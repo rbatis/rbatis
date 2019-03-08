@@ -18,13 +18,7 @@ fn main() {
     let s = node_string.Eval(&m);
     println!("{}", s);
 
-
-    let v = m["v"].as_str();
-
-
-    let re = &String::from("s");
-    let asf = v;
-    println!("{}", asf);
+    println!("{}", m["v"].as_str());
 
 
     TimeUtil::Count_Time(1, Local::now());
