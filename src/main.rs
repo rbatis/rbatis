@@ -1,8 +1,8 @@
 mod ast;
 mod utils;
 
-use utils::TimeUtil;
-use ast::NodeString::NodeString;
+use self::utils::TimeUtil;
+use self::ast::NodeString::NodeString;
 //use utils::TimeUtil;
 use chrono::Local;
 use std::collections::HashMap;
