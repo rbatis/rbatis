@@ -11,17 +11,19 @@ use crate::ast::Node::Node;
 fn main() {
     let node_string = NodeString { buf: "".to_string() };
 
-    let m = &HashMap::new();
+    let mut m = HashMap::new();
+    m.insert("v",String::from("dsa"));
 
-    let s = node_string.Eval(m);
+
+    let s = node_string.Eval(&m);
     println!("{}", s);
 
 
-    let v = m.get("v");
+    let v = m["v"].as_str();
 
 
     let re = &String::from("s");
-    let asf = v.unwrap_or(re);
+    let asf = v;
     println!("{}", asf);
 
 
