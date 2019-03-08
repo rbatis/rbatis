@@ -16,3 +16,4 @@ pub fn Count_Time(total: i32, start: DateTime<Local>) {
     println!("use Time: {} s,each:{} nano/op", time, time * 1000000000.0 / (total as f64));
 }
 
+
