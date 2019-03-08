@@ -7,5 +7,5 @@ use std::collections::HashMap;
 */
 pub trait Node {
     fn Type(&self) -> NodeType;
-    fn Eval(&self, arg: &HashMap<String, String>) -> String;
+    fn Eval(&self, mut arg: &HashMap<&str, String>) -> String;
 }

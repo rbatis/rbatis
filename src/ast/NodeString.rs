@@ -13,7 +13,7 @@ impl Node for NodeString {
         return NodeType::String;
     }
 
-    fn Eval(&self, arg: &HashMap<String, String>) -> String {
+    fn Eval(&self,  mut arg: &HashMap<&str, String>) -> String {
         //  self.buf.replace()
 
 //          for (k,v)in arg{
