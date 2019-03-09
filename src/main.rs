@@ -1,7 +1,7 @@
 mod ast;
 mod utils;
 
-use self::utils::TimeUtil;
+use self::utils::time_util;
 use self::ast::NodeString::NodeString;
 //use utils::TimeUtil;
 use chrono::Local;
@@ -14,11 +14,13 @@ use xml::reader::XmlEvent;
 use std::fs;
 
 fn main() {
+    utils::print_util::print_rust_mybatis();
+
     let node_string = NodeString { buf: "".to_string() };
     let mut m = HashMap::new();
     m.insert("v", String::from("dsa"));
     let s = node_string.Eval(&m);
     println!("{}", s);
     println!("{}", m["v"].as_str());
-    TimeUtil::Count_Time(1, Local::now());
+    time_util::count_time(1, Local::now());
 }

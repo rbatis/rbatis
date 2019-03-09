@@ -7,10 +7,10 @@ use std::io::{Read, BufReader};
 use std::fs;
 
 
-pub fn LoadXml(fileContent: String) {
+pub fn load_xml(file_content: String) {
 //    let file = File::open(filePath).unwrap();
 //    let file = BufReader::new(file);
-    let parser = EventReader::from_str(fileContent.as_ref());
+    let parser = EventReader::from_str(file_content.as_ref());
     let mut depth = 0;
     for e in parser {
         match e {
@@ -73,5 +73,5 @@ fn Test_load_xml() {
     let filePath="./src/example/Example_ActivityMapper.xml";
     println!(">>>>>>>>>>>>>>>>>>>>>>start load {} >>>>>>>>>>>>>>>>>>>>>>>",filePath);
     let content = fs::read_to_string("./src/example/Example_ActivityMapper.xml").unwrap();
-    LoadXml(content);
+    load_xml(content);
 }
