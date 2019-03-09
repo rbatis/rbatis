@@ -14,11 +14,6 @@ impl Node for NodeString {
     }
 
     fn Eval(&self,  mut arg: &HashMap<&str, String>) -> String {
-        //  self.buf.replace()
-
-//          for (k,v)in arg{
-//          }
-
         let mut s = String::new();
         s.push_str(&"sadf");
         return s;
