@@ -53,7 +53,9 @@ fn indent(size: usize) -> String {
 
 #[test]
 fn Test_load() {
-    let path = fs::read_to_string("./src/example/Example_ActivityMapper.xml").unwrap();
+    let filePath = "./src/example/Example_ActivityMapper.xml";
+    println!(">>>>>>>>>>>>>>>>>>>>>>start load {} >>>>>>>>>>>>>>>>>>>>>>>",filePath);
+    let path = fs::read_to_string(filePath).unwrap();
     println!("Name: {}", path)
 }
 
@@ -61,16 +63,17 @@ fn Test_load() {
 #[test]
 fn Test_load_file() {
     // --snip--
-    let filename = "./src/example/Example_ActivityMapper.xml";
-    println!("In file {}", filename);
-    let content = fs::read_to_string("./src/example/Example_ActivityMapper.xml").unwrap();
+    let filePath = "./src/example/Example_ActivityMapper.xml";
+    println!(">>>>>>>>>>>>>>>>>>>>>>start load {} >>>>>>>>>>>>>>>>>>>>>>>",filePath);
+    let content = fs::read_to_string(filePath).unwrap();
     println!("With text:/n{}", content);
 }
 
 //load xml
 #[test]
 fn Test_load_xml() {
-    println!(">>>>>>>>>>>>>>>>>>>>>>start load >>>>>>>>>>>>>>>>>>>>>>>");
+    let filePath="./src/example/Example_ActivityMapper.xml";
+    println!(">>>>>>>>>>>>>>>>>>>>>>start load {} >>>>>>>>>>>>>>>>>>>>>>>",filePath);
     let content = fs::read_to_string("./src/example/Example_ActivityMapper.xml").unwrap();
     LoadXml(content);
 }
