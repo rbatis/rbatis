@@ -21,7 +21,7 @@ pub fn LoadXml(filePath: String) {
                 //load attr
                 if attributes.len()!=0 {
                     for item in attributes{
-                        println!("attr>>>  key={},value={}",item.value,item.value)
+                        println!("attr>>>  key=\"{}\",value=\"{}\"",item.value,item.value)
                     }
                 }
             }
