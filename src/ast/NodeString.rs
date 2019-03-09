@@ -13,7 +13,7 @@ impl Node for NodeString {
         return NodeType::String;
     }
 
-    fn Eval(&self,  mut arg: &HashMap<&str, String>) -> String {
+    fn Eval(&self,   arg: &mut HashMap<&str, String>) -> String {
         let mut s = String::new();
         s.push_str(&"sadf");
         return s;
