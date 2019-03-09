@@ -22,28 +22,3 @@ fn main() {
     println!("{}", m["v"].as_str());
     TimeUtil::Count_Time(1, Local::now());
 }
-
-
-#[test]
-fn Test_load() {
-    let path = fs::read_to_string("./src/example/Example_ActivityMapper.xml").unwrap();
-    println!("Name: {}", path)
-}
-
-//load a xml file
-#[test]
-fn Test_load_file() {
-    // --snip--
-    let filename = "./src/example/Example_ActivityMapper.xml";
-    println!("In file {}", filename);
-    let content = fs::read_to_string("./src/example/Example_ActivityMapper.xml").unwrap();
-    println!("With text:/n{}", content);
-}
-
-//load xml
-#[test]
-fn Test_load_xml() {
-    println!(">>>>>>>>>>>>>>>>>>>>>>start load >>>>>>>>>>>>>>>>>>>>>>>");
-    let content = fs::read_to_string("./src/example/Example_ActivityMapper.xml").unwrap();
-    utils::XmlLoader::LoadXml(content);
-}
