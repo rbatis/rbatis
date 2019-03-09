@@ -10,8 +10,6 @@ use std::fs;
 pub fn LoadXml(fileContent: String) {
 //    let file = File::open(filePath).unwrap();
 //    let file = BufReader::new(file);
-//
-//
     let parser = EventReader::from_str(fileContent.as_ref());
     let mut depth = 0;
     for e in parser {
