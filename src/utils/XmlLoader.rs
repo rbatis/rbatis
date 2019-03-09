@@ -4,6 +4,7 @@ use std::fs::File;
 
 use xml::reader::{EventReader, XmlEvent};
 use std::io::{Read, BufReader};
+use std::fs;
 
 
 pub fn LoadXml(fileContent: String) {
@@ -46,4 +47,30 @@ fn indent(size: usize) -> String {
     const INDENT: &'static str = "    ";
     (0..size).map(|_| INDENT)
         .fold(String::with_capacity(size * INDENT.len()), |r, s| r + s)
+}
+
+
+
+#[test]
+fn Test_load() {
+    let path = fs::read_to_string("./src/example/Example_ActivityMapper.xml").unwrap();
+    println!("Name: {}", path)
+}
+
+//load a xml file
+#[test]
+fn Test_load_file() {
+    // --snip--
+    let filename = "./src/example/Example_ActivityMapper.xml";
+    println!("In file {}", filename);
+    let content = fs::read_to_string("./src/example/Example_ActivityMapper.xml").unwrap();
+    println!("With text:/n{}", content);
+}
+
+//load xml
+#[test]
+fn Test_load_xml() {
+    println!(">>>>>>>>>>>>>>>>>>>>>>start load >>>>>>>>>>>>>>>>>>>>>>>");
+    let content = fs::read_to_string("./src/example/Example_ActivityMapper.xml").unwrap();
+    LoadXml(content);
 }
