@@ -6,11 +6,12 @@ use xml::reader::{EventReader, XmlEvent};
 use std::io::{Read, BufReader};
 
 
-pub fn LoadXml(filePath: String) {
-    let file = File::open(filePath).unwrap();
-    let file = BufReader::new(file);
-
-    let parser = EventReader::new(file);
+pub fn LoadXml(fileContent: String) {
+//    let file = File::open(filePath).unwrap();
+//    let file = BufReader::new(file);
+//
+//
+    let parser = EventReader::from_str(fileContent.as_ref());
     let mut depth = 0;
     for e in parser {
         match e {
