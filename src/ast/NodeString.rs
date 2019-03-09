@@ -25,11 +25,3 @@ impl Node for NodeString {
     }
 }
 
-impl NodeString {
-    pub fn ToString(&self) -> String {
-        let mut s = String::new();
-        s.push_str("NodeString");
-        return s;
-    }
-}
-
