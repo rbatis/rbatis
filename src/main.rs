@@ -43,7 +43,8 @@ use xml::reader::XmlEvent;
 //}
 
 //load xml
-fn main(){
+#[test]
+fn Test(){
     println!(">>>>>>>>>>>>>>>>>>>>>>start load >>>>>>>>>>>>>>>>>>>>>>>");
     utils::XmlLoader::LoadXml(String::from("D:/RustProject/RustMybatis/src/example/Example_ActivityMapper.xml"));
 }
