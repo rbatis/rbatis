@@ -19,7 +19,7 @@ fn main() {
     let node_string = NodeString { buf: "".to_string() };
     let mut m = HashMap::new();
     m.insert("v", String::from("dsa"));
-    let s = node_string.Eval(&m);
+    let mut s = node_string.Eval(&mut m);
     println!("{}", s);
     println!("{}", m["v"].as_str());
     time_util::count_time(1, Local::now());

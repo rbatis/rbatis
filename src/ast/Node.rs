@@ -9,5 +9,5 @@ pub trait Node {
     //return node type
     fn Type(&self) -> NodeType;
     //run node impl,and return result string
-    fn Eval(&self, mut arg: &HashMap<&str, String>) -> String;
+    fn Eval(&self,  arg: &mut HashMap<&str, String>) -> String;
 }
