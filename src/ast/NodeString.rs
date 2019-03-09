@@ -1,7 +1,7 @@
 //use super::{Node::Node,NodeType::NodeType};
 
-use crate::ast::Node::Node;
-use crate::ast::NodeType::NodeType;
+use super::Node::Node;
+use super::NodeType::NodeType;
 use std::collections::HashMap;
 
 pub struct NodeString {
