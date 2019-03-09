@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
-        "https://raw.githubusercontent.com/zhuxiujia/GoMybatis/master/mybatis-3-mapper.dtd">
+        "https://raw.githubusercontent.com/zhuxiujia/RustMybatis/master/mybatis-3-mapper.dtd">
 <mapper>
     <!--logic_enable 逻辑删除字段-->
     <!--logic_deleted 逻辑删除已删除字段-->
