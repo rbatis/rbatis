@@ -21,7 +21,7 @@ fn parserFunc(parser: EventReader<&[u8]>) {
     for item in parser {
         match item {
             Ok(XmlEvent::StartElement { name, attributes, .. }) => {
-                println!("{}+{}", indent(depth), name);
+                print!("<{} {} ", indent(depth), name);
                 depth += 1;
 
                 //load attr
@@ -31,12 +31,12 @@ fn parserFunc(parser: EventReader<&[u8]>) {
                     }
                 }
             }
+            Ok(XmlEvent::Characters(data)) => {
+                println!("{} {}", indent(depth), data);
+            }
             Ok(XmlEvent::EndElement { name }) => {
                 depth -= 1;
-                println!("{}-{}", indent(depth), name);
-            }
-            Ok(XmlEvent::Characters(data)) => {
-                println!("{}-{}", indent(depth), data);
+                println!("{} {}>", indent(depth), name);
             }
             Err(e) => {
                 println!("Error: {}", e);
