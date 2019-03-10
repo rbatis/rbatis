@@ -27,7 +27,7 @@ fn parserFunc(parser: EventReader<&[u8]>) {
                 //load attr
                 if attributes.len() != 0 {
                     for item in attributes {
-                        print!("{}=\"{}\"", item.name, item.value)
+                        print!("{}=\"{}\" ", item.name, item.value)
                     }
                 }
                 println!(">");
