@@ -21,22 +21,23 @@ fn parserFunc(parser: EventReader<&[u8]>) {
     for item in parser {
         match item {
             Ok(XmlEvent::StartElement { name, attributes, .. }) => {
-                print!("<{} {} ", indent(depth), name);
+                print!("{} <{} ", indent(depth), name);
                 depth += 1;
 
                 //load attr
                 if attributes.len() != 0 {
                     for item in attributes {
-                        println!("attr>>>  key=\"{}\",value=\"{}\"", item.value, item.value)
+                        print!("{}=\"{}\"", item.name, item.value)
                     }
                 }
+                println!(">");
             }
             Ok(XmlEvent::Characters(data)) => {
                 println!("{} {}", indent(depth), data);
             }
             Ok(XmlEvent::EndElement { name }) => {
                 depth -= 1;
-                println!("{} {}>", indent(depth), name);
+                println!("{} </{}>", indent(depth), name);
             }
             Err(e) => {
                 println!("Error: {}", e);
