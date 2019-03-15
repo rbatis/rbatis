@@ -1,6 +1,7 @@
 mod ast;
 mod utils;
 mod engines;
+mod lib;
 
 use self::utils::time_util;
 use self::ast::NodeString::NodeString;
