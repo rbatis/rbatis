@@ -2,6 +2,7 @@ mod ast;
 mod utils;
 mod engines;
 mod lib;
+mod SqlBuilder;
 
 use self::utils::time_util;
 use self::ast::NodeString::NodeString;
