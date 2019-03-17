@@ -26,21 +26,24 @@ pub trait Node {
 
 //参数节点
 pub struct ArgNode {
+    //参数源
     pub value: String,
+    //缓存分割包含有"."后的参数
     params: Vec<&'static str>,
-    paramsLen:usize,
+    //参数长度
+    paramsLen: usize,
     pub t: NodeType,
 }
 
 impl ArgNode {
-   pub fn new(v: &'static str) -> Self {
-        let pars:Vec<&'static str>=v.split('.').collect();
-        let len=pars.len();
+    pub fn new(v: &'static str) -> Self {
+        let pars: Vec<&'static str> = v.split('.').collect();
+        let len = pars.len();
         return Self {
             value: v.to_string(),
             t: NArg,
-            params:pars,
-            paramsLen:len,
+            params: pars,
+            paramsLen: len,
         };
     }
 }
