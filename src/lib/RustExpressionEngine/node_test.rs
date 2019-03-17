@@ -18,6 +18,10 @@ fn TestArgNode() {
     let john = json!({
         "name": "John Doe",
         "age": Value::Null,
+         "sex":{
+            "a":"i'm a",
+            "b":"i'm b",
+         },
         "phones": [
             "+44 1234567",
             "+44 2345678"
@@ -26,7 +30,7 @@ fn TestArgNode() {
 
     let argNode = ArgNode {
         t: NArg,
-        value: String::from("name"),
+        value: String::from("sex.a"),
     };
     let (result, Error) = argNode.Eval(john);
     println!("value:{},error:{}", result, Error);
