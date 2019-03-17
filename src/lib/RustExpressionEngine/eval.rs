@@ -34,6 +34,7 @@ fn TestTakeValue(){
     let serialized = serde_json::to_string(&point).unwrap();
     println!("serialized = {}", serialized);
 
+    //create serde_json::Value
     let john = json!(point);
     println!("{}", john["x"]);
 
