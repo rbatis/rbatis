@@ -15,5 +15,5 @@ enum NodeType {
 //抽象语法树节点
 trait Node {
     fn Type() -> NodeType;
-    fn Eval(env: HashMap<&str, &str>) -> (String, String);
+    fn Eval(env: serde_json::Value) -> (serde_json::Value, String);
 }
