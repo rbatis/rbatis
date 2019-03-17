@@ -1,6 +1,6 @@
 use std::collections::HashMap;
-use crate::lib::RustExpressionEngine::node::NodeType::NString;
-use serde_json::Value;
+use crate::lib::RustExpressionEngine::node::NodeType::{NString, NArg};
+use serde_json::{Value, Map};
 
 pub enum NodeType {
     NArg,
@@ -24,6 +24,34 @@ pub trait Node {
     fn Eval(&self, env: Value) -> (Value, String);
 }
 
+//参数节点
+pub struct ArgNode {
+    pub value: String,
+    pub t: NodeType,
+}
+
+impl Node for ArgNode {
+    fn Type(&self) -> NodeType {
+        return NArg;
+    }
+
+    fn Eval(&self, env: Value) -> (Value, String) {
+        let params: Vec<_> = self.value.split('.').collect();
+        let paramsLen = params.len();
+        //: Value::Object(Map<String, Value>)
+        let mut result;
+        for i in 0..paramsLen {
+            result = &env[params[i]];
+            if i == (paramsLen - 1) {
+                return (result.clone(), String::from(""));
+            }
+        }
+        return (Value::Null, String::from(""));
+    }
+}
+
+
+//String节点
 pub struct StringNode {
     pub value: String,
     pub t: NodeType,
