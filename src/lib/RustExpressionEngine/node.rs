@@ -39,9 +39,9 @@ impl Node for ArgNode {
         let params: Vec<_> = self.value.split('.').collect();
         let paramsLen = params.len();
         //: Value::Object(Map<String, Value>)
-        let mut result;
+        let mut result=&env;
         for i in 0..paramsLen {
-            result = &env[params[i]];
+            result = &result[params[i]];
             if i == (paramsLen - 1) {
                 return (result.clone(), String::from(""));
             }
