@@ -1,6 +1,6 @@
 use std::collections::HashMap;
 
-enum NodeType {
+pub enum NodeType {
   NArg,            //参数节点
   NString,          //string 节点
   NNumber,           //number节点
@@ -11,7 +11,7 @@ enum NodeType {
 }
 
 //抽象语法树节点
-trait Node {
+pub trait Node {
     fn Type() -> NodeType;
     fn Eval(env: serde_json::Value) -> (serde_json::Value, String);
 }
