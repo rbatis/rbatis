@@ -6,3 +6,4 @@ mod runtime;
 
 //test mod
 mod parser_test;
+mod node_test;
