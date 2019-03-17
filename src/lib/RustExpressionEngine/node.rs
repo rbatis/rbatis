@@ -25,7 +25,7 @@ pub trait Node {
 }
 
 pub struct StringNode {
-   pub value: String,
+    pub value: String,
     pub t: NodeType,
 }
 
@@ -35,7 +35,6 @@ impl Node for StringNode {
     }
 
     fn Eval(&self, env: Value) -> (Value, String) {
-//        return (Value::String(String::from_str(self.value.as_str())), String::from(""));
-        return (Value::String(String::from(self.value.as_str())), String::from(""));
+        return (Value::String(self.value.to_string()), String::from(""));
     }
 }
