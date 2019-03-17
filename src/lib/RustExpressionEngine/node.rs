@@ -3,9 +3,7 @@ use std::collections::HashMap;
 enum NodeType {
   NArg,            //参数节点
   NString,          //string 节点
-  NFloat,           //float节点
-  NInt,             //int 节点
-  NUInt,           //uint节点
+  NNumber,           //number节点
   NBool,           //bool节点
   NNull,           //空节点
   NBinary,         //二元计算节点
