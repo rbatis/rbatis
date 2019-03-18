@@ -7,9 +7,21 @@ use serde::{Serialize, Deserialize};
 
 pub fn Eval(left: &Value,
             right: &Value,
-            opt: &String,) ->(Value, String) {
+            opt: &String, ) -> (Value, String) {
     //+ - * / == >= <= !=
-    return (Value::Null,"".to_string());
+    println!("l:{}", left);
+    println!("r:{}", right);
+    println!("opt:{}", opt);
+
+    let op = opt.as_str();
+    if op == "+" {
+        let mut s = String::new();
+        s.push_str(left.as_str().unwrap());
+        s.push_str(right.as_str().unwrap());
+        return (Value::String(s), "".to_string());
+    }
+
+    return (Value::Null, "".to_string());
 }
 
 
@@ -36,7 +48,7 @@ struct Point {
 }
 
 #[test]
-fn TestTakeValue(){
+fn TestTakeValue() {
     let point = Point { x: 1, y: 2 };
 
     let serialized = serde_json::to_string(&point).unwrap();
