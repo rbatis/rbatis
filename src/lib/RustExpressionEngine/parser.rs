@@ -1,4 +1,5 @@
 use std::collections::HashMap;
+use core::borrow::Borrow;
 
 pub struct OptMap<'a> {
     pub Map: HashMap<&'a str, bool>,
@@ -39,11 +40,35 @@ impl<'a> OptMap<'a> {
     }
 }
 
-pub fn Parser(str: String) -> String {
+pub fn Parser(data: String) -> Vec<String> {
     let optMap = OptMap::new();
+    let mut dataString = &mut data.clone();
 
-    for (k, v) in optMap.MulOpsMap {}
+    for (k, _) in &optMap.MulOpsMap {
+        let mut newStr = String::from(" ");
+        &newStr.push_str(k);
+        &newStr.push_str(" ");
+        let newDataStr = dataString.replace(k, &newStr);
+        *dataString = newDataStr;
+    }
 
-    return String::from("ds");
+    for (k, _) in &optMap.SingleOptMap {
+        let mut newStr = String::from(" ");
+        &newStr.push_str(k);
+        &newStr.push_str(" ");
+        let newDataStr = dataString.replace(k, &newStr);
+        *dataString = newDataStr;
+    }
+
+
+    let splis: Vec<&str> = dataString.split(" ").collect();
+    let mut result = vec![];
+    for item in splis {
+        if item==" "||item==""{
+            continue;
+        }
+        result.push(item.to_string());
+    }
+    return result;
 }
 

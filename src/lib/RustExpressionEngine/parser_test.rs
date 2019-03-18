@@ -3,7 +3,10 @@ use crate::lib::RustExpressionEngine::parser::OptMap;
 
 #[test]
 fn TestParser() {
-//    parser::Parser();
+    let vecStr = parser::Parser(String::from("a <= b + 1 -2"));
+    for item in vecStr {
+        println!("item:{}", item);
+    }
 }
 
 #[test]
@@ -28,6 +31,5 @@ fn TestParserString() {
         temp.push(c);
 
         println!("{}", temp);
-
     }
 }
