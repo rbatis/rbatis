@@ -1,7 +1,8 @@
 use std::collections::HashMap;
 
 pub struct  OptMap<'a> {
-    pub OpsMap:HashMap< &'a str,bool>
+    pub Map:HashMap< &'a str,bool>,//全部操作符
+    pub MulOpsMap:HashMap< &'a str,bool> //复合操作符
 }
 
 impl <'a>OptMap<'a>{
@@ -17,8 +18,16 @@ impl <'a>OptMap<'a>{
         defMap.insert(">=",true);
         defMap.insert("<=",true);
 
+        let mut MulOpsMap=HashMap::new();
+        for (k,v) in &defMap{
+            if k.len()>1{
+                MulOpsMap.insert(k.clone(),v.clone());
+            }
+        }
+
         Self{
-            OpsMap:defMap
+            Map:defMap,
+            MulOpsMap:MulOpsMap,
         }
     }
 }
