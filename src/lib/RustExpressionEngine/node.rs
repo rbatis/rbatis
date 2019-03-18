@@ -1,10 +1,11 @@
 use std::collections::HashMap;
-use crate::lib::RustExpressionEngine::node::NodeType::{NString, NArg, NNumber, NBool, NNull};
+use crate::lib::RustExpressionEngine::node::NodeType::{NString, NArg, NNumber, NBool, NNull, NBinary};
 use serde_json::{Value, Map};
 use serde_json::value::Value::Number;
 use serde_json;
 use serde_json::de::ParserNumber;
 use std::ptr::null;
+use crate::lib::RustExpressionEngine::eval::Eval;
 
 pub enum NodeType {
     NArg,
@@ -25,7 +26,7 @@ pub enum NodeType {
 //抽象语法树节点
 pub trait Node {
     fn Type(&self) -> NodeType;
-    fn Eval(&self, env: &Value) -> (Value, &str);
+    fn Eval(&self, env: &Value) -> (Value, String);
 }
 
 //参数节点
@@ -57,19 +58,19 @@ impl<'a> Node for ArgNode<'a> {
         return NArg;
     }
 
-    fn Eval(&self, env: &Value) -> (Value, &str) {
+    fn Eval(&self, env: &Value) -> (Value, String) {
         if self.params.len() == 1 {
-            return (env[self.value.as_str()].clone(), "");
+            return (env[self.value.as_str()].clone(), "".to_string());
         } else {
             let paramsLen = self.params.len();
             let mut result = env;
             for i in 0..paramsLen {
                 result = &result[self.params[i]];
                 if i == (paramsLen - 1) {
-                    return (result.clone(), "");
+                    return (result.clone(), "".to_string());
                 }
             }
-            return (Value::Null, "");
+            return (Value::Null, "".to_string());
         }
     }
 }
@@ -86,8 +87,17 @@ impl Node for StringNode {
         return NString;
     }
 
-    fn Eval(&self, env: &Value) -> (Value, &str) {
-        return (Value::String(self.value.to_string()), "");
+    fn Eval(&self, env: &Value) -> (Value, String) {
+        return (Value::String(self.value.to_string()), "".to_string());
+    }
+}
+
+impl StringNode {
+    pub fn new(s: String) -> Self {
+        Self {
+            value: s,
+            t: NString,
+        }
     }
 }
 
@@ -103,8 +113,8 @@ impl Node for NumberNode {
         return NNumber;
     }
 
-    fn Eval(&self, env: &Value) -> (Value, &str) {
-        return ((&self.value).clone(), "");
+    fn Eval(&self, env: &Value) -> (Value, String) {
+        return ((&self.value).clone(), "".to_string());
     }
 }
 
@@ -138,8 +148,8 @@ impl Node for BoolNode {
         return NBool;
     }
 
-    fn Eval(&self, env: &Value) -> (Value, &str) {
-        return ((&self.value).clone(), "");
+    fn Eval(&self, env: &Value) -> (Value, String) {
+        return ((&self.value).clone(), "".to_string());
     }
 }
 
@@ -164,8 +174,8 @@ impl Node for NullNode {
         return NNull;
     }
 
-    fn Eval(&self, env: &Value) -> (Value, &str) {
-        return ((&self.value).clone(), "");
+    fn Eval(&self, env: &Value) -> (Value, String) {
+        return ((&self.value).clone(), "".to_string());
     }
 }
 
@@ -176,6 +186,45 @@ impl NullNode {
         }
         Self {
             value: Value::Null,
+            t: NNumber,
+        }
+    }
+}
+
+
+//计算节点
+pub struct BinaryNode<Left: Node, Right: Node> {
+    left: Left,
+    right: Right,
+    opt: String,
+    t: NodeType,
+}
+
+impl<Left: Node, Right: Node> Node for BinaryNode<Left, Right> {
+    fn Type(&self) -> NodeType {
+        return NBinary;
+    }
+
+    fn Eval(&self, env: &Value) -> (Value, String) {
+        let (l, e) = self.left.Eval(env);
+        if e != "" {
+            return (Value::Null, e);
+        }
+        let (r, e) = self.right.Eval(env);
+        if e != "" {
+            return (Value::Null, e);
+        }
+        return Eval(&l, &r, &self.opt);
+    }
+}
+
+//<Left: Node, Right: Node>
+impl<Left: Node, Right: Node> BinaryNode<Left, Right> {
+    pub fn new(left: Left, right: Right, opt: String) -> Self {
+        Self {
+            left: left,
+            right: right,
+            opt: opt,
             t: NNumber,
         }
     }
