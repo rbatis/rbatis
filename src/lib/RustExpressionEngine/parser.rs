@@ -84,9 +84,9 @@ pub fn Parser(data: String, optMap: &OptMap) -> (Box<Node>, String) {
         nodes.push(boxNode);
     }
 
-//    for item in (&optMap).List {
-//
-//    }
+    for item in optMap.List.clone() {
+
+    }
 
 
     return (Box::new(NullNode::new()), "".to_string());
