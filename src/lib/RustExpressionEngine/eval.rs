@@ -5,6 +5,14 @@ use serde_json::Value;
 use serde::{Serialize, Deserialize};
 
 
+pub fn Eval(left: &Value,
+            right: &Value,
+            opt: &String,) ->(Value, String) {
+    //+ - * / == >= <= !=
+    return (Value::Null,"".to_string());
+}
+
+
 #[test]
 fn TestParser() {
     let john = json!({
@@ -41,3 +49,4 @@ fn TestTakeValue(){
     let deserialized: Point = serde_json::from_str(&serialized).unwrap();
     println!("deserialized = {:?}", deserialized);
 }
+
