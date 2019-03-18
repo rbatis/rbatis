@@ -1,6 +1,6 @@
 use std::collections::HashMap;
 use core::borrow::Borrow;
-use crate::lib::RustExpressionEngine::node::{Node, NullNode, OptNode, BoolNode, StringNode, NumberNode, ArgNode};
+use crate::lib::RustExpressionEngine::node::{Node, NullNode, OptNode, BoolNode, StringNode, NumberNode, ArgNode, BinaryNode};
 use crate::lib::RustExpressionEngine::node::NodeType::NOpt;
 use crate::lib::RustExpressionEngine::runtime::IsNumber;
 
@@ -72,10 +72,10 @@ impl<'a> OptMap<'a> {
     }
 }
 
-pub fn Parser(data: String) -> (Box<Node>, String) {
+pub fn Parser(data: String, optMap: &OptMap) -> (Box<Node>, String) {
     let tokens = ParserOperators(&data);
 
-    let mut nodes=vec![];
+    let mut nodes = vec![];
     for item in tokens {
         let (boxNode, err) = parserNode(&data, &item);
         if err != "" {
@@ -83,6 +83,11 @@ pub fn Parser(data: String) -> (Box<Node>, String) {
         }
         nodes.push(boxNode);
     }
+
+//    for item in (&optMap).List {
+//
+//    }
+
 
     return (Box::new(NullNode::new()), "".to_string());
 }
@@ -192,3 +197,17 @@ fn parseMul(dataString: &mut String, optMap: &OptMap) {
     }
 }
 
+fn findReplaceOpt(express: &String, operator: &String, nodeArg: &mut Vec<Box<Node>>) -> String {
+    let mut index = 1 as i32;
+
+    for item in nodeArg {
+        let itemType = item.Type();
+        if itemType as i32 == NOpt as i32 {
+            let leftIndex = (index - 1) as usize;
+            let rightIndex = (index + 1) as usize;
+           // let newNode = BinaryNode::new(nodeArg[leftIndex], nodeArg[rightIndex], item.Value().as_str().unwrap().to_string());
+        }
+        index = index + 1;
+    }
+    return "".to_string();
+}

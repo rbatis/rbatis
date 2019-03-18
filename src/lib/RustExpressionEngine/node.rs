@@ -8,19 +8,19 @@ use std::ptr::null;
 use crate::lib::RustExpressionEngine::eval::Eval;
 
 pub enum NodeType {
-    NArg,
+    NArg = 1,
     //参数节点
-    NString,
+    NString = 2,
     //string 节点
-    NNumber,
+    NNumber = 3,
     //number节点
-    NBool,
+    NBool = 4,
     //bool节点
-    NNull,
+    NNull = 5,
     //空节点
-    NBinary,
+    NBinary = 6,
     //二元计算节点
-    NOpt,           //操作符节点
+    NOpt = 7,           //操作符节点
 }
 
 
@@ -28,10 +28,11 @@ pub enum NodeType {
 pub trait Node {
     fn Type(&self) -> NodeType;
     fn Eval(&self, env: &Value) -> (Value, String);
+    fn Value(&self) -> Value;
 }
 
 pub struct OptNode {
-    value: Value,
+    pub  value: Value,
     t: NodeType,
 }
 
@@ -42,6 +43,10 @@ impl Node for OptNode {
 
     fn Eval(&self, env: &Value) -> (Value, String) {
         return ((&self).value.clone(), "".to_string());
+    }
+
+    fn Value(&self) -> Value {
+        return (&self).value.clone();
     }
 }
 
@@ -66,11 +71,11 @@ pub struct ArgNode {
     pub t: NodeType,
 }
 
-impl ArgNode{
+impl ArgNode {
     pub fn new(v: &String) -> Self {
         let pars: Vec<&str> = v.split('.').collect();
-        let mut pars2=vec![];
-        for item in &pars{
+        let mut pars2 = vec![];
+        for item in &pars {
             pars2.push(item.to_string());
         }
         let len = &pars.len();
@@ -104,6 +109,9 @@ impl Node for ArgNode {
             return (Value::Null, "".to_string());
         }
     }
+    fn Value(&self) -> Value {
+        return Value::String((&self).value.clone());
+    }
 }
 
 
@@ -120,6 +128,10 @@ impl Node for StringNode {
 
     fn Eval(&self, env: &Value) -> (Value, String) {
         return (Value::String(self.value.to_string()), "".to_string());
+    }
+
+    fn Value(&self) -> Value {
+        return Value::String((&self).value.clone());
     }
 }
 
@@ -148,6 +160,10 @@ impl Node for NumberNode {
 
     fn Eval(&self, env: &Value) -> (Value, String) {
         return ((&self.value).clone(), "".to_string());
+    }
+
+    fn Value(&self) -> Value {
+        return (&self).value.clone();
     }
 }
 
@@ -185,6 +201,9 @@ impl Node for BoolNode {
     fn Eval(&self, env: &Value) -> (Value, String) {
         return ((&self.value).clone(), "".to_string());
     }
+    fn Value(&self) -> Value {
+        return (&self).value.clone();
+    }
 }
 
 impl BoolNode {
@@ -212,6 +231,9 @@ impl Node for NullNode {
     fn Eval(&self, env: &Value) -> (Value, String) {
         return ((&self.value).clone(), "".to_string());
     }
+    fn Value(&self) -> Value {
+        return (&self).value.clone();
+    }
 }
 
 impl NullNode {
@@ -225,14 +247,14 @@ impl NullNode {
 
 
 //计算节点
-pub struct BinaryNode<Left: Node, Right: Node> {
-    left: Left,
-    right: Right,
+pub struct BinaryNode {
+    left: Box<Node>,
+    right: Box<Node>,
     opt: String,
     t: NodeType,
 }
 
-impl<Left: Node, Right: Node> Node for BinaryNode<Left, Right> {
+impl Node for BinaryNode {
     fn Type(&self) -> NodeType {
         return NBinary;
     }
@@ -248,11 +270,14 @@ impl<Left: Node, Right: Node> Node for BinaryNode<Left, Right> {
         }
         return Eval(&l, &r, &self.opt);
     }
+    fn Value(&self) -> Value {
+        return Value::Null;
+    }
 }
 
 //<Left: Node, Right: Node>
-impl<Left: Node, Right: Node> BinaryNode<Left, Right> {
-    pub fn new(left: Left, right: Right, opt: String) -> Self {
+impl BinaryNode {
+    pub fn new(left: Box<Node>, right: Box<Node>, opt: String) -> Self {
         Self {
             left: left,
             right: right,
