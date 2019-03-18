@@ -72,7 +72,13 @@ impl<'a> OptMap<'a> {
     }
 }
 
-pub fn Parser(data: String) -> Vec<String> {
+pub fn Parser(data: String) -> (Box<Node>,String) {
+   let tokens= ParserOperators(&data);
+
+   return (Box::new(NullNode::new()),"".to_string())
+}
+
+pub fn ParserOperators(data:&String)->Vec<String>{
     let optMap = OptMap::new();
     let mut dataString = &mut data.clone();
     parseSingle(dataString, &optMap);
@@ -87,6 +93,7 @@ pub fn Parser(data: String) -> Vec<String> {
     }
     return result;
 }
+
 
 //express:表达式，v:操作符
 fn parserNode(express: &String, v: &'static String) -> (Box<Node>, String) {
