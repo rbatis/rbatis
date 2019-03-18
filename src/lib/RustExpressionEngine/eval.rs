@@ -14,12 +14,43 @@ pub fn Eval(left: &Value,
     println!("opt:{}", opt);
 
     let op = opt.as_str();
+    if op == "=="{
+
+    }
+    if op == "!="{
+
+    }
+    if op == ">="{
+
+    }
+    if op == "<="{
+
+    }
+    if op == "*"{
+
+    }
+    if op == "/"{
+
+    }
     if op == "+" {
         let mut s = String::new();
         s.push_str(left.as_str().unwrap());
         s.push_str(right.as_str().unwrap());
         return (Value::String(s), "".to_string());
     }
+    if op == "-"{
+
+    }
+
+//    match left {
+//        Value::Null => formatter.debug_tuple("Null").finish(),
+//        Value::Bool(v) => formatter.debug_tuple("Bool").field(&v).finish(),
+//        Value::Number(ref v) => Debug::fmt(v, formatter),
+//        Value::String(ref v) => formatter.debug_tuple("String").field(v).finish(),
+//        Value::Array(ref v) => formatter.debug_tuple("Array").field(v).finish(),
+//        Value::Object(ref v) => formatter.debug_tuple("Object").field(v).finish(),
+//    }
+
 
     return (Value::Null, "".to_string());
 }
