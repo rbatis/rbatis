@@ -22,11 +22,16 @@ impl<'a> OptMap<'a> {
         //list 顺序加入操作符
         list.push("*");
         list.push("/");
+        list.push("%");
+        list.push("^");
         list.push("+");
         list.push("-");
 
 
 
+        list.push("@");
+        list.push("#");
+        list.push("$");
         list.push("&");
         list.push("|");
         list.push("=");
