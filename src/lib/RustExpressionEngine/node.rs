@@ -1,7 +1,7 @@
 use std::collections::HashMap;
 use crate::lib::RustExpressionEngine::node::NodeType::{NString, NArg, NNumber, NBool, NNull, NBinary, NOpt};
 use serde_json::{Value, Map};
-use serde_json::value::Value::Number;
+use serde_json::value::Value::{Number, Null};
 use serde_json;
 use serde_json::de::ParserNumber;
 use std::ptr::null;
@@ -23,17 +23,50 @@ pub enum NodeType {
     NOpt = 7,           //操作符节点
 }
 
+impl Clone for NodeType {
+    fn clone(&self) -> Self {
+        match self {
+            NArg => return NArg,
+            NString => return NString,
+            NNumber => return NNumber,
+            NBool => return NBool,
+            NNull => return NNull,
+            NBinary => return NBinary,
+            NOpt => return NOpt,
+        }
+    }
+
+    fn clone_from(&mut self, source: &Self) {
+        *self = source.clone();
+    }
+}
+
 
 //抽象语法树节点
 pub trait Node {
     fn Type(&self) -> NodeType;
     fn Eval(&self, env: &Value) -> (Value, String);
     fn Value(&self) -> Value;
+
 }
+
 
 pub struct OptNode {
     pub  value: Value,
     t: NodeType,
+}
+
+impl Clone for OptNode {
+    fn clone(&self) -> Self {
+        return OptNode {
+            value: self.value.clone(),
+            t: self.t.clone(),
+        };
+    }
+
+    fn clone_from(&mut self, source: &Self) {
+        *self = source.clone()
+    }
 }
 
 impl Node for OptNode {
@@ -69,6 +102,16 @@ pub struct ArgNode {
     //参数长度
     paramsLen: usize,
     pub t: NodeType,
+}
+
+impl Clone for ArgNode {
+    fn clone(&self) -> Self {
+        return ArgNode::new(&self.Value().as_str().unwrap().to_string());
+    }
+
+    fn clone_from(&mut self, source: &Self) {
+        *self = source.clone()
+    }
 }
 
 impl ArgNode {
@@ -121,6 +164,16 @@ pub struct StringNode {
     pub t: NodeType,
 }
 
+impl Clone for StringNode {
+    fn clone(&self) -> Self {
+        return StringNode::new(self.value.clone());
+    }
+
+    fn clone_from(&mut self, source: &Self) {
+        *self = source.clone()
+    }
+}
+
 impl Node for StringNode {
     fn Type(&self) -> NodeType {
         return NString;
@@ -150,6 +203,19 @@ pub struct NumberNode {
     value: Value,
     //u64,i64,f64
     pub t: NodeType,
+}
+
+impl Clone for NumberNode {
+    fn clone(&self) -> Self {
+        return NumberNode {
+            t: NNumber,
+            value: self.value.clone(),
+        };
+    }
+
+    fn clone_from(&mut self, source: &Self) {
+        *self = source.clone()
+    }
 }
 
 
@@ -192,6 +258,18 @@ pub struct BoolNode {
     t: NodeType,
 }
 
+impl Clone for BoolNode {
+    fn clone(&self) -> Self {
+        return BoolNode {
+            t: NBool,
+            value: self.value.clone(),
+        };
+    }
+
+    fn clone_from(&mut self, source: &Self) {
+        *self = source.clone()
+    }
+}
 
 impl Node for BoolNode {
     fn Type(&self) -> NodeType {
@@ -222,6 +300,18 @@ pub struct NullNode {
     t: NodeType,
 }
 
+impl Clone for NullNode {
+    fn clone(&self) -> Self {
+        return NullNode {
+            t: NNull,
+            value: self.value.clone(),
+        };
+    }
+
+    fn clone_from(&mut self, source: &Self) {
+        *self = source.clone()
+    }
+}
 
 impl Node for NullNode {
     fn Type(&self) -> NodeType {
@@ -252,6 +342,22 @@ pub struct BinaryNode {
     right: Box<Node>,
     opt: String,
     t: NodeType,
+}
+
+impl Clone for BinaryNode {
+    fn clone(&self) -> BinaryNode {
+//        return BinaryNode {
+//            left: self.left.clone(),
+//            right: self.right.clone(),
+//            opt: self.opt.clone(),
+//            t: self.t.clone(),
+//        };
+        unimplemented!()
+    }
+
+    fn clone_from(&mut self, source: &Self) {
+        *self = source.clone()
+    }
 }
 
 impl Node for BinaryNode {
