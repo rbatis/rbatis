@@ -205,7 +205,7 @@ fn findReplaceOpt(express: &String, operator: &String, nodeArg: &mut Vec<Box<Nod
         if itemType as i32 == NOpt as i32 {
             let leftIndex = (index - 1) as usize;
             let rightIndex = (index + 1) as usize;
-           // let newNode = BinaryNode::new(nodeArg[leftIndex], nodeArg[rightIndex], item.Value().as_str().unwrap().to_string());
+            //let newNode = BinaryNode::new(nodeArg[leftIndex], nodeArg[rightIndex], item.Value().as_str().unwrap().to_string());
         }
         index = index + 1;
     }

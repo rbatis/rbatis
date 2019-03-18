@@ -47,7 +47,6 @@ pub trait Node {
     fn Type(&self) -> NodeType;
     fn Eval(&self, env: &Value) -> (Value, String);
     fn Value(&self) -> Value;
-
 }
 
 
@@ -337,23 +336,21 @@ impl NullNode {
 
 
 //计算节点
-pub struct BinaryNode {
-    left: Box<Node>,
-    right: Box<Node>,
+pub struct BinaryNode<T: Node + Clone> {
+    left: Box<T>,
+    right: Box<T>,
     opt: String,
     t: NodeType,
 }
 
-impl Clone for BinaryNode {
-    fn clone(&self) -> BinaryNode {
-        //TODO clone BinaryNode
-//        return BinaryNode {
-//            left: self.left.clone(),
-//            right: self.right.clone(),
-//            opt: self.opt.clone(),
-//            t: self.t.clone(),
-//        };
-        unimplemented!()
+impl<T: Node + Clone> Clone for BinaryNode<T> {
+    fn clone(&self) -> BinaryNode<T> {
+        return BinaryNode {
+            left: self.left.clone(),
+            right: self.right.clone(),
+            opt: self.opt.clone(),
+            t: self.t.clone(),
+        };
     }
 
     fn clone_from(&mut self, source: &Self) {
@@ -361,7 +358,7 @@ impl Clone for BinaryNode {
     }
 }
 
-impl Node for BinaryNode {
+impl<T: Node + Clone> Node for BinaryNode<T> {
     fn Type(&self) -> NodeType {
         return NBinary;
     }
@@ -383,8 +380,8 @@ impl Node for BinaryNode {
 }
 
 //<Left: Node, Right: Node>
-impl BinaryNode {
-    pub fn new(left: Box<Node>, right: Box<Node>, opt: String) -> Self {
+impl<T: Node + Clone> BinaryNode<T> {
+    pub fn new(left: Box<T>, right: Box<T>, opt: String) -> Self {
         Self {
             left: left,
             right: right,
