@@ -346,6 +346,7 @@ pub struct BinaryNode {
 
 impl Clone for BinaryNode {
     fn clone(&self) -> BinaryNode {
+        //TODO clone BinaryNode
 //        return BinaryNode {
 //            left: self.left.clone(),
 //            right: self.right.clone(),
