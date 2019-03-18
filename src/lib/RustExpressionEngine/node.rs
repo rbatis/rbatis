@@ -1,6 +1,9 @@
 use std::collections::HashMap;
-use crate::lib::RustExpressionEngine::node::NodeType::{NString, NArg};
+use crate::lib::RustExpressionEngine::node::NodeType::{NString, NArg, NNumber};
 use serde_json::{Value, Map};
+use serde_json::value::Value::Number;
+use serde_json;
+use serde_json::de::ParserNumber;
 
 pub enum NodeType {
     NArg,
@@ -84,5 +87,45 @@ impl Node for StringNode {
 
     fn Eval(&self, env: &Value) -> (Value, &str) {
         return (Value::String(self.value.to_string()), "");
+    }
+}
+
+//number节点
+pub struct NumberNode {
+    number: Value,
+    //u64,i64,f64
+    pub value: String,
+    pub t: NodeType,
+}
+
+impl Node for NumberNode {
+    fn Type(&self) -> NodeType {
+        return NNumber;
+    }
+
+    fn Eval(&self, env: &Value) -> (Value, &str) {
+        return ((&self.number).clone(), "");
+    }
+}
+
+impl NumberNode {
+    pub fn new(value: String) -> Self {
+        let index=value.find(".").unwrap_or_default();
+        if index > 0 {
+            //i64
+            let r: f64 = value.parse().unwrap();
+            return Self {
+                value: value,
+                number: Value::Number(serde_json::Number::from(ParserNumber::F64(r))),
+                t: NNumber,
+            };
+        } else {
+            let r: i64 = value.parse().unwrap();
+            return Self {
+                value: value,
+                number: Value::Number(serde_json::Number::from(ParserNumber::I64(r))),
+                t: NNumber,
+            };
+        }
     }
 }
