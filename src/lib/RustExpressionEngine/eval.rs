@@ -3,33 +3,33 @@ extern crate serde_json;
 use serde_json::json;
 use serde_json::Value;
 use serde::{Serialize, Deserialize};
-
+use crate::lib::RustExpressionEngine::parser::OptMap;
 
 pub fn Eval(left: &Value,
             right: &Value,
-            opt: &String, ) -> (Value, String) {
+            opt: &String) -> (Value, String) {
     //+ - * / == >= <= !=
     println!("l:{}", left);
     println!("r:{}", right);
     println!("opt:{}", opt);
 
     let op = opt.as_str();
-    if op == "=="{
+    if op == "==" {
 
     }
-    if op == "!="{
+    if op == "!=" {
 
     }
-    if op == ">="{
+    if op == ">=" {
 
     }
-    if op == "<="{
+    if op == "<=" {
 
     }
-    if op == "*"{
+    if op == "*" {
 
     }
-    if op == "/"{
+    if op == "/" {
 
     }
     if op == "+" {
@@ -38,17 +38,17 @@ pub fn Eval(left: &Value,
         s.push_str(right.as_str().unwrap());
         return (Value::String(s), "".to_string());
     }
-    if op == "-"{
+    if op == "-" {
 
     }
 
 //    match left {
-//        Value::Null => formatter.debug_tuple("Null").finish(),
-//        Value::Bool(v) => formatter.debug_tuple("Bool").field(&v).finish(),
-//        Value::Number(ref v) => Debug::fmt(v, formatter),
-//        Value::String(ref v) => formatter.debug_tuple("String").field(v).finish(),
-//        Value::Array(ref v) => formatter.debug_tuple("Array").field(v).finish(),
-//        Value::Object(ref v) => formatter.debug_tuple("Object").field(v).finish(),
+//        Value::Null => println!("null"),
+//        Value::Bool(v) => println!("null"),
+//        Value::Number(v) => println!("null"),
+//        Value::String(v) => println!("null"),
+//        Value::Array(v) => println!("null"),
+//        Value::Object(v) => println!("null"),
 //    }
 
 
