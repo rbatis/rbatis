@@ -56,31 +56,35 @@ impl OptNode {
 }
 
 //参数节点
-pub struct ArgNode<'a> {
+pub struct ArgNode {
     //参数源
     pub value: String,
     //缓存分割包含有"."后的参数
-    params: Vec<&'a str>,
+    params: Vec<String>,
     //参数长度
     paramsLen: usize,
     pub t: NodeType,
 }
 
-impl<'a> ArgNode<'a> {
-    pub fn new(v: &'a str) -> Self {
-        let pars: Vec<&'a str> = v.split('.').collect();
-        let len = pars.len();
+impl ArgNode{
+    pub fn new(v: &String) -> Self {
+        let pars: Vec<&str> = v.split('.').collect();
+        let mut pars2=vec![];
+        for item in &pars{
+            pars2.push(item.to_string());
+        }
+        let len = &pars.len();
         return Self {
             value: v.to_string(),
             t: NArg,
-            params: pars,
-            paramsLen: len,
+            params: pars2,
+            paramsLen: len.clone(),
         };
     }
 }
 
 
-impl<'a> Node for ArgNode<'a> {
+impl Node for ArgNode {
     fn Type(&self) -> NodeType {
         return NArg;
     }
@@ -92,7 +96,7 @@ impl<'a> Node for ArgNode<'a> {
             let paramsLen = self.params.len();
             let mut result = env;
             for i in 0..paramsLen {
-                result = &result[self.params[i]];
+                result = &result[&self.params[i]];
                 if i == (paramsLen - 1) {
                     return (result.clone(), "".to_string());
                 }
