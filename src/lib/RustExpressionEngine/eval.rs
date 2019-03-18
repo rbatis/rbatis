@@ -4,6 +4,9 @@ use serde_json::json;
 use serde_json::Value;
 use serde::{Serialize, Deserialize};
 use crate::lib::RustExpressionEngine::parser::OptMap;
+use chrono::Local;
+use crate::utils::time_util;
+use std::iter::Map;
 
 pub fn Eval(left: &Value,
             right: &Value,
@@ -93,3 +96,35 @@ fn TestTakeValue() {
     println!("deserialized = {:?}", deserialized);
 }
 
+#[test]
+fn BenchmarkFromStr() {
+    let point = Point { x: 1, y: 2 };
+
+    let serialized = serde_json::to_string(&point).unwrap();
+    println!("serialized = {}", serialized);
+
+    let total = 100000;
+    let now = Local::now();
+    for i in 0..total {
+        let deserialized: Point = serde_json::from_str(&serialized).unwrap();
+       // println!("deserialized = {:?}", deserialized);
+    }
+    time_util::count_time(total, now);
+    time_util::count_tps(total, now);
+}
+
+#[test]
+fn BenchmarkToString() {
+    let point = Point { x: 1, y: 2 };
+
+
+
+    let total = 100000;
+    let now = Local::now();
+    for i in 0..total {
+        let serialized = serde_json::to_string(&point).unwrap();
+        let deserialized: Value = serde_json::from_str(&serialized).unwrap();
+    }
+    time_util::count_time(total, now);
+    time_util::count_tps(total, now);
+}
