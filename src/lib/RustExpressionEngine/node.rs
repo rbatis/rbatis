@@ -1,9 +1,10 @@
 use std::collections::HashMap;
-use crate::lib::RustExpressionEngine::node::NodeType::{NString, NArg, NNumber};
+use crate::lib::RustExpressionEngine::node::NodeType::{NString, NArg, NNumber, NBool, NNull};
 use serde_json::{Value, Map};
 use serde_json::value::Value::Number;
 use serde_json;
 use serde_json::de::ParserNumber;
+use std::ptr::null;
 
 pub enum NodeType {
     NArg,
@@ -92,7 +93,7 @@ impl Node for StringNode {
 
 //number节点,值节点
 pub struct NumberNode {
-    number: Value,
+    value: Value,
     //u64,i64,f64
     pub t: NodeType,
 }
@@ -103,7 +104,7 @@ impl Node for NumberNode {
     }
 
     fn Eval(&self, env: &Value) -> (Value, &str) {
-        return ((&self.number).clone(), "");
+        return ((&self.value).clone(), "");
     }
 }
 
@@ -114,15 +115,68 @@ impl NumberNode {
             //i64
             let r: f64 = value.parse().unwrap();
             return Self {
-                number: Value::Number(serde_json::Number::from(ParserNumber::F64(r))),
+                value: Value::Number(serde_json::Number::from(ParserNumber::F64(r))),
                 t: NNumber,
             };
         } else {
             let r: i64 = value.parse().unwrap();
             return Self {
-                number: Value::Number(serde_json::Number::from(ParserNumber::I64(r))),
+                value: Value::Number(serde_json::Number::from(ParserNumber::I64(r))),
                 t: NNumber,
             };
+        }
+    }
+}
+
+pub struct BoolNode {
+    value: Value,
+    t: NodeType,
+}
+
+impl Node for BoolNode {
+    fn Type(&self) -> NodeType {
+        return NBool;
+    }
+
+    fn Eval(&self, env: &Value) -> (Value, &str) {
+        return ((&self.value).clone(), "");
+    }
+}
+
+impl BoolNode {
+    fn new(value: String) -> Self {
+        let r: bool = value.parse().unwrap();
+        Self {
+            value: Value::Bool(r),
+            t: NNumber,
+        }
+    }
+}
+
+
+pub struct NullNode {
+    value: Value,
+    t: NodeType,
+}
+
+impl Node for NullNode {
+    fn Type(&self) -> NodeType {
+        return NNull;
+    }
+
+    fn Eval(&self, env: &Value) -> (Value, &str) {
+        return ((&self.value).clone(), "");
+    }
+}
+
+impl NullNode {
+    fn new(value: String) -> Self {
+        if value != "null" {
+            panic!("NullNode value must be null !")
+        }
+        Self {
+            value: Value::Null,
+            t: NNumber,
         }
     }
 }
