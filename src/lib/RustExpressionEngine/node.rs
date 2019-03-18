@@ -1,5 +1,5 @@
 use std::collections::HashMap;
-use crate::lib::RustExpressionEngine::node::NodeType::{NString, NArg, NNumber, NBool, NNull, NBinary};
+use crate::lib::RustExpressionEngine::node::NodeType::{NString, NArg, NNumber, NBool, NNull, NBinary, NOpt};
 use serde_json::{Value, Map};
 use serde_json::value::Value::Number;
 use serde_json;
@@ -23,10 +23,36 @@ pub enum NodeType {
     NOpt,           //操作符节点
 }
 
+
 //抽象语法树节点
 pub trait Node {
     fn Type(&self) -> NodeType;
     fn Eval(&self, env: &Value) -> (Value, String);
+}
+
+pub struct OptNode {
+    value: Value,
+    t: NodeType,
+}
+
+impl Node for OptNode {
+    fn Type(&self) -> NodeType {
+        return NOpt;
+    }
+
+    fn Eval(&self, env: &Value) -> (Value, String) {
+        return ((&self).value.clone(), "".to_string());
+    }
+}
+
+
+impl OptNode {
+    pub fn new(data: String) -> Self {
+        Self {
+            t: NOpt,
+            value: Value::String(data),
+        }
+    }
 }
 
 //参数节点
@@ -52,6 +78,7 @@ impl<'a> ArgNode<'a> {
         };
     }
 }
+
 
 impl<'a> Node for ArgNode<'a> {
     fn Type(&self) -> NodeType {
@@ -92,6 +119,7 @@ impl Node for StringNode {
     }
 }
 
+
 impl StringNode {
     pub fn new(s: String) -> Self {
         Self {
@@ -108,6 +136,7 @@ pub struct NumberNode {
     pub t: NodeType,
 }
 
+
 impl Node for NumberNode {
     fn Type(&self) -> NodeType {
         return NNumber;
@@ -119,7 +148,7 @@ impl Node for NumberNode {
 }
 
 impl NumberNode {
-    pub fn new(value: String) -> Self {
+    pub fn new(value: &String) -> Self {
         let index = value.find(".").unwrap_or_default();
         if index > 0 {
             //i64
@@ -143,6 +172,7 @@ pub struct BoolNode {
     t: NodeType,
 }
 
+
 impl Node for BoolNode {
     fn Type(&self) -> NodeType {
         return NBool;
@@ -154,7 +184,7 @@ impl Node for BoolNode {
 }
 
 impl BoolNode {
-    fn new(value: String) -> Self {
+    pub fn new(value: String) -> Self {
         let r: bool = value.parse().unwrap();
         Self {
             value: Value::Bool(r),
@@ -169,6 +199,7 @@ pub struct NullNode {
     t: NodeType,
 }
 
+
 impl Node for NullNode {
     fn Type(&self) -> NodeType {
         return NNull;
@@ -180,10 +211,7 @@ impl Node for NullNode {
 }
 
 impl NullNode {
-    fn new(value: String) -> Self {
-        if value != "null" {
-            panic!("NullNode value must be null !")
-        }
+    pub fn new() -> Self {
         Self {
             value: Value::Null,
             t: NNumber,
