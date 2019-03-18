@@ -3,12 +3,12 @@ use crate::lib::RustExpressionEngine::parser::OptMap;
 
 #[test]
 fn TestParser() {
-    parser::Parser();
+//    parser::Parser();
 }
 
 #[test]
 fn TestParserString() {
-    let s = String::from("ab + b");
+    let s = String::from("ab+b");
     println!("{}", s);
 
     //let optMap = OptMap::new();
