@@ -74,7 +74,7 @@ impl<'a> Node for ArgNode<'a> {
 }
 
 
-//String节点
+//String节点，值节点
 pub struct StringNode {
     pub value: String,
     pub t: NodeType,
@@ -90,11 +90,10 @@ impl Node for StringNode {
     }
 }
 
-//number节点
+//number节点,值节点
 pub struct NumberNode {
     number: Value,
     //u64,i64,f64
-    pub value: String,
     pub t: NodeType,
 }
 
@@ -110,19 +109,17 @@ impl Node for NumberNode {
 
 impl NumberNode {
     pub fn new(value: String) -> Self {
-        let index=value.find(".").unwrap_or_default();
+        let index = value.find(".").unwrap_or_default();
         if index > 0 {
             //i64
             let r: f64 = value.parse().unwrap();
             return Self {
-                value: value,
                 number: Value::Number(serde_json::Number::from(ParserNumber::F64(r))),
                 t: NNumber,
             };
         } else {
             let r: i64 = value.parse().unwrap();
             return Self {
-                value: value,
                 number: Value::Number(serde_json::Number::from(ParserNumber::I64(r))),
                 t: NNumber,
             };
