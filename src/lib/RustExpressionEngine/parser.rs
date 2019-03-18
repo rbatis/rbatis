@@ -72,13 +72,22 @@ impl<'a> OptMap<'a> {
     }
 }
 
-pub fn Parser(data: String) -> (Box<Node>,String) {
-   let tokens= ParserOperators(&data);
+pub fn Parser(data: String) -> (Box<Node>, String) {
+    let tokens = ParserOperators(&data);
 
-   return (Box::new(NullNode::new()),"".to_string())
+    let mut nodes=vec![];
+    for item in tokens {
+        let (boxNode, err) = parserNode(&data, &item);
+        if err != "" {
+            return (Box::new(NullNode::new()), err);
+        }
+        nodes.push(boxNode);
+    }
+
+    return (Box::new(NullNode::new()), "".to_string());
 }
 
-pub fn ParserOperators(data:&String)->Vec<String>{
+pub fn ParserOperators(data: &String) -> Vec<String> {
     let optMap = OptMap::new();
     let mut dataString = &mut data.clone();
     parseSingle(dataString, &optMap);
@@ -96,7 +105,7 @@ pub fn ParserOperators(data:&String)->Vec<String>{
 
 
 //express:表达式，v:操作符
-fn parserNode(express: &String, v: &'static String) -> (Box<Node>, String) {
+fn parserNode(express: &String, v: &String) -> (Box<Node>, String) {
     if v == "" {
         let nullNode = NullNode::new();
         return (Box::new(nullNode), "".to_string());

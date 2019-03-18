@@ -99,7 +99,7 @@ fn TestArgNode() {
         ]
     });
 
-    let argNode = ArgNode::new("sex.a");
+    let argNode = ArgNode::new(&"sex.a".to_string());
     let (result, Error) = argNode.Eval(&john);
     println!("value:{},error:{}", result, Error);
 }
@@ -119,7 +119,7 @@ fn BenchmarkArgNode() {
         ]
     });
 
-    let argNode = ArgNode::new("sex.a");
+    let argNode = ArgNode::new(&"sex.a".to_string());
 
     let total = 100000;
     let now = Local::now();
