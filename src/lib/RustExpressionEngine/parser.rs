@@ -84,9 +84,8 @@ pub fn Parser(data: String) -> Vec<String> {
     return result;
 }
 
-//处理单个
+//处理单个操作符
 fn parseSingle(dataString:&mut String,optMap:&OptMap){
-    //单操作符
     for (k, _) in &optMap.SingleOptMap {
         let mut newStr = String::from(" ");
         &newStr.push_str(k);
@@ -95,9 +94,8 @@ fn parseSingle(dataString:&mut String,optMap:&OptMap){
         *dataString = newDataStr;
     }
 }
-
+//处理多个操作符
 fn parseMul(dataString:&mut String,optMap:&OptMap){
-    //多操作符
     for (k, _) in &optMap.MulOpsMap {
         let mut newStr = String::from(" ");
 
