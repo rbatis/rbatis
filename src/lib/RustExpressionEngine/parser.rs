@@ -27,8 +27,8 @@ impl<'a> OptMap<'a> {
         list.push("+");
         list.push("-");
 
-
-
+        list.push("(");
+        list.push(")");
         list.push("@");
         list.push("#");
         list.push("$");
