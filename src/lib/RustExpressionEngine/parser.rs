@@ -141,7 +141,7 @@ pub fn ParserTokens(s: &String) -> Vec<String> {
             //println!("is opt:{}", item);
             if result.len() > 0 {
                 let def = String::new();
-                let back = result.back().unwrap_or_else(|| &def).clone();
+                let back = result.back().unwrap_or(&def).clone();
                 if back != "" && optMap.isOpt(back.clone()) {
                     result.pop_back();
                     let mut newItem = back.clone().to_string();
