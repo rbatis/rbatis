@@ -3,6 +3,7 @@ use core::borrow::Borrow;
 use crate::lib::RustExpressionEngine::node::{Node, NullNode, OptNode, BoolNode, StringNode, NumberNode, ArgNode, BinaryNode};
 use crate::lib::RustExpressionEngine::node::NodeType::NOpt;
 use crate::lib::RustExpressionEngine::runtime::IsNumber;
+use std::collections::linked_list::LinkedList;
 
 pub struct OptMap<'a> {
     //列表
@@ -70,10 +71,15 @@ impl<'a> OptMap<'a> {
             SingleOptMap: SingleOptMap,
         }
     }
+
+    pub fn isOpt(&self, arg: String) -> bool {
+        let opt = self.Map.get(arg.as_str());
+        return opt.unwrap_or(&false).clone();
+    }
 }
 
 pub fn Parser(data: String, optMap: &OptMap) -> (Box<Node>, String) {
-    let tokens = ParserOperators(&data);
+    let tokens = ParserTokens(&data);
 
     let mut nodes = vec![];
     for item in tokens {
@@ -84,31 +90,84 @@ pub fn Parser(data: String, optMap: &OptMap) -> (Box<Node>, String) {
         nodes.push(boxNode);
     }
 
-    for item in optMap.List.clone() {
-
-    }
+    for item in optMap.List.clone() {}
 
 
     return (Box::new(NullNode::new()), "".to_string());
 }
 
-pub fn ParserOperators(data: &String) -> Vec<String> {
-    let splitKey=" ";
+pub fn ParserTokens(s: &String) -> Vec<String> {
     let optMap = OptMap::new();
-    let mut dataString = &mut data.clone();
-    parseSingle(dataString, &optMap,&splitKey.to_string());
-    parseMul(dataString, &optMap,&splitKey.to_string());
-    let splis: Vec<&str> = dataString.split(splitKey).collect();
-    let mut result = vec![];
-    for item in splis {
-        if item == " " || item == "" {
+    let chars = s.chars();
+    let charsLen = s.len() as i32;
+    let mut result = LinkedList::new();
+    //str
+    let mut find_str = false;
+    let mut temp_str = String::new();
+    //opt
+    let mut temp_arg = String::new();
+    let mut index: i32 = -1;
+    for item in chars {
+        index = index + 1;
+        if item == '\'' {
+            if find_str {
+                //第二次找到
+                find_str = false;
+                temp_str.push(item);
+                trimPushBack(temp_str.clone(), &mut result);
+                temp_str = String::new();
+                continue;
+            }
+            find_str = true;
+            temp_str.push(item);
             continue;
         }
-        result.push(item.to_string());
+        if find_str {
+            temp_str.push(item);
+            continue;
+        }
+        let needReset = item != '\'' && optMap.isOpt(item.to_string()) == false && !find_str;
+        if needReset {
+            temp_arg.push(item);
+            if (index + 1) == charsLen {
+                trimPushBack(temp_arg.clone(), &mut result);
+            }
+        } else {
+            trimPushBack(temp_arg, &mut result);
+            temp_arg = String::new();
+        }
+        //opt node
+        if optMap.isOpt(item.to_string()) {
+            //println!("is opt:{}", item);
+            if result.len() > 0 {
+                let def = String::new();
+                let back = result.back().unwrap_or_else(|| &def).clone();
+                if back != "" && optMap.isOpt(back.clone()) {
+                    result.pop_back();
+                    let mut newItem = back.clone().to_string();
+                    newItem.push(item);
+                    trimPushBack(newItem.clone(), &mut result);
+                    continue;
+                }
+            }
+            trimPushBack(item.to_string(), &mut result);
+            continue;
+        }
     }
-    return result;
+    let mut v = vec![];
+    for item in result {
+        v.push(item);
+    }
+    return v;
 }
 
+fn trimPushBack(arg: String, list: &mut LinkedList<String>) {
+    let trimStr = arg.trim().to_string();
+    if trimStr == "" {
+        return;
+    }
+    list.push_back(trimStr);
+}
 
 //express:表达式，v:操作符
 fn parserNode(express: &String, v: &String) -> (Box<Node>, String) {
@@ -166,7 +225,7 @@ fn isOperatorsAction(s: &String) -> bool {
 
 
 //处理单个操作符
-fn parseSingle(dataString: &mut String, optMap: &OptMap,splitKey:&String) {
+fn parseSingle(dataString: &mut String, optMap: &OptMap, splitKey: &String) {
     for (k, _) in &optMap.SingleOptMap {
         let mut newStr = String::from(splitKey.as_str());
         &newStr.push_str(k);
@@ -177,12 +236,12 @@ fn parseSingle(dataString: &mut String, optMap: &OptMap,splitKey:&String) {
 }
 
 //处理多个操作符
-fn parseMul(dataString: &mut String, optMap: &OptMap,splitKey:&String) {
+fn parseMul(dataString: &mut String, optMap: &OptMap, splitKey: &String) {
     for (k, _) in &optMap.MulOpsMap {
         let mut newStr = String::from(splitKey.as_str());
 
         let mut s = &mut k.clone().to_string();
-        parseSingle(s, optMap,splitKey);
+        parseSingle(s, optMap, splitKey);
         *s = s.trim().to_string();
 
         newStr.push_str(s.as_str());
