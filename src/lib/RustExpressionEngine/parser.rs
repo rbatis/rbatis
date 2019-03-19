@@ -96,6 +96,9 @@ pub fn Parser(data: String, optMap: &OptMap) -> (Box<Node>, String) {
     return (Box::new(NullNode::new()), "".to_string());
 }
 
+/**
+ * 将原始字符串解析为 去除空格的token数组
+**/
 pub fn ParserTokens(s: &String) -> Vec<String> {
     let optMap = OptMap::new();
     let chars = s.chars();
