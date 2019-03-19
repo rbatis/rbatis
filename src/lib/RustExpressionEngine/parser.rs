@@ -93,11 +93,12 @@ pub fn Parser(data: String, optMap: &OptMap) -> (Box<Node>, String) {
 }
 
 pub fn ParserOperators(data: &String) -> Vec<String> {
+    let splitKey=" ";
     let optMap = OptMap::new();
     let mut dataString = &mut data.clone();
-    parseSingle(dataString, &optMap);
-    parseMul(dataString, &optMap);
-    let splis: Vec<&str> = dataString.split(" ").collect();
+    parseSingle(dataString, &optMap,&splitKey.to_string());
+    parseMul(dataString, &optMap,&splitKey.to_string());
+    let splis: Vec<&str> = dataString.split(splitKey).collect();
     let mut result = vec![];
     for item in splis {
         if item == " " || item == "" {
@@ -165,32 +166,32 @@ fn isOperatorsAction(s: &String) -> bool {
 
 
 //处理单个操作符
-fn parseSingle(dataString: &mut String, optMap: &OptMap) {
+fn parseSingle(dataString: &mut String, optMap: &OptMap,splitKey:&String) {
     for (k, _) in &optMap.SingleOptMap {
-        let mut newStr = String::from(" ");
+        let mut newStr = String::from(splitKey.as_str());
         &newStr.push_str(k);
-        &newStr.push_str(" ");
+        &newStr.push_str(splitKey.as_str());
         let newDataStr = dataString.replace(k, &newStr);
         *dataString = newDataStr;
     }
 }
 
 //处理多个操作符
-fn parseMul(dataString: &mut String, optMap: &OptMap) {
+fn parseMul(dataString: &mut String, optMap: &OptMap,splitKey:&String) {
     for (k, _) in &optMap.MulOpsMap {
-        let mut newStr = String::from(" ");
+        let mut newStr = String::from(splitKey.as_str());
 
         let mut s = &mut k.clone().to_string();
-        parseSingle(s, optMap);
+        parseSingle(s, optMap,splitKey);
         *s = s.trim().to_string();
 
         newStr.push_str(s.as_str());
-        newStr.push_str(" ");
+        newStr.push_str(splitKey.as_str());
 
 
-        let mut to = String::from(" ");
+        let mut to = String::from(splitKey.as_str());
         to.push_str(&k);
-        to.push_str(" ");
+        to.push_str(splitKey.as_str());
 
         let newDataStr = dataString.replace(newStr.as_str(), to.as_str());
         *dataString = newDataStr;
