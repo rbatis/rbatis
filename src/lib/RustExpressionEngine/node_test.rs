@@ -173,79 +173,6 @@ fn TestBinaryNode() {
 }
 
 #[test]
-fn TestMatcher() {
-
-//    vec!["'2019-02-26' == '2019-02-26'",
-//         "`f`+`s`",
-//         "a +1 > b * 8",
-//         "a >= 0",
-//         "'a'+c",
-//         "b",
-//         "a < 1",
-//         "a +1 > b*8",
-//         "a * b == 2",
-//         "a - b == 0",
-//         "a >= 0 && a != 0",
-//         "a == 1 && a != 0",
-//         "1 > 3 ",
-//         "1 + 2 != nil",
-//         "1 != null",
-//         "1 + 2 != nil && 1 > 0 ",
-//         "1 + 2 != nil && 2 < b*8 ", ];
-
-
-
-
-
-    let mut s = "'a+b'=='c'".to_string();
-
-
-    let chars = s.chars();
-
-    println!("{}", "================================");
-
-    //let mut itemMap = HashMap::new();
-    let mut find = false;
-
-    let mut result = vec![];
-
-    let mut temp = String::new();
-    for item in chars {
-        //println!("{}", item);
-
-        if item == '\'' {
-            if find {
-                //第二次找到
-                find = false;
-                temp.push(item);
-                result.push(temp.clone());
-                println!("{}", temp);
-
-                temp = String::new();
-                continue;
-            }
-            find = true;
-            temp.push(item);
-            continue;
-        }
-        if find {
-            temp.push(item);
-        }
-    }
-
-    let mut i = 0;
-    for item in &result.clone() {
-        let mut strItem = String::from("`");
-        strItem.push_str(i.to_string().as_str());
-        s = s.replace(item.as_str(), strItem.as_str());
-        i = i + 1;
-    }
-
-    println!("{}", s);
-}
-
-
-#[test]
 fn TestMatcher2() {
 //"'a+b'=='c'"
 //    vec!["'2019-02-26' == '2019-02-26'",
@@ -254,13 +181,26 @@ fn TestMatcher2() {
 //         "1 != null",
 //         "1 + 2 != nil && 1 > 0 ",
 //         "1 + 2 != nil && 2 < b*8 ", ];
-    let optMap = OptMap::new();
 
-    let mut s = "'2019-02-26' == '2019-02-26'".to_string();
+    let  s = "'2019-02-26' == '2019-02-26'".to_string();
 
     let result= ParserTokens(&s);
 
     for item in result {
         println!("{}", item);
     }
+}
+
+#[test]
+fn BenchmarkParserToken(){
+    let  s = "'2019-02-26' == '2019-02-26'".to_string();
+
+
+    let total = 100000;
+    let now = Local::now();
+    for i in 0..total {
+        ParserTokens(&s);
+    }
+    time_util::count_time(total, now);
+    time_util::count_tps(total, now);
 }
