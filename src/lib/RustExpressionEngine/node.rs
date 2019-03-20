@@ -410,16 +410,10 @@ impl<T: Node + Clone> BinaryNode<T> {
 
 //节点
 pub struct NodeItem<T> {
-    node: T,
+    pub node: T,
 }
 
-impl<T: Node> NodeItem<T> {
-    pub fn new(node: T) -> Self {
-        return Self {
-            node
-        };
-    }
-
+impl <T:Node>Node for NodeItem<T>{
     fn Type(&self) -> NodeType {
         return self.node.Type();
     }
@@ -428,5 +422,19 @@ impl<T: Node> NodeItem<T> {
     }
     fn Value(&self) -> Value {
         return self.node.Value();
+    }
+}
+
+impl <T:Node+Clone>Clone for NodeItem<T>{
+    fn clone(&self) -> Self {
+        return NodeItem::new(self.node.clone());
+    }
+}
+
+impl<T: Node> NodeItem<T> {
+    pub fn new(node: T) -> Self {
+        return Self {
+            node
+        };
     }
 }
