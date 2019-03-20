@@ -112,7 +112,7 @@ pub fn ParserTokens(s: &String) -> Vec<String> {
     let mut index: i32 = -1;
     for item in chars {
         index = index + 1;
-        if item == '\'' {
+        if item == '\'' || item== '`' {
             if find_str {
                 //第二次找到
                 find_str = false;
@@ -129,7 +129,7 @@ pub fn ParserTokens(s: &String) -> Vec<String> {
             temp_str.push(item);
             continue;
         }
-        let needReset = item != '\'' && optMap.isOpt(item.to_string()) == false && !find_str;
+        let needReset = item != '`' && item != '\'' && optMap.isOpt(item.to_string()) == false && !find_str;
         if needReset {
             temp_arg.push(item);
             if (index + 1) == charsLen {
