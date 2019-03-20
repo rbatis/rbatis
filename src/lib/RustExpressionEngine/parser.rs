@@ -93,7 +93,7 @@ pub fn Parser(data: String, optMap: &OptMap) -> (Box<Node>, String) {
     for item in optMap.List.clone() {}
 
     for item in nodes{
-        println!("{}",item.Type());
+        println!("{}:{}",item.Type(),item.Value());
     }
 
 

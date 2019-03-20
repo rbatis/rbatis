@@ -5,7 +5,7 @@ use serde_json::Value;
 
 #[test]
 fn TestParser() {
-    let (boxNode,_ )= parser::Parser(String::from("a<=b+1-2>=1"),&OptMap::new());
+    let (boxNode,_ )= parser::Parser(String::from("a<=b+1-2>=1=='asdf + sdaf '"),&OptMap::new());
     let john = json!({
         "name": "John Doe",
         "age": Value::Null,
