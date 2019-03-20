@@ -6,6 +6,7 @@ use serde_json;
 use serde_json::de::ParserNumber;
 use std::ptr::null;
 use crate::lib::RustExpressionEngine::eval::Eval;
+use std::fmt::{Display, Formatter, Error};
 
 pub enum NodeType {
     NArg = 1,
@@ -22,6 +23,21 @@ pub enum NodeType {
     //二元计算节点
     NOpt = 7,           //操作符节点
 }
+
+impl Display for NodeType{
+    fn fmt(&self, f: &mut Formatter) -> Result<(), Error> {
+        match self {
+            NArg => f.write_str("NArg"),
+            NString => f.write_str("NString"),
+            NNumber => f.write_str("NNumber"),
+            NBool => f.write_str("NBool"),
+            NNull => f.write_str("NNull"),
+            NBinary => f.write_str("NBinary"),
+            NOpt => f.write_str("NOpt"),
+        }
+    }
+}
+
 
 impl Clone for NodeType {
     fn clone(&self) -> Self {
