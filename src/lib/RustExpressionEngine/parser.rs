@@ -92,6 +92,10 @@ pub fn Parser(data: String, optMap: &OptMap) -> (Box<Node>, String) {
 
     for item in optMap.List.clone() {}
 
+    for item in nodes{
+        println!("{}",item.Type());
+    }
+
 
     return (Box::new(NullNode::new()), "".to_string());
 }
@@ -224,40 +228,6 @@ fn isOperatorsAction(s: &String) -> bool {
         return true;
     }
     return false;
-}
-
-
-//处理单个操作符
-fn parseSingle(dataString: &mut String, optMap: &OptMap, splitKey: &String) {
-    for (k, _) in &optMap.SingleOptMap {
-        let mut newStr = String::from(splitKey.as_str());
-        &newStr.push_str(k);
-        &newStr.push_str(splitKey.as_str());
-        let newDataStr = dataString.replace(k, &newStr);
-        *dataString = newDataStr;
-    }
-}
-
-//处理多个操作符
-fn parseMul(dataString: &mut String, optMap: &OptMap, splitKey: &String) {
-    for (k, _) in &optMap.MulOpsMap {
-        let mut newStr = String::from(splitKey.as_str());
-
-        let mut s = &mut k.clone().to_string();
-        parseSingle(s, optMap, splitKey);
-        *s = s.trim().to_string();
-
-        newStr.push_str(s.as_str());
-        newStr.push_str(splitKey.as_str());
-
-
-        let mut to = String::from(splitKey.as_str());
-        to.push_str(&k);
-        to.push_str(splitKey.as_str());
-
-        let newDataStr = dataString.replace(newStr.as_str(), to.as_str());
-        *dataString = newDataStr;
-    }
 }
 
 fn findReplaceOpt(express: &String, operator: &String, nodeArg: &mut Vec<Box<Node>>) -> String {
