@@ -230,15 +230,15 @@ fn isOperatorsAction(s: &String) -> bool {
     return false;
 }
 
-fn findReplaceOpt(express: &String, operator: &String, nodeArg: &mut Vec<Box<Node>>) -> String {
+fn findReplaceOpt<T:Node+Sized+Clone>(express: &String, operator: &String, nodeArg: &mut Vec<T>) -> String {
     let mut index = 1 as i32;
 
-    for item in nodeArg {
+    for item in nodeArg.clone(){
         let itemType = item.Type();
         if itemType as i32 == NOpt as i32 {
             let leftIndex = (index - 1) as usize;
             let rightIndex = (index + 1) as usize;
-            //let newNode = BinaryNode::new(nodeArg[leftIndex], nodeArg[rightIndex], item.Value().as_str().unwrap().to_string());
+            BinaryNode::new(nodeArg[leftIndex].clone(), nodeArg[rightIndex].clone(), item.Value().as_str().unwrap().to_string());
         }
         index = index + 1;
     }

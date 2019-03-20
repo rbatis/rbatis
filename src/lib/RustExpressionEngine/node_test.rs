@@ -167,7 +167,7 @@ fn TestBinaryNode() {
 
     let l = StringNode::new("name".to_string());
     let r = StringNode::new("name".to_string());
-    let b = BinaryNode::new(Box::new(l), Box::new(r), "+".to_string());
+    let b = BinaryNode::new(l, r, "+".to_string());
     let (value, _) = b.Eval(&john);
     println!("{}", value);
 }
