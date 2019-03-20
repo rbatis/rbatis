@@ -51,10 +51,6 @@ impl Clone for NodeType {
             NOpt => return NOpt,
         }
     }
-
-    fn clone_from(&mut self, source: &Self) {
-        *self = source.clone();
-    }
 }
 
 
@@ -77,10 +73,6 @@ impl Clone for OptNode {
             value: self.value.clone(),
             t: self.t.clone(),
         };
-    }
-
-    fn clone_from(&mut self, source: &Self) {
-        *self = source.clone()
     }
 }
 
@@ -122,10 +114,6 @@ pub struct ArgNode {
 impl Clone for ArgNode {
     fn clone(&self) -> Self {
         return ArgNode::new(&self.Value().as_str().unwrap().to_string());
-    }
-
-    fn clone_from(&mut self, source: &Self) {
-        *self = source.clone()
     }
 }
 
@@ -183,10 +171,6 @@ impl Clone for StringNode {
     fn clone(&self) -> Self {
         return StringNode::new(self.value.clone());
     }
-
-    fn clone_from(&mut self, source: &Self) {
-        *self = source.clone()
-    }
 }
 
 impl Node for StringNode {
@@ -226,10 +210,6 @@ impl Clone for NumberNode {
             t: NNumber,
             value: self.value.clone(),
         };
-    }
-
-    fn clone_from(&mut self, source: &Self) {
-        *self = source.clone()
     }
 }
 
@@ -280,10 +260,6 @@ impl Clone for BoolNode {
             value: self.value.clone(),
         };
     }
-
-    fn clone_from(&mut self, source: &Self) {
-        *self = source.clone()
-    }
 }
 
 impl Node for BoolNode {
@@ -322,10 +298,6 @@ impl Clone for NullNode {
             value: self.value.clone(),
         };
     }
-
-    fn clone_from(&mut self, source: &Self) {
-        *self = source.clone()
-    }
 }
 
 impl Node for NullNode {
@@ -352,15 +324,15 @@ impl NullNode {
 
 
 //计算节点
-pub struct BinaryNode<T: Node + Clone> {
-    left: Box<T>,
-    right: Box<T>,
+pub struct BinaryNode<Left: Node, Right: Node> {
+    left: Left,
+    right: Right,
     opt: String,
     t: NodeType,
 }
 
-impl<T: Node + Clone> Clone for BinaryNode<T> {
-    fn clone(&self) -> BinaryNode<T> {
+impl<Left: Node + Clone, Right: Node + Clone> Clone for BinaryNode<Left, Right> {
+    fn clone(&self) -> BinaryNode<Left, Right> {
         return BinaryNode {
             left: self.left.clone(),
             right: self.right.clone(),
@@ -368,13 +340,9 @@ impl<T: Node + Clone> Clone for BinaryNode<T> {
             t: self.t.clone(),
         };
     }
-
-    fn clone_from(&mut self, source: &Self) {
-        *self = source.clone()
-    }
 }
 
-impl<T: Node + Clone> Node for BinaryNode<T> {
+impl<Left: Node + Clone, Right: Node + Clone> Node for BinaryNode<Left, Right> {
     fn Type(&self) -> NodeType {
         return NBinary;
     }
@@ -396,8 +364,8 @@ impl<T: Node + Clone> Node for BinaryNode<T> {
 }
 
 //<Left: Node, Right: Node>
-impl<T: Node + Clone> BinaryNode<T> {
-    pub fn new(left: Box<T>, right: Box<T>, opt: String) -> Self {
+impl<Left: Node + Clone, Right: Node + Clone> BinaryNode<Left, Right> {
+    pub fn new(left: Left, right: Right, opt: String) -> Self {
         Self {
             left: left,
             right: right,
@@ -406,35 +374,63 @@ impl<T: Node + Clone> BinaryNode<T> {
         }
     }
 }
-
-
-//节点
-pub struct NodeItem<T> {
-    pub node: T,
-}
-
-impl <T:Node>Node for NodeItem<T>{
-    fn Type(&self) -> NodeType {
-        return self.node.Type();
-    }
-    fn Eval(&self, env: &Value) -> (Value, String) {
-        return self.node.Eval(env);
-    }
-    fn Value(&self) -> Value {
-        return self.node.Value();
-    }
-}
-
-impl <T:Node+Clone>Clone for NodeItem<T>{
-    fn clone(&self) -> Self {
-        return NodeItem::new(self.node.clone());
-    }
-}
-
-impl<T: Node> NodeItem<T> {
-    pub fn new(node: T) -> Self {
-        return Self {
-            node
-        };
-    }
-}
+//
+////节点
+//pub struct NodeItem {
+//    NArg: ArgNode,
+//    //参数节点
+//    NString: StringNode,
+//    //string 节点
+//    NNumber: NumberNode,
+//    //number节点
+//    NBool: BoolNode,
+//    //bool节点
+//    NNull: NullNode,
+//    //空节点
+//    NBinary: BinaryNode,
+//    //二元计算节点
+//    NOpt: OptNode,
+//
+//    t: NodeType,
+//}
+//
+//impl Node for NodeItem {
+//    fn Type(&self) -> NodeType {
+//        return self.t.clone();
+//    }
+//    fn Eval(&self, env: &Value) -> (Value, String) {
+//        return self.node.Eval(env);
+//    }
+//    fn Value(&self) -> Value {
+//        return self.node.Value();
+//    }
+//}
+//
+//impl Clone for NodeItem {
+//    fn clone(&self) -> Self {
+//        return NodeItem::new(self.node.clone());
+//    }
+//}
+//
+//impl NodeItem {
+//    fn newNArg(NArg: ArgNode) -> Self {
+//        return Self {
+//            NArg: NArg,
+//            //参数节点
+//            NString: StringNode ::new("".to_string()),
+//            //string 节点
+//            NNumber: NumberNode::new(&"0".to_string()),
+//            //number节点
+//            NBool: BoolNode::new("".to_string()),
+//            //bool节点
+//            NNull: NullNode::new(),
+//            //空节点
+//            NBinary: BinaryNode::new(NullNode::new(),NullNode::new(),"".to_string()),
+//            //二元计算节点
+//            NOpt: OptNode,
+//
+//            t: NodeType,
+//        };
+//    }
+//}
+//
