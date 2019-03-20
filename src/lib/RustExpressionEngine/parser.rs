@@ -83,7 +83,7 @@ pub fn Parser(data: String, optMap: &OptMap) -> (Box<Node>, String) {
 
     let mut nodes = vec![];
     for item in tokens {
-        let (boxNode, err) = parserNode(&data, &item);
+        let (boxNode, err) = parserNode(&data, &item,&optMap);
         if err != "" {
             return (Box::new(NullNode::new()), err);
         }
@@ -176,15 +176,15 @@ fn trimPushBack(arg: String, list: &mut LinkedList<String>) {
     list.push_back(trimStr);
 }
 
-//express:表达式，v:操作符
-fn parserNode(express: &String, v: &String) -> (Box<Node>, String) {
+//解析表达式生成一个抽象语法节点，express:表达式，v:操作符
+fn parserNode(express: &String, v: &String,opt:&OptMap) -> (Box<Node>, String) {
     if v == "" {
         let nullNode = NullNode::new();
         return (Box::new(nullNode), "".to_string());
     }
     //TODO NotSupportOptMap[v]
     //opt node
-    if isOperatorsAction(v) {
+    if opt.isOpt(v.clone()) {
         let optNode = OptNode::new(v.clone());
         return (Box::new(optNode), "".to_string());
     }
@@ -207,27 +207,6 @@ fn parserNode(express: &String, v: &String) -> (Box<Node>, String) {
         return (Box::new(argNode), "".to_string());
     }
     return (Box::new(NullNode::new()), "".to_string());
-}
-
-fn isOperatorsAction(s: &String) -> bool {
-    let arg = s.as_str();
-//计算操作符
-    if arg == "+" ||
-        arg == "-" ||
-        arg == "*" ||
-        arg == "/" ||
-        //比较操作符
-        arg == "&&" ||
-        arg == "||" ||
-        arg == "==" ||
-        arg == "!=" ||
-        arg == "<" ||
-        arg == "<=" ||
-        arg == ">" ||
-        arg == ">=" {
-        return true;
-    }
-    return false;
 }
 
 fn findReplaceOpt<T:Node+Sized+Clone>(express: &String, operator: &String, nodeArg: &mut Vec<T>) -> String {
