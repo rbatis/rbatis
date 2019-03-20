@@ -24,7 +24,7 @@ pub enum NodeType {
     NOpt = 7,           //操作符节点
 }
 
-impl Display for NodeType{
+impl Display for NodeType {
     fn fmt(&self, f: &mut Formatter) -> Result<(), Error> {
         match self {
             NArg => f.write_str("NArg"),
@@ -404,5 +404,29 @@ impl<T: Node + Clone> BinaryNode<T> {
             opt: opt,
             t: NNumber,
         }
+    }
+}
+
+
+//节点
+pub struct NodeItem<T> {
+    node: T,
+}
+
+impl<T: Node> NodeItem<T> {
+    pub fn new(node: T) -> Self {
+        return Self {
+            node
+        };
+    }
+
+    fn Type(&self) -> NodeType {
+        return self.node.Type();
+    }
+    fn Eval(&self, env: &Value) -> (Value, String) {
+        return self.node.Eval(env);
+    }
+    fn Value(&self) -> Value {
+        return self.node.Value();
     }
 }
