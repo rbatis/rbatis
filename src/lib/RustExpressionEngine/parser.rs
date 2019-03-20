@@ -209,9 +209,8 @@ fn parserNode(express: &String, v: &String,opt:&OptMap) -> (Box<Node>, String) {
     return (Box::new(NullNode::new()), "".to_string());
 }
 
-fn findReplaceOpt<T:Node+Sized+Clone>(express: &String, operator: &String, nodeArg: &mut Vec<T>) -> String {
+fn findReplaceOpt<T:Node+Clone>(express: &String, operator: &String, nodeArg: &mut Vec<Box<T>>) -> String {
     let mut index = 1 as i32;
-
     for item in nodeArg.clone(){
         let itemType = item.Type();
         if itemType as i32 == NOpt as i32 {
