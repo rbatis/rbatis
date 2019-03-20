@@ -14,6 +14,8 @@ pub struct OptMap<'a> {
     pub MulOpsMap: HashMap<&'a str, bool>,
     //单操作符
     pub SingleOptMap: HashMap<&'a str, bool>,
+
+    pub priorityArray:Vec<&'a str>,
 }
 
 impl<'a> OptMap<'a> {
@@ -64,12 +66,34 @@ impl<'a> OptMap<'a> {
             }
         }
 
+
+        let  mut vecs=vec![];
+        vecs.push("*");
+        vecs.push("/");
+        vecs.push("+");
+        vecs.push("-");
+        vecs.push("<=");
+        vecs.push("<");
+        vecs.push(">=");
+        vecs.push(">");
+        vecs.push("!=");
+        vecs.push("==");
+        vecs.push("&&");
+        vecs.push("||");
+
+
         Self {
             List: list,
             Map: defMap,
             MulOpsMap: MulOpsMap,
             SingleOptMap: SingleOptMap,
+            priorityArray:vecs,
         }
+    }
+
+    //乘除优先于加减 计算优于比较,
+    pub fn priorityArray(&self)->Vec<&str>{
+        return self.priorityArray.clone();
     }
 
     pub fn isOpt(&self, arg: String) -> bool {
@@ -78,19 +102,23 @@ impl<'a> OptMap<'a> {
     }
 }
 
-pub fn Parser(data: String, optMap: &OptMap) -> (Box<Node>, String) {
-    let tokens = ParserTokens(&data);
+pub fn Parser(express: String, optMap: &OptMap) -> (Box<Node>, String) {
+    let tokens = ParserTokens(&express);
 
-    let mut nodes = vec![];
+    let mut nodes:Vec<Box<Node>> = vec![];
     for item in tokens {
-        let (boxNode, err) = parserNode(&data, &item,&optMap);
+        let (boxNode, err) = parserNode(&express, &item,&optMap);
         if err != "" {
             return (Box::new(NullNode::new()), err);
         }
         nodes.push(boxNode);
     }
+    //TODO check nodes
 
-    for item in optMap.List.clone() {}
+
+    for item in optMap.priorityArray() {
+         // findReplaceOpt(&express,&item,&mut nodes);
+    }
 
     for item in nodes{
         println!("{}:{}",item.Type(),item.Value());
@@ -209,7 +237,7 @@ fn parserNode(express: &String, v: &String,opt:&OptMap) -> (Box<Node>, String) {
     return (Box::new(NullNode::new()), "".to_string());
 }
 
-fn findReplaceOpt<T:Node+Clone>(express: &String, operator: &String, nodeArg: &mut Vec<Box<T>>) -> String {
+fn findReplaceOpt<T:Node+Clone>(express: &String, operator: &str, nodeArg: &mut Vec<Box<T>>) -> String {
     let mut index = 1 as i32;
     for item in nodeArg.clone(){
         let itemType = item.Type();
