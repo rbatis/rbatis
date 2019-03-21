@@ -55,7 +55,7 @@ impl Clone for NodeType {
 
 
 //抽象语法树节点
-pub trait Node {
+pub trait Node: Clone {
     fn Type(&self) -> NodeType;
     fn Eval(&self, env: &Value) -> (Value, String);
     fn Value(&self) -> Value;
@@ -331,7 +331,7 @@ pub struct BinaryNode<Left: Node, Right: Node> {
     t: NodeType,
 }
 
-impl<Left: Node + Clone, Right: Node + Clone> Clone for BinaryNode<Left, Right> {
+impl<Left: Node, Right: Node> Clone for BinaryNode<Left, Right> {
     fn clone(&self) -> BinaryNode<Left, Right> {
         return BinaryNode {
             left: self.left.clone(),
@@ -342,7 +342,7 @@ impl<Left: Node + Clone, Right: Node + Clone> Clone for BinaryNode<Left, Right> 
     }
 }
 
-impl<Left: Node + Clone, Right: Node + Clone> Node for BinaryNode<Left, Right> {
+impl<Left: Node, Right: Node> Node for BinaryNode<Left, Right> {
     fn Type(&self) -> NodeType {
         return NBinary;
     }
@@ -364,7 +364,7 @@ impl<Left: Node + Clone, Right: Node + Clone> Node for BinaryNode<Left, Right> {
 }
 
 //<Left: Node, Right: Node>
-impl<Left: Node + Clone, Right: Node + Clone> BinaryNode<Left, Right> {
+impl<Left: Node, Right: Node> BinaryNode<Left, Right> {
     pub fn new(left: Box<Left>, right: Box<Right>, opt: String) -> Self {
         Self {
             left: left,
