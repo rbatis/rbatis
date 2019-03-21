@@ -5,10 +5,11 @@ use serde_json::json;
 use chrono::Local;
 use crate::utils::time_util;
 use serde_json::de::ParserNumber;
-use crate::lib::RustExpressionEngine::parser::{Parser, OptMap, ParserTokens};
-use crate::lib::RustExpressionEngine::runtime::IsNumber;
+//use crate::lib::RustExpressionEngine::parser::{Parser,  ParserTokens};
+use crate::lib::RustExpressionEngine::runtime::{IsNumber, OptMap};
 use std::collections::HashMap;
 use std::collections::linked_list::LinkedList;
+use crate::lib::RustExpressionEngine::runtime;
 
 
 #[test]
@@ -184,7 +185,7 @@ fn TestMatcher2() {
 
     let  s = "'2019-02-26' == '2019-02-26'".to_string();
 
-    let result= ParserTokens(&s);
+    let result= runtime::ParserTokens(&s);
 
     for item in result {
         println!("{}", item);
@@ -199,7 +200,7 @@ fn BenchmarkParserToken(){
     let total = 100000;
     let now = Local::now();
     for i in 0..total {
-        ParserTokens(&s);
+        runtime::ParserTokens(&s);
     }
     time_util::count_time(total, now);
     time_util::count_tps(total, now);
