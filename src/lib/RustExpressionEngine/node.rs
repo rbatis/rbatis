@@ -325,8 +325,8 @@ impl NullNode {
 
 //计算节点
 pub struct BinaryNode<Left: Node, Right: Node> {
-    left: Box<Left>,
-    right: Box<Right>,
+    left: Left,
+    right: Right,
     opt: String,
     t: NodeType,
 }
@@ -365,7 +365,7 @@ impl<Left: Node, Right: Node> Node for BinaryNode<Left, Right> {
 
 //<Left: Node, Right: Node>
 impl<Left: Node, Right: Node> BinaryNode<Left, Right> {
-    pub fn new(left: Box<Left>, right: Box<Right>, opt: String) -> Self {
+    pub fn new(left: Left, right: Right, opt: String) -> Self {
         Self {
             left: left,
             right: right,
