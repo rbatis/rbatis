@@ -36,8 +36,8 @@ pub fn Eval(left: &Value,
     }
     if op == "+" {
         let mut s = String::new();
-        s.push_str(left.as_str().unwrap());
-        s.push_str(right.as_str().unwrap());
+        s.push_str(left.as_str().unwrap_or_default());
+        s.push_str(right.as_str().unwrap_or_default());
         return (Value::String(s), "".to_string());
     }
     if op == "-" {
