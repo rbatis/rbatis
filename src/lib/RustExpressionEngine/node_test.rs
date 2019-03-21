@@ -1,4 +1,4 @@
-use crate::lib::RustExpressionEngine::node::{StringNode, Node, ArgNode, NumberNode, BinaryNode};
+use crate::lib::RustExpressionEngine::node::{StringNode, Node, ArgNode, NumberNode, BinaryNode, NullNode};
 use crate::lib::RustExpressionEngine::node::NodeType::{NString, NArg};
 use serde_json::Value;
 use serde_json::json;
@@ -71,7 +71,7 @@ fn TestNodeRun() {
     for item in expressions {
         index += 1;
         println!("{}", item);
-        let parserArray = Parser(item.to_string(), &OptMap::new());
+       //TODO let parserArray = Parser(item.to_string(), &OptMap::new());
     }
 }
 
@@ -167,10 +167,10 @@ fn TestBinaryNode() {
     });
 
     let l = StringNode::new("name".to_string());
-    let r = StringNode::new("name".to_string());
-    let b = BinaryNode::new(Box::new(l), Box::new(r), "+".to_string());
+    let r = NullNode::new();
+    let b = BinaryNode::new(l, r, "+".to_string());
     let (value, _) = b.Eval(&john);
-    println!("{}", value);
+    println!("TestBinaryNode>>>>>>:{}", value);
 }
 
 #[test]
