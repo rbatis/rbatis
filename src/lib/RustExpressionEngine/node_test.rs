@@ -101,7 +101,7 @@ fn TestArgNode() {
         ]
     });
 
-    let argNode = ArgNode::new(&"sex.a".to_string());
+    let argNode = ArgNode::New("sex.a".to_string());
     let (result, Error) = argNode.Eval(&john);
     println!("value:{},error:{}", result, Error);
 }
@@ -121,7 +121,7 @@ fn BenchmarkArgNode() {
         ]
     });
 
-    let argNode = ArgNode::new(&"sex.a".to_string());
+    let argNode = ArgNode::New("sex.a".to_string());
 
     let total = 100000;
     let now = Local::now();
@@ -146,7 +146,7 @@ fn TestNumberNode() {
             "+44 2345678"
         ]
     });
-    let numb = NumberNode::new(&String::from("1.02"));
+    let numb = NumberNode::New(String::from("1.02"));
     let (value, _) = numb.Eval(&john);
     println!("{}", value);
 }
@@ -165,10 +165,7 @@ fn TestBinaryNode() {
             "+44 2345678"
         ]
     });
-
-    let l = StringNode::new("name".to_string());
-    let r = NullNode::new();
-    let b = BinaryNode::new(l, r, "+".to_string());
+    let b = BinaryNode::New("name".to_string(), "".to_string(), "+".to_string());
     let (value, _) = b.Eval(&john);
     println!("TestBinaryNode>>>>>>:{}", value);
 }
