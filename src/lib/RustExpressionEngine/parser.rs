@@ -49,6 +49,7 @@ fn findReplaceOpt(optMap:&OptMap,express: &String, operator: &str, nodeArg: &mut
             let binaryNode=BinaryNode::NewItem(left, right, item.Value().as_str().unwrap().to_string());
             println!("binNode={}",&binaryNode.Type());
 
+            let binaryNodeIte= NodeItem::NewNBinaryNode(binaryNode);
 //            item.Value()
 //
 //            if haveOpt()

@@ -592,7 +592,26 @@ impl Node for NodeItem {
 }
 
 impl NodeItem {
-    fn NewNBinary(left: NodeItem, right: NodeItem, opt: String) -> Self {
+    pub fn NewNBinaryNode(node:BinaryNode) -> Self {
+        return Self {
+            Data: Option::None,
+            NArg: Option::None,
+            //参数节点
+            NString: Option::None,
+            //string 节点
+            NNumber: Option::None,
+            //number节点
+            NBool: Option::None,
+            //bool节点
+            NNull: Option::None,
+            //空节点
+            NBinary: Option::Some(Box::new(node)),
+            //二元计算节点
+            NOpt: Option::None,
+            t: NBinary,
+        };
+    }
+   pub fn NewNBinary(left: NodeItem, right: NodeItem, opt: String) -> Self {
         return Self {
             Data: Option::None,
             NArg: Option::None,
