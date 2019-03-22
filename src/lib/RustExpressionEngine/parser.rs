@@ -1,6 +1,6 @@
 use std::collections::HashMap;
 use core::borrow::Borrow;
-use crate::lib::RustExpressionEngine::node::{Node, NullNode, OptNode, BoolNode, StringNode, NumberNode, ArgNode, BinaryNode};
+use crate::lib::RustExpressionEngine::node::{Node, NullNode, OptNode, BoolNode, StringNode, NumberNode, ArgNode, BinaryNode, NodeItem};
 use crate::lib::RustExpressionEngine::node::NodeType::NOpt;
 use crate::lib::RustExpressionEngine::runtime::{IsNumber, OptMap, ParserTokens};
 use std::collections::linked_list::LinkedList;
@@ -8,7 +8,7 @@ use std::collections::linked_list::LinkedList;
 
 //TODO 解决bug
 
-pub fn Parser(express: String, optMap: &OptMap) -> (impl Node, String) {
+pub fn Parser(express: String, optMap: &OptMap) -> (NodeItem, String) {
    // let tokens = ParserTokens(&express);
 
 //    let mut nodes:Vec<Box<Node>> = vec![];
@@ -31,7 +31,7 @@ pub fn Parser(express: String, optMap: &OptMap) -> (impl Node, String) {
 //    }
 
 
-    return (NullNode::new(), "".to_string());
+    return (NodeItem::New("".to_string()), "".to_string());
 }
 
 //

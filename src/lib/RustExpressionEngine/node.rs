@@ -7,6 +7,7 @@ use serde_json::de::ParserNumber;
 use std::ptr::null;
 use crate::lib::RustExpressionEngine::eval::Eval;
 use std::fmt::{Display, Formatter, Error};
+use crate::lib::RustExpressionEngine::runtime::{IsNumber, OptMap, ParserTokens};
 
 pub enum NodeType {
     NArg = 1,
@@ -59,6 +60,7 @@ pub trait Node: Clone {
     fn Type(&self) -> NodeType;
     fn Eval(&self, env: &Value) -> (Value, String);
     fn Value(&self) -> Value;
+    fn New(data: String) -> Self;
 }
 
 
@@ -88,17 +90,15 @@ impl Node for OptNode {
     fn Value(&self) -> Value {
         return (&self).value.clone();
     }
-}
 
-
-impl OptNode {
-    pub fn new(data: String) -> Self {
+    fn New(data: String) -> Self {
         Self {
             t: NOpt,
             value: Value::String(data),
         }
     }
 }
+
 
 //参数节点
 pub struct ArgNode {
@@ -113,24 +113,7 @@ pub struct ArgNode {
 
 impl Clone for ArgNode {
     fn clone(&self) -> Self {
-        return ArgNode::new(&self.Value().as_str().unwrap().to_string());
-    }
-}
-
-impl ArgNode {
-    pub fn new(v: &String) -> Self {
-        let pars: Vec<&str> = v.split('.').collect();
-        let mut pars2 = vec![];
-        for item in &pars {
-            pars2.push(item.to_string());
-        }
-        let len = &pars.len();
-        return Self {
-            value: v.to_string(),
-            t: NArg,
-            params: pars2,
-            paramsLen: len.clone(),
-        };
+        return ArgNode::New(self.Value().as_str().unwrap().to_string());
     }
 }
 
@@ -158,6 +141,21 @@ impl Node for ArgNode {
     fn Value(&self) -> Value {
         return Value::String((&self).value.clone());
     }
+
+    fn New(data: String) -> Self {
+        let pars: Vec<&str> = data.split('.').collect();
+        let mut pars2 = vec![];
+        for item in &pars {
+            pars2.push(item.to_string());
+        }
+        let len = &pars.len();
+        return Self {
+            value: data.to_string(),
+            t: NArg,
+            params: pars2,
+            paramsLen: len.clone(),
+        };
+    }
 }
 
 
@@ -169,7 +167,7 @@ pub struct StringNode {
 
 impl Clone for StringNode {
     fn clone(&self) -> Self {
-        return StringNode::new(self.value.clone());
+        return StringNode::New(self.value.clone());
     }
 }
 
@@ -185,17 +183,15 @@ impl Node for StringNode {
     fn Value(&self) -> Value {
         return Value::String((&self).value.clone());
     }
-}
 
-
-impl StringNode {
-    pub fn new(s: String) -> Self {
+    fn New(data: String) -> Self {
         Self {
-            value: s,
+            value: data,
             t: NString,
         }
     }
 }
+
 
 //number节点,值节点
 pub struct NumberNode {
@@ -226,20 +222,24 @@ impl Node for NumberNode {
     fn Value(&self) -> Value {
         return (&self).value.clone();
     }
-}
 
-impl NumberNode {
-    pub fn new(value: &String) -> Self {
-        let index = value.find(".").unwrap_or_default();
+    fn New(data: String) -> Self {
+        if data.as_str() == "" {
+            return Self {
+                value: Value::Number(serde_json::Number::from(ParserNumber::I64(0))),
+                t: NNumber,
+            };
+        }
+        let index = data.find(".").unwrap_or_default();
         if index > 0 {
             //i64
-            let r: f64 = value.parse().unwrap();
+            let r: f64 = data.parse().unwrap();
             return Self {
                 value: Value::Number(serde_json::Number::from(ParserNumber::F64(r))),
                 t: NNumber,
             };
         } else {
-            let r: i64 = value.parse().unwrap();
+            let r: i64 = data.parse().unwrap();
             return Self {
                 value: Value::Number(serde_json::Number::from(ParserNumber::I64(r))),
                 t: NNumber,
@@ -273,11 +273,9 @@ impl Node for BoolNode {
     fn Value(&self) -> Value {
         return (&self).value.clone();
     }
-}
 
-impl BoolNode {
-    pub fn new(value: String) -> Self {
-        let r: bool = value.parse().unwrap();
+    fn New(data: String) -> Self {
+        let r: bool = data.parse().unwrap_or_default();
         Self {
             value: Value::Bool(r),
             t: NNumber,
@@ -311,28 +309,26 @@ impl Node for NullNode {
     fn Value(&self) -> Value {
         return (&self).value.clone();
     }
-}
 
-impl NullNode {
-    pub fn new() -> Self {
+    fn New(data: String) -> Self {
         Self {
             value: Value::Null,
-            t: NNumber,
+            t: NNull,
         }
     }
 }
 
 
 //计算节点
-pub struct BinaryNode<Left: Node, Right: Node> {
-    left: Left,
-    right: Right,
+pub struct BinaryNode {
+    left: NodeItem,
+    right: NodeItem,
     opt: String,
     t: NodeType,
 }
 
-impl<Left: Node, Right: Node> Clone for BinaryNode<Left, Right> {
-    fn clone(&self) -> BinaryNode<Left, Right> {
+impl Clone for BinaryNode {
+    fn clone(&self) -> BinaryNode {
         return BinaryNode {
             left: self.left.clone(),
             right: self.right.clone(),
@@ -342,7 +338,7 @@ impl<Left: Node, Right: Node> Clone for BinaryNode<Left, Right> {
     }
 }
 
-impl<Left: Node, Right: Node> Node for BinaryNode<Left, Right> {
+impl Node for BinaryNode {
     fn Type(&self) -> NodeType {
         return NBinary;
     }
@@ -361,76 +357,214 @@ impl<Left: Node, Right: Node> Node for BinaryNode<Left, Right> {
     fn Value(&self) -> Value {
         return Value::Null;
     }
+
+    fn New(v: String) -> Self {
+        unimplemented!();
+    }
 }
 
-//<Left: Node, Right: Node>
-impl<Left: Node, Right: Node> BinaryNode<Left, Right> {
-    pub fn new(left: Left, right: Right, opt: String) -> Self {
+impl BinaryNode {
+    pub fn New(v: String, v2: String, opt: String) -> Self {
         Self {
-            left: left,
-            right: right,
+            left: NodeItem::New(v),
+            right: NodeItem::New(v2),
             opt: opt,
             t: NNumber,
         }
     }
 }
-//
-////节点
-//pub struct NodeItem {
-//    NArg: ArgNode,
-//    //参数节点
-//    NString: StringNode,
-//    //string 节点
-//    NNumber: NumberNode,
-//    //number节点
-//    NBool: BoolNode,
-//    //bool节点
-//    NNull: NullNode,
-//    //空节点
-//    NBinary: BinaryNode,
-//    //二元计算节点
-//    NOpt: OptNode,
-//
-//    t: NodeType,
-//}
-//
-//impl Node for NodeItem {
-//    fn Type(&self) -> NodeType {
-//        return self.t.clone();
-//    }
-//    fn Eval(&self, env: &Value) -> (Value, String) {
-//        return self.node.Eval(env);
-//    }
-//    fn Value(&self) -> Value {
-//        return self.node.Value();
-//    }
-//}
-//
-//impl Clone for NodeItem {
-//    fn clone(&self) -> Self {
-//        return NodeItem::new(self.node.clone());
-//    }
-//}
-//
-//impl NodeItem {
-//    fn newNArg(NArg: ArgNode) -> Self {
-//        return Self {
-//            NArg: NArg,
-//            //参数节点
-//            NString: StringNode ::new("".to_string()),
-//            //string 节点
-//            NNumber: NumberNode::new(&"0".to_string()),
-//            //number节点
-//            NBool: BoolNode::new("".to_string()),
-//            //bool节点
-//            NNull: NullNode::new(),
-//            //空节点
-//            NBinary: BinaryNode::new(NullNode::new(),NullNode::new(),"".to_string()),
-//            //二元计算节点
-//            NOpt: OptNode,
-//
-//            t: NodeType,
-//        };
-//    }
-//}
-//
+
+//节点
+pub struct NodeItem {
+    Data: String,
+
+    NArg: ArgNode,
+    //参数节点
+    NString: StringNode,
+    //string 节点
+    NNumber: NumberNode,
+    //number节点
+    NBool: BoolNode,
+    //bool节点
+    NNull: NullNode,
+    //二元计算节点
+    NOpt: OptNode,
+
+    t: NodeType,
+}
+
+impl Clone for NodeItem {
+    fn clone(&self) -> Self {
+        return NodeItem::New(self.Data.clone());
+    }
+}
+
+impl Node for NodeItem {
+    fn Type(&self) -> NodeType {
+        return self.t.clone();
+    }
+
+    fn Eval(&self, env: &Value) -> (Value, String) {
+        match self.t {
+            NArg => return self.NArg.Eval(env),
+            //参数节点
+            NString => return self.NString.Eval(env),
+            //string 节点
+            NNumber => return self.NNumber.Eval(env),
+            //number节点
+            NBool => return self.NBool.Eval(env),
+            //bool节点
+            NNull => return self.NNull.Eval(env),
+            //二元计算节点
+            NOpt => return self.NOpt.Eval(env),
+            _ => return self.NNull.Eval(env),
+        }
+    }
+
+    fn Value(&self) -> Value {
+        match self.t {
+            NArg => return self.NArg.Value(),
+            //参数节点
+            NString => return self.NString.Value(),
+            //string 节点
+            NNumber => return self.NNumber.Value(),
+            //number节点
+            NBool => return self.NBool.Value(),
+            //bool节点
+            NNull => return self.NNull.Value(),
+            //二元计算节点
+            NOpt => return self.NOpt.Value(),
+            _ => return self.NNull.Value(),
+        }
+    }
+
+    fn New(data: String) -> Self {
+        let opt = OptMap::new();
+        let mut t;
+        let firstIndex = data.find("'").unwrap_or_default();
+        let lastIndex = data.rfind("'").unwrap_or_default();
+
+        if data.as_str() == "" {
+            t = NNull;
+            return Self {
+                Data: data.clone(),
+                NArg: ArgNode::New("".to_string()),
+                //参数节点
+                NString: StringNode::New("".to_string()),
+                //string 节点
+                NNumber: NumberNode::New("0".to_string()),
+                //number节点
+                NBool: BoolNode::New("".to_string()),
+                //bool节点
+                NNull: NullNode::New("".to_string()),
+                //空节点
+                //NBinary: BinaryNode::new(NullNode::new(),NullNode::new(),"".to_string()),
+                //二元计算节点
+                NOpt: OptNode::New("".to_string()),
+                t: t.clone(),
+            };
+        } else if data.as_str() == "true" || data.as_str() == "false" {
+            t = NBool;
+
+            return Self {
+                Data: data.clone(),
+                NArg: ArgNode::New("".to_string()),
+                //参数节点
+                NString: StringNode::New("".to_string()),
+                //string 节点
+                NNumber: NumberNode::New("0".to_string()),
+                //number节点
+                NBool: BoolNode::New(data.clone()),
+                //bool节点
+                NNull: NullNode::New("".to_string()),
+                //空节点
+                //NBinary: BinaryNode::new(NullNode::new(),NullNode::new(),"".to_string()),
+                //二元计算节点
+                NOpt: OptNode::New("".to_string()),
+                t: t.clone(),
+            };
+        } else if opt.isOpt(data.clone()) {
+            t = NOpt;
+
+            return Self {
+                Data: data.clone(),
+                NArg: ArgNode::New("".to_string()),
+                //参数节点
+                NString: StringNode::New("".to_string()),
+                //string 节点
+                NNumber: NumberNode::New("0".to_string()),
+                //number节点
+                NBool: BoolNode::New("".to_string()),
+                //bool节点
+                NNull: NullNode::New("".to_string()),
+                //空节点
+                //NBinary: BinaryNode::new(NullNode::new(),NullNode::new(),"".to_string()),
+                //二元计算节点
+                NOpt: OptNode::New(data.clone()),
+                t: t.clone(),
+            };
+        } else if firstIndex == 0 && lastIndex == (data.len() - 1) && firstIndex != lastIndex {
+            t = NString;
+
+            return Self {
+                Data: data.clone(),
+                NArg: ArgNode::New("".to_string()),
+                //参数节点
+                NString: StringNode::New("".to_string()),
+                //string 节点
+                NNumber: NumberNode::New("0".to_string()),
+                //number节点
+                NBool: BoolNode::New("".to_string()),
+                //bool节点
+                NNull: NullNode::New("".to_string()),
+                //空节点
+                //NBinary: BinaryNode::new(NullNode::new(),NullNode::new(),"".to_string()),
+                //二元计算节点
+                NOpt: OptNode::New("".to_string()),
+                t: t.clone(),
+            };
+        } else if IsNumber(&data) {
+            t = NNumber;
+
+            return Self {
+                Data: data.clone(),
+                NArg: ArgNode::New("".to_string()),
+                //参数节点
+                NString: StringNode::New("".to_string()),
+                //string 节点
+                NNumber: NumberNode::New("0".to_string()),
+                //number节点
+                NBool: BoolNode::New("".to_string()),
+                //bool节点
+                NNull: NullNode::New("".to_string()),
+                //空节点
+                //NBinary: BinaryNode::new(NullNode::new(),NullNode::new(),"".to_string()),
+                //二元计算节点
+                NOpt: OptNode::New("".to_string()),
+                t: t.clone(),
+            };
+        } else {
+            t = NArg;
+
+            return Self {
+                Data: data.clone(),
+                NArg: ArgNode::New("".to_string()),
+                //参数节点
+                NString: StringNode::New("".to_string()),
+                //string 节点
+                NNumber: NumberNode::New("0".to_string()),
+                //number节点
+                NBool: BoolNode::New("".to_string()),
+                //bool节点
+                NNull: NullNode::New("".to_string()),
+                //空节点
+                //NBinary: BinaryNode::new(NullNode::new(),NullNode::new(),"".to_string()),
+                //二元计算节点
+                NOpt: OptNode::New("".to_string()),
+                t: t.clone(),
+            };
+        }
+    }
+}
+
+
