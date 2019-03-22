@@ -51,11 +51,11 @@ fn findReplaceOpt(optMap:&OptMap,express: &String, operator: &str, nodeArg: &mut
 
             let binaryNodeItem= NodeItem::NewNBinaryNode(binaryNode);
 
+            nodeArg.remove(rightIndex-1);
+            nodeArg.remove(index as usize);
             nodeArg.remove(leftIndex);
-            nodeArg.remove(rightIndex);
+
             nodeArg.insert(leftIndex,binaryNodeItem);
-
-
             if haveOpt(nodeArg){
                 findReplaceOpt(optMap,express,operator,nodeArg);
             }
