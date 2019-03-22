@@ -23,7 +23,7 @@ pub fn Parser(express: String, optMap: &OptMap) -> (NodeItem, String) {
 //
 //
     for item in optMap.priorityArray() {
-          findReplaceOpt(&express,&item,&mut nodes);
+          findReplaceOpt(optMap,&express,&item,&mut nodes);
     }
 //
     for item in nodes{
@@ -34,30 +34,24 @@ pub fn Parser(express: String, optMap: &OptMap) -> (NodeItem, String) {
     return (NodeItem::New("".to_string()), "".to_string());
 }
 
-fn findReplaceOpt(express: &String, operator: &str, nodeArg: &mut Vec<NodeItem>) -> String {
-    let mut index = 1 as i32;
+fn findReplaceOpt(optMap:&OptMap,express: &String, operator: &str, nodeArg: &mut Vec<NodeItem>) -> String {
+
+    //let nodes=vec![];
+    let mut index = 0 as i32;
     let nodeArgLen=nodeArg.len();
     for item in nodeArg.clone(){
         let itemType = item.Type();
         if itemType as i32 == NOpt as i32 {
             let leftIndex = (index - 1) as usize;
             let rightIndex = (index + 1) as usize;
-            let left:NodeItem;
-            let right:NodeItem;
-            if leftIndex<0{
-                left=NodeItem::New("".to_string());
-            }else{
-                left=nodeArg[leftIndex].clone();
-            }
-
-            if rightIndex > (nodeArgLen-1){
-                right=NodeItem::New("".to_string());
-            }else{
-                right=nodeArg[rightIndex].clone();
-            }
-
+            let left=nodeArg[leftIndex].clone();
+            let right=nodeArg[rightIndex].clone();
             let binaryNode=BinaryNode::NewItem(left, right, item.Value().as_str().unwrap().to_string());
             println!("binNode={}",&binaryNode.Type());
+
+//            item.Value()
+//
+//            if haveOpt()
         }
         index = index + 1;
     }
