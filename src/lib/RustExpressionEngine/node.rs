@@ -384,26 +384,38 @@ impl BinaryNode {
 
 //节点
 pub struct NodeItem {
-    Data: String,
+    Data: Option<String>,
 
-    NArg: ArgNode,
+    NArg: Option<ArgNode>,
     //参数节点
-    NString: StringNode,
+    NString: Option<StringNode>,
     //string 节点
-    NNumber: NumberNode,
+    NNumber: Option<NumberNode>,
     //number节点
-    NBool: BoolNode,
+    NBool: Option<BoolNode>,
     //bool节点
-    NNull: NullNode,
+    NNull: Option<NullNode>,
     //二元计算节点
-    NOpt: OptNode,
+    NOpt: Option<OptNode>,
+
+    NBinary: Option<Box<BinaryNode>>,
 
     t: NodeType,
 }
 
 impl Clone for NodeItem {
     fn clone(&self) -> Self {
-        return NodeItem::New(self.Data.clone());
+        return NodeItem {
+            Data: self.Data.clone(),
+            NArg: self.NArg.clone(),
+            NString: self.NString.clone(),
+            NNumber: self.NNumber.clone(),
+            NBool: self.NBool.clone(),
+            NNull: self.NNull.clone(),
+            NOpt: self.NOpt.clone(),
+            NBinary: self.NBinary.clone(),
+            t: self.t.clone(),
+        };
     }
 }
 
@@ -414,35 +426,39 @@ impl Node for NodeItem {
 
     fn Eval(&self, env: &Value) -> (Value, String) {
         match self.t {
-            NArg => return self.NArg.Eval(env),
+            NArg => return self.NArg.clone().unwrap().Eval(env),
             //参数节点
-            NString => return self.NString.Eval(env),
+            NString => return self.NString.clone().unwrap().Eval(env),
             //string 节点
-            NNumber => return self.NNumber.Eval(env),
+            NNumber => return self.NNumber.clone().unwrap().Eval(env),
             //number节点
-            NBool => return self.NBool.Eval(env),
+            NBool => return self.NBool.clone().unwrap().Eval(env),
             //bool节点
-            NNull => return self.NNull.Eval(env),
+            NNull => return self.NNull.clone().unwrap().Eval(env),
             //二元计算节点
-            NOpt => return self.NOpt.Eval(env),
-            _ => return self.NNull.Eval(env),
+            NOpt => return self.NOpt.clone().unwrap().Eval(env),
+
+            NBinary => return self.NBinary.clone().unwrap().Eval(env),
+            _ => return (Value::Null, String::new()),
         }
     }
 
     fn Value(&self) -> Value {
         match self.t {
-            NArg => return self.NArg.Value(),
+            NArg => return self.NArg.clone().unwrap().Value(),
             //参数节点
-            NString => return self.NString.Value(),
+            NString => return self.NString.clone().unwrap().Value(),
             //string 节点
-            NNumber => return self.NNumber.Value(),
+            NNumber => return self.NNumber.clone().unwrap().Value(),
             //number节点
-            NBool => return self.NBool.Value(),
+            NBool => return self.NBool.clone().unwrap().Value(),
             //bool节点
-            NNull => return self.NNull.Value(),
+            NNull => return self.NNull.clone().unwrap().Value(),
             //二元计算节点
-            NOpt => return self.NOpt.Value(),
-            _ => return self.NNull.Value(),
+            NOpt => return self.NOpt.clone().unwrap().Value(),
+
+            NBinary => return self.NBinary.clone().unwrap().Value(),
+            _ => return Value::Null,
         }
     }
 
@@ -455,124 +471,145 @@ impl Node for NodeItem {
         if data.as_str() == "" || data.as_str() == "null" {
             t = NNull;
             return Self {
-                Data: data.clone(),
-                NArg: ArgNode::New("".to_string()),
+                Data: Option::Some(data.clone()),
+                NArg: Option::None,
                 //参数节点
-                NString: StringNode::New("".to_string()),
+                NString: Option::None,
                 //string 节点
-                NNumber: NumberNode::New("0".to_string()),
+                NNumber: Option::None,
                 //number节点
-                NBool: BoolNode::New("".to_string()),
+                NBool: Option::None,
                 //bool节点
-                NNull: NullNode::New("".to_string()),
+                NNull: Option::Some(NullNode { value: Value::Null, t: NodeType::NArg }),
                 //空节点
-                //NBinary: BinaryNode::new(NullNode::new(),NullNode::new(),"".to_string()),
+                NBinary: Option::None,
                 //二元计算节点
-                NOpt: OptNode::New("".to_string()),
+                NOpt: Option::None,
                 t: t.clone(),
             };
         } else if data.as_str() == "true" || data.as_str() == "false" {
             t = NBool;
 
             return Self {
-                Data: data.clone(),
-                NArg: ArgNode::New("".to_string()),
+                Data: Option::Some(data.clone()),
+                NArg: Option::None,
                 //参数节点
-                NString: StringNode::New("".to_string()),
+                NString: Option::None,
                 //string 节点
-                NNumber: NumberNode::New("0".to_string()),
+                NNumber: Option::None,
                 //number节点
-                NBool: BoolNode::New(data.clone()),
+                NBool: Option::Some(BoolNode::New(data)),
                 //bool节点
-                NNull: NullNode::New("".to_string()),
+                NNull: Option::None,
                 //空节点
-                //NBinary: BinaryNode::new(NullNode::new(),NullNode::new(),"".to_string()),
+                NBinary: Option::None,
                 //二元计算节点
-                NOpt: OptNode::New("".to_string()),
+                NOpt: Option::None,
                 t: t.clone(),
             };
         } else if opt.isOpt(data.clone()) {
             t = NOpt;
 
             return Self {
-                Data: data.clone(),
-                NArg: ArgNode::New("".to_string()),
+                Data: Option::Some(data.clone()),
+                NArg: Option::None,
                 //参数节点
-                NString: StringNode::New("".to_string()),
+                NString: Option::None,
                 //string 节点
-                NNumber: NumberNode::New("0".to_string()),
+                NNumber: Option::None,
                 //number节点
-                NBool: BoolNode::New("".to_string()),
+                NBool: Option::None,
                 //bool节点
-                NNull: NullNode::New("".to_string()),
+                NNull: Option::None,
                 //空节点
-                //NBinary: BinaryNode::new(NullNode::new(),NullNode::new(),"".to_string()),
+                NBinary: Option::None,
                 //二元计算节点
-                NOpt: OptNode::New(data.clone()),
+                NOpt: Option::Some(OptNode::New(data)),
                 t: t.clone(),
             };
         } else if firstIndex == 0 && lastIndex == (data.len() - 1) && firstIndex != lastIndex {
             t = NString;
 
             return Self {
-                Data: data.clone(),
-                NArg: ArgNode::New("".to_string()),
+                Data: Option::Some(data.clone()),
+                NArg: Option::None,
                 //参数节点
-                NString: StringNode::New("".to_string()),
+                NString: Option::Some(StringNode::New(data)),
                 //string 节点
-                NNumber: NumberNode::New("0".to_string()),
+                NNumber: Option::None,
                 //number节点
-                NBool: BoolNode::New("".to_string()),
+                NBool: Option::None,
                 //bool节点
-                NNull: NullNode::New("".to_string()),
+                NNull: Option::None,
                 //空节点
-                //NBinary: BinaryNode::new(NullNode::new(),NullNode::new(),"".to_string()),
+                NBinary: Option::None,
                 //二元计算节点
-                NOpt: OptNode::New("".to_string()),
+                NOpt: Option::None,
                 t: t.clone(),
             };
         } else if IsNumber(&data) {
             t = NNumber;
 
             return Self {
-                Data: data.clone(),
-                NArg: ArgNode::New("".to_string()),
+                Data: Option::Some(data.clone()),
+                NArg: Option::None,
                 //参数节点
-                NString: StringNode::New("".to_string()),
+                NString: Option::None,
                 //string 节点
-                NNumber: NumberNode::New("0".to_string()),
+                NNumber: Option::Some(NumberNode::New(data)),
                 //number节点
-                NBool: BoolNode::New("".to_string()),
+                NBool: Option::None,
                 //bool节点
-                NNull: NullNode::New("".to_string()),
+                NNull: Option::None,
                 //空节点
-                //NBinary: BinaryNode::new(NullNode::new(),NullNode::new(),"".to_string()),
+                NBinary: Option::None,
                 //二元计算节点
-                NOpt: OptNode::New("".to_string()),
+                NOpt: Option::None,
                 t: t.clone(),
             };
         } else {
             t = NArg;
 
             return Self {
-                Data: data.clone(),
-                NArg: ArgNode::New("".to_string()),
+                Data: Option::Some(data.clone()),
+                NArg: Option::Some(ArgNode::New(data)),
                 //参数节点
-                NString: StringNode::New("".to_string()),
+                NString: Option::None,
                 //string 节点
-                NNumber: NumberNode::New("0".to_string()),
+                NNumber: Option::None,
                 //number节点
-                NBool: BoolNode::New("".to_string()),
+                NBool: Option::None,
                 //bool节点
-                NNull: NullNode::New("".to_string()),
+                NNull: Option::None,
                 //空节点
-                //NBinary: BinaryNode::new(NullNode::new(),NullNode::new(),"".to_string()),
+                NBinary: Option::None,
                 //二元计算节点
-                NOpt: OptNode::New("".to_string()),
+                NOpt: Option::None,
                 t: t.clone(),
             };
         }
     }
 }
 
+impl NodeItem {
+    fn NewNBinary(left: NodeItem, right: NodeItem, opt: String) -> Self {
+        return Self {
+            Data: Option::None,
+            NArg: Option::None,
+            //参数节点
+            NString: Option::None,
+            //string 节点
+            NNumber: Option::None,
+            //number节点
+            NBool: Option::None,
+            //bool节点
+            NNull: Option::None,
+            //空节点
+            NBinary: Option::Some(Box::new(BinaryNode::NewItem(left, right, opt))),
+            //二元计算节点
+            NOpt: Option::None,
+            t: NBinary,
+        };
+    }
+}
 

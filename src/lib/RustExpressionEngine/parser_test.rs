@@ -7,7 +7,7 @@ use crate::lib::RustExpressionEngine::node::Node;
 
 #[test]
 fn TestParser() {
-    let (boxNode,_ )= parser::Parser(String::from("a<=b+1-2>=1=='asdf + sdaf '"),&OptMap::new());
+    let (boxNode,_ )= parser::Parser(String::from("a<=b"),&OptMap::new());
     let john = json!({
         "name": "John Doe",
         "age": Value::Null,
