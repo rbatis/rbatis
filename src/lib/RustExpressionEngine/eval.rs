@@ -6,14 +6,15 @@ use serde::{Serialize, Deserialize};
 use chrono::Local;
 use crate::utils::time_util;
 use std::iter::Map;
+use std::any::Any;
 
 pub fn Eval(left: &Value,
             right: &Value,
             opt: &String) -> (Value, String) {
     //+ - * / == >= <= !=
-    println!("l:{}", left);
-    println!("r:{}", right);
-    println!("opt:{}", opt);
+//    println!("l:{}", left);
+//    println!("r:{}", right);
+//    println!("opt:{}", opt);
 
     let op = opt.as_str();
     if op == "==" {
@@ -26,7 +27,9 @@ pub fn Eval(left: &Value,
 
     }
     if op == "<=" {
-
+       if left.is_i64() && right.is_i64(){
+           return (Value::Bool(left.as_i64() <= right.as_i64()),"".to_string());
+       }
     }
     if op == "*" {
 

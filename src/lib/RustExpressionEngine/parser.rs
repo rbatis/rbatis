@@ -1,7 +1,7 @@
 use std::collections::HashMap;
 use core::borrow::Borrow;
 use crate::lib::RustExpressionEngine::node::{Node, NullNode, OptNode, BoolNode, StringNode, NumberNode, ArgNode, BinaryNode, NodeItem};
-use crate::lib::RustExpressionEngine::node::NodeType::NOpt;
+use crate::lib::RustExpressionEngine::node::NodeType::{NOpt, NBinary};
 use crate::lib::RustExpressionEngine::runtime::{IsNumber, OptMap, ParserTokens};
 use std::collections::linked_list::LinkedList;
 
@@ -26,15 +26,15 @@ pub fn Parser(express: String, optMap: &OptMap) -> (NodeItem, String) {
           findReplaceOpt(optMap,&express,&item,&mut nodes);
     }
 //
-    for item in nodes{
-        println!("{}:{}",item.Type(),item.Value());
+    for item in &nodes{
+//        if item.Type()==NBinary{
+//            //println!("{}",item.Data)
+//        }
     }
-
-
-    return (NodeItem::New("".to_string()), "".to_string());
+    return (nodes[0].clone(), "".to_string());
 }
 
-fn findReplaceOpt(optMap:&OptMap,express: &String, operator: &str, nodeArg: &mut Vec<NodeItem>) -> String {
+fn findReplaceOpt(optMap:&OptMap,express: &String, operator: &str, nodeArg: &mut Vec<NodeItem>) {
 
     //let nodes=vec![];
     let mut index = 0 as i32;
@@ -51,7 +51,7 @@ fn findReplaceOpt(optMap:&OptMap,express: &String, operator: &str, nodeArg: &mut
 
             let binaryNodeItem= NodeItem::NewNBinaryNode(binaryNode);
 
-            nodeArg.remove(rightIndex-1);
+            nodeArg.remove(rightIndex);
             nodeArg.remove(index as usize);
             nodeArg.remove(leftIndex);
 
@@ -63,7 +63,6 @@ fn findReplaceOpt(optMap:&OptMap,express: &String, operator: &str, nodeArg: &mut
         }
         index = index + 1;
     }
-    return "".to_string();
 }
 
 fn haveOpt(nodeArg: &mut Vec<NodeItem>)->bool{
