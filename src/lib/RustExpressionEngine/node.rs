@@ -372,6 +372,14 @@ impl BinaryNode {
             t: NNumber,
         }
     }
+    pub fn NewItem(v: NodeItem, v2: NodeItem, opt: String) -> Self {
+        Self {
+            left: v,
+            right: v2,
+            opt: opt,
+            t: NNumber,
+        }
+    }
 }
 
 //节点
@@ -444,7 +452,7 @@ impl Node for NodeItem {
         let firstIndex = data.find("'").unwrap_or_default();
         let lastIndex = data.rfind("'").unwrap_or_default();
 
-        if data.as_str() == "" {
+        if data.as_str() == "" || data.as_str() == "null" {
             t = NNull;
             return Self {
                 Data: data.clone(),
