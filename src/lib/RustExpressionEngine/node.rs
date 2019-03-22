@@ -71,7 +71,7 @@ pub struct OptNode {
 
 impl Clone for OptNode {
     fn clone(&self) -> Self {
-        return OptNode {
+        return Self {
             value: self.value.clone(),
             t: self.t.clone(),
         };
@@ -113,7 +113,12 @@ pub struct ArgNode {
 
 impl Clone for ArgNode {
     fn clone(&self) -> Self {
-        return ArgNode::New(self.Value().as_str().unwrap().to_string());
+        Self{
+            value:self.value.clone(),
+            params:self.params.clone(),
+            paramsLen:self.paramsLen.clone(),
+            t:self.t.clone(),
+        }
     }
 }
 
@@ -167,7 +172,10 @@ pub struct StringNode {
 
 impl Clone for StringNode {
     fn clone(&self) -> Self {
-        return StringNode::New(self.value.clone());
+        Self{
+            value:self.value.clone(),
+            t:self.t.clone(),
+        }
     }
 }
 
@@ -202,10 +210,10 @@ pub struct NumberNode {
 
 impl Clone for NumberNode {
     fn clone(&self) -> Self {
-        return NumberNode {
-            t: NNumber,
-            value: self.value.clone(),
-        };
+        Self{
+            value:self.value.clone(),
+            t:self.t.clone(),
+        }
     }
 }
 
@@ -255,7 +263,7 @@ pub struct BoolNode {
 
 impl Clone for BoolNode {
     fn clone(&self) -> Self {
-        return BoolNode {
+        return Self {
             t: NBool,
             value: self.value.clone(),
         };
@@ -328,8 +336,8 @@ pub struct BinaryNode {
 }
 
 impl Clone for BinaryNode {
-    fn clone(&self) -> BinaryNode {
-        return BinaryNode {
+    fn clone(&self) -> Self {
+        return Self {
             left: self.left.clone(),
             right: self.right.clone(),
             opt: self.opt.clone(),
@@ -384,7 +392,7 @@ impl BinaryNode {
 
 //节点
 pub struct NodeItem {
-   pub Data: Option<String>,
+    pub Data: Option<String>,
 
     NArg: Option<ArgNode>,
     //参数节点
@@ -405,7 +413,7 @@ pub struct NodeItem {
 
 impl Clone for NodeItem {
     fn clone(&self) -> Self {
-        return NodeItem {
+        return Self {
             Data: self.Data.clone(),
             NArg: self.NArg.clone(),
             NString: self.NString.clone(),
@@ -592,7 +600,7 @@ impl Node for NodeItem {
 }
 
 impl NodeItem {
-    pub fn NewNBinaryNode(node:BinaryNode) -> Self {
+    pub fn NewNBinaryNode(node: BinaryNode) -> Self {
         return Self {
             Data: Option::None,
             NArg: Option::None,
@@ -611,7 +619,7 @@ impl NodeItem {
             t: NBinary,
         };
     }
-   pub fn NewNBinary(left: NodeItem, right: NodeItem, opt: String) -> Self {
+    pub fn NewNBinary(left: NodeItem, right: NodeItem, opt: String) -> Self {
         return Self {
             Data: Option::None,
             NArg: Option::None,
