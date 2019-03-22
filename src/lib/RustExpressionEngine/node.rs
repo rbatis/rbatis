@@ -384,13 +384,13 @@ impl BinaryNode {
 
 //节点
 pub struct NodeItem {
-    Data: Option<String>,
+   pub Data: Option<String>,
 
     NArg: Option<ArgNode>,
     //参数节点
     NString: Option<StringNode>,
     //string 节点
-    NNumber: Option<NumberNode>,
+    pub  NNumber: Option<NumberNode>,
     //number节点
     NBool: Option<BoolNode>,
     //bool节点
@@ -398,7 +398,7 @@ pub struct NodeItem {
     //二元计算节点
     NOpt: Option<OptNode>,
 
-    NBinary: Option<Box<BinaryNode>>,
+    pub  NBinary: Option<Box<BinaryNode>>,
 
     t: NodeType,
 }

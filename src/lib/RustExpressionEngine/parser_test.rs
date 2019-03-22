@@ -3,11 +3,15 @@ use serde_json::json;
 use serde_json::Value;
 use crate::lib::RustExpressionEngine::runtime::OptMap;
 use crate::lib::RustExpressionEngine::node::Node;
+use crate::utils;
+use chrono::Local;
+use crate::utils::time_util;
+use std::thread::Thread;
 
 
 #[test]
 fn TestParser() {
-    let (boxNode,_ )= parser::Parser(String::from("a<=b"),&OptMap::new());
+    let (boxNode,_ )= parser::Parser(String::from("1<=2"),&OptMap::new());
     let john = json!({
         "name": "John Doe",
         "age": Value::Null,
@@ -21,7 +25,7 @@ fn TestParser() {
         ]
     });
     let (v,_)=boxNode.Eval(&john);
-    println!("item:{}", v);
+    println!("item>>>>>>>>>>   =  {}", v);
 
 }
 
@@ -30,4 +34,22 @@ fn TestParser2() {
    let (n,e)= parser::Parser(String::from("a<=b+1-2>=1=='asdf + sdaf '"),&OptMap::new());
 
     println!("type:{}",n.Type())
+}
+
+#[test]
+fn BenchmarkParser(){
+    let (boxNode,_ )= parser::Parser(String::from("1<=2"),&OptMap::new());
+    let john = json!({
+        "name": "John Doe",
+    });
+
+    let total=100000;
+
+    let now=Local::now();
+
+    for item in 0..total{
+        boxNode.Eval(&john);
+    }
+
+    time_util::count_time(total, now);
 }
