@@ -45,6 +45,8 @@ fn BenchmarkParser(){
 
     let total=100000;
 
+    let v=Value::String("sdf".to_string());
+
     let now=Local::now();
 
     for item in 0..total{
@@ -52,6 +54,7 @@ fn BenchmarkParser(){
         for i in 0..1{
             boxNode.Eval(&john);
             //boxNode.clone();
+          //  boxNode.clone();
         }
     }
 
