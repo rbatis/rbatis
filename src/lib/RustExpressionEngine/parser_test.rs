@@ -48,7 +48,11 @@ fn BenchmarkParser(){
     let now=Local::now();
 
     for item in 0..total{
-        boxNode.Eval(&john);
+
+        for i in 0..1{
+            boxNode.Eval(&john);
+            //boxNode.clone();
+        }
     }
 
     time_util::count_time(total, now);
