@@ -1,3 +1,6 @@
+
+#![feature(test)]
+
 mod ast;
 mod utils;
 mod engines;
@@ -91,4 +94,15 @@ fn main() {
 
     let fb2:FooBar = b.bar(20);
     println!("{:?}",fb2);
+}
+
+
+extern crate test;
+use test::Bencher;
+
+#[bench]
+fn bench_xor_1000_ints(b: &mut Bencher) {
+    b.iter(|| {
+        1 <=2;
+    });
 }
