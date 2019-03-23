@@ -10,42 +10,33 @@ use std::any::Any;
 
 pub fn Eval(left: &Value,
             right: &Value,
-            opt: &String) -> (Value, String) {
+            op: &str) -> (Value, String) {
     //+ - * / == >= <= !=
 //    println!("l:{}", left);
 //    println!("r:{}", right);
 //    println!("opt:{}", opt);
 
-    let op = opt.as_str();
-    if op == "==" {
-
-    }
-    if op == "!=" {
-
-    }
-    if op == ">=" {
-
-    }
+    if op == "==" {}
+    if op == "!=" {}
+    if op == ">=" {}
     if op == "<=" {
-       if left.is_i64() && right.is_i64(){
-           return (Value::Bool(left.as_i64() <= right.as_i64()),String::new());
-       }
+//        println!("left types f64:{}",left.is_f64());
+//        println!("right types f64:{}",right.is_f64());
+        let booll = left.is_f64();
+        let boolr = right.is_f64();
+        if booll && boolr {
+            return (Value::Bool(left.as_i64() <= right.as_i64()), String::new());
+        }
     }
-    if op == "*" {
-
-    }
-    if op == "/" {
-
-    }
+    if op == "*" {}
+    if op == "/" {}
     if op == "+" {
         let mut s = String::new();
         s.push_str(left.as_str().unwrap_or_default());
         s.push_str(right.as_str().unwrap_or_default());
         return (Value::String(s), String::new());
     }
-    if op == "-" {
-
-    }
+    if op == "-" {}
 
 //    match left {
 //        Value::Null => println!("null"),
@@ -109,7 +100,7 @@ fn BenchmarkFromStr() {
     let now = Local::now();
     for i in 0..total {
         let deserialized: Point = serde_json::from_str(&serialized).unwrap();
-       // println!("deserialized = {:?}", deserialized);
+        // println!("deserialized = {:?}", deserialized);
     }
     time_util::count_time(total, now);
     time_util::count_tps(total, now);
@@ -118,7 +109,6 @@ fn BenchmarkFromStr() {
 #[test]
 fn BenchmarkToString() {
     let point = Point { x: 1, y: 2 };
-
 
 
     let total = 100000;

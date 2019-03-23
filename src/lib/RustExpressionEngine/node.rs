@@ -79,24 +79,15 @@ impl Node {
         return self.t == *arg;
     }
 
-
-    pub fn eval(&mut self, env: &Value) -> Node {
-        let mut result = Node {
-            Data: Value::Null,
-            NBinaryLeft: None,
-            NBinaryRight: None,
-            t: NNull,
-        };
-        let leftV = self.NBinaryLeft.clone().unwrap().toNumber();
-        let rightV = self.NBinaryRight.clone().unwrap().toNumber();
-        result.Data = Value::from(leftV + rightV);
-        result.t = NNumber;
-        //let nn=self.NBinaryLeft.unwrap() self.NBinaryRight.unwrap().Eval(env).NNumber.unwrap();
-        match self.t.clone() {
-            NNumber => return result,
-            NBinary => return result,
-            _ => return result,
+    pub fn eval(&self, env: &Value) -> Value {
+        if self.equalNodeType(&NBinary) {
+            let leftV = self.NBinaryLeft.clone().unwrap().eval(env);
+            let rightV = self.NBinaryRight.clone().unwrap().eval(env);
+            let opt = self.toString();
+            let (v, _) = Eval(&leftV, &rightV, opt);
+            return v;
         }
+        return self.Data.clone();
     }
 
     pub fn opt(&self) -> Option<&str> {
