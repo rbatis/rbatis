@@ -45,9 +45,6 @@ fn Bench_Parser(b: &mut Bencher) {
     let john = json!({
         "name": "John Doe",
     });
-
-    let total=100000;
-
     let v=Value::String("sdf".to_string());
 
     let now=Local::now();
