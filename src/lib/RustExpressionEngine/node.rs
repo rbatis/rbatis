@@ -53,8 +53,8 @@ pub struct Node {
     pub  NBool: Option<bool>,
     //bool节点
     pub NNull: Option<bool>,
-    pub  NBinaryLeft: Option<Arc<Node>>,
-    pub  NBinaryRight: Option<Arc<Node>>,
+    pub  NBinaryLeft: Option<Rc<Node>>,
+    pub  NBinaryRight: Option<Rc<Node>>,
     pub  NOpt: Option<String>,
     pub t: Option<NodeType>,
 }
@@ -171,8 +171,8 @@ impl Node {
             NNumber: None,
             NBool: None,
             NNull: None,
-            NBinaryLeft: Option::Some(Arc::new(argLef)),
-            NBinaryRight: Option::Some(Arc::new(argRight)),
+            NBinaryLeft: Option::Some(Rc::new(argLef)),
+            NBinaryRight: Option::Some(Rc::new(argRight)),
             NOpt: Option::Some(opt),
             t: Option::Some(NBinary),
         }
