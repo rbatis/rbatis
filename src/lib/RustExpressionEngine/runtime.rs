@@ -17,10 +17,12 @@ pub fn IsNumber(arg: &String) -> bool{
             item == '8' ||
             item == '9'
         {
-            return true;
+            // nothing do
+        }else{
+            return false;
         }
     }
-    return false;
+    return true;
 }
 
 
