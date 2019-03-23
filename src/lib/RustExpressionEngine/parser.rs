@@ -15,7 +15,7 @@ pub fn Parser(express: String, optMap: &OptMap) -> (NodeItem, String) {
     for item in tokens {
         let node = NodeItem::New(item);
 //        if err != "" {
-//            return (NodeItem::New("".to_string()), err);
+//            return (NodeItem::New(String::new()), err);
 //        }
         nodes.push(node);
     }
@@ -31,7 +31,7 @@ pub fn Parser(express: String, optMap: &OptMap) -> (NodeItem, String) {
 //            //println!("{}",item.Data)
 //        }
     }
-    return (nodes[0].clone(), "".to_string());
+    return (nodes[0].clone(), String::new());
 }
 
 fn findReplaceOpt(optMap:&OptMap,express: &String, operator: &str, nodeArg: &mut Vec<NodeItem>) {

@@ -84,7 +84,7 @@ impl Node for OptNode {
     }
 
     fn Eval(&self, env: &Value) -> (Value, String) {
-        return ((&self).value.clone(), "".to_string());
+        return ((&self).value.clone(), String::new());
     }
 
     fn Value(&self) -> Value {
@@ -130,17 +130,17 @@ impl Node for ArgNode {
 
     fn Eval(&self, env: &Value) -> (Value, String) {
         if self.params.len() == 1 {
-            return (env[self.value.as_str()].clone(), "".to_string());
+            return (env[self.value.as_str()].clone(), String::new());
         } else {
             let paramsLen = self.params.len();
             let mut result = env;
             for i in 0..paramsLen {
                 result = &result[&self.params[i]];
                 if i == (paramsLen - 1) {
-                    return (result.clone(), "".to_string());
+                    return (result.clone(), String::new());
                 }
             }
-            return (Value::Null, "".to_string());
+            return (Value::Null, String::new());
         }
     }
     fn Value(&self) -> Value {
@@ -185,7 +185,7 @@ impl Node for StringNode {
     }
 
     fn Eval(&self, env: &Value) -> (Value, String) {
-        return (Value::String(self.value.to_string()), "".to_string());
+        return (Value::String(self.value.to_string()), String::new());
     }
 
     fn Value(&self) -> Value {
@@ -224,7 +224,7 @@ impl Node for NumberNode {
     }
 
     fn Eval(&self, env: &Value) -> (Value, String) {
-        return ((&self.value).clone(), "".to_string());
+        return ((&self.value).clone(), String::new());
     }
 
     fn Value(&self) -> Value {
@@ -276,7 +276,7 @@ impl Node for BoolNode {
     }
 
     fn Eval(&self, env: &Value) -> (Value, String) {
-        return ((&self.value).clone(), "".to_string());
+        return ((&self.value).clone(), String::new());
     }
     fn Value(&self) -> Value {
         return (&self).value.clone();
@@ -312,7 +312,7 @@ impl Node for NullNode {
     }
 
     fn Eval(&self, env: &Value) -> (Value, String) {
-        return ((&self.value).clone(), "".to_string());
+        return ((&self.value).clone(), String::new());
     }
     fn Value(&self) -> Value {
         return (&self).value.clone();
