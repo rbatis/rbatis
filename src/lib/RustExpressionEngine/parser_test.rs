@@ -28,8 +28,7 @@ fn TestParser() {
             "+44 2345678"
         ]
     });
-    boxNode.eval(&john);
-    //println!("item>>>>>>>>>>   =  {}", v.);
+    println!("result >>>>>>>>>>   =  {}", boxNode.eval(&john));
 
 }
 
