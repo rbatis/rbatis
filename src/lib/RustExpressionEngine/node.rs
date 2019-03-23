@@ -47,36 +47,29 @@ impl Display for NodeType {
 #[derive(Clone)]
 pub struct Node {
     pub Data: Value,
-    pub NArg: Option<String>,
-    pub  NString: Option<String>,
-    pub  NNumber: Option<f64>,
-    pub  NBool: Option<bool>,
-    //bool节点
-    pub NNull: Option<bool>,
     pub  NBinaryLeft: Option<Rc<Node>>,
     pub  NBinaryRight: Option<Rc<Node>>,
-    pub  NOpt: Option<String>,
     pub t: NodeType,
 }
 
 impl Node {
     pub fn toNumber(&self) -> f64 {
-        return self.NNumber.clone().unwrap();
+        return self.Data.as_f64().unwrap();
     }
-    pub fn toString(&self) -> String {
-        return self.NString.clone().unwrap();
+    pub fn toString(&self) -> &str {
+        return self.Data.as_str().unwrap();
     }
-    pub fn toArg(&self) -> String {
-        return self.NArg.clone().unwrap();
+    pub fn toArg(&self) -> &str {
+        return self.Data.as_str().unwrap();
     }
     pub fn toBool(&self) -> bool {
-        return self.NBool.clone().unwrap();
+        return self.Data.as_bool().unwrap();
     }
-    pub fn toNull(&self) -> Option<bool> {
-        return self.NNull.clone();
+    pub fn toNull(&self) -> () {
+        return self.Data.as_null().unwrap();
     }
-    pub fn toOpt(&self) -> String {
-        return self.NOpt.clone().unwrap();
+    pub fn toOpt(&self) -> &str {
+        return self.Data.as_str().unwrap();
     }
     pub fn n_type(&self) -> NodeType {
         return self.t.clone();
@@ -90,19 +83,13 @@ impl Node {
     pub fn eval(&mut self, env: &Value) -> Node {
         let mut result = Node {
             Data: Value::Null,
-            NArg: None,
-            NString: None,
-            NNumber: None,
-            NBool: None,
-            NNull: None,
             NBinaryLeft: None,
             NBinaryRight: None,
-            NOpt: None,
             t: NNull,
         };
-        let leftV = self.NBinaryLeft.clone().unwrap().NNumber.unwrap();
-        let rightV = self.NBinaryRight.clone().unwrap().NNumber.unwrap();
-        result.NNumber = Option::Some(leftV + rightV);
+        let leftV = self.NBinaryLeft.clone().unwrap().Data.as_f64().unwrap();
+        let rightV = self.NBinaryRight.clone().unwrap().Data.as_f64().unwrap();
+        result.Data = Value::from(leftV + rightV);
         result.t = NNumber;
         //let nn=self.NBinaryLeft.unwrap() self.NBinaryRight.unwrap().Eval(env).NNumber.unwrap();
         match self.t.clone() {
@@ -112,106 +99,64 @@ impl Node {
         }
     }
 
-    pub fn opt(&self) -> Option<String> {
-        return self.NOpt.clone();
+    pub fn opt(&self) -> Option<&str> {
+        return self.Data.as_str();
     }
 
 
     pub fn newNull() -> Self {
         Self {
             Data: Value::Null,
-            NArg: None,
-            NString: None,
-            NNumber: None,
-            NBool: None,
-            NNull: None,
             NBinaryLeft: None,
             NBinaryRight: None,
-            NOpt: None,
             t: NNull,
         }
     }
     pub fn newArg(arg: String) -> Self {
         Self {
-            Data: Value::Null,
-            NArg: Option::Some(arg),
-            NString: None,
-            NNumber: None,
-            NBool: None,
-            NNull: None,
+            Data: Value::String(arg),
             NBinaryLeft: None,
             NBinaryRight: None,
-            NOpt: None,
             t: NArg,
         }
     }
     pub fn newString(arg: String) -> Self {
         Self {
-            Data: Value::Null,
-            NArg: None,
-            NString: Option::Some(arg),
-            NNumber: None,
-            NBool: None,
-            NNull: None,
+            Data: Value::String(arg),
             NBinaryLeft: None,
             NBinaryRight: None,
-            NOpt: None,
             t: NString,
         }
     }
     pub fn newNumber(arg: f64) -> Self {
         Self {
-            Data: Value::Null,
-            NArg: None,
-            NString: None,
-            NNumber: Option::Some(arg),
-            NBool: None,
-            NNull: None,
+            Data: Value::Number(serde_json::Number::from_f64(arg).unwrap()),
             NBinaryLeft: None,
             NBinaryRight: None,
-            NOpt: None,
             t: NNumber,
         }
     }
     pub fn newBool(arg: bool) -> Self {
         Self {
-            Data: Value::Null,
-            NArg: None,
-            NString: None,
-            NNumber: None,
-            NBool: Option::Some(arg),
-            NNull: None,
+            Data: Value::Bool(arg),
             NBinaryLeft: None,
             NBinaryRight: None,
-            NOpt: None,
             t: NBool,
         }
     }
-    pub fn newBinary(argLef: Node, argRight: Node, opt: String) -> Self {
+    pub fn newBinary(argLef: Node, argRight: Node, opt: &str) -> Self {
         Self {
-            Data: Value::Null,
-            NArg: None,
-            NString: None,
-            NNumber: None,
-            NBool: None,
-            NNull: None,
+            Data: Value::from(opt),
             NBinaryLeft: Option::Some(Rc::new(argLef)),
             NBinaryRight: Option::Some(Rc::new(argRight)),
-            NOpt: Option::Some(opt),
             t: NBinary,
         }
     }
     pub fn newOpt(arg: String) -> Self {
         Self {
-            Data: Value::Null,
-            NArg: None,
-            NString: None,
-            NNumber: None,
-            NBool: None,
-            NNull: None,
+            Data: Value::String(arg),
             NBinaryLeft: None,
             NBinaryRight: None,
-            NOpt: Option::Some(arg),
             t: NOpt,
         }
     }
