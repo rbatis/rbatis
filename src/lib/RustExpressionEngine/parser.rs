@@ -1,6 +1,6 @@
 use std::collections::HashMap;
 use core::borrow::Borrow;
-use crate::lib::RustExpressionEngine::node::{Node, NullNode, OptNode, BoolNode, StringNode, NumberNode, ArgNode, BinaryNode, NodeItem};
+use crate::lib::RustExpressionEngine::node::Node;
 use crate::lib::RustExpressionEngine::node::NodeType::{NOpt, NBinary};
 use crate::lib::RustExpressionEngine::runtime::{IsNumber, OptMap, ParserTokens};
 use std::collections::linked_list::LinkedList;
@@ -8,14 +8,14 @@ use std::collections::linked_list::LinkedList;
 
 //TODO 解决bug
 
-pub fn Parser(express: String, optMap: &OptMap) -> (NodeItem, String) {
+pub fn Parser(express: String, optMap: &OptMap) -> (Node, String) {
     let tokens = ParserTokens(&express);
 
     let mut nodes = vec![];
     for item in tokens {
-        let node = NodeItem::New(item);
+        let node = Node::parser(item);
 //        if err != "" {
-//            return (NodeItem::New(String::new()), err);
+//            return (Node::New(String::new()), err);
 //        }
         nodes.push(node);
     }
@@ -23,10 +23,10 @@ pub fn Parser(express: String, optMap: &OptMap) -> (NodeItem, String) {
 //
 //
     for item in optMap.priorityArray() {
-          findReplaceOpt(optMap,&express,&item,&mut nodes);
+        findReplaceOpt(optMap, &express, &item, &mut nodes);
     }
 //
-    for item in &nodes{
+    for item in &nodes {
 //        if item.Type()==NBinary{
 //            //println!("{}",item.Data)
 //        }
@@ -34,30 +34,28 @@ pub fn Parser(express: String, optMap: &OptMap) -> (NodeItem, String) {
     return (nodes[0].clone(), String::new());
 }
 
-fn findReplaceOpt(optMap:&OptMap,express: &String, operator: &str, nodeArg: &mut Vec<NodeItem>) {
+fn findReplaceOpt(optMap: &OptMap, express: &String, operator: &str, nodeArg: &mut Vec<Node>) {
 
     //let nodes=vec![];
     let mut index = 0 as i32;
-    let nodeArgLen=nodeArg.len();
-    for item in nodeArg.clone(){
-        let itemType = item.Type();
-        if itemType as i32 == NOpt as i32 && operator==item.Value().as_str().unwrap(){
+    let nodeArgLen = nodeArg.len();
+    for item in nodeArg.clone() {
+        let itemType = item.n_type();
+        if itemType as i32 == NOpt as i32 && operator == item.opt().unwrap().as_str() {
             let leftIndex = (index - 1) as usize;
             let rightIndex = (index + 1) as usize;
-            let left=nodeArg[leftIndex].clone();
-            let right=nodeArg[rightIndex].clone();
-            let binaryNode=BinaryNode::NewItem(left, right, item.Value().as_str().unwrap().to_string());
-            println!("binNode={}",&binaryNode.Type());
-
-            let binaryNodeItem= NodeItem::NewNBinaryNode(binaryNode);
+            let left = nodeArg[leftIndex].clone();
+            let right = nodeArg[rightIndex].clone();
+            let binaryNode = Node::newBinary(left, right, item.opt().unwrap());
+            println!("binNode={}", &binaryNode.n_type());
 
             nodeArg.remove(rightIndex);
             nodeArg.remove(index as usize);
             nodeArg.remove(leftIndex);
 
-            nodeArg.insert(leftIndex,binaryNodeItem);
-            if haveOpt(nodeArg){
-                findReplaceOpt(optMap,express,operator,nodeArg);
+            nodeArg.insert(leftIndex, binaryNode);
+            if haveOpt(nodeArg) {
+                findReplaceOpt(optMap, express, operator, nodeArg);
             }
             break;
         }
@@ -65,9 +63,9 @@ fn findReplaceOpt(optMap:&OptMap,express: &String, operator: &str, nodeArg: &mut
     }
 }
 
-fn haveOpt(nodeArg: &mut Vec<NodeItem>)->bool{
-    for item in nodeArg{
-        if item.Type() as i32==NOpt as i32{
+fn haveOpt(nodeArg: &mut Vec<Node>) -> bool {
+    for item in nodeArg {
+        if item.n_type() as i32 == NOpt as i32 {
             return true;
         }
     }
