@@ -11,20 +11,11 @@ use std::any::Any;
 pub fn Eval(left: &Value,
             right: &Value,
             op: &str) -> (Value, String) {
-
-
-//    let is_left_number = left.is_f64();
-//    let is_right_number = right.is_f64();
-//    let is_left_string = left.is_string();
-//    let is_right_string = right.is_string();
-//    let is_left_null = left.is_null();
-//    let is_right_null = right.is_null();
-
-    if op == "&&"{
-        return (Value::Bool(left.as_bool().unwrap() && right.as_bool().unwrap()),String::new());
+    if op == "&&" {
+        return (Value::Bool(left.as_bool().unwrap() && right.as_bool().unwrap()), String::new());
     }
-    if op == "||"{
-        return (Value::Bool(left.as_bool().unwrap() || right.as_bool().unwrap()),String::new());
+    if op == "||" {
+        return (Value::Bool(left.as_bool().unwrap() || right.as_bool().unwrap()), String::new());
     }
 
     if op == "==" {
@@ -66,7 +57,7 @@ pub fn Eval(left: &Value,
         let boolr = right.is_f64();
         if booll && boolr {
             return (Value::Number(serde_json::Number::from_f64(left.as_f64().unwrap() + right.as_f64().unwrap()).unwrap()), String::new());
-        }else{
+        } else {
             let mut s = String::new();
             s.push_str(left.as_str().unwrap());
             s.push_str(right.as_str().unwrap());

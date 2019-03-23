@@ -15,10 +15,12 @@ use std::sync::Arc;
 
 #[test]
 fn TestParser() {
-    let (mut boxNode,_ )= parser::Parser(String::from("1<2 && 2<1"), &OptMap::new());
+    let (mut boxNode,_ )= parser::Parser(String::from("age"), &OptMap::new());
     let john = json!({
         "name": "John Doe",
-        "age": Value::Null,
+        "age": {
+           "yes":"sadf"
+        },
          "sex":{
             "a":"i'm a",
             "b":"i'm b",
