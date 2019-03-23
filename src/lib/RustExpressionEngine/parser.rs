@@ -41,7 +41,7 @@ fn findReplaceOpt(optMap: &OptMap, express: &String, operator: &str, nodeArg: &m
     let nodeArgLen = nodeArg.len();
     for item in nodeArg.clone() {
         let itemType = item.n_type();
-        if itemType as i32 == NOpt as i32 && operator == item.opt().unwrap().as_str() {
+        if itemType as i32 == NOpt as i32 && operator == item.opt().unwrap() {
             let leftIndex = (index - 1) as usize;
             let rightIndex = (index + 1) as usize;
             let left = nodeArg[leftIndex].clone();
