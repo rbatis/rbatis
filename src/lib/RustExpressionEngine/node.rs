@@ -71,11 +71,11 @@ impl Node {
     pub fn toOpt(&self) -> &str {
         return self.Data.as_str().unwrap();
     }
-    pub fn n_type(&self) -> NodeType {
+    pub fn nodeType(&self) -> NodeType {
         return self.t.clone();
     }
 
-    pub fn eqNodeType(&self, arg: &NodeType) -> bool {
+    pub fn equalNodeType(&self, arg: &NodeType) -> bool {
         return self.t == *arg;
     }
 

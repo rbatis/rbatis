@@ -40,14 +40,14 @@ fn findReplaceOpt(optMap: &OptMap, express: &String, operator: &str, nodeArg: &m
     let mut index = 0 as i32;
     let nodeArgLen = nodeArg.len();
     for item in nodeArg.clone() {
-        let itemType = item.n_type();
+        let itemType = item.nodeType();
         if itemType as i32 == NOpt as i32 && operator == item.opt().unwrap() {
             let leftIndex = (index - 1) as usize;
             let rightIndex = (index + 1) as usize;
             let left = nodeArg[leftIndex].clone();
             let right = nodeArg[rightIndex].clone();
             let binaryNode = Node::newBinary(left, right, item.opt().unwrap());
-            println!("binNode={}", &binaryNode.n_type());
+            println!("binNode={}", &binaryNode.nodeType());
 
             nodeArg.remove(rightIndex);
             nodeArg.remove(index as usize);
@@ -65,7 +65,7 @@ fn findReplaceOpt(optMap: &OptMap, express: &String, operator: &str, nodeArg: &m
 
 fn haveOpt(nodeArg: &mut Vec<Node>) -> bool {
     for item in nodeArg {
-        if item.n_type() as i32 == NOpt as i32 {
+        if item.nodeType() as i32 == NOpt as i32 {
             return true;
         }
     }
