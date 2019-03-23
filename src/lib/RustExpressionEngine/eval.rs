@@ -28,7 +28,7 @@ pub fn Eval(left: &Value,
     }
     if op == "<=" {
        if left.is_i64() && right.is_i64(){
-           return (Value::Bool(left.as_i64() <= right.as_i64()),"".to_string());
+           return (Value::Bool(left.as_i64() <= right.as_i64()),String::new());
        }
     }
     if op == "*" {
@@ -41,7 +41,7 @@ pub fn Eval(left: &Value,
         let mut s = String::new();
         s.push_str(left.as_str().unwrap_or_default());
         s.push_str(right.as_str().unwrap_or_default());
-        return (Value::String(s), "".to_string());
+        return (Value::String(s), String::new());
     }
     if op == "-" {
 
@@ -57,7 +57,7 @@ pub fn Eval(left: &Value,
 //    }
 
 
-    return (Value::Null, "".to_string());
+    return (Value::Null, String::new());
 }
 
 

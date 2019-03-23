@@ -52,6 +52,7 @@ fn BenchmarkParser(){
     for item in 0..total{
 
         for i in 0..1{
+            //String::new();
             boxNode.Eval(&john);
             //boxNode.clone();
           //  boxNode.clone();

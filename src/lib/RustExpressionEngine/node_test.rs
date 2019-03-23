@@ -165,7 +165,7 @@ fn TestBinaryNode() {
             "+44 2345678"
         ]
     });
-    let b = BinaryNode::New("name".to_string(), "".to_string(), "+".to_string());
+    let b = BinaryNode::New("name".to_string(), String::new(), "+".to_string());
     let (value, _) = b.Eval(&john);
     println!("TestBinaryNode>>>>>>:{}", value);
 }
