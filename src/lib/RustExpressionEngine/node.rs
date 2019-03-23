@@ -87,8 +87,8 @@ impl Node {
             NBinaryRight: None,
             t: NNull,
         };
-        let leftV = self.NBinaryLeft.clone().unwrap().Data.as_f64().unwrap();
-        let rightV = self.NBinaryRight.clone().unwrap().Data.as_f64().unwrap();
+        let leftV = self.NBinaryLeft.clone().unwrap().toNumber();
+        let rightV = self.NBinaryRight.clone().unwrap().toNumber();
         result.Data = Value::from(leftV + rightV);
         result.t = NNumber;
         //let nn=self.NBinaryLeft.unwrap() self.NBinaryRight.unwrap().Eval(env).NNumber.unwrap();
