@@ -20,6 +20,13 @@ pub fn Eval(left: &Value,
 //    let is_left_null = left.is_null();
 //    let is_right_null = right.is_null();
 
+    if op == "&&"{
+        return (Value::Bool(left.as_bool().unwrap() && right.as_bool().unwrap()),String::new());
+    }
+    if op == "||"{
+        return (Value::Bool(left.as_bool().unwrap() || right.as_bool().unwrap()),String::new());
+    }
+
     if op == "==" {
         return (Value::Bool(left.eq(right)), String::new());
     }
