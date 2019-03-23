@@ -8,7 +8,7 @@ use std::ptr::null;
 use crate::lib::RustExpressionEngine::eval::Eval;
 use std::fmt::{Display, Formatter, Error};
 use crate::lib::RustExpressionEngine::runtime::{IsNumber, OptMap, ParserTokens};
-
+#[derive(Clone)]
 pub enum NodeType {
     NArg = 1,
     //参数节点
@@ -40,19 +40,6 @@ impl Display for NodeType {
 }
 
 
-impl Clone for NodeType {
-    fn clone(&self) -> Self {
-        match self {
-            NArg => return NArg,
-            NString => return NString,
-            NNumber => return NNumber,
-            NBool => return NBool,
-            NNull => return NNull,
-            NBinary => return NBinary,
-            NOpt => return NOpt,
-        }
-    }
-}
 
 
 //抽象语法树节点
@@ -63,20 +50,13 @@ pub trait Node: Clone {
     fn New(data: String) -> Self;
 }
 
-
+#[derive(Clone)]
 pub struct OptNode {
     pub  value: Value,
     t: NodeType,
 }
 
-impl Clone for OptNode {
-    fn clone(&self) -> Self {
-        return Self {
-            value: self.value.clone(),
-            t: self.t.clone(),
-        };
-    }
-}
+
 
 impl Node for OptNode {
     fn Type(&self) -> NodeType {
@@ -101,6 +81,7 @@ impl Node for OptNode {
 
 
 //参数节点
+#[derive(Clone)]
 pub struct ArgNode {
     //参数源
     pub value: String,
@@ -111,16 +92,7 @@ pub struct ArgNode {
     pub t: NodeType,
 }
 
-impl Clone for ArgNode {
-    fn clone(&self) -> Self {
-        Self{
-            value:self.value.clone(),
-            params:self.params.clone(),
-            paramsLen:self.paramsLen.clone(),
-            t:self.t.clone(),
-        }
-    }
-}
+
 
 
 impl Node for ArgNode {
@@ -165,19 +137,12 @@ impl Node for ArgNode {
 
 
 //String节点，值节点
+#[derive(Clone)]
 pub struct StringNode {
     pub value: String,
     pub t: NodeType,
 }
 
-impl Clone for StringNode {
-    fn clone(&self) -> Self {
-        Self{
-            value:self.value.clone(),
-            t:self.t.clone(),
-        }
-    }
-}
 
 impl Node for StringNode {
     fn Type(&self) -> NodeType {
@@ -202,21 +167,12 @@ impl Node for StringNode {
 
 
 //number节点,值节点
+#[derive(Clone)]
 pub struct NumberNode {
     value: Value,
     //u64,i64,f64
     pub t: NodeType,
 }
-
-impl Clone for NumberNode {
-    fn clone(&self) -> Self {
-        Self{
-            value:self.value.clone(),
-            t:self.t.clone(),
-        }
-    }
-}
-
 
 impl Node for NumberNode {
     fn Type(&self) -> NodeType {
@@ -255,20 +211,13 @@ impl Node for NumberNode {
         }
     }
 }
-
+#[derive(Clone)]
 pub struct BoolNode {
     value: Value,
     t: NodeType,
 }
 
-impl Clone for BoolNode {
-    fn clone(&self) -> Self {
-        return Self {
-            t: NBool,
-            value: self.value.clone(),
-        };
-    }
-}
+
 
 impl Node for BoolNode {
     fn Type(&self) -> NodeType {
@@ -291,20 +240,13 @@ impl Node for BoolNode {
     }
 }
 
-
+#[derive(Clone)]
 pub struct NullNode {
     value: Value,
     t: NodeType,
 }
 
-impl Clone for NullNode {
-    fn clone(&self) -> Self {
-        return NullNode {
-            t: NNull,
-            value: self.value.clone(),
-        };
-    }
-}
+
 
 impl Node for NullNode {
     fn Type(&self) -> NodeType {
@@ -328,22 +270,12 @@ impl Node for NullNode {
 
 
 //计算节点
+#[derive(Clone)]
 pub struct BinaryNode {
     left: NodeItem,
     right: NodeItem,
     opt: String,
     t: NodeType,
-}
-
-impl Clone for BinaryNode {
-    fn clone(&self) -> Self {
-        return Self {
-            left: self.left.clone(),
-            right: self.right.clone(),
-            opt: self.opt.clone(),
-            t: self.t.clone(),
-        };
-    }
 }
 
 impl Node for BinaryNode {
@@ -391,6 +323,7 @@ impl BinaryNode {
 }
 
 //节点
+#[derive(Clone)]
 pub struct NodeItem {
     pub Data: Option<String>,
 
@@ -411,21 +344,6 @@ pub struct NodeItem {
     t: NodeType,
 }
 
-impl Clone for NodeItem {
-    fn clone(&self) -> Self {
-        return Self {
-            Data: self.Data.clone(),
-            NArg: self.NArg.clone(),
-            NString: self.NString.clone(),
-            NNumber: self.NNumber.clone(),
-            NBool: self.NBool.clone(),
-            NNull: self.NNull.clone(),
-            NOpt: self.NOpt.clone(),
-            NBinary: self.NBinary.clone(),
-            t: self.t.clone(),
-        };
-    }
-}
 
 impl Node for NodeItem {
     fn Type(&self) -> NodeType {
