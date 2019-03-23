@@ -1,4 +1,4 @@
-use crate::lib::RustExpressionEngine::node::{StringNode, Node, ArgNode, NumberNode, BinaryNode, NullNode};
+use crate::lib::RustExpressionEngine::node::{ Node};
 use crate::lib::RustExpressionEngine::node::NodeType::{NString, NArg};
 use serde_json::Value;
 use serde_json::json;
@@ -78,12 +78,9 @@ fn TestNodeRun() {
 
 #[test]
 fn TestStringNode() {
-    let strNode = StringNode {
-        t: NString,
-        value: String::from("asdfa"),
-    };
-    let (result, Error) = strNode.Eval(&Value::Null {});
-    println!("value:{},error:{}", result, Error);
+    let mut strNode = Node::newString("sadf".to_string());
+    strNode.eval(&Value::Null {});
+    //println!("value:{}", result);
 }
 
 #[test]
@@ -101,9 +98,9 @@ fn TestArgNode() {
         ]
     });
 
-    let argNode = ArgNode::New("sex.a".to_string());
-    let (result, Error) = argNode.Eval(&john);
-    println!("value:{},error:{}", result, Error);
+    let mut argNode = Node::newArg("sex.a".to_string());
+     argNode.eval(&john);
+    //println!("value:{},error:{}", result, Error);
 }
 
 #[test]
@@ -121,12 +118,12 @@ fn BenchmarkArgNode() {
         ]
     });
 
-    let argNode = ArgNode::New("sex.a".to_string());
+    let mut argNode = Node::newArg("sex.a".to_string());
 
     let total = 100000;
     let now = Local::now();
     for i in 0..total {
-        argNode.Eval(&john);
+        argNode.eval(&john);
     }
     time_util::count_time(total, now);
     time_util::count_tps(total, now);
@@ -146,28 +143,28 @@ fn TestNumberNode() {
             "+44 2345678"
         ]
     });
-    let numb = NumberNode::New(String::from("1.02"));
-    let (value, _) = numb.Eval(&john);
-    println!("{}", value);
+    let mut numb = Node::newNumber(1.02 as f64);
+     numb.eval(&john);
+   // println!("{}", value);
 }
 
 #[test]
 fn TestBinaryNode() {
-    let john = json!({
-        "name": "John Doe",
-        "age": 1,
-         "sex":{
-            "a":"i'm a",
-            "b":"i'm b",
-         },
-        "phones": [
-            "+44 1234567",
-            "+44 2345678"
-        ]
-    });
-    let b = BinaryNode::New("name".to_string(), String::new(), "+".to_string());
-    let (value, _) = b.Eval(&john);
-    println!("TestBinaryNode>>>>>>:{}", value);
+//    let john = json!({
+//        "name": "John Doe",
+//        "age": 1,
+//         "sex":{
+//            "a":"i'm a",
+//            "b":"i'm b",
+//         },
+//        "phones": [
+//            "+44 1234567",
+//            "+44 2345678"
+//        ]
+//    });
+//    let b = Node::newBinary("name".to_string(), String::new(), "+".to_string());
+//    let (value, _) = b.Eval(&john);
+//    println!("TestBinaryNode>>>>>>:{}", value);
 }
 
 #[test]
