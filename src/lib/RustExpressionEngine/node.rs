@@ -8,6 +8,8 @@ use std::ptr::null;
 use crate::lib::RustExpressionEngine::eval::Eval;
 use std::fmt::{Display, Formatter, Error};
 use crate::lib::RustExpressionEngine::runtime::{IsNumber, OptMap, ParserTokens};
+use std::rc::Rc;
+
 #[derive(Clone)]
 pub enum NodeType {
     NArg = 1,
@@ -40,8 +42,6 @@ impl Display for NodeType {
 }
 
 
-
-
 //抽象语法树节点
 pub trait Node: Clone {
     fn Type(&self) -> NodeType;
@@ -55,7 +55,6 @@ pub struct OptNode {
     pub  value: Value,
     t: NodeType,
 }
-
 
 
 impl Node for OptNode {
@@ -91,8 +90,6 @@ pub struct ArgNode {
     paramsLen: usize,
     pub t: NodeType,
 }
-
-
 
 
 impl Node for ArgNode {
@@ -211,12 +208,12 @@ impl Node for NumberNode {
         }
     }
 }
+
 #[derive(Clone)]
 pub struct BoolNode {
     value: Value,
     t: NodeType,
 }
-
 
 
 impl Node for BoolNode {
@@ -245,7 +242,6 @@ pub struct NullNode {
     value: Value,
     t: NodeType,
 }
-
 
 
 impl Node for NullNode {
@@ -321,6 +317,172 @@ impl BinaryNode {
         }
     }
 }
+
+#[derive(Clone)]
+pub struct NodeItem2 {
+    pub Data: Option<String>,
+    pub NArg: Option<String>,
+    pub  NString: Option<String>,
+    pub  NNumber: Option<f64>,
+    pub  NBool: Option<bool>,
+    //bool节点
+    pub NNull: Option<bool>,
+
+    pub  NBinaryLeft: Option<Rc<NodeItem2>>,
+    pub  NBinaryRight: Option<Rc<NodeItem2>>,
+
+
+
+    pub  NOpt: Option<String>,
+    pub t: Option<NodeType>,
+}
+
+pub trait Node2: Clone {
+    fn n_type(&self) -> NodeType;
+    fn eval(&mut self, env: &Value) -> NodeItem2;
+    fn value(&self) -> Value;
+}
+
+impl Node2 for NodeItem2{
+    fn n_type(&self) -> NodeType {
+        return self.t.clone().unwrap();
+    }
+
+    fn eval(&mut self, env: &Value) -> NodeItem2 {
+        let mut result =NodeItem2{
+            Data: None,
+            NArg: None,
+            NString: None,
+            NNumber: None,
+            NBool: None,
+            NNull: None,
+            NBinaryLeft: None,
+            NBinaryRight: None,
+            NOpt: None,
+            t: Option::Some(NNull)
+        };
+
+        let leftV=self.NBinaryLeft.clone().unwrap().NNumber.unwrap();
+        let rightV=self.NBinaryRight.clone().unwrap().NNumber.unwrap();
+
+        result.NNumber=Option::Some(leftV+rightV);
+        result.t=Option::Some(NNumber);
+
+        //let nn=self.NBinaryLeft.unwrap() self.NBinaryRight.unwrap().Eval(env).NNumber.unwrap();
+        match self.t.clone().unwrap() {
+            NNumber=> return result,
+            NBinary=> return result,
+            _=>return result,
+        }
+    }
+
+    fn value(&self) -> Value {
+        unimplemented!()
+    }
+
+}
+
+impl NodeItem2{
+    pub fn newNull()->Self{
+        Self{
+            Data: None,
+            NArg: None,
+            NString: None,
+            NNumber: None,
+            NBool: None,
+            NNull: None,
+            NBinaryLeft: None,
+            NBinaryRight: None,
+            NOpt: None,
+            t: Option::Some(NNull)
+        }
+    }
+    pub fn newArg(arg:String)->Self{
+        Self{
+            Data: None,
+            NArg: Option::Some(arg),
+            NString: None,
+            NNumber: None,
+            NBool: None,
+            NNull: None,
+            NBinaryLeft: None,
+            NBinaryRight: None,
+            NOpt: None,
+            t: Option::Some(NArg)
+        }
+    }
+    pub fn newString(arg:String)->Self{
+        Self{
+            Data: None,
+            NArg: None,
+            NString: Option::Some(arg),
+            NNumber: None,
+            NBool: None,
+            NNull: None,
+            NBinaryLeft: None,
+            NBinaryRight: None,
+            NOpt: None,
+            t: Option::Some(NString)
+        }
+    }
+    pub fn newNumber(arg:f64)->Self{
+        Self{
+            Data: None,
+            NArg: None,
+            NString: None,
+            NNumber: Option::Some(arg),
+            NBool: None,
+            NNull: None,
+            NBinaryLeft: None,
+            NBinaryRight: None,
+            NOpt: None,
+            t: Option::Some(NNumber)
+        }
+    }
+    pub fn newBool(arg:bool)->Self{
+        Self{
+            Data: None,
+            NArg: None,
+            NString: None,
+            NNumber: None,
+            NBool: Option::Some(arg),
+            NNull: None,
+            NBinaryLeft: None,
+            NBinaryRight: None,
+            NOpt: None,
+            t: Option::Some(NBool)
+        }
+    }
+    pub fn newBinary(argLef:NodeItem2,argRight:NodeItem2,opt:String)->Self{
+        Self{
+            Data: None,
+            NArg: None,
+            NString: None,
+            NNumber: None,
+            NBool: None,
+            NNull: None,
+            NBinaryLeft: Option::Some(Rc::new(argLef)),
+            NBinaryRight: Option::Some(Rc::new(argRight)),
+            NOpt: Option::Some(opt),
+            t: Option::Some(NBinary)
+        }
+    }
+    pub fn newOpt(arg:String)->Self{
+        Self{
+            Data: None,
+            NArg: None,
+            NString: None,
+            NNumber: None,
+            NBool: None,
+            NNull: None,
+            NBinaryLeft: None,
+            NBinaryRight: None,
+            NOpt:Option::Some(arg),
+            t: Option::Some(NOpt)
+        }
+    }
+}
+
 
 //节点
 #[derive(Clone)]
