@@ -11,43 +11,82 @@ use std::any::Any;
 pub fn Eval(left: &Value,
             right: &Value,
             op: &str) -> (Value, String) {
-    //+ - * / == >= <= !=
-//    println!("l:{}", left);
-//    println!("r:{}", right);
-//    println!("opt:{}", opt);
 
-    if op == "==" {}
-    if op == "!=" {}
-    if op == ">=" {}
-    if op == "<=" {
-//        println!("left types f64:{}",left.is_f64());
-//        println!("right types f64:{}",right.is_f64());
+
+//    let is_left_number = left.is_f64();
+//    let is_right_number = right.is_f64();
+//    let is_left_string = left.is_string();
+//    let is_right_string = right.is_string();
+//    let is_left_null = left.is_null();
+//    let is_right_null = right.is_null();
+
+    if op == "==" {
+        return (Value::Bool(left.eq(right)), String::new());
+    }
+    if op == "!=" {
+        return (Value::Bool(!left.eq(right)), String::new());
+    }
+    if op == ">=" {
         let booll = left.is_f64();
         let boolr = right.is_f64();
         if booll && boolr {
-            return (Value::Bool(left.as_i64() <= right.as_i64()), String::new());
+            return (Value::Bool(left.as_f64() >= right.as_f64()), String::new());
         }
     }
-    if op == "*" {}
-    if op == "/" {}
-    if op == "+" {
-        let mut s = String::new();
-        s.push_str(left.as_str().unwrap_or_default());
-        s.push_str(right.as_str().unwrap_or_default());
-        return (Value::String(s), String::new());
+    if op == "<=" {
+        let booll = left.is_f64();
+        let boolr = right.is_f64();
+        if booll && boolr {
+            return (Value::Bool(left.as_f64() <= right.as_f64()), String::new());
+        }
     }
-    if op == "-" {}
-
-//    match left {
-//        Value::Null => println!("null"),
-//        Value::Bool(v) => println!("null"),
-//        Value::Number(v) => println!("null"),
-//        Value::String(v) => println!("null"),
-//        Value::Array(v) => println!("null"),
-//        Value::Object(v) => println!("null"),
-//    }
-
-
+    if op == ">" {
+        let booll = left.is_f64();
+        let boolr = right.is_f64();
+        if booll && boolr {
+            return (Value::Bool(left.as_f64() > right.as_f64()), String::new());
+        }
+    }
+    if op == "<" {
+        let booll = left.is_f64();
+        let boolr = right.is_f64();
+        if booll && boolr {
+            return (Value::Bool(left.as_f64() < right.as_f64()), String::new());
+        }
+    }
+    if op == "+" {
+        let booll = left.is_f64();
+        let boolr = right.is_f64();
+        if booll && boolr {
+            return (Value::Number(serde_json::Number::from_f64(left.as_f64().unwrap() + right.as_f64().unwrap()).unwrap()), String::new());
+        }else{
+            let mut s = String::new();
+            s.push_str(left.as_str().unwrap());
+            s.push_str(right.as_str().unwrap());
+            return (Value::from(s), String::new());
+        }
+    }
+    if op == "-" {
+        let booll = left.is_f64();
+        let boolr = right.is_f64();
+        if booll && boolr {
+            return (Value::Number(serde_json::Number::from_f64(left.as_f64().unwrap() - right.as_f64().unwrap()).unwrap()), String::new());
+        }
+    }
+    if op == "*" {
+        let booll = left.is_f64();
+        let boolr = right.is_f64();
+        if booll && boolr {
+            return (Value::Number(serde_json::Number::from_f64(left.as_f64().unwrap() * right.as_f64().unwrap()).unwrap()), String::new());
+        }
+    }
+    if op == "/" {
+        let booll = left.is_f64();
+        let boolr = right.is_f64();
+        if booll && boolr {
+            return (Value::Number(serde_json::Number::from_f64(left.as_f64().unwrap() / right.as_f64().unwrap()).unwrap()), String::new());
+        }
+    }
     return (Value::Null, String::new());
 }
 
