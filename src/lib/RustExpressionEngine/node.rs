@@ -11,7 +11,7 @@ use crate::lib::RustExpressionEngine::runtime::{IsNumber, OptMap, ParserTokens};
 use std::rc::Rc;
 use std::sync::Arc;
 
-#[derive(Clone)]
+#[derive(Clone, PartialEq)]
 pub enum NodeType {
     NArg = 1,
     //参数节点
@@ -46,7 +46,7 @@ impl Display for NodeType {
 //抽象语法树节点
 #[derive(Clone)]
 pub struct Node {
-    pub Data: Option<String>,
+    pub Data: Value,
     pub NArg: Option<String>,
     pub  NString: Option<String>,
     pub  NNumber: Option<f64>,
@@ -56,16 +56,40 @@ pub struct Node {
     pub  NBinaryLeft: Option<Rc<Node>>,
     pub  NBinaryRight: Option<Rc<Node>>,
     pub  NOpt: Option<String>,
-    pub t: Option<NodeType>,
+    pub t: NodeType,
 }
 
 impl Node {
-    pub fn n_type(&self) -> NodeType {
-        return self.t.clone().unwrap();
+    pub fn toNumber(&self) -> f64 {
+        return self.NNumber.clone().unwrap();
     }
+    pub fn toString(&self) -> String {
+        return self.NString.clone().unwrap();
+    }
+    pub fn toArg(&self) -> String {
+        return self.NArg.clone().unwrap();
+    }
+    pub fn toBool(&self) -> bool {
+        return self.NBool.clone().unwrap();
+    }
+    pub fn toNull(&self) -> Option<bool> {
+        return self.NNull.clone();
+    }
+    pub fn toOpt(&self) -> String {
+        return self.NOpt.clone().unwrap();
+    }
+    pub fn n_type(&self) -> NodeType {
+        return self.t.clone();
+    }
+
+    pub fn eqNodeType(&self, arg: &NodeType) -> bool {
+        return self.t == *arg;
+    }
+
+
     pub fn eval(&mut self, env: &Value) -> Node {
         let mut result = Node {
-            Data: None,
+            Data: Value::Null,
             NArg: None,
             NString: None,
             NNumber: None,
@@ -74,28 +98,28 @@ impl Node {
             NBinaryLeft: None,
             NBinaryRight: None,
             NOpt: None,
-            t: Option::Some(NNull),
+            t: NNull,
         };
         let leftV = self.NBinaryLeft.clone().unwrap().NNumber.unwrap();
         let rightV = self.NBinaryRight.clone().unwrap().NNumber.unwrap();
         result.NNumber = Option::Some(leftV + rightV);
-        result.t = Option::Some(NNumber);
+        result.t = NNumber;
         //let nn=self.NBinaryLeft.unwrap() self.NBinaryRight.unwrap().Eval(env).NNumber.unwrap();
-        match self.t.clone().unwrap() {
+        match self.t.clone() {
             NNumber => return result,
             NBinary => return result,
             _ => return result,
         }
     }
 
-    pub fn opt(&self) ->  Option<String> {
+    pub fn opt(&self) -> Option<String> {
         return self.NOpt.clone();
     }
 
 
     pub fn newNull() -> Self {
         Self {
-            Data: None,
+            Data: Value::Null,
             NArg: None,
             NString: None,
             NNumber: None,
@@ -104,12 +128,12 @@ impl Node {
             NBinaryLeft: None,
             NBinaryRight: None,
             NOpt: None,
-            t: Option::Some(NNull),
+            t: NNull,
         }
     }
     pub fn newArg(arg: String) -> Self {
         Self {
-            Data: None,
+            Data: Value::Null,
             NArg: Option::Some(arg),
             NString: None,
             NNumber: None,
@@ -118,12 +142,12 @@ impl Node {
             NBinaryLeft: None,
             NBinaryRight: None,
             NOpt: None,
-            t: Option::Some(NArg),
+            t: NArg,
         }
     }
     pub fn newString(arg: String) -> Self {
         Self {
-            Data: None,
+            Data: Value::Null,
             NArg: None,
             NString: Option::Some(arg),
             NNumber: None,
@@ -132,12 +156,12 @@ impl Node {
             NBinaryLeft: None,
             NBinaryRight: None,
             NOpt: None,
-            t: Option::Some(NString),
+            t: NString,
         }
     }
     pub fn newNumber(arg: f64) -> Self {
         Self {
-            Data: None,
+            Data: Value::Null,
             NArg: None,
             NString: None,
             NNumber: Option::Some(arg),
@@ -146,12 +170,12 @@ impl Node {
             NBinaryLeft: None,
             NBinaryRight: None,
             NOpt: None,
-            t: Option::Some(NNumber),
+            t: NNumber,
         }
     }
     pub fn newBool(arg: bool) -> Self {
         Self {
-            Data: None,
+            Data: Value::Null,
             NArg: None,
             NString: None,
             NNumber: None,
@@ -160,12 +184,12 @@ impl Node {
             NBinaryLeft: None,
             NBinaryRight: None,
             NOpt: None,
-            t: Option::Some(NBool),
+            t: NBool,
         }
     }
     pub fn newBinary(argLef: Node, argRight: Node, opt: String) -> Self {
         Self {
-            Data: None,
+            Data: Value::Null,
             NArg: None,
             NString: None,
             NNumber: None,
@@ -174,12 +198,12 @@ impl Node {
             NBinaryLeft: Option::Some(Rc::new(argLef)),
             NBinaryRight: Option::Some(Rc::new(argRight)),
             NOpt: Option::Some(opt),
-            t: Option::Some(NBinary),
+            t: NBinary,
         }
     }
     pub fn newOpt(arg: String) -> Self {
         Self {
-            Data: None,
+            Data: Value::Null,
             NArg: None,
             NString: None,
             NNumber: None,
@@ -188,7 +212,7 @@ impl Node {
             NBinaryLeft: None,
             NBinaryRight: None,
             NOpt: Option::Some(arg),
-            t: Option::Some(NOpt),
+            t: NOpt,
         }
     }
 
@@ -198,7 +222,7 @@ impl Node {
         let firstIndex = data.find("'").unwrap_or_default();
         let lastIndex = data.rfind("'").unwrap_or_default();
 
-        println!("{}",&data);
+        println!("{}", &data);
 
         if data.as_str() == "" || data.as_str() == "null" {
             return Node::newNull();
@@ -214,7 +238,7 @@ impl Node {
             let newStr = data.replace("'", "").replace("`", "");
             return Node::newString(newStr);
         } else if IsNumber(&data) {
-            let parsed=data.parse().unwrap();
+            let parsed = data.parse().unwrap();
             return Node::newNumber(parsed);
         } else {
             return Node::newArg(data);
