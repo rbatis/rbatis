@@ -1,2 +1,2 @@
 
-mod RustExpressionEngine;
+pub mod RustExpressionEngine;
