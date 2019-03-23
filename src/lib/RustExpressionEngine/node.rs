@@ -88,7 +88,7 @@ impl Node {
             return v;
         }else if self.equalNodeType(&NArg){
             let v=env.get(self.Data.clone().as_str().unwrap());
-            return v.unwrap().clone();
+            return v.unwrap_or(&Value::Null).clone();
         }
         return self.Data.clone();
     }
