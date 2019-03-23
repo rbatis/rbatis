@@ -1,9 +1,9 @@
 
-mod eval;
-mod node;
-mod parser;
-mod runtime;
+pub mod eval;
+pub mod node;
+pub mod parser;
+pub mod runtime;
 
 //test mod
-mod parser_test;
-mod node_test;
+pub mod parser_test;
+pub mod node_test;

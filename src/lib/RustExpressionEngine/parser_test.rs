@@ -7,6 +7,7 @@ use crate::utils;
 use chrono::Local;
 use crate::utils::time_util;
 use std::thread::Thread;
+use test::Bencher;
 
 
 #[test]
@@ -36,8 +37,10 @@ fn TestParser2() {
     println!("type:{}",n.Type())
 }
 
-#[test]
-fn BenchmarkParser(){
+
+
+#[bench]
+fn Bench_Parser(b: &mut Bencher) {
     let (boxNode,_ )= parser::Parser(String::from("1<=2"),&OptMap::new());
     let john = json!({
         "name": "John Doe",
@@ -49,15 +52,8 @@ fn BenchmarkParser(){
 
     let now=Local::now();
 
-    for item in 0..total{
-
-        for i in 0..1{
-            //String::new();
-            boxNode.Eval(&john);
-            //boxNode.clone();
-          //  boxNode.clone();
-        }
-    }
-
-    time_util::count_time(total, now);
+    b.iter(|| {
+        //boxNode.Eval(&john);
+        boxNode.clone();
+    });
 }

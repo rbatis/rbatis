@@ -3,6 +3,8 @@
 
 mod ast;
 mod utils;
+extern crate test;
+use test::Bencher;
 mod engines;
 mod lib;
 mod SqlBuilder;
@@ -12,12 +14,13 @@ use self::ast::NodeString::NodeString;
 //use utils::TimeUtil;
 use chrono::Local;
 use std::collections::HashMap;
-use ast::Node::Node;
 use std::fs::File;
 use std::io::{Read, BufReader};
 use xml::EventReader;
 use xml::reader::XmlEvent;
 use std::fs;
+use serde_json::json;
+use lib::RustExpressionEngine;
 
 //fn main() {
 //    utils::print_util::print_rust_mybatis();
@@ -94,15 +97,4 @@ fn main() {
 
     let fb2:FooBar = b.bar(20);
     println!("{:?}",fb2);
-}
-
-
-extern crate test;
-use test::Bencher;
-
-#[bench]
-fn bench_xor_1000_ints(b: &mut Bencher) {
-    b.iter(|| {
-        1 <=2;
-    });
 }
