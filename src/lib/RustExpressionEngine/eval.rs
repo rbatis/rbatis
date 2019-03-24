@@ -26,36 +26,36 @@ pub fn Eval(left: &Value,
         return (Value::Bool(!left.eq(right)), String::new());
     }
     if op == ">=" {
-        let booll = left.is_f64();
-        let boolr = right.is_f64();
+        let booll = left.is_number();
+        let boolr = right.is_number();
         if booll && boolr {
             return (Value::Bool(left.as_f64() >= right.as_f64()), String::new());
         }
     }
     if op == "<=" {
-        let booll = left.is_f64();
-        let boolr = right.is_f64();
+        let booll = left.is_number();
+        let boolr = right.is_number();
         if booll && boolr {
             return (Value::Bool(left.as_f64() <= right.as_f64()), String::new());
         }
     }
     if op == ">" {
-        let booll = left.is_f64();
-        let boolr = right.is_f64();
+        let booll = left.is_number();
+        let boolr = right.is_number();
         if booll && boolr {
             return (Value::Bool(left.as_f64() > right.as_f64()), String::new());
         }
     }
     if op == "<" {
-        let booll = left.is_f64();
-        let boolr = right.is_f64();
+        let booll = left.is_number();
+        let boolr = right.is_number();
         if booll && boolr {
             return (Value::Bool(left.as_f64() < right.as_f64()), String::new());
         }
     }
     if op == "+" {
-        let booll = left.is_f64();
-        let boolr = right.is_f64();
+        let booll = left.is_number();
+        let boolr = right.is_number();
         if booll && boolr {
             return (Value::Number(serde_json::Number::from_f64(left.as_f64().unwrap() + right.as_f64().unwrap()).unwrap()), String::new());
         } else {
@@ -63,22 +63,22 @@ pub fn Eval(left: &Value,
         }
     }
     if op == "-" {
-        let booll = left.is_f64();
-        let boolr = right.is_f64();
+        let booll = left.is_number();
+        let boolr = right.is_number();
         if booll && boolr {
             return (Value::Number(serde_json::Number::from_f64(left.as_f64().unwrap() - right.as_f64().unwrap()).unwrap()), String::new());
         }
     }
     if op == "*" {
-        let booll = left.is_f64();
-        let boolr = right.is_f64();
+        let booll = left.is_number();
+        let boolr = right.is_number();
         if booll && boolr {
             return (Value::Number(serde_json::Number::from_f64(left.as_f64().unwrap() * right.as_f64().unwrap()).unwrap()), String::new());
         }
     }
     if op == "/" {
-        let booll = left.is_f64();
-        let boolr = right.is_f64();
+        let booll = left.is_number();
+        let boolr = right.is_number();
         if booll && boolr {
             return (Value::Number(serde_json::Number::from_f64(left.as_f64().unwrap() / right.as_f64().unwrap()).unwrap()), String::new());
         }
