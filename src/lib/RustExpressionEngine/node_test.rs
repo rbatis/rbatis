@@ -157,7 +157,7 @@ fn TestNumberNode() {
             "+44 2345678"
         ]
     });
-    let mut numb = Node::newNumber(1.02 as f64);
+    let mut numb = Node::newNumberF64(1.02 as f64);
      numb.eval(&john);
    // println!("{}", value);
 }

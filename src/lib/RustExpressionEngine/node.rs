@@ -138,14 +138,31 @@ impl Node {
             nodeType: NString,
         }
     }
-    pub fn newNumber(arg: f64) -> Self {
+    pub fn newNumberF64(arg: f64) -> Self {
         Self {
-            value: Value::Number(serde_json::Number::from_f64(arg).unwrap()),
+            value: json!(arg),
             leftBinaryNode: None,
             rightBinaryNode: None,
             nodeType: NNumber,
         }
     }
+    pub fn newNumberI64(arg: i64) -> Self {
+        Self {
+            value: json!(arg),
+            leftBinaryNode: None,
+            rightBinaryNode: None,
+            nodeType: NNumber,
+        }
+    }
+    pub fn newNumberU64(arg: u64) -> Self {
+        Self {
+            value: json!(arg),
+            leftBinaryNode: None,
+            rightBinaryNode: None,
+            nodeType: NNumber,
+        }
+    }
+
     pub fn newBool(arg: bool) -> Self {
         Self {
             value: Value::Bool(arg),
@@ -199,8 +216,13 @@ impl Node {
             let newStr = data.replace("'", "").replace("`", "");
             return Node::newString(newStr);
         } else if IsNumber(&data) {
-            let parsed = data.parse().unwrap();
-            return Node::newNumber(parsed);
+            if data.find(".").unwrap_or(0) != 0 {
+                let parsed = data.parse().unwrap();
+                return Node::newNumberF64(parsed);
+            } else {
+                let parsed = data.parse().unwrap();
+                return Node::newNumberI64(parsed);
+            }
         } else {
             return Node::newArg(data);
         }
