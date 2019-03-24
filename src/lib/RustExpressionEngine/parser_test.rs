@@ -15,7 +15,7 @@ use std::sync::Arc;
 
 #[test]
 fn TestParser() {
-    let (mut boxNode,_ )= parser::Parser(String::from("age.yes"), &OptMap::new());
+    let (mut boxNode,_ )= parser::Parser(String::from("'1'+'1'"), &OptMap::new());
     let john = json!({
         "name": "John Doe",
         "age": {
@@ -57,7 +57,7 @@ fn TestBenchmark() {
 
 #[bench]
 fn Bench_Parser(b: &mut Bencher) {
-    let (mut boxNode,_ )= parser::Parser(String::from("age.yes"), &OptMap::new());
+    let (mut boxNode,_ )= parser::Parser(String::from("'1'+'1'"), &OptMap::new());
     let john = json!({
         "name": "John Doe",
          "age": {
