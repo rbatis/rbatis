@@ -47,7 +47,7 @@ impl Display for NodeType {
 //抽象语法树节点
 #[derive(Clone)]
 pub struct Node {
-    pub Data: Value,
+    pub Data: Rc<Value>,
     pub  NBinaryLeft: Option<Rc<Node>>,
     pub  NBinaryRight: Option<Rc<Node>>,
     pub t: NodeType,
@@ -80,18 +80,18 @@ impl Node {
         return self.t == *arg;
     }
 
-    pub fn eval(&self, env: &Value) -> Value {
+    pub fn eval(&self, env: &Value) -> Rc<Value> {
         if self.equalNodeType(&NBinary) {
             let leftV = self.NBinaryLeft.clone().unwrap().eval(env);
             let rightV = self.NBinaryRight.clone().unwrap().eval(env);
             let opt = self.toString();
             let (v, _) = Eval(&leftV, &rightV, opt);
-            return v;
+            return Rc::new(v);
         } else if self.equalNodeType(&NArg) {
             let arr = &(self.Data.as_array().unwrap());
             let arrLen = arr.len() as i32;
             if arrLen == 0 {
-                return Value::Null;
+                return Rc::new(Value::Null);
             }
             let mut index = 0;
             let mut v = env;
@@ -99,11 +99,11 @@ impl Node {
                 let itemStr = item.as_str().unwrap();
                 v = v.get(itemStr).unwrap_or(&Value::Null);
                 if index + 1 == arrLen {
-                    return v.clone();
+                    return Rc::new(v.clone());
                 }
                 index = index + 1;
             }
-            return Value::Null;
+            return Rc::new(Value::Null);
         }
         return self.Data.clone();
     }
@@ -115,7 +115,7 @@ impl Node {
 
     pub fn newNull() -> Self {
         Self {
-            Data: Value::Null,
+            Data: Rc::new(Value::Null),
             NBinaryLeft: None,
             NBinaryRight: None,
             t: NNull,
@@ -124,7 +124,7 @@ impl Node {
     pub fn newArg(arg: String) -> Self {
         let d: Vec<&str> = arg.split(".").collect();
         Self {
-            Data: json!(d),
+            Data: Rc::new(json!(d)),
             NBinaryLeft: None,
             NBinaryRight: None,
             t: NArg,
@@ -132,7 +132,7 @@ impl Node {
     }
     pub fn newString(arg: String) -> Self {
         Self {
-            Data: Value::String(arg),
+            Data: Rc::new(Value::String(arg)),
             NBinaryLeft: None,
             NBinaryRight: None,
             t: NString,
@@ -140,7 +140,7 @@ impl Node {
     }
     pub fn newNumber(arg: f64) -> Self {
         Self {
-            Data: Value::Number(serde_json::Number::from_f64(arg).unwrap()),
+            Data: Rc::new(Value::Number(serde_json::Number::from_f64(arg).unwrap())),
             NBinaryLeft: None,
             NBinaryRight: None,
             t: NNumber,
@@ -148,7 +148,7 @@ impl Node {
     }
     pub fn newBool(arg: bool) -> Self {
         Self {
-            Data: Value::Bool(arg),
+            Data: Rc::new(Value::Bool(arg)),
             NBinaryLeft: None,
             NBinaryRight: None,
             t: NBool,
@@ -156,7 +156,7 @@ impl Node {
     }
     pub fn newBinary(argLef: Node, argRight: Node, opt: &str) -> Self {
         Self {
-            Data: Value::from(opt),
+            Data: Rc::new(Value::from(opt)),
             NBinaryLeft: Option::Some(Rc::new(argLef)),
             NBinaryRight: Option::Some(Rc::new(argRight)),
             t: NBinary,
@@ -164,7 +164,7 @@ impl Node {
     }
     pub fn newOpt(arg: String) -> Self {
         Self {
-            Data: Value::String(arg),
+            Data: Rc::new(Value::String(arg)),
             NBinaryLeft: None,
             NBinaryRight: None,
             t: NOpt,
