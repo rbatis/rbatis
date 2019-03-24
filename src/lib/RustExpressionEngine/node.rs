@@ -10,6 +10,7 @@ use std::fmt::{Display, Formatter, Error};
 use crate::lib::RustExpressionEngine::runtime::{IsNumber, OptMap, ParserTokens};
 use std::rc::Rc;
 use std::sync::Arc;
+use serde_json::json;
 
 #[derive(Clone, PartialEq)]
 pub enum NodeType {
@@ -86,9 +87,23 @@ impl Node {
             let opt = self.toString();
             let (v, _) = Eval(&leftV, &rightV, opt);
             return v;
-        }else if self.equalNodeType(&NArg){
-            let v=env.get(self.Data.clone().as_str().unwrap());
-            return v.unwrap_or(&Value::Null).clone();
+        } else if self.equalNodeType(&NArg) {
+            let arr = &(self.Data.as_array().unwrap());
+            let arrLen = arr.len() as i32;
+            if arrLen == 0 {
+                return Value::Null;
+            }
+            let mut index = 0;
+            let mut v = env;
+            for item in *arr {
+                let itemStr = item.as_str().unwrap();
+                v = v.get(itemStr).unwrap_or(&Value::Null);
+                if index + 1 == arrLen {
+                    return v.clone();
+                }
+                index = index + 1;
+            }
+            return Value::Null;
         }
         return self.Data.clone();
     }
@@ -107,8 +122,9 @@ impl Node {
         }
     }
     pub fn newArg(arg: String) -> Self {
+        let d: Vec<&str> = arg.split(".").collect();
         Self {
-            Data: Value::String(arg),
+            Data: json!(d),
             NBinaryLeft: None,
             NBinaryRight: None,
             t: NArg,
