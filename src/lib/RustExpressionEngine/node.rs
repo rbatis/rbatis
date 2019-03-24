@@ -47,48 +47,48 @@ impl Display for NodeType {
 //抽象语法树节点
 #[derive(Clone)]
 pub struct Node {
-    pub Data: Value,
-    pub  NBinaryLeft: Option<Rc<Node>>,
-    pub  NBinaryRight: Option<Rc<Node>>,
-    pub t: NodeType,
+    pub value: Value,
+    pub leftBinaryNode: Option<Rc<Node>>,
+    pub rightBinaryNode: Option<Rc<Node>>,
+    pub nodeType: NodeType,
 }
 
 impl Node {
     pub fn toNumber(&self) -> f64 {
-        return self.Data.as_f64().unwrap();
+        return self.value.as_f64().unwrap();
     }
     pub fn toString(&self) -> &str {
-        return self.Data.as_str().unwrap();
+        return self.value.as_str().unwrap();
     }
     pub fn toArg(&self) -> &str {
-        return self.Data.as_str().unwrap();
+        return self.value.as_str().unwrap();
     }
     pub fn toBool(&self) -> bool {
-        return self.Data.as_bool().unwrap();
+        return self.value.as_bool().unwrap();
     }
     pub fn toNull(&self) -> () {
-        return self.Data.as_null().unwrap();
+        return self.value.as_null().unwrap();
     }
     pub fn toOpt(&self) -> &str {
-        return self.Data.as_str().unwrap();
+        return self.value.as_str().unwrap();
     }
     pub fn nodeType(&self) -> NodeType {
-        return self.t.clone();
+        return self.nodeType.clone();
     }
 
     pub fn equalNodeType(&self, arg: &NodeType) -> bool {
-        return self.t == *arg;
+        return self.nodeType == *arg;
     }
 
     pub fn eval(&self, env: &Value) -> Value {
         if self.equalNodeType(&NBinary) {
-            let leftV = self.NBinaryLeft.clone().unwrap().eval(env);
-            let rightV = self.NBinaryRight.clone().unwrap().eval(env);
+            let leftV = self.leftBinaryNode.clone().unwrap().eval(env);
+            let rightV = self.rightBinaryNode.clone().unwrap().eval(env);
             let opt = self.toString();
             let (v, _) = Eval(&leftV, &rightV, opt);
             return v;
         } else if self.equalNodeType(&NArg) {
-            let arr = &(self.Data.as_array().unwrap());
+            let arr = &(self.value.as_array().unwrap());
             let arrLen = arr.len() as i32;
             if arrLen == 0 {
                 return Value::Null;
@@ -105,69 +105,69 @@ impl Node {
             }
             return Value::Null;
         }
-        return self.Data.clone();
+        return self.value.clone();
     }
 
     pub fn opt(&self) -> Option<&str> {
-        return self.Data.as_str();
+        return self.value.as_str();
     }
 
 
     pub fn newNull() -> Self {
         Self {
-            Data: Value::Null,
-            NBinaryLeft: None,
-            NBinaryRight: None,
-            t: NNull,
+            value: Value::Null,
+            leftBinaryNode: None,
+            rightBinaryNode: None,
+            nodeType: NNull,
         }
     }
     pub fn newArg(arg: String) -> Self {
         let d: Vec<&str> = arg.split(".").collect();
         Self {
-            Data: json!(d),
-            NBinaryLeft: None,
-            NBinaryRight: None,
-            t: NArg,
+            value: json!(d),
+            leftBinaryNode: None,
+            rightBinaryNode: None,
+            nodeType: NArg,
         }
     }
     pub fn newString(arg: String) -> Self {
         Self {
-            Data: Value::String(arg),
-            NBinaryLeft: None,
-            NBinaryRight: None,
-            t: NString,
+            value: Value::String(arg),
+            leftBinaryNode: None,
+            rightBinaryNode: None,
+            nodeType: NString,
         }
     }
     pub fn newNumber(arg: f64) -> Self {
         Self {
-            Data: Value::Number(serde_json::Number::from_f64(arg).unwrap()),
-            NBinaryLeft: None,
-            NBinaryRight: None,
-            t: NNumber,
+            value: Value::Number(serde_json::Number::from_f64(arg).unwrap()),
+            leftBinaryNode: None,
+            rightBinaryNode: None,
+            nodeType: NNumber,
         }
     }
     pub fn newBool(arg: bool) -> Self {
         Self {
-            Data:Value::Bool(arg),
-            NBinaryLeft: None,
-            NBinaryRight: None,
-            t: NBool,
+            value: Value::Bool(arg),
+            leftBinaryNode: None,
+            rightBinaryNode: None,
+            nodeType: NBool,
         }
     }
     pub fn newBinary(argLef: Node, argRight: Node, opt: &str) -> Self {
         Self {
-            Data: Value::from(opt),
-            NBinaryLeft: Option::Some(Rc::new(argLef)),
-            NBinaryRight: Option::Some(Rc::new(argRight)),
-            t: NBinary,
+            value: Value::from(opt),
+            leftBinaryNode: Option::Some(Rc::new(argLef)),
+            rightBinaryNode: Option::Some(Rc::new(argRight)),
+            nodeType: NBinary,
         }
     }
     pub fn newOpt(arg: String) -> Self {
         Self {
-            Data: Value::String(arg),
-            NBinaryLeft: None,
-            NBinaryRight: None,
-            t: NOpt,
+            value: Value::String(arg),
+            leftBinaryNode: None,
+            rightBinaryNode: None,
+            nodeType: NOpt,
         }
     }
 
