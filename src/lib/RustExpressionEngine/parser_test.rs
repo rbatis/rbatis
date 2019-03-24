@@ -11,6 +11,8 @@ use test::Bencher;
 use crate::lib::RustExpressionEngine::node::NodeType::{NNumber, NOpt};
 use std::rc::Rc;
 use std::sync::Arc;
+use core::time;
+use std::thread;
 
 
 #[test]
@@ -40,7 +42,7 @@ fn TestBenchmark() {
     let john = json!({
         "name": "John Doe",
     });
-    let total=100000;
+    let total=10000000;
     let now=Local::now();
     for _ in 0..total{
         for _ in 0..1{
@@ -51,6 +53,9 @@ fn TestBenchmark() {
     }
     utils::time_util::count_time(total,now);
     utils::time_util::count_tps(total,now);
+
+//    let ten_millis = time::Duration::from_secs(1000*60);
+//    thread::sleep(ten_millis);
 }
 
 
