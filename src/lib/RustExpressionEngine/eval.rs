@@ -20,9 +20,15 @@ pub fn Eval(left: &Value,
     }
 
     if op == "==" {
+        if left.is_number() && right.is_number() {
+            return (Value::Bool(left.as_f64() == right.as_f64()), String::new());
+        }
         return (Value::Bool(left.eq(right)), String::new());
     }
     if op == "!=" {
+        if left.is_number() && right.is_number() {
+            return (Value::Bool(!(left.as_f64() == right.as_f64())), String::new());
+        }
         return (Value::Bool(!left.eq(right)), String::new());
     }
     if op == ">=" {
@@ -59,7 +65,7 @@ pub fn Eval(left: &Value,
         if booll && boolr {
             return (Value::Number(serde_json::Number::from_f64(left.as_f64().unwrap() + right.as_f64().unwrap()).unwrap()), String::new());
         } else {
-            return (Value::from(left.as_str().unwrap().to_owned()+right.as_str().unwrap()), String::new());
+            return (Value::from(left.as_str().unwrap().to_owned() + right.as_str().unwrap()), String::new());
         }
     }
     if op == "-" {

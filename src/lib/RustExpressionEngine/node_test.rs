@@ -9,7 +9,7 @@ use serde_json::de::ParserNumber;
 use crate::lib::RustExpressionEngine::runtime::{IsNumber, OptMap};
 use std::collections::HashMap;
 use std::collections::linked_list::LinkedList;
-use crate::lib::RustExpressionEngine::runtime;
+use crate::lib::RustExpressionEngine::{runtime, parser};
 
 
 #[test]
@@ -29,13 +29,18 @@ fn TestString() {
 
 #[test]
 fn TestNodeRun() {
+    let john = json!({
+        "a":1,
+        "b":2,
+        "c":"c",
+    });
     let results = vec![
         Value::Bool(true),
         Value::String("fs".to_string()),
         Value::Bool(false),
         Value::Bool(true),
         Value::String("ac".to_string()),
-        Value::Number(serde_json::Number::from(ParserNumber::I64(2))),
+        json!(2),
         Value::Bool(false),
         Value::Bool(false),
         Value::Bool(true),
@@ -69,9 +74,18 @@ fn TestNodeRun() {
 
     let mut index = 0;
     for item in expressions {
-        index += 1;
         println!("{}", item);
        //TODO let parserArray = Parser(item.to_string(), &OptMap::new());
+
+        let (mut boxNode,_ )= parser::Parser(String::from(item), &OptMap::new());
+        let result=boxNode.eval(&john);
+        println!("result >>>>>>>>>>   =  {}", &result);
+        let resultValue=&results[index];
+        if !result.eq(resultValue){
+           // println!("exe express fail:".to_owned()+item);
+            panic!(">>>>>>>>>>>>>>>>>>>>>exe fail express:'".to_owned()+item+"'");
+        }
+        index += 1;
     }
 }
 

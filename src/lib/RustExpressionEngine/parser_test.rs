@@ -17,8 +17,9 @@ use std::thread;
 
 #[test]
 fn TestParser() {
-    let (mut boxNode,_ )= parser::Parser(String::from("'1'+'1'"), &OptMap::new());
+    let (mut boxNode,_ )= parser::Parser(String::from("a == 1 && a != 0"), &OptMap::new());
     let john = json!({
+        "a":1,
         "name": "John Doe",
         "age": {
            "yes":"sadf"
@@ -62,7 +63,7 @@ fn TestBenchmark() {
 
 #[bench]
 fn Bench_Parser(b: &mut Bencher) {
-    let (mut boxNode,_ )= parser::Parser(String::from("n > 2"), &OptMap::new());
+    let (mut boxNode,_ )= parser::Parser(String::from("n == 1"), &OptMap::new());
     let john = json!({
         "n":1,
         "name": "John Doe",
