@@ -47,7 +47,6 @@ fn findReplaceOpt(optMap: &OptMap, express: &String, operator: &str, nodeArg: &m
             let left = nodeArg[leftIndex].clone();
             let right = nodeArg[rightIndex].clone();
             let binaryNode = Node::newBinary(left, right, item.opt().unwrap());
-            println!("binNode={}", &binaryNode.nodeType());
 
             nodeArg.remove(rightIndex);
             nodeArg.remove(index as usize);

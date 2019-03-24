@@ -173,12 +173,18 @@ impl Node {
 
     //根据string 解析单个node
     pub fn parser(data: String) -> Self {
+        // println!("data={}", &data);
         let opt = OptMap::new();
-        let firstIndex = data.find("'").unwrap_or_default();
-        let lastIndex = data.rfind("'").unwrap_or_default();
-
-        println!("{}", &data);
-
+        let mut firstIndex = 0;
+        let mut lastIndex = 0;
+        if data.rfind("'").unwrap_or(0) != 0 {
+            firstIndex = data.find("'").unwrap_or_default();
+            lastIndex = data.rfind("'").unwrap_or_default();
+        }
+        if data.rfind("`").unwrap_or(0) != 0 {
+            firstIndex = data.find("`").unwrap_or_default();
+            lastIndex = data.rfind("`").unwrap_or_default();
+        }
         if data.as_str() == "" || data.as_str() == "null" {
             return Node::newNull();
         } else if data.as_str() == "true" || data.as_str() == "false" {
