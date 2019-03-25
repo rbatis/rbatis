@@ -11,7 +11,6 @@ mod lib;
 mod SqlBuilder;
 
 use self::utils::time_util;
-use self::ast::NodeString::NodeString;
 //use utils::TimeUtil;
 use chrono::Local;
 use std::collections::HashMap;
