@@ -11,20 +11,10 @@ use std::collections::HashMap;
 use std::collections::linked_list::LinkedList;
 use crate::lib::RustExpressionEngine::{runtime, parser};
 
-
-#[test]
-fn TestString() {
-    let s = String::from("'asd'");
-
-    let firstIndex = s.find("'").unwrap_or_default();
-    let lastIndex = s.rfind("'").unwrap_or_default();
-
-    if firstIndex == 0 && lastIndex == (s.len() - 1) && firstIndex != lastIndex {
-        println!("yes")
-    }
-
-    let s2 = String::from("123.44");
-    println!("{}", IsNumber(&s2));
+#[derive(Clone, PartialEq)]
+struct  Eq{
+   pub express:String,
+   pub eq:Value,
 }
 
 #[test]
@@ -34,56 +24,38 @@ fn TestNodeRun() {
         "b":2,
         "c":"c",
     });
-    let results = vec![
-        Value::Bool(true),
-        Value::String("fs".to_string()),
-        Value::Bool(false),
-        Value::Bool(true),
-        Value::String("ac".to_string()),
-        json!(2),
-        Value::Bool(false),
-        Value::Bool(false),
-        Value::Bool(true),
-        Value::Bool(false),
-        Value::Bool(true),
-        Value::Bool(true),
-        Value::Bool(false),
-        Value::Bool(true),
-        Value::Bool(true),
-        Value::Bool(true),
-        Value::Bool(true),
+    let expressions:Vec<Eq>=vec![
+            Eq{express: "'2019-02-26' == '2019-02-26'".to_string(),eq: json!(true)},
+            Eq{express: "`f`+`s`".to_string(),eq: json!("fs")},
+            Eq{express: "a +1 > b * 8".to_string(),eq: json!(false)},
+            Eq{express: "a >= 0".to_string(),eq: json!(true)},
+            Eq{express:  "'a'+c".to_string(),eq: json!("ac")},
+            Eq{express: "b".to_string(),eq: json!(2)},
+            Eq{express: "a < 1".to_string(),eq: json!(false)},
+            Eq{express: "a +1 > b*8".to_string(),eq: json!(false)},
+            Eq{express: "a * b == 2".to_string(),eq: json!(true)},
+            Eq{express:  "a - b == 0".to_string(),eq: json!(false)},
+            Eq{express:  "a >= 0 && a != 0".to_string(),eq: json!(true)},
+            Eq{express: "a == 1 && a != 0".to_string(),eq: json!(true)},
+            Eq{express: "1 > 3 ".to_string(),eq: json!(false)},
+            Eq{express: "1 + 2 != nil".to_string(),eq: json!(true)},
+            Eq{express: "1 != null".to_string(),eq: json!(true)},
+            Eq{express: "1 + 2 != nil && 1 > 0 ".to_string(),eq: json!(true)},
+            Eq{express: "1 + 2 != nil && 2 < b*8 ".to_string(),eq: json!(true)},
     ];
 
-    let expressions = vec!["'2019-02-26' == '2019-02-26'",
-                           "`f`+`s`",
-                           "a +1 > b * 8",
-                           "a >= 0",
-                           "'a'+c",
-                           "b",
-                           "a < 1",
-                           "a +1 > b*8",
-                           "a * b == 2",
-                           "a - b == 0",
-                           "a >= 0 && a != 0",
-                           "a == 1 && a != 0",
-                           "1 > 3 ",
-                           "1 + 2 != nil",
-                           "1 != null",
-                           "1 + 2 != nil && 1 > 0 ",
-                           "1 + 2 != nil && 2 < b*8 ", ];
 
     let mut index = 0;
     for item in expressions {
-        println!("{}", item);
+        println!("{}", item.express.clone());
        //TODO let parserArray = Parser(item.to_string(), &OptMap::new());
-
-        let (mut boxNode,_ )= parser::Parser(String::from(item), &OptMap::new());
+        let (mut boxNode,_ )= parser::Parser(item.express.clone(), &OptMap::new());
         let result=boxNode.eval(&john);
         println!("result >>>>>>>>>>   =  {}", &result);
-        let resultValue=&results[index];
+        let resultValue=&item.eq.clone();
         if !result.eq(resultValue){
            // println!("exe express fail:".to_owned()+item);
-            panic!(">>>>>>>>>>>>>>>>>>>>>exe fail express:'".to_owned()+item+"'");
+            panic!(">>>>>>>>>>>>>>>>>>>>>exe fail express:'".to_owned()+item.clone().express.as_str()+"'");
         }
         index += 1;
     }
