@@ -1,6 +1,7 @@
-
+#![feature(fn_traits)]
 #![feature(test)]
 
+mod example;
 mod ast;
 mod utils;
 extern crate test;
