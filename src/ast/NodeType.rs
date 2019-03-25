@@ -1,5 +1,13 @@
-
 pub enum NodeType {
-    String,
+    NArg,
+    NString,
+    NIf,
+    NTrim,
+    NForEach,
+    NChoose,
+    NOtherwise,
+    NWhen,
+    NBind,
+    NInclude,
 }
 
