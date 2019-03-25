@@ -1,4 +1,4 @@
-use crate::lib::RustExpressionEngine::node::{ Node};
+use crate::lib::RustExpressionEngine::node::Node;
 use crate::lib::RustExpressionEngine::node::NodeType::{NString, NArg};
 use serde_json::Value;
 use serde_json::json;
@@ -12,9 +12,9 @@ use std::collections::linked_list::LinkedList;
 use crate::lib::RustExpressionEngine::{runtime, parser};
 
 #[derive(Clone, PartialEq)]
-struct  Eq{
-   pub express:String,
-   pub eq:Value,
+struct Eq<'a> {
+    pub express: &'a str,
+    pub eq: Value,
 }
 
 #[test]
@@ -24,38 +24,38 @@ fn TestNodeRun() {
         "b":2,
         "c":"c",
     });
-    let expressions:Vec<Eq>=vec![
-            Eq{express: "'2019-02-26' == '2019-02-26'".to_string(),eq: json!(true)},
-            Eq{express: "`f`+`s`".to_string(),eq: json!("fs")},
-            Eq{express: "a +1 > b * 8".to_string(),eq: json!(false)},
-            Eq{express: "a >= 0".to_string(),eq: json!(true)},
-            Eq{express:  "'a'+c".to_string(),eq: json!("ac")},
-            Eq{express: "b".to_string(),eq: json!(2)},
-            Eq{express: "a < 1".to_string(),eq: json!(false)},
-            Eq{express: "a +1 > b*8".to_string(),eq: json!(false)},
-            Eq{express: "a * b == 2".to_string(),eq: json!(true)},
-            Eq{express:  "a - b == 0".to_string(),eq: json!(false)},
-            Eq{express:  "a >= 0 && a != 0".to_string(),eq: json!(true)},
-            Eq{express: "a == 1 && a != 0".to_string(),eq: json!(true)},
-            Eq{express: "1 > 3 ".to_string(),eq: json!(false)},
-            Eq{express: "1 + 2 != nil".to_string(),eq: json!(true)},
-            Eq{express: "1 != null".to_string(),eq: json!(true)},
-            Eq{express: "1 + 2 != nil && 1 > 0 ".to_string(),eq: json!(true)},
-            Eq{express: "1 + 2 != nil && 2 < b*8 ".to_string(),eq: json!(true)},
+    let expressions: Vec<Eq> = vec![
+        Eq { express: "'2019-02-26' == '2019-02-26'", eq: json!(true) },
+        Eq { express: "`f`+`s`", eq: json!("fs") },
+        Eq { express: "a +1 > b * 8", eq: json!(false) },
+        Eq { express: "a >= 0", eq: json!(true) },
+        Eq { express: "'a'+c", eq: json!("ac") },
+        Eq { express: "b", eq: json!(2) },
+        Eq { express: "a < 1", eq: json!(false) },
+        Eq { express: "a +1 > b*8", eq: json!(false) },
+        Eq { express: "a * b == 2", eq: json!(true) },
+        Eq { express: "a - b == 0", eq: json!(false) },
+        Eq { express: "a >= 0 && a != 0", eq: json!(true) },
+        Eq { express: "a == 1 && a != 0", eq: json!(true) },
+        Eq { express: "1 > 3 ", eq: json!(false) },
+        Eq { express: "1 + 2 != nil", eq: json!(true) },
+        Eq { express: "1 != null", eq: json!(true) },
+        Eq { express: "1 + 2 != nil && 1 > 0 ", eq: json!(true) },
+        Eq { express: "1 + 2 != nil && 2 < b*8 ", eq: json!(true) },
     ];
 
 
     let mut index = 0;
     for item in expressions {
         println!("{}", item.express.clone());
-       //TODO let parserArray = Parser(item.to_string(), &OptMap::new());
-        let (mut boxNode,_ )= parser::Parser(item.express.clone(), &OptMap::new());
-        let result=boxNode.eval(&john);
+        //TODO let parserArray = Parser(item.to_string(), &OptMap::new());
+        let (mut boxNode, _) = parser::Parser(item.express.clone().to_string(), &OptMap::new());
+        let result = boxNode.eval(&john);
         println!("result >>>>>>>>>>   =  {}", &result);
-        let resultValue=&item.eq.clone();
-        if !result.eq(resultValue){
-           // println!("exe express fail:".to_owned()+item);
-            panic!(">>>>>>>>>>>>>>>>>>>>>exe fail express:'".to_owned()+item.clone().express.as_str()+"'");
+        let resultValue = &item.eq.clone();
+        if !result.eq(resultValue) {
+            // println!("exe express fail:".to_owned()+item);
+            panic!(">>>>>>>>>>>>>>>>>>>>>exe fail express:'".to_owned() + item.clone().express + "'");
         }
         index += 1;
     }
@@ -85,7 +85,7 @@ fn TestArgNode() {
     });
 
     let mut argNode = Node::newArg("sex.a".to_string());
-     argNode.eval(&john);
+    argNode.eval(&john);
     //println!("value:{},error:{}", result, Error);
 }
 
@@ -130,8 +130,8 @@ fn TestNumberNode() {
         ]
     });
     let mut numb = Node::newNumberF64(1.02 as f64);
-     numb.eval(&john);
-   // println!("{}", value);
+    numb.eval(&john);
+    // println!("{}", value);
 }
 
 #[test]
@@ -163,9 +163,9 @@ fn TestMatcher2() {
 //         "1 + 2 != nil && 1 > 0 ",
 //         "1 + 2 != nil && 2 < b*8 ", ];
 
-    let  s = "'2019-02-26' == '2019-02-26'".to_string();
+    let s = "'2019-02-26' == '2019-02-26'".to_string();
 
-    let result= runtime::ParserTokens(&s);
+    let result = runtime::ParserTokens(&s);
 
     for item in result {
         println!("{}", item);
@@ -173,8 +173,8 @@ fn TestMatcher2() {
 }
 
 #[test]
-fn BenchmarkParserToken(){
-    let  s = "'2019-02-26' == '2019-02-26'".to_string();
+fn BenchmarkParserToken() {
+    let s = "'2019-02-26' == '2019-02-26'".to_string();
 
 
     let total = 100000;
