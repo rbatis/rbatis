@@ -19,7 +19,7 @@ pub enum NodeType {
 impl Node for NodeType{
     fn eval(&self, env: Value) -> String {
         match self {
-            NodeType::NString(strs)=> return strs.value.clone() ,
+            NodeType::NString(stringNode)=> return stringNode.value.clone() ,
             _=> String::new(),
         }
     }
