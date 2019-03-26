@@ -5,6 +5,7 @@ pub mod parser;
 pub mod runtime;
 
 //test mod
-pub mod parser_test;
-pub mod node_test;
-pub mod eval_test;
+ mod parser_test;
+ mod node_test;
+ mod eval_test;
+ mod runtime_test;
