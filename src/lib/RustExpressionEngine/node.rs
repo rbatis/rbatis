@@ -191,6 +191,7 @@ impl Node {
     //根据string 解析单个node
     pub fn parser(data: String) -> Self {
         // println!("data={}", &data);
+        let dataStr=data.as_str();
         let opt = OptMap::new();
         let mut firstIndex = 0;
         let mut lastIndex = 0;
@@ -202,15 +203,15 @@ impl Node {
             firstIndex = data.find("`").unwrap_or_default();
             lastIndex = data.rfind("`").unwrap_or_default();
         }
-        if data.as_str() == "" || data.as_str() == "null" {
+        if dataStr == "" || dataStr == "null" {
             return Node::newNull();
-        } else if data.as_str() == "true" || data.as_str() == "false" {
-            if data.as_str() == "true" {
+        } else if dataStr == "true" || dataStr == "false" {
+            if dataStr == "true" {
                 return Node::newBool(true);
             } else {
                 return Node::newBool(false);
             }
-        } else if opt.isOpt(data.as_str()) {
+        } else if opt.isOpt(dataStr) {
             return Node::newOpt(data.clone());
         } else if firstIndex == 0 && lastIndex == (data.len() - 1) && firstIndex != lastIndex {
             let newStr = data.replace("'", "").replace("`", "");
