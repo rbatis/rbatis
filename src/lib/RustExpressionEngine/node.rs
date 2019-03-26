@@ -124,7 +124,7 @@ impl Node {
     pub fn newArg(arg: String) -> Self {
         let d: Vec<&str> = arg.split(".").collect();
         Self {
-            value: json!(d),
+            value: Value::String(arg),
             leftBinaryNode: None,
             rightBinaryNode: None,
             nodeType: NArg,
@@ -140,7 +140,7 @@ impl Node {
     }
     pub fn newNumberF64(arg: f64) -> Self {
         Self {
-            value: json!(arg),
+            value: Value::Number(serde_json::Number::from(ParserNumber::F64(arg))),
             leftBinaryNode: None,
             rightBinaryNode: None,
             nodeType: NNumber,
@@ -148,7 +148,7 @@ impl Node {
     }
     pub fn newNumberI64(arg: i64) -> Self {
         Self {
-            value: json!(arg),
+            value: Value::Number(serde_json::Number::from(ParserNumber::I64(arg))),
             leftBinaryNode: None,
             rightBinaryNode: None,
             nodeType: NNumber,
@@ -156,7 +156,7 @@ impl Node {
     }
     pub fn newNumberU64(arg: u64) -> Self {
         Self {
-            value: json!(arg),
+            value: Value::Number(serde_json::Number::from(ParserNumber::U64(arg))),
             leftBinaryNode: None,
             rightBinaryNode: None,
             nodeType: NNumber,
