@@ -189,9 +189,8 @@ impl Node {
     }
 
     //根据string 解析单个node
-    pub fn parser(data: String,opt:&OptMap) -> Self {
+    pub fn parser(data: &str,opt:&OptMap) -> Self {
         // println!("data={}", &data);
-        let dataStr=data.as_str();
         let mut firstIndex = 0;
         let mut lastIndex = 0;
         if data.rfind("'").unwrap_or(0) != 0 {
@@ -202,20 +201,20 @@ impl Node {
             firstIndex = data.find("`").unwrap_or_default();
             lastIndex = data.rfind("`").unwrap_or_default();
         }
-        if dataStr == "" || dataStr == "null" {
+        if data == "" || data == "null" {
             return Node::newNull();
-        } else if dataStr == "true" || dataStr == "false" {
-            if dataStr == "true" {
+        } else if data == "true" || data == "false" {
+            if data == "true" {
                 return Node::newBool(true);
             } else {
                 return Node::newBool(false);
             }
-        } else if opt.isOpt(dataStr) {
-            return Node::newOpt(data.clone());
+        } else if opt.isOpt(data) {
+            return Node::newOpt(data.to_string());
         } else if firstIndex == 0 && lastIndex == (data.len() - 1) && firstIndex != lastIndex {
             let newStr = data.replace("'", "").replace("`", "");
             return Node::newString(newStr);
-        } else if IsNumber(&data) {
+        } else if IsNumber(&data.to_string()) {
             if data.find(".").unwrap_or(0) != 0 {
                 let parsed = data.parse().unwrap();
                 return Node::newNumberF64(parsed);
@@ -224,7 +223,7 @@ impl Node {
                 return Node::newNumberI64(parsed);
             }
         } else {
-            return Node::newArg(data);
+            return Node::newArg(data.to_string());
         }
     }
 }
