@@ -162,10 +162,10 @@ fn TestMatcher2() {
 //         "1 != null",
 //         "1 + 2 != nil && 1 > 0 ",
 //         "1 + 2 != nil && 2 < b*8 ", ];
-
+    let optMap = OptMap::new();
     let s = "'2019-02-26' == '2019-02-26'".to_string();
 
-    let result = runtime::ParserTokens(&s);
+    let result = runtime::ParserTokens(&s,&optMap);
 
     for item in result {
         println!("{}", item);
@@ -175,12 +175,12 @@ fn TestMatcher2() {
 #[test]
 fn BenchmarkParserToken() {
     let s = "'2019-02-26' == '2019-02-26'".to_string();
-
+    let optMap = OptMap::new();
 
     let total = 100000;
     let now = Local::now();
     for i in 0..total {
-        runtime::ParserTokens(&s);
+        runtime::ParserTokens(&s,&optMap);
     }
     time_util::count_time(total, now);
     time_util::count_tps(total, now);

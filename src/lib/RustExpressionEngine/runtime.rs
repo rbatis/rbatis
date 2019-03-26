@@ -29,8 +29,7 @@ pub fn IsNumber(arg: &String) -> bool{
 /**
  * 将原始字符串解析为 去除空格的token数组
 **/
-pub fn ParserTokens(s: &String) -> Vec<String> {
-    let optMap = OptMap::new();
+pub fn ParserTokens(s: &String,optMap:&OptMap) -> Vec<String> {
     let chars = s.chars();
     let charsLen = s.len() as i32;
     let mut result = LinkedList::new();

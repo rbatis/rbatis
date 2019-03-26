@@ -61,10 +61,11 @@ fn TestBenchmark() {
 
 #[bench]
 fn Bench_Parser_Token(b: &mut Bencher) {
+    let optMap = OptMap::new();
     let m= &OptMap::new();
     let now=Local::now();
     b.iter(|| {
-        runtime::ParserTokens(&String::from("n == 1"));
+        runtime::ParserTokens(&String::from("n == 1"),&optMap);
     });
 }
 
