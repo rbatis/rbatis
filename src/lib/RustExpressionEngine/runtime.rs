@@ -58,8 +58,8 @@ pub fn ParserTokens(s: &String, optMap: &OptMap) -> Vec<String> {
             temp_str.push(item);
             continue;
         }
-        let needReset = item != '`' && item != '\'' && isOpt == false && !find_str;
-        if needReset {
+        if item != '`' && item != '\'' && isOpt == false && !find_str {
+            //need reset
             temp_arg.push(item);
             if (index + 1) == charsLen {
                 trimPushBack(&temp_arg, &mut result);
