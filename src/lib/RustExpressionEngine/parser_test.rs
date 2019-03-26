@@ -1,4 +1,4 @@
-use crate::lib::RustExpressionEngine::parser;
+use crate::lib::RustExpressionEngine::{parser, runtime};
 use serde_json::json;
 use serde_json::Value;
 use crate::lib::RustExpressionEngine::runtime::OptMap;
@@ -59,12 +59,20 @@ fn TestBenchmark() {
 //    thread::sleep(ten_millis);
 }
 
-
+#[bench]
+fn Bench_Parser_Token(b: &mut Bencher) {
+    let m= &OptMap::new();
+    let now=Local::now();
+    b.iter(|| {
+        runtime::ParserTokens(&String::from("n == 1"));
+    });
+}
 
 #[bench]
 fn Bench_Parser(b: &mut Bencher) {
+    let m= &OptMap::new();
     let now=Local::now();
     b.iter(|| {
-        parser::Parser(String::from("n == 1"), &OptMap::new());
+        parser::Parser(String::from("n == 1"), m);
     });
 }
