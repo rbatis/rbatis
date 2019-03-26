@@ -18,7 +18,7 @@ pub enum NodeType {
 impl Node for NodeType{
     fn eval(&self, env: Value) -> String {
         match self {
-            NodeType::NString(strNode)=> return strNode.value.clone() ,
+            NodeType::NString(strs)=> return strs.value.clone() ,
             _=> String::new(),
         }
     }
@@ -63,6 +63,17 @@ pub struct StringNode {
     pub expressMap: Vec<String>,
     //去重的，需要替换的express map
     pub noConvertExpressMap: Vec<String>,
+}
+
+impl StringNode{
+    fn new(v:String)->Self{
+        //TODO find v #[] and find v$[]
+        Self{
+            value: v,
+            expressMap: vec![],
+            noConvertExpressMap: vec![]
+        }
+    }
 }
 
 pub struct TrimNode {
