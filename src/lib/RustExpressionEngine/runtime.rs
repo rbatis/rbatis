@@ -94,7 +94,7 @@ pub fn ParserTokens(s: &String, optMap: &OptMap) -> Vec<String> {
 
 fn trimPushBack(arg: String, list: &mut LinkedList<String>) {
     let trimStr = arg.trim().to_string();
-    if trimStr == "" {
+    if trimStr.is_empty(){
         return;
     }
     list.push_back(trimStr);
