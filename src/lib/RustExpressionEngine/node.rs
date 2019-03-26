@@ -121,7 +121,7 @@ impl Node {
             nodeType: NNull,
         }
     }
-    pub fn newArg(arg: String) -> Self {
+    pub fn newArg(arg: &str) -> Self {
         let d: Vec<&str> = arg.split(".").collect();
         Self {
             value: json!(d),
@@ -179,9 +179,9 @@ impl Node {
             nodeType: NBinary,
         }
     }
-    pub fn newOpt(arg: String) -> Self {
+    pub fn newOpt(arg: &str) -> Self {
         Self {
-            value: Value::String(arg),
+            value: Value::String(arg.to_string()),
             leftBinaryNode: None,
             rightBinaryNode: None,
             nodeType: NOpt,
@@ -210,7 +210,7 @@ impl Node {
                 return Node::newBool(false);
             }
         } else if opt.isOpt(data) {
-            return Node::newOpt(data.to_string());
+            return Node::newOpt(data);
         } else if firstIndex == 0 && lastIndex == (data.len() - 1) && firstIndex != lastIndex {
             let newStr = data.replace("'", "").replace("`", "");
             return Node::newString(newStr);
@@ -223,7 +223,7 @@ impl Node {
                 return Node::newNumberI64(parsed);
             }
         } else {
-            return Node::newArg(data.to_string());
+            return Node::newArg(data);
         }
     }
 }
