@@ -210,7 +210,7 @@ impl Node {
             } else {
                 return Node::newBool(false);
             }
-        } else if opt.isOpt(data.clone()) {
+        } else if opt.isOpt(data.as_str()) {
             return Node::newOpt(data.clone());
         } else if firstIndex == 0 && lastIndex == (data.len() - 1) && firstIndex != lastIndex {
             let newStr = data.replace("'", "").replace("`", "");

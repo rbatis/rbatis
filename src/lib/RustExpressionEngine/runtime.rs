@@ -58,7 +58,7 @@ pub fn ParserTokens(s: &String,optMap:&OptMap) -> Vec<String> {
             temp_str.push(item);
             continue;
         }
-        let needReset = item != '`' && item != '\'' && optMap.isOpt(item.to_string()) == false && !find_str;
+        let needReset = item != '`' && item != '\'' && optMap.isOpt(item.to_string().as_str()) == false && !find_str;
         if needReset {
             temp_arg.push(item);
             if (index + 1) == charsLen {
@@ -69,12 +69,12 @@ pub fn ParserTokens(s: &String,optMap:&OptMap) -> Vec<String> {
             temp_arg = String::new();
         }
         //opt node
-        if optMap.isOpt(item.to_string()) {
+        if optMap.isOpt(item.to_string().as_str()) {
             //println!("is opt:{}", item);
             if result.len() > 0 {
                 let def = String::new();
                 let back = result.back().unwrap_or(&def).clone();
-                if back != "" && optMap.isOpt(back.clone()) {
+                if back != "" && optMap.isOpt(back.as_str()) {
                     result.pop_back();
                     let mut newItem = back.clone().to_string();
                     newItem.push(item);
@@ -193,8 +193,8 @@ impl<'a> OptMap<'a> {
         return self.priorityArray.clone();
     }
 
-    pub fn isOpt(&self, arg: String) -> bool {
-        let opt = self.Map.get(arg.as_str());
+    pub fn isOpt(&self, arg: &str) -> bool {
+        let opt = self.Map.get(arg);
         return opt.unwrap_or(&false).clone();
     }
 }
