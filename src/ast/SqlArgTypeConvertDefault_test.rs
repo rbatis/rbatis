@@ -1,6 +1,8 @@
 use crate::ast::SqlArgTypeConvert::SqlArgTypeConvert;
 use crate::ast::SqlArgTypeConvertDefault::SqlArgTypeConvertDefault;
-use serde_json::json;
+use serde_json::{json, Value};
+use chrono::Local;
+use test::Bencher;
 
 #[test]
 fn TestConvert(){
@@ -14,4 +16,15 @@ fn TestConvert(){
     println!("string=>{}",result);
     result =  convert.convert(json!(null));
     println!("null=>{}",result);
+}
+
+
+#[bench]
+fn Bench_Convert(b: &mut Bencher) {
+   // let a=json!(1.27);
+    let convert=SqlArgTypeConvertDefault{};
+    b.iter(|| {
+        let a=json!(null);
+        convert.convert(a);
+    });
 }
