@@ -84,7 +84,7 @@ fn TestArgNode() {
         ]
     });
 
-    let mut argNode = Node::newArg("sex.a".to_string());
+    let mut argNode = Node::newArg("sex.a");
     argNode.eval(&john);
     //println!("value:{},error:{}", result, Error);
 }
@@ -104,7 +104,7 @@ fn BenchmarkArgNode() {
         ]
     });
 
-    let mut argNode = Node::newArg("sex.a".to_string());
+    let mut argNode = Node::newArg("sex.a");
 
     let total = 100000;
     let now = Local::now();
