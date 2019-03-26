@@ -124,7 +124,7 @@ impl Node {
     pub fn newArg(arg: String) -> Self {
         let d: Vec<&str> = arg.split(".").collect();
         Self {
-            value: Value::String(arg),
+            value: json!(d),
             leftBinaryNode: None,
             rightBinaryNode: None,
             nodeType: NArg,
