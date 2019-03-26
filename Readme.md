@@ -1,5 +1,5 @@
 
-## RustMybatis a Rustlang-based,dynamic sql, no Runtime,no GC, low Memory use,High Performance orm Framework. 
+## RustMybatis a Rustlang-based,dynamic sql, no Runtime,no GC, low Memory use,High Performance orm Framework.  based Abstract syntax tree.
 
 ## RustMybatis 是一个高性能的,动态sql,低内存开销的,没有运行时,没有GC,并发安全的  数据库 ORM框架
 
