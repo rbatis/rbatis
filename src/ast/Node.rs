@@ -6,5 +6,5 @@ use serde_json::Value;
 * Abstract syntax tree node
 */
 pub struct  Node {
-    pub value: Value,
+    pub nodeType:NodeType
 }
