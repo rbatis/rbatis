@@ -5,14 +5,14 @@ use serde_json::Value;
 pub enum NodeType {
     Null,
     NString(StringNode),
-    NIf(If),
-    NTrim(Trim),
-    NForEach(ForEach),
-    NChoose(Choose),
-    NOtherwise(Otherwise),
-    NWhen(When),
-    NBind(Bind),
-    NInclude(Include),
+    NIf(IfNode),
+    NTrim(TrimNode),
+    NForEach(ForEachNode),
+    NChoose(ChooseNode),
+    NOtherwise(OtherwiseNode),
+    NWhen(WhenNode),
+    NBind(BindNode),
+    NInclude(IncludeNode),
 }
 
 impl Node for NodeType{
@@ -24,17 +24,17 @@ impl Node for NodeType{
     }
 }
 
-pub struct Bind {
+pub struct BindNode {
     pub name: String,
     pub value: String,
 }
 
-pub struct Choose {
+pub struct ChooseNode {
     pub whenNodes: Vec<NodeType>,
     pub otherwiseNode: Rc<NodeType>,
 }
 
-pub struct ForEach {
+pub struct ForEachNode {
     pub childs: Vec<NodeType>,
     pub collection: String,
     pub  index: String,
@@ -44,16 +44,16 @@ pub struct ForEach {
     pub separator: String,
 }
 
-pub struct If {
+pub struct IfNode {
     pub childs: Vec<NodeType>,
     pub test: String,
 }
 
-pub struct Include {
+pub struct IncludeNode {
     pub childs: Vec<NodeType>,
 }
 
-pub struct Otherwise {
+pub struct OtherwiseNode {
     pub childs: Vec<NodeType>,
 }
 
@@ -65,7 +65,7 @@ pub struct StringNode {
     pub noConvertExpressMap: Vec<String>,
 }
 
-pub struct Trim {
+pub struct TrimNode {
     pub childs: Vec<NodeType>,
     pub prefix: String,
     pub suffix: String,
@@ -73,7 +73,7 @@ pub struct Trim {
     pub prefixOverrides: String,
 }
 
-pub struct When {
+pub struct WhenNode {
     pub childs: Vec<NodeType>,
     pub test: String,
 }
