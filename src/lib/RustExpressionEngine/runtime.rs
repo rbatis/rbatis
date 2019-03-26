@@ -1,8 +1,7 @@
-
 use std::collections::linked_list::LinkedList;
 use std::collections::HashMap;
 
-pub fn IsNumber(arg: &String) -> bool{
+pub fn IsNumber(arg: &String) -> bool {
     let chars = arg.chars();
     for item in chars {
         if item == '.' ||
@@ -18,7 +17,7 @@ pub fn IsNumber(arg: &String) -> bool{
             item == '9'
         {
             // nothing do
-        }else{
+        } else {
             return false;
         }
     }
@@ -29,7 +28,7 @@ pub fn IsNumber(arg: &String) -> bool{
 /**
  * 将原始字符串解析为 去除空格的token数组
 **/
-pub fn ParserTokens(s: &String,optMap:&OptMap) -> Vec<String> {
+pub fn ParserTokens(s: &String, optMap: &OptMap) -> Vec<String> {
     let chars = s.chars();
     let charsLen = s.len() as i32;
     let mut result = LinkedList::new();
@@ -41,7 +40,7 @@ pub fn ParserTokens(s: &String,optMap:&OptMap) -> Vec<String> {
     let mut index: i32 = -1;
     for item in chars {
         index = index + 1;
-        if item == '\'' || item== '`' {
+        if item == '\'' || item == '`' {
             if find_str {
                 //第二次找到
                 find_str = false;
@@ -112,7 +111,7 @@ pub struct OptMap<'a> {
     //单操作符
     pub SingleOptMap: HashMap<&'a str, bool>,
 
-    pub priorityArray:Vec<&'a str>,
+    pub priorityArray: Vec<&'a str>,
 }
 
 impl<'a> OptMap<'a> {
@@ -164,7 +163,7 @@ impl<'a> OptMap<'a> {
         }
 
 
-        let  mut vecs=vec![];
+        let mut vecs = vec![];
         vecs.push("*");
         vecs.push("/");
         vecs.push("+");
@@ -184,12 +183,12 @@ impl<'a> OptMap<'a> {
             Map: defMap,
             MulOpsMap: MulOpsMap,
             SingleOptMap: SingleOptMap,
-            priorityArray:vecs,
+            priorityArray: vecs,
         }
     }
 
     //乘除优先于加减 计算优于比较,
-    pub fn priorityArray(&self)->Vec<&str>{
+    pub fn priorityArray(&self) -> Vec<&str> {
         return self.priorityArray.clone();
     }
 
