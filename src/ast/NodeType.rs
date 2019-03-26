@@ -1,4 +1,6 @@
 use std::rc::Rc;
+use crate::ast::Node::Node;
+use serde_json::Value;
 
 pub enum NodeType {
     Null,
@@ -11,6 +13,15 @@ pub enum NodeType {
     NWhen(When),
     NBind(Bind),
     NInclude(Include),
+}
+
+impl Node for NodeType{
+    fn eval(&self, env: Value) -> String {
+        match self {
+            NodeType::NString(strNode)=> return strNode.value.clone() ,
+            _=> String::new(),
+        }
+    }
 }
 
 pub struct Bind {
