@@ -13,7 +13,7 @@ pub fn Parser(express: String, optMap: &OptMap) -> (Node, String) {
 
     let mut nodes = vec![];
     for item in tokens {
-        let node = Node::parser(item);
+        let node = Node::parser(item,optMap);
 //        if err != "" {
 //            return (Node::New(String::new()), err);
 //        }
