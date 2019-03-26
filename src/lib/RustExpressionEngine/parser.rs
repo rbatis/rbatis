@@ -26,11 +26,11 @@ pub fn Parser(express: String, optMap: &OptMap) -> (Node, String) {
         findReplaceOpt(optMap, &express, &item, &mut nodes);
     }
 //
-    for item in &nodes {
+//    for item in &nodes {
 //        if item.Type()==NBinary{
 //            //println!("{}",item.Data)
 //        }
-    }
+//    }
     return (nodes[0].clone(), String::new());
 }
 
