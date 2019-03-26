@@ -189,10 +189,9 @@ impl Node {
     }
 
     //根据string 解析单个node
-    pub fn parser(data: String) -> Self {
+    pub fn parser(data: String,opt:&OptMap) -> Self {
         // println!("data={}", &data);
         let dataStr=data.as_str();
-        let opt = OptMap::new();
         let mut firstIndex = 0;
         let mut lastIndex = 0;
         if data.rfind("'").unwrap_or(0) != 0 {
