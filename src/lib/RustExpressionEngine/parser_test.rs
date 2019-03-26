@@ -72,7 +72,6 @@ fn Bench_Parser_Token(b: &mut Bencher) {
 #[bench]
 fn Bench_Parser(b: &mut Bencher) {
     let m= &OptMap::new();
-    let now=Local::now();
     b.iter(|| {
         parser::Parser(String::from(" a + b"), m);
     });
