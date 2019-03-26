@@ -40,6 +40,7 @@ pub fn ParserTokens(s: &String, optMap: &OptMap) -> Vec<String> {
     let mut index: i32 = -1;
     for item in chars {
         index = index + 1;
+        let isOpt = optMap.isOpt(item.to_string().as_str());
         if item == '\'' || item == '`' {
             if find_str {
                 //第二次找到
@@ -57,7 +58,7 @@ pub fn ParserTokens(s: &String, optMap: &OptMap) -> Vec<String> {
             temp_str.push(item);
             continue;
         }
-        let needReset = item != '`' && item != '\'' && optMap.isOpt(item.to_string().as_str()) == false && !find_str;
+        let needReset = item != '`' && item != '\'' && isOpt == false && !find_str;
         if needReset {
             temp_arg.push(item);
             if (index + 1) == charsLen {
@@ -68,7 +69,7 @@ pub fn ParserTokens(s: &String, optMap: &OptMap) -> Vec<String> {
             temp_arg = String::new();
         }
         //opt node
-        if optMap.isOpt(item.to_string().as_str()) {
+        if isOpt {
             //println!("is opt:{}", item);
             if result.len() > 0 {
                 let def = String::new();

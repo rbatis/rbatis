@@ -74,6 +74,6 @@ fn Bench_Parser(b: &mut Bencher) {
     let m= &OptMap::new();
     let now=Local::now();
     b.iter(|| {
-        parser::Parser(String::from("n == 1"), m);
+        parser::Parser(String::from(" a + b"), m);
     });
 }
