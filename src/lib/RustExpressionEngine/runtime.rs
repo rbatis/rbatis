@@ -46,8 +46,8 @@ pub fn ParserTokens(s: &String, optMap: &OptMap) -> Vec<String> {
                 //第二次找到
                 find_str = false;
                 temp_str.push(item);
-                trimPushBack(temp_str.clone(), &mut result);
-                temp_str = String::new();
+                trimPushBack(&temp_str, &mut result);
+                temp_str.clear();
                 continue;
             }
             find_str = true;
@@ -62,11 +62,11 @@ pub fn ParserTokens(s: &String, optMap: &OptMap) -> Vec<String> {
         if needReset {
             temp_arg.push(item);
             if (index + 1) == charsLen {
-                trimPushBack(temp_arg.clone(), &mut result);
+                trimPushBack(&temp_arg, &mut result);
             }
         } else {
-            trimPushBack(temp_arg, &mut result);
-            temp_arg = String::new();
+            trimPushBack(&temp_arg, &mut result);
+            temp_arg.clear();
         }
         //opt node
         if isOpt {
@@ -78,11 +78,11 @@ pub fn ParserTokens(s: &String, optMap: &OptMap) -> Vec<String> {
                     result.pop_back();
                     let mut newItem = back.clone().to_string();
                     newItem.push(item);
-                    trimPushBack(newItem.clone(), &mut result);
+                    trimPushBack(&newItem, &mut result);
                     continue;
                 }
             }
-            trimPushBack(item.to_string(), &mut result);
+            trimPushBack(&item.to_string(), &mut result);
             continue;
         }
     }
@@ -93,9 +93,9 @@ pub fn ParserTokens(s: &String, optMap: &OptMap) -> Vec<String> {
     return v;
 }
 
-fn trimPushBack(arg: String, list: &mut LinkedList<String>) {
+fn trimPushBack(arg: &String, list: &mut LinkedList<String>) {
     let trimStr = arg.trim().to_string();
-    if trimStr.is_empty(){
+    if trimStr.is_empty() {
         return;
     }
     list.push_back(trimStr);
