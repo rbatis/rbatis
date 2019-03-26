@@ -1,4 +1,6 @@
 
+use crate::utils::string_util;
+
 /**
 *  string抽象节点
 **/
@@ -11,12 +13,12 @@ pub struct StringNode {
 }
 
 impl StringNode{
-    fn new(v:String)->Self{
+    fn new(v:&String)->Self{
         //TODO find v #[] and find v$[]
         Self{
-            value: v,
-            expressMap: vec![],
-            noConvertExpressMap: vec![]
+            value: v.clone(),
+            expressMap: string_util::findConvertString(v.clone()),
+            noConvertExpressMap: string_util::findNoConvertString(v.clone()),
         }
     }
 }
