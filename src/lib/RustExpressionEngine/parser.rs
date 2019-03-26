@@ -9,7 +9,7 @@ use std::collections::linked_list::LinkedList;
 //TODO 解决bug
 
 pub fn Parser(express: String, optMap: &OptMap) -> (Node, String) {
-    let tokens = ParserTokens(&express);
+    let tokens = ParserTokens(&express,optMap);
 
     let mut nodes = vec![];
     for item in tokens {
