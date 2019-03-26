@@ -44,7 +44,7 @@ pub fn findConvertString(arg: String) -> Vec<String> {
 pub fn findNoConvertString(arg: String) -> Vec<String> {
     let mut finds = HashMap::new();
     let chars = arg.bytes();
-    let mut item = &mut String::new();
+    let mut item =  String::new();
     let mut lastIndex: i32 = -1;
     let mut startIndex: i32 = -1;
     let strBytes: Vec<u8> = arg.bytes().collect();
@@ -59,11 +59,11 @@ pub fn findNoConvertString(arg: String) -> Vec<String> {
             startIndex = index + 1;
         }
         if v == 125 && startIndex != -1 {
-            *item = String::from_utf8(strBytes[startIndex as usize..index as usize].to_vec()).unwrap();
+            item = String::from_utf8(strBytes[startIndex as usize..index as usize].to_vec()).unwrap();
             //去掉逗号之后的部分
             if item.contains(',') {
                 let vecs: Vec<&str> = item.split(",").collect();
-                *item = vecs[0].to_string();
+                item = vecs[0].to_string();
             }
             finds.insert(item.clone(), 1);
             item.clear();
