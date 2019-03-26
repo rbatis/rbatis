@@ -1,6 +1,7 @@
 use std::rc::Rc;
 use crate::ast::Node::Node;
 use serde_json::Value;
+use crate::ast::StringNode::StringNode;
 
 pub enum NodeType {
     Null,
@@ -55,25 +56,6 @@ pub struct IncludeNode {
 
 pub struct OtherwiseNode {
     pub childs: Vec<NodeType>,
-}
-
-pub struct StringNode {
-    pub value: String,
-    //去重的，需要替换的express map
-    pub expressMap: Vec<String>,
-    //去重的，需要替换的express map
-    pub noConvertExpressMap: Vec<String>,
-}
-
-impl StringNode{
-    fn new(v:String)->Self{
-        //TODO find v #[] and find v$[]
-        Self{
-            value: v,
-            expressMap: vec![],
-            noConvertExpressMap: vec![]
-        }
-    }
 }
 
 pub struct TrimNode {

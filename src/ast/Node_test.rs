@@ -1,6 +1,7 @@
-use crate::ast::NodeType::{NodeType, StringNode};
+use crate::ast::NodeType::{NodeType};
 use crate::ast::Node::Node;
 use serde_json::json;
+use crate::ast::StringNode::StringNode;
 
 #[test]
 fn TestStringNode(){
