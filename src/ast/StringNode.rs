@@ -25,7 +25,7 @@ impl StringNode {
 }
 
 impl Node for StringNode {
-    fn eval(&self, env: Value) -> String {
+    fn eval(&self, env: &Value) -> String {
         let mut result = self.value.clone();
         for item in &self.expressMap {
             result = result.replace(("#{".to_owned()+item.as_str()+"}").as_str(), env.get(item).unwrap_or(&Value::String(String::new())).as_str().unwrap_or(""));
