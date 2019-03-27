@@ -21,6 +21,14 @@ impl Node for NodeType {
         match self {
             NodeType::Null => return String::new(),
             NodeType::NString(stringNode) => return stringNode.eval(env),
+//            NodeType::NIf(ifNode) => return ifNode.eval(env),
+//            NodeType::NTrim(trimNode) => return trimNode.eval(env),
+//            NodeType::NForEach(forEachNode) => return forEachNode.eval(env),
+//            NodeType::NChoose(chooseNode) => return chooseNode.eval(env),
+//            NodeType::NChoose(otherwiseNode) => return otherwiseNode.eval(env),
+//            NodeType::NChoose(whenNode) => return whenNode.eval(env),
+//            NodeType::NChoose(bindNode) => return bindNode.eval(env),
+//            NodeType::NChoose(includeNode) => return includeNode.eval(env),
             _ => String::new(),
         }
     }
