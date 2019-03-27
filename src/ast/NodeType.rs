@@ -17,7 +17,7 @@ pub enum NodeType {
 }
 
 impl Node for NodeType {
-    fn eval(&self, env: Value) -> String {
+    fn eval(&self, env: &Value) -> String {
         match self {
             NodeType::Null => return String::new(),
             NodeType::NString(stringNode) => return stringNode.eval(env),
