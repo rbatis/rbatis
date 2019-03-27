@@ -16,11 +16,12 @@ pub enum NodeType {
     NInclude(IncludeNode),
 }
 
-impl Node for NodeType{
+impl Node for NodeType {
     fn eval(&self, env: Value) -> String {
         match self {
-            NodeType::NString(stringNode)=> return stringNode.eval(env) ,
-            _=> String::new(),
+            NodeType::Null => return String::new(),
+            NodeType::NString(stringNode) => return stringNode.eval(env),
+            _ => String::new(),
         }
     }
 }
