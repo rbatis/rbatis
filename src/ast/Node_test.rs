@@ -3,6 +3,8 @@ use crate::ast::Node::Node;
 use serde_json::{json, Value};
 use crate::ast::StringNode::StringNode;
 use test::Bencher;
+use crate::ast::SqlArgTypeConvertDefault::SqlArgTypeConvertDefault;
+use std::rc::Rc;
 
 #[test]
 fn TestStringNode() {
@@ -10,7 +12,8 @@ fn TestStringNode() {
         "name": "John Doe",
     });
 
-    let strNode = NodeType::NString(StringNode::new("vvvvvvvvvv#{name}vvvvvvvv${name}"));
+    let convert=SqlArgTypeConvertDefault::new();
+    let strNode = NodeType::NString(StringNode::new("vvvvvvvvvv#{name}vvvvvvvv${name}",Rc::new(convert)));
 
     let result = strNode.eval(&john);
     println!("{}", result);
@@ -21,8 +24,9 @@ fn Bench_Parser(b: &mut Bencher) {
     let john:&Value = &json!({
         "name": "John Doe",
     });
+    let convert=SqlArgTypeConvertDefault::new();
 
-    let strNode = NodeType::NString(StringNode::new("vvvvvvvvvv#{name}vvvvvvvv"));
+    let strNode = NodeType::NString(StringNode::new("vvvvvvvvvv#{name}vvvvvvvv",Rc::new(convert)));
 
     b.iter(|| {
         &strNode.eval(john);
