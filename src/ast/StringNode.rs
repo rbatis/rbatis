@@ -2,6 +2,8 @@ use crate::utils::string_util;
 use crate::ast::Node::Node;
 use serde_json::Value;
 use std::collections::HashMap;
+use crate::ast::SqlArgTypeConvert::SqlArgTypeConvert;
+use std::rc::Rc;
 
 /**
 *  string抽象节点
@@ -12,10 +14,12 @@ pub struct StringNode {
     pub expressMap: HashMap<String,String>,
     //去重的，需要替换的免sql转换express map
     pub noConvertExpressMap: HashMap<String,String>,
+
+    pub sqlConvert:Rc<SqlArgTypeConvert>,
 }
 
 impl StringNode {
-   pub fn new(v: &str) -> Self {
+   pub fn new(v: &str,convert:Rc<SqlArgTypeConvert>) -> Self {
         //TODO find v #[] and find v$[]
        let mut  expressMap=HashMap::new();
        for item in &string_util::findConvertString(v.to_string()){
@@ -27,8 +31,9 @@ impl StringNode {
        }
         Self {
             value: v.to_string(),
-            expressMap: expressMap,
-            noConvertExpressMap: noConvertExpressMap,
+            expressMap,
+            noConvertExpressMap,
+            sqlConvert:convert,
         }
     }
 }
@@ -37,7 +42,9 @@ impl Node for StringNode {
     fn eval(&self, env: &Value) -> String {
         let mut result = self.value.clone();
         for (item,value) in &self.expressMap {
-            result = result.replace(value, env.get(item).unwrap_or(&Value::String(String::new())).as_str().unwrap_or(""));
+            let v=env.get(item).unwrap_or(&Value::String(String::new())).clone();
+            let vstr=self.sqlConvert.convert(v);
+            result = result.replace(value, vstr.as_str());
         }
         for (item,value) in &self.noConvertExpressMap {
             result = result.replace(value, env.get(item).unwrap_or(&Value::String(String::new())).as_str().unwrap_or(""));

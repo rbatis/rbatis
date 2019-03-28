@@ -1,7 +1,14 @@
 use crate::ast::SqlArgTypeConvert::SqlArgTypeConvert;
 use serde_json::Value;
 
-pub struct SqlArgTypeConvertDefault {}
+pub struct SqlArgTypeConvertDefault {
+}
+
+impl SqlArgTypeConvertDefault{
+    pub fn new()->Self{
+        return Self{};
+    }
+}
 
 impl SqlArgTypeConvert for SqlArgTypeConvertDefault {
     fn convert(&self,arg: Value) -> String {
