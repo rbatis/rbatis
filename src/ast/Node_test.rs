@@ -13,7 +13,7 @@ fn TestStringNode() {
     });
 
     let convert=SqlArgTypeConvertDefault::new();
-    let strNode = NodeType::NString(StringNode::new("vvvvvvvvvv#{name}vvvvvvvv${name}",Rc::new(convert)));
+    let strNode = NodeType::NString(StringNode::new("select * from ${name} where name = #{name}",Rc::new(convert)));
 
     let result = strNode.eval(&john);
     println!("{}", result);
