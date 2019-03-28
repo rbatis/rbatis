@@ -2,40 +2,52 @@
 use std::collections::HashMap;
 use std::collections::hash_map::RandomState;
 use crate::engines::ExpressionEngine::ExpressionEngine;
+use crate::lib::RustExpressionEngine::runtime::OptMap;
+use crate::lib::RustExpressionEngine;
+use serde_json::Value;
+use crate::lib::RustExpressionEngine::node::Node;
+use std::rc::Rc;
+use serde_json::json;
 
-pub struct ExpressionEngineDefault<R> {
-    result: R,
+pub struct ExpressionEngineDefault<'a> {
+    result: Value,
+    optMap: OptMap<'a>,
 }
 
-impl<R> ExpressionEngine<String, R> for ExpressionEngineDefault<R> {
+impl <'a>ExpressionEngine<Node, Value> for ExpressionEngineDefault<'a> {
     fn Name(&self) -> String {
         return String::from("ExpressionEngineDefault");
     }
 
-    fn Lexer(&self, lexerArg: String) -> (String, String) {
-        unimplemented!()
+    fn Lexer(&self, lexerArg: String) -> (Node, String) {
+        return RustExpressionEngine::parser::Parser(lexerArg, &self.optMap);
     }
 
-    fn Eval(&self, lexerResult: String, arg: HashMap<&str, &str, RandomState>) -> (R, String) {
-        unimplemented!()
+    fn Eval(&self, lexerResult: Node, env: &Value) -> (Value, String) {
+        return (lexerResult.eval(env), String::new());
     }
 
-    fn LexerAndEval(&self, lexerArg: String, arg: HashMap<&str, &str, RandomState>) -> (R, String) {
+    fn LexerAndEval(&self, lexerArg: String, env: &Value) -> (Value, String) {
         unimplemented!()
     }
 }
 
-
-
-
-
-
+impl<'a> ExpressionEngineDefault<'a> {
+    pub fn new() -> Self {
+        Self {
+            result: Value::Null,
+            optMap: OptMap::new(),
+        }
+    }
+}
 
 
 #[test]
 fn TestExpressionEngineDefault() {
-    let engine = ExpressionEngineDefault {
-        result: false,
-    };
-    println!("{}", engine.Name())
+    let engine = ExpressionEngineDefault::new();
+    println!("engine={}", engine.Name());
+
+    let (node,_)=engine.Lexer("1 + 1".to_string());
+
+    println!("result={}",node.eval(&json!(1)))
 }

@@ -9,28 +9,16 @@ use std::collections::linked_list::LinkedList;
 //TODO 解决bug
 
 pub fn Parser(express: String, optMap: &OptMap) -> (Node, String) {
-    let tokens = ParserTokens(&express,optMap);
-
+    let tokens = ParserTokens(&express, optMap);
     let mut nodes = vec![];
     for item in tokens {
-        let node = Node::parser(item.as_str(),optMap);
-//        if err != "" {
-//            return (Node::New(String::new()), err);
-//        }
+        let node = Node::parser(item.as_str(), optMap);
         nodes.push(node);
     }
-//    //TODO check nodes
-//
-//
+    //TODO check nodes
     for item in optMap.priorityArray() {
         findReplaceOpt(optMap, &express, &item, &mut nodes);
     }
-//
-//    for item in &nodes {
-//        if item.Type()==NBinary{
-//            //println!("{}",item.Data)
-//        }
-//    }
     return (nodes[0].clone(), String::new());
 }
 
