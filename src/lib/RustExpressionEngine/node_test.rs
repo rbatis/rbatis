@@ -64,7 +64,7 @@ fn TestNodeRun() {
 
 #[test]
 fn TestStringNode() {
-    let mut strNode = Node::newString("sadf".to_string());
+    let mut strNode = Node::newString("sadf");
     strNode.eval(&Value::Null {});
     //println!("value:{}", result);
 }
