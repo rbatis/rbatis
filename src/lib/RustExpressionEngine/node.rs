@@ -130,9 +130,9 @@ impl Node {
             nodeType: NArg,
         }
     }
-    pub fn newString(arg: String) -> Self {
+    pub fn newString(arg: &str) -> Self {
         Self {
-            value: Value::String(arg),
+            value: Value::String(arg.to_string()),
             leftBinaryNode: None,
             rightBinaryNode: None,
             nodeType: NString,
@@ -213,7 +213,7 @@ impl Node {
             return Node::newOpt(data);
         } else if firstIndex == 0 && lastIndex == (data.len() - 1) && firstIndex != lastIndex {
             let newStr = data.replace("'", "").replace("`", "");
-            return Node::newString(newStr);
+            return Node::newString(newStr.as_str());
         } else if IsNumber(&data.to_string()) {
             if data.find(".").unwrap_or(0) != 0 {
                 let parsed = data.parse().unwrap();
