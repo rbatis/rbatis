@@ -39,6 +39,9 @@ impl Node for StringNode {
         for (item,value) in &self.expressMap {
             result = result.replace(value, env.get(item).unwrap_or(&Value::String(String::new())).as_str().unwrap_or(""));
         }
+        for (item,value) in &self.noConvertExpressMap {
+            result = result.replace(value, env.get(item).unwrap_or(&Value::String(String::new())).as_str().unwrap_or(""));
+        }
         return result;
     }
 }
