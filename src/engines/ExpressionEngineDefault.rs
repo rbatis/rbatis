@@ -10,7 +10,6 @@ use std::rc::Rc;
 use serde_json::json;
 
 pub struct ExpressionEngineDefault<'a> {
-    result: Value,
     optMap: OptMap<'a>,
 }
 
@@ -35,7 +34,6 @@ impl <'a>ExpressionEngine<Node, Value> for ExpressionEngineDefault<'a> {
 impl<'a> ExpressionEngineDefault<'a> {
     pub fn new() -> Self {
         Self {
-            result: Value::Null,
             optMap: OptMap::new(),
         }
     }
