@@ -13,6 +13,7 @@ impl SqlArgTypeConvertDefault{
 impl SqlArgTypeConvert for SqlArgTypeConvertDefault {
     fn convert(&self,arg: Value) -> String {
         match arg {
+            Value::Null => return String::from("null"),
             Value::String(s) => return "'".to_owned()+s.as_str()+"'",
             Value::Number(n) => return n.to_string(),
             Value::Object(o) => panic!("not support object!"),
