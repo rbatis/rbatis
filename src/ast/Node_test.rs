@@ -10,7 +10,7 @@ fn TestStringNode() {
         "name": "John Doe",
     });
 
-    let strNode = NodeType::NString(StringNode::new("vvvvvvvvvv#{name}vvvvvvvv"));
+    let strNode = NodeType::NString(StringNode::new("vvvvvvvvvv#{name}vvvvvvvv${name}"));
 
     let result = strNode.eval(&john);
     println!("{}", result);
