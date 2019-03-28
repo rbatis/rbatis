@@ -2,6 +2,14 @@ use std::rc::Rc;
 use crate::ast::Node::Node;
 use serde_json::Value;
 use crate::ast::StringNode::StringNode;
+use crate::ast::IfNode::IfNode;
+use crate::ast::TrimNode::TrimNode;
+use crate::ast::ForEachNode::ForEachNode;
+use crate::ast::ChooseNode::ChooseNode;
+use crate::ast::OtherwiseNode::OtherwiseNode;
+use crate::ast::WhenNode::WhenNode;
+use crate::ast::BindNode::BindNode;
+use crate::ast::IncludeNode::IncludeNode;
 
 pub enum NodeType {
     Null,
@@ -21,63 +29,17 @@ impl Node for NodeType {
         match self {
             NodeType::Null => return String::new(),
             NodeType::NString(stringNode) => return stringNode.eval(env),
-//            NodeType::NIf(ifNode) => return ifNode.eval(env),
-//            NodeType::NTrim(trimNode) => return trimNode.eval(env),
-//            NodeType::NForEach(forEachNode) => return forEachNode.eval(env),
-//            NodeType::NChoose(chooseNode) => return chooseNode.eval(env),
-//            NodeType::NChoose(otherwiseNode) => return otherwiseNode.eval(env),
-//            NodeType::NChoose(whenNode) => return whenNode.eval(env),
-//            NodeType::NChoose(bindNode) => return bindNode.eval(env),
-//            NodeType::NChoose(includeNode) => return includeNode.eval(env),
+            NodeType::NIf(ifNode) => return ifNode.eval(env),
+            NodeType::NTrim(trimNode) => return trimNode.eval(env),
+            NodeType::NForEach(forEachNode) => return forEachNode.eval(env),
+            NodeType::NChoose(chooseNode) => return chooseNode.eval(env),
+            NodeType::NOtherwise(otherwiseNode) => return otherwiseNode.eval(env),
+            NodeType::NWhen(whenNode) => return whenNode.eval(env),
+            NodeType::NBind(bindNode) => return bindNode.eval(env),
+            NodeType::NInclude(includeNode) => return includeNode.eval(env),
             _ => String::new(),
         }
     }
-}
-
-pub struct BindNode {
-    pub name: String,
-    pub value: String,
-}
-
-pub struct ChooseNode {
-    pub whenNodes: Vec<NodeType>,
-    pub otherwiseNode: Rc<NodeType>,
-}
-
-pub struct ForEachNode {
-    pub childs: Vec<NodeType>,
-    pub collection: String,
-    pub  index: String,
-    pub item: String,
-    pub open: String,
-    pub close: String,
-    pub separator: String,
-}
-
-pub struct IfNode {
-    pub childs: Vec<NodeType>,
-    pub test: String,
-}
-
-pub struct IncludeNode {
-    pub childs: Vec<NodeType>,
-}
-
-pub struct OtherwiseNode {
-    pub childs: Vec<NodeType>,
-}
-
-pub struct TrimNode {
-    pub childs: Vec<NodeType>,
-    pub prefix: String,
-    pub suffix: String,
-    pub suffixOverrides: String,
-    pub prefixOverrides: String,
-}
-
-pub struct WhenNode {
-    pub childs: Vec<NodeType>,
-    pub test: String,
 }
 
 
