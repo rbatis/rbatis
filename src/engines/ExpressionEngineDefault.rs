@@ -21,12 +21,8 @@ impl <'a>ExpressionEngine<Node, Value> for ExpressionEngineDefault<'a> {
         return RustExpressionEngine::parser::Parser(lexerArg, &self.optMap);
     }
 
-    fn Eval(&self, lexerResult: Node, env: &Value) -> (Value, String) {
+    fn Eval(&self, lexerResult: &Node, env: &Value) -> (Value, String) {
         return (lexerResult.eval(env), String::new());
-    }
-
-    fn LexerAndEval(&self, lexerArg: String, env: &Value) -> (Value, String) {
-        unimplemented!()
     }
 }
 
