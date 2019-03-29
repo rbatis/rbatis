@@ -18,7 +18,7 @@
 
 
 ##动态表达式性能(测试平台 win10,6 core i7,16GB mem)
-``` 识别执行 '1 <= 2'  parser_test::Bench_Parser ... bench:          21 ns/iter (+/- 0) ```
-``` 识别执行 '1 >= 2'  parser_test::Bench_Parser ... bench:          21 ns/iter (+/- 0) ```
-``` 识别执行 '1 > 2'  parser_test::Bench_Parser ... bench:          21 ns/iter (+/- 0) ```
-``` 识别执行 '1 < 2'  parser_test::Bench_Parser ... bench:          21 ns/iter (+/- 0) ```
+<pre>识别执行 '1 <= 2'  parser_test::Bench_Parser ... bench:          21 ns/iter (+/- 0)
+     识别执行 '1 >= 2'  parser_test::Bench_Parser ... bench:          21 ns/iter (+/- 0)
+     识别执行 '1 > 2'  parser_test::Bench_Parser ... bench:          21 ns/iter (+/- 0)
+     识别执行 '1 < 2'  parser_test::Bench_Parser ... bench:          21 ns/iter (+/- 0) </pre>
