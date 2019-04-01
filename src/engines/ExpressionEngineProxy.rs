@@ -5,7 +5,7 @@ use std::rc::Rc;
 
 pub struct ExpressionEngineProxy<'a, T, R> {
     expressionEngine: Rc<ExpressionEngine<T, R>>,
-    cache: ExpressionEngineCache<'a>,
+    cache: ExpressionEngineCache<'a,T>,
 }
 
 impl<'a, T, R> ExpressionEngine<T, R> for ExpressionEngineProxy<'a, T, R> {
@@ -23,7 +23,7 @@ impl<'a, T, R> ExpressionEngine<T, R> for ExpressionEngineProxy<'a, T, R> {
 }
 
 impl<'a, T, R> ExpressionEngineProxy<'a, T, R> {
-    pub fn new(expressionEngine: Rc<ExpressionEngine<T, R>>, expressionEngineCache: ExpressionEngineCache<'a>) -> Self {
+    pub fn new(expressionEngine: Rc<ExpressionEngine<T, R>>, expressionEngineCache: ExpressionEngineCache<'a,T>) -> Self {
         Self {
             expressionEngine: expressionEngine,
             cache: expressionEngineCache,
@@ -33,12 +33,12 @@ impl<'a, T, R> ExpressionEngineProxy<'a, T, R> {
     pub fn LexerAndEval(&mut self, lexerArg: &'a str, arg: &Value) -> (R,String) {
         unimplemented!();
 //        let cached = self.cache.get(lexerArg);
-//        if cached.is_none() {
+//        if &cached.is_none() == &true {
 //            let (nodes, e) = self.Lexer(lexerArg.to_string());
 //            &self.cache.put(lexerArg, nodes);
 //            return self.Eval(&nodes,arg);
 //        } else {
-//            return self.Eval(cached.unwrap(),arg);
+//            return self.Eval(&cached.unwrap(),arg);
 //        }
     }
 }
