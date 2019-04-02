@@ -8,7 +8,7 @@ pub struct BindNode<'a> {
     pub name: String,
     pub value: String,
 
-    pub engine: Rc<ExpressionEngineProxy<'a, lib::RustExpressionEngine::node::Node, Value>>,
+    pub engine: ExpressionEngineProxy<'a, lib::RustExpressionEngine::node::Node, Value>,
 }
 
 impl<'a> SqlNode for BindNode<'a> {
