@@ -1,9 +1,9 @@
 use crate::ast::NodeType::NodeType;
-use crate::ast::Node::Node;
+use crate::ast::Node::SqlNode;
 use serde_json::Value;
 
-pub struct ForEachNode {
-    pub childs: Vec<NodeType>,
+pub struct ForEachNode<'a> {
+    pub childs: Vec<NodeType<'a>>,
     pub collection: String,
     pub index: String,
     pub item: String,
@@ -12,7 +12,7 @@ pub struct ForEachNode {
     pub separator: String,
 }
 
-impl Node for ForEachNode {
+impl <'a> SqlNode for ForEachNode<'a> {
     fn eval(&self, env: &Value) -> String {
         unimplemented!()
     }

@@ -1,13 +1,13 @@
 use crate::ast::NodeType::NodeType;
-use crate::ast::Node::Node;
+use crate::ast::Node::SqlNode;
 use serde_json::Value;
 
-pub struct IfNode {
-    pub childs: Vec<NodeType>,
+pub struct IfNode<'a> {
+    pub childs: Vec<NodeType<'a>>,
     pub test: String,
 }
 
-impl Node for IfNode{
+impl <'a> SqlNode for IfNode<'a>{
     fn eval(&self, env: &Value) -> String {
         unimplemented!()
     }

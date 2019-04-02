@@ -1,5 +1,5 @@
 use std::rc::Rc;
-use crate::ast::Node::Node;
+use crate::ast::Node::SqlNode;
 use serde_json::Value;
 use crate::ast::StringNode::StringNode;
 use crate::ast::IfNode::IfNode;
@@ -11,20 +11,20 @@ use crate::ast::WhenNode::WhenNode;
 use crate::ast::BindNode::BindNode;
 use crate::ast::IncludeNode::IncludeNode;
 
-pub enum NodeType {
+pub enum NodeType<'a> {
     Null,
     NString(StringNode),
-    NIf(IfNode),
-    NTrim(TrimNode),
-    NForEach(ForEachNode),
-    NChoose(ChooseNode),
-    NOtherwise(OtherwiseNode),
-    NWhen(WhenNode),
-    NBind(BindNode),
-    NInclude(IncludeNode),
+    NIf(IfNode<'a>),
+    NTrim(TrimNode<'a>),
+    NForEach(ForEachNode<'a>),
+    NChoose(ChooseNode<'a>),
+    NOtherwise(OtherwiseNode<'a>),
+    NWhen(WhenNode<'a>),
+    NBind(BindNode<'a>),
+    NInclude(IncludeNode<'a>),
 }
 
-impl Node for NodeType {
+impl <'a> SqlNode for NodeType<'a> {
     fn eval(&self, env: &Value) -> String {
         match self {
             NodeType::Null => return String::new(),

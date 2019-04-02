@@ -1,5 +1,5 @@
 use crate::ast::NodeType::NodeType;
-use crate::ast::Node::Node;
+use crate::ast::Node::SqlNode;
 use serde_json::{json, Value};
 use crate::ast::StringNode::StringNode;
 use test::Bencher;
