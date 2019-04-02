@@ -31,16 +31,16 @@ impl<'a, T: Copy, R: Copy> ExpressionEngineProxy<'a, T, R> {
     }
 
     pub fn LexerAndEval(&mut self, lexerArg: &'a str, arg: &Value) -> (R, String) {
-        let cached = self.cache.get(lexerArg);
+        let  cached = self.cache.get(lexerArg);
         if cached.is_none() {
             let (nodes, e) = self.Lexer(lexerArg.to_string());
             self.cache.put(lexerArg, nodes);
             let (v, e) = self.Eval(&nodes, arg);
             return (v.clone(), e.clone());
         } else {
-//            let (v,e)= self.Eval(&cached.unwrap(),arg);
-//            return (v.clone(),e.clone());
-            unimplemented!();
+            let c=cached.unwrap().clone();
+            let (v, e) = self.Eval(&c, arg);
+            return (v.clone(), e.clone());
         }
     }
 }
