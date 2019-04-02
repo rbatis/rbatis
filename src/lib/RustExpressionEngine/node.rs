@@ -80,18 +80,18 @@ impl Node {
         return self.nodeType == *arg;
     }
 
-    pub fn eval(&self, env: &Value) -> Value {
+    pub fn eval(&self, env: &Value) -> Result<Value,String> {
         if self.equalNodeType(&NBinary) {
             let leftV = self.leftBinaryNode.clone().unwrap().eval(env);
             let rightV = self.rightBinaryNode.clone().unwrap().eval(env);
             let opt = self.toString();
-            let (v, _) = Eval(&leftV, &rightV, opt);
+            let v = Eval(&leftV.unwrap(), &rightV.unwrap(), opt);
             return v;
         } else if self.equalNodeType(&NArg) {
             let arr = &(self.value.as_array().unwrap());
             let arrLen = arr.len() as i32;
             if arrLen == 0 {
-                return Value::Null;
+                return Result::Ok(Value::Null);
             }
             let mut index = 0;
             let mut v = env;
@@ -99,13 +99,13 @@ impl Node {
                 let itemStr = item.as_str().unwrap();
                 v = v.get(itemStr).unwrap_or(&Value::Null);
                 if index + 1 == arrLen {
-                    return v.clone();
+                    return Result::Ok(v.clone());
                 }
                 index = index + 1;
             }
-            return Value::Null;
+            return Result::Ok(Value::Null);
         }
-        return self.value.clone();
+        return Result::Ok(self.value.clone());
     }
 
     pub fn opt(&self) -> Option<&str> {

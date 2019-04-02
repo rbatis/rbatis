@@ -15,11 +15,11 @@ impl<'a, T:Clone, R:Clone> ExpressionEngine<T, R> for ExpressionEngineProxy<'a, 
         return self.expressionEngine.Name();
     }
 
-    fn Lexer(&self, lexerArg: String) -> (T, String) {
+    fn Lexer(&self, lexerArg: String) -> Result<T, String>{
         return self.expressionEngine.Lexer(lexerArg);
     }
 
-    fn Eval(&self, lexerResult: &T, arg: &Value) -> (R, String) {
+    fn Eval(&self, lexerResult: &T, arg: &Value) -> Result<R, String> {
         return self.expressionEngine.Eval(lexerResult, arg);
     }
 }
@@ -32,17 +32,15 @@ impl<'a, T:Clone, R:Clone> ExpressionEngineProxy<'a, T, R> {
         }
     }
 
-    pub fn LexerAndEval(&mut self, lexerArg: &'a str, arg: &Value) -> (R, String) {
+    pub fn LexerAndEval(&mut self, lexerArg: &'a str, arg: &Value) -> Result<R, String>{
         let cached = self.cache.get(lexerArg);
         if cached.is_none() {
-            let (nodes, e) = self.Lexer(lexerArg.to_string());
+            let nodes = self.Lexer(lexerArg.to_string()).unwrap();
             self.cache.put(lexerArg, nodes.clone());
-            let (v, e) = self.Eval(&nodes, arg);
-            return (v.clone(), e.clone());
+            return self.Eval(&nodes, arg);
         } else {
             let c = cached.unwrap().clone();
-            let (v, e) = self.Eval(&c, arg);
-            return (v.clone(), e.clone());
+            return  self.Eval(&c, arg);
         }
     }
 }

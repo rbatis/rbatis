@@ -8,7 +8,7 @@ use std::collections::linked_list::LinkedList;
 
 //TODO 解决bug
 
-pub fn Parser(express: String, optMap: &OptMap) -> (Node, String) {
+pub fn Parser(express: String, optMap: &OptMap) -> Result<Node,String> {
     let tokens = ParserTokens(&express, optMap);
     let mut nodes = vec![];
     for item in tokens {
@@ -19,7 +19,7 @@ pub fn Parser(express: String, optMap: &OptMap) -> (Node, String) {
     for item in optMap.priorityArray() {
         findReplaceOpt(optMap, &express, &item, &mut nodes);
     }
-    return (nodes[0].clone(), String::new());
+    return Result::Ok(nodes[0].clone());
 }
 
 fn findReplaceOpt(optMap: &OptMap, express: &String, operator: &str, nodeArg: &mut Vec<Node>) {

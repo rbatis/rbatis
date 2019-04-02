@@ -17,12 +17,12 @@ impl <'a>ExpressionEngine<Node, Value> for ExpressionEngineDefault<'a> {
         return String::from("ExpressionEngineDefault");
     }
 
-    fn Lexer(&self, lexerArg: String) -> (Node, String) {
+    fn Lexer(&self, lexerArg: String) -> Result<Node,String> {
         return RustExpressionEngine::parser::Parser(lexerArg, &self.optMap);
     }
 
-    fn Eval(&self, lexerResult: &Node, env: &Value) -> (Value, String) {
-        return (lexerResult.eval(env), String::new());
+    fn Eval(&self, lexerResult: &Node, env: &Value) -> Result<Value, String> {
+        return lexerResult.eval(env);
     }
 }
 
@@ -40,7 +40,8 @@ fn TestExpressionEngineDefault() {
     let engine = ExpressionEngineDefault::new();
     println!("engine={}", engine.Name());
 
-    let (node,_)=engine.Lexer("1 + 1".to_string());
+    let node=engine.Lexer("1 + 1".to_string());
 
-    println!("result={}",node.eval(&json!(1)))
+    let result=node.unwrap().eval(&json!(1));
+    println!("result={}",result.unwrap());
 }

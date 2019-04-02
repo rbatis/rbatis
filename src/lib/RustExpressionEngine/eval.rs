@@ -11,85 +11,85 @@ use std::rc::Rc;
 
 pub fn Eval(left: &Value,
             right: &Value,
-            op: &str) -> (Value, String) {
+            op: &str) -> Result<Value,String> {
     if op == "&&" {
-        return (Value::Bool(left.as_bool().unwrap() && right.as_bool().unwrap()), String::new());
+        return Result::Ok(Value::Bool(left.as_bool().unwrap() && right.as_bool().unwrap()));
     }
     if op == "||" {
-        return (Value::Bool(left.as_bool().unwrap() || right.as_bool().unwrap()), String::new());
+        return Result::Ok(Value::Bool(left.as_bool().unwrap() || right.as_bool().unwrap()));
     }
 
     if op == "==" {
         if left.is_number() && right.is_number() {
-            return (Value::Bool(left.as_f64() == right.as_f64()), String::new());
+            return Result::Ok(Value::Bool(left.as_f64() == right.as_f64()));
         }
-        return (Value::Bool(left.eq(right)), String::new());
+        return Result::Ok(Value::Bool(left.eq(right)));
     }
     if op == "!=" {
         if left.is_number() && right.is_number() {
-            return (Value::Bool(!(left.as_f64() == right.as_f64())), String::new());
+            return Result::Ok(Value::Bool(!(left.as_f64() == right.as_f64())));
         }
-        return (Value::Bool(!left.eq(right)), String::new());
+        return Result::Ok(Value::Bool(!left.eq(right)));
     }
     if op == ">=" {
         let booll = left.is_number();
         let boolr = right.is_number();
         if booll && boolr {
-            return (Value::Bool(left.as_f64() >= right.as_f64()), String::new());
+            return Result::Ok(Value::Bool(left.as_f64() >= right.as_f64()));
         }
     }
     if op == "<=" {
         let booll = left.is_number();
         let boolr = right.is_number();
         if booll && boolr {
-            return (Value::Bool(left.as_f64() <= right.as_f64()), String::new());
+            return Result::Ok(Value::Bool(left.as_f64() <= right.as_f64()));
         }
     }
     if op == ">" {
         let booll = left.is_number();
         let boolr = right.is_number();
         if booll && boolr {
-            return (Value::Bool(left.as_f64() > right.as_f64()), String::new());
+            return Result::Ok(Value::Bool(left.as_f64() > right.as_f64()));
         }
     }
     if op == "<" {
         let booll = left.is_number();
         let boolr = right.is_number();
         if booll && boolr {
-            return (Value::Bool(left.as_f64() < right.as_f64()), String::new());
+            return Result::Ok(Value::Bool(left.as_f64() < right.as_f64()));
         }
     }
     if op == "+" {
         let booll = left.is_number();
         let boolr = right.is_number();
         if booll && boolr {
-            return (Value::Number(serde_json::Number::from_f64(left.as_f64().unwrap() + right.as_f64().unwrap()).unwrap()), String::new());
+            return Result::Ok(Value::Number(serde_json::Number::from_f64(left.as_f64().unwrap() + right.as_f64().unwrap()).unwrap()));
         } else {
-            return (Value::from(left.as_str().unwrap().to_owned() + right.as_str().unwrap()), String::new());
+            return Result::Ok(Value::from(left.as_str().unwrap().to_owned() + right.as_str().unwrap()));
         }
     }
     if op == "-" {
         let booll = left.is_number();
         let boolr = right.is_number();
         if booll && boolr {
-            return (Value::Number(serde_json::Number::from_f64(left.as_f64().unwrap() - right.as_f64().unwrap()).unwrap()), String::new());
+            return Result::Ok(Value::Number(serde_json::Number::from_f64(left.as_f64().unwrap() - right.as_f64().unwrap()).unwrap()));
         }
     }
     if op == "*" {
         let booll = left.is_number();
         let boolr = right.is_number();
         if booll && boolr {
-            return (Value::Number(serde_json::Number::from_f64(left.as_f64().unwrap() * right.as_f64().unwrap()).unwrap()), String::new());
+            return Result::Ok(Value::Number(serde_json::Number::from_f64(left.as_f64().unwrap() * right.as_f64().unwrap()).unwrap()));
         }
     }
     if op == "/" {
         let booll = left.is_number();
         let boolr = right.is_number();
         if booll && boolr {
-            return (Value::Number(serde_json::Number::from_f64(left.as_f64().unwrap() / right.as_f64().unwrap()).unwrap()), String::new());
+            return Result::Ok(Value::Number(serde_json::Number::from_f64(left.as_f64().unwrap() / right.as_f64().unwrap()).unwrap()));
         }
     }
-    return (Value::Null, String::new());
+    return Result::Ok(Value::Null);
 }
 
 

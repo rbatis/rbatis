@@ -34,5 +34,5 @@ fn TestCache() {
         cache.put("sadf", Node::newString("asdf"));
         v = cache.get("sadf");
     }
-    println!("{}", v.unwrap().eval(&Value::Null));
+    println!("{}", v.unwrap().eval(&Value::Null).unwrap());
 }
