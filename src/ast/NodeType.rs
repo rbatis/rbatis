@@ -25,7 +25,7 @@ pub enum NodeType<'a> {
 }
 
 impl <'a> SqlNode for NodeType<'a> {
-    fn eval(&mut self, env: &Value) -> String {
+    fn eval(&mut self, env: &mut Value) -> String {
         match self {
             NodeType::Null => return String::new(),
             NodeType::NString(stringNode) => return stringNode.eval(env),

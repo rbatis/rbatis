@@ -9,11 +9,20 @@ use crate::engines::ExpressionEngineCache::ExpressionEngineCache;
 #[test]
 fn TestBindNode(){
     let mut bindNode =BindNode{
-        name: "".to_string(),
-        value: "".to_string(),
+        name: "a",
+        value: "1+1",
         engine: ExpressionEngineProxy::new(Rc::new(ExpressionEngineDefault::new()),
                                            ExpressionEngineCache::new()),
     };
 
-    bindNode.eval(&json!("123321"));
+    let mut john = json!({
+        "a": 0,
+    });
+
+
+    let r=bindNode.eval(& mut john);
+
+
+    println!("r={}",r);
+    println!("john[a]={}",john["a"]);
 }

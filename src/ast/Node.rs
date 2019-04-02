@@ -6,6 +6,6 @@ use serde_json::Value;
 * Abstract syntax tree node
 */
 pub trait SqlNode {
-    fn eval(&mut self, env: &Value) -> String;
+    fn eval(&mut self, env: &mut Value) -> String;
 }
 
