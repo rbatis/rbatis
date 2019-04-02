@@ -6,7 +6,7 @@ use test::Bencher;
 
 #[bench]
 fn Bench_Parser(b: &mut Bencher) {
-    let (mut boxNode,_ )= parser::Parser(String::from("'1'+'1'"), &OptMap::new());
+    let mut boxNode= parser::Parser(String::from("'1'+'1'"), &OptMap::new()).unwrap();
     let john = json!({
         "n":1,
         "name": "John Doe",

@@ -13,8 +13,8 @@ pub struct BindNode<'a> {
 
 impl<'a> SqlNode for BindNode<'a> {
     fn eval(&mut self, env: &mut Value) -> String {
-        let (r,e)= self.engine.LexerAndEval(self.value,env);
-        env[self.name]=r;
+        let r= self.engine.LexerAndEval(self.value,env);
+        env[self.name]=r.unwrap();
         return "".to_string();
     }
 }

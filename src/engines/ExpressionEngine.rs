@@ -7,6 +7,6 @@ use serde_json::Value;
 
 pub trait ExpressionEngine<T, R> {
     fn Name(&self) -> String;
-    fn Lexer(&self,lexerArg: String) -> (T, String);
-    fn Eval(&self, lexerResult: &T, arg: &Value) -> (R, String);
+    fn Lexer(&self,lexerArg: String) -> Result<T, String>;
+    fn Eval(&self, lexerResult: &T, arg: &Value) -> Result<R, String>;
 }
