@@ -2,6 +2,7 @@ use crate::engines::ExpressionEngine::ExpressionEngine;
 use serde_json::Value;
 use crate::engines::ExpressionEngineCache::ExpressionEngineCache;
 use std::rc::Rc;
+use crate::engines::ExpressionEngineDefault::ExpressionEngineDefault;
 
 pub struct ExpressionEngineProxy<'a, T, R> {
     expressionEngine: Rc<ExpressionEngine<T, R>>,
@@ -29,6 +30,13 @@ impl<'a, T: Copy, R: Copy> ExpressionEngineProxy<'a, T, R> {
             cache: expressionEngineCache,
         }
     }
+
+//    pub fn newDefault() -> Self {
+//        Self {
+//            expressionEngine: Rc::new(ExpressionEngineDefault::new()),
+//            cache: ExpressionEngineCache::new(),
+//        }
+//    }
 
     pub fn LexerAndEval(&mut self, lexerArg: &'a str, arg: &Value) -> (R, String) {
         let  cached = self.cache.get(lexerArg);

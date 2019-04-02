@@ -5,7 +5,7 @@ use serde_json::Value;
 /**
 * Abstract syntax tree node
 */
-pub trait   Node {
-    fn eval(&self,env:&Value) -> String;
+pub trait SqlNode {
+    fn eval(&self, env: &Value) -> String;
 }
 

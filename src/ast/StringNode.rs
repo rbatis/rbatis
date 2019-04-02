@@ -1,5 +1,5 @@
 use crate::utils::string_util;
-use crate::ast::Node::Node;
+use crate::ast::Node::SqlNode;
 use serde_json::Value;
 use std::collections::HashMap;
 use crate::ast::SqlArgTypeConvert::SqlArgTypeConvert;
@@ -38,7 +38,7 @@ impl StringNode {
     }
 }
 
-impl Node for StringNode {
+impl SqlNode for StringNode {
     fn eval(&self, env: &Value) -> String {
         let mut result = self.value.clone();
         for (item,value) in &self.expressMap {

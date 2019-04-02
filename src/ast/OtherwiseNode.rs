@@ -1,12 +1,12 @@
 use crate::ast::NodeType::NodeType;
-use crate::ast::Node::Node;
+use crate::ast::Node::SqlNode;
 use serde_json::Value;
 
-pub struct OtherwiseNode {
-    pub childs: Vec<NodeType>,
+pub struct OtherwiseNode<'a> {
+    pub childs: Vec<NodeType<'a>>,
 }
 
-impl Node for OtherwiseNode{
+impl<'a> SqlNode for OtherwiseNode<'a> {
     fn eval(&self, env: &Value) -> String {
         unimplemented!()
     }
