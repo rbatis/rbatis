@@ -10,13 +10,13 @@ use crate::engines::ExpressionEngineCache::ExpressionEngineCache;
 fn TestBindNode(){
     let mut bindNode =BindNode{
         name: "a",
-        value: "1+1",
+        value: "a+1",
         engine: ExpressionEngineProxy::new(Rc::new(ExpressionEngineDefault::new()),
                                            ExpressionEngineCache::new()),
     };
 
     let mut john = json!({
-        "a": 0,
+        "a": 1,
     });
 
 
