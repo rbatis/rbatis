@@ -32,8 +32,11 @@ impl<'a, T: Copy, R: Copy> ExpressionEngineProxy<'a, T, R> {
     }
 
 //    pub fn newDefault() -> Self {
+//
+//        let engine:Rc<ExpressionEngine<T, R>> = Rc::new(ExpressionEngineDefault::new());
+//
 //        Self {
-//            expressionEngine: Rc::new(ExpressionEngineDefault::new()),
+//            expressionEngine: engine,
 //            cache: ExpressionEngineCache::new(),
 //        }
 //    }
