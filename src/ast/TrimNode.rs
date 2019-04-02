@@ -11,7 +11,7 @@ pub struct TrimNode<'a> {
 }
 
 impl<'a> SqlNode for TrimNode<'a> {
-    fn eval(&self, env: &Value) -> String {
+    fn eval(&mut self, env: &Value) -> String {
         unimplemented!()
     }
 }
