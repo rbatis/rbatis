@@ -8,7 +8,7 @@ pub struct IfNode<'a> {
 }
 
 impl <'a> SqlNode for IfNode<'a>{
-    fn eval(&self, env: &Value) -> String {
+    fn eval(&mut self, env: &Value) -> String {
         unimplemented!()
     }
 }

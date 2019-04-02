@@ -8,7 +8,7 @@ use crate::engines::ExpressionEngineCache::ExpressionEngineCache;
 
 #[test]
 fn TestBindNode(){
-    let bindNode=BindNode{
+    let mut bindNode =BindNode{
         name: "".to_string(),
         value: "".to_string(),
         engine: ExpressionEngineProxy::new(Rc::new(ExpressionEngineDefault::new()),

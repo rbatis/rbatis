@@ -7,7 +7,7 @@ pub struct OtherwiseNode<'a> {
 }
 
 impl<'a> SqlNode for OtherwiseNode<'a> {
-    fn eval(&self, env: &Value) -> String {
+    fn eval(&mut self, env: &Value) -> String {
         unimplemented!()
     }
 }

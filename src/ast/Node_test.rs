@@ -13,7 +13,7 @@ fn TestStringNode() {
     });
 
     let convert=SqlArgTypeConvertDefault::new();
-    let strNode = NodeType::NString(StringNode::new("select * from ${name} where name = #{name}",Rc::new(convert)));
+    let mut strNode = NodeType::NString(StringNode::new("select * from ${name} where name = #{name}", Rc::new(convert)));
 
     let result = strNode.eval(&john);
     println!("{}", result);
@@ -26,7 +26,7 @@ fn Bench_Parser(b: &mut Bencher) {
     });
     let convert=SqlArgTypeConvertDefault::new();
 
-    let strNode = NodeType::NString(StringNode::new("vvvvvvvvvv#{name}vvvvvvvv",Rc::new(convert)));
+    let mut strNode = NodeType::NString(StringNode::new("vvvvvvvvvv#{name}vvvvvvvv", Rc::new(convert)));
 
     b.iter(|| {
         &strNode.eval(john);
