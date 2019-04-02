@@ -8,20 +8,20 @@ use std::rc::Rc;
 
 #[test]
 fn TestStringNode() {
-    let john = json!({
+    let mut john = json!({
         "name": "John Doe",
     });
 
     let convert=SqlArgTypeConvertDefault::new();
     let mut strNode = NodeType::NString(StringNode::new("select * from ${name} where name = #{name}", Rc::new(convert)));
 
-    let result = strNode.eval(&john);
+    let result = strNode.eval(&mut john);
     println!("{}", result);
 }
 
 #[bench]
 fn Bench_Parser(b: &mut Bencher) {
-    let john:&Value = &json!({
+    let mut john =  json!({
         "name": "John Doe",
     });
     let convert=SqlArgTypeConvertDefault::new();
@@ -29,6 +29,6 @@ fn Bench_Parser(b: &mut Bencher) {
     let mut strNode = NodeType::NString(StringNode::new("vvvvvvvvvv#{name}vvvvvvvv", Rc::new(convert)));
 
     b.iter(|| {
-        &strNode.eval(john);
+        &strNode.eval(&mut john);
     });
 }

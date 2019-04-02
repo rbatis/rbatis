@@ -5,17 +5,16 @@ use crate::lib;
 use crate::ast::Node::SqlNode;
 
 pub struct BindNode<'a> {
-    pub name: String,
-    pub value: String,
+    pub name: &'a str,
+    pub value: &'a str,
 
     pub engine: ExpressionEngineProxy<'a, lib::RustExpressionEngine::node::Node, Value>,
 }
 
 impl<'a> SqlNode for BindNode<'a> {
-    fn eval(&mut self, env: &Value) -> String {
-//        self.engine.LexerAndEval(self.name.as_str(),&Value::String(self.value));
-//
-//        return "".to_string();
-        unimplemented!()
+    fn eval(&mut self, env: &mut Value) -> String {
+        let (r,e)= self.engine.LexerAndEval(self.value,env);
+        env[self.name]=r;
+        return "".to_string();
     }
 }
