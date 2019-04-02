@@ -5,6 +5,7 @@ use crate::ast::SqlArgTypeConvertDefault::SqlArgTypeConvertDefault;
 use std::rc::Rc;
 use serde_json::Value;
 
+#[derive(Clone, PartialEq)]
 pub struct ExpressionEngineCache<'a,T> {
     cache: HashMap<&'a str, T>,
 }
