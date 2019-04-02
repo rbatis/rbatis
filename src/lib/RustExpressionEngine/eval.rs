@@ -89,7 +89,7 @@ pub fn Eval(left: &Value,
             return Result::Ok(Value::Number(serde_json::Number::from_f64(left.as_f64().unwrap() / right.as_f64().unwrap()).unwrap()));
         }
     }
-    return Result::Ok(Value::Null);
+    return Result::Err("un support opt = ".to_owned()+op);
 }
 
 
