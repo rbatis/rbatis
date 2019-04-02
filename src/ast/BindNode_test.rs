@@ -8,11 +8,12 @@ use crate::engines::ExpressionEngineCache::ExpressionEngineCache;
 
 #[test]
 fn TestBindNode(){
-//    let bindNode=BindNode{
-//        name: "".to_string(),
-//        value: "".to_string(),
-//        engine: Rc::new(ExpressionEngineProxy::new(Rc::new(ExpressionEngineDefault::new()),ExpressionEngineCache::new())),
-//    };
-//
-//    bindNode.eval(&json!("123321"));
+    let bindNode=BindNode{
+        name: "".to_string(),
+        value: "".to_string(),
+        engine: ExpressionEngineProxy::new(Rc::new(ExpressionEngineDefault::new()),
+                                           ExpressionEngineCache::new()),
+    };
+
+    bindNode.eval(&json!("123321"));
 }
