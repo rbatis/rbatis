@@ -51,9 +51,9 @@ impl SqlNode for StringNode {
         for (item, value) in &self.expressMap {
             let getV = env.get(item);
             if getV.is_none() {
-                //let v = self.engine.LexerAndEval(item, env).unwrap();
-                //let vstr = self.sqlConvert.convert(v);
-                //result = result.replace(value, vstr.as_str());
+                let v = self.engine.LexerAndEval(item, env).unwrap();
+                let vstr = self.sqlConvert.convert(v);
+                result = result.replace(value, vstr.as_str());
             } else {
                 let v = getV.unwrap_or(&Value::String(String::new())).clone();
                 let vstr = self.sqlConvert.convert(v);
