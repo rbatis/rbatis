@@ -15,8 +15,9 @@ pub fn TestChooseNode() {
     let mut john = json!({
         "arg": 2,
     });
-    let engine=ExpressionEngineProxy::new(Rc::new(ExpressionEngineDefault::new()),
-                                          ExpressionEngineCache::new());
+    let engine=ExpressionEngineProxy::new(
+        Rc::new(ExpressionEngineDefault::new()),
+        ExpressionEngineCache::new());
 
     let sNode = NString(StringNode::new("dsaf#{arg+1}", Rc::new(SqlArgTypeConvertDefault::new()),engine));
 
