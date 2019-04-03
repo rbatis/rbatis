@@ -55,7 +55,7 @@ fn TestNodeRun() {
         let resultValue = &item.eq.clone();
         if !result.eq(resultValue) {
             // println!("exe express fail:".to_owned()+item);
-            panic!(">>>>>>>>>>>>>>>>>>>>>exe fail express:'".to_owned() + item.clone().express + "'");
+            panic!("[RustMybatis]>>>>>>>>>>>>>>>>>>>>>exe fail express:'".to_owned() + item.clone().express + "'");
         }
         index += 1;
     }

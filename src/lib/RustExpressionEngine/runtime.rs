@@ -112,7 +112,7 @@ pub struct OptMap<'a> {
     //单操作符
     pub SingleOptMap: HashMap<&'a str, bool>,
 
-    pub priorityArray: Vec<&'a str>,
+    pub allowPriorityArray: Vec<&'a str>,
 }
 
 impl<'a> OptMap<'a> {
@@ -184,17 +184,28 @@ impl<'a> OptMap<'a> {
             Map: defMap,
             MulOpsMap: MulOpsMap,
             SingleOptMap: SingleOptMap,
-            priorityArray: vecs,
+            allowPriorityArray: vecs,
         }
     }
 
     //乘除优先于加减 计算优于比较,
     pub fn priorityArray(&self) -> Vec<&str> {
-        return self.priorityArray.clone();
+        return self.allowPriorityArray.clone();
     }
 
+    //是否是操作符
     pub fn isOpt(&self, arg: &str) -> bool {
         let opt = self.Map.get(arg);
-        return opt.unwrap_or(&false).clone();
+        return opt.is_none() == false;
+    }
+
+    //是否为有效的操作符
+    pub fn isAllowOpt(&self, arg: &str) -> bool {
+        for item in &self.allowPriorityArray{
+            if arg==*item{
+                return true;
+            }
+        }
+        return false;
     }
 }
