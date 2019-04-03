@@ -55,7 +55,7 @@ impl SqlNode for StringNode {
                 let vstr = self.sqlConvert.convert(v);
                 result = result.replace(value, vstr.as_str());
             } else {
-                let v = getV.unwrap_or(&Value::String(String::new())).clone();
+                let v = getV.unwrap().clone();
                 let vstr = self.sqlConvert.convert(v);
                 result = result.replace(value, vstr.as_str());
             }
