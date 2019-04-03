@@ -15,14 +15,12 @@ pub struct ChooseNode<'a> {
 impl<'a> SqlNode for ChooseNode<'a> {
     fn eval(&mut self, env: &mut Value) -> Result<String, String> {
         let whenIsNone = self.whenNodes.is_none();
-        //let otherIsNone = self.otherwiseNode.is_none();
-        if whenIsNone {
-            return Result::Ok(String::new());
-        }
-        for mut item in self.whenNodes.clone().unwrap() {
-            let s = item.eval(env);
-            if s.is_ok() {
-                return s;
+        if whenIsNone == false {
+            for mut item in self.whenNodes.clone().unwrap() {
+                let s = item.eval(env);
+                if s.is_ok() {
+                    return s;
+                }
             }
         }
         let mut node = self.otherwiseNode.deref_mut().eval(env);
