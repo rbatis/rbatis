@@ -3,11 +3,11 @@ use crate::ast::Node::SqlNode;
 use serde_json::Value;
 
 #[derive(Clone)]
-pub struct IncludeNode<'a> {
-    pub childs: Vec<NodeType<'a>>,
+pub struct IncludeNode {
+    pub childs: Vec<NodeType>,
 }
 
-impl <'a> SqlNode for IncludeNode<'a>{
+impl  SqlNode for IncludeNode{
     fn eval(&mut self, env: &mut Value) -> Result<String,String> {
         unimplemented!()
     }

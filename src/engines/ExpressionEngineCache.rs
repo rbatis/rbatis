@@ -6,18 +6,18 @@ use std::rc::Rc;
 use serde_json::Value;
 
 #[derive(Clone, PartialEq)]
-pub struct ExpressionEngineCache<'a,T> {
-    cache: HashMap<&'a str, T>,
+pub struct ExpressionEngineCache<T> {
+    cache: HashMap<String, T>,
 }
 
-impl<'a,T> ExpressionEngineCache<'a,T> {
+impl<T> ExpressionEngineCache<T> {
     pub fn new() -> Self {
         return Self {
             cache: HashMap::new(),
         };
     }
 
-    pub fn put(&mut self, k: &'a str, v: T) {
+    pub fn put(&mut self, k: String, v: T) {
         &self.cache.insert(k, v);
     }
 
@@ -31,7 +31,7 @@ fn TestCache() {
     let mut cache = ExpressionEngineCache::new();
     let v;
     {
-        cache.put("sadf", Node::newString("asdf"));
+        cache.put("sadf".to_string(), Node::newString("asdf"));
         v = cache.get("sadf");
     }
     println!("{}", v.unwrap().eval(&Value::Null).unwrap());

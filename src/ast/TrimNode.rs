@@ -3,15 +3,15 @@ use crate::ast::Node::SqlNode;
 use serde_json::Value;
 
 #[derive(Clone)]
-pub struct TrimNode<'a> {
-    pub childs: Vec<NodeType<'a>>,
+pub struct TrimNode {
+    pub childs: Vec<NodeType>,
     pub prefix: String,
     pub suffix: String,
     pub suffixOverrides: String,
     pub prefixOverrides: String,
 }
 
-impl<'a> SqlNode for TrimNode<'a> {
+impl SqlNode for TrimNode {
     fn eval(&mut self, env: &mut Value) -> Result<String,String> {
         unimplemented!()
     }

@@ -3,8 +3,8 @@ use crate::ast::Node::SqlNode;
 use serde_json::Value;
 
 #[derive(Clone)]
-pub struct ForEachNode<'a> {
-    pub childs: Vec<NodeType<'a>>,
+pub struct ForEachNode {
+    pub childs: Vec<NodeType>,
     pub collection: String,
     pub index: String,
     pub item: String,
@@ -13,7 +13,7 @@ pub struct ForEachNode<'a> {
     pub separator: String,
 }
 
-impl <'a> SqlNode for ForEachNode<'a> {
+impl  SqlNode for ForEachNode {
     fn eval(&mut self, env: &mut Value) -> Result<String,String> {
         unimplemented!()
     }

@@ -7,12 +7,12 @@ use crate::ast::OtherwiseNode::OtherwiseNode;
 use std::ops::DerefMut;
 
 #[derive(Clone)]
-pub struct ChooseNode<'a> {
-    pub whenNodes: Option<Vec<NodeType<'a>>>,
-    pub otherwiseNode: Option<Box<NodeType<'a>>>,
+pub struct ChooseNode {
+    pub whenNodes: Option<Vec<NodeType>>,
+    pub otherwiseNode: Option<Box<NodeType>>,
 }
 
-impl<'a> SqlNode for ChooseNode<'a> {
+impl SqlNode for ChooseNode {
     fn eval(&mut self, env: &mut Value) -> Result<String, String> {
         if self.whenNodes.is_none() == false {
             for mut item in self.whenNodes.clone().unwrap() {
