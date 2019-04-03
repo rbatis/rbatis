@@ -43,9 +43,15 @@ impl SqlNode for StringNode {
     fn eval(&mut self, env: &mut Value) -> Result<String,String> {
         let mut result = self.value.clone();
         for (item,value) in &self.expressMap {
-            let v=env.get(item).unwrap_or(&Value::String(String::new())).clone();
-            let vstr=self.sqlConvert.convert(v);
-            result = result.replace(value, vstr.as_str());
+            let getV=env.get(item);
+            if getV.is_none(){
+                //TODO engine.eval()
+
+            }else{
+                let v=getV.unwrap_or(&Value::String(String::new())).clone();
+                let vstr=self.sqlConvert.convert(v);
+                result = result.replace(value, vstr.as_str());
+            }
         }
         for (item,value) in &self.noConvertExpressMap {
             result = result.replace(value, env.get(item).unwrap_or(&Value::String(String::new())).as_str().unwrap_or(""));
