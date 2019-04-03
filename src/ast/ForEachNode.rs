@@ -2,6 +2,7 @@ use crate::ast::NodeType::NodeType;
 use crate::ast::Node::SqlNode;
 use serde_json::Value;
 
+#[derive(Clone)]
 pub struct ForEachNode<'a> {
     pub childs: Vec<NodeType<'a>>,
     pub collection: String,

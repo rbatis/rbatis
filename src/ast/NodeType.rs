@@ -11,6 +11,7 @@ use crate::ast::WhenNode::WhenNode;
 use crate::ast::BindNode::BindNode;
 use crate::ast::IncludeNode::IncludeNode;
 
+#[derive(Clone)]
 pub enum NodeType<'a> {
     Null,
     NString(StringNode),

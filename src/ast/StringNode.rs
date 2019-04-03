@@ -8,6 +8,7 @@ use std::rc::Rc;
 /**
 *  string抽象节点
 **/
+#[derive(Clone)]
 pub struct StringNode {
     pub value: String,
     //去重的，需要替换的要sql转换express map

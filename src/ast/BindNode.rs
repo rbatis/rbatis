@@ -4,6 +4,7 @@ use crate::engines::ExpressionEngineProxy::ExpressionEngineProxy;
 use crate::lib;
 use crate::ast::Node::SqlNode;
 
+#[derive(Clone)]
 pub struct BindNode<'a> {
     pub name: &'a str,
     pub value: &'a str,

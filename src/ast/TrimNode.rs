@@ -2,6 +2,7 @@ use crate::ast::NodeType::NodeType;
 use crate::ast::Node::SqlNode;
 use serde_json::Value;
 
+#[derive(Clone)]
 pub struct TrimNode<'a> {
     pub childs: Vec<NodeType<'a>>,
     pub prefix: String,
