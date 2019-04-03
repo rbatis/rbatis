@@ -20,7 +20,7 @@ fn TestBindNode(){
     });
 
 
-    let r=bindNode.eval(& mut john);
+    let r=bindNode.eval(& mut john).unwrap();
 
 
     println!("r={}",r);

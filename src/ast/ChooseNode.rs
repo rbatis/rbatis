@@ -9,7 +9,7 @@ pub struct ChooseNode<'a> {
 }
 
 impl<'a> SqlNode for ChooseNode<'a> {
-    fn eval(&mut self, env: &mut Value) -> String {
+    fn eval(&mut self, env: &mut Value) -> Result<String,String> {
         unimplemented!()
 //        let whenIsNone = self.whenNodes.is_none();
 //        let otherIsNone = self.otherwiseNode.is_none();
