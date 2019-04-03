@@ -7,7 +7,7 @@ pub struct IncludeNode<'a> {
 }
 
 impl <'a> SqlNode for IncludeNode<'a>{
-    fn eval(&mut self, env: &mut Value) -> String {
+    fn eval(&mut self, env: &mut Value) -> Result<String,String> {
         unimplemented!()
     }
 }

@@ -25,9 +25,9 @@ pub enum NodeType<'a> {
 }
 
 impl <'a> SqlNode for NodeType<'a> {
-    fn eval(&mut self, env: &mut Value) -> String {
+    fn eval(&mut self, env: &mut Value) -> Result<String,String> {
         match self {
-            NodeType::Null => return String::new(),
+            NodeType::Null => return Result::Ok(String::new()),
             NodeType::NString(stringNode) => return stringNode.eval(env),
             NodeType::NIf(ifNode) => return ifNode.eval(env),
             NodeType::NTrim(trimNode) => return trimNode.eval(env),
@@ -37,7 +37,7 @@ impl <'a> SqlNode for NodeType<'a> {
             NodeType::NWhen(whenNode) => return whenNode.eval(env),
             NodeType::NBind(bindNode) => return bindNode.eval(env),
             NodeType::NInclude(includeNode) => return includeNode.eval(env),
-            _ => String::new(),
+            _ => Result::Err(String::from("NodeType not exist!")),
         }
     }
 }

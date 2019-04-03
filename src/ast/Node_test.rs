@@ -15,7 +15,7 @@ fn TestStringNode() {
     let convert=SqlArgTypeConvertDefault::new();
     let mut strNode = NodeType::NString(StringNode::new("select * from ${name} where name = #{name}", Rc::new(convert)));
 
-    let result = strNode.eval(&mut john);
+    let result = strNode.eval(&mut john).unwrap();
     println!("{}", result);
 }
 
