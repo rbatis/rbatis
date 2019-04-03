@@ -9,7 +9,7 @@ use std::ops::DerefMut;
 #[derive(Clone)]
 pub struct ChooseNode<'a> {
     pub whenNodes: Option<Vec<NodeType<'a>>>,
-    pub otherwiseNode: Box<NodeType<'a>>,
+    pub otherwiseNode: Option<Box<NodeType<'a>>>,
 }
 
 impl<'a> SqlNode for ChooseNode<'a> {
@@ -23,7 +23,9 @@ impl<'a> SqlNode for ChooseNode<'a> {
                 }
             }
         }
-        let mut node = self.otherwiseNode.deref_mut().eval(env);
-        return node;
+        if self.otherwiseNode.is_none() == false {
+            return self.otherwiseNode.clone().unwrap().deref_mut().eval(env);
+        }
+        return Result::Ok("".to_string());
     }
 }
