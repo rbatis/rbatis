@@ -12,20 +12,20 @@ use crate::ast::BindNode::BindNode;
 use crate::ast::IncludeNode::IncludeNode;
 
 #[derive(Clone)]
-pub enum NodeType<'a> {
+pub enum NodeType {
     Null,
-    NString(StringNode<'a>),
-    NIf(IfNode<'a>),
-    NTrim(TrimNode<'a>),
-    NForEach(ForEachNode<'a>),
-    NChoose(ChooseNode<'a>),
-    NOtherwise(OtherwiseNode<'a>),
-    NWhen(WhenNode<'a>),
-    NBind(BindNode<'a>),
-    NInclude(IncludeNode<'a>),
+    NString(StringNode),
+    NIf(IfNode),
+    NTrim(TrimNode),
+    NForEach(ForEachNode),
+    NChoose(ChooseNode),
+    NOtherwise(OtherwiseNode),
+    NWhen(WhenNode),
+    NBind(BindNode),
+    NInclude(IncludeNode),
 }
 
-impl<'a> SqlNode for NodeType<'a> {
+impl SqlNode for NodeType {
     fn eval(&mut self, env: &mut Value) -> Result<String, String> {
         match self {
             NodeType::Null => return Result::Ok(String::new()),

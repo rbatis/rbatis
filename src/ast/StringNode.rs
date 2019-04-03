@@ -12,7 +12,7 @@ use crate::engines::ExpressionEngine::ExpressionEngine;
 *  string抽象节点
 **/
 #[derive(Clone)]
-pub struct StringNode<'a> {
+pub struct StringNode {
     pub value: String,
     //去重的，需要替换的要sql转换express map
     pub expressMap: HashMap<String, String>,
@@ -21,11 +21,11 @@ pub struct StringNode<'a> {
 
     pub sqlConvert: Rc<SqlArgTypeConvert>,
 
-    pub engine: ExpressionEngineProxy<'a, lib::RustExpressionEngine::node::Node, Value>,
+    pub engine: ExpressionEngineProxy<lib::RustExpressionEngine::node::Node, Value>,
 }
 
-impl<'a> StringNode<'a> {
-    pub fn new(v: &str, convert: Rc<SqlArgTypeConvert>, engine: ExpressionEngineProxy<'a, lib::RustExpressionEngine::node::Node, Value>) -> Self {
+impl StringNode {
+    pub fn new(v: &str, convert: Rc<SqlArgTypeConvert>, engine: ExpressionEngineProxy< lib::RustExpressionEngine::node::Node, Value>) -> Self {
         //TODO find v #[] and find v$[]
         let mut expressMap = HashMap::new();
         for item in &string_util::findConvertString(v.to_string()) {
@@ -45,7 +45,7 @@ impl<'a> StringNode<'a> {
     }
 }
 
-impl<'a> SqlNode for StringNode<'a> {
+impl SqlNode for StringNode {
     fn eval(&mut self, env: &mut Value) -> Result<String, String> {
         let mut result = self.value.clone();
         for (item, value) in &self.expressMap {

@@ -5,17 +5,17 @@ use std::rc::Rc;
 use crate::engines::ExpressionEngineDefault::ExpressionEngineDefault;
 
 #[derive(Clone)]
-pub struct ExpressionEngineProxy<'a, T, R> {
+pub struct ExpressionEngineProxy<T, R> {
     expressionEngine: Rc<ExpressionEngine<T, R>>,
-    cache: ExpressionEngineCache<'a, T>,
+    cache: ExpressionEngineCache<T>,
 }
 
-impl<'a, T:Clone, R:Clone> ExpressionEngine<T, R> for ExpressionEngineProxy<'a, T, R> {
+impl<'a, T: Clone, R: Clone> ExpressionEngine<T, R> for ExpressionEngineProxy<T, R> {
     fn Name(&self) -> String {
         return self.expressionEngine.Name();
     }
 
-    fn Lexer(&self, lexerArg: String) -> Result<T, String>{
+    fn Lexer(&self, lexerArg: String) -> Result<T, String> {
         return self.expressionEngine.Lexer(lexerArg);
     }
 
@@ -24,23 +24,23 @@ impl<'a, T:Clone, R:Clone> ExpressionEngine<T, R> for ExpressionEngineProxy<'a, 
     }
 }
 
-impl<'a, T:Clone, R:Clone> ExpressionEngineProxy<'a, T, R> {
-    pub fn new(expressionEngine: Rc<ExpressionEngine<T, R>>, expressionEngineCache: ExpressionEngineCache<'a, T>) -> Self {
+impl<T: Clone, R: Clone> ExpressionEngineProxy<T, R> {
+    pub fn new(expressionEngine: Rc<ExpressionEngine<T, R>>, expressionEngineCache: ExpressionEngineCache<T>) -> Self {
         Self {
             expressionEngine: expressionEngine,
             cache: expressionEngineCache,
         }
     }
 
-    pub fn LexerAndEval(&mut self, lexerArg: &'a str, arg: &Value) -> Result<R, String>{
+    pub fn LexerAndEval(&mut self, lexerArg: &str, arg: &Value) -> Result<R, String> {
         let cached = self.cache.get(lexerArg);
         if cached.is_none() {
             let nodes = self.Lexer(lexerArg.to_string()).unwrap();
-            self.cache.put(lexerArg, nodes.clone());
+            self.cache.put(lexerArg.to_string(), nodes.clone());
             return self.Eval(&nodes, arg);
         } else {
             let c = cached.unwrap().clone();
-            return  self.Eval(&c, arg);
+            return self.Eval(&c, arg);
         }
     }
 }
