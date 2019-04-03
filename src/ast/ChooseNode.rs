@@ -14,8 +14,7 @@ pub struct ChooseNode<'a> {
 
 impl<'a> SqlNode for ChooseNode<'a> {
     fn eval(&mut self, env: &mut Value) -> Result<String, String> {
-        let whenIsNone = self.whenNodes.is_none();
-        if whenIsNone == false {
+        if self.whenNodes.is_none() == false {
             for mut item in self.whenNodes.clone().unwrap() {
                 let s = item.eval(env);
                 if s.is_ok() {
