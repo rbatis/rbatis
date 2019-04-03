@@ -10,10 +10,10 @@ use serde_json::json;
 #[test]
 pub fn TestChooseNode() {
     let mut john = json!({
-        "a": 1,
+        "arg": 2,
     });
 
-    let sNode = NString(StringNode::new("dsaf", Rc::new(SqlArgTypeConvertDefault::new())));
+    let sNode = NString(StringNode::new("dsaf#{arg}", Rc::new(SqlArgTypeConvertDefault::new())));
 
     let mut c = ChooseNode {
         whenNodes: Option::Some(vec![sNode]),
