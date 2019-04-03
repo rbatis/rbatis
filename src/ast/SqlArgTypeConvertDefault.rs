@@ -16,6 +16,7 @@ impl SqlArgTypeConvert for SqlArgTypeConvertDefault {
             Value::Null => return String::from("null"),
             Value::String(s) => return "'".to_owned()+s.as_str()+"'",
             Value::Number(n) => return n.to_string(),
+            Value::Bool(b) => return b.to_string(),
             Value::Object(o) => panic!("not support convert object!"),
             Value::Array(arr) => panic!("not support convert array!"),
             _ => return String::from(""),
