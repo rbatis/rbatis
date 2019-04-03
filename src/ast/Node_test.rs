@@ -5,6 +5,9 @@ use crate::ast::StringNode::StringNode;
 use test::Bencher;
 use crate::ast::SqlArgTypeConvertDefault::SqlArgTypeConvertDefault;
 use std::rc::Rc;
+use crate::engines::ExpressionEngineProxy::ExpressionEngineProxy;
+use crate::engines::ExpressionEngineDefault::ExpressionEngineDefault;
+use crate::engines::ExpressionEngineCache::ExpressionEngineCache;
 
 #[test]
 fn TestStringNode() {
@@ -13,7 +16,9 @@ fn TestStringNode() {
     });
 
     let convert=SqlArgTypeConvertDefault::new();
-    let mut strNode = NodeType::NString(StringNode::new("select * from ${name} where name = #{name}", Rc::new(convert)));
+    let engine=ExpressionEngineProxy::new(Rc::new(ExpressionEngineDefault::new()),
+                                          ExpressionEngineCache::new());
+    let mut strNode = NodeType::NString(StringNode::new("select * from ${name} where name = #{name}", Rc::new(convert),engine));
 
     let result = strNode.eval(&mut john).unwrap();
     println!("{}", result);
@@ -25,8 +30,10 @@ fn Bench_Parser(b: &mut Bencher) {
         "name": "John Doe",
     });
     let convert=SqlArgTypeConvertDefault::new();
+    let engine=ExpressionEngineProxy::new(Rc::new(ExpressionEngineDefault::new()),
+                                          ExpressionEngineCache::new());
 
-    let mut strNode = NodeType::NString(StringNode::new("vvvvvvvvvv#{name}vvvvvvvv", Rc::new(convert)));
+    let mut strNode = NodeType::NString(StringNode::new("vvvvvvvvvv#{name}vvvvvvvv", Rc::new(convert),engine));
 
     b.iter(|| {
         &strNode.eval(&mut john);

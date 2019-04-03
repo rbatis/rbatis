@@ -14,7 +14,7 @@ use crate::ast::IncludeNode::IncludeNode;
 #[derive(Clone)]
 pub enum NodeType<'a> {
     Null,
-    NString(StringNode),
+    NString(StringNode<'a>),
     NIf(IfNode<'a>),
     NTrim(TrimNode<'a>),
     NForEach(ForEachNode<'a>),
@@ -25,8 +25,8 @@ pub enum NodeType<'a> {
     NInclude(IncludeNode<'a>),
 }
 
-impl <'a> SqlNode for NodeType<'a> {
-    fn eval(&mut self, env: &mut Value) -> Result<String,String> {
+impl<'a> SqlNode for NodeType<'a> {
+    fn eval(&mut self, env: &mut Value) -> Result<String, String> {
         match self {
             NodeType::Null => return Result::Ok(String::new()),
             NodeType::NString(stringNode) => return stringNode.eval(env),
