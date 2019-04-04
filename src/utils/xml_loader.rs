@@ -75,9 +75,9 @@ fn parserFunc(parser: EventReader<&[u8]>) {
 //                    attributes: vec![],
 //                    childs: vec![]
 //                });
-                tempElement.data=data;
                 let last=fathers.last_mut().unwrap();
-                *last=tempElement.clone();
+                (*last).data= data.clone();
+               // *last=tempElement.clone();
             }
             Ok(XmlEvent::EndElement { name }) => {
                 println!("{} </{}>", indent(depth), name);
@@ -85,7 +85,7 @@ fn parserFunc(parser: EventReader<&[u8]>) {
 //                if name.local_name=="mapper" {
 //                    continue;
 //                }
-                if depth==1{
+                if name.local_name=="mapper"{
                     continue;
                 }
 
