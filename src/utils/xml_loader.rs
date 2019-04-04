@@ -8,6 +8,15 @@ use std::fs;
 use std::thread::park;
 use std::fmt::Error;
 use core::borrow::Borrow;
+use self::xml::attribute::OwnedAttribute;
+
+
+pub struct Element {
+    pub tag: String,
+    pub data: String,
+    pub attributes: Vec<OwnedAttribute>,
+    pub childs: Vec<Element>,
+}
 
 
 pub fn load_xml(mut file_content: &mut String) {
