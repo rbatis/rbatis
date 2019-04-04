@@ -10,7 +10,7 @@ use std::fmt::Error;
 use core::borrow::Borrow;
 use self::xml::attribute::OwnedAttribute;
 
-
+#[derive(Clone)]
 pub struct Element {
     pub tag: String,
     pub data: String,
