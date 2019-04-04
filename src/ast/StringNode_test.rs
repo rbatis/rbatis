@@ -18,8 +18,8 @@ pub fn TestStringNode(){
     let engine=ExpressionEngineProxy::new(
         Rc::new(ExpressionEngineDefault::new()),
         ExpressionEngineCache::new());
-
-    let mut sNode = StringNode::new("arg+1=#{arg+1}", Rc::new(SqlArgTypeConvertDefault::new()), engine);
+    let convert=Rc::new(SqlArgTypeConvertDefault::new());
+    let mut sNode = StringNode::new("arg+1=#{arg+1}", convert, engine);
 
     let r=sNode.eval(&mut john).unwrap();
     println!("{}",r);
