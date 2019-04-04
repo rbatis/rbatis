@@ -14,7 +14,7 @@
 ## 进度表
 | ast | xmlLoader | expressEngines | sqlDecoder | logSystem | dataSourceRouter |templeteDecoder |
 | ------ | ------ | ------ | ------ | ------ | ------ |------ |
-| * | √ | √ | * | * | * | * |
+| √ | √ | √ | * | * | * | * |
 
 
 ##动态表达式性能(测试平台 win10,6 core i7,16GB mem)
