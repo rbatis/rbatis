@@ -28,13 +28,12 @@ impl Element {
 }
 
 
-pub fn load_xml(mut file_content: &mut String) {
+pub fn load_xml(mut file_content: &mut String) -> Vec<Element> {
     let mut parser = EventReader::from_str(file_content);
-    parserFunc(parser);
-//    parserFunc(parser.borrow());
+    return parserFunc(parser);
 }
 
-fn parserFunc(parser: EventReader<&[u8]>) {
+fn parserFunc(parser: EventReader<&[u8]>) -> Vec<Element> {
     let mut depth = 0;
 
     let mut tempElement = &mut Element {
@@ -47,7 +46,7 @@ fn parserFunc(parser: EventReader<&[u8]>) {
     let mut fathers = vec![];
 
     for item in parser {
-        println!("depth={}",depth);
+        println!("depth={}", depth);
         match item {
             Ok(XmlEvent::StartElement { name, attributes, .. }) => {
                 print!("{} <{} ", indent(depth), name);
@@ -81,7 +80,7 @@ fn parserFunc(parser: EventReader<&[u8]>) {
                 let last = fathers.last_mut();
                 if last.is_some() {
                     last.unwrap().childs.push(pop);
-                }else{
+                } else {
                     fathers.push(pop)
                 }
                 tempElement.reset();
@@ -97,6 +96,7 @@ fn parserFunc(parser: EventReader<&[u8]>) {
     }
 
     println!("result>>>>>>>  {}", fathers.len());
+    return fathers;
 }
 
 fn indent(size: usize) -> String {
