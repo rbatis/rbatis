@@ -5,14 +5,14 @@ use crate::ast::Node::SqlNode;
 use serde_json::json;
 use crate::engines::ExpressionEngineDefault::ExpressionEngineDefault;
 use crate::engines::ExpressionEngineCache::ExpressionEngineCache;
+use crate::ast::NodeConfigHolder::NodeConfigHolder;
 
 #[test]
 fn TestBindNode(){
     let mut bindNode =BindNode{
         name: "a".to_string(),
         value: "a+1".to_string(),
-        engine: ExpressionEngineProxy::new(Rc::new(ExpressionEngineDefault::new()),
-                                           ExpressionEngineCache::new()),
+        holder: Box::new(NodeConfigHolder::new()),
     };
 
     let mut john = json!({
