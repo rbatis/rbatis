@@ -7,6 +7,9 @@ use std::rc::Rc;
 use crate::engines::ExpressionEngineProxy::ExpressionEngineProxy;
 use crate::lib;
 use crate::engines::ExpressionEngine::ExpressionEngine;
+use crate::engines::ExpressionEngineDefault::ExpressionEngineDefault;
+use crate::engines::ExpressionEngineCache::ExpressionEngineCache;
+use crate::ast::SqlArgTypeConvertDefault::SqlArgTypeConvertDefault;
 
 /**
 *  string抽象节点
@@ -25,8 +28,16 @@ pub struct StringNode {
 }
 
 impl StringNode {
+
+    pub fn newDefault(v: &str)-> Self{
+        let engine=ExpressionEngineProxy::new(
+            Rc::new(ExpressionEngineDefault::new()),
+            ExpressionEngineCache::new());
+        let convert=Rc::new(SqlArgTypeConvertDefault::new());
+       return StringNode::new(v,convert,engine);
+    }
+
     pub fn new(v: &str, convert: Rc<SqlArgTypeConvert>, engine: ExpressionEngineProxy< lib::RustExpressionEngine::node::Node, Value>) -> Self {
-        //TODO find v #[] and find v$[]
         let mut expressMap = HashMap::new();
         for item in &string_util::findConvertString(v.to_string()) {
             expressMap.insert(item.clone(), "#{".to_owned() + item.as_str() + "}");

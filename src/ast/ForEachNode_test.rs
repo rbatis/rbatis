@@ -12,13 +12,9 @@ use crate::engines::ExpressionEngineDefault::ExpressionEngineDefault;
 
 #[test]
 pub fn TestForEachNode(){
-    let engine=ExpressionEngineProxy::new(
-        Rc::new(ExpressionEngineDefault::new()),
-        ExpressionEngineCache::new());
-    let convert=Rc::new(SqlArgTypeConvertDefault::new());
 
     let mut n=ForEachNode{
-        childs: vec![NodeType::NString(StringNode::new("#{item}",convert,engine))],
+        childs: vec![NodeType::NString(StringNode::newDefault("#{item}"))],
         collection: "arg".to_string(),
         index: "index".to_string(),
         item: "item".to_string(),
