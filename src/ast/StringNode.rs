@@ -29,6 +29,7 @@ pub struct StringNode {
 
 impl StringNode {
 
+    //初始化了默认的引擎和sql转换器，比较耗时，推荐使用new(...)或者是在debug测试时使用。
     pub fn newDefault(v: &str)-> Self{
         let engine=ExpressionEngineProxy::new(
             Rc::new(ExpressionEngineDefault::new()),
