@@ -47,12 +47,9 @@ fn parserFunc(parser: EventReader<&[u8]>) {
     let mut fathers = vec![];
 
     for item in parser {
-        //println!("depth={}", depth);
         match item {
             Ok(XmlEvent::StartElement { name, attributes, .. }) => {
                 print!("{} <{} ", indent(depth), name);
-
-
                 //load attr
                 if attributes.len() != 0 {
                     for item in &attributes {
@@ -69,32 +66,22 @@ fn parserFunc(parser: EventReader<&[u8]>) {
             }
             Ok(XmlEvent::Characters(data)) => {
                 println!("{} {}", indent(depth), data);
-//                tempElement.childs.push(Element{
-//                    tag: "".to_string(),
-//                    data: data.clone(),
-//                    attributes: vec![],
-//                    childs: vec![]
-//                });
-                let last=fathers.last_mut().unwrap();
-               // (*last).data= data.clone();
-                (*last).childs.push(Element{
+                let last = fathers.last_mut().unwrap();
+                // (*last).data= data.clone();
+                (*last).childs.push(Element {
                     tag: "".to_string(),
                     data: data.clone(),
                     attributes: vec![],
-                    childs: vec![]
+                    childs: vec![],
                 })
             }
             Ok(XmlEvent::EndElement { name }) => {
                 println!("{} </{}>", indent(depth), name);
-                //parent
-//                if name.local_name=="mapper" {
-//                    continue;
-//                }
-                if name.local_name=="mapper"{
+                if name.local_name == "mapper" {
                     continue;
                 }
 
-                let pop=fathers.pop().unwrap();
+                let pop = fathers.pop().unwrap();
                 let last = fathers.last_mut();
                 if last.is_some() {
                     last.unwrap().childs.push(pop);
@@ -104,8 +91,8 @@ fn parserFunc(parser: EventReader<&[u8]>) {
                 depth -= 1;
             }
             Err(e) => {
-                println!("Error: {},{}", e,tempElement.tag);
-               break;
+                println!("Error: {},{}", e, tempElement.tag);
+                break;
             }
             _ => {}
         }
