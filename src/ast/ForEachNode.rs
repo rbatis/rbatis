@@ -15,6 +15,14 @@ pub struct ForEachNode {
 
 impl  SqlNode for ForEachNode {
     fn eval(&mut self, env: &mut Value) -> Result<String,String> {
-        unimplemented!()
+        unimplemented!();
+//        let collection=env.get(self.collection.as_str());
+//        if collection.is_none(){
+//            return Result::Err("[RustMybatis] collection name:".to_owned()+self.collection.as_str()+" is none value!");
+//        }
+//
+//
+//
+//        return Result::Err("".to_string());
     }
 }
