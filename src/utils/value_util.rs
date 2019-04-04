@@ -8,7 +8,7 @@ pub fn GetDeepValue(arg: &str, value: &Value) -> Value {
     let mut v = value;
     for item in splits {
         if item.is_empty() {
-            return Value::Null;
+            continue;
         }
         let ropt = v.get(item);
         if ropt.is_none() {
