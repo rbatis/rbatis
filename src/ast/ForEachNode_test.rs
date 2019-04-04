@@ -8,13 +8,14 @@ use std::rc::Rc;
 use crate::engines::ExpressionEngineCache::ExpressionEngineCache;
 use crate::ast::SqlArgTypeConvertDefault::SqlArgTypeConvertDefault;
 use crate::engines::ExpressionEngineDefault::ExpressionEngineDefault;
+use crate::ast::NodeConfigHolder::NodeConfigHolder;
 
 
 #[test]
 pub fn TestForEachNode(){
 
     let mut n=ForEachNode{
-        childs: vec![NodeType::NString(StringNode::newDefault("index:#{index},item:#{item}"))],
+        childs: vec![NodeType::NString(StringNode::new("index:#{index},item:#{item}",Box::new(NodeConfigHolder::new())))],
         collection: "arg".to_string(),
         index: "index".to_string(),
         item: "item".to_string(),

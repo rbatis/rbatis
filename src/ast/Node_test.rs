@@ -8,17 +8,14 @@ use std::rc::Rc;
 use crate::engines::ExpressionEngineProxy::ExpressionEngineProxy;
 use crate::engines::ExpressionEngineDefault::ExpressionEngineDefault;
 use crate::engines::ExpressionEngineCache::ExpressionEngineCache;
+use crate::ast::NodeConfigHolder::NodeConfigHolder;
 
 #[test]
 fn TestStringNode() {
     let mut john = json!({
         "name": "John Doe",
     });
-
-    let convert=SqlArgTypeConvertDefault::new();
-    let engine=ExpressionEngineProxy::new(Rc::new(ExpressionEngineDefault::new()),
-                                          ExpressionEngineCache::new());
-    let mut strNode = NodeType::NString(StringNode::new("select * from ${name} where name = #{name}", Rc::new(convert),engine));
+    let mut strNode = NodeType::NString(StringNode::new("select * from ${name} where name = #{name}", Box::new(NodeConfigHolder::new())));
 
     let result = strNode.eval(&mut john).unwrap();
     println!("{}", result);
@@ -29,11 +26,9 @@ fn Bench_Parser(b: &mut Bencher) {
     let mut john =  json!({
         "name": "John Doe",
     });
-    let convert=SqlArgTypeConvertDefault::new();
-    let engine=ExpressionEngineProxy::new(Rc::new(ExpressionEngineDefault::new()),
-                                          ExpressionEngineCache::new());
 
-    let mut strNode = NodeType::NString(StringNode::new("vvvvvvvvvv#{name}vvvvvvvv", Rc::new(convert),engine));
+
+    let mut strNode = NodeType::NString(StringNode::new("vvvvvvvvvv#{name}vvvvvvvv", Box::new(NodeConfigHolder::new())));
 
     b.iter(|| {
         &strNode.eval(&mut john);
