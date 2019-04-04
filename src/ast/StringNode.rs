@@ -10,6 +10,7 @@ use crate::engines::ExpressionEngine::ExpressionEngine;
 use crate::engines::ExpressionEngineDefault::ExpressionEngineDefault;
 use crate::engines::ExpressionEngineCache::ExpressionEngineCache;
 use crate::ast::SqlArgTypeConvertDefault::SqlArgTypeConvertDefault;
+use crate::ast::NodeConfigHolder::NodeConfigHolder;
 
 /**
 *  string抽象节点
@@ -22,23 +23,12 @@ pub struct StringNode {
     //去重的，需要替换的免sql转换express map
     pub noConvertExpressMap: HashMap<String, String>,
 
-    pub sqlConvert: Rc<SqlArgTypeConvert>,
-
-    pub engine: ExpressionEngineProxy<lib::RustExpressionEngine::node::Node, Value>,
+    pub holder: Box<NodeConfigHolder>,
 }
 
 impl StringNode {
 
-    //初始化了默认的引擎和sql转换器，比较耗时，推荐使用new(...)或者是在debug测试时使用。
-    pub fn newDefault(v: &str)-> Self{
-        let engine=ExpressionEngineProxy::new(
-            Rc::new(ExpressionEngineDefault::new()),
-            ExpressionEngineCache::new());
-        let convert=Rc::new(SqlArgTypeConvertDefault::new());
-       return StringNode::new(v,convert,engine);
-    }
-
-    pub fn new(v: &str, convert: Rc<SqlArgTypeConvert>, engine: ExpressionEngineProxy< lib::RustExpressionEngine::node::Node, Value>) -> Self {
+    pub fn new(v: &str, holder:Box<NodeConfigHolder>) -> Self {
         let mut expressMap = HashMap::new();
         for item in &string_util::findConvertString(v.to_string()) {
             expressMap.insert(item.clone(), "#{".to_owned() + item.as_str() + "}");
@@ -51,8 +41,7 @@ impl StringNode {
             value: v.to_string(),
             expressMap:expressMap,
             noConvertExpressMap:noConvertExpressMap,
-            sqlConvert: convert,
-            engine: engine,
+            holder:holder,
         }
     }
 }
@@ -63,12 +52,12 @@ impl SqlNode for StringNode {
         for (item, value) in &self.expressMap {
             let getV = env.get(item);
             if getV.is_none() {
-                let v = self.engine.LexerAndEval(item, env).unwrap();
-                let vstr = self.sqlConvert.convert(v);
+                let v = self.holder.as_mut().engine.LexerAndEval(item, env).unwrap();
+                let vstr = self.holder.sqlConvert.convert(v);
                 result = result.replace(value, vstr.as_str());
             } else {
                 let v = getV.unwrap().clone();
-                let vstr = self.sqlConvert.convert(v);
+                let vstr = self.holder.sqlConvert.convert(v);
                 result = result.replace(value, vstr.as_str());
             }
         }
