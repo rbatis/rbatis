@@ -19,6 +19,9 @@ impl SqlNode for ForEachNode {
     fn eval(&mut self, env: &mut Value) -> Result<String, String> {
         let mut result = String::new();
 
+        //open
+        result=result+self.open.as_str();
+
         let collectionValue = utils::value_util::GetDeepValue(self.collection.as_str(), env);
         if collectionValue.is_null() {
             return Result::Err("[RustMybatis] collection name:".to_owned() + self.collection.as_str() + " is none value!");
@@ -28,7 +31,9 @@ impl SqlNode for ForEachNode {
         }
         let collection = collectionValue.as_array().unwrap();
 
+        let collectionLen=collection.len() as i32;
         let mut index = -1;
+        let haveSeparator= !self.separator.is_empty();
         for item in collection {
             index = index + 1;
             //build temp arg
@@ -41,7 +46,12 @@ impl SqlNode for ForEachNode {
                 return itemResult;
             }
             result = result + itemResult.unwrap().as_str();
+            if haveSeparator && (index+1)<collectionLen{
+                result = result + self.separator.as_str();
+            }
         }
+        //close
+        result=result+self.close.as_str();
         return Result::Ok(result);
     }
 }

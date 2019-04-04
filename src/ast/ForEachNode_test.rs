@@ -18,9 +18,9 @@ pub fn TestForEachNode(){
         collection: "arg".to_string(),
         index: "index".to_string(),
         item: "item".to_string(),
-        open: "".to_string(),
-        close: "".to_string(),
-        separator: "".to_string()
+        open: "(".to_string(),
+        close: ")".to_string(),
+        separator: ",".to_string()
     };
     let mut john = json!({
         "arg": [1,2,3,4],
