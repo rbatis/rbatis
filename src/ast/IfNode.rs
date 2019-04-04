@@ -5,7 +5,6 @@ use serde_json::Value;
 #[derive(Clone)]
 pub struct IfNode {
     pub childs: Vec<NodeType>,
-    pub t: NodeType,
     pub test: String,
 }
 
