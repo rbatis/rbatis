@@ -76,8 +76,13 @@ fn parserFunc(parser: EventReader<&[u8]>) {
 //                    childs: vec![]
 //                });
                 let last=fathers.last_mut().unwrap();
-                (*last).data= data.clone();
-               // *last=tempElement.clone();
+               // (*last).data= data.clone();
+                (*last).childs.push(Element{
+                    tag: "".to_string(),
+                    data: data.clone(),
+                    attributes: vec![],
+                    childs: vec![]
+                })
             }
             Ok(XmlEvent::EndElement { name }) => {
                 println!("{} </{}>", indent(depth), name);
