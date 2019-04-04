@@ -14,7 +14,7 @@ use crate::engines::ExpressionEngineDefault::ExpressionEngineDefault;
 pub fn TestForEachNode(){
 
     let mut n=ForEachNode{
-        childs: vec![NodeType::NString(StringNode::newDefault("#{item}"))],
+        childs: vec![NodeType::NString(StringNode::newDefault("index:#{index},item:#{item}"))],
         collection: "arg".to_string(),
         index: "index".to_string(),
         item: "item".to_string(),
