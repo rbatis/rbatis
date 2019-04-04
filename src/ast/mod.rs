@@ -11,7 +11,7 @@ pub mod IncludeNode;
 pub mod OtherwiseNode;
 pub mod TrimNode;
 pub mod WhenNode;
-
+pub mod NodeConfigHolder;
 //test
 mod Node_test;
 mod SqlArgTypeConvertDefault_test;
