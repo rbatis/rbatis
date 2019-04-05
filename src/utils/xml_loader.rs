@@ -83,8 +83,6 @@ fn parserFunc(parser: EventReader<&[u8]>) -> Vec<Element> {
             _ => {}
         }
     }
-
-    println!("result>>>>>>>  {}", fathers.len());
     return fathers;
 }
 
