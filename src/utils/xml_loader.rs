@@ -94,15 +94,6 @@ fn indent(size: usize) -> String {
         .fold(String::with_capacity(size * INDENT.len()), |r, s| r + s)
 }
 
-
-#[test]
-fn Test_load() {
-    let filePath = "./src/example/Example_ActivityMapper.xml";
-    println!(">>>>>>>>>>>>>>>>>>>>>>start load {} >>>>>>>>>>>>>>>>>>>>>>>", filePath);
-    let path = fs::read_to_string(filePath).unwrap();
-    println!("Name: {}", path)
-}
-
 //load a xml file
 #[test]
 fn Test_load_file() {
@@ -119,6 +110,7 @@ fn Test_load_xml() {
     let filePath = "./src/example/Example_ActivityMapper.xml";
     println!(">>>>>>>>>>>>>>>>>>>>>>start load {} >>>>>>>>>>>>>>>>>>>>>>>", filePath);
     let mut content = fs::read_to_string("./src/example/Example_ActivityMapper.xml").unwrap();
+    println!("With text:/n{}", content);
 
     load_xml(&mut content);
 }
