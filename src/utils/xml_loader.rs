@@ -46,18 +46,9 @@ fn parserFunc(parser: EventReader<&[u8]>) -> Vec<Element> {
     let mut fathers = vec![];
 
     for item in parser {
-        println!("depth={}", depth);
         match item {
             Ok(XmlEvent::StartElement { name, attributes, .. }) => {
-                print!("{} <{} ", indent(depth), name);
                 //load attr
-                if attributes.len() != 0 {
-                    for item in &attributes {
-                        print!("{}=\"{}\" ", item.name, item.value)
-                    }
-                }
-                println!(">");
-
                 tempElement.tag = name.local_name;
                 tempElement.attributes = attributes.clone();
 
@@ -65,7 +56,6 @@ fn parserFunc(parser: EventReader<&[u8]>) -> Vec<Element> {
                 depth += 1;
             }
             Ok(XmlEvent::Characters(data)) => {
-                println!("{} {}", indent(depth), data);
                 let last = fathers.last_mut().unwrap();
                 (*last).childs.push(Element {
                     tag: "".to_string(),
@@ -75,7 +65,6 @@ fn parserFunc(parser: EventReader<&[u8]>) -> Vec<Element> {
                 })
             }
             Ok(XmlEvent::EndElement { name }) => {
-                println!("{} </{}>", indent(depth), name);
                 let pop = fathers.pop().unwrap();
                 let last = fathers.last_mut();
                 if last.is_some() {

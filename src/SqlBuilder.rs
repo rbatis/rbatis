@@ -3,6 +3,27 @@ use std::collections::HashMap;
 use chrono::Local;
 use crate::utils::time_util;
 
+pub struct SqlBuilder {
+
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 #[test]
 fn TestSqlBuilder() {
     utils::print_util::print_rust_mybatis();
