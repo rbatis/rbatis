@@ -88,12 +88,6 @@ fn parserFunc(parser: EventReader<&[u8]>) -> Vec<Element> {
     return fathers;
 }
 
-fn indent(size: usize) -> String {
-    const INDENT: &'static str = "    ";
-    (0..size).map(|_| INDENT)
-        .fold(String::with_capacity(size * INDENT.len()), |r, s| r + s)
-}
-
 //load a xml file
 #[test]
 fn Test_load_file() {
