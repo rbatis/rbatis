@@ -98,7 +98,7 @@ impl Node {
             for item in *arr {
                 let itemStr = item.as_str().unwrap();
                 v = v.get(itemStr).unwrap_or(&Value::Null);
-                if index + 1 == arrLen {
+                if v.is_null() || index + 1 == arrLen {
                     return Result::Ok(v.clone());
                 }
                 index = index + 1;

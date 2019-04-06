@@ -25,8 +25,10 @@ fn TestNodeRun() {
         "a":1,
         "b":2,
         "c":"c",
+        "d":null,
     });
     let expressions: Vec<Eq> = vec![
+        Eq { express: "d.a == null", eq: json!(true) },
         Eq { express: "'2019-02-26' == '2019-02-26'", eq: json!(true) },
         Eq { express: "`f`+`s`", eq: json!("fs") },
         Eq { express: "a +1 > b * 8", eq: json!(false) },
