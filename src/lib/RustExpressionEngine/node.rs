@@ -49,7 +49,7 @@ impl Display for NodeType {
 #[derive(Clone)]
 pub struct Node {
     pub value: Value,
-    pub string_value: Option<Rc<Value>>,
+    pub string_value: Option<Rc<Value>>,//因为String结构体拷贝非常消耗性能，因此使用Rc智能指针来克隆代替原生String克隆
     pub leftBinaryNode: Option<Rc<Node>>,
     pub rightBinaryNode: Option<Rc<Node>>,
     pub nodeType: NodeType,
