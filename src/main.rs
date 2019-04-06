@@ -1,6 +1,5 @@
 #![feature(fn_traits)]
 #![feature(test)]
-#![feature(inner_deref)]
 
 mod example;
 mod ast;

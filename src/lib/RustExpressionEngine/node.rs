@@ -11,7 +11,6 @@ use crate::lib::RustExpressionEngine::runtime::{IsNumber, OptMap, ParserTokens};
 use std::rc::Rc;
 use std::sync::Arc;
 use serde_json::json;
-use std::ops::Deref;
 
 #[derive(Clone, PartialEq)]
 pub enum NodeType {
@@ -49,7 +48,6 @@ impl Display for NodeType {
 #[derive(Clone)]
 pub struct Node {
     pub value: Value,
-    pub string_value: Option<Rc<Value>>,//因为String结构体拷贝非常消耗性能，因此使用Rc智能指针来克隆代替原生String克隆
     pub leftBinaryNode: Option<Rc<Node>>,
     pub rightBinaryNode: Option<Rc<Node>>,
     pub nodeType: NodeType,
@@ -82,21 +80,13 @@ impl Node {
         return self.nodeType == *arg;
     }
 
-    pub fn eval(&self, env: &Value) -> Result<Value, String> {
+    pub fn eval(&self, env: &Value) -> Result<Value,String> {
         if self.equalNodeType(&NBinary) {
-            let l = self.leftBinaryNode.clone().unwrap();
-            let r = self.rightBinaryNode.clone().unwrap();
-            if (&l).equalNodeType(&NString) && (&r).equalNodeType(&NString) {
-                let opt = self.toString();
-                let v = Eval(l.string_value.clone().deref().unwrap(), r.string_value.clone().deref().unwrap(), opt);
-                return v;
-            } else {
-                let leftV = l.value.clone();
-                let rightV = r.value.clone();
-                let opt = self.toString();
-                let v = Eval(&leftV, &rightV, opt);
-                return v;
-            }
+            let leftV = self.leftBinaryNode.clone().unwrap().eval(env);
+            let rightV = self.rightBinaryNode.clone().unwrap().eval(env);
+            let opt = self.toString();
+            let v = Eval(&leftV.unwrap(), &rightV.unwrap(), opt);
+            return v;
         } else if self.equalNodeType(&NArg) {
             let arr = &(self.value.as_array().unwrap());
             let arrLen = arr.len() as i32;
@@ -125,7 +115,6 @@ impl Node {
 
     pub fn newNull() -> Self {
         Self {
-            string_value: None,
             value: Value::Null,
             leftBinaryNode: None,
             rightBinaryNode: None,
@@ -135,7 +124,6 @@ impl Node {
     pub fn newArg(arg: &str) -> Self {
         let d: Vec<&str> = arg.split(".").collect();
         Self {
-            string_value: None,
             value: json!(d),
             leftBinaryNode: None,
             rightBinaryNode: None,
@@ -144,7 +132,6 @@ impl Node {
     }
     pub fn newString(arg: &str) -> Self {
         Self {
-            string_value: Option::Some(Rc::new(Value::String(arg.to_string()))),
             value: Value::String(arg.to_string()),
             leftBinaryNode: None,
             rightBinaryNode: None,
@@ -153,7 +140,6 @@ impl Node {
     }
     pub fn newNumberF64(arg: f64) -> Self {
         Self {
-            string_value: None,
             value: Value::Number(serde_json::Number::from(ParserNumber::F64(arg))),
             leftBinaryNode: None,
             rightBinaryNode: None,
@@ -162,7 +148,6 @@ impl Node {
     }
     pub fn newNumberI64(arg: i64) -> Self {
         Self {
-            string_value: None,
             value: Value::Number(serde_json::Number::from(ParserNumber::I64(arg))),
             leftBinaryNode: None,
             rightBinaryNode: None,
@@ -171,7 +156,6 @@ impl Node {
     }
     pub fn newNumberU64(arg: u64) -> Self {
         Self {
-            string_value: None,
             value: Value::Number(serde_json::Number::from(ParserNumber::U64(arg))),
             leftBinaryNode: None,
             rightBinaryNode: None,
@@ -181,7 +165,6 @@ impl Node {
 
     pub fn newBool(arg: bool) -> Self {
         Self {
-            string_value: None,
             value: Value::Bool(arg),
             leftBinaryNode: None,
             rightBinaryNode: None,
@@ -190,7 +173,6 @@ impl Node {
     }
     pub fn newBinary(argLef: Node, argRight: Node, opt: &str) -> Self {
         Self {
-            string_value: None,
             value: Value::from(opt),
             leftBinaryNode: Option::Some(Rc::new(argLef)),
             rightBinaryNode: Option::Some(Rc::new(argRight)),
@@ -199,7 +181,6 @@ impl Node {
     }
     pub fn newOpt(arg: &str) -> Self {
         Self {
-            string_value: None,
             value: Value::String(arg.to_string()),
             leftBinaryNode: None,
             rightBinaryNode: None,
@@ -208,7 +189,7 @@ impl Node {
     }
 
     //根据string 解析单个node
-    pub fn parser(data: &str, opt: &OptMap) -> Self {
+    pub fn parser(data: &str,opt:&OptMap) -> Self {
         // println!("data={}", &data);
         let mut firstIndex = 0;
         let mut lastIndex = 0;
