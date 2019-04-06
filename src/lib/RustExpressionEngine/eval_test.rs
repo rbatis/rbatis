@@ -34,7 +34,7 @@ fn TestMemGC() {
 
     let total=1000000;
     println!("start");
-    for i in 0..1000000{
+    for i in 0..total{
         boxNode.eval(&john);
         if i==(total-1){
             println!("999999");
@@ -42,7 +42,7 @@ fn TestMemGC() {
             thread::sleep(ten_millis);
         }
     }
-    for i in 0..1000000{
+    for i in 0..total{
         boxNode.eval(&john);
         if i==(total-1){
             println!("999999");
@@ -50,7 +50,7 @@ fn TestMemGC() {
             thread::sleep(ten_millis);
         }
     }
-    for i in 0..1000000{
+    for i in 0..total{
         boxNode.eval(&john);
         if i==(total-1){
             println!("999999");
