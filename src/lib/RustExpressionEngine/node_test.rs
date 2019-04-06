@@ -10,6 +10,8 @@ use crate::lib::RustExpressionEngine::runtime::{IsNumber, OptMap};
 use std::collections::HashMap;
 use std::collections::linked_list::LinkedList;
 use crate::lib::RustExpressionEngine::{runtime, parser};
+use std::rc::Rc;
+use test::Bencher;
 
 #[derive(Clone, PartialEq)]
 struct Eq<'a> {
@@ -135,44 +137,6 @@ fn TestNumberNode() {
 }
 
 #[test]
-fn TestBinaryNode() {
-//    let john = json!({
-//        "name": "John Doe",
-//        "age": 1,
-//         "sex":{
-//            "a":"i'm a",
-//            "b":"i'm b",
-//         },
-//        "phones": [
-//            "+44 1234567",
-//            "+44 2345678"
-//        ]
-//    });
-//    let b = Node::newBinary("name".to_string(), String::new(), "+".to_string());
-//    let (value, _) = b.Eval(&john);
-//    println!("TestBinaryNode>>>>>>:{}", value);
-}
-
-#[test]
-fn TestMatcher2() {
-//"'a+b'=='c'"
-//    vec!["'2019-02-26' == '2019-02-26'",
-//         "`f`+`s`",
-//         "a +1 > b * 8",
-//         "1 != null",
-//         "1 + 2 != nil && 1 > 0 ",
-//         "1 + 2 != nil && 2 < b*8 ", ];
-    let optMap = OptMap::new();
-    let s = "'2019-02-26' == '2019-02-26'".to_string();
-
-    let result = runtime::ParserTokens(&s,&optMap);
-
-    for item in result {
-        println!("{}", item);
-    }
-}
-
-#[test]
 fn BenchmarkParserToken() {
     let s = "'2019-02-26' == '2019-02-26'".to_string();
     let optMap = OptMap::new();
@@ -184,4 +148,13 @@ fn BenchmarkParserToken() {
     }
     time_util::count_time(total, now);
     time_util::count_tps(total, now);
+}
+
+
+#[bench]
+fn Bench_Node_Eval(b: &mut Bencher) {
+    let rc=Rc::new("asdf".to_string());
+    b.iter(|| {
+        rc.clone();
+    });
 }
