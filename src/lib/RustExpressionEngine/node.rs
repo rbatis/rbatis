@@ -82,10 +82,12 @@ impl Node {
 
     pub fn eval(&self, env: &Value) -> Result<Value,String> {
         if self.equalNodeType(&NBinary) {
-            let leftV = self.leftBinaryNode.clone().unwrap().eval(env);
-            let rightV = self.rightBinaryNode.clone().unwrap().eval(env);
+            let leftNode=&self.leftBinaryNode.clone().unwrap();
+            let rightNode=&self.rightBinaryNode.clone().unwrap();
+            let leftV = &leftNode.eval(env).unwrap();
+            let rightV = &rightNode.eval(env).unwrap();
             let opt = self.toString();
-            let v = Eval(&leftV.unwrap(), &rightV.unwrap(), opt);
+            let v = Eval(leftV, rightV, opt);
             return v;
         } else if self.equalNodeType(&NArg) {
             let arr = &(self.value.as_array().unwrap());
