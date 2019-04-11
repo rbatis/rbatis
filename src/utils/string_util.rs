@@ -2,7 +2,7 @@ use std::io::Read;
 use std::collections::HashMap;
 
 //find like #{*} value *
-pub fn findConvertString(arg: String) -> Vec<String> {
+pub fn findConvertString(arg: &str) -> Vec<String> {
     let mut finds = HashMap::new();
     let chars = arg.bytes();
     let mut item = &mut String::new();
@@ -41,7 +41,7 @@ pub fn findConvertString(arg: String) -> Vec<String> {
 
 
 //find like ${*} value *
-pub fn findNoConvertString(arg: String) -> Vec<String> {
+pub fn findNoConvertString(arg: &str) -> Vec<String> {
     let mut finds = HashMap::new();
     let chars = arg.bytes();
     let mut item =  String::new();
