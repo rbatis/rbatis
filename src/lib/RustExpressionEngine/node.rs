@@ -92,9 +92,10 @@ impl Node {
 
     pub fn eval(&self, env: &Value) -> Result<Value, String> {
         if self.equalNodeType(&NBinary) {
-            let mut leftEvaled = false;
             let leftNodeRef = &self.leftBinaryNode.clone().unwrap();
             let rightNodeRef = &self.rightBinaryNode.clone().unwrap();
+
+            let mut leftEvaled = false;
             let mut leftV = &Value::Null;
             let mut leftEval = Value::Null;
             let leftIsValue = leftNodeRef.isValueNode();
@@ -110,7 +111,7 @@ impl Node {
             let mut rightEval = Value::Null;
             let rightIsValue = rightNodeRef.isValueNode();
             if rightIsValue.is_some() {
-                rightV = leftIsValue.unwrap();
+                rightV = rightIsValue.unwrap();
             } else {
                 rightEval = rightNodeRef.eval(env).unwrap();
                 rightEvaled = true;
@@ -118,9 +119,9 @@ impl Node {
             let opt = self.toString();
 
             if leftEvaled && rightEvaled == false {
-                return Eval(leftV, &rightEval, opt);
-            } else if leftEvaled == false && rightEvaled {
                 return Eval(&leftEval, rightV, opt);
+            } else if leftEvaled == false && rightEvaled {
+                return Eval(leftV, &rightEval, opt);
             } else if leftEvaled == false && rightEvaled == false {
                 return Eval(leftV, rightV, opt);
             } else {
