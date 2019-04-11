@@ -80,15 +80,52 @@ impl Node {
         return self.nodeType == *arg;
     }
 
-    pub fn eval(&self, env: &Value) -> Result<Value,String> {
+    pub fn isValueNode(&self) -> Option<&Value> {
         if self.equalNodeType(&NBinary) {
-            let leftNode=&self.leftBinaryNode.clone().unwrap();
-            let rightNode=&self.rightBinaryNode.clone().unwrap();
-            let leftV = &leftNode.eval(env).unwrap();
-            let rightV = &rightNode.eval(env).unwrap();
+            return Option::None;
+        } else if self.equalNodeType(&NArg) {
+            return Option::None;
+        } else {
+            return Option::Some(&self.value);
+        }
+    }
+
+    pub fn eval(&self, env: &Value) -> Result<Value, String> {
+        if self.equalNodeType(&NBinary) {
+            let mut leftEvaled = false;
+            let leftNodeRef = &self.leftBinaryNode.clone().unwrap();
+            let rightNodeRef = &self.rightBinaryNode.clone().unwrap();
+            let mut leftV = &Value::Null;
+            let mut leftEval = Value::Null;
+            let leftIsValue = leftNodeRef.isValueNode();
+            if leftIsValue.is_some() {
+                leftV = leftIsValue.unwrap();
+            } else {
+                leftEval = leftNodeRef.eval(env).unwrap();
+                leftEvaled = true;
+            }
+
+            let mut rightEvaled = false;
+            let mut rightV = &Value::Null;
+            let mut rightEval = Value::Null;
+            let rightIsValue = rightNodeRef.isValueNode();
+            if rightIsValue.is_some() {
+                rightV = leftIsValue.unwrap();
+            } else {
+                rightEval = rightNodeRef.eval(env).unwrap();
+                rightEvaled = true;
+            }
             let opt = self.toString();
-            let v = Eval(leftV, rightV, opt);
-            return v;
+
+            if leftEvaled && rightEvaled == false {
+                return Eval(leftV, &rightEval, opt);
+            } else if leftEvaled == false && rightEvaled {
+                return Eval(&leftEval, rightV, opt);
+            } else if leftEvaled == false && rightEvaled == false {
+                return Eval(leftV, rightV, opt);
+            } else {
+                return Eval(&leftEval, &rightEval, opt);
+            }
         } else if self.equalNodeType(&NArg) {
             let arr = &(self.value.as_array().unwrap());
             let arrLen = arr.len() as i32;
@@ -191,7 +228,7 @@ impl Node {
     }
 
     //根据string 解析单个node
-    pub fn parser(data: &str,opt:&OptMap) -> Self {
+    pub fn parser(data: &str, opt: &OptMap) -> Self {
         // println!("data={}", &data);
         let mut firstIndex = 0;
         let mut lastIndex = 0;
