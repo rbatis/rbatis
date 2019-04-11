@@ -30,11 +30,11 @@ impl StringNode {
 
     pub fn new(v: &str, holder:Box<NodeConfigHolder>) -> Self {
         let mut expressMap = HashMap::new();
-        for item in &string_util::findConvertString(v.to_string()) {
+        for item in &string_util::findConvertString(v) {
             expressMap.insert(item.clone(), "#{".to_owned() + item.as_str() + "}");
         }
         let mut noConvertExpressMap = HashMap::new();
-        for item in &string_util::findNoConvertString(v.to_string()) {
+        for item in &string_util::findNoConvertString(v) {
             noConvertExpressMap.insert(item.clone(), "${".to_owned() + item.as_str() + "}");
         }
         Self {
