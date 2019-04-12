@@ -95,7 +95,6 @@ impl Node {
             let leftNodeRef = &self.leftBinaryNode.clone().unwrap();
             let rightNodeRef = &self.rightBinaryNode.clone().unwrap();
 
-            let mut leftEvaled = false;
             let mut leftV = &Value::Null;
             let mut leftEval = Value::Null;
             let leftIsValue = leftNodeRef.isValueNode();
@@ -103,10 +102,9 @@ impl Node {
                 leftV = leftIsValue.unwrap();
             } else {
                 leftEval = leftNodeRef.eval(env).unwrap();
-                leftEvaled = true;
+                leftV= &leftEval;
             }
 
-            let mut rightEvaled = false;
             let mut rightV = &Value::Null;
             let mut rightEval = Value::Null;
             let rightIsValue = rightNodeRef.isValueNode();
@@ -114,19 +112,10 @@ impl Node {
                 rightV = rightIsValue.unwrap();
             } else {
                 rightEval = rightNodeRef.eval(env).unwrap();
-                rightEvaled = true;
+                rightV=&rightEval;
             }
             let opt = self.toString();
-
-            if leftEvaled && rightEvaled == false {
-                return Eval(&leftEval, rightV, opt);
-            } else if leftEvaled == false && rightEvaled {
-                return Eval(leftV, &rightEval, opt);
-            } else if leftEvaled == false && rightEvaled == false {
-                return Eval(leftV, rightV, opt);
-            } else {
-                return Eval(&leftEval, &rightEval, opt);
-            }
+            return Eval(leftV, rightV, opt);
         } else if self.equalNodeType(&NArg) {
             let arr = &(self.value.as_array().unwrap());
             let arrLen = arr.len() as i32;
