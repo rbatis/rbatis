@@ -3,23 +3,14 @@ use std::collections::HashMap;
 use chrono::Local;
 use crate::utils::time_util;
 
+use std::thread;
+use std::time::Duration;
+use core::fmt::Debug;
+use std::fmt::Display;
+
 pub struct SqlBuilder {
 
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 
@@ -74,4 +65,29 @@ fn TestSqlBuilder() {
 
     time_util::count_time(total, now);
     time_util::count_tps(total, now);
+}
+
+
+
+
+
+#[test]
+fn TestLink() {
+    let mut ops = r2d2_mysql::mysql::OptsBuilder::new();
+    ops.user(Option::Some("root"));
+    ops.pass(Option::Some("root"));
+    ops.db_name(Option::Some("test"));
+
+
+    let manager = r2d2_mysql::MysqlConnectionManager::new(ops);
+    let pool = r2d2::Pool::builder()
+        .max_size(15)
+        .build(manager)
+        .unwrap();
+    let mut conn = pool.get().unwrap();
+    for row in conn.prep_exec("SELECT * from biz_activity limit 1;", ()).unwrap() {
+        let a = row.unwrap();
+        let f:String=a.get("name").unwrap();
+        println!("{:?}", f);
+    }
 }
