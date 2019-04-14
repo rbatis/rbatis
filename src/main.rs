@@ -1,8 +1,7 @@
 #![feature(fn_traits)]
 #![feature(test)]
 
-extern crate r2d2;
-extern crate r2d2_mysql;
+extern crate mysql;
 mod example;
 mod ast;
 mod utils;

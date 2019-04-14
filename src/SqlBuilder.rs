@@ -73,18 +73,13 @@ fn TestSqlBuilder() {
 
 #[test]
 fn TestLink() {
-    let mut ops = r2d2_mysql::mysql::OptsBuilder::new();
+    let mut ops = mysql::OptsBuilder::new();
     ops.user(Option::Some("root"));
     ops.pass(Option::Some("root"));
     ops.db_name(Option::Some("test"));
 
 
-    let manager = r2d2_mysql::MysqlConnectionManager::new(ops);
-    let pool = r2d2::Pool::builder()
-        .max_size(15)
-        .build(manager)
-        .unwrap();
-    let mut conn = pool.get().unwrap();
+    let mut conn = mysql::Conn::new(ops).unwrap();
     for row in conn.prep_exec("SELECT * from biz_activity limit 1;", ()).unwrap() {
         let a = row.unwrap();
         let f:String=a.get("name").unwrap();
