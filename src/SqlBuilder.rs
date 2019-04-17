@@ -7,6 +7,7 @@ use std::thread;
 use std::time::Duration;
 use core::fmt::Debug;
 use std::fmt::Display;
+use postgres::{Connection, TlsMode};
 
 pub struct SqlBuilder {
 
@@ -72,7 +73,7 @@ fn TestSqlBuilder() {
 
 
 #[test]
-fn TestLink() {
+fn TestLinkMysql() {
     let mut ops = mysql::OptsBuilder::new();
     ops.user(Option::Some("root"));
     ops.pass(Option::Some("root"));
@@ -84,5 +85,25 @@ fn TestLink() {
         let a = row.unwrap();
         let f:String=a.get("name").unwrap();
         println!("{:?}", f);
+    }
+}
+
+#[test]
+fn TestLinkPostgres() {
+    let conn = Connection::connect("postgres://postgres:postgres@127.0.0.1:5432/postgres", TlsMode::None).unwrap();
+    conn.execute("CREATE TABLE person (
+                    id              SERIAL PRIMARY KEY,
+                    name            VARCHAR NOT NULL,
+                    data            VARCHAR NULL
+                  )", &[]).unwrap();
+    conn.execute("INSERT INTO person (name, data) VALUES ($1, $2)",
+                 &[&"Steven".to_string(), &"".to_string()]).unwrap();
+    for row in &conn.query("SELECT id, name, data FROM person", &[]).unwrap() {
+        let mut personMap =HashMap::new();
+        //personMap.insert(0,row.get(0));
+        let s:String=row.get(1);
+        personMap.insert("1",s);
+        //personMap.insert(2,row.get(2));
+        println!("Found person {}",personMap.get("1").unwrap());
     }
 }
