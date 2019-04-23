@@ -107,3 +107,8 @@ fn TestLinkPostgres() {
         println!("Found person {}",personMap.get("1").unwrap());
     }
 }
+
+#[test]
+fn TestPool(){
+    println!("{}","dsaf")
+}
