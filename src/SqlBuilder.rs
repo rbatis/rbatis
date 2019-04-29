@@ -8,6 +8,8 @@ use std::time::Duration;
 use core::fmt::Debug;
 use std::fmt::Display;
 use postgres::{Connection, TlsMode};
+use core::borrow::Borrow;
+use mysql::Value;
 
 pub struct SqlBuilder {
 
@@ -76,15 +78,21 @@ fn TestSqlBuilder() {
 fn TestLinkMysql() {
     let mut ops = mysql::OptsBuilder::new();
     ops.user(Option::Some("root"));
-    ops.pass(Option::Some("root"));
+    ops.pass(Option::Some("123456"));
     ops.db_name(Option::Some("test"));
 
 
     let mut conn = mysql::Conn::new(ops).unwrap();
     for row in conn.prep_exec("SELECT * from biz_activity limit 1;", ()).unwrap() {
         let a = row.unwrap();
-        let f:String=a.get("name").unwrap();
-        println!("{:?}", f);
+        let cs=a.columns();
+        for t in cs.as_ref(){
+            let columnName=t.name_str();
+            println!("{:?}", columnName);
+            let k=columnName.as_ref();
+            let f:Value=a.get(k).unwrap();
+            println!("{:?}", f);
+        }
     }
 }
 
