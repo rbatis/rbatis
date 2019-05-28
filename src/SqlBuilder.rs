@@ -78,7 +78,7 @@ fn TestSqlBuilder() {
 fn TestLinkMysql() {
     let mut ops = mysql::OptsBuilder::new();
     ops.user(Option::Some("root"));
-    ops.pass(Option::Some("123456"));
+    ops.pass(Option::Some("root"));
     ops.db_name(Option::Some("test"));
 
 
