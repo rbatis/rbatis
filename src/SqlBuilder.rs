@@ -89,7 +89,7 @@ fn TestLinkMysql() {
     for row in conn.prep_exec("SELECT * from biz_activity limit 2;", ()).unwrap() {
         let a = row.unwrap();
         //decode
-        let act: Act = utils::decode_util::decode(&a).unwrap();
+        let act: Act = utils::decode_util::decodeRow(&a).unwrap();
         println!("dejson_obj_str = {:?}", act);
     }
 }

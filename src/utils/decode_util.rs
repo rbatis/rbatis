@@ -3,12 +3,14 @@ use mysql::{Column, Value, Row};
 use std::result;
 use serde::de;
 
-
-pub fn decode<T>(row: &Row) -> result::Result<T, serde_json::Error>
+pub fn decodeRow<T>(row: &Row) -> result::Result<T, serde_json::Error>
     where
         T: de::DeserializeOwned {
-    let mut json_obj_str = String::new();
+
     let cs = row.columns();
+    let csLen=cs.len();
+
+    let mut json_obj_str = String::new();
     for c in cs.as_ref() {
         let columnName = c.name_str();
         let k = columnName.as_ref();
@@ -33,6 +35,8 @@ pub fn decode<T>(row: &Row) -> result::Result<T, serde_json::Error>
         json_obj_str = json_obj_str + ":" + sql.as_str() + ",";
     }
     json_obj_str.pop();
+
+
     json_obj_str = "{".to_owned() + json_obj_str.as_str() + "}";
     return serde_json::from_str(json_obj_str.as_str());
 }
