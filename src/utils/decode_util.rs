@@ -1,7 +1,21 @@
 use std::sync::Arc;
-use mysql::{Column, Value, Row};
+use mysql::{Column, Value, Row, QueryResult};
 use std::result;
 use serde::de;
+
+
+pub fn decode<T>(rows:QueryResult) -> result::Result<Vec<T>, serde_json::Error>
+    where
+        T: de::DeserializeOwned {
+    let mut arr=vec![];
+    rows.for_each(|item|{
+        let row=item.unwrap();
+        let act = decodeRow(&row).unwrap();
+        arr.push(act);
+        //println!("dejson_obj_str = {:?}", act);
+    } );
+    return result::Result::Ok(arr)
+}
 
 pub fn decodeRow<T>(row: &Row) -> result::Result<T, serde_json::Error>
     where
