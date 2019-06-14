@@ -4,6 +4,7 @@
 [![Build Status](https://travis-ci.org/zhuxiujia/RustMybatis.svg?branch=master)](https://travis-ci.org/zhuxiujia/RustMybatis)
 * 基于抽象语法树 生成动态的sql语句,避免运行中使用递归，达到高性能的目的
 * 内部使用serde_json编码和解码数据库返回数据，以达到最高兼容性
+* 吸收go语言版GoMybatis经验，结合Rust语言开辟高效率开发方案和生产级别实践
 
 #### 支持数据库类型
 * Mysql
