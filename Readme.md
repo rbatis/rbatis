@@ -3,7 +3,7 @@
 [![Build Status](https://travis-ci.org/zhuxiujia/RustMybatis.svg?branch=master)](https://travis-ci.org/zhuxiujia/RustMybatis)
 
 
-### RustMybatis 是一个高性能的,动态sql,低内存开销的,没有运行时,没有GC,并发安全的  数据库 ORM框架
+### RustMybatis 是一个高性能的,动态sql,低内存开销的,无runtime,无GC,并发安全的  数据库 ORM框架
 
 * 基于抽象语法树 生成动态的sql语句,避免运行中使用递归，达到高性能的目的
 
