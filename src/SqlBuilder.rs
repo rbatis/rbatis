@@ -86,51 +86,11 @@ fn TestLinkMysql() {
 
 
     let mut conn = mysql::Conn::new(ops).unwrap();
-    for row in conn.prep_exec("SELECT * from biz_activity limit 1;", ()).unwrap() {
+    for row in conn.prep_exec("SELECT * from biz_activity limit 2;", ()).unwrap() {
         let a = row.unwrap();
-
-
-        let mut serialized = "{".to_owned();
-
-        let cs = a.columns();
-        for t in cs.as_ref() {
-            let columnName = t.name_str();
-            println!("{:?}", columnName);
-            let k = columnName.as_ref();
-            let f: Value = a.get(k).unwrap();
-            println!("{:?}", f);
-
-            serialized = serialized + "\"" + columnName.as_ref() + "\"";
-
-            let mut sql = f.as_sql(true);
-            if sql.as_str() == "NULL" {
-                sql = "null".to_string();
-            } else {
-                if sql == "''" {
-                    sql = "\"\"".to_owned();
-                } else {
-                    let sqlLen = sql.len();
-                    let first = sql.find("'").unwrap_or_default();
-                    let last = sql.rfind("'").unwrap_or_default();
-                    if first == 0 && last == (sqlLen - 1) && first != last {
-                        let slice = &sql[1..(sqlLen - 1)];
-                        sql = "\"".to_owned() + slice + "\"";
-                    }
-                }
-            }
-
-            serialized = serialized + ":" + sql.as_str() + ",";
-        }
-        serialized.pop();
-        serialized = serialized + "}";
-        println!("query sql result ==> {}", serialized);
-
         //decode
-        // Convert the JSON string back to a Point.
-        let deserialized: Act = serde_json::from_str(&serialized).unwrap();
-
-        // Prints deserialized = Point { x: 1, y: 2 }
-        println!("deserialized = {:?}", deserialized);
+        let act: Act = utils::decode_util::decode(&a).unwrap();
+        println!("dejson_obj_str = {:?}", act);
     }
 }
 
