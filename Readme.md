@@ -19,8 +19,11 @@
 | ------ | ------ | ------ | ------ | ------ | ------ |------ |
 | √      | √      | √      | *      | *      | *      | *     |
 
-### 动态表达式性能(测试平台 win10,6 core i7,16GB mem)
-<pre>识别执行 '1 <= 2'  parser_test::Bench_Parser ... bench:          21 ns/iter (+/- 0)
-     识别执行 '1 >= 2'  parser_test::Bench_Parser ... bench:          21 ns/iter (+/- 0)
-     识别执行 '1 > 2'  parser_test::Bench_Parser ... bench:          21 ns/iter (+/- 0)
-     识别执行 '1 < 2'  parser_test::Bench_Parser ... bench:          21 ns/iter (+/- 0) </pre>
+### 动态表达式性能(测试平台 win10,6 core i7,16GB)
+<pre>
+     bench: '1 <= 2'  parser_test::Bench_Parser ... bench:          21 ns/iter (+/- 0)
+     bench: '1 >= 2'  parser_test::Bench_Parser ... bench:          21 ns/iter (+/- 0)
+     bench: '1 > 2'   parser_test::Bench_Parser ... bench:          21 ns/iter (+/- 0)
+     bench: '1 < 2'   parser_test::Bench_Parser ... bench:          21 ns/iter (+/- 0) 
+     bench: ''1'+'1'' parser_test::Bench_Parser ... bench:          118 ns/iter (+/- 1)
+</pre>
