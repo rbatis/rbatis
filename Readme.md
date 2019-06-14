@@ -1,5 +1,6 @@
 
-#### RustMybatis a Rustlang-based,dynamic sql, no Runtime,no GC, low Memory use,High Performance orm Framework.
+#### Rbatis a Rustlang-based,dynamic sql, no Runtime,no GC, low Memory use,High Performance orm Framework.
+#### Rbatis 是一个高性能的,动态sql,低内存开销的,无runtime,无GC,并发安全的  数据库 ORM框架
 [![Build Status](https://travis-ci.org/zhuxiujia/RustMybatis.svg?branch=master)](https://travis-ci.org/zhuxiujia/RustMybatis)
 
 #### 支持数据库类型
@@ -8,8 +9,6 @@
 * TiDB(NewSql)
 * CockroachDB(NewSql)
 
-
-### RustMybatis 是一个高性能的,动态sql,低内存开销的,无runtime,无GC,并发安全的  数据库 ORM框架
 
 * 基于抽象语法树 生成动态的sql语句,避免运行中使用递归，达到高性能的目的
 * 内部使用serde_json编码和解码数据库返回数据，以达到最高兼容性
