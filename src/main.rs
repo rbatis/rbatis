@@ -33,10 +33,10 @@ use lib::RustExpressionEngine;
 //}
 
 macro_rules! foo {
-    (x => $e:expr) => (println!("mode X: {}", $e));
-    (y => $e:expr) => (println!("mode Y: {}", $e));
+    (   what fuck $e:expr,what fuck $e2:expr) => (println!("mode X: {},{}", $e,$e2));
+    (y <-> $e:expr) => (println!("mode Y: {}", $e));
 }
 
 fn main() {
-    foo!(y => 3);
+    foo!(            what fuck           3+1, what fuck "asdfgas");
 }
