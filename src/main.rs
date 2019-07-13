@@ -37,6 +37,15 @@ macro_rules! foo {
     (y <-> $e:expr) => (println!("mode Y: {}", $e));
 }
 
+
+struct  A {
+    pub func:fn()
+}
+
 fn main() {
+    let mut a =A{ func: ||{ println!("yes fn")} };
+
+    (a.func)();
+
     foo!(            what fuck           3+1, what fuck "asdfgas");
 }
