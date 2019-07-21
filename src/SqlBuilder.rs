@@ -86,8 +86,17 @@ fn TestCheckAct() {
     let v=serde_json::to_value(&act).unwrap();
     println!("{}",v.get("id").unwrap());
 
-    let r=serde_json::from_value(v);
-    let newAct:Act=r.unwrap();
+    let newAct:Act=serde_json::from_value(v.clone()).unwrap();
+
+    let b=v.borrow();
+    if (b.is_object()){
+        let obj=b.as_object().unwrap();
+        for (k,val) in obj{
+            println!("{}",k);
+        }
+    }
+
+
     println!("{}",newAct.name);
 }
 
@@ -98,8 +107,16 @@ fn Bench_TestCheckAct(b: &mut Bencher) {
         name: "xiaoming".to_string(),
         version: 0
     };
+    let v=serde_json::to_value(&act).unwrap();
     b.iter(|| {
-       // let v=serde_json::to_value(&act);
+
+       if (v.is_object()){
+           let obj=v.as_object().unwrap();
+           for (k,v) in obj{
+               println!("{}",k);
+           }
+       }
+
     });
 }
 
