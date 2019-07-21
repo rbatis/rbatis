@@ -11,6 +11,7 @@ use postgres::{Connection, TlsMode};
 use core::borrow::Borrow;
 use mysql::Value;
 use serde::{Serialize, Deserialize};
+use test::Bencher;
 
 pub struct SqlBuilder {}
 
@@ -74,6 +75,34 @@ pub struct Act {
     pub name: String,
     pub version: i32,
 }
+
+#[test]
+fn TestCheckAct() {
+    let act=Act{
+        id: "1".to_string(),
+        name: "xiaoming".to_string(),
+        version: 0
+    };
+    let v=serde_json::to_value(&act).unwrap();
+    println!("{}",v.get("id").unwrap());
+
+    let r=serde_json::from_value(v);
+    let newAct:Act=r.unwrap();
+    println!("{}",newAct.name);
+}
+
+#[bench]
+fn Bench_TestCheckAct(b: &mut Bencher) {
+    let act=Act{
+        id: "1".to_string(),
+        name: "xiaoming".to_string(),
+        version: 0
+    };
+    b.iter(|| {
+       // let v=serde_json::to_value(&act);
+    });
+}
+
 
 
 #[test]
