@@ -50,6 +50,6 @@ fn main() {
     // foo!(            what fuck           3+1, what fuck "asdfgas");
     let mut a = A { func: || { println!("yes fn1") } };
     (a.func)();
-    a = A { func: || { println!("yes fn2") } };
+     a.func = || { println!("yes fn2")};
     (a.func)();
 }
