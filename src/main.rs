@@ -2,11 +2,15 @@
 #![feature(test)]
 
 extern crate mysql;
+
 mod example;
 mod ast;
 mod utils;
+
 extern crate test;
+
 use test::Bencher;
+
 mod engines;
 mod lib;
 mod SqlBuilder;
@@ -38,14 +42,14 @@ macro_rules! foo {
 }
 
 
-struct  A {
-    pub func:fn()
+struct A {
+    pub func: fn()
 }
 
 fn main() {
-    let mut a =A{ func: ||{ println!("yes fn")} };
-
+    // foo!(            what fuck           3+1, what fuck "asdfgas");
+    let mut a = A { func: || { println!("yes fn1") } };
     (a.func)();
-
-    foo!(            what fuck           3+1, what fuck "asdfgas");
+    a = A { func: || { println!("yes fn2") } };
+    (a.func)();
 }
