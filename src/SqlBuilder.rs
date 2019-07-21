@@ -76,49 +76,13 @@ pub struct Act {
     pub version: i32,
 }
 
-#[test]
-fn TestCheckAct() {
-    let act=Act{
-        id: "1".to_string(),
-        name: "xiaoming".to_string(),
-        version: 0
-    };
-    let v=serde_json::to_value(&act).unwrap();
-    println!("{}",v.get("id").unwrap());
-
-    let newAct:Act=serde_json::from_value(v.clone()).unwrap();
-
-    if (v.is_object()){
-        let obj=v.as_object().unwrap();
-        for (k,val) in obj{
-            println!("{}",k);
-        }
-    }
-
-
-    println!("{}",newAct.name);
-}
 
 #[bench]
 fn Bench_TestCheckAct(b: &mut Bencher) {
-    let act=Act{
-        id: "1".to_string(),
-        name: "xiaoming".to_string(),
-        version: 0
-    };
-    let v=serde_json::to_value(&act).unwrap();
     b.iter(|| {
-
-       if (v.is_object()){
-           let obj=v.as_object().unwrap();
-           for (k,v) in obj{
-               println!("{}",k);
-           }
-       }
 
     });
 }
-
 
 
 #[test]
