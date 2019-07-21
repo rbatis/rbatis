@@ -88,9 +88,8 @@ fn TestCheckAct() {
 
     let newAct:Act=serde_json::from_value(v.clone()).unwrap();
 
-    let b=v.borrow();
-    if (b.is_object()){
-        let obj=b.as_object().unwrap();
+    if (v.is_object()){
+        let obj=v.as_object().unwrap();
         for (k,val) in obj{
             println!("{}",k);
         }
