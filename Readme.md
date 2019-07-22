@@ -21,7 +21,7 @@
 | ------ | ------ | ------ | ------ | ------ | ------ |------ |
 | √      | √      | √      | *      | *      | *      | *     |
 
-### 动态表达式性能(测试平台 win10,6 core i7,16GB)
+### 动态表达式性能(测试平台 win10,6 core i7,16GB)(原生代码运算算1+-*/1约等于 1 ns/iter)
 <pre>
      bench: '1 <= 2'  parser_test::Bench_Parser ... bench:          21 ns/iter (+/- 0)
      bench: '1 >= 2'  parser_test::Bench_Parser ... bench:          21 ns/iter (+/- 0)
