@@ -2,25 +2,29 @@ use std::sync::Arc;
 use mysql::{Column, Value, Row, QueryResult};
 use std::result;
 use serde::de;
+use std::any::Any;
 
 
-pub fn decode<T>(rows:QueryResult) -> result::Result<Vec<T>, serde_json::Error>
+pub fn decode<T>(rows:QueryResult) -> result::Result<T, serde_json::Error>
     where
         T: de::DeserializeOwned {
-    let mut arr=vec![];
-    rows.for_each(|item|{
-        let row=item.unwrap();
-        let act = decodeRow(&row).unwrap();
-        arr.push(act);
-        //println!("dejson_obj_str = {:?}", act);
-    } );
-    return result::Result::Ok(arr)
+    let mut js = "[".to_owned();
+    let mut push_spar = false;
+    rows.for_each(|item| {
+        let row = item.unwrap();
+        let act = decodeRow(&row);
+        js.push_str(act.as_str());
+        js.push_str(",");
+        push_spar = true;
+    });
+    if push_spar {
+        js.pop();
+    }
+    js = js + "]";
+    return serde_json::from_str(js.as_str());
 }
 
-pub fn decodeRow<T>(row: &Row) -> result::Result<T, serde_json::Error>
-    where
-        T: de::DeserializeOwned {
-
+pub fn decodeRow(row: &Row) -> String {
     let cs = row.columns();
     let csLen=cs.len();
 
@@ -49,8 +53,6 @@ pub fn decodeRow<T>(row: &Row) -> result::Result<T, serde_json::Error>
         json_obj_str = json_obj_str + ":" + sql.as_str() + ",";
     }
     json_obj_str.pop();
-
-
     json_obj_str = "{".to_owned() + json_obj_str.as_str() + "}";
-    return serde_json::from_str(json_obj_str.as_str());
+    return json_obj_str;
 }
