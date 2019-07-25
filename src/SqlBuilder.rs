@@ -90,10 +90,10 @@ fn Bench_TestCheckAct(b: &mut Bencher) {
 #[test]
 fn TestLinkMysql() {
     let mut ops = mysql::OptsBuilder::new();
-    ops.user(Option::Some("root"));
-    ops.pass(Option::Some("TEST"));
-    ops.db_name(Option::Some("test"));
-    ops.ip_or_hostname(Option::Some("115.220.9.139"));
+    ops.user(Some("root"));
+    ops.pass(Some("TEST"));
+    ops.db_name(Some("test"));
+    ops.ip_or_hostname(Some("115.220.9.139"));
 
 
     let mut conn = Conn::new(ops).unwrap();
