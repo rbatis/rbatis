@@ -14,6 +14,7 @@ use serde::{Serialize, Deserialize};
 use test::Bencher;
 use std::any::Any;
 use crate::utils::decode_util::decode;
+use serde_json::Error;
 
 pub struct SqlBuilder {}
 
@@ -75,9 +76,27 @@ fn TestSqlBuilder() {
 pub struct Act {
     pub id: String,
     pub name: String,
-    pub version: i32,
+    pub version: Option<i32>,
 }
 
+
+#[test]
+fn TestAct() {
+    let mut a=Act{
+        id: "".to_string(),
+        name: "".to_string(),
+        version: Some(0),
+    };
+    let data = r#"{ "id":"","name":"asdf","version":1 }"#;
+    let a:Result<Act,Error>=serde_json::from_str(data);
+    if a.is_err(){
+        println!("{:?}",a.err().unwrap());
+    }else{
+        println!("{:?}",a.unwrap().version.unwrap());
+    }
+
+
+}
 
 #[bench]
 fn Bench_TestCheckAct(b: &mut Bencher) {
