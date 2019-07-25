@@ -12,6 +12,7 @@ use core::borrow::Borrow;
 use mysql::Value;
 use serde::{Serialize, Deserialize};
 use test::Bencher;
+use std::any::Any;
 
 pub struct SqlBuilder {}
 
