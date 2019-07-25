@@ -9,10 +9,11 @@ use core::fmt::Debug;
 use std::fmt::Display;
 use postgres::{Connection, TlsMode};
 use core::borrow::Borrow;
-use mysql::Value;
+use mysql::{Value, Conn};
 use serde::{Serialize, Deserialize};
 use test::Bencher;
 use std::any::Any;
+use crate::utils::decode_util::decode;
 
 pub struct SqlBuilder {}
 
@@ -95,9 +96,9 @@ fn TestLinkMysql() {
     ops.ip_or_hostname(Option::Some("115.220.9.139"));
 
 
-    let mut conn = mysql::Conn::new(ops).unwrap();
+    let mut conn = Conn::new(ops).unwrap();
     let rows = conn.prep_exec("SELECT * from biz_activity limit 2;", ()).unwrap();
-    let result: Vec<Act> = utils::decode_util::decode(rows).unwrap();
+    let result: Vec<Act> = decode(rows).unwrap();
     for item in &result {
         println!("{}", item.name);
     }
