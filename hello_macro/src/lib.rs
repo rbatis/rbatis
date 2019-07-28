@@ -1,12 +1,12 @@
 
 
 pub trait HelloMacro {
-    fn hello_macro() -> bool;
+    fn is_array() -> bool;
 }
 
 
 impl HelloMacro for String{
-    fn hello_macro() -> bool{
+    fn is_array() -> bool{
         println!("String not array");
         return false;
     }
@@ -14,7 +14,7 @@ impl HelloMacro for String{
 
 
 impl <T>HelloMacro for Vec<T>{
-    fn hello_macro() -> bool {
+    fn is_array() -> bool {
         println!("vec is array");
         return true;
     }

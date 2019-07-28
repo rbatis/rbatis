@@ -44,5 +44,5 @@ fn main() {
 }
 
 fn testf<T:HelloMacro>(arg:T){
-    T::hello_macro();
+    T::is_array();
 }
