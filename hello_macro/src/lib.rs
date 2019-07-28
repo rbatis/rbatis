@@ -13,9 +13,24 @@ impl HelloMacro for String{
 }
 
 
+//array
 impl <T>HelloMacro for Vec<T>{
     fn is_array() -> bool {
         println!("vec is array");
+        return true;
+    }
+}
+//array
+impl  <T>HelloMacro for [T]{
+    fn is_array() -> bool {
+        println!("[] is array");
+        return true;
+    }
+}
+//array
+impl  <T>HelloMacro for &[T]{
+    fn is_array() -> bool {
+        println!("&[] is array");
         return true;
     }
 }
