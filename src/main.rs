@@ -27,29 +27,7 @@ use std::fs;
 use serde_json::json;
 use lib::RustExpressionEngine;
 
-//fn main() {
-//    utils::print_util::print_rust_mybatis();
-//    let now=Local::now();
-//
-//
-//
-//    time_util::count_time(1, now);
-//}
-
-macro_rules! foo {
-    (   what fuck $e:expr,what fuck $e2:expr) => (println!("mode X: {},{}", $e,$e2));
-    (y <-> $e:expr) => (println!("mode Y: {}", $e));
-}
-
-
-struct A {
-    pub func: fn()
-}
 
 fn main() {
-    // foo!(            what fuck           3+1, what fuck "asdfgas");
-    let mut a = A { func: || { println!("yes fn1") } };
-    (a.func)();
-     a.func = || { println!("yes fn2")};
-    (a.func)();
+
 }
