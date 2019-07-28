@@ -16,3 +16,7 @@ serde_json = "1.0"
 #sql drivers
 mysql="*"
 postgres = "*"
+
+
+hello_macro = { path = "../Rbatis/hello_macro" }
+hello_macro_derive = { path = "../Rbatis/hello_macro/hello_macro_derive" }
