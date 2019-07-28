@@ -15,6 +15,8 @@ use test::Bencher;
 use std::any::Any;
 use crate::utils::decode_util::decode;
 use serde_json::Error;
+use hello_macro_derive::HelloMacro;
+use hello_macro::HelloMacro;
 
 pub struct SqlBuilder {}
 
@@ -72,31 +74,14 @@ fn TestSqlBuilder() {
 }
 
 
-#[derive(Serialize, Deserialize, Debug, Clone)]
+#[derive(Serialize, Deserialize, Debug, Clone,HelloMacro)]
 pub struct Act {
     pub id: String,
     pub name: String,
     pub version: Option<i32>,
 }
 
-impl Decode for Act{
-    fn decode(&self) -> Result<Self, String> {
-        return Result::Ok(self.clone());
-    }
-}
 
-
-pub trait Decode: Sized+Clone{
-    fn decode(&self) -> Result<Self, String>;
-}
-
-
-impl<T> Decode for Vec<T> where
-    T: Decode{
-    fn decode(&self) -> Result<Self, String> {
-        return Result::Ok(self.to_vec());
-    }
-}
 
 
 #[test]
@@ -110,16 +95,14 @@ fn TestLinkMysql() {
 
     let mut conn = Conn::new(ops).unwrap();
     let rows = conn.prep_exec("SELECT * from biz_activity limit 2;", ()).unwrap();
-    let mut result: Vec<Act> = vec![];
+    let mut result :Option<Vec<Act>>= None;
     let err= decode(rows,&mut result);
     if err.is_some(){
         panic!(err.unwrap());
     }
-    for item in &result {
+    for item in &result.unwrap() {
         println!("{}", item.name);
     }
-     let f=result[0].decode();
-     println!("{:?}",f.unwrap());
 }
 
 #[test]

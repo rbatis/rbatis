@@ -4,36 +4,59 @@ use std::result;
 use serde::de;
 use std::any::Any;
 
+use hello_macro_derive::HelloMacro;
+use hello_macro::HelloMacro;
 
+pub type Error = String;
 
-pub fn decode<T>(rows:QueryResult, r: &mut T) -> Option<serde_json::Error>
+pub fn decode<T>(rows: QueryResult, r: &mut Option<T>) -> Option<Error>
     where
-        T: de::DeserializeOwned {
-    let mut js = "[".to_owned();
-    let mut push_spar = false;
-    rows.for_each(|item| {
-        let row = item.unwrap();
-        let act = decodeRow(&row);
-        js.push_str(act.as_str());
-        js.push_str(",");
-        push_spar = true;
-    });
-    if push_spar {
-        js.pop();
+        T: de::DeserializeOwned + HelloMacro {
+    let mut js = "".to_owned();
+    if T::is_array() {
+        //is array json
+        js = "[".to_owned();
+        let mut push_spar = false;
+        rows.for_each(|item| {
+            let row = item.unwrap();
+            let act = decodeRow(&row);
+            js.push_str(act.as_str());
+            js.push_str(",");
+            push_spar = true;
+        });
+        if push_spar {
+            js.pop();
+        }
+        js = js + "]";
+    } else {
+        //not array json
+        let mut index = 0;
+        rows.for_each(|item| {
+            if index > 1 {
+                return;
+            }
+            let row = item.unwrap();
+            let act = decodeRow(&row);
+            js.push_str(act.as_str());
+            index = index + 1;
+        });
+        if index > 1 {
+            return Option::Some("rows.affected_rows > 1,but decode one result!".to_string());
+        }
     }
-    js = js + "]";
-    let decodeR= serde_json::from_str(js.as_str());
-    if decodeR.is_ok(){
-        *r=decodeR.unwrap();
-    }else{
-        return decodeR.err();
+    let decodeR = serde_json::from_str(js.as_str());
+    if decodeR.is_ok() {
+        *r = Option::Some(decodeR.unwrap());
+    } else {
+        let e = decodeR.err().unwrap().to_string();
+        return Some(e);
     }
-    return None
+    return None;
 }
 
 pub fn decodeRow(row: &Row) -> String {
     let cs = row.columns();
-    let csLen=cs.len();
+    let csLen = cs.len();
 
     let mut json_obj_str = String::new();
     for c in cs.as_ref() {

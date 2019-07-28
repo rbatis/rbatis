@@ -17,7 +17,7 @@ pub fn hello_macro_derive(input: TokenStream) -> TokenStream {
         impl HelloMacro for #name {
             fn is_array() -> bool {
                 println!("Hello, Macro! My name is {}", stringify!(#name));
-                 return true;
+                 return false;
             }
         }
     };
