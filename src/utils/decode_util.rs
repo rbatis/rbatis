@@ -5,7 +5,8 @@ use serde::de;
 use std::any::Any;
 
 
-pub fn decode<T>(rows:QueryResult) -> result::Result<T, serde_json::Error>
+
+pub fn decode<T>(rows:QueryResult, r: &mut T) -> Option<serde_json::Error>
     where
         T: de::DeserializeOwned {
     let mut js = "[".to_owned();
@@ -21,7 +22,13 @@ pub fn decode<T>(rows:QueryResult) -> result::Result<T, serde_json::Error>
         js.pop();
     }
     js = js + "]";
-    return serde_json::from_str(js.as_str());
+    let decodeR= serde_json::from_str(js.as_str());
+    if decodeR.is_ok(){
+        *r=decodeR.unwrap();
+    }else{
+        return decodeR.err();
+    }
+    return None
 }
 
 pub fn decodeRow(row: &Row) -> String {
