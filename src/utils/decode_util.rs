@@ -9,6 +9,11 @@ use hello_macro::HelloMacro;
 
 pub type Error = String;
 
+
+/**
+* the json decode util
+* by  zhuxiujia@qq.com
+**/
 pub fn decode<T>(rows: QueryResult, r: &mut Option<T>) -> Option<Error>
     where
         T: de::DeserializeOwned + HelloMacro {
@@ -72,11 +77,13 @@ pub fn decodeRow(row: &Row) -> String {
                 sql = "\"\"".to_owned();
             } else {
                 let sqlLen = sql.len();
-                let first = sql.find("'").unwrap_or_default();
                 let last = sql.rfind("'").unwrap_or_default();
-                if first == 0 && last == (sqlLen - 1) && first != last {
-                    let slice = &sql[1..(sqlLen - 1)];
-                    sql = "\"".to_owned() + slice + "\"";
+                if last == (sqlLen - 1){
+                    let first = sql.find("'").unwrap_or_default();
+                    if first == 0 && first != last{
+                        let slice = &sql[1..(sqlLen - 1)];
+                        sql = "\"".to_owned() + slice + "\"";
+                    }
                 }
             }
         }
