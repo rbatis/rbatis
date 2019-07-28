@@ -37,5 +37,12 @@ struct Pancakes;
 
 
 fn main() {
-    Pancakes::hello_macro();
+   // Pancakes::hello_macro();
+   // String::hello_macro();
+    let s=vec!["String".to_string()];
+    testf(s);
+}
+
+fn testf<T:HelloMacro>(arg:T){
+    T::hello_macro();
 }
