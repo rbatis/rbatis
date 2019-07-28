@@ -72,37 +72,30 @@ fn TestSqlBuilder() {
 }
 
 
-#[derive(Serialize, Deserialize, Debug)]
+#[derive(Serialize, Deserialize, Debug, Clone)]
 pub struct Act {
     pub id: String,
     pub name: String,
     pub version: Option<i32>,
 }
 
-
-#[test]
-fn TestAct() {
-    let mut a=Act{
-        id: "".to_string(),
-        name: "".to_string(),
-        version: Some(0),
-    };
-    let data = r#"{ "id":"","name":"asdf","version":1 }"#;
-    let a:Result<Act,Error>=serde_json::from_str(data);
-    if a.is_err(){
-        println!("{:?}",a.err().unwrap());
-    }else{
-        println!("{:?}",a.unwrap().version.unwrap());
+impl Decode for Act{
+    fn decode(&self) -> Result<Self, String> {
+        return Result::Ok(self.clone());
     }
-
-
 }
 
-#[bench]
-fn Bench_TestCheckAct(b: &mut Bencher) {
-    b.iter(|| {
 
-    });
+pub trait Decode: Sized+Clone{
+    fn decode(&self) -> Result<Self, String>;
+}
+
+
+impl<T> Decode for Vec<T> where
+    T: Decode{
+    fn decode(&self) -> Result<Self, String> {
+        return Result::Ok(self.to_vec());
+    }
 }
 
 
@@ -121,6 +114,8 @@ fn TestLinkMysql() {
     for item in &result {
         println!("{}", item.name);
     }
+     let f=result[0].decode();
+     println!("{:?}",f.unwrap());
 }
 
 #[test]
@@ -143,7 +138,10 @@ fn TestLinkPostgres() {
     }
 }
 
-#[test]
-fn TestPool() {
-    println!("{}", "dsaf")
+#[bench]
+fn Bench_TestCheckAct(b: &mut Bencher) {
+    b.iter(|| {
+
+    });
 }
+
