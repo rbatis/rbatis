@@ -18,7 +18,7 @@ pub fn decode<T>(rows: QueryResult, r: &mut Option<T>) -> Option<Error>
     where
         T: de::DeserializeOwned + HelloMacro {
     let mut js = "".to_owned();
-    if T::is_array() {
+    if T::decode_name()=="Vec" || T::decode_name()=="Array" || T::decode_name()=="Slice" {
         //is array json
         js = "[".to_owned();
         let mut push_spar = false;

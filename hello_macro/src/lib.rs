@@ -1,36 +1,24 @@
 
-
+//过程宏
 pub trait HelloMacro {
-    fn is_array() -> bool;
+    fn decode_name() -> &'static str;
 }
-
-
-impl HelloMacro for String{
-    fn is_array() -> bool{
-        println!("String not array");
-        return false;
-    }
-}
-
 
 //array
 impl <T>HelloMacro for Vec<T>{
-    fn is_array() -> bool {
-        println!("vec is array");
-        return true;
+    fn decode_name() -> &'static str{
+        return "Vec";
     }
 }
 //array
 impl  <T>HelloMacro for [T]{
-    fn is_array() -> bool {
-        println!("[] is array");
-        return true;
+    fn decode_name() -> &'static str{
+        return "Array";
     }
 }
 //array
 impl  <T>HelloMacro for &[T]{
-    fn is_array() -> bool {
-        println!("&[] is array");
-        return true;
+    fn decode_name() -> &'static str{
+        return "Slice";
     }
 }
