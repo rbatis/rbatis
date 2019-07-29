@@ -18,5 +18,5 @@ mysql="*"
 postgres = "*"
 
 
-hello_macro = { path = "../Rbatis/hello_macro" }
-hello_macro_derive = { path = "../Rbatis/hello_macro/hello_macro_derive" }
+rbatis_macro = { path = "../Rbatis/rbatis_macro" }
+rbatis_macro_derive = { path = "../Rbatis/rbatis_macro_derive" }

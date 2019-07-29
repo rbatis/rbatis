@@ -1,23 +1,23 @@
 
 //过程宏
-pub trait HelloMacro {
+pub trait RbatisMacro {
     fn decode_name() -> &'static str;
 }
 
 //array
-impl <T>HelloMacro for Vec<T>{
+impl <T>RbatisMacro for Vec<T>{
     fn decode_name() -> &'static str{
         return "Vec";
     }
 }
 //array
-impl  <T>HelloMacro for [T]{
+impl  <T>RbatisMacro for [T]{
     fn decode_name() -> &'static str{
         return "Array";
     }
 }
 //array
-impl  <T>HelloMacro for &[T]{
+impl  <T>RbatisMacro for &[T]{
     fn decode_name() -> &'static str{
         return "Slice";
     }

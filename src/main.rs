@@ -28,23 +28,23 @@ use serde_json::json;
 use lib::RustExpressionEngine;
 
 
-use hello_macro_derive::HelloMacro;
+use rbatis_macro_derive::RbatisMacro;
 
-use hello_macro::HelloMacro;
+use rbatis_macro::RbatisMacro;
 
-#[derive(HelloMacro)]
+#[derive(RbatisMacro)]
 struct Pancakes;
 
 
 fn main() {
-   // Pancakes::hello_macro();
-   // String::hello_macro();
+   // Pancakes::rbatis_macro();
+   // String::rbatis_macro();
     let s=vec!["String".to_string()];
     testf(s);
 
 }
 
-fn testf<T:HelloMacro>(arg:T){
+fn testf<T:RbatisMacro>(arg:T){
     let name=T::decode_name();
     println!("{}",name);
 }

@@ -1,3 +1,4 @@
+extern crate rbatis_macro_derive;
 use crate::utils;
 use std::collections::HashMap;
 use chrono::Local;
@@ -15,8 +16,8 @@ use test::Bencher;
 use std::any::Any;
 use crate::utils::decode_util::decode;
 use serde_json::Error;
-use hello_macro_derive::HelloMacro;
-use hello_macro::HelloMacro;
+use rbatis_macro_derive::RbatisMacro;
+use rbatis_macro::RbatisMacro;
 
 pub struct SqlBuilder {}
 
@@ -74,7 +75,7 @@ fn TestSqlBuilder() {
 }
 
 
-#[derive(Serialize, Deserialize, Debug, Clone,HelloMacro)]
+#[derive(Serialize, Deserialize, Debug, Clone,RbatisMacro)]
 pub struct Act {
     pub id: String,
     pub name: String,
