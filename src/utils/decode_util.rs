@@ -4,8 +4,8 @@ use std::result;
 use serde::de;
 use std::any::Any;
 
-use hello_macro_derive::HelloMacro;
-use hello_macro::HelloMacro;
+use rbatis_macro_derive::RbatisMacro;
+use rbatis_macro::RbatisMacro;
 
 pub type Error = String;
 
@@ -16,7 +16,7 @@ pub type Error = String;
 **/
 pub fn decode<T>(rows: QueryResult) -> Result<T,Error>
     where
-        T: de::DeserializeOwned + HelloMacro {
+        T: de::DeserializeOwned + RbatisMacro {
     let mut js = "".to_owned();
     if T::decode_name()=="Vec" || T::decode_name()=="Array" || T::decode_name()=="Slice" {
         //is array json
