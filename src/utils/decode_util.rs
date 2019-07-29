@@ -69,18 +69,16 @@ pub fn decodeRow(row: &Row) -> String {
         let f: Value = row.get(k).unwrap();
         json_obj_str = json_obj_str + "\"" + columnName.as_ref() + "\"";
         let mut sql = f.as_sql(true);
-        let sqlLen=sql.len();
+        let sqlLen = sql.len();
         if sql.as_str() == "NULL" {
             sql = "null".to_string();
         } else {
             if sql == "''" {
                 sql = "\"\"".to_owned();
-            } else {
-                if sql.starts_with("'") {
-                   if sql.ends_with("'") && sqlLen != 1 {
-                       let slice = &sql[1..(sqlLen - 1)];
-                       sql = "\"".to_owned() + slice + "\"";
-                   }
+            } else if sql.starts_with("'") {
+                if sql.ends_with("'") && sqlLen > 1 {
+                    let slice = &sql[1..(sqlLen - 1)];
+                    sql = "\"".to_owned() + slice + "\"";
                 }
             }
         }
