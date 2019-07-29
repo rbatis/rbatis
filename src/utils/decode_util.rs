@@ -14,7 +14,7 @@ pub type Error = String;
 * the json decode util
 * by  zhuxiujia@qq.com
 **/
-pub fn decode<T>(rows: QueryResult, r: &mut Option<T>) -> Option<Error>
+pub fn decode<T>(rows: QueryResult) -> Result<T,Error>
     where
         T: de::DeserializeOwned + HelloMacro {
     let mut js = "".to_owned();
@@ -46,17 +46,16 @@ pub fn decode<T>(rows: QueryResult, r: &mut Option<T>) -> Option<Error>
             index = index + 1;
         });
         if index > 1 {
-            return Option::Some("rows.affected_rows > 1,but decode one result!".to_string());
+            return Result::Err("rows.affected_rows > 1,but decode one result!".to_string());
         }
     }
     let decodeR = serde_json::from_str(js.as_str());
     if decodeR.is_ok() {
-        *r = Option::Some(decodeR.unwrap());
+        return Result::Ok(decodeR.unwrap());
     } else {
         let e = decodeR.err().unwrap().to_string();
-        return Some(e);
+        return Result::Err(e);
     }
-    return None;
 }
 
 pub fn decodeRow(row: &Row) -> String {

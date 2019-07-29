@@ -92,13 +92,11 @@ fn TestLinkMysql() {
     ops.db_name(Some("test"));
     ops.ip_or_hostname(Some("115.220.9.139"));
 
-
     let mut conn = Conn::new(ops).unwrap();
     let rows = conn.prep_exec("SELECT * from biz_activity limit 2;", ()).unwrap();
-    let mut result: Option<Vec<Act>> = None;
-    let err = decode(rows, &mut result);
-    if err.is_some() {
-        panic!(err.unwrap());
+    let result:Result<Vec<Act>,String> = decode(rows);
+    if result.is_err() {
+        panic!(result.err().unwrap());
     }
     for item in &result.unwrap() {
         println!("{}", item.name);
