@@ -14,11 +14,11 @@ pub type Error = String;
 * the json decode util
 * by  zhuxiujia@qq.com
 **/
-pub fn decode<T>(rows: QueryResult) -> Result<T,Error>
+pub fn decode<T>(rows: QueryResult) -> Result<T, Error>
     where
         T: de::DeserializeOwned + RbatisMacro {
     let mut js = "".to_owned();
-    if T::decode_name()=="Vec" || T::decode_name()=="Array" || T::decode_name()=="Slice" {
+    if T::decode_name() == "Vec" || T::decode_name() == "Array" || T::decode_name() == "Slice" || T::decode_name() == "LinkedList" {
         //is array json
         js = "[".to_owned();
         let mut push_spar = false;
@@ -77,9 +77,9 @@ pub fn decodeRow(row: &Row) -> String {
             } else {
                 let sqlLen = sql.len();
                 let last = sql.rfind("'").unwrap_or_default();
-                if last == (sqlLen - 1){
+                if last == (sqlLen - 1) {
                     let first = sql.find("'").unwrap_or_default();
-                    if first == 0 && first != last{
+                    if first == 0 && first != last {
                         let slice = &sql[1..(sqlLen - 1)];
                         sql = "\"".to_owned() + slice + "\"";
                     }

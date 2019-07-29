@@ -1,3 +1,4 @@
+use std::collections::LinkedList;
 
 //过程宏
 pub trait RbatisMacro {
@@ -20,5 +21,11 @@ impl  <T>RbatisMacro for [T]{
 impl  <T>RbatisMacro for &[T]{
     fn decode_name() -> &'static str{
         return "Slice";
+    }
+}
+//array
+impl  <T>RbatisMacro for LinkedList<T>{
+    fn decode_name() -> &'static str{
+        return "LinkedList";
     }
 }
