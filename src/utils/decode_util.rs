@@ -6,6 +6,9 @@ use std::any::Any;
 
 use rbatis_macro_derive::RbatisMacro;
 use rbatis_macro::RbatisMacro;
+use std::collections::HashMap;
+use serde_json::Number;
+use std::str::FromStr;
 
 pub type Error = String;
 
@@ -35,21 +38,15 @@ impl RQueryResult{
 pub fn decode<T>(rows: RQueryResult) -> Result<T, Error>
     where
         T: de::DeserializeOwned + RbatisMacro {
-    let mut js = "".to_owned();
+    let mut js = serde_json::Value::Null;
     if T::decode_name() == "Vec" || T::decode_name() == "Array" || T::decode_name() == "Slice" || T::decode_name() == "LinkedList" {
         //is array json
-        js = "[".to_owned();
-        let mut push_spar = false;
+        let mut vec_v=vec![];
         for item in rows.rows{
             let act = decodeRow(&item);
-            js.push_str(act.as_str());
-            js.push_str(",");
-            push_spar = true;
+            vec_v.push(act);
         }
-        if push_spar {
-            js.pop();
-        }
-        js = js + "]";
+        js=serde_json::Value::Array(vec_v)
     } else {
         //not array json
         let mut index = 0;
@@ -57,12 +54,11 @@ pub fn decode<T>(rows: RQueryResult) -> Result<T, Error>
             if index > 1 {
                 return Result::Err("rows.affected_rows > 1,but decode one result!".to_string());
             }
-            let act = decodeRow(&item);
-            js.push_str(act.as_str());
+            js = decodeRow(&item);
             index = index + 1;
         }
     }
-    let decodeR = serde_json::from_str(js.as_str());
+    let decodeR = serde_json::from_value(js);
     if decodeR.is_ok() {
         return Result::Ok(decodeR.unwrap());
     } else {
@@ -71,33 +67,37 @@ pub fn decode<T>(rows: RQueryResult) -> Result<T, Error>
     }
 }
 
-pub fn decodeRow(row: &Row) -> String {
+pub fn decodeRow(row: &Row) -> serde_json::Value {
     let cs = row.columns();
-    let csLen = cs.len();
-
-    let mut json_obj_str = String::new();
+    let mut m=serde_json::map::Map::new();
     for c in cs.as_ref() {
         let columnName = c.name_str();
         let k = columnName.as_ref();
         let f: Value = row.get(k).unwrap();
-        json_obj_str = json_obj_str + "\"" + columnName.as_ref() + "\"";
+
         let mut sql = f.as_sql(true);
         let sqlLen = sql.len();
+        let item:serde_json::Value;
         if sql.as_str() == "NULL" {
-            sql = "null".to_string();
+            item=serde_json::Value::Null;
         } else {
             if sql == "''" {
                 sql = "\"\"".to_owned();
+                item=serde_json::Value::String(sql);
             } else if sql.starts_with("'") {
-                if sql.ends_with("'") && sqlLen > 1 {
-                    let slice = &sql[1..(sqlLen - 1)];
-                    sql = "\"".to_owned() + slice + "\"";
+                let slice = &sql[1..(sqlLen - 1)];
+                sql = "\"".to_owned() + slice + "\"";
+                item=serde_json::Value::String(sql);
+            }else{
+                let n=Number::from_str(sql.as_str());
+                if n.is_ok(){
+                    item=serde_json::Value::Number(n.unwrap());
+                }else{
+                    item=serde_json::Value::Null;
                 }
             }
         }
-        json_obj_str = json_obj_str + ":" + sql.as_str() + ",";
+       m.insert(columnName.to_string(),item);
     }
-    json_obj_str.pop();
-    json_obj_str = "{".to_owned() + json_obj_str.as_str() + "}";
-    return json_obj_str;
+    return serde_json::Value::Object(m);
 }
