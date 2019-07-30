@@ -165,3 +165,13 @@ fn TestBenchmarkTPS() {
     utils::time_util::count_time(total,now);
     utils::time_util::count_tps(total,now);
 }
+
+
+#[bench]
+fn Bench_Test(b: &mut Bencher) {
+
+    b.iter( || {
+
+       // v.push(2);
+    });
+}
