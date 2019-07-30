@@ -95,7 +95,8 @@ fn TestLinkMysql() {
 
     let mut conn = Conn::new(ops).unwrap();
     let rows = conn.prep_exec("SELECT * from biz_activity limit 2;", ()).unwrap();
-    let result:Result<Vec<Act>,String> = decode(rows);
+    let rq=utils::decode_util::RQueryResult::from_query_result(rows);
+    let result:Result<Vec<Act>,String> = decode(rq);
     if result.is_err() {
         panic!(result.err().unwrap());
     }
@@ -125,9 +126,19 @@ fn TestLinkPostgres() {
 }
 
 #[bench]
-fn Bench_TestCheckAct(b: &mut Bencher) {
-    b.iter(|| {
+fn Bench_Decode_Util(b: &mut Bencher) {
+    let mut ops = mysql::OptsBuilder::new();
+    ops.user(Some("root"));
+    ops.pass(Some("TEST"));
+    ops.db_name(Some("test"));
+    ops.ip_or_hostname(Some("115.220.9.139"));
 
+    let mut conn = Conn::new(ops).unwrap();
+    let rows = conn.prep_exec("SELECT * from biz_activity limit 1;", ()).unwrap();
+    let rq=&utils::decode_util::RQueryResult::from_query_result(rows);
+
+    b.iter( || {
+        let result:Result<Act,String> = decode(rq.clone());
     });
 }
 
