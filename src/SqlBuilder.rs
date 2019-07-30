@@ -142,6 +142,9 @@ fn Bench_Decode_Util(b: &mut Bencher) {
     });
 }
 
+
+
+//use TPS: 143472.0229555237 TPS/s  约为golang的1.4倍(go=103685 TPS/s)
 #[test]
 fn TestBenchmarkTPS() {
     let now=Local::now();
