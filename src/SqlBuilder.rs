@@ -142,3 +142,23 @@ fn Bench_Decode_Util(b: &mut Bencher) {
     });
 }
 
+#[test]
+fn TestBenchmarkTPS() {
+    let now=Local::now();
+    let mut ops = mysql::OptsBuilder::new();
+    ops.user(Some("root"));
+    ops.pass(Some("TEST"));
+    ops.db_name(Some("test"));
+    ops.ip_or_hostname(Some("115.220.9.139"));
+
+    let mut conn = Conn::new(ops).unwrap();
+    let rows = conn.prep_exec("SELECT * from biz_activity limit 1;", ()).unwrap();
+    let rq=&utils::decode_util::RQueryResult::from_query_result(rows);
+
+    let total=100000;
+    for _ in 0..total{
+        let result:Result<Act,String> = decode(rq.clone());
+    }
+    utils::time_util::count_time(total,now);
+    utils::time_util::count_tps(total,now);
+}
