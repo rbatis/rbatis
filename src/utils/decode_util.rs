@@ -10,11 +10,29 @@ use rbatis_macro::RbatisMacro;
 pub type Error = String;
 
 
+#[derive(Clone, PartialEq)]
+pub struct RQueryResult{
+    rows:Vec<Row>,
+}
+
+impl RQueryResult{
+    pub fn from_query_result(arg:QueryResult)->Self{
+        let mut rq=RQueryResult{
+            rows: vec![],
+        };
+        arg.for_each(|item|{
+            rq.rows.push(item.unwrap());
+        });
+        return rq;
+    }
+}
+
+
 /**
 * the json decode util
 * by  zhuxiujia@qq.com
 **/
-pub fn decode<T>(rows: QueryResult) -> Result<T, Error>
+pub fn decode<T>(rows: RQueryResult) -> Result<T, Error>
     where
         T: de::DeserializeOwned + RbatisMacro {
     let mut js = "".to_owned();
@@ -22,13 +40,12 @@ pub fn decode<T>(rows: QueryResult) -> Result<T, Error>
         //is array json
         js = "[".to_owned();
         let mut push_spar = false;
-        rows.for_each(|item| {
-            let row = item.unwrap();
-            let act = decodeRow(&row);
+        for item in rows.rows{
+            let act = decodeRow(&item);
             js.push_str(act.as_str());
             js.push_str(",");
             push_spar = true;
-        });
+        }
         if push_spar {
             js.pop();
         }
@@ -36,17 +53,13 @@ pub fn decode<T>(rows: QueryResult) -> Result<T, Error>
     } else {
         //not array json
         let mut index = 0;
-        rows.for_each(|item| {
+        for item in rows.rows{
             if index > 1 {
-                return;
+                return Result::Err("rows.affected_rows > 1,but decode one result!".to_string());
             }
-            let row = item.unwrap();
-            let act = decodeRow(&row);
+            let act = decodeRow(&item);
             js.push_str(act.as_str());
             index = index + 1;
-        });
-        if index > 1 {
-            return Result::Err("rows.affected_rows > 1,but decode one result!".to_string());
         }
     }
     let decodeR = serde_json::from_str(js.as_str());
