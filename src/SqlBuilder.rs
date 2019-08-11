@@ -210,8 +210,8 @@ fn TestFF() {
     let mut sql_data="".to_string();
 
     let mut fnvec:Vec<fn(param:&mut HashMap<&str,serde_json::Value,RandomState>,  sql:&mut String)>=vec![];
-    fnvec.push(| param:&mut HashMap<&str,serde_json::Value,RandomState>,  sql:&mut String |{  param.insert("patern",serde_json::Value::String("%".to_owned()+"%"));    });
-    fnvec.push(| param:&mut HashMap<&str,serde_json::Value,RandomState>,  sql:&mut String |{  sql.push_str("select * from biz_activity"); });
+    fnvec.push(| param,sql |{  param.insert("patern",serde_json::Value::String("%".to_owned()+"%"));    });
+    fnvec.push(| param,sql |{  sql.push_str("select * from biz_activity"); });
 
 // sql.push_str("select * from biz_activity");
 
