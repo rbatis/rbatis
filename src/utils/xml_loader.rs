@@ -28,8 +28,8 @@ impl Element {
 }
 
 
-pub fn load_xml(mut file_content: &mut String) -> Vec<Element> {
-    let mut parser = EventReader::from_str(file_content);
+pub fn load_xml(file_content:String) -> Vec<Element> {
+    let mut parser = EventReader::from_str(file_content.as_str());
     return parserFunc(parser);
 }
 
@@ -104,5 +104,5 @@ fn Test_load_xml() {
     let mut content = fs::read_to_string("./src/example/Example_ActivityMapper.xml").unwrap();
     println!("With text:/n{}", content);
 
-    load_xml(&mut content);
+    load_xml( content);
 }
