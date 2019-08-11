@@ -18,6 +18,7 @@ use crate::utils::decode_util::decode;
 use serde_json::Error;
 use rbatis_macro_derive::RbatisMacro;
 use rbatis_macro::RbatisMacro;
+use std::collections::hash_map::RandomState;
 
 pub struct SqlBuilder {}
 
@@ -170,19 +171,32 @@ macro_rules! create_function {
     // This macro takes an argument of designator `ident` and
     // creates a function named `$func_name`.
     // The `ident` designator is used for variable/function names.
-    ($func_name:ident) => (
+
+  ($func_name:ident,$xml:expr) => (
+
+  //arg:HashMap<&str,String,RandomState>
         fn $func_name() {
             // The `stringify!` macro converts an `ident` into a string.
-            println!("You called {:?}()",
-                     stringify!($func_name))
+            let xml_data:&str=$xml;
+            println!("expr={:?}",xml_data);
+            println!("You called {:?}()",stringify!($func_name));
+            //TODO build logic
+
         }
     )
 }
 
-// Create functions named `foo` and `bar` with the above macro.
-create_function!(foo);
-create_function!(bar);
-
+create_function!(foo,r#"<select id="selectByCondition" resultMap="BaseResultMap">
+        <bind name="pattern" value="'%' + name + '%'"/>
+        select * from biz_activity
+        <where>
+            <if test="name != null">and name like #{pattern}</if>
+            <if test="startTime != null">and create_time >= #{startTime}</if>
+            <if test="endTime != null">and create_time &lt;= #{endTime}</if>
+        </where>
+        order by create_time desc
+        <if test="page != null and size != null">limit #{page}, #{size}</if>
+    </select>"#);
 
 #[test]
 fn TestFF() {
