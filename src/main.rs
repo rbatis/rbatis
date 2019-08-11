@@ -48,3 +48,12 @@ fn testf<T:RbatisMacro>(arg:T){
     let name=T::decode_name();
     println!("{}",name);
 }
+
+#[bench]
+fn Bench_Test(b: &mut Bencher) {
+
+    b.iter( || {
+
+        // v.push(2);
+    });
+}
