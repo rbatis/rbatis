@@ -206,4 +206,17 @@ fn TestFF() {
     let mut m =HashMap::new();
     m.insert("s",serde_json::Value::String("s".to_string()));
     let arg=m.get("name").unwrap_or(&serde_json::value::Value::Null);
+
+    let mut sql_data="".to_string();
+
+    let mut fnvec:Vec<fn(param:&mut HashMap<&str,serde_json::Value,RandomState>,  sql:&mut String)>=vec![];
+    fnvec.push(| param:&mut HashMap<&str,serde_json::Value,RandomState>,  sql:&mut String |{  param.insert("patern",serde_json::Value::String("%".to_owned()+"%"));    });
+    fnvec.push(| param:&mut HashMap<&str,serde_json::Value,RandomState>,  sql:&mut String |{  sql.push_str("select * from biz_activity"); });
+
+// sql.push_str("select * from biz_activity");
+
+    fnvec[0](&mut m,&mut sql_data);
+    fnvec[1](&mut m,&mut sql_data);
+
+    println!("sql:{}",sql_data);
 }
