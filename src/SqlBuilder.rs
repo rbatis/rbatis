@@ -175,13 +175,15 @@ macro_rules! create_function {
   ($func_name:ident,$xml:expr) => (
 
   //arg:HashMap<&str,String,RandomState>
-        fn $func_name() {
+        fn $func_name() -> fn(){
             // The `stringify!` macro converts an `ident` into a string.
             let xml_data:&str=$xml;
             println!("expr={:?}",xml_data);
             println!("You called {:?}()",stringify!($func_name));
             //TODO build logic
+            let el_vec = utils::xml_loader::load_xml(xml_data.to_string());
 
+            return ||{ };
         }
     )
 }
@@ -201,4 +203,7 @@ create_function!(foo,r#"<select id="selectByCondition" resultMap="BaseResultMap"
 #[test]
 fn TestFF() {
     foo();
+    let mut m =HashMap::new();
+    m.insert("s",serde_json::Value::String("s".to_string()));
+    let arg=m.get("name").unwrap_or(&serde_json::value::Value::Null);
 }
