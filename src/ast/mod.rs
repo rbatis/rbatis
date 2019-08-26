@@ -1,3 +1,7 @@
+#![feature(test)]
+#![feature(fn_traits)]
+extern crate test;
+
 pub mod NodeType;
 pub mod Node;
 pub mod SqlArgTypeConvert;
