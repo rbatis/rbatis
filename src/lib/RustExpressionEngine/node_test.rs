@@ -53,9 +53,10 @@ fn TestNodeRun() {
     for item in expressions {
         println!("{}", item.express.clone());
         //TODO let parserArray = Parser(item.to_string(), &OptMap::new());
-        let mut boxNode = parser::Parser(item.express.clone().to_string(), &OptMap::new()).unwrap();
+
+        let mut boxNode = parser::Parser(item.express.to_string(), &OptMap::new()).unwrap();
         let result = boxNode.eval(&john).unwrap();
-        println!("result >>>>>>>>>>   =  {}", &result);
+        println!("express: {} >>>>> {}", item.express,&result);
         let resultValue = &item.eq.clone();
         if !result.eq(resultValue) {
             // println!("exe express fail:".to_owned()+item);
