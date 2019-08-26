@@ -1,13 +1,10 @@
 #![feature(fn_traits)]
-#![feature(test)]
 
 extern crate mysql;
 
 mod example;
 mod ast;
 mod utils;
-
-extern crate test;
 
 use test::Bencher;
 
