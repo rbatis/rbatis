@@ -1,7 +1,3 @@
-#![feature(test)]
-#![feature(fn_traits)]
-extern crate test;
-
 pub mod time_util;
 pub mod xml_loader;
 pub mod print_util;
