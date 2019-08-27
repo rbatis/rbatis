@@ -11,4 +11,4 @@ pub mod decode_util;
 
 
 //test
-mod string_util_test;
+pub mod string_util_test;

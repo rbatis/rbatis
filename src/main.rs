@@ -4,15 +4,15 @@ extern crate test;
 
 extern crate mysql;
 
-mod example;
-mod ast;
-mod utils;
+pub mod example;
+pub mod ast;
+pub mod utils;
 
 use test::Bencher;
 
-mod engines;
-mod lib;
-mod SqlBuilder;
+pub mod engines;
+pub mod lib;
+pub mod SqlBuilder;
 
 use self::utils::time_util;
 //use utils::TimeUtil;
