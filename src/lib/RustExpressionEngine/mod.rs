@@ -8,7 +8,7 @@ pub mod parser;
 pub mod runtime;
 
 //test mod
- mod parser_test;
- mod node_test;
- mod eval_test;
- mod runtime_test;
+ pub mod parser_test;
+ pub mod node_test;
+ pub mod eval_test;
+ pub mod runtime_test;
