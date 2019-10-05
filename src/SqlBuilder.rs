@@ -170,7 +170,6 @@ fn TestBenchmarkTPS() {
 
 #[test]
 fn TestFF() {
-    foo();
     let mut m =HashMap::new();
     m.insert("s",serde_json::Value::String("s".to_string()));
     let arg=m.get("name").unwrap_or(&serde_json::value::Value::Null);
