@@ -167,38 +167,6 @@ fn TestBenchmarkTPS() {
     utils::time_util::count_tps(total,now);
 }
 
-macro_rules! create_function {
-    // This macro takes an argument of designator `ident` and
-    // creates a function named `$func_name`.
-    // The `ident` designator is used for variable/function names.
-
-  ($func_name:ident,$xml:expr) => (
-
-  //arg:HashMap<&str,String,RandomState>
-        fn $func_name() -> fn(){
-            // The `stringify!` macro converts an `ident` into a string.
-            let xml_data:&str=$xml;
-            println!("expr={:?}",xml_data);
-            println!("You called {:?}()",stringify!($func_name));
-            //TODO build logic
-            let el_vec = utils::xml_loader::load_xml(xml_data.to_string());
-
-            return ||{ };
-        }
-    )
-}
-
-create_function!(foo,r#"<select id="selectByCondition" resultMap="BaseResultMap">
-        <bind name="pattern" value="'%' + name + '%'"/>
-        select * from biz_activity
-        <where>
-            <if test="name != null">and name like #{pattern}</if>
-            <if test="startTime != null">and create_time >= #{startTime}</if>
-            <if test="endTime != null">and create_time &lt;= #{endTime}</if>
-        </where>
-        order by create_time desc
-        <if test="page != null and size != null">limit #{page}, #{size}</if>
-    </select>"#);
 
 #[test]
 fn TestFF() {
