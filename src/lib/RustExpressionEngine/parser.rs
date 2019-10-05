@@ -25,7 +25,11 @@ pub fn Parser(express: String, optMap: &OptMap) -> Result<Node,String> {
     for item in optMap.priorityArray() {
         findReplaceOpt(optMap, &express, &item, &mut nodes);
     }
-    return Result::Ok(nodes[0].clone());
+    if nodes.len()>0{
+        return Result::Ok(nodes[0].clone());
+    }else{
+        return Result::Err("parser express fail".to_string());
+    }
 }
 
 fn findReplaceOpt(optMap: &OptMap, express: &String, operator: &str, nodeArg: &mut Vec<Node>) {
