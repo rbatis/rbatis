@@ -200,11 +200,11 @@ impl Node {
             nodeType: NBool,
         }
     }
-    pub fn newBinary(argLef: Node, argRight: Node, opt: &str) -> Self {
+    pub fn newBinary(argLef: Rc<Node>, argRight: Rc<Node>, opt: &str) -> Self {
         Self {
             value: Value::from(opt),
-            leftBinaryNode: Option::Some(Rc::new(argLef)),
-            rightBinaryNode: Option::Some(Rc::new(argRight)),
+            leftBinaryNode: Option::Some(argLef),
+            rightBinaryNode: Option::Some(argRight),
             nodeType: NBinary,
         }
     }
