@@ -4,6 +4,8 @@ use crate::lib::RustExpressionEngine::node::Node;
 use crate::lib::RustExpressionEngine::node::NodeType::{NOpt, NBinary};
 use crate::lib::RustExpressionEngine::runtime::{IsNumber, OptMap, ParserTokens};
 use std::collections::linked_list::LinkedList;
+use std::rc::Rc;
+use std::ops::Deref;
 
 
 //TODO 解决bug
@@ -19,21 +21,20 @@ pub fn Parser(express: String, optMap: &OptMap) -> Result<Node,String> {
                 panic!("[RustMybatis] find not support opt:".to_owned()+item.as_str());
             }
         }
-        nodes.push(node);
+        nodes.push(Rc::new(node));
     }
     //TODO check nodes
     for item in optMap.priorityArray() {
         findReplaceOpt(optMap, &express, &item, &mut nodes);
     }
     if nodes.len()>0{
-        return Result::Ok(nodes[0].clone());
+        return Result::Ok(nodes[0].deref().clone());
     }else{
         return Result::Err("parser express fail".to_string());
     }
 }
 
-fn findReplaceOpt(optMap: &OptMap, express: &String, operator: &str, nodeArg: &mut Vec<Node>) {
-
+fn findReplaceOpt(optMap: &OptMap, express: &String, operator: &str, nodeArg: &mut Vec<Rc<Node>>) {
     //let nodes=vec![];
     let mut index = 0 as i32;
     let nodeArgLen = nodeArg.len();
@@ -50,7 +51,7 @@ fn findReplaceOpt(optMap: &OptMap, express: &String, operator: &str, nodeArg: &m
             nodeArg.remove(index as usize);
             nodeArg.remove(leftIndex);
 
-            nodeArg.insert(leftIndex, binaryNode);
+            nodeArg.insert(leftIndex, Rc::new(binaryNode));
             if haveOpt(nodeArg) {
                 findReplaceOpt(optMap, express, operator, nodeArg);
             }
@@ -60,7 +61,7 @@ fn findReplaceOpt(optMap: &OptMap, express: &String, operator: &str, nodeArg: &m
     }
 }
 
-fn haveOpt(nodeArg: &mut Vec<Node>) -> bool {
+fn haveOpt(nodeArg: &mut Vec<Rc<Node>>) -> bool {
     for item in nodeArg {
         if item.nodeType() as i32 == NOpt as i32 {
             return true;
