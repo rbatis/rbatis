@@ -1,16 +1,13 @@
 
 struct Example{
-   pub f:fn()->String
-}
-impl Example{
-    pub fn Print(&self){
-        println!("{}",self.f.call(()))
-    }
+   pub selectByCondition:fn()
 }
 
 
 #[test]
 fn testWriteMethod(){
-    let e=Example{ f: ||String::from("sad") };
-   e.Print();
+    let e=Example{
+        selectByCondition: || {println!("select * from table");}
+    };
+    (e.selectByCondition)();
 }
