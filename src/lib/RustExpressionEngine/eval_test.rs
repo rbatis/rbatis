@@ -31,30 +31,20 @@ fn TestMemGC() {
         }
     });
 
-    let total=1000000;
+    let total=10000000;
     println!("start");
-    for i in 0..total{
-        boxNode.eval(&john);
-        if i==(total-1){
-            println!("999999");
-            let ten_millis = time::Duration::from_secs(5);
-            thread::sleep(ten_millis);
-        }
-    }
-    for i in 0..total{
-        boxNode.eval(&john);
-        if i==(total-1){
-            println!("999999");
-            let ten_millis = time::Duration::from_secs(5);
-            thread::sleep(ten_millis);
-        }
-    }
-    for i in 0..total{
-        boxNode.eval(&john);
-        if i==(total-1){
-            println!("999999");
-            let ten_millis = time::Duration::from_secs(5);
-            thread::sleep(ten_millis);
+
+    for _loop in 0..3{
+        for i in 0..total{
+            boxNode.eval(&john);
+            if i==(total-1){
+                println!("done:{}",_loop);
+                let ten_millis = time::Duration::from_secs(5);
+                thread::sleep(ten_millis);
+            }
+            if i%1000000==0{
+                println!("number:{}",i)
+            }
         }
     }
 }
