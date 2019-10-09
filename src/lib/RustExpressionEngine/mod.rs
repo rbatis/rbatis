@@ -2,7 +2,6 @@ pub mod eval;
 pub mod node;
 pub mod parser;
 pub mod runtime;
-pub mod node2;
 
 //test mod
  pub mod parser_test;

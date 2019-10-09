@@ -15,7 +15,6 @@ fn Bench_Parser(b: &mut Bencher) {
            "yes":"sadf"
         }
     });
-    let now=Local::now();
     b.iter(|| {
         boxNode.eval(&john);
     });
