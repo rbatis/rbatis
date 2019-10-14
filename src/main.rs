@@ -12,7 +12,7 @@ use test::Bencher;
 
 pub mod engines;
 pub mod lib;
-pub mod SqlBuilder;
+pub mod core;
 
 use self::utils::time_util;
 //use utils::TimeUtil;
