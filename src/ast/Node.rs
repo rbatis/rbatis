@@ -5,6 +5,13 @@ use crate::utils::xml_loader::Element;
 use crate::ast::StringNode::StringNode;
 use crate::ast::NodeConfigHolder::NodeConfigHolder;
 use std::rc::Rc;
+use crate::ast::IfNode::IfNode;
+use crate::ast::TrimNode::TrimNode;
+use crate::ast::ForEachNode::ForEachNode;
+use crate::ast::ChooseNode::ChooseNode;
+use crate::ast::NodeType::NodeType::NWhen;
+use crate::ast::WhenNode::WhenNode;
+use crate::ast::OtherwiseNode::OtherwiseNode;
 
 /**
 * Abstract syntax tree node
@@ -31,8 +38,11 @@ pub fn DoChildNodes(childNodes: &mut Vec<NodeType>, env: &mut Value) -> Result<S
 pub fn LoopDecodeXml(xml_vec:Vec<Element>,holder:NodeConfigHolder) -> Result<Vec<NodeType>, String> {
     let mut nodes=vec![];
     for xml in xml_vec {
+        let child_nodes;
         if xml.childs.len() != 0 {
-            let child_result = LoopDecodeXml(xml.childs, holder.clone());
+            child_nodes = LoopDecodeXml(xml.clone().childs, holder.clone()).unwrap_or(vec![]);
+        }else{
+            child_nodes = vec![];
         }
        let tag_str=xml.tag.as_str();
        //println!("tag_str:{}",tag_str);
@@ -41,12 +51,40 @@ pub fn LoopDecodeXml(xml_vec:Vec<Element>,holder:NodeConfigHolder) -> Result<Vec
            "update" => println!("<update>"),
            "insert" => println!("<insert>"),
            "delete" => println!("<delete>"),
-           "if" => println!("<if>"),
-           "trim" => println!("<trim>"),
-           "foreach" => println!("<foreach>"),
-           "choose" => println!("<choose>"),
-           "when" => println!("<when>"),
-           "otherwise" => println!("<otherwise>"),
+           "if" => nodes.push(NodeType::NIf(IfNode{
+               childs: child_nodes,
+               test: xml.getAttr("test"),
+               holder:holder.clone(),
+           })),
+           "trim" => nodes.push(NodeType::NTrim(TrimNode{
+               childs: child_nodes,
+               prefix: xml.getAttr("prefix"),
+               suffix: xml.getAttr("suffix"),
+               suffixOverrides: xml.getAttr("suffixOverrides"),
+               prefixOverrides: xml.getAttr("prefixOverrides")
+           })),
+           "foreach" => nodes.push(NodeType::NForEach(ForEachNode{
+               childs: child_nodes,
+               collection: xml.getAttr("collection"),
+               index: xml.getAttr("index"),
+               item: xml.getAttr("item"),
+               open: xml.getAttr("open"),
+               close: xml.getAttr("close"),
+               separator: xml.getAttr("separator")
+           })),
+           "choose" => nodes.push(NodeType::NChoose(ChooseNode{
+               //todo filter nodes from child nodes
+               whenNodes: filter_when_nodes(child_nodes.clone()),
+               otherwiseNode: filter_otherwise_nodes(child_nodes),
+           })),
+           "when" => nodes.push(NodeType::NWhen(WhenNode{
+               childs: child_nodes,
+               test: xml.getAttr("test"),
+               holder:holder.clone(),
+           })),
+           "otherwise" => nodes.push(NodeType::NOtherwise(OtherwiseNode{
+               childs: child_nodes,
+           })),
            "bind" => println!("<bind>"),
            "include" => println!("<include>"),
            "" => {
@@ -61,4 +99,38 @@ pub fn LoopDecodeXml(xml_vec:Vec<Element>,holder:NodeConfigHolder) -> Result<Vec
        }
     }
     return Result::Ok(nodes);
+}
+
+pub fn filter_when_nodes(arg:Vec<NodeType>) -> Option<Vec<NodeType>>{
+    let mut data=vec![];
+    for x in arg {
+        match x {
+            NodeType::NWhen(whenNode) => data.push( NodeType::NWhen(whenNode)),
+            _ => {}
+        }
+    }
+    if data.len()==0 {
+        return Option::None;
+    }else{
+        return Some(data);
+    }
+}
+
+pub fn filter_otherwise_nodes(arg:Vec<NodeType>) -> Option<Box<NodeType>>{
+    let mut data=vec![];
+    for x in arg {
+        match x {
+            NodeType::NOtherwise(nOtherwise) => data.push(NodeType::NOtherwise(nOtherwise)),
+            _ => {}
+        }
+    }
+    if data.len()>0 {
+        if data.len()>1{
+            panic!("otherwise_nodes length can not > 1;")
+        }
+        let d0=data[0].clone();
+        return Option::Some(Box::new(d0));
+    }else{
+        return Option::None;
+    }
 }

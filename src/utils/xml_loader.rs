@@ -25,6 +25,14 @@ impl Element {
         self.attributes.clear();
         self.childs.clear();
     }
+    pub fn getAttr(&self,arg:&str)->String{
+        for x in &self.attributes {
+           if x.name.to_string().as_str()==arg{
+               return x.value.clone();
+           }
+        }
+        return "".to_string();
+    }
 }
 
 
