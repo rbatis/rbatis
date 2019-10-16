@@ -1,6 +1,7 @@
 use super::NodeType::NodeType;
 use std::collections::HashMap;
 use serde_json::Value;
+use crate::utils::xml_loader::Element;
 
 /**
 * Abstract syntax tree node
@@ -24,6 +25,13 @@ pub fn DoChildNodes(childNodes: &mut Vec<NodeType>, env: &mut Value) -> Result<S
 }
 
 //TODO decode xml
-pub fn DecodeXml(xml:String) -> Result<String, String> {
-   unimplemented!()
+pub fn DecodeXml(xml_vec:Vec<Element>) -> Result<String, String> {
+    for xml in xml_vec {
+       let xml_str=xml.tag.as_str();
+       match xml_str {
+           "select" => println!("sda"),
+           _ => {}
+       }
+    }
+    return Result::Ok("ssd".to_string());
 }
