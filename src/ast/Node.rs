@@ -22,3 +22,8 @@ pub fn DoChildNodes(childNodes: &mut Vec<NodeType>, env: &mut Value) -> Result<S
     }
     return Result::Ok(s);
 }
+
+//TODO decode xml
+pub fn DecodeXml(xml:String) -> Result<String, String> {
+
+}
