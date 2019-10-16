@@ -6,11 +6,12 @@ use serde_json::Value;
 use crate::engines::ExpressionEngineDefault::ExpressionEngineDefault;
 use crate::engines::ExpressionEngineCache::ExpressionEngineCache;
 use crate::ast::SqlArgTypeConvertDefault::SqlArgTypeConvertDefault;
+use lib::RustExpressionEngine::node::Node;
 
 #[derive(Clone)]
 pub struct NodeConfigHolder{
     pub sqlConvert: Rc<SqlArgTypeConvert>,
-    pub engine: ExpressionEngineProxy<lib::RustExpressionEngine::node::Node, Value>,
+    pub engine: ExpressionEngineProxy<Node, Value>,
 }
 
 impl NodeConfigHolder{
