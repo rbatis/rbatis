@@ -15,7 +15,7 @@ fn TestStringNode() {
     let mut john = json!({
         "name": "John Doe",
     });
-    let mut strNode = NodeType::NString(StringNode::new("select * from ${name} where name = #{name}", Box::new(NodeConfigHolder::new())));
+    let mut strNode = NodeType::NString(StringNode::new("select * from ${name} where name = #{name}",  NodeConfigHolder::new()));
 
     let result = strNode.eval(&mut john).unwrap();
     println!("{}", result);
@@ -28,7 +28,7 @@ fn Bench_Parser(b: &mut Bencher) {
     });
 
 
-    let mut strNode = NodeType::NString(StringNode::new("vvvvvvvvvv#{name}vvvvvvvv", Box::new(NodeConfigHolder::new())));
+    let mut strNode = NodeType::NString(StringNode::new("vvvvvvvvvv#{name}vvvvvvvv",  NodeConfigHolder::new()));
 
     b.iter(|| {
         &strNode.eval(&mut john);

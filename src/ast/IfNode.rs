@@ -5,10 +5,10 @@ use crate::ast::NodeConfigHolder::NodeConfigHolder;
 use serde_json::ser::State::Rest;
 
 #[derive(Clone)]
-pub struct IfNode {
+pub struct IfNode{
     pub childs: Vec<NodeType>,
     pub test: String,
-    pub holder: Box<NodeConfigHolder>,
+    pub holder: NodeConfigHolder,
 }
 
 impl SqlNode for IfNode {

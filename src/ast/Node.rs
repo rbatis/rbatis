@@ -2,6 +2,9 @@ use super::NodeType::NodeType;
 use std::collections::HashMap;
 use serde_json::Value;
 use crate::utils::xml_loader::Element;
+use crate::ast::StringNode::StringNode;
+use crate::ast::NodeConfigHolder::NodeConfigHolder;
+use std::rc::Rc;
 
 /**
 * Abstract syntax tree node
@@ -25,30 +28,36 @@ pub fn DoChildNodes(childNodes: &mut Vec<NodeType>, env: &mut Value) -> Result<S
 }
 
 //TODO decode xml
-pub fn LoopDecodeXml(xml_vec:Vec<Element>) -> Result<Vec<NodeType>, String> {
+pub fn LoopDecodeXml(xml_vec:Vec<Element>,holder:NodeConfigHolder) -> Result<NodeType, String> {
     for xml in xml_vec {
-       if xml.childs.len()!=0{
-            let child_result= LoopDecodeXml(xml.childs);
-       }
+        if xml.childs.len() != 0 {
+            let child_result = LoopDecodeXml(xml.childs, holder.clone());
+        }
        let tag_str=xml.tag.as_str();
-//       println!("tag_str:{}",tag_str);
+       //println!("tag_str:{}",tag_str);
        match tag_str {
            "select" => println!("<select>"),
            "update" => println!("<update>"),
            "insert" => println!("<insert>"),
            "delete" => println!("<delete>"),
-
-           "" => println!("<string>{}",xml.data.replace("\n","")),
            "if" => println!("<if>"),
            "trim" => println!("<trim>"),
            "foreach" => println!("<foreach>"),
            "choose" => println!("<choose>"),
            "when" => println!("<when>"),
            "otherwise" => println!("<otherwise>"),
-           "bind"  => println!("<bind>"),
-           "include"  => println!("<include>"),
+           "bind" => println!("<bind>"),
+           "include" => println!("<include>"),
+           "" => {
+               let string = xml.data.replace("\n", "");
+               let data=string.as_str();
+               let tag=xml.tag.as_str();
+               let n = StringNode::new(data, holder.clone());
+               println!("{}",data);
+               return Ok(NodeType::NString(n));
+           },
            _ => {}
        }
     }
-    return Result::Ok(vec![]);
+    return Result::Err("".to_string());
 }

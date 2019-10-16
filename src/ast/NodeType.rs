@@ -25,7 +25,7 @@ pub enum NodeType {
     NInclude(IncludeNode),
 }
 
-impl SqlNode for NodeType {
+impl <'a>SqlNode for NodeType {
     fn eval(&mut self, env: &mut Value) -> Result<String, String> {
         match self {
             NodeType::Null => return Result::Ok(String::new()),

@@ -2,13 +2,24 @@ use crate::ast::NodeType::NodeType;
 use crate::ast::Node::{SqlNode, DoChildNodes};
 use serde_json::Value;
 use crate::ast::NodeConfigHolder::NodeConfigHolder;
+use std::borrow::BorrowMut;
 
-#[derive(Clone)]
+
 pub struct WhenNode {
     pub childs: Vec<NodeType>,
     pub test: String,
 
-    pub holder: Box<NodeConfigHolder>,
+    pub holder: NodeConfigHolder,
+}
+
+impl Clone for WhenNode{
+    fn clone(&self) -> Self {
+        return Self{
+            childs: self.childs.clone(),
+            test: self.test.clone(),
+            holder: self.holder.clone(),
+        }
+    }
 }
 
 impl  SqlNode for WhenNode{

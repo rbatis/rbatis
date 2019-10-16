@@ -12,7 +12,7 @@ fn TestBindNode(){
     let mut bindNode =BindNode{
         name: "a".to_string(),
         value: "a+1".to_string(),
-        holder: Box::new(NodeConfigHolder::new()),
+        holder:NodeConfigHolder::new(),
     };
 
     let mut john = json!({
