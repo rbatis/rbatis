@@ -25,23 +25,30 @@ pub fn DoChildNodes(childNodes: &mut Vec<NodeType>, env: &mut Value) -> Result<S
 }
 
 //TODO decode xml
-pub fn LoopDecodeXml(xml_vec:Vec<Element>) -> Result<String, String> {
+pub fn LoopDecodeXml(xml_vec:Vec<Element>) -> Result<Vec<NodeType>, String> {
     for xml in xml_vec {
        if xml.childs.len()!=0{
             let child_result= LoopDecodeXml(xml.childs);
        }
        let tag_str=xml.tag.as_str();
-       println!("tag_str:{}",tag_str);
-       if tag_str == ""{
-           println!("str>>>>  {}",xml.data);
-       }
+//       println!("tag_str:{}",tag_str);
        match tag_str {
-           "select" => println!("select"),
-           "update" => println!("update"),
-           "insert" => println!("insert"),
-           "delete" => println!("delete"),
+           "select" => println!("<select>"),
+           "update" => println!("<update>"),
+           "insert" => println!("<insert>"),
+           "delete" => println!("<delete>"),
+
+           "" => println!("<string>{}",xml.data.replace("\n","")),
+           "if" => println!("<if>"),
+           "trim" => println!("<trim>"),
+           "foreach" => println!("<foreach>"),
+           "choose" => println!("<choose>"),
+           "when" => println!("<when>"),
+           "otherwise" => println!("<otherwise>"),
+           "bind"  => println!("<bind>"),
+           "include"  => println!("<include>"),
            _ => {}
        }
     }
-    return Result::Ok("ssd".to_string());
+    return Result::Ok(vec![]);
 }
