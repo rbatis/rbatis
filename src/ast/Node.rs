@@ -27,16 +27,20 @@ pub fn DoChildNodes(childNodes: &mut Vec<NodeType>, env: &mut Value) -> Result<S
 //TODO decode xml
 pub fn LoopDecodeXml(xml_vec:Vec<Element>) -> Result<String, String> {
     for xml in xml_vec {
-       let xml_str=xml.tag.as_str();
-       match xml_str {
+       if xml.childs.len()!=0{
+            let child_result= LoopDecodeXml(xml.childs);
+       }
+       let tag_str=xml.tag.as_str();
+       println!("tag_str:{}",tag_str);
+       if tag_str == ""{
+           println!("str>>>>  {}",xml.data);
+       }
+       match tag_str {
            "select" => println!("select"),
            "update" => println!("update"),
            "insert" => println!("insert"),
            "delete" => println!("delete"),
            _ => {}
-       }
-       if xml.childs.len()!=0{
-         let child_result=   LoopDecodeXml(xml.childs);
        }
     }
     return Result::Ok("ssd".to_string());
