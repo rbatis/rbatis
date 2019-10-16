@@ -9,12 +9,12 @@ use crate::ast::NodeConfigHolder::NodeConfigHolder;
 pub struct BindNode {
     pub name: String,
     pub value: String,
-    pub holder: Box<NodeConfigHolder>,
+    pub holder: NodeConfigHolder,
 }
 
 impl SqlNode for BindNode {
     fn eval(&mut self, env: &mut Value) -> Result<String, String> {
-        let r = self.holder.as_mut().engine.LexerAndEval(self.value.as_str(), env);
+        let r = self.holder.engine.LexerAndEval(self.value.as_str(), env);
         env[self.name.as_str()] = r.unwrap_or(Value::Null);
         return Result::Ok("".to_string());
     }

@@ -16,7 +16,7 @@ pub fn TestStringNode(){
         "arg": 2,
     });
 
-    let mut sNode = StringNode::new("arg+1=#{arg+1}", Box::new(NodeConfigHolder::new()));
+    let mut sNode = StringNode::new("arg+1=#{arg+1}",  NodeConfigHolder::new());
 
     let r=sNode.eval(&mut john).unwrap();
     println!("{}",r);
@@ -33,7 +33,7 @@ fn Bench_StringNode(b: &mut Bencher) {
         Rc::new(ExpressionEngineDefault::new()),
         ExpressionEngineCache::new());
 
-    let mut sNode = StringNode::new("arg+1=#{arg}", Box::new(NodeConfigHolder::new()));
+    let mut sNode = StringNode::new("arg+1=#{arg}",  NodeConfigHolder::new());
 
     b.iter(|| {
         sNode.eval(&mut john).unwrap();

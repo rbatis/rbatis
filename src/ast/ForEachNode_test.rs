@@ -15,7 +15,7 @@ use crate::ast::NodeConfigHolder::NodeConfigHolder;
 pub fn TestForEachNode(){
 
     let mut n=ForEachNode{
-        childs: vec![NodeType::NString(StringNode::new("index:#{index},item:#{item}",Box::new(NodeConfigHolder::new())))],
+        childs: vec![NodeType::NString(StringNode::new("index:#{index},item:#{item}", NodeConfigHolder::new()))],
         collection: "arg".to_string(),
         index: "index".to_string(),
         item: "item".to_string(),

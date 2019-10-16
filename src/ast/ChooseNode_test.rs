@@ -20,7 +20,7 @@ pub fn TestChooseNode() {
         Rc::new(ExpressionEngineDefault::new()),
         ExpressionEngineCache::new());
 
-    let sNode = NString(StringNode::new("dsaf#{arg+1}", Box::new(NodeConfigHolder::new())));
+    let sNode = NString(StringNode::new("dsaf#{arg+1}",  NodeConfigHolder::new()));
 
     let mut c = ChooseNode {
         whenNodes: Option::Some(vec![sNode]),
