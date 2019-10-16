@@ -28,7 +28,8 @@ pub fn DoChildNodes(childNodes: &mut Vec<NodeType>, env: &mut Value) -> Result<S
 }
 
 //TODO decode xml
-pub fn LoopDecodeXml(xml_vec:Vec<Element>,holder:NodeConfigHolder) -> Result<NodeType, String> {
+pub fn LoopDecodeXml(xml_vec:Vec<Element>,holder:NodeConfigHolder) -> Result<Vec<NodeType>, String> {
+    let mut nodes=vec![];
     for xml in xml_vec {
         if xml.childs.len() != 0 {
             let child_result = LoopDecodeXml(xml.childs, holder.clone());
@@ -54,10 +55,10 @@ pub fn LoopDecodeXml(xml_vec:Vec<Element>,holder:NodeConfigHolder) -> Result<Nod
                let tag=xml.tag.as_str();
                let n = StringNode::new(data, holder.clone());
                println!("{}",data);
-               return Ok(NodeType::NString(n));
+               nodes.push(NodeType::NString(n));
            },
            _ => {}
        }
     }
-    return Result::Err("".to_string());
+    return Result::Ok(nodes);
 }
