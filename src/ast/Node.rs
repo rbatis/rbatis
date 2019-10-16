@@ -12,6 +12,8 @@ use crate::ast::ChooseNode::ChooseNode;
 use crate::ast::NodeType::NodeType::NWhen;
 use crate::ast::WhenNode::WhenNode;
 use crate::ast::OtherwiseNode::OtherwiseNode;
+use crate::ast::BindNode::BindNode;
+use crate::ast::IncludeNode::IncludeNode;
 
 /**
 * Abstract syntax tree node
@@ -85,8 +87,14 @@ pub fn LoopDecodeXml(xml_vec:Vec<Element>,holder:NodeConfigHolder) -> Result<Vec
            "otherwise" => nodes.push(NodeType::NOtherwise(OtherwiseNode{
                childs: child_nodes,
            })),
-           "bind" => println!("<bind>"),
-           "include" => println!("<include>"),
+           "bind" => nodes.push(NodeType::NBind(BindNode{
+               name: xml.getAttr("name"),
+               value: xml.getAttr("value"),
+               holder:holder.clone(),
+           })),
+           "include" => nodes.push(NodeType::NInclude(IncludeNode{
+               childs: child_nodes,
+           })),
            "" => {
                let string = xml.data.replace("\n", "");
                let data=string.as_str();
