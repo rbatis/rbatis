@@ -65,28 +65,38 @@ pub fn LoopDecodeXml(xml_vec:Vec<Element>,holder:NodeConfigHolder) -> Vec<NodeTy
                return child_nodes;
            },
            "select" => nodes.push(NodeType::NSelectNode(SelectNode{
+               id: xml.getAttr("id"),
+               resultMap: xml.getAttr("resultMap"),
                childs: child_nodes,
            })),
            "update" => nodes.push(NodeType::NUpdateNode(UpdateNode{
+               id: xml.getAttr("id"),
                childs: child_nodes,
            })),
            "insert" => nodes.push(NodeType::NInsertNode(InsertNode{
+               id: xml.getAttr("id"),
                childs: child_nodes,
            })),
            "delete" => nodes.push(NodeType::NDeleteNode(DeleteNode{
+               id: xml.getAttr("id"),
                childs: child_nodes,
            })),
 
            "selectTemplete" => nodes.push(NodeType::NSelectTempleteNode(SelectTempleteNode{
+               id: xml.getAttr("id"),
+               resultMap: xml.getAttr("resultMap"),
                childs: child_nodes,
            })),
            "updateTemplete" => nodes.push(NodeType::NUpdateTempleteNode(UpdateTempleteNode{
+               id: xml.getAttr("id"),
                childs: child_nodes,
            })),
            "insertTemplete" => nodes.push(NodeType::NInsertTempleteNode(InsertTempleteNode{
+               id: xml.getAttr("id"),
                childs: child_nodes,
            })),
            "deleteTemplete" => nodes.push(NodeType::NDeleteTempleteNode(DeleteTempleteNode{
+               id: xml.getAttr("id"),
                childs: child_nodes,
            })),
 
