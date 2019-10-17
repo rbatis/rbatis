@@ -3,6 +3,7 @@ use crate::ast::Node::{SqlNode, DoChildNodes};
 use serde_json::{Value, Map};
 use crate::utils;
 use std::collections::HashMap;
+use crate::ast::NodeConfigHolder::NodeConfigHolder;
 
 #[derive(Clone)]
 pub struct ForEachNode {
@@ -16,7 +17,7 @@ pub struct ForEachNode {
 }
 
 impl SqlNode for ForEachNode {
-    fn eval(&mut self, env: &mut Value) -> Result<String, String> {
+    fn eval(&mut self, env: &mut Value,holder:&mut NodeConfigHolder) -> Result<String, String> {
         let mut result = String::new();
 
         //open
@@ -41,7 +42,7 @@ impl SqlNode for ForEachNode {
             objMap.insert("item".to_string(), item.clone());
             objMap.insert("index".to_string(), Value::Number(serde_json::Number::from_f64(index as f64).unwrap()));
             let mut tempArg: Value = Value::Object(objMap);
-            let itemResult = DoChildNodes(&mut self.childs, &mut tempArg);
+            let itemResult = DoChildNodes(&mut self.childs, &mut tempArg,holder);
             if itemResult.is_err() {
                 return itemResult;
             }

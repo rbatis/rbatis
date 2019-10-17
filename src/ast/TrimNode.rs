@@ -1,6 +1,7 @@
 use crate::ast::NodeType::NodeType;
 use crate::ast::Node::{SqlNode, DoChildNodes};
 use serde_json::Value;
+use crate::ast::NodeConfigHolder::NodeConfigHolder;
 
 #[derive(Clone)]
 pub struct TrimNode {
@@ -12,8 +13,8 @@ pub struct TrimNode {
 }
 
 impl SqlNode for TrimNode {
-    fn eval(&mut self, env: &mut Value) -> Result<String, String> {
-        let resultValue = DoChildNodes(&mut self.childs, env);
+    fn eval(&mut self, env: &mut Value,holder:&mut NodeConfigHolder) -> Result<String, String> {
+        let resultValue = DoChildNodes(&mut self.childs, env,holder);
         let isError = resultValue.is_err();
         if isError {
             return Result::Err(resultValue.clone().err().unwrap());

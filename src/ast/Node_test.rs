@@ -12,25 +12,27 @@ use crate::ast::NodeConfigHolder::NodeConfigHolder;
 
 #[test]
 fn TestStringNode() {
+    let mut holder=NodeConfigHolder::new();
     let mut john = json!({
         "name": "John Doe",
     });
-    let mut strNode = NodeType::NString(StringNode::new("select * from ${name} where name = #{name}",  NodeConfigHolder::new()));
+    let mut strNode = NodeType::NString(StringNode::new("select * from ${name} where name = #{name}"));
 
-    let result = strNode.eval(&mut john).unwrap();
+    let result = strNode.eval(&mut john,&mut holder).unwrap();
     println!("{}", result);
 }
 
 #[bench]
 fn Bench_Parser(b: &mut Bencher) {
+    let mut holder=NodeConfigHolder::new();
     let mut john =  json!({
         "name": "John Doe",
     });
 
 
-    let mut strNode = NodeType::NString(StringNode::new("vvvvvvvvvv#{name}vvvvvvvv",  NodeConfigHolder::new()));
+    let mut strNode = NodeType::NString(StringNode::new("vvvvvvvvvv#{name}vvvvvvvv"));
 
     b.iter(|| {
-        &strNode.eval(&mut john);
+        &strNode.eval(&mut john,&mut holder);
     });
 }

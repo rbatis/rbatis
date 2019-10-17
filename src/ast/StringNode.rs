@@ -22,13 +22,11 @@ pub struct StringNode {
     pub expressMap: HashMap<String, String>,
     //去重的，需要替换的免sql转换express map
     pub noConvertExpressMap: HashMap<String, String>,
-
-    pub holder: NodeConfigHolder,
 }
 
 impl StringNode {
 
-    pub fn new(v: &str, holder:NodeConfigHolder) -> Self {
+    pub fn new(v: &str) -> Self {
         let mut expressMap = HashMap::new();
         for item in &string_util::findConvertString(v) {
             expressMap.insert(item.clone(), "#{".to_owned() + item.as_str() + "}");
@@ -41,23 +39,22 @@ impl StringNode {
             value: v.to_string(),
             expressMap:expressMap,
             noConvertExpressMap:noConvertExpressMap,
-            holder:holder,
         }
     }
 }
 
 impl SqlNode for StringNode {
-    fn eval(&mut self, env: &mut Value) -> Result<String, String> {
+    fn eval(&mut self, env: &mut Value,holder:&mut NodeConfigHolder) -> Result<String, String> {
         let mut result = self.value.clone();
         for (item, value) in &self.expressMap {
             let getV = env.get(item);
             if getV.is_none() {
-                let v = self.holder.engine.LexerAndEval(item, env).unwrap();
-                let vstr = self.holder.sqlConvert.convert(v);
+                let v = holder.engine.LexerAndEval(item, env).unwrap();
+                let vstr = holder.sqlConvert.convert(v);
                 result = result.replace(value, vstr.as_str());
             } else {
                 let v = getV.unwrap().clone();
-                let vstr = self.holder.sqlConvert.convert(v);
+                let vstr = holder.sqlConvert.convert(v);
                 result = result.replace(value, vstr.as_str());
             }
         }
