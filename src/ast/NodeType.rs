@@ -44,6 +44,23 @@ impl <'a>SqlNode for NodeType {
             _ => Result::Err(String::from("NodeType not exist!")),
         }
     }
+
+    fn print(&self) -> String {
+        match self {
+            NodeType::Null => return "null".to_string(),
+            NodeType::NString(stringNode) => return stringNode.print(),
+            NodeType::NIf(ifNode) => return ifNode.print(),
+            NodeType::NTrim(trimNode) => return trimNode.print(),
+            NodeType::NForEach(forEachNode) => return forEachNode.print(),
+            NodeType::NChoose(chooseNode) => return chooseNode.print(),
+            NodeType::NOtherwise(otherwiseNode) => return otherwiseNode.print(),
+            NodeType::NWhen(whenNode) => return whenNode.print(),
+            NodeType::NBind(bindNode) => return bindNode.print(),
+            NodeType::NInclude(includeNode) => return includeNode.print(),
+            NodeType::NSet(setNode) => return setNode.print(),
+            _ => String::from("NodeType not exist!"),
+        }
+    }
 }
 
 

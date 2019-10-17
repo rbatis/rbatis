@@ -18,4 +18,8 @@ impl SqlNode for BindNode {
         env[self.name.as_str()] = r.unwrap_or(Value::Null);
         return Result::Ok("".to_string());
     }
+
+    fn print(&self) -> String {
+        return "<bind ".to_string()+self.name.as_str()+"="+self.value.as_str()+">";
+    }
 }

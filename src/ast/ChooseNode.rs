@@ -27,4 +27,18 @@ impl SqlNode for ChooseNode {
         }
         return Result::Ok("".to_string());
     }
+
+    fn print(&self) -> String {
+        let mut result= "<choose>".to_string();
+        if self.whenNodes.is_some() {
+            for x in self.whenNodes.as_ref().unwrap(){
+                result=result+x.print().as_str();
+            }
+        }
+        if self.otherwiseNode.is_some() {
+           result=result+self.otherwiseNode.as_ref().unwrap().as_ref().print().as_str();
+        }
+        result=result+"</choose>";
+        return result;
+    }
 }
