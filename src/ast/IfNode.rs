@@ -29,10 +29,11 @@ impl SqlNode for IfNode {
 
     fn print(&self) -> String {
         let mut result="<if ".to_string();
-        result=result+self.test.as_str();
+        result=result+self.test.as_str() + ">";
         for x in &self.childs {
             result=result+x.print().as_str();
         }
+        result=result+"</if>";
         return result;
     }
 }

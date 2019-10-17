@@ -151,7 +151,6 @@ pub fn LoopDecodeXml(xml_vec:Vec<Element>,holder:NodeConfigHolder) -> Vec<NodeTy
                let data=string.as_str();
                let tag=xml.tag.as_str();
                let n = StringNode::new(data, holder.clone());
-               println!("{}",data);
                nodes.push(NodeType::NString(n));
            },
            _ => {}
