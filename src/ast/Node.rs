@@ -54,6 +54,9 @@ pub fn LoopDecodeXml(xml_vec:Vec<Element>,holder:NodeConfigHolder) -> Vec<NodeTy
        match tag_str {
            "mapper" => {
                println!("mmm:{}",child_nodes[0].print());
+               println!("mmm:{}",child_nodes[1].print());
+               println!("mmm:{}",child_nodes[2].print());
+               println!("mmm:{}",child_nodes[3].print());
                return child_nodes;
            },
            "select" => return child_nodes,

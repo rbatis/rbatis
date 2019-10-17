@@ -13,6 +13,12 @@ pub mod TrimNode;
 pub mod WhenNode;
 pub mod NodeConfigHolder;
 pub mod SetNode;
+
+pub mod InsertNode;
+pub mod UpdateNode;
+pub mod DeleteNode;
+pub mod SelectNode;
+
 //test
 pub mod Node_test;
 pub mod SqlArgTypeConvertDefault_test;

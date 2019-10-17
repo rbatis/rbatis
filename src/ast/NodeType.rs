@@ -12,6 +12,11 @@ use crate::ast::BindNode::BindNode;
 use crate::ast::IncludeNode::IncludeNode;
 use crate::ast::SetNode::SetNode;
 
+use crate::ast::SelectNode::SelectNode;
+use crate::ast::DeleteNode::DeleteNode;
+use crate::ast::UpdateNode::UpdateNode;
+use crate::ast::InsertNode::InsertNode;
+
 #[derive(Clone)]
 pub enum NodeType {
     Null,
@@ -25,11 +30,23 @@ pub enum NodeType {
     NBind(BindNode),
     NInclude(IncludeNode),
     NSet(SetNode),
+
+    //CRUD
+    NInsertNode(InsertNode),
+    NUpdateNode(UpdateNode),
+    NDeleteNode(DeleteNode),
+    NSelectNode(SelectNode),
 }
 
 impl <'a>SqlNode for NodeType {
     fn eval(&mut self, env: &mut Value) -> Result<String, String> {
         match self {
+            NodeType::NSelectNode(node) => return node.eval(env),
+            NodeType::NDeleteNode(node) => return node.eval(env),
+            NodeType::NUpdateNode(node) => return node.eval(env),
+            NodeType::NInsertNode(node) => return node.eval(env),
+
+
             NodeType::Null => return Result::Ok(String::new()),
             NodeType::NString(stringNode) => return stringNode.eval(env),
             NodeType::NIf(ifNode) => return ifNode.eval(env),
@@ -47,6 +64,12 @@ impl <'a>SqlNode for NodeType {
 
     fn print(&self) -> String {
         match self {
+            NodeType::NSelectNode(node) => return node.print(),
+            NodeType::NUpdateNode(node) => return node.print(),
+            NodeType::NInsertNode(node) => return node.print(),
+            NodeType::NDeleteNode(node) => return node.print(),
+
+
             NodeType::Null => return "null".to_string(),
             NodeType::NString(stringNode) => return stringNode.print(),
             NodeType::NIf(ifNode) => return ifNode.print(),
