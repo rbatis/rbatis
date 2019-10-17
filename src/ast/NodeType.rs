@@ -10,6 +10,7 @@ use crate::ast::OtherwiseNode::OtherwiseNode;
 use crate::ast::WhenNode::WhenNode;
 use crate::ast::BindNode::BindNode;
 use crate::ast::IncludeNode::IncludeNode;
+use crate::ast::SetNode::SetNode;
 
 #[derive(Clone)]
 pub enum NodeType {
@@ -23,6 +24,7 @@ pub enum NodeType {
     NWhen(WhenNode),
     NBind(BindNode),
     NInclude(IncludeNode),
+    NSet(SetNode),
 }
 
 impl <'a>SqlNode for NodeType {
@@ -38,6 +40,7 @@ impl <'a>SqlNode for NodeType {
             NodeType::NWhen(whenNode) => return whenNode.eval(env),
             NodeType::NBind(bindNode) => return bindNode.eval(env),
             NodeType::NInclude(includeNode) => return includeNode.eval(env),
+            NodeType::NSet(setNode) => return setNode.eval(env),
             _ => Result::Err(String::from("NodeType not exist!")),
         }
     }
