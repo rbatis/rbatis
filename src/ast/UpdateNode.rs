@@ -14,6 +14,10 @@ impl SqlNode for UpdateNode{
     }
 
     fn print(&self) -> String {
-        unimplemented!()
+        let mut result="<update ".to_string();
+        for x in &self.childs {
+            result=result+x.print().as_str();
+        }
+        return result;
     }
 }
