@@ -24,8 +24,15 @@ fn testLoadXml(){
     println!(">>>>>>>>>>>>>>>>>>>>>>start load {} >>>>>>>>>>>>>>>>>>>>>>>", filePath);
     let content = fs::read_to_string(filePath).unwrap();
     println!("With text:/n{}", content);
+    println!("start build -------------------------------------------------------");
     let rbatis=Rbatis{};
     let mut node = rbatis.build(content);
-    let data=node.eval(&mut Value::String("".to_string()));
-    println!("data:{}",data.unwrap());
+
+    for x in node {
+        let data= x.print();
+        println!("start build data:{}",data);
+    }
+//
+//    let data=node.eval(&mut Value::String("".to_string()));
+//    println!("data:{}",data.unwrap());
 }
