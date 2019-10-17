@@ -1,6 +1,7 @@
 use crate::ast::NodeType::NodeType;
 use crate::ast::Node::{SqlNode, DoChildNodes};
 use serde_json::Value;
+use crate::ast::NodeConfigHolder::NodeConfigHolder;
 
 #[derive(Clone)]
 pub struct IncludeNode {
@@ -8,8 +9,8 @@ pub struct IncludeNode {
 }
 
 impl  SqlNode for IncludeNode{
-    fn eval(&mut self, env: &mut Value) -> Result<String,String> {
-        return DoChildNodes(&mut self.childs, env);
+    fn eval(&mut self, env: &mut Value,holder:&mut NodeConfigHolder) -> Result<String,String> {
+        return DoChildNodes(&mut self.childs, env,holder);
     }
 
     fn print(&self) -> String {

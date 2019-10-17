@@ -13,9 +13,9 @@ use crate::ast::NodeConfigHolder::NodeConfigHolder;
 
 #[test]
 pub fn TestForEachNode(){
-
+    let mut holder=NodeConfigHolder::new();
     let mut n=ForEachNode{
-        childs: vec![NodeType::NString(StringNode::new("index:#{index},item:#{item}", NodeConfigHolder::new()))],
+        childs: vec![NodeType::NString(StringNode::new("index:#{index},item:#{item}"))],
         collection: "arg".to_string(),
         index: "index".to_string(),
         item: "item".to_string(),
@@ -27,6 +27,6 @@ pub fn TestForEachNode(){
         "arg": [1,2,3,4],
     });
 
-    let r=n.eval(&mut john);
+    let r=n.eval(&mut john,&mut holder);
     println!("{}", r.unwrap());
 }

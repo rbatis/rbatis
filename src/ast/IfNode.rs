@@ -8,12 +8,11 @@ use serde_json::ser::State::Rest;
 pub struct IfNode{
     pub childs: Vec<NodeType>,
     pub test: String,
-    pub holder: NodeConfigHolder,
 }
 
 impl SqlNode for IfNode {
-    fn eval(&mut self, env: &mut Value) -> Result<String, String> {
-        let result = self.holder.engine.LexerAndEval(self.test.as_str(), env);
+    fn eval(&mut self, env: &mut Value,holder:&mut NodeConfigHolder) -> Result<String, String> {
+        let result = holder.engine.LexerAndEval(self.test.as_str(), env);
         if result.is_err() {
             return Result::Err(result.err().unwrap());
         }
@@ -22,7 +21,7 @@ impl SqlNode for IfNode {
            return  Result::Err("[RustMybatis] express:'".to_owned() + self.test.as_str() + "' is not return bool value!");
         }
         if b.as_bool().unwrap() {
-            return DoChildNodes(&mut self.childs, env);
+            return DoChildNodes(&mut self.childs, env,holder);
         }
         return Result::Ok("".to_string());
     }

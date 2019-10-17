@@ -8,14 +8,13 @@ use std::rc::Rc;
 
 #[test]
 pub fn TestIfNode() {
-    let h = NodeConfigHolder::new();
     let mut node = IfNode {
-        childs: vec![NodeType::NString(StringNode::new("yes", h.clone()))],
+        childs: vec![NodeType::NString(StringNode::new("yes"))],
         test: "arg == 1".to_string(),
-        holder: h,
     };
     let mut john = json!({
         "arg": 1,
     });
-    println!("{}", node.eval(&mut john).unwrap());
+    let mut holder=NodeConfigHolder::new();
+    println!("{}", node.eval(&mut john,&mut holder).unwrap());
 }

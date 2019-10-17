@@ -28,17 +28,17 @@ use crate::ast::SelectTempleteNode::SelectTempleteNode;
 * Abstract syntax tree node
 */
 pub trait SqlNode {
-    fn eval(&mut self, env: &mut Value) -> Result<String, String>;
+    fn eval(&mut self, env: &mut Value,holder:&mut NodeConfigHolder) -> Result<String, String>;
 
     fn print(&self) -> String;
 }
 
 
 //执行子所有节点
-pub fn DoChildNodes(childNodes: &mut Vec<NodeType>, env: &mut Value) -> Result<String, String> {
+pub fn DoChildNodes(childNodes: &mut Vec<NodeType>, env: &mut Value,holder:&mut NodeConfigHolder) -> Result<String, String> {
     let mut s = String::new();
     for item in childNodes {
-        let itemResult = item.eval(env);
+        let itemResult = item.eval(env,holder);
         if !itemResult.is_ok() {
             return itemResult;
         }
@@ -104,7 +104,6 @@ pub fn LoopDecodeXml(xml_vec:Vec<Element>,holder:NodeConfigHolder) -> Vec<NodeTy
            "if" => nodes.push(NodeType::NIf(IfNode{
                childs: child_nodes,
                test: xml.getAttr("test"),
-               holder:holder.clone(),
            })),
            "trim" => nodes.push(NodeType::NTrim(TrimNode{
                childs: child_nodes,
@@ -130,7 +129,6 @@ pub fn LoopDecodeXml(xml_vec:Vec<Element>,holder:NodeConfigHolder) -> Vec<NodeTy
            "when" => nodes.push(NodeType::NWhen(WhenNode{
                childs: child_nodes,
                test: xml.getAttr("test"),
-               holder:holder.clone(),
            })),
            "otherwise" => nodes.push(NodeType::NOtherwise(OtherwiseNode{
                childs: child_nodes,
@@ -138,7 +136,6 @@ pub fn LoopDecodeXml(xml_vec:Vec<Element>,holder:NodeConfigHolder) -> Vec<NodeTy
            "bind" => nodes.push(NodeType::NBind(BindNode{
                name: xml.getAttr("name"),
                value: xml.getAttr("value"),
-               holder:holder.clone(),
            })),
            "include" => nodes.push(NodeType::NInclude(IncludeNode{
                childs: child_nodes,
@@ -150,7 +147,7 @@ pub fn LoopDecodeXml(xml_vec:Vec<Element>,holder:NodeConfigHolder) -> Vec<NodeTy
                let string = xml.data.replace("\n", "");
                let data=string.as_str();
                let tag=xml.tag.as_str();
-               let n = StringNode::new(data, holder.clone());
+               let n = StringNode::new(data);
                nodes.push(NodeType::NString(n));
            },
            _ => {}

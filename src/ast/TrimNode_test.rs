@@ -7,8 +7,9 @@ use crate::ast::NodeConfigHolder::NodeConfigHolder;
 
 #[test]
 pub fn TestTrimNode(){
+    let mut holder=NodeConfigHolder::new();
     let mut node =TrimNode{
-        childs: vec![NodeType::NString(StringNode::new("1trim value1",NodeConfigHolder::new()))],
+        childs: vec![NodeType::NString(StringNode::new("1trim value1"))],
         prefix: "(".to_string(),
         suffix: ")".to_string(),
         suffixOverrides: "1".to_string(),
@@ -18,6 +19,6 @@ pub fn TestTrimNode(){
         "arg": 2,
     });
 
-   let r= node.eval(&mut john).unwrap();
+   let r= node.eval(&mut john,&mut holder).unwrap();
     println!("{}",r)
 }

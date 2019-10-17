@@ -13,6 +13,7 @@ use crate::ast::NodeConfigHolder::NodeConfigHolder;
 
 #[test]
 pub fn TestChooseNode() {
+    let mut holder=NodeConfigHolder::new();
     let mut john = json!({
         "arg": 2,
     });
@@ -20,13 +21,13 @@ pub fn TestChooseNode() {
         Rc::new(ExpressionEngineDefault::new()),
         ExpressionEngineCache::new());
 
-    let sNode = NString(StringNode::new("dsaf#{arg+1}",  NodeConfigHolder::new()));
+    let sNode = NString(StringNode::new("dsaf#{arg+1}"));
 
     let mut c = ChooseNode {
         whenNodes: Option::Some(vec![sNode]),
         otherwiseNode: None,
     };
 
-    let r = c.eval(&mut john);
+    let r = c.eval(&mut john,&mut holder);
     println!("{}", r.unwrap());
 }

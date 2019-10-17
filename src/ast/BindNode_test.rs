@@ -9,10 +9,10 @@ use crate::ast::NodeConfigHolder::NodeConfigHolder;
 
 #[test]
 fn TestBindNode(){
+    let mut holder=NodeConfigHolder::new();
     let mut bindNode =BindNode{
         name: "a".to_string(),
         value: "a+1".to_string(),
-        holder:NodeConfigHolder::new(),
     };
 
     let mut john = json!({
@@ -20,7 +20,7 @@ fn TestBindNode(){
     });
 
 
-    let r=bindNode.eval(& mut john).unwrap();
+    let r=bindNode.eval(& mut john,&mut holder).unwrap();
 
 
     println!("r={}",r);

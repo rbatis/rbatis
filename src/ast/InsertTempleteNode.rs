@@ -1,6 +1,7 @@
 use crate::ast::NodeType::NodeType;
 use crate::ast::Node::SqlNode;
 use serde_json::Value;
+use crate::ast::NodeConfigHolder::NodeConfigHolder;
 
 #[derive(Clone)]
 pub struct InsertTempleteNode {
@@ -9,7 +10,7 @@ pub struct InsertTempleteNode {
 }
 
 impl SqlNode for InsertTempleteNode{
-    fn eval(&mut self, env: &mut Value) -> Result<String, String> {
+    fn eval(&mut self, env: &mut Value,holder:&mut NodeConfigHolder) -> Result<String, String> {
         unimplemented!()
     }
 

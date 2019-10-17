@@ -15,10 +15,10 @@ pub fn TestStringNode(){
     let mut john = json!({
         "arg": 2,
     });
+    let mut holder=NodeConfigHolder::new();
+    let mut sNode = StringNode::new("arg+1=#{arg+1}");
 
-    let mut sNode = StringNode::new("arg+1=#{arg+1}",  NodeConfigHolder::new());
-
-    let r=sNode.eval(&mut john).unwrap();
+    let r=sNode.eval(&mut john,&mut holder).unwrap();
     println!("{}",r);
 }
 
@@ -33,9 +33,9 @@ fn Bench_StringNode(b: &mut Bencher) {
         Rc::new(ExpressionEngineDefault::new()),
         ExpressionEngineCache::new());
 
-    let mut sNode = StringNode::new("arg+1=#{arg}",  NodeConfigHolder::new());
-
+    let mut sNode = StringNode::new("arg+1=#{arg}");
+    let mut holder=NodeConfigHolder::new();
     b.iter(|| {
-        sNode.eval(&mut john).unwrap();
+        sNode.eval(&mut john,&mut holder).unwrap();
     });
 }
