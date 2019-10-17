@@ -57,10 +57,7 @@ pub fn LoopDecodeXml(xml_vec:Vec<Element>,holder:NodeConfigHolder) -> Vec<NodeTy
        //println!("tag_str:{}",tag_str);
        match tag_str {
            "mapper" => {
-               println!("mmm:{}",child_nodes[0].print());
-               println!("mmm:{}",child_nodes[1].print());
-               println!("mmm:{}",child_nodes[2].print());
-               println!("mmm:{}",child_nodes[3].print());
+               //mapper 不做处理，直接返回子节点
                return child_nodes;
            },
            "select" => nodes.push(NodeType::NSelectNode(SelectNode{
