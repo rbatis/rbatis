@@ -14,6 +14,7 @@ use crate::ast::WhenNode::WhenNode;
 use crate::ast::OtherwiseNode::OtherwiseNode;
 use crate::ast::BindNode::BindNode;
 use crate::ast::IncludeNode::IncludeNode;
+use crate::ast::SetNode::SetNode;
 
 /**
 * Abstract syntax tree node
@@ -37,22 +38,25 @@ pub fn DoChildNodes(childNodes: &mut Vec<NodeType>, env: &mut Value) -> Result<S
 }
 
 //TODO decode xml
-pub fn LoopDecodeXml(xml_vec:Vec<Element>,holder:NodeConfigHolder) -> Result<Vec<NodeType>, String> {
+pub fn LoopDecodeXml(xml_vec:Vec<Element>,holder:NodeConfigHolder) -> Vec<NodeType> {
     let mut nodes=vec![];
     for xml in xml_vec {
         let child_nodes;
-        if xml.childs.len() != 0 {
-            child_nodes = LoopDecodeXml(xml.clone().childs, holder.clone()).unwrap_or(vec![]);
+        if xml.childs.len() > 0 {
+            child_nodes = LoopDecodeXml(xml.clone().childs, holder.clone());
         }else{
             child_nodes = vec![];
         }
        let tag_str=xml.tag.as_str();
        //println!("tag_str:{}",tag_str);
        match tag_str {
-           "select" => println!("<select>"),
-           "update" => println!("<update>"),
-           "insert" => println!("<insert>"),
-           "delete" => println!("<delete>"),
+           "mapper" => {
+               return child_nodes;
+           },
+           "select" => return child_nodes,
+           "update" => return child_nodes,
+           "insert" => return child_nodes,
+           "delete" => return child_nodes,
            "if" => nodes.push(NodeType::NIf(IfNode{
                childs: child_nodes,
                test: xml.getAttr("test"),
@@ -95,6 +99,9 @@ pub fn LoopDecodeXml(xml_vec:Vec<Element>,holder:NodeConfigHolder) -> Result<Vec
            "include" => nodes.push(NodeType::NInclude(IncludeNode{
                childs: child_nodes,
            })),
+           "set" => nodes.push(NodeType::NSet(SetNode{
+               childs: child_nodes,
+           })),
            "" => {
                let string = xml.data.replace("\n", "");
                let data=string.as_str();
@@ -106,7 +113,7 @@ pub fn LoopDecodeXml(xml_vec:Vec<Element>,holder:NodeConfigHolder) -> Result<Vec
            _ => {}
        }
     }
-    return Result::Ok(nodes);
+    return nodes;
 }
 
 pub fn filter_when_nodes(arg:Vec<NodeType>) -> Option<Vec<NodeType>>{
