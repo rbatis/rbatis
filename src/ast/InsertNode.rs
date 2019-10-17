@@ -4,6 +4,7 @@ use serde_json::Value;
 
 #[derive(Clone)]
 pub struct InsertNode {
+    pub id:String,
     pub childs: Vec<NodeType>,
 }
 

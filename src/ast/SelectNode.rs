@@ -4,6 +4,8 @@ use serde_json::Value;
 
 #[derive(Clone)]
 pub struct SelectNode {
+    pub id:String,
+    pub resultMap:String,
     pub childs: Vec<NodeType>,
 }
 
