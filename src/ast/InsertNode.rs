@@ -14,10 +14,11 @@ impl SqlNode for InsertNode{
     }
 
     fn print(&self) -> String {
-        let mut result="<insert ".to_string();
+        let mut result="<insert>".to_string();
         for x in &self.childs {
             result=result+x.print().as_str();
         }
+        result=result+"</insert>";
         return result;
     }
 }

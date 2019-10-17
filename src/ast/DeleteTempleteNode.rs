@@ -14,7 +14,9 @@ impl SqlNode for DeleteTempleteNode{
     }
 
     fn print(&self) -> String {
-        let mut result="<delete ".to_string();
+        let mut result="<deleteTemplete ".to_string();
+        result=result+"id="+self.id.as_str();
+        result=result+">";
         for x in &self.childs {
             result=result+x.print().as_str();
         }

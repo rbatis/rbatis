@@ -30,7 +30,8 @@ fn testLoadXml(){
 
     for x in node {
         let data= x.print();
-        println!("start build data:{}",data);
+        let data_str=data.as_str();
+        println!("{}",data_str);
     }
 //
 //    let data=node.eval(&mut Value::String("".to_string()));
