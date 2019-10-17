@@ -23,15 +23,15 @@ fn testLoadXml(){
     let filePath = "./src/example/Example_ActivityMapper.xml";
     println!(">>>>>>>>>>>>>>>>>>>>>>start load {} >>>>>>>>>>>>>>>>>>>>>>>", filePath);
     let content = fs::read_to_string(filePath).unwrap();
-    println!("With text:/n{}", content);
+    //println!("With text:/n{}", content);
     println!("start build -------------------------------------------------------");
     let rbatis=Rbatis{};
     let mut node = rbatis.build(content);
 
     for x in node {
         let data= x.print();
-        let data_str=data.as_str();
-        println!("{}",data_str);
+        let data_str=data.as_str().replace("\r","");
+        println!("\n{:?}",data_str);
     }
 //
 //    let data=node.eval(&mut Value::String("".to_string()));
