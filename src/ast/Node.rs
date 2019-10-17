@@ -21,6 +21,8 @@ use crate::ast::SetNode::SetNode;
 */
 pub trait SqlNode {
     fn eval(&mut self, env: &mut Value) -> Result<String, String>;
+
+    fn print(&self) -> String;
 }
 
 
@@ -51,6 +53,7 @@ pub fn LoopDecodeXml(xml_vec:Vec<Element>,holder:NodeConfigHolder) -> Vec<NodeTy
        //println!("tag_str:{}",tag_str);
        match tag_str {
            "mapper" => {
+               println!("mmm:{}",child_nodes[0].print());
                return child_nodes;
            },
            "select" => return child_nodes,

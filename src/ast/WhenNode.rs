@@ -37,4 +37,13 @@ impl  SqlNode for WhenNode{
         }
         return Result::Ok("".to_string());
     }
+
+    fn print(&self) -> String {
+        let mut result="<when ".to_string();
+        result=result+self.test.as_str() +">";
+        for x in &self.childs {
+            result=result+x.print().as_str();
+        }
+        return result;
+    }
 }

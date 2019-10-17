@@ -38,4 +38,16 @@ impl SqlNode for TrimNode {
         newBuffer = newBuffer + " " + self.prefix.as_str() + " " + result + " " + self.suffix.as_str();
         return Result::Ok(newBuffer);
     }
+
+    fn print(&self) -> String {
+        let mut result="<trim ".to_string();
+        result=result+self.prefix.as_str();
+        result=result+self.suffix.as_str();
+        result=result+self.suffixOverrides.as_str();
+        result=result+self.prefixOverrides.as_str();
+        for x in &self.childs {
+            result=result+x.print().as_str();
+        }
+        return result;
+    }
 }

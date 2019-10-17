@@ -11,4 +11,11 @@ impl SqlNode for OtherwiseNode {
     fn eval(&mut self, env: &mut Value) -> Result<String,String> {
         return DoChildNodes(&mut self.childs, env);
     }
+    fn print(&self) -> String {
+        let mut result="<otherwise>".to_string();
+        for x in &self.childs {
+            result=result+x.print().as_str();
+        }
+        return result;
+    }
 }

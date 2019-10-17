@@ -66,4 +66,10 @@ impl SqlNode for StringNode {
         }
         return Result::Ok(result);
     }
+
+    fn print(&self) -> String {
+        let mut result="<string> ".to_string();
+        result=result+self.value.as_str();
+        return result;
+    }
 }
