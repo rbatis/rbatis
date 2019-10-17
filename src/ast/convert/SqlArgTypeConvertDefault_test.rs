@@ -1,5 +1,5 @@
-use crate::ast::SqlArgTypeConvert::SqlArgTypeConvert;
-use crate::ast::SqlArgTypeConvertDefault::SqlArgTypeConvertDefault;
+use crate::ast::convert::SqlArgTypeConvert::SqlArgTypeConvert;
+use crate::ast::convert::SqlArgTypeConvertDefault::SqlArgTypeConvertDefault;
 use serde_json::{json, Value};
 use chrono::Local;
 use test::Bencher;

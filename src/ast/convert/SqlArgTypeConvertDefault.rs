@@ -1,4 +1,4 @@
-use crate::ast::SqlArgTypeConvert::SqlArgTypeConvert;
+use crate::ast::convert::SqlArgTypeConvert::SqlArgTypeConvert;
 use serde_json::Value;
 
 pub struct SqlArgTypeConvertDefault {
