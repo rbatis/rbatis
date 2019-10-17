@@ -1,7 +1,6 @@
+pub mod convert;
 pub mod NodeType;
 pub mod Node;
-pub mod SqlArgTypeConvert;
-pub mod SqlArgTypeConvertDefault;
 pub mod StringNode;
 pub mod BindNode;
 pub mod ChooseNode;
@@ -26,7 +25,6 @@ pub mod SelectTempleteNode;
 
 //test
 pub mod Node_test;
-pub mod SqlArgTypeConvertDefault_test;
 pub mod BindNode_test;
 pub mod ChooseNode_test;
 pub mod ForEachNode_test;

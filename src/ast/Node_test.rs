@@ -3,7 +3,7 @@ use crate::ast::Node::SqlNode;
 use serde_json::{json, Value};
 use crate::ast::StringNode::StringNode;
 use test::Bencher;
-use crate::ast::SqlArgTypeConvertDefault::SqlArgTypeConvertDefault;
+use crate::ast::convert::SqlArgTypeConvertDefault::SqlArgTypeConvertDefault;
 use std::rc::Rc;
 use crate::engines::ExpressionEngineProxy::ExpressionEngineProxy;
 use crate::engines::ExpressionEngineDefault::ExpressionEngineDefault;
