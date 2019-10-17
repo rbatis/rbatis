@@ -15,6 +15,10 @@ use crate::ast::OtherwiseNode::OtherwiseNode;
 use crate::ast::BindNode::BindNode;
 use crate::ast::IncludeNode::IncludeNode;
 use crate::ast::SetNode::SetNode;
+use crate::ast::SelectNode::SelectNode;
+use crate::ast::UpdateNode::UpdateNode;
+use crate::ast::InsertNode::InsertNode;
+use crate::ast::DeleteNode::DeleteNode;
 
 /**
 * Abstract syntax tree node
@@ -59,10 +63,18 @@ pub fn LoopDecodeXml(xml_vec:Vec<Element>,holder:NodeConfigHolder) -> Vec<NodeTy
                println!("mmm:{}",child_nodes[3].print());
                return child_nodes;
            },
-           "select" => return child_nodes,
-           "update" => return child_nodes,
-           "insert" => return child_nodes,
-           "delete" => return child_nodes,
+           "select" => nodes.push(NodeType::NSelectNode(SelectNode{
+               childs: child_nodes,
+           })),
+           "update" => nodes.push(NodeType::NUpdateNode(UpdateNode{
+               childs: child_nodes,
+           })),
+           "insert" => nodes.push(NodeType::NInsertNode(InsertNode{
+               childs: child_nodes,
+           })),
+           "delete" => nodes.push(NodeType::NDeleteNode(DeleteNode{
+               childs: child_nodes,
+           })),
            "if" => nodes.push(NodeType::NIf(IfNode{
                childs: child_nodes,
                test: xml.getAttr("test"),
