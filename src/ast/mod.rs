@@ -19,6 +19,11 @@ pub mod UpdateNode;
 pub mod DeleteNode;
 pub mod SelectNode;
 
+pub mod InsertTempleteNode;
+pub mod UpdateTempleteNode;
+pub mod DeleteTempleteNode;
+pub mod SelectTempleteNode;
+
 //test
 pub mod Node_test;
 pub mod SqlArgTypeConvertDefault_test;

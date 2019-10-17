@@ -19,6 +19,10 @@ use crate::ast::SelectNode::SelectNode;
 use crate::ast::UpdateNode::UpdateNode;
 use crate::ast::InsertNode::InsertNode;
 use crate::ast::DeleteNode::DeleteNode;
+use crate::ast::DeleteTempleteNode::DeleteTempleteNode;
+use crate::ast::InsertTempleteNode::InsertTempleteNode;
+use crate::ast::UpdateTempleteNode::UpdateTempleteNode;
+use crate::ast::SelectTempleteNode::SelectTempleteNode;
 
 /**
 * Abstract syntax tree node
@@ -72,6 +76,21 @@ pub fn LoopDecodeXml(xml_vec:Vec<Element>,holder:NodeConfigHolder) -> Vec<NodeTy
            "delete" => nodes.push(NodeType::NDeleteNode(DeleteNode{
                childs: child_nodes,
            })),
+
+           "selectTemplete" => nodes.push(NodeType::NSelectTempleteNode(SelectTempleteNode{
+               childs: child_nodes,
+           })),
+           "updateTemplete" => nodes.push(NodeType::NUpdateTempleteNode(UpdateTempleteNode{
+               childs: child_nodes,
+           })),
+           "insertTemplete" => nodes.push(NodeType::NInsertTempleteNode(InsertTempleteNode{
+               childs: child_nodes,
+           })),
+           "deleteTemplete" => nodes.push(NodeType::NDeleteTempleteNode(DeleteTempleteNode{
+               childs: child_nodes,
+           })),
+
+
            "if" => nodes.push(NodeType::NIf(IfNode{
                childs: child_nodes,
                test: xml.getAttr("test"),

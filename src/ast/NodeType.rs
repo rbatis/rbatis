@@ -16,6 +16,10 @@ use crate::ast::SelectNode::SelectNode;
 use crate::ast::DeleteNode::DeleteNode;
 use crate::ast::UpdateNode::UpdateNode;
 use crate::ast::InsertNode::InsertNode;
+use crate::ast::InsertTempleteNode::InsertTempleteNode;
+use crate::ast::UpdateTempleteNode::UpdateTempleteNode;
+use crate::ast::DeleteTempleteNode::DeleteTempleteNode;
+use crate::ast::SelectTempleteNode::SelectTempleteNode;
 
 #[derive(Clone)]
 pub enum NodeType {
@@ -36,6 +40,11 @@ pub enum NodeType {
     NUpdateNode(UpdateNode),
     NDeleteNode(DeleteNode),
     NSelectNode(SelectNode),
+
+    NInsertTempleteNode(InsertTempleteNode),
+    NUpdateTempleteNode(UpdateTempleteNode),
+    NDeleteTempleteNode(DeleteTempleteNode),
+    NSelectTempleteNode(SelectTempleteNode),
 }
 
 impl <'a>SqlNode for NodeType {
@@ -46,6 +55,10 @@ impl <'a>SqlNode for NodeType {
             NodeType::NUpdateNode(node) => return node.eval(env),
             NodeType::NInsertNode(node) => return node.eval(env),
 
+            NodeType::NSelectTempleteNode(node) => return node.eval(env),
+            NodeType::NDeleteTempleteNode(node) => return node.eval(env),
+            NodeType::NUpdateTempleteNode(node) => return node.eval(env),
+            NodeType::NInsertTempleteNode(node) => return node.eval(env),
 
             NodeType::Null => return Result::Ok(String::new()),
             NodeType::NString(stringNode) => return stringNode.eval(env),
@@ -68,6 +81,11 @@ impl <'a>SqlNode for NodeType {
             NodeType::NUpdateNode(node) => return node.print(),
             NodeType::NInsertNode(node) => return node.print(),
             NodeType::NDeleteNode(node) => return node.print(),
+
+            NodeType::NSelectTempleteNode(node) => return node.print(),
+            NodeType::NUpdateTempleteNode(node) => return node.print(),
+            NodeType::NInsertTempleteNode(node) => return node.print(),
+            NodeType::NDeleteTempleteNode(node) => return node.print(),
 
 
             NodeType::Null => return "null".to_string(),
