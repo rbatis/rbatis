@@ -18,7 +18,7 @@ impl SqlNode for IfNode {
         }
         let b = &result.unwrap();
         if !b.is_boolean() {
-           return  Result::Err("[RustMybatis] express:'".to_owned() + self.test.as_str() + "' is not return bool value!");
+           return  Result::Err("[Rbatis] express:'".to_owned() + self.test.as_str() + "' is not return bool value!");
         }
         if b.as_bool().unwrap() {
             return DoChildNodes(&mut self.childs, env,holder);
