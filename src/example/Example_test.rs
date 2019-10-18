@@ -3,6 +3,7 @@ use crate::core::Rbatis::Rbatis;
 use serde_json::Value;
 use crate::ast::BindNode::BindNode;
 use crate::ast::Node::SqlNode;
+use crate::ast::NodeConfigHolder::NodeConfigHolder;
 
 struct Example{
    pub selectByCondition:fn()
@@ -20,20 +21,15 @@ fn testWriteMethod(){
 
 #[test]
 fn testLoadXml(){
+    let mut holder=NodeConfigHolder::new();
     let filePath = "./src/example/Example_ActivityMapper.xml";
     println!(">>>>>>>>>>>>>>>>>>>>>>start load {} >>>>>>>>>>>>>>>>>>>>>>>", filePath);
     let content = fs::read_to_string(filePath).unwrap();
     //println!("With text:/n{}", content);
     println!("start build -------------------------------------------------------");
-    let rbatis=Rbatis{};
-    let mut node = rbatis.build(content);
+    let mut rbatis=Rbatis::new(content);
+    rbatis.print();
 
-    for x in node {
-        let data= x.print();
-        let data_str=data.as_str();
-        println!("\n{:?}",data_str);
-    }
-//
-//    let data=node.eval(&mut Value::String("".to_string()));
-//    println!("data:{}",data.unwrap());
+    let data=rbatis.Get("selectByCondition").eval(&mut Value::String("s".to_string()),&mut holder);
+    println!("data:{}",data.unwrap());
 }
