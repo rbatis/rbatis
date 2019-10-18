@@ -96,20 +96,12 @@ impl Node {
             let leftNode = self.leftBinaryNode.clone().unwrap();
             let rightNode = self.rightBinaryNode.clone().unwrap();
 
-            let mut leftV = Value::Null;
-            let leftIsValue = leftNode.isValueNode();
-
-            let mut rightV = Value::Null;
-            let rightIsValue = rightNode.isValueNode();
-
-            if leftIsValue.is_some() {
-                leftV = leftIsValue.unwrap_or(Value::Null);
-            } else {
+            let mut leftV = leftNode.isValueNode().unwrap_or(Value::Null);
+            let mut rightV =  rightNode.isValueNode().unwrap_or(Value::Null);
+            if leftV.is_null() {
                 leftV = (&rightNode).eval(env).unwrap_or(Value::Null);
             }
-            if rightIsValue.is_some() {
-                rightV = rightIsValue.unwrap_or(Value::Null);
-            } else {
+            if rightV.is_null() {
                 rightV = rightNode.eval(env).unwrap_or(Value::Null);
             }
             let opt = self.toString();

@@ -35,8 +35,8 @@ fn testLoadXml(){
 
     let mut arg=json!({
         //"name":"sadf",
-       //"startTime":"startTime",
-       //"endTime":"endTime",
+       "startTime":"startTime",
+       "endTime":"endTime",
     });
 
     let data=node.eval(&mut arg,&mut holder);

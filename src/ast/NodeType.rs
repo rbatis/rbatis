@@ -21,6 +21,7 @@ use crate::ast::UpdateTempleteNode::UpdateTempleteNode;
 use crate::ast::DeleteTempleteNode::DeleteTempleteNode;
 use crate::ast::SelectTempleteNode::SelectTempleteNode;
 use crate::ast::NodeConfigHolder::NodeConfigHolder;
+use crate::ast::WhereNode::WhereNode;
 
 #[derive(Clone)]
 pub enum NodeType {
@@ -35,6 +36,7 @@ pub enum NodeType {
     NBind(BindNode),
     NInclude(IncludeNode),
     NSet(SetNode),
+    NWhere(WhereNode),
 
     //CRUD
     NInsertNode(InsertNode),
@@ -72,7 +74,8 @@ impl <'a>SqlNode for NodeType {
             NodeType::NBind(bindNode) => return bindNode.eval(env,holder),
             NodeType::NInclude(includeNode) => return includeNode.eval(env,holder),
             NodeType::NSet(setNode) => return setNode.eval(env,holder),
-            _ => Result::Err(String::from("NodeType not exist!")),
+            NodeType::NWhere(node) => return node.eval(env,holder),
+            _ => Result::Err(String::from("eval NodeType not exist!")),
         }
     }
 
@@ -100,7 +103,8 @@ impl <'a>SqlNode for NodeType {
             NodeType::NBind(bindNode) => return bindNode.print(),
             NodeType::NInclude(includeNode) => return includeNode.print(),
             NodeType::NSet(setNode) => return setNode.print(),
-            _ => String::from("NodeType not exist!"),
+            NodeType::NWhere(node) => return node.print(),
+            _ => String::from("print NodeType not exist!"),
         }
     }
 }
