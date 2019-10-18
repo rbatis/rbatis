@@ -5,6 +5,23 @@ use serde_json::json;
 use test::Bencher;
 use std::{time, thread};
 
+#[test]
+fn TestEvalArg() {
+    let mut boxNode= parser::Parser(String::from("startTime == null"), &OptMap::new()).unwrap();
+    let john = json!({
+        "n":1,
+        "name": "John Doe",
+        "startTime":"1",
+        "endTime":"1",
+         "age": {
+           "yes":"sadf"
+        }
+    });
+    let v=boxNode.eval(&john).unwrap();
+    println!("{:?}",v);
+}
+
+
 #[bench]
 fn Bench_Parser(b: &mut Bencher) {
     let mut boxNode= parser::Parser(String::from("'1'+'1'"), &OptMap::new()).unwrap();
