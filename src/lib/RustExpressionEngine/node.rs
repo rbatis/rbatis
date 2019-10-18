@@ -99,14 +99,14 @@ impl Node {
             let mut leftV = leftNode.isValueNode().unwrap_or(Value::Null);
             let mut rightV =  rightNode.isValueNode().unwrap_or(Value::Null);
             if leftV.is_null() {
-                leftV = (&rightNode).eval(env).unwrap_or(Value::Null);
+                leftV = leftNode.eval(env).unwrap_or(Value::Null);
             }
             if rightV.is_null() {
                 rightV = rightNode.eval(env).unwrap_or(Value::Null);
             }
             let opt = self.toString();
             return Eval(&leftV, &rightV, opt);
-        } else if self.equalNodeType(&NArg) {
+        } else if self.equalNodeType(&NArg){
             let arr = self.value.as_array().unwrap();
             let arrLen = arr.len() as i32;
             if arrLen == 0 {
