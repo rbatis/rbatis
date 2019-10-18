@@ -21,19 +21,51 @@ impl Rbatis {
         };
     }
 
-    pub fn Get(&mut self,id:&str)->NodeType{
-        let node:NodeType;
+    pub fn Get(&mut self, id: &str) -> NodeType {
+        let node: NodeType;
         for x in &mut self.nodeTypes {
             match x {
-                NodeType::NSelectNode(n) => return x.clone(),
-                NodeType::NUpdateNode(n) => return x.clone(),
-                NodeType::NInsertNode(n) => return x.clone(),
-                NodeType::NDeleteNode(n) => return x.clone(),
+                NodeType::NSelectNode(n) => {
+                    if n.id.eq(id) {
+                        return x.clone();
+                    }
+                }
+                NodeType::NUpdateNode(n) => {
+                    if n.id.eq(id) {
+                        return x.clone();
+                    }
+                }
+                NodeType::NInsertNode(n) => {
+                    if n.id.eq(id) {
+                        return x.clone();
+                    }
+                }
+                NodeType::NDeleteNode(n) => {
+                    if n.id.eq(id) {
+                        return x.clone();
+                    }
+                }
 
-                NodeType::NSelectTempleteNode(n) => return x.clone(),
-                NodeType::NUpdateTempleteNode(n) => return x.clone(),
-                NodeType::NInsertTempleteNode(n) => return x.clone(),
-                NodeType::NDeleteTempleteNode(n) => return x.clone(),
+                NodeType::NSelectTempleteNode(n) => {
+                    if n.id.eq(id) {
+                        return x.clone();
+                    }
+                }
+                NodeType::NUpdateTempleteNode(n) => {
+                    if n.id.eq(id) {
+                        return x.clone();
+                    }
+                }
+                NodeType::NInsertTempleteNode(n) => {
+                    if n.id.eq(id) {
+                        return x.clone();
+                    }
+                }
+                NodeType::NDeleteTempleteNode(n) => {
+                    if n.id.eq(id) {
+                        return x.clone();
+                    }
+                }
                 _ => {}
             }
         }

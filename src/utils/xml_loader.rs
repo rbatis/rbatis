@@ -67,7 +67,7 @@ fn parserFunc(parser: EventReader<&[u8]>) -> Vec<Element> {
                 let last = fathers.last_mut().unwrap();
                 (*last).childs.push(Element {
                     tag: "".to_string(),
-                    data: data.clone().replace("\r","").replace("\n","").trim().to_string(),
+                    data: " ".to_string()+data.clone().replace("\r","").replace("\n","").trim(),
                     attributes: vec![],
                     childs: vec![],
                 })
