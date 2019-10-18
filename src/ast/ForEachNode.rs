@@ -25,10 +25,10 @@ impl SqlNode for ForEachNode {
 
         let collectionValue = utils::value_util::GetDeepValue(self.collection.as_str(), env);
         if collectionValue.is_null() {
-            return Result::Err("[RustMybatis] collection name:".to_owned() + self.collection.as_str() + " is none value!");
+            return Result::Err("[Rbatis] collection name:".to_owned() + self.collection.as_str() + " is none value!");
         }
         if !&collectionValue.is_array() {
-            return Result::Err("[RustMybatis] collection name:".to_owned() + self.collection.as_str() + " is not a array value!");
+            return Result::Err("[Rbatis] collection name:".to_owned() + self.collection.as_str() + " is not a array value!");
         }
         let collection = collectionValue.as_array().unwrap();
 

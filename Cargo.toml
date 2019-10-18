@@ -1,5 +1,5 @@
 [package]
-name = "RustMybatis"
+name = "Rbatis"
 version = "0.1.0"
 authors = ["ce <zhuxiujia@qq.com>"]
 edition = "2018"

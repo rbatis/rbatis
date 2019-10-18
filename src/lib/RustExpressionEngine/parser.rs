@@ -18,7 +18,7 @@ pub fn Parser(express: String, optMap: &OptMap) -> Result<Node,String> {
         if node.nodeType==NOpt{
             let isAllowOpt=optMap.isAllowOpt(item.as_str());
             if !isAllowOpt{
-                panic!("[RustMybatis] find not support opt:".to_owned()+item.as_str());
+                panic!("[Rbatis] find not support opt:".to_owned()+item.as_str());
             }
         }
         nodes.push(Rc::new(node));
