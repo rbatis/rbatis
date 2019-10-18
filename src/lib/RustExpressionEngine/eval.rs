@@ -60,12 +60,12 @@ pub fn Eval(left: &Value,
         }
     }
     if op == "+" {
-        let booll = left.is_number();
-        let boolr = right.is_number();
-        if booll && boolr {
+        if left.is_number() && right.is_number() {
             return Result::Ok(Value::Number(serde_json::Number::from_f64(left.as_f64().unwrap() + right.as_f64().unwrap()).unwrap()));
-        } else {
+        } else if left.is_string() && right.is_string(){
             return Result::Ok(Value::from(left.as_str().unwrap().to_owned() + right.as_str().unwrap()));
+        }else{
+            return Result::Err("un support diffrent type '+' opt".to_string());
         }
     }
     if op == "-" {

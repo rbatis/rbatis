@@ -99,9 +99,9 @@ impl Node {
             let mut leftEval = Value::Null;
             let leftIsValue = leftNodeRef.isValueNode();
             if leftIsValue.is_some() {
-                leftV = leftIsValue.unwrap();
+                leftV = leftIsValue.unwrap_or(&Value::Null)
             } else {
-                leftEval = leftNodeRef.eval(env).unwrap();
+                leftEval = leftNodeRef.eval(env).unwrap_or(Value::Null);
                 leftV= &leftEval;
             }
 
@@ -109,22 +109,22 @@ impl Node {
             let mut rightEval = Value::Null;
             let rightIsValue = rightNodeRef.isValueNode();
             if rightIsValue.is_some() {
-                rightV = rightIsValue.unwrap();
+                rightV = rightIsValue.unwrap_or(&Value::Null);
             } else {
-                rightEval = rightNodeRef.eval(env).unwrap();
+                rightEval = rightNodeRef.eval(env).unwrap_or(Value::Null);
                 rightV=&rightEval;
             }
             let opt = self.toString();
             return Eval(leftV, rightV, opt);
         } else if self.equalNodeType(&NArg) {
-            let arr = &(self.value.as_array().unwrap());
+            let arr = self.value.as_array().unwrap();
             let arrLen = arr.len() as i32;
             if arrLen == 0 {
                 return Result::Ok(Value::Null);
             }
             let mut index = 0;
             let mut v = env;
-            for item in *arr {
+            for item in arr {
                 let itemStr = item.as_str().unwrap();
                 v = v.get(itemStr).unwrap_or(&Value::Null);
                 if v.is_null() || index + 1 == arrLen {

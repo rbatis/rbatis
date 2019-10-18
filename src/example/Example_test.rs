@@ -1,6 +1,6 @@
 use std::fs;
 use crate::core::Rbatis::Rbatis;
-use serde_json::Value;
+use serde_json::{json, Value};
 use crate::ast::BindNode::BindNode;
 use crate::ast::Node::SqlNode;
 use crate::ast::NodeConfigHolder::NodeConfigHolder;
@@ -30,6 +30,19 @@ fn testLoadXml(){
     let mut rbatis=Rbatis::new(content);
     rbatis.print();
 
-    let data=rbatis.Get("selectByCondition").eval(&mut Value::String("s".to_string()),&mut holder);
-    println!("data:{}",data.unwrap());
+    let mut node=rbatis.Get("selectByCondition");
+    println!("the node:{}",&node.print());
+
+    let mut arg=json!({
+        //"name":"sadf",
+       //"startTime":"startTime",
+       //"endTime":"endTime",
+    });
+
+    let data=node.eval(&mut arg,&mut holder);
+    if data.is_ok(){
+        println!("sql:{}",data.unwrap());
+    }else{
+        println!("sql:fail={}",data.err().unwrap());
+    }
 }
