@@ -34,9 +34,11 @@ fn testLoadXml(){
     println!("the node:{}",&node.print());
 
     let mut arg=json!({
-        "name":"sadf",
+       "name":"sadf",
        "startTime":"startTime",
        "endTime":"endTime",
+       "page":1,
+       "size":1,
     });
 
     let data=node.eval(&mut arg,&mut holder);
