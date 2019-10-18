@@ -7,6 +7,7 @@ use crate::lib::RustExpressionEngine;
 use serde_json::Value;
 use crate::lib::RustExpressionEngine::node::Node;
 use serde_json::json;
+use std::ops::Index;
 
 pub struct ExpressionEngineDefault<'a> {
     optMap: OptMap<'a>,
@@ -18,7 +19,11 @@ impl <'a>ExpressionEngine<Node, Value> for ExpressionEngineDefault<'a> {
     }
 
     fn Lexer(&self, lexerArg: String) -> Result<Node,String> {
-        return RustExpressionEngine::parser::Parser(lexerArg, &self.optMap);
+        let mut newLexerArg=lexerArg;
+        if newLexerArg.find(" and ").is_some(){
+            newLexerArg=newLexerArg.replace(" and "," && ");
+        }
+        return RustExpressionEngine::parser::Parser(newLexerArg, &self.optMap);
     }
 
     fn Eval(&self, lexerResult: &Node, env: &Value) -> Result<Value, String> {
