@@ -23,6 +23,7 @@ use crate::ast::DeleteTempleteNode::DeleteTempleteNode;
 use crate::ast::InsertTempleteNode::InsertTempleteNode;
 use crate::ast::UpdateTempleteNode::UpdateTempleteNode;
 use crate::ast::SelectTempleteNode::SelectTempleteNode;
+use crate::ast::WhereNode::WhereNode;
 
 /**
 * Abstract syntax tree node
@@ -129,6 +130,9 @@ pub fn LoopDecodeXml(xml_vec:Vec<Element>,holder:NodeConfigHolder) -> Vec<NodeTy
            "when" => nodes.push(NodeType::NWhen(WhenNode{
                childs: child_nodes,
                test: xml.getAttr("test"),
+           })),
+           "where" => nodes.push(NodeType::NWhere(WhereNode{
+               childs: child_nodes,
            })),
            "otherwise" => nodes.push(NodeType::NOtherwise(OtherwiseNode{
                childs: child_nodes,

@@ -12,6 +12,7 @@ pub mod TrimNode;
 pub mod WhenNode;
 pub mod NodeConfigHolder;
 pub mod SetNode;
+pub mod WhereNode;
 
 pub mod InsertNode;
 pub mod UpdateNode;
