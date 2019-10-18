@@ -18,7 +18,7 @@ impl SqlNode for WhereNode{
             if s.is_empty(){
                 return Result::Ok(" ".to_string());
             }else{
-                return Result::Ok(" where ".to_string()+s);
+                return Result::Ok(" where ".to_string()+s.trim_start_matches("and "));
             }
         }else{
             return Result::Err(result.err().unwrap());
