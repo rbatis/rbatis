@@ -11,6 +11,7 @@ use crate::lib::RustExpressionEngine::runtime::{IsNumber, OptMap, ParserTokens};
 use std::rc::Rc;
 use std::sync::Arc;
 use serde_json::json;
+use std::ops::Deref;
 
 #[derive(Clone, PartialEq)]
 pub enum NodeType {
@@ -80,42 +81,39 @@ impl Node {
         return self.nodeType == *arg;
     }
 
-    pub fn isValueNode(&self) -> Option<&Value> {
+    pub fn isValueNode(&self) -> Option<Value> {
         if self.equalNodeType(&NBinary) {
             return Option::None;
         } else if self.equalNodeType(&NArg) {
             return Option::None;
         } else {
-            return Option::Some(&self.value);
+            return Option::Some(self.value.clone());
         }
     }
 
     pub fn eval(&self, env: &Value) -> Result<Value, String> {
         if self.equalNodeType(&NBinary) {
-            let leftNodeRef = &self.leftBinaryNode.clone().unwrap();
-            let rightNodeRef = &self.rightBinaryNode.clone().unwrap();
+            let leftNode = self.leftBinaryNode.clone().unwrap();
+            let rightNode = self.rightBinaryNode.clone().unwrap();
 
-            let mut leftV = &Value::Null;
-            let mut leftEval = Value::Null;
-            let leftIsValue = leftNodeRef.isValueNode();
+            let mut leftV = Value::Null;
+            let leftIsValue = leftNode.isValueNode();
+
+            let mut rightV = Value::Null;
+            let rightIsValue = rightNode.isValueNode();
+
             if leftIsValue.is_some() {
-                leftV = leftIsValue.unwrap_or(&Value::Null)
+                leftV = leftIsValue.unwrap_or(Value::Null);
             } else {
-                leftEval = leftNodeRef.eval(env).unwrap_or(Value::Null);
-                leftV= &leftEval;
+                leftV = (&rightNode).eval(env).unwrap_or(Value::Null);
             }
-
-            let mut rightV = &Value::Null;
-            let mut rightEval = Value::Null;
-            let rightIsValue = rightNodeRef.isValueNode();
             if rightIsValue.is_some() {
-                rightV = rightIsValue.unwrap_or(&Value::Null);
+                rightV = rightIsValue.unwrap_or(Value::Null);
             } else {
-                rightEval = rightNodeRef.eval(env).unwrap_or(Value::Null);
-                rightV=&rightEval;
+                rightV = rightNode.eval(env).unwrap_or(Value::Null);
             }
             let opt = self.toString();
-            return Eval(leftV, rightV, opt);
+            return Eval(&leftV, &rightV, opt);
         } else if self.equalNodeType(&NArg) {
             let arr = self.value.as_array().unwrap();
             let arrLen = arr.len() as i32;

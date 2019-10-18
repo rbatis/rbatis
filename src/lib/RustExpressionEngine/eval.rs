@@ -20,16 +20,10 @@ pub fn Eval(left: &Value,
     }
 
     if op == "==" {
-        if left.is_number() && right.is_number() {
-            return Result::Ok(Value::Bool(left.as_f64() == right.as_f64()));
-        }
-        return Result::Ok(Value::Bool(left.eq(right)));
+        return Result::Ok(Value::Bool(eq(left,right)));
     }
     if op == "!=" {
-        if left.is_number() && right.is_number() {
-            return Result::Ok(Value::Bool(!(left.as_f64() == right.as_f64())));
-        }
-        return Result::Ok(Value::Bool(!left.eq(right)));
+        return Result::Ok(Value::Bool(!eq(left,right)));
     }
     if op == ">=" {
         let booll = left.is_number();
@@ -92,6 +86,23 @@ pub fn Eval(left: &Value,
     return Result::Err("un support opt = ".to_owned()+op);
 }
 
+
+fn eq(left:&Value,right:&Value)-> bool{
+    if left.is_null() || right.is_null(){// on null
+        return false;
+    }else if left.is_null() && right.is_null(){// all null
+        return true;
+    }else if left.is_number() && right.is_number(){
+        return left.as_f64()==right.as_f64();
+    }else if left.is_string() && right.is_string(){
+        return left.as_str().unwrap().eq(right.as_str().unwrap());
+    }else if left.is_boolean() && right.is_boolean(){
+        return left.as_bool()==right.as_bool()
+    }else{
+        return false;
+    }
+    return false;
+}
 
 #[test]
 fn TestParser() {
