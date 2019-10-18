@@ -88,10 +88,10 @@ pub fn Eval(left: &Value,
 
 
 fn eq(left:&Value,right:&Value)-> bool{
-    if left.is_null() || right.is_null(){// on null
-        return false;
-    }else if left.is_null() && right.is_null(){// all null
+    if left.is_null() && right.is_null(){// all null
         return true;
+    }else if left.is_null() || right.is_null(){// on null
+        return false;
     }else if left.is_number() && right.is_number(){
         return left.as_f64()==right.as_f64();
     }else if left.is_string() && right.is_string(){
