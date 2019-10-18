@@ -30,7 +30,7 @@ fn testLoadXml(){
 
     for x in node {
         let data= x.print();
-        let data_str=data.as_str().replace("\r","");
+        let data_str=data.as_str();
         println!("\n{:?}",data_str);
     }
 //
