@@ -23,8 +23,8 @@ fn testLoadXml(b: &mut Bencher) {
     let mut rbatis=Rbatis::new(content);
     rbatis.print();
 
-    let mut node=rbatis.Get("selectByCondition");
-    println!("the node:{}",&node.print());
+   // let mut node=rbatis.Get("selectByCondition");
+//    println!("the node:{}",&node.print());
 
     let mut arg=json!({
        "name":"sadf",
@@ -35,6 +35,7 @@ fn testLoadXml(b: &mut Bencher) {
     });
 
     b.iter(|| {
+        let mut node=rbatis.Get("selectByCondition");
         let data=node.eval(&mut arg,&mut holder);
         if data.is_ok(){
            // println!("sql:{}",data.unwrap());
