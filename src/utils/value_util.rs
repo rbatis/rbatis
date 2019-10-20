@@ -10,12 +10,7 @@ pub fn GetDeepValue(arg: &str, value: &Value) -> Value {
         if item.is_empty() {
             continue;
         }
-        let ropt = v.get(item);
-        if ropt.is_none() {
-            return Value::Null;
-        } else {
-            v = ropt.unwrap();
-        }
+        v = v.get(item).unwrap_or(&Value::Null);
     }
     return v.clone();
 }

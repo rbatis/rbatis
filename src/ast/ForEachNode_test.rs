@@ -24,9 +24,9 @@ pub fn TestForEachNode(){
         separator: ",".to_string()
     };
     let mut john = json!({
-        "arg": [1,2,3,4],
+        "arg": 1,
     });
 
     let r=n.eval(&mut john,&mut holder);
-    println!("{}", r.unwrap());
+    println!("{}", r.unwrap_or("null".to_string()));
 }
