@@ -23,6 +23,7 @@ impl SqlNode for SelectTempleteNode{
         for x in &self.childs {
             result=result+x.print().as_str();
         }
+        result+="</selectTemplete>";
         return result;
     }
 }

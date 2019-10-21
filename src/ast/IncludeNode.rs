@@ -18,6 +18,7 @@ impl  SqlNode for IncludeNode{
         for x in &self.childs {
             result=result+x.print().as_str();
         }
+        result+=" </include>";
         return result;
     }
 }

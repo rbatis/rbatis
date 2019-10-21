@@ -39,7 +39,7 @@ impl SqlNode for ChooseNode {
         if self.otherwiseNode.is_some() {
            result=result+self.otherwiseNode.as_ref().unwrap().as_ref().print().as_str();
         }
-        result=result+"</choose>";
+        result=result+" </choose>";
         return result;
     }
 }

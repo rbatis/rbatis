@@ -21,6 +21,7 @@ impl SqlNode for DeleteTempleteNode{
         for x in &self.childs {
             result=result+x.print().as_str();
         }
+        result=result+" </deleteTemplete>";
         return result;
     }
 }

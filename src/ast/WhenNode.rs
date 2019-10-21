@@ -42,6 +42,7 @@ impl  SqlNode for WhenNode{
         for x in &self.childs {
             result=result+x.print().as_str();
         }
+        result+=" </when>";
         return result;
     }
 }
