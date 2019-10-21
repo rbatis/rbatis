@@ -1,6 +1,6 @@
 use crate::ast::NodeType::NodeType;
 use std::rc::Rc;
-use crate::ast::Node::SqlNode;
+use crate::ast::Node::{SqlNode, print_child};
 use serde_json::Value;
 use core::borrow::BorrowMut;
 use crate::ast::OtherwiseNode::OtherwiseNode;
@@ -31,14 +31,8 @@ impl SqlNode for ChooseNode {
 
     fn print(&self) -> String {
         let mut result= "\n<choose>".to_string();
-        if self.whenNodes.is_some() {
-            for x in self.whenNodes.as_ref().unwrap(){
-                result=result+x.print().as_str();
-            }
-        }
-        if self.otherwiseNode.is_some() {
-           result=result+self.otherwiseNode.as_ref().unwrap().as_ref().print().as_str();
-        }
+        result=print_child(result,self.whenNodes.as_ref().unwrap());
+        result=result+self.otherwiseNode.as_ref().unwrap().print().as_str();
         result=result+" \n</choose>";
         return result;
     }

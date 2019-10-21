@@ -1,5 +1,5 @@
 use crate::ast::NodeType::NodeType;
-use crate::ast::Node::SqlNode;
+use crate::ast::Node::{SqlNode, print_child};
 use serde_json::Value;
 use crate::ast::NodeConfigHolder::NodeConfigHolder;
 
@@ -19,9 +19,7 @@ impl SqlNode for UpdateNode{
         let mut result="\n<update ".to_string();
         result=result+"id=\""+self.id.as_str()+"\"";
         result=result+">";
-        for x in &self.childs {
-            result=result+x.print().as_str();
-        }
+        result=print_child(result,self.childs.as_ref());
         result=result+" \n</update>";
         return result;
     }

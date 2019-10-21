@@ -1,5 +1,5 @@
 use crate::ast::NodeType::NodeType;
-use crate::ast::Node::{SqlNode, DoChildNodes};
+use crate::ast::Node::{SqlNode, DoChildNodes, print_child};
 use serde_json::Value;
 use crate::ast::NodeConfigHolder::NodeConfigHolder;
 use std::borrow::BorrowMut;
@@ -39,9 +39,7 @@ impl  SqlNode for WhenNode{
     fn print(&self) -> String {
         let mut result="\n<when ".to_string();
         result=result+" test=\""+self.test.as_str()+"\" >";
-        for x in &self.childs {
-            result=result+x.print().as_str();
-        }
+        result=print_child(result,self.childs.as_ref());
         result+=" \n</when>";
         return result;
     }

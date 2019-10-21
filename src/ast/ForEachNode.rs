@@ -1,5 +1,5 @@
 use crate::ast::NodeType::NodeType;
-use crate::ast::Node::{SqlNode, DoChildNodes};
+use crate::ast::Node::{SqlNode, DoChildNodes, print_child};
 use serde_json::{Value, Map};
 use crate::utils;
 use std::collections::HashMap;
@@ -66,7 +66,7 @@ impl SqlNode for ForEachNode {
         result=result+" separator=\""+self.separator.as_str()+"\"";
 
         for x in &self.childs{
-            result=result+x.print().as_str();
+            result=print_child(result,self.childs.as_ref());
         }
         result=result+" \n</foreach>";
         return result;

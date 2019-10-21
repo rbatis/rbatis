@@ -1,5 +1,5 @@
 use crate::ast::NodeType::NodeType;
-use crate::ast::Node::{SqlNode, DoChildNodes};
+use crate::ast::Node::{SqlNode, DoChildNodes, print_child};
 use serde_json::Value;
 use crate::ast::NodeConfigHolder::NodeConfigHolder;
 
@@ -46,9 +46,7 @@ impl SqlNode for TrimNode {
         result=result+" suffix=\""+self.suffix.as_str()+"\"";
         result=result+" suffixOverrides=\""+self.suffixOverrides.as_str()+"\"";
         result=result+" prefixOverrides=\""+self.prefixOverrides.as_str()+"\"";
-        for x in &self.childs {
-            result=result+x.print().as_str();
-        }
+        result=print_child(result,self.childs.as_ref());
         result+=" \n</trim>";
         return result;
     }
