@@ -197,3 +197,12 @@ pub fn filter_otherwise_nodes(arg:Vec<NodeType>) -> Option<Box<NodeType>>{
         return Option::None;
     }
 }
+
+
+pub fn print_child(mut result:String,arg:&Vec<NodeType>)->String{
+    for x in arg{
+        let item=x.print();
+        result=result+item.as_str();
+    }
+    return result;
+}

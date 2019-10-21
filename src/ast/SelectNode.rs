@@ -1,5 +1,5 @@
 use crate::ast::NodeType::NodeType;
-use crate::ast::Node::{SqlNode, DoChildNodes};
+use crate::ast::Node::{SqlNode, DoChildNodes, print_child};
 use serde_json::Value;
 use crate::ast::NodeConfigHolder::NodeConfigHolder;
 
@@ -20,9 +20,7 @@ impl SqlNode for SelectNode{
         let mut result="\n<select ".to_string();
         result=result+"id=\""+self.id.as_str()+"\"";
         result=result+">";
-        for x in &self.childs {
-            result=result+x.print().as_str();
-        }
+        result=print_child(result,self.childs.as_ref());
         result=result+" \n</select>";
         return result;
     }
