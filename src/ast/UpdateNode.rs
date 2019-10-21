@@ -22,7 +22,7 @@ impl SqlNode for UpdateNode{
         for x in &self.childs {
             result=result+x.print().as_str();
         }
-        result=result+" </update>";
+        result=result+" \n</update>";
         return result;
     }
 }

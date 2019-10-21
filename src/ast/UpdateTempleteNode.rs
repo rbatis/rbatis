@@ -22,7 +22,7 @@ impl SqlNode for UpdateTempleteNode{
         for x in &self.childs {
             result=result+x.print().as_str();
         }
-        result+=" </updateTemplete>";
+        result+=" \n</updateTemplete>";
         return result;
     }
 }

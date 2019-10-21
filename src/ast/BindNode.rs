@@ -19,6 +19,6 @@ impl SqlNode for BindNode {
     }
 
     fn print(&self) -> String {
-        return "\n<bind ".to_string()+self.name.as_str()+"=\""+self.value.as_str()+"\" ></bind>";
+        return "\n<bind ".to_string()+self.name.as_str()+"=\""+self.value.as_str()+"\" >\n</bind>";
     }
 }

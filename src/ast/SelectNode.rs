@@ -23,7 +23,7 @@ impl SqlNode for SelectNode{
         for x in &self.childs {
             result=result+x.print().as_str();
         }
-        result=result+" </select>";
+        result=result+" \n</select>";
         return result;
     }
 }

@@ -17,7 +17,7 @@ impl SqlNode for SetNode {
         for x in &self.childs {
             result=result+x.print().as_str();
         }
-        result+=" </set>";
+        result+=" \n</set>";
         return result;
     }
 
