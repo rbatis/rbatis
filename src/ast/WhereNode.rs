@@ -31,7 +31,7 @@ impl SqlNode for WhereNode{
         for x in &self.childs {
             result = result + x.print().as_str();
         }
-        result = result + "</select>";
+        result = result + " </where>";
         return result;
     }
 }

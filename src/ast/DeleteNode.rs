@@ -21,7 +21,7 @@ impl SqlNode for DeleteNode{
         for x in &self.childs {
             result=result+x.print().as_str();
         }
-        result=result+"</delete>";
+        result=result+" </delete>";
         return result;
     }
 }
