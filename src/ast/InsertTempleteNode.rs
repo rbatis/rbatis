@@ -22,7 +22,7 @@ impl SqlNode for InsertTempleteNode{
         for x in &self.childs {
             result=result+x.print().as_str();
         }
-        result+=" </insertTemplete>";
+        result+=" \n</insertTemplete>";
         return result;
     }
 }

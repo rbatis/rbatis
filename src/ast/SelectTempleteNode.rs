@@ -34,7 +34,7 @@ impl SqlNode for SelectTempleteNode{
         for x in &self.childs {
             result=result+x.print().as_str();
         }
-        result=result+"</selectTemplete>";
+        result=result+"\n</selectTemplete>";
         return result;
     }
 }

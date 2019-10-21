@@ -24,14 +24,14 @@ fn TestEval(){
         <bind name="pattern" value="'%' + name + '%'"/>
         select * from biz_activity
         <where>
-            <if test="name != null">and name like #{pattern}</if>
-            <if test="startTime != null">and create_time >= #{startTime}</if>
-            <if test="endTime != null">and create_time &lt;= #{endTime}</if>
-        </where>
+            <if test="name != null">and name like #{pattern}\n</if>
+            <if test="startTime != null">and create_time >= #{startTime}\n</if>
+            <if test="endTime != null">and create_time &lt;= #{endTime}\n</if>
+        \n</where>
         order by create_time desc
-        <if test="page != null and size != null">limit #{page}, #{size}</if>
-    </select>
-    </mapper>
+        <if test="page != null and size != null">limit #{page}, #{size}\n</if>
+    \n</select>
+    \n</mapper>
     "#.to_string());
     let mut strNode=rbatis.Get("selectByCondition");
     println!("{}",strNode.print());
@@ -80,14 +80,14 @@ fn Bench_Eval(b: &mut Bencher) {
         <bind name="pattern" value="'%' + name + '%'"/>
         select * from biz_activity
         <where>
-            <if test="name != null">and name like #{pattern}</if>
-            <if test="startTime != null">and create_time >= #{startTime}</if>
-            <if test="endTime != null">and create_time &lt;= #{endTime}</if>
-        </where>
+            <if test="name != null">and name like #{pattern}\n</if>
+            <if test="startTime != null">and create_time >= #{startTime}\n</if>
+            <if test="endTime != null">and create_time &lt;= #{endTime}\n</if>
+        \n</where>
         order by create_time desc
-        <if test="page != null and size != null">limit #{page}, #{size}</if>
-    </select>
-    </mapper>
+        <if test="page != null and size != null">limit #{page}, #{size}\n</if>
+    \n</select>
+    \n</mapper>
     "#.to_string());
     let mut strNode=rbatis.Get("selectByCondition");
     let r=&strNode.eval(&mut john,&mut holder);

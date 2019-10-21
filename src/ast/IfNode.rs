@@ -32,7 +32,7 @@ impl SqlNode for IfNode {
         for x in &self.childs {
             result=result+x.print().as_str();
         }
-        result=result+" </if>";
+        result=result+" \n</if>";
         return result;
     }
 }

@@ -17,7 +17,7 @@ impl SqlNode for OtherwiseNode {
         for x in &self.childs {
             result=result+x.print().as_str();
         }
-        result+=" </otherwise>";
+        result+=" \n</otherwise>";
         return result;
     }
 }

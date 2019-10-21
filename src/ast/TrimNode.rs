@@ -49,7 +49,7 @@ impl SqlNode for TrimNode {
         for x in &self.childs {
             result=result+x.print().as_str();
         }
-        result+=" </trim>";
+        result+=" \n</trim>";
         return result;
     }
 }
