@@ -18,7 +18,7 @@ impl SqlNode for SelectNode{
 
     fn print(&self) -> String {
         let mut result="<select ".to_string();
-        result=result+"id="+self.id.as_str();
+        result=result+"id=\""+self.id.as_str()+"\"";
         result=result+">";
         for x in &self.childs {
             result=result+x.print().as_str();

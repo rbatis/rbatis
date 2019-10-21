@@ -42,10 +42,10 @@ impl SqlNode for TrimNode {
 
     fn print(&self) -> String {
         let mut result="<trim ".to_string();
-        result=result+self.prefix.as_str();
-        result=result+self.suffix.as_str();
-        result=result+self.suffixOverrides.as_str();
-        result=result+self.prefixOverrides.as_str();
+        result=result+"\""+self.prefix.as_str()+"\"";
+        result=result+"\""+self.suffix.as_str()+"\"";
+        result=result+"\""+self.suffixOverrides.as_str()+"\"";
+        result=result+"\""+self.prefixOverrides.as_str()+"\"";
         for x in &self.childs {
             result=result+x.print().as_str();
         }
