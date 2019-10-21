@@ -17,7 +17,7 @@ impl Rbatis {
         let holder = NodeConfigHolder::new();
         let nodes = load_xml(xml_content);
         return Rbatis {
-            nodeTypes: LoopDecodeXml(nodes, holder.clone()),
+            nodeTypes: LoopDecodeXml(&nodes, &holder),
         };
     }
 
