@@ -86,6 +86,10 @@ pub fn LoopDecodeXml(xml_vec:Vec<Element>,holder:NodeConfigHolder) -> Vec<NodeTy
            "selectTemplete" => nodes.push(NodeType::NSelectTempleteNode(SelectTempleteNode{
                id: xml.getAttr("id"),
                resultMap: xml.getAttr("resultMap"),
+               lang: xml.getAttr("lang"),
+               tables: xml.getAttr("tables"),
+               columns: xml.getAttr("columns"),
+               wheres: xml.getAttr("wheres"),
                childs: child_nodes,
            })),
            "updateTemplete" => nodes.push(NodeType::NUpdateTempleteNode(UpdateTempleteNode{
