@@ -146,6 +146,7 @@ pub fn LoopDecodeXml(xml_vec:Vec<Element>,holder:NodeConfigHolder) -> Vec<NodeTy
                value: xml.getAttr("value"),
            })),
            "include" => nodes.push(NodeType::NInclude(IncludeNode{
+               refid: xml.getAttr("refid"),
                childs: child_nodes,
            })),
            "set" => nodes.push(NodeType::NSet(SetNode{
