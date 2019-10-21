@@ -153,9 +153,8 @@ pub fn LoopDecodeXml(xml_vec:Vec<Element>,holder:NodeConfigHolder) -> Vec<NodeTy
                childs: child_nodes,
            })),
            "" => {
-               let string = xml.data.replace("", "");
-               let data=string.as_str();
-               let tag=xml.tag.as_str();
+               let data= xml.data.as_str();
+               let tag= xml.tag.as_str();
                let n = StringNode::new(data);
                nodes.push(NodeType::NString(n));
            },
