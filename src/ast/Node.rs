@@ -31,7 +31,7 @@ use crate::ast::WhereNode::WhereNode;
 pub trait SqlNode {
     fn eval(&mut self, env: &mut Value,holder:&mut NodeConfigHolder) -> Result<String, String>;
 
-    fn print(&self) -> String;
+    fn print(&self,deep:i32) -> String;
 }
 
 
@@ -152,7 +152,7 @@ pub fn LoopDecodeXml(xml_vec:Vec<Element>,holder:NodeConfigHolder) -> Vec<NodeTy
                childs: child_nodes,
            })),
            "" => {
-               let string = xml.data.replace("\n", "");
+               let string = xml.data.replace("", "");
                let data=string.as_str();
                let tag=xml.tag.as_str();
                let n = StringNode::new(data);
@@ -199,10 +199,18 @@ pub fn filter_otherwise_nodes(arg:Vec<NodeType>) -> Option<Box<NodeType>>{
 }
 
 
-pub fn print_child(mut result:String,arg:&Vec<NodeType>)->String{
+pub fn print_child(mut result:String,arg:&Vec<NodeType>,deep:i32)->String{
     for x in arg{
-        let item=x.print();
-        result=result+item.as_str();
+        let item=x.print(deep);
+        result=result+""+item.as_str();
     }
     return result;
+}
+
+pub fn create_deep(deep:i32)-> String {
+    let mut s="\n".to_string();
+    for index in 0..deep{
+        s=s+"  ";
+    }
+    return s;
 }

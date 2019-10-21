@@ -1,5 +1,5 @@
 use crate::ast::NodeType::NodeType;
-use crate::ast::Node::{SqlNode, print_child};
+use crate::ast::Node::{SqlNode, print_child, create_deep};
 use serde_json::Value;
 use crate::ast::NodeConfigHolder::NodeConfigHolder;
 
@@ -14,12 +14,12 @@ impl SqlNode for DeleteTempleteNode{
         unimplemented!()
     }
 
-    fn print(&self) -> String {
-        let mut result="\n<deleteTemplete ".to_string();
+    fn print(&self,deep:i32) -> String {
+        let mut result=create_deep(deep)+"<deleteTemplete ";
         result=result+"id=\""+self.id.as_str()+"\"";
         result=result+">";
-        result=print_child(result,self.childs.as_ref());
-        result=result+" \n</deleteTemplete>";
+        result=print_child(result,self.childs.as_ref(),deep+1);
+        result=result+create_deep(deep).as_str()+"</deleteTemplete>";
         return result;
     }
 }

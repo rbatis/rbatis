@@ -75,7 +75,7 @@ impl Rbatis {
     pub fn print(&self) -> String {
         let mut result = String::new();
         for x in &self.nodeTypes {
-            let data = x.print();
+            let data = x.print(0);
             let data_str = data.as_str();
             result += data_str;
             println!("\n{}", data_str);

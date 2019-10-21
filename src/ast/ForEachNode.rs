@@ -1,5 +1,5 @@
 use crate::ast::NodeType::NodeType;
-use crate::ast::Node::{SqlNode, DoChildNodes, print_child};
+use crate::ast::Node::{SqlNode, DoChildNodes, print_child, create_deep};
 use serde_json::{Value, Map};
 use crate::utils;
 use std::collections::HashMap;
@@ -56,19 +56,20 @@ impl SqlNode for ForEachNode {
         return Result::Ok(result);
     }
 
-    fn print(&self) -> String {
-        let mut result="\n<foreach ".to_string();
+    fn print(&self,deep:i32) -> String {
+        let mut result=create_deep(deep)+"<foreach ";
         result=result+" collection=\""+self.collection.as_str()+"\"";
         result=result+" index=\""+self.index.as_str()+"\"";
         result=result+" item=\""+self.item.as_str()+"\"";
         result=result+" open=\""+self.open.as_str()+"\"";
         result=result+" close=\""+self.close.as_str()+"\"";
         result=result+" separator=\""+self.separator.as_str()+"\"";
+        result=result+" >";
 
         for x in &self.childs{
-            result=print_child(result,self.childs.as_ref());
+            result=print_child(result,self.childs.as_ref(),deep+1);
         }
-        result=result+" \n</foreach>";
+        result=result+create_deep(deep).as_str()+"</foreach>";
         return result;
     }
 }
