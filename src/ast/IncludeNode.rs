@@ -1,5 +1,5 @@
 use crate::ast::NodeType::NodeType;
-use crate::ast::Node::{SqlNode, DoChildNodes, create_deep};
+use crate::ast::Node::{SqlNode, DoChildNodes, create_deep, print_child};
 use serde_json::Value;
 use crate::ast::NodeConfigHolder::NodeConfigHolder;
 
@@ -16,10 +16,7 @@ impl  SqlNode for IncludeNode{
 
     fn print(&self,deep:i32) -> String {
         let mut result=create_deep(deep)+"<include "+"refid=\""+ self.refid.as_str()+"\"" +" >";
-
-        for x in &self.childs {
-            result=result+x.print(deep).as_str();
-        }
+        result=result+print_child(self.childs.as_ref(),deep+1).as_str();
         result=result+ create_deep(deep).as_str()+"</include>";
         return result;
     }

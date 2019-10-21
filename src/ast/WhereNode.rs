@@ -1,6 +1,6 @@
 use crate::ast::NodeConfigHolder::NodeConfigHolder;
 use serde_json::Value;
-use crate::ast::Node::{DoChildNodes, SqlNode, create_deep};
+use crate::ast::Node::{DoChildNodes, SqlNode, create_deep, print_child};
 use crate::ast::NodeType::NodeType;
 
 #[derive(Clone)]
@@ -28,9 +28,7 @@ impl SqlNode for WhereNode{
     fn print(&self,deep:i32) -> String {
         let mut result = create_deep(deep)+"<where";
         result = result + ">";
-        for x in &self.childs {
-            result = result + x.print(deep).as_str();
-        }
+        result=result+print_child(self.childs.as_ref(),deep+1).as_str();
         result = result + create_deep(deep).as_str()+"</where>";
         return result;
     }

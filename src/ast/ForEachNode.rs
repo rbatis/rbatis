@@ -66,9 +66,7 @@ impl SqlNode for ForEachNode {
         result=result+" separator=\""+self.separator.as_str()+"\"";
         result=result+" >";
 
-        for x in &self.childs{
-            result=print_child(result,self.childs.as_ref(),deep+1);
-        }
+        result=result+print_child(self.childs.as_ref(),deep+1).as_str();
         result=result+create_deep(deep).as_str()+"</foreach>";
         return result;
     }

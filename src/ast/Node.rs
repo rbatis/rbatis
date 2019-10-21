@@ -199,7 +199,8 @@ pub fn filter_otherwise_nodes(arg:Vec<NodeType>) -> Option<Box<NodeType>>{
 }
 
 
-pub fn print_child(mut result:String,arg:&Vec<NodeType>,deep:i32)->String{
+pub fn print_child(arg:&Vec<NodeType>,deep:i32)->String{
+    let mut result=String::new();
     for x in arg{
         let item=x.print(deep);
         result=result+""+item.as_str();

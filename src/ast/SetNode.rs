@@ -14,7 +14,7 @@ impl SqlNode for SetNode {
     }
     fn print(&self,deep:i32) -> String {
         let mut result=create_deep(deep)+"<set>";
-        result=print_child(result,self.childs.as_ref(),deep+1);
+        result=result+print_child(self.childs.as_ref(),deep+1).as_str();
         result=result+create_deep(deep).as_str()+"</set>";
         return result;
     }

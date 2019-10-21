@@ -19,7 +19,7 @@ impl SqlNode for UpdateNode{
         let mut result=create_deep(deep)+"<update ";
         result=result+"id=\""+self.id.as_str()+"\"";
         result=result+">";
-        result=print_child(result,self.childs.as_ref(),deep+1);
+        result=result+print_child(self.childs.as_ref(),deep+1).as_str();
         result=result+create_deep(deep).as_str()+"</update>";
         return result;
     }
