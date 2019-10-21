@@ -2,7 +2,7 @@ use serde_json::Value;
 use std::rc::Rc;
 use crate::engines::ExpressionEngineProxy::ExpressionEngineProxy;
 use crate::lib;
-use crate::ast::Node::SqlNode;
+use crate::ast::Node::{SqlNode, create_deep};
 use crate::ast::NodeConfigHolder::NodeConfigHolder;
 
 #[derive(Clone)]
@@ -18,7 +18,7 @@ impl SqlNode for BindNode {
         return Result::Ok("".to_string());
     }
 
-    fn print(&self) -> String {
-        return "\n<bind ".to_string()+self.name.as_str()+"=\""+self.value.as_str()+"\" >\n</bind>";
+    fn print(&self,deep:i32) -> String {
+        return create_deep(deep)+"<bind "+self.name.as_str()+"=\""+self.value.as_str()+"\" >"+create_deep(deep).as_str()+"</bind>";
     }
 }

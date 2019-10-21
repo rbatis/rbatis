@@ -79,31 +79,31 @@ impl <'a>SqlNode for NodeType {
         }
     }
 
-    fn print(&self) -> String {
+    fn print(&self,deep:i32) -> String {
         match self {
-            NodeType::NSelectNode(node) => return node.print(),
-            NodeType::NUpdateNode(node) => return node.print(),
-            NodeType::NInsertNode(node) => return node.print(),
-            NodeType::NDeleteNode(node) => return node.print(),
+            NodeType::NSelectNode(node) => return node.print(deep),
+            NodeType::NUpdateNode(node) => return node.print(deep),
+            NodeType::NInsertNode(node) => return node.print(deep),
+            NodeType::NDeleteNode(node) => return node.print(deep),
 
-            NodeType::NSelectTempleteNode(node) => return node.print(),
-            NodeType::NUpdateTempleteNode(node) => return node.print(),
-            NodeType::NInsertTempleteNode(node) => return node.print(),
-            NodeType::NDeleteTempleteNode(node) => return node.print(),
+            NodeType::NSelectTempleteNode(node) => return node.print(deep),
+            NodeType::NUpdateTempleteNode(node) => return node.print(deep),
+            NodeType::NInsertTempleteNode(node) => return node.print(deep),
+            NodeType::NDeleteTempleteNode(node) => return node.print(deep),
 
 
             NodeType::Null => return "null".to_string(),
-            NodeType::NString(stringNode) => return stringNode.print(),
-            NodeType::NIf(ifNode) => return ifNode.print(),
-            NodeType::NTrim(trimNode) => return trimNode.print(),
-            NodeType::NForEach(forEachNode) => return forEachNode.print(),
-            NodeType::NChoose(chooseNode) => return chooseNode.print(),
-            NodeType::NOtherwise(otherwiseNode) => return otherwiseNode.print(),
-            NodeType::NWhen(whenNode) => return whenNode.print(),
-            NodeType::NBind(bindNode) => return bindNode.print(),
-            NodeType::NInclude(includeNode) => return includeNode.print(),
-            NodeType::NSet(setNode) => return setNode.print(),
-            NodeType::NWhere(node) => return node.print(),
+            NodeType::NString(stringNode) => return stringNode.print(deep),
+            NodeType::NIf(ifNode) => return ifNode.print(deep),
+            NodeType::NTrim(trimNode) => return trimNode.print(deep),
+            NodeType::NForEach(forEachNode) => return forEachNode.print(deep),
+            NodeType::NChoose(chooseNode) => return chooseNode.print(deep),
+            NodeType::NOtherwise(otherwiseNode) => return otherwiseNode.print(deep),
+            NodeType::NWhen(whenNode) => return whenNode.print(deep),
+            NodeType::NBind(bindNode) => return bindNode.print(deep),
+            NodeType::NInclude(includeNode) => return includeNode.print(deep),
+            NodeType::NSet(setNode) => return setNode.print(deep),
+            NodeType::NWhere(node) => return node.print(deep),
             _ => String::from("print NodeType not exist!"),
         }
     }

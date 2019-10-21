@@ -61,7 +61,7 @@ fn TestBenchmarkTPS() {
     rbatis.print();
 
     let mut node=rbatis.Get("selectByCondition");
-    println!("the node:{}",&node.print());
+    println!("the node:{}",&node.print(0));
 
     let mut arg=json!({
        "name":"sadf",

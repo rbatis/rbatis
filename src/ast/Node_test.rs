@@ -34,7 +34,7 @@ fn TestEval(){
     \n</mapper>
     "#.to_string());
     let mut strNode=rbatis.Get("selectByCondition");
-    println!("{}",strNode.print());
+    println!("{}",strNode.print(0));
     let r=&strNode.eval(&mut john,&mut holder);
     println!("r:{}",r.clone().unwrap());
 }
