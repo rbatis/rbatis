@@ -57,7 +57,7 @@ impl SqlNode for ForEachNode {
     }
 
     fn print(&self) -> String {
-        let mut result="<foreach ".to_string();
+        let mut result="\n<foreach ".to_string();
         result=result+" collection=\""+self.collection.as_str()+"\"";
         result=result+" index=\""+self.index.as_str()+"\"";
         result=result+" item=\""+self.item.as_str()+"\"";

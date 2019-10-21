@@ -13,7 +13,7 @@ impl SqlNode for SetNode {
         return DoChildNodes(&mut self.childs, env,holder);
     }
     fn print(&self) -> String {
-        let mut result="<set>".to_string();
+        let mut result="\n<set>".to_string();
         for x in &self.childs {
             result=result+x.print().as_str();
         }

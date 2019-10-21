@@ -78,7 +78,7 @@ impl Rbatis {
             let data = x.print();
             let data_str = data.as_str();
             result += data_str;
-            println!("\n{:?}", data_str);
+            println!("\n{}", data_str);
         }
         return result;
     }

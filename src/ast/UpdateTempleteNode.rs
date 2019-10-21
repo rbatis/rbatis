@@ -16,7 +16,7 @@ impl SqlNode for UpdateTempleteNode{
     }
 
     fn print(&self) -> String {
-        let mut result="<updateTemplete ".to_string();
+        let mut result="\n<updateTemplete ".to_string();
         result=result+"id=\""+self.id.as_str()+"\"";
         result=result+">";
         for x in &self.childs {

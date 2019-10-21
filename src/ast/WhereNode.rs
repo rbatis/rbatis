@@ -26,7 +26,7 @@ impl SqlNode for WhereNode{
     }
 
     fn print(&self) -> String {
-        let mut result = "<where".to_string();
+        let mut result = "\n<where".to_string();
         result = result + ">";
         for x in &self.childs {
             result = result + x.print().as_str();

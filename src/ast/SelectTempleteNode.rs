@@ -21,7 +21,7 @@ impl SqlNode for SelectTempleteNode{
     }
 
     fn print(&self) -> String {
-        let mut result="<selectTemplete ".to_string();
+        let mut result="\n<selectTemplete ".to_string();
         result=result+"id=\""+self.id.as_str()+"\" ";
         result=result+"resultMap=\""+self.resultMap.as_str()+"\" ";
         result=result+"lang=\""+self.lang.as_str()+"\" ";

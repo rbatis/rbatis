@@ -15,7 +15,7 @@ impl SqlNode for InsertTempleteNode{
     }
 
     fn print(&self) -> String {
-        let mut result="<insertTemplete ".to_string();
+        let mut result="\n<insertTemplete ".to_string();
         result=result+"id=\""+self.id.as_str()+"\"";
         result=result+">";
 

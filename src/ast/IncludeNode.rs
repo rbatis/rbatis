@@ -14,7 +14,7 @@ impl  SqlNode for IncludeNode{
     }
 
     fn print(&self) -> String {
-        let mut result="<include>".to_string();
+        let mut result="\n<include>".to_string();
         for x in &self.childs {
             result=result+x.print().as_str();
         }
