@@ -30,7 +30,7 @@ impl SqlNode for ChooseNode {
     }
 
     fn print(&self) -> String {
-        let mut result= "<choose>".to_string();
+        let mut result= "\n<choose>".to_string();
         if self.whenNodes.is_some() {
             for x in self.whenNodes.as_ref().unwrap(){
                 result=result+x.print().as_str();

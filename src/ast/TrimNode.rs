@@ -41,7 +41,7 @@ impl SqlNode for TrimNode {
     }
 
     fn print(&self) -> String {
-        let mut result="<trim ".to_string();
+        let mut result="\n<trim ".to_string();
         result=result+" prefix=\""+self.prefix.as_str()+"\"";
         result=result+" suffix=\""+self.suffix.as_str()+"\"";
         result=result+" suffixOverrides=\""+self.suffixOverrides.as_str()+"\"";

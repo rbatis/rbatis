@@ -13,7 +13,7 @@ impl SqlNode for OtherwiseNode {
         return DoChildNodes(&mut self.childs, env,holder);
     }
     fn print(&self) -> String {
-        let mut result="<otherwise>".to_string();
+        let mut result="\n<otherwise>".to_string();
         for x in &self.childs {
             result=result+x.print().as_str();
         }

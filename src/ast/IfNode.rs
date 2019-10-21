@@ -27,7 +27,7 @@ impl SqlNode for IfNode {
     }
 
     fn print(&self) -> String {
-        let mut result="<if ".to_string();
+        let mut result="\n<if ".to_string();
         result=result+" test=\""+self.test.as_str() +"\" >";
         for x in &self.childs {
             result=result+x.print().as_str();

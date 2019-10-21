@@ -16,7 +16,7 @@ impl SqlNode for InsertNode{
     }
 
     fn print(&self) -> String {
-        let mut result="<insert ".to_string();
+        let mut result="\n<insert ".to_string();
         result=result+"id=\""+self.id.as_str()+"\"";
         result=result+">";
         for x in &self.childs {

@@ -37,7 +37,7 @@ impl  SqlNode for WhenNode{
     }
 
     fn print(&self) -> String {
-        let mut result="<when ".to_string();
+        let mut result="\n<when ".to_string();
         result=result+" test=\""+self.test.as_str()+"\" >";
         for x in &self.childs {
             result=result+x.print().as_str();
