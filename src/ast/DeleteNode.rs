@@ -18,7 +18,7 @@ impl SqlNode for DeleteNode{
         let mut result=create_deep(deep)+"<delete ";
         result=result+"id=\""+self.id.as_str()+"\"";
         result=result+">";
-        result=print_child(result,self.childs.as_ref(),deep+1);
+        result=result+print_child(self.childs.as_ref(),deep+1).as_str();
         result=result+create_deep(deep).as_str()+"</delete>";
         return result;
     }

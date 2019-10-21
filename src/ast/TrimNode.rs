@@ -46,7 +46,7 @@ impl SqlNode for TrimNode {
         result=result+" suffix=\""+self.suffix.as_str()+"\"";
         result=result+" suffixOverrides=\""+self.suffixOverrides.as_str()+"\"";
         result=result+" prefixOverrides=\""+self.prefixOverrides.as_str()+"\"";
-        result=print_child(result,self.childs.as_ref(),deep+1);
+        result=result+print_child(self.childs.as_ref(),deep+1).as_str();
         result=result+create_deep(deep).as_str()+"</trim>";
         return result;
     }

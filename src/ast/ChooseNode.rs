@@ -31,7 +31,7 @@ impl SqlNode for ChooseNode {
 
     fn print(&self,deep:i32) -> String {
         let mut result= create_deep(deep)+"<choose>";
-        result=print_child(result,self.whenNodes.as_ref().unwrap(),deep+1);
+        result=result+print_child(self.whenNodes.as_ref().unwrap(),deep+1).as_str();
         result=result+self.otherwiseNode.as_ref().unwrap().print(deep).as_str();
         result=result+create_deep(deep).as_str()+"</choose>";
         return result;
