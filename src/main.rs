@@ -11,7 +11,6 @@ pub mod utils;
 use test::Bencher;
 
 pub mod engines;
-pub mod lib;
 pub mod core;
 
 use self::utils::time_util;
@@ -24,7 +23,7 @@ use xml::EventReader;
 use xml::reader::XmlEvent;
 use std::fs;
 use serde_json::json;
-use lib::RustExpressionEngine;
+use engines::RustExpressionEngine;
 
 
 use rbatis_macro_derive::RbatisMacro;

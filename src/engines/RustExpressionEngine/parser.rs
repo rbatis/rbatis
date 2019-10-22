@@ -1,8 +1,8 @@
 use std::collections::HashMap;
 use core::borrow::Borrow;
-use crate::lib::RustExpressionEngine::node::Node;
-use crate::lib::RustExpressionEngine::node::NodeType::{NOpt, NBinary};
-use crate::lib::RustExpressionEngine::runtime::{IsNumber, OptMap, ParserTokens};
+use crate::engines::RustExpressionEngine::node::Node;
+use crate::engines::RustExpressionEngine::node::NodeType::{NOpt, NBinary};
+use crate::engines::RustExpressionEngine::runtime::{IsNumber, OptMap, ParserTokens};
 use std::collections::linked_list::LinkedList;
 use std::rc::Rc;
 use std::ops::Deref;
@@ -30,7 +30,7 @@ pub fn Parser(express: String, optMap: &OptMap) -> Result<Node,String> {
     if nodes.len()>0{
         return Result::Ok(nodes[0].deref().clone());
     }else{
-        return Result::Err("parser express fail".to_string());
+        return Result::Err("[Rbatis] parser express fail".to_string());
     }
 }
 
