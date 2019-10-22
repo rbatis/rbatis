@@ -12,6 +12,7 @@ use test::Bencher;
 
 pub mod engines;
 pub mod core;
+pub mod decode;
 
 use self::utils::time_util;
 //use utils::TimeUtil;

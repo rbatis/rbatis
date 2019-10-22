@@ -52,7 +52,7 @@ pub fn decode<T>(rows: RQueryResult) -> Result<T, Error>
         let mut index = 0;
         for item in rows.rows{
             if index > 1 {
-                return Result::Err("[Rbatis] rows.affected_rows > 1,but decode one result!".to_string());
+                return Result::Err("rows.affected_rows > 1,but decode one result!".to_string());
             }
             js = decodeRow(&item);
             index = index + 1;
