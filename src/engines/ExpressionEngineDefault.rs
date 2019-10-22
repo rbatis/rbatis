@@ -2,10 +2,10 @@
 use std::collections::HashMap;
 use std::collections::hash_map::RandomState;
 use crate::engines::ExpressionEngine::ExpressionEngine;
-use crate::lib::RustExpressionEngine::runtime::OptMap;
-use crate::lib::RustExpressionEngine;
+use crate::engines::RustExpressionEngine::runtime::OptMap;
+use crate::engines::RustExpressionEngine;
 use serde_json::Value;
-use crate::lib::RustExpressionEngine::node::Node;
+use crate::engines::RustExpressionEngine::node::Node;
 use serde_json::json;
 use std::ops::Index;
 
