@@ -13,6 +13,8 @@ struct Example{
    pub selectByCondition:fn()
 }
 
+
+//10/23: 4,697 ns/iter (+/- 1,772)
 #[bench]
 fn BenchmarkExec(b: &mut Bencher) {
     let mut holder=NodeConfigHolder::new();
