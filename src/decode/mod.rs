@@ -1,2 +1,2 @@
 pub mod Decoder;
-pub mod RQueryResultDecoder;
+pub mod MysqlResultDecoder;
