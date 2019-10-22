@@ -7,6 +7,7 @@ use crate::ast::NodeConfigHolder::NodeConfigHolder;
 use test::Bencher;
 use chrono::Local;
 use crate::utils;
+use crate::ast::NodeType::NodeType;
 
 struct Example{
    pub selectByCondition:fn()
@@ -35,7 +36,8 @@ fn BenchmarkExec(b: &mut Bencher) {
     });
 
     b.iter(|| {
-        let mut node=rbatis.Get("selectByCondition");
+
+        let mut node=rbatis.Get("selectByCondition").unwrap();
         let data=node.eval(&mut arg,&mut holder);
         if data.is_ok(){
            // println!("sql:{}",data.unwrap());
@@ -60,7 +62,7 @@ fn TestBenchmarkTPS() {
     let mut rbatis=Rbatis::new(content);
     rbatis.print();
 
-    let mut node=rbatis.Get("selectByCondition");
+    let mut node=rbatis.Get("selectByCondition").unwrap();
     println!("the node:{}",&node.print(0));
 
     let mut arg=json!({

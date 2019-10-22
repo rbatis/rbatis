@@ -4,6 +4,7 @@ use serde_json::{json, Value};
 use crate::ast::BindNode::BindNode;
 use crate::ast::Node::SqlNode;
 use crate::ast::NodeConfigHolder::NodeConfigHolder;
+use crate::ast::NodeType::NodeType;
 
 struct Example{
    pub selectByCondition:fn()
@@ -30,7 +31,8 @@ fn testLoadXml(){
     let mut rbatis=Rbatis::new(content);
     rbatis.print();
 
-    let mut node=rbatis.Get("selectByCondition");
+
+    let mut node=rbatis.Get("selectByCondition").unwrap();
     println!("the node:{}",&node.print(0));
 
     let mut arg=json!({
