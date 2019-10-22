@@ -14,11 +14,11 @@ use mysql::{Value, Conn};
 use serde::{Serialize, Deserialize};
 use test::Bencher;
 use std::any::Any;
-use crate::utils::decode_util::decode;
 use serde_json::Error;
 use rbatis_macro_derive::RbatisMacro;
 use rbatis_macro::RbatisMacro;
 use std::collections::hash_map::RandomState;
+use crate::decode::Decoder::Decoder;
 
 pub struct SqlBuilder {}
 
@@ -95,9 +95,8 @@ fn TestLinkMysql() {
     ops.ip_or_hostname(Some("115.220.9.139"));
 
     let mut conn = Conn::new(ops).unwrap();
-    let rows = conn.prep_exec("SELECT * from biz_activity limit 2;", ()).unwrap();
-    let rq=utils::decode_util::RQueryResult::from_query_result(rows);
-    let result:Result<Vec<Act>,String> = decode(rq);
+    let mut rows = conn.prep_exec("SELECT * from biz_activity limit 2;", ()).unwrap();
+    let result:Result<Vec<Act>,String> = rows.decode();
     if result.is_err() {
         panic!(result.err().unwrap());
     }
@@ -135,11 +134,9 @@ fn Bench_Decode_Util(b: &mut Bencher) {
     ops.ip_or_hostname(Some("115.220.9.139"));
 
     let mut conn = Conn::new(ops).unwrap();
-    let rows = conn.prep_exec("SELECT * from biz_activity limit 1;", ()).unwrap();
-    let rq=&utils::decode_util::RQueryResult::from_query_result(rows);
-
+    let mut rows = conn.prep_exec("SELECT * from biz_activity limit 1;", ()).unwrap();
     b.iter( || {
-        let result:Result<Act,String> = decode(rq.clone());
+        let result:Result<Act,String> = rows.decode();
     });
 }
 
@@ -156,12 +153,11 @@ fn TestBenchmarkTPS() {
     ops.ip_or_hostname(Some("115.220.9.139"));
 
     let mut conn = Conn::new(ops).unwrap();
-    let rows = conn.prep_exec("SELECT * from biz_activity limit 1;", ()).unwrap();
-    let rq=&utils::decode_util::RQueryResult::from_query_result(rows);
+    let mut rows = conn.prep_exec("SELECT * from biz_activity limit 1;", ()).unwrap();
 
     let total=100000;
     for _ in 0..total{
-        let result:Result<Act,String> = decode(rq.clone());
+        let result:Result<Act,String> = rows.decode();
     }
     utils::time_util::count_time(total,now);
     utils::time_util::count_tps(total,now);
