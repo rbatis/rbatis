@@ -33,7 +33,7 @@ fn TestEval(){
     \n</select>
     \n</mapper>
     "#.to_string());
-    let mut strNode=rbatis.Get("selectByCondition");
+    let mut strNode=rbatis.Get("selectByCondition").unwrap();
     println!("{}",strNode.print(0));
     let r=&strNode.eval(&mut john,&mut holder);
     println!("r:{}",r.clone().unwrap());
@@ -89,7 +89,7 @@ fn Bench_Eval(b: &mut Bencher) {
     \n</select>
     \n</mapper>
     "#.to_string());
-    let mut strNode=rbatis.Get("selectByCondition");
+    let mut strNode=rbatis.Get("selectByCondition").unwrap();
     let r=&strNode.eval(&mut john,&mut holder);
     b.iter(|| {
         &strNode.eval(&mut john,&mut holder);
