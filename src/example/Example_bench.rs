@@ -13,7 +13,7 @@ struct Example{
 }
 
 #[bench]
-fn testLoadXml(b: &mut Bencher) {
+fn BenchmarkExec(b: &mut Bencher) {
     let mut holder=NodeConfigHolder::new();
     let filePath = "./src/example/Example_ActivityMapper.xml";
     println!(">>>>>>>>>>>>>>>>>>>>>>start load {} >>>>>>>>>>>>>>>>>>>>>>>", filePath);
