@@ -95,14 +95,12 @@ fn TestLinkMysql() {
     ops.ip_or_hostname(Some("115.220.9.139"));
 
     let mut conn = Conn::new(ops).unwrap();
-    let mut rows = conn.prep_exec("SELECT * from biz_activity limit 2;", ()).unwrap();
+    let mut rows = conn.prep_exec("SELECT * from biz_activity", ()).unwrap();
     let result:Result<Vec<Act>,String> = rows.decode();
     if result.is_err() {
         panic!(result.err().unwrap());
     }
-    for item in &result.unwrap() {
-        println!("{}", item.name);
-    }
+    println!("{:?}",result.unwrap());
 }
 
 #[test]
@@ -134,9 +132,10 @@ fn Bench_Decode_Util(b: &mut Bencher) {
     ops.ip_or_hostname(Some("115.220.9.139"));
 
     let mut conn = Conn::new(ops).unwrap();
-    let mut rows = conn.prep_exec("SELECT * from biz_activity limit 1;", ()).unwrap();
+    let mut rows = conn.prep_exec("SELECT * from biz_activity;", ()).unwrap();
     b.iter( || {
-        let result:Result<Act,String> = rows.decode();
+        let result:Result<Vec<Act>,String> = rows.decode();
+        println!("{:?}",result.unwrap());
     });
 }
 
