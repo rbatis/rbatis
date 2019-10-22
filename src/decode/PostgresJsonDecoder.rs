@@ -1,4 +1,4 @@
-use crate::decode::Decoder::JsonDecoder;
+use crate::decode::Decoder::Decoder;
 use postgres::rows::Rows;
 use serde::de;
 use rbatis_macro::RbatisMacro;
