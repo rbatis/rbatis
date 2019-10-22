@@ -21,7 +21,7 @@ impl Decoder for QueryResult<'_> {
             //is array json
             let mut vec_v = vec![];
             self.for_each(|item| {
-                let act = decodeRow(&(item.unwrap()));
+                let act = decodeRow(&item.unwrap());
                 vec_v.push(act);
             });
             js = serde_json::Value::Array(vec_v)
@@ -33,7 +33,7 @@ impl Decoder for QueryResult<'_> {
                 if index > 1 {
                     return;
                 }
-                js = decodeRow(&(item.unwrap()));
+                js = decodeRow(&item.unwrap());
                 index = index + 1;
             });
             if index > 0 {
