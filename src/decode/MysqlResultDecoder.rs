@@ -12,17 +12,16 @@ use std::collections::HashMap;
 use serde_json::Number;
 use std::str::FromStr;
 use serde::de::DeserializeOwned;
-
+use std::ops::Deref;
 
 impl Decoder for QueryResult<'_> {
-    fn decode<T>(&self) -> Result<T, String> where T: DeserializeOwned + RbatisMacro {
-        unimplemented!();
+    fn decode<T>(&mut self) -> Result<T, String> where T: DeserializeOwned + RbatisMacro {
         let mut js = serde_json::Value::Null;
         if T::decode_name() == "Vec" || T::decode_name() == "Array" || T::decode_name() == "Slice" || T::decode_name() == "LinkedList" {
             //is array json
             let mut vec_v = vec![];
-            &self.for_each(|item| {
-                let act = decodeRow(&item.unwrap());
+            self.for_each(|item| {
+                let act = decodeRow(&(item.unwrap()));
                 vec_v.push(act);
             });
             js = serde_json::Value::Array(vec_v)
@@ -30,11 +29,11 @@ impl Decoder for QueryResult<'_> {
             let mut result: Result<T, String> = Result::Err("[Rbatis] rows.affected_rows > 1,but decode one result!".to_string());
             //not array json
             let mut index = 0;
-            &self.for_each(|item| {
+            self.for_each(|item| {
                 if index > 1 {
                     return;
                 }
-                js = decodeRow(&item.unwrap());
+                js = decodeRow(&(item.unwrap()));
                 index = index + 1;
             });
             if index > 0 {
