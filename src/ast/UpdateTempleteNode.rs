@@ -1,5 +1,5 @@
 use crate::ast::NodeType::NodeType;
-use crate::ast::Node::{SqlNode, print_child, create_deep};
+use crate::ast::Node::{SqlNode, print_child, create_deep, DoChildNodes};
 use serde_json::Value;
 use crate::ast::NodeConfigHolder::NodeConfigHolder;
 
@@ -12,7 +12,7 @@ pub struct UpdateTempleteNode {
 
 impl SqlNode for UpdateTempleteNode{
     fn eval(&mut self, env: &mut Value,holder:&mut NodeConfigHolder) -> Result<String, String> {
-        unimplemented!()
+        return DoChildNodes(&mut self.childs, env,holder);
     }
 
     fn print(&self,deep:i32) -> String {
