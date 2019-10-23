@@ -40,7 +40,7 @@ pub fn DoChildNodes(childNodes: &mut Vec<NodeType>, env: &mut Value,holder:&mut 
     let mut s = String::new();
     for item in childNodes {
         let itemResult = item.eval(env,holder);
-        if !itemResult.is_ok() {
+        if itemResult.is_err() {
             return itemResult;
         }
         s = s + itemResult.unwrap().as_str();
