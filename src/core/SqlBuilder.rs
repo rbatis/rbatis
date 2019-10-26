@@ -8,7 +8,6 @@ use std::thread;
 use std::time::Duration;
 use core::fmt::Debug;
 use std::fmt::Display;
-use postgres::{Connection, TlsMode};
 use core::borrow::Borrow;
 use mysql::{Value, Conn};
 use serde::{Serialize, Deserialize};
@@ -19,6 +18,8 @@ use rbatis_macro_derive::RbatisMacro;
 use rbatis_macro::RbatisMacro;
 use std::collections::hash_map::RandomState;
 use crate::decode::Decoder::Decoder;
+
+use postgres::{Client, NoTls};
 
 pub struct SqlBuilder {}
 
@@ -105,7 +106,7 @@ fn TestLinkMysql() {
 
 #[test]
 fn TestLinkPostgres() {
-    let conn = Connection::connect("postgres://postgres:postgres@localhost:5432/postgres", TlsMode::None).unwrap();
+    let mut client = Client::connect("postgres://postgres:postgres@localhost:5432/postgres", postgres::NoTls).unwrap();
 //    conn.execute("CREATE TABLE person (
 //                    id              SERIAL PRIMARY KEY,
 //                    name            VARCHAR NOT NULL,
@@ -122,8 +123,8 @@ fn TestLinkPostgres() {
 //
 //    }
 
-    let mut r=conn.query("SELECT * FROM person;", &[]).unwrap();
-    let mut act:Result<Act,String> = r.decode();
+    let mut r=client.query("SELECT * FROM person;", &[]).unwrap();
+    let mut act:Result<Vec<Act>,String> = r.decode();
     println!("decode: {:?}",act.unwrap());
 }
 
