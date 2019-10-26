@@ -8,3 +8,10 @@ pub trait Decoder{
           where
               T: de::DeserializeOwned + RbatisMacro;
 }
+
+pub fn isJsonArrayType(decode_name:&str)->bool{
+     if decode_name == "Vec" || decode_name == "Array" || decode_name == "Slice" || decode_name == "LinkedList" {
+          return true;
+     }
+     return false;
+}

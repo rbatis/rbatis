@@ -1,4 +1,4 @@
-use crate::decode::Decoder::Decoder;
+use crate::decode::Decoder::{Decoder, isJsonArrayType};
 use std::sync::Arc;
 use mysql::{Column, Row, QueryResult};
 use std::result;
@@ -17,7 +17,7 @@ use std::ops::Deref;
 impl Decoder for QueryResult<'_> {
     fn decode<T>(&mut self) -> Result<T, String> where T: DeserializeOwned + RbatisMacro {
         let mut js = serde_json::Value::Null;
-        if T::decode_name() == "Vec" || T::decode_name() == "Array" || T::decode_name() == "Slice" || T::decode_name() == "LinkedList" {
+        if isJsonArrayType(T::decode_name()) {
             //is array json
             let mut vec_v = vec![];
             self.for_each(|item| {
@@ -50,7 +50,7 @@ impl Decoder for QueryResult<'_> {
     }
 }
 
-pub fn decodeRow(row: &Row) -> Value {
+fn decodeRow(row: &Row) -> Value {
     let cs = row.columns();
     let mut m = serde_json::map::Map::new();
     for c in cs.as_ref() {
