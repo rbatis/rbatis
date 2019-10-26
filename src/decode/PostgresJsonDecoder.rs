@@ -28,17 +28,13 @@ impl Decoder for Vec<Row>{
         }else{
             let mut result: Result<T, String> = Result::Err("[Rbatis] rows.affected_rows > 1,but decode one result!".to_string());
             //not array json
-            let mut index = 0;
-            for i in 0..self.len() {
-                let item = self.get(i);
-                if index > 1 {
-                    continue;
-                }
-                js = decodeRow(&item.unwrap());
-                index = index + 1;
-            }
-            if index > 0 {
+            let size=self.len();
+            if size > 1 {
                 return result;
+            }
+            for i in 0..size {
+                let item = self.get(i);
+                js = decodeRow(&item.unwrap());
             }
         }
         let decodeR = serde_json::from_value(js);
