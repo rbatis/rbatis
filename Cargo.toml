@@ -16,7 +16,15 @@ serde_json = "1.0"
 #sql drivers
 mysql="*"
 postgres = "*"
-
+postgres-shared = {version = "*", features = ["with-serde_json"] }
 
 rbatis_macro = { path = "../Rbatis/rbatis_macro" }
 rbatis_macro_derive = { path = "../Rbatis/rbatis_macro_derive" }
+
+[features]
+no-logging = []
+with-chrono = ["postgres-shared/with-chrono"]
+with-serde_json = ["postgres-shared/with-serde_json"]
+with-time = ["postgres-shared/with-time"]
+[badges.circle-ci]
+repository = "sfackler/rust-postgres"
