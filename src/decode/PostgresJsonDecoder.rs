@@ -59,11 +59,8 @@ fn decodeRow(row: &Row) -> Value {
     for c in cs.as_ref() {
         let columnName = c.name();
         let c_type= cs.get(index).unwrap().type_().name();
-
-
         let mut v=serde_json::Value::Null;
-
-         println!("c_type:{}",c_type);
+        // println!("c_type:{}",c_type);
         if  c_type == "varchar" {
             let mut field:String=row.get(index);
             if !field.eq("null") {
@@ -84,8 +81,17 @@ fn decodeRow(row: &Row) -> Value {
             if field.is_some() {
                 v = json!(field.unwrap());
             }
+        }else if c_type == "float4"{
+            let mut field:Option<f32>=row.get(index);
+            if field.is_some() {
+                v = json!(field.unwrap());
+            }
+        } else if c_type == "float8"{
+            let mut field:Option<f64>=row.get(index);
+            if field.is_some() {
+                v = json!(field.unwrap());
+            }
         }
-
         m.insert(columnName.to_string(), v);
         index=index+1;
     }
