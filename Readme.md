@@ -16,9 +16,9 @@
 
 
 ### 支持数据库类型
-| mysql    | postgres |
-| ------ | ------ |
-| √      | √      |
+| mysql    | postgres | TiDB    | CockroachDB |
+| ------ | ------ | ------ | ------ |
+| √      | √      | *      | *      |
 
 ### 进度表
 | ast    | xmlLoader | expressEngines | sqlDecoder | logSystem | dataSourceRouter |templeteDecoder |
