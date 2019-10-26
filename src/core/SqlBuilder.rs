@@ -105,7 +105,7 @@ fn TestLinkMysql() {
 
 #[test]
 fn TestLinkPostgres() {
-    let conn = Connection::connect("postgres://postgres:postgres@115.220.9.139:5432/postgres", TlsMode::None).unwrap();
+    let conn = Connection::connect("postgres://postgres:postgres@localhost:5432/postgres", TlsMode::None).unwrap();
 //    conn.execute("CREATE TABLE person (
 //                    id              SERIAL PRIMARY KEY,
 //                    name            VARCHAR NOT NULL,
