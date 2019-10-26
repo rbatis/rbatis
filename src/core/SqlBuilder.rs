@@ -105,22 +105,26 @@ fn TestLinkMysql() {
 
 #[test]
 fn TestLinkPostgres() {
-    let conn = Connection::connect("postgres://postgres:postgres@127.0.0.1:5432/postgres", TlsMode::None).unwrap();
-    conn.execute("CREATE TABLE person (
-                    id              SERIAL PRIMARY KEY,
-                    name            VARCHAR NOT NULL,
-                    data            VARCHAR NULL
-                  )", &[]).unwrap();
-    conn.execute("INSERT INTO person (name, data) VALUES ($1, $2)",
-                 &[&"Steven".to_string(), &"".to_string()]).unwrap();
-    for row in &conn.query("SELECT id, name, data FROM person", &[]).unwrap() {
-        let mut personMap = HashMap::new();
-        //personMap.insert(0,row.get(0));
-        let s: String = row.get(1);
-        personMap.insert("1", s);
-        //personMap.insert(2,row.get(2));
-        println!("Found person {}", personMap.get("1").unwrap());
-    }
+    let conn = Connection::connect("postgres://postgres:postgres@115.220.9.139:5432/postgres", TlsMode::None).unwrap();
+//    conn.execute("CREATE TABLE person (
+//                    id              SERIAL PRIMARY KEY,
+//                    name            VARCHAR NOT NULL,
+//                    data            VARCHAR NULL
+//                  )", &[]).unwrap();
+    //conn.execute("INSERT INTO person (name, data) VALUES ($1, $2)", &[&"Steven".to_string(), &"".to_string()]).unwrap();
+//    for row in &conn.query("SELECT id, name, data FROM person", &[]).unwrap() {
+//        let mut personMap = HashMap::new();
+//        //personMap.insert(0,row.get(0));
+//        let s: String = row.get(1);
+//        personMap.insert("1", s);
+//        //personMap.insert(2,row.get(2));
+//        println!("Found person {}", personMap.get("1").unwrap());
+//
+//    }
+
+    let mut r=conn.query("SELECT * FROM person;", &[]).unwrap();
+    let mut act:Result<Act,String> = r.decode();
+    println!("decode: {:?}",act.unwrap());
 }
 
 #[bench]
