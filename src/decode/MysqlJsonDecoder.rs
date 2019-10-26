@@ -30,13 +30,14 @@ impl Decoder for QueryResult<'_> {
             //not array json
             let mut index = 0;
             self.for_each(|item| {
-                if index > 1 {
+                if index >= 1 {
+                    index = index + 1;
                     return;
                 }
                 js = decodeRow(&item.unwrap());
                 index = index + 1;
             });
-            if index > 0 {
+            if index > 1 {
                 return result;
             }
         }
