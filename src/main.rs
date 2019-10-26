@@ -4,6 +4,8 @@ extern crate test;
 
 extern crate mysql;
 
+extern crate postgres_shared;
+
 pub mod example;
 pub mod ast;
 pub mod utils;

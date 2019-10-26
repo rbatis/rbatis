@@ -1,9 +1,11 @@
+
 use crate::decode::Decoder::{Decoder, isJsonArrayType};
 use postgres::rows::{Rows, Row};
 use serde::de;
 use rbatis_macro::RbatisMacro;
 use std::borrow::BorrowMut;
 use serde_json::Value;
+
 
 //PG 解析器
 impl Decoder for Rows{
@@ -48,5 +50,14 @@ impl Decoder for Rows{
 }
 
 fn decodeRow(row: &Row) -> Value {
-    unimplemented!()
+    let cs = row.columns();
+    let mut m = serde_json::map::Map::new();
+    let mut index=0;
+    for c in cs.as_ref() {
+        let columnName = c.name();
+        let field:serde_json::Value=row.get(index);
+        m.insert(columnName.to_string(), field);
+        index=index+1;
+    }
+    return serde_json::Value::Object(m);
 }
