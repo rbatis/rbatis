@@ -5,10 +5,7 @@
 
 
 ##### xml案例:
-` xml
-<?xml version="1.0" encoding="UTF-8"?>
-<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
-        "https://raw.githubusercontent.com/zhuxiujia/Rbatis/master/mybatis-3-mapper.dtd">
+``` xml
 <mapper>
     <resultMap id="BaseResultMap">
         <id column="id" property="id"/>
@@ -39,7 +36,7 @@
         <if test="page != null and size != null">limit #{page}, #{size}</if>
     </select>
 </mapper>
-`
+``` 
 
 * 简洁如同Java的Mybatis,比肩C/C++的极高性能
 * 可拓展的sql解析执行引擎
