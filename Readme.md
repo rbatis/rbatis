@@ -15,7 +15,7 @@
 * CockroachDB(NewSql)
 
 
-### 数据库支持表
+### 支持数据库类型
 | mysql    | postgres |
 | ------ | ------ |
 | √      | √      |
@@ -23,7 +23,7 @@
 ### 进度表
 | ast    | xmlLoader | expressEngines | sqlDecoder | logSystem | dataSourceRouter |templeteDecoder |
 | ------ | ------ | ------ | ------ | ------ | ------ |------ |
-| √      | √      | √      | *      | *      | *      | *     |
+| √      | √      | √      | √      | √      | *      | *     |
 
 ### 动态表达式性能(测试平台 win10,6 core i7,16GB)(原生Rust代码数值运算约等于 1 ns/iter,字符串运算约等于100 ns/iter)
 <pre>
