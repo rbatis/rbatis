@@ -55,6 +55,14 @@ fn decodeRow(row: &Row) -> Value {
     let mut index=0;
     for c in cs.as_ref() {
         let columnName = c.name();
+
+        if index==0{
+            let id:Value= row.get(index);
+            println!("id:{}",id);
+        }
+
+
+
         let fieldOpt:Option<postgres::Result<Value>>=row.get_opt(index);
         let mut field=fieldOpt.unwrap_or(Result::Ok(Value::Null));
         m.insert(columnName.to_string(), field.unwrap());
