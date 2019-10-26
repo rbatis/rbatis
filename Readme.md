@@ -15,7 +15,10 @@
 * CockroachDB(NewSql)
 
 
-
+### 数据库支持表
+| mysql    | postgres |
+| ------ | ------ |
+| √      | √      |
 
 ### 进度表
 | ast    | xmlLoader | expressEngines | sqlDecoder | logSystem | dataSourceRouter |templeteDecoder |
