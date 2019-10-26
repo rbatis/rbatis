@@ -1,14 +1,17 @@
 
 use crate::decode::Decoder::{Decoder, isJsonArrayType};
-use postgres::rows::{Rows, Row};
 use serde::de;
 use rbatis_macro::RbatisMacro;
 use std::borrow::BorrowMut;
 use serde_json::Value;
+use postgres::Row;
+use std::str::FromStr;
+use serde_json::json;
+use serde_json::value::Value::Number;
 
 
 //PG 解析器
-impl Decoder for Rows{
+impl Decoder for Vec<Row>{
     fn decode<T>(&mut self) -> Result<T, String> where
         T: de::DeserializeOwned + RbatisMacro {
         //unimplemented!();
@@ -17,8 +20,8 @@ impl Decoder for Rows{
             //is array json
             let mut vec_v = vec![];
             for i in 0..self.len(){
-                let item=self.get(i);
-                let act= decodeRow(&item);
+                let mut item=self.get_mut(i);
+                let act= decodeRow(&item.unwrap());
                 vec_v.push(act);
             }
             js = serde_json::Value::Array(vec_v);
@@ -31,7 +34,7 @@ impl Decoder for Rows{
                 if index > 1 {
                     continue;
                 }
-                js = decodeRow(&item);
+                js = decodeRow(&item.unwrap());
                 index = index + 1;
             }
             if index > 0 {
@@ -55,9 +58,35 @@ fn decodeRow(row: &Row) -> Value {
     let mut index=0;
     for c in cs.as_ref() {
         let columnName = c.name();
-        let fieldOpt:Option<postgres::Result<Value>>=row.get_opt(index);
-        let mut field=fieldOpt.unwrap_or(Result::Ok(Value::Null));
-        m.insert(columnName.to_string(), field.unwrap());
+        let c_type= cs.get(index).unwrap().type_().name();
+
+
+        let mut v=serde_json::Value::Null;
+
+         println!("c_type:{}",c_type);
+        if  c_type == "varchar" {
+            let mut field:String=row.get(index);
+            if !field.eq("null") {
+                v = serde_json::Value::String(field);
+            }
+        }else if c_type == "int2"{
+            let mut field:Option<i16>=row.get(index);
+            if field.is_some() {
+                v = json!(field.unwrap());
+            }
+        }else if c_type == "int4"{
+            let mut field:Option<i32>=row.get(index);
+            if field.is_some() {
+                v = json!(field.unwrap());
+            }
+        }else if c_type == "int8"{
+            let mut field:Option<i64>=row.get(index);
+            if field.is_some() {
+                v = json!(field.unwrap());
+            }
+        }
+
+        m.insert(columnName.to_string(), v);
         index=index+1;
     }
     return serde_json::Value::Object(m);
