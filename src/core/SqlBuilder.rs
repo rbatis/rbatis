@@ -20,6 +20,7 @@ use std::collections::hash_map::RandomState;
 use crate::decode::Decoder::Decoder;
 
 use postgres::{Client, NoTls};
+use serde_json::{json};
 
 pub struct SqlBuilder {}
 
@@ -40,40 +41,93 @@ fn TestSqlBuilder() {
     let now = Local::now();
     for i in 0..total {
         let mut sql = String::new();
-        sql.push_str("select * from biz_activity  where ");
+
+
+       let mut arg=json!({
+       "name":"sadf",
+       "startTime":"startTime",
+       "endTime":"endTime",
+       "page":1,
+       "size":1,
+        });
+
+        sql.push_str("select * from biz_activity  where name = #{name} and startTime=#{startTime} and endTime=#{endTime} limit page=#{page},size=#{size}");
 
         let name = paramMap.get("name").unwrap();
         if name != &"" {
-            sql.push_str(name);
-            sql.push_str(&" ");
+            sql.replace("#{name}",name);
         }
         let startTime = paramMap.get("startTime").unwrap();
         if startTime != &"" {
-            sql.push_str(startTime);
-            sql.push_str(&" ");
+            sql.replace("#{startTime}",startTime);
         }
         let endTime = paramMap.get("endTime").unwrap();
         if endTime != &"" {
-            sql.push_str(endTime);
-            sql.push_str(&" ");
+            sql.replace("#{endTime}",endTime);
         }
         let pageStr = paramMap.get("page").unwrap();
         let page: i32 = pageStr.to_string().parse().unwrap();
         if page != 0 {
-            sql.push_str(&page.to_string());
-            sql.push_str(&" ");
+            sql.replace("#{page}",pageStr);
         }
         let sizeStr = paramMap.get("size").unwrap();
         let size: i32 = sizeStr.parse().unwrap();
         if size != 0 {
-            sql.push_str(&size.to_string());
-            sql.push_str(&" ");
+            sql.replace("#{size}",sizeStr);
         }
         // println!("{}",sql);
     }
 
     time_util::count_time(total, now);
     time_util::count_tps(total, now);
+}
+
+#[bench]
+fn benchSqlBuilder(b: &mut Bencher){
+
+    let mut paramMap = HashMap::new();
+    paramMap.insert("name", "aaa");
+    paramMap.insert("startTime", "aaa");
+    paramMap.insert("endTime", "aaa");
+    paramMap.insert("page", "1");
+    paramMap.insert("size", "20");
+
+    b.iter(|| {
+        let mut sql = String::new();
+
+        let mut arg=json!({
+       "name":"sadf",
+       "startTime":"startTime",
+       "endTime":"endTime",
+       "page":1,
+       "size":1,
+        });
+
+        sql.push_str("select * from biz_activity  where name = #{name} and startTime=#{startTime} and endTime=#{endTime} limit page=#{page},size=#{size}");
+
+        let name = paramMap.get("name").unwrap();
+        if name != &"" {
+            sql.replace("#{name}",name);
+        }
+        let startTime = paramMap.get("startTime").unwrap();
+        if startTime != &"" {
+            sql.replace("#{startTime}",startTime);
+        }
+        let endTime = paramMap.get("endTime").unwrap();
+        if endTime != &"" {
+            sql.replace("#{endTime}",endTime);
+        }
+        let pageStr = paramMap.get("page").unwrap();
+        let page: i32 = pageStr.to_string().parse().unwrap();
+        if page != 0 {
+            sql.replace("#{page}",pageStr);
+        }
+        let sizeStr = paramMap.get("size").unwrap();
+        let size: i32 = sizeStr.parse().unwrap();
+        if size != 0 {
+            sql.replace("#{size}",sizeStr);
+        }
+    });
 }
 
 
