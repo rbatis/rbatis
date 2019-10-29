@@ -93,7 +93,7 @@ fn TestLinkMysql() {
     ops.user(Some("root"));
     ops.pass(Some("TEST"));
     ops.db_name(Some("test"));
-    ops.ip_or_hostname(Some("115.220.9.139"));
+    ops.ip_or_hostname(Some("localhost"));
 
     let mut conn = Conn::new(ops).unwrap();
     let mut rows = conn.prep_exec("SELECT * from biz_activity", ()).unwrap();
@@ -134,7 +134,7 @@ fn Bench_Decode_Util(b: &mut Bencher) {
     ops.user(Some("root"));
     ops.pass(Some("TEST"));
     ops.db_name(Some("test"));
-    ops.ip_or_hostname(Some("115.220.9.139"));
+    ops.ip_or_hostname(Some("localhost"));
 
     let mut conn = Conn::new(ops).unwrap();
     let mut rows = conn.prep_exec("SELECT * from biz_activity;", ()).unwrap();
@@ -154,7 +154,7 @@ fn TestBenchmarkTPS() {
     ops.user(Some("root"));
     ops.pass(Some("TEST"));
     ops.db_name(Some("test"));
-    ops.ip_or_hostname(Some("115.220.9.139"));
+    ops.ip_or_hostname(Some("localhost"));
 
     let mut conn = Conn::new(ops).unwrap();
     let mut rows = conn.prep_exec("SELECT * from biz_activity limit 1;", ()).unwrap();

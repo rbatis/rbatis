@@ -58,9 +58,9 @@ fn decodeRow(row: &Row) -> Value {
         let mut v=serde_json::Value::Null;
         // println!("c_type:{}",c_type);
         if  c_type == "varchar" {
-            let mut field:String=row.get(index);
-            if !field.eq("null") {
-                v = serde_json::Value::String(field);
+            let mut field:Option<String>=row.get(index);
+            if field.is_some() {
+                v = serde_json::Value::String(field.unwrap());
             }
         }else if c_type == "int2"{
             let mut field:Option<i16>=row.get(index);
