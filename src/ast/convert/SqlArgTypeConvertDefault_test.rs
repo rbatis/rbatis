@@ -24,7 +24,7 @@ fn Bench_Convert(b: &mut Bencher) {
    // let a=json!(1.27);
     let convert=SqlArgTypeConvertDefault{};
     b.iter(|| {
-        let a=json!(null);
-        convert.convert(a);
+        let node=json!("1234");
+        convert.convert(node);
     });
 }
