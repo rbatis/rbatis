@@ -32,9 +32,6 @@ fn testLoadXml(){
     rbatis.print();
 
 
-    let mut node=rbatis.Get("selectByCondition").unwrap();
-    println!("the node:{}",&node.print(0));
-
     let mut arg=json!({
        "name":"sadf",
        "startTime":"startTime",
@@ -43,7 +40,7 @@ fn testLoadXml(){
        "size":1,
     });
 
-    let data=node.eval(&mut arg,&mut holder);
+    let data=rbatis.eval("selectByCondition",&mut arg);
     if data.is_ok(){
         println!("sql:{}",data.unwrap());
     }else{
