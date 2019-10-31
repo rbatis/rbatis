@@ -10,6 +10,7 @@ use std::collections::HashMap;
 
 pub struct Rbatis {
     nodeTypes: HashMap<String,NodeType>,
+    holder: NodeConfigHolder,
 }
 
 impl Rbatis {
@@ -35,12 +36,21 @@ impl Rbatis {
             };
         }
         return Rbatis {
+            holder:holder,
             nodeTypes: m,
         };
     }
 
     pub fn Get(&mut self, id: &str) -> Option<&mut NodeType> {
         return self.nodeTypes.get_mut(id);
+    }
+
+    pub fn eval(&mut self,id:&str,env: &mut Value) -> Result<String, String>{
+        let mut node=self.nodeTypes.get_mut(id);
+        if node.is_none(){
+            return Result::Err("node:".to_string()+id+" is none");
+        }
+        return node.unwrap().eval(env,&mut self.holder)
     }
 
     pub fn print(&self) -> String {
