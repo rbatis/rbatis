@@ -17,8 +17,8 @@ impl SqlArgTypeConvert for SqlArgTypeConvertDefault {
             Value::String(s) => return "'".to_owned()+s.as_str()+"'",
             Value::Number(n) => return n.to_string(),
             Value::Bool(b) => return b.to_string(),
-            Value::Object(o) => panic!("[Rbatis] not support convert object!"),
-            Value::Array(arr) => panic!("[Rbatis] not support convert array!"),
+            Value::Object(o) => panic!("[Rbatis] not support convert Object/Map<String,Value>!"),
+            Value::Array(arr) => panic!("[Rbatis] not support convert Vec<Value>!"),
             _ => return String::from(""),
         }
     }
