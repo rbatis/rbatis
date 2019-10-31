@@ -11,33 +11,6 @@ use crate::engines::ExpressionEngineCache::ExpressionEngineCache;
 use crate::ast::NodeConfigHolder::NodeConfigHolder;
 use crate::core::Rbatis::Rbatis;
 
-#[test]
-fn TestEval(){
-    let mut holder=NodeConfigHolder::new();
-    let mut john =  json!({
-        "name": "John Doe",
-    });
-
-    let mut rbatis=Rbatis::new(r#"
-    <mapper>
-    <select id="selectByCondition" resultMap="BaseResultMap">
-        <bind name="pattern" value="'%' + name + '%'"/>
-        select * from biz_activity
-        <where>
-            <if test="name != null">and name like #{pattern}\n</if>
-            <if test="startTime != null">and create_time >= #{startTime}\n</if>
-            <if test="endTime != null">and create_time &lt;= #{endTime}\n</if>
-        \n</where>
-        order by create_time desc
-        <if test="page != null and size != null">limit #{page}, #{size}\n</if>
-    \n</select>
-    \n</mapper>
-    "#.to_string());
-    let mut strNode=rbatis.Get("selectByCondition").unwrap();
-    println!("{}",strNode.print(0));
-    let r=&strNode.eval(&mut john,&mut holder);
-    println!("r:{}",r.clone().unwrap());
-}
 
 
 #[test]
@@ -67,60 +40,4 @@ fn Bench_Parser(b: &mut Bencher) {
     });
 }
 
-#[bench]
-fn Bench_Eval(b: &mut Bencher) {
-    let mut holder=NodeConfigHolder::new();
-    let mut john =  json!({
-        "name": "John Doe",
-    });
 
-    let mut rbatis=Rbatis::new(r#"
-    <mapper>
-    <select id="selectByCondition" resultMap="BaseResultMap">
-        <bind name="pattern" value="'%' + name + '%'"/>
-        select * from biz_activity
-        <where>
-            <if test="name != null">and name like #{pattern}\n</if>
-            <if test="startTime != null">and create_time >= #{startTime}\n</if>
-            <if test="endTime != null">and create_time &lt;= #{endTime}\n</if>
-        \n</where>
-        order by create_time desc
-        <if test="page != null and size != null">limit #{page}, #{size}\n</if>
-    \n</select>
-    \n</mapper>
-    "#.to_string());
-    let mut strNode=rbatis.Get("selectByCondition").unwrap();
-    let r=&strNode.eval(&mut john,&mut holder);
-    b.iter(|| {
-        &strNode.eval(&mut john,&mut holder);
-    });
-}
-
-
-#[bench]
-fn Bench_Clone(b: &mut Bencher) {
-    let mut holder=NodeConfigHolder::new();
-    let mut john =  json!({
-        "name": "John Doe",
-    });
-
-    let mut rbatis=Rbatis::new(r#"
-    <mapper>
-    <select id="selectByCondition" resultMap="BaseResultMap">
-        <bind name="pattern" value="'%' + name + '%'"/>
-        select * from biz_activity
-        <where>
-            <if test="name != null">and name like #{pattern}\n</if>
-            <if test="startTime != null">and create_time >= #{startTime}\n</if>
-            <if test="endTime != null">and create_time &lt;= #{endTime}\n</if>
-        \n</where>
-        order by create_time desc
-        <if test="page != null and size != null">limit #{page}, #{size}\n</if>
-    \n</select>
-    \n</mapper>
-    "#.to_string());
-    let mut strNode=rbatis.Get("selectByCondition").unwrap();
-    b.iter(|| {
-        strNode.clone();
-    });
-}

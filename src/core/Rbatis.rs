@@ -41,10 +41,6 @@ impl Rbatis {
         };
     }
 
-    pub fn Get(&mut self, id: &str) -> Option<&mut NodeType> {
-        return self.nodeTypes.get_mut(id);
-    }
-
     pub fn eval(&mut self,id:&str,env: &mut Value) -> Result<String, String>{
         let mut node=self.nodeTypes.get_mut(id);
         if node.is_none(){
