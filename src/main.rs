@@ -24,34 +24,24 @@ use xml::reader::XmlEvent;
 use std::fs;
 use serde_json::json;
 use engines::RustExpressionEngine;
-
-
 use rbatis_macro_derive::RbatisMacro;
-
 use rbatis_macro::RbatisMacro;
+use std::thread::sleep;
+use std::time::Duration;
 
-#[derive(RbatisMacro)]
-struct Pancakes;
-
-
-fn main() {
-   // Pancakes::rbatis_macro();
-   // String::rbatis_macro();
-    let s=vec!["String".to_string()];
-    testf(s);
-
+fn main(){
+    fff();
+    sleep(Duration::from_secs(3));
 }
 
-fn testf<T:RbatisMacro>(arg:T){
-    let name=T::decode_name();
-    println!("{}",name);
+pub fn fff(){
+   println!("func!");
 }
+
 
 #[bench]
-fn Bench_Test(b: &mut Bencher) {
-
+fn Bench_main(b: &mut Bencher) {
     b.iter( || {
-
         // v.push(2);
     });
 }
