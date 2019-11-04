@@ -31,7 +31,6 @@ use std::time::Duration;
 
 fn main(){
     block_on(fff());
-    sleep(Duration::from_secs(3));
 }
 
 pub  async fn fff(){
