@@ -1,4 +1,3 @@
-#![feature(async_await)]
 #![feature(test)]
 extern crate test;
 use futures::executor::block_on;
