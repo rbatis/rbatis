@@ -1,6 +1,7 @@
 #![feature(async_await)]
 #![feature(test)]
 extern crate test;
+use futures::executor::block_on;
 
 pub mod example;
 pub mod ast;
@@ -29,11 +30,11 @@ use std::thread::sleep;
 use std::time::Duration;
 
 fn main(){
-    fff();
+    block_on(fff());
     sleep(Duration::from_secs(3));
 }
 
-pub fn fff(){
+pub  async fn fff(){
    println!("func!");
 }
 
