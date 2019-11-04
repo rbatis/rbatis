@@ -1,6 +1,6 @@
+#![feature(async_await)]
 #![feature(test)]
 extern crate test;
-extern crate mysql;
 
 pub mod example;
 pub mod ast;
