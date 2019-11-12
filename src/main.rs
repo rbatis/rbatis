@@ -1,6 +1,5 @@
 #![feature(test)]
 extern crate test;
-use futures::executor::block_on;
 
 pub mod example;
 pub mod ast;
@@ -27,13 +26,21 @@ use rbatis_macro_derive::RbatisMacro;
 use rbatis_macro::RbatisMacro;
 use std::thread::sleep;
 use std::time::Duration;
+use async_std::task;
 
-fn main(){
-    block_on(fff());
-}
 
-pub  async fn fff(){
-   println!("func!");
+fn main() {
+    let task = task::spawn(async {
+        task::sleep(Duration::from_millis(1000)).await;
+        println!("done");
+        "hello"
+    });
+
+    task::block_on(async {
+        println!("waiting for the task");
+        let res = task.await;
+        println!("task ended with result {:?}", res);
+    });
 }
 
 
