@@ -95,15 +95,8 @@ impl Node {
         if self.equalNodeType(&NBinary) {
             let leftNode = self.leftBinaryNode.clone().unwrap();
             let rightNode = self.rightBinaryNode.clone().unwrap();
-
-            let mut leftV = leftNode.isValueNode().unwrap_or(Value::Null);
-            let mut rightV =  rightNode.isValueNode().unwrap_or(Value::Null);
-            if leftV.is_null() {
-                leftV = leftNode.eval(env).unwrap_or(Value::Null);
-            }
-            if rightV.is_null() {
-                rightV = rightNode.eval(env).unwrap_or(Value::Null);
-            }
+            let mut leftV = leftNode.eval(env).unwrap_or(Value::Null);
+            let mut rightV = rightNode.eval(env).unwrap_or(Value::Null);
             let opt = self.toString();
             return Eval(&leftV, &rightV, opt);
         } else if self.equalNodeType(&NArg){
@@ -124,7 +117,7 @@ impl Node {
             }
             return Result::Ok(Value::Null);
         }
-        return Result::Ok(self.value.clone());
+        return Result::Err("".to_string());
     }
 
     pub fn opt(&self) -> Option<&str> {
