@@ -117,7 +117,7 @@ impl Node {
             }
             return Result::Ok(Value::Null);
         }
-        return Result::Err("".to_string());
+        return Result::Ok(self.value.clone());
     }
 
     pub fn opt(&self) -> Option<&str> {
