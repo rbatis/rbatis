@@ -21,7 +21,7 @@ use xml::EventReader;
 use xml::reader::XmlEvent;
 use std::fs;
 use serde_json::json;
-use engines::RustExpressionEngine;
+use engines::RbatisEngine;
 use rbatis_macro_derive::RbatisMacro;
 use rbatis_macro::RbatisMacro;
 use std::thread::sleep;

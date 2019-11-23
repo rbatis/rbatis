@@ -6,7 +6,7 @@ use crate::ast::convert::SqlArgTypeConvertDefault::SqlArgTypeConvertDefault;
 use crate::ast::Node::SqlNode;
 use serde_json::json;
 use crate::ast::NodeConfigHolder::NodeConfigHolder;
-use crate::engines::RustExpressionEngine::runtime::ExEngine;
+use crate::engines::RbatisEngine::runtime::RbatisEngine;
 
 
 #[test]
@@ -15,7 +15,7 @@ pub fn TestChooseNode() {
     let mut john = json!({
         "arg": 2,
     });
-    let engine=ExEngine::new();
+    let engine= RbatisEngine::new();
 
     let sNode = NString(StringNode::new("dsaf#{arg+1}"));
 
