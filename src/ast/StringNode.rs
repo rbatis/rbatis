@@ -4,11 +4,8 @@ use serde_json::Value;
 use std::collections::HashMap;
 use crate::ast::convert::SqlArgTypeConvert::SqlArgTypeConvert;
 use std::rc::Rc;
-use crate::engines::ExpressionEngineProxy::ExpressionEngineProxy;
 use crate::engines;
-use crate::engines::ExpressionEngine::ExpressionEngine;
-use crate::engines::ExpressionEngineDefault::ExpressionEngineDefault;
-use crate::engines::ExpressionEngineCache::ExpressionEngineCache;
+
 use crate::ast::convert::SqlArgTypeConvertDefault::SqlArgTypeConvertDefault;
 use crate::ast::NodeConfigHolder::NodeConfigHolder;
 
@@ -49,7 +46,7 @@ impl SqlNode for StringNode {
         for (item, value) in &self.expressMap {
             let getV = env.get(item);
             if getV.is_none() {
-                let v = holder.engine.LexerAndEval(item, env).unwrap();
+                let v = holder.engine.Eval(item, env).unwrap();
                 let vstr = holder.sqlConvert.convert(v);
                 result = result.replace(value, vstr.as_str());
             } else {

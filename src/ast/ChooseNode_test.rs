@@ -5,10 +5,8 @@ use std::rc::Rc;
 use crate::ast::convert::SqlArgTypeConvertDefault::SqlArgTypeConvertDefault;
 use crate::ast::Node::SqlNode;
 use serde_json::json;
-use crate::engines::ExpressionEngineProxy::ExpressionEngineProxy;
-use crate::engines::ExpressionEngineDefault::ExpressionEngineDefault;
-use crate::engines::ExpressionEngineCache::ExpressionEngineCache;
 use crate::ast::NodeConfigHolder::NodeConfigHolder;
+use crate::engines::RustExpressionEngine::runtime::ExEngine;
 
 
 #[test]
@@ -17,9 +15,7 @@ pub fn TestChooseNode() {
     let mut john = json!({
         "arg": 2,
     });
-    let engine=ExpressionEngineProxy::new(
-        Rc::new(ExpressionEngineDefault::new()),
-        ExpressionEngineCache::new());
+    let engine=ExEngine::new();
 
     let sNode = NString(StringNode::new("dsaf#{arg+1}"));
 
