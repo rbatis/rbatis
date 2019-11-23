@@ -22,7 +22,7 @@ impl Clone for WhenNode{
 
 impl  SqlNode for WhenNode{
     fn eval(&mut self, env: &mut Value,holder:&mut NodeConfigHolder) -> Result<String,String> {
-        let resultValue = holder.engine.LexerAndEval(self.test.as_str(), env);
+        let resultValue = holder.engine.Eval(self.test.as_str(), env);
         if resultValue.is_err(){
             return Result::Err(resultValue.err().unwrap());
         }

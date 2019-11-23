@@ -12,7 +12,7 @@ pub struct IfNode{
 
 impl SqlNode for IfNode {
     fn eval(&mut self, env: &mut Value,holder:&mut NodeConfigHolder) -> Result<String, String> {
-        let result = holder.engine.LexerAndEval(self.test.as_str(), env);
+        let result = holder.engine.Eval(self.test.as_str(), env);
         if result.is_err() {
             return Result::Err(result.err().unwrap());
         }

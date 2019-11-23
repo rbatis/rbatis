@@ -1,14 +1,13 @@
 use crate::ast::StringNode::StringNode;
-use crate::engines::ExpressionEngineProxy::ExpressionEngineProxy;
 use std::rc::Rc;
-use crate::engines::ExpressionEngineDefault::ExpressionEngineDefault;
-use crate::engines::ExpressionEngineCache::ExpressionEngineCache;
+
 use crate::ast::convert::SqlArgTypeConvertDefault::SqlArgTypeConvertDefault;
 use crate::engines::RustExpressionEngine::node::NodeType::NString;
 use crate::ast::Node::SqlNode;
 use serde_json::json;
 use test::Bencher;
 use crate::ast::NodeConfigHolder::NodeConfigHolder;
+use crate::engines::RustExpressionEngine::runtime::ExEngine;
 
 #[test]
 pub fn TestStringNode(){
@@ -29,9 +28,7 @@ fn Bench_StringNode(b: &mut Bencher) {
         "arg": 2,
     });
 
-    let engine=ExpressionEngineProxy::new(
-        Rc::new(ExpressionEngineDefault::new()),
-        ExpressionEngineCache::new());
+    let engine=ExEngine::new();
 
     let mut sNode = StringNode::new("arg+1=#{arg}");
     let mut holder=NodeConfigHolder::new();

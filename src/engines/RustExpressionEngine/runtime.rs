@@ -4,7 +4,7 @@ use serde_json::Value;
 use crate::engines::RustExpressionEngine::parser::Parser;
 use crate::engines::RustExpressionEngine::node::Node;
 
-
+#[derive(Clone)]
 pub struct ExEngine {
     pub cache:HashMap<String,Node>,
     pub optMap:OptMap<'static>,
@@ -12,7 +12,7 @@ pub struct ExEngine {
 
 impl ExEngine{
 
-    pub fn new()-> Engine{
+    pub fn new()-> Self{
         return Self{
             cache: Default::default(),
             optMap: OptMap::new(),
@@ -157,7 +157,7 @@ fn trimPushBack(arg: &String, list: &mut LinkedList<String>) {
     list.push_back(trimStr);
 }
 
-
+#[derive(Clone)]
 pub struct OptMap<'a> {
     //列表
     pub List: Vec<&'a str>,
