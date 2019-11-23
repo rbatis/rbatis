@@ -1,5 +1,61 @@
 use std::collections::linked_list::LinkedList;
 use std::collections::HashMap;
+use serde_json::Value;
+use crate::engines::RustExpressionEngine::parser::Parser;
+use crate::engines::RustExpressionEngine::node::Node;
+
+
+pub struct ExEngine {
+    pub cache:HashMap<String,Node>,
+    pub optMap:OptMap<'static>,
+}
+
+impl ExEngine{
+
+    pub fn new()-> Engine{
+        return Self{
+            cache: Default::default(),
+            optMap: OptMap::new(),
+        }
+    }
+
+    pub fn Eval(&mut self,lexerArg: &str, arg: &Value) -> Result<Value, String>{
+        let cached = self.cache.get(lexerArg);
+        if (&cached).is_none() {
+            let nodes = Parser(lexerArg.to_string(),&self.optMap);
+            if nodes.is_err(){
+                return Result::Err(nodes.err().unwrap());
+            }
+            let node=nodes.unwrap();
+            self.cache.insert(lexerArg.to_string(), node.clone());
+            return node.eval(arg);
+        } else {
+            let nodes = cached.unwrap().clone();
+            return nodes.eval(arg);
+        }
+    }
+
+    pub fn Eval_No_Cache(&self,lexerArg: &str, arg: &Value) -> Result<Value, String>{
+            let nodes = Parser(lexerArg.to_string(),&self.optMap);
+            if nodes.is_err(){
+                return Result::Err(nodes.err().unwrap());
+            }
+            let node=nodes.unwrap();
+            return node.eval(arg);
+    }
+
+    pub fn clearCache(&mut self){
+        self.cache.clear();
+    }
+
+    pub fn removeCache(&mut self,lexerArg: &str){
+        self.cache.remove(lexerArg);
+    }
+
+
+}
+
+
 
 pub fn IsNumber(arg: &String) -> bool {
     let chars = arg.chars();
