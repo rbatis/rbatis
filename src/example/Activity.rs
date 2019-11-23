@@ -7,7 +7,7 @@ use serde::{Serialize, Deserialize};
 */
 #[derive(Serialize, Deserialize, Debug, Clone,RbatisMacro)]
 pub struct Activity {
-    pub id: String,
-    pub name: String,
+    pub id: Option<String>,
+    pub name: Option<String>,
     pub version: Option<i32>,
 }
