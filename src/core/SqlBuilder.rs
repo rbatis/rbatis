@@ -21,6 +21,7 @@ use crate::decode::Decoder::Decoder;
 
 use postgres::{Client, NoTls};
 use serde_json::{json};
+use crate::example::Activity::Activity;
 
 pub struct SqlBuilder {}
 
@@ -131,15 +132,6 @@ fn benchSqlBuilder(b: &mut Bencher){
 }
 
 
-#[derive(Serialize, Deserialize, Debug, Clone,RbatisMacro)]
-pub struct Act {
-    pub id: String,
-    pub name: String,
-    pub version: Option<i32>,
-}
-
-
-
 
 #[test]
 fn TestLinkMysql() {
@@ -151,7 +143,7 @@ fn TestLinkMysql() {
 
     let mut conn = Conn::new(ops).unwrap();
     let mut rows = conn.prep_exec("SELECT * from biz_activity", ()).unwrap();
-    let result:Result<Vec<Act>,String> = rows.decode();
+    let result:Result<Vec<Activity>,String> = rows.decode();
     if result.is_err() {
         panic!(result.err().unwrap());
     }
@@ -178,7 +170,7 @@ fn TestLinkPostgres() {
 //    }
 
     let mut r=client.query("SELECT * FROM person;", &[]).unwrap();
-    let mut act:Result<Vec<Act>,String> = r.decode();
+    let mut act:Result<Vec<Activity>,String> = r.decode();
     println!("decode: {:?}",act.unwrap());
 }
 
@@ -193,7 +185,7 @@ fn Bench_Decode_Util(b: &mut Bencher) {
     let mut conn = Conn::new(ops).unwrap();
     let mut rows = conn.prep_exec("SELECT * from biz_activity;", ()).unwrap();
     b.iter( || {
-        let result:Result<Vec<Act>,String> = rows.decode();
+        let result:Result<Vec<Activity>,String> = rows.decode();
         println!("{:?}",result.unwrap());
     });
 }
@@ -215,7 +207,7 @@ fn TestBenchmarkTPS() {
 
     let total=100000;
     for _ in 0..total{
-        let result:Result<Act,String> = rows.decode();
+        let result:Result<Activity,String> = rows.decode();
     }
     utils::time_util::count_time(total,now);
     utils::time_util::count_tps(total,now);
