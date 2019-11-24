@@ -24,6 +24,8 @@ pub mod UpdateTempleteNode;
 pub mod DeleteTempleteNode;
 pub mod SelectTempleteNode;
 
+pub mod ResultMap;
+
 //test
 pub mod Node_test;
 pub mod BindNode_test;
