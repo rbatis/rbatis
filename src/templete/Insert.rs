@@ -1,9 +1,9 @@
 use serde_json::Value;
 use serde_json::json;
 
-pub struct InsertTemplete {}
+pub struct Insert {}
 
-impl InsertTemplete {
+impl Insert {
     fn do_create_values_sql(&self,arg: &Value)->String{
         let obj = arg.as_object();
         let obj_map = obj.unwrap();
