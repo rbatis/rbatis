@@ -4,6 +4,7 @@ extern crate test;
 pub mod example;
 pub mod ast;
 pub mod utils;
+pub mod templete;
 
 use test::Bencher;
 
