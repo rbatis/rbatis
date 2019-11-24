@@ -16,19 +16,6 @@
         <result column="create_time" property="createTime" langType="time.Time"/>
         <result column="delete_flag" property="deleteFlag" langType="int" logic_enable="true" logic_undelete="1" logic_deleted="0"/>
     </resultMap>
-
-    <!--模板标签: columns wheres sets 支持逗号','分隔表达式，name?name = #{name}为判空表达式-->
-    <!--插入模板:默认id="insertTemplete,test="field != null",where自动设置逻辑删除字段,支持批量插入" -->
-    <insertTemplete tables="biz_activity" />
-    <!--插入模板:默认id="insertTemplete,test="field != null",where自动设置逻辑删除字段,支持批量插入" -->
-    <insertTemplete tables="biz_activity" id="InsertTempleteBatch"/>
-    <!--查询模板:默认id="selectTemplete,where自动设置逻辑删除字段-->
-    <selectTemplete tables="biz_activity" wheres="name?name = #{name}" columns=""/>
-    <!--更新模板:默认id="updateTemplete,set自动设置乐观锁版本号-->
-    <updateTemplete tables="biz_activity" sets="name?name = #{name}" wheres="name?name = #{name}"/>
-    <!--删除模板:默认id="deleteTemplete,where自动设置逻辑删除字段-->
-    <deleteTemplete tables="biz_activity" wheres="name?name = #{name}"/>
-
     <!--SelectByCondition func(name *string, startTime *time.Time, endTime *time.Time, page *int, size *int) ([]Activity, error) `mapperParams:"name,startTime,endTime,page,size"`-->
     <select id="selectByCondition" resultMap="BaseResultMap">
         <bind name="pattern" value="'%' + name + '%'"/>
