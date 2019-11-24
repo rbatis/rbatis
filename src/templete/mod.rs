@@ -1,1 +1,1 @@
-pub mod InsertTemplete;
+pub mod Insert;
