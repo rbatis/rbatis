@@ -29,6 +29,7 @@ use std::time::Duration;
 use async_std::task;
 
 use std::sync::Mutex;
+use crate::utils::bencher::Bencher;
 
 lazy_static! {
     static ref ARRAY: Mutex<Vec<u8>> = Mutex::new(vec![]);
@@ -54,9 +55,11 @@ fn main() {
 }
 
 
-//#[bench]
-//fn bench_main(b: &mut Bencher) {
-//    b.iter( || {
-//        // v.push(2);
-//    });
-//}
+//cargo test --release --package rbatis --bin rbatis bench_main --all-features -- --nocapture --exact
+#[test]
+fn bench_main() {
+    let mut b =Bencher::new(1000000);
+    b.iter( || {
+         //println!("asdf");
+    });
+}
