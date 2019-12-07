@@ -3,7 +3,6 @@ extern crate proc_macro;
 use crate::proc_macro::TokenStream;
 use quote::quote;
 use syn;
-use rbatis_macro::RbatisMacro;
 
 #[proc_macro_derive(RbatisMacro)]
 pub fn rbatis_macro_derive(input: TokenStream) -> TokenStream {

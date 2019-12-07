@@ -25,7 +25,7 @@ impl Element {
         self.attributes.clear();
         self.childs.clear();
     }
-    pub fn getAttr(&self,arg:&str)->String{
+    pub fn get_attr(&self, arg:&str) ->String{
         for x in &self.attributes {
            if x.name.to_string().as_str()==arg{
                return x.value.clone();
@@ -38,13 +38,13 @@ impl Element {
 
 pub fn load_xml(file_content:String) -> Vec<Element> {
     let mut parser = EventReader::from_str(file_content.as_str());
-    return parserFunc(parser);
+    return parser_func(parser);
 }
 
-fn parserFunc(parser: EventReader<&[u8]>) -> Vec<Element> {
+fn parser_func(parser: EventReader<&[u8]>) -> Vec<Element> {
     let mut depth = 0;
 
-    let mut tempElement = &mut Element {
+    let mut temp_element = &mut Element {
         tag: "".to_string(),
         data: "".to_string(),
         attributes: vec![],
@@ -57,10 +57,10 @@ fn parserFunc(parser: EventReader<&[u8]>) -> Vec<Element> {
         match item {
             Ok(XmlEvent::StartElement { name, attributes, .. }) => {
                 //load attr
-                tempElement.tag = name.local_name;
-                tempElement.attributes = attributes.clone();
+                temp_element.tag = name.local_name;
+                temp_element.attributes = attributes.clone();
 
-                &fathers.push(tempElement.clone());
+                &fathers.push(temp_element.clone());
                 depth += 1;
             }
             Ok(XmlEvent::Characters(data)) => {
@@ -80,12 +80,12 @@ fn parserFunc(parser: EventReader<&[u8]>) -> Vec<Element> {
                 } else {
                     fathers.push(pop)
                 }
-                tempElement.reset();
+                temp_element.reset();
 
                 depth -= 1;
             }
             Err(e) => {
-                println!("Error: {},{}", e, tempElement.tag);
+                println!("Error: {},{}", e, temp_element.tag);
                 break;
             }
             _ => {}

@@ -6,7 +6,7 @@ use crate::ast::node_config_holder::NodeConfigHolder;
 #[derive(Clone)]
 pub struct SelectNode {
     pub id:String,
-    pub resultMap:String,
+    pub result_map:String,
     pub childs: Vec<NodeType>,
 }
 

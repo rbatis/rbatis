@@ -2,25 +2,25 @@ use std::io::Read;
 use std::collections::HashMap;
 
 //find like #{*} value *
-pub fn findConvertString(arg: &str) -> Vec<String> {
+pub fn find_convert_string(arg: &str) -> Vec<String> {
     let mut finds = HashMap::new();
     let chars = arg.bytes();
     let mut item = &mut String::new();
-    let mut lastIndex: i32 = -1;
-    let mut startIndex: i32 = -1;
-    let strBytes: Vec<u8> = arg.bytes().collect();
+    let mut last_index: i32 = -1;
+    let mut start_index: i32 = -1;
+    let str_bytes: Vec<u8> = arg.bytes().collect();
 
     let mut index = -1;
     for v in chars {
         index = index + 1;
         if v == 35 {
-            lastIndex = index;
+            last_index = index;
         }
-        if v == 123 && lastIndex == (index - 1) {
-            startIndex = index + 1;
+        if v == 123 && last_index == (index - 1) {
+            start_index = index + 1;
         }
-        if v == 125 && startIndex != -1 {
-            *item = String::from_utf8(strBytes[startIndex as usize..index as usize].to_vec()).unwrap();
+        if v == 125 && start_index != -1 {
+            *item = String::from_utf8(str_bytes[start_index as usize..index as usize].to_vec()).unwrap();
             //去掉逗号之后的部分
             if item.contains(',') {
                 let vecs: Vec<&str> = item.split(",").collect();
@@ -28,8 +28,8 @@ pub fn findConvertString(arg: &str) -> Vec<String> {
             }
             finds.insert(item.clone(), 1);
             item.clear();
-            startIndex = -1;
-            lastIndex = -1;
+            start_index = -1;
+            last_index = -1;
         }
     }
     let mut result = vec![];
@@ -41,34 +41,33 @@ pub fn findConvertString(arg: &str) -> Vec<String> {
 
 
 //find like ${*} value *
-pub fn findNoConvertString(arg: &str) -> Vec<String> {
+pub fn find_no_convert_string(arg: &str) -> Vec<String> {
     let mut finds = HashMap::new();
     let chars = arg.bytes();
     let mut item =  String::new();
-    let mut lastIndex: i32 = -1;
-    let mut startIndex: i32 = -1;
-    let strBytes: Vec<u8> = arg.bytes().collect();
+    let mut last_index: i32 = -1;
+    let mut start_index: i32 = -1;
+    let str_bytes: Vec<u8> = arg.bytes().collect();
 
     let mut index = -1;
     for v in chars {
         index = index + 1;
         if v == 36 {
-            lastIndex = index;
+            last_index = index;
         }
-        if v == 123 && lastIndex == (index - 1) {
-            startIndex = index + 1;
+        if v == 123 && last_index == (index - 1) {
+            start_index = index + 1;
         }
-        if v == 125 && startIndex != -1 {
-            item = String::from_utf8(strBytes[startIndex as usize..index as usize].to_vec()).unwrap();
+        if v == 125 && start_index != -1 {
+            item = String::from_utf8(str_bytes[start_index as usize..index as usize].to_vec()).unwrap();
             //去掉逗号之后的部分
             if item.contains(',') {
                 let vecs: Vec<&str> = item.split(",").collect();
                 item = vecs[0].to_string();
             }
             finds.insert(item.clone(), 1);
-            item.clear();
-            startIndex = -1;
-            lastIndex = -1;
+            start_index = -1;
+            last_index = -1;
         }
     }
     let mut result = vec![];

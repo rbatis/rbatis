@@ -1,8 +1,8 @@
-use crate::utils::string_util::findConvertString;
+use crate::utils::string_util::find_convert_string;
 
 #[test]
 fn TestStringUtil(){
-    let s=findConvertString("#{arg1},,,#{arg2}sadfsadf#{arg3}");
+    let s= find_convert_string("#{arg1},,,#{arg2}sadfsadf#{arg3}");
     for i in s{
         println!("{}",i);
     }

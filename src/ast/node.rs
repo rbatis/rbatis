@@ -36,14 +36,14 @@ pub trait SqlNode {
 
 
 //执行子所有节点
-pub fn do_child_nodes(childNodes: &mut Vec<NodeType>, env: &mut Value, holder:&mut NodeConfigHolder) -> Result<String, String> {
+pub fn do_child_nodes(child_nodes: &mut Vec<NodeType>, env: &mut Value, holder:&mut NodeConfigHolder) -> Result<String, String> {
     let mut s = String::new();
-    for item in childNodes {
-        let itemResult = item.eval(env,holder);
-        if itemResult.is_err() {
-            return itemResult;
+    for item in child_nodes {
+        let item_result = item.eval(env, holder);
+        if item_result.is_err() {
+            return item_result;
         }
-        s = s + itemResult.unwrap().as_str();
+        s = s + item_result.unwrap().as_str();
     }
     return Result::Ok(s);
 }
@@ -66,74 +66,74 @@ pub fn loop_decode_xml(xml_vec: &Vec<Element>, holder:&NodeConfigHolder) -> Vec<
                return child_nodes;
            },
            "select" => nodes.push(NodeType::NSelectNode(SelectNode{
-               id: xml.getAttr("id"),
-               resultMap: xml.getAttr("resultMap"),
+               id: xml.get_attr("id"),
+               result_map: xml.get_attr("result_map"),
                childs: child_nodes,
            })),
            "update" => nodes.push(NodeType::NUpdateNode(UpdateNode{
-               id: xml.getAttr("id"),
+               id: xml.get_attr("id"),
                childs: child_nodes,
            })),
            "insert" => nodes.push(NodeType::NInsertNode(InsertNode{
-               id: xml.getAttr("id"),
+               id: xml.get_attr("id"),
                childs: child_nodes,
            })),
            "delete" => nodes.push(NodeType::NDeleteNode(DeleteNode{
-               id: xml.getAttr("id"),
+               id: xml.get_attr("id"),
                childs: child_nodes,
            })),
 
            "selectTemplete" => nodes.push(NodeType::NSelectTempleteNode(SelectTempleteNode{
-               id: xml.getAttr("id"),
-               resultMap: xml.getAttr("resultMap"),
-               lang: xml.getAttr("lang"),
-               tables: xml.getAttr("tables"),
-               columns: xml.getAttr("columns"),
-               wheres: xml.getAttr("wheres"),
+               id: xml.get_attr("id"),
+               result_map: xml.get_attr("result_map"),
+               lang: xml.get_attr("lang"),
+               tables: xml.get_attr("tables"),
+               columns: xml.get_attr("columns"),
+               wheres: xml.get_attr("wheres"),
                childs: child_nodes,
            })),
            "updateTemplete" => nodes.push(NodeType::NUpdateTempleteNode(UpdateTempleteNode{
-               id: xml.getAttr("id"),
+               id: xml.get_attr("id"),
                childs: child_nodes,
            })),
            "insertTemplete" => nodes.push(NodeType::NInsertTempleteNode(InsertTempleteNode{
-               id: xml.getAttr("id"),
+               id: xml.get_attr("id"),
                childs: child_nodes,
            })),
            "deleteTemplete" => nodes.push(NodeType::NDeleteTempleteNode(DeleteTempleteNode{
-               id: xml.getAttr("id"),
+               id: xml.get_attr("id"),
                childs: child_nodes,
            })),
 
 
            "if" => nodes.push(NodeType::NIf(IfNode{
                childs: child_nodes,
-               test: xml.getAttr("test"),
+               test: xml.get_attr("test"),
            })),
            "trim" => nodes.push(NodeType::NTrim(TrimNode{
                childs: child_nodes,
-               prefix: xml.getAttr("prefix"),
-               suffix: xml.getAttr("suffix"),
-               suffixOverrides: xml.getAttr("suffixOverrides"),
-               prefixOverrides: xml.getAttr("prefixOverrides")
+               prefix: xml.get_attr("prefix"),
+               suffix: xml.get_attr("suffix"),
+               suffix_overrides: xml.get_attr("suffix_overrides"),
+               prefix_overrides: xml.get_attr("prefix_overrides")
            })),
            "foreach" => nodes.push(NodeType::NForEach(ForEachNode{
                childs: child_nodes,
-               collection: xml.getAttr("collection"),
-               index: xml.getAttr("index"),
-               item: xml.getAttr("item"),
-               open: xml.getAttr("open"),
-               close: xml.getAttr("close"),
-               separator: xml.getAttr("separator")
+               collection: xml.get_attr("collection"),
+               index: xml.get_attr("index"),
+               item: xml.get_attr("item"),
+               open: xml.get_attr("open"),
+               close: xml.get_attr("close"),
+               separator: xml.get_attr("separator")
            })),
            "choose" => nodes.push(NodeType::NChoose(ChooseNode{
                //todo filter nodes from child nodes
-               whenNodes: filter_when_nodes(child_nodes.clone()),
-               otherwiseNode: filter_otherwise_nodes(child_nodes),
+               when_nodes: filter_when_nodes(child_nodes.clone()),
+               otherwise_node: filter_otherwise_nodes(child_nodes),
            })),
            "when" => nodes.push(NodeType::NWhen(WhenNode{
                childs: child_nodes,
-               test: xml.getAttr("test"),
+               test: xml.get_attr("test"),
            })),
            "where" => nodes.push(NodeType::NWhere(WhereNode{
                childs: child_nodes,
@@ -142,11 +142,11 @@ pub fn loop_decode_xml(xml_vec: &Vec<Element>, holder:&NodeConfigHolder) -> Vec<
                childs: child_nodes,
            })),
            "bind" => nodes.push(NodeType::NBind(BindNode{
-               name: xml.getAttr("name"),
-               value: xml.getAttr("value"),
+               name: xml.get_attr("name"),
+               value: xml.get_attr("value"),
            })),
            "include" => nodes.push(NodeType::NInclude(IncludeNode{
-               refid: xml.getAttr("refid"),
+               refid: xml.get_attr("refid"),
                childs: child_nodes,
            })),
            "set" => nodes.push(NodeType::NSet(SetNode{
@@ -167,10 +167,9 @@ pub fn loop_decode_xml(xml_vec: &Vec<Element>, holder:&NodeConfigHolder) -> Vec<
 pub fn filter_when_nodes(arg:Vec<NodeType>) -> Option<Vec<NodeType>>{
     let mut data=vec![];
     for x in arg {
-        match x {
-            NodeType::NWhen(whenNode) => data.push( NodeType::NWhen(whenNode)),
-            _ => {}
-        }
+        if let NodeType::NWhen(when_node) = x {
+            data.push(NodeType::NWhen(when_node))
+        } else {}
     }
     if data.len()==0 {
         return Option::None;
@@ -182,10 +181,9 @@ pub fn filter_when_nodes(arg:Vec<NodeType>) -> Option<Vec<NodeType>>{
 pub fn filter_otherwise_nodes(arg:Vec<NodeType>) -> Option<Box<NodeType>>{
     let mut data=vec![];
     for x in arg {
-        match x {
-            NodeType::NOtherwise(nOtherwise) => data.push(NodeType::NOtherwise(nOtherwise)),
-            _ => {}
-        }
+        if let NodeType::NOtherwise(node) = x {
+            data.push(NodeType::NOtherwise(node))
+        } else {}
     }
     if data.len()>0 {
         if data.len()>1{

@@ -22,11 +22,11 @@ impl Clone for WhenNode{
 
 impl  SqlNode for WhenNode{
     fn eval(&mut self, env: &mut Value,holder:&mut NodeConfigHolder) -> Result<String,String> {
-        let resultValue = holder.engine.eval(self.test.as_str(), env);
-        if resultValue.is_err(){
-            return Result::Err(resultValue.err().unwrap());
+        let result_value = holder.engine.eval(self.test.as_str(), env);
+        if result_value.is_err(){
+            return Result::Err(result_value.err().unwrap());
         }
-        let result=resultValue.unwrap();
+        let result= result_value.unwrap();
         if !result.is_boolean(){
             return Result::Err("[rbatis] test:'".to_owned()+self.test.as_str()+"' is not return bool!");
         }

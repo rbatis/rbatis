@@ -24,8 +24,6 @@ pub mod update_templete_node;
 pub mod delete_templete_node;
 pub mod select_templete_node;
 
-pub mod result_map;
-
 //test
 pub mod node_test;
 pub mod bind_node_test;
