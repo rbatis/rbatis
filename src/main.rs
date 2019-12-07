@@ -46,7 +46,7 @@ fn main() {
 
 
 #[bench]
-fn Bench_main(b: &mut Bencher) {
+fn bench_main(b: &mut Bencher) {
     b.iter( || {
         // v.push(2);
     });

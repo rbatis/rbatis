@@ -1,5 +1,5 @@
-pub mod Insert;
-pub mod Templete;
-pub mod Update;
-pub mod Delete;
-pub mod Select;
+pub mod insert;
+pub mod templete;
+pub mod update;
+pub mod delete;
+pub mod select;

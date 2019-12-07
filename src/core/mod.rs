@@ -1,5 +1,5 @@
-pub mod SqlBuilder;
-pub mod Rbatis;
+pub mod sql_builder;
+pub mod rbatis;
 
 
-mod Rbatis_test;
+mod rbatis_test;

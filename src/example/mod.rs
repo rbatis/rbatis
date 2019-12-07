@@ -1,4 +1,4 @@
-mod Example_test;
-mod Example_bench;
-mod Config;
-pub mod Activity;
+mod example_test;
+mod example_bench;
+mod config;
+pub mod activity;

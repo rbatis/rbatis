@@ -1,3 +1,3 @@
-pub mod Decoder;
-pub mod MysqlJsonDecoder;
-pub mod PostgresJsonDecoder;
+pub mod decoder;
+pub mod mysql_json_decoder;
+pub mod postgres_json_decoder;
