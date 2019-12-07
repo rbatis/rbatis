@@ -5,12 +5,12 @@ use crate::ast::node_type::NodeType;
 use crate::ast::string_node::StringNode;
 use std::rc::Rc;
 use crate::ast::convert::sql_arg_type_convert_default::SqlArgTypeConvertDefault;
-use crate::ast::node_config_holder::NodeConfigHolder;
+use crate::ast::config_holder::ConfigHolder;
 
 
 #[test]
 pub fn test_for_each_node(){
-    let mut holder=NodeConfigHolder::new();
+    let mut holder= ConfigHolder::new();
     let mut n=ForEachNode{
         childs: vec![NodeType::NString(StringNode::new("index:#{index},item:#{item}"))],
         collection: "arg".to_string(),

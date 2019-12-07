@@ -3,7 +3,7 @@ use crate::core::rbatis::Rbatis;
 use serde_json::{json, Value};
 use crate::ast::bind_node::BindNode;
 use crate::ast::node::SqlNode;
-use crate::ast::node_config_holder::NodeConfigHolder;
+use crate::ast::config_holder::ConfigHolder;
 //use test::Bencher;
 use chrono::Local;
 use crate::utils;

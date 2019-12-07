@@ -10,7 +10,7 @@ pub mod include_node;
 pub mod otherwise_node;
 pub mod trim_node;
 pub mod when_node;
-pub mod node_config_holder;
+pub mod config_holder;
 pub mod set_node;
 pub mod where_node;
 

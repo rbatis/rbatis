@@ -7,7 +7,7 @@ use std::rc::Rc;
 use crate::engine;
 
 use crate::ast::convert::sql_arg_type_convert_default::SqlArgTypeConvertDefault;
-use crate::ast::node_config_holder::NodeConfigHolder;
+use crate::ast::config_holder::ConfigHolder;
 
 /**
 *  string抽象节点
@@ -41,7 +41,7 @@ impl StringNode {
 }
 
 impl SqlNode for StringNode {
-    fn eval(&mut self, env: &mut Value,holder:&mut NodeConfigHolder) -> Result<String, String> {
+    fn eval(&mut self, env: &mut Value, holder:&mut ConfigHolder) -> Result<String, String> {
         let mut result = self.value.clone();
         for (item, value) in &self.express_map {
             let get_v = env.get(item);

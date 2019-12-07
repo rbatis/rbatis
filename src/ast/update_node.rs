@@ -1,7 +1,7 @@
 use crate::ast::node_type::NodeType;
 use crate::ast::node::{SqlNode, print_child, create_deep, do_child_nodes};
 use serde_json::Value;
-use crate::ast::node_config_holder::NodeConfigHolder;
+use crate::ast::config_holder::ConfigHolder;
 
 #[derive(Clone)]
 pub struct UpdateNode {
@@ -11,7 +11,7 @@ pub struct UpdateNode {
 
 
 impl SqlNode for UpdateNode{
-    fn eval(&mut self, env: &mut Value,holder:&mut NodeConfigHolder) -> Result<String, String> {
+    fn eval(&mut self, env: &mut Value, holder:&mut ConfigHolder) -> Result<String, String> {
         return do_child_nodes(&mut self.childs, env, holder);
     }
 

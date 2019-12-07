@@ -3,7 +3,7 @@ use std::collections::HashMap;
 use serde_json::Value;
 use crate::utils::xml_loader::Element;
 use crate::ast::string_node::StringNode;
-use crate::ast::node_config_holder::NodeConfigHolder;
+use crate::ast::config_holder::ConfigHolder;
 use std::rc::Rc;
 use crate::ast::if_node::IfNode;
 use crate::ast::trim_node::TrimNode;
@@ -25,14 +25,14 @@ use crate::ast::where_node::WhereNode;
 * Abstract syntax tree node
 */
 pub trait SqlNode {
-    fn eval(&mut self, env: &mut Value,holder:&mut NodeConfigHolder) -> Result<String, String>;
+    fn eval(&mut self, env: &mut Value, holder:&mut ConfigHolder) -> Result<String, String>;
 
     fn print(&self,deep:i32) -> String;
 }
 
 
 //执行子所有节点
-pub fn do_child_nodes(child_nodes: &mut Vec<NodeType>, env: &mut Value, holder:&mut NodeConfigHolder) -> Result<String, String> {
+pub fn do_child_nodes(child_nodes: &mut Vec<NodeType>, env: &mut Value, holder:&mut ConfigHolder) -> Result<String, String> {
     let mut s = String::new();
     for item in child_nodes {
         let item_result = item.eval(env, holder);
@@ -45,7 +45,7 @@ pub fn do_child_nodes(child_nodes: &mut Vec<NodeType>, env: &mut Value, holder:&
 }
 
 //TODO decode xml
-pub fn loop_decode_xml(xml_vec: &Vec<Element>, holder:&NodeConfigHolder) -> Vec<NodeType> {
+pub fn loop_decode_xml(xml_vec: &Vec<Element>, holder:&ConfigHolder) -> Vec<NodeType> {
     let mut nodes=vec![];
     for xml in xml_vec {
         let child_nodes;

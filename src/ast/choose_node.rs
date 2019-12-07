@@ -5,7 +5,7 @@ use serde_json::Value;
 use core::borrow::BorrowMut;
 use crate::ast::otherwise_node::OtherwiseNode;
 use std::ops::DerefMut;
-use crate::ast::node_config_holder::NodeConfigHolder;
+use crate::ast::config_holder::ConfigHolder;
 
 #[derive(Clone)]
 pub struct ChooseNode {
@@ -14,7 +14,7 @@ pub struct ChooseNode {
 }
 
 impl SqlNode for ChooseNode {
-    fn eval(&mut self, env: &mut Value,holder:&mut NodeConfigHolder) -> Result<String, String> {
+    fn eval(&mut self, env: &mut Value, holder:&mut ConfigHolder) -> Result<String, String> {
         if self.when_nodes.is_none() == false {
             for mut item in self.when_nodes.clone().unwrap() {
                 let s = item.eval(env,holder);

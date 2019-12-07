@@ -5,13 +5,13 @@ use std::rc::Rc;
 use crate::ast::convert::sql_arg_type_convert_default::SqlArgTypeConvertDefault;
 use crate::ast::node::SqlNode;
 use serde_json::json;
-use crate::ast::node_config_holder::NodeConfigHolder;
+use crate::ast::config_holder::ConfigHolder;
 use crate::engine::runtime::RbatisEngine;
 
 
 #[test]
 pub fn test_choose_node() {
-    let mut holder=NodeConfigHolder::new();
+    let mut holder= ConfigHolder::new();
     let mut john = json!({
         "arg": 2,
     });

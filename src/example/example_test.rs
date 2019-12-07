@@ -3,7 +3,7 @@ use crate::core::rbatis::Rbatis;
 use serde_json::{json, Value};
 use crate::ast::bind_node::BindNode;
 use crate::ast::node::SqlNode;
-use crate::ast::node_config_holder::NodeConfigHolder;
+use crate::ast::config_holder::ConfigHolder;
 use crate::ast::node_type::NodeType;
 
 struct Example{
@@ -22,7 +22,7 @@ fn testWriteMethod(){
 
 #[test]
 fn testLoadXml(){
-    let mut holder=NodeConfigHolder::new();
+    let mut holder= ConfigHolder::new();
     let filePath = "./src/example/Example_ActivityMapper.xml";
     println!(">>>>>>>>>>>>>>>>>>>>>>start load {} >>>>>>>>>>>>>>>>>>>>>>>", filePath);
     let content = fs::read_to_string(filePath).unwrap();
