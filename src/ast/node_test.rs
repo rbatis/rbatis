@@ -6,14 +6,14 @@ use crate::ast::string_node::StringNode;
 use crate::ast::convert::sql_arg_type_convert_default::SqlArgTypeConvertDefault;
 use std::rc::Rc;
 
-use crate::ast::node_config_holder::NodeConfigHolder;
+use crate::ast::config_holder::ConfigHolder;
 use crate::core::rbatis::Rbatis;
 
 
 
 #[test]
 fn test_string_node() {
-    let mut holder=NodeConfigHolder::new();
+    let mut holder= ConfigHolder::new();
     let mut john = json!({
         "name": "John Doe",
     });

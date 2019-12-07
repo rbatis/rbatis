@@ -1,7 +1,7 @@
 use crate::ast::node_type::NodeType;
 use crate::ast::node::{SqlNode, do_child_nodes, print_child, create_deep};
 use serde_json::Value;
-use crate::ast::node_config_holder::NodeConfigHolder;
+use crate::ast::config_holder::ConfigHolder;
 use std::borrow::BorrowMut;
 
 
@@ -21,7 +21,7 @@ impl Clone for WhenNode{
 }
 
 impl  SqlNode for WhenNode{
-    fn eval(&mut self, env: &mut Value,holder:&mut NodeConfigHolder) -> Result<String,String> {
+    fn eval(&mut self, env: &mut Value, holder:&mut ConfigHolder) -> Result<String,String> {
         let result_value = holder.engine.eval(self.test.as_str(), env);
         if result_value.is_err(){
             return Result::Err(result_value.err().unwrap());

@@ -8,17 +8,17 @@ use engine::node::Node;
 use crate::engine::runtime::RbatisEngine;
 
 #[derive(Clone)]
-pub struct NodeConfigHolder{
+pub struct ConfigHolder {
     pub sql_convert: Rc<SqlArgTypeConvert>,
     pub engine: RbatisEngine,
 }
 
-impl NodeConfigHolder{
+impl ConfigHolder {
     pub fn new() -> Self{
         let engine= RbatisEngine::new();
         let convert=Rc::new(SqlArgTypeConvertDefault::new());
 
-        return NodeConfigHolder{
+        return ConfigHolder {
             sql_convert:convert,
             engine:engine,
         }

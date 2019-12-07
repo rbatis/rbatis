@@ -16,7 +16,7 @@ use crate::ast::select_node::SelectNode;
 use crate::ast::delete_node::DeleteNode;
 use crate::ast::update_node::UpdateNode;
 use crate::ast::insert_node::InsertNode;
-use crate::ast::node_config_holder::NodeConfigHolder;
+use crate::ast::config_holder::ConfigHolder;
 use crate::ast::where_node::WhereNode;
 
 #[derive(Clone)]
@@ -42,7 +42,7 @@ pub enum NodeType {
 }
 
 impl <'a>SqlNode for NodeType {
-    fn eval(&mut self, env: &mut Value,holder:&mut NodeConfigHolder) -> Result<String, String> {
+    fn eval(&mut self, env: &mut Value, holder:&mut ConfigHolder) -> Result<String, String> {
         match self {
             NodeType::NSelectNode(node) => return node.eval(env,holder),
             NodeType::NDeleteNode(node) => return node.eval(env,holder),

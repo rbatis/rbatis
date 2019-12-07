@@ -6,7 +6,7 @@ use crate::engine::node::NodeType::NString;
 use crate::ast::node::SqlNode;
 use serde_json::json;
 //use test::Bencher;
-use crate::ast::node_config_holder::NodeConfigHolder;
+use crate::ast::config_holder::ConfigHolder;
 use crate::engine::runtime::RbatisEngine;
 
 #[test]
@@ -14,7 +14,7 @@ pub fn test_string_node(){
     let mut john = json!({
         "arg": 2,
     });
-    let mut holder=NodeConfigHolder::new();
+    let mut holder= ConfigHolder::new();
     let mut sNode = StringNode::new("arg+1=#{arg+1}");
 
     let r=sNode.eval(&mut john,&mut holder).unwrap();

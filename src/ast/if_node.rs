@@ -1,7 +1,7 @@
 use crate::ast::node_type::NodeType;
 use crate::ast::node::{SqlNode, do_child_nodes, print_child, create_deep};
 use serde_json::Value;
-use crate::ast::node_config_holder::NodeConfigHolder;
+use crate::ast::config_holder::ConfigHolder;
 use serde_json::ser::State::Rest;
 
 #[derive(Clone)]
@@ -11,7 +11,7 @@ pub struct IfNode{
 }
 
 impl SqlNode for IfNode {
-    fn eval(&mut self, env: &mut Value,holder:&mut NodeConfigHolder) -> Result<String, String> {
+    fn eval(&mut self, env: &mut Value, holder:&mut ConfigHolder) -> Result<String, String> {
         let result = holder.engine.eval(self.test.as_str(), env);
         if result.is_err() {
             return Result::Err(result.err().unwrap());

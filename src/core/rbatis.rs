@@ -1,4 +1,4 @@
-use crate::ast::node_config_holder::NodeConfigHolder;
+use crate::ast::config_holder::ConfigHolder;
 use crate::ast::node::{SqlNode, loop_decode_xml};
 use crate::ast::bind_node::BindNode;
 use crate::ast::string_node::StringNode;
@@ -10,13 +10,13 @@ use std::collections::HashMap;
 
 pub struct Rbatis {
     node_types: HashMap<String,NodeType>,
-    holder: NodeConfigHolder,
+    holder: ConfigHolder,
 }
 
 impl Rbatis {
     pub fn new(xml_content: String) -> Rbatis {
         //TODO load xml_content string,create ast
-        let holder = NodeConfigHolder::new();
+        let holder = ConfigHolder::new();
         let nodes = load_xml(xml_content);
         let data= loop_decode_xml(&nodes, &holder);
         let mut m=HashMap::new();
