@@ -27,7 +27,7 @@ pub struct SqlBuilder {}
 
 
 #[test]
-fn TestSqlBuilder() {
+fn test_sql_builder() {
     utils::print_util::print_rust_mybatis();
 
 
@@ -84,7 +84,7 @@ fn TestSqlBuilder() {
 }
 
 #[bench]
-fn benchSqlBuilder(b: &mut Bencher){
+fn bench_sql_builder(b: &mut Bencher){
 
     let mut paramMap = HashMap::new();
     paramMap.insert("name", "aaa");
@@ -134,7 +134,7 @@ fn benchSqlBuilder(b: &mut Bencher){
 
 
 #[test]
-fn TestLinkMysql() {
+fn test_link_mysql() {
     let mut ops = mysql::OptsBuilder::new();
     ops.user(Some("root"));
     ops.pass(Some("TEST"));
@@ -151,7 +151,7 @@ fn TestLinkMysql() {
 }
 
 #[test]
-fn TestLinkPostgres() {
+fn test_link_postgres() {
     let mut client = Client::connect("postgres://postgres:postgres@localhost:5432/postgres", postgres::NoTls).unwrap();
 //    conn.execute("CREATE TABLE person (
 //                    id              SERIAL PRIMARY KEY,
@@ -175,7 +175,7 @@ fn TestLinkPostgres() {
 }
 
 #[bench]
-fn Bench_Decode_Util(b: &mut Bencher) {
+fn bench_decode_util(b: &mut Bencher) {
     let mut ops = mysql::OptsBuilder::new();
     ops.user(Some("root"));
     ops.pass(Some("TEST"));
@@ -194,7 +194,7 @@ fn Bench_Decode_Util(b: &mut Bencher) {
 //use Time: 0.638 s,each:6380 nano/op
 //use TPS: 156739.8119122257 TPS/s
 #[test]
-fn TestBenchmarkTPS() {
+fn test_benchmark_tps() {
     let now=Local::now();
     let mut ops = mysql::OptsBuilder::new();
     ops.user(Some("root"));
@@ -215,7 +215,7 @@ fn TestBenchmarkTPS() {
 
 
 #[test]
-fn TestFF() {
+fn test_func() {
     let mut m =HashMap::new();
     m.insert("s",serde_json::Value::String("s".to_string()));
     let arg=m.get("name").unwrap_or(&serde_json::value::Value::Null);

@@ -6,7 +6,7 @@ use crate::ast::string_node::StringNode;
 use crate::ast::node_config_holder::NodeConfigHolder;
 
 #[test]
-pub fn TestTrimNode(){
+pub fn test_trim_node(){
     let mut holder=NodeConfigHolder::new();
     let mut node =TrimNode{
         childs: vec![NodeType::NString(StringNode::new("1trim value1"))],

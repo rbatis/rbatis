@@ -6,16 +6,16 @@ use crate::ast::convert::sql_arg_type_convert_default::SqlArgTypeConvertDefault;
 use crate::ast::node::SqlNode;
 use serde_json::json;
 use crate::ast::node_config_holder::NodeConfigHolder;
-use crate::engines::RbatisEngine::runtime::RbatisEngine;
+use crate::engines::rbatis_engine::runtime::RbatisEngine;
 
 
 #[test]
-pub fn TestChooseNode() {
+pub fn test_choose_node() {
     let mut holder=NodeConfigHolder::new();
     let mut john = json!({
         "arg": 2,
     });
-    let engine= RbatisEngine::new();
+    let engine= rbatis_engine::new();
 
     let sNode = NString(StringNode::new("dsaf#{arg+1}"));
 

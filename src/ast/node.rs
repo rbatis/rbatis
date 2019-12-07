@@ -36,7 +36,7 @@ pub trait SqlNode {
 
 
 //执行子所有节点
-pub fn DoChildNodes(childNodes: &mut Vec<NodeType>, env: &mut Value,holder:&mut NodeConfigHolder) -> Result<String, String> {
+pub fn do_child_nodes(childNodes: &mut Vec<NodeType>, env: &mut Value, holder:&mut NodeConfigHolder) -> Result<String, String> {
     let mut s = String::new();
     for item in childNodes {
         let itemResult = item.eval(env,holder);
@@ -49,12 +49,12 @@ pub fn DoChildNodes(childNodes: &mut Vec<NodeType>, env: &mut Value,holder:&mut 
 }
 
 //TODO decode xml
-pub fn LoopDecodeXml(xml_vec: &Vec<Element>,holder:&NodeConfigHolder) -> Vec<NodeType> {
+pub fn loop_decode_xml(xml_vec: &Vec<Element>, holder:&NodeConfigHolder) -> Vec<NodeType> {
     let mut nodes=vec![];
     for xml in xml_vec {
         let child_nodes;
         if xml.childs.len() > 0 {
-            child_nodes = LoopDecodeXml(&(&xml).childs, holder);
+            child_nodes = loop_decode_xml(&(&xml).childs, holder);
         }else{
             child_nodes = vec![];
         }

@@ -1,13 +1,13 @@
-use crate::engines::RbatisEngine::parser;
-use crate::engines::RbatisEngine::runtime::OptMap;
+use crate::engines::rbatis_engine::parser;
+use crate::engines::rbatis_engine::runtime::OptMap;
 use chrono::Local;
 use serde_json::json;
 use test::Bencher;
 use std::{time, thread};
 
 #[test]
-fn TestEvalArg() {
-    let mut boxNode= parser::Parser(String::from("startTime == null"), &OptMap::new()).unwrap();
+fn test_eval_arg() {
+    let mut boxNode= parser::parser(String::from("startTime == null"), &OptMap::new()).unwrap();
     let john = json!({
         "n":1,
         "name": "John Doe",
@@ -23,8 +23,8 @@ fn TestEvalArg() {
 
 
 #[bench]
-fn Bench_Parser(b: &mut Bencher) {
-    let mut boxNode= parser::Parser(String::from("'1'+'1'"), &OptMap::new()).unwrap();
+fn bench_parser(b: &mut Bencher) {
+    let mut boxNode= parser::parser(String::from("'1'+'1'"), &OptMap::new()).unwrap();
     let john = json!({
         "n":1,
         "name": "John Doe",
@@ -38,8 +38,8 @@ fn Bench_Parser(b: &mut Bencher) {
 }
 
 #[test]
-fn TestMemGC() {
-    let mut boxNode= parser::Parser(String::from("'1'+'1'"), &OptMap::new()).unwrap();
+fn test_mem_gc() {
+    let mut boxNode= parser::parser(String::from("'1'+'1'"), &OptMap::new()).unwrap();
     let john = json!({
         "n":1,
         "name": "John Doe",

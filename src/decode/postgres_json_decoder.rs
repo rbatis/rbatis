@@ -26,7 +26,7 @@ impl Decoder for Vec<Row>{
             }
             js = serde_json::Value::Array(vec_v);
         }else{
-            let mut result: Result<T, String> = Result::Err("[Rbatis] rows.affected_rows > 1,but decode one result!".to_string());
+            let mut result: Result<T, String> = Result::Err("[rbatis] rows.affected_rows > 1,but decode one result!".to_string());
             //not array json
             let size=self.len();
             if size > 1 {

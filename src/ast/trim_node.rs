@@ -1,5 +1,5 @@
 use crate::ast::node_type::NodeType;
-use crate::ast::node::{SqlNode, DoChildNodes, print_child, create_deep};
+use crate::ast::node::{SqlNode, do_child_nodes, print_child, create_deep};
 use serde_json::Value;
 use crate::ast::node_config_holder::NodeConfigHolder;
 
@@ -14,7 +14,7 @@ pub struct TrimNode {
 
 impl SqlNode for TrimNode {
     fn eval(&mut self, env: &mut Value,holder:&mut NodeConfigHolder) -> Result<String, String> {
-        let resultValue = DoChildNodes(&mut self.childs, env,holder);
+        let resultValue = do_child_nodes(&mut self.childs, env, holder);
         let isError = resultValue.is_err();
         if isError {
             return Result::Err(resultValue.clone().err().unwrap());

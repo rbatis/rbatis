@@ -1,15 +1,15 @@
-use crate::engines::RbatisEngine::node::Node;
-use crate::engines::RbatisEngine::node::NodeType::{NString, NArg};
+use crate::engines::rbatis_engine::node::Node;
+use crate::engines::rbatis_engine::node::NodeType::{NString, NArg};
 use serde_json::Value;
 use serde_json::json;
 use chrono::Local;
 use crate::utils::time_util;
 use serde_json::de::ParserNumber;
-//use crate::engines::RustExpressionEngine::parser::{Parser,  ParserTokens};
-use crate::engines::RbatisEngine::runtime::{IsNumber, OptMap};
+//use crate::engines::RustExpressionEngine::parser::{parser,  ParserTokens};
+use crate::engines::rbatis_engine::runtime::{is_number, OptMap};
 use std::collections::HashMap;
 use std::collections::linked_list::LinkedList;
-use crate::engines::RbatisEngine::{runtime, parser};
+use crate::engines::rbatis_engine::{runtime, parser};
 use std::rc::Rc;
 use test::Bencher;
 
@@ -52,15 +52,15 @@ fn TestNodeRun() {
     let mut index = 0;
     for item in expressions {
         println!("{}", item.express.clone());
-        //TODO let parserArray = Parser(item.to_string(), &OptMap::new());
+        //TODO let parserArray = parser(item.to_string(), &OptMap::new());
 
-        let mut boxNode = parser::Parser(item.express.to_string(), &OptMap::new()).unwrap();
+        let mut boxNode = parser::parser(item.express.to_string(), &OptMap::new()).unwrap();
         let result = boxNode.eval(&john).unwrap();
         println!("express: {} >>>>> {}", item.express,&result);
         let resultValue = &item.eq.clone();
         if !result.eq(resultValue) {
             // println!("exe express fail:".to_owned()+item);
-            panic!("[Rbatis] >>>>>>>>>>>>>>>>>>>>>exe fail express:'".to_owned() + item.clone().express + "'");
+            panic!("[rbatis] >>>>>>>>>>>>>>>>>>>>>exe fail express:'".to_owned() + item.clone().express + "'");
         }
         index += 1;
     }
@@ -69,7 +69,7 @@ fn TestNodeRun() {
 
 #[test]
 fn TestStringNode() {
-    let mut strNode = Node::newString("sadf");
+    let mut strNode = Node::new_string("sadf");
     strNode.eval(&Value::Null {});
     //println!("value:{}", result);
 }
@@ -89,13 +89,13 @@ fn TestArgNode() {
         ]
     });
 
-    let mut argNode = Node::newArg("sex.a");
+    let mut argNode = Node::new_arg("sex.a");
     argNode.eval(&john);
     //println!("value:{},error:{}", result, Error);
 }
 
 #[test]
-fn BenchmarkArgNode() {
+fn benchmark_arg_node() {
     let john = json!({
         "name": "John Doe",
         "age": Value::Null,
@@ -109,7 +109,7 @@ fn BenchmarkArgNode() {
         ]
     });
 
-    let mut argNode = Node::newArg("sex.a");
+    let mut argNode = Node::new_arg("sex.a");
 
     let total = 100000;
     let now = Local::now();
@@ -134,20 +134,20 @@ fn TestNumberNode() {
             "+44 2345678"
         ]
     });
-    let mut numb = Node::newNumberF64(1.02 as f64);
+    let mut numb = Node::new_number_f64(1.02 as f64);
     numb.eval(&john);
     // println!("{}", value);
 }
 
 #[test]
-fn BenchmarkParserToken() {
+fn benchmark_parser_token() {
     let s = "'2019-02-26' == '2019-02-26'".to_string();
     let optMap = OptMap::new();
 
     let total = 100000;
     let now = Local::now();
     for i in 0..total {
-        runtime::ParserTokens(&s,&optMap);
+        runtime::parser_tokens(&s, &optMap);
     }
     time_util::count_time(total, now);
     time_util::count_tps(total, now);
@@ -155,7 +155,7 @@ fn BenchmarkParserToken() {
 
 
 #[bench]
-fn Bench_Node_Eval(b: &mut Bencher) {
+fn bench_node_eval(b: &mut Bencher) {
     let rc=Rc::new("asdf".to_string());
     b.iter(|| {
         rc.clone();

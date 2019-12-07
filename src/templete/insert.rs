@@ -9,7 +9,7 @@ impl Insert {
         sql = sql.replace("#{table}", table);
 
         if arg.is_null() {
-            return Result::Err("[Rbatis] arg is null value".to_string());
+            return Result::Err("[rbatis] arg is null value".to_string());
         }
         if arg.is_object() {
             return Result::Ok(do_create_obj_sql(sql, arg));
@@ -17,18 +17,18 @@ impl Insert {
             let mut values = "".to_string();
             let arr = arg.as_array().unwrap();
             if arr.len() == 0 {
-                return Result::Err("[Rbatis] arg array len = 0!".to_string());
+                return Result::Err("[rbatis] arg array len = 0!".to_string());
             }
             //todo replace to xml field
             if !arr.get(0).unwrap().is_object() {
-                return Result::Err("[Rbatis] unsupport arg type,only support object json and object array!".to_string());
+                return Result::Err("[rbatis] unsupport arg type,only support object json and object array!".to_string());
             }
             let fields = do_create_field_sql(arr.get(0).unwrap().clone());
             sql = sql.replace("#{fields}", fields.as_str());
 
             for x in arr {
                 if !x.is_object() {
-                    return Result::Err("[Rbatis] unsupport arg type,only support object json and object array!".to_string());
+                    return Result::Err("[rbatis] unsupport arg type,only support object json and object array!".to_string());
                 }
                 let mut value_item_sql = do_create_values_sql(x);
                 value_item_sql = "(".to_string() + value_item_sql.as_str() + "),";
@@ -38,7 +38,7 @@ impl Insert {
             sql = sql.replace("#{values}", values.as_str());
             return Result::Ok(sql);
         } else {
-            return Result::Err("[Rbatis] unsupport arg type,only support object json and object array!".to_string());
+            return Result::Err("[rbatis] unsupport arg type,only support object json and object array!".to_string());
         }
     }
 }

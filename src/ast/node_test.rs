@@ -12,7 +12,7 @@ use crate::core::rbatis::Rbatis;
 
 
 #[test]
-fn TestStringNode() {
+fn test_string_node() {
     let mut holder=NodeConfigHolder::new();
     let mut john = json!({
         "name": "John Doe",
@@ -24,7 +24,7 @@ fn TestStringNode() {
 }
 
 #[bench]
-fn Bench_Parser(b: &mut Bencher) {
+fn bencher_parser(b: &mut Bencher) {
     let mut holder=NodeConfigHolder::new();
     let mut john =  json!({
         "name": "John Doe",

@@ -1,5 +1,5 @@
 use crate::ast::node_type::NodeType;
-use crate::ast::node::{SqlNode, DoChildNodes, print_child, create_deep};
+use crate::ast::node::{SqlNode, do_child_nodes, print_child, create_deep};
 use serde_json::Value;
 use crate::ast::node_config_holder::NodeConfigHolder;
 use serde_json::ser::State::Rest;
@@ -12,16 +12,16 @@ pub struct IfNode{
 
 impl SqlNode for IfNode {
     fn eval(&mut self, env: &mut Value,holder:&mut NodeConfigHolder) -> Result<String, String> {
-        let result = holder.engine.Eval(self.test.as_str(), env);
+        let result = holder.engine.eval(self.test.as_str(), env);
         if result.is_err() {
             return Result::Err(result.err().unwrap());
         }
         let b = &result.unwrap();
         if !b.is_boolean() {
-           return  Result::Err("[Rbatis] express:'".to_owned() + self.test.as_str() + "' is not return bool value!");
+           return  Result::Err("[rbatis] express:'".to_owned() + self.test.as_str() + "' is not return bool value!");
         }
         if b.as_bool().unwrap() {
-            return DoChildNodes(&mut self.childs, env,holder);
+            return do_child_nodes(&mut self.childs, env, holder);
         }
         return Result::Ok("".to_string());
     }

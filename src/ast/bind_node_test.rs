@@ -6,7 +6,7 @@ use serde_json::json;
 use crate::ast::node_config_holder::NodeConfigHolder;
 
 #[test]
-fn TestBindNode(){
+fn test_bind_node(){
     let mut holder=NodeConfigHolder::new();
     let mut bindNode =BindNode{
         name: "a".to_string(),

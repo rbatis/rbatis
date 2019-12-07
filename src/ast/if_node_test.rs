@@ -7,7 +7,7 @@ use crate::ast::node::SqlNode;
 use std::rc::Rc;
 
 #[test]
-pub fn TestIfNode() {
+pub fn test_if_node() {
     let mut node = IfNode {
         childs: vec![NodeType::NString(StringNode::new("yes"))],
         test: "arg == 1".to_string(),

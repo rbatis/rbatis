@@ -9,7 +9,7 @@ use crate::ast::node_config_holder::NodeConfigHolder;
 
 
 #[test]
-pub fn TestForEachNode(){
+pub fn test_for_each_node(){
     let mut holder=NodeConfigHolder::new();
     let mut n=ForEachNode{
         childs: vec![NodeType::NString(StringNode::new("index:#{index},item:#{item}"))],
