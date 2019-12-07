@@ -1,12 +1,12 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
-        "https://raw.githubusercontent.com/zhuxiujia/Rbatis/master/mybatis-3-mapper.dtd">
+        "https://raw.githubusercontent.com/zhuxiujia/Rbatis/master/rbatis-mapper.dtd">
 <mapper>
     <!--logic_enable 逻辑删除字段-->
     <!--logic_deleted 逻辑删除已删除字段-->
     <!--logic_undelete 逻辑删除 未删除字段-->
     <!--version_enable 乐观锁版本字段,支持int,int8,int16,int32,int64-->
-    <resultMap id="BaseResultMap">
+    <result_map id="BaseResultMap">
         <id column="id" property="id"/>
         <result column="name" property="name" lang_type="string"/>
         <result column="pc_link" property="pcLink" lang_type="string"/>
@@ -15,9 +15,9 @@
         <result column="version" property="version" lang_type="int" version_enable="true"/>
         <result column="create_time" property="createTime" lang_type="time.Time"/>
         <result column="delete_flag" property="deleteFlag" lang_type="int" logic_enable="true" logic_undelete="1" logic_deleted="0"/>
-    </resultMap>
+    </result_map>
     <!--SelectByCondition func(name *string, startTime *time.Time, endTime *time.Time, page *int, size *int) ([]Activity, error) `mapperParams:"name,startTime,endTime,page,size"`-->
-    <select id="select_by_condition" resultMap="BaseResultMap">
+    <select id="select_by_condition" result_map="BaseResultMap">
         <bind name="pattern" value="'%' + name + '%'"/>
         select * from biz_activity
         <where>
@@ -92,7 +92,7 @@
     </update>
     <insert id="insert">
         insert into biz_activity
-        <trim prefix="(" suffix=")" suffixOverrides=",">
+        <trim prefix="(" suffix=")" suffix_overrides=",">
             <if test="id != nil">id,</if>
             <if test="name != nil">name,</if>
             <if test="pcLink != nil">pc_link,</if>
@@ -102,7 +102,7 @@
             <if test="deleteFlag != nil">delete_flag,</if>
         </trim>
 
-        <trim prefix="values (" suffix=")" suffixOverrides=",">
+        <trim prefix="values (" suffix=")" suffix_overrides=",">
             <if test="id != nil">#{id},</if>
             <if test="name != nil">#{name},</if>
             <if test="pcLink != nil">#{pcLink},</if>
@@ -113,7 +113,7 @@
         </trim>
     </insert>
 
-    <select id="choose" resultMap="BaseResultMap">
+    <select id="choose" result_map="BaseResultMap">
         SELECT * FROM biz_activity
         <choose>
             <when test="deleteFlag > 1">WHERE delete_flag > 1</when>
