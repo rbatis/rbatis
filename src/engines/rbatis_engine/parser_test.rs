@@ -7,7 +7,7 @@ use crate::utils;
 use chrono::Local;
 use crate::utils::time_util;
 use std::thread::Thread;
-use test::Bencher;
+//use test::Bencher;
 use crate::engines::rbatis_engine::node::NodeType::{NNumber, NOpt};
 use std::rc::Rc;
 use std::sync::Arc;
@@ -59,20 +59,20 @@ fn TestBenchmark() {
 //    thread::sleep(ten_millis);
 }
 
-#[bench]
-fn bench_parser_token(b: &mut Bencher) {
-    let optMap = OptMap::new();
-    let m= &OptMap::new();
-    let now=Local::now();
-    b.iter(|| {
-        runtime::parser_tokens(&String::from("n == 1"), &optMap);
-    });
-}
-
-#[bench]
-fn bench_parser(b: &mut Bencher) {
-    let m= &OptMap::new();
-    b.iter(|| {
-        parser::parser(String::from(" a + b"), m);
-    });
-}
+//#[bench]
+//fn bench_parser_token(b: &mut Bencher) {
+//    let optMap = OptMap::new();
+//    let m= &OptMap::new();
+//    let now=Local::now();
+//    b.iter(|| {
+//        runtime::parser_tokens(&String::from("n == 1"), &optMap);
+//    });
+//}
+//
+//#[bench]
+//fn bench_parser(b: &mut Bencher) {
+//    let m= &OptMap::new();
+//    b.iter(|| {
+//        parser::parser(String::from(" a + b"), m);
+//    });
+//}
