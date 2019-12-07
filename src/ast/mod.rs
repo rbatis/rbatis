@@ -19,11 +19,6 @@ pub mod update_node;
 pub mod delete_node;
 pub mod select_node;
 
-pub mod insert_templete_node;
-pub mod update_templete_node;
-pub mod delete_templete_node;
-pub mod select_templete_node;
-
 //test
 pub mod node_test;
 pub mod bind_node_test;

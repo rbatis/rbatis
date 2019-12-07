@@ -19,10 +19,6 @@ use crate::ast::select_node::SelectNode;
 use crate::ast::update_node::UpdateNode;
 use crate::ast::insert_node::InsertNode;
 use crate::ast::delete_node::DeleteNode;
-use crate::ast::delete_templete_node::DeleteTempleteNode;
-use crate::ast::insert_templete_node::InsertTempleteNode;
-use crate::ast::update_templete_node::UpdateTempleteNode;
-use crate::ast::select_templete_node::SelectTempleteNode;
 use crate::ast::where_node::WhereNode;
 
 /**
@@ -82,30 +78,6 @@ pub fn loop_decode_xml(xml_vec: &Vec<Element>, holder:&NodeConfigHolder) -> Vec<
                id: xml.get_attr("id"),
                childs: child_nodes,
            })),
-
-           "selectTemplete" => nodes.push(NodeType::NSelectTempleteNode(SelectTempleteNode{
-               id: xml.get_attr("id"),
-               result_map: xml.get_attr("result_map"),
-               lang: xml.get_attr("lang"),
-               tables: xml.get_attr("tables"),
-               columns: xml.get_attr("columns"),
-               wheres: xml.get_attr("wheres"),
-               childs: child_nodes,
-           })),
-           "updateTemplete" => nodes.push(NodeType::NUpdateTempleteNode(UpdateTempleteNode{
-               id: xml.get_attr("id"),
-               childs: child_nodes,
-           })),
-           "insertTemplete" => nodes.push(NodeType::NInsertTempleteNode(InsertTempleteNode{
-               id: xml.get_attr("id"),
-               childs: child_nodes,
-           })),
-           "deleteTemplete" => nodes.push(NodeType::NDeleteTempleteNode(DeleteTempleteNode{
-               id: xml.get_attr("id"),
-               childs: child_nodes,
-           })),
-
-
            "if" => nodes.push(NodeType::NIf(IfNode{
                childs: child_nodes,
                test: xml.get_attr("test"),

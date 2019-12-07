@@ -16,10 +16,6 @@ use crate::ast::select_node::SelectNode;
 use crate::ast::delete_node::DeleteNode;
 use crate::ast::update_node::UpdateNode;
 use crate::ast::insert_node::InsertNode;
-use crate::ast::insert_templete_node::InsertTempleteNode;
-use crate::ast::update_templete_node::UpdateTempleteNode;
-use crate::ast::delete_templete_node::DeleteTempleteNode;
-use crate::ast::select_templete_node::SelectTempleteNode;
 use crate::ast::node_config_holder::NodeConfigHolder;
 use crate::ast::where_node::WhereNode;
 
@@ -43,11 +39,6 @@ pub enum NodeType {
     NUpdateNode(UpdateNode),
     NDeleteNode(DeleteNode),
     NSelectNode(SelectNode),
-
-    NInsertTempleteNode(InsertTempleteNode),
-    NUpdateTempleteNode(UpdateTempleteNode),
-    NDeleteTempleteNode(DeleteTempleteNode),
-    NSelectTempleteNode(SelectTempleteNode),
 }
 
 impl <'a>SqlNode for NodeType {
@@ -57,11 +48,6 @@ impl <'a>SqlNode for NodeType {
             NodeType::NDeleteNode(node) => return node.eval(env,holder),
             NodeType::NUpdateNode(node) => return node.eval(env,holder),
             NodeType::NInsertNode(node) => return node.eval(env,holder),
-
-            NodeType::NSelectTempleteNode(node) => return node.eval(env,holder),
-            NodeType::NDeleteTempleteNode(node) => return node.eval(env,holder),
-            NodeType::NUpdateTempleteNode(node) => return node.eval(env,holder),
-            NodeType::NInsertTempleteNode(node) => return node.eval(env,holder),
 
             NodeType::Null => return Result::Ok(String::new()),
             NodeType::NString(node) => return node.eval(env,holder),
@@ -85,12 +71,6 @@ impl <'a>SqlNode for NodeType {
             NodeType::NUpdateNode(node) => return node.print(deep),
             NodeType::NInsertNode(node) => return node.print(deep),
             NodeType::NDeleteNode(node) => return node.print(deep),
-
-            NodeType::NSelectTempleteNode(node) => return node.print(deep),
-            NodeType::NUpdateTempleteNode(node) => return node.print(deep),
-            NodeType::NInsertTempleteNode(node) => return node.print(deep),
-            NodeType::NDeleteTempleteNode(node) => return node.print(deep),
-
 
             NodeType::Null => return "null".to_string(),
             NodeType::NString(node) => return node.print(deep),

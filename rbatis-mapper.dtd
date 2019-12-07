@@ -16,7 +16,7 @@
                limitations under the License.
 
         -->
-        <!ELEMENT mapper ( result_map* | sql* | insert* | update* |update_templete* | delete* |delete_templete* | select* | select_templete* | insert_templete* )+>
+        <!ELEMENT mapper ( result_map* | sql* | insert* | update* | delete* | select*)+>
         <!ATTLIST mapper
                 >
         <!ELEMENT result_map (constructor?,id*,result*,association*,collection*, discriminator?)>
@@ -146,24 +146,6 @@
                 lang CDATA #IMPLIED
                 >
 
-        <!ELEMENT select_templete (#PCDATA | include | trim | where | set | foreach | choose | if | bind)*>
-        <!ATTLIST select_templete
-                id CDATA #IMPLIED
-                result_map (BaseResultMap) #IMPLIED
-                result_type CDATA #IMPLIED
-
-
-                fetchSize CDATA #IMPLIED
-                timeout CDATA #IMPLIED
-                lang CDATA #IMPLIED
-
-
-                tables CDATA #REQUIRED
-                columns CDATA #IMPLIED
-                wheres CDATA #IMPLIED
-                >
-
-
         <!ELEMENT insert (#PCDATA | selectKey | include | trim | where | set | foreach | choose | if | bind)*>
         <!ATTLIST insert
                 id CDATA #REQUIRED
@@ -172,15 +154,6 @@
                 
                 
                 lang CDATA #IMPLIED
-                >
-
-        <!ELEMENT insert_templete (#PCDATA | selectKey | include | trim | where | set | foreach | choose | if | bind)*>
-        <!ATTLIST insert_templete
-                id CDATA #IMPLIED
-                result_map CDATA #IMPLIED
-                tables CDATA #REQUIRED
-                inserts CDATA #IMPLIED
-                result_map (BaseResultMap) #IMPLIED
                 >
 
         <!ELEMENT selectKey (#PCDATA | include | trim | where | set | foreach | choose | if | bind)*>
@@ -202,20 +175,6 @@
                 
                 lang CDATA #IMPLIED
                 >
-        <!ELEMENT update_templete (#PCDATA | selectKey | include | trim | where | set | foreach | choose | if | bind)*>
-        <!ATTLIST update_templete
-                id CDATA #IMPLIED
-                timeout CDATA #IMPLIED
-                result_map (BaseResultMap) #IMPLIED
-
-                useGeneratedKeys (true|false) #IMPLIED
-
-
-                lang CDATA #IMPLIED
-                tables CDATA #REQUIRED
-                sets CDATA #IMPLIED
-                wheres CDATA #IMPLIED
-                >
 
         <!ELEMENT delete (#PCDATA | include | trim | where | set | foreach | choose | if | bind)*>
         <!ATTLIST delete
@@ -224,16 +183,7 @@
                 
                 lang CDATA #IMPLIED
                 >
-        <!ELEMENT delete_templete (#PCDATA | include | trim | where | set | foreach | choose | if | bind)*>
-        <!ATTLIST delete_templete
-                id CDATA #IMPLIED
-                timeout CDATA #IMPLIED
 
-                lang CDATA #IMPLIED
-                tables CDATA #REQUIRED
-                wheres CDATA #IMPLIED
-                result_map (BaseResultMap) #IMPLIED
-                >
         <!-- Dynamic -->
 
         <!ELEMENT include (property+)?>
