@@ -11,7 +11,7 @@ use std::collections::HashMap;
 use std::collections::linked_list::LinkedList;
 use crate::engines::rbatis_engine::{runtime, parser};
 use std::rc::Rc;
-use test::Bencher;
+//use test::Bencher;
 
 #[derive(Clone, PartialEq)]
 struct Eq<'a> {
@@ -154,10 +154,10 @@ fn benchmark_parser_token() {
 }
 
 
-#[bench]
-fn bench_node_eval(b: &mut Bencher) {
-    let rc=Rc::new("asdf".to_string());
-    b.iter(|| {
-        rc.clone();
-    });
-}
+//#[bench]
+//fn bench_node_eval(b: &mut Bencher) {
+//    let rc=Rc::new("asdf".to_string());
+//    b.iter(|| {
+//        rc.clone();
+//    });
+//}

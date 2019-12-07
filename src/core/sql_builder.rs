@@ -11,7 +11,7 @@ use std::fmt::Display;
 use core::borrow::Borrow;
 use mysql::{Value, Conn};
 use serde::{Serialize, Deserialize};
-use test::Bencher;
+//use test::Bencher;
 use std::any::Any;
 use serde_json::Error;
 use rbatis_macro_derive::RbatisMacro;
@@ -83,53 +83,53 @@ fn test_sql_builder() {
     time_util::count_tps(total, now);
 }
 
-#[bench]
-fn bench_sql_builder(b: &mut Bencher){
-
-    let mut paramMap = HashMap::new();
-    paramMap.insert("name", "aaa");
-    paramMap.insert("startTime", "aaa");
-    paramMap.insert("endTime", "aaa");
-    paramMap.insert("page", "1");
-    paramMap.insert("size", "20");
-
-    b.iter(|| {
-        let mut sql = String::new();
-
-        let mut arg=json!({
-       "name":"sadf",
-       "startTime":"startTime",
-       "endTime":"endTime",
-       "page":1,
-       "size":1,
-        });
-
-        sql.push_str("select * from biz_activity  where name = #{name} and startTime=#{startTime} and endTime=#{endTime} limit page=#{page},size=#{size}");
-
-        let name = paramMap.get("name").unwrap();
-        if name != &"" {
-            sql.replace("#{name}",name);
-        }
-        let startTime = paramMap.get("startTime").unwrap();
-        if startTime != &"" {
-            sql.replace("#{startTime}",startTime);
-        }
-        let endTime = paramMap.get("endTime").unwrap();
-        if endTime != &"" {
-            sql.replace("#{endTime}",endTime);
-        }
-        let pageStr = paramMap.get("page").unwrap();
-        let page: i32 = pageStr.to_string().parse().unwrap();
-        if page != 0 {
-            sql.replace("#{page}",pageStr);
-        }
-        let sizeStr = paramMap.get("size").unwrap();
-        let size: i32 = sizeStr.parse().unwrap();
-        if size != 0 {
-            sql.replace("#{size}",sizeStr);
-        }
-    });
-}
+//#[bench]
+//fn bench_sql_builder(b: &mut Bencher){
+//
+//    let mut paramMap = HashMap::new();
+//    paramMap.insert("name", "aaa");
+//    paramMap.insert("startTime", "aaa");
+//    paramMap.insert("endTime", "aaa");
+//    paramMap.insert("page", "1");
+//    paramMap.insert("size", "20");
+//
+//    b.iter(|| {
+//        let mut sql = String::new();
+//
+//        let mut arg=json!({
+//       "name":"sadf",
+//       "startTime":"startTime",
+//       "endTime":"endTime",
+//       "page":1,
+//       "size":1,
+//        });
+//
+//        sql.push_str("select * from biz_activity  where name = #{name} and startTime=#{startTime} and endTime=#{endTime} limit page=#{page},size=#{size}");
+//
+//        let name = paramMap.get("name").unwrap();
+//        if name != &"" {
+//            sql.replace("#{name}",name);
+//        }
+//        let startTime = paramMap.get("startTime").unwrap();
+//        if startTime != &"" {
+//            sql.replace("#{startTime}",startTime);
+//        }
+//        let endTime = paramMap.get("endTime").unwrap();
+//        if endTime != &"" {
+//            sql.replace("#{endTime}",endTime);
+//        }
+//        let pageStr = paramMap.get("page").unwrap();
+//        let page: i32 = pageStr.to_string().parse().unwrap();
+//        if page != 0 {
+//            sql.replace("#{page}",pageStr);
+//        }
+//        let sizeStr = paramMap.get("size").unwrap();
+//        let size: i32 = sizeStr.parse().unwrap();
+//        if size != 0 {
+//            sql.replace("#{size}",sizeStr);
+//        }
+//    });
+//}
 
 
 
@@ -174,21 +174,21 @@ fn test_link_postgres() {
     println!("decode: {:?}",act.unwrap());
 }
 
-#[bench]
-fn bench_decode_util(b: &mut Bencher) {
-    let mut ops = mysql::OptsBuilder::new();
-    ops.user(Some("root"));
-    ops.pass(Some("TEST"));
-    ops.db_name(Some("test"));
-    ops.ip_or_hostname(Some("localhost"));
-
-    let mut conn = Conn::new(ops).unwrap();
-    let mut rows = conn.prep_exec("SELECT * from biz_activity;", ()).unwrap();
-    b.iter( || {
-        let result:Result<Vec<Activity>,String> = rows.decode();
-        println!("{:?}",result.unwrap());
-    });
-}
+//#[bench]
+//fn bench_decode_util(b: &mut Bencher) {
+//    let mut ops = mysql::OptsBuilder::new();
+//    ops.user(Some("root"));
+//    ops.pass(Some("TEST"));
+//    ops.db_name(Some("test"));
+//    ops.ip_or_hostname(Some("localhost"));
+//
+//    let mut conn = Conn::new(ops).unwrap();
+//    let mut rows = conn.prep_exec("SELECT * from biz_activity;", ()).unwrap();
+//    b.iter( || {
+//        let result:Result<Vec<Activity>,String> = rows.decode();
+//        println!("{:?}",result.unwrap());
+//    });
+//}
 
 
 //use Time: 0.638 s,each:6380 nano/op

@@ -2,7 +2,7 @@ use crate::ast::node_type::NodeType;
 use crate::ast::node::SqlNode;
 use serde_json::{json, Value};
 use crate::ast::string_node::StringNode;
-use test::Bencher;
+//use test::Bencher;
 use crate::ast::convert::sql_arg_type_convert_default::SqlArgTypeConvertDefault;
 use std::rc::Rc;
 
@@ -23,19 +23,19 @@ fn test_string_node() {
     println!("{}", result);
 }
 
-#[bench]
-fn bencher_parser(b: &mut Bencher) {
-    let mut holder=NodeConfigHolder::new();
-    let mut john =  json!({
-        "name": "John Doe",
-    });
-
-
-    let mut strNode = NodeType::NString(StringNode::new("vvvvvvvvvv#{name}vvvvvvvv"));
-
-    b.iter(|| {
-        &strNode.eval(&mut john,&mut holder);
-    });
-}
+//#[bench]
+//fn bencher_parser(b: &mut Bencher) {
+//    let mut holder=NodeConfigHolder::new();
+//    let mut john =  json!({
+//        "name": "John Doe",
+//    });
+//
+//
+//    let mut strNode = NodeType::NString(StringNode::new("vvvvvvvvvv#{name}vvvvvvvv"));
+//
+//    b.iter(|| {
+//        &strNode.eval(&mut john,&mut holder);
+//    });
+//}
 
 

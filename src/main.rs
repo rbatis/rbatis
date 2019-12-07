@@ -1,12 +1,9 @@
-#![feature(test)]
-extern crate test;
-
 pub mod example;
 pub mod ast;
 pub mod utils;
 pub mod templete;
 
-use test::Bencher;
+//use test::Bencher;
 
 pub mod engines;
 pub mod core;
@@ -45,9 +42,9 @@ fn main() {
 }
 
 
-#[bench]
-fn bench_main(b: &mut Bencher) {
-    b.iter( || {
-        // v.push(2);
-    });
-}
+//#[bench]
+//fn bench_main(b: &mut Bencher) {
+//    b.iter( || {
+//        // v.push(2);
+//    });
+//}

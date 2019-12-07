@@ -2,7 +2,7 @@ use crate::ast::convert::sql_arg_type_convert::SqlArgTypeConvert;
 use crate::ast::convert::sql_arg_type_convert_default::SqlArgTypeConvertDefault;
 use serde_json::{json, Value};
 use chrono::Local;
-use test::Bencher;
+//use test::Bencher;
 
 #[test]
 fn test_convert(){
@@ -19,12 +19,12 @@ fn test_convert(){
 }
 
 
-#[bench]
-fn bencher_conver(b: &mut Bencher) {
-   // let a=json!(1.27);
-    let convert=SqlArgTypeConvertDefault{};
-    b.iter(|| {
-        let node=json!("1234");
-        convert.convert(node);
-    });
-}
+//#[bench]
+//fn bencher_conver(b: &mut Bencher) {
+//   // let a=json!(1.27);
+//    let convert=SqlArgTypeConvertDefault{};
+//    b.iter(|| {
+//        let node=json!("1234");
+//        convert.convert(node);
+//    });
+//}

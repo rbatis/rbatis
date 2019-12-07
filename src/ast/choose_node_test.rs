@@ -15,7 +15,7 @@ pub fn test_choose_node() {
     let mut john = json!({
         "arg": 2,
     });
-    let engine= rbatis_engine::new();
+    let engine= RbatisEngine::new();
 
     let sNode = NString(StringNode::new("dsaf#{arg+1}"));
 

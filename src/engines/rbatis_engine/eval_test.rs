@@ -2,7 +2,7 @@ use crate::engines::rbatis_engine::parser;
 use crate::engines::rbatis_engine::runtime::OptMap;
 use chrono::Local;
 use serde_json::json;
-use test::Bencher;
+//use test::Bencher;
 use std::{time, thread};
 
 #[test]
@@ -22,20 +22,20 @@ fn test_eval_arg() {
 }
 
 
-#[bench]
-fn bench_parser(b: &mut Bencher) {
-    let mut boxNode= parser::parser(String::from("'1'+'1'"), &OptMap::new()).unwrap();
-    let john = json!({
-        "n":1,
-        "name": "John Doe",
-         "age": {
-           "yes":"sadf"
-        }
-    });
-    b.iter(|| {
-        boxNode.eval(&john);
-    });
-}
+//#[bench]
+//fn bench_parser(b: &mut Bencher) {
+//    let mut boxNode= parser::parser(String::from("'1'+'1'"), &OptMap::new()).unwrap();
+//    let john = json!({
+//        "n":1,
+//        "name": "John Doe",
+//         "age": {
+//           "yes":"sadf"
+//        }
+//    });
+//    b.iter(|| {
+//        boxNode.eval(&john);
+//    });
+//}
 
 #[test]
 fn test_mem_gc() {
