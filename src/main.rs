@@ -1,3 +1,7 @@
+#[macro_use]
+extern crate lazy_static;
+
+
 pub mod example;
 pub mod ast;
 pub mod utils;
@@ -24,8 +28,18 @@ use std::thread::{sleep, spawn};
 use std::time::Duration;
 use async_std::task;
 
+use std::sync::Mutex;
+
+lazy_static! {
+    static ref ARRAY: Mutex<Vec<u8>> = Mutex::new(vec![]);
+}
+
+
 
 fn main() {
+//    ARRAY.lock().unwrap().push(1);
+//    println!("{:?}",ARRAY.lock().unwrap().get(0).unwrap());
+
     let task = task::spawn(async {
         let id = task::current().id();
         println!("{:?}", id);
