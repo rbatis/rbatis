@@ -27,11 +27,6 @@ impl Rbatis {
                 NodeType::NUpdateNode(node) => m.insert(node.id,x),
                 NodeType::NInsertNode(node) => m.insert(node.id,x),
 
-                NodeType::NSelectTempleteNode(node) => m.insert(node.id,x),
-                NodeType::NDeleteTempleteNode(node) => m.insert(node.id,x),
-                NodeType::NUpdateTempleteNode(node) => m.insert(node.id,x),
-                NodeType::NInsertTempleteNode(node) => m.insert(node.id,x),
-
                 _ => m.insert("unknow".to_string(),NodeType::Null),
             };
         }
