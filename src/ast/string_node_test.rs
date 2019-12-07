@@ -2,12 +2,12 @@ use crate::ast::string_node::StringNode;
 use std::rc::Rc;
 
 use crate::ast::convert::sql_arg_type_convert_default::SqlArgTypeConvertDefault;
-use crate::engines::rbatis_engine::node::NodeType::NString;
+use crate::engine::node::NodeType::NString;
 use crate::ast::node::SqlNode;
 use serde_json::json;
 //use test::Bencher;
 use crate::ast::node_config_holder::NodeConfigHolder;
-use crate::engines::rbatis_engine::runtime::RbatisEngine;
+use crate::engine::runtime::RbatisEngine;
 
 #[test]
 pub fn test_string_node(){

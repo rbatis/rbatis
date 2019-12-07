@@ -6,7 +6,7 @@ use crate::ast::convert::sql_arg_type_convert_default::SqlArgTypeConvertDefault;
 use crate::ast::node::SqlNode;
 use serde_json::json;
 use crate::ast::node_config_holder::NodeConfigHolder;
-use crate::engines::rbatis_engine::runtime::RbatisEngine;
+use crate::engine::runtime::RbatisEngine;
 
 
 #[test]
