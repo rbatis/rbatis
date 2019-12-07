@@ -7,16 +7,16 @@
 ##### xml案例:
 ``` xml
 <mapper>
-    <resultMap id="BaseResultMap">
+    <result_map id="BaseResultMap">
         <id column="id" property="id"/>
-        <result column="name" property="name" langType="string"/>
-        <result column="pc_link" property="pcLink" langType="string"/>
-        <result column="h5_link" property="h5Link" langType="string"/>
-        <result column="remark" property="remark" langType="string"/>
-        <result column="version" property="version" langType="int" version_enable="true"/>
-        <result column="create_time" property="createTime" langType="time.Time"/>
-        <result column="delete_flag" property="deleteFlag" langType="int" logic_enable="true" logic_undelete="1" logic_deleted="0"/>
-    </resultMap>
+        <result column="name" property="name" lang_type="string"/>
+        <result column="pc_link" property="pcLink" lang_type="string"/>
+        <result column="h5_link" property="h5Link" lang_type="string"/>
+        <result column="remark" property="remark" lang_type="string"/>
+        <result column="version" property="version" lang_type="int" version_enable="true"/>
+        <result column="create_time" property="createTime" lang_type="time.Time"/>
+        <result column="delete_flag" property="deleteFlag" lang_type="int" logic_enable="true" logic_undelete="1" logic_deleted="0"/>
+    </result_map>
 
     <insertTemplete tables="biz_activity" />
     <insertTemplete tables="biz_activity" id="InsertTempleteBatch"/>
@@ -24,7 +24,7 @@
     <updateTemplete tables="biz_activity" sets="name?name = #{name}" wheres="name?name = #{name}"/>
     <deleteTemplete tables="biz_activity" wheres="name?name = #{name}"/>
 
-    <select id="selectByCondition" resultMap="BaseResultMap">
+    <select id="select_by_condition" result_map="BaseResultMap">
         <bind name="pattern" value="'%' + name + '%'"/>
         select * from biz_activity
         <where>

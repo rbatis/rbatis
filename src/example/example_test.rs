@@ -7,16 +7,16 @@ use crate::ast::node_config_holder::NodeConfigHolder;
 use crate::ast::node_type::NodeType;
 
 struct Example{
-   pub selectByCondition:fn()
+   pub select_by_condition:fn()
 }
 
 
 #[test]
 fn testWriteMethod(){
     let e=Example{
-        selectByCondition: || {println!("select * from table");}
+        select_by_condition: || {println!("select * from table");}
     };
-    (e.selectByCondition)();
+    (e.select_by_condition)();
 }
 
 
@@ -40,7 +40,7 @@ fn testLoadXml(){
        "size":1,
     });
 
-    let data=rbatis.eval("selectByCondition",&mut arg);
+    let data=rbatis.eval("select_by_condition",&mut arg);
     if data.is_ok(){
         println!("sql:{}",data.unwrap());
     }else{

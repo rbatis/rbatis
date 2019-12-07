@@ -9,7 +9,7 @@ use crate::engines::rbatis_engine::runtime::RbatisEngine;
 
 #[derive(Clone)]
 pub struct NodeConfigHolder{
-    pub sqlConvert: Rc<SqlArgTypeConvert>,
+    pub sql_convert: Rc<SqlArgTypeConvert>,
     pub engine: RbatisEngine,
 }
 
@@ -19,7 +19,7 @@ impl NodeConfigHolder{
         let convert=Rc::new(SqlArgTypeConvertDefault::new());
 
         return NodeConfigHolder{
-            sqlConvert:convert,
+            sql_convert:convert,
             engine:engine,
         }
     }

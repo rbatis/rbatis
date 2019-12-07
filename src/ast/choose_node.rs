@@ -9,30 +9,30 @@ use crate::ast::node_config_holder::NodeConfigHolder;
 
 #[derive(Clone)]
 pub struct ChooseNode {
-    pub whenNodes: Option<Vec<NodeType>>,
-    pub otherwiseNode: Option<Box<NodeType>>,
+    pub when_nodes: Option<Vec<NodeType>>,
+    pub otherwise_node: Option<Box<NodeType>>,
 }
 
 impl SqlNode for ChooseNode {
     fn eval(&mut self, env: &mut Value,holder:&mut NodeConfigHolder) -> Result<String, String> {
-        if self.whenNodes.is_none() == false {
-            for mut item in self.whenNodes.clone().unwrap() {
+        if self.when_nodes.is_none() == false {
+            for mut item in self.when_nodes.clone().unwrap() {
                 let s = item.eval(env,holder);
                 if s.is_ok() {
                     return s;
                 }
             }
         }
-        if self.otherwiseNode.is_none() == false {
-            return self.otherwiseNode.clone().unwrap().deref_mut().eval(env,holder);
+        if self.otherwise_node.is_none() == false {
+            return self.otherwise_node.clone().unwrap().deref_mut().eval(env, holder);
         }
         return Result::Ok("".to_string());
     }
 
     fn print(&self,deep:i32) -> String {
         let mut result= create_deep(deep)+"<choose>";
-        result=result+print_child(self.whenNodes.as_ref().unwrap(),deep+1).as_str();
-        result=result+self.otherwiseNode.as_ref().unwrap().print(deep).as_str();
+        result=result+print_child(self.when_nodes.as_ref().unwrap(), deep+1).as_str();
+        result=result+self.otherwise_node.as_ref().unwrap().print(deep).as_str();
         result=result+create_deep(deep).as_str()+"</choose>";
         return result;
     }

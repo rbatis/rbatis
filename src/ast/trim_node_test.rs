@@ -12,8 +12,8 @@ pub fn test_trim_node(){
         childs: vec![NodeType::NString(StringNode::new("1trim value1"))],
         prefix: "(".to_string(),
         suffix: ")".to_string(),
-        suffixOverrides: "1".to_string(),
-        prefixOverrides: "1".to_string()
+        suffix_overrides: "1".to_string(),
+        prefix_overrides: "1".to_string()
     };
     let mut john = json!({
         "arg": 2,

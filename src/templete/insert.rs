@@ -50,7 +50,7 @@ fn do_create_values_sql(arg: &Value) -> String {
     let mut values = "".to_string();
     let len = obj_map.len();
     let mut i = 0;
-    for (x, v) in obj_map {
+    for (_, v) in obj_map {
         let vstr: String;
         if v.is_null() {
             vstr = "null".to_string();

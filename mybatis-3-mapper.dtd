@@ -44,10 +44,10 @@
         <!ELEMENT parameter EMPTY>
         <!ATTLIST parameter
                 property CDATA #REQUIRED
-                langType CDATA #IMPLIED
+                lang_type CDATA #IMPLIED
                 <!--jdbcType CDATA #IMPLIED-->
                 mode (IN | OUT | INOUT) #IMPLIED
-                resultMap CDATA #IMPLIED
+                result_map CDATA #IMPLIED
                 scale CDATA #IMPLIED
                 typeHandler CDATA #IMPLIED
                 >
@@ -64,7 +64,7 @@
         <!ELEMENT id EMPTY>
         <!ATTLIST id
                 property CDATA #IMPLIED
-                langType CDATA #IMPLIED
+                lang_type CDATA #IMPLIED
                 column CDATA #IMPLIED
                 <!--jdbcType CDATA #IMPLIED-->
                 typeHandler CDATA #IMPLIED
@@ -73,7 +73,7 @@
         <!ELEMENT result EMPTY>
         <!ATTLIST result
                 property CDATA #IMPLIED
-                langType CDATA #IMPLIED
+                lang_type CDATA #IMPLIED
                 column CDATA #IMPLIED
 
                 version_enable CDATA #IMPLIED
@@ -86,23 +86,23 @@
 
         <!ELEMENT idArg EMPTY>
         <!ATTLIST idArg
-                langType CDATA #IMPLIED
+                lang_type CDATA #IMPLIED
                 column CDATA #IMPLIED
                 <!--jdbcType CDATA #IMPLIED-->
                 typeHandler CDATA #IMPLIED
                 select CDATA #IMPLIED
-                resultMap CDATA #IMPLIED
+                result_map CDATA #IMPLIED
                 name CDATA #IMPLIED
                 >
 
         <!ELEMENT arg EMPTY>
         <!ATTLIST arg
-                langType CDATA #IMPLIED
+                lang_type CDATA #IMPLIED
                 column CDATA #IMPLIED
                 <!--jdbcType CDATA #IMPLIED-->
                 typeHandler CDATA #IMPLIED
                 select CDATA #IMPLIED
-                resultMap CDATA #IMPLIED
+                result_map CDATA #IMPLIED
                 name CDATA #IMPLIED
                 >
 
@@ -110,11 +110,11 @@
         <!ATTLIST collection
                 property CDATA #REQUIRED
                 column CDATA #IMPLIED
-                langType CDATA #IMPLIED
+                lang_type CDATA #IMPLIED
                 ofType CDATA #IMPLIED
                 <!--jdbcType CDATA #IMPLIED-->
                 select CDATA #IMPLIED
-                resultMap CDATA #IMPLIED
+                result_map CDATA #IMPLIED
                 typeHandler CDATA #IMPLIED
                 notNullColumn CDATA #IMPLIED
                 columnPrefix CDATA #IMPLIED
@@ -128,10 +128,10 @@
         <!ATTLIST association
                 property CDATA #REQUIRED
                 column CDATA #IMPLIED
-                langType CDATA #IMPLIED
+                lang_type CDATA #IMPLIED
                 <!--jdbcType CDATA #IMPLIED-->
                 select CDATA #IMPLIED
-                resultMap CDATA #IMPLIED
+                result_map CDATA #IMPLIED
                 typeHandler CDATA #IMPLIED
                 notNullColumn CDATA #IMPLIED
                 columnPrefix CDATA #IMPLIED
@@ -144,7 +144,7 @@
         <!ELEMENT discriminator (case+)>
         <!ATTLIST discriminator
                 column CDATA #IMPLIED
-                langType CDATA #REQUIRED
+                lang_type CDATA #REQUIRED
                 <!--jdbcType CDATA #IMPLIED-->
                 typeHandler CDATA #IMPLIED
                 >
@@ -152,7 +152,7 @@
         <!ELEMENT case (constructor?,id*,result*,association*,collection*, discriminator?)>
         <!ATTLIST case
                 value CDATA #REQUIRED
-                resultMap CDATA #IMPLIED
+                result_map CDATA #IMPLIED
                 resultType CDATA #IMPLIED
                 >
 
@@ -173,7 +173,7 @@
                 id CDATA #REQUIRED
                 parameterMap CDATA #IMPLIED
                 parameterType CDATA #IMPLIED
-                resultMap CDATA #IMPLIED
+                result_map CDATA #IMPLIED
                 resultType CDATA #IMPLIED
                 
                
@@ -192,7 +192,7 @@
                 id CDATA #IMPLIED
                 parameterMap CDATA #IMPLIED
                 parameterType CDATA #IMPLIED
-                resultMap (BaseResultMap) #IMPLIED
+                result_map (BaseResultMap) #IMPLIED
                 resultType CDATA #IMPLIED
 
 
@@ -228,10 +228,10 @@
         <!ELEMENT insertTemplete (#PCDATA | selectKey | include | trim | where | set | foreach | choose | if | bind)*>
         <!ATTLIST insertTemplete
                 id CDATA #IMPLIED
-                resultMap CDATA #IMPLIED
+                result_map CDATA #IMPLIED
                 tables CDATA #REQUIRED
                 inserts CDATA #IMPLIED
-                resultMap (BaseResultMap) #IMPLIED
+                result_map (BaseResultMap) #IMPLIED
                 >
 
         <!ELEMENT selectKey (#PCDATA | include | trim | where | set | foreach | choose | if | bind)*>
@@ -265,7 +265,7 @@
                 parameterType CDATA #IMPLIED
                 timeout CDATA #IMPLIED
                 flushCache (true|false) #IMPLIED
-                resultMap (BaseResultMap) #IMPLIED
+                result_map (BaseResultMap) #IMPLIED
 
                 useGeneratedKeys (true|false) #IMPLIED
 
@@ -299,7 +299,7 @@
                 lang CDATA #IMPLIED
                 tables CDATA #REQUIRED
                 wheres CDATA #IMPLIED
-                resultMap (BaseResultMap) #IMPLIED
+                result_map (BaseResultMap) #IMPLIED
                 >
         <!-- Dynamic -->
 
@@ -324,9 +324,9 @@
         <!ELEMENT trim (#PCDATA | include | trim | where | set | foreach | choose | if | bind)*>
         <!ATTLIST trim
                 prefix CDATA #IMPLIED
-                prefixOverrides CDATA #IMPLIED
+                prefix_overrides CDATA #IMPLIED
                 suffix CDATA #IMPLIED
-                suffixOverrides CDATA #IMPLIED
+                suffix_overrides CDATA #IMPLIED
                 >
         <!ELEMENT where (#PCDATA | include | trim | where | set | foreach | choose | if | bind)*>
         <!ELEMENT set (#PCDATA | include | trim | where | set | foreach | choose | if | bind)*>

@@ -58,32 +58,32 @@ fn decode_row(row: &Row) -> Value {
         let mut v=serde_json::Value::Null;
         // println!("c_type:{}",c_type);
         if  c_type == "varchar" {
-            let mut field:Option<String>=row.get(index);
+            let field:Option<String>=row.get(index);
             if field.is_some() {
                 v = serde_json::Value::String(field.unwrap());
             }
         }else if c_type == "int2"{
-            let mut field:Option<i16>=row.get(index);
+            let field:Option<i16>=row.get(index);
             if field.is_some() {
                 v = json!(field.unwrap());
             }
         }else if c_type == "int4"{
-            let mut field:Option<i32>=row.get(index);
+            let field:Option<i32>=row.get(index);
             if field.is_some() {
                 v = json!(field.unwrap());
             }
         }else if c_type == "int8"{
-            let mut field:Option<i64>=row.get(index);
+            let field:Option<i64>=row.get(index);
             if field.is_some() {
                 v = json!(field.unwrap());
             }
         }else if c_type == "float4"{
-            let mut field:Option<f32>=row.get(index);
+            let field:Option<f32>=row.get(index);
             if field.is_some() {
                 v = json!(field.unwrap());
             }
         } else if c_type == "float8"{
-            let mut field:Option<f64>=row.get(index);
+            let field:Option<f64>=row.get(index);
             if field.is_some() {
                 v = json!(field.unwrap());
             }
