@@ -5,7 +5,7 @@ use chrono::Local;
 use test::Bencher;
 
 #[test]
-fn TestConvert(){
+fn test_convert(){
     let convert=SqlArgTypeConvertDefault{};
     let mut result;
     result =  convert.convert(json!(1));
@@ -20,7 +20,7 @@ fn TestConvert(){
 
 
 #[bench]
-fn Bench_Convert(b: &mut Bencher) {
+fn bencher_conver(b: &mut Bencher) {
    // let a=json!(1.27);
     let convert=SqlArgTypeConvertDefault{};
     b.iter(|| {

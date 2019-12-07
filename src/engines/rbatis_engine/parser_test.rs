@@ -1,14 +1,14 @@
-use crate::engines::RbatisEngine::{parser, runtime};
+use crate::engines::rbatis_engine::{parser, runtime};
 use serde_json::json;
 use serde_json::Value;
-use crate::engines::RbatisEngine::runtime::OptMap;
-use crate::engines::RbatisEngine::node::{Node, NodeType};
+use crate::engines::rbatis_engine::runtime::OptMap;
+use crate::engines::rbatis_engine::node::{Node, NodeType};
 use crate::utils;
 use chrono::Local;
 use crate::utils::time_util;
 use std::thread::Thread;
 use test::Bencher;
-use crate::engines::RbatisEngine::node::NodeType::{NNumber, NOpt};
+use crate::engines::rbatis_engine::node::NodeType::{NNumber, NOpt};
 use std::rc::Rc;
 use std::sync::Arc;
 use core::time;
@@ -17,7 +17,7 @@ use std::thread;
 
 #[test]
 fn TestParser() {
-    let mut boxNode= parser::Parser(String::from("a == 1 && a != 0"), &OptMap::new()).unwrap();
+    let mut boxNode= parser::parser(String::from("a == 1 && a != 0"), &OptMap::new()).unwrap();
     let john = json!({
         "a":1,
         "name": "John Doe",
@@ -39,7 +39,7 @@ fn TestParser() {
 
 #[test]
 fn TestBenchmark() {
-    let mut boxNode= parser::Parser(String::from("1<=2"), &OptMap::new()).unwrap();
+    let mut boxNode= parser::parser(String::from("1<=2"), &OptMap::new()).unwrap();
     let john = json!({
         "name": "John Doe",
     });
@@ -60,19 +60,19 @@ fn TestBenchmark() {
 }
 
 #[bench]
-fn Bench_Parser_Token(b: &mut Bencher) {
+fn bench_parser_token(b: &mut Bencher) {
     let optMap = OptMap::new();
     let m= &OptMap::new();
     let now=Local::now();
     b.iter(|| {
-        runtime::ParserTokens(&String::from("n == 1"),&optMap);
+        runtime::parser_tokens(&String::from("n == 1"), &optMap);
     });
 }
 
 #[bench]
-fn Bench_Parser(b: &mut Bencher) {
+fn bench_parser(b: &mut Bencher) {
     let m= &OptMap::new();
     b.iter(|| {
-        parser::Parser(String::from(" a + b"), m);
+        parser::parser(String::from(" a + b"), m);
     });
 }

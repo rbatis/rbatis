@@ -1,5 +1,5 @@
 use crate::ast::node_type::NodeType;
-use crate::ast::node::{SqlNode, DoChildNodes, print_child, create_deep};
+use crate::ast::node::{SqlNode, do_child_nodes, print_child, create_deep};
 use serde_json::{Value, Map};
 use crate::utils;
 use std::collections::HashMap;
@@ -25,10 +25,10 @@ impl SqlNode for ForEachNode {
 
         let collectionValue = utils::value_util::GetDeepValue(self.collection.as_str(), env);
         if collectionValue.is_null() {
-            return Result::Err("[Rbatis] collection name:".to_owned() + self.collection.as_str() + " is none value!");
+            return Result::Err("[rbatis] collection name:".to_owned() + self.collection.as_str() + " is none value!");
         }
         if !collectionValue.is_array() {
-            return Result::Err("[Rbatis] collection name:".to_owned() + self.collection.as_str() + " is not a array value!");
+            return Result::Err("[rbatis] collection name:".to_owned() + self.collection.as_str() + " is not a array value!");
         }
         let collection = collectionValue.as_array().unwrap();
 
@@ -42,7 +42,7 @@ impl SqlNode for ForEachNode {
             objMap.insert("item".to_string(), item.clone());
             objMap.insert("index".to_string(), Value::Number(serde_json::Number::from_f64(index as f64).unwrap()));
             let mut tempArg: Value = Value::Object(objMap);
-            let itemResult = DoChildNodes(&mut self.childs, &mut tempArg,holder);
+            let itemResult = do_child_nodes(&mut self.childs, &mut tempArg, holder);
             if itemResult.is_err() {
                 return itemResult;
             }

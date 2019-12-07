@@ -1,5 +1,5 @@
 use crate::ast::node_config_holder::NodeConfigHolder;
-use crate::ast::node::{SqlNode, LoopDecodeXml};
+use crate::ast::node::{SqlNode, loop_decode_xml};
 use crate::ast::bind_node::BindNode;
 use crate::ast::string_node::StringNode;
 use crate::utils::xml_loader::load_xml;
@@ -9,7 +9,7 @@ use serde_json::Value;
 use std::collections::HashMap;
 
 pub struct Rbatis {
-    nodeTypes: HashMap<String,NodeType>,
+    node_types: HashMap<String,NodeType>,
     holder: NodeConfigHolder,
 }
 
@@ -18,7 +18,7 @@ impl Rbatis {
         //TODO load xml_content string,create ast
         let holder = NodeConfigHolder::new();
         let nodes = load_xml(xml_content);
-        let data=LoopDecodeXml(&nodes, &holder);
+        let data= loop_decode_xml(&nodes, &holder);
         let mut m=HashMap::new();
         for x in data {
             match x.clone() {
@@ -37,12 +37,12 @@ impl Rbatis {
         }
         return Rbatis {
             holder:holder,
-            nodeTypes: m,
+            node_types: m,
         };
     }
 
     pub fn eval(&mut self,id:&str,env: &mut Value) -> Result<String, String>{
-        let mut node=self.nodeTypes.get_mut(id);
+        let mut node=self.node_types.get_mut(id);
         if node.is_none(){
             return Result::Err("node:".to_string()+id+" is none");
         }
@@ -51,7 +51,7 @@ impl Rbatis {
 
     pub fn print(&self) -> String {
         let mut result = String::new();
-        for (key,node ) in &self.nodeTypes {
+        for (key,node ) in &self.node_types {
             let data = node.print(0);
             let data_str = data.as_str();
             result += data_str;

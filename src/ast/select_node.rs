@@ -1,5 +1,5 @@
 use crate::ast::node_type::NodeType;
-use crate::ast::node::{SqlNode, DoChildNodes, print_child, create_deep};
+use crate::ast::node::{SqlNode, do_child_nodes, print_child, create_deep};
 use serde_json::Value;
 use crate::ast::node_config_holder::NodeConfigHolder;
 
@@ -13,7 +13,7 @@ pub struct SelectNode {
 
 impl SqlNode for SelectNode{
     fn eval(&mut self, env: &mut Value,holder:&mut NodeConfigHolder) -> Result<String, String> {
-        return DoChildNodes(&mut self.childs, env,holder);
+        return do_child_nodes(&mut self.childs, env, holder);
     }
 
     fn print(&self,deep:i32) -> String {

@@ -1,6 +1,6 @@
 use crate::ast::node_config_holder::NodeConfigHolder;
 use serde_json::Value;
-use crate::ast::node::{DoChildNodes, SqlNode, create_deep, print_child};
+use crate::ast::node::{do_child_nodes, SqlNode, create_deep, print_child};
 use crate::ast::node_type::NodeType;
 
 #[derive(Clone)]
@@ -11,7 +11,7 @@ pub struct  WhereNode{
 impl SqlNode for WhereNode{
 
     fn eval(&mut self, env: &mut Value,holder:&mut NodeConfigHolder) -> Result<String, String> {
-        let result= DoChildNodes(&mut self.childs, env,holder);
+        let result= do_child_nodes(&mut self.childs, env, holder);
         if result.is_ok() {
             let r=result.unwrap();
             let s=r.trim();

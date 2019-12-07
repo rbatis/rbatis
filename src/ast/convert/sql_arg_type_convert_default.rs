@@ -22,8 +22,8 @@ impl SqlArgTypeConvert for SqlArgTypeConvertDefault {
             },
             Value::Number(n) => return n.to_string(),
             Value::Bool(b) => return b.to_string(),
-            Value::Object(o) => panic!("[Rbatis] not support convert Object/Map<String,Value>!"),
-            Value::Array(arr) => panic!("[Rbatis] not support convert Vec<Value>!"),
+            Value::Object(o) => panic!("[rbatis] not support convert Object/Map<String,Value>!"),
+            Value::Array(arr) => panic!("[rbatis] not support convert Vec<Value>!"),
             _ => return String::from(""),
         }
     }

@@ -46,7 +46,7 @@ impl SqlNode for StringNode {
         for (item, value) in &self.expressMap {
             let getV = env.get(item);
             if getV.is_none() {
-                let v = holder.engine.Eval(item, env).unwrap();
+                let v = holder.engine.eval(item, env).unwrap();
                 let vstr = holder.sqlConvert.convert(v);
                 result = result.replace(value, vstr.as_str());
             } else {

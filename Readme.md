@@ -1,7 +1,7 @@
 
 #### A ORM formwork Rustlang-based,dynamic sql, no Runtime,no GC, low Memory use,High Performance orm Framework.
-#### Rbatis 是一个高性能的,动态sql,低内存开销的,无runtime,无GC,并发安全的  数据库 ORM框架
-[![Build Status](https://travis-ci.org/zhuxiujia/Rbatis.svg?branch=master)](https://travis-ci.org/zhuxiujia/Rbatis)
+#### rbatis 是一个高性能的,动态sql,低内存开销的,无runtime,无GC,并发安全的  数据库 ORM框架
+[![Build Status](https://travis-ci.org/zhuxiujia/rbatis.svg?branch=master)](https://travis-ci.org/zhuxiujia/rbatis)
 
 
 ##### xml案例:
@@ -64,9 +64,9 @@
 
 ### 动态运算表达式性能(测试平台 win10,6 core i7,16GB)(原生Rust代码数值运算约等于 1 ns/iter,字符串运算约等于100 ns/iter)
 <pre>
-     bench: '1 <= 2'  parser_test::Bench_Parser ... bench:          21 ns/iter (+/- 0)
-     bench: '1 >= 2'  parser_test::Bench_Parser ... bench:          21 ns/iter (+/- 0)
-     bench: '1 > 2'   parser_test::Bench_Parser ... bench:          21 ns/iter (+/- 0)
-     bench: '1 < 2'   parser_test::Bench_Parser ... bench:          21 ns/iter (+/- 0) 
-     bench: ''1'+'1'' parser_test::Bench_Parser ... bench:          118 ns/iter (+/- 1)
+     bench: '1 <= 2'  parser_test::bench_parser ... bench:          21 ns/iter (+/- 0)
+     bench: '1 >= 2'  parser_test::bench_parser ... bench:          21 ns/iter (+/- 0)
+     bench: '1 > 2'   parser_test::bench_parser ... bench:          21 ns/iter (+/- 0)
+     bench: '1 < 2'   parser_test::bench_parser ... bench:          21 ns/iter (+/- 0) 
+     bench: ''1'+'1'' parser_test::bench_parser ... bench:          118 ns/iter (+/- 1)
 </pre>

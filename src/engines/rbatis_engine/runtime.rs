@@ -1,13 +1,13 @@
 use std::collections::linked_list::LinkedList;
 use std::collections::HashMap;
 use serde_json::Value;
-use crate::engines::RbatisEngine::parser::Parser;
-use crate::engines::RbatisEngine::node::Node;
+use crate::engines::rbatis_engine::parser::parser;
+use crate::engines::rbatis_engine::node::Node;
 
 #[derive(Clone)]
 pub struct RbatisEngine {
     pub cache:HashMap<String,Node>,
-    pub optMap:OptMap<'static>,
+    pub opt_map:OptMap<'static>,
 }
 
 impl RbatisEngine {
@@ -15,19 +15,19 @@ impl RbatisEngine {
     pub fn new()-> Self{
         return Self{
             cache: Default::default(),
-            optMap: OptMap::new(),
+            opt_map: OptMap::new(),
         }
     }
 
-    pub fn Eval(&mut self,lexerArg: &str, arg: &Value) -> Result<Value, String>{
-        let cached = self.cache.get(lexerArg);
+    pub fn eval(&mut self, lexer_arg: &str, arg: &Value) -> Result<Value, String>{
+        let cached = self.cache.get(lexer_arg);
         if (&cached).is_none() {
-            let nodes = Parser(lexerArg.to_string(),&self.optMap);
+            let nodes = parser(lexer_arg.to_string(), &self.opt_map);
             if nodes.is_err(){
                 return Result::Err(nodes.err().unwrap());
             }
             let node=nodes.unwrap();
-            self.cache.insert(lexerArg.to_string(), node.clone());
+            self.cache.insert(lexer_arg.to_string(), node.clone());
             return node.eval(arg);
         } else {
             let nodes = cached.unwrap().clone();
@@ -35,8 +35,8 @@ impl RbatisEngine {
         }
     }
 
-    pub fn Eval_No_Cache(&self,lexerArg: &str, arg: &Value) -> Result<Value, String>{
-            let nodes = Parser(lexerArg.to_string(),&self.optMap);
+    pub fn eval_no_cache(&self, lexer_arg: &str, arg: &Value) -> Result<Value, String>{
+            let nodes = parser(lexer_arg.to_string(), &self.opt_map);
             if nodes.is_err(){
                 return Result::Err(nodes.err().unwrap());
             }
@@ -44,12 +44,12 @@ impl RbatisEngine {
             return node.eval(arg);
     }
 
-    pub fn clearCache(&mut self){
+    pub fn clear_cache(&mut self){
         self.cache.clear();
     }
 
-    pub fn removeCache(&mut self,lexerArg: &str){
-        self.cache.remove(lexerArg);
+    pub fn remove_cache(&mut self, lexer_arg: &str){
+        self.cache.remove(lexer_arg);
     }
 
 
@@ -57,7 +57,7 @@ impl RbatisEngine {
 
 
 
-pub fn IsNumber(arg: &String) -> bool {
+pub fn is_number(arg: &String) -> bool {
     let chars = arg.chars();
     for item in chars {
         if item == '.' ||
@@ -84,9 +84,9 @@ pub fn IsNumber(arg: &String) -> bool {
 /**
  * 将原始字符串解析为 去除空格的token数组
 **/
-pub fn ParserTokens(s: &String, optMap: &OptMap) -> Vec<String> {
+pub fn parser_tokens(s: &String, opt_map: &OptMap) -> Vec<String> {
     let chars = s.chars();
-    let charsLen = s.len() as i32;
+    let chars_len = s.len() as i32;
     let mut result = LinkedList::new();
     //str
     let mut find_str = false;
@@ -96,13 +96,13 @@ pub fn ParserTokens(s: &String, optMap: &OptMap) -> Vec<String> {
     let mut index: i32 = -1;
     for item in chars {
         index = index + 1;
-        let isOpt = optMap.isOpt(item.to_string().as_str());
+        let is_opt = opt_map.is_opt(item.to_string().as_str());
         if item == '\'' || item == '`' {
             if find_str {
                 //第二次找到
                 find_str = false;
                 temp_str.push(item);
-                trimPushBack(&temp_str, &mut result);
+                trim_push_back(&temp_str, &mut result);
                 temp_str.clear();
                 continue;
             }
@@ -114,31 +114,31 @@ pub fn ParserTokens(s: &String, optMap: &OptMap) -> Vec<String> {
             temp_str.push(item);
             continue;
         }
-        if item != '`' && item != '\'' && isOpt == false && !find_str {
+        if item != '`' && item != '\'' && is_opt == false && !find_str {
             //need reset
             temp_arg.push(item);
-            if (index + 1) == charsLen {
-                trimPushBack(&temp_arg, &mut result);
+            if (index + 1) == chars_len {
+                trim_push_back(&temp_arg, &mut result);
             }
         } else {
-            trimPushBack(&temp_arg, &mut result);
+            trim_push_back(&temp_arg, &mut result);
             temp_arg.clear();
         }
         //opt node
-        if isOpt {
+        if is_opt {
             //println!("is opt:{}", item);
             if result.len() > 0 {
                 let def = String::new();
                 let back = result.back().unwrap_or(&def).clone();
-                if back != "" && optMap.isOpt(back.as_str()) {
+                if back != "" && opt_map.is_opt(back.as_str()) {
                     result.pop_back();
-                    let mut newItem = back.clone().to_string();
-                    newItem.push(item);
-                    trimPushBack(&newItem, &mut result);
+                    let mut new_item = back.clone().to_string();
+                    new_item.push(item);
+                    trim_push_back(&new_item, &mut result);
                     continue;
                 }
             }
-            trimPushBack(&item.to_string(), &mut result);
+            trim_push_back(&item.to_string(), &mut result);
             continue;
         }
     }
@@ -149,34 +149,34 @@ pub fn ParserTokens(s: &String, optMap: &OptMap) -> Vec<String> {
     return v;
 }
 
-fn trimPushBack(arg: &String, list: &mut LinkedList<String>) {
-    let trimStr = arg.trim().to_string();
-    if trimStr.is_empty() {
+fn trim_push_back(arg: &String, list: &mut LinkedList<String>) {
+    let trim_str = arg.trim().to_string();
+    if trim_str.is_empty() {
         return;
     }
-    list.push_back(trimStr);
+    list.push_back(trim_str);
 }
 
 #[derive(Clone)]
 pub struct OptMap<'a> {
     //列表
-    pub List: Vec<&'a str>,
+    pub list: Vec<&'a str>,
     //全部操作符
-    pub Map: HashMap<&'a str, bool>,
+    pub map: HashMap<&'a str, bool>,
     //复合操作符
-    pub MulOpsMap: HashMap<&'a str, bool>,
+    pub mul_ops_map: HashMap<&'a str, bool>,
     //单操作符
-    pub SingleOptMap: HashMap<&'a str, bool>,
+    pub single_opt_map: HashMap<&'a str, bool>,
 
-    pub allowPriorityArray: Vec<&'a str>,
+    pub allow_priority_array: Vec<&'a str>,
 }
 
 impl<'a> OptMap<'a> {
     pub fn new() -> Self {
         let mut list = Vec::new();
-        let mut defMap = HashMap::new();
-        let mut MulOpsMap = HashMap::new();
-        let mut SingleOptMap = HashMap::new();
+        let mut def_map = HashMap::new();
+        let mut mul_ops_map = HashMap::new();
+        let mut single_opt_map = HashMap::new();
 
         //list 顺序加入操作符
         list.push("*");
@@ -208,14 +208,14 @@ impl<'a> OptMap<'a> {
 
         //全部加入map集合
         for item in &mut list {
-            defMap.insert(*item, true);
+            def_map.insert(*item, true);
         }
         //加入单操作符和多操作符
         for item in &mut list {
             if item.len() > 1 {
-                MulOpsMap.insert(item.clone(), true);
+                mul_ops_map.insert(item.clone(), true);
             } else {
-                SingleOptMap.insert(item.clone(), true);
+                single_opt_map.insert(item.clone(), true);
             }
         }
 
@@ -236,28 +236,28 @@ impl<'a> OptMap<'a> {
 
 
         Self {
-            List: list,
-            Map: defMap,
-            MulOpsMap: MulOpsMap,
-            SingleOptMap: SingleOptMap,
-            allowPriorityArray: vecs,
+            list: list,
+            map: def_map,
+            mul_ops_map: mul_ops_map,
+            single_opt_map: single_opt_map,
+            allow_priority_array: vecs,
         }
     }
 
     //乘除优先于加减 计算优于比较,
-    pub fn priorityArray(&self) -> Vec<&str> {
-        return self.allowPriorityArray.clone();
+    pub fn priority_array(&self) -> Vec<&str> {
+        return self.allow_priority_array.clone();
     }
 
     //是否是操作符
-    pub fn isOpt(&self, arg: &str) -> bool {
-        let opt = self.Map.get(arg);
+    pub fn is_opt(&self, arg: &str) -> bool {
+        let opt = self.map.get(arg);
         return opt.is_none() == false;
     }
 
     //是否为有效的操作符
-    pub fn isAllowOpt(&self, arg: &str) -> bool {
-        for item in &self.allowPriorityArray{
+    pub fn is_allow_opt(&self, arg: &str) -> bool {
+        for item in &self.allow_priority_array {
             if arg==*item{
                 return true;
             }
