@@ -10,9 +10,9 @@ use std::collections::HashMap;
 use crate::core::db_config::DBConfig;
 
 pub struct Rbatis {
-    node_types: HashMap<String,NodeType>,
-    holder: ConfigHolder,
-    db_config: DBConfig,
+    node_types: HashMap<String,NodeType>,//动态sql运算节点集合
+    holder: ConfigHolder,//动态sql节点配置
+    db_config: DBConfig,//数据库连接配置
 }
 
 impl Rbatis {
