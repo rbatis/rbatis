@@ -10,46 +10,63 @@ use std::collections::HashMap;
 use crate::core::db_config::DBConfig;
 
 pub struct Rbatis {
-    node_types: HashMap<String,NodeType>,//动态sql运算节点集合
-    holder: ConfigHolder,//动态sql节点配置
-    db_config: DBConfig,//数据库连接配置
+    node_types: HashMap<String, NodeType>,
+    //动态sql运算节点集合
+    holder: ConfigHolder,
+    //动态sql节点配置
+    db_configs: HashMap<String, DBConfig>,//数据库连接配置
 }
 
 impl Rbatis {
-    pub fn new(xml_content: String,link:String) -> Rbatis {
+    pub fn new(xml_content: String) -> Rbatis {
         //TODO load xml_content string,create ast
         let holder = ConfigHolder::new();
         let nodes = load_xml(xml_content);
-        let data= loop_decode_xml(&nodes, &holder);
-        let mut m=HashMap::new();
+        let data = loop_decode_xml(&nodes, &holder);
+        let mut m = HashMap::new();
         for x in data {
             match x.clone() {
-                NodeType::NSelectNode(node) => m.insert(node.id,x),
-                NodeType::NDeleteNode(node) => m.insert(node.id,x),
-                NodeType::NUpdateNode(node) => m.insert(node.id,x),
-                NodeType::NInsertNode(node) => m.insert(node.id,x),
+                NodeType::NSelectNode(node) => m.insert(node.id, x),
+                NodeType::NDeleteNode(node) => m.insert(node.id, x),
+                NodeType::NUpdateNode(node) => m.insert(node.id, x),
+                NodeType::NInsertNode(node) => m.insert(node.id, x),
 
-                _ => m.insert("unknow".to_string(),NodeType::Null),
+                _ => m.insert("unknow".to_string(), NodeType::Null),
             };
         }
         return Rbatis {
-            holder:holder,
+            holder: holder,
             node_types: m,
-            db_config:DBConfig::new(link)
+            db_configs: HashMap::new(),
         };
     }
 
-    pub fn eval(&mut self,id:&str,env: &mut Value) -> Result<String, String>{
-        let mut node=self.node_types.get_mut(id);
-        if node.is_none(){
-            return Result::Err("node:".to_string()+id+" is none");
+    /// 设置数据库默认url，如果失败返回错误信息
+    pub fn set_db_url(&mut self, name: String, url: String)->Option<String>{
+        let db_config_opt = DBConfig::new(url);
+        if db_config_opt.is_ok() {
+            self.db_configs.insert(name, db_config_opt.unwrap());
+            return Option::None;
+        }else{
+            return Option::Some(db_config_opt.err().unwrap());
         }
-        return node.unwrap().eval(env,&mut self.holder)
+    }
+    pub fn remove_db_url(&mut self, name: String) {
+        self.db_configs.remove(&name);
+    }
+
+
+    pub fn eval(&mut self, id: &str, env: &mut Value) -> Result<String, String> {
+        let mut node = self.node_types.get_mut(id);
+        if node.is_none() {
+            return Result::Err("node:".to_string() + id + " is none");
+        }
+        return node.unwrap().eval(env, &mut self.holder);
     }
 
     pub fn print(&self) -> String {
         let mut result = String::new();
-        for (key,node ) in &self.node_types {
+        for (key, node) in &self.node_types {
             let data = node.print(0);
             let data_str = data.as_str();
             result += data_str;

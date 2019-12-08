@@ -24,7 +24,7 @@ pub fn test_rbatis() {
         <if test="page != null and size != null">limit #{page}, #{size}</if>
     </select>
     </mapper>
-    "#.to_string(),"mysql://postgres:1233456@localhost:5432/test".to_string());
+    "#.to_string());
     let mut r = rbatis.eval("selectByCondition", &mut john).unwrap();
     println!("{}", r);
 }
