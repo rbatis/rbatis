@@ -28,7 +28,8 @@ fn testLoadXml(){
     let content = fs::read_to_string(filePath).unwrap();
     //println!("With text:/n{}", content);
     println!("start build -------------------------------------------------------");
-    let mut rbatis=Rbatis::new(content,"mysql://postgres:1233456@localhost:5432/test".to_string());
+    let mut rbatis=Rbatis::new(content);
+    rbatis.set_db_url("".to_string(),"mysql://postgres:1233456@localhost:5432/test".to_string());//name 为空，则默认数据库
     rbatis.print();
 
 
