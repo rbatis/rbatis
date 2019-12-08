@@ -32,10 +32,6 @@ fn testLoadXml(){
     rbatis.set_db_url("".to_string(),"mysql://root:TEST@localhost:3306/test".to_string());//name 为空，则默认数据库
     rbatis.print();
 
-
-    println!("{}",rbatis.conn_pool.mysql_map.get(&"".to_string()).is_none());
-
-
     let mut arg=json!({
        "name":null,
        "startTime":null,
@@ -44,9 +40,15 @@ fn testLoadXml(){
        "size":null,
     });
 
-    let data:serde_json::Value=rbatis.eval("select_by_condition",&mut arg).unwrap();
+    let data_opt:Result<serde_json::Value,String>=rbatis.eval("select_by_condition",&mut arg);
 
-    println!("result=========>is object {}",data.is_object());
-    println!("result=========>is array {}",data.is_array());
-    println!("result=========>{}",data);
+    if data_opt.is_ok(){
+        let data=data_opt.unwrap();
+        println!("result=========>is object {}",data.is_object());
+        println!("result=========>is array {}",data.is_array());
+        println!("result=========>{}",data);
+    }else{
+        println!("result=========>{}",data_opt.err().unwrap());
+    }
+
 }
