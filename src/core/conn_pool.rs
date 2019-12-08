@@ -1,4 +1,7 @@
 use std::collections::HashMap;
+use crate::core::db_config::DBConfig;
+use crate::utils::driver_util;
+use mysql::Conn;
 
 pub struct ConnPool {
     pub mysql_map: HashMap<String, mysql::Conn>,
@@ -10,6 +13,15 @@ impl ConnPool{
         return Self{
             mysql_map: HashMap::new(),
             pg_map: HashMap::new(),
+        }
+    }
+    pub fn get_mysql_conn(&mut self,name:String,conf:&DBConfig)->Result<Option<&mut Conn>,String>{
+        if self.mysql_map.get(&name).is_some() {
+            return Result::Ok(self.mysql_map.get_mut(&name));
+        }else{
+            let mysql_coon = driver_util::get_mysql_conn(conf)?;
+            self.mysql_map.insert(name.clone(), mysql_coon);
+            return Result::Ok(self.mysql_map.get_mut(&name));
         }
     }
 }
