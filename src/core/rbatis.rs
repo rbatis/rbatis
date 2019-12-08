@@ -90,11 +90,8 @@ impl Rbatis {
                 let conn;
                 let conn_opt = self.conn_pool.mysql_map.get_mut(&"".to_string());
                 if conn_opt.is_none() {
-                    let mysql_coon_opt=driver_util::get_mysql_conn(conf);
-                    if mysql_coon_opt.is_err(){
-                        return Result::Err("[rbatis] link mysql fail:".to_string() + mysql_coon_opt.err().unwrap().as_str());
-                    }
-                    self.conn_pool.mysql_map.insert("".to_string(),mysql_coon_opt.unwrap());
+                    let mysql_coon=driver_util::get_mysql_conn(conf)?;
+                    self.conn_pool.mysql_map.insert("".to_string(),mysql_coon);
                     conn = self.conn_pool.mysql_map.get_mut(&"".to_string()).unwrap();
                 }else{
                     conn = conn_opt.unwrap();

@@ -1,5 +1,6 @@
 use crate::core::db_config::DBConfig;
 use mysql::Conn;
+use std::error::Error;
 
 pub fn get_mysql_conn(arg: &DBConfig) -> Result<Conn, String> {
     let mut ops = mysql::OptsBuilder::new();
@@ -10,7 +11,7 @@ pub fn get_mysql_conn(arg: &DBConfig) -> Result<Conn, String> {
     ops.tcp_port(arg.port as u16);
     let conn = Conn::new(ops);
     if conn.is_err() {
-        return Result::Err("[rbatis] conn fail:".to_string() + conn.err().unwrap().to_string().as_str());
+        return Result::Err("[rbatis] conn fail:".to_string() + conn.err().unwrap().description());
     }
     return Result::Ok(conn.unwrap());
 }
