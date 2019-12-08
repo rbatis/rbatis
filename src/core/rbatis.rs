@@ -79,6 +79,7 @@ impl Rbatis {
             return Result::Err("[rbatis] find method fail:".to_string() + id + " is none");
         }
         let sql = node.unwrap().eval(env, &mut self.holder)?;
+        println!("create sql>>>>>>>>>>>>>>>>>>>>> {}",sql);
         let conf_opt = self.db_configs.get("");
         if conf_opt.is_none() {
             return Result::Err("[rbatis] find database url config fail!".to_string());
@@ -88,7 +89,6 @@ impl Rbatis {
         match db_type {
             "mysql" => {
                 let conn_opt =self.conn_pool.get_mysql_conn("".to_string(), conf)?;
-                println!("sql:{}",sql);
                 let exec_result = conn_opt.unwrap().prep_exec(sql, {});
                 if exec_result.is_err(){
                     return Result::Err("[rbatis] exec fail:".to_string()+exec_result.err().unwrap().to_string().as_str());
