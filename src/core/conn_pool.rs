@@ -17,7 +17,7 @@ impl ConnPool{
 #[test]
 pub fn test_pool() {
     let mut conn = ConnPool::new();
-    let c=conn.mysql_map.get_mut(&"default".to_string());
+    let c=conn.mysql_map.get_mut(&"".to_string());
     println!("{}",c.is_none());
     //  let v=conn.mysql_map.get_mut(&"s".to_string()).unwrap();
 }
