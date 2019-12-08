@@ -58,3 +58,16 @@ impl  <T>RbatisMacro for Option<T>{
         return "Option";
     }
 }
+
+//serde_json::Value
+impl  RbatisMacro for serde_json::Value{
+    fn decode_name() -> &'static str{
+        return "serde_json::Value";
+    }
+}
+
+impl RbatisMacro for String{
+    fn decode_name() -> &'static str {
+       return "String"
+    }
+}

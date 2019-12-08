@@ -5,6 +5,7 @@ use serde::{Serialize, Deserialize};
 #[derive(Serialize, Deserialize, Debug, Clone, RbatisMacro)]
 pub struct DBConfig {
     pub db_type: String,
+    pub db_name:String,
     pub db_user: String,
     pub db_pwd: String,
     pub addr: String,
@@ -41,9 +42,11 @@ impl DBConfig {
         let db_pwd = user_pwd[1];
         let addr = addr_port[0];
         let port = addr_port[1];
+        let db_name=link_dbname[1];
 
         return Result::Ok(Self {
             db_type: db_type.to_string(),
+            db_name: db_name.to_string(),
             db_user: db_user.to_string(),
             db_pwd: db_pwd.to_string(),
             addr: addr.to_string(),

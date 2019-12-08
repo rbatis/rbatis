@@ -8,6 +8,19 @@ use crate::ast::node_type::NodeType;
 use serde_json::Value;
 use std::collections::HashMap;
 use crate::core::db_config::DBConfig;
+use rbatis_macro::RbatisMacro;
+use serde::de;
+use std::str::FromStr;
+use crate::core::conn_pool::ConnPool;
+use std::sync::Mutex;
+use crate::utils::driver_util;
+use mysql::Conn;
+lazy_static! {
+    static ref CONNPOOL: Mutex<ConnPool> = Mutex::new(ConnPool{
+       mysql_map:HashMap::new(),
+       pg_map:HashMap::new(),
+    });
+}
 
 pub struct Rbatis {
     node_types: HashMap<String, NodeType>,
@@ -56,7 +69,7 @@ impl Rbatis {
     }
 
 
-    pub fn eval(&mut self, id: &str, env: &mut Value) -> Result<String, String> {
+    pub fn eval<T>(&mut self, id: &str, env: &mut Value) -> Result<T, String> where T: de::DeserializeOwned + RbatisMacro{
         let mut node = self.node_types.get_mut(id);
         if node.is_none() {
             return Result::Err("[rbatis] find method fail:".to_string() + id + " is none");
@@ -77,7 +90,21 @@ impl Rbatis {
             },
             _ =>   return Result::Err("[rbatis] unsupport database type:".to_string()+db_type)
         }
-        return Result::Ok(sql);
+
+       // CONNPOOL.lock().unwrap().mysql_map.remove(&"1".to_string());
+       // let config:&mut Conn=CONNPOOL.lock().unwrap().mysql_map.get_mut(&"".to_string()).unwrap();
+      // let v= config.prep_exec("SELECT * from biz_activity", ());
+
+//        CONNPOOL.lock().unwrap().mysql_map.insert("".to_string(),driver_util::get_mysql_conn(&DBConfig{
+//            db_type: "mysql".to_string(),
+//            db_name: "".to_string(),
+//            db_user: "".to_string(),
+//            db_pwd: "".to_string(),
+//            addr: "".to_string(),
+//            port: 0
+//        }));
+        let vv=serde_json::from_str(r#"{"a":1}"#).unwrap();
+        return Result::Ok(vv);
     }
 
     pub fn print(&self) -> String {

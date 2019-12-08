@@ -25,7 +25,7 @@ pub fn test_rbatis() {
     </select>
     </mapper>
     "#.to_string());
-    let mut r = rbatis.eval("selectByCondition", &mut john).unwrap();
+    let mut r:String = rbatis.eval("selectByCondition", &mut john).unwrap();
     println!("{}", r);
 }
 
