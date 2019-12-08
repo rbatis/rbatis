@@ -57,7 +57,7 @@ impl Rbatis {
         let db_config_opt = DBConfig::new(url);
         if db_config_opt.is_ok() {
             if name.is_empty() {
-                self.db_configs.insert("default".to_string(), db_config_opt.unwrap());
+                self.db_configs.insert("".to_string(), db_config_opt.unwrap());
             } else {
                 self.db_configs.insert(name, db_config_opt.unwrap());
             }
@@ -79,7 +79,7 @@ impl Rbatis {
             return Result::Err("[rbatis] find method fail:".to_string() + id + " is none");
         }
         let sql = node.unwrap().eval(env, &mut self.holder)?;
-        let conf_opt = self.db_configs.get("default");
+        let conf_opt = self.db_configs.get("");
         if conf_opt.is_none() {
             return Result::Err("[rbatis] find database url config fail!".to_string());
         }
@@ -88,14 +88,14 @@ impl Rbatis {
         match db_type {
             "mysql" => {
                 let conn;
-                let conn_opt = self.conn_pool.mysql_map.get_mut(&"default".to_string());
+                let conn_opt = self.conn_pool.mysql_map.get_mut(&"".to_string());
                 if conn_opt.is_none() {
                     let mysql_coon_opt=driver_util::get_mysql_conn(conf);
                     if mysql_coon_opt.is_err(){
                         return Result::Err("[rbatis] link mysql fail:".to_string() + mysql_coon_opt.err().unwrap().as_str());
                     }
-                    self.conn_pool.mysql_map.insert("default".to_string(),mysql_coon_opt.unwrap());
-                    conn = self.conn_pool.mysql_map.get_mut(&"default".to_string()).unwrap();
+                    self.conn_pool.mysql_map.insert("".to_string(),mysql_coon_opt.unwrap());
+                    conn = self.conn_pool.mysql_map.get_mut(&"".to_string()).unwrap();
                 }else{
                     conn = conn_opt.unwrap();
                 }
