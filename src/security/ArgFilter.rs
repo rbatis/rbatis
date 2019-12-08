@@ -7,7 +7,7 @@ impl ArgFilter {
             let mut m = arg.as_object_mut().unwrap();
             for (k, v) in m {
                 if v.is_string() {
-                    let s = v.as_str().unwrap().replace(";", "\\;");
+                    let s = v.as_str().unwrap().replace("'", "\\'");
                     *v = serde_json::Value::String(s);
                 }
             }
