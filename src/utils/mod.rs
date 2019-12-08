@@ -4,6 +4,7 @@ pub mod print_util;
 pub mod string_util;
 pub mod value_util;
 pub mod bencher;
+pub mod driver_util;
 
 //test
 pub mod string_util_test;

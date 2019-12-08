@@ -41,10 +41,5 @@ fn testLoadXml(){
        "size":1,
     });
 
-    let data=rbatis.eval("select_by_condition",&mut arg);
-    if data.is_ok(){
-        println!("sql:{}",data.unwrap());
-    }else{
-        println!("sql:fail={}",data.err().unwrap());
-    }
+    let data:serde_json::Value=rbatis.eval("select_by_condition",&mut arg).unwrap();
 }
