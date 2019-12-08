@@ -4,11 +4,11 @@ use serde::{Serialize, Deserialize};
 
 #[derive(Serialize, Deserialize, Debug, Clone, RbatisMacro)]
 pub struct DBConfig {
-    db_type: String,
-    db_user: String,
-    db_pwd: String,
-    addr: String,
-    port: i32,
+    pub db_type: String,
+    pub db_user: String,
+    pub db_pwd: String,
+    pub addr: String,
+    pub port: i32,
 }
 
 impl DBConfig {

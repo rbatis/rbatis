@@ -59,9 +59,25 @@ impl Rbatis {
     pub fn eval(&mut self, id: &str, env: &mut Value) -> Result<String, String> {
         let mut node = self.node_types.get_mut(id);
         if node.is_none() {
-            return Result::Err("node:".to_string() + id + " is none");
+            return Result::Err("[rbatis] find method fail:".to_string() + id + " is none");
         }
-        return node.unwrap().eval(env, &mut self.holder);
+        let sql= node.unwrap().eval(env, &mut self.holder)?;
+        let conf_opt=self.db_configs.get("");
+        if conf_opt.is_none(){
+            return Result::Err("[rbatis] find database url config fail!".to_string());
+        }
+        let conf=conf_opt.unwrap();
+        let db_type=conf.db_type.as_str();
+        match db_type {
+            "mysql" => {
+
+            },
+            "postgres" => {
+
+            },
+            _ =>   return Result::Err("[rbatis] unsupport database type:".to_string()+db_type)
+        }
+        return Result::Ok(sql);
     }
 
     pub fn print(&self) -> String {
