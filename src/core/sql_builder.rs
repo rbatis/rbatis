@@ -1,4 +1,3 @@
-extern crate rbatis_macro_derive;
 use crate::utils;
 use std::collections::HashMap;
 use chrono::Local;

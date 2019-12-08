@@ -1,6 +1,6 @@
 #[macro_use]
 extern crate lazy_static;
-
+extern crate rbatis_macro_derive;
 
 pub mod example;
 pub mod ast;
@@ -29,30 +29,28 @@ use std::time::Duration;
 use async_std::task;
 
 use std::sync::Mutex;
-use crate::utils::bencher::Bencher;
-use crate::example::activity::Activity;
+use utils::bencher::Bencher;
+use example::activity::Activity;
+use async_std::future;
+
 
 lazy_static! {
     static ref ARRAY: Mutex<Vec<u8>> = Mutex::new(vec![]);
 }
 
 
-
-fn main() {
+#[async_std::main]
+async fn main() {
 //    ARRAY.lock().unwrap().push(1);
 //    println!("{:?}",ARRAY.lock().unwrap().get(0).unwrap());
-
     let task = task::spawn(async {
         let id = task::current().id();
         println!("{:?}", id);
         task::sleep(Duration::from_millis(1000)).await;
     });
-
-    task::block_on(async {
-        println!("waiting for the task");
-        let res = task.await;
-        println!("task ended with result {:?}", res);
-    });
+    println!("waiting for the task");
+    let res = task.await;
+    println!("task ended with result {:?}", res);
 }
 
 
