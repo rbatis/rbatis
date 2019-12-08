@@ -7,14 +7,16 @@ use std::rc::Rc;
 use crate::ast::node_type::NodeType;
 use serde_json::Value;
 use std::collections::HashMap;
+use crate::core::db_config::DBConfig;
 
 pub struct Rbatis {
     node_types: HashMap<String,NodeType>,
     holder: ConfigHolder,
+    db_config: DBConfig,
 }
 
 impl Rbatis {
-    pub fn new(xml_content: String) -> Rbatis {
+    pub fn new(xml_content: String,link:String) -> Rbatis {
         //TODO load xml_content string,create ast
         let holder = ConfigHolder::new();
         let nodes = load_xml(xml_content);
@@ -33,6 +35,7 @@ impl Rbatis {
         return Rbatis {
             holder:holder,
             node_types: m,
+            db_config:DBConfig::new(link)
         };
     }
 
