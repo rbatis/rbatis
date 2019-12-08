@@ -15,19 +15,16 @@ use crate::core::conn_pool::ConnPool;
 use std::sync::Mutex;
 use crate::utils::driver_util;
 use mysql::Conn;
-lazy_static! {
-    static ref CONNPOOL: Mutex<ConnPool> = Mutex::new(ConnPool{
-       mysql_map:HashMap::new(),
-       pg_map:HashMap::new(),
-    });
-}
+use crate::decode::decoder::Decoder;
 
 pub struct Rbatis {
     node_types: HashMap<String, NodeType>,
     //动态sql运算节点集合
     holder: ConfigHolder,
     //动态sql节点配置
-    db_configs: HashMap<String, DBConfig>,//数据库连接配置
+    db_configs: HashMap<String, DBConfig>,
+    //数据库连接配置
+   pub conn_pool: ConnPool,
 }
 
 impl Rbatis {
@@ -51,17 +48,24 @@ impl Rbatis {
             holder: holder,
             node_types: m,
             db_configs: HashMap::new(),
+            conn_pool: ConnPool::new(),
         };
     }
 
     /// 设置数据库默认url，如果失败返回错误信息
-    pub fn set_db_url(&mut self, name: String, url: String)->Option<String>{
+    pub fn set_db_url(&mut self, name: String, url: String) -> Option<String> {
         let db_config_opt = DBConfig::new(url);
         if db_config_opt.is_ok() {
-            self.db_configs.insert(name, db_config_opt.unwrap());
+            if name.is_empty() {
+                self.db_configs.insert("default".to_string(), db_config_opt.unwrap());
+            } else {
+                self.db_configs.insert(name, db_config_opt.unwrap());
+            }
             return Option::None;
-        }else{
-            return Option::Some(db_config_opt.err().unwrap());
+        } else {
+            let e = db_config_opt.err().unwrap();
+            println!("{}", "[rbatis] link db fail:".to_string() + e.as_str());
+            return Option::Some(e);
         }
     }
     pub fn remove_db_url(&mut self, name: String) {
@@ -69,41 +73,45 @@ impl Rbatis {
     }
 
 
-    pub fn eval<T>(&mut self, id: &str, env: &mut Value) -> Result<T, String> where T: de::DeserializeOwned + RbatisMacro{
+    pub fn eval<T>(&mut self, id: &str, env: &mut Value) -> Result<T, String> where T: de::DeserializeOwned + RbatisMacro {
         let mut node = self.node_types.get_mut(id);
         if node.is_none() {
             return Result::Err("[rbatis] find method fail:".to_string() + id + " is none");
         }
-        let sql= node.unwrap().eval(env, &mut self.holder)?;
-        let conf_opt=self.db_configs.get("");
-        if conf_opt.is_none(){
+        let sql = node.unwrap().eval(env, &mut self.holder)?;
+        let conf_opt = self.db_configs.get("default");
+        if conf_opt.is_none() {
             return Result::Err("[rbatis] find database url config fail!".to_string());
         }
-        let conf=conf_opt.unwrap();
-        let db_type=conf.db_type.as_str();
+        let conf = conf_opt.unwrap();
+        let db_type = conf.db_type.as_str();
         match db_type {
             "mysql" => {
-
-            },
-            "postgres" => {
-
-            },
-            _ =>   return Result::Err("[rbatis] unsupport database type:".to_string()+db_type)
+                let conn;
+                let conn_opt = self.conn_pool.mysql_map.get_mut(&"default".to_string());
+                if conn_opt.is_none() {
+                    let mysql_coon_opt=driver_util::get_mysql_conn(conf);
+                    if mysql_coon_opt.is_err(){
+                        return Result::Err("[rbatis] link mysql fail:".to_string() + mysql_coon_opt.err().unwrap().as_str());
+                    }
+                    self.conn_pool.mysql_map.insert("default".to_string(),mysql_coon_opt.unwrap());
+                    conn = self.conn_pool.mysql_map.get_mut(&"default".to_string()).unwrap();
+                }else{
+                    conn = conn_opt.unwrap();
+                }
+                println!("sql:{}",sql);
+                let exec_result = conn.prep_exec(sql, {});
+                if exec_result.is_err(){
+                    return Result::Err("[rbatis] exec fail:".to_string()+exec_result.err().unwrap().to_string().as_str());
+                }
+                return exec_result.unwrap().decode();
+            }
+            "postgres" => {}
+            _ => return Result::Err("[rbatis] unsupport database type:".to_string() + db_type)
         }
 
-       // CONNPOOL.lock().unwrap().mysql_map.remove(&"1".to_string());
-       // let config:&mut Conn=CONNPOOL.lock().unwrap().mysql_map.get_mut(&"".to_string()).unwrap();
-      // let v= config.prep_exec("SELECT * from biz_activity", ());
 
-//        CONNPOOL.lock().unwrap().mysql_map.insert("".to_string(),driver_util::get_mysql_conn(&DBConfig{
-//            db_type: "mysql".to_string(),
-//            db_name: "".to_string(),
-//            db_user: "".to_string(),
-//            db_pwd: "".to_string(),
-//            addr: "".to_string(),
-//            port: 0
-//        }));
-        let vv=serde_json::from_str(r#"{"a":1}"#).unwrap();
+        let vv = serde_json::from_str(r#"{"a":1}"#).unwrap();
         return Result::Ok(vv);
     }
 

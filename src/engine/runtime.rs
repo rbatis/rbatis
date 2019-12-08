@@ -19,8 +19,12 @@ impl RbatisEngine {
         }
     }
 
-    pub fn eval(&mut self, lexer_arg: &str, arg: &Value) -> Result<Value, String>{
-        let cached = self.cache.get(lexer_arg);
+    pub fn eval(&mut self, expr: &str, arg: &Value) -> Result<Value, String>{
+        let mut lexer_arg = expr.to_string();
+        if expr.find(" and ").is_some() {
+            lexer_arg=lexer_arg.replace(" and ", " && ");
+        }
+        let cached = self.cache.get(lexer_arg.as_str());
         if (&cached).is_none() {
             let nodes = parser(lexer_arg.to_string(), &self.opt_map);
             if nodes.is_err(){
