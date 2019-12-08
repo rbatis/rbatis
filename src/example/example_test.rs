@@ -29,17 +29,24 @@ fn testLoadXml(){
     //println!("With text:/n{}", content);
     println!("start build -------------------------------------------------------");
     let mut rbatis=Rbatis::new(content);
-    rbatis.set_db_url("".to_string(),"mysql://postgres:1233456@localhost:5432/test".to_string());//name 为空，则默认数据库
+    rbatis.set_db_url("".to_string(),"mysql://root:TEST@localhost:3306/test".to_string());//name 为空，则默认数据库
     rbatis.print();
 
 
+    println!("{}",rbatis.conn_pool.mysql_map.get(&"".to_string()).is_none());
+
+
     let mut arg=json!({
-       "name":"sadf",
-       "startTime":"startTime",
-       "endTime":"endTime",
-       "page":1,
-       "size":1,
+       "name":null,
+       "startTime":null,
+       "endTime":null,
+       "page":null,
+       "size":null,
     });
 
     let data:serde_json::Value=rbatis.eval("select_by_condition",&mut arg).unwrap();
+
+    println!("result=========>is object {}",data.is_object());
+    println!("result=========>is array {}",data.is_array());
+    println!("result=========>{}",data);
 }

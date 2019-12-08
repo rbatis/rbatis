@@ -25,6 +25,14 @@ impl Decoder for QueryResult<'_> {
                 vec_v.push(act);
             });
             js = serde_json::Value::Array(vec_v)
+        }
+        if T::decode_name().eq("serde_json::Value") {
+            let mut vec_v = vec![];
+            self.for_each(|item| {
+                let act = decode_row(&item.unwrap());
+                vec_v.push(act);
+            });
+            js = serde_json::Value::Array(vec_v)
         } else {
             let mut result: Result<T, String> = Result::Err("[rbatis] rows.affected_rows > 1,but decode one result!".to_string());
             //not array json
