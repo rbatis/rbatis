@@ -6,6 +6,7 @@ pub mod example;
 pub mod ast;
 pub mod utils;
 pub mod templete;
+pub mod security;
 
 //use test::Bencher;
 
@@ -32,6 +33,7 @@ use std::sync::Mutex;
 use utils::bencher::Bencher;
 use example::activity::Activity;
 use async_std::future;
+use crate::security::ArgFilter::ArgFilter;
 
 
 lazy_static! {
@@ -62,6 +64,7 @@ fn bench_main() {
     let mut b =Bencher::new(1000000);
     b.iter( || {
          //println!("asdf");
-         let js:Activity=serde_json::from_str(r#"{"id":"","name":"","version":0}"#).unwrap();
+         let  mut js:serde_json::Value=serde_json::from_str(r#"{"id":"","name":"","version":0}"#).unwrap();
+         ArgFilter::filter(&mut js);
     });
 }
