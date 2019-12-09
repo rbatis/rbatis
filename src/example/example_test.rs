@@ -29,10 +29,10 @@ fn testLoadXml(){
     let filePath = "./src/example/Example_ActivityMapper.xml";
     println!(">>>>>>>>>>>>>>>>>>>>>>start load xml file{} >>>>>>>>>>>>>>>>>>>>>>>", filePath);
     let content = fs::read_to_string(filePath).unwrap();
-    rbatis.load_xml("".to_string(),content);
+    rbatis.load_xml("Example_ActivityMapper.xml".to_string(),content);
     rbatis.print();
     println!(">>>>>>>>>>>>>>>>>>>>>>start eval method >>>>>>>>>>>>>>>>>>>>>>>");
-    let data_opt:Result<serde_json::Value,String>=rbatis.eval("".to_string(),"select_by_condition",&mut json!({
+    let data_opt:Result<serde_json::Value,String>=rbatis.eval("Example_ActivityMapper.xml".to_string(),"select_by_condition",&mut json!({
        "name":null,
        "startTime":null,
        "endTime":null,
