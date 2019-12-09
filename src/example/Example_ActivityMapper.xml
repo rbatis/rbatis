@@ -13,11 +13,10 @@
         <result column="h5_link" property="h5Link" lang_type="string"/>
         <result column="remark" property="remark" lang_type="string"/>
         <result column="version" property="version" lang_type="int" version_enable="true"/>
-        <result column="create_time" property="createTime" lang_type="time.Time"/>
+        <result column="create_time" property="createTime" lang_type="time"/>
         <result column="delete_flag" property="deleteFlag" lang_type="int" logic_enable="true" logic_undelete="1" logic_deleted="0"/>
     </result_map>
-    <!--SelectByCondition func(name *string, startTime *time.Time, endTime *time.Time, page *int, size *int) ([]Activity, error) `mapperParams:"name,startTime,endTime,page,size"`-->
-    <select id="select_by_condition" result_map="BaseResultMap">
+   <select id="select_by_condition" result_map="BaseResultMap">
         <bind name="pattern" value="'%' + name + '%'"/>
         select * from biz_activity
         <where>
@@ -28,7 +27,6 @@
         order by create_time desc
         <if test="page != null and size != null">limit #{page}, #{size}</if>
     </select>
-    <!--int countByCondition(@Param("name")String name,@Param("startTime") Date startTime, @Param("endTime")Date endTime);-->
     <select id="countByCondition">
         select count(id) from biz_activity where delete_flag=1
         <if test="name != null">
@@ -41,11 +39,9 @@
             and create_time &lt;= #{endTime}
         </if>
     </select>
-    <!--List<Activity> selectAll();-->
     <select id="selectAll">
         select * from biz_activity where delete_flag=1 order by create_time desc
     </select>
-    <!--Activity selectByUUID(@Param("uuid")String uuid);-->
     <select id="selectByUUID">
         select * from biz_activity
         where uuid = #{uuid}
