@@ -71,3 +71,9 @@ impl RbatisMacro for String{
        return "String"
     }
 }
+
+impl RbatisMacro for i32 {
+    fn decode_name() -> &'static str {
+        return "i32"
+    }
+}

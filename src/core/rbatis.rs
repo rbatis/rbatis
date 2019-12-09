@@ -5,7 +5,7 @@ use crate::ast::string_node::StringNode;
 use crate::utils::xml_loader::load_xml;
 use std::rc::Rc;
 use crate::ast::node_type::NodeType;
-use serde_json::Value;
+use serde_json::{Value, Number};
 use std::collections::HashMap;
 use crate::core::db_config::DBConfig;
 use rbatis_macro::RbatisMacro;
@@ -17,6 +17,10 @@ use crate::utils::driver_util;
 use mysql::Conn;
 use crate::decode::decoder::Decoder;
 use crate::core::node_type_map_factory::create_node_type_map;
+use std::any::Any;
+use std::process::exit;
+use serde_json::ser::State::Rest;
+use serde_json::json;
 
 pub struct Rbatis {
     pub mapper_map: HashMap<String, HashMap<String, NodeType>>,
@@ -39,7 +43,7 @@ impl Rbatis {
     }
 
     pub fn load_xml(&mut self, key: String, content: String) {
-        self.mapper_map.insert(key, create_node_type_map(content,&self.holder));
+        self.mapper_map.insert(key, create_node_type_map(content, &self.holder));
     }
 
 
@@ -65,15 +69,16 @@ impl Rbatis {
 
 
     pub fn eval<T>(&mut self, mapper_name: String, id: &str, env: &mut Value) -> Result<T, String> where T: de::DeserializeOwned + RbatisMacro {
-        let mapper_opt= self.mapper_map.get_mut(&mapper_name);
-        if mapper_opt.is_none(){
-            return  Result::Err("[rbatis] find mapper fail,name:'".to_string() + mapper_name.to_string().as_str()+"'");
+        let mapper_opt = self.mapper_map.get_mut(&mapper_name);
+        if mapper_opt.is_none() {
+            return Result::Err("[rbatis] find mapper fail,name:'".to_string() + mapper_name.to_string().as_str() + "'");
         }
         let mut node = mapper_opt.unwrap().get_mut(id);
         if node.is_none() {
-            return Result::Err("[rbatis] find method fail,name:'".to_string() +mapper_name.to_string().as_str() + id + "'");
+            return Result::Err("[rbatis] find method fail,name:'".to_string() + mapper_name.to_string().as_str() + id + "'");
         }
-        let sql = node.unwrap().eval(env, &mut self.holder)?;
+        let mapper_func = node.unwrap();
+        let sql = mapper_func.eval(env, &mut self.holder)?;
         println!("[rbatis] Query ==>  {}", sql);
         let conf_opt = self.db_configs.get("");
         if conf_opt.is_none() {
@@ -84,20 +89,60 @@ impl Rbatis {
         match db_type {
             "mysql" => {
                 let conn_opt = self.conn_pool.get_mysql_conn("".to_string(), conf)?;
-                let exec_result = conn_opt.unwrap().prep_exec(sql, {});
-                if exec_result.is_err() {
-                    return Result::Err("[rbatis] exec fail:".to_string() + exec_result.err().unwrap().to_string().as_str());
+                match mapper_func {
+                    NodeType::NSelectNode(node) => {
+                        //select
+                        let exec_result = conn_opt.unwrap().prep_exec(sql, {});
+                        if exec_result.is_err() {
+                            return Result::Err("[rbatis] exec fail:".to_string() + exec_result.err().unwrap().to_string().as_str());
+                        }
+                        return exec_result.unwrap().decode();
+                    }
+                    _ => {
+                        //exec
+                        let exec_result = conn_opt.unwrap().prep_exec(sql, {});
+                        if exec_result.is_err() {
+                            return Result::Err("[rbatis] exec fail:".to_string() + exec_result.err().unwrap().to_string().as_str());
+                        }
+                        let result = exec_result.unwrap();
+                        let r = serde_json::from_value(json!(result.affected_rows()));
+                        if r.is_err() {
+                            return Result::Err("[rbatis] exec fail:".to_string() + r.err().unwrap().to_string().as_str());
+                        }
+                        return Result::Ok(r.unwrap());
+                    }
                 }
-                return exec_result.unwrap().decode();
             }
             "postgres" => {
                 let conn_opt = self.conn_pool.get_postage_conn("".to_string(), conf)?;
                 //TODO conn_opt.unwrap().query 做 query 和exec
-                let exec_result = conn_opt.unwrap().query(sql.as_str(), &[]);
-                if exec_result.is_err() {
-                    return Result::Err("[rbatis] exec fail:".to_string() + exec_result.err().unwrap().to_string().as_str());
+                match mapper_func {
+                    NodeType::NSelectNode(node) => {
+                        //select
+                        let exec_result = conn_opt.unwrap().query(sql.as_str(), &[]);
+                        if exec_result.is_err() {
+                            return Result::Err("[rbatis] exec fail:".to_string() + exec_result.err().unwrap().to_string().as_str());
+                        }
+                        return exec_result.unwrap().decode();
+                    }
+                    _ => {
+                        //exec
+                        let exec_result = conn_opt.unwrap().execute(sql.as_str(), &[]);
+                        if exec_result.is_err() {
+                            return Result::Err("[rbatis] exec fail:".to_string() + exec_result.err().unwrap().to_string().as_str());
+                        }
+                        let mut num = 0.0;
+                        let mut numOpt = Number::from_f64(exec_result.unwrap() as f64);
+                        if numOpt.is_none() {
+                            numOpt = Number::from_f64(num);
+                        }
+                        let r = serde_json::from_value(serde_json::Value::Number(numOpt.unwrap()));
+                        if r.is_err() {
+                            return Result::Err("[rbatis] exec fail:".to_string() + r.err().unwrap().to_string().as_str());
+                        }
+                        return Result::Ok(r.unwrap());
+                    }
                 }
-                return exec_result.unwrap().decode();
             }
             _ => return Result::Err("[rbatis] unsupport database type:".to_string() + db_type)
         }
