@@ -9,7 +9,6 @@ use std::str::FromStr;
 use serde_json::json;
 use serde_json::value::Value::Number;
 
-
 //PG 解析器
 impl Decoder for Vec<Row>{
     fn decode<T>(&mut self) -> Result<T, String> where
@@ -33,7 +32,23 @@ impl Decoder for Vec<Row>{
 
             js = serde_json::Value::Array(vec_v)
         } else if is_number_type(T::decode_name()){
-
+            let mut size = 0;
+            for item in self {
+                if size > 0 {
+                    continue;
+                }
+                let act = decode_row(item);
+                match act {
+                    serde_json::Value::Object(arg) => {
+                        for (_, r) in arg {
+                            js = r;
+                            break
+                        }
+                    }
+                    _ => {}
+                }
+                size += 1;
+            }
         } else{
             let mut result: Result<T, String> = Result::Err("[rbatis] rows.affected_rows > 1,but decode one result!".to_string());
             //not array json

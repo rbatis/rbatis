@@ -13,6 +13,7 @@ use serde_json::Number;
 use std::str::FromStr;
 use serde::de::DeserializeOwned;
 use std::ops::Deref;
+use serde_json::json;
 
 impl Decoder for QueryResult<'_> {
     fn decode<T>(&mut self) -> Result<T, String> where T: DeserializeOwned + RbatisMacro {
@@ -32,9 +33,24 @@ impl Decoder for QueryResult<'_> {
                 vec_v.push(act);
             }
             js = serde_json::Value::Array(vec_v)
-        }else if is_number_type(T::decode_name()){
-
-
+        } else if is_number_type(T::decode_name()) {
+            let mut size = 0;
+            for item in self {
+                if size > 0 {
+                    continue;
+                }
+                let act = decode_row(&item.unwrap());
+                match act {
+                    serde_json::Value::Object(arg) => {
+                        for (_, r) in arg {
+                            js = r;
+                            break
+                        }
+                    }
+                    _ => {}
+                }
+                size += 1;
+            }
         } else {
             let mut result: Result<T, String> = Result::Err("[rbatis] rows.affected_rows > 1,but decode one result!".to_string());
             //not array json
