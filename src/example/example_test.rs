@@ -42,8 +42,6 @@ fn testLoadXml(){
     println!(">>>>>>>>>>>>>>>>>>>>>>get result>>>>>>>>>>>>>>>>>>>>>>>");
     if data_opt.is_ok(){
         let data=data_opt.unwrap();
-        println!("result=========>is object {}",data.is_object());
-        println!("result=========>is array {}",data.is_array());
         println!("result=========>{}",data);
     }else{
         println!("result=========>{}",data_opt.err().unwrap());
