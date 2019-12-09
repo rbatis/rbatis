@@ -31,9 +31,7 @@ fn test_exec_sql(){
         println!("请修改mysql链接 用户名，密码，ip，和数据库名称");
         return;
     }
-    //读取xml文件为String
-    let content = fs::read_to_string("./src/example/Example_ActivityMapper.xml").unwrap();
-    rbatis.load_xml("Example_ActivityMapper.xml".to_string(),content);//加载xml数据
+    rbatis.load_xml("Example_ActivityMapper.xml".to_string(),fs::read_to_string("./src/example/Example_ActivityMapper.xml").unwrap());//加载xml数据
     rbatis.print();//打印已读取的内容
     println!(">>>>>>>>>>>>>>>>>>>>>>start eval method >>>>>>>>>>>>>>>>>>>>>>>");
     //执行到远程mysql 并且获取结果
