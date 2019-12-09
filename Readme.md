@@ -1,9 +1,13 @@
 
 #### A ORM formwork Rustlang-based,dynamic sql, no Runtime,no GC, low Memory use,High Performance orm Framework.
 #### rbatis 是一个高性能的,动态sql,低内存开销的,无runtime,无GC,并发安全的  数据库 ORM框架，并且所有数据传值均使用json（serde_json）
-#### 因为rust语言没有GC,因此框架理论上能承受极大的并发量，并且是内存安全，线程安全，低开销的代码
-#### rust版本构建要求在stable:1.9以上
 [![Build Status](https://travis-ci.org/zhuxiujia/rbatis.svg?branch=master)](https://travis-ci.org/zhuxiujia/rbatis)
+
+
+* 因为rust语言没有GC,因此框架理论上能承受极大的并发量，并且是无锁，内存安全，线程安全，低开销的代码
+* 借鉴GoMybatis（Go语言系）以及Mybatis Plus（Java系）的ORM框架经验
+* 支持async_std库异步的形式（理论上，假设严格按照async_std库替代所有io操作，那么并发量可远远超过go语言）
+* rust版本构建要求 stable:1.9 以上
 
 ##### xml案例: xml_string
 ``` xml
