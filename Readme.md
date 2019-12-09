@@ -105,7 +105,7 @@ println!("[rbatis] result==> {}",data_result.unwrap());
 | web(可独立部署Web UI服务)                | *     |  
 
 
-### 动态运算表达式性能(测试平台 win10,6 core i7,16GB)(原生Rust代码数值运算约等于 1 ns/iter,字符串运算约等于100 ns/iter)
+### 性能测算 (测试平台 win10,6 core i7,16GB)(原生Rust代码数值运算约等于 1 ns/iter,字符串运算约等于100 ns/iter)
 <pre>
      bench: '1 <= 2'  parser_test::bench_parser ... bench:          21 ns/iter (+/- 0)
      bench: '1 >= 2'  parser_test::bench_parser ... bench:          21 ns/iter (+/- 0)
