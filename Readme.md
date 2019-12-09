@@ -84,14 +84,24 @@ println!("[rbatis] result==> {}",data_result.unwrap());
 
 
 ### 支持数据库类型
-| mysql    | postgres | TiDB    | CockroachDB |
-| ------ | ------ | ------ | ------ |
-| √      | √      | *      | *      |
+| 数据库    | 已支持 |
+| ------ | ------ |
+| mysql            | √     |   
+| postgres         | √     |  
+| TiDB             | *     |
+| CockroachDB      | *     |
 
 ### 进度表
-| ast    | crud_support(CRUD模板)    | xmlLoader | expressEngines | resultDecoder | logSystem | dataSourceRouter |
-| ------ | ------ | ------ | ------ | ------ | ------ | ------ |
-| √      | *      | √      | √      | √      | *      | *      |
+| 功能    | 已支持 |
+| ------ | ------ |
+| ast                                     | √     |   
+| crud_support(CRUD模板)                  | *     |  
+| xmlLoader                               | √     |  
+| expressEngines                          | √     |  
+| resultDecoder                           | √     |  
+| logSystem                               | *    |  
+| dataSourceRouter                        | *     |  
+
 
 ### 动态运算表达式性能(测试平台 win10,6 core i7,16GB)(原生Rust代码数值运算约等于 1 ns/iter,字符串运算约等于100 ns/iter)
 <pre>
