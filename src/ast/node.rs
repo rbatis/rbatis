@@ -25,6 +25,9 @@ use crate::ast::where_node::WhereNode;
 * Abstract syntax tree node
 */
 pub trait SqlNode {
+    /**
+    env: &mut Value,因为bind node 会绑定变量，env必须为可修改的值
+    */
     fn eval(&mut self, env: &mut Value, holder:&mut ConfigHolder) -> Result<String, String>;
 
     fn print(&self,deep:i32) -> String;
