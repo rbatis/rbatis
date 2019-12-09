@@ -1,5 +1,5 @@
 
-use crate::decode::decoder::{Decoder, is_json_array_type};
+use crate::decode::decoder::{Decoder, is_json_array_type, is_number_type};
 use serde::de;
 use rbatis_macro::RbatisMacro;
 use std::borrow::BorrowMut;
@@ -19,13 +19,22 @@ impl Decoder for Vec<Row>{
         if is_json_array_type(T::decode_name()) {
             //is array json
             let mut vec_v = vec![];
-            for i in 0..self.len(){
-                let mut item=self.get_mut(i);
-                let act= decode_row(&item.unwrap());
+            for item in self {
+                let act= decode_row(item);
                 vec_v.push(act);
             }
             js = serde_json::Value::Array(vec_v);
-        }else{
+        }else if T::decode_name().eq("serde_json::Value") {
+            let mut vec_v = vec![];
+            for item in self {
+                let act= decode_row(item);
+                vec_v.push(act);
+            }
+
+            js = serde_json::Value::Array(vec_v)
+        } else if is_number_type(T::decode_name()){
+
+        } else{
             let mut result: Result<T, String> = Result::Err("[rbatis] rows.affected_rows > 1,but decode one result!".to_string());
             //not array json
             let size=self.len();

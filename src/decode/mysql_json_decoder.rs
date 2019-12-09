@@ -1,4 +1,4 @@
-use crate::decode::decoder::{Decoder, is_json_array_type};
+use crate::decode::decoder::{Decoder, is_json_array_type, is_number_type};
 use std::sync::Arc;
 use mysql::{Column, Row, QueryResult};
 use std::result;
@@ -20,19 +20,21 @@ impl Decoder for QueryResult<'_> {
         if is_json_array_type(T::decode_name()) {
             //is array json
             let mut vec_v = vec![];
-            self.for_each(|item| {
+            for item in self {
                 let act = decode_row(&item.unwrap());
                 vec_v.push(act);
-            });
+            }
             js = serde_json::Value::Array(vec_v)
-        }
-        if T::decode_name().eq("serde_json::Value") {
+        } else if T::decode_name().eq("serde_json::Value") {
             let mut vec_v = vec![];
-            self.for_each(|item| {
+            for item in self {
                 let act = decode_row(&item.unwrap());
                 vec_v.push(act);
-            });
+            }
             js = serde_json::Value::Array(vec_v)
+        }else if is_number_type(T::decode_name()){
+
+
         } else {
             let mut result: Result<T, String> = Result::Err("[rbatis] rows.affected_rows > 1,but decode one result!".to_string());
             //not array json

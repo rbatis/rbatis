@@ -66,14 +66,20 @@ impl  RbatisMacro for serde_json::Value{
     }
 }
 
-impl RbatisMacro for String{
-    fn decode_name() -> &'static str {
-       return "String"
-    }
-}
-
 impl RbatisMacro for i32 {
     fn decode_name() -> &'static str {
         return "i32"
+    }
+}
+
+impl RbatisMacro for u32 {
+    fn decode_name() -> &'static str {
+        return "u32"
+    }
+}
+
+impl RbatisMacro for f64 {
+    fn decode_name() -> &'static str {
+        return "f64"
     }
 }
