@@ -116,8 +116,8 @@ println!("[rbatis] result==> {}",data_result.unwrap());
 ///use TPS: 2380952.3809523806 TPS/s
 （综合性能）
 约为:
-操作/纳秒              2440    nano/op 
-事务数/秒   495049.50495049503 TPS/s
+操作/纳秒   2440    nano/op 
+事务数/秒   411522.63 TPS/s
 ``` 
 
 
