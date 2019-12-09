@@ -24,7 +24,13 @@ fn testWriteMethod(){
 fn testLoadXml(){
     println!("start build -------------------------------------------------------");
     let mut rbatis=Rbatis::new();
-    rbatis.load_db_url("".to_string(), "mysql://root:TEST@localhost:3306/test".to_string());//name 为空，则默认数据库
+    let url="mysql://root:TEST@localhost:3306/test";
+    rbatis.load_db_url("".to_string(), url.to_string());//name 为空，则默认数据库
+
+    if url.contains("localhost"){
+        println!("请修改mysql链接 用户名，密码，ip，和数据库名称");
+        return;
+    }
 
     let filePath = "./src/example/Example_ActivityMapper.xml";
     println!(">>>>>>>>>>>>>>>>>>>>>>start load xml file{} >>>>>>>>>>>>>>>>>>>>>>>", filePath);
