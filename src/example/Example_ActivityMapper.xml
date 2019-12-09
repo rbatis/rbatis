@@ -31,13 +31,13 @@
     <!--int countByCondition(@Param("name")String name,@Param("startTime") Date startTime, @Param("endTime")Date endTime);-->
     <select id="countByCondition">
         select count(id) from biz_activity where delete_flag=1
-        <if test="name != nil">
+        <if test="name != null">
             and name like concat('%',#{name},'%')
         </if>
-        <if test="startTime != nil">
+        <if test="startTime != null">
             and create_time >= #{startTime}
         </if>
-        <if test="endTime != nil">
+        <if test="endTime != null">
             and create_time &lt;= #{endTime}
         </if>
     </select>
@@ -81,35 +81,35 @@
     <update id="updateById">
         update biz_activity
         <set>
-            <if test="name != nil">name = #{name},</if>
-            <if test="pcLink != nil">pc_link = #{pcLink},</if>
-            <if test="h5Link != nil">h5_link = #{h5Link},</if>
-            <if test="remark != nil">remark = #{remark},</if>
-            <if test="createTime != nil">create_time = #{createTime},</if>
-            <if test="deleteFlag != nil ">delete_flag = #{deleteFlag},</if>
+            <if test="name != null">name = #{name},</if>
+            <if test="pcLink != null">pc_link = #{pcLink},</if>
+            <if test="h5Link != null">h5_link = #{h5Link},</if>
+            <if test="remark != null">remark = #{remark},</if>
+            <if test="createTime != null">create_time = #{createTime},</if>
+            <if test="deleteFlag != null ">delete_flag = #{deleteFlag},</if>
         </set>
         where id = #{id} and delete_flag = 1
     </update>
     <insert id="insert">
         insert into biz_activity
         <trim prefix="(" suffix=")" suffix_overrides=",">
-            <if test="id != nil">id,</if>
-            <if test="name != nil">name,</if>
-            <if test="pcLink != nil">pc_link,</if>
-            <if test="h5Link != nil">h5_link,</if>
-            <if test="remark != nil">remark,</if>
-            <if test="createTime != nil">create_time,</if>
-            <if test="deleteFlag != nil">delete_flag,</if>
+            <if test="id != null">id,</if>
+            <if test="name != null">name,</if>
+            <if test="pcLink != null">pc_link,</if>
+            <if test="h5Link != null">h5_link,</if>
+            <if test="remark != null">remark,</if>
+            <if test="createTime != null">create_time,</if>
+            <if test="deleteFlag != null">delete_flag,</if>
         </trim>
 
         <trim prefix="values (" suffix=")" suffix_overrides=",">
-            <if test="id != nil">#{id},</if>
-            <if test="name != nil">#{name},</if>
-            <if test="pcLink != nil">#{pcLink},</if>
-            <if test="h5Link != nil">#{h5Link},</if>
-            <if test="remark != nil">#{remark},</if>
-            <if test="createTime != nil">#{createTime},</if>
-            <if test="deleteFlag != nil">#{deleteFlag},</if>
+            <if test="id != null">#{id},</if>
+            <if test="name != null">#{name},</if>
+            <if test="pcLink != null">#{pcLink},</if>
+            <if test="h5Link != null">#{h5Link},</if>
+            <if test="remark != null">#{remark},</if>
+            <if test="createTime != null">#{createTime},</if>
+            <if test="deleteFlag != null">#{deleteFlag},</if>
         </trim>
     </insert>
 
@@ -125,7 +125,7 @@
     <sql id="links">
         pc_link,h5_link
         <!--不启用TypeConvert的话，使用${} 而不是 #{}-->
-        <if test="column != nil">,${column}</if>
+        <if test="column != null">,${column}</if>
     </sql>
 
     <select id="selectLinks">
