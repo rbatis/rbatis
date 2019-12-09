@@ -24,6 +24,15 @@ impl ConnPool{
             return Result::Ok(self.mysql_map.get_mut(&name));
         }
     }
+    pub fn get_postage_conn(&mut self,name:String,conf:&DBConfig)->Result<Option<&mut postgres::Client>,String>{
+        if self.pg_map.get(&name).is_some() {
+            return Result::Ok(self.pg_map.get_mut(&name));
+        }else{
+            let mysql_coon = driver_util::get_postage_conn(conf)?;
+            self.pg_map.insert(name.clone(), mysql_coon);
+            return Result::Ok(self.pg_map.get_mut(&name));
+        }
+    }
 }
 
 #[test]

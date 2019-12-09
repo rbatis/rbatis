@@ -90,7 +90,15 @@ impl Rbatis {
                 }
                 return exec_result.unwrap().decode();
             }
-            "postgres" => {}
+            "postgres" => {
+                let conn_opt = self.conn_pool.get_postage_conn("".to_string(), conf)?;
+                //TODO conn_opt.unwrap().query 做 query 和exec
+                let exec_result = conn_opt.unwrap().query(sql.as_str(), &[]);
+                if exec_result.is_err() {
+                    return Result::Err("[rbatis] exec fail:".to_string() + exec_result.err().unwrap().to_string().as_str());
+                }
+                return exec_result.unwrap().decode();
+            }
             _ => return Result::Err("[rbatis] unsupport database type:".to_string() + db_type)
         }
         let vv = serde_json::from_str(r#"{"a":1}"#).unwrap();
