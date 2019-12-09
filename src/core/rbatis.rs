@@ -74,7 +74,7 @@ impl Rbatis {
             return Result::Err("[rbatis] find method fail,name:'".to_string() +mapper_name.to_string().as_str() + id + "'");
         }
         let sql = node.unwrap().eval(env, &mut self.holder)?;
-        println!("[rbatis] create sql>>>>>>>>>>>>>>>>>>>>> {}", sql);
+        println!("[rbatis] Query ==>  {}", sql);
         let conf_opt = self.db_configs.get("");
         if conf_opt.is_none() {
             return Result::Err("[rbatis] find default database url config fail！".to_string());
