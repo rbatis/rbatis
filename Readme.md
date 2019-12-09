@@ -19,9 +19,9 @@
         <result column="pc_link" property="pcLink" lang_type="string"/>
         <result column="h5_link" property="h5Link" lang_type="string"/>
         <result column="remark" property="remark" lang_type="string"/>
-        <result column="version" property="version" lang_type="int" version_enable="true"/>
+        <result column="version" property="version" lang_type="number" version_enable="true"/>
         <result column="create_time" property="createTime" lang_type="time"/>
-        <result column="delete_flag" property="deleteFlag" lang_type="int" logic_enable="true" logic_undelete="1" logic_deleted="0"/>
+        <result column="delete_flag" property="deleteFlag" lang_type="number" logic_enable="true" logic_undelete="1" logic_deleted="0"/>
     </result_map>
     <select id="select_by_condition" result_map="BaseResultMap">
             <bind name="pattern" value="'%' + name + '%'"/>
