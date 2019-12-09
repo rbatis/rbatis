@@ -8,7 +8,7 @@
 * 性能极高,例子中的select id="select_by_condition"内的代码 单线程可轻松拉起411522.63 TPS/s以上并发（直接返回数据（数据库查询时间损耗0），win10,6 core i7,16GB）  多线程更高 远超go语言版本的GoMyBatis
 * 借鉴GoMybatis（Go语言系）以及Mybatis Plus（Java系）的ORM框架经验 例如乐观锁+版本号
 * 支持async_std库异步的形式（理论上，假设严格按照async_std库替代所有io操作，那么并发量可远远超过go语言）
-* rust版本构建要求 stable:1.9 以上
+* 基于Rust语言稳定版构建，要求 stable:1.9 以上
 
 ##### xml案例: xml_string
 ``` xml
