@@ -89,21 +89,21 @@ println!("[rbatis] result==> {}",data_result.unwrap());
 | ------ | ------ |
 | mysql            | √     |   
 | postgres         | √     |  
-| TiDB             | *     |
-| CockroachDB      | *     |
+| TiDB             | x     |
+| CockroachDB      | x     |
 
 ### 进度表
 | 功能    | 已支持 |
 | ------ | ------ |
-| ast                                     | √     |   
-| crud_support(CRUD模板)                  | *     |  
+| ast                                     | √     |     
 | xmlLoader                               | √     |  
 | expressEngines                          | √     |  
 | resultDecoder                           | √     |  
-| tx(事务/事务嵌套/注解声明式事务)          | *     |  
-| logSystem                               | *     |  
-| dataSourceRouter                        | *     |  
-| web(可独立部署Web UI服务)                | *     |  
+| crud_support(CRUD模板)                  | x     |
+| tx(事务/事务嵌套/注解声明式事务)          | x     |  
+| logSystem                               | x     |  
+| dataSourceRouter                        | x     |  
+| web(可独立部署Web UI服务)                | x     |  
 
 
 ### 性能测算 (测试平台 win10,6 core i7,16GB)
