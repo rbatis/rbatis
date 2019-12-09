@@ -19,7 +19,7 @@ impl Decoder for QueryResult<'_> {
     fn decode<T>(&mut self) -> Result<T, String> where T: DeserializeOwned + RbatisMacro {
         let mut js = serde_json::Value::Null;
         if is_json_array_type(T::decode_name()) {
-            //is array json
+            //decode array
             let mut vec_v = vec![];
             for item in self {
                 let act = decode_row(&item.unwrap());
@@ -27,6 +27,7 @@ impl Decoder for QueryResult<'_> {
             }
             js = serde_json::Value::Array(vec_v)
         } else if T::decode_name().eq("serde_json::Value") {
+            //decode json
             let mut vec_v = vec![];
             for item in self {
                 let act = decode_row(&item.unwrap());
@@ -34,6 +35,7 @@ impl Decoder for QueryResult<'_> {
             }
             js = serde_json::Value::Array(vec_v)
         } else if is_number_type(T::decode_name()) {
+            //decode number
             let mut size = 0;
             for item in self {
                 if size > 0 {
@@ -52,6 +54,7 @@ impl Decoder for QueryResult<'_> {
                 size += 1;
             }
         } else {
+            //decode struct
             let mut result: Result<T, String> = Result::Err("[rbatis] rows.affected_rows > 1,but decode one result!".to_string());
             //not array json
             let mut index = 0;
