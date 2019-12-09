@@ -8,8 +8,8 @@ pub struct DBConfig {
     pub db_name:String,
     pub db_user: String,
     pub db_pwd: String,
-    pub addr: String,
-    pub port: i32,
+    pub db_addr: String,
+    pub db_port: i32,
 }
 
 impl DBConfig {
@@ -49,8 +49,8 @@ impl DBConfig {
             db_name: db_name.to_string(),
             db_user: db_user.to_string(),
             db_pwd: db_pwd.to_string(),
-            addr: addr.to_string(),
-            port: port.parse().unwrap(),
+            db_addr: addr.to_string(),
+            db_port: port.parse().unwrap(),
         });
     }
 }
