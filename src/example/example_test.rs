@@ -31,13 +31,12 @@ fn test_exec_sql(){
         println!("请修改mysql链接 用户名，密码，ip，和数据库名称");
         return;
     }
-
-    let filePath = "./src/example/Example_ActivityMapper.xml";
-    println!(">>>>>>>>>>>>>>>>>>>>>>start load xml file{} >>>>>>>>>>>>>>>>>>>>>>>", filePath);
-    let content = fs::read_to_string(filePath).unwrap();
-    rbatis.load_xml("Example_ActivityMapper.xml".to_string(),content);
-    rbatis.print();
+    //读取xml文件为String
+    let content = fs::read_to_string("./src/example/Example_ActivityMapper.xml").unwrap();
+    rbatis.load_xml("Example_ActivityMapper.xml".to_string(),content);//加载xml数据
+    rbatis.print();//打印已读取的内容
     println!(">>>>>>>>>>>>>>>>>>>>>>start eval method >>>>>>>>>>>>>>>>>>>>>>>");
+    //执行到远程mysql 并且获取结果
     let data_opt:Result<serde_json::Value,String>=rbatis.eval("Example_ActivityMapper.xml".to_string(),"select_by_condition",&mut json!({
        "name":null,
        "startTime":null,
