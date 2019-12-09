@@ -117,3 +117,6 @@ println!("[rbatis] result==> {}",data_result.unwrap());
      bench: '1 < 2'   parser_test::bench_parser ... bench:          21 ns/iter (+/- 0) 
      bench: ''1'+'1'' parser_test::bench_parser ... bench:          118 ns/iter (+/- 1)
 </pre>
+         
+## 欢迎右上角点下 star 或者 微信 捐赠 和 赞助~
+![Image text](https://zhuxiujia.github.io/gomybatis.io/assets/wx_account.jpg)
