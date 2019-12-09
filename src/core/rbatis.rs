@@ -146,8 +146,6 @@ impl Rbatis {
             }
             _ => return Result::Err("[rbatis] unsupport database type:".to_string() + db_type)
         }
-        let vv = serde_json::from_str(r#"{"a":1}"#).unwrap();
-        return Result::Ok(vv);
     }
 
     pub fn print(&self) -> String {
