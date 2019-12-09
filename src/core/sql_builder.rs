@@ -190,8 +190,8 @@ fn test_link_postgres() {
 //}
 
 
-//use Time: 0.108 s,each:1080 nano/op
-//use TPS: 917431.1926605505 TPS/s
+//use Time: 0.042 s,each:420 nano/op
+//use TPS: 2380952.3809523806 TPS/s
 #[test]
 fn test_benchmark_tps() {
     let now=Local::now();
