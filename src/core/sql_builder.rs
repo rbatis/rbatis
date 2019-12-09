@@ -190,8 +190,8 @@ fn test_link_postgres() {
 //}
 
 
-//use Time: 0.638 s,each:6380 nano/op
-//use TPS: 156739.8119122257 TPS/s
+//use Time: 0.108 s,each:1080 nano/op
+//use TPS: 917431.1926605505 TPS/s
 #[test]
 fn test_benchmark_tps() {
     let now=Local::now();
@@ -199,7 +199,7 @@ fn test_benchmark_tps() {
     ops.user(Some("root"));
     ops.pass(Some("TEST"));
     ops.db_name(Some("test"));
-    ops.ip_or_hostname(Some("localhost"));
+    ops.ip_or_hostname(Some("115.220.9.139"));
 
     let mut conn = Conn::new(ops).unwrap();
     let mut rows = conn.prep_exec("SELECT * from biz_activity limit 1;", ()).unwrap();
