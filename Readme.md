@@ -4,39 +4,7 @@
 #### rust版本构建要求在stable:1.9以上
 [![Build Status](https://travis-ci.org/zhuxiujia/rbatis.svg?branch=master)](https://travis-ci.org/zhuxiujia/rbatis)
 
-
-##### rust案例:
-``` rust
-use crate::core::rbatis::Rbatis;
-use serde_json::{json, Value};
-use rbatis_macro_derive::RbatisMacro;
-use rbatis_macro::RbatisMacro;
-
-/**
-* 数据库表模型
-*/
-#[derive(Serialize, Deserialize, Debug, Clone,RbatisMacro)]
-pub struct Activity {
-    pub id: Option<String>,
-    pub name: Option<String>,
-    pub version: Option<i32>,
-}
-
-//......
-let data_result:Result<serde_json::Value,String>=rbatis.eval("".to_string(), "select_by_condition", &mut json!({
-       "name":null,
-       "startTime":null,
-       "endTime":null,
-       "page":null,
-       "size":null,
-    }));
-println!("[rbatis] result==> {}",data_result.unwrap());
-
-//.......执行输出结果
-//[rbatis] Query ==>   select * from biz_activity  order by create_time desc
-//[rbatis] result==> [{"create_time":"\"2019-05-27 10:25:41\"","delete_flag":1,"h5_banner_img":"\"http://47.110.8.203:8080/group1/default/20190527/10/25/0/新人专享banner.jpg?download=0\"","h5_link":"\"http://115.220.9.139:8002/newuser/\"","id":"\"dfbdd779-5f70-4b8f-9921-a235a9c75b69\"","name":"\"新人专享\"","pc_banner_img":"\"http://47.110.8.203:8080/group1/default/20190527/10/25/0/新人专享banner.jpg?download=0\"","pc_link":"\"http://115.220.9.139:8002/newuser/\"","remark":"\"\"","sort":"\"\"","status":0,"version":6},{"create_time":"\"2019-05-27 10:25:41\"","delete_flag":1,"h5_banner_img":"\"http://47.110.8.203:8080/group1/default/20190527/10/25/0/新人专享banner.jpg?download=0\"","h5_link":"\"http://115.220.9.139:8002/newuser/\"","id":"\"dfbdd779-5f70-4b8f-9921-c235a9c75b69\"","name":"\"新人专享\"","pc_banner_img":"\"http://47.110.8.203:8080/group1/default/20190527/10/25/0/新人专享banner.jpg?download=0\"","pc_link":"\"http://115.220.9.139:8002/newuser/\"","remark":"\"\"","sort":"\"\"","status":0,"version":6}]
-```
-##### xml案例:
+##### xml案例: xml_string
 ``` xml
 <mapper>
     <result_map id="BaseResultMap">
@@ -62,6 +30,39 @@ println!("[rbatis] result==> {}",data_result.unwrap());
         </select>
 </mapper>
 ``` 
+##### rust案例:
+``` rust
+use crate::core::rbatis::Rbatis;
+use serde_json::{json, Value};
+use rbatis_macro_derive::RbatisMacro;
+use rbatis_macro::RbatisMacro;
+/**
+* 数据库表模型
+*/
+#[derive(Serialize, Deserialize, Debug, Clone,RbatisMacro)]
+pub struct Activity {
+    pub id: Option<String>,
+    pub name: Option<String>,
+    pub version: Option<i32>,
+}
+
+//......
+let mut rbatis=Rbatis::new();
+rbatis.load_xml("Example_ActivityMapper.xml".to_string(),xml_string);//读取上面的xml
+let data_result:Result<serde_json::Value,String>=rbatis.eval("".to_string(), "select_by_condition", &mut json!({
+       "name":null,
+       "startTime":null,
+       "endTime":null,
+       "page":null,
+       "size":null,
+    }));
+println!("[rbatis] result==> {}",data_result.unwrap());
+
+//.......执行输出结果
+//[rbatis] Query ==>   select * from biz_activity  order by create_time desc
+//[rbatis] result==> [{"create_time":"\"2019-05-27 10:25:41\"","delete_flag":1,"h5_banner_img":"\"http://47.110.8.203:8080/group1/default/20190527/10/25/0/新人专享banner.jpg?download=0\"","h5_link":"\"http://115.220.9.139:8002/newuser/\"","id":"\"dfbdd779-5f70-4b8f-9921-a235a9c75b69\"","name":"\"新人专享\"","pc_banner_img":"\"http://47.110.8.203:8080/group1/default/20190527/10/25/0/新人专享banner.jpg?download=0\"","pc_link":"\"http://115.220.9.139:8002/newuser/\"","remark":"\"\"","sort":"\"\"","status":0,"version":6},{"create_time":"\"2019-05-27 10:25:41\"","delete_flag":1,"h5_banner_img":"\"http://47.110.8.203:8080/group1/default/20190527/10/25/0/新人专享banner.jpg?download=0\"","h5_link":"\"http://115.220.9.139:8002/newuser/\"","id":"\"dfbdd779-5f70-4b8f-9921-c235a9c75b69\"","name":"\"新人专享\"","pc_banner_img":"\"http://47.110.8.203:8080/group1/default/20190527/10/25/0/新人专享banner.jpg?download=0\"","pc_link":"\"http://115.220.9.139:8002/newuser/\"","remark":"\"\"","sort":"\"\"","status":0,"version":6}]
+```
+
 
 * 简洁如同Java的Mybatis,比肩C/C++的极高性能
 * 可拓展的sql解析执行引擎
