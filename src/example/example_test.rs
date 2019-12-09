@@ -22,16 +22,16 @@ fn testWriteMethod(){
 
 #[test]
 fn testLoadXml(){
-    let mut holder= ConfigHolder::new();
-    let filePath = "./src/example/Example_ActivityMapper.xml";
-    println!(">>>>>>>>>>>>>>>>>>>>>>start load {} >>>>>>>>>>>>>>>>>>>>>>>", filePath);
-    let content = fs::read_to_string(filePath).unwrap();
-    //println!("With text:/n{}", content);
     println!("start build -------------------------------------------------------");
     let mut rbatis=Rbatis::new();
-    rbatis.load_xml("".to_string(),content);
     rbatis.load_db_url("".to_string(), "mysql://root:TEST@localhost:3306/test".to_string());//name 为空，则默认数据库
+
+    let filePath = "./src/example/Example_ActivityMapper.xml";
+    println!(">>>>>>>>>>>>>>>>>>>>>>start load xml file{} >>>>>>>>>>>>>>>>>>>>>>>", filePath);
+    let content = fs::read_to_string(filePath).unwrap();
+    rbatis.load_xml("".to_string(),content);
     rbatis.print();
+    println!(">>>>>>>>>>>>>>>>>>>>>>start eval method >>>>>>>>>>>>>>>>>>>>>>>");
     let data_opt:Result<serde_json::Value,String>=rbatis.eval("".to_string(),"select_by_condition",&mut json!({
        "name":null,
        "startTime":null,
@@ -39,6 +39,7 @@ fn testLoadXml(){
        "page":null,
        "size":null,
     }));
+    println!(">>>>>>>>>>>>>>>>>>>>>>get result>>>>>>>>>>>>>>>>>>>>>>>");
     if data_opt.is_ok(){
         let data=data_opt.unwrap();
         println!("result=========>is object {}",data.is_object());
@@ -47,4 +48,5 @@ fn testLoadXml(){
     }else{
         println!("result=========>{}",data_opt.err().unwrap());
     }
+    println!(">>>>>>>>>>>>>>>>>>>>>> eval done >>>>>>>>>>>>>>>>>>>>>>>");
 }
