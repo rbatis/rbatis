@@ -12,7 +12,7 @@ struct Example{
 
 
 #[test]
-fn testWriteMethod(){
+fn test_write_method(){
     let e=Example{
         select_by_condition: || {println!("select * from table");}
     };
@@ -21,7 +21,7 @@ fn testWriteMethod(){
 
 
 #[test]
-fn testLoadXml(){
+fn test_exec_sql(){
     println!("start build -------------------------------------------------------");
     let mut rbatis=Rbatis::new();
     let url="mysql://root:TEST@localhost:3306/test";
