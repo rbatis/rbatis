@@ -99,8 +99,10 @@ println!("[rbatis] result==> {}",data_result.unwrap());
 | xmlLoader                               | √     |  
 | expressEngines                          | √     |  
 | resultDecoder                           | √     |  
-| logSystem                               | *    |  
+| tx(事务/事务嵌套/注解声明式事务)          | *     |  
+| logSystem                               | *     |  
 | dataSourceRouter                        | *     |  
+| web(可独立部署Web UI服务)                | *     |  
 
 
 ### 动态运算表达式性能(测试平台 win10,6 core i7,16GB)(原生Rust代码数值运算约等于 1 ns/iter,字符串运算约等于100 ns/iter)
