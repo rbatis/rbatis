@@ -105,7 +105,23 @@ println!("[rbatis] result==> {}",data_result.unwrap());
 | web(可独立部署Web UI服务)                | *     |  
 
 
-### 性能测算 (测试平台 win10,6 core i7,16GB)(原生Rust代码数值运算约等于 1 ns/iter,字符串运算约等于100 ns/iter)
+### 性能测算 (测试平台 win10,6 core i7,16GB)
+#### 分步骤压测
+``` 
+（sql构建性能）Example_ActivityMapper.xml -> select_by_condition
+///use Time: 0.202 s,each:2020 nano/op
+///use TPS: 495049.50495049503 TPS/s
+（查询结果解码性能）Example_ActivityMapper.xml -> select_by_condition
+///use Time: 0.042 s,each:420 nano/op
+///use TPS: 2380952.3809523806 TPS/s
+（综合性能）
+约为:
+操作/纳秒              2440    nano/op 
+事务数/秒   495049.50495049503 TPS/s
+``` 
+
+
+#### (原生Rust代码数值运算约等于 1 ns/iter,字符串运算约等于100 ns/iter)
 <pre>
      bench: '1 <= 2'  parser_test::bench_parser ... bench:          21 ns/iter (+/- 0)
      bench: '1 >= 2'  parser_test::bench_parser ... bench:          21 ns/iter (+/- 0)
