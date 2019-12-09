@@ -16,44 +16,35 @@ use std::sync::Mutex;
 use crate::utils::driver_util;
 use mysql::Conn;
 use crate::decode::decoder::Decoder;
+use crate::core::node_type_map_factory::create_node_type_map;
 
 pub struct Rbatis {
-    node_types: HashMap<String, NodeType>,
+    pub mapper_map: HashMap<String, HashMap<String, NodeType>>,
     //动态sql运算节点集合
-    holder: ConfigHolder,
+    pub holder: ConfigHolder,
     //动态sql节点配置
-    db_configs: HashMap<String, DBConfig>,
+    pub db_configs: HashMap<String, DBConfig>,
     //数据库连接配置
-   pub conn_pool: ConnPool,
+    pub conn_pool: ConnPool,
 }
 
 impl Rbatis {
-    pub fn new(xml_content: String) -> Rbatis {
-        //TODO load xml_content string,create ast
-        let holder = ConfigHolder::new();
-        let nodes = load_xml(xml_content);
-        let data = loop_decode_xml(&nodes, &holder);
-        let mut m = HashMap::new();
-        for x in data {
-            match x.clone() {
-                NodeType::NSelectNode(node) => m.insert(node.id, x),
-                NodeType::NDeleteNode(node) => m.insert(node.id, x),
-                NodeType::NUpdateNode(node) => m.insert(node.id, x),
-                NodeType::NInsertNode(node) => m.insert(node.id, x),
-
-                _ => m.insert("unknow".to_string(), NodeType::Null),
-            };
-        }
+    pub fn new() -> Rbatis {
         return Rbatis {
-            holder: holder,
-            node_types: m,
+            mapper_map: HashMap::new(),
+            holder: ConfigHolder::new(),
             db_configs: HashMap::new(),
             conn_pool: ConnPool::new(),
         };
     }
 
+    pub fn load_xml(&mut self, key: String, content: String) {
+        self.mapper_map.insert(key, create_node_type_map(content,&self.holder));
+    }
+
+
     /// 设置数据库默认url，如果失败返回错误信息
-    pub fn set_db_url(&mut self, name: String, url: String) -> Option<String> {
+    pub fn load_db_url(&mut self, name: String, url: String) -> Option<String> {
         let db_config_opt = DBConfig::new(url);
         if db_config_opt.is_ok() {
             if name.is_empty() {
@@ -73,31 +64,33 @@ impl Rbatis {
     }
 
 
-    pub fn eval<T>(&mut self, id: &str, env: &mut Value) -> Result<T, String> where T: de::DeserializeOwned + RbatisMacro {
-        let mut node = self.node_types.get_mut(id);
+    pub fn eval<T>(&mut self, mapper_name: String, id: &str, env: &mut Value) -> Result<T, String> where T: de::DeserializeOwned + RbatisMacro {
+        let mapper_opt= self.mapper_map.get_mut(&mapper_name);
+        if mapper_opt.is_none(){
+            return  Result::Err("[rbatis] find mapper fail,name:'".to_string() + mapper_name.to_string().as_str()+"'");
+        }
+        let mut node = mapper_opt.unwrap().get_mut(id);
         if node.is_none() {
-            return Result::Err("[rbatis] find method fail:".to_string() + id + " is none");
+            return Result::Err("[rbatis] find method fail,name:'".to_string() +mapper_name.to_string().as_str() + id + "'");
         }
         let sql = node.unwrap().eval(env, &mut self.holder)?;
-        println!("[rbatis] create sql>>>>>>>>>>>>>>>>>>>>> {}",sql);
+        println!("[rbatis] create sql>>>>>>>>>>>>>>>>>>>>> {}", sql);
         let conf_opt = self.db_configs.get("");
         if conf_opt.is_none() {
-            return Result::Err("[rbatis] find database url config fail!".to_string());
+            return Result::Err("[rbatis] find default database url config fail！".to_string());
         }
         let conf = conf_opt.unwrap();
         let db_type = conf.db_type.as_str();
         match db_type {
             "mysql" => {
-                let conn_opt =self.conn_pool.get_mysql_conn("".to_string(), conf)?;
+                let conn_opt = self.conn_pool.get_mysql_conn("".to_string(), conf)?;
                 let exec_result = conn_opt.unwrap().prep_exec(sql, {});
-                if exec_result.is_err(){
-                    return Result::Err("[rbatis] exec fail:".to_string()+exec_result.err().unwrap().to_string().as_str());
+                if exec_result.is_err() {
+                    return Result::Err("[rbatis] exec fail:".to_string() + exec_result.err().unwrap().to_string().as_str());
                 }
                 return exec_result.unwrap().decode();
             }
-            "postgres" => {
-
-            }
+            "postgres" => {}
             _ => return Result::Err("[rbatis] unsupport database type:".to_string() + db_type)
         }
         let vv = serde_json::from_str(r#"{"a":1}"#).unwrap();
@@ -106,11 +99,13 @@ impl Rbatis {
 
     pub fn print(&self) -> String {
         let mut result = String::new();
-        for (key, node) in &self.node_types {
-            let data = node.print(0);
-            let data_str = data.as_str();
-            result += data_str;
-            println!("\n{}", data_str);
+        for (key, node_types) in &self.mapper_map {
+            for (key, node) in node_types {
+                let data = node.print(0);
+                let data_str = data.as_str();
+                result += data_str;
+                println!("\n{}", data_str);
+            }
         }
         return result;
     }

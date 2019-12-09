@@ -28,10 +28,11 @@ fn testLoadXml(){
     let content = fs::read_to_string(filePath).unwrap();
     //println!("With text:/n{}", content);
     println!("start build -------------------------------------------------------");
-    let mut rbatis=Rbatis::new(content);
-    rbatis.set_db_url("".to_string(),"mysql://root:TEST@localhost:3306/test".to_string());//name 为空，则默认数据库
+    let mut rbatis=Rbatis::new();
+    rbatis.load_xml("".to_string(),content);
+    rbatis.load_db_url("".to_string(), "mysql://root:TEST@localhost:3306/test".to_string());//name 为空，则默认数据库
     rbatis.print();
-    let data_opt:Result<serde_json::Value,String>=rbatis.eval("select_by_condition",&mut json!({
+    let data_opt:Result<serde_json::Value,String>=rbatis.eval("".to_string(),"select_by_condition",&mut json!({
        "name":null,
        "startTime":null,
        "endTime":null,
