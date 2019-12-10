@@ -4,9 +4,9 @@
 [![Build Status](https://travis-ci.org/zhuxiujia/rbatis.svg?branch=master)](https://travis-ci.org/zhuxiujia/rbatis)
 
 
-* 因为rust语言没有GC,因此框架理论上能承受极大的并发量，并且是无锁，内存安全，线程安全，低开销的代码
-* 性能极高,例子中的select id="select_by_condition"内的代码 单线程Bencher压测可轻松拉起411522.63 TPS/s（直接返回数据（数据库查询时间损耗0），win10,6 core i7,16GB）  多线程更高 远超go语言版本的GoMyBatis
-* 借鉴GoMybatis（Go语言系）以及Mybatis Plus（Java系）的ORM框架经验 例如乐观锁+版本号
+* 极少使用锁，内存安全，线程安全，低开销，为rust语言没有GC,因此框架理论上能承受极大的并发量
+* 性能极高，例子中的select id="select_by_condition"内的代码 单线程Bencher压测可轻松拉起411522.63 TPS/s（直接返回数据（数据库查询时间损耗0），win10,6 core i7,16GB）  多线程更高 远超go语言版本的GoMyBatis
+* 多功能，借鉴GoMybatis（Go语言系）以及Mybatis Plus（Java系）的ORM框架经验 例如乐观锁+版本号+逻辑删除
 * 支持async_std库异步的形式（理论上，假设严格按照async_std库替代所有io操作，那么并发量可远远超过go语言）
 * 基于Rust语言稳定版构建，要求 stable:1.9 以上
 
@@ -77,21 +77,23 @@ println!("[rbatis] result==> {}",data_result.unwrap());
 | TiDB             | x     |
 | CockroachDB      | x     |
 
-### 进度表
+### 进度表-按照顺序实现
 | 功能    | 已支持 |
 | ------ | ------ |
-| ast                                     | √     |     
-| xmlLoader                               | √     |  
-| expressEngines                          | √     |  
-| resultDecoder                           | √     |  
-| CRUD(CRUD模板)                           | x     |
-| PagePlug(分页插件)                       | x     |
-| GroupQueryPlug(组合查询插件，高性能应用对关联查询进行分解代替join)                       | x     |
-| SecurityPlug(sql注入拦截插件)           | x     |
-| tx(事务/事务嵌套/注解声明式事务)          | x     |  
-| logSystem                               | x     |  
-| dataSourceRouter                        | x     |  
-| web(可独立部署Web UI服务)                | x     |  
+| ast                                                    | √     |     
+| XmlLoader（xml解析器)                                   | √     |  
+| ExpressEngines（表达式执行引擎)                          | √     |  
+| ResultDecoder（query结果解码器)                          | √     |  
+| CRUD(内置CRUD模板)                                      | x     |
+| LogicDelPlug(逻辑删除插件)                               | x     |
+| VersionLockPlug(乐观锁插件,防止并发修改数据)               | x     |
+| Tx(事务/事务嵌套/注解声明式事务)                           | x     |  
+| LogSystem(日志组件)                                     | x     |  
+| DataSourceRouter(动态数据源路由)                         | x     |  
+| PagePlug(分页插件)                                      | x     |
+| GroupQueryPlug(组合查询插件，对关联查询进行分解代替join)    | x     |
+| SecurityPlug(sql注入拦截插件)                            | x     |
+| web(可独立部署Web UI服务)                                | x     |  
 
 
 ### 性能测算 (测试平台 win10,6 core i7,16GB)
