@@ -5,7 +5,7 @@
 
 
 * 因为rust语言没有GC,因此框架理论上能承受极大的并发量，并且是无锁，内存安全，线程安全，低开销的代码
-* 性能极高,例子中的select id="select_by_condition"内的代码 单线程可轻松拉起411522.63 TPS/s以上并发（直接返回数据（数据库查询时间损耗0），win10,6 core i7,16GB）  多线程更高 远超go语言版本的GoMyBatis
+* 性能极高,例子中的select id="select_by_condition"内的代码 单线程Bencher压测可轻松拉起411522.63 TPS/s（直接返回数据（数据库查询时间损耗0），win10,6 core i7,16GB）  多线程更高 远超go语言版本的GoMyBatis
 * 借鉴GoMybatis（Go语言系）以及Mybatis Plus（Java系）的ORM框架经验 例如乐观锁+版本号
 * 支持async_std库异步的形式（理论上，假设严格按照async_std库替代所有io操作，那么并发量可远远超过go语言）
 * 基于Rust语言稳定版构建，要求 stable:1.9 以上
