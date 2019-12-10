@@ -80,8 +80,8 @@ println!("[rbatis] result==> {}",data_result.unwrap());
 ### 进度表-按照顺序实现
 | 功能    | 已支持 |
 | ------ | ------ |
-| ast                                                    | √     |     
-| XmlLoader（xml解析器)                                   | √     |  
+| AstTree（xml抽象语法树)                                  | √     |     
+| XmlLoader（xml读取器)                                   | √     |  
 | ExpressEngines（表达式执行引擎)                          | √     |  
 | ResultDecoder（query结果解码器)                          | √     |  
 | CRUD(内置CRUD模板)                                      | x     |
