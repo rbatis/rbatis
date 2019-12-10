@@ -84,9 +84,10 @@ println!("[rbatis] result==> {}",data_result.unwrap());
 | xmlLoader                               | √     |  
 | expressEngines                          | √     |  
 | resultDecoder                           | √     |  
-| crud_support(CRUD模板)                  | x     |
-| page_plug(分页插件)                      | x     |
-| security_plug(sql注入拦截插件)           | x     |
+| CRUD(CRUD模板)                           | x     |
+| PagePlug(分页插件)                       | x     |
+| GroupQueryPlug(组合查询插件，高性能应用对关联查询进行分解代替join)                       | x     |
+| SecurityPlug(sql注入拦截插件)           | x     |
 | tx(事务/事务嵌套/注解声明式事务)          | x     |  
 | logSystem                               | x     |  
 | dataSourceRouter                        | x     |  

@@ -147,7 +147,7 @@ fn test_insert_templete_obj() {
 #[test]
 fn test_insert_templete_array() {
     let t = Insert {};
-    let arg = serde_json::from_str(r#"[{"a":"1","delete_flag":1}]"#).unwrap();
+    let arg = serde_json::from_str(r#"[{"a":"1","delete_flag":1},{"a":"1","delete_flag":1}]"#).unwrap();
     let sql = t.eval("activity", arg).unwrap();
     println!("{}", sql);
 }
