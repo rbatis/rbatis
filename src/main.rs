@@ -5,7 +5,7 @@ extern crate rbatis_macro_derive;
 pub mod example;
 pub mod ast;
 pub mod utils;
-pub mod templete;
+pub mod crud;
 pub mod security;
 
 //use test::Bencher;
