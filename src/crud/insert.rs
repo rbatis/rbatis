@@ -12,8 +12,10 @@ impl Insert {
             return Result::Err("[rbatis] arg is null value".to_string());
         }
         if arg.is_object() {
+            //insert object
             return Result::Ok(do_create_obj_sql(sql, arg));
         } else if arg.is_array() {
+            //insert array
             let mut values = "".to_string();
             let arr = arg.as_array().unwrap();
             if arr.len() == 0 {
