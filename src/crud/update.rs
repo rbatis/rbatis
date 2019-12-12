@@ -3,7 +3,7 @@ use serde_json::Value;
 pub struct Update {}
 
 impl Update {
-    pub fn eval<T>(&self, table: &str, arg: Value) -> Result<T, String> {
+    pub fn eval(&self, table: &str, arg: Value) -> Result<String, String> {
         unimplemented!()
         //TODO update by id
 
