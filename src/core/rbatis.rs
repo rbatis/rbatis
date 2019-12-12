@@ -115,7 +115,6 @@ impl Rbatis {
             }
             "postgres" => {
                 let conn_opt = self.conn_pool.get_postage_conn("".to_string(), conf)?;
-                //TODO conn_opt.unwrap().query 做 query 和exec
                 match mapper_func {
                     NodeType::NSelectNode(node) => {
                         //select

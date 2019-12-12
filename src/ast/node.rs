@@ -47,7 +47,6 @@ pub fn do_child_nodes(child_nodes: &mut Vec<NodeType>, env: &mut Value, holder:&
     return Result::Ok(s);
 }
 
-//TODO decode xml
 pub fn loop_decode_xml(xml_vec: &Vec<Element>, holder:&ConfigHolder) -> Vec<NodeType> {
     let mut nodes=vec![];
     for xml in xml_vec {
@@ -102,7 +101,6 @@ pub fn loop_decode_xml(xml_vec: &Vec<Element>, holder:&ConfigHolder) -> Vec<Node
                separator: xml.get_attr("separator")
            })),
            "choose" => nodes.push(NodeType::NChoose(ChooseNode{
-               //todo filter nodes from child nodes
                when_nodes: filter_when_nodes(child_nodes.clone()),
                otherwise_node: filter_otherwise_nodes(child_nodes),
            })),

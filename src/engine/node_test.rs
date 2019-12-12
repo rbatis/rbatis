@@ -52,8 +52,6 @@ fn TestNodeRun() {
     let mut index = 0;
     for item in expressions {
         println!("{}", item.express.clone());
-        //TODO let parserArray = parser(item.to_string(), &OptMap::new());
-
         let mut boxNode = parser::parser(item.express.to_string(), &OptMap::new()).unwrap();
         let result = boxNode.eval(&john).unwrap();
         println!("express: {} >>>>> {}", item.express,&result);

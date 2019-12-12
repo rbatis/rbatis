@@ -5,12 +5,12 @@ pub struct Select {}
 impl Select {
     pub fn eval<T>(&self, table: &str, arg: Value) -> Result<T, String> {
         unimplemented!()
-        //select by id
+        //TODO select by id
 
-        //select by id vec
+        //TODO select by id vec
 
-        //select by map
+        //TODO select by map
 
-        //select by page
+        //TODO select by page
     }
 }
