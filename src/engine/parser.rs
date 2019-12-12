@@ -8,8 +8,6 @@ use std::rc::Rc;
 use std::ops::Deref;
 
 
-//TODO 解决bug
-
 pub fn parser(express: String, opt_map: &OptMap) -> Result<Node,String> {
     let tokens = parser_tokens(&express, opt_map);
     let mut nodes = vec![];
