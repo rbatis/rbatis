@@ -5,6 +5,9 @@ pub struct Select {}
 impl Select {
     pub fn eval(&self, table: &str, arg: Value) -> Result<String, String> {
         unimplemented!();
+        if arg.is_null() {
+            return Result::Err("[rbatis] arg is null value".to_string());
+        }
         //TODO select by id
         if arg.is_string() || arg.is_i64() {
             let select_by_id = do_select_by_id(table, arg)?;
@@ -25,12 +28,8 @@ impl Select {
 }
 
 fn do_select_by_id(table: &str, arg: Value) -> Result<String, String> {
-    let mut sql = "insert into #{table} (#{fields}) VALUES #{values}".to_string();
+    let mut sql = "select * from #{table}".to_string();
     sql = sql.replace("#{table}", table);
-
-    if arg.is_null() {
-        return Result::Err("[rbatis] arg is null value".to_string());
-    }
-    if arg.is_object() {}
+    
     return Result::Err("[rbatis] do_select_by_id fail!".to_string());
 }
