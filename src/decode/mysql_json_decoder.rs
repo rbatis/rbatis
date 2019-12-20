@@ -55,7 +55,7 @@ impl Decoder for QueryResult<'_> {
             }
         } else {
             //decode struct
-            let mut result: Result<T, String> = Result::Err("[rbatis] rows.affected_rows > 1,but decode one result!".to_string());
+            let result: Result<T, String> = Result::Err("[rbatis] rows.affected_rows > 1,but decode one result!".to_string());
             //not array json
             let mut index = 0;
             self.for_each(|item| {

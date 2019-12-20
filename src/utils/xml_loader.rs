@@ -37,7 +37,7 @@ impl Element {
 
 
 pub fn load_xml(file_content:String) -> Vec<Element> {
-    let mut parser = EventReader::from_str(file_content.as_str());
+    let parser = EventReader::from_str(file_content.as_str());
     return parser_func(parser);
 }
 

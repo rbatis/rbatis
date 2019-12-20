@@ -92,8 +92,8 @@ impl Node {
         if self.equal_node_type(&NBinary) {
             let left_node = self.left_binary_node.clone().unwrap();
             let right_node = self.right_binary_node.clone().unwrap();
-            let mut left_v = left_node.eval(env).unwrap_or(Value::Null);
-            let mut right_v = right_node.eval(env).unwrap_or(Value::Null);
+            let left_v = left_node.eval(env).unwrap_or(Value::Null);
+            let right_v = right_node.eval(env).unwrap_or(Value::Null);
             let opt = self.to_string();
             return eval(&left_v, &right_v, opt);
         } else if self.equal_node_type(&NArg){

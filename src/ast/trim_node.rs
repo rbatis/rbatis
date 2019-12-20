@@ -19,7 +19,7 @@ impl SqlNode for TrimNode {
         if is_error {
             return Result::Err(result_value.clone().err().unwrap());
         }
-        let mut result_str = result_value.unwrap();
+        let result_str = result_value.unwrap();
         let mut result = result_str.as_str().trim();
 
         if !self.prefix_overrides.is_empty() {

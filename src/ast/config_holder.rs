@@ -9,7 +9,7 @@ use crate::engine::runtime::RbatisEngine;
 
 #[derive(Clone)]
 pub struct ConfigHolder {
-    pub sql_convert: Rc<SqlArgTypeConvert>,
+    pub sql_convert: Rc<dyn SqlArgTypeConvert>,
     pub engine: RbatisEngine,
 }
 

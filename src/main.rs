@@ -1,4 +1,7 @@
 #![allow(unused_imports)]
+#![allow(unreachable_patterns)]
+#![allow(unused_variables)]
+#![allow(unused_assignments)]
 #[macro_use]
 extern crate lazy_static;
 extern crate rbatis_macro_derive;
@@ -34,7 +37,7 @@ use std::sync::Mutex;
 use utils::bencher::Bencher;
 use example::activity::Activity;
 use async_std::future;
-use crate::security::ArgFilter::ArgFilter;
+use crate::security::arg_filter::ArgFilter;
 use uuid::Uuid;
 
 lazy_static! {
@@ -53,11 +56,6 @@ async fn main() {
     });
     println!("waiting for the task");
     let res = task.await;
-
-    for i in 0..1000{
-
-    }
-
     println!("task ended with result {:?}", res);
 }
 
@@ -71,7 +69,7 @@ fn bench_main() {
     b.iter( || {
          //println!("asdf");
 //         let  mut js:serde_json::Value=serde_json::from_str(r#"{"id":"","name":"","version":0}"#).unwrap();
-//         ArgFilter::filter(&mut js);
+//         arg_filter::filter(&mut js);
         Uuid::new_v4();
     });
 }

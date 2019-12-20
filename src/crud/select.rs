@@ -4,7 +4,6 @@ pub struct Select {}
 
 impl Select {
     pub fn eval(&self, table: &str, arg: Value) -> Result<String, String> {
-        unimplemented!();
         if arg.is_null() {
             return Result::Err("[rbatis] arg is null value".to_string());
         }
