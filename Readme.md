@@ -85,14 +85,14 @@ println!("[rbatis] result==> {}",data_result.unwrap());
 | ExpressEngines（表达式执行引擎)                          | √     |  
 | ResultDecoder（query结果解码器)                          | √     |  
 | CRUD(内置CRUD模板)                                      | x     |
-| LogicDelPlug(逻辑删除插件)                               | x     |
-| VersionLockPlug(乐观锁插件,防止并发修改数据)               | x     |
+| LogicDelPlugin(逻辑删除插件)                               | x     |
+| VersionLockPlugin(乐观锁插件,防止并发修改数据)               | x     |
 | Tx(事务/事务嵌套/注解声明式事务)                           | x     |  
 | LogSystem(日志组件)                                     | x     |  
 | DataSourceRouter(动态数据源路由)                         | x     |  
-| PagePlug(分页插件)                                      | x     |
-| GroupQueryPlug(组合查询插件，对关联查询进行分解代替join)    | x     |
-| SecurityPlug(sql注入拦截插件)                            | x     |
+| PagePlugin(分页插件)                                      | x     |
+| GroupQueryPlugin(组合查询插件，对关联查询进行分解代替join)    | x     |
+| SecurityPlugin(sql注入拦截插件)                            | x     |
 | web(可独立部署Web UI服务)                                | x     |  
 
 
