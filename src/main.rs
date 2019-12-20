@@ -49,6 +49,8 @@ lazy_static! {
 async fn main() {
 //    ARRAY.lock().unwrap().push(1);
 //    println!("{:?}",ARRAY.lock().unwrap().get(0).unwrap());
+    let id = task::current().id();
+    println!("{:?}", id);
     let task = task::spawn(async {
         let id = task::current().id();
         println!("{:?}", id);
