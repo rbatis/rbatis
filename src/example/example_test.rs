@@ -6,6 +6,7 @@ use crate::ast::node::SqlNode;
 use crate::ast::config_holder::ConfigHolder;
 use crate::ast::node_type::NodeType;
 
+
 struct Example{
    pub select_by_condition:fn()
 }
@@ -23,19 +24,19 @@ fn test_write_method(){
 #[test]
 fn test_exec_sql(){
     println!("start build -------------------------------------------------------");
-    let mut rbatis=Rbatis::new();
-    let url="mysql://root:TEST@localhost:3306/test";
+    let mut rbatis = Rbatis::new();
+    let url = "mysql://root:TEST@localhost:3306/test";
     rbatis.load_db_url("".to_string(), url.to_string());//name 为空，则默认数据库
 
-    if url.contains("localhost"){
+    if url.contains("localhost") {
         println!("请修改mysql链接 用户名，密码，ip，和数据库名称");
         return;
     }
-    rbatis.load_xml("Example_ActivityMapper.xml".to_string(),fs::read_to_string("./src/example/Example_ActivityMapper.xml").unwrap());//加载xml数据
+    rbatis.load_xml("Example_ActivityMapper.xml".to_string(), fs::read_to_string("./src/example/Example_ActivityMapper.xml").unwrap());//加载xml数据
     rbatis.print();//打印已读取的内容
     println!(">>>>>>>>>>>>>>>>>>>>>>start eval method >>>>>>>>>>>>>>>>>>>>>>>");
     //执行到远程mysql 并且获取结果
-    let data_opt:Result<serde_json::Value,String>=rbatis.eval("Example_ActivityMapper.xml".to_string(),"select_by_condition",&mut json!({
+    let data_opt: Result<serde_json::Value, String> = rbatis.eval("Example_ActivityMapper.xml".to_string(), "select_by_condition", &mut json!({
        "name":null,
        "startTime":null,
        "endTime":null,
@@ -43,11 +44,11 @@ fn test_exec_sql(){
        "size":null,
     }));
     println!(">>>>>>>>>>>>>>>>>>>>>>get result>>>>>>>>>>>>>>>>>>>>>>>");
-    if data_opt.is_ok(){
-        let data=data_opt.unwrap();
-        println!("result=========>{}",data);
-    }else{
-        println!("result=========>{}",data_opt.err().unwrap());
+    if data_opt.is_ok() {
+        let data = data_opt.unwrap();
+        println!("result=========>{}", data);
+    } else {
+        println!("result=========>{}", data_opt.err().unwrap());
     }
     println!(">>>>>>>>>>>>>>>>>>>>>> eval done >>>>>>>>>>>>>>>>>>>>>>>");
 }
