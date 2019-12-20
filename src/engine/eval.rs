@@ -88,8 +88,6 @@ pub fn eval(left: &Value,
 
 
 fn eq(left:&Value,right:&Value)-> bool{
-//    println!("left:{}",left.clone());
-//    println!("right:{}",left.clone());
     if left.is_null() && right.is_null(){// all null
         return true;
     }else if left.is_null() || right.is_null(){// on null
@@ -103,7 +101,6 @@ fn eq(left:&Value,right:&Value)-> bool{
     }else{
         return false;
     }
-    return false;
 }
 
 #[test]

@@ -52,7 +52,7 @@ impl Decoder for Vec<Row>{
             }
         } else{
             //decode struct
-            let mut result: Result<T, String> = Result::Err("[rbatis] rows.affected_rows > 1,but decode one result!".to_string());
+            let result: Result<T, String> = Result::Err("[rbatis] rows.affected_rows > 1,but decode one result!".to_string());
             //not array json
             let size=self.len();
             if size > 1 {

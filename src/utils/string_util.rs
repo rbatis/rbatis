@@ -5,7 +5,7 @@ use std::collections::HashMap;
 pub fn find_convert_string(arg: &str) -> Vec<String> {
     let mut finds = HashMap::new();
     let chars = arg.bytes();
-    let mut item = &mut String::new();
+    let item = &mut String::new();
     let mut last_index: i32 = -1;
     let mut start_index: i32 = -1;
     let str_bytes: Vec<u8> = arg.bytes().collect();

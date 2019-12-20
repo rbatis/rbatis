@@ -73,7 +73,7 @@ impl Rbatis {
         if mapper_opt.is_none() {
             return Result::Err("[rbatis] find mapper fail,name:'".to_string() + mapper_name.to_string().as_str() + "'");
         }
-        let mut node = mapper_opt.unwrap().get_mut(id);
+        let node = mapper_opt.unwrap().get_mut(id);
         if node.is_none() {
             return Result::Err("[rbatis] find method fail,name:'".to_string() + mapper_name.to_string().as_str() + id + "'");
         }
@@ -130,12 +130,12 @@ impl Rbatis {
                         if exec_result.is_err() {
                             return Result::Err("[rbatis] exec fail:".to_string() + exec_result.err().unwrap().to_string().as_str());
                         }
-                        let mut num = 0.0;
-                        let mut numOpt = Number::from_f64(exec_result.unwrap() as f64);
-                        if numOpt.is_none() {
-                            numOpt = Number::from_f64(num);
+                        let num = 0.0;
+                        let mut num_opt = Number::from_f64(exec_result.unwrap() as f64);
+                        if num_opt.is_none() {
+                            num_opt = Number::from_f64(num);
                         }
-                        let r = serde_json::from_value(serde_json::Value::Number(numOpt.unwrap()));
+                        let r = serde_json::from_value(serde_json::Value::Number(num_opt.unwrap()));
                         if r.is_err() {
                             return Result::Err("[rbatis] exec fail:".to_string() + r.err().unwrap().to_string().as_str());
                         }
