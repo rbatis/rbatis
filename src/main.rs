@@ -1,3 +1,4 @@
+#![allow(unused_imports)]
 #[macro_use]
 extern crate lazy_static;
 extern crate rbatis_macro_derive;
@@ -52,6 +53,11 @@ async fn main() {
     });
     println!("waiting for the task");
     let res = task.await;
+
+    for i in 0..1000{
+
+    }
+
     println!("task ended with result {:?}", res);
 }
 
