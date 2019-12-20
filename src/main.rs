@@ -2,6 +2,7 @@
 #![allow(unreachable_patterns)]
 #![allow(unused_variables)]
 #![allow(unused_assignments)]
+#![allow(unused_must_use)]
 #[macro_use]
 extern crate lazy_static;
 extern crate rbatis_macro_derive;

@@ -20,7 +20,7 @@ struct Eq<'a> {
 }
 
 #[test]
-fn TestNodeRun() {
+fn test_node_run() {
     let john = json!({
         "a":1,
         "b":2,
@@ -52,11 +52,11 @@ fn TestNodeRun() {
     let mut index = 0;
     for item in expressions {
         println!("{}", item.express.clone());
-        let mut boxNode = parser::parser(item.express.to_string(), &OptMap::new()).unwrap();
-        let result = boxNode.eval(&john).unwrap();
+        let box_node = parser::parser(item.express.to_string(), &OptMap::new()).unwrap();
+        let result = box_node.eval(&john).unwrap();
         println!("express: {} >>>>> {}", item.express,&result);
-        let resultValue = &item.eq.clone();
-        if !result.eq(resultValue) {
+        let result_value = &item.eq.clone();
+        if !result.eq(result_value) {
             // println!("exe express fail:".to_owned()+item);
             panic!("[rbatis] >>>>>>>>>>>>>>>>>>>>>exe fail express:'".to_owned() + item.clone().express + "'");
         }
@@ -66,14 +66,14 @@ fn TestNodeRun() {
 
 
 #[test]
-fn TestStringNode() {
-    let mut strNode = Node::new_string("sadf");
-    strNode.eval(&Value::Null {});
+fn test_string_node() {
+    let str_node = Node::new_string("sadf");
+    str_node.eval(&Value::Null {});
     //println!("value:{}", result);
 }
 
 #[test]
-fn TestArgNode() {
+fn test_arg_node() {
     let john = json!({
         "name": "John Doe",
         "age": Value::Null,
@@ -87,8 +87,8 @@ fn TestArgNode() {
         ]
     });
 
-    let mut argNode = Node::new_arg("sex.a");
-    argNode.eval(&john);
+    let arg_node = Node::new_arg("sex.a");
+    arg_node.eval(&john);
     //println!("value:{},error:{}", result, Error);
 }
 
@@ -107,19 +107,19 @@ fn benchmark_arg_node() {
         ]
     });
 
-    let mut argNode = Node::new_arg("sex.a");
+    let arg_node = Node::new_arg("sex.a");
 
     let total = 100000;
     let now = Local::now();
     for i in 0..total {
-        argNode.eval(&john);
+        arg_node.eval(&john);
     }
     time_util::count_time(total, now);
     time_util::count_tps(total, now);
 }
 
 #[test]
-fn TestNumberNode() {
+fn test_number_node() {
     let john = json!({
         "name": "John Doe",
         "age": 1,
@@ -132,7 +132,7 @@ fn TestNumberNode() {
             "+44 2345678"
         ]
     });
-    let mut numb = Node::new_number_f64(1.02 as f64);
+    let numb = Node::new_number_f64(1.02 as f64);
     numb.eval(&john);
     // println!("{}", value);
 }
@@ -140,12 +140,12 @@ fn TestNumberNode() {
 #[test]
 fn benchmark_parser_token() {
     let s = "'2019-02-26' == '2019-02-26'".to_string();
-    let optMap = OptMap::new();
+    let opt_map = OptMap::new();
 
     let total = 100000;
     let now = Local::now();
     for i in 0..total {
-        runtime::parser_tokens(&s, &optMap);
+        runtime::parser_tokens(&s, &opt_map);
     }
     time_util::count_time(total, now);
     time_util::count_tps(total, now);
