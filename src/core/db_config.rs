@@ -53,4 +53,15 @@ impl DBConfig {
             db_port: port.parse().unwrap(),
         });
     }
+
+    pub fn to_string(&self) -> String {
+        let templete = "#{db_type}://#{db_user}:#{db_pwd}@#{db_addr}:#{db_port}/#{db_name}";
+        let link = templete.replace("#{db_type}", "postgres")
+            .replace("#{db_user}", self.db_user.as_str())
+            .replace("#{db_pwd}", self.db_pwd.as_str())
+            .replace("#{db_addr}", self.db_addr.as_str())
+            .replace("#{db_port}", self.db_port.to_string().as_str())
+            .replace("#{db_name}", self.db_name.as_str());
+        return link;
+    }
 }
