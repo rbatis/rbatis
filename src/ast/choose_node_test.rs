@@ -17,10 +17,10 @@ pub fn test_choose_node() {
     });
     let engine= RbatisEngine::new();
 
-    let sNode = NString(StringNode::new("dsaf#{arg+1}"));
+    let s_node = NString(StringNode::new("dsaf#{arg+1}"));
 
     let mut c = ChooseNode {
-        when_nodes: Option::Some(vec![sNode]),
+        when_nodes: Option::Some(vec![s_node]),
         otherwise_node: None,
     };
 

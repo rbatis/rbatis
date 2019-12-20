@@ -8,7 +8,7 @@ use crate::ast::config_holder::ConfigHolder;
 #[test]
 fn test_bind_node(){
     let mut holder= ConfigHolder::new();
-    let mut bindNode =BindNode{
+    let mut bind_node =BindNode{
         name: "a".to_string(),
         value: "a+1".to_string(),
     };
@@ -18,7 +18,7 @@ fn test_bind_node(){
     });
 
 
-    let r=bindNode.eval(& mut john,&mut holder).unwrap();
+    let r= bind_node.eval(& mut john, &mut holder).unwrap();
 
 
     println!("r={}",r);

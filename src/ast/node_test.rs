@@ -17,9 +17,9 @@ fn test_string_node() {
     let mut john = json!({
         "name": "John Doe",
     });
-    let mut strNode = NodeType::NString(StringNode::new("select * from ${name} where name = #{name}"));
+    let mut str_node = NodeType::NString(StringNode::new("select * from ${name} where name = #{name}"));
 
-    let result = strNode.eval(&mut john,&mut holder).unwrap();
+    let result = str_node.eval(&mut john, &mut holder).unwrap();
     println!("{}", result);
 }
 

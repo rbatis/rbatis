@@ -96,20 +96,20 @@ fn parser_func(parser: EventReader<&[u8]>) -> Vec<Element> {
 
 //load a xml file
 #[test]
-fn Test_load_file() {
+fn test_load_file() {
     // --snip--
-    let filePath = "./src/example/Example_ActivityMapper.xml";
-    println!(">>>>>>>>>>>>>>>>>>>>>>start load {} >>>>>>>>>>>>>>>>>>>>>>>", filePath);
-    let content = fs::read_to_string(filePath).unwrap();
+    let file_path = "./src/example/Example_ActivityMapper.xml";
+    println!(">>>>>>>>>>>>>>>>>>>>>>start load {} >>>>>>>>>>>>>>>>>>>>>>>", file_path);
+    let content = fs::read_to_string(file_path).unwrap();
     println!("With text:/n{}", content);
 }
 
 //load xml
 #[test]
-fn Test_load_xml() {
-    let filePath = "./src/example/Example_ActivityMapper.xml";
-    println!(">>>>>>>>>>>>>>>>>>>>>>start load {} >>>>>>>>>>>>>>>>>>>>>>>", filePath);
-    let mut content = fs::read_to_string("./src/example/Example_ActivityMapper.xml").unwrap();
+fn test_load_xml() {
+    let file_path = "./src/example/Example_ActivityMapper.xml";
+    println!(">>>>>>>>>>>>>>>>>>>>>>start load {} >>>>>>>>>>>>>>>>>>>>>>>", file_path);
+    let content = fs::read_to_string("./src/example/Example_ActivityMapper.xml").unwrap();
     println!("With text:/n{}", content);
 
     load_xml( content);

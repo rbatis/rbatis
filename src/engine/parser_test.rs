@@ -16,8 +16,8 @@ use std::thread;
 
 
 #[test]
-fn TestParser() {
-    let mut boxNode= parser::parser(String::from("a == 1 && a != 0"), &OptMap::new()).unwrap();
+fn test_parser() {
+    let box_node = parser::parser(String::from("a == 1 && a != 0"), &OptMap::new()).unwrap();
     let john = json!({
         "a":1,
         "name": "John Doe",
@@ -33,13 +33,13 @@ fn TestParser() {
             "+44 2345678"
         ]
     });
-    println!("result >>>>>>>>>>   =  {}", boxNode.eval(&john).unwrap());
+    println!("result >>>>>>>>>>   =  {}", box_node.eval(&john).unwrap());
 
 }
 
 #[test]
-fn TestBenchmark() {
-    let mut boxNode= parser::parser(String::from("1<=2"), &OptMap::new()).unwrap();
+fn test_benchmark() {
+    let box_node = parser::parser(String::from("1<=2"), &OptMap::new()).unwrap();
     let john = json!({
         "name": "John Doe",
     });
@@ -47,8 +47,8 @@ fn TestBenchmark() {
     let now=Local::now();
     for _ in 0..total{
         for _ in 0..1{
-            boxNode.clone();
-            // boxNode.clone();
+            box_node.clone();
+            // box_node.clone();
             // n2.eval(&john);
         }
     }
