@@ -43,12 +43,16 @@ impl Rbatis {
         };
     }
 
+    ///加载xml数据
+    /// rbatis.load_xml("Example_ActivityMapper.xml".to_string(), fs::read_to_string("./src/example/Example_ActivityMapper.xml").unwrap());//加载xml数据
     pub fn load_xml(&mut self, key: String, content: String) {
         self.mapper_map.insert(key, create_node_type_map(content, &self.holder));
     }
 
 
     /// 设置数据库默认url，如果失败返回错误信息
+    ///  let url = "mysql://root:TEST@localhost:3306/test";
+    ///  rbatis.load_db_url("".to_string(), url.to_string());//name 为空，则默认数据库
     pub fn load_db_url(&mut self, name: String, url: String) -> Option<String> {
         let db_config_opt = DBConfig::new(url);
         if db_config_opt.is_ok() {
@@ -64,11 +68,26 @@ impl Rbatis {
             return Option::Some(e);
         }
     }
+
+    /// 移除数据库url
     pub fn remove_db_url(&mut self, name: String) {
         self.db_configs.remove(&name);
     }
 
 
+    ///执行sql到数据库，例如
+    ///
+    ///    let data_opt: Result<serde_json::Value, String> = rbatis.eval("Example_ActivityMapper.xml".to_string(), "select_by_condition", &mut json!({
+    ///       "name":null,
+    ///       "startTime":null,
+    ///       "endTime":null,
+    ///       "page":null,
+    ///       "size":null,
+    ///    }));
+    ///
+    ///
+    ///
+    ///
     pub fn eval<T>(&mut self, mapper_name: String, id: &str, env: &mut Value) -> Result<T, String> where T: de::DeserializeOwned + RbatisMacro {
         let mapper_opt = self.mapper_map.get_mut(&mapper_name);
         if mapper_opt.is_none() {
@@ -148,6 +167,7 @@ impl Rbatis {
         }
     }
 
+    ///打印内容
     pub fn print(&self) -> String {
         let mut result = String::new();
         for (key, node_types) in &self.mapper_map {
