@@ -84,7 +84,7 @@ println!("[rbatis] result==> {}",data_result.unwrap());
 | AstTree（xml抽象语法树)                                  | √     |     
 | XmlLoader（xml读取器)                                   | √     |  
 | ExpressEngines（表达式执行引擎)                          | √     |  
-| ResultDecoder（query结果解码器)                          | √     |  
+| ResultDecoder（查询结果解码器-基于serde_json macro+rbatis macro)                          | √     |  
 | CRUD(内置CRUD模板)                                      | x     |
 | LogicDelPlugin(逻辑删除插件)                               | x     |
 | VersionLockPlugin(乐观锁插件,防止并发修改数据)               | x     |
