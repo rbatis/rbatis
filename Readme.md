@@ -94,7 +94,7 @@ println!("[rbatis] result==> {}",data_result.unwrap());
 | PagePlugin(分页插件)                                      | x     |
 | GroupQueryPlugin(组合查询插件，对关联查询进行分解代替join)    | x     |
 | SecurityPlugin(sql注入拦截插件)                            | x     |
-| web(可视化Web UI服务)                                | x     |  
+| web(可视化Web UI)                                | x     |  
 
 
 ### 性能测算 (测试平台 win10,6 core i7,16GB)
