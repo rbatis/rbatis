@@ -106,7 +106,7 @@ println!("[rbatis] result==> {}",data_result.unwrap());
 （查询结果解码性能）Example_ActivityMapper.xml -> select_by_condition
 ///use Time: 0.042 s,each:420 nano/op
 ///use TPS: 2380952.3809523806 TPS/s
-（综合性能）
+（综合-完整sql生成+查询结果 性能）
 约为:
 操作/纳秒   2440    nano/op 
 事务数/秒   411522.63 TPS/s
