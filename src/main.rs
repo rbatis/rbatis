@@ -71,8 +71,7 @@ fn bench_main() {
     let mut b =Bencher::new(1000000);
     b.iter( || {
          //println!("asdf");
-//         let  mut js:serde_json::Value=serde_json::from_str(r#"{"id":"","name":"","version":0}"#).unwrap();
-//         arg_filter::filter(&mut js);
-        Uuid::new_v4();
+         let  mut js:serde_json::Value=serde_json::from_str(r#"{"id":"","name":"","version":0}"#).unwrap();
+//        Uuid::new_v4();
     });
 }
