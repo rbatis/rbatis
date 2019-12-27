@@ -23,12 +23,13 @@ use serde_json::ser::State::Rest;
 use serde_json::json;
 
 pub struct Rbatis {
-    pub mapper_map: HashMap<String, HashMap<String, NodeType>>,
     //动态sql运算节点集合
-    pub holder: ConfigHolder,
+    pub mapper_map: HashMap<String, HashMap<String, NodeType>>,
     //动态sql节点配置
-    pub db_configs: HashMap<String, DBConfig>,
+    pub holder: ConfigHolder,
     //数据库连接配置
+    pub db_configs: HashMap<String, DBConfig>,
+    //连接池
     pub conn_pool: ConnPool,
 }
 
