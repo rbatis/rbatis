@@ -69,7 +69,7 @@
             #{index}
         </foreach>
     </select>
-    <update id="deleteById">
+    <update id="delete_by_id">
         update biz_activity
         set delete_flag = 0
         where id = #{id}
