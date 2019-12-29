@@ -15,7 +15,7 @@ pub fn test_string_node(){
         "arg": 2,
     });
     let mut holder= ConfigHolder::new();
-    let mut s_node = StringNode::new("arg+1=#{arg+1}");
+    let s_node = StringNode::new("arg+1=#{arg+1}");
 
     let r= s_node.eval(&mut john, &mut holder).unwrap();
     println!("{}",r);

@@ -13,8 +13,8 @@ pub struct TrimNode {
 }
 
 impl SqlNode for TrimNode {
-    fn eval(&mut self, env: &mut Value, holder:&mut ConfigHolder) -> Result<String, String> {
-        let result_value = do_child_nodes(&mut self.childs, env, holder);
+    fn eval(&self, env: &mut Value, holder:&mut ConfigHolder) -> Result<String, String> {
+        let result_value = do_child_nodes(&self.childs, env, holder);
         let is_error = result_value.is_err();
         if is_error {
             return Result::Err(result_value.clone().err().unwrap());

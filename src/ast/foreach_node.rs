@@ -17,7 +17,7 @@ pub struct ForEachNode {
 }
 
 impl SqlNode for ForEachNode {
-    fn eval(&mut self, env: &mut Value, holder:&mut ConfigHolder) -> Result<String, String> {
+    fn eval(&self, env: &mut Value, holder:&mut ConfigHolder) -> Result<String, String> {
         let mut result = String::new();
 
         //open
@@ -42,7 +42,7 @@ impl SqlNode for ForEachNode {
             obj_map.insert("item".to_string(), item.clone());
             obj_map.insert("index".to_string(), Value::Number(serde_json::Number::from_f64(index as f64).unwrap()));
             let mut temp_arg: Value = Value::Object(obj_map);
-            let item_result = do_child_nodes(&mut self.childs, &mut temp_arg, holder);
+            let item_result = do_child_nodes(&self.childs, &mut temp_arg, holder);
             if item_result.is_err() {
                 return item_result;
             }
