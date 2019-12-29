@@ -111,7 +111,7 @@ impl Rbatis {
             "mysql" => {
                 let conn_opt = self.conn_pool.get_mysql_conn("".to_string(), conf)?;
                 match mapper_func {
-                    NodeType::NSelectNode(node) => {
+                    NodeType::NSelectNode(_) => {
                         //select
                         let exec_result = conn_opt.unwrap().prep_exec(sql, {});
                         if exec_result.is_err() {
@@ -137,7 +137,7 @@ impl Rbatis {
             "postgres" => {
                 let conn_opt = self.conn_pool.get_postage_conn("".to_string(), conf)?;
                 match mapper_func {
-                    NodeType::NSelectNode(node) => {
+                    NodeType::NSelectNode(_) => {
                         //select
                         let exec_result = conn_opt.unwrap().query(sql, &[]);
                         if exec_result.is_err() {
