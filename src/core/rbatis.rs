@@ -98,7 +98,8 @@ impl Rbatis {
             return Result::Err("[rbatis] find method fail,name:'".to_string() + mapper_name.to_string().as_str() + id + "'");
         }
         let mapper_func = node.unwrap();
-        let sql = mapper_func.eval(env, &mut self.holder)?;
+        let sql_string = mapper_func.eval(env, &mut self.holder)?;
+        let sql=sql_string.as_str();
         println!("[rbatis] Query ==>  {}", sql);
         let conf_opt = self.db_configs.get("");
         if conf_opt.is_none() {
@@ -138,7 +139,7 @@ impl Rbatis {
                 match mapper_func {
                     NodeType::NSelectNode(node) => {
                         //select
-                        let exec_result = conn_opt.unwrap().query(sql.as_str(), &[]);
+                        let exec_result = conn_opt.unwrap().query(sql, &[]);
                         if exec_result.is_err() {
                             return Result::Err("[rbatis] exec fail:".to_string() + exec_result.err().unwrap().to_string().as_str());
                         }
@@ -146,7 +147,7 @@ impl Rbatis {
                     }
                     _ => {
                         //exec
-                        let exec_result = conn_opt.unwrap().execute(sql.as_str(), &[]);
+                        let exec_result = conn_opt.unwrap().execute(sql, &[]);
                         if exec_result.is_err() {
                             return Result::Err("[rbatis] exec fail:".to_string() + exec_result.err().unwrap().to_string().as_str());
                         }
@@ -166,6 +167,79 @@ impl Rbatis {
             _ => return Result::Err("[rbatis] unsupport database type:".to_string() + db_type)
         }
     }
+
+
+//    pub fn eval_node_type<T>(&mut self, mapper_name: String, env: &mut Value, mapper_func: &mut NodeType) -> Result<T, String> where T: de::DeserializeOwned + RbatisMacro {
+//        let sql_string = mapper_func.eval(env, &mut self.holder)?;
+//        let sql=sql_string.as_str();
+//        println!("[rbatis] Query ==>  {}", sql);
+//        let conf_opt = self.db_configs.get("");
+//        if conf_opt.is_none() {
+//            return Result::Err("[rbatis] find default database url config fail！".to_string());
+//        }
+//        let conf = conf_opt.unwrap();
+//        let db_type = conf.db_type.as_str();
+//        match db_type {
+//            "mysql" => {
+//                let conn_opt = self.conn_pool.get_mysql_conn("".to_string(), conf)?;
+//                match mapper_func {
+//                    NodeType::NSelectNode(node) => {
+//                        //select
+//                        let exec_result = conn_opt.unwrap().prep_exec(sql, {});
+//                        if exec_result.is_err() {
+//                            return Result::Err("[rbatis] exec fail:".to_string() + exec_result.err().unwrap().to_string().as_str());
+//                        }
+//                        return exec_result.unwrap().decode();
+//                    }
+//                    _ => {
+//                        //exec
+//                        let exec_result = conn_opt.unwrap().prep_exec(sql, {});
+//                        if exec_result.is_err() {
+//                            return Result::Err("[rbatis] exec fail:".to_string() + exec_result.err().unwrap().to_string().as_str());
+//                        }
+//                        let result = exec_result.unwrap();
+//                        let r = serde_json::from_value(json!(result.affected_rows()));
+//                        if r.is_err() {
+//                            return Result::Err("[rbatis] exec fail:".to_string() + r.err().unwrap().to_string().as_str());
+//                        }
+//                        return Result::Ok(r.unwrap());
+//                    }
+//                }
+//            }
+//            "postgres" => {
+//                let conn_opt = self.conn_pool.get_postage_conn("".to_string(), conf)?;
+//                match mapper_func {
+//                    NodeType::NSelectNode(node) => {
+//                        //select
+//                        let exec_result = conn_opt.unwrap().query(sql, &[]);
+//                        if exec_result.is_err() {
+//                            return Result::Err("[rbatis] exec fail:".to_string() + exec_result.err().unwrap().to_string().as_str());
+//                        }
+//                        return exec_result.unwrap().decode();
+//                    }
+//                    _ => {
+//                        //exec
+//                        let exec_result = conn_opt.unwrap().execute(sql, &[]);
+//                        if exec_result.is_err() {
+//                            return Result::Err("[rbatis] exec fail:".to_string() + exec_result.err().unwrap().to_string().as_str());
+//                        }
+//                        let num = 0.0;
+//                        let mut num_opt = Number::from_f64(exec_result.unwrap() as f64);
+//                        if num_opt.is_none() {
+//                            num_opt = Number::from_f64(num);
+//                        }
+//                        let r = serde_json::from_value(serde_json::Value::Number(num_opt.unwrap()));
+//                        if r.is_err() {
+//                            return Result::Err("[rbatis] exec fail:".to_string() + r.err().unwrap().to_string().as_str());
+//                        }
+//                        return Result::Ok(r.unwrap());
+//                    }
+//                }
+//            }
+//            _ => return Result::Err("[rbatis] unsupport database type:".to_string() + db_type)
+//        }
+//    }
+
 
     ///打印内容
     pub fn print(&self) -> String {

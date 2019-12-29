@@ -19,7 +19,7 @@ pub fn test_choose_node() {
 
     let s_node = NString(StringNode::new("dsaf#{arg+1}"));
 
-    let mut c = ChooseNode {
+    let c = ChooseNode {
         when_nodes: Option::Some(vec![s_node]),
         otherwise_node: None,
     };

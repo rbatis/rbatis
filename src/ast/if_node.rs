@@ -11,7 +11,7 @@ pub struct IfNode{
 }
 
 impl SqlNode for IfNode {
-    fn eval(&mut self, env: &mut Value, holder:&mut ConfigHolder) -> Result<String, String> {
+    fn eval(&self, env: &mut Value, holder:&mut ConfigHolder) -> Result<String, String> {
         let result = holder.engine.eval(self.test.as_str(), env);
         if result.is_err() {
             return Result::Err(result.err().unwrap());
@@ -21,7 +21,7 @@ impl SqlNode for IfNode {
            return  Result::Err("[rbatis] express:'".to_owned() + self.test.as_str() + "' is not return bool value!");
         }
         if b.as_bool().unwrap() {
-            return do_child_nodes(&mut self.childs, env, holder);
+            return do_child_nodes(&self.childs, env, holder);
         }
         return Result::Ok("".to_string());
     }

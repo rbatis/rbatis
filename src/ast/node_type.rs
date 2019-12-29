@@ -42,7 +42,7 @@ pub enum NodeType {
 }
 
 impl <'a>SqlNode for NodeType {
-    fn eval(&mut self, env: &mut Value, holder:&mut ConfigHolder) -> Result<String, String> {
+    fn eval(&self, env: &mut Value, holder:&mut ConfigHolder) -> Result<String, String> {
         match self {
             NodeType::NSelectNode(node) => return node.eval(env,holder),
             NodeType::NDeleteNode(node) => return node.eval(env,holder),

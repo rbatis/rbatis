@@ -41,7 +41,7 @@ impl StringNode {
 }
 
 impl SqlNode for StringNode {
-    fn eval(&mut self, env: &mut Value, holder:&mut ConfigHolder) -> Result<String, String> {
+    fn eval(&self, env: &mut Value, holder:&mut ConfigHolder) -> Result<String, String> {
         let mut result = self.value.clone();
         for (item, value) in &self.express_map {
             let get_v = env.get(item);

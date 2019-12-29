@@ -10,8 +10,8 @@ pub struct  WhereNode{
 
 impl SqlNode for WhereNode{
 
-    fn eval(&mut self, env: &mut Value, holder:&mut ConfigHolder) -> Result<String, String> {
-        let result= do_child_nodes(&mut self.childs, env, holder);
+    fn eval(&self, env: &mut Value, holder:&mut ConfigHolder) -> Result<String, String> {
+        let result= do_child_nodes(&self.childs, env, holder);
         if result.is_ok() {
             let r=result.unwrap();
             let s=r.trim();

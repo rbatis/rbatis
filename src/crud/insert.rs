@@ -2,10 +2,9 @@ use serde_json::Value;
 use serde_json::json;
 use crate::core::rbatis::Rbatis;
 
-pub struct Insert {}
 
-impl Insert {
-    pub fn eval(&self, table: &str, arg: Value, engine: &Rbatis) -> Result<String, String> {
+impl Rbatis {
+    pub fn insert(&self, table: &str, arg: Value) -> Result<String, String> {
         let mut sql = "insert into #{table} (#{fields}) VALUES #{values}".to_string();
         sql = sql.replace("#{table}", table);
 
@@ -142,17 +141,15 @@ fn do_create_obj_sql(mut sql: String, arg: Value) -> String {
 #[test]
 fn test_insert_templete_obj() {
     let rbatis=Rbatis::new();
-    let t = Insert {};
     let arg = serde_json::from_str(r#"{  "a":"1","delete_flag":1}"#).unwrap();
-    let sql = t.eval("activity", arg,&rbatis).unwrap();
+    let sql = rbatis.insert("activity", arg).unwrap();
     println!("{}", sql);
 }
 
 #[test]
 fn test_insert_templete_array() {
     let rbatis=Rbatis::new();
-    let t = Insert {};
     let arg = serde_json::from_str(r#"[{"a":"1","delete_flag":1},{"a":"1","delete_flag":1}]"#).unwrap();
-    let sql = t.eval("activity", arg,&rbatis).unwrap();
+    let sql = rbatis.insert("activity", arg).unwrap();
     println!("{}", sql);
 }

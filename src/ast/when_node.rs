@@ -21,7 +21,7 @@ impl Clone for WhenNode{
 }
 
 impl  SqlNode for WhenNode{
-    fn eval(&mut self, env: &mut Value, holder:&mut ConfigHolder) -> Result<String,String> {
+    fn eval(&self, env: &mut Value, holder:&mut ConfigHolder) -> Result<String,String> {
         let result_value = holder.engine.eval(self.test.as_str(), env);
         if result_value.is_err(){
             return Result::Err(result_value.err().unwrap());
@@ -31,7 +31,7 @@ impl  SqlNode for WhenNode{
             return Result::Err("[rbatis] test:'".to_owned()+self.test.as_str()+"' is not return bool!");
         }
         if result.as_bool().unwrap() {
-            return do_child_nodes(&mut self.childs, env, holder);
+            return do_child_nodes(&self.childs, env, holder);
         }
         return Result::Ok("".to_string());
     }

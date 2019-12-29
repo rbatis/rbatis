@@ -11,7 +11,7 @@ pub struct BindNode {
 }
 
 impl SqlNode for BindNode {
-    fn eval(&mut self, env: &mut Value, holder:&mut ConfigHolder) -> Result<String, String> {
+    fn eval(&self, env: &mut Value, holder:&mut ConfigHolder) -> Result<String, String> {
         let r = holder.engine.eval(self.value.as_str(), env);
         env[self.name.as_str()] = r.unwrap_or(Value::Null);
         return Result::Ok("".to_string());

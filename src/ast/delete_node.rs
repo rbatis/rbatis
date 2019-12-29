@@ -10,8 +10,8 @@ pub struct DeleteNode {
 }
 
 impl SqlNode for DeleteNode{
-    fn eval(&mut self, env: &mut Value, holder:&mut ConfigHolder) -> Result<String, String> {
-        return do_child_nodes(&mut self.childs, env, holder);
+    fn eval(&self, env: &mut Value, holder:&mut ConfigHolder) -> Result<String, String> {
+        return do_child_nodes(&self.childs, env, holder);
     }
 
     fn print(&self,deep:i32) -> String {

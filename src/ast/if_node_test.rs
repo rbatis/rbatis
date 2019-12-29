@@ -8,7 +8,7 @@ use std::rc::Rc;
 
 #[test]
 pub fn test_if_node() {
-    let mut node = IfNode {
+    let node = IfNode {
         childs: vec![NodeType::NString(StringNode::new("yes"))],
         test: "arg == 1".to_string(),
     };

@@ -11,7 +11,7 @@ use crate::ast::config_holder::ConfigHolder;
 #[test]
 pub fn test_for_each_node(){
     let mut holder= ConfigHolder::new();
-    let mut n=ForEachNode{
+    let n=ForEachNode{
         childs: vec![NodeType::NString(StringNode::new("index:#{index},item:#{item}"))],
         collection: "arg".to_string(),
         index: "index".to_string(),

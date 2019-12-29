@@ -28,14 +28,14 @@ pub trait SqlNode {
     /**
     env: &mut Value,因为bind node 会绑定变量，env必须为可修改的值
     */
-    fn eval(&mut self, env: &mut Value, holder:&mut ConfigHolder) -> Result<String, String>;
+    fn eval(&self, env: &mut Value, holder:&mut ConfigHolder) -> Result<String, String>;
 
     fn print(&self,deep:i32) -> String;
 }
 
 
 //执行子所有节点
-pub fn do_child_nodes(child_nodes: &mut Vec<NodeType>, env: &mut Value, holder:&mut ConfigHolder) -> Result<String, String> {
+pub fn do_child_nodes(child_nodes: &Vec<NodeType>, env: &mut Value, holder:&mut ConfigHolder) -> Result<String, String> {
     let mut s = String::new();
     for item in child_nodes {
         let item_result = item.eval(env, holder);
