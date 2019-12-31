@@ -37,8 +37,8 @@ fn test_exec_sql(){
     rbatis.load_xml("Example_ActivityMapper.xml".to_string(), fs::read_to_string("./src/example/Example_ActivityMapper.xml").unwrap());//加载xml数据
     rbatis.print();//打印已读取的内容
     println!(">>>>>>>>>>>>>>>>>>>>>>start eval method >>>>>>>>>>>>>>>>>>>>>>>");
-    ///执行到远程mysql 并且获取结果
-    /// Result<serde_json::Value, String>,或者 Result<Activity, String> 等任意类型
+    //执行到远程mysql 并且获取结果
+    //Result<serde_json::Value, String>,或者 Result<Activity, String> 等任意类型
     let data_opt: Result<serde_json::Value, String> = rbatis.eval("Example_ActivityMapper.xml".to_string(), "select_by_condition", &mut json!({
        "name":null,
        "startTime":null,
@@ -47,9 +47,8 @@ fn test_exec_sql(){
        "size":null,
     }));
 
-    ///写法2，直接运行原生sql
-    /// let data_opt: Result<serde_json::Value, String> = rbatis.eval_sql("select * from biz_activity");
-
+    // 写法2，直接运行原生sql
+    // let data_opt: Result<serde_json::Value, String> = rbatis.eval_sql("select * from biz_activity");
     println!(">>>>>>>>>>>>>>>>>>>>>>get result>>>>>>>>>>>>>>>>>>>>>>>");
     if data_opt.is_ok() {
         let data = data_opt.unwrap();
