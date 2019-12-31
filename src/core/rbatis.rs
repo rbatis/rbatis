@@ -88,8 +88,13 @@ impl Rbatis {
    ///    }));
    ///
    ///
-    pub fn eval_sql<T>(&mut self, sql: &str, env: &mut Value) -> Result<T, String> where T: de::DeserializeOwned + RbatisMacro {
-        println!("[rbatis] Query ==>  {}", sql);
+    pub fn eval_sql<T>(&mut self, eval_sql: &str, env: &mut Value) -> Result<T, String> where T: de::DeserializeOwned + RbatisMacro {
+       let mut sql=eval_sql;
+       sql=sql.trim();
+       if sql.is_empty(){
+           return Result::Err("[rbatis] sql can not be empty！".to_string());
+       }
+       println!("[rbatis] Query ==>  {}", sql);
        let is_exec = sql.starts_with("select") || sql.starts_with("SELECT");
        let conf_opt = self.db_configs.get("");
        if conf_opt.is_none() {
