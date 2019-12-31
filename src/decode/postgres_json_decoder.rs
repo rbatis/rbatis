@@ -1,5 +1,5 @@
 
-use crate::decode::decoder::{Decoder, is_json_array_type, is_number_type};
+use crate::decode::decoder::{Decoder};
 use serde::de;
 use rbatis_macro::RbatisMacro;
 use std::borrow::BorrowMut;
@@ -14,53 +14,58 @@ impl Decoder for Vec<Row>{
     fn decode<T>(&mut self) -> Result<T, String> where
         T: de::DeserializeOwned + RbatisMacro {
         let mut js = serde_json::Value::Null;
-        if is_json_array_type(T::decode_name()) {
-            //decode array
-            let mut vec_v = vec![];
-            for item in self {
-                let act= decode_row(item);
-                vec_v.push(act);
-            }
-            js = serde_json::Value::Array(vec_v);
-        }else if T::decode_name().eq("serde_json::Value") {
-            //decode json
-            let mut vec_v = vec![];
-            for item in self {
-                let act= decode_row(item);
-                vec_v.push(act);
-            }
-
-            js = serde_json::Value::Array(vec_v)
-        } else if is_number_type(T::decode_name()){
-            //decode number
-            let mut size = 0;
-            for item in self {
-                if size > 0 {
-                    continue;
+        match T::decode_name() {
+            "Vec" | "Array" | "Slice" | "LinkedList" => {
+                //decode array
+                let mut vec_v = vec![];
+                for item in self {
+                    let act= decode_row(item);
+                    vec_v.push(act);
                 }
-                let act = decode_row(item);
-                match act {
-                    serde_json::Value::Object(arg) => {
-                        for (_, r) in arg {
-                            js = r;
-                            break
-                        }
+                js = serde_json::Value::Array(vec_v);
+            },
+            "i32" | "u32" | "f32" | "i64" | "u64" | "f64" => {
+                //decode number
+                let mut size = 0;
+                for item in self {
+                    if size > 0 {
+                        continue;
                     }
-                    _ => {}
+                    let act = decode_row(item);
+                    match act {
+                        serde_json::Value::Object(arg) => {
+                            for (_, r) in arg {
+                                js = r;
+                                break
+                            }
+                        }
+                        _ => {}
+                    }
+                    size += 1;
                 }
-                size += 1;
-            }
-        } else{
-            //decode struct
-            let result: Result<T, String> = Result::Err("[rbatis] rows.affected_rows > 1,but decode one result!".to_string());
-            //not array json
-            let size=self.len();
-            if size > 1 {
-                return result;
-            }
-            for i in 0..size {
-                let item = self.get(i);
-                js = decode_row(&item.unwrap());
+            },
+            "serde_json::Value" => {
+                //decode json
+                let mut vec_v = vec![];
+                for item in self {
+                    let act= decode_row(item);
+                    vec_v.push(act);
+                }
+
+                js = serde_json::Value::Array(vec_v)
+            },
+            _ => {
+                //decode struct
+                let result: Result<T, String> = Result::Err("[rbatis] rows.affected_rows > 1,but decode one result!".to_string());
+                //not array json
+                let size=self.len();
+                if size > 1 {
+                    return result;
+                }
+                for i in 0..size {
+                    let item = self.get(i);
+                    js = decode_row(&item.unwrap());
+                }
             }
         }
         let decode_result = serde_json::from_value(js);
