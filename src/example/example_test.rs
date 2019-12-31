@@ -46,6 +46,10 @@ fn test_exec_sql(){
        "page":null,
        "size":null,
     }));
+
+    ///写法2，直接运行原生sql
+    /// let data_opt: Result<serde_json::Value, String> = rbatis.eval_sql("select * from biz_activity");
+
     println!(">>>>>>>>>>>>>>>>>>>>>>get result>>>>>>>>>>>>>>>>>>>>>>>");
     if data_opt.is_ok() {
         let data = data_opt.unwrap();

@@ -88,7 +88,7 @@ impl Rbatis {
    ///    }));
    ///
    ///
-    pub fn eval_sql<T>(&mut self, eval_sql: &str, env: &mut Value) -> Result<T, String> where T: de::DeserializeOwned  {
+    pub fn eval_sql<T>(&mut self, eval_sql: &str) -> Result<T, String> where T: de::DeserializeOwned  {
        let mut sql=eval_sql;
        sql=sql.trim();
        if sql.is_empty(){
@@ -183,7 +183,7 @@ impl Rbatis {
         let mapper_func = node.unwrap();
         let sql_string = mapper_func.eval(env, &mut self.holder)?;
         let sql=sql_string.as_str();
-        return self.eval_sql(sql,env);
+        return self.eval_sql(sql);
     }
 
     ///打印内容
