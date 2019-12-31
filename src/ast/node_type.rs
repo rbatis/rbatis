@@ -21,6 +21,7 @@ use crate::ast::where_node::WhereNode;
 use crate::ast::result_map_node::ResultMapNode;
 use crate::ast::result_map_id_node::ResultMapIdNode;
 use crate::ast::result_map_result_node::ResultMapResultNode;
+use crate::engine::node::Node;
 
 #[derive(Clone)]
 pub enum NodeType {
@@ -47,6 +48,12 @@ pub enum NodeType {
     NResultMapNode(ResultMapNode),
     NResultMapIdNode(ResultMapIdNode),
     NResultMapResultNode(ResultMapResultNode),
+}
+
+impl NodeType{
+    pub fn print_node(&self)-> String {
+        return self.print(0);
+    }
 }
 
 impl <'a>SqlNode for NodeType {

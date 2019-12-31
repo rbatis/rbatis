@@ -40,7 +40,7 @@ impl Rbatis{
             return Result::Err("[rbatis] BaseResultMap can not be null!".to_string());
         }
         let base_result_map=base_result_map_opt.unwrap();
-        println!("{}",base_result_map.print(0));
+        println!("{}",base_result_map.print_node());
 
         return Result::Err("[rbatis] BaseResultMap can not be null!".to_string());
     }
