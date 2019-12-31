@@ -72,9 +72,9 @@ impl RbatisMacro for i32 {
     }
 }
 
-impl RbatisMacro for u32 {
+impl RbatisMacro for i64 {
     fn decode_name() -> &'static str {
-        return "u32"
+        return "i64"
     }
 }
 
@@ -84,20 +84,20 @@ impl RbatisMacro for f32 {
     }
 }
 
-impl RbatisMacro for i64 {
+impl RbatisMacro for f64 {
     fn decode_name() -> &'static str {
-        return "i64"
+        return "f64"
+    }
+}
+
+impl RbatisMacro for u32 {
+    fn decode_name() -> &'static str {
+        return "u32"
     }
 }
 
 impl RbatisMacro for u64 {
     fn decode_name() -> &'static str {
         return "u64"
-    }
-}
-
-impl RbatisMacro for f64 {
-    fn decode_name() -> &'static str {
-        return "f64"
     }
 }
