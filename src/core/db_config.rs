@@ -1,8 +1,7 @@
-use rbatis_macro_derive::RbatisMacro;
-use rbatis_macro::RbatisMacro;
+
 use serde::{Serialize, Deserialize};
 
-#[derive(Serialize, Deserialize, Debug, Clone, RbatisMacro)]
+#[derive(Serialize, Deserialize, Debug, Clone)]
 pub struct DBConfig {
     pub db_type: String,
     pub db_name:String,
