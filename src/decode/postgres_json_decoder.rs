@@ -56,11 +56,9 @@ impl Decoder for Vec<Row>{
             },
             _ => {
                 //decode struct
-                let result: Result<T, String> = Result::Err("[rbatis] rows.affected_rows > 1,but decode one result!".to_string());
-                //not array json
                 let size=self.len();
                 if size > 1 {
-                    return result;
+                    return Result::Err("[rbatis] rows.affected_rows > 1,but decode one result!".to_string());
                 }
                 for i in 0..size {
                     let item = self.get(i);
