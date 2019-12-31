@@ -5,7 +5,6 @@
 #![allow(unused_must_use)]
 #[macro_use]
 extern crate lazy_static;
-extern crate rbatis_macro_derive;
 
 pub mod example;
 pub mod ast;
@@ -28,8 +27,6 @@ use xml::EventReader;
 use xml::reader::XmlEvent;
 use std::fs;
 use serde_json::json;
-use rbatis_macro_derive::RbatisMacro;
-use rbatis_macro::RbatisMacro;
 use std::thread::{sleep, spawn};
 use std::time::Duration;
 use async_std::task;

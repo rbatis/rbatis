@@ -8,7 +8,6 @@ use crate::ast::node_type::NodeType;
 use serde_json::{Value, Number};
 use std::collections::HashMap;
 use crate::core::db_config::DBConfig;
-use rbatis_macro::RbatisMacro;
 use serde::de;
 use std::str::FromStr;
 use crate::core::conn_pool::ConnPool;
@@ -89,14 +88,18 @@ impl Rbatis {
    ///    }));
    ///
    ///
-    pub fn eval_sql<T>(&mut self, eval_sql: &str, env: &mut Value) -> Result<T, String> where T: de::DeserializeOwned + RbatisMacro {
+    pub fn eval_sql<T>(&mut self, eval_sql: &str, env: &mut Value) -> Result<T, String> where T: de::DeserializeOwned  {
        let mut sql=eval_sql;
        sql=sql.trim();
        if sql.is_empty(){
            return Result::Err("[rbatis] sql can not be empty！".to_string());
        }
-       println!("[rbatis] Query ==>  {}", sql);
-       let is_exec = sql.starts_with("select") || sql.starts_with("SELECT");
+       let is_select = sql.starts_with("select") || sql.starts_with("SELECT");
+       if is_select {
+           println!("[rbatis] Query ==>  {}", sql);
+       }else{
+           println!("[rbatis] Exec ==>  {}", sql);
+       }
        let conf_opt = self.db_configs.get("");
        if conf_opt.is_none() {
            return Result::Err("[rbatis] find default database url config fail！".to_string());
@@ -106,7 +109,7 @@ impl Rbatis {
        match db_type {
             "mysql" => {
                 let conn_opt = self.conn_pool.get_mysql_conn("".to_string(), conf)?;
-                if !is_exec {
+                if is_select {
                     //select
                     let exec_result = conn_opt.unwrap().prep_exec(sql, {});
                     if exec_result.is_err() {
@@ -129,7 +132,7 @@ impl Rbatis {
             }
             "postgres" => {
                 let conn_opt = self.conn_pool.get_postage_conn("".to_string(), conf)?;
-                if !is_exec {
+                if is_select {
                     //select
                     let exec_result = conn_opt.unwrap().query(sql, &[]);
                     if exec_result.is_err() {
@@ -168,7 +171,7 @@ impl Rbatis {
     ///       "size":null,
     ///    }));
     ///
-    pub fn eval<T>(&mut self, mapper_name: String, id: &str, env: &mut Value) -> Result<T, String> where T: de::DeserializeOwned + RbatisMacro {
+    pub fn eval<T>(&mut self, mapper_name: String, id: &str, env: &mut Value) -> Result<T, String> where T: de::DeserializeOwned  {
         let mapper_opt = self.mapper_map.get_mut(&mapper_name);
         if mapper_opt.is_none() {
             return Result::Err("[rbatis] find mapper fail,name:'".to_string() + mapper_name.to_string().as_str() + "'");
