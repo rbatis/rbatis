@@ -4,6 +4,10 @@ use crate::core::rbatis::Rbatis;
 
 
 impl Rbatis {
+    /// insert an object or  array
+    /// example:
+    /// rbatis.insert("activity", json!(arg))
+    /// rbatis.insert("activity", json!(vec![arg1,arg2]))
     pub fn insert(&self, table: &str, arg: Value) -> Result<String, String> {
         let mut sql = "insert into #{table} (#{fields}) VALUES #{values}".to_string();
         sql = sql.replace("#{table}", table);

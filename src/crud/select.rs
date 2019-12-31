@@ -4,7 +4,11 @@ use crate::core::rbatis::Rbatis;
 pub struct Select {}
 
 impl Select {
-    pub fn eval(&self, table: &str, arg: Value, engine: &Rbatis) -> Result<String, String> {
+    pub fn select(&self, table: &str, arg: Value, engine: &Rbatis) -> Result<String, String> {
+        //TODO select by id
+        //TODO select by map
+        //TODO select by ids
+        //TODO select by page
         if arg.is_null() {
             return Result::Err("[rbatis] arg is null value".to_string());
         }
