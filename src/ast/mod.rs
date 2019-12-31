@@ -19,6 +19,9 @@ pub mod update_node;
 pub mod delete_node;
 pub mod select_node;
 
+pub mod result_map_node;
+pub mod result_map_id_node;
+pub mod result_map_result_node;
 //test
 pub mod node_test;
 pub mod bind_node_test;
