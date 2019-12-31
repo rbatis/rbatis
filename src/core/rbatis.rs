@@ -180,14 +180,14 @@ impl Rbatis {
     ///       "size":null,
     ///    }));
     ///
-    pub fn eval<T>(&mut self, mapper_name: String, id: &str, env: &mut Value) -> Result<T, String> where T: de::DeserializeOwned  {
-        let mapper_opt = self.mapper_map.get_mut(&mapper_name);
+    pub fn eval<T>(&mut self, mapper_name: &str, id: &str, env: &mut Value) -> Result<T, String> where T: de::DeserializeOwned  {
+        let mapper_opt = self.mapper_map.get_mut(&mapper_name.to_string());
         if mapper_opt.is_none() {
-            return Result::Err("[rbatis] find mapper fail,name:'".to_string() + mapper_name.to_string().as_str() + "'");
+            return Result::Err("[rbatis] find mapper fail,name:'".to_string() + mapper_name + "'");
         }
         let node = mapper_opt.unwrap().get_mut(id);
         if node.is_none() {
-            return Result::Err("[rbatis] find method fail,name:'".to_string() + mapper_name.to_string().as_str() + id + "'");
+            return Result::Err("[rbatis] find method fail,name:'".to_string() + mapper_name + id + "'");
         }
         let mapper_func = node.unwrap();
         let sql_string = mapper_func.eval(env, &mut self.holder)?;
