@@ -39,7 +39,7 @@ fn test_exec_sql(){
     println!(">>>>>>>>>>>>>>>>>>>>>>start eval method >>>>>>>>>>>>>>>>>>>>>>>");
     //执行到远程mysql 并且获取结果
     //Result<serde_json::Value, String>,或者 Result<Activity, String> 等任意类型
-    let data_opt: Result<serde_json::Value, String> = rbatis.eval("Example_ActivityMapper.xml".to_string(), "select_by_condition", &mut json!({
+    let data_opt: Result<serde_json::Value, String> = rbatis.eval("Example_ActivityMapper.xml", "select_by_condition", &mut json!({
        "name":null,
        "startTime":null,
        "endTime":null,
