@@ -87,14 +87,23 @@ impl Rbatis {
    ///       "size":null,
    ///    }));
    ///
-   ///
-    pub fn eval_sql<T>(&mut self, eval_sql: &str) -> Result<T, String> where T: de::DeserializeOwned  {
+   pub fn eval_sql<T>(&mut self, eval_sql: &str) -> Result<T, String> where T: de::DeserializeOwned {
+       let mut sql = eval_sql;
+       sql = sql.trim();
+       if sql.is_empty() {
+           return Result::Err("[rbatis] sql can not be empty！".to_string());
+       }
+       let is_select = sql.starts_with("select") || sql.starts_with("SELECT");
+       return self.eval_sql_raw(eval_sql,is_select);
+   }
+
+
+    pub fn eval_sql_raw<T>(&mut self, eval_sql: &str,is_select:bool) -> Result<T, String> where T: de::DeserializeOwned  {
        let mut sql=eval_sql;
        sql=sql.trim();
        if sql.is_empty(){
            return Result::Err("[rbatis] sql can not be empty！".to_string());
        }
-       let is_select = sql.starts_with("select") || sql.starts_with("SELECT");
        if is_select {
            println!("[rbatis] Query ==>  {}", sql);
        }else{
@@ -183,7 +192,14 @@ impl Rbatis {
         let mapper_func = node.unwrap();
         let sql_string = mapper_func.eval(env, &mut self.holder)?;
         let sql=sql_string.as_str();
-        return self.eval_sql(sql);
+        match mapper_func {
+            NodeType::NSelectNode(_)=>{
+                return self.eval_sql_raw(sql,true);
+            }
+            _=>{
+                return self.eval_sql_raw(sql,false);
+            }
+        }
     }
 
     ///打印内容
