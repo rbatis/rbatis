@@ -20,6 +20,9 @@ use crate::ast::update_node::UpdateNode;
 use crate::ast::insert_node::InsertNode;
 use crate::ast::delete_node::DeleteNode;
 use crate::ast::where_node::WhereNode;
+use crate::ast::result_map_node::ResultMapNode;
+use crate::ast::result_map_id_node::ResultMapIdNode;
+use crate::ast::result_map_result_node::ResultMapResultNode;
 
 /**
 * Abstract syntax tree node
@@ -101,7 +104,7 @@ pub fn loop_decode_xml(xml_vec: &Vec<Element>, holder:&ConfigHolder) -> Vec<Node
                separator: xml.get_attr("separator")
            })),
            "choose" => nodes.push(NodeType::NChoose(ChooseNode{
-               when_nodes: filter_when_nodes(child_nodes.clone()),
+               when_nodes: filter_when_nodes(&child_nodes),
                otherwise_node: filter_otherwise_nodes(child_nodes),
            })),
            "when" => nodes.push(NodeType::NWhen(WhenNode{
@@ -125,6 +128,24 @@ pub fn loop_decode_xml(xml_vec: &Vec<Element>, holder:&ConfigHolder) -> Vec<Node
            "set" => nodes.push(NodeType::NSet(SetNode{
                childs: child_nodes,
            })),
+
+           "id" => nodes.push(NodeType::NResultMapIdNode(ResultMapIdNode{
+               column: xml.get_attr("column"),
+               property: xml.get_attr("property"),
+               lang_type: xml.get_attr("lang_type"),
+           })),
+           "result" => nodes.push(NodeType::NResultMapResultNode(ResultMapResultNode{
+               column: xml.get_attr("column"),
+               property: xml.get_attr("property"),
+               lang_type: xml.get_attr("lang_type"),
+           })),
+
+           "result_map" => nodes.push(NodeType::NResultMapNode(ResultMapNode{
+               id: xml.get_attr("id"),
+               id_node: filter_result_map_id_nodes(&child_nodes),
+               results: filter_result_map_result_nodes(&child_nodes),
+           })),
+
            "" => {
                let data= xml.data.as_str();
                let tag= xml.tag.as_str();
@@ -137,11 +158,33 @@ pub fn loop_decode_xml(xml_vec: &Vec<Element>, holder:&ConfigHolder) -> Vec<Node
     return nodes;
 }
 
-pub fn filter_when_nodes(arg:Vec<NodeType>) -> Option<Vec<NodeType>>{
+pub fn filter_result_map_result_nodes(arg:&Vec<NodeType>) -> Option<Vec<NodeType>>{
+    let mut data=vec![];
+    for x in arg {
+        if let NodeType::NResultMapResultNode(result_node) = x {
+            data.push(NodeType::NResultMapResultNode(result_node.clone()));
+        }
+    }
+    if data.len()==0{
+        return Option::None;
+    }
+    return Option::Some(data);
+}
+
+pub fn filter_result_map_id_nodes(arg:&Vec<NodeType>) -> Option<Box<NodeType>>{
+    for x in arg {
+        if let NodeType::NResultMapIdNode(id_node) = x {
+            return Option::Some(Box::new(NodeType::NResultMapIdNode(id_node.clone())));
+        }
+    }
+    return Option::None;
+}
+
+pub fn filter_when_nodes(arg:&Vec<NodeType>) -> Option<Vec<NodeType>>{
     let mut data=vec![];
     for x in arg {
         if let NodeType::NWhen(when_node) = x {
-            data.push(NodeType::NWhen(when_node))
+            data.push(NodeType::NWhen(when_node.clone()))
         } else {}
     }
     if data.len()==0 {

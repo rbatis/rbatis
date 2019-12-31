@@ -18,6 +18,9 @@ use crate::ast::update_node::UpdateNode;
 use crate::ast::insert_node::InsertNode;
 use crate::ast::config_holder::ConfigHolder;
 use crate::ast::where_node::WhereNode;
+use crate::ast::result_map_node::ResultMapNode;
+use crate::ast::result_map_id_node::ResultMapIdNode;
+use crate::ast::result_map_result_node::ResultMapResultNode;
 
 #[derive(Clone)]
 pub enum NodeType {
@@ -39,11 +42,20 @@ pub enum NodeType {
     NUpdateNode(UpdateNode),
     NDeleteNode(DeleteNode),
     NSelectNode(SelectNode),
+
+    //ResultMap
+    NResultMapNode(ResultMapNode),
+    NResultMapIdNode(ResultMapIdNode),
+    NResultMapResultNode(ResultMapResultNode),
 }
 
 impl <'a>SqlNode for NodeType {
     fn eval(&self, env: &mut Value, holder:&mut ConfigHolder) -> Result<String, String> {
         match self {
+            NodeType::NResultMapIdNode(node) => return node.eval(env,holder),
+            NodeType::NResultMapResultNode(node) => return node.eval(env,holder),
+            NodeType::NResultMapNode(node) => return node.eval(env,holder),
+
             NodeType::NSelectNode(node) => return node.eval(env,holder),
             NodeType::NDeleteNode(node) => return node.eval(env,holder),
             NodeType::NUpdateNode(node) => return node.eval(env,holder),
@@ -67,6 +79,11 @@ impl <'a>SqlNode for NodeType {
 
     fn print(&self,deep:i32) -> String {
         match self {
+
+            NodeType::NResultMapIdNode(node) => return node.print(deep),
+            NodeType::NResultMapResultNode(node) => return node.print(deep),
+            NodeType::NResultMapNode(node) => return node.print(deep),
+
             NodeType::NSelectNode(node) => return node.print(deep),
             NodeType::NUpdateNode(node) => return node.print(deep),
             NodeType::NInsertNode(node) => return node.print(deep),
