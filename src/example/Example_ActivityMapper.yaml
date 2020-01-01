@@ -22,9 +22,9 @@ select selectByIds:
     if create != null:
       and create_time = #{create_time}
     if ids!= null:
-    trim ',':
+     trim ',':
       for index,item in ids:
         sql:
-          select * from biz_activity
+        #{item}
         if id != null:
         #{id}
