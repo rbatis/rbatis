@@ -9,12 +9,13 @@ use std::ops::DerefMut;
 use crate::ast::config_holder::ConfigHolder;
 use crate::ast::result_map_id_node::ResultMapIdNode;
 use crate::ast::result_map_result_node::ResultMapResultNode;
+use serde::{Serialize, Deserialize};
 
-#[derive(Clone)]
+#[derive(Serialize, Deserialize, Clone,Debug)]
 pub struct ResultMapNode {
     pub id:String,
     pub id_node: Option<ResultMapIdNode>,
-    pub results: Option<Vec<ResultMapResultNode>>,
+    pub results: Vec<ResultMapResultNode>,
 }
 
 impl SqlNode for ResultMapNode {
@@ -29,8 +30,8 @@ impl SqlNodePrint for ResultMapNode{
         if self.id_node.is_some(){
             result=result+self.id_node.as_ref().unwrap().print(deep).as_str();
         }
-        if self.results.is_some(){
-            result=result+print_child(self.results.as_ref().unwrap(), deep+1).as_str();
+        if self.results.len()>0{
+            result=result+print_child(self.results.as_ref(), deep+1).as_str();
         }
         result=result+create_deep(deep).as_str()+"</result_map>";
         return result;

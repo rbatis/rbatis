@@ -3,8 +3,9 @@ use crate::ast::node::{SqlNode, do_child_nodes, print_child, create_deep, SqlNod
 use serde_json::Value;
 use crate::ast::config_holder::ConfigHolder;
 use std::borrow::BorrowMut;
+use serde::{Serialize, Deserialize};
 
-#[derive(Clone)]
+#[derive(Serialize, Deserialize, Clone,Debug)]
 pub struct ResultMapResultNode {
     pub column: String,
     pub property: String,

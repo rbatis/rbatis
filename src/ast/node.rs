@@ -135,11 +135,8 @@ pub fn loop_decode_xml(xml_vec: &Vec<Element>, holder:&ConfigHolder) -> Vec<Node
                column: xml.get_attr("column"),
                property: xml.get_attr("property"),
                lang_type: xml.get_attr("lang_type"),
-               version_enable:  xml.get_attr("version_enable"),
-               logic_enable:  xml.get_attr("logic_enable"),
-               logic_undelete: xml.get_attr("logic_undelete"),
-               logic_deleted:  xml.get_attr("logic_deleted"),
            })),
+
            "result" => nodes.push(NodeType::NResultMapResultNode(ResultMapResultNode{
                column: xml.get_attr("column"),
                property: xml.get_attr("property"),
@@ -168,17 +165,14 @@ pub fn loop_decode_xml(xml_vec: &Vec<Element>, holder:&ConfigHolder) -> Vec<Node
     return nodes;
 }
 
-pub fn filter_result_map_result_nodes(arg:&Vec<NodeType>) -> Option<Vec<ResultMapResultNode>>{
+pub fn filter_result_map_result_nodes(arg:&Vec<NodeType>) -> Vec<ResultMapResultNode>{
     let mut data=vec![];
     for x in arg {
         if let NodeType::NResultMapResultNode(result_node) = x {
             data.push(result_node.clone());
         }
     }
-    if data.len()==0{
-        return Option::None;
-    }
-    return Option::Some(data);
+    return data;
 }
 
 pub fn filter_result_map_id_nodes(arg:&Vec<NodeType>) -> Option<ResultMapIdNode>{
