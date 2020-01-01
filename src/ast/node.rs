@@ -32,7 +32,9 @@ pub trait SqlNode {
     env: &mut Value,因为bind node 会绑定变量，env必须为可修改的值
     */
     fn eval(&self, env: &mut Value, holder:&mut ConfigHolder) -> Result<String, String>;
+}
 
+pub trait SqlNodePrint {
     fn print(&self,deep:i32) -> String;
 }
 
@@ -133,11 +135,19 @@ pub fn loop_decode_xml(xml_vec: &Vec<Element>, holder:&ConfigHolder) -> Vec<Node
                column: xml.get_attr("column"),
                property: xml.get_attr("property"),
                lang_type: xml.get_attr("lang_type"),
+               version_enable:  xml.get_attr("version_enable"),
+               logic_enable:  xml.get_attr("logic_enable"),
+               logic_undelete: xml.get_attr("logic_undelete"),
+               logic_deleted:  xml.get_attr("logic_deleted"),
            })),
            "result" => nodes.push(NodeType::NResultMapResultNode(ResultMapResultNode{
                column: xml.get_attr("column"),
                property: xml.get_attr("property"),
                lang_type: xml.get_attr("lang_type"),
+               version_enable:  xml.get_attr("version_enable"),
+               logic_enable:  xml.get_attr("logic_enable"),
+               logic_undelete: xml.get_attr("logic_undelete"),
+               logic_deleted:  xml.get_attr("logic_deleted"),
            })),
 
            "result_map" => nodes.push(NodeType::NResultMapNode(ResultMapNode{
@@ -158,11 +168,11 @@ pub fn loop_decode_xml(xml_vec: &Vec<Element>, holder:&ConfigHolder) -> Vec<Node
     return nodes;
 }
 
-pub fn filter_result_map_result_nodes(arg:&Vec<NodeType>) -> Option<Vec<NodeType>>{
+pub fn filter_result_map_result_nodes(arg:&Vec<NodeType>) -> Option<Vec<ResultMapResultNode>>{
     let mut data=vec![];
     for x in arg {
         if let NodeType::NResultMapResultNode(result_node) = x {
-            data.push(NodeType::NResultMapResultNode(result_node.clone()));
+            data.push(result_node.clone());
         }
     }
     if data.len()==0{
@@ -171,10 +181,10 @@ pub fn filter_result_map_result_nodes(arg:&Vec<NodeType>) -> Option<Vec<NodeType
     return Option::Some(data);
 }
 
-pub fn filter_result_map_id_nodes(arg:&Vec<NodeType>) -> Option<Box<NodeType>>{
+pub fn filter_result_map_id_nodes(arg:&Vec<NodeType>) -> Option<ResultMapIdNode>{
     for x in arg {
         if let NodeType::NResultMapIdNode(id_node) = x {
-            return Option::Some(Box::new(NodeType::NResultMapIdNode(id_node.clone())));
+            return Option::Some(id_node.clone());
         }
     }
     return Option::None;
@@ -213,7 +223,7 @@ pub fn filter_otherwise_nodes(arg:Vec<NodeType>) -> Option<Box<NodeType>>{
 }
 
 
-pub fn print_child(arg:&Vec<NodeType>,deep:i32)->String{
+pub fn print_child(arg:&Vec<impl SqlNodePrint>,deep:i32)->String{
     let mut result=String::new();
     for x in arg{
         let item=x.print(deep);

@@ -1,5 +1,5 @@
 use crate::ast::node_type::NodeType;
-use crate::ast::node::{SqlNode, do_child_nodes, print_child, create_deep};
+use crate::ast::node::{SqlNode, do_child_nodes, print_child, create_deep, SqlNodePrint};
 use serde_json::Value;
 use crate::ast::config_holder::ConfigHolder;
 
@@ -39,7 +39,9 @@ impl SqlNode for TrimNode {
         new_buffer = new_buffer + " " + self.prefix.as_str() + " " + result + " " + self.suffix.as_str();
         return Result::Ok(new_buffer);
     }
+}
 
+impl SqlNodePrint for TrimNode{
     fn print(&self,deep:i32) -> String {
         let mut result=create_deep(deep)+"<trim ";
         result=result+" prefix=\""+self.prefix.as_str()+"\"";

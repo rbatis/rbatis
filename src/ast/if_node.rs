@@ -1,5 +1,5 @@
 use crate::ast::node_type::NodeType;
-use crate::ast::node::{SqlNode, do_child_nodes, print_child, create_deep};
+use crate::ast::node::{SqlNode, do_child_nodes, print_child, create_deep, SqlNodePrint};
 use serde_json::Value;
 use crate::ast::config_holder::ConfigHolder;
 use serde_json::ser::State::Rest;
@@ -25,7 +25,9 @@ impl SqlNode for IfNode {
         }
         return Result::Ok("".to_string());
     }
+}
 
+impl SqlNodePrint for IfNode{
     fn print(&self,deep:i32) -> String {
         let mut result=create_deep(deep)+"<if ";
         result=result+" test=\""+self.test.as_str() +"\" >";
