@@ -1,26 +1,26 @@
 use std::rc::Rc;
-use crate::ast::node::{SqlNode, SqlNodePrint};
+use crate::ast::xml::node::{SqlNode, SqlNodePrint};
 use serde_json::Value;
-use crate::ast::string_node::StringNode;
-use crate::ast::if_node::IfNode;
-use crate::ast::trim_node::TrimNode;
-use crate::ast::foreach_node::ForEachNode;
-use crate::ast::choose_node::ChooseNode;
-use crate::ast::otherwise_node::OtherwiseNode;
-use crate::ast::when_node::WhenNode;
-use crate::ast::bind_node::BindNode;
-use crate::ast::include_node::IncludeNode;
-use crate::ast::set_node::SetNode;
+use crate::ast::xml::string_node::StringNode;
+use crate::ast::xml::if_node::IfNode;
+use crate::ast::xml::trim_node::TrimNode;
+use crate::ast::xml::foreach_node::ForEachNode;
+use crate::ast::xml::choose_node::ChooseNode;
+use crate::ast::xml::otherwise_node::OtherwiseNode;
+use crate::ast::xml::when_node::WhenNode;
+use crate::ast::xml::bind_node::BindNode;
+use crate::ast::xml::include_node::IncludeNode;
+use crate::ast::xml::set_node::SetNode;
 
-use crate::ast::select_node::SelectNode;
-use crate::ast::delete_node::DeleteNode;
-use crate::ast::update_node::UpdateNode;
-use crate::ast::insert_node::InsertNode;
+use crate::ast::xml::select_node::SelectNode;
+use crate::ast::xml::delete_node::DeleteNode;
+use crate::ast::xml::update_node::UpdateNode;
+use crate::ast::xml::insert_node::InsertNode;
 use crate::ast::config_holder::ConfigHolder;
-use crate::ast::where_node::WhereNode;
-use crate::ast::result_map_node::ResultMapNode;
-use crate::ast::result_map_id_node::ResultMapIdNode;
-use crate::ast::result_map_result_node::ResultMapResultNode;
+use crate::ast::xml::where_node::WhereNode;
+use crate::ast::xml::result_map_node::ResultMapNode;
+use crate::ast::xml::result_map_id_node::ResultMapIdNode;
+use crate::ast::xml::result_map_result_node::ResultMapResultNode;
 use crate::engine::node::Node;
 
 #[derive(Clone)]

@@ -1,14 +1,14 @@
 
-use crate::ast::node_type::NodeType;
+use crate::ast::xml::node_type::NodeType;
 use std::rc::Rc;
-use crate::ast::node::{SqlNode, print_child, create_deep, SqlNodePrint};
+use crate::ast::xml::node::{SqlNode, print_child, create_deep, SqlNodePrint};
 use serde_json::Value;
 use core::borrow::BorrowMut;
-use crate::ast::otherwise_node::OtherwiseNode;
+use crate::ast::xml::otherwise_node::OtherwiseNode;
 use std::ops::DerefMut;
 use crate::ast::config_holder::ConfigHolder;
-use crate::ast::result_map_id_node::ResultMapIdNode;
-use crate::ast::result_map_result_node::ResultMapResultNode;
+use crate::ast::xml::result_map_id_node::ResultMapIdNode;
+use crate::ast::xml::result_map_result_node::ResultMapResultNode;
 use serde::{Serialize, Deserialize};
 
 #[derive(Serialize, Deserialize, Clone,Debug)]

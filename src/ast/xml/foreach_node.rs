@@ -1,5 +1,5 @@
-use crate::ast::node_type::NodeType;
-use crate::ast::node::{SqlNode, do_child_nodes, print_child, create_deep, SqlNodePrint};
+use crate::ast::xml::node_type::NodeType;
+use crate::ast::xml::node::{SqlNode, do_child_nodes, print_child, create_deep, SqlNodePrint};
 use serde_json::{Value, Map};
 use crate::utils;
 use std::collections::HashMap;

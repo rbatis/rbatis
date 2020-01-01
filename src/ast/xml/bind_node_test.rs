@@ -1,6 +1,6 @@
-use crate::ast::bind_node::BindNode;
+use crate::ast::xml::bind_node::BindNode;
 use std::rc::Rc;
-use crate::ast::node::SqlNode;
+use crate::ast::xml::node::SqlNode;
 use serde_json::json;
 
 use crate::ast::config_holder::ConfigHolder;

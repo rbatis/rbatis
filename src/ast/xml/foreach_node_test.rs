@@ -1,8 +1,8 @@
-use crate::ast::foreach_node::ForEachNode;
-use crate::ast::node::SqlNode;
+use crate::ast::xml::foreach_node::ForEachNode;
+use crate::ast::xml::node::SqlNode;
 use serde_json::json;
-use crate::ast::node_type::NodeType;
-use crate::ast::string_node::StringNode;
+use crate::ast::xml::node_type::NodeType;
+use crate::ast::xml::string_node::StringNode;
 use std::rc::Rc;
 use crate::ast::convert::sql_arg_type_convert_default::SqlArgTypeConvertDefault;
 use crate::ast::config_holder::ConfigHolder;

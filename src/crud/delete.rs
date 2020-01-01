@@ -2,9 +2,9 @@ use serde_json::Value;
 use crate::core::rbatis::Rbatis;
 use std::borrow::BorrowMut;
 use crate::engine::node::NodeType;
-use crate::ast::node::SqlNode;
+use crate::ast::xml::node::SqlNode;
 use std::fs;
-use crate::ast::result_map_node::ResultMapNode;
+use crate::ast::xml::result_map_node::ResultMapNode;
 
 impl Rbatis{
     pub fn delete(&mut self, mapper_name: &str, id: &str, arg: &mut Value)-> Result<String, String>{

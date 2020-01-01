@@ -1,7 +1,7 @@
 use crate::ast::config_holder::ConfigHolder;
 use serde_json::Value;
-use crate::ast::node::{do_child_nodes, SqlNode, create_deep, print_child, SqlNodePrint};
-use crate::ast::node_type::NodeType;
+use crate::ast::xml::node::{do_child_nodes, SqlNode, create_deep, print_child, SqlNodePrint};
+use crate::ast::xml::node_type::NodeType;
 
 #[derive(Clone)]
 pub struct  WhereNode{
