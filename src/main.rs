@@ -5,6 +5,7 @@
 #![allow(unused_must_use)]
 #[macro_use]
 extern crate lazy_static;
+extern crate serde_yaml;
 
 pub mod example;
 pub mod ast;
