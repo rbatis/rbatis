@@ -1,9 +1,11 @@
-use crate::ast::xml::node_type::NodeType;
-use crate::ast::xml::node::{SqlNode, do_child_nodes, print_child, create_deep, SqlNodePrint};
-use serde_json::{Value,json};
-use crate::ast::config_holder::ConfigHolder;
 use std::borrow::BorrowMut;
 
+use serde_json::{json, Value};
+
+use crate::ast::ast::Ast;
+use crate::ast::config_holder::ConfigHolder;
+use crate::ast::xml::node::{create_deep, do_child_nodes, print_child, SqlNodePrint};
+use crate::ast::xml::node_type::NodeType;
 
 pub struct WhenNode {
     pub childs: Vec<NodeType>,
@@ -11,24 +13,24 @@ pub struct WhenNode {
 
 }
 
-impl Clone for WhenNode{
+impl Clone for WhenNode {
     fn clone(&self) -> Self {
-        return Self{
+        return Self {
             childs: self.childs.clone(),
             test: self.test.clone(),
-        }
+        };
     }
 }
 
-impl  SqlNode for WhenNode{
-    fn eval(&self, env: &mut Value, holder:&mut ConfigHolder) -> Result<String,String> {
+impl Ast for WhenNode {
+    fn eval(&self, env: &mut Value, holder: &mut ConfigHolder) -> Result<String, String> {
         let result_value = holder.engine.eval(self.test.as_str(), env);
-        if result_value.is_err(){
+        if result_value.is_err() {
             return Result::Err(result_value.err().unwrap());
         }
-        let result= result_value.unwrap();
-        if !result.is_boolean(){
-            return Result::Err("[rbatis] test:'".to_owned()+self.test.as_str()+"' is not return bool!");
+        let result = result_value.unwrap();
+        if !result.is_boolean() {
+            return Result::Err("[rbatis] test:'".to_owned() + self.test.as_str() + "' is not return bool!");
         }
         if result.as_bool().unwrap() {
             return do_child_nodes(&self.childs, env, holder);
@@ -37,12 +39,12 @@ impl  SqlNode for WhenNode{
     }
 }
 
-impl SqlNodePrint for WhenNode{
-    fn print(&self,deep:i32) -> String {
-        let mut result=create_deep(deep)+"<when ";
-        result=result+" test=\""+self.test.as_str()+"\" >";
-        result=result+print_child(self.childs.as_ref(),deep+1).as_str();
-        result=result+create_deep(deep).as_str()+"</when>";
+impl SqlNodePrint for WhenNode {
+    fn print(&self, deep: i32) -> String {
+        let mut result = create_deep(deep) + "<when ";
+        result = result + " test=\"" + self.test.as_str() + "\" >";
+        result = result + print_child(self.childs.as_ref(), deep + 1).as_str();
+        result = result + create_deep(deep).as_str() + "</when>";
         return result;
     }
 }

@@ -1,5 +1,5 @@
 use crate::ast::config_holder::ConfigHolder;
-use crate::ast::xml::node::{SqlNode, loop_decode_xml, SqlNodePrint};
+use crate::ast::xml::node::{loop_decode_xml, SqlNodePrint};
 use crate::ast::xml::bind_node::BindNode;
 use crate::ast::xml::string_node::StringNode;
 use crate::utils::xml_loader::load_xml;
@@ -21,6 +21,7 @@ use std::process::exit;
 use serde_json::ser::State::Rest;
 use serde_json::json;
 use crate::ast::xml::result_map_node::ResultMapNode;
+use crate::ast::ast::Ast;
 
 pub struct Rbatis {
     //动态sql运算节点集合

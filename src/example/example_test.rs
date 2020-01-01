@@ -2,7 +2,6 @@ use std::fs;
 use crate::core::rbatis::Rbatis;
 use serde_json::{json, Value, Number};
 use crate::ast::xml::bind_node::BindNode;
-use crate::ast::xml::node::SqlNode;
 use crate::ast::config_holder::ConfigHolder;
 use crate::ast::xml::node_type::NodeType;
 use crate::example::activity::Activity;

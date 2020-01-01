@@ -1,11 +1,13 @@
-use serde_json::{Value,json};
 use std::rc::Rc;
-use crate::engine;
-use crate::ast::xml::node::{SqlNode, create_deep, SqlNodePrint};
+
+use serde_json::{json, Value};
+
+use crate::ast::ast::Ast;
 use crate::ast::config_holder::ConfigHolder;
+use crate::ast::xml::node::{create_deep, SqlNodePrint};
+use crate::engine;
 
-
-const TEMPLETE_BIND:&'static str ="<bind #{attr}>#{body}</bind>";
+const TEMPLETE_BIND: &'static str = "<bind #{attr}>#{body}</bind>";
 
 #[derive(Clone)]
 pub struct BindNode {
@@ -13,7 +15,7 @@ pub struct BindNode {
     pub value: String,
 }
 
-impl SqlNode for BindNode {
+impl Ast for BindNode {
     fn eval(&self, env: &mut Value, holder: &mut ConfigHolder) -> Result<String, String> {
         let r = holder.engine.eval(self.value.as_str(), env);
         env[self.name.as_str()] = r.unwrap_or(Value::Null);
@@ -31,9 +33,9 @@ impl SqlNodePrint for BindNode {
 
 
 #[test]
-fn test_bind_node(){
-    let mut holder= ConfigHolder::new();
-    let bind_node =BindNode{
+fn test_bind_node() {
+    let mut holder = ConfigHolder::new();
+    let bind_node = BindNode {
         name: "a".to_string(),
         value: "a+1".to_string(),
     };
@@ -43,9 +45,9 @@ fn test_bind_node(){
     });
 
 
-    let r= bind_node.eval(& mut john, &mut holder).unwrap();
+    let r = bind_node.eval(&mut john, &mut holder).unwrap();
 
 
-    println!("r={}",r);
-    println!("john[a]={}",john["a"]);
+    println!("r={}", r);
+    println!("john[a]={}", john["a"]);
 }
