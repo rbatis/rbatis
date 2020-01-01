@@ -1,10 +1,10 @@
 
-pub struct MD{
+pub struct MDTree{
   //TODO bind,choose,delete,foreach if,include insert otherwise,result_map,select,set,string,trim,update,when,where
 
 }
 
-impl MD{
+impl MDTree{
 
 }
 
