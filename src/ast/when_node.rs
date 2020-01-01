@@ -1,5 +1,5 @@
 use crate::ast::node_type::NodeType;
-use crate::ast::node::{SqlNode, do_child_nodes, print_child, create_deep};
+use crate::ast::node::{SqlNode, do_child_nodes, print_child, create_deep, SqlNodePrint};
 use serde_json::Value;
 use crate::ast::config_holder::ConfigHolder;
 use std::borrow::BorrowMut;
@@ -35,7 +35,9 @@ impl  SqlNode for WhenNode{
         }
         return Result::Ok("".to_string());
     }
+}
 
+impl SqlNodePrint for WhenNode{
     fn print(&self,deep:i32) -> String {
         let mut result=create_deep(deep)+"<when ";
         result=result+" test=\""+self.test.as_str()+"\" >";

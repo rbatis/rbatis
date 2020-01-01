@@ -1,5 +1,5 @@
 use crate::ast::config_holder::ConfigHolder;
-use crate::ast::node::{SqlNode, loop_decode_xml};
+use crate::ast::node::{SqlNode, loop_decode_xml, SqlNodePrint};
 use crate::ast::bind_node::BindNode;
 use crate::ast::string_node::StringNode;
 use crate::utils::xml_loader::load_xml;

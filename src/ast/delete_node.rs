@@ -1,5 +1,5 @@
 use crate::ast::node_type::NodeType;
-use crate::ast::node::{SqlNode, print_child, create_deep, do_child_nodes};
+use crate::ast::node::{SqlNode, print_child, create_deep, do_child_nodes, SqlNodePrint};
 use serde_json::Value;
 use crate::ast::config_holder::ConfigHolder;
 
@@ -13,7 +13,9 @@ impl SqlNode for DeleteNode{
     fn eval(&self, env: &mut Value, holder:&mut ConfigHolder) -> Result<String, String> {
         return do_child_nodes(&self.childs, env, holder);
     }
+}
 
+impl SqlNodePrint for DeleteNode{
     fn print(&self,deep:i32) -> String {
         let mut result=create_deep(deep)+"<delete ";
         result=result+"id=\""+self.id.as_str()+"\"";

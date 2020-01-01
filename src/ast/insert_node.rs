@@ -1,5 +1,5 @@
 use crate::ast::node_type::NodeType;
-use crate::ast::node::{SqlNode, do_child_nodes, print_child, create_deep};
+use crate::ast::node::{SqlNode, do_child_nodes, print_child, create_deep, SqlNodePrint};
 use serde_json::Value;
 use crate::ast::config_holder::ConfigHolder;
 
@@ -11,10 +11,11 @@ pub struct InsertNode {
 
 impl SqlNode for InsertNode{
     fn eval(&self, env: &mut Value, holder:&mut ConfigHolder) -> Result<String, String> {
-
         return do_child_nodes(&self.childs, env, holder);
     }
+}
 
+impl SqlNodePrint for InsertNode{
     fn print(&self,deep:i32) -> String {
         let mut result=create_deep(deep)+"<insert ";
         result=result+"id=\""+self.id.as_str()+"\"";

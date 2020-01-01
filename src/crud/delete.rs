@@ -4,6 +4,7 @@ use std::borrow::BorrowMut;
 use crate::engine::node::NodeType;
 use crate::ast::node::SqlNode;
 use std::fs;
+use crate::ast::result_map_node::ResultMapNode;
 
 impl Rbatis{
     pub fn delete(&mut self, mapper_name: &str, id: &str, arg: &mut Value)-> Result<String, String>{
@@ -11,8 +12,7 @@ impl Rbatis{
             return Result::Err("[rbatis] arg is null value".to_string());
         }
 
-        let table_name=self.get_table_name(mapper_name,id)?;
-
+        let result_map_node=self.get_result_map_node(mapper_name,id);
         //TODO delete by id
         self.do_delete_by_id(mapper_name,id,arg);
         //TODO delete by map
@@ -26,23 +26,18 @@ impl Rbatis{
 
     }
 
-    fn get_table_name(&self,mapper_name:&str,id:&str)-> Result<String, String>{
+    fn get_result_map_node(&self,mapper_name:&str,id:&str)-> Option<ResultMapNode>{
         let result_map_opt = self.mapper_map.get(mapper_name);
         if result_map_opt.is_none(){
-            return Result::Err("[rbatis]  can not be find ".to_string()+mapper_name);
+            return Option::None;
         }
-
-        println!("{}",result_map_opt.clone().unwrap().len());
-
         let result_map = result_map_opt.unwrap();
         let base_result_map_opt= result_map.get("BaseResultMap");
-        if base_result_map_opt.is_none(){
-            return Result::Err("[rbatis] BaseResultMap can not be null!".to_string());
+        if base_result_map_opt.is_some(){
+            let base_result_map=base_result_map_opt.unwrap();
+            return base_result_map.to_result_map_node();
         }
-        let base_result_map=base_result_map_opt.unwrap();
-        println!("{}",base_result_map.print_node());
-
-        return Result::Err("[rbatis] BaseResultMap can not be null!".to_string());
+        return Option::None;
     }
 }
 

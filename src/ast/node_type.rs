@@ -1,5 +1,5 @@
 use std::rc::Rc;
-use crate::ast::node::SqlNode;
+use crate::ast::node::{SqlNode, SqlNodePrint};
 use serde_json::Value;
 use crate::ast::string_node::StringNode;
 use crate::ast::if_node::IfNode;
@@ -54,6 +54,16 @@ impl NodeType{
     pub fn print_node(&self)-> String {
         return self.print(0);
     }
+
+    pub fn to_result_map_node(&self)->Option<ResultMapNode>{
+        match self {
+            NodeType::NResultMapNode(node)=>{
+                   return Option::Some(node.clone());
+            }
+            _=>{}
+        }
+        return Option::None;
+    }
 }
 
 impl <'a>SqlNode for NodeType {
@@ -83,7 +93,9 @@ impl <'a>SqlNode for NodeType {
             _ => Result::Err(String::from("eval NodeType not exist!")),
         }
     }
+}
 
+impl SqlNodePrint for NodeType{
     fn print(&self,deep:i32) -> String {
         match self {
 

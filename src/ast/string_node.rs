@@ -1,5 +1,5 @@
 use crate::utils::string_util;
-use crate::ast::node::{SqlNode, create_deep};
+use crate::ast::node::{SqlNode, create_deep, SqlNodePrint};
 use serde_json::Value;
 use std::collections::HashMap;
 use crate::ast::convert::sql_arg_type_convert::SqlArgTypeConvert;
@@ -60,7 +60,9 @@ impl SqlNode for StringNode {
         }
         return Result::Ok(result);
     }
+}
 
+impl SqlNodePrint for StringNode{
     fn print(&self,deep:i32) -> String {
         let mut result=create_deep(deep);
         result=result+self.value.as_str();
