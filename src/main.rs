@@ -11,6 +11,7 @@ pub mod ast;
 pub mod utils;
 pub mod crud;
 pub mod security;
+pub mod convert;
 
 //use test::Bencher;
 
