@@ -26,7 +26,7 @@ impl SqlNode for ResultMapNode {
 impl SqlNodePrint for ResultMapNode{
     fn print(&self, deep: i32) -> String {
         let mut result= create_deep(deep)+"<result_map id=\""+self.id.as_str()+"\">";
-        if (self.id_node.is_some()){
+        if self.id_node.is_some(){
             result=result+self.id_node.as_ref().unwrap().print(deep).as_str();
         }
         if self.results.is_some(){
