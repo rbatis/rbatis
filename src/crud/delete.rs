@@ -12,7 +12,9 @@ impl Rbatis{
             return Result::Err("[rbatis] arg is null value".to_string());
         }
 
-        let result_map_node=self.get_result_map_node(mapper_name,id);
+        let result_map_node=self.get_result_map_node(mapper_name,id)?;
+        println!("{:?}",result_map_node);
+
         //TODO delete by id
         self.do_delete_by_id(mapper_name,id,arg);
         //TODO delete by map
@@ -24,20 +26,6 @@ impl Rbatis{
     fn do_delete_by_id(&mut self, mapper_name: &str, id: &str, env: &mut Value){
         let mut sql = "DELETE FROM #{table} #{where}".to_string();
 
-    }
-
-    fn get_result_map_node(&self,mapper_name:&str,id:&str)-> Option<ResultMapNode>{
-        let result_map_opt = self.mapper_map.get(mapper_name);
-        if result_map_opt.is_none(){
-            return Option::None;
-        }
-        let result_map = result_map_opt.unwrap();
-        let base_result_map_opt= result_map.get("BaseResultMap");
-        if base_result_map_opt.is_some(){
-            let base_result_map=base_result_map_opt.unwrap();
-            return base_result_map.to_result_map_node();
-        }
-        return Option::None;
     }
 }
 

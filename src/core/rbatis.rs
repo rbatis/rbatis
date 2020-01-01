@@ -20,6 +20,7 @@ use std::any::Any;
 use std::process::exit;
 use serde_json::ser::State::Rest;
 use serde_json::json;
+use crate::ast::result_map_node::ResultMapNode;
 
 pub struct Rbatis {
     //动态sql运算节点集合
@@ -215,5 +216,22 @@ impl Rbatis {
             }
         }
         return result;
+    }
+
+    /// find result map config
+    pub fn get_result_map_node(&self, mapper_name: &str, id: &str) -> Result<ResultMapNode, String> {
+        let result_map_opt = self.mapper_map.get(mapper_name);
+        if result_map_opt.is_none() {
+            return Result::Err("[rbatis]  can not be find ".to_string() + mapper_name);
+        }
+        let result_map = result_map_opt.unwrap();
+        let base_result_map_opt = result_map.get("BaseResultMap");
+        if base_result_map_opt.is_some() {
+            let base_result_map = base_result_map_opt.unwrap().to_result_map_node();
+            if base_result_map.is_some() {
+                return Result::Ok(base_result_map.unwrap());
+            }
+        }
+        return Result::Err("[rbatis]  can not be find ".to_string() + mapper_name);
     }
 }
