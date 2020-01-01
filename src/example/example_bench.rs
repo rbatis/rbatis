@@ -2,7 +2,7 @@ use std::fs;
 use crate::core::rbatis::Rbatis;
 use serde_json::{json, Value};
 use crate::ast::xml::bind_node::BindNode;
-use crate::ast::xml::node::SqlNode;
+use crate::ast::ast::Ast;
 use crate::ast::config_holder::ConfigHolder;
 //use test::Bencher;
 use chrono::Local;

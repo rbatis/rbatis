@@ -1,10 +1,13 @@
-use crate::utils::string_util;
-use crate::ast::xml::node::{SqlNode, create_deep, SqlNodePrint};
-use serde_json::{Value,json};
 use std::collections::HashMap;
 use std::rc::Rc;
-use crate::engine;
+
+use serde_json::{json, Value};
+
+use crate::ast::ast::Ast;
 use crate::ast::config_holder::ConfigHolder;
+use crate::ast::xml::node::{create_deep, SqlNodePrint};
+use crate::engine;
+use crate::utils::string_util;
 
 /**
 *  string抽象节点
@@ -19,7 +22,6 @@ pub struct StringNode {
 }
 
 impl StringNode {
-
     pub fn new(v: &str) -> Self {
         let mut express_map = HashMap::new();
         for item in &string_util::find_convert_string(v) {
@@ -37,8 +39,8 @@ impl StringNode {
     }
 }
 
-impl SqlNode for StringNode {
-    fn eval(&self, env: &mut Value, holder:&mut ConfigHolder) -> Result<String, String> {
+impl Ast for StringNode {
+    fn eval(&self, env: &mut Value, holder: &mut ConfigHolder) -> Result<String, String> {
         let mut result = self.value.clone();
         for (item, value) in &self.express_map {
             let get_v = env.get(item);
@@ -59,23 +61,23 @@ impl SqlNode for StringNode {
     }
 }
 
-impl SqlNodePrint for StringNode{
-    fn print(&self,deep:i32) -> String {
-        let mut result=create_deep(deep);
-        result=result+self.value.as_str();
+impl SqlNodePrint for StringNode {
+    fn print(&self, deep: i32) -> String {
+        let mut result = create_deep(deep);
+        result = result + self.value.as_str();
         return result;
     }
 }
 
 
 #[test]
-pub fn test_string_node(){
+pub fn test_string_node() {
     let mut john = json!({
         "arg": 2,
     });
-    let mut holder= ConfigHolder::new();
+    let mut holder = ConfigHolder::new();
     let s_node = StringNode::new("arg+1=#{arg+1}");
 
-    let r= s_node.eval(&mut john, &mut holder).unwrap();
-    println!("{}",r);
+    let r = s_node.eval(&mut john, &mut holder).unwrap();
+    println!("{}", r);
 }

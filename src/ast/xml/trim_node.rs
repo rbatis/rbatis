@@ -1,7 +1,9 @@
-use crate::ast::xml::node_type::NodeType;
-use crate::ast::xml::node::{SqlNode, do_child_nodes, print_child, create_deep, SqlNodePrint};
-use serde_json::{Value,json};
+use serde_json::{json, Value};
+
+use crate::ast::ast::Ast;
 use crate::ast::config_holder::ConfigHolder;
+use crate::ast::xml::node::{create_deep, do_child_nodes, print_child, SqlNodePrint};
+use crate::ast::xml::node_type::NodeType;
 use crate::ast::xml::string_node::StringNode;
 
 #[derive(Clone)]
@@ -13,8 +15,8 @@ pub struct TrimNode {
     pub prefix_overrides: String,
 }
 
-impl SqlNode for TrimNode {
-    fn eval(&self, env: &mut Value, holder:&mut ConfigHolder) -> Result<String, String> {
+impl Ast for TrimNode {
+    fn eval(&self, env: &mut Value, holder: &mut ConfigHolder) -> Result<String, String> {
         let result_value = do_child_nodes(&self.childs, env, holder);
         let is_error = result_value.is_err();
         if is_error {
@@ -42,34 +44,34 @@ impl SqlNode for TrimNode {
     }
 }
 
-impl SqlNodePrint for TrimNode{
-    fn print(&self,deep:i32) -> String {
-        let mut result=create_deep(deep)+"<trim ";
-        result=result+" prefix=\""+self.prefix.as_str()+"\"";
-        result=result+" suffix=\""+self.suffix.as_str()+"\"";
-        result=result+" suffix_overrides=\""+self.suffix_overrides.as_str()+"\"";
-        result=result+" prefix_overrides=\""+self.prefix_overrides.as_str()+"\"";
-        result=result+print_child(self.childs.as_ref(),deep+1).as_str();
-        result=result+create_deep(deep).as_str()+"</trim>";
+impl SqlNodePrint for TrimNode {
+    fn print(&self, deep: i32) -> String {
+        let mut result = create_deep(deep) + "<trim ";
+        result = result + " prefix=\"" + self.prefix.as_str() + "\"";
+        result = result + " suffix=\"" + self.suffix.as_str() + "\"";
+        result = result + " suffix_overrides=\"" + self.suffix_overrides.as_str() + "\"";
+        result = result + " prefix_overrides=\"" + self.prefix_overrides.as_str() + "\"";
+        result = result + print_child(self.childs.as_ref(), deep + 1).as_str();
+        result = result + create_deep(deep).as_str() + "</trim>";
         return result;
     }
 }
 
 
 #[test]
-pub fn test_trim_node(){
-    let mut holder= ConfigHolder::new();
-    let node =TrimNode{
+pub fn test_trim_node() {
+    let mut holder = ConfigHolder::new();
+    let node = TrimNode {
         childs: vec![NodeType::NString(StringNode::new("1trim value1"))],
         prefix: "(".to_string(),
         suffix: ")".to_string(),
         suffix_overrides: "1".to_string(),
-        prefix_overrides: "1".to_string()
+        prefix_overrides: "1".to_string(),
     };
     let mut john = json!({
         "arg": 2,
     });
 
-    let r= node.eval(&mut john,&mut holder).unwrap();
-    println!("{}",r)
+    let r = node.eval(&mut john, &mut holder).unwrap();
+    println!("{}", r)
 }

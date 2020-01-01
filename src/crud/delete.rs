@@ -2,7 +2,6 @@ use serde_json::Value;
 use crate::core::rbatis::Rbatis;
 use std::borrow::BorrowMut;
 use crate::engine::node::NodeType;
-use crate::ast::xml::node::SqlNode;
 use std::fs;
 use crate::ast::xml::result_map_node::ResultMapNode;
 
