@@ -1,8 +1,8 @@
 ## selectByIds
-string:
+sql:
   select * from biz_activity 
   where delete_flag = 1
-   and delete_flag = 2
+  and delete_flag = 2
 where:
   if id != null:
      #{id}   
@@ -11,7 +11,7 @@ where:
   if ids!= null:
   trim ',':
       for index,item in ids:
-             string:
+             sql:
                 select * from biz_activity
              if id != null:
-                  #{id} 
+                  #{id}
