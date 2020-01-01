@@ -60,6 +60,18 @@ fn filter_str_mapping(_key:&serde_yaml::Value, _value:&serde_yaml::Value,arr:&mu
         if !prop.is_empty() {
             let mut map = HashMap::new();
             match md.tag {
+                "select"=>{
+                    map.insert("id", prop.clone());
+                }
+                "update"=>{
+                    map.insert("id", prop.clone());
+                }
+                "insert"=>{
+                    map.insert("id", prop.clone());
+                }
+                "delete"=>{
+                    map.insert("id", prop.clone());
+                }
                 "if" => {
                     map.insert("key", prop.clone());
                 }
@@ -97,6 +109,11 @@ const TAG_WHERE: &'static str = "where";
 const TAG_FOR: &'static str = "for";
 const TAG_TRIM: &'static str = "trim";
 
+const TAG_SELECT: &'static str = "select";
+const TAG_Update: &'static str = "update";
+const TAG_Delete: &'static str = "delete";
+const TAG_Insert: &'static str = "insert";
+
 fn create_tag(arg: &str) -> &'static str {
     let expr = arg.trim();
     if expr.starts_with(TAG_STRING) {
@@ -111,6 +128,14 @@ fn create_tag(arg: &str) -> &'static str {
         return TAG_FOR;
     } else if expr.starts_with(TAG_TRIM) {
         return TAG_TRIM;
+    } else if expr.starts_with(TAG_SELECT) {
+        return TAG_SELECT;
+    }else if expr.starts_with(TAG_Update) {
+        return TAG_Update;
+    }else if expr.starts_with(TAG_Delete) {
+        return TAG_Delete;
+    }else if expr.starts_with(TAG_Insert) {
+        return TAG_Insert;
     }
     return TAG_UN_KNOW;
 }
