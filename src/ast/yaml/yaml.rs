@@ -3,12 +3,12 @@ use serde_json::Value;
 use crate::ast::config_holder::ConfigHolder;
 use std::process::exit;
 
-pub struct MDTree{
+pub struct YamlNode{
   //TODO bind,choose,delete,foreach if,include insert otherwise,result_map,select,set,string,trim,update,when,where
 
 }
 
-impl Ast for MDTree{
+impl Ast for YamlNode{
 
     fn eval(&self, env: &mut Value, holder: &mut ConfigHolder) -> Result<String, String> {
         unimplemented!()

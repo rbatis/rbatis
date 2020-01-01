@@ -90,7 +90,7 @@ fn filter_str_mapping(_key:&serde_yaml::Value, _value:&serde_yaml::Value,arr:&mu
 
 
 const TAG_UN_KNOW: &'static str = "unknow";
-const TAG_STRING: &'static str = "string";
+const TAG_STRING: &'static str = "sql";
 const TAG_IF: &'static str = "if";
 const TAG_ELSE: &'static str = "else";
 const TAG_WHERE: &'static str = "where";
@@ -148,7 +148,7 @@ pub fn test_count_space() {
 
 #[test]
 pub fn test_parser_md_element() {
-    let s = fs::read_to_string("./src/example/Example_ActivityMapper.md").unwrap();
+    let s = fs::read_to_string("./src/example/Example_ActivityMapper.yaml").unwrap();
     let arr = parser_md_element(s.as_str()).unwrap();
     for x in arr {
         println!("js:{}", serde_json::to_string(&x).unwrap());
