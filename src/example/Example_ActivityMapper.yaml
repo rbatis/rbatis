@@ -1,5 +1,5 @@
 ## result map
-result_map id=BaseResultMap:
+result_map id=BaseResultMap,table=biz_activiy:
   id c=id,p=id:
   result c=name,p=name,string:
   result c=pc_link,p=pc_link,string:
