@@ -1,9 +1,10 @@
 use crate::ast::xml::node_type::NodeType;
 use crate::ast::xml::node::{SqlNode, do_child_nodes, print_child, create_deep, SqlNodePrint};
-use serde_json::{Value, Map};
+use serde_json::{Value, Map,json};
 use crate::utils;
 use std::collections::HashMap;
 use crate::ast::config_holder::ConfigHolder;
+use crate::ast::xml::string_node::StringNode;
 
 #[derive(Clone)]
 pub struct ForEachNode {
@@ -72,4 +73,24 @@ impl SqlNodePrint for ForEachNode{
         result=result+create_deep(deep).as_str()+"</foreach>";
         return result;
     }
+}
+
+#[test]
+pub fn test_for_each_node(){
+    let mut holder= ConfigHolder::new();
+    let n=ForEachNode{
+        childs: vec![NodeType::NString(StringNode::new("index:#{index},item:#{item}"))],
+        collection: "arg".to_string(),
+        index: "index".to_string(),
+        item: "item".to_string(),
+        open: "(".to_string(),
+        close: ")".to_string(),
+        separator: ",".to_string()
+    };
+    let mut john = json!({
+        "arg": 1,
+    });
+
+    let r=n.eval(&mut john,&mut holder);
+    println!("{}", r.unwrap_or("null".to_string()));
 }

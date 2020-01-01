@@ -1,4 +1,4 @@
-use serde_json::Value;
+use serde_json::{Value,json};
 use std::rc::Rc;
 use crate::engine;
 use crate::ast::xml::node::{SqlNode, create_deep, SqlNodePrint};
@@ -27,4 +27,25 @@ impl SqlNodePrint for BindNode {
         data = data.replace("#{body}", create_deep(deep).as_str());
         return data;
     }
+}
+
+
+#[test]
+fn test_bind_node(){
+    let mut holder= ConfigHolder::new();
+    let bind_node =BindNode{
+        name: "a".to_string(),
+        value: "a+1".to_string(),
+    };
+
+    let mut john = json!({
+        "a": 1,
+    });
+
+
+    let r= bind_node.eval(& mut john, &mut holder).unwrap();
+
+
+    println!("r={}",r);
+    println!("john[a]={}",john["a"]);
 }

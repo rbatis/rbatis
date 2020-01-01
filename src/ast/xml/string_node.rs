@@ -1,6 +1,6 @@
 use crate::utils::string_util;
 use crate::ast::xml::node::{SqlNode, create_deep, SqlNodePrint};
-use serde_json::Value;
+use serde_json::{Value,json};
 use std::collections::HashMap;
 use crate::ast::convert::sql_arg_type_convert::SqlArgTypeConvert;
 use std::rc::Rc;
@@ -68,4 +68,17 @@ impl SqlNodePrint for StringNode{
         result=result+self.value.as_str();
         return result;
     }
+}
+
+
+#[test]
+pub fn test_string_node(){
+    let mut john = json!({
+        "arg": 2,
+    });
+    let mut holder= ConfigHolder::new();
+    let s_node = StringNode::new("arg+1=#{arg+1}");
+
+    let r= s_node.eval(&mut john, &mut holder).unwrap();
+    println!("{}",r);
 }

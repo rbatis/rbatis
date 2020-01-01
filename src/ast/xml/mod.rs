@@ -20,14 +20,3 @@ pub mod select_node;
 pub mod result_map_node;
 pub mod result_map_id_node;
 pub mod result_map_result_node;
-//test
-pub mod node_test;
-pub mod bind_node_test;
-pub mod choose_node_test;
-pub mod foreach_node_test;
-pub mod if_node_test;
-pub mod include_node_test;
-pub mod otherwise_node_test;
-pub mod string_node_test;
-pub mod trim_node_test;
-pub mod when_node_test;

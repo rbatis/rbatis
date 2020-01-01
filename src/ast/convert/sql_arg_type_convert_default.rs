@@ -1,6 +1,6 @@
 
-use serde_json::Value;
 use crate::ast::convert::sql_arg_type_convert::SqlArgTypeConvert;
+use serde_json::{json, Value};
 
 pub struct SqlArgTypeConvertDefault {
 }
@@ -28,4 +28,19 @@ impl SqlArgTypeConvert for SqlArgTypeConvertDefault {
             _ => return String::from(""),
         }
     }
+}
+
+
+#[test]
+fn test_convert(){
+    let convert=SqlArgTypeConvertDefault{};
+    let mut result;
+    result =  convert.convert(json!(1));
+    println!("number(i64)=>{}",result);
+    result =  convert.convert(json!(1.2));
+    println!("number(f64)=>{}",result);
+    result =  convert.convert(json!("abc"));
+    println!("string=>{}",result);
+    result =  convert.convert(json!(null));
+    println!("null=>{}",result);
 }
