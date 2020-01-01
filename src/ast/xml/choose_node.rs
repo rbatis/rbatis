@@ -1,11 +1,14 @@
 use crate::ast::xml::node_type::NodeType;
 use std::rc::Rc;
 use crate::ast::xml::node::{SqlNode, print_child, create_deep, SqlNodePrint};
-use serde_json::Value;
+use serde_json::{Value,json};
 use core::borrow::BorrowMut;
 use crate::ast::xml::otherwise_node::OtherwiseNode;
 use std::ops::DerefMut;
 use crate::ast::config_holder::ConfigHolder;
+use crate::engine::runtime::RbatisEngine;
+use crate::ast::xml::string_node::StringNode;
+use crate::ast::xml::node_type::NodeType::NString;
 
 #[derive(Clone)]
 pub struct ChooseNode {
@@ -39,4 +42,24 @@ impl SqlNodePrint for ChooseNode{
         result=result+create_deep(deep).as_str()+"</choose>";
         return result;
     }
+}
+
+
+#[test]
+pub fn test_choose_node() {
+    let mut holder= ConfigHolder::new();
+    let mut john = json!({
+        "arg": 2,
+    });
+    let engine= RbatisEngine::new();
+
+    let s_node = NString(StringNode::new("dsaf#{arg+1}"));
+
+    let c = ChooseNode {
+        when_nodes: Option::Some(vec![s_node]),
+        otherwise_node: None,
+    };
+
+    let r = c.eval(&mut john,&mut holder);
+    println!("{}", r.unwrap());
 }

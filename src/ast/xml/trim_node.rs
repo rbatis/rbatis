@@ -1,7 +1,8 @@
 use crate::ast::xml::node_type::NodeType;
 use crate::ast::xml::node::{SqlNode, do_child_nodes, print_child, create_deep, SqlNodePrint};
-use serde_json::Value;
+use serde_json::{Value,json};
 use crate::ast::config_holder::ConfigHolder;
+use crate::ast::xml::string_node::StringNode;
 
 #[derive(Clone)]
 pub struct TrimNode {
@@ -52,4 +53,23 @@ impl SqlNodePrint for TrimNode{
         result=result+create_deep(deep).as_str()+"</trim>";
         return result;
     }
+}
+
+
+#[test]
+pub fn test_trim_node(){
+    let mut holder= ConfigHolder::new();
+    let node =TrimNode{
+        childs: vec![NodeType::NString(StringNode::new("1trim value1"))],
+        prefix: "(".to_string(),
+        suffix: ")".to_string(),
+        suffix_overrides: "1".to_string(),
+        prefix_overrides: "1".to_string()
+    };
+    let mut john = json!({
+        "arg": 2,
+    });
+
+    let r= node.eval(&mut john,&mut holder).unwrap();
+    println!("{}",r)
 }

@@ -1,6 +1,6 @@
 use super::node_type::NodeType;
 use std::collections::HashMap;
-use serde_json::Value;
+use serde_json::{Value,json};
 use crate::utils::xml_loader::Element;
 use crate::ast::xml::string_node::StringNode;
 use crate::ast::config_holder::ConfigHolder;
@@ -232,4 +232,17 @@ pub fn create_deep(deep:i32)-> String {
         s=s+"  ";
     }
     return s;
+}
+
+
+#[test]
+fn test_string_node() {
+    let mut holder= ConfigHolder::new();
+    let mut john = json!({
+        "name": "John Doe",
+    });
+    let str_node = NodeType::NString(StringNode::new("select * from ${name} where name = #{name}"));
+
+    let result = str_node.eval(&mut john, &mut holder).unwrap();
+    println!("{}", result);
 }

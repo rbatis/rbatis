@@ -1,8 +1,9 @@
 use crate::ast::xml::node_type::NodeType;
 use crate::ast::xml::node::{SqlNode, do_child_nodes, print_child, create_deep, SqlNodePrint};
-use serde_json::Value;
+use serde_json::{Value,json};
 use crate::ast::config_holder::ConfigHolder;
 use serde_json::ser::State::Rest;
+use crate::ast::xml::string_node::StringNode;
 
 #[derive(Clone)]
 pub struct IfNode{
@@ -35,4 +36,18 @@ impl SqlNodePrint for IfNode{
         result=result+create_deep(deep).as_str()+"</if>";
         return result;
     }
+}
+
+
+#[test]
+pub fn test_if_node() {
+    let node = IfNode {
+        childs: vec![NodeType::NString(StringNode::new("yes"))],
+        test: "arg == 1".to_string(),
+    };
+    let mut john = json!({
+        "arg": 1,
+    });
+    let mut holder= ConfigHolder::new();
+    println!("{}", node.eval(&mut john,&mut holder).unwrap());
 }
