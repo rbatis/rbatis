@@ -1,5 +1,5 @@
-use crate::ast::node_type::NodeType;
-use crate::ast::node::{SqlNode, do_child_nodes, create_deep, print_child, SqlNodePrint};
+use crate::ast::xml::node_type::NodeType;
+use crate::ast::xml::node::{SqlNode, do_child_nodes, create_deep, print_child, SqlNodePrint};
 use serde_json::Value;
 use crate::ast::config_holder::ConfigHolder;
 

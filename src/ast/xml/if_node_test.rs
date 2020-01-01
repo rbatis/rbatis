@@ -1,9 +1,9 @@
 use serde_json::json;
-use crate::ast::if_node::IfNode;
-use crate::ast::string_node::StringNode;
+use crate::ast::xml::if_node::IfNode;
+use crate::ast::xml::string_node::StringNode;
 use crate::ast::config_holder::ConfigHolder;
-use crate::ast::node_type::NodeType;
-use crate::ast::node::SqlNode;
+use crate::ast::xml::node_type::NodeType;
+use crate::ast::xml::node::SqlNode;
 use std::rc::Rc;
 
 #[test]

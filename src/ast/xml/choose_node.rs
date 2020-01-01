@@ -1,9 +1,9 @@
-use crate::ast::node_type::NodeType;
+use crate::ast::xml::node_type::NodeType;
 use std::rc::Rc;
-use crate::ast::node::{SqlNode, print_child, create_deep, SqlNodePrint};
+use crate::ast::xml::node::{SqlNode, print_child, create_deep, SqlNodePrint};
 use serde_json::Value;
 use core::borrow::BorrowMut;
-use crate::ast::otherwise_node::OtherwiseNode;
+use crate::ast::xml::otherwise_node::OtherwiseNode;
 use std::ops::DerefMut;
 use crate::ast::config_holder::ConfigHolder;
 
