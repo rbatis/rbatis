@@ -26,13 +26,13 @@ pub fn parser_md_element_arr(mapping: &Mapping) -> Option<Vec<MdElement>> {
     //表达式组
     let mut arr = vec![];
     for (_key, _value) in mapping {
-        if _value.is_sequence(){
-            let data=_value.as_sequence().unwrap();
+        if _value.is_sequence() {
+            let data = _value.as_sequence().unwrap();
             for x in data {
-                filter_str_mapping(_key,x,&mut arr);
+                filter_str_mapping(_key, x, &mut arr);
             }
-        }else{
-            filter_str_mapping(_key,_value,&mut arr);
+        } else {
+            filter_str_mapping(_key, _value, &mut arr);
         }
     }
     return Option::Some(arr);
@@ -42,7 +42,7 @@ fn filter_value(arg: &String) -> String {
     return arg.replace("\\#{", "#{");
 }
 
-fn filter_str_mapping(_key:&serde_yaml::Value, _value:&serde_yaml::Value,arr:&mut Vec<MdElement>){
+fn filter_str_mapping(_key: &serde_yaml::Value, _value: &serde_yaml::Value, arr: &mut Vec<MdElement>) {
     let key = _key.as_str().unwrap();
     let mut md = MdElement {
         tag: create_tag(key),
@@ -60,23 +60,43 @@ fn filter_str_mapping(_key:&serde_yaml::Value, _value:&serde_yaml::Value,arr:&mu
         if !prop.is_empty() {
             let mut map = HashMap::new();
             match md.tag {
-                "select"=>{
+                "select" => {
                     map.insert("id", prop.clone());
                 }
-                "update"=>{
+                "update" => {
                     map.insert("id", prop.clone());
                 }
-                "insert"=>{
+                "insert" => {
                     map.insert("id", prop.clone());
                 }
-                "delete"=>{
+                "delete" => {
                     map.insert("id", prop.clone());
+                }
+
+                "choose" => {
+                    map.insert("id", prop.clone());
+                }
+                "bind" => {
+                    map.insert("id", prop.clone());
+                }
+                "include" => {
+                    map.insert("refid", prop.clone());
+                }
+                "otherwise" => {}
+                "when" => {
+                    map.insert("test", prop.clone());
+                }
+                "set" => {
+
+                }
+                "sql" => {
+
                 }
                 "if" => {
-                    map.insert("key", prop.clone());
+                    map.insert("test", prop.clone());
                 }
                 "trim" => {
-                    map.insert("key", prop.clone());
+                    map.insert("value", prop.clone());
                 }
                 "for" => {
                     let ins: Vec<&str> = prop.split(" in ").collect();
@@ -130,11 +150,11 @@ fn create_tag(arg: &str) -> &'static str {
         return TAG_TRIM;
     } else if expr.starts_with(TAG_SELECT) {
         return TAG_SELECT;
-    }else if expr.starts_with(TAG_Update) {
+    } else if expr.starts_with(TAG_Update) {
         return TAG_Update;
-    }else if expr.starts_with(TAG_Delete) {
+    } else if expr.starts_with(TAG_Delete) {
         return TAG_Delete;
-    }else if expr.starts_with(TAG_Insert) {
+    } else if expr.starts_with(TAG_Insert) {
         return TAG_Insert;
     }
     return TAG_UN_KNOW;
