@@ -5,7 +5,7 @@ result_map id=BaseResultMap,table=biz_activiy:
   result c=pc_link,p=pc_link,string:
   result c=h5_link,p=h5_link,string:
   result c=remark,p=remark,string:
-  result c=version,p=version,string,v_enable=true:
+  result c=version,p=version,string,v=true:
   result c=create_time,p=create_time,time:
   result c=delete_flag,p=delete_flag,number,l=true,l_undelete=1,l_deleted=0:
 
