@@ -197,6 +197,5 @@ pub fn bench_decode_mysql_json(){
     for _ in 0..total{
           let r:Result<serde_json::Value,String>= decode_test(&mut tt,&rows);
     }
-    utils::time_util::count_time(total,now);
-    utils::time_util::count_tps(total,now);
+    utils::time_util::count_time_tps(total,now);
 }

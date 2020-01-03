@@ -3,6 +3,13 @@ extern crate chrono;
 use chrono::Local;
 use self::chrono::DateTime;
 
+
+pub fn count_time_tps(total: i32, start: DateTime<Local>){
+    count_tps(total,start);
+    count_time(total,start);
+}
+
+
 pub fn count_tps(total: i32, start: DateTime<Local>) {
     let mut time = (Local::now().timestamp_millis() - start.timestamp_millis()) as f64;
     time = time / 1000.0;
