@@ -153,8 +153,7 @@ fn benchmark_fromstr() {
         let deserialized: Point = serde_json::from_str(&serialized).unwrap();
         // println!("deserialized = {:?}", deserialized);
     }
-    time_util::count_time(total, now);
-    time_util::count_tps(total, now);
+    time_util::count_time_tps(total,now);
 }
 
 #[test]
@@ -168,6 +167,5 @@ fn benchmark_to_string() {
         let serialized = serde_json::to_string(&point).unwrap();
         let deserialized: Value = serde_json::from_str(&serialized).unwrap();
     }
-    time_util::count_time(total, now);
-    time_util::count_tps(total, now);
+    time_util::count_time_tps(total,now);
 }
