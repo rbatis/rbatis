@@ -9,9 +9,10 @@ use serde_json::value::Value::Number;
 
 //PG 解析器
 impl Decoder for Vec<Row> {
-    fn decode<T: ?Sized>(&mut self,decode_len:&mut usize) -> Result<T, String> where
-        T: de::DeserializeOwned {
+    fn decode<T: ?Sized>(&mut self) -> (Result<T, String> ,usize)
+        where T: de::DeserializeOwned {
         let mut js = serde_json::Value::Null;
+        let len=self.len();
 
         let type_name = std::any::type_name::<T>();
         if is_array::<T>(type_name) {
@@ -58,7 +59,7 @@ impl Decoder for Vec<Row> {
                     //decode struct
                     let size = self.len();
                     if size > 1 {
-                        return Result::Err("[rbatis] rows.affected_rows > 1,but decode one result!".to_string());
+                        return (Result::Err("[rbatis] rows.affected_rows > 1,but decode one result!".to_string()),size);
                     }
                     for i in 0..size {
                         let item = self.get(i);
@@ -67,13 +68,12 @@ impl Decoder for Vec<Row> {
                 }
             }
         }
-        *decode_len=json_len(&js);
         let decode_result = serde_json::from_value(js);
         if decode_result.is_ok() {
-            return Result::Ok(decode_result.unwrap());
+            return (Result::Ok(decode_result.unwrap()),len);
         } else {
             let e = decode_result.err().unwrap().to_string();
-            return Result::Err(e);
+            return (Result::Err(e),len);
         }
     }
 }

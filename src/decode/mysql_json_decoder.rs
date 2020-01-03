@@ -25,7 +25,8 @@ use crate::utils;
 
 
 impl Decoder for QueryResult<'_> {
-    fn decode<T:?Sized>(&mut self,decode_len:&mut usize) -> Result<T, String> where T: DeserializeOwned {
+    fn decode<T:?Sized>(&mut self) -> (Result<T, String>,usize)
+        where T: DeserializeOwned {
         let mut js = serde_json::Value::Null;
         let type_name=std::any::type_name::<T>();
         //println!("type_name>>>   {}",type_name);
@@ -80,18 +81,18 @@ impl Decoder for QueryResult<'_> {
                         index = index + 1;
                     });
                     if index > 1 {
-                        return Result::Err("[rbatis] rows.affected_rows > 1,but decode one result!".to_string());
+                        return (Result::Err("[rbatis] rows.affected_rows > 1,but decode one result!".to_string()),index);
                     }
                 }
             }
         }
-        *decode_len=json_len(&js);
+        let len=json_len(&js);
         let decode_result = serde_json::from_value(js);
         if decode_result.is_ok() {
-            return Result::Ok(decode_result.unwrap());
+            return (Result::Ok(decode_result.unwrap()),len);
         } else {
             let e = decode_result.err().unwrap().to_string();
-            return Result::Err(e);
+            return (Result::Err(e),len);
         }
     }
 }
