@@ -130,9 +130,9 @@ const TAG_FOR: &'static str = "for";
 const TAG_TRIM: &'static str = "trim";
 
 const TAG_SELECT: &'static str = "select";
-const TAG_Update: &'static str = "update";
-const TAG_Delete: &'static str = "delete";
-const TAG_Insert: &'static str = "insert";
+const TAG_UPDATE: &'static str = "update";
+const TAG_DELETE: &'static str = "delete";
+const TAG_INSERT: &'static str = "insert";
 
 fn create_tag(arg: &str) -> &'static str {
     let expr = arg.trim();
@@ -150,12 +150,12 @@ fn create_tag(arg: &str) -> &'static str {
         return TAG_TRIM;
     } else if expr.starts_with(TAG_SELECT) {
         return TAG_SELECT;
-    } else if expr.starts_with(TAG_Update) {
-        return TAG_Update;
-    } else if expr.starts_with(TAG_Delete) {
-        return TAG_Delete;
-    } else if expr.starts_with(TAG_Insert) {
-        return TAG_Insert;
+    } else if expr.starts_with(TAG_UPDATE) {
+        return TAG_UPDATE;
+    } else if expr.starts_with(TAG_DELETE) {
+        return TAG_DELETE;
+    } else if expr.starts_with(TAG_INSERT) {
+        return TAG_INSERT;
     }
     return TAG_UN_KNOW;
 }
