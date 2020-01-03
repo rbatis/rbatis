@@ -1,4 +1,4 @@
-use crate::decode::decoder::{Decoder, is_array, json_len};
+use crate::decode::decoder::{Decoder, is_array};
 use serde::de;
 use std::borrow::BorrowMut;
 use serde_json::Value;
