@@ -3,7 +3,7 @@ use serde::de;
 pub type Error = String;
 
 pub trait Decoder {
-    fn decode<T: ?Sized>(&mut self, decode_len: &mut usize) -> Result<T, Error>
+    fn decode<T: ?Sized>(&mut self) -> (Result<T, Error>,usize)
         where
             T: de::DeserializeOwned;
 }

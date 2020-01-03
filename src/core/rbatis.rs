@@ -148,8 +148,7 @@ impl Rbatis {
                     if exec_result.is_err() {
                         return Result::Err("[rbatis] exec fail:".to_string() + exec_result.err().unwrap().to_string().as_str());
                     }
-                    let mut decoded_num=0;
-                    let result= exec_result.unwrap().decode(&mut decoded_num);
+                    let (result,decoded_num)= exec_result.unwrap().decode();
                     if self.enable_log {
                         info!("{}","[rbatis] ReturnRows <== ".to_string()+ decoded_num.to_string().as_str() );
                     }
@@ -180,8 +179,7 @@ impl Rbatis {
                     if exec_result.is_err() {
                         return Result::Err("[rbatis] exec fail:".to_string() + exec_result.err().unwrap().to_string().as_str());
                     }
-                    let mut decoded_num=0;
-                    let result= exec_result.unwrap().decode(&mut decoded_num);
+                    let (result,decoded_num)= exec_result.unwrap().decode();
                     if self.enable_log {
                         info!("{}","[rbatis] ReturnRows <== ".to_string()+ decoded_num.to_string().as_str() );
                     }
