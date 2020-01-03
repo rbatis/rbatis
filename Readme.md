@@ -118,7 +118,7 @@ println!("[rbatis] result==> {}",data_result.unwrap());
 事务数/秒 TPS: 200000  TPS/s
 ``` 
 
-* 结论： 即便如此，仅 单线程 便有高达40万QPS/TPS，性能也是go语言版、java版 等等有GC暂停语言的 几倍以上性能
+* 结论： 即便如此，仅 单线程 便有高达20万QPS/TPS，性能也是go语言版、java版 等等有GC暂停语言的 几倍以上性能
 
 
 #### (原生Rust代码数值运算约等于 1 ns/iter,字符串运算约等于100 ns/iter)
