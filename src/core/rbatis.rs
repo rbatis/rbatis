@@ -59,7 +59,9 @@ impl Rbatis {
     ///加载xml数据
     /// rbatis.load_xml("Example_ActivityMapper.xml".to_string(), fs::read_to_string("./src/example/Example_ActivityMapper.xml").unwrap());//加载xml数据
     pub fn load_xml(&mut self, key: String, content: String) {
-        println!("[rbatis] load xml data:\n{}",content);
+        if self.enable_log{
+            info!("[rbatis] load xml data:\n{}",content);
+        }
         self.mapper_map.insert(key, create_node_type_map(content, &self.holder));
     }
 
