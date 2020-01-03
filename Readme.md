@@ -53,7 +53,7 @@ pub struct Activity {
 }
 
 //......
-let mut rbatis=Rbatis::new();
+let mut rbatis=Rbatis::new(true);
 rbatis.load_xml("Example_ActivityMapper.xml".to_string(),xml_string);//读取上面的xml
 let data_result:Result<serde_json::Value,String>=rbatis.eval("".to_string(), "select_by_condition", &mut json!({
        "name":null,

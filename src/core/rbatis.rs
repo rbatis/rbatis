@@ -1,28 +1,31 @@
-use crate::ast::config_holder::ConfigHolder;
-use crate::ast::xml::node::{loop_decode_xml, SqlNodePrint};
-use crate::ast::xml::bind_node::BindNode;
-use crate::ast::xml::string_node::StringNode;
-use crate::utils::xml_loader::load_xml;
-use std::rc::Rc;
-use crate::ast::xml::node_type::NodeType;
-use serde_json::{Value, Number};
-use std::collections::HashMap;
-use crate::core::db_config::DBConfig;
-use serde::de;
-use std::str::FromStr;
-use crate::core::conn_pool::ConnPool;
-use std::sync::Mutex;
-use crate::utils::driver_util;
-use mysql::Conn;
-use crate::decode::decoder::Decoder;
-use crate::core::node_type_map_factory::create_node_type_map;
 use std::any::Any;
+use std::collections::HashMap;
 use std::process::exit;
-use serde_json::ser::State::Rest;
-use serde_json::json;
-use crate::ast::xml::result_map_node::ResultMapNode;
-use crate::ast::ast::Ast;
+use std::rc::Rc;
+use std::str::FromStr;
+use std::sync::Mutex;
+
 use log::{error, info, warn};
+use mysql::Conn;
+use serde::de;
+use serde_json::{Number, Value};
+use serde_json::json;
+use serde_json::ser::State::Rest;
+
+use crate::ast::ast::Ast;
+use crate::ast::config_holder::ConfigHolder;
+use crate::ast::xml::bind_node::BindNode;
+use crate::ast::xml::node::{loop_decode_xml, SqlNodePrint};
+use crate::ast::xml::node_type::NodeType;
+use crate::ast::xml::result_map_node::ResultMapNode;
+use crate::ast::xml::string_node::StringNode;
+use crate::core::conn_pool::ConnPool;
+use crate::core::db_config::DBConfig;
+use crate::core::node_type_map_factory::create_node_type_map;
+use crate::decode::decoder::{Decoder};
+use crate::utils::driver_util;
+use crate::utils::xml_loader::load_xml;
+use log4rs::init_file;
 
 pub struct Rbatis {
     //动态sql运算节点集合
@@ -33,6 +36,9 @@ pub struct Rbatis {
     pub db_configs: HashMap<String, DBConfig>,
     //连接池
     pub conn_pool: ConnPool,
+
+    //允许日志输出，禁用此项可减少IO,提高性能
+    pub enable_log: bool,
 }
 
 impl Rbatis {
@@ -42,7 +48,12 @@ impl Rbatis {
             holder: ConfigHolder::new(),
             db_configs: HashMap::new(),
             conn_pool: ConnPool::new(),
+            enable_log: true,
         };
+    }
+
+    pub fn set_enable_log(&mut self,arg:bool){
+        self.enable_log=arg;
     }
 
     ///加载xml数据
@@ -56,8 +67,8 @@ impl Rbatis {
     /// 设置数据库默认url，如果失败返回错误信息
     ///  let url = "mysql://root:TEST@localhost:3306/test";
     ///  rbatis.load_db_url("".to_string(), url.to_string());//name 为空，则默认数据库
-    pub fn load_db_url(&mut self, name: String, url: String) -> Option<String> {
-        let db_config_opt = DBConfig::new(url);
+    pub fn load_db_url(&mut self, name: String, url: &str) -> Option<String> {
+        let db_config_opt = DBConfig::new(url.to_string());
         if db_config_opt.is_ok() {
             if name.is_empty() {
                 self.db_configs.insert("".to_string(), db_config_opt.unwrap());
@@ -108,13 +119,18 @@ impl Rbatis {
        if sql.is_empty(){
            return Result::Err("[rbatis] sql can not be empty！".to_string());
        }
-       if is_select {
-           info!("[rbatis] Query ==>  {}", sql);
-       }else{
-           info!("[rbatis] Query ==>  {}", sql);
-       }
+        if self.enable_log {
+            if is_select {
+                info!("[rbatis] Query ==>  {}", sql);
+            } else {
+                info!("[rbatis] Query ==>  {}", sql);
+            }
+        }
        let conf_opt = self.db_configs.get("");
        if conf_opt.is_none() {
+           if self.enable_log {
+               error!("[rbatis] find default database url config fail！");
+           }
            return Result::Err("[rbatis] find default database url config fail！".to_string());
        }
        let conf = conf_opt.unwrap();
@@ -124,11 +140,16 @@ impl Rbatis {
                 let conn_opt = self.conn_pool.get_mysql_conn("".to_string(), conf)?;
                 if is_select {
                     //select
-                    let exec_result = conn_opt.unwrap().prep_exec(sql, {});
+                    let mut exec_result = conn_opt.unwrap().prep_exec(sql, {});
                     if exec_result.is_err() {
                         return Result::Err("[rbatis] exec fail:".to_string() + exec_result.err().unwrap().to_string().as_str());
                     }
-                    return exec_result.unwrap().decode();
+                    let mut decoded_num=0;
+                    let result= exec_result.unwrap().decode(&mut decoded_num);
+                    if self.enable_log {
+                        info!("{}","[rbatis] ReturnRows <== ".to_string()+ decoded_num.to_string().as_str() );
+                    }
+                    return result;
                 } else {
                     //exec
                     let exec_result = conn_opt.unwrap().prep_exec(sql, {});
@@ -139,6 +160,10 @@ impl Rbatis {
                     let r = serde_json::from_value(json!(result.affected_rows()));
                     if r.is_err() {
                         return Result::Err("[rbatis] exec fail:".to_string() + r.err().unwrap().to_string().as_str());
+                    }
+                    if self.enable_log {
+                        let affected_rows=result.affected_rows();
+                        info!("{}","[rbatis] RowsAffected <== ".to_string()+ affected_rows.to_string().as_str() );
                     }
                     return Result::Ok(r.unwrap());
                 }
@@ -151,7 +176,12 @@ impl Rbatis {
                     if exec_result.is_err() {
                         return Result::Err("[rbatis] exec fail:".to_string() + exec_result.err().unwrap().to_string().as_str());
                     }
-                    return exec_result.unwrap().decode();
+                    let mut decoded_num=0;
+                    let result= exec_result.unwrap().decode(&mut decoded_num);
+                    if self.enable_log {
+                        info!("{}","[rbatis] ReturnRows <== ".to_string()+ decoded_num.to_string().as_str() );
+                    }
+                    return result;
                 } else {
                     //exec
                     let exec_result = conn_opt.unwrap().execute(sql, &[]);
@@ -170,7 +200,10 @@ impl Rbatis {
                     return Result::Ok(r.unwrap());
                 }
             }
-            _ => return Result::Err("[rbatis] unsupport database type:".to_string() + db_type)
+            _ => {
+                error!("{}","[rbatis] unsupport database type:".to_string() + db_type);
+                return Result::Err("[rbatis] unsupport database type:".to_string() + db_type);
+            }
         }
     }
 

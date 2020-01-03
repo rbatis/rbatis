@@ -1,4 +1,4 @@
-use crate::decode::decoder::{Decoder, is_array};
+use crate::decode::decoder::{Decoder, is_array, json_len};
 use std::sync::Arc;
 use mysql::{Column, Row, QueryResult};
 use std::result;
@@ -15,7 +15,7 @@ use serde_json::json;
 
 
 impl Decoder for QueryResult<'_> {
-    fn decode<T:?Sized>(&mut self) -> Result<T, String> where T: DeserializeOwned {
+    fn decode<T:?Sized>(&mut self,decode_len:&mut usize) -> Result<T, String> where T: DeserializeOwned {
         let mut js = serde_json::Value::Null;
         let type_name=std::any::type_name::<T>();
         //println!("type_name>>>   {}",type_name);
@@ -75,6 +75,7 @@ impl Decoder for QueryResult<'_> {
                 }
             }
         }
+        *decode_len=json_len(&js);
         let decode_result = serde_json::from_value(js);
         if decode_result.is_ok() {
             return Result::Ok(decode_result.unwrap());
