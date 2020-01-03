@@ -205,7 +205,9 @@ impl Rbatis {
                 }
             }
             _ => {
-                error!("{}","[rbatis] unsupport database type:".to_string() + db_type);
+                if self.enable_log{
+                    error!("{}","[rbatis] unsupport database type:".to_string() + db_type);
+                }
                 return Result::Err("[rbatis] unsupport database type:".to_string() + db_type);
             }
         }
