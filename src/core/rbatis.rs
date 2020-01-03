@@ -80,7 +80,9 @@ impl Rbatis {
             return Option::None;
         } else {
             let e = db_config_opt.err().unwrap();
-            println!("{}", "[rbatis] link db fail:".to_string() + e.as_str());
+            if self.enable_log{
+                error!("{}", "[rbatis] link db fail:".to_string() + e.as_str());
+            }
             return Option::Some(e);
         }
     }
