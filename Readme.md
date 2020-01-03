@@ -99,19 +99,23 @@ println!("[rbatis] result==> {}",data_result.unwrap());
 
 ### 性能测算 (测试平台 win10,6 core i7,16GB)
 #### 分步骤压测
+
+* sql构建性能  Example_ActivityMapper.xml -> select_by_condition
 ``` 
-（sql构建性能）Example_ActivityMapper.xml -> select_by_condition
 操作/纳秒nano/op: 0.202 s,each:2020 nano/op
 事务数/秒 TPS: 495049.50495049503 TPS/s
+``` 
 
-（查询结果解码性能）Example_ActivityMapper.xml -> select_by_condition
-操作/纳秒nano/op: 0.042 s,each:420 nano/op
-事务数/秒 TPS: 2380952.3809523806 TPS/s
+* 查询结果解码性能 decode/mysql_json_decoder  ->  bench_decode_mysql_json
+``` 
+操作/纳秒nano/op: 0.24 s,each:2400 nano/op
+事务数/秒 TPS: 416666.6666666667 TPS/s
+``` 
 
-（综合-完整sql生成+查询结果 性能）
-约为:
-操作/纳秒nano/op:   2440    nano/op 
-事务数/秒 TPS:   411522.63 TPS/s
+* 综合-完整sql生成+查询结果 性能(即水桶效应，取性能最差的部分)
+``` 
+操作/纳秒nano/op:   2400    nano/op 
+事务数/秒 TPS:   416666.6666666667 TPS/s
 ``` 
 
 * 结论： 查询结果解码性能极高达到2380952 TPS，性能瓶颈 主要在sql构建性能，也是以后优化的手段主要目标。

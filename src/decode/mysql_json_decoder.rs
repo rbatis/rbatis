@@ -167,8 +167,11 @@ fn col(name: &str, ty: ColumnType) -> Column {
     column_from_payload(payload).unwrap()
 }
 
+/// bench_decode_mysql_json
 ///压测单线程 sql 数据解码性能
-//cargo test --release --color=always --package rbatis --bin rbatis decode::mysql_json_decoder::bench_decode_mysql_json --all-features -- --nocapture --exact
+/// cargo test --release --color=always --package rbatis --bin rbatis decode::mysql_json_decoder::bench_decode_mysql_json --all-features -- --nocapture --exact
+// use Time: 0.24 s,each:2400 nano/op
+//use TPS: 416666.6666666667 TPS/s
 #[test]
 pub fn bench_decode_mysql_json(){
     let mut tt=0;
@@ -192,7 +195,7 @@ pub fn bench_decode_mysql_json(){
     let total=100000;
     let now=Local::now();
     for _ in 0..total{
-          let r:serde_json::Value= decode_test(&mut tt,&rows).unwrap();
+          let r:Result<serde_json::Value,String>= decode_test(&mut tt,&rows);
     }
     utils::time_util::count_time(total,now);
     utils::time_util::count_tps(total,now);
