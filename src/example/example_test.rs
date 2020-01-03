@@ -32,17 +32,13 @@ fn test_exec_sql(){
     rbatis.load_db_url("".to_string(), "mysql://root:TEST@localhost:3306/test");
     //4 加载xml配置
     rbatis.load_xml("Example_ActivityMapper.xml".to_string(), fs::read_to_string("./src/example/Example_ActivityMapper.xml").unwrap());//加载xml数据
-
     //判断是否配置数据库
     let conf=rbatis.db_configs.get("").unwrap();
     if conf.db_addr.contains("localhost") {
         println!("请修改mysql链接 用户名，密码，ip，和数据库名称");
         return;
     }
-    // rbatis.print();//（可选）打印已读取的内容
-
-    //执行到远程mysql 并且获取结果
-    //Result<serde_json::Value, String>,或者 Result<Activity, String> 等任意类型
+    //执行到远程mysql 并且获取结果,Result<serde_json::Value, String>,或者 Result<Activity, String> 等任意类型
     let data: Vec<Activity>= rbatis.eval("Example_ActivityMapper.xml", "select_by_condition", &mut json!({
        "name":null,
        "startTime":null,
