@@ -16,6 +16,7 @@ serde_json = "1.0.44"
 
 #sql drivers
 mysql="*"
+mysql_common = "*"
 postgres = {version = "0.17.0-alpha.1", features = ["with-serde_json-1"] }
 #postgres-shared = {version = "*", features = ["with-serde_json"] }
 
