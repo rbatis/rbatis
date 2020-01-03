@@ -79,7 +79,7 @@ println!("[rbatis] result==> {}",data_result);
 //输出结果
 //2020-01-04T00:17:38.074268200+08:00 INFO rbatis::core::rbatis - [rbatis] Query ==>  select * from biz_activity  order by create_time desc
 //2020-01-04T00:17:39.158373600+08:00 INFO rbatis::core::rbatis - [rbatis] ReturnRows <== 2
-//[rbatis] result==> [{"create_time":"\"2019-05-27 10:25:41\"","delete_flag":1,"h5_banner_img":"\"http://47.110.8.203:8080/group1/default/20190527/10/25/0/新人专享banner.jpg?download=0\"","h5_link":"\"http://115.220.9.139:8002/newuser/\"","id":"\"dfbdd779-5f70-4b8f-9921-a235a9c75b69\"","name":"\"新人专享\"","pc_banner_img":"\"http://47.110.8.203:8080/group1/default/20190527/10/25/0/新人专享banner.jpg?download=0\"","pc_link":"\"http://115.220.9.139:8002/newuser/\"","remark":"\"\"","sort":"\"\"","status":0,"version":6},{"create_time":"\"2019-05-27 10:25:41\"","delete_flag":1,"h5_banner_img":"\"http://47.110.8.203:8080/group1/default/20190527/10/25/0/新人专享banner.jpg?download=0\"","h5_link":"\"http://115.220.9.139:8002/newuser/\"","id":"\"dfbdd779-5f70-4b8f-9921-c235a9c75b69\"","name":"\"新人专享\"","pc_banner_img":"\"http://47.110.8.203:8080/group1/default/20190527/10/25/0/新人专享banner.jpg?download=0\"","pc_link":"\"http://115.220.9.139:8002/newuser/\"","remark":"\"\"","sort":"\"\"","status":0,"version":6}]
+//[rbatis] result==> [Activity { id: Some("\"dfbdd779-5f70-4b8f-9921-a235a9c75b69\""), name: Some("\"新人专享\""), version: Some(6) }, Activity { id: Some("\"dfbdd779-5f70-4b8f-9921-c235a9c75b69\""), name: Some("\"新人专享\""), version: Some(6) }]
 ```
 
 ### 支持数据库类型
