@@ -24,12 +24,16 @@ fn test_write_method(){
 
 #[test]
 fn test_exec_sql(){
-    //启用日志
+    //1 启用日志(可选，不添加则不加载日志库)
     log4rs::init_file("log4rs.yaml", Default::default()).unwrap();
-    //初始化rbatis
+    //2 初始化rbatis
     let mut rbatis = Rbatis::new();
-    //加载数据库url name 为空，则默认数据库
+    //3 加载数据库url name 为空，则默认数据库
     rbatis.load_db_url("".to_string(), "mysql://root:TEST@localhost:3306/test");
+    //4 加载xml配置
+    rbatis.load_xml("Example_ActivityMapper.xml".to_string(), fs::read_to_string("./src/example/Example_ActivityMapper.xml").unwrap());//加载xml数据
+
+
 
     //判断是否配置数据库
     let conf=rbatis.db_configs.get("").unwrap();
@@ -37,8 +41,6 @@ fn test_exec_sql(){
         println!("请修改mysql链接 用户名，密码，ip，和数据库名称");
         return;
     }
-    //加载xml配置
-    rbatis.load_xml("Example_ActivityMapper.xml".to_string(), fs::read_to_string("./src/example/Example_ActivityMapper.xml").unwrap());//加载xml数据
     rbatis.print();//（可选）打印已读取的内容
     println!(">>>>>>>>>>>>>>>>>>>>>>start eval method >>>>>>>>>>>>>>>>>>>>>>>");
     //执行到远程mysql 并且获取结果
