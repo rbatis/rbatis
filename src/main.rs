@@ -8,6 +8,29 @@ extern crate lazy_static;
 extern crate serde_yaml;
 
 
+use std::collections::HashMap;
+use std::fs;
+use std::fs::File;
+use std::io::{BufReader, Read};
+use std::sync::Mutex;
+use std::thread::{sleep, spawn};
+use std::time::Duration;
+
+use async_std::future;
+use async_std::task;
+use chrono::Local;
+use log::{error, info, warn};
+use log4rs;
+use serde_json::json;
+use uuid::Uuid;
+use xml::EventReader;
+use xml::reader::XmlEvent;
+
+use example::activity::Activity;
+use utils::bencher::Bencher;
+use utils::time_util;
+
+use crate::security::arg_filter::ArgFilter;
 pub mod example;
 pub mod ast;
 pub mod utils;
@@ -19,35 +42,16 @@ pub mod engine;
 pub mod core;
 pub mod decode;
 
-
-
-use utils::time_util;
-use chrono::Local;
-use std::collections::HashMap;
-use std::fs::File;
-use std::io::{Read, BufReader};
-use xml::EventReader;
-use xml::reader::XmlEvent;
-use std::fs;
-use serde_json::json;
-use std::thread::{sleep, spawn};
-use std::time::Duration;
-use async_std::task;
-
-use std::sync::Mutex;
-use utils::bencher::Bencher;
-use example::activity::Activity;
-use async_std::future;
-use crate::security::arg_filter::ArgFilter;
-use uuid::Uuid;
-
 lazy_static! {
     static ref ARRAY: Mutex<Vec<u8>> = Mutex::new(vec![]);
 }
 
-
 #[async_std::main]
 async fn main() {
+    log4rs::init_file("log4rs.yaml", Default::default()).unwrap();
+    info!("=====================================================================================");
+    error!("================================= [rbatis] now is started============================");
+    warn!("=====================================================================================");
 //    ARRAY.lock().unwrap().push(1);
 //    println!("{:?}",ARRAY.lock().unwrap().get(0).unwrap());
     let id = task::current().id();

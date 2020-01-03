@@ -22,6 +22,7 @@ use serde_json::ser::State::Rest;
 use serde_json::json;
 use crate::ast::xml::result_map_node::ResultMapNode;
 use crate::ast::ast::Ast;
+use log::{error, info, warn};
 
 pub struct Rbatis {
     //动态sql运算节点集合
@@ -108,9 +109,9 @@ impl Rbatis {
            return Result::Err("[rbatis] sql can not be empty！".to_string());
        }
        if is_select {
-           println!("[rbatis] Query ==>  {}", sql);
+           info!("[rbatis] Query ==>  {}", sql);
        }else{
-           println!("[rbatis] Exec ==>  {}", sql);
+           info!("[rbatis] Query ==>  {}", sql);
        }
        let conf_opt = self.db_configs.get("");
        if conf_opt.is_none() {

@@ -10,6 +10,7 @@
 * 多功能，借鉴GoMybatis（Go语言系）以及Mybatis Plus（Java系）的ORM框架经验 例如乐观锁插件+逻辑删除插件+分页插件+WebUI
 * 支持async_std库协程，兼容async await（理论上，假设严格按照async_std库替代所有io操作，那么并发量可远远超过go语言）
 * 基于Rust语言稳定版构建，要求 stable:1.9 以上
+* 内置日志输出,可自定义具体日志（基于标准库log(独立于任何特定的日志记录库)，标准库日志可选任意第三方库实现，类似于java的SLF4j）
 
 ##### xml案例: xml_string
 ``` xml

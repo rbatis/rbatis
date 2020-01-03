@@ -28,3 +28,5 @@ serde_yaml = "0.8"
 
 actix-web = "2.0"
 actix-rt = "1.0"
+log = "0.4"
+log4rs = "0.8.3"
