@@ -192,7 +192,7 @@ pub fn bench_decode_mysql_json(){
     let rows=vec![row];
 
     //开始测试
-    let total=100000;
+    let total=1;//TODO 请改为 let total=100000;
     let now=Local::now();
     for _ in 0..total{
           let r:Result<serde_json::Value,String>= decode_test(&mut tt,&rows);
