@@ -23,8 +23,8 @@ use crate::utils::bencher::Bencher;
 //cargo.exe test --release --color=always --package rbatis --bin rbatis example::example_bench::bench_main --all-features -- --nocapture --exact
 #[test]
 fn bench_main() {
-
     let mut rbatis=Rbatis::new();
+    rbatis.set_enable_log(false);//禁用日志以准确获取性能数据
     rbatis.load_xml("Example_ActivityMapper.xml".to_string(),fs::read_to_string("./src/example/Example_ActivityMapper.xml").unwrap());//加载xml数据
     rbatis.print();//打印已读取的内容
 

@@ -1,4 +1,4 @@
-use crate::decode::decoder::{Decoder, is_array};
+use crate::decode::decoder::{Decoder, is_array, json_len};
 use serde::de;
 use std::borrow::BorrowMut;
 use serde_json::Value;
@@ -9,7 +9,7 @@ use serde_json::value::Value::Number;
 
 //PG 解析器
 impl Decoder for Vec<Row> {
-    fn decode<T: ?Sized>(&mut self) -> Result<T, String> where
+    fn decode<T: ?Sized>(&mut self,decode_len:&mut usize) -> Result<T, String> where
         T: de::DeserializeOwned {
         let mut js = serde_json::Value::Null;
 
@@ -67,6 +67,7 @@ impl Decoder for Vec<Row> {
                 }
             }
         }
+        *decode_len=json_len(&js);
         let decode_result = serde_json::from_value(js);
         if decode_result.is_ok() {
             return Result::Ok(decode_result.unwrap());
