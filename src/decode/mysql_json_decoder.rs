@@ -177,7 +177,7 @@ pub fn bench_decode_mysql_json(){
     let mut tt=0;
 
     //模拟sql
-    let mut js = serde_json::Value::Null;
+    let js = serde_json::Value::Null;
     let vs=vec![
         Value::from("dfbdd779-5f70-4b8f-9921-a235a9c75b69"),
         Value::from("新人专享"),
@@ -192,7 +192,7 @@ pub fn bench_decode_mysql_json(){
     let rows=vec![row];
 
     //开始测试
-    let total=1;//TODO 请改为 let total=100000;
+    let total=100000;
     let now=Local::now();
     for _ in 0..total{
           let r:Result<serde_json::Value,String>= decode_test(&mut tt,&rows);

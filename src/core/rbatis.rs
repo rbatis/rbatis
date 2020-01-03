@@ -140,7 +140,7 @@ impl Rbatis {
                 let conn_opt = self.conn_pool.get_mysql_conn("".to_string(), conf)?;
                 if is_select {
                     //select
-                    let mut exec_result = conn_opt.unwrap().prep_exec(sql, {});
+                    let exec_result = conn_opt.unwrap().prep_exec(sql, {});
                     if exec_result.is_err() {
                         return Result::Err("[rbatis] exec fail:".to_string() + exec_result.err().unwrap().to_string().as_str());
                     }
