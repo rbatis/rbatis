@@ -74,7 +74,7 @@ let data_result: Vec<Activity> =rbatis.eval("".to_string(), "select_by_condition
        "page":null,
        "size":null,
     })).unwrap();
-println!("[rbatis] result==> {}",data_result);
+println!("[rbatis] result==> {:?}",data_result);
 }
 //输出结果
 //2020-01-04T00:17:38.074268200+08:00 INFO rbatis::core::rbatis - [rbatis] Query ==>  select * from biz_activity  order by create_time desc
