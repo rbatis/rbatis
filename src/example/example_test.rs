@@ -24,9 +24,9 @@ fn test_write_method(){
 
 #[test]
 fn test_exec_sql(){
-    println!("start build -------------------------------------------------------");
+    log4rs::init_file("log4rs.yaml", Default::default()).unwrap();
     let mut rbatis = Rbatis::new();
-    let url = "mysql://root:TEST@localhost:3306/test";
+    let url = "mysql://root:TEST@115.220.9.139:3306/test";
     rbatis.load_db_url("".to_string(), url.to_string());//name 为空，则默认数据库
 
     if url.contains("localhost") {
