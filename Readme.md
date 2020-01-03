@@ -12,7 +12,7 @@
 * 基于Rust语言稳定版构建，要求 stable:1.9 以上
 * 内置日志输出,可自定义具体日志（基于标准库log(独立于任何特定的日志记录库)，标准库日志可选任意第三方库实现，类似于java的SLF4j）
 
-##### xml案例: xml_string
+##### xml代码Example
 ``` xml
 <mapper>
     <result_map id="BaseResultMap">
@@ -38,10 +38,16 @@
         </select>
 </mapper>
 ``` 
-##### rust案例:
+##### rust代码Example:
+##### yaml加入以下代码
+```$xslt
+log = "0.4"
+log4rs = "0.8.3"
+```
+#### rust main.rs 加入以下代码
 ``` rust
 use crate::core::rbatis::Rbatis;
-use serde_json::{json, Value};
+use serde_json::{json, Value, Number};
 /**
 * 数据库表模型
 */
@@ -53,8 +59,15 @@ pub struct Activity {
 }
 
 //......
-let mut rbatis=Rbatis::new(true);
-rbatis.load_xml("Example_ActivityMapper.xml".to_string(),xml_string);//读取上面的xml
+fn main() {
+//1 启用日志(可选，不添加则不加载日志库)
+log4rs::init_file("log4rs.yaml", Default::default()).unwrap();
+//2 初始化rbatis
+let mut rbatis = Rbatis::new();
+//3 加载数据库url name 为空，则默认数据库
+rbatis.load_db_url("".to_string(), "mysql://root:TEST@localhost:3306/test");
+//4 加载xml配置，读取上面的xml
+rbatis.load_xml("Example_ActivityMapper.xml".to_string(),xml_string);
 let data_result:Result<serde_json::Value,String>=rbatis.eval("".to_string(), "select_by_condition", &mut json!({
        "name":null,
        "startTime":null,
@@ -63,9 +76,10 @@ let data_result:Result<serde_json::Value,String>=rbatis.eval("".to_string(), "se
        "size":null,
     }));
 println!("[rbatis] result==> {}",data_result.unwrap());
-
+}
 //.......执行输出结果
-//[rbatis] Query ==>   select * from biz_activity  order by create_time desc
+//2020-01-04T00:17:38.074268200+08:00 INFO rbatis::core::rbatis - [rbatis] Query ==>  select * from biz_activity  order by create_time desc
+//2020-01-04T00:17:39.158373600+08:00 INFO rbatis::core::rbatis - [rbatis] ReturnRows <== 2
 //[rbatis] result==> [{"create_time":"\"2019-05-27 10:25:41\"","delete_flag":1,"h5_banner_img":"\"http://47.110.8.203:8080/group1/default/20190527/10/25/0/新人专享banner.jpg?download=0\"","h5_link":"\"http://115.220.9.139:8002/newuser/\"","id":"\"dfbdd779-5f70-4b8f-9921-a235a9c75b69\"","name":"\"新人专享\"","pc_banner_img":"\"http://47.110.8.203:8080/group1/default/20190527/10/25/0/新人专享banner.jpg?download=0\"","pc_link":"\"http://115.220.9.139:8002/newuser/\"","remark":"\"\"","sort":"\"\"","status":0,"version":6},{"create_time":"\"2019-05-27 10:25:41\"","delete_flag":1,"h5_banner_img":"\"http://47.110.8.203:8080/group1/default/20190527/10/25/0/新人专享banner.jpg?download=0\"","h5_link":"\"http://115.220.9.139:8002/newuser/\"","id":"\"dfbdd779-5f70-4b8f-9921-c235a9c75b69\"","name":"\"新人专享\"","pc_banner_img":"\"http://47.110.8.203:8080/group1/default/20190527/10/25/0/新人专享banner.jpg?download=0\"","pc_link":"\"http://115.220.9.139:8002/newuser/\"","remark":"\"\"","sort":"\"\"","status":0,"version":6}]
 ```
 
