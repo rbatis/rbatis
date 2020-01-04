@@ -1,13 +1,10 @@
-
 use serde_json::{json, Value};
 
-
-
-pub trait SqlArgTypeConvertTraft{
+pub trait SqlValueConvert {
     fn to_sql(&self)->String;
 }
 
-impl SqlArgTypeConvertTraft for serde_json::Value{
+impl SqlValueConvert for serde_json::Value{
     fn to_sql(&self)->String{
         match self {
             Value::Null => return String::from("null"),
@@ -20,7 +17,23 @@ impl SqlArgTypeConvertTraft for serde_json::Value{
             Value::Number(n) => return n.to_string(),
             Value::Bool(b) => return b.to_string(),
             Value::Object(o) => panic!("[rbatis] not support convert Object/Map<String,Value>!"),
-            Value::Array(arr) => panic!("[rbatis] not support convert Vec<Value>!"),
+            Value::Array(arr) => {
+                let mut item="(".to_string();
+                for x in arr{
+                    match x {
+                        serde_json::Value::String(_)=>{
+                            item=item+x.to_sql().as_str()+","
+                        },
+                        serde_json::Value::Number(_)=>{
+                            item=item+x.to_sql().as_str()+","
+                        }
+                        _ => {}
+                    }
+                }
+                item.pop();
+                item=item+")";
+                return item;
+            },
             _ => return String::from(""),
         }
     }
