@@ -21,10 +21,17 @@ const AND: &'static str = " and ";
 ///    assert_eq!("null".to_string(),json!(null).to_sql());
 pub trait SqlValueConvert {
     fn to_sql(&self)->String;
+
+    fn to_sql_custom(&self,skip_null:bool)->String;
 }
 
 impl SqlValueConvert for serde_json::Value{
+
     fn to_sql(&self)->String{
+       return self.to_sql_custom(true);
+    }
+
+    fn to_sql_custom(&self,skip_null:bool)->String{
         match self {
             Value::Null => return String::from("null"),
             Value::String(s) => {
@@ -49,6 +56,11 @@ impl SqlValueConvert for serde_json::Value{
                         Value::Array(arr)=>{
                             where_str=where_str+key.as_str()+" in "+value.to_sql().as_str() + AND
                         }
+                        Value::Null=>{
+                            if !skip_null{
+                                where_str=where_str+key.as_str()+" in "+value.to_sql().as_str() + AND
+                            }
+                        }
                         _ => {
                         }
                     }
@@ -65,11 +77,16 @@ impl SqlValueConvert for serde_json::Value{
                 let mut item="(".to_string();
                 for x in arr{
                     match x {
-                        serde_json::Value::String(_)=>{
+                        Value::String(_)=>{
                             item=item+x.to_sql().as_str()+","
                         },
-                        serde_json::Value::Number(_)=>{
+                        Value::Number(_)=>{
                             item=item+x.to_sql().as_str()+","
+                        }
+                        Value::Null=>{
+                            if !skip_null{
+                                item=item+x.to_sql().as_str()+","
+                            }
                         }
                         _ => {}
                     }
