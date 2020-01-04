@@ -58,7 +58,7 @@ impl SqlValueConvert for serde_json::Value{
                         }
                         Value::Null=>{
                             if !skip_null{
-                                where_str=where_str+key.as_str()+" in "+value.to_sql().as_str() + AND
+                                where_str=where_str+key.as_str()+" = "+value.to_sql().as_str() + AND
                             }
                         }
                         _ => {
