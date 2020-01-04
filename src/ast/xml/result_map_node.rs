@@ -12,12 +12,52 @@ use crate::ast::xml::node_type::NodeType;
 use crate::ast::xml::otherwise_node::OtherwiseNode;
 use crate::ast::xml::result_map_id_node::ResultMapIdNode;
 use crate::ast::xml::result_map_result_node::ResultMapResultNode;
+use std::collections::HashMap;
 
 #[derive(Serialize, Deserialize, Clone, Debug)]
 pub struct ResultMapNode {
     pub id: String,
+    pub table: Option<String>,
     pub id_node: Option<ResultMapIdNode>,
     pub results: Vec<ResultMapResultNode>,
+    pub column_map:HashMap<String,ResultMapResultNode>,//Map<Column,Node>
+    pub delete_node:Option<ResultMapResultNode>,
+    pub version_node:Option<ResultMapResultNode>,
+}
+
+impl ResultMapNode {
+    pub fn new(id:String,table_str:String,id_node:Option<ResultMapIdNode>,results:Vec<ResultMapResultNode>) -> Self {
+        let mut column_map=HashMap::new();
+        let mut delete_node = Option::None;
+        let mut version_node = Option::None;
+        let mut table = Option::None;
+        if !table_str.is_empty(){
+            table=Option::Some(table_str);
+        }
+        for item in &results {
+            column_map.insert(item.column.clone(),item.clone());
+            if item.logic_enable.eq("true"){
+                delete_node=Option::Some(item.clone());
+            }
+            if item.version_enable.eq("true"){
+                version_node=Option::Some(item.clone());
+            }
+        }
+        let mut data= Self{
+            id,
+            table,
+            id_node,
+            results,
+            column_map,
+            delete_node,
+            version_node
+        };
+        return data;
+    }
+
+    pub fn find_delete_flag(&self)-> &ResultMapResultNode{
+       unimplemented!()
+    }
 }
 
 impl Ast for ResultMapNode {
