@@ -6,16 +6,14 @@ use serde_json::Value;
 use crate::ast::xml::result_map_node::ResultMapNode;
 use crate::core::rbatis::Rbatis;
 use crate::engine::node::NodeType;
+use serde_json::value::Value::Number;
 
 impl Rbatis{
     pub fn delete(&mut self, mapper_name: &str, id: &str, arg: &mut Value)-> Result<String, String>{
         if arg.is_null() {
             return Result::Err("[rbatis] arg is null value".to_string());
         }
-
         let result_map_node=self.get_result_map_node(mapper_name,id)?;
-        println!("{:?}",result_map_node);
-
         match arg {
             serde_json::Value::String(str)=>{
                 //delete by id
@@ -23,26 +21,19 @@ impl Rbatis{
             }
             serde_json::Value::Array(arr)=>{
                 //delete by ids
-                let mut string_arr:Vec<String>=vec![];
-                let mut f64_arr:Vec<f64>=vec![];
-                let mut i64_arr:Vec<i64>=vec![];
-                let mut u64_arr:Vec<u64>=vec![];
-                let mut arr_type="string";
+                let mut string_arr=vec![];
                 for item in arr {
                     match item {
                         serde_json::Value::String(arr_str)=>{
-                            string_arr.push(arr_str.clone());
+                            string_arr.push(item.clone());
                         },
                         serde_json::Value::Number(number)=>{
                             if number.is_f64(){
-                                arr_type="f64";
-                                f64_arr.push(number.as_f64().unwrap());
+                                string_arr.push(item.clone());
                             }else if number.is_i64(){
-                                arr_type="i64";
-                                i64_arr.push(number.as_i64().unwrap());
+                                string_arr.push(item.clone());
                             }else if number.is_u64(){
-                                arr_type="u64";
-                                u64_arr.push(number.as_u64().unwrap());
+                                string_arr.push(item.clone());
                             } else{
                                 return Result::Err("[rbatis] not support arg! delete by arr,arr must be string array or number array!".to_string());
                             }
@@ -52,8 +43,7 @@ impl Rbatis{
                         }
                     }
                 }
-
-                return self.do_delete_by_ids(arg,&result_map_node,arr_type,string_arr,f64_arr,i64_arr,u64_arr);
+                return self.do_delete_by_ids(arg,&result_map_node,string_arr);
             }
             serde_json::Value::Object(map)=>{
                 //TODO delete by ids
@@ -86,7 +76,7 @@ impl Rbatis{
         return Result::Ok(sql);
     }
 
-    fn do_delete_by_ids(&mut self, env: &mut Value,result_map_node:&ResultMapNode,arr_type:&str, string_arr:Vec<String>,f64_arr:Vec<f64>,i64_arr:Vec<i64>,u64_arr:Vec<u64>)-> Result<String, String>{
+    fn do_delete_by_ids(&mut self, env: &mut Value,result_map_node:&ResultMapNode, arr:Vec<Value>)-> Result<String, String>{
         let mut sql = "DELETE FROM #{table} #{set} where #{where}".to_string();
         //replace table
         if result_map_node.table.is_none() {
@@ -102,37 +92,32 @@ impl Rbatis{
         }
         //replace where
         let mut where_str = "id in (".to_string();
-        match arr_type {
-            "string" => {
-                for x in string_arr {
+        for x in arr {
+            match x{
+                serde_json::Value::String(x)=>{
                     where_str=where_str+x.as_str()+",";
                 }
-                where_str.pop();
-                where_str=where_str+")";
-            }
-            "f64" => {
-                for x in f64_arr {
-                    where_str=where_str+x.to_string().as_str()+",";
+                serde_json::Value::Number(n)=>{
+                  if n.is_u64(){
+                      where_str=where_str+ n.as_u64().unwrap().to_string().as_str()+",";
+                  }else if n.is_f64(){
+                      where_str=where_str+n.as_f64().unwrap().to_string().as_str()+",";
+                  }else if n.is_i64(){
+                      where_str=where_str+n.as_i64().unwrap().to_string().as_str()+",";
+                  }else{
+                      return Result::Err("[rbatis] not support arg! delete by arr,arr must be string array or number array!".to_string());
+                  }
                 }
-                where_str.pop();
-                where_str=where_str+")";
-            }
-            "i64" => {
-                for x in i64_arr {
-                    where_str=where_str+x.to_string().as_str()+",";
+                serde_json::Value::Null=>{
+                    continue;
                 }
-                where_str.pop();
-                where_str=where_str+")";
-            }
-            "u64" => {
-                for x in u64_arr {
-                    where_str=where_str+x.to_string().as_str()+",";
+                _ => {
+                    return Result::Err("[rbatis] not support arg! delete by arr,arr must be string array or number array!".to_string());
                 }
-                where_str.pop();
-                where_str=where_str+")";
             }
-            _ => {}
         }
+        where_str.pop();
+        where_str=where_str+")";
         sql = sql.replace("#{where}", where_str.as_ref());
         return Result::Ok(sql);
     }
