@@ -7,6 +7,7 @@ use crate::ast::xml::result_map_node::ResultMapNode;
 use crate::core::rbatis::Rbatis;
 use crate::engine::node::NodeType;
 use serde_json::value::Value::Number;
+use crate::convert::sql_value_convert::SqlValueConvert;
 
 const AND: &'static str = " and ";
 
@@ -27,10 +28,8 @@ impl Rbatis{
                 let mut string_arr=vec![];
                 for item in arr {
                     match item {
-                        serde_json::Value::String(arr_str)=>{
-                            string_arr.push(item.clone());
-                        },
-                        serde_json::Value::Number(number)=>{
+                          serde_json::Value::String(_)
+                        | serde_json::Value::Number(_)=>{
                             string_arr.push(item.clone());
                         }
                         _ => {
@@ -79,20 +78,20 @@ impl Rbatis{
     ///where delete by id
     fn do_delete_by_id_where(&mut self, env: &mut Value, result_map_node:&ResultMapNode) -> Result<String, String>{
         //replace where
-        let mut where_str = "id = ".to_string() + env.as_str().unwrap();
+        let mut where_str = "id = ".to_string() + env.to_sql().as_str();
         return Result::Ok(where_str);
     }
     ///where delete by ids
     fn do_delete_by_ids_where(&mut self, env: &mut Value, result_map_node:&ResultMapNode, arr:Vec<Value>) -> Result<String, String>{
         //replace where
         let mut where_str = "id in (".to_string();
-        for x in arr {
+        for x in &arr {
             match x{
-                serde_json::Value::String(x)=>{
-                    where_str=where_str+x.as_str()+",";
+                serde_json::Value::String(s)=>{
+                    where_str=where_str+x.to_sql().as_str()+",";
                 }
                 serde_json::Value::Number(n)=>{
-                    where_str=where_str+ n.to_string().as_str()+",";
+                    where_str=where_str+ x.to_sql().as_str()+",";
                 }
                 serde_json::Value::Null=>{
                     continue;
@@ -113,35 +112,15 @@ impl Rbatis{
         let mut where_str="".to_string();
         let len=arg_map.len();
         for (key,value) in arg_map{
-            let mut item="".to_string();
             match value{
                 Value::String(s)=>{
-                    item=s.clone();
-                    where_str=where_str+key.as_str()+" = "+item.as_str() +" and "
+                    where_str=where_str+key.as_str()+" = "+value.to_sql().as_str() +" and "
                 }
                 Value::Number(n)=>{
-                    item=item+ n.to_string().as_str();
-                    where_str=where_str+key.as_str()+" = "+item.as_str() +" and "
+                    where_str=where_str+key.as_str()+" = "+value.to_sql().as_str() +" and "
                 }
                 Value::Array(arr)=>{
-                    item=item+"(";
-                    for x in arr{
-
-                        match x {
-                            serde_json::Value::String(s)=>{
-                                item=item+s.as_str()+","
-                            },
-                            serde_json::Value::Number(number)=>{
-                                item=item+number.to_string().as_str()+","
-                            }
-                            _ => {
-                                return Result::Err("[rbatis] not support arg! delete by arr,arr must be string array or number array!".to_string());
-                            }
-                        }
-                    }
-                    item.pop();
-                    item=item+")";
-                    where_str=where_str+key.as_str()+" in "+item.as_str() +" and "
+                    where_str=where_str+key.as_str()+" in "+value.to_sql().as_str() +" and "
                 }
                 _ => {
                     return Result::Err("[rbatis] not support arg! delete by arr,arr must be string array or number array!".to_string());
