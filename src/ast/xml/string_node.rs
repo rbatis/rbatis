@@ -8,7 +8,7 @@ use crate::ast::config_holder::ConfigHolder;
 use crate::ast::xml::node::{create_deep, SqlNodePrint};
 use crate::engine;
 use crate::utils::string_util;
-use crate::convert::sql_arg_type_convert_default::SqlArgTypeConvertTraft;
+use crate::convert::sql_arg_type_convert_traft::SqlArgTypeConvertTraft;
 
 /**
 *  string抽象节点
