@@ -47,11 +47,11 @@ impl Ast for StringNode {
             let get_v = env.get(item);
             if get_v.is_none() {
                 let v = holder.engine.eval(item, env).unwrap();
-                let vstr = v.to_sql();
+                let vstr = v.to_sql_value();
                 result = result.replace(value, vstr.as_str());
             } else {
                 let v = get_v.unwrap().clone();
-                let vstr = v.to_sql();
+                let vstr = v.to_sql_value();
                 result = result.replace(value, vstr.as_str());
             }
         }
