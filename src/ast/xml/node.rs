@@ -141,12 +141,10 @@ pub fn loop_decode_xml(xml_vec: &Vec<Element>, holder: &ConfigHolder) -> Vec<Nod
                 logic_deleted: xml.get_attr("logic_deleted"),
             })),
 
-            "result_map" => nodes.push(NodeType::NResultMapNode(ResultMapNode {
-                id: xml.get_attr("id"),
-                id_node: filter_result_map_id_nodes(&child_nodes),
-                results: filter_result_map_result_nodes(&child_nodes),
-            })),
-
+            "result_map" => nodes.push(NodeType::NResultMapNode(ResultMapNode::new( xml.get_attr("id"),
+                                                                                     xml.get_attr("table"),
+                                                                                    filter_result_map_id_nodes(&child_nodes),
+                                                                                    filter_result_map_result_nodes(&child_nodes),))),
             "" => {
                 let data = xml.data.as_str();
                 let tag = xml.tag.as_str();

@@ -6,7 +6,7 @@
     <!--logic_deleted 逻辑删除已删除字段-->
     <!--logic_undelete 逻辑删除 未删除字段-->
     <!--version_enable 乐观锁版本字段,支持int,int8,int16,int32,int64-->
-    <result_map id="BaseResultMap">
+    <result_map id="BaseResultMap" table="biz_activity">
         <id column="id" property="id"/>
         <result column="name" property="name" lang_type="string"/>
         <result column="pc_link" property="pcLink" lang_type="string"/>
