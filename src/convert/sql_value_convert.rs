@@ -3,6 +3,22 @@ use serde_json::{json, Value};
 const AND: &'static str = " and ";
 
 ///转换器，serde_json 的json值转换为 sql 兼容的值
+/// 例如转换以下内容
+///
+///    use serde_json::{json, Value};
+///
+///    assert_eq!("true".to_string(),json!(true).to_sql());
+///    assert_eq!("1".to_string(),json!(1).to_sql());
+///    assert_eq!("1.2".to_string(),json!(1.2).to_sql());
+///    assert_eq!("'abc'".to_string(),json!("abc").to_sql());
+///    assert_eq!("('1','2','3')".to_string(),json!(vec!["1","2","3"]).to_sql());
+///    assert_eq!("(1,2,3)".to_string(),json!(vec![1,2,3]).to_sql());
+///    assert_eq!("a = 1 and b = 'b' and c = 1.1".to_string(),json!({
+///      "a":1,
+///      "b":"b",
+///      "c":1.1,
+///    }).to_sql());
+///    assert_eq!("null".to_string(),json!(null).to_sql());
 pub trait SqlValueConvert {
     fn to_sql(&self)->String;
 }
