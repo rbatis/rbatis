@@ -49,6 +49,9 @@ impl Rbatis{
                 //TODO delete by ids
                 return Result::Err("".to_string());
             }
+            serde_json::Value::Null=>{
+                return Result::Err("[rbatis] delete arg type can not be null!".to_string());
+            }
             _ => {
                 return Result::Err("[rbatis] not support arg type".to_string());
             }
