@@ -75,13 +75,17 @@ impl SqlValueConvert for serde_json::Value{
 
 #[test]
 fn test_convert(){
-    let mut result;
-    result =   json!(1).to_sql();
-    println!("number(i64)=>{}",result);
-    result =  json!(1.2).to_sql();
-    println!("number(f64)=>{}",result);
-    result =  json!("abc").to_sql();
-    println!("string=>{}",result);
-    result = json!(null).to_sql();
-    println!("null=>{}",result);
+    println!("bool=>        {}",json!(true).to_sql());
+    println!("number(i64)=> {}",json!(1).to_sql());
+    println!("number(f64)=> {}",json!(1.2).to_sql());
+    println!("string=>      {}",json!("abc").to_sql());
+    println!("vec string=>  {}",json!(vec!["1","2","3"]).to_sql());
+    println!("vec number=>  {}",json!(vec![1,2,3]).to_sql());
+    println!("map =>        {}",json!({
+      "a":1,
+      "b":"b",
+      "c":1.1,
+    }).to_sql());
+
+    println!("null=>        {}",json!(null).to_sql());
 }
