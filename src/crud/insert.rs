@@ -58,7 +58,7 @@ fn do_create_values_sql(arg: &Value) -> String {
     let len = obj_map.len();
     let mut i = 0;
     for (_, v) in obj_map {
-        let vstr=v.to_sql();
+        let vstr=v.to_sql_value();
         if i < (len - 1) {
             values = values + vstr.as_str() + ",";
         } else {
@@ -96,7 +96,7 @@ fn do_create_obj_sql(mut sql: String, arg: Value) -> String {
     let len = obj_map.len();
     let mut i = 0;
     for (x, v) in obj_map {
-        let vstr = v.to_sql();
+        let vstr = v.to_sql_value();
         if i < (len - 1) {
             fields = fields + x.as_str() + ",";
             values = values + vstr.as_str() + ",";

@@ -36,7 +36,7 @@ impl Rbatis{
                 return Result::Err("[rbatis] delete arg type can not be null!".to_string());
             }
             _ => {
-                return Result::Err("[rbatis] not support arg type value: ".to_string()+arg.to_sql().as_str());
+                return Result::Err("[rbatis] not support arg type value: ".to_string()+arg.to_sql_value().as_str());
             }
         };
     }
@@ -65,21 +65,21 @@ impl Rbatis{
     ///where delete by id
     fn do_delete_by_id_where(&mut self, env: &mut Value, result_map_node:&ResultMapNode) -> Result<String, String>{
         //replace where
-        let mut where_str = "id = ".to_string() + env.to_sql().as_str();
+        let mut where_str = "id = ".to_string() + env.to_sql_value().as_str();
         return Result::Ok(where_str);
     }
     ///where delete by ids
     fn do_delete_by_ids_where(&mut self, env: &mut Value, result_map_node:&ResultMapNode) -> Result<String, String>{
         //replace where
         let mut where_str = "id in ".to_string();
-        where_str=where_str+env.to_sql().as_str();
+        where_str=where_str+env.to_sql_value().as_str();
         return Result::Ok(where_str);
     }
 
 
     ///where delete by map,support  string,number,vec
     fn do_delete_by_map_where(&mut self, env: &mut Value, result_map_node:&ResultMapNode,arg_map:&Map<String,Value>)-> Result<String, String>{
-        return Result::Ok(env.to_sql());
+        return Result::Ok(env.to_sql_value());
     }
 }
 
