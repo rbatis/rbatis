@@ -2,6 +2,7 @@ use serde_json::{json, Value};
 
 const AND: &'static str = " and ";
 
+///转换器，serde_json 的json值转换为 sql 兼容的值
 pub trait SqlValueConvert {
     fn to_sql(&self)->String;
 }
