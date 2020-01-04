@@ -1,5 +1,5 @@
-use std::io::Read;
 use std::collections::HashMap;
+use std::io::Read;
 
 //find like #{*} value *
 pub fn find_convert_string(arg: &str) -> Vec<String> {
@@ -75,20 +75,4 @@ pub fn find_no_convert_string(arg: &str) -> Vec<String> {
         result.push(item);
     }
     return result;
-}
-
-pub trait NumberToString{
-    fn as_str(&self)->String;
-}
-
-impl NumberToString for serde_json::Number{
-    fn as_str(&self)->String{
-        if self.is_u64(){
-            return self.as_u64().unwrap().to_string();
-        }else if self.is_f64(){
-            return  self.as_f64().unwrap().to_string();
-        }else{
-            return  self.as_i64().unwrap().to_string();
-        }
-    }
 }
