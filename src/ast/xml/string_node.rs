@@ -8,6 +8,7 @@ use crate::ast::config_holder::ConfigHolder;
 use crate::ast::xml::node::{create_deep, SqlNodePrint};
 use crate::engine;
 use crate::utils::string_util;
+use crate::convert::sql_arg_type_convert_default::SqlArgTypeConvertTraft;
 
 /**
 *  string抽象节点
@@ -46,11 +47,11 @@ impl Ast for StringNode {
             let get_v = env.get(item);
             if get_v.is_none() {
                 let v = holder.engine.eval(item, env).unwrap();
-                let vstr = holder.sql_convert.convert(v);
+                let vstr = v.to_sql();
                 result = result.replace(value, vstr.as_str());
             } else {
                 let v = get_v.unwrap().clone();
-                let vstr = holder.sql_convert.convert(v);
+                let vstr = v.to_sql();
                 result = result.replace(value, vstr.as_str());
             }
         }

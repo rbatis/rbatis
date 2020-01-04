@@ -1,22 +1,18 @@
 
 use serde_json::{json, Value};
-use crate::convert::sql_arg_type_convert::SqlArgTypeConvert;
 
-pub struct SqlArgTypeConvertDefault {
+
+
+pub trait SqlArgTypeConvertTraft{
+    fn to_sql(&self)->String;
 }
 
-impl SqlArgTypeConvertDefault{
-    pub fn new()->Self{
-        return Self{};
-    }
-}
-
-impl SqlArgTypeConvert for SqlArgTypeConvertDefault {
-    fn convert(&self,arg: Value) -> String {
-        match arg {
+impl SqlArgTypeConvertTraft for serde_json::Value{
+    fn to_sql(&self)->String{
+        match self {
             Value::Null => return String::from("null"),
             Value::String(s) => {
-                let mut ns=s;
+                let mut ns=s.clone();
                 ns.insert_str(0,"'");
                 ns=ns+"'";
                 return ns;
@@ -31,16 +27,18 @@ impl SqlArgTypeConvert for SqlArgTypeConvertDefault {
 }
 
 
+
+
+
 #[test]
 fn test_convert(){
-    let convert=SqlArgTypeConvertDefault{};
     let mut result;
-    result =  convert.convert(json!(1));
+    result =   json!(1).to_sql();
     println!("number(i64)=>{}",result);
-    result =  convert.convert(json!(1.2));
+    result =  json!(1.2).to_sql();
     println!("number(f64)=>{}",result);
-    result =  convert.convert(json!("abc"));
+    result =  json!("abc").to_sql();
     println!("string=>{}",result);
-    result =  convert.convert(json!(null));
+    result = json!(null).to_sql();
     println!("null=>{}",result);
 }

@@ -187,7 +187,8 @@ fn test_delete_by_map() {
     let sql =rbatis.delete("Example_ActivityMapper.xml", "BaseResultMap", serde_json::json!({
      "arg": 2,
      "delete_flag":1,
-     "arr":vec![1,2,3]
+     "number_arr":vec![1,2,3],
+     "string_arr":vec!["1","2","3"]
     }).borrow_mut());
     println!("{}",sql.unwrap());
 }
