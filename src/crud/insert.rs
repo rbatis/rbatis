@@ -1,6 +1,7 @@
 use serde_json::Value;
 use serde_json::json;
 use crate::core::rbatis::Rbatis;
+use crate::convert::sql_value_convert::SqlValueConvert;
 
 
 impl Rbatis {
@@ -85,18 +86,7 @@ fn do_create_field_sql(arg: Value) -> String {
     let mut fields = "".to_string();
     let len = obj_map.len();
     let mut i = 0;
-    for (x, v) in obj_map {
-        let vstr: String;
-        if v.is_null() {
-            vstr = "null".to_string();
-        } else if v.is_string() {
-            vstr = "'".to_string() + v.as_str().unwrap_or("null") + "'";
-        } else if v.is_number() {
-            let number = v.as_f64().unwrap();
-            vstr = number.to_string();
-        } else {
-            vstr = "null".to_string();
-        }
+    for (x, _) in obj_map {
         if i < (len - 1) {
             fields = fields + x.as_str() + ",";
         } else {
@@ -116,17 +106,7 @@ fn do_create_obj_sql(mut sql: String, arg: Value) -> String {
     let len = obj_map.len();
     let mut i = 0;
     for (x, v) in obj_map {
-        let vstr: String;
-        if v.is_null() {
-            vstr = "null".to_string();
-        } else if v.is_string() {
-            vstr = "'".to_string() + v.as_str().unwrap_or("null") + "'";
-        } else if v.is_number() {
-            let number = v.as_f64().unwrap();
-            vstr = number.to_string();
-        } else {
-            vstr = "null".to_string();
-        }
+        let vstr = v.to_sql();
         if i < (len - 1) {
             fields = fields + x.as_str() + ",";
             values = values + vstr.as_str() + ",";
