@@ -8,8 +8,7 @@ use crate::core::rbatis::Rbatis;
 use crate::engine::node::NodeType;
 use serde_json::value::Value::Number;
 use crate::convert::sql_value_convert::SqlValueConvert;
-
-const AND: &'static str = " and ";
+use std::any::Any;
 
 impl Rbatis{
     pub fn delete(&mut self, mapper_name: &str, id: &str, arg: &mut Value)-> Result<String, String>{
@@ -18,26 +17,14 @@ impl Rbatis{
         }
         let result_map_node=self.get_result_map_node(mapper_name,id)?;
         match arg {
-            serde_json::Value::String(str)=>{
+            serde_json::Value::String(_) | serde_json::Value::Number(_)=>{
                 //delete by id
                 let where_str=self.do_delete_by_id_where(arg, &result_map_node)?;
                 return self.do_delete_by(arg,&result_map_node,where_str.as_str());
             }
-            serde_json::Value::Array(arr)=>{
+            serde_json::Value::Array(_)=>{
                 //delete by ids
-                let mut string_arr=vec![];
-                for item in arr {
-                    match item {
-                          serde_json::Value::String(_)
-                        | serde_json::Value::Number(_)=>{
-                            string_arr.push(item.clone());
-                        }
-                        _ => {
-                            return Result::Err("[rbatis] not support arg! delete by arr,arr must be string array or number array!".to_string());
-                        }
-                    }
-                }
-                let where_str=self.do_delete_by_ids_where(arg, &result_map_node, string_arr)?;
+                let where_str=self.do_delete_by_ids_where(arg, &result_map_node)?;
                 return self.do_delete_by(arg,&result_map_node,where_str.as_str());
             }
             serde_json::Value::Object(map)=>{
@@ -49,7 +36,7 @@ impl Rbatis{
                 return Result::Err("[rbatis] delete arg type can not be null!".to_string());
             }
             _ => {
-                return Result::Err("[rbatis] not support arg type".to_string());
+                return Result::Err("[rbatis] not support arg type value: ".to_string()+arg.to_sql().as_str());
             }
         };
     }
@@ -82,57 +69,17 @@ impl Rbatis{
         return Result::Ok(where_str);
     }
     ///where delete by ids
-    fn do_delete_by_ids_where(&mut self, env: &mut Value, result_map_node:&ResultMapNode, arr:Vec<Value>) -> Result<String, String>{
+    fn do_delete_by_ids_where(&mut self, env: &mut Value, result_map_node:&ResultMapNode) -> Result<String, String>{
         //replace where
-        let mut where_str = "id in (".to_string();
-        for x in &arr {
-            match x{
-                serde_json::Value::String(s)=>{
-                    where_str=where_str+x.to_sql().as_str()+",";
-                }
-                serde_json::Value::Number(n)=>{
-                    where_str=where_str+ x.to_sql().as_str()+",";
-                }
-                serde_json::Value::Null=>{
-                    continue;
-                }
-                _ => {
-                    return Result::Err("[rbatis] not support arg! delete by arr,arr must be string array or number array!".to_string());
-                }
-            }
-        }
-        where_str.pop();
-        where_str=where_str+")";
+        let mut where_str = "id in ".to_string();
+        where_str=where_str+env.to_sql().as_str();
         return Result::Ok(where_str);
     }
 
 
     ///where delete by map,support  string,number,vec
     fn do_delete_by_map_where(&mut self, env: &mut Value, result_map_node:&ResultMapNode,arg_map:&Map<String,Value>)-> Result<String, String>{
-        let mut where_str="".to_string();
-        let len=arg_map.len();
-        for (key,value) in arg_map{
-            match value{
-                Value::String(s)=>{
-                    where_str=where_str+key.as_str()+" = "+value.to_sql().as_str() +" and "
-                }
-                Value::Number(n)=>{
-                    where_str=where_str+key.as_str()+" = "+value.to_sql().as_str() +" and "
-                }
-                Value::Array(arr)=>{
-                    where_str=where_str+key.as_str()+" in "+value.to_sql().as_str() +" and "
-                }
-                _ => {
-                    return Result::Err("[rbatis] not support arg! delete by arr,arr must be string array or number array!".to_string());
-                }
-            }
-        }
-        if len>0{
-            for _ in 0..AND.len() {
-                where_str.pop();
-            }
-        }
-        return Result::Ok(where_str);
+        return Result::Ok(env.to_sql());
     }
 }
 
@@ -143,7 +90,7 @@ fn test_delete_by_id() {
     let mut rbatis =Rbatis::new();
     rbatis.load_xml("Example_ActivityMapper.xml".to_string(), fs::read_to_string("./src/example/Example_ActivityMapper.xml").unwrap());//加载xml数据
 
-    let sql=rbatis.delete("Example_ActivityMapper.xml", "BaseResultMap", serde_json::json!(r#"1234123123"#).borrow_mut());
+    let sql=rbatis.delete("Example_ActivityMapper.xml", "BaseResultMap", serde_json::json!("1").borrow_mut());
     println!("{}",sql.unwrap());
 }
 
