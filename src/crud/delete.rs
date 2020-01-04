@@ -56,7 +56,7 @@ impl Rbatis{
                 return self.do_delete_by_ids(arg,&result_map_node,arr_type,string_arr,f64_arr,i64_arr,u64_arr);
             }
             serde_json::Value::Object(map)=>{
-                //delete by ids
+                //TODO delete by ids
                 return Result::Err("".to_string());
             }
             _ => {
