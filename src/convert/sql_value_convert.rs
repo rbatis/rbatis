@@ -25,6 +25,11 @@ pub trait SqlValueConvert {
     fn to_sql_value_custom(&self, skip_null:bool) ->String;
 }
 
+/// 转换为sql column 逗号分隔的字符串
+pub trait SqlColumnConvert {
+    fn to_sql_column(&self)->String;
+}
+
 impl SqlValueConvert for serde_json::Value{
 
     fn to_sql_value(&self) ->String{
@@ -103,6 +108,20 @@ impl SqlValueConvert for serde_json::Value{
 }
 
 
+
+
+impl SqlColumnConvert for Vec<String> {
+    fn to_sql_column(&self) -> String {
+        let mut sql="".to_string();
+        for item in self{
+            sql=sql+item.as_str()+",";
+        }
+        if self.len()>0{
+            sql.pop();
+        }
+        return sql;
+    }
+}
 
 
 
