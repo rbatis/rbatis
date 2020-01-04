@@ -35,7 +35,7 @@ fn test_exec_sql(){
     //判断是否配置数据库
     let conf=rbatis.db_configs.get("").unwrap();
     if conf.db_addr.contains("localhost") {
-        println!("请修改mysql链接‘mysql://root:TEST@localhost:3306/test’ 替换为具体的 用户名，密码，ip，和数据库名称");
+        println!("请修改mysql链接'mysql://root:TEST@localhost:3306/test' 替换为具体的 用户名，密码，ip，和数据库名称");
         return;
     }
     //执行到远程mysql 并且获取结果,Result<serde_json::Value, String>,或者 Result<Activity, String> 等任意类型
