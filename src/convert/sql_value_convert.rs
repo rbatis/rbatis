@@ -75,17 +75,16 @@ impl SqlValueConvert for serde_json::Value{
 
 #[test]
 fn test_convert(){
-    println!("bool=>        {}",json!(true).to_sql());
-    println!("number(i64)=> {}",json!(1).to_sql());
-    println!("number(f64)=> {}",json!(1.2).to_sql());
-    println!("string=>      {}",json!("abc").to_sql());
-    println!("vec string=>  {}",json!(vec!["1","2","3"]).to_sql());
-    println!("vec number=>  {}",json!(vec![1,2,3]).to_sql());
-    println!("map =>        {}",json!({
+    assert_eq!("true".to_string(),json!(true).to_sql());
+    assert_eq!("1".to_string(),json!(1).to_sql());
+    assert_eq!("1.2".to_string(),json!(1.2).to_sql());
+    assert_eq!("'abc'".to_string(),json!("abc").to_sql());
+    assert_eq!("('1','2','3')".to_string(),json!(vec!["1","2","3"]).to_sql());
+    assert_eq!("(1,2,3)".to_string(),json!(vec![1,2,3]).to_sql());
+    assert_eq!("a = 1 and b = 'b' and c = 1.1".to_string(),json!({
       "a":1,
       "b":"b",
       "c":1.1,
     }).to_sql());
-
-    println!("null=>        {}",json!(null).to_sql());
+    assert_eq!("null".to_string(),json!(null).to_sql());
 }
