@@ -58,17 +58,7 @@ fn do_create_values_sql(arg: &Value) -> String {
     let len = obj_map.len();
     let mut i = 0;
     for (_, v) in obj_map {
-        let vstr: String;
-        if v.is_null() {
-            vstr = "null".to_string();
-        } else if v.is_string() {
-            vstr = "'".to_string() + v.as_str().unwrap_or("null") + "'";
-        } else if v.is_number() {
-            let number = v.as_f64().unwrap();
-            vstr = number.to_string();
-        } else {
-            vstr = "null".to_string();
-        }
+        let vstr=v.to_sql();
         if i < (len - 1) {
             values = values + vstr.as_str() + ",";
         } else {
