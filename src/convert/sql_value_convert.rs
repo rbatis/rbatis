@@ -129,6 +129,21 @@ impl SqlColumnConvert for Vec<String> {
     }
 }
 
+impl SqlColumnConvert for Vec<&str> {
+    fn to_sql_column(&self) -> String {
+        let mut sql = "".to_string();
+        let mut append = false;
+        for item in self {
+            sql = sql + *item + ",";
+            append = true;
+        }
+        if append {
+            sql.pop();
+        }
+        return sql;
+    }
+}
+
 impl SqlColumnConvert for serde_json::Value {
     fn to_sql_column(&self) -> String {
         let mut sql = "".to_string();
@@ -168,4 +183,11 @@ fn test_convert() {
       "c":1.1,
     }).to_sql_value());
     assert_eq!("null".to_string(), json!(null).to_sql_value());
+}
+
+#[test]
+fn test_conver_str_array(){
+    let arr=vec!["1","2","3"];
+    let columns= arr.to_sql_column();
+    println!("columns:{}",columns);
 }
