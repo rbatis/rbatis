@@ -12,9 +12,6 @@ use std::any::Any;
 
 impl Rbatis{
     pub fn delete(&mut self, mapper_name: &str, id: &str, arg: &mut Value)-> Result<String, String>{
-        if arg.is_null() {
-            return Result::Err("[rbatis] arg is null value".to_string());
-        }
         let result_map_node=self.get_result_map_node(mapper_name,id)?;
         match arg {
             serde_json::Value::String(_) | serde_json::Value::Number(_)=>{

@@ -1,36 +1,100 @@
 use serde_json::Value;
+
+use crate::ast::xml::result_map_node::ResultMapNode;
+use crate::convert::sql_value_convert;
+use crate::convert::sql_value_convert::SqlValueConvert;
 use crate::core::rbatis::Rbatis;
+use std::fs;
+use std::borrow::BorrowMut;
 
-pub struct Select {}
-
-impl Select {
-    pub fn select(&self, table: &str, arg: Value, engine: &Rbatis) -> Result<String, String> {
+impl Rbatis {
+    pub fn select(&mut self, mapper_name: &str, id: &str, arg: &mut Value) -> Result<String, String> {
         //TODO select by id
-        //TODO select by map
         //TODO select by ids
+        //TODO select by map
         //TODO select by page
-        if arg.is_null() {
-            return Result::Err("[rbatis] arg is null value".to_string());
-        }
-        //TODO select by id
-        if arg.is_string() || arg.is_i64() {
-            let select_by_id = do_select_by_id(table, arg)?;
-            return Result::Ok(select_by_id);
-        }
-        //TODO select by id vec
-        if arg.is_array() {}
-        if arg.is_object() {
-            //TODO select by map
 
-            //TODO select by page
+        let result_map_node=self.get_result_map_node(mapper_name,id)?;
+        match arg {
+            serde_json::Value::Null => {
+                return Result::Err("[rbatis] arg is null value".to_string());
+            }
+            serde_json::Value::String(_) | serde_json::Value::Number(_) => {
+                let mut where_str= "id = ".to_string()+ arg.to_sql_value_custom(false).as_str();
+                return Result::Ok(self.do_select_by_templete(arg,&result_map_node,where_str.as_str())?);
+            }
+            serde_json::Value::Array(_) => {
+                let mut where_str= "id in ".to_string()+ arg.to_sql_value_custom(false).as_str();
+                return Result::Ok(self.do_select_by_templete(arg,&result_map_node,where_str.as_str())?);
+            }
+            serde_json::Value::Object(map) => {
+                let mut where_str= arg.to_sql_value_custom(false);
+                return Result::Ok(self.do_select_by_templete(arg,&result_map_node,where_str.as_str())?);
+            }
+
+            _ => {
+                return Result::Err("[rbatis] not support arg type value: ".to_string() + arg.to_sql_value().as_str());
+            }
         }
         return Result::Err("[rbatis] eval select crud fail".to_string());
     }
+
+    fn do_select_by_templete(&mut self, env: &mut Value, result_map_node: &ResultMapNode, where_str: &str) -> Result<String, String> {
+        let mut sql = "select * from #{table} where #{where}".to_string();
+        //replace table
+        if result_map_node.table.is_none() {
+            return Result::Err("[rbatis]  can not find table defin in <result_map>!".to_string());
+        }
+        sql = sql.replace("#{table}", result_map_node.table.as_ref().unwrap());
+
+        //replace where
+        let mut where_string = where_str.to_string();
+        where_string.trim();
+        //delete node
+        if result_map_node.delete_node.is_some() {
+            if !where_string.is_empty() {
+                where_string += sql_value_convert::AND;
+            }
+            where_string = where_string + result_map_node.delete_node.as_ref().unwrap().column.as_str() + " = " + result_map_node.delete_node.as_ref().unwrap().logic_undelete.as_str();
+        }
+        //replace where
+        sql = sql.replace("#{where}", where_string.as_str());
+
+        return Result::Ok(sql);
+    }
 }
 
-fn do_select_by_id(table: &str, arg: Value) -> Result<String, String> {
-    let mut sql = "select * from #{table}".to_string();
-    sql = sql.replace("#{table}", table);
+#[test]
+fn test_select_by_id(){
+    log4rs::init_file("log4rs.yaml", Default::default()).unwrap();
+    let mut rbatis =Rbatis::new();
+    rbatis.load_xml("Example_ActivityMapper.xml".to_string(), fs::read_to_string("./src/example/Example_ActivityMapper.xml").unwrap());//加载xml数据
 
-    return Result::Err("[rbatis] do_select_by_id fail!".to_string());
+    let sql=rbatis.select("Example_ActivityMapper.xml", "BaseResultMap", serde_json::json!("1").borrow_mut());
+    println!("{}",sql.unwrap());
+}
+
+#[test]
+fn test_select_by_ids(){
+    log4rs::init_file("log4rs.yaml", Default::default()).unwrap();
+    let mut rbatis =Rbatis::new();
+    rbatis.load_xml("Example_ActivityMapper.xml".to_string(), fs::read_to_string("./src/example/Example_ActivityMapper.xml").unwrap());//加载xml数据
+
+    let sql=rbatis.select("Example_ActivityMapper.xml", "BaseResultMap", serde_json::json!(vec![1,2,3]).borrow_mut());
+    println!("{}",sql.unwrap());
+}
+
+#[test]
+fn test_select_by_map(){
+    log4rs::init_file("log4rs.yaml", Default::default()).unwrap();
+    let mut rbatis =Rbatis::new();
+    rbatis.load_xml("Example_ActivityMapper.xml".to_string(), fs::read_to_string("./src/example/Example_ActivityMapper.xml").unwrap());//加载xml数据
+
+    let sql=rbatis.select("Example_ActivityMapper.xml", "BaseResultMap", serde_json::json!({
+     "arg": 2,
+     "delete_flag":1,
+     "number_arr":vec![1,2,3],
+     "string_arr":vec!["1","2","3"]
+    }).borrow_mut());
+    println!("{}",sql.unwrap());
 }
