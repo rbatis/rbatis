@@ -34,7 +34,7 @@ impl Rbatis{
                 return Result::Err("[rbatis] delete arg type can not be null!".to_string());
             }
             _ => {
-                return Result::Err("[rbatis] not support arg type value: ".to_string()+arg.to_sql_value().as_str());
+                return Result::Err("[rbatis] not support arg type value in delete(): ".to_string()+arg.to_sql_value().as_str());
             }
         };
     }

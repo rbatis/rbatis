@@ -33,7 +33,7 @@ impl Rbatis {
             }
 
             _ => {
-                return Result::Err("[rbatis] not support arg type value: ".to_string() + arg.to_sql_value().as_str());
+                return Result::Err("[rbatis] not support arg type value in select(): ".to_string() + arg.to_sql_value().as_str());
             }
         }
         return Result::Err("[rbatis] eval select crud fail".to_string());
