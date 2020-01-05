@@ -1,6 +1,6 @@
 use serde_json::{json, Value};
 
-pub const AND: &'static str = " and ";
+pub const AND: &'static str = " AND ";
 
 pub const SKIP_TYPE_STRING: &'static str = "string";
 pub const SKIP_TYPE_NULL: &'static str = "null";
