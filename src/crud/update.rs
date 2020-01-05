@@ -24,7 +24,7 @@ impl Rbatis {
                             sqls = sqls + temp_sql.as_str() + "; \n";
                         }
                         _ => {
-                            return Result::Err("[rbatis] update only support object or array,not support arg type value in update(): ".to_string() + arg.to_sql_value().as_str());
+                            return Result::Err("[rbatis] update only support object or array,not support arg type value in update(): ".to_string() + arg.to_sql_value_def().as_str());
                         }
                     }
                 }
@@ -38,9 +38,9 @@ impl Rbatis {
                     if id_value.is_none() {
                         return Result::Err("[rbatis] arg id field:".to_string() + result_map_node.id_node.as_ref().unwrap().property.as_str() + " can not be null in update()!");
                     }
-                    where_str = where_str + "id = " + id_value.unwrap().to_sql_value_custom("").as_str();
+                    where_str = where_str + "id = " + id_value.unwrap().to_sql_value_skip("").as_str();
                 } else {
-                    where_str = where_str + arg.to_sql_value_custom("").as_str();
+                    where_str = where_str + arg.to_sql_value_skip("").as_str();
                 }
                 let mut sets_map = Map::new();
                 for (k, v) in c {
@@ -59,13 +59,13 @@ impl Rbatis {
                     sets_map.insert(k, v);
                 }
                 let sets_object = Value::Object(sets_map);
-                return self.do_update_by(arg, &result_map_node, sets_object.to_sql_value_custom_separator(SKIP_SETS, ",", ",").as_str(), where_str.as_str());
+                return self.do_update_by(arg, &result_map_node, sets_object.to_sql_value_custom(SKIP_SETS, ",", ",").as_str(), where_str.as_str());
             }
             serde_json::Value::Null => {
                 return Result::Err("[rbatis] delete arg type can not be null!".to_string());
             }
             _ => {
-                return Result::Err("[rbatis] update only support object or array,not support arg type value in update(): ".to_string() + arg.to_sql_value().as_str());
+                return Result::Err("[rbatis] update only support object or array,not support arg type value in update(): ".to_string() + arg.to_sql_value_def().as_str());
             }
         };
     }
@@ -116,7 +116,7 @@ impl Rbatis {
             let version_value_opt = get_version_value(env, &result_map_node.version_node.as_ref().unwrap().property);
             if version_value_opt.is_some() {
                 let version = version_value_opt.unwrap();
-                where_string = where_string + AND + result_map_node.version_node.as_ref().unwrap().column.as_str() + " = " + version.to_sql_value().as_str();
+                where_string = where_string + AND + result_map_node.version_node.as_ref().unwrap().column.as_str() + " = " + version.to_sql_value_def().as_str();
             }
         }
         //delete node
