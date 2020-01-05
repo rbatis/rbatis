@@ -17,24 +17,24 @@ impl Rbatis{
             serde_json::Value::String(_) | serde_json::Value::Number(_)=>{
                 //delete by id
                 //replace where
-                let mut where_str = "id = ".to_string() + arg.to_sql_value().as_str();
+                let mut where_str = "id = ".to_string() + arg.to_sql_value_def().as_str();
                 return self.do_delete_by(arg,&result_map_node,where_str.as_str());
             }
             serde_json::Value::Array(_)=>{
                 //delete by ids
-                let where_str="id in ".to_string()+arg.to_sql_value().as_str();
+                let where_str="id in ".to_string()+arg.to_sql_value_def().as_str();
                 return self.do_delete_by(arg,&result_map_node,where_str.as_str());
             }
             serde_json::Value::Object(map)=>{
                 let  c=map.clone();
-                let where_str=arg.to_sql_value();
+                let where_str=arg.to_sql_value_def();
                 return self.do_delete_by(arg,&result_map_node,where_str.as_str());
             }
             serde_json::Value::Null=>{
                 return Result::Err("[rbatis] delete arg type can not be null!".to_string());
             }
             _ => {
-                return Result::Err("[rbatis] not support arg type value in delete(): ".to_string()+arg.to_sql_value().as_str());
+                return Result::Err("[rbatis] not support arg type value in delete(): ".to_string()+arg.to_sql_value_def().as_str());
             }
         };
     }

@@ -60,7 +60,7 @@ fn do_create_values_sql(arg: &Value) -> String {
     for (_, v) in obj_map {
         values.push(v.clone());
     }
-    return serde_json::Value::Array(values).to_sql_value_custom("");
+    return serde_json::Value::Array(values).to_sql_value_skip("");
 }
 
 
@@ -73,7 +73,7 @@ fn do_create_obj_sql(mut sql: String, arg: Value) -> String {
     }
     let vals = serde_json::Value::Array(values);
     sql = sql.replace("#{fields}", arg.to_sql_column().as_str());
-    sql = sql.replace("#{values}", vals.to_sql_value_custom("").as_str());
+    sql = sql.replace("#{values}", vals.to_sql_value_skip("").as_str());
     return sql;
 }
 

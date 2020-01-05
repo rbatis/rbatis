@@ -16,20 +16,20 @@ impl Rbatis {
                 return Result::Err("[rbatis] arg is null value".to_string());
             }
             serde_json::Value::String(_) | serde_json::Value::Number(_) => {
-                let mut where_str= "id = ".to_string()+ arg.to_sql_value_custom("").as_str();
+                let mut where_str= "id = ".to_string()+ arg.to_sql_value_skip("").as_str();
                 return Result::Ok(self.do_select_by_templete(arg,&result_map_node,where_str.as_str())?);
             }
             serde_json::Value::Array(_) => {
-                let mut where_str= "id in ".to_string()+ arg.to_sql_value_custom("").as_str();
+                let mut where_str= "id in ".to_string()+ arg.to_sql_value_skip("").as_str();
                 return Result::Ok(self.do_select_by_templete(arg,&result_map_node,where_str.as_str())?);
             }
             serde_json::Value::Object(map) => {
-                let mut where_str= arg.to_sql_value_custom("");
+                let mut where_str= arg.to_sql_value_skip("");
                 return Result::Ok(self.do_select_by_templete(arg,&result_map_node,where_str.as_str())?);
             }
 
             _ => {
-                return Result::Err("[rbatis] not support arg type value in select(): ".to_string() + arg.to_sql_value().as_str());
+                return Result::Err("[rbatis] not support arg type value in select(): ".to_string() + arg.to_sql_value_def().as_str());
             }
         }
         return Result::Err("[rbatis] eval select crud fail".to_string());
