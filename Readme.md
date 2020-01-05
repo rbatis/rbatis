@@ -85,8 +85,8 @@ println!("[rbatis] result==> {:?}",data_result);
 ### 支持数据库类型
 | 数据库    | 已支持 |
 | ------ | ------ |
-| mysql            | √     |   
-| postgres         | √     |  
+| Mysql            | √     |   
+| Postgres         | √     |  
 | TiDB             | x     |
 | CockroachDB      | x     |
 
