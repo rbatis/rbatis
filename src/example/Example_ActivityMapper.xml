@@ -9,12 +9,12 @@
     <result_map id="BaseResultMap" table="biz_activity">
         <id column="id" property="id"/>
         <result column="name" property="name" lang_type="string"/>
-        <result column="pc_link" property="pcLink" lang_type="string"/>
-        <result column="h5_link" property="h5Link" lang_type="string"/>
+        <result column="pc_link" property="pc_link" lang_type="string"/>
+        <result column="h5_link" property="h5_link" lang_type="string"/>
         <result column="remark" property="remark" lang_type="string"/>
         <result column="version" property="version" lang_type="number" version_enable="true"/>
-        <result column="create_time" property="createTime" lang_type="time"/>
-        <result column="delete_flag" property="deleteFlag" lang_type="number" logic_enable="true" logic_undelete="1" logic_deleted="0"/>
+        <result column="create_time" property="create_time" lang_type="time"/>
+        <result column="delete_flag" property="delete_flag" lang_type="number" logic_enable="true" logic_undelete="1" logic_deleted="0"/>
     </result_map>
    <select id="select_by_condition" result_map="BaseResultMap">
         <bind name="pattern" value="'%' + name + '%'"/>
