@@ -9,11 +9,6 @@ use std::borrow::BorrowMut;
 
 impl Rbatis {
     pub fn select(&mut self, mapper_name: &str, id: &str, arg: &mut Value) -> Result<String, String> {
-        //TODO select by id
-        //TODO select by ids
-        //TODO select by map
-        //TODO select by page
-
         let result_map_node=self.get_result_map_node(mapper_name,id)?;
         match arg {
             serde_json::Value::Null => {
