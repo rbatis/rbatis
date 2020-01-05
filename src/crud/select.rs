@@ -8,6 +8,7 @@ use crate::convert::sql_value_convert;
 use crate::convert::sql_value_convert::SqlValueConvert;
 use crate::core::rbatis::Rbatis;
 use crate::crud::ipage::IPage;
+use crate::example::activity::Activity;
 
 impl Rbatis {
     pub fn select(&mut self, mapper_name: &str, id: &str, arg: &mut Value) -> Result<String, String> {
@@ -18,11 +19,11 @@ impl Rbatis {
                 return Result::Err("[rbatis] arg is null value".to_string());
             }
             serde_json::Value::String(_) | serde_json::Value::Number(_) => {
-                let mut where_str = "id = ".to_string() + arg.to_sql_value_skip("").as_str();
+                let mut where_str = "id = ".to_string() + arg.to_sql_value_skip("null").as_str();
                 return Result::Ok(self.do_select_by_templete(arg, &result_map_node, where_str.as_str(), &None)?);
             }
             serde_json::Value::Array(_) => {
-                let mut where_str = "id in ".to_string() + arg.to_sql_value_skip("").as_str();
+                let mut where_str = "id in ".to_string() + arg.to_sql_value_skip("null").as_str();
                 return Result::Ok(self.do_select_by_templete(arg, &result_map_node, where_str.as_str(), &None)?);
             }
             serde_json::Value::Object(map) => {
@@ -38,7 +39,7 @@ impl Rbatis {
                         ipage_opt = Some(ipage.unwrap());
                     }
                 }
-                let mut where_str = arg.to_sql_value_skip("");
+                let mut where_str = arg.to_sql_value_skip("null");
                 return Result::Ok(self.do_select_by_templete(arg, &result_map_node, where_str.as_str(), &ipage_opt)?);
             }
             _ => {
@@ -117,13 +118,19 @@ fn test_select_by_id_page() {
     let mut rbatis = Rbatis::new();
     rbatis.load_xml("Example_ActivityMapper.xml".to_string(), fs::read_to_string("./src/example/Example_ActivityMapper.xml").unwrap());//加载xml数据
 
+    let act=Activity{
+        id: None,
+        name: Some("新人专享".to_string()),
+        pc_link: None,
+        h5_link: None,
+        remark: None,
+        create_time: None,
+        version: None,
+        delete_flag: Some(1)
+    };
+    let mut arg= serde_json::to_value(act).unwrap();
     let ipage:IPage<Value>=IPage::new(1,20);
-    let sql = rbatis.select("Example_ActivityMapper.xml", "BaseResultMap", serde_json::json!({
-     "arg": 2,
-     "delete_flag":1,
-     "number_arr":vec![1,2,3],
-     "string_arr":vec!["1","2","3"],
-     "ipage":ipage,
-    }).borrow_mut());
+    arg.as_object_mut().unwrap().insert("ipage".to_string(),serde_json::to_value(ipage).unwrap());
+    let sql = rbatis.select("Example_ActivityMapper.xml", "BaseResultMap", serde_json::to_value(arg).unwrap().borrow_mut());
     println!("{}", sql.unwrap());
 }
