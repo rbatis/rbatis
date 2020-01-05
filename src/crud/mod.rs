@@ -3,4 +3,4 @@ pub mod templete;
 pub mod update;
 pub mod delete;
 pub mod select;
-pub mod page;
+pub mod ipage;
