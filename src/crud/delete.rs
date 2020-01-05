@@ -19,17 +19,18 @@ impl Rbatis{
         match arg {
             serde_json::Value::String(_) | serde_json::Value::Number(_)=>{
                 //delete by id
-                let where_str=self.do_delete_by_id_where(arg, &result_map_node)?;
+                //replace where
+                let mut where_str = "id = ".to_string() + arg.to_sql_value().as_str();
                 return self.do_delete_by(arg,&result_map_node,where_str.as_str());
             }
             serde_json::Value::Array(_)=>{
                 //delete by ids
-                let where_str=self.do_delete_by_ids_where(arg, &result_map_node)?;
+                let where_str="id in ".to_string()+arg.to_sql_value().as_str();
                 return self.do_delete_by(arg,&result_map_node,where_str.as_str());
             }
             serde_json::Value::Object(map)=>{
                 let  c=map.clone();
-                let where_str=self.do_delete_by_map_where(arg, &result_map_node,&c )?;
+                let where_str=arg.to_sql_value();
                 return self.do_delete_by(arg,&result_map_node,where_str.as_str());
             }
             serde_json::Value::Null=>{
@@ -42,7 +43,7 @@ impl Rbatis{
     }
 
 
-    ///基本删除语句框架
+    ///基本删除语句模板
     fn do_delete_by(&mut self, env: &mut Value,result_map_node:&ResultMapNode,where_str:&str)-> Result<String, String>{
         let mut sql = "DELETE FROM #{table} #{set} where #{where}".to_string();
         //replace table
@@ -60,26 +61,6 @@ impl Rbatis{
         //replace where
         sql = sql.replace("#{where}", where_str);
         return Result::Ok(sql);
-    }
-
-    ///where delete by id
-    fn do_delete_by_id_where(&mut self, env: &mut Value, result_map_node:&ResultMapNode) -> Result<String, String>{
-        //replace where
-        let mut where_str = "id = ".to_string() + env.to_sql_value().as_str();
-        return Result::Ok(where_str);
-    }
-    ///where delete by ids
-    fn do_delete_by_ids_where(&mut self, env: &mut Value, result_map_node:&ResultMapNode) -> Result<String, String>{
-        //replace where
-        let mut where_str = "id in ".to_string();
-        where_str=where_str+env.to_sql_value().as_str();
-        return Result::Ok(where_str);
-    }
-
-
-    ///where delete by map,support  string,number,vec
-    fn do_delete_by_map_where(&mut self, env: &mut Value, result_map_node:&ResultMapNode,arg_map:&Map<String,Value>)-> Result<String, String>{
-        return Result::Ok(env.to_sql_value());
     }
 }
 
