@@ -9,21 +9,22 @@ use std::borrow::BorrowMut;
 
 impl Rbatis {
     pub fn select(&mut self, mapper_name: &str, id: &str, arg: &mut Value) -> Result<String, String> {
+        //TODO select by page
         let result_map_node=self.get_result_map_node(mapper_name,id)?;
         match arg {
             serde_json::Value::Null => {
                 return Result::Err("[rbatis] arg is null value".to_string());
             }
             serde_json::Value::String(_) | serde_json::Value::Number(_) => {
-                let mut where_str= "id = ".to_string()+ arg.to_sql_value_custom(false).as_str();
+                let mut where_str= "id = ".to_string()+ arg.to_sql_value_custom("").as_str();
                 return Result::Ok(self.do_select_by_templete(arg,&result_map_node,where_str.as_str())?);
             }
             serde_json::Value::Array(_) => {
-                let mut where_str= "id in ".to_string()+ arg.to_sql_value_custom(false).as_str();
+                let mut where_str= "id in ".to_string()+ arg.to_sql_value_custom("").as_str();
                 return Result::Ok(self.do_select_by_templete(arg,&result_map_node,where_str.as_str())?);
             }
             serde_json::Value::Object(map) => {
-                let mut where_str= arg.to_sql_value_custom(false);
+                let mut where_str= arg.to_sql_value_custom("");
                 return Result::Ok(self.do_select_by_templete(arg,&result_map_node,where_str.as_str())?);
             }
 

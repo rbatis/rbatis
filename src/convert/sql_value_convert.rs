@@ -2,6 +2,13 @@ use serde_json::{json, Value};
 
 pub const AND: &'static str = " and ";
 
+pub const SKIP_TYPE_STRING: &'static str = "string";
+pub const SKIP_TYPE_NULL: &'static str = "null";
+pub const SKIP_TYPE_BOOL: &'static str = "bool";
+pub const SKIP_TYPE_NUMBER: &'static str = "number";
+pub const SKIP_TYPE_ARRAY: &'static str = "array";
+pub const SKIP_TYPE_OBJECT: &'static str = "object";
+
 ///转换器，serde_json 的json值转换为 sql 兼容的值
 /// 例如转换以下内容
 ///
@@ -22,7 +29,9 @@ pub const AND: &'static str = " and ";
 pub trait SqlValueConvert {
     fn to_sql_value(&self) -> String;
 
-    fn to_sql_value_custom(&self, skip_null: bool) -> String;
+    fn to_sql_value_custom(&self, skip_type: &str) -> String;
+
+    fn to_sql_value_custom_separator(&self, skip_type: &str, obj_map_separtor: &str, array_separtor: &str) -> String;
 }
 
 /// 转换为sql column 逗号分隔的字符串
@@ -32,10 +41,10 @@ pub trait SqlColumnConvert {
 
 impl SqlValueConvert for serde_json::Value {
     fn to_sql_value(&self) -> String {
-        return self.to_sql_value_custom(true);
+        return self.to_sql_value_custom(SKIP_TYPE_NULL);
     }
 
-    fn to_sql_value_custom(&self, skip_null: bool) -> String {
+    fn to_sql_value_custom_separator(&self,  skip_col_type: &str, obj_map_separtor: &str, array_separtor: &str) -> String {
         match self {
             Value::Null => return String::from("null"),
             Value::String(s) => {
@@ -53,28 +62,38 @@ impl SqlValueConvert for serde_json::Value {
                 for (key, value) in arg_map {
                     match value {
                         Value::String(s) => {
-                            where_str = where_str + key.as_str() + " = " + value.to_sql_value().as_str() + AND;
-                            append=true;
+                            if skip_col_type.contains(SKIP_TYPE_STRING) {
+                                continue;
+                            }
+                            where_str = where_str + key.as_str() + " = " + value.to_sql_value().as_str() + obj_map_separtor;
+                            append = true;
                         }
                         Value::Number(n) => {
-                            where_str = where_str + key.as_str() + " = " + value.to_sql_value().as_str() + AND;
-                            append=true;
+                            if skip_col_type.contains(SKIP_TYPE_NUMBER) {
+                                continue;
+                            }
+                            where_str = where_str + key.as_str() + " = " + value.to_sql_value().as_str() + obj_map_separtor;
+                            append = true;
                         }
                         Value::Array(arr) => {
-                            where_str = where_str + key.as_str() + " in " + value.to_sql_value().as_str() + AND;
-                            append=true;
+                            if skip_col_type.contains(SKIP_TYPE_ARRAY) {
+                                continue;
+                            }
+                            where_str = where_str + key.as_str() + " in " + value.to_sql_value().as_str() + obj_map_separtor;
+                            append = true;
                         }
                         Value::Null => {
-                            if !skip_null {
-                                where_str = where_str + key.as_str() + " = " + value.to_sql_value().as_str() + AND;
-                                append=true;
+                            if skip_col_type.contains( SKIP_TYPE_NULL) {
+                                continue;
                             }
+                            where_str = where_str + key.as_str() + " = " + value.to_sql_value().as_str() + obj_map_separtor;
+                            append = true;
                         }
                         _ => {}
                     }
                 }
                 if append {
-                    for _ in 0..AND.len() {
+                    for _ in 0..obj_map_separtor.len() {
                         where_str.pop();
                     }
                 }
@@ -86,30 +105,43 @@ impl SqlValueConvert for serde_json::Value {
                 for x in arr {
                     match x {
                         Value::String(_) => {
-                            item = item + x.to_sql_value().as_str() + ",";
-                            append=true;
+                            if skip_col_type.contains(SKIP_TYPE_STRING) {
+                                continue;
+                            }
+                            item = item + x.to_sql_value().as_str() + array_separtor;
+                            append = true;
                         }
                         Value::Number(_) => {
-                            item = item + x.to_sql_value().as_str() + ",";
-                            append=true;
+                            if skip_col_type.contains(SKIP_TYPE_NUMBER) {
+                                continue;
+                            }
+                            item = item + x.to_sql_value().as_str() + array_separtor;
+                            append = true;
                         }
                         Value::Null => {
-                            if !skip_null {
-                                item = item + x.to_sql_value().as_str() + ",";
-                                append=true;
+                            if skip_col_type.contains( SKIP_TYPE_NULL) {
+                                continue;
                             }
+                            item = item + x.to_sql_value().as_str() + array_separtor;
+                            append = true;
                         }
                         _ => {}
                     }
                 }
                 if append {
-                    item.pop();
+                    for _ in 0..array_separtor.len() {
+                        item.pop();
+                    }
                 }
                 item = item + ")";
                 return item;
             }
             _ => return String::from(""),
         }
+    }
+
+    fn to_sql_value_custom(&self, skip_col_type: &str) -> String {
+        return self.to_sql_value_custom_separator(skip_col_type, AND, ",");
     }
 }
 
@@ -186,8 +218,8 @@ fn test_convert() {
 }
 
 #[test]
-fn test_conver_str_array(){
-    let arr=vec!["1","2","3"];
-    let columns= arr.to_sql_column();
-    println!("columns:{}",columns);
+fn test_conver_str_array() {
+    let arr = vec!["1", "2", "3"];
+    let columns = arr.to_sql_column();
+    println!("columns:{}", columns);
 }
