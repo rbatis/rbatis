@@ -103,8 +103,8 @@ println!("[rbatis] result==> {:?}",data_result);
 | LogicDelPlugin(逻辑删除插件)                                 | √     |
 | VersionLockPlugin(乐观锁插件,防止并发修改数据)                | √     |
 | PagePlugin(分页插件)                                         | √     |
-| Tx(事务/事务嵌套/注解声明式事务)                              | x     |   
 | DataSourceRouter(动态数据源路由)                             | x     |  
+| Tx(事务/事务嵌套/注解声明式事务)                              | x     |   
 | JoinQueryPlugin(组合查询插件，对关联查询进行分解代替join)     | x     |
 | SecurityPlugin(sql注入拦截插件)                              | x     |
 | web(可视化Web UI)                                            | x     |  
