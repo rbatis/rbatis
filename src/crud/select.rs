@@ -40,7 +40,7 @@ impl Rbatis {
                         ipage_opt = Some(ipage.unwrap());
                     }
                 }
-                let mut where_str = arg.to_sql_value_skip("null");
+                let mut where_str = arg.to_sql_value_skip("");
                 return Result::Ok(self.do_select_by_templete(arg, &result_map_node, where_str.as_str(), &ipage_opt)?);
             }
             _ => {
