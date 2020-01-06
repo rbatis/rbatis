@@ -12,6 +12,7 @@ use crate::example::activity::Activity;
 use crate::utils::join_in::json_join;
 use serde::de::{Deserialize, DeserializeOwned};
 use serde::ser::Serialize;
+use crate::ast::ast::Ast;
 
 impl Rbatis {
 
@@ -37,6 +38,38 @@ impl Rbatis {
         return Result::Ok(result);
     }
 
+//    pub fn select_page_custom<T>(&mut self, mapper_name: &str, env: &mut Value,  ipage: &IPage<T>,id: &str) -> Result<T, String> where T: DeserializeOwned {
+//        //select redords
+//        let mapper_opt = self.mapper_map.get_mut(&mapper_name.to_string());
+//        if mapper_opt.is_none() {
+//            return Result::Err("[rbatis] find mapper fail,name:'".to_string() + mapper_name + "'");
+//        }
+//        let node = mapper_opt.unwrap().get_mut(id);
+//        if node.is_none() {
+//            return Result::Err("[rbatis] find method fail,name:'".to_string() + mapper_name + id + "'");
+//        }
+//        let mapper_func = node.unwrap();
+//        let sql_string = mapper_func.eval(env, &mut self.holder)?;
+//
+//        self.do_select_by_templete(arg, &result_map_node, where_str.as_str(), &Some(ipage))?
+//
+//        //create where str
+//        let mut where_string="".to_string();
+//        if sql_string.contains("where"){
+//            let wheres:Vec<&str>= sql_string.split("where").collect();
+//            where_string=wheres[1].to_string();
+//        }else if sql_string.contains("WHERE"){
+//            let wheres:Vec<&str>= sql_string.split("WHERE").collect();
+//            where_string=wheres[1].to_string();
+//        }
+//        //do count
+//        let result_map_node = self.get_result_map_node(mapper_name)?;
+//        let count_sql=self.do_count_by_templete(&mut new_arg,&result_map_node,where_string.as_str())?;
+//        let total:i64=self.eval_sql_raw(count_sql.as_str(),true)?;
+//        result.set_total(total);
+//        return Result::Ok(result);
+//    }
+
 
     fn eval_select_return_where<T>(&mut self, mapper_name: &str,  arg: &mut Value) -> Result<(T,String), String> where T: DeserializeOwned {
         let (sql,w) = self.create_sql_select(mapper_name, arg)?;
@@ -51,12 +84,14 @@ impl Rbatis {
                 return Result::Err("[rbatis] arg is null value".to_string());
             }
             serde_json::Value::String(_) | serde_json::Value::Number(_) => {
+                let ipage_opt:Option<IPage<Value>>=None;
                 let mut where_str = "id = ".to_string() + arg.to_sql_value_skip("null").as_str();
-                return Result::Ok(self.do_select_by_templete(arg, &result_map_node, where_str.as_str(), &None)?);
+                return Result::Ok(self.do_select_by_templete(arg, &result_map_node, where_str.as_str(), &ipage_opt)?);
             }
             serde_json::Value::Array(_) => {
+                let ipage_opt:Option<IPage<Value>>=None;
                 let mut where_str = "id in ".to_string() + arg.to_sql_value_skip("null").as_str();
-                return Result::Ok(self.do_select_by_templete(arg, &result_map_node, where_str.as_str(), &None)?);
+                return Result::Ok(self.do_select_by_templete(arg, &result_map_node, where_str.as_str(), &ipage_opt)?);
             }
             serde_json::Value::Object(map) => {
                 let mut ipage_opt = None;
@@ -121,7 +156,7 @@ impl Rbatis {
 
 
     /// return 结果/where sql
-    fn do_select_by_templete(&mut self, env: &mut Value, result_map_node: &ResultMapNode, where_str: &str, ipage_opt: &Option<IPage<Value>>) -> Result<(String,String), String> {
+    fn do_select_by_templete<T>(&mut self, env: &mut Value, result_map_node: &ResultMapNode, where_str: &str, ipage_opt: &Option<IPage<T>>) -> Result<(String,String), String> where T: Serialize + DeserializeOwned + Clone {
         let mut sql = "select * from #{table} where #{where}".to_string();
         //replace table
         if result_map_node.table.is_none() {
