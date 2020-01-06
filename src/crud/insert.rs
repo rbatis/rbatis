@@ -9,7 +9,7 @@ impl Rbatis {
     /// example:
     /// rbatis.insert("activity", json!(arg))
     /// rbatis.insert("activity", json!(vec![arg1,arg2]))
-    pub fn insert(&self, table: &str, arg: Value) -> Result<String, String> {
+    pub fn create_sql_insert(&self, table: &str, arg: Value) -> Result<String, String> {
         let mut sql = "insert into #{table} (#{fields}) VALUES #{values}".to_string();
         sql = sql.replace("#{table}", table);
 
@@ -82,7 +82,7 @@ fn do_create_obj_sql(mut sql: String, arg: Value) -> String {
 fn test_insert_templete_obj() {
     let rbatis = Rbatis::new();
     let arg = serde_json::from_str(r#"{  "a":"1","delete_flag":1}"#).unwrap();
-    let sql = rbatis.insert("activity", arg).unwrap();
+    let sql = rbatis.create_sql_insert("activity", arg).unwrap();
     println!("{}", sql);
 }
 
@@ -90,6 +90,6 @@ fn test_insert_templete_obj() {
 fn test_insert_templete_array() {
     let rbatis = Rbatis::new();
     let arg = serde_json::from_str(r#"[{"a":"1","delete_flag":1},{"a":"1","delete_flag":1}]"#).unwrap();
-    let sql = rbatis.insert("activity", arg).unwrap();
+    let sql = rbatis.create_sql_insert("activity", arg).unwrap();
     println!("{}", sql);
 }
