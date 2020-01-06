@@ -5,7 +5,7 @@ use serde_json::Value;
 
 use crate::ast::xml::result_map_node::ResultMapNode;
 use crate::convert::sql_value_convert;
-use crate::convert::sql_value_convert::SqlValueConvert;
+use crate::convert::sql_value_convert::{SqlValueConvert, AND};
 use crate::core::rbatis::Rbatis;
 use crate::crud::ipage::IPage;
 use crate::example::activity::Activity;
@@ -38,37 +38,44 @@ impl Rbatis {
         return Result::Ok(result);
     }
 
-//    pub fn select_page_custom<T>(&mut self, mapper_name: &str, env: &mut Value,  ipage: &IPage<T>,id: &str) -> Result<T, String> where T: DeserializeOwned {
-//        //select redords
-//        let mapper_opt = self.mapper_map.get_mut(&mapper_name.to_string());
-//        if mapper_opt.is_none() {
-//            return Result::Err("[rbatis] find mapper fail,name:'".to_string() + mapper_name + "'");
-//        }
-//        let node = mapper_opt.unwrap().get_mut(id);
-//        if node.is_none() {
-//            return Result::Err("[rbatis] find method fail,name:'".to_string() + mapper_name + id + "'");
-//        }
-//        let mapper_func = node.unwrap();
-//        let sql_string = mapper_func.eval(env, &mut self.holder)?;
-//
-//        self.do_select_by_templete(arg, &result_map_node, where_str.as_str(), &Some(ipage))?
-//
-//        //create where str
-//        let mut where_string="".to_string();
-//        if sql_string.contains("where"){
-//            let wheres:Vec<&str>= sql_string.split("where").collect();
-//            where_string=wheres[1].to_string();
-//        }else if sql_string.contains("WHERE"){
-//            let wheres:Vec<&str>= sql_string.split("WHERE").collect();
-//            where_string=wheres[1].to_string();
-//        }
-//        //do count
-//        let result_map_node = self.get_result_map_node(mapper_name)?;
-//        let count_sql=self.do_count_by_templete(&mut new_arg,&result_map_node,where_string.as_str())?;
-//        let total:i64=self.eval_sql_raw(count_sql.as_str(),true)?;
-//        result.set_total(total);
-//        return Result::Ok(result);
-//    }
+    pub fn select_page_custom<T>(&mut self, mapper_name: &str, env: &mut Value,  ipage: &IPage<T>,id: &str) -> Result<IPage<T>, String> where T: Serialize + DeserializeOwned + Clone {
+        let mut new_arg = json_join(env, "ipage", ipage)?;
+        //select redords
+        let mapper_opt = self.mapper_map.get_mut(&mapper_name.to_string());
+        if mapper_opt.is_none() {
+            return Result::Err("[rbatis] find mapper fail,name:'".to_string() + mapper_name + "'");
+        }
+        let node = mapper_opt.unwrap().get_mut(id);
+        if node.is_none() {
+            return Result::Err("[rbatis] find method fail,name:'".to_string() + mapper_name + id + "'");
+        }
+        let mapper_func = node.unwrap();
+        let sql_string = mapper_func.eval(&mut new_arg, &mut self.holder)?;
+        //create where str
+        let mut where_string="".to_string();
+        if sql_string.contains("where"){
+            let wheres:Vec<&str>= sql_string.split("where").collect();
+            where_string=wheres[1].to_string();
+        }else if sql_string.contains("WHERE"){
+            let wheres:Vec<&str>= sql_string.split("WHERE").collect();
+            where_string=wheres[1].to_string();
+        }
+
+        //insert delete_flag
+        let result_map_node = self.get_result_map_node(mapper_name)?;
+        let ipage_opt=Option::Some(ipage.clone());
+        let (sql,new_where_sql)= self.do_select_by_templete(&mut new_arg, &result_map_node, where_string.as_str(), &ipage_opt)?;
+        let records:Vec<T>=self.eval_sql_raw(sql.as_str(),true)?;
+        let mut result = ipage.clone();
+        result.set_records(records);
+
+        //do count
+        let result_map_node = self.get_result_map_node(mapper_name)?;
+        let count_sql=self.do_count_by_templete(&mut new_arg,&result_map_node,new_where_sql.as_str())?;
+        let total:i64=self.eval_sql_raw(count_sql.as_str(),true)?;
+        result.set_total(total);
+        return Result::Ok(result);
+    }
 
 
     fn eval_select_return_where<T>(&mut self, mapper_name: &str,  arg: &mut Value) -> Result<(T,String), String> where T: DeserializeOwned {
@@ -168,11 +175,12 @@ impl Rbatis {
         let mut where_string = where_str.to_string();
         where_string.trim();
         //delete node
-        if result_map_node.delete_node.is_some() {
-            if !where_string.is_empty() {
-                where_string += sql_value_convert::AND;
+        if result_map_node.delete_node.is_some() && !where_string.contains(result_map_node.delete_node.as_ref().unwrap().column.as_str()){
+            if where_string.is_empty(){
+                where_string = result_map_node.delete_node.as_ref().unwrap().column.clone()+ " = " + result_map_node.delete_node.as_ref().unwrap().logic_undelete.as_str() + where_string.as_str();
+            }else{
+                where_string = result_map_node.delete_node.as_ref().unwrap().column.clone()+ " = " + result_map_node.delete_node.as_ref().unwrap().logic_undelete.as_str() + AND + where_string.as_str();
             }
-            where_string = where_string + result_map_node.delete_node.as_ref().unwrap().column.as_str() + " = " + result_map_node.delete_node.as_ref().unwrap().logic_undelete.as_str();
         }
         //replace where
         sql = sql.replace("#{where}", where_string.as_str());
@@ -196,11 +204,12 @@ impl Rbatis {
         let mut where_string = where_str.to_string();
         where_string.trim();
         //delete node
-        if result_map_node.delete_node.is_some() && !where_str.contains(result_map_node.delete_node.as_ref().unwrap().column.as_str()){
-            if !where_string.is_empty() {
-                where_string += sql_value_convert::AND;
+        if result_map_node.delete_node.is_some() && !where_string.contains(result_map_node.delete_node.as_ref().unwrap().column.as_str()){
+            if where_string.is_empty(){
+                where_string = result_map_node.delete_node.as_ref().unwrap().column.clone()+ " = " + result_map_node.delete_node.as_ref().unwrap().logic_undelete.as_str() + where_string.as_str();
+            }else{
+                where_string = result_map_node.delete_node.as_ref().unwrap().column.clone()+ " = " + result_map_node.delete_node.as_ref().unwrap().logic_undelete.as_str() + AND + where_string.as_str();
             }
-            where_string = where_string + result_map_node.delete_node.as_ref().unwrap().column.as_str() + " = " + result_map_node.delete_node.as_ref().unwrap().logic_undelete.as_str();
         }
         //replace where
         sql = sql.replace("#{where}", where_string.as_str());

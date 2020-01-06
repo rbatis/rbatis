@@ -78,12 +78,23 @@ fn test_exec_sql(){
 [rbatis] result==>  IPage { total: 2, size: 5, current: 1, records: Some([Activity { id: Some("\"dfbdd779-5f70-4b8f-9921-c235a9c75b69\""), name: Some("\"新人专享\""), pc_link: Some("\"http://115.220.9.139:8002/newuser/\""), h5_link: Some("\"http://115.220.9.139:8002/newuser/\""), remark: Some("\"\""), create_time: Some("\"2019-05-27 10:25:41\""), version: Some(6), delete_flag: Some(1) }]) }
 */
 #[test]
-fn test_exec_select(){
+fn test_exec_select_page(){
     //初始化rbatis
     let mut rbatis = init_rbatis().unwrap();
     //执行到远程mysql 并且获取结果,Result<serde_json::Value, String>,或者 Result<Activity, String> 等任意类型
     let data:IPage<Activity> = rbatis.select_page("Example_ActivityMapper.xml",  &mut json!({
        "name":"新人专享",
     }), &IPage::new(1,5)).unwrap();
+    println!("[rbatis] result==>  {:?}", data);
+}
+
+#[test]
+fn test_exec_select_page_custom(){
+    //初始化rbatis
+    let mut rbatis = init_rbatis().unwrap();
+    //执行到远程mysql 并且获取结果,Result<serde_json::Value, String>,或者 Result<Activity, String> 等任意类型
+    let data:IPage<Activity> = rbatis.select_page_custom("Example_ActivityMapper.xml",  &mut json!({
+       "name":"新人专享",
+    }), &IPage::new(1,5),"select_by_page").unwrap();
     println!("[rbatis] result==>  {:?}", data);
 }
