@@ -9,6 +9,7 @@ use crate::convert::sql_value_convert::SqlValueConvert;
 use crate::core::rbatis::Rbatis;
 use crate::crud::ipage::IPage;
 use crate::example::activity::Activity;
+use crate::utils::join_in::json_join;
 
 impl Rbatis {
     pub fn select(&mut self, mapper_name: &str, id: &str, arg: &mut Value) -> Result<String, String> {
@@ -32,9 +33,9 @@ impl Rbatis {
                 if ipage_value_opt.is_some() {
                     let ipage_value = ipage_value_opt.unwrap();
                     if !ipage_value.is_null() {
-                        let ipage: Result<IPage<Value>,serde_json::Error> = serde_json::from_value(ipage_value.clone());
-                        if ipage.is_err(){
-                            return Result::Err("[rbatis] ".to_string()+ipage.err().unwrap().to_string().as_str());
+                        let ipage: Result<IPage<Value>, serde_json::Error> = serde_json::from_value(ipage_value.clone());
+                        if ipage.is_err() {
+                            return Result::Err("[rbatis] ".to_string() + ipage.err().unwrap().to_string().as_str());
                         }
                         ipage_opt = Some(ipage.unwrap());
                     }
@@ -70,8 +71,8 @@ impl Rbatis {
         //replace where
         sql = sql.replace("#{where}", where_string.as_str());
 
-        if ipage_opt.is_some(){
-            sql = sql + " LIMIT "+ipage_opt.as_ref().unwrap().current.to_string().as_str()+","+ipage_opt.as_ref().unwrap().size.to_string().as_str();
+        if ipage_opt.is_some() {
+            sql = sql + " LIMIT " + ipage_opt.as_ref().unwrap().current.to_string().as_str() + "," + ipage_opt.as_ref().unwrap().size.to_string().as_str();
         }
         return Result::Ok(sql);
     }
@@ -118,7 +119,7 @@ fn test_select_by_id_page() {
     let mut rbatis = Rbatis::new();
     rbatis.load_xml("Example_ActivityMapper.xml".to_string(), fs::read_to_string("./src/example/Example_ActivityMapper.xml").unwrap());//加载xml数据
 
-    let act=Activity{
+    let act = Activity {
         id: None,
         name: Some("新人专享".to_string()),
         pc_link: None,
@@ -126,11 +127,10 @@ fn test_select_by_id_page() {
         remark: None,
         create_time: None,
         version: None,
-        delete_flag: Some(1)
+        delete_flag: Some(1),
     };
-    let mut arg= serde_json::to_value(act).unwrap();
-    let ipage:IPage<Value>=IPage::new(1,20);
-    arg.as_object_mut().unwrap().insert("ipage".to_string(),serde_json::to_value(ipage).unwrap());
+    let ipage: IPage<Value> = IPage::new(1, 20);
+    let mut arg = json_join(act, "ipage", ipage).unwrap();
     let sql = rbatis.select("Example_ActivityMapper.xml", "BaseResultMap", serde_json::to_value(arg).unwrap().borrow_mut());
     println!("{}", sql.unwrap());
 }
