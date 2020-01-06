@@ -135,9 +135,9 @@ impl Rbatis {
         let conf_opt = self.db_configs.get(db);
         if conf_opt.is_none() {
             if self.enable_log {
-                error!("[rbatis] find default database url config fail！");
+                error!("{}","[rbatis] find default database url config:".to_string() + db + " fail!");
             }
-            return Result::Err("[rbatis] find default database url config fail！".to_string());
+            return Result::Err("[rbatis] find default database url config:".to_string() + db + " fail!");
         }
         let conf = conf_opt.unwrap();
         let db_type = conf.db_type.as_str();
