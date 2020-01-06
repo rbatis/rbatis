@@ -8,7 +8,7 @@ use crate::example::activity::Activity;
 use std::collections::LinkedList;
 use crate::crud::ipage::IPage;
 use crate::example::conf::MYSQL_URL;
-
+use log::{error, info, warn};
 
 struct Example{
    pub select_by_condition:fn()
@@ -35,6 +35,7 @@ fn init_rbatis()->Result<Rbatis,String>{
     //判断是否配置数据库
     let conf=rbatis.db_configs.get("").unwrap();
     if conf.db_addr.contains("localhost") {
+        error!("{}","请修改mysql链接'mysql://root:TEST@localhost:3306/test' 替换为具体的 用户名，密码，ip，和数据库名称");
         return Err("请修改mysql链接'mysql://root:TEST@localhost:3306/test' 替换为具体的 用户名，密码，ip，和数据库名称".to_string());
     }
     return Ok(rbatis);
@@ -53,9 +54,12 @@ fn init_rbatis()->Result<Rbatis,String>{
 #[test]
 fn test_exec_sql(){
     //初始化rbatis
-    let mut rbatis = init_rbatis().unwrap();
+    let mut rbatis = init_rbatis();
+    if rbatis.is_err(){
+        return;
+    }
     //执行到远程mysql 并且获取结果,Result<serde_json::Value, String>,或者 Result<Activity, String> 等任意类型
-    let data: Vec<Activity>= rbatis.eval("Example_ActivityMapper.xml", "select_by_condition", &mut json!({
+    let data: Vec<Activity>= rbatis.unwrap().eval("Example_ActivityMapper.xml", "select_by_condition", &mut json!({
        "name":null,
        "startTime":null,
        "endTime":null,
@@ -81,9 +85,12 @@ fn test_exec_sql(){
 #[test]
 fn test_exec_select_page(){
     //初始化rbatis
-    let mut rbatis = init_rbatis().unwrap();
+    let mut rbatis = init_rbatis();
+    if rbatis.is_err(){
+        return;
+    }
     //执行到远程mysql 并且获取结果,Result<serde_json::Value, String>,或者 Result<Activity, String> 等任意类型
-    let data:IPage<Activity> = rbatis.select_page("Example_ActivityMapper.xml",  &mut json!({
+    let data:IPage<Activity> = rbatis.unwrap().select_page("Example_ActivityMapper.xml",  &mut json!({
        "name":"新人专享",
     }), &IPage::new(1,5)).unwrap();
     println!("[rbatis] result==>  {:?}", data);
@@ -92,9 +99,12 @@ fn test_exec_select_page(){
 #[test]
 fn test_exec_select_page_custom(){
     //初始化rbatis
-    let mut rbatis = init_rbatis().unwrap();
+    let mut rbatis = init_rbatis();
+    if rbatis.is_err(){
+        return;
+    }
     //执行到远程mysql 并且获取结果,Result<serde_json::Value, String>,或者 Result<Activity, String> 等任意类型
-    let data:IPage<Activity> = rbatis.select_page_by_mapper("Example_ActivityMapper.xml", "select_by_page",&mut json!({
+    let data:IPage<Activity> = rbatis.unwrap().select_page_by_mapper("Example_ActivityMapper.xml", "select_by_page",&mut json!({
        "name":"新人专享",
     }), &IPage::new(1,5)).unwrap();
     println!("[rbatis] result==>  {:?}", data);
