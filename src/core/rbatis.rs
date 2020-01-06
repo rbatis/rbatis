@@ -135,7 +135,7 @@ impl Rbatis {
         let conf_opt = self.db_configs.get(db);
         if conf_opt.is_none() {
             if self.enable_log {
-                error!("{}","[rbatis] find default database url config:".to_string() + db + " fail!");
+                error!("{}", "[rbatis] find default database url config:".to_string() + db + " fail!");
             }
             return Result::Err("[rbatis] find default database url config:".to_string() + db + " fail!");
         }
@@ -224,11 +224,11 @@ impl Rbatis {
     ///    }));
     ///
     pub fn eval<T>(&mut self, mapper_name: &str, id: &str, env: &mut Value) -> Result<T, String> where T: de::DeserializeOwned {
-        let mapper_opt = self.mapper_map.get_mut(&mapper_name.to_string());
+        let mapper_opt = self.mapper_map.get(&mapper_name.to_string());
         if mapper_opt.is_none() {
             return Result::Err("[rbatis] find mapper fail,name:'".to_string() + mapper_name + "'");
         }
-        let node = mapper_opt.unwrap().get_mut(id);
+        let node = mapper_opt.unwrap().get(id);
         if node.is_none() {
             return Result::Err("[rbatis] find method fail,name:'".to_string() + mapper_name + id + "'");
         }
@@ -237,12 +237,8 @@ impl Rbatis {
         let sql_string = mapper_func.eval(env, &mut self.holder)?;
         let sql = sql_string.as_str();
 
-
-        let mut db = "".to_string();
-        let conf = self.router_configs.get(id).unwrap_or(&db);
-        db=conf.as_str().to_string();
-
-        match mapper_func {
+        let mut db = self.get_conf(id);
+        match &mapper_func {
             NodeType::NSelectNode(_) => {
                 return self.eval_sql_raw(sql, true, db.as_str());
             }
@@ -250,6 +246,12 @@ impl Rbatis {
                 return self.eval_sql_raw(sql, false, db.as_str());
             }
         }
+    }
+
+    pub fn get_conf(&self, key: &str) -> String {
+        let mut db = "".to_string();
+        let conf = self.router_configs.get(key).unwrap_or(&db);
+        return db;
     }
 
     ///打印内容

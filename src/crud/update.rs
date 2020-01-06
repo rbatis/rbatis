@@ -15,11 +15,7 @@ impl Rbatis {
 
     pub fn update<T>(&mut self, mapper_name: &str,  arg: &mut Value) -> Result<T, String> where T: DeserializeOwned {
         let sql = self.create_sql_update(mapper_name, arg)?;
-
-        let mut db = "".to_string();
-        let conf = self.router_configs.get("update").unwrap_or(&db);
-        db=conf.as_str().to_string();
-
+        let mut db = self.get_conf("update");
         return self.eval_sql_raw(sql.as_str(), true,db.as_str());
     }
 
