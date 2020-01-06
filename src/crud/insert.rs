@@ -3,8 +3,17 @@ use serde_json::Value;
 
 use crate::convert::sql_value_convert::{SqlColumnConvert, SqlValueConvert};
 use crate::core::rbatis::Rbatis;
+use serde::de::DeserializeOwned;
 
 impl Rbatis {
+
+
+//    pub fn insert<T>(&mut self, mapper_name: &str, id: &str, arg: &mut Value) -> Result<T, String> where T: DeserializeOwned {
+//        let (sql,_) = self.create_sql_insert(mapper_name, id, arg)?;
+//        return self.eval_sql_raw(sql.as_str(), true);
+//    }
+//
+
     /// insert an object or  array
     /// example:
     /// rbatis.insert("activity", json!(arg))

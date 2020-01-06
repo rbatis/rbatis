@@ -7,10 +7,16 @@ use crate::ast::xml::result_map_node::ResultMapNode;
 use crate::convert::sql_value_convert::{AND, SKIP_TYPE_ARRAY, SKIP_TYPE_NULL, SKIP_TYPE_OBJECT, SqlColumnConvert, SqlValueConvert};
 use crate::convert::sql_value_convert;
 use crate::core::rbatis::Rbatis;
+use serde::de::DeserializeOwned;
 
 pub const SKIP_SETS: &'static str = "null,object,array";
 
 impl Rbatis {
+
+    pub fn update<T>(&mut self, mapper_name: &str, id: &str, arg: &mut Value) -> Result<T, String> where T: DeserializeOwned {
+        let sql = self.create_sql_update(mapper_name, id, arg)?;
+        return self.eval_sql_raw(sql.as_str(), true);
+    }
 
 
 
