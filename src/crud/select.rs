@@ -52,26 +52,44 @@ impl Rbatis {
         let mapper_func = node.unwrap();
         let sql_string = mapper_func.eval(&mut new_arg, &mut self.holder)?;
         //create where str
+        let mut where_befer_string="".to_string();
         let mut where_string="".to_string();
         if sql_string.contains("where"){
             let wheres:Vec<&str>= sql_string.split("where").collect();
+            if wheres.len()>2{
+                return  Result::Err("[rbatis] find 'where' repeated > 2 time,name:'".to_string() + mapper_name + id + "'");
+            }
             where_string=wheres[1].to_string();
+            where_befer_string=wheres[0].to_string();
         }else if sql_string.contains("WHERE"){
             let wheres:Vec<&str>= sql_string.split("WHERE").collect();
+            if wheres.len()>2{
+                return  Result::Err("[rbatis] find 'WHERE' repeated > 2 time,name:'".to_string() + mapper_name + id + "'");
+            }
             where_string=wheres[1].to_string();
+            where_befer_string=wheres[0].to_string();
+        }else{
+            where_befer_string=sql_string;
         }
-
         //insert delete_flag
-        let result_map_node = self.get_result_map_node(mapper_name)?;
-        let ipage_opt=Option::Some(ipage.clone());
-        let (sql,new_where_sql)= self.do_select_by_templete(&mut new_arg, &result_map_node, where_string.as_str(), &ipage_opt)?;
-        let records:Vec<T>=self.eval_sql_raw(sql.as_str(),true)?;
+        let mut append_limit_where_string=where_string.clone();
+        if !where_string.contains(" limit ") && !where_string.contains("LIMIT"){
+            append_limit_where_string = append_limit_where_string + " LIMIT " + ipage.current.to_string().as_str() + "," + ipage.size.to_string().as_str();
+        }
+        let query_sql=where_befer_string+" WHERE "+append_limit_where_string.as_str();
+        let records:Vec<T>=self.eval_sql_raw(query_sql.as_str(),true)?;
         let mut result = ipage.clone();
         result.set_records(records);
 
         //do count
         let result_map_node = self.get_result_map_node(mapper_name)?;
-        let count_sql=self.do_count_by_templete(&mut new_arg,&result_map_node,new_where_sql.as_str())?;
+        let mut count_sql = "select count(1) from #{table} where #{where}".to_string();
+        //replace table
+        if result_map_node.table.is_none() {
+            return Result::Err("[rbatis]  can not find table defin in <result_map>!".to_string());
+        }
+        count_sql = count_sql.replace("#{table}", result_map_node.table.as_ref().unwrap());
+        count_sql = count_sql.replace("#{where}", where_string.as_str());
         let total:i64=self.eval_sql_raw(count_sql.as_str(),true)?;
         result.set_total(total);
         return Result::Ok(result);
