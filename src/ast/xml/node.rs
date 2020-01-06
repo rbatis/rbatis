@@ -64,7 +64,6 @@ pub fn loop_decode_xml(xml_vec: &Vec<Element>, holder: &ConfigHolder) -> Vec<Nod
             }
             "select" => nodes.push(NodeType::NSelectNode(SelectNode {
                 id: xml.get_attr("id"),
-                result_map: xml.get_attr("result_map"),
                 childs: child_nodes,
             })),
             "update" => nodes.push(NodeType::NUpdateNode(UpdateNode {

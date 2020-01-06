@@ -13,14 +13,14 @@ use serde::de::DeserializeOwned;
 
 impl Rbatis{
 
-    pub fn delete<T>(&mut self, mapper_name: &str, id: &str, arg: &mut Value) -> Result<T, String> where T: DeserializeOwned {
-        let sql = self.create_sql_delete(mapper_name, id, arg)?;
+    pub fn delete<T>(&mut self, mapper_name: &str, arg: &mut Value) -> Result<T, String> where T: DeserializeOwned {
+        let sql = self.create_sql_delete(mapper_name, arg)?;
         return self.eval_sql_raw(sql.as_str(), true);
     }
 
 
-    pub fn create_sql_delete(&mut self, mapper_name: &str, id: &str, arg: &mut Value) -> Result<String, String>{
-        let result_map_node=self.get_result_map_node(mapper_name,id)?;
+    pub fn create_sql_delete(&mut self, mapper_name: &str, arg: &mut Value) -> Result<String, String>{
+        let result_map_node=self.get_result_map_node(mapper_name)?;
         match arg {
             serde_json::Value::String(_) | serde_json::Value::Number(_)=>{
                 //delete by id
@@ -76,7 +76,7 @@ fn test_delete_by_id() {
     let mut rbatis =Rbatis::new();
     rbatis.load_xml("Example_ActivityMapper.xml".to_string(), fs::read_to_string("./src/example/Example_ActivityMapper.xml").unwrap());//加载xml数据
 
-    let sql=rbatis.create_sql_delete("Example_ActivityMapper.xml", "BaseResultMap", serde_json::json!("1").borrow_mut());
+    let sql=rbatis.create_sql_delete("Example_ActivityMapper.xml", serde_json::json!("1").borrow_mut());
     println!("{}",sql.unwrap());
 }
 
@@ -86,7 +86,7 @@ fn test_delete_by_ids() {
     let mut rbatis =Rbatis::new();
     rbatis.load_xml("Example_ActivityMapper.xml".to_string(), fs::read_to_string("./src/example/Example_ActivityMapper.xml").unwrap());//加载xml数据
 
-    let sql =rbatis.create_sql_delete("Example_ActivityMapper.xml", "BaseResultMap", serde_json::json!(vec![1,2,3]).borrow_mut());
+    let sql =rbatis.create_sql_delete("Example_ActivityMapper.xml", serde_json::json!(vec![1,2,3]).borrow_mut());
     println!("{}",sql.unwrap());
 }
 
@@ -96,7 +96,7 @@ fn test_delete_by_map() {
     let mut rbatis =Rbatis::new();
     rbatis.load_xml("Example_ActivityMapper.xml".to_string(), fs::read_to_string("./src/example/Example_ActivityMapper.xml").unwrap());//加载xml数据
 
-    let sql =rbatis.create_sql_delete("Example_ActivityMapper.xml", "BaseResultMap", serde_json::json!({
+    let sql =rbatis.create_sql_delete("Example_ActivityMapper.xml", serde_json::json!({
      "arg": 2,
      "delete_flag":1,
      "number_arr":vec![1,2,3],

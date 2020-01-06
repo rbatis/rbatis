@@ -258,7 +258,7 @@ impl Rbatis {
     }
 
     /// find result map config
-    pub fn get_result_map_node(&self, mapper_name: &str, id: &str) -> Result<ResultMapNode, String> {
+    pub fn get_result_map_node(&self, mapper_name: &str) -> Result<ResultMapNode, String> {
         let result_map_opt = self.mapper_map.get(mapper_name);
         if result_map_opt.is_none() {
             return Result::Err("[rbatis]  can not be find ".to_string() + mapper_name);

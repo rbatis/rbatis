@@ -17,7 +17,7 @@ impl Rbatis {
         if arg.is_null() {
             return Result::Err("[rbatis] arg is null value".to_string());
         }
-        let result_map_node = self.get_result_map_node(mapper_name, id)?;
+        let result_map_node = self.get_result_map_node(mapper_name)?;
         let mut sql = "insert into #{table} (#{fields}) VALUES #{values}".to_string();
         if result_map_node.table.is_none() {
             return Result::Err("[rbatis]  can not find table defin in <result_map>!".to_string());

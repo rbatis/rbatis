@@ -21,7 +21,7 @@ impl Rbatis {
 
 
     pub fn create_sql_update(&mut self, mapper_name: &str, id: &str, arg: &mut Value) -> Result<String, String> {
-        let result_map_node = self.get_result_map_node(mapper_name, id)?;
+        let result_map_node = self.get_result_map_node(mapper_name)?;
         match arg {
             serde_json::Value::Array(arr) => {
                 let mut sqls = "".to_string();

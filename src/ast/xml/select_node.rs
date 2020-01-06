@@ -8,7 +8,6 @@ use crate::ast::xml::node_type::NodeType;
 #[derive(Clone)]
 pub struct SelectNode {
     pub id: String,
-    pub result_map: String,
     pub childs: Vec<NodeType>,
 }
 

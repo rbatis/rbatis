@@ -16,7 +16,7 @@
         <result column="create_time" property="create_time" lang_type="time"/>
         <result column="delete_flag" property="delete_flag" lang_type="number" logic_enable="true" logic_undelete="1" logic_deleted="0"/>
     </result_map>
-   <select id="select_by_condition" result_map="BaseResultMap">
+   <select id="select_by_condition">
         <bind name="pattern" value="'%' + name + '%'"/>
         select * from biz_activity
         <where>
@@ -109,7 +109,7 @@
         </trim>
     </insert>
 
-    <select id="choose" result_map="BaseResultMap">
+    <select id="choose">
         SELECT * FROM biz_activity
         <choose>
             <when test="deleteFlag > 1">WHERE delete_flag > 1</when>
