@@ -32,4 +32,7 @@ impl <T> IPage<T>where T:Serialize + Clone {
     pub fn set_records(&mut self,data:Vec<T>){
         self.records=Some(data);
     }
+    pub fn set_total(&mut self,total:i64){
+        self.total=total;
+    }
 }

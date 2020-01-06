@@ -6,6 +6,7 @@ use crate::ast::config_holder::ConfigHolder;
 use crate::ast::xml::node_type::NodeType;
 use crate::example::activity::Activity;
 use std::collections::LinkedList;
+use crate::crud::ipage::IPage;
 
 
 struct Example{
@@ -68,11 +69,8 @@ fn test_exec_select(){
         return;
     }
     //执行到远程mysql 并且获取结果,Result<serde_json::Value, String>,或者 Result<Activity, String> 等任意类型
-    let sql= rbatis.select("Example_ActivityMapper.xml", "select_by_condition", &mut json!({
+    let data:IPage<Activity> = rbatis.select_page("Example_ActivityMapper.xml", "select_by_condition", &mut json!({
        "name":"新人专享",
-    }));
-    let data: Vec<Activity>= rbatis.eval_sql(sql.unwrap().as_str()).unwrap();
-    // 写法2，直接运行原生sql
-    // let data_opt: Result<serde_json::Value, String> = rbatis.eval_sql("select * from biz_activity");
+    }), &IPage::new(1,5)).unwrap();
     println!("[rbatis] result==>  {:?}", data);
 }
