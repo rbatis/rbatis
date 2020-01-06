@@ -6,6 +6,7 @@ use std::str::FromStr;
 use std::sync::Mutex;
 
 use log::{error, info, warn};
+use log4rs::init_file;
 use mysql::Conn;
 use serde::de;
 use serde_json::{Number, Value};
@@ -22,10 +23,9 @@ use crate::ast::xml::string_node::StringNode;
 use crate::core::conn_pool::ConnPool;
 use crate::core::db_config::DBConfig;
 use crate::core::node_type_map_factory::create_node_type_map;
-use crate::decode::decoder::{Decoder};
+use crate::decode::decoder::Decoder;
 use crate::utils::driver_util;
 use crate::utils::xml_loader::load_xml;
-use log4rs::init_file;
 
 pub struct Rbatis {
     //动态sql运算节点集合
@@ -34,6 +34,8 @@ pub struct Rbatis {
     pub holder: ConfigHolder,
     //数据库连接配置
     pub db_configs: HashMap<String, DBConfig>,
+    //路由配置
+    pub router_configs: HashMap<String, String>,
     //连接池
     pub conn_pool: ConnPool,
 
@@ -47,20 +49,21 @@ impl Rbatis {
             mapper_map: HashMap::new(),
             holder: ConfigHolder::new(),
             db_configs: HashMap::new(),
+            router_configs: HashMap::new(),
             conn_pool: ConnPool::new(),
             enable_log: true,
         };
     }
 
-    pub fn set_enable_log(&mut self,arg:bool){
-        self.enable_log=arg;
+    pub fn set_enable_log(&mut self, arg: bool) {
+        self.enable_log = arg;
     }
 
     ///加载xml数据
     /// rbatis.load_xml("Example_ActivityMapper.xml".to_string(), fs::read_to_string("./src/example/Example_ActivityMapper.xml").unwrap());//加载xml数据
     pub fn load_xml(&mut self, key: String, content: String) {
-        if self.enable_log{
-            info!("[rbatis]===========load {}==============\n{}\n================ end {}===============",key,content,key);
+        if self.enable_log {
+            info!("[rbatis]===========load {}==============\n{}\n================ end {}===============", key, content, key);
         }
         self.mapper_map.insert(key, create_node_type_map(content, &self.holder));
     }
@@ -80,12 +83,13 @@ impl Rbatis {
             return Option::None;
         } else {
             let e = db_config_opt.err().unwrap();
-            if self.enable_log{
+            if self.enable_log {
                 error!("{}", "[rbatis] link db fail:".to_string() + e.as_str());
             }
             return Option::Some(e);
         }
     }
+
 
     /// 移除数据库url
     pub fn remove_db_url(&mut self, name: String) {
@@ -93,36 +97,34 @@ impl Rbatis {
     }
 
 
+    ///执行sql到数据库，例如:
+    ///    Result中结果可以为serde_json::Value，Vec，Array,Slice,LinkedList,Map,i32
+    ///
+    ///    let data_opt: Result<serde_json::Value, String> = rbatis.eval( "select * from table", &mut json!({
+    ///       "name":null,
+    ///       "startTime":null,
+    ///       "endTime":null,
+    ///       "page":null,
+    ///       "size":null,
+    ///    }));
+    ///
+    pub fn eval_sql<T>(&mut self, eval_sql: &str, db: &str) -> Result<T, String> where T: de::DeserializeOwned {
+        let mut sql = eval_sql;
+        sql = sql.trim();
+        if sql.is_empty() {
+            return Result::Err("[rbatis] sql can not be empty！".to_string());
+        }
+        let is_select = sql.starts_with("select") || sql.starts_with("SELECT");
+        return self.eval_sql_raw(eval_sql, is_select, db);
+    }
 
 
-   ///执行sql到数据库，例如:
-   ///    Result中结果可以为serde_json::Value，Vec，Array,Slice,LinkedList,Map,i32
-   ///
-   ///    let data_opt: Result<serde_json::Value, String> = rbatis.eval( "select * from table", &mut json!({
-   ///       "name":null,
-   ///       "startTime":null,
-   ///       "endTime":null,
-   ///       "page":null,
-   ///       "size":null,
-   ///    }));
-   ///
-   pub fn eval_sql<T>(&mut self, eval_sql: &str) -> Result<T, String> where T: de::DeserializeOwned {
-       let mut sql = eval_sql;
-       sql = sql.trim();
-       if sql.is_empty() {
-           return Result::Err("[rbatis] sql can not be empty！".to_string());
-       }
-       let is_select = sql.starts_with("select") || sql.starts_with("SELECT");
-       return self.eval_sql_raw(eval_sql,is_select);
-   }
-
-
-    pub fn eval_sql_raw<T>(&mut self, eval_sql: &str,is_select:bool) -> Result<T, String> where T: de::DeserializeOwned  {
-       let mut sql=eval_sql;
-       sql=sql.trim();
-       if sql.is_empty(){
-           return Result::Err("[rbatis] sql can not be empty！".to_string());
-       }
+    pub fn eval_sql_raw<T>(&mut self, eval_sql: &str, is_select: bool, db: &str) -> Result<T, String> where T: de::DeserializeOwned {
+        let mut sql = eval_sql;
+        sql = sql.trim();
+        if sql.is_empty() {
+            return Result::Err("[rbatis] sql can not be empty！".to_string());
+        }
         if self.enable_log {
             if is_select {
                 info!("[rbatis] Query ==>  {}", sql);
@@ -130,16 +132,16 @@ impl Rbatis {
                 info!("[rbatis] Query ==>  {}", sql);
             }
         }
-       let conf_opt = self.db_configs.get("");
-       if conf_opt.is_none() {
-           if self.enable_log {
-               error!("[rbatis] find default database url config fail！");
-           }
-           return Result::Err("[rbatis] find default database url config fail！".to_string());
-       }
-       let conf = conf_opt.unwrap();
-       let db_type = conf.db_type.as_str();
-       match db_type {
+        let conf_opt = self.db_configs.get(db);
+        if conf_opt.is_none() {
+            if self.enable_log {
+                error!("[rbatis] find default database url config fail！");
+            }
+            return Result::Err("[rbatis] find default database url config fail！".to_string());
+        }
+        let conf = conf_opt.unwrap();
+        let db_type = conf.db_type.as_str();
+        match db_type {
             "mysql" => {
                 let conn_opt = self.conn_pool.get_mysql_conn("".to_string(), conf)?;
                 if is_select {
@@ -148,9 +150,9 @@ impl Rbatis {
                     if exec_result.is_err() {
                         return Result::Err("[rbatis] exec fail:".to_string() + exec_result.err().unwrap().to_string().as_str());
                     }
-                    let (result,decoded_num)= exec_result.unwrap().decode();
+                    let (result, decoded_num) = exec_result.unwrap().decode();
                     if self.enable_log {
-                        info!("{}","[rbatis] ReturnRows <== ".to_string()+ decoded_num.to_string().as_str() );
+                        info!("{}", "[rbatis] ReturnRows <== ".to_string() + decoded_num.to_string().as_str());
                     }
                     return result;
                 } else {
@@ -165,8 +167,8 @@ impl Rbatis {
                         return Result::Err("[rbatis] exec fail:".to_string() + r.err().unwrap().to_string().as_str());
                     }
                     if self.enable_log {
-                        let affected_rows=result.affected_rows();
-                        info!("{}","[rbatis] RowsAffected <== ".to_string()+ affected_rows.to_string().as_str() );
+                        let affected_rows = result.affected_rows();
+                        info!("{}", "[rbatis] RowsAffected <== ".to_string() + affected_rows.to_string().as_str());
                     }
                     return Result::Ok(r.unwrap());
                 }
@@ -179,9 +181,9 @@ impl Rbatis {
                     if exec_result.is_err() {
                         return Result::Err("[rbatis] exec fail:".to_string() + exec_result.err().unwrap().to_string().as_str());
                     }
-                    let (result,decoded_num)= exec_result.unwrap().decode();
+                    let (result, decoded_num) = exec_result.unwrap().decode();
                     if self.enable_log {
-                        info!("{}","[rbatis] ReturnRows <== ".to_string()+ decoded_num.to_string().as_str() );
+                        info!("{}", "[rbatis] ReturnRows <== ".to_string() + decoded_num.to_string().as_str());
                     }
                     return result;
                 } else {
@@ -203,8 +205,8 @@ impl Rbatis {
                 }
             }
             _ => {
-                if self.enable_log{
-                    error!("{}","[rbatis] unsupport database type:".to_string() + db_type);
+                if self.enable_log {
+                    error!("{}", "[rbatis] unsupport database type:".to_string() + db_type);
                 }
                 return Result::Err("[rbatis] unsupport database type:".to_string() + db_type);
             }
@@ -221,7 +223,7 @@ impl Rbatis {
     ///       "size":null,
     ///    }));
     ///
-    pub fn eval<T>(&mut self, mapper_name: &str, id: &str, env: &mut Value) -> Result<T, String> where T: de::DeserializeOwned  {
+    pub fn eval<T>(&mut self, mapper_name: &str, id: &str, env: &mut Value) -> Result<T, String> where T: de::DeserializeOwned {
         let mapper_opt = self.mapper_map.get_mut(&mapper_name.to_string());
         if mapper_opt.is_none() {
             return Result::Err("[rbatis] find mapper fail,name:'".to_string() + mapper_name + "'");
@@ -230,15 +232,22 @@ impl Rbatis {
         if node.is_none() {
             return Result::Err("[rbatis] find method fail,name:'".to_string() + mapper_name + id + "'");
         }
+
         let mapper_func = node.unwrap();
         let sql_string = mapper_func.eval(env, &mut self.holder)?;
-        let sql=sql_string.as_str();
+        let sql = sql_string.as_str();
+
+
+        let mut db = "".to_string();
+        let conf = self.router_configs.get(id).unwrap_or(&db);
+        db=conf.as_str().to_string();
+
         match mapper_func {
-            NodeType::NSelectNode(_)=>{
-                return self.eval_sql_raw(sql,true);
+            NodeType::NSelectNode(_) => {
+                return self.eval_sql_raw(sql, true, db.as_str());
             }
-            _=>{
-                return self.eval_sql_raw(sql,false);
+            _ => {
+                return self.eval_sql_raw(sql, false, db.as_str());
             }
         }
     }

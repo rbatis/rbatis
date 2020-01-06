@@ -19,7 +19,10 @@ impl Rbatis {
     ///普通查询
     pub fn select<T>(&mut self, mapper_name: &str, arg: &mut Value) -> Result<T, String> where T: DeserializeOwned {
         let (sql,_) = self.create_sql_select(mapper_name, arg)?;
-        return self.eval_sql_raw(sql.as_str(), true);
+        let mut db = "".to_string();
+        let conf = self.router_configs.get("select").unwrap_or(&db);
+        db=conf.as_str().to_string();
+        return self.eval_sql_raw(sql.as_str(), true,db.as_str());
     }
 
     ///分页查询
@@ -33,7 +36,13 @@ impl Rbatis {
         //do count
         let result_map_node = self.get_result_map_node(mapper_name)?;
         let count_sql=self.do_count_by_templete(&mut new_arg,&result_map_node,w.as_str())?;
-        let total:i64=self.eval_sql_raw(count_sql.as_str(),true)?;
+
+
+        let mut db = "".to_string();
+        let conf = self.router_configs.get("select_page").unwrap_or(&db);
+        db=conf.as_str().to_string();
+
+        let total:i64=self.eval_sql_raw(count_sql.as_str(),true,db.as_str())?;
         result.set_total(total);
         return Result::Ok(result);
     }
@@ -77,7 +86,12 @@ impl Rbatis {
             append_limit_where_string = append_limit_where_string + " LIMIT " + ipage.current.to_string().as_str() + "," + ipage.size.to_string().as_str();
         }
         let query_sql=where_befer_string+" WHERE "+append_limit_where_string.as_str();
-        let records:Vec<T>=self.eval_sql_raw(query_sql.as_str(),true)?;
+
+        let mut db = "".to_string();
+        let conf = self.router_configs.get(id).unwrap_or(&db);
+        db=conf.as_str().to_string();
+
+        let records:Vec<T>=self.eval_sql_raw(query_sql.as_str(),true,db.as_str())?;
         let mut result = ipage.clone();
         result.set_records(records);
 
@@ -90,7 +104,12 @@ impl Rbatis {
         }
         count_sql = count_sql.replace("#{table}", result_map_node.table.as_ref().unwrap());
         count_sql = count_sql.replace("#{where}", where_string.as_str());
-        let total:i64=self.eval_sql_raw(count_sql.as_str(),true)?;
+
+        let mut db = "".to_string();
+        let conf = self.router_configs.get(id).unwrap_or(&db);
+        db=conf.as_str().to_string();
+
+        let total:i64=self.eval_sql_raw(count_sql.as_str(),true,db.as_str())?;
         result.set_total(total);
         return Result::Ok(result);
     }
@@ -98,7 +117,12 @@ impl Rbatis {
 
     fn eval_select_return_where<T>(&mut self, mapper_name: &str,  arg: &mut Value) -> Result<(T,String), String> where T: DeserializeOwned {
         let (sql,w) = self.create_sql_select(mapper_name, arg)?;
-        let data:T= self.eval_sql_raw(sql.as_str(), true)?;
+
+        let mut db = "".to_string();
+        let conf = self.router_configs.get("eval_select_return_where").unwrap_or(&db);
+        db=conf.as_str().to_string();
+
+        let data:T= self.eval_sql_raw(sql.as_str(), true,db.as_str())?;
         return Result::Ok((data,w));
     }
 
