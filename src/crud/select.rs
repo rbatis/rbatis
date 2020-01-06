@@ -30,7 +30,7 @@ impl Rbatis {
         result.set_records(records);
 
         //do count
-        let result_map_node = self.get_result_map_node(mapper_name, id)?;
+        let result_map_node = self.get_result_map_node(mapper_name)?;
         let count_sql=self.do_count_by_templete(&mut new_arg,&result_map_node,w.as_str())?;
         let total:i64=self.eval_sql_raw(count_sql.as_str(),true)?;
         result.set_total(total);
@@ -45,7 +45,7 @@ impl Rbatis {
     }
 
     pub fn create_sql_select(&mut self, mapper_name: &str, id: &str, arg: &mut Value) -> Result<(String, String), String> {
-        let result_map_node = self.get_result_map_node(mapper_name, id)?;
+        let result_map_node = self.get_result_map_node(mapper_name)?;
         match arg {
             serde_json::Value::Null => {
                 return Result::Err("[rbatis] arg is null value".to_string());
@@ -83,7 +83,7 @@ impl Rbatis {
 
 
     pub fn create_sql_count(&mut self, mapper_name: &str, id: &str, arg: &mut Value) -> Result<String, String> {
-        let result_map_node = self.get_result_map_node(mapper_name, id)?;
+        let result_map_node = self.get_result_map_node(mapper_name)?;
         match arg {
             serde_json::Value::Null => {
                 return Result::Err("[rbatis] arg is null value".to_string());

@@ -139,7 +139,6 @@
         <!ELEMENT select (#PCDATA | include | trim | where | set | foreach | choose | if | bind)*>
         <!ATTLIST select
                 id CDATA #REQUIRED
-                result_map CDATA #IMPLIED
                 result_type CDATA #IMPLIED
 
                 fetchSize CDATA #IMPLIED
