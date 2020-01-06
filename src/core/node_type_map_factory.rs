@@ -18,9 +18,9 @@ pub fn create_node_type_map(xml_content: String,holder:&ConfigHolder) -> HashMap
     }
     for x in &data {
         match x{
-            NodeType::NSelectNode(node) => m.insert(node.id.clone(), x.clone()),//TODO where  insert del
-            NodeType::NDeleteNode(node) => m.insert(node.id.clone(), x.clone()), //TODO where  insert del
-            NodeType::NUpdateNode(node) => m.insert(node.id.clone(), x.clone()), //TODO sets insert version,del,where insert del
+            NodeType::NSelectNode(node) => m.insert(node.id.clone(), x.clone()),
+            NodeType::NDeleteNode(node) => m.insert(node.id.clone(), x.clone()),
+            NodeType::NUpdateNode(node) => m.insert(node.id.clone(), x.clone()),
             NodeType::NInsertNode(node) => m.insert(node.id.clone(), x.clone()),
             _ => m.insert("unknow".to_string(), NodeType::Null),
         };
