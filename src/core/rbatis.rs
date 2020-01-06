@@ -251,7 +251,7 @@ impl Rbatis {
     pub fn get_conf(&self, key: &str) -> String {
         let mut db = "".to_string();
         let conf = self.router_configs.get(key).unwrap_or(&db);
-        return db;
+        return conf.clone();
     }
 
     ///打印内容
