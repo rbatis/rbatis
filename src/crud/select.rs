@@ -38,7 +38,7 @@ impl Rbatis {
         return Result::Ok(result);
     }
 
-    pub fn select_page_custom<T>(&mut self, mapper_name: &str, env: &mut Value,  ipage: &IPage<T>,id: &str) -> Result<IPage<T>, String> where T: Serialize + DeserializeOwned + Clone {
+    pub fn select_page_by_mapper<T>(&mut self, mapper_name: &str, env: &mut Value, ipage: &IPage<T>, id: &str) -> Result<IPage<T>, String> where T: Serialize + DeserializeOwned + Clone {
         let mut new_arg = json_join(env, "ipage", ipage)?;
         //select redords
         let mapper_opt = self.mapper_map.get_mut(&mapper_name.to_string());
