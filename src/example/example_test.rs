@@ -93,8 +93,8 @@ fn test_exec_select_page_custom(){
     //初始化rbatis
     let mut rbatis = init_rbatis().unwrap();
     //执行到远程mysql 并且获取结果,Result<serde_json::Value, String>,或者 Result<Activity, String> 等任意类型
-    let data:IPage<Activity> = rbatis.select_page_custom("Example_ActivityMapper.xml",  &mut json!({
+    let data:IPage<Activity> = rbatis.select_page_by_mapper("Example_ActivityMapper.xml", &mut json!({
        "name":"新人专享",
-    }), &IPage::new(1,5),"select_by_page").unwrap();
+    }), &IPage::new(1,5), "select_by_page").unwrap();
     println!("[rbatis] result==>  {:?}", data);
 }
