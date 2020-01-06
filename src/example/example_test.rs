@@ -22,9 +22,7 @@ fn test_write_method(){
     (e.select_by_condition)();
 }
 
-
-#[test]
-fn test_exec_sql(){
+fn init_rbatis()->Result<Rbatis,String>{
     //1 启用日志(可选，不添加则不加载日志库)
     log4rs::init_file("log4rs.yaml", Default::default()).unwrap();
     //2 初始化rbatis
@@ -36,9 +34,25 @@ fn test_exec_sql(){
     //判断是否配置数据库
     let conf=rbatis.db_configs.get("").unwrap();
     if conf.db_addr.contains("localhost") {
-        println!("请修改mysql链接'mysql://root:TEST@localhost:3306/test' 替换为具体的 用户名，密码，ip，和数据库名称");
-        return;
+        return Err("请修改mysql链接'mysql://root:TEST@localhost:3306/test' 替换为具体的 用户名，密码，ip，和数据库名称".to_string());
     }
+    return Ok(rbatis);
+}
+
+
+
+/**
+ 示例-查询活动 数组 集合
+
+2020-01-06T16:40:14.106240+08:00 INFO rbatis::core::rbatis - [rbatis] Query ==>  select * from biz_activity  order by create_time desc
+2020-01-06T16:40:14.233951+08:00 INFO rbatis::core::rbatis - [rbatis] ReturnRows <== 2
+[rbatis] result==>  [Activity { id: Some("\"dfbdd779-5f70-4b8f-9921-a235a9c75b69\""), name: Some("\"新人专享\""), pc_link: Some("\"http://115.220.9.139:8002/newuser/\""), h5_link: Some("\"http://115.220.9.139:8002/newuser/\""), remark: Some("\"\""), create_time: Some("\"2019-05-27 10:25:41\""), version: Some(6), delete_flag: Some(1) }, Activity { id: Some("\"dfbdd779-5f70-4b8f-9921-c235a9c75b69\""), name: Some("\"新人专享\""), pc_link: Some("\"http://115.220.9.139:8002/newuser/\""), h5_link: Some("\"http://115.220.9.139:8002/newuser/\""), remark: Some("\"\""), create_time: Some("\"2019-05-27 10:25:41\""), version: Some(6), delete_flag: Some(1) }]
+
+*/
+#[test]
+fn test_exec_sql(){
+    //初始化rbatis
+    let mut rbatis = init_rbatis().unwrap();
     //执行到远程mysql 并且获取结果,Result<serde_json::Value, String>,或者 Result<Activity, String> 等任意类型
     let data: Vec<Activity>= rbatis.eval("Example_ActivityMapper.xml", "select_by_condition", &mut json!({
        "name":null,
@@ -65,20 +79,8 @@ fn test_exec_sql(){
 */
 #[test]
 fn test_exec_select(){
-    //1 启用日志(可选，不添加则不加载日志库)
-    log4rs::init_file("log4rs.yaml", Default::default()).unwrap();
-    //2 初始化rbatis
-    let mut rbatis = Rbatis::new();
-    //3 加载数据库url name 为空，则默认数据库
-    rbatis.load_db_url("".to_string(), "mysql://root:TEST@115.220.9.139:3306/test");
-    //4 加载xml配置
-    rbatis.load_xml("Example_ActivityMapper.xml".to_string(), fs::read_to_string("./src/example/Example_ActivityMapper.xml").unwrap());//加载xml数据
-    //判断是否配置数据库
-    let conf=rbatis.db_configs.get("").unwrap();
-    if conf.db_addr.contains("localhost") {
-        println!("请修改mysql链接'mysql://root:TEST@localhost:3306/test' 替换为具体的 用户名，密码，ip，和数据库名称");
-        return;
-    }
+    //初始化rbatis
+    let mut rbatis = init_rbatis().unwrap();
     //执行到远程mysql 并且获取结果,Result<serde_json::Value, String>,或者 Result<Activity, String> 等任意类型
     let data:IPage<Activity> = rbatis.select_page("Example_ActivityMapper.xml", "select_by_condition", &mut json!({
        "name":"新人专享",
