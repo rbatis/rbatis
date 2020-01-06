@@ -11,7 +11,10 @@ use crate::core::rbatis::Rbatis;
 pub const SKIP_SETS: &'static str = "null,object,array";
 
 impl Rbatis {
-    pub fn update(&mut self, mapper_name: &str, id: &str, arg: &mut Value) -> Result<String, String> {
+
+
+
+    pub fn create_sql_update(&mut self, mapper_name: &str, id: &str, arg: &mut Value) -> Result<String, String> {
         let result_map_node = self.get_result_map_node(mapper_name, id)?;
         match arg {
             serde_json::Value::Array(arr) => {
@@ -20,7 +23,7 @@ impl Rbatis {
                 for x in arr {
                     match x {
                         serde_json::Value::Object(_) => {
-                            let temp_sql = self.update(mapper_name, id, x)?;
+                            let temp_sql = self.create_sql_update(mapper_name, id, x)?;
                             sqls = sqls + temp_sql.as_str() + "; \n";
                         }
                         _ => {
@@ -150,7 +153,7 @@ fn test_update_by_id() {
     let mut rbatis = Rbatis::new();
     rbatis.load_xml("Example_ActivityMapper.xml".to_string(), fs::read_to_string("./src/example/Example_ActivityMapper.xml").unwrap());//加载xml数据
 
-    let sql = rbatis.update("Example_ActivityMapper.xml", "BaseResultMap", serde_json::json!({
+    let sql = rbatis.create_sql_update("Example_ActivityMapper.xml", "BaseResultMap", serde_json::json!({
      "id":"1",
      "arg": 2,
      "delete_flag":1,
@@ -185,6 +188,6 @@ fn test_update_by_ids() {
      "version":2
     }
     ]"#).unwrap();
-    let sql = rbatis.update("Example_ActivityMapper.xml", "BaseResultMap", &mut json_arr);
+    let sql = rbatis.create_sql_update("Example_ActivityMapper.xml", "BaseResultMap", &mut json_arr);
     println!("{}", sql.unwrap());
 }
