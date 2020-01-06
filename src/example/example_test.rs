@@ -7,6 +7,7 @@ use crate::ast::xml::node_type::NodeType;
 use crate::example::activity::Activity;
 use std::collections::LinkedList;
 use crate::crud::ipage::IPage;
+use crate::example::conf::MYSQL_URL;
 
 
 struct Example{
@@ -28,7 +29,7 @@ fn init_rbatis()->Result<Rbatis,String>{
     //2 初始化rbatis
     let mut rbatis = Rbatis::new();
     //3 加载数据库url name 为空，则默认数据库
-    rbatis.load_db_url("".to_string(), "mysql://root:TEST@localhost:3306/test");
+    rbatis.load_db_url("".to_string(), MYSQL_URL);//"mysql://root:TEST@localhost:3306/test"
     //4 加载xml配置
     rbatis.load_xml("Example_ActivityMapper.xml".to_string(), fs::read_to_string("./src/example/Example_ActivityMapper.xml").unwrap());//加载xml数据
     //判断是否配置数据库
@@ -93,8 +94,8 @@ fn test_exec_select_page_custom(){
     //初始化rbatis
     let mut rbatis = init_rbatis().unwrap();
     //执行到远程mysql 并且获取结果,Result<serde_json::Value, String>,或者 Result<Activity, String> 等任意类型
-    let data:IPage<Activity> = rbatis.select_page_by_mapper("Example_ActivityMapper.xml", &mut json!({
+    let data:IPage<Activity> = rbatis.select_page_by_mapper("Example_ActivityMapper.xml", "select_by_page",&mut json!({
        "name":"新人专享",
-    }), &IPage::new(1,5), "select_by_page").unwrap();
+    }), &IPage::new(1,5)).unwrap();
     println!("[rbatis] result==>  {:?}", data);
 }
