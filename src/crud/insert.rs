@@ -10,9 +10,7 @@ impl Rbatis {
 
     pub fn insert<T>(&mut self, mapper_name: &str, arg: &mut Value) -> Result<T, String> where T: DeserializeOwned {
         let sql = self.create_sql_insert(mapper_name, arg)?;
-        let mut db = "".to_string();
-        let conf = self.router_configs.get("insert").unwrap_or(&db);
-        db=conf.as_str().to_string();
+        let mut db = self.get_conf("insert");
         return self.eval_sql_raw(sql.as_str(), true,db.as_str());
     }
 
