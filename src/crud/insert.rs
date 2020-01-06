@@ -8,12 +8,12 @@ use std::fs;
 
 impl Rbatis {
 
-    pub fn insert<T>(&mut self, mapper_name: &str, id: &str, arg: &mut Value) -> Result<T, String> where T: DeserializeOwned {
-        let sql = self.create_sql_insert(mapper_name, id, arg)?;
+    pub fn insert<T>(&mut self, mapper_name: &str, arg: &mut Value) -> Result<T, String> where T: DeserializeOwned {
+        let sql = self.create_sql_insert(mapper_name, arg)?;
         return self.eval_sql_raw(sql.as_str(), true);
     }
 
-    pub fn create_sql_insert(&mut self, mapper_name: &str, id: &str, arg: &mut Value) -> Result<String, String> {
+    pub fn create_sql_insert(&mut self, mapper_name: &str, arg: &mut Value) -> Result<String, String> {
         if arg.is_null() {
             return Result::Err("[rbatis] arg is null value".to_string());
         }
@@ -93,7 +93,7 @@ fn test_insert_templete_obj() {
     rbatis.load_xml("Example_ActivityMapper.xml".to_string(), fs::read_to_string("./src/example/Example_ActivityMapper.xml").unwrap());//加载xml数据
 
     let mut arg = serde_json::from_str(r#"{  "a":"1","delete_flag":1}"#).unwrap();
-    let sql = rbatis.create_sql_insert("Example_ActivityMapper.xml", "BaseResultMap",&mut arg).unwrap();
+    let sql = rbatis.create_sql_insert("Example_ActivityMapper.xml", &mut arg).unwrap();
     println!("{}", sql);
 }
 
@@ -105,6 +105,6 @@ fn test_insert_templete_array() {
     rbatis.load_xml("Example_ActivityMapper.xml".to_string(), fs::read_to_string("./src/example/Example_ActivityMapper.xml").unwrap());//加载xml数据
 
     let mut arg = serde_json::from_str(r#"[{"a":"1","delete_flag":1},{"a":"1","delete_flag":1}]"#).unwrap();
-    let sql = rbatis.create_sql_insert("Example_ActivityMapper.xml", "BaseResultMap", &mut arg).unwrap();
+    let sql = rbatis.create_sql_insert("Example_ActivityMapper.xml", &mut arg).unwrap();
     println!("{}", sql);
 }
