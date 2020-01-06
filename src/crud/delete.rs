@@ -9,10 +9,14 @@ use crate::engine::node::NodeType;
 use serde_json::value::Value::Number;
 use crate::convert::sql_value_convert::SqlValueConvert;
 use std::any::Any;
+use serde::de::DeserializeOwned;
 
 impl Rbatis{
 
-
+    pub fn delete<T>(&mut self, mapper_name: &str, id: &str, arg: &mut Value) -> Result<T, String> where T: DeserializeOwned {
+        let sql = self.create_sql_delete(mapper_name, id, arg)?;
+        return self.eval_sql_raw(sql.as_str(), true);
+    }
 
 
     pub fn create_sql_delete(&mut self, mapper_name: &str, id: &str, arg: &mut Value) -> Result<String, String>{
