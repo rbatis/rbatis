@@ -100,8 +100,8 @@ println!("[rbatis] result==> {:?}",data_result);
 | YAMLAstTree（类似python/yaml缩进风格的抽象语法树)             | √     |   
 | CRUD(内置CRUD模板)                                           | √     |
 | LogSystem(日志组件)                                          | √     | 
-| LogicDelPlugin(逻辑删除插件)                                 | x     |
-| VersionLockPlugin(乐观锁插件,防止并发修改数据)                | x     |
+| LogicDelPlugin(逻辑删除插件)                                 | √     |
+| VersionLockPlugin(乐观锁插件,防止并发修改数据)                | √     |
 | Tx(事务/事务嵌套/注解声明式事务)                              | x     |   
 | DataSourceRouter(动态数据源路由)                             | x     |  
 | PagePlugin(分页插件)                                         | x     |
