@@ -98,7 +98,7 @@ println!("[rbatis] result==> {:?}",data_result);
 | ExpressEngines（表达式执行引擎)                              | √     |  
 | ResultDecoder（查询结果解码器-基于serde_json)                | √     |  
 | YAMLAstTree（类似python/yaml缩进风格的抽象语法树)             | √     |   
-| CRUD(内置CRUD模板)                                           | √     |
+| CRUD(内置CRUD模板(内置CRUD支持乐观锁/逻辑删除))               | √     |
 | LogSystem(日志组件)                                          | √     | 
 | LogicDelPlugin(逻辑删除插件)                                 | √     |
 | VersionLockPlugin(乐观锁插件,防止并发修改数据)                | √     |
