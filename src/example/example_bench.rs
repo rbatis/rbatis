@@ -20,7 +20,7 @@ use crate::utils::bencher::Bencher;
 
 ///use Time: 0.202 s,each:2020 nano/op
 ///use TPS: 495049.50495049503 TPS/s
-//cargo.exe test --release --color=always --package rbatis --bin rbatis example::example_bench::bench_main --all-features -- --nocapture --exact
+//cargo test --release --color=always --package rbatis --bin rbatis example::example_bench::bench_main --all-features -- --nocapture --exact
 #[test]
 fn bench_main() {
     let mut rbatis=Rbatis::new();
