@@ -41,6 +41,7 @@ pub mod server;
 pub mod engine;
 pub mod core;
 pub mod decode;
+pub mod tx;
 
 lazy_static! {
     static ref ARRAY: Mutex<Vec<u8>> = Mutex::new(vec![]);
