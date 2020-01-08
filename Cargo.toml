@@ -32,4 +32,6 @@ actix-rt = "1.0"
 log = "0.4"
 log4rs = "0.8.3"
 
-rdbc = { git = "https://github.com/andygrove/rdbc/rdbc"}
+rdbc = "*"
+rdbc-mysql ="*"
+rdbc-postgres ="*"

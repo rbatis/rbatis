@@ -109,3 +109,8 @@ fn test_exec_select_page_custom(){
     }), &IPage::new(1,5)).unwrap();
     println!("[rbatis] result==>  {:?}", data);
 }
+
+#[test]
+fn test_tx(){
+
+}
