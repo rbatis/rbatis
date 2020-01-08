@@ -1,7 +1,6 @@
 use std::collections::HashMap;
 use crate::core::db_config::DBConfig;
 use crate::utils::driver_util;
-use mysql::Conn;
 use rdbc::Connection;
 
 pub struct ConnPool {

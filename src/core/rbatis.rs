@@ -7,7 +7,6 @@ use std::sync::Mutex;
 
 use log::{error, info, warn};
 use log4rs::init_file;
-use mysql::Conn;
 use serde::de;
 use serde_json::{Number, Value};
 use serde_json::json;
