@@ -78,7 +78,7 @@ impl Rbatis {
         //insert delete_flag
         let mut append_limit_where_string=where_string.clone();
         if !where_string.contains(" limit ") && !where_string.contains("LIMIT"){
-            append_limit_where_string = append_limit_where_string + " LIMIT " + ipage.current.to_string().as_str() + "," + ipage.size.to_string().as_str();
+            append_limit_where_string = append_limit_where_string + " LIMIT " + ((ipage.current-1)*ipage.size).to_string().as_str() + "," + ipage.size.to_string().as_str();
         }
         let query_sql=where_befer_string+" WHERE "+append_limit_where_string.as_str();
 
