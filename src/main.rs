@@ -6,6 +6,9 @@
 #[macro_use]
 extern crate lazy_static;
 extern crate serde_yaml;
+extern crate rdbc;
+extern crate rdbc_mysql;
+extern crate rdbc_postgres;
 
 
 use std::collections::HashMap;

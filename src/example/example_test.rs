@@ -9,6 +9,11 @@ use std::collections::LinkedList;
 use crate::crud::ipage::IPage;
 use crate::example::conf::MYSQL_URL;
 use log::{error, info, warn};
+use std::sync::Arc;
+use rdbc_mysql::MySQLDriver;
+use rdbc::Driver;
+use std::ops::Deref;
+use std::borrow::{Borrow, BorrowMut};
 
 struct Example{
    pub select_by_condition:fn()
@@ -111,6 +116,16 @@ fn test_exec_select_page_custom(){
 }
 
 #[test]
-fn test_tx(){
-
+fn test_driver_row(){
+    let driver= Arc::new(MySQLDriver::new());
+    let mut conn = driver.connect(MYSQL_URL).unwrap();
+    let mut conn = conn.as_ref().borrow_mut();
+    let mut stmt = conn.prepare("begin;").unwrap();
+    let mut nstmt=stmt.as_ref().borrow_mut();
+    let mut rs = nstmt.execute_query(&vec![]).unwrap();
+    let mut rs_obj=rs.as_ref().borrow_mut();
+    while rs_obj.next() {
+        println!("{:?}", rs_obj.get_string(1).unwrap());
+    }
 }
+
