@@ -54,7 +54,7 @@ fn init_rbatis()->Result<Rbatis,String>{
 #[test]
 fn test_exec_sql(){
     //初始化rbatis
-    let mut rbatis = init_rbatis();
+    let rbatis = init_rbatis();
     if rbatis.is_err(){
         return;
     }
@@ -99,7 +99,7 @@ fn test_exec_select_page(){
 #[test]
 fn test_exec_select_page_custom(){
     //初始化rbatis
-    let mut rbatis = init_rbatis();
+    let rbatis = init_rbatis();
     if rbatis.is_err(){
         return;
     }

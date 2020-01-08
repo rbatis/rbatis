@@ -43,7 +43,7 @@ impl ResultMapNode {
                 version_node=Option::Some(item.clone());
             }
         }
-        let mut data= Self{
+        let data= Self{
             id,
             table,
             id_node,

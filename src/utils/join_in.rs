@@ -1,9 +1,9 @@
 use serde_json::Value;
 use serde::Serialize;
 
-pub fn json_join<T,JOIN_IN>(value:T,key:&str,join_in:JOIN_IN) ->Result<Value,String>
+pub fn json_join<T, JoinIn>(value:T, key:&str, join_in: JoinIn) ->Result<Value,String>
     where
-        T: Serialize,JOIN_IN:Serialize{
+        T: Serialize, JoinIn:Serialize{
     let mut arg= serde_json::to_value(value).unwrap();
     if !arg.is_object(){
         return Err("json_join value must be a object!".to_string());

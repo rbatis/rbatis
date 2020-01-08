@@ -10,7 +10,7 @@ impl Rbatis {
 
     pub fn insert<T>(&mut self, mapper_name: &str, arg: &mut Value) -> Result<T, String> where T: DeserializeOwned {
         let sql = self.create_sql_insert(mapper_name, arg)?;
-        let mut db = self.get_conf("insert");
+        let db = self.get_conf("insert");
         return self.eval_sql_raw(sql.as_str(), true,db.as_str());
     }
 
@@ -45,7 +45,7 @@ impl Rbatis {
                 if !x.is_object() {
                     return Result::Err("[rbatis] unsupport arg type,only support object json and object array!".to_string());
                 }
-                let mut value_item_sql = do_create_values_sql(x);
+                let value_item_sql = do_create_values_sql(x);
                 values = values + value_item_sql.as_str() + ",";
                 append = true;
             }
