@@ -5,10 +5,10 @@ use rdbc_mysql::MySQLResultSet;
 use serde_json::de::ParserNumber;
 
 
-pub fn encode_to_value(arg:&mut ResultSet)->Vec<Value>{
+pub fn encode_to_value(arg:&mut dyn ResultSet)->Vec<Value>{
     let mut arr=vec![];
     while arg.next() {
-        let mut meta_data =arg.meta_data().unwrap();
+        let meta_data =arg.meta_data().unwrap();
         let mut m=serde_json::Map::new();
         for c_index in 0..meta_data.num_columns(){
             let c_name=meta_data.column_name(c_index);

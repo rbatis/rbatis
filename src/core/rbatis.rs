@@ -22,9 +22,9 @@ use crate::ast::xml::string_node::StringNode;
 use crate::core::conn_pool::ConnPool;
 use crate::core::db_config::DBConfig;
 use crate::core::node_type_map_factory::create_node_type_map;
+use crate::decode::rdbc_driver_decoder::decode_result_set;
 use crate::utils::driver_util;
 use crate::utils::xml_loader::load_xml;
-use crate::decode::rdbc_driver_decoder::decode_result_set;
 
 pub struct Rbatis {
     //动态sql运算节点集合
@@ -140,54 +140,45 @@ impl Rbatis {
         }
         let conf = conf_opt.unwrap();
         let db_type = conf.db_type.as_str();
-        match db_type {
-            "mysql" | "postgres" => {
-                //println!("{:?}",conf.clone());
-                let conn_opt = self.conn_pool.get_conn("".to_string(), conf)?;
-                let conn=conn_opt.unwrap();
-                if is_select {
-                    //select
-                    let create_result = conn.create(sql);
-                    if create_result.is_err() {
-                        return Result::Err("[rbatis] exec fail:".to_string() + format!("{:?}", create_result.err().unwrap()).as_str());
-                    }
-                    let mut create_statement =create_result.unwrap();
-                    let mut exec_result = create_statement.execute_query(&vec![]);
-                    if exec_result.is_err() {
-                        return Result::Err("[rbatis] exec fail:".to_string() + format!("{:?}", exec_result.err().unwrap()).as_str());
-                    }
-                    let (result, decoded_num) =  decode_result_set(exec_result.unwrap().as_mut());
-                    if self.enable_log {
-                        info!("{}", "[rbatis] ReturnRows <== ".to_string() + decoded_num.to_string().as_str());
-                    }
-                    return result;
-                } else {
-                    //exec
-                    let create_result = conn.create(sql);
-                    if create_result.is_err() {
-                        return Result::Err("[rbatis] exec fail:".to_string() +  format!("{:?}", create_result.err().unwrap()).as_str());
-                    }
-                    let mut exec_result = create_result.unwrap().execute_update(&vec![]);
-                    if exec_result.is_err() {
-                        return Result::Err("[rbatis] exec fail:".to_string() + format!("{:?}", exec_result.err().unwrap()).as_str());
-                    }
-                    let affected_rows = exec_result.unwrap();
-                    let r = serde_json::from_value(json!(affected_rows));
-                    if r.is_err() {
-                        return Result::Err("[rbatis] exec fail:".to_string() + r.err().unwrap().to_string().as_str());
-                    }
-                    if self.enable_log {
-                        info!("{}", "[rbatis] RowsAffected <== ".to_string() + affected_rows.to_string().as_str());
-                    }
-                    return Result::Ok(r.unwrap());
-                }
+
+        //println!("{:?}",conf.clone());
+        let conn_opt = self.conn_pool.get_conn("".to_string(), conf)?;
+        let conn = conn_opt.unwrap();
+        if is_select {
+            //select
+            let create_result = conn.create(sql);
+            if create_result.is_err() {
+                return Result::Err("[rbatis] exec fail:".to_string() + format!("{:?}", create_result.err().unwrap()).as_str());
             }
-            _ => {
-                if self.enable_log {
-                    error!("{}", "[rbatis] unsupport database type:".to_string() + db_type);
-                }
-                return Result::Err("[rbatis] unsupport database type:".to_string() + db_type);
+            let mut create_statement = create_result.unwrap();
+            let exec_result = create_statement.execute_query(&vec![]);
+            if exec_result.is_err() {
+                return Result::Err("[rbatis] exec fail:".to_string() + format!("{:?}", exec_result.err().unwrap()).as_str());
             }
+            let (result, decoded_num) = decode_result_set(exec_result.unwrap().as_mut());
+            if self.enable_log {
+                info!("{}", "[rbatis] ReturnRows <== ".to_string() + decoded_num.to_string().as_str());
+            }
+            return result;
+        } else {
+            //exec
+            let create_result = conn.create(sql);
+            if create_result.is_err() {
+                return Result::Err("[rbatis] exec fail:".to_string() + format!("{:?}", create_result.err().unwrap()).as_str());
+            }
+            let exec_result = create_result.unwrap().execute_update(&vec![]);
+            if exec_result.is_err() {
+                return Result::Err("[rbatis] exec fail:".to_string() + format!("{:?}", exec_result.err().unwrap()).as_str());
+            }
+            let affected_rows = exec_result.unwrap();
+            let r = serde_json::from_value(json!(affected_rows));
+            if r.is_err() {
+                return Result::Err("[rbatis] exec fail:".to_string() + r.err().unwrap().to_string().as_str());
+            }
+            if self.enable_log {
+                info!("{}", "[rbatis] RowsAffected <== ".to_string() + affected_rows.to_string().as_str());
+            }
+            return Result::Ok(r.unwrap());
         }
     }
 

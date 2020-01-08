@@ -8,12 +8,12 @@ use serde::export::Formatter;
 use crate::decode::decoder::{is_array, json_len};
 use crate::decode::encoder::encode_to_value;
 
-pub fn decode_result_set<T: ?Sized>(arg: &mut ResultSet) -> (Result<T, String>, usize)
+pub fn decode_result_set<T: ?Sized>(arg: &mut dyn ResultSet) -> (Result<T, String>, usize)
     where T: DeserializeOwned {
     let mut js = serde_json::Value::Null;
     let type_name = std::any::type_name::<T>();
 
-    let mut datas = encode_to_value(arg);
+    let datas = encode_to_value(arg);
 
     if is_array::<T>(type_name) {
         //decode array

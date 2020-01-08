@@ -184,7 +184,6 @@ impl Rbatis {
                 return Result::Err("[rbatis] not support arg type value in select(): ".to_string() + arg.to_sql_value_def().as_str());
             }
         }
-        return Result::Err("[rbatis] eval select crud fail".to_string());
     }
 
 
