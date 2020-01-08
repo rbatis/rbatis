@@ -55,7 +55,7 @@ impl DBConfig {
 
     pub fn to_string(&self) -> String {
         let templete = "#{db_type}://#{db_user}:#{db_pwd}@#{db_addr}:#{db_port}/#{db_name}";
-        let link = templete.replace("#{db_type}", "postgres")
+        let link = templete.replace("#{db_type}", self.db_type.as_str())
             .replace("#{db_user}", self.db_user.as_str())
             .replace("#{db_pwd}", self.db_pwd.as_str())
             .replace("#{db_addr}", self.db_addr.as_str())
