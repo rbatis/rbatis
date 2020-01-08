@@ -11,9 +11,11 @@ use crate::example::conf::MYSQL_URL;
 use log::{error, info, warn};
 use std::sync::Arc;
 use rdbc_mysql::MySQLDriver;
-use rdbc::Driver;
+use rdbc::{Driver, DataType, ResultSet, ResultSetMetaData};
 use std::ops::Deref;
 use std::borrow::{Borrow, BorrowMut};
+use std::rc::Rc;
+use std::cell::RefMut;
 
 struct Example{
    pub select_by_condition:fn()
@@ -119,13 +121,38 @@ fn test_exec_select_page_custom(){
 fn test_driver_row(){
     let driver= Arc::new(MySQLDriver::new());
     let mut conn = driver.connect(MYSQL_URL).unwrap();
-    let mut conn = conn.as_ref().borrow_mut();
-    let mut stmt = conn.prepare("begin;").unwrap();
-    let mut nstmt=stmt.as_ref().borrow_mut();
-    let mut rs = nstmt.execute_query(&vec![]).unwrap();
-    let mut rs_obj=rs.as_ref().borrow_mut();
-    while rs_obj.next() {
-        println!("{:?}", rs_obj.get_string(1).unwrap());
+    let mut stmt = conn.create("select * from biz_activity limit 1;").unwrap();
+    let mut rs = stmt.execute_query(&vec![]).unwrap();
+    while rs.next() {
+        let mut meta_data =rs.meta_data().unwrap();
+        for c_index in 0..meta_data.num_columns(){
+
+            let c_name=meta_data.column_name(c_index);
+            let c_type=meta_data.column_type(c_index);
+            println!("{},{:?}",c_name,c_type);
+
+             match c_type {
+                 DataType::Utf8 =>{
+                     println!("{:?}", rs.get_string(c_index).unwrap());
+                 }
+                 DataType::Date| DataType::Time |  DataType::Datetime=>{
+                     println!("{:?}", rs.get_string(c_index).unwrap());
+                 }
+                 DataType::Integer=>{
+                     println!("{:?}", rs.get_i64(c_index).unwrap());
+                 }
+                 DataType::Float=>{
+                     println!("{:?}", rs.get_f64(c_index).unwrap());
+                 }
+                 DataType::Double=>{
+                     println!("{:?}", rs.get_f64(c_index).unwrap());
+                 }
+                 DataType::Decimal=>{
+                     println!("{:?}", rs.get_f64(c_index).unwrap());
+                 }
+                 _ => {}
+             }
+        }
     }
 }
 
