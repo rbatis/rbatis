@@ -22,19 +22,9 @@ use crate::decode::rdbc_driver_decoder::decode_result_set;
 use crate::example::activity::Activity;
 use crate::example::conf::MYSQL_URL;
 
-struct Example {
-    pub select_by_condition: fn()
-}
-
-
-#[test]
-fn test_write_method() {
-    let e = Example {
-        select_by_condition: || { println!("select * from table"); }
-    };
-    (e.select_by_condition)();
-}
-
+/**
+ 初始化实例
+*/
 fn init_rbatis() -> Result<Rbatis, String> {
     //1 启用日志(可选，不添加则不加载日志库)
     log4rs::init_file("log4rs.yaml", Default::default()).unwrap();
@@ -56,11 +46,6 @@ fn init_rbatis() -> Result<Rbatis, String> {
 
 /**
  示例-查询活动 数组 集合
-
-2020-01-06T16:40:14.106240+08:00 INFO rbatis::core::rbatis - [rbatis] Query ==>  select * from biz_activity  order by create_time desc
-2020-01-06T16:40:14.233951+08:00 INFO rbatis::core::rbatis - [rbatis] ReturnRows <== 2
-[rbatis] result==>  [Activity { id: Some("\"dfbdd779-5f70-4b8f-9921-a235a9c75b69\""), name: Some("\"新人专享\""), pc_link: Some("\"http://115.220.9.139:8002/newuser/\""), h5_link: Some("\"http://115.220.9.139:8002/newuser/\""), remark: Some("\"\""), create_time: Some("\"2019-05-27 10:25:41\""), version: Some(6), delete_flag: Some(1) }, Activity { id: Some("\"dfbdd779-5f70-4b8f-9921-c235a9c75b69\""), name: Some("\"新人专享\""), pc_link: Some("\"http://115.220.9.139:8002/newuser/\""), h5_link: Some("\"http://115.220.9.139:8002/newuser/\""), remark: Some("\"\""), create_time: Some("\"2019-05-27 10:25:41\""), version: Some(6), delete_flag: Some(1) }]
-
 */
 #[test]
 fn test_exec_sql() {
@@ -82,16 +67,8 @@ fn test_exec_sql() {
     println!("[rbatis] result==>  {:?}", data);
 }
 
-
 /**
-
-分页查询数据，测试
-
-2020-01-06T16:35:15.969770+08:00 INFO rbatis::core::rbatis - [rbatis] Query ==>  select * from biz_activity where name = '新人专享' AND delete_flag = 1 LIMIT 1,5
-2020-01-06T16:35:16.091525+08:00 INFO rbatis::core::rbatis - [rbatis] ReturnRows <== 1
-2020-01-06T16:35:16.091848+08:00 INFO rbatis::core::rbatis - [rbatis] Query ==>  select count(1) from biz_activity where name = '新人专享' AND delete_flag = 1
-2020-01-06T16:35:16.118317+08:00 INFO rbatis::core::rbatis - [rbatis] ReturnRows <== 1
-[rbatis] result==>  IPage { total: 2, size: 5, current: 1, records: Some([Activity { id: Some("\"dfbdd779-5f70-4b8f-9921-c235a9c75b69\""), name: Some("\"新人专享\""), pc_link: Some("\"http://115.220.9.139:8002/newuser/\""), h5_link: Some("\"http://115.220.9.139:8002/newuser/\""), remark: Some("\"\""), create_time: Some("\"2019-05-27 10:25:41\""), version: Some(6), delete_flag: Some(1) }]) }
+分页查询数据
 */
 #[test]
 fn test_exec_select_page() {
@@ -107,6 +84,9 @@ fn test_exec_select_page() {
     println!("[rbatis] result==>  {:?}", data);
 }
 
+/**
+   自定义分页查询数据(指定xml mapper id)
+*/
 #[test]
 fn test_exec_select_page_custom() {
     //初始化rbatis
@@ -121,6 +101,9 @@ fn test_exec_select_page_custom() {
     println!("[rbatis] result==>  {:?}", data);
 }
 
+/**
+   使用驱动直接执行sql
+*/
 #[test]
 fn test_driver_row() {
     let driver = Arc::new(MySQLDriver::new());
