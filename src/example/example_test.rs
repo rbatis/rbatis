@@ -73,7 +73,7 @@ fn test_exec_sql() {
 #[test]
 fn test_exec_select_page() {
     //初始化rbatis
-    let mut rbatis = init_rbatis();
+    let rbatis = init_rbatis();
     if rbatis.is_err() {
         return;
     }
