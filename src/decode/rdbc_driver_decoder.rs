@@ -1,8 +1,12 @@
-use crate::decode::decoder::{Decoder, is_array, json_len};
+use crate::decode::decoder::{ is_array, json_len};
 use rdbc::ResultSet;
 use serde::de;
 use crate::decode::encoder::encode_to_value;
 use serde::de::DeserializeOwned;
+use rdbc::Error::General;
+use serde::export::Formatter;
+use serde::export::fmt::Error;
+
 
 
 pub fn decode_result_set<T:?Sized>(arg:&mut ResultSet) -> (Result<T, String>,usize)
@@ -55,12 +59,13 @@ pub fn decode_result_set<T:?Sized>(arg:&mut ResultSet) -> (Result<T, String>,usi
                 }
             }
         }
+        println!("json:{}",js.clone().to_string());
         let len=json_len(&js);
         let decode_result = serde_json::from_value(js);
         if decode_result.is_ok() {
             return (Result::Ok(decode_result.unwrap()),len);
         } else {
             let e = decode_result.err().unwrap().to_string();
-            return (Result::Err(e),len);
+            return (Result::Err("[rbatis] json decode fail:".to_string()+e.as_str()),len);
         }
     }

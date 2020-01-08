@@ -1,13 +1,5 @@
 use serde::de;
 
-pub type Error = String;
-
-pub trait Decoder {
-    fn decode<T: ?Sized>(&mut self) -> (Result<T, Error>,usize)
-        where
-            T: de::DeserializeOwned;
-}
-
 
 pub fn is_array<T: ?Sized>(type_name: &str) -> bool
     where
