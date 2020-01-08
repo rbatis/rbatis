@@ -19,7 +19,7 @@ pub fn encode_to_value(arg:&mut ResultSet)->Vec<Value>{
                     if strings.is_ok() {
                         let v=strings.unwrap();
                         if v.is_some(){
-                            m.insert(c_name,serde_json::Value::String(v.unwrap().clone()));
+                            m.insert(c_name,serde_json::Value::String(v.unwrap()));
                         }else{
                             m.insert(c_name,serde_json::Value::Null);
                         }
