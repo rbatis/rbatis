@@ -19,7 +19,7 @@ impl Rbatis {
     ///普通查询
     pub fn select<T>(&mut self, mapper_name: &str, arg: &mut Value) -> Result<T, String> where T: DeserializeOwned {
         let (sql,_) = self.create_sql_select(mapper_name, arg)?;
-        let mut db = self.get_conf("select");
+        let db = self.get_conf("select");
         return self.eval_sql_raw(sql.as_str(), true,db.as_str());
     }
 
@@ -35,7 +35,7 @@ impl Rbatis {
         let result_map_node = self.get_result_map_node(mapper_name)?;
         let count_sql=self.do_count_by_templete(&mut new_arg,&result_map_node,w.as_str())?;
 
-        let mut db = self.get_conf("select_page");
+        let db = self.get_conf("select_page");
 
         let total:i64=self.eval_sql_raw(count_sql.as_str(),true,db.as_str())?;
         result.set_total(total);
@@ -82,7 +82,7 @@ impl Rbatis {
         }
         let query_sql=where_befer_string+" WHERE "+append_limit_where_string.as_str();
 
-        let mut db = self.get_conf(id);
+        let db = self.get_conf(id);
         let records:Vec<T>=self.eval_sql_raw(query_sql.as_str(),true,db.as_str())?;
         let mut result = ipage.clone();
         result.set_records(records);
@@ -97,7 +97,7 @@ impl Rbatis {
         count_sql = count_sql.replace("#{table}", result_map_node.table.as_ref().unwrap());
         count_sql = count_sql.replace("#{where}", where_string.as_str());
 
-        let mut db = self.get_conf(id);
+        let db = self.get_conf(id);
         let total:i64=self.eval_sql_raw(count_sql.as_str(),true,db.as_str())?;
         result.set_total(total);
         return Result::Ok(result);
@@ -106,26 +106,26 @@ impl Rbatis {
 
     fn eval_select_return_where<T>(&mut self, mapper_name: &str,  arg: &mut Value) -> Result<(T,String), String> where T: DeserializeOwned {
         let (sql,w) = self.create_sql_select(mapper_name, arg)?;
-        let mut db = self.get_conf("eval_select_return_where");
+        let db = self.get_conf("eval_select_return_where");
         let data:T= self.eval_sql_raw(sql.as_str(), true,db.as_str())?;
         return Result::Ok((data,w));
     }
 
     pub fn create_sql_select(&mut self, mapper_name: &str,  arg: &mut Value) -> Result<(String, String), String> {
         let result_map_node = self.get_result_map_node(mapper_name)?;
-        match arg {
+        return match arg {
             serde_json::Value::Null => {
-                return Result::Err("[rbatis] arg is null value".to_string());
+                Result::Err("[rbatis] arg is null value".to_string())
             }
             serde_json::Value::String(_) | serde_json::Value::Number(_) => {
-                let ipage_opt:Option<IPage<Value>>=None;
-                let mut where_str = "id = ".to_string() + arg.to_sql_value_skip("null").as_str();
-                return Result::Ok(self.do_select_by_templete(arg, &result_map_node, where_str.as_str(), &ipage_opt)?);
+                let ipage_opt: Option<IPage<Value>> = None;
+                let where_str = "id = ".to_string() + arg.to_sql_value_skip("null").as_str();
+                Result::Ok(self.do_select_by_templete(arg, &result_map_node, where_str.as_str(), &ipage_opt)?)
             }
             serde_json::Value::Array(_) => {
-                let ipage_opt:Option<IPage<Value>>=None;
-                let mut where_str = "id in ".to_string() + arg.to_sql_value_skip("null").as_str();
-                return Result::Ok(self.do_select_by_templete(arg, &result_map_node, where_str.as_str(), &ipage_opt)?);
+                let ipage_opt: Option<IPage<Value>> = None;
+                let where_str = "id in ".to_string() + arg.to_sql_value_skip("null").as_str();
+                Result::Ok(self.do_select_by_templete(arg, &result_map_node, where_str.as_str(), &ipage_opt)?)
             }
             serde_json::Value::Object(map) => {
                 let mut ipage_opt = None;
@@ -140,14 +140,13 @@ impl Rbatis {
                         ipage_opt = Some(ipage.unwrap());
                     }
                 }
-                let mut where_str = arg.to_sql_value_skip("");
-                return Result::Ok(self.do_select_by_templete(arg, &result_map_node, where_str.as_str(), &ipage_opt)?);
+                let where_str = arg.to_sql_value_skip("");
+                Result::Ok(self.do_select_by_templete(arg, &result_map_node, where_str.as_str(), &ipage_opt)?)
             }
             _ => {
-                return Result::Err("[rbatis] not support arg type value in select(): ".to_string() + arg.to_sql_value_def().as_str());
+                Result::Err("[rbatis] not support arg type value in select(): ".to_string() + arg.to_sql_value_def().as_str())
             }
         }
-        return Result::Err("[rbatis] eval select crud fail".to_string());
     }
 
 
@@ -158,11 +157,11 @@ impl Rbatis {
                 return Result::Err("[rbatis] arg is null value".to_string());
             }
             serde_json::Value::String(_) | serde_json::Value::Number(_) => {
-                let mut where_str = "id = ".to_string() + arg.to_sql_value_skip("null").as_str();
+                let where_str = "id = ".to_string() + arg.to_sql_value_skip("null").as_str();
                 return Result::Ok(self.do_count_by_templete(arg, &result_map_node, where_str.as_str())?);
             }
             serde_json::Value::Array(_) => {
-                let mut where_str = "id in ".to_string() + arg.to_sql_value_skip("null").as_str();
+                let where_str = "id in ".to_string() + arg.to_sql_value_skip("null").as_str();
                 return Result::Ok(self.do_count_by_templete(arg, &result_map_node, where_str.as_str())?);
             }
             serde_json::Value::Object(map) => {
@@ -178,7 +177,7 @@ impl Rbatis {
                         ipage_opt = Some(ipage.unwrap());
                     }
                 }
-                let mut where_str = arg.to_sql_value_skip("");
+                let where_str = arg.to_sql_value_skip("");
                 return Result::Ok(self.do_count_by_templete(arg, &result_map_node, where_str.as_str())?);
             }
             _ => {
@@ -296,7 +295,7 @@ fn test_select_by_id_page() {
         delete_flag: Some(1),
     };
     let ipage: IPage<Value> = IPage::new(1, 20);
-    let mut arg = json_join(act, "ipage", ipage).unwrap();
+    let arg = json_join(act, "ipage", ipage).unwrap();
     let (sql,w) = rbatis.create_sql_select("Example_ActivityMapper.xml", serde_json::to_value(arg).unwrap().borrow_mut()).unwrap();
     println!("{}", sql);
 }

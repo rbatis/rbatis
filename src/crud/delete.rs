@@ -15,7 +15,7 @@ impl Rbatis{
 
     pub fn delete<T>(&mut self, mapper_name: &str, arg: &mut Value) -> Result<T, String> where T: DeserializeOwned {
         let sql = self.create_sql_delete(mapper_name, arg)?;
-        let mut db = self.get_conf("delete");
+        let db = self.get_conf("delete");
         return self.eval_sql_raw(sql.as_str(), true,db.as_str());
     }
 
@@ -26,7 +26,7 @@ impl Rbatis{
             serde_json::Value::String(_) | serde_json::Value::Number(_)=>{
                 //delete by id
                 //replace where
-                let mut where_str = "id = ".to_string() + arg.to_sql_value_def().as_str();
+                let where_str = "id = ".to_string() + arg.to_sql_value_def().as_str();
                 return self.do_delete_by(arg,&result_map_node,where_str.as_str());
             }
             serde_json::Value::Array(_)=>{

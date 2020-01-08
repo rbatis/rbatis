@@ -237,7 +237,7 @@ impl Rbatis {
         let sql_string = mapper_func.eval(env, &mut self.holder)?;
         let sql = sql_string.as_str();
 
-        let mut db = self.get_conf(id);
+        let db = self.get_conf(id);
         match &mapper_func {
             NodeType::NSelectNode(_) => {
                 return self.eval_sql_raw(sql, true, db.as_str());
@@ -249,7 +249,7 @@ impl Rbatis {
     }
 
     pub fn get_conf(&self, key: &str) -> String {
-        let mut db = "".to_string();
+        let db = "".to_string();
         let conf = self.router_configs.get(key).unwrap_or(&db);
         return conf.clone();
     }
