@@ -34,7 +34,7 @@ pub struct Rbatis {
     //数据库连接配置
     pub db_configs: HashMap<String, DBConfig>,
     //路由配置
-    pub router_configs: HashMap<String, String>,
+    pub db_router_configs: HashMap<String, String>,
     //连接池
     pub conn_pool: ConnPool,
 
@@ -48,7 +48,7 @@ impl Rbatis {
             mapper_map: HashMap::new(),
             holder: ConfigHolder::new(),
             db_configs: HashMap::new(),
-            router_configs: HashMap::new(),
+            db_router_configs: HashMap::new(),
             conn_pool: ConnPool::new(),
             enable_log: true,
         };
@@ -219,7 +219,7 @@ impl Rbatis {
 
     pub fn get_conf(&self, key: &str) -> String {
         let db = "".to_string();
-        let conf = self.router_configs.get(key).unwrap_or(&db);
+        let conf = self.db_router_configs.get(key).unwrap_or(&db);
         return conf.clone();
     }
 
