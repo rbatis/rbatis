@@ -10,6 +10,18 @@ extern crate rdbc;
 extern crate rdbc_mysql;
 extern crate rdbc_postgres;
 
+pub mod example;
+pub mod ast;
+pub mod utils;
+pub mod crud;
+pub mod security;
+pub mod convert;
+pub mod server;
+pub mod engine;
+pub mod core;
+pub mod decode;
+pub mod tx;
+
 
 use std::collections::HashMap;
 use std::fs;
@@ -34,17 +46,6 @@ use utils::bencher::Bencher;
 use utils::time_util;
 
 use crate::security::arg_filter::ArgFilter;
-pub mod example;
-pub mod ast;
-pub mod utils;
-pub mod crud;
-pub mod security;
-pub mod convert;
-pub mod server;
-pub mod engine;
-pub mod core;
-pub mod decode;
-pub mod tx;
 
 lazy_static! {
     static ref ARRAY: Mutex<Vec<u8>> = Mutex::new(vec![]);
