@@ -12,9 +12,7 @@ pub fn decode_result_set<T: ?Sized>(arg: &mut dyn ResultSet) -> (Result<T, Strin
     where T: DeserializeOwned {
     let mut js = serde_json::Value::Null;
     let type_name = std::any::type_name::<T>();
-
     let datas = encode_to_value(arg);
-
     if is_array::<T>(type_name) {
         //decode array
         js = serde_json::Value::Array(datas);
