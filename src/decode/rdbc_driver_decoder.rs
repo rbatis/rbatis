@@ -13,6 +13,7 @@ pub fn decode_result_set<T: ?Sized>(arg: &mut dyn ResultSet) -> (Result<T, Strin
     let mut js = serde_json::Value::Null;
     let type_name = std::any::type_name::<T>();
     let datas = encode_to_value(arg);
+    let len = datas.len();
     if is_array::<T>(type_name) {
         //decode array
         js = serde_json::Value::Array(datas);
@@ -53,7 +54,6 @@ pub fn decode_result_set<T: ?Sized>(arg: &mut dyn ResultSet) -> (Result<T, Strin
             }
         }
     }
-    let len = json_len(&js);
     let decode_result = serde_json::from_value(js);
     if decode_result.is_ok() {
         return (Result::Ok(decode_result.unwrap()), len);
