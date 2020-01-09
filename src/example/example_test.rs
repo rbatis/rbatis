@@ -105,18 +105,3 @@ fn test_exec_select_page_custom() {
     }), &IPage::new(1, 5)).unwrap();
     println!("[rbatis] result==>  {:?}", data);
 }
-
-/**
-   使用驱动直接执行sql
-*/
-#[test]
-fn test_driver_row() {
-    let driver = Arc::new(MySQLDriver::new());
-    let mut conn = driver.connect(MYSQL_URL).unwrap();
-    let mut stmt = conn.create("select * from biz_activity limit 1;").unwrap();
-    let mut rs = stmt.execute_query(&vec![]).unwrap();//
-
-    let (dd, size): (Result<Value, String>, usize) = decode_result_set(rs.as_mut());
-    println!("{:?}", dd);
-}
-
