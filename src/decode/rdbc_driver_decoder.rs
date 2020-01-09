@@ -49,7 +49,9 @@ pub fn decode_result_set<T: ?Sized>(arg: &mut dyn ResultSet) -> (Result<T, Strin
                 if datas.len() > 1 {
                     return (Result::Err("[rbatis] rows.affected_rows > 1,but decode one result!".to_string()), len);
                 }
-                js = datas.get(0).unwrap().clone();
+                for x in datas {
+                    js = x;
+                }
             }
         }
     }
