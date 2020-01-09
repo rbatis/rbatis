@@ -15,8 +15,7 @@ impl Rbatis{
 
     pub fn delete<T>(&mut self, mapper_name: &str, arg: &mut Value) -> Result<T, String> where T: DeserializeOwned {
         let sql = self.create_sql_delete(mapper_name, arg)?;
-        let db = self.get_conf("delete");
-        return self.eval_sql_raw(sql.as_str(), true,db.as_str());
+        return self.eval_sql_raw(mapper_name,sql.as_str(), true);
     }
 
 

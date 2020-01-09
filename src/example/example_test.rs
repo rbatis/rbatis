@@ -31,15 +31,20 @@ fn init_rbatis() -> Result<Rbatis, String> {
     //2 初始化rbatis
     let mut rbatis = Rbatis::new();
     //3 加载数据库url name 为空，则默认数据库
-    rbatis.load_db_url("".to_string(), MYSQL_URL);//"mysql://root:TEST@localhost:3306/test"
+    rbatis.load_db_url("", MYSQL_URL);//"mysql://root:TEST@localhost:3306/test"
     //4 加载xml配置
     rbatis.load_xml("Example_ActivityMapper.xml".to_string(), fs::read_to_string("./src/example/Example_ActivityMapper.xml").unwrap());//加载xml数据
     //判断是否配置数据库
-    let conf = rbatis.db_configs.get("").unwrap();
+    let conf = rbatis.db_router.get("").unwrap();
     if conf.db_addr.contains("localhost") {
         error!("{}", "请修改mysql链接'mysql://root:TEST@localhost:3306/test' 替换为具体的 用户名，密码，ip，和数据库名称");
         return Err("请修改mysql链接'mysql://root:TEST@localhost:3306/test' 替换为具体的 用户名，密码，ip，和数据库名称".to_string());
     }
+
+   //自定义动态数据源路由
+   //    rbatis.router_func = Option::Some(|id| -> String{
+   //        return "".to_string();
+   //    });
     return Ok(rbatis);
 }
 

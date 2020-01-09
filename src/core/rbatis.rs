@@ -31,13 +31,11 @@ pub struct Rbatis {
     pub mapper_map: HashMap<String, HashMap<String, NodeType>>,
     //动态sql节点配置
     pub holder: ConfigHolder,
-    //数据库连接配置
-    pub db_configs: HashMap<String, DBConfig>,
     //路由配置
-    pub db_router_configs: HashMap<String, String>,
+    pub db_router: HashMap<String, DBConfig>,
+    pub router_func: Option<fn(id: &str) -> String>,
     //连接池
     pub conn_pool: ConnPool,
-
     //允许日志输出，禁用此项可减少IO,提高性能
     pub enable_log: bool,
 }
@@ -47,12 +45,15 @@ impl Rbatis {
         return Rbatis {
             mapper_map: HashMap::new(),
             holder: ConfigHolder::new(),
-            db_configs: HashMap::new(),
-            db_router_configs: HashMap::new(),
+            db_router: HashMap::new(),
             conn_pool: ConnPool::new(),
+            router_func: Option::Some(|id| -> String{
+                return "".to_string();
+            }),
             enable_log: true,
         };
     }
+
 
     pub fn set_enable_log(&mut self, arg: bool) {
         self.enable_log = arg;
@@ -71,14 +72,10 @@ impl Rbatis {
     /// 设置数据库默认url，如果失败返回错误信息
     ///  let url = "mysql://root:TEST@localhost:3306/test";
     ///  rbatis.load_db_url("".to_string(), url.to_string());//name 为空，则默认数据库
-    pub fn load_db_url(&mut self, name: String, url: &str) -> Option<String> {
+    pub fn load_db_url(&mut self, key: &str, url: &str) -> Option<String> {
         let db_config_opt = DBConfig::new(url.to_string());
         if db_config_opt.is_ok() {
-            if name.is_empty() {
-                self.db_configs.insert("".to_string(), db_config_opt.unwrap());
-            } else {
-                self.db_configs.insert(name, db_config_opt.unwrap());
-            }
+            self.db_router.insert(key.to_string(), db_config_opt.unwrap());
             return Option::None;
         } else {
             let e = db_config_opt.err().unwrap();
@@ -87,12 +84,6 @@ impl Rbatis {
             }
             return Option::Some(e);
         }
-    }
-
-
-    /// 移除数据库url
-    pub fn remove_db_url(&mut self, name: String) {
-        self.db_configs.remove(&name);
     }
 
 
@@ -107,18 +98,18 @@ impl Rbatis {
     ///       "size":null,
     ///    }));
     ///
-    pub fn eval_sql<T>(&mut self, eval_sql: &str, db: &str) -> Result<T, String> where T: de::DeserializeOwned {
+    pub fn eval_sql<T>(&mut self, eval_sql: &str) -> Result<T, String> where T: de::DeserializeOwned {
         let mut sql = eval_sql;
         sql = sql.trim();
         if sql.is_empty() {
             return Result::Err("[rbatis] sql can not be empty！".to_string());
         }
         let is_select = sql.starts_with("select") || sql.starts_with("SELECT");
-        return self.eval_sql_raw(eval_sql, is_select, db);
+        return self.eval_sql_raw("", eval_sql, is_select);
     }
 
 
-    pub fn eval_sql_raw<T>(&mut self, eval_sql: &str, is_select: bool, db: &str) -> Result<T, String> where T: de::DeserializeOwned {
+    pub fn eval_sql_raw<T>(&mut self, id: &str, eval_sql: &str, is_select: bool) -> Result<T, String> where T: de::DeserializeOwned {
         let mut sql = eval_sql;
         sql = sql.trim();
         if sql.is_empty() {
@@ -131,18 +122,16 @@ impl Rbatis {
                 info!("[rbatis] Query ==>  {}", sql);
             }
         }
-        let conf_opt = self.db_configs.get(db);
-        if conf_opt.is_none() {
-            if self.enable_log {
-                error!("{}", "[rbatis] find default database url config:".to_string() + db + " fail!");
-            }
-            return Result::Err("[rbatis] find default database url config:".to_string() + db + " fail!");
+        if self.router_func.is_none() {
+            return Result::Err("[rbatis] no router_func find！".to_string());
         }
-        let conf = conf_opt.unwrap();
-        let db_type = conf.db_type.as_str();
-
-        //println!("{:?}",conf.clone());
-        let conn_opt = self.conn_pool.get_conn("".to_string(), conf)?;
+        let key = (self.router_func.unwrap())(id);
+        let db_conf_opt = self.db_router.get(key.as_str());
+        if db_conf_opt.is_none() {
+            return Result::Err("[rbatis] no DBConfig find！".to_string());
+        }
+        let mut conf = db_conf_opt.unwrap();
+        let conn_opt = self.conn_pool.get_conn("".to_string(), &conf)?;
         let conn = conn_opt.unwrap();
         if is_select {
             //select
@@ -205,23 +194,16 @@ impl Rbatis {
         let mapper_func = node.unwrap();
         let sql_string = mapper_func.eval(env, &mut self.holder)?;
         let sql = sql_string.as_str();
-
-        let db = self.get_conf(id);
         match &mapper_func {
             NodeType::NSelectNode(_) => {
-                return self.eval_sql_raw(sql, true, db.as_str());
+                return self.eval_sql_raw(id, sql, true);
             }
             _ => {
-                return self.eval_sql_raw(sql, false, db.as_str());
+                return self.eval_sql_raw(id, sql, false);
             }
         }
     }
 
-    pub fn get_conf(&self, key: &str) -> String {
-        let db = "".to_string();
-        let conf = self.db_router_configs.get(key).unwrap_or(&db);
-        return conf.clone();
-    }
 
     ///打印内容
     pub fn print(&self) -> String {
