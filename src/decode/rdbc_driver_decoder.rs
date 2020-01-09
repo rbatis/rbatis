@@ -45,14 +45,11 @@ pub fn decode_result_set<T: ?Sized>(arg: &mut dyn ResultSet) -> (Result<T, Strin
             }
             _ => {
                 //decode struct
-                let mut index = 0;
-                for item in datas {
-                    if index > 1 {
-                        return (Result::Err("[rbatis] rows.affected_rows > 1,but decode one result!".to_string()), index);
-                    }
-                    js = item;
-                    index = index + 1;
-                };
+                let len = datas.len();
+                if datas.len() > 1 {
+                    return (Result::Err("[rbatis] rows.affected_rows > 1,but decode one result!".to_string()), len);
+                }
+                js = datas.get(0).unwrap().clone();
             }
         }
     }
