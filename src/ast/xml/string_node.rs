@@ -44,6 +44,8 @@ impl Ast for StringNode {
     fn eval(&self, env: &mut Value, holder: &mut ConfigHolder) -> Result<String, String> {
         let mut result = self.value.clone();
         for (item, value) in &self.express_map {
+            //TODO replace to '?'
+            //TODO insert vec<Value> in to  env["sql_arg"]
             let get_v = env.get(item);
             if get_v.is_none() {
                 let v = holder.engine.eval(item, env).unwrap();
