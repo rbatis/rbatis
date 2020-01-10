@@ -2,9 +2,9 @@ use std::borrow::BorrowMut;
 use std::fs;
 
 use serde_json::{Map, Number, Value};
-
+use serde_json::json;
 use crate::ast::xml::result_map_node::ResultMapNode;
-use crate::convert::sql_value_convert::{AND, SKIP_TYPE_ARRAY, SKIP_TYPE_NULL, SKIP_TYPE_OBJECT, SqlColumnConvert, SqlValueConvert};
+use crate::convert::sql_value_convert::{AND, SqlColumnConvert, SqlValueConvert, SqlQuestionConvert, SkipType};
 use crate::convert::sql_value_convert;
 use crate::core::rbatis::Rbatis;
 use serde::de::DeserializeOwned;
@@ -14,14 +14,14 @@ pub const SKIP_SETS: &'static str = "null,object,array";
 impl Rbatis {
 
     pub fn update<T>(&mut self, mapper_name: &str,  arg: &mut Value) -> Result<T, String> where T: DeserializeOwned {
-        let sql = self.create_sql_update(mapper_name, arg)?;
         let mut arg_array=vec![];
+        let sql = self.create_sql_update(mapper_name, arg,&mut arg_array)?;
         return self.eval_raw((mapper_name.to_string()+".update").as_str(), sql.as_str(), false, &mut arg_array);
     }
 
 
 
-    pub fn create_sql_update(&mut self, mapper_name: &str, arg: &mut Value) -> Result<String, String> {
+    pub fn create_sql_update(&mut self, mapper_name: &str, arg: &mut Value,arg_array: &mut Vec<Value>) -> Result<String, String> {
         let result_map_node = self.get_result_map_node(mapper_name)?;
         match arg {
             serde_json::Value::Array(arr) => {
@@ -30,7 +30,7 @@ impl Rbatis {
                 for x in arr {
                     match x {
                         serde_json::Value::Object(_) => {
-                            let temp_sql = self.create_sql_update(mapper_name, x)?;
+                            let temp_sql = self.create_sql_update(mapper_name, x,arg_array)?;
                             sqls = sqls + temp_sql.as_str() + "; \n";
                         }
                         _ => {
@@ -48,9 +48,9 @@ impl Rbatis {
                     if id_value.is_none() {
                         return Result::Err("[rbatis] arg id field:".to_string() + result_map_node.id_node.as_ref().unwrap().property.as_str() + " can not be null in update()!");
                     }
-                    where_str = where_str + "id = " + id_value.unwrap().to_sql_value_skip("").as_str();
+                    where_str = where_str + "id = " + id_value.unwrap().to_sql_question(SkipType::None,AND,",",arg_array).as_str();
                 } else {
-                    where_str = where_str + arg.to_sql_value_skip("").as_str();
+                    where_str = where_str + arg.to_sql_question(SkipType::None,AND,",",arg_array).as_str();
                 }
                 let mut sets_map = Map::new();
                 for (k, v) in c {
@@ -69,7 +69,7 @@ impl Rbatis {
                     sets_map.insert(k, v);
                 }
                 let sets_object = Value::Object(sets_map);
-                return self.do_update_by(arg, &result_map_node, sets_object.to_sql_value_custom(SKIP_SETS, ",", ",").as_str(), where_str.as_str());
+                return self.do_update_by(arg, &result_map_node, sets_object.to_sql_question( SkipType::Object,",", ",",arg_array).as_str(), where_str.as_str());
             }
             serde_json::Value::Null => {
                 return Result::Err("[rbatis] delete arg type can not be null!".to_string());
@@ -159,6 +159,7 @@ fn test_update_by_id() {
     log4rs::init_file("log4rs.yaml", Default::default()).unwrap();
     let mut rbatis = Rbatis::new();
     rbatis.load_xml("Example_ActivityMapper.xml".to_string(), fs::read_to_string("./src/example/Example_ActivityMapper.xml").unwrap());//加载xml数据
+    let mut arg_array=vec![];
 
     let sql = rbatis.create_sql_update("Example_ActivityMapper.xml",  serde_json::json!({
      "id":"1",
@@ -167,8 +168,9 @@ fn test_update_by_id() {
      "number_arr":vec![1,2,3],
      "string_arr":vec!["1","2","3"],
      "version":2,
-    }).borrow_mut());
+    }).borrow_mut(),&mut arg_array);
     println!("{}", sql.unwrap());
+    println!("{}", json!(arg_array));
 }
 
 #[test]
@@ -176,6 +178,7 @@ fn test_update_by_ids() {
     log4rs::init_file("log4rs.yaml", Default::default()).unwrap();
     let mut rbatis = Rbatis::new();
     rbatis.load_xml("Example_ActivityMapper.xml".to_string(), fs::read_to_string("./src/example/Example_ActivityMapper.xml").unwrap());//加载xml数据
+    let mut arg_array=vec![];
 
     let mut json_arr = serde_json::from_str(r#"[
     {
@@ -195,6 +198,7 @@ fn test_update_by_ids() {
      "version":2
     }
     ]"#).unwrap();
-    let sql = rbatis.create_sql_update("Example_ActivityMapper.xml",  &mut json_arr);
+    let sql = rbatis.create_sql_update("Example_ActivityMapper.xml",  &mut json_arr,&mut arg_array);
     println!("{}", sql.unwrap());
+    println!("{}", json!(arg_array));
 }
