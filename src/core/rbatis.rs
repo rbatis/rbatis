@@ -125,10 +125,10 @@ impl Rbatis {
         if self.enable_log {
             if is_select {
                 info!("[rbatis] Query ==>  {}: {}", id, sql);
-                info!("[rbatis][args] ==>  {}: {}", id, crate::utils::rdbc_util::to_string(&params));
+                info!("[rbatis][args] ==>  {}: {}", id, crate::utils::rdbc_util::rdbc_vec_to_string(&params));
             } else {
                 info!("[rbatis] Exec  ==>  {}: {}", id, sql);
-                info!("[rbatis][args] ==>  {}: {}", id, crate::utils::rdbc_util::to_string(&params));
+                info!("[rbatis][args] ==>  {}: {}", id, crate::utils::rdbc_util::rdbc_vec_to_string(&params));
             }
         }
         let key = (self.router_func)(id);
