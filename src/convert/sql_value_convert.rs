@@ -39,6 +39,105 @@ pub trait SqlColumnConvert {
     fn to_sql_column(&self) -> String;
 }
 
+pub trait SqlQuestionConvert{
+    fn to_sql_question(&self,obj_map_separtor: &str, array_separtor: &str,arg_result:&mut Vec<Value>)-> String;
+}
+
+impl SqlQuestionConvert for serde_json::Value{
+    fn to_sql_question(&self,obj_map_separtor: &str, array_separtor: &str,arg_result:&mut Vec<Value>) -> String{
+        match self{
+            Value::Null=>{
+                arg_result.push(self.clone());
+                return " ? ".to_string();
+            },
+            Value::String(s)=>{
+                arg_result.push(self.clone());
+                return " ? ".to_string();
+            },
+            Value::Bool(b)=>{
+                arg_result.push(self.clone());
+                return " ? ".to_string();
+            },
+            Value::Number(n)=>{
+                arg_result.push(self.clone());
+                return " ? ".to_string();
+            },
+            Value::Object(arg_map)=>{
+                let mut append = false;
+                let mut where_str = "".to_string();
+                let len = arg_map.len();
+                for (key, value) in arg_map {
+                    match value {
+                        Value::String(s) => {
+                            let sql=value.to_sql_question(obj_map_separtor,array_separtor,arg_result);
+                            where_str = where_str + key.as_str() + " = "+ sql.as_str() + obj_map_separtor;
+                            append = true;
+                        }
+                        Value::Number(n) => {
+                            let sql=value.to_sql_question(obj_map_separtor,array_separtor,arg_result);
+                            where_str = where_str + key.as_str() + " = "+ sql.as_str() + obj_map_separtor;
+                            append = true;
+                        }
+                        Value::Array(arr) => {
+                            let sql=value.to_sql_question(obj_map_separtor,array_separtor,arg_result);
+                            where_str = where_str + key.as_str() + " = "+ sql.as_str() + obj_map_separtor;
+                            append = true;
+                        }
+                        Value::Null => {
+                            let sql=value.to_sql_question(obj_map_separtor,array_separtor,arg_result);
+                            where_str = where_str + key.as_str() + " = "+ sql.as_str() + obj_map_separtor;
+                            append = true;
+                        }
+                        _ => {}
+                    }
+                }
+                if append {
+                    for _ in 0..obj_map_separtor.len() {
+                        where_str.pop();
+                    }
+                }
+                return where_str;
+            },
+            Value::Array(arr)=>{
+                let mut append = false;
+                let mut item = "(".to_string();
+                for x in arr {
+                    match x {
+                        Value::String(_) => {
+                            let sql=x.to_sql_question(obj_map_separtor,array_separtor,arg_result);
+                            item = item + sql.as_str() + array_separtor;
+                            append = true;
+                        }
+                        Value::Number(_) => {
+                            let sql=x.to_sql_question(obj_map_separtor,array_separtor,arg_result);
+                            item = item + sql.as_str() + array_separtor;
+                            append = true;
+                        }
+                        Value::Null => {
+                            let sql=x.to_sql_question(obj_map_separtor,array_separtor,arg_result);
+                            item = item + sql.as_str() + array_separtor;
+                            append = true;
+                        }
+                        _ => {}
+                    }
+                }
+                if append {
+                    for _ in 0..array_separtor.len() {
+                        item.pop();
+                    }
+                }
+                item = item + ")";
+                return item;
+            },
+            _ => {
+                arg_result.push(serde_json::Value::Null);
+                return String::from(" ? ");
+            },
+        }
+    }
+}
+
+
 impl SqlValueConvert for serde_json::Value {
     fn to_sql_value_def(&self) -> String {
         return self.to_sql_value_skip(SKIP_TYPE_NULL);
