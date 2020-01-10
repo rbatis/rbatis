@@ -26,7 +26,7 @@ impl Rbatis {
     ///分页查询
     pub fn select_page<T>(&mut self, mapper_name: &str, arg: &mut Value, ipage: &IPage<T>) -> Result<IPage<T>, String> where T: Serialize + DeserializeOwned + Clone {
         //do select
-        let mut new_arg = json_join(arg, "ipage", ipage)?;
+        let mut new_arg = json_join(&arg, "ipage", ipage)?;
         let (records,w) = self.eval_select_return_where(mapper_name, &mut new_arg)?;
         let mut result = ipage.clone();
         result.set_records(records);
@@ -44,7 +44,7 @@ impl Rbatis {
     pub fn select_page_by_mapper<T>(&mut self, mapper_name: &str,id: &str, env: &mut Value, ipage: &IPage<T>) -> Result<IPage<T>, String> where T: Serialize + DeserializeOwned + Clone {
         let mut arg_array=vec![];
 
-        let mut new_arg = json_join(env, "ipage", ipage)?;
+        let mut new_arg = json_join(&env, "ipage", ipage)?;
         //select redords
         let mapper_opt = self.mapper_map.get_mut(&mapper_name.to_string());
         if mapper_opt.is_none() {
@@ -295,7 +295,7 @@ fn test_select_by_id_page() {
         delete_flag: Some(1),
     };
     let ipage: IPage<Value> = IPage::new(1, 20);
-    let arg = json_join(act, "ipage", ipage).unwrap();
+    let arg = json_join(&act, "ipage", ipage).unwrap();
     let (sql,w) = rbatis.create_sql_select("Example_ActivityMapper.xml", serde_json::to_value(arg).unwrap().borrow_mut()).unwrap();
     println!("{}", sql);
 }
