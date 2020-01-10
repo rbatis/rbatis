@@ -133,7 +133,7 @@ impl Rbatis {
         let key = (self.router_func.unwrap())(id);
         let db_conf_opt = self.db_router.get(key.as_str());
         if db_conf_opt.is_none() {
-            return Result::Err("[rbatis] no DBConfig find！".to_string());
+            return Result::Err("[rbatis] no DBConfig:".to_string() + key.as_str() + " find！");
         }
         let conf = db_conf_opt.unwrap();
         let conn_opt = self.conn_pool.get_conn("".to_string(), &conf)?;
@@ -143,12 +143,12 @@ impl Rbatis {
             //select
             let create_result = conn.create(sql);
             if create_result.is_err() {
-                return Result::Err("[rbatis] exec fail:".to_string() + format!("{:?}", create_result.err().unwrap()).as_str());
+                return Result::Err("[rbatis] exec fail:".to_string() + id + format!("{:?}", create_result.err().unwrap()).as_str());
             }
             let mut create_statement = create_result.unwrap();
             let exec_result = create_statement.execute_query(&params);
             if exec_result.is_err() {
-                return Result::Err("[rbatis] exec fail:".to_string() + format!("{:?}", exec_result.err().unwrap()).as_str());
+                return Result::Err("[rbatis] exec fail:".to_string() + id + format!("{:?}", exec_result.err().unwrap()).as_str());
             }
             let (result, decoded_num) = decode_result_set(exec_result.unwrap().as_mut());
             if self.enable_log {
@@ -159,16 +159,16 @@ impl Rbatis {
             //exec
             let create_result = conn.create(sql);
             if create_result.is_err() {
-                return Result::Err("[rbatis] exec fail:".to_string() + format!("{:?}", create_result.err().unwrap()).as_str());
+                return Result::Err("[rbatis] exec fail:".to_string() + id + format!("{:?}", create_result.err().unwrap()).as_str());
             }
             let exec_result = create_result.unwrap().execute_update(&params);
             if exec_result.is_err() {
-                return Result::Err("[rbatis] exec fail:".to_string() + format!("{:?}", exec_result.err().unwrap()).as_str());
+                return Result::Err("[rbatis] exec fail:".to_string() + id + format!("{:?}", exec_result.err().unwrap()).as_str());
             }
             let affected_rows = exec_result.unwrap();
             let r = serde_json::from_value(json!(affected_rows));
             if r.is_err() {
-                return Result::Err("[rbatis] exec fail:".to_string() + r.err().unwrap().to_string().as_str());
+                return Result::Err("[rbatis] exec fail:".to_string() + id + r.err().unwrap().to_string().as_str());
             }
             if self.enable_log {
                 info!("[rbatis] RowsAffected <== {}: {}", id, affected_rows.to_string().as_str());
