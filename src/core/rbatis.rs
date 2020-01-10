@@ -108,11 +108,14 @@ impl Rbatis {
         }
         let is_select = sql.starts_with("select") || sql.starts_with("SELECT");
         let mut arg_array = vec![];
-        return self.eval_sql_raw("eval_sql", eval_sql, is_select, &mut arg_array);
+        return self.eval_raw("eval_sql", eval_sql, is_select, &mut arg_array);
     }
 
 
-    pub fn eval_sql_raw<T>(&mut self, id: &str, eval_sql: &str, is_select: bool, arg_array: &mut Vec<Value>) -> Result<T, String> where T: de::DeserializeOwned {
+    ///执行
+    /// arg_array: 执行后 需要替换的参数数据
+    /// return ：替换参数为 ？ 后的sql
+    pub fn eval_raw<T>(&mut self, id: &str, eval_sql: &str, is_select: bool, arg_array: &mut Vec<Value>) -> Result<T, String> where T: de::DeserializeOwned {
         let mut sql = eval_sql;
         sql = sql.trim();
         if sql.is_empty() {
@@ -201,10 +204,10 @@ impl Rbatis {
         let sql_id = mapper_name.to_string() + "." + id;
         match &mapper_func {
             NodeType::NSelectNode(_) => {
-                return self.eval_sql_raw(sql_id.as_str(), sql, true, arg_array);
+                return self.eval_raw(sql_id.as_str(), sql, true, arg_array);
             }
             _ => {
-                return self.eval_sql_raw(sql_id.as_str(), sql, false, arg_array);
+                return self.eval_raw(sql_id.as_str(), sql, false, arg_array);
             }
         }
     }
