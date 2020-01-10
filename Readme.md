@@ -82,6 +82,25 @@ println!("[rbatis] result==> {:?}",data_result);
 2020-01-10T10:28:54.552097+08:00 INFO rbatis::core::rbatis - [rbatis] ReturnRows <== 2
 //[rbatis] result==> [Activity { id: Some("\"dfbdd779-5f70-4b8f-9921-a235a9c75b69\""), name: Some("\"新人专享\""), version: Some(6) }, Activity { id: Some("\"dfbdd779-5f70-4b8f-9921-c235a9c75b69\""), name: Some("\"新人专享\""), version: Some(6) }]
 ```
+### 自定义动态数据源路由return 的字符串为 rbatis.db_router 中定义的配置的key(默认""为默认配置)（在此之前需要加载配置rbatis.load_db_url()）
+``` rust
+    rbatis.load_db_url("".to_string(), "mysql://root:TEST@localhost:3306/test");//默认配置
+    rbatis.load_db_url("read".to_string(), "mysql://root:TEST@localhost:3306/test");//读库
+    rbatis.load_db_url("write".to_string(), "mysql://root:TEST@localhost:3306/test");//读库
+    rbatis.router_func = |id| -> String{
+        info!("[rbatis]匹配路由key  ====>  {}",id);
+        //例如：你可以自定义读写分离
+        if id.contains("select"){
+            //info!("select开头 加载读路由配置");
+            return "read".to_string();
+        }else{
+            //info!("非select开头 加载写路由配置");
+            // return "write".to_string();
+        }
+        return "".to_string();
+    };
+```
+
 
 ### 支持数据库类型
 | 数据库    | 已支持 |
