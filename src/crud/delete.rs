@@ -8,7 +8,7 @@ use crate::ast::xml::result_map_node::ResultMapNode;
 use crate::core::rbatis::Rbatis;
 use crate::engine::node::NodeType;
 use serde_json::value::Value::Number;
-use crate::convert::sql_value_convert::{SqlValueConvert, SqlQuestionConvert, AND};
+use crate::convert::sql_value_convert::{SqlValueConvert, SqlQuestionConvert, AND, SkipType};
 use std::any::Any;
 use serde::de::DeserializeOwned;
 
@@ -28,7 +28,7 @@ impl Rbatis{
                 //delete by id
                 //replace where
                 arg_arr.push(arg.clone());
-                let sql=arg.to_sql_question(AND,",",arg_arr);
+                let sql=arg.to_sql_question(SkipType::None,AND,",",arg_arr);
                 let where_str = "id = ".to_string() + sql.as_str();
                 return self.do_delete_by(arg,&result_map_node,where_str.as_str());
             }
@@ -37,12 +37,12 @@ impl Rbatis{
                 for x in arr {
                     arg_arr.push(x.clone());
                 }
-                let sql=arg.to_sql_question(AND,",",arg_arr);
+                let sql=arg.to_sql_question(SkipType::None,AND,",",arg_arr);
                 let where_str="id in ".to_string()+sql.as_str();
                 return self.do_delete_by(arg,&result_map_node,where_str.as_str());
             }
             serde_json::Value::Object(map)=>{
-                let where_str=arg.to_sql_question(AND,",",arg_arr);
+                let where_str=arg.to_sql_question(SkipType::None,AND,",",arg_arr);
                 return self.do_delete_by(arg,&result_map_node,where_str.as_str());
             }
             serde_json::Value::Null=>{

@@ -5,7 +5,7 @@ use serde_json::Value;
 
 use crate::ast::xml::result_map_node::ResultMapNode;
 use crate::convert::sql_value_convert;
-use crate::convert::sql_value_convert::{SqlValueConvert, AND};
+use crate::convert::sql_value_convert::{SqlValueConvert, AND, SkipType};
 use crate::core::rbatis::Rbatis;
 use crate::crud::ipage::IPage;
 use crate::example::activity::Activity;
@@ -118,12 +118,12 @@ impl Rbatis {
             }
             serde_json::Value::String(_) | serde_json::Value::Number(_) => {
                 let ipage_opt: Option<IPage<Value>> = None;
-                let where_str = "id = ".to_string() + arg.to_sql_value_skip("null").as_str();
+                let where_str = "id = ".to_string() + arg.to_sql_value_skip(SkipType::Null).as_str();
                 Result::Ok(self.do_select_by_templete(arg, &result_map_node, where_str.as_str(), &ipage_opt)?)
             }
             serde_json::Value::Array(_) => {
                 let ipage_opt: Option<IPage<Value>> = None;
-                let where_str = "id in ".to_string() + arg.to_sql_value_skip("null").as_str();
+                let where_str = "id in ".to_string() + arg.to_sql_value_skip(SkipType::Null).as_str();
                 Result::Ok(self.do_select_by_templete(arg, &result_map_node, where_str.as_str(), &ipage_opt)?)
             }
             serde_json::Value::Object(map) => {
@@ -139,7 +139,7 @@ impl Rbatis {
                         ipage_opt = Some(ipage.unwrap());
                     }
                 }
-                let where_str = arg.to_sql_value_skip("");
+                let where_str = arg.to_sql_value_skip(SkipType::None);
                 Result::Ok(self.do_select_by_templete(arg, &result_map_node, where_str.as_str(), &ipage_opt)?)
             }
             _ => {
@@ -156,11 +156,11 @@ impl Rbatis {
                 return Result::Err("[rbatis] arg is null value".to_string());
             }
             serde_json::Value::String(_) | serde_json::Value::Number(_) => {
-                let where_str = "id = ".to_string() + arg.to_sql_value_skip("null").as_str();
+                let where_str = "id = ".to_string() + arg.to_sql_value_skip(SkipType::Null).as_str();
                 return Result::Ok(self.do_count_by_templete(arg, &result_map_node, where_str.as_str())?);
             }
             serde_json::Value::Array(_) => {
-                let where_str = "id in ".to_string() + arg.to_sql_value_skip("null").as_str();
+                let where_str = "id in ".to_string() + arg.to_sql_value_skip(SkipType::Null).as_str();
                 return Result::Ok(self.do_count_by_templete(arg, &result_map_node, where_str.as_str())?);
             }
             serde_json::Value::Object(map) => {
@@ -176,7 +176,7 @@ impl Rbatis {
                         ipage_opt = Some(ipage.unwrap());
                     }
                 }
-                let where_str = arg.to_sql_value_skip("");
+                let where_str = arg.to_sql_value_skip(SkipType::None);
                 return Result::Ok(self.do_count_by_templete(arg, &result_map_node, where_str.as_str())?);
             }
             _ => {

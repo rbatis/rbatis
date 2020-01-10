@@ -130,6 +130,29 @@ fn test_update(){
     println!("[rbatis] result==>  {:?}", r);
 }
 
+#[test]
+fn test_update_array(){
+    //初始化rbatis
+    let rbatis_opt = init_rbatis();
+    if rbatis_opt.is_err() {
+        return;
+    }
+    let mut rbatis =rbatis_opt.unwrap();
+
+    //update
+    let mut json_arr = serde_json::from_str(r#"[
+    {
+     "id":"1",
+     "delete_flag":1,
+     "number_arr":[1,2,3],
+     "string_arr":["1","2","3"],
+     "version":2
+    }
+    ]"#).unwrap();
+    let r: Result<i32, String> = rbatis.update("Example_ActivityMapper.xml",   &mut json_arr);
+    println!("[rbatis] result==>  {:?}", r.unwrap());
+}
+
 /**
  示例-查询活动 数组 集合
 */
