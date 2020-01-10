@@ -41,10 +41,18 @@ fn init_rbatis() -> Result<Rbatis, String> {
         return Err("请修改mysql链接'mysql://root:TEST@localhost:3306/test' 替换为具体的 用户名，密码，ip，和数据库名称".to_string());
     }
 
-   //自定义动态数据源路由
-   //    rbatis.router_func = Option::Some(|id| -> String{
-   //        return "".to_string();
-   //    });
+//    自定义动态数据源路由
+//    rbatis.router_func = Option::Some(|id| -> String{
+//        info!("[rbatis]匹配路由key  ====>  {}",id);
+//        //例如：你可以自定义读写分离
+//        if id.contains("select"){
+//            //select 加载读路由配置
+//        }else{
+//            //非select加载写路由配置
+//        }
+//        //return 的字符串为 rbatis.db_router 中定义的配置的key（在此之前需要加载配置rbatis.db_router.insert()）
+//        return "".to_string();
+//    });
     return Ok(rbatis);
 }
 
@@ -59,7 +67,7 @@ fn test_exec_sql() {
     if rbatis.is_err() {
         return;
     }
-    let mut array=vec![];
+    let mut array = vec![];
     //执行到远程mysql 并且获取结果,Result<serde_json::Value, String>,或者 Result<Activity, String> 等任意类型
     let data: Vec<Activity> = rbatis.unwrap().eval("Example_ActivityMapper.xml", "select_by_condition", &mut json!({
        "name":null,
@@ -67,7 +75,7 @@ fn test_exec_sql() {
        "endTime":null,
        "page":null,
        "size":null,
-    }),&mut array).unwrap();
+    }), &mut array).unwrap();
     // 写法2，直接运行原生sql
     // let data_opt: Result<serde_json::Value, String> = rbatis.eval_sql("select * from biz_activity");
     println!("[rbatis] result==>  {:?}", data);
