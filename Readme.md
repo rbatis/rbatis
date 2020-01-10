@@ -85,8 +85,8 @@ println!("[rbatis] result==> {:?}",data_result);
 ### 自定义动态数据源路由return 的字符串为 rbatis.db_router 中定义的配置的key(默认""为默认配置)（在此之前需要加载配置rbatis.load_db_url()）
 ``` rust
     rbatis.load_db_url("".to_string(), "mysql://root:TEST@localhost:3306/test");//默认配置
-    rbatis.load_db_url("read".to_string(), "mysql://root:TEST@localhost:3306/test");//读库
-    rbatis.load_db_url("write".to_string(), "mysql://root:TEST@localhost:3306/test");//读库
+    rbatis.load_db_url("read".to_string(), "mysql://root:TEST@localhost:3306/test");//只读库
+    rbatis.load_db_url("write".to_string(), "postgres://root:TEST@localhost:3306/test");//只写库
     rbatis.router_func = |id| -> String{
         info!("[rbatis]匹配路由key  ====>  {}",id);
         //例如：你可以自定义读写分离
