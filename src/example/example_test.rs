@@ -73,7 +73,7 @@ fn test_insert(){
         name: Some("活动1".to_string()),
         pc_link: None,
         h5_link: None,
-        sort: Some(1),
+        sort: Some("1".to_string()),
         status: Some(1),
         remark: None,
         create_time: Some("2019-12-12 00:00:00".to_string()),
@@ -114,7 +114,7 @@ fn test_update(){
         name: Some("活动1".to_string()),
         pc_link: None,
         h5_link: None,
-        sort: Some(1),
+        sort: Some("1".to_string()),
         status: Some(1),
         remark: None,
         create_time: Some("2019-12-12 00:00:00".to_string()),
@@ -166,7 +166,7 @@ fn test_exec_select_page() {
     }
     //执行到远程mysql 并且获取结果,Result<serde_json::Value, String>,或者 Result<Activity, String> 等任意类型
     let data: IPage<Activity> = rbatis.unwrap().select_page("Example_ActivityMapper.xml", &mut json!({
-       "name":"新人专享",
+       "name":"新人专享1",
     }), &IPage::new(1, 5)).unwrap();
     println!("[rbatis] result==>  {:?}", data);
 }
