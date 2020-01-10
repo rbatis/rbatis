@@ -37,13 +37,14 @@ fn bench_main() {
        "size":null,
     });
 
+    let mut arg_array=vec![];
 
-    data.eval(arg,&mut rbatis.holder);
+    data.eval(arg,&mut arg_array,&mut rbatis.holder);
 
     let total=100000;
     let now=Local::now();
     for _ in 0..total{
-        data.eval(arg,&mut rbatis.holder);
+        data.eval(arg,&mut arg_array,&mut rbatis.holder);
     }
     utils::time_util::count_time(total,now);
     utils::time_util::count_tps(total,now);

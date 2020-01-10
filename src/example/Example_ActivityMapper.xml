@@ -46,6 +46,7 @@
             <if test="startTime != null">and create_time >= #{startTime}</if>
             <if test="endTime != null">and create_time &lt;= #{endTime}</if>
         </where>
+        and delete_flag = #{delete_flag}
         order by create_time desc
     </select>
 

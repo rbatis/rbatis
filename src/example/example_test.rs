@@ -59,6 +59,7 @@ fn test_exec_sql() {
     if rbatis.is_err() {
         return;
     }
+    let mut array=vec![];
     //执行到远程mysql 并且获取结果,Result<serde_json::Value, String>,或者 Result<Activity, String> 等任意类型
     let data: Vec<Activity> = rbatis.unwrap().eval("Example_ActivityMapper.xml", "select_by_condition", &mut json!({
        "name":null,
@@ -66,7 +67,7 @@ fn test_exec_sql() {
        "endTime":null,
        "page":null,
        "size":null,
-    })).unwrap();
+    }),&mut array).unwrap();
     // 写法2，直接运行原生sql
     // let data_opt: Result<serde_json::Value, String> = rbatis.eval_sql("select * from biz_activity");
     println!("[rbatis] result==>  {:?}", data);
@@ -102,6 +103,7 @@ fn test_exec_select_page_custom() {
     //执行到远程mysql 并且获取结果,Result<serde_json::Value, String>,或者 Result<Activity, String> 等任意类型
     let data: IPage<Activity> = rbatis.unwrap().select_page_by_mapper("Example_ActivityMapper.xml", "select_by_page", &mut json!({
        "name":"新人专享",
+       "delete_flag": 1,
     }), &IPage::new(1, 5)).unwrap();
     println!("[rbatis] result==>  {:?}", data);
 }

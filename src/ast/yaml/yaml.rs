@@ -9,11 +9,9 @@ pub struct YamlNode{
 }
 
 impl Ast for YamlNode{
-
-    fn eval(&self, env: &mut Value, holder: &mut ConfigHolder) -> Result<String, String> {
+    fn eval(&self, env: &mut Value, arg_array: &mut Vec<Value>, holder: &mut ConfigHolder) -> Result<String, String> {
         unimplemented!()
     }
-
 }
 
 

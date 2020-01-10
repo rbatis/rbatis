@@ -6,6 +6,7 @@ pub mod value_util;
 pub mod bencher;
 pub mod driver_util;
 pub mod join_in;
+pub mod rdbc_util;
 
 //test
 pub mod string_util_test;

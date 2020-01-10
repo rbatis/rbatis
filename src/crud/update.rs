@@ -15,7 +15,8 @@ impl Rbatis {
 
     pub fn update<T>(&mut self, mapper_name: &str,  arg: &mut Value) -> Result<T, String> where T: DeserializeOwned {
         let sql = self.create_sql_update(mapper_name, arg)?;
-        return self.eval_sql_raw(mapper_name,sql.as_str(), true);
+        let mut arg_array=vec![];
+        return self.eval_sql_raw(mapper_name,sql.as_str(), true,&mut arg_array);
     }
 
 

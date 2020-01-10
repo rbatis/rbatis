@@ -41,21 +41,32 @@ impl StringNode {
 }
 
 impl Ast for StringNode {
-    fn eval(&self, env: &mut Value, holder: &mut ConfigHolder) -> Result<String, String> {
+    fn eval(&self, env: &mut Value, arg_array:&mut Vec<Value>,holder: &mut ConfigHolder) -> Result<String, String> {
         let mut result = self.value.clone();
         for (item, value) in &self.express_map {
             //TODO replace to '?'
             //TODO insert vec<Value> in to  env["sql_arg"]
+            result = result.replace(value, " ? ");
+
             let get_v = env.get(item);
             if get_v.is_none() {
                 let v = holder.engine.eval(item, env).unwrap();
-                let vstr = v.to_sql_value_def();
-                result = result.replace(value, vstr.as_str());
+                arg_array.push(v);
             } else {
                 let v = get_v.unwrap().clone();
-                let vstr = v.to_sql_value_def();
-                result = result.replace(value, vstr.as_str());
+                arg_array.push(v);
             }
+
+//            let get_v = env.get(item);
+//            if get_v.is_none() {
+//                let v = holder.engine.eval(item, env).unwrap();
+//                let vstr = v.to_sql_value_def();
+//                result = result.replace(value, vstr.as_str());
+//            } else {
+//                let v = get_v.unwrap().clone();
+//                let vstr = v.to_sql_value_def();
+//                result = result.replace(value, vstr.as_str());
+//            }
         }
         for (item, value) in &self.no_convert_express_map {
             result = result.replace(value, env.get(item).unwrap_or(&Value::String(String::new())).as_str().unwrap_or(""));
@@ -80,7 +91,8 @@ pub fn test_string_node() {
     });
     let mut holder = ConfigHolder::new();
     let s_node = StringNode::new("arg+1=#{arg+1}");
+    let mut arg_array=vec![];
 
-    let r = s_node.eval(&mut john, &mut holder).unwrap();
+    let r = s_node.eval(&mut john, &mut arg_array,&mut holder).unwrap();
     println!("{}", r);
 }
