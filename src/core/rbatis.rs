@@ -106,25 +106,25 @@ impl Rbatis {
             return Result::Err("[rbatis] sql can not be empty！".to_string());
         }
         let is_select = sql.starts_with("select") || sql.starts_with("SELECT");
-        let mut arg_array=vec![];
-        return self.eval_sql_raw("eval_sql", eval_sql, is_select,&mut arg_array);
+        let mut arg_array = vec![];
+        return self.eval_sql_raw("eval_sql", eval_sql, is_select, &mut arg_array);
     }
 
 
-    pub fn eval_sql_raw<T>(&mut self, id: &str, eval_sql: &str, is_select: bool,arg_array:&mut Vec<Value>) -> Result<T, String> where T: de::DeserializeOwned {
+    pub fn eval_sql_raw<T>(&mut self, id: &str, eval_sql: &str, is_select: bool, arg_array: &mut Vec<Value>) -> Result<T, String> where T: de::DeserializeOwned {
         let mut sql = eval_sql;
         sql = sql.trim();
         if sql.is_empty() {
             return Result::Err("[rbatis] sql can not be empty！".to_string());
         }
-        let mut params =to_rdbc_values(arg_array);
+        let params = to_rdbc_values(arg_array);
         if self.enable_log {
             if is_select {
-                info!("[rbatis] Query ==>  {}: {}", id,sql);
-                info!("[rbatis][args] ==>  {}: {}", id,crate::utils::rdbc_util::to_string(&params));
+                info!("[rbatis] Query ==>  {}: {}", id, sql);
+                info!("[rbatis][args] ==>  {}: {}", id, crate::utils::rdbc_util::to_string(&params));
             } else {
-                info!("[rbatis] Exec  ==>  {}: {}", id,sql);
-                info!("[rbatis][args] ==>  {}: {}", id,crate::utils::rdbc_util::to_string(&params));
+                info!("[rbatis] Exec  ==>  {}: {}", id, sql);
+                info!("[rbatis][args] ==>  {}: {}", id, crate::utils::rdbc_util::to_string(&params));
             }
         }
         if self.router_func.is_none() {
@@ -135,7 +135,7 @@ impl Rbatis {
         if db_conf_opt.is_none() {
             return Result::Err("[rbatis] no DBConfig find！".to_string());
         }
-        let mut conf = db_conf_opt.unwrap();
+        let conf = db_conf_opt.unwrap();
         let conn_opt = self.conn_pool.get_conn("".to_string(), &conf)?;
         let conn = conn_opt.unwrap();
 
@@ -152,7 +152,7 @@ impl Rbatis {
             }
             let (result, decoded_num) = decode_result_set(exec_result.unwrap().as_mut());
             if self.enable_log {
-                info!("[rbatis] ReturnRows <== {}: {}",id,decoded_num.to_string().as_str());
+                info!("[rbatis] ReturnRows <== {}: {}", id, decoded_num.to_string().as_str());
             }
             return result;
         } else {
@@ -171,7 +171,7 @@ impl Rbatis {
                 return Result::Err("[rbatis] exec fail:".to_string() + r.err().unwrap().to_string().as_str());
             }
             if self.enable_log {
-                info!("[rbatis] RowsAffected <== {}: {}",id,affected_rows.to_string().as_str());
+                info!("[rbatis] RowsAffected <== {}: {}", id, affected_rows.to_string().as_str());
             }
             return Result::Ok(r.unwrap());
         }
@@ -197,10 +197,10 @@ impl Rbatis {
             return Result::Err("[rbatis] find method fail,name:'".to_string() + mapper_name + id + "'");
         }
         let mapper_func = node.unwrap();
-        let sql_string = mapper_func.eval(env, arg_array,&mut self.holder)?;
+        let sql_string = mapper_func.eval(env, arg_array, &mut self.holder)?;
         let sql = sql_string.as_str();
 
-        let sql_id=(mapper_name.to_string()+"."+id);
+        let sql_id = mapper_name.to_string() + "." + id;
         match &mapper_func {
             NodeType::NSelectNode(_) => {
                 return self.eval_sql_raw(sql_id.as_str(), sql, true, arg_array);

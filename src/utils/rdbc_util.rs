@@ -24,12 +24,14 @@ pub fn to_rdbc_values(arg_array:&mut Vec<Value>)->Vec<rdbc::Value>{
 }
 
 pub fn to_string(arg:&Vec<rdbc::Value>)->String{
-    let mut s=String::new();
+    let mut s = String::new();
     for x in arg {
-        s=s+x.to_string().as_str()+",";
+        s = s + x.to_string().as_str() + ",";
     }
-    if s.len()>0{
+    if s.len() > 0 {
         s.pop();
     }
+    s = "{".to_string()+s.as_str();
+    s = s + "}";
     return s;
 }
