@@ -113,11 +113,6 @@ println!("[rbatis] result==> {:?}",data_result);
 ### 进度表-按照顺序实现
 | 功能    | 已支持 |
 | ------ | ------ |
-| XMLAstTree（xml抽象语法树)                                   | √     |     
-| XmlLoader（xml读取器)                                        | √     |  
-| ExpressEngines（表达式执行引擎)                              | √     |  
-| ResultDecoder（查询结果解码器-基于serde_json)                | √     |  
-| YAMLAstTree（类似python/yaml缩进风格的抽象语法树)             | √     |   
 | CRUD(内置CRUD模板(内置CRUD支持乐观锁/逻辑删除))               | √     |
 | LogSystem(日志组件)                                          | √     | 
 | LogicDelPlugin(逻辑删除插件)                                 | √     |
@@ -126,6 +121,7 @@ println!("[rbatis] result==> {:?}",data_result);
 | DataSourceRouter(动态数据源路由)                             | √     |  
 | Tx(事务/事务嵌套/注解声明式事务)                              | x     |   
 | JoinQueryPlugin(组合查询插件，对关联查询进行分解代替join)     | x     |
+| YAMLAstTree（类似python/yaml缩进风格的抽象语法树)             | x     |   
 | web(可视化Web UI)                                            | x     |  
 
 
