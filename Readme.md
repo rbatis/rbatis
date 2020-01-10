@@ -82,7 +82,7 @@ println!("[rbatis] result==> {:?}",data_result);
 2020-01-10T10:28:54.552097+08:00 INFO rbatis::core::rbatis - [rbatis] ReturnRows <== 2
 //[rbatis] result==> [Activity { id: Some("\"dfbdd779-5f70-4b8f-9921-a235a9c75b69\""), name: Some("\"新人专享\""), version: Some(6) }, Activity { id: Some("\"dfbdd779-5f70-4b8f-9921-c235a9c75b69\""), name: Some("\"新人专享\""), version: Some(6) }]
 ```
-### 自定义动态数据源路由return 的字符串为 rbatis.db_router 中定义的配置的key(默认""为默认配置)（在此之前需要加载配置rbatis.load_db_url()）
+### 自定义动态数据源路由
 ``` rust
     rbatis.load_db_url("".to_string(), "mysql://root:TEST@localhost:3306/test");//默认配置
     rbatis.load_db_url("read".to_string(), "mysql://root:TEST@localhost:3306/test");//只读库
