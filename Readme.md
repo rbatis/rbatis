@@ -102,13 +102,13 @@ println!("[rbatis] result==> {:?}",data_result);
 ```
 
 
-### 支持数据库类型
+### 支持数据库类型√已支持.进行中
 | 数据库    | 已支持 |
 | ------ | ------ |
 | Mysql            | √     |   
 | Postgres         | √     |  
-| TiDB             | x     |
-| CockroachDB      | x     |
+| TiDB             | .     |
+| CockroachDB      | .     |
 
 ### 进度表-按照顺序实现
 | 功能    | 已支持 |
