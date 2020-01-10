@@ -124,11 +124,11 @@ impl Rbatis {
         let params = to_rdbc_values(arg_array);
         if self.enable_log {
             if is_select {
-                info!("[rbatis] Query ==>  {}: {}", id, sql);
-                info!("[rbatis][args] ==>  {}: {}", id, crate::utils::rdbc_util::rdbc_vec_to_string(&params));
+                info!("[rbatis] Query: ==>  {}: {}", id, sql);
+                info!("[rbatis]  Args: ==>  {}: {}", id, crate::utils::rdbc_util::rdbc_vec_to_string(&params));
             } else {
-                info!("[rbatis] Exec  ==>  {}: {}", id, sql);
-                info!("[rbatis][args] ==>  {}: {}", id, crate::utils::rdbc_util::rdbc_vec_to_string(&params));
+                info!("[rbatis]  Exec:  ==>  {}: {}", id, sql);
+                info!("[rbatis]  Args:  ==>  {}: {}", id, crate::utils::rdbc_util::rdbc_vec_to_string(&params));
             }
         }
         let key = (self.router_func)(id);
@@ -144,16 +144,16 @@ impl Rbatis {
             //select
             let create_result = conn.create(sql);
             if create_result.is_err() {
-                return Result::Err("[rbatis] exec fail:".to_string() + id + format!("{:?}", create_result.err().unwrap()).as_str());
+                return Result::Err("[rbatis] select fail:".to_string() + id + format!("{:?}", create_result.err().unwrap()).as_str());
             }
             let mut create_statement = create_result.unwrap();
             let exec_result = create_statement.execute_query(&params);
             if exec_result.is_err() {
-                return Result::Err("[rbatis] exec fail:".to_string() + id + format!("{:?}", exec_result.err().unwrap()).as_str());
+                return Result::Err("[rbatis] select fail:".to_string() + id + format!("{:?}", exec_result.err().unwrap()).as_str());
             }
             let (result, decoded_num) = decode_result_set(exec_result.unwrap().as_mut());
             if self.enable_log {
-                info!("[rbatis] ReturnRows <== {}: {}", id, decoded_num.to_string().as_str());
+                info!("[rbatis] Total: <== {}: {}", id, decoded_num.to_string().as_str());
             }
             return result;
         } else {
@@ -172,7 +172,7 @@ impl Rbatis {
                 return Result::Err("[rbatis] exec fail:".to_string() + id + r.err().unwrap().to_string().as_str());
             }
             if self.enable_log {
-                info!("[rbatis] RowsAffected <== {}: {}", id, affected_rows.to_string().as_str());
+                info!("[rbatis] Affected: <== {}: {}", id, affected_rows.to_string().as_str());
             }
             return Result::Ok(r.unwrap());
         }
