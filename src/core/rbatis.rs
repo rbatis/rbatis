@@ -107,7 +107,7 @@ impl Rbatis {
         }
         let is_select = sql.starts_with("select") || sql.starts_with("SELECT");
         let mut arg_array=vec![];
-        return self.eval_sql_raw("", eval_sql, is_select,&mut arg_array);
+        return self.eval_sql_raw("eval_sql", eval_sql, is_select,&mut arg_array);
     }
 
 
@@ -120,11 +120,11 @@ impl Rbatis {
         let mut params =to_rdbc_values(arg_array);
         if self.enable_log {
             if is_select {
-                info!("[rbatis] Query ==>  {}", sql);
-                info!("[rbatis][args] ==>  {}", crate::utils::rdbc_util::to_string(&params));
+                info!("[rbatis] Query ==>  {}: {}", id,sql);
+                info!("[rbatis][args] ==>  {}: {}", id,crate::utils::rdbc_util::to_string(&params));
             } else {
-                info!("[rbatis] Exec  ==>  {}", sql);
-                info!("[rbatis][args] ==>  {}", crate::utils::rdbc_util::to_string(&params));
+                info!("[rbatis] Exec  ==>  {}: {}", id,sql);
+                info!("[rbatis][args] ==>  {}: {}", id,crate::utils::rdbc_util::to_string(&params));
             }
         }
         if self.router_func.is_none() {
@@ -199,12 +199,14 @@ impl Rbatis {
         let mapper_func = node.unwrap();
         let sql_string = mapper_func.eval(env, arg_array,&mut self.holder)?;
         let sql = sql_string.as_str();
+
+        let sql_id=(mapper_name.to_string()+"."+id);
         match &mapper_func {
             NodeType::NSelectNode(_) => {
-                return self.eval_sql_raw(id, sql, true, arg_array);
+                return self.eval_sql_raw(sql_id.as_str(), sql, true, arg_array);
             }
             _ => {
-                return self.eval_sql_raw(id, sql, false, arg_array);
+                return self.eval_sql_raw(sql_id.as_str(), sql, false, arg_array);
             }
         }
     }
