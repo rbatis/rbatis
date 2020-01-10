@@ -11,6 +11,7 @@ use serde_json::value::Value::Number;
 use crate::convert::sql_value_convert::{SqlValueConvert, SqlQuestionConvert, AND, SkipType};
 use std::any::Any;
 use serde::de::DeserializeOwned;
+use crate::utils::string_util::count_string_num;
 
 impl Rbatis{
 
@@ -27,16 +28,12 @@ impl Rbatis{
             serde_json::Value::String(_) | serde_json::Value::Number(_)=>{
                 //delete by id
                 //replace where
-                arg_arr.push(arg.clone());
                 let sql=arg.to_sql_question(SkipType::None,AND,",",arg_arr);
                 let where_str = "id = ".to_string() + sql.as_str();
                 return self.do_delete_by(arg,&result_map_node,where_str.as_str());
             }
             serde_json::Value::Array(arr)=>{
                 //delete by ids
-                for x in arr {
-                    arg_arr.push(x.clone());
-                }
                 let sql=arg.to_sql_question(SkipType::None,AND,",",arg_arr);
                 let where_str="id in ".to_string()+sql.as_str();
                 return self.do_delete_by(arg,&result_map_node,where_str.as_str());
@@ -79,32 +76,31 @@ impl Rbatis{
 
 #[test]
 fn test_delete_by_id() {
-    log4rs::init_file("log4rs.yaml", Default::default()).unwrap();
     let mut rbatis =Rbatis::new();
     rbatis.load_xml("Example_ActivityMapper.xml".to_string(), fs::read_to_string("./src/example/Example_ActivityMapper.xml").unwrap());//加载xml数据
 
     let mut arg_array=vec![];
 
-    let sql=rbatis.create_sql_delete("Example_ActivityMapper.xml", serde_json::json!("1").borrow_mut(),&mut arg_array);
-    println!("{}",sql.unwrap());
+    let sql=rbatis.create_sql_delete("Example_ActivityMapper.xml", serde_json::json!("1").borrow_mut(),&mut arg_array).unwrap();
+    println!("{}",sql);
     println!("{}", json!(arg_array));
+    assert_eq!(arg_array.len(),count_string_num(&sql,'?'));
 }
 
 #[test]
 fn test_delete_by_ids() {
-    log4rs::init_file("log4rs.yaml", Default::default()).unwrap();
     let mut rbatis =Rbatis::new();
     rbatis.load_xml("Example_ActivityMapper.xml".to_string(), fs::read_to_string("./src/example/Example_ActivityMapper.xml").unwrap());//加载xml数据
 
     let mut arg_array=vec![];
-    let sql =rbatis.create_sql_delete("Example_ActivityMapper.xml", serde_json::json!(vec![1,2,3]).borrow_mut(),&mut arg_array);
-    println!("{}",sql.unwrap());
+    let sql =rbatis.create_sql_delete("Example_ActivityMapper.xml", serde_json::json!(vec![1,2,3]).borrow_mut(),&mut arg_array).unwrap();
+    println!("{}",sql);
     println!("{}", json!(arg_array));
+    assert_eq!(arg_array.len(),count_string_num(&sql,'?'));
 }
 
 #[test]
 fn test_delete_by_map() {
-    log4rs::init_file("log4rs.yaml", Default::default()).unwrap();
     let mut rbatis =Rbatis::new();
     rbatis.load_xml("Example_ActivityMapper.xml".to_string(), fs::read_to_string("./src/example/Example_ActivityMapper.xml").unwrap());//加载xml数据
 
@@ -114,7 +110,8 @@ fn test_delete_by_map() {
      "delete_flag":1,
      "number_arr":vec![8,8,8],
      "string_arr":vec!["1","2","3"]
-    }).borrow_mut(),&mut arg_array);
-    println!("{}",sql.unwrap());
+    }).borrow_mut(),&mut arg_array).unwrap();
+    println!("{}",sql);
     println!("{}", json!(arg_array));
+    assert_eq!(arg_array.len(),count_string_num(&sql,'?'));
 }
