@@ -198,7 +198,7 @@ impl Rbatis {
             return Result::Err("[rbatis] find method fail,name:'".to_string() + mapper_name + id + "'");
         }
         let mapper_func = node.unwrap();
-        let sql_string = mapper_func.eval(env, arg_array, &mut self.holder)?;
+        let sql_string = mapper_func.eval(env, &mut self.holder,arg_array)?;
         let sql = sql_string.as_str();
 
         let sql_id = mapper_name.to_string() + "." + id;

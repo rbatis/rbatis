@@ -61,7 +61,7 @@ impl ResultMapNode {
 }
 
 impl Ast for ResultMapNode {
-    fn eval(&self, env: &mut Value, arg_array:&mut Vec<Value>,holder: &mut ConfigHolder) -> Result<String, String> {
+    fn eval(&self, env: &mut Value, holder: &mut ConfigHolder,arg_array:&mut Vec<Value>) -> Result<String, String> {
         return Result::Ok("".to_string());
     }
 }

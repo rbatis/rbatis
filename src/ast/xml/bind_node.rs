@@ -16,7 +16,7 @@ pub struct BindNode {
 }
 
 impl Ast for BindNode {
-    fn eval(&self, env: &mut Value, arg_array:&mut Vec<Value>,holder: &mut ConfigHolder) -> Result<String, String> {
+    fn eval(&self, env: &mut Value, holder: &mut ConfigHolder,arg_array:&mut Vec<Value>) -> Result<String, String> {
         let r = holder.engine.eval(self.value.as_str(), env);
         env[self.name.as_str()] = r.unwrap_or(Value::Null);
         return Result::Ok("".to_string());
@@ -46,7 +46,7 @@ fn test_bind_node() {
 
     let mut arg_array=vec![];
 
-    let r = bind_node.eval(&mut john, &mut arg_array,&mut holder).unwrap();
+    let r = bind_node.eval(&mut john,&mut holder, &mut arg_array).unwrap();
 
 
     println!("r={}", r);

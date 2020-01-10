@@ -23,7 +23,7 @@ impl Clone for WhenNode {
 }
 
 impl Ast for WhenNode {
-    fn eval(&self, env: &mut Value, arg_array:&mut Vec<Value>,holder: &mut ConfigHolder) -> Result<String, String> {
+    fn eval(&self, env: &mut Value, holder: &mut ConfigHolder,arg_array:&mut Vec<Value>) -> Result<String, String> {
         let result_value = holder.engine.eval(self.test.as_str(), env);
         if result_value.is_err() {
             return Result::Err(result_value.err().unwrap());
@@ -33,7 +33,7 @@ impl Ast for WhenNode {
             return Result::Err("[rbatis] test:'".to_owned() + self.test.as_str() + "' is not return bool!");
         }
         if result.as_bool().unwrap() {
-            return do_child_nodes(&self.childs, env, arg_array,holder);
+            return do_child_nodes(&self.childs, env,holder,arg_array);
         }
         return Result::Ok("".to_string());
     }
