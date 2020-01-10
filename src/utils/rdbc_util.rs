@@ -10,7 +10,7 @@ pub fn to_rdbc_values(arg_array:&mut Vec<Value>)->Vec<rdbc::Value>{
     return params;
 }
 
-pub fn to_string(arg:&Vec<rdbc::Value>)->String{
+pub fn rdbc_vec_to_string(arg:&Vec<rdbc::Value>) ->String{
     let mut s = String::new();
     for x in arg {
         s = s + x.to_string().as_str() + ",";
