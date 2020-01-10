@@ -140,15 +140,29 @@ fn test_update_array(){
     let mut rbatis =rbatis_opt.unwrap();
 
     //update
-    let mut json_arr = serde_json::from_str(r#"[
-    {
-     "id":"1",
-     "delete_flag":1,
-     "number_arr":[1,2,3],
-     "string_arr":["1","2","3"],
-     "version":2
-    }
-    ]"#).unwrap();
+    let mut json_arr = json!([Activity{
+        id: Some("1".to_string()),
+        name: Some("活动1".to_string()),
+        pc_link: None,
+        h5_link: None,
+        sort: Some("1".to_string()),
+        status: Some(1),
+        remark: None,
+        create_time: Some("2019-12-12 00:00:00".to_string()),
+        version: Some(1),
+        delete_flag: Some(1)
+    },Activity{
+        id: Some("2".to_string()),
+        name: Some("活动2".to_string()),
+        pc_link: None,
+        h5_link: None,
+        sort: Some("1".to_string()),
+        status: Some(1),
+        remark: None,
+        create_time: Some("2019-12-12 00:00:00".to_string()),
+        version: Some(1),
+        delete_flag: Some(1)
+    }]);
     let r: Result<i32, String> = rbatis.update("Example_ActivityMapper.xml",   &mut json_arr);
     println!("[rbatis] result==>  {:?}", r.unwrap());
 }

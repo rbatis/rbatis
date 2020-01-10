@@ -26,6 +26,7 @@ use crate::decode::rdbc_driver_decoder::decode_result_set;
 use crate::utils::{driver_util, rdbc_util};
 use crate::utils::xml_loader::load_xml;
 use crate::utils::rdbc_util::to_rdbc_values;
+use serde_json::de::ParserNumber;
 
 pub struct Rbatis {
     //动态sql运算节点集合
@@ -167,7 +168,7 @@ impl Rbatis {
                 return Result::Err("[rbatis] exec fail:".to_string() + id + format!("{:?}", exec_result.err().unwrap()).as_str());
             }
             let affected_rows = exec_result.unwrap();
-            let r = serde_json::from_value(json!(affected_rows));
+            let r = serde_json::from_value( serde_json::Value::Number(serde_json::Number::from(ParserNumber::U64(affected_rows))));
             if r.is_err() {
                 return Result::Err("[rbatis] exec fail:".to_string() + id + r.err().unwrap().to_string().as_str());
             }

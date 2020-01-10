@@ -32,7 +32,8 @@ impl Rbatis {
                     match x {
                         serde_json::Value::Object(_) => {
                             let temp_sql = self.create_sql_update(mapper_name, x,arg_array)?;
-                            sqls = sqls + temp_sql.as_str() + "; \n";
+                            let temp_str=temp_sql.as_str();
+                            sqls = sqls + temp_str + "; \n";
                         }
                         _ => {
                             return Result::Err("[rbatis] update only support object or array,not support arg type value in update(): ".to_string() + arg.to_sql_value_def().as_str());
@@ -42,8 +43,29 @@ impl Rbatis {
                 return Result::Ok(sqls);
             }
             serde_json::Value::Object(map) => {
-                let mut where_str = "".to_string();
+
                 let c = map.clone();
+
+                let mut sets_map = Map::new();
+                for (k, v) in &c {
+                    if result_map_node.id_node.is_some() && result_map_node.id_node.as_ref().unwrap().column.eq(k) {
+                        continue;
+                    }
+                    if result_map_node.delete_node.is_some() && result_map_node.delete_node.as_ref().unwrap().column.eq(k) {
+                        continue;
+                    }
+                    if result_map_node.version_node.is_some() && result_map_node.version_node.as_ref().unwrap().column.eq(k) {
+                        continue;
+                    }
+                    if v.is_null() {
+                        continue;
+                    }
+                    sets_map.insert(k.clone(), v.clone());
+                }
+                let sets_object = Value::Object(sets_map);
+                let sets=sets_object.to_sql_question( SkipType::None,",", ",",arg_array);
+
+                let mut where_str = "".to_string();
                 if result_map_node.id_node.is_some() {
                     let id_value = c.get(&result_map_node.id_node.as_ref().unwrap().property);
                     if id_value.is_none() {
@@ -53,24 +75,9 @@ impl Rbatis {
                 } else {
                     where_str = where_str + arg.to_sql_question(SkipType::None,AND,",",arg_array).as_str();
                 }
-                let mut sets_map = Map::new();
-                for (k, v) in c {
-                    if result_map_node.id_node.is_some() && result_map_node.id_node.as_ref().unwrap().column.eq(&k) {
-                        continue;
-                    }
-                    if result_map_node.delete_node.is_some() && result_map_node.delete_node.as_ref().unwrap().column.eq(&k) {
-                        continue;
-                    }
-                    if result_map_node.version_node.is_some() && result_map_node.version_node.as_ref().unwrap().column.eq(&k) {
-                        continue;
-                    }
-                    if v.is_null() {
-                        continue;
-                    }
-                    sets_map.insert(k, v);
-                }
-                let sets_object = Value::Object(sets_map);
-                return self.do_update_by(arg, &result_map_node, sets_object.to_sql_question( SkipType::Object,",", ",",arg_array).as_str(), where_str.as_str());
+
+
+                return self.do_update_by(arg, &result_map_node, sets.as_str(), where_str.as_str());
             }
             serde_json::Value::Null => {
                 return Result::Err("[rbatis] delete arg type can not be null!".to_string());
