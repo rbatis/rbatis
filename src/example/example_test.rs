@@ -42,17 +42,17 @@ fn init_rbatis() -> Result<Rbatis, String> {
     }
 
 //    自定义动态数据源路由
-//    rbatis.router_func = Option::Some(|id| -> String{
+//    rbatis.router_func = |id| -> String{
 //        info!("[rbatis]匹配路由key  ====>  {}",id);
 //        //例如：你可以自定义读写分离
 //        if id.contains("select"){
-//            //select 加载读路由配置
+//            //info!("select开头 加载读路由配置");
 //        }else{
-//            //非select加载写路由配置
+//            //info!("非select开头 加载写路由配置");
 //        }
 //        //return 的字符串为 rbatis.db_router 中定义的配置的key（在此之前需要加载配置rbatis.db_router.insert()）
 //        return "".to_string();
-//    });
+//    };
     return Ok(rbatis);
 }
 
