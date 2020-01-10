@@ -20,7 +20,7 @@ impl Rbatis {
     pub fn select<T>(&mut self, mapper_name: &str, arg: &mut Value) -> Result<T, String> where T: DeserializeOwned {
         let (sql,_) = self.create_sql_select(mapper_name, arg)?;
         let mut arg_array=vec![];
-        return self.eval_sql_raw((mapper_name.to_string()+".select").as_str(),sql.as_str(), true,&mut arg_array);
+        return self.eval_raw((mapper_name.to_string()+".select").as_str(), sql.as_str(), true, &mut arg_array);
     }
 
     ///分页查询
@@ -36,7 +36,7 @@ impl Rbatis {
         let count_sql=self.do_count_by_templete(&mut new_arg,&result_map_node,w.as_str())?;
         let mut arg_array=vec![];
 
-        let total:i64=self.eval_sql_raw((mapper_name.to_string()+".select_page").as_str(),count_sql.as_str(),true,&mut arg_array)?;
+        let total:i64=self.eval_raw((mapper_name.to_string()+".select_page").as_str(), count_sql.as_str(), true, &mut arg_array)?;
         result.set_total(total);
         return Result::Ok(result);
     }
@@ -83,7 +83,7 @@ impl Rbatis {
         }
         let query_sql=where_befer_string+" WHERE "+append_limit_where_string.as_str();
 
-        let records:Vec<T>=self.eval_sql_raw((mapper_name.to_string()+"."+id).as_str(),query_sql.as_str(),true,&mut arg_array)?;
+        let records:Vec<T>=self.eval_raw((mapper_name.to_string()+"."+id).as_str(), query_sql.as_str(), true, &mut arg_array)?;
         let mut result = ipage.clone();
         result.set_records(records);
 
@@ -97,7 +97,7 @@ impl Rbatis {
         count_sql = count_sql.replace("#{table}", result_map_node.table.as_ref().unwrap());
         count_sql = count_sql.replace("#{where}", where_string.as_str());
 
-        let total:i64=self.eval_sql_raw((mapper_name.to_string()+"."+id).as_str(),count_sql.as_str(),true,&mut arg_array)?;
+        let total:i64=self.eval_raw((mapper_name.to_string()+"."+id).as_str(), count_sql.as_str(), true, &mut arg_array)?;
         result.set_total(total);
         return Result::Ok(result);
     }
@@ -106,7 +106,7 @@ impl Rbatis {
     fn eval_select_return_where<T>(&mut self, mapper_name: &str,  arg: &mut Value) -> Result<(T,String), String> where T: DeserializeOwned {
         let (sql,w) = self.create_sql_select(mapper_name, arg)?;
         let mut arg_array=vec![];
-        let data:T= self.eval_sql_raw((mapper_name.to_string()+".eval_select_return_where").as_str(),sql.as_str(), true,&mut arg_array)?;
+        let data:T= self.eval_raw((mapper_name.to_string()+".eval_select_return_where").as_str(), sql.as_str(), true, &mut arg_array)?;
         return Result::Ok((data,w));
     }
 
