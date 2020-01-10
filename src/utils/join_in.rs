@@ -1,7 +1,7 @@
 use serde_json::Value;
 use serde::Serialize;
 
-pub fn json_join<T, JoinIn>(value:T, key:&str, join_in: JoinIn) ->Result<Value,String>
+pub fn json_join<T, JoinIn>(value:&T, key:&str, join_in: JoinIn) ->Result<Value,String>
     where
         T: Serialize, JoinIn:Serialize{
     let mut arg= serde_json::to_value(value).unwrap();
