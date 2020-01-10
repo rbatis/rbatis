@@ -34,7 +34,7 @@ pub struct Rbatis {
     pub holder: ConfigHolder,
     //路由配置
     pub db_router: HashMap<String, DBConfig>,
-    pub router_func: Option<fn(id: &str) -> String>,
+    pub router_func: fn(id: &str) -> String,
     //连接池
     pub conn_pool: ConnPool,
     //允许日志输出，禁用此项可减少IO,提高性能
@@ -48,9 +48,10 @@ impl Rbatis {
             holder: ConfigHolder::new(),
             db_router: HashMap::new(),
             conn_pool: ConnPool::new(),
-            router_func: Option::Some(|id| -> String{
+            router_func: |id| -> String{
+                //加载默认配置，key=""
                 return "".to_string();
-            }),
+            },
             enable_log: true,
         };
     }
@@ -127,10 +128,7 @@ impl Rbatis {
                 info!("[rbatis][args] ==>  {}: {}", id, crate::utils::rdbc_util::to_string(&params));
             }
         }
-        if self.router_func.is_none() {
-            return Result::Err("[rbatis] no router_func find！".to_string());
-        }
-        let key = (self.router_func.unwrap())(id);
+        let key = (self.router_func)(id);
         let db_conf_opt = self.db_router.get(key.as_str());
         if db_conf_opt.is_none() {
             return Result::Err("[rbatis] no DBConfig:".to_string() + key.as_str() + " find！");
