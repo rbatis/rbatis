@@ -1,11 +1,12 @@
 use serde_json::json;
 use serde_json::Value;
 
-use crate::convert::sql_value_convert::{SqlColumnConvert, SqlValueConvert};
+use crate::convert::sql_value_convert::{SqlColumnConvert, SqlValueConvert, SqlQuestionConvert, SkipType, AND};
 use crate::core::rbatis::Rbatis;
 use serde::de::DeserializeOwned;
 use std::fs;
 use crate::utils::rdbc_util::rdbc_vec_to_string;
+use crate::utils::string_util::count_string_num;
 
 impl Rbatis {
     pub fn insert<T>(&mut self, mapper_name: &str, arg: &mut Value) -> Result<T, String> where T: DeserializeOwned {
@@ -45,8 +46,13 @@ impl Rbatis {
                 if !x.is_object() {
                     return Result::Err("[rbatis] unsupport arg type,only support object json and object array!".to_string());
                 }
-                let value_item_sql = do_create_value_sql(x, arg_array);
-                values = values + "("+value_item_sql.as_str() + "),";
+                let obj=x.as_object().unwrap();
+                let mut obj_vec=vec![];
+                for (_,item) in obj {
+                    obj_vec.push(item.clone());
+                }
+                let value_item_sql = serde_json::Value::Array(obj_vec).to_sql_question(SkipType::None,",",",",arg_array);
+                values = values +value_item_sql.as_str() + ",";
                 append = true;
             }
             if append {
@@ -61,22 +67,8 @@ impl Rbatis {
 }
 
 
-fn do_create_value_sql(arg: &Value, arg_array: &mut Vec<Value>) -> String {
-    let obj = arg.as_object();
-    let obj_map = obj.unwrap();
-    let mut values = String::new();
-    for (x, item) in obj_map {
-        arg_array.push(item.clone());
-        values = values + " ? ,"
-    }
-    if values.len() > 0 {
-        values.pop();
-    }
-    return values;
-}
-
 fn do_create_obj_sql(mut sql: String, arg: &Value, arg_array: &mut Vec<Value>) -> String {
-    let values = do_create_value_sql(arg, arg_array);
+    let values = arg.to_sql_question(SkipType::None,AND,",",arg_array);
     sql = sql.replace("#{fields}", arg.to_sql_column().as_str());
     sql = sql.replace("#{values}", ("(".to_string() + values.as_str() + ")").as_str());
     return sql;
@@ -85,7 +77,6 @@ fn do_create_obj_sql(mut sql: String, arg: &Value, arg_array: &mut Vec<Value>) -
 
 #[test]
 fn test_insert_templete_obj() {
-    log4rs::init_file("log4rs.yaml", Default::default()).unwrap();
     let mut rbatis = Rbatis::new();
     rbatis.load_xml("Example_ActivityMapper.xml".to_string(), fs::read_to_string("./src/example/Example_ActivityMapper.xml").unwrap());//加载xml数据
 
@@ -94,11 +85,11 @@ fn test_insert_templete_obj() {
     let sql = rbatis.create_sql_insert("Example_ActivityMapper.xml", &mut arg, &mut arg_array).unwrap();
     println!("{}", sql);
     println!("{}", json!(arg_array));
+    assert_eq!(arg_array.len(),count_string_num(&sql,'?'));
 }
 
 #[test]
 fn test_insert_templete_array() {
-    log4rs::init_file("log4rs.yaml", Default::default()).unwrap();
     let mut rbatis = Rbatis::new();
     rbatis.load_xml("Example_ActivityMapper.xml".to_string(), fs::read_to_string("./src/example/Example_ActivityMapper.xml").unwrap());//加载xml数据
     let mut arg_array = vec![];
@@ -106,4 +97,5 @@ fn test_insert_templete_array() {
     let sql = rbatis.create_sql_insert("Example_ActivityMapper.xml", &mut arg, &mut arg_array).unwrap();
     println!("{}", sql);
     println!("{}", json!(arg_array));
+    assert_eq!(arg_array.len(),count_string_num(&sql,'?'));
 }

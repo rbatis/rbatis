@@ -100,7 +100,7 @@ impl SqlQuestionConvert for serde_json::Value{
                         }
                         Value::Array(arr) => {
                             let sql=value.to_sql_question(skip_type,obj_map_separtor,array_separtor,arg_result);
-                            where_str = where_str + key.as_str() + " = "+ sql.as_str() + obj_map_separtor;
+                            where_str = where_str + key.as_str() + " in "+ sql.as_str() + obj_map_separtor;
                             append = true;
                         }
                         Value::Null => {

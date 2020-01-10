@@ -8,6 +8,7 @@ use crate::convert::sql_value_convert::{AND, SqlColumnConvert, SqlValueConvert, 
 use crate::convert::sql_value_convert;
 use crate::core::rbatis::Rbatis;
 use serde::de::DeserializeOwned;
+use crate::utils::string_util::count_string_num;
 
 pub const SKIP_SETS: &'static str = "null,object,array";
 
@@ -156,7 +157,6 @@ fn get_version_value(env: &Value, property: &String) -> Option<Value> {
 
 #[test]
 fn test_update_by_id() {
-    log4rs::init_file("log4rs.yaml", Default::default()).unwrap();
     let mut rbatis = Rbatis::new();
     rbatis.load_xml("Example_ActivityMapper.xml".to_string(), fs::read_to_string("./src/example/Example_ActivityMapper.xml").unwrap());//加载xml数据
     let mut arg_array=vec![];
@@ -168,14 +168,14 @@ fn test_update_by_id() {
      "number_arr":vec![1,2,3],
      "string_arr":vec!["1","2","3"],
      "version":2,
-    }).borrow_mut(),&mut arg_array);
-    println!("{}", sql.unwrap());
+    }).borrow_mut(),&mut arg_array).unwrap();
+    println!("{}", sql);
     println!("{}", json!(arg_array));
+    assert_eq!(arg_array.len(),count_string_num(&sql,'?'));
 }
 
 #[test]
 fn test_update_by_ids() {
-    log4rs::init_file("log4rs.yaml", Default::default()).unwrap();
     let mut rbatis = Rbatis::new();
     rbatis.load_xml("Example_ActivityMapper.xml".to_string(), fs::read_to_string("./src/example/Example_ActivityMapper.xml").unwrap());//加载xml数据
     let mut arg_array=vec![];
@@ -198,7 +198,8 @@ fn test_update_by_ids() {
      "version":2
     }
     ]"#).unwrap();
-    let sql = rbatis.create_sql_update("Example_ActivityMapper.xml",  &mut json_arr,&mut arg_array);
-    println!("{}", sql.unwrap());
+    let sql = rbatis.create_sql_update("Example_ActivityMapper.xml",  &mut json_arr,&mut arg_array).unwrap();
+    println!("{}", sql);
     println!("{}", json!(arg_array));
+    assert_eq!(arg_array.len(),count_string_num(&sql,'?'));
 }

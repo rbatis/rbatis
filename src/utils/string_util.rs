@@ -76,3 +76,15 @@ pub fn find_no_convert_string(arg: &str) -> Vec<String> {
     }
     return result;
 }
+
+
+pub fn count_string_num(s:&String,c:char)->usize{
+    let cs=s.chars();
+    let mut num=0;
+    for x in cs {
+        if x==c{
+            num+=1;
+        }
+    }
+    return num;
+}
