@@ -14,7 +14,7 @@ pub struct IfNode {
 }
 
 impl Ast for IfNode {
-    fn eval(&self, env: &mut Value, holder: &mut ConfigHolder) -> Result<String, String> {
+    fn eval(&self, env: &mut Value,arg_array:&mut Vec<Value>, holder: &mut ConfigHolder) -> Result<String, String> {
         let result = holder.engine.eval(self.test.as_str(), env);
         if result.is_err() {
             return Result::Err(result.err().unwrap());
@@ -24,7 +24,7 @@ impl Ast for IfNode {
             return Result::Err("[rbatis] express:'".to_owned() + self.test.as_str() + "' is not return bool value!");
         }
         if b.as_bool().unwrap() {
-            return do_child_nodes(&self.childs, env, holder);
+            return do_child_nodes(&self.childs, env, arg_array,holder);
         }
         return Result::Ok("".to_string());
     }
@@ -51,5 +51,7 @@ pub fn test_if_node() {
         "arg": 1,
     });
     let mut holder = ConfigHolder::new();
-    println!("{}", node.eval(&mut john, &mut holder).unwrap());
+    let mut arg_array=vec![];
+
+    println!("{}", node.eval(&mut john, &mut arg_array,&mut holder).unwrap());
 }

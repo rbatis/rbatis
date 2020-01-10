@@ -34,10 +34,10 @@ pub trait SqlNodePrint {
 
 
 //执行子所有节点
-pub fn do_child_nodes(child_nodes: &Vec<NodeType>, env: &mut Value, holder: &mut ConfigHolder) -> Result<String, String> {
+pub fn do_child_nodes(child_nodes: &Vec<NodeType>, env: &mut Value, arg_array:&mut Vec<Value>,holder: &mut ConfigHolder) -> Result<String, String> {
     let mut s = String::new();
     for item in child_nodes {
-        let item_result = item.eval(env, holder);
+        let item_result = item.eval(env, arg_array,holder);
         if item_result.is_err() {
             return item_result;
         }
@@ -233,7 +233,8 @@ fn test_string_node() {
         "name": "John Doe",
     });
     let str_node = NodeType::NString(StringNode::new("select * from ${name} where name = #{name}"));
+    let mut arg_array=vec![];
 
-    let result = str_node.eval(&mut john, &mut holder).unwrap();
+    let result = str_node.eval(&mut john, &mut arg_array,&mut holder).unwrap();
     println!("{}", result);
 }

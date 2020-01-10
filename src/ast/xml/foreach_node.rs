@@ -21,7 +21,7 @@ pub struct ForEachNode {
 }
 
 impl Ast for ForEachNode {
-    fn eval(&self, env: &mut Value, holder: &mut ConfigHolder) -> Result<String, String> {
+    fn eval(&self, env: &mut Value, arg_array:&mut Vec<Value>,holder: &mut ConfigHolder) -> Result<String, String> {
         let mut result = String::new();
 
         //open
@@ -46,7 +46,7 @@ impl Ast for ForEachNode {
             obj_map.insert("item".to_string(), item.clone());
             obj_map.insert("index".to_string(), Value::Number(serde_json::Number::from_f64(index as f64).unwrap()));
             let mut temp_arg: Value = Value::Object(obj_map);
-            let item_result = do_child_nodes(&self.childs, &mut temp_arg, holder);
+            let item_result = do_child_nodes(&self.childs, &mut temp_arg, arg_array,holder);
             if item_result.is_err() {
                 return item_result;
             }
@@ -93,7 +93,7 @@ pub fn test_for_each_node() {
     let mut john = json!({
         "arg": 1,
     });
-
-    let r = n.eval(&mut john, &mut holder);
+    let mut arg_array=vec![];
+    let r = n.eval(&mut john, &mut arg_array,&mut holder);
     println!("{}", r.unwrap_or("null".to_string()));
 }

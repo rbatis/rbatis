@@ -25,6 +25,7 @@ use crate::core::node_type_map_factory::create_node_type_map;
 use crate::decode::rdbc_driver_decoder::decode_result_set;
 use crate::utils::driver_util;
 use crate::utils::xml_loader::load_xml;
+use crate::utils::rdbc_util::to_rdbc_values;
 
 pub struct Rbatis {
     //动态sql运算节点集合
@@ -105,21 +106,25 @@ impl Rbatis {
             return Result::Err("[rbatis] sql can not be empty！".to_string());
         }
         let is_select = sql.starts_with("select") || sql.starts_with("SELECT");
-        return self.eval_sql_raw("", eval_sql, is_select);
+        let mut arg_array=vec![];
+        return self.eval_sql_raw("", eval_sql, is_select,&mut arg_array);
     }
 
 
-    pub fn eval_sql_raw<T>(&mut self, id: &str, eval_sql: &str, is_select: bool) -> Result<T, String> where T: de::DeserializeOwned {
+    pub fn eval_sql_raw<T>(&mut self, id: &str, eval_sql: &str, is_select: bool,arg_array:&mut Vec<Value>) -> Result<T, String> where T: de::DeserializeOwned {
         let mut sql = eval_sql;
         sql = sql.trim();
         if sql.is_empty() {
             return Result::Err("[rbatis] sql can not be empty！".to_string());
         }
+        let mut params =to_rdbc_values(arg_array);
         if self.enable_log {
             if is_select {
                 info!("[rbatis] Query ==>  {}", sql);
+                info!("[rbatis][args] ==>  {}", crate::utils::rdbc_util::to_string(&params));
             } else {
-                info!("[rbatis] Query ==>  {}", sql);
+                info!("[rbatis] Exec  ==>  {}", sql);
+                info!("[rbatis][args] ==>  {}", crate::utils::rdbc_util::to_string(&params));
             }
         }
         if self.router_func.is_none() {
@@ -133,6 +138,7 @@ impl Rbatis {
         let mut conf = db_conf_opt.unwrap();
         let conn_opt = self.conn_pool.get_conn("".to_string(), &conf)?;
         let conn = conn_opt.unwrap();
+
         if is_select {
             //select
             let create_result = conn.create(sql);
@@ -140,7 +146,7 @@ impl Rbatis {
                 return Result::Err("[rbatis] exec fail:".to_string() + format!("{:?}", create_result.err().unwrap()).as_str());
             }
             let mut create_statement = create_result.unwrap();
-            let exec_result = create_statement.execute_query(&vec![]);
+            let exec_result = create_statement.execute_query(&params);
             if exec_result.is_err() {
                 return Result::Err("[rbatis] exec fail:".to_string() + format!("{:?}", exec_result.err().unwrap()).as_str());
             }
@@ -155,7 +161,7 @@ impl Rbatis {
             if create_result.is_err() {
                 return Result::Err("[rbatis] exec fail:".to_string() + format!("{:?}", create_result.err().unwrap()).as_str());
             }
-            let exec_result = create_result.unwrap().execute_update(&vec![]);
+            let exec_result = create_result.unwrap().execute_update(&params);
             if exec_result.is_err() {
                 return Result::Err("[rbatis] exec fail:".to_string() + format!("{:?}", exec_result.err().unwrap()).as_str());
             }
@@ -181,7 +187,7 @@ impl Rbatis {
     ///       "size":null,
     ///    }));
     ///
-    pub fn eval<T>(&mut self, mapper_name: &str, id: &str, env: &mut Value) -> Result<T, String> where T: de::DeserializeOwned {
+    pub fn eval<T>(&mut self, mapper_name: &str, id: &str, env: &mut Value, arg_array: &mut Vec<Value>) -> Result<T, String> where T: de::DeserializeOwned {
         let mapper_opt = self.mapper_map.get(&mapper_name.to_string());
         if mapper_opt.is_none() {
             return Result::Err("[rbatis] find mapper fail,name:'".to_string() + mapper_name + "'");
@@ -190,16 +196,15 @@ impl Rbatis {
         if node.is_none() {
             return Result::Err("[rbatis] find method fail,name:'".to_string() + mapper_name + id + "'");
         }
-
         let mapper_func = node.unwrap();
-        let sql_string = mapper_func.eval(env, &mut self.holder)?;
+        let sql_string = mapper_func.eval(env, arg_array,&mut self.holder)?;
         let sql = sql_string.as_str();
         match &mapper_func {
             NodeType::NSelectNode(_) => {
-                return self.eval_sql_raw(id, sql, true);
+                return self.eval_sql_raw(id, sql, true, arg_array);
             }
             _ => {
-                return self.eval_sql_raw(id, sql, false);
+                return self.eval_sql_raw(id, sql, false, arg_array);
             }
         }
     }
