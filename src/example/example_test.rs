@@ -41,7 +41,7 @@ fn init_rbatis() -> Result<Rbatis, String> {
         return Err("请修改mysql链接'mysql://root:TEST@localhost:3306/test' 替换为具体的 用户名，密码，ip，和数据库名称".to_string());
     }
 
-//    自定义动态数据源路由return 的字符串为 rbatis.db_router 中定义的配置的key(默认""为默认配置)（在此之前需要加载配置rbatis.db_router.insert()）
+//    自定义动态数据源路由return 的字符串为 rbatis.db_router 中定义的配置的key(默认""为默认配置)（在此之前需要加载配置rbatis.load_db_url()）
 //    rbatis.router_func = |id| -> String{
 //        info!("[rbatis]匹配路由key  ====>  {}",id);
 //        //例如：你可以自定义读写分离
