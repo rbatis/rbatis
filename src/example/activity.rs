@@ -11,6 +11,8 @@ pub struct Activity {
     pub name: Option<String>,
     pub pc_link:Option<String>,
     pub h5_link:Option<String>,
+    pub sort:Option<i32>,
+    pub status:Option<i32>,
     pub remark:Option<String>,
     pub create_time:Option<String>,
     pub version: Option<i32>,

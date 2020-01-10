@@ -9,12 +9,12 @@ use std::fs;
 impl Rbatis {
 
     pub fn insert<T>(&mut self, mapper_name: &str, arg: &mut Value) -> Result<T, String> where T: DeserializeOwned {
-        let sql = self.create_sql_insert(mapper_name, arg)?;
         let mut arg_array=vec![];
+        let sql = self.create_sql_insert(mapper_name, arg,&mut arg_array)?;
         return self.eval_raw((mapper_name.to_string()+".insert").as_str(), sql.as_str(), true, &mut arg_array);
     }
 
-    pub fn create_sql_insert(&mut self, mapper_name: &str, arg: &mut Value) -> Result<String, String> {
+    pub fn create_sql_insert(&mut self, mapper_name: &str, arg: &mut Value,arg_array:&mut Vec<Value>) -> Result<String, String> {
         if arg.is_null() {
             return Result::Err("[rbatis] arg is null value".to_string());
         }
@@ -26,7 +26,7 @@ impl Rbatis {
         sql = sql.replace("#{table}", result_map_node.table.as_ref().unwrap());
         if arg.is_object() {
             //insert object
-            return Result::Ok(do_create_obj_sql(sql, arg));
+            return Result::Ok(do_create_obj_sql(sql, arg,arg_array));
         } else if arg.is_array() {
             //insert array
             let mut values = "".to_string();
@@ -72,16 +72,20 @@ fn do_create_values_sql(arg: &Value) -> String {
 }
 
 
-fn do_create_obj_sql(mut sql: String, arg: &Value) -> String {
+fn do_create_obj_sql(mut sql: String, arg: &Value,arg_array:&mut Vec<Value>) -> String {
     let obj = arg.as_object();
     let obj_map = obj.unwrap();
-    let mut values = vec![];
+    let mut values = String::new();
     for (x, item) in obj_map {
-        values.push(item.clone());
+        arg_array.push(item.clone());
+        values=values+" ? ,"
     }
-    let vals = serde_json::Value::Array(values);
+    if values.len()>0 {
+      values.pop();
+    }
+    //    let vals = serde_json::Value::Array(values);
     sql = sql.replace("#{fields}", arg.to_sql_column().as_str());
-    sql = sql.replace("#{values}", vals.to_sql_value_skip("").as_str());
+    sql = sql.replace("#{values}", ("(".to_string()+values.as_str()+")").as_str());
     return sql;
 }
 
@@ -94,7 +98,8 @@ fn test_insert_templete_obj() {
     rbatis.load_xml("Example_ActivityMapper.xml".to_string(), fs::read_to_string("./src/example/Example_ActivityMapper.xml").unwrap());//加载xml数据
 
     let mut arg = serde_json::from_str(r#"{  "a":"1","delete_flag":1}"#).unwrap();
-    let sql = rbatis.create_sql_insert("Example_ActivityMapper.xml", &mut arg).unwrap();
+    let mut arg_array=vec![];
+    let sql = rbatis.create_sql_insert("Example_ActivityMapper.xml", &mut arg,&mut arg_array).unwrap();
     println!("{}", sql);
 }
 
@@ -104,8 +109,8 @@ fn test_insert_templete_array() {
     log4rs::init_file("log4rs.yaml", Default::default()).unwrap();
     let mut rbatis =Rbatis::new();
     rbatis.load_xml("Example_ActivityMapper.xml".to_string(), fs::read_to_string("./src/example/Example_ActivityMapper.xml").unwrap());//加载xml数据
-
+    let mut arg_array=vec![];
     let mut arg = serde_json::from_str(r#"[{"a":"1","delete_flag":1},{"a":"1","delete_flag":1}]"#).unwrap();
-    let sql = rbatis.create_sql_insert("Example_ActivityMapper.xml", &mut arg).unwrap();
+    let sql = rbatis.create_sql_insert("Example_ActivityMapper.xml", &mut arg,&mut arg_array).unwrap();
     println!("{}", sql);
 }

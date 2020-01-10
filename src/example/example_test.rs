@@ -56,6 +56,80 @@ fn init_rbatis() -> Result<Rbatis, String> {
 }
 
 
+
+#[test]
+fn test_insert(){
+    //初始化rbatis
+    let rbatis_opt = init_rbatis();
+    if rbatis_opt.is_err() {
+        return;
+    }
+    let mut rbatis =rbatis_opt.unwrap();
+    //插入前先删一下
+    let r:Result<i32,String>=rbatis.eval_sql("delete from biz_activity  where id = '1'");
+
+    let activity=Activity{
+        id: Some("1".to_string()),
+        name: Some("活动1".to_string()),
+        pc_link: None,
+        h5_link: None,
+        sort: Some(1),
+        status: Some(1),
+        remark: None,
+        create_time: Some("2019-12-12 00:00:00".to_string()),
+        version: Some(1),
+        delete_flag: Some(1)
+    };
+    let r:Result<i32,String>=rbatis.insert("Example_ActivityMapper.xml",&mut json!(activity));
+    println!("[rbatis] result==>  {:?}", r);
+}
+
+
+#[test]
+fn test_delete(){
+    //初始化rbatis
+    let rbatis_opt = init_rbatis();
+    if rbatis_opt.is_err() {
+        return;
+    }
+    let mut rbatis =rbatis_opt.unwrap();
+    let r:Result<i32,String>=rbatis.delete("Example_ActivityMapper.xml",&mut json!("1"));
+    println!("[rbatis] result==>  {:?}", r);
+}
+
+#[test]
+fn test_update(){
+    //初始化rbatis
+    let rbatis_opt = init_rbatis();
+    if rbatis_opt.is_err() {
+        return;
+    }
+    let mut rbatis =rbatis_opt.unwrap();
+
+    //先插入
+    //插入前先删一下
+    let r:Result<i32,String>=rbatis.eval_sql("delete from biz_activity  where id = '1'");
+    let r:Result<i32,String>=rbatis.insert("Example_ActivityMapper.xml",&mut json!(Activity{
+        id: Some("1".to_string()),
+        name: Some("活动1".to_string()),
+        pc_link: None,
+        h5_link: None,
+        sort: Some(1),
+        status: Some(1),
+        remark: None,
+        create_time: Some("2019-12-12 00:00:00".to_string()),
+        version: Some(1),
+        delete_flag: Some(1)
+    }));
+
+    //update
+    let r: Result<i32, String> = rbatis.update("Example_ActivityMapper.xml", &mut json!({
+    "id":"1",
+    "name":"updated",
+    }));
+    println!("[rbatis] result==>  {:?}", r);
+}
+
 /**
  示例-查询活动 数组 集合
 */

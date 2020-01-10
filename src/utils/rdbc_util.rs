@@ -1,24 +1,11 @@
 use serde_json::Value;
+use crate::convert::sql_value_convert::SqlValueConvert;
 
 pub fn to_rdbc_values(arg_array:&mut Vec<Value>)->Vec<rdbc::Value>{
     let mut params =vec![];
     for x in arg_array {
-        match x{
-            serde_json::Value::String(v)=>{
-                params.push(rdbc::Value::String(v.clone()));
-            }
-            serde_json::Value::Number(v)=>{
-                if v.is_i64(){
-                    params.push(rdbc::Value::String(v.as_i64().unwrap().to_string()));
-                }else if v.is_u64(){
-                    params.push(rdbc::Value::String(v.as_u64().unwrap().to_string()));
-                }else if v.is_f64(){
-                    params.push(rdbc::Value::String(v.as_f64().unwrap().to_string()));
-                }
-            }
-            _ => {
-            }
-        }
+        let item=x.to_sql_value_def();
+        params.push(rdbc::Value::String(item));
     }
     return params;
 }
