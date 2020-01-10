@@ -152,7 +152,7 @@ impl Rbatis {
             }
             let (result, decoded_num) = decode_result_set(exec_result.unwrap().as_mut());
             if self.enable_log {
-                info!("{}", "[rbatis] ReturnRows <== ".to_string() + decoded_num.to_string().as_str());
+                info!("[rbatis] ReturnRows <== {}: {}",id,decoded_num.to_string().as_str());
             }
             return result;
         } else {
@@ -171,7 +171,7 @@ impl Rbatis {
                 return Result::Err("[rbatis] exec fail:".to_string() + r.err().unwrap().to_string().as_str());
             }
             if self.enable_log {
-                info!("{}", "[rbatis] RowsAffected <== ".to_string() + affected_rows.to_string().as_str());
+                info!("[rbatis] RowsAffected <== {}: {}",id,affected_rows.to_string().as_str());
             }
             return Result::Ok(r.unwrap());
         }
