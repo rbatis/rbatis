@@ -54,11 +54,12 @@ pub fn decode_result_set<T: ?Sized>(arg: &mut dyn ResultSet) -> (Result<T, Strin
             }
         }
     }
+    println!("js:{}",js);
     let decode_result = serde_json::from_value(js);
     if decode_result.is_ok() {
         return (Result::Ok(decode_result.unwrap()), len);
     } else {
         let e = decode_result.err().unwrap().to_string();
-        return (Result::Err("[rbatis] json decode fail:".to_string() + e.as_str()), len);
+        return (Result::Err("[rbatis] json decode: ".to_string()+type_name+" fail:" + e.as_str()), len);
     }
 }

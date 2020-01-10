@@ -210,7 +210,8 @@ impl Rbatis {
         sql = sql.replace("#{where}", where_string.as_str());
 
         if ipage_opt.is_some() {
-            sql = sql + " LIMIT " + ipage_opt.as_ref().unwrap().current.to_string().as_str() + "," + ipage_opt.as_ref().unwrap().size.to_string().as_str();
+            let ipage=ipage_opt.as_ref().unwrap();
+            sql = sql + " LIMIT " + ((ipage.current-1)*ipage.size).to_string().as_str() + "," + ipage.size.to_string().as_str();
         }
         return Result::Ok((sql,where_string));
     }
