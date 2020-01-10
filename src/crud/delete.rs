@@ -2,41 +2,47 @@ use std::borrow::{BorrowMut, Borrow};
 use std::fs;
 
 use serde_json::{Value, Map};
+use serde_json::json;
 
 use crate::ast::xml::result_map_node::ResultMapNode;
 use crate::core::rbatis::Rbatis;
 use crate::engine::node::NodeType;
 use serde_json::value::Value::Number;
-use crate::convert::sql_value_convert::SqlValueConvert;
+use crate::convert::sql_value_convert::{SqlValueConvert, SqlQuestionConvert, AND};
 use std::any::Any;
 use serde::de::DeserializeOwned;
 
 impl Rbatis{
 
     pub fn delete<T>(&mut self, mapper_name: &str, arg: &mut Value) -> Result<T, String> where T: DeserializeOwned {
-        let sql = self.create_sql_delete(mapper_name, arg)?;
         let mut arg_array=vec![];
+        let sql = self.create_sql_delete(mapper_name, arg,&mut arg_array)?;
         return self.eval_raw((mapper_name.to_string()+".delete").as_str(), sql.as_str(), false, &mut arg_array);
     }
 
 
-    pub fn create_sql_delete(&mut self, mapper_name: &str, arg: &mut Value) -> Result<String, String>{
+    pub fn create_sql_delete(&mut self, mapper_name: &str, arg: &mut Value,arg_arr:&mut Vec<Value>) -> Result<String, String>{
         let result_map_node=self.get_result_map_node(mapper_name)?;
         match arg {
             serde_json::Value::String(_) | serde_json::Value::Number(_)=>{
                 //delete by id
                 //replace where
-                let where_str = "id = ".to_string() + arg.to_sql_value_def().as_str();
+                arg_arr.push(arg.clone());
+                let sql=arg.to_sql_question(AND,",",arg_arr);
+                let where_str = "id = ".to_string() + sql.as_str();
                 return self.do_delete_by(arg,&result_map_node,where_str.as_str());
             }
-            serde_json::Value::Array(_)=>{
+            serde_json::Value::Array(arr)=>{
                 //delete by ids
-                let where_str="id in ".to_string()+arg.to_sql_value_def().as_str();
+                for x in arr {
+                    arg_arr.push(x.clone());
+                }
+                let sql=arg.to_sql_question(AND,",",arg_arr);
+                let where_str="id in ".to_string()+sql.as_str();
                 return self.do_delete_by(arg,&result_map_node,where_str.as_str());
             }
             serde_json::Value::Object(map)=>{
-                let  c=map.clone();
-                let where_str=arg.to_sql_value_def();
+                let where_str=arg.to_sql_question(AND,",",arg_arr);
                 return self.do_delete_by(arg,&result_map_node,where_str.as_str());
             }
             serde_json::Value::Null=>{
@@ -77,8 +83,11 @@ fn test_delete_by_id() {
     let mut rbatis =Rbatis::new();
     rbatis.load_xml("Example_ActivityMapper.xml".to_string(), fs::read_to_string("./src/example/Example_ActivityMapper.xml").unwrap());//加载xml数据
 
-    let sql=rbatis.create_sql_delete("Example_ActivityMapper.xml", serde_json::json!("1").borrow_mut());
+    let mut arg_array=vec![];
+
+    let sql=rbatis.create_sql_delete("Example_ActivityMapper.xml", serde_json::json!("1").borrow_mut(),&mut arg_array);
     println!("{}",sql.unwrap());
+    println!("{}", json!(arg_array));
 }
 
 #[test]
@@ -87,8 +96,10 @@ fn test_delete_by_ids() {
     let mut rbatis =Rbatis::new();
     rbatis.load_xml("Example_ActivityMapper.xml".to_string(), fs::read_to_string("./src/example/Example_ActivityMapper.xml").unwrap());//加载xml数据
 
-    let sql =rbatis.create_sql_delete("Example_ActivityMapper.xml", serde_json::json!(vec![1,2,3]).borrow_mut());
+    let mut arg_array=vec![];
+    let sql =rbatis.create_sql_delete("Example_ActivityMapper.xml", serde_json::json!(vec![1,2,3]).borrow_mut(),&mut arg_array);
     println!("{}",sql.unwrap());
+    println!("{}", json!(arg_array));
 }
 
 #[test]
@@ -97,11 +108,13 @@ fn test_delete_by_map() {
     let mut rbatis =Rbatis::new();
     rbatis.load_xml("Example_ActivityMapper.xml".to_string(), fs::read_to_string("./src/example/Example_ActivityMapper.xml").unwrap());//加载xml数据
 
+    let mut arg_array=vec![];
     let sql =rbatis.create_sql_delete("Example_ActivityMapper.xml", serde_json::json!({
      "arg": 2,
      "delete_flag":1,
-     "number_arr":vec![1,2,3],
+     "number_arr":vec![8,8,8],
      "string_arr":vec!["1","2","3"]
-    }).borrow_mut());
+    }).borrow_mut(),&mut arg_array);
     println!("{}",sql.unwrap());
+    println!("{}", json!(arg_array));
 }
