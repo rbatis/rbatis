@@ -23,7 +23,7 @@ use crate::core::conn_pool::ConnPool;
 use crate::core::db_config::DBConfig;
 use crate::core::node_type_map_factory::create_node_type_map;
 use crate::decode::rdbc_driver_decoder::decode_result_set;
-use crate::utils::driver_util;
+use crate::utils::{driver_util, rdbc_util};
 use crate::utils::xml_loader::load_xml;
 use crate::utils::rdbc_util::to_rdbc_values;
 
@@ -125,10 +125,10 @@ impl Rbatis {
         if self.enable_log {
             if is_select {
                 info!("[rbatis] Query: ==>  {}: {}", id, sql);
-                info!("[rbatis]  Args: ==>  {}: {}", id, crate::utils::rdbc_util::rdbc_vec_to_string(&params));
+                info!("[rbatis]  Args: ==>  {}: {}", id, rdbc_util::rdbc_vec_to_string(&params));
             } else {
                 info!("[rbatis]  Exec:  ==>  {}: {}", id, sql);
-                info!("[rbatis]  Args:  ==>  {}: {}", id, crate::utils::rdbc_util::rdbc_vec_to_string(&params));
+                info!("[rbatis]  Args:  ==>  {}: {}", id, rdbc_util::rdbc_vec_to_string(&params));
             }
         }
         let key = (self.router_func)(id);
