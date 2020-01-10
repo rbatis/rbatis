@@ -20,17 +20,17 @@ pub struct ChooseNode {
 }
 
 impl Ast for ChooseNode {
-    fn eval(&self, env: &mut Value, arg_array:&mut Vec<Value>,holder: &mut ConfigHolder) -> Result<String, String> {
+    fn eval(&self, env: &mut Value, holder: &mut ConfigHolder,arg_array:&mut Vec<Value>) -> Result<String, String> {
         if self.when_nodes.is_none() == false {
             for item in self.when_nodes.clone().unwrap() {
-                let s = item.eval(env, arg_array,holder);
+                let s = item.eval(env,holder,arg_array);
                 if s.is_ok() {
                     return s;
                 }
             }
         }
         if self.otherwise_node.is_none() == false {
-            return self.otherwise_node.clone().unwrap().deref_mut().eval(env, arg_array,holder);
+            return self.otherwise_node.clone().unwrap().deref_mut().eval(env,holder,arg_array);
         }
         return Result::Ok("".to_string());
     }
@@ -64,6 +64,6 @@ pub fn test_choose_node() {
     let mut arg_array=vec![];
 
 
-    let r = c.eval(&mut john, &mut arg_array,&mut holder);
+    let r = c.eval(&mut john,&mut holder, &mut arg_array);
     println!("{}", r.unwrap());
 }

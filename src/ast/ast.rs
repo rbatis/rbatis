@@ -8,5 +8,5 @@ pub trait Ast {
     /**
     env: &mut Value,因为bind node 会绑定变量，env必须为可修改的值
     */
-    fn eval(&self, env: &mut Value, arg_array:&mut Vec<Value>,holder:&mut ConfigHolder) -> Result<String, String>;
+    fn eval(&self, env: &mut Value,holder:&mut ConfigHolder,arg_result:&mut Vec<Value>) -> Result<String, String>;
 }

@@ -11,8 +11,8 @@ pub struct SetNode {
 }
 
 impl Ast for SetNode {
-    fn eval(&self, env: &mut Value, arg_array:&mut Vec<Value>,holder: &mut ConfigHolder) -> Result<String, String> {
-        return do_child_nodes(&self.childs, env, arg_array,holder);
+    fn eval(&self, env: &mut Value, holder: &mut ConfigHolder,arg_array:&mut Vec<Value>) -> Result<String, String> {
+        return do_child_nodes(&self.childs, env,holder,arg_array);
     }
 }
 

@@ -52,7 +52,7 @@ impl IfNode {
 }
 
 impl Ast for IfNode {
-    fn eval(&self, env: &mut Value,arg_array:&mut Vec<Value>, holder: &mut ConfigHolder) -> Result<String, String> {
+    fn eval(&self, env: &mut Value, holder: &mut ConfigHolder,arg_array:&mut Vec<Value>) -> Result<String, String> {
         println!("express:{}",self.express);
         println!("_if:{}",self._if);
         return Result::Ok("".to_string())
@@ -65,5 +65,5 @@ pub fn test_if_node() {
     let if_node = IfNode::new("if a!=b:");
     let mut arg_array=vec![];
 
-    if_node.eval(&mut json!("1"),&mut arg_array,&mut ConfigHolder::new());
+    if_node.eval(&mut json!("1"),&mut ConfigHolder::new(),&mut arg_array);
 }

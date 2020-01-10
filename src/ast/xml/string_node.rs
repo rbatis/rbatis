@@ -41,7 +41,7 @@ impl StringNode {
 }
 
 impl Ast for StringNode {
-    fn eval(&self, env: &mut Value, arg_array:&mut Vec<Value>,holder: &mut ConfigHolder) -> Result<String, String> {
+    fn eval(&self, env: &mut Value, holder: &mut ConfigHolder,arg_array:&mut Vec<Value>) -> Result<String, String> {
         let mut result = self.value.clone();
         for (item, value) in &self.express_map {
             //TODO replace to '?'
@@ -93,6 +93,6 @@ pub fn test_string_node() {
     let s_node = StringNode::new("arg+1=#{arg+1}");
     let mut arg_array=vec![];
 
-    let r = s_node.eval(&mut john, &mut arg_array,&mut holder).unwrap();
+    let r = s_node.eval(&mut john,&mut holder, &mut arg_array).unwrap();
     println!("{}", r);
 }

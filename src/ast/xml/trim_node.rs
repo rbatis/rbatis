@@ -16,8 +16,8 @@ pub struct TrimNode {
 }
 
 impl Ast for TrimNode {
-    fn eval(&self, env: &mut Value, arg_array:&mut Vec<Value>,holder: &mut ConfigHolder) -> Result<String, String> {
-        let result_value = do_child_nodes(&self.childs, env,arg_array, holder);
+    fn eval(&self, env: &mut Value, holder: &mut ConfigHolder,arg_array:&mut Vec<Value>) -> Result<String, String> {
+        let result_value = do_child_nodes(&self.childs, env, holder,arg_array);
         let is_error = result_value.is_err();
         if is_error {
             return Result::Err(result_value.clone().err().unwrap());
@@ -73,6 +73,6 @@ pub fn test_trim_node() {
     });
     let mut arg_array=vec![];
 
-    let r = node.eval(&mut john, &mut arg_array,&mut holder).unwrap();
+    let r = node.eval(&mut john,&mut holder, &mut arg_array).unwrap();
     println!("{}", r)
 }
