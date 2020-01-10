@@ -287,6 +287,8 @@ fn test_select_by_id_page() {
         name: Some("新人专享".to_string()),
         pc_link: None,
         h5_link: None,
+        sort: None,
+        status: Some(1),
         remark: None,
         create_time: None,
         version: None,
