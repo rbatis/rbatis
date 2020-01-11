@@ -7,7 +7,7 @@ use crate::utils::driver_util;
 
 ///链接工厂
 pub trait ConnFactory {
-    fn get_thread_conn(&mut self, id: ThreadId, driver: &str) -> Result<&Box<dyn Connection>, String>;
+    fn get_thread_conn(&mut self, id: ThreadId, driver: &str) -> Result<&mut Box<dyn Connection>, String>;
 }
 
 
@@ -18,14 +18,14 @@ pub struct ConnFactoryImpl {
 
 
 impl ConnFactory for ConnFactoryImpl {
-    fn get_thread_conn(&mut self, id: ThreadId, driver: &str) -> Result<&Box<dyn Connection>, String> {
+    fn get_thread_conn(&mut self, id: ThreadId, driver: &str) -> Result<&mut Box<dyn Connection>, String> {
         let item=self.data.get(&id);
         if item.is_some() {
-            return Ok(self.data.get(&id).unwrap());
+            return Ok(self.data.get_mut(&id).unwrap());
         } else {
             let r = driver_util::get_conn_by_link(driver)?;
             self.data.insert(id.clone(), r);
-            return Ok(self.data.get(&id).unwrap());
+            return Ok(self.data.get_mut(&id).unwrap());
         }
     }
 }

@@ -19,7 +19,6 @@ use crate::ast::xml::node::{loop_decode_xml, SqlNodePrint};
 use crate::ast::xml::node_type::NodeType;
 use crate::ast::xml::result_map_node::ResultMapNode;
 use crate::ast::xml::string_node::StringNode;
-use crate::conn_pool::ConnPool;
 use crate::db_config::DBConfig;
 use crate::node_type_map_factory::create_node_type_map;
 use crate::decode::rdbc_driver_decoder::decode_result_set;
@@ -30,6 +29,8 @@ use serde_json::de::ParserNumber;
 use crate::session::Session;
 use uuid::Uuid;
 use crate::tx::propagation::Propagation;
+use crate::conn_factory::{ConnFactory, ConnFactoryImpl};
+use std::thread;
 
 pub struct Rbatis {
     pub id :String,
@@ -38,12 +39,14 @@ pub struct Rbatis {
     //动态sql节点配置
     pub holder: ConfigHolder,
     //路由配置
-    pub db_router: HashMap<String, DBConfig>,
+    pub db_driver_map: HashMap<String, String>,
     pub router_func: fn(id: &str) -> String,
-    //连接池
-    pub conn_pool: ConnPool,
+    //连接工厂
+    pub conn_factory: Box<dyn ConnFactory>,
     //允许日志输出，禁用此项可减少IO,提高性能
     pub enable_log: bool,
+    //true异步模式，false线程模式
+    pub async_mode: bool,
 }
 
 
@@ -53,13 +56,14 @@ impl Rbatis {
             id: Uuid::new_v4().to_string(),
             mapper_map: HashMap::new(),
             holder: ConfigHolder::new(),
-            db_router: HashMap::new(),
-            conn_pool: ConnPool::new(),
+            db_driver_map: HashMap::new(),
+            conn_factory: Box::new(ConnFactoryImpl::new(true)),
             router_func: |id| -> String{
                 //加载默认配置，key=""
                 return "".to_string();
             },
             enable_log: true,
+            async_mode: false,
         };
     }
 
@@ -84,7 +88,7 @@ impl Rbatis {
     pub fn load_db_url(&mut self, key: &str, url: &str) -> Option<String> {
         let db_config_opt = DBConfig::new(url.to_string());
         if db_config_opt.is_ok() {
-            self.db_router.insert(key.to_string(), db_config_opt.unwrap());
+            self.db_driver_map.insert(key.to_string(), key.to_string());
             return Option::None;
         } else {
             let e = db_config_opt.err().unwrap();
@@ -119,53 +123,29 @@ impl Rbatis {
     }
 
     pub fn begin(&mut self,id: &str) -> Result<u64, String>{
-        let key = (self.router_func)(id);
-        let db_conf_opt = self.db_router.get(key.as_str());
-        if db_conf_opt.is_none() {
-            return Result::Err("[rbatis] no DBConfig:".to_string() + key.as_str() + " find!");
-        }
-        let conf = db_conf_opt.unwrap();
-        let conn_opt = self.conn_pool.get_conn(id.to_string(), &conf)?;
-        let conn = conn_opt.unwrap();
-        let create_result = conn.create("begin;");
-        if create_result.is_err() {
-            return Result::Err("[rbatis] exec fail:".to_string()  + format!("{:?}", create_result.err().unwrap()).as_str());
-        }
-        let exec_result = create_result.unwrap().execute_update(&[]);
-        if exec_result.is_err() {
-            return Result::Err("[rbatis] exec fail:".to_string()  + format!("{:?}", exec_result.err().unwrap()).as_str());
-        }
-        return Result::Ok(exec_result.unwrap())
+        let data=self.eval_sql_source(id, "begin;")?;
+        return Result::Ok(data);
     }
     pub fn commit(&mut self,id: &str) -> Result<u64, String>{
-        let key = (self.router_func)(id);
-        let db_conf_opt = self.db_router.get(key.as_str());
-        if db_conf_opt.is_none() {
-            return Result::Err("[rbatis] no DBConfig:".to_string() + key.as_str() + " find!");
-        }
-        let conf = db_conf_opt.unwrap();
-        let conn_opt = self.conn_pool.get_conn(id.to_string(), &conf)?;
-        let conn = conn_opt.unwrap();
-        let create_result = conn.create("commit;");
-        if create_result.is_err() {
-            return Result::Err("[rbatis] exec fail:".to_string()  + format!("{:?}", create_result.err().unwrap()).as_str());
-        }
-        let exec_result = create_result.unwrap().execute_update(&[]);
-        if exec_result.is_err() {
-            return Result::Err("[rbatis] exec fail:".to_string()  + format!("{:?}", exec_result.err().unwrap()).as_str());
-        }
-        return Result::Ok(exec_result.unwrap())
+        let data=self.eval_sql_source(id, "commit;")?;
+        return Result::Ok(data);
     }
     pub fn rollback(&mut self,id: &str) -> Result<u64, String>{
+        let data=self.eval_sql_source(id, "rollback;")?;
+        return Result::Ok(data);
+    }
+
+    ///执行无编译的原生sql
+    pub fn eval_sql_source(&mut self, id: &str, sql:&str) -> Result<u64, String>{
         let key = (self.router_func)(id);
-        let db_conf_opt = self.db_router.get(key.as_str());
+        let db_conf_opt = self.db_driver_map.get(key.as_str());
         if db_conf_opt.is_none() {
             return Result::Err("[rbatis] no DBConfig:".to_string() + key.as_str() + " find!");
         }
-        let conf = db_conf_opt.unwrap();
-        let conn_opt = self.conn_pool.get_conn(id.to_string(), &conf)?;
-        let conn = conn_opt.unwrap();
-        let create_result = conn.create("rollback;");
+        let driver = db_conf_opt.unwrap();
+        let thread_id=thread::current().id();
+        let conn = self.conn_factory.get_thread_conn(thread_id,driver.as_str())?;
+        let create_result = conn.create(sql);
         if create_result.is_err() {
             return Result::Err("[rbatis] exec fail:".to_string()  + format!("{:?}", create_result.err().unwrap()).as_str());
         }
@@ -175,7 +155,6 @@ impl Rbatis {
         }
         return Result::Ok(exec_result.unwrap())
     }
-
 
     ///执行
     /// arg_array: 执行后 需要替换的参数数据
@@ -197,14 +176,13 @@ impl Rbatis {
             }
         }
         let key = (self.router_func)(id);
-        let db_conf_opt = self.db_router.get(key.as_str());
+        let db_conf_opt = self.db_driver_map.get(key.as_str());
         if db_conf_opt.is_none() {
             return Result::Err("[rbatis] no DBConfig:".to_string() + key.as_str() + " find!");
         }
-        let conf = db_conf_opt.unwrap();
-        let conn_opt = self.conn_pool.get_conn("".to_string(), &conf)?;
-        let conn = conn_opt.unwrap();
-
+        let driver = db_conf_opt.unwrap();
+        let thread_id=thread::current().id();
+        let conn = self.conn_factory.get_thread_conn(thread_id,driver.as_str())?;
         if is_select {
             //select
             let create_result = conn.prepare(sql);

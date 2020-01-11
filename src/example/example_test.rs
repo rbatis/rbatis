@@ -37,8 +37,8 @@ fn init_rbatis() -> Result<Rbatis, String> {
     let  f=fs::File::open("./src/example/Example_ActivityMapper.xml");
     rbatis.load_xml("Example_ActivityMapper.xml".to_string(), fs::read_to_string("./src/example/Example_ActivityMapper.xml").unwrap());//加载xml数据
     //判断是否配置数据库
-    let conf = rbatis.db_router.get("").unwrap();
-    if conf.db_addr.contains("localhost") {
+    let conf = rbatis.db_driver_map.get("").unwrap();
+    if conf.contains("localhost") {
         error!("{}", "请修改mysql链接'mysql://root:TEST@localhost:3306/test' 替换为具体的 用户名，密码，ip，和数据库名称");
         return Err("请修改mysql链接'mysql://root:TEST@localhost:3306/test' 替换为具体的 用户名，密码，ip，和数据库名称".to_string());
     }
