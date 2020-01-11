@@ -44,10 +44,7 @@ impl Ast for StringNode {
     fn eval(&self, env: &mut Value, holder: &mut ConfigHolder,arg_array:&mut Vec<Value>) -> Result<String, String> {
         let mut result = self.value.clone();
         for (item, value) in &self.express_map {
-            //TODO replace to '?'
-            //TODO insert vec<Value> in to  env["sql_arg"]
             result = result.replace(value, " ? ");
-
             let get_v = env.get(item);
             if get_v.is_none() {
                 let v = holder.engine.eval(item, env).unwrap();
@@ -56,17 +53,6 @@ impl Ast for StringNode {
                 let v = get_v.unwrap().clone();
                 arg_array.push(v);
             }
-
-//            let get_v = env.get(item);
-//            if get_v.is_none() {
-//                let v = holder.engine.eval(item, env).unwrap();
-//                let vstr = v.to_sql_value_def();
-//                result = result.replace(value, vstr.as_str());
-//            } else {
-//                let v = get_v.unwrap().clone();
-//                let vstr = v.to_sql_value_def();
-//                result = result.replace(value, vstr.as_str());
-//            }
         }
         for (item, value) in &self.no_convert_express_map {
             result = result.replace(value, env.get(item).unwrap_or(&Value::String(String::new())).as_str().unwrap_or(""));
