@@ -33,6 +33,8 @@ fn init_rbatis() -> Result<Rbatis, String> {
     //3 加载数据库url name 为空，则默认数据库
     rbatis.load_db_url("", MYSQL_URL);//"mysql://root:TEST@localhost:3306/test"
     //4 加载xml配置
+
+    let  f=fs::File::open("./src/example/Example_ActivityMapper.xml");
     rbatis.load_xml("Example_ActivityMapper.xml".to_string(), fs::read_to_string("./src/example/Example_ActivityMapper.xml").unwrap());//加载xml数据
     //判断是否配置数据库
     let conf = rbatis.db_router.get("").unwrap();
