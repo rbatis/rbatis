@@ -225,3 +225,34 @@ fn test_exec_select_page_custom() {
     }), &IPage::new(1, 5)).unwrap();
     println!("[rbatis] result==>  {:?}", data);
 }
+
+
+pub struct Service{
+}
+impl Service{
+    pub fn find_activity(&self){
+        println!("activity");
+    }
+}
+
+
+/**
+  测试事务
+*/
+#[test]
+fn test_tx(){
+//初始化rbatis
+    let rbatis_opt = init_rbatis();
+    if rbatis_opt.is_err() {
+        return;
+    }
+    let mut rbatis =rbatis_opt.unwrap();
+
+    let begin=rbatis.begin("").unwrap();
+    println!("begin:{}",begin);
+    let data:u64= rbatis.eval_sql("UPDATE `biz_activity` SET `name` = '活动3' WHERE (`id` = '2');").unwrap();
+    println!("update:{}",data);
+    let rollback=  rbatis.rollback("").unwrap();
+    println!("commit:{}",rollback);
+
+}

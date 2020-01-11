@@ -14,13 +14,13 @@ impl ConnPool{
         }
     }
 
-    pub fn get_conn(&mut self,name:String,conf:&DBConfig)->Result<Option<&mut Box<dyn Connection>>,String>{
-        if self.conn_map.get(&name).is_some() {
-            return Result::Ok(self.conn_map.get_mut(&name));
+    pub fn get_conn(&mut self,id:String,conf:&DBConfig)->Result<Option<&mut Box<dyn Connection>>,String>{
+        if self.conn_map.get(&id).is_some() {
+            return Result::Ok(self.conn_map.get_mut(&id));
         }else{
             let mysql_coon = driver_util::get_conn(conf)?;
-            self.conn_map.insert(name.clone(), mysql_coon);
-            return Result::Ok(self.conn_map.get_mut(&name));
+            self.conn_map.insert(id.clone(), mysql_coon);
+            return Result::Ok(self.conn_map.get_mut(&id));
         }
     }
 

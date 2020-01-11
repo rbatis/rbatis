@@ -27,8 +27,11 @@ use crate::utils::{driver_util, rdbc_util};
 use crate::utils::xml_loader::load_xml;
 use crate::utils::rdbc_util::to_rdbc_values;
 use serde_json::de::ParserNumber;
+use crate::core::session::{Session, Propagation};
+use uuid::Uuid;
 
 pub struct Rbatis {
+    pub id :String,
     //动态sql运算节点集合
     pub mapper_map: HashMap<String, HashMap<String, NodeType>>,
     //动态sql节点配置
@@ -42,9 +45,46 @@ pub struct Rbatis {
     pub enable_log: bool,
 }
 
+
+impl Session for Rbatis{
+    fn id(&self) -> String {
+        return self.id.clone();
+    }
+
+    fn query<T>(&mut self, sql: &str, arg_array: &mut Vec<Value>) -> Result<T, String> where T: de::DeserializeOwned {
+        unimplemented!()
+    }
+
+    fn exec(&mut self, sql: &str, arg_array: &mut Vec<Value>) -> Result<u64, String> {
+        unimplemented!()
+    }
+
+    fn rollback(&mut self) -> Result<u64, String> {
+        unimplemented!()
+    }
+
+    fn commit(&mut self) -> Result<u64, String> {
+        unimplemented!()
+    }
+
+    fn begin(&mut self, propagation_type: Propagation) -> Result<u64, String> {
+        unimplemented!()
+    }
+
+    fn close(&mut self) {
+        unimplemented!()
+    }
+
+    fn propagation(&self) -> Propagation {
+        unimplemented!()
+    }
+}
+
+
 impl Rbatis {
     pub fn new() -> Rbatis {
         return Rbatis {
+            id: Uuid::new_v4().to_string(),
             mapper_map: HashMap::new(),
             holder: ConfigHolder::new(),
             db_router: HashMap::new(),
@@ -105,11 +145,69 @@ impl Rbatis {
         let mut sql = eval_sql;
         sql = sql.trim();
         if sql.is_empty() {
-            return Result::Err("[rbatis] sql can not be empty！".to_string());
+            return Result::Err("[rbatis] sql can not be empty!".to_string());
         }
         let is_select = sql.starts_with("select") || sql.starts_with("SELECT");
         let mut arg_array = vec![];
         return self.eval_raw("eval_sql", eval_sql, is_select, &mut arg_array);
+    }
+
+    pub fn begin(&mut self,id: &str) -> Result<u64, String>{
+        let key = (self.router_func)(id);
+        let db_conf_opt = self.db_router.get(key.as_str());
+        if db_conf_opt.is_none() {
+            return Result::Err("[rbatis] no DBConfig:".to_string() + key.as_str() + " find!");
+        }
+        let conf = db_conf_opt.unwrap();
+        let conn_opt = self.conn_pool.get_conn(id.to_string(), &conf)?;
+        let conn = conn_opt.unwrap();
+        let create_result = conn.create("begin;");
+        if create_result.is_err() {
+            return Result::Err("[rbatis] exec fail:".to_string()  + format!("{:?}", create_result.err().unwrap()).as_str());
+        }
+        let exec_result = create_result.unwrap().execute_update(&[]);
+        if exec_result.is_err() {
+            return Result::Err("[rbatis] exec fail:".to_string()  + format!("{:?}", exec_result.err().unwrap()).as_str());
+        }
+        return Result::Ok(exec_result.unwrap())
+    }
+    pub fn commit(&mut self,id: &str) -> Result<u64, String>{
+        let key = (self.router_func)(id);
+        let db_conf_opt = self.db_router.get(key.as_str());
+        if db_conf_opt.is_none() {
+            return Result::Err("[rbatis] no DBConfig:".to_string() + key.as_str() + " find!");
+        }
+        let conf = db_conf_opt.unwrap();
+        let conn_opt = self.conn_pool.get_conn(id.to_string(), &conf)?;
+        let conn = conn_opt.unwrap();
+        let create_result = conn.create("commit;");
+        if create_result.is_err() {
+            return Result::Err("[rbatis] exec fail:".to_string()  + format!("{:?}", create_result.err().unwrap()).as_str());
+        }
+        let exec_result = create_result.unwrap().execute_update(&[]);
+        if exec_result.is_err() {
+            return Result::Err("[rbatis] exec fail:".to_string()  + format!("{:?}", exec_result.err().unwrap()).as_str());
+        }
+        return Result::Ok(exec_result.unwrap())
+    }
+    pub fn rollback(&mut self,id: &str) -> Result<u64, String>{
+        let key = (self.router_func)(id);
+        let db_conf_opt = self.db_router.get(key.as_str());
+        if db_conf_opt.is_none() {
+            return Result::Err("[rbatis] no DBConfig:".to_string() + key.as_str() + " find!");
+        }
+        let conf = db_conf_opt.unwrap();
+        let conn_opt = self.conn_pool.get_conn(id.to_string(), &conf)?;
+        let conn = conn_opt.unwrap();
+        let create_result = conn.create("rollback;");
+        if create_result.is_err() {
+            return Result::Err("[rbatis] exec fail:".to_string()  + format!("{:?}", create_result.err().unwrap()).as_str());
+        }
+        let exec_result = create_result.unwrap().execute_update(&[]);
+        if exec_result.is_err() {
+            return Result::Err("[rbatis] exec fail:".to_string()  + format!("{:?}", exec_result.err().unwrap()).as_str());
+        }
+        return Result::Ok(exec_result.unwrap())
     }
 
 
@@ -120,7 +218,7 @@ impl Rbatis {
         let mut sql = eval_sql;
         sql = sql.trim();
         if sql.is_empty() {
-            return Result::Err("[rbatis] sql can not be empty！".to_string());
+            return Result::Err("[rbatis] sql can not be empty!".to_string());
         }
         let params = to_rdbc_values(arg_array);
         if self.enable_log {
@@ -135,7 +233,7 @@ impl Rbatis {
         let key = (self.router_func)(id);
         let db_conf_opt = self.db_router.get(key.as_str());
         if db_conf_opt.is_none() {
-            return Result::Err("[rbatis] no DBConfig:".to_string() + key.as_str() + " find！");
+            return Result::Err("[rbatis] no DBConfig:".to_string() + key.as_str() + " find!");
         }
         let conf = db_conf_opt.unwrap();
         let conn_opt = self.conn_pool.get_conn("".to_string(), &conf)?;
@@ -143,7 +241,7 @@ impl Rbatis {
 
         if is_select {
             //select
-            let create_result = conn.create(sql);
+            let create_result = conn.prepare(sql);
             if create_result.is_err() {
                 return Result::Err("[rbatis] select fail:".to_string() + id + format!("{:?}", create_result.err().unwrap()).as_str());
             }
@@ -159,7 +257,7 @@ impl Rbatis {
             return result;
         } else {
             //exec
-            let create_result = conn.create(sql);
+            let create_result = conn.prepare(sql);
             if create_result.is_err() {
                 return Result::Err("[rbatis] exec fail:".to_string() + id + format!("{:?}", create_result.err().unwrap()).as_str());
             }
