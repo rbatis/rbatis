@@ -14,7 +14,7 @@ use serde_json::{json, Number, Value};
 use crate::ast::config_holder::ConfigHolder;
 use crate::ast::xml::bind_node::BindNode;
 use crate::ast::xml::node_type::NodeType;
-use crate::core::rbatis::Rbatis;
+use crate::rbatis::Rbatis;
 use crate::crud::ipage::IPage;
 use crate::decode::encoder::encode_to_value;
 use crate::decode::rdbc_driver_decoder;

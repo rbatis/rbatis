@@ -2,7 +2,7 @@ use serde_json::json;
 use serde_json::Value;
 
 use crate::convert::sql_value_convert::{SqlColumnConvert, SqlValueConvert, SqlQuestionConvert, SkipType, AND};
-use crate::core::rbatis::Rbatis;
+use crate::rbatis::Rbatis;
 use serde::de::DeserializeOwned;
 use std::fs;
 use crate::utils::rdbc_util::rdbc_vec_to_string;

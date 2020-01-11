@@ -6,7 +6,7 @@ use rdbc::{Connection, Driver};
 use rdbc_mysql::MySQLDriver;
 use rdbc_postgres::PostgresDriver;
 
-use crate::core::db_config::DBConfig;
+use crate::db_config::DBConfig;
 
 pub fn get_conn(arg: &DBConfig) -> Result<Box<dyn Connection>, String> {
     let link = arg.to_string();
