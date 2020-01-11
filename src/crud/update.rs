@@ -6,7 +6,7 @@ use serde_json::json;
 use crate::ast::xml::result_map_node::ResultMapNode;
 use crate::convert::sql_value_convert::{AND, SqlColumnConvert, SqlValueConvert, SqlQuestionConvert, SkipType};
 use crate::convert::sql_value_convert;
-use crate::core::rbatis::Rbatis;
+use crate::rbatis::Rbatis;
 use serde::de::DeserializeOwned;
 use crate::utils::string_util::count_string_num;
 

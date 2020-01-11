@@ -7,7 +7,7 @@ use serde_json::json;
 use crate::ast::xml::result_map_node::ResultMapNode;
 use crate::convert::sql_value_convert;
 use crate::convert::sql_value_convert::{SqlValueConvert, AND, SkipType, SqlQuestionConvert};
-use crate::core::rbatis::Rbatis;
+use crate::rbatis::Rbatis;
 use crate::crud::ipage::IPage;
 use crate::example::activity::Activity;
 use crate::utils::join_in::json_join;

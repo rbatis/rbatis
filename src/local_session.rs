@@ -2,7 +2,7 @@ use serde::de;
 use serde_json::Value;
 use uuid::Uuid;
 
-use crate::core::session::Session;
+use crate::session::Session;
 use crate::tx::propagation::Propagation;
 use crate::tx::save_point_stack::SavePointStack;
 use crate::tx::tx_stack::TxStack;

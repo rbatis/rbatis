@@ -1,5 +1,5 @@
 use std::collections::HashMap;
-use crate::core::db_config::DBConfig;
+use crate::db_config::DBConfig;
 use crate::utils::driver_util;
 use rdbc::Connection;
 
