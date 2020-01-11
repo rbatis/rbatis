@@ -68,14 +68,16 @@ fn test_insert(){
     }
     let mut rbatis =rbatis_opt.unwrap();
     //插入前先删一下
-    let r:Result<i32,String>=rbatis.eval_sql("delete from biz_activity  where id = '1'");
+    //let r:Result<i32,String>=rbatis.eval_sql("delete from biz_activity  where id = '1'");
 
     let activity=Activity{
         id: Some("1".to_string()),
         name: Some("活动1".to_string()),
         pc_link: None,
         h5_link: None,
-        sort: Some("1".to_string()),
+        pc_banner_img: None,
+        h5_banner_img: None,
+        sort: Some("12".to_string()),
         status: Some(1),
         remark: None,
         create_time: Some("2019-12-12 00:00:00".to_string()),
@@ -110,19 +112,21 @@ fn test_update(){
 
     //先插入
     //插入前先删一下
-    let r:Result<i32,String>=rbatis.eval_sql("delete from biz_activity  where id = '1'");
-    let r:Result<i32,String>=rbatis.insert("Example_ActivityMapper.xml",&mut json!(Activity{
+    let r:i32=rbatis.eval_sql("delete from biz_activity  where id = '1'").unwrap();
+    let r:i32=rbatis.insert("Example_ActivityMapper.xml",&mut json!(Activity{
         id: Some("1".to_string()),
         name: Some("活动1".to_string()),
         pc_link: None,
         h5_link: None,
+        pc_banner_img: None,
+        h5_banner_img: None,
         sort: Some("1".to_string()),
         status: Some(1),
         remark: None,
         create_time: Some("2019-12-12 00:00:00".to_string()),
         version: Some(1),
         delete_flag: Some(1)
-    }));
+    })).unwrap();
 
     //update
     let r: Result<i32, String> = rbatis.update("Example_ActivityMapper.xml", &mut json!({
@@ -147,6 +151,8 @@ fn test_update_array(){
         name: Some("活动1".to_string()),
         pc_link: None,
         h5_link: None,
+        pc_banner_img: None,
+        h5_banner_img: None,
         sort: Some("1".to_string()),
         status: Some(1),
         remark: None,
@@ -158,6 +164,8 @@ fn test_update_array(){
         name: Some("活动2".to_string()),
         pc_link: None,
         h5_link: None,
+        pc_banner_img: None,
+        h5_banner_img: None,
         sort: Some("1".to_string()),
         status: Some(1),
         remark: None,
@@ -252,8 +260,8 @@ fn test_tx(){
 
     let begin=rbatis.begin("").unwrap();
     println!("begin:{}",begin);
-    let data:u64= rbatis.eval_sql("UPDATE `biz_activity` SET `name` = '活动3' WHERE (`id` = '2');").unwrap();
+    let data:u64= rbatis.eval_sql("UPDATE `biz_activity` SET `name` = '活动1' WHERE (`id` = '2');").unwrap();
     println!("update:{}",data);
-    let rollback=  rbatis.rollback("").unwrap();
+    let rollback=  rbatis.commit("").unwrap();
     println!("commit:{}",rollback);
 }

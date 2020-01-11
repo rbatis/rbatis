@@ -1,10 +1,11 @@
 use serde_json::Value;
-use crate::convert::sql_value_convert::SqlValueConvert;
+use crate::convert::sql_value_convert::{SqlValueConvert, SkipType};
 
 pub fn to_rdbc_values(arg_array: &mut Vec<Value>) -> Vec<rdbc::Value> {
     let mut params = vec![];
     for x in arg_array {
-        let item = x.to_sql_value_def();
+        let item = x.to_sql_value_skip(SkipType::None);
+        println!("{}",item);
         params.push(rdbc::Value::String(item));
     }
     return params;

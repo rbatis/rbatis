@@ -10,7 +10,6 @@ use crate::db_config::DBConfig;
 
 
 pub fn get_conn_by_link(link: &str) -> Result<Box<dyn Connection>, String> {
-    println!("[rbatis] link:{}",link);
     if link.is_empty()|| link.find(":").is_none(){
         return Err("[rbatis] error of driver link!".to_string());
     }

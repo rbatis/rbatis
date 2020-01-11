@@ -182,10 +182,7 @@ impl SqlValueConvert for serde_json::Value {
                 if skip_col_type==SkipType::String {
                     return "".to_string();
                 }
-                let mut ns = s.clone();
-                ns.insert_str(0, "'");
-                ns = ns + "'";
-                return ns;
+                return format!("'{}'",s);
             }
             Value::Number(n) => {
                 if skip_col_type==SkipType::Number {

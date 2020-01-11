@@ -68,9 +68,14 @@ impl Rbatis {
 
 
 fn do_create_obj_sql(mut sql: String, arg: &Value, arg_array: &mut Vec<Value>) -> String {
-    let values = arg.to_sql_question(SkipType::None,AND,",",arg_array);
+    let obj=arg.as_object().unwrap();
+    let mut obj_vec=vec![];
+    for (_,item) in obj {
+        obj_vec.push(item.clone());
+    }
+    let values = serde_json::Value::Array(obj_vec).to_sql_question(SkipType::None,",",",",arg_array);
     sql = sql.replace("#{fields}", arg.to_sql_column().as_str());
-    sql = sql.replace("#{values}", ("(".to_string() + values.as_str() + ")").as_str());
+    sql = sql.replace("#{values}", values.as_str());
     return sql;
 }
 
