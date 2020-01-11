@@ -88,7 +88,7 @@ impl Rbatis {
     pub fn load_db_url(&mut self, key: &str, url: &str) -> Option<String> {
         let db_config_opt = DBConfig::new(url.to_string());
         if db_config_opt.is_ok() {
-            self.db_driver_map.insert(key.to_string(), key.to_string());
+            self.db_driver_map.insert(key.to_string(), url.to_string());
             return Option::None;
         } else {
             let e = db_config_opt.err().unwrap();
