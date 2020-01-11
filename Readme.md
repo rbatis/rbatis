@@ -8,7 +8,7 @@
 * 使用最通用的json数据结构（基于serde_json）进行传参和通讯
 * 性能极高，例子中的select id="select_by_condition"内的代码 单线程基准测试benchmark 可轻松拉起200000 QPS/s（直接返回数据（数据库查询时间损耗0），win10,6 core i7,16GB）  多线程更高 远超go语言版本的GoMyBatis
 * 多功能，借鉴GoMybatis（Go语言系）以及Mybatis Plus（Java系）的ORM框架经验 例如乐观锁插件+逻辑删除插件+分页插件+WebUI
-* 支持async_std库协程，兼容async await（理论上，假设严格按照async_std库替代所有io操作，那么并发量可远远超过go语言）
+* 支持async_std库协程(https://github.com/async-rs/async-std)，兼容async await（理论上，假设严格按照async_std库替代所有io操作，那么并发量可远远超过go语言）
 * 基于Rust语言稳定版构建，要求 stable:1.9 以上
 * 内置日志输出,可自定义具体日志（基于标准库log(独立于任何特定的日志记录库)，标准库日志可选任意第三方库实现，类似于java的SLF4j）
 
