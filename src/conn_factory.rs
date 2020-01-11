@@ -19,6 +19,7 @@ pub struct ConnFactoryImpl {
 
 impl ConnFactory for ConnFactoryImpl {
     fn get_thread_conn(&mut self, id: ThreadId, driver: &str) -> Result<&mut Box<dyn Connection>, String> {
+        println!("get_thread_driver:{:?},{}",id,driver);
         let item=self.data.get(&id);
         if item.is_some() {
             return Ok(self.data.get_mut(&id).unwrap());

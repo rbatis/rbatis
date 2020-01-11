@@ -256,5 +256,4 @@ fn test_tx(){
     println!("update:{}",data);
     let rollback=  rbatis.rollback("").unwrap();
     println!("commit:{}",rollback);
-
 }
