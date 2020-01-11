@@ -120,7 +120,7 @@ fn test_update(){
         h5_link: None,
         pc_banner_img: None,
         h5_banner_img: None,
-        sort: Some("1".to_string()),
+        sort: Some("122".to_string()),
         status: Some(1),
         remark: None,
         create_time: Some("2019-12-12 00:00:00".to_string()),
