@@ -185,7 +185,7 @@ impl Rbatis {
         let conn = self.conn_factory.get_thread_conn(thread_id,driver.as_str())?;
         if is_select {
             //select
-            let create_result = conn.prepare(sql);
+            let create_result = conn.create(sql);
             if create_result.is_err() {
                 return Result::Err("[rbatis] select fail:".to_string() + id + format!("{:?}", create_result.err().unwrap()).as_str());
             }
@@ -201,7 +201,7 @@ impl Rbatis {
             return result;
         } else {
             //exec
-            let create_result = conn.prepare(sql);
+            let create_result = conn.create(sql);
             if create_result.is_err() {
                 return Result::Err("[rbatis] exec fail:".to_string() + id + format!("{:?}", create_result.err().unwrap()).as_str());
             }
