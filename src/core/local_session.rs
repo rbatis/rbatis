@@ -74,7 +74,7 @@ impl Session for LocalSession {
         unimplemented!()
     }
 
-    fn propagation(&self) -> Propagation {
+    fn propagation(&self) -> Option<Propagation> {
         unimplemented!()
     }
 }
