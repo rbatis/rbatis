@@ -27,8 +27,9 @@ use crate::utils::{driver_util, rdbc_util};
 use crate::utils::xml_loader::load_xml;
 use crate::utils::rdbc_util::to_rdbc_values;
 use serde_json::de::ParserNumber;
-use crate::core::session::{Session, Propagation};
+use crate::core::session::Session;
 use uuid::Uuid;
+use crate::tx::propagation::Propagation;
 
 pub struct Rbatis {
     pub id :String,
@@ -43,41 +44,6 @@ pub struct Rbatis {
     pub conn_pool: ConnPool,
     //允许日志输出，禁用此项可减少IO,提高性能
     pub enable_log: bool,
-}
-
-
-impl Session for Rbatis{
-    fn id(&self) -> String {
-        return self.id.clone();
-    }
-
-    fn query<T>(&mut self, sql: &str, arg_array: &mut Vec<Value>) -> Result<T, String> where T: de::DeserializeOwned {
-        unimplemented!()
-    }
-
-    fn exec(&mut self, sql: &str, arg_array: &mut Vec<Value>) -> Result<u64, String> {
-        unimplemented!()
-    }
-
-    fn rollback(&mut self) -> Result<u64, String> {
-        unimplemented!()
-    }
-
-    fn commit(&mut self) -> Result<u64, String> {
-        unimplemented!()
-    }
-
-    fn begin(&mut self, propagation_type: Propagation) -> Result<u64, String> {
-        unimplemented!()
-    }
-
-    fn close(&mut self) {
-        unimplemented!()
-    }
-
-    fn propagation(&self) -> Propagation {
-        unimplemented!()
-    }
 }
 
 
