@@ -294,6 +294,8 @@ fn test_select_by_id_page() {
         name: Some("新人专享".to_string()),
         pc_link: None,
         h5_link: None,
+        pc_banner_img: None,
+        h5_banner_img: None,
         sort: None,
         status: Some(1),
         remark: None,
