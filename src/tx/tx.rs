@@ -1,20 +1,26 @@
 use rdbc::Connection;
+use serde::de;
+use serde_json::Value;
+
+use crate::local_session::LocalSession;
 use crate::session::Session;
 use crate::tx::propagation::Propagation;
-use serde_json::Value;
-use serde::de;
 
-pub struct Tx{
-    pub coon:Box<dyn Connection>,
-    pub is_start:bool,
-    pub is_close:bool,
+pub struct Tx {
+    pub session: Option<LocalSession>,
+    pub is_close: bool,
 }
 
-impl Tx{
-
+impl Tx {
+    pub fn new()->Self{
+        return Self{
+            session: None ,
+            is_close: false
+        }
+    }
 }
 
-impl Session for Tx{
+impl Session for Tx {
     fn id(&self) -> String {
         unimplemented!()
     }
@@ -35,7 +41,7 @@ impl Session for Tx{
         unimplemented!()
     }
 
-    fn begin(&mut self, propagation_type: Option<Propagation>) -> Result<u64, String> {
+    fn begin(&mut self, propagation_type: Option<Propagation>) -> Result<Tx, String> {
         unimplemented!()
     }
 
@@ -49,10 +55,5 @@ impl Session for Tx{
 }
 
 
-
-
-
 #[test]
-fn test_tx(){
-    
-}
+fn test_tx() {}
