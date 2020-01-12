@@ -1,6 +1,7 @@
 use serde::de;
 use serde_json::Value;
 use crate::tx::propagation::Propagation;
+use crate::tx::tx::Tx;
 
 
 pub trait Session {
@@ -10,7 +11,7 @@ pub trait Session {
 
     fn rollback(&mut self) -> Result<u64, String>;
     fn commit(&mut self) -> Result<u64, String>;
-    fn begin(&mut self,propagation_type: Option<Propagation>) -> Result<u64, String>;
+    fn begin(&mut self,propagation_type: Option<Propagation>) -> Result<Tx, String>;
     fn close(&mut self,);
     fn propagation(&self) -> Option<Propagation>;
 }

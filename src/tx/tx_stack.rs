@@ -36,8 +36,15 @@ impl TxStack {
     pub fn first(&mut self) -> (Option<&mut Tx>, Option<&mut Propagation>) {
         return (self.txs.front_mut(), self.propagations.front_mut());
     }
+    pub fn first_ref(&self) -> (Option<&Tx>, Option<&Propagation>) {
+        return (self.txs.front(), self.propagations.front());
+    }
+
     pub fn last(&mut self) -> (Option<&mut Tx>, Option<&mut Propagation>) {
         return (self.txs.back_mut(), self.propagations.back_mut());
+    }
+    pub fn last_ref(&self) -> (Option<&Tx>, Option<&Propagation>) {
+        return (self.txs.back(), self.propagations.back());
     }
 
     pub fn len(&self) -> usize {

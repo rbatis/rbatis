@@ -9,6 +9,7 @@ use crate::decode::rdbc_driver_decoder::decode_result_set;
 use crate::session::Session;
 use crate::tx::propagation::Propagation;
 use crate::tx::save_point_stack::SavePointStack;
+use crate::tx::tx::Tx;
 use crate::tx::tx_stack::TxStack;
 use crate::utils::{driver_util, rdbc_util};
 use crate::utils::rdbc_util::to_rdbc_values;
@@ -161,7 +162,7 @@ impl Session for LocalSession {
         unimplemented!()
     }
 
-    fn begin(&mut self, propagation_type: Option<Propagation>) -> Result<u64, String> {
+    fn begin(&mut self, propagation_type: Option<Propagation>) -> Result<Tx, String> {
         if propagation_type.is_some() {
             match propagation_type.as_ref().unwrap() {
                 Propagation::REQUIRED => {
@@ -180,15 +181,19 @@ impl Session for LocalSession {
                 _ => {}
             }
         }
-        return Ok(0);
+        return Ok(Tx::new());
     }
 
     fn close(&mut self) {
-        unimplemented!()
+        self.is_closed = true;
     }
 
     fn propagation(&self) -> Option<Propagation> {
-        unimplemented!()
+        if self.tx_stack.len()!=0{
+            let (tx_opt,prop_opt)=self.tx_stack.last_ref();
+            return Some(prop_opt.unwrap().clone());
+        }
+        return None;
     }
 }
 
