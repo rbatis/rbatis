@@ -13,5 +13,5 @@ pub trait Session {
     fn commit(&mut self) -> Result<u64, String>;
     fn begin(&mut self,propagation_type: Option<Propagation>) -> Result<Tx, String>;
     fn close(&mut self,);
-    fn propagation(&self) -> Option<Propagation>;
+    fn last_propagation(&self) -> Option<Propagation>;
 }

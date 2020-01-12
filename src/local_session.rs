@@ -136,8 +136,8 @@ impl Session for LocalSession {
         let (t_opt, p_opt) = self.tx_stack.pop();
         if t_opt.is_some() && p_opt.is_some() {
             let mut t = t_opt.unwrap();
-            if self.propagation().is_some() {
-                if self.propagation().as_ref().unwrap().eq(&Propagation::NESTED) {
+            if self.last_propagation().is_some() {
+                if self.last_propagation().as_ref().unwrap().eq(&Propagation::NESTED) {
                     let point_opt = self.save_point_stack.pop();
                     if point_opt.is_some() {
                         info!("[rbatis] [{}] exec ============ rollback", self.session_id.as_str());
@@ -159,6 +159,9 @@ impl Session for LocalSession {
     }
 
     fn commit(&mut self) -> Result<u64, String> {
+        if self.is_closed == true {
+            return Err("[rbatis] session can not query a closed session!".to_string());
+        }
         unimplemented!()
     }
 
@@ -185,10 +188,13 @@ impl Session for LocalSession {
     }
 
     fn close(&mut self) {
+        if self.is_closed{
+            return;
+        }
         self.is_closed = true;
     }
 
-    fn propagation(&self) -> Option<Propagation> {
+    fn last_propagation(&self) -> Option<Propagation> {
         if self.tx_stack.len()!=0{
             let (tx_opt,prop_opt)=self.tx_stack.last_ref();
             return Some(prop_opt.unwrap().clone());
