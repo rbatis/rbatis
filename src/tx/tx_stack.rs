@@ -11,7 +11,7 @@ pub struct TxStack {
     propagations: LinkedList<Propagation>,
 }
 
-impl TxStack {
+impl  TxStack  {
     pub fn new()->Self{
         return Self{
             len: 0,
