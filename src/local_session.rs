@@ -139,7 +139,7 @@ impl Session for LocalSession {
         unimplemented!()
     }
 
-    fn begin(&mut self, propagation_type: Option<Propagation>) -> Result<Tx, String> {
+    fn begin(&mut self, propagation_type: Option<Propagation>) -> Result<u64, String> {
         if propagation_type.is_some() {
             match propagation_type.as_ref().unwrap() {
                 Propagation::REQUIRED => {
@@ -158,7 +158,7 @@ impl Session for LocalSession {
                 _ => {}
             }
         }
-        return Ok(Tx::new(self.driver.as_str())?);
+        return Ok(0);
     }
 
     fn close(&mut self) {
