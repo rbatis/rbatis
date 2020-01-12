@@ -197,7 +197,9 @@ impl Session for LocalSession {
     fn last_propagation(&self) -> Option<Propagation> {
         if self.tx_stack.len()!=0{
             let (tx_opt,prop_opt)=self.tx_stack.last_ref();
-            return Some(prop_opt.unwrap().clone());
+            if prop_opt.is_some(){
+                return Some(prop_opt.unwrap().clone());
+            }
         }
         return None;
     }
