@@ -11,7 +11,7 @@ pub trait Session {
 
     fn rollback(&mut self) -> Result<u64, String>;
     fn commit(&mut self) -> Result<u64, String>;
-    fn begin(&mut self,propagation_type: Option<Propagation>) -> Result<Tx, String>;
+    fn begin(&mut self,propagation_type: Option<Propagation>) -> Result<u64, String>;
     fn close(&mut self,);
     fn last_propagation(&self) -> Option<Propagation>;
 }
