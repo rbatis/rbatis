@@ -13,11 +13,12 @@ use crate::tx::tx::Tx;
 use crate::tx::tx_stack::TxStack;
 use crate::utils::{driver_util, rdbc_util};
 use crate::utils::rdbc_util::to_rdbc_values;
+use crate::query_impl::Queryable;
 
-pub struct LocalSession {
+pub struct LocalSession  {
     pub session_id: String,
     pub driver: String,
-    pub tx_stack: TxStack,
+    pub tx_stack: TxStack ,
     pub save_point_stack: SavePointStack,
     pub is_closed: bool,
     pub new_local_session: Option<Box<LocalSession>>,
@@ -26,7 +27,7 @@ pub struct LocalSession {
     pub conn: Option<Box<dyn Connection>>,
 }
 
-impl LocalSession {
+impl  LocalSession  {
     pub fn new(id: &str, driver: &str, conn: Option<Box<dyn Connection>>) -> Self {
         let mut new_id = id.to_string();
         if new_id.is_empty() {
@@ -57,7 +58,7 @@ impl Session for LocalSession {
         if self.new_local_session.is_some() {
             return self.new_local_session.as_mut().unwrap().query(sql, arg_array);
         }
-        let params = to_rdbc_values(arg_array);
+        let  params = to_rdbc_values(arg_array);
         if self.enable_log {
             info!("[rbatis] Query: ==>  {}: ", sql);
             info!("[rbatis]  Args: ==>  {}: ", rdbc_util::rdbc_vec_to_string(&params));
@@ -68,21 +69,7 @@ impl Session for LocalSession {
             let result = t.query(sql, arg_array)?;
             return result;
         } else {
-            let conn = self.conn.as_mut().unwrap();
-            let create_result = conn.create(sql);
-            if create_result.is_err() {
-                return Result::Err("[rbatis] select fail:".to_string() + format!("{:?}", create_result.err().unwrap()).as_str());
-            }
-            let mut create_statement = create_result.unwrap();
-            let exec_result = create_statement.execute_query(&params);
-            if exec_result.is_err() {
-                return Result::Err("[rbatis] select fail:".to_string() + format!("{:?}", exec_result.err().unwrap()).as_str());
-            }
-            let (result, decoded_num) = decode_result_set(exec_result.unwrap().as_mut());
-            if self.enable_log {
-                info!("[rbatis] Total: <==  {}", decoded_num.to_string().as_str());
-            }
-            return result;
+            return self.conn.as_mut().unwrap().query(self.enable_log,sql,&params);
         }
     }
 
@@ -101,23 +88,10 @@ impl Session for LocalSession {
         let (mut t_opt, _) = self.tx_stack.last();
         if t_opt.is_some() {
             let t = t_opt.unwrap();
-            let result = t.query(sql, arg_array)?;
-            return result;
+            let result = t.exec(sql, arg_array)?;
+            return Ok(result);
         } else {
-            let conn = self.conn.as_mut().unwrap();
-            let create_result = conn.create(sql);
-            if create_result.is_err() {
-                return Result::Err("[rbatis] exec fail:".to_string() + format!("{:?}", create_result.err().unwrap()).as_str());
-            }
-            let exec_result = create_result.unwrap().execute_update(&params);
-            if exec_result.is_err() {
-                return Result::Err("[rbatis] exec fail:".to_string() + format!("{:?}", exec_result.err().unwrap()).as_str());
-            }
-            let affected_rows = exec_result.unwrap();
-            if self.enable_log {
-                info!("[rbatis] Affected: <== {}", affected_rows.to_string().as_str());
-            }
-            return Result::Ok(affected_rows);
+            return self.conn.as_mut().unwrap().exec(self.enable_log,sql,&params);
         }
     }
 
@@ -184,7 +158,7 @@ impl Session for LocalSession {
                 _ => {}
             }
         }
-        return Ok(Tx::new());
+        return Ok(Tx::new(self.driver.as_str())?);
     }
 
     fn close(&mut self) {

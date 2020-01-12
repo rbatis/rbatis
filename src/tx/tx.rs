@@ -1,22 +1,30 @@
 use rdbc::Connection;
 use serde::de;
 use serde_json::Value;
+use uuid::Uuid;
 
 use crate::local_session::LocalSession;
 use crate::session::Session;
 use crate::tx::propagation::Propagation;
+use crate::utils::driver_util;
+use crate::query_impl::Queryable;
 
 pub struct Tx {
-    pub session: Option<LocalSession>,
+    pub id: String,
+    pub driver: String,
+    pub conn: Box<dyn Connection>,
     pub is_close: bool,
 }
 
 impl Tx {
-    pub fn new()->Self{
-        return Self{
-            session: None ,
-            is_close: false
-        }
+    pub fn new(driver: &str) -> Result<Self, String> {
+        let r = driver_util::get_conn_by_link(driver)?;
+        return Ok(Self {
+            id: Uuid::new_v4().to_string(),
+            driver: driver.to_string(),
+            conn: r,
+            is_close: false,
+        });
     }
 }
 
@@ -25,11 +33,13 @@ impl Session for Tx {
         unimplemented!()
     }
 
-    fn query<T>(&mut self, sql: &str, arg_array: &mut Vec<Value>) -> Result<T, String> where T: de::DeserializeOwned {
+    fn query<T>(&mut self, sql: &str, arg_array: &mut Vec<serde_json::Value>) -> Result<T, String> where T: de::DeserializeOwned {
+       //return self.conn.query(sql,arg_array);
         unimplemented!()
     }
 
-    fn exec(&mut self, sql: &str, arg_array: &mut Vec<Value>) -> Result<u64, String> {
+    fn exec(&mut self, sql: &str, arg_array: &mut Vec<serde_json::Value>) -> Result<u64, String> {
+       // return self.conn.exec(sql,arg_array);
         unimplemented!()
     }
 
