@@ -16,7 +16,7 @@ impl SavePointStack{
         self.len+=1;
         self.data.push_back(k.to_string());
     }
-    pub  fn pop(&mut self,k:&str)->Option<String>{
+    pub  fn pop(&mut self)->Option<String>{
         if self.len==0{
             return None;
         }

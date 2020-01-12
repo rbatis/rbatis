@@ -25,7 +25,7 @@ impl TxStack {
         self.len += 1;
     }
 
-    pub fn pop(&mut self, p: Propagation) -> (Option<Tx>, Option<Propagation>) {
+    pub fn pop(&mut self) -> (Option<Tx>, Option<Propagation>) {
         if self.len==0{
             return (None,None);
         }
@@ -33,11 +33,11 @@ impl TxStack {
         return (self.txs.pop_back(), self.propagations.pop_back());
     }
 
-    pub fn first(&self) -> (Option<&Tx>, Option<&Propagation>) {
-        return (self.txs.front(), self.propagations.front());
+    pub fn first(&mut self) -> (Option<&mut Tx>, Option<&mut Propagation>) {
+        return (self.txs.front_mut(), self.propagations.front_mut());
     }
-    pub fn last(&self) -> (Option<&Tx>, Option<&Propagation>) {
-        return (self.txs.back(), self.propagations.back());
+    pub fn last(&mut self) -> (Option<&mut Tx>, Option<&mut Propagation>) {
+        return (self.txs.back_mut(), self.propagations.back_mut());
     }
 
     pub fn len(&self) -> usize {
