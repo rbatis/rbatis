@@ -49,7 +49,7 @@ impl Session for Tx {
         unimplemented!()
     }
 
-    fn propagation(&self) -> Option<Propagation> {
+    fn last_propagation(&self) -> Option<Propagation> {
         unimplemented!()
     }
 }
