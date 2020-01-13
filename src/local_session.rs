@@ -180,7 +180,7 @@ impl <'a>Session<'a> for LocalSession<'a> {
                             self.tx_stack.push(l_t.unwrap(),l_p.unwrap());
                         }
                     }else{
-                        let mut tx =Tx::new("", self.driver.as_str(), self.enable_log, self.conn.as_mut());
+                        let tx =Tx::new("", self.driver.as_str(), self.enable_log, self.conn.as_mut());
                         self.tx_stack.push(tx,propagation_type.unwrap());
                     }
                 }
