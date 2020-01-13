@@ -15,19 +15,19 @@ use crate::utils::{driver_util, rdbc_util};
 use crate::utils::rdbc_util::to_rdbc_values;
 use crate::query_impl::Queryable;
 
-pub struct LocalSession {
+pub struct LocalSession<'a> {
     pub session_id: String,
     pub driver: String,
-    pub tx_stack: TxStack,
+    pub tx_stack: TxStack<'a>,
     pub save_point_stack: SavePointStack,
     pub is_closed: bool,
-    pub new_local_session: Option<Box<LocalSession>>,
+    pub new_local_session: Option<Box<LocalSession<'a>>>,
     pub enable_log: bool,
 
     pub conn: Option<Box<dyn Connection>>,
 }
 
-impl LocalSession {
+impl <'a>LocalSession<'a> {
     pub fn new(id: &str, driver: &str, conn: Option<Box<dyn Connection>>) -> Self {
         let mut new_id = id.to_string();
         if new_id.is_empty() {
@@ -44,9 +44,13 @@ impl LocalSession {
             conn: conn,
         };
     }
+
+    pub fn conn_ref(&mut self) -> &mut Box<dyn Connection+'static>{
+        return self.conn.as_mut().unwrap();
+    }
 }
 
-impl Session for LocalSession {
+impl <'a>Session for LocalSession<'a> {
     fn id(&self) -> String {
         return Uuid::new_v4().to_string();
     }
@@ -167,13 +171,13 @@ impl Session for LocalSession {
             match propagation_type.as_ref().unwrap() {
                 Propagation::REQUIRED => {
                     if self.tx_stack.len() > 0 {
-                        let (t,p)=self.tx_stack.last_pop();
-                        if t.is_some() && p.is_some(){
-                            self.tx_stack.push(t.unwrap(),p.unwrap());
+                        let (l_t,l_p)=self.tx_stack.last_pop();
+                        if l_t.is_some() && l_p.is_some(){
+                            self.tx_stack.push(l_t.unwrap(),l_p.unwrap());
                         }
                     }else{
-//                        let tx=
-//                        self.tx_stack.push()
+//                        let tx=Tx::new("",self.driver.as_str(),self.enable_log,self.conn_ref());
+//                        self.tx_stack.push(tx,propagation_type.unwrap());
                     }
                 }
                 Propagation::NOT_SUPPORTED => {

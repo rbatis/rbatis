@@ -10,28 +10,27 @@ use crate::tx::propagation::Propagation;
 use crate::utils::driver_util;
 use crate::utils::rdbc_util::to_rdbc_values;
 
-pub struct Tx {
+pub struct Tx<'a> {
     pub id: String,
     pub driver: String,
-    pub conn: Box<dyn Connection>,
+    pub conn: &'a mut Box<dyn Connection>,
     pub is_close: bool,
     pub enable_log: bool,
 }
 
-impl Tx {
-    pub fn new(id: &str, driver: &str, enable_log: bool) -> Result<Self, String> {
-        let r = driver_util::get_conn_by_link(driver)?;
+impl <'a>Tx<'a> {
+    pub fn new(id: &str, driver: &str, enable_log: bool, conn:&'a mut Box<dyn Connection>) -> Self {
         let mut v = id.to_string();
         if v.eq("") {
             v = Uuid::new_v4().to_string();
         }
-        return Ok(Self {
+        return Self {
             id: v,
             driver: driver.to_string(),
-            conn: r,
+            conn: conn,
             is_close: false,
             enable_log: enable_log,
-        });
+        };
     }
 
     pub fn id(&self) -> String {
