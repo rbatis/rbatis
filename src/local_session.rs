@@ -29,13 +29,14 @@ pub struct LocalSession<'a> {
     pub tx: Option<Tx<'a>>,
 }
 
-impl<'a> LocalSession<'a> {
-    pub fn new(id: &str, driver: &str, conn: Option<Box<dyn Connection>>) -> Self {
+impl LocalSession<'_> {
+    pub fn new(id: &str, driver: &str) -> Result<Self,String> {
         let mut new_id = id.to_string();
         if new_id.is_empty() {
             new_id = Uuid::new_v4().to_string();
         }
-        return Self {
+        let conn = driver_util::get_conn_by_link(driver)?;
+        return Ok(Self {
             session_id: new_id,
             driver: driver.to_string(),
             tx_stack: TxStack::new(),
@@ -43,14 +44,9 @@ impl<'a> LocalSession<'a> {
             is_closed: false,
             new_local_session: None,
             enable_log: true,
-            conn: conn,
-
+            conn: Some(conn),
             tx: None,
-        };
-    }
-
-    pub fn setTx(&mut self, t: Tx<'a>) {
-        //self.tx=Some(t);
+        });
     }
 }
 
@@ -201,21 +197,13 @@ impl<'a> Session<'a> for LocalSession<'a> {
                         //TODO stop old tx
                     }
                     //new session
-                    let r = driver_util::get_conn_by_link(self.driver.as_str());
-                    if r.is_err() {
-                        return Err(r.err().unwrap());
-                    }
-                    self.new_local_session = Some(Box::new(LocalSession::new("", self.driver.as_str(), Option::from(r.unwrap()))));
+                    self.new_local_session = Some(Box::new(LocalSession::new("", self.driver.as_str())?));
                 }
                 Propagation::NOT_SUPPORTED => {
                     if self.tx_stack.len() > 0 {
                         //TODO stop old tx
                     }
-                    let r = driver_util::get_conn_by_link(self.driver.as_str());
-                    if r.is_err() {
-                        return Err(r.err().unwrap());
-                    }
-                    self.new_local_session = Some(Box::new(LocalSession::new("", self.driver.as_str(), Option::from(r.unwrap()))));
+                    self.new_local_session = Some(Box::new(LocalSession::new("", self.driver.as_str())?));
                 }
                 Propagation::NEVER => {
                     if self.tx_stack.len() > 0 {
