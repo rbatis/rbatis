@@ -1,51 +1,50 @@
-
 use std::collections::LinkedList;
 
 use crate::tx::propagation::Propagation;
 use crate::tx::tx::Tx;
 
 //事务栈
-pub struct TxStack {
+pub struct TxStack<'a> {
     len: usize,
-    txs: LinkedList<Tx>,
+    txs: LinkedList<Tx<'a>>,
     propagations: LinkedList<Propagation>,
 }
 
-impl  TxStack  {
-    pub fn new()->Self{
-        return Self{
+impl<'a> TxStack<'a> {
+    pub fn new() -> Self {
+        return Self {
             len: 0,
             txs: LinkedList::new(),
-            propagations: LinkedList::new()
-        }
+            propagations: LinkedList::new(),
+        };
     }
-    pub fn push(&mut self, tx: Tx, p: Propagation) {
+    pub fn push(&mut self, tx: Tx<'a>, p: Propagation) {
         self.txs.push_back(tx);
         self.propagations.push_back(p);
         self.len += 1;
     }
 
-    pub fn pop(&mut self) -> (Option<Tx>, Option<Propagation>) {
-        if self.len==0{
-            return (None,None);
+    pub fn pop(&mut self) -> (Option<Tx<'a>>, Option<Propagation>) {
+        if self.len == 0 {
+            return (None, None);
         }
         self.len -= 1;
         return (self.txs.pop_back(), self.propagations.pop_back());
     }
 
-    pub fn first_pop(&mut self) -> (Option<Tx>, Option<Propagation>) {
+    pub fn first_pop(&mut self) -> (Option<Tx<'a>>, Option<Propagation>) {
         return (self.txs.pop_front(), self.propagations.pop_front());
     }
 
-    pub fn first_ref(&self) -> (Option<&Tx>, Option<&Propagation>) {
+    pub fn first_ref(&self) -> (Option<&Tx<'a>>, Option<&Propagation>) {
         return (self.txs.front(), self.propagations.front());
     }
 
-    pub fn last_pop(&mut self) -> (Option<Tx>, Option< Propagation>) {
+    pub fn last_pop(&mut self) -> (Option<Tx<'a>>, Option<Propagation>) {
         return (self.txs.pop_back(), self.propagations.pop_back());
     }
 
-    pub fn last_ref(&self) -> (Option<&Tx>, Option<&Propagation>) {
+    pub fn last_ref(&self) -> (Option<&Tx<'a>>, Option<&Propagation>) {
         return (self.txs.back(), self.propagations.back());
     }
 
