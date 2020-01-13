@@ -26,10 +26,10 @@ pub struct LocalSession<'a> {
 
     pub conn: Option<Box<dyn Connection>>,
 
-    pub tx:Option<Tx<'a>>,
+    pub tx: Option<Tx<'a>>,
 }
 
-impl <'a>LocalSession<'a> {
+impl<'a> LocalSession<'a> {
     pub fn new(id: &str, driver: &str, conn: Option<Box<dyn Connection>>) -> Self {
         let mut new_id = id.to_string();
         if new_id.is_empty() {
@@ -45,16 +45,16 @@ impl <'a>LocalSession<'a> {
             enable_log: true,
             conn: conn,
 
-            tx:None,
+            tx: None,
         };
     }
 
-    pub fn setTx(&mut self,t:Tx<'a>){
+    pub fn setTx(&mut self, t: Tx<'a>) {
         //self.tx=Some(t);
     }
 }
 
-impl <'a>Session<'a> for LocalSession<'a> {
+impl<'a> Session<'a> for LocalSession<'a> {
     fn id(&self) -> String {
         return Uuid::new_v4().to_string();
     }
@@ -173,30 +173,31 @@ impl <'a>Session<'a> for LocalSession<'a> {
     fn begin(&'a mut self, propagation_type: Option<Propagation>) -> Result<u64, String> {
         if propagation_type.is_some() {
             match propagation_type.as_ref().unwrap() {
+                ///默认，表示如果当前事务存在，则支持当前事务。否则，会启动一个新的事务。have tx ? join : new tx()
                 Propagation::REQUIRED => {
                     if self.tx_stack.len() > 0 {
-                        let (l_t,l_p)=self.tx_stack.last_pop();
-                        if l_t.is_some() && l_p.is_some(){
-                            self.tx_stack.push(l_t.unwrap(),l_p.unwrap());
+                        let (l_t, l_p) = self.tx_stack.last_pop();
+                        if l_t.is_some() && l_p.is_some() {
+                            self.tx_stack.push(l_t.unwrap(), l_p.unwrap());
                         }
-                    }else{
+                    } else {
                         //new tx
-                        let tx =Tx::begin("", self.driver.as_str(), self.enable_log, self.conn.as_mut())?;
-                        self.tx_stack.push(tx,propagation_type.unwrap());
+                        let tx = Tx::begin("", self.driver.as_str(), self.enable_log, self.conn.as_mut())?;
+                        self.tx_stack.push(tx, propagation_type.unwrap());
                     }
                 }
-                Propagation::SUPPORTS=>{
+                Propagation::SUPPORTS => {
                     return Ok(0);
                 }
-                Propagation::MANDATORY=>{
-                    if self.tx_stack.len()>0{
+                Propagation::MANDATORY => {
+                    if self.tx_stack.len() > 0 {
                         return Ok(0);
-                    }else{
+                    } else {
                         return Err("[rbatis] PROPAGATION_MANDATORY Nested transaction exception! current not have a transaction!".to_string());
                     }
                 }
-                Propagation::REQUIRES_NEW=>{
-                    if self.tx_stack.len()>0{
+                Propagation::REQUIRES_NEW => {
+                    if self.tx_stack.len() > 0 {
                         //TODO stop old tx
                     }
                     //new session
@@ -216,31 +217,29 @@ impl <'a>Session<'a> for LocalSession<'a> {
                     }
                     self.new_local_session = Some(Box::new(LocalSession::new("", self.driver.as_str(), Option::from(r.unwrap()))));
                 }
-                Propagation::NEVER =>{
-                    if self.tx_stack.len()>0{
+                Propagation::NEVER => {
+                    if self.tx_stack.len() > 0 {
                         return Err("[rbatis] PROPAGATION_NEVER  Nested transaction exception! current Already have a transaction!".to_string());
                     }
                 }
-                Propagation::NESTED =>{
-                    //REQUIRED 类似，增加 save point
-                    if self.tx_stack.len()>0{
-                        let (l_t,l_p)=self.tx_stack.last_pop();
-                        if l_t.is_some() && l_p.is_some(){
-                            self.tx_stack.push(l_t.unwrap(),l_p.unwrap());
+                ///表示如果当前事务存在，则在嵌套事务内执行，如嵌套事务回滚，则只会在嵌套事务内回滚，不会影响当前事务。如果当前没有事务，则进行与PROPAGATION_REQUIRED类似的操作。
+                Propagation::NESTED => {
+                    if self.tx_stack.len() > 0 {
+                        let (l_t, l_p) = self.tx_stack.last_pop();
+                        if l_t.is_some() && l_p.is_some() {
+                            self.tx_stack.push(l_t.unwrap(), l_p.unwrap());
                         }
-                    }else{
-                        //new tx
-                        let tx =Tx::begin("", self.driver.as_str(), self.enable_log, self.conn.as_mut())?;
-                        self.tx_stack.push(tx,propagation_type.unwrap());
+                    } else {
+                        return self.begin(Option::Some(Propagation::REQUIRED));
                     }
                 }
-                Propagation::REQUIRED=>{
-                    if self.tx_stack.len()>0{
+                Propagation::NOT_REQUIRED => {
+                    if self.tx_stack.len() > 0 {
                         return Err("[rbatis] PROPAGATION_NOT_REQUIRED Nested transaction exception! current Already have a transaction!".to_string());
-                    }else{
+                    } else {
                         //new tx
-                        let tx =Tx::begin("", self.driver.as_str(), self.enable_log, self.conn.as_mut())?;
-                        self.tx_stack.push(tx,propagation_type.unwrap());
+                        let tx = Tx::begin("", self.driver.as_str(), self.enable_log, self.conn.as_mut())?;
+                        self.tx_stack.push(tx, propagation_type.unwrap());
                     }
                 }
                 _ => {
