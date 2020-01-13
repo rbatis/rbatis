@@ -13,13 +13,13 @@ use crate::utils::rdbc_util::to_rdbc_values;
 pub struct Tx<'a> {
     pub id: String,
     pub driver: String,
-    pub conn: &'a mut Box<dyn Connection>,
+    pub conn: Option<&'a mut Box<dyn Connection>>,
     pub is_close: bool,
     pub enable_log: bool,
 }
 
-impl <'a>Tx<'a> {
-    pub fn new(id: &str, driver: &str, enable_log: bool, conn:&'a mut Box<dyn Connection>) -> Self {
+impl<'a> Tx<'a> {
+    pub fn new(id: &str, driver: &str, enable_log: bool, conn: Option<&'a mut Box<dyn Connection>>) -> Tx<'a> {
         let mut v = id.to_string();
         if v.eq("") {
             v = Uuid::new_v4().to_string();
@@ -39,23 +39,24 @@ impl <'a>Tx<'a> {
 
     pub fn query<T>(&mut self, sql: &str, arg_array: &mut Vec<serde_json::Value>) -> Result<T, String> where T: de::DeserializeOwned {
         let params = to_rdbc_values(arg_array);
-        return self.conn.query(self.enable_log, sql, &params);
+        return self.conn.as_mut().unwrap().query(self.enable_log, sql, &params);
     }
 
     pub fn exec(&mut self, sql: &str, arg_array: &mut Vec<serde_json::Value>) -> Result<u64, String> {
         let params = to_rdbc_values(arg_array);
-        return self.conn.exec(self.enable_log, sql, &params);
+        return self.conn.as_mut().unwrap().exec(self.enable_log, sql, &params);
     }
 
     pub fn rollback(&mut self) -> Result<u64, String> {
-        return self.conn.exec(true, "rollback;", &[]);
+        return self.conn.as_mut().unwrap().exec(true, "rollback;", &[]);
     }
 
     pub fn commit(&mut self) -> Result<u64, String> {
-        return self.conn.exec(true, "commit;", &[]);
+        return self.conn.as_mut().unwrap().exec(true, "commit;", &[]);
     }
 }
 
-
 #[test]
-fn test_tx() {}
+fn test_tx() {
+
+}

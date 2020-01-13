@@ -25,6 +25,8 @@ pub struct LocalSession<'a> {
     pub enable_log: bool,
 
     pub conn: Option<Box<dyn Connection>>,
+
+    pub tx:Option<Tx<'a>>,
 }
 
 impl <'a>LocalSession<'a> {
@@ -42,11 +44,17 @@ impl <'a>LocalSession<'a> {
             new_local_session: None,
             enable_log: true,
             conn: conn,
+
+            tx:None,
         };
+    }
+
+    pub fn setTx(&mut self,t:Tx<'a>){
+        //self.tx=Some(t);
     }
 }
 
-impl <'a>Session for LocalSession<'a> {
+impl <'a>Session<'a> for LocalSession<'a> {
     fn id(&self) -> String {
         return Uuid::new_v4().to_string();
     }
@@ -162,7 +170,7 @@ impl <'a>Session for LocalSession<'a> {
         return Ok(closec_num);
     }
 
-    fn begin(&mut self, propagation_type: Option<Propagation>) -> Result<u64, String> {
+    fn begin(&'a mut self, propagation_type: Option<Propagation>) -> Result<u64, String> {
         if propagation_type.is_some() {
             match propagation_type.as_ref().unwrap() {
                 Propagation::REQUIRED => {
@@ -172,8 +180,8 @@ impl <'a>Session for LocalSession<'a> {
                             self.tx_stack.push(l_t.unwrap(),l_p.unwrap());
                         }
                     }else{
-//                        let tx=Tx::new("",self.driver.as_str(),self.enable_log,self.conn_ref());
-//                        self.tx_stack.push(tx,propagation_type.unwrap());
+                        let mut tx =Tx::new("", self.driver.as_str(), self.enable_log, self.conn.as_mut());
+                        self.tx_stack.push(tx,propagation_type.unwrap());
                     }
                 }
                 Propagation::NOT_SUPPORTED => {
