@@ -44,10 +44,6 @@ impl <'a>LocalSession<'a> {
             conn: conn,
         };
     }
-
-    pub fn conn_ref(&mut self) -> &mut Box<dyn Connection+'static>{
-        return self.conn.as_mut().unwrap();
-    }
 }
 
 impl <'a>Session for LocalSession<'a> {
