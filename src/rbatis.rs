@@ -20,7 +20,6 @@ use crate::ast::xml::node_type::NodeType;
 use crate::ast::xml::result_map_node::ResultMapNode;
 use crate::ast::xml::string_node::StringNode;
 use crate::db_config::DBConfig;
-use crate::node_type_map_factory::create_node_type_map;
 use crate::decode::rdbc_driver_decoder::decode_result_set;
 use crate::utils::{driver_util, rdbc_util};
 use crate::utils::xml_loader::load_xml;
@@ -31,6 +30,7 @@ use uuid::Uuid;
 use crate::tx::propagation::Propagation;
 use crate::conn_factory::{ConnFactory, ConnFactoryImpl};
 use std::thread;
+use crate::ast::node_type_map_util::create_node_type_map;
 
 pub struct Rbatis {
     pub id :String,

@@ -4,7 +4,7 @@ use serde_json::Value;
 use uuid::Uuid;
 
 use crate::local_session::LocalSession;
-use crate::query_impl::Queryable;
+use crate::queryable::Queryable;
 use crate::session::Session;
 use crate::tx::propagation::Propagation;
 use crate::utils::driver_util;
