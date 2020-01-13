@@ -180,9 +180,31 @@ impl <'a>Session<'a> for LocalSession<'a> {
                             self.tx_stack.push(l_t.unwrap(),l_p.unwrap());
                         }
                     }else{
-                        let tx =Tx::new("", self.driver.as_str(), self.enable_log, self.conn.as_mut());
+                        //new tx
+                        let tx =Tx::begin("", self.driver.as_str(), self.enable_log, self.conn.as_mut())?;
                         self.tx_stack.push(tx,propagation_type.unwrap());
                     }
+                }
+                Propagation::SUPPORTS=>{
+                    return Ok(0);
+                }
+                Propagation::MANDATORY=>{
+                    if self.tx_stack.len()>0{
+                        return Ok(0);
+                    }else{
+                        return Err("[rbatis] PROPAGATION_MANDATORY Nested transaction exception! current not have a transaction!".to_string());
+                    }
+                }
+                Propagation::REQUIRES_NEW=>{
+                    if self.tx_stack.len()>0{
+                        //TODO stop old tx
+                    }
+                    //new session
+                    let r = driver_util::get_conn_by_link(self.driver.as_str());
+                    if r.is_err() {
+                        return Err(r.err().unwrap());
+                    }
+                    self.new_local_session = Some(Box::new(LocalSession::new("", self.driver.as_str(), Option::from(r.unwrap()))));
                 }
                 Propagation::NOT_SUPPORTED => {
                     if self.tx_stack.len() > 0 {
@@ -194,7 +216,36 @@ impl <'a>Session<'a> for LocalSession<'a> {
                     }
                     self.new_local_session = Some(Box::new(LocalSession::new("", self.driver.as_str(), Option::from(r.unwrap()))));
                 }
-                _ => {}
+                Propagation::NEVER =>{
+                    if self.tx_stack.len()>0{
+                        return Err("[rbatis] PROPAGATION_NEVER  Nested transaction exception! current Already have a transaction!".to_string());
+                    }
+                }
+                Propagation::NESTED =>{
+                    //REQUIRED 类似，增加 save point
+                    if self.tx_stack.len()>0{
+                        let (l_t,l_p)=self.tx_stack.last_pop();
+                        if l_t.is_some() && l_p.is_some(){
+                            self.tx_stack.push(l_t.unwrap(),l_p.unwrap());
+                        }
+                    }else{
+                        //new tx
+                        let tx =Tx::begin("", self.driver.as_str(), self.enable_log, self.conn.as_mut())?;
+                        self.tx_stack.push(tx,propagation_type.unwrap());
+                    }
+                }
+                Propagation::REQUIRED=>{
+                    if self.tx_stack.len()>0{
+                        return Err("[rbatis] PROPAGATION_NOT_REQUIRED Nested transaction exception! current Already have a transaction!".to_string());
+                    }else{
+                        //new tx
+                        let tx =Tx::begin("", self.driver.as_str(), self.enable_log, self.conn.as_mut())?;
+                        self.tx_stack.push(tx,propagation_type.unwrap());
+                    }
+                }
+                _ => {
+                    return Err("[rbatis] Nested transaction exception! not support PROPAGATION in begin!".to_string());
+                }
             }
         }
         return Ok(0);
