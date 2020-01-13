@@ -19,18 +19,21 @@ pub struct Tx<'a> {
 }
 
 impl<'a> Tx<'a> {
-    pub fn new(id: &str, driver: &str, enable_log: bool, conn: Option<&'a mut Box<dyn Connection>>) -> Tx<'a> {
+    //开始一个事务
+    pub fn begin(id: &str, driver: &str, enable_log: bool, conn: Option<&'a mut Box<dyn Connection>>) -> Result<Tx<'a>,String> {
         let mut v = id.to_string();
         if v.eq("") {
             v = Uuid::new_v4().to_string();
         }
-        return Self {
+        let mut s= Self {
             id: v,
             driver: driver.to_string(),
             conn: conn,
             is_close: false,
             enable_log: enable_log,
         };
+        let data=s.conn.as_mut().unwrap().exec(enable_log,"begin;",&[])?;
+        return Ok(s);
     }
 
     pub fn id(&self) -> String {
