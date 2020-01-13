@@ -13,7 +13,7 @@ use crate::tx::tx::Tx;
 use crate::tx::tx_stack::TxStack;
 use crate::utils::{driver_util, rdbc_util};
 use crate::utils::rdbc_util::to_rdbc_values;
-use crate::query_impl::Queryable;
+use crate::queryable::Queryable;
 
 pub struct LocalSession<'a> {
     pub session_id: String,
