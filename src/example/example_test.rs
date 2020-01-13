@@ -237,14 +237,6 @@ fn test_exec_select_page_custom() {
 }
 
 
-pub struct Service{
-}
-impl Service{
-    pub fn find_activity(&self){
-        println!("activity");
-    }
-}
-
 
 /**
   测试事务

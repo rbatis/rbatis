@@ -15,10 +15,10 @@ use crate::utils::{driver_util, rdbc_util};
 use crate::utils::rdbc_util::to_rdbc_values;
 use crate::query_impl::Queryable;
 
-pub struct LocalSession  {
+pub struct LocalSession {
     pub session_id: String,
     pub driver: String,
-    pub tx_stack: TxStack ,
+    pub tx_stack: TxStack,
     pub save_point_stack: SavePointStack,
     pub is_closed: bool,
     pub new_local_session: Option<Box<LocalSession>>,
@@ -27,7 +27,7 @@ pub struct LocalSession  {
     pub conn: Option<Box<dyn Connection>>,
 }
 
-impl  LocalSession  {
+impl LocalSession {
     pub fn new(id: &str, driver: &str, conn: Option<Box<dyn Connection>>) -> Self {
         let mut new_id = id.to_string();
         if new_id.is_empty() {
@@ -58,18 +58,18 @@ impl Session for LocalSession {
         if self.new_local_session.is_some() {
             return self.new_local_session.as_mut().unwrap().query(sql, arg_array);
         }
-        let  params = to_rdbc_values(arg_array);
+        let params = to_rdbc_values(arg_array);
         if self.enable_log {
             info!("[rbatis] Query: ==>  {}: ", sql);
             info!("[rbatis]  Args: ==>  {}: ", rdbc_util::rdbc_vec_to_string(&params));
         }
-        let (mut t_opt, _) = self.tx_stack.last();
+        let (mut t_opt, _) = self.tx_stack.last_pop();
         if t_opt.is_some() {
-            let t = t_opt.unwrap();
+            let mut t = t_opt.unwrap();
             let result = t.query(sql, arg_array)?;
             return result;
         } else {
-            return self.conn.as_mut().unwrap().query(self.enable_log,sql,&params);
+            return self.conn.as_mut().unwrap().query(self.enable_log, sql, &params);
         }
     }
 
@@ -85,13 +85,13 @@ impl Session for LocalSession {
             info!("[rbatis] Query: ==>  {}: ", sql);
             info!("[rbatis]  Args: ==>  {}: ", rdbc_util::rdbc_vec_to_string(&params));
         }
-        let (mut t_opt, _) = self.tx_stack.last();
+        let (mut t_opt, _) = self.tx_stack.last_pop();
         if t_opt.is_some() {
-            let t = t_opt.unwrap();
+            let mut t = t_opt.unwrap();
             let result = t.exec(sql, arg_array)?;
             return Ok(result);
         } else {
-            return self.conn.as_mut().unwrap().exec(self.enable_log,sql,&params);
+            return self.conn.as_mut().unwrap().exec(self.enable_log, sql, &params);
         }
     }
 
@@ -118,7 +118,6 @@ impl Session for LocalSession {
                         let sql = "rollback to ".to_string() + point_opt.unwrap().as_str();
                         let r = t.exec(sql.as_str(), &mut vec![])?;
                         closec_num += r;
-                        return Ok(closec_num);
                     }
                 }
             }
@@ -126,7 +125,6 @@ impl Session for LocalSession {
                 info!("[rbatis] [{}] exec ============ rollback", self.session_id.as_str());
                 let r = t.rollback()?;
                 closec_num += r;
-                return Ok(closec_num);
             }
         }
         return Ok(closec_num);
@@ -136,14 +134,47 @@ impl Session for LocalSession {
         if self.is_closed == true {
             return Err("[rbatis] session can not query a closed session!".to_string());
         }
-        unimplemented!()
+        let mut closec_num = 0;
+        if self.new_local_session.is_some() {
+            let new_session = self.new_local_session.as_mut().unwrap();
+            let r = new_session.rollback()?;
+            new_session.close();
+            closec_num += r;
+        }
+        let (t_opt, p_opt) = self.tx_stack.pop();
+        if t_opt.is_some() && p_opt.is_some() {
+            let mut t = t_opt.unwrap();
+            if self.last_propagation().is_some() {
+                if self.last_propagation().as_ref().unwrap().eq(&Propagation::NESTED) {
+                    let p_id = format!("p{}", self.tx_stack.len() + 1);
+                    self.save_point_stack.push(p_id.as_str());
+                    let sql = format!("savepoint {}", p_id.as_str());
+                    let r = t.exec(sql.as_str(), &mut vec![])?;
+                    closec_num += r;
+                }
+            }
+            if self.tx_stack.len() == 0 {
+                info!("[rbatis] [{}] exec ============ rollback", self.session_id.as_str());
+                let r = t.commit()?;
+                closec_num += r;
+            }
+        }
+        return Ok(closec_num);
     }
 
     fn begin(&mut self, propagation_type: Option<Propagation>) -> Result<u64, String> {
         if propagation_type.is_some() {
             match propagation_type.as_ref().unwrap() {
                 Propagation::REQUIRED => {
-                    if self.tx_stack.len() > 0 {}
+                    if self.tx_stack.len() > 0 {
+                        let (t,p)=self.tx_stack.last_pop();
+                        if t.is_some() && p.is_some(){
+                            self.tx_stack.push(t.unwrap(),p.unwrap());
+                        }
+                    }else{
+//                        let tx=
+//                        self.tx_stack.push()
+                    }
                 }
                 Propagation::NOT_SUPPORTED => {
                     if self.tx_stack.len() > 0 {
@@ -162,16 +193,16 @@ impl Session for LocalSession {
     }
 
     fn close(&mut self) {
-        if self.is_closed{
+        if self.is_closed {
             return;
         }
         self.is_closed = true;
     }
 
     fn last_propagation(&self) -> Option<Propagation> {
-        if self.tx_stack.len()!=0{
-            let (tx_opt,prop_opt)=self.tx_stack.last_ref();
-            if prop_opt.is_some(){
+        if self.tx_stack.len() != 0 {
+            let (tx_opt, prop_opt) = self.tx_stack.last_ref();
+            if prop_opt.is_some() {
                 return Some(prop_opt.unwrap().clone());
             }
         }

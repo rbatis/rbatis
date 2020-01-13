@@ -33,16 +33,18 @@ impl  TxStack  {
         return (self.txs.pop_back(), self.propagations.pop_back());
     }
 
-    pub fn first(&mut self) -> (Option<&mut Tx>, Option<&mut Propagation>) {
-        return (self.txs.front_mut(), self.propagations.front_mut());
+    pub fn first_pop(&mut self) -> (Option<Tx>, Option<Propagation>) {
+        return (self.txs.pop_front(), self.propagations.pop_front());
     }
+
     pub fn first_ref(&self) -> (Option<&Tx>, Option<&Propagation>) {
         return (self.txs.front(), self.propagations.front());
     }
 
-    pub fn last(&mut self) -> (Option<&mut Tx>, Option<&mut Propagation>) {
-        return (self.txs.back_mut(), self.propagations.back_mut());
+    pub fn last_pop(&mut self) -> (Option<Tx>, Option< Propagation>) {
+        return (self.txs.pop_back(), self.propagations.pop_back());
     }
+
     pub fn last_ref(&self) -> (Option<&Tx>, Option<&Propagation>) {
         return (self.txs.back(), self.propagations.back());
     }
