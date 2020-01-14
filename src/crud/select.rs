@@ -37,7 +37,7 @@ impl Rbatis {
         let result_map_node = self.get_result_map_node(mapper_name)?;
         let count_sql = self.do_count_by_templete(&mut new_arg, &result_map_node, w.as_str())?;
 
-        let total: i64 = self.eval_raw((mapper_name.to_string() + ".select_page").as_str(), count_sql.as_str(), false, &mut arg_array)?;
+        let total: i64 = self.eval_raw((mapper_name.to_string() + ".select_page").as_str(), count_sql.as_str(), true, &mut arg_array)?;
         result.set_total(total);
         return Result::Ok(result);
     }
@@ -96,9 +96,14 @@ impl Rbatis {
             return Result::Err("[rbatis]  can not find table defin in <result_map>!".to_string());
         }
         count_sql = count_sql.replace("#{table}", result_map_node.table.as_ref().unwrap());
-        count_sql = count_sql.replace("#{where}", where_string.as_str());
 
-        let total: i64 = self.eval_raw((mapper_name.to_string() + "." + id).as_str(), count_sql.as_str(), false, &mut arg_array)?;
+        //sub string limit
+        let limit_opt = where_string.rfind(" limit ");
+        if limit_opt.is_some() {
+            where_string = where_string[0..limit_opt.unwrap()].to_string();
+        }
+        count_sql = count_sql.replace("#{where}", where_string.as_str());
+        let total = self.eval_raw((mapper_name.to_string() + "." + id).as_str(), count_sql.as_str(), true, &mut arg_array)?;
         result.set_total(total);
         return Result::Ok(result);
     }
