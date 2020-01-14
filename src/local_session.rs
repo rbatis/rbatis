@@ -6,6 +6,7 @@ use serde_json::Value;
 use uuid::Uuid;
 
 use crate::decode::rdbc_driver_decoder::decode_result_set;
+use crate::queryable::Queryable;
 use crate::session::Session;
 use crate::tx::propagation::Propagation;
 use crate::tx::save_point_stack::SavePointStack;
@@ -13,7 +14,6 @@ use crate::tx::tx::Tx;
 use crate::tx::tx_stack::TxStack;
 use crate::utils::{driver_util, rdbc_util};
 use crate::utils::rdbc_util::to_rdbc_values;
-use crate::queryable::Queryable;
 
 pub struct LocalSession<'a> {
     pub session_id: String,
@@ -30,12 +30,17 @@ pub struct LocalSession<'a> {
 }
 
 impl<'a> LocalSession<'a> {
-    pub fn new(id: &str, driver: &str, conn: Option<Box<dyn Connection>>) -> Self {
+    pub fn new(id: &str, driver: &str, conn_opt: Option<Box<dyn Connection>>) -> Result<Self, String> {
         let mut new_id = id.to_string();
         if new_id.is_empty() {
             new_id = Uuid::new_v4().to_string();
         }
-        return Self {
+        let mut conn = conn_opt;
+        if conn.is_none() {
+            let r = driver_util::get_conn_by_link(driver)?;
+            conn = Some(r);
+        }
+        return Ok(Self {
             session_id: new_id,
             driver: driver.to_string(),
             tx_stack: TxStack::new(),
@@ -44,13 +49,8 @@ impl<'a> LocalSession<'a> {
             new_local_session: None,
             enable_log: true,
             conn: conn,
-
             tx: None,
-        };
-    }
-
-    pub fn setTx(&mut self, t: Tx<'a>) {
-        //self.tx=Some(t);
+        });
     }
 }
 
@@ -205,7 +205,8 @@ impl<'a> Session<'a> for LocalSession<'a> {
                     if r.is_err() {
                         return Err(r.err().unwrap());
                     }
-                    self.new_local_session = Some(Box::new(LocalSession::new("", self.driver.as_str(), Option::from(r.unwrap()))));
+                    let new_session = LocalSession::new("", self.driver.as_str(), Option::from(r.unwrap()))?;
+                    self.new_local_session = Some(Box::new(new_session));
                 }
                 Propagation::NOT_SUPPORTED => {
                     if self.tx_stack.len() > 0 {
@@ -215,7 +216,8 @@ impl<'a> Session<'a> for LocalSession<'a> {
                     if r.is_err() {
                         return Err(r.err().unwrap());
                     }
-                    self.new_local_session = Some(Box::new(LocalSession::new("", self.driver.as_str(), Option::from(r.unwrap()))));
+                    let new_session = LocalSession::new("", self.driver.as_str(), Option::from(r.unwrap()))?;
+                    self.new_local_session = Some(Box::new(new_session));
                 }
                 Propagation::NEVER => {
                     if self.tx_stack.len() > 0 {
