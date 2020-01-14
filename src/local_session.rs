@@ -23,10 +23,7 @@ pub struct LocalSession<'a> {
     pub is_closed: bool,
     pub new_local_session: Option<Box<LocalSession<'a>>>,
     pub enable_log: bool,
-
     pub conn: Option<Box<dyn Connection>>,
-
-    pub tx: Option<Tx<'a>>,
 }
 
 impl<'a> LocalSession<'a> {
@@ -49,7 +46,6 @@ impl<'a> LocalSession<'a> {
             new_local_session: None,
             enable_log: true,
             conn: conn,
-            tx: None,
         });
     }
 }

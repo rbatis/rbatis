@@ -4,36 +4,37 @@ use std::process::exit;
 use std::rc::Rc;
 use std::str::FromStr;
 use std::sync::Mutex;
+use std::thread;
 
 use log::{error, info, warn};
 use log4rs::init_file;
 use serde::de;
 use serde_json::{Number, Value};
+use serde_json::de::ParserNumber;
 use serde_json::json;
 use serde_json::ser::State::Rest;
+use uuid::Uuid;
 
 use crate::ast::ast::Ast;
 use crate::ast::config_holder::ConfigHolder;
+use crate::ast::node_type_map_util::create_node_type_map;
 use crate::ast::xml::bind_node::BindNode;
 use crate::ast::xml::node::{loop_decode_xml, SqlNodePrint};
 use crate::ast::xml::node_type::NodeType;
 use crate::ast::xml::result_map_node::ResultMapNode;
 use crate::ast::xml::string_node::StringNode;
+use crate::conn_factory::{ConnFactory, ConnFactoryImpl};
 use crate::db_config::DBConfig;
 use crate::decode::rdbc_driver_decoder::decode_result_set;
-use crate::utils::{driver_util, rdbc_util};
-use crate::utils::xml_loader::load_xml;
-use crate::utils::rdbc_util::to_rdbc_values;
-use serde_json::de::ParserNumber;
+use crate::local_session::LocalSession;
 use crate::session::Session;
-use uuid::Uuid;
 use crate::tx::propagation::Propagation;
-use crate::conn_factory::{ConnFactory, ConnFactoryImpl};
-use std::thread;
-use crate::ast::node_type_map_util::create_node_type_map;
+use crate::utils::{driver_util, rdbc_util};
+use crate::utils::rdbc_util::to_rdbc_values;
+use crate::utils::xml_loader::load_xml;
 
 pub struct Rbatis {
-    pub id :String,
+    pub id: String,
     //动态sql运算节点集合
     pub mapper_map: HashMap<String, HashMap<String, NodeType>>,
     //动态sql节点配置
@@ -185,6 +186,8 @@ impl Rbatis {
         let conn = self.conn_factory.get_thread_conn(thread_id,driver.as_str())?;
         if is_select {
             //select
+            //let session=LocalSession::new("",driver,Some(conn));
+
             let create_result = conn.create(sql);
             if create_result.is_err() {
                 return Result::Err("[rbatis] select fail:".to_string() + id + format!("{:?}", create_result.err().unwrap()).as_str());
