@@ -1,50 +1,49 @@
 use std::borrow::BorrowMut;
 use std::fs;
 
-use serde_json::Value;
-use serde_json::json;
-
-use crate::ast::xml::result_map_node::ResultMapNode;
-use crate::convert::sql_value_convert;
-use crate::convert::sql_value_convert::{SqlValueConvert, AND, SkipType, SqlQuestionConvert};
-use crate::rbatis::Rbatis;
-use crate::crud::ipage::IPage;
-use crate::example::activity::Activity;
-use crate::utils::join_in::json_join;
 use serde::de::{Deserialize, DeserializeOwned};
 use serde::ser::Serialize;
+use serde_json::json;
+use serde_json::Value;
+
 use crate::ast::ast::Ast;
+use crate::ast::xml::result_map_node::ResultMapNode;
+use crate::convert::sql_value_convert;
+use crate::convert::sql_value_convert::{AND, SkipType, SqlQuestionConvert, SqlValueConvert};
+use crate::crud::ipage::IPage;
+use crate::example::activity::Activity;
+use crate::rbatis::Rbatis;
+use crate::utils::join_in::json_join;
 use crate::utils::string_util::count_string_num;
 
 impl Rbatis {
-
     ///普通查询
     pub fn select<T>(&mut self, mapper_name: &str, arg: &mut Value) -> Result<T, String> where T: DeserializeOwned {
-        let mut arg_array=vec![];
-        let (sql,_) = self.create_sql_select(mapper_name, arg,&mut arg_array)?;
-        return self.eval_raw((mapper_name.to_string()+".select").as_str(), sql.as_str(), true, &mut arg_array);
+        let mut arg_array = vec![];
+        let (sql, _) = self.create_sql_select(mapper_name, arg, &mut arg_array)?;
+        return self.eval_raw((mapper_name.to_string() + ".select").as_str(), sql.as_str(), true, &mut arg_array);
     }
 
     ///分页查询
     pub fn select_page<T>(&mut self, mapper_name: &str, arg: &mut Value, ipage: &IPage<T>) -> Result<IPage<T>, String> where T: Serialize + DeserializeOwned + Clone {
-        let mut arg_array=vec![];
+        let mut arg_array = vec![];
         //do select
         let mut new_arg = json_join(&arg, "ipage", ipage)?;
-        let (records,w) = self.eval_select_return_where(mapper_name, &mut new_arg,&mut arg_array)?;
+        let (records, w) = self.eval_select_return_where(mapper_name, &mut new_arg, &mut arg_array)?;
         let mut result = ipage.clone();
         result.set_records(records);
 
         //do count
         let result_map_node = self.get_result_map_node(mapper_name)?;
-        let count_sql=self.do_count_by_templete(&mut new_arg,&result_map_node,w.as_str())?;
+        let count_sql = self.do_count_by_templete(&mut new_arg, &result_map_node, w.as_str())?;
 
-        let total:i64=self.eval_raw((mapper_name.to_string()+".select_page").as_str(), count_sql.as_str(), true, &mut arg_array)?;
+        let total: i64 = self.eval_raw((mapper_name.to_string() + ".select_page").as_str(), count_sql.as_str(), false, &mut arg_array)?;
         result.set_total(total);
         return Result::Ok(result);
     }
 
-    pub fn select_page_by_mapper<T>(&mut self, mapper_name: &str,id: &str, env: &mut Value, ipage: &IPage<T>) -> Result<IPage<T>, String> where T: Serialize + DeserializeOwned + Clone {
-        let mut arg_array=vec![];
+    pub fn select_page_by_mapper<T>(&mut self, mapper_name: &str, id: &str, env: &mut Value, ipage: &IPage<T>) -> Result<IPage<T>, String> where T: Serialize + DeserializeOwned + Clone {
+        let mut arg_array = vec![];
 
         let mut new_arg = json_join(&env, "ipage", ipage)?;
         //select redords
@@ -57,35 +56,35 @@ impl Rbatis {
             return Result::Err("[rbatis] find method fail,name:'".to_string() + mapper_name + id + "'");
         }
         let mapper_func = node.unwrap();
-        let sql_string = mapper_func.eval(&mut new_arg,&mut self.holder,&mut arg_array)?;
+        let sql_string = mapper_func.eval(&mut new_arg, &mut self.holder, &mut arg_array)?;
         //create where str
-        let mut where_befer_string="".to_string();
-        let mut where_string="".to_string();
-        if sql_string.contains("where"){
-            let wheres:Vec<&str>= sql_string.split("where").collect();
-            if wheres.len()>2{
-                return  Result::Err("[rbatis] find 'where' repeated > 2 time,name:'".to_string() + mapper_name + id + "'");
+        let mut where_befer_string = "".to_string();
+        let mut where_string = "".to_string();
+        if sql_string.contains("where") {
+            let wheres: Vec<&str> = sql_string.split("where").collect();
+            if wheres.len() > 2 {
+                return Result::Err("[rbatis] find 'where' repeated > 2 time,name:'".to_string() + mapper_name + id + "'");
             }
-            where_string=wheres[1].to_string();
-            where_befer_string=wheres[0].to_string();
-        }else if sql_string.contains("WHERE"){
-            let wheres:Vec<&str>= sql_string.split("WHERE").collect();
-            if wheres.len()>2{
-                return  Result::Err("[rbatis] find 'WHERE' repeated > 2 time,name:'".to_string() + mapper_name + id + "'");
+            where_string = wheres[1].to_string();
+            where_befer_string = wheres[0].to_string();
+        } else if sql_string.contains("WHERE") {
+            let wheres: Vec<&str> = sql_string.split("WHERE").collect();
+            if wheres.len() > 2 {
+                return Result::Err("[rbatis] find 'WHERE' repeated > 2 time,name:'".to_string() + mapper_name + id + "'");
             }
-            where_string=wheres[1].to_string();
-            where_befer_string=wheres[0].to_string();
-        }else{
-            where_befer_string=sql_string;
+            where_string = wheres[1].to_string();
+            where_befer_string = wheres[0].to_string();
+        } else {
+            where_befer_string = sql_string;
         }
         //insert delete_flag
-        let mut append_limit_where_string=where_string.clone();
-        if !where_string.contains(" limit ") && !where_string.contains("LIMIT"){
-            append_limit_where_string = append_limit_where_string + " LIMIT " + ((ipage.current-1)*ipage.size).to_string().as_str() + "," + ipage.size.to_string().as_str();
+        let mut append_limit_where_string = where_string.clone();
+        if !where_string.contains(" limit ") && !where_string.contains("LIMIT") {
+            append_limit_where_string = append_limit_where_string + " LIMIT " + ((ipage.current - 1) * ipage.size).to_string().as_str() + "," + ipage.size.to_string().as_str();
         }
-        let query_sql=where_befer_string+" WHERE "+append_limit_where_string.as_str();
+        let query_sql = where_befer_string + " WHERE " + append_limit_where_string.as_str();
 
-        let records:Vec<T>=self.eval_raw((mapper_name.to_string()+"."+id).as_str(), query_sql.as_str(), true, &mut arg_array)?;
+        let records: Vec<T> = self.eval_raw((mapper_name.to_string() + "." + id).as_str(), query_sql.as_str(), true, &mut arg_array)?;
         let mut result = ipage.clone();
         result.set_records(records);
 
@@ -99,19 +98,19 @@ impl Rbatis {
         count_sql = count_sql.replace("#{table}", result_map_node.table.as_ref().unwrap());
         count_sql = count_sql.replace("#{where}", where_string.as_str());
 
-        let total:i64=self.eval_raw((mapper_name.to_string()+"."+id).as_str(), count_sql.as_str(), true, &mut arg_array)?;
+        let total: i64 = self.eval_raw((mapper_name.to_string() + "." + id).as_str(), count_sql.as_str(), false, &mut arg_array)?;
         result.set_total(total);
         return Result::Ok(result);
     }
 
 
-    fn eval_select_return_where<T>(&mut self, mapper_name: &str,  arg: &mut Value,arg_array:&mut Vec<Value>) -> Result<(T,String), String> where T: DeserializeOwned {
-        let (sql,w) = self.create_sql_select(mapper_name, arg,arg_array)?;
-        let data:T= self.eval_raw((mapper_name.to_string()+".eval_select_return_where").as_str(), sql.as_str(), true, arg_array)?;
-        return Result::Ok((data,w));
+    fn eval_select_return_where<T>(&mut self, mapper_name: &str, arg: &mut Value, arg_array: &mut Vec<Value>) -> Result<(T, String), String> where T: DeserializeOwned {
+        let (sql, w) = self.create_sql_select(mapper_name, arg, arg_array)?;
+        let data: T = self.eval_raw((mapper_name.to_string() + ".eval_select_return_where").as_str(), sql.as_str(), true, arg_array)?;
+        return Result::Ok((data, w));
     }
 
-    pub fn create_sql_select(&mut self, mapper_name: &str,  arg: &mut Value,arg_arr:&mut Vec<Value>) -> Result<(String, String), String> {
+    pub fn create_sql_select(&mut self, mapper_name: &str, arg: &mut Value, arg_arr: &mut Vec<Value>) -> Result<(String, String), String> {
         let result_map_node = self.get_result_map_node(mapper_name)?;
         return match arg {
             serde_json::Value::Null => {
@@ -119,12 +118,12 @@ impl Rbatis {
             }
             serde_json::Value::String(_) | serde_json::Value::Number(_) => {
                 let ipage_opt: Option<IPage<Value>> = None;
-                let where_str = "id = ".to_string() + arg.to_sql_question(SkipType::Null,AND,",",arg_arr).as_str();
+                let where_str = "id = ".to_string() + arg.to_sql_question(SkipType::Null, AND, ",", arg_arr).as_str();
                 Result::Ok(self.do_select_by_templete(arg, &result_map_node, where_str.as_str(), &ipage_opt)?)
             }
             serde_json::Value::Array(_) => {
                 let ipage_opt: Option<IPage<Value>> = None;
-                let where_str = "id in ".to_string() + arg.to_sql_question(SkipType::Null,AND,",",arg_arr).as_str();
+                let where_str = "id in ".to_string() + arg.to_sql_question(SkipType::Null, AND, ",", arg_arr).as_str();
                 Result::Ok(self.do_select_by_templete(arg, &result_map_node, where_str.as_str(), &ipage_opt)?)
             }
             serde_json::Value::Object(map) => {
@@ -140,28 +139,28 @@ impl Rbatis {
                         ipage_opt = Some(ipage.unwrap());
                     }
                 }
-                let where_str = arg.to_sql_question(SkipType::None,AND,",",arg_arr);
+                let where_str = arg.to_sql_question(SkipType::None, AND, ",", arg_arr);
                 Result::Ok(self.do_select_by_templete(arg, &result_map_node, where_str.as_str(), &ipage_opt)?)
             }
             _ => {
                 Result::Err("[rbatis] not support arg type value in select(): ".to_string() + arg.to_sql_value_def().as_str())
             }
-        }
+        };
     }
 
 
-    pub fn create_sql_count(&mut self, mapper_name: &str,  arg: &mut Value,arg_arr:&mut Vec<Value>) -> Result<String, String> {
+    pub fn create_sql_count(&mut self, mapper_name: &str, arg: &mut Value, arg_arr: &mut Vec<Value>) -> Result<String, String> {
         let result_map_node = self.get_result_map_node(mapper_name)?;
         match arg {
             serde_json::Value::Null => {
                 return Result::Err("[rbatis] arg is null value".to_string());
             }
             serde_json::Value::String(_) | serde_json::Value::Number(_) => {
-                let where_str = "id = ".to_string() + arg.to_sql_question(SkipType::Null,AND,",",arg_arr).as_str();
+                let where_str = "id = ".to_string() + arg.to_sql_question(SkipType::Null, AND, ",", arg_arr).as_str();
                 return Result::Ok(self.do_count_by_templete(arg, &result_map_node, where_str.as_str())?);
             }
             serde_json::Value::Array(_) => {
-                let where_str = "id in ".to_string() + arg.to_sql_question(SkipType::Null,AND,",",arg_arr).as_str();
+                let where_str = "id in ".to_string() + arg.to_sql_question(SkipType::Null, AND, ",", arg_arr).as_str();
                 return Result::Ok(self.do_count_by_templete(arg, &result_map_node, where_str.as_str())?);
             }
             serde_json::Value::Object(map) => {
@@ -177,7 +176,7 @@ impl Rbatis {
                         ipage_opt = Some(ipage.unwrap());
                     }
                 }
-                let where_str = arg.to_sql_question(SkipType::None,AND,",",arg_arr);
+                let where_str = arg.to_sql_question(SkipType::None, AND, ",", arg_arr);
                 return Result::Ok(self.do_count_by_templete(arg, &result_map_node, where_str.as_str())?);
             }
             _ => {
@@ -188,7 +187,7 @@ impl Rbatis {
 
 
     /// return 结果/where sql
-    fn do_select_by_templete<T>(&mut self, env: &mut Value, result_map_node: &ResultMapNode, where_str: &str, ipage_opt: &Option<IPage<T>>) -> Result<(String,String), String> where T: Serialize + DeserializeOwned + Clone {
+    fn do_select_by_templete<T>(&mut self, env: &mut Value, result_map_node: &ResultMapNode, where_str: &str, ipage_opt: &Option<IPage<T>>) -> Result<(String, String), String> where T: Serialize + DeserializeOwned + Clone {
         let mut sql = "select * from #{table} where #{where}".to_string();
         //replace table
         if result_map_node.table.is_none() {
@@ -200,21 +199,21 @@ impl Rbatis {
         let mut where_string = where_str.to_string();
         where_string.trim();
         //delete node
-        if result_map_node.delete_node.is_some() && !where_string.contains(result_map_node.delete_node.as_ref().unwrap().column.as_str()){
-            if where_string.is_empty(){
-                where_string = result_map_node.delete_node.as_ref().unwrap().column.clone()+ " = " + result_map_node.delete_node.as_ref().unwrap().logic_undelete.as_str() + where_string.as_str();
-            }else{
-                where_string = result_map_node.delete_node.as_ref().unwrap().column.clone()+ " = " + result_map_node.delete_node.as_ref().unwrap().logic_undelete.as_str() + AND + where_string.as_str();
+        if result_map_node.delete_node.is_some() && !where_string.contains(result_map_node.delete_node.as_ref().unwrap().column.as_str()) {
+            if where_string.is_empty() {
+                where_string = result_map_node.delete_node.as_ref().unwrap().column.clone() + " = " + result_map_node.delete_node.as_ref().unwrap().logic_undelete.as_str() + where_string.as_str();
+            } else {
+                where_string = result_map_node.delete_node.as_ref().unwrap().column.clone() + " = " + result_map_node.delete_node.as_ref().unwrap().logic_undelete.as_str() + AND + where_string.as_str();
             }
         }
         //replace where
         sql = sql.replace("#{where}", where_string.as_str());
 
         if ipage_opt.is_some() {
-            let ipage=ipage_opt.as_ref().unwrap();
-            sql = sql + " LIMIT " + ((ipage.current-1)*ipage.size).to_string().as_str() + "," + ipage.size.to_string().as_str();
+            let ipage = ipage_opt.as_ref().unwrap();
+            sql = sql + " LIMIT " + ((ipage.current - 1) * ipage.size).to_string().as_str() + "," + ipage.size.to_string().as_str();
         }
-        return Result::Ok((sql,where_string));
+        return Result::Ok((sql, where_string));
     }
 
     /// return 结果/where sql
@@ -230,11 +229,11 @@ impl Rbatis {
         let mut where_string = where_str.to_string();
         where_string.trim();
         //delete node
-        if result_map_node.delete_node.is_some() && !where_string.contains(result_map_node.delete_node.as_ref().unwrap().column.as_str()){
-            if where_string.is_empty(){
-                where_string = result_map_node.delete_node.as_ref().unwrap().column.clone()+ " = " + result_map_node.delete_node.as_ref().unwrap().logic_undelete.as_str() + where_string.as_str();
-            }else{
-                where_string = result_map_node.delete_node.as_ref().unwrap().column.clone()+ " = " + result_map_node.delete_node.as_ref().unwrap().logic_undelete.as_str() + AND + where_string.as_str();
+        if result_map_node.delete_node.is_some() && !where_string.contains(result_map_node.delete_node.as_ref().unwrap().column.as_str()) {
+            if where_string.is_empty() {
+                where_string = result_map_node.delete_node.as_ref().unwrap().column.clone() + " = " + result_map_node.delete_node.as_ref().unwrap().logic_undelete.as_str() + where_string.as_str();
+            } else {
+                where_string = result_map_node.delete_node.as_ref().unwrap().column.clone() + " = " + result_map_node.delete_node.as_ref().unwrap().logic_undelete.as_str() + AND + where_string.as_str();
             }
         }
         //replace where
@@ -247,48 +246,48 @@ impl Rbatis {
 fn test_select_by_id() {
     let mut rbatis = Rbatis::new();
     rbatis.load_xml("Example_ActivityMapper.xml".to_string(), fs::read_to_string("./src/example/Example_ActivityMapper.xml").unwrap());//加载xml数据
-    let mut arg_array=vec![];
-    let (sql,_) = rbatis.create_sql_select("Example_ActivityMapper.xml", serde_json::json!("1").borrow_mut(),&mut arg_array).unwrap();
+    let mut arg_array = vec![];
+    let (sql, _) = rbatis.create_sql_select("Example_ActivityMapper.xml", serde_json::json!("1").borrow_mut(), &mut arg_array).unwrap();
     println!("{}", sql);
     println!("{}", json!(arg_array));
 
-    assert_eq!(arg_array.len(),count_string_num(&sql,'?'));
+    assert_eq!(arg_array.len(), count_string_num(&sql, '?'));
 }
 
 #[test]
 fn test_select_by_ids() {
     let mut rbatis = Rbatis::new();
     rbatis.load_xml("Example_ActivityMapper.xml".to_string(), fs::read_to_string("./src/example/Example_ActivityMapper.xml").unwrap());//加载xml数据
-    let mut arg_array=vec![];
-    let (sql,_)  = rbatis.create_sql_select("Example_ActivityMapper.xml",  serde_json::json!(vec![1,2,3]).borrow_mut(),&mut arg_array).unwrap();
+    let mut arg_array = vec![];
+    let (sql, _) = rbatis.create_sql_select("Example_ActivityMapper.xml", serde_json::json!(vec![1,2,3]).borrow_mut(), &mut arg_array).unwrap();
     println!("{}", sql);
     println!("{}", json!(arg_array));
 
-    assert_eq!(arg_array.len(),count_string_num(&sql,'?'));
+    assert_eq!(arg_array.len(), count_string_num(&sql, '?'));
 }
 
 #[test]
 fn test_select_by_map() {
     let mut rbatis = Rbatis::new();
     rbatis.load_xml("Example_ActivityMapper.xml".to_string(), fs::read_to_string("./src/example/Example_ActivityMapper.xml").unwrap());//加载xml数据
-    let mut arg_array=vec![];
-    let (sql,_)  = rbatis.create_sql_select("Example_ActivityMapper.xml",  serde_json::json!({
+    let mut arg_array = vec![];
+    let (sql, _) = rbatis.create_sql_select("Example_ActivityMapper.xml", serde_json::json!({
      "arg": 2,
      "delete_flag":1,
      "number_arr":vec![1,2,3],
      "string_arr":vec!["1","2","3"]
-    }).borrow_mut(),&mut arg_array).unwrap();
+    }).borrow_mut(), &mut arg_array).unwrap();
     println!("{}", sql);
     println!("{}", json!(arg_array));
 
-    assert_eq!(arg_array.len(),count_string_num(&sql,'?'));
+    assert_eq!(arg_array.len(), count_string_num(&sql, '?'));
 }
 
 #[test]
 fn test_select_by_id_page() {
     let mut rbatis = Rbatis::new();
     rbatis.load_xml("Example_ActivityMapper.xml".to_string(), fs::read_to_string("./src/example/Example_ActivityMapper.xml").unwrap());//加载xml数据
-    let mut arg_array=vec![];
+    let mut arg_array = vec![];
     let act = Activity {
         id: None,
         name: Some("新人专享".to_string()),
@@ -305,9 +304,9 @@ fn test_select_by_id_page() {
     };
     let ipage: IPage<Value> = IPage::new(1, 20);
     let arg = json_join(&act, "ipage", ipage).unwrap();
-    let (sql,w) = rbatis.create_sql_select("Example_ActivityMapper.xml", serde_json::to_value(arg).unwrap().borrow_mut(),&mut arg_array).unwrap();
+    let (sql, w) = rbatis.create_sql_select("Example_ActivityMapper.xml", serde_json::to_value(arg).unwrap().borrow_mut(), &mut arg_array).unwrap();
     println!("{}", sql);
     println!("{}", json!(arg_array));
 
-    assert_eq!(arg_array.len(),count_string_num(&sql,'?'));
+    assert_eq!(arg_array.len(), count_string_num(&sql, '?'));
 }

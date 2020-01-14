@@ -28,6 +28,7 @@ use crate::db_config::DBConfig;
 use crate::decode::rdbc_driver_decoder::decode_result_set;
 use crate::local_session::LocalSession;
 use crate::session::Session;
+use crate::session_factory::{SessionFactory, SessionFactoryImpl};
 use crate::tx::propagation::Propagation;
 use crate::utils::{driver_util, rdbc_util};
 use crate::utils::rdbc_util::to_rdbc_values;
@@ -42,8 +43,8 @@ pub struct Rbatis {
     //路由配置
     pub db_driver_map: HashMap<String, String>,
     pub router_func: fn(id: &str) -> String,
-    //连接工厂
-    pub conn_factory: Box<dyn ConnFactory>,
+    //session工厂
+    pub session_factory: Box<dyn SessionFactory>,
     //允许日志输出，禁用此项可减少IO,提高性能
     pub enable_log: bool,
     //true异步模式，false线程模式
@@ -58,7 +59,7 @@ impl Rbatis {
             mapper_map: HashMap::new(),
             holder: ConfigHolder::new(),
             db_driver_map: HashMap::new(),
-            conn_factory: Box::new(ConnFactoryImpl::new(true)),
+            session_factory: Box::new(SessionFactoryImpl::new(true)),
             router_func: |id| -> String{
                 //加载默认配置，key=""
                 return "".to_string();
@@ -137,24 +138,18 @@ impl Rbatis {
     }
 
     ///执行无编译的原生sql
-    pub fn eval_sql_source(&mut self, id: &str, sql:&str) -> Result<u64, String>{
+    pub fn eval_sql_source(&mut self, id: &str, sql:&str) -> Result<u64, String> {
         let key = (self.router_func)(id);
         let db_conf_opt = self.db_driver_map.get(key.as_str());
         if db_conf_opt.is_none() {
             return Result::Err("[rbatis] no DBConfig:".to_string() + key.as_str() + " find!");
         }
         let driver = db_conf_opt.unwrap();
-        let thread_id=thread::current().id();
-        let conn = self.conn_factory.get_thread_conn(thread_id,driver.as_str())?;
-        let create_result = conn.create(sql);
-        if create_result.is_err() {
-            return Result::Err("[rbatis] exec fail:".to_string()  + format!("{:?}", create_result.err().unwrap()).as_str());
-        }
-        let exec_result = create_result.unwrap().execute_update(&[]);
-        if exec_result.is_err() {
-            return Result::Err("[rbatis] exec fail:".to_string()  + format!("{:?}", exec_result.err().unwrap()).as_str());
-        }
-        return Result::Ok(exec_result.unwrap())
+        let thread_id = thread::current().id();
+        let conn = self.session_factory.get_thread_session(thread_id, driver.as_str())?;
+        let mut vec = vec![];
+        let create_result = conn.exec(sql, &mut vec)?;
+        return Result::Ok(create_result);
     }
 
     ///执行
@@ -182,38 +177,16 @@ impl Rbatis {
             return Result::Err("[rbatis] no DBConfig:".to_string() + key.as_str() + " find!");
         }
         let driver = db_conf_opt.unwrap();
-        let thread_id=thread::current().id();
-        let conn = self.conn_factory.get_thread_conn(thread_id,driver.as_str())?;
+        let thread_id = thread::current().id();
+        let conn = self.session_factory.get_thread_session(thread_id, driver.as_str())?;
         if is_select {
             //select
             //let session=LocalSession::new("",driver,Some(conn));
-
-            let create_result = conn.create(sql);
-            if create_result.is_err() {
-                return Result::Err("[rbatis] select fail:".to_string() + id + format!("{:?}", create_result.err().unwrap()).as_str());
-            }
-            let mut create_statement = create_result.unwrap();
-            let exec_result = create_statement.execute_query(&params);
-            if exec_result.is_err() {
-                return Result::Err("[rbatis] select fail:".to_string() + id + format!("{:?}", exec_result.err().unwrap()).as_str());
-            }
-            let (result, decoded_num) = decode_result_set(exec_result.unwrap().as_mut());
-            if self.enable_log {
-                info!("[rbatis] Total: <== {}: {}", id, decoded_num.to_string().as_str());
-            }
-            return result;
+            return conn.query(sql, arg_array);
         } else {
             //exec
-            let create_result = conn.create(sql);
-            if create_result.is_err() {
-                return Result::Err("[rbatis] exec fail:".to_string() + id + format!("{:?}", create_result.err().unwrap()).as_str());
-            }
-            let exec_result = create_result.unwrap().execute_update(&params);
-            if exec_result.is_err() {
-                return Result::Err("[rbatis] exec fail:".to_string() + id + format!("{:?}", exec_result.err().unwrap()).as_str());
-            }
-            let affected_rows = exec_result.unwrap();
-            let r = serde_json::from_value( serde_json::Value::Number(serde_json::Number::from(ParserNumber::U64(affected_rows))));
+            let affected_rows = conn.exec(sql, arg_array)?;
+            let r = serde_json::from_value(serde_json::Value::Number(serde_json::Number::from(ParserNumber::U64(affected_rows))));
             if r.is_err() {
                 return Result::Err("[rbatis] exec fail:".to_string() + id + r.err().unwrap().to_string().as_str());
             }

@@ -46,7 +46,7 @@ pub fn decode_result_set<T: ?Sized>(arg: &mut dyn ResultSet) -> (Result<T, Strin
                 //decode struct
                 let len = datas.len();
                 if datas.len() > 1 {
-                    return (Result::Err("[rbatis] rows.affected_rows > 1,but decode one result!".to_string()), len);
+                    return (Result::Err(format!("[rbatis] rows.affected_rows > 1,but decode one result({})!", type_name)), len);
                 }
                 for x in datas {
                     js = x;
