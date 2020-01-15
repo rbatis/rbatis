@@ -5,7 +5,6 @@
 
 ![Image text](logo.png)
 
-
 * 极少使用锁，内存安全，线程安全，低开销，为rust语言没有GC,因此框架理论上能承受极大的并发量
 * 使用最通用的json数据结构（基于serde_json）进行传参和通讯
 * 性能极高，例子中的select id="select_by_condition"内的代码 单线程基准测试benchmark 可轻松拉起200000 QPS/s（直接返回数据（数据库查询时间损耗0），win10,6 core i7,16GB）  多线程更高 远超go语言版本的GoMyBatis
