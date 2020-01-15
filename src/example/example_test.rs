@@ -25,7 +25,7 @@ use crate::example::conf::MYSQL_URL;
 /**
  初始化实例
 */
-fn init_rbatis() -> Result<Rbatis<'static>, String> {
+fn init_rbatis() -> Result<Rbatis, String> {
     //1 启用日志(可选，不添加则不加载日志库)
     log4rs::init_file("log4rs.yaml", Default::default()).unwrap();
     //2 初始化rbatis

@@ -32,7 +32,7 @@ use crate::utils::{driver_util, rdbc_util};
 use crate::utils::rdbc_util::to_rdbc_values;
 use crate::utils::xml_loader::load_xml;
 
-pub struct Rbatis<'a> {
+pub struct Rbatis {
     pub id: String,
     //动态sql运算节点集合
     pub mapper_map: HashMap<String, HashMap<String, NodeType>>,
@@ -42,7 +42,7 @@ pub struct Rbatis<'a> {
     pub db_driver_map: HashMap<String, String>,
     pub router_func: fn(id: &str) -> String,
     //session工厂
-    pub session_factory: SessionFactoryImpl<'a>,
+    pub session_factory: SessionFactoryImpl,
     //允许日志输出，禁用此项可减少IO,提高性能
     pub enable_log: bool,
     //true异步模式，false线程模式
@@ -50,7 +50,7 @@ pub struct Rbatis<'a> {
 }
 
 
-impl <'a>Rbatis<'a> {
+impl Rbatis {
     pub fn new() -> Self {
         return Self {
             id: Uuid::new_v4().to_string(),
