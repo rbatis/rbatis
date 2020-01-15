@@ -182,9 +182,11 @@ impl<'a> Session<'a> for LocalSession<'a> {
                         self.tx_stack.push(tx, propagation_type.unwrap());
                     }
                 }
+                ///表示如果当前事务存在，则支持当前事务，如果当前没有事务，就以非事务方式执行。  have tx ? join(): session.exec()
                 Propagation::SUPPORTS => {
                     return Ok(0);
                 }
+                ///表示如果当前事务存在，则支持当前事务，如果当前没有事务，则返回事务嵌套错误。  have tx ? join() : return error
                 Propagation::MANDATORY => {
                     if self.tx_stack.len() > 0 {
                         return Ok(0);
@@ -192,6 +194,7 @@ impl<'a> Session<'a> for LocalSession<'a> {
                         return Err("[rbatis] PROPAGATION_MANDATORY Nested transaction exception! current not have a transaction!".to_string());
                     }
                 }
+                ///表示新建一个全新Session开启一个全新事务，如果当前存在事务，则把当前事务挂起。 have tx ? stop old。  -> new session().new tx()
                 Propagation::REQUIRES_NEW => {
                     if self.tx_stack.len() > 0 {
                         //TODO stop old tx
@@ -204,6 +207,7 @@ impl<'a> Session<'a> for LocalSession<'a> {
                     let new_session = LocalSession::new("", self.driver.as_str(), Option::from(r.unwrap()))?;
                     self.new_local_session = Some(Box::new(new_session));
                 }
+                ///表示以非事务方式执行操作，如果当前存在事务，则新建一个Session以非事务方式执行操作，把当前事务挂起。  have tx ? stop old。 -> new session().exec()
                 Propagation::NOT_SUPPORTED => {
                     if self.tx_stack.len() > 0 {
                         //TODO stop old tx
@@ -215,6 +219,7 @@ impl<'a> Session<'a> for LocalSession<'a> {
                     let new_session = LocalSession::new("", self.driver.as_str(), Option::from(r.unwrap()))?;
                     self.new_local_session = Some(Box::new(new_session));
                 }
+                ///表示以非事务方式执行操作，如果当前存在事务，则返回事务嵌套错误。    have tx ? return error: session.exec()
                 Propagation::NEVER => {
                     if self.tx_stack.len() > 0 {
                         return Err("[rbatis] PROPAGATION_NEVER  Nested transaction exception! current Already have a transaction!".to_string());
@@ -231,6 +236,7 @@ impl<'a> Session<'a> for LocalSession<'a> {
                         return self.begin(Option::Some(Propagation::REQUIRED));
                     }
                 }
+                ///表示如果当前没有事务，就新建一个事务,否则返回错误。  have tx ? return error: session.new tx()
                 Propagation::NOT_REQUIRED => {
                     if self.tx_stack.len() > 0 {
                         return Err("[rbatis] PROPAGATION_NOT_REQUIRED Nested transaction exception! current Already have a transaction!".to_string());
