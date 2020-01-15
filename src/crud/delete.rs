@@ -13,7 +13,7 @@ use std::any::Any;
 use serde::de::DeserializeOwned;
 use crate::utils::string_util::count_string_num;
 
-impl Rbatis{
+impl <'a> Rbatis<'a> {
 
     pub fn delete<T>(&mut self, mapper_name: &str, arg: &mut Value) -> Result<T, String> where T: DeserializeOwned {
         let mut arg_array=vec![];

@@ -8,19 +8,19 @@ use crate::session::Session;
 use crate::utils::driver_util;
 
 ///链接工厂
-pub trait SessionFactory {
-    fn get_thread_session(&mut self, id: ThreadId, driver: &str) -> Result<&mut LocalSession<'static>, String>;
+pub trait SessionFactory<'a> {
+    fn get_thread_session(&mut self, id: ThreadId, driver: &str) -> Result<&mut LocalSession<'a>, String>;
 }
 
 
-pub struct SessionFactoryImpl {
+pub struct SessionFactoryImpl<'a> {
     pub async_mode: bool,
-    pub data: HashMap<ThreadId, LocalSession<'static>>,
+    pub data: HashMap<ThreadId, LocalSession<'a>>,
 }
 
 
-impl SessionFactory for SessionFactoryImpl {
-    fn get_thread_session(&mut self, id: ThreadId, driver: &str) -> Result<&mut LocalSession<'static>, String> {
+impl <'a>SessionFactory<'a> for SessionFactoryImpl<'a> {
+    fn get_thread_session(&mut self, id: ThreadId, driver: &str) -> Result<&mut LocalSession<'a>, String> {
         let item = self.data.get(&id);
         if item.is_some() {
             return Ok(self.data.get_mut(&id).unwrap());
@@ -32,8 +32,8 @@ impl SessionFactory for SessionFactoryImpl {
     }
 }
 
-impl SessionFactoryImpl {
-    pub fn new(async_mode: bool) -> Self {
+impl <'a>SessionFactoryImpl<'a> {
+    pub fn new(async_mode: bool) -> SessionFactoryImpl<'a> {
         return Self {
             async_mode,
             data: HashMap::new(),
