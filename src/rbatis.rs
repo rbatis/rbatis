@@ -23,7 +23,6 @@ use crate::ast::xml::node::{loop_decode_xml, SqlNodePrint};
 use crate::ast::xml::node_type::NodeType;
 use crate::ast::xml::result_map_node::ResultMapNode;
 use crate::ast::xml::string_node::StringNode;
-use crate::conn_factory::{ConnFactory, ConnFactoryImpl};
 use crate::db_config::DBConfig;
 use crate::decode::rdbc_driver_decoder::decode_result_set;
 use crate::local_session::LocalSession;
@@ -178,14 +177,13 @@ impl Rbatis {
         }
         let driver = db_conf_opt.unwrap();
         let thread_id = thread::current().id();
-        let conn = self.session_factory.get_thread_session(thread_id, driver.as_str())?;
+        let session = self.session_factory.get_thread_session(thread_id, driver.as_str())?;
         if is_select {
             //select
-            //let session=LocalSession::new("",driver,Some(conn));
-            return conn.query(sql, arg_array);
+            return session.query(sql, arg_array);
         } else {
             //exec
-            let affected_rows = conn.exec(sql, arg_array)?;
+            let affected_rows = session.exec(sql, arg_array)?;
             let r = serde_json::from_value(serde_json::Value::Number(serde_json::Number::from(ParserNumber::U64(affected_rows))));
             if r.is_err() {
                 return Result::Err("[rbatis] exec fail:".to_string() + id + r.err().unwrap().to_string().as_str());
