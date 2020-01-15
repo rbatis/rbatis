@@ -3,6 +3,8 @@
 #### rbatis 是一个无GC无虚拟机无运行时Runtime直接编译为机器码,并发安全的  数据库 ORM框架，并且所有数据传值均使用json（serde_json）
 [![Build Status](https://travis-ci.org/zhuxiujia/rbatis.svg?branch=master)](https://travis-ci.org/zhuxiujia/rbatis)
 
+![Image text](logo.png)
+
 
 * 极少使用锁，内存安全，线程安全，低开销，为rust语言没有GC,因此框架理论上能承受极大的并发量
 * 使用最通用的json数据结构（基于serde_json）进行传参和通讯
