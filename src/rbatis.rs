@@ -25,7 +25,6 @@ use crate::ast::xml::result_map_node::ResultMapNode;
 use crate::ast::xml::string_node::StringNode;
 use crate::db_config::DBConfig;
 use crate::decode::rdbc_driver_decoder::decode_result_set;
-use crate::local_session::LocalSession;
 use crate::session::Session;
 use crate::session_factory::{SessionFactory, SessionFactoryImpl};
 use crate::tx::propagation::Propagation;
@@ -33,7 +32,7 @@ use crate::utils::{driver_util, rdbc_util};
 use crate::utils::rdbc_util::to_rdbc_values;
 use crate::utils::xml_loader::load_xml;
 
-pub struct Rbatis {
+pub struct Rbatis<'a> {
     pub id: String,
     //动态sql运算节点集合
     pub mapper_map: HashMap<String, HashMap<String, NodeType>>,
@@ -43,7 +42,7 @@ pub struct Rbatis {
     pub db_driver_map: HashMap<String, String>,
     pub router_func: fn(id: &str) -> String,
     //session工厂
-    pub session_factory: Box<dyn SessionFactory>,
+    pub session_factory: SessionFactoryImpl<'a>,
     //允许日志输出，禁用此项可减少IO,提高性能
     pub enable_log: bool,
     //true异步模式，false线程模式
@@ -51,14 +50,14 @@ pub struct Rbatis {
 }
 
 
-impl Rbatis {
-    pub fn new() -> Rbatis {
-        return Rbatis {
+impl <'a>Rbatis<'a> {
+    pub fn new() -> Self {
+        return Self {
             id: Uuid::new_v4().to_string(),
             mapper_map: HashMap::new(),
             holder: ConfigHolder::new(),
             db_driver_map: HashMap::new(),
-            session_factory: Box::new(SessionFactoryImpl::new(true)),
+            session_factory: SessionFactoryImpl::new(true),
             router_func: |id| -> String{
                 //加载默认配置，key=""
                 return "".to_string();
