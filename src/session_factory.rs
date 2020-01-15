@@ -14,7 +14,9 @@ pub trait SessionFactory {
 
 
 pub struct SessionFactoryImpl {
+    ///是否启用异步模式，即async await
     pub async_mode: bool,
+    /// data 持有session所有权，当session被删除时，session即被销毁
     pub data: HashMap<ThreadId, LocalSession<'static>>,
 }
 
