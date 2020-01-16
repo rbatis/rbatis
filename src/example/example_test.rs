@@ -14,18 +14,19 @@ use serde_json::{json, Number, Value};
 use crate::ast::config_holder::ConfigHolder;
 use crate::ast::xml::bind_node::BindNode;
 use crate::ast::xml::node_type::NodeType;
-use crate::rbatis::Rbatis;
 use crate::crud::ipage::IPage;
 use crate::decode::encoder::encode_to_value;
 use crate::decode::rdbc_driver_decoder;
 use crate::decode::rdbc_driver_decoder::decode_result_set;
 use crate::example::activity::Activity;
 use crate::example::conf::MYSQL_URL;
+use crate::rbatis::Rbatis;
+use crate::session::Session;
 
 /**
  初始化实例
 */
-fn init_rbatis() -> Result<Rbatis, String> {
+fn init_rbatis() -> Result<Rbatis<'static>, String> {
     //1 启用日志(可选，不添加则不加载日志库)
     log4rs::init_file("log4rs.yaml", Default::default()).unwrap();
     //2 初始化rbatis
@@ -34,7 +35,7 @@ fn init_rbatis() -> Result<Rbatis, String> {
     rbatis.load_db_url("", MYSQL_URL);//"mysql://root:TEST@localhost:3306/test"
     //4 加载xml配置
 
-    let  f=fs::File::open("./src/example/Example_ActivityMapper.xml");
+    let f = fs::File::open("./src/example/Example_ActivityMapper.xml");
     rbatis.load_xml("Example_ActivityMapper.xml".to_string(), fs::read_to_string("./src/example/Example_ActivityMapper.xml").unwrap());//加载xml数据
     //判断是否配置数据库
     let conf = rbatis.db_driver_map.get("").unwrap();
@@ -237,23 +238,25 @@ fn test_exec_select_page_custom() {
 }
 
 
-
 /**
   测试事务
 */
 #[test]
-fn test_tx(){
+fn test_tx() {
 //初始化rbatis
     let rbatis_opt = init_rbatis();
     if rbatis_opt.is_err() {
         return;
     }
-    let mut rbatis =rbatis_opt.unwrap();
+    let mut rbatis = rbatis_opt.unwrap();
 
-    let begin=rbatis.begin("").unwrap();
-    println!("begin:{}",begin);
-    let data:u64= rbatis.eval_sql("UPDATE `biz_activity` SET `name` = '活动1' WHERE (`id` = '2');").unwrap();
-    println!("update:{}",data);
-    let rollback=  rbatis.commit("").unwrap();
-    println!("commit:{}",rollback);
+//    let begin=rbatis.tx("",None).unwrap();
+//     begin.begin(None);
+//    begin.commit();
+
+    //  println!("begin:{}",begin);
+    let data: u64 = rbatis.eval_sql("UPDATE `biz_activity` SET `name` = '活动1' WHERE (`id` = '2');").unwrap();
+    println!("update:{}", data);
+    let rollback = rbatis.commit("").unwrap();
+    println!("commit:{}", rollback);
 }

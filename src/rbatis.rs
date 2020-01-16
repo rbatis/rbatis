@@ -25,6 +25,7 @@ use crate::ast::xml::result_map_node::ResultMapNode;
 use crate::ast::xml::string_node::StringNode;
 use crate::db_config::DBConfig;
 use crate::decode::rdbc_driver_decoder::decode_result_set;
+use crate::local_session::LocalSession;
 use crate::session::Session;
 use crate::session_factory::{SessionFactory, SessionFactoryImpl};
 use crate::tx::propagation::Propagation;
@@ -32,7 +33,7 @@ use crate::utils::{driver_util, rdbc_util};
 use crate::utils::rdbc_util::to_rdbc_values;
 use crate::utils::xml_loader::load_xml;
 
-pub struct Rbatis {
+pub struct Rbatis<'a> {
     pub id: String,
     //动态sql运算节点集合
     pub mapper_map: HashMap<String, HashMap<String, NodeType>>,
@@ -42,7 +43,7 @@ pub struct Rbatis {
     pub db_driver_map: HashMap<String, String>,
     pub router_func: fn(id: &str) -> String,
     //session工厂
-    pub session_factory: SessionFactoryImpl,
+    pub session_factory: SessionFactoryImpl<'a>,
     //允许日志输出，禁用此项可减少IO,提高性能
     pub enable_log: bool,
     //true异步模式，false线程模式
@@ -50,7 +51,7 @@ pub struct Rbatis {
 }
 
 
-impl Rbatis {
+impl<'a> Rbatis<'a> {
     pub fn new() -> Self {
         return Self {
             id: Uuid::new_v4().to_string(),
@@ -122,16 +123,26 @@ impl Rbatis {
         return self.eval_raw("eval_sql", eval_sql, is_select, &mut arg_array);
     }
 
-    pub fn begin(&mut self,id: &str) -> Result<u64, String>{
-        let data=self.eval_sql_source(id, "begin;")?;
+    pub fn begin(&'a mut self, id: &str, propagation_type: Option<Propagation>) -> Result<&mut LocalSession<'a>, String> {
+        let key = (self.router_func)(id);
+        let db_conf_opt = self.db_driver_map.get(key.as_str());
+        if db_conf_opt.is_none() {
+            return Result::Err("[rbatis] no DBConfig:".to_string() + key.as_str() + " find!");
+        }
+        let driver = db_conf_opt.unwrap();
+        let thread_id = thread::current().id();
+        let session = self.session_factory.get_thread_session(thread_id, driver.as_str())?;
+//        {
+//            session.begin(propagation_type)?;
+//        }
+        return Result::Ok(session);
+    }
+    pub fn commit(&mut self, id: &str) -> Result<u64, String> {
+        let data = self.eval_sql_source(id, "commit;")?;
         return Result::Ok(data);
     }
-    pub fn commit(&mut self,id: &str) -> Result<u64, String>{
-        let data=self.eval_sql_source(id, "commit;")?;
-        return Result::Ok(data);
-    }
-    pub fn rollback(&mut self,id: &str) -> Result<u64, String>{
-        let data=self.eval_sql_source(id, "rollback;")?;
+    pub fn rollback(&mut self, id: &str) -> Result<u64, String> {
+        let data = self.eval_sql_source(id, "rollback;")?;
         return Result::Ok(data);
     }
 
