@@ -163,10 +163,10 @@ impl Rbatis {
         if self.enable_log {
             if is_select {
                 info!("[rbatis] Query: ==>  {}: {}", id, sql);
-                info!("[rbatis]  Args: ==>  {}: {}", id, rdbc_util::rdbc_vec_to_string(&params));
+                info!("[rbatis]  Args: ==>  {}: {}", id, crate::utils::rdbc_util::rdbc_vec_to_string(&params));
             } else {
                 info!("[rbatis]  Exec:  ==>  {}: {}", id, sql);
-                info!("[rbatis]  Args:  ==>  {}: {}", id, rdbc_util::rdbc_vec_to_string(&params));
+                info!("[rbatis]  Args:  ==>  {}: {}", id, crate::utils::rdbc_util::rdbc_vec_to_string(&params));
             }
         }
         let key = (self.router_func)(id);
@@ -179,10 +179,10 @@ impl Rbatis {
         let session = self.session_factory.get_thread_session(thread_id, driver.as_str())?;
         if is_select {
             //select
-            return session.query(sql, arg_array);
+            return session.query(sql, &params);
         } else {
             //exec
-            let affected_rows = session.exec(sql, arg_array)?;
+            let affected_rows = session.exec(sql, &params)?;
             let r = serde_json::from_value(serde_json::Value::Number(serde_json::Number::from(ParserNumber::U64(affected_rows))));
             if r.is_err() {
                 return Result::Err("[rbatis] exec fail:".to_string() + id + r.err().unwrap().to_string().as_str());
