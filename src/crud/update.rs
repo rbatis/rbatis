@@ -1,28 +1,27 @@
 use std::borrow::BorrowMut;
 use std::fs;
 
+use serde::de::DeserializeOwned;
 use serde_json::{Map, Number, Value};
 use serde_json::json;
+
 use crate::ast::xml::result_map_node::ResultMapNode;
-use crate::convert::sql_value_convert::{AND, SqlColumnConvert, SqlValueConvert, SqlQuestionConvert, SkipType};
+use crate::convert::sql_value_convert::{AND, SkipType, SqlColumnConvert, SqlQuestionConvert, SqlValueConvert};
 use crate::convert::sql_value_convert;
 use crate::rbatis::Rbatis;
-use serde::de::DeserializeOwned;
 use crate::utils::string_util::count_string_num;
 
 pub const SKIP_SETS: &'static str = "null,object,array";
 
-impl Rbatis {
-
-    pub fn update<T>(&mut self, mapper_name: &str,  arg: &mut Value) -> Result<T, String> where T: DeserializeOwned {
-        let mut arg_array=vec![];
-        let sql = self.create_sql_update(mapper_name, arg,&mut arg_array)?;
-        return self.eval_raw((mapper_name.to_string()+".update").as_str(), sql.as_str(), false, &mut arg_array);
+impl<'a> Rbatis<'a> {
+    pub fn update<T>(&mut self, mapper_name: &str, arg: &mut Value) -> Result<T, String> where T: DeserializeOwned {
+        let mut arg_array = vec![];
+        let sql = self.create_sql_update(mapper_name, arg, &mut arg_array)?;
+        return self.eval_raw((mapper_name.to_string() + ".update").as_str(), sql.as_str(), false, &mut arg_array);
     }
 
 
-
-    pub fn create_sql_update(&mut self, mapper_name: &str, arg: &mut Value,arg_array: &mut Vec<Value>) -> Result<String, String> {
+    pub fn create_sql_update(&mut self, mapper_name: &str, arg: &mut Value, arg_array: &mut Vec<Value>) -> Result<String, String> {
         let result_map_node = self.get_result_map_node(mapper_name)?;
         match arg {
             serde_json::Value::Array(arr) => {
@@ -31,8 +30,8 @@ impl Rbatis {
                 for x in arr {
                     match x {
                         serde_json::Value::Object(_) => {
-                            let temp_sql = self.create_sql_update(mapper_name, x,arg_array)?;
-                            let temp_str=temp_sql.as_str();
+                            let temp_sql = self.create_sql_update(mapper_name, x, arg_array)?;
+                            let temp_str = temp_sql.as_str();
                             sqls = sqls + temp_str + "; \n";
                         }
                         _ => {

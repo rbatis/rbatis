@@ -1,38 +1,37 @@
-use std::borrow::{BorrowMut, Borrow};
+use std::any::Any;
+use std::borrow::{Borrow, BorrowMut};
 use std::fs;
 
-use serde_json::{Value, Map};
+use serde::de::DeserializeOwned;
+use serde_json::{Map, Value};
 use serde_json::json;
+use serde_json::value::Value::Number;
 
 use crate::ast::xml::result_map_node::ResultMapNode;
-use crate::rbatis::Rbatis;
+use crate::convert::sql_value_convert::{AND, SkipType, SqlQuestionConvert, SqlValueConvert};
 use crate::engine::node::NodeType;
-use serde_json::value::Value::Number;
-use crate::convert::sql_value_convert::{SqlValueConvert, SqlQuestionConvert, AND, SkipType};
-use std::any::Any;
-use serde::de::DeserializeOwned;
+use crate::rbatis::Rbatis;
 use crate::utils::string_util::count_string_num;
 
-impl Rbatis {
-
+impl<'a> Rbatis<'a> {
     pub fn delete<T>(&mut self, mapper_name: &str, arg: &mut Value) -> Result<T, String> where T: DeserializeOwned {
-        let mut arg_array=vec![];
-        let sql = self.create_sql_delete(mapper_name, arg,&mut arg_array)?;
-        return self.eval_raw((mapper_name.to_string()+".delete").as_str(), sql.as_str(), false, &mut arg_array);
+        let mut arg_array = vec![];
+        let sql = self.create_sql_delete(mapper_name, arg, &mut arg_array)?;
+        return self.eval_raw((mapper_name.to_string() + ".delete").as_str(), sql.as_str(), false, &mut arg_array);
     }
 
 
-    pub fn create_sql_delete(&mut self, mapper_name: &str, arg: &mut Value,arg_arr:&mut Vec<Value>) -> Result<String, String>{
-        let result_map_node=self.get_result_map_node(mapper_name)?;
+    pub fn create_sql_delete(&mut self, mapper_name: &str, arg: &mut Value, arg_arr: &mut Vec<Value>) -> Result<String, String> {
+        let result_map_node = self.get_result_map_node(mapper_name)?;
         match arg {
-            serde_json::Value::String(_) | serde_json::Value::Number(_)=>{
+            serde_json::Value::String(_) | serde_json::Value::Number(_) => {
                 //delete by id
                 //replace where
-                let sql=arg.to_sql_question(SkipType::None,AND,",",arg_arr);
+                let sql = arg.to_sql_question(SkipType::None, AND, ",", arg_arr);
                 let where_str = "id = ".to_string() + sql.as_str();
-                return self.do_delete_by(arg,&result_map_node,where_str.as_str());
+                return self.do_delete_by(arg, &result_map_node, where_str.as_str());
             }
-            serde_json::Value::Array(arr)=>{
+            serde_json::Value::Array(arr) => {
                 //delete by ids
                 let sql=arg.to_sql_question(SkipType::None,AND,",",arg_arr);
                 let where_str="id in ".to_string()+sql.as_str();

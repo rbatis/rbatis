@@ -1,14 +1,15 @@
+use std::fs;
+
+use serde::de::DeserializeOwned;
 use serde_json::json;
 use serde_json::Value;
 
-use crate::convert::sql_value_convert::{SqlColumnConvert, SqlValueConvert, SqlQuestionConvert, SkipType, AND};
+use crate::convert::sql_value_convert::{AND, SkipType, SqlColumnConvert, SqlQuestionConvert, SqlValueConvert};
 use crate::rbatis::Rbatis;
-use serde::de::DeserializeOwned;
-use std::fs;
 use crate::utils::rdbc_util::rdbc_vec_to_string;
 use crate::utils::string_util::count_string_num;
 
-impl  Rbatis{
+impl<'a> Rbatis<'a> {
     pub fn insert<T>(&mut self, mapper_name: &str, arg: &mut Value) -> Result<T, String> where T: DeserializeOwned {
         let mut arg_array = vec![];
         let sql = self.create_sql_insert(mapper_name, arg, &mut arg_array)?;
