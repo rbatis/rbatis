@@ -32,7 +32,7 @@ impl<'a> Tx<'a> {
             is_close: false,
             enable_log: enable_log,
         };
-        let data=s.conn.as_mut().unwrap().exec(enable_log,"begin;",&[])?;
+        let data = s.conn.as_mut().unwrap().exec(enable_log, "begin;", &[])?;
         return Ok(s);
     }
 
@@ -40,14 +40,14 @@ impl<'a> Tx<'a> {
         return self.id.clone();
     }
 
-    pub fn query<T>(&mut self, sql: &str, arg_array: &mut Vec<serde_json::Value>) -> Result<T, String> where T: de::DeserializeOwned {
-        let params = to_rdbc_values(arg_array);
-        return self.conn.as_mut().unwrap().query(self.enable_log, sql, &params);
+    pub fn query<T>(&mut self, sql: &str, arg_array: &[rdbc::Value]) -> Result<T, String> where T: de::DeserializeOwned {
+        //let params = to_rdbc_values(arg_array);
+        return self.conn.as_mut().unwrap().query(self.enable_log, sql, &arg_array);
     }
 
-    pub fn exec(&mut self, sql: &str, arg_array: &mut Vec<serde_json::Value>) -> Result<u64, String> {
-        let params = to_rdbc_values(arg_array);
-        return self.conn.as_mut().unwrap().exec(self.enable_log, sql, &params);
+    pub fn exec(&mut self, sql: &str, arg_array: &[rdbc::Value]) -> Result<u64, String> {
+        //let params = to_rdbc_values(arg_array);
+        return self.conn.as_mut().unwrap().exec(self.enable_log, sql, &arg_array);
     }
 
     pub fn rollback(&mut self) -> Result<u64, String> {

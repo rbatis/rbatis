@@ -55,17 +55,16 @@ impl<'a> Session<'a> for LocalSession<'a> {
         return Uuid::new_v4().to_string();
     }
 
-    fn query<T>(&mut self, sql: &str, arg_array: &mut Vec<Value>) -> Result<T, String> where T: de::DeserializeOwned {
+    fn query<T>(&mut self, sql: &str, arg_array: &[rdbc::Value]) -> Result<T, String> where T: de::DeserializeOwned {
         if self.is_closed == true {
             return Err("[rbatis] session can not query a closed session!".to_string());
         }
         if self.new_local_session.is_some() {
             return self.new_local_session.as_mut().unwrap().query(sql, arg_array);
         }
-        let params = to_rdbc_values(arg_array);
         if self.enable_log {
             info!("[rbatis] Query: ==>  {}: ", sql);
-            info!("[rbatis]  Args: ==>  {}: ", rdbc_util::rdbc_vec_to_string(&params));
+            info!("[rbatis]  Args: ==>  {}: ", rdbc_util::rdbc_vec_to_string(arg_array));
         }
         let (t_opt, _) = self.tx_stack.last_pop();
         if t_opt.is_some() {
@@ -73,21 +72,20 @@ impl<'a> Session<'a> for LocalSession<'a> {
             let result = t.query(sql, arg_array)?;
             return result;
         } else {
-            return self.conn.as_mut().unwrap().query(self.enable_log, sql, &params);
+            return self.conn.as_mut().unwrap().query(self.enable_log, sql, &arg_array);
         }
     }
 
-    fn exec(&mut self, sql: &str, arg_array: &mut Vec<Value>) -> Result<u64, String> {
+    fn exec(&mut self, sql: &str, arg_array: &[rdbc::Value]) -> Result<u64, String> {
         if self.is_closed == true {
             return Err("[rbatis] session can not query a closed session!".to_string());
         }
         if self.new_local_session.is_some() {
             return self.new_local_session.as_mut().unwrap().query(sql, arg_array);
         }
-        let params = to_rdbc_values(arg_array);
         if self.enable_log {
             info!("[rbatis] Query: ==>  {}: ", sql);
-            info!("[rbatis]  Args: ==>  {}: ", rdbc_util::rdbc_vec_to_string(&params));
+            info!("[rbatis]  Args: ==>  {}: ", rdbc_util::rdbc_vec_to_string(&arg_array));
         }
         let (t_opt, _) = self.tx_stack.last_pop();
         if t_opt.is_some() {
@@ -95,7 +93,7 @@ impl<'a> Session<'a> for LocalSession<'a> {
             let result = t.exec(sql, arg_array)?;
             return Ok(result);
         } else {
-            return self.conn.as_mut().unwrap().exec(self.enable_log, sql, &params);
+            return self.conn.as_mut().unwrap().exec(self.enable_log, sql, &arg_array);
         }
     }
 
