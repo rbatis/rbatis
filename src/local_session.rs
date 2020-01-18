@@ -172,7 +172,7 @@ impl<'a> LocalSession<'a> {
                     }
                 } else {
                     //new tx
-                    let tx = Tx::begin("", self.driver.as_str(), self.enable_log, self.conn.as_mut())?;
+                    let tx = Tx::begin("", self.driver.as_str(), self.enable_log, self.conn.as_mut().unwrap())?;
                     self.tx_stack.push(tx, propagation_type);
                 }
             }
@@ -236,7 +236,7 @@ impl<'a> LocalSession<'a> {
                     return Err("[rbatis] PROPAGATION_NOT_REQUIRED Nested transaction exception! current Already have a transaction!".to_string());
                 } else {
                     //new tx
-                    let tx = Tx::begin("", self.driver.as_str(), self.enable_log, self.conn.as_mut())?;
+                    let tx = Tx::begin("", self.driver.as_str(), self.enable_log, self.conn.as_mut().unwrap())?;
                     self.tx_stack.push(tx, propagation_type);
                 }
             }
