@@ -164,9 +164,8 @@ impl<'a> Session<'a> for LocalSession<'a> {
         return Ok(closec_num);
     }
 
-    fn begin(&'a mut self, propagation_type: Option<Propagation>) -> Result<u64, String> {
-        if propagation_type.is_some() {
-            match propagation_type.as_ref().unwrap() {
+    fn begin(&'a mut self, propagation_type: &Propagation) -> Result<u64, String> {
+            match propagation_type {
                 //默认，表示如果当前事务存在，则支持当前事务。否则，会启动一个新的事务。have tx ? join : new tx()
                 Propagation::REQUIRED => {
                     if self.tx_stack.len() > 0 {
@@ -177,7 +176,7 @@ impl<'a> Session<'a> for LocalSession<'a> {
                     } else {
                         //new tx
                         let tx = Tx::begin("", self.driver.as_str(), self.enable_log, self.conn.as_mut())?;
-                        self.tx_stack.push(tx, propagation_type.unwrap());
+                        self.tx_stack.push(tx, propagation_type.clone());
                     }
                 }
                 //表示如果当前事务存在，则支持当前事务，如果当前没有事务，就以非事务方式执行。  have tx ? join(): session.exec()
@@ -231,7 +230,7 @@ impl<'a> Session<'a> for LocalSession<'a> {
                             self.tx_stack.push(l_t.unwrap(), l_p.unwrap());
                         }
                     } else {
-                        return self.begin(Option::Some(Propagation::REQUIRED));
+                        return self.begin(&Propagation::REQUIRED);
                     }
                 }
                 //表示如果当前没有事务，就新建一个事务,否则返回错误。  have tx ? return error: session.new tx()
@@ -241,14 +240,16 @@ impl<'a> Session<'a> for LocalSession<'a> {
                     } else {
                         //new tx
                         let tx = Tx::begin("", self.driver.as_str(), self.enable_log, self.conn.as_mut())?;
-                        self.tx_stack.push(tx, propagation_type.unwrap());
+                        self.tx_stack.push(tx, propagation_type.clone());
                     }
+                }
+                Propagation::None => {
+                    return Ok(0);
                 }
                 _ => {
                     return Err("[rbatis] Nested transaction exception! not support PROPAGATION in begin!".to_string());
                 }
             }
-        }
         return Ok(0);
     }
 
@@ -270,3 +271,10 @@ impl<'a> Session<'a> for LocalSession<'a> {
     }
 }
 
+
+//#[test]
+//pub fn test_se(){
+//    let mut se =LocalSession::new("", "", None).unwrap();
+//    se.begin(None);
+//    se.begin(None);
+//}
