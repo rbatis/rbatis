@@ -10,7 +10,7 @@ pub trait Session<'a> {
 
     fn rollback(&mut self) -> Result<u64, String>;
     fn commit(&mut self) -> Result<u64, String>;
-    fn begin(&'a mut self, propagation_type: &Propagation) -> Result<u64, String>;
+    fn begin(&'a mut self, propagation_type: Propagation) -> Result<u64, String>;
     fn close(&mut self);
     fn last_propagation(&self) -> Option<Propagation>;
 }

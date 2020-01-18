@@ -164,7 +164,7 @@ impl<'a> Session<'a> for LocalSession<'a> {
         return Ok(closec_num);
     }
 
-    fn begin(&'a mut self, propagation_type: &Propagation) -> Result<u64, String> {
+    fn begin(&'a mut self, propagation_type: Propagation) -> Result<u64, String> {
             match propagation_type {
                 //默认，表示如果当前事务存在，则支持当前事务。否则，会启动一个新的事务。have tx ? join : new tx()
                 Propagation::REQUIRED => {
@@ -176,7 +176,7 @@ impl<'a> Session<'a> for LocalSession<'a> {
                     } else {
                         //new tx
                         let tx = Tx::begin("", self.driver.as_str(), self.enable_log, self.conn.as_mut())?;
-                        self.tx_stack.push(tx, propagation_type.clone());
+                        self.tx_stack.push(tx, propagation_type);
                     }
                 }
                 //表示如果当前事务存在，则支持当前事务，如果当前没有事务，就以非事务方式执行。  have tx ? join(): session.exec()
@@ -230,7 +230,7 @@ impl<'a> Session<'a> for LocalSession<'a> {
                             self.tx_stack.push(l_t.unwrap(), l_p.unwrap());
                         }
                     } else {
-                        return self.begin(&Propagation::REQUIRED);
+                        return self.begin(Propagation::REQUIRED);
                     }
                 }
                 //表示如果当前没有事务，就新建一个事务,否则返回错误。  have tx ? return error: session.new tx()
@@ -272,9 +272,9 @@ impl<'a> Session<'a> for LocalSession<'a> {
 }
 
 
-//#[test]
-//pub fn test_se(){
-//    let mut se =LocalSession::new("", "", None).unwrap();
-//    se.begin(None);
-//    se.begin(None);
-//}
+#[test]
+pub fn test_se(){
+    let mut se =LocalSession::new("", "", None).unwrap();
+   // se.begin(Propagation::None);
+   // se.begin(Propagation::None);
+}
