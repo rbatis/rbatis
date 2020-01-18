@@ -21,7 +21,6 @@ use crate::decode::rdbc_driver_decoder::decode_result_set;
 use crate::example::activity::Activity;
 use crate::example::conf::MYSQL_URL;
 use crate::rbatis::Rbatis;
-use crate::session::Session;
 
 /**
  初始化实例

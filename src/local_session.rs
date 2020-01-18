@@ -7,7 +7,6 @@ use uuid::Uuid;
 
 use crate::decode::rdbc_driver_decoder::decode_result_set;
 use crate::queryable::Queryable;
-use crate::session::Session;
 use crate::tx::propagation::Propagation;
 use crate::tx::save_point_stack::SavePointStack;
 use crate::tx::tx::Tx;
@@ -48,14 +47,12 @@ impl<'a> LocalSession<'a> {
             conn: conn,
         });
     }
-}
 
-impl<'a> Session<'a> for LocalSession<'a> {
-    fn id(&self) -> String {
+    pub  fn id(&self) -> String {
         return Uuid::new_v4().to_string();
     }
 
-    fn query<T>(&mut self, sql: &str, arg_array: &[rdbc::Value]) -> Result<T, String> where T: de::DeserializeOwned {
+    pub  fn query<T>(&mut self, sql: &str, arg_array: &[rdbc::Value]) -> Result<T, String> where T: de::DeserializeOwned {
         if self.is_closed == true {
             return Err("[rbatis] session can not query a closed session!".to_string());
         }
@@ -76,7 +73,7 @@ impl<'a> Session<'a> for LocalSession<'a> {
         }
     }
 
-    fn exec(&mut self, sql: &str, arg_array: &[rdbc::Value]) -> Result<u64, String> {
+    pub   fn exec(&mut self, sql: &str, arg_array: &[rdbc::Value]) -> Result<u64, String> {
         if self.is_closed == true {
             return Err("[rbatis] session can not query a closed session!".to_string());
         }
@@ -97,7 +94,7 @@ impl<'a> Session<'a> for LocalSession<'a> {
         }
     }
 
-    fn rollback(&mut self) -> Result<u64, String> {
+    pub  fn rollback(&mut self) -> Result<u64, String> {
         if self.is_closed == true {
             return Err("[rbatis] session can not query a closed session!".to_string());
         }
@@ -132,7 +129,7 @@ impl<'a> Session<'a> for LocalSession<'a> {
         return Ok(closec_num);
     }
 
-    fn commit(&mut self) -> Result<u64, String> {
+    pub  fn commit(&mut self) -> Result<u64, String> {
         if self.is_closed == true {
             return Err("[rbatis] session can not query a closed session!".to_string());
         }
@@ -164,103 +161,103 @@ impl<'a> Session<'a> for LocalSession<'a> {
         return Ok(closec_num);
     }
 
-    fn begin(&'a mut self, propagation_type: Propagation) -> Result<u64, String> {
-            match propagation_type {
-                //默认，表示如果当前事务存在，则支持当前事务。否则，会启动一个新的事务。have tx ? join : new tx()
-                Propagation::REQUIRED => {
-                    if self.tx_stack.len() > 0 {
-                        let (l_t, l_p) = self.tx_stack.last_pop();
-                        if l_t.is_some() && l_p.is_some() {
-                            self.tx_stack.push(l_t.unwrap(), l_p.unwrap());
-                        }
-                    } else {
-                        //new tx
-                        let tx = Tx::begin("", self.driver.as_str(), self.enable_log, self.conn.as_mut())?;
-                        self.tx_stack.push(tx, propagation_type);
+    pub  fn begin(&'a mut self, propagation_type: Propagation) -> Result<u64, String> {
+        match propagation_type {
+            //默认，表示如果当前事务存在，则支持当前事务。否则，会启动一个新的事务。have tx ? join : new tx()
+            Propagation::REQUIRED => {
+                if self.tx_stack.len() > 0 {
+                    let (l_t, l_p) = self.tx_stack.last_pop();
+                    if l_t.is_some() && l_p.is_some() {
+                        self.tx_stack.push(l_t.unwrap(), l_p.unwrap());
                     }
-                }
-                //表示如果当前事务存在，则支持当前事务，如果当前没有事务，就以非事务方式执行。  have tx ? join(): session.exec()
-                Propagation::SUPPORTS => {
-                    return Ok(0);
-                }
-                //表示如果当前事务存在，则支持当前事务，如果当前没有事务，则返回事务嵌套错误。  have tx ? join() : return error
-                Propagation::MANDATORY => {
-                    if self.tx_stack.len() > 0 {
-                        return Ok(0);
-                    } else {
-                        return Err("[rbatis] PROPAGATION_MANDATORY Nested transaction exception! current not have a transaction!".to_string());
-                    }
-                }
-                //表示新建一个全新Session开启一个全新事务，如果当前存在事务，则把当前事务挂起。 have tx ? stop old。  -> new session().new tx()
-                Propagation::REQUIRES_NEW => {
-                    if self.tx_stack.len() > 0 {
-                        //TODO stop old tx
-                    }
-                    //new session
-                    let r = driver_util::get_conn_by_link(self.driver.as_str());
-                    if r.is_err() {
-                        return Err(r.err().unwrap());
-                    }
-                    let new_session = LocalSession::new("", self.driver.as_str(), Option::from(r.unwrap()))?;
-                    self.new_local_session = Some(Box::new(new_session));
-                }
-                //表示以非事务方式执行操作，如果当前存在事务，则新建一个Session以非事务方式执行操作，把当前事务挂起。  have tx ? stop old。 -> new session().exec()
-                Propagation::NOT_SUPPORTED => {
-                    if self.tx_stack.len() > 0 {
-                        //TODO stop old tx
-                    }
-                    let r = driver_util::get_conn_by_link(self.driver.as_str());
-                    if r.is_err() {
-                        return Err(r.err().unwrap());
-                    }
-                    let new_session = LocalSession::new("", self.driver.as_str(), Option::from(r.unwrap()))?;
-                    self.new_local_session = Some(Box::new(new_session));
-                }
-                //表示以非事务方式执行操作，如果当前存在事务，则返回事务嵌套错误。    have tx ? return error: session.exec()
-                Propagation::NEVER => {
-                    if self.tx_stack.len() > 0 {
-                        return Err("[rbatis] PROPAGATION_NEVER  Nested transaction exception! current Already have a transaction!".to_string());
-                    }
-                }
-                //表示如果当前事务存在，则在嵌套事务内执行，如嵌套事务回滚，则只会在嵌套事务内回滚，不会影响当前事务。如果当前没有事务，则进行与PROPAGATION_REQUIRED类似的操作。
-                Propagation::NESTED => {
-                    if self.tx_stack.len() > 0 {
-                        let (l_t, l_p) = self.tx_stack.last_pop();
-                        if l_t.is_some() && l_p.is_some() {
-                            self.tx_stack.push(l_t.unwrap(), l_p.unwrap());
-                        }
-                    } else {
-                        return self.begin(Propagation::REQUIRED);
-                    }
-                }
-                //表示如果当前没有事务，就新建一个事务,否则返回错误。  have tx ? return error: session.new tx()
-                Propagation::NOT_REQUIRED => {
-                    if self.tx_stack.len() > 0 {
-                        return Err("[rbatis] PROPAGATION_NOT_REQUIRED Nested transaction exception! current Already have a transaction!".to_string());
-                    } else {
-                        //new tx
-                        let tx = Tx::begin("", self.driver.as_str(), self.enable_log, self.conn.as_mut())?;
-                        self.tx_stack.push(tx, propagation_type);
-                    }
-                }
-                Propagation::None => {
-                    return Ok(0);
-                }
-                _ => {
-                    return Err("[rbatis] Nested transaction exception! not support PROPAGATION in begin!".to_string());
+                } else {
+                    //new tx
+                    let tx = Tx::begin("", self.driver.as_str(), self.enable_log, self.conn.as_mut())?;
+                    self.tx_stack.push(tx, propagation_type);
                 }
             }
+            //表示如果当前事务存在，则支持当前事务，如果当前没有事务，就以非事务方式执行。  have tx ? join(): session.exec()
+            Propagation::SUPPORTS => {
+                return Ok(0);
+            }
+            //表示如果当前事务存在，则支持当前事务，如果当前没有事务，则返回事务嵌套错误。  have tx ? join() : return error
+            Propagation::MANDATORY => {
+                if self.tx_stack.len() > 0 {
+                    return Ok(0);
+                } else {
+                    return Err("[rbatis] PROPAGATION_MANDATORY Nested transaction exception! current not have a transaction!".to_string());
+                }
+            }
+            //表示新建一个全新Session开启一个全新事务，如果当前存在事务，则把当前事务挂起。 have tx ? stop old。  -> new session().new tx()
+            Propagation::REQUIRES_NEW => {
+                if self.tx_stack.len() > 0 {
+                    //TODO stop old tx
+                }
+                //new session
+                let r = driver_util::get_conn_by_link(self.driver.as_str());
+                if r.is_err() {
+                    return Err(r.err().unwrap());
+                }
+                let new_session = LocalSession::new("", self.driver.as_str(), Option::from(r.unwrap()))?;
+                self.new_local_session = Some(Box::new(new_session));
+            }
+            //表示以非事务方式执行操作，如果当前存在事务，则新建一个Session以非事务方式执行操作，把当前事务挂起。  have tx ? stop old。 -> new session().exec()
+            Propagation::NOT_SUPPORTED => {
+                if self.tx_stack.len() > 0 {
+                    //TODO stop old tx
+                }
+                let r = driver_util::get_conn_by_link(self.driver.as_str());
+                if r.is_err() {
+                    return Err(r.err().unwrap());
+                }
+                let new_session = LocalSession::new("", self.driver.as_str(), Option::from(r.unwrap()))?;
+                self.new_local_session = Some(Box::new(new_session));
+            }
+            //表示以非事务方式执行操作，如果当前存在事务，则返回事务嵌套错误。    have tx ? return error: session.exec()
+            Propagation::NEVER => {
+                if self.tx_stack.len() > 0 {
+                    return Err("[rbatis] PROPAGATION_NEVER  Nested transaction exception! current Already have a transaction!".to_string());
+                }
+            }
+            //表示如果当前事务存在，则在嵌套事务内执行，如嵌套事务回滚，则只会在嵌套事务内回滚，不会影响当前事务。如果当前没有事务，则进行与PROPAGATION_REQUIRED类似的操作。
+            Propagation::NESTED => {
+                if self.tx_stack.len() > 0 {
+                    let (l_t, l_p) = self.tx_stack.last_pop();
+                    if l_t.is_some() && l_p.is_some() {
+                        self.tx_stack.push(l_t.unwrap(), l_p.unwrap());
+                    }
+                } else {
+                    return self.begin(Propagation::REQUIRED);
+                }
+            }
+            //表示如果当前没有事务，就新建一个事务,否则返回错误。  have tx ? return error: session.new tx()
+            Propagation::NOT_REQUIRED => {
+                if self.tx_stack.len() > 0 {
+                    return Err("[rbatis] PROPAGATION_NOT_REQUIRED Nested transaction exception! current Already have a transaction!".to_string());
+                } else {
+                    //new tx
+                    let tx = Tx::begin("", self.driver.as_str(), self.enable_log, self.conn.as_mut())?;
+                    self.tx_stack.push(tx, propagation_type);
+                }
+            }
+            Propagation::None => {
+                return Ok(0);
+            }
+            _ => {
+                return Err("[rbatis] Nested transaction exception! not support PROPAGATION in begin!".to_string());
+            }
+        }
         return Ok(0);
     }
 
-    fn close(&mut self) {
+    pub  fn close(&mut self) {
         if self.is_closed {
             return;
         }
         self.is_closed = true;
     }
 
-    fn last_propagation(&self) -> Option<Propagation> {
+   pub  fn last_propagation(&self) -> Option<Propagation> {
         if self.tx_stack.len() != 0 {
             let (tx_opt, prop_opt) = self.tx_stack.last_ref();
             if prop_opt.is_some() {
@@ -271,10 +268,14 @@ impl<'a> Session<'a> for LocalSession<'a> {
     }
 }
 
+//impl<'a> Session<'a> for LocalSession<'a> {
+//
+//}
+
 
 #[test]
 pub fn test_se(){
-    let mut se =LocalSession::new("", "", None).unwrap();
-   // se.begin(Propagation::None);
-   // se.begin(Propagation::None);
+//    let mut se =LocalSession::new("", "", None).unwrap();
+//    se.begin(Propagation::None);
+//    se.begin(Propagation::None);
 }

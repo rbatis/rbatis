@@ -5,7 +5,6 @@ use uuid::Uuid;
 
 use crate::local_session::LocalSession;
 use crate::queryable::Queryable;
-use crate::session::Session;
 use crate::tx::propagation::Propagation;
 use crate::utils::driver_util;
 use crate::utils::rdbc_util::to_rdbc_values;
