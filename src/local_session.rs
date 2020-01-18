@@ -240,7 +240,7 @@ impl<'a> Session<'a> for LocalSession<'a> {
                     } else {
                         //new tx
                         let tx = Tx::begin("", self.driver.as_str(), self.enable_log, self.conn.as_mut())?;
-                        self.tx_stack.push(tx, propagation_type.clone());
+                        self.tx_stack.push(tx, propagation_type);
                     }
                 }
                 Propagation::None => {
