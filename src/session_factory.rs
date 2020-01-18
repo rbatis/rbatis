@@ -9,7 +9,7 @@ use crate::utils::driver_util;
 
 ///链接工厂
 pub trait SessionFactory<'a> {
-    fn get_thread_session(&mut self, id: ThreadId, driver: &str) -> Result<&mut LocalSession<'a>, String>;
+    fn get_thread_session(&mut self, id: &ThreadId, driver: &str) -> Result<&mut LocalSession<'a>, String>;
 }
 
 
@@ -22,8 +22,8 @@ pub struct SessionFactoryImpl<'a> {
 
 
 impl<'a> SessionFactory<'a> for SessionFactoryImpl<'a> {
-    fn get_thread_session(&mut self, id: ThreadId, driver: &str) -> Result<&mut LocalSession<'a>, String> {
-        let item = self.data.get(&id);
+    fn get_thread_session(&mut self, id: &ThreadId, driver: &str) -> Result<&mut LocalSession<'a>, String> {
+        let item = self.data.get(id);
         if item.is_some() {
             return Ok(self.data.get_mut(&id).unwrap());
         } else {

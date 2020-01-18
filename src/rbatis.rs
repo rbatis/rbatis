@@ -131,7 +131,7 @@ impl<'a> Rbatis<'a> {
         }
         let driver = db_conf_opt.unwrap();
         let thread_id = thread::current().id();
-        let session = self.session_factory.get_thread_session(thread_id, driver.as_str())?;
+        let session = self.session_factory.get_thread_session(&thread_id, driver.as_str())?;
 //        {
 //            session.begin(propagation_type)?;
 //        }
@@ -155,7 +155,7 @@ impl<'a> Rbatis<'a> {
         }
         let driver = db_conf_opt.unwrap();
         let thread_id = thread::current().id();
-        let conn = self.session_factory.get_thread_session(thread_id, driver.as_str())?;
+        let conn = self.session_factory.get_thread_session(&thread_id, driver.as_str())?;
         let mut vec = vec![];
         let create_result = conn.exec(sql, &mut vec)?;
         return Result::Ok(create_result);
@@ -187,7 +187,7 @@ impl<'a> Rbatis<'a> {
         }
         let driver = db_conf_opt.unwrap();
         let thread_id = thread::current().id();
-        let session = self.session_factory.get_thread_session(thread_id, driver.as_str())?;
+        let session = self.session_factory.get_thread_session(&thread_id, driver.as_str())?;
         if is_select {
             //select
             return session.query(sql, &params);
