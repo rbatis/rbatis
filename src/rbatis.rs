@@ -26,7 +26,6 @@ use crate::ast::xml::string_node::StringNode;
 use crate::db_config::DBConfig;
 use crate::decode::rdbc_driver_decoder::decode_result_set;
 use crate::local_session::LocalSession;
-use crate::session::Session;
 use crate::session_factory::{SessionFactory, SessionFactoryImpl};
 use crate::tx::propagation::Propagation;
 use crate::utils::{driver_util, rdbc_util};
