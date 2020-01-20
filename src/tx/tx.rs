@@ -2,7 +2,7 @@ use rdbc::Connection;
 use serde::de;
 use serde_json::Value;
 use uuid::Uuid;
-
+use serde::{Deserialize, Serialize};
 use crate::local_session::LocalSession;
 use crate::queryable::Queryable;
 use crate::tx::propagation::Propagation;
@@ -23,6 +23,7 @@ pub trait Tx {
 
 ///TX is transaction abstraction
 /// Tx即事务抽象
+#[derive(Serialize, Deserialize, Clone, Debug)]
 pub struct TxImpl {
     pub id: String,
     pub driver: String,

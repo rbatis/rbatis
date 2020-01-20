@@ -2,8 +2,10 @@ use std::collections::LinkedList;
 
 use crate::tx::propagation::Propagation;
 use crate::tx::tx::TxImpl;
+use serde::{Deserialize, Serialize};
 
-//事务栈
+///事务栈
+#[derive(Serialize, Deserialize, Clone, Debug)]
 pub struct TxStack {
     len: usize,
     txs: LinkedList<TxImpl>,
