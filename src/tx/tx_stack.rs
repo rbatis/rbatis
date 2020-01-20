@@ -48,9 +48,9 @@ impl TxStack {
         return (self.txs.back(), self.propagations.back());
     }
 
-    pub fn close(&mut self){
-        for mut x in &mut self.txs {
-            x.is_close=true;
+    pub fn close(&mut self) {
+        for x in &mut self.txs {
+            x.is_close = true;
         }
     }
 
@@ -61,5 +61,11 @@ impl TxStack {
 
     pub fn have_tx(&self) -> bool {
         return self.len > 0;
+    }
+}
+
+impl Drop for TxStack {
+    fn drop(&mut self) {
+        self.close();
     }
 }

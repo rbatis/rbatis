@@ -45,6 +45,9 @@ impl Tx {
         if self.is_close {
             return Err("[rbatis] conn is closed!".to_string());
         }
+        if self.conn.is_null() {
+            return Err("[rbatis] conn is closed! the conn is null".to_string());
+        }
         unsafe {
             return self.conn.as_mut().unwrap().query(self.enable_log, sql, &arg_array);
         }
@@ -55,6 +58,9 @@ impl Tx {
         if self.is_close {
             return Err("[rbatis] conn is closed!".to_string());
         }
+        if self.conn.is_null() {
+            return Err("[rbatis] conn is closed! the conn is null".to_string());
+        }
         unsafe {
             return self.conn.as_mut().unwrap().exec(self.enable_log, sql, &arg_array);
         }
@@ -63,6 +69,9 @@ impl Tx {
     pub fn rollback(&mut self) -> Result<u64, String> {
         if self.is_close {
             return Err("[rbatis] conn is closed!".to_string());
+        }
+        if self.conn.is_null() {
+            return Err("[rbatis] conn is closed! the conn is null".to_string());
         }
         unsafe {
             return self.conn.as_mut().unwrap().exec(true, "rollback;", &[]);
@@ -73,9 +82,25 @@ impl Tx {
         if self.is_close {
             return Err("[rbatis] conn is closed!".to_string());
         }
+        if self.conn.is_null() {
+            return Err("[rbatis] conn is closed! the conn is null".to_string());
+        }
         unsafe {
             return self.conn.as_mut().unwrap().exec(true, "commit;", &[]);
         }
+    }
+
+    pub fn close(&mut self) {
+        if self.is_close {
+            return;
+        }
+        self.is_close = true;
+    }
+}
+
+impl Drop for Tx {
+    fn drop(&mut self) {
+        self.close();
     }
 }
 
