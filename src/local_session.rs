@@ -64,7 +64,7 @@ impl LocalSession {
             info!("[rbatis] Query: ==>  {}: ", sql);
             info!("[rbatis]  Args: ==>  {}: ", rdbc_util::rdbc_vec_to_string(arg_array));
         }
-        let (t_opt, _) = self.tx_stack.last_pop();
+        let (t_opt, _) = self.tx_stack.last_ref_mut();
         if t_opt.is_some() {
             let mut t = t_opt.unwrap();
             let result = t.query(sql, arg_array,self.conn.as_mut().unwrap())?;
@@ -85,7 +85,7 @@ impl LocalSession {
             info!("[rbatis] Query: ==>  {}: ", sql);
             info!("[rbatis]  Args: ==>  {}: ", rdbc_util::rdbc_vec_to_string(&arg_array));
         }
-        let (t_opt, _) = self.tx_stack.last_pop();
+        let (t_opt, _) = self.tx_stack.last_ref_mut();
         if t_opt.is_some() {
             let mut t = t_opt.unwrap();
             let result = t.exec(sql, arg_array,self.conn.as_mut().unwrap())?;
@@ -108,6 +108,8 @@ impl LocalSession {
         }
 
         let (t_opt, p_opt) = self.tx_stack.pop();
+//        println!("{}",t_opt.is_some());
+//        println!("{}",p_opt.is_some());
         if t_opt.is_some() && p_opt.is_some() {
             let mut t = t_opt.unwrap();
             if self.last_propagation().is_some() {

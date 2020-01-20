@@ -21,6 +21,7 @@ use crate::decode::rdbc_driver_decoder::decode_result_set;
 use crate::example::activity::Activity;
 use crate::example::conf::MYSQL_URL;
 use crate::rbatis::Rbatis;
+use crate::tx::propagation::Propagation;
 
 /**
  初始化实例
@@ -58,19 +59,18 @@ fn init_rbatis() -> Result<Rbatis, String> {
 }
 
 
-
 #[test]
-fn test_insert(){
+fn test_insert() {
     //初始化rbatis
     let rbatis_opt = init_rbatis();
     if rbatis_opt.is_err() {
         return;
     }
-    let mut rbatis =rbatis_opt.unwrap();
+    let mut rbatis = rbatis_opt.unwrap();
     //插入前先删一下
     //let r:Result<i32,String>=rbatis.eval_sql("delete from biz_activity  where id = '1'");
 
-    let activity=Activity{
+    let activity = Activity {
         id: Some("1".to_string()),
         name: Some("活动1".to_string()),
         pc_link: None,
@@ -82,38 +82,38 @@ fn test_insert(){
         remark: None,
         create_time: Some("2019-12-12 00:00:00".to_string()),
         version: Some(1),
-        delete_flag: Some(1)
+        delete_flag: Some(1),
     };
-    let r:Result<i32,String>=rbatis.insert("Example_ActivityMapper.xml",&mut json!(activity));
+    let r: Result<i32, String> = rbatis.insert("Example_ActivityMapper.xml", &mut json!(activity));
     println!("[rbatis] result==>  {:?}", r);
 }
 
 
 #[test]
-fn test_delete(){
+fn test_delete() {
     //初始化rbatis
     let rbatis_opt = init_rbatis();
     if rbatis_opt.is_err() {
         return;
     }
-    let mut rbatis =rbatis_opt.unwrap();
-    let r:Result<i32,String>=rbatis.delete("Example_ActivityMapper.xml",&mut json!("1"));
+    let mut rbatis = rbatis_opt.unwrap();
+    let r: Result<i32, String> = rbatis.delete("Example_ActivityMapper.xml", &mut json!("1"));
     println!("[rbatis] result==>  {:?}", r);
 }
 
 #[test]
-fn test_update(){
+fn test_update() {
     //初始化rbatis
     let rbatis_opt = init_rbatis();
     if rbatis_opt.is_err() {
         return;
     }
-    let mut rbatis =rbatis_opt.unwrap();
+    let mut rbatis = rbatis_opt.unwrap();
 
     //先插入
     //插入前先删一下
-    let r:i32=rbatis.eval_sql("delete from biz_activity  where id = '1'").unwrap();
-    let r:i32=rbatis.insert("Example_ActivityMapper.xml",&mut json!(Activity{
+    let r: i32 = rbatis.eval_sql("delete from biz_activity  where id = '1'").unwrap();
+    let r: i32 = rbatis.insert("Example_ActivityMapper.xml", &mut json!(Activity{
         id: Some("1".to_string()),
         name: Some("活动1".to_string()),
         pc_link: None,
@@ -137,13 +137,13 @@ fn test_update(){
 }
 
 #[test]
-fn test_update_array(){
+fn test_update_array() {
     //初始化rbatis
     let rbatis_opt = init_rbatis();
     if rbatis_opt.is_err() {
         return;
     }
-    let mut rbatis =rbatis_opt.unwrap();
+    let mut rbatis = rbatis_opt.unwrap();
 
     //update
     let mut json_arr = json!([Activity{
@@ -173,7 +173,7 @@ fn test_update_array(){
         version: Some(1),
         delete_flag: Some(1)
     }]);
-    let r: Result<i32, String> = rbatis.update("Example_ActivityMapper.xml",   &mut json_arr);
+    let r: Result<i32, String> = rbatis.update("Example_ActivityMapper.xml", &mut json_arr);
     println!("[rbatis] result==>  {:?}", r.unwrap());
 }
 
@@ -241,21 +241,23 @@ fn test_exec_select_page_custom() {
   测试事务
 */
 #[test]
-fn test_tx() {
-//初始化rbatis
+fn test_tx(){
+    test_tx_return().unwrap();
+}
+
+fn test_tx_return() -> Result<u64, String> {
+   //初始化rbatis
     let rbatis_opt = init_rbatis();
     if rbatis_opt.is_err() {
-        return;
+        return Ok(1);
     }
     let mut rbatis = rbatis_opt.unwrap();
-
-//    let begin=rbatis.tx("",None).unwrap();
-//     begin.begin(None);
-//    begin.commit();
-
-    //  println!("begin:{}",begin);
-    let data: u64 = rbatis.eval_sql("UPDATE `biz_activity` SET `name` = '活动1' WHERE (`id` = '2');").unwrap();
-    println!("update:{}", data);
-    let rollback = rbatis.commit("").unwrap();
-    println!("commit:{}", rollback);
+    let mut session = rbatis.begin("", Propagation::REQUIRED)?;
+    let data = session.exec("UPDATE `biz_activity` SET `name` = '活动2' WHERE (`id` = '2');",&[])?;
+   // let rollbacked = session.rollback()?;
+    let commited = session.commit()?;
+   // println!("commit:{}", commited);
+    let act:Activity=session.query("select * from biz_activity where id  = '2'",&[])?;
+    println!("result:{}",serde_json::to_string(&act).unwrap());
+    return Ok(1);
 }
