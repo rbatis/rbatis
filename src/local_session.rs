@@ -49,8 +49,8 @@ impl LocalSession {
         });
     }
 
-    pub fn id(&self) -> String {
-        return Uuid::new_v4().to_string();
+    pub fn id(&self) -> &str {
+        return self.session_id.as_str();
     }
 
     pub fn query<T>(&mut self, sql: &str, arg_array: &[rdbc::Value]) -> Result<T, String> where T: de::DeserializeOwned {
@@ -61,7 +61,7 @@ impl LocalSession {
             return self.new_local_session.as_mut().unwrap().query(sql, arg_array);
         }
         if self.enable_log {
-            info!("[rbatis] Query: ==>  {}: ", sql);
+            info!("[rbatis] [{}] Query: ==>  {}: ", self.id(), sql);
             info!("[rbatis]  Args: ==>  {}: ", rdbc_util::rdbc_vec_to_string(arg_array));
         }
         let (t_opt, _) = self.tx_stack.last_ref_mut();
@@ -82,7 +82,7 @@ impl LocalSession {
             return self.new_local_session.as_mut().unwrap().query(sql, arg_array);
         }
         if self.enable_log {
-            info!("[rbatis] Query: ==>  {}: ", sql);
+            info!("[rbatis] [{}] Query: ==>  {}: ", self.id(),sql);
             info!("[rbatis]  Args: ==>  {}: ", rdbc_util::rdbc_vec_to_string(&arg_array));
         }
         let (t_opt, _) = self.tx_stack.last_ref_mut();
@@ -100,7 +100,7 @@ impl LocalSession {
             return Err("[rbatis] session can not query a closed session!".to_string());
         }
         if self.enable_log {
-            info!("[rbatis] Exec: ==>   Rollback; ");
+            info!("[rbatis] [{}] Exec: ==>   Rollback; ",self.id());
         }
         let mut closec_num = 0;
         if self.new_local_session.is_some() {
@@ -119,7 +119,6 @@ impl LocalSession {
                 if self.last_propagation().as_ref().unwrap().eq(&Propagation::NESTED) {
                     let point_opt = self.save_point_stack.pop();
                     if point_opt.is_some() {
-                        info!("[rbatis] [{}] exec ============ rollback", self.session_id.as_str());
                         let sql = "rollback to ".to_string() + point_opt.unwrap().as_str();
                         let r = t.exec(sql.as_str(), &mut vec![],self.conn.as_mut().unwrap())?;
                         closec_num += r;
@@ -127,7 +126,6 @@ impl LocalSession {
                 }
             }
             if self.tx_stack.len() == 0 {
-                info!("[rbatis] [{}] exec ============ rollback", self.session_id.as_str());
                 let r = t.rollback(self.conn.as_mut().unwrap())?;
                 closec_num += r;
             }
@@ -140,7 +138,7 @@ impl LocalSession {
             return Err("[rbatis] session can not query a closed session!".to_string());
         }
         if self.enable_log {
-            info!("[rbatis] Exec: ==>   Commit; ");
+            info!("[rbatis] [{}] Exec: ==>   Commit; ",self.id());
         }
         let mut closec_num = 0;
         if self.new_local_session.is_some() {
@@ -175,7 +173,7 @@ impl LocalSession {
             return Err("[rbatis] session can not query a closed session!".to_string());
         }
         if self.enable_log {
-            info!("[rbatis] Exec: ==>   Begin:{}; ", propagation_type);
+            info!("[rbatis] [{}] Exec: ==>   Begin:{}; ", self.id(), propagation_type);
         }
         match propagation_type {
             //默认，表示如果当前事务存在，则支持当前事务。否则，会启动一个新的事务。have tx ? join : new tx()
