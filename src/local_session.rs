@@ -163,6 +163,9 @@ impl LocalSession {
     }
 
     pub  fn begin(&mut self, propagation_type: Propagation) -> Result<u64, String> {
+        if self.is_closed == true {
+            return Err("[rbatis] session can not query a closed session!".to_string());
+        }
         match propagation_type {
             //默认，表示如果当前事务存在，则支持当前事务。否则，会启动一个新的事务。have tx ? join : new tx()
             Propagation::REQUIRED => {
