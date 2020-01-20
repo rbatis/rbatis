@@ -48,6 +48,13 @@ impl TxStack {
         return (self.txs.back(), self.propagations.back());
     }
 
+    pub fn close(&mut self){
+        for mut x in &mut self.txs {
+            x.is_close=true;
+        }
+    }
+
+
     pub fn len(&self) -> usize {
         return self.len;
     }

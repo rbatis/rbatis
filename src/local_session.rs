@@ -6,6 +6,7 @@ use serde_json::Value;
 use uuid::Uuid;
 
 use crate::decode::rdbc_driver_decoder::decode_result_set;
+use crate::example::conf::MYSQL_URL;
 use crate::queryable::Queryable;
 use crate::tx::propagation::Propagation;
 use crate::tx::save_point_stack::SavePointStack;
@@ -13,7 +14,6 @@ use crate::tx::tx::Tx;
 use crate::tx::tx_stack::TxStack;
 use crate::utils::{driver_util, rdbc_util};
 use crate::utils::rdbc_util::to_rdbc_values;
-use crate::example::conf::MYSQL_URL;
 
 pub struct LocalSession {
     pub session_id: String,
@@ -49,11 +49,11 @@ impl LocalSession {
         });
     }
 
-    pub  fn id(&self) -> String {
+    pub fn id(&self) -> String {
         return Uuid::new_v4().to_string();
     }
 
-    pub  fn query<T>(&mut self, sql: &str, arg_array: &[rdbc::Value]) -> Result<T, String> where T: de::DeserializeOwned {
+    pub fn query<T>(&mut self, sql: &str, arg_array: &[rdbc::Value]) -> Result<T, String> where T: de::DeserializeOwned {
         if self.is_closed == true {
             return Err("[rbatis] session can not query a closed session!".to_string());
         }
@@ -74,7 +74,7 @@ impl LocalSession {
         }
     }
 
-    pub   fn exec(&mut self, sql: &str, arg_array: &[rdbc::Value]) -> Result<u64, String> {
+    pub fn exec(&mut self, sql: &str, arg_array: &[rdbc::Value]) -> Result<u64, String> {
         if self.is_closed == true {
             return Err("[rbatis] session can not query a closed session!".to_string());
         }
@@ -95,7 +95,7 @@ impl LocalSession {
         }
     }
 
-    pub  fn rollback(&mut self) -> Result<u64, String> {
+    pub fn rollback(&mut self) -> Result<u64, String> {
         if self.is_closed == true {
             return Err("[rbatis] session can not query a closed session!".to_string());
         }
@@ -130,7 +130,7 @@ impl LocalSession {
         return Ok(closec_num);
     }
 
-    pub  fn commit(&mut self) -> Result<u64, String> {
+    pub fn commit(&mut self) -> Result<u64, String> {
         if self.is_closed == true {
             return Err("[rbatis] session can not query a closed session!".to_string());
         }
@@ -162,7 +162,7 @@ impl LocalSession {
         return Ok(closec_num);
     }
 
-    pub  fn begin(&mut self, propagation_type: Propagation) -> Result<u64, String> {
+    pub fn begin(&mut self, propagation_type: Propagation) -> Result<u64, String> {
         if self.is_closed == true {
             return Err("[rbatis] session can not query a closed session!".to_string());
         }
@@ -254,14 +254,15 @@ impl LocalSession {
         return Ok(0);
     }
 
-    pub  fn close(&mut self) {
+    pub fn close(&mut self) {
         if self.is_closed {
             return;
         }
+        self.tx_stack.close();
         self.is_closed = true;
     }
 
-   pub  fn last_propagation(&self) -> Option<Propagation> {
+    pub fn last_propagation(&self) -> Option<Propagation> {
         if self.tx_stack.len() != 0 {
             let (tx_opt, prop_opt) = self.tx_stack.last_ref();
             if prop_opt.is_some() {
@@ -278,13 +279,13 @@ impl LocalSession {
 
 
 #[test]
-pub fn test_se(){
-    let mut s =LocalSession::new("", MYSQL_URL, None);
-    if s.is_err(){
-        println!("执行失败:{}",s.err().unwrap());
+pub fn test_se() {
+    let mut s = LocalSession::new("", MYSQL_URL, None);
+    if s.is_err() {
+        println!("执行失败:{}", s.err().unwrap());
         return;
     }
-    let mut se=s.unwrap();
+    let mut se = s.unwrap();
     se.begin(Propagation::None);
     se.begin(Propagation::None);
 }
