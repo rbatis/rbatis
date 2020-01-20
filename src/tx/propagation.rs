@@ -1,7 +1,12 @@
+use core::fmt;
+use std::fmt::Display;
 
 use serde::{Deserialize, Serialize};
+use serde::export::fmt::Error;
+use serde::export::Formatter;
+
 ///事务传播行为
-#[derive(Clone,Copy,Eq, PartialEq,Serialize, Deserialize,Debug)]
+#[derive(Clone, Copy, Eq, PartialEq, Serialize, Deserialize, Debug)]
 pub enum Propagation {
     None,
     ///默认，表示如果当前事务存在，则支持当前事务。否则，会启动一个新的事务。have tx ? join : new tx()
@@ -20,4 +25,21 @@ pub enum Propagation {
     NESTED,
     ///表示如果当前没有事务，就新建一个事务,否则返回错误。  have tx ? return error: session.new tx()
     NOT_REQUIRED,
+}
+
+impl Display for Propagation {
+    fn fmt(&self, f: &mut Formatter<'_>) -> fmt::Result {
+        return match self {
+            Propagation::None => return write!(f, "None"),
+            REQUIRED => return write!(f, "REQUIRED"),
+            SUPPORTS => return write!(f, "SUPPORTS"),
+            MANDATORY => return write!(f, "MANDATORY"),
+            REQUIRES_NEW => return write!(f, "REQUIRES_NEW"),
+            NOT_SUPPORTED => return write!(f, "NOT_SUPPORTED"),
+            NEVER => return write!(f, "NEVER"),
+            NESTED => return write!(f, "NESTED"),
+            NOT_REQUIRED => return write!(f, "NOT_REQUIRED"),
+            _ => return write!(f, ""),
+        };
+    }
 }
