@@ -143,7 +143,7 @@ impl LocalSession {
         let mut closec_num = 0;
         if self.new_local_session.is_some() {
             let new_session = self.new_local_session.as_mut().unwrap();
-            let r = new_session.rollback()?;
+            let r = new_session.commit()?;
             new_session.close();
             closec_num += r;
         }
@@ -160,7 +160,7 @@ impl LocalSession {
                 }
             }
             if self.tx_stack.len() == 0 {
-                info!("[rbatis] [{}] exec ============ rollback", self.session_id.as_str());
+                info!("[rbatis] [{}] exec ============ commit", self.session_id.as_str());
                 let r = t.commit(self.conn.as_mut().unwrap())?;
                 closec_num += r;
             }
@@ -179,9 +179,9 @@ impl LocalSession {
             //默认，表示如果当前事务存在，则支持当前事务。否则，会启动一个新的事务。have tx ? join : new tx()
             Propagation::REQUIRED => {
                 if self.tx_stack.len() > 0 {
-                    let (l_t, l_p) = self.tx_stack.last_pop();
+                    let (l_t, l_p) = self.tx_stack.last_ref();
                     if l_t.is_some() && l_p.is_some() {
-                        self.tx_stack.push(l_t.unwrap(), l_p.unwrap());
+                        self.tx_stack.push(l_t.unwrap().clone(), l_p.unwrap().clone());
                     }
                 } else {
                     //new tx
@@ -235,9 +235,9 @@ impl LocalSession {
             //表示如果当前事务存在，则在嵌套事务内执行，如嵌套事务回滚，则只会在嵌套事务内回滚，不会影响当前事务。如果当前没有事务，则进行与PROPAGATION_REQUIRED类似的操作。
             Propagation::NESTED => {
                 if self.tx_stack.len() > 0 {
-                    let (l_t, l_p) = self.tx_stack.last_pop();
+                    let (l_t, l_p) = self.tx_stack.last_ref();
                     if l_t.is_some() && l_p.is_some() {
-                        self.tx_stack.push(l_t.unwrap(), l_p.unwrap());
+                        self.tx_stack.push(l_t.unwrap().clone(), l_p.unwrap().clone());
                     }
                 } else {
                     return self.begin(Propagation::REQUIRED);

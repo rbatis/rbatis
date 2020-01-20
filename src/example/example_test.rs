@@ -253,9 +253,17 @@ fn test_tx_return() -> Result<u64, String> {
     }
     let mut rbatis = rbatis_opt.unwrap();
     let mut session = rbatis.begin("", Propagation::REQUIRED)?;
-    let data = session.exec("UPDATE `biz_activity` SET `name` = '活动2' WHERE (`id` = '2');",&[])?;
+    let data = session.exec("UPDATE `biz_activity` SET `name` = '活动1' WHERE (`id` = '2');",&[])?;
    // let rollbacked = session.rollback()?;
     let commited = session.commit()?;
+
+    let data = session.exec("UPDATE `biz_activity` SET `name` = '活动2' WHERE (`id` = '2');",&[])?;
+    // let rollbacked = session.rollback()?;
+    let commited = session.commit()?;
+
+    let data = session.exec("UPDATE `biz_activity` SET `name` = '活动3' WHERE (`id` = '2');",&[])?;
+    // let rollbacked = session.rollback()?;
+    let commited = session.rollback()?;
    // println!("commit:{}", commited);
     let act:Activity=session.query("select * from biz_activity where id  = '2'",&[])?;
     println!("result:{}",serde_json::to_string(&act).unwrap());
