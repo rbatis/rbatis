@@ -1,6 +1,7 @@
 
+use serde::{Deserialize, Serialize};
 ///事务传播行为
-#[derive(Clone,Copy,Eq, PartialEq)]
+#[derive(Clone,Copy,Eq, PartialEq,Serialize, Deserialize,Debug)]
 pub enum Propagation {
     None,
     ///默认，表示如果当前事务存在，则支持当前事务。否则，会启动一个新的事务。have tx ? join : new tx()
