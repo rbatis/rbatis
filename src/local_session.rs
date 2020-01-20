@@ -13,19 +13,20 @@ use crate::tx::tx::Tx;
 use crate::tx::tx_stack::TxStack;
 use crate::utils::{driver_util, rdbc_util};
 use crate::utils::rdbc_util::to_rdbc_values;
+use crate::example::conf::MYSQL_URL;
 
-pub struct LocalSession<'a> {
+pub struct LocalSession {
     pub session_id: String,
     pub driver: String,
-    pub tx_stack: TxStack<'a>,
+    pub tx_stack: TxStack,
     pub save_point_stack: SavePointStack,
     pub is_closed: bool,
-    pub new_local_session: Option<Box<LocalSession<'a>>>,
+    pub new_local_session: Option<Box<LocalSession>>,
     pub enable_log: bool,
     pub conn: Option<Box<dyn Connection>>,
 }
 
-impl<'a> LocalSession<'a> {
+impl LocalSession {
     pub fn new(id: &str, driver: &str, conn_opt: Option<Box<dyn Connection>>) -> Result<Self, String> {
         let mut new_id = id.to_string();
         if new_id.is_empty() {
@@ -161,7 +162,7 @@ impl<'a> LocalSession<'a> {
         return Ok(closec_num);
     }
 
-    pub  fn begin(&'a mut self, propagation_type: Propagation) -> Result<u64, String> {
+    pub  fn begin(&mut self, propagation_type: Propagation) -> Result<u64, String> {
         match propagation_type {
             //默认，表示如果当前事务存在，则支持当前事务。否则，会启动一个新的事务。have tx ? join : new tx()
             Propagation::REQUIRED => {
@@ -275,7 +276,7 @@ impl<'a> LocalSession<'a> {
 
 #[test]
 pub fn test_se(){
-//    let mut se =LocalSession::new("", "", None).unwrap();
-//    se.begin(Propagation::None);
-//    se.begin(Propagation::None);
+    let mut se =LocalSession::new("", MYSQL_URL, None).unwrap();
+    se.begin(Propagation::None);
+    se.begin(Propagation::None);
 }
