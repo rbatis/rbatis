@@ -134,14 +134,6 @@ impl Rbatis {
         session.begin(propagation_type)?;
         return Result::Ok(session);
     }
-    pub fn commit(&mut self, id: &str) -> Result<u64, String> {
-        let data = self.eval_sql_source(id, "commit;")?;
-        return Result::Ok(data);
-    }
-    pub fn rollback(&mut self, id: &str) -> Result<u64, String> {
-        let data = self.eval_sql_source(id, "rollback;")?;
-        return Result::Ok(data);
-    }
 
     ///执行无编译的原生sql
     pub fn eval_sql_source(&mut self, id: &str, sql:&str) -> Result<u64, String> {

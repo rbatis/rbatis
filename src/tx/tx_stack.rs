@@ -50,6 +50,14 @@ impl TxStack {
         return (self.txs.back(), self.propagations.back());
     }
 
+    pub fn first_ref_mut(&mut self) -> (Option<&mut TxImpl>, Option<&mut Propagation>) {
+        return (self.txs.front_mut(), self.propagations.front_mut());
+    }
+
+    pub fn last_ref_mut(&mut self) -> (Option<&mut TxImpl>, Option<&mut Propagation>) {
+        return (self.txs.back_mut(), self.propagations.back_mut());
+    }
+
     pub fn close(&mut self) {
         for x in &mut self.txs {
             x.is_close = true;
