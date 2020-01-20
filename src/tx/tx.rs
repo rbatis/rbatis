@@ -9,12 +9,20 @@ use crate::tx::propagation::Propagation;
 use crate::utils::driver_util;
 use crate::utils::rdbc_util::to_rdbc_values;
 
+
+
+
+
+
+
+
+
 ///TX is transaction abstraction
 ///Conn is the connection pointer.
 /// This object contains a small amount of unsafe (but check if conn is null) to avoid the life cycle (because if the life cycle is used, then & mut can only be used once in this cycle, which violates the original requirement that a session can start multiple transactions)
 /// Tx即事务抽象
 /// conn为连接指针，本对象包含少量unsafe（但是有检查conn是否为null） 来规避 生命周期（因为如果用了生命周期，那么&mut 只能在 本周期内使用一次，这违背了一条session可以启动多条事务的原本需求）
-pub struct Tx {
+pub struct TxImpl {
     pub id: String,
     pub driver: String,
     pub conn: *mut Box<dyn Connection>,
@@ -23,9 +31,9 @@ pub struct Tx {
     pub enable_log: bool,
 }
 
-impl Tx {
+impl TxImpl {
     //开始一个事务
-    pub fn begin(id: &str, driver: &str, enable_log: bool, conn: *mut Box<dyn Connection>) -> Result<Tx, String> {
+    pub fn begin(id: &str, driver: &str, enable_log: bool, conn: *mut Box<dyn Connection>) -> Result<TxImpl, String> {
         let mut v = id.to_string();
         if v.eq("") {
             v = Uuid::new_v4().to_string();
@@ -103,7 +111,7 @@ impl Tx {
     }
 }
 
-impl Drop for Tx {
+impl Drop for TxImpl {
     fn drop(&mut self) {
         self.close();
     }
