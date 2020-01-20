@@ -13,7 +13,7 @@ use crate::utils::string_util::count_string_num;
 
 pub const SKIP_SETS: &'static str = "null,object,array";
 
-impl<'a> Rbatis<'a> {
+impl Rbatis {
     pub fn update<T>(&mut self, mapper_name: &str, arg: &mut Value) -> Result<T, String> where T: DeserializeOwned {
         let mut arg_array = vec![];
         let sql = self.create_sql_update(mapper_name, arg, &mut arg_array)?;

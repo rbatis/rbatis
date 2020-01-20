@@ -9,7 +9,7 @@ use crate::rbatis::Rbatis;
 use crate::utils::rdbc_util::rdbc_vec_to_string;
 use crate::utils::string_util::count_string_num;
 
-impl<'a> Rbatis<'a> {
+impl Rbatis {
     pub fn insert<T>(&mut self, mapper_name: &str, arg: &mut Value) -> Result<T, String> where T: DeserializeOwned {
         let mut arg_array = vec![];
         let sql = self.create_sql_insert(mapper_name, arg, &mut arg_array)?;

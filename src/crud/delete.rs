@@ -13,7 +13,7 @@ use crate::engine::node::NodeType;
 use crate::rbatis::Rbatis;
 use crate::utils::string_util::count_string_num;
 
-impl<'a> Rbatis<'a> {
+impl Rbatis {
     pub fn delete<T>(&mut self, mapper_name: &str, arg: &mut Value) -> Result<T, String> where T: DeserializeOwned {
         let mut arg_array = vec![];
         let sql = self.create_sql_delete(mapper_name, arg, &mut arg_array)?;

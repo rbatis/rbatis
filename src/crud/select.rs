@@ -16,7 +16,7 @@ use crate::rbatis::Rbatis;
 use crate::utils::join_in::json_join;
 use crate::utils::string_util::count_string_num;
 
-impl<'a> Rbatis<'a> {
+impl Rbatis {
     ///普通查询
     pub fn select<T>(&mut self, mapper_name: &str, arg: &mut Value) -> Result<T, String> where T: DeserializeOwned {
         let mut arg_array = vec![];
