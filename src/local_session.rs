@@ -10,7 +10,7 @@ use crate::example::conf::MYSQL_URL;
 use crate::queryable::Queryable;
 use crate::tx::propagation::Propagation;
 use crate::tx::save_point_stack::SavePointStack;
-use crate::tx::tx::TxImpl;
+use crate::tx::tx::{TxImpl, Tx};
 use crate::tx::tx_stack::TxStack;
 use crate::utils::{driver_util, rdbc_util};
 use crate::utils::rdbc_util::to_rdbc_values;
@@ -67,7 +67,7 @@ impl LocalSession {
         let (t_opt, _) = self.tx_stack.last_pop();
         if t_opt.is_some() {
             let mut t = t_opt.unwrap();
-            let result = t.query(sql, arg_array)?;
+            let result = t.query(sql, arg_array,self.conn.as_mut().unwrap())?;
             return result;
         } else {
             return self.conn.as_mut().unwrap().query(self.enable_log, sql, &arg_array);
@@ -88,7 +88,7 @@ impl LocalSession {
         let (t_opt, _) = self.tx_stack.last_pop();
         if t_opt.is_some() {
             let mut t = t_opt.unwrap();
-            let result = t.exec(sql, arg_array)?;
+            let result = t.exec(sql, arg_array,self.conn.as_mut().unwrap())?;
             return Ok(result);
         } else {
             return self.conn.as_mut().unwrap().exec(self.enable_log, sql, &arg_array);
@@ -116,14 +116,14 @@ impl LocalSession {
                     if point_opt.is_some() {
                         info!("[rbatis] [{}] exec ============ rollback", self.session_id.as_str());
                         let sql = "rollback to ".to_string() + point_opt.unwrap().as_str();
-                        let r = t.exec(sql.as_str(), &mut vec![])?;
+                        let r = t.exec(sql.as_str(), &mut vec![],self.conn.as_mut().unwrap())?;
                         closec_num += r;
                     }
                 }
             }
             if self.tx_stack.len() == 0 {
                 info!("[rbatis] [{}] exec ============ rollback", self.session_id.as_str());
-                let r = t.rollback()?;
+                let r = t.rollback(self.conn.as_mut().unwrap())?;
                 closec_num += r;
             }
         }
@@ -149,13 +149,13 @@ impl LocalSession {
                     let p_id = format!("p{}", self.tx_stack.len() + 1);
                     self.save_point_stack.push(p_id.as_str());
                     let sql = format!("savepoint {}", p_id.as_str());
-                    let r = t.exec(sql.as_str(), &mut vec![])?;
+                    let r = t.exec(sql.as_str(), &mut vec![],self.conn.as_mut().unwrap())?;
                     closec_num += r;
                 }
             }
             if self.tx_stack.len() == 0 {
                 info!("[rbatis] [{}] exec ============ rollback", self.session_id.as_str());
-                let r = t.commit()?;
+                let r = t.commit(self.conn.as_mut().unwrap())?;
                 closec_num += r;
             }
         }
@@ -287,6 +287,5 @@ pub fn test_se() {
         return;
     }
     let mut se = s.unwrap();
-    se.begin(Propagation::None);
     se.begin(Propagation::None);
 }
