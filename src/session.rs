@@ -1,7 +1,7 @@
 use serde::de;
 
 use crate::tx::propagation::Propagation;
-use crate::tx::tx::Tx;
+use crate::tx::tx::TxImpl;
 
 //pub trait Session<'a> {
 //    fn id(&self) -> String;

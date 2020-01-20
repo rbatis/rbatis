@@ -10,7 +10,7 @@ use crate::example::conf::MYSQL_URL;
 use crate::queryable::Queryable;
 use crate::tx::propagation::Propagation;
 use crate::tx::save_point_stack::SavePointStack;
-use crate::tx::tx::Tx;
+use crate::tx::tx::TxImpl;
 use crate::tx::tx_stack::TxStack;
 use crate::utils::{driver_util, rdbc_util};
 use crate::utils::rdbc_util::to_rdbc_values;
@@ -176,7 +176,7 @@ impl LocalSession {
                     }
                 } else {
                     //new tx
-                    let tx = Tx::begin("", self.driver.as_str(), self.enable_log, self.conn.as_mut().unwrap())?;
+                    let tx = TxImpl::begin("", self.driver.as_str(), self.enable_log, self.conn.as_mut().unwrap())?;
                     self.tx_stack.push(tx, propagation_type);
                 }
             }
@@ -240,7 +240,7 @@ impl LocalSession {
                     return Err("[rbatis] PROPAGATION_NOT_REQUIRED Nested transaction exception! current Already have a transaction!".to_string());
                 } else {
                     //new tx
-                    let tx = Tx::begin("", self.driver.as_str(), self.enable_log, self.conn.as_mut().unwrap())?;
+                    let tx = TxImpl::begin("", self.driver.as_str(), self.enable_log, self.conn.as_mut().unwrap())?;
                     self.tx_stack.push(tx, propagation_type);
                 }
             }
