@@ -99,20 +99,18 @@ impl LocalSession {
         if self.is_closed == true {
             return Err("[rbatis] session can not query a closed session!".to_string());
         }
-        if self.enable_log {
-            info!("[rbatis] [{}] Exec: ==>   Rollback; ",self.id());
-        }
         let mut closec_num = 0;
         if self.new_local_session.is_some() {
             let new_session = self.new_local_session.as_mut().unwrap();
+            if self.enable_log {
+                info!("[rbatis] [{}] Exec: ==>   Rollback; ",self.session_id);
+            }
             let r = new_session.rollback()?;
             new_session.close();
             closec_num += r;
         }
 
         let (t_opt, p_opt) = self.tx_stack.pop();
-//        println!("{}",t_opt.is_some());
-//        println!("{}",p_opt.is_some());
         if t_opt.is_some() && p_opt.is_some() {
             let mut t = t_opt.unwrap();
             if self.last_propagation().is_some() {
@@ -126,6 +124,9 @@ impl LocalSession {
                 }
             }
             if self.tx_stack.len() == 0 {
+                if self.enable_log {
+                    info!("[rbatis] [{}] Exec: ==>   Rollback; ",self.id());
+                }
                 let r = t.rollback(self.conn.as_mut().unwrap())?;
                 closec_num += r;
             }
@@ -137,12 +138,12 @@ impl LocalSession {
         if self.is_closed == true {
             return Err("[rbatis] session can not query a closed session!".to_string());
         }
-        if self.enable_log {
-            info!("[rbatis] [{}] Exec: ==>   Commit; ",self.id());
-        }
         let mut closec_num = 0;
         if self.new_local_session.is_some() {
             let new_session = self.new_local_session.as_mut().unwrap();
+            if self.enable_log {
+                info!("[rbatis] [{}] Exec: ==>   Commit; ",self.session_id);
+            }
             let r = new_session.commit()?;
             new_session.close();
             closec_num += r;
@@ -160,7 +161,9 @@ impl LocalSession {
                 }
             }
             if self.tx_stack.len() == 0 {
-                info!("[rbatis] [{}] exec ============ commit", self.session_id.as_str());
+                if self.enable_log {
+                    info!("[rbatis] [{}] Exec: ==>   Commit; ",self.id());
+                }
                 let r = t.commit(self.conn.as_mut().unwrap())?;
                 closec_num += r;
             }

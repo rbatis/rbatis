@@ -254,12 +254,8 @@ fn test_tx_return() -> Result<u64, String> {
     let mut rbatis = rbatis_opt.unwrap();
     let mut session = rbatis.begin("", Propagation::REQUIRED)?;
     let data = session.exec("UPDATE `biz_activity` SET `name` = '活动1' WHERE (`id` = '2');",&[])?;
-   // let rollbacked = session.rollback()?;
-    let commited = session.commit()?;
 
     let data = session.exec("UPDATE `biz_activity` SET `name` = '活动2' WHERE (`id` = '2');",&[])?;
-    // let rollbacked = session.rollback()?;
-    let commited = session.commit()?;
 
     let data = session.exec("UPDATE `biz_activity` SET `name` = '活动3' WHERE (`id` = '2');",&[])?;
     // let rollbacked = session.rollback()?;
