@@ -32,7 +32,7 @@ impl Tx {
             is_close: false,
             enable_log: enable_log,
         };
-        let data = s.exec( "begin;", &[])?;
+        let data = s.exec("begin;", &[])?;
         return Ok(s);
     }
 
@@ -45,7 +45,7 @@ impl Tx {
         if self.is_close {
             return Err("[rbatis] conn is closed!".to_string());
         }
-        unsafe{
+        unsafe {
             return self.conn.as_mut().unwrap().query(self.enable_log, sql, &arg_array);
         }
     }
@@ -55,8 +55,8 @@ impl Tx {
         if self.is_close {
             return Err("[rbatis] conn is closed!".to_string());
         }
-        unsafe{
-          return  self.conn.as_mut().unwrap().exec(self.enable_log, sql, &arg_array);
+        unsafe {
+            return self.conn.as_mut().unwrap().exec(self.enable_log, sql, &arg_array);
         }
     }
 
@@ -64,8 +64,8 @@ impl Tx {
         if self.is_close {
             return Err("[rbatis] conn is closed!".to_string());
         }
-        unsafe{
-        return self.conn.as_mut().unwrap().exec(true, "rollback;", &[]);
+        unsafe {
+            return self.conn.as_mut().unwrap().exec(true, "rollback;", &[]);
         }
     }
 
@@ -80,6 +80,4 @@ impl Tx {
 }
 
 #[test]
-fn test_tx() {
-
-}
+fn test_tx() {}
