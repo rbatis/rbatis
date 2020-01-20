@@ -279,7 +279,12 @@ impl LocalSession {
 
 #[test]
 pub fn test_se(){
-    let mut se =LocalSession::new("", MYSQL_URL, None).unwrap();
+    let mut s =LocalSession::new("", MYSQL_URL, None);
+    if s.is_err(){
+        println!("执行失败:{}",s.err().unwrap());
+        return;
+    }
+    let mut se=s.unwrap();
     se.begin(Propagation::None);
     se.begin(Propagation::None);
 }
