@@ -113,12 +113,12 @@ impl LocalSession {
         let (t_opt, p_opt) = self.tx_stack.pop();
         if t_opt.is_some() && p_opt.is_some() {
             let mut t = t_opt.unwrap();
-            if self.last_propagation().is_some() {
-                if self.last_propagation().as_ref().unwrap().eq(&Propagation::NESTED) {
+            if p_opt.is_some() {
+                if p_opt.as_ref().unwrap().eq(&Propagation::NESTED) {
                     let point_opt = self.save_point_stack.pop();
                     if point_opt.is_some() {
                         let sql = "rollback to ".to_string() + point_opt.unwrap().as_str();
-                        let r = t.exec(sql.as_str(), &mut vec![],self.conn.as_mut().unwrap())?;
+                        let r = t.exec(sql.as_str(), &mut vec![], self.conn.as_mut().unwrap())?;
                         closec_num += r;
                     }
                 }
@@ -151,18 +151,18 @@ impl LocalSession {
         let (t_opt, p_opt) = self.tx_stack.pop();
         if t_opt.is_some() && p_opt.is_some() {
             let mut t = t_opt.unwrap();
-            if self.last_propagation().is_some() {
-                if self.last_propagation().as_ref().unwrap().eq(&Propagation::NESTED) {
+            if p_opt.is_some() {
+                if p_opt.as_ref().unwrap().eq(&Propagation::NESTED) {
                     let p_id = format!("p{}", self.tx_stack.len() + 1);
                     self.save_point_stack.push(p_id.as_str());
                     let sql = format!("savepoint {}", p_id.as_str());
-                    let r = t.exec(sql.as_str(), &mut vec![],self.conn.as_mut().unwrap())?;
+                    let r = t.exec(sql.as_str(), &mut vec![], self.conn.as_mut().unwrap())?;
                     closec_num += r;
                 }
             }
             if self.tx_stack.len() == 0 {
                 if self.enable_log {
-                    info!("[rbatis] [{}] Exec: ==>   Commit; ",self.id());
+                    info!("[rbatis] [{}] Exec: ==>   Commit; ", self.id());
                 }
                 let r = t.commit(self.conn.as_mut().unwrap())?;
                 closec_num += r;
@@ -181,25 +181,22 @@ impl LocalSession {
         match propagation_type {
             //默认，表示如果当前事务存在，则支持当前事务。否则，会启动一个新的事务。have tx ? join : new tx()
             Propagation::REQUIRED => {
-                if self.tx_stack.len() > 0 {
-                    self.tx_stack.push_last();
-                } else {
-                    //new tx
-                    let tx = TxImpl::begin("", self.driver.as_str(), self.enable_log, self.conn.as_mut().unwrap())?;
-                    self.tx_stack.push(tx, propagation_type);
-                }
+                let tx = TxImpl::begin("", self.driver.as_str(), self.enable_log, self.conn.as_mut().unwrap())?;
+                self.tx_stack.push(tx, Propagation::REQUIRED);
             }
             //表示如果当前事务存在，则支持当前事务，如果当前没有事务，就以非事务方式执行。  have tx ? join(): session.exec()
             Propagation::SUPPORTS => {
                 if self.tx_stack.len() > 0 {
-                    self.tx_stack.push_last();
+                    let tx = TxImpl::begin("", self.driver.as_str(), self.enable_log, self.conn.as_mut().unwrap())?;
+                    self.tx_stack.push(tx, Propagation::SUPPORTS);
                 } else {}
                 return Ok(0);
             }
             //表示如果当前事务存在，则支持当前事务，如果当前没有事务，则返回事务嵌套错误。  have tx ? join() : return error
             Propagation::MANDATORY => {
                 if self.tx_stack.len() > 0 {
-                    self.tx_stack.push_last();
+                    let tx = TxImpl::begin("", self.driver.as_str(), self.enable_log, self.conn.as_mut().unwrap())?;
+                    self.tx_stack.push(tx, Propagation::MANDATORY);
                     return Ok(0);
                 } else {
                     return Err("[rbatis] PROPAGATION_MANDATORY Nested transaction exception! current not have a transaction!".to_string());
@@ -207,9 +204,6 @@ impl LocalSession {
             }
             //表示新建一个全新Session开启一个全新事务，如果当前存在事务，则把当前事务挂起。 have tx ? stop old。  -> new session().new tx()
             Propagation::REQUIRES_NEW => {
-                if self.tx_stack.len() > 0 {
-                    //stop old tx
-                }
                 //new session
                 let r = driver_util::get_conn_by_link(self.driver.as_str())?;
                 let new_session = LocalSession::new("", self.driver.as_str(), Option::from(r))?;
@@ -232,8 +226,8 @@ impl LocalSession {
             //表示如果当前事务存在，则在嵌套事务内执行，如嵌套事务回滚，则只会在嵌套事务内回滚，不会影响当前事务。如果当前没有事务，则进行与PROPAGATION_REQUIRED类似的操作。
             Propagation::NESTED => {
                 if self.tx_stack.len() > 0 {
-                    //todo
-                    self.tx_stack.push_last();
+                    let tx = TxImpl::begin("", self.driver.as_str(), self.enable_log, self.conn.as_mut().unwrap())?;
+                    self.tx_stack.push(tx, Propagation::NESTED);
                 } else {
                     return self.begin(Propagation::REQUIRED);
                 }
@@ -264,16 +258,6 @@ impl LocalSession {
         }
         self.tx_stack.close();
         self.is_closed = true;
-    }
-
-    pub fn last_propagation(&self) -> Option<Propagation> {
-        if self.tx_stack.len() != 0 {
-            let (tx_opt, prop_opt) = self.tx_stack.last_ref();
-            if prop_opt.is_some() {
-                return Some(prop_opt.unwrap().clone());
-            }
-        }
-        return None;
     }
 }
 
