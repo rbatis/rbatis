@@ -241,27 +241,28 @@ fn test_exec_select_page_custom() {
   测试事务
 */
 #[test]
-fn test_tx(){
+fn test_tx() {
     test_tx_return().unwrap();
 }
 
 fn test_tx_return() -> Result<u64, String> {
-   //初始化rbatis
+    //初始化rbatis
     let rbatis_opt = init_rbatis();
     if rbatis_opt.is_err() {
         return Ok(1);
     }
     let mut rbatis = rbatis_opt.unwrap();
-    let mut session = rbatis.begin("", Propagation::REQUIRED)?;
-    let data = session.exec("UPDATE `biz_activity` SET `name` = '活动1' WHERE (`id` = '2');",&[])?;
+    rbatis.begin("", Propagation::REQUIRED)?;
 
-    let data = session.exec("UPDATE `biz_activity` SET `name` = '活动2' WHERE (`id` = '2');",&[])?;
+    let u:u32 = rbatis.eval_sql("UPDATE `biz_activity` SET `name` = '活动1' WHERE (`id` = '2');")?;
 
-    let data = session.exec("UPDATE `biz_activity` SET `name` = '活动3' WHERE (`id` = '2');",&[])?;
-    // let rollbacked = session.rollback()?;
-    let commited = session.rollback()?;
-   // println!("commit:{}", commited);
-    let act:Activity=session.query("select * from biz_activity where id  = '2'",&[])?;
-    println!("result:{}",serde_json::to_string(&act).unwrap());
+    let u:u32 = rbatis.eval_sql("UPDATE `biz_activity` SET `name` = '活动2' WHERE (`id` = '2');")?;
+
+    let u:u32 = rbatis.eval_sql("UPDATE `biz_activity` SET `name` = '活动3' WHERE (`id` = '2');")?;
+
+    rbatis.commit("")?;
+
+    let act: Activity = rbatis.eval_sql("select * from biz_activity where id  = '2';")?;
+    println!("result:{}", serde_json::to_string(&act).unwrap());
     return Ok(1);
 }
