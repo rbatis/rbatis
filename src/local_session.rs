@@ -10,7 +10,7 @@ use crate::example::conf::MYSQL_URL;
 use crate::queryable::Queryable;
 use crate::tx::propagation::Propagation;
 use crate::tx::save_point_stack::SavePointStack;
-use crate::tx::tx::{TxImpl, Tx};
+use crate::tx::tx::{Tx, TxImpl};
 use crate::tx::tx_stack::TxStack;
 use crate::utils::{driver_util, rdbc_util};
 use crate::utils::rdbc_util::to_rdbc_values;
@@ -210,11 +210,8 @@ impl LocalSession {
                     //TODO stop old tx
                 }
                 //new session
-                let r = driver_util::get_conn_by_link(self.driver.as_str());
-                if r.is_err() {
-                    return Err(r.err().unwrap());
-                }
-                let new_session = LocalSession::new("", self.driver.as_str(), Option::from(r.unwrap()))?;
+                let r = driver_util::get_conn_by_link(self.driver.as_str())?;
+                let new_session = LocalSession::new("", self.driver.as_str(), Option::from(r))?;
                 self.new_local_session = Some(Box::new(new_session));
             }
             //表示以非事务方式执行操作，如果当前存在事务，则新建一个Session以非事务方式执行操作，把当前事务挂起。  have tx ? stop old。 -> new session().exec()
@@ -222,11 +219,8 @@ impl LocalSession {
                 if self.tx_stack.len() > 0 {
                     //TODO stop old tx
                 }
-                let r = driver_util::get_conn_by_link(self.driver.as_str());
-                if r.is_err() {
-                    return Err(r.err().unwrap());
-                }
-                let new_session = LocalSession::new("", self.driver.as_str(), Option::from(r.unwrap()))?;
+                let r = driver_util::get_conn_by_link(self.driver.as_str())?;
+                let new_session = LocalSession::new("", self.driver.as_str(), Option::from(r))?;
                 self.new_local_session = Some(Box::new(new_session));
             }
             //表示以非事务方式执行操作，如果当前存在事务，则返回事务嵌套错误。    have tx ? return error: session.exec()
