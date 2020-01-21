@@ -20,28 +20,8 @@ pub struct SessionFactoryImpl {
 }
 
 
-//impl<'a> SessionFactory<'a> for SessionFactoryImpl<'a> {
-//    fn get_thread_session(&mut self, id: &ThreadId, driver: &str) -> Result<&mut LocalSession<'a>, String> {
-//        let item = self.data.get(id);
-//        if item.is_some() {
-//            return Ok(self.data.get_mut(&id).unwrap());
-//        } else {
-//            let session = LocalSession::new("", driver, None)?;
-//            self.data.insert(id.clone(), session);
-//            return Ok(self.data.get_mut(&id).unwrap());
-//        }
-//    }
-//}
-
-impl SessionFactoryImpl {
-    pub fn new(async_mode: bool) -> Self {
-        return Self {
-            async_mode,
-            data: HashMap::new(),
-        };
-    }
-
-   pub fn get_thread_session(&mut self, id: &ThreadId, driver: &str) -> Result<&mut LocalSession, String> {
+impl SessionFactory for SessionFactoryImpl {
+    fn get_thread_session(&mut self, id: &ThreadId, driver: &str) -> Result<&mut LocalSession, String> {
         let item = self.data.get(id);
         if item.is_some() {
             return Ok(self.data.get_mut(&id).unwrap());
@@ -50,5 +30,14 @@ impl SessionFactoryImpl {
             self.data.insert(id.clone(), session);
             return Ok(self.data.get_mut(&id).unwrap());
         }
+    }
+}
+
+impl SessionFactoryImpl {
+    pub fn new(async_mode: bool) -> Self {
+        return Self {
+            async_mode,
+            data: HashMap::new(),
+        };
     }
 }
