@@ -12,12 +12,13 @@ use crate::convert::sql_value_convert::{AND, SkipType, SqlQuestionConvert, SqlVa
 use crate::engine::node::NodeType;
 use crate::rbatis::Rbatis;
 use crate::utils::string_util::count_string_num;
+use crate::session_factory::SessionFactory;
 
 impl Rbatis {
-    pub fn delete<T>(&mut self, mapper_name: &str, arg: &mut Value) -> Result<T, String> where T: DeserializeOwned {
+    pub fn delete<T>(&mut self,session_factory:&mut Box<dyn SessionFactory>, mapper_name: &str, arg: &mut Value) -> Result<T, String> where T: DeserializeOwned {
         let mut arg_array = vec![];
         let sql = self.create_sql_delete(mapper_name, arg, &mut arg_array)?;
-        return self.eval_raw((mapper_name.to_string() + ".delete").as_str(), sql.as_str(), false, &mut arg_array);
+        return self.eval_raw(session_factory,(mapper_name.to_string() + ".delete").as_str(), sql.as_str(), false, &mut arg_array);
     }
 
 

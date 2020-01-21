@@ -10,7 +10,6 @@ use crate::engine::runtime::{is_number, OptMap};
 use std::collections::HashMap;
 use std::collections::linked_list::LinkedList;
 use crate::engine::{runtime, parser};
-use std::rc::Rc;
 //use test::Bencher;
 
 #[derive(Clone, PartialEq)]

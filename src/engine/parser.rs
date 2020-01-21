@@ -4,8 +4,8 @@ use crate::engine::node::Node;
 use crate::engine::node::NodeType::{NOpt, NBinary};
 use crate::engine::runtime::{is_number, OptMap, parser_tokens};
 use std::collections::linked_list::LinkedList;
-use std::rc::Rc;
 use std::ops::Deref;
+use std::sync::Arc;
 
 
 pub fn parser(express: String, opt_map: &OptMap) -> Result<Node,String> {
@@ -19,7 +19,7 @@ pub fn parser(express: String, opt_map: &OptMap) -> Result<Node,String> {
                 panic!("[rbatis] find not support opt:".to_owned()+item.as_str());
             }
         }
-        nodes.push(Rc::new(node));
+        nodes.push(Arc::new(node));
     }
     //TODO check nodes
     for item in opt_map.priority_array() {
@@ -32,7 +32,7 @@ pub fn parser(express: String, opt_map: &OptMap) -> Result<Node,String> {
     }
 }
 
-fn find_replace_opt(opt_map: &OptMap, express: &String, operator: &str, node_arg: &mut Vec<Rc<Node>>) {
+fn find_replace_opt(opt_map: &OptMap, express: &String, operator: &str, node_arg: &mut Vec<Arc<Node>>) {
     //let nodes=vec![];
     let mut index = 0 as i32;
     let node_arg_len = node_arg.len();
@@ -49,7 +49,7 @@ fn find_replace_opt(opt_map: &OptMap, express: &String, operator: &str, node_arg
             node_arg.remove(index as usize);
             node_arg.remove(left_index);
 
-            node_arg.insert(left_index, Rc::new(binary_node));
+            node_arg.insert(left_index, Arc::new(binary_node));
             if have_opt(node_arg) {
                 find_replace_opt(opt_map, express, operator, node_arg);
             }
@@ -59,7 +59,7 @@ fn find_replace_opt(opt_map: &OptMap, express: &String, operator: &str, node_arg
     }
 }
 
-fn have_opt(node_arg: &mut Vec<Rc<Node>>) -> bool {
+fn have_opt(node_arg: &mut Vec<Arc<Node>>) -> bool {
     for item in node_arg {
         if item.node_type() as i32 == NOpt as i32 {
             return true;
