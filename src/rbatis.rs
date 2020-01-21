@@ -161,21 +161,6 @@ impl Rbatis {
         return Result::Ok(session);
     }
 
-    ///执行无编译的原生sql
-    pub fn eval_sql_source(&mut self, id: &str, sql:&str) -> Result<u64, String> {
-        let key = (self.router_func)(id);
-        let db_conf_opt = self.db_driver_map.get(key.as_str());
-        if db_conf_opt.is_none() {
-            return Result::Err("[rbatis] no DBConfig:".to_string() + key.as_str() + " find!");
-        }
-        let driver = db_conf_opt.unwrap();
-        let thread_id = thread::current().id();
-        let conn = self.session_factory.get_thread_session(&thread_id, driver.as_str())?;
-        let mut vec = vec![];
-        let create_result = conn.exec(sql, &mut vec)?;
-        return Result::Ok(create_result);
-    }
-
     ///执行
     /// arg_array: 执行后 需要替换的参数数据
     /// return ：替换参数为 ？ 后的sql
