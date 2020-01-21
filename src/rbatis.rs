@@ -135,6 +135,32 @@ impl Rbatis {
         return Result::Ok(session);
     }
 
+    pub fn rollback(&mut self, id: &str) -> Result<&mut LocalSession, String> {
+        let key = (self.router_func)(id);
+        let db_conf_opt = self.db_driver_map.get(key.as_str());
+        if db_conf_opt.is_none() {
+            return Result::Err("[rbatis] no DBConfig:".to_string() + key.as_str() + " find!");
+        }
+        let driver = db_conf_opt.unwrap();
+        let thread_id = thread::current().id();
+        let session = self.session_factory.get_thread_session(&thread_id, driver.as_str())?;
+        session.rollback()?;
+        return Result::Ok(session);
+    }
+
+    pub fn commit(&mut self, id: &str) -> Result<&mut LocalSession, String> {
+        let key = (self.router_func)(id);
+        let db_conf_opt = self.db_driver_map.get(key.as_str());
+        if db_conf_opt.is_none() {
+            return Result::Err("[rbatis] no DBConfig:".to_string() + key.as_str() + " find!");
+        }
+        let driver = db_conf_opt.unwrap();
+        let thread_id = thread::current().id();
+        let session = self.session_factory.get_thread_session(&thread_id, driver.as_str())?;
+        session.commit()?;
+        return Result::Ok(session);
+    }
+
     ///执行无编译的原生sql
     pub fn eval_sql_source(&mut self, id: &str, sql:&str) -> Result<u64, String> {
         let key = (self.router_func)(id);
