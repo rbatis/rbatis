@@ -26,7 +26,7 @@ use crate::ast::xml::string_node::StringNode;
 use crate::db_config::DBConfig;
 use crate::decode::rdbc_driver_decoder::decode_result_set;
 use crate::local_session::LocalSession;
-use crate::session_factory::{SessionFactory, SessionFactoryImpl};
+use crate::session_factory::{SessionFactory, SessionFactoryCached};
 use crate::tx::propagation::Propagation;
 use crate::utils::{driver_util, rdbc_util};
 use crate::utils::rdbc_util::to_rdbc_values;
@@ -57,7 +57,7 @@ impl Rbatis {
             mapper_map: HashMap::new(),
             holder: ConfigHolder::new(),
             db_driver_map: HashMap::new(),
-            session_factory: Box::new(SessionFactoryImpl::new(true)),
+            session_factory: Box::new(SessionFactoryCached::new(true)),
             router_func: |id| -> String{
                 //加载默认配置，key=""
                 return "".to_string();
