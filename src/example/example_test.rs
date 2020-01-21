@@ -22,6 +22,10 @@ use crate::example::activity::Activity;
 use crate::example::conf::MYSQL_URL;
 use crate::rbatis::Rbatis;
 use crate::tx::propagation::Propagation;
+use std::sync::mpsc;
+use std::thread;
+use std::thread::sleep;
+use std::time::Duration;
 
 /**
  初始化实例
@@ -265,4 +269,37 @@ fn test_tx_return() -> Result<u64, String> {
     let act: Activity = rbatis.eval_sql("select * from biz_activity where id  = '2';")?;
     println!("result:{}", serde_json::to_string(&act).unwrap());
     return Ok(1);
+}
+
+
+use actix_web::{web, App, Responder, HttpServer};
+use std::process::exit;
+
+async fn index() -> impl Responder {
+    "Hello world!"
+}
+#[actix_rt::main]
+async fn main() -> std::io::Result<()> {
+    HttpServer::new(|| {
+        App::new().service(
+            web::scope("/app").route("/index.html", web::get().to(index)),
+        )
+    })
+        .bind("127.0.0.1:8088")?
+        .run()
+        .await
+}
+
+#[test]
+pub fn test_web(){
+    //初始化rbatis
+    let rbatis_opt = init_rbatis();
+    if rbatis_opt.is_err() {
+        return;
+    }
+    thread::spawn(||{
+        sleep(Duration::from_secs(20));
+        exit(0);
+    });
+    main();
 }
