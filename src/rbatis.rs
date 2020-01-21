@@ -42,7 +42,7 @@ pub struct Rbatis {
     pub db_driver_map: HashMap<String, String>,
     pub router_func: fn(id: &str) -> String,
     //session工厂
-    pub session_factory: SessionFactoryImpl,
+    pub session_factory: Box<dyn SessionFactory>,
     //允许日志输出，禁用此项可减少IO,提高性能
     pub enable_log: bool,
     //true异步模式，false线程模式
@@ -57,7 +57,7 @@ impl Rbatis {
             mapper_map: HashMap::new(),
             holder: ConfigHolder::new(),
             db_driver_map: HashMap::new(),
-            session_factory: SessionFactoryImpl::new(true),
+            session_factory: Box::new(SessionFactoryImpl::new(true)),
             router_func: |id| -> String{
                 //加载默认配置，key=""
                 return "".to_string();
