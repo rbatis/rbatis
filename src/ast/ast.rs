@@ -4,7 +4,7 @@ use crate::ast::config_holder::ConfigHolder;
 /**
 * Abstract syntax tree node
 */
-pub trait Ast {
+pub trait Ast:Send + Sync {
     /**
     env: &mut Value,因为bind node 会绑定变量，env必须为可修改的值 arg_result: 执行后 提交到 驱动的参数
     */
