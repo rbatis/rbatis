@@ -232,6 +232,7 @@ impl LocalSession {
             //表示如果当前事务存在，则在嵌套事务内执行，如嵌套事务回滚，则只会在嵌套事务内回滚，不会影响当前事务。如果当前没有事务，则进行与PROPAGATION_REQUIRED类似的操作。
             Propagation::NESTED => {
                 if self.tx_stack.len() > 0 {
+                    //todo
                     self.tx_stack.push_last();
                 } else {
                     return self.begin(Propagation::REQUIRED);
