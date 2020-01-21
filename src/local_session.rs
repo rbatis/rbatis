@@ -182,10 +182,7 @@ impl LocalSession {
             //默认，表示如果当前事务存在，则支持当前事务。否则，会启动一个新的事务。have tx ? join : new tx()
             Propagation::REQUIRED => {
                 if self.tx_stack.len() > 0 {
-                    let (l_t, l_p) = self.tx_stack.last_ref();
-                    if l_t.is_some() && l_p.is_some() {
-                        self.tx_stack.push(l_t.unwrap().clone(), l_p.unwrap().clone());
-                    }
+                    self.tx_stack.push_last();
                 } else {
                     //new tx
                     let tx = TxImpl::begin("", self.driver.as_str(), self.enable_log, self.conn.as_mut().unwrap())?;
@@ -194,11 +191,15 @@ impl LocalSession {
             }
             //表示如果当前事务存在，则支持当前事务，如果当前没有事务，就以非事务方式执行。  have tx ? join(): session.exec()
             Propagation::SUPPORTS => {
+                if self.tx_stack.len() > 0 {
+                    self.tx_stack.push_last();
+                } else {}
                 return Ok(0);
             }
             //表示如果当前事务存在，则支持当前事务，如果当前没有事务，则返回事务嵌套错误。  have tx ? join() : return error
             Propagation::MANDATORY => {
                 if self.tx_stack.len() > 0 {
+                    self.tx_stack.push_last();
                     return Ok(0);
                 } else {
                     return Err("[rbatis] PROPAGATION_MANDATORY Nested transaction exception! current not have a transaction!".to_string());
@@ -207,7 +208,7 @@ impl LocalSession {
             //表示新建一个全新Session开启一个全新事务，如果当前存在事务，则把当前事务挂起。 have tx ? stop old。  -> new session().new tx()
             Propagation::REQUIRES_NEW => {
                 if self.tx_stack.len() > 0 {
-                    //TODO stop old tx
+                    //stop old tx
                 }
                 //new session
                 let r = driver_util::get_conn_by_link(self.driver.as_str())?;
@@ -217,11 +218,10 @@ impl LocalSession {
             //表示以非事务方式执行操作，如果当前存在事务，则新建一个Session以非事务方式执行操作，把当前事务挂起。  have tx ? stop old。 -> new session().exec()
             Propagation::NOT_SUPPORTED => {
                 if self.tx_stack.len() > 0 {
-                    //TODO stop old tx
+                    let r = driver_util::get_conn_by_link(self.driver.as_str())?;
+                    let new_session = LocalSession::new("", self.driver.as_str(), Option::from(r))?;
+                    self.new_local_session = Some(Box::new(new_session));
                 }
-                let r = driver_util::get_conn_by_link(self.driver.as_str())?;
-                let new_session = LocalSession::new("", self.driver.as_str(), Option::from(r))?;
-                self.new_local_session = Some(Box::new(new_session));
             }
             //表示以非事务方式执行操作，如果当前存在事务，则返回事务嵌套错误。    have tx ? return error: session.exec()
             Propagation::NEVER => {
@@ -232,10 +232,7 @@ impl LocalSession {
             //表示如果当前事务存在，则在嵌套事务内执行，如嵌套事务回滚，则只会在嵌套事务内回滚，不会影响当前事务。如果当前没有事务，则进行与PROPAGATION_REQUIRED类似的操作。
             Propagation::NESTED => {
                 if self.tx_stack.len() > 0 {
-                    let (l_t, l_p) = self.tx_stack.last_ref();
-                    if l_t.is_some() && l_p.is_some() {
-                        self.tx_stack.push(l_t.unwrap().clone(), l_p.unwrap().clone());
-                    }
+                    self.tx_stack.push_last();
                 } else {
                     return self.begin(Propagation::REQUIRED);
                 }
