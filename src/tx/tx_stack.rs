@@ -35,16 +35,6 @@ impl TxStack {
         return (self.txs.pop_back(), self.propagations.pop_back());
     }
 
-    pub fn push_last(&mut self) {
-        if self.len == 0 {
-            return;
-        }
-        let (l_t, l_p) = self.last_ref();
-        if l_t.is_some() && l_p.is_some() {
-            self.push(l_t.unwrap().clone(), l_p.unwrap().clone());
-        }
-    }
-
     pub fn push_first(&mut self) {
         if self.len == 0 {
             return;
