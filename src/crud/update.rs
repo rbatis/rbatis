@@ -10,14 +10,15 @@ use crate::convert::sql_value_convert::{AND, SkipType, SqlColumnConvert, SqlQues
 use crate::convert::sql_value_convert;
 use crate::rbatis::Rbatis;
 use crate::utils::string_util::count_string_num;
+use crate::session_factory::SessionFactory;
 
 pub const SKIP_SETS: &'static str = "null,object,array";
 
 impl Rbatis {
-    pub fn update<T>(&mut self, mapper_name: &str, arg: &mut Value) -> Result<T, String> where T: DeserializeOwned {
+    pub fn update<T>(&mut self,session_factory:&mut Box<dyn SessionFactory>, mapper_name: &str, arg: &mut Value) -> Result<T, String> where T: DeserializeOwned {
         let mut arg_array = vec![];
         let sql = self.create_sql_update(mapper_name, arg, &mut arg_array)?;
-        return self.eval_raw((mapper_name.to_string() + ".update").as_str(), sql.as_str(), false, &mut arg_array);
+        return self.eval_raw(session_factory,(mapper_name.to_string() + ".update").as_str(), sql.as_str(), false, &mut arg_array);
     }
 
 

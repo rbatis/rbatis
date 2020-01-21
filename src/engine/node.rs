@@ -8,7 +8,6 @@ use std::ptr::null;
 use crate::engine::eval::eval;
 use std::fmt::{Display, Formatter, Error};
 use crate::engine::runtime::{is_number, OptMap, parser_tokens};
-use std::rc::Rc;
 use std::sync::Arc;
 use serde_json::json;
 use std::ops::Deref;
@@ -49,8 +48,8 @@ impl Display for NodeType {
 #[derive(Clone)]
 pub struct Node {
     pub value: Value,
-    pub left_binary_node: Option<Rc<Node>>,
-    pub right_binary_node: Option<Rc<Node>>,
+    pub left_binary_node: Option<Arc<Node>>,
+    pub right_binary_node: Option<Arc<Node>>,
     pub node_type: NodeType,
 }
 
@@ -180,7 +179,7 @@ impl Node {
             node_type: NBool,
         }
     }
-    pub fn new_binary(arg_lef: Rc<Node>, arg_right: Rc<Node>, opt: &str) -> Self {
+    pub fn new_binary(arg_lef: Arc<Node>, arg_right: Arc<Node>, opt: &str) -> Self {
         Self {
             value: Value::from(opt),
             left_binary_node: Option::Some(arg_lef),
