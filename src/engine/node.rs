@@ -14,7 +14,7 @@ use crate::engine::eval::eval;
 use crate::engine::node::NodeType::{NArg, NBinary, NBool, NNull, NNumber, NOpt, NString};
 use crate::engine::runtime::{is_number, OptMap, parser_tokens};
 
-#[derive(Clone, PartialEq)]
+#[derive(Clone, PartialEq,Debug)]
 pub enum NodeType {
     NArg = 1,
     //参数节点
@@ -47,7 +47,7 @@ impl Display for NodeType {
 
 
 //抽象语法树节点
-#[derive(Clone)]
+#[derive(Clone,Debug)]
 pub struct Node {
     pub value: Value,
     pub left_binary_node: Option<Box<Node>>,

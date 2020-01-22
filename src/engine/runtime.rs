@@ -4,7 +4,7 @@ use serde_json::Value;
 use crate::engine::parser::parser;
 use crate::engine::node::Node;
 
-#[derive(Clone)]
+#[derive(Clone,Debug)]
 pub struct RbatisEngine {
     pub cache:HashMap<String,Node>,
     pub opt_map:OptMap<'static>,
@@ -161,7 +161,7 @@ fn trim_push_back(arg: &String, list: &mut LinkedList<String>) {
     list.push_back(trim_str);
 }
 
-#[derive(Clone)]
+#[derive(Clone,Debug)]
 pub struct OptMap<'a> {
     //列表
     pub list: Vec<&'a str>,

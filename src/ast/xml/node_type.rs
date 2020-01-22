@@ -25,7 +25,7 @@ use crate::ast::xml::when_node::WhenNode;
 use crate::ast::xml::where_node::WhereNode;
 use crate::engine::node::Node;
 
-#[derive(Clone)]
+#[derive(Clone,Debug)]
 pub enum NodeType {
     Null,
     NString(StringNode),

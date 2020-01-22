@@ -9,7 +9,7 @@ use crate::ast::xml::node_type::NodeType;
 use crate::ast::xml::string_node::StringNode;
 use crate::utils;
 
-#[derive(Clone)]
+#[derive(Clone,Debug)]
 pub struct ForEachNode {
     pub childs: Vec<NodeType>,
     pub collection: String,

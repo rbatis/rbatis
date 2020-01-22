@@ -5,7 +5,7 @@ use serde_json::Value;
 use engine::node::Node;
 use crate::engine::runtime::RbatisEngine;
 
-#[derive(Clone)]
+#[derive(Clone,Debug)]
 pub struct ConfigHolder {
     pub engine: RbatisEngine,
 }

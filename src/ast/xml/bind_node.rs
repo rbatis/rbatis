@@ -9,7 +9,7 @@ use crate::engine;
 
 const TEMPLETE_BIND: &'static str = "<bind #{attr}>#{body}</bind>";
 
-#[derive(Clone)]
+#[derive(Clone,Debug)]
 pub struct BindNode {
     pub name: String,
     pub value: String,

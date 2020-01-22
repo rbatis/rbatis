@@ -13,7 +13,7 @@ use crate::ast::xml::otherwise_node::OtherwiseNode;
 use crate::ast::xml::string_node::StringNode;
 use crate::engine::runtime::RbatisEngine;
 
-#[derive(Clone)]
+#[derive(Clone,Debug)]
 pub struct ChooseNode {
     pub when_nodes: Option<Vec<NodeType>>,
     pub otherwise_node: Option<Box<NodeType>>,
