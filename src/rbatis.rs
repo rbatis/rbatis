@@ -32,6 +32,7 @@ use crate::utils::{driver_util, rdbc_util};
 use crate::utils::rdbc_util::to_rdbc_values;
 use crate::utils::xml_loader::load_xml;
 
+#[derive(Clone)]
 pub struct Rbatis {
     pub id: String,
     //动态sql运算节点集合
