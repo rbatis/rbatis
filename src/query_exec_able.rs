@@ -4,7 +4,8 @@ use serde::de;
 
 use crate::decode::rdbc_driver_decoder::decode_result_set;
 
-pub trait Queryable {
+///查询，执行接口
+pub trait QueryExecable {
     fn query_prepare<T>(&mut self, enable_log: bool, sql: &str, arg_array: &[rdbc::Value]) -> Result<T, String> where T: de::DeserializeOwned;
     fn exec_prepare(&mut self, enable_log: bool, sql: &str, arg_array: &[rdbc::Value]) -> Result<u64, String>;
     fn query<T>(&mut self, enable_log: bool, sql: &str, arg_array: &[rdbc::Value]) -> Result<T, String> where T: de::DeserializeOwned;
@@ -14,8 +15,8 @@ pub trait Queryable {
     fn exec_custom(&mut self, enable_log: bool, sql: &str, arg_array: &[rdbc::Value], is_prepare: bool) -> Result<u64, String>;
 }
 
-
-impl Queryable for Box<dyn Connection> {
+///查询和执行，带有prepare的是已编译的sql。
+impl QueryExecable for Box<dyn Connection> {
     fn query_prepare<T>(&mut self, enable_log: bool, sql: &str, arg_array: &[rdbc::Value]) -> Result<T, String> where T: de::DeserializeOwned {
         return self.query_custom(enable_log, sql, arg_array, true);
     }
