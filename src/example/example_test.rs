@@ -292,14 +292,9 @@ struct AppStateWithCounter {
 
 async fn index(mut rbs: web::Data<AppStateWithCounter>) -> impl Responder {
     //写法1
-    //let act: Activity = Rbatis::new_ref(rbs.counter.lock().as_mut().unwrap()).eval_sql("select * from biz_activity where id  = '2';").unwrap();
-
-    //写法2
-    let data: IPage<Activity> = Rbatis::new_ref(rbs.counter.lock().as_mut().unwrap()).select_page("Example_ActivityMapper.xml", &mut json!({
-       "delete_flag" : 1,
-    }), &IPage::new(0, 5)).unwrap();
-
-    return serde_json::to_string(&data).unwrap();
+    let mut factory =Rbatis::new_factory();
+    let act: Activity = rbs.counter.lock().as_mut().unwrap().eval_sql(&mut factory,"select * from biz_activity where id  = '2';").unwrap();
+    return serde_json::to_string(&act).unwrap();
 }
 
 #[actix_rt::main]
