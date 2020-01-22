@@ -7,20 +7,13 @@ use crate::ast::config_holder::ConfigHolder;
 use crate::ast::xml::node::{create_deep, do_child_nodes, print_child, SqlNodePrint};
 use crate::ast::xml::node_type::NodeType;
 
+#[derive(Clone,Debug)]
 pub struct WhenNode {
     pub childs: Vec<NodeType>,
     pub test: String,
 
 }
 
-impl Clone for WhenNode {
-    fn clone(&self) -> Self {
-        return Self {
-            childs: self.childs.clone(),
-            test: self.test.clone(),
-        };
-    }
-}
 
 impl Ast for WhenNode {
     fn eval(&self, env: &mut Value, holder: &mut ConfigHolder,arg_array:&mut Vec<Value>) -> Result<String, String> {

@@ -6,7 +6,7 @@ use crate::ast::xml::node::{create_deep, do_child_nodes, print_child, SqlNodePri
 use crate::ast::xml::node_type::NodeType;
 use crate::ast::xml::string_node::StringNode;
 
-#[derive(Clone)]
+#[derive(Clone,Debug)]
 pub struct TrimNode {
     pub childs: Vec<NodeType>,
     pub prefix: String,

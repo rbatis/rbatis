@@ -13,7 +13,7 @@ use crate::convert::sql_value_convert::SqlValueConvert;
 /**
 *  string抽象节点
 **/
-#[derive(Clone)]
+#[derive(Clone,Debug)]
 pub struct StringNode {
     pub value: String,
     //去重的，需要替换的要sql转换express map

@@ -5,7 +5,7 @@ use crate::ast::config_holder::ConfigHolder;
 use crate::ast::xml::node::{create_deep, do_child_nodes, print_child, SqlNodePrint};
 use crate::ast::xml::node_type::NodeType;
 
-#[derive(Clone)]
+#[derive(Clone,Debug)]
 pub struct SetNode {
     pub childs: Vec<NodeType>,
 }
