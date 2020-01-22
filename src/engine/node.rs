@@ -1,16 +1,18 @@
 use std::collections::HashMap;
-use crate::engine::node::NodeType::{NString, NArg, NNumber, NBool, NNull, NBinary, NOpt};
-use serde_json::{Value, Map};
-use serde_json::value::Value::{Number, Null};
+use std::fmt::{Display, Error, Formatter};
+use std::ops::Deref;
+use std::ptr::null;
+use std::sync::Arc;
+
+use serde_json::{Map, Value};
 use serde_json;
 use serde_json::de::ParserNumber;
-use std::ptr::null;
-use crate::engine::eval::eval;
-use std::fmt::{Display, Formatter, Error};
-use crate::engine::runtime::{is_number, OptMap, parser_tokens};
-use std::sync::Arc;
 use serde_json::json;
-use std::ops::Deref;
+use serde_json::value::Value::{Null, Number};
+
+use crate::engine::eval::eval;
+use crate::engine::node::NodeType::{NArg, NBinary, NBool, NNull, NNumber, NOpt, NString};
+use crate::engine::runtime::{is_number, OptMap, parser_tokens};
 
 #[derive(Clone, PartialEq)]
 pub enum NodeType {
@@ -48,8 +50,8 @@ impl Display for NodeType {
 #[derive(Clone)]
 pub struct Node {
     pub value: Value,
-    pub left_binary_node: Option<Arc<Node>>,
-    pub right_binary_node: Option<Arc<Node>>,
+    pub left_binary_node: Option<Box<Node>>,
+    pub right_binary_node: Option<Box<Node>>,
     pub node_type: NodeType,
 }
 
@@ -177,7 +179,7 @@ impl Node {
             node_type: NBool,
         }
     }
-    pub fn new_binary(arg_lef: Arc<Node>, arg_right: Arc<Node>, opt: &str) -> Self {
+    pub fn new_binary(arg_lef: Box<Node>, arg_right: Box<Node>, opt: &str) -> Self {
         Self {
             value: Value::from(opt),
             left_binary_node: Option::Some(arg_lef),
