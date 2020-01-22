@@ -11,13 +11,13 @@ use crate::utils::string_util::count_string_num;
 use crate::session_factory::SessionFactory;
 
 impl Rbatis {
-    pub fn insert<T>(&mut self,session_factory:&mut Box<dyn SessionFactory>, mapper_name: &str, arg: &mut Value) -> Result<T, String> where T: DeserializeOwned {
+    pub fn insert<T>(&self,session_factory:&mut Box<dyn SessionFactory>, mapper_name: &str, arg: &mut Value) -> Result<T, String> where T: DeserializeOwned {
         let mut arg_array = vec![];
         let sql = self.create_sql_insert(mapper_name, arg, &mut arg_array)?;
         return self.eval_raw(session_factory,(mapper_name.to_string() + ".insert").as_str(), sql.as_str(), false, &mut arg_array);
     }
 
-    pub fn create_sql_insert(&mut self, mapper_name: &str, arg: &mut Value, arg_array: &mut Vec<Value>) -> Result<String, String> {
+    pub fn create_sql_insert(&self, mapper_name: &str, arg: &mut Value, arg_array: &mut Vec<Value>) -> Result<String, String> {
         if arg.is_null() {
             return Result::Err("[rbatis] arg is null value".to_string());
         }
