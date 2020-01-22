@@ -4,10 +4,10 @@ use serde_json::Value;
 use uuid::Uuid;
 use serde::{Deserialize, Serialize};
 use crate::local_session::LocalSession;
-use crate::queryable::Queryable;
 use crate::tx::propagation::Propagation;
 use crate::utils::driver_util;
 use crate::utils::rdbc_util::to_rdbc_values;
+use crate::query_exec_able::QueryExecable;
 
 ///TX is transaction abstraction
 /// Tx即事务抽象

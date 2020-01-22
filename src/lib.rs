@@ -25,5 +25,5 @@ pub mod rbatis;
 pub mod db_config;
 pub mod session;
 pub mod local_session;
-pub mod queryable;
+pub mod query_exec_able;
 pub mod session_factory;

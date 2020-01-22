@@ -7,13 +7,13 @@ use uuid::Uuid;
 
 use crate::decode::rdbc_driver_decoder::decode_result_set;
 use crate::example::conf::MYSQL_URL;
-use crate::queryable::Queryable;
 use crate::tx::propagation::Propagation;
 use crate::tx::save_point_stack::SavePointStack;
 use crate::tx::tx::{Tx, TxImpl};
 use crate::tx::tx_stack::TxStack;
 use crate::utils::{driver_util, rdbc_util};
 use crate::utils::rdbc_util::to_rdbc_values;
+use crate::query_exec_able::QueryExecable;
 
 pub struct LocalSession {
     pub session_id: String,
