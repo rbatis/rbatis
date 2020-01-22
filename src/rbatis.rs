@@ -81,7 +81,7 @@ impl Rbatis {
     /// rbatis.load_xml("Example_ActivityMapper.xml".to_string(), fs::read_to_string("./src/example/Example_ActivityMapper.xml").unwrap());//加载xml数据
     pub fn load_xml(&mut self, key: String, content: String) {
         if self.enable_log {
-            info!("[rbatis]===========load {}==============\n{}\n================ end {}===============", key, content, key);
+            info!("===========load {}==============\n{}\n================ end {}===============", key, content, key);
         }
         self.mapper_map.insert(key, create_node_type_map(content, &self.holder));
     }
@@ -176,15 +176,6 @@ impl Rbatis {
             return Result::Err("[rbatis] sql can not be empty!".to_string());
         }
         let params = to_rdbc_values(arg_array);
-        if self.enable_log {
-            if is_select {
-                info!("[rbatis] Query: ==>  {}: {}", id, sql);
-                info!("[rbatis]  Args: ==>  {}: {}", id, crate::utils::rdbc_util::rdbc_vec_to_string(&params));
-            } else {
-                info!("[rbatis]  Exec:  ==>  {}: {}", id, sql);
-                info!("[rbatis]  Args:  ==>  {}: {}", id, crate::utils::rdbc_util::rdbc_vec_to_string(&params));
-            }
-        }
         let key = (self.router_func)(id);
         let db_conf_opt = self.db_driver_map.get(key.as_str());
         if db_conf_opt.is_none() {
@@ -204,7 +195,7 @@ impl Rbatis {
                 return Result::Err("[rbatis] exec fail:".to_string() + id + r.err().unwrap().to_string().as_str());
             }
             if self.enable_log {
-                info!("[rbatis] Affected: <== {}: {}", id, affected_rows.to_string().as_str());
+                info!(" Affected: <== {}: {}", id, affected_rows.to_string().as_str());
             }
             return Result::Ok(r.unwrap());
         }
