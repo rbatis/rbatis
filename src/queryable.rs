@@ -12,7 +12,7 @@ pub trait Queryable {
 
 impl Queryable for Box<dyn Connection> {
     fn query<T>(&mut self, enable_log: bool, sql: &str, arg_array: &[rdbc::Value]) -> Result<T, String> where T: de::DeserializeOwned {
-        let create_result = self.create(sql);
+        let create_result = self.prepare(sql);
         if create_result.is_err() {
             return Result::Err("[rbatis] select fail:".to_string() + format!("{:?}", create_result.err().unwrap()).as_str());
         }
@@ -29,7 +29,7 @@ impl Queryable for Box<dyn Connection> {
     }
 
     fn exec(&mut self, enable_log: bool, sql: &str, arg_array: &[rdbc::Value]) -> Result<u64, String> {
-        let create_result = self.create(sql);
+        let create_result = self.prepare(sql);
         if create_result.is_err() {
             return Result::Err("[rbatis] exec fail:".to_string() + format!("{:?}", create_result.err().unwrap()).as_str());
         }

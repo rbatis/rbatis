@@ -13,7 +13,20 @@ pub fn encode_to_value(arg: &mut dyn ResultSet) -> Vec<Value> {
             let c_name = meta_data.column_name(c_index);
             let c_type = meta_data.column_type(c_index);
             match c_type {
-                DataType::Char | DataType::Utf8 | DataType::Date | DataType::Time | DataType::Datetime => {
+
+                 DataType::Date | DataType::Time | DataType::Datetime => {
+                    let date_bytes= arg.get_date(c_index);
+                    if date_bytes.is_ok() {
+                        let v = date_bytes.unwrap();
+                        if v.is_some() {
+                            m.insert(c_name, serde_json::Value::String(v.unwrap()));
+                        } else {
+                            m.insert(c_name, serde_json::Value::Null);
+                        }
+                    }
+                }
+
+                DataType::Char | DataType::Utf8 => {
                     let strings = arg.get_string(c_index);
                     if strings.is_ok() {
                         let v = strings.unwrap();

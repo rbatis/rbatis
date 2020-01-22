@@ -27,7 +27,6 @@ rdbc-postgres = {git = "https://github.com/rbatis/rdbc",path="/rdbc-postgres"}
 
 
 
-
 #web library
 actix-web = "2.0"
 actix-rt = "1.0"
