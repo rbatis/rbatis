@@ -1,18 +1,44 @@
 use log::{error, info, warn};
-use rdbc::Connection;
+use rdbc::{Connection, Value};
 use serde::de;
 
 use crate::decode::rdbc_driver_decoder::decode_result_set;
 
 pub trait Queryable {
+    fn query_prepare<T>(&mut self, enable_log: bool, sql: &str, arg_array: &[rdbc::Value]) -> Result<T, String> where T: de::DeserializeOwned;
+    fn exec_prepare(&mut self, enable_log: bool, sql: &str, arg_array: &[rdbc::Value]) -> Result<u64, String>;
     fn query<T>(&mut self, enable_log: bool, sql: &str, arg_array: &[rdbc::Value]) -> Result<T, String> where T: de::DeserializeOwned;
     fn exec(&mut self, enable_log: bool, sql: &str, arg_array: &[rdbc::Value]) -> Result<u64, String>;
+
+    fn query_custom<T>(&mut self, enable_log: bool, sql: &str, arg_array: &[rdbc::Value], is_prepare: bool) -> Result<T, String> where T: de::DeserializeOwned;
+    fn exec_custom(&mut self, enable_log: bool, sql: &str, arg_array: &[rdbc::Value], is_prepare: bool) -> Result<u64, String>;
 }
 
 
 impl Queryable for Box<dyn Connection> {
-    fn query<T>(&mut self, enable_log: bool, sql: &str, arg_array: &[rdbc::Value]) -> Result<T, String> where T: de::DeserializeOwned {
-        let create_result = self.prepare(sql);
+    fn query_prepare<T>(&mut self, enable_log: bool, sql: &str, arg_array: &[rdbc::Value]) -> Result<T, String> where T: de::DeserializeOwned {
+        return self.query_custom(enable_log, sql, arg_array, true);
+    }
+
+    fn exec_prepare(&mut self, enable_log: bool, sql: &str, arg_array: &[rdbc::Value]) -> Result<u64, String> {
+        return self.exec_custom(enable_log, sql, arg_array, true);
+    }
+
+    fn query<T>(&mut self, enable_log: bool, sql: &str, arg_array: &[Value]) -> Result<T, String> where T: de::DeserializeOwned {
+        return self.query_custom(enable_log, sql, arg_array, false);
+    }
+
+    fn exec(&mut self, enable_log: bool, sql: &str, arg_array: &[Value]) -> Result<u64, String> {
+        return self.exec_custom(enable_log, sql, arg_array, false);
+    }
+
+    fn query_custom<T>(&mut self, enable_log: bool, sql: &str, arg_array: &[rdbc::Value], is_prepare: bool) -> Result<T, String> where T: de::DeserializeOwned {
+        let create_result;
+        if is_prepare {
+            create_result = self.prepare(sql);
+        } else {
+            create_result = self.create(sql);
+        }
         if create_result.is_err() {
             return Result::Err("[rbatis] select fail:".to_string() + format!("{:?}", create_result.err().unwrap()).as_str());
         }
@@ -28,8 +54,13 @@ impl Queryable for Box<dyn Connection> {
         return result;
     }
 
-    fn exec(&mut self, enable_log: bool, sql: &str, arg_array: &[rdbc::Value]) -> Result<u64, String> {
-        let create_result = self.prepare(sql);
+    fn exec_custom(&mut self, enable_log: bool, sql: &str, arg_array: &[rdbc::Value], is_prepare: bool) -> Result<u64, String> {
+        let create_result;
+        if is_prepare {
+            create_result = self.prepare(sql);
+        } else {
+            create_result = self.create(sql);
+        }
         if create_result.is_err() {
             return Result::Err("[rbatis] exec fail:".to_string() + format!("{:?}", create_result.err().unwrap()).as_str());
         }

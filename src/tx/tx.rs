@@ -32,6 +32,15 @@ pub struct TxImpl {
     pub enable_log: bool,
 }
 
+impl TxImpl{
+    fn do_begin(&mut self, conn: &mut Box<dyn Connection>) -> Result<u64, String> {
+        if self.is_close {
+            return Err("[rbatis] conn is closed!".to_string());
+        }
+        return conn.exec(true, "begin;", &[]);
+    }
+}
+
 impl Tx for TxImpl {
     //开始一个事务
     fn begin(id: &str, driver: &str, enable_log: bool, conn: &mut Box<dyn Connection>) -> Result<TxImpl, String> {
@@ -45,7 +54,7 @@ impl Tx for TxImpl {
             is_close: false,
             enable_log: enable_log,
         };
-        let data = s.exec("begin;", &[], conn)?;
+        let data = s.do_begin(conn)?;
         return Ok(s);
     }
 
@@ -58,7 +67,7 @@ impl Tx for TxImpl {
         if self.is_close {
             return Err("[rbatis] conn is closed!".to_string());
         }
-        return conn.query(self.enable_log, sql, &arg_array);
+        return conn.query_prepare(self.enable_log, sql, &arg_array);
     }
 
     fn exec(&mut self, sql: &str, arg_array: &[rdbc::Value], conn: &mut Box<dyn Connection>) -> Result<u64, String> {
@@ -66,7 +75,7 @@ impl Tx for TxImpl {
         if self.is_close {
             return Err("[rbatis] conn is closed!".to_string());
         }
-        return conn.exec(self.enable_log, sql, &arg_array);
+        return conn.exec_prepare(self.enable_log, sql, &arg_array);
     }
 
     fn rollback(&mut self, conn: &mut Box<dyn Connection>) -> Result<u64, String> {

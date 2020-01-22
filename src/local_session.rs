@@ -70,7 +70,7 @@ impl LocalSession {
             let result = t.query(sql, arg_array,self.conn.as_mut().unwrap())?;
             return result;
         } else {
-            return self.conn.as_mut().unwrap().query(self.enable_log, sql, &arg_array);
+            return self.conn.as_mut().unwrap().query_prepare(self.enable_log, sql, &arg_array);
         }
     }
 
@@ -91,7 +91,7 @@ impl LocalSession {
             let result = t.exec(sql, arg_array,self.conn.as_mut().unwrap())?;
             return Ok(result);
         } else {
-            return self.conn.as_mut().unwrap().exec(self.enable_log, sql, &arg_array);
+            return self.conn.as_mut().unwrap().exec_prepare(self.enable_log, sql, &arg_array);
         }
     }
 
