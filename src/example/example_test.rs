@@ -54,7 +54,7 @@ fn init_rbatis() -> Result<Rbatis, String> {
 
 //    自定义动态数据源路由return 的字符串为 rbatis.db_router 中定义的配置的key(默认""为默认配置)（在此之前需要加载配置rbatis.load_db_url()）
 //    rbatis.router_func = |id| -> String{
-//        info!("[rbatis]匹配路由key  ====>  {}",id);
+//        info!("匹配路由key  ====>  {}",id);
 //        //例如：你可以自定义读写分离
 //        if id.contains("select"){
 //            //info!("select开头 加载读路由配置");

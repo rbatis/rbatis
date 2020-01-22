@@ -89,7 +89,7 @@ println!("[rbatis] result==> {:?}",data_result);
     rbatis.load_db_url("read".to_string(), "mysql://root:TEST@localhost:3306/test");//只读库
     rbatis.load_db_url("write".to_string(), "postgres://root:TEST@localhost:3306/test");//只写库
     rbatis.router_func = |id| -> String{
-        info!("[rbatis]匹配路由key  ====>  {}",id);
+        info!("匹配路由key  ====>  {}",id);
         //例如：你可以自定义读写分离
         if id.contains("select"){
             //info!("select开头 加载读路由配置");
