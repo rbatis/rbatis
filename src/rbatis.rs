@@ -8,7 +8,8 @@ use std::thread;
 
 use log::{error, info, warn};
 use log4rs::init_file;
-use serde::de;
+use serde::{de, Serialize};
+use serde::de::DeserializeOwned;
 use serde_json::{Number, Value};
 use serde_json::de::ParserNumber;
 use serde_json::json;
@@ -31,6 +32,7 @@ use crate::tx::propagation::Propagation;
 use crate::utils::{driver_util, rdbc_util};
 use crate::utils::rdbc_util::to_rdbc_values;
 use crate::utils::xml_loader::load_xml;
+use crate::crud::ipage::IPage;
 
 #[derive(Clone)]
 pub struct Rbatis {
@@ -51,6 +53,117 @@ pub struct Rbatis {
 }
 
 
+pub struct FactoryRbatis<'a> {
+    pub factory: Box<dyn SessionFactory>,
+    pub rbatis: &'a mut Rbatis,
+}
+
+impl<'a> FactoryRbatis<'a> {
+    pub fn set_enable_log(&mut self, arg: bool) {
+        return self.rbatis.set_enable_log(arg);
+    }
+
+    ///加载xml数据
+    /// rbatis.load_xml("Example_ActivityMapper.xml".to_string(), fs::read_to_string("./src/example/Example_ActivityMapper.xml").unwrap());//加载xml数据
+    pub fn load_xml(&mut self, key: String, content: String) {
+        return self.rbatis.load_xml(key, content);
+    }
+
+
+    /// 设置数据库默认url，如果失败返回错误信息
+    ///  let url = "mysql://root:TEST@localhost:3306/test";
+    ///  rbatis.load_db_url("".to_string(), url.to_string());//name 为空，则默认数据库
+    pub fn load_db_url(&mut self, key: &str, url: &str) -> Option<String> {
+        return self.rbatis.load_db_url(key, url);
+    }
+
+
+    ///执行sql到数据库，例如:
+    ///    Result中结果可以为serde_json::Value，Vec，Array,Slice,LinkedList,Map,i32
+    ///
+    ///    let data_opt: Result<serde_json::Value, String> = rbatis.eval( "select * from table", &mut json!({
+    ///       "name":null,
+    ///       "startTime":null,
+    ///       "endTime":null,
+    ///       "page":null,
+    ///       "size":null,
+    ///    }));
+    ///
+    pub fn eval_sql<T>(&mut self, eval_sql: &str) -> Result<T, String> where T: de::DeserializeOwned {
+        return self.rbatis.eval_sql(&mut self.factory, eval_sql);
+    }
+
+    pub fn begin(&mut self, id: &str, propagation_type: Propagation) -> Result<&mut LocalSession, String> {
+        return self.rbatis.begin(&mut self.factory, id, propagation_type);
+    }
+
+    pub fn rollback(&mut self, id: &str) -> Result<i32, String> {
+        return self.rbatis.rollback(&mut self.factory, id);
+    }
+
+    pub fn commit(&mut self, id: &str) -> Result<i32, String> {
+        return self.rbatis.commit(&mut self.factory, id);
+    }
+
+    ///执行
+    /// arg_array: 执行后 需要替换的参数数据
+    /// return ：替换参数为 ？ 后的sql
+    pub fn eval_raw<T>(&mut self, id: &str, eval_sql: &str, is_select: bool, arg_array: &mut Vec<Value>) -> Result<T, String> where T: de::DeserializeOwned {
+        return self.rbatis.eval_raw(&mut self.factory, id, eval_sql, is_select, arg_array);
+    }
+
+    ///执行sql到数据库，例如
+    ///
+    ///    let data_opt: Result<serde_json::Value, String> = rbatis.eval("Example_ActivityMapper.xml".to_string(), "select_by_condition", &mut json!({
+    ///       "name":null,
+    ///       "startTime":null,
+    ///       "endTime":null,
+    ///       "page":null,
+    ///       "size":null,
+    ///    }));
+    ///
+    pub fn eval<T>(&mut self, mapper_name: &str, id: &str, env: &mut Value, arg_array: &mut Vec<Value>) -> Result<T, String> where T: de::DeserializeOwned {
+        return self.rbatis.eval(&mut self.factory, mapper_name, id, env, arg_array);
+    }
+
+
+    pub fn delete<T>(&mut self, mapper_name: &str, arg: &mut Value) -> Result<T, String> where T: DeserializeOwned {
+        return self.rbatis.delete(&mut self.factory, mapper_name, arg);
+    }
+
+    pub fn insert<T>(&mut self, mapper_name: &str, arg: &mut Value) -> Result<T, String> where T: DeserializeOwned {
+        return self.rbatis.insert(&mut self.factory, mapper_name, arg);
+    }
+
+    ///普通查询
+    pub fn select<T>(&mut self, mapper_name: &str, arg: &mut Value) -> Result<T, String> where T: DeserializeOwned {
+        return self.rbatis.select(&mut self.factory, mapper_name, arg);
+    }
+    ///分页查询
+    pub fn select_page<T>(&mut self, mapper_name: &str, arg: &mut Value, ipage: &IPage<T>) -> Result<IPage<T>, String> where T: Serialize + DeserializeOwned + Clone {
+        return self.rbatis.select_page(&mut self.factory, mapper_name, arg,ipage);
+    }
+    ///分页查询
+    pub fn select_page_by_mapper<T>(&mut self, mapper_name: &str, id: &str, env: &mut Value, ipage: &IPage<T>) -> Result<IPage<T>, String> where T: Serialize + DeserializeOwned + Clone {
+        return self.rbatis.select_page_by_mapper(&mut self.factory, mapper_name,id,env,ipage);
+    }
+
+    pub fn update<T>(&mut self, mapper_name: &str, arg: &mut Value) -> Result<T, String> where T: DeserializeOwned {
+        return self.rbatis.update(&mut self.factory, mapper_name, arg);
+    }
+
+    ///打印内容
+    pub fn print(&self) -> String {
+        return self.rbatis.print();
+    }
+
+    /// find result map config
+    pub fn get_result_map_node(&self, mapper_name: &str) -> Result<ResultMapNode, String> {
+        return self.rbatis.get_result_map_node(mapper_name);
+    }
+}
+
+
 impl Rbatis {
     pub fn new() -> Self {
         return Self {
@@ -68,8 +181,15 @@ impl Rbatis {
         };
     }
 
-    pub fn new_factory()->Box<dyn SessionFactory>{
+    pub fn new_factory() -> Box<dyn SessionFactory> {
         return Box::new(SessionFactoryCached::new(true));
+    }
+
+    pub fn new_ref(rbatis: &mut Rbatis) -> FactoryRbatis {
+        return FactoryRbatis {
+            factory: Box::new(SessionFactoryCached::new(true)),
+            rbatis: rbatis,
+        };
     }
 
 
@@ -116,7 +236,7 @@ impl Rbatis {
     ///       "size":null,
     ///    }));
     ///
-    pub fn eval_sql<T>(&mut self,session_factory:&mut Box<dyn SessionFactory>, eval_sql: &str) -> Result<T, String> where T: de::DeserializeOwned {
+    pub fn eval_sql<T>(&mut self, session_factory: &mut Box<dyn SessionFactory>, eval_sql: &str) -> Result<T, String> where T: de::DeserializeOwned {
         let mut sql = eval_sql;
         sql = sql.trim();
         if sql.is_empty() {
@@ -124,10 +244,10 @@ impl Rbatis {
         }
         let is_select = sql.starts_with("select") || sql.starts_with("SELECT");
         let mut arg_array = vec![];
-        return self.eval_raw(session_factory,"eval_sql", eval_sql, is_select, &mut arg_array);
+        return self.eval_raw(session_factory, "eval_sql", eval_sql, is_select, &mut arg_array);
     }
 
-    pub fn begin<'a>(&mut self,session_factory:&'a mut Box<dyn SessionFactory>, id: &str, propagation_type: Propagation) -> Result<&'a mut LocalSession, String> {
+    pub fn begin<'a>(&mut self, session_factory: &'a mut Box<dyn SessionFactory>, id: &str, propagation_type: Propagation) -> Result<&'a mut LocalSession, String> {
         let key = (self.router_func)(id);
         let db_conf_opt = self.db_driver_map.get(key.as_str());
         if db_conf_opt.is_none() {
@@ -140,7 +260,7 @@ impl Rbatis {
         return Result::Ok(session);
     }
 
-    pub fn rollback(&mut self,session_factory:&mut Box<dyn SessionFactory>, id: &str) -> Result<i32, String> {
+    pub fn rollback(&mut self, session_factory: &mut Box<dyn SessionFactory>, id: &str) -> Result<i32, String> {
         let key = (self.router_func)(id);
         let db_conf_opt = self.db_driver_map.get(key.as_str());
         if db_conf_opt.is_none() {
@@ -153,7 +273,7 @@ impl Rbatis {
         return Result::Ok(0);
     }
 
-    pub fn commit(&mut self,session_factory:&mut Box<dyn SessionFactory>, id: &str) -> Result<i32, String> {
+    pub fn commit(&mut self, session_factory: &mut Box<dyn SessionFactory>, id: &str) -> Result<i32, String> {
         let key = (self.router_func)(id);
         let db_conf_opt = self.db_driver_map.get(key.as_str());
         if db_conf_opt.is_none() {
@@ -169,7 +289,7 @@ impl Rbatis {
     ///执行
     /// arg_array: 执行后 需要替换的参数数据
     /// return ：替换参数为 ？ 后的sql
-    pub fn eval_raw<T>(&mut self,session_factory:&mut Box<dyn SessionFactory>, id: &str, eval_sql: &str, is_select: bool, arg_array: &mut Vec<Value>) -> Result<T, String> where T: de::DeserializeOwned {
+    pub fn eval_raw<T>(&mut self, session_factory: &mut Box<dyn SessionFactory>, id: &str, eval_sql: &str, is_select: bool, arg_array: &mut Vec<Value>) -> Result<T, String> where T: de::DeserializeOwned {
         let mut sql = eval_sql;
         sql = sql.trim();
         if sql.is_empty() {
@@ -211,7 +331,7 @@ impl Rbatis {
     ///       "size":null,
     ///    }));
     ///
-    pub fn eval<T>(&mut self,session_factory:&mut Box<dyn SessionFactory>, mapper_name: &str, id: &str, env: &mut Value, arg_array: &mut Vec<Value>) -> Result<T, String> where T: de::DeserializeOwned {
+    pub fn eval<T>(&mut self, session_factory: &mut Box<dyn SessionFactory>, mapper_name: &str, id: &str, env: &mut Value, arg_array: &mut Vec<Value>) -> Result<T, String> where T: de::DeserializeOwned {
         let mapper_opt = self.mapper_map.get(&mapper_name.to_string());
         if mapper_opt.is_none() {
             return Result::Err("[rbatis] find mapper fail,name:'".to_string() + mapper_name + "'");
@@ -221,16 +341,16 @@ impl Rbatis {
             return Result::Err("[rbatis] find method fail,name:'".to_string() + mapper_name + id + "'");
         }
         let mapper_func = node.unwrap();
-        let sql_string = mapper_func.eval(env, &mut self.holder,arg_array)?;
+        let sql_string = mapper_func.eval(env, &mut self.holder, arg_array)?;
         let sql = sql_string.as_str();
 
         let sql_id = mapper_name.to_string() + "." + id;
         match &mapper_func {
             NodeType::NSelectNode(_) => {
-                return self.eval_raw(session_factory,sql_id.as_str(), sql, true, arg_array);
+                return self.eval_raw(session_factory, sql_id.as_str(), sql, true, arg_array);
             }
             _ => {
-                return self.eval_raw(session_factory,sql_id.as_str(), sql, false, arg_array);
+                return self.eval_raw(session_factory, sql_id.as_str(), sql, false, arg_array);
             }
         }
     }
