@@ -327,7 +327,7 @@ pub fn test_web() {
 
 ///代理实现服务内容
 macro_rules! impl_service {
-   ($($fn: ident (&self,$($x:ident:$t:ty)*         ) -> Result<$return_type:ty,String> ),*) => {
+   ($($fn: ident (&self $(,$x:ident:$t:ty)*         ) -> Result<$return_type:ty,String> ),*) => {
     $(
     fn $fn(&self  $(,$x:$t)*    ) -> Result<$return_type,String> {
            //return Result::Err("".to_string());
@@ -339,11 +339,11 @@ macro_rules! impl_service {
 
 
 pub trait Service {
-    fn select_activity(&self, arg: String) -> Result<String, String>;
+    fn select_activity(&self) -> Result<String, String>;
 }
 
 struct ServiceImpl {
-    select_activity: fn(s:&ServiceImpl, arg: String) -> Result<String, String>,
+    select_activity: fn(s:&ServiceImpl) -> Result<String, String>,
 }
 
 impl Service for ServiceImpl {
@@ -351,16 +351,16 @@ impl Service for ServiceImpl {
 //        return (self.select_activity)(&self,arg);
 //    }
     impl_service! {
-       select_activity(&self,arg:String) -> Result<String,String>
+       select_activity(&self) -> Result<String,String>
     }
 }
 
 #[test]
 pub fn test_service(){
     let s=ServiceImpl{
-        select_activity:  |s:&ServiceImpl, arg: String| -> Result<String, String>{
+        select_activity:  |s:&ServiceImpl| -> Result<String, String>{
             return Result::Ok("ok".to_string());
         }
     };
-   let s= s.select_activity("1".to_string()).unwrap();
+   let s= s.select_activity().unwrap();
 }
