@@ -43,6 +43,7 @@ impl Rbatis {
         return Result::Ok(result);
     }
 
+    /// 根据mapper 自定义内容 分页查询， 只需写一个查询内容，不需要添加 count函数
     pub fn select_page_by_mapper<T>(&mut self, session_factory: &mut Box<dyn SessionFactory>, mapper_name: &str, id: &str, env: &mut Value, ipage: &IPage<T>) -> Result<IPage<T>, String> where T: Serialize + DeserializeOwned + Clone {
         let mut arg_array = vec![];
 
