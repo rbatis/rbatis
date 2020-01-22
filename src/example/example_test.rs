@@ -3,9 +3,16 @@ use std::cell::RefMut;
 use std::collections::LinkedList;
 use std::fs;
 use std::ops::Deref;
+use std::process::exit;
 use std::rc::Rc;
 use std::sync::Arc;
+use std::sync::mpsc;
+use std::sync::Mutex;
+use std::thread;
+use std::thread::sleep;
+use std::time::Duration;
 
+use actix_web::{App, HttpServer, Responder, web};
 use log::{error, info, warn};
 use rdbc::{DataType, Driver, ResultSet, ResultSetMetaData};
 use rdbc_mysql::{MySQLDriver, MySQLResultSet};
@@ -21,11 +28,8 @@ use crate::decode::rdbc_driver_decoder::decode_result_set;
 use crate::example::activity::Activity;
 use crate::example::conf::MYSQL_URL;
 use crate::rbatis::Rbatis;
+use crate::session_factory::SessionFactoryCached;
 use crate::tx::propagation::Propagation;
-use std::sync::mpsc;
-use std::thread;
-use std::thread::sleep;
-use std::time::Duration;
 
 /**
  初始化实例
@@ -282,29 +286,26 @@ fn test_tx_return() -> Result<u64, String> {
 }
 
 
-use actix_web::{web, App, Responder, HttpServer};
-use std::process::exit;
-use crate::session_factory::SessionFactoryCached;
-
-
-use std::sync::Mutex;
-
-lazy_static! {
-    static ref RBATIS: Mutex<Result<Rbatis,String>> = Mutex::new(init_rbatis());
+struct AppStateWithCounter {
+    counter: Mutex<Rbatis>, // <- Mutex is necessary to mutate safely across threads
 }
 
-async fn index() -> impl Responder {
-    let mut factory =Rbatis::new_factory();
-    let act: Activity = RBATIS.lock().unwrap().as_mut().unwrap().eval_sql(&mut factory,"select * from biz_activity where id  = '2';").unwrap();
+async fn index(mut rbs: web::Data<AppStateWithCounter>) -> impl Responder {
+    let mut factory = Rbatis::new_factory();
+    let act: Activity = rbs.counter.lock().as_mut().unwrap().eval_sql(&mut factory, "select * from biz_activity where id  = '2';").unwrap();
     return serde_json::to_string(&act).unwrap();
 }
 
 #[actix_rt::main]
 async fn main() -> std::io::Result<()> {
-    HttpServer::new(|| {
-        App::new().service(
-            web::scope("/app").route("/index.html", web::get().to(index)),
-        )
+    //初始化rbatis
+    let c = web::Data::new(AppStateWithCounter {
+        counter: Mutex::new(init_rbatis().unwrap()),
+    });
+    HttpServer::new(move || {
+        App::new()
+            .app_data(c.clone())
+            .route("/", web::get().to(index))
     })
         .bind("127.0.0.1:8088")?
         .run()
