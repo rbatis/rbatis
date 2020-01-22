@@ -15,14 +15,14 @@ use crate::session_factory::SessionFactory;
 pub const SKIP_SETS: &'static str = "null,object,array";
 
 impl Rbatis {
-    pub fn update<T>(&mut self,session_factory:&mut Box<dyn SessionFactory>, mapper_name: &str, arg: &mut Value) -> Result<T, String> where T: DeserializeOwned {
+    pub fn update<T>(&self,session_factory:&mut Box<dyn SessionFactory>, mapper_name: &str, arg: &mut Value) -> Result<T, String> where T: DeserializeOwned {
         let mut arg_array = vec![];
         let sql = self.create_sql_update(mapper_name, arg, &mut arg_array)?;
         return self.eval_raw(session_factory,(mapper_name.to_string() + ".update").as_str(), sql.as_str(), false, &mut arg_array);
     }
 
 
-    pub fn create_sql_update(&mut self, mapper_name: &str, arg: &mut Value, arg_array: &mut Vec<Value>) -> Result<String, String> {
+    pub fn create_sql_update(&self, mapper_name: &str, arg: &mut Value, arg_array: &mut Vec<Value>) -> Result<String, String> {
         let result_map_node = self.get_result_map_node(mapper_name)?;
         match arg {
             serde_json::Value::Array(arr) => {
@@ -90,7 +90,7 @@ impl Rbatis {
 
 
     ///基本删除语句模板
-    fn do_update_by(&mut self, env: &mut Value, result_map_node: &ResultMapNode, sets: &str, where_str: &str) -> Result<String, String> {
+    fn do_update_by(&self, env: &mut Value, result_map_node: &ResultMapNode, sets: &str, where_str: &str) -> Result<String, String> {
         let mut sql = "UPDATE #{table} #{set} where #{where}".to_string();
         //replace table
         if result_map_node.table.is_none() {
