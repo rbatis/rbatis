@@ -15,14 +15,14 @@ use crate::utils::string_util::count_string_num;
 use crate::session_factory::SessionFactory;
 
 impl Rbatis {
-    pub fn delete<T>(&mut self,session_factory:&mut Box<dyn SessionFactory>, mapper_name: &str, arg: &mut Value) -> Result<T, String> where T: DeserializeOwned {
+    pub fn delete<T>(&self,session_factory:&mut Box<dyn SessionFactory>, mapper_name: &str, arg: &mut Value) -> Result<T, String> where T: DeserializeOwned {
         let mut arg_array = vec![];
         let sql = self.create_sql_delete(mapper_name, arg, &mut arg_array)?;
         return self.eval_raw(session_factory,(mapper_name.to_string() + ".delete").as_str(), sql.as_str(), false, &mut arg_array);
     }
 
 
-    pub fn create_sql_delete(&mut self, mapper_name: &str, arg: &mut Value, arg_arr: &mut Vec<Value>) -> Result<String, String> {
+    pub fn create_sql_delete(&self, mapper_name: &str, arg: &mut Value, arg_arr: &mut Vec<Value>) -> Result<String, String> {
         let result_map_node = self.get_result_map_node(mapper_name)?;
         match arg {
             serde_json::Value::String(_) | serde_json::Value::Number(_) => {
@@ -53,7 +53,7 @@ impl Rbatis {
 
 
     ///基本删除语句模板
-    fn do_delete_by(&mut self, env: &mut Value,result_map_node:&ResultMapNode,where_str:&str)-> Result<String, String>{
+    fn do_delete_by(&self, env: &mut Value,result_map_node:&ResultMapNode,where_str:&str)-> Result<String, String>{
         let mut sql = "DELETE FROM #{table} #{set} where #{where}".to_string();
         //replace table
         if result_map_node.table.is_none() {

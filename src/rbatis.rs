@@ -117,7 +117,7 @@ impl Rbatis {
     ///       "size":null,
     ///    }));
     ///
-    pub fn eval_sql<T>(&mut self, session_factory: &mut Box<dyn SessionFactory>, eval_sql: &str) -> Result<T, String> where T: de::DeserializeOwned {
+    pub fn eval_sql<T>(&self, session_factory: &mut Box<dyn SessionFactory>, eval_sql: &str) -> Result<T, String> where T: de::DeserializeOwned {
         let mut sql = eval_sql;
         sql = sql.trim();
         if sql.is_empty() {
@@ -128,7 +128,7 @@ impl Rbatis {
         return self.eval_raw(session_factory, "eval_sql", eval_sql, is_select, &mut arg_array);
     }
 
-    pub fn begin<'a>(&mut self, session_factory: &'a mut Box<dyn SessionFactory>, id: &str, propagation_type: Propagation) -> Result<&'a mut LocalSession, String> {
+    pub fn begin<'a>(&self, session_factory: &'a mut Box<dyn SessionFactory>, id: &str, propagation_type: Propagation) -> Result<&'a mut LocalSession, String> {
         let key = (self.router_func)(id);
         let db_conf_opt = self.db_driver_map.get(key.as_str());
         if db_conf_opt.is_none() {
@@ -141,7 +141,7 @@ impl Rbatis {
         return Result::Ok(session);
     }
 
-    pub fn rollback(&mut self, session_factory: &mut Box<dyn SessionFactory>, id: &str) -> Result<i32, String> {
+    pub fn rollback(&self, session_factory: &mut Box<dyn SessionFactory>, id: &str) -> Result<i32, String> {
         let key = (self.router_func)(id);
         let db_conf_opt = self.db_driver_map.get(key.as_str());
         if db_conf_opt.is_none() {
@@ -154,7 +154,7 @@ impl Rbatis {
         return Result::Ok(0);
     }
 
-    pub fn commit(&mut self, session_factory: &mut Box<dyn SessionFactory>, id: &str) -> Result<i32, String> {
+    pub fn commit(&self, session_factory: &mut Box<dyn SessionFactory>, id: &str) -> Result<i32, String> {
         let key = (self.router_func)(id);
         let db_conf_opt = self.db_driver_map.get(key.as_str());
         if db_conf_opt.is_none() {
@@ -170,7 +170,7 @@ impl Rbatis {
     ///执行
     /// arg_array: 执行后 需要替换的参数数据
     /// return ：替换参数为 ？ 后的sql
-    pub fn eval_raw<T>(&mut self, session_factory: &mut Box<dyn SessionFactory>, id: &str, eval_sql: &str, is_select: bool, arg_array: &mut Vec<Value>) -> Result<T, String> where T: de::DeserializeOwned {
+    pub fn eval_raw<T>(&self, session_factory: &mut Box<dyn SessionFactory>, id: &str, eval_sql: &str, is_select: bool, arg_array: &mut Vec<Value>) -> Result<T, String> where T: de::DeserializeOwned {
         let mut sql = eval_sql;
         sql = sql.trim();
         if sql.is_empty() {
