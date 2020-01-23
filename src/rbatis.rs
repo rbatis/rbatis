@@ -141,7 +141,7 @@ impl Rbatis {
         return self.eval_raw( "eval_sql", eval_sql, is_select, &mut arg_array);
     }
 
-    pub fn begin<'a>(&mut self, id: &str, propagation_type: Propagation) -> Result<i32, String> {
+    pub fn begin<'a>(&'a mut self, id: &str, propagation_type: Propagation) -> Result<&'a mut LocalSession, String> {
         let key = (self.router_func)(id);
         let db_conf_opt = self.db_driver_map.get(key.as_str());
         if db_conf_opt.is_none() {
@@ -149,8 +149,9 @@ impl Rbatis {
         }
         let driver = db_conf_opt.unwrap();
         let thread_id = thread::current().id();
-        self.session_factory.get_thread_session(&thread_id, driver.as_str())?.begin(propagation_type)?;
-        return Result::Ok(1);
+        let session= self.session_factory.get_thread_session(&thread_id, driver.as_str())?;
+        session.begin(propagation_type)?;
+        return Result::Ok(session);
     }
 
     pub fn rollback(&mut self, id: &str) -> Result<i32, String> {
