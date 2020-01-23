@@ -34,6 +34,16 @@ use crate::utils::rdbc_util::to_rdbc_values;
 use crate::utils::xml_loader::load_xml;
 use crate::crud::ipage::IPage;
 use std::ops::{Deref, DerefMut};
+
+
+
+lazy_static!{
+   static ref GlobalFactory: Mutex<SessionFactoryCached> = Mutex::new(SessionFactoryCached::new(false));
+}
+
+
+
+
 #[derive(Clone)]
 pub struct Rbatis {
     pub id: String,
@@ -117,7 +127,7 @@ impl Rbatis {
     ///       "size":null,
     ///    }));
     ///
-    pub fn eval_sql<T>(&self, session_factory: &mut Box<dyn SessionFactory>, eval_sql: &str) -> Result<T, String> where T: de::DeserializeOwned {
+    pub fn eval_sql<T>(&self, eval_sql: &str) -> Result<T, String> where T: de::DeserializeOwned {
         let mut sql = eval_sql;
         sql = sql.trim();
         if sql.is_empty() {
@@ -125,10 +135,10 @@ impl Rbatis {
         }
         let is_select = sql.starts_with("select") || sql.starts_with("SELECT");
         let mut arg_array = vec![];
-        return self.eval_raw(session_factory, "eval_sql", eval_sql, is_select, &mut arg_array);
+        return self.eval_raw( "eval_sql", eval_sql, is_select, &mut arg_array);
     }
 
-    pub fn begin<'a>(&self, session_factory: &'a mut Box<dyn SessionFactory>, id: &str, propagation_type: Propagation) -> Result<&'a mut LocalSession, String> {
+    pub fn begin<'a>(&self, id: &str, propagation_type: Propagation) -> Result<i32, String> {
         let key = (self.router_func)(id);
         let db_conf_opt = self.db_driver_map.get(key.as_str());
         if db_conf_opt.is_none() {
@@ -136,12 +146,11 @@ impl Rbatis {
         }
         let driver = db_conf_opt.unwrap();
         let thread_id = thread::current().id();
-        let session = session_factory.get_thread_session(&thread_id, driver.as_str())?;
-        session.begin(propagation_type)?;
-        return Result::Ok(session);
+         GlobalFactory.lock().as_mut().unwrap().get_thread_session(&thread_id, driver.as_str())?.begin(propagation_type)?;
+        return Result::Ok(1);
     }
 
-    pub fn rollback(&self, session_factory: &mut Box<dyn SessionFactory>, id: &str) -> Result<i32, String> {
+    pub fn rollback(&self, id: &str) -> Result<i32, String> {
         let key = (self.router_func)(id);
         let db_conf_opt = self.db_driver_map.get(key.as_str());
         if db_conf_opt.is_none() {
@@ -149,12 +158,11 @@ impl Rbatis {
         }
         let driver = db_conf_opt.unwrap();
         let thread_id = thread::current().id();
-        let session = session_factory.get_thread_session(&thread_id, driver.as_str())?;
-        session.rollback()?;
-        return Result::Ok(0);
+        GlobalFactory.lock().as_mut().unwrap().get_thread_session(&thread_id, driver.as_str())?.rollback()?;
+        return Result::Ok(1);
     }
 
-    pub fn commit(&self, session_factory: &mut Box<dyn SessionFactory>, id: &str) -> Result<i32, String> {
+    pub fn commit(&self, id: &str) -> Result<i32, String> {
         let key = (self.router_func)(id);
         let db_conf_opt = self.db_driver_map.get(key.as_str());
         if db_conf_opt.is_none() {
@@ -162,15 +170,14 @@ impl Rbatis {
         }
         let driver = db_conf_opt.unwrap();
         let thread_id = thread::current().id();
-        let session = session_factory.get_thread_session(&thread_id, driver.as_str())?;
-        session.commit()?;
-        return Result::Ok(0);
+        GlobalFactory.lock().as_mut().unwrap().get_thread_session(&thread_id, driver.as_str())?.commit()?;
+        return Result::Ok(1);
     }
 
     ///执行
     /// arg_array: 执行后 需要替换的参数数据
     /// return ：替换参数为 ？ 后的sql
-    pub fn eval_raw<T>(&self, session_factory: &mut Box<dyn SessionFactory>, id: &str, eval_sql: &str, is_select: bool, arg_array: &mut Vec<Value>) -> Result<T, String> where T: de::DeserializeOwned {
+    pub fn eval_raw<T>(&self, id: &str, eval_sql: &str, is_select: bool, arg_array: &mut Vec<Value>) -> Result<T, String> where T: de::DeserializeOwned {
         let mut sql = eval_sql;
         sql = sql.trim();
         if sql.is_empty() {
@@ -184,13 +191,12 @@ impl Rbatis {
         }
         let driver = db_conf_opt.unwrap();
         let thread_id = thread::current().id();
-        let session = session_factory.get_thread_session(&thread_id, driver.as_str())?;
         if is_select {
             //select
-            return session.query(sql, &params);
+            return GlobalFactory.lock().as_mut().unwrap().get_thread_session(&thread_id, driver.as_str())?.query(sql, &params);
         } else {
             //exec
-            let affected_rows = session.exec(sql, &params)?;
+            let affected_rows = GlobalFactory.lock().as_mut().unwrap().get_thread_session(&thread_id, driver.as_str())?.exec(sql, &params)?;
             let r = serde_json::from_value(serde_json::Value::Number(serde_json::Number::from(ParserNumber::U64(affected_rows))));
             if r.is_err() {
                 return Result::Err("[rbatis] exec fail:".to_string() + id + r.err().unwrap().to_string().as_str());
@@ -212,7 +218,7 @@ impl Rbatis {
     ///       "size":null,
     ///    }));
     ///
-    pub fn eval<T>(&mut self, session_factory: &mut Box<dyn SessionFactory>, mapper_name: &str, id: &str, env: &mut Value, arg_array: &mut Vec<Value>) -> Result<T, String> where T: de::DeserializeOwned {
+    pub fn eval<T>(&mut self, mapper_name: &str, id: &str, env: &mut Value, arg_array: &mut Vec<Value>) -> Result<T, String> where T: de::DeserializeOwned {
         let mapper_opt = self.mapper_map.get(&mapper_name.to_string());
         if mapper_opt.is_none() {
             return Result::Err("[rbatis] find mapper fail,name:'".to_string() + mapper_name + "'");
@@ -228,10 +234,10 @@ impl Rbatis {
         let sql_id = mapper_name.to_string() + "." + id;
         match &mapper_func {
             NodeType::NSelectNode(_) => {
-                return self.eval_raw(session_factory, sql_id.as_str(), sql, true, arg_array);
+                return self.eval_raw(sql_id.as_str(), sql, true, arg_array);
             }
             _ => {
-                return self.eval_raw(session_factory, sql_id.as_str(), sql, false, arg_array);
+                return self.eval_raw(sql_id.as_str(), sql, false, arg_array);
             }
         }
     }

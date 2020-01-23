@@ -20,6 +20,11 @@ pub struct SessionFactoryCached {
 }
 
 
+unsafe impl Send for SessionFactoryCached { }
+
+unsafe impl Sync for SessionFactoryCached { }
+
+
 impl SessionFactory for SessionFactoryCached {
     fn get_thread_session(&mut self, id: &ThreadId, driver: &str) -> Result<&mut LocalSession, String> {
         let item = self.data.get(id);
