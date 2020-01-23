@@ -330,7 +330,7 @@ macro_rules! impl_service {
    ($($fn: ident (&self $(,$x:ident:$t:ty)*         ) -> Result<$return_type:ty,String> ),*) => {
     $(
     fn $fn(&self  $(,$x:$t)*    ) -> Result<$return_type,String> {
-           return (self.$fn)(&self  $(,$x)*    );
+           return (self.$fn)(self  $(,$x)*    );
         }
     )*
    }
@@ -366,7 +366,7 @@ impl Service for ServiceImpl {
 
 #[test]
 pub fn test_service() {
-    let s = ServiceImpl {
+    let mut s = ServiceImpl {
         select_activity: |s: &ServiceImpl| -> Result<String, String>{
             return Result::Ok("ok".to_string());
         },
@@ -374,5 +374,6 @@ pub fn test_service() {
             return Result::Ok("ok".to_string());
         },
     };
-    let s = s.select_activity().unwrap();
+    println!("{}",s.select_activity().unwrap());
+    println!("{}",s.update_activity().unwrap());
 }
