@@ -330,7 +330,6 @@ macro_rules! impl_service {
    ($($fn: ident (&self $(,$x:ident:$t:ty)*         ) -> Result<$return_type:ty,String> ),*) => {
     $(
     fn $fn(&self  $(,$x:$t)*    ) -> Result<$return_type,String> {
-           //return Result::Err("".to_string());
            return (self.$fn)(&self  $(,$x)*    );
         }
     )*
@@ -347,9 +346,6 @@ struct ServiceImpl {
 }
 
 impl Service for ServiceImpl {
-//    fn select_activity(&self, arg: String) -> Result<String, String> {
-//        return (self.select_activity)(&self,arg);
-//    }
     impl_service! {
        select_activity(&self) -> Result<String,String>
     }
