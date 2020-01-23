@@ -13,20 +13,33 @@ pub trait SessionFactory {
 
 
 pub struct SessionFactoryCached {
-    ///是否启用异步模式，即async await
-    pub async_mode: bool,
     /// data 持有session所有权，当session被删除时，session即被销毁
     pub data: HashMap<ThreadId, LocalSession>,
+    ///是否清理缓存无事务的链接，启用节省内存，不启用则复用链接
+    pub clean_no_tx_link: bool,
 }
 
 
-unsafe impl Send for SessionFactoryCached { }
+unsafe impl Send for SessionFactoryCached {}
 
-unsafe impl Sync for SessionFactoryCached { }
+unsafe impl Sync for SessionFactoryCached {}
 
 
 impl SessionFactory for SessionFactoryCached {
     fn get_thread_session(&mut self, id: &ThreadId, driver: &str) -> Result<&mut LocalSession, String> {
+        if self.clean_no_tx_link {
+            let mut kvec = vec![];
+            for (k, v) in &self.data {
+                if v.tx_stack.len() == 0 {
+                    kvec.push(k.clone());
+                }
+            }
+            //清理无用的链接
+            for item in kvec {
+                self.data.remove(&item);
+            }
+        }
+
         let item = self.data.get(id);
         if item.is_some() {
             return Ok(self.data.get_mut(&id).unwrap());
@@ -39,10 +52,11 @@ impl SessionFactory for SessionFactoryCached {
 }
 
 impl SessionFactoryCached {
-    pub fn new(async_mode: bool) -> Self {
+    /// clean_no_tx_link:是否清理缓存无事务的链接，启用节省内存但是每个请求重复链接，不启用则复用链接性能高
+    pub fn new(clean_no_tx_link: bool) -> Self {
         return Self {
-            async_mode,
             data: HashMap::new(),
+            clean_no_tx_link: clean_no_tx_link,
         };
     }
 }
