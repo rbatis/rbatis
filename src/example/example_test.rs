@@ -91,9 +91,7 @@ fn test_insert() {
         version: Some(1),
         delete_flag: Some(1),
     };
-    let mut factory = Rbatis::new_factory();
-
-    let r: Result<i32, String> = rbatis.insert(&mut factory, "Example_ActivityMapper.xml", &mut json!(activity));
+    let r: Result<i32, String> = rbatis.insert( "Example_ActivityMapper.xml", &mut json!(activity));
     println!("[rbatis] result==>  {:?}", r);
 }
 
@@ -106,9 +104,7 @@ fn test_delete() {
         return;
     }
     let mut rbatis = rbatis_opt.unwrap();
-    let mut factory = Rbatis::new_factory();
-
-    let r: Result<i32, String> = rbatis.delete(&mut factory, "Example_ActivityMapper.xml", &mut json!("1"));
+    let r: Result<i32, String> = rbatis.delete("Example_ActivityMapper.xml", &mut json!("1"));
     println!("[rbatis] result==>  {:?}", r);
 }
 
@@ -120,11 +116,10 @@ fn test_update() {
         return;
     }
     let mut rbatis = rbatis_opt.unwrap();
-    let mut factory = Rbatis::new_factory();
     //先插入
     //插入前先删一下
-    let r: i32 = rbatis.eval_sql(&mut factory, "delete from biz_activity  where id = '1'").unwrap();
-    let r: i32 = rbatis.insert(&mut factory, "Example_ActivityMapper.xml", &mut json!(Activity{
+    let r: i32 = rbatis.eval_sql( "delete from biz_activity  where id = '1'").unwrap();
+    let r: i32 = rbatis.insert("Example_ActivityMapper.xml", &mut json!(Activity{
         id: Some("1".to_string()),
         name: Some("活动1".to_string()),
         pc_link: None,
@@ -140,7 +135,7 @@ fn test_update() {
     })).unwrap();
 
     //update
-    let r: Result<i32, String> = rbatis.update(&mut factory, "Example_ActivityMapper.xml", &mut json!({
+    let r: Result<i32, String> = rbatis.update("Example_ActivityMapper.xml", &mut json!({
     "id":"1",
     "name":"updated",
     }));
@@ -155,7 +150,6 @@ fn test_update_array() {
         return;
     }
     let mut rbatis = rbatis_opt.unwrap();
-    let mut factory = Rbatis::new_factory();
     //update
     let mut json_arr = json!([Activity{
         id: Some("1".to_string()),
@@ -184,7 +178,7 @@ fn test_update_array() {
         version: Some(1),
         delete_flag: Some(1)
     }]);
-    let r: Result<i32, String> = rbatis.update(&mut factory, "Example_ActivityMapper.xml", &mut json_arr);
+    let r: Result<i32, String> = rbatis.update("Example_ActivityMapper.xml", &mut json_arr);
     println!("[rbatis] result==>  {:?}", r.unwrap());
 }
 
@@ -198,10 +192,9 @@ fn test_exec_sql() {
     if rbatis.is_err() {
         return;
     }
-    let mut factory = Rbatis::new_factory();
     let mut array = vec![];
     //执行到远程mysql 并且获取结果,Result<serde_json::Value, String>,或者 Result<Activity, String> 等任意类型
-    let data: Vec<Activity> = rbatis.unwrap().eval(&mut factory, "Example_ActivityMapper.xml", "select_by_condition", &mut json!({
+    let data: Vec<Activity> = rbatis.unwrap().eval("Example_ActivityMapper.xml", "select_by_condition", &mut json!({
        "name":null,
        "startTime":null,
        "endTime":null,
@@ -223,9 +216,8 @@ fn test_exec_select_page() {
     if rbatis.is_err() {
         return;
     }
-    let mut factory = Rbatis::new_factory();
     //执行到远程mysql 并且获取结果,Result<serde_json::Value, String>,或者 Result<Activity, String> 等任意类型
-    let data: IPage<Activity> = rbatis.unwrap().select_page(&mut factory, "Example_ActivityMapper.xml", &mut json!({
+    let data: IPage<Activity> = rbatis.unwrap().select_page( "Example_ActivityMapper.xml", &mut json!({
        "name":"新人专享1",
     }), &IPage::new(1, 5)).unwrap();
     println!("[rbatis] result==>  {:?}", data);
@@ -241,10 +233,8 @@ fn test_exec_select_page_custom() {
     if rbatis.is_err() {
         return;
     }
-    let mut factory = Rbatis::new_factory();
-
     //执行到远程mysql 并且获取结果,Result<serde_json::Value, String>,或者 Result<Activity, String> 等任意类型
-    let data: IPage<Activity> = rbatis.unwrap().select_page_by_mapper(&mut factory, "Example_ActivityMapper.xml", "select_by_page", &mut json!({
+    let data: IPage<Activity> = rbatis.unwrap().select_page_by_mapper("Example_ActivityMapper.xml", "select_by_page", &mut json!({
        "name":"新人专享",
        "delete_flag": 1,
     }), &IPage::new(1, 5)).unwrap();
@@ -267,19 +257,17 @@ fn test_tx_return() -> Result<u64, String> {
         return Ok(1);
     }
     let mut rbatis = rbatis_opt.unwrap();
-    let mut factory = Rbatis::new_factory();
+    rbatis.begin( "", Propagation::REQUIRED)?;
 
-    rbatis.begin(&mut factory, "", Propagation::REQUIRED)?;
+    let u: u32 = rbatis.eval_sql( "UPDATE `biz_activity` SET `name` = '活动1' WHERE (`id` = '2');")?;
 
-    let u: u32 = rbatis.eval_sql(&mut factory, "UPDATE `biz_activity` SET `name` = '活动1' WHERE (`id` = '2');")?;
+    let u: u32 = rbatis.eval_sql( "UPDATE `biz_activity` SET `name` = '活动2' WHERE (`id` = '2');")?;
 
-    let u: u32 = rbatis.eval_sql(&mut factory, "UPDATE `biz_activity` SET `name` = '活动2' WHERE (`id` = '2');")?;
+    let u: u32 = rbatis.eval_sql( "UPDATE `biz_activity` SET `name` = '活动3' WHERE (`id` = '2');")?;
 
-    let u: u32 = rbatis.eval_sql(&mut factory, "UPDATE `biz_activity` SET `name` = '活动3' WHERE (`id` = '2');")?;
+    rbatis.commit( "")?;
 
-    rbatis.commit(&mut factory, "")?;
-
-    let act: Activity = rbatis.eval_sql(&mut factory, "select * from biz_activity where id  = '2';")?;
+    let act: Activity = rbatis.eval_sql( "select * from biz_activity where id  = '2';")?;
     println!("result:{}", serde_json::to_string(&act).unwrap());
     return Ok(1);
 }
@@ -291,8 +279,7 @@ struct AppStateWithCounter {
 
 async fn index(mut rbs: web::Data<AppStateWithCounter>) -> impl Responder {
     //写法1
-    let mut factory = Rbatis::new_factory();
-    let act: Activity = rbs.counter.lock().as_mut().unwrap().eval_sql(&mut factory, "select * from biz_activity where id  = '2';").unwrap();
+    let act: Activity = rbs.counter.lock().as_mut().unwrap().eval_sql( "select * from biz_activity where id  = '2';").unwrap();
     return serde_json::to_string(&act).unwrap();
 }
 
