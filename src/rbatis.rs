@@ -72,7 +72,7 @@ impl Rbatis {
             mapper_map: HashMap::new(),
             holder: ConfigHolder::new(),
             db_driver_map: HashMap::new(),
-            session_factory: SessionFactoryCached::new(true),
+            session_factory: SessionFactoryCached::new(false),
             router_func: |id| -> String{
                 //加载默认配置，key=""
                 return "".to_string();
@@ -83,7 +83,7 @@ impl Rbatis {
     }
 
     pub fn new_factory() -> Box<dyn SessionFactory> {
-        return Box::new(SessionFactoryCached::new(true));
+        return Box::new(SessionFactoryCached::new(false));
     }
 
 

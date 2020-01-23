@@ -7,13 +7,13 @@ use uuid::Uuid;
 
 use crate::decode::rdbc_driver_decoder::decode_result_set;
 use crate::example::conf::MYSQL_URL;
+use crate::query_exec_able::QueryExecable;
 use crate::tx::propagation::Propagation;
 use crate::tx::save_point_stack::SavePointStack;
 use crate::tx::tx::{Tx, TxImpl};
 use crate::tx::tx_stack::TxStack;
 use crate::utils::{driver_util, rdbc_util};
 use crate::utils::rdbc_util::to_rdbc_values;
-use crate::query_exec_able::QueryExecable;
 
 pub struct LocalSession {
     pub session_id: String,
@@ -49,6 +49,14 @@ impl LocalSession {
         });
     }
 
+    pub fn have_tx(&self) -> bool {
+        if self.tx_stack.len() > 0 || self.new_local_session.is_some() {
+            return true;
+        }
+        return false;
+    }
+
+
     pub fn id(&self) -> &str {
         return self.session_id.as_str();
     }
@@ -67,7 +75,7 @@ impl LocalSession {
         let (t_opt, _) = self.tx_stack.last_ref_mut();
         if t_opt.is_some() {
             let t = t_opt.unwrap();
-            let result = t.query(sql, arg_array,self.conn.as_mut().unwrap())?;
+            let result = t.query(sql, arg_array, self.conn.as_mut().unwrap())?;
             return result;
         } else {
             return self.conn.as_mut().unwrap().query_prepare(self.enable_log, sql, &arg_array);
@@ -88,7 +96,7 @@ impl LocalSession {
         let (t_opt, _) = self.tx_stack.last_ref_mut();
         if t_opt.is_some() {
             let t = t_opt.unwrap();
-            let result = t.exec(sql, arg_array,self.conn.as_mut().unwrap())?;
+            let result = t.exec(sql, arg_array, self.conn.as_mut().unwrap())?;
             return Ok(result);
         } else {
             return self.conn.as_mut().unwrap().exec_prepare(self.enable_log, sql, &arg_array);
