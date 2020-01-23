@@ -3,7 +3,7 @@ use std::collections::HashMap;
 use std::process::exit;
 use std::rc::Rc;
 use std::str::FromStr;
-use std::sync::Mutex;
+use std::sync::{Mutex, MutexGuard};
 use std::thread;
 
 use log::{error, info, warn};
@@ -34,17 +34,20 @@ use crate::utils::rdbc_util::to_rdbc_values;
 use crate::utils::xml_loader::load_xml;
 use crate::crud::ipage::IPage;
 use std::ops::{Deref, DerefMut};
+use std::borrow::BorrowMut;
+
 
 
 
 lazy_static!{
-   static ref GlobalFactory: Mutex<SessionFactoryCached> = Mutex::new(SessionFactoryCached::new(false));
+  static ref RBATIS: Mutex<Rbatis> = Mutex::new(Rbatis::new());
 }
 
+///使用 lazy_static 获取的单例
+pub fn singleton() -> MutexGuard<'static,Rbatis>{
+    return RBATIS.lock().unwrap();
+}
 
-
-
-#[derive(Clone)]
 pub struct Rbatis {
     pub id: String,
     //动态sql运算节点集合
@@ -55,7 +58,7 @@ pub struct Rbatis {
     pub db_driver_map: HashMap<String, String>,
     pub router_func: fn(id: &str) -> String,
     //session工厂
-//    pub session_factory: Box<dyn SessionFactory>,
+    pub session_factory: SessionFactoryCached,
     //允许日志输出，禁用此项可减少IO,提高性能
     pub enable_log: bool,
     //true异步模式，false线程模式
@@ -69,7 +72,7 @@ impl Rbatis {
             mapper_map: HashMap::new(),
             holder: ConfigHolder::new(),
             db_driver_map: HashMap::new(),
-//            session_factory: Box::new(SessionFactoryCached::new(true)),
+            session_factory: SessionFactoryCached::new(true),
             router_func: |id| -> String{
                 //加载默认配置，key=""
                 return "".to_string();
@@ -127,7 +130,7 @@ impl Rbatis {
     ///       "size":null,
     ///    }));
     ///
-    pub fn eval_sql<T>(&self, eval_sql: &str) -> Result<T, String> where T: de::DeserializeOwned {
+    pub fn eval_sql<T>(&mut self, eval_sql: &str) -> Result<T, String> where T: de::DeserializeOwned {
         let mut sql = eval_sql;
         sql = sql.trim();
         if sql.is_empty() {
@@ -138,7 +141,7 @@ impl Rbatis {
         return self.eval_raw( "eval_sql", eval_sql, is_select, &mut arg_array);
     }
 
-    pub fn begin<'a>(&self, id: &str, propagation_type: Propagation) -> Result<i32, String> {
+    pub fn begin<'a>(&mut self, id: &str, propagation_type: Propagation) -> Result<i32, String> {
         let key = (self.router_func)(id);
         let db_conf_opt = self.db_driver_map.get(key.as_str());
         if db_conf_opt.is_none() {
@@ -146,11 +149,11 @@ impl Rbatis {
         }
         let driver = db_conf_opt.unwrap();
         let thread_id = thread::current().id();
-         GlobalFactory.lock().as_mut().unwrap().get_thread_session(&thread_id, driver.as_str())?.begin(propagation_type)?;
+        self.session_factory.get_thread_session(&thread_id, driver.as_str())?.begin(propagation_type)?;
         return Result::Ok(1);
     }
 
-    pub fn rollback(&self, id: &str) -> Result<i32, String> {
+    pub fn rollback(&mut self, id: &str) -> Result<i32, String> {
         let key = (self.router_func)(id);
         let db_conf_opt = self.db_driver_map.get(key.as_str());
         if db_conf_opt.is_none() {
@@ -158,11 +161,11 @@ impl Rbatis {
         }
         let driver = db_conf_opt.unwrap();
         let thread_id = thread::current().id();
-        GlobalFactory.lock().as_mut().unwrap().get_thread_session(&thread_id, driver.as_str())?.rollback()?;
+        self.session_factory.get_thread_session(&thread_id, driver.as_str())?.rollback()?;
         return Result::Ok(1);
     }
 
-    pub fn commit(&self, id: &str) -> Result<i32, String> {
+    pub fn commit(&mut self, id: &str) -> Result<i32, String> {
         let key = (self.router_func)(id);
         let db_conf_opt = self.db_driver_map.get(key.as_str());
         if db_conf_opt.is_none() {
@@ -170,14 +173,14 @@ impl Rbatis {
         }
         let driver = db_conf_opt.unwrap();
         let thread_id = thread::current().id();
-        GlobalFactory.lock().as_mut().unwrap().get_thread_session(&thread_id, driver.as_str())?.commit()?;
+        self.session_factory.get_thread_session(&thread_id, driver.as_str())?.commit()?;
         return Result::Ok(1);
     }
 
     ///执行
     /// arg_array: 执行后 需要替换的参数数据
     /// return ：替换参数为 ？ 后的sql
-    pub fn eval_raw<T>(&self, id: &str, eval_sql: &str, is_select: bool, arg_array: &mut Vec<Value>) -> Result<T, String> where T: de::DeserializeOwned {
+    pub fn eval_raw<T>(&mut self, id: &str, eval_sql: &str, is_select: bool, arg_array: &mut Vec<Value>) -> Result<T, String> where T: de::DeserializeOwned {
         let mut sql = eval_sql;
         sql = sql.trim();
         if sql.is_empty() {
@@ -193,10 +196,10 @@ impl Rbatis {
         let thread_id = thread::current().id();
         if is_select {
             //select
-            return GlobalFactory.lock().as_mut().unwrap().get_thread_session(&thread_id, driver.as_str())?.query(sql, &params);
+            return self.session_factory.get_thread_session(&thread_id, driver.as_str())?.query(sql, &params);
         } else {
             //exec
-            let affected_rows = GlobalFactory.lock().as_mut().unwrap().get_thread_session(&thread_id, driver.as_str())?.exec(sql, &params)?;
+            let affected_rows = self.session_factory.get_thread_session(&thread_id, driver.as_str())?.exec(sql, &params)?;
             let r = serde_json::from_value(serde_json::Value::Number(serde_json::Number::from(ParserNumber::U64(affected_rows))));
             if r.is_err() {
                 return Result::Err("[rbatis] exec fail:".to_string() + id + r.err().unwrap().to_string().as_str());

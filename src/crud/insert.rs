@@ -11,7 +11,7 @@ use crate::utils::string_util::count_string_num;
 use crate::session_factory::SessionFactory;
 
 impl Rbatis {
-    pub fn insert<T>(&self,mapper_name: &str, arg: &mut Value) -> Result<T, String> where T: DeserializeOwned {
+    pub fn insert<T>(&mut self, mapper_name: &str, arg: &mut Value) -> Result<T, String> where T: DeserializeOwned {
         let mut arg_array = vec![];
         let sql = self.create_sql_insert(mapper_name, arg, &mut arg_array)?;
         return self.eval_raw((mapper_name.to_string() + ".insert").as_str(), sql.as_str(), false, &mut arg_array);

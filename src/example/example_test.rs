@@ -26,7 +26,7 @@ use crate::decode::rdbc_driver_decoder;
 use crate::decode::rdbc_driver_decoder::decode_result_set;
 use crate::example::activity::Activity;
 use crate::example::conf::MYSQL_URL;
-use crate::rbatis::Rbatis;
+use crate::rbatis::{Rbatis, singleton};
 use crate::session_factory::{SessionFactory, SessionFactoryCached};
 use crate::tx::propagation::Propagation;
 
@@ -73,7 +73,7 @@ fn test_insert() {
     if rbatis_opt.is_err() {
         return;
     }
-    let rbatis = rbatis_opt.unwrap();
+    let mut rbatis = rbatis_opt.unwrap();
     //插入前先删一下
     //let r:Result<i32,String>=rbatis.eval_sql("delete from biz_activity  where id = '1'");
 
@@ -273,25 +273,28 @@ fn test_tx_return() -> Result<u64, String> {
 }
 
 
-struct AppStateWithCounter {
-    counter: Mutex<Rbatis>, // <- Mutex is necessary to mutate safely across threads
-}
 
-async fn index(mut rbs: web::Data<AppStateWithCounter>) -> impl Responder {
+async fn index() -> impl Responder {
     //写法1
-    let act: Activity = rbs.counter.lock().as_mut().unwrap().eval_sql( "select * from biz_activity where id  = '2';").unwrap();
+    let act: Activity = singleton().eval_sql( "select * from biz_activity where id  = '2';").unwrap();
     return serde_json::to_string(&act).unwrap();
 }
 
 #[actix_rt::main]
 async fn main() -> std::io::Result<()> {
+    //日志
+    log4rs::init_file("log4rs.yaml", Default::default()).unwrap();
+
+    //3 加载数据库url name 为空，则默认数据库
+    singleton().load_db_url("", MYSQL_URL);//"mysql://root:TEST@localhost:3306/test"
+    //4 加载xml配置
+
+    let f = fs::File::open("./src/example/Example_ActivityMapper.xml");
+    singleton().load_xml("Example_ActivityMapper.xml".to_string(), fs::read_to_string("./src/example/Example_ActivityMapper.xml").unwrap());//加载xml数据
+
     //初始化rbatis
-    let c = web::Data::new(AppStateWithCounter {
-        counter: Mutex::new(init_rbatis().unwrap()),
-    });
     HttpServer::new(move || {
         App::new()
-            .app_data(c.clone())
             .route("/", web::get().to(index))
     })
         .bind("127.0.0.1:8000")?
