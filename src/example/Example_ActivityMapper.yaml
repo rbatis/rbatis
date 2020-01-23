@@ -18,13 +18,12 @@ select selectByIds:
     and delete_flag = 2
   where:
     if id != null:
-    #{id}
+       sql: #{id}
     if create != null:
-      and create_time = #{create_time}
+       sql: and create_time = #{create_time}
     if ids!= null:
      trim ',':
-      for index,item in ids:
-        sql:
-        #{item}
+       for index,item in ids:
+        sql: #{item}
         if id != null:
-        #{id}
+           sql: #{id}
