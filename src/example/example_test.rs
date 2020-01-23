@@ -335,28 +335,44 @@ macro_rules! impl_service {
     )*
    }
 }
-
+macro_rules! impl_service_mut {
+   ($($fn: ident (&mut self $(,$x:ident:$t:ty)*         ) -> Result<$return_type:ty,String> ),*) => {
+    $(
+    fn $fn(&mut self  $(,$x:$t)*    ) -> Result<$return_type,String> {
+           return (self.$fn)(self  $(,$x)*    );
+        }
+    )*
+   }
+}
 
 pub trait Service {
     fn select_activity(&self) -> Result<String, String>;
+    fn update_activity(&mut self) -> Result<String, String>;
 }
 
 struct ServiceImpl {
     select_activity: fn(s:&ServiceImpl) -> Result<String, String>,
+    update_activity: fn(s:&mut ServiceImpl) -> Result<String, String>,
 }
 
 impl Service for ServiceImpl {
     impl_service! {
        select_activity(&self) -> Result<String,String>
     }
+    impl_service_mut!{
+       update_activity(&mut self) -> Result<String, String>
+    }
 }
 
 #[test]
-pub fn test_service(){
-    let s=ServiceImpl{
-        select_activity:  |s:&ServiceImpl| -> Result<String, String>{
+pub fn test_service() {
+    let s = ServiceImpl {
+        select_activity: |s: &ServiceImpl| -> Result<String, String>{
             return Result::Ok("ok".to_string());
-        }
+        },
+        update_activity: |s: &mut ServiceImpl| -> Result<String, String>{
+            return Result::Ok("ok".to_string());
+        },
     };
-   let s= s.select_activity().unwrap();
+    let s = s.select_activity().unwrap();
 }
