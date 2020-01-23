@@ -55,7 +55,7 @@ impl SessionFactoryCached {
     pub fn new(clean_no_tx_link: bool) -> Self {
         return Self {
             data: HashMap::new(),
-            clean_no_tx_link: clean_no_tx_link,
+            clean_no_tx_link: false,
         };
     }
 }
