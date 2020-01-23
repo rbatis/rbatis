@@ -74,7 +74,7 @@ fn test_insert() {
     if rbatis_opt.is_err() {
         return;
     }
-    let mut rbatis = rbatis_opt.unwrap();
+    let rbatis = rbatis_opt.unwrap();
     //插入前先删一下
     //let r:Result<i32,String>=rbatis.eval_sql("delete from biz_activity  where id = '1'");
 
