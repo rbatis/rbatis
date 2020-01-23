@@ -66,7 +66,7 @@ impl LocalSession {
         }
         let (t_opt, _) = self.tx_stack.last_ref_mut();
         if t_opt.is_some() {
-            let mut t = t_opt.unwrap();
+            let t = t_opt.unwrap();
             let result = t.query(sql, arg_array,self.conn.as_mut().unwrap())?;
             return result;
         } else {
@@ -87,7 +87,7 @@ impl LocalSession {
         }
         let (t_opt, _) = self.tx_stack.last_ref_mut();
         if t_opt.is_some() {
-            let mut t = t_opt.unwrap();
+            let t = t_opt.unwrap();
             let result = t.exec(sql, arg_array,self.conn.as_mut().unwrap())?;
             return Ok(result);
         } else {
