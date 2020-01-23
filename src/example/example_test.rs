@@ -36,8 +36,9 @@ use crate::tx::propagation::Propagation;
 fn init_rbatis() -> Result<Rbatis, String> {
     //1 启用日志(可选，不添加则不加载日志库)
     log4rs::init_file("log4rs.yaml", Default::default()).unwrap();
-    //2 初始化rbatis
-    let mut rbatis = Rbatis::new();
+
+    let mut rbatis =Rbatis::new();
+
     //3 加载数据库url name 为空，则默认数据库
     rbatis.load_db_url("", MYSQL_URL);//"mysql://root:TEST@localhost:3306/test"
     //4 加载xml配置
@@ -63,6 +64,17 @@ fn init_rbatis() -> Result<Rbatis, String> {
 //        return "".to_string();
 //    };
     return Ok(rbatis);
+}
+
+fn init_singleton_rbatis(){
+    //1 启用日志(可选，不添加则不加载日志库)
+    log4rs::init_file("log4rs.yaml", Default::default()).unwrap();
+    //3 加载数据库url name 为空，则默认数据库
+    singleton().load_db_url("", MYSQL_URL);//"mysql://root:TEST@localhost:3306/test"
+    //4 加载xml配置
+
+    let f = fs::File::open("./src/example/Example_ActivityMapper.xml");
+    singleton().load_xml("Example_ActivityMapper.xml".to_string(), fs::read_to_string("./src/example/Example_ActivityMapper.xml").unwrap());//加载xml数据
 }
 
 
@@ -282,16 +294,7 @@ async fn index() -> impl Responder {
 
 #[actix_rt::main]
 async fn main() -> std::io::Result<()> {
-    //日志
-    log4rs::init_file("log4rs.yaml", Default::default()).unwrap();
-
-    //3 加载数据库url name 为空，则默认数据库
-    singleton().load_db_url("", MYSQL_URL);//"mysql://root:TEST@localhost:3306/test"
-    //4 加载xml配置
-
-    let f = fs::File::open("./src/example/Example_ActivityMapper.xml");
-    singleton().load_xml("Example_ActivityMapper.xml".to_string(), fs::read_to_string("./src/example/Example_ActivityMapper.xml").unwrap());//加载xml数据
-
+    init_singleton_rbatis();
     //初始化rbatis
     HttpServer::new(move || {
         App::new()
@@ -319,7 +322,9 @@ macro_rules! impl_service {
    ($($fn: ident (&self $(,$x:ident:$t:ty)*         ) -> Result<$return_type:ty,String> ),*) => {
     $(
     fn $fn(&self  $(,$x:$t)*    ) -> Result<$return_type,String> {
-           return (self.$fn)(self  $(,$x)*    );
+           //TODO 判断是否启用事务，启用则根据事务最后一条传播行为创建。
+           let data = (self.$fn)(self  $(,$x)*    );
+           return data;
         }
     )*
    }
@@ -328,41 +333,49 @@ macro_rules! impl_service_mut {
    ($($fn: ident (&mut self $(,$x:ident:$t:ty)*         ) -> Result<$return_type:ty,String> ),*) => {
     $(
     fn $fn(&mut self  $(,$x:$t)*    ) -> Result<$return_type,String> {
-           return (self.$fn)(self  $(,$x)*    );
+            //TODO 判断是否启用事务，启用则根据事务最后一条传播行为创建。
+            let data = (self.$fn)(self  $(,$x)*    );
+            return data;
         }
     )*
    }
 }
 
 pub trait Service {
-    fn select_activity(&self) -> Result<String, String>;
+    fn select_activity(&self) -> Result<Activity, String>;
     fn update_activity(&mut self) -> Result<String, String>;
 }
 
 struct ServiceImpl {
-    select_activity: fn(s:&ServiceImpl) -> Result<String, String>,
+    select_activity: fn(s:&ServiceImpl) -> Result<Activity, String>,
     update_activity: fn(s:&mut ServiceImpl) -> Result<String, String>,
 }
 
 impl Service for ServiceImpl {
     impl_service! {
-       select_activity(&self) -> Result<String,String>
+       select_activity(&self) -> Result<Activity,String>
     }
     impl_service_mut!{
        update_activity(&mut self) -> Result<String, String>
     }
 }
 
+/// 示例，使用 trait和宏 代理实现服务
 #[test]
 pub fn test_service() {
+    if MYSQL_URL.contains("localhost") {
+        return;
+    }
+    init_singleton_rbatis();
     let mut s = ServiceImpl {
-        select_activity: |s: &ServiceImpl| -> Result<String, String>{
-            return Result::Ok("ok".to_string());
+        select_activity: |s: &ServiceImpl| -> Result<Activity, String>{
+            let act: Activity = singleton().eval_sql( "select * from biz_activity where id  = '2';").unwrap();
+            return Result::Ok(act);
         },
         update_activity: |s: &mut ServiceImpl| -> Result<String, String>{
             return Result::Ok("ok".to_string());
         },
     };
-    println!("{}",s.select_activity().unwrap());
+    println!("{:?}",s.select_activity().unwrap());
     println!("{}",s.update_activity().unwrap());
 }
