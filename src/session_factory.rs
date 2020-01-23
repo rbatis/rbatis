@@ -39,9 +39,6 @@ impl SessionFactory for SessionFactoryCached {
                 self.data.remove(&item);
             }
         }
-
-        println!("len-----------------{}",self.data.len());
-
         let item = self.data.get(id);
         if item.is_some() {
             return Ok(self.data.get_mut(&id).unwrap());
