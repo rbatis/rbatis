@@ -15,7 +15,6 @@ use std::time::Duration;
 use actix_web::{App, HttpServer, Responder, web};
 use log::{error, info, warn};
 use rdbc::{DataType, Driver, ResultSet, ResultSetMetaData};
-use rdbc_mysql::{MySQLDriver, MySQLResultSet};
 use serde_json::{json, Number, Value};
 
 use crate::ast::config_holder::ConfigHolder;

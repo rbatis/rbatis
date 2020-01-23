@@ -150,7 +150,7 @@ impl Rbatis {
                 Result::Ok(self.do_select_by_templete(arg, &result_map_node, where_str.as_str(), &ipage_opt)?)
             }
             _ => {
-                Result::Err("[rbatis] not support arg type value in select(): ".to_string() + arg.to_sql_value_def().as_str())
+                Result::Err("[rbatis] not support arg type value in select(): ".to_string() + arg.to_sql_value_def(true).as_str())
             }
         };
     }
@@ -187,7 +187,7 @@ impl Rbatis {
                 return Result::Ok(self.do_count_by_templete(arg, &result_map_node, where_str.as_str())?);
             }
             _ => {
-                return Result::Err("[rbatis] not support arg type value in select(): ".to_string() + arg.to_sql_value_def().as_str());
+                return Result::Err("[rbatis] not support arg type value in select(): ".to_string() + arg.to_sql_value_def(true).as_str());
             }
         }
     }

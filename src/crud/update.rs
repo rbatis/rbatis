@@ -36,7 +36,7 @@ impl Rbatis {
                             sqls = sqls + temp_str + "; \n";
                         }
                         _ => {
-                            return Result::Err("[rbatis] update only support object or array,not support arg type value in update(): ".to_string() + arg.to_sql_value_def().as_str());
+                            return Result::Err("[rbatis] update only support object or array,not support arg type value in update(): ".to_string() + arg.to_sql_value_def(true).as_str());
                         }
                     }
                 }
@@ -83,7 +83,7 @@ impl Rbatis {
                 return Result::Err("[rbatis] delete arg type can not be null!".to_string());
             }
             _ => {
-                return Result::Err("[rbatis] update only support object or array,not support arg type value in update(): ".to_string() + arg.to_sql_value_def().as_str());
+                return Result::Err("[rbatis] update only support object or array,not support arg type value in update(): ".to_string() + arg.to_sql_value_def(true).as_str());
             }
         };
     }
@@ -134,7 +134,7 @@ impl Rbatis {
             let version_value_opt = get_version_value(env, &result_map_node.version_node.as_ref().unwrap().property);
             if version_value_opt.is_some() {
                 let version = version_value_opt.unwrap();
-                where_string = where_string + AND + result_map_node.version_node.as_ref().unwrap().column.as_str() + " = " + version.to_sql_value_def().as_str();
+                where_string = where_string + AND + result_map_node.version_node.as_ref().unwrap().column.as_str() + " = " + version.to_sql_value_def(true).as_str();
             }
         }
         //delete node

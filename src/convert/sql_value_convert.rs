@@ -20,11 +20,11 @@ pub const AND: &'static str = " AND ";
 ///    }).to_sql());
 ///    assert_eq!("null".to_string(),json!(null).to_sql_value());
 pub trait SqlValueConvert {
-    fn to_sql_value_def(&self) -> String;
+    fn to_sql_value_def(&self,format_str:bool) -> String;
 
-    fn to_sql_value_skip(&self, skip_type: SkipType) -> String;
+    fn to_sql_value_skip(&self,format_str:bool, skip_type: SkipType) -> String;
 
-    fn to_sql_value_custom(&self, skip_type: SkipType, obj_map_separtor: &str, array_separtor: &str) -> String;
+    fn to_sql_value_custom(&self,format_str:bool, skip_type: SkipType, obj_map_separtor: &str, array_separtor: &str) -> String;
 }
 
 /// 转换为sql column 逗号分隔的字符串
@@ -162,15 +162,15 @@ impl SqlQuestionConvert for serde_json::Value{
 
 
 impl SqlValueConvert for serde_json::Value {
-    fn to_sql_value_def(&self) -> String {
-        return self.to_sql_value_skip(SkipType::Null);
+    fn to_sql_value_def(&self,format_str:bool) -> String {
+        return self.to_sql_value_skip(format_str,SkipType::Null);
     }
 
-    fn to_sql_value_skip(&self, skip_col_type: SkipType) -> String {
-        return self.to_sql_value_custom(skip_col_type, AND, ",");
+    fn to_sql_value_skip(&self,format_str:bool , skip_col_type: SkipType) -> String {
+        return self.to_sql_value_custom(format_str,skip_col_type, AND, ",");
     }
 
-    fn to_sql_value_custom(&self, skip_col_type: SkipType, obj_map_separtor: &str, array_separtor: &str) -> String {
+    fn to_sql_value_custom(&self,format_str:bool , skip_col_type: SkipType, obj_map_separtor: &str, array_separtor: &str) -> String {
         match self {
             Value::Null => {
                 if skip_col_type==SkipType::Null {
@@ -179,10 +179,14 @@ impl SqlValueConvert for serde_json::Value {
                 return String::from("null")
             },
             Value::String(s) => {
-                if skip_col_type==SkipType::String {
+                if skip_col_type == SkipType::String {
                     return "".to_string();
                 }
-                return format!("'{}'",s);
+                if format_str{
+                    return format!("'{}'", s);
+                }else{
+                    return s.clone();
+                }
             }
             Value::Number(n) => {
                 if skip_col_type==SkipType::Number {
@@ -206,19 +210,19 @@ impl SqlValueConvert for serde_json::Value {
                 for (key, value) in arg_map {
                     match value {
                         Value::String(s) => {
-                            where_str = where_str + key.as_str() + " = " + value.to_sql_value_def().as_str() + obj_map_separtor;
+                            where_str = where_str + key.as_str() + " = " + value.to_sql_value_def(true).as_str() + obj_map_separtor;
                             append = true;
                         }
                         Value::Number(n) => {
-                            where_str = where_str + key.as_str() + " = " + value.to_sql_value_def().as_str() + obj_map_separtor;
+                            where_str = where_str + key.as_str() + " = " + value.to_sql_value_def(true).as_str() + obj_map_separtor;
                             append = true;
                         }
                         Value::Array(arr) => {
-                            where_str = where_str + key.as_str() + " in " + value.to_sql_value_def().as_str() + obj_map_separtor;
+                            where_str = where_str + key.as_str() + " in " + value.to_sql_value_def(true).as_str() + obj_map_separtor;
                             append = true;
                         }
                         Value::Null => {
-                            where_str = where_str + key.as_str() + " = " + value.to_sql_value_def().as_str() + obj_map_separtor;
+                            where_str = where_str + key.as_str() + " = " + value.to_sql_value_def(true).as_str() + obj_map_separtor;
                             append = true;
                         }
                         _ => {}
@@ -240,15 +244,15 @@ impl SqlValueConvert for serde_json::Value {
                 for x in arr {
                     match x {
                         Value::String(_) => {
-                            item = item + x.to_sql_value_def().as_str() + array_separtor;
+                            item = item + x.to_sql_value_def(true).as_str() + array_separtor;
                             append = true;
                         }
                         Value::Number(_) => {
-                            item = item + x.to_sql_value_def().as_str() + array_separtor;
+                            item = item + x.to_sql_value_def(true).as_str() + array_separtor;
                             append = true;
                         }
                         Value::Null => {
-                            item = item + x.to_sql_value_def().as_str() + array_separtor;
+                            item = item + x.to_sql_value_def(true).as_str() + array_separtor;
                             append = true;
                         }
                         _ => {}
@@ -325,18 +329,18 @@ impl SqlColumnConvert for serde_json::Value {
 
 #[test]
 fn test_convert() {
-    assert_eq!("true".to_string(), json!(true).to_sql_value_def());
-    assert_eq!("1".to_string(), json!(1).to_sql_value_def());
-    assert_eq!("1.2".to_string(), json!(1.2).to_sql_value_def());
-    assert_eq!("'abc'".to_string(), json!("abc").to_sql_value_def());
-    assert_eq!("('1','2','3')".to_string(), json!(vec!["1","2","3"]).to_sql_value_def());
-    assert_eq!("(1,2,3)".to_string(), json!(vec![1,2,3]).to_sql_value_def());
+    assert_eq!("true".to_string(), json!(true).to_sql_value_def(true));
+    assert_eq!("1".to_string(), json!(1).to_sql_value_def(true));
+    assert_eq!("1.2".to_string(), json!(1.2).to_sql_value_def(true));
+    assert_eq!("'abc'".to_string(), json!("abc").to_sql_value_def(true));
+    assert_eq!("('1','2','3')".to_string(), json!(vec!["1","2","3"]).to_sql_value_def(true));
+    assert_eq!("(1,2,3)".to_string(), json!(vec![1,2,3]).to_sql_value_def(true));
     assert_eq!("a = 1 and b = 'b' and c = 1.1".to_string(), json!({
       "a":1,
       "b":"b",
       "c":1.1,
-    }).to_sql_value_def());
-    assert_eq!("null".to_string(), json!(null).to_sql_value_def());
+    }).to_sql_value_def(true));
+    assert_eq!("null".to_string(), json!(null).to_sql_value_def(true));
 }
 
 #[test]

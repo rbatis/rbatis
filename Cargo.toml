@@ -22,10 +22,6 @@ log = "0.4"
 log4rs = "0.8.3"
 #sql drivers
 rdbc = {git = "https://github.com/rbatis/rdbc",path="/rdbc"}
-rdbc-mysql = {git = "https://github.com/rbatis/rdbc",path="/rdbc-mysql"}
-rdbc-postgres = {git = "https://github.com/rbatis/rdbc",path="/rdbc-postgres"}
-
-
 
 #web library
 actix-web = "2.0"

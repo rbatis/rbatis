@@ -1,6 +1,5 @@
 use rdbc::{DataType, ResultSetMetaData, Error, ResultSet};
 use serde_json::{Value, Number};
-use rdbc_mysql::MySQLResultSet;
 use serde_json::de::ParserNumber;
 
 
