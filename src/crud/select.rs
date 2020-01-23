@@ -19,14 +19,14 @@ use crate::utils::string_util::count_string_num;
 
 impl Rbatis {
     ///普通查询
-    pub fn select<T>(&self, session_factory: &mut Box<dyn SessionFactory>, mapper_name: &str, arg: &mut Value) -> Result<T, String> where T: DeserializeOwned {
+    pub fn select<T>(&mut self, session_factory: &mut Box<dyn SessionFactory>, mapper_name: &str, arg: &mut Value) -> Result<T, String> where T: DeserializeOwned {
         let mut arg_array = vec![];
         let (sql, _) = self.create_sql_select(mapper_name, arg, &mut arg_array)?;
         return self.eval_raw((mapper_name.to_string() + ".select").as_str(), sql.as_str(), true, &mut arg_array);
     }
 
     ///分页查询
-    pub fn select_page<T>(&self,mapper_name: &str, arg: &mut Value, ipage: &IPage<T>) -> Result<IPage<T>, String> where T: Serialize + DeserializeOwned + Clone {
+    pub fn select_page<T>(&mut self, mapper_name: &str, arg: &mut Value, ipage: &IPage<T>) -> Result<IPage<T>, String> where T: Serialize + DeserializeOwned + Clone {
         let mut arg_array = vec![];
         //do select
         let mut new_arg = json_join(&arg, "ipage", ipage)?;
@@ -111,7 +111,7 @@ impl Rbatis {
     }
 
 
-    fn eval_select_return_where<T>(&self, mapper_name: &str, arg: &mut Value, arg_array: &mut Vec<Value>) -> Result<(T, String), String> where T: DeserializeOwned {
+    fn eval_select_return_where<T>(&mut self, mapper_name: &str, arg: &mut Value, arg_array: &mut Vec<Value>) -> Result<(T, String), String> where T: DeserializeOwned {
         let (sql, w) = self.create_sql_select(mapper_name, arg, arg_array)?;
         let data: T = self.eval_raw((mapper_name.to_string() + ".eval_select_return_where").as_str(), sql.as_str(), true, arg_array)?;
         return Result::Ok((data, w));
