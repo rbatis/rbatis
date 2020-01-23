@@ -30,7 +30,7 @@ impl SessionFactory for SessionFactoryCached {
         if self.clean_no_tx_link {
             let mut kvec = vec![];
             for (k, v) in &self.data {
-                if v.tx_stack.len() == 0 {
+                if !v.have_tx() {
                     kvec.push(k.clone());
                 }
             }
@@ -39,6 +39,8 @@ impl SessionFactory for SessionFactoryCached {
                 self.data.remove(&item);
             }
         }
+
+        println!("len-----------------{}",self.data.len());
 
         let item = self.data.get(id);
         if item.is_some() {
