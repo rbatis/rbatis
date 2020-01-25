@@ -134,7 +134,7 @@ impl Rbatis {
         if sql.is_empty() {
             return Result::Err("[rbatis] sql can not be empty!".to_string());
         }
-        let is_select = sql.starts_with("select") || sql.starts_with("SELECT");
+        let is_select = sql.starts_with("select") || sql.starts_with("SELECT") || sql.starts_with("Select");
         let mut arg_array = vec![];
         return self.eval_raw("eval_sql", eval_sql, is_select, &mut arg_array);
     }
