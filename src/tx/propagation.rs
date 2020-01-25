@@ -8,7 +8,7 @@ use serde::export::Formatter;
 ///事务传播行为
 #[derive(Clone, Copy, Eq, PartialEq, Serialize, Deserialize, Debug)]
 pub enum Propagation {
-    None,
+    NONE,
     ///默认，表示如果当前事务存在，则支持当前事务。否则，会启动一个新的事务。have tx ? join : new tx()
     REQUIRED,
     ///表示如果当前事务存在，则支持当前事务，如果当前没有事务，就以非事务方式执行。  have tx ? join(): session.exec()
@@ -30,7 +30,7 @@ pub enum Propagation {
 impl Display for Propagation {
     fn fmt(&self, f: &mut Formatter<'_>) -> fmt::Result {
         return match self {
-            Propagation::None => return write!(f, "None"),
+            Propagation::NONE => return write!(f, "None"),
             REQUIRED => return write!(f, "REQUIRED"),
             SUPPORTS => return write!(f, "SUPPORTS"),
             MANDATORY => return write!(f, "MANDATORY"),

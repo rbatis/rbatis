@@ -1,3 +1,5 @@
+use crate::tx::propagation::Propagation::NONE;
+
 ///代理实现服务,支持事务嵌套
 #[macro_export(local_inner_macros)]
 macro_rules! impl_service {
@@ -5,11 +7,11 @@ macro_rules! impl_service {
     $(
     fn $fn(&self  $(,$x:$t)*    ) -> Result<$return_type,String> {
            //TODO 判断是否启用事务，启用则根据事务最后一条传播行为创建。
-           if $p!=Propagation::None{
+           if $p!=crate::tx::propagation::Propagation::NONE{
               singleton().begin( "", $p)?;
            }
            let data = (self.$fn)(self  $(,$x)*    );
-           if $p!=Propagation::None{
+           if $p!=crate::tx::propagation::Propagation::NONE{
               if data.is_ok(){
                 singleton().commit("")?;
               }else{
@@ -29,11 +31,11 @@ macro_rules! impl_service_mut {
     $(
     fn $fn(&mut self  $(,$x:$t)*    ) -> Result<$return_type,String> {
             //TODO 判断是否启用事务，启用则根据事务最后一条传播行为创建。
-            if $p!=Propagation::None{
+            if $p!=crate::tx::propagation::Propagation::NONE{
               singleton().begin( "", $p)?;
            }
             let data = (self.$fn)(self  $(,$x)*    );
-            if $p!=Propagation::None{
+            if $p!=crate::tx::propagation::Propagation::NONE{
               if data.is_ok(){
                 singleton().commit("")?;
               }else{

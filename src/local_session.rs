@@ -251,7 +251,7 @@ impl LocalSession {
                     self.tx_stack.push(tx, propagation_type);
                 }
             }
-            Propagation::None => {
+            Propagation::NONE => {
                 return Ok(0);
             }
             _ => {
@@ -288,5 +288,5 @@ pub fn test_se() {
         return;
     }
     let mut se = s.unwrap();
-    se.begin(Propagation::None);
+    se.begin(Propagation::NONE);
 }
