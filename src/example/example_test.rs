@@ -28,6 +28,7 @@ use crate::example::activity::Activity;
 use crate::example::conf::MYSQL_URL;
 use crate::rbatis::{Rbatis, singleton};
 use crate::session_factory::{SessionFactory, SessionFactoryCached};
+use crate::tx::propagation::Propagation::{NONE, REQUIRED};
 use crate::tx::propagation::Propagation;
 
 /**
@@ -329,10 +330,10 @@ struct ServiceImpl {
 
 impl Service for ServiceImpl {
     impl_service! {
-     Propagation::REQUIRED,  select_activity(&self) -> Result<Activity,String>
+      REQUIRED,  select_activity(&self) -> Result<Activity,String>
     }
     impl_service_mut! {
-     Propagation::None,  update_activity(&mut self) -> Result<String, String>
+      NONE,  update_activity(&mut self) -> Result<String, String>
     }
 }
 
