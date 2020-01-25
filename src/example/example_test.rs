@@ -277,10 +277,13 @@ fn test_tx_return() -> Result<u64, String> {
 
     let u: u32 = rbatis.eval_sql("UPDATE `biz_activity` SET `name` = '活动3' WHERE (`id` = '2');")?;
 
-    rbatis.commit("")?;
 
     let act: Activity = rbatis.eval_sql("select * from biz_activity where id  = '2';")?;
     println!("result:{}", serde_json::to_string(&act).unwrap());
+
+
+    rbatis.commit("")?;
+
     return Ok(1);
 }
 

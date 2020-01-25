@@ -74,8 +74,9 @@ impl LocalSession {
         }
         let (t_opt, _) = self.tx_stack.last_ref_mut();
         if t_opt.is_some() {
+            let type_name = std::any::type_name::<T>();
             let t = t_opt.unwrap();
-            let result = t.query(sql, arg_array, self.conn.as_mut().unwrap())?;
+            let result = t.query(sql, arg_array, self.conn.as_mut().unwrap());
             return result;
         } else {
             return self.conn.as_mut().unwrap().query_prepare(self.enable_log, sql, &arg_array);
