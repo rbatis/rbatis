@@ -260,6 +260,10 @@ impl LocalSession {
         return Ok(0);
     }
 
+    pub fn is_valid(&mut self) -> bool {
+        return self.conn.as_mut().unwrap().is_valid();
+    }
+
     pub fn close(&mut self) {
         if self.is_closed {
             return;
