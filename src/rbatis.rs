@@ -1,5 +1,7 @@
 use std::any::Any;
+use std::borrow::BorrowMut;
 use std::collections::HashMap;
+use std::ops::{Deref, DerefMut};
 use std::process::exit;
 use std::rc::Rc;
 use std::str::FromStr;
@@ -24,6 +26,7 @@ use crate::ast::xml::node::{loop_decode_xml, SqlNodePrint};
 use crate::ast::xml::node_type::NodeType;
 use crate::ast::xml::result_map_node::ResultMapNode;
 use crate::ast::xml::string_node::StringNode;
+use crate::crud::ipage::IPage;
 use crate::db_config::DBConfig;
 use crate::decode::rdbc_driver_decoder::decode_result_set;
 use crate::local_session::LocalSession;
@@ -32,12 +35,6 @@ use crate::tx::propagation::Propagation;
 use crate::utils::{driver_util, rdbc_util};
 use crate::utils::rdbc_util::to_rdbc_values;
 use crate::utils::xml_loader::load_xml;
-use crate::crud::ipage::IPage;
-use std::ops::{Deref, DerefMut};
-use std::borrow::BorrowMut;
-
-
-
 
 lazy_static!{
   static ref RBATIS: Mutex<Rbatis> = Mutex::new(Rbatis::new());
@@ -197,10 +194,12 @@ impl Rbatis {
         let thread_id = thread::current().id();
         if is_select {
             //select
-            return self.session_factory.get_thread_session(&thread_id, driver.as_str())?.query(sql, &params);
+            let session = self.session_factory.get_thread_session(&thread_id, driver.as_str())?;
+            return session.query(sql, &params);
         } else {
             //exec
-            let affected_rows = self.session_factory.get_thread_session(&thread_id, driver.as_str())?.exec(sql, &params)?;
+            let session = self.session_factory.get_thread_session(&thread_id, driver.as_str())?;
+            let affected_rows = session.exec(sql, &params)?;
             let r = serde_json::from_value(serde_json::Value::Number(serde_json::Number::from(ParserNumber::U64(affected_rows))));
             if r.is_err() {
                 return Result::Err("[rbatis] exec fail:".to_string() + id + r.err().unwrap().to_string().as_str());
