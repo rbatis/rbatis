@@ -8,6 +8,9 @@ extern crate lazy_static;
 extern crate rdbc;
 extern crate serde_yaml;
 
+#[macro_use]
+pub mod r_macro;
+
 pub mod example;
 pub mod ast;
 pub mod utils;
