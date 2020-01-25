@@ -129,8 +129,6 @@ impl Rbatis {
     ///    }));
     ///
     pub fn eval_sql<T>(&mut self, eval_sql: &str) -> Result<T, String> where T: de::DeserializeOwned {
-        thread::sleep(Duration::from_secs(60));
-
         let mut sql = eval_sql;
         sql = sql.trim();
         if sql.is_empty() {
