@@ -12,18 +12,17 @@ result_map id=BaseResultMap,table=biz_activiy:
 
 ## selectByIds
 select selectByIds:
-  sql:
     select * from biz_activity
     where delete_flag = 1
     and delete_flag = 2
   where:
     if id != null:
-       sql: #{id}
+    #{id}
     if create != null:
-       sql: and create_time = #{create_time}
+      and create_time = #{create_time}
     if ids!= null:
-     trim ',':
-       for index,item in ids:
-        sql: #{item}
-        if id != null:
-           sql: #{id}
+      trim ',':
+        for index,item in ids:
+          #{item}
+          if id != null:
+          #{id}
