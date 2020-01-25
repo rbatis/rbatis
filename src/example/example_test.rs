@@ -37,7 +37,7 @@ fn init_rbatis() -> Result<Rbatis, String> {
     //1 启用日志(可选，不添加则不加载日志库)
     log4rs::init_file("log4rs.yaml", Default::default()).unwrap();
 
-    let mut rbatis =Rbatis::new();
+    let mut rbatis = Rbatis::new();
 
     //3 加载数据库url name 为空，则默认数据库
     rbatis.load_db_url("", MYSQL_URL);//"mysql://root:TEST@localhost:3306/test"
@@ -66,7 +66,7 @@ fn init_rbatis() -> Result<Rbatis, String> {
     return Ok(rbatis);
 }
 
-fn init_singleton_rbatis(){
+fn init_singleton_rbatis() {
     //1 启用日志(可选，不添加则不加载日志库)
     log4rs::init_file("log4rs.yaml", Default::default()).unwrap();
     //3 加载数据库url name 为空，则默认数据库
@@ -103,7 +103,7 @@ fn test_insert() {
         version: Some(1),
         delete_flag: Some(1),
     };
-    let r: Result<i32, String> = rbatis.insert( "Example_ActivityMapper.xml", &mut json!(activity));
+    let r: Result<i32, String> = rbatis.insert("Example_ActivityMapper.xml", &mut json!(activity));
     println!("[rbatis] result==>  {:?}", r);
 }
 
@@ -130,7 +130,7 @@ fn test_update() {
     let mut rbatis = rbatis_opt.unwrap();
     //先插入
     //插入前先删一下
-    let r: i32 = rbatis.eval_sql( "delete from biz_activity  where id = '1'").unwrap();
+    let r: i32 = rbatis.eval_sql("delete from biz_activity  where id = '1'").unwrap();
     let r: i32 = rbatis.insert("Example_ActivityMapper.xml", &mut json!(Activity{
         id: Some("1".to_string()),
         name: Some("活动1".to_string()),
@@ -229,7 +229,7 @@ fn test_exec_select_page() {
         return;
     }
     //执行到远程mysql 并且获取结果,Result<serde_json::Value, String>,或者 Result<Activity, String> 等任意类型
-    let data: IPage<Activity> = rbatis.unwrap().select_page( "Example_ActivityMapper.xml", &mut json!({
+    let data: IPage<Activity> = rbatis.unwrap().select_page("Example_ActivityMapper.xml", &mut json!({
        "name":"新人专享1",
     }), &IPage::new(1, 5)).unwrap();
     println!("[rbatis] result==>  {:?}", data);
@@ -269,21 +269,20 @@ fn test_tx_return() -> Result<u64, String> {
         return Ok(1);
     }
     let mut rbatis = rbatis_opt.unwrap();
-    rbatis.begin( "", Propagation::REQUIRED)?;
+    rbatis.begin("", Propagation::REQUIRED)?;
 
-    let u: u32 = rbatis.eval_sql( "UPDATE `biz_activity` SET `name` = '活动1' WHERE (`id` = '2');")?;
+    let u: u32 = rbatis.eval_sql("UPDATE `biz_activity` SET `name` = '活动1' WHERE (`id` = '2');")?;
 
-    let u: u32 = rbatis.eval_sql( "UPDATE `biz_activity` SET `name` = '活动2' WHERE (`id` = '2');")?;
+    let u: u32 = rbatis.eval_sql("UPDATE `biz_activity` SET `name` = '活动2' WHERE (`id` = '2');")?;
 
-    let u: u32 = rbatis.eval_sql( "UPDATE `biz_activity` SET `name` = '活动3' WHERE (`id` = '2');")?;
+    let u: u32 = rbatis.eval_sql("UPDATE `biz_activity` SET `name` = '活动3' WHERE (`id` = '2');")?;
 
-    rbatis.commit( "")?;
+    rbatis.commit("")?;
 
-    let act: Activity = rbatis.eval_sql( "select * from biz_activity where id  = '2';")?;
+    let act: Activity = rbatis.eval_sql("select * from biz_activity where id  = '2';")?;
     println!("result:{}", serde_json::to_string(&act).unwrap());
     return Ok(1);
 }
-
 
 
 async fn index() -> impl Responder {
@@ -319,22 +318,42 @@ pub fn test_web() {
 
 ///代理实现服务内容
 macro_rules! impl_service {
-   ($($fn: ident (&self $(,$x:ident:$t:ty)*         ) -> Result<$return_type:ty,String> ),*) => {
+   ($($p:expr,  $fn: ident (&self $(,$x:ident:$t:ty)*         ) -> Result<$return_type:ty,String> ),*) => {
     $(
     fn $fn(&self  $(,$x:$t)*    ) -> Result<$return_type,String> {
            //TODO 判断是否启用事务，启用则根据事务最后一条传播行为创建。
+           if $p!=Propagation::None{
+              singleton().begin( "", $p)?;
+           }
            let data = (self.$fn)(self  $(,$x)*    );
+           if $p!=Propagation::None{
+              if data.is_ok(){
+                singleton().commit("")?;
+              }else{
+                singleton().rollback("")?;
+              }
+           }
            return data;
         }
     )*
    }
 }
 macro_rules! impl_service_mut {
-   ($($fn: ident (&mut self $(,$x:ident:$t:ty)*         ) -> Result<$return_type:ty,String> ),*) => {
+   ($($p:expr,  $fn: ident (&mut self $(,$x:ident:$t:ty)*         ) -> Result<$return_type:ty,String> ),*) => {
     $(
     fn $fn(&mut self  $(,$x:$t)*    ) -> Result<$return_type,String> {
             //TODO 判断是否启用事务，启用则根据事务最后一条传播行为创建。
+            if $p!=Propagation::None{
+              singleton().begin( "", $p)?;
+           }
             let data = (self.$fn)(self  $(,$x)*    );
+            if $p!=Propagation::None{
+              if data.is_ok(){
+                singleton().commit("")?;
+              }else{
+                singleton().rollback("")?;
+              }
+           }
             return data;
         }
     )*
@@ -347,16 +366,16 @@ pub trait Service {
 }
 
 struct ServiceImpl {
-    select_activity: fn(s:&ServiceImpl) -> Result<Activity, String>,
-    update_activity: fn(s:&mut ServiceImpl) -> Result<String, String>,
+    select_activity: fn(s: &ServiceImpl) -> Result<Activity, String>,
+    update_activity: fn(s: &mut ServiceImpl) -> Result<String, String>,
 }
 
 impl Service for ServiceImpl {
     impl_service! {
-       select_activity(&self) -> Result<Activity,String>
+     Propagation::REQUIRED,  select_activity(&self) -> Result<Activity,String>
     }
-    impl_service_mut!{
-       update_activity(&mut self) -> Result<String, String>
+    impl_service_mut! {
+     Propagation::None,  update_activity(&mut self) -> Result<String, String>
     }
 }
 
@@ -367,15 +386,17 @@ pub fn test_service() {
         return;
     }
     init_singleton_rbatis();
+
     let mut s = ServiceImpl {
         select_activity: |s: &ServiceImpl| -> Result<Activity, String>{
-            let act: Activity = singleton().eval_sql( "select * from biz_activity where id  = '2';").unwrap();
+            let act: Activity = singleton().eval_sql("select * from biz_activity where id  = '2';").unwrap();
             return Result::Ok(act);
         },
         update_activity: |s: &mut ServiceImpl| -> Result<String, String>{
             return Result::Ok("ok".to_string());
         },
     };
-    println!("{:?}",s.select_activity().unwrap());
-    println!("{}",s.update_activity().unwrap());
+    let act: Activity = s.select_activity().unwrap();
+    println!("{:?}", serde_json::to_string(&act).unwrap().as_str());
+    println!("{:?}", s.update_activity().unwrap());
 }
