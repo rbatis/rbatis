@@ -288,8 +288,8 @@ fn test_tx_return() -> Result<u64, String> {
 
 async fn index() -> impl Responder {
     //写法1
-    let act: Activity = singleton().eval_sql( "select * from biz_activity where id  = '2';").unwrap();
-    return serde_json::to_string(&act).unwrap();
+    let act: Result<Activity, String> = singleton().eval_sql("select * from biz_activity where id  = '2';");
+    return format!("{:?}", act);
 }
 
 #[actix_rt::main]

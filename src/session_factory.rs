@@ -4,6 +4,7 @@ use std::thread::ThreadId;
 use rdbc::Connection;
 
 use crate::local_session::LocalSession;
+use crate::query_exec_able::QueryExecable;
 use crate::utils::driver_util;
 
 ///链接工厂
@@ -24,6 +25,11 @@ unsafe impl Send for SessionFactoryCached {}
 
 unsafe impl Sync for SessionFactoryCached {}
 
+impl Drop for SessionFactoryCached {
+    fn drop(&mut self) {
+        self.data.clear();
+    }
+}
 
 impl SessionFactory for SessionFactoryCached {
     fn get_thread_session(&mut self, id: &ThreadId, driver: &str) -> Result<&mut LocalSession, String> {
@@ -39,7 +45,7 @@ impl SessionFactory for SessionFactoryCached {
                 self.data.remove(&item);
             }
         }
-        let item = self.data.get(id);
+        let item = self.data.get_mut(id);
         if item.is_some() {
             return Ok(self.data.get_mut(&id).unwrap());
         } else {
