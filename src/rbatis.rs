@@ -7,6 +7,7 @@ use std::rc::Rc;
 use std::str::FromStr;
 use std::sync::{Mutex, MutexGuard};
 use std::thread;
+use std::time::Duration;
 
 use log::{error, info, warn};
 use log4rs::init_file;
@@ -128,6 +129,8 @@ impl Rbatis {
     ///    }));
     ///
     pub fn eval_sql<T>(&mut self, eval_sql: &str) -> Result<T, String> where T: de::DeserializeOwned {
+        thread::sleep(Duration::from_secs(60));
+
         let mut sql = eval_sql;
         sql = sql.trim();
         if sql.is_empty() {
@@ -135,7 +138,7 @@ impl Rbatis {
         }
         let is_select = sql.starts_with("select") || sql.starts_with("SELECT");
         let mut arg_array = vec![];
-        return self.eval_raw( "eval_sql", eval_sql, is_select, &mut arg_array);
+        return self.eval_raw("eval_sql", eval_sql, is_select, &mut arg_array);
     }
 
     pub fn begin<'a>(&'a mut self, id: &str, propagation_type: Propagation) -> Result<&'a mut LocalSession, String> {
