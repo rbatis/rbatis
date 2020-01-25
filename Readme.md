@@ -120,7 +120,7 @@ println!("[rbatis] result==> {:?}",data_result);
 | VersionLockPlugin(乐观锁插件,防止并发修改数据)                | √     |
 | PagePlugin(分页插件)                                         | √     |
 | DataSourceRouter(动态数据源路由)                             | √     |  
-| Tx(事务/事务嵌套/注解声明式事务)                              | x     |   
+| Tx(事务/事务嵌套/注解声明式事务)                              | √     |   
 | JoinQueryPlugin(组合查询插件，对关联查询进行分解代替join)     | x     |
 | YAMLAstTree（类似python/yaml缩进风格的抽象语法树)             | x     |   
 | web(可视化Web UI)                                            | x     |  
