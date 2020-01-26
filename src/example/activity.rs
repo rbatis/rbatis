@@ -20,3 +20,22 @@ pub struct Activity {
     pub version: Option<i32>,
     pub delete_flag: Option<i32>,
 }
+
+impl Activity {
+    pub fn new() -> Self {
+        return Self {
+            id: None,
+            name: None,
+            pc_link: None,
+            h5_link: None,
+            pc_banner_img: None,
+            h5_banner_img: None,
+            sort: None,
+            status: None,
+            remark: None,
+            create_time: None,
+            version: None,
+            delete_flag: None,
+        }
+    }
+}

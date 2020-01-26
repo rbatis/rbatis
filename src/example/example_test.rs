@@ -291,20 +291,7 @@ fn test_tx_return() -> Result<u64, String> {
 
 async fn index() -> impl Responder {
     //写法1
-    let act: Activity = singleton().eval_sql("select * from biz_activity where id  = '2';").unwrap_or(Activity {
-        id: None,
-        name: None,
-        pc_link: None,
-        h5_link: None,
-        pc_banner_img: None,
-        h5_banner_img: None,
-        sort: None,
-        status: None,
-        remark: None,
-        create_time: None,
-        version: None,
-        delete_flag: None,
-    });
+    let act: Activity = singleton().eval_sql("select * from biz_activity where id  = '2';").unwrap_or(Activity::new());
     return serde_json::to_string(&act).unwrap();
 }
 
