@@ -358,3 +358,20 @@ pub fn test_service() {
     println!("{:?}", serde_json::to_string(&act).unwrap().as_str());
     println!("{:?}", s.update_activity().unwrap());
 }
+
+#[test]
+pub fn test_service2() {
+    let s = "select * from biz_activity
+    if  name!=null:
+      and delete_flag = #{del}
+    and a = 0
+    for item in ids:
+      #{item}
+    trim 'and':
+      and delete_flag = #{del}
+    where id  = '2';";
+    println!("{}", s);
+
+    let ls = s.lines();
+    for x in ls {}
+}
