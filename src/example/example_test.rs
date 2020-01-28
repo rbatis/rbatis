@@ -26,7 +26,7 @@ use crate::decode::rdbc_driver_decoder;
 use crate::decode::rdbc_driver_decoder::decode_result_set;
 use crate::example::activity::Activity;
 use crate::example::conf::MYSQL_URL;
-use crate::rbatis::{Rbatis, singleton};
+use crate::rbatis::{eval_sql, Rbatis, singleton};
 use crate::session_factory::{SessionFactory, SessionFactoryCached};
 use crate::tx::propagation::Propagation::{NONE, REQUIRED};
 use crate::tx::propagation::Propagation;
@@ -291,7 +291,7 @@ fn test_tx_return() -> Result<u64, String> {
 
 async fn index() -> impl Responder {
     //写法1
-    let act: Activity = singleton().eval_sql("select * from biz_activity where id  = '2';").unwrap_or(Activity::new());
+    let act: Activity = eval_sql("select * from biz_activity where id  = '2';").unwrap();
     return serde_json::to_string(&act).unwrap();
 }
 

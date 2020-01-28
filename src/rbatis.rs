@@ -37,14 +37,19 @@ use crate::utils::{driver_util, rdbc_util};
 use crate::utils::rdbc_util::to_rdbc_values;
 use crate::utils::xml_loader::load_xml;
 
-lazy_static!{
+lazy_static! {
   static ref RBATIS: Mutex<Rbatis> = Mutex::new(Rbatis::new());
 }
 
 ///使用 lazy_static 获取的单例
-pub fn singleton() -> MutexGuard<'static,Rbatis>{
+pub fn singleton() -> MutexGuard<'static, Rbatis> {
     return RBATIS.lock().unwrap();
 }
+
+pub fn eval_sql<T>(eval_sql: &str) -> Result<T, String> where T: de::DeserializeOwned {
+    return singleton().eval_sql(eval_sql)
+}
+
 
 pub struct Rbatis {
     pub id: String,
