@@ -1,4 +1,7 @@
+use std::collections::HashMap;
+use std::hash::Hash;
 use std::ops::Index;
+use std::sync::{Mutex, RwLock};
 
 use serde_json::json;
 use serde_json::Value;
@@ -13,9 +16,29 @@ use crate::ast::node::trim_node::TrimNode;
 use crate::engine::parser::parser;
 use crate::utils::bencher::Bencher;
 
+lazy_static! {
+  static ref ParserMap: Mutex<HashMap<String,Vec<NodeType>>> = Mutex::new(HashMap::new());
+}
+
 pub struct PyInterpreter {}
 
+
 impl PyInterpreter {
+
+    //编译缓存
+    pub fn parser_by_cache(arg: &str) -> Result<Vec<NodeType>, String> {
+        // RwLock //let ParserMap: Mutex<HashMap<String, Vec<NodeType>>> = Mutex::new(HashMap::new());
+        let mut rd = ParserMap.lock().unwrap();
+        let nodes = rd.get(&arg.to_string());
+        if nodes.is_some() {
+            return Ok(nodes.unwrap().clone());
+        } else {
+            let nods = PyInterpreter::parser(arg)?;
+            rd.insert(arg.to_string(), nods.clone());
+            return Ok(nods);
+        }
+    }
+
     pub fn parser(arg: &str) -> Result<Vec<NodeType>, String> {
         let mut pys = vec![];
         let ls = arg.lines();
@@ -84,7 +107,7 @@ impl PyInterpreter {
         }
         return Ok(pys);
     }
-    pub fn parser_node(x: &str) -> Result<NodeType, String> {
+    fn parser_node(x: &str) -> Result<NodeType, String> {
         let mut trim_x = x.trim();
         if trim_x.ends_with(":") {
             trim_x = trim_x[0..trim_x.len() - 1].trim();
@@ -235,6 +258,6 @@ pub fn bench_exec() {
     trim 'and ':
       and delete_flag2 = #{del}
     where id  = '2';";
-        let pys = PyInterpreter::parser(s);
+        let pys = PyInterpreter::parser_by_cache(s);
     });
 }
