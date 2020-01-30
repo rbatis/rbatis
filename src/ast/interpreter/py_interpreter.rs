@@ -61,7 +61,8 @@ impl PyInterpreter {
                 space_index = count_index;
             }
             if count_index > space_index {
-                let (child_str, skip) = PyInterpreter::find_child_str(line_index, space_index, arg);
+                let (child_str, skip) = PyInterpreter::find_child_str(line_index, count_index, arg);
+                //println!("child_str: {},{}",skip,child_str.replace("\n",""));
                 if skip != -1 {
                     skip_line = skip;
                 }
@@ -102,7 +103,11 @@ impl PyInterpreter {
             if skip_line != -1 && line_index <= skip_line {
                 continue;
             }
-            pys.push(PyInterpreter::parser_node(x)?);
+
+            let node=PyInterpreter::parser_node(x)?;
+
+
+            pys.push(node);
             //当前node
         }
         return Ok(pys);
@@ -121,11 +126,15 @@ impl PyInterpreter {
                 if !trim_x.contains(" in ") {
                     return Err("[rbatis] parser express fail:".to_string() + trim_x);
                 }
+                trim_x = trim_x["for ".len()..].trim();
+                let in_index=trim_x.find(" in ").unwrap();
+                let col=trim_x[in_index+" in ".len()..].trim();
+                let item=trim_x[..in_index].trim();
                 return Ok(NodeType::NForEach(ForEachNode {
                     childs: vec![],
-                    collection: trim_x[trim_x.find(" in ").unwrap()..].trim().to_string(),
+                    collection: col.to_string(),
                     index: "".to_string(),
-                    item: trim_x[..trim_x.find(" in ").unwrap()].trim().to_string(),
+                    item: item.to_string(),
                     open: "".to_string(),
                     close: "".to_string(),
                     separator: "".to_string(),
@@ -133,12 +142,13 @@ impl PyInterpreter {
             } else if trim_x.starts_with("trim ") {
                 trim_x = trim_x["trim ".len()..].trim();
                 if trim_x.starts_with("'") && trim_x.ends_with("'") {
+                    trim_x = trim_x[1..trim_x.len()-1].trim();
                     return Ok(NodeType::NTrim(TrimNode {
                         childs: vec![],
                         prefix: "".to_string(),
                         suffix: "".to_string(),
-                        suffix_overrides: "".to_string(),
-                        prefix_overrides: "".to_string(),
+                        suffix_overrides: trim_x.to_string(),
+                        prefix_overrides: trim_x.to_string(),
                     }));
                 } else {
                     return Err("[rbatis] parser express fail:".to_string() + trim_x);
@@ -161,7 +171,9 @@ impl PyInterpreter {
                 ' ' => {
                     index += 1;
                 }
-                _ => {}
+                _ => {
+                    break;
+                }
             }
         }
         return index;
@@ -184,6 +196,7 @@ impl PyInterpreter {
                 }
             }
         }
+        let ss=result.as_str();
         return (result, skip_line);
     }
 }
@@ -213,20 +226,27 @@ pub fn test_py_interpreter_parser() {
 #[test]
 pub fn test_exec() {
     let s = "
-    select * from biz_activity
+    SELECT * FROM biz_activity
     if  name!=null:
       name = #{name}
-    and delete_flag1 = #{del}
+    AND delete_flag1 = #{del}
     if  age!=1:
        and age = 2
        if  age!=1:
          and age = 3
-    trim 'and ':
-      and delete_flag2 = #{del}
+    trim 'AND ':
+      AND delete_flag2 = #{del}
+    AND ids in (
+    trim ',':
+      for item in ids:
+        #{item},
+    )
     where id  = '2';";
-
     let pys = PyInterpreter::parser(s).unwrap();
-    println!("{:?}", pys);
+    //println!("{:?}", pys);
+    for x in &pys {
+        println!("{:?}", x.clone());
+    }
     println!("pys:len:{}", pys.len());
 
 
@@ -235,10 +255,12 @@ pub fn test_exec() {
     let mut env = json!({
         "name": "1",
         "age": 27,
-        "del":1
+        "del":1,
+        "ids":[1,2,3]
     });
-    let r = crate::ast::node::node::do_child_nodes(&pys, &mut env, &mut holder, &mut arg_array).unwrap();
-    println!("{}", r);
+    let mut r = crate::ast::node::node::do_child_nodes(&pys, &mut env, &mut holder, &mut arg_array).unwrap();
+    println!("{}", r.clone());
+    println!("{:?}", arg_array.clone());
 }
 
 //cargo test --release --color=always --package rbatis --lib ast::interpreter::py_interpreter::bench_exec --all-features -- --nocapture --exact
