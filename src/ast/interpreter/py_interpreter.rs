@@ -11,6 +11,7 @@ use crate::ast::node::node_type::NodeType;
 use crate::ast::node::string_node::StringNode;
 use crate::ast::node::trim_node::TrimNode;
 use crate::engine::parser::parser;
+use crate::utils::bencher::Bencher;
 
 #[derive(Clone, Debug)]
 pub struct Py {
@@ -130,7 +131,6 @@ impl PyInterpreter {
             }
             if count_index > space_index {
                 let (child_str, skip) = self.find_child_str(line_index, space_index, arg);
-                println!("child_str:{},skip:{}", child_str.replace("\n", "").trim(), skip);
                 if skip != -1 {
                     skip_line = skip;
                 }
@@ -260,6 +260,8 @@ pub fn test_exec() {
     and delete_flag1 = #{del}
     if  age!=1:
        and age = 2
+       if  age!=1:
+         and age = 3
     trim 'and ':
       and delete_flag2 = #{del}
     where id  = '2';";
@@ -283,4 +285,27 @@ pub fn test_exec() {
     });
     let r = crate::ast::node::node::do_child_nodes(&nts, &mut env, &mut holder, &mut arg_array).unwrap();
     println!("{}", r);
+}
+
+#[test]
+pub fn bench_exec() {
+
+    let mut b =Bencher::new(1000000);
+    b.iter(  ||  {
+        let s = "
+    select * from biz_activity
+    if  name!=null:
+      name = #{name}
+    and delete_flag1 = #{del}
+    if  age!=1:
+       and age = 2
+       if  age!=1:
+         and age = 3
+    trim 'and ':
+      and delete_flag2 = #{del}
+    where id  = '2';";
+        let p = PyInterpreter {};
+        let pys = p.parser(s);
+        let nts = pys.to_node_type();
+    });
 }
