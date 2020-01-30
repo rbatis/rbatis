@@ -13,102 +13,10 @@ use crate::ast::node::trim_node::TrimNode;
 use crate::engine::parser::parser;
 use crate::utils::bencher::Bencher;
 
-#[derive(Clone, Debug)]
-pub struct Py {
-    pub tag: &'static str,
-    pub props: String,
-    pub childs: Option<Vec<Py>>,
-}
-
-pub trait ToNodeType {
-    fn to_node_type(&self) -> Vec<NodeType>;
-}
-
-
-impl ToNodeType for Vec<Py> {
-    fn to_node_type(&self) -> Vec<NodeType> {
-        let mut result = vec![];
-        for x in self {
-            let nt = x.to_node_type();
-            result.push(nt);
-        }
-        return result;
-    }
-}
-
-
-impl Py {
-    pub fn to_node_type(&self) -> NodeType {
-        match self.tag {
-            "string" => {
-                return NodeType::NString(StringNode::new(self.props.as_str()));
-            }
-            "if" => {
-                let mut childs = vec![];
-                if self.childs.is_some() {
-                    childs = self.childs.as_ref().unwrap().to_node_type();
-                }
-                return NodeType::NIf(IfNode {
-                    childs,
-                    test: self.props.clone(),
-                });
-            }
-            "trim" => {
-                let mut childs = vec![];
-                if self.childs.is_some() {
-                    childs = self.childs.as_ref().unwrap().to_node_type();
-                }
-                let splits: Vec<&str> = self.props.split(",").collect();
-                let mut suffix_overrides = "".to_string();
-                let mut prefix_overrides = "".to_string();
-                if splits.len() == 1 {
-                    prefix_overrides = splits[0].to_string();
-                    if prefix_overrides.starts_with("'") && prefix_overrides.starts_with("'") {
-                        prefix_overrides = prefix_overrides[1..prefix_overrides.len() - 1].to_string();
-                    }
-                }
-                if splits.len() == 2 {
-                    suffix_overrides = splits[1].to_string();
-                    if suffix_overrides.starts_with("'") && suffix_overrides.starts_with("'") {
-                        suffix_overrides = suffix_overrides[1..suffix_overrides.len() - 1].to_string();
-                    }
-                }
-                return NodeType::NTrim(TrimNode {
-                    childs,
-                    prefix: "".to_string(),
-                    suffix: "".to_string(),
-                    suffix_overrides: suffix_overrides,
-                    prefix_overrides: prefix_overrides,
-                });
-            }
-            "for" => {
-                let mut childs = vec![];
-                if self.childs.is_some() {
-                    childs = self.childs.as_ref().unwrap().to_node_type();
-                }
-                //for item in ids:
-
-                return NodeType::NForEach(ForEachNode {
-                    childs,
-                    collection: "".to_string(),
-                    index: "".to_string(),
-                    item: "".to_string(),
-                    open: "".to_string(),
-                    close: "".to_string(),
-                    separator: "".to_string(),
-                });
-            }
-            _ => {
-                return NodeType::Null;
-            }
-        }
-    }
-}
-
 pub struct PyInterpreter {}
 
 impl PyInterpreter {
-    pub fn parser(arg: &str) -> Vec<Py> {
+    pub fn parser(arg: &str) -> Result<Vec<NodeType>, String> {
         let mut pys = vec![];
         let ls = arg.lines();
 
@@ -135,57 +43,90 @@ impl PyInterpreter {
                     skip_line = skip;
                 }
                 if !child_str.is_empty() && pys.last_mut().is_some() {
-                    let last: &mut Py = pys.last_mut().unwrap();
-                    let parserd = PyInterpreter::parser(child_str.as_str());
+                    let last: &mut NodeType = pys.last_mut().unwrap();
+                    let parserd = PyInterpreter::parser(child_str.as_str())?;
                     if !parserd.is_empty() {
-                        last.childs = Some(parserd);
+                        match last {
+                            NodeType::NTrim(node) => {
+                                node.childs = parserd;
+                            }
+                            NodeType::NIf(node) => {
+                                node.childs = parserd;
+                            }
+                            NodeType::NForEach(node) => {
+                                node.childs = parserd;
+                            }
+                            NodeType::NOtherwise(node) => {
+                                node.childs = parserd;
+                            }
+                            NodeType::NWhen(node) => {
+                                node.childs = parserd;
+                            }
+                            NodeType::NInclude(node) => {
+                                node.childs = parserd;
+                            }
+                            NodeType::NSet(node) => {
+                                node.childs = parserd;
+                            }
+                            NodeType::NWhere(node) => {
+                                node.childs = parserd;
+                            }
+                            _ => {}
+                        }
                     }
                 }
             }
             if skip_line != -1 && line_index <= skip_line {
                 continue;
             }
-            pys.push(PyInterpreter::parser_node(x));
+            pys.push(PyInterpreter::parser_node(x)?);
             //当前node
         }
-        return pys;
+        return Ok(pys);
     }
-    pub fn parser_node(x: &str) -> Py {
-        let trim_x = x.trim();
+    pub fn parser_node(x: &str) -> Result<NodeType, String> {
+        let mut trim_x = x.trim();
         if trim_x.ends_with(":") {
+            trim_x = trim_x[0..trim_x.len() - 1].trim();
             if trim_x.starts_with("if ") {
-                return Py {
-                    tag: "if",
-                    props: trim_x["if ".len()..trim_x.len() - 1].trim().to_string(),
-                    childs: None,
-                };
+                trim_x = trim_x["if ".len()..].trim();
+                return Ok(NodeType::NIf(IfNode {
+                    childs: vec![],
+                    test: trim_x.to_string(),
+                }));
             } else if trim_x.starts_with("for ") {
-                return Py {
-                    tag: "for",
-                    props: trim_x["for ".len()..trim_x.len() - 1].trim().to_string(),
-                    childs: None,
-                };
+                if !trim_x.contains(" in ") {
+                    return Err("[rbatis] parser express fail:".to_string() + trim_x);
+                }
+                return Ok(NodeType::NForEach(ForEachNode {
+                    childs: vec![],
+                    collection: trim_x[trim_x.find(" in ").unwrap()..].trim().to_string(),
+                    index: "".to_string(),
+                    item: trim_x[..trim_x.find(" in ").unwrap()].trim().to_string(),
+                    open: "".to_string(),
+                    close: "".to_string(),
+                    separator: "".to_string(),
+                }));
             } else if trim_x.starts_with("trim ") {
-                return Py {
-                    tag: "trim",
-                    props: trim_x["trim ".len()..trim_x.len() - 1].trim().to_string(),
-                    childs: None,
-                };
+                trim_x = trim_x["trim ".len()..].trim();
+                if trim_x.starts_with("'") && trim_x.ends_with("'") {
+                    return Ok(NodeType::NTrim(TrimNode {
+                        childs: vec![],
+                        prefix: "".to_string(),
+                        suffix: "".to_string(),
+                        suffix_overrides: "".to_string(),
+                        prefix_overrides: "".to_string(),
+                    }));
+                } else {
+                    return Err("[rbatis] parser express fail:".to_string() + trim_x);
+                }
             } else {
                 // unkonw tag
-                return Py {
-                    tag: "unkonw",
-                    props: trim_x.to_string(),
-                    childs: None,
-                };
+                return Err("[rbatis] unknow tag with:".to_string() + trim_x);
             }
         } else {
             //string
-            return Py {
-                tag: "string",
-                props: " ".to_string() + x.trim(),
-                childs: None,
-            };
+            return Ok(NodeType::NString(StringNode::new(x)));
         }
     }
 
@@ -244,9 +185,6 @@ pub fn test_py_interpreter_parser() {
     //println!("{}", s);
     let pys = PyInterpreter::parser(s);
     println!("{:?}", pys);
-
-    let nts = pys.to_node_type();
-    println!("{:?}", nts);
 }
 
 #[test]
@@ -264,14 +202,10 @@ pub fn test_exec() {
       and delete_flag2 = #{del}
     where id  = '2';";
 
-    let pys = PyInterpreter::parser(s);
+    let pys = PyInterpreter::parser(s).unwrap();
     println!("{:?}", pys);
     println!("pys:len:{}", pys.len());
 
-
-    let nts = pys.to_node_type();
-    println!("{:?}", nts);
-    println!("nts:len:{}", nts.len());
 
     let mut arg_array = vec![];
     let mut holder = ConfigHolder::new();
@@ -280,7 +214,7 @@ pub fn test_exec() {
         "age": 27,
         "del":1
     });
-    let r = crate::ast::node::node::do_child_nodes(&nts, &mut env, &mut holder, &mut arg_array).unwrap();
+    let r = crate::ast::node::node::do_child_nodes(&pys, &mut env, &mut holder, &mut arg_array).unwrap();
     println!("{}", r);
 }
 
@@ -302,6 +236,5 @@ pub fn bench_exec() {
       and delete_flag2 = #{del}
     where id  = '2';";
         let pys = PyInterpreter::parser(s);
-        let nts = pys.to_node_type();
     });
 }
