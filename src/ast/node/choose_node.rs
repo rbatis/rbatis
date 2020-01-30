@@ -6,11 +6,11 @@ use serde_json::{json, Value};
 
 use crate::ast::ast::Ast;
 use crate::ast::config_holder::ConfigHolder;
-use crate::ast::xml::node::{create_deep, print_child, SqlNodePrint};
-use crate::ast::xml::node_type::NodeType;
-use crate::ast::xml::node_type::NodeType::NString;
-use crate::ast::xml::otherwise_node::OtherwiseNode;
-use crate::ast::xml::string_node::StringNode;
+use crate::ast::node::node::{create_deep, print_child, SqlNodePrint};
+use crate::ast::node::node_type::NodeType;
+use crate::ast::node::node_type::NodeType::NString;
+use crate::ast::node::otherwise_node::OtherwiseNode;
+use crate::ast::node::string_node::StringNode;
 use crate::engine::runtime::RbatisEngine;
 
 #[derive(Clone,Debug)]

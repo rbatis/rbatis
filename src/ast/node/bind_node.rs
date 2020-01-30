@@ -4,7 +4,7 @@ use serde_json::{json, Value};
 
 use crate::ast::ast::Ast;
 use crate::ast::config_holder::ConfigHolder;
-use crate::ast::xml::node::{create_deep, SqlNodePrint};
+use crate::ast::node::node::{create_deep, SqlNodePrint};
 use crate::engine;
 
 const TEMPLETE_BIND: &'static str = "<bind #{attr}>#{body}</bind>";

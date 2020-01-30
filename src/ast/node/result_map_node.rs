@@ -7,11 +7,11 @@ use serde_json::{json, Value};
 
 use crate::ast::ast::Ast;
 use crate::ast::config_holder::ConfigHolder;
-use crate::ast::xml::node::{create_deep, print_child, SqlNodePrint};
-use crate::ast::xml::node_type::NodeType;
-use crate::ast::xml::otherwise_node::OtherwiseNode;
-use crate::ast::xml::result_map_id_node::ResultMapIdNode;
-use crate::ast::xml::result_map_result_node::ResultMapResultNode;
+use crate::ast::node::node::{create_deep, print_child, SqlNodePrint};
+use crate::ast::node::node_type::NodeType;
+use crate::ast::node::otherwise_node::OtherwiseNode;
+use crate::ast::node::result_map_id_node::ResultMapIdNode;
+use crate::ast::node::result_map_result_node::ResultMapResultNode;
 use std::collections::HashMap;
 
 #[derive(Serialize, Deserialize, Clone, Debug)]

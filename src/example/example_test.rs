@@ -18,8 +18,8 @@ use rdbc::{DataType, Driver, ResultSet, ResultSetMetaData};
 use serde_json::{json, Number, Value};
 
 use crate::ast::config_holder::ConfigHolder;
-use crate::ast::xml::bind_node::BindNode;
-use crate::ast::xml::node_type::NodeType;
+use crate::ast::node::bind_node::BindNode;
+use crate::ast::node::node_type::NodeType;
 use crate::crud::ipage::IPage;
 use crate::decode::encoder::encode_to_value;
 use crate::decode::rdbc_driver_decoder;
@@ -357,21 +357,4 @@ pub fn test_service() {
     let act: Activity = s.select_activity().unwrap();
     println!("{:?}", serde_json::to_string(&act).unwrap().as_str());
     println!("{:?}", s.update_activity().unwrap());
-}
-
-#[test]
-pub fn test_service2() {
-    let s = "select * from biz_activity
-    if  name!=null:
-      and delete_flag = #{del}
-    and a = 0
-    for item in ids:
-      #{item}
-    trim 'and':
-      and delete_flag = #{del}
-    where id  = '2';";
-    println!("{}", s);
-
-    let ls = s.lines();
-    for x in ls {}
 }

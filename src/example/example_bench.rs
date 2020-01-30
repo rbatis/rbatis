@@ -1,13 +1,13 @@
 use std::fs;
 use crate::rbatis::Rbatis;
 use serde_json::{json, Value};
-use crate::ast::xml::bind_node::BindNode;
+use crate::ast::node::bind_node::BindNode;
 use crate::ast::ast::Ast;
 use crate::ast::config_holder::ConfigHolder;
 //use test::Bencher;
 use chrono::Local;
 use crate::utils;
-use crate::ast::xml::node_type::NodeType;
+use crate::ast::node::node_type::NodeType;
 use crate::utils::bencher::Bencher;
 
 //lazy_static! {
