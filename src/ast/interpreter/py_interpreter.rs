@@ -95,6 +95,22 @@ impl PyInterpreter {
                             NodeType::NWhere(node) => {
                                 node.childs = parserd;
                             }
+                            NodeType::NString(node) => {
+                                let mut news = node.value.clone();
+                                for x in parserd {
+                                    match x {
+                                        NodeType::NString(new_snode) => {
+                                            news = news + new_snode.value.as_str();
+                                        }
+                                        _ => {
+                                            return Err("[rbatis] parser node fail,string node' child must be same string node!:".to_string() + child_str.as_str());
+                                        }
+                                    }
+                                }
+                                if news.len() != node.value.len() {
+                                    *node = StringNode::new(news.as_str());
+                                }
+                            }
                             _ => {}
                         }
                     }
@@ -227,6 +243,7 @@ pub fn test_py_interpreter_parser() {
 pub fn test_exec() {
     let s = "
     SELECT * FROM biz_activity
+      AND del = 2
     if  name!=null:
       name = #{name}
     AND delete_flag1 = #{del}
