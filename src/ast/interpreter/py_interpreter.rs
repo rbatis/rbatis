@@ -108,7 +108,7 @@ impl Py {
 pub struct PyInterpreter {}
 
 impl PyInterpreter {
-    pub fn parser(&self, arg: &str) -> Vec<Py> {
+    pub fn parser(arg: &str) -> Vec<Py> {
         let mut pys = vec![];
         let ls = arg.lines();
 
@@ -125,18 +125,18 @@ impl PyInterpreter {
                 continue;
             }
 
-            let count_index = self.count_space(x);
+            let count_index = PyInterpreter::count_space(x);
             if space_index == -1 {
                 space_index = count_index;
             }
             if count_index > space_index {
-                let (child_str, skip) = self.find_child_str(line_index, space_index, arg);
+                let (child_str, skip) = PyInterpreter::find_child_str(line_index, space_index, arg);
                 if skip != -1 {
                     skip_line = skip;
                 }
                 if !child_str.is_empty() && pys.last_mut().is_some() {
                     let last: &mut Py = pys.last_mut().unwrap();
-                    let parserd = self.parser(child_str.as_str());
+                    let parserd = PyInterpreter::parser(child_str.as_str());
                     if !parserd.is_empty() {
                         last.childs = Some(parserd);
                     }
@@ -145,12 +145,12 @@ impl PyInterpreter {
             if skip_line != -1 && line_index <= skip_line {
                 continue;
             }
-            pys.push(self.parser_node(x));
+            pys.push(PyInterpreter::parser_node(x));
             //当前node
         }
         return pys;
     }
-    pub fn parser_node(&self, x: &str) -> Py {
+    pub fn parser_node(x: &str) -> Py {
         let trim_x = x.trim();
         if trim_x.ends_with(":") {
             if trim_x.starts_with("if ") {
@@ -189,7 +189,7 @@ impl PyInterpreter {
         }
     }
 
-    pub fn count_space(&self, arg: &str) -> i32 {
+    pub fn count_space(arg: &str) -> i32 {
         let cs = arg.chars();
         let mut index = 0;
         for x in cs {
@@ -204,7 +204,7 @@ impl PyInterpreter {
     }
 
     ///find_child_str
-    fn find_child_str(&self, line_index: i32, space_index: i32, arg: &str) -> (String, i32) {
+    fn find_child_str(line_index: i32, space_index: i32, arg: &str) -> (String, i32) {
         let mut result = String::new();
         let mut skip_line = -1;
         let mut index = -1;
@@ -212,7 +212,7 @@ impl PyInterpreter {
         for x in lines {
             index += 1;
             if index >= line_index {
-                if self.count_space(x) >= space_index {
+                if PyInterpreter::count_space(x) >= space_index {
                     result = result + x + "\n";
                     skip_line = index;
                 } else {
@@ -242,9 +242,7 @@ pub fn test_py_interpreter_parser() {
       and delete_flag = #{del2}
     where id  = '2';";
     //println!("{}", s);
-
-    let p = PyInterpreter {};
-    let pys = p.parser(s);
+    let pys = PyInterpreter::parser(s);
     println!("{:?}", pys);
 
     let nts = pys.to_node_type();
@@ -266,8 +264,7 @@ pub fn test_exec() {
       and delete_flag2 = #{del}
     where id  = '2';";
 
-    let p = PyInterpreter {};
-    let pys = p.parser(s);
+    let pys = PyInterpreter::parser(s);
     println!("{:?}", pys);
     println!("pys:len:{}", pys.len());
 
@@ -287,11 +284,11 @@ pub fn test_exec() {
     println!("{}", r);
 }
 
+//cargo test --release --color=always --package rbatis --lib ast::interpreter::py_interpreter::bench_exec --all-features -- --nocapture --exact
 #[test]
 pub fn bench_exec() {
-
-    let mut b =Bencher::new(1000000);
-    b.iter(  ||  {
+    let mut b = Bencher::new(1000000);
+    b.iter(|| {
         let s = "
     select * from biz_activity
     if  name!=null:
@@ -304,8 +301,7 @@ pub fn bench_exec() {
     trim 'and ':
       and delete_flag2 = #{del}
     where id  = '2';";
-        let p = PyInterpreter {};
-        let pys = p.parser(s);
+        let pys = PyInterpreter::parser(s);
         let nts = pys.to_node_type();
     });
 }
