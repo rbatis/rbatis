@@ -128,6 +128,7 @@ impl PyInterpreter {
         }
         return Ok(pys);
     }
+
     fn parser_node(x: &str) -> Result<NodeType, String> {
         let mut trim_x = x.trim();
         if trim_x.ends_with(":") {
@@ -179,7 +180,7 @@ impl PyInterpreter {
         }
     }
 
-    pub fn count_space(arg: &str) -> i32 {
+    fn count_space(arg: &str) -> i32 {
         let cs = arg.chars();
         let mut index = 0;
         for x in cs {
