@@ -7,7 +7,7 @@ use serde_json::{Map, Value};
 use serde_json::json;
 use serde_json::value::Value::Number;
 
-use crate::ast::xml::result_map_node::ResultMapNode;
+use crate::ast::node::result_map_node::ResultMapNode;
 use crate::convert::sql_value_convert::{AND, SkipType, SqlQuestionConvert, SqlValueConvert};
 use crate::engine::node::NodeType;
 use crate::rbatis::Rbatis;

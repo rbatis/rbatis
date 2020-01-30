@@ -1,7 +1,7 @@
 use std::collections::HashMap;
-use crate::ast::xml::node_type::NodeType;
+use crate::ast::node::node_type::NodeType;
 use crate::utils::xml_loader::load_xml;
-use crate::ast::xml::node::{loop_decode_xml};
+use crate::ast::node::node::{loop_decode_xml};
 use crate::ast::config_holder::ConfigHolder;
 
 pub fn create_node_type_map(xml_content: String,holder:&ConfigHolder) -> HashMap<String, NodeType> {
