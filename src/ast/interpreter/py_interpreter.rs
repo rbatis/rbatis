@@ -122,7 +122,7 @@ impl PyInterpreter {
                                             node.otherwise_node = Some(Box::new(x.clone()));
                                         }
                                         _ => {
-                                            return Err("[rbatis] parser node fail,choose node' child must be when and otherwise nodes!:".to_string() + child_str.as_str());
+                                            return Err("[rbatis] parser node fail,choose node' child must be when and otherwise nodes!: ".to_string() + child_str.as_str());
                                         }
                                     }
                                 }
@@ -135,7 +135,7 @@ impl PyInterpreter {
                                             news = news + new_snode.value.as_str();
                                         }
                                         _ => {
-                                            return Err("[rbatis] parser node fail,string node' child must be same string node!:".to_string() + child_str.as_str());
+                                            return Err("[rbatis] parser node fail,string node' child must be same string node!: ".to_string() + child_str.as_str());
                                         }
                                     }
                                 }
@@ -144,7 +144,7 @@ impl PyInterpreter {
                                 }
                             }
                             _ => {
-                                return Err("[rbatis] not support node  type in sql !:".to_string() + child_str.as_str());
+                                return Err("[rbatis] not support node  type in sql!: ".to_string() + child_str.as_str());
                             }
                         }
                     }
@@ -240,7 +240,7 @@ impl PyInterpreter {
                 }));
             } else {
                 // unkonw tag
-                return Err("[rbatis] unknow tag with:".to_string() + trim_x);
+                return Err("[rbatis] unknow tag: ".to_string() + trim_x);
             }
         } else {
             //string,replace space to only one
@@ -318,6 +318,7 @@ pub fn test_py_interpreter_parser() {
         and version = 1
       and version = 1
     and a = 0
+      yes
     for item in ids:
       #{item}
     trim 'and':
