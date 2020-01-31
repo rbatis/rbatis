@@ -45,28 +45,31 @@ impl PyInterpreter {
     }
 
     pub fn parser(arg: &str) -> Result<Vec<NodeType>, String> {
+        let line_space_map = PyInterpreter::create_line_space_map(arg);
+
+
         let mut pys = vec![];
         let ls = arg.lines();
 
         let mut skip_line = -1;
 
-        let mut space_index = -1;
-        let mut line_index = -1;
+        let mut space = -1;
+        let mut line = -1;
         for x in ls {
-            line_index += 1;
+            line += 1;
             if x.is_empty() {
                 continue;
             }
-            if skip_line != -1 && line_index <= skip_line {
+            if skip_line != -1 && line <= skip_line {
                 continue;
             }
 
-            let count_index = PyInterpreter::count_space(x);
-            if space_index == -1 {
-                space_index = count_index;
+            let count_index = *line_space_map.get(&line).unwrap();
+            if space == -1 {
+                space = count_index;
             }
-            if count_index > space_index {
-                let (child_str, skip) = PyInterpreter::find_child_str(line_index, count_index, arg);
+            if count_index > space {
+                let (child_str, skip) = PyInterpreter::find_child_str(line, count_index, arg, &line_space_map);
                 //println!("child_str: {},{}",skip,child_str.replace("\n",""));
                 if skip != -1 {
                     skip_line = skip;
@@ -100,10 +103,10 @@ impl PyInterpreter {
                             NodeType::NWhere(node) => {
                                 node.childs = parserd;
                             }
-                            NodeType::NSet(node) =>{
+                            NodeType::NSet(node) => {
                                 node.childs = parserd;
                             }
-                            NodeType::NWhere(node) =>{
+                            NodeType::NWhere(node) => {
                                 node.childs = parserd;
                             }
                             NodeType::NChoose(node) => {
@@ -147,11 +150,11 @@ impl PyInterpreter {
                     }
                 }
             }
-            if skip_line != -1 && line_index <= skip_line {
+            if skip_line != -1 && line <= skip_line {
                 continue;
             }
 
-            let node = PyInterpreter::parser_node(x)?;
+            let node = PyInterpreter::parser_node(x, *line_space_map.get(&line).unwrap() as usize)?;
 
 
             pys.push(node);
@@ -160,7 +163,7 @@ impl PyInterpreter {
         return Ok(pys);
     }
 
-    fn parser_node(x: &str) -> Result<NodeType, String> {
+    fn parser_node(x: &str, space: usize) -> Result<NodeType, String> {
         let mut trim_x = x.trim();
         if trim_x.ends_with(":") {
             trim_x = trim_x[0..trim_x.len() - 1].trim();
@@ -241,7 +244,13 @@ impl PyInterpreter {
             }
         } else {
             //string
-            return Ok(NodeType::NString(StringNode::new(x)));
+            let mut s_node;
+            if space <= 1 {
+                s_node = StringNode::new(x);
+            } else {
+                s_node = StringNode::new(x[(space - 1)..].as_ref());
+            }
+            return Ok(NodeType::NString(s_node));
         }
     }
 
@@ -262,17 +271,17 @@ impl PyInterpreter {
     }
 
     ///find_child_str
-    fn find_child_str(line_index: i32, space_index: i32, arg: &str) -> (String, i32) {
+    fn find_child_str(line_index: i32, space_index: i32, arg: &str, m: &HashMap<i32, i32>) -> (String, i32) {
         let mut result = String::new();
         let mut skip_line = -1;
-        let mut index = -1;
+        let mut line = -1;
         let lines = arg.lines();
         for x in lines {
-            index += 1;
-            if index >= line_index {
-                if PyInterpreter::count_space(x) >= space_index {
+            line += 1;
+            if line >= line_index {
+                if *m.get(&line).unwrap() >= space_index {
                     result = result + x + "\n";
-                    skip_line = index;
+                    skip_line = line;
                 } else {
                     break;
                 }
@@ -280,6 +289,20 @@ impl PyInterpreter {
         }
         let ss = result.as_str();
         return (result, skip_line);
+    }
+
+    ///Map<line,space>
+    fn create_line_space_map(arg: &str) -> HashMap<i32, i32> {
+        let mut m = HashMap::new();
+        let lines = arg.lines();
+        let mut line = -1;
+        for x in lines {
+            line += 1;
+            let space = PyInterpreter::count_space(x);
+            //dothing
+            m.insert(line, space);
+        }
+        return m;
     }
 }
 
@@ -328,7 +351,7 @@ pub fn test_exec() {
     let pys = PyInterpreter::parser(s).unwrap();
     //println!("{:?}", pys);
     //for x in &pys {
-       // println!("{:?}", x.clone());
+    // println!("{:?}", x.clone());
     //}
     //println!("pys:len:{}", pys.len());
 
