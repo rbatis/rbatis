@@ -243,7 +243,7 @@ impl PyInterpreter {
                 return Err("[rbatis] unknow tag with:".to_string() + trim_x);
             }
         } else {
-            //string
+            //string,replace space to only one
             let mut s_node;
             if space <= 1 {
                 s_node = StringNode::new(x);
