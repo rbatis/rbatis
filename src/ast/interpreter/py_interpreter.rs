@@ -327,10 +327,10 @@ pub fn test_exec() {
     where id  = '2';";
     let pys = PyInterpreter::parser(s).unwrap();
     //println!("{:?}", pys);
-    for x in &pys {
-        println!("{:?}", x.clone());
-    }
-    println!("pys:len:{}", pys.len());
+    //for x in &pys {
+       // println!("{:?}", x.clone());
+    //}
+    //println!("pys:len:{}", pys.len());
 
 
     let mut arg_array = vec![];
