@@ -100,6 +100,12 @@ impl PyInterpreter {
                             NodeType::NWhere(node) => {
                                 node.childs = parserd;
                             }
+                            NodeType::NSet(node) =>{
+                                node.childs = parserd;
+                            }
+                            NodeType::NWhere(node) =>{
+                                node.childs = parserd;
+                            }
                             NodeType::NChoose(node) => {
                                 for x in &parserd {
                                     match x {
