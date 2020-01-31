@@ -8,11 +8,17 @@ use serde_json::Value;
 
 use crate::ast::ast::Ast;
 use crate::ast::config_holder::ConfigHolder;
+use crate::ast::node::bind_node::BindNode;
+use crate::ast::node::choose_node::ChooseNode;
 use crate::ast::node::foreach_node::ForEachNode;
 use crate::ast::node::if_node::IfNode;
 use crate::ast::node::node_type::NodeType;
+use crate::ast::node::otherwise_node::OtherwiseNode;
+use crate::ast::node::set_node::SetNode;
 use crate::ast::node::string_node::StringNode;
 use crate::ast::node::trim_node::TrimNode;
+use crate::ast::node::when_node::WhenNode;
+use crate::ast::node::where_node::WhereNode;
 use crate::engine::parser::parser;
 use crate::utils::bencher::Bencher;
 
@@ -24,7 +30,6 @@ pub struct PyInterpreter {}
 
 
 impl PyInterpreter {
-
     //编译缓存
     pub fn parser_by_cache(arg: &str) -> Result<Vec<NodeType>, String> {
         // RwLock //let ParserMap: Mutex<HashMap<String, Vec<NodeType>>> = Mutex::new(HashMap::new());
@@ -95,9 +100,27 @@ impl PyInterpreter {
                             NodeType::NWhere(node) => {
                                 node.childs = parserd;
                             }
+                            NodeType::NChoose(node) => {
+                                for x in &parserd {
+                                    match x {
+                                        NodeType::NWhen(wnode) => {
+                                            if node.when_nodes.is_none() {
+                                                node.when_nodes = Some(vec![]);
+                                            }
+                                            node.when_nodes.as_mut().unwrap().push(x.clone());
+                                        }
+                                        NodeType::NOtherwise(onode) => {
+                                            node.otherwise_node = Some(Box::new(x.clone()));
+                                        }
+                                        _ => {
+                                            return Err("[rbatis] parser node fail,choose node' child must be when and otherwise nodes!:".to_string() + child_str.as_str());
+                                        }
+                                    }
+                                }
+                            }
                             NodeType::NString(node) => {
                                 let mut news = node.value.clone();
-                                for x in parserd {
+                                for x in &parserd {
                                     match x {
                                         NodeType::NString(new_snode) => {
                                             news = news + new_snode.value.as_str();
@@ -111,7 +134,9 @@ impl PyInterpreter {
                                     *node = StringNode::new(news.as_str());
                                 }
                             }
-                            _ => {}
+                            _ => {
+                                return Err("[rbatis] not support node  type in sql !:".to_string() + child_str.as_str());
+                            }
                         }
                     }
                 }
@@ -120,7 +145,7 @@ impl PyInterpreter {
                 continue;
             }
 
-            let node=PyInterpreter::parser_node(x)?;
+            let node = PyInterpreter::parser_node(x)?;
 
 
             pys.push(node);
@@ -133,6 +158,7 @@ impl PyInterpreter {
         let mut trim_x = x.trim();
         if trim_x.ends_with(":") {
             trim_x = trim_x[0..trim_x.len() - 1].trim();
+
             if trim_x.starts_with("if ") {
                 trim_x = trim_x["if ".len()..].trim();
                 return Ok(NodeType::NIf(IfNode {
@@ -144,9 +170,9 @@ impl PyInterpreter {
                     return Err("[rbatis] parser express fail:".to_string() + trim_x);
                 }
                 trim_x = trim_x["for ".len()..].trim();
-                let in_index=trim_x.find(" in ").unwrap();
-                let col=trim_x[in_index+" in ".len()..].trim();
-                let item=trim_x[..in_index].trim();
+                let in_index = trim_x.find(" in ").unwrap();
+                let col = trim_x[in_index + " in ".len()..].trim();
+                let item = trim_x[..in_index].trim();
                 return Ok(NodeType::NForEach(ForEachNode {
                     childs: vec![],
                     collection: col.to_string(),
@@ -159,7 +185,7 @@ impl PyInterpreter {
             } else if trim_x.starts_with("trim ") {
                 trim_x = trim_x["trim ".len()..].trim();
                 if trim_x.starts_with("'") && trim_x.ends_with("'") {
-                    trim_x = trim_x[1..trim_x.len()-1].trim();
+                    trim_x = trim_x[1..trim_x.len() - 1].trim();
                     return Ok(NodeType::NTrim(TrimNode {
                         childs: vec![],
                         prefix: "".to_string(),
@@ -170,6 +196,39 @@ impl PyInterpreter {
                 } else {
                     return Err("[rbatis] parser express fail:".to_string() + trim_x);
                 }
+            } else if trim_x.starts_with("choose ") {
+                trim_x = trim_x["choose ".len()..].trim();
+                return Ok(NodeType::NChoose(ChooseNode {
+                    when_nodes: None,
+                    otherwise_node: None,
+                }));
+            } else if trim_x.starts_with("otherwise ") {
+                trim_x = trim_x["otherwise ".len()..].trim();
+                return Ok(NodeType::NOtherwise(OtherwiseNode {
+                    childs: vec![],
+                }));
+            } else if trim_x.starts_with("when ") {
+                trim_x = trim_x["when ".len()..].trim();
+                return Ok(NodeType::NWhen(WhenNode {
+                    childs: vec![],
+                    test: trim_x.to_string(),
+                }));
+            } else if trim_x.starts_with("bind ") {
+                trim_x = trim_x["bind ".len()..].trim();
+                return Ok(NodeType::NBind(BindNode {
+                    name: "".to_string(),
+                    value: "".to_string(),
+                }));
+            } else if trim_x.starts_with("set ") {
+                trim_x = trim_x["set ".len()..].trim();
+                return Ok(NodeType::NSet(SetNode {
+                    childs: vec![]
+                }));
+            } else if trim_x.starts_with("where ") {
+                trim_x = trim_x["where ".len()..].trim();
+                return Ok(NodeType::NWhere(WhereNode {
+                    childs: vec![]
+                }));
             } else {
                 // unkonw tag
                 return Err("[rbatis] unknow tag with:".to_string() + trim_x);
@@ -213,7 +272,7 @@ impl PyInterpreter {
                 }
             }
         }
-        let ss=result.as_str();
+        let ss = result.as_str();
         return (result, skip_line);
     }
 }
