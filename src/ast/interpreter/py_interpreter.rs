@@ -310,20 +310,20 @@ impl PyInterpreter {
 #[test]
 pub fn test_py_interpreter_parser() {
     let s = "
-    select * from biz_activity
+    SELECT * FROM biz_activity
     if  name!=null:
-      and delete_flag = #{del}
-      and version = 1
+      AND delete_flag = #{del}
+      AND version = 1
       if  age!=1:
-        and version = 1
-      and version = 1
-    and a = 0
+        AND version = 1
+      AND version = 1
+    AND a = 0
       yes
     for item in ids:
       #{item}
-    trim 'and':
-      and delete_flag = #{del2}
-    where id  = '2';";
+    trim 'AND':
+      AND delete_flag = #{del2}
+    WHERE id  = '2';";
     //println!("{}", s);
     let pys = PyInterpreter::parser(s);
     println!("{:?}", pys);
@@ -338,9 +338,9 @@ pub fn test_exec() {
       name = #{name}
     AND delete_flag1 = #{del}
     if  age!=1:
-       and age = 2
+       AND age = 2
        if  age!=1:
-         and age = 3
+         AND age = 3
     trim 'AND ':
       AND delete_flag2 = #{del}
     AND ids in (
@@ -348,7 +348,7 @@ pub fn test_exec() {
       for item in ids:
         #{item},
     )
-    where id  = '2';";
+    WHERE id  = '2';";
     let pys = PyInterpreter::parser(s).unwrap();
     //println!("{:?}", pys);
     //for x in &pys {
@@ -376,17 +376,17 @@ pub fn bench_exec() {
     let mut b = Bencher::new(1000000);
     b.iter(|| {
         let s = "
-    select * from biz_activity
+    SELECT * FROM biz_activity
     if  name!=null:
       name = #{name}
-    and delete_flag1 = #{del}
+    AND delete_flag1 = #{del}
     if  age!=1:
-       and age = 2
+       AND age = 2
        if  age!=1:
-         and age = 3
-    trim 'and ':
-      and delete_flag2 = #{del}
-    where id  = '2';";
+         AND age = 3
+    trim 'AND ':
+      AND delete_flag2 = #{del}
+    WHERE id  = '2';";
         let pys = PyInterpreter::parser_by_cache(s);
     });
 }
