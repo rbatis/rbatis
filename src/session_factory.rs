@@ -3,8 +3,8 @@ use std::thread::ThreadId;
 
 use rdbc::Connection;
 
+use crate::abstract_session::AbstractSession;
 use crate::local_session::LocalSession;
-use crate::query_exec_able::QueryExecable;
 use crate::utils::driver_util;
 
 ///链接工厂
