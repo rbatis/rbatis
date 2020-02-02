@@ -5,9 +5,9 @@ use serde_json::de::ParserNumber;
 use serde_json::Value;
 use uuid::Uuid;
 
+use crate::abstract_session::AbstractSession;
 use crate::decode::rdbc_driver_decoder::decode_result_set;
 use crate::example::conf::MYSQL_URL;
-use crate::query_exec_able::QueryExecable;
 use crate::tx::propagation::Propagation;
 use crate::tx::save_point_stack::SavePointStack;
 use crate::tx::tx::{Tx, TxImpl};

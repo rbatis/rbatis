@@ -9,7 +9,7 @@ extern crate rdbc;
 extern crate serde_yaml;
 
 #[macro_use]
-pub mod r_macro;
+pub mod rbatis_macro;
 
 pub mod example;
 pub mod ast;
@@ -26,5 +26,5 @@ pub mod rbatis;
 pub mod db_config;
 pub mod session;
 pub mod local_session;
-pub mod query_exec_able;
+pub mod abstract_session;
 pub mod session_factory;
