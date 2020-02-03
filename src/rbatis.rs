@@ -194,11 +194,6 @@ impl Rbatis {
     ///    }));
     ///
     pub fn raw_sql<T>(&mut self, eval_sql: &str) -> Result<T, String> where T: de::DeserializeOwned {
-        let mut sql = eval_sql;
-        sql = sql.trim();
-        if sql.is_empty() {
-            return Result::Err("[rbatis] sql can not be empty!".to_string());
-        }
         let mut arg_array = vec![];
         return self.raw_sql_prepare("eval_sql", eval_sql, &mut arg_array);
     }
