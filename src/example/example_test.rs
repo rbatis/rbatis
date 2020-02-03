@@ -131,7 +131,7 @@ fn test_update() {
     let mut rbatis = rbatis_opt.unwrap();
     //先插入
     //插入前先删一下
-    let r: i32 = rbatis.eval_sql("delete from biz_activity  where id = '1'").unwrap();
+    let r: i32 = rbatis.raw_sql("delete from biz_activity  where id = '1'").unwrap();
     let r: i32 = rbatis.insert("Example_ActivityMapper.xml", &mut json!(Activity{
         id: Some("1".to_string()),
         name: Some("活动1".to_string()),
@@ -207,7 +207,7 @@ fn test_exec_sql() {
     }
     let mut array = vec![];
     //执行到远程mysql 并且获取结果,Result<serde_json::Value, String>,或者 Result<Activity, String> 等任意类型
-    let data: Vec<Activity> = rbatis.unwrap().eval("Example_ActivityMapper.xml", "select_by_condition", &mut json!({
+    let data: Vec<Activity> = rbatis.unwrap().mapper("Example_ActivityMapper.xml", "select_by_condition", &mut json!({
        "name":null,
        "startTime":null,
        "endTime":null,
@@ -272,14 +272,14 @@ fn test_tx_return() -> Result<u64, String> {
     let mut rbatis = rbatis_opt.unwrap();
     rbatis.begin("", Propagation::REQUIRED)?;
 
-    let u: u32 = rbatis.eval_sql("UPDATE `biz_activity` SET `name` = '活动1' WHERE (`id` = '2');")?;
+    let u: u32 = rbatis.raw_sql("UPDATE `biz_activity` SET `name` = '活动1' WHERE (`id` = '2');")?;
 
-    let u: u32 = rbatis.eval_sql("UPDATE `biz_activity` SET `name` = '活动2' WHERE (`id` = '2');")?;
+    let u: u32 = rbatis.raw_sql("UPDATE `biz_activity` SET `name` = '活动2' WHERE (`id` = '2');")?;
 
-    let u: u32 = rbatis.eval_sql("UPDATE `biz_activity` SET `name` = '活动3' WHERE (`id` = '2');")?;
+    let u: u32 = rbatis.raw_sql("UPDATE `biz_activity` SET `name` = '活动3' WHERE (`id` = '2');")?;
 
 
-    let act: Activity = rbatis.eval_sql("select * from biz_activity where id  = '2';")?;
+    let act: Activity = rbatis.raw_sql("select * from biz_activity where id  = '2';")?;
     println!("result:{}", serde_json::to_string(&act).unwrap());
 
 
@@ -347,7 +347,7 @@ pub fn test_service() {
 
     let mut s = ServiceImpl {
         select_activity: |s: &ServiceImpl| -> Result<Activity, String>{
-            let act: Activity = singleton().eval_sql("select * from biz_activity where id  = '2';").unwrap();
+            let act: Activity = singleton().raw_sql("select * from biz_activity where id  = '2';").unwrap();
             return Result::Ok(act);
         },
         update_activity: |s: &mut ServiceImpl| -> Result<String, String>{

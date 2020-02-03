@@ -21,12 +21,12 @@ use uuid::Uuid;
 
 use crate::ast::ast::Ast;
 use crate::ast::config_holder::ConfigHolder;
-use crate::ast::node_type_map_util::create_node_type_map;
 use crate::ast::node::bind_node::BindNode;
 use crate::ast::node::node::{loop_decode_xml, SqlNodePrint};
 use crate::ast::node::node_type::NodeType;
 use crate::ast::node::result_map_node::ResultMapNode;
 use crate::ast::node::string_node::StringNode;
+use crate::ast::node_type_map_util::create_node_type_map;
 use crate::crud::ipage::IPage;
 use crate::db_config::DBConfig;
 use crate::decode::rdbc_driver_decoder::decode_result_set;
@@ -47,7 +47,7 @@ pub fn singleton() -> MutexGuard<'static, Rbatis> {
 }
 
 pub fn eval_sql<T>(eval_sql: &str) -> Result<T, String> where T: de::DeserializeOwned {
-    return singleton().eval_sql(eval_sql)
+    return singleton().raw_sql(eval_sql)
 }
 
 
@@ -122,28 +122,6 @@ impl Rbatis {
     }
 
 
-    ///执行sql到数据库，例如:
-    ///    Result中结果可以为serde_json::Value，Vec，Array,Slice,LinkedList,Map,i32
-    ///
-    ///    let data_opt: Result<serde_json::Value, String> = rbatis.eval( "select * from table", &mut json!({
-    ///       "name":null,
-    ///       "startTime":null,
-    ///       "endTime":null,
-    ///       "page":null,
-    ///       "size":null,
-    ///    }));
-    ///
-    pub fn eval_sql<T>(&mut self, eval_sql: &str) -> Result<T, String> where T: de::DeserializeOwned {
-        let mut sql = eval_sql;
-        sql = sql.trim();
-        if sql.is_empty() {
-            return Result::Err("[rbatis] sql can not be empty!".to_string());
-        }
-        let is_select = sql.starts_with("select") || sql.starts_with("SELECT") || sql.starts_with("Select");
-        let mut arg_array = vec![];
-        return self.eval_raw("eval_sql", eval_sql, is_select, &mut arg_array);
-    }
-
     pub fn begin<'a>(&'a mut self, id: &str, propagation_type: Propagation) -> Result<&'a mut LocalSession, String> {
         let key = (self.router_func)(id);
         let db_conf_opt = self.db_driver_map.get(key.as_str());
@@ -181,10 +159,32 @@ impl Rbatis {
         return Result::Ok(1);
     }
 
+
+    ///执行sql到数据库，例如:
+    ///    Result中结果可以为serde_json::Value，Vec，Array,Slice,LinkedList,Map,i32
+    ///
+    ///    let data_opt: Result<serde_json::Value, String> = rbatis.raw_sql( "select * from table", &mut json!({
+    ///       "name":null,
+    ///       "startTime":null,
+    ///       "endTime":null,
+    ///       "page":null,
+    ///       "size":null,
+    ///    }));
+    ///
+    pub fn raw_sql<T>(&mut self, eval_sql: &str) -> Result<T, String> where T: de::DeserializeOwned {
+        let mut sql = eval_sql;
+        sql = sql.trim();
+        if sql.is_empty() {
+            return Result::Err("[rbatis] sql can not be empty!".to_string());
+        }
+        let mut arg_array = vec![];
+        return self.raw_sql_prepare("eval_sql", eval_sql, &mut arg_array);
+    }
+
     ///执行
     /// arg_array: 执行后 需要替换的参数数据
     /// return ：替换参数为 ？ 后的sql
-    pub fn eval_raw<T>(&mut self, id: &str, eval_sql: &str, is_select: bool, arg_array: &mut Vec<Value>) -> Result<T, String> where T: de::DeserializeOwned {
+    pub fn raw_sql_prepare<T>(&mut self, id: &str, eval_sql: &str, arg_array: &mut Vec<Value>) -> Result<T, String> where T: de::DeserializeOwned {
         let mut sql = eval_sql;
         sql = sql.trim();
         if sql.is_empty() {
@@ -198,7 +198,8 @@ impl Rbatis {
         }
         let driver = db_conf_opt.unwrap();
         let thread_id = thread::current().id();
-        if is_select {
+        let is_select = sql.starts_with("select") || sql.starts_with("SELECT") || sql.starts_with("Select");
+        if is_select  {
             //select
             let session = self.session_factory.get_thread_session(&thread_id, driver.as_str())?;
             return session.query(sql, &params);
@@ -219,7 +220,7 @@ impl Rbatis {
 
     ///执行sql到数据库，例如
     ///
-    ///    let data_opt: Result<serde_json::Value, String> = rbatis.eval("Example_ActivityMapper.xml".to_string(), "select_by_condition", &mut json!({
+    ///    let data_opt: Result<serde_json::Value, String> = rbatis.mapper("Example_ActivityMapper.xml".to_string(), "select_by_condition", &mut json!({
     ///       "name":null,
     ///       "startTime":null,
     ///       "endTime":null,
@@ -227,7 +228,7 @@ impl Rbatis {
     ///       "size":null,
     ///    }));
     ///
-    pub fn eval<T>(&mut self, mapper_name: &str, id: &str, env: &mut Value, arg_array: &mut Vec<Value>) -> Result<T, String> where T: de::DeserializeOwned {
+    pub fn mapper<T>(&mut self, mapper_name: &str, id: &str, env: &mut Value, arg_array: &mut Vec<Value>) -> Result<T, String> where T: de::DeserializeOwned {
         let mapper_opt = self.mapper_map.get(&mapper_name.to_string());
         if mapper_opt.is_none() {
             return Result::Err("[rbatis] find mapper fail,name:'".to_string() + mapper_name + "'");
@@ -241,14 +242,7 @@ impl Rbatis {
         let sql = sql_string.as_str();
 
         let sql_id = mapper_name.to_string() + "." + id;
-        match &mapper_func {
-            NodeType::NSelectNode(_) => {
-                return self.eval_raw(sql_id.as_str(), sql, true, arg_array);
-            }
-            _ => {
-                return self.eval_raw(sql_id.as_str(), sql, false, arg_array);
-            }
-        }
+        return self.raw_sql_prepare(sql_id.as_str(), sql, arg_array);
     }
 
 
