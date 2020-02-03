@@ -123,6 +123,7 @@ println!("[rbatis] result==> {:?}",data_result);
 | DataSourceRouter(动态数据源路由)                             | √     |  
 | Tx(事务/事务嵌套/注解声明式事务)                              | √     |   
 | Py(在SQL中使用和xml等价的类python语法)                        | √     | 
+| SlowSqlCount(内置慢查询日志分析)                              | x     | 
 | DataBaseConvertPlugin(数据库表结构转换为配置插件)             | x     | 
 | web(可视化Web UI)                                            | x     |  
 
