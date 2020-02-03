@@ -1,9 +1,9 @@
 use std::fs;
-
+use serde::{Deserialize, Serialize};
 use chrono::{DateTime, Utc};
 use std::collections::LinkedList;
 
-#[derive(Debug)]
+#[derive(Serialize, Deserialize, Clone, Debug)]
 pub struct Log {
     pub sql: String,
     pub return_data: String,
