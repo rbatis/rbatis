@@ -4,11 +4,12 @@ use std::rc::Rc;
 use serde_json::{json, Value};
 
 use crate::ast::ast::Ast;
-use crate::ast::config_holder::ConfigHolder;
+
 use crate::ast::node::node::{create_deep, SqlNodePrint};
 use crate::engine;
 use crate::utils::string_util;
 use crate::convert::sql_value_convert::SqlValueConvert;
+use crate::engine::runtime::RbatisEngine;
 
 /**
 *  string抽象节点
@@ -41,13 +42,13 @@ impl StringNode {
 }
 
 impl Ast for StringNode {
-    fn eval(&self, env: &mut Value, holder: &mut ConfigHolder,arg_array:&mut Vec<Value>) -> Result<String, String> {
+    fn eval(&self, env: &mut Value, engine: &mut RbatisEngine,arg_array:&mut Vec<Value>) -> Result<String, String> {
         let mut result = self.value.clone();
         for (item, value) in &self.express_map {
             result = result.replace(value, " ? ");
             let get_v = env.get(item);
             if get_v.is_none() {
-                let v = holder.engine.eval(item, env).unwrap();
+                let v = engine.eval(item, env).unwrap();
                 arg_array.push(v);
             } else {
                 let v = get_v.unwrap().clone();
@@ -75,7 +76,7 @@ pub fn test_string_node() {
     let mut john = json!({
         "arg": 2,
     });
-    let mut holder = ConfigHolder::new();
+    let mut holder = RbatisEngine::new();
     let s_node = StringNode::new("arg+1=#{arg+1}");
     let mut arg_array=vec![];
 

@@ -3,7 +3,7 @@ use std::rc::Rc;
 use serde_json::{json, Value};
 
 use crate::ast::ast::Ast;
-use crate::ast::config_holder::ConfigHolder;
+
 use crate::ast::node::bind_node::BindNode;
 use crate::ast::node::choose_node::ChooseNode;
 use crate::ast::node::delete_node::DeleteNode;
@@ -24,6 +24,7 @@ use crate::ast::node::update_node::UpdateNode;
 use crate::ast::node::when_node::WhenNode;
 use crate::ast::node::where_node::WhereNode;
 use crate::engine::node::Node;
+use crate::engine::runtime::RbatisEngine;
 
 #[derive(Clone,Debug)]
 pub enum NodeType {
@@ -69,7 +70,7 @@ impl NodeType {
 }
 
 impl<'a> Ast for NodeType {
-    fn eval(&self, env: &mut Value, holder: &mut ConfigHolder,arg_array:&mut Vec<Value>) -> Result<String, String> {
+    fn eval(&self, env: &mut Value, holder: &mut RbatisEngine,arg_array:&mut Vec<Value>) -> Result<String, String> {
         match self {
             NodeType::NResultMapIdNode(node) => return node.eval(env,holder,arg_array),
             NodeType::NResultMapResultNode(node) => return node.eval(env,holder,arg_array),

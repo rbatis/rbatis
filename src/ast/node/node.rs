@@ -3,7 +3,7 @@ use std::rc::Rc;
 
 use serde_json::{json, Value};
 
-use crate::ast::config_holder::ConfigHolder;
+
 use crate::ast::node::bind_node::BindNode;
 use crate::ast::node::choose_node::ChooseNode;
 use crate::ast::node::delete_node::DeleteNode;
@@ -27,6 +27,7 @@ use crate::utils::xml_loader::Element;
 
 use super::node_type::NodeType;
 use crate::ast::ast::Ast;
+use crate::engine::runtime::RbatisEngine;
 
 pub trait SqlNodePrint {
     fn print(&self, deep: i32) -> String;
@@ -34,7 +35,7 @@ pub trait SqlNodePrint {
 
 
 //执行子所有节点
-pub fn do_child_nodes(child_nodes: &Vec<NodeType>, env: &mut Value,holder: &mut ConfigHolder,arg_array:&mut Vec<Value>) -> Result<String, String> {
+pub fn do_child_nodes(child_nodes: &Vec<NodeType>, env: &mut Value,holder: &mut RbatisEngine,arg_array:&mut Vec<Value>) -> Result<String, String> {
     let mut s = String::new();
     for item in child_nodes {
         let item_result = item.eval(env,holder,arg_array);
@@ -67,7 +68,7 @@ pub fn create_deep(deep: i32) -> String {
 
 #[test]
 fn test_string_node() {
-    let mut holder = ConfigHolder::new();
+    let mut holder = RbatisEngine::new();
     let mut john = json!({
         "name": "John Doe",
     });
