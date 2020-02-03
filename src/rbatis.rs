@@ -165,7 +165,18 @@ impl Rbatis {
     /// 执行py sql到数据库，例如:
     ///    Result中结果可以为serde_json::Value，Vec，Array,Slice,LinkedList,Map,i32
     ///
-    ///    let data_opt: Result<serde_json::Value, String> = rbatis.raw_sql( "select * from table", &mut json!({
+    ///    let data_opt: Result<serde_json::Value, String> = rbatis.raw_sql( "
+    ///    SELECT * FROM biz_activity
+    ///    if  name!=null:
+    ///      name = #{name}
+    ///    AND delete_flag1 = #{del}
+    ///    if  age!=1:
+    ///       AND age = 2
+    ///       if  age!=1:
+    ///         AND age = 3
+    ///    trim 'AND ':
+    ///      AND delete_flag2 = #{del}
+    ///    WHERE id  = '2';", &mut json!({
     ///       "name":null,
     ///       "startTime":null,
     ///       "endTime":null,
