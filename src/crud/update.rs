@@ -22,7 +22,7 @@ impl Rbatis {
     }
 
 
-    pub fn create_sql_update(&self, mapper_name: &str, arg: &mut Value, arg_array: &mut Vec<Value>) -> Result<String, String> {
+    fn create_sql_update(&self, mapper_name: &str, arg: &mut Value, arg_array: &mut Vec<Value>) -> Result<String, String> {
         let result_map_node = self.get_result_map_node(mapper_name)?;
         match arg {
             serde_json::Value::Array(arr) => {
