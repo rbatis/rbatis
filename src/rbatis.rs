@@ -136,7 +136,7 @@ impl Rbatis {
         return Result::Ok(session);
     }
 
-    pub fn rollback(&mut self, id: &str) -> Result<i32, String> {
+    pub fn rollback<'a>(&mut self, id: &'a str) -> Result<&'a str, String> {
         let key = (self.router_func)(id);
         let db_conf_opt = self.db_driver_map.get(key.as_str());
         if db_conf_opt.is_none() {
@@ -145,10 +145,10 @@ impl Rbatis {
         let driver = db_conf_opt.unwrap();
         let thread_id = thread::current().id();
         self.session_factory.get_thread_session(&thread_id, driver.as_str())?.rollback()?;
-        return Result::Ok(1);
+        return Result::Ok(id);
     }
 
-    pub fn commit(&mut self, id: &str) -> Result<i32, String> {
+    pub fn commit<'a>(&mut self, id: &'a str) -> Result<&'a str, String> {
         let key = (self.router_func)(id);
         let db_conf_opt = self.db_driver_map.get(key.as_str());
         if db_conf_opt.is_none() {
@@ -157,7 +157,7 @@ impl Rbatis {
         let driver = db_conf_opt.unwrap();
         let thread_id = thread::current().id();
         self.session_factory.get_thread_session(&thread_id, driver.as_str())?.commit()?;
-        return Result::Ok(1);
+        return Result::Ok(id);
     }
 
 
