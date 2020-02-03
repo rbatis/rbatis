@@ -5,7 +5,7 @@ use std::rc::Rc;
 use serde_json::{json, Value};
 
 use crate::ast::ast::Ast;
-use crate::ast::config_holder::ConfigHolder;
+
 use crate::ast::node::node::{create_deep, print_child, SqlNodePrint};
 use crate::ast::node::node_type::NodeType;
 use crate::ast::node::node_type::NodeType::NString;
@@ -20,7 +20,7 @@ pub struct ChooseNode {
 }
 
 impl Ast for ChooseNode {
-    fn eval(&self, env: &mut Value, holder: &mut ConfigHolder,arg_array:&mut Vec<Value>) -> Result<String, String> {
+    fn eval(&self, env: &mut Value, holder: &mut RbatisEngine,arg_array:&mut Vec<Value>) -> Result<String, String> {
         if self.when_nodes.is_none() == false {
             for item in self.when_nodes.clone().unwrap() {
                 let s = item.eval(env,holder,arg_array);
@@ -49,12 +49,10 @@ impl SqlNodePrint for ChooseNode {
 
 #[test]
 pub fn test_choose_node() {
-    let mut holder = ConfigHolder::new();
+    let mut holder = RbatisEngine::new();
     let mut john = json!({
         "arg": 2,
     });
-    let engine = RbatisEngine::new();
-
     let s_node = NString(StringNode::new("dsaf#{arg+1}"));
 
     let c = ChooseNode {

@@ -3,9 +3,10 @@ use std::rc::Rc;
 use serde_json::{json, Value};
 
 use crate::ast::ast::Ast;
-use crate::ast::config_holder::ConfigHolder;
+
 use crate::ast::node::node::{create_deep, SqlNodePrint};
 use crate::engine;
+use crate::engine::runtime::RbatisEngine;
 
 const TEMPLETE_BIND: &'static str = "<bind #{attr}>#{body}</bind>";
 
@@ -16,8 +17,8 @@ pub struct BindNode {
 }
 
 impl Ast for BindNode {
-    fn eval(&self, env: &mut Value, holder: &mut ConfigHolder,arg_array:&mut Vec<Value>) -> Result<String, String> {
-        let r = holder.engine.eval(self.value.as_str(), env);
+    fn eval(&self, env: &mut Value, holder: &mut RbatisEngine,arg_array:&mut Vec<Value>) -> Result<String, String> {
+        let r = holder.eval(self.value.as_str(), env);
         env[self.name.as_str()] = r.unwrap_or(Value::Null);
         return Result::Ok("".to_string());
     }
@@ -34,7 +35,7 @@ impl SqlNodePrint for BindNode {
 
 #[test]
 fn test_bind_node() {
-    let mut holder = ConfigHolder::new();
+    let mut holder = RbatisEngine::new();
     let bind_node = BindNode {
         name: "a".to_string(),
         value: "a+1".to_string(),

@@ -7,7 +7,7 @@ use serde_json::json;
 use serde_json::Value;
 
 use crate::ast::ast::Ast;
-use crate::ast::config_holder::ConfigHolder;
+
 use crate::ast::node::bind_node::BindNode;
 use crate::ast::node::choose_node::ChooseNode;
 use crate::ast::node::foreach_node::ForEachNode;
@@ -21,6 +21,7 @@ use crate::ast::node::when_node::WhenNode;
 use crate::ast::node::where_node::WhereNode;
 use crate::engine::parser::parser;
 use crate::utils::bencher::Bencher;
+use crate::engine::runtime::RbatisEngine;
 
 lazy_static! {
   static ref ParserMap: Mutex<HashMap<String,Vec<NodeType>>> = Mutex::new(HashMap::new());
@@ -358,7 +359,7 @@ pub fn test_exec() {
 
 
     let mut arg_array = vec![];
-    let mut holder = ConfigHolder::new();
+    let mut holder = RbatisEngine::new();
     let mut env = json!({
         "name": "1",
         "age": 27,

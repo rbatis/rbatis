@@ -1,7 +1,7 @@
 use std::collections::HashMap;
 use crate::ast::node::node_type::NodeType;
 use crate::utils::xml_loader::{load_xml, Element};
-use crate::ast::config_holder::ConfigHolder;
+
 use crate::ast::node::select_node::SelectNode;
 use crate::ast::node::insert_node::InsertNode;
 use crate::ast::node::if_node::IfNode;
@@ -20,8 +20,9 @@ use crate::ast::node::string_node::StringNode;
 use crate::ast::node::bind_node::BindNode;
 use crate::ast::node::delete_node::DeleteNode;
 use crate::ast::node::update_node::UpdateNode;
+use crate::engine::runtime::RbatisEngine;
 
-pub fn parser(xml_content: String, holder:&ConfigHolder) -> HashMap<String, NodeType> {
+pub fn parser(xml_content: String, holder:&RbatisEngine) -> HashMap<String, NodeType> {
     let nodes = load_xml(xml_content);
     let data = loop_decode_xml(&nodes, holder);
     let mut m = HashMap::new();
@@ -46,7 +47,7 @@ pub fn parser(xml_content: String, holder:&ConfigHolder) -> HashMap<String, Node
     return m;
 }
 
-pub fn loop_decode_xml(xml_vec: &Vec<Element>, holder: &ConfigHolder) -> Vec<NodeType> {
+pub fn loop_decode_xml(xml_vec: &Vec<Element>, holder: &RbatisEngine) -> Vec<NodeType> {
     let mut nodes = vec![];
     for xml in xml_vec {
         let child_nodes;

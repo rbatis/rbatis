@@ -6,13 +6,14 @@ use serde::{Deserialize, Serialize};
 use serde_json::{json, Value};
 
 use crate::ast::ast::Ast;
-use crate::ast::config_holder::ConfigHolder;
+
 use crate::ast::node::node::{create_deep, print_child, SqlNodePrint};
 use crate::ast::node::node_type::NodeType;
 use crate::ast::node::otherwise_node::OtherwiseNode;
 use crate::ast::node::result_map_id_node::ResultMapIdNode;
 use crate::ast::node::result_map_result_node::ResultMapResultNode;
 use std::collections::HashMap;
+use crate::engine::runtime::RbatisEngine;
 
 #[derive(Serialize, Deserialize, Clone, Debug)]
 pub struct ResultMapNode {
@@ -61,7 +62,7 @@ impl ResultMapNode {
 }
 
 impl Ast for ResultMapNode {
-    fn eval(&self, env: &mut Value, holder: &mut ConfigHolder,arg_array:&mut Vec<Value>) -> Result<String, String> {
+    fn eval(&self, env: &mut Value, holder: &mut RbatisEngine,arg_array:&mut Vec<Value>) -> Result<String, String> {
         return Result::Ok("".to_string());
     }
 }

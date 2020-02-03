@@ -3,9 +3,10 @@ use std::borrow::BorrowMut;
 use serde_json::{json, Value};
 
 use crate::ast::ast::Ast;
-use crate::ast::config_holder::ConfigHolder;
+
 use crate::ast::node::node::{create_deep, do_child_nodes, print_child, SqlNodePrint};
 use crate::ast::node::node_type::NodeType;
+use crate::engine::runtime::RbatisEngine;
 
 #[derive(Clone,Debug)]
 pub struct WhenNode {
@@ -16,8 +17,8 @@ pub struct WhenNode {
 
 
 impl Ast for WhenNode {
-    fn eval(&self, env: &mut Value, holder: &mut ConfigHolder,arg_array:&mut Vec<Value>) -> Result<String, String> {
-        let result_value = holder.engine.eval(self.test.as_str(), env);
+    fn eval(&self, env: &mut Value, holder: &mut RbatisEngine,arg_array:&mut Vec<Value>) -> Result<String, String> {
+        let result_value = holder.eval(self.test.as_str(), env);
         if result_value.is_err() {
             return Result::Err(result_value.err().unwrap());
         }

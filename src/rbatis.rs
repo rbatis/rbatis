@@ -20,7 +20,7 @@ use serde_json::ser::State::Rest;
 use uuid::Uuid;
 
 use crate::ast::ast::Ast;
-use crate::ast::config_holder::ConfigHolder;
+
 use crate::ast::lang::py::Py;
 use crate::ast::node::bind_node::BindNode;
 use crate::ast::node::node::{do_child_nodes, SqlNodePrint};
@@ -36,6 +36,7 @@ use crate::tx::propagation::Propagation;
 use crate::utils::{driver_util, rdbc_util};
 use crate::utils::rdbc_util::to_rdbc_values;
 use crate::utils::xml_loader::load_xml;
+use crate::engine::runtime::RbatisEngine;
 
 lazy_static! {
   static ref RBATIS: Mutex<Rbatis> = Mutex::new(Rbatis::new());
@@ -56,7 +57,7 @@ pub struct Rbatis {
     //动态sql运算节点集合
     pub mapper_map: HashMap<String, HashMap<String, NodeType>>,
     //动态sql节点配置
-    pub holder: ConfigHolder,
+    pub holder: RbatisEngine,
     //路由配置
     pub db_driver_map: HashMap<String, String>,
     pub router_func: fn(id: &str) -> String,
@@ -73,7 +74,7 @@ impl Rbatis {
         return Self {
             id: Uuid::new_v4().to_string(),
             mapper_map: HashMap::new(),
-            holder: ConfigHolder::new(),
+            holder: RbatisEngine::new(),
             db_driver_map: HashMap::new(),
             session_factory: SessionFactoryCached::new(false),
             router_func: |id| -> String{
