@@ -11,7 +11,12 @@ pub struct Log {
 }
 
 pub fn find_slow_sql(log_path: &str) {
-    let data = fs::read_to_string(log_path).unwrap();
+    let data_result = fs::read_to_string(log_path);
+    if data_result.is_err(){
+        return;
+    }
+    let data = data_result.unwrap();
+
     let mut use_time_vec = LinkedList::new();
     let mut temp = 0;
     let mut time_start = None;
