@@ -21,7 +21,7 @@ use uuid::Uuid;
 
 use crate::ast::ast::Ast;
 use crate::ast::config_holder::ConfigHolder;
-use crate::ast::interpreter::py::Py;
+use crate::ast::lang::py::Py;
 use crate::ast::node::bind_node::BindNode;
 use crate::ast::node::node::{do_child_nodes, SqlNodePrint};
 use crate::ast::node::node_type::NodeType;
@@ -100,7 +100,7 @@ impl Rbatis {
         if self.enable_log {
             info!("===========load {}==============\n{}\n================ end {}===============", key, content, key);
         }
-        self.mapper_map.insert(key, crate::ast::interpreter::xml::parser(content, &self.holder));
+        self.mapper_map.insert(key, crate::ast::lang::xml::parser(content, &self.holder));
     }
 
 
