@@ -76,10 +76,10 @@ pub fn test_string_node() {
     let mut john = json!({
         "arg": 2,
     });
-    let mut holder = RbatisEngine::new();
+    let mut engine = RbatisEngine::new();
     let s_node = StringNode::new("arg+1=#{arg+1}");
     let mut arg_array=vec![];
 
-    let r = s_node.eval(&mut john,&mut holder, &mut arg_array).unwrap();
+    let r = s_node.eval(&mut john,&mut engine, &mut arg_array).unwrap();
     println!("{}", r);
 }

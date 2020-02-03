@@ -57,7 +57,7 @@ pub struct Rbatis {
     //动态sql运算节点集合
     pub mapper_map: HashMap<String, HashMap<String, NodeType>>,
     //动态sql节点配置
-    pub holder: RbatisEngine,
+    pub engine: RbatisEngine,
     //路由配置
     pub db_driver_map: HashMap<String, String>,
     pub router_func: fn(id: &str) -> String,
@@ -74,7 +74,7 @@ impl Rbatis {
         return Self {
             id: Uuid::new_v4().to_string(),
             mapper_map: HashMap::new(),
-            holder: RbatisEngine::new(),
+            engine: RbatisEngine::new(),
             db_driver_map: HashMap::new(),
             session_factory: SessionFactoryCached::new(false),
             router_func: |id| -> String{
@@ -101,7 +101,7 @@ impl Rbatis {
         if self.enable_log {
             info!("===========load {}==============\n{}\n================ end {}===============", key, content, key);
         }
-        self.mapper_map.insert(key, crate::ast::lang::xml::parser(content, &self.holder));
+        self.mapper_map.insert(key, crate::ast::lang::xml::parser(content, &self.engine));
     }
 
 
@@ -177,7 +177,7 @@ impl Rbatis {
     pub fn py_sql<T>(&mut self, mapper_name: &str, env: &mut Value, eval_sql: &str) -> Result<T, String> where T: de::DeserializeOwned {
         let pys = Py::parser_by_cache(eval_sql)?;
         let mut arg_array = vec![];
-        let raw_sql = do_child_nodes(&pys, env, &mut self.holder, &mut arg_array)?;
+        let raw_sql = do_child_nodes(&pys, env, &mut self.engine, &mut arg_array)?;
         return self.raw_sql_prepare(mapper_name, raw_sql.as_str(), &mut arg_array);
     }
 
@@ -260,7 +260,7 @@ impl Rbatis {
             return Result::Err("[rbatis] find method fail,name:'".to_string() + mapper_name + id + "'");
         }
         let mapper_func = node.unwrap();
-        let sql_string = mapper_func.eval(env, &mut self.holder, arg_array)?;
+        let sql_string = mapper_func.eval(env, &mut self.engine, arg_array)?;
         let sql = sql_string.as_str();
 
         let sql_id = mapper_name.to_string() + "." + id;

@@ -15,8 +15,8 @@ pub struct IfNode {
 }
 
 impl Ast for IfNode {
-    fn eval(&self, env: &mut Value, holder: &mut RbatisEngine,arg_array:&mut Vec<Value>) -> Result<String, String> {
-        let result = holder.eval(self.test.as_str(), env);
+    fn eval(&self, env: &mut Value, engine: &mut RbatisEngine,arg_array:&mut Vec<Value>) -> Result<String, String> {
+        let result = engine.eval(self.test.as_str(), env);
         if result.is_err() {
             return Result::Err(result.err().unwrap());
         }
@@ -25,7 +25,7 @@ impl Ast for IfNode {
             return Result::Err("[rbatis] express:'".to_owned() + self.test.as_str() + "' is not return bool value!");
         }
         if b.as_bool().unwrap() {
-            return do_child_nodes(&self.childs, env,holder,arg_array);
+            return do_child_nodes(&self.childs, env,engine,arg_array);
         }
         return Result::Ok("".to_string());
     }
@@ -51,8 +51,8 @@ pub fn test_if_node() {
     let mut john = json!({
         "arg": 1,
     });
-    let mut holder = RbatisEngine::new();
+    let mut engine = RbatisEngine::new();
     let mut arg_array=vec![];
 
-    println!("{}", node.eval(&mut john,&mut holder, &mut arg_array).unwrap());
+    println!("{}", node.eval(&mut john,&mut engine, &mut arg_array).unwrap());
 }

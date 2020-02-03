@@ -17,8 +17,8 @@ pub struct BindNode {
 }
 
 impl Ast for BindNode {
-    fn eval(&self, env: &mut Value, holder: &mut RbatisEngine,arg_array:&mut Vec<Value>) -> Result<String, String> {
-        let r = holder.eval(self.value.as_str(), env);
+    fn eval(&self, env: &mut Value, engine: &mut RbatisEngine,arg_array:&mut Vec<Value>) -> Result<String, String> {
+        let r = engine.eval(self.value.as_str(), env);
         env[self.name.as_str()] = r.unwrap_or(Value::Null);
         return Result::Ok("".to_string());
     }
@@ -35,7 +35,7 @@ impl SqlNodePrint for BindNode {
 
 #[test]
 fn test_bind_node() {
-    let mut holder = RbatisEngine::new();
+    let mut engine = RbatisEngine::new();
     let bind_node = BindNode {
         name: "a".to_string(),
         value: "a+1".to_string(),
@@ -47,7 +47,7 @@ fn test_bind_node() {
 
     let mut arg_array=vec![];
 
-    let r = bind_node.eval(&mut john,&mut holder, &mut arg_array).unwrap();
+    let r = bind_node.eval(&mut john,&mut engine, &mut arg_array).unwrap();
 
 
     println!("r={}", r);

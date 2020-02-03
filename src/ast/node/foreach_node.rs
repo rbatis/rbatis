@@ -22,7 +22,7 @@ pub struct ForEachNode {
 }
 
 impl Ast for ForEachNode {
-    fn eval(&self, env: &mut Value, holder: &mut RbatisEngine,arg_array:&mut Vec<Value>) -> Result<String, String> {
+    fn eval(&self, env: &mut Value, engine: &mut RbatisEngine,arg_array:&mut Vec<Value>) -> Result<String, String> {
         let mut result = String::new();
 
         //open
@@ -47,7 +47,7 @@ impl Ast for ForEachNode {
             obj_map.insert("item".to_string(), item.clone());
             obj_map.insert("index".to_string(), Value::Number(serde_json::Number::from_f64(index as f64).unwrap()));
             let mut temp_arg: Value = Value::Object(obj_map);
-            let item_result = do_child_nodes(&self.childs, &mut temp_arg, holder,arg_array);
+            let item_result = do_child_nodes(&self.childs, &mut temp_arg, engine,arg_array);
             if item_result.is_err() {
                 return item_result;
             }
@@ -81,7 +81,7 @@ impl SqlNodePrint for ForEachNode {
 
 #[test]
 pub fn test_for_each_node() {
-    let mut holder = RbatisEngine::new();
+    let mut engine = RbatisEngine::new();
     let n = ForEachNode {
         childs: vec![NodeType::NString(StringNode::new("index:#{index},item:#{item}"))],
         collection: "arg".to_string(),
@@ -95,6 +95,6 @@ pub fn test_for_each_node() {
         "arg": 1,
     });
     let mut arg_array=vec![];
-    let r = n.eval(&mut john,&mut holder, &mut arg_array);
+    let r = n.eval(&mut john,&mut engine, &mut arg_array);
     println!("{}", r.unwrap_or("null".to_string()));
 }

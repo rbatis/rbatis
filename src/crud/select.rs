@@ -58,7 +58,7 @@ impl Rbatis {
             return Result::Err("[rbatis] find method fail,name:'".to_string() + mapper_name + id + "'");
         }
         let mapper_func = node.unwrap();
-        let sql_string = mapper_func.eval(&mut new_arg, &mut self.holder, &mut arg_array)?;
+        let sql_string = mapper_func.eval(&mut new_arg, &mut self.engine, &mut arg_array)?;
         //create where str
         let mut where_befer_string = "".to_string();
         let mut where_string = "".to_string();

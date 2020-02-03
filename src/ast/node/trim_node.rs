@@ -17,8 +17,8 @@ pub struct TrimNode {
 }
 
 impl Ast for TrimNode {
-    fn eval(&self, env: &mut Value, holder: &mut RbatisEngine,arg_array:&mut Vec<Value>) -> Result<String, String> {
-        let result_value = do_child_nodes(&self.childs, env, holder,arg_array);
+    fn eval(&self, env: &mut Value, engine: &mut RbatisEngine,arg_array:&mut Vec<Value>) -> Result<String, String> {
+        let result_value = do_child_nodes(&self.childs, env, engine,arg_array);
         let is_error = result_value.is_err();
         if is_error {
             return Result::Err(result_value.clone().err().unwrap());
@@ -61,7 +61,7 @@ impl SqlNodePrint for TrimNode {
 
 #[test]
 pub fn test_trim_node() {
-    let mut holder = RbatisEngine::new();
+    let mut engine = RbatisEngine::new();
     let node = TrimNode {
         childs: vec![NodeType::NString(StringNode::new("1trim value1"))],
         prefix: "(".to_string(),
@@ -74,6 +74,6 @@ pub fn test_trim_node() {
     });
     let mut arg_array=vec![];
 
-    let r = node.eval(&mut john,&mut holder, &mut arg_array).unwrap();
+    let r = node.eval(&mut john,&mut engine, &mut arg_array).unwrap();
     println!("{}", r)
 }
