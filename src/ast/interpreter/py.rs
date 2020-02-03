@@ -26,10 +26,10 @@ lazy_static! {
   static ref ParserMap: Mutex<HashMap<String,Vec<NodeType>>> = Mutex::new(HashMap::new());
 }
 
-pub struct PyInterpreter {}
+pub struct Py {}
 
 
-impl PyInterpreter {
+impl Py {
     //编译缓存
     pub fn parser_by_cache(arg: &str) -> Result<Vec<NodeType>, String> {
         // RwLock //let ParserMap: Mutex<HashMap<String, Vec<NodeType>>> = Mutex::new(HashMap::new());
@@ -38,14 +38,14 @@ impl PyInterpreter {
         if nodes.is_some() {
             return Ok(nodes.unwrap().clone());
         } else {
-            let nods = PyInterpreter::parser(arg)?;
+            let nods = Py::parser(arg)?;
             rd.insert(arg.to_string(), nods.clone());
             return Ok(nods);
         }
     }
 
     pub fn parser(arg: &str) -> Result<Vec<NodeType>, String> {
-        let line_space_map = PyInterpreter::create_line_space_map(arg);
+        let line_space_map = Py::create_line_space_map(arg);
 
 
         let mut pys = vec![];
@@ -69,14 +69,14 @@ impl PyInterpreter {
                 space = count_index;
             }
             if count_index > space {
-                let (child_str, skip) = PyInterpreter::find_child_str(line, count_index, arg, &line_space_map);
+                let (child_str, skip) = Py::find_child_str(line, count_index, arg, &line_space_map);
                 //println!("child_str: {},{}",skip,child_str.replace("\n",""));
                 if skip != -1 {
                     skip_line = skip;
                 }
                 if !child_str.is_empty() && pys.last_mut().is_some() {
                     let last: &mut NodeType = pys.last_mut().unwrap();
-                    let parserd = PyInterpreter::parser(child_str.as_str())?;
+                    let parserd = Py::parser(child_str.as_str())?;
                     if !parserd.is_empty() {
                         match last {
                             NodeType::NTrim(node) => {
@@ -154,7 +154,7 @@ impl PyInterpreter {
                 continue;
             }
 
-            let node = PyInterpreter::parser_node(x, *line_space_map.get(&line).unwrap() as usize)?;
+            let node = Py::parser_node(x, *line_space_map.get(&line).unwrap() as usize)?;
 
 
             pys.push(node);
@@ -298,7 +298,7 @@ impl PyInterpreter {
         let mut line = -1;
         for x in lines {
             line += 1;
-            let space = PyInterpreter::count_space(x);
+            let space = Py::count_space(x);
             //dothing
             m.insert(line, space);
         }
@@ -325,7 +325,7 @@ pub fn test_py_interpreter_parser() {
       AND delete_flag = #{del2}
     WHERE id  = '2';";
     //println!("{}", s);
-    let pys = PyInterpreter::parser(s);
+    let pys = Py::parser(s);
     println!("{:?}", pys);
 }
 
@@ -349,7 +349,7 @@ pub fn test_exec() {
         #{item},
     )
     WHERE id  = '2';";
-    let pys = PyInterpreter::parser(s).unwrap();
+    let pys = Py::parser(s).unwrap();
     //println!("{:?}", pys);
     //for x in &pys {
     // println!("{:?}", x.clone());
@@ -387,6 +387,6 @@ pub fn bench_exec() {
     trim 'AND ':
       AND delete_flag2 = #{del}
     WHERE id  = '2';";
-        let pys = PyInterpreter::parser_by_cache(s);
+        let pys = Py::parser_by_cache(s);
     });
 }
