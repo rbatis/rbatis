@@ -359,14 +359,14 @@ pub fn test_exec() {
 
 
     let mut arg_array = vec![];
-    let mut holder = RbatisEngine::new();
+    let mut engine = RbatisEngine::new();
     let mut env = json!({
         "name": "1",
         "age": 27,
         "del":1,
         "ids":[1,2,3]
     });
-    let mut r = crate::ast::node::node::do_child_nodes(&pys, &mut env, &mut holder, &mut arg_array).unwrap();
+    let mut r = crate::ast::node::node::do_child_nodes(&pys, &mut env, &mut engine, &mut arg_array).unwrap();
     println!("{}", r.clone());
     println!("{:?}", arg_array.clone());
 }

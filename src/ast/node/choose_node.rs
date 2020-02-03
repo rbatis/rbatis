@@ -20,17 +20,17 @@ pub struct ChooseNode {
 }
 
 impl Ast for ChooseNode {
-    fn eval(&self, env: &mut Value, holder: &mut RbatisEngine,arg_array:&mut Vec<Value>) -> Result<String, String> {
+    fn eval(&self, env: &mut Value, engine: &mut RbatisEngine,arg_array:&mut Vec<Value>) -> Result<String, String> {
         if self.when_nodes.is_none() == false {
             for item in self.when_nodes.clone().unwrap() {
-                let s = item.eval(env,holder,arg_array);
+                let s = item.eval(env,engine,arg_array);
                 if s.is_ok() {
                     return s;
                 }
             }
         }
         if self.otherwise_node.is_none() == false {
-            return self.otherwise_node.clone().unwrap().deref_mut().eval(env,holder,arg_array);
+            return self.otherwise_node.clone().unwrap().deref_mut().eval(env,engine,arg_array);
         }
         return Result::Ok("".to_string());
     }
@@ -49,7 +49,7 @@ impl SqlNodePrint for ChooseNode {
 
 #[test]
 pub fn test_choose_node() {
-    let mut holder = RbatisEngine::new();
+    let mut engine = RbatisEngine::new();
     let mut john = json!({
         "arg": 2,
     });
@@ -62,6 +62,6 @@ pub fn test_choose_node() {
     let mut arg_array=vec![];
 
 
-    let r = c.eval(&mut john,&mut holder, &mut arg_array);
+    let r = c.eval(&mut john,&mut engine, &mut arg_array);
     println!("{}", r.unwrap());
 }

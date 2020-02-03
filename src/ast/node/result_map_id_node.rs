@@ -18,7 +18,7 @@ pub struct ResultMapIdNode {
 
 
 impl Ast for ResultMapIdNode {
-    fn eval(&self, env: &mut Value, holder: &mut RbatisEngine,arg_array:&mut Vec<Value>) -> Result<String, String> {
+    fn eval(&self, env: &mut Value, engine: &mut RbatisEngine,arg_array:&mut Vec<Value>) -> Result<String, String> {
         return Result::Ok("".to_string());
     }
 }

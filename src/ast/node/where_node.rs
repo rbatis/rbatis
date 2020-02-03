@@ -12,8 +12,8 @@ pub struct WhereNode {
 }
 
 impl Ast for WhereNode {
-    fn eval(&self, env: &mut Value, holder: &mut RbatisEngine,arg_array:&mut Vec<Value>) -> Result<String, String> {
-        let result = do_child_nodes(&self.childs, env,holder,arg_array);
+    fn eval(&self, env: &mut Value, engine: &mut RbatisEngine,arg_array:&mut Vec<Value>) -> Result<String, String> {
+        let result = do_child_nodes(&self.childs, env,engine,arg_array);
         if result.is_ok() {
             let r = result.unwrap();
             let s = r.trim();

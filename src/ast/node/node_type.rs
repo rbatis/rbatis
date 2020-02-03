@@ -70,29 +70,29 @@ impl NodeType {
 }
 
 impl<'a> Ast for NodeType {
-    fn eval(&self, env: &mut Value, holder: &mut RbatisEngine,arg_array:&mut Vec<Value>) -> Result<String, String> {
+    fn eval(&self, env: &mut Value, engine: &mut RbatisEngine,arg_array:&mut Vec<Value>) -> Result<String, String> {
         match self {
-            NodeType::NResultMapIdNode(node) => return node.eval(env,holder,arg_array),
-            NodeType::NResultMapResultNode(node) => return node.eval(env,holder,arg_array),
-            NodeType::NResultMapNode(node) => return node.eval(env,holder,arg_array),
+            NodeType::NResultMapIdNode(node) => return node.eval(env,engine,arg_array),
+            NodeType::NResultMapResultNode(node) => return node.eval(env,engine,arg_array),
+            NodeType::NResultMapNode(node) => return node.eval(env,engine,arg_array),
 
-            NodeType::NSelectNode(node) => return node.eval(env,holder,arg_array),
-            NodeType::NDeleteNode(node) => return node.eval(env,holder,arg_array),
-            NodeType::NUpdateNode(node) => return node.eval(env,holder,arg_array),
-            NodeType::NInsertNode(node) => return node.eval(env,holder,arg_array),
+            NodeType::NSelectNode(node) => return node.eval(env,engine,arg_array),
+            NodeType::NDeleteNode(node) => return node.eval(env,engine,arg_array),
+            NodeType::NUpdateNode(node) => return node.eval(env,engine,arg_array),
+            NodeType::NInsertNode(node) => return node.eval(env,engine,arg_array),
 
             NodeType::Null => return Result::Ok(String::new()),
-            NodeType::NString(node) => return node.eval(env,holder,arg_array),
-            NodeType::NIf(node) => return node.eval(env,holder,arg_array),
-            NodeType::NTrim(node) => return node.eval(env,holder,arg_array),
-            NodeType::NForEach(node) => return node.eval(env,holder,arg_array),
-            NodeType::NChoose(node) => return node.eval(env,holder,arg_array),
-            NodeType::NOtherwise(node) => return node.eval(env,holder,arg_array),
-            NodeType::NWhen(node) => return node.eval(env,holder,arg_array),
-            NodeType::NBind(node) => return node.eval(env,holder,arg_array),
-            NodeType::NInclude(node) => return node.eval(env,holder,arg_array),
-            NodeType::NSet(node) => return node.eval(env,holder,arg_array),
-            NodeType::NWhere(node) => return node.eval(env,holder,arg_array),
+            NodeType::NString(node) => return node.eval(env,engine,arg_array),
+            NodeType::NIf(node) => return node.eval(env,engine,arg_array),
+            NodeType::NTrim(node) => return node.eval(env,engine,arg_array),
+            NodeType::NForEach(node) => return node.eval(env,engine,arg_array),
+            NodeType::NChoose(node) => return node.eval(env,engine,arg_array),
+            NodeType::NOtherwise(node) => return node.eval(env,engine,arg_array),
+            NodeType::NWhen(node) => return node.eval(env,engine,arg_array),
+            NodeType::NBind(node) => return node.eval(env,engine,arg_array),
+            NodeType::NInclude(node) => return node.eval(env,engine,arg_array),
+            NodeType::NSet(node) => return node.eval(env,engine,arg_array),
+            NodeType::NWhere(node) => return node.eval(env,engine,arg_array),
             _ => Result::Err(String::from("eval NodeType not exist!")),
         }
     }
