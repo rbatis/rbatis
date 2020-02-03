@@ -164,24 +164,15 @@ impl Rbatis {
     /// 执行py sql到数据库，例如:
     ///    Result中结果可以为serde_json::Value，Vec，Array,Slice,LinkedList,Map,i32
     ///
-    ///    let data_opt: Result<serde_json::Value, String> = rbatis.raw_sql( "
-    ///    SELECT * FROM biz_activity
-    ///    if  name!=null:
-    ///      name = #{name}
-    ///    AND delete_flag1 = #{del}
-    ///    if  age!=1:
-    ///       AND age = 2
-    ///       if  age!=1:
-    ///         AND age = 3
-    ///    trim 'AND ':
-    ///      AND delete_flag2 = #{del}
-    ///    WHERE id  = '2';", &mut json!({
-    ///       "name":null,
-    ///       "startTime":null,
-    ///       "endTime":null,
-    ///       "page":null,
-    ///       "size":null,
-    ///    }));
+    ///    let data: Vec<Activity> = rbatis.unwrap().py_sql("Example_ActivityMapper.xml", &mut json!({
+    ///       "name":"新人专享",
+    ///       "delete_flag": 1,
+    ///    }), "
+    ///    SELECT * FROM biz_activity WHERE delete_flag = 1
+    ///    if name != null:
+    ///      AND name like #{name+'%'}
+    ///    ").unwrap();
+    ///    println!("[rbatis] result==>  {:?}", data);
     ///
     pub fn py_sql<T>(&mut self, mapper_name: &str, env: &mut Value, eval_sql: &str) -> Result<T, String> where T: de::DeserializeOwned {
         let pys = Py::parser_by_cache(eval_sql)?;
