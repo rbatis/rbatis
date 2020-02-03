@@ -23,11 +23,10 @@ use crate::ast::ast::Ast;
 use crate::ast::config_holder::ConfigHolder;
 use crate::ast::interpreter::py::Py;
 use crate::ast::node::bind_node::BindNode;
-use crate::ast::node::node::{do_child_nodes, loop_decode_xml, SqlNodePrint};
+use crate::ast::node::node::{do_child_nodes, SqlNodePrint};
 use crate::ast::node::node_type::NodeType;
 use crate::ast::node::result_map_node::ResultMapNode;
 use crate::ast::node::string_node::StringNode;
-use crate::ast::node_type_map_util::create_node_type_map;
 use crate::crud::ipage::IPage;
 use crate::db_config::DBConfig;
 use crate::decode::rdbc_driver_decoder::decode_result_set;
@@ -101,7 +100,7 @@ impl Rbatis {
         if self.enable_log {
             info!("===========load {}==============\n{}\n================ end {}===============", key, content, key);
         }
-        self.mapper_map.insert(key, create_node_type_map(content, &self.holder));
+        self.mapper_map.insert(key, crate::ast::interpreter::xml::parser(content, &self.holder));
     }
 
 
@@ -266,7 +265,7 @@ impl Rbatis {
         let sql_id = mapper_name.to_string() + "." + id;
         return self.raw_sql_prepare(sql_id.as_str(), sql, arg_array);
     }
-    
+
 
 
     ///打印内容
