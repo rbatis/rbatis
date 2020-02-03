@@ -121,7 +121,7 @@ println!("[rbatis] result==> {:?}",data_result);
 | PagePlugin(分页插件)                                         | √     |
 | DataSourceRouter(动态数据源路由)                             | √     |  
 | Tx(事务/事务嵌套/注解声明式事务)                              | √     |   
-| JoinQueryPlugin(组合查询插件，对关联查询进行分解代替join)     | x     | 
+| DataBaseConvertPlugin(数据库表结构转换为配置插件)             | x     | 
 | web(可视化Web UI)                                            | x     |  
 
 
