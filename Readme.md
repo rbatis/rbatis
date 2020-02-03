@@ -108,6 +108,7 @@ println!("[rbatis] result==> {:?}",data_result);
 | ------ | ------ |
 | Mysql            | √     |   
 | Postgres         | √     |  
+| SQLlite          | √     |  
 | TiDB             | .     |
 | CockroachDB      | .     |
 
