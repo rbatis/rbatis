@@ -15,6 +15,7 @@ use crate::utils::string_util::count_string_num;
 use crate::session_factory::SessionFactory;
 
 impl Rbatis {
+
     pub fn delete<T>(&mut self, mapper_name: &str, arg: &mut Value) -> Result<T, String> where T: DeserializeOwned {
         let mut arg_array = vec![];
         let sql = self.create_sql_delete(mapper_name, arg, &mut arg_array)?;
@@ -22,7 +23,7 @@ impl Rbatis {
     }
 
 
-    pub fn create_sql_delete(&self, mapper_name: &str, arg: &mut Value, arg_arr: &mut Vec<Value>) -> Result<String, String> {
+    fn create_sql_delete(&self, mapper_name: &str, arg: &mut Value, arg_arr: &mut Vec<Value>) -> Result<String, String> {
         let result_map_node = self.get_result_map_node(mapper_name)?;
         match arg {
             serde_json::Value::String(_) | serde_json::Value::Number(_) => {

@@ -266,6 +266,7 @@ impl Rbatis {
         let sql_id = mapper_name.to_string() + "." + id;
         return self.raw_sql_prepare(sql_id.as_str(), sql, arg_array);
     }
+    
 
 
     ///打印内容
