@@ -21,8 +21,9 @@ use uuid::Uuid;
 
 use crate::ast::ast::Ast;
 use crate::ast::config_holder::ConfigHolder;
+use crate::ast::interpreter::py::Py;
 use crate::ast::node::bind_node::BindNode;
-use crate::ast::node::node::{loop_decode_xml, SqlNodePrint, do_child_nodes};
+use crate::ast::node::node::{do_child_nodes, loop_decode_xml, SqlNodePrint};
 use crate::ast::node::node_type::NodeType;
 use crate::ast::node::result_map_node::ResultMapNode;
 use crate::ast::node::string_node::StringNode;
@@ -36,7 +37,6 @@ use crate::tx::propagation::Propagation;
 use crate::utils::{driver_util, rdbc_util};
 use crate::utils::rdbc_util::to_rdbc_values;
 use crate::utils::xml_loader::load_xml;
-use crate::ast::interpreter::py::Py;
 
 lazy_static! {
   static ref RBATIS: Mutex<Rbatis> = Mutex::new(Rbatis::new());
@@ -48,7 +48,7 @@ pub fn singleton() -> MutexGuard<'static, Rbatis> {
 }
 
 pub fn eval_sql<T>(eval_sql: &str) -> Result<T, String> where T: de::DeserializeOwned {
-    return singleton().raw_sql(eval_sql)
+    return singleton().raw_sql(eval_sql);
 }
 
 
@@ -131,7 +131,7 @@ impl Rbatis {
         }
         let driver = db_conf_opt.unwrap();
         let thread_id = thread::current().id();
-        let session= self.session_factory.get_thread_session(&thread_id, driver.as_str())?;
+        let session = self.session_factory.get_thread_session(&thread_id, driver.as_str())?;
         session.begin(propagation_type)?;
         return Result::Ok(session);
     }
@@ -161,7 +161,6 @@ impl Rbatis {
     }
 
 
-
     /// 执行py sql到数据库，例如:
     ///    Result中结果可以为serde_json::Value，Vec，Array,Slice,LinkedList,Map,i32
     ///
@@ -184,10 +183,11 @@ impl Rbatis {
     ///       "size":null,
     ///    }));
     ///
-    pub fn py_sql<T>(&mut self,  mapper_name: &str,env: &mut Value, arg_array: &mut Vec<Value>, eval_sql: &str) -> Result<T, String> where T: de::DeserializeOwned {
+    pub fn py_sql<T>(&mut self, mapper_name: &str, env: &mut Value, eval_sql: &str) -> Result<T, String> where T: de::DeserializeOwned {
         let pys = Py::parser_by_cache(eval_sql)?;
-        let raw_sql=do_child_nodes(&pys,env,&mut self.holder,arg_array)?;
-        return self.raw_sql(raw_sql.as_str());
+        let mut arg_array = vec![];
+        let raw_sql = do_child_nodes(&pys, env, &mut self.holder, &mut arg_array)?;
+        return self.raw_sql_prepare(mapper_name, raw_sql.as_str(), &mut arg_array);
     }
 
 
@@ -230,7 +230,7 @@ impl Rbatis {
         let driver = db_conf_opt.unwrap();
         let thread_id = thread::current().id();
         let is_select = sql.starts_with("select") || sql.starts_with("SELECT") || sql.starts_with("Select");
-        if is_select  {
+        if is_select {
             //select
             let session = self.session_factory.get_thread_session(&thread_id, driver.as_str())?;
             return session.query(sql, &params);

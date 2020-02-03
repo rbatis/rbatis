@@ -256,6 +256,28 @@ fn test_exec_select_page_custom() {
 
 
 /**
+   sql中使用py语法(指定xml mapper id)
+*/
+#[test]
+fn test_exec_py_sql() {
+    //初始化rbatis
+    let rbatis = init_rbatis();
+    if rbatis.is_err() {
+        return;
+    }
+    //执行到远程mysql 并且获取结果,Result<serde_json::Value, String>,或者 Result<Activity, String> 等任意类型
+    let data: Vec<Activity> = rbatis.unwrap().py_sql("Example_ActivityMapper.xml", &mut json!({
+       "name":"新人专享",
+       "delete_flag": 1,
+    }), "
+    SELECT * FROM biz_activity WHERE delete_flag = 1
+    if name != null:
+      AND name like #{name+'%'}
+    ").unwrap();
+    println!("[rbatis] result==>  {:?}", data);
+}
+
+/**
   测试事务
 */
 #[test]
