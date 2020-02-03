@@ -24,7 +24,6 @@ pub mod tx;
 
 pub mod rbatis;
 pub mod db_config;
-pub mod session;
 pub mod local_session;
 pub mod abstract_session;
 pub mod session_factory;
