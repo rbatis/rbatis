@@ -122,7 +122,7 @@ impl Rbatis {
     }
 
 
-    pub fn begin<'a>(&'a mut self, id: &str, propagation_type: Propagation) -> Result<&'a mut LocalSession, String> {
+    pub fn begin(&mut self, id: &str, propagation_type: Propagation) -> Result<&mut LocalSession, String> {
         let key = (self.router_func)(id);
         let db_conf_opt = self.db_driver_map.get(key.as_str());
         if db_conf_opt.is_none() {
