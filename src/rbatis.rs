@@ -22,7 +22,7 @@ use uuid::Uuid;
 use crate::ast::ast::Ast;
 use crate::ast::config_holder::ConfigHolder;
 use crate::ast::node::bind_node::BindNode;
-use crate::ast::node::node::{loop_decode_xml, SqlNodePrint};
+use crate::ast::node::node::{loop_decode_xml, SqlNodePrint, do_child_nodes};
 use crate::ast::node::node_type::NodeType;
 use crate::ast::node::result_map_node::ResultMapNode;
 use crate::ast::node::string_node::StringNode;
@@ -36,6 +36,7 @@ use crate::tx::propagation::Propagation;
 use crate::utils::{driver_util, rdbc_util};
 use crate::utils::rdbc_util::to_rdbc_values;
 use crate::utils::xml_loader::load_xml;
+use crate::ast::interpreter::py::Py;
 
 lazy_static! {
   static ref RBATIS: Mutex<Rbatis> = Mutex::new(Rbatis::new());
@@ -157,6 +158,25 @@ impl Rbatis {
         let thread_id = thread::current().id();
         self.session_factory.get_thread_session(&thread_id, driver.as_str())?.commit()?;
         return Result::Ok(1);
+    }
+
+
+
+    /// 执行py sql到数据库，例如:
+    ///    Result中结果可以为serde_json::Value，Vec，Array,Slice,LinkedList,Map,i32
+    ///
+    ///    let data_opt: Result<serde_json::Value, String> = rbatis.raw_sql( "select * from table", &mut json!({
+    ///       "name":null,
+    ///       "startTime":null,
+    ///       "endTime":null,
+    ///       "page":null,
+    ///       "size":null,
+    ///    }));
+    ///
+    pub fn py_sql<T>(&mut self,  mapper_name: &str,env: &mut Value, arg_array: &mut Vec<Value>, eval_sql: &str) -> Result<T, String> where T: de::DeserializeOwned {
+        let pys = Py::parser_by_cache(eval_sql)?;
+        let raw_sql=do_child_nodes(&pys,env,&mut self.holder,arg_array)?;
+        return self.raw_sql(raw_sql.as_str());
     }
 
 
