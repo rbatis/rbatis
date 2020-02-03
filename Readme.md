@@ -122,7 +122,7 @@ println!("[rbatis] result==> {:?}",data_result);
 | PagePlugin(分页插件)                                         | √     |
 | DataSourceRouter(动态数据源路由)                             | √     |  
 | Tx(事务/事务嵌套/注解声明式事务)                              | √     |   
-| Py(在SQL中使用和xml等价的类python语法)                        | x     | 
+| Py(在SQL中使用和xml等价的类python语法)                        | √     | 
 | DataBaseConvertPlugin(数据库表结构转换为配置插件)             | x     | 
 | web(可视化Web UI)                                            | x     |  
 
