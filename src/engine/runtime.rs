@@ -3,6 +3,7 @@ use std::collections::HashMap;
 use serde_json::Value;
 use crate::engine::parser::parser;
 use crate::engine::node::Node;
+use crate::error::RbatisError;
 
 #[derive(Clone,Debug)]
 pub struct RbatisEngine {
@@ -19,7 +20,7 @@ impl RbatisEngine {
         }
     }
 
-    pub fn eval(&mut self, expr: &str, arg: &Value) -> Result<Value, String>{
+    pub fn eval(&mut self, expr: &str, arg: &Value) -> Result<Value, RbatisError>{
         let mut lexer_arg = expr.to_string();
         if expr.find(" and ").is_some() {
             lexer_arg=lexer_arg.replace(" and ", " && ");
@@ -39,7 +40,7 @@ impl RbatisEngine {
         }
     }
 
-    pub fn eval_no_cache(&self, lexer_arg: &str, arg: &Value) -> Result<Value, String>{
+    pub fn eval_no_cache(&self, lexer_arg: &str, arg: &Value) -> Result<Value, RbatisError>{
             let nodes = parser(lexer_arg.to_string(), &self.opt_map);
             if nodes.is_err(){
                 return Result::Err(nodes.err().unwrap());

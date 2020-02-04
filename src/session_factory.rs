@@ -6,10 +6,11 @@ use rdbc::Connection;
 use crate::abstract_session::AbstractSession;
 use crate::local_session::LocalSession;
 use crate::utils::driver_util;
+use crate::error::RbatisError;
 
 ///链接工厂
 pub trait SessionFactory {
-    fn get_thread_session(&mut self, id: &ThreadId, driver: &str) -> Result<&mut LocalSession, String>;
+    fn get_thread_session(&mut self, id: &ThreadId, driver: &str) -> Result<&mut LocalSession, RbatisError>;
 }
 
 
@@ -32,7 +33,7 @@ impl Drop for SessionFactoryCached {
 }
 
 impl SessionFactory for SessionFactoryCached {
-    fn get_thread_session(&mut self, id: &ThreadId, driver: &str) -> Result<&mut LocalSession, String> {
+    fn get_thread_session(&mut self, id: &ThreadId, driver: &str) -> Result<&mut LocalSession, RbatisError> {
         if self.clean_no_tx_link {
             let mut kvec = vec![];
             for (k, v) in &self.data {

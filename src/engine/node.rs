@@ -13,6 +13,7 @@ use serde_json::value::Value::{Null, Number};
 use crate::engine::eval::eval;
 use crate::engine::node::NodeType::{NArg, NBinary, NBool, NNull, NNumber, NOpt, NString};
 use crate::engine::runtime::{is_number, OptMap, parser_tokens};
+use crate::error::RbatisError;
 
 #[derive(Clone, PartialEq,Debug)]
 pub enum NodeType {
@@ -89,7 +90,7 @@ impl Node {
         }
     }
 
-    pub fn eval(&self, env: &Value) -> Result<Value, String> {
+    pub fn eval(&self, env: &Value) -> Result<Value, RbatisError> {
         if self.equal_node_type(&NBinary) {
             let left_v = self.left_binary_node.as_ref().unwrap().eval(env).unwrap_or(Value::Null);
             let right_v = self.right_binary_node.as_ref().unwrap().eval(env).unwrap_or(Value::Null);

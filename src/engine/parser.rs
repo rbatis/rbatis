@@ -7,8 +7,9 @@ use std::ops::Deref;
 use crate::engine::node::Node;
 use crate::engine::node::NodeType::{NBinary, NOpt};
 use crate::engine::runtime::{is_number, OptMap, parser_tokens};
+use crate::error::RbatisError;
 
-pub fn parser(express: String, opt_map: &OptMap) -> Result<Node, String> {
+pub fn parser(express: String, opt_map: &OptMap) -> Result<Node, RbatisError> {
     let tokens = parser_tokens(&express, opt_map);
     let mut nodes = vec![];
     for item in tokens {
@@ -28,7 +29,7 @@ pub fn parser(express: String, opt_map: &OptMap) -> Result<Node, String> {
     if nodes.len()>0{
         return Result::Ok(nodes[0].deref().clone());
     }else{
-        return Result::Err("[rbatis] parser express fail".to_string());
+        return Result::Err(RbatisError::from("[rbatis] parser express fail".to_string()));
     }
 }
 

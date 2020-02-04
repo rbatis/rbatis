@@ -30,11 +30,12 @@ use crate::rbatis::{eval_sql, Rbatis, singleton};
 use crate::session_factory::{SessionFactory, SessionFactoryCached};
 use crate::tx::propagation::Propagation::{NONE, REQUIRED};
 use crate::tx::propagation::Propagation;
+use crate::error::RbatisError;
 
 /**
  初始化实例
 */
-fn init_rbatis() -> Result<Rbatis, String> {
+fn init_rbatis() -> Result<Rbatis, RbatisError> {
     //1 启用日志(可选，不添加则不加载日志库)
     log4rs::init_file("log4rs.yaml", Default::default()).unwrap();
 
@@ -50,7 +51,7 @@ fn init_rbatis() -> Result<Rbatis, String> {
     let conf = rbatis.db_driver_map.get("").unwrap();
     if conf.contains("localhost") {
         error!("{}", "请修改mysql链接'mysql://root:TEST@localhost:3306/test' 替换为具体的 用户名，密码，ip，和数据库名称");
-        return Err("请修改mysql链接'mysql://root:TEST@localhost:3306/test' 替换为具体的 用户名，密码，ip，和数据库名称".to_string());
+        return Err(RbatisError::from("请修改mysql链接'mysql://root:TEST@localhost:3306/test' 替换为具体的 用户名，密码，ip，和数据库名称".to_string()));
     }
 
 //    自定义动态数据源路由return 的字符串为 rbatis.db_router 中定义的配置的key(默认""为默认配置)（在此之前需要加载配置rbatis.load_db_url()）
@@ -104,7 +105,7 @@ fn test_insert() {
         version: Some(1),
         delete_flag: Some(1),
     };
-    let r: Result<i32, String> = rbatis.insert("Example_ActivityMapper.xml", &mut json!(activity));
+    let r: Result<i32, RbatisError> = rbatis.insert("Example_ActivityMapper.xml", &mut json!(activity));
     println!("[rbatis] result==>  {:?}", r);
 }
 
@@ -117,7 +118,7 @@ fn test_delete() {
         return;
     }
     let mut rbatis = rbatis_opt.unwrap();
-    let r: Result<i32, String> = rbatis.delete("Example_ActivityMapper.xml", &mut json!("1"));
+    let r: Result<i32, RbatisError> = rbatis.delete("Example_ActivityMapper.xml", &mut json!("1"));
     println!("[rbatis] result==>  {:?}", r);
 }
 
@@ -148,7 +149,7 @@ fn test_update() {
     })).unwrap();
 
     //update
-    let r: Result<i32, String> = rbatis.update("Example_ActivityMapper.xml", &mut json!({
+    let r: Result<i32, RbatisError> = rbatis.update("Example_ActivityMapper.xml", &mut json!({
     "id":"1",
     "name":"updated",
     }));
@@ -191,7 +192,7 @@ fn test_update_array() {
         version: Some(1),
         delete_flag: Some(1)
     }]);
-    let r: Result<i32, String> = rbatis.update("Example_ActivityMapper.xml", &mut json_arr);
+    let r: Result<i32, RbatisError> = rbatis.update("Example_ActivityMapper.xml", &mut json_arr);
     println!("[rbatis] result==>  {:?}", r.unwrap());
 }
 
@@ -206,7 +207,7 @@ fn test_exec_sql() {
         return;
     }
     let mut array = vec![];
-    //执行到远程mysql 并且获取结果,Result<serde_json::Value, String>,或者 Result<Activity, String> 等任意类型
+    //执行到远程mysql 并且获取结果,Result<serde_json::Value, RbatisError>,或者 Result<String, RbatisError> 等任意类型
     let data: Vec<Activity> = rbatis.unwrap().mapper("Example_ActivityMapper.xml", "select_by_condition", &mut json!({
        "name":null,
        "startTime":null,
@@ -215,7 +216,7 @@ fn test_exec_sql() {
        "size":null,
     }), &mut array).unwrap();
     // 写法2，直接运行原生sql
-    // let data_opt: Result<serde_json::Value, String> = rbatis.eval_sql("select * from biz_activity");
+    // let data_opt: Result<serde_json::Value, RbatisError> = rbatis.eval_sql("select * from biz_activity");
     println!("[rbatis] result==>  {:?}", data);
 }
 
@@ -229,7 +230,7 @@ fn test_exec_select_page() {
     if rbatis.is_err() {
         return;
     }
-    //执行到远程mysql 并且获取结果,Result<serde_json::Value, String>,或者 Result<Activity, String> 等任意类型
+    //执行到远程mysql 并且获取结果,Result<serde_json::Value, RbatisError>,或者 Result<String, RbatisError> 等任意类型
     let data: IPage<Activity> = rbatis.unwrap().select_page("Example_ActivityMapper.xml", &mut json!({
        "name":"新人专享1",
     }), &IPage::new(1, 5)).unwrap();
@@ -246,7 +247,7 @@ fn test_exec_select_page_custom() {
     if rbatis.is_err() {
         return;
     }
-    //执行到远程mysql 并且获取结果,Result<serde_json::Value, String>,或者 Result<Activity, String> 等任意类型
+    //执行到远程mysql 并且获取结果,Result<serde_json::Value, RbatisError>,或者 Result<String, RbatisError> 等任意类型
     let data: IPage<Activity> = rbatis.unwrap().select_page_by_mapper("Example_ActivityMapper.xml", "select_by_page", &mut json!({
        "name":"新人专享",
        "delete_flag": 1,
@@ -265,7 +266,7 @@ fn test_exec_py_sql() {
     if rbatis.is_err() {
         return;
     }
-    //执行到远程mysql 并且获取结果,Result<serde_json::Value, String>,或者 Result<Activity, String> 等任意类型
+    //执行到远程mysql 并且获取结果,Result<serde_json::Value, RbatisError>,或者 Result<String, RbatisError> 等任意类型
     let data: Vec<Activity> = rbatis.unwrap().py_sql("Example_ActivityMapper.xml", &mut json!({
        "name":"新人专享",
        "delete_flag": 1,
@@ -285,7 +286,7 @@ fn test_tx() {
     test_tx_return().unwrap();
 }
 
-fn test_tx_return() -> Result<u64, String> {
+fn test_tx_return() -> Result<u64, RbatisError> {
     //初始化rbatis
     let rbatis_opt = init_rbatis();
     if rbatis_opt.is_err() {
@@ -341,21 +342,21 @@ pub fn test_web() {
 
 
 pub trait Service {
-    fn select_activity(&self) -> Result<Activity, String>;
-    fn update_activity(&mut self) -> Result<String, String>;
+    fn select_activity(&self) -> Result<Activity, RbatisError>;
+    fn update_activity(&mut self) -> Result<String, RbatisError>;
 }
 
 struct ServiceImpl {
-    select_activity: fn(s: &ServiceImpl) -> Result<Activity, String>,
-    update_activity: fn(s: &mut ServiceImpl) -> Result<String, String>,
+    select_activity: fn(s: &ServiceImpl) -> Result<Activity, RbatisError>,
+    update_activity: fn(s: &mut ServiceImpl) -> Result<String, RbatisError>,
 }
 
 impl Service for ServiceImpl {
     impl_service! {
-      REQUIRED,  select_activity(&self) -> Result<Activity,String>
+      REQUIRED,  select_activity(&self) -> Result<Activity,RbatisError>
     }
     impl_service_mut! {
-      NONE,  update_activity(&mut self) -> Result<String, String>
+      NONE,  update_activity(&mut self) -> Result<String, RbatisError>
     }
 }
 
@@ -368,11 +369,11 @@ pub fn test_service() {
     init_singleton_rbatis();
 
     let mut s = ServiceImpl {
-        select_activity: |s: &ServiceImpl| -> Result<Activity, String>{
+        select_activity: |s: &ServiceImpl| -> Result<Activity, RbatisError>{
             let act: Activity = singleton().raw_sql("select * from biz_activity where id  = '2';").unwrap();
             return Result::Ok(act);
         },
-        update_activity: |s: &mut ServiceImpl| -> Result<String, String>{
+        update_activity: |s: &mut ServiceImpl| -> Result<String, RbatisError>{
             return Result::Ok("ok".to_string());
         },
     };

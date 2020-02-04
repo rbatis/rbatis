@@ -37,6 +37,8 @@ use crate::utils::{driver_util, rdbc_util};
 use crate::utils::rdbc_util::to_rdbc_values;
 use crate::utils::xml_loader::load_xml;
 use crate::engine::runtime::RbatisEngine;
+use crate::error::RbatisError;
+use std::error::Error;
 
 lazy_static! {
   static ref RBATIS: Mutex<Rbatis> = Mutex::new(Rbatis::new());
@@ -47,7 +49,7 @@ pub fn singleton() -> MutexGuard<'static, Rbatis> {
     return RBATIS.lock().unwrap();
 }
 
-pub fn eval_sql<T>(eval_sql: &str) -> Result<T, String> where T: de::DeserializeOwned {
+pub fn eval_sql<T>(eval_sql: &str) -> Result<T, RbatisError> where T: de::DeserializeOwned {
     return singleton().raw_sql(eval_sql);
 }
 
@@ -108,7 +110,7 @@ impl Rbatis {
     /// 设置数据库默认url，如果失败返回错误信息
     ///  let url = "mysql://root:TEST@localhost:3306/test";
     ///  rbatis.load_db_url("".to_string(), url.to_string());//name 为空，则默认数据库
-    pub fn load_db_url(&mut self, key: &str, url: &str) -> Option<String> {
+    pub fn load_db_url(&mut self, key: &str, url: &str) -> Option<RbatisError> {
         let db_config_opt = DBConfig::new(url.to_string());
         if db_config_opt.is_ok() {
             self.db_driver_map.insert(key.to_string(), url.to_string());
@@ -116,18 +118,18 @@ impl Rbatis {
         } else {
             let e = db_config_opt.err().unwrap();
             if self.enable_log {
-                error!("{}", "[rbatis] link db fail:".to_string() + e.as_str());
+                error!("{}", "[rbatis] link db fail:".to_string() + e.description());
             }
             return Option::Some(e);
         }
     }
 
 
-    pub fn begin(&mut self, id: &str, propagation_type: Propagation) -> Result<&mut LocalSession, String> {
+    pub fn begin(&mut self, id: &str, propagation_type: Propagation) -> Result<&mut LocalSession, RbatisError> {
         let key = (self.router_func)(id);
         let db_conf_opt = self.db_driver_map.get(key.as_str());
         if db_conf_opt.is_none() {
-            return Result::Err("[rbatis] no DBConfig:".to_string() + key.as_str() + " find!");
+            return Result::Err(RbatisError::from("[rbatis] no DBConfig:".to_string() + key.as_str() + " find!"));
         }
         let driver = db_conf_opt.unwrap();
         let thread_id = thread::current().id();
@@ -136,11 +138,11 @@ impl Rbatis {
         return Result::Ok(session);
     }
 
-    pub fn rollback<'a>(&mut self, id: &'a str) -> Result<&'a str, String> {
+    pub fn rollback<'a>(&mut self, id: &'a str) -> Result<&'a str, RbatisError> {
         let key = (self.router_func)(id);
         let db_conf_opt = self.db_driver_map.get(key.as_str());
         if db_conf_opt.is_none() {
-            return Result::Err("[rbatis] no DBConfig:".to_string() + key.as_str() + " find!");
+            return Result::Err(RbatisError::from("[rbatis] no DBConfig:".to_string() + key.as_str() + " find!"));
         }
         let driver = db_conf_opt.unwrap();
         let thread_id = thread::current().id();
@@ -148,11 +150,11 @@ impl Rbatis {
         return Result::Ok(id);
     }
 
-    pub fn commit<'a>(&mut self, id: &'a str) -> Result<&'a str, String> {
+    pub fn commit<'a>(&mut self, id: &'a str) -> Result<&'a str, RbatisError> {
         let key = (self.router_func)(id);
         let db_conf_opt = self.db_driver_map.get(key.as_str());
         if db_conf_opt.is_none() {
-            return Result::Err("[rbatis] no DBConfig:".to_string() + key.as_str() + " find!");
+            return Result::Err(RbatisError::from("[rbatis] no DBConfig:".to_string() + key.as_str() + " find!"));
         }
         let driver = db_conf_opt.unwrap();
         let thread_id = thread::current().id();
@@ -174,7 +176,7 @@ impl Rbatis {
     ///    ").unwrap();
     ///    println!("[rbatis] result==>  {:?}", data);
     ///
-    pub fn py_sql<T>(&mut self, mapper_name: &str, env: &mut Value, eval_sql: &str) -> Result<T, String> where T: de::DeserializeOwned {
+    pub fn py_sql<T>(&mut self, mapper_name: &str, env: &mut Value, eval_sql: &str) -> Result<T, RbatisError> where T: de::DeserializeOwned {
         let pys = Py::parser_by_cache(eval_sql)?;
         let mut arg_array = vec![];
         let raw_sql = do_child_nodes(&pys, env, &mut self.engine, &mut arg_array)?;
@@ -185,7 +187,7 @@ impl Rbatis {
     ///执行sql到数据库，例如:
     ///    Result中结果可以为serde_json::Value，Vec，Array,Slice,LinkedList,Map,i32
     ///
-    ///    let data_opt: Result<serde_json::Value, String> = rbatis.raw_sql( "select * from table", &mut json!({
+    ///    let data_opt: Result<serde_json::Value, RbatisError> = rbatis.raw_sql( "select * from table", &mut json!({
     ///       "name":null,
     ///       "startTime":null,
     ///       "endTime":null,
@@ -193,7 +195,7 @@ impl Rbatis {
     ///       "size":null,
     ///    }));
     ///
-    pub fn raw_sql<T>(&mut self, eval_sql: &str) -> Result<T, String> where T: de::DeserializeOwned {
+    pub fn raw_sql<T>(&mut self, eval_sql: &str) -> Result<T, RbatisError> where T: de::DeserializeOwned {
         let mut arg_array = vec![];
         return self.raw_sql_prepare("eval_sql", eval_sql, &mut arg_array);
     }
@@ -201,17 +203,17 @@ impl Rbatis {
     ///执行
     /// arg_array: 执行后 需要替换的参数数据
     /// return ：替换参数为 ？ 后的sql
-    pub fn raw_sql_prepare<T>(&mut self, id: &str, eval_sql: &str, arg_array: &mut Vec<Value>) -> Result<T, String> where T: de::DeserializeOwned {
+    pub fn raw_sql_prepare<T>(&mut self, id: &str, eval_sql: &str, arg_array: &mut Vec<Value>) -> Result<T, RbatisError> where T: de::DeserializeOwned {
         let mut sql = eval_sql;
         sql = sql.trim();
         if sql.is_empty() {
-            return Result::Err("[rbatis] sql can not be empty!".to_string());
+            return Result::Err(RbatisError::from("[rbatis] sql can not be empty!".to_string()));
         }
         let params = to_rdbc_values(arg_array);
         let key = (self.router_func)(id);
         let db_conf_opt = self.db_driver_map.get(key.as_str());
         if db_conf_opt.is_none() {
-            return Result::Err("[rbatis] no DBConfig:".to_string() + key.as_str() + " find!");
+            return Result::Err(RbatisError::from("[rbatis] no DBConfig:".to_string() + key.as_str() + " find!"));
         }
         let driver = db_conf_opt.unwrap();
         let thread_id = thread::current().id();
@@ -226,7 +228,7 @@ impl Rbatis {
             let affected_rows = session.exec(sql, &params)?;
             let r = serde_json::from_value(serde_json::Value::Number(serde_json::Number::from(ParserNumber::U64(affected_rows))));
             if r.is_err() {
-                return Result::Err("[rbatis] exec fail:".to_string() + id + r.err().unwrap().to_string().as_str());
+                return Result::Err(RbatisError::from("[rbatis] exec fail:".to_string() + id + r.err().unwrap().to_string().as_str()));
             }
             if self.enable_log {
                 info!(" Affected: <== {}: {}", id, affected_rows.to_string().as_str());
@@ -237,7 +239,7 @@ impl Rbatis {
 
     ///执行sql到数据库，例如
     ///
-    ///    let data_opt: Result<serde_json::Value, String> = rbatis.mapper("Example_ActivityMapper.xml".to_string(), "select_by_condition", &mut json!({
+    ///    let data_opt: Result<serde_json::Value, RbatisError> = rbatis.mapper("Example_ActivityMapper.xml".to_string(), "select_by_condition", &mut json!({
     ///       "name":null,
     ///       "startTime":null,
     ///       "endTime":null,
@@ -245,14 +247,14 @@ impl Rbatis {
     ///       "size":null,
     ///    }));
     ///
-    pub fn mapper<T>(&mut self, mapper_name: &str, id: &str, env: &mut Value, arg_array: &mut Vec<Value>) -> Result<T, String> where T: de::DeserializeOwned {
+    pub fn mapper<T>(&mut self, mapper_name: &str, id: &str, env: &mut Value, arg_array: &mut Vec<Value>) -> Result<T, RbatisError> where T: de::DeserializeOwned {
         let mapper_opt = self.mapper_map.get(&mapper_name.to_string());
         if mapper_opt.is_none() {
-            return Result::Err("[rbatis] find mapper fail,name:'".to_string() + mapper_name + "'");
+            return Result::Err(RbatisError::from("[rbatis] find mapper fail,name:'".to_string() + mapper_name + "'"));
         }
         let node = mapper_opt.unwrap().get(id);
         if node.is_none() {
-            return Result::Err("[rbatis] find method fail,name:'".to_string() + mapper_name + id + "'");
+            return Result::Err(RbatisError::from("[rbatis] find method fail,name:'".to_string() + mapper_name + id + "'"));
         }
         let mapper_func = node.unwrap();
         let sql_string = mapper_func.eval(env, &mut self.engine, arg_array)?;
@@ -279,10 +281,10 @@ impl Rbatis {
     }
 
     /// find result map config
-    pub fn get_result_map_node(&self, mapper_name: &str) -> Result<ResultMapNode, String> {
+    pub fn get_result_map_node(&self, mapper_name: &str) -> Result<ResultMapNode, RbatisError> {
         let result_map_opt = self.mapper_map.get(mapper_name);
         if result_map_opt.is_none() {
-            return Result::Err("[rbatis]  can not be find ".to_string() + mapper_name);
+            return Result::Err(RbatisError::from("[rbatis]  can not be find ".to_string() + mapper_name));
         }
         let result_map = result_map_opt.unwrap();
         let base_result_map_opt = result_map.get("BaseResultMap");
@@ -292,6 +294,6 @@ impl Rbatis {
                 return Result::Ok(base_result_map.unwrap());
             }
         }
-        return Result::Err("[rbatis]  can not be find ".to_string() + mapper_name);
+        return Result::Err(RbatisError::from("[rbatis]  can not be find ".to_string() + mapper_name));
     }
 }

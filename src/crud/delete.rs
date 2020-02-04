@@ -13,17 +13,18 @@ use crate::engine::node::NodeType;
 use crate::rbatis::Rbatis;
 use crate::utils::string_util::count_string_num;
 use crate::session_factory::SessionFactory;
+use crate::error::RbatisError;
 
 impl Rbatis {
 
-    pub fn delete<T>(&mut self, mapper_name: &str, arg: &mut Value) -> Result<T, String> where T: DeserializeOwned {
+    pub fn delete<T>(&mut self, mapper_name: &str, arg: &mut Value) -> Result<T, RbatisError> where T: DeserializeOwned {
         let mut arg_array = vec![];
         let sql = self.create_sql_delete(mapper_name, arg, &mut arg_array)?;
         return self.raw_sql_prepare((mapper_name.to_string() + ".delete").as_str(), sql.as_str(), &mut arg_array);
     }
 
 
-    fn create_sql_delete(&self, mapper_name: &str, arg: &mut Value, arg_arr: &mut Vec<Value>) -> Result<String, String> {
+    fn create_sql_delete(&self, mapper_name: &str, arg: &mut Value, arg_arr: &mut Vec<Value>) -> Result<String, RbatisError> {
         let result_map_node = self.get_result_map_node(mapper_name)?;
         match arg {
             serde_json::Value::String(_) | serde_json::Value::Number(_) => {
@@ -44,21 +45,21 @@ impl Rbatis {
                 return self.do_delete_by(arg,&result_map_node,where_str.as_str());
             }
             serde_json::Value::Null=>{
-                return Result::Err("[rbatis] delete arg type can not be null!".to_string());
+                return Result::Err(RbatisError::from("[rbatis] delete arg type can not be null!".to_string()));
             }
             _ => {
-                return Result::Err("[rbatis] not support arg type value in delete(): ".to_string()+arg.to_sql_value_def(true).as_str());
+                return Result::Err(RbatisError::from("[rbatis] not support arg type value in delete(): ".to_string()+arg.to_sql_value_def(true).as_str()));
             }
         };
     }
 
 
     ///基本删除语句模板
-    fn do_delete_by(&self, env: &mut Value,result_map_node:&ResultMapNode,where_str:&str)-> Result<String, String>{
+    fn do_delete_by(&self, env: &mut Value,result_map_node:&ResultMapNode,where_str:&str)-> Result<String, RbatisError>{
         let mut sql = "DELETE FROM #{table} #{set} where #{where}".to_string();
         //replace table
         if result_map_node.table.is_none() {
-            return Result::Err("[rbatis]  can not find table defin in <result_map>!".to_string());
+            return Result::Err(RbatisError::from("[rbatis]  can not find table defin in <result_map>!".to_string()));
         }
         sql = sql.replace("#{table}", result_map_node.table.as_ref().unwrap());
         //delete node

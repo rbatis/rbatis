@@ -7,8 +7,9 @@ use serde::export::Formatter;
 
 use crate::decode::decoder::{is_array, json_len};
 use crate::decode::encoder::encode_to_value;
+use crate::error::RbatisError;
 
-pub fn decode_result_set<T: ?Sized>(arg: &mut dyn ResultSet) -> (Result<T, String>, usize)
+pub fn decode_result_set<T: ?Sized>(arg: &mut dyn ResultSet) -> (Result<T, RbatisError>, usize)
     where T: DeserializeOwned {
     let mut js = serde_json::Value::Null;
     let type_name = std::any::type_name::<T>();
@@ -46,7 +47,7 @@ pub fn decode_result_set<T: ?Sized>(arg: &mut dyn ResultSet) -> (Result<T, Strin
                 //decode struct
                 let len = datas.len();
                 if datas.len() > 1 {
-                    return (Result::Err(format!("[rbatis] rows.affected_rows > 1,but decode one result({})!", type_name)), len);
+                    return (Result::Err(RbatisError::from(format!("[rbatis] rows.affected_rows > 1,but decode one result({})!", type_name))), len);
                 }
                 for x in datas {
                     js = x;
@@ -59,6 +60,6 @@ pub fn decode_result_set<T: ?Sized>(arg: &mut dyn ResultSet) -> (Result<T, Strin
         return (Result::Ok(decode_result.unwrap()), len);
     } else {
         let e = decode_result.err().unwrap().to_string();
-        return (Result::Err("[rbatis] json decode: ".to_string()+type_name+" fail:" + e.as_str()), len);
+        return (Result::Err(RbatisError::from("[rbatis] json decode: ".to_string()+type_name+" fail:" + e.as_str())), len);
     }
 }

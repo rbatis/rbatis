@@ -25,6 +25,7 @@ use crate::ast::node::when_node::WhenNode;
 use crate::ast::node::where_node::WhereNode;
 use crate::engine::node::Node;
 use crate::engine::runtime::RbatisEngine;
+use crate::error::RbatisError;
 
 #[derive(Clone,Debug)]
 pub enum NodeType {
@@ -70,7 +71,7 @@ impl NodeType {
 }
 
 impl<'a> Ast for NodeType {
-    fn eval(&self, env: &mut Value, engine: &mut RbatisEngine,arg_array:&mut Vec<Value>) -> Result<String, String> {
+    fn eval(&self, env: &mut Value, engine: &mut RbatisEngine,arg_array:&mut Vec<Value>) -> Result<String, RbatisError> {
         match self {
             NodeType::NResultMapIdNode(node) => return node.eval(env,engine,arg_array),
             NodeType::NResultMapResultNode(node) => return node.eval(env,engine,arg_array),
@@ -93,7 +94,7 @@ impl<'a> Ast for NodeType {
             NodeType::NInclude(node) => return node.eval(env,engine,arg_array),
             NodeType::NSet(node) => return node.eval(env,engine,arg_array),
             NodeType::NWhere(node) => return node.eval(env,engine,arg_array),
-            _ => Result::Err(String::from("eval NodeType not exist!")),
+            _ => Result::Err(RbatisError::from("eval NodeType not exist!")),
         }
     }
 }

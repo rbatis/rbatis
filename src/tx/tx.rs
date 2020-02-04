@@ -9,16 +9,17 @@ use crate::local_session::LocalSession;
 use crate::tx::propagation::Propagation;
 use crate::utils::driver_util;
 use crate::utils::rdbc_util::to_rdbc_values;
+use crate::error::RbatisError;
 
 ///TX is transaction abstraction
 /// Tx即事务抽象
 pub trait Tx {
     fn id(&self) -> String;
-    fn begin(id: &str, driver: &str, enable_log: bool, conn: &mut Box<dyn Connection>) -> Result<TxImpl, String>;
-    fn query<T>(&mut self, sql: &str, arg_array: &[rdbc::Value], conn: &mut Box<dyn Connection>) -> Result<T, String> where T: de::DeserializeOwned;
-    fn exec(&mut self, sql: &str, arg_array: &[rdbc::Value], conn: &mut Box<dyn Connection>) -> Result<u64, String>;
-    fn rollback(&mut self, conn: &mut Box<dyn Connection>) -> Result<u64, String>;
-    fn commit(&mut self, conn: &mut Box<dyn Connection>) -> Result<u64, String>;
+    fn begin(id: &str, driver: &str, enable_log: bool, conn: &mut Box<dyn Connection>) -> Result<TxImpl, RbatisError>;
+    fn query<T>(&mut self, sql: &str, arg_array: &[rdbc::Value], conn: &mut Box<dyn Connection>) -> Result<T, RbatisError> where T: de::DeserializeOwned;
+    fn exec(&mut self, sql: &str, arg_array: &[rdbc::Value], conn: &mut Box<dyn Connection>) -> Result<u64, RbatisError>;
+    fn rollback(&mut self, conn: &mut Box<dyn Connection>) -> Result<u64, RbatisError>;
+    fn commit(&mut self, conn: &mut Box<dyn Connection>) -> Result<u64, RbatisError>;
     fn close(&mut self);
 }
 
@@ -34,9 +35,9 @@ pub struct TxImpl {
 }
 
 impl TxImpl{
-    fn do_begin(&mut self, conn: &mut Box<dyn Connection>) -> Result<u64, String> {
+    fn do_begin(&mut self, conn: &mut Box<dyn Connection>) -> Result<u64, RbatisError> {
         if self.is_close {
-            return Err("[rbatis] conn is closed!".to_string());
+            return Err(RbatisError::from("[rbatis] conn is closed!".to_string()));
         }
         return conn.exec(true, "begin;", &[]);
     }
@@ -44,7 +45,7 @@ impl TxImpl{
 
 impl Tx for TxImpl {
     //开始一个事务
-    fn begin(id: &str, driver: &str, enable_log: bool, conn: &mut Box<dyn Connection>) -> Result<TxImpl, String> {
+    fn begin(id: &str, driver: &str, enable_log: bool, conn: &mut Box<dyn Connection>) -> Result<TxImpl, RbatisError> {
         let mut v = id.to_string();
         if v.eq("") {
             v = Uuid::new_v4().to_string();
@@ -63,32 +64,32 @@ impl Tx for TxImpl {
         return self.id.clone();
     }
 
-    fn query<T>(&mut self, sql: &str, arg_array: &[rdbc::Value], conn: &mut Box<dyn Connection>) -> Result<T, String> where T: de::DeserializeOwned {
+    fn query<T>(&mut self, sql: &str, arg_array: &[rdbc::Value], conn: &mut Box<dyn Connection>) -> Result<T, RbatisError> where T: de::DeserializeOwned {
         //let params = to_rdbc_values(arg_array);
         if self.is_close {
-            return Err("[rbatis] conn is closed!".to_string());
+            return Err(RbatisError::from("[rbatis] conn is closed!".to_string()));
         }
         return conn.query_prepare(self.enable_log, sql, &arg_array);
     }
 
-    fn exec(&mut self, sql: &str, arg_array: &[rdbc::Value], conn: &mut Box<dyn Connection>) -> Result<u64, String> {
+    fn exec(&mut self, sql: &str, arg_array: &[rdbc::Value], conn: &mut Box<dyn Connection>) -> Result<u64, RbatisError> {
         //let params = to_rdbc_values(arg_array);
         if self.is_close {
-            return Err("[rbatis] conn is closed!".to_string());
+            return Err(RbatisError::from("[rbatis] conn is closed!".to_string()));
         }
         return conn.exec_prepare(self.enable_log, sql, &arg_array);
     }
 
-    fn rollback(&mut self, conn: &mut Box<dyn Connection>) -> Result<u64, String> {
+    fn rollback(&mut self, conn: &mut Box<dyn Connection>) -> Result<u64, RbatisError> {
         if self.is_close {
-            return Err("[rbatis] conn is closed!".to_string());
+            return Err(RbatisError::from("[rbatis] conn is closed!".to_string()));
         }
         return conn.exec(true, "rollback;", &[]);
     }
 
-    fn commit(&mut self, conn: &mut Box<dyn Connection>) -> Result<u64, String> {
+    fn commit(&mut self, conn: &mut Box<dyn Connection>) -> Result<u64, RbatisError> {
         if self.is_close {
-            return Err("[rbatis] conn is closed!".to_string());
+            return Err(RbatisError::from("[rbatis] conn is closed!".to_string()));
         }
         return conn.exec(true, "commit;", &[]);
     }

@@ -7,10 +7,11 @@ use rdbc::{Connection, Driver};
 use crate::db_config::DBConfig;
 use rdbc::mysql::MySQLDriver;
 use rdbc::postgres::PostgresDriver;
+use crate::error::RbatisError;
 
-pub fn get_conn_by_link(link: &str) -> Result<Box<dyn Connection>, String> {
+pub fn get_conn_by_link(link: &str) -> Result<Box<dyn Connection>, RbatisError> {
     if link.is_empty()|| link.find(":").is_none(){
-        return Err("[rbatis] error of driver link!".to_string());
+        return Err(RbatisError::from("[rbatis] error of driver link!".to_string()));
     }
     if link.starts_with("mysql") {
         let driver = MySQLDriver::new();
@@ -18,7 +19,7 @@ pub fn get_conn_by_link(link: &str) -> Result<Box<dyn Connection>, String> {
         if conn.is_err() {
             let info = "[rbatis] connect mysql server fail:".to_string() + format!("{:?}", conn.err().unwrap()).as_str();
             error!("{}", info);
-            return Result::Err(info);
+            return Result::Err(RbatisError::from(info));
         }
         return Result::Ok(conn.unwrap());
     } else if link.starts_with("postgres") {
@@ -27,18 +28,18 @@ pub fn get_conn_by_link(link: &str) -> Result<Box<dyn Connection>, String> {
         if conn.is_err() {
             let info = "[rbatis] connect mysql server fail:".to_string() + format!("{:?}", conn.err().unwrap()).as_str();
             error!("{}", info);
-            return Result::Err(info);
+            return Result::Err(RbatisError::from(info));
         }
         return Result::Ok(conn.unwrap());
     } else {
         let sp:Vec<&str> =link.split(":").collect();
         let info = "[rbatis] connect fail,not support database type:".to_string() + sp[0];
         error!("{}", info);
-        return Result::Err(info);
+        return Result::Err(RbatisError::from(info));
     }
 }
 
-pub fn get_conn(arg: &DBConfig) -> Result<Box<dyn Connection>, String> {
+pub fn get_conn(arg: &DBConfig) -> Result<Box<dyn Connection>, RbatisError> {
     let link = arg.to_string();
     println!("link:{}",link);
     if arg.db_type.eq("mysql") {
@@ -47,7 +48,7 @@ pub fn get_conn(arg: &DBConfig) -> Result<Box<dyn Connection>, String> {
         if conn.is_err() {
             let info = "[rbatis] connect mysql server fail:".to_string() + format!("{:?}", conn.err().unwrap()).as_str();
             error!("{}", info);
-            return Result::Err(info);
+            return Result::Err(RbatisError::from(info));
         }
         return Result::Ok(conn.unwrap());
     } else if arg.db_type.eq("postgres") {
@@ -56,12 +57,12 @@ pub fn get_conn(arg: &DBConfig) -> Result<Box<dyn Connection>, String> {
         if conn.is_err() {
             let info = "[rbatis] connect mysql server fail:".to_string() + format!("{:?}", conn.err().unwrap()).as_str();
             error!("{}", info);
-            return Result::Err(info);
+            return Result::Err(RbatisError::from(info));
         }
         return Result::Ok(conn.unwrap());
     } else {
         let info = "[rbatis] connect fail,not support database type:".to_string() + arg.db_type.as_str();
         error!("{}", info);
-        return Result::Err(info);
+        return Result::Err(RbatisError::from(info));
     }
 }
