@@ -16,7 +16,7 @@ use crate::error::RbatisError;
 pub const SKIP_SETS: &'static str = "null,object,array";
 
 impl Rbatis {
-    pub fn update<T>(&mut self, mapper_name: &str, env: &mut Value) -> Result<T, RbatisError> where T: DeserializeOwned {
+    pub fn update<T>(&mut self, mapper_name: &str, env: &Value) -> Result<T, RbatisError> where T: DeserializeOwned {
         let mut arg_array = vec![];
         let mut arg=env.clone();
         let sql = self.create_sql_update(mapper_name, &mut arg, &mut arg_array)?;
