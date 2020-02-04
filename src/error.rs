@@ -9,6 +9,12 @@ pub enum RbatisError {
     E(String)
 }
 
+impl RbatisError {
+    pub fn new(arg: &str) -> Self {
+        return RbatisError::E(arg.to_string());
+    }
+}
+
 impl Display for RbatisError {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         return match self {
@@ -32,10 +38,10 @@ impl Error for RbatisError {
 
 #[test]
 pub fn test_error() {
-    let e= e().err().unwrap();
-    println!("{}",e);
+    let e = e().err().unwrap();
+    println!("{}", e);
 }
 
 fn e() -> Result<String, RbatisError> {
-    return Err(RbatisError::E("e".to_string()));
+    return Err(RbatisError::new("e"));
 }
