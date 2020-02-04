@@ -381,3 +381,18 @@ pub fn test_service() {
     println!("{:?}", serde_json::to_string(&act).unwrap().as_str());
     println!("{:?}", s.update_activity().unwrap());
 }
+
+
+//添加 tokio异步支持示例
+use tokio::task;
+async fn docs() -> Result<IPage<Activity>, Box<dyn std::error::Error>> {
+    let res = task::spawn_blocking(move || {
+        //do some compute-heavy work or call synchronous code
+        let data: IPage<Activity> = singleton().select_page("Example_ActivityMapper.xml", &mut json!({
+       "name":"新人专享1",
+    }), &IPage::new(1, 5)).unwrap();
+        //"done computing"
+        return data;
+    }).await?;
+    Ok(res)
+}
