@@ -11,18 +11,19 @@ use crate::convert::sql_value_convert;
 use crate::rbatis::Rbatis;
 use crate::utils::string_util::count_string_num;
 use crate::session_factory::SessionFactory;
+use crate::error::RbatisError;
 
 pub const SKIP_SETS: &'static str = "null,object,array";
 
 impl Rbatis {
-    pub fn update<T>(&mut self, mapper_name: &str, arg: &mut Value) -> Result<T, String> where T: DeserializeOwned {
+    pub fn update<T>(&mut self, mapper_name: &str, arg: &mut Value) -> Result<T, RbatisError> where T: DeserializeOwned {
         let mut arg_array = vec![];
         let sql = self.create_sql_update(mapper_name, arg, &mut arg_array)?;
         return self.raw_sql_prepare((mapper_name.to_string() + ".update").as_str(), sql.as_str(), &mut arg_array);
     }
 
 
-    fn create_sql_update(&self, mapper_name: &str, arg: &mut Value, arg_array: &mut Vec<Value>) -> Result<String, String> {
+    fn create_sql_update(&self, mapper_name: &str, arg: &mut Value, arg_array: &mut Vec<Value>) -> Result<String, RbatisError> {
         let result_map_node = self.get_result_map_node(mapper_name)?;
         match arg {
             serde_json::Value::Array(arr) => {
@@ -36,7 +37,7 @@ impl Rbatis {
                             sqls = sqls + temp_str + "; \n";
                         }
                         _ => {
-                            return Result::Err("[rbatis] update only support object or array,not support arg type value in update(): ".to_string() + arg.to_sql_value_def(true).as_str());
+                            return Result::Err(RbatisError::from("[rbatis] update only support object or array,not support arg type value in update(): ".to_string() + arg.to_sql_value_def(true).as_str()));
                         }
                     }
                 }
@@ -69,7 +70,7 @@ impl Rbatis {
                 if result_map_node.id_node.is_some() {
                     let id_value = c.get(&result_map_node.id_node.as_ref().unwrap().property);
                     if id_value.is_none() {
-                        return Result::Err("[rbatis] arg id field:".to_string() + result_map_node.id_node.as_ref().unwrap().property.as_str() + " can not be null in update()!");
+                        return Result::Err(RbatisError::from("[rbatis] arg id field:".to_string() + result_map_node.id_node.as_ref().unwrap().property.as_str() + " can not be null in update()!"));
                     }
                     where_str = where_str + "id = " + id_value.unwrap().to_sql_question(SkipType::None,AND,",",arg_array).as_str();
                 } else {
@@ -80,21 +81,21 @@ impl Rbatis {
                 return self.do_update_by(arg, &result_map_node, sets.as_str(), where_str.as_str());
             }
             serde_json::Value::Null => {
-                return Result::Err("[rbatis] delete arg type can not be null!".to_string());
+                return Result::Err(RbatisError::from("[rbatis] delete arg type can not be null!".to_string()));
             }
             _ => {
-                return Result::Err("[rbatis] update only support object or array,not support arg type value in update(): ".to_string() + arg.to_sql_value_def(true).as_str());
+                return Result::Err(RbatisError::from("[rbatis] update only support object or array,not support arg type value in update(): ".to_string() + arg.to_sql_value_def(true).as_str()));
             }
         };
     }
 
 
     ///基本删除语句模板
-    fn do_update_by(&self, env: &mut Value, result_map_node: &ResultMapNode, sets: &str, where_str: &str) -> Result<String, String> {
+    fn do_update_by(&self, env: &mut Value, result_map_node: &ResultMapNode, sets: &str, where_str: &str) -> Result<String, RbatisError> {
         let mut sql = "UPDATE #{table} #{set} where #{where}".to_string();
         //replace table
         if result_map_node.table.is_none() {
-            return Result::Err("[rbatis]  can not find table defin in <result_map>!".to_string());
+            return Result::Err(RbatisError::from("[rbatis]  can not find table defin in <result_map>!".to_string()));
         }
         sql = sql.replace("#{table}", result_map_node.table.as_ref().unwrap());
 
@@ -111,7 +112,7 @@ impl Rbatis {
                             sets = sets + ","
                         }
                         if n.is_f64() {
-                            return Result::Err("[rbatis] not support version value type,version field must be a i64 or u64 number!!".to_string());
+                            return Result::Err(RbatisError::from("[rbatis] not support version value type,version field must be a i64 or u64 number!!".to_string()));
                         } else if n.is_u64() {
                             sets = sets + " " + result_map_node.version_node.as_ref().unwrap().column.as_str() + " = " + (n.as_u64().unwrap() + 1 as u64).to_string().as_str();
                         } else {
@@ -121,7 +122,7 @@ impl Rbatis {
                     }
                     serde_json::Value::Null => {}
                     _ => {
-                        return Result::Err("[rbatis] not support version value type,version field must be a i64 or u64 number!".to_string());
+                        return Result::Err(RbatisError::from("[rbatis] not support version value type,version field must be a i64 or u64 number!".to_string()));
                     }
                 }
             }

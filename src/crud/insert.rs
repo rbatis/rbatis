@@ -9,23 +9,24 @@ use crate::rbatis::Rbatis;
 use crate::utils::rdbc_util::rdbc_vec_to_string;
 use crate::utils::string_util::count_string_num;
 use crate::session_factory::SessionFactory;
+use crate::error::RbatisError;
 
 impl Rbatis {
 
-    pub fn insert<T>(&mut self, mapper_name: &str, arg: &mut Value) -> Result<T, String> where T: DeserializeOwned {
+    pub fn insert<T>(&mut self, mapper_name: &str, arg: &mut Value) -> Result<T, RbatisError> where T: DeserializeOwned {
         let mut arg_array = vec![];
         let sql = self.create_sql_insert(mapper_name, arg, &mut arg_array)?;
         return self.raw_sql_prepare((mapper_name.to_string() + ".insert").as_str(), sql.as_str(), &mut arg_array);
     }
 
-    fn create_sql_insert(&self, mapper_name: &str, arg: &mut Value, arg_array: &mut Vec<Value>) -> Result<String, String> {
+    fn create_sql_insert(&self, mapper_name: &str, arg: &mut Value, arg_array: &mut Vec<Value>) -> Result<String, RbatisError> {
         if arg.is_null() {
-            return Result::Err("[rbatis] arg is null value".to_string());
+            return Result::Err(RbatisError::from("[rbatis] arg is null value".to_string()));
         }
         let result_map_node = self.get_result_map_node(mapper_name)?;
         let mut sql = "insert into #{table} (#{fields}) VALUES #{values}".to_string();
         if result_map_node.table.is_none() {
-            return Result::Err("[rbatis]  can not find table defin in <result_map>!".to_string());
+            return Result::Err(RbatisError::from("[rbatis]  can not find table defin in <result_map>!".to_string()));
         }
         sql = sql.replace("#{table}", result_map_node.table.as_ref().unwrap());
         if arg.is_object() {
@@ -36,10 +37,10 @@ impl Rbatis {
             let mut values = "".to_string();
             let arr = arg.as_array().unwrap();
             if arr.len() == 0 {
-                return Result::Err("[rbatis] arg array len = 0!".to_string());
+                return Result::Err(RbatisError::from("[rbatis] arg array len = 0!".to_string()));
             }
             if !arr.get(0).unwrap().is_object() {
-                return Result::Err("[rbatis] unsupport arg type,only support object json and object array!".to_string());
+                return Result::Err(RbatisError::from("[rbatis] unsupport arg type,only support object json and object array!".to_string()));
             }
             let fields = arr.get(0).unwrap().clone().to_sql_column();
             sql = sql.replace("#{fields}", fields.as_str());
@@ -47,7 +48,7 @@ impl Rbatis {
             let mut append = false;
             for x in arr {
                 if !x.is_object() {
-                    return Result::Err("[rbatis] unsupport arg type,only support object json and object array!".to_string());
+                    return Result::Err(RbatisError::from("[rbatis] unsupport arg type,only support object json and object array!".to_string()));
                 }
                 let obj=x.as_object().unwrap();
                 let mut obj_vec=vec![];
@@ -64,7 +65,7 @@ impl Rbatis {
             sql = sql.replace("#{values}", values.as_str());
             return Result::Ok(sql);
         } else {
-            return Result::Err("[rbatis] unsupport arg type,only support object json and object array!".to_string());
+            return Result::Err(RbatisError::from("[rbatis] unsupport arg type,only support object json and object array!".to_string()));
         }
     }
 }

@@ -14,6 +14,7 @@ use crate::tx::tx::{Tx, TxImpl};
 use crate::tx::tx_stack::TxStack;
 use crate::utils::{driver_util, rdbc_util};
 use crate::utils::rdbc_util::to_rdbc_values;
+use crate::error::RbatisError;
 
 pub struct LocalSession {
     pub session_id: String,
@@ -27,7 +28,7 @@ pub struct LocalSession {
 }
 
 impl LocalSession {
-    pub fn new(id: &str, driver: &str, conn_opt: Option<Box<dyn Connection>>) -> Result<Self, String> {
+    pub fn new(id: &str, driver: &str, conn_opt: Option<Box<dyn Connection>>) -> Result<Self, RbatisError> {
         let mut new_id = id.to_string();
         if new_id.is_empty() {
             new_id = Uuid::new_v4().to_string();
@@ -61,9 +62,9 @@ impl LocalSession {
         return self.session_id.as_str();
     }
 
-    pub fn query<T>(&mut self, sql: &str, arg_array: &[rdbc::Value]) -> Result<T, String> where T: de::DeserializeOwned {
+    pub fn query<T>(&mut self, sql: &str, arg_array: &[rdbc::Value]) -> Result<T, RbatisError> where T: de::DeserializeOwned {
         if self.is_closed == true {
-            return Err("[rbatis] session can not query a closed session!".to_string());
+            return Err(RbatisError::from("[rbatis] session can not query a closed session!".to_string()));
         }
         if self.new_local_session.is_some() {
             return self.new_local_session.as_mut().unwrap().query(sql, arg_array);
@@ -83,9 +84,9 @@ impl LocalSession {
         }
     }
 
-    pub fn exec(&mut self, sql: &str, arg_array: &[rdbc::Value]) -> Result<u64, String> {
+    pub fn exec(&mut self, sql: &str, arg_array: &[rdbc::Value]) -> Result<u64, RbatisError> {
         if self.is_closed == true {
-            return Err("[rbatis] session can not query a closed session!".to_string());
+            return Err(RbatisError::from("[rbatis] session can not query a closed session!".to_string()));
         }
         if self.new_local_session.is_some() {
             return self.new_local_session.as_mut().unwrap().query(sql, arg_array);
@@ -104,9 +105,9 @@ impl LocalSession {
         }
     }
 
-    pub fn rollback(&mut self) -> Result<u64, String> {
+    pub fn rollback(&mut self) -> Result<u64, RbatisError> {
         if self.is_closed == true {
-            return Err("[rbatis] session can not query a closed session!".to_string());
+            return Err(RbatisError::from("[rbatis] session can not query a closed session!".to_string()));
         }
         let mut closec_num = 0;
         if self.new_local_session.is_some() {
@@ -143,9 +144,9 @@ impl LocalSession {
         return Ok(closec_num);
     }
 
-    pub fn commit(&mut self) -> Result<u64, String> {
+    pub fn commit(&mut self) -> Result<u64, RbatisError> {
         if self.is_closed == true {
-            return Err("[rbatis] session can not query a closed session!".to_string());
+            return Err(RbatisError::from("[rbatis] session can not query a closed session!".to_string()));
         }
         let mut closec_num = 0;
         if self.new_local_session.is_some() {
@@ -180,9 +181,9 @@ impl LocalSession {
         return Ok(closec_num);
     }
 
-    pub fn begin(&mut self, propagation_type: Propagation) -> Result<u64, String> {
+    pub fn begin(&mut self, propagation_type: Propagation) -> Result<u64, RbatisError> {
         if self.is_closed == true {
-            return Err("[rbatis] session can not query a closed session!".to_string());
+            return Err(RbatisError::from("[rbatis] session can not query a closed session!".to_string()));
         }
         if self.enable_log {
             info!(" [{}] Exec: ==>   Begin:{}; ", self.id(), propagation_type);
@@ -208,7 +209,7 @@ impl LocalSession {
                     self.tx_stack.push(tx, Propagation::MANDATORY);
                     return Ok(0);
                 } else {
-                    return Err("[rbatis] PROPAGATION_MANDATORY Nested transaction exception! current not have a transaction!".to_string());
+                    return Err(RbatisError::from("[rbatis] PROPAGATION_MANDATORY Nested transaction exception! current not have a transaction!".to_string()));
                 }
             }
             //表示新建一个全新Session开启一个全新事务，如果当前存在事务，则把当前事务挂起。 have tx ? stop old。  -> new session().new tx()
@@ -229,7 +230,7 @@ impl LocalSession {
             //表示以非事务方式执行操作，如果当前存在事务，则返回事务嵌套错误。    have tx ? return error: session.exec()
             Propagation::NEVER => {
                 if self.tx_stack.len() > 0 {
-                    return Err("[rbatis] PROPAGATION_NEVER  Nested transaction exception! current Already have a transaction!".to_string());
+                    return Err(RbatisError::from("[rbatis] PROPAGATION_NEVER  Nested transaction exception! current Already have a transaction!".to_string()));
                 }
             }
             //表示如果当前事务存在，则在嵌套事务内执行，如嵌套事务回滚，则只会在嵌套事务内回滚，不会影响当前事务。如果当前没有事务，则进行与PROPAGATION_REQUIRED类似的操作。
@@ -244,7 +245,7 @@ impl LocalSession {
             //表示如果当前没有事务，就新建一个事务,否则返回错误。  have tx ? return error: session.new tx()
             Propagation::NOT_REQUIRED => {
                 if self.tx_stack.len() > 0 {
-                    return Err("[rbatis] PROPAGATION_NOT_REQUIRED Nested transaction exception! current Already have a transaction!".to_string());
+                    return Err(RbatisError::from("[rbatis] PROPAGATION_NOT_REQUIRED Nested transaction exception! current Already have a transaction!".to_string()));
                 } else {
                     //new tx
                     let tx = TxImpl::begin("", self.driver.as_str(), self.enable_log, self.conn.as_mut().unwrap())?;
@@ -255,7 +256,7 @@ impl LocalSession {
                 return Ok(0);
             }
             _ => {
-                return Err("[rbatis] Nested transaction exception! not support PROPAGATION in begin!".to_string());
+                return Err(RbatisError::from("[rbatis] Nested transaction exception! not support PROPAGATION in begin!".to_string()));
             }
         }
         return Ok(0);

@@ -28,6 +28,7 @@ use crate::utils::xml_loader::Element;
 use super::node_type::NodeType;
 use crate::ast::ast::Ast;
 use crate::engine::runtime::RbatisEngine;
+use crate::error::RbatisError;
 
 pub trait SqlNodePrint {
     fn print(&self, deep: i32) -> String;
@@ -35,7 +36,7 @@ pub trait SqlNodePrint {
 
 
 //执行子所有节点
-pub fn do_child_nodes(child_nodes: &Vec<NodeType>, env: &mut Value,engine: &mut RbatisEngine,arg_array:&mut Vec<Value>) -> Result<String, String> {
+pub fn do_child_nodes(child_nodes: &Vec<NodeType>, env: &mut Value,engine: &mut RbatisEngine,arg_array:&mut Vec<Value>) -> Result<String, RbatisError> {
     let mut s = String::new();
     for item in child_nodes {
         let item_result = item.eval(env,engine,arg_array);

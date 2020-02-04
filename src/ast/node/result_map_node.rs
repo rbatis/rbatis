@@ -14,6 +14,7 @@ use crate::ast::node::result_map_id_node::ResultMapIdNode;
 use crate::ast::node::result_map_result_node::ResultMapResultNode;
 use std::collections::HashMap;
 use crate::engine::runtime::RbatisEngine;
+use crate::error::RbatisError;
 
 #[derive(Serialize, Deserialize, Clone, Debug)]
 pub struct ResultMapNode {
@@ -62,7 +63,7 @@ impl ResultMapNode {
 }
 
 impl Ast for ResultMapNode {
-    fn eval(&self, env: &mut Value, engine: &mut RbatisEngine,arg_array:&mut Vec<Value>) -> Result<String, String> {
+    fn eval(&self, env: &mut Value, engine: &mut RbatisEngine,arg_array:&mut Vec<Value>) -> Result<String, RbatisError> {
         return Result::Ok("".to_string());
     }
 }

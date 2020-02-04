@@ -9,9 +9,15 @@ pub enum RbatisError {
     E(String)
 }
 
-impl RbatisError {
-    pub fn new(arg: &str) -> Self {
+impl From<&str> for RbatisError{
+    fn from(arg: &str) -> Self {
         return RbatisError::E(arg.to_string());
+    }
+}
+
+impl From<std::string::String> for RbatisError{
+    fn from(arg: String) -> Self {
+        return RbatisError::E(arg);
     }
 }
 
@@ -43,5 +49,5 @@ pub fn test_error() {
 }
 
 fn e() -> Result<String, RbatisError> {
-    return Err(RbatisError::new("e"));
+    return Err(RbatisError::from("e"));
 }

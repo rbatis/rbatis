@@ -16,17 +16,18 @@ use crate::rbatis::Rbatis;
 use crate::session_factory::SessionFactory;
 use crate::utils::join_in::json_join;
 use crate::utils::string_util::count_string_num;
+use crate::error::RbatisError;
 
 impl Rbatis {
     ///普通查询
-    pub fn select<T>(&mut self, session_factory: &mut Box<dyn SessionFactory>, mapper_name: &str, arg: &mut Value) -> Result<T, String> where T: DeserializeOwned {
+    pub fn select<T>(&mut self, session_factory: &mut Box<dyn SessionFactory>, mapper_name: &str, arg: &mut Value) -> Result<T, RbatisError> where T: DeserializeOwned {
         let mut arg_array = vec![];
         let (sql, _) = self.create_sql_select(mapper_name, arg, &mut arg_array)?;
         return self.raw_sql_prepare((mapper_name.to_string() + ".select").as_str(), sql.as_str(), &mut arg_array);
     }
 
     ///分页查询
-    pub fn select_page<T>(&mut self, mapper_name: &str, arg: &mut Value, ipage: &IPage<T>) -> Result<IPage<T>, String> where T: Serialize + DeserializeOwned + Clone {
+    pub fn select_page<T>(&mut self, mapper_name: &str, arg: &mut Value, ipage: &IPage<T>) -> Result<IPage<T>, RbatisError> where T: Serialize + DeserializeOwned + Clone {
         let mut arg_array = vec![];
         //do select
         let mut new_arg = json_join(&arg, "ipage", ipage)?;
@@ -44,18 +45,18 @@ impl Rbatis {
     }
 
     /// 根据mapper 自定义内容 分页查询， 只需写一个查询内容，不需要添加 count函数
-    pub fn select_page_by_mapper<T>(&mut self, mapper_name: &str, id: &str, env: &mut Value, ipage: &IPage<T>) -> Result<IPage<T>, String> where T: Serialize + DeserializeOwned + Clone {
+    pub fn select_page_by_mapper<T>(&mut self, mapper_name: &str, id: &str, env: &mut Value, ipage: &IPage<T>) -> Result<IPage<T>, RbatisError> where T: Serialize + DeserializeOwned + Clone {
         let mut arg_array = vec![];
 
         let mut new_arg = json_join(&env, "ipage", ipage)?;
         //select redords
         let mapper_opt = self.mapper_map.get_mut(&mapper_name.to_string());
         if mapper_opt.is_none() {
-            return Result::Err("[rbatis] find mapper fail,name:'".to_string() + mapper_name + "'");
+            return Result::Err(RbatisError::from("[rbatis] find mapper fail,name:'".to_string() + mapper_name + "'"));
         }
         let node = mapper_opt.unwrap().get_mut(id);
         if node.is_none() {
-            return Result::Err("[rbatis] find method fail,name:'".to_string() + mapper_name + id + "'");
+            return Result::Err(RbatisError::from("[rbatis] find method fail,name:'".to_string() + mapper_name + id + "'"));
         }
         let mapper_func = node.unwrap();
         let sql_string = mapper_func.eval(&mut new_arg, &mut self.engine, &mut arg_array)?;
@@ -65,14 +66,14 @@ impl Rbatis {
         if sql_string.contains("where") {
             let wheres: Vec<&str> = sql_string.split("where").collect();
             if wheres.len() > 2 {
-                return Result::Err("[rbatis] find 'where' repeated > 2 time,name:'".to_string() + mapper_name + id + "'");
+                return Result::Err(RbatisError::from("[rbatis] find 'where' repeated > 2 time,name:'".to_string() + mapper_name + id + "'"));
             }
             where_string = wheres[1].to_string();
             where_befer_string = wheres[0].to_string();
         } else if sql_string.contains("WHERE") {
             let wheres: Vec<&str> = sql_string.split("WHERE").collect();
             if wheres.len() > 2 {
-                return Result::Err("[rbatis] find 'WHERE' repeated > 2 time,name:'".to_string() + mapper_name + id + "'");
+                return Result::Err(RbatisError::from("[rbatis] find 'WHERE' repeated > 2 time,name:'".to_string() + mapper_name + id + "'"));
             }
             where_string = wheres[1].to_string();
             where_befer_string = wheres[0].to_string();
@@ -95,7 +96,7 @@ impl Rbatis {
         let mut count_sql = "select count(1) from #{table} where #{where}".to_string();
         //replace table
         if result_map_node.table.is_none() {
-            return Result::Err("[rbatis]  can not find table defin in <result_map>!".to_string());
+            return Result::Err(RbatisError::from("[rbatis]  can not find table defin in <result_map>!".to_string()));
         }
         count_sql = count_sql.replace("#{table}", result_map_node.table.as_ref().unwrap());
 
@@ -111,17 +112,17 @@ impl Rbatis {
     }
 
 
-    fn eval_select_return_where<T>(&mut self, mapper_name: &str, arg: &mut Value, arg_array: &mut Vec<Value>) -> Result<(T, String), String> where T: DeserializeOwned {
+    fn eval_select_return_where<T>(&mut self, mapper_name: &str, arg: &mut Value, arg_array: &mut Vec<Value>) -> Result<(T, String), RbatisError> where T: DeserializeOwned {
         let (sql, w) = self.create_sql_select(mapper_name, arg, arg_array)?;
         let data: T = self.raw_sql_prepare((mapper_name.to_string() + ".eval_select_return_where").as_str(), sql.as_str(), arg_array)?;
         return Result::Ok((data, w));
     }
 
-    fn create_sql_select(&self, mapper_name: &str, arg: &mut Value, arg_arr: &mut Vec<Value>) -> Result<(String, String), String> {
+    fn create_sql_select(&self, mapper_name: &str, arg: &mut Value, arg_arr: &mut Vec<Value>) -> Result<(String, String), RbatisError> {
         let result_map_node = self.get_result_map_node(mapper_name)?;
         return match arg {
             serde_json::Value::Null => {
-                Result::Err("[rbatis] arg is null value".to_string())
+                Result::Err(RbatisError::from("[rbatis] arg is null value".to_string()))
             }
             serde_json::Value::String(_) | serde_json::Value::Number(_) => {
                 let ipage_opt: Option<IPage<Value>> = None;
@@ -141,7 +142,7 @@ impl Rbatis {
                     if !ipage_value.is_null() {
                         let ipage: Result<IPage<Value>, serde_json::Error> = serde_json::from_value(ipage_value.clone());
                         if ipage.is_err() {
-                            return Result::Err("[rbatis] ".to_string() + ipage.err().unwrap().to_string().as_str());
+                            return Result::Err(RbatisError::from("[rbatis] ".to_string() + ipage.err().unwrap().to_string().as_str()));
                         }
                         ipage_opt = Some(ipage.unwrap());
                     }
@@ -150,17 +151,17 @@ impl Rbatis {
                 Result::Ok(self.do_select_by_templete(arg, &result_map_node, where_str.as_str(), &ipage_opt)?)
             }
             _ => {
-                Result::Err("[rbatis] not support arg type value in select(): ".to_string() + arg.to_sql_value_def(true).as_str())
+                Result::Err(RbatisError::from("[rbatis] not support arg type value in select(): ".to_string() + arg.to_sql_value_def(true).as_str()))
             }
         };
     }
 
 
-    fn create_sql_count(&mut self, mapper_name: &str, arg: &mut Value, arg_arr: &mut Vec<Value>) -> Result<String, String> {
+    fn create_sql_count(&mut self, mapper_name: &str, arg: &mut Value, arg_arr: &mut Vec<Value>) -> Result<String, RbatisError> {
         let result_map_node = self.get_result_map_node(mapper_name)?;
         match arg {
             serde_json::Value::Null => {
-                return Result::Err("[rbatis] arg is null value".to_string());
+                return Result::Err(RbatisError::from("[rbatis] arg is null value"));
             }
             serde_json::Value::String(_) | serde_json::Value::Number(_) => {
                 let where_str = "id = ".to_string() + arg.to_sql_question(SkipType::Null, AND, ",", arg_arr).as_str();
@@ -178,7 +179,7 @@ impl Rbatis {
                     if !ipage_value.is_null() {
                         let ipage: Result<IPage<Value>, serde_json::Error> = serde_json::from_value(ipage_value.clone());
                         if ipage.is_err() {
-                            return Result::Err("[rbatis] ".to_string() + ipage.err().unwrap().to_string().as_str());
+                            return Result::Err(RbatisError::from("[rbatis] ".to_string() + ipage.err().unwrap().to_string().as_str()));
                         }
                         ipage_opt = Some(ipage.unwrap());
                     }
@@ -187,18 +188,18 @@ impl Rbatis {
                 return Result::Ok(self.do_count_by_templete(arg, &result_map_node, where_str.as_str())?);
             }
             _ => {
-                return Result::Err("[rbatis] not support arg type value in select(): ".to_string() + arg.to_sql_value_def(true).as_str());
+                return Result::Err(RbatisError::from("[rbatis] not support arg type value in select(): ".to_string() + arg.to_sql_value_def(true).as_str()));
             }
         }
     }
 
 
     /// return 结果/where sql
-    fn do_select_by_templete<T>(&self, env: &mut Value, result_map_node: &ResultMapNode, where_str: &str, ipage_opt: &Option<IPage<T>>) -> Result<(String, String), String> where T: Serialize + DeserializeOwned + Clone {
+    fn do_select_by_templete<T>(&self, env: &mut Value, result_map_node: &ResultMapNode, where_str: &str, ipage_opt: &Option<IPage<T>>) -> Result<(String, String), RbatisError> where T: Serialize + DeserializeOwned + Clone {
         let mut sql = "select * from #{table} where #{where}".to_string();
         //replace table
         if result_map_node.table.is_none() {
-            return Result::Err("[rbatis]  can not find table defin in <result_map>!".to_string());
+            return Result::Err(RbatisError::from("[rbatis]  can not find table defin in <result_map>!".to_string()));
         }
         sql = sql.replace("#{table}", result_map_node.table.as_ref().unwrap());
 
@@ -224,11 +225,11 @@ impl Rbatis {
     }
 
     /// return 结果/where sql
-    fn do_count_by_templete(&self, env: &mut Value, result_map_node: &ResultMapNode, where_str: &str) -> Result<String, String> {
+    fn do_count_by_templete(&self, env: &mut Value, result_map_node: &ResultMapNode, where_str: &str) -> Result<String, RbatisError> {
         let mut sql = "select count(1) from #{table} where #{where}".to_string();
         //replace table
         if result_map_node.table.is_none() {
-            return Result::Err("[rbatis]  can not find table defin in <result_map>!".to_string());
+            return Result::Err(RbatisError::from("[rbatis]  can not find table defin in <result_map>!".to_string()));
         }
         sql = sql.replace("#{table}", result_map_node.table.as_ref().unwrap());
 
