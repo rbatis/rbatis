@@ -3,7 +3,7 @@ use std::borrow::BorrowMut;
 use std::collections::HashMap;
 use std::ops::{Deref, DerefMut};
 use std::process::exit;
-use std::rc::Rc;
+
 use std::str::FromStr;
 use std::sync::{Mutex, MutexGuard};
 use std::thread;
