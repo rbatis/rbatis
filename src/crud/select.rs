@@ -20,14 +20,15 @@ use crate::error::RbatisError;
 
 impl Rbatis {
     ///普通查询
-    pub fn select<T>(&mut self, session_factory: &mut Box<dyn SessionFactory>, mapper_name: &str, arg: &mut Value) -> Result<T, RbatisError> where T: DeserializeOwned {
+    pub fn select<T>(&mut self, session_factory: &mut Box<dyn SessionFactory>, mapper_name: &str, env: &Value) -> Result<T, RbatisError> where T: DeserializeOwned {
         let mut arg_array = vec![];
-        let (sql, _) = self.create_sql_select(mapper_name, arg, &mut arg_array)?;
+        let mut arg=env.clone();
+        let (sql, _) = self.create_sql_select(mapper_name, &mut arg, &mut arg_array)?;
         return self.raw_sql_prepare((mapper_name.to_string() + ".select").as_str(), sql.as_str(), &mut arg_array);
     }
 
     ///分页查询
-    pub fn select_page<T>(&mut self, mapper_name: &str, arg: &mut Value, ipage: &IPage<T>) -> Result<IPage<T>, RbatisError> where T: Serialize + DeserializeOwned + Clone {
+    pub fn select_page<T>(&mut self, mapper_name: &str, arg: &Value, ipage: &IPage<T>) -> Result<IPage<T>, RbatisError> where T: Serialize + DeserializeOwned + Clone {
         let mut arg_array = vec![];
         //do select
         let mut new_arg = json_join(&arg, "ipage", ipage)?;
@@ -45,10 +46,10 @@ impl Rbatis {
     }
 
     /// 根据mapper 自定义内容 分页查询， 只需写一个查询内容，不需要添加 count函数
-    pub fn select_page_by_mapper<T>(&mut self, mapper_name: &str, id: &str, env: &mut Value, ipage: &IPage<T>) -> Result<IPage<T>, RbatisError> where T: Serialize + DeserializeOwned + Clone {
+    pub fn select_page_by_mapper<T>(&mut self, mapper_name: &str, id: &str, env: &Value, ipage: &IPage<T>) -> Result<IPage<T>, RbatisError> where T: Serialize + DeserializeOwned + Clone {
         let mut arg_array = vec![];
-
-        let mut new_arg = json_join(&env, "ipage", ipage)?;
+        let mut arg=env.clone();
+        let mut new_arg = json_join(&mut arg, "ipage", ipage)?;
         //select redords
         let mapper_opt = self.mapper_map.get_mut(&mapper_name.to_string());
         if mapper_opt.is_none() {
