@@ -176,10 +176,11 @@ impl Rbatis {
     ///    ").unwrap();
     ///    println!("[rbatis] result==>  {:?}", data);
     ///
-    pub fn py_sql<T>(&mut self, mapper_name: &str, env: &mut Value, eval_sql: &str) -> Result<T, RbatisError> where T: de::DeserializeOwned {
+    pub fn py_sql<T>(&mut self, mapper_name: &str, env: &Value, eval_sql: &str) -> Result<T, RbatisError> where T: de::DeserializeOwned {
         let pys = Py::parser_by_cache(eval_sql)?;
         let mut arg_array = vec![];
-        let raw_sql = do_child_nodes(&pys, env, &mut self.engine, &mut arg_array)?;
+        let mut new_env=env.clone();
+        let raw_sql = do_child_nodes(&pys, &mut new_env, &mut self.engine, &mut arg_array)?;
         return self.raw_sql_prepare(mapper_name, raw_sql.as_str(), &mut arg_array);
     }
 
@@ -247,7 +248,8 @@ impl Rbatis {
     ///       "size":null,
     ///    }));
     ///
-    pub fn mapper<T>(&mut self, mapper_name: &str, id: &str, env: &mut Value, arg_array: &mut Vec<Value>) -> Result<T, RbatisError> where T: de::DeserializeOwned {
+    pub fn mapper<T>(&mut self, mapper_name: &str, id: &str, env: &Value, arg_array: &mut Vec<Value>) -> Result<T, RbatisError> where T: de::DeserializeOwned {
+        let mut arg =env.clone();
         let mapper_opt = self.mapper_map.get(&mapper_name.to_string());
         if mapper_opt.is_none() {
             return Result::Err(RbatisError::from("[rbatis] find mapper fail,name:'".to_string() + mapper_name + "'"));
@@ -257,7 +259,7 @@ impl Rbatis {
             return Result::Err(RbatisError::from("[rbatis] find method fail,name:'".to_string() + mapper_name + id + "'"));
         }
         let mapper_func = node.unwrap();
-        let sql_string = mapper_func.eval(env, &mut self.engine, arg_array)?;
+        let sql_string = mapper_func.eval(&mut arg, &mut self.engine, arg_array)?;
         let sql = sql_string.as_str();
 
         let sql_id = mapper_name.to_string() + "." + id;
