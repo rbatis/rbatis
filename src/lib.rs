@@ -22,6 +22,7 @@ pub mod engine;
 pub mod decode;
 pub mod tx;
 pub mod plugin;
+pub mod error;
 
 pub mod rbatis;
 pub mod db_config;
