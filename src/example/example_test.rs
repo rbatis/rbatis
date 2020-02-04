@@ -31,6 +31,8 @@ use crate::session_factory::{SessionFactory, SessionFactoryCached};
 use crate::tx::propagation::Propagation::{NONE, REQUIRED};
 use crate::tx::propagation::Propagation;
 use crate::error::RbatisError;
+use std::error::Error;
+use tokio::task;
 
 /**
  初始化实例
@@ -384,14 +386,28 @@ pub fn test_service() {
 
 
 //添加 tokio异步支持示例
-use tokio::task;
-async fn docs(arg: &Value) -> Result<IPage<Activity>, Box<dyn std::error::Error>> {
-    let mut new_arg =arg.clone();
+//#[tokio::main]
+//async fn main() {
+//    //init_singleton_rbatis();
+//    //初始化rbatis
+//    let arg = json!({
+//     "a":1
+//    });
+//    query(&arg).await;
+//    query(&arg).await;
+//}
+async fn query(arg: &Value) -> Result<IPage<Activity>, RbatisError> {
+    let mut new_arg = arg.clone();
     let res = task::spawn_blocking(move || {
         //do some compute-heavy work or call synchronous code
-        let data: IPage<Activity> = singleton().select_page("Example_ActivityMapper.xml", &mut new_arg, &IPage::new(1, 5)).unwrap();
-        //"done computing"
+        let data: Result<IPage<Activity>, RbatisError> = singleton().select_page("Example_ActivityMapper.xml", &mut new_arg, &IPage::new(1, 5));
+        println!("{:?}", data);
         return data;
-    }).await?;
-    Ok(res)
+    }).await;
+    //Box<dyn std::error::Error>
+    if res.is_ok() {
+        return res.unwrap();
+    } else {
+        return Err(RbatisError::from(res.err().unwrap().description()));
+    }
 }
