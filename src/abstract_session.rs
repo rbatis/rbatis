@@ -3,19 +3,7 @@ use rdbc::{Connection, Value};
 use serde::de;
 
 use crate::decode::rdbc_driver_decoder::decode_result_set;
-
-/// TODO 添加 tokio异步支持
-use tokio::task;
 use crate::error::RbatisError;
-
-async fn docs() -> Result<(), Box<dyn std::error::Error>> {
-    let res = task::spawn_blocking(move || {
-        //do some compute-heavy work or call synchronous code
-        "done computing"
-    }).await?;
-    assert_eq!(res, "done computing");
-    Ok(())
-}
 
 ///查询，执行接口
 pub trait AbstractSession {
