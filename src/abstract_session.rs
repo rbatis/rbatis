@@ -4,6 +4,19 @@ use serde::de;
 
 use crate::decode::rdbc_driver_decoder::decode_result_set;
 
+
+/// TODO tokio异步支持
+///  use tokio::task;
+///  # async fn docs() -> Result<(), Box<dyn std::error::Error>>{
+///  let res = task::spawn_blocking(move || {
+///     //do some compute-heavy work or call synchronous code
+///     "done computing"
+///  }).await?;
+///  assert_eq!(res, "done computing");
+///  # Ok(())
+///  # }
+
+
 ///查询，执行接口
 pub trait AbstractSession {
     fn query_prepare<T>(&mut self, enable_log: bool, sql: &str, arg_array: &[rdbc::Value]) -> Result<T, String> where T: de::DeserializeOwned;
