@@ -9,13 +9,13 @@ pub enum RbatisError {
     E(String)
 }
 
-impl From<&str> for RbatisError{
+impl From<&str> for RbatisError {
     fn from(arg: &str) -> Self {
         return RbatisError::E(arg.to_string());
     }
 }
 
-impl From<std::string::String> for RbatisError{
+impl From<std::string::String> for RbatisError {
     fn from(arg: String) -> Self {
         return RbatisError::E(arg);
     }
@@ -36,6 +36,24 @@ impl Error for RbatisError {
         return match self {
             RbatisError::E(data) => {
                 data.as_str()
+            }
+        };
+    }
+}
+
+
+pub trait AsStdResult<T> where T: Clone {
+    fn as_std_result(&self) -> Result<T, Box<dyn std::error::Error>>;
+}
+
+impl<T> AsStdResult<T> for Result<T, RbatisError> where T: Clone {
+    fn as_std_result(&self) -> Result<T, Box<dyn std::error::Error>> {
+        return match self {
+            Err(e) => {
+                Err(Box::new(e.clone()))
+            }
+            Ok(o) => {
+                Ok(o.clone())
             }
         };
     }
