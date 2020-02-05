@@ -1,5 +1,17 @@
 use crate::tx::propagation::Propagation::NONE;
 
+///将嵌套Result转换为标准的 Result<T,RbatisError>
+#[macro_export(local_inner_macros)]
+macro_rules! to_result {
+    ($arg:expr) => {
+       if $arg.is_ok(){
+           return $arg.ok().unwrap();
+       }else{
+           return Err(RbatisError::from($arg.err().unwrap().description()));
+       }
+    };
+}
+
 ///代理实现服务,支持事务嵌套
 #[macro_export(local_inner_macros)]
 macro_rules! impl_service {

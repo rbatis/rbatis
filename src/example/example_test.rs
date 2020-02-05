@@ -1,6 +1,7 @@
 use std::borrow::{Borrow, BorrowMut};
 use std::cell::RefMut;
 use std::collections::LinkedList;
+use std::error::Error;
 use std::fs;
 use std::ops::Deref;
 use std::process::exit;
@@ -16,7 +17,7 @@ use actix_web::{App, HttpServer, Responder, web};
 use log::{error, info, warn};
 use rdbc::{DataType, Driver, ResultSet, ResultSetMetaData};
 use serde_json::{json, Number, Value};
-
+use tokio::task;
 
 use crate::ast::node::bind_node::BindNode;
 use crate::ast::node::node_type::NodeType;
@@ -24,15 +25,13 @@ use crate::crud::ipage::IPage;
 use crate::decode::encoder::encode_to_value;
 use crate::decode::rdbc_driver_decoder;
 use crate::decode::rdbc_driver_decoder::decode_result_set;
+use crate::error::RbatisError;
 use crate::example::activity::Activity;
 use crate::example::conf::MYSQL_URL;
 use crate::rbatis::{eval_sql, Rbatis, singleton};
 use crate::session_factory::{SessionFactory, SessionFactoryCached};
 use crate::tx::propagation::Propagation::{NONE, REQUIRED};
 use crate::tx::propagation::Propagation;
-use crate::error::RbatisError;
-use std::error::Error;
-use tokio::task;
 
 /**
  初始化实例
@@ -385,6 +384,10 @@ pub fn test_service() {
 }
 
 
+
+
+
+
 //添加 tokio异步支持示例
 //#[tokio::main]
 //async fn main() {
@@ -404,10 +407,5 @@ async fn query(arg: &Value) -> Result<IPage<Activity>, RbatisError> {
         println!("{:?}", data);
         return data;
     }).await;
-    //Box<dyn std::error::Error>
-    if res.is_ok() {
-        return res.unwrap();
-    } else {
-        return Err(RbatisError::from(res.err().unwrap().description()));
-    }
+    to_result!(res);
 }
