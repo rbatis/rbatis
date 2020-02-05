@@ -315,8 +315,16 @@ fn test_tx_return() -> Result<u64, RbatisError> {
 
 async fn index() -> impl Responder {
     //写法1
-    let act: Activity = eval_sql("select * from biz_activity where id  = '2';").unwrap();
-    return serde_json::to_string(&act).unwrap();
+//    let data: Result<IPage<Activity>, RbatisError> = singleton().select_page("Example_ActivityMapper.xml", &mut json!({
+//       "name":"新人专享1",
+//    }), &IPage::new(1, 5));
+
+    let data=query(&json!({
+       "name":"新人专享1",
+    })).await;
+    println!("{:?}",&data);
+    //let act: Activity = eval_sql("select * from biz_activity where id  = '2';").unwrap();
+    return serde_json::to_string(&data).unwrap();
 }
 
 #[actix_rt::main]
