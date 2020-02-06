@@ -1,5 +1,6 @@
 use crate::tx::propagation::Propagation::NONE;
 use crate::error::RbatisError;
+use tokio::task;
 
 ///将嵌套Result await调用后 转换为标准的 Result<T,RbatisError>
 /// 使用方法
