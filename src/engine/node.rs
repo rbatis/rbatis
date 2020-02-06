@@ -6,7 +6,6 @@ use std::ptr::null;
 
 use serde_json::{Map, Value};
 use serde_json;
-use serde_json::de::ParserNumber;
 use serde_json::json;
 use serde_json::value::Value::{Null, Number};
 
@@ -149,7 +148,7 @@ impl Node {
     }
     pub fn new_number_f64(arg: f64) -> Self {
         Self {
-            value: Value::Number(serde_json::Number::from(ParserNumber::F64(arg))),
+            value: json!(arg),
             left_binary_node: None,
             right_binary_node: None,
             node_type: NNumber,
@@ -157,7 +156,7 @@ impl Node {
     }
     pub fn new_number_i64(arg: i64) -> Self {
         Self {
-            value: Value::Number(serde_json::Number::from(ParserNumber::I64(arg))),
+            value: json!(arg),
             left_binary_node: None,
             right_binary_node: None,
             node_type: NNumber,
@@ -165,7 +164,7 @@ impl Node {
     }
     pub fn new_number_u64(arg: u64) -> Self {
         Self {
-            value: Value::Number(serde_json::Number::from(ParserNumber::U64(arg))),
+            value: json!(arg),
             left_binary_node: None,
             right_binary_node: None,
             node_type: NNumber,

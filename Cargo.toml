@@ -10,8 +10,8 @@ xml-rs = "0.8"
 lazy_static = "1.4.0"
 
 #serde
-serde = { version = "1.0.44", features = ["derive"] }
-serde_json = "1.0.44"
+serde = { version = "1.0", features = ["derive"] }
+serde_json = "1.0"
 serde_yaml = "0.8"
 
 #async
@@ -24,7 +24,6 @@ log4rs = "0.8.3"
 rdbc = {git = "https://github.com/rbatis/rdbc",path="/rdbc"}
 
 #web library
-actix = "*"
-actix-web = "*"
-actix-rt = "*"
+actix-web = "2.0"
+actix-rt = "1.0"
 tokio = { version = "0.2", features = ["full"] }

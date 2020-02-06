@@ -1,7 +1,6 @@
 use log::{error, info, warn};
 use rdbc::Connection;
 use serde::de;
-use serde_json::de::ParserNumber;
 use serde_json::Value;
 use uuid::Uuid;
 
