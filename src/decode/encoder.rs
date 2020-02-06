@@ -1,7 +1,5 @@
 use rdbc::{DataType, ResultSetMetaData, Error, ResultSet};
-use serde_json::{Value, Number};
-use serde_json::de::ParserNumber;
-
+use serde_json::{json,Value, Number};
 
 pub fn encode_to_value(arg: &mut dyn ResultSet) -> Vec<Value> {
     let mut arr = vec![];
@@ -41,7 +39,7 @@ pub fn encode_to_value(arg: &mut dyn ResultSet) -> Vec<Value> {
                     if strings.is_ok() {
                         let v = strings.unwrap();
                         if v.is_some() {
-                            m.insert(c_name, serde_json::Value::Number(Number::from(ParserNumber::I64(v.unwrap()))));
+                            m.insert(c_name, json!(v.unwrap()));
                         } else {
                             m.insert(c_name, serde_json::Value::Null);
                         }

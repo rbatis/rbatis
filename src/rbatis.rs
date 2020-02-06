@@ -14,7 +14,6 @@ use log4rs::init_file;
 use serde::{de, Serialize};
 use serde::de::DeserializeOwned;
 use serde_json::{Number, Value};
-use serde_json::de::ParserNumber;
 use serde_json::json;
 use serde_json::ser::State::Rest;
 use uuid::Uuid;
@@ -203,7 +202,7 @@ impl Rbatis {
             //exec
             let session = self.session_factory.get_thread_session(&id.to_string(), self.db_driver.as_str())?;
             let affected_rows = session.exec(sql, &params)?;
-            let r = serde_json::from_value(serde_json::Value::Number(serde_json::Number::from(ParserNumber::U64(affected_rows))));
+            let r = serde_json::from_value(json!(affected_rows));
             if r.is_err() {
                 return Result::Err(RbatisError::from("[rbatis] exec fail:".to_string() + id + r.err().unwrap().to_string().as_str()));
             }
