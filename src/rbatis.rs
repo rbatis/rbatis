@@ -62,6 +62,9 @@ pub struct Rbatis {
     pub db_driver: String,
     //session工厂
     pub session_factory: SessionFactoryCached,
+
+    //最大连接数
+    pub max_conn: usize,
     //允许日志输出，禁用此项可减少IO,提高性能
     pub enable_log: bool,
     //true异步模式，false线程模式
@@ -75,14 +78,11 @@ impl Rbatis {
             mapper_map: HashMap::new(),
             engine: RbatisEngine::new(),
             db_driver: "".to_string(),
-            session_factory: SessionFactoryCached::new(false),
+            session_factory: SessionFactoryCached::new(20),
             enable_log: true,
             async_mode: false,
+            max_conn: 20,
         };
-    }
-
-    pub fn new_factory() -> Box<dyn SessionFactory> {
-        return Box::new(SessionFactoryCached::new(false));
     }
 
 
