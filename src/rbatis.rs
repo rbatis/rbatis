@@ -47,9 +47,6 @@ pub fn singleton() -> MutexGuard<'static, Rbatis> {
     return RBATIS.lock().unwrap();
 }
 
-pub fn eval_sql<T>(id: &str, eval_sql: &str) -> Result<T, RbatisError> where T: de::DeserializeOwned {
-    return singleton().raw_sql(id, eval_sql);
-}
 
 pub async fn async_eval_sql<T>(id: &str, eval_sql: &str) -> Result<T, RbatisError> where T: de::DeserializeOwned + Send + 'static {
     let s = eval_sql.to_string();
