@@ -16,6 +16,7 @@ use serde::de::DeserializeOwned;
 use serde_json::{Number, Value};
 use serde_json::json;
 use serde_json::ser::State::Rest;
+use tokio::task;
 use uuid::Uuid;
 
 use crate::ast::ast::Ast;
@@ -31,7 +32,7 @@ use crate::decode::rdbc_driver_decoder::decode_result_set;
 use crate::engine::runtime::RbatisEngine;
 use crate::error::RbatisError;
 use crate::local_session::LocalSession;
-use crate::session_factory::{SessionFactory, ConnPoolSessionFactory};
+use crate::session_factory::{ConnPoolSessionFactory, SessionFactory};
 use crate::tx::propagation::Propagation;
 use crate::utils::{driver_util, rdbc_util};
 use crate::utils::rdbc_util::to_rdbc_values;
@@ -49,6 +50,14 @@ pub fn singleton() -> MutexGuard<'static, Rbatis> {
 pub fn eval_sql<T>(id: &str, eval_sql: &str) -> Result<T, RbatisError> where T: de::DeserializeOwned {
     return singleton().raw_sql(id, eval_sql);
 }
+
+pub async fn async_eval_sql<T>(id: &str, eval_sql: &str) -> Result<T, RbatisError> where T: de::DeserializeOwned + Send + 'static {
+    let s = eval_sql.to_string();
+    return to_tokio_await!(T,{ singleton().raw_sql(format!("{:?}",std::thread::current().id()).as_str(),s.as_str())  });
+}
+
+
+
 
 
 pub struct Rbatis {
