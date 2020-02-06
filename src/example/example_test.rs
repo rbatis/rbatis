@@ -354,7 +354,7 @@ pub fn test_service() {
 
 
 async fn index() -> impl Responder {
-    //写法1
+    //写法1 注意：适用于不支持async的框架
     //singleton().raw_sql("","select * from biz_activity where id  = '2';").unwrap();
     //写法2
     let data: Result<Activity, RbatisError> = crate::rbatis::async_raw_sql(format!("{:?}", std::thread::current().id()).as_str(), "select * from biz_activity where id  = '2';").await;
