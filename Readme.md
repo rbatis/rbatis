@@ -109,7 +109,7 @@ println!("[rbatis] result==> {:?}",data_result);
 ``` rust
 //这里举例使用web排行榜屠榜最快的actix-web
 #[macro_use]
-pub mod rbatis_macro;
+use rbatis::rbatis_macro;
 
 async fn index() -> impl Responder {
     //写法
