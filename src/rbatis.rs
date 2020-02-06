@@ -134,10 +134,48 @@ pub async fn async_update<T>(_id: &str, _mapper_name: &str,_mapper_id: &str, _en
     return to_tokio_await!(T,{ singleton().update(&id,&mapper_name,&env)  });
 }
 
+pub async fn async_select<T>(_id: &str, _mapper_name: &str,_mapper_id: &str, _env: &Value) -> Result<T, RbatisError> where T: de::DeserializeOwned + Send + 'static {
+    let id = _id.to_string();
+    let mapper_name = _mapper_name.to_string();
+    let mapper_id = _mapper_id.to_string();
+    let env = _env.clone();
+    return to_tokio_await!(T,{ singleton().select(&id,&mapper_name,&env)  });
+}
 
 
+pub async fn async_select_page<T>(_id: &str, _mapper_name: &str, _env: &Value,_ipage: &IPage<T>) -> Result<IPage<T>, RbatisError> where T: de::DeserializeOwned +Serialize + Clone+ Send + 'static {
+    let id = _id.to_string();
+    let mapper_name = _mapper_name.to_string();
+    let env = _env.clone();
+    let ipage=_ipage.clone();
+    let data = task::spawn_blocking(move || {
+        let data = singleton().select_page(&id,&mapper_name,&env,&ipage);
+        return data;
+    }).await;
+    if data.is_ok() {
+        return data.ok().unwrap();
+    } else {
+        return Err(RbatisError::from(data.err().unwrap().description()));
+    }
+}
 
 
+pub async fn async_select_page_by_mapper<T>(_id: &str, _mapper_name: &str,_mapper_id: &str, _env: &Value,_ipage: &IPage<T>) -> Result<IPage<T>, RbatisError> where T: de::DeserializeOwned +Serialize + Clone+ Send + 'static {
+    let id = _id.to_string();
+    let mapper_name = _mapper_name.to_string();
+    let mapper_id = _mapper_id.to_string();
+    let env = _env.clone();
+    let ipage=_ipage.clone();
+    let data = task::spawn_blocking(move || {
+        let data = singleton().select_page(&id,&mapper_name,&env,&ipage);
+        return data;
+    }).await;
+    if data.is_ok() {
+        return data.ok().unwrap();
+    } else {
+        return Err(RbatisError::from(data.err().unwrap().description()));
+    }
+}
 
 pub struct Rbatis {
     pub id: String,
