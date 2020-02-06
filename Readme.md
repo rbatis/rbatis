@@ -105,23 +105,28 @@ println!("[rbatis] result==> {:?}",data_result);
 //2020-01-10T10:28:54.552097+08:00 INFO rbatis::core::rbatis - [rbatis] ReturnRows <== 2
 //[rbatis] result==> [Activity { id: Some("\"dfbdd779-5f70-4b8f-9921-a235a9c75b69\""), name: Some("\"新人专享\""), version: Some(6) }, Activity { id: Some("\"dfbdd779-5f70-4b8f-9921-c235a9c75b69\""), name: Some("\"新人专享\""), version: Some(6) }]
 ```
-### 自定义动态数据源路由
+### async await的web框架支持
 ``` rust
-    rbatis.load_db_url("".to_string(), "mysql://root:TEST@localhost:3306/test");//默认配置
-    rbatis.load_db_url("read".to_string(), "mysql://root:TEST@localhost:3306/test");//只读库
-    rbatis.load_db_url("write".to_string(), "postgres://root:TEST@localhost:3306/test");//只写库
-    rbatis.router_func = |id| -> String{
-        info!("匹配路由key  ====>  {}",id);
-        //例如：你可以自定义读写分离
-        if id.contains("select"){
-            //info!("select开头 加载读路由配置");
-            return "read".to_string();
-        }else{
-            //info!("非select开头 加载写路由配置");
-            // return "write".to_string();
-        }
-        return "".to_string();
-    };
+//这里举例使用web排行榜屠榜最快的actix-web
+async fn index() -> impl Responder {
+    //写法
+    let data=to_tokio_await!(Activity,{ singleton().raw_sql(format!("{:?}",std::thread::current().id()).as_str(),"select * from biz_activity where id  = '2';")  });
+    println!("{:?}",&data);
+    return serde_json::to_string(&data).unwrap();
+}
+
+#[actix_rt::main]
+async fn main() -> std::io::Result<()> {
+    init_singleton_rbatis();
+    //初始化rbatis
+    HttpServer::new(move || {
+        App::new()
+            .route("/", web::get().to(index))
+    })
+        .bind("127.0.0.1:8000")?
+        .run()
+        .await
+}
 ```
 
 
