@@ -312,42 +312,6 @@ fn test_tx_return() -> Result<u64, RbatisError> {
 }
 
 
-async fn index() -> impl Responder {
-    //写法1
-//    let data: Result<IPage<Activity>, RbatisError> = singleton().select_page("Example_ActivityMapper.xml", &mut json!({
-//       "name":"新人专享1",
-//    }), &IPage::new(1, 5));
-
-    let data=query(&json!({
-    })).await;
-    println!("{:?}",&data);
-    //let act: Activity = eval_sql("select * from biz_activity where id  = '2';").unwrap();
-    return serde_json::to_string(&data).unwrap();
-}
-
-#[actix_rt::main]
-async fn main() -> std::io::Result<()> {
-    init_singleton_rbatis();
-    //初始化rbatis
-    HttpServer::new(move || {
-        App::new()
-            .route("/", web::get().to(index))
-    })
-        .bind("127.0.0.1:8000")?
-        .run()
-        .await
-}
-
-#[test]
-pub fn test_web() {
-    //初始化rbatis
-    if MYSQL_URL.contains("localhost") {
-        return;
-    }
-    main();
-}
-
-
 pub trait Service {
     fn select_activity(&self) -> Result<Activity, RbatisError>;
     fn update_activity(&mut self) -> Result<String, RbatisError>;
@@ -390,28 +354,37 @@ pub fn test_service() {
 }
 
 
-
-
-
-
-//添加 tokio异步支持示例
-//#[tokio::main]
-//async fn main() {
-//    //init_singleton_rbatis();
-//    //初始化rbatis
-//    let arg = json!({
-//     "a":1
-//    });
-//    query(&arg).await;
-//    query(&arg).await;
-//}
-async fn query(arg: &Value) -> Result<IPage<Activity>, RbatisError> {
-    let mut new_arg = arg.clone();
-    let res = task::spawn_blocking(move || {
-        //do some compute-heavy work or call synchronous code
-        let data: Result<IPage<Activity>, RbatisError> = singleton().select_page("","Example_ActivityMapper.xml", &mut new_arg, &IPage::new(1, 5));
+async fn index() -> impl Responder {
+    //写法1
+    //singleton().raw_sql("","select * from biz_activity where id  = '2';").unwrap();
+    //写法2
+    let data:Result<Activity,RbatisError>=to_tokio_await!({
+        let data: Result<Activity,RbatisError> = singleton().raw_sql("","select * from biz_activity where id  = '2';");
         println!("{:?}", data);
         return data;
-    }).await;
-    to_result!(res);
+    });
+    println!("{:?}",&data);
+    return serde_json::to_string(&data).unwrap();
+}
+
+#[actix_rt::main]
+async fn main() -> std::io::Result<()> {
+    init_singleton_rbatis();
+    //初始化rbatis
+    HttpServer::new(move || {
+        App::new()
+            .route("/", web::get().to(index))
+    })
+        .bind("127.0.0.1:8000")?
+        .run()
+        .await
+}
+
+#[test]
+pub fn test_web() {
+    //初始化rbatis
+    if MYSQL_URL.contains("localhost") {
+        return;
+    }
+    main();
 }

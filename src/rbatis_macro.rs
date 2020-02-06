@@ -1,14 +1,17 @@
 use crate::tx::propagation::Propagation::NONE;
 
-///将嵌套Result转换为标准的 Result<T,RbatisError>
+///将嵌套Result await调用后 转换为标准的 Result<T,RbatisError>
 #[macro_export(local_inner_macros)]
-macro_rules! to_result {
-    ($arg:expr) => {
-       if $arg.is_ok(){
-           return $arg.ok().unwrap();
-       }else{
-           return Err(RbatisError::from($arg.err().unwrap().description()));
-       }
+macro_rules! to_tokio_await {
+    ($b:block) => {
+        {
+          let data=task::spawn_blocking(move || $b).await;
+           if data.is_ok(){
+              data.ok().unwrap()
+             }else{
+               Err(RbatisError::from(data.err().unwrap().description()))
+            }
+        }
     };
 }
 
