@@ -26,6 +26,10 @@ pub struct LocalSession {
     pub conn: Option<Box<dyn Connection>>,
 }
 
+unsafe impl Sync for LocalSession{}
+unsafe impl Send for LocalSession{}
+
+
 impl LocalSession {
     pub fn new(id: &str, driver: &str, conn_opt: Option<Box<dyn Connection>>) -> Result<Self, RbatisError> {
         let mut new_id = id.to_string();
