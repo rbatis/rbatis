@@ -13,11 +13,11 @@ use crate::error::RbatisError;
 
 impl Rbatis {
 
-    pub fn insert<T>(&mut self, mapper_name: &str, env: &Value) -> Result<T, RbatisError> where T: DeserializeOwned {
+    pub fn insert<T>(&mut self,id:&str, mapper_name: &str, env: &Value) -> Result<T, RbatisError> where T: DeserializeOwned {
         let mut arg_array = vec![];
         let mut arg=env.clone();
         let sql = self.create_sql_insert(mapper_name, &mut arg, &mut arg_array)?;
-        return self.raw_sql_prepare((mapper_name.to_string() + ".insert").as_str(), sql.as_str(), &mut arg_array);
+        return self.raw_sql_prepare(id, sql.as_str(), &mut arg_array);
     }
 
     fn create_sql_insert(&self, mapper_name: &str, arg: &mut Value, arg_array: &mut Vec<Value>) -> Result<String, RbatisError> {

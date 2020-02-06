@@ -1,9 +1,9 @@
 use std::any::Any;
 use std::borrow::BorrowMut;
 use std::collections::HashMap;
+use std::error::Error;
 use std::ops::{Deref, DerefMut};
 use std::process::exit;
-
 use std::str::FromStr;
 use std::sync::{Mutex, MutexGuard};
 use std::thread;
@@ -20,7 +20,6 @@ use serde_json::ser::State::Rest;
 use uuid::Uuid;
 
 use crate::ast::ast::Ast;
-
 use crate::ast::lang::py::Py;
 use crate::ast::node::bind_node::BindNode;
 use crate::ast::node::node::{do_child_nodes, SqlNodePrint};
@@ -30,15 +29,14 @@ use crate::ast::node::string_node::StringNode;
 use crate::crud::ipage::IPage;
 use crate::db_config::DBConfig;
 use crate::decode::rdbc_driver_decoder::decode_result_set;
+use crate::engine::runtime::RbatisEngine;
+use crate::error::RbatisError;
 use crate::local_session::LocalSession;
 use crate::session_factory::{SessionFactory, SessionFactoryCached};
 use crate::tx::propagation::Propagation;
 use crate::utils::{driver_util, rdbc_util};
 use crate::utils::rdbc_util::to_rdbc_values;
 use crate::utils::xml_loader::load_xml;
-use crate::engine::runtime::RbatisEngine;
-use crate::error::RbatisError;
-use std::error::Error;
 
 lazy_static! {
   static ref RBATIS: Mutex<Rbatis> = Mutex::new(Rbatis::new());
@@ -49,8 +47,8 @@ pub fn singleton() -> MutexGuard<'static, Rbatis> {
     return RBATIS.lock().unwrap();
 }
 
-pub fn eval_sql<T>(eval_sql: &str) -> Result<T, RbatisError> where T: de::DeserializeOwned {
-    return singleton().raw_sql(eval_sql);
+pub fn eval_sql<T>(id: &str, eval_sql: &str) -> Result<T, RbatisError> where T: de::DeserializeOwned {
+    return singleton().raw_sql(id, eval_sql);
 }
 
 
@@ -107,7 +105,7 @@ impl Rbatis {
     pub fn load_db_url(&mut self, url: &str) -> Option<RbatisError> {
         let db_config_opt = DBConfig::new(url.to_string());
         if db_config_opt.is_ok() {
-            self.db_driver =url.to_string();
+            self.db_driver = url.to_string();
             return Option::None;
         } else {
             let e = db_config_opt.err().unwrap();
@@ -154,12 +152,12 @@ impl Rbatis {
     ///    ").unwrap();
     ///    println!("[rbatis] result==>  {:?}", data);
     ///
-    pub fn py_sql<T>(&mut self, mapper_name: &str, env: &Value, eval_sql: &str) -> Result<T, RbatisError> where T: de::DeserializeOwned {
+    pub fn py_sql<T>(&mut self, id: &str, mapper_name: &str, env: &Value, eval_sql: &str) -> Result<T, RbatisError> where T: de::DeserializeOwned {
         let pys = Py::parser_by_cache(eval_sql)?;
         let mut arg_array = vec![];
-        let mut new_env=env.clone();
+        let mut new_env = env.clone();
         let raw_sql = do_child_nodes(&pys, &mut new_env, &mut self.engine, &mut arg_array)?;
-        return self.raw_sql_prepare(mapper_name, raw_sql.as_str(), &mut arg_array);
+        return self.raw_sql_prepare(id, raw_sql.as_str(), &mut arg_array);
     }
 
 
@@ -174,9 +172,9 @@ impl Rbatis {
     ///       "size":null,
     ///    }));
     ///
-    pub fn raw_sql<T>(&mut self, eval_sql: &str) -> Result<T, RbatisError> where T: de::DeserializeOwned {
+    pub fn raw_sql<T>(&mut self, id: &str, eval_sql: &str) -> Result<T, RbatisError> where T: de::DeserializeOwned {
         let mut arg_array = vec![];
-        return self.raw_sql_prepare("eval_sql", eval_sql, &mut arg_array);
+        return self.raw_sql_prepare(id, eval_sql, &mut arg_array);
     }
 
     ///执行
@@ -220,8 +218,8 @@ impl Rbatis {
     ///       "size":null,
     ///    }));
     ///
-    pub fn mapper<T>(&mut self, id: &str,mapper_name: &str, mapper_id: &str,env: &Value, arg_array: &mut Vec<Value>) -> Result<T, RbatisError> where T: de::DeserializeOwned {
-        let mut arg =env.clone();
+    pub fn mapper<T>(&mut self, id: &str, mapper_name: &str, mapper_id: &str, env: &Value, arg_array: &mut Vec<Value>) -> Result<T, RbatisError> where T: de::DeserializeOwned {
+        let mut arg = env.clone();
         let mapper_opt = self.mapper_map.get(&mapper_name.to_string());
         if mapper_opt.is_none() {
             return Result::Err(RbatisError::from("[rbatis] find mapper fail,name:'".to_string() + mapper_name + "'"));
@@ -235,9 +233,8 @@ impl Rbatis {
         let mapper_func = node.unwrap();
         let sql_string = mapper_func.eval(&mut arg, &mut self.engine, arg_array)?;
         let sql = sql_string.as_str();
-        return self.raw_sql_prepare(mapper_name_id.as_str(), sql, arg_array);
+        return self.raw_sql_prepare(id, sql, arg_array);
     }
-
 
 
     ///打印内容
@@ -271,7 +268,7 @@ impl Rbatis {
         return Result::Err(RbatisError::from("[rbatis]  can not be find ".to_string() + mapper_name));
     }
 
-    fn check_driver(&self)->Result<bool,RbatisError>{
+    fn check_driver(&self) -> Result<bool, RbatisError> {
         if self.db_driver.is_empty() {
             return Result::Err(RbatisError::from("[rbatis] no DataBase driver find!"));
         }

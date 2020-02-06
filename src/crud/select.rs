@@ -1,5 +1,6 @@
 use std::borrow::BorrowMut;
 use std::fs;
+use std::process::id;
 
 use serde::de::{Deserialize, DeserializeOwned};
 use serde::ser::Serialize;
@@ -11,28 +12,28 @@ use crate::ast::node::result_map_node::ResultMapNode;
 use crate::convert::sql_value_convert;
 use crate::convert::sql_value_convert::{AND, SkipType, SqlQuestionConvert, SqlValueConvert};
 use crate::crud::ipage::IPage;
+use crate::error::RbatisError;
 use crate::example::activity::Activity;
 use crate::rbatis::Rbatis;
 use crate::session_factory::SessionFactory;
 use crate::utils::join_in::json_join;
 use crate::utils::string_util::count_string_num;
-use crate::error::RbatisError;
 
 impl Rbatis {
     ///普通查询
-    pub fn select<T>(&mut self, session_factory: &mut Box<dyn SessionFactory>, mapper_name: &str, env: &Value) -> Result<T, RbatisError> where T: DeserializeOwned {
+    pub fn select<T>(&mut self, id: &str, session_factory: &mut Box<dyn SessionFactory>, mapper_name: &str, env: &Value) -> Result<T, RbatisError> where T: DeserializeOwned {
         let mut arg_array = vec![];
-        let mut arg=env.clone();
+        let mut arg = env.clone();
         let (sql, _) = self.create_sql_select(mapper_name, &mut arg, &mut arg_array)?;
-        return self.raw_sql_prepare((mapper_name.to_string() + ".select").as_str(), sql.as_str(), &mut arg_array);
+        return self.raw_sql_prepare(id, sql.as_str(), &mut arg_array);
     }
 
     ///分页查询
-    pub fn select_page<T>(&mut self, mapper_name: &str, arg: &Value, ipage: &IPage<T>) -> Result<IPage<T>, RbatisError> where T: Serialize + DeserializeOwned + Clone {
+    pub fn select_page<T>(&mut self, id: &str, mapper_name: &str, arg: &Value, ipage: &IPage<T>) -> Result<IPage<T>, RbatisError> where T: Serialize + DeserializeOwned + Clone {
         let mut arg_array = vec![];
         //do select
         let mut new_arg = json_join(&arg, "ipage", ipage)?;
-        let (records, w) = self.eval_select_return_where(mapper_name, &mut new_arg, &mut arg_array)?;
+        let (records, w) = self.eval_select_return_where(id, mapper_name, &mut new_arg, &mut arg_array)?;
         let mut result = ipage.clone();
         result.set_records(records);
 
@@ -40,15 +41,15 @@ impl Rbatis {
         let result_map_node = self.get_result_map_node(mapper_name)?;
         let count_sql = self.do_count_by_templete(&mut new_arg, &result_map_node, w.as_str())?;
 
-        let total: i64 = self.raw_sql_prepare((mapper_name.to_string() + ".select_page").as_str(), count_sql.as_str(), &mut arg_array)?;
+        let total: i64 = self.raw_sql_prepare(id, count_sql.as_str(), &mut arg_array)?;
         result.set_total(total);
         return Result::Ok(result);
     }
 
     /// 根据mapper 自定义内容 分页查询， 只需写一个查询内容，不需要添加 count函数
-    pub fn select_page_by_mapper<T>(&mut self, id: &str,mapper_name: &str, mapper_id: &str, env: &Value, ipage: &IPage<T>) -> Result<IPage<T>, RbatisError> where T: Serialize + DeserializeOwned + Clone {
+    pub fn select_page_by_mapper<T>(&mut self, id: &str, mapper_name: &str, mapper_id: &str, env: &Value, ipage: &IPage<T>) -> Result<IPage<T>, RbatisError> where T: Serialize + DeserializeOwned + Clone {
         let mut arg_array = vec![];
-        let mut arg=env.clone();
+        let mut arg = env.clone();
         let mut new_arg = json_join(&mut arg, "ipage", ipage)?;
         //select redords
         let mapper_opt = self.mapper_map.get_mut(&mapper_name.to_string());
@@ -89,7 +90,7 @@ impl Rbatis {
         }
         let query_sql = where_befer_string + " WHERE " + append_limit_where_string.as_str();
 
-        let records: Vec<T> = self.raw_sql_prepare(mapper_name_id.as_str(), query_sql.as_str(), &mut arg_array)?;
+        let records: Vec<T> = self.raw_sql_prepare(id, query_sql.as_str(), &mut arg_array)?;
         let mut result = ipage.clone();
         result.set_records(records);
 
@@ -108,15 +109,15 @@ impl Rbatis {
             where_string = where_string[0..limit_opt.unwrap()].to_string();
         }
         count_sql = count_sql.replace("#{where}", where_string.as_str());
-        let total = self.raw_sql_prepare(mapper_name_id.as_str(), count_sql.as_str(), &mut arg_array)?;
+        let total = self.raw_sql_prepare(id, count_sql.as_str(), &mut arg_array)?;
         result.set_total(total);
         return Result::Ok(result);
     }
 
 
-    fn eval_select_return_where<T>(&mut self, mapper_name: &str, arg: &mut Value, arg_array: &mut Vec<Value>) -> Result<(T, String), RbatisError> where T: DeserializeOwned {
+    fn eval_select_return_where<T>(&mut self, id: &str, mapper_name: &str, arg: &mut Value, arg_array: &mut Vec<Value>) -> Result<(T, String), RbatisError> where T: DeserializeOwned {
         let (sql, w) = self.create_sql_select(mapper_name, arg, arg_array)?;
-        let data: T = self.raw_sql_prepare((mapper_name.to_string() + ".eval_select_return_where").as_str(), sql.as_str(), arg_array)?;
+        let data: T = self.raw_sql_prepare(id, sql.as_str(), arg_array)?;
         return Result::Ok((data, w));
     }
 

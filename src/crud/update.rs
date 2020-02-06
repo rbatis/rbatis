@@ -16,11 +16,11 @@ use crate::error::RbatisError;
 pub const SKIP_SETS: &'static str = "null,object,array";
 
 impl Rbatis {
-    pub fn update<T>(&mut self, mapper_name: &str, env: &Value) -> Result<T, RbatisError> where T: DeserializeOwned {
+    pub fn update<T>(&mut self,id:&str, mapper_name: &str, env: &Value) -> Result<T, RbatisError> where T: DeserializeOwned {
         let mut arg_array = vec![];
         let mut arg=env.clone();
         let sql = self.create_sql_update(mapper_name, &mut arg, &mut arg_array)?;
-        return self.raw_sql_prepare((mapper_name.to_string() + ".update").as_str(), sql.as_str(), &mut arg_array);
+        return self.raw_sql_prepare(id, sql.as_str(), &mut arg_array);
     }
 
 
