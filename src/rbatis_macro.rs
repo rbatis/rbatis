@@ -2,6 +2,11 @@ use crate::tx::propagation::Propagation::NONE;
 use crate::error::RbatisError;
 
 ///将嵌套Result await调用后 转换为标准的 Result<T,RbatisError>
+/// 使用方法
+///
+///  //data 即可被推断为 data:Result<Activity,RbatisError>
+///  let data=to_tokio_await!(Activity,{ singleton().raw_sql(format!("{:?}",std::thread::current().id()).as_str(),"select * from biz_activity where id  = '2';")  });
+///
 #[macro_export(local_inner_macros)]
 macro_rules! to_tokio_await {
     ($t:ty,$b:block) => {
