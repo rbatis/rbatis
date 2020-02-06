@@ -24,6 +24,17 @@ macro_rules! to_tokio_await {
 }
 
 ///代理实现服务,支持事务嵌套
+/// 使用方法：
+/// struct ServiceImpl {
+///    select_activity: fn(s: &ServiceImpl) -> Result<Activity, RbatisError>,
+/// }
+///
+///impl Service for ServiceImpl {
+///    impl_service! {
+///      //这里逗号前面是事务传播行为(详见tx::Propagation枚举中的定义)，后面是结构体定义的方法
+///      REQUIRED,  select_activity(&self) -> Result<Activity,RbatisError>
+///    }
+///  }
 #[macro_export(local_inner_macros)]
 macro_rules! impl_service {
    ($($p:path,  $fn: ident (&self $(,$x:ident:$t:ty)*         ) -> Result<$return_type:ty,$return_type_error:ty> ),*) => {
@@ -48,6 +59,17 @@ macro_rules! impl_service {
 }
 
 ///代理实现服务,支持事务嵌套
+/// 使用方法：
+/// struct ServiceImpl {
+///    update_activity: fn(s: &mut ServiceImpl) -> Result<String, RbatisError>,
+///}
+///
+///impl Service for ServiceImpl {
+///    impl_service_mut! {
+///      //这里逗号前面是事务传播行为(详见tx::Propagation枚举中的定义)，后面是结构体定义的方法
+///      NONE,  update_activity(&mut self) -> Result<String, RbatisError>
+///    }
+///  }
 #[macro_export(local_inner_macros)]
 macro_rules! impl_service_mut {
    ($($p:path,  $fn: ident (&mut self $(,$x:ident:$t:ty)*         ) -> Result<$return_type:ty,$return_type_error:ty> ),*) => {
