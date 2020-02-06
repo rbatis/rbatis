@@ -1,13 +1,16 @@
 use crate::tx::propagation::Propagation::NONE;
+use crate::error::RbatisError;
 
 ///将嵌套Result await调用后 转换为标准的 Result<T,RbatisError>
 #[macro_export(local_inner_macros)]
 macro_rules! to_tokio_await {
-    ($b:block) => {
+    ($t:ty,$b:block) => {
         {
           let data=task::spawn_blocking(move || $b).await;
+          let mut result_ok_data:Result<$t,RbatisError>;
            if data.is_ok(){
-              data.ok().unwrap()
+              result_ok_data=data.ok().unwrap();
+              result_ok_data
              }else{
                Err(RbatisError::from(data.err().unwrap().description()))
             }
