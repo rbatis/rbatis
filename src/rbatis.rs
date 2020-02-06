@@ -121,23 +121,22 @@ impl Rbatis {
 
     pub fn begin(&mut self, id: &str, propagation_type: Propagation) -> Result<&mut LocalSession, RbatisError> {
         self.check_driver()?;
-        let thread_id = thread::current().id();
-        let session = self.session_factory.get_thread_session(&thread_id, self.db_driver.as_str())?;
+        let session = self.session_factory.get_thread_session(&id.to_string(), self.db_driver.as_str())?;
         session.begin(propagation_type)?;
         return Result::Ok(session);
     }
 
     pub fn rollback<'a>(&mut self, id: &'a str) -> Result<&'a str, RbatisError> {
         self.check_driver()?;
-        let thread_id = thread::current().id();
-        self.session_factory.get_thread_session(&thread_id, self.db_driver.as_str())?.rollback()?;
+        self.session_factory.get_thread_session(&id.to_string(), self.db_driver.as_str())?.rollback()?;
+        self.session_factory.data.remove(&id.to_string());
         return Result::Ok(id);
     }
 
     pub fn commit<'a>(&mut self, id: &'a str) -> Result<&'a str, RbatisError> {
         self.check_driver()?;
-        let thread_id = thread::current().id();
-        self.session_factory.get_thread_session(&thread_id, self.db_driver.as_str())?.commit()?;
+        self.session_factory.get_thread_session(&id.to_string(), self.db_driver.as_str())?.commit()?;
+        self.session_factory.data.remove(&id.to_string());
         return Result::Ok(id);
     }
 
@@ -191,15 +190,14 @@ impl Rbatis {
         }
         let params = to_rdbc_values(arg_array);
         self.check_driver()?;
-        let thread_id = thread::current().id();
         let is_select = sql.starts_with("select") || sql.starts_with("SELECT") || sql.starts_with("Select");
         if is_select {
             //select
-            let session = self.session_factory.get_thread_session(&thread_id, self.db_driver.as_str())?;
+            let session = self.session_factory.get_thread_session(&id.to_string(), self.db_driver.as_str())?;
             return session.query(sql, &params);
         } else {
             //exec
-            let session = self.session_factory.get_thread_session(&thread_id, self.db_driver.as_str())?;
+            let session = self.session_factory.get_thread_session(&id.to_string(), self.db_driver.as_str())?;
             let affected_rows = session.exec(sql, &params)?;
             let r = serde_json::from_value(serde_json::Value::Number(serde_json::Number::from(ParserNumber::U64(affected_rows))));
             if r.is_err() {
@@ -222,22 +220,22 @@ impl Rbatis {
     ///       "size":null,
     ///    }));
     ///
-    pub fn mapper<T>(&mut self, mapper_name: &str, id: &str, env: &Value, arg_array: &mut Vec<Value>) -> Result<T, RbatisError> where T: de::DeserializeOwned {
+    pub fn mapper<T>(&mut self, id: &str,mapper_name: &str, mapper_id: &str,env: &Value, arg_array: &mut Vec<Value>) -> Result<T, RbatisError> where T: de::DeserializeOwned {
         let mut arg =env.clone();
         let mapper_opt = self.mapper_map.get(&mapper_name.to_string());
         if mapper_opt.is_none() {
             return Result::Err(RbatisError::from("[rbatis] find mapper fail,name:'".to_string() + mapper_name + "'"));
         }
-        let node = mapper_opt.unwrap().get(id);
+        let mapper_name_id = mapper_name.to_string() + "." + mapper_id;
+
+        let node = mapper_opt.unwrap().get(mapper_id);
         if node.is_none() {
-            return Result::Err(RbatisError::from("[rbatis] find method fail,name:'".to_string() + mapper_name + id + "'"));
+            return Result::Err(RbatisError::from("[rbatis] no method find in : ".to_string() + mapper_name_id.as_str()));
         }
         let mapper_func = node.unwrap();
         let sql_string = mapper_func.eval(&mut arg, &mut self.engine, arg_array)?;
         let sql = sql_string.as_str();
-
-        let sql_id = mapper_name.to_string() + "." + id;
-        return self.raw_sql_prepare(sql_id.as_str(), sql, arg_array);
+        return self.raw_sql_prepare(mapper_name_id.as_str(), sql, arg_array);
     }
 
 

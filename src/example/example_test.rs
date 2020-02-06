@@ -208,7 +208,7 @@ fn test_exec_sql() {
     }
     let mut array = vec![];
     //执行到远程mysql 并且获取结果,Result<serde_json::Value, RbatisError>,或者 Result<String, RbatisError> 等任意类型
-    let data: Vec<Activity> = rbatis.unwrap().mapper("Example_ActivityMapper.xml", "select_by_condition", &mut json!({
+    let data: Vec<Activity> = rbatis.unwrap().mapper("","Example_ActivityMapper.xml", "select_by_condition", &mut json!({
        "name":null,
        "startTime":null,
        "endTime":null,
@@ -248,7 +248,7 @@ fn test_exec_select_page_custom() {
         return;
     }
     //执行到远程mysql 并且获取结果,Result<serde_json::Value, RbatisError>,或者 Result<String, RbatisError> 等任意类型
-    let data: IPage<Activity> = rbatis.unwrap().select_page_by_mapper("Example_ActivityMapper.xml", "select_by_page", &mut json!({
+    let data: IPage<Activity> = rbatis.unwrap().select_page_by_mapper("","Example_ActivityMapper.xml", "select_by_page", &mut json!({
        "name":"新人专享",
        "delete_flag": 1,
     }), &IPage::new(1, 5)).unwrap();
