@@ -13,7 +13,7 @@
 * 基于Rust语言稳定版构建，要求 stable:1.9 以上
 * 内置日志输出,可自定义具体日志（基于标准库log(独立于任何特定的日志记录库)，标准库日志可选任意第三方库实现，类似于java的SLF4j）
 
-#### py风格sql语法Example
+##### py风格sql语法Example
 ``` python
 //执行到远程mysql 并且获取结果,Result<serde_json::Value, RbatisError>,或者 Result<String, RbatisError> 等任意类型
     let py_sql="
