@@ -71,10 +71,9 @@ fn init_rbatis() -> Result<Rbatis, RbatisError> {
 fn init_singleton_rbatis() {
     //1 启用日志(可选，不添加则不加载日志库)
     log4rs::init_file("log4rs.yaml", Default::default()).unwrap();
-    //3 加载数据库url name 为空，则默认数据库
+    //2 加载数据库url name 为空，则默认数据库
     Rbatis::singleton().load_db_url(MYSQL_URL);//"mysql://root:TEST@localhost:3306/test"
-    //4 加载xml配置
-
+    //3 加载xml配置
     let f = fs::File::open("./src/example/Example_ActivityMapper.xml");
     Rbatis::singleton().load_xml("Example_ActivityMapper.xml".to_string(), fs::read_to_string("./src/example/Example_ActivityMapper.xml").unwrap());//加载xml数据
 }
