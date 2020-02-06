@@ -56,6 +56,44 @@ pub async fn async_eval_sql<T>(id: &str, eval_sql: &str) -> Result<T, RbatisErro
     return to_tokio_await!(T,{ singleton().raw_sql(format!("{:?}",std::thread::current().id()).as_str(),s.as_str())  });
 }
 
+pub async fn async_begin<T>(id: &str, propagation_type: Propagation) -> Result<String, RbatisError>  {
+    let _id=id.to_string();
+    let data=task::spawn_blocking(move || {
+        let data=singleton().begin(_id.as_str(),propagation_type);
+        return data;
+    }).await;
+    if data.is_ok(){
+        return data.ok().unwrap();
+    }else{
+        return Err(RbatisError::from(data.err().unwrap().description()))
+    }
+}
+
+pub async fn async_commit<T>(id: &str, propagation_type: Propagation) -> Result<String, RbatisError>  {
+    let _id=id.to_string();
+    let data=task::spawn_blocking(move || {
+        let data=singleton().commit(_id.as_str());
+        return data;
+    }).await;
+    if data.is_ok(){
+        return data.ok().unwrap();
+    }else{
+        return Err(RbatisError::from(data.err().unwrap().description()))
+    }
+}
+
+pub async fn async_rollback<T>(id: &str, propagation_type: Propagation) -> Result<String, RbatisError>  {
+    let _id=id.to_string();
+    let data=task::spawn_blocking(move || {
+        let data=singleton().rollback(_id.as_str());
+        return data;
+    }).await;
+    if data.is_ok(){
+        return data.ok().unwrap();
+    }else{
+        return Err(RbatisError::from(data.err().unwrap().description()))
+    }
+}
 
 
 
@@ -125,31 +163,31 @@ impl Rbatis {
     }
 
 
-    pub fn begin(&mut self, id: &str, propagation_type: Propagation) -> Result<&mut LocalSession, RbatisError> {
+    pub fn begin(&mut self, id: &str, propagation_type: Propagation) -> Result<String, RbatisError> {
         self.check_driver()?;
         let session = self.session_factory.get_thread_session(&id.to_string(), self.db_driver.as_str())?;
         session.begin(propagation_type)?;
-        return Result::Ok(session);
+        return Result::Ok(session.id().to_string());
     }
 
-    pub fn rollback<'a>(&mut self, id: &'a str) -> Result<&'a str, RbatisError> {
+    pub fn rollback<'a>(&mut self, id: &'a str) -> Result<String, RbatisError> {
         self.check_driver()?;
         let session = self.session_factory.get_thread_session(&id.to_string(), self.db_driver.as_str())?;
         session.rollback()?;
         if !session.have_tx() {
             self.session_factory.remove(&id.to_string());
         }
-        return Result::Ok(id);
+        return Result::Ok(id.to_string());
     }
 
-    pub fn commit<'a>(&mut self, id: &'a str) -> Result<&'a str, RbatisError> {
+    pub fn commit<'a>(&mut self, id: &'a str) -> Result<String, RbatisError> {
         self.check_driver()?;
         let session = self.session_factory.get_thread_session(&id.to_string(), self.db_driver.as_str())?;
         session.commit()?;
         if !session.have_tx() {
             self.session_factory.remove(&id.to_string());
         }
-        return Result::Ok(id);
+        return Result::Ok(id.to_string());
     }
 
 
