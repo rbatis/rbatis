@@ -15,25 +15,25 @@ pub trait SessionFactory {
     fn remove(&mut self, id: &String);
 }
 
-
-pub struct SessionFactoryCached {
+///连接池session工厂  connection pool session factory
+pub struct ConnPoolSessionFactory {
     /// data 持有session所有权，当session被删除时，session即被销毁
     pub data: HashMap<String, LocalSession>,
     pub max_conn: usize,
 }
 
 
-unsafe impl Send for SessionFactoryCached {}
+unsafe impl Send for ConnPoolSessionFactory {}
 
-unsafe impl Sync for SessionFactoryCached {}
+unsafe impl Sync for ConnPoolSessionFactory {}
 
-impl Drop for SessionFactoryCached {
+impl Drop for ConnPoolSessionFactory {
     fn drop(&mut self) {
         self.data.clear();
     }
 }
 
-impl SessionFactory for SessionFactoryCached {
+impl SessionFactory for ConnPoolSessionFactory {
     fn get_thread_session(&mut self, id: &String, driver: &str) -> Result<&mut LocalSession, RbatisError> {
         self.gc();
         let item = self.data.get_mut(id);
@@ -51,7 +51,7 @@ impl SessionFactory for SessionFactoryCached {
     }
 }
 
-impl SessionFactoryCached {
+impl ConnPoolSessionFactory {
     /// clean_no_tx_link:是否清理缓存无事务的链接，启用节省内存但是每个请求重复链接，不启用则复用链接性能高
     pub fn new(max_conn: usize) -> Self {
         return Self {

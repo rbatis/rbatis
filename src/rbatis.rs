@@ -31,7 +31,7 @@ use crate::decode::rdbc_driver_decoder::decode_result_set;
 use crate::engine::runtime::RbatisEngine;
 use crate::error::RbatisError;
 use crate::local_session::LocalSession;
-use crate::session_factory::{SessionFactory, SessionFactoryCached};
+use crate::session_factory::{SessionFactory, ConnPoolSessionFactory};
 use crate::tx::propagation::Propagation;
 use crate::utils::{driver_util, rdbc_util};
 use crate::utils::rdbc_util::to_rdbc_values;
@@ -60,7 +60,7 @@ pub struct Rbatis {
     //数据库驱动
     pub db_driver: String,
     //session工厂
-    pub session_factory: SessionFactoryCached,
+    pub session_factory: ConnPoolSessionFactory,
 
     //最大连接数
     pub max_conn: usize,
@@ -77,7 +77,7 @@ impl Rbatis {
             mapper_map: HashMap::new(),
             engine: RbatisEngine::new(),
             db_driver: "".to_string(),
-            session_factory: SessionFactoryCached::new(20),
+            session_factory: ConnPoolSessionFactory::new(20),
             enable_log: true,
             async_mode: false,
             max_conn: 20,

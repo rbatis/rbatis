@@ -29,7 +29,7 @@ use crate::error::RbatisError;
 use crate::example::activity::Activity;
 use crate::example::conf::MYSQL_URL;
 use crate::rbatis::{eval_sql, Rbatis, singleton};
-use crate::session_factory::{SessionFactory, SessionFactoryCached};
+use crate::session_factory::{SessionFactory, ConnPoolSessionFactory};
 use crate::tx::propagation::Propagation::{NONE, REQUIRED};
 use crate::tx::propagation::Propagation;
 
@@ -359,7 +359,7 @@ async fn index() -> impl Responder {
     //singleton().raw_sql("","select * from biz_activity where id  = '2';").unwrap();
     //写法2
     let data:Result<Activity,RbatisError>=to_tokio_await!({
-        let data: Result<Activity,RbatisError> = singleton().raw_sql("","select * from biz_activity where id  = '2';");
+        let data: Result<Activity,RbatisError> = singleton().raw_sql(format!("{:?}",std::thread::current().id()).as_str(),"select * from biz_activity where id  = '2';");
         println!("{:?}", data);
         return data;
     });
