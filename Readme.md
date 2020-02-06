@@ -113,7 +113,7 @@ use rbatis::rbatis_macro;
 
 async fn index() -> impl Responder {
     //写法
-    let data: Result<Activity, RbatisError> = Rbatis::async_raw_sql(format!("{:?}", std::thread::current().id()).as_str(), "select * from biz_activity where id  = '2';").await;
+    let data: Result<Activity, RbatisError> = Rbatis::async_raw_sql("", "select * from biz_activity where id  = '2';").await;
     println!("{:?}", &data);
     return serde_json::to_string(&data).unwrap();
 }
