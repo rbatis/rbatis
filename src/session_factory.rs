@@ -11,6 +11,7 @@ use crate::error::RbatisError;
 ///链接工厂
 pub trait SessionFactory {
     fn get_thread_session(&mut self, id: &String, driver: &str) -> Result<&mut LocalSession, RbatisError>;
+    fn remove(&mut self, id: &String);
 }
 
 
@@ -45,6 +46,10 @@ impl SessionFactory for SessionFactoryCached {
             self.data.insert(id.clone(), session);
             return Ok(self.data.get_mut(id).unwrap());
         }
+    }
+
+    fn remove(&mut self, id: &String) {
+        self.data.remove(id);
     }
 }
 
