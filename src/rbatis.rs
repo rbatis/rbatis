@@ -60,9 +60,8 @@ pub struct Rbatis {
     pub mapper_map: HashMap<String, HashMap<String, NodeType>>,
     //动态sql节点配置
     pub engine: RbatisEngine,
-    //路由配置
-    pub db_driver_map: HashMap<String, String>,
-    pub router_func: fn(id: &str) -> String,
+    //数据库驱动
+    pub db_driver: String,
     //session工厂
     pub session_factory: SessionFactoryCached,
     //允许日志输出，禁用此项可减少IO,提高性能
@@ -77,12 +76,8 @@ impl Rbatis {
             id: Uuid::new_v4().to_string(),
             mapper_map: HashMap::new(),
             engine: RbatisEngine::new(),
-            db_driver_map: HashMap::new(),
+            db_driver: "".to_string(),
             session_factory: SessionFactoryCached::new(false),
-            router_func: |id| -> String{
-                //加载默认配置，key=""
-                return "".to_string();
-            },
             enable_log: true,
             async_mode: false,
         };
@@ -109,11 +104,10 @@ impl Rbatis {
 
     /// 设置数据库默认url，如果失败返回错误信息
     ///  let url = "mysql://root:TEST@localhost:3306/test";
-    ///  rbatis.load_db_url("".to_string(), url.to_string());//name 为空，则默认数据库
-    pub fn load_db_url(&mut self, key: &str, url: &str) -> Option<RbatisError> {
+    pub fn load_db_url(&mut self, url: &str) -> Option<RbatisError> {
         let db_config_opt = DBConfig::new(url.to_string());
         if db_config_opt.is_ok() {
-            self.db_driver_map.insert(key.to_string(), url.to_string());
+            self.db_driver =url.to_string();
             return Option::None;
         } else {
             let e = db_config_opt.err().unwrap();
@@ -126,39 +120,24 @@ impl Rbatis {
 
 
     pub fn begin(&mut self, id: &str, propagation_type: Propagation) -> Result<&mut LocalSession, RbatisError> {
-        let key = (self.router_func)(id);
-        let db_conf_opt = self.db_driver_map.get(key.as_str());
-        if db_conf_opt.is_none() {
-            return Result::Err(RbatisError::from("[rbatis] no DBConfig:".to_string() + key.as_str() + " find!"));
-        }
-        let driver = db_conf_opt.unwrap();
+        self.check_driver()?;
         let thread_id = thread::current().id();
-        let session = self.session_factory.get_thread_session(&thread_id, driver.as_str())?;
+        let session = self.session_factory.get_thread_session(&thread_id, self.db_driver.as_str())?;
         session.begin(propagation_type)?;
         return Result::Ok(session);
     }
 
     pub fn rollback<'a>(&mut self, id: &'a str) -> Result<&'a str, RbatisError> {
-        let key = (self.router_func)(id);
-        let db_conf_opt = self.db_driver_map.get(key.as_str());
-        if db_conf_opt.is_none() {
-            return Result::Err(RbatisError::from("[rbatis] no DBConfig:".to_string() + key.as_str() + " find!"));
-        }
-        let driver = db_conf_opt.unwrap();
+        self.check_driver()?;
         let thread_id = thread::current().id();
-        self.session_factory.get_thread_session(&thread_id, driver.as_str())?.rollback()?;
+        self.session_factory.get_thread_session(&thread_id, self.db_driver.as_str())?.rollback()?;
         return Result::Ok(id);
     }
 
     pub fn commit<'a>(&mut self, id: &'a str) -> Result<&'a str, RbatisError> {
-        let key = (self.router_func)(id);
-        let db_conf_opt = self.db_driver_map.get(key.as_str());
-        if db_conf_opt.is_none() {
-            return Result::Err(RbatisError::from("[rbatis] no DBConfig:".to_string() + key.as_str() + " find!"));
-        }
-        let driver = db_conf_opt.unwrap();
+        self.check_driver()?;
         let thread_id = thread::current().id();
-        self.session_factory.get_thread_session(&thread_id, driver.as_str())?.commit()?;
+        self.session_factory.get_thread_session(&thread_id, self.db_driver.as_str())?.commit()?;
         return Result::Ok(id);
     }
 
@@ -211,21 +190,16 @@ impl Rbatis {
             return Result::Err(RbatisError::from("[rbatis] sql can not be empty!".to_string()));
         }
         let params = to_rdbc_values(arg_array);
-        let key = (self.router_func)(id);
-        let db_conf_opt = self.db_driver_map.get(key.as_str());
-        if db_conf_opt.is_none() {
-            return Result::Err(RbatisError::from("[rbatis] no DBConfig:".to_string() + key.as_str() + " find!"));
-        }
-        let driver = db_conf_opt.unwrap();
+        self.check_driver()?;
         let thread_id = thread::current().id();
         let is_select = sql.starts_with("select") || sql.starts_with("SELECT") || sql.starts_with("Select");
         if is_select {
             //select
-            let session = self.session_factory.get_thread_session(&thread_id, driver.as_str())?;
+            let session = self.session_factory.get_thread_session(&thread_id, self.db_driver.as_str())?;
             return session.query(sql, &params);
         } else {
             //exec
-            let session = self.session_factory.get_thread_session(&thread_id, driver.as_str())?;
+            let session = self.session_factory.get_thread_session(&thread_id, self.db_driver.as_str())?;
             let affected_rows = session.exec(sql, &params)?;
             let r = serde_json::from_value(serde_json::Value::Number(serde_json::Number::from(ParserNumber::U64(affected_rows))));
             if r.is_err() {
@@ -297,5 +271,12 @@ impl Rbatis {
             }
         }
         return Result::Err(RbatisError::from("[rbatis]  can not be find ".to_string() + mapper_name));
+    }
+
+    fn check_driver(&self)->Result<bool,RbatisError>{
+        if self.db_driver.is_empty() {
+            return Result::Err(RbatisError::from("[rbatis] no DataBase driver find!"));
+        }
+        return Ok(true);
     }
 }
