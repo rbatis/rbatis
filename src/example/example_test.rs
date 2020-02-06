@@ -28,7 +28,7 @@ use crate::decode::rdbc_driver_decoder::decode_result_set;
 use crate::error::RbatisError;
 use crate::example::activity::Activity;
 use crate::example::conf::MYSQL_URL;
-use crate::rbatis::{eval_sql, Rbatis, singleton};
+use crate::rbatis::{Rbatis, singleton};
 use crate::session_factory::{ConnPoolSessionFactory, SessionFactory};
 use crate::tx::propagation::Propagation::{NONE, REQUIRED};
 use crate::tx::propagation::Propagation;
