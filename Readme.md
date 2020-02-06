@@ -13,6 +13,28 @@
 * 基于Rust语言稳定版构建，要求 stable:1.9 以上
 * 内置日志输出,可自定义具体日志（基于标准库log(独立于任何特定的日志记录库)，标准库日志可选任意第三方库实现，类似于java的SLF4j）
 
+#### py风格sql语法Example
+``` python
+//执行到远程mysql 并且获取结果,Result<serde_json::Value, RbatisError>,或者 Result<String, RbatisError> 等任意类型
+    let py_sql="
+                   SELECT * FROM biz_activity
+                   if  name!=null:
+                     name = #{name}
+                   AND delete_flag1 = #{del}
+                   if  age!=1:
+                      AND age = 2
+                      if  age!=1:
+                        AND age = 3
+                   trim 'AND ':
+                     AND delete_flag2 = #{del}
+                   WHERE id  = '2';";
+    let data: Vec<Activity> = rbatis.unwrap().py_sql("","Example_ActivityMapper.xml", &mut json!({
+       "name":"新人专享",
+       "delete_flag": 1,
+    }), py_sql).unwrap();
+```
+
+
 ##### xml代码Example
 ``` xml
 <mapper>
