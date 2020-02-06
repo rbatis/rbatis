@@ -42,140 +42,6 @@ lazy_static! {
   static ref RBATIS: Mutex<Rbatis> = Mutex::new(Rbatis::new());
 }
 
-///使用 lazy_static 获取的单例
-pub fn singleton() -> MutexGuard<'static, Rbatis> {
-    return RBATIS.lock().unwrap();
-}
-
-
-pub async fn async_raw_sql<T>(id: &str, eval_sql: &str) -> Result<T, RbatisError> where T: de::DeserializeOwned + Send + 'static {
-    let s = eval_sql.to_string();
-    return to_tokio_await!(T,{ singleton().raw_sql(format!("{:?}",std::thread::current().id()).as_str(),s.as_str())  });
-}
-
-pub async fn async_begin<T>(id: &str, propagation_type: Propagation) -> Result<String, RbatisError> {
-    let _id = id.to_string();
-    let data = task::spawn_blocking(move || {
-        let data = singleton().begin(_id.as_str(), propagation_type);
-        return data;
-    }).await;
-    if data.is_ok() {
-        return data.ok().unwrap();
-    } else {
-        return Err(RbatisError::from(data.err().unwrap().description()));
-    }
-}
-
-pub async fn async_commit<T>(id: &str, propagation_type: Propagation) -> Result<String, RbatisError> {
-    let _id = id.to_string();
-    let data = task::spawn_blocking(move || {
-        let data = singleton().commit(_id.as_str());
-        return data;
-    }).await;
-    if data.is_ok() {
-        return data.ok().unwrap();
-    } else {
-        return Err(RbatisError::from(data.err().unwrap().description()));
-    }
-}
-
-pub async fn async_rollback<T>(id: &str, propagation_type: Propagation) -> Result<String, RbatisError> {
-    let _id = id.to_string();
-    let data = task::spawn_blocking(move || {
-        let data = singleton().rollback(_id.as_str());
-        return data;
-    }).await;
-    if data.is_ok() {
-        return data.ok().unwrap();
-    } else {
-        return Err(RbatisError::from(data.err().unwrap().description()));
-    }
-}
-
-pub async fn async_py_sql<T>(id: &str, mapper_name: &str, env: &Value, eval_sql: &str) -> Result<T, RbatisError> where T: de::DeserializeOwned + Send + 'static {
-    let _id = id.to_string();
-    let _mapper_name = mapper_name.to_string();
-    let _env = env.clone();
-    let sql = eval_sql.to_string();
-    return to_tokio_await!(T,{ singleton().py_sql(_id.as_str(),_mapper_name.as_str(),&_env,&sql)  });
-}
-
-
-pub async fn async_mapper<T>(id: &str, mapper_name: &str,mapper_id: &str, env: &Value, eval_sql: &str) -> Result<T, RbatisError> where T: de::DeserializeOwned + Send + 'static {
-    let _id = id.to_string();
-    let _mapper_name = mapper_name.to_string();
-    let _mapper_id = mapper_id.to_string();
-    let _env = env.clone();
-    let sql = eval_sql.to_string();
-    return to_tokio_await!(T,{ singleton().mapper(&_id,&_mapper_name,&_mapper_id,&_env)  });
-}
-
-pub async fn async_delete<T>(_id: &str, _mapper_name: &str,_mapper_id: &str, _env: &Value) -> Result<T, RbatisError> where T: de::DeserializeOwned + Send + 'static {
-    let id = _id.to_string();
-    let mapper_name = _mapper_name.to_string();
-    let mapper_id = _mapper_id.to_string();
-    let env = _env.clone();
-    return to_tokio_await!(T,{ singleton().delete(&id,&mapper_name,&env)  });
-}
-
-pub async fn async_insert<T>(_id: &str, _mapper_name: &str,_mapper_id: &str, _env: &Value) -> Result<T, RbatisError> where T: de::DeserializeOwned + Send + 'static {
-    let id = _id.to_string();
-    let mapper_name = _mapper_name.to_string();
-    let mapper_id = _mapper_id.to_string();
-    let env = _env.clone();
-    return to_tokio_await!(T,{ singleton().insert(&id,&mapper_name,&env)  });
-}
-
-pub async fn async_update<T>(_id: &str, _mapper_name: &str,_mapper_id: &str, _env: &Value) -> Result<T, RbatisError> where T: de::DeserializeOwned + Send + 'static {
-    let id = _id.to_string();
-    let mapper_name = _mapper_name.to_string();
-    let mapper_id = _mapper_id.to_string();
-    let env = _env.clone();
-    return to_tokio_await!(T,{ singleton().update(&id,&mapper_name,&env)  });
-}
-
-pub async fn async_select<T>(_id: &str, _mapper_name: &str,_mapper_id: &str, _env: &Value) -> Result<T, RbatisError> where T: de::DeserializeOwned + Send + 'static {
-    let id = _id.to_string();
-    let mapper_name = _mapper_name.to_string();
-    let mapper_id = _mapper_id.to_string();
-    let env = _env.clone();
-    return to_tokio_await!(T,{ singleton().select(&id,&mapper_name,&env)  });
-}
-
-
-pub async fn async_select_page<T>(_id: &str, _mapper_name: &str, _env: &Value,_ipage: &IPage<T>) -> Result<IPage<T>, RbatisError> where T: de::DeserializeOwned +Serialize + Clone+ Send + 'static {
-    let id = _id.to_string();
-    let mapper_name = _mapper_name.to_string();
-    let env = _env.clone();
-    let ipage=_ipage.clone();
-    let data = task::spawn_blocking(move || {
-        let data = singleton().select_page(&id,&mapper_name,&env,&ipage);
-        return data;
-    }).await;
-    if data.is_ok() {
-        return data.ok().unwrap();
-    } else {
-        return Err(RbatisError::from(data.err().unwrap().description()));
-    }
-}
-
-
-pub async fn async_select_page_by_mapper<T>(_id: &str, _mapper_name: &str,_mapper_id: &str, _env: &Value,_ipage: &IPage<T>) -> Result<IPage<T>, RbatisError> where T: de::DeserializeOwned +Serialize + Clone+ Send + 'static {
-    let id = _id.to_string();
-    let mapper_name = _mapper_name.to_string();
-    let mapper_id = _mapper_id.to_string();
-    let env = _env.clone();
-    let ipage=_ipage.clone();
-    let data = task::spawn_blocking(move || {
-        let data = singleton().select_page(&id,&mapper_name,&env,&ipage);
-        return data;
-    }).await;
-    if data.is_ok() {
-        return data.ok().unwrap();
-    } else {
-        return Err(RbatisError::from(data.err().unwrap().description()));
-    }
-}
 
 pub struct Rbatis {
     pub id: String,
@@ -209,6 +75,12 @@ impl Rbatis {
             max_conn: 20,
         };
     }
+
+    ///使用 lazy_static 获取的单例
+    pub fn singleton() -> MutexGuard<'static, Rbatis> {
+        return RBATIS.lock().unwrap();
+    }
+
 
 
     pub fn set_enable_log(&mut self, arg: bool) {

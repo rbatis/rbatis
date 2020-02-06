@@ -1,7 +1,7 @@
 use crate::tx::propagation::Propagation::NONE;
 use crate::error::RbatisError;
 use tokio::task;
-
+use crate::rbatis::{Rbatis};
 ///将嵌套Result await调用后 转换为标准的 Result<T,RbatisError>
 /// 使用方法
 ///
@@ -43,14 +43,14 @@ macro_rules! impl_service {
     fn $fn(&self  $(,$x:$t)*    ) -> Result<$return_type,$return_type_error> {
            //TODO 判断是否启用事务，启用则根据事务最后一条传播行为创建。
            if $p!=crate::tx::propagation::Propagation::NONE{
-              singleton().begin( "", $p)?;
+              Rbatis::singleton().begin( "", $p)?;
            }
            let data = (self.$fn)(self  $(,$x)*    );
            if $p!=crate::tx::propagation::Propagation::NONE{
               if data.is_ok(){
-                singleton().commit("")?;
+                Rbatis::singleton().commit("")?;
               }else{
-                singleton().rollback("")?;
+                Rbatis::singleton().rollback("")?;
               }
            }
            return data;
@@ -78,14 +78,14 @@ macro_rules! impl_service_mut {
     fn $fn(&mut self  $(,$x:$t)*    ) -> Result<$return_type,$return_type_error> {
             //TODO 判断是否启用事务，启用则根据事务最后一条传播行为创建。
             if $p!=crate::tx::propagation::Propagation::NONE{
-              singleton().begin( "", $p)?;
+              Rbatis::singleton().begin( "", $p)?;
            }
             let data = (self.$fn)(self  $(,$x)*    );
             if $p!=crate::tx::propagation::Propagation::NONE{
               if data.is_ok(){
-                singleton().commit("")?;
+                Rbatis::singleton().commit("")?;
               }else{
-                singleton().rollback("")?;
+                Rbatis::singleton().rollback("")?;
               }
            }
             return data;

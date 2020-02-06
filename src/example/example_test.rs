@@ -28,7 +28,7 @@ use crate::decode::rdbc_driver_decoder::decode_result_set;
 use crate::error::RbatisError;
 use crate::example::activity::Activity;
 use crate::example::conf::MYSQL_URL;
-use crate::rbatis::{Rbatis, singleton};
+use crate::rbatis::{Rbatis};
 use crate::session_factory::{ConnPoolSessionFactory, SessionFactory};
 use crate::tx::propagation::Propagation::{NONE, REQUIRED};
 use crate::tx::propagation::Propagation;
@@ -72,11 +72,11 @@ fn init_singleton_rbatis() {
     //1 启用日志(可选，不添加则不加载日志库)
     log4rs::init_file("log4rs.yaml", Default::default()).unwrap();
     //3 加载数据库url name 为空，则默认数据库
-    singleton().load_db_url(MYSQL_URL);//"mysql://root:TEST@localhost:3306/test"
+    Rbatis::singleton().load_db_url(MYSQL_URL);//"mysql://root:TEST@localhost:3306/test"
     //4 加载xml配置
 
     let f = fs::File::open("./src/example/Example_ActivityMapper.xml");
-    singleton().load_xml("Example_ActivityMapper.xml".to_string(), fs::read_to_string("./src/example/Example_ActivityMapper.xml").unwrap());//加载xml数据
+    Rbatis::singleton().load_xml("Example_ActivityMapper.xml".to_string(), fs::read_to_string("./src/example/Example_ActivityMapper.xml").unwrap());//加载xml数据
 }
 
 
@@ -340,7 +340,7 @@ pub fn test_service() {
 
     let mut s = ServiceImpl {
         select_activity: |s: &ServiceImpl| -> Result<Activity, RbatisError>{
-            let act: Activity = singleton().raw_sql("", "select * from biz_activity where id  = '2';").unwrap();
+            let act: Activity = Rbatis::singleton().raw_sql("", "select * from biz_activity where id  = '2';").unwrap();
             return Result::Ok(act);
         },
         update_activity: |s: &mut ServiceImpl| -> Result<String, RbatisError>{
@@ -357,7 +357,7 @@ async fn index() -> impl Responder {
     //写法1 注意：适用于不支持async的框架
     //singleton().raw_sql("","select * from biz_activity where id  = '2';").unwrap();
     //写法2
-    let data: Result<Activity, RbatisError> = crate::rbatis::async_raw_sql(format!("{:?}", std::thread::current().id()).as_str(), "select * from biz_activity where id  = '2';").await;
+    let data: Result<Activity, RbatisError> = Rbatis::async_raw_sql(format!("{:?}", std::thread::current().id()).as_str(), "select * from biz_activity where id  = '2';").await;
     println!("{:?}", &data);
     return serde_json::to_string(&data).unwrap();
 }
