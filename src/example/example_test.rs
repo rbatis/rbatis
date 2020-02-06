@@ -206,7 +206,6 @@ fn test_exec_sql() {
     if rbatis.is_err() {
         return;
     }
-    let mut array = vec![];
     //执行到远程mysql 并且获取结果,Result<serde_json::Value, RbatisError>,或者 Result<String, RbatisError> 等任意类型
     let data: Vec<Activity> = rbatis.unwrap().mapper("", "Example_ActivityMapper.xml", "select_by_condition", &mut json!({
        "name":null,
@@ -214,7 +213,7 @@ fn test_exec_sql() {
        "endTime":null,
        "page":null,
        "size":null,
-    }), &mut array).unwrap();
+    })).unwrap();
     // 写法2，直接运行原生sql
     // let data_opt: Result<serde_json::Value, RbatisError> = rbatis.eval_sql("select * from biz_activity");
     println!("[rbatis] result==>  {:?}", data);
