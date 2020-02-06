@@ -15,13 +15,12 @@ use crate::crud::ipage::IPage;
 use crate::error::RbatisError;
 use crate::example::activity::Activity;
 use crate::rbatis::Rbatis;
-use crate::session_factory::SessionFactory;
 use crate::utils::join_in::json_join;
 use crate::utils::string_util::count_string_num;
 
 impl Rbatis {
     ///普通查询
-    pub fn select<T>(&mut self, id: &str, session_factory: &mut Box<dyn SessionFactory>, mapper_name: &str, env: &Value) -> Result<T, RbatisError> where T: DeserializeOwned {
+    pub fn select<T>(&mut self, id: &str, mapper_name: &str, env: &Value) -> Result<T, RbatisError> where T: DeserializeOwned {
         let mut arg_array = vec![];
         let mut arg = env.clone();
         let (sql, _) = self.create_sql_select(mapper_name, &mut arg, &mut arg_array)?;

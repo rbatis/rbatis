@@ -135,6 +135,10 @@ pub async fn async_update<T>(_id: &str, _mapper_name: &str,_mapper_id: &str, _en
 }
 
 
+
+
+
+
 pub struct Rbatis {
     pub id: String,
     //动态sql运算节点集合
