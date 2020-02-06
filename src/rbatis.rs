@@ -48,7 +48,7 @@ pub fn singleton() -> MutexGuard<'static, Rbatis> {
 }
 
 
-pub async fn async_eval_sql<T>(id: &str, eval_sql: &str) -> Result<T, RbatisError> where T: de::DeserializeOwned + Send + 'static {
+pub async fn async_raw_sql<T>(id: &str, eval_sql: &str) -> Result<T, RbatisError> where T: de::DeserializeOwned + Send + 'static {
     let s = eval_sql.to_string();
     return to_tokio_await!(T,{ singleton().raw_sql(format!("{:?}",std::thread::current().id()).as_str(),s.as_str())  });
 }
