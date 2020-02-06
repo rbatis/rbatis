@@ -56,43 +56,61 @@ pub async fn async_eval_sql<T>(id: &str, eval_sql: &str) -> Result<T, RbatisErro
     return to_tokio_await!(T,{ singleton().raw_sql(format!("{:?}",std::thread::current().id()).as_str(),s.as_str())  });
 }
 
-pub async fn async_begin<T>(id: &str, propagation_type: Propagation) -> Result<String, RbatisError>  {
-    let _id=id.to_string();
-    let data=task::spawn_blocking(move || {
-        let data=singleton().begin(_id.as_str(),propagation_type);
+pub async fn async_begin<T>(id: &str, propagation_type: Propagation) -> Result<String, RbatisError> {
+    let _id = id.to_string();
+    let data = task::spawn_blocking(move || {
+        let data = singleton().begin(_id.as_str(), propagation_type);
         return data;
     }).await;
-    if data.is_ok(){
+    if data.is_ok() {
         return data.ok().unwrap();
-    }else{
-        return Err(RbatisError::from(data.err().unwrap().description()))
+    } else {
+        return Err(RbatisError::from(data.err().unwrap().description()));
     }
 }
 
-pub async fn async_commit<T>(id: &str, propagation_type: Propagation) -> Result<String, RbatisError>  {
-    let _id=id.to_string();
-    let data=task::spawn_blocking(move || {
-        let data=singleton().commit(_id.as_str());
+pub async fn async_commit<T>(id: &str, propagation_type: Propagation) -> Result<String, RbatisError> {
+    let _id = id.to_string();
+    let data = task::spawn_blocking(move || {
+        let data = singleton().commit(_id.as_str());
         return data;
     }).await;
-    if data.is_ok(){
+    if data.is_ok() {
         return data.ok().unwrap();
-    }else{
-        return Err(RbatisError::from(data.err().unwrap().description()))
+    } else {
+        return Err(RbatisError::from(data.err().unwrap().description()));
     }
 }
 
-pub async fn async_rollback<T>(id: &str, propagation_type: Propagation) -> Result<String, RbatisError>  {
-    let _id=id.to_string();
-    let data=task::spawn_blocking(move || {
-        let data=singleton().rollback(_id.as_str());
+pub async fn async_rollback<T>(id: &str, propagation_type: Propagation) -> Result<String, RbatisError> {
+    let _id = id.to_string();
+    let data = task::spawn_blocking(move || {
+        let data = singleton().rollback(_id.as_str());
         return data;
     }).await;
-    if data.is_ok(){
+    if data.is_ok() {
         return data.ok().unwrap();
-    }else{
-        return Err(RbatisError::from(data.err().unwrap().description()))
+    } else {
+        return Err(RbatisError::from(data.err().unwrap().description()));
     }
+}
+
+pub async fn async_py_sql<T>(id: &str, mapper_name: &str, env: &Value, eval_sql: &str) -> Result<T, RbatisError> where T: de::DeserializeOwned + Send + 'static {
+    let _id = id.to_string();
+    let _mapper_name = mapper_name.to_string();
+    let _env = env.clone();
+    let sql = eval_sql.to_string();
+    return to_tokio_await!(T,{ singleton().py_sql(_id.as_str(),_mapper_name.as_str(),&_env,&sql)  });
+}
+
+
+pub async fn mapper<T>(id: &str, mapper_name: &str,mapper_id: &str, env: &Value, eval_sql: &str) -> Result<T, RbatisError> where T: de::DeserializeOwned + Send + 'static {
+    let _id = id.to_string();
+    let _mapper_name = mapper_name.to_string();
+    let _mapper_id = mapper_name.to_string();
+    let _env = env.clone();
+    let sql = eval_sql.to_string();
+    return to_tokio_await!(T,{ singleton().mapper(&_id,&_mapper_name,&_mapper_id,&_env)  });
 }
 
 
@@ -270,8 +288,9 @@ impl Rbatis {
     ///       "size":null,
     ///    }));
     ///
-    pub fn mapper<T>(&mut self, id: &str, mapper_name: &str, mapper_id: &str, env: &Value, arg_array: &mut Vec<Value>) -> Result<T, RbatisError> where T: de::DeserializeOwned {
+    pub fn mapper<T>(&mut self, id: &str, mapper_name: &str, mapper_id: &str, env: &Value) -> Result<T, RbatisError> where T: de::DeserializeOwned {
         let mut arg = env.clone();
+        let mut _arg_array = vec![];
         let mapper_opt = self.mapper_map.get(&mapper_name.to_string());
         if mapper_opt.is_none() {
             return Result::Err(RbatisError::from("[rbatis] find mapper fail,name:'".to_string() + mapper_name + "'"));
@@ -283,9 +302,9 @@ impl Rbatis {
             return Result::Err(RbatisError::from("[rbatis] no method find in : ".to_string() + mapper_name_id.as_str()));
         }
         let mapper_func = node.unwrap();
-        let sql_string = mapper_func.eval(&mut arg, &mut self.engine, arg_array)?;
+        let sql_string = mapper_func.eval(&mut arg, &mut self.engine, &mut _arg_array)?;
         let sql = sql_string.as_str();
-        return self.raw_sql_prepare(id, sql, arg_array);
+        return self.raw_sql_prepare(id, sql, &mut _arg_array);
     }
 
 
