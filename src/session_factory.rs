@@ -56,7 +56,7 @@ impl SessionFactoryCached {
             clean_no_tx_link: clean_no_tx_link,
         };
     }
-
+    ///清理所有不含事务的session
     pub fn gc(&mut self){
         let mut kvec = vec![];
         for (k, v) in &self.data {
