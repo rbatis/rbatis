@@ -10,13 +10,13 @@ use crate::error::RbatisError;
 
 ///链接工厂
 pub trait SessionFactory {
-    fn get_thread_session(&mut self, id: &ThreadId, driver: &str) -> Result<&mut LocalSession, RbatisError>;
+    fn get_thread_session(&mut self, id: &String, driver: &str) -> Result<&mut LocalSession, RbatisError>;
 }
 
 
 pub struct SessionFactoryCached {
     /// data 持有session所有权，当session被删除时，session即被销毁
-    pub data: HashMap<ThreadId, LocalSession>,
+    pub data: HashMap<String, LocalSession>,
     ///是否清理缓存无事务的链接，启用节省内存，不启用则复用链接
     pub clean_no_tx_link: bool,
 }
@@ -33,7 +33,7 @@ impl Drop for SessionFactoryCached {
 }
 
 impl SessionFactory for SessionFactoryCached {
-    fn get_thread_session(&mut self, id: &ThreadId, driver: &str) -> Result<&mut LocalSession, RbatisError> {
+    fn get_thread_session(&mut self, id: &String, driver: &str) -> Result<&mut LocalSession, RbatisError> {
         if self.clean_no_tx_link {
             let mut kvec = vec![];
             for (k, v) in &self.data {
@@ -48,11 +48,11 @@ impl SessionFactory for SessionFactoryCached {
         }
         let item = self.data.get_mut(id);
         if item.is_some() {
-            return Ok(self.data.get_mut(&id).unwrap());
+            return Ok(self.data.get_mut(id).unwrap());
         } else {
             let session = LocalSession::new("", driver, None)?;
             self.data.insert(id.clone(), session);
-            return Ok(self.data.get_mut(&id).unwrap());
+            return Ok(self.data.get_mut(id).unwrap());
         }
     }
 }

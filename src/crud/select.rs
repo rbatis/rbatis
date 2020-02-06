@@ -46,7 +46,7 @@ impl Rbatis {
     }
 
     /// 根据mapper 自定义内容 分页查询， 只需写一个查询内容，不需要添加 count函数
-    pub fn select_page_by_mapper<T>(&mut self, mapper_name: &str, id: &str, env: &Value, ipage: &IPage<T>) -> Result<IPage<T>, RbatisError> where T: Serialize + DeserializeOwned + Clone {
+    pub fn select_page_by_mapper<T>(&mut self, id: &str,mapper_name: &str, mapper_id: &str, env: &Value, ipage: &IPage<T>) -> Result<IPage<T>, RbatisError> where T: Serialize + DeserializeOwned + Clone {
         let mut arg_array = vec![];
         let mut arg=env.clone();
         let mut new_arg = json_join(&mut arg, "ipage", ipage)?;
@@ -55,9 +55,10 @@ impl Rbatis {
         if mapper_opt.is_none() {
             return Result::Err(RbatisError::from("[rbatis] find mapper fail,name:'".to_string() + mapper_name + "'"));
         }
-        let node = mapper_opt.unwrap().get_mut(id);
+        let mapper_name_id = mapper_name.to_string() + "." + mapper_id;
+        let node = mapper_opt.unwrap().get_mut(mapper_id);
         if node.is_none() {
-            return Result::Err(RbatisError::from("[rbatis] find method fail,name:'".to_string() + mapper_name + id + "'"));
+            return Result::Err(RbatisError::from("[rbatis] no method find in : ".to_string() + mapper_name_id.as_str()));
         }
         let mapper_func = node.unwrap();
         let sql_string = mapper_func.eval(&mut new_arg, &mut self.engine, &mut arg_array)?;
@@ -67,14 +68,14 @@ impl Rbatis {
         if sql_string.contains("where") {
             let wheres: Vec<&str> = sql_string.split("where").collect();
             if wheres.len() > 2 {
-                return Result::Err(RbatisError::from("[rbatis] find 'where' repeated > 2 time,name:'".to_string() + mapper_name + id + "'"));
+                return Result::Err(RbatisError::from("[rbatis] find 'where' repeated > 2 time,name:'".to_string() + mapper_name_id.as_str()));
             }
             where_string = wheres[1].to_string();
             where_befer_string = wheres[0].to_string();
         } else if sql_string.contains("WHERE") {
             let wheres: Vec<&str> = sql_string.split("WHERE").collect();
             if wheres.len() > 2 {
-                return Result::Err(RbatisError::from("[rbatis] find 'WHERE' repeated > 2 time,name:'".to_string() + mapper_name + id + "'"));
+                return Result::Err(RbatisError::from("[rbatis] find 'WHERE' repeated > 2 time,name:'".to_string() + mapper_name_id.as_str()));
             }
             where_string = wheres[1].to_string();
             where_befer_string = wheres[0].to_string();
@@ -88,7 +89,7 @@ impl Rbatis {
         }
         let query_sql = where_befer_string + " WHERE " + append_limit_where_string.as_str();
 
-        let records: Vec<T> = self.raw_sql_prepare((mapper_name.to_string() + "." + id).as_str(), query_sql.as_str(), &mut arg_array)?;
+        let records: Vec<T> = self.raw_sql_prepare(mapper_name_id.as_str(), query_sql.as_str(), &mut arg_array)?;
         let mut result = ipage.clone();
         result.set_records(records);
 
@@ -107,7 +108,7 @@ impl Rbatis {
             where_string = where_string[0..limit_opt.unwrap()].to_string();
         }
         count_sql = count_sql.replace("#{where}", where_string.as_str());
-        let total = self.raw_sql_prepare((mapper_name.to_string() + "." + id).as_str(), count_sql.as_str(), &mut arg_array)?;
+        let total = self.raw_sql_prepare(mapper_name_id.as_str(), count_sql.as_str(), &mut arg_array)?;
         result.set_total(total);
         return Result::Ok(result);
     }
