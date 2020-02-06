@@ -319,7 +319,6 @@ async fn index() -> impl Responder {
 //    }), &IPage::new(1, 5));
 
     let data=query(&json!({
-       "name":"新人专享1",
     })).await;
     println!("{:?}",&data);
     //let act: Activity = eval_sql("select * from biz_activity where id  = '2';").unwrap();
