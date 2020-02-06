@@ -35,16 +35,7 @@ impl Drop for SessionFactoryCached {
 impl SessionFactory for SessionFactoryCached {
     fn get_thread_session(&mut self, id: &String, driver: &str) -> Result<&mut LocalSession, RbatisError> {
         if self.clean_no_tx_link {
-            let mut kvec = vec![];
-            for (k, v) in &self.data {
-                if !v.have_tx() {
-                    kvec.push(k.clone());
-                }
-            }
-            //清理无用的链接
-            for item in kvec {
-                self.data.remove(&item);
-            }
+            self.gc();
         }
         let item = self.data.get_mut(id);
         if item.is_some() {
@@ -64,5 +55,18 @@ impl SessionFactoryCached {
             data: HashMap::new(),
             clean_no_tx_link: clean_no_tx_link,
         };
+    }
+
+    pub fn gc(&mut self){
+        let mut kvec = vec![];
+        for (k, v) in &self.data {
+            if !v.have_tx() {
+                kvec.push(k.clone());
+            }
+        }
+        //清理无用的链接
+        for item in kvec {
+            self.data.remove(&item);
+        }
     }
 }
