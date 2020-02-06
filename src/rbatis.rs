@@ -101,15 +101,22 @@ pub async fn async_py_sql<T>(id: &str, mapper_name: &str, env: &Value, eval_sql:
 }
 
 
-pub async fn mapper<T>(id: &str, mapper_name: &str,mapper_id: &str, env: &Value, eval_sql: &str) -> Result<T, RbatisError> where T: de::DeserializeOwned + Send + 'static {
+pub async fn async_mapper<T>(id: &str, mapper_name: &str,mapper_id: &str, env: &Value, eval_sql: &str) -> Result<T, RbatisError> where T: de::DeserializeOwned + Send + 'static {
     let _id = id.to_string();
     let _mapper_name = mapper_name.to_string();
-    let _mapper_id = mapper_name.to_string();
+    let _mapper_id = mapper_id.to_string();
     let _env = env.clone();
     let sql = eval_sql.to_string();
     return to_tokio_await!(T,{ singleton().mapper(&_id,&_mapper_name,&_mapper_id,&_env)  });
 }
 
+pub async fn async_delete<T>(_id: &str, _mapper_name: &str,_mapper_id: &str, _env: &Value) -> Result<T, RbatisError> where T: de::DeserializeOwned + Send + 'static {
+    let id = _id.to_string();
+    let mapper_name = _mapper_name.to_string();
+    let mapper_id = _mapper_id.to_string();
+    let env = _env.clone();
+    return to_tokio_await!(T,{ singleton().delete(&id,&mapper_name,&env)  });
+}
 
 
 
