@@ -118,6 +118,21 @@ pub async fn async_delete<T>(_id: &str, _mapper_name: &str,_mapper_id: &str, _en
     return to_tokio_await!(T,{ singleton().delete(&id,&mapper_name,&env)  });
 }
 
+pub async fn async_insert<T>(_id: &str, _mapper_name: &str,_mapper_id: &str, _env: &Value) -> Result<T, RbatisError> where T: de::DeserializeOwned + Send + 'static {
+    let id = _id.to_string();
+    let mapper_name = _mapper_name.to_string();
+    let mapper_id = _mapper_id.to_string();
+    let env = _env.clone();
+    return to_tokio_await!(T,{ singleton().insert(&id,&mapper_name,&env)  });
+}
+
+pub async fn async_update<T>(_id: &str, _mapper_name: &str,_mapper_id: &str, _env: &Value) -> Result<T, RbatisError> where T: de::DeserializeOwned + Send + 'static {
+    let id = _id.to_string();
+    let mapper_name = _mapper_name.to_string();
+    let mapper_id = _mapper_id.to_string();
+    let env = _env.clone();
+    return to_tokio_await!(T,{ singleton().update(&id,&mapper_name,&env)  });
+}
 
 
 pub struct Rbatis {
