@@ -108,6 +108,9 @@ println!("[rbatis] result==> {:?}",data_result);
 ### async await的web框架支持
 ``` rust
 //这里举例使用web排行榜屠榜最快的actix-web
+#[macro_use]
+pub mod rbatis_macro;
+
 async fn index() -> impl Responder {
     //写法
     let data=to_tokio_await!(Activity,{ singleton().raw_sql(format!("{:?}",std::thread::current().id()).as_str(),"select * from biz_activity where id  = '2';")  });
