@@ -126,15 +126,21 @@ impl Rbatis {
 
     pub fn rollback<'a>(&mut self, id: &'a str) -> Result<&'a str, RbatisError> {
         self.check_driver()?;
-        self.session_factory.get_thread_session(&id.to_string(), self.db_driver.as_str())?.rollback()?;
-        self.session_factory.data.remove(&id.to_string());
+        let session = self.session_factory.get_thread_session(&id.to_string(), self.db_driver.as_str())?;
+        session.rollback()?;
+        if !session.have_tx() {
+            self.session_factory.remove(&id.to_string());
+        }
         return Result::Ok(id);
     }
 
     pub fn commit<'a>(&mut self, id: &'a str) -> Result<&'a str, RbatisError> {
         self.check_driver()?;
-        self.session_factory.get_thread_session(&id.to_string(), self.db_driver.as_str())?.commit()?;
-        self.session_factory.data.remove(&id.to_string());
+        let session = self.session_factory.get_thread_session(&id.to_string(), self.db_driver.as_str())?;
+        session.commit()?;
+        if !session.have_tx() {
+            self.session_factory.remove(&id.to_string());
+        }
         return Result::Ok(id);
     }
 
