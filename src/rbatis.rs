@@ -69,7 +69,7 @@ impl Rbatis {
             mapper_map: HashMap::new(),
             engine: RbatisEngine::new(),
             db_driver: "".to_string(),
-            session_factory: ConnPoolSessionFactory::new(20,1000),
+            session_factory: ConnPoolSessionFactory::new(20,10),
             enable_log: true,
             async_mode: false,
             max_conn: 20,
