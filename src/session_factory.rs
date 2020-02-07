@@ -20,6 +20,7 @@ pub struct ConnPoolSessionFactory {
     /// data 持有session所有权，当session被删除时，session即被销毁
     pub data: HashMap<String, LocalSession>,
     pub max_conn: usize,
+    pub max_wait_ms: u64,
 }
 
 
@@ -53,10 +54,11 @@ impl SessionFactory for ConnPoolSessionFactory {
 
 impl ConnPoolSessionFactory {
     /// clean_no_tx_link:是否清理缓存无事务的链接，启用节省内存但是每个请求重复链接，不启用则复用链接性能高
-    pub fn new(max_conn: usize) -> Self {
+    pub fn new(max_conn: usize, max_wait_ms: u64) -> Self {
         return Self {
             data: HashMap::new(),
             max_conn,
+            max_wait_ms: 0,
         };
     }
     ///清理所有不含事务的session
@@ -76,7 +78,7 @@ impl ConnPoolSessionFactory {
         }
         if self.data.len() > self.max_conn {
             //持续GC直到小于最大连接数
-            std::thread::sleep(Duration::from_millis(50));
+            std::thread::sleep(Duration::from_millis(self.max_wait_ms));
             self.gc();
         }
     }
