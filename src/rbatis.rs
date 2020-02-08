@@ -32,7 +32,7 @@ use crate::decode::rdbc_driver_decoder::decode_result_set;
 use crate::engine::runtime::RbatisEngine;
 use crate::error::RbatisError;
 use crate::local_session::LocalSession;
-use crate::session_factory::{ConnPoolSessionFactory, SessionFactory};
+use crate::session_factory::{ConnPoolSessionFactory, SessionFactory, WaitType};
 use crate::tx::propagation::Propagation;
 use crate::utils::{driver_util, rdbc_util};
 use crate::utils::rdbc_util::to_rdbc_values;
@@ -69,7 +69,7 @@ impl Rbatis {
             mapper_map: HashMap::new(),
             engine: RbatisEngine::new(),
             db_driver: "".to_string(),
-            session_factory: ConnPoolSessionFactory::new(20,10),
+            session_factory: ConnPoolSessionFactory::new(20, 10, WaitType::Thread),
             enable_log: true,
             async_mode: false,
             max_conn: 20,
@@ -80,7 +80,6 @@ impl Rbatis {
     pub fn singleton() -> MutexGuard<'static, Rbatis> {
         return RBATIS.lock().unwrap();
     }
-
 
 
     pub fn set_enable_log(&mut self, arg: bool) {
@@ -113,6 +112,13 @@ impl Rbatis {
         }
     }
 
+    pub fn set_wait_type(&mut self, t: WaitType) {
+        self.session_factory.wait_type = t;
+    }
+
+    pub fn wait_type(&self) -> WaitType {
+        self.session_factory.wait_type
+    }
 
     pub fn begin(&mut self, id: &str, propagation_type: Propagation) -> Result<String, RbatisError> {
         self.check_driver()?;
