@@ -136,15 +136,15 @@ println!("[rbatis] result==> {:?}",data_result);
 #### 事务支持
 ``` rust
 
-    //自定义事务（必须有你定义的事务id）
+    //自定义事务
      #[test]
     pub fn test_tx() {
-    let tx_id="1234";
-    rbatis.begin(tx_id, Propagation::REQUIRED)?;//启动事务，传入事务传播行为
-    let u: u32 = rbatis.raw_sql(tx_id, "UPDATE `biz_activity` SET `name` = '活动1' WHERE (`id` = '2');")?;
-    let act: Activity = rbatis.raw_sql(tx_id, "select * from biz_activity where id  = '2';")?;
-    rbatis.commit(tx_id)?;//提交事务
-    rbatis.rollback(tx_id)?;//回滚事务
+    let tx_id="1234";//事务id
+    Rbatis::singleton().begin(tx_id, Propagation::REQUIRED)?;//启动事务，传入事务传播行为
+    let u: u32 = Rbatis::singleton().raw_sql(tx_id, "UPDATE `biz_activity` SET `name` = '活动1' WHERE (`id` = '2');")?;
+    let act: Activity = Rbatis::singleton().raw_sql(tx_id, "select * from biz_activity where id  = '2';")?;
+    Rbatis::singleton().commit(tx_id)?;//提交事务
+    Rbatis::singleton().rollback(tx_id)?;//回滚事务
     }
     //声明式事务
     pub trait Service {
