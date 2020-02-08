@@ -12,7 +12,7 @@
 * 支持[async_std](https://github.com/async-rs/async-std)库协程,兼容async await（理论上，假设严格按照async_std库替代所有io操作，那么并发量可远远超过go语言）
 * 基于Rust语言稳定版构建，要求 stable:1.9 以上
 * 内置日志输出,可自定义具体日志（基于标准库log(独立于任何特定的日志记录库)，标准库日志可选任意第三方库实现，类似于java的SLF4j）
-* [点击查看-示例代码](https://github.com/rbatis/rbatis/tree/master/src/example)
+* [点击查看-示例代码](https://github.com/rbatis/rbatis/blob/master/src/example/example_test.rs)
 
 ##### py风格sql语法Example
 ``` python
