@@ -167,7 +167,7 @@ impl Rbatis {
     ///执行sql到数据库，例如:
     ///    Result中结果可以为serde_json::Value，Vec，Array,Slice,LinkedList,Map,i32
     ///
-    ///    let data_opt: Result<serde_json::Value, RbatisError> = rbatis.raw_sql( "select * from table", &mut json!({
+    ///    let data_opt: Result<serde_json::Value, RbatisError> = rbatis.raw_sql( "","select * from table", &json!({
     ///       "name":null,
     ///       "startTime":null,
     ///       "endTime":null,
@@ -213,7 +213,7 @@ impl Rbatis {
 
     ///执行sql到数据库，例如
     ///
-    ///    let data_opt: Result<serde_json::Value, RbatisError> = rbatis.mapper("Example_ActivityMapper.xml".to_string(), "select_by_condition", &mut json!({
+    ///    let data_opt: Result<serde_json::Value, RbatisError> = rbatis.mapper("","Example_ActivityMapper.xml".to_string(), "select_by_condition", &json!({
     ///       "name":null,
     ///       "startTime":null,
     ///       "endTime":null,
