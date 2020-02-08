@@ -65,7 +65,7 @@ impl Rbatis{
         }
     }
 
-    pub async fn async_commit<T>(id: &str, propagation_type: Propagation) -> Result<String, RbatisError> {
+    pub async fn async_commit<T>(id: &str) -> Result<String, RbatisError> {
         let _id = id.to_string();
         let data = task::spawn_blocking(move || {
             let data = Rbatis::singleton().commit(_id.as_str());
@@ -78,7 +78,7 @@ impl Rbatis{
         }
     }
 
-    pub async fn async_rollback<T>(id: &str, propagation_type: Propagation) -> Result<String, RbatisError> {
+    pub async fn async_rollback<T>(id: &str) -> Result<String, RbatisError> {
         let _id = id.to_string();
         let data = task::spawn_blocking(move || {
             let data = Rbatis::singleton().rollback(_id.as_str());
@@ -99,12 +99,11 @@ impl Rbatis{
     }
 
 
-    pub async fn async_mapper<T>(id: &str, mapper_name: &str,mapper_id: &str, env: &Value, eval_sql: &str) -> Result<T, RbatisError> where T: de::DeserializeOwned + Send + 'static {
+    pub async fn async_mapper<T>(id: &str, mapper_name: &str,mapper_id: &str, env: &Value) -> Result<T, RbatisError> where T: de::DeserializeOwned + Send + 'static {
         let _id = id.to_string();
         let _mapper_name = mapper_name.to_string();
         let _mapper_id = mapper_id.to_string();
         let _env = env.clone();
-        let sql = eval_sql.to_string();
         return to_tokio_await!(T,{ Rbatis::singleton().mapper(&_id,&_mapper_name,&_mapper_id,&_env)  });
     }
 
@@ -124,10 +123,9 @@ impl Rbatis{
         return to_tokio_await!(T,{ Rbatis::singleton().insert(&id,&mapper_name,&env)  });
     }
 
-    pub async fn async_update<T>(_id: &str, _mapper_name: &str,_mapper_id: &str, _env: &Value) -> Result<T, RbatisError> where T: de::DeserializeOwned + Send + 'static {
+    pub async fn async_update<T>(_id: &str, _mapper_name: &str, _env: &Value) -> Result<T, RbatisError> where T: de::DeserializeOwned + Send + 'static {
         let id = _id.to_string();
         let mapper_name = _mapper_name.to_string();
-        let mapper_id = _mapper_id.to_string();
         let env = _env.clone();
         return to_tokio_await!(T,{ Rbatis::singleton().update(&id,&mapper_name,&env)  });
     }

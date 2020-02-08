@@ -361,7 +361,7 @@ async fn main_actix() -> std::io::Result<()> {
 
 async fn handle_root(_: Request<Body>) -> Result<Response<Body>, Infallible> {
     //写法1
-    let data: Result<Activity, RbatisError> = Rbatis::singleton().raw_sql("", "select * from biz_activity where id  = '2';");
+    let data: Result<Activity, RbatisError> = Rbatis::singleton_raw_sql("", "select * from biz_activity where id  = '2';");
     //写法2 注意：适用于超级耗时的任务
     //let data: Result<Activity, RbatisError> = Rbatis::async_raw_sql("", "select * from biz_activity where id  = '2';").await;
     println!("{:?}", &data);
