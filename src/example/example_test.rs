@@ -374,6 +374,7 @@ async fn main() -> std::io::Result<()> {
         .await
 }
 
+/// cargo test --release --color=always --package rbatis --lib example::example_test::test_web --all-features -- --nocapture --exact
 #[test]
 pub fn test_web() {
     //初始化rbatis
