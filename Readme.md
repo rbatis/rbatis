@@ -125,7 +125,7 @@ println!("[rbatis] result==> {:?}",data_result);
 //2020-01-10T10:28:54.552097+08:00 INFO rbatis::core::rbatis - [rbatis] ReturnRows <== 2
 //[rbatis] result==> [Activity { id: Some("\"dfbdd779-5f70-4b8f-9921-a235a9c75b69\""), name: Some("\"新人专享\""), version: Some(6) }, Activity { id: Some("\"dfbdd779-5f70-4b8f-9921-c235a9c75b69\""), name: Some("\"新人专享\""), version: Some(6) }]
 ```
-### async await的web框架支持
+### Web框架支持(这里举例actix-web,不支持tokio的框架使用 默认方法，支持tokio的使用async_* 开头的方法)
 ``` rust
 //这里举例使用web排行榜屠榜最快的actix-web
 #[macro_use]
