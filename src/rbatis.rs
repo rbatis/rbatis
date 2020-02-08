@@ -210,9 +210,6 @@ impl Rbatis {
             if r.is_err() {
                 return Result::Err(RbatisError::from("[rbatis] exec fail:".to_string() + id + r.err().unwrap().to_string().as_str()));
             }
-            if self.enable_log {
-                info!(" Affected: <== {}: {}", id, affected_rows.to_string().as_str());
-            }
             return Result::Ok(r.unwrap());
         }
     }
