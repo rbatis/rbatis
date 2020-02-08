@@ -326,7 +326,7 @@ pub fn test_service() {
 
     let mut s = ServiceImpl {
         select_activity: |s: &ServiceImpl| -> Result<Activity, RbatisError>{
-            let act: Activity = Rbatis::singleton().raw_sql("", "select * from biz_activity where id  = '2';").unwrap();
+            let act: Activity = Rbatis::singleton_raw_sql("", "select * from biz_activity where id  = '2';").unwrap();
             return Result::Ok(act);
         },
         update_activity: |s: &mut ServiceImpl| -> Result<String, RbatisError>{
