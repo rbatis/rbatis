@@ -90,12 +90,11 @@ impl Rbatis{
         }
     }
 
-    pub async fn async_py_sql<T>(id: &str, mapper_name: &str, env: &Value, eval_sql: &str) -> Result<T, RbatisError> where T: de::DeserializeOwned + Send + 'static {
+    pub async fn async_py_sql<T>(id: &str, env: &Value, eval_sql: &str) -> Result<T, RbatisError> where T: de::DeserializeOwned + Send + 'static {
         let _id = id.to_string();
-        let _mapper_name = mapper_name.to_string();
         let _env = env.clone();
         let sql = eval_sql.to_string();
-        return to_tokio_await!(T,{ Rbatis::singleton().py_sql(_id.as_str(),_mapper_name.as_str(),&_env,&sql)  });
+        return to_tokio_await!(T,{ Rbatis::singleton().py_sql(_id.as_str(),&_env,&sql)  });
     }
 
 
