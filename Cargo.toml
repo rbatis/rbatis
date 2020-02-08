@@ -27,3 +27,4 @@ rdbc = {git = "https://github.com/rbatis/rdbc",path="/rdbc"}
 actix-web = "2.0"
 actix-rt = "1.0"
 tokio = { version = "0.2", features = ["full"] }
+hyper = "0.13"
