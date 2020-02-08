@@ -353,9 +353,9 @@ pub fn test_service() {
 
 
 async fn index() -> impl Responder {
-    //写法1 注意：适用于不支持async的框架
+    //写法1
     let data: Result<Activity, RbatisError>=Rbatis::singleton().raw_sql("","select * from biz_activity where id  = '2';");
-    //写法2
+    //写法2 注意：适用于超级耗时的任务
     //let data: Result<Activity, RbatisError> = Rbatis::async_raw_sql("", "select * from biz_activity where id  = '2';").await;
     println!("{:?}", &data);
     return serde_json::to_string(&data).unwrap();
