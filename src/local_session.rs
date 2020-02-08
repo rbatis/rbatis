@@ -14,6 +14,7 @@ use crate::tx::tx_stack::TxStack;
 use crate::utils::{driver_util, rdbc_util};
 use crate::utils::rdbc_util::to_rdbc_values;
 use crate::error::RbatisError;
+use crate::rbatis::Rbatis;
 
 pub struct LocalSession {
     pub session_id: String,
@@ -69,8 +70,10 @@ impl LocalSession {
             return self.new_local_session.as_mut().unwrap().query(sql, arg_array);
         }
         if self.enable_log {
-            info!("[{}]Query: ==>  {}", self.id(), sql);
-            info!("[{}]Args : ==>  {}", self.id(), rdbc_util::rdbc_vec_to_string(arg_array));
+//            info!("[{}]Query: ==>  {}", self.id(), sql);
+//            info!("[{}]Args : ==>  {}", self.id(), rdbc_util::rdbc_vec_to_string(arg_array));
+            Rbatis::channel_send(format!("[{}]Query: ==>  {}", self.id(), sql));
+            Rbatis::channel_send(format!("[{}]Args : ==>  {}", self.id(), rdbc_util::rdbc_vec_to_string(arg_array)));
         }
         let (t_opt, _) = self.tx_stack.last_ref_mut();
         if t_opt.is_some() {
@@ -91,8 +94,11 @@ impl LocalSession {
             return self.new_local_session.as_mut().unwrap().query(sql, arg_array);
         }
         if self.enable_log {
-            info!("[{}]Query: ==>  {}", self.id(), sql);
-            info!("[{}]Args : ==>  {}", self.id(), rdbc_util::rdbc_vec_to_string(&arg_array));
+//            info!("[{}]Query: ==>  {}", self.id(), sql);
+//            info!("[{}]Args : ==>  {}", self.id(), rdbc_util::rdbc_vec_to_string(&arg_array));
+
+            Rbatis::channel_send(format!("[{}]Query: ==>  {}", self.id(), sql));
+            Rbatis::channel_send(format!("[{}]Args : ==>  {}", self.id(), rdbc_util::rdbc_vec_to_string(arg_array)));
         }
         let (t_opt, _) = self.tx_stack.last_ref_mut();
         if t_opt.is_some() {
@@ -180,7 +186,7 @@ impl LocalSession {
         return Ok(closec_num);
     }
 
-    pub fn begin(&mut self, propagation_type: Propagation) -> Result<u64, RbatisError> {
+    pub fn begin(&mut self, id:&str,propagation_type: Propagation) -> Result<u64, RbatisError> {
         if self.is_closed == true {
             return Err(RbatisError::from("[rbatis] session can not query a closed session!".to_string()));
         }
@@ -193,13 +199,13 @@ impl LocalSession {
         match propagation_type {
             //默认，表示如果当前事务存在，则支持当前事务。否则，会启动一个新的事务。have tx ? join : new tx()
             Propagation::REQUIRED => {
-                let tx = TxImpl::begin("", self.driver.as_str(), self.enable_log, self.conn.as_mut().unwrap())?;
+                let tx = TxImpl::begin(id, self.driver.as_str(), self.enable_log, self.conn.as_mut().unwrap())?;
                 self.tx_stack.push(tx, Propagation::REQUIRED);
             }
             //表示如果当前事务存在，则支持当前事务，如果当前没有事务，就以非事务方式执行。  have tx ? join(): session.exec()
             Propagation::SUPPORTS => {
                 if self.tx_stack.len() > 0 {
-                    let tx = TxImpl::begin("", self.driver.as_str(), self.enable_log, self.conn.as_mut().unwrap())?;
+                    let tx = TxImpl::begin(id, self.driver.as_str(), self.enable_log, self.conn.as_mut().unwrap())?;
                     self.tx_stack.push(tx, Propagation::SUPPORTS);
                 } else {}
                 return Ok(0);
@@ -207,7 +213,7 @@ impl LocalSession {
             //表示如果当前事务存在，则支持当前事务，如果当前没有事务，则返回事务嵌套错误。  have tx ? join() : return error
             Propagation::MANDATORY => {
                 if self.tx_stack.len() > 0 {
-                    let tx = TxImpl::begin("", self.driver.as_str(), self.enable_log, self.conn.as_mut().unwrap())?;
+                    let tx = TxImpl::begin(id, self.driver.as_str(), self.enable_log, self.conn.as_mut().unwrap())?;
                     self.tx_stack.push(tx, Propagation::MANDATORY);
                     return Ok(0);
                 } else {
@@ -238,10 +244,10 @@ impl LocalSession {
             //表示如果当前事务存在，则在嵌套事务内执行，如嵌套事务回滚，则只会在嵌套事务内回滚，不会影响当前事务。如果当前没有事务，则进行与PROPAGATION_REQUIRED类似的操作。
             Propagation::NESTED => {
                 if self.tx_stack.len() > 0 {
-                    let tx = TxImpl::begin("", self.driver.as_str(), self.enable_log, self.conn.as_mut().unwrap())?;
+                    let tx = TxImpl::begin(id, self.driver.as_str(), self.enable_log, self.conn.as_mut().unwrap())?;
                     self.tx_stack.push(tx, Propagation::NESTED);
                 } else {
-                    return self.begin(Propagation::REQUIRED);
+                    return self.begin(id,Propagation::REQUIRED);
                 }
             }
             //表示如果当前没有事务，就新建一个事务,否则返回错误。  have tx ? return error: session.new tx()
@@ -250,7 +256,7 @@ impl LocalSession {
                     return Err(RbatisError::from("[rbatis] PROPAGATION_NOT_REQUIRED Nested transaction exception! current Already have a transaction!".to_string()));
                 } else {
                     //new tx
-                    let tx = TxImpl::begin("", self.driver.as_str(), self.enable_log, self.conn.as_mut().unwrap())?;
+                    let tx = TxImpl::begin(id, self.driver.as_str(), self.enable_log, self.conn.as_mut().unwrap())?;
                     self.tx_stack.push(tx, propagation_type);
                 }
             }
@@ -291,5 +297,5 @@ pub fn test_se() {
         return;
     }
     let mut se = s.unwrap();
-    se.begin(Propagation::NONE);
+    se.begin("",Propagation::NONE);
 }
