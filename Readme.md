@@ -145,7 +145,7 @@ async fn main() -> std::io::Result<()> {
 | Mysql            | √     |   
 | Postgres         | √     |  
 | SQLlite          | √     |  
-| TiDB             | .     |
+| TiDB             | √     |
 | CockroachDB      | .     |
 
 ### 进度表-按照顺序实现
