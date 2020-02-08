@@ -29,7 +29,7 @@
                    trim 'AND ':
                      AND delete_flag2 = #{delete_flag}
                    WHERE id  = '2';";
-    let data: Vec<Activity> = rbatis.unwrap()
+    let data: Vec<Activity> = Rbatis::singleton()
     .py_sql("", &json!({ "name":"新人专享", "delete_flag": 1, }), py_sql)
     .unwrap();
 ```
