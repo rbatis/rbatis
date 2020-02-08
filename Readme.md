@@ -61,7 +61,25 @@
         </select>
 </mapper>
 ``` 
-##### rust代码Example:
+#### 日志系统(这里举例使用log4rs.yaml)
+``` yaml
+refresh_rate: 1 seconds
+appenders:
+  stdout:
+    kind: console
+  requests:
+    kind: file
+    path: "requests.log"
+    encoder:
+      pattern: "{d} - {m}{n}"
+root:
+  level: info
+  appenders:
+    - stdout
+    - requests
+```
+
+##### 代码Example:
 ##### Cargo.toml 加入以下代码
 ```$xslt
 [dependencies]
