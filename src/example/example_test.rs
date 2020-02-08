@@ -29,7 +29,7 @@ use crate::error::RbatisError;
 use crate::example::activity::Activity;
 use crate::example::conf::MYSQL_URL;
 use crate::rbatis::Rbatis;
-use crate::session_factory::{ConnPoolSessionFactory, SessionFactory};
+use crate::session_factory::{ConnPoolSessionFactory, SessionFactory, WaitType};
 use crate::tx::propagation::Propagation::{NONE, REQUIRED};
 use crate::tx::propagation::Propagation;
 
@@ -58,7 +58,6 @@ fn init_singleton_rbatis() {
     //2 加载数据库url name 为空，则默认数据库
     Rbatis::singleton().load_db_url(MYSQL_URL);//"mysql://root:TEST@localhost:3306/test"
     //3 加载xml配置
-    let f = fs::File::open("./src/example/Example_ActivityMapper.xml");
     Rbatis::singleton().load_xml("Example_ActivityMapper.xml", fs::read_to_string("./src/example/Example_ActivityMapper.xml").unwrap());//加载xml数据
 }
 
@@ -391,6 +390,8 @@ pub fn test_web() {
     if MYSQL_URL.contains("localhost") {
         return;
     }
+    // 设置延迟类型
+    Rbatis::singleton().set_wait_type(WaitType::Tokio);
     init_singleton_rbatis();
     main_hyper();//hyper
     //main_actix();//actix
