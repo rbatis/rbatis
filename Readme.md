@@ -34,6 +34,32 @@
     .unwrap();
 ```
 
+#### 日志系统(这里举例使用log4rs.yaml)
+``` rust
+ use log4rs::init_file;
+ //main函数加入
+ fn main(){
+   log4rs::init_file("log4rs.yaml", Default::default()).unwrap();
+ }
+```
+##### 定义log4rs.yaml
+``` yaml
+refresh_rate: 1 seconds
+appenders:
+  stdout:
+    kind: console
+  requests:
+    kind: file
+    path: "requests.log"
+    encoder:
+      pattern: "{d} - {m}{n}"
+root:
+  level: info
+  appenders:
+    - stdout
+    - requests
+```
+
 
 ##### xml代码Example
 ``` xml
@@ -61,25 +87,6 @@
         </select>
 </mapper>
 ``` 
-#### 日志系统(这里举例使用log4rs.yaml)
-``` yaml
-refresh_rate: 1 seconds
-appenders:
-  stdout:
-    kind: console
-  requests:
-    kind: file
-    path: "requests.log"
-    encoder:
-      pattern: "{d} - {m}{n}"
-root:
-  level: info
-  appenders:
-    - stdout
-    - requests
-```
-
-##### 代码Example:
 ##### Cargo.toml 加入以下代码
 ```$xslt
 [dependencies]
