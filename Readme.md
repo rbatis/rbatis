@@ -112,7 +112,7 @@ fn main() {
 log4rs::init_file("log4rs.yaml", Default::default()).unwrap();//1 启用日志(可选，不添加则不加载日志库)
 let mut rbatis = Rbatis::new();//2 初始化rbatis,也可以使用全局单例Rbatis::singleton()
 rbatis.load_db_url("mysql://root:TEST@localhost:3306/test");//3 加载数据库url
-rbatis.load_xml("Example_ActivityMapper.xml".to_string(),xml_string);//4 加载xml配置
+rbatis.load_xml("Example_ActivityMapper.xml".to_string(),fs::read_to_string("./src/example/Example_ActivityMapper.xml").unwrap());//4 加载xml配置
 let data_result: Vec<Activity> =rbatis.eval("".to_string(), "select_by_condition", &json!({
        "name":null,
        "startTime":null,
