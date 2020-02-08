@@ -9,6 +9,7 @@ use crate::engine::runtime::{is_number, OptMap};
 use std::collections::HashMap;
 use std::collections::linked_list::LinkedList;
 use crate::engine::{runtime, parser};
+use std::time::SystemTime;
 //use test::Bencher;
 
 #[derive(Clone, PartialEq)]
@@ -108,7 +109,7 @@ fn benchmark_arg_node() {
     let arg_node = Node::new_arg("sex.a");
 
     let total = 100000;
-    let now = Local::now();
+    let now = SystemTime::now();
     for i in 0..total {
         arg_node.eval(&john);
     }
@@ -140,7 +141,7 @@ fn benchmark_parser_token() {
     let opt_map = OptMap::new();
 
     let total = 100000;
-    let now = Local::now();
+    let now = SystemTime::now();
     for i in 0..total {
         runtime::parser_tokens(&s, &opt_map);
     }

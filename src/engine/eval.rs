@@ -8,6 +8,7 @@ use crate::utils::time_util;
 use std::iter::Map;
 use std::any::Any;
 use crate::error::RbatisError;
+use std::time::SystemTime;
 
 pub fn eval(left: &Value,
             right: &Value,
@@ -148,7 +149,7 @@ fn benchmark_fromstr() {
     println!("serialized = {}", serialized);
 
     let total = 100000;
-    let now = Local::now();
+    let now = SystemTime::now();
     for i in 0..total {
         let deserialized: Point = serde_json::from_str(&serialized).unwrap();
         // println!("deserialized = {:?}", deserialized);
@@ -162,7 +163,7 @@ fn benchmark_to_string() {
 
 
     let total = 100000;
-    let now = Local::now();
+    let now = SystemTime::now();
     for i in 0..total {
         let serialized = serde_json::to_string(&point).unwrap();
         let deserialized: Value = serde_json::from_str(&serialized).unwrap();
