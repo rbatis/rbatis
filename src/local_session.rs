@@ -32,17 +32,13 @@ unsafe impl Send for LocalSession{}
 
 impl LocalSession {
     pub fn new(id: &str, driver: &str, conn_opt: Option<Box<dyn Connection>>) -> Result<Self, RbatisError> {
-        let mut new_id = id.to_string();
-        if new_id.is_empty() {
-            new_id = Uuid::new_v4().to_string();
-        }
         let mut conn = conn_opt;
         if conn.is_none() {
             let r = driver_util::get_conn_by_link(driver)?;
             conn = Some(r);
         }
         return Ok(Self {
-            session_id: new_id,
+            session_id: id.to_string(),
             driver: driver.to_string(),
             tx_stack: TxStack::new(),
             save_point_stack: SavePointStack::new(),
@@ -190,6 +186,9 @@ impl LocalSession {
         }
         if self.enable_log {
             info!(" [{}] Exec: ==>   Begin:{}; ", self.id(), propagation_type);
+        }
+        if self.id().is_empty() {
+            return Err(RbatisError::from("[rbatis] session can not query a empty id session!".to_string()));
         }
         match propagation_type {
             //默认，表示如果当前事务存在，则支持当前事务。否则，会启动一个新的事务。have tx ? join : new tx()

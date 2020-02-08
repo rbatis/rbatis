@@ -274,20 +274,20 @@ fn test_tx_return() -> Result<u64, RbatisError> {
         return Ok(1);
     }
     let mut rbatis = rbatis_opt.unwrap();
-    rbatis.begin("", Propagation::REQUIRED)?;
+    let tx_id="1";
+    rbatis.begin(tx_id, Propagation::REQUIRED)?;
 
-    let u: u32 = rbatis.raw_sql("", "UPDATE `biz_activity` SET `name` = '活动1' WHERE (`id` = '2');")?;
+    let u: u32 = rbatis.raw_sql(tx_id, "UPDATE `biz_activity` SET `name` = '活动1' WHERE (`id` = '2');")?;
 
-    let u: u32 = rbatis.raw_sql("", "UPDATE `biz_activity` SET `name` = '活动2' WHERE (`id` = '2');")?;
+    let u: u32 = rbatis.raw_sql(tx_id, "UPDATE `biz_activity` SET `name` = '活动2' WHERE (`id` = '2');")?;
 
-    let u: u32 = rbatis.raw_sql("", "UPDATE `biz_activity` SET `name` = '活动3' WHERE (`id` = '2');")?;
+    let u: u32 = rbatis.raw_sql(tx_id, "UPDATE `biz_activity` SET `name` = '活动3' WHERE (`id` = '2');")?;
 
-
-    let act: Activity = rbatis.raw_sql("", "select * from biz_activity where id  = '2';")?;
+    let act: Activity = rbatis.raw_sql(tx_id, "select * from biz_activity where id  = '2';")?;
     println!("result:{}", serde_json::to_string(&act).unwrap());
 
 
-    rbatis.commit("")?;
+    rbatis.commit(tx_id)?;
 
     return Ok(1);
 }
