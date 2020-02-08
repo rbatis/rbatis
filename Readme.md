@@ -29,7 +29,7 @@
                    trim 'AND ':
                      AND delete_flag2 = #{del}
                    WHERE id  = '2';";
-    let data: Vec<Activity> = rbatis.unwrap().py_sql("","Example_ActivityMapper.xml", &mut json!({
+    let data: Vec<Activity> = rbatis.unwrap().py_sql("","Example_ActivityMapper.xml", &json!({
        "name":"新人专享",
        "delete_flag": 1,
     }), py_sql).unwrap();
@@ -93,7 +93,7 @@ let mut rbatis = Rbatis::new();
 rbatis.load_db_url("".to_string(), "mysql://root:TEST@localhost:3306/test");
 //4 加载xml配置，读取上面的xml
 rbatis.load_xml("Example_ActivityMapper.xml".to_string(),xml_string);
-let data_result: Vec<Activity> =rbatis.eval("".to_string(), "select_by_condition", &mut json!({
+let data_result: Vec<Activity> =rbatis.eval("".to_string(), "select_by_condition", &json!({
        "name":null,
        "startTime":null,
        "endTime":null,
