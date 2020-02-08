@@ -21,18 +21,17 @@
                    SELECT * FROM biz_activity
                    if  name!=null:
                      name = #{name}
-                   AND delete_flag1 = #{del}
+                   AND delete_flag1 = #{delete_flag}
                    if  age!=1:
                       AND age = 2
                       if  age!=1:
                         AND age = 3
                    trim 'AND ':
-                     AND delete_flag2 = #{del}
+                     AND delete_flag2 = #{delete_flag}
                    WHERE id  = '2';";
-    let data: Vec<Activity> = rbatis.unwrap().py_sql("", &json!({
-       "name":"新人专享",
-       "delete_flag": 1,
-    }), py_sql).unwrap();
+    let data: Vec<Activity> = rbatis.unwrap()
+    .py_sql("", &json!({ "name":"新人专享", "delete_flag": 1, }), py_sql)
+    .unwrap();
 ```
 
 
