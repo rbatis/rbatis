@@ -143,8 +143,6 @@ println!("[rbatis] result==> {:?}",data_result);
         Rbatis::singleton().begin(tx_id, Propagation::REQUIRED)?;//启动事务，传入事务传播行为
         let u: u32 = Rbatis::singleton()
             .raw_sql(tx_id, "UPDATE `biz_activity` SET `name` = '活动1' WHERE (`id` = '2');")?;
-        let act: Activity = Rbatis::singleton()
-           .raw_sql(tx_id, "select * from biz_activity where id  = '2';")?;
         Rbatis::singleton().commit(tx_id)?;//提交事务
         Rbatis::singleton().rollback(tx_id)?;//回滚事务
     }
