@@ -80,7 +80,7 @@ impl Rbatis {
 #[test]
 fn test_delete_by_id() {
     let mut rbatis =Rbatis::new();
-    rbatis.load_xml("Example_ActivityMapper.xml".to_string(), fs::read_to_string("./src/example/Example_ActivityMapper.xml").unwrap());//加载xml数据
+    rbatis.load_xml("Example_ActivityMapper.xml", fs::read_to_string("./src/example/Example_ActivityMapper.xml").unwrap());//加载xml数据
 
     let mut arg_array=vec![];
 
@@ -93,7 +93,7 @@ fn test_delete_by_id() {
 #[test]
 fn test_delete_by_ids() {
     let mut rbatis =Rbatis::new();
-    rbatis.load_xml("Example_ActivityMapper.xml".to_string(), fs::read_to_string("./src/example/Example_ActivityMapper.xml").unwrap());//加载xml数据
+    rbatis.load_xml("Example_ActivityMapper.xml", fs::read_to_string("./src/example/Example_ActivityMapper.xml").unwrap());//加载xml数据
 
     let mut arg_array=vec![];
     let sql =rbatis.create_sql_delete("Example_ActivityMapper.xml", serde_json::json!(vec![1,2,3]).borrow_mut(),&mut arg_array).unwrap();
@@ -105,7 +105,7 @@ fn test_delete_by_ids() {
 #[test]
 fn test_delete_by_map() {
     let mut rbatis =Rbatis::new();
-    rbatis.load_xml("Example_ActivityMapper.xml".to_string(), fs::read_to_string("./src/example/Example_ActivityMapper.xml").unwrap());//加载xml数据
+    rbatis.load_xml("Example_ActivityMapper.xml", fs::read_to_string("./src/example/Example_ActivityMapper.xml").unwrap());//加载xml数据
 
     let mut arg_array=vec![];
     let sql =rbatis.create_sql_delete("Example_ActivityMapper.xml", serde_json::json!({

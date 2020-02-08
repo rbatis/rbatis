@@ -88,7 +88,7 @@ fn do_create_obj_sql(mut sql: String, arg: &Value, arg_array: &mut Vec<Value>) -
 #[test]
 fn test_insert_templete_obj() {
     let mut rbatis = Rbatis::new();
-    rbatis.load_xml("Example_ActivityMapper.xml".to_string(), fs::read_to_string("./src/example/Example_ActivityMapper.xml").unwrap());//加载xml数据
+    rbatis.load_xml("Example_ActivityMapper.xml", fs::read_to_string("./src/example/Example_ActivityMapper.xml").unwrap());//加载xml数据
 
     let mut arg = serde_json::from_str(r#"{  "a":"1","delete_flag":1}"#).unwrap();
     let mut arg_array = vec![];
@@ -101,7 +101,7 @@ fn test_insert_templete_obj() {
 #[test]
 fn test_insert_templete_array() {
     let mut rbatis = Rbatis::new();
-    rbatis.load_xml("Example_ActivityMapper.xml".to_string(), fs::read_to_string("./src/example/Example_ActivityMapper.xml").unwrap());//加载xml数据
+    rbatis.load_xml("Example_ActivityMapper.xml", fs::read_to_string("./src/example/Example_ActivityMapper.xml").unwrap());//加载xml数据
     let mut arg_array = vec![];
     let mut arg = serde_json::from_str(r#"[{"a":"1","delete_flag":1},{"a":"1","delete_flag":1}]"#).unwrap();
     let sql = rbatis.create_sql_insert("Example_ActivityMapper.xml", &mut arg, &mut arg_array).unwrap();
