@@ -88,7 +88,7 @@ fn test_insert() {
         version: Some(1),
         delete_flag: Some(1),
     };
-    let r: Result<i32, RbatisError> = rbatis.insert("", "Example_ActivityMapper.xml", &mut json!(activity));
+    let r: Result<i32, RbatisError> = rbatis.insert("", "Example_ActivityMapper.xml", &json!(activity));
     println!("[rbatis] result==>  {:?}", r);
 }
 
@@ -101,7 +101,7 @@ fn test_delete() {
         return;
     }
     let mut rbatis = rbatis_opt.unwrap();
-    let r: Result<i32, RbatisError> = rbatis.delete("", "Example_ActivityMapper.xml", &mut json!("1"));
+    let r: Result<i32, RbatisError> = rbatis.delete("", "Example_ActivityMapper.xml", &json!("1"));
     println!("[rbatis] result==>  {:?}", r);
 }
 
@@ -116,7 +116,7 @@ fn test_update() {
     //先插入
     //插入前先删一下
     let r: i32 = rbatis.raw_sql("", "delete from biz_activity  where id = '1'").unwrap();
-    let r: i32 = rbatis.insert("", "Example_ActivityMapper.xml", &mut json!(Activity{
+    let r: i32 = rbatis.insert("", "Example_ActivityMapper.xml", &json!(Activity{
         id: Some("1".to_string()),
         name: Some("活动1".to_string()),
         pc_link: None,
@@ -132,7 +132,7 @@ fn test_update() {
     })).unwrap();
 
     //update
-    let r: Result<i32, RbatisError> = rbatis.update("", "Example_ActivityMapper.xml", &mut json!({
+    let r: Result<i32, RbatisError> = rbatis.update("", "Example_ActivityMapper.xml", &json!({
     "id":"1",
     "name":"updated",
     }));
@@ -175,7 +175,7 @@ fn test_update_array() {
         version: Some(1),
         delete_flag: Some(1)
     }]);
-    let r: Result<i32, RbatisError> = rbatis.update("", "Example_ActivityMapper.xml", &mut json_arr);
+    let r: Result<i32, RbatisError> = rbatis.update("", "Example_ActivityMapper.xml", &json_arr);
     println!("[rbatis] result==>  {:?}", r.unwrap());
 }
 
@@ -190,7 +190,7 @@ fn test_exec_sql() {
         return;
     }
     //执行到远程mysql 并且获取结果,Result<serde_json::Value, RbatisError>,或者 Result<String, RbatisError> 等任意类型
-    let data: Vec<Activity> = rbatis.unwrap().mapper("", "Example_ActivityMapper.xml", "select_by_condition", &mut json!({
+    let data: Vec<Activity> = rbatis.unwrap().mapper("", "Example_ActivityMapper.xml", "select_by_condition", &json!({
        "name":null,
        "startTime":null,
        "endTime":null,
@@ -213,7 +213,7 @@ fn test_exec_select_page() {
         return;
     }
     //执行到远程mysql 并且获取结果,Result<serde_json::Value, RbatisError>,或者 Result<String, RbatisError> 等任意类型
-    let data: IPage<Activity> = rbatis.unwrap().select_page("", "Example_ActivityMapper.xml", &mut json!({
+    let data: IPage<Activity> = rbatis.unwrap().select_page("", "Example_ActivityMapper.xml", &json!({
        "name":"新人专享1",
     }), &IPage::new(1, 5)).unwrap();
     println!("[rbatis] result==>  {:?}", data);
@@ -230,7 +230,7 @@ fn test_exec_select_page_custom() {
         return;
     }
     //执行到远程mysql 并且获取结果,Result<serde_json::Value, RbatisError>,或者 Result<String, RbatisError> 等任意类型
-    let data: IPage<Activity> = rbatis.unwrap().select_page_by_mapper("", "Example_ActivityMapper.xml", "select_by_page", &mut json!({
+    let data: IPage<Activity> = rbatis.unwrap().select_page_by_mapper("", "Example_ActivityMapper.xml", "select_by_page", &json!({
        "name":"新人专享",
        "delete_flag": 1,
     }), &IPage::new(1, 5)).unwrap();
@@ -249,7 +249,7 @@ fn test_exec_py_sql() {
         return;
     }
     //执行到远程mysql 并且获取结果,Result<serde_json::Value, RbatisError>,或者 Result<String, RbatisError> 等任意类型
-    let data: Vec<Activity> = rbatis.unwrap().py_sql("", "Example_ActivityMapper.xml", &mut json!({
+    let data: Vec<Activity> = rbatis.unwrap().py_sql("", "Example_ActivityMapper.xml", &json!({
        "name":"新人专享",
        "delete_flag": 1,
     }), "
