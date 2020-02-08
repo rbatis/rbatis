@@ -15,10 +15,10 @@
 
 
 #### 为什么选择Rbatis
-* 为了提供开发效率，可以在sql中使用传统mybatis的if，foreach,trim,where等等功能
-* 为了提供开发效率，传入参数为json即可，可以在sql中写判断，不写Mapper.xml，可以方便的分页查询，插入，CRUD
-* 为了可维护性，可移植性，提供Mapper.xml支持
-* 为了安全，我们选择Rust，它无GC，并发安全，高性能，同时增加了session连接池,Mybatis Plus里的那种乐观锁和版本号
+* 为了高开发效率，可以在sql中使用传统mybatis的if，foreach,trim,where等等功能
+* 为了高开发效率，传入参数为json即可，可以在sql中写判断，不写Mapper.xml，可以方便的分页查询，插入，CRUD
+* 为了可维护，可移植性，提供Mapper.xml支持
+* 为了高安全，我们选择Rust，它无GC，并发安全，高性能，同时增加了session连接池,Mybatis Plus里的那种乐观锁和版本号
 * 为了高并发，我们支持了Tokio和std库的 future语法，即async .await
 * 为了高拓展，我们fork了Rdbc库并且改动作为Rust的驱动程序，支持Mysql，Pg,Sqlite,Tidb,CockroachDB...
 
