@@ -5,7 +5,7 @@ use std::error::Error;
 use std::ops::{Deref, DerefMut};
 use std::process::exit;
 use std::str::FromStr;
-use std::sync::{Mutex, MutexGuard};
+use std::sync::{mpsc, Mutex, MutexGuard};
 use std::thread;
 use std::time::Duration;
 
@@ -40,6 +40,52 @@ use crate::utils::xml_loader::load_xml;
 
 lazy_static! {
   static ref RBATIS: Mutex<Rbatis> = Mutex::new(Rbatis::new());
+}
+
+lazy_static! {
+  static ref CHANNEL: Mutex<Channel> = Mutex::new(Channel::new());
+}
+
+pub struct Channel {
+    pub sender: mpsc::Sender<String>,
+    pub receiver: mpsc::Receiver<String>,
+}
+
+impl Channel {
+    pub fn recv(&self) -> Option<String> {
+        match self.receiver.try_recv() {
+            Ok(r) => {
+                return Some(r);
+            }
+            _ => {
+                return None;
+            }
+        }
+    }
+
+    pub fn send(&self,arg:String) {
+        self.sender.send(arg);
+    }
+
+    pub fn new() -> Self {
+        let (tx, rx): (mpsc::Sender<String>, mpsc::Receiver<String>) =
+            mpsc::channel();
+        thread::spawn(move || {
+            // 线程中接收子线程发送的消息并输出
+            loop {
+                let s = Rbatis::channel_recv();
+                if !s.is_some(){
+                    thread::sleep(Duration::from_millis(200));
+                } else {
+                    info!("{}", s.unwrap());
+                }
+            }
+        });
+        return Self {
+            sender: tx,
+            receiver: rx,
+        };
+    }
 }
 
 
@@ -77,8 +123,20 @@ impl Rbatis {
     }
 
     ///使用 lazy_static 获取的单例
-    pub fn singleton() -> MutexGuard<'static, Rbatis> {
+    pub fn singleton<'a>() -> MutexGuard<'a, Rbatis> {
         return RBATIS.lock().unwrap();
+    }
+
+    pub fn channel<'a>() -> MutexGuard<'a, Channel> {
+        return CHANNEL.lock().unwrap();
+    }
+
+    pub fn channel_recv() -> Option<String> {
+        return CHANNEL.lock().unwrap().recv();
+    }
+
+    pub fn channel_send(arg:String) {
+         CHANNEL.lock().unwrap().send(arg);
     }
 
 
@@ -122,14 +180,14 @@ impl Rbatis {
 
     pub fn begin(&mut self, id: &str, propagation_type: Propagation) -> Result<String, RbatisError> {
         self.check_driver()?;
-        let session = self.session_factory.get_thread_session(&id.to_string(), self.db_driver.as_str(),self.enable_log)?;
-        session.begin(propagation_type)?;
+        let session = self.session_factory.get_thread_session(&id.to_string(), self.db_driver.as_str(), self.enable_log)?;
+        session.begin(id,propagation_type)?;
         return Result::Ok(session.id().to_string());
     }
 
     pub fn rollback<'a>(&mut self, id: &'a str) -> Result<String, RbatisError> {
         self.check_driver()?;
-        let session = self.session_factory.get_thread_session(&id.to_string(), self.db_driver.as_str(),self.enable_log)?;
+        let session = self.session_factory.get_thread_session(&id.to_string(), self.db_driver.as_str(), self.enable_log)?;
         session.rollback()?;
         if !session.have_tx() {
             self.session_factory.remove(&id.to_string());
@@ -139,7 +197,7 @@ impl Rbatis {
 
     pub fn commit<'a>(&mut self, id: &'a str) -> Result<String, RbatisError> {
         self.check_driver()?;
-        let session = self.session_factory.get_thread_session(&id.to_string(), self.db_driver.as_str(),self.enable_log)?;
+        let session = self.session_factory.get_thread_session(&id.to_string(), self.db_driver.as_str(), self.enable_log)?;
         session.commit()?;
         if !session.have_tx() {
             self.session_factory.remove(&id.to_string());
@@ -200,11 +258,11 @@ impl Rbatis {
         let is_select = sql.starts_with("select") || sql.starts_with("SELECT") || sql.starts_with("Select");
         if is_select {
             //select
-            let session = self.session_factory.get_thread_session(&id.to_string(), self.db_driver.as_str(),self.enable_log)?;
+            let session = self.session_factory.get_thread_session(&id.to_string(), self.db_driver.as_str(), self.enable_log)?;
             return session.query(sql, &params);
         } else {
             //exec
-            let session = self.session_factory.get_thread_session(&id.to_string(), self.db_driver.as_str(),self.enable_log)?;
+            let session = self.session_factory.get_thread_session(&id.to_string(), self.db_driver.as_str(), self.enable_log)?;
             let affected_rows = session.exec(sql, &params)?;
             let r = serde_json::from_value(json!(affected_rows));
             if r.is_err() {

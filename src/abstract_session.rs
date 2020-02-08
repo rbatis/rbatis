@@ -4,6 +4,7 @@ use serde::de;
 
 use crate::decode::rdbc_driver_decoder::decode_result_set;
 use crate::error::RbatisError;
+use crate::rbatis::Rbatis;
 
 ///查询，执行接口
 pub trait AbstractSession {
@@ -51,7 +52,8 @@ impl AbstractSession for Box<dyn Connection> {
         }
         let (result, decoded_num) = decode_result_set(exec_result.unwrap().as_mut());
         if enable_log {
-            info!(" Total: <==  {}", decoded_num.to_string().as_str());
+            //info!(" Total: <==  {}", decoded_num.to_string().as_str());
+            Rbatis::channel_send(format!(" Total: <==  {}", decoded_num.to_string().as_str()));
         }
         return result;
     }
@@ -72,7 +74,8 @@ impl AbstractSession for Box<dyn Connection> {
         }
         let affected_rows = exec_result.unwrap();
         if enable_log {
-            info!(" Affected: <== {}", affected_rows.to_string().as_str());
+            //info!(" Affected: <== {}", affected_rows.to_string().as_str());
+            Rbatis::channel_send(format!(" Affected: <==  {}", affected_rows.to_string().as_str()));
         }
         return Result::Ok(affected_rows);
     }

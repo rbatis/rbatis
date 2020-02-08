@@ -341,9 +341,9 @@ pub fn test_service() {
 
 async fn index() -> impl Responder {
     //写法1
-    let data: Result<Activity, RbatisError> = Rbatis::singleton().raw_sql("", "select * from biz_activity where id  = '2';");
+    //let data: Result<Activity, RbatisError> = Rbatis::singleton().raw_sql(format!("{:?}",std::thread::current().id()).as_str(), "select * from biz_activity where id  = '2';");
     //写法2 注意：适用于超级耗时的任务
-    //let data: Result<Activity, RbatisError> = Rbatis::async_raw_sql("", "select * from biz_activity where id  = '2';").await;
+    let data: Result<Activity, RbatisError> = Rbatis::async_raw_sql(format!("{:?}",std::thread::current().id()).as_str(), "select * from biz_activity where id  = '2';").await;
     println!("{:?}", &data);
     return serde_json::to_string(&data).unwrap();
 }
@@ -391,8 +391,8 @@ pub fn test_web() {
         return;
     }
     // 设置延迟类型
-    Rbatis::singleton().set_wait_type(WaitType::Tokio);
     init_singleton_rbatis();
+    Rbatis::singleton().set_wait_type(WaitType::Tokio);
     main_hyper();//hyper
     //main_actix();//actix
 }

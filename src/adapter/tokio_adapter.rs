@@ -47,8 +47,9 @@ tokio async await 支持
 impl Rbatis{
 
     pub async fn async_raw_sql<T>(id: &str, eval_sql: &str) -> Result<T, RbatisError> where T: de::DeserializeOwned + Send + 'static {
+        let _id=id.to_string();
         let s = eval_sql.to_string();
-        return to_tokio_await!(T,{ Rbatis::singleton().raw_sql(format!("{:?}",std::thread::current().id()).as_str(),s.as_str())  });
+        return to_tokio_await!(T,{ Rbatis::singleton().raw_sql(&_id,s.as_str())  });
     }
 
     pub async fn async_begin<T>(id: &str, propagation_type: Propagation) -> Result<String, RbatisError> {
