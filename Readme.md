@@ -125,6 +125,56 @@ println!("[rbatis] result==> {:?}",data_result);
 //2020-01-10T10:28:54.552097+08:00 INFO rbatis::core::rbatis - [rbatis] ReturnRows <== 2
 //[rbatis] result==> [Activity { id: Some("\"dfbdd779-5f70-4b8f-9921-a235a9c75b69\""), name: Some("\"新人专享\""), version: Some(6) }, Activity { id: Some("\"dfbdd779-5f70-4b8f-9921-c235a9c75b69\""), name: Some("\"新人专享\""), version: Some(6) }]
 ```
+
+#### 事务支持
+``` rust
+
+    //自定义事务（必须有你定义的事务id）
+    let tx_id="1234";
+    rbatis.begin(tx_id, Propagation::REQUIRED)?;//启动事务，传入事务传播行为
+    let u: u32 = rbatis.raw_sql(tx_id, "UPDATE `biz_activity` SET `name` = '活动1' WHERE (`id` = '2');")?;
+    let act: Activity = rbatis.raw_sql(tx_id, "select * from biz_activity where id  = '2';")?;
+    rbatis.commit(tx_id)?;//提交事务
+    rbatis.rollback(tx_id)?;//回滚事务
+
+    //声明式事务
+    pub trait Service {
+        fn select_activity(&self) -> Result<Activity, RbatisError>;
+        fn update_activity(&mut self) -> Result<String, RbatisError>;
+    }
+    struct ServiceImpl {
+        select_activity: fn(s: &ServiceImpl) -> Result<Activity, RbatisError>,
+        update_activity: fn(s: &mut ServiceImpl) -> Result<String, RbatisError>,
+    }
+    impl Service for ServiceImpl {
+        impl_service! {
+          REQUIRED,  select_activity(&self) -> Result<Activity,RbatisError>
+        }
+        impl_service_mut! {
+          NONE,  update_activity(&mut self) -> Result<String, RbatisError>
+        }
+    }
+    #[test]
+    pub fn test_service() {
+        init_singleton_rbatis();
+        let mut s = ServiceImpl {
+            select_activity: |s: &ServiceImpl| -> Result<Activity, RbatisError>{
+                let act: Activity = Rbatis::singleton().raw_sql("", "select * from biz_activity where id  = '2';").unwrap();
+                return Result::Ok(act);
+            },
+            update_activity: |s: &mut ServiceImpl| -> Result<String, RbatisError>{
+                return Result::Ok("ok".to_string());
+            },
+        };
+        let act: Activity = s.select_activity().unwrap();
+        println!("{:?}", serde_json::to_string(&act).unwrap().as_str());
+        println!("{:?}", s.update_activity().unwrap());
+    }
+
+```
+
+
+
 ### Web框架支持(这里举例actix-web,不支持tokio的框架使用 默认方法，支持tokio的使用async_* 开头的方法)
 ``` rust
 //这里举例使用web排行榜屠榜最快的actix-web
