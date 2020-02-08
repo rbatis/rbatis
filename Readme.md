@@ -16,7 +16,7 @@
 
 ##### py风格sql语法Example
 ``` python
-//执行到远程mysql 并且获取结果,Result<serde_json::Value, RbatisError>,或者 Result<String, RbatisError> 等任意类型
+//执行到远程mysql 并且获取结果。支持serde_json可序列化的任意类型
     let py_sql="
                    SELECT * FROM biz_activity
                    if  name!=null:
