@@ -31,7 +31,7 @@ unsafe impl Send for LocalSession{}
 
 
 impl LocalSession {
-    pub fn new(id: &str, driver: &str, conn_opt: Option<Box<dyn Connection>>) -> Result<Self, RbatisError> {
+    pub fn new(id: &str, driver: &str, conn_opt: Option<Box<dyn Connection>>,enable_log:bool) -> Result<Self, RbatisError> {
         let mut conn = conn_opt;
         if conn.is_none() {
             let r = driver_util::get_conn_by_link(driver)?;
@@ -44,7 +44,7 @@ impl LocalSession {
             save_point_stack: SavePointStack::new(),
             is_closed: false,
             new_local_session: None,
-            enable_log: true,
+            enable_log: enable_log,
             conn: conn,
         });
     }
@@ -218,14 +218,14 @@ impl LocalSession {
             Propagation::REQUIRES_NEW => {
                 //new session
                 let r = driver_util::get_conn_by_link(self.driver.as_str())?;
-                let new_session = LocalSession::new("", self.driver.as_str(), Option::from(r))?;
+                let new_session = LocalSession::new("", self.driver.as_str(), Option::from(r),self.enable_log)?;
                 self.new_local_session = Some(Box::new(new_session));
             }
             //表示以非事务方式执行操作，如果当前存在事务，则新建一个Session以非事务方式执行操作，把当前事务挂起。  have tx ? stop old。 -> new session().exec()
             Propagation::NOT_SUPPORTED => {
                 if self.tx_stack.len() > 0 {
                     let r = driver_util::get_conn_by_link(self.driver.as_str())?;
-                    let new_session = LocalSession::new("", self.driver.as_str(), Option::from(r))?;
+                    let new_session = LocalSession::new("", self.driver.as_str(), Option::from(r),self.enable_log)?;
                     self.new_local_session = Some(Box::new(new_session));
                 }
             }
@@ -285,7 +285,7 @@ impl Drop for LocalSession {
 
 #[test]
 pub fn test_se() {
-    let s = LocalSession::new("", MYSQL_URL, None);
+    let s = LocalSession::new("", MYSQL_URL, None,true);
     if s.is_err() {
         println!("执行失败:{}", s.err().unwrap());
         return;

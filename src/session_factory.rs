@@ -12,7 +12,7 @@ use crate::utils::driver_util;
 
 ///链接工厂
 pub trait SessionFactory {
-    fn get_thread_session(&mut self, id: &String, driver: &str) -> Result<&mut LocalSession, RbatisError>;
+    fn get_thread_session(&mut self, id: &String, driver: &str,enable_log:bool) -> Result<&mut LocalSession, RbatisError>;
     fn remove(&mut self, id: &String);
     fn set_wait_type(&mut self, t: WaitType);
     fn wait_type(&self) -> WaitType;
@@ -40,13 +40,13 @@ impl Drop for ConnPoolSessionFactory {
 }
 
 impl SessionFactory for ConnPoolSessionFactory {
-    fn get_thread_session(&mut self, id: &String, driver: &str) -> Result<&mut LocalSession, RbatisError> {
+    fn get_thread_session(&mut self, id: &String, driver: &str,enable_log:bool) -> Result<&mut LocalSession, RbatisError> {
         self.gc();
         let item = self.data.get_mut(id);
         if item.is_some() {
             return Ok(self.data.get_mut(id).unwrap());
         } else {
-            let session = LocalSession::new(id, driver, None)?;
+            let session = LocalSession::new(id, driver, None,enable_log)?;
             self.data.insert(id.to_string(), session);
             return Ok(self.data.get_mut(id).unwrap());
         }
