@@ -1,10 +1,4 @@
-extern crate chrono;
-
-use std::time::{SystemTime, UNIX_EPOCH};
-
-use chrono::Local;
-
-use self::chrono::DateTime;
+use std::time::{SystemTime};
 
 pub fn count_time_tps(total: i32, start: SystemTime) {
     count_tps(total, start);
