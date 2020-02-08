@@ -249,7 +249,7 @@ fn test_exec_py_sql() {
         return;
     }
     //执行到远程mysql 并且获取结果,Result<serde_json::Value, RbatisError>,或者 Result<String, RbatisError> 等任意类型
-    let data: Vec<Activity> = rbatis.unwrap().py_sql("", "Example_ActivityMapper.xml", &json!({
+    let data: Vec<Activity> = rbatis.unwrap().py_sql("", &json!({
        "name":"新人专享",
        "delete_flag": 1,
     }), "
