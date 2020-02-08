@@ -144,7 +144,7 @@ async fn main() -> std::io::Result<()> {
 | ------ | ------ |
 | Mysql            | √     |   
 | Postgres         | √     |  
-| SQLlite          | √     |  
+| SQLite           | √     |  
 | TiDB             | √     |
 | CockroachDB      | √     |
 
