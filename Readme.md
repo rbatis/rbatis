@@ -70,7 +70,7 @@ log = "0.4"
 log4rs = "0.8.3"
 rbatis = {git = "https://github.com/rbatis/rbatis"}
 ```
-#### rust main.rs 加入以下代码
+#### main.rs 加入以下代码
 ``` rust
 use crate::core::rbatis::Rbatis;
 use serde_json::{json, Value, Number};
