@@ -156,7 +156,6 @@ println!("[rbatis] result==> {:?}",data_result);
     }
     #[test]
     pub fn test_service() {
-        init_singleton_rbatis();
         let mut s = ServiceImpl {
             select_activity: |s: &ServiceImpl| -> Result<Activity, RbatisError>{
                 let act: Activity = Rbatis::singleton().raw_sql("", "select * from biz_activity where id  = '2';").unwrap();
