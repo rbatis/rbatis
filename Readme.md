@@ -63,10 +63,12 @@
 </mapper>
 ``` 
 ##### rust代码Example:
-##### yaml加入以下代码
+##### Cargo.toml 加入以下代码
 ```$xslt
+[dependencies]
 log = "0.4"
 log4rs = "0.8.3"
+rbatis = {git = "https://github.com/rbatis/rbatis"}
 ```
 #### rust main.rs 加入以下代码
 ``` rust
