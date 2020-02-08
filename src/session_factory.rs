@@ -24,11 +24,6 @@ pub struct ConnPoolSessionFactory {
     pub max_wait_ms: u64,
 }
 
-
-unsafe impl Send for ConnPoolSessionFactory {}
-
-unsafe impl Sync for ConnPoolSessionFactory {}
-
 impl Drop for ConnPoolSessionFactory {
     fn drop(&mut self) {
         self.data.clear();
