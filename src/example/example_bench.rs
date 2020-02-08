@@ -9,6 +9,7 @@ use chrono::Local;
 use crate::utils;
 use crate::ast::node::node_type::NodeType;
 use crate::utils::bencher::Bencher;
+use std::time::SystemTime;
 
 //lazy_static! {
 //    static ref ARRAY: Mutex<Vec<u8>> = Mutex::new(vec![]);
@@ -70,7 +71,7 @@ fn bench_example() {
     data.eval(arg,&mut rbatis.engine,&mut arg_array);
 
     let total=100000;
-    let now=Local::now();
+    let now=SystemTime::now();
     for _ in 0..total{
         data.eval(arg,&mut rbatis.engine,&mut arg_array);
     }

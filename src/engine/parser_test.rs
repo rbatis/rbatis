@@ -12,6 +12,7 @@ use crate::engine::node::NodeType::{NNumber, NOpt};
 
 use core::time;
 use std::thread;
+use std::time::SystemTime;
 
 
 #[test]
@@ -43,7 +44,7 @@ fn test_benchmark() {
         "name": "John Doe",
     });
     let total=10000000;
-    let now=Local::now();
+    let now=SystemTime::now();
     for _ in 0..total{
         for _ in 0..1{
             box_node.clone();
