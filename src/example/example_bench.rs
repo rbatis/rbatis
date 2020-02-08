@@ -54,7 +54,7 @@ fn bench_main() {
 fn bench_example() {
     let mut rbatis=Rbatis::new();
     rbatis.set_enable_log(false);//禁用日志以准确获取性能数据
-    rbatis.load_xml("Example_ActivityMapper.xml".to_string(),fs::read_to_string("./src/example/Example_ActivityMapper.xml").unwrap());//加载xml数据
+    rbatis.load_xml("Example_ActivityMapper.xml",fs::read_to_string("./src/example/Example_ActivityMapper.xml").unwrap());//加载xml数据
     rbatis.print();//打印已读取的内容
 
     let data= rbatis.mapper_map.get_mut("Example_ActivityMapper.xml").unwrap().get_mut("select_by_condition").unwrap();

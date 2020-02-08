@@ -255,7 +255,7 @@ impl Rbatis {
 #[test]
 fn test_select_by_id() {
     let mut rbatis = Rbatis::new();
-    rbatis.load_xml("Example_ActivityMapper.xml".to_string(), fs::read_to_string("./src/example/Example_ActivityMapper.xml").unwrap());//加载xml数据
+    rbatis.load_xml("Example_ActivityMapper.xml", fs::read_to_string("./src/example/Example_ActivityMapper.xml").unwrap());//加载xml数据
     let mut arg_array = vec![];
     let (sql, _) = rbatis.create_sql_select("Example_ActivityMapper.xml", serde_json::json!("1").borrow_mut(), &mut arg_array).unwrap();
     println!("{}", sql);
@@ -267,7 +267,7 @@ fn test_select_by_id() {
 #[test]
 fn test_select_by_ids() {
     let mut rbatis = Rbatis::new();
-    rbatis.load_xml("Example_ActivityMapper.xml".to_string(), fs::read_to_string("./src/example/Example_ActivityMapper.xml").unwrap());//加载xml数据
+    rbatis.load_xml("Example_ActivityMapper.xml", fs::read_to_string("./src/example/Example_ActivityMapper.xml").unwrap());//加载xml数据
     let mut arg_array = vec![];
     let (sql, _) = rbatis.create_sql_select("Example_ActivityMapper.xml", serde_json::json!(vec![1,2,3]).borrow_mut(), &mut arg_array).unwrap();
     println!("{}", sql);
@@ -279,7 +279,7 @@ fn test_select_by_ids() {
 #[test]
 fn test_select_by_map() {
     let mut rbatis = Rbatis::new();
-    rbatis.load_xml("Example_ActivityMapper.xml".to_string(), fs::read_to_string("./src/example/Example_ActivityMapper.xml").unwrap());//加载xml数据
+    rbatis.load_xml("Example_ActivityMapper.xml", fs::read_to_string("./src/example/Example_ActivityMapper.xml").unwrap());//加载xml数据
     let mut arg_array = vec![];
     let (sql, _) = rbatis.create_sql_select("Example_ActivityMapper.xml", serde_json::json!({
      "arg": 2,
@@ -296,7 +296,7 @@ fn test_select_by_map() {
 #[test]
 fn test_select_by_id_page() {
     let mut rbatis = Rbatis::new();
-    rbatis.load_xml("Example_ActivityMapper.xml".to_string(), fs::read_to_string("./src/example/Example_ActivityMapper.xml").unwrap());//加载xml数据
+    rbatis.load_xml("Example_ActivityMapper.xml", fs::read_to_string("./src/example/Example_ActivityMapper.xml").unwrap());//加载xml数据
     let mut arg_array = vec![];
     let act = Activity {
         id: None,

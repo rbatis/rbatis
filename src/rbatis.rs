@@ -89,11 +89,11 @@ impl Rbatis {
 
     ///加载xml数据
     /// rbatis.load_xml("Example_ActivityMapper.xml".to_string(), fs::read_to_string("./src/example/Example_ActivityMapper.xml").unwrap());//加载xml数据
-    pub fn load_xml(&mut self, key: String, content: String) {
+    pub fn load_xml(&mut self, key: &str, content: String) {
         if self.enable_log {
             info!("===========load {}==============\n{}\n================ end {}===============", key, content, key);
         }
-        self.mapper_map.insert(key, crate::ast::lang::xml::parser(content, &self.engine));
+        self.mapper_map.insert(key.to_string(), crate::ast::lang::xml::parser(content, &self.engine));
     }
 
 
