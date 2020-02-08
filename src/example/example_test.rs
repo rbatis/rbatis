@@ -1,3 +1,4 @@
+use std::{convert::Infallible, net::SocketAddr};
 use std::borrow::{Borrow, BorrowMut};
 use std::cell::RefMut;
 use std::collections::LinkedList;
@@ -11,9 +12,11 @@ use std::sync::mpsc;
 use std::sync::Mutex;
 use std::thread;
 use std::thread::sleep;
-use std::time::Duration;
+use std::time::{Duration, SystemTime};
 
 use actix_web::{App, HttpServer, Responder, web};
+use hyper::{Body, Request, Response, Server};
+use hyper::service::{make_service_fn, service_fn};
 use log::{error, info, warn};
 use rdbc::{DataType, Driver, ResultSet, ResultSetMetaData};
 use serde_json::{json, Number, Value};
@@ -32,6 +35,7 @@ use crate::rbatis::Rbatis;
 use crate::session_factory::{ConnPoolSessionFactory, SessionFactory, WaitType};
 use crate::tx::propagation::Propagation::{NONE, REQUIRED};
 use crate::tx::propagation::Propagation;
+use crate::utils::time_util::count_time_tps;
 
 /**
  初始化实例
@@ -274,7 +278,7 @@ fn test_tx_return() -> Result<u64, RbatisError> {
         return Ok(1);
     }
     let mut rbatis = rbatis_opt.unwrap();
-    let tx_id="1";
+    let tx_id = "1";
     rbatis.begin(tx_id, Propagation::REQUIRED)?;
 
     let u: u32 = rbatis.raw_sql(tx_id, "UPDATE `biz_activity` SET `name` = '活动1' WHERE (`id` = '2');")?;
@@ -355,10 +359,6 @@ async fn main_actix() -> std::io::Result<()> {
         .await
 }
 
-use std::{convert::Infallible, net::SocketAddr};
-use hyper::{Body, Request, Response, Server};
-use hyper::service::{make_service_fn, service_fn};
-
 async fn handle_root(_: Request<Body>) -> Result<Response<Body>, Infallible> {
     //写法1
     let data: Result<Activity, RbatisError> = Rbatis::singleton().raw_sql("", "select * from biz_activity where id  = '2';");
@@ -395,4 +395,21 @@ pub fn test_web() {
     init_singleton_rbatis();
     main_hyper();//hyper
     //main_actix();//actix
+}
+
+
+///cargo.exe test --release --color=always --package rbatis --lib example::example_test::bench_query_local --all-features -- --nocapture --exact
+#[test]
+pub fn bench_query_local() {
+    if MYSQL_URL.contains("localhost") {
+        return;
+    }
+    let total = 10000;
+    let start = SystemTime::now();
+    init_singleton_rbatis();
+    Rbatis::singleton().enable_log = false;
+    for i in 0..total {
+        let data: Result<Activity, RbatisError> = Rbatis::singleton().raw_sql("", "select * from biz_activity where id  = '2';");
+    }
+    count_time_tps(total, start);
 }

@@ -122,14 +122,14 @@ impl Rbatis {
 
     pub fn begin(&mut self, id: &str, propagation_type: Propagation) -> Result<String, RbatisError> {
         self.check_driver()?;
-        let session = self.session_factory.get_thread_session(&id.to_string(), self.db_driver.as_str())?;
+        let session = self.session_factory.get_thread_session(&id.to_string(), self.db_driver.as_str(),self.enable_log)?;
         session.begin(propagation_type)?;
         return Result::Ok(session.id().to_string());
     }
 
     pub fn rollback<'a>(&mut self, id: &'a str) -> Result<String, RbatisError> {
         self.check_driver()?;
-        let session = self.session_factory.get_thread_session(&id.to_string(), self.db_driver.as_str())?;
+        let session = self.session_factory.get_thread_session(&id.to_string(), self.db_driver.as_str(),self.enable_log)?;
         session.rollback()?;
         if !session.have_tx() {
             self.session_factory.remove(&id.to_string());
@@ -139,7 +139,7 @@ impl Rbatis {
 
     pub fn commit<'a>(&mut self, id: &'a str) -> Result<String, RbatisError> {
         self.check_driver()?;
-        let session = self.session_factory.get_thread_session(&id.to_string(), self.db_driver.as_str())?;
+        let session = self.session_factory.get_thread_session(&id.to_string(), self.db_driver.as_str(),self.enable_log)?;
         session.commit()?;
         if !session.have_tx() {
             self.session_factory.remove(&id.to_string());
@@ -200,11 +200,11 @@ impl Rbatis {
         let is_select = sql.starts_with("select") || sql.starts_with("SELECT") || sql.starts_with("Select");
         if is_select {
             //select
-            let session = self.session_factory.get_thread_session(&id.to_string(), self.db_driver.as_str())?;
+            let session = self.session_factory.get_thread_session(&id.to_string(), self.db_driver.as_str(),self.enable_log)?;
             return session.query(sql, &params);
         } else {
             //exec
-            let session = self.session_factory.get_thread_session(&id.to_string(), self.db_driver.as_str())?;
+            let session = self.session_factory.get_thread_session(&id.to_string(), self.db_driver.as_str(),self.enable_log)?;
             let affected_rows = session.exec(sql, &params)?;
             let r = serde_json::from_value(json!(affected_rows));
             if r.is_err() {
