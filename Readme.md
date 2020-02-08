@@ -21,6 +21,7 @@
 * 为了提供开发效率，传入参数为json即可，可以在sql中写判断，不写Mapper.xml，可以方便的分页查询，插入，CRUD
 * 为了可维护性，可移植性，提供Mapper.xml支持
 * 为了安全，我们选择Rust，它无GC，并发安全，高性能，同时增加了Mybatis Plus里的那种乐观锁和版本号
+* 为了高并发，我们支持了Tokio和std库的 future语法，即async .await
 
 ##### py风格sql语法Example
 ``` python
