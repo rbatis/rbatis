@@ -40,19 +40,15 @@ impl Drop for ConnPoolSessionFactory {
 }
 
 impl SessionFactory for ConnPoolSessionFactory {
-    fn get_thread_session(&mut self, _id: &String, driver: &str) -> Result<&mut LocalSession, RbatisError> {
-        let mut id = _id.clone();
-        if id.is_empty() {
-            id = format!("{:?}", std::thread::current().id());
-        }
+    fn get_thread_session(&mut self, id: &String, driver: &str) -> Result<&mut LocalSession, RbatisError> {
         self.gc();
-        let item = self.data.get_mut(&id);
+        let item = self.data.get_mut(id);
         if item.is_some() {
-            return Ok(self.data.get_mut(&id).unwrap());
+            return Ok(self.data.get_mut(id).unwrap());
         } else {
-            let session = LocalSession::new("", driver, None)?;
-            self.data.insert(id.clone(), session);
-            return Ok(self.data.get_mut(&id).unwrap());
+            let session = LocalSession::new(id, driver, None)?;
+            self.data.insert(id.to_string(), session);
+            return Ok(self.data.get_mut(id).unwrap());
         }
     }
 
