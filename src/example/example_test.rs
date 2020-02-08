@@ -28,7 +28,7 @@ use crate::decode::rdbc_driver_decoder::decode_result_set;
 use crate::error::RbatisError;
 use crate::example::activity::Activity;
 use crate::example::conf::MYSQL_URL;
-use crate::rbatis::{Rbatis};
+use crate::rbatis::Rbatis;
 use crate::session_factory::{ConnPoolSessionFactory, SessionFactory};
 use crate::tx::propagation::Propagation::{NONE, REQUIRED};
 use crate::tx::propagation::Propagation;
@@ -354,7 +354,7 @@ pub fn test_service() {
 
 async fn index() -> impl Responder {
     //写法1
-    let data: Result<Activity, RbatisError>=Rbatis::singleton().raw_sql("","select * from biz_activity where id  = '2';");
+    let data: Result<Activity, RbatisError> = Rbatis::singleton().raw_sql("", "select * from biz_activity where id  = '2';");
     //写法2 注意：适用于超级耗时的任务
     //let data: Result<Activity, RbatisError> = Rbatis::async_raw_sql("", "select * from biz_activity where id  = '2';").await;
     println!("{:?}", &data);
