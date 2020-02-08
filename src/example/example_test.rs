@@ -392,5 +392,6 @@ pub fn test_web() {
         return;
     }
     init_singleton_rbatis();
-    main_hyper();
+    main_hyper();//hyper
+    //main_actix();//actix
 }
