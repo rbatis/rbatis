@@ -38,10 +38,11 @@ use crate::utils::{driver_util, rdbc_util};
 use crate::utils::rdbc_util::to_rdbc_values;
 use crate::utils::xml_loader::load_xml;
 
+/// Rbatis 单例
 lazy_static! {
   static ref RBATIS: Mutex<Rbatis> = Mutex::new(Rbatis::new());
 }
-
+/// Log Channel日志通道
 lazy_static! {
   static ref CHANNEL: Mutex<Channel> = Mutex::new(Channel::new());
 }
