@@ -122,7 +122,7 @@ impl Rbatis {
         };
     }
 
-    ///使用 lazy_static 获取的单例
+    ///使用 lazy_static 获取的单例,请尽量使用 async_开头或者singleton_开头的方法，避免使用singleton()造成锁定时间过长
     pub fn singleton<'a>() -> MutexGuard<'a, Rbatis> {
         return RBATIS.lock().unwrap();
     }
