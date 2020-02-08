@@ -347,8 +347,6 @@ async fn index() -> impl Responder {
 
 #[actix_rt::main]
 async fn main_actix() -> std::io::Result<()> {
-    init_singleton_rbatis();
-    //初始化rbatis
     HttpServer::new(move || {
         App::new()
             .route("/", web::get().to(index))
@@ -373,7 +371,7 @@ async fn handle_root(_: Request<Body>) -> Result<Response<Body>, Infallible> {
 
 #[tokio::main]
 async fn main_hyper() {
-    let addr = SocketAddr::from(([127, 0, 0, 1], 3000));
+    let addr = SocketAddr::from(([127, 0, 0, 1], 8000));
 
     let make_svc = make_service_fn(|_conn| async {
         Ok::<_, Infallible>(service_fn(handle_root))
@@ -393,5 +391,6 @@ pub fn test_web() {
     if MYSQL_URL.contains("localhost") {
         return;
     }
+    init_singleton_rbatis();
     main_hyper();
 }
