@@ -15,6 +15,13 @@
 * 内置日志输出,可自定义具体日志（基于标准库log(独立于任何特定的日志记录库)，标准库日志可选任意第三方库实现，类似于java的SLF4j）
 * [点击查看-示例代码](https://github.com/rbatis/rbatis/blob/master/src/example/example_test.rs)
 
+
+#### 为什么选择Rbatis
+* 为了提供开发效率，可以在sql中使用传统mybatis的if，foreach,trim,where等等功能
+* 为了提供开发效率，可以不写Mapper.xml，可以方便的分页查询，插入，CRUD
+* 为了可维护性，可移植性，提供Mapper.xml支持
+* 为了安全，我们选择Rust，它无GC，并发安全，高性能，同时增加了Mybatis Plus里的那种乐观锁和版本号
+
 ##### py风格sql语法Example
 ``` python
 //执行到远程mysql 并且获取结果。支持serde_json可序列化的任意类型
