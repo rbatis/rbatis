@@ -1,6 +1,7 @@
 use serde::{Deserialize, Serialize};
 use serde_json::Value;
 
+/// the page interface 分页接口
 #[derive(Serialize, Deserialize, Clone, Debug)]
 pub struct IPage<T: Serialize + Clone> {
     pub total: i64,
