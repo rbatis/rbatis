@@ -39,32 +39,16 @@ use crate::tx::propagation::Propagation;
 fn init_rbatis() -> Result<Rbatis, RbatisError> {
     //1 启用日志(可选，不添加则不加载日志库)
     log4rs::init_file("log4rs.yaml", Default::default()).unwrap();
-
     let mut rbatis = Rbatis::new();
-
     //3 加载数据库url name 为空，则默认数据库
     rbatis.load_db_url(MYSQL_URL);//"mysql://root:TEST@localhost:3306/test"
     //4 加载xml配置
-
-    let f = fs::File::open("./src/example/Example_ActivityMapper.xml");
     rbatis.load_xml("Example_ActivityMapper.xml".to_string(), fs::read_to_string("./src/example/Example_ActivityMapper.xml").unwrap());//加载xml数据
     //判断是否配置数据库
     if rbatis.db_driver.contains("localhost") {
         error!("{}", "请修改mysql链接'mysql://root:TEST@localhost:3306/test' 替换为具体的 用户名，密码，ip，和数据库名称");
         return Err(RbatisError::from("请修改mysql链接'mysql://root:TEST@localhost:3306/test' 替换为具体的 用户名，密码，ip，和数据库名称".to_string()));
     }
-
-//    自定义动态数据源路由return 的字符串为 rbatis.db_router 中定义的配置的key(默认""为默认配置)（在此之前需要加载配置rbatis.load_db_url()）
-//    rbatis.router_func = |id| -> String{
-//        info!("匹配路由key  ====>  {}",id);
-//        //例如：你可以自定义读写分离
-//        if id.contains("select"){
-//            //info!("select开头 加载读路由配置");
-//        }else{
-//            //info!("非select开头 加载写路由配置");
-//        }
-//        return "".to_string();
-//    };
     return Ok(rbatis);
 }
 
