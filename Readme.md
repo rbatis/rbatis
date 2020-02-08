@@ -18,7 +18,7 @@
 
 #### 为什么选择Rbatis
 * 为了提供开发效率，可以在sql中使用传统mybatis的if，foreach,trim,where等等功能
-* 为了提供开发效率，可以不写Mapper.xml，可以方便的分页查询，插入，CRUD
+* 为了提供开发效率，传入参数为json即可，可以在sql中写判断，不写Mapper.xml，可以方便的分页查询，插入，CRUD
 * 为了可维护性，可移植性，提供Mapper.xml支持
 * 为了安全，我们选择Rust，它无GC，并发安全，高性能，同时增加了Mybatis Plus里的那种乐观锁和版本号
 
