@@ -21,6 +21,7 @@
 * 为了高安全，我们选择Rust，它无GC，并发安全，高性能，同时增加了session连接池,Mybatis Plus里的那种乐观锁和版本号
 * 为了高并发，我们支持了Tokio和std库的 future语法，即async .await
 * 为了高拓展，我们fork了Rdbc库并且改动作为Rust的驱动程序，支持Mysql，Pg,Sqlite,Tidb,CockroachDB...
+* 不影响主业务的异步日志,执行过程中发出的Log先发送到全局channel，由单独的一个循环线程延迟写日志
 
 ##### py风格sql语法Example
 ``` python
