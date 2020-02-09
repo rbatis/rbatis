@@ -65,7 +65,7 @@ impl Channel {
     }
 
     pub fn send(&self, arg: String) {
-        self.sender.send(arg);
+        self.sender.try_send(arg);
     }
 
     pub fn new() -> Self {
