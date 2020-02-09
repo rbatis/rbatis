@@ -62,7 +62,7 @@ impl Channel {
         thread::spawn(move || {
             // 线程中接收子线程发送的消息并输出
             loop {
-                let mut s = receiver.recv();
+                let  s = receiver.recv();
                 if s.is_ok(){
                     info!("{}", s.unwrap());
                 }
