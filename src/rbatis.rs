@@ -49,21 +49,9 @@ lazy_static! {
 
 pub struct Channel {
     pub sender: mpsc::SyncSender<String>,
-    pub receiver: mpsc::Receiver<String>,
 }
 
 impl Channel {
-    pub fn recv(&self) -> Option<String> {
-        match self.receiver.try_recv() {
-            Ok(r) => {
-                return Some(r);
-            }
-            _ => {
-                return None;
-            }
-        }
-    }
-
     pub fn send(&self, arg: String) {
         self.sender.try_send(arg);
     }
@@ -74,17 +62,15 @@ impl Channel {
         thread::spawn(move || {
             // 线程中接收子线程发送的消息并输出
             loop {
-                let mut s = Rbatis::channel_recv();
-                if !s.is_some() {
-                    thread::sleep(Duration::from_millis(200));
-                } else {
+                let mut s = receiver.recv();
+                if s.is_ok(){
                     info!("{}", s.unwrap());
                 }
             }
         });
         return Self {
             sender,
-            receiver,
+           // receiver,
         };
     }
 }
@@ -132,9 +118,9 @@ impl Rbatis {
         return CHANNEL.lock().unwrap();
     }
 
-    pub fn channel_recv() -> Option<String> {
-        return CHANNEL.lock().unwrap().recv();
-    }
+//    pub fn channel_recv() -> Option<String> {
+//        return CHANNEL.lock().unwrap().recv();
+//    }
 
     pub fn channel_send(arg: String) {
         CHANNEL.lock().unwrap().send(arg);
