@@ -118,14 +118,9 @@ impl Rbatis {
         return CHANNEL.lock().unwrap();
     }
 
-//    pub fn channel_recv() -> Option<String> {
-//        return CHANNEL.lock().unwrap().recv();
-//    }
-
     pub fn channel_send(arg: String) {
         CHANNEL.lock().unwrap().send(arg);
     }
-
 
     pub fn set_enable_log(&mut self, arg: bool) {
         self.enable_log = arg;
