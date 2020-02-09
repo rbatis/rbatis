@@ -48,7 +48,7 @@ lazy_static! {
 }
 
 pub struct Channel {
-    pub sender: mpsc::Sender<String>,
+    pub sender: mpsc::SyncSender<String>,
     pub receiver: mpsc::Receiver<String>,
 }
 
@@ -64,18 +64,18 @@ impl Channel {
         }
     }
 
-    pub fn send(&self,arg:String) {
+    pub fn send(&self, arg: String) {
         self.sender.send(arg);
     }
 
     pub fn new() -> Self {
-        let (tx, rx): (mpsc::Sender<String>, mpsc::Receiver<String>) =
-            mpsc::channel();
+        let (sender, receiver): (mpsc::SyncSender<String>, mpsc::Receiver<String>) =
+            mpsc::sync_channel(100000);
         thread::spawn(move || {
             // 线程中接收子线程发送的消息并输出
             loop {
-                let s = Rbatis::channel_recv();
-                if !s.is_some(){
+                let mut s = Rbatis::channel_recv();
+                if !s.is_some() {
                     thread::sleep(Duration::from_millis(200));
                 } else {
                     info!("{}", s.unwrap());
@@ -83,8 +83,8 @@ impl Channel {
             }
         });
         return Self {
-            sender: tx,
-            receiver: rx,
+            sender,
+            receiver,
         };
     }
 }
@@ -136,8 +136,8 @@ impl Rbatis {
         return CHANNEL.lock().unwrap().recv();
     }
 
-    pub fn channel_send(arg:String) {
-         CHANNEL.lock().unwrap().send(arg);
+    pub fn channel_send(arg: String) {
+        CHANNEL.lock().unwrap().send(arg);
     }
 
 
@@ -182,7 +182,7 @@ impl Rbatis {
     pub fn begin(&mut self, id: &str, propagation_type: Propagation) -> Result<String, RbatisError> {
         self.check_driver()?;
         let session = self.session_factory.get_thread_session(&id.to_string(), self.db_driver.as_str(), self.enable_log)?;
-        session.begin(id,propagation_type)?;
+        session.begin(id, propagation_type)?;
         return Result::Ok(session.id().to_string());
     }
 
