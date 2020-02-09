@@ -118,7 +118,8 @@ impl LocalSession {
         if self.new_local_session.is_some() {
             let new_session = self.new_local_session.as_mut().unwrap();
             if self.enable_log {
-                info!(" [{}] Exec: ==>   Rollback; ", self.session_id);
+                //info!(" [{}] Exec: ==>   Rollback; ", self.session_id);
+                Rbatis::channel_send(format!(" [{}] Exec: ==>   Rollback; ", self.session_id));
             }
             let r = new_session.rollback()?;
             new_session.close();
@@ -157,7 +158,8 @@ impl LocalSession {
         if self.new_local_session.is_some() {
             let new_session = self.new_local_session.as_mut().unwrap();
             if self.enable_log {
-                info!(" [{}] Exec: ==>   Commit; ", self.session_id);
+                //info!(" [{}] Exec: ==>   Commit; ", self.session_id);
+                Rbatis::channel_send(format!(" [{}] Exec: ==>   Commit; ", self.session_id));
             }
             let r = new_session.commit()?;
             new_session.close();
@@ -191,7 +193,8 @@ impl LocalSession {
             return Err(RbatisError::from("[rbatis] session can not query a closed session!".to_string()));
         }
         if self.enable_log {
-            info!(" [{}] Exec: ==>   Begin:{}; ", self.id(), propagation_type);
+            //info!(" [{}] Exec: ==>   Begin:{}; ", self.id(), propagation_type);
+            Rbatis::channel_send(format!(" [{}] Exec: ==>   Begin:{}; ", self.id(), propagation_type));
         }
         if self.id().is_empty() {
             return Err(RbatisError::from("[rbatis] session can not query a empty id session!".to_string()));
