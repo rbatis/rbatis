@@ -1,7 +1,7 @@
 [package]
 name = "rbatis"
 version = "1.0.4"
-description = "an ORM library for easy use"
+description = "Rust ORM Framework High Performance高性能Rust ORM框架(JSON based)"
 authors = ["ce <zhuxiujia@qq.com>"]
 edition = "2018"
 license = "MIT"
