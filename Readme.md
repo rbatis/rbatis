@@ -26,7 +26,7 @@
 ##### 引用项目(Cargo.toml)
 ``` rust
 # add this library,and cargo install
-rbatis = "1.0.4"
+rbatis = "*"
 ```
 
 ##### py风格sql语法Example
