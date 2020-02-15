@@ -2,7 +2,7 @@ use log::{error, info, warn};
 use rbatis_drivers::{Connection, Value};
 use serde::de;
 
-use crate::decode::rdbc_driver_decoder::decode_result_set;
+use crate::decode::driver_decoder::decode_result_set;
 use crate::error::RbatisError;
 use crate::rbatis::Rbatis;
 

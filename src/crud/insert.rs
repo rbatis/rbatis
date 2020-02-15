@@ -6,7 +6,6 @@ use serde_json::Value;
 
 use crate::convert::sql_value_convert::{AND, SkipType, SqlColumnConvert, SqlQuestionConvert, SqlValueConvert};
 use crate::rbatis::Rbatis;
-use crate::utils::rdbc_util::rdbc_vec_to_string;
 use crate::utils::string_util::count_string_num;
 use crate::session_factory::SessionFactory;
 use crate::error::RbatisError;

@@ -8,7 +8,7 @@ use crate::abstract_session::AbstractSession;
 use crate::local_session::LocalSession;
 use crate::tx::propagation::Propagation;
 use crate::utils::driver_util;
-use crate::utils::rdbc_util::to_rdbc_values;
+use crate::utils::rbatis_driver_util::to_driver_values;
 use crate::error::RbatisError;
 
 ///TX is transaction abstraction
@@ -65,7 +65,6 @@ impl Tx for TxImpl {
     }
 
     fn query<T>(&mut self, sql: &str, arg_array: &[rbatis_drivers::Value], conn: &mut Box<dyn Connection>) -> Result<T, RbatisError> where T: de::DeserializeOwned {
-        //let params = to_rdbc_values(arg_array);
         if self.is_close {
             return Err(RbatisError::from("[rbatis] conn is closed!".to_string()));
         }
@@ -73,7 +72,6 @@ impl Tx for TxImpl {
     }
 
     fn exec(&mut self, sql: &str, arg_array: &[rbatis_drivers::Value], conn: &mut Box<dyn Connection>) -> Result<u64, RbatisError> {
-        //let params = to_rdbc_values(arg_array);
         if self.is_close {
             return Err(RbatisError::from("[rbatis] conn is closed!".to_string()));
         }
