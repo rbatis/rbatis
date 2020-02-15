@@ -1,5 +1,5 @@
 use log::{error, info, warn};
-use rdbc::Connection;
+use rbatis_drivers::Connection;
 use serde::de;
 use serde_json::Value;
 use uuid::Uuid;
@@ -62,7 +62,7 @@ impl LocalSession {
         return self.session_id.as_str();
     }
 
-    pub fn query<T>(&mut self, sql: &str, arg_array: &[rdbc::Value]) -> Result<T, RbatisError> where T: de::DeserializeOwned {
+    pub fn query<T>(&mut self, sql: &str, arg_array: &[rbatis_drivers::Value]) -> Result<T, RbatisError> where T: de::DeserializeOwned {
         if self.is_closed == true {
             return Err(RbatisError::from("[rbatis] session can not query a closed session!".to_string()));
         }
@@ -86,7 +86,7 @@ impl LocalSession {
         }
     }
 
-    pub fn exec(&mut self, sql: &str, arg_array: &[rdbc::Value]) -> Result<u64, RbatisError> {
+    pub fn exec(&mut self, sql: &str, arg_array: &[rbatis_drivers::Value]) -> Result<u64, RbatisError> {
         if self.is_closed == true {
             return Err(RbatisError::from("[rbatis] session can not query a closed session!".to_string()));
         }

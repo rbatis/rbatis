@@ -3,6 +3,7 @@ name = "rbatis"
 version = "1.0.0"
 authors = ["ce <zhuxiujia@qq.com>"]
 edition = "2018"
+license = "MIT"
 
 [dependencies]
 chrono = "0.4"
@@ -21,7 +22,7 @@ uuid = { version = "0.8", features = ["serde", "v4"] }
 log = "0.4"
 log4rs = "0.8.3"
 #sql drivers
-rdbc = {git = "https://github.com/rbatis/rdbc",path="/rdbc"}
+rbatis_drivers = "1.0.0"
 
 #web library
 actix-web = "2.0"

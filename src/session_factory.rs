@@ -2,7 +2,7 @@ use std::collections::HashMap;
 use std::thread::ThreadId;
 use std::time::Duration;
 
-use rdbc::Connection;
+use rbatis_drivers::Connection;
 use uuid::Uuid;
 
 use crate::abstract_session::AbstractSession;

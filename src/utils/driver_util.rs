@@ -1,14 +1,14 @@
 use std::error::Error;
 
 use log::{error, info, warn};
-use rdbc::{Connection, Driver};
+use rbatis_drivers::{Connection, Driver};
 
 
 use crate::db_config::DBConfig;
-use rdbc::mysql::MySQLDriver;
-use rdbc::postgres::PostgresDriver;
+use rbatis_drivers::mysql::MySQLDriver;
+use rbatis_drivers::postgres::PostgresDriver;
 use crate::error::RbatisError;
-use rdbc::sqlite::SqliteDriver;
+use rbatis_drivers::sqlite::SqliteDriver;
 
 /// fetch a database connection
 pub fn get_conn_by_link(link: &str) -> Result<Box<dyn Connection>, RbatisError> {
@@ -25,7 +25,7 @@ pub fn get_conn_by_link(link: &str) -> Result<Box<dyn Connection>, RbatisError> 
         }
         return Result::Ok(conn.unwrap());
     } else if link.starts_with("postgres") {
-        let driver: Box<dyn rdbc::Driver> = Box::new(PostgresDriver::new());
+        let driver: Box<dyn rbatis_drivers::Driver> = Box::new(PostgresDriver::new());
         let conn = driver.connect(link);
         if conn.is_err() {
             let info = "[rbatis] connect postgres server fail:".to_string() + format!("{:?}", conn.err().unwrap()).as_str();
@@ -34,7 +34,7 @@ pub fn get_conn_by_link(link: &str) -> Result<Box<dyn Connection>, RbatisError> 
         }
         return Result::Ok(conn.unwrap());
     } else if link.starts_with("sqlite") {
-        let driver: Box<dyn rdbc::Driver> = Box::new(SqliteDriver::new());
+        let driver: Box<dyn rbatis_drivers::Driver> = Box::new(SqliteDriver::new());
         let conn = driver.connect(link);
         if conn.is_err() {
             let info = "[rbatis] connect sqlite server fail:".to_string() + format!("{:?}", conn.err().unwrap()).as_str();
