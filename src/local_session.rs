@@ -191,9 +191,6 @@ impl LocalSession {
             //info!(" [{}] Exec: ==>   Begin:{}; ", self.id(), propagation_type);
             Rbatis::channel_send(format!(" [{}] Exec: ==>   Begin:{}; ", self.id(), propagation_type));
         }
-        if self.id().is_empty() {
-            return Err(RbatisError::from("[rbatis] session can not query a empty id session!".to_string()));
-        }
         match propagation_type {
             //默认，表示如果当前事务存在，则支持当前事务。否则，会启动一个新的事务。have tx ? join : new tx()
             Propagation::REQUIRED => {
