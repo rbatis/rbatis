@@ -23,6 +23,12 @@
 * 为了高拓展，我们fork了Rdbc库并且改动作为Rust的驱动程序，支持Mysql，Pg,Sqlite,Tidb,CockroachDB...
 * 不影响主业务的异步日志,执行过程中发出的Log先发送到全局channel，由单独的一个循环线程延迟写日志
 
+##### 引用项目(Cargo.toml)
+``` rust
+# add this library,and cargo install
+rbatis = "1.0.4"
+```
+
 ##### py风格sql语法Example
 ``` python
 //执行到远程mysql 并且获取结果。支持serde_json可序列化的任意类型
