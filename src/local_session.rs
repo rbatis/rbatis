@@ -5,14 +5,14 @@ use serde_json::Value;
 use uuid::Uuid;
 
 use crate::abstract_session::AbstractSession;
-use crate::decode::rdbc_driver_decoder::decode_result_set;
+use crate::decode::driver_decoder::decode_result_set;
 use crate::example::conf::MYSQL_URL;
 use crate::tx::propagation::Propagation;
 use crate::tx::save_point_stack::SavePointStack;
 use crate::tx::tx::{Tx, TxImpl};
 use crate::tx::tx_stack::TxStack;
-use crate::utils::{driver_util, rdbc_util};
-use crate::utils::rdbc_util::to_rdbc_values;
+use crate::utils::{driver_util, rbatis_driver_util};
+use crate::utils::rbatis_driver_util::{to_driver_values, FormatString};
 use crate::error::RbatisError;
 use crate::rbatis::Rbatis;
 
@@ -70,10 +70,8 @@ impl LocalSession {
             return self.new_local_session.as_mut().unwrap().query(sql, arg_array);
         }
         if self.enable_log {
-//            info!("[{}]Query: ==>  {}", self.id(), sql);
-//            info!("[{}]Args : ==>  {}", self.id(), rdbc_util::rdbc_vec_to_string(arg_array));
             Rbatis::channel_send(format!("[{}]Query: ==>  {}", self.id(), sql));
-            Rbatis::channel_send(format!("[{}]Args : ==>  {}", self.id(), rdbc_util::rdbc_vec_to_string(arg_array)));
+            Rbatis::channel_send(format!("[{}]Args : ==>  {}", self.id(), arg_array.format_string()));
         }
         let (t_opt, _) = self.tx_stack.last_ref_mut();
         if t_opt.is_some() {
@@ -94,11 +92,8 @@ impl LocalSession {
             return self.new_local_session.as_mut().unwrap().query(sql, arg_array);
         }
         if self.enable_log {
-//            info!("[{}]Query: ==>  {}", self.id(), sql);
-//            info!("[{}]Args : ==>  {}", self.id(), rdbc_util::rdbc_vec_to_string(&arg_array));
-
             Rbatis::channel_send(format!("[{}]Query: ==>  {}", self.id(), sql));
-            Rbatis::channel_send(format!("[{}]Args : ==>  {}", self.id(), rdbc_util::rdbc_vec_to_string(arg_array)));
+            Rbatis::channel_send(format!("[{}]Args : ==>  {}", self.id(), arg_array.format_string()));
         }
         let (t_opt, _) = self.tx_stack.last_ref_mut();
         if t_opt.is_some() {
