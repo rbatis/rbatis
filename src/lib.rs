@@ -7,7 +7,7 @@
 
 #[macro_use]
 extern crate lazy_static;
-extern crate rdbc;
+extern crate rbatis_drivers;
 extern crate serde_yaml;
 
 #[macro_use]

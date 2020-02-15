@@ -1,4 +1,4 @@
-use rdbc::Connection;
+use rbatis_drivers::Connection;
 use serde::{Deserialize, Serialize};
 use serde::de;
 use serde_json::Value;
@@ -16,8 +16,8 @@ use crate::error::RbatisError;
 pub trait Tx {
     fn id(&self) -> String;
     fn begin(id: &str, driver: &str, enable_log: bool, conn: &mut Box<dyn Connection>) -> Result<TxImpl, RbatisError>;
-    fn query<T>(&mut self, sql: &str, arg_array: &[rdbc::Value], conn: &mut Box<dyn Connection>) -> Result<T, RbatisError> where T: de::DeserializeOwned;
-    fn exec(&mut self, sql: &str, arg_array: &[rdbc::Value], conn: &mut Box<dyn Connection>) -> Result<u64, RbatisError>;
+    fn query<T>(&mut self, sql: &str, arg_array: &[rbatis_drivers::Value], conn: &mut Box<dyn Connection>) -> Result<T, RbatisError> where T: de::DeserializeOwned;
+    fn exec(&mut self, sql: &str, arg_array: &[rbatis_drivers::Value], conn: &mut Box<dyn Connection>) -> Result<u64, RbatisError>;
     fn rollback(&mut self, conn: &mut Box<dyn Connection>) -> Result<u64, RbatisError>;
     fn commit(&mut self, conn: &mut Box<dyn Connection>) -> Result<u64, RbatisError>;
     fn close(&mut self);
@@ -64,7 +64,7 @@ impl Tx for TxImpl {
         return self.id.clone();
     }
 
-    fn query<T>(&mut self, sql: &str, arg_array: &[rdbc::Value], conn: &mut Box<dyn Connection>) -> Result<T, RbatisError> where T: de::DeserializeOwned {
+    fn query<T>(&mut self, sql: &str, arg_array: &[rbatis_drivers::Value], conn: &mut Box<dyn Connection>) -> Result<T, RbatisError> where T: de::DeserializeOwned {
         //let params = to_rdbc_values(arg_array);
         if self.is_close {
             return Err(RbatisError::from("[rbatis] conn is closed!".to_string()));
@@ -72,7 +72,7 @@ impl Tx for TxImpl {
         return conn.query_prepare(self.enable_log, sql, &arg_array);
     }
 
-    fn exec(&mut self, sql: &str, arg_array: &[rdbc::Value], conn: &mut Box<dyn Connection>) -> Result<u64, RbatisError> {
+    fn exec(&mut self, sql: &str, arg_array: &[rbatis_drivers::Value], conn: &mut Box<dyn Connection>) -> Result<u64, RbatisError> {
         //let params = to_rdbc_values(arg_array);
         if self.is_close {
             return Err(RbatisError::from("[rbatis] conn is closed!".to_string()));

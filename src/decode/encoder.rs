@@ -1,4 +1,4 @@
-use rdbc::{DataType, ResultSetMetaData, Error, ResultSet};
+use rbatis_drivers::{DataType, ResultSetMetaData, Error, ResultSet};
 use serde_json::{json,Value, Number};
 
 pub fn encode_to_value(arg: &mut dyn ResultSet) -> Vec<Value> {

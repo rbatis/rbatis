@@ -18,7 +18,7 @@ use actix_web::{App, HttpServer, Responder, web};
 use hyper::{Body, Request, Response, Server};
 use hyper::service::{make_service_fn, service_fn};
 use log::{error, info, warn};
-use rdbc::{DataType, Driver, ResultSet, ResultSetMetaData};
+use rbatis_drivers::{DataType, Driver, ResultSet, ResultSetMetaData};
 use serde_json::{json, Number, Value};
 use tokio::task;
 

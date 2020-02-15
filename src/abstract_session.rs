@@ -1,5 +1,5 @@
 use log::{error, info, warn};
-use rdbc::{Connection, Value};
+use rbatis_drivers::{Connection, Value};
 use serde::de;
 
 use crate::decode::rdbc_driver_decoder::decode_result_set;
@@ -8,22 +8,22 @@ use crate::rbatis::Rbatis;
 
 ///查询，执行接口
 pub trait AbstractSession {
-    fn query_prepare<T>(&mut self, enable_log: bool, sql: &str, arg_array: &[rdbc::Value]) -> Result<T, RbatisError> where T: de::DeserializeOwned;
-    fn exec_prepare(&mut self, enable_log: bool, sql: &str, arg_array: &[rdbc::Value]) -> Result<u64,  RbatisError>;
-    fn query<T>(&mut self, enable_log: bool, sql: &str, arg_array: &[rdbc::Value]) -> Result<T, RbatisError> where T: de::DeserializeOwned;
-    fn exec(&mut self, enable_log: bool, sql: &str, arg_array: &[rdbc::Value]) -> Result<u64,  RbatisError>;
+    fn query_prepare<T>(&mut self, enable_log: bool, sql: &str, arg_array: &[rbatis_drivers::Value]) -> Result<T, RbatisError> where T: de::DeserializeOwned;
+    fn exec_prepare(&mut self, enable_log: bool, sql: &str, arg_array: &[rbatis_drivers::Value]) -> Result<u64,  RbatisError>;
+    fn query<T>(&mut self, enable_log: bool, sql: &str, arg_array: &[rbatis_drivers::Value]) -> Result<T, RbatisError> where T: de::DeserializeOwned;
+    fn exec(&mut self, enable_log: bool, sql: &str, arg_array: &[rbatis_drivers::Value]) -> Result<u64,  RbatisError>;
 
-    fn query_custom<T>(&mut self, enable_log: bool, sql: &str, arg_array: &[rdbc::Value], is_prepare: bool) -> Result<T, RbatisError> where T: de::DeserializeOwned;
-    fn exec_custom(&mut self, enable_log: bool, sql: &str, arg_array: &[rdbc::Value], is_prepare: bool) -> Result<u64,  RbatisError>;
+    fn query_custom<T>(&mut self, enable_log: bool, sql: &str, arg_array: &[rbatis_drivers::Value], is_prepare: bool) -> Result<T, RbatisError> where T: de::DeserializeOwned;
+    fn exec_custom(&mut self, enable_log: bool, sql: &str, arg_array: &[rbatis_drivers::Value], is_prepare: bool) -> Result<u64,  RbatisError>;
 }
 
 ///查询和执行，带有prepare的是已编译的sql。
 impl AbstractSession for Box<dyn Connection> {
-    fn query_prepare<T>(&mut self, enable_log: bool, sql: &str, arg_array: &[rdbc::Value]) -> Result<T, RbatisError> where T: de::DeserializeOwned {
+    fn query_prepare<T>(&mut self, enable_log: bool, sql: &str, arg_array: &[rbatis_drivers::Value]) -> Result<T, RbatisError> where T: de::DeserializeOwned {
         return self.query_custom(enable_log, sql, arg_array, true);
     }
 
-    fn exec_prepare(&mut self, enable_log: bool, sql: &str, arg_array: &[rdbc::Value]) -> Result<u64,  RbatisError> {
+    fn exec_prepare(&mut self, enable_log: bool, sql: &str, arg_array: &[rbatis_drivers::Value]) -> Result<u64,  RbatisError> {
         return self.exec_custom(enable_log, sql, arg_array, true);
     }
 
@@ -35,7 +35,7 @@ impl AbstractSession for Box<dyn Connection> {
         return self.exec_custom(enable_log, sql, arg_array, false);
     }
 
-    fn query_custom<T>(&mut self, enable_log: bool, sql: &str, arg_array: &[rdbc::Value], is_prepare: bool) -> Result<T, RbatisError> where T: de::DeserializeOwned {
+    fn query_custom<T>(&mut self, enable_log: bool, sql: &str, arg_array: &[rbatis_drivers::Value], is_prepare: bool) -> Result<T, RbatisError> where T: de::DeserializeOwned {
         let create_result;
         if is_prepare {
             create_result = self.prepare(sql);
@@ -58,7 +58,7 @@ impl AbstractSession for Box<dyn Connection> {
         return result;
     }
 
-    fn exec_custom(&mut self, enable_log: bool, sql: &str, arg_array: &[rdbc::Value], is_prepare: bool) -> Result<u64,  RbatisError> {
+    fn exec_custom(&mut self, enable_log: bool, sql: &str, arg_array: &[rbatis_drivers::Value], is_prepare: bool) -> Result<u64,  RbatisError> {
         let create_result;
         if is_prepare {
             create_result = self.prepare(sql);
