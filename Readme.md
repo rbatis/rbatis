@@ -118,7 +118,7 @@ fn main()  {
     //first install log
     log4rs::init_file("log4rs.yaml", Default::default()).unwrap();
     // you may need install your mysql or change database url.
-    Rbatis::singleton().db_driver = "mysql://root:TEST@115.220.9.139:3306/test".to_string();
+    Rbatis::singleton().db_driver = "mysql://root:123456@127.0.0.1:3306/test".to_string();
     let data:Result<serde_json::Value,RbatisError>=Rbatis::singleton().raw_sql("","select * from biz_activity;");
     println!("{}",data.ok().unwrap());
 }
