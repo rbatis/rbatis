@@ -52,7 +52,8 @@ impl SessionFactory for ConnPoolSessionFactory {
                 //check alive
                 if !session.is_valid() {
                     //unvalid
-                    session.conn=Some(driver_util::get_conn_by_link(driver)?);
+                    session.conn = None;
+                    session.conn = Some(driver_util::get_conn_by_link(driver)?);
                 } else {
                     session.check_alive_time = now;
                 }
@@ -64,8 +65,6 @@ impl SessionFactory for ConnPoolSessionFactory {
             return Ok(self.data.get_mut(id).unwrap());
         }
     }
-
-
 
 
     fn remove(&mut self, id: &String) {
