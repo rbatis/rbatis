@@ -1,6 +1,7 @@
 use std::collections::HashMap;
+use std::ops::Sub;
 use std::thread::ThreadId;
-use std::time::Duration;
+use std::time::{Duration, SystemTime};
 
 use rbatis_drivers::Connection;
 use uuid::Uuid;
@@ -12,7 +13,7 @@ use crate::utils::driver_util;
 
 ///链接工厂
 pub trait SessionFactory {
-    fn get_thread_session(&mut self, id: &String, driver: &str,enable_log:bool) -> Result<&mut LocalSession, RbatisError>;
+    fn get_thread_session(&mut self, id: &String, driver: &str, enable_log: bool) -> Result<&mut LocalSession, RbatisError>;
     fn remove(&mut self, id: &String);
     fn set_wait_type(&mut self, t: WaitType);
     fn wait_type(&self) -> WaitType;
@@ -31,6 +32,7 @@ pub struct ConnPoolSessionFactory {
     pub max_conn: usize,
     pub max_wait_ms: u64,
     pub wait_type: WaitType,
+    pub max_check_alive_sec: u64,//default 10 * 60
 }
 
 impl Drop for ConnPoolSessionFactory {
@@ -40,17 +42,31 @@ impl Drop for ConnPoolSessionFactory {
 }
 
 impl SessionFactory for ConnPoolSessionFactory {
-    fn get_thread_session(&mut self, id: &String, driver: &str,enable_log:bool) -> Result<&mut LocalSession, RbatisError> {
+    fn get_thread_session(&mut self, id: &String, driver: &str, enable_log: bool) -> Result<&mut LocalSession, RbatisError> {
         self.gc();
         let item = self.data.get_mut(id);
         if item.is_some() {
-            return Ok(self.data.get_mut(id).unwrap());
+            let session = self.data.get_mut(id).unwrap();
+            let now = SystemTime::now();
+            if now.sub(Duration::from_secs(self.max_check_alive_sec)).gt(&session.check_alive_time) {
+                //check alive
+                if !session.is_valid() {
+                    //unvalid
+                    session.conn=Some(driver_util::get_conn_by_link(driver)?);
+                } else {
+                    session.check_alive_time = now;
+                }
+            }
+            return Ok(session);
         } else {
-            let session = LocalSession::new(id, driver, None,enable_log)?;
+            let session = LocalSession::new(id, driver, None, enable_log)?;
             self.data.insert(id.to_string(), session);
             return Ok(self.data.get_mut(id).unwrap());
         }
     }
+
+
+
 
     fn remove(&mut self, id: &String) {
         self.data.remove(id);
@@ -67,12 +83,13 @@ impl SessionFactory for ConnPoolSessionFactory {
 
 impl ConnPoolSessionFactory {
     /// clean_no_tx_link:是否清理缓存无事务的链接，启用节省内存但是每个请求重复链接，不启用则复用链接性能高
-    pub fn new(max_conn: usize, max_wait_ms: u64, wait_type: WaitType) -> Self {
+    pub fn new(max_conn: usize, max_wait_ms: u64, wait_type: WaitType, max_check_alive_sec: u64) -> Self {
         return Self {
             data: HashMap::new(),
             max_conn,
-            max_wait_ms: 0,
+            max_wait_ms,
             wait_type,
+            max_check_alive_sec,
         };
     }
     ///清理所有不含事务的session

@@ -62,15 +62,15 @@ impl Channel {
         thread::spawn(move || {
             // 线程中接收子线程发送的消息并输出
             loop {
-                let  s = receiver.recv();
-                if s.is_ok(){
+                let s = receiver.recv();
+                if s.is_ok() {
                     info!("{}", s.unwrap());
                 }
             }
         });
         return Self {
             sender,
-           // receiver,
+            // receiver,
         };
     }
 }
@@ -102,7 +102,7 @@ impl Rbatis {
             mapper_map: HashMap::new(),
             engine: RbatisEngine::new(),
             db_driver: "".to_string(),
-            session_factory: ConnPoolSessionFactory::new(20, 10, WaitType::Thread),
+            session_factory: ConnPoolSessionFactory::new(20, 10, WaitType::Thread, 15 * 60),
             enable_log: true,
             async_mode: false,
             max_conn: 20,

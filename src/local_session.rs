@@ -1,3 +1,5 @@
+use std::time::SystemTime;
+
 use log::{error, info, warn};
 use rbatis_drivers::Connection;
 use serde::de;
@@ -6,15 +8,15 @@ use uuid::Uuid;
 
 use crate::abstract_session::AbstractSession;
 use crate::decode::driver_decoder::decode_result_set;
+use crate::error::RbatisError;
 use crate::example::conf::MYSQL_URL;
+use crate::rbatis::Rbatis;
 use crate::tx::propagation::Propagation;
 use crate::tx::save_point_stack::SavePointStack;
 use crate::tx::tx::{Tx, TxImpl};
 use crate::tx::tx_stack::TxStack;
 use crate::utils::{driver_util, rbatis_driver_util};
-use crate::utils::rbatis_driver_util::{to_driver_values, FormatString};
-use crate::error::RbatisError;
-use crate::rbatis::Rbatis;
+use crate::utils::rbatis_driver_util::{FormatString, to_driver_values};
 
 pub struct LocalSession {
     pub session_id: String,
@@ -25,6 +27,7 @@ pub struct LocalSession {
     pub new_local_session: Option<Box<LocalSession>>,
     pub enable_log: bool,
     pub conn: Option<Box<dyn Connection>>,
+    pub check_alive_time: SystemTime
 }
 
 unsafe impl Sync for LocalSession{}
@@ -47,6 +50,7 @@ impl LocalSession {
             new_local_session: None,
             enable_log: enable_log,
             conn: conn,
+            check_alive_time: SystemTime::now()
         });
     }
 
