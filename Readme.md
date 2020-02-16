@@ -105,11 +105,27 @@ root:
 ##### Cargo.toml 加入以下代码
 ```$xslt
 [dependencies]
+rbatis = "*"
 log = "0.4"
 log4rs = "0.8.3"
-rbatis = {git = "https://github.com/rbatis/rbatis"}
 ```
-#### main.rs 加入以下代码
+#### 简单使用
+``` rust
+use rbatis::rbatis::Rbatis;
+use rbatis::error::RbatisError;
+
+fn main()  {
+    //first install log
+    log4rs::init_file("log4rs.yaml", Default::default()).unwrap();
+    // you may need install your mysql or change database url.
+    Rbatis::singleton().db_driver = "mysql://root:TEST@115.220.9.139:3306/test".to_string();
+    let data:Result<serde_json::Value,RbatisError>=Rbatis::singleton().raw_sql("","select * from biz_activity;");
+    println!("{}",data.ok().unwrap());
+}
+```
+
+
+#### xml使用方法
 ``` rust
 use crate::core::rbatis::Rbatis;
 use serde_json::{json, Value, Number};
