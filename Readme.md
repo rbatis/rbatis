@@ -103,7 +103,7 @@ root:
 </mapper>
 ``` 
 ##### Cargo.toml 加入以下代码
-```$xslt
+``` toml
 [dependencies]
 rbatis = "*"
 log = "0.4"
