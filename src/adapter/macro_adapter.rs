@@ -25,7 +25,7 @@ pub fn parser_sql(source: &str) -> fn(arg: &serde_json::Value) -> (String,Vec<se
             let name= arg_map.get("name").unwrap();
             args.push(name.clone());
             //create sql line
-            sql = sql + "  AND name = ?" //replace
+            sql = sql + "  AND name = ?"; //replace
         }
         return (sql,args);
     }
