@@ -23,7 +23,7 @@
 * 为了高拓展，我们fork了Rdbc库并且改动作为Rust的驱动程序，支持Mysql，Pg,Sqlite,Tidb,CockroachDB...
 * 不影响主业务的异步日志,执行过程中发出的Log先发送到全局channel，由单独的一个循环线程延迟写日志
 
-##### 引用项目(Cargo.toml)
+##### 首先(Cargo.toml)添加项目依赖
 ``` rust
 # add this library,and cargo install
 rbatis = "*"
