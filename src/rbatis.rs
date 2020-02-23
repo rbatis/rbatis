@@ -91,8 +91,6 @@ pub struct Rbatis {
     pub max_conn: usize,
     //允许日志输出，禁用此项可减少IO,提高性能
     pub enable_log: bool,
-    //true异步模式，false线程模式
-    pub async_mode: bool,
 }
 
 impl Rbatis {
@@ -104,7 +102,6 @@ impl Rbatis {
             db_driver: "".to_string(),
             session_factory: ConnPoolSessionFactory::new(20, 10, WaitType::Thread, 15 * 60),
             enable_log: true,
-            async_mode: false,
             max_conn: 20,
         };
     }
