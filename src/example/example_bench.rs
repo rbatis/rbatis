@@ -49,7 +49,7 @@ fn bench_main() {
 
 ///use Time: 0.202 s,each:2020 nano/op
 ///use TPS: 495049.50495049503 TPS/s
-//cargo test --release --color=always --package rbatis --bin rbatis example::example_bench::bench_main --all-features -- --nocapture --exact
+//cargo.exe test --release --color=always --package rbatis --lib example::example_bench::bench_example --all-features -- --nocapture --exact
 #[test]
 fn bench_example() {
     let mut rbatis=Rbatis::new();
