@@ -2,6 +2,7 @@
 name = "rbatis"
 version = "1.0.5"
 description = "Rust ORM Framework High Performance高性能Rust ORM框架(JSON based)"
+readme = "README.md"
 authors = ["ce <zhuxiujia@qq.com>"]
 edition = "2018"
 license = "MIT"
