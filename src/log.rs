@@ -64,7 +64,8 @@ impl log::Log for Logger {
 
 static LOGGER: Logger = Logger {};
 
-pub fn init(log_file_path: &str) -> Result<(), SetLoggerError> {
+/// 初始化日志文件路径
+pub fn init_log(log_file_path: &str) -> Result<(), SetLoggerError> {
     let log_path = log_file_path.to_owned();
     std::thread::spawn(move || {
         let mut file = OpenOptions::new().create(true).append(true).open(log_path.as_str());
@@ -92,14 +93,14 @@ pub fn init(log_file_path: &str) -> Result<(), SetLoggerError> {
 
 #[test]
 pub fn test_log() {
-    init("rbatis.log");
+    init_log("rbatis.log");
     info!("Commencing yak shaving");
     std::thread::sleep(Duration::from_secs(5));
 }
 
 #[test]
 pub fn bench_log() {
-    init("rbatis.log");
+    init_log("rbatis.log");
     let total = 1000;
     let now = SystemTime::now();
     for i in 0..total {
