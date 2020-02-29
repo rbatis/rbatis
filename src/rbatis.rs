@@ -111,10 +111,6 @@ impl Rbatis {
         return RBATIS.lock().unwrap();
     }
 
-    pub fn channel<'a>() -> MutexGuard<'a, Channel> {
-        return CHANNEL.lock().unwrap();
-    }
-
     pub fn channel_send(arg: String) {
         CHANNEL.lock().unwrap().send(arg);
     }
