@@ -49,32 +49,15 @@ rbatis = "*"
     .unwrap();
 ```
 
-#### 日志系统(这里举例使用log4rs.yaml)
+#### 日志系统(这里举例使用fast_log)
 ``` rust
- use log4rs::init_file;
  //main函数加入
- fn main(){
-   log4rs::init_file("log4rs.yaml", Default::default()).unwrap();
+ use log::{error, info, warn};
+ fn  main(){
+     fast_log::init_log("requests.log");
+     info!("Commencing yak shaving");
  }
 ```
-##### 定义log4rs.yaml
-``` yaml
-refresh_rate: 1 seconds
-appenders:
-  stdout:
-    kind: console
-  requests:
-    kind: file
-    path: "requests.log"
-    encoder:
-      pattern: "{d} - {m}{n}"
-root:
-  level: info
-  appenders:
-    - stdout
-    - requests
-```
-
 
 ##### xml代码Example
 ``` xml
@@ -107,7 +90,7 @@ root:
 [dependencies]
 rbatis = "*"
 log = "0.4"
-log4rs = "0.8.3"
+fast_log="1.0.1"
 ```
 #### 简单使用
 ``` rust
@@ -116,7 +99,7 @@ use rbatis::error::RbatisError;
 
 fn main()  {
     //first install log
-    log4rs::init_file("log4rs.yaml", Default::default()).unwrap();
+    fast_log::log::init_log("requests.log").unwrap();
     // you may need install your mysql or change database url.
     Rbatis::singleton().db_driver = "mysql://root:123456@127.0.0.1:3306/test".to_string();
     let data:Result<serde_json::Value,RbatisError>=Rbatis::singleton().raw_sql("","select * from biz_activity;");
@@ -140,7 +123,7 @@ pub struct Activity {
 }
 
 fn main() {
-log4rs::init_file("log4rs.yaml", Default::default()).unwrap();//1 启用日志(可选，不添加则不加载日志库)
+ fast_log::log::init_log("requests.log").unwrap();//1 启用日志(可选，不添加则不加载日志库)
 let mut rbatis = Rbatis::new();//2 初始化rbatis,也可以使用全局单例Rbatis::singleton()
 rbatis.load_db_url("mysql://root:TEST@localhost:3306/test");//3 加载数据库url
 rbatis.load_xml("Example_ActivityMapper.xml".to_string(),fs::read_to_string("./src/example/Example_ActivityMapper.xml").unwrap());//4 加载xml配置
@@ -227,7 +210,7 @@ async fn index() -> impl Responder {
 #[actix_rt::main]
 async fn main() -> std::io::Result<()> {
     //1 启用日志(可选，不添加则不加载日志库)
-        log4rs::init_file("log4rs.yaml", Default::default()).unwrap();
+        fast_log::log::init_log("requests.log").unwrap();;
         //2 加载数据库url name 为空，则默认数据库
         Rbatis::singleton().load_db_url(MYSQL_URL);//"mysql://root:TEST@localhost:3306/test"
         //3 加载xml配置

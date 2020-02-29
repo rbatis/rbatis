@@ -11,7 +11,6 @@ use std::thread;
 use std::time::Duration;
 
 use log::{error, info, warn};
-use log4rs::init_file;
 use serde::{de, Serialize};
 use serde::de::DeserializeOwned;
 use serde_json::{Number, Value};
