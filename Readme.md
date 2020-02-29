@@ -90,7 +90,7 @@ rbatis = "*"
 [dependencies]
 rbatis = "*"
 log = "0.4"
-fast_log="1.0.1"
+fast_log="1.0.2"
 ```
 #### 简单使用
 ``` rust
