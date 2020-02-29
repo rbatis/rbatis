@@ -17,7 +17,7 @@ use std::time::SystemTime;
 
 //#[async_std::main]
 //async fn main() {
-//    log4rs::init_file("log4rs.yaml", Default::default()).unwrap();
+//     fast_log::log::init_log("requests.log").unwrap();
 //    info!("=====================================================================================");
 //    error!("================================= [rbatis] now is started============================");
 //    warn!("=====================================================================================");
