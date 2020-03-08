@@ -407,7 +407,10 @@ pub fn bench_query_local() {
     let total = 10000;
     let start = SystemTime::now();
     init_singleton_rbatis();
+    //disable log
     Rbatis::singleton().enable_log = false;
+    //or you can disable debug mod in fastlog,so log just write to file ,not print to console!
+    fast_log::log::DEBUG_MODE.store(false,std::sync::atomic::Ordering::Relaxed);
     for i in 0..total {
         let data: Result<Activity, RbatisError> = Rbatis::singleton().raw_sql("", "select * from biz_activity where id  = '2';");
     }
