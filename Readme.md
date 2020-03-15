@@ -286,5 +286,5 @@ async fn main() -> std::io::Result<()> {
 不支持，应该坚持去IOE
 
          
-## 欢迎右上角点下 star 或者 微信 捐赠 和 赞助~
+## 欢迎右上角star或者微信捐赠~
 ![Image text](https://zhuxiujia.github.io/gomybatis.io/assets/wx_account.jpg)
