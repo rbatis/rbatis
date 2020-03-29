@@ -16,6 +16,7 @@ pub fn find_slow_sql(log_path: &str) -> LinkedList<SqlLog>{
     let mut use_time_vec = LinkedList::new();
     let input_opt = File::open(log_path);
     if input_opt.is_err(){
+        println!("{}",input_opt.err().unwrap());
         return use_time_vec;
     }
     let buffered = BufReader::new(input_opt.unwrap());
@@ -53,6 +54,6 @@ pub fn find_slow_sql(log_path: &str) -> LinkedList<SqlLog>{
 
 #[test]
 pub fn test_find_slow_sql() {
-    let  use_time_vec= find_slow_sql("D:/RustProject/rbatis/requests.log");
+    let  use_time_vec= find_slow_sql("../rbatis/requests.log");
     println!("top use time: {:?}", use_time_vec);
 }
