@@ -369,7 +369,7 @@ async fn handle_root(_: Request<Body>) -> Result<Response<Body>, Infallible> {
     Ok(Response::new(serde_json::to_string(&data).unwrap().into()))
 }
 
-/// cargo test --release --color=always --package rbatis --lib example::example_test::test_web --all-features -- --nocapture --exact
+/// cargo test --release --no-run --package rbatis --lib example::example_test::main_hyper --all-features -- --nocapture --exact
 #[tokio::main]
 #[test]
 async fn main_hyper() {
