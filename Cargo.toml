@@ -30,4 +30,4 @@ rbatis_drivers = "1.0.1"
 actix-web = "2.0"
 actix-rt = "1.0"
 tokio = { version = "0.2", features = ["full"] }
-hyper = "0.13"
+hyper = "*"

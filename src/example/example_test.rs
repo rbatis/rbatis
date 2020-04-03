@@ -349,6 +349,7 @@ async fn index() -> impl Responder {
 }
 
 #[actix_rt::main]
+#[test]
 async fn main_actix() -> std::io::Result<()> {
     HttpServer::new(move || {
         App::new()
@@ -364,28 +365,14 @@ async fn handle_root(_: Request<Body>) -> Result<Response<Body>, Infallible> {
     //let data: Result<Activity, RbatisError> = Rbatis::singleton_raw_sql("", "select * from biz_activity where id  = '2';");
     //写法2 注意：适用于超级耗时的任务
     let data: Result<Activity, RbatisError> = Rbatis::async_raw_sql("", "select * from biz_activity where id  = '2';").await;
-    println!("{:?}", &data);
+    //println!("{:?}", &data);
     Ok(Response::new(serde_json::to_string(&data).unwrap().into()))
 }
 
-#[tokio::main]
-async fn main_hyper() {
-    let addr = SocketAddr::from(([127, 0, 0, 1], 8000));
-
-    let make_svc = make_service_fn(|_conn| async {
-        Ok::<_, Infallible>(service_fn(handle_root))
-    });
-
-    let server = Server::bind(&addr).serve(make_svc);
-
-    if let Err(e) = server.await {
-        eprintln!("server error: {}", e);
-    }
-}
-
 /// cargo test --release --color=always --package rbatis --lib example::example_test::test_web --all-features -- --nocapture --exact
+#[tokio::main]
 #[test]
-pub fn test_web() {
+async fn main_hyper() {
     //初始化rbatis
     if MYSQL_URL.contains("localhost") {
         return;
@@ -393,10 +380,15 @@ pub fn test_web() {
     // 设置延迟类型
     init_singleton_rbatis();
     Rbatis::singleton().set_wait_type(WaitType::Tokio);
-    main_hyper();//hyper
-    //main_actix();//actix
+    let addr = SocketAddr::from(([127, 0, 0, 1], 8000));
+    let make_svc = make_service_fn(|_conn| async {
+        Ok::<_, Infallible>(service_fn(handle_root))
+    });
+    let server = Server::bind(&addr).serve(make_svc);
+    if let Err(e) = server.await {
+        eprintln!("server error: {}", e);
+    }
 }
-
 
 ///cargo.exe test --release --color=always --package rbatis --lib example::example_test::bench_query_local --all-features -- --nocapture --exact
 #[test]
