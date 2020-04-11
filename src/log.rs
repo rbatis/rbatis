@@ -39,7 +39,7 @@ impl SimpleLogger {
 }
 
 lazy_static! {
-   static ref LOG:SimpleLogger=SimpleLogger::new();
+   static ref LOG:Mutex<SimpleLogger>= Mutex::new(SimpleLogger::new());
 }
 
 pub struct Logger {}
@@ -52,7 +52,13 @@ impl log::Log for Logger {
         if self.enabled(record.metadata()) {
             let local: DateTime<Local> = Local::now();
             let data = format!("{} - {} - {}", local, record.level(), record.args());
-            LOG.send(data);
+            match LOG.lock(){
+                Ok(t)=>{
+                    t.send(data);
+                }
+                _=>{
+                }
+            }
         }
     }
     fn flush(&self) {}
