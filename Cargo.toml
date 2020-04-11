@@ -24,7 +24,7 @@ uuid = { version = "0.8", features = ["serde", "v4"] }
 log = "0.4"
 fast_log = "1.0.3"
 #sql drivers
-rbatis_drivers = "1.0.1"
+rbatis_drivers = "1.0.2"
 
 #web library
 actix-web = "2.0"

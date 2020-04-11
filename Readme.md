@@ -12,17 +12,9 @@
 * 多功能，乐观锁插件+逻辑删除插件+分页插件+Py风格Sql+基本的Mybatis功能
 * 支持future,async await（理论上，假设严格按照async_std库替代所有io操作，那么并发量可远远超过go语言）
 * 日志支持,可自定义具体日志（基于标准库log(独立于任何特定的日志记录库)，日志可选任意第三方库实现）
+* 使用百分百的安全代码实现(lib.rs加入了#![forbid(unsafe_code)] 禁止不安全代码)
 * [点击查看-示例代码](https://github.com/rbatis/rbatis/blob/master/src/example/example_test.rs)
 
-
-#### 为什么选择Rbatis
-* 为了高开发效率，可以在sql中使用传统mybatis的if，foreach,trim,where等等功能
-* 为了高开发效率，传入参数为json即可，可以在sql中写判断，不写Mapper.xml，可以方便的分页查询，插入，CRUD
-* 为了可维护，可移植性，提供Mapper.xml支持
-* 为了高安全，我们选择Rust，它无GC，并发安全，高性能，同时增加了session连接池,Mybatis Plus里的那种乐观锁和版本号
-* 为了高并发，我们支持了Tokio和std库的 future语法，即async .await
-* 为了高拓展，我们fork了Rdbc库并且改动作为Rust的驱动程序，支持Mysql，Pg,Sqlite,Tidb,CockroachDB...
-* 不影响主业务的异步日志,执行过程中发出的Log先发送到全局channel，由单独的一个循环线程延迟写日志
 
 ##### 首先(Cargo.toml)添加项目依赖
 ``` rust
@@ -234,7 +226,6 @@ async fn main() -> std::io::Result<()> {
 | ------ | ------ |
 | Mysql            | √     |   
 | Postgres         | √     |  
-| SQLite           | √     |  
 | TiDB             | √     |
 | CockroachDB      | √     |
 
