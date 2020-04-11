@@ -408,3 +408,12 @@ pub fn bench_query_local() {
     }
     count_time_tps(total, start);
 }
+
+
+#[test]
+pub fn test_log(){
+    //1 启用日志(可选，不添加则不加载日志库)
+    fast_log::log::init_log("requests.log").unwrap();
+    info!("print data");
+    sleep(Duration::from_secs(1));
+}

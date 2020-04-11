@@ -32,4 +32,3 @@ pub mod local_session;
 pub mod abstract_session;
 pub mod session_factory;
 pub mod adapter;
-pub mod log;
