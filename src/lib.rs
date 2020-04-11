@@ -3,7 +3,7 @@
 #![allow(unused_variables)]
 #![allow(unused_assignments)]
 #![allow(unused_must_use)]
-#[forbid(unsafe_code)]
+#![forbid(unsafe_code)]
 
 #[macro_use]
 extern crate lazy_static;
