@@ -21,10 +21,6 @@ pub struct SimpleLogger {
     pub recv: std::sync::mpsc::Receiver<String>,
 }
 
-unsafe impl Send for SimpleLogger {}
-
-unsafe impl Sync for SimpleLogger {}
-
 impl SimpleLogger {
     pub fn new() -> Self {
         let (s, r) = std::sync::mpsc::channel();

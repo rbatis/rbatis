@@ -30,9 +30,6 @@ pub struct LocalSession {
     pub check_alive_time: SystemTime
 }
 
-unsafe impl Sync for LocalSession{}
-unsafe impl Send for LocalSession{}
-
 
 impl LocalSession {
     pub fn new(id: &str, driver: &str, conn_opt: Option<Box<dyn Connection>>,enable_log:bool) -> Result<Self, RbatisError> {
