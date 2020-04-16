@@ -71,6 +71,7 @@ fn test_insert() {
     //初始化rbatis
     let rbatis_opt = init_rbatis();
     if rbatis_opt.is_err() {
+        println!("{}",rbatis_opt.err().unwrap());
         return;
     }
     let mut rbatis = rbatis_opt.unwrap();
@@ -101,6 +102,7 @@ fn test_delete() {
     //初始化rbatis
     let rbatis_opt = init_rbatis();
     if rbatis_opt.is_err() {
+        println!("{}",rbatis_opt.err().unwrap());
         return;
     }
     let mut rbatis = rbatis_opt.unwrap();
@@ -113,6 +115,7 @@ fn test_update() {
     //初始化rbatis
     let rbatis_opt = init_rbatis();
     if rbatis_opt.is_err() {
+        println!("{}",rbatis_opt.err().unwrap());
         return;
     }
     let mut rbatis = rbatis_opt.unwrap();
@@ -147,6 +150,7 @@ fn test_update_array() {
     //初始化rbatis
     let rbatis_opt = init_rbatis();
     if rbatis_opt.is_err() {
+        println!("{}",rbatis_opt.err().unwrap());
         return;
     }
     let mut rbatis = rbatis_opt.unwrap();
@@ -190,6 +194,7 @@ fn test_exec_sql() {
     //初始化rbatis
     let rbatis = init_rbatis();
     if rbatis.is_err() {
+        println!("{}",rbatis.err().unwrap());
         return;
     }
     //执行到远程mysql 并且获取结果,Result<serde_json::Value, RbatisError>,或者 Result<String, RbatisError> 等任意类型
@@ -230,6 +235,7 @@ fn test_exec_select_page_custom() {
     //初始化rbatis
     let rbatis = init_rbatis();
     if rbatis.is_err() {
+        println!("{}",rbatis.err().unwrap());
         return;
     }
     //执行到远程mysql 并且获取结果,Result<serde_json::Value, RbatisError>,或者 Result<String, RbatisError> 等任意类型
@@ -249,6 +255,7 @@ fn test_exec_py_sql() {
     //初始化rbatis
     let rbatis = init_rbatis();
     if rbatis.is_err() {
+        println!("{}",rbatis.err().unwrap());
         return;
     }
     //执行到远程mysql 并且获取结果,Result<serde_json::Value, RbatisError>,或者 Result<String, RbatisError> 等任意类型
@@ -320,6 +327,7 @@ impl Service for ServiceImpl {
 #[test]
 pub fn test_service() {
     if MYSQL_URL.contains("localhost") {
+        println!("no database config in MYSQL_URL");
         return;
     }
     init_singleton_rbatis();
@@ -375,6 +383,7 @@ async fn handle_root(_: Request<Body>) -> Result<Response<Body>, Infallible> {
 async fn main_hyper() {
     //初始化rbatis
     if MYSQL_URL.contains("localhost") {
+        println!("no database config in MYSQL_URL");
         return;
     }
     // 设置延迟类型
@@ -394,6 +403,7 @@ async fn main_hyper() {
 #[test]
 pub fn bench_query_local() {
     if MYSQL_URL.contains("localhost") {
+        println!("no database config in MYSQL_URL");
         return;
     }
     let total = 10000;
