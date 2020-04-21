@@ -3,6 +3,7 @@ use crate::sqlite::statement::Statement;
 use crate::sqlite::value::SqliteValue;
 use crate::sqlite::{Sqlite, SqliteConnection};
 
+#[derive(Debug)]
 pub struct SqliteRow<'c> {
     pub(super) values: usize,
     pub(super) statement: Option<usize>,

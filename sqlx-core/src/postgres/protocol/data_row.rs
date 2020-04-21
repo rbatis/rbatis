@@ -3,6 +3,7 @@ use crate::postgres::database::Postgres;
 use byteorder::NetworkEndian;
 use std::ops::Range;
 
+#[derive(Debug)]
 pub(crate) struct DataRow<'c> {
     values: &'c [Option<(u32, u32)>],
     buffer: &'c [u8],
