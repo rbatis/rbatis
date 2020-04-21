@@ -34,6 +34,7 @@ pub(crate) struct Statement {
     pub(crate) columns: Box<[Column]>,
 }
 
+#[derive(Debug)]
 pub struct PgRow<'c> {
     pub(super) data: DataRow<'c>,
 
