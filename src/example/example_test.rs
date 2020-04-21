@@ -427,3 +427,21 @@ pub fn test_log(){
     info!("print data");
     sleep(Duration::from_secs(1));
 }
+
+
+use sqlx_core::mysql::{MySqlPool, MySqlRow};
+use sqlx_core::executor::Executor;
+use sqlx_core::cursor::Cursor;
+
+#[tokio::main]
+#[test]
+pub async fn test_sqlx(){
+   let pool=MySqlPool::new(MYSQL_URL).await.unwrap();
+    let mut conn =pool.acquire().await.unwrap();
+   let mut c=conn.fetch("SELECT count(1) FROM user;");
+    while let Some(row) = c.next().await.unwrap() {
+       let row:MySqlRow =row;
+       println!("{:?}",row);
+    }
+   println!("done");
+}
