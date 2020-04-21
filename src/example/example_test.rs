@@ -71,7 +71,7 @@ fn test_insert() {
     //初始化rbatis
     let rbatis_opt = init_rbatis();
     if rbatis_opt.is_err() {
-        println!("{}",rbatis_opt.err().unwrap());
+        println!("{}", rbatis_opt.err().unwrap());
         return;
     }
     let mut rbatis = rbatis_opt.unwrap();
@@ -102,7 +102,7 @@ fn test_delete() {
     //初始化rbatis
     let rbatis_opt = init_rbatis();
     if rbatis_opt.is_err() {
-        println!("{}",rbatis_opt.err().unwrap());
+        println!("{}", rbatis_opt.err().unwrap());
         return;
     }
     let mut rbatis = rbatis_opt.unwrap();
@@ -115,7 +115,7 @@ fn test_update() {
     //初始化rbatis
     let rbatis_opt = init_rbatis();
     if rbatis_opt.is_err() {
-        println!("{}",rbatis_opt.err().unwrap());
+        println!("{}", rbatis_opt.err().unwrap());
         return;
     }
     let mut rbatis = rbatis_opt.unwrap();
@@ -150,7 +150,7 @@ fn test_update_array() {
     //初始化rbatis
     let rbatis_opt = init_rbatis();
     if rbatis_opt.is_err() {
-        println!("{}",rbatis_opt.err().unwrap());
+        println!("{}", rbatis_opt.err().unwrap());
         return;
     }
     let mut rbatis = rbatis_opt.unwrap();
@@ -194,7 +194,7 @@ fn test_exec_sql() {
     //初始化rbatis
     let rbatis = init_rbatis();
     if rbatis.is_err() {
-        println!("{}",rbatis.err().unwrap());
+        println!("{}", rbatis.err().unwrap());
         return;
     }
     //执行到远程mysql 并且获取结果,Result<serde_json::Value, RbatisError>,或者 Result<String, RbatisError> 等任意类型
@@ -235,7 +235,7 @@ fn test_exec_select_page_custom() {
     //初始化rbatis
     let rbatis = init_rbatis();
     if rbatis.is_err() {
-        println!("{}",rbatis.err().unwrap());
+        println!("{}", rbatis.err().unwrap());
         return;
     }
     //执行到远程mysql 并且获取结果,Result<serde_json::Value, RbatisError>,或者 Result<String, RbatisError> 等任意类型
@@ -255,7 +255,7 @@ fn test_exec_py_sql() {
     //初始化rbatis
     let rbatis = init_rbatis();
     if rbatis.is_err() {
-        println!("{}",rbatis.err().unwrap());
+        println!("{}", rbatis.err().unwrap());
         return;
     }
     //执行到远程mysql 并且获取结果,Result<serde_json::Value, RbatisError>,或者 Result<String, RbatisError> 等任意类型
@@ -351,7 +351,7 @@ async fn index() -> impl Responder {
     //写法1
     //let data: Result<Activity, RbatisError> = Rbatis::singleton().raw_sql(format!("{:?}",std::thread::current().id()).as_str(), "select * from biz_activity where id  = '2';");
     //写法2 注意：适用于超级耗时的任务
-    let data: Result<Activity, RbatisError> = Rbatis::async_raw_sql(format!("{:?}",std::thread::current().id()).as_str(), "select * from biz_activity where id  = '2';").await;
+    let data: Result<Activity, RbatisError> = Rbatis::async_raw_sql(format!("{:?}", std::thread::current().id()).as_str(), "select * from biz_activity where id  = '2';").await;
     println!("{:?}", &data);
     return serde_json::to_string(&data).unwrap();
 }
@@ -412,7 +412,7 @@ pub fn bench_query_local() {
     //disable log
     Rbatis::singleton().enable_log = false;
     //or you can disable debug mod in fastlog,so log just write to file ,not print to console!
-    fast_log::log::DEBUG_MODE.store(false,std::sync::atomic::Ordering::Relaxed);
+    fast_log::log::DEBUG_MODE.store(false, std::sync::atomic::Ordering::Relaxed);
     for i in 0..total {
         let data: Result<Activity, RbatisError> = Rbatis::singleton().raw_sql("", "select * from biz_activity where id  = '2';");
     }
@@ -421,7 +421,7 @@ pub fn bench_query_local() {
 
 
 #[test]
-pub fn test_log(){
+pub fn test_log() {
     //1 启用日志(可选，不添加则不加载日志库)
     fast_log::log::init_log("requests.log").unwrap();
     info!("print data");
@@ -432,16 +432,19 @@ pub fn test_log(){
 use sqlx_core::mysql::{MySqlPool, MySqlRow};
 use sqlx_core::executor::Executor;
 use sqlx_core::cursor::Cursor;
+use sqlx_core::row::Row;
 
 #[tokio::main]
 #[test]
-pub async fn test_sqlx(){
-   let pool=MySqlPool::new(MYSQL_URL).await.unwrap();
-    let mut conn =pool.acquire().await.unwrap();
-   let mut c=conn.fetch("SELECT count(1) FROM user;");
+pub async fn test_sqlx() {
+    let pool = MySqlPool::new(MYSQL_URL).await.unwrap();
+    let mut conn = pool.acquire().await.unwrap();
+    let mut c = conn.fetch("SELECT count(1) FROM user;");
     while let Some(row) = c.next().await.unwrap() {
-       let row:MySqlRow =row;
-       println!("{:?}",row);
+        let row: MySqlRow = row;
+        println!("{:?}", row);
+        let counts: i32 = row.try_get("count(1)").unwrap();
+        println!("{:?}", counts);
     }
-   println!("done");
+    println!("done");
 }
