@@ -439,11 +439,11 @@ use sqlx_core::row::Row;
 pub async fn test_sqlx() {
     let pool = MySqlPool::new(MYSQL_URL).await.unwrap();
     let mut conn = pool.acquire().await.unwrap();
-    let mut c = conn.fetch("SELECT count(1) as total FROM biz_activity;");
+    let mut c = conn.fetch("SELECT count(1) FROM biz_activity;");
     while let Some(row) = c.next().await.unwrap() {
         let row: MySqlRow = row;
         println!("{:?}", row);
-        let counts: i32 = row.try_get("total").unwrap();
+        let counts: i32 = row.try_get("count(1)").unwrap();
         println!("{:?}", counts);
     }
     println!("done");
