@@ -438,6 +438,7 @@ use sqlx_core::row::Row;
 #[test]
 pub async fn test_sqlx() {
     let pool = MySqlPool::new(MYSQL_URL).await.unwrap();
+    //pooledConn 交由rbatis上下文管理
     let mut conn = pool.acquire().await.unwrap();
     let mut c = conn.fetch("SELECT count(1) FROM biz_activity;");
     while let Some(row) = c.next().await.unwrap() {
