@@ -442,7 +442,6 @@ pub async fn test_sqlx() {
     let mut conn = pool.acquire().await.unwrap();
     let mut c = conn.fetch("SELECT count(1) FROM biz_activity;");
     while let Some(row) = c.next().await.unwrap() {
-        let row: MySqlRow = row;
         println!("{:?}", row);
         let counts:serde_json::Value = row.try_get_json("count(1)").unwrap();
         println!("json: {:?}", counts.to_string());
