@@ -84,6 +84,99 @@ impl<'c> RawValue<'c> for PgValue<'c> {
     }
 
     fn try_to_json(&self) -> Result<Value, String> {
-        unimplemented!()
+        if (self.type_info.is_none()) {
+            return Err("postgres value.type_info is none!".to_string());
+        }
+        //TODO batter way to match type replace use string match
+        let type_string = format!("{}", self.type_info.as_ref().unwrap());
+
+        match type_string.as_str() {
+            "NULL" => return Ok(serde_json::Value::Null),
+            "BIGINT UNSIGNED" => {
+                let r = u64::decode(self.clone());
+                if r.is_err() {
+                    return Err(r.err().unwrap().to_string());
+                }
+                return Ok(serde_json::Value::from(r.unwrap()));
+            }
+            "BIGINT" => {
+                let r = i64::decode(self.clone());
+                if r.is_err() {
+                    return Err(r.err().unwrap().to_string());
+                }
+                return Ok(serde_json::Value::from(r.unwrap()));
+            }
+            "INT UNSIGNED" => {
+                let r = u32::decode(self.clone());
+                if r.is_err() {
+                    return Err(r.err().unwrap().to_string());
+                }
+                return Ok(serde_json::Value::from(r.unwrap()));
+            }
+            "INT" => {
+                let r = i32::decode(self.clone());
+                if r.is_err() {
+                    return Err(r.err().unwrap().to_string());
+                }
+                return Ok(serde_json::Value::from(r.unwrap()));
+            }
+            "SMALLINT" => {
+                let r = i16::decode(self.clone());
+                if r.is_err() {
+                    return Err(r.err().unwrap().to_string());
+                }
+                return Ok(serde_json::Value::from(r.unwrap()));
+            }
+            "SMALLINT UNSIGNED" => {
+                let r = u16::decode(self.clone());
+                if r.is_err() {
+                    return Err(r.err().unwrap().to_string());
+                }
+                return Ok(serde_json::Value::from(r.unwrap()));
+            }
+            "TINYINT UNSIGNED" => {
+                let r = u8::decode(self.clone());
+                if r.is_err() {
+                    return Err(r.err().unwrap().to_string());
+                }
+                return Ok(serde_json::Value::from(r.unwrap()));
+            }
+            "TINYINT" => {
+                let r = i8::decode(self.clone());
+                if r.is_err() {
+                    return Err(r.err().unwrap().to_string());
+                }
+                return Ok(serde_json::Value::from(r.unwrap()));
+            }
+            "FLOAT" => {
+                let r = f64::decode(self.clone());
+                if r.is_err() {
+                    return Err(r.err().unwrap().to_string());
+                }
+                return Ok(serde_json::Value::from(r.unwrap()));
+            }
+            "DOUBLE" => {
+                let r = f64::decode(self.clone());
+                if r.is_err() {
+                    return Err(r.err().unwrap().to_string());
+                }
+                return Ok(serde_json::Value::from(r.unwrap()));
+            }
+            "BINARY" | "VARBINARY" | "BLOB" | "CHAR" | "VARCHAR" | "TEXT" => {
+                let r = String::decode(self.clone());
+                if r.is_err() {
+                    return Err(r.err().unwrap().to_string());
+                }
+                return Ok(serde_json::Value::from(r.unwrap()));
+            }
+            "DATE" | "TIME" | "DATETIME" | "TIMESTAMP" => {
+                let r = String::decode(self.clone());
+                if r.is_err() {
+                    return Err(r.err().unwrap().to_string());
+                }
+                return Ok(serde_json::Value::from(r.unwrap()));
+            }
+            _ => return Err(format!("un support database type for:{}!",type_string).to_string()),
+        }
     }
 }

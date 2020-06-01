@@ -60,7 +60,6 @@ mod float;
 mod int;
 mod str;
 mod uint;
-mod json;
 
 #[cfg(feature = "bigdecimal")]
 mod bigdecimal;

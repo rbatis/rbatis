@@ -167,7 +167,6 @@ where
     ///json decode
     fn json_decode<T, I>(&self, index: I) -> crate::Result<T>
         where
-            T: Type<Self::Database>,
             I: ColumnIndex<'c, Self>,
             T: DeserializeOwned
     {
