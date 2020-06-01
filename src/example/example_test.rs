@@ -443,7 +443,7 @@ pub async fn test_sqlx() {
     let mut c = conn.fetch("SELECT count(1) FROM biz_activity;");
     while let Some(row) = c.next().await.unwrap() {
         println!("{:?}", row);
-        let counts:serde_json::Value = row.try_get_json("count(1)").unwrap();
+        let counts:serde_json::Value = row.json_decode("count(1)").unwrap();
         println!("json: {:?}", counts.to_string());
     }
     println!("done");
