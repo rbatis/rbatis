@@ -11,7 +11,7 @@ pub enum MySqlData<'c> {
     Text(&'c [u8]),
 }
 
-#[derive(Debug,Clone)]
+#[derive(Debug, Clone)]
 pub struct MySqlValue<'c> {
     type_info: Option<MySqlTypeInfo>,
     data: Option<MySqlData<'c>>,
@@ -63,7 +63,7 @@ impl<'c> RawValue<'c> for MySqlValue<'c> {
         self.type_info.clone()
     }
 
-    fn try_to_json(&self) -> Result<serde_json::Value,String> {
+    fn try_to_json(&self) -> Result<serde_json::Value, String> {
         if (self.type_info.is_none()) {
             return Err("mysql value.type_info is none!".to_string());
         }
@@ -80,14 +80,14 @@ impl<'c> RawValue<'c> for MySqlValue<'c> {
                     return Err(r.err().unwrap().to_string());
                 }
                 return Ok(serde_json::Value::from(r.unwrap()));
-            },
+            }
             "BIGINT" => {
                 let r = i64::decode(self.clone());
                 if r.is_err() {
                     return Err(r.err().unwrap().to_string());
                 }
                 return Ok(serde_json::Value::from(r.unwrap()));
-            },
+            }
             "INT UNSIGNED" => {
                 let r = u32::decode(self.clone());
                 if r.is_err() {
@@ -101,21 +101,21 @@ impl<'c> RawValue<'c> for MySqlValue<'c> {
                     return Err(r.err().unwrap().to_string());
                 }
                 return Ok(serde_json::Value::from(r.unwrap()));
-            },
-            "SMALLINT"  => {
+            }
+            "SMALLINT" => {
                 let r = i16::decode(self.clone());
                 if r.is_err() {
                     return Err(r.err().unwrap().to_string());
                 }
                 return Ok(serde_json::Value::from(r.unwrap()));
-            },
+            }
             "SMALLINT UNSIGNED" => {
                 let r = u16::decode(self.clone());
                 if r.is_err() {
                     return Err(r.err().unwrap().to_string());
                 }
                 return Ok(serde_json::Value::from(r.unwrap()));
-            },
+            }
             "TINYINT UNSIGNED" => {
                 let r = u8::decode(self.clone());
                 if r.is_err() {
@@ -130,7 +130,7 @@ impl<'c> RawValue<'c> for MySqlValue<'c> {
                 }
                 return Ok(serde_json::Value::from(r.unwrap()));
             }
-            "FLOAT" =>{
+            "FLOAT" => {
                 let r = f64::decode(self.clone());
                 if r.is_err() {
                     return Err(r.err().unwrap().to_string());
