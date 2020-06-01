@@ -14,6 +14,7 @@ use crate::sqlite::type_info::SqliteType;
 use crate::sqlite::{Sqlite, SqliteTypeInfo};
 use crate::value::RawValue;
 use serde_json::Value;
+use crate::decode::Decode;
 
 pub struct SqliteValue<'c> {
     pub(super) index: i32,
@@ -135,6 +136,45 @@ impl<'c> RawValue<'c> for SqliteValue<'c> {
     }
 
     fn try_to_json(&self) -> Result<Value, String> {
-        unimplemented!()
+        //TODO batter way to match type replace use string match
+        let type_string = self.r#type();
+        if type_string.is_none() {
+            return Ok(serde_json::Value::Null);
+        }
+        let type_string = type_string.unwrap();
+        return match type_string {
+            SqliteType::Text => {
+                let r = String::decode(self.clone());
+                if r.is_err() {
+                    return Err(r.err().unwrap().to_string());
+                }
+                Ok(serde_json::Value::from(r.unwrap()))
+            },
+            SqliteType::Boolean => {
+                let r = bool::decode(self.clone());
+                if r.is_err() {
+                    return Err(r.err().unwrap().to_string());
+                }
+                Ok(serde_json::Value::from(r.unwrap()))
+            },
+            SqliteType::Integer => {
+                let r = i64::decode(self.clone());
+                if r.is_err() {
+                    return Err(r.err().unwrap().to_string());
+                }
+                Ok(serde_json::Value::from(r.unwrap()))
+            },
+            SqliteType::Float => {
+                let r = f64::decode(self.clone());
+                if r.is_err() {
+                    return Err(r.err().unwrap().to_string());
+                }
+                Ok(serde_json::Value::from(r.unwrap()))
+            },
+            SqliteType::Blob => {
+                unimplemented!()
+            }
+            _ => Err(format!("un support database type for:{}!", type_string).to_string()),
+        }
     }
 }
