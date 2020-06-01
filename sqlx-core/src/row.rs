@@ -165,7 +165,7 @@ where
 
 
     ///json decode
-    fn try_get_json<T, I>(&self, index: I) -> crate::Result<T>
+    fn json_decode<T, I>(&self, index: I) -> crate::Result<T>
         where
             T: Type<Self::Database>,
             I: ColumnIndex<'c, Self>,
