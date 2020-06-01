@@ -87,7 +87,7 @@ impl<'c> RawValue<'c> for PgValue<'c> {
     }
 
     fn try_to_json(&self) -> Result<Value, String> {
-        if (self.type_info.is_none()) {
+        if self.type_info.is_none() {
             return Err("postgres value.type_info is none!".to_string());
         }
         //TODO batter way to match type replace use string match
