@@ -20,4 +20,7 @@ pub trait RawValue<'c> {
     type Database: Database;
 
     fn type_info(&self) -> Option<<Self::Database as Database>::TypeInfo>;
+
+    /// to an json value
+    fn try_to_json(&self) -> Result<serde_json::Value,String>;
 }

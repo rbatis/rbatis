@@ -29,13 +29,14 @@ pub(super) enum Step {
 }
 
 /// Thin wrapper around [sqlite3_stmt] to impl `Send`.
-#[derive(Clone, Copy)]
+#[derive(Clone, Copy, Debug)]
 pub(super) struct SqliteStatementHandle(NonNull<sqlite3_stmt>);
 
 /// Represents a _single_ SQL statement that has been compiled into binary
 /// form and is ready to be evaluated.
 ///
 /// The statement is finalized ( `sqlite3_finalize` ) on drop.
+#[derive(Debug)]
 pub(super) struct Statement {
     handle: Option<SqliteStatementHandle>,
     pub(super) connection: SqliteConnectionHandle,

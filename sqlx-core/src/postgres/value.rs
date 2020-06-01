@@ -2,6 +2,7 @@ use crate::error::UnexpectedNullError;
 use crate::postgres::{PgTypeInfo, Postgres};
 use crate::value::RawValue;
 use std::str::from_utf8;
+use serde_json::Value;
 
 #[derive(Debug, Copy, Clone)]
 pub enum PgData<'c> {
@@ -80,5 +81,9 @@ impl<'c> RawValue<'c> for PgValue<'c> {
         } else {
             None
         }
+    }
+
+    fn try_to_json(&self) -> Result<Value, String> {
+        unimplemented!()
     }
 }

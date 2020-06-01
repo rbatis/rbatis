@@ -13,6 +13,7 @@ use crate::sqlite::statement::Statement;
 use crate::sqlite::type_info::SqliteType;
 use crate::sqlite::{Sqlite, SqliteTypeInfo};
 use crate::value::RawValue;
+use serde_json::Value;
 
 pub struct SqliteValue<'c> {
     pub(super) index: i32,
@@ -131,5 +132,9 @@ impl<'c> RawValue<'c> for SqliteValue<'c> {
             r#type: self.r#type()?,
             affinity: None,
         })
+    }
+
+    fn try_to_json(&self) -> Result<Value, String> {
+        unimplemented!()
     }
 }

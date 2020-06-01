@@ -20,10 +20,11 @@ use crate::sqlite::SqliteError;
 use crate::url::Url;
 
 /// Thin wrapper around [sqlite3] to impl `Send`.
-#[derive(Clone, Copy)]
+#[derive(Clone, Copy,Debug)]
 pub(super) struct SqliteConnectionHandle(pub(super) NonNull<sqlite3>);
 
 /// A connection to a [Sqlite](struct.Sqlite.html) database.
+#[derive(Debug)]
 pub struct SqliteConnection {
     pub(super) handle: SqliteConnectionHandle,
     pub(super) worker: Worker,

@@ -8,7 +8,7 @@ use std::thread::{park, spawn, JoinHandle};
 // SQLite connection and perform all I/O operations for SQLite on _that_ thread. To this effect
 // we have a worker struct that is a thin message passing API to run messages on the worker thread.
 
-#[derive(Clone)]
+#[derive(Clone,Debug)]
 pub(crate) struct Worker {
     running: Arc<AtomicBool>,
     queue: Arc<ArrayQueue<Box<dyn FnOnce() + Send>>>,
