@@ -1,6 +1,9 @@
 use crate::error::UnexpectedNullError;
 use crate::mysql::{MySql, MySqlTypeInfo};
 use crate::value::RawValue;
+use serde_json::Value;
+use crate::mysql::protocol::TypeId;
+use crate::decode::Decode;
 
 #[derive(Debug, Copy, Clone)]
 pub enum MySqlData<'c> {
@@ -8,7 +11,7 @@ pub enum MySqlData<'c> {
     Text(&'c [u8]),
 }
 
-#[derive(Debug)]
+#[derive(Debug,Clone)]
 pub struct MySqlValue<'c> {
     type_info: Option<MySqlTypeInfo>,
     data: Option<MySqlData<'c>>,
@@ -58,5 +61,27 @@ impl<'c> RawValue<'c> for MySqlValue<'c> {
 
     fn type_info(&self) -> Option<MySqlTypeInfo> {
         self.type_info.clone()
+    }
+
+    fn try_to_json(&self) -> Result<serde_json::Value,String> {
+        if (self.type_info.is_none()) {
+            return Err("mysql value.type_info is none!".to_string());
+        }
+
+        //TODO batter way to match type replace use string match
+        let type_string = format!("{}", self.type_info.as_ref().unwrap());
+        println!("type_info >>> {}", type_string.clone());
+
+        match type_string.as_str() {
+            "NULL" => return Ok(serde_json::Value::Null),
+            "BIGINT UNSIGNED" | "BIGINT" => {
+                let r = i64::decode(self.clone());
+                if r.is_err() {
+                    return Err(r.err().unwrap().to_string());
+                }
+                return Ok(serde_json::Value::from(r.unwrap()));
+            },
+            _ => return Ok(serde_json::Value::Null),
+        }
     }
 }

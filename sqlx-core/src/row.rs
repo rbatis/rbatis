@@ -4,6 +4,8 @@ use crate::database::Database;
 use crate::decode::Decode;
 use crate::types::{Type, TypeInfo};
 use crate::value::{HasRawValue, RawValue};
+use serde::de::DeserializeOwned;
+
 
 /// A type that can be used to index into a [`Row`].
 ///
@@ -151,7 +153,6 @@ where
             // NOTE: If there is no type, the value is NULL. This is fine. If the user tries
             //       to get this into a non-Option we catch that elsewhere and report as
             //       UnexpectedNullError.
-
             if !expected_ty.compatible(&T::type_info()) {
                 return Err(crate::Error::mismatched_types::<Self::Database, T>(
                     expected_ty,
@@ -160,6 +161,30 @@ where
         }
 
         T::decode(value)
+    }
+
+
+    ///json decode
+    fn try_get_json<T, I>(&self, index: I) -> crate::Result<T>
+        where
+            T: Type<Self::Database>,
+            I: ColumnIndex<'c, Self>,
+            T: DeserializeOwned
+    {
+        let value = self.try_get_raw(index)?;
+        let v = value.try_to_json();
+        if (v.is_err()){
+            return Err(decode_err!("unexpected value {:?} for serde_json::Value", v.err().unwrap()));
+        }
+        let t:Result<T,serde_json::Error> = serde_json::from_value(v.unwrap());
+        match t {
+            Ok(r)=>{
+                return Ok(r);
+            }
+            Err(e)=>{
+                return Err(decode_err!("unexpected value {:?} for serde_json::from_value", e.to_string()));
+            }
+        }
     }
 
     /// Index into the database row and decode a single value.

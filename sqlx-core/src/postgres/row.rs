@@ -22,7 +22,7 @@ pub(crate) struct Column {
 
 // A statement description containing the column information used to
 // properly decode data
-#[derive(Default)]
+#[derive(Default,Debug)]
 pub(crate) struct Statement {
     // paramaters
     pub(crate) params: Box<[PgTypeInfo]>,

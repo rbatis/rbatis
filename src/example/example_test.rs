@@ -444,8 +444,8 @@ pub async fn test_sqlx() {
     while let Some(row) = c.next().await.unwrap() {
         let row: MySqlRow = row;
         println!("{:?}", row);
-        let counts: i32 = row.try_get("count(1)").unwrap();
-        println!("{:?}", counts);
+        let counts:serde_json::Value = row.try_get_json("count(1)").unwrap();
+        println!("json: {:?}", counts.to_string());
     }
     println!("done");
 }
