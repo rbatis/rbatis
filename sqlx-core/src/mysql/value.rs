@@ -64,7 +64,7 @@ impl<'c> RawValue<'c> for MySqlValue<'c> {
     }
 
     fn try_to_json(&self) -> Result<serde_json::Value, String> {
-        if (self.type_info.is_none()) {
+        if self.type_info.is_none() {
             return Err("mysql value.type_info is none!".to_string());
         }
 
