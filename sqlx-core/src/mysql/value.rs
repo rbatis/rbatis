@@ -158,7 +158,7 @@ impl<'c> RawValue<'c> for MySqlValue<'c> {
                 }
                 return Ok(serde_json::Value::from(r.unwrap()));
             }
-            _ => return Ok(serde_json::Value::Null),
+            _ => return Err(format!("un support database type for:{}!",type_string).to_string()),
         }
     }
 }
