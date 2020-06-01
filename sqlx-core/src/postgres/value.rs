@@ -3,6 +3,9 @@ use crate::postgres::{PgTypeInfo, Postgres};
 use crate::value::RawValue;
 use std::str::from_utf8;
 use serde_json::Value;
+use crate::decode::Decode;
+use serde_json::value::Value::Array;
+use time::{date, offset, Date, NumericalDuration, OffsetDateTime, PrimitiveDateTime, Time};
 
 #[derive(Debug, Copy, Clone)]
 pub enum PgData<'c> {
@@ -88,88 +91,72 @@ impl<'c> RawValue<'c> for PgValue<'c> {
             return Err("postgres value.type_info is none!".to_string());
         }
         //TODO batter way to match type replace use string match
+        if self.type_info == None {
+            return return Ok(serde_json::Value::Null);
+        }
         let type_string = format!("{}", self.type_info.as_ref().unwrap());
-
         match type_string.as_str() {
-            "NULL" => return Ok(serde_json::Value::Null),
-            "BIGINT UNSIGNED" => {
-                let r = u64::decode(self.clone());
-                if r.is_err() {
-                    return Err(r.err().unwrap().to_string());
-                }
-                return Ok(serde_json::Value::from(r.unwrap()));
-            }
-            "BIGINT" => {
-                let r = i64::decode(self.clone());
-                if r.is_err() {
-                    return Err(r.err().unwrap().to_string());
-                }
-                return Ok(serde_json::Value::from(r.unwrap()));
-            }
-            "INT UNSIGNED" => {
-                let r = u32::decode(self.clone());
-                if r.is_err() {
-                    return Err(r.err().unwrap().to_string());
-                }
-                return Ok(serde_json::Value::from(r.unwrap()));
-            }
-            "INT" => {
-                let r = i32::decode(self.clone());
-                if r.is_err() {
-                    return Err(r.err().unwrap().to_string());
-                }
-                return Ok(serde_json::Value::from(r.unwrap()));
-            }
-            "SMALLINT" => {
-                let r = i16::decode(self.clone());
-                if r.is_err() {
-                    return Err(r.err().unwrap().to_string());
-                }
-                return Ok(serde_json::Value::from(r.unwrap()));
-            }
-            "SMALLINT UNSIGNED" => {
-                let r = u16::decode(self.clone());
-                if r.is_err() {
-                    return Err(r.err().unwrap().to_string());
-                }
-                return Ok(serde_json::Value::from(r.unwrap()));
-            }
-            "TINYINT UNSIGNED" => {
-                let r = u8::decode(self.clone());
-                if r.is_err() {
-                    return Err(r.err().unwrap().to_string());
-                }
-                return Ok(serde_json::Value::from(r.unwrap()));
-            }
-            "TINYINT" => {
-                let r = i8::decode(self.clone());
-                if r.is_err() {
-                    return Err(r.err().unwrap().to_string());
-                }
-                return Ok(serde_json::Value::from(r.unwrap()));
-            }
-            "FLOAT" => {
-                let r = f64::decode(self.clone());
-                if r.is_err() {
-                    return Err(r.err().unwrap().to_string());
-                }
-                return Ok(serde_json::Value::from(r.unwrap()));
-            }
-            "DOUBLE" => {
-                let r = f64::decode(self.clone());
-                if r.is_err() {
-                    return Err(r.err().unwrap().to_string());
-                }
-                return Ok(serde_json::Value::from(r.unwrap()));
-            }
-            "BINARY" | "VARBINARY" | "BLOB" | "CHAR" | "VARCHAR" | "TEXT" => {
+            "NUMERIC" =>{
+                //decimal
                 let r = String::decode(self.clone());
                 if r.is_err() {
                     return Err(r.err().unwrap().to_string());
                 }
                 return Ok(serde_json::Value::from(r.unwrap()));
             }
-            "DATE" | "TIME" | "DATETIME" | "TIMESTAMP" => {
+            "BOOL" => {
+                let r = bool::decode(self.clone());
+                if r.is_err() {
+                    return Err(r.err().unwrap().to_string());
+                }
+                return Ok(serde_json::Value::from(r.unwrap()));
+            }
+            "BYTEA" => {
+               unimplemented!();
+            }
+            "TIME" | "DATE" | "TIMESTAMP" | "TIMESTAMPTZ" => {
+                let r = String::decode(self.clone());
+                if r.is_err() {
+                    return Err(r.err().unwrap().to_string());
+                }
+                return Ok(serde_json::Value::from(r.unwrap()));
+            }
+            "FLOAT4" =>{
+                let r = f32::decode(self.clone());
+                if r.is_err() {
+                    return Err(r.err().unwrap().to_string());
+                }
+                return Ok(serde_json::Value::from(r.unwrap()));
+            }
+            "FLOAT8" =>{
+                let r = f64::decode(self.clone());
+                if r.is_err() {
+                    return Err(r.err().unwrap().to_string());
+                }
+                return Ok(serde_json::Value::from(r.unwrap()));
+            }
+            "INT4" =>{
+                let r = i32::decode(self.clone());
+                if r.is_err() {
+                    return Err(r.err().unwrap().to_string());
+                }
+                return Ok(serde_json::Value::from(r.unwrap()));
+            }
+            "INT8" =>{
+                let r = i64::decode(self.clone());
+                if r.is_err() {
+                    return Err(r.err().unwrap().to_string());
+                }
+                return Ok(serde_json::Value::from(r.unwrap()));
+            }
+            "TEXT" => {
+                let r = String::decode(self.clone());
+                if r.is_err() {
+                    return Err(r.err().unwrap().to_string());
+                }
+                return Ok(serde_json::Value::from(r.unwrap()));
+            }
+            "UUID" => {
                 let r = String::decode(self.clone());
                 if r.is_err() {
                     return Err(r.err().unwrap().to_string());
