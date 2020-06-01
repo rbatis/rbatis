@@ -74,13 +74,90 @@ impl<'c> RawValue<'c> for MySqlValue<'c> {
 
         match type_string.as_str() {
             "NULL" => return Ok(serde_json::Value::Null),
-            "BIGINT UNSIGNED" | "BIGINT" => {
+            "BIGINT UNSIGNED" => {
+                let r = u64::decode(self.clone());
+                if r.is_err() {
+                    return Err(r.err().unwrap().to_string());
+                }
+                return Ok(serde_json::Value::from(r.unwrap()));
+            },
+            "BIGINT" => {
                 let r = i64::decode(self.clone());
                 if r.is_err() {
                     return Err(r.err().unwrap().to_string());
                 }
                 return Ok(serde_json::Value::from(r.unwrap()));
             },
+            "INT UNSIGNED" => {
+                let r = u32::decode(self.clone());
+                if r.is_err() {
+                    return Err(r.err().unwrap().to_string());
+                }
+                return Ok(serde_json::Value::from(r.unwrap()));
+            }
+            "INT" => {
+                let r = i32::decode(self.clone());
+                if r.is_err() {
+                    return Err(r.err().unwrap().to_string());
+                }
+                return Ok(serde_json::Value::from(r.unwrap()));
+            },
+            "SMALLINT"  => {
+                let r = i16::decode(self.clone());
+                if r.is_err() {
+                    return Err(r.err().unwrap().to_string());
+                }
+                return Ok(serde_json::Value::from(r.unwrap()));
+            },
+            "SMALLINT UNSIGNED" => {
+                let r = u16::decode(self.clone());
+                if r.is_err() {
+                    return Err(r.err().unwrap().to_string());
+                }
+                return Ok(serde_json::Value::from(r.unwrap()));
+            },
+            "TINYINT UNSIGNED" => {
+                let r = u8::decode(self.clone());
+                if r.is_err() {
+                    return Err(r.err().unwrap().to_string());
+                }
+                return Ok(serde_json::Value::from(r.unwrap()));
+            }
+            "TINYINT" => {
+                let r = i8::decode(self.clone());
+                if r.is_err() {
+                    return Err(r.err().unwrap().to_string());
+                }
+                return Ok(serde_json::Value::from(r.unwrap()));
+            }
+            "FLOAT" =>{
+                let r = f64::decode(self.clone());
+                if r.is_err() {
+                    return Err(r.err().unwrap().to_string());
+                }
+                return Ok(serde_json::Value::from(r.unwrap()));
+            }
+            "DOUBLE" => {
+                let r = f64::decode(self.clone());
+                if r.is_err() {
+                    return Err(r.err().unwrap().to_string());
+                }
+                return Ok(serde_json::Value::from(r.unwrap()));
+            }
+            "BINARY" | "VARBINARY" | "BLOB" | "CHAR" | "VARCHAR" | "TEXT" => {
+                let r = String::decode(self.clone());
+                if r.is_err() {
+                    return Err(r.err().unwrap().to_string());
+                }
+                return Ok(serde_json::Value::from(r.unwrap()));
+            }
+            "DATE" | "TIME" | "DATETIME" | "TIMESTAMP" => {
+                let r = String::decode(self.clone());
+                if r.is_err() {
+                    return Err(r.err().unwrap().to_string());
+                }
+                return Ok(serde_json::Value::from(r.unwrap()));
+            }
             _ => return Ok(serde_json::Value::Null),
         }
     }
