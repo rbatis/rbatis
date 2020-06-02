@@ -17,6 +17,13 @@ extern crate test;
 #[cfg(feature = "bigdecimal")]
 extern crate bigdecimal_ as bigdecimal;
 
+
+#[macro_use]
+extern crate async_trait;
+
+
+
+
 mod runtime;
 
 #[macro_use]
@@ -69,3 +76,6 @@ pub mod postgres;
 pub mod sqlite;
 
 pub use error::{Error, Result};
+
+
+

@@ -441,7 +441,7 @@ pub async fn test_sqlx() {
     //pooledConn 交由rbatis上下文管理
     let mut conn = pool.acquire().await.unwrap();
     let mut c = conn.fetch("SELECT count(1) FROM biz_activity;");
-    while let Some(row) = c.next().await.unwrap() {
+    while let Some(row) = c.next().await.unwrap() as Option<MySqlRow> {
         println!("{:?}", row);
         let counts:serde_json::Value = row.json_decode("count(1)").unwrap();
         println!("json: {:?}", counts.to_string());
