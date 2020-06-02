@@ -8,6 +8,7 @@ use serde_json::Value;
 use crate::connection::Connect;
 use crate::executor::RefExecutor;
 use crate::cursor;
+use crate::row::Row;
 
 /// The return type of [Encode::encode].
 pub enum IsNull {
@@ -96,7 +97,7 @@ impl<D> JsonEncode for dyn Cursor<'_, '_, Database=D>
 {
     async fn encode(&mut self) -> Result<serde_json::Value, String> {
         //TODO impl encode
-        while let Some(row) = self.next().await.unwrap() {
+        while let Some(row) = self.next().await.unwrap() as Option<D::Row> {
 
         }
         return Err("sd".to_string());
