@@ -66,6 +66,9 @@ where
     fn next<'cur>(
         &'cur mut self,
     ) -> BoxFuture<'cur, crate::Result<Option<<Self::Database as HasRow<'cur>>::Row>>>;
+
+
+    fn encode(&mut self) -> BoxFuture<Result<serde_json::Value, String>>;
 }
 
 // Prevent users from implementing the `Row` trait.

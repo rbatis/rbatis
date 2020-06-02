@@ -84,22 +84,3 @@ impl<T, DB> Encode<DB> for Option<T>
         self.as_ref().map_or(0, Encode::size_hint)
     }
 }
-
-#[async_trait]
-pub trait JsonEncode {
-    async fn encode(&mut self) -> Result<serde_json::Value, String>;
-}
-
-
-#[async_trait]
-impl<D> JsonEncode for dyn Cursor<'_, '_, Database=D>
-    where D: Database
-{
-    async fn encode(&mut self) -> Result<serde_json::Value, String> {
-        //TODO impl encode
-        while let Some(row) = self.next().await.unwrap() as Option<D::Row> {
-
-        }
-        return Err("sd".to_string());
-    }
-}
