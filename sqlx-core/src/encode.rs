@@ -3,6 +3,11 @@
 use crate::database::Database;
 use crate::types::Type;
 use std::mem;
+use crate::cursor::{HasCursor, Cursor};
+use serde_json::Value;
+use crate::connection::Connect;
+use crate::executor::RefExecutor;
+use crate::cursor;
 
 /// The return type of [Encode::encode].
 pub enum IsNull {
@@ -17,8 +22,8 @@ pub enum IsNull {
 
 /// Encode a single value to be sent to the database.
 pub trait Encode<DB>
-where
-    DB: Database + ?Sized,
+    where
+        DB: Database + ?Sized,
 {
     /// Writes the value of `self` into `buf` in the expected format for the database.
     fn encode(&self, buf: &mut DB::RawBuffer);
@@ -35,10 +40,10 @@ where
 }
 
 impl<T: ?Sized, DB> Encode<DB> for &'_ T
-where
-    DB: Database,
-    T: Type<DB>,
-    T: Encode<DB>,
+    where
+        DB: Database,
+        T: Type<DB>,
+        T: Encode<DB>,
 {
     fn encode(&self, buf: &mut DB::RawBuffer) {
         (*self).encode(buf)
@@ -54,10 +59,10 @@ where
 }
 
 impl<T, DB> Encode<DB> for Option<T>
-where
-    DB: Database,
-    T: Type<DB>,
-    T: Encode<DB>,
+    where
+        DB: Database,
+        T: Type<DB>,
+        T: Encode<DB>,
 {
     fn encode(&self, buf: &mut DB::RawBuffer) {
         // Forward to [encode_nullable] and ignore the result
@@ -76,5 +81,24 @@ where
 
     fn size_hint(&self) -> usize {
         self.as_ref().map_or(0, Encode::size_hint)
+    }
+}
+
+#[async_trait]
+pub trait JsonEncode {
+    async fn encode(&mut self) -> Result<serde_json::Value, String>;
+}
+
+
+#[async_trait]
+impl<D> JsonEncode for dyn Cursor<'_, '_, Database=D>
+    where D: Database
+{
+    async fn encode(&mut self) -> Result<serde_json::Value, String> {
+        //TODO impl encode
+        while let Some(row) = self.next().await.unwrap() {
+
+        }
+        return Err("sd".to_string());
     }
 }
