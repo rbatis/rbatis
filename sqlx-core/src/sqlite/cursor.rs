@@ -54,6 +54,10 @@ impl<'c, 'q> Cursor<'c, 'q> for SqliteCursor<'c, 'q> {
     fn next(&mut self) -> BoxFuture<crate::Result<Option<SqliteRow<'_>>>> {
         Box::pin(next(self))
     }
+
+    fn encode(&mut self) -> BoxFuture<'_, Result<serde_json::Value, String>> {
+        unimplemented!()
+    }
 }
 
 async fn next<'a, 'c: 'a, 'q: 'a>(

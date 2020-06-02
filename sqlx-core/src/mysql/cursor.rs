@@ -56,6 +56,10 @@ impl<'c, 'q> Cursor<'c, 'q> for MySqlCursor<'c, 'q> {
     fn next(&mut self) -> BoxFuture<crate::Result<Option<MySqlRow<'_>>>> {
         Box::pin(next(self))
     }
+
+    fn encode(&mut self) -> BoxFuture<'_, Result<serde_json::Value, String>> {
+        unimplemented!()
+    }
 }
 
 async fn next<'a, 'c: 'a, 'q: 'a>(
