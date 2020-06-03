@@ -20,7 +20,6 @@ pub fn decode_result<T: ?Sized>(datas: Vec<serde_json::Value>) -> Result<T, crat
     where T: DeserializeOwned {
     let mut js = serde_json::Value::Null;
     let type_name = std::any::type_name::<T>();
-    let len = datas.len();
     if is_array::<T>(type_name) {
         //decode array
         js = serde_json::Value::Array(datas);
@@ -54,7 +53,6 @@ pub fn decode_result<T: ?Sized>(datas: Vec<serde_json::Value>) -> Result<T, crat
             }
             _ => {
                 //decode struct
-                let len = datas.len();
                 if datas.len() > 1 {
                     return Result::Err(decode_err!("[rbatis] rows.affected_rows > 1,but decode one result({})!", type_name));
                 }
