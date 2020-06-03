@@ -63,14 +63,17 @@ impl<'c, 'q> Cursor<'c, 'q> for MySqlCursor<'c, 'q> {
         Box::pin(async move {
             let mut arr = vec![];
             while let Some(row) = self.next().await.unwrap() as Option<MySqlRow<'_>> {
+                let mut m=serde_json::Map::new();
                 let keys = row.names.keys();
                 for x in keys {
                     let key = x.to_string();
                     let v: serde_json::Value = row.json_decode_impl(key.as_str()).unwrap();
-                    arr.push(v);
+                    m.insert(key,v);
                 }
+                arr.push(serde_json::Value::Object(m));
             }
             let o = serde_json::Value::Array(arr);
+            println!("build json:{}",o.to_string());
             let v = serde_json::from_value(o);
             if v.is_err() {
                 return Err(v.err().unwrap().to_string());

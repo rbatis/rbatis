@@ -22,12 +22,16 @@ use rbatis_drivers::{DataType, Driver, ResultSet, ResultSetMetaData};
 use serde_json::{json, Number, Value};
 use tokio::task;
 
+use sqlx_core::cursor::Cursor;
+use sqlx_core::executor::Executor;
+use sqlx_core::row::Row;
+
 use crate::ast::node::bind_node::BindNode;
 use crate::ast::node::node_type::NodeType;
 use crate::crud::ipage::IPage;
-use crate::decode::encoder::encode_to_value;
 use crate::decode::driver_decoder;
 use crate::decode::driver_decoder::decode_result_set;
+use crate::decode::encoder::encode_to_value;
 use crate::error::RbatisError;
 use crate::example::activity::Activity;
 use crate::example::conf::MYSQL_URL;
@@ -35,7 +39,7 @@ use crate::rbatis::Rbatis;
 use crate::session_factory::{ConnPoolSessionFactory, SessionFactory, WaitType};
 use crate::tx::propagation::Propagation::{NONE, REQUIRED};
 use crate::tx::propagation::Propagation;
-use crate::utils::time_util::{count_time_tps, count_time, count_nano};
+use crate::utils::time_util::{count_nano, count_time, count_time_tps};
 
 /**
  初始化实例
@@ -429,13 +433,6 @@ pub fn test_log() {
 }
 
 
-
-use sqlx_core::executor::Executor;
-use sqlx_core::cursor::Cursor;
-use sqlx_core::row::Row;
-
-
-
 use sqlx_core::mysql::{MySqlPool, MySqlRow, MySqlCursor};
 #[tokio::main]
 #[test]
@@ -455,7 +452,7 @@ pub async fn test_mysql_driver() {
 }
 
 
-// use sqlx_core::postgres::PgPool;
+//use sqlx_core::postgres::PgPool;
 // #[tokio::main]
 // #[test]
 // pub async fn test_mysql_pg() {
@@ -463,8 +460,8 @@ pub async fn test_mysql_driver() {
 //     //pooledConn 交由rbatis上下文管理
 //     let mut conn = pool.acquire().await.unwrap();
 //     let mut c = conn.fetch("SELECT count(1) FROM biz_activity;");
-//     let r=c.encode().await.unwrap();
-//     println!("done:{}",r);
+//     let r: serde_json::Value = c.decode().await.unwrap();
+//     println!("done:{}", r);
 // }
 
 
@@ -476,6 +473,6 @@ pub async fn test_mysql_driver() {
 //     //pooledConn 交由rbatis上下文管理
 //     let mut conn = pool.acquire().await.unwrap();
 //     let mut c = conn.fetch("SELECT count(1) FROM biz_activity;");
-//     let r=c.encode().await.unwrap();
+//     let r:serde_json::Value=c.decode().await.unwrap();
 //     println!("done:{}",r);
 // }
