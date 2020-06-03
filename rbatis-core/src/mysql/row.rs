@@ -60,14 +60,11 @@ impl<'c> Row<'c> for MySqlRow<'c> {
             return Err(decode_err!("unexpected value {:?} for serde_json::Value", v.err().unwrap()));
         }
         let t: Result<T, serde_json::Error> = serde_json::from_value(v.unwrap());
-        return match t {
-            Ok(r) => {
-                Ok(r)
-            }
-            Err(e) => {
-                Err(decode_err!("unexpected value {:?} for serde_json::from_value", e.to_string()))
-            }
+        if t.is_err(){
+            let e = t.err().unwrap();
+            return  Err(decode_err!("unexpected value {:?} for serde_json::from_value", e.to_string()))
         }
+        return Ok(t.ok().unwrap());
     }
 }
 
