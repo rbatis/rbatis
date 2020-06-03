@@ -1,15 +1,15 @@
 use std::sync::Arc;
 
 use futures_core::future::BoxFuture;
+use serde::de::DeserializeOwned;
 
 use crate::connection::ConnectionSource;
 use crate::cursor::Cursor;
 use crate::executor::Execute;
 use crate::pool::Pool;
+use crate::postgres::{PgArguments, PgConnection, PgRow, Postgres};
 use crate::postgres::protocol::{DataRow, Message, ReadyForQuery, RowDescription};
 use crate::postgres::row::Statement;
-use crate::postgres::{PgArguments, PgConnection, PgRow, Postgres};
-use serde::de::DeserializeOwned;
 
 pub struct PgCursor<'c, 'q> {
     source: ConnectionSource<'c, PgConnection>,
@@ -24,9 +24,9 @@ impl<'c, 'q> Cursor<'c, 'q> for PgCursor<'c, 'q> {
 
     #[doc(hidden)]
     fn from_pool<E>(pool: &Pool<PgConnection>, query: E) -> Self
-    where
-        Self: Sized,
-        E: Execute<'q, Postgres>,
+        where
+            Self: Sized,
+            E: Execute<'q, Postgres>,
     {
         Self {
             source: ConnectionSource::Pool(pool.clone()),
@@ -37,9 +37,9 @@ impl<'c, 'q> Cursor<'c, 'q> for PgCursor<'c, 'q> {
 
     #[doc(hidden)]
     fn from_connection<E>(conn: &'c mut PgConnection, query: E) -> Self
-    where
-        Self: Sized,
-        E: Execute<'q, Postgres>,
+        where
+            Self: Sized,
+            E: Execute<'q, Postgres>,
     {
         Self {
             source: ConnectionSource::ConnectionRef(conn),
@@ -53,16 +53,16 @@ impl<'c, 'q> Cursor<'c, 'q> for PgCursor<'c, 'q> {
     }
 
     fn decode<T>(&mut self) -> BoxFuture<Result<T, String>>
-        where T: DeserializeOwned  {
+        where T: DeserializeOwned {
         Box::pin(async move {
             let mut arr = vec![];
             while let Some(row) = self.next().await.unwrap() as Option<PgRow<'_>> {
-                let mut m=serde_json::Map::new();
+                let mut m = serde_json::Map::new();
                 let keys = row.statement.names.keys();
                 for x in keys {
                     let key = x.to_string();
                     let v: serde_json::Value = row.json_decode_impl(key.as_str()).unwrap();
-                    m.insert(key,v);
+                    m.insert(key, v);
                 }
                 arr.push(serde_json::Value::Object(m));
             }
@@ -71,13 +71,11 @@ impl<'c, 'q> Cursor<'c, 'q> for PgCursor<'c, 'q> {
             if v.is_err() {
                 return Err(v.err().unwrap().to_string());
             }
-            let v:T = v.unwrap();
+            let v: T = v.unwrap();
             return Ok(v);
         })
     }
 }
-
-
 
 
 async fn next<'a, 'c: 'a, 'q: 'a>(
