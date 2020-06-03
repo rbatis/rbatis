@@ -57,9 +57,17 @@ impl<'c, 'q> Cursor<'c, 'q> for MySqlCursor<'c, 'q> {
         Box::pin(next(self))
     }
 
-    fn encode(&mut self) -> BoxFuture<'_, Result<serde_json::Value, String>> {
+    fn encode(&mut self) -> BoxFuture<Result<serde_json::Value, String>> {
+        Box::pin(encode(self));
         unimplemented!()
     }
+}
+
+async fn encode<'a, 'c: 'a, 'q: 'a>(c: &'a mut MySqlCursor<'c, 'q>) -> Result<serde_json::Value, String> {
+    while let Some(row) = c.next().await.unwrap() as Option<MySqlRow<'_>> {
+
+    }
+    return Ok(serde_json::Value::Null);
 }
 
 async fn next<'a, 'c: 'a, 'q: 'a>(
