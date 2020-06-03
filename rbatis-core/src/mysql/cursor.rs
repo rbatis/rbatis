@@ -10,6 +10,7 @@ use crate::executor::Execute;
 use crate::mysql::{MySql, MySqlArguments, MySqlConnection, MySqlRow, MySqlTypeInfo};
 use crate::mysql::protocol::{ColumnCount, ColumnDefinition, Row, Status};
 use crate::pool::Pool;
+use crate::decode::decode_result;
 
 pub struct MySqlCursor<'c, 'q> {
     source: ConnectionSource<'c, MySqlConnection>,
@@ -72,14 +73,8 @@ impl<'c, 'q> Cursor<'c, 'q> for MySqlCursor<'c, 'q> {
                 }
                 arr.push(serde_json::Value::Object(m));
             }
-            let o = serde_json::Value::Array(arr);
-            println!("build json:{}", o.to_string());
-            let v = serde_json::from_value(o);
-            if v.is_err() {
-                return Err(v.err().unwrap().to_string());
-            }
-            let v: T = v.unwrap();
-            return Ok(v);
+            let r = decode_result(arr)?;
+            return Ok(r);
         })
     }
 }
