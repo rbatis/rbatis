@@ -87,7 +87,7 @@ pub fn json_decode<T: ?Sized>(datas: Vec<serde_json::Value>) -> Result<T, crate:
     }
 }
 
-pub fn is_array(type_name: &str) -> bool {
+fn is_array(type_name: &str) -> bool {
     if type_name.starts_with("alloc::collections::linked_list")
         || type_name.starts_with("alloc::vec::Vec<")
         || type_name.starts_with("[")
@@ -97,7 +97,7 @@ pub fn is_array(type_name: &str) -> bool {
     return false;
 }
 
-pub fn json_len(js: &serde_json::Value) -> usize {
+fn json_len(js: &serde_json::Value) -> usize {
     if js.is_null() {
         return 0;
     } else if js.is_array() {
