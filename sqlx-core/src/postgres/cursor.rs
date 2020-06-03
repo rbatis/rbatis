@@ -52,9 +52,24 @@ impl<'c, 'q> Cursor<'c, 'q> for PgCursor<'c, 'q> {
     }
 
     fn encode(&mut self) -> BoxFuture<'_, Result<serde_json::Value, String>> {
-        unimplemented!()
+        Box::pin(encode(self))
     }
 }
+
+async fn encode<'a, 'c: 'a, 'q: 'a>(c: &'a mut PgCursor<'c, 'q>) -> Result<serde_json::Value, String> {
+    let mut arr = vec![];
+    while let Some(row) = c.next().await.unwrap() as Option<PgCursor<'_,'_>> {
+        let keys = row.statement.names.keys();
+        for x in keys {
+            let key = x.to_string();
+            let v: serde_json::Value = row.json_decode_impl(key.as_str()).unwrap();
+            arr.push(v);
+        }
+    }
+    let o = serde_json::Value::Array(arr);
+    return Ok(o);
+}
+
 
 async fn next<'a, 'c: 'a, 'q: 'a>(
     cursor: &'a mut PgCursor<'c, 'q>,
