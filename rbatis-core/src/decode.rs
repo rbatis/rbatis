@@ -8,9 +8,6 @@ use crate::database::Database;
 use crate::value::HasRawValue;
 
 /// A type that can be decoded from the database.
-/// support decode types:
-/// serde_json::Value,BigDecimal, i8..i64,u8..u64,serde_json::Number,bool,String
-/// or object used serde_json macro object
 pub trait Decode<'de, DB>
     where
         Self: Sized + 'de,
@@ -20,6 +17,9 @@ pub trait Decode<'de, DB>
 }
 
 /// decode json vec to an object
+/// support decode types:
+/// serde_json::Value,BigDecimal, i8..i64,u8..u64,serde_json::Number,bool,String
+/// or object used serde_json macro object
 pub fn json_decode<T: ?Sized>(datas: Vec<serde_json::Value>) -> Result<T, crate::Error>
     where T: DeserializeOwned {
     let mut js = serde_json::Value::Null;
