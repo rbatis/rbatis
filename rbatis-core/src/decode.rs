@@ -31,6 +31,10 @@ pub fn json_decode<T: ?Sized>(datas: Vec<serde_json::Value>) -> Result<T, crate:
             "f32" | "f64" |
             "serde_json::number::Number" |
             "bool"   => {
+                //decode struct
+                if datas.len() > 1 {
+                    return Result::Err(decode_err!("[rbatis] rows.affected_rows > 1,but decode one result({})!", type_name));
+                }
                 for item in datas {
                     match item {
                         serde_json::Value::Object(arg) => {
