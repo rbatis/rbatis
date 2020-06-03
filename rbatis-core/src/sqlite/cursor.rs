@@ -1,12 +1,12 @@
 use futures_core::future::BoxFuture;
+use serde::de::DeserializeOwned;
 
 use crate::connection::ConnectionSource;
 use crate::cursor::Cursor;
 use crate::executor::Execute;
 use crate::pool::Pool;
-use crate::sqlite::statement::Step;
 use crate::sqlite::{Sqlite, SqliteArguments, SqliteConnection, SqliteRow};
-use serde::de::DeserializeOwned;
+use crate::sqlite::statement::Step;
 
 pub struct SqliteCursor<'c, 'q> {
     pub(super) source: ConnectionSource<'c, SqliteConnection>,
@@ -22,9 +22,9 @@ impl<'c, 'q> Cursor<'c, 'q> for SqliteCursor<'c, 'q> {
 
     #[doc(hidden)]
     fn from_pool<E>(pool: &Pool<SqliteConnection>, query: E) -> Self
-    where
-        Self: Sized,
-        E: Execute<'q, Sqlite>,
+        where
+            Self: Sized,
+            E: Execute<'q, Sqlite>,
     {
         let (query, arguments) = query.into_parts();
 
@@ -38,9 +38,9 @@ impl<'c, 'q> Cursor<'c, 'q> for SqliteCursor<'c, 'q> {
 
     #[doc(hidden)]
     fn from_connection<E>(conn: &'c mut SqliteConnection, query: E) -> Self
-    where
-        Self: Sized,
-        E: Execute<'q, Sqlite>,
+        where
+            Self: Sized,
+            E: Execute<'q, Sqlite>,
     {
         let (query, arguments) = query.into_parts();
 
@@ -61,13 +61,13 @@ impl<'c, 'q> Cursor<'c, 'q> for SqliteCursor<'c, 'q> {
         Box::pin(async move {
             let mut arr = vec![];
             while let Some(row) = self.next().await.unwrap() as Option<SqliteRow<'_>> {
-                let mut m=serde_json::Map::new();
+                let mut m = serde_json::Map::new();
                 //TODO is sqlite column is true?
                 let keys = row.values;
                 for x in 0..keys {
                     let key = x.to_string();
                     let v: serde_json::Value = row.json_decode_impl(key.as_str()).unwrap();
-                    m.insert(key,v);
+                    m.insert(key, v);
                 }
                 arr.push(serde_json::Value::Object(m));
             }
@@ -76,13 +76,11 @@ impl<'c, 'q> Cursor<'c, 'q> for SqliteCursor<'c, 'q> {
             if v.is_err() {
                 return Err(v.err().unwrap().to_string());
             }
-            let v:T = v.unwrap();
+            let v: T = v.unwrap();
             return Ok(v);
-    })
+        })
     }
 }
-
-
 
 
 async fn next<'a, 'c: 'a, 'q: 'a>(
