@@ -10,7 +10,7 @@ use crate::pool::Pool;
 use crate::postgres::{PgArguments, PgConnection, PgRow, Postgres};
 use crate::postgres::protocol::{DataRow, Message, ReadyForQuery, RowDescription};
 use crate::postgres::row::Statement;
-use crate::decode::decode_result;
+use crate::decode::json_decode;
 
 pub struct PgCursor<'c, 'q> {
     source: ConnectionSource<'c, PgConnection>,
@@ -67,7 +67,7 @@ impl<'c, 'q> Cursor<'c, 'q> for PgCursor<'c, 'q> {
                 }
                 arr.push(serde_json::Value::Object(m));
             }
-            let r = decode_result(arr)?;
+            let r = json_decode(arr)?;
             return Ok(r);
         })
     }

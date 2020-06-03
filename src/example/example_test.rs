@@ -443,10 +443,10 @@ pub async fn test_mysql_driver() {
     let mut conn = pool.acquire().await.unwrap();
     count_wait_time("acquire", start);
     start = SystemTime::now();
-    let mut c = conn.fetch("SELECT * FROM biz_activity;");
+    let mut c = conn.fetch("SELECT count(1) FROM biz_activity;");
     count_wait_time("fetch", start);
     start = SystemTime::now();
-    let r:Vec<Activity> = c.decode().await.unwrap();
+    let r:i32 = c.decode().await.unwrap();
     count_wait_time("decode", start);
     println!("done:{:?}",r);
 }

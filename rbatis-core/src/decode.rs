@@ -16,7 +16,7 @@ where
 }
 
 /// decode json vec to an object
-pub fn decode_result<T: ?Sized>(datas: Vec<serde_json::Value>) -> Result<T, crate::Error>
+pub fn json_decode<T: ?Sized>(datas: Vec<serde_json::Value>) -> Result<T, crate::Error>
     where T: DeserializeOwned {
     let mut js = serde_json::Value::Null;
     let type_name = std::any::type_name::<T>();
@@ -24,17 +24,14 @@ pub fn decode_result<T: ?Sized>(datas: Vec<serde_json::Value>) -> Result<T, crat
         //decode array
         js = serde_json::Value::Array(datas);
     } else {
-        match std::any::type_name::<T>() {
+        match type_name {
+            //decode single type(from map type get an value)
             "i8" | "i16" | "i32"  | "i64" |
             "u8" | "u16" | "u32" | "u64" |
             "f32" | "f64" |
-            "serde_json::number::Number" => {
-                //decode number
-                let mut size = 0;
+            "serde_json::number::Number" |
+            "bool"   => {
                 for item in datas {
-                    if size > 0 {
-                        continue;
-                    }
                     match item {
                         serde_json::Value::Object(arg) => {
                             for (_, r) in arg {
@@ -44,7 +41,7 @@ pub fn decode_result<T: ?Sized>(datas: Vec<serde_json::Value>) -> Result<T, crat
                         }
                         _ => {}
                     }
-                    size += 1;
+                    break;
                 }
             }
             "serde_json::value::Value" => {
@@ -56,8 +53,10 @@ pub fn decode_result<T: ?Sized>(datas: Vec<serde_json::Value>) -> Result<T, crat
                 if datas.len() > 1 {
                     return Result::Err(decode_err!("[rbatis] rows.affected_rows > 1,but decode one result({})!", type_name));
                 }
+                //decode single object
                 for x in datas {
                     js = x;
+                    break;
                 }
             }
         }
