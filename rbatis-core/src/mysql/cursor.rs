@@ -59,11 +59,11 @@ impl<'c, 'q> Cursor<'c, 'q> for MySqlCursor<'c, 'q> {
         Box::pin(next(self))
     }
 
-    fn decode<T>(&mut self) -> BoxFuture<Result<T, String>>
+    fn decode<T>(&mut self) -> BoxFuture<Result<T, crate::Error>>
         where T: DeserializeOwned {
         Box::pin(async move {
             let mut arr = vec![];
-            while let Some(row) = self.next().await.unwrap() as Option<MySqlRow<'_>> {
+            while let Some(row) = self.next().await? as Option<MySqlRow<'_>> {
                 let mut m = serde_json::Map::new();
                 let keys = row.names.keys();
                 for x in keys {

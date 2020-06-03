@@ -16,7 +16,7 @@ where
 }
 
 /// decode json vec to an object
-pub fn decode_result<T: ?Sized>(datas: Vec<serde_json::Value>) -> Result<T, String>
+pub fn decode_result<T: ?Sized>(datas: Vec<serde_json::Value>) -> Result<T, crate::Error>
     where T: DeserializeOwned {
     let mut js = serde_json::Value::Null;
     let type_name = std::any::type_name::<T>();
@@ -56,7 +56,7 @@ pub fn decode_result<T: ?Sized>(datas: Vec<serde_json::Value>) -> Result<T, Stri
                 //decode struct
                 let len = datas.len();
                 if datas.len() > 1 {
-                    return Result::Err(String::from(format!("[rbatis] rows.affected_rows > 1,but decode one result({})!", type_name)));
+                    return Result::Err(decode_err!("[rbatis] rows.affected_rows > 1,but decode one result({})!", type_name));
                 }
                 for x in datas {
                     js = x;
@@ -69,7 +69,7 @@ pub fn decode_result<T: ?Sized>(datas: Vec<serde_json::Value>) -> Result<T, Stri
         return Result::Ok(decode_result.unwrap());
     } else {
         let e = decode_result.err().unwrap().to_string();
-        return Result::Err(String::from("[rbatis] json decode: ".to_string()+type_name+" fail:" + e.as_str()));
+        return Result::Err(decode_err!("[rbatis] json decode: {}, fail:{}" ,type_name, e.as_str()));
     }
 }
 
