@@ -16,6 +16,7 @@ use crate::value::RawValue;
 use serde_json::Value;
 use crate::decode::Decode;
 
+#[derive(Debug,Clone)]
 pub struct SqliteValue<'c> {
     pub(super) index: i32,
     pub(super) statement: &'c Statement,
@@ -174,7 +175,7 @@ impl<'c> RawValue<'c> for SqliteValue<'c> {
             SqliteType::Blob => {
                 unimplemented!()
             }
-            _ => Err(format!("un support database type for:{}!", type_string).to_string()),
+            _ => Err(format!("un support database type for:{:?}!", type_string).to_string()),
         }
     }
 }
