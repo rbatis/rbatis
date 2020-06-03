@@ -4,6 +4,7 @@ use crate::value::RawValue;
 use serde_json::Value;
 use crate::mysql::protocol::TypeId;
 use crate::decode::Decode;
+use crate::types::BigDecimal;
 
 #[derive(Debug, Copy, Clone)]
 pub enum MySqlData<'c> {
@@ -71,6 +72,13 @@ impl<'c> RawValue<'c> for MySqlValue<'c> {
         let type_string = format!("{}", self.type_info.as_ref().unwrap());
         match type_string.as_str() {
             "NULL" => return Ok(serde_json::Value::Null),
+            "NEWDECIMAL" => {
+                let r = BigDecimal::decode(self.clone());
+                if r.is_err() {
+                    return Err(r.err().unwrap().to_string());
+                }
+                return Ok(serde_json::Value::from(r.unwrap().to_string()));
+            }
             "BIGINT UNSIGNED" => {
                 let r = u64::decode(self.clone());
                 if r.is_err() {
