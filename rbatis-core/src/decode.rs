@@ -3,14 +3,15 @@ use serde::de;
 use serde::de::DeserializeOwned;
 use serde::export::fmt::Error;
 use serde::export::Formatter;
+
 use crate::database::Database;
 use crate::value::HasRawValue;
 
 /// A type that can be decoded from the database.
 pub trait Decode<'de, DB>
-where
-    Self: Sized + 'de,
-    DB: Database,
+    where
+        Self: Sized + 'de,
+        DB: Database,
 {
     fn decode(value: <DB as HasRawValue<'de>>::RawValue) -> crate::Result<Self>;
 }
@@ -26,11 +27,12 @@ pub fn json_decode<T: ?Sized>(datas: Vec<serde_json::Value>) -> Result<T, crate:
     } else {
         match type_name {
             //decode single type(from map type get an value)
-            "i8" | "i16" | "i32"  | "i64" |
+            "i8" | "i16" | "i32" | "i64" |
             "u8" | "u16" | "u32" | "u64" |
             "f32" | "f64" |
             "serde_json::number::Number" |
-            "bool"   => {
+            "bigdecimal::BigDecimal" |
+            "bool" => {
                 //decode struct
                 if datas.len() > 1 {
                     return Result::Err(decode_err!("[rbatis] rows.affected_rows > 1,but decode one result({})!", type_name));
@@ -51,6 +53,10 @@ pub fn json_decode<T: ?Sized>(datas: Vec<serde_json::Value>) -> Result<T, crate:
             "serde_json::value::Value" => {
                 //decode json
                 js = serde_json::Value::Array(datas)
+            }
+            "alloc::string::String" => {
+                js = serde_json::Value::Array(datas);
+                js = serde_json::Value::String(js.to_string());
             }
             _ => {
                 //decode struct
