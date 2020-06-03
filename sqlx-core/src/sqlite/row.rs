@@ -2,6 +2,7 @@ use crate::row::{ColumnIndex, Row};
 use crate::sqlite::statement::Statement;
 use crate::sqlite::value::SqliteValue;
 use crate::sqlite::{Sqlite, SqliteConnection};
+use serde::de::DeserializeOwned;
 
 #[derive(Debug)]
 pub struct SqliteRow<'c> {
@@ -23,6 +24,16 @@ impl<'c> SqliteRow<'c> {
     #[inline]
     fn statement(&self) -> &'c Statement {
         self.connection.statement(self.statement)
+    }
+}
+
+impl <'c>SqliteRow<'c>{
+    pub fn json_decode_impl<T, I>(&self, index: I) -> crate::Result<T>
+        where
+            I: ColumnIndex<'c, Self>,
+            T: DeserializeOwned
+    {
+        self.json_decode(index)
     }
 }
 

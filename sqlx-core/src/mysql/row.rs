@@ -4,11 +4,23 @@ use std::sync::Arc;
 use crate::mysql::protocol;
 use crate::mysql::{MySql, MySqlValue};
 use crate::row::{ColumnIndex, Row};
+use serde::de::DeserializeOwned;
+use crate::value::RawValue;
 
-#[derive( Debug)]
+#[derive(Debug)]
 pub struct MySqlRow<'c> {
     pub(super) row: protocol::Row<'c>,
     pub(super) names: Arc<HashMap<Box<str>, u16>>,
+}
+
+impl<'c> MySqlRow<'c> {
+    pub fn json_decode_impl<T, I>(&self, index: I) -> crate::Result<T>
+        where
+            I: ColumnIndex<'c, Self>,
+            T: DeserializeOwned
+    {
+        self.json_decode(index)
+    }
 }
 
 impl crate::row::private_row::Sealed for MySqlRow<'_> {}
@@ -22,8 +34,8 @@ impl<'c> Row<'c> for MySqlRow<'c> {
 
     #[doc(hidden)]
     fn try_get_raw<I>(&self, index: I) -> crate::Result<MySqlValue<'c>>
-    where
-        I: ColumnIndex<'c, Self>,
+        where
+            I: ColumnIndex<'c, Self>,
     {
         let index = index.index(self)?;
         let column_ty = self.row.columns[index].clone();
@@ -35,6 +47,27 @@ impl<'c> Row<'c> for MySqlRow<'c> {
         };
 
         Ok(value)
+    }
+
+    fn json_decode<T, I>(&self, index: I) -> crate::Result<T>
+        where
+            I: ColumnIndex<'c, Self>,
+            T: DeserializeOwned
+    {
+        let value = self.try_get_raw(index)?;
+        let v = value.try_to_json();
+        if (v.is_err()) {
+            return Err(decode_err!("unexpected value {:?} for serde_json::Value", v.err().unwrap()));
+        }
+        let t: Result<T, serde_json::Error> = serde_json::from_value(v.unwrap());
+        match t {
+            Ok(r) => {
+                return Ok(r);
+            }
+            Err(e) => {
+                return Err(decode_err!("unexpected value {:?} for serde_json::from_value", e.to_string()));
+            }
+        }
     }
 }
 

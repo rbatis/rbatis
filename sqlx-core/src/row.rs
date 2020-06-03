@@ -165,6 +165,7 @@ where
 
 
     ///json decode
+    #[inline]
     fn json_decode<T, I>(&self, index: I) -> crate::Result<T>
         where
             I: ColumnIndex<'c, Self>,
