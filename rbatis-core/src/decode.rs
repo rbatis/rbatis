@@ -35,7 +35,8 @@ pub fn json_decode<T: ?Sized>(datas: Vec<serde_json::Value>) -> Result<T, crate:
             "f32" | "f64" |
             "serde_json::number::Number" |
             "bigdecimal::BigDecimal" |
-            "bool" => {
+            "bool" |
+            "alloc::string::String" => {
                 //decode struct
                 if datas.len() > 1 {
                     return Result::Err(decode_err!("[rbatis] rows.affected_rows > 1,but decode one result({})!", type_name));
@@ -44,7 +45,14 @@ pub fn json_decode<T: ?Sized>(datas: Vec<serde_json::Value>) -> Result<T, crate:
                     match item {
                         serde_json::Value::Object(arg) => {
                             for (_, r) in arg {
-                                js = r;
+                                match type_name {
+                                    "alloc::string::String" => {
+                                        js = serde_json::Value::String(r.to_string());
+                                    }
+                                    _ => {
+                                        js = r;
+                                    }
+                                }
                                 break;
                             }
                         }
@@ -56,9 +64,6 @@ pub fn json_decode<T: ?Sized>(datas: Vec<serde_json::Value>) -> Result<T, crate:
             "serde_json::value::Value" => {
                 //decode json
                 js = serde_json::Value::Array(datas)
-            }
-            "alloc::string::String" => {
-                js = serde_json::Value::String(serde_json::Value::Array(datas).to_string());
             }
             _ => {
                 //decode struct
