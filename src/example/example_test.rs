@@ -39,7 +39,7 @@ use crate::rbatis::Rbatis;
 use crate::session_factory::{ConnPoolSessionFactory, SessionFactory, WaitType};
 use crate::tx::propagation::Propagation::{NONE, REQUIRED};
 use crate::tx::propagation::Propagation;
-use crate::utils::time_util::{count_nano, count_time, count_time_tps};
+use crate::utils::time_util::{count_wait_time, count_each_time, count_time_tps};
 
 /**
  初始化实例
@@ -420,7 +420,7 @@ pub fn bench_query_local() {
     for i in 0..total {
         let data: Result<Activity, RbatisError> = Rbatis::singleton().raw_sql("", "select * from biz_activity where id  = '2';");
     }
-    count_time_tps(total, start);
+    count_time_tps("bench_query_local",total, start);
 }
 
 
@@ -441,13 +441,13 @@ pub async fn test_mysql_driver() {
     //pooledConn 交由rbatis上下文管理
     let mut start = SystemTime::now();
     let mut conn = pool.acquire().await.unwrap();
-    count_nano("acquire()",start);
+    count_wait_time("acquire", start);
     start = SystemTime::now();
     let mut c = conn.fetch("SELECT * FROM biz_activity;");
-    count_nano("fetch()",start);
+    count_wait_time("fetch", start);
     start = SystemTime::now();
     let r:Vec<Activity> = c.decode().await.unwrap();
-    count_nano("decode()",start);
+    count_wait_time("decode", start);
     println!("done:{:?}",r);
 }
 
