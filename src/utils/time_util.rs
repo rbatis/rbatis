@@ -23,3 +23,8 @@ pub fn count_time(total: u128, start: SystemTime) {
     let mut time = SystemTime::now().duration_since(start).unwrap();
     println!("use Time: {} s,each:{} nano/op", time.as_secs(), time.as_nanos() / total as u128);
 }
+
+pub fn count_nano( start: SystemTime){
+    let mut time = SystemTime::now().duration_since(start).unwrap();
+    println!("use Time: {} nano", time.as_nanos());
+}

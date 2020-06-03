@@ -4,7 +4,7 @@ use std::cell::RefMut;
 use std::collections::LinkedList;
 use std::error::Error;
 use std::fs;
-use std::ops::Deref;
+use std::ops::{Deref, Sub};
 use std::process::exit;
 use std::rc::Rc;
 use std::sync::Arc;
@@ -35,7 +35,7 @@ use crate::rbatis::Rbatis;
 use crate::session_factory::{ConnPoolSessionFactory, SessionFactory, WaitType};
 use crate::tx::propagation::Propagation::{NONE, REQUIRED};
 use crate::tx::propagation::Propagation;
-use crate::utils::time_util::count_time_tps;
+use crate::utils::time_util::{count_time_tps, count_time, count_nano};
 
 /**
  初始化实例
@@ -442,9 +442,15 @@ use sqlx_core::mysql::{MySqlPool, MySqlRow, MySqlCursor};
 pub async fn test_mysql_driver() {
     let pool = MySqlPool::new(MYSQL_URL).await.unwrap();
     //pooledConn 交由rbatis上下文管理
+    let mut start = SystemTime::now();
     let mut conn = pool.acquire().await.unwrap();
+    count_nano(start);
+    start = SystemTime::now();
     let mut c = conn.fetch("SELECT count(1) FROM biz_activity;");
+    count_nano(start);
+    start = SystemTime::now();
     let r:serde_json::Value = c.decode().await.unwrap();
+    count_nano(start);
     println!("done:{}",r);
 }
 
