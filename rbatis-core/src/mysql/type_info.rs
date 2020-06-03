@@ -96,6 +96,7 @@ impl Display for MySqlTypeInfo {
             TypeId::TIME => f.write_str("TIME"),
             TypeId::DATETIME => f.write_str("DATETIME"),
             TypeId::TIMESTAMP => f.write_str("TIMESTAMP"),
+            TypeId::NEWDECIMAL => f.write_str("NEWDECIMAL"),
 
             id => write!(f, "<{:#x}>", id.0),
         }
