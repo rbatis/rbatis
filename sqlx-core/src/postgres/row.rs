@@ -6,6 +6,7 @@ use crate::postgres::type_info::SharedStr;
 use crate::postgres::value::PgValue;
 use crate::postgres::{PgTypeInfo, Postgres};
 use crate::row::{ColumnIndex, Row};
+use serde::de::DeserializeOwned;
 
 // A statement has 0 or more columns being returned from the database
 // For Postgres, each column has an OID and a format (binary or text)
@@ -41,6 +42,16 @@ pub struct PgRow<'c> {
     // shared reference to the statement this row is coming from
     // allows us to get the column information on demand
     pub(super) statement: Arc<Statement>,
+}
+
+impl <'c>PgRow<'c>{
+    pub fn json_decode_impl<T, I>(&self, index: I) -> crate::Result<T>
+        where
+            I: ColumnIndex<'c, Self>,
+            T: DeserializeOwned
+    {
+        self.json_decode(index)
+    }
 }
 
 impl crate::row::private_row::Sealed for PgRow<'_> {}
