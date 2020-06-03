@@ -1,4 +1,4 @@
-use crate::utils::time_util::count_time;
+use crate::utils::time_util::count_each_time;
 use chrono::{Local, DateTime};
 
 pub struct Bencher {
