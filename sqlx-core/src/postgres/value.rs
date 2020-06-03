@@ -13,7 +13,7 @@ pub enum PgData<'c> {
     Text(&'c str),
 }
 
-#[derive(Debug)]
+#[derive(Debug,Clone)]
 pub struct PgValue<'c> {
     type_info: Option<PgTypeInfo>,
     data: Option<PgData<'c>>,

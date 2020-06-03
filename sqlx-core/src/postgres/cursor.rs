@@ -58,7 +58,7 @@ impl<'c, 'q> Cursor<'c, 'q> for PgCursor<'c, 'q> {
 
 async fn encode<'a, 'c: 'a, 'q: 'a>(c: &'a mut PgCursor<'c, 'q>) -> Result<serde_json::Value, String> {
     let mut arr = vec![];
-    while let Some(row) = c.next().await.unwrap() as Option<PgCursor<'_,'_>> {
+    while let Some(row) = c.next().await.unwrap() as Option<PgRow<'_>> {
         let keys = row.statement.names.keys();
         for x in keys {
             let key = x.to_string();

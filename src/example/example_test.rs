@@ -429,23 +429,46 @@ pub fn test_log() {
 }
 
 
-use sqlx_core::mysql::{MySqlPool, MySqlRow, MySqlCursor};
+
 use sqlx_core::executor::Executor;
 use sqlx_core::cursor::Cursor;
 use sqlx_core::row::Row;
 
+
+use sqlx_core::mysql::{MySqlPool, MySqlRow, MySqlCursor};
 #[tokio::main]
 #[test]
-pub async fn test_sqlx() {
+pub async fn test_mysql_driver() {
     let pool = MySqlPool::new(MYSQL_URL).await.unwrap();
     //pooledConn 交由rbatis上下文管理
     let mut conn = pool.acquire().await.unwrap();
     let mut c = conn.fetch("SELECT count(1) FROM biz_activity;");
-    // while let Some(row) = c.next().await.unwrap() as Option<MySqlRow> {
-    //     println!("{:?}", row);
-    //     let counts:serde_json::Value = row.json_decode("count(1)").unwrap();
-    //     println!("json: {:?}", counts.to_string());
-    // }
     let r=c.encode().await.unwrap();
     println!("done:{}",r);
 }
+
+
+// use sqlx_core::postgres::PgPool;
+// #[tokio::main]
+// #[test]
+// pub async fn test_mysql_pg() {
+//     let pool = PgPool::new(MYSQL_URL).await.unwrap();
+//     //pooledConn 交由rbatis上下文管理
+//     let mut conn = pool.acquire().await.unwrap();
+//     let mut c = conn.fetch("SELECT count(1) FROM biz_activity;");
+//     let r=c.encode().await.unwrap();
+//     println!("done:{}",r);
+// }
+
+
+// use sqlx_core::sqlite::SqlitePool;
+// #[tokio::main]
+// #[test]
+// pub async fn test_mysql_sqlite() {
+//     let pool = SqlitePool::new(MYSQL_URL).await.unwrap();
+//     //pooledConn 交由rbatis上下文管理
+//     let mut conn = pool.acquire().await.unwrap();
+//     let mut c = conn.fetch("SELECT count(1) FROM biz_activity;");
+//     let r=c.encode().await.unwrap();
+//     println!("done:{}",r);
+// }

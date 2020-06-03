@@ -56,9 +56,25 @@ impl<'c, 'q> Cursor<'c, 'q> for SqliteCursor<'c, 'q> {
     }
 
     fn encode(&mut self) -> BoxFuture<'_, Result<serde_json::Value, String>> {
-        unimplemented!()
+        Box::pin(encode(self))
     }
 }
+
+async fn encode<'a, 'c: 'a, 'q: 'a>(c: &'a mut SqliteCursor<'c, 'q>) -> Result<serde_json::Value, String> {
+    let mut arr = vec![];
+    while let Some(row) = c.next().await.unwrap() as Option<SqliteRow<'_>> {
+        //TODO is sqlite column is true?
+        let keys = row.values;
+        for x in 0..keys {
+            let key = x.to_string();
+            let v: serde_json::Value = row.json_decode_impl(key.as_str()).unwrap();
+            arr.push(v);
+        }
+    }
+    let o = serde_json::Value::Array(arr);
+    return Ok(o);
+}
+
 
 async fn next<'a, 'c: 'a, 'q: 'a>(
     cursor: &'a mut SqliteCursor<'c, 'q>,
