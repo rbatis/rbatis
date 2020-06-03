@@ -56,16 +56,16 @@ impl<'c> Row<'c> for MySqlRow<'c> {
     {
         let value = self.try_get_raw(index)?;
         let v = value.try_to_json();
-        if (v.is_err()) {
+        if v.is_err() {
             return Err(decode_err!("unexpected value {:?} for serde_json::Value", v.err().unwrap()));
         }
         let t: Result<T, serde_json::Error> = serde_json::from_value(v.unwrap());
-        match t {
+        return match t {
             Ok(r) => {
-                return Ok(r);
+                Ok(r)
             }
             Err(e) => {
-                return Err(decode_err!("unexpected value {:?} for serde_json::from_value", e.to_string()));
+                Err(decode_err!("unexpected value {:?} for serde_json::from_value", e.to_string()))
             }
         }
     }

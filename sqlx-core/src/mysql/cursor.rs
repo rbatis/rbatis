@@ -72,7 +72,7 @@ impl<'c, 'q> Cursor<'c, 'q> for MySqlCursor<'c, 'q> {
             }
             let o = serde_json::Value::Array(arr);
             let v = serde_json::from_value(o);
-            if (v.is_err()){
+            if v.is_err() {
                 return Err(v.err().unwrap().to_string());
             }
             let v:T = v.unwrap();
