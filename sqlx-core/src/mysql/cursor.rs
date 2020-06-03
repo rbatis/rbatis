@@ -9,6 +9,7 @@ use crate::executor::Execute;
 use crate::mysql::protocol::{ColumnCount, ColumnDefinition, Row, Status};
 use crate::mysql::{MySql, MySqlArguments, MySqlConnection, MySqlRow, MySqlTypeInfo};
 use crate::pool::Pool;
+use serde::de::DeserializeOwned;
 
 pub struct MySqlCursor<'c, 'q> {
     source: ConnectionSource<'c, MySqlConnection>,
@@ -57,24 +58,30 @@ impl<'c, 'q> Cursor<'c, 'q> for MySqlCursor<'c, 'q> {
         Box::pin(next(self))
     }
 
-    fn encode(&mut self) -> BoxFuture<Result<serde_json::Value, String>> {
-        Box::pin(encode(self))
+    fn decode<T>(&mut self) -> BoxFuture<Result<T, String>>
+    where T: DeserializeOwned {
+        Box::pin(async move {
+            let mut arr = vec![];
+            while let Some(row) = self.next().await.unwrap() as Option<MySqlRow<'_>> {
+                let keys = row.names.keys();
+                for x in keys {
+                    let key = x.to_string();
+                    let v: serde_json::Value = row.json_decode_impl(key.as_str()).unwrap();
+                    arr.push(v);
+                }
+            }
+            let o = serde_json::Value::Array(arr);
+            let v = serde_json::from_value(o);
+            if (v.is_err()){
+                return Err(v.err().unwrap().to_string());
+            }
+            let v:T = v.unwrap();
+            return Ok(v);
+        })
     }
 }
 
-async fn encode<'a, 'c: 'a, 'q: 'a>(c: &'a mut MySqlCursor<'c, 'q>) -> Result<serde_json::Value, String> {
-    let mut arr = vec![];
-    while let Some(row) = c.next().await.unwrap() as Option<MySqlRow<'_>> {
-        let keys = row.names.keys();
-        for x in keys {
-            let key = x.to_string();
-            let v: serde_json::Value = row.json_decode_impl(key.as_str()).unwrap();
-            arr.push(v);
-        }
-    }
-    let o = serde_json::Value::Array(arr);
-    return Ok(o);
-}
+
 
 async fn next<'a, 'c: 'a, 'q: 'a>(
     cursor: &'a mut MySqlCursor<'c, 'q>,

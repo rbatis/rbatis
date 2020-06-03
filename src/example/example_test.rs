@@ -435,6 +435,7 @@ use sqlx_core::cursor::Cursor;
 use sqlx_core::row::Row;
 
 
+
 use sqlx_core::mysql::{MySqlPool, MySqlRow, MySqlCursor};
 #[tokio::main]
 #[test]
@@ -443,7 +444,7 @@ pub async fn test_mysql_driver() {
     //pooledConn 交由rbatis上下文管理
     let mut conn = pool.acquire().await.unwrap();
     let mut c = conn.fetch("SELECT count(1) FROM biz_activity;");
-    let r=c.encode().await.unwrap();
+    let r:serde_json::Value = c.decode().await.unwrap();
     println!("done:{}",r);
 }
 

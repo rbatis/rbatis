@@ -9,6 +9,7 @@ use crate::pool::Pool;
 use crate::postgres::protocol::{DataRow, Message, ReadyForQuery, RowDescription};
 use crate::postgres::row::Statement;
 use crate::postgres::{PgArguments, PgConnection, PgRow, Postgres};
+use serde::de::DeserializeOwned;
 
 pub struct PgCursor<'c, 'q> {
     source: ConnectionSource<'c, PgConnection>,
@@ -51,24 +52,30 @@ impl<'c, 'q> Cursor<'c, 'q> for PgCursor<'c, 'q> {
         Box::pin(next(self))
     }
 
-    fn encode(&mut self) -> BoxFuture<'_, Result<serde_json::Value, String>> {
-        Box::pin(encode(self))
+    fn decode<T>(&mut self) -> BoxFuture<Result<T, String>>
+        where T: DeserializeOwned  {
+        Box::pin(async move {
+            let mut arr = vec![];
+            while let Some(row) = c.next().await.unwrap() as Option<PgRow<'_>> {
+                let keys = row.statement.names.keys();
+                for x in keys {
+                    let key = x.to_string();
+                    let v: serde_json::Value = row.json_decode_impl(key.as_str()).unwrap();
+                    arr.push(v);
+                }
+            }
+            let o = serde_json::Value::Array(arr);
+            let v = serde_json::from_value(o);
+            if (v.is_err()){
+                return Err(v.err().unwrap().to_string());
+            }
+            let v:T = v.unwrap();
+            return Ok(v);
+        })
     }
 }
 
-async fn encode<'a, 'c: 'a, 'q: 'a>(c: &'a mut PgCursor<'c, 'q>) -> Result<serde_json::Value, String> {
-    let mut arr = vec![];
-    while let Some(row) = c.next().await.unwrap() as Option<PgRow<'_>> {
-        let keys = row.statement.names.keys();
-        for x in keys {
-            let key = x.to_string();
-            let v: serde_json::Value = row.json_decode_impl(key.as_str()).unwrap();
-            arr.push(v);
-        }
-    }
-    let o = serde_json::Value::Array(arr);
-    return Ok(o);
-}
+
 
 
 async fn next<'a, 'c: 'a, 'q: 'a>(
