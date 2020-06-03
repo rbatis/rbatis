@@ -69,7 +69,7 @@ where
     ) -> BoxFuture<'cur, crate::Result<Option<<Self::Database as HasRow<'cur>>::Row>>>;
 
 
-    fn decode<T>(&mut self) -> BoxFuture<Result<T, String>>
+    fn decode<T>(&mut self) -> BoxFuture<Result<T, crate::Error>>
     where  T: DeserializeOwned;
 }
 
