@@ -58,8 +58,7 @@ impl<'c, 'q> Cursor<'c, 'q> for MySqlCursor<'c, 'q> {
     }
 
     fn encode(&mut self) -> BoxFuture<Result<serde_json::Value, String>> {
-        Box::pin(encode(self));
-        unimplemented!()
+        Box::pin(encode(self))
     }
 }
 
