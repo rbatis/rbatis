@@ -21,7 +21,7 @@ pub fn json_decode<T: ?Sized>(datas: Vec<serde_json::Value>) -> Result<T, crate:
     where T: DeserializeOwned {
     let mut js = serde_json::Value::Null;
     let type_name = std::any::type_name::<T>();
-    if is_array::<T>(type_name) {
+    if is_array(type_name) {
         //decode array
         js = serde_json::Value::Array(datas);
     } else {
@@ -55,8 +55,7 @@ pub fn json_decode<T: ?Sized>(datas: Vec<serde_json::Value>) -> Result<T, crate:
                 js = serde_json::Value::Array(datas)
             }
             "alloc::string::String" => {
-                js = serde_json::Value::Array(datas);
-                js = serde_json::Value::String(js.to_string());
+                js = serde_json::Value::String(serde_json::Value::Array(datas).to_string());
             }
             _ => {
                 //decode struct
@@ -80,9 +79,7 @@ pub fn json_decode<T: ?Sized>(datas: Vec<serde_json::Value>) -> Result<T, crate:
     }
 }
 
-pub fn is_array<T: ?Sized>(type_name: &str) -> bool
-    where
-        T: de::DeserializeOwned {
+pub fn is_array(type_name: &str) -> bool {
     if type_name.starts_with("alloc::collections::linked_list")
         || type_name.starts_with("alloc::vec::Vec<")
         || type_name.starts_with("[")
