@@ -7,6 +7,7 @@ use crate::executor::Execute;
 use crate::pool::Pool;
 use crate::sqlite::{Sqlite, SqliteArguments, SqliteConnection, SqliteRow};
 use crate::sqlite::statement::Step;
+use crate::decode::decode_result;
 
 pub struct SqliteCursor<'c, 'q> {
     pub(super) source: ConnectionSource<'c, SqliteConnection>,
@@ -71,13 +72,8 @@ impl<'c, 'q> Cursor<'c, 'q> for SqliteCursor<'c, 'q> {
                 }
                 arr.push(serde_json::Value::Object(m));
             }
-            let o = serde_json::Value::Array(arr);
-            let v = serde_json::from_value(o);
-            if v.is_err() {
-                return Err(v.err().unwrap().to_string());
-            }
-            let v: T = v.unwrap();
-            return Ok(v);
+            let r = decode_result(arr)?;
+            return Ok(r);
         })
     }
 }
