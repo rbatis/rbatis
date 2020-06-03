@@ -25,9 +25,9 @@ impl<'c, 'q> Cursor<'c, 'q> for MySqlCursor<'c, 'q> {
 
     #[doc(hidden)]
     fn from_pool<E>(pool: &Pool<MySqlConnection>, query: E) -> Self
-    where
-        Self: Sized,
-        E: Execute<'q, MySql>,
+        where
+            Self: Sized,
+            E: Execute<'q, MySql>,
     {
         Self {
             source: ConnectionSource::Pool(pool.clone()),
@@ -40,9 +40,9 @@ impl<'c, 'q> Cursor<'c, 'q> for MySqlCursor<'c, 'q> {
 
     #[doc(hidden)]
     fn from_connection<E>(conn: &'c mut MySqlConnection, query: E) -> Self
-    where
-        Self: Sized,
-        E: Execute<'q, MySql>,
+        where
+            Self: Sized,
+            E: Execute<'q, MySql>,
     {
         Self {
             source: ConnectionSource::ConnectionRef(conn),
@@ -63,15 +63,17 @@ impl<'c, 'q> Cursor<'c, 'q> for MySqlCursor<'c, 'q> {
 }
 
 async fn encode<'a, 'c: 'a, 'q: 'a>(c: &'a mut MySqlCursor<'c, 'q>) -> Result<serde_json::Value, String> {
+    let mut arr = vec![];
     while let Some(row) = c.next().await.unwrap() as Option<MySqlRow<'_>> {
         let keys = row.names.keys();
         for x in keys {
             let key = x.to_string();
             let v: serde_json::Value = row.json_decode_impl(key.as_str()).unwrap();
-            println!("key:{},value:{}", key, v);
+            arr.push(v);
         }
     }
-    return Ok(serde_json::Value::Null);
+    let o = serde_json::Value::Array(arr);
+    return Ok(o);
 }
 
 async fn next<'a, 'c: 'a, 'q: 'a>(
@@ -99,22 +101,22 @@ async fn next<'a, 'c: 'a, 'q: 'a>(
         match packet_id {
             // OK or EOF packet
             0x00 | 0xFE
-                if conn.stream.packet().len() < 0xFF_FF_FF && (packet_id != 0x00 || initial) =>
-            {
-                let status = if let Some(eof) = conn.stream.maybe_handle_eof()? {
-                    eof.status
-                } else {
-                    conn.stream.handle_ok()?.status
-                };
+            if conn.stream.packet().len() < 0xFF_FF_FF && (packet_id != 0x00 || initial) =>
+                {
+                    let status = if let Some(eof) = conn.stream.maybe_handle_eof()? {
+                        eof.status
+                    } else {
+                        conn.stream.handle_ok()?.status
+                    };
 
-                if status.contains(Status::SERVER_MORE_RESULTS_EXISTS) {
-                    // There is more to this query
-                    initial = true;
-                } else {
-                    conn.is_ready = true;
-                    return Ok(None);
+                    if status.contains(Status::SERVER_MORE_RESULTS_EXISTS) {
+                        // There is more to this query
+                        initial = true;
+                    } else {
+                        conn.is_ready = true;
+                        return Ok(None);
+                    }
                 }
-            }
 
             // ERR packet
             0xFF => {

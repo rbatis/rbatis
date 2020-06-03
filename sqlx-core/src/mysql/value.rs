@@ -70,8 +70,6 @@ impl<'c> RawValue<'c> for MySqlValue<'c> {
 
         //TODO batter way to match type replace use string match
         let type_string = format!("{}", self.type_info.as_ref().unwrap());
-        println!("type_info >>> {}", type_string.clone());
-
         match type_string.as_str() {
             "NULL" => return Ok(serde_json::Value::Null),
             "BIGINT UNSIGNED" => {
