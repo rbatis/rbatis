@@ -6,6 +6,7 @@ use crate::executor::Execute;
 use crate::pool::Pool;
 use crate::sqlite::statement::Step;
 use crate::sqlite::{Sqlite, SqliteArguments, SqliteConnection, SqliteRow};
+use serde::de::DeserializeOwned;
 
 pub struct SqliteCursor<'c, 'q> {
     pub(super) source: ConnectionSource<'c, SqliteConnection>,
@@ -55,25 +56,31 @@ impl<'c, 'q> Cursor<'c, 'q> for SqliteCursor<'c, 'q> {
         Box::pin(next(self))
     }
 
-    fn encode(&mut self) -> BoxFuture<'_, Result<serde_json::Value, String>> {
-        Box::pin(encode(self))
+    fn decode<T>(&mut self) -> BoxFuture<Result<T, String>>
+        where T: DeserializeOwned {
+        Box::pin(async move {
+            let mut arr = vec![];
+            while let Some(row) = c.next().await.unwrap() as Option<SqliteRow<'_>> {
+                //TODO is sqlite column is true?
+                let keys = row.values;
+                for x in 0..keys {
+                    let key = x.to_string();
+                    let v: serde_json::Value = row.json_decode_impl(key.as_str()).unwrap();
+                    arr.push(v);
+                }
+            }
+            let o = serde_json::Value::Array(arr);
+            let v = serde_json::from_value(o);
+            if (v.is_err()){
+                return Err(v.err().unwrap().to_string());
+            }
+            let v:T = v.unwrap();
+            return Ok(v);
+    })
     }
 }
 
-async fn encode<'a, 'c: 'a, 'q: 'a>(c: &'a mut SqliteCursor<'c, 'q>) -> Result<serde_json::Value, String> {
-    let mut arr = vec![];
-    while let Some(row) = c.next().await.unwrap() as Option<SqliteRow<'_>> {
-        //TODO is sqlite column is true?
-        let keys = row.values;
-        for x in 0..keys {
-            let key = x.to_string();
-            let v: serde_json::Value = row.json_decode_impl(key.as_str()).unwrap();
-            arr.push(v);
-        }
-    }
-    let o = serde_json::Value::Array(arr);
-    return Ok(o);
-}
+
 
 
 async fn next<'a, 'c: 'a, 'q: 'a>(
