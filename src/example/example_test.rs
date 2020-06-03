@@ -448,7 +448,7 @@ pub async fn test_mysql_driver() {
     let mut c = conn.fetch("SELECT count(1) FROM biz_activity;");
     count_wait_time("fetch", start);
     start = SystemTime::now();
-    let r:String = c.decode().await.unwrap();
+    let r:BigDecimal = c.decode().await.unwrap();
     count_wait_time("decode", start);
     println!("done:{:?}",r);
 }
