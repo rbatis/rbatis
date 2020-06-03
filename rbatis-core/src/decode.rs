@@ -46,7 +46,7 @@ pub fn json_decode<T: ?Sized>(datas: Vec<serde_json::Value>) -> Result<T, crate:
                         serde_json::Value::Object(arg) => {
                             for (_, r) in arg {
                                 match type_name {
-                                    "alloc::string::String" => {
+                                    "alloc::string::String" | "bigdecimal::BigDecimal" => {
                                         js = serde_json::Value::String(r.to_string());
                                     }
                                     _ => {
