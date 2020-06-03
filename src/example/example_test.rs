@@ -444,13 +444,13 @@ pub async fn test_mysql_driver() {
     //pooledConn 交由rbatis上下文管理
     let mut start = SystemTime::now();
     let mut conn = pool.acquire().await.unwrap();
-    count_nano(start);
+    count_nano("acquire()",start);
     start = SystemTime::now();
     let mut c = conn.fetch("SELECT count(1) FROM biz_activity;");
-    count_nano(start);
+    count_nano("fetch()",start);
     start = SystemTime::now();
     let r:serde_json::Value = c.decode().await.unwrap();
-    count_nano(start);
+    count_nano("decode()",start);
     println!("done:{}",r);
 }
 
