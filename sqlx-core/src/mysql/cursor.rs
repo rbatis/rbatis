@@ -64,8 +64,12 @@ impl<'c, 'q> Cursor<'c, 'q> for MySqlCursor<'c, 'q> {
 
 async fn encode<'a, 'c: 'a, 'q: 'a>(c: &'a mut MySqlCursor<'c, 'q>) -> Result<serde_json::Value, String> {
     while let Some(row) = c.next().await.unwrap() as Option<MySqlRow<'_>> {
-        let f:i32=  row.json_decode_impl("count(1)").unwrap();
-        println!("f:{}",f);
+        let keys = row.names.keys();
+        for x in keys {
+            let key = x.to_string();
+            let v: serde_json::Value = row.json_decode_impl(key.as_str()).unwrap();
+            println!("key:{},value:{}", key, v);
+        }
     }
     return Ok(serde_json::Value::Null);
 }
