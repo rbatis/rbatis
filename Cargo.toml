@@ -13,7 +13,7 @@ license = "MIT"
 [features]
 
 [dependencies]
-sqlx-core = { version = "0.3.4", path = "sqlx-core", default-features = false , features = ["runtime-tokio","mysql","all-type"]}
+rbatis-core = { version = "0.0.1", path = "rbatis-core", default-features = false , features = ["runtime-tokio","mysql","all-type"]}
 chrono = { version = "0.4", features = ["serde"] }
 xml-rs = "0.8"
 lazy_static = "1.4.0"

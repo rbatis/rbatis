@@ -22,9 +22,9 @@ use rbatis_drivers::{DataType, Driver, ResultSet, ResultSetMetaData};
 use serde_json::{json, Number, Value};
 use tokio::task;
 
-use sqlx_core::cursor::Cursor;
-use sqlx_core::executor::Executor;
-use sqlx_core::row::Row;
+use rbatis_core::cursor::Cursor;
+use rbatis_core::executor::Executor;
+use rbatis_core::row::Row;
 
 use crate::ast::node::bind_node::BindNode;
 use crate::ast::node::node_type::NodeType;
@@ -433,7 +433,7 @@ pub fn test_log() {
 }
 
 
-use sqlx_core::mysql::{MySqlPool, MySqlRow, MySqlCursor};
+use rbatis_core::mysql::{MySqlPool, MySqlRow, MySqlCursor};
 #[tokio::main]
 #[test]
 pub async fn test_mysql_driver() {
@@ -452,7 +452,7 @@ pub async fn test_mysql_driver() {
 }
 
 
-//use sqlx_core::postgres::PgPool;
+//use rbatis_core::postgres::PgPool;
 // #[tokio::main]
 // #[test]
 // pub async fn test_mysql_pg() {
@@ -465,7 +465,7 @@ pub async fn test_mysql_driver() {
 // }
 
 
-// use sqlx_core::sqlite::SqlitePool;
+// use rbatis_core::sqlite::SqlitePool;
 // #[tokio::main]
 // #[test]
 // pub async fn test_mysql_sqlite() {
