@@ -67,7 +67,7 @@ pub fn decode_result<T: ?Sized>(datas: Vec<serde_json::Value>) -> Result<T, crat
         return Result::Ok(decode_result.unwrap());
     } else {
         let e = decode_result.err().unwrap().to_string();
-        return Result::Err(decode_err!("[rbatis] json decode: {}, fail:{}" ,type_name, e.as_str()));
+        return Result::Err(decode_err!("[rbatis] json decode: {}, fail:{}" ,type_name, e));
     }
 }
 
