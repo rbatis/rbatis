@@ -446,12 +446,12 @@ pub async fn test_mysql_driver() {
     let mut conn = pool.acquire().await.unwrap();
     count_nano("acquire()",start);
     start = SystemTime::now();
-    let mut c = conn.fetch("SELECT count(1) FROM biz_activity;");
+    let mut c = conn.fetch("SELECT * FROM biz_activity;");
     count_nano("fetch()",start);
     start = SystemTime::now();
-    let r:serde_json::Value = c.decode().await.unwrap();
+    let r:Vec<Activity> = c.decode().await.unwrap();
     count_nano("decode()",start);
-    println!("done:{}",r);
+    println!("done:{:?}",r);
 }
 
 
