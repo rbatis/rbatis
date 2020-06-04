@@ -20,7 +20,6 @@ pub fn count_each_time(tag: &str, total: u128, start: SystemTime) {
 
 //count wait time
 pub fn count_wait_time(tag: &str, start: SystemTime) {
-    let mut unit="nano";
     let mut wait = SystemTime::now().duration_since(start).unwrap();
     if wait.gt(&Duration::from_millis(1)) {
         println!("[count_wait_time] {} use Time: {} ms", tag, wait.as_millis());
