@@ -75,6 +75,6 @@ fn bench_example() {
     for _ in 0..total{
         data.eval(arg,&mut rbatis.engine,&mut arg_array);
     }
-    utils::time_util::count_each_time("bench_example",total, now);
-    utils::time_util::count_tps("bench_example",total,now);
+    utils::time_util::print_each_time("bench_example", total, now);
+    utils::time_util::print_qps("bench_example", total, now);
 }
