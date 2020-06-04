@@ -1,4 +1,4 @@
-use std::time::SystemTime;
+use std::time::{SystemTime, Duration};
 
 pub fn count_time_tps(tag: &str, total: u128, start: SystemTime) {
     count_tps(tag, total, start);
@@ -20,6 +20,13 @@ pub fn count_each_time(tag: &str, total: u128, start: SystemTime) {
 
 //count wait time
 pub fn count_wait_time(tag: &str, start: SystemTime) {
-    let mut time = SystemTime::now().duration_since(start).unwrap();
-    println!("[count_wait_time] {} use Time: {} nano", tag, time.as_nanos());
+    let mut unit="nano";
+    let mut wait = SystemTime::now().duration_since(start).unwrap();
+    if wait.gt(&Duration::from_millis(1)) {
+        println!("[count_wait_time] {} use Time: {} ms", tag, wait.as_millis());
+    }else if wait.gt(&Duration::from_secs(1)) {
+        println!("[count_wait_time] {} use Time: {} s", tag, wait.as_secs());
+    }else{
+        println!("[count_wait_time] {} use Time: {} nano", tag, wait.as_nanos());
+    }
 }
