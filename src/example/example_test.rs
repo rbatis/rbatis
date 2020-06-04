@@ -39,7 +39,7 @@ use crate::rbatis::Rbatis;
 use crate::session_factory::{ConnPoolSessionFactory, SessionFactory, WaitType};
 use crate::tx::propagation::Propagation::{NONE, REQUIRED};
 use crate::tx::propagation::Propagation;
-use crate::utils::time_util::{count_wait_time, count_each_time, count_time_tps};
+use crate::utils::time_util::{print_time, print_each_time, count_time_tps};
 
 /**
  初始化实例
@@ -443,13 +443,13 @@ pub async fn test_mysql_driver() {
     //pooledConn 交由rbatis上下文管理
     let mut start = SystemTime::now();
     let mut conn = pool.acquire().await.unwrap();
-    count_wait_time("acquire", start);
+    print_time("acquire", start);
     start = SystemTime::now();
     let mut c = conn.fetch("SELECT count(1) FROM biz_activity;");
-    count_wait_time("fetch", start);
+    print_time("fetch", start);
     start = SystemTime::now();
     let r:BigDecimal = c.decode().await.unwrap();
-    count_wait_time("decode", start);
+    print_time("decode", start);
     println!("done:{:?}",r);
 }
 
