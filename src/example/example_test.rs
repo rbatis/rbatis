@@ -20,7 +20,6 @@ use hyper::service::{make_service_fn, service_fn};
 use log::{error, info, warn};
 use rbatis_drivers::{DataType, Driver, ResultSet, ResultSetMetaData};
 use serde_json::{json, Number, Value};
-use tokio::task;
 
 use rbatis_core::cursor::Cursor;
 use rbatis_core::executor::Executor;
@@ -436,21 +435,25 @@ pub fn test_log() {
 use rbatis_core::mysql::{MySqlPool, MySqlRow, MySqlCursor};
 use rbatis_core::types::BigDecimal;
 
-#[tokio::main]
+
 #[test]
-pub async fn test_mysql_driver() {
-    let pool = MySqlPool::new(MYSQL_URL).await.unwrap();
-    //pooledConn 交由rbatis上下文管理
-    let mut start = SystemTime::now();
-    let mut conn = pool.acquire().await.unwrap();
-    print_time("acquire", start);
-    start = SystemTime::now();
-    let mut c = conn.fetch("SELECT count(1) FROM biz_activity;");
-    print_time("fetch", start);
-    start = SystemTime::now();
-    let r:BigDecimal = c.decode().await.unwrap();
-    print_time("decode", start);
-    println!("done:{:?}",r);
+pub fn test_mysql_driver() {
+    async_std::task::block_on(
+        async move {
+            let pool = MySqlPool::new(MYSQL_URL).await.unwrap();
+            //pooledConn 交由rbatis上下文管理
+            let mut start = SystemTime::now();
+            let mut conn = pool.acquire().await.unwrap();
+            print_time("acquire", start);
+            start = SystemTime::now();
+            let mut c = conn.fetch("SELECT count(1) FROM biz_activity;");
+            print_time("fetch", start);
+            start = SystemTime::now();
+            let r:BigDecimal = c.decode().await.unwrap();
+            print_time("decode", start);
+            println!("done:{:?}",r);
+        }
+    );
 }
 
 
