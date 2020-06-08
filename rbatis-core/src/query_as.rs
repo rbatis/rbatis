@@ -10,6 +10,7 @@ use crate::types::Type;
 /// using [`FromRow`](trait.FromRow.html). Returned
 /// by [`query_as`](fn.query_as.html).
 #[must_use = "query must be executed to affect database"]
+#[derive(Debug)]
 pub struct QueryAs<'q, DB, O>
 where
     DB: Database,

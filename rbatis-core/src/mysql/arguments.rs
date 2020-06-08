@@ -4,7 +4,7 @@ use crate::mysql::type_info::MySqlTypeInfo;
 use crate::mysql::MySql;
 use crate::types::Type;
 
-#[derive(Default)]
+#[derive(Default,Debug)]
 pub struct MySqlArguments {
     pub(crate) param_types: Vec<MySqlTypeInfo>,
     pub(crate) params: Vec<u8>,

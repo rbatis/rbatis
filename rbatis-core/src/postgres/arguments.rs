@@ -6,7 +6,7 @@ use crate::io::BufMut;
 use crate::postgres::{PgRawBuffer, PgTypeInfo, Postgres};
 use crate::types::Type;
 
-#[derive(Default)]
+#[derive(Default,Debug)]
 pub struct PgArguments {
     // Types of the bind parameters
     pub(super) types: Vec<PgTypeInfo>,
