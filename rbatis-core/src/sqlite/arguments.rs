@@ -32,7 +32,7 @@ pub enum SqliteArgumentValue {
     Int64(i64),
 }
 
-#[derive(Default)]
+#[derive(Default,Debug)]
 pub struct SqliteArguments {
     index: usize,
     values: Vec<SqliteArgumentValue>,

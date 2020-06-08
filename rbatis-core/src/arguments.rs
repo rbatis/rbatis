@@ -3,9 +3,10 @@
 use crate::database::Database;
 use crate::encode::Encode;
 use crate::types::Type;
+use bitflags::_core::fmt::Debug;
 
 /// A tuple of arguments to be sent to the database.
-pub trait Arguments: Send + Sized + Default + 'static {
+pub trait Arguments: Send + Sized + Default+ Debug + 'static {
     type Database: Database + ?Sized;
 
     /// Reserves the capacity for at least `len` more values (of `size` bytes) to
