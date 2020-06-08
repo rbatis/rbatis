@@ -21,6 +21,7 @@ where
     Self: Executor,
 {
     /// Starts a new transaction.
+    /// 从conn启动一个事务，因为conn的所有权移动给了Transaction,直到Transaction commit 或者 rollback完成时返回原来的conn连接
     ///
     /// Wraps this connection in [`Transaction`] to manage the transaction lifecycle. To get the
     /// original connection back, explicitly [`commit`] or [`rollback`] and this connection will
@@ -33,6 +34,7 @@ where
     /// let conn = tx.commit().await?;
     /// // conn is back now and out of the transaction
     /// ```
+    ///
     ///
     /// [`commit`]: crate::transaction::Transaction::commit
     /// [`rollback`]: crate::transaction::Transaction::rollback
