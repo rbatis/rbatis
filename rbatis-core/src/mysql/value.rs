@@ -1,8 +1,6 @@
 use crate::error::UnexpectedNullError;
 use crate::mysql::{MySql, MySqlTypeInfo};
 use crate::value::RawValue;
-use serde_json::Value;
-use crate::mysql::protocol::TypeId;
 use crate::decode::Decode;
 use crate::types::BigDecimal;
 

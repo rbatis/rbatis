@@ -1,8 +1,5 @@
 //! Types and traits for decoding values from the database.
-use serde::de;
 use serde::de::DeserializeOwned;
-use serde::export::fmt::Error;
-use serde::export::Formatter;
 
 use crate::database::Database;
 use crate::value::HasRawValue;
@@ -95,14 +92,4 @@ fn is_array(type_name: &str) -> bool {
         return true;
     }
     return false;
-}
-
-fn json_len(js: &serde_json::Value) -> usize {
-    if js.is_null() {
-        return 0;
-    } else if js.is_array() {
-        return js.as_array().unwrap().len();
-    } else {
-        return 1;
-    }
 }
