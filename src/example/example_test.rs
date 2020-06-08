@@ -6,6 +6,7 @@ use std::time::{Duration, SystemTime};
 use crate::example::conf::MYSQL_URL;
 use rbatis_core::executor::Executor;
 use rbatis_core::cursor::Cursor;
+use rbatis_core::connection::Connection;
 
 
 #[test]
