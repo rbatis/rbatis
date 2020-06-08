@@ -32,7 +32,9 @@ pub struct Py {}
 
 
 impl Py {
-    //编译缓存
+
+    /// parser and cache py data sql,return an vec node type
+    ///编译并且缓存py slq数据，返回node type 数组
     pub fn parser_by_cache(arg: &str) -> Result<Vec<NodeType>, RbatisError> {
         // RwLock //let PY_PARSER_MAP: Mutex<HashMap<String, Vec<NodeType>>> = Mutex::new(HashMap::new());
         let mut rd = PY_PARSER_MAP.lock().unwrap();
@@ -46,6 +48,8 @@ impl Py {
         }
     }
 
+    /// parser py string data
+    /// 解析py语法
     pub fn parser(arg: &str) -> Result<Vec<NodeType>, RbatisError> {
         let line_space_map = Py::create_line_space_map(arg);
 
