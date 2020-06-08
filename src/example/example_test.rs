@@ -21,7 +21,7 @@ pub fn test_log() {
 
 #[test]
 pub fn test_mysql_driver() {
-    async_std::task::block_on(
+   let r =  async_std::task::block_on(
         async move {
             let pool = MySqlPool::new(MYSQL_URL).await.unwrap();
             //pooledConn 交由rbatis上下文管理

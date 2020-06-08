@@ -20,3 +20,4 @@ pub mod decode;
 pub mod plugin;
 pub mod error;
 pub mod db_config;
+pub mod rbatis;
