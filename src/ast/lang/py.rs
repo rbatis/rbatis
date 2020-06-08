@@ -25,7 +25,7 @@ use crate::engine::runtime::RbatisEngine;
 use crate::error::RbatisError;
 
 lazy_static! {
-  static ref ParserMap: Mutex<HashMap<String,Vec<NodeType>>> = Mutex::new(HashMap::new());
+  static ref PY_PARSER_MAP: Mutex<HashMap<String,Vec<NodeType>>> = Mutex::new(HashMap::new());
 }
 
 pub struct Py {}
@@ -34,8 +34,8 @@ pub struct Py {}
 impl Py {
     //编译缓存
     pub fn parser_by_cache(arg: &str) -> Result<Vec<NodeType>, RbatisError> {
-        // RwLock //let ParserMap: Mutex<HashMap<String, Vec<NodeType>>> = Mutex::new(HashMap::new());
-        let mut rd = ParserMap.lock().unwrap();
+        // RwLock //let PY_PARSER_MAP: Mutex<HashMap<String, Vec<NodeType>>> = Mutex::new(HashMap::new());
+        let mut rd = PY_PARSER_MAP.lock().unwrap();
         let nodes = rd.get(&arg.to_string());
         if nodes.is_some() {
             return Ok(nodes.unwrap().clone());
@@ -246,7 +246,7 @@ impl Py {
             }
         } else {
             //string,replace space to only one
-            let mut s_node;
+            let s_node;
             if space <= 1 {
                 s_node = StringNode::new(x);
             } else {
@@ -367,7 +367,7 @@ pub fn test_exec() {
         "del":1,
         "ids":[1,2,3]
     });
-    let mut r = crate::ast::node::node::do_child_nodes(&pys, &mut env, &mut engine, &mut arg_array).unwrap();
+    let r = crate::ast::node::node::do_child_nodes(&pys, &mut env, &mut engine, &mut arg_array).unwrap();
     println!("{}", r.clone());
     println!("{:?}", arg_array.clone());
 }

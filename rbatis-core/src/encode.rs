@@ -3,12 +3,6 @@
 use crate::database::Database;
 use crate::types::Type;
 use std::mem;
-use crate::cursor::{HasCursor, Cursor};
-use serde_json::Value;
-use crate::connection::Connect;
-use crate::executor::RefExecutor;
-use crate::cursor;
-use crate::row::Row;
 
 /// The return type of [Encode::encode].
 pub enum IsNull {
