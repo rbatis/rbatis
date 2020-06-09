@@ -2,9 +2,7 @@ use std::path::Display;
 
 use serde::{Deserialize, Serialize};
 
-/**
-* 数据库表模型
-*/
+///数据库表模型
 #[derive(Serialize, Deserialize, Clone, Debug)]
 pub struct Activity {
     pub id: Option<String>,

@@ -3,7 +3,7 @@ use std::collections::HashMap;
 
 use serde_json::{json, Value};
 
-use crate::ast::ast::Ast;
+use crate::ast::ast::RbatisAST;
 
 use crate::ast::node::node::{create_deep, SqlNodePrint};
 use crate::engine;
@@ -12,9 +12,7 @@ use crate::convert::sql_value_convert::SqlValueConvert;
 use crate::engine::runtime::RbatisEngine;
 use crate::error::RbatisError;
 
-/**
-*  string抽象节点
-**/
+///string抽象节点
 #[derive(Clone,Debug)]
 pub struct StringNode {
     pub value: String,
@@ -42,7 +40,7 @@ impl StringNode {
     }
 }
 
-impl Ast for StringNode {
+impl RbatisAST for StringNode {
     fn eval(&self, env: &mut Value, engine: &mut RbatisEngine,arg_array:&mut Vec<Value>) -> Result<String, RbatisError> {
         let mut result = self.value.clone();
         for (item, value) in &self.express_map {

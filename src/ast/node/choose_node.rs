@@ -4,7 +4,7 @@ use std::ops::DerefMut;
 
 use serde_json::{json, Value};
 
-use crate::ast::ast::Ast;
+use crate::ast::ast::RbatisAST;
 
 use crate::ast::node::node::{create_deep, print_child, SqlNodePrint};
 use crate::ast::node::node_type::NodeType;
@@ -20,7 +20,7 @@ pub struct ChooseNode {
     pub otherwise_node: Option<Box<NodeType>>,
 }
 
-impl Ast for ChooseNode {
+impl RbatisAST for ChooseNode {
     fn eval(&self, env: &mut Value, engine: &mut RbatisEngine,arg_array:&mut Vec<Value>) -> Result<String, RbatisError> {
         if self.when_nodes.is_none() == false {
             for item in self.when_nodes.clone().unwrap() {
