@@ -138,13 +138,11 @@ pub fn loop_decode_xml(xml_vec: &Vec<Element>) -> Vec<NodeType> {
 
             "id" => nodes.push(NodeType::NResultMapIdNode(ResultMapIdNode {
                 column: xml.get_attr("column"),
-                property: xml.get_attr("property"),
                 lang_type: xml.get_attr("lang_type"),
             })),
 
             "result" => nodes.push(NodeType::NResultMapResultNode(ResultMapResultNode {
                 column: xml.get_attr("column"),
-                property: xml.get_attr("property"),
                 lang_type: xml.get_attr("lang_type"),
                 version_enable: xml.get_attr("version_enable"),
                 logic_enable: xml.get_attr("logic_enable"),

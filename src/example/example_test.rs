@@ -42,23 +42,19 @@ pub fn test_rbatis(){
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
         "https://raw.githubusercontent.com/zhuxiujia/Rbatis/master/rbatis-mapper.dtd">
 <mapper>
-    <!--logic_enable 逻辑删除字段-->
-    <!--logic_deleted 逻辑删除已删除字段-->
-    <!--logic_undelete 逻辑删除 未删除字段-->
-    <!--version_enable 乐观锁版本字段,支持int,int8,int16,int32,int64-->
     <result_map id="BaseResultMap" table="biz_activity">
-        <id column="id" property="id"/>
-        <result column="name" property="name" lang_type="string"/>
-        <result column="pc_link" property="pc_link" lang_type="string"/>
-        <result column="h5_link" property="h5_link" lang_type="string"/>
-        <result column="pc_banner_img" property="pc_banner_img" lang_type="string"/>
-        <result column="h5_banner_img" property="h5_banner_img" lang_type="string"/>
-        <result column="sort" property="sort" lang_type="string"/>
-        <result column="status" property="status" lang_type="number"/>
-        <result column="remark" property="remark" lang_type="string"/>
-        <result column="version" property="version" lang_type="number" version_enable="true"/>
-        <result column="create_time" property="create_time" lang_type="time"/>
-        <result column="delete_flag" property="delete_flag" lang_type="number" logic_enable="true" logic_undelete="1"
+        <id column="id"/>
+        <result column="name" lang_type="string"/>
+        <result column="pc_link" lang_type="string"/>
+        <result column="h5_link" lang_type="string"/>
+        <result column="pc_banner_img" lang_type="string"/>
+        <result column="h5_banner_img" lang_type="string"/>
+        <result column="sort" lang_type="string"/>
+        <result column="status" lang_type="number"/>
+        <result column="remark" lang_type="string"/>
+        <result column="version" lang_type="number" version_enable="true"/>
+        <result column="create_time" lang_type="time"/>
+        <result column="delete_flag" lang_type="number" logic_enable="true" logic_undelete="1"
                 logic_deleted="0"/>
     </result_map>
     <select id="select_by_condition">
