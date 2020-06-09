@@ -7,6 +7,7 @@ use crate::example::conf::MYSQL_URL;
 use rbatis_core::executor::Executor;
 use rbatis_core::cursor::Cursor;
 use rbatis_core::connection::Connection;
+use crate::rbatis::Rbatis;
 
 
 #[test]
@@ -34,3 +35,11 @@ pub fn test_mysql_driver() {
     );
 }
 
+#[test]
+pub fn test_rbatis(){
+    let mut rb = Rbatis::new();
+    rb.load_py("test",r#"
+    if 1 ==1:
+      select * from biz_activity;
+    "#).unwrap();
+}
