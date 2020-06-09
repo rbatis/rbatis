@@ -13,7 +13,6 @@ use crate::error::RbatisError;
 #[derive(Serialize, Deserialize, Clone, Debug)]
 pub struct ResultMapResultNode {
     pub column: String,
-    pub property: String,
     pub lang_type: String,
 
     pub version_enable: String,
@@ -33,7 +32,6 @@ impl SqlNodePrint for ResultMapResultNode {
     fn print(&self, deep: i32) -> String {
         let mut result = create_deep(deep) + "<result ";
         result = result + " column=\"" + self.column.as_str() + "\"";
-        result = result + " property=\"" + self.property.as_str() + "\"";
         result = result + " lang_type=\"" + self.lang_type.as_str() + "\"";
         result = result + "></result>";
         return result;
