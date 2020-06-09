@@ -22,9 +22,20 @@ use crate::ast::node::delete_node::DeleteNode;
 use crate::ast::node::update_node::UpdateNode;
 use crate::engine::runtime::RbatisEngine;
 
-pub fn parser(xml_content: String, engine:&RbatisEngine) -> HashMap<String, NodeType> {
+
+
+
+pub struct Xml {}
+
+impl Xml{
+    pub fn parser(xml_content: &str) -> HashMap<String, NodeType> {
+        return parser(xml_content);
+    }
+}
+
+pub fn parser(xml_content: &str) -> HashMap<String, NodeType> {
     let nodes = load_xml(xml_content);
-    let data = loop_decode_xml(&nodes, engine);
+    let data = loop_decode_xml(&nodes);
     let mut m = HashMap::new();
     for x in &data {
         match x{
@@ -47,12 +58,12 @@ pub fn parser(xml_content: String, engine:&RbatisEngine) -> HashMap<String, Node
     return m;
 }
 
-pub fn loop_decode_xml(xml_vec: &Vec<Element>, engine: &RbatisEngine) -> Vec<NodeType> {
+pub fn loop_decode_xml(xml_vec: &Vec<Element>) -> Vec<NodeType> {
     let mut nodes = vec![];
     for xml in xml_vec {
         let child_nodes;
         if xml.childs.len() > 0 {
-            child_nodes = loop_decode_xml(&(&xml).childs, engine);
+            child_nodes = loop_decode_xml(&(&xml).childs);
         } else {
             child_nodes = vec![];
         }
