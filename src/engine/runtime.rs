@@ -86,9 +86,7 @@ pub fn is_number(arg: &String) -> bool {
 }
 
 
-/**
- * 将原始字符串解析为 去除空格的token数组
-**/
+///将原始字符串解析为 去除空格的token数组
 pub fn parser_tokens(s: &String, opt_map: &OptMap) -> Vec<String> {
     let chars = s.chars();
     let chars_len = s.len() as i32;

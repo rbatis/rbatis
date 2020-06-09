@@ -26,7 +26,7 @@ use crate::ast::node::where_node::WhereNode;
 use crate::utils::xml_loader::Element;
 
 use super::node_type::NodeType;
-use crate::ast::ast::Ast;
+use crate::ast::ast::RbatisAST;
 use crate::engine::runtime::RbatisEngine;
 use crate::error::RbatisError;
 

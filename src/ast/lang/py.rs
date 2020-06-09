@@ -6,7 +6,7 @@ use std::sync::{Mutex, RwLock};
 use serde_json::json;
 use serde_json::Value;
 
-use crate::ast::ast::Ast;
+use crate::ast::ast::RbatisAST;
 
 use crate::ast::node::bind_node::BindNode;
 use crate::ast::node::choose_node::ChooseNode;

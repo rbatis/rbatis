@@ -2,7 +2,7 @@
 
 use serde_json::{json, Value};
 
-use crate::ast::ast::Ast;
+use crate::ast::ast::RbatisAST;
 
 use crate::ast::node::bind_node::BindNode;
 use crate::ast::node::choose_node::ChooseNode;
@@ -70,7 +70,7 @@ impl NodeType {
     }
 }
 
-impl<'a> Ast for NodeType {
+impl<'a> RbatisAST for NodeType {
     fn eval(&self, env: &mut Value, engine: &mut RbatisEngine,arg_array:&mut Vec<Value>) -> Result<String, RbatisError> {
         match self {
             NodeType::NResultMapIdNode(node) => return node.eval(env,engine,arg_array),
