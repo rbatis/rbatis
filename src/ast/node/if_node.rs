@@ -17,15 +17,11 @@ pub struct IfNode {
 
 impl RbatisAST for IfNode {
     fn eval(&self, env: &mut Value, engine: &mut RbatisEngine,arg_array:&mut Vec<Value>) -> Result<String, RbatisError> {
-        let result = engine.eval(self.test.as_str(), env);
-        if result.is_err() {
-            return Result::Err(RbatisError::from(result.err().unwrap()));
-        }
-        let b = &result.unwrap();
-        if !b.is_boolean() {
+        let result = engine.eval(self.test.as_str(), env)?;
+        if !result.is_boolean() {
             return Result::Err(RbatisError::from("[rbatis] express:'".to_owned() + self.test.as_str() + "' is not return bool value!"));
         }
-        if b.as_bool().unwrap() {
+        if result.as_bool().unwrap() {
             return do_child_nodes(&self.childs, env,engine,arg_array);
         }
         return Result::Ok("".to_string());
