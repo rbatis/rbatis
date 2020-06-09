@@ -48,11 +48,8 @@ impl RbatisAST for ForEachNode {
             obj_map.insert("item".to_string(), item.clone());
             obj_map.insert("index".to_string(), Value::Number(serde_json::Number::from_f64(index as f64).unwrap()));
             let mut temp_arg: Value = Value::Object(obj_map);
-            let item_result = do_child_nodes(&self.childs, &mut temp_arg, engine,arg_array);
-            if item_result.is_err() {
-                return item_result;
-            }
-            result = result + item_result.unwrap().as_str();
+            let item_result = do_child_nodes(&self.childs, &mut temp_arg, engine,arg_array)?;
+            result = result + item_result.as_str();
             if have_separator && (index + 1) < collection_len {
                 result = result + self.separator.as_str();
             }

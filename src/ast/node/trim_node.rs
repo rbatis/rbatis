@@ -19,14 +19,8 @@ pub struct TrimNode {
 
 impl RbatisAST for TrimNode {
     fn eval(&self, env: &mut Value, engine: &mut RbatisEngine,arg_array:&mut Vec<Value>) -> Result<String, RbatisError> {
-        let result_value = do_child_nodes(&self.childs, env, engine,arg_array);
-        let is_error = result_value.is_err();
-        if is_error {
-            return Result::Err(result_value.clone().err().unwrap());
-        }
-        let result_str = result_value.unwrap();
-        let mut result = result_str.as_str().trim();
-
+        let result_value = do_child_nodes(&self.childs, env, engine,arg_array)?;
+        let mut result = result_value.as_str().trim();
         if !self.prefix_overrides.is_empty() {
             let splits: Vec<&str> = self.prefix_overrides.split("|").collect();
             for item in splits {

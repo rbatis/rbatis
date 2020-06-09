@@ -39,11 +39,8 @@ pub trait SqlNodePrint {
 pub fn do_child_nodes(child_nodes: &Vec<NodeType>, env: &mut Value,engine: &mut RbatisEngine,arg_array:&mut Vec<Value>) -> Result<String, RbatisError> {
     let mut s = String::new();
     for item in child_nodes {
-        let item_result = item.eval(env,engine,arg_array);
-        if item_result.is_err() {
-            return item_result;
-        }
-        s = s + item_result.unwrap().as_str();
+        let item_result = item.eval(env,engine,arg_array)?;
+        s = s + item_result.as_str();
     }
     return Result::Ok(s);
 }
