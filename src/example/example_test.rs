@@ -8,6 +8,7 @@ use rbatis_core::executor::Executor;
 use rbatis_core::cursor::Cursor;
 use rbatis_core::connection::Connection;
 use crate::rbatis::Rbatis;
+use std::ops::Deref;
 
 
 #[test]
@@ -67,4 +68,15 @@ pub fn test_rbatis() {
         <if test="page != null and size != null">limit #{page}, #{size}</if>
     </select>
 </mapper>"#).unwrap();
+}
+
+#[test]
+pub fn test_rw_lock() {
+    let r = async_std::task::block_on(
+        async move {
+            let lock = async_std::sync::RwLock::new(1);
+            let f = lock.read().await;
+            let f = f.deref();
+            println!("{}", f);
+        });
 }
