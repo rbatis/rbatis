@@ -19,26 +19,24 @@ pub fn test_log() {
 }
 
 
-
-
 #[test]
 pub fn test_mysql_driver() {
-   let r =  async_std::task::block_on(
+    let r = async_std::task::block_on(
         async move {
             let pool = MySqlPool::new(MYSQL_URL).await.unwrap();
             //pooledConn 交由rbatis上下文管理
             let mut conn = pool.acquire().await.unwrap();
             let mut c = conn.fetch("SELECT count(1) FROM biz_activity;");
-            let r:serde_json::Value = c.decode().await.unwrap();
-            println!("done:{:?}",r);
+            let r: serde_json::Value = c.decode().await.unwrap();
+            println!("done:{:?}", r);
         }
     );
 }
 
 #[test]
-pub fn test_rbatis(){
+pub fn test_rbatis() {
     let mut rb = Rbatis::new();
-    rb.load_xml("test",r#"<?xml version="1.0" encoding="UTF-8"?>
+    rb.load_xml("test", r#"<?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
         "https://raw.githubusercontent.com/zhuxiujia/Rbatis/master/rbatis-mapper.dtd">
 <mapper>
