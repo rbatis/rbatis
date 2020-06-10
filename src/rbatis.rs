@@ -9,10 +9,11 @@ use crate::ast::node::delete_node::DeleteNode;
 use crate::ast::node::update_node::UpdateNode;
 use crate::ast::node::select_node::SelectNode;
 
+/// rbatis engine
 pub struct Rbatis<'r> {
     engine: RbatisEngine,
     /// map<mapper_name,map<method_name,NodeType>>
-    mapper_node_map: HashMap<&'r str,HashMap<String, NodeType>>,
+    mapper_node_map: HashMap<&'r str, HashMap<String, NodeType>>,
 }
 
 
