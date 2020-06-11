@@ -52,10 +52,10 @@ impl RbatisEngine {
         }
         let cache_read = cache_read.unwrap();
         let r = cache_read.get(arg);
-        if r.is_none() {
-            return Ok(Option::None);
+        return if r.is_none() {
+            Ok(Option::None)
         } else {
-            return Ok(r.cloned());
+            Ok(r.cloned())
         }
     }
 
