@@ -6,12 +6,12 @@ use crate::engine::node::Node;
 use crate::error::RbatisError;
 use std::sync::{Mutex, RwLock};
 
-
+/// global expr cache
 lazy_static!{
    static ref  EXPR_CACHE: RwLock<HashMap<String, Node>> = RwLock::new(HashMap::new());
 }
 
-
+/// the express engine for  exe code on runtime
 #[derive(Clone, Debug)]
 pub struct RbatisEngine {
     pub opt_map: OptMap<'static>,
@@ -24,6 +24,7 @@ impl RbatisEngine {
         };
     }
 
+    ///eval express with arg value,if cache have value it will no run parser expr.
     pub fn eval(&self, expr: &str, arg: &Value) -> Result<Value, RbatisError> {
         let mut lexer_arg = expr.to_string();
         if expr.find(" and ").is_some() {
@@ -44,6 +45,7 @@ impl RbatisEngine {
         }
     }
 
+    /// read from cache,if not exist return null
     fn cache_read(&self, arg: &str) -> Option<Node>{
         // let CACHE: RwLock<HashMap<String, Node>> = RwLock::new(HashMap::new());
         let cache_read = EXPR_CACHE.read();
@@ -59,6 +61,7 @@ impl RbatisEngine {
         }
     }
 
+    /// save to cache,if fail nothing to do.
     fn cache_insert(&self, key: String, node: Node) -> Result<(), RbatisError> {
         //let CACHE: RwLock<HashMap<String, Node>> = RwLock::new(HashMap::new());
         let cache_write = EXPR_CACHE.write();
@@ -70,6 +73,7 @@ impl RbatisEngine {
         return Ok(());
     }
 
+    /// no cache mode to run engine
     pub fn eval_no_cache(&self, lexer_arg: &str, arg: &Value) -> Result<Value, RbatisError> {
         let nodes = parser(lexer_arg.to_string(), &self.opt_map);
         if nodes.is_err() {
@@ -77,14 +81,6 @@ impl RbatisEngine {
         }
         let node = nodes.unwrap();
         return node.eval(arg);
-    }
-
-    pub fn clear_cache(&mut self) {
-        unimplemented!()
-    }
-
-    pub fn remove_cache(&mut self, lexer_arg: &str) {
-        unimplemented!()
     }
 }
 
