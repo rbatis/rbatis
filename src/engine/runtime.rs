@@ -29,7 +29,7 @@ impl RbatisEngine {
         if expr.find(" and ").is_some() {
             lexer_arg = lexer_arg.replace(" and ", " && ");
         }
-        let cached = self.cache_read(lexer_arg.as_str())?;
+        let cached = self.cache_read(lexer_arg.as_str());
         if cached.is_none() {
             let nodes = parser(lexer_arg.to_string(), &self.opt_map);
             if nodes.is_err() {
@@ -44,18 +44,18 @@ impl RbatisEngine {
         }
     }
 
-    fn cache_read(&self, arg: &str) -> Result<Option<Node>, RbatisError> {
+    fn cache_read(&self, arg: &str) -> Option<Node>{
         // let CACHE: RwLock<HashMap<String, Node>> = RwLock::new(HashMap::new());
         let cache_read = EXPR_CACHE.read();
         if cache_read.is_err() {
-            return Err(RbatisError::from(cache_read.err().unwrap().to_string()));
+            return Option::None;
         }
         let cache_read = cache_read.unwrap();
         let r = cache_read.get(arg);
         return if r.is_none() {
-            Ok(Option::None)
+            Option::None
         } else {
-            Ok(r.cloned())
+            r.cloned()
         }
     }
 
