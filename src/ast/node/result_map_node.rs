@@ -22,48 +22,49 @@ pub struct ResultMapNode {
     pub table: Option<String>,
     pub id_node: Option<ResultMapIdNode>,
     pub results: Vec<ResultMapResultNode>,
-    pub column_map:HashMap<String,ResultMapResultNode>,//Map<Column,Node>
-    pub delete_node:Option<ResultMapResultNode>,
-    pub version_node:Option<ResultMapResultNode>,
+    pub column_map: HashMap<String, ResultMapResultNode>,
+    //Map<Column,Node>
+    pub delete_node: Option<ResultMapResultNode>,
+    pub version_node: Option<ResultMapResultNode>,
 }
 
 impl ResultMapNode {
-    pub fn new(id:String,table_str:String,id_node:Option<ResultMapIdNode>,results:Vec<ResultMapResultNode>) -> Self {
-        let mut column_map=HashMap::new();
+    pub fn new(id: String, table_str: String, id_node: Option<ResultMapIdNode>, results: Vec<ResultMapResultNode>) -> Self {
+        let mut column_map = HashMap::new();
         let mut delete_node = Option::None;
         let mut version_node = Option::None;
         let mut table = Option::None;
-        if !table_str.is_empty(){
-            table=Option::Some(table_str);
+        if !table_str.is_empty() {
+            table = Option::Some(table_str);
         }
         for item in &results {
-            column_map.insert(item.column.clone(),item.clone());
-            if item.logic_enable.eq("true"){
-                delete_node=Option::Some(item.clone());
+            column_map.insert(item.column.clone(), item.clone());
+            if item.logic_enable.eq("true") {
+                delete_node = Option::Some(item.clone());
             }
-            if item.version_enable.eq("true"){
-                version_node=Option::Some(item.clone());
+            if item.version_enable.eq("true") {
+                version_node = Option::Some(item.clone());
             }
         }
-        let data= Self{
+        let data = Self {
             id,
             table,
             id_node,
             results,
             column_map,
             delete_node,
-            version_node
+            version_node,
         };
         return data;
     }
 
-    pub fn find_delete_flag(&self)-> &ResultMapResultNode{
-       unimplemented!()
+    pub fn find_delete_flag(&self) -> &ResultMapResultNode {
+        unimplemented!()
     }
 }
 
 impl RbatisAST for ResultMapNode {
-    fn eval(&self, env: &mut Value, engine: &mut RbatisEngine,arg_array:&mut Vec<Value>) -> Result<String, RbatisError> {
+    fn eval(&self, env: &mut Value, engine: &RbatisEngine, arg_array: &mut Vec<Value>) -> Result<String, RbatisError> {
         return Result::Ok("".to_string());
     }
 }

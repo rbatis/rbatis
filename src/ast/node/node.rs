@@ -36,10 +36,10 @@ pub trait SqlNodePrint {
 
 
 //执行子所有节点
-pub fn do_child_nodes(child_nodes: &Vec<NodeType>, env: &mut Value,engine: &mut RbatisEngine,arg_array:&mut Vec<Value>) -> Result<String, RbatisError> {
+pub fn do_child_nodes(child_nodes: &Vec<NodeType>, env: &mut Value, engine: &RbatisEngine, arg_array: &mut Vec<Value>) -> Result<String, RbatisError> {
     let mut s = String::new();
     for item in child_nodes {
-        let item_result = item.eval(env,engine,arg_array)?;
+        let item_result = item.eval(env, engine, arg_array)?;
         s = s + item_result.as_str();
     }
     return Result::Ok(s);
@@ -71,8 +71,8 @@ fn test_string_node() {
         "name": "John Doe",
     });
     let str_node = NodeType::NString(StringNode::new("select * from ${name} where name = #{name}"));
-    let mut arg_array=vec![];
+    let mut arg_array = vec![];
 
-    let result = str_node.eval(&mut john,&mut engine, &mut arg_array).unwrap();
+    let result = str_node.eval(&mut john, &mut engine, &mut arg_array).unwrap();
     println!("{}", result);
 }

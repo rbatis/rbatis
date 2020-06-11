@@ -13,7 +13,7 @@ use crate::engine::runtime::RbatisEngine;
 use crate::error::RbatisError;
 
 ///string抽象节点
-#[derive(Clone,Debug)]
+#[derive(Clone, Debug)]
 pub struct StringNode {
     pub value: String,
     //去重的，需要替换的要sql转换express map
@@ -41,7 +41,7 @@ impl StringNode {
 }
 
 impl RbatisAST for StringNode {
-    fn eval(&self, env: &mut Value, engine: &mut RbatisEngine,arg_array:&mut Vec<Value>) -> Result<String, RbatisError> {
+    fn eval(&self, env: &mut Value, engine: &RbatisEngine, arg_array: &mut Vec<Value>) -> Result<String, RbatisError> {
         let mut result = self.value.clone();
         for (item, value) in &self.express_map {
             result = result.replace(value, " ? ");
@@ -77,8 +77,8 @@ pub fn test_string_node() {
     });
     let mut engine = RbatisEngine::new();
     let s_node = StringNode::new("arg+1=#{arg+1}");
-    let mut arg_array=vec![];
+    let mut arg_array = vec![];
 
-    let r = s_node.eval(&mut john,&mut engine, &mut arg_array).unwrap();
+    let r = s_node.eval(&mut john, &mut engine, &mut arg_array).unwrap();
     println!("{}", r);
 }

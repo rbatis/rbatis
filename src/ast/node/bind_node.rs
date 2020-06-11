@@ -1,5 +1,3 @@
-
-
 use serde_json::{json, Value};
 
 use crate::ast::ast::RbatisAST;
@@ -11,14 +9,14 @@ use crate::error::RbatisError;
 
 const TEMPLETE_BIND: &'static str = "<bind #{attr}>#{body}</bind>";
 
-#[derive(Clone,Debug)]
+#[derive(Clone, Debug)]
 pub struct BindNode {
     pub name: String,
     pub value: String,
 }
 
 impl RbatisAST for BindNode {
-    fn eval(&self, env: &mut Value, engine: &mut RbatisEngine,arg_array:&mut Vec<Value>) -> Result<String, RbatisError> {
+    fn eval(&self, env: &mut Value, engine: &RbatisEngine, arg_array: &mut Vec<Value>) -> Result<String, RbatisError> {
         let r = engine.eval(self.value.as_str(), env)?;
         env[self.name.as_str()] = r;
         return Result::Ok("".to_string());
@@ -46,9 +44,9 @@ fn test_bind_node() {
         "a": 1,
     });
 
-    let mut arg_array=vec![];
+    let mut arg_array = vec![];
 
-    let r = bind_node.eval(&mut john,&mut engine, &mut arg_array).unwrap();
+    let r = bind_node.eval(&mut john, &mut engine, &mut arg_array).unwrap();
 
 
     println!("r={}", r);
