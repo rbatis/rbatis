@@ -7,6 +7,8 @@ use crate::error::RbatisError;
 use std::sync::{Mutex, RwLock};
 
 /// global expr cache,use RwLock but not blocking
+///
+/// for engine: if cache not have expr value,it will be redo parser code.not wait cache return for no blocking
 lazy_static!{
    static ref  EXPR_CACHE: RwLock<HashMap<String, Node>> = RwLock::new(HashMap::new());
 }
