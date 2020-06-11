@@ -6,7 +6,7 @@ use crate::engine::node::Node;
 use crate::error::RbatisError;
 use std::sync::{Mutex, RwLock};
 
-/// global expr cache
+/// global expr cache,use RwLock but not blocking
 lazy_static!{
    static ref  EXPR_CACHE: RwLock<HashMap<String, Node>> = RwLock::new(HashMap::new());
 }
