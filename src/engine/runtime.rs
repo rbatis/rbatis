@@ -4,62 +4,89 @@ use serde_json::Value;
 use crate::engine::parser::parser;
 use crate::engine::node::Node;
 use crate::error::RbatisError;
+use std::sync::{Mutex, RwLock};
 
-#[derive(Clone,Debug)]
+
+lazy_static!{
+   static ref  EXPR_CACHE: RwLock<HashMap<String, Node>> = RwLock::new(HashMap::new());
+}
+
+
+#[derive(Clone, Debug)]
 pub struct RbatisEngine {
-    pub cache:HashMap<String,Node>,
-    pub opt_map:OptMap<'static>,
+    pub opt_map: OptMap<'static>,
 }
 
 impl RbatisEngine {
-
-    pub fn new()-> Self{
-        return Self{
-            cache: Default::default(),
+    pub fn new() -> Self {
+        return Self {
             opt_map: OptMap::new(),
-        }
+        };
     }
 
-    pub fn eval(&mut self, expr: &str, arg: &Value) -> Result<Value, RbatisError>{
+    pub fn eval(&self, expr: &str, arg: &Value) -> Result<Value, RbatisError> {
         let mut lexer_arg = expr.to_string();
         if expr.find(" and ").is_some() {
-            lexer_arg=lexer_arg.replace(" and ", " && ");
+            lexer_arg = lexer_arg.replace(" and ", " && ");
         }
-        let cached = self.cache.get(lexer_arg.as_str());
-        if (&cached).is_none() {
+        let cached = self.cache_read(lexer_arg.as_str())?;
+        if cached.is_none() {
             let nodes = parser(lexer_arg.to_string(), &self.opt_map);
-            if nodes.is_err(){
+            if nodes.is_err() {
                 return Result::Err(nodes.err().unwrap());
             }
-            let node=nodes.unwrap();
-            self.cache.insert(lexer_arg.to_string(), node.clone());
+            let node = nodes.unwrap();
+            self.cache_insert(lexer_arg.to_string(), node.clone());
             return node.eval(arg);
         } else {
-            let nodes = cached.unwrap().clone();
+            let nodes = cached.unwrap();
             return nodes.eval(arg);
         }
     }
 
-    pub fn eval_no_cache(&self, lexer_arg: &str, arg: &Value) -> Result<Value, RbatisError>{
-            let nodes = parser(lexer_arg.to_string(), &self.opt_map);
-            if nodes.is_err(){
-                return Result::Err(nodes.err().unwrap());
-            }
-            let node=nodes.unwrap();
-            return node.eval(arg);
+    fn cache_read(&self, arg: &str) -> Result<Option<Node>, RbatisError> {
+        // let CACHE: RwLock<HashMap<String, Node>> = RwLock::new(HashMap::new());
+        let cache_read = EXPR_CACHE.read();
+        if cache_read.is_err() {
+            return Err(RbatisError::from(cache_read.err().unwrap().to_string()));
+        }
+        let cache_read = cache_read.unwrap();
+        let r = cache_read.get(arg);
+        if r.is_none() {
+            return Ok(Option::None);
+        } else {
+            return Ok(r.cloned());
+        }
     }
 
-    pub fn clear_cache(&mut self){
-        self.cache.clear();
+    fn cache_insert(&self, key: String, node: Node) -> Result<(), RbatisError> {
+        //let CACHE: RwLock<HashMap<String, Node>> = RwLock::new(HashMap::new());
+        let cache_write = EXPR_CACHE.write();
+        if cache_write.is_err() {
+            return Err(RbatisError::from(cache_write.err().unwrap().to_string()));
+        }
+        let mut cache_write = cache_write.unwrap();
+        cache_write.insert(key, node);
+        return Ok(());
     }
 
-    pub fn remove_cache(&mut self, lexer_arg: &str){
-        self.cache.remove(lexer_arg);
+    pub fn eval_no_cache(&self, lexer_arg: &str, arg: &Value) -> Result<Value, RbatisError> {
+        let nodes = parser(lexer_arg.to_string(), &self.opt_map);
+        if nodes.is_err() {
+            return Result::Err(nodes.err().unwrap());
+        }
+        let node = nodes.unwrap();
+        return node.eval(arg);
     }
 
+    pub fn clear_cache(&mut self) {
+        unimplemented!()
+    }
 
+    pub fn remove_cache(&mut self, lexer_arg: &str) {
+        unimplemented!()
+    }
 }
-
 
 
 pub fn is_number(arg: &String) -> bool {
@@ -160,7 +187,7 @@ fn trim_push_back(arg: &String, list: &mut LinkedList<String>) {
     list.push_back(trim_str);
 }
 
-#[derive(Clone,Debug)]
+#[derive(Clone, Debug)]
 pub struct OptMap<'a> {
     //列表
     pub list: Vec<&'a str>,
@@ -261,7 +288,7 @@ impl<'a> OptMap<'a> {
     //是否为有效的操作符
     pub fn is_allow_opt(&self, arg: &str) -> bool {
         for item in &self.allow_priority_array {
-            if arg==*item{
+            if arg == *item {
                 return true;
             }
         }
