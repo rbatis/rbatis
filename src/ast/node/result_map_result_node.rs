@@ -23,7 +23,7 @@ pub struct ResultMapResultNode {
 
 
 impl RbatisAST for ResultMapResultNode {
-    fn eval(&self, env: &mut Value, engine: &mut RbatisEngine,arg_array:&mut Vec<Value>) -> Result<String, RbatisError> {
+    fn eval(&self, env: &mut Value, engine: &RbatisEngine, arg_array: &mut Vec<Value>) -> Result<String, RbatisError> {
         return Result::Ok("".to_string());
     }
 }

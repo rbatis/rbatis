@@ -7,15 +7,15 @@ use crate::ast::node::node_type::NodeType;
 use crate::engine::runtime::RbatisEngine;
 use crate::error::RbatisError;
 
-#[derive(Clone,Debug)]
+#[derive(Clone, Debug)]
 pub struct IncludeNode {
     pub refid: String,
     pub childs: Vec<NodeType>,
 }
 
 impl RbatisAST for IncludeNode {
-    fn eval(&self, env: &mut Value, engine: &mut RbatisEngine,arg_array:&mut Vec<Value>) -> Result<String, RbatisError> {
-        return do_child_nodes(&self.childs, env,engine,arg_array);
+    fn eval(&self, env: &mut Value, engine: &RbatisEngine, arg_array: &mut Vec<Value>) -> Result<String, RbatisError> {
+        return do_child_nodes(&self.childs, env, engine, arg_array);
     }
 }
 

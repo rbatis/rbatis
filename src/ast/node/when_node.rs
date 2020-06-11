@@ -9,7 +9,7 @@ use crate::ast::node::node_type::NodeType;
 use crate::engine::runtime::RbatisEngine;
 use crate::error::RbatisError;
 
-#[derive(Clone,Debug)]
+#[derive(Clone, Debug)]
 pub struct WhenNode {
     pub childs: Vec<NodeType>,
     pub test: String,
@@ -18,13 +18,13 @@ pub struct WhenNode {
 
 
 impl RbatisAST for WhenNode {
-    fn eval(&self, env: &mut Value, engine: &mut RbatisEngine,arg_array:&mut Vec<Value>) -> Result<String, RbatisError> {
+    fn eval(&self, env: &mut Value, engine: &RbatisEngine, arg_array: &mut Vec<Value>) -> Result<String, RbatisError> {
         let result = engine.eval(self.test.as_str(), env)?;
         if !result.is_boolean() {
             return Result::Err(RbatisError::from("[rbatis] test:'".to_owned() + self.test.as_str() + "' is not return bool!"));
         }
         if result.as_bool().unwrap() {
-            return do_child_nodes(&self.childs, env,engine,arg_array);
+            return do_child_nodes(&self.childs, env, engine, arg_array);
         }
         return Result::Ok("".to_string());
     }

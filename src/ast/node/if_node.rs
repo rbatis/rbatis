@@ -9,20 +9,20 @@ use crate::ast::node::string_node::StringNode;
 use crate::engine::runtime::RbatisEngine;
 use crate::error::RbatisError;
 
-#[derive(Clone,Debug)]
+#[derive(Clone, Debug)]
 pub struct IfNode {
     pub childs: Vec<NodeType>,
     pub test: String,
 }
 
 impl RbatisAST for IfNode {
-    fn eval(&self, env: &mut Value, engine: &mut RbatisEngine,arg_array:&mut Vec<Value>) -> Result<String, RbatisError> {
+    fn eval(&self, env: &mut Value, engine: &RbatisEngine, arg_array: &mut Vec<Value>) -> Result<String, RbatisError> {
         let result = engine.eval(self.test.as_str(), env)?;
         if !result.is_boolean() {
             return Result::Err(RbatisError::from("[rbatis] express:'".to_owned() + self.test.as_str() + "' is not return bool value!"));
         }
         if result.as_bool().unwrap() {
-            return do_child_nodes(&self.childs, env,engine,arg_array);
+            return do_child_nodes(&self.childs, env, engine, arg_array);
         }
         return Result::Ok("".to_string());
     }
@@ -49,7 +49,7 @@ pub fn test_if_node() {
         "arg": 1,
     });
     let mut engine = RbatisEngine::new();
-    let mut arg_array=vec![];
+    let mut arg_array = vec![];
 
-    println!("{}", node.eval(&mut john,&mut engine, &mut arg_array).unwrap());
+    println!("{}", node.eval(&mut john, &mut engine, &mut arg_array).unwrap());
 }
