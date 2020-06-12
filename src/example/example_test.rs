@@ -36,8 +36,10 @@ pub fn test_mysql_driver() {
 
 #[test]
 pub fn test_rbatis() {
-    let mut rb = Rbatis::new();
-    rb.load_xml("test", r#"<?xml version="1.0" encoding="UTF-8"?>
+     async_std::task::block_on(
+        async move {
+            let mut rb = Rbatis::new("").await;
+            rb.load_xml("test", r#"<?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
         "https://raw.githubusercontent.com/zhuxiujia/Rbatis/master/rbatis-mapper.dtd">
 <mapper>
@@ -68,6 +70,8 @@ pub fn test_rbatis() {
         <if test="page != null and size != null">limit #{page}, #{size}</if>
     </select>
 </mapper>"#).unwrap();
+        }
+     )
 }
 
 #[test]
