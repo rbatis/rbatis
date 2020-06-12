@@ -62,7 +62,7 @@ impl<'r> Rbatis<'r> {
         for x in arg {
             q = q.bind(x.to_string());
         }
-        let mut c = q.fetch(&mut conn);
+        let mut c = conn.fetch(q);
         return c.decode().await;
     }
 
