@@ -9,6 +9,7 @@ use rbatis_core::cursor::Cursor;
 use rbatis_core::connection::Connection;
 use crate::rbatis::Rbatis;
 use std::ops::Deref;
+use serde_json::json;
 
 
 #[test]
@@ -40,7 +41,7 @@ pub fn test_mysql_() {
         async move {
             let rb = Rbatis::new(MYSQL_URL).await;
             //pooledConn 交由rbatis上下文管理
-            let arg = &vec![ serde_json::Value::String(String::from("count(1)")) ];
+            let arg = &vec![ json!("count(1)") ];
             let r: serde_json::Value =  rb.fetch_prepared("SELECT ? FROM biz_activity;",arg).await.unwrap();
             println!("done:{:?}", r);
         }
