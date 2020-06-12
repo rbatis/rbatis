@@ -74,17 +74,29 @@ impl<'r> Rbatis<'r> {
 
 
     /// fetch result(prepared sql)
-    pub async fn xml_fetch<T>(&self, mapper: &str, method: &str, arg: &mut serde_json::Value) -> Result<T, rbatis_core::Error>
+    pub async fn xml_fetch<T>(&self, mapper: &str, method: &str, arg: &serde_json::Value) -> Result<T, rbatis_core::Error>
         where T: DeserializeOwned {
         let x = self.mapper_node_map.get(mapper).unwrap();
         let node_type = x.get(method).unwrap();
         let mut arg_array = vec![];
-        let sql = node_type.eval(arg, &self.engine, &mut arg_array).unwrap();
+        let sql = node_type.eval(&mut arg.clone(), &self.engine, &mut arg_array).unwrap();
         unimplemented!()
     }
 
     /// exec sql(prepared sql)
-    pub async fn xml_exec(&self, mapper: &str, method: &str, arg: &mut serde_json::Value) -> Result<u64, rbatis_core::Error> {
+    pub async fn xml_exec(&self, mapper: &str, method: &str, arg: &serde_json::Value) -> Result<u64, rbatis_core::Error> {
         unimplemented!()
     }
+
+    /// fetch result(prepared sql)
+    pub async fn py_fetch<T>(&self,  py: &str, arg: &serde_json::Value) -> Result<T, rbatis_core::Error>
+        where T: DeserializeOwned {
+        unimplemented!()
+    }
+
+    /// exec sql(prepared sql)
+    pub async fn py_exec(&self, py: &str, arg: &serde_json::Value) -> Result<u64, rbatis_core::Error> {
+        unimplemented!()
+    }
+
 }
