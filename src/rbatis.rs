@@ -40,7 +40,7 @@ impl<'r> Rbatis<'r> {
         return Ok(());
     }
 
-    /// fetch result
+    /// fetch result(row sql)
     pub async fn fetch<T>(&self, sql: &str) -> Result<T, rbatis_core::Error>
         where T: DeserializeOwned {
         let mut conn = self.pool.as_ref().unwrap().acquire().await.unwrap();
@@ -48,13 +48,13 @@ impl<'r> Rbatis<'r> {
         return c.decode().await;
     }
 
-    /// exec sql
+    /// exec sql(row sql)
     pub async fn exec(&self, sql: &str) -> Result<u64, rbatis_core::Error> {
         let mut conn = self.pool.as_ref().unwrap().acquire().await.unwrap();
         return conn.execute(sql).await;
     }
 
-    /// fetch result
+    /// fetch result(prepared sql)
     pub async fn fetch_prepared<T>(&self, sql: &str, arg: &Vec<serde_json::Value>) -> Result<T, rbatis_core::Error>
         where T: DeserializeOwned {
         let mut conn = self.pool.as_ref().unwrap().acquire().await.unwrap();
@@ -66,14 +66,14 @@ impl<'r> Rbatis<'r> {
         return c.decode().await;
     }
 
-    /// exec sql
+    /// exec sql(prepared sql)
     pub async fn exec_prepared(&self, sql: &str, arg: &Vec<serde_json::Value>) -> Result<u64, rbatis_core::Error> {
         let mut conn = self.pool.as_ref().unwrap().acquire().await.unwrap();
         unimplemented!()
     }
 
 
-    /// fetch result
+    /// fetch result(prepared sql)
     pub async fn xml_fetch<T>(&self, mapper: &str, method: &str, arg: &mut serde_json::Value) -> Result<T, rbatis_core::Error>
         where T: DeserializeOwned {
         let x = self.mapper_node_map.get(mapper).unwrap();
@@ -83,7 +83,7 @@ impl<'r> Rbatis<'r> {
         unimplemented!()
     }
 
-    /// exec sql
+    /// exec sql(prepared sql)
     pub async fn xml_exec(&self, mapper: &str, method: &str, arg: &mut serde_json::Value) -> Result<u64, rbatis_core::Error> {
         unimplemented!()
     }
