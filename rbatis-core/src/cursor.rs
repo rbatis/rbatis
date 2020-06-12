@@ -13,7 +13,7 @@ use serde::de::DeserializeOwned;
 /// A `Cursor` can be created by either [`Executor::fetch`] or [`Query::fetch`].
 ///
 /// ```rust,ignore
-/// let mut cursor = sqlx::query("SELECT slug, title, description FROM articles")
+/// let mut cursor = rbatis_core::query("SELECT slug, title, description FROM articles")
 ///     .fetch(&mut conn);
 /// ```
 ///
@@ -22,7 +22,7 @@ use serde::de::DeserializeOwned;
 /// in a `while` loop to iterate through all returned rows.
 ///
 /// ```rust,ignore
-/// # #[derive(sqlx::FromRow)]
+/// # #[derive(rbatis_core::FromRow)]
 /// # struct Article<'a> {
 /// #     slug: &'a str,
 /// #     title: &'a str,
@@ -36,7 +36,7 @@ use serde::de::DeserializeOwned;
 /// }
 /// ```
 ///
-/// This trait is sealed and cannot be implemented for types outside of SQLx.
+/// This trait is sealed and cannot be implemented for types outside of rbatis_core.
 ///
 /// [`Executor::fetch`]: crate::executor::Executor::fetch
 /// [`Query::fetch`]: crate::query::Query::fetch

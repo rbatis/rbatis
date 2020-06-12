@@ -82,8 +82,8 @@
 //! ```
 //!
 //! ```rust,ignore
-//! #[derive(sqlx::Type)]
-//! #[sqlx(rename = "inventory_item")]
+//! #[derive(rbatis_core::Type)]
+//! #[rbatis_core(rename = "inventory_item")]
 //! struct InventoryItem {
 //!     name: String,
 //!     supplier_id: i32,
@@ -107,8 +107,8 @@
 //! ```
 //!
 //! ```rust,ignore
-//! #[derive(sqlx::Type)]
-//! #[sqlx(rename = "mood", rename_all = "lowercase")]
+//! #[derive(rbatis_core::Type)]
+//! #[rbatis_core(rename = "mood", rename_all = "lowercase")]
 //! enum Mood { Sad, Ok, Happy }
 //! ```
 //!
@@ -117,7 +117,7 @@
 //! Rust enumeration.
 //!
 //! ```rust,ignore
-//! #[derive(sqlx::Type)]
+//! #[derive(rbatis_core::Type)]
 //! #[repr(i32)]
 //! enum Mood { Sad = 0, Ok = 1, Happy = 2 }
 //! ```

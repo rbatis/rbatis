@@ -20,7 +20,7 @@ use crate::runtime::spawn;
 /// // Acquire a new connection and immediately begin a transaction
 /// let mut tx = pool.begin().await?;
 ///
-/// sqlx::query("INSERT INTO articles (slug) VALUES ('this-is-a-slug')")
+/// rbatis_core::query("INSERT INTO articles (slug) VALUES ('this-is-a-slug')")
 ///     .execute(&mut tx)
 ///     // As we didn't fill in all the required fields in this INSERT,
 ///     // this statement will fail. Since we used `?`, this function
@@ -50,7 +50,7 @@ where
         if depth == 0 {
             inner.execute("BEGIN").await?;
         } else {
-            let stmt = format!("SAVEPOINT _sqlx_savepoint_{}", depth);
+            let stmt = format!("SAVEPOINT _rbatis_core_savepoint_{}", depth);
 
             inner.execute(&*stmt).await?;
         }
@@ -76,7 +76,7 @@ where
         if depth == 1 {
             inner.execute("COMMIT").await?;
         } else {
-            let stmt = format!("RELEASE SAVEPOINT _sqlx_savepoint_{}", depth - 1);
+            let stmt = format!("RELEASE SAVEPOINT _rbatis_core_savepoint_{}", depth - 1);
 
             inner.execute(&*stmt).await?;
         }
@@ -93,7 +93,7 @@ where
         if depth == 1 {
             inner.execute("ROLLBACK").await?;
         } else {
-            let stmt = format!("ROLLBACK TO SAVEPOINT _sqlx_savepoint_{}", depth - 1);
+            let stmt = format!("ROLLBACK TO SAVEPOINT _rbatis_core_savepoint_{}", depth - 1);
 
             inner.execute(&*stmt).await?;
         }

@@ -69,7 +69,7 @@ pub(super) async fn upgrade_if_needed(stream: &mut MySqlStream, url: &Url) -> cr
         | Some(mode @ "VERIFY_CA")
         | Some(mode @ "VERIFY_IDENTITY") => {
             return Err(tls_err!(
-                "ssl-mode {:?} unsupported; SQLx was compiled without `tls` feature",
+                "ssl-mode {:?} unsupported; rbatis_core was compiled without `tls` feature",
                 mode
             )
             .into());

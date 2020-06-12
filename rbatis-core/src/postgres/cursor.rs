@@ -98,7 +98,7 @@ async fn next<'a, 'c: 'a, 'q: 'a>(
     loop {
         match conn.stream.receive().await? {
             // Indicates that a phase of the extended query flow has completed
-            // We as SQLx don't generally care as long as it is happening
+            // We as rbatis_core don't generally care as long as it is happening
             Message::ParseComplete | Message::BindComplete => {}
 
             // Indicates that _a_ query has finished executing

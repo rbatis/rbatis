@@ -18,10 +18,10 @@ macro_rules! decode_err {
     };
 }
 
-/// A specialized `Result` type for SQLx.
+/// A specialized `Result` type for rbatis_core.
 pub type Result<T> = std::result::Result<T, Error>;
 
-/// A generic error that represents all the ways a method can fail inside of SQLx.
+/// A generic error that represents all the ways a method can fail inside of rbatis_core.
 #[derive(Debug)]
 #[non_exhaustive]
 pub enum Error {
@@ -49,7 +49,7 @@ pub enum Error {
 
     /// Unexpected or invalid data was encountered. This would indicate that we received
     /// data that we were not expecting or it was in a format we did not understand. This
-    /// generally means either there is a programming error in a SQLx driver or
+    /// generally means either there is a programming error in a rbatis_core driver or
     /// something with the connection or the database database itself is corrupted.
     ///
     /// Context is provided by the included error message.
