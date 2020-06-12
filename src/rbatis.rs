@@ -12,6 +12,7 @@ use rbatis_core::mysql::MySqlPool;
 use rbatis_core::executor::Executor;
 use serde::de::DeserializeOwned;
 use rbatis_core::cursor::Cursor;
+use crate::ast::ast::RbatisAST;
 
 /// rbatis engine
 pub struct Rbatis<'r> {
@@ -49,5 +50,24 @@ impl<'r> Rbatis<'r> {
     pub async fn exec(&self, sql: &str) -> Result<u64, rbatis_core::Error> {
         let mut conn = self.pool.as_ref().unwrap().acquire().await.unwrap();
         return conn.execute(sql).await;
+    }
+
+
+
+
+
+    /// fetch result
+    pub async fn xml_fetch<T>(&self, mapper: &str,method: &str,arg: &mut serde_json::Value) -> Result<T, rbatis_core::Error>
+        where T: DeserializeOwned {
+        let x= self.mapper_node_map.get(mapper).unwrap();
+        let node_type=x.get(method).unwrap();
+        let mut arg_array = vec![];
+        let sql=node_type.eval(arg,&self.engine,&mut arg_array).unwrap();
+        unimplemented!()
+    }
+
+    /// exec sql
+    pub async fn xml_exec(&self, mapper: &str,method: &str,arg: &mut serde_json::Value) -> Result<u64, rbatis_core::Error> {
+        unimplemented!()
     }
 }
