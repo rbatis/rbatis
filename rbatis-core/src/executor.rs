@@ -127,7 +127,7 @@ where
 }
 
 // The following impl lets `&mut &Pool` continue to work
-// This pattern was required in SQLx < 0.3
+// This pattern was required in rbatis_core < 0.3
 // Going forward users will likely naturally use `&Pool` instead
 
 impl<'c, T> RefExecutor<'c> for &'c mut T

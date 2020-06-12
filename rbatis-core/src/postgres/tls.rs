@@ -47,7 +47,7 @@ pub(crate) async fn request_if_needed(stream: &mut PgStream, url: &Url) -> crate
         | Some(mode @ "verify-ca")
         | Some(mode @ "verify-full") => {
             return Err(tls_err!(
-                "sslmode {:?} unsupported; SQLx was compiled without `tls` feature",
+                "sslmode {:?} unsupported; rbatis_core was compiled without `tls` feature",
                 mode
             )
             .into());

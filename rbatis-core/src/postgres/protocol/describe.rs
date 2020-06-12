@@ -40,11 +40,11 @@ mod test {
     #[test]
     fn it_writes_describe_portal() {
         let mut buf = Vec::new();
-        let m = Describe::Portal("__sqlx_p_1");
+        let m = Describe::Portal("__rbatis_core_p_1");
 
         m.write(&mut buf);
 
-        assert_eq!(buf, b"D\0\0\0\x10P__sqlx_p_1\0");
+        assert_eq!(buf, b"D\0\0\0\x10P__rbatis_core_p_1\0");
     }
 
     #[test]
@@ -54,6 +54,6 @@ mod test {
 
         m.write(&mut buf);
 
-        assert_eq!(buf, b"D\x00\x00\x00\x18S__sqlx_statement_1\x00");
+        assert_eq!(buf, b"D\x00\x00\x00\x18S__rbatis_core_statement_1\x00");
     }
 }

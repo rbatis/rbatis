@@ -1,4 +1,4 @@
-//! **Pool** for SQLx database connections.
+//! **Pool** for rbatis_core database connections.
 
 use std::{
     fmt,

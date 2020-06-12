@@ -13,7 +13,7 @@ use serde::de::DeserializeOwned;
 /// This trait is implemented for strings which are used to look up a column by name, and for
 /// `usize` which is used as a positional index into the row.
 ///
-/// This trait is sealed and cannot be implemented for types outside of SQLx.
+/// This trait is sealed and cannot be implemented for types outside of rbatis_core.
 ///
 /// [`Row`]: trait.Row.html
 /// [`get`]: trait.Row.html#method.get
@@ -56,7 +56,7 @@ mod private_column_index {
 /// encountered when manually implementing [`FromRow`] (as opposed to deriving) or iterating
 /// a [`Cursor`] (returned from [`Query::fetch`]).
 ///
-/// This trait is sealed and cannot be implemented for types outside of SQLx.
+/// This trait is sealed and cannot be implemented for types outside of rbatis_core.
 ///
 /// [`FromRow`]: crate::row::FromRow
 /// [`Cursor`]: crate::cursor::Cursor
@@ -83,7 +83,7 @@ where
     /// can be used to access a column by position.
     ///
     /// ```rust,ignore
-    /// # let mut cursor = sqlx::query("SELECT id, name FROM users")
+    /// # let mut cursor = rbatis_core::query("SELECT id, name FROM users")
     /// #     .fetch(&mut conn);
     /// #
     /// # let row = cursor.next().await?.unwrap();
@@ -124,7 +124,7 @@ where
     /// can be used to access a column by position.
     ///
     /// ```rust,ignore
-    /// # let mut cursor = sqlx::query("SELECT id, name FROM users")
+    /// # let mut cursor = rbatis_core::query("SELECT id, name FROM users")
     /// #     .fetch(&mut conn);
     /// #
     /// # let row = cursor.next().await?.unwrap();
@@ -237,12 +237,12 @@ pub trait HasRow<'c> {
 /// In order to use [`query_as`] the output type must implement `FromRow`.
 ///
 /// # Deriving
-/// This trait can be automatically derived by SQLx for any struct. The generated implementation
+/// This trait can be automatically derived by rbatis_core for any struct. The generated implementation
 /// will consist of a sequence of calls to [`Row::try_get`] using the name from each
 /// struct field.
 ///
 /// ```rust,ignore
-/// #[derive(sqlx::FromRow)]
+/// #[derive(rbatis_core::FromRow)]
 /// struct User {
 ///     id: i32,
 ///     name: String,
