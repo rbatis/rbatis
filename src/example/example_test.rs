@@ -35,6 +35,19 @@ pub fn test_mysql_driver() {
 }
 
 #[test]
+pub fn test_mysql_() {
+    let r = async_std::task::block_on(
+        async move {
+            let rb = Rbatis::new(MYSQL_URL).await;
+            //pooledConn 交由rbatis上下文管理
+            let arg = &vec![ serde_json::Value::String(String::from("count(1)")) ];
+            let r: serde_json::Value =  rb.fetch_prepared("SELECT ? FROM biz_activity;",arg).await.unwrap();
+            println!("done:{:?}", r);
+        }
+    );
+}
+
+#[test]
 pub fn test_rbatis() {
      async_std::task::block_on(
         async move {

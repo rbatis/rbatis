@@ -8,11 +8,13 @@ use crate::ast::node::insert_node::InsertNode;
 use crate::ast::node::delete_node::DeleteNode;
 use crate::ast::node::update_node::UpdateNode;
 use crate::ast::node::select_node::SelectNode;
-use rbatis_core::mysql::MySqlPool;
+use rbatis_core::mysql::{MySqlPool, MySql};
 use rbatis_core::executor::Executor;
 use serde::de::DeserializeOwned;
 use rbatis_core::cursor::Cursor;
 use crate::ast::ast::RbatisAST;
+use rbatis_core::query::{query, Query};
+use rbatis_core::query_as::query_as;
 
 /// rbatis engine
 pub struct Rbatis<'r> {
@@ -52,22 +54,37 @@ impl<'r> Rbatis<'r> {
         return conn.execute(sql).await;
     }
 
+    /// fetch result
+    pub async fn fetch_prepared<T>(&self, sql: &str, arg: &Vec<serde_json::Value>) -> Result<T, rbatis_core::Error>
+        where T: DeserializeOwned {
+        let mut conn = self.pool.as_ref().unwrap().acquire().await.unwrap();
+        let mut q: Query<MySql> = query(sql);
+        for x in arg {
+            q = q.bind(x.to_string());
+        }
+        let mut c = q.fetch(&mut conn);
+        return c.decode().await;
+    }
 
-
+    /// exec sql
+    pub async fn exec_prepared(&self, sql: &str, arg: &Vec<serde_json::Value>) -> Result<u64, rbatis_core::Error> {
+        let mut conn = self.pool.as_ref().unwrap().acquire().await.unwrap();
+        unimplemented!()
+    }
 
 
     /// fetch result
-    pub async fn xml_fetch<T>(&self, mapper: &str,method: &str,arg: &mut serde_json::Value) -> Result<T, rbatis_core::Error>
+    pub async fn xml_fetch<T>(&self, mapper: &str, method: &str, arg: &mut serde_json::Value) -> Result<T, rbatis_core::Error>
         where T: DeserializeOwned {
-        let x= self.mapper_node_map.get(mapper).unwrap();
-        let node_type=x.get(method).unwrap();
+        let x = self.mapper_node_map.get(mapper).unwrap();
+        let node_type = x.get(method).unwrap();
         let mut arg_array = vec![];
-        let sql=node_type.eval(arg,&self.engine,&mut arg_array).unwrap();
+        let sql = node_type.eval(arg, &self.engine, &mut arg_array).unwrap();
         unimplemented!()
     }
 
     /// exec sql
-    pub async fn xml_exec(&self, mapper: &str,method: &str,arg: &mut serde_json::Value) -> Result<u64, rbatis_core::Error> {
+    pub async fn xml_exec(&self, mapper: &str, method: &str, arg: &mut serde_json::Value) -> Result<u64, rbatis_core::Error> {
         unimplemented!()
     }
 }
