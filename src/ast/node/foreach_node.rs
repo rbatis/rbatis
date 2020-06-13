@@ -9,7 +9,7 @@ use crate::ast::node::node_type::NodeType;
 use crate::ast::node::string_node::StringNode;
 use crate::utils;
 use crate::engine::runtime::RbatisEngine;
-use crate::error::RbatisError;
+
 
 #[derive(Clone, Debug)]
 pub struct ForEachNode {
@@ -23,7 +23,7 @@ pub struct ForEachNode {
 }
 
 impl RbatisAST for ForEachNode {
-    fn eval(&self, env: &mut Value, engine: &RbatisEngine, arg_array: &mut Vec<Value>) -> Result<String, RbatisError> {
+    fn eval(&self, env: &mut Value, engine: &RbatisEngine, arg_array: &mut Vec<Value>) -> Result<String, rbatis_core::Error> {
         let mut result = String::new();
 
         //open
@@ -31,10 +31,10 @@ impl RbatisAST for ForEachNode {
 
         let collection_value = utils::value_util::get_deep_value(self.collection.as_str(), env);
         if collection_value.is_null() {
-            return Result::Err(RbatisError::from("[rbatis] collection name:".to_owned() + self.collection.as_str() + " is none value!"));
+            return Result::Err(rbatis_core::Error::from("[rbatis] collection name:".to_owned() + self.collection.as_str() + " is none value!"));
         }
         if !collection_value.is_array() {
-            return Result::Err(RbatisError::from("[rbatis] collection name:".to_owned() + self.collection.as_str() + " is not a array value!"));
+            return Result::Err(rbatis_core::Error::from("[rbatis] collection name:".to_owned() + self.collection.as_str() + " is not a array value!"));
         }
         let collection = collection_value.as_array().unwrap();
 

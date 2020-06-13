@@ -10,7 +10,7 @@ use crate::engine;
 use crate::utils::string_util;
 use crate::convert::sql_value_convert::SqlValueConvert;
 use crate::engine::runtime::RbatisEngine;
-use crate::error::RbatisError;
+
 
 ///string抽象节点
 #[derive(Clone, Debug)]
@@ -41,7 +41,7 @@ impl StringNode {
 }
 
 impl RbatisAST for StringNode {
-    fn eval(&self, env: &mut Value, engine: &RbatisEngine, arg_array: &mut Vec<Value>) -> Result<String, RbatisError> {
+    fn eval(&self, env: &mut Value, engine: &RbatisEngine, arg_array: &mut Vec<Value>) -> Result<String, rbatis_core::Error> {
         let mut result = self.value.clone();
         for (item, value) in &self.express_map {
             result = result.replace(value, " ? ");

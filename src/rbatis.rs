@@ -1,5 +1,5 @@
 use crate::ast::lang::py::Py;
-use crate::error::RbatisError;
+
 use std::collections::HashMap;
 use crate::ast::node::node_type::NodeType;
 use crate::engine::runtime::RbatisEngine;
@@ -34,7 +34,7 @@ impl<'r> Rbatis<'r> {
         return Rbatis { pool, mapper_node_map: HashMap::new(), engine: RbatisEngine::new() };
     }
 
-    pub fn load_xml(&mut self, mapper_name: &'r str, data: &str) -> Result<(), RbatisError> {
+    pub fn load_xml(&mut self, mapper_name: &'r str, data: &str) -> Result<(), rbatis_core::Error> {
         let xml = Xml::parser(data);
         self.mapper_node_map.insert(mapper_name, xml);
         return Ok(());

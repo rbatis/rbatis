@@ -1,6 +1,6 @@
 
 use serde::{Serialize, Deserialize};
-use crate::error::RbatisError;
+
 
 #[derive(Serialize, Deserialize, Debug, Clone)]
 pub struct DBConfig {
@@ -13,27 +13,27 @@ pub struct DBConfig {
 }
 
 impl DBConfig {
-    pub fn new(link: String) -> Result<DBConfig, RbatisError> {
+    pub fn new(link: String) -> Result<DBConfig, rbatis_core::Error> {
         if link.find("://").is_none() {
-            return Result::Err(RbatisError::from("[rbatis] link must have [type]://[user]:[password]@[ip]:[port]/[db_name], miss ://"));
+            return Result::Err(rbatis_core::Error::from("[rbatis] link must have [type]://[user]:[password]@[ip]:[port]/[db_name], miss ://"));
         }
         let dbtype_cfg: Vec<&str> = link.split("://").collect();
         if dbtype_cfg[1].find("@").is_none() {
-            return Result::Err(RbatisError::from("[rbatis] link must have [type]://[user]:[password]@[ip]:[port]/[db_name], miss @"));
+            return Result::Err(rbatis_core::Error::from("[rbatis] link must have [type]://[user]:[password]@[ip]:[port]/[db_name], miss @"));
         }
         let user_pwd_link: Vec<&str> = dbtype_cfg[1].split("@").collect();
         if user_pwd_link[0].find(":").is_none() {
-            return Result::Err(RbatisError::from("[rbatis] link must have [type]://[user]:[password]@[ip]:[port]/[db_name], miss ':' of [user]:[password]"));
+            return Result::Err(rbatis_core::Error::from("[rbatis] link must have [type]://[user]:[password]@[ip]:[port]/[db_name], miss ':' of [user]:[password]"));
         }
         let user_pwd: Vec<&str> = user_pwd_link[0].split(":").collect();
 
         if user_pwd_link[1].find("/").is_none() {
-            return Result::Err(RbatisError::from("[rbatis] link must have [type]://[user]:[password]@[ip]:[port]/[db_name], miss '/' of [port]/[db_name]"));
+            return Result::Err(rbatis_core::Error::from("[rbatis] link must have [type]://[user]:[password]@[ip]:[port]/[db_name], miss '/' of [port]/[db_name]"));
         }
         let link_dbname: Vec<&str> = user_pwd_link[1].split("/").collect();
 
         if link_dbname[0].find(":").is_none() {
-            return Result::Err(RbatisError::from("[rbatis] link must have [type]://[user]:[password]@[ip]:[port]/[db_name], miss ':' of [ip]:[port]"));
+            return Result::Err(rbatis_core::Error::from("[rbatis] link must have [type]://[user]:[password]@[ip]:[port]/[db_name], miss ':' of [ip]:[port]"));
         }
         let addr_port: Vec<&str> = link_dbname[0].split(":").collect();
 

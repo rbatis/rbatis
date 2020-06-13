@@ -5,7 +5,7 @@ use crate::ast::ast::RbatisAST;
 use crate::ast::node::node::{create_deep, do_child_nodes, print_child, SqlNodePrint};
 use crate::ast::node::node_type::NodeType;
 use crate::engine::runtime::RbatisEngine;
-use crate::error::RbatisError;
+
 
 #[derive(Clone, Debug)]
 pub struct WhereNode {
@@ -13,7 +13,7 @@ pub struct WhereNode {
 }
 
 impl RbatisAST for WhereNode {
-    fn eval(&self, env: &mut Value, engine: &RbatisEngine, arg_array: &mut Vec<Value>) -> Result<String, RbatisError> {
+    fn eval(&self, env: &mut Value, engine: &RbatisEngine, arg_array: &mut Vec<Value>) -> Result<String, rbatis_core::Error> {
         let result = do_child_nodes(&self.childs, env, engine, arg_array)?;
         let s = result.trim();
         if s.is_empty() {

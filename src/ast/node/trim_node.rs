@@ -6,7 +6,7 @@ use crate::ast::node::node::{create_deep, do_child_nodes, print_child, SqlNodePr
 use crate::ast::node::node_type::NodeType;
 use crate::ast::node::string_node::StringNode;
 use crate::engine::runtime::RbatisEngine;
-use crate::error::RbatisError;
+
 
 #[derive(Clone, Debug)]
 pub struct TrimNode {
@@ -18,7 +18,7 @@ pub struct TrimNode {
 }
 
 impl RbatisAST for TrimNode {
-    fn eval(&self, env: &mut Value, engine: &RbatisEngine, arg_array: &mut Vec<Value>) -> Result<String, RbatisError> {
+    fn eval(&self, env: &mut Value, engine: &RbatisEngine, arg_array: &mut Vec<Value>) -> Result<String, rbatis_core::Error> {
         let result_value = do_child_nodes(&self.childs, env, engine, arg_array)?;
         let mut result = result_value.as_str().trim();
         if !self.prefix_overrides.is_empty() {
