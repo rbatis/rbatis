@@ -54,8 +54,8 @@ impl<'r> Rbatis<'r> {
         return conn.execute(sql).await;
     }
 
-    /// fetch result(prepared sql)
-    pub async fn fetch_prepared<T>(&self, sql: &str, arg: &Vec<serde_json::Value>) -> Result<T, rbatis_core::Error>
+    /// fetch result(prepare sql)
+    pub async fn fetch_prepare<T>(&self, sql: &str, arg: &Vec<serde_json::Value>) -> Result<T, rbatis_core::Error>
         where T: DeserializeOwned {
         let mut conn = self.pool.as_ref().unwrap().acquire().await.unwrap();
         let mut q: Query<MySql> = query(sql);
@@ -66,14 +66,14 @@ impl<'r> Rbatis<'r> {
         return c.decode().await;
     }
 
-    /// exec sql(prepared sql)
-    pub async fn exec_prepared(&self, sql: &str, arg: &Vec<serde_json::Value>) -> Result<u64, rbatis_core::Error> {
+    /// exec sql(prepare sql)
+    pub async fn exec_prepare(&self, sql: &str, arg: &Vec<serde_json::Value>) -> Result<u64, rbatis_core::Error> {
         let mut conn = self.pool.as_ref().unwrap().acquire().await.unwrap();
         unimplemented!()
     }
 
 
-    /// fetch result(prepared sql)
+    /// fetch result(prepare sql)
     pub async fn xml_fetch<T>(&self, mapper: &str, method: &str, arg: &serde_json::Value) -> Result<T, rbatis_core::Error>
         where T: DeserializeOwned {
         let x = self.mapper_node_map.get(mapper).unwrap();
@@ -83,18 +83,18 @@ impl<'r> Rbatis<'r> {
         unimplemented!()
     }
 
-    /// exec sql(prepared sql)
+    /// exec sql(prepare sql)
     pub async fn xml_exec(&self, mapper: &str, method: &str, arg: &serde_json::Value) -> Result<u64, rbatis_core::Error> {
         unimplemented!()
     }
 
-    /// fetch result(prepared sql)
+    /// fetch result(prepare sql)
     pub async fn py_fetch<T>(&self,  py: &str, arg: &serde_json::Value) -> Result<T, rbatis_core::Error>
         where T: DeserializeOwned {
         unimplemented!()
     }
 
-    /// exec sql(prepared sql)
+    /// exec sql(prepare sql)
     pub async fn py_exec(&self, py: &str, arg: &serde_json::Value) -> Result<u64, rbatis_core::Error> {
         unimplemented!()
     }
