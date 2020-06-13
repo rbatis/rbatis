@@ -39,7 +39,7 @@ pub fn test_mysql_driver() {
 pub fn test_mysql_() {
     let r = async_std::task::block_on(
         async move {
-            let rb = Rbatis::new(MYSQL_URL).await;
+            let rb = Rbatis::new(MYSQL_URL).await.unwrap();
             //pooledConn 交由rbatis上下文管理
             let arg = &vec![ json!("count(1)") ];
             let r: serde_json::Value =  rb.fetch_prepare("SELECT ? FROM biz_activity;",arg).await.unwrap();
@@ -52,7 +52,7 @@ pub fn test_mysql_() {
 pub fn test_rbatis() {
      async_std::task::block_on(
         async move {
-            let mut rb = Rbatis::new("").await;
+            let mut rb = Rbatis::new("").await.unwrap();
             rb.load_xml("test", r#"<?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
         "https://raw.githubusercontent.com/zhuxiujia/Rbatis/master/rbatis-mapper.dtd">
