@@ -20,6 +20,7 @@ pub trait ToResult<T>  {
 }
 
 impl <T>ToResult<T> for Option<&T> {
+    #[inline]
     fn to_result<F>(&self, fail_method: F) -> Result<&T, Error> where F: Fn() -> String {
         to_result(self, fail_method)
     }
