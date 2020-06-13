@@ -12,7 +12,7 @@ use crate::ast::node::node_type::NodeType::NString;
 use crate::ast::node::otherwise_node::OtherwiseNode;
 use crate::ast::node::string_node::StringNode;
 use crate::engine::runtime::RbatisEngine;
-use crate::error::RbatisError;
+
 
 #[derive(Clone, Debug)]
 pub struct ChooseNode {
@@ -21,7 +21,7 @@ pub struct ChooseNode {
 }
 
 impl RbatisAST for ChooseNode {
-    fn eval(&self, env: &mut Value, engine: &RbatisEngine, arg_array: &mut Vec<Value>) -> Result<String, RbatisError> {
+    fn eval(&self, env: &mut Value, engine: &RbatisEngine, arg_array: &mut Vec<Value>) -> Result<String, rbatis_core::Error> {
         if self.when_nodes.is_none() == false {
             for item in self.when_nodes.clone().unwrap() {
                 let s = item.eval(env, engine, arg_array);

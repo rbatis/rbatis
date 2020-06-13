@@ -7,7 +7,7 @@ use crate::ast::ast::RbatisAST;
 use crate::ast::node::node::{create_deep, do_child_nodes, print_child, SqlNodePrint};
 use crate::ast::node::node_type::NodeType;
 use crate::engine::runtime::RbatisEngine;
-use crate::error::RbatisError;
+
 
 #[derive(Clone, Debug)]
 pub struct WhenNode {
@@ -18,10 +18,10 @@ pub struct WhenNode {
 
 
 impl RbatisAST for WhenNode {
-    fn eval(&self, env: &mut Value, engine: &RbatisEngine, arg_array: &mut Vec<Value>) -> Result<String, RbatisError> {
+    fn eval(&self, env: &mut Value, engine: &RbatisEngine, arg_array: &mut Vec<Value>) -> Result<String, rbatis_core::Error> {
         let result = engine.eval(self.test.as_str(), env)?;
         if !result.is_boolean() {
-            return Result::Err(RbatisError::from("[rbatis] test:'".to_owned() + self.test.as_str() + "' is not return bool!"));
+            return Result::Err(rbatis_core::Error::from("[rbatis] test:'".to_owned() + self.test.as_str() + "' is not return bool!"));
         }
         if result.as_bool().unwrap() {
             return do_child_nodes(&self.childs, env, engine, arg_array);

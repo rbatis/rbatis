@@ -88,14 +88,14 @@ fast_log="1.0.2"
 #### 简单使用
 ``` rust
 use rbatis::rbatis::Rbatis;
-use rbatis::error::RbatisError;
+use rbatis::error::rbatis_core::Error;
 
 fn main()  {
     //first install log
     fast_log::log::init_log("requests.log").unwrap();
     // you may need install your mysql or change database url.
     Rbatis::singleton().db_driver = "mysql://root:123456@127.0.0.1:3306/test".to_string();
-    let data:Result<serde_json::Value,RbatisError>=Rbatis::singleton().raw_sql("","select * from biz_activity;");
+    let data:Result<serde_json::Value,rbatis_core::Error>=Rbatis::singleton().raw_sql("","select * from biz_activity;");
     println!("{}",data.ok().unwrap());
 }
 ```
@@ -140,7 +140,7 @@ println!("[rbatis] result==> {:?}",data_result);
 ``` rust
 
     //自定义事务
-    pub fn tx() -> Result<u32,RbatisError>{
+    pub fn tx() -> Result<u32,rbatis_core::Error>{
         let tx_id="1234";//事务id
         Rbatis::singleton().begin(tx_id, Propagation::REQUIRED)?;//启动事务，传入事务传播行为
         let affected: u32 = Rbatis::singleton()
@@ -151,29 +151,29 @@ println!("[rbatis] result==> {:?}",data_result);
     }
     //声明式事务
     pub trait Service {
-        fn select_activity(&self) -> Result<Activity, RbatisError>;
-        fn update_activity(&mut self) -> Result<String, RbatisError>;
+        fn select_activity(&self) -> Result<Activity, rbatis_core::Error>;
+        fn update_activity(&mut self) -> Result<String, rbatis_core::Error>;
     }
     struct ServiceImpl {
-        select_activity: fn(s: &ServiceImpl) -> Result<Activity, RbatisError>,
-        update_activity: fn(s: &mut ServiceImpl) -> Result<String, RbatisError>,
+        select_activity: fn(s: &ServiceImpl) -> Result<Activity, rbatis_core::Error>,
+        update_activity: fn(s: &mut ServiceImpl) -> Result<String, rbatis_core::Error>,
     }
     impl Service for ServiceImpl {
         impl_service! {
-          REQUIRED,  select_activity(&self) -> Result<Activity,RbatisError>
+          REQUIRED,  select_activity(&self) -> Result<Activity,rbatis_core::Error>
         }
         impl_service_mut! {
-          NONE,  update_activity(&mut self) -> Result<String, RbatisError>
+          NONE,  update_activity(&mut self) -> Result<String, rbatis_core::Error>
         }
     }
     #[test]
     pub fn test_service() {
         let mut s = ServiceImpl {
-            select_activity: |s: &ServiceImpl| -> Result<Activity, RbatisError>{
+            select_activity: |s: &ServiceImpl| -> Result<Activity, rbatis_core::Error>{
                 let act: Activity = Rbatis::singleton().raw_sql("", "select * from biz_activity where id  = '2';").unwrap();
                 return Result::Ok(act);
             },
-            update_activity: |s: &mut ServiceImpl| -> Result<String, RbatisError>{
+            update_activity: |s: &mut ServiceImpl| -> Result<String, rbatis_core::Error>{
                 return Result::Ok("ok".to_string());
             },
         };
@@ -194,7 +194,7 @@ use rbatis::rbatis_macro;
 
 async fn index() -> impl Responder {
     //写法
-    let data: Result<Activity, RbatisError> = 
+    let data: Result<Activity, rbatis_core::Error> = 
     Rbatis::async_raw_sql("", "select * from biz_activity where id  = '2';").await;
     println!("{:?}", &data);
     return serde_json::to_string(&data).unwrap();

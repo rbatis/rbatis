@@ -3,7 +3,7 @@ use std::collections::HashMap;
 use serde_json::Value;
 use crate::engine::parser::parser;
 use crate::engine::node::Node;
-use crate::error::RbatisError;
+
 use std::sync::{Mutex, RwLock};
 
 lazy_static!{
@@ -26,7 +26,7 @@ impl RbatisEngine {
     }
 
     ///eval express with arg value,if cache have value it will no run parser expr.
-    pub fn eval(&self, expr: &str, arg: &Value) -> Result<Value, RbatisError> {
+    pub fn eval(&self, expr: &str, arg: &Value) -> Result<Value, rbatis_core::Error> {
         let mut lexer_arg = expr.to_string();
         if expr.find(" and ").is_some() {
             lexer_arg = lexer_arg.replace(" and ", " && ");
@@ -63,11 +63,11 @@ impl RbatisEngine {
     }
 
     /// save to cache,if fail nothing to do.
-    fn cache_insert(&self, key: String, node: Node) -> Result<(), RbatisError> {
+    fn cache_insert(&self, key: String, node: Node) -> Result<(), rbatis_core::Error> {
         //let CACHE: RwLock<HashMap<String, Node>> = RwLock::new(HashMap::new());
         let cache_write = EXPR_CACHE.write();
         if cache_write.is_err() {
-            return Err(RbatisError::from(cache_write.err().unwrap().to_string()));
+            return Err(rbatis_core::Error::from(cache_write.err().unwrap().to_string()));
         }
         let mut cache_write = cache_write.unwrap();
         cache_write.insert(key, node);
@@ -75,7 +75,7 @@ impl RbatisEngine {
     }
 
     /// no cache mode to run engine
-    pub fn eval_no_cache(&self, lexer_arg: &str, arg: &Value) -> Result<Value, RbatisError> {
+    pub fn eval_no_cache(&self, lexer_arg: &str, arg: &Value) -> Result<Value, rbatis_core::Error> {
         let nodes = parser(lexer_arg.to_string(), &self.opt_map);
         if nodes.is_err() {
             return Result::Err(nodes.err().unwrap());

@@ -25,6 +25,10 @@ pub type Result<T> = std::result::Result<T, Error>;
 #[derive(Debug)]
 #[non_exhaustive]
 pub enum Error {
+
+    /// Default Error
+    E(String),
+
     /// Error communicating with the database.
     Io(io::Error),
 
@@ -120,6 +124,9 @@ impl Display for Error {
     // noinspection RsMatchCheck
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         match self {
+
+            Error::E(error) => write!(f, "{}", error),
+
             Error::Io(error) => write!(f, "{}", error),
 
             Error::UrlParse(error) => write!(f, "{}", error),
@@ -207,6 +214,20 @@ impl From<TlsError<'_>> for Error {
         Error::Tls(err.args.to_string().into())
     }
 }
+
+
+impl From<&str> for Error {
+    fn from(arg: &str) -> Self {
+        return Error::E(arg.to_string());
+    }
+}
+
+impl From<std::string::String> for Error {
+    fn from(arg: String) -> Self {
+        return Error::E(arg);
+    }
+}
+
 
 /// An error that was returned by the database.
 pub trait DatabaseError: StdError + Send + Sync + 'static {

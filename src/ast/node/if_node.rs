@@ -7,7 +7,7 @@ use crate::ast::node::node::{create_deep, do_child_nodes, print_child, SqlNodePr
 use crate::ast::node::node_type::NodeType;
 use crate::ast::node::string_node::StringNode;
 use crate::engine::runtime::RbatisEngine;
-use crate::error::RbatisError;
+
 
 #[derive(Clone, Debug)]
 pub struct IfNode {
@@ -16,10 +16,10 @@ pub struct IfNode {
 }
 
 impl RbatisAST for IfNode {
-    fn eval(&self, env: &mut Value, engine: &RbatisEngine, arg_array: &mut Vec<Value>) -> Result<String, RbatisError> {
+    fn eval(&self, env: &mut Value, engine: &RbatisEngine, arg_array: &mut Vec<Value>) -> Result<String, rbatis_core::Error> {
         let result = engine.eval(self.test.as_str(), env)?;
         if !result.is_boolean() {
-            return Result::Err(RbatisError::from("[rbatis] express:'".to_owned() + self.test.as_str() + "' is not return bool value!"));
+            return Result::Err(rbatis_core::Error::from("[rbatis] express:'".to_owned() + self.test.as_str() + "' is not return bool value!"));
         }
         if result.as_bool().unwrap() {
             return do_child_nodes(&self.childs, env, engine, arg_array);

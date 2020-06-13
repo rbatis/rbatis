@@ -5,7 +5,7 @@ use crate::ast::ast::RbatisAST;
 use crate::ast::node::node::{create_deep, SqlNodePrint};
 use crate::engine;
 use crate::engine::runtime::RbatisEngine;
-use crate::error::RbatisError;
+
 
 const TEMPLETE_BIND: &'static str = "<bind #{attr}>#{body}</bind>";
 
@@ -16,7 +16,7 @@ pub struct BindNode {
 }
 
 impl RbatisAST for BindNode {
-    fn eval(&self, env: &mut Value, engine: &RbatisEngine, arg_array: &mut Vec<Value>) -> Result<String, RbatisError> {
+    fn eval(&self, env: &mut Value, engine: &RbatisEngine, arg_array: &mut Vec<Value>) -> Result<String, rbatis_core::Error> {
         let r = engine.eval(self.value.as_str(), env)?;
         env[self.name.as_str()] = r;
         return Result::Ok("".to_string());
