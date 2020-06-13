@@ -92,9 +92,9 @@ impl<'r> Rbatis<'r> {
     pub async fn xml_fetch<T>(&self, mapper: &str, method: &str, arg: &serde_json::Value) -> Result<T, rbatis_core::Error>
         where T: DeserializeOwned {
         let x = self.mapper_node_map.get(mapper);
-        let x = x.to_result(format!("[rabtis] mapper:{} not init to rbatis", mapper))?;
+        let x = x.to_result(|| format!("[rabtis] mapper:{} not init to rbatis", mapper))?;
         let node_type = x.get(method);
-        let node_type = node_type.to_result(format!("[rabtis] mapper:{}.{}() not init to rbatis", mapper, method))?;
+        let node_type = node_type.to_result(|| format!("[rabtis] mapper:{}.{}() not init to rbatis", mapper, method))?;
         let mut arg_array = vec![];
         let sql = node_type.eval(&mut arg.clone(), &self.engine, &mut arg_array)?;
         unimplemented!()
