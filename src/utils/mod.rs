@@ -5,6 +5,7 @@ pub mod string_util;
 pub mod value_util;
 pub mod bencher;
 pub mod join_in;
+pub mod error_util;
 
 //test
 pub mod string_util_test;
