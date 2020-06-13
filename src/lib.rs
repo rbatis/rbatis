@@ -7,7 +7,6 @@
 
 #[macro_use]
 extern crate lazy_static;
-extern crate rbatis_drivers;
 extern crate serde_yaml;
 
 pub mod example;
