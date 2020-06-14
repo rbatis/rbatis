@@ -1,22 +1,26 @@
-use log::{error, info, warn};
-use rbatis_core::mysql::{MySqlPool, MySqlRow, MySqlCursor};
-use rbatis_core::types::BigDecimal;
+use std::env::Args;
+use std::ops::Deref;
 use std::thread::sleep;
 use std::time::{Duration, SystemTime};
-use crate::example::conf::MYSQL_URL;
-use rbatis_core::executor::Executor;
-use rbatis_core::cursor::Cursor;
-use rbatis_core::connection::Connection;
-use crate::rbatis::Rbatis;
-use std::ops::Deref;
-use serde_json::json;
-use fast_log::log::RuntimeType;
 
+use fast_log::log::RuntimeType;
+use log::{error, info, warn};
+use serde_json::json;
+use tokio::macros::support::Future;
+
+use rbatis_core::connection::Connection;
+use rbatis_core::cursor::Cursor;
+use rbatis_core::executor::Executor;
+use rbatis_core::mysql::{MySqlCursor, MySqlPool, MySqlRow};
+use rbatis_core::types::BigDecimal;
+
+use crate::example::conf::MYSQL_URL;
+use crate::rbatis::Rbatis;
 
 #[test]
 pub fn test_log() {
     //1 启用日志(可选，不添加则不加载日志库)
-    fast_log::log::init_log("requests.log",RuntimeType::Std).unwrap();
+    fast_log::log::init_log("requests.log", RuntimeType::Std).unwrap();
     info!("print data");
     sleep(Duration::from_secs(1));
 }
@@ -42,8 +46,8 @@ pub fn test_mysql_() {
         async move {
             let rb = Rbatis::new(MYSQL_URL).await.unwrap();
             //pooledConn 交由rbatis上下文管理
-            let arg = &vec![ json!("count(1)") ];
-            let r: serde_json::Value =  rb.fetch_prepare("SELECT ? FROM biz_activity;",arg).await.unwrap();
+            let arg = &vec![json!("count(1)")];
+            let r: serde_json::Value = rb.fetch_prepare("SELECT ? FROM biz_activity;", arg).await.unwrap();
             println!("done:{:?}", r);
         }
     );
@@ -51,7 +55,7 @@ pub fn test_mysql_() {
 
 #[test]
 pub fn test_rbatis() {
-     async_std::task::block_on(
+    async_std::task::block_on(
         async move {
             let mut rb = Rbatis::new("").await.unwrap();
             rb.load_xml("test", r#"<?xml version="1.0" encoding="UTF-8"?>
@@ -86,16 +90,30 @@ pub fn test_rbatis() {
     </select>
 </mapper>"#).unwrap();
         }
-     )
+    )
 }
 
+struct Service {
+    hello: Box<dyn Fn() -> String>,
+}
+
+
 #[test]
-pub fn test_rw_lock() {
-    let r = async_std::task::block_on(
-        async move {
-            let lock = async_std::sync::RwLock::new(1);
-            let f = lock.read().await;
-            let f = f.deref();
-            println!("{}", f);
-        });
+pub fn test_hook() {
+    let mut s = Service {
+        hello: Box::new( || -> String{
+            "fuck you".to_string()
+        })
+    };
+    s = Service {
+        hello: Box::new(move || -> String{
+            println!("befor");
+            let r = (s.hello)();
+            println!("after");
+            return r;
+        })
+    };
+
+    let r = (s.hello)();
+    println!("s:{:?}", r);
 }
