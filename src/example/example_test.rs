@@ -97,6 +97,12 @@ struct Service {
     hello: Box<dyn Fn() -> String>,
 }
 
+impl Service{
+    pub fn hello(&self) ->String{
+        (self.hello)()
+    }
+}
+
 
 #[test]
 pub fn test_hook() {
@@ -114,6 +120,6 @@ pub fn test_hook() {
         })
     };
 
-    let r = (s.hello)();
+    let r = s.hello();
     println!("s:{:?}", r);
 }
