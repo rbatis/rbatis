@@ -38,3 +38,6 @@ hyper = "0.13"
 
 #async trait
 async-trait = "0.1.31"
+
+
+futures-core = { version = "0.3.4"}
