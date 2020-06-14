@@ -6,7 +6,7 @@ use std::time::{Duration, SystemTime};
 use fast_log::log::RuntimeType;
 use log::{error, info, warn};
 use serde_json::json;
-use tokio::macros::support::Future;
+use tokio::macros::support::{Future, Pin};
 
 use rbatis_core::connection::Connection;
 use rbatis_core::cursor::Cursor;
@@ -16,6 +16,7 @@ use rbatis_core::types::BigDecimal;
 
 use crate::example::conf::MYSQL_URL;
 use crate::rbatis::Rbatis;
+use futures_core::future::BoxFuture;
 
 #[test]
 pub fn test_log() {
@@ -94,11 +95,11 @@ pub fn test_rbatis() {
 }
 
 struct Service {
-    hello: Box<dyn Fn() -> String>,
+    hello: Box<dyn Fn() -> BoxFuture<'static,String>>,
 }
 
 impl Service{
-    pub fn hello(&self) ->String{
+    pub fn hello(&self) -> BoxFuture<'static,String> {
         (self.hello)()
     }
 }
@@ -107,12 +108,14 @@ impl Service{
 #[test]
 pub fn test_hook() {
     let mut s = Service {
-        hello: Box::new( || -> String{
-            "fuck you".to_string()
+        hello: Box::new( || -> BoxFuture<'static,String>{
+           Box::pin( async {
+               "fuck you".to_string()
+           })
         })
     };
     s = Service {
-        hello: Box::new(move || -> String{
+        hello: Box::new(move || -> BoxFuture<'static,String>{
             println!("befor");
             let r = (s.hello)();
             println!("after");
@@ -120,6 +123,8 @@ pub fn test_hook() {
         })
     };
 
-    let r = s.hello();
-    println!("s:{:?}", r);
+    async_std::task::block_on(async  move {
+        let r = s.hello().await;
+        println!("s:{:?}", r);
+    });
 }
