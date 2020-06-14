@@ -94,12 +94,12 @@ pub fn test_rbatis() {
     )
 }
 
-struct Service {
-    hello: Box<dyn Fn() -> BoxFuture<'static, String>>,
+struct Service<'s> {
+    hello: Box<dyn Fn() -> BoxFuture<'s, String>>,
 }
 
-impl Service {
-    pub fn hello(&self) -> BoxFuture<'static, String> {
+impl<'s> Service<'s> {
+    pub fn hello(&self) -> BoxFuture<'s, String> {
         (self.hello)()
     }
 }
@@ -108,14 +108,14 @@ impl Service {
 #[test]
 pub fn test_hook() {
     let mut s = Service {
-        hello: Box::new(|| -> BoxFuture<'static, String>{
+        hello: Box::new(|| -> BoxFuture<String>{
             Box::pin(async {
                 "fuck you".to_string()
             })
         })
     };
     s = Service {
-        hello: Box::new(move || -> BoxFuture<'static, String>{
+        hello: Box::new(move || -> BoxFuture<String>{
             println!("befor");
             let r = (s.hello)();
             println!("after");
