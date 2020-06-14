@@ -10,12 +10,13 @@ use rbatis_core::connection::Connection;
 use crate::rbatis::Rbatis;
 use std::ops::Deref;
 use serde_json::json;
+use fast_log::log::RuntimeType;
 
 
 #[test]
 pub fn test_log() {
     //1 启用日志(可选，不添加则不加载日志库)
-    fast_log::log::init_log("requests.log").unwrap();
+    fast_log::log::init_log("requests.log",RuntimeType::Std).unwrap();
     info!("print data");
     sleep(Duration::from_secs(1));
 }
