@@ -19,3 +19,4 @@ pub mod decode;
 pub mod plugin;
 pub mod db_config;
 pub mod rbatis;
+pub mod context;
