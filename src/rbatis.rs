@@ -5,7 +5,7 @@ use serde::de::DeserializeOwned;
 use rbatis_core::cursor::Cursor;
 use rbatis_core::Error;
 use rbatis_core::executor::Executor;
-use rbatis_core::mysql::{MySql, MySqlPool};
+use rbatis_core::mysql::{MySql, MySqlPool, MySqlConnection};
 use rbatis_core::query::{query, Query};
 use rbatis_core::query_as::query_as;
 
@@ -19,6 +19,8 @@ use crate::ast::node::select_node::SelectNode;
 use crate::ast::node::update_node::UpdateNode;
 use crate::engine::runtime::RbatisEngine;
 use crate::utils::error_util::ToResult;
+use crate::utils::sync_map::SyncMap;
+use rbatis_core::pool::PoolConnection;
 
 /// rbatis engine
 pub struct Rbatis<'r> {
@@ -26,6 +28,7 @@ pub struct Rbatis<'r> {
     engine: RbatisEngine,
     /// map<mapper_name,map<method_name,NodeType>>
     mapper_node_map: HashMap<&'r str, HashMap<String, NodeType>>,
+    txs: SyncMap<PoolConnection<MySqlConnection>>
 }
 
 
@@ -35,7 +38,7 @@ impl<'r> Rbatis<'r> {
         if url.ne("") {
             pool = Some(MySqlPool::new(url).await?);
         }
-        return Ok(Rbatis { pool, mapper_node_map: HashMap::new(), engine: RbatisEngine::new() });
+        return Ok(Rbatis { pool, mapper_node_map: HashMap::new(), engine: RbatisEngine::new(), txs: SyncMap::new() });
     }
 
     pub fn load_xml(&mut self, mapper_name: &'r str, data: &str) -> Result<(), rbatis_core::Error> {
@@ -45,7 +48,7 @@ impl<'r> Rbatis<'r> {
     }
 
     /// get conn pool
-    pub fn get_conn_pool(&self) -> Result<&MySqlPool, rbatis_core::Error> {
+    pub fn get_pool(&self) -> Result<&MySqlPool, rbatis_core::Error> {
         if self.pool.is_none() {
             return Err(rbatis_core::Error::from("[rbatis] rbatis pool not inited!"));
         }
@@ -55,14 +58,14 @@ impl<'r> Rbatis<'r> {
     /// fetch result(row sql)
     pub async fn fetch<T>(&self, sql: &str) -> Result<T, rbatis_core::Error>
         where T: DeserializeOwned {
-        let mut conn = self.get_conn_pool()?.acquire().await?;
+        let mut conn = self.get_pool()?.acquire().await?;
         let mut c = conn.fetch(sql);
         return c.decode().await;
     }
 
     /// exec sql(row sql)
     pub async fn exec(&self, sql: &str) -> Result<u64, rbatis_core::Error> {
-        let mut conn = self.get_conn_pool()?.acquire().await?;
+        let mut conn = self.get_pool()?.acquire().await?;
         return conn.execute(sql).await;
     }
 
@@ -72,7 +75,7 @@ impl<'r> Rbatis<'r> {
         if self.pool.is_none() {
             return Err(rbatis_core::Error::from("[rbatis] rbatis pool not inited!"));
         }
-        let mut conn = self.get_conn_pool()?.acquire().await?;
+        let mut conn = self.get_pool()?.acquire().await?;
         let mut q: Query<MySql> = query(sql);
         for x in arg {
             q = q.bind(x.to_string());
@@ -83,7 +86,7 @@ impl<'r> Rbatis<'r> {
 
     /// exec sql(prepare sql)
     pub async fn exec_prepare(&self, sql: &str, arg: &Vec<serde_json::Value>) -> Result<u64, rbatis_core::Error> {
-        let mut conn = self.get_conn_pool()?.acquire().await?;
+        let mut conn = self.get_pool()?.acquire().await?;
         unimplemented!()
     }
 
