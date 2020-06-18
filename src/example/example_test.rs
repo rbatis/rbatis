@@ -20,6 +20,7 @@ use crate::rbatis::Rbatis;
 use std::cell::{Cell, RefCell};
 use std::rc::Rc;
 use std::sync::{Mutex, Arc, RwLock};
+use std::collections::HashMap;
 
 #[test]
 pub fn test_log() {
@@ -99,25 +100,27 @@ pub fn test_rbatis() {
 
 #[derive(Debug)]
 struct Service{
-    pub cell:Arc<Mutex<RefCell<i32>>>
+    pub cell:Arc<Mutex<RefCell<HashMap<String,String>>>>
 }
 impl Service{
     pub fn new()->Service{
         Service{
-            cell: Arc::new(Mutex::new(RefCell::new(1)))
+            cell: Arc::new(Mutex::new(RefCell::new(HashMap::new())))
         }
     }
     pub fn change(&self){
         let c= self.cell.clone();
         let lock= c.lock().unwrap();
         let mut b=   lock.borrow_mut();
-        *b=23;
+        b.insert("1".to_string(),"2".to_string());
     }
     pub fn load(&self){
         let c= self.cell.clone();
         let lock= c.lock().unwrap();
-        let mut b=   lock.borrow();
-        println!("{}",b);
+        let  b=   lock.borrow();
+
+        let f= b.get("1");
+        println!("{:?}",f);
     }
 }
 
@@ -128,5 +131,5 @@ lazy_static!{
 #[test]
 pub fn test_hook() {
     SS.change();
-    println!("{:?}",SS.load());
+    SS.load();
 }
