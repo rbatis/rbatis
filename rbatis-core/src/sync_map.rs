@@ -26,19 +26,22 @@ impl<T> SyncMap<T> {
         }
     }
 
+    /// put an value,this value will move lifetime into SyncMap
+    #[inline]
     pub async fn put(&self, key: &str, value: T) {
         let c = self.cell.clone();
-            let lock = c.lock().await;
-                let mut b = lock.borrow_mut();
-                b.insert(key.to_string(), value);
+        let lock = c.lock().await;
+        let mut b = lock.borrow_mut();
+        b.insert(key.to_string(), value);
     }
 
+    /// pop value,lifetime will move to caller
+    #[inline]
     pub async fn pop(&self, key: &str) -> Option<T> {
         let c = self.cell.clone();
-         let lock = c.lock().await;
+        let lock = c.lock().await;
         let mut b = lock.borrow_mut();
-         return b.remove(key);
-
+        return b.remove(key);
     }
 }
 
