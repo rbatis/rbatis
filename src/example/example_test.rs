@@ -17,6 +17,9 @@ use rbatis_core::types::BigDecimal;
 
 use crate::example::conf::MYSQL_URL;
 use crate::rbatis::Rbatis;
+use std::cell::{Cell, RefCell};
+use std::rc::Rc;
+use std::sync::{Mutex, Arc, RwLock};
 
 #[test]
 pub fn test_log() {
@@ -94,9 +97,36 @@ pub fn test_rbatis() {
     )
 }
 
+#[derive(Debug)]
+struct Service{
+    pub cell:Arc<Mutex<RefCell<i32>>>
+}
+impl Service{
+    pub fn new()->Service{
+        Service{
+            cell: Arc::new(Mutex::new(RefCell::new(1)))
+        }
+    }
+    pub fn change(&self){
+        let c= self.cell.clone();
+        let lock= c.lock().unwrap();
+        let mut b=   lock.borrow_mut();
+        *b=23;
+    }
+    pub fn load(&self){
+        let c= self.cell.clone();
+        let lock= c.lock().unwrap();
+        let mut b=   lock.borrow();
+        println!("{}",b);
+    }
+}
 
+lazy_static!{
+  static ref SS:Service=Service::new();
+}
 
 #[test]
 pub fn test_hook() {
-
+    SS.change();
+    println!("{:?}",SS.load());
 }
