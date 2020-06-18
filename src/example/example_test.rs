@@ -99,36 +99,37 @@ pub fn test_rbatis() {
 }
 
 #[derive(Debug)]
-struct Service{
-    pub cell:Arc<Mutex<RefCell<HashMap<String,String>>>>
+struct SyncMap<T> {
+    pub cell: Arc<Mutex<RefCell<HashMap<String, T>>>>
 }
-impl Service{
-    pub fn new()->Service{
-        Service{
+
+impl<T> SyncMap<T> {
+    pub fn new() -> SyncMap<T> {
+        SyncMap {
             cell: Arc::new(Mutex::new(RefCell::new(HashMap::new())))
         }
     }
-    pub fn put(&self,key:&str,value:String){
-        let c= self.cell.clone();
-        let lock= c.lock().unwrap();
-        let mut b=   lock.borrow_mut();
-        b.insert(key.to_string(),value);
+    pub fn put(&self, key: &str, value: T) {
+        let c = self.cell.clone();
+        let lock = c.lock().unwrap();
+        let mut b = lock.borrow_mut();
+        b.insert(key.to_string(), value);
     }
 
-    pub fn pop(&self,key:&str)->Option<String>{
-        let c= self.cell.clone();
-        let lock= c.lock().unwrap();
-        let mut b =   lock.borrow_mut();
+    pub fn pop(&self, key: &str) -> Option<T> {
+        let c = self.cell.clone();
+        let lock = c.lock().unwrap();
+        let mut b = lock.borrow_mut();
         return b.remove(key);
     }
 }
 
-lazy_static!{
-  static ref SS:Service=Service::new();
+lazy_static! {
+  static ref SS:SyncMap<String>= SyncMap::<String>::new();
 }
 
 #[test]
 pub fn test_hook() {
-    SS.put("1","fuck you".to_string());
-    println!("{:?}",SS.pop("1"));
+    SS.put("1", "fuck you".to_string());
+    println!("{:?}", SS.pop("1"));
 }
