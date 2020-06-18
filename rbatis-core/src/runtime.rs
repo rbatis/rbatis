@@ -15,6 +15,7 @@ pub(crate) use async_std::{
     net::TcpStream,
     task::sleep,
     task::spawn,
+    sync::Mutex
 };
 
 #[cfg(feature = "runtime-tokio")]
@@ -25,4 +26,5 @@ pub(crate) use tokio::{
     task::spawn,
     time::delay_for as sleep,
     time::timeout,
+    sync::Mutex
 };

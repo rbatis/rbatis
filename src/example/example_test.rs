@@ -21,7 +21,7 @@ use std::cell::{Cell, RefCell};
 use std::rc::Rc;
 use std::sync::{Mutex, Arc, RwLock};
 use std::collections::HashMap;
-use crate::utils::sync_map::SyncMap;
+use rbatis_core::sync_map::SyncMap;
 
 #[test]
 pub fn test_log() {
@@ -98,6 +98,4 @@ pub fn test_rbatis() {
         }
     )
 }
-
-
 
