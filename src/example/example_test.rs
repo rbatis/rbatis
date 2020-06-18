@@ -21,6 +21,7 @@ use std::cell::{Cell, RefCell};
 use std::rc::Rc;
 use std::sync::{Mutex, Arc, RwLock};
 use std::collections::HashMap;
+use crate::utils::sync_map::SyncMap;
 
 #[test]
 pub fn test_log() {
@@ -98,38 +99,5 @@ pub fn test_rbatis() {
     )
 }
 
-#[derive(Debug)]
-struct SyncMap<T> {
-    pub cell: Arc<Mutex<RefCell<HashMap<String, T>>>>
-}
 
-impl<T> SyncMap<T> {
-    pub fn new() -> SyncMap<T> {
-        SyncMap {
-            cell: Arc::new(Mutex::new(RefCell::new(HashMap::new())))
-        }
-    }
-    pub fn put(&self, key: &str, value: T) {
-        let c = self.cell.clone();
-        let lock = c.lock().unwrap();
-        let mut b = lock.borrow_mut();
-        b.insert(key.to_string(), value);
-    }
 
-    pub fn pop(&self, key: &str) -> Option<T> {
-        let c = self.cell.clone();
-        let lock = c.lock().unwrap();
-        let mut b = lock.borrow_mut();
-        return b.remove(key);
-    }
-}
-
-lazy_static! {
-  static ref SS:SyncMap<String>= SyncMap::<String>::new();
-}
-
-#[test]
-pub fn test_hook() {
-    SS.put("1", "fuck you".to_string());
-    println!("{:?}", SS.pop("1"));
-}
