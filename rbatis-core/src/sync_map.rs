@@ -11,8 +11,12 @@ use crate::runtime::Mutex;
 /// lazy_static! {
 ///   static ref SS:SyncMap<String>= SyncMap::<String>::new();
 /// }
-/// SS.put("1", "fuck you".to_string());
-/// println!("{:?}", SS.pop("1"));
+///
+///
+/// SS.put("1", "fuck you".to_string()).await;
+/// println!("{:?}", SS.pop("1").await);
+///
+///
 ///
 #[derive(Debug, Clone)]
 pub struct SyncMap<T> {
