@@ -19,8 +19,8 @@ use crate::ast::node::select_node::SelectNode;
 use crate::ast::node::update_node::UpdateNode;
 use crate::engine::runtime::RbatisEngine;
 use crate::utils::error_util::ToResult;
-use crate::utils::sync_map::SyncMap;
 use rbatis_core::pool::PoolConnection;
+use rbatis_core::sync_map::SyncMap;
 
 /// rbatis engine
 pub struct Rbatis<'r> {
