@@ -108,19 +108,18 @@ impl Service{
             cell: Arc::new(Mutex::new(RefCell::new(HashMap::new())))
         }
     }
-    pub fn change(&self){
+    pub fn put(&self,key:&str,value:String){
         let c= self.cell.clone();
         let lock= c.lock().unwrap();
         let mut b=   lock.borrow_mut();
-        b.insert("1".to_string(),"2".to_string());
+        b.insert(key.to_string(),value);
     }
-    pub fn load(&self){
+
+    pub fn pop(&self,key:&str)->Option<String>{
         let c= self.cell.clone();
         let lock= c.lock().unwrap();
-        let  b=   lock.borrow();
-
-        let f= b.get("1");
-        println!("{:?}",f);
+        let mut b =   lock.borrow_mut();
+        return b.remove(key);
     }
 }
 
@@ -130,6 +129,6 @@ lazy_static!{
 
 #[test]
 pub fn test_hook() {
-    SS.change();
-    SS.load();
+    SS.put("1","fuck you".to_string());
+    println!("{:?}",SS.pop("1"));
 }
