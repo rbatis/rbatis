@@ -44,12 +44,3 @@ impl<T> SyncMap<T> {
         return b.remove(key);
     }
 }
-
-#[test]
-pub fn test_sync_map() {
-    async_std::task::block_on(async move {
-        let map = SyncMap::new();
-        map.put("1", "fuck you".to_string()).await;
-        println!("{:?}", map.pop("1").await);
-    });
-}
