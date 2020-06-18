@@ -94,37 +94,9 @@ pub fn test_rbatis() {
     )
 }
 
-struct Service<'s> {
-    hello: Box<dyn Fn() -> BoxFuture<'s, String>>,
-}
-
-impl<'s> Service<'s> {
-    pub fn hello(&self) -> BoxFuture<'s, String> {
-        (self.hello)()
-    }
-}
 
 
 #[test]
 pub fn test_hook() {
-    let mut s = Service {
-        hello: Box::new(|| -> BoxFuture<String>{
-            Box::pin(async {
-                "fuck you".to_string()
-            })
-        })
-    };
-    s = Service {
-        hello: Box::new(move || -> BoxFuture<String>{
-            println!("befor");
-            let r = (s.hello)();
-            println!("after");
-            return r;
-        })
-    };
 
-    async_std::task::block_on(async move {
-        let r = s.hello().await;
-        println!("s:{:?}", r);
-    });
 }
