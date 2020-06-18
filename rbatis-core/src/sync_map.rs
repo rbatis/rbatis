@@ -18,32 +18,28 @@ use crate::runtime::Mutex;
 ///
 ///
 ///
-#[derive(Debug, Clone)]
+#[derive(Debug)]
 pub struct SyncMap<T> {
-    pub cell: Arc<Mutex<RefCell<HashMap<String, T>>>>
+    pub cell: Mutex<RefCell<HashMap<String, T>>>
 }
 
 impl<T> SyncMap<T> {
     pub fn new() -> SyncMap<T> {
         SyncMap {
-            cell: Arc::new(Mutex::new(RefCell::new(HashMap::new())))
+            cell: Mutex::new(RefCell::new(HashMap::new()))
         }
     }
 
     /// put an value,this value will move lifetime into SyncMap
-    #[inline]
     pub async fn put(&self, key: &str, value: T) {
-        let c = self.cell.clone();
-        let lock = c.lock().await;
+        let lock = self.cell.lock().await;
         let mut b = lock.borrow_mut();
         b.insert(key.to_string(), value);
     }
 
     /// pop value,lifetime will move to caller
-    #[inline]
     pub async fn pop(&self, key: &str) -> Option<T> {
-        let c = self.cell.clone();
-        let lock = c.lock().await;
+        let lock = self.cell.lock().await;
         let mut b = lock.borrow_mut();
         return b.remove(key);
     }

@@ -99,3 +99,12 @@ pub fn test_rbatis() {
     )
 }
 
+
+lazy_static!{
+  static ref M:SyncMap<String>=SyncMap::new();
+}
+
+#[test]
+pub fn test(){
+
+}
