@@ -105,6 +105,12 @@ lazy_static!{
 }
 
 #[test]
-pub fn test(){
-
+pub fn test_tx(){
+  async_std::task::block_on(async{
+      let rb=Rbatis::new(MYSQL_URL).await.unwrap();
+      rb.begin("1").await.unwrap();
+      let v:serde_json::Value= rb.fetch("1","SELECT count(1) FROM biz_activity;").await.unwrap();
+      println!("{}",v.clone());
+      rb.commit("1").await.unwrap();
+  });
 }
