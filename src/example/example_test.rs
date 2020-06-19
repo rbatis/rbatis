@@ -10,7 +10,7 @@ use std::time::{Duration, SystemTime};
 use fast_log::log::RuntimeType;
 use futures_core::future::BoxFuture;
 use log::{error, info, warn};
-use serde_json::json;
+use serde_json::{json, Value};
 use tokio::macros::support::{Future, Pin};
 
 use rbatis_core::connection::Connection;
@@ -150,9 +150,13 @@ pub fn test_tide() {
     async_std::task::block_on(async {
         let mut app = tide::new();
         app.at("/test").get(move |_| async {
-            let v: serde_json::Value = RB.fetch("", "SELECT count(1) FROM biz_activity;").await.unwrap();
-            println!("{}", v.clone());
-            Ok(v)
+            let v = RB.fetch("", "SELECT count(1) FROM biz_activity;").await;
+            if v.is_ok(){
+                let data:Value=v.unwrap();
+                Ok(data.to_string())
+            }else{
+                Ok(v.err().unwrap().to_string())
+            }
         });
         app.at("/").get(|_| async { Ok("Hello, world!") });
         let addr = "127.0.0.1:8080";

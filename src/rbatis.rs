@@ -61,7 +61,7 @@ impl<'r> Rbatis<'r> {
     async fn get_tx(&self, tx_id: &str) -> Result<Transaction<PoolConnection<MySqlConnection>>, rbatis_core::Error> {
         let tx = self.context_tx.pop(tx_id).await;
         if tx.is_none() {
-            return Err(rbatis_core::Error::from(format!("tx:{} not exist！", tx_id)));
+            return Err(rbatis_core::Error::from(format!("[rbatis] tx:{} not exist！", tx_id)));
         }
         return Ok(tx.unwrap());
     }
@@ -79,7 +79,7 @@ impl<'r> Rbatis<'r> {
     pub async fn commit(&self, tx_id: &str) -> Result<PoolConnection<MySqlConnection>, rbatis_core::Error> {
         let tx = self.context_tx.pop(tx_id).await;
         if tx.is_none() {
-            return Err(rbatis_core::Error::from(format!("tx:{} not exist！", tx_id)));
+            return Err(rbatis_core::Error::from(format!("[rbatis] tx:{} not exist！", tx_id)));
         }
         let tx = tx.unwrap();
         let result = tx.commit().await?;
@@ -89,7 +89,7 @@ impl<'r> Rbatis<'r> {
     pub async fn rollback(&self, tx_id: &str) -> Result<PoolConnection<MySqlConnection>, rbatis_core::Error> {
         let tx = self.context_tx.pop(tx_id).await;
         if tx.is_none() {
-            return Err(rbatis_core::Error::from(format!("tx:{} not exist！", tx_id)));
+            return Err(rbatis_core::Error::from(format!("[rbatis] tx:{} not exist！", tx_id)));
         }
         let tx = tx.unwrap();
         let result = tx.rollback().await?;
