@@ -382,7 +382,7 @@ pub fn test_exec() {
     println!("{:?}", arg_array.clone());
 }
 
-//cargo test --release --color=always --package rbatis --lib ast::interpreter::py_interpreter::bench_exec --all-features -- --nocapture --exact
+//cargo.exe test --release --color=always --package rbatis --lib ast::lang::py::bench_exec --all-features -- --nocapture --exact
 #[test]
 pub fn bench_exec() {
     let mut b = Bencher::new(1000000);
