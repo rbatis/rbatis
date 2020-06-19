@@ -129,9 +129,6 @@ impl<'r> Rbatis<'r> {
     pub async fn fetch_prepare<T>(&self, tx_id: &str, sql: &str, arg: &Vec<serde_json::Value>) -> Result<T, rbatis_core::Error>
         where T: DeserializeOwned {
         if tx_id.is_empty() {
-            if self.pool.is_none() {
-                return Err(rbatis_core::Error::from("[rbatis] rbatis pool not inited!"));
-            }
             let mut conn = self.get_pool()?.acquire().await?;
             let mut q: Query<MySql> = query(sql);
             for x in arg {
@@ -155,9 +152,6 @@ impl<'r> Rbatis<'r> {
     /// exec sql(prepare sql)
     pub async fn exec_prepare(&self, tx_id: &str, sql: &str, arg: &Vec<serde_json::Value>) -> Result<u64, rbatis_core::Error> {
         if tx_id.is_empty() {
-            if self.pool.is_none() {
-                return Err(rbatis_core::Error::from("[rbatis] rbatis pool not inited!"));
-            }
             let mut conn = self.get_pool()?.acquire().await?;
             let mut q: Query<MySql> = query(sql);
             for x in arg {
@@ -177,21 +171,28 @@ impl<'r> Rbatis<'r> {
     }
 
 
-    /// fetch result(prepare sql)
-    pub async fn xml_fetch<T>(&self, mapper: &str, method: &str, arg: &serde_json::Value) -> Result<T, rbatis_core::Error>
-        where T: DeserializeOwned {
+    fn xml_to_sql(&self, mapper: &str, method: &str, arg: &serde_json::Value) -> Result<(String,Vec<serde_json::Value>), rbatis_core::Error> {
         let x = self.mapper_node_map.get(mapper);
         let x = x.to_result(|| format!("[rabtis] mapper:{} not init to rbatis", mapper))?;
         let node_type = x.get(method);
         let node_type = node_type.to_result(|| format!("[rabtis] mapper:{}.{}() not init to rbatis", mapper, method))?;
         let mut arg_array = vec![];
-        let sql = node_type.eval(&mut arg.clone(), &self.engine, &mut arg_array)?;
-        unimplemented!()
+        let sql=  node_type.eval(&mut arg.clone(), &self.engine, &mut arg_array)?;
+        return Ok((sql,arg_array));
+    }
+
+
+    /// fetch result(prepare sql)
+    pub async fn xml_fetch<T>(&self, tx_id: &str, mapper: &str, method: &str, arg: &serde_json::Value) -> Result<T, rbatis_core::Error>
+        where T: DeserializeOwned {
+        let (sql,args) = self.xml_to_sql(mapper, method, arg)?;
+        return self.fetch_prepare(tx_id,sql.as_str(),&args).await;
     }
 
     /// exec sql(prepare sql)
-    pub async fn xml_exec(&self, mapper: &str, method: &str, arg: &serde_json::Value) -> Result<u64, rbatis_core::Error> {
-        unimplemented!()
+    pub async fn xml_exec(&self, tx_id: &str, mapper: &str, method: &str, arg: &serde_json::Value) -> Result<u64, rbatis_core::Error> {
+        let (sql,args) = self.xml_to_sql(mapper, method, arg)?;
+        return self.exec_prepare(tx_id,sql.as_str(),&args).await;
     }
 
     /// fetch result(prepare sql)
