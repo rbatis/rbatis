@@ -66,7 +66,7 @@ impl<'r> Rbatis<'r> {
         return Ok(tx.unwrap());
     }
 
-
+    /// begin tx,for new conn
     pub async fn begin(&self, tx_id: &str) -> Result<u64, rbatis_core::Error> {
         if tx_id.is_empty() {
             return Err(rbatis_core::Error::from("[rbatis] tx_id can not be empty"));
@@ -76,6 +76,7 @@ impl<'r> Rbatis<'r> {
         return Ok(1);
     }
 
+    /// commit tx,and return conn
     pub async fn commit(&self, tx_id: &str) -> Result<PoolConnection<MySqlConnection>, rbatis_core::Error> {
         let tx = self.context_tx.pop(tx_id).await;
         if tx.is_none() {
@@ -86,6 +87,7 @@ impl<'r> Rbatis<'r> {
         return Ok(result);
     }
 
+    /// rollback tx,and return conn
     pub async fn rollback(&self, tx_id: &str) -> Result<PoolConnection<MySqlConnection>, rbatis_core::Error> {
         let tx = self.context_tx.pop(tx_id).await;
         if tx.is_none() {
