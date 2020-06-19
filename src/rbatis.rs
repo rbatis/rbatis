@@ -82,8 +82,8 @@ impl<'r> Rbatis<'r> {
             return Err(rbatis_core::Error::from(format!("tx:{} not exist！", tx_id)));
         }
         let tx = tx.unwrap();
-        let r = tx.commit().await?;
-        return Ok(r);
+        let result = tx.commit().await?;
+        return Ok(result);
     }
 
     pub async fn rollback(&self, tx_id: &str) -> Result<PoolConnection<MySqlConnection>, rbatis_core::Error> {
@@ -92,8 +92,8 @@ impl<'r> Rbatis<'r> {
             return Err(rbatis_core::Error::from(format!("tx:{} not exist！", tx_id)));
         }
         let tx = tx.unwrap();
-        let r = tx.rollback().await?;
-        return Ok(r);
+        let result = tx.rollback().await?;
+        return Ok(result);
     }
 
 
@@ -120,9 +120,9 @@ impl<'r> Rbatis<'r> {
             return conn.execute(sql).await;
         } else {
             let mut conn = self.get_tx(tx_id).await?;
-            let r = conn.execute(sql).await;
+            let result = conn.execute(sql).await;
             self.context_tx.put(tx_id, conn).await;
-            return r;
+            return result;
         }
     }
 
@@ -144,9 +144,9 @@ impl<'r> Rbatis<'r> {
                 q = q.bind(x.to_string());
             }
             let mut c = conn.fetch(q);
-            let r = c.decode().await;
+            let result = c.decode().await;
             self.context_tx.put(tx_id, conn).await;
-            return r;
+            return result;
         }
     }
 
@@ -165,9 +165,9 @@ impl<'r> Rbatis<'r> {
             for x in arg {
                 q = q.bind(x.to_string());
             }
-            let r = conn.execute(q).await;
+            let result = conn.execute(q).await;
             self.context_tx.put(tx_id, conn).await;
-            return r;
+            return result;
         }
     }
 
