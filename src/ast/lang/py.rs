@@ -45,6 +45,7 @@ impl Py {
                 return Ok(nodes.unwrap().clone());
             } else {
                 let nods = Py::parser(arg)?;
+                drop(rd);
                 Py::try_cache_into(arg, nods.clone());
                 return Ok(nods);
             }
