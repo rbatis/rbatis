@@ -4,7 +4,7 @@ use serde_json::Value;
 use crate::engine::parser::parser;
 use crate::engine::node::Node;
 
-use std::sync::{Mutex, RwLock};
+use std::sync::{RwLock};
 
 lazy_static!{
    /// for engine: if cache not have expr value,it will be redo parser code.not wait cache return for no blocking
@@ -48,8 +48,7 @@ impl RbatisEngine {
 
     /// read from cache,if not exist return null
     fn cache_read(&self, arg: &str) -> Option<Node>{
-        // let CACHE: RwLock<HashMap<String, Node>> = RwLock::new(HashMap::new());
-        let cache_read = EXPR_CACHE.read();
+        let cache_read = EXPR_CACHE.try_read();
         if cache_read.is_err() {
             return Option::None;
         }
@@ -64,8 +63,7 @@ impl RbatisEngine {
 
     /// save to cache,if fail nothing to do.
     fn cache_insert(&self, key: String, node: Node) -> Result<(), rbatis_core::Error> {
-        //let CACHE: RwLock<HashMap<String, Node>> = RwLock::new(HashMap::new());
-        let cache_write = EXPR_CACHE.write();
+        let cache_write = EXPR_CACHE.try_write();
         if cache_write.is_err() {
             return Err(rbatis_core::Error::from(cache_write.err().unwrap().to_string()));
         }

@@ -33,7 +33,7 @@ impl Py {
     /// parser and cache py data sql,return an vec node type
     ///编译并且缓存py slq数据，返回node type 数组
     pub fn parser_and_cache(arg: &str) -> Result<Vec<NodeType>, rbatis_core::Error> {
-        let rd = PY_PARSER_MAP.read();
+        let rd = PY_PARSER_MAP.try_read();
         if rd.is_err() {
             let nods = Py::parser(arg)?;
             Py::try_cache_into(arg, nods.clone());
@@ -53,7 +53,7 @@ impl Py {
     }
 
     fn try_cache_into(py: &str, arg: Vec<NodeType>) {
-        let rd = PY_PARSER_MAP.write();
+        let rd = PY_PARSER_MAP.try_write();
         if rd.is_ok() {
             rd.unwrap().insert(py.to_string(), arg);
         }
