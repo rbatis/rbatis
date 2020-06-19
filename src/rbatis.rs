@@ -2,12 +2,16 @@ use std::collections::HashMap;
 
 use serde::de::DeserializeOwned;
 
+use rbatis_core::connection::Connection;
 use rbatis_core::cursor::Cursor;
 use rbatis_core::Error;
 use rbatis_core::executor::Executor;
-use rbatis_core::mysql::{MySql, MySqlPool, MySqlConnection};
+use rbatis_core::mysql::{MySql, MySqlConnection, MySqlPool};
+use rbatis_core::pool::PoolConnection;
 use rbatis_core::query::{query, Query};
 use rbatis_core::query_as::query_as;
+use rbatis_core::sync_map::SyncMap;
+use rbatis_core::transaction::Transaction;
 
 use crate::ast::ast::RbatisAST;
 use crate::ast::lang::py::Py;
@@ -19,10 +23,6 @@ use crate::ast::node::select_node::SelectNode;
 use crate::ast::node::update_node::UpdateNode;
 use crate::engine::runtime::RbatisEngine;
 use crate::utils::error_util::ToResult;
-use rbatis_core::pool::PoolConnection;
-use rbatis_core::sync_map::SyncMap;
-use rbatis_core::connection::Connection;
-use rbatis_core::transaction::Transaction;
 
 /// rbatis engine
 pub struct Rbatis<'r> {
@@ -57,7 +57,7 @@ impl<'r> Rbatis<'r> {
         return Ok(self.pool.as_ref().unwrap());
     }
 
-    async fn get_tx(&self,tx_id:&str)-> Result<Transaction<PoolConnection<MySqlConnection>>, rbatis_core::Error>{
+    async fn get_tx(&self, tx_id: &str) -> Result<Transaction<PoolConnection<MySqlConnection>>, rbatis_core::Error> {
         let tx = self.context_tx.pop(tx_id).await;
         if tx.is_none() {
             return Err(rbatis_core::Error::from(format!("tx:{} not exist！", tx_id)));
@@ -67,7 +67,7 @@ impl<'r> Rbatis<'r> {
 
 
     pub async fn begin(&self, tx_id: &str) -> Result<u64, rbatis_core::Error> {
-        if tx_id.is_empty(){
+        if tx_id.is_empty() {
             return Err(rbatis_core::Error::from("[rbatis] tx_id can not be empty"));
         }
         let mut conn = self.get_pool()?.begin().await?;
@@ -113,20 +113,20 @@ impl<'r> Rbatis<'r> {
     }
 
     /// exec sql(row sql)
-    pub async fn exec(&self,tx_id:&str, sql: &str) -> Result<u64, rbatis_core::Error> {
+    pub async fn exec(&self, tx_id: &str, sql: &str) -> Result<u64, rbatis_core::Error> {
         if tx_id.is_empty() {
             let mut conn = self.get_pool()?.acquire().await?;
             return conn.execute(sql).await;
-        }else{
+        } else {
             let mut conn = self.get_tx(tx_id).await?;
             return conn.execute(sql).await;
         }
     }
 
     /// fetch result(prepare sql)
-    pub async fn fetch_prepare<T>(&self, tx_id:&str,sql: &str, arg: &Vec<serde_json::Value>) -> Result<T, rbatis_core::Error>
+    pub async fn fetch_prepare<T>(&self, tx_id: &str, sql: &str, arg: &Vec<serde_json::Value>) -> Result<T, rbatis_core::Error>
         where T: DeserializeOwned {
-        if tx_id.is_empty(){
+        if tx_id.is_empty() {
             if self.pool.is_none() {
                 return Err(rbatis_core::Error::from("[rbatis] rbatis pool not inited!"));
             }
@@ -137,7 +137,7 @@ impl<'r> Rbatis<'r> {
             }
             let mut c = conn.fetch(q);
             return c.decode().await;
-        }else{
+        } else {
             let mut conn = self.get_tx(tx_id).await?;
             let mut q: Query<MySql> = query(sql);
             for x in arg {
@@ -149,9 +149,25 @@ impl<'r> Rbatis<'r> {
     }
 
     /// exec sql(prepare sql)
-    pub async fn exec_prepare(&self, sql: &str, arg: &Vec<serde_json::Value>) -> Result<u64, rbatis_core::Error> {
-        let mut conn = self.get_pool()?.acquire().await?;
-        unimplemented!()
+    pub async fn exec_prepare(&self, tx_id: &str, sql: &str, arg: &Vec<serde_json::Value>) -> Result<u64, rbatis_core::Error> {
+        if tx_id.is_empty() {
+            if self.pool.is_none() {
+                return Err(rbatis_core::Error::from("[rbatis] rbatis pool not inited!"));
+            }
+            let mut conn = self.get_pool()?.acquire().await?;
+            let mut q: Query<MySql> = query(sql);
+            for x in arg {
+                q = q.bind(x.to_string());
+            }
+            return conn.execute(q).await;
+        } else {
+            let mut conn = self.get_tx(tx_id).await?;
+            let mut q: Query<MySql> = query(sql);
+            for x in arg {
+                q = q.bind(x.to_string());
+            }
+            return conn.execute(q).await;
+        }
     }
 
 
