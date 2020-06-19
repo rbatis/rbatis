@@ -100,17 +100,18 @@ pub fn test_rbatis() {
 }
 
 
-lazy_static!{
+lazy_static! {
   static ref M:SyncMap<String>=SyncMap::new();
 }
 
 #[test]
-pub fn test_tx(){
-  async_std::task::block_on(async{
-      let rb=Rbatis::new(MYSQL_URL).await.unwrap();
-      rb.begin("1").await.unwrap();
-      let v:serde_json::Value= rb.fetch("1","SELECT count(1) FROM biz_activity;").await.unwrap();
-      println!("{}",v.clone());
-      rb.commit("1").await.unwrap();
-  });
+pub fn test_tx() {
+    async_std::task::block_on(async {
+        let rb = Rbatis::new(MYSQL_URL).await.unwrap();
+        let tx_id = "1";
+        rb.begin(tx_id).await.unwrap();
+        let v: serde_json::Value = rb.fetch(tx_id, "SELECT count(1) FROM biz_activity;").await.unwrap();
+        println!("{}", v.clone());
+        rb.commit(tx_id).await.unwrap();
+    });
 }
