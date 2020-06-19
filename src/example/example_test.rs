@@ -110,16 +110,30 @@ pub fn test_tx() {
     async_std::task::block_on(async {
         //TODO fix tx out of time
         let rb = Rbatis::new(MYSQL_URL).await.unwrap();
-        let total=1000;
-        let now=SystemTime::now();
-        for i in 0..total{
-            let tx_i=i.to_string();
+        let tx_id = "1";
+        rb.begin(tx_id).await.unwrap();
+        let v: serde_json::Value = rb.fetch(tx_id, "SELECT count(1) FROM biz_activity;").await.unwrap();
+        println!("{}", v.clone());
+        rb.commit(tx_id).await.unwrap();
+    });
+}
+
+
+#[test]
+pub fn test_bench_tx() {
+    async_std::task::block_on(async {
+        //TODO fix tx out of time
+        let rb = Rbatis::new(MYSQL_URL).await.unwrap();
+        let total = 1000;
+        let now = SystemTime::now();
+        for i in 0..total {
+            let tx_i = i.to_string();
             let tx_id = tx_i.as_str();
             rb.begin(tx_id).await.unwrap();
             let v: serde_json::Value = rb.fetch(tx_id, "SELECT count(1) FROM biz_activity;").await.unwrap();
             println!("{},{}", i, v.clone());
             rb.commit(tx_id).await.unwrap();
         }
-        count_time_tps("tx",total,now);
+        count_time_tps("tx", total, now);
     });
 }
