@@ -22,6 +22,7 @@ use std::rc::Rc;
 use std::sync::{Mutex, Arc, RwLock};
 use std::collections::HashMap;
 use rbatis_core::sync_map::SyncMap;
+use crate::utils::time_util::count_time_tps;
 
 #[test]
 pub fn test_log() {
@@ -107,11 +108,20 @@ lazy_static! {
 #[test]
 pub fn test_tx() {
     async_std::task::block_on(async {
-        let rb = Rbatis::new(MYSQL_URL).await.unwrap();
-        let tx_id = "1";
-        rb.begin(tx_id).await.unwrap();
-        let v: serde_json::Value = rb.fetch(tx_id, "SELECT count(1) FROM biz_activity;").await.unwrap();
-        println!("{}", v.clone());
-        rb.commit(tx_id).await.unwrap();
+        //TODO fix tx out of time
+        let total=1000;
+        let now=SystemTime::now();
+        for i in 0..total{
+            let rb = Rbatis::new(MYSQL_URL).await.unwrap();
+            let tx_i=i.to_string();
+            let tx_id = tx_i.as_str();
+            rb.begin(tx_id).await.unwrap();
+            let v: serde_json::Value = rb.fetch(tx_id, "SELECT count(1) FROM biz_activity;").await.unwrap();
+            println!("{}", v.clone());
+            rb.commit(tx_id).await.unwrap();
+            sleep(Duration::from_millis(100));
+        }
+        count_time_tps("tx",total,now);
+
     });
 }
