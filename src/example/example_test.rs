@@ -137,3 +137,31 @@ pub fn test_bench_tx() {
         count_time_tps("tx", total, now);
     });
 }
+
+
+lazy_static!{
+  static ref RB:Rbatis<'static>=makeRB();
+}
+fn makeRB()->Rbatis<'static>{
+    async_std::task::block_on(async {
+        Rbatis::new(MYSQL_URL).await.unwrap()
+    })
+}
+
+#[test]
+pub fn test_tide(){
+    async_std::task::block_on(async {
+        let mut app = tide::new();
+        app.at("/test").get(move |_| async  {
+            {
+                let v: serde_json::Value = RB.fetch("", "SELECT count(1) FROM biz_activity;").await.unwrap();
+                println!("{}", v.clone());
+            }
+            Ok("Hello, world!")
+        });
+        app.at("/").get(|_| async { Ok("Hello, world!") });
+        let addr="127.0.0.1:8080";
+        println!("server on {}",addr);
+        app.listen(addr).await.unwrap();
+    });
+}
