@@ -18,6 +18,7 @@ use crate::ast::lang::py::Py;
 use crate::ast::lang::xml::Xml;
 use crate::ast::node::delete_node::DeleteNode;
 use crate::ast::node::insert_node::InsertNode;
+use crate::ast::node::node::do_child_nodes;
 use crate::ast::node::node_type::NodeType;
 use crate::ast::node::select_node::SelectNode;
 use crate::ast::node::update_node::UpdateNode;
@@ -171,38 +172,48 @@ impl<'r> Rbatis<'r> {
     }
 
 
-    fn xml_to_sql(&self, mapper: &str, method: &str, arg: &serde_json::Value) -> Result<(String,Vec<serde_json::Value>), rbatis_core::Error> {
+    fn xml_to_sql(&self, mapper: &str, method: &str, arg: &serde_json::Value) -> Result<(String, Vec<serde_json::Value>), rbatis_core::Error> {
         let x = self.mapper_node_map.get(mapper);
         let x = x.to_result(|| format!("[rabtis] mapper:{} not init to rbatis", mapper))?;
         let node_type = x.get(method);
         let node_type = node_type.to_result(|| format!("[rabtis] mapper:{}.{}() not init to rbatis", mapper, method))?;
         let mut arg_array = vec![];
-        let sql=  node_type.eval(&mut arg.clone(), &self.engine, &mut arg_array)?;
-        return Ok((sql,arg_array));
+        let sql = node_type.eval(&mut arg.clone(), &self.engine, &mut arg_array)?;
+        return Ok((sql, arg_array));
     }
 
 
     /// fetch result(prepare sql)
     pub async fn xml_fetch<T>(&self, tx_id: &str, mapper: &str, method: &str, arg: &serde_json::Value) -> Result<T, rbatis_core::Error>
         where T: DeserializeOwned {
-        let (sql,args) = self.xml_to_sql(mapper, method, arg)?;
-        return self.fetch_prepare(tx_id,sql.as_str(),&args).await;
+        let (sql, args) = self.xml_to_sql(mapper, method, arg)?;
+        return self.fetch_prepare(tx_id, sql.as_str(), &args).await;
     }
 
     /// exec sql(prepare sql)
     pub async fn xml_exec(&self, tx_id: &str, mapper: &str, method: &str, arg: &serde_json::Value) -> Result<u64, rbatis_core::Error> {
-        let (sql,args) = self.xml_to_sql(mapper, method, arg)?;
-        return self.exec_prepare(tx_id,sql.as_str(),&args).await;
+        let (sql, args) = self.xml_to_sql(mapper, method, arg)?;
+        return self.exec_prepare(tx_id, sql.as_str(), &args).await;
+    }
+
+
+    fn py_to_sql(&self, py: &str, arg: &serde_json::Value) -> Result<(String, Vec<serde_json::Value>), rbatis_core::Error> {
+        let nodes = Py::parser_and_cache(py)?;
+        let mut arg_array = vec![];
+        let sql = do_child_nodes(&nodes, &mut arg.clone(), &self.engine, &mut arg_array)?;
+        return Ok((sql, arg_array));
     }
 
     /// fetch result(prepare sql)
-    pub async fn py_fetch<T>(&self, py: &str, arg: &serde_json::Value) -> Result<T, rbatis_core::Error>
+    pub async fn py_fetch<T>(&self, tx_id: &str, py: &str, arg: &serde_json::Value) -> Result<T, rbatis_core::Error>
         where T: DeserializeOwned {
-        unimplemented!()
+        let (sql, args) = self.py_to_sql(py, arg)?;
+        return self.fetch_prepare(tx_id, sql.as_str(), &args).await;
     }
 
     /// exec sql(prepare sql)
-    pub async fn py_exec(&self, py: &str, arg: &serde_json::Value) -> Result<u64, rbatis_core::Error> {
-        unimplemented!()
+    pub async fn py_exec(&self, tx_id: &str, py: &str, arg: &serde_json::Value) -> Result<u64, rbatis_core::Error> {
+        let (sql, args) = self.py_to_sql(py, arg)?;
+        return self.exec_prepare(tx_id, sql.as_str(), &args).await;
     }
 }
