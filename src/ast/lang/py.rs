@@ -7,7 +7,6 @@ use serde_json::json;
 use serde_json::Value;
 
 use crate::ast::ast::RbatisAST;
-
 use crate::ast::node::bind_node::BindNode;
 use crate::ast::node::choose_node::ChooseNode;
 use crate::ast::node::foreach_node::ForEachNode;
@@ -20,31 +19,42 @@ use crate::ast::node::trim_node::TrimNode;
 use crate::ast::node::when_node::WhenNode;
 use crate::ast::node::where_node::WhereNode;
 use crate::engine::parser::parser;
-use crate::utils::bencher::Bencher;
 use crate::engine::runtime::RbatisEngine;
-
+use crate::utils::bencher::Bencher;
 
 lazy_static! {
-  static ref PY_PARSER_MAP: Mutex<HashMap<String,Vec<NodeType>>> = Mutex::new(HashMap::new());
+  static ref PY_PARSER_MAP: RwLock<HashMap<String,Vec<NodeType>>> = RwLock::new(HashMap::new());
 }
 
 pub struct Py {}
 
 
 impl Py {
-
     /// parser and cache py data sql,return an vec node type
     ///编译并且缓存py slq数据，返回node type 数组
-    pub fn parser_by_cache(arg: &str) -> Result<Vec<NodeType>, rbatis_core::Error> {
-        // RwLock //let PY_PARSER_MAP: Mutex<HashMap<String, Vec<NodeType>>> = Mutex::new(HashMap::new());
-        let mut rd = PY_PARSER_MAP.lock().unwrap();
-        let nodes = rd.get(&arg.to_string());
-        if nodes.is_some() {
-            return Ok(nodes.unwrap().clone());
-        } else {
+    pub fn parser_and_cache(arg: &str) -> Result<Vec<NodeType>, rbatis_core::Error> {
+        let rd = PY_PARSER_MAP.read();
+        if rd.is_err() {
             let nods = Py::parser(arg)?;
-            rd.insert(arg.to_string(), nods.clone());
+            Py::try_cache_into(arg, nods.clone());
             return Ok(nods);
+        } else {
+            let rd = rd.unwrap();
+            let nodes = rd.get(&arg.to_string());
+            if nodes.is_some() {
+                return Ok(nodes.unwrap().clone());
+            } else {
+                let nods = Py::parser(arg)?;
+                Py::try_cache_into(arg, nods.clone());
+                return Ok(nods);
+            }
+        }
+    }
+
+    fn try_cache_into(py: &str, arg: Vec<NodeType>) {
+        let rd = PY_PARSER_MAP.write();
+        if rd.is_ok() {
+            rd.unwrap().insert(py.to_string(), arg);
         }
     }
 
@@ -52,13 +62,9 @@ impl Py {
     /// 解析py语法
     pub fn parser(arg: &str) -> Result<Vec<NodeType>, rbatis_core::Error> {
         let line_space_map = Py::create_line_space_map(arg);
-
-
         let mut pys = vec![];
         let ls = arg.lines();
-
         let mut skip_line = -1;
-
         let mut space = -1;
         let mut line = -1;
         for x in ls {
@@ -393,6 +399,6 @@ pub fn bench_exec() {
     trim 'AND ':
       AND delete_flag2 = #{del}
     WHERE id  = '2';";
-        let pys = Py::parser_by_cache(s);
+        let pys = Py::parser_and_cache(s);
     });
 }
