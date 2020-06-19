@@ -1,5 +1,9 @@
+use std::cell::{Cell, RefCell};
+use std::collections::HashMap;
 use std::env::Args;
 use std::ops::Deref;
+use std::rc::Rc;
+use std::sync::{Arc, Mutex, RwLock};
 use std::thread::sleep;
 use std::time::{Duration, SystemTime};
 
@@ -13,15 +17,11 @@ use rbatis_core::connection::Connection;
 use rbatis_core::cursor::Cursor;
 use rbatis_core::executor::Executor;
 use rbatis_core::mysql::{MySqlCursor, MySqlPool, MySqlRow};
+use rbatis_core::sync_map::SyncMap;
 use rbatis_core::types::BigDecimal;
 
 use crate::example::conf::MYSQL_URL;
 use crate::rbatis::Rbatis;
-use std::cell::{Cell, RefCell};
-use std::rc::Rc;
-use std::sync::{Mutex, Arc, RwLock};
-use std::collections::HashMap;
-use rbatis_core::sync_map::SyncMap;
 use crate::utils::time_util::count_time_tps;
 
 #[test]
@@ -139,29 +139,27 @@ pub fn test_bench_tx() {
 }
 
 
-lazy_static!{
+lazy_static! {
   static ref RB:Rbatis<'static>=makeRB();
 }
-fn makeRB()->Rbatis<'static>{
+fn makeRB() -> Rbatis<'static> {
     async_std::task::block_on(async {
         Rbatis::new(MYSQL_URL).await.unwrap()
     })
 }
 
 #[test]
-pub fn test_tide(){
+pub fn test_tide() {
     async_std::task::block_on(async {
         let mut app = tide::new();
-        app.at("/test").get(move |_| async  {
-            {
-                let v: serde_json::Value = RB.fetch("", "SELECT count(1) FROM biz_activity;").await.unwrap();
-                println!("{}", v.clone());
-            }
-            Ok("Hello, world!")
+        app.at("/test").get(move |_| async {
+            let v: serde_json::Value = RB.fetch("", "SELECT count(1) FROM biz_activity;").await.unwrap();
+            println!("{}", v.clone());
+            Ok(v)
         });
         app.at("/").get(|_| async { Ok("Hello, world!") });
-        let addr="127.0.0.1:8080";
-        println!("server on {}",addr);
+        let addr = "127.0.0.1:8080";
+        println!("server on {}", addr);
         app.listen(addr).await.unwrap();
     });
 }
