@@ -140,12 +140,9 @@ pub fn test_bench_tx() {
 
 
 lazy_static! {
-  static ref RB:Rbatis<'static>=makeRB();
-}
-fn makeRB() -> Rbatis<'static> {
-    async_std::task::block_on(async {
+  static ref RB:Rbatis<'static>=async_std::task::block_on(async {
         Rbatis::new(MYSQL_URL).await.unwrap()
-    })
+    });
 }
 
 #[test]

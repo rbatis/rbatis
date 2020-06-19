@@ -70,7 +70,7 @@ impl<'r> Rbatis<'r> {
         if tx_id.is_empty() {
             return Err(rbatis_core::Error::from("[rbatis] tx_id can not be empty"));
         }
-        let mut conn = self.get_pool()?.begin().await?;
+        let conn = self.get_pool()?.begin().await?;
         self.context_tx.put(tx_id, conn).await;
         return Ok(1);
     }
@@ -119,7 +119,9 @@ impl<'r> Rbatis<'r> {
             return conn.execute(sql).await;
         } else {
             let mut conn = self.get_tx(tx_id).await?;
-            return conn.execute(sql).await;
+            let r = conn.execute(sql).await;
+            self.context_tx.put(tx_id, conn).await;
+            return r;
         }
     }
 
@@ -144,7 +146,9 @@ impl<'r> Rbatis<'r> {
                 q = q.bind(x.to_string());
             }
             let mut c = conn.fetch(q);
-            return c.decode().await;
+            let r = c.decode().await;
+            self.context_tx.put(tx_id, conn).await;
+            return r;
         }
     }
 
@@ -166,7 +170,9 @@ impl<'r> Rbatis<'r> {
             for x in arg {
                 q = q.bind(x.to_string());
             }
-            return conn.execute(q).await;
+            let r = conn.execute(q).await;
+            self.context_tx.put(tx_id, conn).await;
+            return r;
         }
     }
 
