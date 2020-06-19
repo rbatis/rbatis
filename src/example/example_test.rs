@@ -54,7 +54,7 @@ pub fn test_mysql_() {
             let rb = Rbatis::new(MYSQL_URL).await.unwrap();
             //pooledConn 交由rbatis上下文管理
             let arg = &vec![json!("count(1)")];
-            let r: serde_json::Value = rb.fetch_prepare("SELECT ? FROM biz_activity;", arg).await.unwrap();
+            let r: serde_json::Value = rb.fetch_prepare("","SELECT ? FROM biz_activity;", arg).await.unwrap();
             println!("done:{:?}", r);
         }
     );
