@@ -57,6 +57,14 @@ impl<'r> Rbatis<'r> {
         return Ok(self.pool.as_ref().unwrap());
     }
 
+    async fn get_tx(&self,tx_id:&str)-> Result<Transaction<PoolConnection<MySqlConnection>>, rbatis_core::Error>{
+        let tx = self.context_tx.pop(tx_id).await;
+        if tx.is_none() {
+            return Err(rbatis_core::Error::from(format!("tx:{} not exist！", tx_id)));
+        }
+        return Ok(tx.unwrap());
+    }
+
 
     pub async fn begin(&self, tx_id: &str) -> Result<u64, rbatis_core::Error> {
         if tx_id.is_empty(){
@@ -96,11 +104,7 @@ impl<'r> Rbatis<'r> {
             let mut c = conn.fetch(sql);
             return c.decode().await;
         } else {
-            let tx = self.context_tx.pop(tx_id).await;
-            if tx.is_none() {
-                return Err(rbatis_core::Error::from(format!("tx:{} not exist！", tx_id)));
-            }
-            let mut conn = tx.unwrap();
+            let mut conn = self.get_tx(tx_id).await?;
             let mut c = conn.fetch(sql);
             let t = c.decode().await;
             self.context_tx.put(tx_id, conn).await;
@@ -109,24 +113,39 @@ impl<'r> Rbatis<'r> {
     }
 
     /// exec sql(row sql)
-    pub async fn exec(&self, sql: &str) -> Result<u64, rbatis_core::Error> {
-        let mut conn = self.get_pool()?.acquire().await?;
-        return conn.execute(sql).await;
+    pub async fn exec(&self,tx_id:&str, sql: &str) -> Result<u64, rbatis_core::Error> {
+        if tx_id.is_empty() {
+            let mut conn = self.get_pool()?.acquire().await?;
+            return conn.execute(sql).await;
+        }else{
+            let mut conn = self.get_tx(tx_id).await?;
+            return conn.execute(sql).await;
+        }
     }
 
     /// fetch result(prepare sql)
-    pub async fn fetch_prepare<T>(&self, sql: &str, arg: &Vec<serde_json::Value>) -> Result<T, rbatis_core::Error>
+    pub async fn fetch_prepare<T>(&self, tx_id:&str,sql: &str, arg: &Vec<serde_json::Value>) -> Result<T, rbatis_core::Error>
         where T: DeserializeOwned {
-        if self.pool.is_none() {
-            return Err(rbatis_core::Error::from("[rbatis] rbatis pool not inited!"));
+        if tx_id.is_empty(){
+            if self.pool.is_none() {
+                return Err(rbatis_core::Error::from("[rbatis] rbatis pool not inited!"));
+            }
+            let mut conn = self.get_pool()?.acquire().await?;
+            let mut q: Query<MySql> = query(sql);
+            for x in arg {
+                q = q.bind(x.to_string());
+            }
+            let mut c = conn.fetch(q);
+            return c.decode().await;
+        }else{
+            let mut conn = self.get_tx(tx_id).await?;
+            let mut q: Query<MySql> = query(sql);
+            for x in arg {
+                q = q.bind(x.to_string());
+            }
+            let mut c = conn.fetch(q);
+            return c.decode().await;
         }
-        let mut conn = self.get_pool()?.acquire().await?;
-        let mut q: Query<MySql> = query(sql);
-        for x in arg {
-            q = q.bind(x.to_string());
-        }
-        let mut c = conn.fetch(q);
-        return c.decode().await;
     }
 
     /// exec sql(prepare sql)
