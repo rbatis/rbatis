@@ -21,6 +21,8 @@ use crate::engine::runtime::RbatisEngine;
 use crate::utils::error_util::ToResult;
 use rbatis_core::pool::PoolConnection;
 use rbatis_core::sync_map::SyncMap;
+use rbatis_core::connection::Connection;
+use rbatis_core::transaction::Transaction;
 
 /// rbatis engine
 pub struct Rbatis<'r> {
@@ -28,7 +30,7 @@ pub struct Rbatis<'r> {
     engine: RbatisEngine,
     /// map<mapper_name,map<method_name,NodeType>>
     mapper_node_map: HashMap<&'r str, HashMap<String, NodeType>>,
-    txs: SyncMap<PoolConnection<MySqlConnection>>
+    context_tx: SyncMap<Transaction<PoolConnection<MySqlConnection>>>,
 }
 
 
@@ -38,7 +40,7 @@ impl<'r> Rbatis<'r> {
         if url.ne("") {
             pool = Some(MySqlPool::new(url).await?);
         }
-        return Ok(Rbatis { pool, mapper_node_map: HashMap::new(), engine: RbatisEngine::new(), txs: SyncMap::new() });
+        return Ok(Rbatis { pool, mapper_node_map: HashMap::new(), engine: RbatisEngine::new(), context_tx: SyncMap::new() });
     }
 
     pub fn load_xml(&mut self, mapper_name: &'r str, data: &str) -> Result<(), rbatis_core::Error> {
@@ -55,12 +57,55 @@ impl<'r> Rbatis<'r> {
         return Ok(self.pool.as_ref().unwrap());
     }
 
+
+    pub async fn begin(&self, tx_id: &str) -> Result<u64, rbatis_core::Error> {
+        if tx_id.is_empty(){
+            return Err(rbatis_core::Error::from("[rbatis] tx_id can not be empty"));
+        }
+        let mut conn = self.get_pool()?.begin().await?;
+        self.context_tx.put(tx_id, conn).await;
+        return Ok(1);
+    }
+
+    pub async fn commit(&self, tx_id: &str) -> Result<PoolConnection<MySqlConnection>, rbatis_core::Error> {
+        let tx = self.context_tx.pop(tx_id).await;
+        if tx.is_none() {
+            return Err(rbatis_core::Error::from(format!("tx:{} not exist！", tx_id)));
+        }
+        let tx = tx.unwrap();
+        let r = tx.commit().await?;
+        return Ok(r);
+    }
+
+    pub async fn rollback(&self, tx_id: &str) -> Result<PoolConnection<MySqlConnection>, rbatis_core::Error> {
+        let tx = self.context_tx.pop(tx_id).await;
+        if tx.is_none() {
+            return Err(rbatis_core::Error::from(format!("tx:{} not exist！", tx_id)));
+        }
+        let tx = tx.unwrap();
+        let r = tx.rollback().await?;
+        return Ok(r);
+    }
+
+
     /// fetch result(row sql)
-    pub async fn fetch<T>(&self, sql: &str) -> Result<T, rbatis_core::Error>
+    pub async fn fetch<T>(&self, tx_id: &str, sql: &str) -> Result<T, rbatis_core::Error>
         where T: DeserializeOwned {
-        let mut conn = self.get_pool()?.acquire().await?;
-        let mut c = conn.fetch(sql);
-        return c.decode().await;
+        if tx_id.is_empty() {
+            let mut conn = self.get_pool()?.acquire().await?;
+            let mut c = conn.fetch(sql);
+            return c.decode().await;
+        } else {
+            let tx = self.context_tx.pop(tx_id).await;
+            if tx.is_none() {
+                return Err(rbatis_core::Error::from(format!("tx:{} not exist！", tx_id)));
+            }
+            let mut conn = tx.unwrap();
+            let mut c = conn.fetch(sql);
+            let t = c.decode().await;
+            self.context_tx.put(tx_id, conn).await;
+            return t;
+        }
     }
 
     /// exec sql(row sql)
