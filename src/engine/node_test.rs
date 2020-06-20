@@ -113,7 +113,7 @@ fn benchmark_arg_node() {
     for i in 0..total {
         arg_node.eval(&john);
     }
-    time_util::count_time_tps(total,now);
+    time_util::count_time_tps("benchmark_arg_node",total,now);
 }
 
 #[test]
@@ -145,7 +145,7 @@ fn benchmark_parser_token() {
     for i in 0..total {
         runtime::parser_tokens(&s, &opt_map);
     }
-    time_util::count_time_tps(total,now);
+    time_util::count_time_tps("benchmark_parser_token",total,now);
 }
 
 

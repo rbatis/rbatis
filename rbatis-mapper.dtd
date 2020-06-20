@@ -31,7 +31,6 @@
 
         <!ELEMENT id EMPTY>
         <!ATTLIST id
-                property CDATA #IMPLIED
                 lang_type CDATA #IMPLIED
                 column CDATA #IMPLIED
                 <!--jdbcType CDATA #IMPLIED-->
@@ -40,7 +39,6 @@
 
         <!ELEMENT result EMPTY>
         <!ATTLIST result
-                property CDATA #IMPLIED
                 lang_type CDATA #IMPLIED
                 column CDATA #IMPLIED
 
@@ -76,7 +74,6 @@
 
         <!ELEMENT collection (constructor?,id*,result*,association*,collection*, discriminator?)>
         <!ATTLIST collection
-                property CDATA #REQUIRED
                 column CDATA #IMPLIED
                 lang_type CDATA #IMPLIED
                 ofType CDATA #IMPLIED
@@ -94,7 +91,6 @@
 
         <!ELEMENT association (constructor?,id*,result*,association*,collection*, discriminator?)>
         <!ATTLIST association
-                property CDATA #REQUIRED
                 column CDATA #IMPLIED
                 lang_type CDATA #IMPLIED
                 <!--jdbcType CDATA #IMPLIED-->
@@ -124,11 +120,6 @@
                 result_type CDATA #IMPLIED
                 >
 
-        <!ELEMENT property EMPTY>
-        <!ATTLIST property
-                name CDATA #REQUIRED
-                value CDATA #REQUIRED
-                >
 
         <!ELEMENT typeAlias EMPTY>
         <!ATTLIST typeAlias
@@ -185,11 +176,6 @@
                 >
 
         <!-- Dynamic -->
-
-        <!ELEMENT include (property+)?>
-        <!ATTLIST include
-                refid CDATA #REQUIRED
-                >
 
         <!ELEMENT bind EMPTY>
         <!ATTLIST bind

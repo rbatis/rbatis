@@ -1,14 +1,14 @@
 use serde_json::{json, Value};
 
-use crate::ast::ast::Ast;
+use crate::ast::ast::RbatisAST;
 
 use crate::ast::node::node::{create_deep, do_child_nodes, print_child, SqlNodePrint};
 use crate::ast::node::node_type::NodeType;
 use crate::ast::node::string_node::StringNode;
 use crate::engine::runtime::RbatisEngine;
-use crate::error::RbatisError;
 
-#[derive(Clone,Debug)]
+
+#[derive(Clone, Debug)]
 pub struct TrimNode {
     pub childs: Vec<NodeType>,
     pub prefix: String,
@@ -17,16 +17,10 @@ pub struct TrimNode {
     pub prefix_overrides: String,
 }
 
-impl Ast for TrimNode {
-    fn eval(&self, env: &mut Value, engine: &mut RbatisEngine,arg_array:&mut Vec<Value>) -> Result<String, RbatisError> {
-        let result_value = do_child_nodes(&self.childs, env, engine,arg_array);
-        let is_error = result_value.is_err();
-        if is_error {
-            return Result::Err(result_value.clone().err().unwrap());
-        }
-        let result_str = result_value.unwrap();
-        let mut result = result_str.as_str().trim();
-
+impl RbatisAST for TrimNode {
+    fn eval(&self, env: &mut Value, engine: &RbatisEngine, arg_array: &mut Vec<Value>) -> Result<String, rbatis_core::Error> {
+        let result_value = do_child_nodes(&self.childs, env, engine, arg_array)?;
+        let mut result = result_value.as_str().trim();
         if !self.prefix_overrides.is_empty() {
             let splits: Vec<&str> = self.prefix_overrides.split("|").collect();
             for item in splits {
@@ -73,8 +67,8 @@ pub fn test_trim_node() {
     let mut john = json!({
         "arg": 2,
     });
-    let mut arg_array=vec![];
+    let mut arg_array = vec![];
 
-    let r = node.eval(&mut john,&mut engine, &mut arg_array).unwrap();
+    let r = node.eval(&mut john, &mut engine, &mut arg_array).unwrap();
     println!("{}", r)
 }

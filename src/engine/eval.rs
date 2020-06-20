@@ -7,12 +7,12 @@ use chrono::Local;
 use crate::utils::time_util;
 use std::iter::Map;
 use std::any::Any;
-use crate::error::RbatisError;
+
 use std::time::SystemTime;
 
 pub fn eval(left: &Value,
             right: &Value,
-            op: &str) -> Result<Value,RbatisError> {
+            op: &str) -> Result<Value,rbatis_core::Error> {
     if op == "&&" {
         return Result::Ok(Value::Bool(left.as_bool().unwrap() && right.as_bool().unwrap()));
     }
@@ -60,7 +60,7 @@ pub fn eval(left: &Value,
         } else if left.is_string() && right.is_string(){
             return Result::Ok(Value::from(left.as_str().unwrap().to_owned() + right.as_str().unwrap()));
         }else{
-            return Result::Err(RbatisError::from("[rbatis] un support diffrent type '+' opt"));
+            return Result::Err(rbatis_core::Error::from("[rbatis] un support diffrent type '+' opt"));
         }
     }
     if op == "-" {
@@ -84,7 +84,7 @@ pub fn eval(left: &Value,
             return Result::Ok(Value::Number(serde_json::Number::from_f64(left.as_f64().unwrap() / right.as_f64().unwrap()).unwrap()));
         }
     }
-    return Result::Err(RbatisError::from("[rbatis] un support opt = ".to_owned()+op));
+    return Result::Err(rbatis_core::Error::from("[rbatis] un support opt = ".to_owned()+op));
 }
 
 
@@ -154,7 +154,7 @@ fn benchmark_fromstr() {
         let deserialized: Point = serde_json::from_str(&serialized).unwrap();
         // println!("deserialized = {:?}", deserialized);
     }
-    time_util::count_time_tps(total,now);
+    time_util::count_time_tps("benchmark_fromstr",total,now);
 }
 
 #[test]
@@ -168,5 +168,5 @@ fn benchmark_to_string() {
         let serialized = serde_json::to_string(&point).unwrap();
         let deserialized: Value = serde_json::from_str(&serialized).unwrap();
     }
-    time_util::count_time_tps(total,now);
+    time_util::count_time_tps("benchmark_to_string",total,now);
 }

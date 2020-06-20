@@ -3,63 +3,85 @@ use std::collections::HashMap;
 use serde_json::Value;
 use crate::engine::parser::parser;
 use crate::engine::node::Node;
-use crate::error::RbatisError;
 
-#[derive(Clone,Debug)]
+use std::sync::{RwLock};
+
+lazy_static!{
+   /// for engine: if cache not have expr value,it will be redo parser code.not wait cache return for no blocking
+   /// global expr cache,use RwLock but not blocking
+   static ref  EXPR_CACHE: RwLock<HashMap<String, Node>> = RwLock::new(HashMap::new());
+}
+
+/// the express engine for  exe code on runtime
+#[derive(Clone, Debug)]
 pub struct RbatisEngine {
-    pub cache:HashMap<String,Node>,
-    pub opt_map:OptMap<'static>,
+    pub opt_map: OptMap<'static>,
 }
 
 impl RbatisEngine {
-
-    pub fn new()-> Self{
-        return Self{
-            cache: Default::default(),
+    pub fn new() -> Self {
+        return Self {
             opt_map: OptMap::new(),
-        }
+        };
     }
 
-    pub fn eval(&mut self, expr: &str, arg: &Value) -> Result<Value, RbatisError>{
+    ///eval express with arg value,if cache have value it will no run parser expr.
+    pub fn eval(&self, expr: &str, arg: &Value) -> Result<Value, rbatis_core::Error> {
         let mut lexer_arg = expr.to_string();
         if expr.find(" and ").is_some() {
-            lexer_arg=lexer_arg.replace(" and ", " && ");
+            lexer_arg = lexer_arg.replace(" and ", " && ");
         }
-        let cached = self.cache.get(lexer_arg.as_str());
-        if (&cached).is_none() {
+        let cached = self.cache_read(lexer_arg.as_str());
+        if cached.is_none() {
             let nodes = parser(lexer_arg.to_string(), &self.opt_map);
-            if nodes.is_err(){
+            if nodes.is_err() {
                 return Result::Err(nodes.err().unwrap());
             }
-            let node=nodes.unwrap();
-            self.cache.insert(lexer_arg.to_string(), node.clone());
+            let node = nodes.unwrap();
+            self.cache_insert(lexer_arg.to_string(), node.clone());
             return node.eval(arg);
         } else {
-            let nodes = cached.unwrap().clone();
+            let nodes = cached.unwrap();
             return nodes.eval(arg);
         }
     }
 
-    pub fn eval_no_cache(&self, lexer_arg: &str, arg: &Value) -> Result<Value, RbatisError>{
-            let nodes = parser(lexer_arg.to_string(), &self.opt_map);
-            if nodes.is_err(){
-                return Result::Err(nodes.err().unwrap());
-            }
-            let node=nodes.unwrap();
-            return node.eval(arg);
+    /// read from cache,if not exist return null
+    fn cache_read(&self, arg: &str) -> Option<Node>{
+        let cache_read = EXPR_CACHE.try_read();
+        if cache_read.is_err() {
+            return Option::None;
+        }
+        let cache_read = cache_read.unwrap();
+        let r = cache_read.get(arg);
+        return if r.is_none() {
+            Option::None
+        } else {
+            r.cloned()
+        }
     }
 
-    pub fn clear_cache(&mut self){
-        self.cache.clear();
+    /// save to cache,if fail nothing to do.
+    fn cache_insert(&self, key: String, node: Node) -> Result<(), rbatis_core::Error> {
+        let cache_write = EXPR_CACHE.try_write();
+        if cache_write.is_err() {
+            return Err(rbatis_core::Error::from(cache_write.err().unwrap().to_string()));
+        }
+        let mut cache_write = cache_write.unwrap();
+        cache_write.insert(key, node);
+        return Ok(());
     }
 
-    pub fn remove_cache(&mut self, lexer_arg: &str){
-        self.cache.remove(lexer_arg);
+    /// no cache mode to run engine
+    pub fn eval_no_cache(&self, lexer_arg: &str, arg: &Value) -> Result<Value, rbatis_core::Error> {
+        let nodes = parser(lexer_arg.to_string(), &self.opt_map);
+        if nodes.is_err() {
+            return Result::Err(nodes.err().unwrap());
+        }
+        let node = nodes.unwrap();
+        return node.eval(arg);
     }
-
-
 }
-
 
 
 pub fn is_number(arg: &String) -> bool {
@@ -86,9 +108,7 @@ pub fn is_number(arg: &String) -> bool {
 }
 
 
-/**
- * 将原始字符串解析为 去除空格的token数组
-**/
+///将原始字符串解析为 去除空格的token数组
 pub fn parser_tokens(s: &String, opt_map: &OptMap) -> Vec<String> {
     let chars = s.chars();
     let chars_len = s.len() as i32;
@@ -162,7 +182,7 @@ fn trim_push_back(arg: &String, list: &mut LinkedList<String>) {
     list.push_back(trim_str);
 }
 
-#[derive(Clone,Debug)]
+#[derive(Clone, Debug)]
 pub struct OptMap<'a> {
     //列表
     pub list: Vec<&'a str>,
@@ -263,7 +283,7 @@ impl<'a> OptMap<'a> {
     //是否为有效的操作符
     pub fn is_allow_opt(&self, arg: &str) -> bool {
         for item in &self.allow_priority_array {
-            if arg==*item{
+            if arg == *item {
                 return true;
             }
         }

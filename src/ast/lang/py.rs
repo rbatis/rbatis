@@ -6,8 +6,7 @@ use std::sync::{Mutex, RwLock};
 use serde_json::json;
 use serde_json::Value;
 
-use crate::ast::ast::Ast;
-
+use crate::ast::ast::RbatisAST;
 use crate::ast::node::bind_node::BindNode;
 use crate::ast::node::choose_node::ChooseNode;
 use crate::ast::node::foreach_node::ForEachNode;
@@ -20,41 +19,53 @@ use crate::ast::node::trim_node::TrimNode;
 use crate::ast::node::when_node::WhenNode;
 use crate::ast::node::where_node::WhereNode;
 use crate::engine::parser::parser;
-use crate::utils::bencher::Bencher;
 use crate::engine::runtime::RbatisEngine;
-use crate::error::RbatisError;
+use crate::utils::bencher::Bencher;
 
 lazy_static! {
-  static ref ParserMap: Mutex<HashMap<String,Vec<NodeType>>> = Mutex::new(HashMap::new());
+  static ref PY_PARSER_MAP: RwLock<HashMap<String,Vec<NodeType>>> = RwLock::new(HashMap::new());
 }
 
 pub struct Py {}
 
 
 impl Py {
-    //编译缓存
-    pub fn parser_by_cache(arg: &str) -> Result<Vec<NodeType>, RbatisError> {
-        // RwLock //let ParserMap: Mutex<HashMap<String, Vec<NodeType>>> = Mutex::new(HashMap::new());
-        let mut rd = ParserMap.lock().unwrap();
-        let nodes = rd.get(&arg.to_string());
-        if nodes.is_some() {
-            return Ok(nodes.unwrap().clone());
-        } else {
+    /// parser and cache py data sql,return an vec node type
+    ///编译并且缓存py slq数据，返回node type 数组
+    pub fn parser_and_cache(arg: &str) -> Result<Vec<NodeType>, rbatis_core::Error> {
+        let rd = PY_PARSER_MAP.try_read();
+        if rd.is_err() {
             let nods = Py::parser(arg)?;
-            rd.insert(arg.to_string(), nods.clone());
+            Py::try_cache_into(arg, nods.clone());
             return Ok(nods);
+        } else {
+            let rd = rd.unwrap();
+            let nodes = rd.get(&arg.to_string());
+            if nodes.is_some() {
+                return Ok(nodes.unwrap().clone());
+            } else {
+                let nods = Py::parser(arg)?;
+                drop(rd);
+                Py::try_cache_into(arg, nods.clone());
+                return Ok(nods);
+            }
         }
     }
 
-    pub fn parser(arg: &str) -> Result<Vec<NodeType>, RbatisError> {
+    fn try_cache_into(py: &str, arg: Vec<NodeType>) {
+        let rd = PY_PARSER_MAP.try_write();
+        if rd.is_ok() {
+            rd.unwrap().insert(py.to_string(), arg);
+        }
+    }
+
+    /// parser py string data
+    /// 解析py语法
+    pub fn parser(arg: &str) -> Result<Vec<NodeType>, rbatis_core::Error> {
         let line_space_map = Py::create_line_space_map(arg);
-
-
         let mut pys = vec![];
         let ls = arg.lines();
-
         let mut skip_line = -1;
-
         let mut space = -1;
         let mut line = -1;
         for x in ls {
@@ -124,7 +135,7 @@ impl Py {
                                             node.otherwise_node = Some(Box::new(x.clone()));
                                         }
                                         _ => {
-                                            return Err(RbatisError::from("[rbatis] parser node fail,choose node' child must be when and otherwise nodes!: ".to_string() + child_str.as_str()));
+                                            return Err(rbatis_core::Error::from("[rbatis] parser node fail,choose node' child must be when and otherwise nodes!: ".to_string() + child_str.as_str()));
                                         }
                                     }
                                 }
@@ -137,7 +148,7 @@ impl Py {
                                             news = news + new_snode.value.as_str();
                                         }
                                         _ => {
-                                            return Err(RbatisError::from("[rbatis] parser node fail,string node' child must be same string node!: ".to_string() + child_str.as_str()));
+                                            return Err(rbatis_core::Error::from("[rbatis] parser node fail,string node' child must be same string node!: ".to_string() + child_str.as_str()));
                                         }
                                     }
                                 }
@@ -146,7 +157,7 @@ impl Py {
                                 }
                             }
                             _ => {
-                                return Err(RbatisError::from("[rbatis] not support node  type in sql!: ".to_string() + child_str.as_str()));
+                                return Err(rbatis_core::Error::from("[rbatis] not support node  type in sql!: ".to_string() + child_str.as_str()));
                             }
                         }
                     }
@@ -165,7 +176,7 @@ impl Py {
         return Ok(pys);
     }
 
-    fn parser_node(x: &str, space: usize) -> Result<NodeType, RbatisError> {
+    fn parser_node(x: &str, space: usize) -> Result<NodeType, rbatis_core::Error> {
         let mut trim_x = x.trim();
         if trim_x.ends_with(":") {
             trim_x = trim_x[0..trim_x.len() - 1].trim();
@@ -178,7 +189,7 @@ impl Py {
                 }));
             } else if trim_x.starts_with("for ") {
                 if !trim_x.contains(" in ") {
-                    return Err(RbatisError::from("[rbatis] parser express fail:".to_string() + trim_x));
+                    return Err(rbatis_core::Error::from("[rbatis] parser express fail:".to_string() + trim_x));
                 }
                 trim_x = trim_x["for ".len()..].trim();
                 let in_index = trim_x.find(" in ").unwrap();
@@ -205,7 +216,7 @@ impl Py {
                         prefix_overrides: trim_x.to_string(),
                     }));
                 } else {
-                    return Err(RbatisError::from("[rbatis] parser express fail:".to_string() + trim_x));
+                    return Err(rbatis_core::Error::from("[rbatis] parser express fail:".to_string() + trim_x));
                 }
             } else if trim_x.starts_with("choose ") {
                 trim_x = trim_x["choose ".len()..].trim();
@@ -242,11 +253,11 @@ impl Py {
                 }));
             } else {
                 // unkonw tag
-                return Err(RbatisError::from("[rbatis] unknow tag: ".to_string() + trim_x));
+                return Err(rbatis_core::Error::from("[rbatis] unknow tag: ".to_string() + trim_x));
             }
         } else {
             //string,replace space to only one
-            let mut s_node;
+            let s_node;
             if space <= 1 {
                 s_node = StringNode::new(x);
             } else {
@@ -367,12 +378,12 @@ pub fn test_exec() {
         "del":1,
         "ids":[1,2,3]
     });
-    let mut r = crate::ast::node::node::do_child_nodes(&pys, &mut env, &mut engine, &mut arg_array).unwrap();
+    let r = crate::ast::node::node::do_child_nodes(&pys, &mut env, &mut engine, &mut arg_array).unwrap();
     println!("{}", r.clone());
     println!("{:?}", arg_array.clone());
 }
 
-//cargo test --release --color=always --package rbatis --lib ast::interpreter::py_interpreter::bench_exec --all-features -- --nocapture --exact
+//cargo.exe test --release --color=always --package rbatis --lib ast::lang::py::bench_exec --all-features -- --nocapture --exact
 #[test]
 pub fn bench_exec() {
     let mut b = Bencher::new(1000000);
@@ -389,6 +400,6 @@ pub fn bench_exec() {
     trim 'AND ':
       AND delete_flag2 = #{del}
     WHERE id  = '2';";
-        let pys = Py::parser_by_cache(s);
+        let pys = Py::parser_and_cache(s);
     });
 }
