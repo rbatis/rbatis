@@ -1,11 +1,14 @@
+use std::str::from_utf8;
+
+use serde_json::Value;
+use serde_json::value::Value::Array;
+
+use time::{date, Date, NumericalDuration, offset, OffsetDateTime, PrimitiveDateTime, Time};
+
+use crate::decode::Decode;
 use crate::error::UnexpectedNullError;
 use crate::postgres::{PgTypeInfo, Postgres};
 use crate::value::RawValue;
-use std::str::from_utf8;
-use serde_json::Value;
-use crate::decode::Decode;
-use serde_json::value::Value::Array;
-use time::{date, offset, Date, NumericalDuration, OffsetDateTime, PrimitiveDateTime, Time};
 
 #[derive(Debug, Copy, Clone)]
 pub enum PgData<'c> {
@@ -13,7 +16,7 @@ pub enum PgData<'c> {
     Text(&'c str),
 }
 
-#[derive(Debug,Clone)]
+#[derive(Debug, Clone)]
 pub struct PgValue<'c> {
     type_info: Option<PgTypeInfo>,
     data: Option<PgData<'c>>,
@@ -92,11 +95,11 @@ impl<'c> RawValue<'c> for PgValue<'c> {
         }
         //TODO batter way to match type replace use string match
         if self.type_info == None {
-            return return Ok(serde_json::Value::Null);
+            return return Ok(serde_json::Value::Null);;
         }
         let type_string = format!("{}", self.type_info.as_ref().unwrap());
         match type_string.as_str() {
-            "NUMERIC" =>{
+            "NUMERIC" => {
                 //decimal
                 let r = String::decode(self.clone());
                 if r.is_err() {
@@ -112,30 +115,30 @@ impl<'c> RawValue<'c> for PgValue<'c> {
                 return Ok(serde_json::Value::from(r.unwrap()));
             }
             "BYTEA" => {
-               unimplemented!();
+                unimplemented!();
             }
-            "FLOAT4" =>{
+            "FLOAT4" => {
                 let r = f32::decode(self.clone());
                 if r.is_err() {
                     return Err(r.err().unwrap().to_string());
                 }
                 return Ok(serde_json::Value::from(r.unwrap()));
             }
-            "FLOAT8" =>{
+            "FLOAT8" => {
                 let r = f64::decode(self.clone());
                 if r.is_err() {
                     return Err(r.err().unwrap().to_string());
                 }
                 return Ok(serde_json::Value::from(r.unwrap()));
             }
-            "INT4" =>{
+            "INT4" => {
                 let r = i32::decode(self.clone());
                 if r.is_err() {
                     return Err(r.err().unwrap().to_string());
                 }
                 return Ok(serde_json::Value::from(r.unwrap()));
             }
-            "INT8" =>{
+            "INT8" => {
                 let r = i64::decode(self.clone());
                 if r.is_err() {
                     return Err(r.err().unwrap().to_string());
@@ -157,21 +160,21 @@ impl<'c> RawValue<'c> for PgValue<'c> {
                 return Ok(serde_json::Value::from(r.unwrap()));
             }
 
-            "TIME"  => {
+            "TIME" => {
                 let r = chrono::DateTime::<chrono::Utc>::decode(self.clone());
                 if r.is_err() {
                     return Err(r.err().unwrap().to_string());
                 }
                 return Ok(serde_json::Value::from(r.unwrap().to_string()));
             }
-            | "DATE"  => {
+            | "DATE" => {
                 let r = chrono::NaiveDate::decode(self.clone());
                 if r.is_err() {
                     return Err(r.err().unwrap().to_string());
                 }
                 return Ok(serde_json::Value::from(r.unwrap().to_string()));
             }
-            "TIMESTAMP"=> {
+            "TIMESTAMP" => {
                 let r = chrono::NaiveDateTime::decode(self.clone());
                 if r.is_err() {
                     return Err(r.err().unwrap().to_string());
@@ -186,7 +189,7 @@ impl<'c> RawValue<'c> for PgValue<'c> {
                 return Ok(serde_json::Value::from(r.unwrap().to_string()));
             }
 
-            _ => return Err(format!("un support database type for:{}!",type_string).to_string()),
+            _ => return Err(format!("un support database type for:{}!", type_string).to_string()),
         }
     }
 }
