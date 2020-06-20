@@ -152,7 +152,8 @@ pub fn test_tide() {
         let mut app = tide::new();
         app.at("/test").get( |mut req:Request<()>| async move {
             let a=req.body_string().await;
-            println!("accept req /test arg: {:?}",a);
+            println!("accept req[{} /test] arg: {:?}",req.url().to_string(),a);
+
             let v = RB.fetch("", "SELECT count(1) FROM biz_activity;").await;
             if v.is_ok(){
                 let data:Value=v.unwrap();
