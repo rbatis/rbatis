@@ -57,7 +57,7 @@ pub fn test_prepare_sql() {
             fast_log::log::init_log("requests.log", &RuntimeType::Std).unwrap();
             let rb = Rbatis::new(MYSQL_URL).await.unwrap();
             //pooledConn 交由rbatis上下文管理
-            let arg = &vec![json!(1), serde_json::Value::String("test%".to_string())];
+            let arg = &vec![json!(1), json!("test%")];
             let r: Vec<Activity> = rb.fetch_prepare("", "SELECT * FROM biz_activity WHERE delete_flag =  ? AND name like ?", arg).await.unwrap();
             println!("done:{:?}", r);
         }
