@@ -21,6 +21,7 @@ use rbatis_core::mysql::{MySqlCursor, MySqlPool, MySqlRow};
 use rbatis_core::sync_map::SyncMap;
 use rbatis_core::types::BigDecimal;
 
+use crate::example::activity::Activity;
 use crate::example::conf::MYSQL_URL;
 use crate::rbatis::Rbatis;
 use crate::utils::time_util::count_time_tps;
@@ -56,8 +57,8 @@ pub fn test_prepare_sql() {
             fast_log::log::init_log("requests.log", &RuntimeType::Std).unwrap();
             let rb = Rbatis::new(MYSQL_URL).await.unwrap();
             //pooledConn 交由rbatis上下文管理
-            let arg = &vec![json!(1)];
-            let r: serde_json::Value = rb.fetch_prepare("", "SELECT * FROM biz_activity WHERE delete_flag =  ?", arg).await.unwrap();
+            let arg = &vec![json!(1), serde_json::Value::String("test%".to_string())];
+            let r: Vec<Activity> = rb.fetch_prepare("", "SELECT * FROM biz_activity WHERE delete_flag =  ? AND name like ?", arg).await.unwrap();
             println!("done:{:?}", r);
         }
     );
