@@ -9,7 +9,7 @@ use std::time::{Duration, SystemTime};
 
 use fast_log::log::RuntimeType;
 use futures_core::future::BoxFuture;
-use log::{error, info, warn};
+use log::{error, info, warn, LevelFilter};
 use serde_json::{json, Value};
 use tokio::macros::support::{Future, Pin};
 
@@ -152,8 +152,7 @@ pub fn test_tide() {
         let mut app = tide::new();
         app.at("/test").get( |mut req:Request<()>| async move {
             let a=req.body_string().await;
-            println!("accept req[{} /test] arg: {:?}",req.url().to_string(),a);
-
+            // println!("accept req[{} /test] arg: {:?}",req.url().to_string(),a);
             let v = RB.fetch("", "SELECT count(1) FROM biz_activity;").await;
             if v.is_ok(){
                 let data:Value=v.unwrap();
@@ -163,7 +162,7 @@ pub fn test_tide() {
             }
         });
         app.at("/").get(|_| async { Ok("Hello, world!") });
-        let addr = "127.0.0.1:8000";
+        let addr = "0.0.0.0:8000";
         println!("server on {}", addr);
         app.listen(addr).await.unwrap();
     });
