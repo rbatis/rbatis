@@ -1,4 +1,5 @@
 use crate::database::Database;
+use bitflags::_core::fmt::Debug;
 
 /// Associate [`Database`] with a `RawValue` of a generic lifetime.
 ///
@@ -13,7 +14,7 @@ pub trait HasRawValue<'c> {
 
     /// The Rust type used to hold a not-yet-decoded value that has just been
     /// received from the database.
-    type RawValue: RawValue<'c, Database = Self::Database>;
+    type RawValue: RawValue<'c, Database = Self::Database>+Debug;
 }
 
 pub trait RawValue<'c> {
