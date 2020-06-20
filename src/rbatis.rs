@@ -1,5 +1,6 @@
 use std::collections::HashMap;
 
+use log::{error, info, LevelFilter, warn};
 use serde::de::DeserializeOwned;
 
 use rbatis_core::connection::Connection;
@@ -24,7 +25,7 @@ use crate::ast::node::select_node::SelectNode;
 use crate::ast::node::update_node::UpdateNode;
 use crate::engine::runtime::RbatisEngine;
 use crate::utils::error_util::ToResult;
-use log::{error, info, LevelFilter, warn};
+
 /// rbatis engine
 pub struct Rbatis<'r> {
     pool: Option<MySqlPool>,
@@ -102,7 +103,7 @@ impl<'r> Rbatis<'r> {
     /// fetch result(row sql)
     pub async fn fetch<T>(&self, tx_id: &str, sql: &str) -> Result<T, rbatis_core::Error>
         where T: DeserializeOwned {
-        info!("[rbatis] fetch sql:{}",sql);
+        info!("[rbatis] fetch sql:{}", sql);
         if tx_id.is_empty() {
             let mut conn = self.get_pool()?.acquire().await?;
             let mut c = conn.fetch(sql);
@@ -118,7 +119,7 @@ impl<'r> Rbatis<'r> {
 
     /// exec sql(row sql)
     pub async fn exec(&self, tx_id: &str, sql: &str) -> Result<u64, rbatis_core::Error> {
-        info!("[rbatis] exec sql:{}",sql);
+        info!("[rbatis] exec sql:{}", sql);
         if tx_id.is_empty() {
             let mut conn = self.get_pool()?.acquire().await?;
             return conn.execute(sql).await;
@@ -130,25 +131,34 @@ impl<'r> Rbatis<'r> {
         }
     }
 
+    fn bind_arg<'a>(&self, sql: &'a str, arg: &Vec<serde_json::Value>) -> Query<'a, MySql> {
+        let mut q: Query<MySql> = query(sql);
+        for x in arg {
+            match x{
+                serde_json::Value::String(s)=>{
+                    q = q.bind(s);
+                }
+                _ => {
+                    q = q.bind(x.to_string());
+                }
+            }
+        }
+        return q;
+    }
+
     /// fetch result(prepare sql)
     pub async fn fetch_prepare<T>(&self, tx_id: &str, sql: &str, arg: &Vec<serde_json::Value>) -> Result<T, rbatis_core::Error>
         where T: DeserializeOwned {
-        info!("[rbatis] fetch prepare sql:{}",sql);
-        info!("[rbatis] fetch prepare arg:{:?}",arg);
+        info!("[rbatis] fetch prepare sql:{}", sql);
+        info!("[rbatis] fetch prepare arg:{:?}", arg);
         if tx_id.is_empty() {
             let mut conn = self.get_pool()?.acquire().await?;
-            let mut q: Query<MySql> = query(sql);
-            for x in arg {
-                q = q.bind(x.to_string());
-            }
+            let mut q: Query<MySql> = self.bind_arg(sql, arg);
             let mut c = conn.fetch(q);
             return c.decode_json().await;
         } else {
             let mut conn = self.get_tx(tx_id).await?;
-            let mut q: Query<MySql> = query(sql);
-            for x in arg {
-                q = q.bind(x.to_string());
-            }
+            let mut q: Query<MySql> = self.bind_arg(sql, arg);
             let mut c = conn.fetch(q);
             let result = c.decode_json().await;
             self.context_tx.put(tx_id, conn).await;
@@ -158,21 +168,15 @@ impl<'r> Rbatis<'r> {
 
     /// exec sql(prepare sql)
     pub async fn exec_prepare(&self, tx_id: &str, sql: &str, arg: &Vec<serde_json::Value>) -> Result<u64, rbatis_core::Error> {
-        info!("[rbatis] exec prepare sql:{}",sql);
-        info!("[rbatis] exec prepare arg:{:?}",arg);
+        info!("[rbatis] exec prepare sql:{}", sql);
+        info!("[rbatis] exec prepare arg:{:?}", arg);
         if tx_id.is_empty() {
             let mut conn = self.get_pool()?.acquire().await?;
-            let mut q: Query<MySql> = query(sql);
-            for x in arg {
-                q = q.bind(x.to_string());
-            }
+            let mut q: Query<MySql> = self.bind_arg(sql, arg);
             return conn.execute(q).await;
         } else {
             let mut conn = self.get_tx(tx_id).await?;
-            let mut q: Query<MySql> = query(sql);
-            for x in arg {
-                q = q.bind(x.to_string());
-            }
+            let mut q: Query<MySql> = self.bind_arg(sql, arg);
             let result = conn.execute(q).await;
             self.context_tx.put(tx_id, conn).await;
             return result;
