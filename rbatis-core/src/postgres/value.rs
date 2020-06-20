@@ -114,13 +114,6 @@ impl<'c> RawValue<'c> for PgValue<'c> {
             "BYTEA" => {
                unimplemented!();
             }
-            "TIME" | "DATE" | "TIMESTAMP" | "TIMESTAMPTZ" => {
-                let r = String::decode(self.clone());
-                if r.is_err() {
-                    return Err(r.err().unwrap().to_string());
-                }
-                return Ok(serde_json::Value::from(r.unwrap()));
-            }
             "FLOAT4" =>{
                 let r = f32::decode(self.clone());
                 if r.is_err() {
@@ -163,6 +156,36 @@ impl<'c> RawValue<'c> for PgValue<'c> {
                 }
                 return Ok(serde_json::Value::from(r.unwrap()));
             }
+
+            "TIME"  => {
+                let r = chrono::DateTime::<chrono::Utc>::decode(self.clone());
+                if r.is_err() {
+                    return Err(r.err().unwrap().to_string());
+                }
+                return Ok(serde_json::Value::from(r.unwrap().to_string()));
+            }
+            | "DATE"  => {
+                let r = chrono::NaiveDate::decode(self.clone());
+                if r.is_err() {
+                    return Err(r.err().unwrap().to_string());
+                }
+                return Ok(serde_json::Value::from(r.unwrap().to_string()));
+            }
+            "TIMESTAMP"=> {
+                let r = chrono::NaiveDateTime::decode(self.clone());
+                if r.is_err() {
+                    return Err(r.err().unwrap().to_string());
+                }
+                return Ok(serde_json::Value::from(r.unwrap().to_string()));
+            }
+            "TIMESTAMPTZ" => {
+                let r = chrono::DateTime::<chrono::Local>::decode(self.clone());
+                if r.is_err() {
+                    return Err(r.err().unwrap().to_string());
+                }
+                return Ok(serde_json::Value::from(r.unwrap().to_string()));
+            }
+
             _ => return Err(format!("un support database type for:{}!",type_string).to_string()),
         }
     }
