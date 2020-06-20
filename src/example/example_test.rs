@@ -23,6 +23,7 @@ use rbatis_core::types::BigDecimal;
 use crate::example::conf::MYSQL_URL;
 use crate::rbatis::Rbatis;
 use crate::utils::time_util::count_time_tps;
+use tide::Request;
 
 #[test]
 pub fn test_log() {
@@ -149,7 +150,9 @@ lazy_static! {
 pub fn test_tide() {
     async_std::task::block_on(async {
         let mut app = tide::new();
-        app.at("/test").get(move |_| async {
+        app.at("/test").get( |mut req:Request<()>| async move {
+            let a=req.body_string().await;
+            println!("accept req /test arg: {:?}",a);
             let v = RB.fetch("", "SELECT count(1) FROM biz_activity;").await;
             if v.is_ok(){
                 let data:Value=v.unwrap();
@@ -159,7 +162,7 @@ pub fn test_tide() {
             }
         });
         app.at("/").get(|_| async { Ok("Hello, world!") });
-        let addr = "127.0.0.1:8080";
+        let addr = "127.0.0.1:8000";
         println!("server on {}", addr);
         app.listen(addr).await.unwrap();
     });
