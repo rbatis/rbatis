@@ -52,8 +52,8 @@ fn test_benchmark() {
             // n2.eval(&john);
         }
     }
-    utils::time_util::count_time(total,now);
-    utils::time_util::count_tps(total,now);
+    utils::time_util::print_each_time("test_benchmark", total, now);
+    utils::time_util::print_qps("test_benchmark", total, now);
 
 //    let ten_millis = time::Duration::from_secs(1000*60);
 //    thread::sleep(ten_millis);

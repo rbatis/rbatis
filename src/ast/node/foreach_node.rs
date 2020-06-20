@@ -2,16 +2,16 @@ use std::collections::HashMap;
 
 use serde_json::{json, Map, Value};
 
-use crate::ast::ast::Ast;
+use crate::ast::ast::RbatisAST;
 
 use crate::ast::node::node::{create_deep, do_child_nodes, print_child, SqlNodePrint};
 use crate::ast::node::node_type::NodeType;
 use crate::ast::node::string_node::StringNode;
 use crate::utils;
 use crate::engine::runtime::RbatisEngine;
-use crate::error::RbatisError;
 
-#[derive(Clone,Debug)]
+
+#[derive(Clone, Debug)]
 pub struct ForEachNode {
     pub childs: Vec<NodeType>,
     pub collection: String,
@@ -22,8 +22,8 @@ pub struct ForEachNode {
     pub separator: String,
 }
 
-impl Ast for ForEachNode {
-    fn eval(&self, env: &mut Value, engine: &mut RbatisEngine,arg_array:&mut Vec<Value>) -> Result<String, RbatisError> {
+impl RbatisAST for ForEachNode {
+    fn eval(&self, env: &mut Value, engine: &RbatisEngine, arg_array: &mut Vec<Value>) -> Result<String, rbatis_core::Error> {
         let mut result = String::new();
 
         //open
@@ -31,10 +31,10 @@ impl Ast for ForEachNode {
 
         let collection_value = utils::value_util::get_deep_value(self.collection.as_str(), env);
         if collection_value.is_null() {
-            return Result::Err(RbatisError::from("[rbatis] collection name:".to_owned() + self.collection.as_str() + " is none value!"));
+            return Result::Err(rbatis_core::Error::from("[rbatis] collection name:".to_owned() + self.collection.as_str() + " is none value!"));
         }
         if !collection_value.is_array() {
-            return Result::Err(RbatisError::from("[rbatis] collection name:".to_owned() + self.collection.as_str() + " is not a array value!"));
+            return Result::Err(rbatis_core::Error::from("[rbatis] collection name:".to_owned() + self.collection.as_str() + " is not a array value!"));
         }
         let collection = collection_value.as_array().unwrap();
 
@@ -48,11 +48,8 @@ impl Ast for ForEachNode {
             obj_map.insert("item".to_string(), item.clone());
             obj_map.insert("index".to_string(), Value::Number(serde_json::Number::from_f64(index as f64).unwrap()));
             let mut temp_arg: Value = Value::Object(obj_map);
-            let item_result = do_child_nodes(&self.childs, &mut temp_arg, engine,arg_array);
-            if item_result.is_err() {
-                return item_result;
-            }
-            result = result + item_result.unwrap().as_str();
+            let item_result = do_child_nodes(&self.childs, &mut temp_arg, engine, arg_array)?;
+            result = result + item_result.as_str();
             if have_separator && (index + 1) < collection_len {
                 result = result + self.separator.as_str();
             }
@@ -95,7 +92,7 @@ pub fn test_for_each_node() {
     let mut john = json!({
         "arg": 1,
     });
-    let mut arg_array=vec![];
-    let r = n.eval(&mut john,&mut engine, &mut arg_array);
+    let mut arg_array = vec![];
+    let r = n.eval(&mut john, &mut engine, &mut arg_array);
     println!("{}", r.unwrap_or("null".to_string()));
 }

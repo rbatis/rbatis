@@ -1,25 +1,36 @@
-use std::time::{SystemTime};
+use std::time::{SystemTime, Duration};
 
-pub fn count_time_tps(total: u128, start: SystemTime) {
-    count_tps(total, start);
-    count_time(total, start);
-}
-
-#[test]
-fn test_count() {
-    let sys_time = SystemTime::now();
-    count_time(1,sys_time);
+pub fn count_time_tps(tag: &str, total: u128, start: SystemTime) {
+    print_qps(tag, total, start);
+    print_each_time(tag, total, start);
 }
 
 
-
-pub fn count_tps(total: u128, start: SystemTime) {
-    let mut time = SystemTime::now().duration_since(start).unwrap();
-    println!("use TPS: {} QPS/s", (total*1000000000 as u128  / time.as_nanos() as u128));
+///count qps
+pub fn print_qps(tag: &str, total: u128, start: SystemTime) {
+    let time = SystemTime::now().duration_since(start).unwrap();
+    println!("[count_tps] {} use TPS: {} QPS/s", tag, (total * 1000000000 as u128 / time.as_nanos() as u128));
 }
 
-//计算每个操作耗时nano纳秒
-pub fn count_time(total: u128, start: SystemTime) {
-    let mut time = SystemTime::now().duration_since(start).unwrap();
-    println!("use Time: {} s,each:{} nano/op", time.as_secs(), time.as_nanos() / total as u128);
+///计算每个操作耗时ns纳秒
+pub fn print_each_time(tag: &str, total: u128, start: SystemTime) {
+    let  time = SystemTime::now().duration_since(start).unwrap();
+    println!("[count_each_time] {} use Time: {},each:{} ns/op", tag, duration_to_string(time), time.as_nanos() / total as u128);
+}
+
+/// count wait time
+pub fn print_time(tag: &str, start: SystemTime) {
+    let  wait = SystemTime::now().duration_since(start).unwrap();
+    println!("[count_wait_time] {} use Time: {} ", tag, duration_to_string(wait));
+}
+
+/// duration_to_string
+fn duration_to_string(wait: Duration) -> String {
+    if wait.gt(&Duration::from_millis(1)) {
+        return format!("{}ms",wait.as_millis());
+    } else if wait.gt(&Duration::from_secs(1)) {
+        return format!("{}s",wait.as_secs() as u128);
+    } else {
+        return format!("{}ns",wait.as_nanos());
+    }
 }
