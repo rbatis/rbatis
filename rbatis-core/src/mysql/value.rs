@@ -154,12 +154,33 @@ impl<'c> RawValue<'c> for MySqlValue<'c> {
                 }
                 return Ok(serde_json::Value::from(r.unwrap()));
             }
-            "DATE" | "TIME" | "DATETIME" | "TIMESTAMP" => {
-                let r = String::decode(self.clone());
+            "DATE" => {
+                let r = chrono::NaiveDate::decode(self.clone());
                 if r.is_err() {
                     return Err(r.err().unwrap().to_string());
                 }
-                return Ok(serde_json::Value::from(r.unwrap()));
+                return Ok(serde_json::Value::from(r.unwrap().to_string()));
+            }
+            "TIME"  => {
+                let r = chrono::NaiveTime::decode(self.clone());
+                if r.is_err() {
+                    return Err(r.err().unwrap().to_string());
+                }
+                return Ok(serde_json::Value::from(r.unwrap().to_string()));
+            }
+            "DATETIME"  => {
+                let r = chrono::DateTime::<chrono::Utc>::decode(self.clone());
+                if r.is_err() {
+                    return Err(r.err().unwrap().to_string());
+                }
+                return Ok(serde_json::Value::from(r.unwrap().to_string()));
+            }
+            "TIMESTAMP" => {
+                let r = chrono::DateTime::<chrono::Utc>::decode(self.clone());
+                if r.is_err() {
+                    return Err(r.err().unwrap().to_string());
+                }
+                return Ok(serde_json::Value::from(r.unwrap().to_string()));
             }
             _ => return Err(format!("un support database type for:{}!",type_string).to_string()),
         }
