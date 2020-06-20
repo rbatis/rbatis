@@ -59,7 +59,7 @@ impl<'c, 'q> Cursor<'c, 'q> for MySqlCursor<'c, 'q> {
         Box::pin(next(self))
     }
 
-    fn decode<T>(&mut self) -> BoxFuture<Result<T, crate::Error>>
+    fn decode_json<T>(&mut self) -> BoxFuture<Result<T, crate::Error>>
         where T: DeserializeOwned {
         Box::pin(async move {
             let mut arr = vec![];
@@ -68,7 +68,8 @@ impl<'c, 'q> Cursor<'c, 'q> for MySqlCursor<'c, 'q> {
                 let keys = row.names.keys();
                 for x in keys {
                     let key = x.to_string();
-                    let v: serde_json::Value = row.json_decode_impl(key.as_str()).unwrap();
+                    let key_str=key.as_str();
+                    let v:serde_json::Value = row.json_decode_impl(key_str)?;
                     m.insert(key, v);
                 }
                 arr.push(serde_json::Value::Object(m));

@@ -6,6 +6,7 @@ use crate::mysql::{MySql, MySqlValue};
 use crate::row::{ColumnIndex, Row};
 use serde::de::DeserializeOwned;
 use crate::value::RawValue;
+use std::any::Any;
 
 #[derive(Debug)]
 pub struct MySqlRow<'c> {
@@ -57,12 +58,13 @@ impl<'c> Row<'c> for MySqlRow<'c> {
         let value = self.try_get_raw(index)?;
         let v = value.try_to_json();
         if v.is_err() {
-            return Err(decode_err!("unexpected value {:?} for serde_json::Value", v.err().unwrap()));
+            let e = v.err().unwrap();
+            return Err(decode_err!("unexpected value.try_to_json(). value: {:?},err: {:?}",value, e));
         }
         let t: Result<T, serde_json::Error> = serde_json::from_value(v.unwrap());
         if t.is_err(){
             let e = t.err().unwrap();
-            return  Err(decode_err!("unexpected value {:?} for serde_json::from_value", e.to_string()))
+            return  Err(decode_err!("unexpected serde_json::from_value() error: {:?}", e))
         }
         return Ok(t.ok().unwrap());
     }

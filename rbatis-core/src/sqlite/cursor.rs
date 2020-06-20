@@ -57,7 +57,7 @@ impl<'c, 'q> Cursor<'c, 'q> for SqliteCursor<'c, 'q> {
         Box::pin(next(self))
     }
 
-    fn decode<T>(&mut self) -> BoxFuture<Result<T, crate::Error>>
+    fn decode_json<T>(&mut self) -> BoxFuture<Result<T, crate::Error>>
         where T: DeserializeOwned {
         Box::pin(async move {
             let mut arr = vec![];

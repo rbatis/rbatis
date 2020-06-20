@@ -9,8 +9,9 @@ use std::time::{Duration, SystemTime};
 
 use fast_log::log::RuntimeType;
 use futures_core::future::BoxFuture;
-use log::{error, info, warn, LevelFilter};
+use log::{error, info, LevelFilter, warn};
 use serde_json::{json, Value};
+use tide::Request;
 use tokio::macros::support::{Future, Pin};
 
 use rbatis_core::connection::Connection;
@@ -23,7 +24,6 @@ use rbatis_core::types::BigDecimal;
 use crate::example::conf::MYSQL_URL;
 use crate::rbatis::Rbatis;
 use crate::utils::time_util::count_time_tps;
-use tide::Request;
 
 #[test]
 pub fn test_log() {
@@ -35,34 +35,62 @@ pub fn test_log() {
 
 
 #[test]
-pub fn test_mysql_driver() {
+pub fn test_use_driver() {
     let r = async_std::task::block_on(
         async move {
+            fast_log::log::init_log("requests.log", &RuntimeType::Std).unwrap();
             let pool = MySqlPool::new(MYSQL_URL).await.unwrap();
             //pooledConn 交由rbatis上下文管理
             let mut conn = pool.acquire().await.unwrap();
             let mut c = conn.fetch("SELECT count(1) FROM biz_activity;");
-            let r: serde_json::Value = c.decode().await.unwrap();
+            let r: serde_json::Value = c.decode_json().await.unwrap();
             println!("done:{:?}", r);
         }
     );
 }
 
 #[test]
-pub fn test_mysql_() {
+pub fn test_prepare_sql() {
     let r = async_std::task::block_on(
         async move {
+            fast_log::log::init_log("requests.log", &RuntimeType::Std).unwrap();
             let rb = Rbatis::new(MYSQL_URL).await.unwrap();
             //pooledConn 交由rbatis上下文管理
-            let arg = &vec![json!("count(1)")];
-            let r: serde_json::Value = rb.fetch_prepare("","SELECT ? FROM biz_activity;", arg).await.unwrap();
+            let arg = &vec![json!(1)];
+            let r: serde_json::Value = rb.fetch_prepare("", "SELECT * FROM biz_activity WHERE delete_flag =  ?", arg).await.unwrap();
             println!("done:{:?}", r);
         }
     );
 }
 
+
 #[test]
-pub fn test_rbatis() {
+pub fn test_py_sql() {
+    async_std::task::block_on(async move {
+        fast_log::log::init_log("requests.log", &RuntimeType::AsyncStd).unwrap();
+        let mut rb = Rbatis::new(MYSQL_URL).await.unwrap();
+        let py = r#"
+    SELECT * FROM biz_activity
+    WHERE delete_flag = #{delete_flag}
+    if name != null:
+      AND name like #{name+'%'}
+    if ids != null:
+      AND id in (
+      trim ',':
+         for item in ids:
+           #{item},
+      )"#;
+        let data: serde_json::Value = rb.py_fetch("", py, &json!({
+
+           "delete_flag": 1
+        })).await.unwrap();
+        println!("{}", data);
+    });
+}
+
+
+#[test]
+pub fn test_xml_sql() {
     async_std::task::block_on(
         async move {
             let mut rb = Rbatis::new("").await.unwrap();
@@ -120,24 +148,6 @@ pub fn test_tx() {
 }
 
 
-#[test]
-pub fn test_bench_tx() {
-    async_std::task::block_on(async {
-        //TODO fix tx out of time
-        let rb = Rbatis::new(MYSQL_URL).await.unwrap();
-        let total = 1000;
-        let now = SystemTime::now();
-        for i in 0..total {
-            let tx_i = i.to_string();
-            let tx_id = tx_i.as_str();
-            rb.begin(tx_id).await.unwrap();
-            let v: serde_json::Value = rb.fetch(tx_id, "SELECT count(1) FROM biz_activity;").await.unwrap();
-            println!("{},{}", i, v.clone());
-            rb.commit(tx_id).await.unwrap();
-        }
-        count_time_tps("tx", total, now);
-    });
-}
 
 
 lazy_static! {
@@ -150,14 +160,14 @@ lazy_static! {
 pub fn test_tide() {
     async_std::task::block_on(async {
         let mut app = tide::new();
-        app.at("/test").get( |mut req:Request<()>| async move {
-            let a=req.body_string().await;
+        app.at("/test").get(|mut req: Request<()>| async move {
+            let a = req.body_string().await;
             // println!("accept req[{} /test] arg: {:?}",req.url().to_string(),a);
             let v = RB.fetch("", "SELECT count(1) FROM biz_activity;").await;
-            if v.is_ok(){
-                let data:Value=v.unwrap();
+            if v.is_ok() {
+                let data: Value = v.unwrap();
                 Ok(data.to_string())
-            }else{
+            } else {
                 Ok(v.err().unwrap().to_string())
             }
         });
