@@ -29,12 +29,6 @@
 //!
 //! Requires the `time` Cargo feature flag.
 //!
-//! | Rust type                             | Postgres type(s)                                     |
-//! |---------------------------------------|------------------------------------------------------|
-//! | `time::PrimitiveDateTime`             | TIMESTAMP                                            |
-//! | `time::OffsetDateTime`                | TIMESTAMPTZ                                          |
-//! | `time::Date`                          | DATE                                                 |
-//! | `time::Time`                          | TIME                                                 |
 //!
 //! ### [`uuid`](https://crates.io/crates/uuid)
 //!
@@ -149,9 +143,6 @@ mod bigdecimal;
 
 #[cfg(feature = "chrono")]
 mod chrono;
-
-#[cfg(feature = "time")]
-mod time;
 
 #[cfg(feature = "uuid")]
 mod uuid;

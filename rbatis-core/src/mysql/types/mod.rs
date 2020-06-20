@@ -30,16 +30,6 @@
 //! | `chrono::NaiveDate`                   | DATE                                                 |
 //! | `chrono::NaiveTime`                   | TIME                                                 |
 //!
-//! ### [`time`](https://crates.io/crates/time)
-//!
-//! Requires the `time` Cargo feature flag.
-//!
-//! | Rust type                             | MySQL type(s)                                        |
-//! |---------------------------------------|------------------------------------------------------|
-//! | `time::PrimitiveDateTime`             | DATETIME                                             |
-//! | `time::OffsetDateTime`                | TIMESTAMP                                            |
-//! | `time::Date`                          | DATE                                                 |
-//! | `time::Time`                          | TIME                                                 |
 //!
 //! ### [`bigdecimal`](https://crates.io/crates/bigdecimal)
 //! Requires the `bigdecimal` Cargo feature flag.
@@ -66,9 +56,6 @@ mod bigdecimal;
 
 #[cfg(feature = "chrono")]
 mod chrono;
-
-#[cfg(feature = "time")]
-mod time;
 
 use crate::decode::Decode;
 use crate::mysql::{MySql, MySqlValue};

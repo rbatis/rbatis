@@ -15,7 +15,7 @@ unstable = []
 # intended mainly for CI and docs
 all = ["all-database", "all-type"]
 all-database = ["mysql", "sqlite", "postgres"]
-all-type = ["bigdecimal", "json", "time", "chrono", "ipnetwork", "uuid"]
+all-type = ["bigdecimal", "json", "chrono", "ipnetwork", "uuid"]
 # we need a feature which activates `num-bigint` as well because
 # `bigdecimal` uses types from it but does not reexport (tsk tsk)
 bigdecimal = ["bigdecimal_", "num-bigint"]
@@ -61,7 +61,6 @@ tokio = { version = "0.2", default-features = false, features = [ "dns", "fs", "
 url = { version = "2.1.1", default-features = false }
 uuid = { version = "0.8.1", default-features = false, optional = true, features = [ "std" ] }
 serde = { version = "1.0", features = [ "derive" ], optional = true }
-time = { version = "0.2.7", optional = true }
 serde_json = { version = "1.0", features = [ "raw_value" ], optional = true }
 
 async-trait = "0.1.31"

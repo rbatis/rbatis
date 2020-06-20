@@ -174,7 +174,7 @@ where
         let value = self.try_get_raw(index)?;
         let v = value.try_to_json();
         if v.is_err() {
-            return Err(decode_err!("unexpected value for serde_json::Value,value: {:?},err: {:?}",value, v.err().unwrap()));
+            return Err(decode_err!("unexpected value.try_to_json(). value: {:?},err: {:?}",value, v.err().unwrap()));
         }
         let t:Result<T,serde_json::Error> = serde_json::from_value(v.unwrap());
         match t {
