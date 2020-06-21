@@ -159,6 +159,13 @@ println!("[rbatis] result==> {:?}",data_result);
 
 ### Web框架支持(这里举例hyper)
 ``` rust
+
+lazy_static! {
+  static ref RB:Rbatis<'static>=async_std::task::block_on(async {
+        Rbatis::new(MYSQL_URL).await.unwrap()
+    });
+}
+
 use std::convert::Infallible;
 async fn hello(_: hyper::Request<hyper::Body>) -> Result<hyper::Response<hyper::Body>, Infallible> {
     let v = RB.fetch("", "SELECT count(1) FROM biz_activity;").await;
