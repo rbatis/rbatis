@@ -153,12 +153,12 @@ impl<'r> Rbatis<'r> {
         info!("[rbatis] fetch prepare arg:{:?}", arg);
         if tx_id.is_empty() {
             let mut conn = self.get_pool()?.acquire().await?;
-            let mut q: Query<MySql> = self.bind_arg(sql, arg);
+            let q: Query<MySql> = self.bind_arg(sql, arg);
             let mut c = conn.fetch(q);
             return c.decode_json().await;
         } else {
             let mut conn = self.get_tx(tx_id).await?;
-            let mut q: Query<MySql> = self.bind_arg(sql, arg);
+            let q: Query<MySql> = self.bind_arg(sql, arg);
             let mut c = conn.fetch(q);
             let result = c.decode_json().await;
             self.context_tx.put(tx_id, conn).await;
@@ -172,11 +172,11 @@ impl<'r> Rbatis<'r> {
         info!("[rbatis] exec prepare arg:{:?}", arg);
         if tx_id.is_empty() {
             let mut conn = self.get_pool()?.acquire().await?;
-            let mut q: Query<MySql> = self.bind_arg(sql, arg);
+            let q: Query<MySql> = self.bind_arg(sql, arg);
             return conn.execute(q).await;
         } else {
             let mut conn = self.get_tx(tx_id).await?;
-            let mut q: Query<MySql> = self.bind_arg(sql, arg);
+            let q: Query<MySql> = self.bind_arg(sql, arg);
             let result = conn.execute(q).await;
             self.context_tx.put(tx_id, conn).await;
             return result;
