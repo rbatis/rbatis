@@ -138,7 +138,6 @@ lazy_static! {
 #[test]
 pub fn test_tx() {
     async_std::task::block_on(async {
-        //TODO fix tx out of time
         let rb = Rbatis::new(MYSQL_URL).await.unwrap();
         let tx_id = "1";
         rb.begin(tx_id).await.unwrap();
