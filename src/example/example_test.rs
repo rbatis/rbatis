@@ -81,10 +81,7 @@ pub fn test_py_sql() {
          for item in ids:
            #{item},
       )"#;
-        let data: serde_json::Value = rb.py_fetch("", py, &json!({
-
-           "delete_flag": 1
-        })).await.unwrap();
+        let data: serde_json::Value = rb.py_fetch("", py, &json!({   "delete_flag": 1 })).await.unwrap();
         println!("{}", data);
     });
 }
