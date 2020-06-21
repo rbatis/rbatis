@@ -68,8 +68,8 @@ pub fn test_prepare_sql() {
 #[test]
 pub fn test_py_sql() {
     async_std::task::block_on(async move {
-        fast_log::log::init_log("requests.log", &RuntimeType::AsyncStd).unwrap();
-        let mut rb = Rbatis::new(MYSQL_URL).await.unwrap();
+        fast_log::log::init_log("requests.log", &RuntimeType::Std).unwrap();
+        let rb = Rbatis::new(MYSQL_URL).await.unwrap();
         let py = r#"
     SELECT * FROM biz_activity
     WHERE delete_flag = #{delete_flag}
@@ -177,4 +177,35 @@ pub fn test_tide() {
         println!("server on {}", addr);
         app.listen(addr).await.unwrap();
     });
+}
+
+
+
+use std::convert::Infallible;
+async fn hello(_: hyper::Request<hyper::Body>) -> Result<hyper::Response<hyper::Body>, Infallible> {
+    let v = RB.fetch("", "SELECT count(1) FROM biz_activity;").await;
+    if v.is_ok() {
+        let data: Value = v.unwrap();
+        Ok(hyper::Response::new(hyper::Body::from(data.to_string())))
+    } else {
+        Ok(hyper::Response::new(hyper::Body::from(v.err().unwrap().to_string())))
+    }
+}
+
+#[tokio::main]
+#[test]
+pub async fn test_hyper(){
+    fast_log::log::init_log("requests.log",&RuntimeType::Std);
+    // For every connection, we must make a `Service` to handle all
+    // incoming HTTP requests on said connection.
+    let make_svc = hyper::service::make_service_fn(|_conn| {
+        // This is the `Service` that will handle the connection.
+        // `service_fn` is a helper to convert a function that
+        // returns a Response into a `Service`.
+        async { Ok::<_, Infallible>(hyper::service::service_fn(hello)) }
+    });
+    let addr = ([0, 0, 0, 0], 8000).into();
+    let server = hyper::Server::bind(&addr).serve(make_svc);
+    println!("Listening on http://{}", addr);
+    server.await.unwrap();
 }
