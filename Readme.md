@@ -25,21 +25,20 @@ rbatis = "*"
 ##### py风格sql语法Example
 ``` python
 //执行到远程mysql 并且获取结果。支持serde_json可序列化的任意类型
-    let py_sql="
-                   SELECT * FROM biz_activity
-                   if  name!=null:
-                     name = #{name}
-                   AND delete_flag1 = #{delete_flag}
-                   if  age!=1:
-                      AND age = 2
-                      if  age!=1:
-                        AND age = 3
-                   trim 'AND ':
-                     AND delete_flag2 = #{delete_flag}
-                   WHERE id  = '2';";
-    let data: Vec<Activity> = Rbatis::singleton()
-    .py_sql("", &json!({ "name":"新人专享", "delete_flag": 1, }), py_sql)
-    .unwrap();
+         let rb = Rbatis::new(MYSQL_URL).await.unwrap();
+            let py = r#"
+        SELECT * FROM biz_activity
+        WHERE delete_flag = #{delete_flag}
+        if name != null:
+          AND name like #{name+'%'}
+        if ids != null:
+          AND id in (
+          trim ',':
+             for item in ids:
+               #{item},
+          )"#;
+            let data: serde_json::Value = rb.py_fetch("", py, &json!({   "delete_flag": 1 })).await.unwrap();
+            println!("{}", data);
 ```
 
 #### 日志系统(这里举例使用fast_log)
@@ -47,8 +46,8 @@ rbatis = "*"
  //main函数加入
  use log::{error, info, warn};
  fn  main(){
-     fast_log::init_log("requests.log");
-     info!("Commencing yak shaving");
+      fast_log::log::init_log("requests.log", &RuntimeType::Std).unwrap();
+      info!("print data");
  }
 ```
 
@@ -87,16 +86,25 @@ fast_log="1.0.2"
 ```
 #### 简单使用
 ``` rust
-use rbatis::rbatis::Rbatis;
-use rbatis::error::rbatis_core::Error;
 
 fn main()  {
-    //first install log
-    fast_log::log::init_log("requests.log").unwrap();
-    // you may need install your mysql or change database url.
-    Rbatis::singleton().db_driver = "mysql://root:123456@127.0.0.1:3306/test".to_string();
-    let data:Result<serde_json::Value,rbatis_core::Error>=Rbatis::singleton().raw_sql("","select * from biz_activity;");
-    println!("{}",data.ok().unwrap());
+      async_std::task::block_on(async move {
+           fast_log::log::init_log("requests.log", &RuntimeType::Std).unwrap();
+           let rb = Rbatis::new(MYSQL_URL).await.unwrap();
+           let py = r#"
+       SELECT * FROM biz_activity
+       WHERE delete_flag = #{delete_flag}
+       if name != null:
+         AND name like #{name+'%'}
+       if ids != null:
+         AND id in (
+         trim ',':
+            for item in ids:
+              #{item},
+         )"#;
+           let data: serde_json::Value = rb.py_fetch("", py, &json!({   "delete_flag": 1 })).await.unwrap();
+           println!("{}", data);
+       });
 }
 ```
 
@@ -117,9 +125,8 @@ pub struct Activity {
 
 fn main() {
  fast_log::log::init_log("requests.log").unwrap();//1 启用日志(可选，不添加则不加载日志库)
-let mut rbatis = Rbatis::new();//2 初始化rbatis,也可以使用全局单例Rbatis::singleton()
-rbatis.load_db_url("mysql://root:TEST@localhost:3306/test");//3 加载数据库url
-rbatis.load_xml("Example_ActivityMapper.xml".to_string(),fs::read_to_string("./src/example/Example_ActivityMapper.xml").unwrap());//4 加载xml配置
+ let mut rb = Rbatis::new("mysql://root:TEST@localhost:3306/test").await.unwrap();//2 初始化rbatis
+rb.load_xml("Example_ActivityMapper.xml".to_string(),fs::read_to_string("./src/example/Example_ActivityMapper.xml").unwrap());//4 加载xml配置
 let data_result: Vec<Activity> =rbatis.eval("".to_string(), "select_by_condition", &json!({
        "name":null,
        "startTime":null,
@@ -138,85 +145,47 @@ println!("[rbatis] result==> {:?}",data_result);
 
 #### 事务支持
 ``` rust
-
-    //自定义事务
-    pub fn tx() -> Result<u32,rbatis_core::Error>{
-        let tx_id="1234";//事务id
-        Rbatis::singleton().begin(tx_id, Propagation::REQUIRED)?;//启动事务，传入事务传播行为
-        let affected: u32 = Rbatis::singleton()
-            .raw_sql(tx_id, "UPDATE `biz_activity` SET `name` = '活动1' WHERE `id` = '2'")?;
-        Rbatis::singleton().commit(tx_id)?;//提交事务
-        Rbatis::singleton().rollback(tx_id)?;//回滚事务
-        Ok(affected)
-    }
-    //声明式事务
-    pub trait Service {
-        fn select_activity(&self) -> Result<Activity, rbatis_core::Error>;
-        fn update_activity(&mut self) -> Result<String, rbatis_core::Error>;
-    }
-    struct ServiceImpl {
-        select_activity: fn(s: &ServiceImpl) -> Result<Activity, rbatis_core::Error>,
-        update_activity: fn(s: &mut ServiceImpl) -> Result<String, rbatis_core::Error>,
-    }
-    impl Service for ServiceImpl {
-        impl_service! {
-          REQUIRED,  select_activity(&self) -> Result<Activity,rbatis_core::Error>
-        }
-        impl_service_mut! {
-          NONE,  update_activity(&mut self) -> Result<String, rbatis_core::Error>
-        }
-    }
-    #[test]
-    pub fn test_service() {
-        let mut s = ServiceImpl {
-            select_activity: |s: &ServiceImpl| -> Result<Activity, rbatis_core::Error>{
-                let act: Activity = Rbatis::singleton().raw_sql("", "select * from biz_activity where id  = '2';").unwrap();
-                return Result::Ok(act);
-            },
-            update_activity: |s: &mut ServiceImpl| -> Result<String, rbatis_core::Error>{
-                return Result::Ok("ok".to_string());
-            },
-        };
-        let act: Activity = s.select_activity().unwrap();
-        println!("{:?}", serde_json::to_string(&act).unwrap().as_str());
-        println!("{:?}", s.update_activity().unwrap());
-    }
-
+   async_std::task::block_on(async {
+        let rb = Rbatis::new(MYSQL_URL).await.unwrap();
+        let tx_id = "1";
+        rb.begin(tx_id).await.unwrap();
+        let v: serde_json::Value = rb.fetch(tx_id, "SELECT count(1) FROM biz_activity;").await.unwrap();
+        println!("{}", v.clone());
+        rb.commit(tx_id).await.unwrap();
+    });
 ```
 
 
 
-### Web框架支持(这里举例actix-web,不支持tokio的框架使用 默认方法，支持tokio的使用async_* 开头的方法)
+### Web框架支持(这里举例hyper)
 ``` rust
-//这里举例使用web排行榜屠榜最快的actix-web
-#[macro_use]
-use rbatis::rbatis_macro;
-
-async fn index() -> impl Responder {
-    //写法
-    let data: Result<Activity, rbatis_core::Error> = 
-    Rbatis::async_raw_sql("", "select * from biz_activity where id  = '2';").await;
-    println!("{:?}", &data);
-    return serde_json::to_string(&data).unwrap();
+use std::convert::Infallible;
+async fn hello(_: hyper::Request<hyper::Body>) -> Result<hyper::Response<hyper::Body>, Infallible> {
+    let v = RB.fetch("", "SELECT count(1) FROM biz_activity;").await;
+    if v.is_ok() {
+        let data: Value = v.unwrap();
+        Ok(hyper::Response::new(hyper::Body::from(data.to_string())))
+    } else {
+        Ok(hyper::Response::new(hyper::Body::from(v.err().unwrap().to_string())))
+    }
 }
 
-#[actix_rt::main]
-async fn main() -> std::io::Result<()> {
-    //1 启用日志(可选，不添加则不加载日志库)
-        fast_log::log::init_log("requests.log").unwrap();;
-        //2 加载数据库url name 为空，则默认数据库
-        Rbatis::singleton().load_db_url(MYSQL_URL);//"mysql://root:TEST@localhost:3306/test"
-        //3 加载xml配置
-        let f = fs::File::open("./src/example/Example_ActivityMapper.xml");
-        Rbatis::singleton().load_xml("Example_ActivityMapper.xml".to_string(), fs::read_to_string("./src/example/Example_ActivityMapper.xml").unwrap());//加载xml数据
-    //初始化rbatis
-    HttpServer::new(move || {
-        App::new()
-            .route("/", web::get().to(index))
-    })
-        .bind("127.0.0.1:8000")?
-        .run()
-        .await
+#[tokio::main]
+#[test]
+pub async fn test_hyper(){
+    fast_log::log::init_log("requests.log",&RuntimeType::Std);
+    // For every connection, we must make a `Service` to handle all
+    // incoming HTTP requests on said connection.
+    let make_svc = hyper::service::make_service_fn(|_conn| {
+        // This is the `Service` that will handle the connection.
+        // `service_fn` is a helper to convert a function that
+        // returns a Response into a `Service`.
+        async { Ok::<_, Infallible>(hyper::service::service_fn(hello)) }
+    });
+    let addr = ([0, 0, 0, 0], 8000).into();
+    let server = hyper::Server::bind(&addr).serve(make_svc);
+    println!("Listening on http://{}", addr);
+    server.await.unwrap();
 }
 ```
 
@@ -233,16 +202,16 @@ async fn main() -> std::io::Result<()> {
 ### 进度表-按照顺序实现
 | 功能    | 已支持 |
 | ------ | ------ |
-| CRUD(内置CRUD模板(内置CRUD支持乐观锁/逻辑删除))               | √     |
+| CRUD(内置CRUD模板(内置CRUD支持乐观锁/逻辑删除))                  | √     |
 | LogSystem(日志组件)                                          | √     | 
-| LogicDelPlugin(逻辑删除插件)                                 | √     |
-| VersionLockPlugin(乐观锁插件,防止并发修改数据)                | √     |
-| PagePlugin(分页插件)                                         | √     |
-| Tx(事务/事务嵌套/注解声明式事务)                              | √     |   
-| Py(在SQL中使用和xml等价的类python语法)                        | √     | 
+| Tx(事务/事务嵌套/注解声明式事务)                                | √     |   
+| Py(在SQL中使用和xml等价的类python语法)                         | √     | 
 | SlowSqlCount(内置慢查询日志分析)                              | √     | 
-| async/await支持(actix/actix-web,hyper等等兼容Tokio/Async_std的web框架)  | √     | 
-| DataBaseConvertPlugin(数据库表结构转换为配置插件)             | x     | 
+| async/await支持                                             | √     | 
+| LogicDelPlugin(逻辑删除插件)                                 | x     |
+| VersionLockPlugin(乐观锁插件,防止并发修改数据)                  | x     |
+| PagePlugin(分页插件)                                         | x     |
+| DataBaseConvertPlugin(数据库表结构转换为配置插件)               | x     | 
 | web(可视化Web UI)                                            | x     |  
 
 
