@@ -9,6 +9,9 @@
 extern crate lazy_static;
 extern crate serde_yaml;
 
+#[macro_use]
+extern crate serde_json;
+
 pub mod example;
 pub mod ast;
 pub mod utils;
