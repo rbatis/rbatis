@@ -1,6 +1,9 @@
 use std::path::Display;
 
 use serde::{Deserialize, Serialize};
+use chrono::{DateTime, Utc, Local, NaiveDateTime, NaiveDate};
+
+use chrono::serde::ts_nanoseconds;
 
 ///数据库表模型
 #[derive(Serialize, Deserialize, Clone, Debug)]
@@ -14,7 +17,8 @@ pub struct Activity {
     pub sort: Option<String>,
     pub status: Option<i32>,
     pub remark: Option<String>,
-    pub create_time: Option<String>,
+
+    pub create_time: Option<DateTime<chrono::Utc>>,
     pub version: Option<i32>,
     pub delete_flag: Option<i32>,
 }
