@@ -30,6 +30,6 @@ mod value;
 #[cfg_attr(docsrs, doc(cfg(feature = "mysql")))]
 pub type MySqlPool = crate::pool::Pool<MySqlConnection>;
 
-make_query_as!(MySqlQueryAs, MySql, MySqlRow);
+//make_query_as!(MySqlQueryAs, MySql, MySqlRow);
 impl_map_row_for_row!(MySql, MySqlRow);
 impl_from_row_for_tuples!(MySql, MySqlRow);
