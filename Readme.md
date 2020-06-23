@@ -245,15 +245,11 @@ pub async fn test_hyper(){
 
 ### 常见问题
 * async await支持？
-
-请参考使用adapter包，使用async_开头的方法支持异步操作
+已同时支持async_std和tokio
 * postgres 的stmt使用$1,$2而不是mysql的?,那么是否需要特殊处理？
-
 不需要，因为rbatis旗下 rbatis_driver 已经处理了 ? -> $1的转换，你只需要在sql中写?即可。
 * oracle数据库驱动支持？
-
 不支持，应该坚持去IOE
-
          
 ## 欢迎右上角star或者微信捐赠~
 ![Image text](https://zhuxiujia.github.io/gomybatis.io/assets/wx_account.jpg)
