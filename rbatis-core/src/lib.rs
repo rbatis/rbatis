@@ -55,8 +55,8 @@ pub mod encode;
 pub mod pool;
 pub mod query;
 
-#[macro_use]
-pub mod query_as;
+//#[macro_use]
+//pub mod query_as;
 
 pub mod types;
 

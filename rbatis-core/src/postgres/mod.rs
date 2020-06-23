@@ -32,6 +32,6 @@ mod value;
 #[cfg_attr(docsrs, doc(cfg(feature = "postgres")))]
 pub type PgPool = crate::pool::Pool<PgConnection>;
 
-make_query_as!(PgQueryAs, Postgres, PgRow);
+//make_query_as!(PgQueryAs, Postgres, PgRow);
 impl_map_row_for_row!(Postgres, PgRow);
 impl_from_row_for_tuples!(Postgres, PgRow);
