@@ -37,12 +37,24 @@ pub struct Rbatis<'r> {
 
 
 impl<'r> Rbatis<'r> {
-    pub async fn new(url: &str) -> Result<Rbatis<'r>, rbatis_core::Error> {
+
+    pub fn new() -> Rbatis<'static>{
+        return Rbatis { pool:None, mapper_node_map: HashMap::new(), engine: RbatisEngine::new(), context_tx: SyncMap::new() };
+    }
+
+    pub fn check(&self){
+        println!("{:?}",self.pool);
+        println!("{:?}",self.mapper_node_map);
+    }
+
+    /// link pool
+    pub async fn link(&mut self, url: &str) -> Result<(), rbatis_core::Error> {
         let mut pool = Option::None;
         if url.ne("") {
             pool = Some(DBPool::new(url).await?);
+            self.pool=pool;
         }
-        return Ok(Rbatis { pool, mapper_node_map: HashMap::new(), engine: RbatisEngine::new(), context_tx: SyncMap::new() });
+        return Ok(());
     }
 
     pub fn load_xml(&mut self, mapper_name: &'r str, data: &str) -> Result<(), rbatis_core::Error> {

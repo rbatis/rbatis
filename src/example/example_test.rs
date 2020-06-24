@@ -1,5 +1,6 @@
 use std::cell::{Cell, RefCell};
 use std::collections::HashMap;
+use std::convert::Infallible;
 use std::env::Args;
 use std::ops::Deref;
 use std::rc::Rc;
@@ -55,7 +56,8 @@ pub fn test_prepare_sql() {
     let r = async_std::task::block_on(
         async move {
             fast_log::log::init_log("requests.log", &RuntimeType::Std).unwrap();
-            let rb = Rbatis::new(MYSQL_URL).await.unwrap();
+            let mut rb = Rbatis::new();
+            rb.link(MYSQL_URL).await.unwrap();
             //pooledConn 交由rbatis上下文管理
             let arg = &vec![json!(1), json!("test%")];
             let r: Vec<Activity> = rb.fetch_prepare("", "SELECT * FROM biz_activity WHERE delete_flag =  ? AND name like ?", arg).await.unwrap();
@@ -69,7 +71,8 @@ pub fn test_prepare_sql() {
 pub fn test_py_sql() {
     async_std::task::block_on(async move {
         fast_log::log::init_log("requests.log", &RuntimeType::Std).unwrap();
-        let rb = Rbatis::new(MYSQL_URL).await.unwrap();
+        let mut rb = Rbatis::new();
+        rb.link(MYSQL_URL).await.unwrap();
         let py = r#"
     SELECT * FROM biz_activity
     WHERE delete_flag = #{delete_flag}
@@ -91,7 +94,8 @@ pub fn test_py_sql() {
 pub fn test_xml_sql() {
     async_std::task::block_on(
         async move {
-            let mut rb = Rbatis::new("").await.unwrap();
+            let mut rb = Rbatis::new();
+            rb.link(MYSQL_URL).await.unwrap();
             rb.load_xml("test", r#"<?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
         "https://raw.githubusercontent.com/zhuxiujia/Rbatis/master/rbatis-mapper.dtd">
@@ -135,7 +139,8 @@ lazy_static! {
 #[test]
 pub fn test_tx() {
     async_std::task::block_on(async {
-        let rb = Rbatis::new(MYSQL_URL).await.unwrap();
+        let mut rb = Rbatis::new();
+        rb.link(MYSQL_URL).await.unwrap();
         let tx_id = "1";
         rb.begin(tx_id).await.unwrap();
         let v: serde_json::Value = rb.fetch(tx_id, "SELECT count(1) FROM biz_activity;").await.unwrap();
@@ -148,9 +153,13 @@ pub fn test_tx() {
 
 
 lazy_static! {
-  static ref RB:Rbatis<'static>=async_std::task::block_on(async {
-        Rbatis::new(MYSQL_URL).await.unwrap()
-    });
+  static ref RB:Rbatis<'static>={
+         let mut r=Rbatis::new();
+         async_std::task::block_on(async{
+           r.link(MYSQL_URL).await;
+         });
+         return r;
+  };
 }
 
 #[test]
@@ -177,9 +186,29 @@ pub fn test_tide() {
 
 
 
-use std::convert::Infallible;
+
+
+lazy_static! {
+ static ref RT:Mutex<tokio::runtime::Runtime> = Mutex::new(tokio::runtime::Builder::new()
+        .basic_scheduler()
+        .enable_all()
+        .build()
+        .unwrap());
+ static ref RB_TOKIO:Rbatis<'static>=makeRB();
+}
+
+fn makeRB() -> Rbatis<'static> {
+    let v = RT.lock().unwrap().block_on(async {
+        let mut rb = Rbatis::new();
+        rb.link(MYSQL_URL).await;
+        return rb;
+    });
+    return v;
+}
+
+
 async fn hello(_: hyper::Request<hyper::Body>) -> Result<hyper::Response<hyper::Body>, Infallible> {
-    let v = RB.fetch("", "SELECT count(1) FROM biz_activity;").await;
+    let v = RB_TOKIO.fetch("", "SELECT count(1) FROM biz_activity;").await;
     if v.is_ok() {
         let data: Value = v.unwrap();
         Ok(hyper::Response::new(hyper::Body::from(data.to_string())))
@@ -188,20 +217,24 @@ async fn hello(_: hyper::Request<hyper::Body>) -> Result<hyper::Response<hyper::
     }
 }
 
-#[tokio::main]
 #[test]
-pub async fn test_hyper(){
-    fast_log::log::init_log("requests.log",&RuntimeType::Std);
-    // For every connection, we must make a `Service` to handle all
-    // incoming HTTP requests on said connection.
-    let make_svc = hyper::service::make_service_fn(|_conn| {
-        // This is the `Service` that will handle the connection.
-        // `service_fn` is a helper to convert a function that
-        // returns a Response into a `Service`.
-        async { Ok::<_, Infallible>(hyper::service::service_fn(hello)) }
+pub fn test_hyper() {
+    RB_TOKIO.check();
+    sleep(Duration::from_secs(1));
+    RT.lock().unwrap().block_on(async {
+        //RB_TOKIO.link(MYSQL_URL).await;
+        //fast_log::log::init_log("requests.log", &RuntimeType::Std);
+        // For every connection, we must make a `Service` to handle all
+        // incoming HTTP requests on said connection.
+        let make_svc = hyper::service::make_service_fn(|_conn| {
+            // This is the `Service` that will handle the connection.
+            // `service_fn` is a helper to convert a function that
+            // returns a Response into a `Service`.
+            async { Ok::<_, Infallible>(hyper::service::service_fn(hello)) }
+        });
+        let addr = ([0, 0, 0, 0], 8000).into();
+        let server = hyper::Server::bind(&addr).serve(make_svc);
+        println!("Listening on http://{}", addr);
+        server.await.unwrap();
     });
-    let addr = ([0, 0, 0, 0], 8000).into();
-    let server = hyper::Server::bind(&addr).serve(make_svc);
-    println!("Listening on http://{}", addr);
-    server.await.unwrap();
 }
