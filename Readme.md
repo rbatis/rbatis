@@ -19,6 +19,13 @@
 ##### 首先(Cargo.toml)添加项目依赖
 ``` rust
 # add this library,and cargo install
+#json
+serde = { version = "1.0", features = ["derive"] }
+serde_json = "1.0"
+#log
+log = "0.4"
+fast_log="1.0.2"
+#rbatis
 rbatis-core = { version = "0.0.3",  default-features = false , features = ["all","runtime-async-std"]}
 rbatis = "1.1.1"
 ```
@@ -78,13 +85,6 @@ rbatis = "1.1.1"
         </select>
 </mapper>
 ``` 
-##### Cargo.toml 加入以下代码
-``` toml
-[dependencies]
-rbatis = "*"
-log = "0.4"
-fast_log="1.0.2"
-```
 #### 简单使用
 ``` rust
 
