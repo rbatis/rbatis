@@ -21,9 +21,6 @@ extern crate bigdecimal_ as bigdecimal;
 #[macro_use]
 extern crate async_trait;
 
-#[macro_use]
-extern crate serde_json;
-
 
 mod runtime;
 
