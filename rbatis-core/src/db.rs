@@ -1,24 +1,631 @@
+use std::borrow::BorrowMut;
+use std::ops::{Deref, DerefMut};
 
-/// mysql
-#[cfg(feature = "mysql")]
-pub use crate::mysql::{
-    MySql as DBType,
-    MySqlConnection as DBConnection,
-    MySqlPool as DBPool
-};
+use crate::connection::Connect;
+use crate::Error;
+use crate::executor::Executor;
+use crate::mysql::{MySql, MySqlConnection, MySqlCursor, MySqlPool};
+use crate::pool::PoolConnection;
+use crate::postgres::{PgConnection, PgCursor, PgPool, Postgres};
+use crate::query::{Query, query};
+use crate::sqlite::{Sqlite, SqliteConnection, SqliteCursor, SqlitePool};
+use crate::transaction::Transaction;
+use futures_core::future::BoxFuture;
+use crate::cursor::Cursor;
+use serde::de::DeserializeOwned;
 
-/// pg
-#[cfg(feature = "postgres")]
-pub use crate::postgres::{
-    Postgres as DBType,
-    PgConnection as DBConnection,
-    PgPool as DBPool
-};
+#[derive(Debug, Clone)]
+pub enum DriverType {
+    None = 0,
+    Mysql = 1,
+    Postgres = 2,
+    Sqlite = 3,
+}
 
-/// sqlite
-#[cfg(feature = "sqlite")]
-pub use crate::sqlite::{
-    Sqlite as DBType,
-    SqliteConnection as DBConnection,
-    SqlitePool as DBPool
-};
+#[derive(Debug)]
+pub struct DBPool {
+    pub driver_type: DriverType,
+    pub mysql: Option<crate::mysql::MySqlPool>,
+    pub postgres: Option<crate::postgres::PgPool>,
+    pub sqlite: Option<crate::sqlite::SqlitePool>,
+}
+
+
+impl DBPool {
+    //new
+    pub async fn new(driver: &str) -> crate::Result<DBPool> {
+        let mut pool = Self {
+            driver_type: DriverType::None,
+            mysql: None,
+            postgres: None,
+            sqlite: None,
+        };
+        if driver.starts_with("mysql") {
+            pool.driver_type = DriverType::Mysql;
+            pool.mysql = Some(MySqlPool::new(driver).await?);
+        } else if driver.starts_with("postgres") {
+            pool.driver_type = DriverType::Postgres;
+            pool.postgres = Some(PgPool::new(driver).await?);
+        } else if driver.starts_with("sqlite") {
+            pool.driver_type = DriverType::Sqlite;
+            pool.sqlite = Some(SqlitePool::new(driver).await?);
+        } else {
+            return Err(Error::from("unsupport driver type!"));
+        }
+        return Ok(pool);
+    }
+
+    pub fn make_query<'f, 's>(&'f self, sql: &'s str) -> crate::Result<DBQuery<'s>> {
+        match &self.driver_type {
+            &DriverType::None => {
+                return Err(Error::from("un init DBPool!"));
+            }
+            &DriverType::Mysql => {
+                let mut q: Query<'s, MySql> = query(sql);
+                return Ok(DBQuery {
+                    driver_type: DriverType::Mysql,
+                    mysql: Some(q),
+                    postgres: None,
+                    sqlite: None,
+                });
+            }
+            &DriverType::Postgres => {
+                let mut q: Query<Postgres> = query(sql);
+                return Ok(DBQuery {
+                    driver_type: DriverType::Postgres,
+                    mysql: None,
+                    postgres: Some(q),
+                    sqlite: None,
+                });
+            }
+            &DriverType::Sqlite => {
+                let mut q: Query<Sqlite> = query(sql);
+                return Ok(DBQuery {
+                    driver_type: DriverType::Sqlite,
+                    mysql: None,
+                    postgres: None,
+                    sqlite: Some(q),
+                });
+            }
+            _ => {
+                return Err(Error::from("unsupport driver type!"));
+            }
+        }
+    }
+    /// Retrieves a connection from the pool.
+    ///
+    /// Waits for at most the configured connection timeout before returning an error.
+    pub async fn acquire(&self) -> crate::Result<DBPoolConn> {
+        match &self.driver_type {
+            &DriverType::None => {
+                return Err(Error::from("un init DBPool!"));
+            }
+            &DriverType::Mysql => {
+                let conn = self.mysql.as_ref().unwrap().acquire().await?;
+                return Ok(DBPoolConn {
+                    driver_type: DriverType::Mysql,
+                    mysql: Some(conn),
+                    postgres: None,
+                    sqlite: None,
+                });
+            }
+            &DriverType::Postgres => {
+                let conn = self.postgres.as_ref().unwrap().acquire().await?;
+                return Ok(DBPoolConn {
+                    driver_type: DriverType::Postgres,
+                    mysql: None,
+                    postgres: Some(conn),
+                    sqlite: None,
+                });
+            }
+            &DriverType::Sqlite => {
+                let conn = self.sqlite.as_ref().unwrap().acquire().await?;
+                return Ok(DBPoolConn {
+                    driver_type: DriverType::Sqlite,
+                    mysql: None,
+                    postgres: None,
+                    sqlite: Some(conn),
+                });
+            }
+            _ => {
+                return Err(Error::from("unsupport driver type!"));
+            }
+        }
+    }
+
+    pub async fn begin(&self) -> crate::Result<DBTx> {
+        match &self.driver_type {
+            &DriverType::None => {
+                return Err(Error::from("un init DBPool!"));
+            }
+            &DriverType::Mysql => {
+                Ok(DBTx {
+                    driver_type: DriverType::Mysql,
+                    mysql: Some(self.mysql.as_ref().unwrap().begin().await?),
+                    postgres: None,
+                    sqlite: None,
+                })
+            }
+            &DriverType::Postgres => {
+                Ok(DBTx {
+                    driver_type: DriverType::Postgres,
+                    mysql: None,
+                    postgres: Some(self.postgres.as_ref().unwrap().begin().await?),
+                    sqlite: None,
+                })
+            }
+            &DriverType::Sqlite => {
+                Ok(DBTx {
+                    driver_type: DriverType::Sqlite,
+                    mysql: None,
+                    postgres: None,
+                    sqlite: Some(self.sqlite.as_ref().unwrap().begin().await?),
+                })
+            }
+
+            _ => {
+                return Err(Error::from("unsupport driver type!"));
+            }
+        }
+    }
+}
+
+pub struct DBType {
+    pub driver_type: DriverType,
+    pub mysql: Option<crate::mysql::MySql>,
+    pub postgres: Option<crate::postgres::Postgres>,
+    pub sqlite: Option<crate::sqlite::Sqlite>,
+}
+
+pub struct DBConnection {
+    pub driver_type: DriverType,
+    pub mysql: Option<crate::mysql::MySqlConnection>,
+    pub postgres: Option<crate::postgres::PgConnection>,
+    pub sqlite: Option<crate::sqlite::SqliteConnection>,
+}
+
+impl DBConnection {
+    pub fn new_my(arg: crate::mysql::MySqlConnection) -> Self {
+        Self {
+            driver_type: DriverType::Mysql,
+            mysql: Some(arg),
+            postgres: None,
+            sqlite: None,
+        }
+    }
+    pub fn new_sqlite(arg: crate::sqlite::SqliteConnection) -> Self {
+        Self {
+            driver_type: DriverType::Sqlite,
+            mysql: None,
+            postgres: None,
+            sqlite: Some(arg),
+        }
+    }
+    pub fn new_pg(arg: crate::postgres::PgConnection) -> Self {
+        Self {
+            driver_type: DriverType::Postgres,
+            mysql: None,
+            postgres: Some(arg),
+            sqlite: None,
+        }
+    }
+}
+
+
+pub struct DBQuery<'q> {
+    pub driver_type: DriverType,
+    pub mysql: Option<Query<'q, MySql>>,
+    pub postgres: Option<Query<'q, Postgres>>,
+    pub sqlite: Option<Query<'q, Sqlite>>,
+}
+
+impl<'q> DBQuery<'q> {
+    pub fn bind(&mut self, t: &str) -> crate::Result<()> {
+        match &self.driver_type {
+            &DriverType::None => {
+                return Err(Error::from("un init DBPool!"));
+            }
+            &DriverType::Mysql => {
+                let mut q = self.mysql.take().unwrap();
+                q = q.bind(t);
+                self.mysql = Some(q);
+            }
+            &DriverType::Postgres => {
+                let mut q = self.postgres.take().unwrap();
+                q = q.bind(t);
+                self.postgres = Some(q);
+            }
+            &DriverType::Sqlite => {
+                let mut q = self.sqlite.take().unwrap();
+                q = q.bind(t);
+                self.sqlite = Some(q);
+            }
+            _ => {
+                return Err(Error::from("unsupport driver type!"));
+            }
+        }
+        return Ok(());
+    }
+}
+
+
+pub struct DBPoolConn {
+    pub driver_type: DriverType,
+    pub mysql: Option<PoolConnection<MySqlConnection>>,
+    pub postgres: Option<PoolConnection<PgConnection>>,
+    pub sqlite: Option<PoolConnection<SqliteConnection>>,
+}
+
+
+impl DBPoolConn {
+    pub fn fetch<'q>(&mut self,sql:&'q str) -> crate::Result<DBCursor<'_, 'q>> {
+        match &self.driver_type {
+            &DriverType::None => {
+                return Err(Error::from("un init DBPool!"));
+            }
+            &DriverType::Mysql => {
+                let data = self.mysql.as_mut().unwrap().fetch(sql);
+                return Ok(DBCursor {
+                    driver_type: DriverType::Mysql,
+                    mysql: Some(data),
+                    postgres: None,
+                    sqlite: None,
+                });
+            }
+            &DriverType::Postgres => {
+                let data = self.postgres.as_mut().unwrap().fetch(sql);
+                return Ok(DBCursor {
+                    driver_type: DriverType::Postgres,
+                    mysql: None,
+                    postgres: Some(data),
+                    sqlite: None,
+                });
+            }
+            &DriverType::Sqlite => {
+                let data = self.sqlite.as_mut().unwrap().fetch(sql);
+                return Ok(DBCursor {
+                    driver_type: DriverType::Sqlite,
+                    mysql: None,
+                    postgres: None,
+                    sqlite: Some(data),
+                });
+            }
+            _ => {
+                return Err(Error::from("unsupport driver type!"));
+            }
+        }
+    }
+
+    pub async fn execute(&mut self,sql:&str) -> crate::Result<u64> {
+        match &self.driver_type {
+            &DriverType::None => {
+                return Err(Error::from("un init DBPool!"));
+            }
+            &DriverType::Mysql => {
+                let data = self.mysql.as_mut().unwrap().execute(sql).await?;
+                return Ok(data);
+            }
+            &DriverType::Postgres => {
+                let data = self.postgres.as_mut().unwrap().execute(sql).await?;
+                return Ok(data);
+            }
+            &DriverType::Sqlite => {
+                let data = self.sqlite.as_mut().unwrap().execute(sql).await?;
+                return Ok(data);
+            }
+            _ => {
+                return Err(Error::from("unsupport driver type!"));
+            }
+        }
+    }
+
+    pub fn fetch_parperd<'q>(&mut self,sql:DBQuery<'q>) -> crate::Result<DBCursor<'_, 'q>> {
+        match &self.driver_type {
+            &DriverType::None => {
+                return Err(Error::from("un init DBPool!"));
+            }
+            &DriverType::Mysql => {
+                let data = self.mysql.as_mut().unwrap().fetch(sql.mysql.unwrap());
+                return Ok(DBCursor {
+                    driver_type: DriverType::Mysql,
+                    mysql: Some(data),
+                    postgres: None,
+                    sqlite: None,
+                });
+            }
+            &DriverType::Postgres => {
+                let data = self.postgres.as_mut().unwrap().fetch(sql.postgres.unwrap());
+                return Ok(DBCursor {
+                    driver_type: DriverType::Postgres,
+                    mysql: None,
+                    postgres: Some(data),
+                    sqlite: None,
+                });
+            }
+            &DriverType::Sqlite => {
+                let data = self.sqlite.as_mut().unwrap().fetch(sql.sqlite.unwrap());
+                return Ok(DBCursor {
+                    driver_type: DriverType::Sqlite,
+                    mysql: None,
+                    postgres: None,
+                    sqlite: Some(data),
+                });
+            }
+            _ => {
+                return Err(Error::from("unsupport driver type!"));
+            }
+        }
+    }
+
+    pub async fn execute_parperd(&mut self,sql:DBQuery<'_>) -> crate::Result<u64> {
+        match &self.driver_type {
+            &DriverType::None => {
+                return Err(Error::from("un init DBPool!"));
+            }
+            &DriverType::Mysql => {
+                let data = self.mysql.as_mut().unwrap().execute(sql.mysql.unwrap()).await?;
+                return Ok(data);
+            }
+            &DriverType::Postgres => {
+                let data = self.postgres.as_mut().unwrap().execute(sql.postgres.unwrap()).await?;
+                return Ok(data);
+            }
+            &DriverType::Sqlite => {
+                let data = self.sqlite.as_mut().unwrap().execute(sql.sqlite.unwrap()).await?;
+                return Ok(data);
+            }
+            _ => {
+                return Err(Error::from("unsupport driver type!"));
+            }
+        }
+    }
+}
+
+
+pub struct DBCursor<'c, 'q> {
+    pub driver_type: DriverType,
+    pub mysql: Option<MySqlCursor<'c, 'q>>,
+    pub postgres: Option<PgCursor<'c, 'q>>,
+    pub sqlite: Option<SqliteCursor<'c, 'q>>,
+}
+
+impl <'c, 'q>DBCursor<'c, 'q> {
+    pub async fn decode_json<T>(&mut self) -> Result<T, crate::Error>
+        where T: DeserializeOwned {
+        match &self.driver_type {
+            &DriverType::None => {
+                return Err(Error::from("un init DBPool!"));
+            }
+            &DriverType::Mysql => {
+                let data = self.mysql.as_mut().unwrap().decode_json().await?;
+                return Ok(data);
+            }
+            &DriverType::Postgres => {
+                let data = self.postgres.as_mut().unwrap().decode_json().await?;
+                return Ok(data);
+            }
+            &DriverType::Sqlite => {
+                let data = self.sqlite.as_mut().unwrap().decode_json().await?;
+                return Ok(data);
+            }
+            _ => {
+                return Err(Error::from("unsupport driver type!"));
+            }
+        }
+    }
+}
+
+
+pub struct DBTx {
+    pub driver_type: DriverType,
+    pub mysql: Option<Transaction<PoolConnection<MySqlConnection>>>,
+    pub postgres: Option<Transaction<PoolConnection<PgConnection>>>,
+    pub sqlite: Option<Transaction<PoolConnection<SqliteConnection>>>,
+}
+
+impl DBTx {
+    pub async fn commit(&mut self) -> crate::Result<DBPoolConn> {
+        match &self.driver_type {
+            &DriverType::None => {
+                return Err(Error::from("un init DBPool!"));
+            }
+            &DriverType::Mysql => {
+                let data = self.mysql.take().unwrap().commit().await?;
+                Ok(DBPoolConn {
+                    driver_type: DriverType::Mysql,
+                    mysql: Some(data),
+                    postgres: None,
+                    sqlite: None,
+                })
+            }
+            &DriverType::Postgres => {
+                let data = self.postgres.take().unwrap().commit().await?;
+                Ok(DBPoolConn {
+                    driver_type: DriverType::Mysql,
+                    mysql: None,
+                    postgres: Some(data),
+                    sqlite: None,
+                })
+            }
+            &DriverType::Sqlite => {
+                let data = self.sqlite.take().unwrap().commit().await?;
+                Ok(DBPoolConn {
+                    driver_type: DriverType::Mysql,
+                    mysql: None,
+                    postgres: None,
+                    sqlite: Some(data),
+                })
+            }
+
+            _ => {
+                return Err(Error::from("unsupport driver type!"));
+            }
+        }
+    }
+
+    pub async fn rollback(&mut self) -> crate::Result<DBPoolConn> {
+        match &self.driver_type {
+            &DriverType::None => {
+                return Err(Error::from("un init DBPool!"));
+            }
+            &DriverType::Mysql => {
+                let data = self.mysql.take().unwrap().rollback().await?;
+                Ok(DBPoolConn {
+                    driver_type: DriverType::Mysql,
+                    mysql: Some(data),
+                    postgres: None,
+                    sqlite: None,
+                })
+            }
+            &DriverType::Postgres => {
+                let data = self.postgres.take().unwrap().rollback().await?;
+                Ok(DBPoolConn {
+                    driver_type: DriverType::Postgres,
+                    mysql: None,
+                    postgres: Some(data),
+                    sqlite: None,
+                })
+            }
+            &DriverType::Sqlite => {
+                let data = self.sqlite.take().unwrap().rollback().await?;
+                Ok(DBPoolConn {
+                    driver_type: DriverType::Sqlite,
+                    mysql: None,
+                    postgres: None,
+                    sqlite: Some(data),
+                })
+            }
+
+            _ => {
+                return Err(Error::from("unsupport driver type!"));
+            }
+        }
+    }
+
+
+
+
+    ///TODO find better way reduce the same code
+    pub fn fetch<'q>(&mut self,sql:&'q str) -> crate::Result<DBCursor<'_, 'q>> {
+        match &self.driver_type {
+            &DriverType::None => {
+                return Err(Error::from("un init DBPool!"));
+            }
+            &DriverType::Mysql => {
+                let data = self.mysql.as_mut().unwrap().fetch(sql);
+                return Ok(DBCursor {
+                    driver_type: DriverType::Mysql,
+                    mysql: Some(data),
+                    postgres: None,
+                    sqlite: None,
+                });
+            }
+            &DriverType::Postgres => {
+                let data = self.postgres.as_mut().unwrap().fetch(sql);
+                return Ok(DBCursor {
+                    driver_type: DriverType::Postgres,
+                    mysql: None,
+                    postgres: Some(data),
+                    sqlite: None,
+                });
+            }
+            &DriverType::Sqlite => {
+                let data = self.sqlite.as_mut().unwrap().fetch(sql);
+                return Ok(DBCursor {
+                    driver_type: DriverType::Sqlite,
+                    mysql: None,
+                    postgres: None,
+                    sqlite: Some(data),
+                });
+            }
+            _ => {
+                return Err(Error::from("unsupport driver type!"));
+            }
+        }
+    }
+
+    pub async fn execute(&mut self,sql:&str) -> crate::Result<u64> {
+        match &self.driver_type {
+            &DriverType::None => {
+                return Err(Error::from("un init DBPool!"));
+            }
+            &DriverType::Mysql => {
+                let data = self.mysql.as_mut().unwrap().execute(sql).await?;
+                return Ok(data);
+            }
+            &DriverType::Postgres => {
+                let data = self.postgres.as_mut().unwrap().execute(sql).await?;
+                return Ok(data);
+            }
+            &DriverType::Sqlite => {
+                let data = self.sqlite.as_mut().unwrap().execute(sql).await?;
+                return Ok(data);
+            }
+            _ => {
+                return Err(Error::from("unsupport driver type!"));
+            }
+        }
+    }
+
+    pub fn fetch_parperd<'q>(&mut self,sql:DBQuery<'q>) -> crate::Result<DBCursor<'_, 'q>> {
+        match &self.driver_type {
+            &DriverType::None => {
+                return Err(Error::from("un init DBPool!"));
+            }
+            &DriverType::Mysql => {
+                let data = self.mysql.as_mut().unwrap().fetch(sql.mysql.unwrap());
+                return Ok(DBCursor {
+                    driver_type: DriverType::Mysql,
+                    mysql: Some(data),
+                    postgres: None,
+                    sqlite: None,
+                });
+            }
+            &DriverType::Postgres => {
+                let data = self.postgres.as_mut().unwrap().fetch(sql.postgres.unwrap());
+                return Ok(DBCursor {
+                    driver_type: DriverType::Postgres,
+                    mysql: None,
+                    postgres: Some(data),
+                    sqlite: None,
+                });
+            }
+            &DriverType::Sqlite => {
+                let data = self.sqlite.as_mut().unwrap().fetch(sql.sqlite.unwrap());
+                return Ok(DBCursor {
+                    driver_type: DriverType::Sqlite,
+                    mysql: None,
+                    postgres: None,
+                    sqlite: Some(data),
+                });
+            }
+            _ => {
+                return Err(Error::from("unsupport driver type!"));
+            }
+        }
+    }
+
+    pub async fn execute_parperd(&mut self,sql:DBQuery<'_>) -> crate::Result<u64> {
+        match &self.driver_type {
+            &DriverType::None => {
+                return Err(Error::from("un init DBPool!"));
+            }
+            &DriverType::Mysql => {
+                let data = self.mysql.as_mut().unwrap().execute(sql.mysql.unwrap()).await?;
+                return Ok(data);
+            }
+            &DriverType::Postgres => {
+                let data = self.postgres.as_mut().unwrap().execute(sql.postgres.unwrap()).await?;
+                return Ok(data);
+            }
+            &DriverType::Sqlite => {
+                let data = self.sqlite.as_mut().unwrap().execute(sql.sqlite.unwrap()).await?;
+                return Ok(data);
+            }
+            _ => {
+                return Err(Error::from("unsupport driver type!"));
+            }
+        }
+    }
+
+}
