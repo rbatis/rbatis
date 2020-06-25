@@ -1,5 +1,6 @@
 use crate::database::Database;
 use bitflags::_core::fmt::Debug;
+use crate::Result;
 
 /// Associate [`Database`] with a `RawValue` of a generic lifetime.
 ///
@@ -23,5 +24,5 @@ pub trait RawValue<'c> {
     fn type_info(&self) -> Option<<Self::Database as Database>::TypeInfo>;
 
     /// to an json value
-    fn try_to_json(&self) -> Result<serde_json::Value,String>;
+    fn try_to_json(&self) -> Result<serde_json::Value>;
 }
