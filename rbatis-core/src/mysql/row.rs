@@ -48,25 +48,6 @@ impl<'c> Row<'c> for MySqlRow<'c> {
 
         Ok(value)
     }
-
-    fn json_decode<T, I>(&self, index: I) -> crate::Result<T>
-        where
-            I: ColumnIndex<'c, Self>,
-            T: DeserializeOwned
-    {
-        let value = self.try_get_raw(index)?;
-        let v = value.try_to_json();
-        if v.is_err() {
-            let e = v.err().unwrap();
-            return Err(decode_err!("unexpected value.try_to_json(). value: {:?},err: {:?}",value, e));
-        }
-        let t: Result<T, serde_json::Error> = serde_json::from_value(v.unwrap());
-        if t.is_err(){
-            let e = t.err().unwrap();
-            return  Err(decode_err!("unexpected serde_json::from_value() error: {:?}", e))
-        }
-        return Ok(t.ok().unwrap());
-    }
 }
 
 impl<'c> ColumnIndex<'c, MySqlRow<'c>> for usize {

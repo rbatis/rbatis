@@ -15,6 +15,7 @@ use crate::sqlite::{Sqlite, SqliteTypeInfo};
 use crate::value::RawValue;
 use serde_json::Value;
 use crate::decode::Decode;
+use crate::Result;
 
 #[derive(Debug,Clone)]
 pub struct SqliteValue<'c> {
@@ -136,7 +137,7 @@ impl<'c> RawValue<'c> for SqliteValue<'c> {
         })
     }
 
-    fn try_to_json(&self) -> Result<Value, String> {
+    fn try_to_json(&self) -> Result<serde_json::Value>  {
         //TODO batter way to match type replace use string match
         let type_string = self.r#type();
         if type_string.is_none() {
@@ -147,35 +148,35 @@ impl<'c> RawValue<'c> for SqliteValue<'c> {
             SqliteType::Text => {
                 let r:crate::Result<String> = Decode::<'_,Sqlite>::decode(self.clone());
                 if r.is_err() {
-                    return Err(r.err().unwrap().to_string());
+                    return Err(r.err().unwrap());
                 }
                 Ok(serde_json::Value::from(r.unwrap()))
             },
             SqliteType::Boolean => {
                 let r:crate::Result<bool> = Decode::<'_,Sqlite>::decode(self.clone());
                 if r.is_err() {
-                    return Err(r.err().unwrap().to_string());
+                    return Err(r.err().unwrap());
                 }
                 Ok(serde_json::Value::from(r.unwrap()))
             },
             SqliteType::Integer => {
                 let r:crate::Result<i64> = Decode::<'_,Sqlite>::decode(self.clone());
                 if r.is_err() {
-                    return Err(r.err().unwrap().to_string());
+                    return Err(r.err().unwrap());
                 }
                 Ok(serde_json::Value::from(r.unwrap()))
             },
             SqliteType::Float => {
                 let r:crate::Result<f64> = Decode::<'_,Sqlite>::decode(self.clone());
                 if r.is_err() {
-                    return Err(r.err().unwrap().to_string());
+                    return Err(r.err().unwrap());
                 }
                 Ok(serde_json::Value::from(r.unwrap()))
             },
             SqliteType::Blob => {
                 unimplemented!()
             }
-            _ => Err(format!("un support database type for:{:?}!", type_string).to_string()),
+            _ => Err(crate::Error::from(format!("un support database type for:{:?}!", type_string))),
         }
     }
 }

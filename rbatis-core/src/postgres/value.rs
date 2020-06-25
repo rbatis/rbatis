@@ -11,6 +11,7 @@ use crate::error::UnexpectedNullError;
 use crate::postgres::{PgTypeInfo, Postgres};
 use crate::value::RawValue;
 use crate::types::BigDecimal;
+use crate::Result;
 
 #[derive(Debug, Copy, Clone)]
 pub enum PgData<'c> {
@@ -91,7 +92,7 @@ impl<'c> RawValue<'c> for PgValue<'c> {
         }
     }
 
-    fn try_to_json(&self) -> Result<Value, String> {
+    fn try_to_json(&self) -> Result<serde_json::Value>  {
         if self.type_info.is_none() {
             return Ok(serde_json::Value::Null);
         }
@@ -105,14 +106,14 @@ impl<'c> RawValue<'c> for PgValue<'c> {
                 //decimal
                 let r:crate::Result<BigDecimal> = Decode::<'_,Postgres>::decode(self.clone());
                 if r.is_err() {
-                    return Err(r.err().unwrap().to_string());
+                    return Err(r.err().unwrap());
                 }
                 return Ok(serde_json::Value::from(r.unwrap().to_string()));
             }
             "BOOL" => {
                 let r:crate::Result<bool> = Decode::<'_,Postgres>::decode(self.clone());
                 if r.is_err() {
-                    return Err(r.err().unwrap().to_string());
+                    return Err(r.err().unwrap());
                 }
                 return Ok(serde_json::Value::from(r.unwrap()));
             }
@@ -122,42 +123,42 @@ impl<'c> RawValue<'c> for PgValue<'c> {
             "FLOAT4" => {
                 let r:crate::Result<f32> = Decode::<'_,Postgres>::decode(self.clone());
                 if r.is_err() {
-                    return Err(r.err().unwrap().to_string());
+                    return Err(r.err().unwrap());
                 }
                 return Ok(serde_json::Value::from(r.unwrap()));
             }
             "FLOAT8" => {
                 let r:crate::Result<f64> = Decode::<'_,Postgres>::decode(self.clone());
                 if r.is_err() {
-                    return Err(r.err().unwrap().to_string());
+                    return Err(r.err().unwrap());
                 }
                 return Ok(serde_json::Value::from(r.unwrap()));
             }
             "INT4" => {
                 let r:crate::Result<i32> = Decode::<'_,Postgres>::decode(self.clone());
                 if r.is_err() {
-                    return Err(r.err().unwrap().to_string());
+                    return Err(r.err().unwrap());
                 }
                 return Ok(serde_json::Value::from(r.unwrap()));
             }
             "INT8" => {
                 let r:crate::Result<i64> = Decode::<'_,Postgres>::decode(self.clone());
                 if r.is_err() {
-                    return Err(r.err().unwrap().to_string());
+                    return Err(r.err().unwrap());
                 }
                 return Ok(serde_json::Value::from(r.unwrap()));
             }
             "TEXT" => {
                 let r:crate::Result<String> = Decode::<'_,Postgres>::decode(self.clone());
                 if r.is_err() {
-                    return Err(r.err().unwrap().to_string());
+                    return Err(r.err().unwrap());
                 }
                 return Ok(serde_json::Value::from(r.unwrap()));
             }
             "UUID" => {
                 let r:crate::Result<String> = Decode::<'_,Postgres>::decode(self.clone());
                 if r.is_err() {
-                    return Err(r.err().unwrap().to_string());
+                    return Err(r.err().unwrap());
                 }
                 return Ok(serde_json::Value::from(r.unwrap()));
             }
@@ -165,33 +166,33 @@ impl<'c> RawValue<'c> for PgValue<'c> {
             "TIME" => {
                 let r:crate::Result< chrono::DateTime::<chrono::Utc>> = Decode::<'_,Postgres>::decode(self.clone());
                 if r.is_err() {
-                    return Err(r.err().unwrap().to_string());
+                    return Err(r.err().unwrap());
                 }
                 return Ok(serde_json::Value::from(r.unwrap().to_string()));
             }
             | "DATE" => {
                 let r:crate::Result<chrono::NaiveDate> = Decode::<'_,Postgres>::decode(self.clone());
                 if r.is_err() {
-                    return Err(r.err().unwrap().to_string());
+                    return Err(r.err().unwrap());
                 }
                 return Ok(serde_json::Value::from(r.unwrap().to_string()));
             }
             "TIMESTAMP" => {
                 let r:crate::Result<chrono::NaiveDateTime> = Decode::<'_,Postgres>::decode(self.clone());
                 if r.is_err() {
-                    return Err(r.err().unwrap().to_string());
+                    return Err(r.err().unwrap());
                 }
                 return Ok(serde_json::Value::from(r.unwrap().to_string()));
             }
             "TIMESTAMPTZ" => {
                 let r:crate::Result<chrono::DateTime::<chrono::Local>> = Decode::<'_,Postgres>::decode(self.clone());
                 if r.is_err() {
-                    return Err(r.err().unwrap().to_string());
+                    return Err(r.err().unwrap());
                 }
                 return Ok(serde_json::Value::from(r.unwrap().to_string()));
             }
 
-            _ => return Err(format!("un support database type for:{}!", type_string).to_string()),
+            _ => return Err(crate::Error::from(format!("un support database type for:{:?}!", type_string))),
         }
     }
 }
