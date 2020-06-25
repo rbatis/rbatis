@@ -19,7 +19,8 @@
 ##### 首先(Cargo.toml)添加项目依赖
 ``` rust
 # add this library,and cargo install
-rbatis = "*"
+rbatis-core = { version = "0.0.3",  default-features = false , features = ["all","runtime-async-std"]}
+rbatis = "1.1.1"
 ```
 
 ##### py风格sql语法Example
