@@ -31,6 +31,6 @@ pub use value::SqliteValue;
 #[cfg_attr(docsrs, doc(cfg(feature = "sqlite")))]
 pub type SqlitePool = crate::pool::Pool<SqliteConnection>;
 
-//make_query_as!(SqliteQueryAs, Sqlite, SqliteRow);
+make_query_as!(SqliteQueryAs, Sqlite, SqliteRow);
 impl_map_row_for_row!(Sqlite, SqliteRow);
 impl_from_row_for_tuples!(Sqlite, SqliteRow);

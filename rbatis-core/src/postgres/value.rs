@@ -3,7 +3,7 @@ use std::str::from_utf8;
 use serde_json::Value;
 use serde_json::value::Value::Array;
 
-use time::{date, Date, NumericalDuration, offset, OffsetDateTime, PrimitiveDateTime, Time};
+use chrono::{ Date, DateTime,NaiveDateTime,NaiveDate,NaiveTime};
 
 use crate::decode::Decode;
 use crate::error::UnexpectedNullError;

@@ -9,6 +9,7 @@ use rbatis_core::Error;
 use rbatis_core::executor::Executor;
 use rbatis_core::pool::{PoolConnection, Pool};
 use rbatis_core::query::{query, Query};
+use rbatis_core::query_as::query_as;
 use rbatis_core::sync_map::SyncMap;
 use rbatis_core::transaction::Transaction;
 use rbatis_core::db::{DBPool, DBConnection, DBType};
