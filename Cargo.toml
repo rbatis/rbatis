@@ -9,6 +9,11 @@ license = "MIT"
 
 [workspace]
 
+members=[
+ "example"
+]
+
+
 
 [features]
 

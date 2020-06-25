@@ -7,12 +7,12 @@
 
 #[macro_use]
 extern crate lazy_static;
-extern crate serde_yaml;
-
 #[macro_use]
 extern crate serde_json;
 
-pub mod example;
+extern crate serde_yaml;
+
+
 pub mod ast;
 pub mod utils;
 pub mod crud;

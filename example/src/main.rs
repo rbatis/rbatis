@@ -1,3 +1,11 @@
+pub mod activity;
+
+#[macro_use]
+extern crate lazy_static;
+#[macro_use]
+extern crate serde_json;
+
+
 use std::cell::{Cell, RefCell};
 use std::collections::HashMap;
 use std::convert::Infallible;
@@ -9,7 +17,6 @@ use std::thread::sleep;
 use std::time::{Duration, SystemTime};
 
 use fast_log::log::RuntimeType;
-use futures_core::future::BoxFuture;
 use log::{error, info, LevelFilter, warn};
 use serde_json::{json, Value};
 use tide::Request;
@@ -22,10 +29,19 @@ use rbatis_core::mysql::{MySqlCursor, MySqlPool, MySqlRow};
 use rbatis_core::sync_map::SyncMap;
 use rbatis_core::types::BigDecimal;
 
-use crate::example::activity::Activity;
-use crate::example::conf::MYSQL_URL;
-use crate::rbatis::Rbatis;
-use crate::utils::time_util::count_time_tps;
+use crate::activity::Activity;
+use rbatis::rbatis::Rbatis;
+
+//示例 mysql 链接地址
+pub const MYSQL_URL: &'static str = "mysql://root:123456@localhost:3306/test";
+
+
+
+fn main() {
+    println!("Hello, world!");
+}
+
+
 
 #[test]
 pub fn test_log() {
