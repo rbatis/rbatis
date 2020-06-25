@@ -155,7 +155,7 @@ lazy_static! {
 #[test]
 pub fn test_tx() {
     async_std::task::block_on(async {
-        let mut rb = Rbatis::new();
+        let rb = Rbatis::new();
         rb.link(MYSQL_URL).await.unwrap();
         let tx_id = "1";
         rb.begin(tx_id).await.unwrap();
@@ -170,7 +170,7 @@ pub fn test_tx() {
 
 lazy_static! {
   static ref RB:Rbatis<'static>={
-         let mut r=Rbatis::new();
+         let r=Rbatis::new();
          async_std::task::block_on(async{
            r.link(MYSQL_URL).await;
          });
@@ -210,16 +210,7 @@ lazy_static! {
         .enable_all()
         .build()
         .unwrap());
- static ref RB_TOKIO:Rbatis<'static>=makeRB();
-}
-
-fn makeRB() -> Rbatis<'static> {
-    let v = RT.lock().unwrap().block_on(async {
-        let mut rb = Rbatis::new();
-        rb.link(MYSQL_URL).await;
-        return rb;
-    });
-    return v;
+ static ref RB_TOKIO:Rbatis<'static>=Rbatis::new();
 }
 
 
@@ -238,7 +229,7 @@ pub fn test_hyper() {
     RB_TOKIO.check();
     sleep(Duration::from_secs(1));
     RT.lock().unwrap().block_on(async {
-        //RB_TOKIO.link(MYSQL_URL).await;
+        RB_TOKIO.link(MYSQL_URL).await;
         //fast_log::log::init_log("requests.log", &RuntimeType::Std);
         // For every connection, we must make a `Service` to handle all
         // incoming HTTP requests on said connection.

@@ -7,7 +7,7 @@ use rbatis_core::connection::Connection;
 use rbatis_core::cursor::Cursor;
 use rbatis_core::Error;
 use rbatis_core::executor::Executor;
-use rbatis_core::pool::PoolConnection;
+use rbatis_core::pool::{PoolConnection, Pool};
 use rbatis_core::query::{query, Query};
 use rbatis_core::sync_map::SyncMap;
 use rbatis_core::transaction::Transaction;
@@ -24,11 +24,12 @@ use crate::ast::node::select_node::SelectNode;
 use crate::ast::node::update_node::UpdateNode;
 use crate::engine::runtime::RbatisEngine;
 use crate::utils::error_util::ToResult;
+use once_cell::sync::OnceCell;
 
 
 /// rbatis engine
 pub struct Rbatis<'r> {
-    pool: Option<DBPool>,
+    pool: OnceCell<DBPool>,
     engine: RbatisEngine,
     /// map<mapper_name,map<method_name,NodeType>>
     mapper_node_map: HashMap<&'r str, HashMap<String, NodeType>>,
@@ -39,20 +40,21 @@ pub struct Rbatis<'r> {
 impl<'r> Rbatis<'r> {
 
     pub fn new() -> Rbatis<'static>{
-        return Rbatis { pool:None, mapper_node_map: HashMap::new(), engine: RbatisEngine::new(), context_tx: SyncMap::new() };
+        return Rbatis { pool:OnceCell::new(), mapper_node_map: HashMap::new(), engine: RbatisEngine::new(), context_tx: SyncMap::new() };
     }
 
     pub fn check(&self){
-        println!("{:?}",self.pool);
-        println!("{:?}",self.mapper_node_map);
+        println!("self.pool: {:?}",self.pool);
+        println!("self.mapper_node_map: {:?}",self.mapper_node_map);
     }
 
     /// link pool
-    pub async fn link(&mut self, url: &str) -> Result<(), rbatis_core::Error> {
-        let mut pool = Option::None;
+    pub async fn link(&self, url: &str) -> Result<(), rbatis_core::Error> {
         if url.ne("") {
-            pool = Some(DBPool::new(url).await?);
-            self.pool=pool;
+            let pool = DBPool::new(url).await?;
+            self.pool.get_or_init(|| {
+                pool
+            });
         }
         return Ok(());
     }
@@ -65,10 +67,11 @@ impl<'r> Rbatis<'r> {
 
     /// get conn pool
     pub fn get_pool(&self) -> Result<&DBPool, rbatis_core::Error> {
-        if self.pool.is_none() {
+        let p=self.pool.get();
+        if p.is_none() {
             return Err(rbatis_core::Error::from("[rbatis] rbatis pool not inited!"));
         }
-        return Ok(self.pool.as_ref().unwrap());
+        return Ok(p.unwrap());
     }
 
     async fn get_tx(&self, tx_id: &str) -> Result<Transaction<PoolConnection<DBConnection>>, rbatis_core::Error> {
