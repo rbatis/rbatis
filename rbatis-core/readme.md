@@ -10,7 +10,7 @@ fn main()  -> Result<u64, rbatis_core::Error>{
         async move {
            let pool = DBPool::new(url).await?;
            let mut conn = pool.acquire().await?;
-           let count:u64=onn.execute(sql).await?;
+           let count:u64=onn.execute("mysql://root:123456@localhost:3306/test").await?;
            println("{}",count);
            return count;
         }
