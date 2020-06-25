@@ -35,7 +35,15 @@ use rbatis::rbatis::Rbatis;
 //示例 mysql 链接地址
 pub const MYSQL_URL: &'static str = "mysql://root:123456@localhost:3306/test";
 
-
+lazy_static! {
+  static ref RB:Rbatis<'static>={
+         let r=Rbatis::new();
+         async_std::task::block_on(async{
+           r.link(MYSQL_URL).await;
+         });
+         return r;
+  };
+}
 
 fn main() {
     println!("Hello, world!");
@@ -148,10 +156,6 @@ pub fn test_xml_sql() {
 }
 
 
-lazy_static! {
-  static ref M:SyncMap<String>=SyncMap::new();
-}
-
 #[test]
 pub fn test_tx() {
     async_std::task::block_on(async {
@@ -165,18 +169,6 @@ pub fn test_tx() {
     });
 }
 
-
-
-
-lazy_static! {
-  static ref RB:Rbatis<'static>={
-         let r=Rbatis::new();
-         async_std::task::block_on(async{
-           r.link(MYSQL_URL).await;
-         });
-         return r;
-  };
-}
 
 #[test]
 pub fn test_tide() {
@@ -203,7 +195,7 @@ pub fn test_tide() {
 
 
 
-
+//初始化Tokio运行时
 lazy_static! {
  static ref RT:Mutex<tokio::runtime::Runtime> = Mutex::new(tokio::runtime::Builder::new()
         .basic_scheduler()
