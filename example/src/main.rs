@@ -182,7 +182,7 @@ lazy_static! {
 pub fn test_tide() {
     async_std::task::block_on(async {
         let mut app = tide::new();
-        app.at("/test").get(|mut req: Request<()>| async move {
+        app.at("/").get(|mut req: Request<()>| async move {
             let a = req.body_string().await;
             // println!("accept req[{} /test] arg: {:?}",req.url().to_string(),a);
             let v = RB.fetch("", "SELECT count(1) FROM biz_activity;").await;
@@ -193,7 +193,7 @@ pub fn test_tide() {
                 Ok(v.err().unwrap().to_string())
             }
         });
-        app.at("/").get(|_| async { Ok("Hello, world!") });
+        //app.at("/").get(|_| async { Ok("Hello, world!") });
         let addr = "0.0.0.0:8000";
         println!("server on {}", addr);
         app.listen(addr).await.unwrap();
