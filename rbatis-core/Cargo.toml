@@ -15,11 +15,12 @@ unstable = []
 # intended mainly for CI and docs
 all = ["all-database", "all-type"]
 all-database = ["mysql", "sqlite", "postgres"]
-all-type = ["bigdecimal", "chrono", "ipnetwork", "uuid"]
+all-type = ["bigdecimal", "json", "chrono", "ipnetwork", "uuid"]
 # we need a feature which activates `num-bigint` as well because
 # `bigdecimal` uses types from it but does not reexport (tsk tsk)
 bigdecimal = ["bigdecimal_", "num-bigint"]
 postgres = [ "md-5", "sha2", "base64", "sha-1", "rand", "hmac", "futures-channel/sink", "futures-util/sink" ]
+json = ["serde", "serde_json"]
 mysql = [ "sha-1", "sha2", "generic-array", "num-bigint", "base64", "digest", "rand" ]
 sqlite = [ "libsqlite3-sys" ]
 tls = [ "async-native-tls" ]
@@ -59,8 +60,8 @@ sha2 = { version = "0.8.1", default-features = false, optional = true }
 tokio = { version = "0.2", default-features = false, features = [ "dns", "fs", "time", "tcp" ], optional = true }
 url = { version = "2.1.1", default-features = false }
 uuid = { version = "0.8.1", default-features = false, optional = true, features = [ "std" ] }
-serde = { version = "1.0", features = [ "derive" ] }
-serde_json = { version = "1.0" }
+serde = { version = "1.0", features = [ "derive" ], optional = true }
+serde_json = { version = "1.0", features = [ "raw_value" ], optional = true }
 
 async-trait = "0.1.31"
 
@@ -70,3 +71,4 @@ version = "0.17.1"
 optional = true
 default-features = false
 features = [ "pkg-config", "vcpkg", "bundled" ]
+
