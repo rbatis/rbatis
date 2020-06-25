@@ -236,28 +236,3 @@ pub fn test_hyper() {
         server.await.unwrap();
     });
 }
-
-
-pub trait Encode<DBType>{
-    fn en(&self)-> &'static str;
-}
-
-impl Encode<i32> for i32{
-    fn en(&self) ->  &'static str {
-        return "i32";
-    }
-}
-
-impl Encode<String> for i32{
-    fn en(&self) -> &'static str {
-        return "i32";
-    }
-
-}
-
-
-#[test]
-pub fn test_encode(){
-     let a=32;
-    println!("{:?}",Encode::<String>::en(&a));
-}
