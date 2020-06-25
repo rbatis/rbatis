@@ -10,7 +10,6 @@ use crate::postgres::{PgConnection, PgCursor, PgPool, Postgres};
 use crate::query::{Query, query};
 use crate::sqlite::{Sqlite, SqliteConnection, SqliteCursor, SqlitePool};
 use crate::transaction::Transaction;
-use futures_core::future::BoxFuture;
 use crate::cursor::Cursor;
 use serde::de::DeserializeOwned;
 
@@ -25,9 +24,9 @@ pub enum DriverType {
 #[derive(Debug)]
 pub struct DBPool {
     pub driver_type: DriverType,
-    pub mysql: Option<crate::mysql::MySqlPool>,
-    pub postgres: Option<crate::postgres::PgPool>,
-    pub sqlite: Option<crate::sqlite::SqlitePool>,
+    pub mysql: Option<MySqlPool>,
+    pub postgres: Option<PgPool>,
+    pub sqlite: Option<SqlitePool>,
 }
 
 
@@ -172,20 +171,20 @@ impl DBPool {
 
 pub struct DBType {
     pub driver_type: DriverType,
-    pub mysql: Option<crate::mysql::MySql>,
-    pub postgres: Option<crate::postgres::Postgres>,
-    pub sqlite: Option<crate::sqlite::Sqlite>,
+    pub mysql: Option<MySql>,
+    pub postgres: Option<Postgres>,
+    pub sqlite: Option<Sqlite>,
 }
 
 pub struct DBConnection {
     pub driver_type: DriverType,
-    pub mysql: Option<crate::mysql::MySqlConnection>,
-    pub postgres: Option<crate::postgres::PgConnection>,
-    pub sqlite: Option<crate::sqlite::SqliteConnection>,
+    pub mysql: Option<MySqlConnection>,
+    pub postgres: Option<PgConnection>,
+    pub sqlite: Option<SqliteConnection>,
 }
 
 impl DBConnection {
-    pub fn new_my(arg: crate::mysql::MySqlConnection) -> Self {
+    pub fn new_my(arg: MySqlConnection) -> Self {
         Self {
             driver_type: DriverType::Mysql,
             mysql: Some(arg),
