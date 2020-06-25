@@ -145,28 +145,28 @@ impl<'c> RawValue<'c> for SqliteValue<'c> {
         let type_string = type_string.unwrap();
         return match type_string {
             SqliteType::Text => {
-                let r = String::decode(self.clone());
+                let r:crate::Result<String> = Decode::<'_,Sqlite>::decode(self.clone());
                 if r.is_err() {
                     return Err(r.err().unwrap().to_string());
                 }
                 Ok(serde_json::Value::from(r.unwrap()))
             },
             SqliteType::Boolean => {
-                let r = bool::decode(self.clone());
+                let r:crate::Result<bool> = Decode::<'_,Sqlite>::decode(self.clone());
                 if r.is_err() {
                     return Err(r.err().unwrap().to_string());
                 }
                 Ok(serde_json::Value::from(r.unwrap()))
             },
             SqliteType::Integer => {
-                let r = i64::decode(self.clone());
+                let r:crate::Result<i64> = Decode::<'_,Sqlite>::decode(self.clone());
                 if r.is_err() {
                     return Err(r.err().unwrap().to_string());
                 }
                 Ok(serde_json::Value::from(r.unwrap()))
             },
             SqliteType::Float => {
-                let r = f64::decode(self.clone());
+                let r:crate::Result<f64> = Decode::<'_,Sqlite>::decode(self.clone());
                 if r.is_err() {
                     return Err(r.err().unwrap().to_string());
                 }
