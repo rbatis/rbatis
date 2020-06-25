@@ -10,15 +10,14 @@ license = "MIT"
 [workspace]
 
 members=[
- "example"
+ "example",
+ "rbatis-core"
 ]
-
-
 
 [features]
 
 [dependencies]
-rbatis-core = { version = "0.0.1", path = "rbatis-core", default-features = false , features = ["runtime-async-std","mysql","all-type"]}
+rbatis-core = { path = "rbatis-core", default-features = false , features = ["runtime-async-std","mysql","all-type"]}
 chrono = { version = "0.4", features = ["serde"] }
 xml-rs = "0.8"
 lazy_static = "1.4.0"

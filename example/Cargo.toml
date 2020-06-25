@@ -30,7 +30,7 @@ async-std = {version="1.3.0",features = ["attributes"] }
 tokio = { version = "0.2", features = ["full"] }
 
 
-rbatis-core = { version = "0.0.1", path = "../rbatis-core", default-features = false , features = ["runtime-async-std","mysql","all-type"]}
+rbatis-core = { path = "../rbatis-core", default-features = false , features = ["runtime-async-std","mysql","all-type"]}
 chrono = { version = "0.4", features = ["serde"] }
 lazy_static = "1.4.0"
 rbatis = {path = "../"}
