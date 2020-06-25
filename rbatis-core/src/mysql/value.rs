@@ -2,7 +2,9 @@ use crate::error::UnexpectedNullError;
 use crate::mysql::{MySql, MySqlTypeInfo};
 use crate::value::RawValue;
 use crate::decode::Decode;
+use crate::encode::Encode;
 use crate::types::BigDecimal;
+
 
 #[derive(Debug, Copy, Clone)]
 pub enum MySqlData<'c> {
@@ -71,112 +73,112 @@ impl<'c> RawValue<'c> for MySqlValue<'c> {
         match type_string.as_str() {
             "NULL" => return Ok(serde_json::Value::Null),
             "NEWDECIMAL" => {
-                let r = BigDecimal::decode(self.clone());
+                let r:crate::Result<BigDecimal> = Decode::<'_,MySql>::decode(self.clone());
                 if r.is_err() {
                     return Err(r.err().unwrap().to_string());
                 }
                 return Ok(serde_json::Value::from(r.unwrap().to_string()));
             }
             "BIGINT UNSIGNED" => {
-                let r = u64::decode(self.clone());
+                let r:crate::Result<u64> = Decode::<'_,MySql>::decode(self.clone());
                 if r.is_err() {
                     return Err(r.err().unwrap().to_string());
                 }
                 return Ok(serde_json::Value::from(r.unwrap()));
             }
             "BIGINT" => {
-                let r = i64::decode(self.clone());
+                let r:crate::Result<i64> = Decode::<'_,MySql>::decode(self.clone());
                 if r.is_err() {
                     return Err(r.err().unwrap().to_string());
                 }
                 return Ok(serde_json::Value::from(r.unwrap()));
             }
             "INT UNSIGNED" => {
-                let r = u32::decode(self.clone());
+                let r:crate::Result<u32> = Decode::<'_,MySql>::decode(self.clone());
                 if r.is_err() {
                     return Err(r.err().unwrap().to_string());
                 }
                 return Ok(serde_json::Value::from(r.unwrap()));
             }
             "INT" => {
-                let r = i32::decode(self.clone());
+                let r:crate::Result<i32> = Decode::<'_,MySql>::decode(self.clone());
                 if r.is_err() {
                     return Err(r.err().unwrap().to_string());
                 }
                 return Ok(serde_json::Value::from(r.unwrap()));
             }
             "SMALLINT" => {
-                let r = i16::decode(self.clone());
+                let r:crate::Result<i16> = Decode::<'_,MySql>::decode(self.clone());
                 if r.is_err() {
                     return Err(r.err().unwrap().to_string());
                 }
                 return Ok(serde_json::Value::from(r.unwrap()));
             }
             "SMALLINT UNSIGNED" => {
-                let r = u16::decode(self.clone());
+                let r:crate::Result<u16> = Decode::<'_,MySql>::decode(self.clone());
                 if r.is_err() {
                     return Err(r.err().unwrap().to_string());
                 }
                 return Ok(serde_json::Value::from(r.unwrap()));
             }
             "TINYINT UNSIGNED" => {
-                let r = u8::decode(self.clone());
+                let r:crate::Result<u8> = Decode::<'_,MySql>::decode(self.clone());
                 if r.is_err() {
                     return Err(r.err().unwrap().to_string());
                 }
                 return Ok(serde_json::Value::from(r.unwrap()));
             }
             "TINYINT" => {
-                let r = i8::decode(self.clone());
+                let r:crate::Result<i8> = Decode::<'_,MySql>::decode(self.clone());
                 if r.is_err() {
                     return Err(r.err().unwrap().to_string());
                 }
                 return Ok(serde_json::Value::from(r.unwrap()));
             }
             "FLOAT" => {
-                let r = f64::decode(self.clone());
+                let r:crate::Result<f32> = Decode::<'_,MySql>::decode(self.clone());
                 if r.is_err() {
                     return Err(r.err().unwrap().to_string());
                 }
                 return Ok(serde_json::Value::from(r.unwrap()));
             }
             "DOUBLE" => {
-                let r = f64::decode(self.clone());
+                let r:crate::Result<f64> = Decode::<'_,MySql>::decode(self.clone());
                 if r.is_err() {
                     return Err(r.err().unwrap().to_string());
                 }
                 return Ok(serde_json::Value::from(r.unwrap()));
             }
             "BINARY" | "VARBINARY" | "BLOB" | "CHAR" | "VARCHAR" | "TEXT" => {
-                let r = String::decode(self.clone());
+                let r:crate::Result<String> = Decode::<'_,MySql>::decode(self.clone());
                 if r.is_err() {
                     return Err(r.err().unwrap().to_string());
                 }
                 return Ok(serde_json::Value::from(r.unwrap()));
             }
             "DATE" => {
-                let r = chrono::NaiveDate::decode(self.clone());
+                let r:crate::Result<chrono::NaiveDate> = Decode::<'_,MySql>::decode(self.clone());
                 if r.is_err() {
                     return Err(r.err().unwrap().to_string());
                 }
                 return Ok(serde_json::Value::from(r.unwrap().to_string()));
             }
             "TIME"  => {
-                let r = chrono::NaiveTime::decode(self.clone());
+                let r:crate::Result<chrono::NaiveTime> = Decode::<'_,MySql>::decode(self.clone());
                 if r.is_err() {
                     return Err(r.err().unwrap().to_string());
                 }
                 return Ok(serde_json::Value::from(r.unwrap().to_string()));
             }
             "DATETIME"  => {
-                let r = chrono::DateTime::<chrono::Utc>::decode(self.clone());
+                let r:crate::Result<chrono::DateTime<chrono::Utc>> = Decode::<'_,MySql>::decode(self.clone());
                 if r.is_err() {
                     return Err(r.err().unwrap().to_string());
                 }
                 return Ok(serde_json::Value::from(r.unwrap().to_string()));
             }
             "TIMESTAMP" => {
-                let r = chrono::DateTime::<chrono::Utc>::decode(self.clone());
+                let r:crate::Result<chrono::DateTime::<chrono::Utc>> = Decode::<'_,MySql>::decode(self.clone());
                 if r.is_err() {
                     return Err(r.err().unwrap().to_string());
                 }
