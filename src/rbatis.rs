@@ -88,6 +88,7 @@ impl<'r> Rbatis<'r> {
             return Err(rbatis_core::Error::from("[rbatis] tx_id can not be empty"));
         }
         let conn = self.get_pool()?.begin().await?;
+        //send tx to context
         self.context_tx.put(tx_id, conn).await;
         return Ok(1);
     }
@@ -133,6 +134,7 @@ impl<'r> Rbatis<'r> {
             let c = conn.fetch(sql);
             if c.is_err() {
                 let e = c.err().unwrap();
+                //send tx back to context
                 self.context_tx.put(tx_id, conn).await;
                 return Err(e);
             }
@@ -140,9 +142,11 @@ impl<'r> Rbatis<'r> {
             let json = c.fetch_json().await;
             if json.is_err() {
                 let e = json.err().unwrap();
+                //send tx back to context
                 self.context_tx.put(tx_id, conn).await;
                 return Err(e);
             }
+            //send tx back to context
             self.context_tx.put(tx_id, conn).await;
             let json = json.unwrap();
             fetch_num = json.len();
@@ -162,6 +166,7 @@ impl<'r> Rbatis<'r> {
         } else {
             let mut conn = self.get_tx(tx_id).await?;
             let result = conn.execute(sql).await;
+            //send tx back to context
             self.context_tx.put(tx_id, conn).await;
             if result.is_err() {
                 return Err(result.err().unwrap());
@@ -207,7 +212,8 @@ impl<'r> Rbatis<'r> {
             let q: DBQuery = self.bind_arg(sql, arg);
             let c = conn.fetch_parperd(q);
             if c.is_err() {
-                let e = c.err().unwrap().into();
+                let e = c.err().unwrap();
+                //send tx back to context
                 self.context_tx.put(tx_id, conn).await;
                 return Err(e);
             }
@@ -215,9 +221,11 @@ impl<'r> Rbatis<'r> {
             let json = c.fetch_json().await;
             if json.is_err() {
                 let e = json.err().unwrap();
+                //send tx back to context
                 self.context_tx.put(tx_id, conn).await;
                 return Err(e);
             }
+            //send tx back to context
             self.context_tx.put(tx_id, conn).await;
             let json = json.unwrap();
             return_num = json.len();
@@ -240,6 +248,7 @@ impl<'r> Rbatis<'r> {
             let mut conn = self.get_tx(tx_id).await?;
             let q: DBQuery = self.bind_arg(sql, arg);
             result = conn.execute_parperd(q).await;
+            //send tx back to context
             self.context_tx.put(tx_id, conn).await;
         }
         if result.is_ok() {
