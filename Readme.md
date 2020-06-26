@@ -59,61 +59,8 @@ rbatis = "1.1.2"
  }
 ```
 
-##### xml代码Example
-``` xml
-<mapper>
-    <result_map id="BaseResultMap">
-        <id column="id" property="id"/>
-        <result column="name" property="name" lang_type="string"/>
-        <result column="pc_link" property="pcLink" lang_type="string"/>
-        <result column="h5_link" property="h5Link" lang_type="string"/>
-        <result column="remark" property="remark" lang_type="string"/>
-        <result column="version" property="version" lang_type="number" version_enable="true"/>
-        <result column="create_time" property="createTime" lang_type="time"/>
-        <result column="delete_flag" property="deleteFlag" lang_type="number" logic_enable="true" logic_undelete="1" logic_deleted="0"/>
-    </result_map>
-    <select id="select_by_condition" result_map="BaseResultMap">
-            <bind name="pattern" value="'%' + name + '%'"/>
-            select * from biz_activity
-            <where>
-                <if test="name != null">and name like #{pattern}</if>
-                <if test="startTime != null">and create_time >= #{startTime}</if>
-                <if test="endTime != null">and create_time &lt;= #{endTime}</if>
-            </where>
-            order by create_time desc
-            <if test="page != null and size != null">limit #{page}, #{size}</if>
-        </select>
-</mapper>
-``` 
-#### 简单使用
-``` rust
-
-fn main()  {
-      async_std::task::block_on(async move {
-           fast_log::log::init_log("requests.log", &RuntimeType::Std).unwrap();
-           let rb = Rbatis::new(MYSQL_URL).await.unwrap();
-           let py = r#"
-       SELECT * FROM biz_activity
-       WHERE delete_flag = #{delete_flag}
-       if name != null:
-         AND name like #{name+'%'}
-       if ids != null:
-         AND id in (
-         trim ',':
-            for item in ids:
-              #{item},
-         )"#;
-           let data: serde_json::Value = rb.py_fetch("", py, &json!({   "delete_flag": 1 })).await.unwrap();
-           println!("{}", data);
-       });
-}
-```
-
-
 #### xml使用方法
 ``` rust
-use crate::core::rbatis::Rbatis;
-use serde_json::{json, Value, Number};
 /**
 * 数据库表模型
 */
@@ -121,27 +68,74 @@ use serde_json::{json, Value, Number};
 pub struct Activity {
     pub id: Option<String>,
     pub name: Option<String>,
+    pub pc_link: Option<String>,
+    pub h5_link: Option<String>,
+    pub pc_banner_img: Option<String>,
+    pub h5_banner_img: Option<String>,
+    pub sort: Option<String>,
+    pub status: Option<i32>,
+    pub remark: Option<String>,
+    pub create_time: Option<DateTime<chrono::Utc>>,
     pub version: Option<i32>,
+    pub delete_flag: Option<i32>,
 }
-
 fn main() {
- fast_log::log::init_log("requests.log").unwrap();//1 启用日志(可选，不添加则不加载日志库)
- let mut rb = Rbatis::new("mysql://root:TEST@localhost:3306/test").await.unwrap();//2 初始化rbatis
-rb.load_xml("Example_ActivityMapper.xml".to_string(),fs::read_to_string("./src/example/Example_ActivityMapper.xml").unwrap());//4 加载xml配置
-let data_result: Vec<Activity> =rbatis.eval("".to_string(), "select_by_condition", &json!({
-       "name":null,
-       "startTime":null,
-       "endTime":null,
-       "page":null,
-       "size":null,
-    })).unwrap();
-println!("[rbatis] result==> {:?}",data_result);
+    async_std::task::block_on(
+           async move {
+               fast_log::log::init_log("requests.log", &RuntimeType::Std).unwrap();
+               let mut rb = Rbatis::new();
+               rb.link(MYSQL_URL).await.unwrap();
+               //xml数据建议以 XXMapper.xml 的格式存储管理
+               rb.load_xml("test", r#"<?xml version="1.0" encoding="UTF-8"?>
+   <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+           "https://raw.githubusercontent.com/zhuxiujia/Rbatis/master/rbatis-mapper.dtd">
+   <mapper>
+       <result_map id="BaseResultMap" table="biz_activity">
+           <id column="id"/>
+           <result column="name" lang_type="string"/>
+           <result column="pc_link" lang_type="string"/>
+           <result column="h5_link" lang_type="string"/>
+           <result column="pc_banner_img" lang_type="string"/>
+           <result column="h5_banner_img" lang_type="string"/>
+           <result column="sort" lang_type="string"/>
+           <result column="status" lang_type="number"/>
+           <result column="remark" lang_type="string"/>
+           <result column="version" lang_type="number" version_enable="true"/>
+           <result column="create_time" lang_type="time"/>
+           <result column="delete_flag" lang_type="number" logic_enable="true" logic_undelete="1"
+                   logic_deleted="0"/>
+       </result_map>
+       <select id="select_by_condition">
+           <bind name="pattern" value="'%' + name + '%'"/>
+           select * from biz_activity
+           <where>
+               <if test="name != null">and name like #{pattern}</if>
+               <if test="startTime != null">and create_time >= #{startTime}</if>
+               <if test="endTime != null">and create_time &lt;= #{endTime}</if>
+           </where>
+           order by create_time desc
+           <if test="page != null and size != null">limit #{page}, #{size}</if>
+       </select>
+   </mapper>"#).unwrap();
+   
+               let arg = &json!({
+               "delete_flag": 1,
+               "name": "test",
+               "startTime": null,
+               "endTime": null,
+               "page": 0,
+               "size": 20
+               });
+               let data: Vec<Activity> = rb.xml_fetch("", "test", "select_by_condition", arg).await.unwrap();
+               println!("{}", serde_json::to_string(&data).unwrap_or("".to_string()));
+           }
+       )
 }
 //输出结果
-//2020-01-10T10:28:54.437167+08:00 INFO rbatis::core::rbatis - [rbatis] Query ==>  Example_ActivityMapper.xml.select_by_condition: select * from biz_activity  order by create_time desc
-//2020-01-10T10:28:54.437306+08:00 INFO rbatis::core::rbatis - [rbatis][args] ==>  Example_ActivityMapper.xml.select_by_condition: 
-//2020-01-10T10:28:54.552097+08:00 INFO rbatis::core::rbatis - [rbatis] ReturnRows <== 2
-//[rbatis] result==> [Activity { id: Some("\"dfbdd779-5f70-4b8f-9921-a235a9c75b69\""), name: Some("\"新人专享\""), version: Some(6) }, Activity { id: Some("\"dfbdd779-5f70-4b8f-9921-c235a9c75b69\""), name: Some("\"新人专享\""), version: Some(6) }]
+//2020-06-27T03:13:40.422307200+08:00 INFO rbatis::rbatis - [rbatis] >> fetch sql: select * from biz_activity where name like  ? order by create_time desc limit  ? ,  ?   (src\rbatis.rs:198)
+//2020-06-27T03:13:40.424307300+08:00 INFO rbatis::rbatis - [rbatis] >> fetch arg:["%test%",0,20]  (src\rbatis.rs:199)
+//2020-06-27T03:13:40.446308900+08:00 INFO rbatis::rbatis - [rbatis] << 4  (src\rbatis.rs:234)
+//[{"id":"221","name":"test","pc_link":"","h5_link":"","pc_banner_img":null,"h5_banner_img":null,"sort":"0","status":0,"remark":"","create_time":"2020-06-17T20:10:23Z","version":0,"delete_flag":1},{"id":"222","name":"test","pc_link":"","h5_link":"","pc_banner_img":null,"h5_banner_img":null,"sort":"0","status":0,"remark":"","create_time":"2020-06-17T20:10:23Z","version":0,"delete_flag":1},{"id":"223","name":"test","pc_link":"","h5_link":"","pc_banner_img":null,"h5_banner_img":null,"sort":"0","status":0,"remark":"","create_time":"2020-06-17T20:10:23Z","version":0,"delete_flag":1},{"id":"178","name":"test_insret","pc_link":"","h5_link":"","pc_banner_img":null,"h5_banner_img":null,"sort":"1","status":1,"remark":"","create_time":"2020-06-17T20:08:13Z","version":0,"delete_flag":1}]
 ```
 
 #### 事务支持
