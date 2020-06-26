@@ -16,8 +16,9 @@ members=[
 
 [features]
 
+
 [dependencies]
-rbatis-core = { version = "0.0.3", path = "rbatis-core", default-features = false , features = ["all","runtime-async-std"]}
+rbatis-core = { version = "0.0.3", path = "rbatis-core", default-features = false , features = ["all"]}
 chrono = { version = "0.4", features = ["serde"] }
 xml-rs = "0.8"
 lazy_static = "1.4.0"
