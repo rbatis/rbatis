@@ -2,7 +2,6 @@ use crate::error::UnexpectedNullError;
 use crate::mysql::{MySql, MySqlTypeInfo};
 use crate::value::RawValue;
 use crate::decode::Decode;
-use crate::encode::Encode;
 use crate::types::BigDecimal;
 use crate::Result;
 

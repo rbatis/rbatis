@@ -1,7 +1,3 @@
-use std::borrow::BorrowMut;
-use std::ops::{Deref, DerefMut};
-
-use crate::connection::Connect;
 use crate::Error;
 use crate::executor::Executor;
 use crate::mysql::{MySql, MySqlConnection, MySqlCursor, MySqlPool};
@@ -60,7 +56,7 @@ impl DBPool {
                 return Err(Error::from("un init DBPool!"));
             }
             &DriverType::Mysql => {
-                let mut q: Query<'s, MySql> = query(sql);
+                let q: Query<MySql> = query(sql);
                 return Ok(DBQuery {
                     driver_type: DriverType::Mysql,
                     mysql: Some(q),
@@ -69,7 +65,7 @@ impl DBPool {
                 });
             }
             &DriverType::Postgres => {
-                let mut q: Query<Postgres> = query(sql);
+                let q: Query<Postgres> = query(sql);
                 return Ok(DBQuery {
                     driver_type: DriverType::Postgres,
                     mysql: None,
@@ -78,16 +74,13 @@ impl DBPool {
                 });
             }
             &DriverType::Sqlite => {
-                let mut q: Query<Sqlite> = query(sql);
+                let q: Query<Sqlite> = query(sql);
                 return Ok(DBQuery {
                     driver_type: DriverType::Sqlite,
                     mysql: None,
                     postgres: None,
                     sqlite: Some(q),
                 });
-            }
-            _ => {
-                return Err(Error::from("unsupport driver type!"));
             }
         }
     }
@@ -126,9 +119,6 @@ impl DBPool {
                     sqlite: Some(conn),
                 });
             }
-            _ => {
-                return Err(Error::from("unsupport driver type!"));
-            }
         }
     }
 
@@ -160,10 +150,6 @@ impl DBPool {
                     postgres: None,
                     sqlite: Some(self.sqlite.as_ref().unwrap().begin().await?),
                 })
-            }
-
-            _ => {
-                return Err(Error::from("unsupport driver type!"));
             }
         }
     }
@@ -239,9 +225,6 @@ impl<'q> DBQuery<'q> {
                 q = q.bind(t);
                 self.sqlite = Some(q);
             }
-            _ => {
-                return Err(Error::from("unsupport driver type!"));
-            }
         }
         return Ok(());
     }
@@ -289,9 +272,6 @@ impl DBPoolConn {
                     sqlite: Some(data),
                 });
             }
-            _ => {
-                return Err(Error::from("unsupport driver type!"));
-            }
         }
     }
 
@@ -311,9 +291,6 @@ impl DBPoolConn {
             &DriverType::Sqlite => {
                 let data = self.sqlite.as_mut().unwrap().execute(sql).await?;
                 return Ok(data);
-            }
-            _ => {
-                return Err(Error::from("unsupport driver type!"));
             }
         }
     }
@@ -350,9 +327,6 @@ impl DBPoolConn {
                     sqlite: Some(data),
                 });
             }
-            _ => {
-                return Err(Error::from("unsupport driver type!"));
-            }
         }
     }
 
@@ -372,9 +346,6 @@ impl DBPoolConn {
             &DriverType::Sqlite => {
                 let data = self.sqlite.as_mut().unwrap().execute(sql.sqlite.unwrap()).await?;
                 return Ok(data);
-            }
-            _ => {
-                return Err(Error::from("unsupport driver type!"));
             }
         }
     }
@@ -406,9 +377,6 @@ impl <'c, 'q>DBCursor<'c, 'q> {
             &DriverType::Sqlite => {
                 let data = self.sqlite.as_mut().unwrap().decode_json().await?;
                 return Ok(data);
-            }
-            _ => {
-                return Err(Error::from("unsupport driver type!"));
             }
         }
     }
@@ -455,10 +423,6 @@ impl DBTx {
                     sqlite: Some(data),
                 })
             }
-
-            _ => {
-                return Err(Error::from("unsupport driver type!"));
-            }
         }
     }
 
@@ -493,10 +457,6 @@ impl DBTx {
                     postgres: None,
                     sqlite: Some(data),
                 })
-            }
-
-            _ => {
-                return Err(Error::from("unsupport driver type!"));
             }
         }
     }
@@ -537,9 +497,6 @@ impl DBTx {
                     sqlite: Some(data),
                 });
             }
-            _ => {
-                return Err(Error::from("unsupport driver type!"));
-            }
         }
     }
 
@@ -559,9 +516,6 @@ impl DBTx {
             &DriverType::Sqlite => {
                 let data = self.sqlite.as_mut().unwrap().execute(sql).await?;
                 return Ok(data);
-            }
-            _ => {
-                return Err(Error::from("unsupport driver type!"));
             }
         }
     }
@@ -598,9 +552,6 @@ impl DBTx {
                     sqlite: Some(data),
                 });
             }
-            _ => {
-                return Err(Error::from("unsupport driver type!"));
-            }
         }
     }
 
@@ -620,9 +571,6 @@ impl DBTx {
             &DriverType::Sqlite => {
                 let data = self.sqlite.as_mut().unwrap().execute(sql.sqlite.unwrap()).await?;
                 return Ok(data);
-            }
-            _ => {
-                return Err(Error::from("unsupport driver type!"));
             }
         }
     }

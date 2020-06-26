@@ -13,7 +13,6 @@ use crate::sqlite::statement::Statement;
 use crate::sqlite::type_info::SqliteType;
 use crate::sqlite::{Sqlite, SqliteTypeInfo};
 use crate::value::RawValue;
-use serde_json::Value;
 use crate::decode::Decode;
 use crate::Result;
 
@@ -176,7 +175,6 @@ impl<'c> RawValue<'c> for SqliteValue<'c> {
             SqliteType::Blob => {
                 unimplemented!()
             }
-            _ => Err(crate::Error::from(format!("un support database type for:{:?}!", type_string))),
         }
     }
 }
