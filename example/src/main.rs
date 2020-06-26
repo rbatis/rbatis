@@ -160,6 +160,7 @@ pub fn test_xml_sql() {
             fast_log::log::init_log("requests.log", &RuntimeType::Std).unwrap();
             let mut rb = Rbatis::new();
             rb.link(MYSQL_URL).await.unwrap();
+            //xml数据建议以 XXMapper.xml 的格式存储管理
             rb.load_xml("test", r#"<?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
         "https://raw.githubusercontent.com/zhuxiujia/Rbatis/master/rbatis-mapper.dtd">
