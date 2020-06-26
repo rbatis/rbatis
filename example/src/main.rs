@@ -122,7 +122,7 @@ pub fn test_prepare_sql() {
             rb.link(MYSQL_URL).await.unwrap();
             let arg = &vec![json!(1), json!("test%")];
             let r: Vec<Activity> = rb.fetch_prepare("", "SELECT * FROM biz_activity WHERE delete_flag =  ? AND name like ?", arg).await.unwrap();
-            println!("done:{:?}", r);
+            println!("done:{}", serde_json::to_string(&r).unwrap_or(String::new()));
         }
     );
 }
@@ -201,7 +201,7 @@ pub fn test_xml_sql() {
             "size": 20
             });
             let data: Vec<Activity> = rb.xml_fetch("", "test", "select_by_condition", arg).await.unwrap();
-            println!("{:?}", data);
+            println!("{}", serde_json::to_string(&data).unwrap_or("".to_string()));
         }
     )
 }
