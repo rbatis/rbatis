@@ -360,6 +360,8 @@ pub struct DBCursor<'c, 'q> {
 }
 
 impl <'c, 'q>DBCursor<'c, 'q> {
+
+    /// fetch json and decode json into Type
     pub async fn decode_json<T>(&mut self) -> Result<T, crate::Error>
         where T: DeserializeOwned {
         match &self.driver_type {
@@ -381,6 +383,7 @@ impl <'c, 'q>DBCursor<'c, 'q> {
         }
     }
 
+    /// only fetch json
     pub async fn fetch_json(&mut self) -> Result<Vec<serde_json::Value>, crate::Error>{
         match &self.driver_type {
             &DriverType::None => {
