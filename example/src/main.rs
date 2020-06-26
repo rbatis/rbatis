@@ -67,7 +67,6 @@ pub fn test_use_driver() {
         async move {
             fast_log::log::init_log("requests.log", &RuntimeType::Std).unwrap();
             let pool = MySqlPool::new(MYSQL_URL).await.unwrap();
-            //pooledConn 交由rbatis上下文管理
             let mut conn = pool.acquire().await.unwrap();
             let mut c = conn.fetch("SELECT count(1) FROM biz_activity;");
             let r: serde_json::Value = c.decode_json().await.unwrap();
