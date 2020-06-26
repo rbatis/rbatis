@@ -245,18 +245,17 @@ pub async fn test_hyper(){
 
 
 ### 常见问题
-* async await支持？
+* async await支持？<br/>
 已同时支持async_std和tokio
-* postgres 的stmt使用$1,$2而不是mysql的?,那么是否需要特殊处理？
-
+* postgres 的stmt使用$1,$2而不是mysql的?,那么是否需要特殊处理？<br/>
 不需要，因为rbatis旗下 rbatis_driver 已经处理了 ? -> $1的转换，你只需要在sql中写?即可。
-* oracle数据库驱动支持？
+* oracle数据库驱动支持？<br/>
 不支持，应该坚持去IOE
 
-* 直接使用驱动依赖项目里哪个库？
+* 直接使用驱动依赖项目里哪个库？<br/>
 应该使用rbatis-core， Cargo.toml 加入 rbatis-core = "*"
 
-* 如何选择运行时是tokio还是async_std？
+* 如何选择运行时是tokio还是async_std？<br/>
 ```rust
 # Cargo.toml 加入 
 rbatis-core = { features = ["runtime-async-std","all-type"]}
