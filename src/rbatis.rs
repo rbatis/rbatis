@@ -16,7 +16,7 @@ use rbatis_core::query_as::query_as;
 use rbatis_core::sync_map::SyncMap;
 use rbatis_core::transaction::Transaction;
 
-use crate::ast::ast::RbatisSqlAST;
+use crate::ast::ast::RbatisAST;
 use crate::ast::lang::py::Py;
 use crate::ast::lang::xml::Xml;
 use crate::ast::node::delete_node::DeleteNode;

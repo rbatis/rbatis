@@ -2,7 +2,7 @@ use std::collections::HashMap;
 
 use serde_json::{json, Map, Value};
 
-use crate::ast::ast::RbatisSqlAST;
+use crate::ast::ast::RbatisAST;
 use crate::ast::node::node::{create_deep, do_child_nodes, print_child, SqlNodePrint};
 use crate::ast::node::node_type::NodeType;
 use crate::ast::node::string_node::StringNode;
@@ -21,7 +21,7 @@ pub struct ForEachNode {
     pub separator: String,
 }
 
-impl RbatisSqlAST for ForEachNode {
+impl RbatisAST for ForEachNode {
     fn eval(&self, convert: &impl StmtConvert, env: &mut Value, engine: &RbatisEngine, arg_array: &mut Vec<Value>) -> Result<String, rbatis_core::Error> {
         let mut result = String::new();
 

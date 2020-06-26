@@ -1,6 +1,6 @@
 use serde_json::{json, Value};
 
-use crate::ast::ast::RbatisSqlAST;
+use crate::ast::ast::RbatisAST;
 use crate::ast::node::bind_node::BindNode;
 use crate::ast::node::choose_node::ChooseNode;
 use crate::ast::node::delete_node::DeleteNode;
@@ -67,7 +67,7 @@ impl NodeType {
     }
 }
 
-impl<'a> RbatisSqlAST for NodeType {
+impl<'a> RbatisAST for NodeType {
     fn eval(&self, convert: &impl StmtConvert, env: &mut Value, engine: &RbatisEngine, arg_array: &mut Vec<Value>) -> Result<String, rbatis_core::Error> {
         match self {
             NodeType::NResultMapIdNode(node) => return node.eval(convert, env, engine, arg_array),

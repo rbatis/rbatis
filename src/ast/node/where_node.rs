@@ -1,6 +1,6 @@
 use serde_json::{json, Value};
 
-use crate::ast::ast::RbatisSqlAST;
+use crate::ast::ast::RbatisAST;
 use crate::ast::node::node::{create_deep, do_child_nodes, print_child, SqlNodePrint};
 use crate::ast::node::node_type::NodeType;
 use crate::convert::stmt_convert::StmtConvert;
@@ -11,7 +11,7 @@ pub struct WhereNode {
     pub childs: Vec<NodeType>,
 }
 
-impl RbatisSqlAST for WhereNode {
+impl RbatisAST for WhereNode {
     fn eval(&self, convert: &impl StmtConvert, env: &mut Value, engine: &RbatisEngine, arg_array: &mut Vec<Value>) -> Result<String, rbatis_core::Error> {
         let result = do_child_nodes(convert, &self.childs, env, engine, arg_array)?;
         let s = result.trim();
