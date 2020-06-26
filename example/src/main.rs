@@ -1,4 +1,9 @@
-pub mod activity;
+#![allow(unused_imports)]
+#![allow(unreachable_patterns)]
+#![allow(unused_variables)]
+#![allow(unused_assignments)]
+#![allow(unused_must_use)]
+#![allow(dead_code)]
 
 #[macro_use]
 extern crate lazy_static;
@@ -11,9 +16,27 @@ use fast_log::log::RuntimeType;
 use log::{info};
 use serde_json::{json, Value};
 use tide::Request;
-use crate::activity::Activity;
 use rbatis::rbatis::Rbatis;
 use rbatis_core::db::DBPool;
+use chrono::DateTime;
+use serde::{Deserialize, Serialize};
+
+///数据库表模型,支持BigDecimal ,DateTime ,rust基本类型（int,float,uint,string,Vec,Array）
+#[derive(Serialize, Deserialize, Clone, Debug)]
+pub struct Activity {
+    pub id: Option<String>,
+    pub name: Option<String>,
+    pub pc_link: Option<String>,
+    pub h5_link: Option<String>,
+    pub pc_banner_img: Option<String>,
+    pub h5_banner_img: Option<String>,
+    pub sort: Option<String>,
+    pub status: Option<i32>,
+    pub remark: Option<String>,
+    pub create_time: Option<DateTime<chrono::Utc>>,
+    pub version: Option<i32>,
+    pub delete_flag: Option<i32>,
+}
 
 //示例 mysql 链接地址
 pub const MYSQL_URL: &'static str = "mysql://root:123456@localhost:3306/test";
@@ -29,8 +52,36 @@ lazy_static! {
   };
 }
 
+//初始化Tokio运行时
+lazy_static! {
+ static ref RT:Mutex<tokio::runtime::Runtime> = Mutex::new(tokio::runtime::Builder::new()
+        .basic_scheduler()
+        .enable_all()
+        .build()
+        .unwrap());
+}
+
+
+//启动web服务，并且对表执行 count统计
 fn main() {
-    println!("Hello, world!");
+    async_std::task::block_on(async {
+        fast_log::log::init_log("requests.log", &RuntimeType::Std).unwrap();
+        let mut app = tide::new();
+        app.at("/").get(|_: Request<()>| async move {
+            // println!("accept req[{} /test] arg: {:?}",req.url().to_string(),a);
+            let v = RB.fetch("", "SELECT count(1) FROM biz_activity;").await;
+            if v.is_ok() {
+                let data: Value = v.unwrap();
+                Ok(data.to_string())
+            } else {
+                Ok(v.err().unwrap().to_string())
+            }
+        });
+        //app.at("/").get(|_| async { Ok("Hello, world!") });
+        let addr = "0.0.0.0:8000";
+        println!("http server listen on {}", addr);
+        app.listen(addr).await.unwrap();
+    });
 }
 
 
@@ -177,15 +228,6 @@ pub fn test_tide() {
     });
 }
 
-
-//初始化Tokio运行时
-lazy_static! {
- static ref RT:Mutex<tokio::runtime::Runtime> = Mutex::new(tokio::runtime::Builder::new()
-        .basic_scheduler()
-        .enable_all()
-        .build()
-        .unwrap());
-}
 
 async fn hello(_: hyper::Request<hyper::Body>) -> Result<hyper::Response<hyper::Body>, Infallible> {
     let v = RB.fetch("", "SELECT count(1) FROM biz_activity;").await;
