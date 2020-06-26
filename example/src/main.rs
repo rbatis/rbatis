@@ -35,6 +35,7 @@ use rbatis::rbatis::Rbatis;
 //示例 mysql 链接地址
 pub const MYSQL_URL: &'static str = "mysql://root:123456@localhost:3306/test";
 
+/// 示例-Rbatis示例初始化
 lazy_static! {
   static ref RB:Rbatis<'static>={
          let r=Rbatis::new();
@@ -50,7 +51,7 @@ fn main() {
 }
 
 
-
+/// 示例-打印日志
 #[test]
 pub fn test_log() {
     //1 启用日志(可选，不添加则不加载日志库)
@@ -59,7 +60,7 @@ pub fn test_log() {
     sleep(Duration::from_secs(1));
 }
 
-
+/// 示例-Rbatis直接使用驱动
 #[test]
 pub fn test_use_driver() {
     let r = async_std::task::block_on(
@@ -75,6 +76,7 @@ pub fn test_use_driver() {
     );
 }
 
+/// 示例-Rbatis直接使用驱动-prepared stmt sql
 #[test]
 pub fn test_prepare_sql() {
     let r = async_std::task::block_on(
@@ -91,6 +93,7 @@ pub fn test_prepare_sql() {
 }
 
 
+/// 示例-Rbatis使用py风格的语法查询
 #[test]
 pub fn test_py_sql() {
     async_std::task::block_on(async move {
@@ -114,6 +117,7 @@ pub fn test_py_sql() {
 }
 
 
+/// 示例-Rbatis使用传统XML风格的语法查询
 #[test]
 pub fn test_xml_sql() {
     async_std::task::block_on(
@@ -155,7 +159,7 @@ pub fn test_xml_sql() {
     )
 }
 
-
+/// 示例-Rbatis使用事务
 #[test]
 pub fn test_tx() {
     async_std::task::block_on(async {
@@ -169,7 +173,7 @@ pub fn test_tx() {
     });
 }
 
-
+/// 示例-Rbatis使用web框架Tide、async_std
 #[test]
 pub fn test_tide() {
     async_std::task::block_on(async {
@@ -212,7 +216,7 @@ async fn hello(_: hyper::Request<hyper::Body>) -> Result<hyper::Response<hyper::
         Ok(hyper::Response::new(hyper::Body::from(v.err().unwrap().to_string())))
     }
 }
-
+/// 示例-Rbatis使用web框架hyper/Tokio
 #[test]
 pub fn test_hyper() {
     RT.lock().unwrap().block_on(async {
