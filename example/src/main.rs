@@ -173,6 +173,7 @@ pub fn test_tx() {
 #[test]
 pub fn test_tide() {
     async_std::task::block_on(async {
+        fast_log::log::init_log("requests.log", &RuntimeType::Std);
         let mut app = tide::new();
         app.at("/").get(|mut req: Request<()>| async move {
             let a = req.body_string().await;
@@ -191,8 +192,6 @@ pub fn test_tide() {
         app.listen(addr).await.unwrap();
     });
 }
-
-
 
 
 //初始化Tokio运行时
@@ -218,7 +217,7 @@ async fn hello(_: hyper::Request<hyper::Body>) -> Result<hyper::Response<hyper::
 pub fn test_hyper() {
     RT.lock().unwrap().block_on(async {
         RB.link(MYSQL_URL).await;
-        //fast_log::log::init_log("requests.log", &RuntimeType::Std);
+        fast_log::log::init_log("requests.log", &RuntimeType::Std);
         let make_svc = hyper::service::make_service_fn(|_conn| {
             async { Ok::<_, Infallible>(hyper::service::service_fn( hello)) }
         });
