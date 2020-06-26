@@ -1,6 +1,6 @@
 use serde_json::{json, Value};
 
-use crate::ast::ast::RbatisSqlAST;
+use crate::ast::ast::RbatisAST;
 use crate::ast::node::node::{create_deep, SqlNodePrint};
 use crate::convert::stmt_convert::StmtConvert;
 use crate::engine;
@@ -14,7 +14,7 @@ pub struct BindNode {
     pub value: String,
 }
 
-impl RbatisSqlAST for BindNode {
+impl RbatisAST for BindNode {
     fn eval(&self, convert: &impl StmtConvert, env: &mut Value, engine: &RbatisEngine, arg_array: &mut Vec<Value>) -> Result<String, rbatis_core::Error> {
         let r = engine.eval(self.value.as_str(), env)?;
         env[self.name.as_str()] = r;

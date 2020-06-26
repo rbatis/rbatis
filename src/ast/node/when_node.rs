@@ -2,7 +2,7 @@ use std::borrow::BorrowMut;
 
 use serde_json::{json, Value};
 
-use crate::ast::ast::RbatisSqlAST;
+use crate::ast::ast::RbatisAST;
 use crate::ast::node::node::{create_deep, do_child_nodes, print_child, SqlNodePrint};
 use crate::ast::node::node_type::NodeType;
 use crate::convert::stmt_convert::StmtConvert;
@@ -16,7 +16,7 @@ pub struct WhenNode {
 }
 
 
-impl RbatisSqlAST for WhenNode {
+impl RbatisAST for WhenNode {
     fn eval(&self, convert: &impl StmtConvert, env: &mut Value, engine: &RbatisEngine, arg_array: &mut Vec<Value>) -> Result<String, rbatis_core::Error> {
         let result = engine.eval(self.test.as_str(), env)?;
         if !result.is_boolean() {

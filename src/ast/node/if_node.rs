@@ -1,7 +1,7 @@
 use serde_json::{json, Value};
 use serde_json::ser::State::Rest;
 
-use crate::ast::ast::RbatisSqlAST;
+use crate::ast::ast::RbatisAST;
 use crate::ast::node::node::{create_deep, do_child_nodes, print_child, SqlNodePrint};
 use crate::ast::node::node_type::NodeType;
 use crate::ast::node::string_node::StringNode;
@@ -14,7 +14,7 @@ pub struct IfNode {
     pub test: String,
 }
 
-impl RbatisSqlAST for IfNode {
+impl RbatisAST for IfNode {
     fn eval(&self, convert: &impl StmtConvert, env: &mut Value, engine: &RbatisEngine, arg_array: &mut Vec<Value>) -> Result<String, rbatis_core::Error> {
         let result = engine.eval(self.test.as_str(), env)?;
         if !result.is_boolean() {
