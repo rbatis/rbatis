@@ -69,8 +69,12 @@ where
     ) -> BoxFuture<'cur, crate::Result<Option<<Self::Database as HasRow<'cur>>::Row>>>;
 
 
+    /// fetch and decode data
     fn decode_json<T>(&mut self) -> BoxFuture<Result<T, crate::Error>>
     where  T: DeserializeOwned;
+
+    /// fetch into an json array
+    fn fetch_json(&mut self) -> BoxFuture<Result<Vec<serde_json::Value>, crate::Error>>;
 }
 
 // Prevent users from implementing the `Row` trait.

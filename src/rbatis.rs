@@ -1,3 +1,4 @@
+use std::cell::Cell;
 use std::collections::HashMap;
 
 use log::{error, info, LevelFilter, warn};
@@ -6,7 +7,7 @@ use serde::de::DeserializeOwned;
 
 use rbatis_core::connection::Connection;
 use rbatis_core::cursor::Cursor;
-use rbatis_core::db::{ DBPool, DBPoolConn, DBQuery, DBTx, DBType};
+use rbatis_core::db::{DBPool, DBPoolConn, DBQuery, DBTx, DBType};
 use rbatis_core::Error;
 use rbatis_core::executor::Executor;
 use rbatis_core::pool::{Pool, PoolConnection};
@@ -26,6 +27,7 @@ use crate::ast::node::select_node::SelectNode;
 use crate::ast::node::update_node::UpdateNode;
 use crate::engine::runtime::RbatisEngine;
 use crate::utils::error_util::ToResult;
+
 /// rbatis engine
 pub struct Rbatis<'r> {
     pool: OnceCell<DBPool>,
@@ -86,7 +88,7 @@ impl<'r> Rbatis<'r> {
             return Err(rbatis_core::Error::from("[rbatis] tx_id can not be empty"));
         }
         let conn = self.get_pool()?.begin().await?;
-        self.context_tx.put(tx_id, conn).await;
+        self.context_tx.put(tx_id, conn);
         return Ok(1);
     }
 
@@ -118,17 +120,34 @@ impl<'r> Rbatis<'r> {
         where T: DeserializeOwned {
         info!("[rbatis] >> fetch sql:{}", sql);
         let data;
+        let fetch_num;
         if tx_id.is_empty() {
             let mut conn = self.get_pool()?.acquire().await?;
             let mut c = conn.fetch(sql)?;
-            data = c.decode_json().await?;
+            let json = c.fetch_json().await?;
+            fetch_num = json.len();
+            data = rbatis_core::decode::json_decode::<T>(json)?;
         } else {
             let mut conn = self.get_tx(tx_id).await?;
-            let mut c = conn.fetch(sql)?;
-            data  = c.decode_json().await?;
-            self.context_tx.put(tx_id, conn).await;
+            //now conn must return to context
+            let c = conn.fetch(sql);
+            if c.is_err() {
+                let e = c.err().unwrap();
+                self.context_tx.put(tx_id, conn);
+                return Err(e);
+            }
+            let mut c = c.unwrap();
+            let json = c.fetch_json().await;
+            if json.is_err() {
+                let e = json.err().unwrap();
+                self.context_tx.put(tx_id, conn);
+                return Err(e);
+            }
+            let json = json.unwrap();
+            fetch_num = json.len();
+            data = rbatis_core::decode::json_decode::<T>(json)?;
         }
-        //TODO info!("[rbatis] << {}", result.unwrap());
+        info!("[rbatis] << {}", fetch_num);
         return Ok(data);
     }
 
@@ -141,10 +160,14 @@ impl<'r> Rbatis<'r> {
             data = conn.execute(sql).await?;
         } else {
             let mut conn = self.get_tx(tx_id).await?;
-            data = conn.execute(sql).await?;
-            self.context_tx.put(tx_id, conn).await;
+            let result = conn.execute(sql).await;
+            self.context_tx.put(tx_id, conn);
+            if result.is_err() {
+                return Err(result.err().unwrap());
+            }
+            data = result.unwrap();
         }
-        //TODO info!("[rbatis] << {}", result.unwrap());
+        info!("[rbatis] << {}", &data);
         return Ok(data);
     }
 
@@ -168,38 +191,62 @@ impl<'r> Rbatis<'r> {
         where T: DeserializeOwned {
         info!("[rbatis] >> fetch sql:{}", sql);
         info!("[rbatis] >> fetch arg:{:?}", arg);
+        let result;
+        let return_num;
         if tx_id.is_empty() {
             let mut conn = self.get_pool()?.acquire().await?;
             let q: DBQuery = self.bind_arg(sql, arg);
             let mut c = conn.fetch_parperd(q)?;
-            return c.decode_json().await;
+            let json_array = c.fetch_json().await?;
+            return_num = json_array.len();
+            result = rbatis_core::decode::json_decode::<T>(json_array)?;
         } else {
             let mut conn = self.get_tx(tx_id).await?;
+            //now conn use finish must be return to context
             let q: DBQuery = self.bind_arg(sql, arg);
-            let mut c = conn.fetch_parperd(q)?;
-            let result = c.decode_json().await;
-            self.context_tx.put(tx_id, conn).await;
-            return result;
+            let c = conn.fetch_parperd(q);
+            if c.is_err() {
+                let e = c.err().unwrap().into();
+                self.context_tx.put(tx_id, conn);
+                return Err(e);
+            }
+            let mut c = c.unwrap();
+            let json = c.fetch_json().await;
+            if json.is_err() {
+                let e = json.err().unwrap();
+                self.context_tx.put(tx_id, conn);
+                return Err(e);
+            }
+            self.context_tx.put(tx_id, conn);
+            let json = json.unwrap();
+            return_num = json.len();
+            result = rbatis_core::decode::json_decode::<T>(json)?;
         }
-        //TODO info!("[rbatis] << {}", result.unwrap());
+        info!("[rbatis] << {}", return_num);
+        return Ok(result);
     }
 
     /// exec sql(prepare sql)
     pub async fn exec_prepare(&self, tx_id: &str, sql: &str, arg: &Vec<serde_json::Value>) -> Result<u64, rbatis_core::Error> {
         info!("[rbatis] >> exec sql:{}", sql);
         info!("[rbatis] >> exec arg:{:?}", arg);
+        let result;
         if tx_id.is_empty() {
             let mut conn = self.get_pool()?.acquire().await?;
             let q: DBQuery = self.bind_arg(sql, arg);
-            return conn.execute_parperd(q).await;
+            result = conn.execute_parperd(q).await;
         } else {
             let mut conn = self.get_tx(tx_id).await?;
             let q: DBQuery = self.bind_arg(sql, arg);
-            let result = conn.execute_parperd(q).await;
-            self.context_tx.put(tx_id, conn).await;
-            return result;
+            result = conn.execute_parperd(q).await;
+            self.context_tx.put(tx_id, conn);
         }
-        //TODO info!("[rbatis] << {}", result.unwrap());
+        if result.is_ok() {
+            info!("[rbatis] << {}", result.as_ref().unwrap());
+        } else {
+            info!("[rbatis] << {}", 0);
+        }
+        return result;
     }
 
 
