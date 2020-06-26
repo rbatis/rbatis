@@ -26,8 +26,8 @@ serde_json = "1.0"
 log = "0.4"
 fast_log="1.0.2"
 #rbatis
-rbatis-core = { version = "1.1.2",  default-features = false , features = ["all","runtime-async-std"]}
-rbatis = "1.1.2"
+rbatis-core = { version = "1.1.3",  default-features = false , features = ["all","runtime-async-std"]}
+rbatis = "1.1.3"
 ```
 
 ##### py风格sql语法Example
