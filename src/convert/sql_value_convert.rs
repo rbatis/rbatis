@@ -47,7 +47,7 @@ pub enum SkipType{
 pub trait SqlQuestionConvert{
     fn to_sql_question(&self,skip_type:SkipType,obj_map_separtor: &str, array_separtor: &str,arg_result:&mut Vec<Value>)-> String;
 }
-//TDOO mysql=> " ? " ,pg => " $1 "
+//TODO mysql=> " ? " ,pg => " $1 "
 impl SqlQuestionConvert for serde_json::Value{
     fn to_sql_question(&self,skip_type:SkipType,obj_map_separtor: &str, array_separtor: &str,arg_result:&mut Vec<Value>) -> String{
         match self{
