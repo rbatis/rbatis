@@ -380,6 +380,26 @@ impl <'c, 'q>DBCursor<'c, 'q> {
             }
         }
     }
+
+    pub async fn fetch_json(&mut self) -> Result<Vec<serde_json::Value>, crate::Error>{
+        match &self.driver_type {
+            &DriverType::None => {
+                return Err(Error::from("un init DBPool!"));
+            }
+            &DriverType::Mysql => {
+                let data = self.mysql.as_mut().unwrap().fetch_json().await?;
+                return Ok(data);
+            }
+            &DriverType::Postgres => {
+                let data = self.postgres.as_mut().unwrap().fetch_json().await?;
+                return Ok(data);
+            }
+            &DriverType::Sqlite => {
+                let data = self.sqlite.as_mut().unwrap().fetch_json().await?;
+                return Ok(data);
+            }
+        }
+    }
 }
 
 

@@ -11,6 +11,7 @@ use crate::mysql::{MySql, MySqlArguments, MySqlConnection, MySqlRow, MySqlTypeIn
 use crate::mysql::protocol::{ColumnCount, ColumnDefinition, Row, Status};
 use crate::pool::Pool;
 use crate::decode::json_decode;
+use serde_json::Value;
 
 pub struct MySqlCursor<'c, 'q> {
     source: ConnectionSource<'c, MySqlConnection>,
@@ -76,6 +77,24 @@ impl<'c, 'q> Cursor<'c, 'q> for MySqlCursor<'c, 'q> {
             }
             let r = json_decode(arr)?;
             return Ok(r);
+        })
+    }
+
+    fn fetch_json(&mut self) -> BoxFuture<Result<Vec<serde_json::Value>, crate::Error>> {
+        Box::pin(async move {
+            let mut arr = vec![];
+            while let Some(row) = self.next().await? as Option<MySqlRow<'_>> {
+                let mut m = serde_json::Map::new();
+                let keys = row.names.keys();
+                for x in keys {
+                    let key = x.to_string();
+                    let key_str=key.as_str();
+                    let v:serde_json::Value = row.json_decode_impl(key_str)?;
+                    m.insert(key, v);
+                }
+                arr.push(serde_json::Value::Object(m));
+            }
+            return Ok(arr);
         })
     }
 }
