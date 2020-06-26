@@ -196,7 +196,7 @@ impl<'r> Rbatis<'r> {
     pub async fn fetch_prepare<T>(&self, tx_id: &str, sql: &str, arg: &Vec<serde_json::Value>) -> Result<T, rbatis_core::Error>
         where T: DeserializeOwned {
         info!("[rbatis] >> fetch sql:{}", sql);
-        info!("[rbatis] >> fetch arg:{:?}", arg);
+        info!("[rbatis] >> fetch arg:{}", serde_json::to_string(arg).unwrap_or("".to_string()));
         let result;
         let return_num;
         if tx_id.is_empty() {
@@ -238,7 +238,7 @@ impl<'r> Rbatis<'r> {
     /// exec sql(prepare sql)
     pub async fn exec_prepare(&self, tx_id: &str, sql: &str, arg: &Vec<serde_json::Value>) -> Result<u64, rbatis_core::Error> {
         info!("[rbatis] >> exec sql:{}", sql);
-        info!("[rbatis] >> exec arg:{:?}", arg);
+        info!("[rbatis] >> exec arg:{}", serde_json::to_string(arg).unwrap_or("".to_string()));
         let result;
         if tx_id.is_empty() {
             let mut conn = self.get_pool()?.acquire().await?;

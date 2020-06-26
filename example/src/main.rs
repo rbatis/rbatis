@@ -7,19 +7,21 @@
 
 #[macro_use]
 extern crate lazy_static;
-use std::convert::Infallible;
-use std::sync::{ Mutex};
-use std::thread::sleep;
-use std::time::{Duration};
 
+use std::convert::Infallible;
+use std::sync::Mutex;
+use std::thread::sleep;
+use std::time::Duration;
+
+use chrono::DateTime;
 use fast_log::log::RuntimeType;
-use log::{info};
+use log::info;
+use serde::{Deserialize, Serialize};
 use serde_json::{json, Value};
 use tide::Request;
+
 use rbatis::rbatis::Rbatis;
 use rbatis_core::db::DBPool;
-use chrono::DateTime;
-use serde::{Deserialize, Serialize};
 
 ///数据库表模型,支持BigDecimal ,DateTime ,rust基本类型（int,float,uint,string,Vec,Array）
 #[derive(Serialize, Deserialize, Clone, Debug)]
@@ -69,7 +71,8 @@ fn main() {
         let mut app = tide::new();
         app.at("/").get(|_: Request<()>| async move {
             // println!("accept req[{} /test] arg: {:?}",req.url().to_string(),a);
-            let v = RB.fetch("", "SELECT count(1) FROM biz_activity;").await;
+            let arg = &vec![json!(1)];
+            let v = RB.fetch_prepare("", "SELECT count(1) FROM biz_activity where delete_flag = ?;", arg).await;
             if v.is_ok() {
                 let data: Value = v.unwrap();
                 Ok(data.to_string())
@@ -112,7 +115,7 @@ pub fn test_use_driver() {
 //示例-Rbatis直接使用驱动-prepared stmt sql
 #[test]
 pub fn test_prepare_sql() {
-  async_std::task::block_on(
+    async_std::task::block_on(
         async move {
             fast_log::log::init_log("requests.log", &RuntimeType::Std).unwrap();
             let rb = Rbatis::new();
@@ -154,6 +157,7 @@ pub fn test_py_sql() {
 pub fn test_xml_sql() {
     async_std::task::block_on(
         async move {
+            fast_log::log::init_log("requests.log", &RuntimeType::Std).unwrap();
             let mut rb = Rbatis::new();
             rb.link(MYSQL_URL).await.unwrap();
             rb.load_xml("test", r#"<?xml version="1.0" encoding="UTF-8"?>
@@ -187,6 +191,17 @@ pub fn test_xml_sql() {
         <if test="page != null and size != null">limit #{page}, #{size}</if>
     </select>
 </mapper>"#).unwrap();
+
+            let arg = &json!({
+            "delete_flag": 1,
+            "name": "test",
+            "startTime": null,
+            "endTime": null,
+            "page": 0,
+            "size": 20
+            });
+            let data: Vec<Activity> = rb.xml_fetch("", "test", "select_by_condition", arg).await.unwrap();
+            println!("{:?}", data);
         }
     )
 }
@@ -238,6 +253,7 @@ async fn hello(_: hyper::Request<hyper::Body>) -> Result<hyper::Response<hyper::
         Ok(hyper::Response::new(hyper::Body::from(v.err().unwrap().to_string())))
     }
 }
+
 // 示例-Rbatis使用web框架hyper/Tokio
 #[test]
 pub fn test_hyper() {
@@ -245,7 +261,7 @@ pub fn test_hyper() {
         RB.link(MYSQL_URL).await.unwrap();
         fast_log::log::init_log("requests.log", &RuntimeType::Std).unwrap();
         let make_svc = hyper::service::make_service_fn(|_conn| {
-            async { Ok::<_, Infallible>(hyper::service::service_fn( hello)) }
+            async { Ok::<_, Infallible>(hyper::service::service_fn(hello)) }
         });
         let addr = ([0, 0, 0, 0], 8000).into();
         let server = hyper::Server::bind(&addr).serve(make_svc);
