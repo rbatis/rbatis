@@ -79,7 +79,7 @@ fn main() {
         });
         //app.at("/").get(|_| async { Ok("Hello, world!") });
         let addr = "0.0.0.0:8000";
-        println!("http server listen on {}", addr);
+        println!("http server listen on http://{}", addr);
         app.listen(addr).await.unwrap();
     });
 }
@@ -223,7 +223,7 @@ pub fn test_tide() {
         });
         //app.at("/").get(|_| async { Ok("Hello, world!") });
         let addr = "0.0.0.0:8000";
-        println!("server on {}", addr);
+        println!("server on http://{}", addr);
         app.listen(addr).await.unwrap();
     });
 }
