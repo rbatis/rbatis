@@ -1,18 +1,19 @@
 extern crate serde_json;
 
+use std::any::Any;
+use std::iter::Map;
+use std::time::SystemTime;
+
+use chrono::Local;
+use serde::{Deserialize, Serialize};
 use serde_json::json;
 use serde_json::Value;
-use serde::{Serialize, Deserialize};
-use chrono::Local;
-use crate::utils::time_util;
-use std::iter::Map;
-use std::any::Any;
 
-use std::time::SystemTime;
+use crate::utils::time_util;
 
 pub fn eval(left: &Value,
             right: &Value,
-            op: &str) -> Result<Value,rbatis_core::Error> {
+            op: &str) -> Result<Value, rbatis_core::Error> {
     if op == "&&" {
         return Result::Ok(Value::Bool(left.as_bool().unwrap() && right.as_bool().unwrap()));
     }
@@ -21,10 +22,10 @@ pub fn eval(left: &Value,
     }
 
     if op == "==" {
-        return Result::Ok(Value::Bool(eq(left,right)));
+        return Result::Ok(Value::Bool(eq(left, right)));
     }
     if op == "!=" {
-        return Result::Ok(Value::Bool(!eq(left,right)));
+        return Result::Ok(Value::Bool(!eq(left, right)));
     }
     if op == ">=" {
         let booll = left.is_number();
@@ -57,9 +58,9 @@ pub fn eval(left: &Value,
     if op == "+" {
         if left.is_number() && right.is_number() {
             return Result::Ok(Value::Number(serde_json::Number::from_f64(left.as_f64().unwrap() + right.as_f64().unwrap()).unwrap()));
-        } else if left.is_string() && right.is_string(){
+        } else if left.is_string() && right.is_string() {
             return Result::Ok(Value::from(left.as_str().unwrap().to_owned() + right.as_str().unwrap()));
-        }else{
+        } else {
             return Result::Err(rbatis_core::Error::from("[rbatis] un support diffrent type '+' opt"));
         }
     }
@@ -84,22 +85,22 @@ pub fn eval(left: &Value,
             return Result::Ok(Value::Number(serde_json::Number::from_f64(left.as_f64().unwrap() / right.as_f64().unwrap()).unwrap()));
         }
     }
-    return Result::Err(rbatis_core::Error::from("[rbatis] un support opt = ".to_owned()+op));
+    return Result::Err(rbatis_core::Error::from("[rbatis] un support opt = ".to_owned() + op));
 }
 
 
-fn eq(left:&Value,right:&Value)-> bool{
-    if left.is_null() && right.is_null(){// all null
+fn eq(left: &Value, right: &Value) -> bool {
+    if left.is_null() && right.is_null() {// all null
         return true;
-    }else if left.is_null() || right.is_null(){// on null
+    } else if left.is_null() || right.is_null() {// on null
         return false;
-    }else if left.is_number() && right.is_number(){
-        return left.as_f64()==right.as_f64();
-    }else if left.is_string() && right.is_string(){
+    } else if left.is_number() && right.is_number() {
+        return left.as_f64() == right.as_f64();
+    } else if left.is_string() && right.is_string() {
         return left.as_str().unwrap().eq(right.as_str().unwrap());
-    }else if left.is_boolean() && right.is_boolean(){
-        return left.as_bool()==right.as_bool()
-    }else{
+    } else if left.is_boolean() && right.is_boolean() {
+        return left.as_bool() == right.as_bool();
+    } else {
         return false;
     }
 }
@@ -154,7 +155,7 @@ fn benchmark_fromstr() {
         let deserialized: Point = serde_json::from_str(&serialized).unwrap();
         // println!("deserialized = {:?}", deserialized);
     }
-    time_util::count_time_tps("benchmark_fromstr",total,now);
+    time_util::count_time_tps("benchmark_fromstr", total, now);
 }
 
 #[test]
@@ -168,5 +169,5 @@ fn benchmark_to_string() {
         let serialized = serde_json::to_string(&point).unwrap();
         let deserialized: Value = serde_json::from_str(&serialized).unwrap();
     }
-    time_util::count_time_tps("benchmark_to_string",total,now);
+    time_util::count_time_tps("benchmark_to_string", total, now);
 }

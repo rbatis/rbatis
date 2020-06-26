@@ -1,13 +1,14 @@
 extern crate xml;
 
+use core::borrow::Borrow;
+use std::fmt::Error;
+use std::fs;
 use std::fs::File;
+use std::io::{BufReader, Read};
+use std::thread::park;
 
 use xml::reader::{EventReader, XmlEvent};
-use std::io::{Read, BufReader};
-use std::fs;
-use std::thread::park;
-use std::fmt::Error;
-use core::borrow::Borrow;
+
 use self::xml::attribute::OwnedAttribute;
 
 #[derive(Clone, Debug)]
@@ -25,18 +26,18 @@ impl Element {
         self.attributes.clear();
         self.childs.clear();
     }
-    pub fn get_attr(&self, arg:&str) ->String{
+    pub fn get_attr(&self, arg: &str) -> String {
         for x in &self.attributes {
-           if x.name.to_string().as_str()==arg{
-               return x.value.clone();
-           }
+            if x.name.to_string().as_str() == arg {
+                return x.value.clone();
+            }
         }
         return "".to_string();
     }
 }
 
 
-pub fn load_xml(file_content:&str) -> Vec<Element> {
+pub fn load_xml(file_content: &str) -> Vec<Element> {
     let parser = EventReader::from_str(file_content);
     return parser_func(parser);
 }
@@ -67,7 +68,7 @@ fn parser_func(parser: EventReader<&[u8]>) -> Vec<Element> {
                 let last = fathers.last_mut().unwrap();
                 (*last).childs.push(Element {
                     tag: "".to_string(),
-                    data: " ".to_string()+data.clone().replace("\r","").replace("\n","").trim(),
+                    data: " ".to_string() + data.clone().replace("\r", "").replace("\n", "").trim(),
                     attributes: vec![],
                     childs: vec![],
                 })
@@ -112,5 +113,5 @@ fn test_load_xml() {
     let content = fs::read_to_string("./src/example/Example_ActivityMapper.xml").unwrap();
     println!("With text:/n{}", content);
 
-    load_xml( content.as_str());
+    load_xml(content.as_str());
 }

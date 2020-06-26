@@ -18,7 +18,7 @@ pub struct TrimNode {
 
 impl RbatisSqlAST for TrimNode {
     fn eval(&self, convert: &impl StmtConvert, env: &mut Value, engine: &RbatisEngine, arg_array: &mut Vec<Value>) -> Result<String, rbatis_core::Error> {
-        let result_value = do_child_nodes(convert,&self.childs, env, engine, arg_array)?;
+        let result_value = do_child_nodes(convert, &self.childs, env, engine, arg_array)?;
         let mut result = result_value.as_str().trim();
         if !self.prefix_overrides.is_empty() {
             let splits: Vec<&str> = self.prefix_overrides.split("|").collect();

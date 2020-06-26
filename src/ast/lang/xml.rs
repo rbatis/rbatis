@@ -1,33 +1,30 @@
 use std::collections::HashMap;
-use crate::ast::node::node_type::NodeType;
-use crate::utils::xml_loader::{load_xml, Element};
 
-use crate::ast::node::select_node::SelectNode;
-use crate::ast::node::insert_node::InsertNode;
-use crate::ast::node::if_node::IfNode;
-use crate::ast::node::trim_node::TrimNode;
-use crate::ast::node::foreach_node::ForEachNode;
+use crate::ast::node::bind_node::BindNode;
 use crate::ast::node::choose_node::ChooseNode;
+use crate::ast::node::delete_node::DeleteNode;
+use crate::ast::node::foreach_node::ForEachNode;
+use crate::ast::node::if_node::IfNode;
+use crate::ast::node::include_node::IncludeNode;
+use crate::ast::node::insert_node::InsertNode;
+use crate::ast::node::node_type::NodeType;
+use crate::ast::node::otherwise_node::OtherwiseNode;
+use crate::ast::node::result_map_id_node::ResultMapIdNode;
+use crate::ast::node::result_map_node::ResultMapNode;
+use crate::ast::node::result_map_result_node::ResultMapResultNode;
+use crate::ast::node::select_node::SelectNode;
+use crate::ast::node::set_node::SetNode;
+use crate::ast::node::string_node::StringNode;
+use crate::ast::node::trim_node::TrimNode;
+use crate::ast::node::update_node::UpdateNode;
 use crate::ast::node::when_node::WhenNode;
 use crate::ast::node::where_node::WhereNode;
-use crate::ast::node::otherwise_node::OtherwiseNode;
-use crate::ast::node::include_node::IncludeNode;
-use crate::ast::node::set_node::SetNode;
-use crate::ast::node::result_map_id_node::ResultMapIdNode;
-use crate::ast::node::result_map_result_node::ResultMapResultNode;
-use crate::ast::node::result_map_node::ResultMapNode;
-use crate::ast::node::string_node::StringNode;
-use crate::ast::node::bind_node::BindNode;
-use crate::ast::node::delete_node::DeleteNode;
-use crate::ast::node::update_node::UpdateNode;
 use crate::engine::runtime::RbatisEngine;
-
-
-
+use crate::utils::xml_loader::{Element, load_xml};
 
 pub struct Xml {}
 
-impl Xml{
+impl Xml {
     pub fn parser(xml_content: &str) -> HashMap<String, NodeType> {
         return parser(xml_content);
     }
@@ -38,7 +35,7 @@ pub fn parser(xml_content: &str) -> HashMap<String, NodeType> {
     let data = loop_decode_xml(&nodes);
     let mut m = HashMap::new();
     for x in &data {
-        match x{
+        match x {
             NodeType::NResultMapNode(node) => m.insert(node.id.clone(), x.clone()),
             _ => {
                 continue;
@@ -46,14 +43,13 @@ pub fn parser(xml_content: &str) -> HashMap<String, NodeType> {
         };
     }
     for x in &data {
-        match x{
+        match x {
             NodeType::NSelectNode(node) => m.insert(node.id.clone(), x.clone()),
             NodeType::NDeleteNode(node) => m.insert(node.id.clone(), x.clone()),
             NodeType::NUpdateNode(node) => m.insert(node.id.clone(), x.clone()),
             NodeType::NInsertNode(node) => m.insert(node.id.clone(), x.clone()),
             _ => m.insert("unknow".to_string(), NodeType::Null),
         };
-
     }
     return m;
 }
@@ -150,10 +146,10 @@ pub fn loop_decode_xml(xml_vec: &Vec<Element>) -> Vec<NodeType> {
                 logic_deleted: xml.get_attr("logic_deleted"),
             })),
 
-            "result_map" => nodes.push(NodeType::NResultMapNode(ResultMapNode::new( xml.get_attr("id"),
-                                                                                    xml.get_attr("table"),
-                                                                                    filter_result_map_id_nodes(&child_nodes),
-                                                                                    filter_result_map_result_nodes(&child_nodes),))),
+            "result_map" => nodes.push(NodeType::NResultMapNode(ResultMapNode::new(xml.get_attr("id"),
+                                                                                   xml.get_attr("table"),
+                                                                                   filter_result_map_id_nodes(&child_nodes),
+                                                                                   filter_result_map_result_nodes(&child_nodes), ))),
             "" => {
                 let data = xml.data.as_str();
                 let tag = xml.tag.as_str();

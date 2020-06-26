@@ -13,7 +13,7 @@ pub struct WhereNode {
 
 impl RbatisSqlAST for WhereNode {
     fn eval(&self, convert: &impl StmtConvert, env: &mut Value, engine: &RbatisEngine, arg_array: &mut Vec<Value>) -> Result<String, rbatis_core::Error> {
-        let result = do_child_nodes(convert,&self.childs, env, engine, arg_array)?;
+        let result = do_child_nodes(convert, &self.childs, env, engine, arg_array)?;
         let s = result.trim();
         if s.is_empty() {
             return Result::Ok(" ".to_string());

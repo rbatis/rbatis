@@ -1,6 +1,5 @@
 use serde::de;
 
-
 pub fn is_array<T: ?Sized>(type_name: &str) -> bool
     where
         T: de::DeserializeOwned {

@@ -3,11 +3,9 @@ use std::collections::HashMap;
 use std::collections::linked_list::LinkedList;
 use std::ops::Deref;
 
-
 use crate::engine::node::Node;
 use crate::engine::node::NodeType::{NBinary, NOpt};
 use crate::engine::runtime::{is_number, OptMap, parser_tokens};
-
 
 pub fn parser(express: String, opt_map: &OptMap) -> Result<Node, rbatis_core::Error> {
     let tokens = parser_tokens(&express, opt_map);
@@ -26,9 +24,9 @@ pub fn parser(express: String, opt_map: &OptMap) -> Result<Node, rbatis_core::Er
     for item in opt_map.priority_array() {
         find_replace_opt(opt_map, &express, &item, &mut nodes);
     }
-    if nodes.len()>0{
+    if nodes.len() > 0 {
         return Result::Ok(nodes[0].deref().clone());
-    }else{
+    } else {
         return Result::Err(rbatis_core::Error::from("[rbatis] parser express fail".to_string()));
     }
 }

@@ -1,10 +1,12 @@
-use crate::engine::parser;
-use crate::engine::runtime::OptMap;
+//use test::Bencher;
+use std::{thread, time};
+
 use chrono::Local;
 use serde_json::json;
-//use test::Bencher;
-use std::{time, thread};
+
 use crate::engine::node::Node;
+use crate::engine::parser;
+use crate::engine::runtime::OptMap;
 
 #[test]
 fn test_eval_arg() {
@@ -18,8 +20,8 @@ fn test_eval_arg() {
            "yes":"sadf"
         }
     });
-    let v= box_node.eval(&john).unwrap();
-    println!("{:?}",v);
+    let v = box_node.eval(&john).unwrap();
+    println!("{:?}", v);
 }
 
 
@@ -49,19 +51,19 @@ fn test_mem_gc() {
         }
     });
 
-    let total=10000000;
+    let total = 10000000;
     println!("start");
 
-    for _loop in 0..3{
-        for i in 0..total{
+    for _loop in 0..3 {
+        for i in 0..total {
             box_node.eval(&john);
-            if i==(total-1){
-                println!("done:{}",_loop);
+            if i == (total - 1) {
+                println!("done:{}", _loop);
                 let ten_millis = time::Duration::from_secs(5);
                 thread::sleep(ten_millis);
             }
-            if i%1000000==0{
-                println!("number:{}",i)
+            if i % 1000000 == 0 {
+                println!("number:{}", i)
             }
         }
     }

@@ -1,12 +1,13 @@
-use std::collections::linked_list::LinkedList;
 use std::collections::HashMap;
+use std::collections::linked_list::LinkedList;
+use std::sync::RwLock;
+
 use serde_json::Value;
-use crate::engine::parser::parser;
+
 use crate::engine::node::Node;
+use crate::engine::parser::parser;
 
-use std::sync::{RwLock};
-
-lazy_static!{
+lazy_static! {
    /// for engine: if cache not have expr value,it will be redo parser code.not wait cache return for no blocking
    /// global expr cache,use RwLock but not blocking
    static ref  EXPR_CACHE: RwLock<HashMap<String, Node>> = RwLock::new(HashMap::new());
@@ -47,7 +48,7 @@ impl RbatisEngine {
     }
 
     /// read from cache,if not exist return null
-    fn cache_read(&self, arg: &str) -> Option<Node>{
+    fn cache_read(&self, arg: &str) -> Option<Node> {
         let cache_read = EXPR_CACHE.try_read();
         if cache_read.is_err() {
             return Option::None;
@@ -58,7 +59,7 @@ impl RbatisEngine {
             Option::None
         } else {
             r.cloned()
-        }
+        };
     }
 
     /// save to cache,if fail nothing to do.
