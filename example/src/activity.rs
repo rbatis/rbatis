@@ -1,9 +1,5 @@
-use std::path::Display;
-
 use serde::{Deserialize, Serialize};
-use chrono::{DateTime, Utc, Local, NaiveDateTime, NaiveDate};
-
-use chrono::serde::ts_nanoseconds;
+use chrono::DateTime;
 
 ///数据库表模型,支持BigDecimal ,DateTime ,以及serde json支持的所有rust基本数据类型（int,float,uint,string）
 #[derive(Serialize, Deserialize, Clone, Debug)]

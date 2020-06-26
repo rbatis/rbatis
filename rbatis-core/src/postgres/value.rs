@@ -1,12 +1,5 @@
 use std::str::from_utf8;
-
-use serde_json::Value;
-use serde_json::value::Value::Array;
-
-use chrono::{ Date, DateTime,NaiveDateTime,NaiveDate,NaiveTime};
-
 use crate::decode::Decode;
-use crate::encode::Encode;
 use crate::error::UnexpectedNullError;
 use crate::postgres::{PgTypeInfo, Postgres};
 use crate::value::RawValue;
@@ -95,10 +88,6 @@ impl<'c> RawValue<'c> for PgValue<'c> {
     fn try_to_json(&self) -> Result<serde_json::Value>  {
         if self.type_info.is_none() {
             return Ok(serde_json::Value::Null);
-        }
-        //TODO batter way to match type replace use string match
-        if self.type_info == None {
-            return return Ok(serde_json::Value::Null);;
         }
         let type_string = format!("{}", self.type_info.as_ref().unwrap());
         match type_string.as_str() {

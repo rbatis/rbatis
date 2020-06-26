@@ -5,7 +5,6 @@ use crate::mysql::protocol;
 use crate::mysql::{MySql, MySqlValue};
 use crate::row::{ColumnIndex, Row};
 use serde::de::DeserializeOwned;
-use crate::value::RawValue;
 
 #[derive(Debug)]
 pub struct MySqlRow<'c> {
