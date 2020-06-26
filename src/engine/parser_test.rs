@@ -1,19 +1,19 @@
-use crate::engine::{parser, runtime};
-use serde_json::json;
-use serde_json::Value;
-use crate::engine::runtime::OptMap;
-use crate::engine::node::{Node, NodeType};
-use crate::utils;
-use chrono::Local;
-use crate::utils::time_util;
-use std::thread::Thread;
-//use test::Bencher;
-use crate::engine::node::NodeType::{NNumber, NOpt};
-
 use core::time;
 use std::thread;
+use std::thread::Thread;
 use std::time::SystemTime;
 
+use chrono::Local;
+use serde_json::json;
+use serde_json::Value;
+
+use crate::engine::{parser, runtime};
+use crate::engine::node::{Node, NodeType};
+//use test::Bencher;
+use crate::engine::node::NodeType::{NNumber, NOpt};
+use crate::engine::runtime::OptMap;
+use crate::utils;
+use crate::utils::time_util;
 
 #[test]
 fn test_parser() {
@@ -34,7 +34,6 @@ fn test_parser() {
         ]
     });
     println!("result >>>>>>>>>>   =  {}", box_node.eval(&john).unwrap());
-
 }
 
 #[test]
@@ -43,10 +42,10 @@ fn test_benchmark() {
     let john = json!({
         "name": "John Doe",
     });
-    let total=10000000;
-    let now=SystemTime::now();
-    for _ in 0..total{
-        for _ in 0..1{
+    let total = 10000000;
+    let now = SystemTime::now();
+    for _ in 0..total {
+        for _ in 0..1 {
             box_node.clone();
             // box_node.clone();
             // n2.eval(&john);

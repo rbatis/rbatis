@@ -44,7 +44,7 @@ pub fn find_convert_string(arg: &str) -> Vec<String> {
 pub fn find_no_convert_string(arg: &str) -> Vec<String> {
     let mut finds = HashMap::new();
     let chars = arg.bytes();
-    let mut item =  String::new();
+    let mut item = String::new();
     let mut last_index: i32 = -1;
     let mut start_index: i32 = -1;
     let str_bytes: Vec<u8> = arg.bytes().collect();
@@ -78,12 +78,12 @@ pub fn find_no_convert_string(arg: &str) -> Vec<String> {
 }
 
 
-pub fn count_string_num(s:&String,c:char)->usize{
-    let cs=s.chars();
-    let mut num=0;
+pub fn count_string_num(s: &String, c: char) -> usize {
+    let cs = s.chars();
+    let mut num = 0;
     for x in cs {
-        if x==c{
-            num+=1;
+        if x == c {
+            num += 1;
         }
     }
     return num;

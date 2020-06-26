@@ -1,5 +1,6 @@
+use chrono::{DateTime, Local};
+
 use crate::utils::time_util::print_each_time;
-use chrono::{Local, DateTime};
 
 pub struct Bencher {
     total: i32,

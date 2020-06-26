@@ -3,14 +3,12 @@ use std::collections::HashMap;
 use serde_json::{json, Map, Value};
 
 use crate::ast::ast::RbatisSqlAST;
-
 use crate::ast::node::node::{create_deep, do_child_nodes, print_child, SqlNodePrint};
 use crate::ast::node::node_type::NodeType;
 use crate::ast::node::string_node::StringNode;
-use crate::utils;
-use crate::engine::runtime::RbatisEngine;
 use crate::convert::stmt_convert::StmtConvert;
-
+use crate::engine::runtime::RbatisEngine;
+use crate::utils;
 
 #[derive(Clone, Debug)]
 pub struct ForEachNode {
@@ -24,7 +22,7 @@ pub struct ForEachNode {
 }
 
 impl RbatisSqlAST for ForEachNode {
-    fn eval(&self,convert: &impl StmtConvert, env: &mut Value, engine: &RbatisEngine, arg_array: &mut Vec<Value>) -> Result<String, rbatis_core::Error> {
+    fn eval(&self, convert: &impl StmtConvert, env: &mut Value, engine: &RbatisEngine, arg_array: &mut Vec<Value>) -> Result<String, rbatis_core::Error> {
         let mut result = String::new();
 
         //open
@@ -49,7 +47,7 @@ impl RbatisSqlAST for ForEachNode {
             obj_map.insert("item".to_string(), item.clone());
             obj_map.insert("index".to_string(), Value::Number(serde_json::Number::from_f64(index as f64).unwrap()));
             let mut temp_arg: Value = Value::Object(obj_map);
-            let item_result = do_child_nodes(convert,&self.childs, &mut temp_arg, engine, arg_array)?;
+            let item_result = do_child_nodes(convert, &self.childs, &mut temp_arg, engine, arg_array)?;
             result = result + item_result.as_str();
             if have_separator && (index + 1) < collection_len {
                 result = result + self.separator.as_str();

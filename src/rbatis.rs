@@ -263,8 +263,8 @@ impl<'r> Rbatis<'r> {
     fn py_to_sql(&self, py: &str, arg: &serde_json::Value) -> Result<(String, Vec<serde_json::Value>), rbatis_core::Error> {
         let nodes = Py::parser_and_cache(py)?;
         let mut arg_array = vec![];
-        let mut env =arg.clone();
-        let sql = do_child_nodes(&self.pool.get().unwrap().driver_type,&nodes, &mut env, &self.engine, &mut arg_array)?;
+        let mut env = arg.clone();
+        let sql = do_child_nodes(&self.pool.get().unwrap().driver_type, &nodes, &mut env, &self.engine, &mut arg_array)?;
         return Ok((sql, arg_array));
     }
 
@@ -275,7 +275,7 @@ impl<'r> Rbatis<'r> {
         let node_type = node_type.to_result(|| format!("[rabtis] mapper:{}.{}() not init to rbatis", mapper, method))?;
         let mut arg_array = vec![];
 
-        let sql = node_type.eval(&self.pool.get().unwrap().driver_type,&mut arg.clone(), &self.engine, &mut arg_array)?;
+        let sql = node_type.eval(&self.pool.get().unwrap().driver_type, &mut arg.clone(), &self.engine, &mut arg_array)?;
         return Ok((sql, arg_array));
     }
 

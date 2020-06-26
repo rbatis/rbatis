@@ -23,7 +23,7 @@ impl RbatisSqlAST for WhenNode {
             return Result::Err(rbatis_core::Error::from("[rbatis] test:'".to_owned() + self.test.as_str() + "' is not return bool!"));
         }
         if result.as_bool().unwrap() {
-            return do_child_nodes(convert,&self.childs, env, engine, arg_array);
+            return do_child_nodes(convert, &self.childs, env, engine, arg_array);
         }
         return Result::Ok("".to_string());
     }

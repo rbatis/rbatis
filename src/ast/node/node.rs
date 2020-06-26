@@ -34,7 +34,7 @@ pub trait SqlNodePrint {
 
 
 //执行子所有节点
-pub fn do_child_nodes(convert: &impl StmtConvert,child_nodes: &Vec<NodeType>, env: &mut Value, engine: &RbatisEngine, arg_array: &mut Vec<Value>) -> Result<String, rbatis_core::Error> {
+pub fn do_child_nodes(convert: &impl StmtConvert, child_nodes: &Vec<NodeType>, env: &mut Value, engine: &RbatisEngine, arg_array: &mut Vec<Value>) -> Result<String, rbatis_core::Error> {
     let mut s = String::new();
     for item in child_nodes {
         let item_result = item.eval(convert, env, engine, arg_array)?;

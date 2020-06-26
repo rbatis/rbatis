@@ -21,7 +21,7 @@ impl RbatisSqlAST for IfNode {
             return Result::Err(rbatis_core::Error::from("[rbatis] express:'".to_owned() + self.test.as_str() + "' is not return bool value!"));
         }
         if result.as_bool().unwrap() {
-            return do_child_nodes(convert,&self.childs, env, engine, arg_array);
+            return do_child_nodes(convert, &self.childs, env, engine, arg_array);
         }
         return Result::Ok("".to_string());
     }

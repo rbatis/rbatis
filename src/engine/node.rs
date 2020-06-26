@@ -3,7 +3,6 @@ use std::fmt::{Display, Error, Formatter};
 use std::ops::Deref;
 use std::ptr::null;
 
-
 use serde_json::{Map, Value};
 use serde_json;
 use serde_json::json;
@@ -13,8 +12,7 @@ use crate::engine::eval::eval;
 use crate::engine::node::NodeType::{NArg, NBinary, NBool, NNull, NNumber, NOpt, NString};
 use crate::engine::runtime::{is_number, OptMap, parser_tokens};
 
-
-#[derive(Clone, PartialEq,Debug)]
+#[derive(Clone, PartialEq, Debug)]
 pub enum NodeType {
     NArg = 1,
     //参数节点
@@ -47,7 +45,7 @@ impl Display for NodeType {
 
 
 //抽象语法树节点
-#[derive(Clone,Debug)]
+#[derive(Clone, Debug)]
 pub struct Node {
     pub value: Value,
     pub left_binary_node: Option<Box<Node>>,
@@ -95,7 +93,7 @@ impl Node {
             let right_v = self.right_binary_node.as_ref().unwrap().eval(env).unwrap_or(Value::Null);
             let opt = self.to_string();
             return eval(&left_v, &right_v, opt);
-        } else if self.equal_node_type(&NArg){
+        } else if self.equal_node_type(&NArg) {
             let arr = self.value.as_array().unwrap();
             let arr_len = arr.len() as i32;
             if arr_len == 0 {
