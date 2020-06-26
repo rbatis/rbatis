@@ -1,13 +1,12 @@
 use serde_json::{json, Value};
 use serde_json::ser::State::Rest;
 
-use crate::ast::ast::RbatisAST;
-
+use crate::ast::ast::RbatisSqlAST;
 use crate::ast::node::node::{create_deep, do_child_nodes, print_child, SqlNodePrint};
 use crate::ast::node::node_type::NodeType;
 use crate::ast::node::string_node::StringNode;
+use crate::convert::stmt_convert::StmtConvert;
 use crate::engine::runtime::RbatisEngine;
-
 
 #[derive(Clone, Debug)]
 pub struct IfNode {
@@ -15,14 +14,14 @@ pub struct IfNode {
     pub test: String,
 }
 
-impl RbatisAST for IfNode {
-    fn eval(&self, env: &mut Value, engine: &RbatisEngine, arg_array: &mut Vec<Value>) -> Result<String, rbatis_core::Error> {
+impl RbatisSqlAST for IfNode {
+    fn eval(&self, convert: &impl StmtConvert, env: &mut Value, engine: &RbatisEngine, arg_array: &mut Vec<Value>) -> Result<String, rbatis_core::Error> {
         let result = engine.eval(self.test.as_str(), env)?;
         if !result.is_boolean() {
             return Result::Err(rbatis_core::Error::from("[rbatis] express:'".to_owned() + self.test.as_str() + "' is not return bool value!"));
         }
         if result.as_bool().unwrap() {
-            return do_child_nodes(&self.childs, env, engine, arg_array);
+            return do_child_nodes(convert,&self.childs, env, engine, arg_array);
         }
         return Result::Ok("".to_string());
     }

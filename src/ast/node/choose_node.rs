@@ -1,18 +1,16 @@
 use core::borrow::BorrowMut;
 use std::ops::DerefMut;
 
-
 use serde_json::{json, Value};
 
-use crate::ast::ast::RbatisAST;
-
+use crate::ast::ast::RbatisSqlAST;
 use crate::ast::node::node::{create_deep, print_child, SqlNodePrint};
 use crate::ast::node::node_type::NodeType;
 use crate::ast::node::node_type::NodeType::NString;
 use crate::ast::node::otherwise_node::OtherwiseNode;
 use crate::ast::node::string_node::StringNode;
+use crate::convert::stmt_convert::StmtConvert;
 use crate::engine::runtime::RbatisEngine;
-
 
 #[derive(Clone, Debug)]
 pub struct ChooseNode {
@@ -20,18 +18,18 @@ pub struct ChooseNode {
     pub otherwise_node: Option<Box<NodeType>>,
 }
 
-impl RbatisAST for ChooseNode {
-    fn eval(&self, env: &mut Value, engine: &RbatisEngine, arg_array: &mut Vec<Value>) -> Result<String, rbatis_core::Error> {
+impl RbatisSqlAST for ChooseNode {
+    fn eval(&self, convert: &impl StmtConvert, env: &mut Value, engine: &RbatisEngine, arg_array: &mut Vec<Value>) -> Result<String, rbatis_core::Error> {
         if self.when_nodes.is_none() == false {
             for item in self.when_nodes.clone().unwrap() {
-                let s = item.eval(env, engine, arg_array);
+                let s = item.eval(convert, env, engine, arg_array);
                 if s.is_ok() {
                     return s;
                 }
             }
         }
         if self.otherwise_node.is_none() == false {
-            return self.otherwise_node.clone().unwrap().deref_mut().eval(env, engine, arg_array);
+            return self.otherwise_node.clone().unwrap().deref_mut().eval(convert, env, engine, arg_array);
         }
         return Result::Ok("".to_string());
     }
@@ -63,6 +61,6 @@ pub fn test_choose_node() {
     let mut arg_array = vec![];
 
 
-    let r = c.eval(&mut john, &mut engine, &mut arg_array);
+    let r = c.eval(DriverType, &mut john, &mut engine, &mut arg_array);
     println!("{}", r.unwrap());
 }

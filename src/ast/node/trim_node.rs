@@ -1,12 +1,11 @@
 use serde_json::{json, Value};
 
-use crate::ast::ast::RbatisAST;
-
+use crate::ast::ast::RbatisSqlAST;
 use crate::ast::node::node::{create_deep, do_child_nodes, print_child, SqlNodePrint};
 use crate::ast::node::node_type::NodeType;
 use crate::ast::node::string_node::StringNode;
+use crate::convert::stmt_convert::StmtConvert;
 use crate::engine::runtime::RbatisEngine;
-
 
 #[derive(Clone, Debug)]
 pub struct TrimNode {
@@ -17,9 +16,9 @@ pub struct TrimNode {
     pub prefix_overrides: String,
 }
 
-impl RbatisAST for TrimNode {
-    fn eval(&self, env: &mut Value, engine: &RbatisEngine, arg_array: &mut Vec<Value>) -> Result<String, rbatis_core::Error> {
-        let result_value = do_child_nodes(&self.childs, env, engine, arg_array)?;
+impl RbatisSqlAST for TrimNode {
+    fn eval(&self, convert: &impl StmtConvert, env: &mut Value, engine: &RbatisEngine, arg_array: &mut Vec<Value>) -> Result<String, rbatis_core::Error> {
+        let result_value = do_child_nodes(convert,&self.childs, env, engine, arg_array)?;
         let mut result = result_value.as_str().trim();
         if !self.prefix_overrides.is_empty() {
             let splits: Vec<&str> = self.prefix_overrides.split("|").collect();

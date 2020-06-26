@@ -1,9 +1,8 @@
 use std::collections::HashMap;
 
-
 use serde_json::{json, Value};
 
-
+use crate::ast::ast::RbatisSqlAST;
 use crate::ast::node::bind_node::BindNode;
 use crate::ast::node::choose_node::ChooseNode;
 use crate::ast::node::delete_node::DeleteNode;
@@ -23,12 +22,11 @@ use crate::ast::node::trim_node::TrimNode;
 use crate::ast::node::update_node::UpdateNode;
 use crate::ast::node::when_node::WhenNode;
 use crate::ast::node::where_node::WhereNode;
+use crate::convert::stmt_convert::StmtConvert;
+use crate::engine::runtime::RbatisEngine;
 use crate::utils::xml_loader::Element;
 
 use super::node_type::NodeType;
-use crate::ast::ast::RbatisAST;
-use crate::engine::runtime::RbatisEngine;
-
 
 pub trait SqlNodePrint {
     fn print(&self, deep: i32) -> String;
@@ -36,10 +34,10 @@ pub trait SqlNodePrint {
 
 
 //执行子所有节点
-pub fn do_child_nodes(child_nodes: &Vec<NodeType>, env: &mut Value, engine: &RbatisEngine, arg_array: &mut Vec<Value>) -> Result<String, rbatis_core::Error> {
+pub fn do_child_nodes(convert: &impl StmtConvert,child_nodes: &Vec<NodeType>, env: &mut Value, engine: &RbatisEngine, arg_array: &mut Vec<Value>) -> Result<String, rbatis_core::Error> {
     let mut s = String::new();
     for item in child_nodes {
-        let item_result = item.eval(env, engine, arg_array)?;
+        let item_result = item.eval(convert, env, engine, arg_array)?;
         s = s + item_result.as_str();
     }
     return Result::Ok(s);

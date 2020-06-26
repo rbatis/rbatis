@@ -1,20 +1,18 @@
 use core::borrow::BorrowMut;
+use std::collections::HashMap;
 use std::ops::DerefMut;
-
 
 use serde::{Deserialize, Serialize};
 use serde_json::{json, Value};
 
-use crate::ast::ast::RbatisAST;
-
+use crate::ast::ast::RbatisSqlAST;
 use crate::ast::node::node::{create_deep, print_child, SqlNodePrint};
 use crate::ast::node::node_type::NodeType;
 use crate::ast::node::otherwise_node::OtherwiseNode;
 use crate::ast::node::result_map_id_node::ResultMapIdNode;
 use crate::ast::node::result_map_result_node::ResultMapResultNode;
-use std::collections::HashMap;
+use crate::convert::stmt_convert::StmtConvert;
 use crate::engine::runtime::RbatisEngine;
-
 
 #[derive(Serialize, Deserialize, Clone, Debug)]
 pub struct ResultMapNode {
@@ -63,8 +61,8 @@ impl ResultMapNode {
     }
 }
 
-impl RbatisAST for ResultMapNode {
-    fn eval(&self, env: &mut Value, engine: &RbatisEngine, arg_array: &mut Vec<Value>) -> Result<String, rbatis_core::Error> {
+impl RbatisSqlAST for ResultMapNode {
+    fn eval(&self, convert: &impl StmtConvert, env: &mut Value, engine: &RbatisEngine, arg_array: &mut Vec<Value>) -> Result<String, rbatis_core::Error> {
         return Result::Ok("".to_string());
     }
 }
