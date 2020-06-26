@@ -26,7 +26,6 @@ use crate::ast::node::select_node::SelectNode;
 use crate::ast::node::update_node::UpdateNode;
 use crate::engine::runtime::RbatisEngine;
 use crate::utils::error_util::ToResult;
-
 /// rbatis engine
 pub struct Rbatis<'r> {
     pool: OnceCell<DBPool>,
@@ -118,31 +117,35 @@ impl<'r> Rbatis<'r> {
     pub async fn fetch<T>(&self, tx_id: &str, sql: &str) -> Result<T, rbatis_core::Error>
         where T: DeserializeOwned {
         info!("[rbatis] fetch sql:{}", sql);
+        let data;
         if tx_id.is_empty() {
             let mut conn = self.get_pool()?.acquire().await?;
             let mut c = conn.fetch(sql)?;
-            return c.decode_json().await;
+            data = c.decode_json().await?;
         } else {
             let mut conn = self.get_tx(tx_id).await?;
             let mut c = conn.fetch(sql)?;
-            let t = c.decode_json().await;
+            data  = c.decode_json().await?;
             self.context_tx.put(tx_id, conn).await;
-            return t;
         }
+        info!("[rbatis] << {}", 1);
+        return Ok(data);
     }
 
     /// exec sql(row sql)
     pub async fn exec(&self, tx_id: &str, sql: &str) -> Result<u64, rbatis_core::Error> {
         info!("[rbatis] exec sql:{}", sql);
+        let data;
         if tx_id.is_empty() {
             let mut conn = self.get_pool()?.acquire().await?;
-            return conn.execute(sql).await;
+            data = conn.execute(sql).await?;
         } else {
             let mut conn = self.get_tx(tx_id).await?;
-            let result = conn.execute(sql).await;
+            data = conn.execute(sql).await?;
             self.context_tx.put(tx_id, conn).await;
-            return result;
         }
+        //TODO info!("[rbatis] << {}", result.unwrap());
+        return Ok(data);
     }
 
     fn bind_arg<'a>(&self, sql: &'a str, arg: &Vec<serde_json::Value>) -> DBQuery<'a> {
