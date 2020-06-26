@@ -1,11 +1,10 @@
 use serde_json::{json, Value};
 
-use crate::ast::ast::RbatisAST;
-
+use crate::ast::ast::RbatisSqlAST;
 use crate::ast::node::node::{create_deep, do_child_nodes, print_child, SqlNodePrint};
 use crate::ast::node::node_type::NodeType;
+use crate::convert::stmt_convert::StmtConvert;
 use crate::engine::runtime::RbatisEngine;
-
 
 #[derive(Clone, Debug)]
 pub struct SelectNode {
@@ -14,9 +13,9 @@ pub struct SelectNode {
 }
 
 
-impl RbatisAST for SelectNode {
-    fn eval(&self, env: &mut Value, engine: &RbatisEngine, arg_array: &mut Vec<Value>) -> Result<String, rbatis_core::Error> {
-        return do_child_nodes(&self.childs, env, engine, arg_array);
+impl RbatisSqlAST for SelectNode {
+    fn eval(&self, convert: &impl StmtConvert, env: &mut Value, engine: &RbatisEngine, arg_array: &mut Vec<Value>) -> Result<String, rbatis_core::Error> {
+        return do_child_nodes(convert,&self.childs, env, engine, arg_array);
     }
 }
 

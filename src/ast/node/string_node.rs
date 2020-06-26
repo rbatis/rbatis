@@ -1,16 +1,13 @@
 use std::collections::HashMap;
 
-
 use serde_json::{json, Value};
 
-use crate::ast::ast::RbatisAST;
-
+use crate::ast::ast::RbatisSqlAST;
 use crate::ast::node::node::{create_deep, SqlNodePrint};
+use crate::convert::stmt_convert::StmtConvert;
 use crate::engine;
-use crate::utils::string_util;
-use crate::convert::sql_value_convert::SqlValueConvert;
 use crate::engine::runtime::RbatisEngine;
-
+use crate::utils::string_util;
 
 ///string抽象节点
 #[derive(Clone, Debug)]
@@ -40,11 +37,11 @@ impl StringNode {
     }
 }
 
-impl RbatisAST for StringNode {
-    fn eval(&self, env: &mut Value, engine: &RbatisEngine, arg_array: &mut Vec<Value>) -> Result<String, rbatis_core::Error> {
+impl RbatisSqlAST for StringNode {
+    fn eval(&self, convert: &impl StmtConvert, env: &mut Value, engine: &RbatisEngine, arg_array: &mut Vec<Value>) -> Result<String, rbatis_core::Error> {
         let mut result = self.value.clone();
         for (item, value) in &self.express_map {
-            result = result.replace(value, " ? ");
+            result = result.replace(value, convert.stmt_convert(arg_array.len()).as_str());
             let get_v = env.get(item);
             if get_v.is_none() {
                 let v = engine.eval(item, env).unwrap();

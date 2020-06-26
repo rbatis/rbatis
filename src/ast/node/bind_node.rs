@@ -1,11 +1,10 @@
 use serde_json::{json, Value};
 
-use crate::ast::ast::RbatisAST;
-
+use crate::ast::ast::RbatisSqlAST;
 use crate::ast::node::node::{create_deep, SqlNodePrint};
+use crate::convert::stmt_convert::StmtConvert;
 use crate::engine;
 use crate::engine::runtime::RbatisEngine;
-
 
 const TEMPLETE_BIND: &'static str = "<bind #{attr}>#{body}</bind>";
 
@@ -15,8 +14,8 @@ pub struct BindNode {
     pub value: String,
 }
 
-impl RbatisAST for BindNode {
-    fn eval(&self, env: &mut Value, engine: &RbatisEngine, arg_array: &mut Vec<Value>) -> Result<String, rbatis_core::Error> {
+impl RbatisSqlAST for BindNode {
+    fn eval(&self, convert: &impl StmtConvert, env: &mut Value, engine: &RbatisEngine, arg_array: &mut Vec<Value>) -> Result<String, rbatis_core::Error> {
         let r = engine.eval(self.value.as_str(), env)?;
         env[self.name.as_str()] = r;
         return Result::Ok("".to_string());

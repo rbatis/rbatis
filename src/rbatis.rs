@@ -16,7 +16,7 @@ use rbatis_core::query_as::query_as;
 use rbatis_core::sync_map::SyncMap;
 use rbatis_core::transaction::Transaction;
 
-use crate::ast::ast::RbatisAST;
+use crate::ast::ast::RbatisSqlAST;
 use crate::ast::lang::py::Py;
 use crate::ast::lang::xml::Xml;
 use crate::ast::node::delete_node::DeleteNode;
@@ -260,13 +260,22 @@ impl<'r> Rbatis<'r> {
     }
 
 
+    fn py_to_sql(&self, py: &str, arg: &serde_json::Value) -> Result<(String, Vec<serde_json::Value>), rbatis_core::Error> {
+        let nodes = Py::parser_and_cache(py)?;
+        let mut arg_array = vec![];
+        let mut env =arg.clone();
+        let sql = do_child_nodes(&self.pool.get().unwrap().driver_type,&nodes, &mut env, &self.engine, &mut arg_array)?;
+        return Ok((sql, arg_array));
+    }
+
     fn xml_to_sql(&self, mapper: &str, method: &str, arg: &serde_json::Value) -> Result<(String, Vec<serde_json::Value>), rbatis_core::Error> {
         let x = self.mapper_node_map.get(mapper);
         let x = x.to_result(|| format!("[rabtis] mapper:{} not init to rbatis", mapper))?;
         let node_type = x.get(method);
         let node_type = node_type.to_result(|| format!("[rabtis] mapper:{}.{}() not init to rbatis", mapper, method))?;
         let mut arg_array = vec![];
-        let sql = node_type.eval(&mut arg.clone(), &self.engine, &mut arg_array)?;
+
+        let sql = node_type.eval(&self.pool.get().unwrap().driver_type,&mut arg.clone(), &self.engine, &mut arg_array)?;
         return Ok((sql, arg_array));
     }
 
@@ -284,13 +293,6 @@ impl<'r> Rbatis<'r> {
         return self.exec_prepare(tx_id, sql.as_str(), &args).await;
     }
 
-
-    fn py_to_sql(&self, py: &str, arg: &serde_json::Value) -> Result<(String, Vec<serde_json::Value>), rbatis_core::Error> {
-        let nodes = Py::parser_and_cache(py)?;
-        let mut arg_array = vec![];
-        let sql = do_child_nodes(&nodes, &mut arg.clone(), &self.engine, &mut arg_array)?;
-        return Ok((sql, arg_array));
-    }
 
     /// fetch result(prepare sql)
     pub async fn py_fetch<T>(&self, tx_id: &str, py: &str, arg: &serde_json::Value) -> Result<T, rbatis_core::Error>

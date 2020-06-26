@@ -1,7 +1,6 @@
 use serde_json::{json, Value};
 
-use crate::ast::ast::RbatisAST;
-
+use crate::ast::ast::RbatisSqlAST;
 use crate::ast::node::bind_node::BindNode;
 use crate::ast::node::choose_node::ChooseNode;
 use crate::ast::node::delete_node::DeleteNode;
@@ -21,9 +20,9 @@ use crate::ast::node::trim_node::TrimNode;
 use crate::ast::node::update_node::UpdateNode;
 use crate::ast::node::when_node::WhenNode;
 use crate::ast::node::where_node::WhereNode;
+use crate::convert::stmt_convert::StmtConvert;
 use crate::engine::node::Node;
 use crate::engine::runtime::RbatisEngine;
-
 
 #[derive(Clone, Debug)]
 pub enum NodeType {
@@ -68,30 +67,30 @@ impl NodeType {
     }
 }
 
-impl<'a> RbatisAST for NodeType {
-    fn eval(&self, env: &mut Value, engine: &RbatisEngine, arg_array: &mut Vec<Value>) -> Result<String, rbatis_core::Error> {
+impl<'a> RbatisSqlAST for NodeType {
+    fn eval(&self, convert: &impl StmtConvert, env: &mut Value, engine: &RbatisEngine, arg_array: &mut Vec<Value>) -> Result<String, rbatis_core::Error> {
         match self {
-            NodeType::NResultMapIdNode(node) => return node.eval(env, engine, arg_array),
-            NodeType::NResultMapResultNode(node) => return node.eval(env, engine, arg_array),
-            NodeType::NResultMapNode(node) => return node.eval(env, engine, arg_array),
+            NodeType::NResultMapIdNode(node) => return node.eval(convert, env, engine, arg_array),
+            NodeType::NResultMapResultNode(node) => return node.eval(convert, env, engine, arg_array),
+            NodeType::NResultMapNode(node) => return node.eval(convert, env, engine, arg_array),
 
-            NodeType::NSelectNode(node) => return node.eval(env, engine, arg_array),
-            NodeType::NDeleteNode(node) => return node.eval(env, engine, arg_array),
-            NodeType::NUpdateNode(node) => return node.eval(env, engine, arg_array),
-            NodeType::NInsertNode(node) => return node.eval(env, engine, arg_array),
+            NodeType::NSelectNode(node) => return node.eval(convert, env, engine, arg_array),
+            NodeType::NDeleteNode(node) => return node.eval(convert, env, engine, arg_array),
+            NodeType::NUpdateNode(node) => return node.eval(convert, env, engine, arg_array),
+            NodeType::NInsertNode(node) => return node.eval(convert, env, engine, arg_array),
 
             NodeType::Null => return Result::Ok(String::new()),
-            NodeType::NString(node) => return node.eval(env, engine, arg_array),
-            NodeType::NIf(node) => return node.eval(env, engine, arg_array),
-            NodeType::NTrim(node) => return node.eval(env, engine, arg_array),
-            NodeType::NForEach(node) => return node.eval(env, engine, arg_array),
-            NodeType::NChoose(node) => return node.eval(env, engine, arg_array),
-            NodeType::NOtherwise(node) => return node.eval(env, engine, arg_array),
-            NodeType::NWhen(node) => return node.eval(env, engine, arg_array),
-            NodeType::NBind(node) => return node.eval(env, engine, arg_array),
-            NodeType::NInclude(node) => return node.eval(env, engine, arg_array),
-            NodeType::NSet(node) => return node.eval(env, engine, arg_array),
-            NodeType::NWhere(node) => return node.eval(env, engine, arg_array),
+            NodeType::NString(node) => return node.eval(convert, env, engine, arg_array),
+            NodeType::NIf(node) => return node.eval(convert, env, engine, arg_array),
+            NodeType::NTrim(node) => return node.eval(convert, env, engine, arg_array),
+            NodeType::NForEach(node) => return node.eval(convert, env, engine, arg_array),
+            NodeType::NChoose(node) => return node.eval(convert, env, engine, arg_array),
+            NodeType::NOtherwise(node) => return node.eval(convert, env, engine, arg_array),
+            NodeType::NWhen(node) => return node.eval(convert, env, engine, arg_array),
+            NodeType::NBind(node) => return node.eval(convert, env, engine, arg_array),
+            NodeType::NInclude(node) => return node.eval(convert, env, engine, arg_array),
+            NodeType::NSet(node) => return node.eval(convert, env, engine, arg_array),
+            NodeType::NWhere(node) => return node.eval(convert, env, engine, arg_array),
             _ => Result::Err(rbatis_core::Error::from("eval NodeType not exist!")),
         }
     }
