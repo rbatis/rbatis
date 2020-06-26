@@ -262,6 +262,12 @@ rbatis-core = { features = ["runtime-async-std","all-type"]}
 # 或者Cargo.toml 加入 
 # rbatis-core = { features = ["runtime-tokio","all-type"]}
 ```
+
+
+### 和Rbatis相关项目
+* Log日志库 https://github.com/rbatis/fast_log
+* Rbatis/Core  https://github.com/rbatis/rbatis/tree/master/rbatis-core
+
   
 ## 欢迎右上角star或者微信捐赠~
 ![Image text](https://zhuxiujia.github.io/gomybatis.io/assets/wx_account.jpg)
