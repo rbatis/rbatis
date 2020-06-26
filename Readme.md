@@ -254,8 +254,12 @@ pub async fn test_hyper(){
 *直接使用驱动依赖项目里哪个库？
 应该使用rbatis-core， Cargo.toml 加入 rbatis-core = "*"
 *如何选择运行时是tokio还是async_std？
-Cargo.toml 加入 rbatis-core = { features = ["runtime-async-std","all-type"]}
-或者Cargo.toml 加入 rbatis-core = { features = ["runtime-tokio","all-type"]}
+```rust
+# Cargo.toml 加入 
+rbatis-core = { features = ["runtime-async-std","all-type"]}
+# 或者Cargo.toml 加入 
+# rbatis-core = { features = ["runtime-tokio","all-type"]}
+```
   
 ## 欢迎右上角star或者微信捐赠~
 ![Image text](https://zhuxiujia.github.io/gomybatis.io/assets/wx_account.jpg)
