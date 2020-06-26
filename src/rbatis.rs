@@ -116,7 +116,7 @@ impl<'r> Rbatis<'r> {
     /// fetch result(row sql)
     pub async fn fetch<T>(&self, tx_id: &str, sql: &str) -> Result<T, rbatis_core::Error>
         where T: DeserializeOwned {
-        info!("[rbatis] fetch sql:{}", sql);
+        info!("[rbatis] >> fetch sql:{}", sql);
         let data;
         if tx_id.is_empty() {
             let mut conn = self.get_pool()?.acquire().await?;
@@ -128,13 +128,13 @@ impl<'r> Rbatis<'r> {
             data  = c.decode_json().await?;
             self.context_tx.put(tx_id, conn).await;
         }
-        info!("[rbatis] << {}", 1);
+        //TODO info!("[rbatis] << {}", result.unwrap());
         return Ok(data);
     }
 
     /// exec sql(row sql)
     pub async fn exec(&self, tx_id: &str, sql: &str) -> Result<u64, rbatis_core::Error> {
-        info!("[rbatis] exec sql:{}", sql);
+        info!("[rbatis] >> exec sql:{}", sql);
         let data;
         if tx_id.is_empty() {
             let mut conn = self.get_pool()?.acquire().await?;
@@ -166,8 +166,8 @@ impl<'r> Rbatis<'r> {
     /// fetch result(prepare sql)
     pub async fn fetch_prepare<T>(&self, tx_id: &str, sql: &str, arg: &Vec<serde_json::Value>) -> Result<T, rbatis_core::Error>
         where T: DeserializeOwned {
-        info!("[rbatis] fetch prepare sql:{}", sql);
-        info!("[rbatis] fetch prepare arg:{:?}", arg);
+        info!("[rbatis] >> fetch sql:{}", sql);
+        info!("[rbatis] >> fetch arg:{:?}", arg);
         if tx_id.is_empty() {
             let mut conn = self.get_pool()?.acquire().await?;
             let q: DBQuery = self.bind_arg(sql, arg);
@@ -181,12 +181,13 @@ impl<'r> Rbatis<'r> {
             self.context_tx.put(tx_id, conn).await;
             return result;
         }
+        //TODO info!("[rbatis] << {}", result.unwrap());
     }
 
     /// exec sql(prepare sql)
     pub async fn exec_prepare(&self, tx_id: &str, sql: &str, arg: &Vec<serde_json::Value>) -> Result<u64, rbatis_core::Error> {
-        info!("[rbatis] exec prepare sql:{}", sql);
-        info!("[rbatis] exec prepare arg:{:?}", arg);
+        info!("[rbatis] >> exec sql:{}", sql);
+        info!("[rbatis] >> exec arg:{:?}", arg);
         if tx_id.is_empty() {
             let mut conn = self.get_pool()?.acquire().await?;
             let q: DBQuery = self.bind_arg(sql, arg);
@@ -198,6 +199,7 @@ impl<'r> Rbatis<'r> {
             self.context_tx.put(tx_id, conn).await;
             return result;
         }
+        //TODO info!("[rbatis] << {}", result.unwrap());
     }
 
 
