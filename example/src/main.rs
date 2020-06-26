@@ -41,7 +41,7 @@ pub struct Activity {
 //示例 mysql 链接地址
 pub const MYSQL_URL: &'static str = "mysql://root:123456@localhost:3306/test";
 
-// 示例-Rbatis示例初始化
+// 示例-Rbatis示例初始化(必须)
 lazy_static! {
   static ref RB:Rbatis<'static>={
          let r=Rbatis::new();
@@ -52,7 +52,7 @@ lazy_static! {
   };
 }
 
-//初始化Tokio运行时
+//Tokio运行时(可选)
 lazy_static! {
  static ref RT:Mutex<tokio::runtime::Runtime> = Mutex::new(tokio::runtime::Builder::new()
         .basic_scheduler()
