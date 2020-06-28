@@ -14,6 +14,7 @@ use crate::ast::node::result_map_node::ResultMapNode;
 use crate::ast::node::result_map_result_node::ResultMapResultNode;
 use crate::ast::node::select_node::SelectNode;
 use crate::ast::node::set_node::SetNode;
+use crate::ast::node::sql_node::SqlNode;
 use crate::ast::node::string_node::StringNode;
 use crate::ast::node::trim_node::TrimNode;
 use crate::ast::node::update_node::UpdateNode;
@@ -21,7 +22,6 @@ use crate::ast::node::when_node::WhenNode;
 use crate::ast::node::where_node::WhereNode;
 use crate::engine::runtime::RbatisEngine;
 use crate::utils::xml_loader::{Element, load_xml};
-use crate::ast::node::sql_node::SqlNode;
 
 pub struct Xml {}
 
@@ -66,35 +66,33 @@ fn do_replace_include_node(arg: &mut HashMap<String, NodeType>) {
             continue;
         }
         let childs = childs.take().unwrap();
-        let mut include_node = loop_find_include_node(childs);
-        if include_node.is_none() {
+        let mut include_nodes =Vec::new();
+        loop_find_include_node(childs,&mut include_nodes);
+        if include_nodes.is_empty() {
             continue;
         }
-        match include_node {
-            Some(node) => {
-                match node {
-                    NodeType::NInclude(include) => {
-                        if include.refid.is_empty() {
-                            panic!("[rbatis] include node refid must have an value!");
-                        }
-                        let mut v = find_node(&arg_clone, &include.refid);
-                        if v.is_none() {
-                            panic!(format!("[rbatis] include node refid = '{}' not find!", &include.refid));
-                        }
-                        include.childs = vec![v.take().unwrap()];
+        for item in include_nodes {
+            match item {
+                NodeType::NInclude(include) => {
+                    if include.refid.is_empty() {
+                        panic!("[rbatis] include node refid must have an value!");
                     }
-                    _ => {}
+                    let mut v = find_node(&arg_clone, &include.refid);
+                    if v.is_none() {
+                        panic!(format!("[rbatis] include node refid = '{}' not find!", &include.refid));
+                    }
+                    include.childs = vec![v.take().unwrap()];
                 }
+                _ => {}
             }
-            _ => {}
         }
     }
 }
 
-fn find_node(arg: &HashMap<String, NodeType>,id:&str)->Option<NodeType>{
-    for (k,v) in arg {
-        println!("k:{}",k);
-        if k.eq(id){
+fn find_node(arg: &HashMap<String, NodeType>, id: &str) -> Option<NodeType> {
+    for (k, v) in arg {
+        println!("k:{}", k);
+        if k.eq(id) {
             return Some(v.clone());
         }
     }
@@ -102,23 +100,21 @@ fn find_node(arg: &HashMap<String, NodeType>,id:&str)->Option<NodeType>{
 }
 
 
-fn loop_find_include_node(m: &mut Vec<NodeType>) -> Option<&mut NodeType> {
+fn loop_find_include_node<'m>(m: &'m mut Vec<NodeType>, result: &mut Vec<&'m mut NodeType>) {
     for x in m {
         match x {
             NodeType::NInclude(_) => {
-                return Some(x);
+                result.push(x);
             }
             _ => {
                 let childs = x.childs_mut();
                 if childs.is_some() {
-                    return loop_find_include_node(childs.unwrap());
+                    return loop_find_include_node(childs.unwrap(), result);
                 }
             }
         }
     }
-    return None;
 }
-
 
 
 pub fn loop_decode_xml(xml_vec: &Vec<Element>) -> Vec<NodeType> {
