@@ -161,30 +161,9 @@ pub fn test_xml_sql() {
             let mut rb = Rbatis::new();
             rb.link(MYSQL_URL).await.unwrap();
             //xml数据建议以 XXMapper.xml 的格式存储管理
-            rb.load_xml("test", r#"<?xml version="1.0" encoding="UTF-8"?>
-<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
-        "https://raw.githubusercontent.com/zhuxiujia/Rbatis/master/rbatis-mapper.dtd">
+            rb.load_xml("test", r#"
 <mapper>
-    <result_map id="BaseResultMap" table="biz_activity">
-        <id column="id"/>
-        <result column="name" lang_type="string"/>
-        <result column="pc_link" lang_type="string"/>
-        <result column="h5_link" lang_type="string"/>
-        <result column="pc_banner_img" lang_type="string"/>
-        <result column="h5_banner_img" lang_type="string"/>
-        <result column="sort" lang_type="string"/>
-        <result column="status" lang_type="number"/>
-        <result column="remark" lang_type="string"/>
-        <result column="version" lang_type="number" version_enable="true"/>
-        <result column="create_time" lang_type="time"/>
-        <result column="delete_flag" lang_type="number" logic_enable="true" logic_undelete="1"
-                logic_deleted="0"/>
-    </result_map>
-
-    <sql id="columns">
-        id,name,pc_link,h5_link,pc_banner_img,h5_banner_img,sort,status,remark,version,create_time,delete_flag
-    </sql>
-
+    <sql id="columns">id,name,pc_link,h5_link,pc_banner_img,h5_banner_img,sort,status,remark,version,create_time,delete_flag</sql>
     <select id="select_by_condition">
         <bind name="pattern" value="'%' + name + '%'"/>
         select <include refid="columns"/> from biz_activity
@@ -197,7 +176,6 @@ pub fn test_xml_sql() {
         <if test="page != null and size != null">limit #{page}, #{size}</if>
     </select>
 </mapper>"#).unwrap();
-
             let arg = &json!({
             "delete_flag": 1,
             "name": "test",
