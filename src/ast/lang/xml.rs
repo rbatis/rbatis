@@ -21,6 +21,7 @@ use crate::ast::node::when_node::WhenNode;
 use crate::ast::node::where_node::WhereNode;
 use crate::engine::runtime::RbatisEngine;
 use crate::utils::xml_loader::{Element, load_xml};
+use crate::ast::node::sql_node::SqlNode;
 
 pub struct Xml {}
 
@@ -48,11 +49,77 @@ pub fn parser(xml_content: &str) -> HashMap<String, NodeType> {
             NodeType::NDeleteNode(node) => m.insert(node.id.clone(), x.clone()),
             NodeType::NUpdateNode(node) => m.insert(node.id.clone(), x.clone()),
             NodeType::NInsertNode(node) => m.insert(node.id.clone(), x.clone()),
+            NodeType::NSqlNode(node) => m.insert(node.id.clone(), x.clone()),
             _ => m.insert("unknow".to_string(), NodeType::Null),
         };
     }
+    //replace include node
+    do_replace_include_node(&mut m);
     return m;
 }
+
+fn do_replace_include_node(arg: &mut HashMap<String, NodeType>) {
+    let arg_clone = arg.clone();
+    for (k, v) in arg {
+        let mut childs = v.childs_mut();
+        if childs.is_none() {
+            continue;
+        }
+        let childs = childs.take().unwrap();
+        let mut include_node = loop_find_include_node(childs);
+        if include_node.is_none() {
+            continue;
+        }
+        match include_node {
+            Some(node) => {
+                match node {
+                    NodeType::NInclude(include) => {
+                        if include.refid.is_empty() {
+                            panic!("[rbatis] include node refid must have an value!");
+                        }
+                        let mut v = find_node(&arg_clone, &include.refid);
+                        if v.is_none() {
+                            panic!(format!("[rbatis] include node refid = '{}' not find!", &include.refid));
+                        }
+                        include.childs = vec![v.take().unwrap()];
+                    }
+                    _ => {}
+                }
+            }
+            _ => {}
+        }
+    }
+}
+
+fn find_node(arg: &HashMap<String, NodeType>,id:&str)->Option<NodeType>{
+    for (k,v) in arg {
+        println!("k:{}",k);
+        if k.eq(id){
+            return Some(v.clone());
+        }
+    }
+    return None;
+}
+
+
+fn loop_find_include_node(m: &mut Vec<NodeType>) -> Option<&mut NodeType> {
+    for x in m {
+        match x {
+            NodeType::NInclude(_) => {
+                return Some(x);
+            }
+            _ => {
+                let childs = x.childs_mut();
+                if childs.is_some() {
+                    return loop_find_include_node(childs.unwrap());
+                }
+            }
+        }
+    }
+    return None;
+}
+
+
 
 pub fn loop_decode_xml(xml_vec: &Vec<Element>) -> Vec<NodeType> {
     let mut nodes = vec![];
@@ -125,14 +192,14 @@ pub fn loop_decode_xml(xml_vec: &Vec<Element>) -> Vec<NodeType> {
                 value: xml.get_attr("value"),
             })),
             "include" => {
-                if child_nodes.len()>0{
+                if child_nodes.len() > 0 {
                     panic!("[rabatis] the <include> node child element must be empty!");
                 }
                 nodes.push(NodeType::NInclude(IncludeNode {
                     refid: xml.get_attr("refid"),
                     childs: child_nodes,
                 }))
-            },
+            }
             "set" => nodes.push(NodeType::NSet(SetNode {
                 childs: child_nodes,
             })),
@@ -155,6 +222,12 @@ pub fn loop_decode_xml(xml_vec: &Vec<Element>) -> Vec<NodeType> {
                                                                                    xml.get_attr("table"),
                                                                                    filter_result_map_id_nodes(&child_nodes),
                                                                                    filter_result_map_result_nodes(&child_nodes), ))),
+            "sql" => {
+                nodes.push(NodeType::NSqlNode(SqlNode {
+                    id: xml.get_attr("id"),
+                    childs: child_nodes,
+                }))
+            }
             "" => {
                 let data = xml.data.as_str();
                 let tag = xml.tag.as_str();

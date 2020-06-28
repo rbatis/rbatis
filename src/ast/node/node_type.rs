@@ -23,6 +23,7 @@ use crate::ast::node::where_node::WhereNode;
 use crate::convert::stmt_convert::StmtConvert;
 use crate::engine::node::Node;
 use crate::engine::runtime::RbatisEngine;
+use crate::ast::node::sql_node::SqlNode;
 
 #[derive(Clone, Debug)]
 pub enum NodeType {
@@ -39,6 +40,7 @@ pub enum NodeType {
     NSet(SetNode),
     NWhere(WhereNode),
 
+    NSqlNode(SqlNode),
     //CRUD
     NInsertNode(InsertNode),
     NUpdateNode(UpdateNode),
@@ -64,6 +66,60 @@ impl NodeType {
             _ => {}
         }
         return Option::None;
+    }
+
+    pub fn childs(&self) ->Option<&Vec<NodeType>> {
+        match self {
+            NodeType::NResultMapIdNode(node) => return None,
+            NodeType::NResultMapResultNode(node) => return None,
+            NodeType::NResultMapNode(node) => return None,
+
+            NodeType::NSelectNode(node) => return Some(&node.childs),
+            NodeType::NDeleteNode(node) => return Some(&node.childs),
+            NodeType::NUpdateNode(node) => return Some(&node.childs),
+            NodeType::NInsertNode(node) => return Some(&node.childs),
+
+            NodeType::Null => return None,
+            NodeType::NString(node) => return None,
+            NodeType::NIf(node) =>  return Some(&node.childs),
+            NodeType::NTrim(node) =>return Some(&node.childs),
+            NodeType::NForEach(node) => return Some(&node.childs),
+            NodeType::NChoose(node) => return None,
+            NodeType::NOtherwise(node) => return Some(&node.childs),
+            NodeType::NWhen(node) => return Some(&node.childs),
+            NodeType::NBind(node) => return None,
+            NodeType::NInclude(node) => return Some(&node.childs),
+            NodeType::NSet(node) => return Some(&node.childs),
+            NodeType::NWhere(node) => return Some(&node.childs),
+            NodeType::NSqlNode(node) => return Some(&node.childs),
+        }
+    }
+    pub fn childs_mut(&mut self) ->Option<&mut Vec<NodeType>> {
+        match self {
+            NodeType::NResultMapIdNode(node) => return None,
+            NodeType::NResultMapResultNode(node) => return None,
+            NodeType::NResultMapNode(node) => return None,
+
+            NodeType::NSelectNode(node) => return Some(&mut node.childs),
+            NodeType::NDeleteNode(node) => return Some(&mut node.childs),
+            NodeType::NUpdateNode(node) => return Some(&mut node.childs),
+            NodeType::NInsertNode(node) => return Some(&mut node.childs),
+
+            NodeType::Null => return None,
+            NodeType::NString(node) => return None,
+            NodeType::NIf(node) =>  return Some(&mut node.childs),
+            NodeType::NTrim(node) =>return Some(&mut node.childs),
+            NodeType::NForEach(node) => return Some(&mut node.childs),
+            NodeType::NChoose(node) => return None,
+            NodeType::NOtherwise(node) => return Some(&mut node.childs),
+            NodeType::NWhen(node) => return Some(&mut node.childs),
+            NodeType::NBind(node) => return None,
+            NodeType::NInclude(node) => return Some(&mut node.childs),
+            NodeType::NSet(node) => return Some(&mut node.childs),
+            NodeType::NWhere(node) => return Some(&mut node.childs),
+
+            NodeType::NSqlNode(node) => return Some(&mut node.childs),
+        }
     }
 }
 
@@ -91,7 +147,8 @@ impl<'a> RbatisAST for NodeType {
             NodeType::NInclude(node) => return node.eval(convert, env, engine, arg_array),
             NodeType::NSet(node) => return node.eval(convert, env, engine, arg_array),
             NodeType::NWhere(node) => return node.eval(convert, env, engine, arg_array),
-            _ => Result::Err(rbatis_core::Error::from("eval NodeType not exist!")),
+
+            NodeType::NSqlNode(node) => return node.eval(convert, env, engine, arg_array),
         }
     }
 }
@@ -120,7 +177,8 @@ impl SqlNodePrint for NodeType {
             NodeType::NInclude(node) => return node.print(deep),
             NodeType::NSet(node) => return node.print(deep),
             NodeType::NWhere(node) => return node.print(deep),
-            _ => String::from("print NodeType not exist!"),
+
+            NodeType::NSqlNode(node) => return  node.print(deep),
         }
     }
 }

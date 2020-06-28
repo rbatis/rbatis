@@ -180,9 +180,14 @@ pub fn test_xml_sql() {
         <result column="delete_flag" lang_type="number" logic_enable="true" logic_undelete="1"
                 logic_deleted="0"/>
     </result_map>
+
+    <sql id="columns">
+        id,name,pc_link,h5_link,pc_banner_img,h5_banner_img,sort,status,remark,version,create_time,delete_flag
+    </sql>
+
     <select id="select_by_condition">
         <bind name="pattern" value="'%' + name + '%'"/>
-        select * from biz_activity
+        select <include refid="columns"/> from biz_activity
         <where>
             <if test="name != null">and name like #{pattern}</if>
             <if test="startTime != null">and create_time >= #{startTime}</if>
