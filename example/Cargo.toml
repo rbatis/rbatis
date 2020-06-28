@@ -24,7 +24,7 @@ tide = "0.11.0"
 
 
 log = "0.4"
-fast_log = "1.2.0"
+fast_log = "1.2.1"
 
 
 #runtime
