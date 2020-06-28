@@ -11,6 +11,7 @@ pub mod trim_node;
 pub mod when_node;
 pub mod set_node;
 pub mod where_node;
+pub mod sql_node;
 
 pub mod insert_node;
 pub mod update_node;
