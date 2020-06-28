@@ -124,10 +124,15 @@ pub fn loop_decode_xml(xml_vec: &Vec<Element>) -> Vec<NodeType> {
                 name: xml.get_attr("name"),
                 value: xml.get_attr("value"),
             })),
-            "include" => nodes.push(NodeType::NInclude(IncludeNode {
-                refid: xml.get_attr("refid"),
-                childs: child_nodes,
-            })),
+            "include" => {
+                if child_nodes.len()>0{
+                    panic!("[rabatis] the <include> node child element must be empty!");
+                }
+                nodes.push(NodeType::NInclude(IncludeNode {
+                    refid: xml.get_attr("refid"),
+                    childs: child_nodes,
+                }))
+            },
             "set" => nodes.push(NodeType::NSet(SetNode {
                 childs: child_nodes,
             })),

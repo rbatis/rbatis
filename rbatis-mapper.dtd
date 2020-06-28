@@ -121,6 +121,11 @@
                 >
 
 
+        <!ELEMENT include (property+)?>
+        <!ATTLIST include
+                refid CDATA #REQUIRED
+                >
+
         <!ELEMENT typeAlias EMPTY>
         <!ATTLIST typeAlias
                 alias CDATA #REQUIRED
