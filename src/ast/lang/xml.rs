@@ -91,7 +91,6 @@ fn do_replace_include_node(arg: &mut HashMap<String, NodeType>) {
 
 fn find_node(arg: &HashMap<String, NodeType>, id: &str) -> Option<NodeType> {
     for (k, v) in arg {
-        println!("k:{}", k);
         if k.eq(id) {
             return Some(v.clone());
         }
