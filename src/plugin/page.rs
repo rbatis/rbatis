@@ -1,11 +1,8 @@
 //TODO add page plugin
-
-
-
-
 use serde::de::DeserializeOwned;
 use serde::{Deserialize, Serialize};
 
+///分页 Page 抽象接口
 pub trait IPage<T> {
     ///每页显示条数
     fn get_size(&self) -> i64;
