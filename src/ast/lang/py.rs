@@ -21,6 +21,7 @@ use crate::ast::node::where_node::WhereNode;
 use crate::engine::parser::parser;
 use crate::engine::runtime::RbatisEngine;
 use crate::utils::bencher::Bencher;
+use rbatis_core::db::DriverType;
 
 lazy_static! {
   static ref PY_PARSER_MAP: RwLock<HashMap<String,Vec<NodeType>>> = RwLock::new(HashMap::new());
@@ -378,7 +379,7 @@ pub fn test_exec() {
         "del":1,
         "ids":[1,2,3]
     });
-    let r = crate::ast::node::node::do_child_nodes(&pys, &mut env, &mut engine, &mut arg_array).unwrap();
+    let r = crate::ast::node::node::do_child_nodes(&DriverType::Mysql, &pys, &mut env, &mut engine, &mut arg_array).unwrap();
     println!("{}", r.clone());
     println!("{:?}", arg_array.clone());
 }

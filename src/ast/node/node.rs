@@ -27,6 +27,7 @@ use crate::engine::runtime::RbatisEngine;
 use crate::utils::xml_loader::Element;
 
 use super::node_type::NodeType;
+use rbatis_core::db::DriverType;
 
 pub trait SqlNodePrint {
     fn print(&self, deep: i32) -> String;
@@ -71,6 +72,6 @@ fn test_string_node() {
     let str_node = NodeType::NString(StringNode::new("select * from ${name} where name = #{name}"));
     let mut arg_array = vec![];
 
-    let result = str_node.eval(&mut john, &mut engine, &mut arg_array).unwrap();
+    let result = str_node.eval(&DriverType::Mysql, &mut john, &mut engine, &mut arg_array).unwrap();
     println!("{}", result);
 }
