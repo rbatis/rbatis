@@ -25,7 +25,7 @@ impl RbatisAST for WhereNode {
             result = result.trim_start_matches("or");
             result = result.trim_start_matches("Or");
             result = result.trim_start_matches("OR");
-            return Result::Ok(" where ".to_string() + result);
+            return Result::Ok(" WHERE ".to_string() + result);
         }
     }
 }
