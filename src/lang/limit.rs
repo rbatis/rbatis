@@ -14,8 +14,8 @@ impl PageLimit for DriverType {
             DriverType::Sqlite => {
                 Ok(format!(" LIMIT {} OFFSET {}", size, offset))
             }
-            _ => {
-                Err(rbatis_core::Error::from(format!("[rbatis] not support now for DriverType:{:?}", self)))
+            DriverType::None => {
+                Err(rbatis_core::Error::from(format!("[rbatis] not support now for DriverType:{:?}", DriverType::None)))
             }
         };
     }
