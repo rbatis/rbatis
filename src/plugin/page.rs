@@ -59,6 +59,14 @@ pub struct Page<T> {
 
 
 impl<T> Page<T> {
+    pub fn new_def() -> Self {
+        return Page{
+            records: vec![],
+            total: 0,
+            size: 10,
+            current: 1
+        };
+    }
     pub fn new(current: i64, size: i64) -> Self {
         return Page::new_total(current, size, 0);
     }
