@@ -61,11 +61,11 @@ pub struct Page<T> {
 
 impl<T> Page<T> {
     pub fn new_def() -> Self {
-        return Page{
+        return Page {
             records: vec![],
             total: 0,
             size: 10,
-            current: 1
+            current: 1,
         };
     }
     pub fn new(current: i64, size: i64) -> Self {
@@ -127,15 +127,19 @@ impl<T> IPage<T> for Page<T> {
     }
 }
 
-mod test{
-    use crate::plugin::page::Page;
+mod test {
+    use crate::plugin::page::{Page, IPage};
 
     #[test]
-    pub fn test_page(){
-        let page:Page<i32>=Page::new_def();
-        let s=serde_json::to_string(&page).unwrap();
-        println!("{}",s.clone());
-        let r:Page<i32>=serde_json::from_str(s.as_str()).unwrap();
-        println!("{:?}",r);
+    pub fn test_page() {
+        let page: Page<i32> = Page::new(2, 10);
+        let s = serde_json::to_string(&page).unwrap();
+        println!("{}", s.clone());
+        let r: Page<i32> = serde_json::from_str(s.as_str()).unwrap();
+        println!("{:?}", r);
+
+        println!("offset:{}",page.offset());
+        println!("get_pages:{}",page.get_pages());
+        assert_eq!(page.offset(),10);
     }
 }
