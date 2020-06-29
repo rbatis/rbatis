@@ -126,3 +126,16 @@ impl<T> IPage<T> for Page<T> {
         self.records = arg;
     }
 }
+
+mod test{
+    use crate::plugin::page::Page;
+
+    #[test]
+    pub fn test_page(){
+        let page:Page<i32>=Page::new_def();
+        let s=serde_json::to_string(&page).unwrap();
+        println!("{}",s.clone());
+        let r:Page<i32>=serde_json::from_str(s.as_str()).unwrap();
+        println!("{:?}",r);
+    }
+}
