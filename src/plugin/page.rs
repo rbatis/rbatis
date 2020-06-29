@@ -6,7 +6,7 @@
 use serde::de::DeserializeOwned;
 use serde::{Deserialize, Serialize};
 
-pub trait IPage<'de,T> where T:Deserialize<'de>+Serialize {
+pub trait IPage<T> {
     fn get_size(&self) -> i64;
     fn get_current(&self) -> i64;
     fn get_total(&self) -> i64;
@@ -19,7 +19,7 @@ pub trait IPage<'de,T> where T:Deserialize<'de>+Serialize {
     fn set_records(&mut self, arg: Vec<T>);
 }
 
-#[derive(Serialize,Deserialize, Clone, Debug)]
+#[derive(Serialize, Deserialize, Clone, Debug)]
 pub struct Page<T> {
     records: Vec<T>,
     total: i64,
@@ -28,18 +28,18 @@ pub struct Page<T> {
 }
 
 
-impl <T>Page<T>{
-    pub fn new()->Self{
-        Self{
+impl<T> Page<T> {
+    pub fn new() -> Self {
+        Self {
             records: vec![],
             total: 0,
             size: 0,
-            current: 0
+            current: 0,
         }
     }
 }
 
-impl<'de,T> IPage<'de,T> for Page<T> where T:Deserialize<'de>+Serialize {
+impl<T> IPage<T> for Page<T> {
     fn get_size(&self) -> i64 {
         self.size
     }
