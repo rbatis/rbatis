@@ -14,11 +14,15 @@ pub struct WhereNode {
 impl RbatisAST for WhereNode {
     fn eval(&self, convert: &impl StmtConvert, env: &mut Value, engine: &RbatisEngine, arg_array: &mut Vec<Value>) -> Result<String, rbatis_core::Error> {
         let result = do_child_nodes(convert, &self.childs, env, engine, arg_array)?;
-        let s = result.trim();
+        let s = result.trim().to_string();
         if s.is_empty() {
             return Result::Ok(" ".to_string());
         } else {
-            return Result::Ok(" where ".to_string() + s.trim_start_matches("and "));
+            let mut result = s.as_str().trim();
+            result = result.trim_start_matches("and");
+            result = result.trim_start_matches("AND");
+            result = result.trim_start_matches("And");
+            return Result::Ok(" where ".to_string() + result);
         }
     }
 }
