@@ -10,6 +10,7 @@ pub trait IPage<T> where T: DeserializeOwned + Serialize {
     fn get_current(&self) -> i64;
     fn get_total(&self) -> i64;
     fn get_records(&self) -> &Vec<T>;
+    fn get_records_mut(&mut self) -> &mut Vec<T>;
 
     fn set_total(&mut self, arg: i64);
     fn set_size(&mut self, arg: i64);
@@ -40,6 +41,10 @@ impl<T> IPage<T> for Page<T> where T: DeserializeOwned + Serialize {
 
     fn get_records(&self) -> &Vec<T> {
         self.records.as_ref()
+    }
+
+    fn get_records_mut(&mut self) -> &mut Vec<T> {
+        self.records.as_mut()
     }
 
     fn set_total(&mut self, total: i64) {

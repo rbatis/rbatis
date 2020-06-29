@@ -11,7 +11,6 @@ use crate::mysql::{MySql, MySqlArguments, MySqlConnection, MySqlRow, MySqlTypeIn
 use crate::mysql::protocol::{ColumnCount, ColumnDefinition, Row, Status};
 use crate::pool::Pool;
 use crate::decode::json_decode;
-use serde_json::Value;
 
 pub struct MySqlCursor<'c, 'q> {
     source: ConnectionSource<'c, MySqlConnection>,
