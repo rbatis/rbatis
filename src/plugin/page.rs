@@ -2,8 +2,7 @@
 
 
 use serde::de::DeserializeOwned;
-use serde::ser::Serialize;
-
+use serde::{Deserialize, Serialize};
 
 pub trait IPage<T> where T: DeserializeOwned + Serialize {
     fn get_size(&self) -> i64;
@@ -18,7 +17,7 @@ pub trait IPage<T> where T: DeserializeOwned + Serialize {
     fn set_records(&mut self, arg: Vec<T>);
 }
 
-
+#[derive(Serialize, Clone, Debug)]
 pub struct Page<T>
     where T: DeserializeOwned + Serialize {
     records: Vec<T>,
