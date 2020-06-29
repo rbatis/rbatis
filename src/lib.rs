@@ -19,3 +19,4 @@ pub mod engine;
 pub mod decode;
 pub mod plugin;
 pub mod rbatis;
+pub mod lang;
