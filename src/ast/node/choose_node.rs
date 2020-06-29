@@ -11,6 +11,7 @@ use crate::ast::node::otherwise_node::OtherwiseNode;
 use crate::ast::node::string_node::StringNode;
 use crate::convert::stmt_convert::StmtConvert;
 use crate::engine::runtime::RbatisEngine;
+use rbatis_core::db::DriverType;
 
 #[derive(Clone, Debug)]
 pub struct ChooseNode {
@@ -61,6 +62,6 @@ pub fn test_choose_node() {
     let mut arg_array = vec![];
 
 
-    let r = c.eval(DriverType, &mut john, &mut engine, &mut arg_array);
+    let r = c.eval(&DriverType::Mysql, &mut john, &mut engine, &mut arg_array);
     println!("{}", r.unwrap());
 }

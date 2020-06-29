@@ -5,6 +5,7 @@ use crate::ast::node::node::{create_deep, SqlNodePrint};
 use crate::convert::stmt_convert::StmtConvert;
 use crate::engine;
 use crate::engine::runtime::RbatisEngine;
+use rbatis_core::db::DriverType;
 
 const TEMPLETE_BIND: &'static str = "<bind #{attr}>#{body}</bind>";
 
@@ -45,7 +46,7 @@ fn test_bind_node() {
 
     let mut arg_array = vec![];
 
-    let r = bind_node.eval(&mut john, &mut engine, &mut arg_array).unwrap();
+    let r = bind_node.eval(&DriverType::Mysql, &mut john, &mut engine, &mut arg_array).unwrap();
 
 
     println!("r={}", r);

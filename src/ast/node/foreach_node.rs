@@ -9,6 +9,7 @@ use crate::ast::node::string_node::StringNode;
 use crate::convert::stmt_convert::StmtConvert;
 use crate::engine::runtime::RbatisEngine;
 use crate::utils;
+use rbatis_core::db::DriverType;
 
 #[derive(Clone, Debug)]
 pub struct ForEachNode {
@@ -92,6 +93,6 @@ pub fn test_for_each_node() {
         "arg": 1,
     });
     let mut arg_array = vec![];
-    let r = n.eval(&mut john, &mut engine, &mut arg_array);
+    let r = n.eval(&DriverType::Mysql, &mut john, &mut engine, &mut arg_array);
     println!("{}", r.unwrap_or("null".to_string()));
 }

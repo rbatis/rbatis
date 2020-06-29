@@ -7,6 +7,7 @@ use crate::ast::node::node_type::NodeType;
 use crate::ast::node::string_node::StringNode;
 use crate::convert::stmt_convert::StmtConvert;
 use crate::engine::runtime::RbatisEngine;
+use rbatis_core::db::DriverType;
 
 #[derive(Clone, Debug)]
 pub struct IfNode {
@@ -50,5 +51,5 @@ pub fn test_if_node() {
     let mut engine = RbatisEngine::new();
     let mut arg_array = vec![];
 
-    println!("{}", node.eval(&mut john, &mut engine, &mut arg_array).unwrap());
+    println!("{}", node.eval(&DriverType::Mysql, &mut john, &mut engine, &mut arg_array).unwrap());
 }

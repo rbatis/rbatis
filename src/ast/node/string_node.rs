@@ -8,6 +8,7 @@ use crate::convert::stmt_convert::StmtConvert;
 use crate::engine;
 use crate::engine::runtime::RbatisEngine;
 use crate::utils::string_util;
+use rbatis_core::db::DriverType;
 
 ///string抽象节点
 #[derive(Clone, Debug)]
@@ -76,6 +77,6 @@ pub fn test_string_node() {
     let s_node = StringNode::new("arg+1=#{arg+1}");
     let mut arg_array = vec![];
 
-    let r = s_node.eval(&mut john, &mut engine, &mut arg_array).unwrap();
+    let r = s_node.eval(&DriverType::Mysql, &mut john, &mut engine, &mut arg_array).unwrap();
     println!("{}", r);
 }
