@@ -41,10 +41,10 @@ pub trait IPage<T> {
 
 #[derive(Serialize, Deserialize, Clone, Debug)]
 pub struct Page<T> {
-    records: Vec<T>,
-    total: i64,
-    size: i64,
-    current: i64,
+    pub records: Vec<T>,
+    pub total: i64,
+    pub size: i64,
+    pub current: i64,
 }
 
 
