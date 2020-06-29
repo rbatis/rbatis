@@ -107,14 +107,3 @@ impl<T> IPage<T> for Page<T> {
         self.records = arg;
     }
 }
-
-
-#[test]
-pub fn test_page() {
-    let p: Page<i32> = Page::new();
-    let v = serde_json::to_string(&p).unwrap();
-    println!("{}", v.clone());
-
-    let d: Page<i32> = serde_json::from_str(v.as_str()).unwrap();
-    println!("{:?}", d);
-}
