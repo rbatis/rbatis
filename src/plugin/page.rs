@@ -19,11 +19,24 @@ pub trait IPage<T> where T: DeserializeOwned + Serialize {
 }
 
 
-pub struct Page<T> where T: DeserializeOwned + Serialize {
+pub struct Page<T>
+    where T: DeserializeOwned + Serialize {
     records: Vec<T>,
     total: i64,
     size: i64,
     current: i64,
+}
+
+impl <T>Page<T>
+    where T: DeserializeOwned + Serialize{
+    pub fn new()->Self{
+        Self{
+            records: vec![],
+            total: 0,
+            size: 0,
+            current: 0
+        }
+    }
 }
 
 impl<T> IPage<T> for Page<T> where T: DeserializeOwned + Serialize {
