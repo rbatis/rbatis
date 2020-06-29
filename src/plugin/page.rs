@@ -7,15 +7,24 @@ use serde::de::DeserializeOwned;
 use serde::{Deserialize, Serialize};
 
 pub trait IPage<T> {
+    ///每页显示条数
     fn get_size(&self) -> i64;
+    ///当前页
     fn get_current(&self) -> i64;
+    ///总数
     fn get_total(&self) -> i64;
+    ///查询数据列表
     fn get_records(&self) -> &Vec<T>;
     fn get_records_mut(&mut self) -> &mut Vec<T>;
 
+
+    ///总数
     fn set_total(&mut self, arg: i64);
+    ///每页显示条数
     fn set_size(&mut self, arg: i64);
+    ///当前页
     fn set_current(&mut self, arg: i64);
+    ///查询数据列表
     fn set_records(&mut self, arg: Vec<T>);
 
     ///当前分页总页数
@@ -41,9 +50,13 @@ pub trait IPage<T> {
 
 #[derive(Serialize, Deserialize, Clone, Debug)]
 pub struct Page<T> {
+    ///查询数据列表
     pub records: Vec<T>,
+    ///总数
     pub total: i64,
+    ///每页显示条数，默认 10
     pub size: i64,
+    ///当前页
     pub current: i64,
 }
 
