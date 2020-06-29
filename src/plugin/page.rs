@@ -1,10 +1,12 @@
 //TODO add page plugin
 
 
+
+
 use serde::de::DeserializeOwned;
 use serde::{Deserialize, Serialize};
 
-pub trait IPage<T> where T: DeserializeOwned + Serialize {
+pub trait IPage<'de,T> where T:Deserialize<'de>+Serialize {
     fn get_size(&self) -> i64;
     fn get_current(&self) -> i64;
     fn get_total(&self) -> i64;
@@ -17,17 +19,16 @@ pub trait IPage<T> where T: DeserializeOwned + Serialize {
     fn set_records(&mut self, arg: Vec<T>);
 }
 
-#[derive(Serialize, Clone, Debug)]
-pub struct Page<T>
-    where T: DeserializeOwned + Serialize {
+#[derive(Serialize,Deserialize, Clone, Debug)]
+pub struct Page<T> {
     records: Vec<T>,
     total: i64,
     size: i64,
     current: i64,
 }
 
-impl <T>Page<T>
-    where T: DeserializeOwned + Serialize{
+
+impl <T>Page<T>{
     pub fn new()->Self{
         Self{
             records: vec![],
@@ -38,7 +39,7 @@ impl <T>Page<T>
     }
 }
 
-impl<T> IPage<T> for Page<T> where T: DeserializeOwned + Serialize {
+impl<'de,T> IPage<'de,T> for Page<T> where T:Deserialize<'de>+Serialize {
     fn get_size(&self) -> i64 {
         self.size
     }
@@ -74,4 +75,15 @@ impl<T> IPage<T> for Page<T> where T: DeserializeOwned + Serialize {
     fn set_records(&mut self, arg: Vec<T>) {
         self.records = arg;
     }
+}
+
+
+#[test]
+pub fn test_page() {
+    let p: Page<i32> = Page::new();
+    let v = serde_json::to_string(&p).unwrap();
+    println!("{}", v.clone());
+
+    let d: Page<i32> = serde_json::from_str(v.as_str()).unwrap();
+    println!("{:?}", d);
 }
