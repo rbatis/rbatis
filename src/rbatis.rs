@@ -27,6 +27,8 @@ use crate::ast::node::select_node::SelectNode;
 use crate::ast::node::update_node::UpdateNode;
 use crate::engine::runtime::RbatisEngine;
 use crate::utils::error_util::ToResult;
+use serde::ser::Serialize;
+use crate::plugin::page::Page;
 
 /// rbatis engine
 pub struct Rbatis<'r> {
@@ -307,8 +309,8 @@ impl<'r> Rbatis<'r> {
     }
 
     /// fetch result(prepare sql)
-    pub async fn select_page<T>(&self, tx_id: &str, mapper: &str, method: &str, arg: &serde_json::Value) -> Result<T, rbatis_core::Error>
-        where T: DeserializeOwned {
+    pub async fn select_page<T>(&self, tx_id: &str, mapper: &str, method: &str, arg: &serde_json::Value, page: Page<T>) -> Result<T, rbatis_core::Error>
+        where T: DeserializeOwned + Serialize {
         unimplemented!();
         let (sql, args) = self.xml_to_sql(mapper, method, arg)?;
         return self.fetch_prepare(tx_id, sql.as_str(), &args).await;
