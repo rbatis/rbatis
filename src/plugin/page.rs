@@ -12,6 +12,7 @@ pub trait IPage<T> {
     fn get_total(&self) -> i64;
     ///查询数据列表
     fn get_records(&self) -> &Vec<T>;
+    ///查询数据列表
     fn get_records_mut(&mut self) -> &mut Vec<T>;
 
 
