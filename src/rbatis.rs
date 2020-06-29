@@ -279,7 +279,6 @@ impl<'r> Rbatis<'r> {
         return Ok((sql, arg_array));
     }
 
-
     /// fetch result(prepare sql)
     pub async fn xml_fetch<T>(&self, tx_id: &str, mapper: &str, method: &str, arg: &serde_json::Value) -> Result<T, rbatis_core::Error>
         where T: DeserializeOwned {
@@ -305,5 +304,13 @@ impl<'r> Rbatis<'r> {
     pub async fn py_exec(&self, tx_id: &str, py: &str, arg: &serde_json::Value) -> Result<u64, rbatis_core::Error> {
         let (sql, args) = self.py_to_sql(py, arg)?;
         return self.exec_prepare(tx_id, sql.as_str(), &args).await;
+    }
+
+    /// fetch result(prepare sql)
+    pub async fn select_page<T>(&self, tx_id: &str, mapper: &str, method: &str, arg: &serde_json::Value) -> Result<T, rbatis_core::Error>
+        where T: DeserializeOwned {
+        unimplemented!();
+        let (sql, args) = self.xml_to_sql(mapper, method, arg)?;
+        return self.fetch_prepare(tx_id, sql.as_str(), &args).await;
     }
 }
