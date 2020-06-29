@@ -2,30 +2,20 @@
 use serde::de::DeserializeOwned;
 use serde::{Deserialize, Serialize};
 
-///分页 Page 抽象接口
+///Page interface, support get_pages() and offset()
 pub trait IPage<T> {
-    ///每页显示条数
     fn get_size(&self) -> i64;
-    ///当前页
     fn get_current(&self) -> i64;
-    ///总数
     fn get_total(&self) -> i64;
-    ///查询数据列表
     fn get_records(&self) -> &Vec<T>;
-    ///查询数据列表
     fn get_records_mut(&mut self) -> &mut Vec<T>;
 
-
-    ///总数
     fn set_total(&mut self, arg: i64);
-    ///每页显示条数
     fn set_size(&mut self, arg: i64);
-    ///当前页
     fn set_current(&mut self, arg: i64);
-    ///查询数据列表
     fn set_records(&mut self, arg: Vec<T>);
 
-    ///当前分页总页数
+    ///sum pages
     fn get_pages(&self) -> i64 {
         if self.get_size() == 0 {
             return 0;
@@ -36,7 +26,7 @@ pub trait IPage<T> {
         }
         return pages;
     }
-    ///计算当前分页偏移量
+    ///sum offset
     fn offset(&self) -> i64 {
         if self.get_current() > 0 {
             (self.get_current() - 1) * self.get_size()
@@ -48,13 +38,13 @@ pub trait IPage<T> {
 
 #[derive(Serialize, Deserialize, Clone, Debug)]
 pub struct Page<T> {
-    ///查询数据列表
+    ///data
     pub records: Vec<T>,
-    ///总数
+    ///total num
     pub total: i64,
-    ///每页显示条数，默认 10
+    ///default 10
     pub size: i64,
-    ///当前页
+    ///current index
     pub current: i64,
 }
 
