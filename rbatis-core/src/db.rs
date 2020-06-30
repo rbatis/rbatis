@@ -155,13 +155,6 @@ impl DBPool {
     }
 }
 
-pub struct DBType {
-    pub driver_type: DriverType,
-    pub mysql: Option<MySql>,
-    pub postgres: Option<Postgres>,
-    pub sqlite: Option<Sqlite>,
-}
-
 pub struct DBConnection {
     pub driver_type: DriverType,
     pub mysql: Option<MySqlConnection>,
