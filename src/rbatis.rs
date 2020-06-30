@@ -78,8 +78,8 @@ impl<'r> Rbatis<'r> {
     }
 
     /// get driver type
-    pub fn driver_type(&self) ->Result<DriverType,rbatis_core::Error>{
-        let pool=self.get_pool()?;
+    pub fn driver_type(&self) -> Result<DriverType, rbatis_core::Error> {
+        let pool = self.get_pool()?;
         Ok(pool.driver_type)
     }
 
@@ -273,7 +273,7 @@ impl<'r> Rbatis<'r> {
         let nodes = Py::parser_and_cache(py)?;
         let mut arg_array = vec![];
         let mut env = arg.clone();
-        let driver_type=self.driver_type()?;
+        let driver_type = self.driver_type()?;
         let sql = do_child_nodes(&driver_type, &nodes, &mut env, &self.engine, &mut arg_array)?;
         return Ok((sql, arg_array));
     }
@@ -285,7 +285,7 @@ impl<'r> Rbatis<'r> {
         let node_type = node_type.to_result(|| format!("[rabtis] mapper:{}.{}() not init to rbatis", mapper, method))?;
         let mut arg_array = vec![];
 
-        let driver_type=self.driver_type()?;
+        let driver_type = self.driver_type()?;
         let sql = node_type.eval(&driver_type, &mut arg.clone(), &self.engine, &mut arg_array)?;
         return Ok((sql, arg_array));
     }
@@ -347,12 +347,46 @@ impl<'r> Rbatis<'r> {
         return self.exec_prepare(tx_id, sql.as_str(), &args).await;
     }
 
+
+    pub async fn fetch_page<T>(&self, tx_id: &str, sql: &str, args: Vec<serde_json::Value>, page: Page<T>) -> Result<Page<T>, rbatis_core::Error>
+        where T: DeserializeOwned + Serialize + Clone {
+        let mut page_result = page.clone();
+        let mut sql = sql.to_owned();
+        sql = sql.replace("select ", "SELECT ");
+        sql = sql.replace("from ", "FROM ");
+        sql = sql.trim().to_string();
+        let limit_sql = self.driver_type()?.page_limit_sql(page.offset(), page.get_size())?;
+        sql = sql + limit_sql.as_str();
+        if !sql.starts_with("SELECT ") && !sql.contains("FROM ") {
+            return Err(rbatis_core::Error::from("[rbatis] xml_fetch_page() sql must contains 'select ' And 'from '"));
+        }
+        if page.is_serch_count() {
+            //make count sql
+            let mut count_sql = sql.clone();
+            let sql_vec: Vec<&str> = count_sql.split("FROM ").collect();
+            count_sql = "SELECT count(1) FROM ".to_string() + sql_vec[1];
+            let total = self.fetch_prepare(tx_id, count_sql.as_str(), &args).await?;
+            page_result.set_total(total);
+            if total == 0 {
+                return Ok(page_result);
+            }
+        }
+        let data: Vec<T> = self.fetch_prepare(tx_id, sql.as_str(), &args).await?;
+        page_result.set_records(data);
+        return Ok(page_result);
+    }
+
+
     /// fetch result(prepare sql)
-    pub async fn select_page<T>(&self, tx_id: &str, mapper: &str, method: &str, arg: &serde_json::Value, page: Page<T>) -> Result<T, rbatis_core::Error>
-        where T: DeserializeOwned + Serialize {
-        unimplemented!();
-        let limit_sql=self.driver_type()?.page_limit_sql(page.get_current(), page.get_size())?;
+    pub async fn xml_fetch_page<T>(&self, tx_id: &str, mapper: &str, method: &str, arg: &serde_json::Value, page: Page<T>) -> Result<Page<T>, rbatis_core::Error>
+        where T: DeserializeOwned + Serialize + Clone {
         let (sql, args) = self.xml_to_sql(mapper, method, arg)?;
-        return self.fetch_prepare(tx_id, sql.as_str(), &args).await;
+        return self.fetch_page::<T>(tx_id, sql.as_str(), args, page).await;
+    }
+
+    pub async fn py_fetch_page<T>(&self, tx_id: &str, py: &str, arg: &serde_json::Value, page: Page<T>) -> Result<Page<T>, rbatis_core::Error>
+        where T: DeserializeOwned + Serialize + Clone {
+        let (sql, args) = self.py_to_sql(py, arg)?;
+        return self.fetch_page::<T>(tx_id, sql.as_str(), args, page).await;
     }
 }

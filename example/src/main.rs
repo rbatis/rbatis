@@ -22,6 +22,7 @@ use tide::Request;
 
 use rbatis::rbatis::Rbatis;
 use rbatis_core::db::DBPool;
+use rbatis::plugin::page::Page;
 
 ///数据库表模型,支持BigDecimal ,DateTime ,rust基本类型（int,float,uint,string,Vec,Array）
 #[derive(Serialize, Deserialize, Clone, Debug)]
@@ -148,6 +149,25 @@ pub fn test_py_sql() {
       )"#;
         let data: serde_json::Value = rb.py_fetch("", py, &json!({   "delete_flag": 1 })).await.unwrap();
         println!("{}", data);
+    });
+}
+
+
+
+//示例-Rbatis使用py风格的语法分页
+#[test]
+pub fn test_py_sql_page() {
+    async_std::task::block_on(async move {
+        fast_log::log::init_log("requests.log", &RuntimeType::Std).unwrap();
+        let rb = Rbatis::new();
+        rb.link(MYSQL_URL).await.unwrap();
+        let py = r#"
+    SELECT * FROM biz_activity
+    WHERE delete_flag = #{delete_flag}
+    if name != null:
+      AND name like #{name+'%'}"#;
+        let data: Page<Activity> = rb.py_fetch_page("", py, &json!({   "delete_flag": 1 }),Page::new(1,20)).await.unwrap();
+        println!("{}", serde_json::to_string(&data).unwrap());
     });
 }
 

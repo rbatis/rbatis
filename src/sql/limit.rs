@@ -3,7 +3,7 @@ use rbatis_core::db::DriverType;
 use crate::sql::PageLimit;
 
 impl PageLimit for DriverType {
-    fn page_limit_sql(&self, offset: i64, size: i64) -> rbatis_core::Result<String> {
+    fn page_limit_sql(&self, offset: u64, size: u64) -> rbatis_core::Result<String> {
         return match self {
             DriverType::Mysql => {
                 Ok(format!(" LIMIT {},{}", offset, size))
