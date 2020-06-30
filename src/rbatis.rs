@@ -7,7 +7,7 @@ use serde::de::DeserializeOwned;
 
 use rbatis_core::connection::Connection;
 use rbatis_core::cursor::Cursor;
-use rbatis_core::db::{DBPool, DBPoolConn, DBQuery, DBTx, DBType};
+use rbatis_core::db::{DBPool, DBPoolConn, DBQuery, DBTx};
 use rbatis_core::Error;
 use rbatis_core::executor::Executor;
 use rbatis_core::pool::{Pool, PoolConnection};
@@ -28,7 +28,8 @@ use crate::ast::node::update_node::UpdateNode;
 use crate::engine::runtime::RbatisEngine;
 use crate::utils::error_util::ToResult;
 use serde::ser::Serialize;
-use crate::plugin::page::Page;
+use crate::plugin::page::{Page, IPage};
+use crate::sql::PageLimit;
 
 /// rbatis engine
 pub struct Rbatis<'r> {
@@ -342,6 +343,7 @@ impl<'r> Rbatis<'r> {
     pub async fn select_page<T>(&self, tx_id: &str, mapper: &str, method: &str, arg: &serde_json::Value, page: Page<T>) -> Result<T, rbatis_core::Error>
         where T: DeserializeOwned + Serialize {
         unimplemented!();
+        let limit_sql=self.pool.get().unwrap().driver_type.page_limit_sql(page.get_current(),page.get_size())?;
         let (sql, args) = self.xml_to_sql(mapper, method, arg)?;
         return self.fetch_prepare(tx_id, sql.as_str(), &args).await;
     }
