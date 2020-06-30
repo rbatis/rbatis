@@ -258,7 +258,7 @@ impl PagePlugin for RbatisPagePlugin {
 
 
 mod test {
-    use crate::plugin::page::{Page, IPage};
+    use crate::plugin::page::{Page, IPage, IPageRequest};
 
     #[test]
     pub fn test_page() {
