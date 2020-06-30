@@ -295,7 +295,22 @@ impl<'r> Rbatis<'r> {
     }
 
 
-    /// fetch result(prepare sql)
+    /// fetch query result(prepare sql)
+    ///for example:
+    ///
+    ///         let py = r#"
+    ///     SELECT * FROM biz_activity
+    ///    WHERE delete_flag = #{delete_flag}
+    ///     if name != null:
+    ///       AND name like #{name+'%'}
+    ///     if ids != null:
+    ///       AND id in (
+    ///       trim ',':
+    ///          for item in ids:
+    ///            #{item},
+    ///       )"#;
+    ///         let data: serde_json::Value = rb.py_fetch("", py, &json!({   "delete_flag": 1 })).await.unwrap();
+    ///
     pub async fn py_fetch<T>(&self, tx_id: &str, py: &str, arg: &serde_json::Value) -> Result<T, rbatis_core::Error>
         where T: DeserializeOwned {
         let (sql, args) = self.py_to_sql(py, arg)?;
@@ -303,6 +318,21 @@ impl<'r> Rbatis<'r> {
     }
 
     /// exec sql(prepare sql)
+    ///for example:
+    ///
+    ///         let py = r#"
+    ///     SELECT * FROM biz_activity
+    ///    WHERE delete_flag = #{delete_flag}
+    ///     if name != null:
+    ///       AND name like #{name+'%'}
+    ///     if ids != null:
+    ///       AND id in (
+    ///       trim ',':
+    ///          for item in ids:
+    ///            #{item},
+    ///       )"#;
+    ///         let data: u64 = rb.py_exec("", py, &json!({   "delete_flag": 1 })).await.unwrap();
+    ///
     pub async fn py_exec(&self, tx_id: &str, py: &str, arg: &serde_json::Value) -> Result<u64, rbatis_core::Error> {
         let (sql, args) = self.py_to_sql(py, arg)?;
         return self.exec_prepare(tx_id, sql.as_str(), &args).await;
