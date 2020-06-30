@@ -4,19 +4,21 @@ use serde::{Deserialize, Serialize};
 
 ///Page interface, support get_pages() and offset()
 pub trait IPage<T> {
-    fn get_size(&self) -> i64;
-    fn get_current(&self) -> i64;
-    fn get_total(&self) -> i64;
+    fn get_size(&self) -> u64;
+    fn get_current(&self) -> u64;
+    fn get_total(&self) -> u64;
     fn get_records(&self) -> &Vec<T>;
     fn get_records_mut(&mut self) -> &mut Vec<T>;
+    fn is_serch_count(&self) -> bool;
 
-    fn set_total(&mut self, arg: i64);
-    fn set_size(&mut self, arg: i64);
-    fn set_current(&mut self, arg: i64);
+    fn set_total(&mut self, arg: u64);
+    fn set_size(&mut self, arg: u64);
+    fn set_current(&mut self, arg: u64);
     fn set_records(&mut self, arg: Vec<T>);
+    fn set_serch_count(&mut self, arg: bool);
 
     ///sum pages
-    fn get_pages(&self) -> i64 {
+    fn get_pages(&self) -> u64 {
         if self.get_size() == 0 {
             return 0;
         }
@@ -27,7 +29,7 @@ pub trait IPage<T> {
         return pages;
     }
     ///sum offset
-    fn offset(&self) -> i64 {
+    fn offset(&self) -> u64 {
         if self.get_current() > 0 {
             (self.get_current() - 1) * self.get_size()
         } else {
@@ -41,25 +43,28 @@ pub struct Page<T> {
     ///data
     pub records: Vec<T>,
     ///total num
-    pub total: i64,
+    pub total: u64,
     ///default 10
-    pub size: i64,
+    pub size: u64,
     ///current index
-    pub current: i64,
+    pub current: u64,
+
+    pub serch_count: bool,
 }
 
 
 impl<T> Page<T> {
-    pub fn new(current: i64, size: i64) -> Self {
+    pub fn new(current: u64, size: u64) -> Self {
         return Page::new_total(current, size, 0);
     }
-    pub fn new_total(current: i64, size: i64, total: i64) -> Self {
+    pub fn new_total(current: u64, size: u64, total: u64) -> Self {
         if current < 1 {
             return Self {
                 total,
                 size,
-                current: 1 as i64,
+                current: 1 as u64,
                 records: vec![],
+                serch_count: true,
             };
         }
         return Self {
@@ -67,31 +72,33 @@ impl<T> Page<T> {
             size,
             current,
             records: vec![],
+            serch_count: true,
         };
     }
 }
 
-impl <T>Default for Page<T>{
+impl<T> Default for Page<T> {
     fn default() -> Self {
         return Page {
             records: vec![],
             total: 0,
             size: 10,
             current: 1,
+            serch_count: true,
         };
     }
 }
 
 impl<T> IPage<T> for Page<T> {
-    fn get_size(&self) -> i64 {
+    fn get_size(&self) -> u64 {
         self.size
     }
 
-    fn get_current(&self) -> i64 {
+    fn get_current(&self) -> u64 {
         self.current
     }
 
-    fn get_total(&self) -> i64 {
+    fn get_total(&self) -> u64 {
         self.total
     }
 
@@ -103,20 +110,28 @@ impl<T> IPage<T> for Page<T> {
         self.records.as_mut()
     }
 
-    fn set_total(&mut self, total: i64) {
+    fn is_serch_count(&self) -> bool {
+        self.serch_count
+    }
+
+    fn set_total(&mut self, total: u64) {
         self.total = total;
     }
 
-    fn set_size(&mut self, arg: i64) {
+    fn set_size(&mut self, arg: u64) {
         self.size = arg;
     }
 
-    fn set_current(&mut self, arg: i64) {
+    fn set_current(&mut self, arg: u64) {
         self.current = arg;
     }
 
     fn set_records(&mut self, arg: Vec<T>) {
         self.records = arg;
+    }
+
+    fn set_serch_count(&mut self, arg: bool)  {
+        self.serch_count = arg;
     }
 }
 
@@ -131,8 +146,8 @@ mod test {
         let r: Page<i32> = serde_json::from_str(s.as_str()).unwrap();
         println!("{:?}", r);
 
-        println!("offset:{}",page.offset());
-        println!("get_pages:{}",page.get_pages());
-        assert_eq!(page.offset(),10);
+        println!("offset:{}", page.offset());
+        println!("get_pages:{}", page.get_pages());
+        assert_eq!(page.offset(), 10);
     }
 }

@@ -4,5 +4,5 @@ pub mod limit;
 
 
 pub trait PageLimit {
-    fn page_limit_sql(&self, offset:i64, size:i64) -> rbatis_core::Result<String>;
+    fn page_limit_sql(&self, offset:u64, size:u64) -> rbatis_core::Result<String>;
 }
