@@ -28,7 +28,7 @@ use crate::ast::node::update_node::UpdateNode;
 use crate::engine::runtime::RbatisEngine;
 use crate::utils::error_util::ToResult;
 use serde::ser::Serialize;
-use crate::plugin::page::{Page, IPage};
+use crate::plugin::page::{Page, IPage, PagePlugin, RbatisPagePlugin, IPageRequest, PageRequest};
 use crate::sql::PageLimit;
 
 /// rbatis engine
@@ -38,12 +38,20 @@ pub struct Rbatis<'r> {
     /// map<mapper_name,map<method_name,NodeType>>
     mapper_node_map: HashMap<&'r str, HashMap<String, NodeType>>,
     context_tx: SyncMap<DBTx>,
+    /// page plugin
+    page_plugin: Box<dyn PagePlugin>,
 }
 
 
 impl<'r> Rbatis<'r> {
-    pub fn new() -> Rbatis<'static> {
-        return Rbatis { pool: OnceCell::new(), mapper_node_map: HashMap::new(), engine: RbatisEngine::new(), context_tx: SyncMap::new() };
+    pub fn new() -> Self {
+        return Self {
+            pool: OnceCell::new(),
+            mapper_node_map: HashMap::new(),
+            engine: RbatisEngine::new(),
+            context_tx: SyncMap::new(),
+            page_plugin: Box::new(RbatisPagePlugin {}),
+        };
     }
 
     pub fn check(&self) {
@@ -348,23 +356,12 @@ impl<'r> Rbatis<'r> {
     }
 
 
-    pub async fn fetch_page<T>(&self, tx_id: &str, sql: &str, args: Vec<serde_json::Value>, page: Page<T>) -> Result<Page<T>, rbatis_core::Error>
+    pub async fn fetch_page<T>(&self, tx_id: &str, sql: &str, args: Vec<serde_json::Value>, page: &PageRequest) -> Result<Page<T>, rbatis_core::Error>
         where T: DeserializeOwned + Serialize + Clone {
-        let mut page_result = page.clone();
-        let mut sql = sql.to_owned();
-        sql = sql.replace("select ", "SELECT ");
-        sql = sql.replace("from ", "FROM ");
-        sql = sql.trim().to_string();
-        let limit_sql = self.driver_type()?.page_limit_sql(page.offset(), page.get_size())?;
-        sql = sql + limit_sql.as_str();
-        if !sql.starts_with("SELECT ") && !sql.contains("FROM ") {
-            return Err(rbatis_core::Error::from("[rbatis] xml_fetch_page() sql must contains 'select ' And 'from '"));
-        }
+        let mut page_result = Page::new(page.get_current(), page.get_size());
+        let (count_sql, sql) = self.page_plugin.fetch_page(&self.driver_type()?, tx_id, sql, &args, &page)?;
         if page.is_serch_count() {
             //make count sql
-            let mut count_sql = sql.clone();
-            let sql_vec: Vec<&str> = count_sql.split("FROM ").collect();
-            count_sql = "SELECT count(1) FROM ".to_string() + sql_vec[1];
             let total = self.fetch_prepare(tx_id, count_sql.as_str(), &args).await?;
             page_result.set_total(total);
             if total == 0 {
@@ -378,13 +375,13 @@ impl<'r> Rbatis<'r> {
 
 
     /// fetch result(prepare sql)
-    pub async fn xml_fetch_page<T>(&self, tx_id: &str, mapper: &str, method: &str, arg: &serde_json::Value, page: Page<T>) -> Result<Page<T>, rbatis_core::Error>
+    pub async fn xml_fetch_page<T>(&self, tx_id: &str, mapper: &str, method: &str, arg: &serde_json::Value, page: &PageRequest) -> Result<Page<T>, rbatis_core::Error>
         where T: DeserializeOwned + Serialize + Clone {
         let (sql, args) = self.xml_to_sql(mapper, method, arg)?;
         return self.fetch_page::<T>(tx_id, sql.as_str(), args, page).await;
     }
 
-    pub async fn py_fetch_page<T>(&self, tx_id: &str, py: &str, arg: &serde_json::Value, page: Page<T>) -> Result<Page<T>, rbatis_core::Error>
+    pub async fn py_fetch_page<T>(&self, tx_id: &str, py: &str, arg: &serde_json::Value, page: &PageRequest) -> Result<Page<T>, rbatis_core::Error>
         where T: DeserializeOwned + Serialize + Clone {
         let (sql, args) = self.py_to_sql(py, arg)?;
         return self.fetch_page::<T>(tx_id, sql.as_str(), args, page).await;
