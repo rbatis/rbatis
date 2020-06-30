@@ -7,7 +7,7 @@ use serde::de::DeserializeOwned;
 
 use rbatis_core::connection::Connection;
 use rbatis_core::cursor::Cursor;
-use rbatis_core::db::{DBPool, DBPoolConn, DBQuery, DBTx};
+use rbatis_core::db::{DBPool, DBPoolConn, DBQuery, DBTx, DriverType};
 use rbatis_core::Error;
 use rbatis_core::executor::Executor;
 use rbatis_core::pool::{Pool, PoolConnection};
@@ -75,6 +75,12 @@ impl<'r> Rbatis<'r> {
             return Err(rbatis_core::Error::from("[rbatis] rbatis pool not inited!"));
         }
         return Ok(p.unwrap());
+    }
+
+    /// get driver type
+    pub fn driver_type(&self) ->Result<DriverType,rbatis_core::Error>{
+        let pool=self.get_pool()?;
+        Ok(pool.driver_type)
     }
 
     async fn get_tx(&self, tx_id: &str) -> Result<DBTx, rbatis_core::Error> {
@@ -267,7 +273,8 @@ impl<'r> Rbatis<'r> {
         let nodes = Py::parser_and_cache(py)?;
         let mut arg_array = vec![];
         let mut env = arg.clone();
-        let sql = do_child_nodes(&self.pool.get().unwrap().driver_type, &nodes, &mut env, &self.engine, &mut arg_array)?;
+        let driver_type=self.driver_type()?;
+        let sql = do_child_nodes(&driver_type, &nodes, &mut env, &self.engine, &mut arg_array)?;
         return Ok((sql, arg_array));
     }
 
@@ -278,7 +285,8 @@ impl<'r> Rbatis<'r> {
         let node_type = node_type.to_result(|| format!("[rabtis] mapper:{}.{}() not init to rbatis", mapper, method))?;
         let mut arg_array = vec![];
 
-        let sql = node_type.eval(&self.pool.get().unwrap().driver_type, &mut arg.clone(), &self.engine, &mut arg_array)?;
+        let driver_type=self.driver_type()?;
+        let sql = node_type.eval(&driver_type, &mut arg.clone(), &self.engine, &mut arg_array)?;
         return Ok((sql, arg_array));
     }
 
@@ -343,7 +351,7 @@ impl<'r> Rbatis<'r> {
     pub async fn select_page<T>(&self, tx_id: &str, mapper: &str, method: &str, arg: &serde_json::Value, page: Page<T>) -> Result<T, rbatis_core::Error>
         where T: DeserializeOwned + Serialize {
         unimplemented!();
-        let limit_sql=self.pool.get().unwrap().driver_type.page_limit_sql(page.get_current(),page.get_size())?;
+        let limit_sql=self.driver_type()?.page_limit_sql(page.get_current(), page.get_size())?;
         let (sql, args) = self.xml_to_sql(mapper, method, arg)?;
         return self.fetch_prepare(tx_id, sql.as_str(), &args).await;
     }
