@@ -27,7 +27,7 @@ log = "0.4"
 fast_log="1.0.2"
 #rbatis
 rbatis-core = { version = "1.1.4",  default-features = false , features = ["all","runtime-async-std"]}
-rbatis = "1.1.4"
+rbatis = "1.1.5"
 ```
 
 ##### py风格sql语法Example
