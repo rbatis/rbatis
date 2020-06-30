@@ -7,6 +7,39 @@ use serde_json::Value;
 use rbatis_core::db::DriverType;
 use crate::sql::PageLimit;
 
+
+///default page plugin
+pub trait PagePlugin: Send + Sync {
+    /// return 2 sql for select ,  (count_sql,select_sql)
+    fn create_page_sql(&self, driver_type: &DriverType, tx_id: &str, sql: &str, args: &Vec<serde_json::Value>, page: &dyn IPageRequest) -> Result<(String, String), rbatis_core::Error>;
+}
+
+#[derive(Copy, Clone, Debug)]
+pub struct RbatisPagePlugin {}
+
+
+impl PagePlugin for RbatisPagePlugin {
+    fn create_page_sql<>(&self, driver_type: &DriverType, tx_id: &str, sql: &str, args: &Vec<Value>, page: &dyn IPageRequest) -> Result<(String, String), rbatis_core::Error> {
+        let mut sql = sql.to_owned();
+        sql = sql.replace("select ", "SELECT ");
+        sql = sql.replace("from ", "FROM ");
+        sql = sql.trim().to_string();
+        let limit_sql = driver_type.page_limit_sql(page.offset(), page.get_size())?;
+        sql = sql + limit_sql.as_str();
+        if !sql.starts_with("SELECT ") && !sql.contains("FROM ") {
+            return Err(rbatis_core::Error::from("[rbatis] xml_fetch_page() sql must contains 'select ' And 'from '"));
+        }
+        let mut count_sql = sql.clone();
+        if page.is_serch_count() {
+            //make count sql
+            let sql_vec: Vec<&str> = count_sql.split("FROM ").collect();
+            count_sql = "SELECT count(1) FROM ".to_string() + sql_vec[1];
+        }
+        return Ok((count_sql, sql));
+    }
+}
+
+
 ///Page interface, support get_pages() and offset()
 pub trait IPageRequest {
     fn get_size(&self) -> u64;
@@ -220,39 +253,6 @@ impl<T> IPage<T> for Page<T> {
 
     fn set_records(&mut self, arg: Vec<T>) {
         self.records = arg;
-    }
-}
-
-use async_trait::async_trait;
-
-///default page plugin
-pub trait PagePlugin: Send + Sync {
-    /// return 2 sql for select ,  (count_sql,select_sql)
-    fn create_page_sql(&self, driver_type: &DriverType, tx_id: &str, sql: &str, args: &Vec<serde_json::Value>, page: &dyn IPageRequest) -> Result<(String, String), rbatis_core::Error>;
-}
-
-#[derive(Copy, Clone, Debug)]
-pub struct RbatisPagePlugin {}
-
-
-impl PagePlugin for RbatisPagePlugin {
-    fn create_page_sql<>(&self, driver_type: &DriverType, tx_id: &str, sql: &str, args: &Vec<Value>, page: &dyn IPageRequest) -> Result<(String, String), rbatis_core::Error> {
-        let mut sql = sql.to_owned();
-        sql = sql.replace("select ", "SELECT ");
-        sql = sql.replace("from ", "FROM ");
-        sql = sql.trim().to_string();
-        let limit_sql = driver_type.page_limit_sql(page.offset(), page.get_size())?;
-        sql = sql + limit_sql.as_str();
-        if !sql.starts_with("SELECT ") && !sql.contains("FROM ") {
-            return Err(rbatis_core::Error::from("[rbatis] xml_fetch_page() sql must contains 'select ' And 'from '"));
-        }
-        let mut count_sql = sql.clone();
-        if page.is_serch_count() {
-            //make count sql
-            let sql_vec: Vec<&str> = count_sql.split("FROM ").collect();
-            count_sql = "SELECT count(1) FROM ".to_string() + sql_vec[1];
-        }
-        return Ok((count_sql, sql));
     }
 }
 
