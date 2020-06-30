@@ -22,7 +22,7 @@ use tide::Request;
 
 use rbatis::rbatis::Rbatis;
 use rbatis_core::db::DBPool;
-use rbatis::plugin::page::{Page, PageRequest};
+use rbatis::plugin::page::{Page, IPageRequest, PageRequest};
 
 ///数据库表模型,支持BigDecimal ,DateTime ,rust基本类型（int,float,uint,string,Vec,Array）
 #[derive(Serialize, Deserialize, Clone, Debug)]

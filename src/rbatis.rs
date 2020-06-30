@@ -28,7 +28,7 @@ use crate::ast::node::update_node::UpdateNode;
 use crate::engine::runtime::RbatisEngine;
 use crate::utils::error_util::ToResult;
 use serde::ser::Serialize;
-use crate::plugin::page::{Page, IPage, PagePlugin, RbatisPagePlugin, IPageRequest, PageRequest};
+use crate::plugin::page::{Page, IPage, PagePlugin, RbatisPagePlugin, IPageRequest};
 use crate::sql::PageLimit;
 
 /// rbatis engine
@@ -356,10 +356,10 @@ impl<'r> Rbatis<'r> {
     }
 
 
-    pub async fn fetch_page<T>(&self, tx_id: &str, sql: &str, args: Vec<serde_json::Value>, page: &PageRequest) -> Result<Page<T>, rbatis_core::Error>
+    pub async fn fetch_page<T>(&self, tx_id: &str, sql: &str, args: Vec<serde_json::Value>, page: &dyn IPageRequest) -> Result<Page<T>, rbatis_core::Error>
         where T: DeserializeOwned + Serialize + Clone {
         let mut page_result = Page::new(page.get_current(), page.get_size());
-        let (count_sql, sql) = self.page_plugin.fetch_page(&self.driver_type()?, tx_id, sql, &args, &page)?;
+        let (count_sql, sql) = self.page_plugin.create_page_sql(&self.driver_type()?, tx_id, sql, &args, page)?;
         if page.is_serch_count() {
             //make count sql
             let total = self.fetch_prepare(tx_id, count_sql.as_str(), &args).await?;
@@ -375,13 +375,13 @@ impl<'r> Rbatis<'r> {
 
 
     /// fetch result(prepare sql)
-    pub async fn xml_fetch_page<T>(&self, tx_id: &str, mapper: &str, method: &str, arg: &serde_json::Value, page: &PageRequest) -> Result<Page<T>, rbatis_core::Error>
+    pub async fn xml_fetch_page<T>(&self, tx_id: &str, mapper: &str, method: &str, arg: &serde_json::Value, page: &dyn IPageRequest) -> Result<Page<T>, rbatis_core::Error>
         where T: DeserializeOwned + Serialize + Clone {
         let (sql, args) = self.xml_to_sql(mapper, method, arg)?;
         return self.fetch_page::<T>(tx_id, sql.as_str(), args, page).await;
     }
 
-    pub async fn py_fetch_page<T>(&self, tx_id: &str, py: &str, arg: &serde_json::Value, page: &PageRequest) -> Result<Page<T>, rbatis_core::Error>
+    pub async fn py_fetch_page<T>(&self, tx_id: &str, py: &str, arg: &serde_json::Value, page: &dyn IPageRequest) -> Result<Page<T>, rbatis_core::Error>
         where T: DeserializeOwned + Serialize + Clone {
         let (sql, args) = self.py_to_sql(py, arg)?;
         return self.fetch_page::<T>(tx_id, sql.as_str(), args, page).await;

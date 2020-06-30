@@ -228,7 +228,7 @@ use async_trait::async_trait;
 
 
 pub trait PagePlugin: Send + Sync {
-    fn fetch_page(&self, driver_type: &DriverType, tx_id: &str, sql: &str, args: &Vec<serde_json::Value>, page: &PageRequest) -> Result<(String, String), rbatis_core::Error>;
+    fn create_page_sql(&self, driver_type: &DriverType, tx_id: &str, sql: &str, args: &Vec<serde_json::Value>, page: &dyn IPageRequest) -> Result<(String, String), rbatis_core::Error>;
 }
 
 #[derive(Copy, Clone, Debug)]
@@ -236,7 +236,7 @@ pub struct RbatisPagePlugin {}
 
 
 impl PagePlugin for RbatisPagePlugin {
-    fn fetch_page<>(&self, driver_type: &DriverType, tx_id: &str, sql: &str, args: &Vec<Value>, page: &PageRequest) -> Result<(String, String), rbatis_core::Error> {
+    fn create_page_sql<>(&self, driver_type: &DriverType, tx_id: &str, sql: &str, args: &Vec<Value>, page: &dyn IPageRequest) -> Result<(String, String), rbatis_core::Error> {
         let mut sql = sql.to_owned();
         sql = sql.replace("select ", "SELECT ");
         sql = sql.replace("from ", "FROM ");
