@@ -33,13 +33,13 @@ use crate::sql::PageLimit;
 
 /// rbatis engine
 pub struct Rbatis<'r> {
-    pool: OnceCell<DBPool>,
-    engine: RbatisEngine,
+    pub pool: OnceCell<DBPool>,
+    pub engine: RbatisEngine,
     /// map<mapper_name,map<method_name,NodeType>>
-    mapper_node_map: HashMap<&'r str, HashMap<String, NodeType>>,
-    context_tx: SyncMap<DBTx>,
+    pub mapper_node_map: HashMap<&'r str, HashMap<String, NodeType>>,
+    pub context_tx: SyncMap<DBTx>,
     /// page plugin
-    page_plugin: Box<dyn PagePlugin>,
+    pub page_plugin: Box<dyn PagePlugin>,
 }
 
 
