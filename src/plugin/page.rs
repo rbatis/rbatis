@@ -1,4 +1,3 @@
-//TODO add page plugin
 use serde::de::DeserializeOwned;
 use serde::{Deserialize, Serialize};
 use async_std::process::Output;
