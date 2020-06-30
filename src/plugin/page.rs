@@ -226,8 +226,9 @@ impl<T> IPage<T> for Page<T> {
 
 use async_trait::async_trait;
 
-
+///default page plugin
 pub trait PagePlugin: Send + Sync {
+    /// return 2 sql for select ,  (count_sql,select_sql)
     fn create_page_sql(&self, driver_type: &DriverType, tx_id: &str, sql: &str, args: &Vec<serde_json::Value>, page: &dyn IPageRequest) -> Result<(String, String), rbatis_core::Error>;
 }
 
