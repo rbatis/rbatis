@@ -210,9 +210,9 @@ pub async fn test_hyper(){
 | Py(在SQL中使用和xml等价的类python语法)                         | √     | 
 | SlowSqlCount(内置慢查询日志分析)                              | √     | 
 | async/await支持                                             | √     | 
+| PagePlugin(分页插件)                                         | √     |
 | LogicDelPlugin(逻辑删除插件)                                 | x     |
 | VersionLockPlugin(乐观锁插件,防止并发修改数据)                  | x     |
-| PagePlugin(分页插件)                                         | x     |
 | DataBaseConvertPlugin(数据库表结构转换为配置插件)               | x     | 
 | web(可视化Web UI)                                            | x     |  
 
