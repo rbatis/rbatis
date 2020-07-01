@@ -27,11 +27,11 @@ pub fn find_slow_sql(log_path: &str) -> LinkedList<SqlLog> {
     let mut sql = "".to_string();
 
     for x in buffered.lines().map(|r| r.unwrap()) {
-        if x.contains("Query:") || x.contains("Exec:") {
+        if x.contains("Query ==>") || x.contains("Exec ==>") {
             time_start = Some(x[0..x.find(" - ").unwrap()].to_string());
             sql = x.clone();
         }
-        if time_start.is_some() && (x.contains("Total: <==") || x.contains("Affected: <==")) {
+        if time_start.is_some() && (x.contains("Total <==") || x.contains("Affected <==")) {
             let time_end = x[0..x.find(" - ").unwrap()].to_string();
             let date_time = time_start.unwrap().parse::<DateTime<Utc>>().unwrap();
             let date_time_end = time_end.parse::<DateTime<Utc>>().unwrap();
