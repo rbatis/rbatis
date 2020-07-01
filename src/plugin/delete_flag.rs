@@ -1,1 +1,0 @@
-//TODO delete_flag plugin
