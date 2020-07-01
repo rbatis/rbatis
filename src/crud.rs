@@ -10,7 +10,14 @@ use rbatis_core::Result;
 use crate::convert::stmt_convert::StmtConvert;
 use crate::rbatis::Rbatis;
 
+/// DB Table model trait
 pub trait CRUDEntity: Send + Sync + DeserializeOwned + Serialize {
+    /// your table id type,for example:
+    /// IdType = String
+    /// IdType = i32
+    ///
+    type IdType: Send + Sync + DeserializeOwned + Serialize;
+    /// your table name
     fn table_name(&self) -> String;
 
     fn to_value(&self) -> Result<serde_json::Value> {
@@ -58,15 +65,22 @@ pub trait CRUDEntity: Send + Sync + DeserializeOwned + Serialize {
 
 #[async_trait]
 pub trait CRUD {
-    async fn save<T>(&self, entity: &T) -> Result<u64> where T:CRUDEntity;
-    async fn save_batch<T>(&self, entity: &Vec<T>) -> Result<u64> where T:CRUDEntity;
-    async fn remove_by_id(&self,id:serde_json::Value) -> Result<u64>;
+    async fn save<T>(&self, entity: &T) -> Result<u64> where T: CRUDEntity;
+    async fn save_batch<T>(&self, entity: &Vec<T>) -> Result<u64> where T: CRUDEntity;
+    async fn remove_by_id<T>(&self, id: &T::IdType) -> Result<u64> where T: CRUDEntity;
+    async fn remove_batch_by_id<T>(&self, ids: &Vec<T::IdType>) -> Result<u64> where T: CRUDEntity;
+    async fn update_by_id<T>(&self, id: &T::IdType) -> Result<u64> where T: CRUDEntity;
+    async fn update_batch_by_id<T>(&self, ids: &Vec<T::IdType>) -> Result<u64> where T: CRUDEntity;
+    async fn get_by_id<T>(&self, id: &T::IdType) -> Result<T> where T: CRUDEntity;
+    ///all record
+    async fn list<T>(&self) -> Result<Vec<T>> where T: CRUDEntity;
+    async fn list_by_ids<T>(&self, ids: &Vec<T::IdType>) -> Result<Vec<T>> where T: CRUDEntity;
 }
 
 #[async_trait]
 impl CRUD for Rbatis<'_> {
     async fn save<T>(&self, entity: &T) -> Result<u64>
-    where T:CRUDEntity{
+        where T: CRUDEntity {
         let map = entity.to_value_map()?;
         let (values, args) = entity.values(&self.driver_type()?, &map)?;
         let sql = format!("INSERT INTO {} ({}) VALUES ({})", entity.table_name(), entity.fields(&map)?, values);
@@ -74,10 +88,39 @@ impl CRUD for Rbatis<'_> {
     }
 
     async fn save_batch<T>(&self, entity: &Vec<T>) -> Result<u64> where T: CRUDEntity {
+        let mut r = 0;
+        for x in entity {
+            let v = self.save(x).await?;
+            r = r + v;
+        }
+        return Ok(r);
+    }
+
+    async fn remove_by_id<T>(&self, id: &T::IdType) -> Result<u64> where T: CRUDEntity {
         unimplemented!()
     }
 
-    async fn remove_by_id(&self, id: Value) -> Result<u64> {
+    async fn remove_batch_by_id<T>(&self, ids: &Vec<T::IdType>) -> Result<u64> where T: CRUDEntity {
+        unimplemented!()
+    }
+
+    async fn update_by_id<T>(&self, id: &T::IdType) -> Result<u64> where T: CRUDEntity {
+        unimplemented!()
+    }
+
+    async fn update_batch_by_id<T>(&self, ids: &Vec<T::IdType>) -> Result<u64> where T: CRUDEntity {
+        unimplemented!()
+    }
+
+    async fn get_by_id<T>(&self, id: &T::IdType) -> Result<T> where T: CRUDEntity {
+        unimplemented!()
+    }
+
+    async fn list<T>(&self) -> Result<Vec<T>> where T: CRUDEntity {
+        unimplemented!()
+    }
+
+    async fn list_by_ids<T>(&self, ids: &Vec<T::IdType>) -> Result<Vec<T>> where T: CRUDEntity {
         unimplemented!()
     }
 }
@@ -108,6 +151,7 @@ mod test {
     }
 
     impl CRUDEntity for Activity {
+        type IdType = String;
         fn table_name(&self) -> String {
             "biz_activity".to_string()
         }
@@ -133,9 +177,9 @@ mod test {
 
             let rb = Rbatis::new();
             rb.link("mysql://root:123456@localhost:3306/test").await.unwrap();
-            let r=rb.save(&ac).await;
-            if r.is_err(){
-                println!("{}",r.err().unwrap().to_string());
+            let r = rb.save(&ac).await;
+            if r.is_err() {
+                println!("{}", r.err().unwrap().to_string());
             }
         })
     }
