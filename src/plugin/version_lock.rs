@@ -48,7 +48,7 @@ impl<'a> VersionLock<'a> for RbatisLogicDeletePlugin {
     }
 }
 
-mod Test{
+mod test{
     use crate::plugin::version_lock::{RbatisLogicDeletePlugin, VersionLock};
     use rbatis_core::db::DriverType;
 
