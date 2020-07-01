@@ -282,7 +282,8 @@ impl<'r> Rbatis<'r> {
         let mut arg_array = vec![];
         let mut env = arg.clone();
         let driver_type = self.driver_type()?;
-        let sql = do_child_nodes(&driver_type, &nodes, &mut env, &self.engine, &mut arg_array)?;
+        let mut sql = do_child_nodes(&driver_type, &nodes, &mut env, &self.engine, &mut arg_array)?;
+        sql = sql.trim().to_string();
         return Ok((sql, arg_array));
     }
 
@@ -294,7 +295,8 @@ impl<'r> Rbatis<'r> {
         let mut arg_array = vec![];
 
         let driver_type = self.driver_type()?;
-        let sql = node_type.eval(&driver_type, &mut arg.clone(), &self.engine, &mut arg_array)?;
+        let mut sql = node_type.eval(&driver_type, &mut arg.clone(), &self.engine, &mut arg_array)?;
+        sql = sql.trim().to_string();
         return Ok((sql, arg_array));
     }
 
