@@ -139,7 +139,10 @@ mod test {
 
             let rb = Rbatis::new();
             rb.link("mysql://root:123456@localhost:3306/test").await.unwrap();
-            rb.save(&ac).await.unwrap();
+            let r=rb.save(&ac).await;
+            if r.is_err(){
+                println!("{}",r.err().unwrap().to_string());
+            }
         })
     }
 }
