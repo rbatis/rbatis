@@ -57,35 +57,29 @@ pub trait CRUDEntity: Send + Sync + DeserializeOwned + Serialize {
 
 
 #[async_trait]
-pub trait CRUD<T>
-    where T: CRUDEntity {
-    async fn save(&self, entity: &T) -> Result<u64>;
-    // async fn save_batch(&self, entity: Vec<T>);
-    // async fn save_batch_limit(&self, entity: Vec<T>, batch_size: i32);
-    // async fn remove(&self);
+pub trait CRUD {
+    async fn save<T>(&self, entity: &T) -> Result<u64> where T:CRUDEntity;
+    async fn save_batch<T>(&self, entity: &Vec<T>) -> Result<u64> where T:CRUDEntity;
+    async fn remove_by_id(&self,id:serde_json::Value) -> Result<u64>;
 }
 
 #[async_trait]
-impl<T> CRUD<T> for Rbatis<'_>
-    where T: CRUDEntity {
-    async fn save(&self, entity: &T) -> Result<u64>{
+impl CRUD for Rbatis<'_> {
+    async fn save<T>(&self, entity: &T) -> Result<u64>
+    where T:CRUDEntity{
         let map = entity.to_value_map()?;
         let (values, args) = entity.values(&self.driver_type()?, &map)?;
         let sql = format!("INSERT INTO {} ({}) VALUES ({})", entity.table_name(), entity.fields(&map)?, values);
         return self.exec_prepare("", sql.as_str(), &args).await;
     }
 
-    // async fn save_batch(&self, entity: Vec<T>) {
-    //     unimplemented!()
-    // }
-    //
-    // async fn save_batch_limit(&self, entity: Vec<T>, batch_size: i32) {
-    //     unimplemented!()
-    // }
-    //
-    // async fn remove(&self) {
-    //     unimplemented!()
-    // }
+    async fn save_batch<T>(&self, entity: &Vec<T>) -> Result<u64> where T: CRUDEntity {
+        unimplemented!()
+    }
+
+    async fn remove_by_id(&self, id: Value) -> Result<u64> {
+        unimplemented!()
+    }
 }
 
 mod test {
