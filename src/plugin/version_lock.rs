@@ -23,5 +23,6 @@ impl VersionLock for RbatisLogicDeletePlugin{
         let mut new_sql= sql.to_string();
         new_sql = new_sql.replace("update ","UPDATE ");
         new_sql = new_sql.replace("set ","SET ");
+        new_sql = new_sql.replace("where ","WHERE ");
     }
 }
