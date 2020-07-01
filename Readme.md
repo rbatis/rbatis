@@ -262,6 +262,12 @@ rbatis-core = { features = ["runtime-async-std","all-type"]}
 * Log日志库 https://github.com/rbatis/fast_log
 * Rbatis/Core  https://github.com/rbatis/rbatis/tree/master/rbatis-core
 
+
+# TODO 即将到来的特性
+* 基本的CRUD内置方法 save，save_batch，remove_batch_by_id，list_by_ids...等等常用方法
+* QueryWrapper支持，可以免写xml，py，sql
+
+
   
 ## 欢迎右上角star或者微信捐赠~
 ![Image text](https://zhuxiujia.github.io/gomybatis.io/assets/wx_account.jpg)
