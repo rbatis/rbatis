@@ -59,7 +59,7 @@ pub trait CRUDEntity: Send + Sync + DeserializeOwned + Serialize {
 #[async_trait]
 pub trait CRUD<T>
     where T: CRUDEntity {
-    async fn save(&self, entity: &T) -> Result<u64> where T: 'static + CRUDEntity;
+    async fn save(&self, entity: &T) -> Result<u64>;
     // async fn save_batch(&self, entity: Vec<T>);
     // async fn save_batch_limit(&self, entity: Vec<T>, batch_size: i32);
     // async fn remove(&self);
@@ -68,7 +68,7 @@ pub trait CRUD<T>
 #[async_trait]
 impl<T> CRUD<T> for Rbatis<'_>
     where T: CRUDEntity {
-    async fn save(&self, entity: &T) -> Result<u64> where T: 'static + CRUDEntity {
+    async fn save(&self, entity: &T) -> Result<u64>{
         let map = entity.to_value_map()?;
         let (values, args) = entity.values(&self.driver_type()?, &map)?;
         let sql = format!("INSERT INTO {} ({}) VALUES ({})", entity.table_name(), entity.fields(&map)?, values);
