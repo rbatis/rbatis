@@ -25,7 +25,7 @@ serde_json = "1.0"
 #log
 log = "0.4"
 fast_log="1.0.2"
-#rbatis
+#rbatis-core和rbatis 版本必须保持一致
 rbatis-core = { version = "1.1.5",  default-features = false , features = ["all","runtime-async-std"]}
 rbatis = "1.1.5"
 ```
