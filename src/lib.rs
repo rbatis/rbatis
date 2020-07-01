@@ -20,3 +20,4 @@ pub mod decode;
 pub mod plugin;
 pub mod rbatis;
 pub mod sql;
+pub mod crud;
