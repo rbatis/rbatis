@@ -265,7 +265,26 @@ rbatis-core = { features = ["runtime-async-std","all-type"]}
 
 # TODO 即将到来的特性
 * 基本的CRUD内置方法 save，save_batch，remove_batch_by_id，list_by_ids...等等常用方法
+```rust
+let activity = Activity {
+                id: Some("12312".to_string()),
+                name: None,
+                remark: None,
+                create_time: Some("2020-02-09 00:00:00".to_string()),
+                version: Some(1),
+                delete_flag: Some(1),
+            };
+ let r = rb.save(&activity).await;
+            if r.is_err() {
+                println!("{}", r.err().unwrap().to_string());
+            }
+```
 * QueryWrapper支持，可以免写xml，py，sql
+```rust
+let w=Wrapper::select("*")
+            .all_eq(&Map::new())
+            .order_by(true,true,"");
+```
 
 
   
