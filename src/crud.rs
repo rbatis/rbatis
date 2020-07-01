@@ -160,7 +160,7 @@ mod test {
     #[test]
     pub fn test_save() {
         async_std::task::block_on(async {
-            let ac = Activity {
+            let activity = Activity {
                 id: Some("12312".to_string()),
                 name: None,
                 pc_link: None,
@@ -177,7 +177,7 @@ mod test {
 
             let rb = Rbatis::new();
             rb.link("mysql://root:123456@localhost:3306/test").await.unwrap();
-            let r = rb.save(&ac).await;
+            let r = rb.save(&activity).await;
             if r.is_err() {
                 println!("{}", r.err().unwrap().to_string());
             }
