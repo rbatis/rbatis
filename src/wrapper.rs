@@ -8,6 +8,7 @@ use std::ops::Add;
 pub struct Wrapper {
     pub sql: String,
     pub args: Vec<serde_json::Value>,
+    pub where_num: i32,
 }
 
 impl Wrapper {
@@ -15,27 +16,43 @@ impl Wrapper {
         Self {
             sql: format!("WHERE "),
             args: vec![],
+            where_num: 0
         }
     }
 
     pub fn all_eq<T>(&mut self, arg: &T) -> &mut Self
-    where T:Serialize{
-        let v=serde_json::to_value(arg).unwrap();
-        if !v.is_object(){
+        where T: Serialize {
+        let v = serde_json::to_value(arg).unwrap();
+        if !v.is_object() {
             panic!("[rbatis] wrapper all_eq only support object struct!")
         }
-        let map=v.as_object().unwrap();
+        let map = v.as_object().unwrap();
         let len = map.len();
         let mut index = 0;
         for (k, v) in map {
-            self.sql.push_str(k.as_str());
-            self.sql.push_str(" = ?");
-            self.args.push(v.clone());
+            self.eq(k.as_str(), v);
             if (index + 1) != len {
                 self.sql.push_str(" , ");
-                index+=1;
+                index += 1;
             }
         }
+        self.where_num += 1;
+
+        self
+    }
+
+    pub fn eq<T>(&mut self, column: &str, obj: T) -> &mut Self
+        where T: Serialize {
+        if self.where_num != 0 {
+            self.sql.push_str(" AND ");
+        }
+
+        let v = serde_json::to_value(obj).unwrap();
+        self.sql.push_str(column);
+        self.sql.push_str(" = ?");
+        self.args.push(v);
+        self.where_num += 1;
+
         self
     }
 
@@ -55,7 +72,7 @@ impl Wrapper {
             }
             if (index + 1) != len {
                 self.sql.push_str(" , ");
-                index+=1;
+                index += 1;
             }
         }
         self
@@ -72,7 +89,7 @@ mod test {
         let mut w = Wrapper::new();
         let mut m = Map::new();
         m.insert("a".to_string(), json!("1"));
-        w.all_eq(&m).order_by(true, &["id", "name"]);
+        w.eq("id", 1).all_eq(&m).order_by(true, &["id", "name"]);
         println!("{:?}", w);
     }
 }
