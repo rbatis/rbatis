@@ -4,7 +4,9 @@ use crate::crud::CRUDEnable;
 use std::ops::Add;
 use rbatis_core::Error;
 
-//TODO
+/// you can serialize to JSON, and Clone, Debug
+/// for Example, use json rpc send this Wrapper to server
+///
 #[derive(Serialize, Deserialize, Clone, Debug)]
 pub struct Wrapper {
     pub sql: String,
