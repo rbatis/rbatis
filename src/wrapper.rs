@@ -282,13 +282,20 @@ mod test {
         let mut m = Map::new();
         m.insert("a".to_string(), json!("1"));
         w.eq("id", 1)
+            .and()
             .in_("id", &[1, 2, 3])
+            .and()
             .all_eq(&m)
+            .and()
             .like("name", 1)
+            .and()
             .not_like("name", "asdf")
+            .and()
             .between("create_time", "2020-01-01 00:00:00", "2020-12-12 00:00:00")
+            .group_by(&["id"])
             .order_by(true, &["id", "name"]);
-        println!("{:?}", w.clone());
+        println!("sql:{:?}", w.sql.as_str());
+        println!("arg:{:?}", w.args.clone());
 
         let ms:Vec<&str>= w.sql.matches("?").collect();
         assert_eq!(ms.len(),w.args.len());
