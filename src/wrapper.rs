@@ -34,6 +34,7 @@ impl Wrapper {
         self
     }
 
+    /// arg: JsonObject or struct{} or map[String,**]
     pub fn all_eq<T>(&mut self, arg: &T) -> &mut Self
         where T: Serialize {
         let v = serde_json::to_value(arg).unwrap();
@@ -234,7 +235,7 @@ impl Wrapper {
         self
     }
 
-    pub fn in_<T>(&mut self, column: &str, obj: &[T]) -> &mut Self
+    pub fn in_arr<T>(&mut self, column: &str, obj: &[T]) -> &mut Self
         where T: Serialize {
         let v = serde_json::to_value(obj).unwrap();
         self.sql.push_str(column);
@@ -283,12 +284,12 @@ mod test {
         m.insert("a".to_string(), json!("1"));
         w.eq("id", 1)
             .and()
-            .in_("id", &[1, 2, 3])
+            .in_arr("id", &[1, 2, 3])
             .and()
             .all_eq(&m)
             .and()
             .like("name", 1)
-            .and()
+            .or()
             .not_like("name", "asdf")
             .and()
             .between("create_time", "2020-01-01 00:00:00", "2020-12-12 00:00:00")
