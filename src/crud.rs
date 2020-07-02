@@ -176,7 +176,7 @@ mod test {
         pub version: Option<i32>,
         pub delete_flag: Option<i32>,
     }
-
+    /// 必须实现 CRUDEntity接口，如果表名 不正确，可以重写 fn table_name() -> String 方法！
     impl CRUDEntity for BizActivity {
         type IdType = String;
     }
