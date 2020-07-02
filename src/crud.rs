@@ -18,7 +18,7 @@ pub trait CRUDEntity: Send + Sync + DeserializeOwned + Serialize {
     ///
     type IdType: Send + Sync + DeserializeOwned + Serialize;
     /// your table name
-    fn table_name(&self) -> String;
+    fn table_name() -> String;
 
     fn to_value(&self) -> Result<serde_json::Value> {
         let json = serde_json::to_value(self).unwrap_or(serde_json::Value::Null);
@@ -83,7 +83,7 @@ impl CRUD for Rbatis<'_> {
         where T: CRUDEntity {
         let map = entity.to_value_map()?;
         let (values, args) = entity.values(&self.driver_type()?, &map)?;
-        let sql = format!("INSERT INTO {} ({}) VALUES ({})", entity.table_name(), entity.fields(&map)?, values);
+        let sql = format!("INSERT INTO {} ({}) VALUES ({})", T::table_name(), entity.fields(&map)?, values);
         return self.exec_prepare("", sql.as_str(), &args).await;
     }
 
@@ -152,7 +152,7 @@ mod test {
 
     impl CRUDEntity for Activity {
         type IdType = String;
-        fn table_name(&self) -> String {
+        fn table_name() -> String {
             "biz_activity".to_string()
         }
     }
