@@ -23,6 +23,14 @@ pub trait CRUDEnable: Send + Sync + DeserializeOwned + Serialize {
     /// for Example:  struct  BizActivity{} =>  "biz_activity"
     /// also. you can overwrite this method return ture name
     ///
+    ///  impl CRUDEnable for BizActivity{
+    ///   table_name() -> String{
+    ///     "biz_activity".to_string()
+    ///   }
+    /// }
+    ///
+    ///
+    ///
     fn table_name() -> String {
         let type_name = std::any::type_name::<Self>();
         let mut name = type_name.to_string();
