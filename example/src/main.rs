@@ -23,10 +23,11 @@ use tide::Request;
 use rbatis::rbatis::Rbatis;
 use rbatis_core::db::DBPool;
 use rbatis::plugin::page::{Page, IPageRequest, PageRequest};
+use rbatis::crud::{CRUD, CRUDEnable};
 
 ///数据库表模型,支持BigDecimal ,DateTime ,rust基本类型（int,float,uint,string,Vec,Array）
 #[derive(Serialize, Deserialize, Clone, Debug)]
-pub struct Activity {
+pub struct BizActivity {
     pub id: Option<String>,
     pub name: Option<String>,
     pub pc_link: Option<String>,
@@ -36,9 +37,13 @@ pub struct Activity {
     pub sort: Option<String>,
     pub status: Option<i32>,
     pub remark: Option<String>,
-    pub create_time: Option<DateTime<chrono::Utc>>,
+    pub create_time: Option<DateTime<chrono::FixedOffset>>,
     pub version: Option<i32>,
     pub delete_flag: Option<i32>,
+}
+
+impl CRUDEnable for BizActivity {
+    type IdType = String;
 }
 
 //示例 mysql 链接地址
@@ -122,8 +127,11 @@ pub fn test_prepare_sql() {
             let rb = Rbatis::new();
             rb.link(MYSQL_URL).await.unwrap();
             let arg = &vec![json!(1), json!("test%")];
-            let r: Vec<Activity> = rb.fetch_prepare("", "SELECT * FROM biz_activity WHERE delete_flag =  ? AND name like ?", arg).await.unwrap();
+            let r: Vec<BizActivity> = rb.fetch_prepare("", "SELECT * FROM biz_activity WHERE delete_flag =  ? AND name like ?", arg).await.unwrap();
             println!("done:{}", serde_json::to_string(&r).unwrap_or(String::new()));
+            //
+            // let a=r.get(0).unwrap();
+            // rb.save(a).await.unwrap();
         }
     );
 }
@@ -166,7 +174,7 @@ pub fn test_py_sql_page() {
     WHERE delete_flag = #{delete_flag}
     if name != null:
       AND name like #{name+'%'}"#;
-        let data: Page<Activity> = rb.py_fetch_page("", py, &json!({   "delete_flag": 1 }),&PageRequest::new(1,20)).await.unwrap();
+        let data: Page<BizActivity> = rb.py_fetch_page("", py, &json!({   "delete_flag": 1 }), &PageRequest::new(1, 20)).await.unwrap();
         println!("{}", serde_json::to_string(&data).unwrap());
     });
 }
@@ -204,7 +212,7 @@ pub fn test_xml_sql() {
             "page": 0,
             "size": 20
             });
-            let data: Vec<Activity> = rb.xml_fetch("", "test", "select_by_condition", arg).await.unwrap();
+            let data: Vec<BizActivity> = rb.xml_fetch("", "test", "select_by_condition", arg).await.unwrap();
             println!("{}", serde_json::to_string(&data).unwrap_or("".to_string()));
         }
     )

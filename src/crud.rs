@@ -11,7 +11,7 @@ use crate::convert::stmt_convert::StmtConvert;
 use crate::rbatis::Rbatis;
 
 /// DB Table model trait
-pub trait CRUDEnable: Send + Sync + DeserializeOwned + Serialize {
+pub trait CRUDEnable: Send + Sync + Serialize {
     /// your table id type,for example:
     /// IdType = String
     /// IdType = i32
@@ -61,6 +61,7 @@ pub trait CRUDEnable: Send + Sync + DeserializeOwned + Serialize {
         }
         return Ok(json);
     }
+
     fn to_value_map(&self) -> Result<serde_json::Map<String, Value>> {
         let json = serde_json::to_value(self).unwrap_or(serde_json::Value::Null);
         if json.eq(&serde_json::Value::Null) {
@@ -69,8 +70,20 @@ pub trait CRUDEnable: Send + Sync + DeserializeOwned + Serialize {
         if !json.is_object() {
             return Err(Error::from("[rbaits] to_value_map() fail,data is not an object!"));
         }
-        let m = json.as_object().unwrap().to_owned();
-        return Ok(m);
+        let mut m = json.as_object().unwrap().to_owned();
+        let mut new_m=m.clone();
+        for (k,v)in &m {
+            if (k.contains("time") || k.contains("date")) && v.is_string(){
+                let mut new_v=v.as_str().unwrap().to_string();
+                new_v=new_v.replace("T"," ");
+                let new_vs:Vec<&str> =  new_v.split("+").collect();
+                if new_vs.len()>1{
+                    new_v=new_vs.get(0).unwrap().to_string();
+                }
+                new_m.insert(k.to_string(),serde_json::Value::String(new_v));
+            }
+        }
+        return Ok(new_m);
     }
 
     fn fields(&self, map: &serde_json::Map<String, Value>) -> Result<String> {
