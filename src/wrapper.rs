@@ -2,12 +2,14 @@ use serde::{Deserialize, Serialize};
 use serde_json::{json, Map, Value};
 use crate::crud::CRUDEntity;
 use std::ops::Add;
+use rbatis_core::Error;
 
 //TODO
-#[derive(Serialize, Deserialize, Clone, Debug)]
+#[derive(Debug)]
 pub struct Wrapper {
     pub sql: String,
     pub args: Vec<serde_json::Value>,
+    pub error: Option<Error>,
 }
 
 impl Wrapper {
@@ -15,7 +17,16 @@ impl Wrapper {
         Self {
             sql: "".to_string(),
             args: vec![],
+            error: None
         }
+    }
+
+    //check is done？
+    pub fn check_done(&mut self) ->Result<(),Error>{
+        if self.error.is_some(){
+            return Err(self.error.take().unwrap());
+        }
+        return Ok(());
     }
 
     pub fn and(&mut self) -> &mut Self {
@@ -39,7 +50,7 @@ impl Wrapper {
         where T: Serialize {
         let v = serde_json::to_value(arg).unwrap();
         if !v.is_object() {
-            info!("[rbatis] wrapper all_eq only support object struct!");
+            self.error=Some(Error::from("[rbatis] wrapper all_eq only support object struct!"));
             return self;
         }
         let map = v.as_object().unwrap();
@@ -301,7 +312,8 @@ mod test {
             .and()
             .between("create_time", "2020-01-01 00:00:00", "2020-12-12 00:00:00")
             .group_by(&["id"])
-            .order_by(true, &["id", "name"]);
+            .order_by(true, &["id", "name"])
+            .check_done().unwrap();
         println!("sql:{:?}", w.sql.as_str());
         println!("arg:{:?}", w.args.clone());
 

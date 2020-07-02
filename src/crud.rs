@@ -18,7 +18,10 @@ pub trait CRUDEntity: Send + Sync + DeserializeOwned + Serialize {
     ///
     type IdType: Send + Sync + DeserializeOwned + Serialize;
     /// your table name
-    fn table_name() -> String;
+    fn table_name() -> String{
+        let type_name = std::any::type_name::<Self>();
+        return type_name.to_string();
+    }
 
     fn to_value(&self) -> Result<serde_json::Value> {
         let json = serde_json::to_value(self).unwrap_or(serde_json::Value::Null);
@@ -152,9 +155,6 @@ mod test {
 
     impl CRUDEntity for Activity {
         type IdType = String;
-        fn table_name() -> String {
-            "biz_activity".to_string()
-        }
     }
 
     #[test]
