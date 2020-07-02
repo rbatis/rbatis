@@ -8,7 +8,6 @@ use std::ops::Add;
 pub struct Wrapper {
     pub sql: String,
     pub args: Vec<serde_json::Value>,
-    pub where_num: i32,
 }
 
 impl Wrapper {
@@ -16,16 +15,21 @@ impl Wrapper {
         Self {
             sql: "".to_string(),
             args: vec![],
-            where_num: 0
         }
     }
 
+    pub fn and(&mut self) -> &mut Self {
+        self.sql.push_str(" AND ");
+        self
+    }
+
+    pub fn or(&mut self) -> &mut Self {
+        self.sql.push_str(" OR ");
+        self
+    }
+
     pub fn having(&mut self, sql_having: &str) -> &mut Self {
-        if self.where_num != 0 {
-            self.sql.push_str(" AND ");
-        }
-        self.sql.push_str(format!(" HAVING {} ",sql_having).as_str());
-        self.where_num += 1;
+        self.sql.push_str(format!(" HAVING {} ", sql_having).as_str());
 
         self
     }
@@ -46,22 +50,16 @@ impl Wrapper {
                 index += 1;
             }
         }
-        self.where_num += 1;
-
         self
     }
 
     pub fn eq<T>(&mut self, column: &str, obj: T) -> &mut Self
         where T: Serialize {
-        if self.where_num != 0 {
-            self.sql.push_str(" AND ");
-        }
-
         let v = serde_json::to_value(obj).unwrap();
         self.sql.push_str(column);
         self.sql.push_str(" = ?");
         self.args.push(v);
-        self.where_num += 1;
+
 
         self
     }
@@ -69,15 +67,11 @@ impl Wrapper {
     /// not equal
     pub fn ne<T>(&mut self, column: &str, obj: T) -> &mut Self
         where T: Serialize {
-        if self.where_num != 0 {
-            self.sql.push_str(" AND ");
-        }
-
         let v = serde_json::to_value(obj).unwrap();
         self.sql.push_str(column);
         self.sql.push_str(" <> ?");
         self.args.push(v);
-        self.where_num += 1;
+
 
         self
     }
@@ -125,30 +119,20 @@ impl Wrapper {
     ///  sql:   column > obj
     pub fn gt<T>(&mut self, column: &str, obj: T) -> &mut Self
         where T: Serialize {
-        if self.where_num != 0 {
-            self.sql.push_str(" AND ");
-        }
-
         let v = serde_json::to_value(obj).unwrap();
         self.sql.push_str(column);
         self.sql.push_str(" > ?");
         self.args.push(v);
-        self.where_num += 1;
-
         self
     }
     ///  sql:   column >= obj
     pub fn ge<T>(&mut self, column: &str, obj: T) -> &mut Self
         where T: Serialize {
-        if self.where_num != 0 {
-            self.sql.push_str(" AND ");
-        }
-
         let v = serde_json::to_value(obj).unwrap();
         self.sql.push_str(column);
         self.sql.push_str(" >= ?");
         self.args.push(v);
-        self.where_num += 1;
+
 
         self
     }
@@ -156,15 +140,10 @@ impl Wrapper {
     ///  sql:   column < obj
     pub fn lt<T>(&mut self, column: &str, obj: T) -> &mut Self
         where T: Serialize {
-        if self.where_num != 0 {
-            self.sql.push_str(" AND ");
-        }
-
         let v = serde_json::to_value(obj).unwrap();
         self.sql.push_str(column);
         self.sql.push_str(" < ?");
         self.args.push(v);
-        self.where_num += 1;
 
         self
     }
@@ -172,179 +151,122 @@ impl Wrapper {
     ///  sql:   column <= obj
     pub fn le<T>(&mut self, column: &str, obj: T) -> &mut Self
         where T: Serialize {
-        if self.where_num != 0 {
-            self.sql.push_str(" AND ");
-        }
-
         let v = serde_json::to_value(obj).unwrap();
         self.sql.push_str(column);
         self.sql.push_str(" <= ?");
         self.args.push(v);
-        self.where_num += 1;
+
 
         self
     }
 
-    pub fn between<T>(&mut self, column: &str, min: T,max: T) -> &mut Self
+    pub fn between<T>(&mut self, column: &str, min: T, max: T) -> &mut Self
         where T: Serialize {
-        if self.where_num != 0 {
-            self.sql.push_str(" AND ");
-        }
-
         let min_v = serde_json::to_value(min).unwrap();
         let max_v = serde_json::to_value(max).unwrap();
         self.sql.push_str(column);
         self.sql.push_str(" BETWEEN ? AND ?");
         self.args.push(min_v);
         self.args.push(max_v);
-        self.where_num += 1;
+
 
         self
     }
 
-    pub fn not_between<T>(&mut self, column: &str, min: T,max: T) -> &mut Self
+    pub fn not_between<T>(&mut self, column: &str, min: T, max: T) -> &mut Self
         where T: Serialize {
-        if self.where_num != 0 {
-            self.sql.push_str(" AND ");
-        }
-
         let min_v = serde_json::to_value(min).unwrap();
         let max_v = serde_json::to_value(max).unwrap();
         self.sql.push_str(column);
         self.sql.push_str(" NOT BETWEEN ? AND ?");
         self.args.push(min_v);
         self.args.push(max_v);
-        self.where_num += 1;
 
         self
     }
 
     pub fn like<T>(&mut self, column: &str, obj: T) -> &mut Self
         where T: Serialize {
-        if self.where_num != 0 {
-            self.sql.push_str(" AND ");
-        }
-
         let v = serde_json::to_value(obj).unwrap();
         self.sql.push_str(column);
         self.sql.push_str(" LIKE '%?%'");
         self.args.push(v);
-        self.where_num += 1;
 
         self
     }
     pub fn like_left<T>(&mut self, column: &str, obj: T) -> &mut Self
         where T: Serialize {
-        if self.where_num != 0 {
-            self.sql.push_str(" AND ");
-        }
-
         let v = serde_json::to_value(obj).unwrap();
         self.sql.push_str(column);
         self.sql.push_str(" LIKE '%?'");
         self.args.push(v);
-        self.where_num += 1;
 
         self
     }
 
     pub fn like_right<T>(&mut self, column: &str, obj: T) -> &mut Self
         where T: Serialize {
-        if self.where_num != 0 {
-            self.sql.push_str(" AND ");
-        }
-
         let v = serde_json::to_value(obj).unwrap();
         self.sql.push_str(column);
         self.sql.push_str(" LIKE '?%'");
         self.args.push(v);
-        self.where_num += 1;
-
         self
     }
 
     pub fn not_like<T>(&mut self, column: &str, obj: T) -> &mut Self
         where T: Serialize {
-        if self.where_num != 0 {
-            self.sql.push_str(" AND ");
-        }
-
         let v = serde_json::to_value(obj).unwrap();
         self.sql.push_str(column);
         self.sql.push_str(" NOT LIKE '%?%'");
         self.args.push(v);
-        self.where_num += 1;
-
         self
     }
 
     pub fn is_null(&mut self, column: &str) -> &mut Self {
-        if self.where_num != 0 {
-            self.sql.push_str(" AND ");
-        }
         self.sql.push_str(column);
         self.sql.push_str(" is null");
-        self.where_num += 1;
-
         self
     }
 
     pub fn is_not_null(&mut self, column: &str) -> &mut Self {
-        if self.where_num != 0 {
-            self.sql.push_str(" AND ");
-        }
         self.sql.push_str(column);
         self.sql.push_str(" is not null");
-        self.where_num += 1;
-
         self
     }
 
     pub fn in_<T>(&mut self, column: &str, obj: &[T]) -> &mut Self
         where T: Serialize {
-        if self.where_num != 0 {
-            self.sql.push_str(" AND ");
-        }
-
         let v = serde_json::to_value(obj).unwrap();
         self.sql.push_str(column);
 
-
-        let vec= v.as_array().unwrap();
-        let mut sqls=String::new();
+        let vec = v.as_array().unwrap();
+        let mut sqls = String::new();
         for x in vec {
             sqls.push_str(" ? ");
             sqls.push_str(",");
             self.args.push(x.clone());
         }
         sqls.pop();
-        self.sql.push_str(format!(" IN ({})",sqls).as_str());
-        self.where_num += 1;
+        self.sql.push_str(format!(" IN ({})", sqls).as_str());
+
 
         self
     }
 
     pub fn not_in<T>(&mut self, column: &str, obj: &[T]) -> &mut Self
         where T: Serialize {
-        if self.where_num != 0 {
-            self.sql.push_str(" AND ");
-        }
-
         let v = serde_json::to_value(obj).unwrap();
         self.sql.push_str(column);
 
-
-        let vec= v.as_array().unwrap();
-        let mut sqls=String::new();
+        let vec = v.as_array().unwrap();
+        let mut sqls = String::new();
         for x in vec {
             sqls.push_str(" ? ");
             sqls.push_str(",");
             self.args.push(x.clone());
         }
         sqls.pop();
-        self.sql.push_str(format!(" NOT IN ({})",sqls).as_str());
-        self.where_num += 1;
-
+        self.sql.push_str(format!(" NOT IN ({})", sqls).as_str());
         self
     }
 }
@@ -360,12 +282,15 @@ mod test {
         let mut m = Map::new();
         m.insert("a".to_string(), json!("1"));
         w.eq("id", 1)
-            .in_("id",&[1,2,3])
+            .in_("id", &[1, 2, 3])
             .all_eq(&m)
-            .like("name",1)
-            .not_like("name","asdf")
-            .between("create_time","2020-01-01 00:00:00","2020-12-12 00:00:00")
+            .like("name", 1)
+            .not_like("name", "asdf")
+            .between("create_time", "2020-01-01 00:00:00", "2020-12-12 00:00:00")
             .order_by(true, &["id", "name"]);
-        println!("{:?}", w);
+        println!("{:?}", w.clone());
+
+        let ms:Vec<&str>= w.sql.matches("?").collect();
+        assert_eq!(ms.len(),w.args.len());
     }
 }
