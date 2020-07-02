@@ -308,7 +308,11 @@ mod test {
         m.insert("a".to_string(), json!("1"));
        let w= Wrapper::new().eq("id", 1)
             .and()
+            .ne("id",1)
+            .and()
             .is_in("id", &[1, 2, 3])
+            .and()
+            .not_in("id", &[1, 2, 3])
             .and()
             .all_eq(&m)
             .and()
