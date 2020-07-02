@@ -1,6 +1,6 @@
 use serde::{Deserialize, Serialize};
 use serde_json::{json, Map, Value};
-use crate::crud::CRUDEntity;
+use crate::crud::CRUDEnable;
 use std::ops::Add;
 use rbatis_core::Error;
 
