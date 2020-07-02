@@ -17,13 +17,33 @@ pub trait CRUDEntity: Send + Sync + DeserializeOwned + Serialize {
     /// IdType = i32
     ///
     type IdType: Send + Sync + DeserializeOwned + Serialize;
-    /// your table name,default is type name,you can overwrite this method return ture name
-    fn table_name() -> String{
+
+    /// get table name,default is type name
+    ///
+    /// for Example:  struct  BizActivity{} =>  "biz_activity"
+    /// also. you can overwrite this method return ture name
+    ///
+    fn table_name() -> String {
         let type_name = std::any::type_name::<Self>();
-        let mut name=type_name.to_string();
-        let names:Vec<&str> = name.split("::").collect();
-        name = names.get(names.len()-1).unwrap().to_string();
-        return name.to_lowercase().to_string();
+        let mut name = type_name.to_string();
+        let names: Vec<&str> = name.split("::").collect();
+        name = names.get(names.len() - 1).unwrap().to_string();
+        let chs = name.chars();
+        let mut new_name = String::new();
+        let mut index = 0;
+        let chs_len = name.len();
+        for x in chs {
+            if x.is_uppercase() {
+                if index != 0 &&  (index + 1) != chs_len {
+                    new_name.push_str("_");
+                }
+                new_name.push_str(x.to_lowercase().to_string().as_str());
+            }else{
+                new_name.push(x);
+            }
+            index += 1;
+        }
+        return new_name;
     }
 
     fn to_value(&self) -> Result<serde_json::Value> {
@@ -142,7 +162,7 @@ mod test {
     use fast_log::log::RuntimeType;
 
     #[derive(Serialize, Deserialize, Clone, Debug)]
-    pub struct Activity {
+    pub struct BizActivity {
         pub id: Option<String>,
         pub name: Option<String>,
         pub pc_link: Option<String>,
@@ -157,14 +177,14 @@ mod test {
         pub delete_flag: Option<i32>,
     }
 
-    impl CRUDEntity for Activity {
+    impl CRUDEntity for BizActivity {
         type IdType = String;
     }
 
     #[test]
     pub fn test_save() {
         async_std::task::block_on(async {
-            let activity = Activity {
+            let activity = BizActivity {
                 id: Some("12312".to_string()),
                 name: None,
                 pc_link: None,
@@ -179,7 +199,7 @@ mod test {
                 delete_flag: Some(1),
             };
 
-            fast_log::log::init_log("requests.log",&RuntimeType::Std);
+            fast_log::log::init_log("requests.log", &RuntimeType::Std);
             let rb = Rbatis::new();
             rb.link("mysql://root:123456@localhost:3306/test").await.unwrap();
             let r = rb.save(&activity).await;
