@@ -17,10 +17,13 @@ pub trait CRUDEntity: Send + Sync + DeserializeOwned + Serialize {
     /// IdType = i32
     ///
     type IdType: Send + Sync + DeserializeOwned + Serialize;
-    /// your table name
+    /// your table name,default is type name,you can overwrite this method return ture name
     fn table_name() -> String{
         let type_name = std::any::type_name::<Self>();
-        return type_name.to_string();
+        let mut name=type_name.to_string();
+        let names:Vec<&str> = name.split("::").collect();
+        name = names.get(names.len()-1).unwrap().to_string();
+        return name.to_lowercase().to_string();
     }
 
     fn to_value(&self) -> Result<serde_json::Value> {
@@ -136,6 +139,7 @@ mod test {
 
     use crate::crud::{CRUD, CRUDEntity};
     use crate::rbatis::Rbatis;
+    use fast_log::log::RuntimeType;
 
     #[derive(Serialize, Deserialize, Clone, Debug)]
     pub struct Activity {
@@ -175,6 +179,7 @@ mod test {
                 delete_flag: Some(1),
             };
 
+            fast_log::log::init_log("requests.log",&RuntimeType::Std);
             let rb = Rbatis::new();
             rb.link("mysql://root:123456@localhost:3306/test").await.unwrap();
             let r = rb.save(&activity).await;
