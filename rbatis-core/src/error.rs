@@ -25,7 +25,6 @@ pub type Result<T> = std::result::Result<T, Error>;
 #[derive(Debug)]
 #[non_exhaustive]
 pub enum Error {
-
     /// Default Error
     E(String),
 
@@ -82,16 +81,16 @@ pub enum Error {
 impl Error {
     #[allow(dead_code)]
     pub(crate) fn decode<E>(err: E) -> Self
-    where
-        E: StdError + Send + Sync + 'static,
+        where
+            E: StdError + Send + Sync + 'static,
     {
         Error::Decode(err.into())
     }
 
     #[allow(dead_code)]
     pub(crate) fn mismatched_types<DB: Database, T>(expected: DB::TypeInfo) -> Self
-    where
-        T: Type<DB>,
+        where
+            T: Type<DB>,
     {
         let ty_name = type_name::<T>();
 
@@ -124,7 +123,6 @@ impl Display for Error {
     // noinspection RsMatchCheck
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         match self {
-
             Error::E(error) => write!(f, "{}", error),
 
             Error::Io(error) => write!(f, "{}", error),
@@ -406,3 +404,73 @@ impl Display for UnexpectedNullError {
 }
 
 impl StdError for UnexpectedNullError {}
+
+
+impl Clone for Error {
+    fn clone(&self) -> Self {
+        Error::from(self.to_string())
+    }
+
+    fn clone_from(&mut self, source: &Self) {
+        *self = Self::from(source.to_string());
+    }
+}
+
+
+use serde::ser::{Serialize, SerializeStruct, Serializer};
+use serde::{Deserialize, Deserializer};
+use serde::de::{Visitor, Unexpected};
+
+// This is what #[derive(Serialize)] would generate.
+impl Serialize for Error {
+    fn serialize<S>(&self, serializer: S) -> std::result::Result<S::Ok, S::Error>
+        where
+            S: Serializer,
+    {
+        serializer.serialize_str(self.to_string().as_str())
+    }
+}
+
+
+struct ErrorVisitor;
+impl<'de> Visitor<'de> for ErrorVisitor {
+    type Value = String;
+
+    fn expecting(&self, formatter: &mut fmt::Formatter) -> fmt::Result {
+        formatter.write_str("a string")
+    }
+
+    fn visit_string<E>(self, v: String) -> std::result::Result<Self::Value, E>
+        where
+            E: std::error::Error,
+    {
+        Ok(v)
+    }
+
+    fn visit_str<E>(self, v: &str) -> std::result::Result<Self::Value, E>
+        where
+            E: std::error::Error,
+    {
+        Ok(v.to_string())
+    }
+
+}
+
+impl<'de> Deserialize<'de> for Error {
+    fn deserialize<D>(deserializer: D) -> std::result::Result<Self, D::Error>
+        where
+            D: Deserializer<'de>,
+    {
+        let r = deserializer.deserialize_string(ErrorVisitor)?;
+        return Ok(Error::from(r));
+    }
+}
+
+
+#[test]
+fn test_json_error(){
+    let e=Error::from("fuck");
+    let s= serde_json::to_string(&e).unwrap();
+    println!("{}",s.as_str());
+    let new_e:Error=serde_json::from_str(s.as_str()).unwrap();
+}
