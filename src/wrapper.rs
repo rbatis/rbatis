@@ -56,6 +56,21 @@ impl Wrapper {
         self
     }
 
+    pub fn ne<T>(&mut self, column: &str, obj: T) -> &mut Self
+        where T: Serialize {
+        if self.where_num != 0 {
+            self.sql.push_str(" AND ");
+        }
+
+        let v = serde_json::to_value(obj).unwrap();
+        self.sql.push_str(column);
+        self.sql.push_str(" != ?");
+        self.args.push(v);
+        self.where_num += 1;
+
+        self
+    }
+
     pub fn order_by(&mut self, is_asc: bool, columns: &[&str]) -> &mut Self {
         let len = columns.len();
         let mut index = 0;
