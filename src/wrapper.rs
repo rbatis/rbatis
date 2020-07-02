@@ -257,7 +257,7 @@ impl Wrapper {
         self
     }
 
-    pub fn in_arr<T>(&mut self, column: &str, obj: &[T]) -> &mut Self
+    pub fn is_in<T>(&mut self, column: &str, obj: &[T]) -> &mut Self
         where T: Serialize {
         if obj.len() == 0 {
             return self;
@@ -308,7 +308,7 @@ mod test {
         m.insert("a".to_string(), json!("1"));
        let w= Wrapper::new().eq("id", 1)
             .and()
-            .in_arr("id", &[1, 2, 3])
+            .is_in("id", &[1, 2, 3])
             .and()
             .all_eq(&m)
             .and()
