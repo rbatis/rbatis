@@ -39,9 +39,13 @@ impl Wrapper {
         where T: Serialize {
         let v = serde_json::to_value(arg).unwrap();
         if !v.is_object() {
-            panic!("[rbatis] wrapper all_eq only support object struct!")
+            info!("[rbatis] wrapper all_eq only support object struct!");
+            return self;
         }
         let map = v.as_object().unwrap();
+        if map.len() == 0 {
+            return self;
+        }
         let len = map.len();
         let mut index = 0;
         for (k, v) in map {
@@ -79,10 +83,10 @@ impl Wrapper {
 
     pub fn order_by(&mut self, is_asc: bool, columns: &[&str]) -> &mut Self {
         let len = columns.len();
-        let mut index = 0;
         if len == 0 {
             return self;
         }
+        let mut index = 0;
         self.sql = self.sql.trim_end_matches("WHERE ").to_string();
         self.sql.push_str(" ORDER BY ");
         for x in columns {
@@ -101,10 +105,10 @@ impl Wrapper {
 
     pub fn group_by(&mut self, columns: &[&str]) -> &mut Self {
         let len = columns.len();
-        let mut index = 0;
         if len == 0 {
             return self;
         }
+        let mut index = 0;
         self.sql = self.sql.trim_end_matches("WHERE ").to_string();
         self.sql.push_str(" GROUP BY ");
         for x in columns {
@@ -237,6 +241,9 @@ impl Wrapper {
 
     pub fn in_arr<T>(&mut self, column: &str, obj: &[T]) -> &mut Self
         where T: Serialize {
+        if obj.len() == 0 {
+            return self;
+        }
         let v = serde_json::to_value(obj).unwrap();
         self.sql.push_str(column);
 
@@ -298,7 +305,7 @@ mod test {
         println!("sql:{:?}", w.sql.as_str());
         println!("arg:{:?}", w.args.clone());
 
-        let ms:Vec<&str>= w.sql.matches("?").collect();
-        assert_eq!(ms.len(),w.args.len());
+        let ms: Vec<&str> = w.sql.matches("?").collect();
+        assert_eq!(ms.len(), w.args.len());
     }
 }
