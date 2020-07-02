@@ -19,13 +19,13 @@ impl Wrapper {
         Self {
             sql: "".to_string(),
             args: vec![],
-            error: None
+            error: None,
         }
     }
 
     //check is done？
-    pub fn check_err(&mut self) ->Result<(),Error>{
-        if self.error.is_some(){
+    pub fn check(&mut self) -> Result<(), Error> {
+        if self.error.is_some() {
             return Err(self.error.take().unwrap());
         }
         return Ok(());
@@ -52,7 +52,7 @@ impl Wrapper {
         where T: Serialize {
         let v = serde_json::to_value(arg).unwrap();
         if !v.is_object() {
-            self.error=Some(Error::from("[rbatis] wrapper all_eq only support object struct!"));
+            self.error = Some(Error::from("[rbatis] wrapper all_eq only support object struct!"));
             return self;
         }
         let map = v.as_object().unwrap();
@@ -315,7 +315,7 @@ mod test {
             .between("create_time", "2020-01-01 00:00:00", "2020-12-12 00:00:00")
             .group_by(&["id"])
             .order_by(true, &["id", "name"])
-            .check_err().unwrap();
+            .check().unwrap();
         println!("sql:{:?}", w.sql.as_str());
         println!("arg:{:?}", w.args.clone());
 
