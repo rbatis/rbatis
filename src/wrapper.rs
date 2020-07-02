@@ -66,6 +66,7 @@ impl Wrapper {
         self
     }
 
+    /// not equal
     pub fn ne<T>(&mut self, column: &str, obj: T) -> &mut Self
         where T: Serialize {
         if self.where_num != 0 {
@@ -121,7 +122,7 @@ impl Wrapper {
         self
     }
 
-    ///  >
+    ///  sql:   column > obj
     pub fn gt<T>(&mut self, column: &str, obj: T) -> &mut Self
         where T: Serialize {
         if self.where_num != 0 {
@@ -136,7 +137,7 @@ impl Wrapper {
 
         self
     }
-
+    ///  sql:   column >= obj
     pub fn ge<T>(&mut self, column: &str, obj: T) -> &mut Self
         where T: Serialize {
         if self.where_num != 0 {
@@ -152,6 +153,7 @@ impl Wrapper {
         self
     }
 
+    ///  sql:   column < obj
     pub fn lt<T>(&mut self, column: &str, obj: T) -> &mut Self
         where T: Serialize {
         if self.where_num != 0 {
@@ -167,6 +169,7 @@ impl Wrapper {
         self
     }
 
+    ///  sql:   column <= obj
     pub fn le<T>(&mut self, column: &str, obj: T) -> &mut Self
         where T: Serialize {
         if self.where_num != 0 {
