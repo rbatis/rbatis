@@ -22,7 +22,7 @@ impl Wrapper {
     }
 
     //check is done？
-    pub fn check_done(&mut self) ->Result<(),Error>{
+    pub fn check_err(&mut self) ->Result<(),Error>{
         if self.error.is_some(){
             return Err(self.error.take().unwrap());
         }
@@ -313,7 +313,7 @@ mod test {
             .between("create_time", "2020-01-01 00:00:00", "2020-12-12 00:00:00")
             .group_by(&["id"])
             .order_by(true, &["id", "name"])
-            .check_done().unwrap();
+            .check_err().unwrap();
         println!("sql:{:?}", w.sql.as_str());
         println!("arg:{:?}", w.args.clone());
 
