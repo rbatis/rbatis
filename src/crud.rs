@@ -9,6 +9,7 @@ use rbatis_core::Result;
 
 use crate::convert::stmt_convert::StmtConvert;
 use crate::rbatis::Rbatis;
+use crate::wrapper::Wrapper;
 
 /// DB Table model trait
 pub trait CRUDEnable: Send + Sync + Serialize {
@@ -114,11 +115,21 @@ pub trait CRUDEnable: Send + Sync + Serialize {
 pub trait CRUD {
     async fn save<T>(&self, entity: &T) -> Result<u64> where T: CRUDEnable;
     async fn save_batch<T>(&self, entity: &Vec<T>) -> Result<u64> where T: CRUDEnable;
+
+    async fn remove_by_wrapper<T>(&self,w:&Wrapper) -> Result<u64> where T: CRUDEnable;
     async fn remove_by_id<T>(&self, id: &T::IdType) -> Result<u64> where T: CRUDEnable;
     async fn remove_batch_by_id<T>(&self, ids: &Vec<T::IdType>) -> Result<u64> where T: CRUDEnable;
+
+    async fn update_by_wrapper<T>(&self,w:&Wrapper) -> Result<u64> where T: CRUDEnable;
     async fn update_by_id<T>(&self, id: &T::IdType) -> Result<u64> where T: CRUDEnable;
     async fn update_batch_by_id<T>(&self, ids: &Vec<T::IdType>) -> Result<u64> where T: CRUDEnable;
+
+
+    async fn get_by_wrapper<T>(&self,w:&Wrapper) -> Result<T> where T: CRUDEnable;
     async fn get_by_id<T>(&self, id: &T::IdType) -> Result<T> where T: CRUDEnable;
+
+
+    async fn list_by_wrapper<T>(&self,w:&Wrapper) -> Result<Vec<T>> where T: CRUDEnable;
     ///all record
     async fn list<T>(&self) -> Result<Vec<T>> where T: CRUDEnable;
     async fn list_by_ids<T>(&self, ids: &Vec<T::IdType>) -> Result<Vec<T>> where T: CRUDEnable;
@@ -143,11 +154,22 @@ impl CRUD for Rbatis<'_> {
         return Ok(r);
     }
 
+    async fn remove_by_wrapper<T>(&self, w: &Wrapper) -> Result<u64> where T: CRUDEnable {
+        unimplemented!()
+    }
+
     async fn remove_by_id<T>(&self, id: &T::IdType) -> Result<u64> where T: CRUDEnable {
+        let mut w =Wrapper::new();
+        // w.sql=format!("UPDATE {} SET ",T::table_name());
+        w.sql=format!("DELETE {}  ",T::table_name());
         unimplemented!()
     }
 
     async fn remove_batch_by_id<T>(&self, ids: &Vec<T::IdType>) -> Result<u64> where T: CRUDEnable {
+        unimplemented!()
+    }
+
+    async fn update_by_wrapper<T>(&self, w: &Wrapper) -> Result<u64> where T: CRUDEnable {
         unimplemented!()
     }
 
@@ -159,7 +181,15 @@ impl CRUD for Rbatis<'_> {
         unimplemented!()
     }
 
+    async fn get_by_wrapper<T>(&self, w: &Wrapper) -> Result<T> where T: CRUDEnable {
+        unimplemented!()
+    }
+
     async fn get_by_id<T>(&self, id: &T::IdType) -> Result<T> where T: CRUDEnable {
+        unimplemented!()
+    }
+
+    async fn list_by_wrapper<T>(&self, w: &Wrapper) -> Result<Vec<T>> where T: CRUDEnable {
         unimplemented!()
     }
 
