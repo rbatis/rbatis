@@ -11,7 +11,7 @@ use crate::convert::stmt_convert::StmtConvert;
 use crate::rbatis::Rbatis;
 
 /// DB Table model trait
-pub trait CRUDEntity: Send + Sync + DeserializeOwned + Serialize {
+pub trait CRUDEnable: Send + Sync + DeserializeOwned + Serialize {
     /// your table id type,for example:
     /// IdType = String
     /// IdType = i32
@@ -91,29 +91,29 @@ pub trait CRUDEntity: Send + Sync + DeserializeOwned + Serialize {
 
 #[async_trait]
 pub trait CRUD {
-    async fn save<T>(&self, entity: &T) -> Result<u64> where T: CRUDEntity;
-    async fn save_batch<T>(&self, entity: &Vec<T>) -> Result<u64> where T: CRUDEntity;
-    async fn remove_by_id<T>(&self, id: &T::IdType) -> Result<u64> where T: CRUDEntity;
-    async fn remove_batch_by_id<T>(&self, ids: &Vec<T::IdType>) -> Result<u64> where T: CRUDEntity;
-    async fn update_by_id<T>(&self, id: &T::IdType) -> Result<u64> where T: CRUDEntity;
-    async fn update_batch_by_id<T>(&self, ids: &Vec<T::IdType>) -> Result<u64> where T: CRUDEntity;
-    async fn get_by_id<T>(&self, id: &T::IdType) -> Result<T> where T: CRUDEntity;
+    async fn save<T>(&self, entity: &T) -> Result<u64> where T: CRUDEnable;
+    async fn save_batch<T>(&self, entity: &Vec<T>) -> Result<u64> where T: CRUDEnable;
+    async fn remove_by_id<T>(&self, id: &T::IdType) -> Result<u64> where T: CRUDEnable;
+    async fn remove_batch_by_id<T>(&self, ids: &Vec<T::IdType>) -> Result<u64> where T: CRUDEnable;
+    async fn update_by_id<T>(&self, id: &T::IdType) -> Result<u64> where T: CRUDEnable;
+    async fn update_batch_by_id<T>(&self, ids: &Vec<T::IdType>) -> Result<u64> where T: CRUDEnable;
+    async fn get_by_id<T>(&self, id: &T::IdType) -> Result<T> where T: CRUDEnable;
     ///all record
-    async fn list<T>(&self) -> Result<Vec<T>> where T: CRUDEntity;
-    async fn list_by_ids<T>(&self, ids: &Vec<T::IdType>) -> Result<Vec<T>> where T: CRUDEntity;
+    async fn list<T>(&self) -> Result<Vec<T>> where T: CRUDEnable;
+    async fn list_by_ids<T>(&self, ids: &Vec<T::IdType>) -> Result<Vec<T>> where T: CRUDEnable;
 }
 
 #[async_trait]
 impl CRUD for Rbatis<'_> {
     async fn save<T>(&self, entity: &T) -> Result<u64>
-        where T: CRUDEntity {
+        where T: CRUDEnable {
         let map = entity.to_value_map()?;
         let (values, args) = entity.values(&self.driver_type()?, &map)?;
         let sql = format!("INSERT INTO {} ({}) VALUES ({})", T::table_name(), entity.fields(&map)?, values);
         return self.exec_prepare("", sql.as_str(), &args).await;
     }
 
-    async fn save_batch<T>(&self, entity: &Vec<T>) -> Result<u64> where T: CRUDEntity {
+    async fn save_batch<T>(&self, entity: &Vec<T>) -> Result<u64> where T: CRUDEnable {
         let mut r = 0;
         for x in entity {
             let v = self.save(x).await?;
@@ -122,31 +122,31 @@ impl CRUD for Rbatis<'_> {
         return Ok(r);
     }
 
-    async fn remove_by_id<T>(&self, id: &T::IdType) -> Result<u64> where T: CRUDEntity {
+    async fn remove_by_id<T>(&self, id: &T::IdType) -> Result<u64> where T: CRUDEnable {
         unimplemented!()
     }
 
-    async fn remove_batch_by_id<T>(&self, ids: &Vec<T::IdType>) -> Result<u64> where T: CRUDEntity {
+    async fn remove_batch_by_id<T>(&self, ids: &Vec<T::IdType>) -> Result<u64> where T: CRUDEnable {
         unimplemented!()
     }
 
-    async fn update_by_id<T>(&self, id: &T::IdType) -> Result<u64> where T: CRUDEntity {
+    async fn update_by_id<T>(&self, id: &T::IdType) -> Result<u64> where T: CRUDEnable {
         unimplemented!()
     }
 
-    async fn update_batch_by_id<T>(&self, ids: &Vec<T::IdType>) -> Result<u64> where T: CRUDEntity {
+    async fn update_batch_by_id<T>(&self, ids: &Vec<T::IdType>) -> Result<u64> where T: CRUDEnable {
         unimplemented!()
     }
 
-    async fn get_by_id<T>(&self, id: &T::IdType) -> Result<T> where T: CRUDEntity {
+    async fn get_by_id<T>(&self, id: &T::IdType) -> Result<T> where T: CRUDEnable {
         unimplemented!()
     }
 
-    async fn list<T>(&self) -> Result<Vec<T>> where T: CRUDEntity {
+    async fn list<T>(&self) -> Result<Vec<T>> where T: CRUDEnable {
         unimplemented!()
     }
 
-    async fn list_by_ids<T>(&self, ids: &Vec<T::IdType>) -> Result<Vec<T>> where T: CRUDEntity {
+    async fn list_by_ids<T>(&self, ids: &Vec<T::IdType>) -> Result<Vec<T>> where T: CRUDEnable {
         unimplemented!()
     }
 }
@@ -157,7 +157,7 @@ mod test {
     use serde::Deserialize;
     use serde::Serialize;
 
-    use crate::crud::{CRUD, CRUDEntity};
+    use crate::crud::{CRUD, CRUDEnable};
     use crate::rbatis::Rbatis;
     use fast_log::log::RuntimeType;
 
@@ -177,7 +177,7 @@ mod test {
         pub delete_flag: Option<i32>,
     }
     /// 必须实现 CRUDEntity接口，如果表名 不正确，可以重写 fn table_name() -> String 方法！
-    impl CRUDEntity for BizActivity {
+    impl CRUDEnable for BizActivity {
         type IdType = String;
     }
 
