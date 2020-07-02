@@ -5,7 +5,7 @@ use std::ops::Add;
 use rbatis_core::Error;
 
 //TODO
-#[derive(Debug)]
+#[derive(Serialize, Deserialize, Clone, Debug)]
 pub struct Wrapper {
     pub sql: String,
     pub args: Vec<serde_json::Value>,
