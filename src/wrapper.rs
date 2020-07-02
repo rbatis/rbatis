@@ -24,11 +24,16 @@ impl Wrapper {
     }
 
     //check is done？
-    pub fn check(&mut self) -> Result<(), Error> {
+    pub fn check(&mut self) -> Result<Wrapper, Error> {
         if self.error.is_some() {
             return Err(self.error.take().unwrap());
         }
-        return Ok(());
+        let clone= Wrapper{
+            sql: self.sql.clone(),
+            args: self.args.clone(),
+            error: self.error.clone()
+        };
+        return Ok(clone);
     }
 
     pub fn and(&mut self) -> &mut Self {
@@ -299,10 +304,9 @@ mod test {
 
     #[test]
     fn test_select() {
-        let mut w = Wrapper::new();
         let mut m = Map::new();
         m.insert("a".to_string(), json!("1"));
-        w.eq("id", 1)
+       let w= Wrapper::new().eq("id", 1)
             .and()
             .in_arr("id", &[1, 2, 3])
             .and()
