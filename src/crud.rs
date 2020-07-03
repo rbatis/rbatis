@@ -102,15 +102,15 @@ pub trait CRUDEnable: Send + Sync + Serialize {
 #[async_trait]
 pub trait CRUD {
     async fn save<T>(&self, entity: &T) -> Result<u64> where T: CRUDEnable;
-    async fn save_batch<T>(&self, entity: &Vec<T>) -> Result<u64> where T: CRUDEnable;
+    async fn save_batch<T>(&self, entity: &[T]) -> Result<u64> where T: CRUDEnable;
 
     async fn remove_by_wrapper<T>(&self, w: &Wrapper) -> Result<u64> where T: CRUDEnable;
     async fn remove_by_id<T>(&self, id: &T::IdType) -> Result<u64> where T: CRUDEnable;
-    async fn remove_batch_by_id<T>(&self, ids: &Vec<T::IdType>) -> Result<u64> where T: CRUDEnable;
+    async fn remove_batch_by_id<T>(&self, ids: &[T::IdType]) -> Result<u64> where T: CRUDEnable;
 
     async fn update_by_wrapper<T>(&self, w: &Wrapper) -> Result<u64> where T: CRUDEnable;
     async fn update_by_id<T>(&self, id: &T::IdType) -> Result<u64> where T: CRUDEnable;
-    async fn update_batch_by_id<T>(&self, ids: &Vec<T::IdType>) -> Result<u64> where T: CRUDEnable;
+    async fn update_batch_by_id<T>(&self, ids: &[T::IdType]) -> Result<u64> where T: CRUDEnable;
 
 
     async fn get_by_wrapper<T>(&self, w: &Wrapper) -> Result<T> where T: CRUDEnable;
@@ -120,13 +120,11 @@ pub trait CRUD {
     async fn list_by_wrapper<T>(&self, w: &Wrapper) -> Result<Vec<T>> where T: CRUDEnable;
     ///all record
     async fn list<T>(&self) -> Result<Vec<T>> where T: CRUDEnable;
-    async fn list_by_ids<T>(&self, ids: &Vec<T::IdType>) -> Result<Vec<T>> where T: CRUDEnable;
+    async fn list_by_ids<T>(&self, ids: &[T::IdType]) -> Result<Vec<T>> where T: CRUDEnable;
 }
 
 #[async_trait]
 impl CRUD for Rbatis<'_> {
-
-
     /// save one entity to database
     async fn save<T>(&self, entity: &T) -> Result<u64>
         where T: CRUDEnable {
@@ -143,16 +141,16 @@ impl CRUD for Rbatis<'_> {
     /// [rbatis] Exec ==>   INSERT INTO biz_activity (id,name,version) VALUES ( ? , ? , ?),( ? , ? , ?)
     ///
     ///
-    async fn save_batch<T>(&self, args: &Vec<T>) -> Result<u64> where T: CRUDEnable {
-        if args.is_empty(){
+    async fn save_batch<T>(&self, args: &[T]) -> Result<u64> where T: CRUDEnable {
+        if args.is_empty() {
             return Ok(0);
         }
         let mut value_arr = String::new();
         let mut arg_arr = vec![];
-        let mut fields= "".to_string();
+        let mut fields = "".to_string();
         for x in args {
             let map = x.to_value_map()?;
-            if fields.is_empty(){
+            if fields.is_empty() {
                 fields = x.fields(&map)?;
             }
             let (values, args) = x.values(&self.driver_type()?, &map)?;
@@ -170,9 +168,9 @@ impl CRUD for Rbatis<'_> {
         let mut where_sql = arg.sql.as_str();
         let mut sql = String::new();
         if self.logic_plugin.is_some() {
-            sql = self.logic_plugin.as_ref().unwrap().make_delete_sql(&self.driver_type()?, T::table_name().as_str(), where_sql)?;
+            sql = self.logic_plugin.as_ref().unwrap().make_delete_sql(&self.driver_type()?, T::table_name().as_str(), make_where_sql(where_sql).as_str())?;
         } else {
-            sql = format!("DELETE FROM {} WHERE {}", T::table_name(), where_sql);
+            sql = format!("DELETE FROM {} {}", T::table_name(), make_where_sql(where_sql));
         }
         return self.exec_prepare("", sql.as_str(), &arg.args).await;
     }
@@ -187,8 +185,17 @@ impl CRUD for Rbatis<'_> {
         return self.exec_prepare("", sql.as_str(), &vec![]).await;
     }
 
-    async fn remove_batch_by_id<T>(&self, ids: &Vec<T::IdType>) -> Result<u64> where T: CRUDEnable {
-        unimplemented!()
+    ///remove batch id
+    /// for Example :
+    /// rb.remove_batch_by_id::<BizActivity>(&["1".to_string(),"2".to_string()]).await;
+    /// [rbatis] Exec ==> DELETE FROM biz_activity WHERE id IN ( ? , ? )
+    ///
+    async fn remove_batch_by_id<T>(&self, ids: &[T::IdType]) -> Result<u64> where T: CRUDEnable {
+        if ids.is_empty() {
+            return Ok(0);
+        }
+        let mut w = Wrapper::new().and().is_in("id", &ids).check()?;
+        return self.remove_by_wrapper::<T>(&w).await;
     }
 
     async fn update_by_wrapper<T>(&self, w: &Wrapper) -> Result<u64> where T: CRUDEnable {
@@ -199,7 +206,7 @@ impl CRUD for Rbatis<'_> {
         unimplemented!()
     }
 
-    async fn update_batch_by_id<T>(&self, ids: &Vec<T::IdType>) -> Result<u64> where T: CRUDEnable {
+    async fn update_batch_by_id<T>(&self, ids: &[T::IdType]) -> Result<u64> where T: CRUDEnable {
         unimplemented!()
     }
 
@@ -219,10 +226,17 @@ impl CRUD for Rbatis<'_> {
         unimplemented!()
     }
 
-    async fn list_by_ids<T>(&self, ids: &Vec<T::IdType>) -> Result<Vec<T>> where T: CRUDEnable {
+    async fn list_by_ids<T>(&self, ids: &[T::IdType]) -> Result<Vec<T>> where T: CRUDEnable {
         unimplemented!()
     }
 }
+
+fn make_where_sql(arg:&str)->String{
+    let mut where_sql = arg.to_string();
+    where_sql= where_sql.trim().trim_start_matches("AND ").trim_start_matches("OR ").to_string();
+    format!(" WHERE {} ", where_sql)
+}
+
 
 mod test {
     use chrono::{DateTime, Utc};
@@ -233,6 +247,7 @@ mod test {
     use crate::crud::{CRUD, CRUDEnable};
     use crate::rbatis::Rbatis;
     use fast_log::log::RuntimeType;
+    use crate::plugin::logic_delete::RbatisLogicDeletePlugin;
 
     #[derive(Serialize, Deserialize, Clone, Debug)]
     pub struct BizActivity {
@@ -300,7 +315,7 @@ mod test {
                 version: Some(1),
                 delete_flag: Some(1),
             };
-            let args=vec![activity.clone(),activity];
+            let args = vec![activity.clone(), activity];
 
             fast_log::log::init_log("requests.log", &RuntimeType::Std);
             let rb = Rbatis::new();
@@ -312,6 +327,34 @@ mod test {
         });
     }
 
+
     #[test]
-    pub fn test_delete() {}
+    pub fn test_remove_batch_by_id() {
+        async_std::task::block_on(async {
+            fast_log::log::init_log("requests.log", &RuntimeType::Std);
+            let mut rb = Rbatis::new();
+            rb.logic_plugin = Some(Box::new(RbatisLogicDeletePlugin::new("delete_flag")));
+            rb.link("mysql://root:123456@localhost:3306/test").await.unwrap();
+            let r = rb.remove_batch_by_id::<BizActivity>(&["1".to_string(), "2".to_string()]).await;
+            if r.is_err() {
+                println!("{}", r.err().unwrap().to_string());
+            }
+        });
+    }
+
+
+    #[test]
+    pub fn test_remove_by_id() {
+        async_std::task::block_on(async {
+            fast_log::log::init_log("requests.log", &RuntimeType::Std);
+            let mut rb = Rbatis::new();
+            //设置 逻辑删除插件
+            rb.logic_plugin = Some(Box::new(RbatisLogicDeletePlugin::new("delete_flag")));
+            rb.link("mysql://root:123456@localhost:3306/test").await.unwrap();
+            let r = rb.remove_by_id::<BizActivity>(&"1".to_string()).await;
+            if r.is_err() {
+                println!("{}", r.err().unwrap().to_string());
+            }
+        });
+    }
 }
