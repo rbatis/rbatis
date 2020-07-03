@@ -41,6 +41,11 @@ impl Wrapper {
         self
     }
 
+    pub fn push_sql(&mut self, sql: &str) -> &mut Self {
+        self.sql.push_str(sql);
+        self
+    }
+
     /// link wrapper sql, if end with where , do nothing
     pub fn and(&mut self) -> &mut Self {
         if self.sql.ends_with("WHERE ") || self.sql.ends_with(" WHERE") {
