@@ -11,6 +11,7 @@ use crate::convert::stmt_convert::StmtConvert;
 use crate::rbatis::Rbatis;
 use crate::wrapper::Wrapper;
 use crate::utils::string_util::to_snake_name;
+use serde::export::fmt::Display;
 
 /// DB Table model trait
 pub trait CRUDEnable: Send + Sync + Serialize {
@@ -18,7 +19,7 @@ pub trait CRUDEnable: Send + Sync + Serialize {
     /// IdType = String
     /// IdType = i32
     ///
-    type IdType: Send + Sync + DeserializeOwned + Serialize;
+    type IdType: Send + Sync + DeserializeOwned + Serialize +Display;
 
     /// get table name,default is type name for snake name
     ///
@@ -33,6 +34,7 @@ pub trait CRUDEnable: Send + Sync + Serialize {
     ///
     ///
     ///
+    #[inline]
     fn table_name() -> String {
         let type_name = std::any::type_name::<Self>();
         let mut name = type_name.to_string();
@@ -140,15 +142,25 @@ impl CRUD for Rbatis<'_> {
         return Ok(r);
     }
 
-    async fn remove_by_wrapper<T>(&self, w: &Wrapper) -> Result<u64> where T: CRUDEnable {
-        unimplemented!()
+    async fn remove_by_wrapper<T>(&self, arg: &Wrapper) -> Result<u64> where T: CRUDEnable {
+        let mut where_sql= arg.sql.as_str();
+        let mut sql = String::new();
+        if self.logic_plugin.is_some(){
+            sql= self.logic_plugin.as_ref().unwrap().make_delete_sql(&self.driver_type()?,T::table_name().as_str(),where_sql)?;
+        }else{
+            sql= format!("DELETE FROM {} WHERE {}",T::table_name(),where_sql);
+        }
+        return self.exec_prepare("",sql.as_str(),&arg.args).await;
     }
 
     async fn remove_by_id<T>(&self, id: &T::IdType) -> Result<u64> where T: CRUDEnable {
-        let mut w =Wrapper::new();
-        // w.sql=format!("UPDATE {} SET ",T::table_name());
-        w.sql=format!("DELETE {}  ",T::table_name());
-        unimplemented!()
+        let mut sql = String::new();
+        if self.logic_plugin.is_some(){
+            sql= self.logic_plugin.as_ref().unwrap().make_delete_sql(&self.driver_type()?,T::table_name().as_str(),format!(" WHERE id = {}",id).as_str())?;
+        }else{
+            sql= format!("DELETE FROM {} WHERE id = {}",T::table_name(),id);
+        }
+        return self.exec_prepare("",sql.as_str(),&vec![]).await;
     }
 
     async fn remove_batch_by_id<T>(&self, ids: &Vec<T::IdType>) -> Result<u64> where T: CRUDEnable {
@@ -244,5 +256,10 @@ mod test {
                 println!("{}", r.err().unwrap().to_string());
             }
         });
+    }
+
+    #[test]
+    pub fn test_delete(){
+
     }
 }
