@@ -28,19 +28,21 @@ impl Wrapper {
         if self.error.is_some() {
             return Err(self.error.take().unwrap());
         }
-        let clone= Wrapper{
+        let clone = Wrapper {
             sql: self.sql.clone(),
             args: self.args.clone(),
-            error: self.error.clone()
+            error: self.error.clone(),
         };
         return Ok(clone);
     }
 
+    /// link wrapper sql
     pub fn and(&mut self) -> &mut Self {
         self.sql.push_str(" AND ");
         self
     }
 
+    /// link wrapper sql
     pub fn or(&mut self) -> &mut Self {
         self.sql.push_str(" OR ");
         self
@@ -48,7 +50,6 @@ impl Wrapper {
 
     pub fn having(&mut self, sql_having: &str) -> &mut Self {
         self.sql.push_str(format!(" HAVING {} ", sql_having).as_str());
-
         self
     }
 
@@ -94,8 +95,6 @@ impl Wrapper {
         self.sql.push_str(column);
         self.sql.push_str(" <> ?");
         self.args.push(v);
-
-
         self
     }
 
@@ -155,8 +154,6 @@ impl Wrapper {
         self.sql.push_str(column);
         self.sql.push_str(" >= ?");
         self.args.push(v);
-
-
         self
     }
 
@@ -178,8 +175,6 @@ impl Wrapper {
         self.sql.push_str(column);
         self.sql.push_str(" <= ?");
         self.args.push(v);
-
-
         self
     }
 
@@ -191,8 +186,6 @@ impl Wrapper {
         self.sql.push_str(" BETWEEN ? AND ?");
         self.args.push(min_v);
         self.args.push(max_v);
-
-
         self
     }
 
@@ -204,7 +197,6 @@ impl Wrapper {
         self.sql.push_str(" NOT BETWEEN ? AND ?");
         self.args.push(min_v);
         self.args.push(max_v);
-
         self
     }
 
@@ -214,7 +206,6 @@ impl Wrapper {
         self.sql.push_str(column);
         self.sql.push_str(" LIKE '%?%'");
         self.args.push(v);
-
         self
     }
     pub fn like_left<T>(&mut self, column: &str, obj: T) -> &mut Self
@@ -223,7 +214,6 @@ impl Wrapper {
         self.sql.push_str(column);
         self.sql.push_str(" LIKE '%?'");
         self.args.push(v);
-
         self
     }
 
@@ -264,7 +254,6 @@ impl Wrapper {
         }
         let v = serde_json::to_value(obj).unwrap();
         self.sql.push_str(column);
-
         let vec = v.as_array().unwrap();
         let mut sqls = String::new();
         for x in vec {
@@ -274,8 +263,6 @@ impl Wrapper {
         }
         sqls.pop();
         self.sql.push_str(format!(" IN ({})", sqls).as_str());
-
-
         self
     }
 
@@ -283,7 +270,6 @@ impl Wrapper {
         where T: Serialize {
         let v = serde_json::to_value(obj).unwrap();
         self.sql.push_str(column);
-
         let vec = v.as_array().unwrap();
         let mut sqls = String::new();
         for x in vec {
@@ -306,9 +292,9 @@ mod test {
     fn test_select() {
         let mut m = Map::new();
         m.insert("a".to_string(), json!("1"));
-       let w= Wrapper::new().eq("id", 1)
+        let w = Wrapper::new().eq("id", 1)
             .and()
-            .ne("id",1)
+            .ne("id", 1)
             .and()
             .is_in("id", &[1, 2, 3])
             .and()
