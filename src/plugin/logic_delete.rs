@@ -17,6 +17,14 @@ pub struct RbatisLogicDeletePlugin {
     pub column: String
 }
 
+impl RbatisLogicDeletePlugin{
+    pub fn new(column:&str)->Self{
+        Self{
+            column:column.to_string()
+        }
+    }
+}
+
 impl LogicDelete for RbatisLogicDeletePlugin {
     fn column(&self) -> &str {
         self.column.as_str()

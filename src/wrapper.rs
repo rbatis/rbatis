@@ -36,6 +36,11 @@ impl Wrapper {
         return Ok(clone);
     }
 
+    pub fn set_sql(&mut self, sql:&str) -> &mut Self {
+        self.sql = sql.to_string();
+        self
+    }
+
     /// link wrapper sql
     pub fn and(&mut self) -> &mut Self {
         self.sql.push_str(" AND ");
