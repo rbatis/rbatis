@@ -20,10 +20,10 @@ use serde::{Deserialize, Serialize};
 use serde_json::{json, Value};
 use tide::Request;
 
+use rbatis::crud::{CRUD, CRUDEnable};
+use rbatis::plugin::page::{IPageRequest, Page, PageRequest};
 use rbatis::rbatis::Rbatis;
 use rbatis_core::db::DBPool;
-use rbatis::plugin::page::{Page, IPageRequest, PageRequest};
-use rbatis::crud::{CRUD, CRUDEnable};
 
 ///数据库表模型,支持BigDecimal ,DateTime ,rust基本类型（int,float,uint,string,Vec,Array）
 #[derive(Serialize, Deserialize, Clone, Debug)]
@@ -71,26 +71,25 @@ lazy_static! {
 
 
 //启动web服务，并且对表执行 count统计
-fn main() {
-    async_std::task::block_on(async {
-        fast_log::log::init_log("requests.log", &RuntimeType::Std).unwrap();
-        let mut app = tide::new();
-        app.at("/").get(|_: Request<()>| async move {
-            // println!("accept req[{} /test] arg: {:?}",req.url().to_string(),a);
-            let arg = &vec![json!(1)];
-            let v = RB.fetch_prepare("", "SELECT count(1) FROM biz_activity where delete_flag = ?;", arg).await;
-            if v.is_ok() {
-                let data: Value = v.unwrap();
-                Ok(data.to_string())
-            } else {
-                Ok(v.err().unwrap().to_string())
-            }
-        });
-        //app.at("/").get(|_| async { Ok("Hello, world!") });
-        let addr = "0.0.0.0:8000";
-        println!("http server listen on http://{}", addr);
-        app.listen(addr).await.unwrap();
+#[async_std::main]
+async fn main() {
+    fast_log::log::init_log("requests.log", &RuntimeType::Std).unwrap();
+    let mut app = tide::new();
+    app.at("/").get(|_: Request<()>| async move {
+        // println!("accept req[{} /test] arg: {:?}",req.url().to_string(),a);
+        let arg = &vec![json!(1)];
+        let v = RB.fetch_prepare("", "SELECT count(1) FROM biz_activity where delete_flag = ?;", arg).await;
+        if v.is_ok() {
+            let data: Value = v.unwrap();
+            Ok(data.to_string())
+        } else {
+            Ok(v.err().unwrap().to_string())
+        }
     });
+    //app.at("/").get(|_| async { Ok("Hello, world!") });
+    let addr = "0.0.0.0:8000";
+    println!("http server listen on http://{}", addr);
+    app.listen(addr).await.unwrap();
 }
 
 
@@ -159,7 +158,6 @@ pub fn test_py_sql() {
         println!("{}", data);
     });
 }
-
 
 
 //示例-Rbatis使用py风格的语法分页
