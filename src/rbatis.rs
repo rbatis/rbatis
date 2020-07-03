@@ -30,6 +30,7 @@ use crate::utils::error_util::ToResult;
 use serde::ser::Serialize;
 use crate::plugin::page::{Page, IPage, PagePlugin, RbatisPagePlugin, IPageRequest};
 use crate::sql::PageLimit;
+use crate::plugin::logic_delete::{LogicDelete, RbatisLogicDeletePlugin};
 
 /// rbatis engine
 pub struct Rbatis<'r> {
@@ -40,6 +41,7 @@ pub struct Rbatis<'r> {
     pub context_tx: SyncMap<DBTx>,
     /// page plugin
     pub page_plugin: Box<dyn PagePlugin>,
+    pub logic_plugin: Option<Box<dyn LogicDelete>>
 }
 
 
@@ -51,6 +53,7 @@ impl<'r> Rbatis<'r> {
             engine: RbatisEngine::new(),
             context_tx: SyncMap::new(),
             page_plugin: Box::new(RbatisPagePlugin {}),
+            logic_plugin: None
         };
     }
 
