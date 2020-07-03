@@ -125,6 +125,9 @@ pub trait CRUD {
 
 #[async_trait]
 impl CRUD for Rbatis<'_> {
+
+
+    /// save one entity to database
     async fn save<T>(&self, entity: &T) -> Result<u64>
         where T: CRUDEnable {
         let map = entity.to_value_map()?;
@@ -133,6 +136,13 @@ impl CRUD for Rbatis<'_> {
         return self.exec_prepare("", sql.as_str(), &args).await;
     }
 
+    /// save batch makes many value into  only one sql. make sure your data not  to long!
+    ///
+    /// for Example:
+    /// rb.save_batch(&vec![activity]);
+    /// [rbatis] Exec ==>   INSERT INTO biz_activity (id,name,version) VALUES ( ? , ? , ?),( ? , ? , ?)
+    ///
+    ///
     async fn save_batch<T>(&self, args: &Vec<T>) -> Result<u64> where T: CRUDEnable {
         if args.is_empty(){
             return Ok(0);
