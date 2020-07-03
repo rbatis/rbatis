@@ -193,7 +193,7 @@ impl CRUD for Rbatis<'_> {
         if ids.is_empty() {
             return Ok(0);
         }
-        let mut w = Wrapper::new().and().is_in("id", &ids).check()?;
+        let mut w = Wrapper::new().and().in_array("id", &ids).check()?;
         return self.remove_by_wrapper::<T>(&w).await;
     }
 
