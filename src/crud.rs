@@ -19,7 +19,7 @@ pub trait CRUDEnable: Send + Sync + Serialize {
     /// IdType = String
     /// IdType = i32
     ///
-    type IdType: Send + Sync + DeserializeOwned + Serialize +Display;
+    type IdType: Send + Sync + DeserializeOwned + Serialize + Display;
 
     /// get table name,default is type name for snake name
     ///
@@ -60,16 +60,16 @@ pub trait CRUDEnable: Send + Sync + Serialize {
             return Err(Error::from("[rbaits] to_value_map() fail,data is not an object!"));
         }
         let mut m = json.as_object().unwrap().to_owned();
-        let mut new_m=m.clone();
-        for (k,v)in &m {
-            if (k.contains("time") || k.contains("date")) && v.is_string(){
-                let mut new_v=v.as_str().unwrap().to_string();
-                new_v=new_v.replace("T"," ");
-                let new_vs:Vec<&str> =  new_v.split("+").collect();
-                if new_vs.len()>1{
-                    new_v=new_vs.get(0).unwrap().to_string();
+        let mut new_m = m.clone();
+        for (k, v) in &m {
+            if (k.contains("time") || k.contains("date")) && v.is_string() {
+                let mut new_v = v.as_str().unwrap().to_string();
+                new_v = new_v.replace("T", " ");
+                let new_vs: Vec<&str> = new_v.split("+").collect();
+                if new_vs.len() > 1 {
+                    new_v = new_vs.get(0).unwrap().to_string();
                 }
-                new_m.insert(k.to_string(),serde_json::Value::String(new_v));
+                new_m.insert(k.to_string(), serde_json::Value::String(new_v));
             }
         }
         return Ok(new_m);
@@ -104,20 +104,20 @@ pub trait CRUD {
     async fn save<T>(&self, entity: &T) -> Result<u64> where T: CRUDEnable;
     async fn save_batch<T>(&self, entity: &Vec<T>) -> Result<u64> where T: CRUDEnable;
 
-    async fn remove_by_wrapper<T>(&self,w:&Wrapper) -> Result<u64> where T: CRUDEnable;
+    async fn remove_by_wrapper<T>(&self, w: &Wrapper) -> Result<u64> where T: CRUDEnable;
     async fn remove_by_id<T>(&self, id: &T::IdType) -> Result<u64> where T: CRUDEnable;
     async fn remove_batch_by_id<T>(&self, ids: &Vec<T::IdType>) -> Result<u64> where T: CRUDEnable;
 
-    async fn update_by_wrapper<T>(&self,w:&Wrapper) -> Result<u64> where T: CRUDEnable;
+    async fn update_by_wrapper<T>(&self, w: &Wrapper) -> Result<u64> where T: CRUDEnable;
     async fn update_by_id<T>(&self, id: &T::IdType) -> Result<u64> where T: CRUDEnable;
     async fn update_batch_by_id<T>(&self, ids: &Vec<T::IdType>) -> Result<u64> where T: CRUDEnable;
 
 
-    async fn get_by_wrapper<T>(&self,w:&Wrapper) -> Result<T> where T: CRUDEnable;
+    async fn get_by_wrapper<T>(&self, w: &Wrapper) -> Result<T> where T: CRUDEnable;
     async fn get_by_id<T>(&self, id: &T::IdType) -> Result<T> where T: CRUDEnable;
 
 
-    async fn list_by_wrapper<T>(&self,w:&Wrapper) -> Result<Vec<T>> where T: CRUDEnable;
+    async fn list_by_wrapper<T>(&self, w: &Wrapper) -> Result<Vec<T>> where T: CRUDEnable;
     ///all record
     async fn list<T>(&self) -> Result<Vec<T>> where T: CRUDEnable;
     async fn list_by_ids<T>(&self, ids: &Vec<T::IdType>) -> Result<Vec<T>> where T: CRUDEnable;
@@ -133,34 +133,48 @@ impl CRUD for Rbatis<'_> {
         return self.exec_prepare("", sql.as_str(), &args).await;
     }
 
-    async fn save_batch<T>(&self, entity: &Vec<T>) -> Result<u64> where T: CRUDEnable {
-        let mut r = 0;
-        for x in entity {
-            let v = self.save(x).await?;
-            r = r + v;
+    async fn save_batch<T>(&self, args: &Vec<T>) -> Result<u64> where T: CRUDEnable {
+        if args.is_empty(){
+            return Ok(0);
         }
-        return Ok(r);
+        let mut value_arr = String::new();
+        let mut arg_arr = vec![];
+        let mut fields= "".to_string();
+        for x in args {
+            let map = x.to_value_map()?;
+            if fields.is_empty(){
+                fields = x.fields(&map)?;
+            }
+            let (values, args) = x.values(&self.driver_type()?, &map)?;
+            value_arr = value_arr + format!("({}),", values).as_str();
+            for x in args {
+                arg_arr.push(x);
+            }
+        }
+        value_arr.pop();//pop ','
+        let sql = format!("INSERT INTO {} ({}) VALUES {}", T::table_name(), fields, value_arr);
+        return self.exec_prepare("", sql.as_str(), &arg_arr).await;
     }
 
     async fn remove_by_wrapper<T>(&self, arg: &Wrapper) -> Result<u64> where T: CRUDEnable {
-        let mut where_sql= arg.sql.as_str();
+        let mut where_sql = arg.sql.as_str();
         let mut sql = String::new();
-        if self.logic_plugin.is_some(){
-            sql= self.logic_plugin.as_ref().unwrap().make_delete_sql(&self.driver_type()?,T::table_name().as_str(),where_sql)?;
-        }else{
-            sql= format!("DELETE FROM {} WHERE {}",T::table_name(),where_sql);
+        if self.logic_plugin.is_some() {
+            sql = self.logic_plugin.as_ref().unwrap().make_delete_sql(&self.driver_type()?, T::table_name().as_str(), where_sql)?;
+        } else {
+            sql = format!("DELETE FROM {} WHERE {}", T::table_name(), where_sql);
         }
-        return self.exec_prepare("",sql.as_str(),&arg.args).await;
+        return self.exec_prepare("", sql.as_str(), &arg.args).await;
     }
 
     async fn remove_by_id<T>(&self, id: &T::IdType) -> Result<u64> where T: CRUDEnable {
         let mut sql = String::new();
-        if self.logic_plugin.is_some(){
-            sql= self.logic_plugin.as_ref().unwrap().make_delete_sql(&self.driver_type()?,T::table_name().as_str(),format!(" WHERE id = {}",id).as_str())?;
-        }else{
-            sql= format!("DELETE FROM {} WHERE id = {}",T::table_name(),id);
+        if self.logic_plugin.is_some() {
+            sql = self.logic_plugin.as_ref().unwrap().make_delete_sql(&self.driver_type()?, T::table_name().as_str(), format!(" WHERE id = {}", id).as_str())?;
+        } else {
+            sql = format!("DELETE FROM {} WHERE id = {}", T::table_name(), id);
         }
-        return self.exec_prepare("",sql.as_str(),&vec![]).await;
+        return self.exec_prepare("", sql.as_str(), &vec![]).await;
     }
 
     async fn remove_batch_by_id<T>(&self, ids: &Vec<T::IdType>) -> Result<u64> where T: CRUDEnable {
@@ -225,6 +239,7 @@ mod test {
         pub version: Option<i32>,
         pub delete_flag: Option<i32>,
     }
+
     /// 必须实现 CRUDEntity接口，如果表名 不正确，可以重写 fn table_name() -> String 方法！
     impl CRUDEnable for BizActivity {
         type IdType = String;
@@ -259,7 +274,34 @@ mod test {
     }
 
     #[test]
-    pub fn test_delete(){
+    pub fn test_save_batch() {
+        async_std::task::block_on(async {
+            let activity = BizActivity {
+                id: Some("12312".to_string()),
+                name: None,
+                pc_link: None,
+                h5_link: None,
+                pc_banner_img: None,
+                h5_banner_img: None,
+                sort: None,
+                status: Some(1),
+                remark: None,
+                create_time: Some("2020-02-09 00:00:00".to_string()),
+                version: Some(1),
+                delete_flag: Some(1),
+            };
+            let args=vec![activity.clone(),activity];
 
+            fast_log::log::init_log("requests.log", &RuntimeType::Std);
+            let rb = Rbatis::new();
+            rb.link("mysql://root:123456@localhost:3306/test").await.unwrap();
+            let r = rb.save_batch(&args).await;
+            if r.is_err() {
+                println!("{}", r.err().unwrap().to_string());
+            }
+        });
     }
+
+    #[test]
+    pub fn test_delete() {}
 }
