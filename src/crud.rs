@@ -201,11 +201,11 @@ impl CRUD for Rbatis<'_> {
         unimplemented!()
     }
 
-    async fn update_by_id<T>(&self, id: &T) -> Result<u64> where T: CRUDEnable {
+    async fn update_by_id<T>(&self, arg: &T) -> Result<u64> where T: CRUDEnable {
         unimplemented!()
     }
 
-    async fn update_batch_by_id<T>(&self, ids: &[T]) -> Result<u64> where T: CRUDEnable {
+    async fn update_batch_by_id<T>(&self, args: &[T]) -> Result<u64> where T: CRUDEnable {
         unimplemented!()
     }
 
