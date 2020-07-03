@@ -84,14 +84,13 @@ pub trait CRUDEnable: Send + Sync + Serialize {
         return Ok(sql);
     }
 
-    fn values(&self, db_type: &DriverType, map: &serde_json::Map<String, serde_json::Value>) -> Result<(String, Vec<serde_json::Value>)> {
+    fn values(&self, index:&mut usize, db_type: &DriverType, map: &serde_json::Map<String, serde_json::Value>) -> Result<(String, Vec<serde_json::Value>)> {
         let mut sql = String::new();
-        let mut index = 0;
         let mut arr = vec![];
         for (k, v) in map {
-            sql = sql + db_type.stmt_convert(index).as_str() + ",";
+            sql = sql + db_type.stmt_convert(*index).as_str() + ",";
             arr.push(v.to_owned());
-            index += 1;
+            *index += 1;
         }
         sql = sql.trim_end_matches(",").to_string();
         return Ok((sql, arr));
@@ -128,7 +127,8 @@ impl CRUD for Rbatis<'_> {
     async fn save<T>(&self, entity: &T) -> Result<u64>
         where T: CRUDEnable {
         let map = entity.to_value_map()?;
-        let (values, args) = entity.values(&self.driver_type()?, &map)?;
+        let mut index =0;
+        let (values, args) = entity.values(&mut index,&self.driver_type()?, &map)?;
         let sql = format!("INSERT INTO {} ({}) VALUES ({})", T::table_name(), entity.fields(&map)?, values);
         return self.exec_prepare("", sql.as_str(), &args).await;
     }
@@ -147,12 +147,13 @@ impl CRUD for Rbatis<'_> {
         let mut value_arr = String::new();
         let mut arg_arr = vec![];
         let mut fields = "".to_string();
+        let mut field_index = 0;
         for x in args {
             let map = x.to_value_map()?;
             if fields.is_empty() {
                 fields = x.fields(&map)?;
             }
-            let (values, args) = x.values(&self.driver_type()?, &map)?;
+            let (values, args) = x.values(&mut field_index,&self.driver_type()?, &map)?;
             value_arr = value_arr + format!("({}),", values).as_str();
             for x in args {
                 arg_arr.push(x);
@@ -193,7 +194,7 @@ impl CRUD for Rbatis<'_> {
         if ids.is_empty() {
             return Ok(0);
         }
-        let mut w = Wrapper::new().and().in_array("id", &ids).check()?;
+        let mut w = Wrapper::new(&self.driver_type()?).and().in_array("id", &ids).check()?;
         return self.remove_by_wrapper::<T>(&w).await;
     }
 

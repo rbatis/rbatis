@@ -3,20 +3,24 @@ use serde_json::{json, Map, Value};
 use crate::crud::CRUDEnable;
 use std::ops::Add;
 use rbatis_core::Error;
+use rbatis_core::db::DriverType;
+use crate::convert::stmt_convert::StmtConvert;
 
 /// you can serialize to JSON, and Clone, Debug
 /// for Example, use json rpc send this Wrapper to server
 ///
 #[derive(Serialize, Deserialize, Clone, Debug)]
 pub struct Wrapper {
+    pub driver_type: DriverType,
     pub sql: String,
     pub args: Vec<serde_json::Value>,
     pub error: Option<Error>,
 }
 
 impl Wrapper {
-    pub fn new() -> Self {
+    pub fn new(driver_type: &DriverType) -> Self {
         Self {
+            driver_type: driver_type.clone(),
             sql: "".to_string(),
             args: vec![],
             error: None,
@@ -29,6 +33,7 @@ impl Wrapper {
             return Err(self.error.take().unwrap());
         }
         let clone = Wrapper {
+            driver_type: self.driver_type.clone(),
             sql: self.sql.clone(),
             args: self.args.clone(),
             error: self.error.clone(),
@@ -47,17 +52,17 @@ impl Wrapper {
     }
 
     pub fn trim_sql(&mut self, sql: &str) -> &mut Self {
-        self.sql=self.sql.trim().to_string();
+        self.sql = self.sql.trim().to_string();
         self
     }
 
     pub fn trim_sql_start(&mut self, sql: &str) -> &mut Self {
-        self.sql=self.sql.trim_start().to_string();
+        self.sql = self.sql.trim_start().to_string();
         self
     }
 
     pub fn trim_sql_end(&mut self, sql: &str) -> &mut Self {
-        self.sql=self.sql.trim_end().to_string();
+        self.sql = self.sql.trim_end().to_string();
         self
     }
 
@@ -113,7 +118,7 @@ impl Wrapper {
         where T: Serialize {
         let v = serde_json::to_value(obj).unwrap();
         self.sql.push_str(column);
-        self.sql.push_str(" = ?");
+        self.sql.push_str(format!(" = {}", self.driver_type.stmt_convert(self.args.len())).as_str());
         self.args.push(v);
 
 
@@ -125,7 +130,7 @@ impl Wrapper {
         where T: Serialize {
         let v = serde_json::to_value(obj).unwrap();
         self.sql.push_str(column);
-        self.sql.push_str(" <> ?");
+        self.sql.push_str(format!(" <> {}", self.driver_type.stmt_convert(self.args.len())).as_str());
         self.args.push(v);
         self
     }
@@ -175,7 +180,7 @@ impl Wrapper {
         where T: Serialize {
         let v = serde_json::to_value(obj).unwrap();
         self.sql.push_str(column);
-        self.sql.push_str(" > ?");
+        self.sql.push_str(format!(" > {}",self.driver_type.stmt_convert(self.args.len())).as_str());
         self.args.push(v);
         self
     }
@@ -184,7 +189,7 @@ impl Wrapper {
         where T: Serialize {
         let v = serde_json::to_value(obj).unwrap();
         self.sql.push_str(column);
-        self.sql.push_str(" >= ?");
+        self.sql.push_str(format!(" >= {}",self.driver_type.stmt_convert(self.args.len())).as_str());
         self.args.push(v);
         self
     }
@@ -194,7 +199,7 @@ impl Wrapper {
         where T: Serialize {
         let v = serde_json::to_value(obj).unwrap();
         self.sql.push_str(column);
-        self.sql.push_str(" < ?");
+        self.sql.push_str(format!(" < {}",self.driver_type.stmt_convert(self.args.len())).as_str());
         self.args.push(v);
 
         self
@@ -205,7 +210,7 @@ impl Wrapper {
         where T: Serialize {
         let v = serde_json::to_value(obj).unwrap();
         self.sql.push_str(column);
-        self.sql.push_str(" <= ?");
+        self.sql.push_str(format!(" <= {}",self.driver_type.stmt_convert(self.args.len())).as_str());
         self.args.push(v);
         self
     }
@@ -215,7 +220,7 @@ impl Wrapper {
         let min_v = serde_json::to_value(min).unwrap();
         let max_v = serde_json::to_value(max).unwrap();
         self.sql.push_str(column);
-        self.sql.push_str(" BETWEEN ? AND ?");
+        self.sql.push_str(format!(" BETWEEN {} AND {}",self.driver_type.stmt_convert(self.args.len()),self.driver_type.stmt_convert(self.args.len()+1)).as_str());
         self.args.push(min_v);
         self.args.push(max_v);
         self
@@ -226,7 +231,7 @@ impl Wrapper {
         let min_v = serde_json::to_value(min).unwrap();
         let max_v = serde_json::to_value(max).unwrap();
         self.sql.push_str(column);
-        self.sql.push_str(" NOT BETWEEN ? AND ?");
+        self.sql.push_str(format!(" NOT BETWEEN {} AND {}",self.driver_type.stmt_convert(self.args.len()),self.driver_type.stmt_convert(self.args.len()+1)).as_str());
         self.args.push(min_v);
         self.args.push(max_v);
         self
@@ -236,7 +241,7 @@ impl Wrapper {
         where T: Serialize {
         let v = serde_json::to_value(obj).unwrap();
         self.sql.push_str(column);
-        self.sql.push_str(" LIKE '%?%'");
+        self.sql.push_str(format!(" LIKE '%{}%'",self.driver_type.stmt_convert(self.args.len())).as_str());
         self.args.push(v);
         self
     }
@@ -244,7 +249,7 @@ impl Wrapper {
         where T: Serialize {
         let v = serde_json::to_value(obj).unwrap();
         self.sql.push_str(column);
-        self.sql.push_str(" LIKE '%?'");
+        self.sql.push_str(format!(" LIKE '%{}'",self.driver_type.stmt_convert(self.args.len())).as_str());
         self.args.push(v);
         self
     }
@@ -253,7 +258,7 @@ impl Wrapper {
         where T: Serialize {
         let v = serde_json::to_value(obj).unwrap();
         self.sql.push_str(column);
-        self.sql.push_str(" LIKE '?%'");
+        self.sql.push_str(format!(" LIKE '{}%'",self.driver_type.stmt_convert(self.args.len())).as_str());
         self.args.push(v);
         self
     }
@@ -262,7 +267,7 @@ impl Wrapper {
         where T: Serialize {
         let v = serde_json::to_value(obj).unwrap();
         self.sql.push_str(column);
-        self.sql.push_str(" NOT LIKE '%?%'");
+        self.sql.push_str(format!(" NOT LIKE '%{}%'",self.driver_type.stmt_convert(self.args.len())).as_str());
         self.args.push(v);
         self
     }
@@ -289,7 +294,7 @@ impl Wrapper {
         let vec = v.as_array().unwrap();
         let mut sqls = String::new();
         for x in vec {
-            sqls.push_str(" ? ");
+            sqls.push_str(format!(" {} ",self.driver_type.stmt_convert(self.args.len())).as_str());
             sqls.push_str(",");
             self.args.push(x.clone());
         }
@@ -305,7 +310,7 @@ impl Wrapper {
         let vec = v.as_array().unwrap();
         let mut sqls = String::new();
         for x in vec {
-            sqls.push_str(" ? ");
+            sqls.push_str(format!(" {} ",self.driver_type.stmt_convert(self.args.len())).as_str());
             sqls.push_str(",");
             self.args.push(x.clone());
         }
@@ -319,12 +324,13 @@ mod test {
     use crate::wrapper::Wrapper;
     use serde_json::Map;
     use serde_json::json;
+    use rbatis_core::db::DriverType;
 
     #[test]
     fn test_select() {
         let mut m = Map::new();
         m.insert("a".to_string(), json!("1"));
-        let w = Wrapper::new().eq("id", 1)
+        let w = Wrapper::new(&DriverType::Mysql).eq("id", 1)
             .and()
             .ne("id", 1)
             .and()
