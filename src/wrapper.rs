@@ -23,7 +23,7 @@ impl Wrapper {
         }
     }
 
-    //check is done？
+    //check is done？and return cloned Wrapper
     pub fn check(&mut self) -> Result<Wrapper, Error> {
         if self.error.is_some() {
             return Err(self.error.take().unwrap());
