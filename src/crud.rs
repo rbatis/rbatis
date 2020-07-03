@@ -108,18 +108,17 @@ pub trait CRUD {
     async fn remove_by_id<T>(&self, id: &T::IdType) -> Result<u64> where T: CRUDEnable;
     async fn remove_batch_by_id<T>(&self, ids: &[T::IdType]) -> Result<u64> where T: CRUDEnable;
 
-    async fn update_by_wrapper<T>(&self, w: &Wrapper) -> Result<u64> where T: CRUDEnable;
-    async fn update_by_id<T>(&self, id: &T::IdType) -> Result<u64> where T: CRUDEnable;
-    async fn update_batch_by_id<T>(&self, ids: &[T::IdType]) -> Result<u64> where T: CRUDEnable;
+    async fn update_by_wrapper<T>(&self, arg: &T, w: &Wrapper) -> Result<u64> where T: CRUDEnable;
+    async fn update_by_id<T>(&self, arg: &T) -> Result<u64> where T: CRUDEnable;
+    async fn update_batch_by_id<T>(&self, ids: &[T]) -> Result<u64> where T: CRUDEnable;
 
 
     async fn get_by_wrapper<T>(&self, w: &Wrapper) -> Result<T> where T: CRUDEnable;
     async fn get_by_id<T>(&self, id: &T::IdType) -> Result<T> where T: CRUDEnable;
 
-
-    async fn list_by_wrapper<T>(&self, w: &Wrapper) -> Result<Vec<T>> where T: CRUDEnable;
-    ///all record
+    ///fetch all record
     async fn list<T>(&self) -> Result<Vec<T>> where T: CRUDEnable;
+    async fn list_by_wrapper<T>(&self, w: &Wrapper) -> Result<Vec<T>> where T: CRUDEnable;
     async fn list_by_ids<T>(&self, ids: &[T::IdType]) -> Result<Vec<T>> where T: CRUDEnable;
 }
 
@@ -198,15 +197,15 @@ impl CRUD for Rbatis<'_> {
         return self.remove_by_wrapper::<T>(&w).await;
     }
 
-    async fn update_by_wrapper<T>(&self, w: &Wrapper) -> Result<u64> where T: CRUDEnable {
+    async fn update_by_wrapper<T>(&self, arg: &T, w: &Wrapper) -> Result<u64> where T: CRUDEnable {
         unimplemented!()
     }
 
-    async fn update_by_id<T>(&self, id: &T::IdType) -> Result<u64> where T: CRUDEnable {
+    async fn update_by_id<T>(&self, id: &T) -> Result<u64> where T: CRUDEnable {
         unimplemented!()
     }
 
-    async fn update_batch_by_id<T>(&self, ids: &[T::IdType]) -> Result<u64> where T: CRUDEnable {
+    async fn update_batch_by_id<T>(&self, ids: &[T]) -> Result<u64> where T: CRUDEnable {
         unimplemented!()
     }
 
@@ -231,9 +230,9 @@ impl CRUD for Rbatis<'_> {
     }
 }
 
-fn make_where_sql(arg:&str)->String{
+fn make_where_sql(arg: &str) -> String {
     let mut where_sql = arg.to_string();
-    where_sql= where_sql.trim().trim_start_matches("AND ").trim_start_matches("OR ").to_string();
+    where_sql = where_sql.trim_start().trim_start_matches("AND ").trim_start_matches("OR ").to_string();
     format!(" WHERE {} ", where_sql)
 }
 

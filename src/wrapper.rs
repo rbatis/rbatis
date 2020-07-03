@@ -36,19 +36,25 @@ impl Wrapper {
         return Ok(clone);
     }
 
-    pub fn set_sql(&mut self, sql:&str) -> &mut Self {
+    pub fn set_sql(&mut self, sql: &str) -> &mut Self {
         self.sql = sql.to_string();
         self
     }
 
-    /// link wrapper sql
+    /// link wrapper sql, if end with where , do nothing
     pub fn and(&mut self) -> &mut Self {
+        if self.sql.ends_with("WHERE ") || self.sql.ends_with(" WHERE") {
+            return self;
+        }
         self.sql.push_str(" AND ");
         self
     }
 
-    /// link wrapper sql
+    /// link wrapper sql, if end with where , do nothing
     pub fn or(&mut self) -> &mut Self {
+        if self.sql.ends_with("WHERE ") || self.sql.ends_with(" WHERE") {
+            return self;
+        }
         self.sql.push_str(" OR ");
         self
     }
