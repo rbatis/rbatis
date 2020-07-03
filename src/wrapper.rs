@@ -279,7 +279,7 @@ impl Wrapper {
         self
     }
 
-    pub fn is_in<T>(&mut self, column: &str, obj: &[T]) -> &mut Self
+    pub fn in_array<T>(&mut self, column: &str, obj: &[T]) -> &mut Self
         where T: Serialize {
         if obj.len() == 0 {
             return self;
@@ -328,7 +328,7 @@ mod test {
             .and()
             .ne("id", 1)
             .and()
-            .is_in("id", &[1, 2, 3])
+            .in_array("id", &[1, 2, 3])
             .and()
             .not_in("id", &[1, 2, 3])
             .and()
