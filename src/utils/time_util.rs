@@ -1,6 +1,6 @@
 use std::time::{Duration, SystemTime};
 
-pub fn count_time_tps(tag: &str, total: u128, start: SystemTime) {
+pub fn count_time_qps(tag: &str, total: u128, start: SystemTime) {
     print_qps(tag, total, start);
     print_each_time(tag, total, start);
 }

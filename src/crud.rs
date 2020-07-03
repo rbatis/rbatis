@@ -10,6 +10,7 @@ use rbatis_core::Result;
 use crate::convert::stmt_convert::StmtConvert;
 use crate::rbatis::Rbatis;
 use crate::wrapper::Wrapper;
+use crate::utils::string_util::to_snake_name;
 
 /// DB Table model trait
 pub trait CRUDEnable: Send + Sync + Serialize {
@@ -19,7 +20,7 @@ pub trait CRUDEnable: Send + Sync + Serialize {
     ///
     type IdType: Send + Sync + DeserializeOwned + Serialize;
 
-    /// get table name,default is type name
+    /// get table name,default is type name for snake name
     ///
     /// for Example:  struct  BizActivity{} =>  "biz_activity"
     /// also. you can overwrite this method return ture name
@@ -37,22 +38,7 @@ pub trait CRUDEnable: Send + Sync + Serialize {
         let mut name = type_name.to_string();
         let names: Vec<&str> = name.split("::").collect();
         name = names.get(names.len() - 1).unwrap().to_string();
-        let chs = name.chars();
-        let mut new_name = String::new();
-        let mut index = 0;
-        let chs_len = name.len();
-        for x in chs {
-            if x.is_uppercase() {
-                if index != 0 &&  (index + 1) != chs_len {
-                    new_name.push_str("_");
-                }
-                new_name.push_str(x.to_lowercase().to_string().as_str());
-            }else{
-                new_name.push(x);
-            }
-            index += 1;
-        }
-        return new_name;
+        return to_snake_name(&name);
     }
 
     fn to_value(&self) -> Result<serde_json::Value> {
@@ -257,6 +243,6 @@ mod test {
             if r.is_err() {
                 println!("{}", r.err().unwrap().to_string());
             }
-        })
+        });
     }
 }
