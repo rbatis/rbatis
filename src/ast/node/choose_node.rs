@@ -9,7 +9,7 @@ use crate::ast::node::node_type::NodeType;
 use crate::ast::node::node_type::NodeType::NString;
 use crate::ast::node::otherwise_node::OtherwiseNode;
 use crate::ast::node::string_node::StringNode;
-use crate::convert::stmt_convert::StmtConvert;
+use rbatis_core::convert::StmtConvert;
 use crate::engine::runtime::RbatisEngine;
 use rbatis_core::db::DriverType;
 

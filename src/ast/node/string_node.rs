@@ -4,7 +4,7 @@ use serde_json::{json, Value};
 
 use crate::ast::ast::RbatisAST;
 use crate::ast::node::node::{create_deep, SqlNodePrint};
-use crate::convert::stmt_convert::StmtConvert;
+use rbatis_core::convert::StmtConvert;
 use crate::engine;
 use crate::engine::runtime::RbatisEngine;
 use crate::utils::string_util;

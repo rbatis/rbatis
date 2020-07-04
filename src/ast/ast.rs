@@ -1,6 +1,6 @@
 use serde_json::Value;
 
-use crate::convert::stmt_convert::StmtConvert;
+use rbatis_core::convert::StmtConvert;
 use crate::engine::runtime::RbatisEngine;
 
 /// Abstract syntax tree node

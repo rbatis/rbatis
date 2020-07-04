@@ -22,7 +22,7 @@ use crate::ast::node::trim_node::TrimNode;
 use crate::ast::node::update_node::UpdateNode;
 use crate::ast::node::when_node::WhenNode;
 use crate::ast::node::where_node::WhereNode;
-use crate::convert::stmt_convert::StmtConvert;
+use rbatis_core::convert::StmtConvert;
 use crate::engine::runtime::RbatisEngine;
 use crate::utils::xml_loader::Element;
 

@@ -14,7 +14,6 @@ extern crate serde_yaml;
 
 pub mod ast;
 pub mod utils;
-pub mod convert;
 pub mod engine;
 pub mod decode;
 pub mod plugin;

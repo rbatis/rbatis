@@ -6,8 +6,8 @@ use serde_json::{json, Value};
 use crate::ast::ast::RbatisAST;
 use crate::ast::node::node::{create_deep, do_child_nodes, print_child, SqlNodePrint};
 use crate::ast::node::node_type::NodeType;
-use crate::convert::stmt_convert::StmtConvert;
 use crate::engine::runtime::RbatisEngine;
+use rbatis_core::convert::StmtConvert;
 
 #[derive(Serialize, Deserialize, Clone, Debug)]
 pub struct ResultMapIdNode {

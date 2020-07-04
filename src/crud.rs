@@ -8,7 +8,7 @@ use rbatis_core::db::DriverType;
 use rbatis_core::Error;
 use rbatis_core::Result;
 
-use crate::convert::stmt_convert::StmtConvert;
+use rbatis_core::convert::StmtConvert;
 use crate::rbatis::Rbatis;
 use crate::utils::string_util::to_snake_name;
 use crate::wrapper::Wrapper;

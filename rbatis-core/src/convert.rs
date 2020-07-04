@@ -1,4 +1,4 @@
-use rbatis_core::db::DriverType;
+use crate::db::DriverType;
 
 ///the stmt replace str convert
 pub trait StmtConvert {
