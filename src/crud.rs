@@ -59,7 +59,7 @@ pub trait CRUDEnable: Send + Sync + Serialize {
         if !json.is_object() {
             return Err(Error::from("[rbaits] to_value_map() fail,data is not an object!"));
         }
-        let mut m = json.as_object().unwrap().to_owned();
+        let m = json.as_object().unwrap().to_owned();
         let mut new_m = m.clone();
         for (k, v) in &m {
             if (k.contains("time") || k.contains("date")) && v.is_string() {
@@ -199,7 +199,26 @@ impl CRUD for Rbatis<'_> {
     }
 
     async fn update_by_wrapper<T>(&self, arg: &T, w: &Wrapper) -> Result<u64> where T: CRUDEnable {
-        unimplemented!()
+        let mut index=0;
+        let mut args = vec![];
+
+        let map = arg.to_value_map()?;
+        let driver_type=&self.driver_type()?;
+        let mut sets =String::new();
+        for (k,v) in map {
+            if v.is_null(){
+                continue;
+            }
+            sets.push_str(format!("{} = {},",k,driver_type.stmt_convert(index)).as_str());
+            args.push(v);
+        }
+        sets.pop();
+        let mut wrapper =Wrapper::new(&self.driver_type()?);
+        wrapper.sql =  format!("UPDATE {} SET {} WHERE ",T::table_name(),sets);
+        if !w.sql.is_empty(){
+            wrapper = wrapper.join_first_wrapper(w).check()?;
+        }
+        return self.exec_prepare("",wrapper.sql.as_str(),&wrapper.args).await;
     }
 
     async fn update_by_id<T>(&self, arg: &T) -> Result<u64> where T: CRUDEnable {
@@ -248,6 +267,7 @@ mod test {
     use crate::rbatis::Rbatis;
     use fast_log::log::RuntimeType;
     use crate::plugin::logic_delete::RbatisLogicDeletePlugin;
+    use crate::wrapper::Wrapper;
 
     #[derive(Serialize, Deserialize, Clone, Debug)]
     pub struct BizActivity {
@@ -352,6 +372,38 @@ mod test {
             rb.logic_plugin = Some(Box::new(RbatisLogicDeletePlugin::new("delete_flag")));
             rb.link("mysql://root:123456@localhost:3306/test").await.unwrap();
             let r = rb.remove_by_id::<BizActivity>(&"1".to_string()).await;
+            if r.is_err() {
+                println!("{}", r.err().unwrap().to_string());
+            }
+        });
+    }
+
+    #[test]
+    pub fn test_update_by_wrapper() {
+        async_std::task::block_on(async {
+            fast_log::log::init_log("requests.log", &RuntimeType::Std);
+            let mut rb = Rbatis::new();
+            //设置 逻辑删除插件
+            rb.logic_plugin = Some(Box::new(RbatisLogicDeletePlugin::new("delete_flag")));
+            rb.link("mysql://root:123456@localhost:3306/test").await.unwrap();
+
+            let activity = BizActivity {
+                id: Some("12312".to_string()),
+                name: None,
+                pc_link: None,
+                h5_link: None,
+                pc_banner_img: None,
+                h5_banner_img: None,
+                sort: None,
+                status: Some(1),
+                remark: None,
+                create_time: Some("2020-02-09 00:00:00".to_string()),
+                version: Some(1),
+                delete_flag: Some(1),
+            };
+
+            let w=Wrapper::new(&rb.driver_type().unwrap()).eq("id","12312").check().unwrap();
+            let r = rb.update_by_wrapper(&activity,&w).await;
             if r.is_err() {
                 println!("{}", r.err().unwrap().to_string());
             }

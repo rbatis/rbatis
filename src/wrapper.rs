@@ -1,10 +1,13 @@
+use std::ops::Add;
+
 use serde::{Deserialize, Serialize};
 use serde_json::{json, Map, Value};
-use crate::crud::CRUDEnable;
-use std::ops::Add;
-use rbatis_core::Error;
+
 use rbatis_core::db::DriverType;
+use rbatis_core::Error;
+
 use crate::convert::stmt_convert::StmtConvert;
+use crate::crud::CRUDEnable;
 
 /// you can serialize to JSON, and Clone, Debug
 /// for Example, use json rpc send this Wrapper to server
@@ -49,6 +52,37 @@ impl Wrapper {
         };
         return Ok(clone);
     }
+
+    /// link left Wrapper to this Wrapper
+    /// for Example:
+    ///  let w = Wrapper::new(&DriverType::Postgres).eq("a", "1").check().unwrap();
+    ///  let w2 = Wrapper::new(&DriverType::Postgres).eq("b", "2")
+    ///             .and()
+    ///             .join_first_wrapper(&w)
+    ///             .check().unwrap();
+    ///  println!("sql:{:?}", w2.sql.as_str());  // sql:"a =  $1 a =  $2 "
+    ///  println!("arg:{:?}", w2.args.clone()); // arg:[String("1"), String("2")]
+    ///
+    pub fn join_first_wrapper(&mut self, arg: &Wrapper) -> &mut Self {
+        self.join_first(&arg.driver_type, &arg.sql, &arg.args)
+    }
+
+    pub fn join_first(&mut self, driver_type: &DriverType, sql: &str, args: &Vec<Value>) -> &mut Self {
+        let mut new_sql = sql.to_string();
+        if driver_type.eq(&DriverType::Postgres) {
+            let arg_old_len = args.len();
+            for index in 0..arg_old_len {
+                let str = driver_type.stmt_convert(index);
+                new_sql = new_sql.replace(str.as_str(), driver_type.stmt_convert(index + arg_old_len).as_str());
+            }
+        }
+        self.sql.push_str(new_sql.as_str());
+        for x in args {
+            self.args.insert(0, x.clone());
+        }
+        self
+    }
+
 
     pub fn set_sql(&mut self, sql: &str) -> &mut Self {
         self.sql = sql.to_string();
@@ -330,10 +364,12 @@ impl Wrapper {
 }
 
 mod test {
-    use crate::wrapper::Wrapper;
-    use serde_json::Map;
     use serde_json::json;
+    use serde_json::Map;
+
     use rbatis_core::db::DriverType;
+
+    use crate::wrapper::Wrapper;
 
     #[test]
     fn test_select() {
@@ -361,6 +397,21 @@ mod test {
         println!("arg:{:?}", w.args.clone());
 
         let ms: Vec<&str> = w.sql.matches("?").collect();
+        assert_eq!(ms.len(), w.args.len());
+    }
+
+    #[test]
+    fn test_link() {
+        let w = Wrapper::new(&DriverType::Postgres).eq("a", "1").check().unwrap();
+        let w2 = Wrapper::new(&DriverType::Postgres).eq("b", "2")
+            .and()
+            .join_first_wrapper(&w)
+            .check().unwrap();
+
+        println!("sql:{:?}", w2.sql.as_str());
+        println!("arg:{:?}", w2.args.clone());
+
+        let ms: Vec<&str> = w.sql.matches("$").collect();
         assert_eq!(ms.len(), w.args.len());
     }
 }
