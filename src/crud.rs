@@ -4,15 +4,15 @@ use serde::export::fmt::Display;
 use serde::Serialize;
 use serde_json::Value;
 
+use rbatis_core::convert::StmtConvert;
 use rbatis_core::db::DriverType;
 use rbatis_core::Error;
 use rbatis_core::Result;
 
-use rbatis_core::convert::StmtConvert;
+use crate::plugin::page::{IPageRequest, Page};
 use crate::rbatis::Rbatis;
 use crate::utils::string_util::to_snake_name;
 use crate::wrapper::Wrapper;
-use crate::plugin::page::{IPageRequest, Page};
 
 /// DB Table model trait
 pub trait CRUDEnable: Send + Sync + Serialize {
@@ -113,15 +113,15 @@ pub trait CRUD {
     async fn update_batch_by_id<T>(&self, ids: &[T]) -> Result<u64> where T: CRUDEnable;
 
 
-    async fn get_by_wrapper<T>(&self, w: &Wrapper) -> Result<T> where T: CRUDEnable;
-    async fn get_by_id<T>(&self, id: &T::IdType) -> Result<T> where T: CRUDEnable;
+    async fn fetch_by_wrapper<T>(&self, w: &Wrapper) -> Result<T> where T: CRUDEnable;
+    async fn fetch_by_id<T>(&self, id: &T::IdType) -> Result<T> where T: CRUDEnable;
 
     ///fetch all record
     async fn list<T>(&self) -> Result<Vec<T>> where T: CRUDEnable;
     async fn list_by_wrapper<T>(&self, w: &Wrapper) -> Result<Vec<T>> where T: CRUDEnable;
     async fn list_by_ids<T>(&self, ids: &[T::IdType]) -> Result<Vec<T>> where T: CRUDEnable;
 
-    async fn fetch_page_by_wrapper<T>(&self,  w: &Wrapper,page: &dyn IPageRequest) -> Result<Page<T>> where T: CRUDEnable
+    async fn fetch_page_by_wrapper<T>(&self, w: &Wrapper, page: &dyn IPageRequest) -> Result<Page<T>> where T: CRUDEnable;
 }
 
 #[async_trait]
@@ -248,11 +248,11 @@ impl CRUD for Rbatis<'_> {
         Ok(updates)
     }
 
-    async fn get_by_wrapper<T>(&self, w: &Wrapper) -> Result<T> where T: CRUDEnable {
+    async fn fetch_by_wrapper<T>(&self, w: &Wrapper) -> Result<T> where T: CRUDEnable {
         unimplemented!()
     }
 
-    async fn get_by_id<T>(&self, id: &T::IdType) -> Result<T> where T: CRUDEnable {
+    async fn fetch_by_id<T>(&self, id: &T::IdType) -> Result<T> where T: CRUDEnable {
         unimplemented!()
     }
 
@@ -268,7 +268,7 @@ impl CRUD for Rbatis<'_> {
         unimplemented!()
     }
 
-    async fn fetch_page_by_wrapper<T>(&self,  w: &Wrapper,page: &dyn IPageRequest) -> Result<Page<T>> where T: CRUDEnable {
+    async fn fetch_page_by_wrapper<T>(&self, w: &Wrapper, page: &dyn IPageRequest) -> Result<Page<T>> where T: CRUDEnable {
         unimplemented!()
     }
 }
