@@ -78,7 +78,7 @@ impl Wrapper {
         }
         self.sql.push_str(new_sql.as_str());
         for x in args {
-            self.args.insert(0, x.clone());
+            self.args.push(x.clone());
         }
         self
     }

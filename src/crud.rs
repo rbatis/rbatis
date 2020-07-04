@@ -1,17 +1,17 @@
+use async_trait::async_trait;
 use serde::de::DeserializeOwned;
+use serde::export::fmt::Display;
 use serde::Serialize;
 use serde_json::Value;
 
-use async_trait::async_trait;
 use rbatis_core::db::DriverType;
 use rbatis_core::Error;
 use rbatis_core::Result;
 
 use crate::convert::stmt_convert::StmtConvert;
 use crate::rbatis::Rbatis;
-use crate::wrapper::Wrapper;
 use crate::utils::string_util::to_snake_name;
-use serde::export::fmt::Display;
+use crate::wrapper::Wrapper;
 
 /// DB Table model trait
 pub trait CRUDEnable: Send + Sync + Serialize {
@@ -84,7 +84,7 @@ pub trait CRUDEnable: Send + Sync + Serialize {
         return Ok(sql);
     }
 
-    fn values(&self, index:&mut usize, db_type: &DriverType, map: &serde_json::Map<String, serde_json::Value>) -> Result<(String, Vec<serde_json::Value>)> {
+    fn values(&self, index: &mut usize, db_type: &DriverType, map: &serde_json::Map<String, serde_json::Value>) -> Result<(String, Vec<serde_json::Value>)> {
         let mut sql = String::new();
         let mut arr = vec![];
         for (k, v) in map {
@@ -127,8 +127,8 @@ impl CRUD for Rbatis<'_> {
     async fn save<T>(&self, entity: &T) -> Result<u64>
         where T: CRUDEnable {
         let map = entity.to_value_map()?;
-        let mut index =0;
-        let (values, args) = entity.values(&mut index,&self.driver_type()?, &map)?;
+        let mut index = 0;
+        let (values, args) = entity.values(&mut index, &self.driver_type()?, &map)?;
         let sql = format!("INSERT INTO {} ({}) VALUES ({})", T::table_name(), entity.fields(&map)?, values);
         return self.exec_prepare("", sql.as_str(), &args).await;
     }
@@ -153,7 +153,7 @@ impl CRUD for Rbatis<'_> {
             if fields.is_empty() {
                 fields = x.fields(&map)?;
             }
-            let (values, args) = x.values(&mut field_index,&self.driver_type()?, &map)?;
+            let (values, args) = x.values(&mut field_index, &self.driver_type()?, &map)?;
             value_arr = value_arr + format!("({}),", values).as_str();
             for x in args {
                 arg_arr.push(x);
@@ -199,31 +199,42 @@ impl CRUD for Rbatis<'_> {
     }
 
     async fn update_by_wrapper<T>(&self, arg: &T, w: &Wrapper) -> Result<u64> where T: CRUDEnable {
-        let mut index=0;
+        let mut index = 0;
         let mut args = vec![];
 
         let map = arg.to_value_map()?;
-        let driver_type=&self.driver_type()?;
-        let mut sets =String::new();
-        for (k,v) in map {
-            if v.is_null(){
+        let driver_type = &self.driver_type()?;
+        let mut sets = String::new();
+        for (k, v) in map {
+            //filter null
+            if v.is_null() {
                 continue;
             }
-            sets.push_str(format!("{} = {},",k,driver_type.stmt_convert(index)).as_str());
+            //filter id
+            if k.eq("id") {
+                continue;
+            }
+            sets.push_str(format!(" {} = {},", k, driver_type.stmt_convert(index)).as_str());
             args.push(v);
         }
         sets.pop();
-        let mut wrapper =Wrapper::new(&self.driver_type()?);
-        wrapper.sql =  format!("UPDATE {} SET {}",T::table_name(),sets);
-        if !w.sql.is_empty(){
+        let mut wrapper = Wrapper::new(&self.driver_type()?);
+        wrapper.sql = format!("UPDATE {} SET {}", T::table_name(), sets);
+        wrapper.args = args;
+        if !w.sql.is_empty() {
             wrapper.sql.push_str(" WHERE ");
             wrapper = wrapper.join_first_wrapper(w).check()?;
         }
-        return self.exec_prepare("",wrapper.sql.as_str(),&wrapper.args).await;
+        return self.exec_prepare("", wrapper.sql.as_str(), &wrapper.args).await;
     }
 
     async fn update_by_id<T>(&self, arg: &T) -> Result<u64> where T: CRUDEnable {
-        unimplemented!()
+        let args = arg.to_value_map()?;
+        let id_field = args.get("id");
+        if id_field.is_none() {
+            return Err(Error::from("[rbaits] arg not have \"id\" field! "));
+        }
+        self.update_by_wrapper(arg, Wrapper::new(&self.driver_type()?).eq("id", id_field.unwrap())).await
     }
 
     async fn update_batch_by_id<T>(&self, args: &[T]) -> Result<u64> where T: CRUDEnable {
@@ -260,14 +271,14 @@ fn make_where_sql(arg: &str) -> String {
 
 mod test {
     use chrono::{DateTime, Utc};
+    use fast_log::log::RuntimeType;
     use serde::de::DeserializeOwned;
     use serde::Deserialize;
     use serde::Serialize;
 
     use crate::crud::{CRUD, CRUDEnable};
-    use crate::rbatis::Rbatis;
-    use fast_log::log::RuntimeType;
     use crate::plugin::logic_delete::RbatisLogicDeletePlugin;
+    use crate::rbatis::Rbatis;
     use crate::wrapper::Wrapper;
 
     #[derive(Serialize, Deserialize, Clone, Debug)]
@@ -403,8 +414,39 @@ mod test {
                 delete_flag: Some(1),
             };
 
-            let w=Wrapper::new(&rb.driver_type().unwrap()).eq("id","12312").check().unwrap();
-            let r = rb.update_by_wrapper(&activity,&w).await;
+            let w = Wrapper::new(&rb.driver_type().unwrap()).eq("id", "12312").check().unwrap();
+            let r = rb.update_by_wrapper(&activity, &w).await;
+            if r.is_err() {
+                println!("{}", r.err().unwrap().to_string());
+            }
+        });
+    }
+
+
+    #[test]
+    pub fn test_update_by_id() {
+        async_std::task::block_on(async {
+            fast_log::log::init_log("requests.log", &RuntimeType::Std);
+            let mut rb = Rbatis::new();
+            //设置 逻辑删除插件
+            rb.logic_plugin = Some(Box::new(RbatisLogicDeletePlugin::new("delete_flag")));
+            rb.link("mysql://root:123456@localhost:3306/test").await.unwrap();
+
+            let activity = BizActivity {
+                id: Some("12312".to_string()),
+                name: None,
+                pc_link: None,
+                h5_link: None,
+                pc_banner_img: None,
+                h5_banner_img: None,
+                sort: None,
+                status: Some(1),
+                remark: None,
+                create_time: Some("2020-02-09 00:00:00".to_string()),
+                version: Some(1),
+                delete_flag: Some(1),
+            };
+            let r = rb.update_by_id(&activity).await;
             if r.is_err() {
                 println!("{}", r.err().unwrap().to_string());
             }
