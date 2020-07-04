@@ -1,12 +1,14 @@
-use serde::de::DeserializeOwned;
-use serde::{Deserialize, Serialize};
-use async_std::process::Output;
 use std::future::Future;
-use futures_core::future::BoxFuture;
-use serde_json::Value;
-use rbatis_core::db::DriverType;
-use crate::sql::PageLimit;
 
+use async_std::process::Output;
+use futures_core::future::BoxFuture;
+use serde::{Deserialize, Serialize};
+use serde::de::DeserializeOwned;
+use serde_json::Value;
+
+use rbatis_core::db::DriverType;
+
+use crate::sql::PageLimit;
 
 ///default page plugin
 pub trait PagePlugin: Send + Sync {
@@ -41,7 +43,7 @@ impl PagePlugin for RbatisPagePlugin {
 
 
 ///Page interface, support get_pages() and offset()
-pub trait IPageRequest {
+pub trait IPageRequest: Send + Sync {
     fn get_size(&self) -> u64;
     fn get_current(&self) -> u64;
     fn get_total(&self) -> u64;
@@ -106,7 +108,7 @@ pub struct PageRequest {
     pub serch_count: bool,
 }
 
-impl PageRequest{
+impl PageRequest {
     pub fn new(current: u64, size: u64) -> Self {
         return PageRequest::new_total(current, size, 0);
     }
@@ -128,7 +130,7 @@ impl PageRequest{
     }
 }
 
-impl Default for PageRequest{
+impl Default for PageRequest {
     fn default() -> Self {
         return PageRequest {
             total: 0,
@@ -209,7 +211,8 @@ impl<T> Default for Page<T> {
     }
 }
 
-impl<T> IPageRequest for Page<T> {
+impl<T> IPageRequest for Page<T>
+    where T: Send + Sync {
     fn get_size(&self) -> u64 {
         self.size
     }
@@ -242,7 +245,8 @@ impl<T> IPageRequest for Page<T> {
     }
 }
 
-impl<T> IPage<T> for Page<T> {
+impl<T> IPage<T> for Page<T>
+    where T: Send + Sync {
     fn get_records(&self) -> &Vec<T> {
         self.records.as_ref()
     }
@@ -258,7 +262,7 @@ impl<T> IPage<T> for Page<T> {
 
 
 mod test {
-    use crate::plugin::page::{Page, IPage, IPageRequest};
+    use crate::plugin::page::{IPage, IPageRequest, Page};
 
     #[test]
     pub fn test_page() {

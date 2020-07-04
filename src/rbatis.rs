@@ -4,6 +4,7 @@ use std::collections::HashMap;
 use log::{error, info, LevelFilter, warn};
 use once_cell::sync::OnceCell;
 use serde::de::DeserializeOwned;
+use serde::ser::Serialize;
 
 use rbatis_core::connection::Connection;
 use rbatis_core::cursor::Cursor;
@@ -26,11 +27,10 @@ use crate::ast::node::node_type::NodeType;
 use crate::ast::node::select_node::SelectNode;
 use crate::ast::node::update_node::UpdateNode;
 use crate::engine::runtime::RbatisEngine;
-use crate::utils::error_util::ToResult;
-use serde::ser::Serialize;
-use crate::plugin::page::{Page, IPage, PagePlugin, RbatisPagePlugin, IPageRequest};
-use crate::sql::PageLimit;
 use crate::plugin::logic_delete::{LogicDelete, RbatisLogicDeletePlugin};
+use crate::plugin::page::{IPage, IPageRequest, Page, PagePlugin, RbatisPagePlugin};
+use crate::sql::PageLimit;
+use crate::utils::error_util::ToResult;
 
 /// rbatis engine
 pub struct Rbatis<'r> {
@@ -41,7 +41,7 @@ pub struct Rbatis<'r> {
     pub context_tx: SyncMap<DBTx>,
     /// page plugin
     pub page_plugin: Box<dyn PagePlugin>,
-    pub logic_plugin: Option<Box<dyn LogicDelete>>
+    pub logic_plugin: Option<Box<dyn LogicDelete>>,
 }
 
 
@@ -53,7 +53,7 @@ impl<'r> Rbatis<'r> {
             engine: RbatisEngine::new(),
             context_tx: SyncMap::new(),
             page_plugin: Box::new(RbatisPagePlugin {}),
-            logic_plugin: None
+            logic_plugin: None,
         };
     }
 
@@ -362,7 +362,7 @@ impl<'r> Rbatis<'r> {
 
 
     pub async fn fetch_page<T>(&self, tx_id: &str, sql: &str, args: Vec<serde_json::Value>, page: &dyn IPageRequest) -> Result<Page<T>, rbatis_core::Error>
-        where T: DeserializeOwned + Serialize {
+        where T: DeserializeOwned + Serialize + Send + Sync {
         let mut page_result = Page::new(page.get_current(), page.get_size());
         let (count_sql, sql) = self.page_plugin.create_page_sql(&self.driver_type()?, tx_id, sql, &args, page)?;
         if page.is_serch_count() {
@@ -381,13 +381,13 @@ impl<'r> Rbatis<'r> {
 
     /// fetch result(prepare sql)
     pub async fn xml_fetch_page<T>(&self, tx_id: &str, mapper: &str, method: &str, arg: &serde_json::Value, page: &dyn IPageRequest) -> Result<Page<T>, rbatis_core::Error>
-        where T: DeserializeOwned + Serialize {
+        where T: DeserializeOwned + Serialize + Send + Sync {
         let (sql, args) = self.xml_to_sql(mapper, method, arg)?;
         return self.fetch_page::<T>(tx_id, sql.as_str(), args, page).await;
     }
 
     pub async fn py_fetch_page<T>(&self, tx_id: &str, py: &str, arg: &serde_json::Value, page: &dyn IPageRequest) -> Result<Page<T>, rbatis_core::Error>
-        where T: DeserializeOwned + Serialize {
+        where T: DeserializeOwned + Serialize + Send + Sync {
         let (sql, args) = self.py_to_sql(py, arg)?;
         return self.fetch_page::<T>(tx_id, sql.as_str(), args, page).await;
     }
