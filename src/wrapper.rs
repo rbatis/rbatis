@@ -6,7 +6,7 @@ use serde_json::{json, Map, Value};
 use rbatis_core::db::DriverType;
 use rbatis_core::Error;
 
-use crate::convert::stmt_convert::StmtConvert;
+use rbatis_core::convert::StmtConvert;
 use crate::crud::CRUDEnable;
 
 /// you can serialize to JSON, and Clone, Debug
