@@ -238,7 +238,11 @@ impl CRUD for Rbatis<'_> {
     }
 
     async fn update_batch_by_id<T>(&self, args: &[T]) -> Result<u64> where T: CRUDEnable {
-        unimplemented!()
+        let mut updates = 0;
+        for x in args {
+            updates += self.update_by_id(x).await?
+        }
+        Ok(updates)
     }
 
     async fn get_by_wrapper<T>(&self, w: &Wrapper) -> Result<T> where T: CRUDEnable {
