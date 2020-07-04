@@ -12,6 +12,7 @@ use rbatis_core::convert::StmtConvert;
 use crate::rbatis::Rbatis;
 use crate::utils::string_util::to_snake_name;
 use crate::wrapper::Wrapper;
+use crate::plugin::page::{IPageRequest, Page};
 
 /// DB Table model trait
 pub trait CRUDEnable: Send + Sync + Serialize {
@@ -119,6 +120,8 @@ pub trait CRUD {
     async fn list<T>(&self) -> Result<Vec<T>> where T: CRUDEnable;
     async fn list_by_wrapper<T>(&self, w: &Wrapper) -> Result<Vec<T>> where T: CRUDEnable;
     async fn list_by_ids<T>(&self, ids: &[T::IdType]) -> Result<Vec<T>> where T: CRUDEnable;
+
+    async fn fetch_page_by_wrapper<T>(&self,  w: &Wrapper,page: &dyn IPageRequest) -> Result<Page<T>> where T: CRUDEnable
 }
 
 #[async_trait]
@@ -262,6 +265,10 @@ impl CRUD for Rbatis<'_> {
     }
 
     async fn list_by_ids<T>(&self, ids: &[T::IdType]) -> Result<Vec<T>> where T: CRUDEnable {
+        unimplemented!()
+    }
+
+    async fn fetch_page_by_wrapper<T>(&self,  w: &Wrapper,page: &dyn IPageRequest) -> Result<Page<T>> where T: CRUDEnable {
         unimplemented!()
     }
 }
