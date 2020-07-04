@@ -9,7 +9,7 @@ impl StmtConvert for DriverType {
     fn stmt_convert(&self, index: usize) -> String {
         match &self {
             DriverType::Postgres => {
-                format!("${}", index + 1)
+                format!(" ${} ", index + 1)
             }
             DriverType::Mysql => {
                 " ? ".to_string()

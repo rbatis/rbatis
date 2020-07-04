@@ -10,7 +10,7 @@ use crate::cursor::Cursor;
 use serde::de::DeserializeOwned;
 use serde::{Deserialize, Serialize};
 
-#[derive(Serialize, Deserialize, Debug, Clone,Copy)]
+#[derive(Serialize, Deserialize, Debug, Clone,Copy,Eq, PartialEq)]
 pub enum DriverType {
     None = 0,
     Mysql = 1,
