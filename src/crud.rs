@@ -214,8 +214,9 @@ impl CRUD for Rbatis<'_> {
         }
         sets.pop();
         let mut wrapper =Wrapper::new(&self.driver_type()?);
-        wrapper.sql =  format!("UPDATE {} SET {} WHERE ",T::table_name(),sets);
+        wrapper.sql =  format!("UPDATE {} SET {}",T::table_name(),sets);
         if !w.sql.is_empty(){
+            wrapper.sql.push_str(" WHERE ");
             wrapper = wrapper.join_first_wrapper(w).check()?;
         }
         return self.exec_prepare("",wrapper.sql.as_str(),&wrapper.args).await;
