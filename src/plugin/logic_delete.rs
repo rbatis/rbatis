@@ -42,7 +42,7 @@ impl LogicDelete for RbatisLogicDeletePlugin {
 
 
     fn create_sql(&self, driver_type: &DriverType, table_name: &str, sql_where: &str) -> Result<String, Error> {
-        let mut new_sql = format!("UPDATE {} SET {} = {}", table_name, self.column(), self.deleted()) + sql_where;
+        let new_sql = format!("UPDATE {} SET {} = {}", table_name, self.column(), self.deleted()) + sql_where;
         return Ok(new_sql);
     }
 }
