@@ -5,10 +5,15 @@ use rbatis_core::db::DriverType;
 use serde_json::Value;
 use rbatis_core::Error;
 
+/// Logic Delete Plugin trait
 pub trait LogicDelete: Send + Sync {
+    /// database column
     fn column(&self) -> &str;
+    /// deleted data,must be i32
     fn deleted(&self) -> i32;
+    /// un deleted data,must be i32
     fn un_deleted(&self) -> i32;
+    /// create_update_sql
     fn create_sql(&self, driver_type: &DriverType, table_name: &str, sql_where: &str) -> Result<String, rbatis_core::Error>;
 }
 
