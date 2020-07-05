@@ -208,3 +208,15 @@ pub fn test_fetch_page_by_wrapper() {
         println!("{}", serde_json::to_string(&r).unwrap());
     });
 }
+
+#[test]
+pub fn test_list() {
+    async_std::task::block_on(async {
+        let mut rb = init_rbatis().await;
+        //设置 逻辑删除插件
+        rb.logic_plugin = Some(Box::new(RbatisLogicDeletePlugin::new("delete_flag")));
+
+        let r: Vec<BizActivity> = rb.list().await.unwrap();
+        println!("{}", serde_json::to_string(&r).unwrap());
+    });
+}
