@@ -226,14 +226,11 @@ impl CRUD for Rbatis<'_> {
     }
 
     async fn update_by_wrapper<T>(&self, arg: &T, w: &Wrapper) -> Result<u64> where T: CRUDEnable {
-        let mut index = -1;
         let mut args = vec![];
-
         let map = arg.to_value_map()?;
         let driver_type = &self.driver_type()?;
         let mut sets = String::new();
         for (k, v) in map {
-            index+=1;
             //filter null
             if v.is_null() {
                 continue;
@@ -242,7 +239,7 @@ impl CRUD for Rbatis<'_> {
             if k.eq("id") {
                 continue;
             }
-            sets.push_str(format!(" {} = {},", k, driver_type.stmt_convert(index as usize)).as_str());
+            sets.push_str(format!(" {} = {},", k, driver_type.stmt_convert(args.len())).as_str());
             args.push(v);
         }
         sets.pop();
