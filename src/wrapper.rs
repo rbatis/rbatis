@@ -10,7 +10,26 @@ use rbatis_core::convert::StmtConvert;
 use crate::crud::CRUDEnable;
 
 /// you can serialize to JSON, and Clone, Debug
-/// for Example, use json rpc send this Wrapper to server
+/// use json rpc send this Wrapper to server
+///
+/// for Example:
+///         let w = Wrapper::new(&DriverType::Mysql)
+///             .eq("id", 1)
+///             .and()
+///             .ne("id", 1)
+///             .and()
+///             .in_array("id", &[1, 2, 3])
+///             .and()
+///             .not_in("id", &[1, 2, 3])
+///             .and()
+///             .like("name", 1)
+///             .or()
+///             .not_like("name", "asdf")
+///             .and()
+///             .between("create_time", "2020-01-01 00:00:00", "2020-12-12 00:00:00")
+///             .group_by(&["id"])
+///             .order_by(true, &["id", "name"])
+///             .check().unwrap();
 ///
 #[derive(Serialize, Deserialize, Clone, Debug)]
 pub struct Wrapper {
