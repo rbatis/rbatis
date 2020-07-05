@@ -8,6 +8,8 @@
 #[macro_use]
 extern crate lazy_static;
 
+mod crud_test;
+
 use std::convert::Infallible;
 use std::sync::Mutex;
 use std::thread::sleep;

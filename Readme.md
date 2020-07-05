@@ -26,9 +26,50 @@ serde_json = "1.0"
 log = "0.4"
 fast_log="1.0.2"
 #rbatis-core和rbatis 版本必须保持一致
-rbatis-core = { version = "1.1.5",  default-features = false , features = ["all","runtime-async-std"]}
-rbatis = "1.1.5"
+rbatis-core = { version = "1.2.0",  default-features = false , features = ["all","runtime-async-std"]}
+rbatis = "1.2.0"
 ```
+
+
+#####  基本的CRUD内置方法 save，save_batch，remove_batch_by_id，list_by_ids...等等常用方法(详见 example/crud_test.rs)
+```rust
+let activity = Activity {
+                id: Some("12312".to_string()),
+                name: None,
+                remark: None,
+                create_time: Some("2020-02-09 00:00:00".to_string()),
+                version: Some(1),
+                delete_flag: Some(1),
+            };
+ let r = rb.save(&activity).await;
+            if r.is_err() {
+                println!("{}", r.err().unwrap().to_string());
+            }
+```
+#####  QueryWrapper支持，可以免写xml，py，sql(详见 example/crud_test.rs)
+```rust
+ let mut m = Map::new();
+        m.insert("a".to_string(), json!("1"));
+        let w = Wrapper::new(&DriverType::Mysql).eq("id", 1)
+            .and()
+            .ne("id", 1)
+            .and()
+            .in_array("id", &[1, 2, 3])
+            .and()
+            .not_in("id", &[1, 2, 3])
+            .and()
+            .all_eq(&m)
+            .and()
+            .like("name", 1)
+            .or()
+            .not_like("name", "asdf")
+            .and()
+            .between("create_time", "2020-01-01 00:00:00", "2020-12-12 00:00:00")
+            .group_by(&["id"])
+            .order_by(true, &["id", "name"])
+            .check().unwrap();
+```
+
 
 ##### py风格sql语法Example
 ``` python
@@ -264,29 +305,7 @@ rbatis-core = { features = ["runtime-async-std","all-type"]}
 
 
 # TODO 即将到来的特性
-* 基本的CRUD内置方法 save，save_batch，remove_batch_by_id，list_by_ids...等等常用方法
-```rust
-let activity = Activity {
-                id: Some("12312".to_string()),
-                name: None,
-                remark: None,
-                create_time: Some("2020-02-09 00:00:00".to_string()),
-                version: Some(1),
-                delete_flag: Some(1),
-            };
- let r = rb.save(&activity).await;
-            if r.is_err() {
-                println!("{}", r.err().unwrap().to_string());
-            }
-```
-* QueryWrapper支持，可以免写xml，py，sql
-```rust
-let w=Wrapper::select("*")
-            .all_eq(&Map::new())
-            .order_by(true,true,"");
-```
 
 
-  
 ## 欢迎右上角star或者微信捐赠~
 ![Image text](https://zhuxiujia.github.io/gomybatis.io/assets/wx_account.jpg)
