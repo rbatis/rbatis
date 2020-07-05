@@ -125,39 +125,39 @@ pub trait CRUDEnable: Send + Sync + Serialize + DeserializeOwned {
 
 #[async_trait]
 pub trait CRUD {
-    async fn save<T>(&self, entity: &T) -> Result<u64> where T: CRUDEnable;
-    async fn save_batch<T>(&self, entity: &[T]) -> Result<u64> where T: CRUDEnable;
-
-    async fn remove_by_wrapper<T>(&self, w: &Wrapper) -> Result<u64> where T: CRUDEnable;
-    async fn remove_by_id<T>(&self, id: &T::IdType) -> Result<u64> where T: CRUDEnable;
-    async fn remove_batch_by_id<T>(&self, ids: &[T::IdType]) -> Result<u64> where T: CRUDEnable;
-
-    async fn update_by_wrapper<T>(&self, arg: &T, w: &Wrapper) -> Result<u64> where T: CRUDEnable;
-    async fn update_by_id<T>(&self, arg: &T) -> Result<u64> where T: CRUDEnable;
-    async fn update_batch_by_id<T>(&self, ids: &[T]) -> Result<u64> where T: CRUDEnable;
+    /// tx_id: Transaction id,default ""
+    async fn save<T>(&self, tx_id: &str, entity: &T) -> Result<u64> where T: CRUDEnable;
+    async fn save_batch<T>(&self, tx_id: &str, entity: &[T]) -> Result<u64> where T: CRUDEnable;
 
 
-    async fn fetch_by_wrapper<T>(&self, w: &Wrapper) -> Result<T> where T: CRUDEnable;
-    async fn fetch_by_id<T>(&self, id: &T::IdType) -> Result<T> where T: CRUDEnable;
+    async fn remove_by_wrapper<T>(&self, tx_id: &str, w: &Wrapper) -> Result<u64> where T: CRUDEnable;
+    async fn remove_by_id<T>(&self, tx_id: &str, id: &T::IdType) -> Result<u64> where T: CRUDEnable;
+    async fn remove_batch_by_id<T>(&self, tx_id: &str, ids: &[T::IdType]) -> Result<u64> where T: CRUDEnable;
+
+    async fn update_by_wrapper<T>(&self, tx_id: &str, arg: &T, w: &Wrapper) -> Result<u64> where T: CRUDEnable;
+    async fn update_by_id<T>(&self, tx_id: &str, arg: &T) -> Result<u64> where T: CRUDEnable;
+    async fn update_batch_by_id<T>(&self, tx_id: &str, ids: &[T]) -> Result<u64> where T: CRUDEnable;
+
+    async fn fetch_by_wrapper<T>(&self, tx_id: &str, w: &Wrapper) -> Result<T> where T: CRUDEnable;
+    async fn fetch_by_id<T>(&self, tx_id: &str, id: &T::IdType) -> Result<T> where T: CRUDEnable;
+    async fn fetch_page_by_wrapper<T>(&self, tx_id: &str, w: &Wrapper, page: &dyn IPageRequest) -> Result<Page<T>> where T: CRUDEnable;
 
     ///fetch all record
-    async fn list<T>(&self) -> Result<Vec<T>> where T: CRUDEnable;
-    async fn list_by_wrapper<T>(&self, w: &Wrapper) -> Result<Vec<T>> where T: CRUDEnable;
-    async fn list_by_ids<T>(&self, ids: &[T::IdType]) -> Result<Vec<T>> where T: CRUDEnable;
-
-    async fn fetch_page_by_wrapper<T>(&self, w: &Wrapper, page: &dyn IPageRequest) -> Result<Page<T>> where T: CRUDEnable;
+    async fn list<T>(&self, tx_id: &str) -> Result<Vec<T>> where T: CRUDEnable;
+    async fn list_by_wrapper<T>(&self, tx_id: &str, w: &Wrapper) -> Result<Vec<T>> where T: CRUDEnable;
+    async fn list_by_ids<T>(&self, tx_id: &str, ids: &[T::IdType]) -> Result<Vec<T>> where T: CRUDEnable;
 }
 
 #[async_trait]
 impl CRUD for Rbatis<'_> {
     /// save one entity to database
-    async fn save<T>(&self, entity: &T) -> Result<u64>
+    async fn save<T>(&self, tx_id: &str, entity: &T) -> Result<u64>
         where T: CRUDEnable {
         let map = entity.to_value_map()?;
         let mut index = 0;
         let (values, args) = entity.values(&mut index, &self.driver_type()?, &map)?;
         let sql = format!("INSERT INTO {} ({}) VALUES ({})", T::table_name(), entity.fields(&map)?, values);
-        return self.exec_prepare("", sql.as_str(), &args).await;
+        return self.exec_prepare(tx_id, sql.as_str(), &args).await;
     }
 
     /// save batch makes many value into  only one sql. make sure your data not  to long!
@@ -167,7 +167,7 @@ impl CRUD for Rbatis<'_> {
     /// [rbatis] Exec ==>   INSERT INTO biz_activity (id,name,version) VALUES ( ? , ? , ?),( ? , ? , ?)
     ///
     ///
-    async fn save_batch<T>(&self, args: &[T]) -> Result<u64> where T: CRUDEnable {
+    async fn save_batch<T>(&self, tx_id: &str, args: &[T]) -> Result<u64> where T: CRUDEnable {
         if args.is_empty() {
             return Ok(0);
         }
@@ -188,28 +188,28 @@ impl CRUD for Rbatis<'_> {
         }
         value_arr.pop();//pop ','
         let sql = format!("INSERT INTO {} ({}) VALUES {}", T::table_name(), fields, value_arr);
-        return self.exec_prepare("", sql.as_str(), &arg_arr).await;
+        return self.exec_prepare(tx_id, sql.as_str(), &arg_arr).await;
     }
 
-    async fn remove_by_wrapper<T>(&self, arg: &Wrapper) -> Result<u64> where T: CRUDEnable {
-        let  where_sql = arg.sql.as_str();
+    async fn remove_by_wrapper<T>(&self, tx_id: &str, arg: &Wrapper) -> Result<u64> where T: CRUDEnable {
+        let where_sql = arg.sql.as_str();
         let mut sql = String::new();
         if self.logic_plugin.is_some() {
             sql = self.logic_plugin.as_ref().unwrap().create_sql(&self.driver_type()?, T::table_name().as_str(), make_where_sql(where_sql).as_str())?;
         } else {
             sql = format!("DELETE FROM {} {}", T::table_name(), make_where_sql(where_sql));
         }
-        return self.exec_prepare("", sql.as_str(), &arg.args).await;
+        return self.exec_prepare(tx_id, sql.as_str(), &arg.args).await;
     }
 
-    async fn remove_by_id<T>(&self, id: &T::IdType) -> Result<u64> where T: CRUDEnable {
+    async fn remove_by_id<T>(&self, tx_id: &str, id: &T::IdType) -> Result<u64> where T: CRUDEnable {
         let mut sql = String::new();
         if self.logic_plugin.is_some() {
             sql = self.logic_plugin.as_ref().unwrap().create_sql(&self.driver_type()?, T::table_name().as_str(), format!(" WHERE id = {}", id).as_str())?;
         } else {
             sql = format!("DELETE FROM {} WHERE id = {}", T::table_name(), id);
         }
-        return self.exec_prepare("", sql.as_str(), &vec![]).await;
+        return self.exec_prepare(tx_id, sql.as_str(), &vec![]).await;
     }
 
     ///remove batch id
@@ -217,15 +217,15 @@ impl CRUD for Rbatis<'_> {
     /// rb.remove_batch_by_id::<BizActivity>(&["1".to_string(),"2".to_string()]).await;
     /// [rbatis] Exec ==> DELETE FROM biz_activity WHERE id IN ( ? , ? )
     ///
-    async fn remove_batch_by_id<T>(&self, ids: &[T::IdType]) -> Result<u64> where T: CRUDEnable {
+    async fn remove_batch_by_id<T>(&self, tx_id: &str, ids: &[T::IdType]) -> Result<u64> where T: CRUDEnable {
         if ids.is_empty() {
             return Ok(0);
         }
         let w = Wrapper::new(&self.driver_type()?).and().in_array("id", &ids).check()?;
-        return self.remove_by_wrapper::<T>(&w).await;
+        return self.remove_by_wrapper::<T>(tx_id, &w).await;
     }
 
-    async fn update_by_wrapper<T>(&self, arg: &T, w: &Wrapper) -> Result<u64> where T: CRUDEnable {
+    async fn update_by_wrapper<T>(&self, tx_id: &str, arg: &T, w: &Wrapper) -> Result<u64> where T: CRUDEnable {
         let mut args = vec![];
         let map = arg.to_value_map()?;
         let driver_type = &self.driver_type()?;
@@ -250,53 +250,53 @@ impl CRUD for Rbatis<'_> {
             wrapper.sql.push_str(" WHERE ");
             wrapper = wrapper.link_right_wrapper(w).check()?;
         }
-        return self.exec_prepare("", wrapper.sql.as_str(), &wrapper.args).await;
+        return self.exec_prepare(tx_id, wrapper.sql.as_str(), &wrapper.args).await;
     }
 
-    async fn update_by_id<T>(&self, arg: &T) -> Result<u64> where T: CRUDEnable {
+    async fn update_by_id<T>(&self, tx_id: &str, arg: &T) -> Result<u64> where T: CRUDEnable {
         let args = arg.to_value_map()?;
         let id_field = args.get("id");
         if id_field.is_none() {
             return Err(Error::from("[rbaits] arg not have \"id\" field! "));
         }
-        self.update_by_wrapper(arg, Wrapper::new(&self.driver_type()?).eq("id", id_field.unwrap())).await
+        self.update_by_wrapper(tx_id, arg, Wrapper::new(&self.driver_type()?).eq("id", id_field.unwrap())).await
     }
 
-    async fn update_batch_by_id<T>(&self, args: &[T]) -> Result<u64> where T: CRUDEnable {
+    async fn update_batch_by_id<T>(&self, tx_id: &str, args: &[T]) -> Result<u64> where T: CRUDEnable {
         let mut updates = 0;
         for x in args {
-            updates += self.update_by_id(x).await?
+            updates += self.update_by_id(tx_id, x).await?
         }
         Ok(updates)
     }
 
-    async fn fetch_by_wrapper<T>(&self, w: &Wrapper) -> Result<T> where T: CRUDEnable {
+    async fn fetch_by_wrapper<T>(&self, tx_id: &str, w: &Wrapper) -> Result<T> where T: CRUDEnable {
         let sql = make_select_sql::<T>(&self, w)?;
-        return self.fetch_prepare("", sql.as_str(), &w.args).await;
+        return self.fetch_prepare(tx_id, sql.as_str(), &w.args).await;
     }
 
-    async fn fetch_by_id<T>(&self, id: &T::IdType) -> Result<T> where T: CRUDEnable {
+    async fn fetch_by_id<T>(&self, tx_id: &str, id: &T::IdType) -> Result<T> where T: CRUDEnable {
         let w = Wrapper::new(&self.driver_type().unwrap()).eq("id", id).check()?;
-        return self.fetch_by_wrapper(&w).await;
+        return self.fetch_by_wrapper(tx_id, &w).await;
     }
 
-    async fn list_by_wrapper<T>(&self, w: &Wrapper) -> Result<Vec<T>> where T: CRUDEnable {
+    async fn list_by_wrapper<T>(&self, tx_id: &str, w: &Wrapper) -> Result<Vec<T>> where T: CRUDEnable {
         let sql = make_select_sql::<T>(&self, w)?;
-        return self.fetch_prepare("", sql.as_str(), &w.args).await;
+        return self.fetch_prepare(tx_id, sql.as_str(), &w.args).await;
     }
 
-    async fn list<T>(&self) -> Result<Vec<T>> where T: CRUDEnable {
-        return self.list_by_wrapper(&Wrapper::new(&self.driver_type()?)).await;
+    async fn list<T>(&self, tx_id: &str) -> Result<Vec<T>> where T: CRUDEnable {
+        return self.list_by_wrapper(tx_id, &Wrapper::new(&self.driver_type()?)).await;
     }
 
-    async fn list_by_ids<T>(&self, ids: &[T::IdType]) -> Result<Vec<T>> where T: CRUDEnable {
+    async fn list_by_ids<T>(&self, tx_id: &str, ids: &[T::IdType]) -> Result<Vec<T>> where T: CRUDEnable {
         let w = Wrapper::new(&self.driver_type()?).in_array("id", ids).check()?;
-        return self.list_by_wrapper(&w).await;
+        return self.list_by_wrapper(tx_id, &w).await;
     }
 
-    async fn fetch_page_by_wrapper<T>(&self, w: &Wrapper, page: &dyn IPageRequest) -> Result<Page<T>> where T: CRUDEnable {
+    async fn fetch_page_by_wrapper<T>(&self, tx_id: &str, w: &Wrapper, page: &dyn IPageRequest) -> Result<Page<T>> where T: CRUDEnable {
         let sql = make_select_sql::<T>(&self, w)?;
-        self.fetch_page("", sql.as_str(), &w.args, page).await
+        self.fetch_page(tx_id, sql.as_str(), &w.args, page).await
     }
 }
 
@@ -383,7 +383,7 @@ mod test {
             fast_log::log::init_log("requests.log", &RuntimeType::Std);
             let rb = Rbatis::new();
             rb.link("mysql://root:123456@localhost:3306/test").await.unwrap();
-            let r = rb.save(&activity).await;
+            let r = rb.save("", &activity).await;
             if r.is_err() {
                 println!("{}", r.err().unwrap().to_string());
             }
@@ -412,7 +412,7 @@ mod test {
             fast_log::log::init_log("requests.log", &RuntimeType::Std);
             let rb = Rbatis::new();
             rb.link("mysql://root:123456@localhost:3306/test").await.unwrap();
-            let r = rb.save_batch(&args).await;
+            let r = rb.save_batch("", &args).await;
             if r.is_err() {
                 println!("{}", r.err().unwrap().to_string());
             }
@@ -427,7 +427,7 @@ mod test {
             let mut rb = Rbatis::new();
             rb.logic_plugin = Some(Box::new(RbatisLogicDeletePlugin::new("delete_flag")));
             rb.link("mysql://root:123456@localhost:3306/test").await.unwrap();
-            let r = rb.remove_batch_by_id::<BizActivity>(&["1".to_string(), "2".to_string()]).await;
+            let r = rb.remove_batch_by_id::<BizActivity>("", &["1".to_string(), "2".to_string()]).await;
             if r.is_err() {
                 println!("{}", r.err().unwrap().to_string());
             }
@@ -443,7 +443,7 @@ mod test {
             //设置 逻辑删除插件
             rb.logic_plugin = Some(Box::new(RbatisLogicDeletePlugin::new("delete_flag")));
             rb.link("mysql://root:123456@localhost:3306/test").await.unwrap();
-            let r = rb.remove_by_id::<BizActivity>(&"1".to_string()).await;
+            let r = rb.remove_by_id::<BizActivity>("",&"1".to_string()).await;
             if r.is_err() {
                 println!("{}", r.err().unwrap().to_string());
             }
@@ -475,7 +475,7 @@ mod test {
             };
 
             let w = Wrapper::new(&rb.driver_type().unwrap()).eq("id", "12312").check().unwrap();
-            let r = rb.update_by_wrapper(&activity, &w).await;
+            let r = rb.update_by_wrapper("", &activity, &w).await;
             if r.is_err() {
                 println!("{}", r.err().unwrap().to_string());
             }
@@ -506,7 +506,7 @@ mod test {
                 version: Some(1),
                 delete_flag: Some(1),
             };
-            let r = rb.update_by_id(&activity).await;
+            let r = rb.update_by_id("", &activity).await;
             if r.is_err() {
                 println!("{}", r.err().unwrap().to_string());
             }
@@ -523,7 +523,7 @@ mod test {
             rb.link("mysql://root:123456@localhost:3306/test").await.unwrap();
 
             let w = Wrapper::new(&rb.driver_type().unwrap()).eq("id", "12312").check().unwrap();
-            let r: Result<BizActivity, Error> = rb.fetch_by_wrapper(&w).await;
+            let r: Result<BizActivity, Error> = rb.fetch_by_wrapper("", &w).await;
             if r.is_err() {
                 println!("{}", r.err().unwrap().to_string());
             }
@@ -540,7 +540,7 @@ mod test {
             rb.link("mysql://root:123456@localhost:3306/test").await.unwrap();
 
             let w = Wrapper::new(&rb.driver_type().unwrap()).check().unwrap();
-            let r: Page<BizActivity> = rb.fetch_page_by_wrapper(&w, &PageRequest::new(1, 20)).await.unwrap();
+            let r: Page<BizActivity> = rb.fetch_page_by_wrapper("", &w, &PageRequest::new(1, 20)).await.unwrap();
             println!("{}", serde_json::to_string(&r).unwrap());
         });
     }

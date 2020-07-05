@@ -58,7 +58,7 @@ pub fn test_save() {
             version: Some(1),
             delete_flag: Some(1),
         };
-        let r = rb.save(&activity).await;
+        let r = rb.save("", &activity).await;
         if r.is_err() {
             println!("{}", r.err().unwrap().to_string());
         }
@@ -84,7 +84,7 @@ pub fn test_save_batch() {
             delete_flag: Some(1),
         };
         let args = vec![activity.clone(), activity];
-        let r = rb.save_batch(&args).await;
+        let r = rb.save_batch("", &args).await;
         if r.is_err() {
             println!("{}", r.err().unwrap().to_string());
         }
@@ -98,7 +98,7 @@ pub fn test_remove_batch_by_id() {
         let mut rb = init_rbatis().await;
         rb.logic_plugin = Some(Box::new(RbatisLogicDeletePlugin::new("delete_flag")));
         rb.link("mysql://root:123456@localhost:3306/test").await.unwrap();
-        let r = rb.remove_batch_by_id::<BizActivity>(&["1".to_string(), "2".to_string()]).await;
+        let r = rb.remove_batch_by_id::<BizActivity>("", &["1".to_string(), "2".to_string()]).await;
         if r.is_err() {
             println!("{}", r.err().unwrap().to_string());
         }
@@ -113,7 +113,7 @@ pub fn test_remove_by_id() {
         //设置 逻辑删除插件
         rb.logic_plugin = Some(Box::new(RbatisLogicDeletePlugin::new("delete_flag")));
         rb.link("mysql://root:123456@localhost:3306/test").await.unwrap();
-        let r = rb.remove_by_id::<BizActivity>(&"1".to_string()).await;
+        let r = rb.remove_by_id::<BizActivity>("",&"1".to_string()).await;
         if r.is_err() {
             println!("{}", r.err().unwrap().to_string());
         }
@@ -143,7 +143,7 @@ pub fn test_update_by_wrapper() {
         };
 
         let w = Wrapper::new(&rb.driver_type().unwrap()).eq("id", "12312").check().unwrap();
-        let r = rb.update_by_wrapper(&activity, &w).await;
+        let r = rb.update_by_wrapper("", &activity, &w).await;
         if r.is_err() {
             println!("{}", r.err().unwrap().to_string());
         }
@@ -172,7 +172,7 @@ pub fn test_update_by_id() {
             version: Some(1),
             delete_flag: Some(1),
         };
-        let r = rb.update_by_id(&activity).await;
+        let r = rb.update_by_id("", &activity).await;
         if r.is_err() {
             println!("{}", r.err().unwrap().to_string());
         }
@@ -187,7 +187,7 @@ pub fn test_fetch_by_wrapper() {
         rb.logic_plugin = Some(Box::new(RbatisLogicDeletePlugin::new("delete_flag")));
 
         let w = Wrapper::new(&rb.driver_type().unwrap()).eq("id", "12312").check().unwrap();
-        let r: Result<BizActivity, Error> = rb.fetch_by_wrapper(&w).await;
+        let r: Result<BizActivity, Error> = rb.fetch_by_wrapper("", &w).await;
         if r.is_err() {
             println!("{}", r.err().unwrap().to_string());
         }
@@ -202,9 +202,9 @@ pub fn test_fetch_page_by_wrapper() {
         rb.logic_plugin = Some(Box::new(RbatisLogicDeletePlugin::new("delete_flag")));
 
         let w = Wrapper::new(&rb.driver_type().unwrap())
-            .eq("delete_flag",1)
+            .eq("delete_flag", 1)
             .check().unwrap();
-        let r: Page<BizActivity> = rb.fetch_page_by_wrapper(&w, &PageRequest::new(1, 20)).await.unwrap();
+        let r: Page<BizActivity> = rb.fetch_page_by_wrapper("", &w, &PageRequest::new(1, 20)).await.unwrap();
         println!("{}", serde_json::to_string(&r).unwrap());
     });
 }
@@ -215,7 +215,7 @@ pub fn test_list() {
         let mut rb = init_rbatis().await;
         //设置 逻辑删除插件
         rb.logic_plugin = Some(Box::new(RbatisLogicDeletePlugin::new("delete_flag")));
-        let r: Vec<BizActivity> = rb.list().await.unwrap();
+        let r: Vec<BizActivity> = rb.list("").await.unwrap();
         println!("{}", serde_json::to_string(&r).unwrap());
     });
 }
