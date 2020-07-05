@@ -5,6 +5,20 @@
 #### This crate uses #![forbid(unsafe_code)] to ensure everything is implemented in 100% Safe Rust.
 [![Build Status](https://travis-ci.org/zhuxiujia/rbatis.svg?branch=master)](https://travis-ci.org/zhuxiujia/rbatis)
 
+
+
+##### way not diesel,way not sqlx ? 为什么不选择diesel,sqlx之类的框架?
+| 框架    | 协程异步async高并发 | 使用难度 | 符合企业化规范（支持xml）| logic del逻辑删除插件| page分页插件
+| ------ | ------ |------ |------ |------ |------ |
+| rbatis | √     | easy简单(依赖json和反射)              |   √     |    √     |   √     |  
+| sqlx   | √     | hard难（依赖宏）       |   x     |   x     |   x     |  
+| diesel | x     | easy简单（缺少xml支持） |   x     |  x     |  x     |  
+
+
+
+
+
+
 ![Image text](logo.png)
 
 * 使用最通用的json数据结构（基于serde_json）进行传参和通讯
@@ -19,12 +33,15 @@
 ##### 首先(Cargo.toml)添加项目依赖
 ``` rust
 # add this library,and cargo install
-#json
+
+#json支持
 serde = { version = "1.0", features = ["derive"] }
 serde_json = "1.0"
-#log
+
+#log日志支持
 log = "0.4"
 fast_log="1.0.2"
+
 #rbatis-core和rbatis 版本必须保持一致
 rbatis-core = { version = "1.2.2",  default-features = false , features = ["all","runtime-async-std"]}
 rbatis =  { version = "1.2.2" } 
@@ -282,7 +299,7 @@ pub async fn test_hyper(){
 * async await支持？<br/>
 已同时支持async_std和tokio
 * postgres 的stmt使用$1,$2而不是mysql的?,那么是否需要特殊处理？<br/>
-不需要，因为rbatis旗下 rbatis_driver 已经处理了 ? -> $1的转换，你只需要在sql中写?即可。
+不需要，因为rbatis 99%的api使用#{}描述参数变量，只需要写具体参数名称，不需要对应数据库的符号。
 * oracle数据库驱动支持？<br/>
 不支持，应该坚持去IOE
 
