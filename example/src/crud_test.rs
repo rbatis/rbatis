@@ -215,7 +215,6 @@ pub fn test_list() {
         let mut rb = init_rbatis().await;
         //设置 逻辑删除插件
         rb.logic_plugin = Some(Box::new(RbatisLogicDeletePlugin::new("delete_flag")));
-
         let r: Vec<BizActivity> = rb.list().await.unwrap();
         println!("{}", serde_json::to_string(&r).unwrap());
     });

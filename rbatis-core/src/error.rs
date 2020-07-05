@@ -417,9 +417,9 @@ impl Clone for Error {
 }
 
 
-use serde::ser::{Serialize, SerializeStruct, Serializer};
+use serde::ser::{Serialize, Serializer};
 use serde::{Deserialize, Deserializer};
-use serde::de::{Visitor, Unexpected};
+use serde::de::{Visitor};
 
 // This is what #[derive(Serialize)] would generate.
 impl Serialize for Error {

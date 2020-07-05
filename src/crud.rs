@@ -192,7 +192,7 @@ impl CRUD for Rbatis<'_> {
     }
 
     async fn remove_by_wrapper<T>(&self, arg: &Wrapper) -> Result<u64> where T: CRUDEnable {
-        let mut where_sql = arg.sql.as_str();
+        let  where_sql = arg.sql.as_str();
         let mut sql = String::new();
         if self.logic_plugin.is_some() {
             sql = self.logic_plugin.as_ref().unwrap().create_sql(&self.driver_type()?, T::table_name().as_str(), make_where_sql(where_sql).as_str())?;
@@ -221,18 +221,19 @@ impl CRUD for Rbatis<'_> {
         if ids.is_empty() {
             return Ok(0);
         }
-        let mut w = Wrapper::new(&self.driver_type()?).and().in_array("id", &ids).check()?;
+        let w = Wrapper::new(&self.driver_type()?).and().in_array("id", &ids).check()?;
         return self.remove_by_wrapper::<T>(&w).await;
     }
 
     async fn update_by_wrapper<T>(&self, arg: &T, w: &Wrapper) -> Result<u64> where T: CRUDEnable {
-        let mut index = 0;
+        let mut index = -1;
         let mut args = vec![];
 
         let map = arg.to_value_map()?;
         let driver_type = &self.driver_type()?;
         let mut sets = String::new();
         for (k, v) in map {
+            index+=1;
             //filter null
             if v.is_null() {
                 continue;
@@ -241,7 +242,7 @@ impl CRUD for Rbatis<'_> {
             if k.eq("id") {
                 continue;
             }
-            sets.push_str(format!(" {} = {},", k, driver_type.stmt_convert(index)).as_str());
+            sets.push_str(format!(" {} = {},", k, driver_type.stmt_convert(index as usize)).as_str());
             args.push(v);
         }
         sets.pop();
@@ -310,7 +311,7 @@ fn make_where_sql(arg: &str) -> String {
 
 fn make_select_sql<T>(rb: &Rbatis, w: &Wrapper) -> Result<String> where T: CRUDEnable {
     let fields = T::table_fields();
-    let mut where_sql = String::new();
+    let where_sql = String::new();
     let mut sql = String::new();
     if rb.logic_plugin.is_some() {
         let mut where_sql = w.sql.clone();
@@ -319,7 +320,11 @@ fn make_select_sql<T>(rb: &Rbatis, w: &Wrapper) -> Result<String> where T: CRUDE
         }
         sql = format!("SELECT {} FROM {} WHERE {} = {} {}", fields, T::table_name(), rb.logic_plugin.as_ref().unwrap().column(), rb.logic_plugin.as_ref().unwrap().un_deleted(), where_sql);
     } else {
-        sql = format!("SELECT {} FROM {} WHERE {}", fields, T::table_name(), w.sql.as_str());
+        let mut where_sql = w.sql.clone();
+        if !where_sql.is_empty() {
+            where_sql = " WHERE ".to_string() + where_sql.as_str();
+        }
+        sql = format!("SELECT {} FROM {} {}", fields, T::table_name(), where_sql);
     }
     Ok(sql)
 }
