@@ -15,7 +15,7 @@ use crate::utils::string_util::to_snake_name;
 use crate::wrapper::Wrapper;
 
 /// DB Table model trait
-pub trait CRUDEnable: Send + Sync + Serialize+DeserializeOwned {
+pub trait CRUDEnable: Send + Sync + Serialize + DeserializeOwned {
     /// your table id type,for example:
     /// IdType = String
     /// IdType = i32
@@ -137,7 +137,7 @@ pub trait CRUD {
     async fn update_batch_by_id<T>(&self, ids: &[T]) -> Result<u64> where T: CRUDEnable;
 
 
-    async fn fetch_by_wrapper<T>(&self, w: &Wrapper) -> Result<T> where T: CRUDEnable+DeserializeOwned;
+    async fn fetch_by_wrapper<T>(&self, w: &Wrapper) -> Result<T> where T: CRUDEnable;
     async fn fetch_by_id<T>(&self, id: &T::IdType) -> Result<T> where T: CRUDEnable;
 
     ///fetch all record
@@ -272,9 +272,9 @@ impl CRUD for Rbatis<'_> {
         Ok(updates)
     }
 
-    async fn fetch_by_wrapper<T>(&self, w: &Wrapper) -> Result<T> where T: CRUDEnable+DeserializeOwned {
-        let fields=T::table_fields();
-        println!("fields:{}",fields);
+    async fn fetch_by_wrapper<T>(&self, w: &Wrapper) -> Result<T> where T: CRUDEnable {
+        let fields = T::table_fields();
+        println!("fields:{}", fields);
         unimplemented!()
     }
 
@@ -306,8 +306,6 @@ fn make_where_sql(arg: &str) -> String {
 }
 
 
-
-
 mod test {
     use chrono::{DateTime, Utc};
     use fast_log::log::RuntimeType;
@@ -315,11 +313,12 @@ mod test {
     use serde::Deserialize;
     use serde::Serialize;
 
+    use rbatis_core::Error;
+
     use crate::crud::{CRUD, CRUDEnable};
     use crate::plugin::logic_delete::RbatisLogicDeletePlugin;
     use crate::rbatis::Rbatis;
     use crate::wrapper::Wrapper;
-    use rbatis_core::Error;
 
     #[derive(Serialize, Deserialize, Clone, Debug)]
     pub struct BizActivity {
@@ -494,7 +493,7 @@ mod test {
     }
 
     #[test]
-    pub fn test_fetch_by_wrapper(){
+    pub fn test_fetch_by_wrapper() {
         async_std::task::block_on(async {
             fast_log::log::init_log("requests.log", &RuntimeType::Std);
             let mut rb = Rbatis::new();
@@ -503,11 +502,10 @@ mod test {
             rb.link("mysql://root:123456@localhost:3306/test").await.unwrap();
 
             let w = Wrapper::new(&rb.driver_type().unwrap()).eq("id", "12312").check().unwrap();
-            let r:Result<BizActivity,Error> = rb.fetch_by_wrapper(&w).await;
+            let r: Result<BizActivity, Error> = rb.fetch_by_wrapper(&w).await;
             if r.is_err() {
                 println!("{}", r.err().unwrap().to_string());
             }
         });
-
     }
 }
