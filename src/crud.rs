@@ -250,7 +250,7 @@ impl CRUD for Rbatis<'_> {
         wrapper.args = args;
         if !w.sql.is_empty() {
             wrapper.sql.push_str(" WHERE ");
-            wrapper = wrapper.join_left_wrapper(w).check()?;
+            wrapper = wrapper.join_right_wrapper(w).check()?;
         }
         return self.exec_prepare("", wrapper.sql.as_str(), &wrapper.args).await;
     }

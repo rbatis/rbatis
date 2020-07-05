@@ -77,16 +77,16 @@ impl Wrapper {
     ///  let w = Wrapper::new(&DriverType::Postgres).eq("a", "1").check().unwrap();
     ///  let w2 = Wrapper::new(&DriverType::Postgres).eq("b", "2")
     ///             .and()
-    ///             .join_left_wrapper(&w)
+    ///             .join_right_wrapper(&w)
     ///             .check().unwrap();
     ///  println!("sql:{:?}", w2.sql.as_str());  // sql:"a =  $1 a =  $2 "
     ///  println!("arg:{:?}", w2.args.clone()); // arg:[String("1"), String("2")]
     ///
-    pub fn join_left_wrapper(&mut self, arg: &Wrapper) -> &mut Self {
-        self.join_left(&arg.driver_type, &arg.sql, &arg.args)
+    pub fn join_right_wrapper(&mut self, arg: &Wrapper) -> &mut Self {
+        self.join_right(&arg.driver_type, &arg.sql, &arg.args)
     }
 
-    pub fn join_left(&mut self, driver_type: &DriverType, sql: &str, args: &Vec<Value>) -> &mut Self {
+    pub fn join_right(&mut self, driver_type: &DriverType, sql: &str, args: &Vec<Value>) -> &mut Self {
         let mut new_sql = sql.to_string();
         if driver_type.eq(&DriverType::Postgres) {
             let arg_old_len = args.len();
@@ -424,7 +424,7 @@ mod test {
         let w = Wrapper::new(&DriverType::Postgres).eq("a", "1").check().unwrap();
         let w2 = Wrapper::new(&DriverType::Postgres).eq("b", "2")
             .and()
-            .join_left_wrapper(&w)
+            .join_right_wrapper(&w)
             .check().unwrap();
 
         println!("sql:{:?}", w2.sql.as_str());
