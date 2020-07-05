@@ -5,6 +5,7 @@
 #### This crate uses #![forbid(unsafe_code)] to ensure everything is implemented in 100% Safe Rust.
 [![Build Status](https://travis-ci.org/zhuxiujia/rbatis.svg?branch=master)](https://travis-ci.org/zhuxiujia/rbatis)
 
+![Image text](logo.png)
 
 
 ##### way not diesel,way not sqlx ? 为什么不选择diesel,sqlx之类的框架?
@@ -21,9 +22,6 @@
 | Rust   | rbatis       | mysql(docker with 1CPU,1G Mem)    | select count(1) from table; 10000次    | 965649 ns/op      |  2.1MB   |      
 | Golang | GoMybatis    | mysql(docker with 1CPU,1G Mem)    | select count(1) from table; 10000次    | 1184503 ns/op     |  28.4MB  |     
 
-
-
-![Image text](logo.png)
 
 * 使用最通用的json数据结构（基于serde_json）进行传参和通讯
 * 高性能，单线程benchmark 可轻松拉起200000 QPS/s（直接返回数据（数据库查询时间损耗0），win10,6 core i7,16GB）  多线程更高 远超go语言版本的GoMyBatis
