@@ -58,7 +58,7 @@ let activity = Activity {
                 version: Some(1),
                 delete_flag: Some(1),
             };
- let r = rb.save(&activity).await;
+ let r = rb.save("",&activity).await;
             if r.is_err() {
                 println!("{}", r.err().unwrap().to_string());
             }
