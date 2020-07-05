@@ -147,9 +147,9 @@
         <!ELEMENT trim (#PCDATA | include | trim | where | set | foreach | choose | if | bind)*>
         <!ATTLIST trim
                 prefix CDATA #IMPLIED
-                prefixOverrides CDATA #IMPLIED
+                prefix_overrides CDATA #IMPLIED
                 suffix CDATA #IMPLIED
-                suffixOverrides CDATA #IMPLIED
+                suffix_overrides CDATA #IMPLIED
                 >
         <!ELEMENT where (#PCDATA | include | trim | where | set | foreach | choose | if | bind)*>
         <!ELEMENT set (#PCDATA | include | trim | where | set | foreach | choose | if | bind)*>
