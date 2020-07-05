@@ -201,7 +201,9 @@ pub fn test_fetch_page_by_wrapper() {
         //设置 逻辑删除插件
         rb.logic_plugin = Some(Box::new(RbatisLogicDeletePlugin::new("delete_flag")));
 
-        let w = Wrapper::new(&rb.driver_type().unwrap()).check().unwrap();
+        let w = Wrapper::new(&rb.driver_type().unwrap())
+            .eq("delete_flag",1)
+            .check().unwrap();
         let r: Page<BizActivity> = rb.fetch_page_by_wrapper(&w, &PageRequest::new(1, 20)).await.unwrap();
         println!("{}", serde_json::to_string(&r).unwrap());
     });
