@@ -274,12 +274,19 @@ impl CRUD for Rbatis<'_> {
 
     async fn fetch_by_wrapper<T>(&self, w: &Wrapper) -> Result<T> where T: CRUDEnable {
         let fields = T::table_fields();
-        println!("fields:{}", fields);
-        unimplemented!()
+        let mut where_sql = String::new();
+        let mut sql = String::new();
+        if self.logic_plugin.is_some() {
+            sql = format!("SELECT {} FROM {} WHERE {} = {} AND {}", fields, T::table_name(), self.logic_plugin.as_ref().unwrap().column(), self.logic_plugin.as_ref().unwrap().un_deleted(), w.sql.as_str());
+        } else {
+            sql = format!("SELECT {} FROM {} WHERE {}", fields, T::table_name(), w.sql.as_str());
+        }
+        return self.fetch_prepare("", sql.as_str(), &w.args).await;
     }
 
     async fn fetch_by_id<T>(&self, id: &T::IdType) -> Result<T> where T: CRUDEnable {
-        unimplemented!()
+        let w = Wrapper::new(&self.driver_type().unwrap()).eq("id", id).check()?;
+        return self.fetch_by_wrapper(&w).await;
     }
 
     async fn list_by_wrapper<T>(&self, w: &Wrapper) -> Result<Vec<T>> where T: CRUDEnable {
