@@ -16,7 +16,7 @@
 
 
 ##### 和其他语言对比性能压测(环境（docker）仅供参考)
-| 语言 | 框架     | 数据库 | 查询语句 | 每操作性能（越低越好） | 内存（越低越好） |
+| 语言 | 框架     | 数据库 | 查询语句 | 纳秒/每操作（越低越好） | 内存（越低越好） |
 | ------ | ------ | ------ |------ |------ |------ |
 | Rust   | rbatis       | mysql(docker with 1CPU,1G Mem)    | select count(1) from table; 10000次    | 965649 ns/op      |  2.1MB   |      
 | Golang | GoMybatis    | mysql(docker with 1CPU,1G Mem)    | select count(1) from table; 10000次    | 1184503 ns/op     |  28.4MB  |     
