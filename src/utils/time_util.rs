@@ -9,7 +9,7 @@ pub fn count_time_qps(tag: &str, total: u128, start: SystemTime) {
 ///count qps
 pub fn print_qps(tag: &str, total: u128, start: SystemTime) {
     let time = SystemTime::now().duration_since(start).unwrap();
-    println!("[count_tps] {} use TPS: {} QPS/s", tag, (total * 1000000000 as u128 / time.as_nanos() as u128));
+    println!("[count_qps] {} use qps: {} QPS/s", tag, (total * 1000000000 as u128 / time.as_nanos() as u128));
 }
 
 ///计算每个操作耗时ns纳秒
