@@ -319,7 +319,19 @@ impl CRUD for Rbatis<'_> {
     }
 
     async fn fetch_page_by_wrapper<T>(&self, w: &Wrapper, page: &dyn IPageRequest) -> Result<Page<T>> where T: CRUDEnable {
-        unimplemented!()
+        let fields = T::table_fields();
+        let mut where_sql = String::new();
+        let mut sql = String::new();
+        if self.logic_plugin.is_some() {
+            let mut where_sql = w.sql.clone();
+            if !where_sql.is_empty() {
+                where_sql = " AND ".to_string() + where_sql.as_str();
+            }
+            sql = format!("SELECT {} FROM {} WHERE {} = {} {}", fields, T::table_name(), self.logic_plugin.as_ref().unwrap().column(), self.logic_plugin.as_ref().unwrap().un_deleted(), where_sql);
+        } else {
+            sql = format!("SELECT {} FROM {} WHERE {}", fields, T::table_name(), w.sql.as_str());
+        }
+        self.fetch_page("",sql.as_str(),&w.args,page).await
     }
 }
 
@@ -343,6 +355,7 @@ mod test {
     use crate::plugin::logic_delete::RbatisLogicDeletePlugin;
     use crate::rbatis::Rbatis;
     use crate::wrapper::Wrapper;
+    use crate::plugin::page::{Page, PageRequest};
 
     #[derive(Serialize, Deserialize, Clone, Debug)]
     pub struct BizActivity {
@@ -530,6 +543,21 @@ mod test {
             if r.is_err() {
                 println!("{}", r.err().unwrap().to_string());
             }
+        });
+    }
+
+    #[test]
+    pub fn test_fetch_page_by_wrapper(){
+        async_std::task::block_on(async {
+            fast_log::log::init_log("requests.log", &RuntimeType::Std);
+            let mut rb = Rbatis::new();
+            //设置 逻辑删除插件
+            rb.logic_plugin = Some(Box::new(RbatisLogicDeletePlugin::new("delete_flag")));
+            rb.link("mysql://root:123456@localhost:3306/test").await.unwrap();
+
+            let w = Wrapper::new(&rb.driver_type().unwrap()).check().unwrap();
+            let r: Page<BizActivity> = rb.fetch_page_by_wrapper(&w,&PageRequest::new(1, 20)).await.unwrap();
+            println!("{}",serde_json::to_string(&r).unwrap());
         });
     }
 }
