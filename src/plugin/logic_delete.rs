@@ -1,6 +1,3 @@
-//TODO delete_flag plugin
-
-
 use rbatis_core::db::DriverType;
 use serde_json::Value;
 use rbatis_core::Error;
