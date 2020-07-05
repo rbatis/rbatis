@@ -10,7 +10,7 @@
 ##### way not diesel,way not sqlx ? 为什么不选择diesel,sqlx之类的框架?
 | 框架    | 协程异步async高并发 | 使用难度 | 符合企业化规范（支持xml）| logic del逻辑删除插件| page分页插件
 | ------ | ------ |------ |------ |------ |------ |
-| rbatis | √     | easy简单              |   √     |    √     |   √     |  
+| rbatis | √     | easy简单(依赖json和反射)              |   √     |    √     |   √     |  
 | sqlx   | √     | hard难（依赖宏）       |   x     |   x     |   x     |  
 | diesel | x     | easy简单（缺少xml支持） |   x     |  x     |  x     |  
 
