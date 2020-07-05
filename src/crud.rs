@@ -277,7 +277,11 @@ impl CRUD for Rbatis<'_> {
         let mut where_sql = String::new();
         let mut sql = String::new();
         if self.logic_plugin.is_some() {
-            sql = format!("SELECT {} FROM {} WHERE {} = {} AND {}", fields, T::table_name(), self.logic_plugin.as_ref().unwrap().column(), self.logic_plugin.as_ref().unwrap().un_deleted(), w.sql.as_str());
+            let mut where_sql = w.sql.clone();
+            if !where_sql.is_empty() {
+                where_sql = " AND ".to_string() + where_sql.as_str();
+            }
+            sql = format!("SELECT {} FROM {} WHERE {} = {} {}", fields, T::table_name(), self.logic_plugin.as_ref().unwrap().column(), self.logic_plugin.as_ref().unwrap().un_deleted(), where_sql);
         } else {
             sql = format!("SELECT {} FROM {} WHERE {}", fields, T::table_name(), w.sql.as_str());
         }
@@ -290,15 +294,28 @@ impl CRUD for Rbatis<'_> {
     }
 
     async fn list_by_wrapper<T>(&self, w: &Wrapper) -> Result<Vec<T>> where T: CRUDEnable {
-        unimplemented!()
+        let fields = T::table_fields();
+        let mut where_sql = String::new();
+        let mut sql = String::new();
+        if self.logic_plugin.is_some() {
+            let mut where_sql = w.sql.clone();
+            if !where_sql.is_empty() {
+                where_sql = " AND ".to_string() + where_sql.as_str();
+            }
+            sql = format!("SELECT {} FROM {} WHERE {} = {} {}", fields, T::table_name(), self.logic_plugin.as_ref().unwrap().column(), self.logic_plugin.as_ref().unwrap().un_deleted(), where_sql);
+        } else {
+            sql = format!("SELECT {} FROM {} WHERE {}", fields, T::table_name(), w.sql.as_str());
+        }
+        return self.fetch_prepare("", sql.as_str(), &w.args).await;
     }
 
     async fn list<T>(&self) -> Result<Vec<T>> where T: CRUDEnable {
-        unimplemented!()
+        return self.list_by_wrapper(&Wrapper::new(&self.driver_type()?)).await;
     }
 
     async fn list_by_ids<T>(&self, ids: &[T::IdType]) -> Result<Vec<T>> where T: CRUDEnable {
-        unimplemented!()
+        let w=Wrapper::new(&self.driver_type()?).in_array("id",ids).check()?;
+        return self.list_by_wrapper(&w).await;
     }
 
     async fn fetch_page_by_wrapper<T>(&self, w: &Wrapper, page: &dyn IPageRequest) -> Result<Page<T>> where T: CRUDEnable {
