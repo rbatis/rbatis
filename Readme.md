@@ -19,12 +19,15 @@
 ##### 首先(Cargo.toml)添加项目依赖
 ``` rust
 # add this library,and cargo install
-#json
+
+#json支持
 serde = { version = "1.0", features = ["derive"] }
 serde_json = "1.0"
-#log
+
+#log日志支持
 log = "0.4"
 fast_log="1.0.2"
+
 #rbatis-core和rbatis 版本必须保持一致
 rbatis-core = { version = "1.2.2",  default-features = false , features = ["all","runtime-async-std"]}
 rbatis =  { version = "1.2.2" } 
