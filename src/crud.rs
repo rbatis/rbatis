@@ -15,7 +15,7 @@ use crate::utils::string_util::to_snake_name;
 use crate::wrapper::Wrapper;
 
 /// DB Table model trait
-pub trait CRUDEnable: Send + Sync + Serialize {
+pub trait CRUDEnable: Send + Sync + Serialize+DeserializeOwned {
     /// your table id type,for example:
     /// IdType = String
     /// IdType = i32
@@ -42,6 +42,30 @@ pub trait CRUDEnable: Send + Sync + Serialize {
         let names: Vec<&str> = name.split("::").collect();
         name = names.get(names.len() - 1).unwrap().to_string();
         return to_snake_name(&name);
+    }
+
+    /// get table fields string
+    ///
+    /// for Example:
+    ///   "create_time,delete_flag,h5_banner_img,h5_link,id,name,pc_banner_img,pc_link,remark,sort,status,version"
+    ///
+    /// you also can impl this method for static string
+    ///
+    #[inline]
+    fn table_fields() -> String {
+        let a: Self = serde_json::from_str("{}").unwrap();
+        let v = serde_json::to_value(&a).unwrap();
+        if !v.is_object() {
+            return " * ".to_string();
+        }
+        let m = v.as_object().unwrap();
+        let mut fields = String::new();
+        for (k, _) in m {
+            fields.push_str(k);
+            fields.push_str(",");
+        }
+        fields.pop();
+        return format!(" {} ", fields);
     }
 
     fn to_value(&self) -> Result<serde_json::Value> {
@@ -113,7 +137,7 @@ pub trait CRUD {
     async fn update_batch_by_id<T>(&self, ids: &[T]) -> Result<u64> where T: CRUDEnable;
 
 
-    async fn fetch_by_wrapper<T>(&self, w: &Wrapper) -> Result<T> where T: CRUDEnable;
+    async fn fetch_by_wrapper<T>(&self, w: &Wrapper) -> Result<T> where T: CRUDEnable+DeserializeOwned;
     async fn fetch_by_id<T>(&self, id: &T::IdType) -> Result<T> where T: CRUDEnable;
 
     ///fetch all record
@@ -248,7 +272,9 @@ impl CRUD for Rbatis<'_> {
         Ok(updates)
     }
 
-    async fn fetch_by_wrapper<T>(&self, w: &Wrapper) -> Result<T> where T: CRUDEnable {
+    async fn fetch_by_wrapper<T>(&self, w: &Wrapper) -> Result<T> where T: CRUDEnable+DeserializeOwned {
+        let fields=T::table_fields();
+        println!("fields:{}",fields);
         unimplemented!()
     }
 
@@ -280,6 +306,8 @@ fn make_where_sql(arg: &str) -> String {
 }
 
 
+
+
 mod test {
     use chrono::{DateTime, Utc};
     use fast_log::log::RuntimeType;
@@ -291,6 +319,7 @@ mod test {
     use crate::plugin::logic_delete::RbatisLogicDeletePlugin;
     use crate::rbatis::Rbatis;
     use crate::wrapper::Wrapper;
+    use rbatis_core::Error;
 
     #[derive(Serialize, Deserialize, Clone, Debug)]
     pub struct BizActivity {
@@ -462,5 +491,23 @@ mod test {
                 println!("{}", r.err().unwrap().to_string());
             }
         });
+    }
+
+    #[test]
+    pub fn test_fetch_by_wrapper(){
+        async_std::task::block_on(async {
+            fast_log::log::init_log("requests.log", &RuntimeType::Std);
+            let mut rb = Rbatis::new();
+            //设置 逻辑删除插件
+            rb.logic_plugin = Some(Box::new(RbatisLogicDeletePlugin::new("delete_flag")));
+            rb.link("mysql://root:123456@localhost:3306/test").await.unwrap();
+
+            let w = Wrapper::new(&rb.driver_type().unwrap()).eq("id", "12312").check().unwrap();
+            let r:Result<BizActivity,Error> = rb.fetch_by_wrapper(&w).await;
+            if r.is_err() {
+                println!("{}", r.err().unwrap().to_string());
+            }
+        });
+
     }
 }
