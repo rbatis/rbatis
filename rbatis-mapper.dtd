@@ -16,25 +16,25 @@
                limitations under the License.
 
         -->
-        <!ELEMENT mapper (resultMap*  | sql* | insert* | update* |updateTemplete* | delete* |deleteTemplete* | select* | selectTemplete* | insertTemplete* )+>
+        <!ELEMENT mapper (result_map*  | sql* | insert* | update* |updateTemplete* | delete* |deleteTemplete* | select* | selectTemplete* | insertTemplete* )+>
         <!ATTLIST mapper
                 >
 
-        <!ELEMENT resultMap (id*,result*)>
-        <!ATTLIST resultMap
+        <!ELEMENT result_map (id*,result*)>
+        <!ATTLIST result_map
                 id CDATA #REQUIRED
-                tables  #REQUIRED
+                table  #REQUIRED
                 >
 
         <!ELEMENT id EMPTY>
         <!ATTLIST id
-                langType CDATA #IMPLIED
+                lang_type CDATA #IMPLIED
                 column CDATA #IMPLIED
                 >
 
         <!ELEMENT result EMPTY>
         <!ATTLIST result
-                langType CDATA #IMPLIED
+                lang_type CDATA #IMPLIED
                 column CDATA #IMPLIED
                 version_enable CDATA #IMPLIED
                 logic_enable CDATA #IMPLIED
@@ -44,10 +44,10 @@
 
         <!ELEMENT arg EMPTY>
         <!ATTLIST arg
-                langType CDATA #IMPLIED
+                lang_type CDATA #IMPLIED
                 column CDATA #IMPLIED
                 select CDATA #IMPLIED
-                resultMap CDATA #IMPLIED
+                result_map CDATA #IMPLIED
                 name CDATA #IMPLIED
                 >
 
@@ -60,16 +60,16 @@
         <!ELEMENT select (#PCDATA | include | trim | where | set | foreach | choose | if | bind)*>
         <!ATTLIST select
                 id CDATA #REQUIRED
-                resultMap CDATA #IMPLIED
+                result_map CDATA #IMPLIED
                 lang CDATA #IMPLIED
                 >
 
         <!ELEMENT selectTemplete (#PCDATA | include | trim | where | set | foreach | choose | if | bind)*>
         <!ATTLIST selectTemplete
                 id CDATA #IMPLIED
-                resultMap (BaseResultMap) #IMPLIED
+                result_map (Baseresult_map) #IMPLIED
                 lang CDATA #IMPLIED
-                tables CDATA #IMPLIED
+                table CDATA #IMPLIED
                 columns CDATA #IMPLIED
                 wheres CDATA #IMPLIED
                 >
@@ -87,10 +87,10 @@
         <!ELEMENT insertTemplete (#PCDATA | include | trim | where | set | foreach | choose | if | bind)*>
         <!ATTLIST insertTemplete
                 id CDATA #IMPLIED
-                resultMap CDATA #IMPLIED
-                tables CDATA #IMPLIED
+                result_map CDATA #IMPLIED
+                table CDATA #IMPLIED
                 inserts CDATA #IMPLIED
-                resultMap (BaseResultMap) #IMPLIED
+                result_map (Baseresult_map) #IMPLIED
                 >
 
         <!ELEMENT update (#PCDATA | include | trim | where | set | foreach | choose | if | bind)*>
@@ -102,9 +102,9 @@
         <!ELEMENT updateTemplete (#PCDATA | include | trim | where | set | foreach | choose | if | bind)*>
         <!ATTLIST updateTemplete
                 id CDATA #IMPLIED
-                resultMap (BaseResultMap) #IMPLIED
+                result_map (Baseresult_map) #IMPLIED
                 lang CDATA #IMPLIED
-                tables CDATA #IMPLIED
+                table CDATA #IMPLIED
                 sets CDATA #IMPLIED
                 wheres CDATA #IMPLIED
                 >
@@ -120,9 +120,9 @@
                 id CDATA #IMPLIED
 
                 lang CDATA #IMPLIED
-                tables CDATA #IMPLIED
+                table CDATA #IMPLIED
                 wheres CDATA #IMPLIED
-                resultMap (BaseResultMap) #IMPLIED
+                result_map (Baseresult_map) #IMPLIED
                 >
         <!-- Dynamic -->
 
