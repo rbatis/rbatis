@@ -252,8 +252,7 @@ pub async fn test_hyper(){
 | SlowSqlCount(内置慢查询日志分析)                              | √     | 
 | async/await支持                                             | √     | 
 | PagePlugin(分页插件)                                         | √     |
-| LogicDelPlugin(逻辑删除插件)                                 | x     |
-| VersionLockPlugin(乐观锁插件,防止并发修改数据)                  | x     |
+| LogicDelPlugin(逻辑删除插件)                                 | √    |
 | DataBaseConvertPlugin(数据库表结构转换为配置插件)               | x     | 
 | web(可视化Web UI)                                            | x     |  
 
