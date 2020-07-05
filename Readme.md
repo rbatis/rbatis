@@ -5,6 +5,18 @@
 #### This crate uses #![forbid(unsafe_code)] to ensure everything is implemented in 100% Safe Rust.
 [![Build Status](https://travis-ci.org/zhuxiujia/rbatis.svg?branch=master)](https://travis-ci.org/zhuxiujia/rbatis)
 
+
+
+##### way not diesel,way not sqlx ? 为什么不选择diesel,sqlx之类的框架?
+| 框架    | 协程异步async高并发 | 使用难度 | 符合企业化规范（支持xml）
+| ------ | ------ |------ |------ |
+| rbatis | √     |   easy简单     |   √     |   
+| sqlx   | √     |   hard难（依赖宏）    |   x     |  
+| diesel | x     |   easy简单（缺少xml支持）     |   x     |  
+
+
+
+
 ![Image text](logo.png)
 
 * 使用最通用的json数据结构（基于serde_json）进行传参和通讯
