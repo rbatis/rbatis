@@ -26,6 +26,7 @@ use rbatis::crud::{CRUD, CRUDEnable};
 use rbatis::plugin::page::{IPageRequest, Page, PageRequest};
 use rbatis::rbatis::Rbatis;
 use rbatis_core::db::DBPool;
+use rbatis::wrapper::Wrapper;
 
 ///数据库表模型,支持BigDecimal ,DateTime ,rust基本类型（int,float,uint,string,Vec,Array）
 #[derive(Serialize, Deserialize, Clone, Debug)]
@@ -161,6 +162,19 @@ pub fn test_py_sql() {
     });
 }
 
+//示例-Rbatis语法分页
+#[test]
+pub fn test_sql_page() {
+    async_std::task::block_on(async move {
+        fast_log::log::init_log("requests.log", &RuntimeType::Std).unwrap();
+        let rb = Rbatis::new();
+        rb.link(MYSQL_URL).await.unwrap();
+        let wraper=Wrapper::new(&rb.driver_type().unwrap())
+        .eq("delete_flag",1).check().unwrap();
+        let data: Page<BizActivity> = rb.fetch_page_by_wrapper("", &wraper,  &PageRequest::new(1, 20)).await.unwrap();
+        println!("{}", serde_json::to_string(&data).unwrap());
+    });
+}
 
 //示例-Rbatis使用py风格的语法分页
 #[test]
@@ -178,7 +192,6 @@ pub fn test_py_sql_page() {
         println!("{}", serde_json::to_string(&data).unwrap());
     });
 }
-
 
 //示例-Rbatis使用传统XML风格的语法查询
 #[test]

@@ -89,6 +89,44 @@ let activity = Activity {
             .check().unwrap();
 ```
 
+##### 分页插件使用
+```rust
+        let rb = Rbatis::new();
+        rb.link(MYSQL_URL).await.unwrap();
+        let wraper=Wrapper::new(&rb.driver_type().unwrap()).eq("delete_flag",1).check().unwrap();
+        let data: Page<BizActivity> = rb.fetch_page_by_wrapper("", &wraper,  &PageRequest::new(1, 20)).await.unwrap();
+        println!("{}", serde_json::to_string(&data).unwrap());
+
+2020-07-10T21:28:40.036506700+08:00 INFO rbatis::rbatis - [rbatis] Query ==> SELECT count(1) FROM biz_activity  WHERE delete_flag =  ? LIMIT 0,20
+2020-07-10T21:28:40.040505200+08:00 INFO rbatis::rbatis - [rbatis] Args  ==> [1]
+2020-07-10T21:28:40.073506+08:00 INFO rbatis::rbatis - [rbatis] Total <== 1
+2020-07-10T21:28:40.073506+08:00 INFO rbatis::rbatis - [rbatis] Query ==> SELECT  create_time,delete_flag,h5_banner_img,h5_link,id,name,pc_banner_img,pc_link,remark,sort,status,version  FROM biz_activity  WHERE delete_flag =  ? LIMIT 0,20
+2020-07-10T21:28:40.073506+08:00 INFO rbatis::rbatis - [rbatis] Args  ==> [1]
+2020-07-10T21:28:40.076506500+08:00 INFO rbatis::rbatis - [rbatis] Total <== 5
+```
+```json
+{
+	"records": [{
+		"id": "12312",
+		"name": "null",
+		"pc_link": "null",
+		"h5_link": "null",
+		"pc_banner_img": "null",
+		"h5_banner_img": "null",
+		"sort": "null",
+		"status": 1,
+		"remark": "null",
+		"create_time": "2020-02-09T00:00:00+00:00",
+		"version": 1,
+		"delete_flag": 1
+	}],
+	"total": 5,
+	"size": 20,
+	"current": 1,
+	"serch_count": true
+}
+```
+
 
 ##### py风格sql语法Example
 ``` python

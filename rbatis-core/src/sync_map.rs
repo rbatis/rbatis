@@ -1,8 +1,6 @@
 use std::cell::{RefCell};
 use std::collections::HashMap;
 use crate::runtime::Mutex;
-use std::borrow::BorrowMut;
-
 
 /// sync map is safe for sync and send
 ///
@@ -32,14 +30,12 @@ impl<T> SyncMap<T> {
     /// put an value,this value will move lifetime into SyncMap
     pub async fn put(&self, key: &str, value: T) {
         let mut lock = self.cell.lock().await;
-        let mut b = lock.borrow_mut();
-        b.insert(key.to_string(), value);
+        lock.insert(key.to_string(), value);
     }
 
     /// pop value,lifetime will move to caller
     pub async fn pop(&self, key: &str) -> Option<T> {
         let mut lock = self.cell.lock().await;
-        let mut b = lock.borrow_mut();
-        return b.remove(key);
+        return lock.remove(key);
     }
 }
