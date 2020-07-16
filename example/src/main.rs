@@ -47,25 +47,7 @@ pub struct BizActivity {
 
 impl CRUDEnable for BizActivity {
     type IdType = String;
-
-    fn default() -> Self {
-        Self{
-            id: None,
-            name: None,
-            pc_link: None,
-            h5_link: None,
-            pc_banner_img: None,
-            h5_banner_img: None,
-            sort: None,
-            status: None,
-            remark: None,
-            create_time: None,
-            version: None,
-            delete_flag: None
-        }
-    }
 }
-
 
 
 //示例 mysql 链接地址
@@ -188,9 +170,9 @@ pub fn test_sql_page() {
         fast_log::log::init_log("requests.log", &RuntimeType::Std).unwrap();
         let rb = Rbatis::new();
         rb.link(MYSQL_URL).await.unwrap();
-        let wraper=Wrapper::new(&rb.driver_type().unwrap())
-        .eq("delete_flag",1).check().unwrap();
-        let data: Page<BizActivity> = rb.fetch_page_by_wrapper("", &wraper,  &PageRequest::new(1, 20)).await.unwrap();
+        let wraper = Wrapper::new(&rb.driver_type().unwrap())
+            .eq("delete_flag", 1).check().unwrap();
+        let data: Page<BizActivity> = rb.fetch_page_by_wrapper("", &wraper, &PageRequest::new(1, 20)).await.unwrap();
         println!("{}", serde_json::to_string(&data).unwrap());
     });
 }
