@@ -3,6 +3,7 @@ mod capabilities;
 mod field;
 mod status;
 mod r#type;
+mod quit;
 
 pub(crate) use auth_plugin::AuthPlugin;
 pub(crate) use capabilities::Capabilities;
@@ -16,6 +17,7 @@ mod com_stmt_execute;
 mod com_stmt_prepare;
 mod handshake;
 
+pub(crate) use quit::Quit;
 pub(crate) use com_ping::ComPing;
 pub(crate) use com_query::ComQuery;
 pub(crate) use com_stmt_execute::{ComStmtExecute, Cursor};
@@ -46,6 +48,7 @@ pub(crate) use row::Row;
 #[cfg_attr(not(feature = "tls"), allow(unused_imports, dead_code))]
 pub(crate) use ssl_request::SslRequest;
 
+
 pub(crate) trait Encode {
     fn encode(&self, buf: &mut Vec<u8>, capabilities: Capabilities);
 }
@@ -57,3 +60,4 @@ impl Encode for &'_ [u8] {
         buf.put_bytes(self);
     }
 }
+

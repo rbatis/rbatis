@@ -9,7 +9,7 @@ use sha1::Sha1;
 use crate::connection::{Connect, Connection};
 use crate::executor::Executor;
 use crate::mysql::protocol::{
-    AuthPlugin, AuthSwitch, Capabilities, ComPing, Handshake, HandshakeResponse,
+    AuthPlugin, AuthSwitch, Capabilities, ComPing, Handshake, HandshakeResponse, Quit
 };
 use crate::mysql::stream::MySqlStream;
 use crate::mysql::util::xor_eq;
@@ -250,8 +250,7 @@ async fn establish(stream: &mut MySqlStream, url: &Url) -> crate::Result<()> {
 }
 
 async fn close(mut stream: MySqlStream) -> crate::Result<()> {
-    // TODO: Actually tell MySQL that we're closing
-
+    stream.send(Quit,true).await?;
     stream.flush().await?;
     stream.shutdown()?;
 
