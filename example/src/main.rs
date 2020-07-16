@@ -47,7 +47,26 @@ pub struct BizActivity {
 
 impl CRUDEnable for BizActivity {
     type IdType = String;
+
+    fn default() -> Self {
+        Self{
+            id: None,
+            name: None,
+            pc_link: None,
+            h5_link: None,
+            pc_banner_img: None,
+            h5_banner_img: None,
+            sort: None,
+            status: None,
+            remark: None,
+            create_time: None,
+            version: None,
+            delete_flag: None
+        }
+    }
 }
+
+
 
 //示例 mysql 链接地址
 pub const MYSQL_URL: &'static str = "mysql://root:123456@localhost:3306/test";
