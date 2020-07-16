@@ -2,7 +2,7 @@ use async_trait::async_trait;
 use serde::de::DeserializeOwned;
 use serde::export::fmt::Display;
 use serde::Serialize;
-use serde_json::Value;
+use serde_json::{Value, Map};
 
 use rbatis_core::convert::StmtConvert;
 use rbatis_core::db::DriverType;
@@ -15,12 +15,17 @@ use crate::utils::string_util::to_snake_name;
 use crate::wrapper::Wrapper;
 
 /// DB Table model trait
-pub trait CRUDEnable: Send + Sync + Serialize + DeserializeOwned {
+pub trait CRUDEnable: Send + Sync + Serialize + DeserializeOwned{
     /// your table id type,for example:
     /// IdType = String
     /// IdType = i32
     ///
     type IdType: Send + Sync + DeserializeOwned + Serialize + Display;
+
+
+    /// impl default
+    fn default() -> Self;
+
 
     /// get table name,default is type name for snake name
     ///
@@ -68,16 +73,10 @@ pub trait CRUDEnable: Send + Sync + Serialize + DeserializeOwned {
         return format!(" {} ", fields);
     }
 
-    fn to_value(&self) -> Result<serde_json::Value> {
-        let json = serde_json::to_value(self).unwrap_or(serde_json::Value::Null);
-        if json.eq(&serde_json::Value::Null) {
-            return Err(Error::from("[rbaits] fields() fail!"));
-        }
-        return Ok(json);
-    }
 
-    fn to_value_map(&self) -> Result<serde_json::Map<String, Value>> {
-        let json = serde_json::to_value(self).unwrap_or(serde_json::Value::Null);
+
+    fn to_value_map(arg:&Self) -> Result<serde_json::Map<String, Value>> {
+        let json = serde_json::to_value(arg).unwrap_or(serde_json::Value::Null);
         if json.eq(&serde_json::Value::Null) {
             return Err(Error::from("[rbaits] to_value_map() fail!"));
         }
@@ -100,7 +99,7 @@ pub trait CRUDEnable: Send + Sync + Serialize + DeserializeOwned {
         return Ok(new_m);
     }
 
-    fn fields(&self, map: &serde_json::Map<String, Value>) -> Result<String> {
+    fn fields(map: &serde_json::Map<String, Value>) -> Result<String> {
         let mut sql = String::new();
         for (k, v) in map {
             sql = sql + k.as_str() + ",";
@@ -109,7 +108,7 @@ pub trait CRUDEnable: Send + Sync + Serialize + DeserializeOwned {
         return Ok(sql);
     }
 
-    fn values(&self, index: &mut usize, db_type: &DriverType, map: &serde_json::Map<String, serde_json::Value>) -> Result<(String, Vec<serde_json::Value>)> {
+    fn values(index: &mut usize, db_type: &DriverType, map: &serde_json::Map<String, serde_json::Value>) -> Result<(String, Vec<serde_json::Value>)> {
         let mut sql = String::new();
         let mut arr = vec![];
         for (k, v) in map {
@@ -121,6 +120,32 @@ pub trait CRUDEnable: Send + Sync + Serialize + DeserializeOwned {
         return Ok((sql, arr));
     }
 }
+
+
+// impl<T> CRUDEnable for Vec<T>
+//     where T: CRUDEnable {
+//     type IdType = T::IdType;
+//
+//     fn table_name() -> String {
+//         T::table_name()
+//     }
+//
+//     fn table_fields() -> String {
+//         T::table_fields()
+//     }
+//
+//     fn to_value_map(&self) -> Result<Map<String, Value>> {
+//         T::to_value_map(self)
+//     }
+//
+//     fn fields(&self, map: &Map<String, Value>) -> Result<String> {
+//         T::fields(self, map)
+//     }
+//
+//     fn values(&self, index: &mut usize, db_type: &DriverType, map: &Map<String, Value>) -> Result<(String, Vec<Value>)> {
+//         T::values(self, index, db_type, map)
+//     }
+// }
 
 
 #[async_trait]
@@ -153,10 +178,10 @@ impl CRUD for Rbatis<'_> {
     /// save one entity to database
     async fn save<T>(&self, tx_id: &str, entity: &T) -> Result<u64>
         where T: CRUDEnable {
-        let map = entity.to_value_map()?;
+        let map = T::to_value_map(entity)?;
         let mut index = 0;
-        let (values, args) = entity.values(&mut index, &self.driver_type()?, &map)?;
-        let sql = format!("INSERT INTO {} ({}) VALUES ({})", T::table_name(), entity.fields(&map)?, values);
+        let (values, args) = T::values(&mut index, &self.driver_type()?, &map)?;
+        let sql = format!("INSERT INTO {} ({}) VALUES ({})", T::table_name(), T::fields(&map)?, values);
         return self.exec_prepare(tx_id, sql.as_str(), &args).await;
     }
 
@@ -176,11 +201,11 @@ impl CRUD for Rbatis<'_> {
         let mut fields = "".to_string();
         let mut field_index = 0;
         for x in args {
-            let map = x.to_value_map()?;
+            let map = T::to_value_map(x)?;
             if fields.is_empty() {
-                fields = x.fields(&map)?;
+                fields = T::fields(&map)?;
             }
-            let (values, args) = x.values(&mut field_index, &self.driver_type()?, &map)?;
+            let (values, args) = T::values(&mut field_index, &self.driver_type()?, &map)?;
             value_arr = value_arr + format!("({}),", values).as_str();
             for x in args {
                 arg_arr.push(x);
@@ -227,7 +252,7 @@ impl CRUD for Rbatis<'_> {
 
     async fn update_by_wrapper<T>(&self, tx_id: &str, arg: &T, w: &Wrapper) -> Result<u64> where T: CRUDEnable {
         let mut args = vec![];
-        let map = arg.to_value_map()?;
+        let map = T::to_value_map(arg)?;
         let driver_type = &self.driver_type()?;
         let mut sets = String::new();
         for (k, v) in map {
@@ -254,7 +279,7 @@ impl CRUD for Rbatis<'_> {
     }
 
     async fn update_by_id<T>(&self, tx_id: &str, arg: &T) -> Result<u64> where T: CRUDEnable {
-        let args = arg.to_value_map()?;
+        let args = T::to_value_map(arg)?;
         let id_field = args.get("id");
         if id_field.is_none() {
             return Err(Error::from("[rbaits] arg not have \"id\" field! "));
@@ -360,6 +385,22 @@ mod test {
     /// 必须实现 CRUDEntity接口，如果表名 不正确，可以重写 fn table_name() -> String 方法！
     impl CRUDEnable for BizActivity {
         type IdType = String;
+        fn default() -> Self {
+            Self{
+                id: None,
+                name: None,
+                pc_link: None,
+                h5_link: None,
+                pc_banner_img: None,
+                h5_banner_img: None,
+                sort: None,
+                status: None,
+                remark: None,
+                create_time: None,
+                version: None,
+                delete_flag: None
+            }
+        }
     }
 
     #[test]
@@ -443,7 +484,7 @@ mod test {
             //设置 逻辑删除插件
             rb.logic_plugin = Some(Box::new(RbatisLogicDeletePlugin::new("delete_flag")));
             rb.link("mysql://root:123456@localhost:3306/test").await.unwrap();
-            let r = rb.remove_by_id::<BizActivity>("",&"1".to_string()).await;
+            let r = rb.remove_by_id::<BizActivity>("", &"1".to_string()).await;
             if r.is_err() {
                 println!("{}", r.err().unwrap().to_string());
             }
