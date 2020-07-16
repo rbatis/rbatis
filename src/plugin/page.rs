@@ -89,6 +89,8 @@ pub struct Page<T> {
     pub records: Vec<T>,
     ///total num
     pub total: u64,
+    ///pages
+    pub pages: u64,
     ///default 10
     pub size: u64,
     ///current index
@@ -183,6 +185,7 @@ impl<T> Page<T> {
         if current < 1 {
             return Self {
                 total,
+                pages: 0,
                 size,
                 current: 1 as u64,
                 records: vec![],
@@ -191,6 +194,7 @@ impl<T> Page<T> {
         }
         return Self {
             total,
+            pages: 0,
             size,
             current,
             records: vec![],
@@ -204,6 +208,7 @@ impl<T> Default for Page<T> {
         return Page {
             records: vec![],
             total: 0,
+            pages: 0,
             size: 10,
             current: 1,
             serch_count: true,

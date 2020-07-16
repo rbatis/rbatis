@@ -375,6 +375,7 @@ impl<'r> Rbatis<'r> {
         }
         let data: Vec<T> = self.fetch_prepare(tx_id, sql.as_str(), args).await?;
         page_result.set_records(data);
+        page_result.pages = page_result.get_pages();
         return Ok(page_result);
     }
 
