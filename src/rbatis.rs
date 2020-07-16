@@ -242,7 +242,7 @@ impl<'r> Rbatis<'r> {
                 self.context_tx.put(tx_id, conn).await;
                 return Err(e);
             }
-            let mut c = c.unwrap();
+            let mut c = c?;
             let json = c.fetch_json().await;
             if json.is_err() {
                 let e = json.err().unwrap();
