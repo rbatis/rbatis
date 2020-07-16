@@ -153,20 +153,6 @@ impl<S> DerefMut for BufStream<S> {
     }
 }
 
-// TODO: Find a nicer way to do this
-// Return `Ok(None)` immediately from a function if the wrapped value is `None`
-#[allow(unused)]
-macro_rules! ret_if_none {
-    ($val:expr) => {
-        match $val {
-            Some(val) => val,
-            None => {
-                return Ok(None);
-            }
-        }
-    };
-}
-
 impl<'a, S: AsyncWrite + Unpin> Future for GuardedFlush<'a, S> {
     type Output = io::Result<()>;
 
