@@ -44,6 +44,11 @@ pub struct Rbatis<'r> {
     pub logic_plugin: Option<Box<dyn LogicDelete>>,
 }
 
+impl<'r> Default for Rbatis<'r> {
+    fn default() -> Rbatis<'r> {
+        Rbatis::new()
+    }
+}
 
 impl<'r> Rbatis<'r> {
     pub fn new() -> Self {
