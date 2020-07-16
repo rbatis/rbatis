@@ -142,33 +142,6 @@ impl<T> CRUDEnable for Option<T> where T: CRUDEnable {
     }
 }
 
-//
-// impl<T> CRUDEnable for Vec<T>
-//     where T: CRUDEnable {
-//     type IdType = T::IdType;
-//
-//
-//     fn table_name() -> String {
-//         T::table_name()
-//     }
-//
-//     fn table_fields() -> String {
-//         T::table_fields()
-//     }
-//
-//     fn to_value_map<T>(arg: &T) -> Result<Map<String, Value>> {
-//         T::to_value_map::<T>(arg)
-//     }
-//
-//     fn fields(map: &Map<String, Value>) -> Result<String> {
-//         T::fields(map)
-//     }
-//
-//     fn values(index: &mut usize, db_type: &DriverType, map: &Map<String, Value>) -> Result<(String, Vec<Value>)> {
-//         T::values(index, db_type, map)
-//     }
-// }
-
 
 #[async_trait]
 pub trait CRUD {
