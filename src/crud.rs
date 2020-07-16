@@ -117,6 +117,31 @@ pub trait CRUDEnable: Send + Sync + Serialize + DeserializeOwned {
     }
 }
 
+
+impl<T> CRUDEnable for Option<T> where T: CRUDEnable {
+    type IdType = T::IdType;
+
+    fn table_name() -> String {
+        T::table_name()
+    }
+
+    fn table_fields() -> String {
+        T::table_fields()
+    }
+
+    fn to_value_map<C>(arg: &C) -> Result<Map<String, Value>> where C: CRUDEnable {
+        T::to_value_map(arg)
+    }
+
+    fn fields(map: &Map<String, Value>) -> Result<String> {
+        T::fields(map)
+    }
+
+    fn values(index: &mut usize, db_type: &DriverType, map: &Map<String, Value>) -> Result<(String, Vec<Value>)> {
+        T::values(index, db_type, map)
+    }
+}
+
 //
 // impl<T> CRUDEnable for Vec<T>
 //     where T: CRUDEnable {

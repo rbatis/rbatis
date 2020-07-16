@@ -185,13 +185,16 @@ pub fn test_fetch_by_wrapper() {
         //设置 逻辑删除插件
         rb.logic_plugin = Some(Box::new(RbatisLogicDeletePlugin::new("delete_flag")));
 
-        let w = Wrapper::new(&rb.driver_type().unwrap()).eq("id", "12312").check().unwrap();
-        let r: Result<BizActivity, Error> = rb.fetch_by_wrapper("", &w).await;
+        let w = Wrapper::new(&rb.driver_type().unwrap()).eq("id", "1").check().unwrap();
+        let r: Result<Option<BizActivity>, Error> = rb.fetch_by_wrapper("", &w).await;
+        println!("is_some:{:?}",r);
         if r.is_err() {
             println!("{}", r.err().unwrap().to_string());
         }
     });
 }
+
+
 
 #[test]
 pub fn test_fetch_page_by_wrapper() {
