@@ -202,8 +202,8 @@ impl<'r> Rbatis<'r> {
         return Ok(data);
     }
 
-    fn bind_arg<'a>(&self, sql: &'a str, arg: &Vec<serde_json::Value>) -> DBQuery<'a> {
-        let mut q: DBQuery = self.pool.get().unwrap().make_query(sql).unwrap();
+    fn bind_arg<'a>(&self, sql: &'a str, arg: &Vec<serde_json::Value>) -> Result<DBQuery<'a>, rbatis_core::Error> {
+        let mut q: DBQuery = self.get_pool()?.make_query(sql)?;
         for x in arg {
             match x {
                 serde_json::Value::String(s) => {
@@ -214,7 +214,7 @@ impl<'r> Rbatis<'r> {
                 }
             }
         }
-        return q;
+        return Ok(q);
     }
 
     /// fetch result(prepare sql)
@@ -226,15 +226,15 @@ impl<'r> Rbatis<'r> {
         let return_num;
         if tx_id.is_empty() {
             let mut conn = self.get_pool()?.acquire().await?;
-            let q: DBQuery = self.bind_arg(sql, arg);
+            let q: DBQuery = self.bind_arg(sql, arg)?;
             let mut c = conn.fetch_parperd(q)?;
             let json_array = c.fetch_json().await?;
             return_num = json_array.len();
             result = rbatis_core::decode::json_decode::<T>(json_array)?;
         } else {
+            let q: DBQuery = self.bind_arg(sql, arg)?;
             let mut conn = self.get_tx(tx_id).await?;
             //now conn use finish must be return to context
-            let q: DBQuery = self.bind_arg(sql, arg);
             let c = conn.fetch_parperd(q);
             if c.is_err() {
                 let e = c.err().unwrap();
@@ -266,12 +266,12 @@ impl<'r> Rbatis<'r> {
         info!("[rbatis] Args ==> {}", serde_json::to_string(arg).unwrap_or("".to_string()));
         let result;
         if tx_id.is_empty() {
+            let q: DBQuery = self.bind_arg(sql, arg)?;
             let mut conn = self.get_pool()?.acquire().await?;
-            let q: DBQuery = self.bind_arg(sql, arg);
             result = conn.execute_parperd(q).await;
         } else {
+            let q: DBQuery = self.bind_arg(sql, arg)?;
             let mut conn = self.get_tx(tx_id).await?;
-            let q: DBQuery = self.bind_arg(sql, arg);
             result = conn.execute_parperd(q).await;
             //send tx back to context
             self.context_tx.put(tx_id, conn).await;
