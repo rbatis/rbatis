@@ -15,16 +15,12 @@ use crate::utils::string_util::to_snake_name;
 use crate::wrapper::Wrapper;
 
 /// DB Table model trait
-pub trait CRUDEnable: Send + Sync + Serialize + DeserializeOwned{
+pub trait CRUDEnable: Send + Sync + Serialize + DeserializeOwned {
     /// your table id type,for example:
     /// IdType = String
     /// IdType = i32
     ///
     type IdType: Send + Sync + DeserializeOwned + Serialize + Display;
-
-
-    /// impl default
-    fn default() -> Self;
 
 
     /// get table name,default is type name for snake name
@@ -74,8 +70,8 @@ pub trait CRUDEnable: Send + Sync + Serialize + DeserializeOwned{
     }
 
 
-
-    fn to_value_map(arg:&Self) -> Result<serde_json::Map<String, Value>> {
+    fn to_value_map<C>(arg: &C) -> Result<serde_json::Map<String, Value>>
+        where C: CRUDEnable {
         let json = serde_json::to_value(arg).unwrap_or(serde_json::Value::Null);
         if json.eq(&serde_json::Value::Null) {
             return Err(Error::from("[rbaits] to_value_map() fail!"));
@@ -121,10 +117,11 @@ pub trait CRUDEnable: Send + Sync + Serialize + DeserializeOwned{
     }
 }
 
-
+//
 // impl<T> CRUDEnable for Vec<T>
 //     where T: CRUDEnable {
 //     type IdType = T::IdType;
+//
 //
 //     fn table_name() -> String {
 //         T::table_name()
@@ -134,16 +131,16 @@ pub trait CRUDEnable: Send + Sync + Serialize + DeserializeOwned{
 //         T::table_fields()
 //     }
 //
-//     fn to_value_map(&self) -> Result<Map<String, Value>> {
-//         T::to_value_map(self)
+//     fn to_value_map<T>(arg: &T) -> Result<Map<String, Value>> {
+//         T::to_value_map::<T>(arg)
 //     }
 //
-//     fn fields(&self, map: &Map<String, Value>) -> Result<String> {
-//         T::fields(self, map)
+//     fn fields(map: &Map<String, Value>) -> Result<String> {
+//         T::fields(map)
 //     }
 //
-//     fn values(&self, index: &mut usize, db_type: &DriverType, map: &Map<String, Value>) -> Result<(String, Vec<Value>)> {
-//         T::values(self, index, db_type, map)
+//     fn values(index: &mut usize, db_type: &DriverType, map: &Map<String, Value>) -> Result<(String, Vec<Value>)> {
+//         T::values(index, db_type, map)
 //     }
 // }
 
@@ -385,22 +382,6 @@ mod test {
     /// 必须实现 CRUDEntity接口，如果表名 不正确，可以重写 fn table_name() -> String 方法！
     impl CRUDEnable for BizActivity {
         type IdType = String;
-        fn default() -> Self {
-            Self{
-                id: None,
-                name: None,
-                pc_link: None,
-                h5_link: None,
-                pc_banner_img: None,
-                h5_banner_img: None,
-                sort: None,
-                status: None,
-                remark: None,
-                create_time: None,
-                version: None,
-                delete_flag: None
-            }
-        }
     }
 
     #[test]

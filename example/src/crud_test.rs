@@ -30,22 +30,6 @@ pub struct BizActivity {
 /// 必须实现 CRUDEntity接口，如果表名 不正确，可以重写 fn table_name() -> String 方法！
 impl CRUDEnable for BizActivity {
     type IdType = String;
-    fn default() -> Self {
-        Self {
-            id: None,
-            name: None,
-            pc_link: None,
-            h5_link: None,
-            pc_banner_img: None,
-            h5_banner_img: None,
-            sort: None,
-            status: None,
-            remark: None,
-            create_time: None,
-            version: None,
-            delete_flag: None,
-        }
-    }
 }
 
 pub async fn init_rbatis() -> Rbatis<'static> {
