@@ -207,10 +207,13 @@ impl<'r> Rbatis<'r> {
         for x in arg {
             match x {
                 serde_json::Value::String(s) => {
-                    q.bind(s);
+                    q.bind(Some(s));
+                }
+                serde_json::Value::Null => {
+                    q.bind(None);
                 }
                 _ => {
-                    q.bind(x.to_string().as_str());
+                    q.bind(Some(x.to_string().as_str()));
                 }
             }
         }
