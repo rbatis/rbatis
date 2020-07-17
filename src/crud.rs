@@ -70,7 +70,7 @@ pub trait CRUDEnable: Send + Sync + Serialize + DeserializeOwned {
     }
 
 
-    fn to_value_map<C>(arg: &C) -> Result<serde_json::Map<String, Value>>
+    fn to_value_map<C>(db_type: &DriverType, arg: &C) -> Result<serde_json::Map<String, Value>>
         where C: CRUDEnable {
         let json = serde_json::to_value(arg).unwrap_or(serde_json::Value::Null);
         if json.eq(&serde_json::Value::Null) {
@@ -82,7 +82,7 @@ pub trait CRUDEnable: Send + Sync + Serialize + DeserializeOwned {
         let m = json.as_object().unwrap().to_owned();
         let mut new_m = m.clone();
         for (k, v) in &m {
-            if (k.contains("time") || k.contains("date")) && v.is_string() && k.contains(":") && k.contains("-") {
+            if (k.contains("time") || k.contains("date")) && v.is_string() {
                 let vs = v.as_str().unwrap();
                 if vs.len() < 19 {
                     continue;
@@ -104,12 +104,28 @@ pub trait CRUDEnable: Send + Sync + Serialize + DeserializeOwned {
         return Ok(sql);
     }
 
+    ///return (sql,args)
     fn values(index: &mut usize, db_type: &DriverType, map: &serde_json::Map<String, serde_json::Value>) -> Result<(String, Vec<serde_json::Value>)> {
         let mut sql = String::new();
         let mut arr = vec![];
         for (k, v) in map {
-            sql = sql + db_type.stmt_convert(*index).as_str() + ",";
-            arr.push(v.to_owned());
+            //TODO this code move to local sql package
+            match db_type {
+                DriverType::Postgres => {
+                    if (k.contains("time") || k.contains("date")) && v.is_string() {
+                        //is date
+                        sql = sql + format!("cast({} as timestamp)", db_type.stmt_convert(*index).as_str()).as_str() + ",";
+                        arr.push(v.to_owned());
+                    } else {
+                        sql = sql + db_type.stmt_convert(*index).as_str() + ",";
+                        arr.push(v.to_owned());
+                    }
+                }
+                _ => {
+                    sql = sql + db_type.stmt_convert(*index).as_str() + ",";
+                    arr.push(v.to_owned());
+                }
+            }
             *index += 1;
         }
         sql = sql.trim_end_matches(",").to_string();
@@ -129,8 +145,8 @@ impl<T> CRUDEnable for Option<T> where T: CRUDEnable {
         T::table_fields()
     }
 
-    fn to_value_map<C>(arg: &C) -> Result<Map<String, Value>> where C: CRUDEnable {
-        T::to_value_map(arg)
+    fn to_value_map<C>(db_type: &DriverType, arg: &C) -> Result<Map<String, Value>> where C: CRUDEnable {
+        T::to_value_map(db_type, arg)
     }
 
     fn fields(map: &Map<String, Value>) -> Result<String> {
@@ -173,7 +189,7 @@ impl CRUD for Rbatis<'_> {
     /// save one entity to database
     async fn save<T>(&self, tx_id: &str, entity: &T) -> Result<u64>
         where T: CRUDEnable {
-        let map = T::to_value_map(entity)?;
+        let map = T::to_value_map(&self.driver_type()?, entity)?;
         let mut index = 0;
         let (values, args) = T::values(&mut index, &self.driver_type()?, &map)?;
         let sql = format!("INSERT INTO {} ({}) VALUES ({})", T::table_name(), T::fields(&map)?, values);
@@ -196,7 +212,7 @@ impl CRUD for Rbatis<'_> {
         let mut fields = "".to_string();
         let mut field_index = 0;
         for x in args {
-            let map = T::to_value_map(x)?;
+            let map = T::to_value_map(&self.driver_type()?, x)?;
             if fields.is_empty() {
                 fields = T::fields(&map)?;
             }
@@ -247,7 +263,7 @@ impl CRUD for Rbatis<'_> {
 
     async fn update_by_wrapper<T>(&self, tx_id: &str, arg: &T, w: &Wrapper) -> Result<u64> where T: CRUDEnable {
         let mut args = vec![];
-        let map = T::to_value_map(arg)?;
+        let map = T::to_value_map(&self.driver_type()?, arg)?;
         let driver_type = &self.driver_type()?;
         let mut sets = String::new();
         for (k, v) in map {
@@ -274,7 +290,7 @@ impl CRUD for Rbatis<'_> {
     }
 
     async fn update_by_id<T>(&self, tx_id: &str, arg: &T) -> Result<u64> where T: CRUDEnable {
-        let args = T::to_value_map(arg)?;
+        let args = T::to_value_map(&self.driver_type()?, arg)?;
         let id_field = args.get("id");
         if id_field.is_none() {
             return Err(Error::from("[rbaits] arg not have \"id\" field! "));
