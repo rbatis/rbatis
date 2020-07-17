@@ -199,7 +199,7 @@ pub struct DBQuery<'q> {
 }
 
 impl<'q> DBQuery<'q> {
-    pub fn bind(&mut self, t: &str) -> crate::Result<()> {
+    pub fn bind(&mut self, t: Option<&str>) -> crate::Result<()> {
         match &self.driver_type {
             &DriverType::None => {
                 return Err(Error::from("un init DBPool!"));

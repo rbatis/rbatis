@@ -45,12 +45,12 @@ pub fn test_save() {
         let rb = init_rbatis().await;
         let activity = BizActivity {
             id: Some("12312".to_string()),
-            name: None,
+            name: Some("123".to_string()),
             pc_link: None,
             h5_link: None,
             pc_banner_img: None,
             h5_banner_img: None,
-            sort: None,
+            sort: Some("1".to_string()),
             status: Some(1),
             remark: None,
             create_time: Some("2020-02-09 00:00:00".to_string()),
