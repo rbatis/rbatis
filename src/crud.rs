@@ -83,7 +83,11 @@ pub trait CRUDEnable: Send + Sync + Serialize + DeserializeOwned {
         let mut new_m = m.clone();
         for (k, v) in &m {
             if (k.contains("time") || k.contains("date")) && v.is_string() && k.contains(":") && k.contains("-") {
-                let mut new_v = v.as_str().unwrap().to_string()[0..19].to_string();
+                let vs = v.as_str().unwrap();
+                if vs.len() < 19 {
+                    continue;
+                }
+                let mut new_v = vs.to_string()[0..19].to_string();
                 new_v = new_v.replace("T", " ");
                 new_m.insert(k.to_string(), serde_json::Value::String(new_v));
             }
