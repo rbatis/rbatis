@@ -11,7 +11,7 @@ use rbatis_core::Result;
 
 use crate::plugin::page::{IPageRequest, Page};
 use crate::rbatis::Rbatis;
-use crate::utils::string_util::to_snake_name;
+use crate::utils::string_util::{to_snake_name};
 use crate::wrapper::Wrapper;
 
 /// DB Table model trait
@@ -82,13 +82,9 @@ pub trait CRUDEnable: Send + Sync + Serialize + DeserializeOwned {
         let m = json.as_object().unwrap().to_owned();
         let mut new_m = m.clone();
         for (k, v) in &m {
-            if (k.contains("time") || k.contains("date")) && v.is_string() {
-                let mut new_v = v.as_str().unwrap().to_string();
+            if (k.contains("time") || k.contains("date")) && v.is_string() && k.contains(":") && k.contains("-") {
+                let mut new_v = v.as_str().unwrap().to_string()[0..19].to_string();
                 new_v = new_v.replace("T", " ");
-                let new_vs: Vec<&str> = new_v.split("+").collect();
-                if new_vs.len() > 1 {
-                    new_v = new_vs.get(0).unwrap().to_string();
-                }
                 new_m.insert(k.to_string(), serde_json::Value::String(new_v));
             }
         }
