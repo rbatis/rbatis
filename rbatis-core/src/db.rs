@@ -10,7 +10,7 @@ use crate::cursor::Cursor;
 use serde::de::DeserializeOwned;
 use serde::{Deserialize, Serialize};
 
-#[derive(Serialize, Deserialize, Debug, Clone,Copy,Eq, PartialEq)]
+#[derive(Serialize, Deserialize, Debug, Clone, Copy, Eq, PartialEq)]
 pub enum DriverType {
     None = 0,
     Mysql = 1,
@@ -199,24 +199,81 @@ pub struct DBQuery<'q> {
 }
 
 impl<'q> DBQuery<'q> {
-    pub fn bind(&mut self, t: Option<&str>) -> crate::Result<()> {
+    pub fn bind_value(&mut self, t: &serde_json::Value) -> crate::Result<()> {
         match &self.driver_type {
             &DriverType::None => {
                 return Err(Error::from("un init DBPool!"));
             }
             &DriverType::Mysql => {
                 let mut q = self.mysql.take().unwrap();
-                q = q.bind(t);
+                match t {
+                    serde_json::Value::String(s) => {
+                        q = q.bind(Some(s));
+                    }
+                    serde_json::Value::Null => {
+                        q = q.bind(Option::<String>::None);
+                    }
+                    serde_json::Value::Number(n) => {
+                        if n.is_f64() {
+                            q = q.bind(n.as_f64().unwrap());
+                        } else if n.is_u64() {
+                            q = q.bind(n.as_f64().unwrap());
+                        } else if n.is_i64() {
+                            q = q.bind(n.as_i64().unwrap());
+                        }
+                    }
+                    _ => {
+                        q = q.bind(Some(t.to_string().as_str()));
+                    }
+                }
                 self.mysql = Some(q);
             }
             &DriverType::Postgres => {
                 let mut q = self.postgres.take().unwrap();
-                q = q.bind(t);
+                match t {
+                    serde_json::Value::String(s) => {
+                        q = q.bind(Some(s));
+                    }
+                    serde_json::Value::Null => {
+                        q = q.bind(Option::<String>::None);
+                    }
+                    serde_json::Value::Number(n) => {
+                        if n.is_f64() {
+                            q = q.bind(n.as_f64().unwrap());
+                        } else if n.is_u64() {
+                            q = q.bind(n.as_f64().unwrap());
+                        } else if n.is_i64() {
+                            q = q.bind(n.as_i64().unwrap());
+                        }
+                    }
+                    _ => {
+                        q = q.bind(Some(t.to_string().as_str()));
+                    }
+                }
                 self.postgres = Some(q);
             }
             &DriverType::Sqlite => {
                 let mut q = self.sqlite.take().unwrap();
-                q = q.bind(t);
+                match t {
+                    serde_json::Value::String(s) => {
+                        q = q.bind(Some(s));
+                    }
+                    serde_json::Value::Null => {
+                        q = q.bind(Option::<String>::None);
+                    }
+                    serde_json::Value::Number(n) => {
+                        if n.is_f64() {
+                            q = q.bind(n.as_f64().unwrap());
+                        } else if n.is_u64() {
+                            q = q.bind(n.as_f64().unwrap());
+                        } else if n.is_i64() {
+                            q = q.bind(n.as_i64().unwrap());
+                        }
+                    }
+                    _ => {
+                        q = q.bind(Some(t.to_string().as_str()));
+                    }
+                }
                 self.sqlite = Some(q);
             }
         }
@@ -234,7 +291,7 @@ pub struct DBPoolConn {
 
 
 impl DBPoolConn {
-    pub fn fetch<'q>(&mut self,sql:&'q str) -> crate::Result<DBCursor<'_, 'q>> {
+    pub fn fetch<'q>(&mut self, sql: &'q str) -> crate::Result<DBCursor<'_, 'q>> {
         match &self.driver_type {
             &DriverType::None => {
                 return Err(Error::from("un init DBPool!"));
@@ -269,7 +326,7 @@ impl DBPoolConn {
         }
     }
 
-    pub async fn execute(&mut self,sql:&str) -> crate::Result<u64> {
+    pub async fn execute(&mut self, sql: &str) -> crate::Result<u64> {
         match &self.driver_type {
             &DriverType::None => {
                 return Err(Error::from("un init DBPool!"));
@@ -289,7 +346,7 @@ impl DBPoolConn {
         }
     }
 
-    pub fn fetch_parperd<'q>(&mut self,sql:DBQuery<'q>) -> crate::Result<DBCursor<'_, 'q>> {
+    pub fn fetch_parperd<'q>(&mut self, sql: DBQuery<'q>) -> crate::Result<DBCursor<'_, 'q>> {
         match &self.driver_type {
             &DriverType::None => {
                 return Err(Error::from("un init DBPool!"));
@@ -324,7 +381,7 @@ impl DBPoolConn {
         }
     }
 
-    pub async fn execute_parperd(&mut self,sql:DBQuery<'_>) -> crate::Result<u64> {
+    pub async fn execute_parperd(&mut self, sql: DBQuery<'_>) -> crate::Result<u64> {
         match &self.driver_type {
             &DriverType::None => {
                 return Err(Error::from("un init DBPool!"));
@@ -353,8 +410,7 @@ pub struct DBCursor<'c, 'q> {
     pub sqlite: Option<SqliteCursor<'c, 'q>>,
 }
 
-impl <'c, 'q>DBCursor<'c, 'q> {
-
+impl<'c, 'q> DBCursor<'c, 'q> {
     /// fetch json and decode json into Type
     pub async fn decode_json<T>(&mut self) -> Result<T, crate::Error>
         where T: DeserializeOwned {
@@ -378,7 +434,7 @@ impl <'c, 'q>DBCursor<'c, 'q> {
     }
 
     /// only fetch json
-    pub async fn fetch_json(&mut self) -> Result<Vec<serde_json::Value>, crate::Error>{
+    pub async fn fetch_json(&mut self) -> Result<Vec<serde_json::Value>, crate::Error> {
         match &self.driver_type {
             &DriverType::None => {
                 return Err(Error::from("un init DBPool!"));
@@ -479,10 +535,8 @@ impl DBTx {
     }
 
 
-
-
     ///TODO find better way reduce the same code
-    pub fn fetch<'q>(&mut self,sql:&'q str) -> crate::Result<DBCursor<'_, 'q>> {
+    pub fn fetch<'q>(&mut self, sql: &'q str) -> crate::Result<DBCursor<'_, 'q>> {
         match &self.driver_type {
             &DriverType::None => {
                 return Err(Error::from("un init DBPool!"));
@@ -517,7 +571,7 @@ impl DBTx {
         }
     }
 
-    pub async fn execute(&mut self,sql:&str) -> crate::Result<u64> {
+    pub async fn execute(&mut self, sql: &str) -> crate::Result<u64> {
         match &self.driver_type {
             &DriverType::None => {
                 return Err(Error::from("un init DBPool!"));
@@ -537,7 +591,7 @@ impl DBTx {
         }
     }
 
-    pub fn fetch_parperd<'q>(&mut self,sql:DBQuery<'q>) -> crate::Result<DBCursor<'_, 'q>> {
+    pub fn fetch_parperd<'q>(&mut self, sql: DBQuery<'q>) -> crate::Result<DBCursor<'_, 'q>> {
         match &self.driver_type {
             &DriverType::None => {
                 return Err(Error::from("un init DBPool!"));
@@ -572,7 +626,7 @@ impl DBTx {
         }
     }
 
-    pub async fn execute_parperd(&mut self,sql:DBQuery<'_>) -> crate::Result<u64> {
+    pub async fn execute_parperd(&mut self, sql: DBQuery<'_>) -> crate::Result<u64> {
         match &self.driver_type {
             &DriverType::None => {
                 return Err(Error::from("un init DBPool!"));
@@ -591,5 +645,4 @@ impl DBTx {
             }
         }
     }
-
 }

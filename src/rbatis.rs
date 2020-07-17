@@ -205,17 +205,7 @@ impl<'r> Rbatis<'r> {
     fn bind_arg<'a>(&self, sql: &'a str, arg: &Vec<serde_json::Value>) -> Result<DBQuery<'a>, rbatis_core::Error> {
         let mut q: DBQuery = self.get_pool()?.make_query(sql)?;
         for x in arg {
-            match x {
-                serde_json::Value::String(s) => {
-                    q.bind(Some(s));
-                }
-                serde_json::Value::Null => {
-                    q.bind(None);
-                }
-                _ => {
-                    q.bind(Some(x.to_string().as_str()));
-                }
-            }
+            q.bind_value(x);
         }
         return Ok(q);
     }
