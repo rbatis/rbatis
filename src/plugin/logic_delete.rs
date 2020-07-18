@@ -1,5 +1,6 @@
-use rbatis_core::db::DriverType;
 use serde_json::Value;
+
+use rbatis_core::db::DriverType;
 use rbatis_core::Error;
 
 /// Logic Delete Plugin trait
@@ -19,10 +20,10 @@ pub struct RbatisLogicDeletePlugin {
     pub column: String
 }
 
-impl RbatisLogicDeletePlugin{
-    pub fn new(column:&str)->Self{
-        Self{
-            column:column.to_string()
+impl RbatisLogicDeletePlugin {
+    pub fn new(column: &str) -> Self {
+        Self {
+            column: column.to_string()
         }
     }
 }

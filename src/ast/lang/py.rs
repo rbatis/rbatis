@@ -6,6 +6,8 @@ use std::sync::{Mutex, RwLock};
 use serde_json::json;
 use serde_json::Value;
 
+use rbatis_core::db::DriverType;
+
 use crate::ast::ast::RbatisAST;
 use crate::ast::node::bind_node::BindNode;
 use crate::ast::node::choose_node::ChooseNode;
@@ -21,7 +23,6 @@ use crate::ast::node::where_node::WhereNode;
 use crate::engine::parser::parser;
 use crate::engine::runtime::RbatisEngine;
 use crate::utils::bencher::Bencher;
-use rbatis_core::db::DriverType;
 
 lazy_static! {
   static ref PY_PARSER_MAP: RwLock<HashMap<String,Vec<NodeType>>> = RwLock::new(HashMap::new());

@@ -66,8 +66,8 @@ fn do_replace_include_node(arg: &mut HashMap<String, NodeType>) {
             continue;
         }
         let childs = childs.take().unwrap();
-        let mut include_nodes =Vec::new();
-        loop_find_include_node(childs,&mut include_nodes);
+        let mut include_nodes = Vec::new();
+        loop_find_include_node(childs, &mut include_nodes);
         if include_nodes.is_empty() {
             continue;
         }

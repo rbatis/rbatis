@@ -2,6 +2,9 @@ use std::collections::HashMap;
 
 use serde_json::{json, Value};
 
+use rbatis_core::convert::StmtConvert;
+use rbatis_core::db::DriverType;
+
 use crate::ast::ast::RbatisAST;
 use crate::ast::node::bind_node::BindNode;
 use crate::ast::node::choose_node::ChooseNode;
@@ -22,12 +25,10 @@ use crate::ast::node::trim_node::TrimNode;
 use crate::ast::node::update_node::UpdateNode;
 use crate::ast::node::when_node::WhenNode;
 use crate::ast::node::where_node::WhereNode;
-use rbatis_core::convert::StmtConvert;
 use crate::engine::runtime::RbatisEngine;
 use crate::utils::xml_loader::Element;
 
 use super::node_type::NodeType;
-use rbatis_core::db::DriverType;
 
 pub trait SqlNodePrint {
     fn print(&self, deep: i32) -> String;

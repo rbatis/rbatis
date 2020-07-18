@@ -1,5 +1,7 @@
 use serde_json::{json, Value};
 
+use rbatis_core::convert::StmtConvert;
+
 use crate::ast::ast::RbatisAST;
 use crate::ast::node::bind_node::BindNode;
 use crate::ast::node::choose_node::ChooseNode;
@@ -15,15 +17,14 @@ use crate::ast::node::result_map_node::ResultMapNode;
 use crate::ast::node::result_map_result_node::ResultMapResultNode;
 use crate::ast::node::select_node::SelectNode;
 use crate::ast::node::set_node::SetNode;
+use crate::ast::node::sql_node::SqlNode;
 use crate::ast::node::string_node::StringNode;
 use crate::ast::node::trim_node::TrimNode;
 use crate::ast::node::update_node::UpdateNode;
 use crate::ast::node::when_node::WhenNode;
 use crate::ast::node::where_node::WhereNode;
-use rbatis_core::convert::StmtConvert;
 use crate::engine::node::Node;
 use crate::engine::runtime::RbatisEngine;
-use crate::ast::node::sql_node::SqlNode;
 
 #[derive(Clone, Debug)]
 pub enum NodeType {
@@ -68,7 +69,7 @@ impl NodeType {
         return Option::None;
     }
 
-    pub fn childs(&self) ->Option<&Vec<NodeType>> {
+    pub fn childs(&self) -> Option<&Vec<NodeType>> {
         match self {
             NodeType::NResultMapIdNode(node) => return None,
             NodeType::NResultMapResultNode(node) => return None,
@@ -81,8 +82,8 @@ impl NodeType {
 
             NodeType::Null => return None,
             NodeType::NString(node) => return None,
-            NodeType::NIf(node) =>  return Some(&node.childs),
-            NodeType::NTrim(node) =>return Some(&node.childs),
+            NodeType::NIf(node) => return Some(&node.childs),
+            NodeType::NTrim(node) => return Some(&node.childs),
             NodeType::NForEach(node) => return Some(&node.childs),
             NodeType::NChoose(node) => return None,
             NodeType::NOtherwise(node) => return Some(&node.childs),
@@ -94,7 +95,7 @@ impl NodeType {
             NodeType::NSqlNode(node) => return Some(&node.childs),
         }
     }
-    pub fn childs_mut(&mut self) ->Option<&mut Vec<NodeType>> {
+    pub fn childs_mut(&mut self) -> Option<&mut Vec<NodeType>> {
         match self {
             NodeType::NResultMapIdNode(node) => return None,
             NodeType::NResultMapResultNode(node) => return None,
@@ -107,8 +108,8 @@ impl NodeType {
 
             NodeType::Null => return None,
             NodeType::NString(node) => return None,
-            NodeType::NIf(node) =>  return Some(&mut node.childs),
-            NodeType::NTrim(node) =>return Some(&mut node.childs),
+            NodeType::NIf(node) => return Some(&mut node.childs),
+            NodeType::NTrim(node) => return Some(&mut node.childs),
             NodeType::NForEach(node) => return Some(&mut node.childs),
             NodeType::NChoose(node) => return None,
             NodeType::NOtherwise(node) => return Some(&mut node.childs),
@@ -178,7 +179,7 @@ impl SqlNodePrint for NodeType {
             NodeType::NSet(node) => return node.print(deep),
             NodeType::NWhere(node) => return node.print(deep),
 
-            NodeType::NSqlNode(node) => return  node.print(deep),
+            NodeType::NSqlNode(node) => return node.print(deep),
         }
     }
 }
