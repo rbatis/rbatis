@@ -1,7 +1,9 @@
 use serde_json::Value;
+
 use rbatis_core::convert::StmtConvert;
 use rbatis_core::db::DriverType;
-use crate::sql::{Date};
+
+use crate::sql::Date;
 
 impl Date for DriverType {
     fn date_convert(&self, value: &Value, index: usize) -> rbatis_core::Result<(String, Value)> {
@@ -19,6 +21,4 @@ impl Date for DriverType {
 }
 
 #[test]
-pub fn test_date() {
-
-}
+pub fn test_date() {}
