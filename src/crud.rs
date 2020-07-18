@@ -2,7 +2,7 @@ use async_trait::async_trait;
 use serde::de::DeserializeOwned;
 use serde::export::fmt::Display;
 use serde::Serialize;
-use serde_json::{Value, Map};
+use serde_json::{Map, Value};
 
 use rbatis_core::convert::StmtConvert;
 use rbatis_core::db::DriverType;
@@ -11,7 +11,8 @@ use rbatis_core::Result;
 
 use crate::plugin::page::{IPageRequest, Page};
 use crate::rbatis::Rbatis;
-use crate::utils::string_util::{to_snake_name};
+use crate::sql::Date;
+use crate::utils::string_util::to_snake_name;
 use crate::wrapper::Wrapper;
 
 /// DB Table model trait
@@ -109,26 +110,18 @@ pub trait CRUDEnable: Send + Sync + Serialize + DeserializeOwned {
         let mut sql = String::new();
         let mut arr = vec![];
         for (k, v) in map {
-            //TODO this code move to local sql package
-            match db_type {
-                DriverType::Postgres => {
-                    if (k.contains("time") || k.contains("date")) && v.is_string() {
-                        //is date
-                        sql = sql + format!("cast({} as timestamp)", db_type.stmt_convert(*index).as_str()).as_str() + ",";
-                        arr.push(v.to_owned());
-                    } else {
-                        sql = sql + db_type.stmt_convert(*index).as_str() + ",";
-                        arr.push(v.to_owned());
-                    }
-                }
-                _ => {
-                    sql = sql + db_type.stmt_convert(*index).as_str() + ",";
-                    arr.push(v.to_owned());
-                }
+            //date convert
+            if (k.contains("time") || k.contains("date")) && v.is_string() {
+                let (new_sql, new_value) = db_type.date_convert(v, *index)?;
+                sql = sql + new_sql.as_str() + ",";
+                arr.push(new_value);
+            } else {
+                sql = sql + db_type.stmt_convert(*index).as_str() + ",";
+                arr.push(v.to_owned());
             }
             *index += 1;
         }
-        sql = sql.trim_end_matches(",").to_string();
+        sql.pop();//remove ','
         return Ok((sql, arr));
     }
 }
