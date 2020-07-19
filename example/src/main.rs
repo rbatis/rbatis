@@ -8,8 +8,6 @@
 #[macro_use]
 extern crate lazy_static;
 
-mod crud_test;
-
 use std::convert::Infallible;
 use std::sync::Mutex;
 use std::thread::sleep;
@@ -25,8 +23,10 @@ use tide::Request;
 use rbatis::crud::{CRUD, CRUDEnable};
 use rbatis::plugin::page::{IPageRequest, Page, PageRequest};
 use rbatis::rbatis::Rbatis;
-use rbatis_core::db::DBPool;
 use rbatis::wrapper::Wrapper;
+use rbatis_core::db::DBPool;
+
+mod crud_test;
 
 ///数据库表模型,支持BigDecimal ,DateTime ,rust基本类型（int,float,uint,string,Vec,Array）
 #[derive(Serialize, Deserialize, Clone, Debug)]
@@ -62,15 +62,6 @@ lazy_static! {
          });
          return r;
   };
-}
-
-//Tokio运行时(可选)
-lazy_static! {
- static ref RT:Mutex<tokio::runtime::Runtime> = Mutex::new(tokio::runtime::Builder::new()
-        .basic_scheduler()
-        .enable_all()
-        .build()
-        .unwrap());
 }
 
 
@@ -281,17 +272,22 @@ async fn hello(_: hyper::Request<hyper::Body>) -> Result<hyper::Response<hyper::
 }
 
 // 示例-Rbatis使用web框架hyper/Tokio
+#[tokio::main]
 #[test]
-pub fn test_hyper() {
-    RT.lock().unwrap().block_on(async {
-        RB.link(MYSQL_URL).await.unwrap();
-        fast_log::log::init_log("requests.log", &RuntimeType::Std).unwrap();
-        let make_svc = hyper::service::make_service_fn(|_conn| {
-            async { Ok::<_, Infallible>(hyper::service::service_fn(hello)) }
-        });
-        let addr = ([0, 0, 0, 0], 8000).into();
-        let server = hyper::Server::bind(&addr).serve(make_svc);
-        println!("Listening on http://{}", addr);
-        server.await.unwrap();
+pub async fn test_hyper() {
+    // 实例化 运行时
+    // let RT:Mutex<tokio::runtime::Runtime> = Mutex::new(tokio::runtime::Builder::new()
+    //     .basic_scheduler()
+    //     .enable_all()
+    //     .build()
+    //     .unwrap());
+    RB.link(MYSQL_URL).await.unwrap();
+    fast_log::log::init_log("requests.log", &RuntimeType::Std).unwrap();
+    let make_svc = hyper::service::make_service_fn(|_conn| {
+        async { Ok::<_, Infallible>(hyper::service::service_fn(hello)) }
     });
+    let addr = ([0, 0, 0, 0], 8000).into();
+    let server = hyper::Server::bind(&addr).serve(make_svc);
+    println!("Listening on http://{}", addr);
+    server.await.unwrap();
 }
