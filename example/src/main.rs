@@ -281,8 +281,8 @@ pub async fn test_hyper() {
     //     .enable_all()
     //     .build()
     //     .unwrap());
-    RB.link(MYSQL_URL).await.unwrap();
     fast_log::log::init_log("requests.log", &RuntimeType::Std).unwrap();
+    RB.link(MYSQL_URL).await.unwrap();
     let make_svc = hyper::service::make_service_fn(|_conn| {
         async { Ok::<_, Infallible>(hyper::service::service_fn(hello)) }
     });
