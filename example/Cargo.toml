@@ -20,7 +20,7 @@ lazy_static = "1.4.0"
 actix-web = "2.0"
 actix-rt = "1.0"
 hyper = "0.13"
-tide = "0.11.0"
+tide = "0.12.0"
 
 
 log = "0.4"
