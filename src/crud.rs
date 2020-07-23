@@ -22,8 +22,6 @@ pub trait CRUDEnable: Send + Sync + Serialize + DeserializeOwned {
     /// IdType = i32
     ///
     type IdType: Send + Sync + DeserializeOwned + Serialize + Display;
-
-
     /// get table name,default is type name for snake name
     ///
     /// for Example:  struct  BizActivity{} =>  "biz_activity"
@@ -151,6 +149,45 @@ impl<T> CRUDEnable for Option<T> where T: CRUDEnable {
     }
 }
 
+/// fetch id value
+///
+/// for example:
+///     impl Id for BizActivity {
+///         type IdType = String;
+///
+///         fn get_id(&self) -> Option<Self::IdType> {
+///             self.id.clone()
+///         }
+///     }
+/// let vec = vec![BizActivity {
+///             id: Some("12312".to_string())
+///         }];
+///         let ids = vec.to_ids();
+///         println!("{:?}", ids);
+///
+pub trait Id {
+    type IdType: Send + Sync + DeserializeOwned + Serialize + Display;
+    fn get_id(&self) -> Option<Self::IdType>;
+}
+
+/// fetch ids, must use Id trait  together
+pub trait Ids<C> where C: Id {
+    ///get ids
+    fn to_ids(&self) -> Vec<C::IdType>;
+}
+
+impl<C> Ids<C> for Vec<C> where C: Id {
+    fn to_ids(&self) -> Vec<C::IdType> {
+        let mut vec = vec![];
+        for item in self {
+            let id = item.get_id();
+            if id.is_some() {
+                vec.push(id.unwrap());
+            }
+        }
+        vec
+    }
+}
 
 #[async_trait]
 pub trait CRUD {
@@ -364,7 +401,7 @@ mod test {
 
     use rbatis_core::Error;
 
-    use crate::crud::{CRUD, CRUDEnable};
+    use crate::crud::{CRUD, CRUDEnable, Id, Ids};
     use crate::plugin::logic_delete::RbatisLogicDeletePlugin;
     use crate::plugin::page::{Page, PageRequest};
     use crate::rbatis::Rbatis;
@@ -389,6 +426,34 @@ mod test {
     /// 必须实现 CRUDEntity接口，如果表名 不正确，可以重写 fn table_name() -> String 方法！
     impl CRUDEnable for BizActivity {
         type IdType = String;
+    }
+
+    impl Id for BizActivity {
+        type IdType = String;
+
+        fn get_id(&self) -> Option<Self::IdType> {
+            self.id.clone()
+        }
+    }
+
+    #[test]
+    pub fn test_ids() {
+        let vec = vec![BizActivity {
+            id: Some("12312".to_string()),
+            name: None,
+            pc_link: None,
+            h5_link: None,
+            pc_banner_img: None,
+            h5_banner_img: None,
+            sort: None,
+            status: Some(1),
+            remark: None,
+            create_time: Some("2020-02-09 00:00:00".to_string()),
+            version: Some(1),
+            delete_flag: Some(1),
+        }];
+        let ids = vec.to_ids();
+        println!("{:?}", ids);
     }
 
     #[test]
