@@ -4,4 +4,4 @@
 
 # 3 导入数据库表数据 example/database.sql
 
-# 4 Intellij Clion打开后，example/crud_test.rs 和 main.rs 包含的测试代码均可参考和执行。
+# 4 Intellij Clion打开后，example/crud_test.rs 和 main.rs 包含的测试代码均可 点击 绿色按钮 执行。
