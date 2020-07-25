@@ -55,13 +55,7 @@ pub const MYSQL_URL: &'static str = "mysql://root:123456@localhost:3306/test";
 
 // 示例-Rbatis示例初始化(必须)
 lazy_static! {
-  static ref RB:Rbatis<'static>={
-         let r=Rbatis::new();
-         async_std::task::block_on(async{
-           r.link(MYSQL_URL).await.unwrap();
-         });
-         return r;
-  };
+  static ref RB:Rbatis<'static>=Rbatis::new();
 }
 
 
@@ -69,6 +63,7 @@ lazy_static! {
 #[async_std::main]
 async fn main() {
     fast_log::log::init_log("requests.log", &RuntimeType::Std).unwrap();
+    RB.link(MYSQL_URL).await.unwrap();
     let mut app = tide::new();
     app.at("/").get(|_: Request<()>| async move {
         // println!("accept req[{} /test] arg: {:?}",req.url().to_string(),a);
@@ -242,6 +237,7 @@ pub fn test_tx() {
 pub fn test_tide() {
     async_std::task::block_on(async {
         fast_log::log::init_log("requests.log", &RuntimeType::Std).unwrap();
+        RB.link(MYSQL_URL).await.unwrap();
         let mut app = tide::new();
         app.at("/").get(|_: Request<()>| async move {
             // println!("accept req[{} /test] arg: {:?}",req.url().to_string(),a);
