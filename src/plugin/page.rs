@@ -179,7 +179,7 @@ impl ToString for PageRequest {
     fn to_string(&self) -> String {
         let result = serde_json::to_string(self);
         if result.is_err() {
-            return "null".to_string();
+            return "".to_string();
         } else {
             return result.unwrap();
         }
@@ -279,7 +279,7 @@ impl<T> ToString for Page<T> where T: Send + Sync + Serialize {
     fn to_string(&self) -> String {
         let result = serde_json::to_string(self);
         if result.is_err() {
-            return "null".to_string();
+            return "".to_string();
         } else {
             return result.unwrap();
         }
