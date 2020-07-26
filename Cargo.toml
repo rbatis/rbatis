@@ -15,10 +15,12 @@ members=[
 ]
 
 [features]
-
+default = [ "runtime-async-std" ]
+runtime-async-std = [ "rbatis-core/runtime-async-std", "async-std" ]
+runtime-tokio = [ "rbatis-core/runtime-tokio", "tokio" ]
 
 [dependencies]
-rbatis-core = { version = "1.2.6", path = "rbatis-core",  features = ["all"]}
+rbatis-core = { version = "1.2.6", path = "rbatis-core", default-features = false, optional = true, features = ["all"]}
 chrono = { version = "0.4", features = ["serde"] }
 xml-rs = "0.8"
 lazy_static = "1.4.0"
@@ -29,7 +31,8 @@ serde_json = "1.0"
 serde_yaml = "0.8"
 
 #async
-async-std = {version="1.6.0",features = ["attributes"] }
+async-std = { version = "1.6.0", optional = true }
+
 
 uuid = { version = "0.8", features = ["serde", "v4"] }
 log = "0.4"
@@ -38,7 +41,7 @@ fast_log = "1.2.2"
 #web library
 actix-web = "2.0"
 actix-rt = "1.0"
-tokio = { version = "0.2", features = ["full"] }
+tokio = { version = "0.2", optional = true, features = ["full"] }
 hyper = "0.13"
 
 #async trait

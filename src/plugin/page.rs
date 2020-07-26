@@ -1,6 +1,4 @@
 use std::future::Future;
-
-use async_std::process::Output;
 use futures_core::future::BoxFuture;
 use serde::{Deserialize, Serialize};
 use serde::de::DeserializeOwned;
