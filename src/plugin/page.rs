@@ -175,6 +175,17 @@ impl IPageRequest for PageRequest {
     }
 }
 
+impl ToString for PageRequest {
+    fn to_string(&self) -> String {
+        let result = serde_json::to_string(self);
+        if result.is_err() {
+            return "null".to_string();
+        } else {
+            return result.unwrap();
+        }
+    }
+}
+
 
 impl<T> Page<T> {
     pub fn new(current: u64, size: u64) -> Self {
