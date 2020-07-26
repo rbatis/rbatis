@@ -26,6 +26,14 @@ pub fn json_decode<T: ?Sized>(datas: Vec<serde_json::Value>) -> Result<T, crate:
         js = serde_json::Value::Array(datas);
     } else {
         match type_name {
+            //decode single type option
+            "core::option::Option<i8>" | "core::option::Option<i16>" | "core::option::Option<i32>" | "core::option::Option<i64>" |
+            "core::option::Option<u8>" | "core::option::Option<u16>" | "core::option::Option<u32>" | "core::option::Option<u64>" |
+            "core::option::Option<f32>" | "core::option::Option<f64>" |
+            "core::option::Option<serde_json::number::Number>" |
+            "core::option::Option<bigdecimal::BigDecimal>" |
+            "core::option::Option<bool>" |
+            "core::option::Option<alloc::string::String>" |
             //decode single type(from map type get an value)
             "i8" | "i16" | "i32" | "i64" |
             "u8" | "u16" | "u32" | "u64" |
@@ -88,7 +96,13 @@ fn is_array(type_name: &str) -> bool {
     if type_name.starts_with("alloc::collections::linked_list")
         || type_name.starts_with("alloc::vec::Vec<")
         || type_name.starts_with("[")
-        || type_name.starts_with("&[") {
+        || type_name.starts_with("&[")
+
+        || type_name.starts_with("core::option::Option<alloc::collections::linked_list")
+        || type_name.starts_with("core::option::Option<alloc::vec::Vec<")
+        || type_name.starts_with("core::option::Option<[")
+        || type_name.starts_with("core::option::Option<&[")
+    {
         return true;
     }
     return false;
