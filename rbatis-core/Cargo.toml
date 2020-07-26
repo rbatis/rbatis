@@ -10,7 +10,6 @@ authors = [
 ]
 
 [features]
-default = [ "runtime-async-std" ]
 unstable = []
 # intended mainly for CI and docs
 all = ["all-database", "all-type"]

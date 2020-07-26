@@ -32,5 +32,5 @@ async-std = {version="1.6.0",features = ["attributes"] }
 tokio = { version = "0.2", features = ["full"] }
 
 #rbatis dep
-rbatis-core = { path = "../rbatis-core", default-features = false , features = ["runtime-async-std","all-type"]}
+rbatis-core = { path = "../rbatis-core", features = ["runtime-async-std","all"]}
 rbatis = {path = "../"}
