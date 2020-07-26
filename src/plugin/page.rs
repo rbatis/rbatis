@@ -1,4 +1,5 @@
 use std::future::Future;
+
 use futures_core::future::BoxFuture;
 use serde::{Deserialize, Serialize};
 use serde::de::DeserializeOwned;
@@ -263,13 +264,25 @@ impl<T> IPage<T> for Page<T>
     }
 }
 
+impl<T> ToString for Page<T> where T: Send + Sync + Serialize {
+    fn to_string(&self) -> String {
+        let result = serde_json::to_string(self);
+        if result.is_err() {
+            return "null".to_string();
+        } else {
+            return result.unwrap();
+        }
+    }
+}
+
 
 mod test {
     use crate::plugin::page::{IPage, IPageRequest, Page};
 
     #[test]
     pub fn test_page() {
-        let page: Page<i32> = Page::new(2, 10);
+        let mut page: Page<i32> = Page::new(2, 10);
+        page.records.push(12);
         let s = serde_json::to_string(&page).unwrap();
         println!("{}", s.clone());
         let r: Page<i32> = serde_json::from_str(s.as_str()).unwrap();
@@ -277,6 +290,7 @@ mod test {
 
         println!("offset:{}", page.offset());
         println!("get_pages:{}", page.get_pages());
+        println!("page_string:{}", page.to_string());
         assert_eq!(page.offset(), 10);
     }
 }
