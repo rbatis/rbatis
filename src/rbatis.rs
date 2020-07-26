@@ -364,14 +364,14 @@ impl<'r> Rbatis<'r> {
         let (count_sql, sql) = self.page_plugin.create_page_sql(&self.driver_type()?, tx_id, sql, args, page)?;
         if page.is_serch_count() {
             //make count sql
-            let total = self.fetch_prepare(tx_id, count_sql.as_str(), args).await?;
-            page_result.set_total(total);
-            if total == 0 {
+            let total:Option<u64> = self.fetch_prepare(tx_id, count_sql.as_str(), args).await?;
+            page_result.set_total(total.unwrap_or(0));
+            if page_result.get_total() == 0 {
                 return Ok(page_result);
             }
         }
-        let data: Vec<T> = self.fetch_prepare(tx_id, sql.as_str(), args).await?;
-        page_result.set_records(data);
+        let data: Option<Vec<T>> = self.fetch_prepare(tx_id, sql.as_str(), args).await?;
+        page_result.set_records(data.unwrap_or(vec![]));
         page_result.pages = page_result.get_pages();
         return Ok(page_result);
     }
