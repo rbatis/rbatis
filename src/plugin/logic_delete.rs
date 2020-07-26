@@ -47,9 +47,6 @@ impl LogicDelete for RbatisLogicDeletePlugin {
             //fields have column
             let new_sql = format!("UPDATE {} SET {} = {}", table_name, self.column(), self.deleted()) + sql_where;
             Ok(new_sql)
-        } else if !sql_where.is_empty() {
-            let new_sql = format!("DELETE FROM {} WHERE {}", table_name, sql_where);
-            Ok(new_sql)
         } else {
             let new_sql = format!("DELETE FROM {} ", table_name);
             Ok(new_sql)
