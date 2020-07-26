@@ -12,7 +12,7 @@ pub trait LogicDelete: Send + Sync {
     /// un deleted data,must be i32
     fn un_deleted(&self) -> i32;
     /// create_update_sql
-    fn create_sql(&self, driver_type: &DriverType, table_name: &str, sql_where: &str) -> Result<String, rbatis_core::Error>;
+    fn create_sql(&self, driver_type: &DriverType, table_name: &str, table_fields: &Vec<&str>, sql_where: &str) -> Result<String, rbatis_core::Error>;
 }
 
 
@@ -42,8 +42,17 @@ impl LogicDelete for RbatisLogicDeletePlugin {
     }
 
 
-    fn create_sql(&self, driver_type: &DriverType, table_name: &str, sql_where: &str) -> Result<String, Error> {
-        let new_sql = format!("UPDATE {} SET {} = {}", table_name, self.column(), self.deleted()) + sql_where;
-        return Ok(new_sql);
+    fn create_sql(&self, driver_type: &DriverType, table_name: &str, table_fields: &Vec<&str>, sql_where: &str) -> Result<String, Error> {
+        return if table_fields.contains(&self.column.as_str()) {
+            //fields have column
+            let new_sql = format!("UPDATE {} SET {} = {}", table_name, self.column(), self.deleted()) + sql_where;
+            Ok(new_sql)
+        } else if !sql_where.is_empty() {
+            let new_sql = format!("DELETE FROM {} WHERE {}", table_name, sql_where);
+            Ok(new_sql)
+        } else {
+            let new_sql = format!("DELETE FROM {} ", table_name);
+            Ok(new_sql)
+        };
     }
 }
