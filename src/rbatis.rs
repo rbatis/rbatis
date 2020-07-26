@@ -366,6 +366,7 @@ impl<'r> Rbatis<'r> {
             //make count sql
             let total:Option<u64> = self.fetch_prepare(tx_id, count_sql.as_str(), args).await?;
             page_result.set_total(total.unwrap_or(0));
+            page_result.pages = page_result.get_pages();
             if page_result.get_total() == 0 {
                 return Ok(page_result);
             }
