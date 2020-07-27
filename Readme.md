@@ -32,6 +32,10 @@
 * [点击查看-示例代码（建议用Clion导入项目而不是VSCode以支持debug）](https://github.com/rbatis/rbatis/tree/master/example/src)
 
 
+
+##### 项目实战例子 https://github.com/rbatis/abs_admin
+
+
 ##### 首先(Cargo.toml)添加项目依赖
 ``` rust
 # add this library,and cargo install
