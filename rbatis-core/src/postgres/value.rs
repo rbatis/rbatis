@@ -157,28 +157,28 @@ impl<'c> RawValue<'c> for PgValue<'c> {
                 if r.is_err() {
                     return Err(r.err().unwrap());
                 }
-                return Ok(serde_json::Value::from(r.unwrap().to_string()));
+                return Ok(serde_json::Value::from(r.unwrap().format("%Y-%m-%d %H:%M:%S").to_string()));
             }
-            | "DATE" => {
+            "DATE" => {
                 let r:crate::Result<chrono::NaiveDate> = Decode::<'_,Postgres>::decode(self.clone());
                 if r.is_err() {
                     return Err(r.err().unwrap());
                 }
-                return Ok(serde_json::Value::from(r.unwrap().to_string()));
+                return Ok(serde_json::Value::from(r.unwrap().format("%Y-%m-%d %H:%M:%S").to_string()));
             }
             "TIMESTAMP" => {
                 let r:crate::Result<chrono::NaiveDateTime> = Decode::<'_,Postgres>::decode(self.clone());
                 if r.is_err() {
                     return Err(r.err().unwrap());
                 }
-                return Ok(serde_json::Value::from(r.unwrap().to_string()));
+                return Ok(serde_json::Value::from(r.unwrap().format("%Y-%m-%d %H:%M:%S").to_string()));
             }
             "TIMESTAMPTZ" => {
                 let r:crate::Result<chrono::DateTime::<chrono::Local>> = Decode::<'_,Postgres>::decode(self.clone());
                 if r.is_err() {
                     return Err(r.err().unwrap());
                 }
-                return Ok(serde_json::Value::from(r.unwrap().to_string()));
+                return Ok(serde_json::Value::from(r.unwrap().format("%Y-%m-%d %H:%M:%S").to_string()));
             }
 
             _ => return Err(crate::Error::from(format!("un support database type for:{:?}!", type_string))),
