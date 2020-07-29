@@ -63,6 +63,9 @@ impl Wrapper {
         if self.error.is_some() {
             return Err(self.error.take().unwrap());
         }
+        //remove and ,or
+        self.trim_and();
+        self.trim_or();
         let clone = Wrapper {
             driver_type: self.driver_type.clone(),
             sql: self.sql.clone(),
@@ -378,6 +381,16 @@ impl Wrapper {
         }
         sqls.pop();
         self.sql.push_str(format!(" NOT IN ({})", sqls).as_str());
+        self
+    }
+
+    pub fn trim_and(&mut self) -> &mut Self {
+        self.sql = self.sql.trim_start_matches(" AND ").trim_end_matches(" AND ").to_string();
+        self
+    }
+
+    pub fn trim_or(&mut self) -> &mut Self {
+        self.sql = self.sql.trim_start_matches(" OR ").trim_end_matches(" OR ").to_string();
         self
     }
 }
