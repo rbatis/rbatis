@@ -21,7 +21,7 @@ runtime-async-std = ["rbatis-core/runtime-async-std"]
 runtime-tokio = ["rbatis-core/runtime-tokio"]
 
 [dependencies]
-rbatis-core = { path = "rbatis-core", default-features = false, features = ["all"] }
+rbatis-core = { version = "1.3.7", path = "rbatis-core", default-features = false, features = ["all"] }
 chrono = { version = "0.4", features = ["serde"] }
 xml-rs = "0.8"
 lazy_static = "1.4.0"
