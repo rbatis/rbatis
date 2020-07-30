@@ -177,7 +177,7 @@ impl<'r> Rbatis<'r> {
             fetch_num = json.len();
             data = rbatis_core::decode::json_decode::<T>(json)?;
         }
-        info!("[rbatis] Total <== {}", fetch_num);
+        info!("[rbatis] ReturnRows <== {}", fetch_num);
         return Ok(data);
     }
 
@@ -198,7 +198,7 @@ impl<'r> Rbatis<'r> {
             }
             data = result.unwrap();
         }
-        info!("[rbatis] Affected <== {}", &data);
+        info!("[rbatis] RowsAffected <== {}", &data);
         return Ok(data);
     }
 
@@ -248,7 +248,7 @@ impl<'r> Rbatis<'r> {
             return_num = json.len();
             result = rbatis_core::decode::json_decode::<T>(json)?;
         }
-        info!("[rbatis] Total <== {}", return_num);
+        info!("[rbatis] ReturnRows <== {}", return_num);
         return Ok(result);
     }
 
@@ -269,9 +269,9 @@ impl<'r> Rbatis<'r> {
             self.context_tx.put(tx_id, conn).await;
         }
         if result.is_ok() {
-            info!("[rbatis] Affected <== {}", result.as_ref().unwrap());
+            info!("[rbatis] RowsAffected <== {}", result.as_ref().unwrap());
         } else {
-            info!("[rbatis] Affected <== {}", 0);
+            info!("[rbatis] RowsAffected <== {}", 0);
         }
         return result;
     }
