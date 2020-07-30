@@ -28,7 +28,7 @@ fast_log = "1.2.2"
 
 
 #runtime
-async-std = { version = "1.6.0" }
+async-std = { version = "1.6.0", features = ["attributes"] }
 tokio = { version = "0.2", features = ["full"] }
 
 #rbatis dep
