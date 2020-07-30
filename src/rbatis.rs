@@ -144,7 +144,7 @@ impl<'r> Rbatis<'r> {
     /// fetch result(row sql)
     pub async fn fetch<T>(&self, tx_id: &str, sql: &str) -> Result<T, rbatis_core::Error>
         where T: DeserializeOwned {
-        info!("[rbatis] Query ==> {}", sql);
+        info!("[rbatis] [{}] Query ==> {}",tx_id, sql);
         let data;
         let fetch_num;
         if tx_id.is_empty() {
@@ -177,13 +177,13 @@ impl<'r> Rbatis<'r> {
             fetch_num = json.len();
             data = rbatis_core::decode::json_decode::<T>(json)?;
         }
-        info!("[rbatis] ReturnRows <== {}", fetch_num);
+        info!("[rbatis] [{}] ReturnRows <== {}", tx_id, fetch_num);
         return Ok(data);
     }
 
     /// exec sql(row sql)
     pub async fn exec(&self, tx_id: &str, sql: &str) -> Result<u64, rbatis_core::Error> {
-        info!("[rbatis] Exec ==> :{}", sql);
+        info!("[rbatis] [{}] Exec ==> :{}",tx_id, sql);
         let data;
         if tx_id.is_empty() {
             let mut conn = self.get_pool()?.acquire().await?;
@@ -198,7 +198,7 @@ impl<'r> Rbatis<'r> {
             }
             data = result.unwrap();
         }
-        info!("[rbatis] RowsAffected <== {}", &data);
+        info!("[rbatis] [{}] RowsAffected <== {}", tx_id, &data);
         return Ok(data);
     }
 
@@ -213,8 +213,8 @@ impl<'r> Rbatis<'r> {
     /// fetch result(prepare sql)
     pub async fn fetch_prepare<T>(&self, tx_id: &str, sql: &str, arg: &Vec<serde_json::Value>) -> Result<T, rbatis_core::Error>
         where T: DeserializeOwned {
-        info!("[rbatis] Query ==> {}", sql);
-        info!("[rbatis] Args  ==> {}", serde_json::to_string(arg).unwrap_or("".to_string()));
+        info!("[rbatis] [{}] Query ==> {}",tx_id, sql);
+        info!("[rbatis] [{}] Args  ==> {}",tx_id, serde_json::to_string(arg).unwrap_or("".to_string()));
         let result;
         let return_num;
         if tx_id.is_empty() {
@@ -248,14 +248,14 @@ impl<'r> Rbatis<'r> {
             return_num = json.len();
             result = rbatis_core::decode::json_decode::<T>(json)?;
         }
-        info!("[rbatis] ReturnRows <== {}", return_num);
+        info!("[rbatis] [{}] ReturnRows <== {}",tx_id, return_num);
         return Ok(result);
     }
 
     /// exec sql(prepare sql)
     pub async fn exec_prepare(&self, tx_id: &str, sql: &str, arg: &Vec<serde_json::Value>) -> Result<u64, rbatis_core::Error> {
-        info!("[rbatis] Exec ==> {}", sql);
-        info!("[rbatis] Args ==> {}", serde_json::to_string(arg).unwrap_or("".to_string()));
+        info!("[rbatis] [{}] Exec ==> {}", tx_id, sql);
+        info!("[rbatis] [{}] Args ==> {}", tx_id, serde_json::to_string(arg).unwrap_or("".to_string()));
         let result;
         if tx_id.is_empty() {
             let q: DBQuery = self.bind_arg(sql, arg)?;
@@ -269,9 +269,9 @@ impl<'r> Rbatis<'r> {
             self.context_tx.put(tx_id, conn).await;
         }
         if result.is_ok() {
-            info!("[rbatis] RowsAffected <== {}", result.as_ref().unwrap());
+            info!("[rbatis] [{}] RowsAffected <== {}", tx_id, result.as_ref().unwrap());
         } else {
-            info!("[rbatis] RowsAffected <== {}", 0);
+            info!("[rbatis] [{}] RowsAffected <== {}", tx_id, 0);
         }
         return result;
     }
