@@ -371,14 +371,14 @@ impl Wrapper {
     pub fn is_null(&mut self, column: &str) -> &mut Self {
         add_and!(self);
         self.sql.push_str(column);
-        self.sql.push_str(" is null");
+        self.sql.push_str(" IS NULL");
         self
     }
 
     pub fn is_not_null(&mut self, column: &str) -> &mut Self {
         add_and!(self);
         self.sql.push_str(column);
-        self.sql.push_str(" is not null");
+        self.sql.push_str(" IS NOT NULL");
         self
     }
 
