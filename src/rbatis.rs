@@ -334,7 +334,7 @@ impl<'r> Rbatis<'r> {
         return self.exec_prepare(tx_id, sql.as_str(), &args).await;
     }
 
-
+    /// fetch page result(prepare sql)
     pub async fn fetch_page<T>(&self, tx_id: &str, sql: &str, args: &Vec<serde_json::Value>, page: &dyn IPageRequest) -> Result<Page<T>, rbatis_core::Error>
         where T: DeserializeOwned + Serialize + Send + Sync {
         let mut page_result = Page::new(page.get_current(), page.get_size());
@@ -362,6 +362,7 @@ impl<'r> Rbatis<'r> {
         return self.fetch_page::<T>(tx_id, sql.as_str(), &args, page).await;
     }
 
+    /// fetch result(prepare sql)
     pub async fn py_fetch_page<T>(&self, tx_id: &str, py: &str, arg: &serde_json::Value, page: &dyn IPageRequest) -> Result<Page<T>, rbatis_core::Error>
         where T: DeserializeOwned + Serialize + Send + Sync {
         let (sql, args) = self.py_to_sql(py, arg)?;
