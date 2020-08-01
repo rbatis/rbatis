@@ -69,8 +69,6 @@ pub mod sqlite;
 
 pub use error::{Error, Result};
 
-pub mod sync_map;
-
 pub mod db;
 
 pub mod convert;

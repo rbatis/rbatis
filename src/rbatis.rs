@@ -14,7 +14,6 @@ use rbatis_core::executor::Executor;
 use rbatis_core::pool::{Pool, PoolConnection};
 use rbatis_core::query::{query, Query};
 use rbatis_core::query_as::query_as;
-use rbatis_core::sync_map::SyncMap;
 use rbatis_core::transaction::Transaction;
 
 use crate::ast::ast::RbatisAST;
@@ -38,13 +37,11 @@ use dashmap::DashMap;
 pub struct Rbatis<'r> {
     pub pool: OnceCell<DBPool>,
     pub engine: RbatisEngine,
-    /// map<mapper_name,map<method_name,NodeType>>
+    // map<mapper_name,map<method_name,NodeType>>
     pub mapper_node_map: HashMap<&'r str, HashMap<String, NodeType>>,
-    pub context_tx: SyncMap<DBTx>,
-
-    //TODO context must be Sync for Sqlite
+    //context of tx
     pub context: DashMap<String,DBTx>,
-    /// page plugin
+    // page plugin
     pub page_plugin: Box<dyn PagePlugin>,
     pub logic_plugin: Option<Box<dyn LogicDelete>>,
 }
@@ -61,7 +58,6 @@ impl<'r> Rbatis<'r> {
             pool: OnceCell::new(),
             mapper_node_map: HashMap::new(),
             engine: RbatisEngine::new(),
-            context_tx: SyncMap::new(),
             context: DashMap::new(),
             page_plugin: Box::new(RbatisPagePlugin {}),
             logic_plugin: None,
@@ -105,14 +101,6 @@ impl<'r> Rbatis<'r> {
         Ok(pool.driver_type)
     }
 
-    // async fn get_tx(&self, tx_id: &str) -> Result<DBTx, rbatis_core::Error> {
-    //     let tx = self.context_tx.pop(tx_id).await;
-    //     if tx.is_none() {
-    //         return Err(rbatis_core::Error::from(format!("[rbatis] tx:{} not exist！", tx_id)));
-    //     }
-    //     return Ok(tx.unwrap());
-    // }
-
     /// begin tx,for new conn
     pub async fn begin(&self, tx_id: &str) -> Result<u64, rbatis_core::Error> {
         if tx_id.is_empty() {
@@ -120,28 +108,28 @@ impl<'r> Rbatis<'r> {
         }
         let conn = self.get_pool()?.begin().await?;
         //send tx to context
-        self.context_tx.put(tx_id, conn).await;
+        self.context.insert(tx_id.to_string(), conn);
         return Ok(1);
     }
 
     /// commit tx,and return conn
     pub async fn commit(&self, tx_id: &str) -> Result<DBPoolConn, rbatis_core::Error> {
-        let tx = self.context_tx.pop(tx_id).await;
+        let tx = self.context.remove(tx_id);
         if tx.is_none() {
             return Err(rbatis_core::Error::from(format!("[rbatis] tx:{} not exist！", tx_id)));
         }
-        let mut tx = tx.unwrap();
+        let  (key, mut tx) = tx.unwrap();
         let result = tx.commit().await?;
         return Ok(result);
     }
 
     /// rollback tx,and return conn
     pub async fn rollback(&self, tx_id: &str) -> Result<DBPoolConn, rbatis_core::Error> {
-        let tx = self.context_tx.pop(tx_id).await;
-        if tx.is_none() {
+        let tx_op = self.context.remove(tx_id);
+        if tx_op.is_none() {
             return Err(rbatis_core::Error::from(format!("[rbatis] tx:{} not exist！", tx_id)));
         }
-        let mut tx = tx.unwrap();
+        let (key, mut tx) = tx_op.unwrap();
         let result = tx.rollback().await?;
         return Ok(result);
     }
@@ -160,26 +148,18 @@ impl<'r> Rbatis<'r> {
             fetch_num = json.len();
             data = rbatis_core::decode::json_decode::<T>(json)?;
         } else {
-            let map = self.context_tx.lock().await;
-            let mut conn = map.get_mut(tx_id);
+            let conn = self.context.get_mut(tx_id);
             if conn.is_none() {
                 return Err(rbatis_core::Error::from(format!("[rbatis] tx:{} not exist！", tx_id)));
             }
             let mut conn = conn.unwrap();
-
-            //now conn must return to context
             let c = conn.fetch(sql);
             if c.is_err() {
                 let e = c.err().unwrap();
                 return Err(e);
             }
             let mut c = c.unwrap();
-            let json = c.fetch_json().await;
-            if json.is_err() {
-                let e = json.err().unwrap();
-                return Err(e);
-            }
-            let json = json.unwrap();
+            let json = c.fetch_json().await?;
             fetch_num = json.len();
             data = rbatis_core::decode::json_decode::<T>(json)?;
         }
@@ -195,18 +175,12 @@ impl<'r> Rbatis<'r> {
             let mut conn = self.get_pool()?.acquire().await?;
             data = conn.execute(sql).await?;
         } else {
-            let map = self.context_tx.lock().await;
-            let mut conn = map.get_mut(tx_id);
+            let conn = self.context.get_mut(tx_id);
             if conn.is_none() {
                 return Err(rbatis_core::Error::from(format!("[rbatis] tx:{} not exist！", tx_id)));
             }
             let mut conn = conn.unwrap();
-
-            let result = conn.execute(sql).await;
-            if result.is_err() {
-                return Err(result.err().unwrap());
-            }
-            data = result.unwrap();
+            data = conn.execute(sql).await?;
         }
         info!("[rbatis] [{}] RowsAffected <== {}", tx_id, &data);
         return Ok(data);
@@ -236,24 +210,13 @@ impl<'r> Rbatis<'r> {
             result = rbatis_core::decode::json_decode::<T>(json_array)?;
         } else {
             let q: DBQuery = self.bind_arg(sql, arg)?;
-            let map = self.context_tx.lock().await;
-            let mut conn = map.get_mut(tx_id);
+            let conn = self.context.get_mut(tx_id);
             if conn.is_none() {
                 return Err(rbatis_core::Error::from(format!("[rbatis] tx:{} not exist！", tx_id)));
             }
             let mut conn = conn.unwrap();
-            //now conn use finish must be return to context
-            let c = conn.fetch_parperd(q);
-            if c.is_err() {
-                let e = c.err().unwrap();
-                return Err(e);
-            }
-            let json = c.unwrap().fetch_json().await;
-            if json.is_err() {
-                let e = json.err().unwrap();
-                return Err(e);
-            }
-            let json = json.unwrap();
+            let mut c = conn.fetch_parperd(q)?;
+            let json = c.fetch_json().await?;
             return_num = json.len();
             result = rbatis_core::decode::json_decode::<T>(json)?;
         }
@@ -272,8 +235,7 @@ impl<'r> Rbatis<'r> {
             result = conn.execute_parperd(q).await;
         } else {
             let q: DBQuery = self.bind_arg(sql, arg)?;
-            let map = self.context_tx.lock().await;
-            let mut conn = map.get_mut(tx_id);
+            let conn = self.context.get_mut(tx_id);
             if conn.is_none() {
                 return Err(rbatis_core::Error::from(format!("[rbatis] tx:{} not exist！", tx_id)));
             }
