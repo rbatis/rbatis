@@ -31,6 +31,8 @@ use crate::plugin::logic_delete::{LogicDelete, RbatisLogicDeletePlugin};
 use crate::plugin::page::{IPage, IPageRequest, Page, PagePlugin, RbatisPagePlugin};
 use crate::sql::PageLimit;
 use crate::utils::error_util::ToResult;
+use dashmap::DashMap;
+
 
 /// rbatis engine
 pub struct Rbatis<'r> {
@@ -39,6 +41,9 @@ pub struct Rbatis<'r> {
     /// map<mapper_name,map<method_name,NodeType>>
     pub mapper_node_map: HashMap<&'r str, HashMap<String, NodeType>>,
     pub context_tx: SyncMap<DBTx>,
+
+    //TODO context must be Sync for Sqlite
+    pub context: DashMap<String,DBTx>,
     /// page plugin
     pub page_plugin: Box<dyn PagePlugin>,
     pub logic_plugin: Option<Box<dyn LogicDelete>>,
@@ -57,6 +62,7 @@ impl<'r> Rbatis<'r> {
             mapper_node_map: HashMap::new(),
             engine: RbatisEngine::new(),
             context_tx: SyncMap::new(),
+            context: DashMap::new(),
             page_plugin: Box::new(RbatisPagePlugin {}),
             logic_plugin: None,
         };
