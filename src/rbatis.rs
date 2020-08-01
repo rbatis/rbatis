@@ -109,6 +109,7 @@ impl<'r> Rbatis<'r> {
         let conn = self.get_pool()?.begin().await?;
         //send tx to context
         self.context.insert(tx_id.to_string(), conn);
+        info!("[rbatis] [{}] Begin", tx_id);
         return Ok(1);
     }
 
@@ -120,6 +121,7 @@ impl<'r> Rbatis<'r> {
         }
         let  (key, mut tx) = tx.unwrap();
         let result = tx.commit().await?;
+        info!("[rbatis] [{}] Commit", tx_id);
         return Ok(result);
     }
 
@@ -131,6 +133,7 @@ impl<'r> Rbatis<'r> {
         }
         let (key, mut tx) = tx_op.unwrap();
         let result = tx.rollback().await?;
+        info!("[rbatis] [{}] Rollback", tx_id);
         return Ok(result);
     }
 
