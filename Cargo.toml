@@ -37,7 +37,7 @@ tokio = { version = "0.2", features = ["full"] }
 
 uuid = { version = "0.8", features = ["serde", "v4"] }
 log = "0.4"
-fast_log = "1.2.2"
+fast_log = "1.2.3"
 
 #async trait
 async-trait = "0.1.31"
