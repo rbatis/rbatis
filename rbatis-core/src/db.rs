@@ -1,3 +1,5 @@
+use std::time::Duration;
+
 use serde::{Deserialize, Serialize};
 use serde::de::DeserializeOwned;
 
@@ -5,12 +7,51 @@ use crate::cursor::Cursor;
 use crate::Error;
 use crate::executor::Executor;
 use crate::mysql::{MySql, MySqlConnection, MySqlCursor, MySqlPool};
+use crate::pool::Builder;
 use crate::pool::PoolConnection;
 use crate::postgres::{PgConnection, PgCursor, PgPool, Postgres};
 use crate::query::{Query, query};
 use crate::runtime::Mutex;
 use crate::sqlite::{Sqlite, SqliteConnection, SqliteCursor, SqlitePool};
 use crate::transaction::Transaction;
+
+#[derive(Debug, Clone, Copy)]
+pub struct PoolOptions {
+    pub max_size: u32,
+    pub connect_timeout: Duration,
+    pub min_size: u32,
+    pub max_lifetime: Option<Duration>,
+    pub idle_timeout: Option<Duration>,
+    pub test_on_acquire: bool,
+}
+
+impl Default for PoolOptions {
+    fn default() -> Self {
+        Self {
+            // pool a maximum of 10 connections to the same database
+            max_size: 10,
+            // don't open connections until necessary
+            min_size: 0,
+            // try to connect for 10 seconds before erroring
+            connect_timeout: Duration::from_secs(60),
+            // reap connections that have been alive > 30 minutes
+            // prevents unbounded live-leaking of memory due to naive prepared statement caching
+            // see src/cache.rs for context
+            max_lifetime: Some(Duration::from_secs(1800)),
+            // don't reap connections based on idle time
+            idle_timeout: None,
+            // If true, test the health of a connection on acquire
+            test_on_acquire: true,
+        }
+    }
+}
+
+impl PoolOptions {
+    pub fn new() -> Self {
+        PoolOptions::default()
+    }
+}
+
 
 #[derive(Serialize, Deserialize, Debug, Clone, Copy, Eq, PartialEq)]
 pub enum DriverType {
@@ -30,7 +71,7 @@ pub struct DBPool {
 
 
 impl DBPool {
-    //new
+    //new with default opt
     pub async fn new(driver: &str) -> crate::Result<DBPool> {
         let mut pool = Self {
             driver_type: DriverType::None,
@@ -47,6 +88,50 @@ impl DBPool {
         } else if driver.starts_with("sqlite") {
             pool.driver_type = DriverType::Sqlite;
             pool.sqlite = Some(SqlitePool::new(driver).await?);
+        } else {
+            return Err(Error::from("unsupport driver type!"));
+        }
+        return Ok(pool);
+    }
+
+    //new_opt
+    pub async fn new_opt(driver: &str, opt: &PoolOptions) -> crate::Result<DBPool> {
+        let mut pool = Self {
+            driver_type: DriverType::None,
+            mysql: None,
+            postgres: None,
+            sqlite: None,
+        };
+        if driver.starts_with("mysql") {
+            pool.driver_type = DriverType::Mysql;
+            let build = Builder::new()
+                .max_size(opt.max_size)
+                .max_lifetime(opt.max_lifetime)
+                .connect_timeout(opt.connect_timeout)
+                .min_size(opt.min_size)
+                .idle_timeout(opt.idle_timeout)
+                .test_on_acquire(opt.test_on_acquire);
+            pool.mysql = Some(build.build(driver).await?);
+        } else if driver.starts_with("postgres") {
+            pool.driver_type = DriverType::Postgres;
+            let build = Builder::new()
+                .max_size(opt.max_size)
+                .max_lifetime(opt.max_lifetime)
+                .connect_timeout(opt.connect_timeout)
+                .min_size(opt.min_size)
+                .idle_timeout(opt.idle_timeout)
+                .test_on_acquire(opt.test_on_acquire);
+            pool.postgres = Some(build.build(driver).await?);
+        } else if driver.starts_with("sqlite") {
+            pool.driver_type = DriverType::Sqlite;
+            let build = Builder::new()
+                .max_size(opt.max_size)
+                .max_lifetime(opt.max_lifetime)
+                .connect_timeout(opt.connect_timeout)
+                .min_size(opt.min_size)
+                .idle_timeout(opt.idle_timeout)
+                .test_on_acquire(opt.test_on_acquire);
+            pool.sqlite = Some(build.build(driver).await?);
         } else {
             return Err(Error::from("unsupport driver type!"));
         }
@@ -619,7 +704,7 @@ impl DBTx {
                 });
             }
             &DriverType::Sqlite => {
-                let tx =self.sqlite.as_mut().unwrap().get_mut();
+                let tx = self.sqlite.as_mut().unwrap().get_mut();
                 let data = tx.fetch(sql.sqlite.unwrap());
                 return Ok(DBCursor {
                     driver_type: DriverType::Sqlite,

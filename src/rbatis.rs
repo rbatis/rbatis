@@ -1,6 +1,7 @@
 use std::cell::Cell;
 use std::collections::HashMap;
 
+use dashmap::DashMap;
 use log::{error, info, LevelFilter, warn};
 use once_cell::sync::OnceCell;
 use serde::de::DeserializeOwned;
@@ -8,7 +9,7 @@ use serde::ser::Serialize;
 
 use rbatis_core::connection::Connection;
 use rbatis_core::cursor::Cursor;
-use rbatis_core::db::{DBPool, DBPoolConn, DBQuery, DBTx, DriverType};
+use rbatis_core::db::{DBPool, DBPoolConn, DBQuery, DBTx, DriverType, PoolOptions};
 use rbatis_core::Error;
 use rbatis_core::executor::Executor;
 use rbatis_core::pool::{Pool, PoolConnection};
@@ -30,8 +31,6 @@ use crate::plugin::logic_delete::{LogicDelete, RbatisLogicDeletePlugin};
 use crate::plugin::page::{IPage, IPageRequest, Page, PagePlugin, RbatisPagePlugin};
 use crate::sql::PageLimit;
 use crate::utils::error_util::ToResult;
-use dashmap::DashMap;
-
 
 /// rbatis engine
 pub struct Rbatis<'r> {
@@ -40,7 +39,7 @@ pub struct Rbatis<'r> {
     // map<mapper_name,map<method_name,NodeType>>
     pub mapper_node_map: HashMap<&'r str, HashMap<String, NodeType>>,
     //context of tx
-    pub context: DashMap<String,DBTx>,
+    pub context: DashMap<String, DBTx>,
     // page plugin
     pub page_plugin: Box<dyn PagePlugin>,
     pub logic_plugin: Option<Box<dyn LogicDelete>>,
@@ -71,12 +70,26 @@ impl<'r> Rbatis<'r> {
 
     /// link pool
     pub async fn link(&self, url: &str) -> Result<(), rbatis_core::Error> {
-        if url.ne("") {
-            let pool = DBPool::new(url).await?;
-            self.pool.get_or_init(|| {
-                pool
-            });
+        if url.is_empty(){
+            return Err(Error::from("[rbatis] link url is empty!"));
         }
+        let pool = DBPool::new(url).await?;
+        self.pool.get_or_init(|| {
+            pool
+        });
+        return Ok(());
+    }
+
+    /// link pool by options
+    /// for example:
+    pub async fn link_opt(&self, url: &str, opt: &PoolOptions) -> Result<(), rbatis_core::Error> {
+        if url.is_empty(){
+            return Err(Error::from("[rbatis] link url is empty!"));
+        }
+        let pool = DBPool::new_opt(url, opt).await?;
+        self.pool.get_or_init(|| {
+            pool
+        });
         return Ok(());
     }
 
@@ -119,7 +132,7 @@ impl<'r> Rbatis<'r> {
         if tx.is_none() {
             return Err(rbatis_core::Error::from(format!("[rbatis] tx:{} not exist！", tx_id)));
         }
-        let  (key, mut tx) = tx.unwrap();
+        let (key, mut tx) = tx.unwrap();
         let result = tx.commit().await?;
         info!("[rbatis] [{}] Commit", tx_id);
         return Ok(result);
