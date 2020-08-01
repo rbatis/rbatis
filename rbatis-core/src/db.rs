@@ -1,14 +1,16 @@
+use serde::{Deserialize, Serialize};
+use serde::de::DeserializeOwned;
+
+use crate::cursor::Cursor;
 use crate::Error;
 use crate::executor::Executor;
 use crate::mysql::{MySql, MySqlConnection, MySqlCursor, MySqlPool};
 use crate::pool::PoolConnection;
 use crate::postgres::{PgConnection, PgCursor, PgPool, Postgres};
 use crate::query::{Query, query};
+use crate::runtime::Mutex;
 use crate::sqlite::{Sqlite, SqliteConnection, SqliteCursor, SqlitePool};
 use crate::transaction::Transaction;
-use crate::cursor::Cursor;
-use serde::de::DeserializeOwned;
-use serde::{Deserialize, Serialize};
 
 #[derive(Serialize, Deserialize, Debug, Clone, Copy, Eq, PartialEq)]
 pub enum DriverType {
@@ -149,7 +151,7 @@ impl DBPool {
                     driver_type: DriverType::Sqlite,
                     mysql: None,
                     postgres: None,
-                    sqlite: Some(self.sqlite.as_ref().unwrap().begin().await?),
+                    sqlite: Some(Mutex::new(self.sqlite.as_ref().unwrap().begin().await?)),
                 })
             }
         }
@@ -460,7 +462,7 @@ pub struct DBTx {
     pub driver_type: DriverType,
     pub mysql: Option<Transaction<PoolConnection<MySqlConnection>>>,
     pub postgres: Option<Transaction<PoolConnection<PgConnection>>>,
-    pub sqlite: Option<Transaction<PoolConnection<SqliteConnection>>>,
+    pub sqlite: Option<Mutex<Transaction<PoolConnection<SqliteConnection>>>>,
 }
 
 impl DBTx {
@@ -488,7 +490,8 @@ impl DBTx {
                 })
             }
             &DriverType::Sqlite => {
-                let data = self.sqlite.take().unwrap().commit().await?;
+                let take = self.sqlite.take().unwrap().into_inner();
+                let data = take.commit().await?;
                 Ok(DBPoolConn {
                     driver_type: DriverType::Mysql,
                     mysql: None,
@@ -523,7 +526,7 @@ impl DBTx {
                 })
             }
             &DriverType::Sqlite => {
-                let data = self.sqlite.take().unwrap().rollback().await?;
+                let data = self.sqlite.take().unwrap().into_inner().rollback().await?;
                 Ok(DBPoolConn {
                     driver_type: DriverType::Sqlite,
                     mysql: None,
@@ -560,7 +563,8 @@ impl DBTx {
                 });
             }
             &DriverType::Sqlite => {
-                let data = self.sqlite.as_mut().unwrap().fetch(sql);
+                let mut m = self.sqlite.as_mut().unwrap().get_mut();
+                let data = m.fetch(sql);
                 return Ok(DBCursor {
                     driver_type: DriverType::Sqlite,
                     mysql: None,
@@ -585,7 +589,7 @@ impl DBTx {
                 return Ok(data);
             }
             &DriverType::Sqlite => {
-                let data = self.sqlite.as_mut().unwrap().execute(sql).await?;
+                let data = self.sqlite.as_mut().unwrap().lock().await.execute(sql).await?;
                 return Ok(data);
             }
         }
@@ -615,7 +619,8 @@ impl DBTx {
                 });
             }
             &DriverType::Sqlite => {
-                let data = self.sqlite.as_mut().unwrap().fetch(sql.sqlite.unwrap());
+                let mut tx =self.sqlite.as_mut().unwrap().get_mut();
+                let data = tx.fetch(sql.sqlite.unwrap());
                 return Ok(DBCursor {
                     driver_type: DriverType::Sqlite,
                     mysql: None,
@@ -640,7 +645,7 @@ impl DBTx {
                 return Ok(data);
             }
             &DriverType::Sqlite => {
-                let data = self.sqlite.as_mut().unwrap().execute(sql.sqlite.unwrap()).await?;
+                let data = self.sqlite.as_mut().unwrap().lock().await.execute(sql.sqlite.unwrap()).await?;
                 return Ok(data);
             }
         }
