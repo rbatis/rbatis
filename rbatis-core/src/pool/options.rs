@@ -17,7 +17,7 @@ where
     /// Get a new builder with default options.
     ///
     /// See the source of this method for current defaults.
-    pub(crate) fn new() -> Self {
+    pub fn new() -> Self {
         Self {
             phantom: PhantomData,
             options: Options {
