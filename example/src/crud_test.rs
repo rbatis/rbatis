@@ -9,6 +9,7 @@ use rbatis::plugin::logic_delete::RbatisLogicDeletePlugin;
 use rbatis::plugin::page::{Page, PageRequest};
 use rbatis::rbatis::Rbatis;
 use rbatis::wrapper::Wrapper;
+use rbatis_core::db::PoolOptions;
 use rbatis_core::Error;
 
 #[derive(Serialize, Deserialize, Clone, Debug)]
@@ -36,6 +37,11 @@ pub async fn init_rbatis() -> Rbatis<'static> {
     fast_log::log::init_log("requests.log", &RuntimeType::Std);
     let rb = Rbatis::new();
     rb.link("mysql://root:123456@localhost:3306/test").await.unwrap();
+
+    // or use opt custom pool
+    // let mut opt = PoolOptions::new();
+    // opt.max_size = 20;
+    // rb.link_opt("mysql://root:123456@localhost:3306/test", &opt).await.unwrap();
     return rb;
 }
 
@@ -187,13 +193,12 @@ pub fn test_fetch_by_wrapper() {
 
         let w = Wrapper::new(&rb.driver_type().unwrap()).eq("id", "1").check().unwrap();
         let r: Result<Option<BizActivity>, Error> = rb.fetch_by_wrapper("", &w).await;
-        println!("is_some:{:?}",r);
+        println!("is_some:{:?}", r);
         if r.is_err() {
             println!("{}", r.err().unwrap().to_string());
         }
     });
 }
-
 
 
 #[test]
