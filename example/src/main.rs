@@ -222,6 +222,7 @@ pub fn test_xml_sql() {
 #[test]
 pub fn test_tx() {
     async_std::task::block_on(async {
+        fast_log::log::init_log("requests.log", &RuntimeType::Std).unwrap();
         let rb = Rbatis::new();
         rb.link(MYSQL_URL).await.unwrap();
         let tx_id = "1";
