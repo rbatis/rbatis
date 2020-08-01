@@ -156,6 +156,21 @@ let activity = Activity {
  }
 ```
 
+
+#### 自定义连接池大小，超时，活跃连接数等等
+
+```rust
+use rbatis_core::db::PoolOptions;
+
+pub async fn init_rbatis() -> Rbatis<'static> {
+let rb = Rbatis::new();
+let mut opt = PoolOptions::new();
+opt.max_size = 20;
+rb.link_opt("mysql://root:123456@localhost:3306/test", &opt).await.unwrap();
+}
+```
+
+
 #### xml使用方法
 ``` rust
 /**
