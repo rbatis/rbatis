@@ -563,7 +563,7 @@ impl DBTx {
                 });
             }
             &DriverType::Sqlite => {
-                let mut m = self.sqlite.as_mut().unwrap().get_mut();
+                let m = self.sqlite.as_mut().unwrap().get_mut();
                 let data = m.fetch(sql);
                 return Ok(DBCursor {
                     driver_type: DriverType::Sqlite,
@@ -619,7 +619,7 @@ impl DBTx {
                 });
             }
             &DriverType::Sqlite => {
-                let mut tx =self.sqlite.as_mut().unwrap().get_mut();
+                let tx =self.sqlite.as_mut().unwrap().get_mut();
                 let data = tx.fetch(sql.sqlite.unwrap());
                 return Ok(DBCursor {
                     driver_type: DriverType::Sqlite,
