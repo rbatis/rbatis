@@ -64,9 +64,15 @@ impl<'r> Rbatis<'r> {
         };
     }
 
-    /// try return an new wrapper
+    /// try return an new wrapper,if not call the link() method,it will be panic!
     pub fn new_wrapper(&self) -> Wrapper {
-        Wrapper::new(&self.driver_type().unwrap())
+        let driver=self.driver_type();
+        if driver.as_ref().unwrap().eq(&DriverType::None){
+            panic!("[rbatis] .new_wrapper() method must be call .link(url) to init first!");
+        }
+        Wrapper::new(&driver.unwrap_or_else(|_|{
+            panic!("[rbatis] .new_wrapper() method must be call .link(url) to init first!");
+        }))
     }
 
     pub fn check(&self) {

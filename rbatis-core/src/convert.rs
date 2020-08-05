@@ -18,7 +18,7 @@ impl StmtConvert for DriverType {
                 " ? ".to_string()
             }
             DriverType::None => {
-                panic!("un support none for driver type!")
+                panic!("[rbatis] un support none for driver type!")
             }
         }
     }

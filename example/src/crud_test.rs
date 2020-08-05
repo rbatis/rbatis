@@ -9,7 +9,7 @@ use rbatis::plugin::logic_delete::RbatisLogicDeletePlugin;
 use rbatis::plugin::page::{Page, PageRequest};
 use rbatis::rbatis::Rbatis;
 use rbatis::wrapper::Wrapper;
-use rbatis_core::db::PoolOptions;
+use rbatis_core::db::{PoolOptions, DriverType};
 use rbatis_core::Error;
 
 #[derive(Serialize, Deserialize, Clone, Debug)]
@@ -190,7 +190,6 @@ pub fn test_fetch_by_wrapper() {
         let mut rb = init_rbatis().await;
         //设置 逻辑删除插件
         rb.logic_plugin = Some(Box::new(RbatisLogicDeletePlugin::new("delete_flag")));
-
         let w = rb.new_wrapper().eq("id", "1").check().unwrap();
         let r: Result<Option<BizActivity>, Error> = rb.fetch_by_wrapper("", &w).await;
         println!("is_some:{:?}", r);
