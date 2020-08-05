@@ -92,7 +92,7 @@ let activity = Activity {
 ```rust
         let rb = Rbatis::new();
         rb.link(MYSQL_URL).await.unwrap();
-        let wraper=Wrapper::new(&rb.driver_type().unwrap()).eq("delete_flag",1).check().unwrap();
+        let wraper= rb.new_wrapper().eq("delete_flag",1).check().unwrap();
         let data: Page<BizActivity> = rb.fetch_page_by_wrapper("", &wraper,  &PageRequest::new(1, 20)).await.unwrap();
         println!("{}", serde_json::to_string(&data).unwrap());
 

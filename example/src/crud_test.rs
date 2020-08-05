@@ -147,7 +147,7 @@ pub fn test_update_by_wrapper() {
             delete_flag: Some(1),
         };
 
-        let w = Wrapper::new(&rb.driver_type().unwrap()).eq("id", "12312").check().unwrap();
+        let w = rb.new_wrapper().eq("id", "12312").check().unwrap();
         let r = rb.update_by_wrapper("", &activity, &w).await;
         if r.is_err() {
             println!("{}", r.err().unwrap().to_string());
@@ -191,7 +191,7 @@ pub fn test_fetch_by_wrapper() {
         //设置 逻辑删除插件
         rb.logic_plugin = Some(Box::new(RbatisLogicDeletePlugin::new("delete_flag")));
 
-        let w = Wrapper::new(&rb.driver_type().unwrap()).eq("id", "1").check().unwrap();
+        let w = rb.new_wrapper().eq("id", "1").check().unwrap();
         let r: Result<Option<BizActivity>, Error> = rb.fetch_by_wrapper("", &w).await;
         println!("is_some:{:?}", r);
         if r.is_err() {
@@ -208,7 +208,7 @@ pub fn test_fetch_page_by_wrapper() {
         //设置 逻辑删除插件
         rb.logic_plugin = Some(Box::new(RbatisLogicDeletePlugin::new("delete_flag")));
 
-        let w = Wrapper::new(&rb.driver_type().unwrap())
+        let w = rb.new_wrapper()
             .eq("delete_flag", 1)
             .check().unwrap();
         let r: Page<BizActivity> = rb.fetch_page_by_wrapper("", &w, &PageRequest::new(1, 20)).await.unwrap();
