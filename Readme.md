@@ -187,7 +187,7 @@ pub struct Activity {
     pub sort: Option<String>,
     pub status: Option<i32>,
     pub remark: Option<String>,
-    pub create_time: Option<DateTime<chrono::Utc>>,
+    pub create_time: Option<String>,
     pub version: Option<i32>,
     pub delete_flag: Option<i32>,
 }
