@@ -31,6 +31,7 @@ use crate::plugin::logic_delete::{LogicDelete, RbatisLogicDeletePlugin};
 use crate::plugin::page::{IPage, IPageRequest, Page, PagePlugin, RbatisPagePlugin};
 use crate::sql::PageLimit;
 use crate::utils::error_util::ToResult;
+use crate::wrapper::Wrapper;
 
 /// rbatis engine
 pub struct Rbatis<'r> {
@@ -63,6 +64,11 @@ impl<'r> Rbatis<'r> {
         };
     }
 
+    /// try return an new wrapper
+    pub fn new_wrapper(&self) -> Wrapper {
+        Wrapper::new(&self.driver_type().unwrap())
+    }
+
     pub fn check(&self) {
         println!("self.pool: {:?}", self.pool);
         println!("self.mapper_node_map: {:?}", self.mapper_node_map);
@@ -70,7 +76,7 @@ impl<'r> Rbatis<'r> {
 
     /// link pool
     pub async fn link(&self, url: &str) -> Result<(), rbatis_core::Error> {
-        if url.is_empty(){
+        if url.is_empty() {
             return Err(Error::from("[rbatis] link url is empty!"));
         }
         let pool = DBPool::new(url).await?;
@@ -83,7 +89,7 @@ impl<'r> Rbatis<'r> {
     /// link pool by options
     /// for example:
     pub async fn link_opt(&self, url: &str, opt: &PoolOptions) -> Result<(), rbatis_core::Error> {
-        if url.is_empty(){
+        if url.is_empty() {
             return Err(Error::from("[rbatis] link url is empty!"));
         }
         let pool = DBPool::new_opt(url, opt).await?;
