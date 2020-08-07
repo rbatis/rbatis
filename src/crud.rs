@@ -78,15 +78,7 @@ pub trait CRUDEnable: Send + Sync + Serialize + DeserializeOwned {
         if !json.is_object() {
             return Err(Error::from("[rbaits] to_value_map() fail,data is not an object!"));
         }
-        let m = json.as_object().unwrap().to_owned();
-        let mut new_m = m.clone();
-        for (k, v) in &m {
-            if (k.contains("time") || k.contains("date")) && v.is_string() {
-                let vs = v.as_str().unwrap();
-                new_m.insert(k.to_string(), serde_json::Value::String(vs.to_string()));
-            }
-        }
-        return Ok(new_m);
+        return Ok(json.as_object().unwrap().to_owned());
     }
 
     fn fields(map: &serde_json::Map<String, Value>) -> Result<String> {
