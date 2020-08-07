@@ -349,17 +349,17 @@ pub async fn test_hyper(){
 
 
 
-### 常见问题
+### FAQ 常见问题
+* 日期时间和BigDecimal支持？<br/>
+已支持chrono::NaiveDateTime和bigdecimal::BigDecimal
 * async await支持？<br/>
 已同时支持async_std和tokio
 * postgres 的stmt使用$1,$2而不是mysql的?,那么是否需要特殊处理？<br/>
 不需要，因为rbatis 99%的api使用#{}描述参数变量，只需要写具体参数名称，不需要对应数据库的符号。
 * oracle数据库驱动支持？<br/>
 不支持，应该坚持去IOE
-
 * 直接使用驱动依赖项目里哪个库？<br/>
 应该使用rbatis-core， Cargo.toml 加入 rbatis-core = "*"
-
 * 如何选择运行时是tokio还是async_std？<br/>
 ```rust
 # Cargo.toml 加入 
