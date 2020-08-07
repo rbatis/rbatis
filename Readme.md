@@ -302,7 +302,13 @@ pub async fn test_hyper(){
     server.await.unwrap();
 }
 ```
-
+### 支持数据结构列表
+| 数据库    | 已支持 |
+| ------ | ------ |
+| Option                   | √     |   
+| i32,i64,f32,f64,String   | √     |  
+| NativeDateTime           | √     |  
+| BigDecimal               | √     |
 
 ### 支持数据库类型√已支持.进行中
 | 数据库    | 已支持 |
