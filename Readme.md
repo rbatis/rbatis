@@ -49,8 +49,8 @@ log = "0.4"
 fast_log="1.2.2"
 
 #rbatis-core和rbatis 版本必须保持一致
-rbatis-core = { version = "1.4.1", features = ["all"]}
-rbatis =  { version = "1.4.1" } 
+rbatis-core = { version = "1.4.2", features = ["all"]}
+rbatis =  { version = "1.4.2" } 
 ```
 
 
