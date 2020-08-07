@@ -306,7 +306,7 @@ pub async fn test_hyper(){
 | 数据库    | 已支持 |
 | ------ | ------ |
 | Option                   | √     |   
-| i32,i64,f32,f64,String   | √     |  
+| i32,i64,f32,f64,bool,String   | √     |  
 | NativeDateTime           | √     |  
 | BigDecimal               | √     |
 
