@@ -25,6 +25,7 @@ use rbatis::plugin::page::{IPageRequest, Page, PageRequest};
 use rbatis::rbatis::Rbatis;
 use rbatis::wrapper::Wrapper;
 use rbatis_core::db::DBPool;
+use rbatis_core::types::chrono::NaiveDateTime;
 
 mod crud_test;
 
@@ -40,7 +41,7 @@ pub struct BizActivity {
     pub sort: Option<String>,
     pub status: Option<i32>,
     pub remark: Option<String>,
-    pub create_time: Option<String>,
+    pub create_time: Option<NaiveDateTime>,
     pub version: Option<i32>,
     pub delete_flag: Option<i32>,
 }
