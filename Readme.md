@@ -308,7 +308,7 @@ pub async fn test_hyper(){
 | Option                   | √     | 
 | Vec                      | √     |  
 | Slice                    | √     |   
-| i32,i64,f32,f64,bool,String...and more base rust type   | √     |  
+| i32,i64,f32,f64,bool,String...more rust type   | √     |  
 | NativeDateTime           | √     |  
 | BigDecimal               | √     |
 
