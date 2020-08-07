@@ -302,6 +302,15 @@ pub async fn test_hyper(){
     server.await.unwrap();
 }
 ```
+### 支持数据结构列表
+| 数据库    | 已支持 |
+| ------ | ------ |
+| Option                   | √     | 
+| Vec                      | √     |  
+| Slice                    | √     |   
+| i32,i64,f32,f64,bool,String...and more base rust type   | √     |  
+| NativeDateTime           | √     |  
+| BigDecimal               | √     |
 
 ### 支持数据库类型√已支持.进行中
 | 数据库    | 已支持 |
