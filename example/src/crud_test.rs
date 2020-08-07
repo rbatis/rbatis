@@ -11,6 +11,7 @@ use rbatis::rbatis::Rbatis;
 use rbatis::wrapper::Wrapper;
 use rbatis_core::db::{PoolOptions, DriverType};
 use rbatis_core::Error;
+use rbatis_core::types::chrono::NaiveDateTime;
 
 #[derive(Serialize, Deserialize, Clone, Debug)]
 pub struct BizActivity {
@@ -23,7 +24,7 @@ pub struct BizActivity {
     pub sort: Option<String>,
     pub status: Option<i32>,
     pub remark: Option<String>,
-    pub create_time: Option<String>,
+    pub create_time: Option<NaiveDateTime>,
     pub version: Option<i32>,
     pub delete_flag: Option<i32>,
 }
@@ -59,7 +60,7 @@ pub fn test_save() {
             sort: Some("1".to_string()),
             status: Some(1),
             remark: None,
-            create_time: Some("2020-02-09 00:00:00".to_string()),
+            create_time: Some(NaiveDateTime::parse_from_str("2020-02-09 00:00:00","%Y-%m-%d %H:%M:%S").unwrap()),
             version: Some(1),
             delete_flag: Some(1),
         };
@@ -84,7 +85,7 @@ pub fn test_save_batch() {
             sort: None,
             status: Some(1),
             remark: None,
-            create_time: Some("2020-02-09 00:00:00".to_string()),
+            create_time: Some(NaiveDateTime::parse_from_str("2020-02-09 00:00:00","%Y-%m-%d %H:%M:%S%").unwrap()),
             version: Some(1),
             delete_flag: Some(1),
         };
@@ -142,7 +143,7 @@ pub fn test_update_by_wrapper() {
             sort: None,
             status: Some(1),
             remark: None,
-            create_time: Some("2020-02-09 00:00:00".to_string()),
+            create_time: Some(NaiveDateTime::parse_from_str("2020-02-09 00:00:00","%Y-%m-%d %H:%M:%S%").unwrap()),
             version: Some(1),
             delete_flag: Some(1),
         };
@@ -173,7 +174,7 @@ pub fn test_update_by_id() {
             sort: None,
             status: Some(1),
             remark: None,
-            create_time: Some("2020-02-09 00:00:00".to_string()),
+            create_time: Some(NaiveDateTime::parse_from_str("2020-02-09 00:00:00","%Y-%m-%d %H:%M:%S%").unwrap()),
             version: Some(1),
             delete_flag: Some(1),
         };

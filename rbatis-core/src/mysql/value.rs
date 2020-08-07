@@ -160,28 +160,28 @@ impl<'c> RawValue<'c> for MySqlValue<'c> {
                 if r.is_err() {
                     return Err(r.err().unwrap());
                 }
-                return Ok(serde_json::Value::from(r.unwrap().format("%Y-%m-%d %H:%M:%S").to_string()));
+                return Ok(serde_json::Value::from(r.unwrap().to_string()));
             }
             "TIME"  => {
                 let r:crate::Result<chrono::NaiveTime> = Decode::<'_,MySql>::decode(self.clone());
                 if r.is_err() {
                     return Err(r.err().unwrap());
                 }
-                return Ok(serde_json::Value::from(r.unwrap().format("%Y-%m-%d %H:%M:%S").to_string()));
+                return Ok(serde_json::Value::from(r.unwrap().to_string()));
             }
             "DATETIME"  => {
-                let r:crate::Result<chrono::DateTime<chrono::Utc>> = Decode::<'_,MySql>::decode(self.clone());
+                let r:crate::Result<chrono::NaiveDateTime> = Decode::<'_,MySql>::decode(self.clone());
                 if r.is_err() {
                     return Err(r.err().unwrap());
                 }
-                return Ok(serde_json::Value::from(r.unwrap().format("%Y-%m-%d %H:%M:%S").to_string()));
+                return Ok(serde_json::Value::from(r.unwrap().to_string()));
             }
             "TIMESTAMP" => {
-                let r:crate::Result<chrono::DateTime::<chrono::Utc>> = Decode::<'_,MySql>::decode(self.clone());
+                let r:crate::Result<chrono::NaiveDateTime> = Decode::<'_,MySql>::decode(self.clone());
                 if r.is_err() {
                     return Err(r.err().unwrap());
                 }
-                return Ok(serde_json::Value::from(r.unwrap().format("%Y-%m-%d %H:%M:%S").to_string()));
+                return Ok(serde_json::Value::from(r.unwrap().to_string()));
             }
             _ => return Err(crate::Error::from(format!("un support database type for:{:?}!", type_string))),
         }
