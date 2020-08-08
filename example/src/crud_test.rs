@@ -12,6 +12,7 @@ use rbatis::wrapper::Wrapper;
 use rbatis_core::db::{PoolOptions, DriverType};
 use rbatis_core::Error;
 use rbatis_core::types::chrono::NaiveDateTime;
+use rbatis_core::value::DateTimeNow;
 
 #[derive(Serialize, Deserialize, Clone, Debug)]
 pub struct BizActivity {
@@ -60,7 +61,7 @@ pub fn test_save() {
             sort: Some("1".to_string()),
             status: Some(1),
             remark: None,
-            create_time: Some(NaiveDateTime::parse_from_str("2020-02-09 00:00:00","%Y-%m-%d %H:%M:%S").unwrap()),
+            create_time: Some(NaiveDateTime::now()),
             version: Some(1),
             delete_flag: Some(1),
         };
@@ -85,7 +86,7 @@ pub fn test_save_batch() {
             sort: None,
             status: Some(1),
             remark: None,
-            create_time: Some(NaiveDateTime::parse_from_str("2020-02-09 00:00:00","%Y-%m-%d %H:%M:%S%").unwrap()),
+            create_time: Some(NaiveDateTime::now()),
             version: Some(1),
             delete_flag: Some(1),
         };
@@ -143,7 +144,7 @@ pub fn test_update_by_wrapper() {
             sort: None,
             status: Some(1),
             remark: None,
-            create_time: Some(NaiveDateTime::parse_from_str("2020-02-09 00:00:00","%Y-%m-%d %H:%M:%S%").unwrap()),
+            create_time: Some(NaiveDateTime::now()),
             version: Some(1),
             delete_flag: Some(1),
         };
@@ -174,7 +175,7 @@ pub fn test_update_by_id() {
             sort: None,
             status: Some(1),
             remark: None,
-            create_time: Some(NaiveDateTime::parse_from_str("2020-02-09 00:00:00","%Y-%m-%d %H:%M:%S%").unwrap()),
+            create_time: Some(NaiveDateTime::now()),
             version: Some(1),
             delete_flag: Some(1),
         };
