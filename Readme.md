@@ -60,7 +60,7 @@ let activity = Activity {
                 id: Some("12312".to_string()),
                 name: None,
                 remark: None,
-                create_time: Some("2020-02-09 00:00:00".to_string()),
+                create_time: Some(NaiveDateTime::now()),
                 version: Some(1),
                 delete_flag: Some(1),
             };
@@ -187,7 +187,7 @@ pub struct Activity {
     pub sort: Option<String>,
     pub status: Option<i32>,
     pub remark: Option<String>,
-    pub create_time: Option<String>,
+    pub create_time: Option<NaiveDateTime>,
     pub version: Option<i32>,
     pub delete_flag: Option<i32>,
 }
