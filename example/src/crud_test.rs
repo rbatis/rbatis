@@ -35,7 +35,7 @@ impl CRUDEnable for BizActivity {
     type IdType = String;
 }
 
-pub async fn init_rbatis() -> Rbatis<'static> {
+pub async fn init_rbatis() -> Rbatis {
     fast_log::log::init_log("requests.log", &RuntimeType::Std);
     let rb = Rbatis::new();
     rb.link("mysql://root:123456@localhost:3306/test").await.unwrap();
@@ -78,7 +78,7 @@ pub fn test_save_batch() {
         let rb = init_rbatis().await;
         let activity = BizActivity {
             id: Some("12312".to_string()),
-            name: None,
+            name: Some("test_1".to_string()),
             pc_link: None,
             h5_link: None,
             pc_banner_img: None,

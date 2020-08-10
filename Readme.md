@@ -162,7 +162,7 @@ let activity = Activity {
 ```rust
 use rbatis_core::db::PoolOptions;
 
-pub async fn init_rbatis() -> Rbatis<'static> {
+pub async fn init_rbatis() -> Rbatis {
 let rb = Rbatis::new();
 let mut opt = PoolOptions::new();
 opt.max_size = 20;
@@ -268,7 +268,7 @@ fn main() {
 ``` rust
 
 lazy_static! {
-  static ref RB:Rbatis<'static>=async_std::task::block_on(async {
+  static ref RB:Rbatis=async_std::task::block_on(async {
         Rbatis::new(MYSQL_URL).await.unwrap()
     });
 }

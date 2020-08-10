@@ -34,11 +34,11 @@ use crate::utils::error_util::ToResult;
 use crate::wrapper::Wrapper;
 
 /// rbatis engine
-pub struct Rbatis<'r> {
+pub struct Rbatis {
     pub pool: OnceCell<DBPool>,
     pub engine: RbatisEngine,
     // map<mapper_name,map<method_name,NodeType>>
-    pub mapper_node_map: HashMap<&'r str, HashMap<String, NodeType>>,
+    pub mapper_node_map: HashMap<String, HashMap<String, NodeType>>,
     //context of tx
     pub context: DashMap<String, DBTx>,
     // page plugin
@@ -46,13 +46,13 @@ pub struct Rbatis<'r> {
     pub logic_plugin: Option<Box<dyn LogicDelete>>,
 }
 
-impl<'r> Default for Rbatis<'r> {
-    fn default() -> Rbatis<'r> {
+impl<'r> Default for Rbatis {
+    fn default() -> Rbatis {
         Rbatis::new()
     }
 }
 
-impl<'r> Rbatis<'r> {
+impl Rbatis {
     pub fn new() -> Self {
         return Self {
             pool: OnceCell::new(),
@@ -66,11 +66,11 @@ impl<'r> Rbatis<'r> {
 
     /// try return an new wrapper,if not call the link() method,it will be panic!
     pub fn new_wrapper(&self) -> Wrapper {
-        let driver=self.driver_type();
-        if driver.as_ref().unwrap().eq(&DriverType::None){
+        let driver = self.driver_type();
+        if driver.as_ref().unwrap().eq(&DriverType::None) {
             panic!("[rbatis] .new_wrapper() method must be call .link(url) to init first!");
         }
-        Wrapper::new(&driver.unwrap_or_else(|_|{
+        Wrapper::new(&driver.unwrap_or_else(|_| {
             panic!("[rbatis] .new_wrapper() method must be call .link(url) to init first!");
         }))
     }
@@ -105,9 +105,9 @@ impl<'r> Rbatis<'r> {
         return Ok(());
     }
 
-    pub fn load_xml(&mut self, mapper_name: &'r str, data: &str) -> Result<(), rbatis_core::Error> {
+    pub fn load_xml(&mut self, mapper_name: &str, data: &str) -> Result<(), rbatis_core::Error> {
         let xml = Xml::parser(data);
-        self.mapper_node_map.insert(mapper_name, xml);
+        self.mapper_node_map.insert(mapper_name.to_string(), xml);
         return Ok(());
     }
 

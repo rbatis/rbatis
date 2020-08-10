@@ -202,7 +202,7 @@ pub trait CRUD {
 }
 
 #[async_trait]
-impl CRUD for Rbatis<'_> {
+impl CRUD for Rbatis {
     /// save one entity to database
     async fn save<T>(&self, tx_id: &str, entity: &T) -> Result<u64>
         where T: CRUDEnable {
