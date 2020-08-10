@@ -43,6 +43,7 @@ pub struct Rbatis {
     pub context: DashMap<String, DBTx>,
     // page plugin
     pub page_plugin: Box<dyn PagePlugin>,
+    // logic delete plugin
     pub logic_plugin: Option<Box<dyn LogicDelete>>,
 }
 
