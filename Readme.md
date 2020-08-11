@@ -29,7 +29,8 @@
 * 支持future,async await（理论上，假设严格按照async_std/tokio库替代所有io操作，那么并发量可远远超过go语言）
 * 日志支持,可自定义具体日志（基于标准库log(独立于任何特定的日志记录库)，日志可选任意第三方库实现）
 * 使用百分百的安全代码实现(lib.rs加入了"#![forbid(unsafe_code)]" 禁止不安全的unsafe代码)
-* [点击查看-示例代码（建议用Clion导入项目而不是VSCode以支持debug）](https://github.com/rbatis/rbatis/tree/master/example/src)
+* [示例代码（需要Clion导入）](https://github.com/rbatis/rbatis/tree/master/example/src)
+* [示例项目（需要Clion导入）](https://github.com/rbatis/abs_admin)
 
 
 
