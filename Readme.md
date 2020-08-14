@@ -117,9 +117,14 @@ rb.save_batch("", &vec![activity]).await;
 let result: Option<BizActivity> = rb.fetch_by_id("", &"1".to_string()).await.unwrap();
 //Query ==> SELECT create_time,delete_flag,h5_banner_img,h5_link,id,name,pc_banner_img,pc_link,remark,sort,status,version  FROM biz_activity WHERE delete_flag = 1  AND id =  ? 
 
-//批量查全部
+//查询-全部
 let result: Vec<BizActivity> = rb.list("").await.unwrap();
-//Query ==> SELECT create_time,delete_flag,h5_banner_img,h5_link,id,name,pc_banner_img,pc_link,remark,sort,status,version  FROM biz_activity WHERE delete_flag = 1  AND id =  ? 
+//Query ==> SELECT create_time,delete_flag,h5_banner_img,h5_link,id,name,pc_banner_img,pc_link,remark,sort,status,version  FROM biz_activity WHERE delete_flag = 1
+
+//批量-查询id
+let result: Vec<BizActivity> = rb.list_by_ids("",&["1".to_string()]).await.unwrap();
+//Query ==> SELECT create_time,delete_flag,h5_banner_img,h5_link,id,name,pc_banner_img,pc_link,remark,sort,status,version  FROM biz_activity WHERE delete_flag = 1  AND id IN  (?) 
+
 
 //删除
 rb.remove_by_id::<BizActivity>("", &"1".to_string()).await;
