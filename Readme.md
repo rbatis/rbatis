@@ -43,6 +43,9 @@
 serde = { version = "1.0", features = ["derive"] }
 serde_json = "1.0"
 
+# 日期数据支持（NaiveDateTime）
+chrono = { version = "0.4", features = ["serde"] }
+
 #log日志支持
 log = "0.4"
 fast_log="1.2.2"
