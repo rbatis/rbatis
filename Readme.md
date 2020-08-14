@@ -43,8 +43,11 @@
 serde = { version = "1.0", features = ["derive"] }
 serde_json = "1.0"
 
-# 日期数据支持（NaiveDateTime）
+#日期支持（NaiveDateTime）
 chrono = { version = "0.4", features = ["serde"] }
+
+#BigDecimal支持(可选，适合金额计算场景)
+bigdecimal = "0.1.2"
 
 #log日志支持
 log = "0.4"
