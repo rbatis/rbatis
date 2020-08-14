@@ -39,23 +39,24 @@
 ``` rust
 # add this library,and cargo install
 
-#json支持
+#json支持(必须)
 serde = { version = "1.0", features = ["derive"] }
 serde_json = "1.0"
 
-#日期支持（NaiveDateTime）
+#日期支持(必须)
 chrono = { version = "0.4", features = ["serde"] }
 
-#BigDecimal支持(可选，适合金额计算场景)
-bigdecimal = "0.1.2"
-
-#log日志支持
+#log日志支持(必须)
 log = "0.4"
 fast_log="1.2.2"
 
-#rbatis-core和rbatis 版本必须保持一致
+#rbatis支持，版本必须保持一致(必须)
 rbatis-core = { version = "1.4.3", features = ["all"]}
 rbatis =  { version = "1.4.3" } 
+
+#BigDecimal支持(非必须，适合金额计算场景)
+bigdecimal = "0.1.2"
+
 ```
 
 ##### 一分钟快速学会， QueryWrapper，常用方法(详见example/crud_test.rs)
