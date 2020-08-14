@@ -216,7 +216,8 @@ rb.update_by_wrapper("", &activity, &w).await;
 ##### py风格sql语法Example
 ``` python
 //执行到远程mysql 并且获取结果。支持serde_json可序列化的任意类型
-         let rb = Rbatis::new(MYSQL_URL).await.unwrap();
+        let rb = Rbatis::new();
+        rb.link(MYSQL_URL).await.unwrap();
             let py = r#"
         SELECT * FROM biz_activity
         WHERE delete_flag = #{delete_flag}
@@ -339,7 +340,8 @@ fn main() {
 #### 事务支持
 ``` rust
    async_std::task::block_on(async {
-        let rb = Rbatis::new(MYSQL_URL).await.unwrap();
+        let rb = Rbatis::new();
+        rb.link(MYSQL_URL).await.unwrap();
         let tx_id = "1";
         rb.begin(tx_id).await.unwrap();
         let v: serde_json::Value = rb.fetch(tx_id, "SELECT count(1) FROM biz_activity;").await.unwrap();
