@@ -296,7 +296,7 @@ fn main() {
 
 
 
-### Web框架支持(这里举例hyper)
+### Web框架支持(这里举例hyper,支持所有基于tokio,async_std的web框架)
 ``` rust
 
 lazy_static! {
