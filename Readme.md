@@ -85,15 +85,10 @@ impl CRUDEnable for BizActivity {
 
 ///rbatis初始化，rbatis是线程安全可使用lazy_static 定义为全局变量
 let rb = Rbatis::new();
-///自定义连接池配置(可选)
-// rb.pool.get_or_init(||{
-//        let mut opt=PoolOptions::new();
-//        opt.max_size=10;
-//        opt.connect_timeout=Duration::from_secs(60) ;
-//        DBPool::new_opt(MYSQL_URL,&opt)
-//    });
-///链接数据库，  自动识别mysql，pg，sqlite等等支持的数据库类型
+///连接数据库   
 rb.link("mysql://root:123456@localhost:3306/test").await.unwrap();
+///自定义连接池参数。 
+// rb.link_opt(MYSQL_URL,&PoolOptions::new()).await.unwrap();
 ///新建的wrapper sql逻辑
 let wrapper = rb.new_wrapper()
             .eq("id", 1)                    //sql:  id = 1
