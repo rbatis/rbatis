@@ -94,7 +94,7 @@ impl CRUDEnable for BizActivity {
     type IdType = String;
 }
 
-let activity = Activity {
+let activity = BizActivity {
                 id: Some("12312".to_string()),
                 name: None,
                 remark: None,
@@ -270,7 +270,7 @@ fn main() {
                "page": 0,
                "size": 20
                });
-               let data: Vec<Activity> = rb.xml_fetch("", "test", "select_by_condition", arg).await.unwrap();
+               let data: Vec<BizActivity> = rb.xml_fetch("", "test", "select_by_condition", arg).await.unwrap();
                println!("{}", serde_json::to_string(&data).unwrap_or("".to_string()));
            }
        )
