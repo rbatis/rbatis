@@ -113,7 +113,7 @@ rb.save("",&activity).await;
 rb.save_batch("", &vec![activity]).await;
 //Exec ==> INSERT INTO biz_activity (create_time,delete_flag,h5_banner_img,h5_link,id,name,pc_banner_img,pc_link,remark,sort,status,version) VALUES ( ? , ? , ? , ? , ? , ? , ? , ? , ? , ? , ? , ? ),( ? , ? , ? , ? , ? , ? , ? , ? , ? , ? , ? , ? )
 
-//查询
+//查询, Option包装，有可能查不到数据
 let result: Option<BizActivity> = rb.fetch_by_id("", &"1".to_string()).await.unwrap();
 //Query ==> SELECT create_time,delete_flag,h5_banner_img,h5_link,id,name,pc_banner_img,pc_link,remark,sort,status,version  FROM biz_activity WHERE delete_flag = 1  AND id =  ? 
 
