@@ -79,10 +79,10 @@ impl CRUDEnable for BizActivity {
     type IdType = String;
 }
 
-//rbatis初始化，rbatis是线程安全的，所以可以使用lazy_static 定义为全局变量
+///rbatis初始化，rbatis是线程安全的，所以可以使用lazy_static 定义为全局变量
 let rb = Rbatis::new();
 rb.link("mysql://root:123456@localhost:3306/test").await.unwrap();
-//新建的wrapper sql逻辑
+///新建的wrapper sql逻辑
 let wrapper = rb.new_wrapper()
             .eq("id", 1)                    //sql:  id = 1
             .and()                          //sql:  and 
@@ -105,45 +105,45 @@ let activity = BizActivity {
                 version: Some(1),
                 delete_flag: Some(1),
             };
-//保存
+///保存
 rb.save("",&activity).await;
 //Exec ==> INSERT INTO biz_activity (create_time,delete_flag,h5_banner_img,h5_link,id,name,pc_banner_img,pc_link,remark,sort,status,version) VALUES ( ? , ? , ? , ? , ? , ? , ? , ? , ? , ? , ? , ? )
 
-//批量保存
+///批量保存
 rb.save_batch("", &vec![activity]).await;
 //Exec ==> INSERT INTO biz_activity (create_time,delete_flag,h5_banner_img,h5_link,id,name,pc_banner_img,pc_link,remark,sort,status,version) VALUES ( ? , ? , ? , ? , ? , ? , ? , ? , ? , ? , ? , ? ),( ? , ? , ? , ? , ? , ? , ? , ? , ? , ? , ? , ? )
 
-//查询, Option包装，有可能查不到数据则为None
+///查询, Option包装，有可能查不到数据则为None
 let result: Option<BizActivity> = rb.fetch_by_id("", &"1".to_string()).await.unwrap();
 //Query ==> SELECT create_time,delete_flag,h5_banner_img,h5_link,id,name,pc_banner_img,pc_link,remark,sort,status,version  FROM biz_activity WHERE delete_flag = 1  AND id =  ? 
 
-//查询-全部
+///查询-全部
 let result: Vec<BizActivity> = rb.list("").await.unwrap();
 //Query ==> SELECT create_time,delete_flag,h5_banner_img,h5_link,id,name,pc_banner_img,pc_link,remark,sort,status,version  FROM biz_activity WHERE delete_flag = 1
 
-//批量-查询id
+///批量-查询id
 let result: Vec<BizActivity> = rb.list_by_ids("",&["1".to_string()]).await.unwrap();
 //Query ==> SELECT create_time,delete_flag,h5_banner_img,h5_link,id,name,pc_banner_img,pc_link,remark,sort,status,version  FROM biz_activity WHERE delete_flag = 1  AND id IN  (?) 
 
-//自定义查询
+///自定义查询
 let w = rb.new_wrapper().eq("id", "1").check().unwrap();
 let r: Result<Option<BizActivity>, Error> = rb.fetch_by_wrapper("", &w).await;
 //Query ==> SELECT  create_time,delete_flag,h5_banner_img,h5_link,id,name,pc_banner_img,pc_link,remark,sort,status,version  FROM biz_activity WHERE delete_flag = 1  AND id =  ? 
 
-//删除
+///删除
 rb.remove_by_id::<BizActivity>("", &"1".to_string()).await;
 //Exec ==> UPDATE biz_activity SET delete_flag = 0 WHERE id = 1
 
-//批量删除
+///批量删除
 rb.remove_batch_by_id::<BizActivity>("", &["1".to_string(), "2".to_string()]).await;
 //Exec ==> UPDATE biz_activity SET delete_flag = 0 WHERE id IN (  ?  ,  ?  ) 
 
-//修改
+///修改
 let w = rb.new_wrapper().eq("id", "12312").check().unwrap();
 rb.update_by_wrapper("", &activity, &w).await;
 //Exec ==> UPDATE biz_activity SET  create_time =  ? , delete_flag =  ? , status =  ? , version =  ?  WHERE id =  ? 
 
-//...还有更多方法，请查看crud.rs
+///...还有更多方法，请查看crud.rs
 ```
 
 ##### 逻辑删除插件使用(逻辑删除只有使用wrapper方法的list*(),remove*()，fetch*()有效)
