@@ -90,7 +90,7 @@ rb.link("mysql://root:123456@localhost:3306/test").await.unwrap();
 ///自定义连接池参数。(可选)
 // let mut opt =PoolOptions::new();
 // opt.max_size=100;
-// rb.link_opt(MYSQL_URL,&opt).await.unwrap();
+// rb.link_opt("mysql://root:123456@localhost:3306/test",&opt).await.unwrap();
 ///新建的wrapper sql逻辑
 let wrapper = rb.new_wrapper()
             .eq("id", 1)                    //sql:  id = 1
@@ -170,7 +170,7 @@ rb.update_by_wrapper("", &activity, &w).await;
 ##### 分页插件使用
 ```rust
         let mut rb = Rbatis::new();
-        rb.link(MYSQL_URL).await.unwrap();
+        rb.link("mysql://root:123456@localhost:3306/test").await.unwrap();
         //框架默认RbatisPagePlugin，如果需要自定义的话需要结构体 必须实现impl PagePlugin for Plugin***{}，例如：
         //rb.page_plugin = Box::new(RbatisPagePlugin {});
 
@@ -217,7 +217,7 @@ rb.update_by_wrapper("", &activity, &w).await;
 ``` python
 //执行到远程mysql 并且获取结果。支持serde_json可序列化的任意类型
         let rb = Rbatis::new();
-        rb.link(MYSQL_URL).await.unwrap();
+        rb.link("mysql://root:123456@localhost:3306/test").await.unwrap();
             let py = r#"
         SELECT * FROM biz_activity
         WHERE delete_flag = #{delete_flag}
@@ -283,7 +283,7 @@ fn main() {
            async move {
                fast_log::log::init_log("requests.log", &RuntimeType::Std).unwrap();
                let mut rb = Rbatis::new();
-               rb.link(MYSQL_URL).await.unwrap();
+               rb.link("mysql://root:123456@localhost:3306/test").await.unwrap();
                //xml数据建议以 XXMapper.xml 的格式存储管理
                rb.load_xml("test", r#"<?xml version="1.0" encoding="UTF-8"?>
    <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
@@ -341,7 +341,7 @@ fn main() {
 ``` rust
    async_std::task::block_on(async {
         let rb = Rbatis::new();
-        rb.link(MYSQL_URL).await.unwrap();
+        rb.link("mysql://root:123456@localhost:3306/test").await.unwrap();
         let tx_id = "1";
         rb.begin(tx_id).await.unwrap();
         let v: serde_json::Value = rb.fetch(tx_id, "SELECT count(1) FROM biz_activity;").await.unwrap();
