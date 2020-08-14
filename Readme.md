@@ -54,19 +54,19 @@ rbatis =  { version = "1.4.3" }
 
 #####  QueryWrapper支持，可以免写xml，py，sql(详见 example/crud_test.rs)
 ```rust
-        // 也可以使用 let wrapper = rbatis.new_wrapper();
+        // 也可以使用 rbatis.new_wrapper();简化创建流程
         let wrapper = Wrapper::new(&DriverType::Mysql)
-            .eq("id", 1)
-            .and()
-            .ne("id", 1)
-            .in_array("id", &[1, 2, 3])
-            .not_in("id", &[1, 2, 3])
-            .like("name", 1)
-            .or()
-            .not_like("name", "asdf")
-            .between("create_time", "2020-01-01 00:00:00", "2020-12-12 00:00:00")
-            .group_by(&["id"])
-            .order_by(true, &["id", "name"])
+            .eq("id", 1)                    //sql:  id = 1
+            .and()                          //sql:  and 
+            .ne("id", 1)                    //sql:  id <> 1
+            .in_array("id", &[1, 2, 3])     //sql:  id in (1,2,3)
+            .not_in("id", &[1, 2, 3])       //sql:  id not in (1,2,3)
+            .like("name", 1)                //sql:  name like 1
+            .or()                           //sql:  or
+            .not_like("name", "asdf")       //sql:  name not like 'asdf'
+            .between("create_time", "2020-01-01 00:00:00", "2020-12-12 00:00:00")//sql:  create_time between '2020-01-01 00:00:00' and '2020-01-01 00:00:00'
+            .group_by(&["id"])              //sql:  group by id
+            .order_by(true, &["id", "name"])//sql:  group by id,name
             .check().unwrap();
 ```
 
