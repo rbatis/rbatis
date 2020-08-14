@@ -131,7 +131,7 @@ let r = rb.update_by_wrapper("", &activity, &rb.new_wrapper()).await;
 
 ##### 分页插件使用
 ```rust
-        let rb = Rbatis::new();
+        let mut rb = Rbatis::new();
         rb.link(MYSQL_URL).await.unwrap();
         //框架默认RbatisPagePlugin，如果需要自定义的话需要结构体 必须实现impl PagePlugin for Plugin***{}
         rb.page_plugin = Box::new(RbatisPagePlugin {});
