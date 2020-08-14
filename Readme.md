@@ -133,8 +133,8 @@ let r = rb.update_by_wrapper("", &activity, &rb.new_wrapper()).await;
 ```rust
         let mut rb = Rbatis::new();
         rb.link(MYSQL_URL).await.unwrap();
-        //框架默认RbatisPagePlugin，如果需要自定义的话需要结构体 必须实现impl PagePlugin for Plugin***{}
-        rb.page_plugin = Box::new(RbatisPagePlugin {});
+        //框架默认RbatisPagePlugin，如果需要自定义的话需要结构体 必须实现impl PagePlugin for Plugin***{}，例如：
+        //rb.page_plugin = Box::new(RbatisPagePlugin {});
         let wraper= rb.new_wrapper()
                     .eq("delete_flag",1)
                     .check()
