@@ -389,6 +389,7 @@ async fn main() -> std::io::Result<()> {
 | i32,i64,f32,f64,bool,String...more rust type   | √     |  
 | NativeDateTime           | √     |  
 | BigDecimal               | √     |
+| serde_json::Value...more serde type         | √     |
 
 ### 支持数据库类型√已支持.进行中
 | 数据库    | 已支持 |
