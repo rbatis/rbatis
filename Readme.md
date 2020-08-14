@@ -77,8 +77,7 @@ impl CRUDEnable for BizActivity {
 }
 
 //rbatis初始化，rbatis是线程安全的，所以可以使用lazy_static 定义为全局变量
-let mut rb = Rbatis::new();
-rb.logic_plugin = Some(Box::new(RbatisLogicDeletePlugin::new("delete_flag")));
+let rb = Rbatis::new();
 rb.link("mysql://root:123456@localhost:3306/test").await.unwrap();
 //新建的wrapper sql逻辑
 let wrapper = rb.new_wrapper()
