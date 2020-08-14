@@ -87,8 +87,10 @@ impl CRUDEnable for BizActivity {
 let rb = Rbatis::new();
 ///连接数据库   
 rb.link("mysql://root:123456@localhost:3306/test").await.unwrap();
-///自定义连接池参数。 
-// rb.link_opt(MYSQL_URL,&PoolOptions::new()).await.unwrap();
+///自定义连接池参数。(可选)
+// let mut opt =PoolOptions::new();
+// opt.max_size=100;
+// rb.link_opt(MYSQL_URL,&opt).await.unwrap();
 ///新建的wrapper sql逻辑
 let wrapper = rb.new_wrapper()
             .eq("id", 1)                    //sql:  id = 1
