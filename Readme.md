@@ -55,7 +55,7 @@ rbatis-core = { version = "1.4.3", features = ["all"]}
 rbatis =  { version = "1.4.3" } 
 ```
 
-#####  QueryWrapper支持，常用方法(详见example/crud_test.rs)
+##### 一分钟快速学会， QueryWrapper，常用方法(详见example/crud_test.rs)
 ```rust
 ///表结构
 #[derive(Serialize, Deserialize, Clone, Debug)]
