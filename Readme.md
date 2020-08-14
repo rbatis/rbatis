@@ -125,6 +125,10 @@ let result: Vec<BizActivity> = rb.list("").await.unwrap();
 let result: Vec<BizActivity> = rb.list_by_ids("",&["1".to_string()]).await.unwrap();
 //Query ==> SELECT create_time,delete_flag,h5_banner_img,h5_link,id,name,pc_banner_img,pc_link,remark,sort,status,version  FROM biz_activity WHERE delete_flag = 1  AND id IN  (?) 
 
+//自定义查询
+let w = rb.new_wrapper().eq("id", "1").check().unwrap();
+let r: Result<Option<BizActivity>, Error> = rb.fetch_by_wrapper("", &w).await;
+//Query ==> SELECT  create_time,delete_flag,h5_banner_img,h5_link,id,name,pc_banner_img,pc_link,remark,sort,status,version  FROM biz_activity WHERE delete_flag = 1  AND id =  ? 
 
 //删除
 rb.remove_by_id::<BizActivity>("", &"1".to_string()).await;
