@@ -78,7 +78,7 @@ pub struct BizActivity {
     pub delete_flag: Option<i32>,
 }
 
-/// 表名默认为结构体名称的蛇形命名，biz_activity。如果不正确，可以重写 fn table_name() -> String 方法！
+/// 实现CRUDEnable接口,以支持自动识别。自动识别表名为'biz_activity'如果不正确，可以重写 fn table_name()方法！
 impl CRUDEnable for BizActivity {
     type IdType = String;
 }
