@@ -80,7 +80,7 @@ impl CRUDEnable for BizActivity {
 let mut rb = Rbatis::new();
 rb.logic_plugin = Some(Box::new(RbatisLogicDeletePlugin::new("delete_flag")));
 rb.link("mysql://root:123456@localhost:3306/test").await.unwrap();
-        //新建的wrapper sql逻辑
+//新建的wrapper sql逻辑
 let wrapper = rb.new_wrapper()
             .eq("id", 1)                    //sql:  id = 1
             .and()                          //sql:  and 
