@@ -464,5 +464,5 @@ rbatis-core = { features = ["runtime-async-std","all-type"]}
 # TODO 即将到来的特性
 
 
-## 该框架编写非常不易而且耗时，欢迎微信捐赠~或者~右上角点下star
+## 为了大家有一款称心如意的ORM框架，编写非常非常耗时且不容易，欢迎微信捐赠支持~或者~右上角点下star
 ![Image text](https://zhuxiujia.github.io/gomybatis.io/assets/wx_account.jpg)
