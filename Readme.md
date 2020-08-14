@@ -118,7 +118,7 @@ let result: Option<BizActivity> = rb.fetch_by_id("", &"1".to_string()).await.unw
 //Query ==> SELECT create_time,delete_flag,h5_banner_img,h5_link,id,name,pc_banner_img,pc_link,remark,sort,status,version  FROM biz_activity WHERE delete_flag = 1  AND id =  ? 
 
 //批量查全部
-let result: Vec<BizActivity> = rb.list("", &"1".to_string()).await.unwrap();
+let result: Vec<BizActivity> = rb.list("").await.unwrap();
 //Query ==> SELECT create_time,delete_flag,h5_banner_img,h5_link,id,name,pc_banner_img,pc_link,remark,sort,status,version  FROM biz_activity WHERE delete_flag = 1  AND id =  ? 
 
 //删除
