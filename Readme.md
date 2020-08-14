@@ -103,18 +103,29 @@ let activity = BizActivity {
                 delete_flag: Some(1),
             };
 //保存
-let r = rb.save("",&activity).await;
-            if r.is_err() {
-                println!("{}", r.err().unwrap().to_string());
-            }
+rb.save("",&activity).await;
+//Exec ==> INSERT INTO biz_activity (create_time,delete_flag,h5_banner_img,h5_link,id,name,pc_banner_img,pc_link,remark,sort,status,version) VALUES ( ? , ? , ? , ? , ? , ? , ? , ? , ? , ? , ? , ? )
+
 //批量保存
-let r = rb.save_batch("", &vec![activity]).await;
+rb.save_batch("", &vec![activity]).await;
+//Exec ==> INSERT INTO biz_activity (create_time,delete_flag,h5_banner_img,h5_link,id,name,pc_banner_img,pc_link,remark,sort,status,version) VALUES ( ? , ? , ? , ? , ? , ? , ? , ? , ? , ? , ? , ? ),( ? , ? , ? , ? , ? , ? , ? , ? , ? , ? , ? , ? )
+
+//查询
+rb.fetch_by_id::<Option<BizActivity>>("", &"1".to_string()).await;
+//Query ==> SELECT create_time,delete_flag,h5_banner_img,h5_link,id,name,pc_banner_img,pc_link,remark,sort,status,version  FROM biz_activity WHERE delete_flag = 1  AND id =  ? 
+
 //删除
-let r = rb.remove_by_id::<BizActivity>("", &"1".to_string()).await;
+rb.remove_by_id::<BizActivity>("", &"1".to_string()).await;
+//Exec ==> UPDATE biz_activity SET delete_flag = 0 WHERE id = 1
+
 //批量删除
-let r = rb.remove_batch_by_id::<BizActivity>("", &["1".to_string(), "2".to_string()]).await;
+rb.remove_batch_by_id::<BizActivity>("", &["1".to_string(), "2".to_string()]).await;
+//Exec ==> UPDATE biz_activity SET delete_flag = 0 WHERE id IN (  ?  ,  ?  ) 
+
 //修改
-let r = rb.update_by_wrapper("", &activity, &rb.new_wrapper()).await;
+let w = rb.new_wrapper().eq("id", "12312").check().unwrap();
+rb.update_by_wrapper("", &activity, &w).await;
+//Exec ==> UPDATE biz_activity SET  create_time =  ? , delete_flag =  ? , status =  ? , version =  ?  WHERE id =  ? 
 ```
 
 ##### 逻辑删除插件使用(逻辑删除只有使用wrapper方法的list*(),remove*()，fetch*()有效)
