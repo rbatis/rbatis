@@ -117,6 +117,10 @@ rb.save_batch("", &vec![activity]).await;
 let result: Option<BizActivity> = rb.fetch_by_id("", &"1".to_string()).await.unwrap();
 //Query ==> SELECT create_time,delete_flag,h5_banner_img,h5_link,id,name,pc_banner_img,pc_link,remark,sort,status,version  FROM biz_activity WHERE delete_flag = 1  AND id =  ? 
 
+//批量查全部
+let result: Vec<BizActivity> = rb.list("", &"1".to_string()).await.unwrap();
+//Query ==> SELECT create_time,delete_flag,h5_banner_img,h5_link,id,name,pc_banner_img,pc_link,remark,sort,status,version  FROM biz_activity WHERE delete_flag = 1  AND id =  ? 
+
 //删除
 rb.remove_by_id::<BizActivity>("", &"1".to_string()).await;
 //Exec ==> UPDATE biz_activity SET delete_flag = 0 WHERE id = 1
@@ -129,6 +133,8 @@ rb.remove_batch_by_id::<BizActivity>("", &["1".to_string(), "2".to_string()]).aw
 let w = rb.new_wrapper().eq("id", "12312").check().unwrap();
 rb.update_by_wrapper("", &activity, &w).await;
 //Exec ==> UPDATE biz_activity SET  create_time =  ? , delete_flag =  ? , status =  ? , version =  ?  WHERE id =  ? 
+
+//...还有更多方法，请查看crud.rs
 ```
 
 ##### 逻辑删除插件使用(逻辑删除只有使用wrapper方法的list*(),remove*()，fetch*()有效)
