@@ -70,9 +70,30 @@ rbatis =  { version = "1.4.3" }
             .check().unwrap();
 ```
 
-
-#####  基本的CRUD内置方法 save...等常用方法(详见 example/crud_test.rs)
+#####  常用方法(详见example/crud_test.rs)
 ```rust
+///表结构
+#[derive(Serialize, Deserialize, Clone, Debug)]
+pub struct BizActivity {
+    pub id: Option<String>,
+    pub name: Option<String>,
+    pub pc_link: Option<String>,
+    pub h5_link: Option<String>,
+    pub pc_banner_img: Option<String>,
+    pub h5_banner_img: Option<String>,
+    pub sort: Option<String>,
+    pub status: Option<i32>,
+    pub remark: Option<String>,
+    pub create_time: Option<NaiveDateTime>,
+    pub version: Option<i32>,
+    pub delete_flag: Option<i32>,
+}
+
+/// 表名默认为结构体名称的蛇形命名，biz_activity。如果不正确，可以重写 fn table_name() -> String 方法！
+impl CRUDEnable for BizActivity {
+    type IdType = String;
+}
+
 let activity = Activity {
                 id: Some("12312".to_string()),
                 name: None,
