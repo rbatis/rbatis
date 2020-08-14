@@ -33,11 +33,9 @@
 * [示例项目（需要Clion导入）](https://github.com/rbatis/abs_admin)
 
 
+##### 项目实战 https://github.com/rbatis/abs_admin
 
-##### 项目实战例子 https://github.com/rbatis/abs_admin
-
-
-##### 首先(Cargo.toml)添加项目依赖
+##### 使用方法：添加依赖(Cargo.toml)
 ``` rust
 # add this library,and cargo install
 
@@ -54,32 +52,15 @@ rbatis-core = { version = "1.4.3", features = ["all"]}
 rbatis =  { version = "1.4.3" } 
 ```
 
-
-#####  基本的CRUD内置方法 save，save_batch，remove_batch_by_id，list_by_ids...等等常用方法(详见 example/crud_test.rs)
-```rust
-let activity = Activity {
-                id: Some("12312".to_string()),
-                name: None,
-                remark: None,
-                create_time: Some(NaiveDateTime::now()),
-                version: Some(1),
-                delete_flag: Some(1),
-            };
- let r = rb.save("",&activity).await;
-            if r.is_err() {
-                println!("{}", r.err().unwrap().to_string());
-            }
-```
 #####  QueryWrapper支持，可以免写xml，py，sql(详见 example/crud_test.rs)
 ```rust
- let mut m = Map::new();
-        m.insert("a".to_string(), json!("1"));
-        let w = Wrapper::new(&DriverType::Mysql).eq("id", 1)
+        // 也可以使用 let wrapper = rbatis.new_wrapper();
+        let wrapper = Wrapper::new(&DriverType::Mysql)
+            .eq("id", 1)
             .and()
             .ne("id", 1)
             .in_array("id", &[1, 2, 3])
             .not_in("id", &[1, 2, 3])
-            .all_eq(&m)
             .like("name", 1)
             .or()
             .not_like("name", "asdf")
@@ -89,20 +70,49 @@ let activity = Activity {
             .check().unwrap();
 ```
 
+
+#####  基本的CRUD内置方法 save...等常用方法(详见 example/crud_test.rs)
+```rust
+let activity = Activity {
+                id: Some("12312".to_string()),
+                name: None,
+                remark: None,
+                create_time: Some(NaiveDateTime::now()),
+                version: Some(1),
+                delete_flag: Some(1),
+            };
+//保存
+let r = rb.save("",&activity).await;
+            if r.is_err() {
+                println!("{}", r.err().unwrap().to_string());
+            }
+//批量保存
+let r = rb.save_batch("", &vec![activity]).await;
+//删除
+let r = rb.remove_by_id::<BizActivity>("", &"1".to_string()).await;
+//批量删除
+let r = rb.remove_batch_by_id::<BizActivity>("", &["1".to_string(), "2".to_string()]).await;
+//修改
+let r = rb.update_by_wrapper("", &activity, &rb.new_wrapper()).await;
+```
+
 ##### 分页插件使用
 ```rust
         let rb = Rbatis::new();
         rb.link(MYSQL_URL).await.unwrap();
-        let wraper= rb.new_wrapper().eq("delete_flag",1).check().unwrap();
+        let wraper= rb.new_wrapper()
+                    .eq("delete_flag",1)
+                    .check()
+                    .unwrap();
         let data: Page<BizActivity> = rb.fetch_page_by_wrapper("", &wraper,  &PageRequest::new(1, 20)).await.unwrap();
         println!("{}", serde_json::to_string(&data).unwrap());
 
-2020-07-10T21:28:40.036506700+08:00 INFO rbatis::rbatis - [rbatis] Query ==> SELECT count(1) FROM biz_activity  WHERE delete_flag =  ? LIMIT 0,20
-2020-07-10T21:28:40.040505200+08:00 INFO rbatis::rbatis - [rbatis] Args  ==> [1]
-2020-07-10T21:28:40.073506+08:00 INFO rbatis::rbatis - [rbatis] Total <== 1
-2020-07-10T21:28:40.073506+08:00 INFO rbatis::rbatis - [rbatis] Query ==> SELECT  create_time,delete_flag,h5_banner_img,h5_link,id,name,pc_banner_img,pc_link,remark,sort,status,version  FROM biz_activity  WHERE delete_flag =  ? LIMIT 0,20
-2020-07-10T21:28:40.073506+08:00 INFO rbatis::rbatis - [rbatis] Args  ==> [1]
-2020-07-10T21:28:40.076506500+08:00 INFO rbatis::rbatis - [rbatis] Total <== 5
+//2020-07-10T21:28:40.036506700+08:00 INFO rbatis::rbatis - [rbatis] Query ==> SELECT count(1) FROM biz_activity  WHERE delete_flag =  ? LIMIT 0,20
+//2020-07-10T21:28:40.040505200+08:00 INFO rbatis::rbatis - [rbatis] Args  ==> [1]
+//2020-07-10T21:28:40.073506+08:00 INFO rbatis::rbatis - [rbatis] Total <== 1
+//2020-07-10T21:28:40.073506+08:00 INFO rbatis::rbatis - [rbatis] Query ==> SELECT  create_time,delete_flag,h5_banner_img,h5_link,id,name,pc_banner_img,pc_link,remark,sort,status,version  FROM biz_activity  WHERE delete_flag =  ? LIMIT 0,20
+//2020-07-10T21:28:40.073506+08:00 INFO rbatis::rbatis - [rbatis] Args  ==> [1]
+//2020-07-10T21:28:40.076506500+08:00 INFO rbatis::rbatis - [rbatis] Total <== 5
 ```
 ```json
 {
