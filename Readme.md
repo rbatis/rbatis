@@ -117,6 +117,18 @@ let r = rb.remove_batch_by_id::<BizActivity>("", &["1".to_string(), "2".to_strin
 let r = rb.update_by_wrapper("", &activity, &rb.new_wrapper()).await;
 ```
 
+##### 逻辑删除插件使用(逻辑删除只有使用wrapper方法的list*(),remove*()，fetch*()有效)
+```rust
+   let mut rb = init_rbatis().await;
+   rb.logic_plugin = Some(Box::new(RbatisLogicDeletePlugin::new("delete_flag")));
+   rb.link("mysql://root:123456@localhost:3306/test").await.unwrap();
+           let r = rb.remove_batch_by_id::<BizActivity>("", &["1".to_string(), "2".to_string()]).await;
+           if r.is_err() {
+               println!("{}", r.err().unwrap().to_string());
+   }
+```
+
+
 ##### 分页插件使用
 ```rust
         let rb = Rbatis::new();
