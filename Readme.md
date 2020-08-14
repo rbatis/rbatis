@@ -52,25 +52,7 @@ rbatis-core = { version = "1.4.3", features = ["all"]}
 rbatis =  { version = "1.4.3" } 
 ```
 
-#####  QueryWrapper支持，可以免写xml，py，sql(详见 example/crud_test.rs)
-```rust
-        // 也可以使用 rbatis.new_wrapper();简化创建流程
-        let wrapper = Wrapper::new(&DriverType::Mysql)
-            .eq("id", 1)                    //sql:  id = 1
-            .and()                          //sql:  and 
-            .ne("id", 1)                    //sql:  id <> 1
-            .in_array("id", &[1, 2, 3])     //sql:  id in (1,2,3)
-            .not_in("id", &[1, 2, 3])       //sql:  id not in (1,2,3)
-            .like("name", 1)                //sql:  name like 1
-            .or()                           //sql:  or
-            .not_like("name", "asdf")       //sql:  name not like 'asdf'
-            .between("create_time", "2020-01-01 00:00:00", "2020-12-12 00:00:00")//sql:  create_time between '2020-01-01 00:00:00' and '2020-01-01 00:00:00'
-            .group_by(&["id"])              //sql:  group by id
-            .order_by(true, &["id", "name"])//sql:  group by id,name
-            .check().unwrap();
-```
-
-#####  常用方法(详见example/crud_test.rs)
+#####  QueryWrapper支持，常用方法(详见example/crud_test.rs)
 ```rust
 ///表结构
 #[derive(Serialize, Deserialize, Clone, Debug)]
@@ -93,6 +75,24 @@ pub struct BizActivity {
 impl CRUDEnable for BizActivity {
     type IdType = String;
 }
+
+//rbatis初始化，rbatis是线程安全的，所以可以使用lazy_static 定义为全局变量
+let rb = Rbatis::new();
+rb.link("mysql://root:123456@localhost:3306/test").await.unwrap();
+        //新建的wrapper sql逻辑
+let wrapper = rb.new_wrapper()
+            .eq("id", 1)                    //sql:  id = 1
+            .and()                          //sql:  and 
+            .ne("id", 1)                    //sql:  id <> 1
+            .in_array("id", &[1, 2, 3])     //sql:  id in (1,2,3)
+            .not_in("id", &[1, 2, 3])       //sql:  id not in (1,2,3)
+            .like("name", 1)                //sql:  name like 1
+            .or()                           //sql:  or
+            .not_like("name", "asdf")       //sql:  name not like 'asdf'
+            .between("create_time", "2020-01-01 00:00:00", "2020-12-12 00:00:00")//sql:  create_time between '2020-01-01 00:00:00' and '2020-01-01 00:00:00'
+            .group_by(&["id"])              //sql:  group by id
+            .order_by(true, &["id", "name"])//sql:  group by id,name
+            .check().unwrap();
 
 let activity = BizActivity {
                 id: Some("12312".to_string()),
