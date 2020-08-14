@@ -135,11 +135,13 @@ let r = rb.update_by_wrapper("", &activity, &rb.new_wrapper()).await;
         rb.link(MYSQL_URL).await.unwrap();
         //框架默认RbatisPagePlugin，如果需要自定义的话需要结构体 必须实现impl PagePlugin for Plugin***{}，例如：
         //rb.page_plugin = Box::new(RbatisPagePlugin {});
+
+        let req = PageRequest::new(1, 20);//分页请求，页码，条数
         let wraper= rb.new_wrapper()
                     .eq("delete_flag",1)
                     .check()
                     .unwrap();
-        let data: Page<BizActivity> = rb.fetch_page_by_wrapper("", &wraper,  &PageRequest::new(1, 20)).await.unwrap();
+        let data: Page<BizActivity> = rb.fetch_page_by_wrapper("", &wraper,  &req).await.unwrap();
         println!("{}", serde_json::to_string(&data).unwrap());
 
 //2020-07-10T21:28:40.036506700+08:00 INFO rbatis::rbatis - [rbatis] Query ==> SELECT count(1) FROM biz_activity  WHERE delete_flag =  ? LIMIT 0,20
