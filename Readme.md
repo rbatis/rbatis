@@ -350,42 +350,31 @@ fn main() {
 
 
 
-### Web框架支持(这里举例hyper,支持所有基于tokio,async_std的web框架)
+### Web框架支持(这里举例actix-web,支持所有基于tokio,async_std的web框架)
 ``` rust
-
 lazy_static! {
-  static ref RB:Rbatis=async_std::task::block_on(async {
-        Rbatis::new(MYSQL_URL).await.unwrap()
-    });
+   static ref RB:Rbatis=Rbatis::new();
 }
 
-use std::convert::Infallible;
-async fn hello(_: hyper::Request<hyper::Body>) -> Result<hyper::Response<hyper::Body>, Infallible> {
-    let v = RB.fetch("", "SELECT count(1) FROM biz_activity;").await;
-    if v.is_ok() {
-        let data: Value = v.unwrap();
-        Ok(hyper::Response::new(hyper::Body::from(data.to_string())))
-    } else {
-        Ok(hyper::Response::new(hyper::Body::from(v.err().unwrap().to_string())))
-    }
+async fn index() -> impl Responder {
+    let v:Result<i32,rbatis_core::Error> = RB.fetch("", "SELECT count(1) FROM biz_activity;").await;
+    HttpResponse::Ok().body(format!("count(1)={}",v.unwrap_or(0)))
 }
 
-#[tokio::main]
-#[test]
-pub async fn test_hyper(){
-    fast_log::log::init_log("requests.log",&RuntimeType::Std);
-    // For every connection, we must make a `Service` to handle all
-    // incoming HTTP requests on said connection.
-    let make_svc = hyper::service::make_service_fn(|_conn| {
-        // This is the `Service` that will handle the connection.
-        // `service_fn` is a helper to convert a function that
-        // returns a Response into a `Service`.
-        async { Ok::<_, Infallible>(hyper::service::service_fn(hello)) }
-    });
-    let addr = ([0, 0, 0, 0], 8000).into();
-    let server = hyper::Server::bind(&addr).serve(make_svc);
-    println!("Listening on http://{}", addr);
-    server.await.unwrap();
+#[actix_rt::main]
+async fn main() -> std::io::Result<()> {
+    //日志
+    fast_log::log::init_log("requests.log", &RuntimeType::Std).unwrap();
+    //链接数据库
+    RB.link("mysql://root:123456@localhost:3306/test").await.unwrap();
+    //http路由
+    HttpServer::new(|| {
+        App::new()
+            .route("/", web::get().to(index))
+    })
+        .bind("127.0.0.1:8000")?
+        .run()
+        .await
 }
 ```
 ### 支持数据结构列表
