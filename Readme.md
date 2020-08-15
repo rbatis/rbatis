@@ -83,6 +83,8 @@ impl CRUDEnable for BizActivity {
     type IdType = String;
 }
 
+#[actix_rt::main]
+async fn main() {
 ///rbatis初始化，rbatis是线程安全可使用lazy_static 定义为全局变量
 let rb = Rbatis::new();
 ///连接数据库   
@@ -151,6 +153,7 @@ rb.remove_batch_by_id::<BizActivity>("", &["1".to_string(), "2".to_string()]).aw
 let w = rb.new_wrapper().eq("id", "12312").check().unwrap();
 rb.update_by_wrapper("", &activity, &w).await;
 //Exec ==> UPDATE biz_activity SET  create_time =  ? , delete_flag =  ? , status =  ? , version =  ?  WHERE id =  ? 
+}
 
 ///...还有更多方法，请查看crud.rs
 ```
