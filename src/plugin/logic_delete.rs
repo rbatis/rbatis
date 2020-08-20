@@ -48,10 +48,39 @@ impl LogicDelete for RbatisLogicDeletePlugin {
             let new_sql = format!("UPDATE {} SET {} = {}", table_name, self.column(), self.deleted()) + sql_where;
             Ok(new_sql)
         } else if !sql_where.is_empty() {
-            let new_sql = format!("DELETE FROM {} {}", table_name, sql_where);
+            let new_sql = format!("DELETE FROM {}", table_name) + sql_where;
             Ok(new_sql)
         } else {
             Err(Error::from("[rbatis] del data must have where sql!"))
         };
     }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test_logic_delete_plugin_create_sql() {
+        let r = RbatisLogicDeletePlugin::new("del");
+        let table_fields = vec!["name", "age", "del"];
+        let sql_where = "";
+        let result = r.create_sql(&DriverType::Mysql, "test", &table_fields, sql_where).unwrap();
+        assert_eq!("UPDATE test SET del = 0", &result);
+
+        let sql_where = " WHERE name = 'zhangsan'";
+        let result = r.create_sql(&DriverType::Mysql, "test", &table_fields, sql_where).unwrap();
+        assert_eq!("UPDATE test SET del = 0 WHERE name = 'zhangsan'", &result);
+
+        let table_fields = vec!["name", "age"];
+        let sql_where = " WHERE name = 'zhangsan'";
+        let result = r.create_sql(&DriverType::Mysql, "test", &table_fields, sql_where).unwrap();
+        assert_eq!("DELETE FROM test WHERE name = 'zhangsan'", &result);
+
+        let table_fields = vec!["name", "age"];
+        let sql_where = "";
+        let result = r.create_sql(&DriverType::Mysql, "test", &table_fields, sql_where);
+        assert!(result.is_err());
+    }
+    
 }
