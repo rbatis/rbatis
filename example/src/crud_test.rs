@@ -118,7 +118,7 @@ pub fn test_remove_by_id() {
     async_std::task::block_on(async {
         let mut rb = init_rbatis().await;
         //设置 逻辑删除插件
-        rb.logic_plugin = Some(Box::new(RbatisLogicDeletePlugin::new("delete_flag")));
+        rb.logic_plugin = Some(Box::new(RbatisLogicDeletePlugin::new_opt("delete_flag",1,0)));
         rb.link("mysql://root:123456@localhost:3306/test").await.unwrap();
         let r = rb.remove_by_id::<BizActivity>("", &"1".to_string()).await;
         if r.is_err() {
