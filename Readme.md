@@ -346,7 +346,7 @@ fn main() {
    async_std::task::block_on(async {
         let rb = Rbatis::new();
         rb.link("mysql://root:123456@localhost:3306/test").await.unwrap();
-        let tx_id = "1";
+        let tx_id = "1";//事务id号
         rb.begin(tx_id).await.unwrap();
         let v: serde_json::Value = rb.fetch(tx_id, "SELECT count(1) FROM biz_activity;").await.unwrap();
         println!("{}", v.clone());
