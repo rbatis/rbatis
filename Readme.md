@@ -158,7 +158,7 @@ rb.update_by_wrapper("", &activity, &w).await;
 ///...还有更多方法，请查看crud.rs
 ```
 
-##### 逻辑删除插件使用(逻辑删除只有使用wrapper方法的list*(),remove*()，fetch*()有效)
+##### 逻辑删除插件使用(逻辑删除针对Rbatis提供的查询方法和删除方法有效，例如方法 list**(),remove**()，fetch**()) 。  update**方法和py，xml语法无效
 ```rust
    let mut rb = init_rbatis().await;
    //rb.logic_plugin = Some(Box::new(RbatisLogicDeletePlugin::new_opt("delete_flag",1,0)));//自定义已删除/未删除 写法
