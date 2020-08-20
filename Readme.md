@@ -51,8 +51,8 @@ log = "0.4"
 fast_log="1.2.2"
 
 #rbatis支持，版本必须保持一致(必须)
-rbatis-core = { version = "1.4.3", features = ["all"]}
-rbatis =  { version = "1.4.3" } 
+rbatis-core = { version = "1.4.4", features = ["all"]}
+rbatis =  { version = "1.4.4" } 
 
 #BigDecimal支持(非必须，适合金额计算场景)
 bigdecimal = "0.1.2"
