@@ -262,7 +262,7 @@ rb.link_opt("mysql://root:123456@localhost:3306/test", &opt).await.unwrap();
 ```
 
 
-#### xml使用方法
+#### XML使用方法
 ``` rust
 /**
 * 数据库表模型
