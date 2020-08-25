@@ -53,9 +53,14 @@ pub trait CRUDEnable: Send + Sync + Serialize + DeserializeOwned {
     ///
     #[inline]
     fn table_fields() -> String {
-        let a: Self = serde_json::from_str("{}").unwrap();
-        let v = serde_json::to_value(&a).unwrap();
+        let bean: serde_json::Result<Self> = serde_json::from_str("{}");
+        if bean.is_err() {
+            //if json decode fail,return '*'
+            return " * ".to_string();
+        }
+        let v = serde_json::to_value(&bean.unwrap()).unwrap_or(serde_json::Value::Null);
         if !v.is_object() {
+            //if json decode fail,return '*'
             return " * ".to_string();
         }
         let m = v.as_object().unwrap();
@@ -253,7 +258,7 @@ impl CRUD for Rbatis {
         let where_sql = arg.sql.as_str();
         let mut sql = String::new();
         if self.logic_plugin.is_some() {
-            sql = self.logic_plugin.as_ref().unwrap().create_sql(&self.driver_type()?, T::table_name().as_str(), &T::table_fields().split(",").collect(),make_where_sql(where_sql).as_str())?;
+            sql = self.logic_plugin.as_ref().unwrap().create_sql(&self.driver_type()?, T::table_name().as_str(), &T::table_fields().split(",").collect(), make_where_sql(where_sql).as_str())?;
         } else {
             sql = format!("DELETE FROM {} {}", T::table_name(), make_where_sql(where_sql));
         }
@@ -263,7 +268,7 @@ impl CRUD for Rbatis {
     async fn remove_by_id<T>(&self, tx_id: &str, id: &T::IdType) -> Result<u64> where T: CRUDEnable {
         let mut sql = String::new();
         if self.logic_plugin.is_some() {
-            sql = self.logic_plugin.as_ref().unwrap().create_sql(&self.driver_type()?, T::table_name().as_str(), &T::table_fields().split(",").collect(),format!(" WHERE id = {}", id).as_str())?;
+            sql = self.logic_plugin.as_ref().unwrap().create_sql(&self.driver_type()?, T::table_name().as_str(), &T::table_fields().split(",").collect(), format!(" WHERE id = {}", id).as_str())?;
         } else {
             sql = format!("DELETE FROM {} WHERE id = {}", T::table_name(), id);
         }
@@ -334,7 +339,7 @@ impl CRUD for Rbatis {
     }
 
     async fn fetch_by_id<T>(&self, tx_id: &str, id: &T::IdType) -> Result<T> where T: CRUDEnable {
-        let w = Wrapper::new(&self.driver_type().unwrap()).eq("id", id).check()?;
+        let w = Wrapper::new(&self.driver_type()?).eq("id", id).check()?;
         return self.fetch_by_wrapper(tx_id, &w).await;
     }
 
