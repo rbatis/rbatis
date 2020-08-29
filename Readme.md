@@ -1,8 +1,8 @@
 
 #### A ORM formwork Rustlang-based,dynamic sql, no Runtime,No Garbage Collector, low Memory use,High Performance orm Framework. support async_std,tokio
-#### rbatis 是一个无GC无虚拟机无运行时Runtime直接编译为机器码,并发安全的  数据库 ORM框架，并且所有数据传值均使用json（serde_json）
-#### rbatis 使用百分之百的安全代码实现
 #### This crate uses #![forbid(unsafe_code)] to ensure everything is implemented in 100% Safe Rust.
+#### rbatis 是一个无GC无虚拟机无运行时Runtime直接编译为机器码,并发安全的  数据库 ORM框架，并且所有数据传值均使用json（serde_json）使用百分之百的安全代码实现
+
 [![Build Status](https://travis-ci.org/zhuxiujia/rbatis.svg?branch=master)](https://travis-ci.org/zhuxiujia/rbatis)
 
 ![Image text](logo.png)
@@ -11,9 +11,9 @@
 ##### way not diesel,way not sqlx ? 为什么不选择diesel,sqlx之类的框架?
 | 框架    | 协程异步async高并发 | 使用难度 | 符合企业化规范（支持xml,无需重复编译）| logic del逻辑删除插件| page分页插件
 | ------ | ------ |------ |------ |------ |------ |
-| rbatis | √     | 简单(依赖json和反射)              |   √     |    √     |   √     |  
-| sqlx   | √     | 难（依赖宏）       |   x     |   x     |   x     |  
-| diesel | x     | 简单（缺少xml支持） |   x     |  x     |  x     |  
+| rbatis | √     | 非常简单   |   √     |    √     |   √     |  
+| sqlx   | √     | 难（强依赖宏和 莫名其妙的环境变量）       |   x     |   x     |   x     |  
+| diesel | x     | 简单（缺xml支持） |   x     |  x     |  x     |  
 
 
 ##### 和其他语言对比性能压测(环境（docker）仅供参考)
@@ -25,7 +25,7 @@
 
 * 使用最通用的json数据结构（基于serde_json）进行传参和通讯
 * 高性能，单线程benchmark 可轻松拉起200000 QPS/s（直接返回数据（数据库查询时间损耗0），win10,6 core i7,16GB）  多线程更高 远超go语言版本的GoMyBatis
-* 多功能，乐观锁插件+逻辑删除插件+分页插件+Py风格Sql+基本的Mybatis功能
+* 多功能，逻辑删除插件+分页插件+Py风格Sql+基本的Mybatis功能
 * 支持future,async await（理论上，假设严格按照async_std/tokio库替代所有io操作，那么并发量可远远超过go语言）
 * 日志支持,可自定义具体日志（基于标准库log(独立于任何特定的日志记录库)，日志可选任意第三方库实现）
 * 使用百分百的安全代码实现(lib.rs加入了"#![forbid(unsafe_code)]" 禁止不安全的unsafe代码)
@@ -51,8 +51,8 @@ log = "0.4"
 fast_log="1.2.2"
 
 #rbatis支持，版本必须保持一致(必须)
-rbatis-core = { version = "1.4.3", features = ["all"]}
-rbatis =  { version = "1.4.3" } 
+rbatis-core = { version = "1.4.5", features = ["all"]}
+rbatis =  { version = "1.4.5" } 
 
 #BigDecimal支持(非必须，适合金额计算场景)
 bigdecimal = "0.1.2"
@@ -158,9 +158,10 @@ rb.update_by_wrapper("", &activity, &w).await;
 ///...还有更多方法，请查看crud.rs
 ```
 
-##### 逻辑删除插件使用(逻辑删除只有使用wrapper方法的list*(),remove*()，fetch*()有效)
+##### 逻辑删除插件使用(逻辑删除针对Rbatis提供的查询方法和删除方法有效，例如方法 list**(),remove**()，fetch**())
 ```rust
    let mut rb = init_rbatis().await;
+   //rb.logic_plugin = Some(Box::new(RbatisLogicDeletePlugin::new_opt("delete_flag",1,0)));//自定义已删除/未删除 写法
    rb.logic_plugin = Some(Box::new(RbatisLogicDeletePlugin::new("delete_flag")));
    rb.link("mysql://root:123456@localhost:3306/test").await.unwrap();
            let r = rb.remove_batch_by_id::<BizActivity>("", &["1".to_string(), "2".to_string()]).await;
@@ -261,7 +262,7 @@ rb.link_opt("mysql://root:123456@localhost:3306/test", &opt).await.unwrap();
 ```
 
 
-#### xml使用方法
+#### XML使用方法
 ``` rust
 /**
 * 数据库表模型
@@ -345,7 +346,7 @@ fn main() {
    async_std::task::block_on(async {
         let rb = Rbatis::new();
         rb.link("mysql://root:123456@localhost:3306/test").await.unwrap();
-        let tx_id = "1";
+        let tx_id = "1";//事务id号
         rb.begin(tx_id).await.unwrap();
         let v: serde_json::Value = rb.fetch(tx_id, "SELECT count(1) FROM biz_activity;").await.unwrap();
         println!("{}", v.clone());
@@ -406,7 +407,7 @@ async fn main() -> std::io::Result<()> {
 ### 进度表-按照顺序实现
 | 功能    | 已支持 |
 | ------ | ------ |
-| CRUD(内置CRUD模板(内置CRUD支持乐观锁/逻辑删除))                  | √     |
+| CRUD(内置CRUD模板(内置CRUD支持逻辑删除插件))                  | √     |
 | LogSystem(日志组件)                                          | √     | 
 | Tx(事务/事务嵌套/注解声明式事务)                                | √     |   
 | Py(在SQL中使用和xml等价的类python语法)                         | √     | 
