@@ -135,11 +135,11 @@ impl Wrapper {
         self
     }
 
-    /// do method,if arg is true
+    /// do method,if test is true
     /// for example:
     ///  wrapper.if_do(true, |w| w.eq("id", "1"))
-    pub fn if_do(&mut self, arg: bool, method: fn(s: &mut Self) -> &mut Self) -> &mut Self {
-        if arg {
+    pub fn if_do(&mut self, test: bool, method: fn(s: &mut Self) -> &mut Self) -> &mut Self {
+        if test {
             return method(self);
         }
         return self;
