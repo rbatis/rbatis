@@ -136,6 +136,8 @@ impl Wrapper {
     }
 
     /// do method,if arg is true
+    /// for example:
+    ///  wrapper.if_do(true, |w| w.eq("id", "1"))
     pub fn if_do(&mut self, arg: bool, method: fn(s: &mut Self) -> &mut Self) -> &mut Self {
         if arg {
             return method(self);
