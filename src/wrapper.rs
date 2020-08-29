@@ -1,5 +1,6 @@
 use std::ops::Add;
 
+use futures_core::core_reexport::any::Any;
 use serde::{Deserialize, Serialize};
 use serde_json::{json, Map, Value};
 
@@ -132,6 +133,14 @@ impl Wrapper {
         let s = sql.replace(" and ", " AND ").replace(" or ", " OR ").replace(" where ", " WHERE ");
         self.sql.push_str(s.as_str());
         self
+    }
+
+    /// do method,if arg is true
+    pub fn if_do(&mut self, arg: bool, method: fn(s: &mut Self) -> &mut Self) -> &mut Self {
+        if arg {
+            return method(self);
+        }
+        return self;
     }
 
     pub fn trim_sql(&mut self, sql: &str) -> &mut Self {
@@ -499,5 +508,15 @@ mod test {
 
         let ms: Vec<&str> = w.sql.matches("$").collect();
         assert_eq!(ms.len(), w.args.len());
+    }
+
+    #[test]
+    fn test_do_is_some() {
+        let p = Option::<i32>::Some(1);
+        let w = Wrapper::new(&DriverType::Postgres)
+            .if_do(p.is_some(), |w| w.eq("a", "1"))
+            .check().unwrap();
+        println!("sql:{:?}", w.sql.as_str());
+        println!("arg:{:?}", w.args.clone());
     }
 }
