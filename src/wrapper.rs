@@ -125,18 +125,18 @@ impl Wrapper {
 
 
     /// do method,if test is true
-   /// for example:
-   ///  wrapper.if_do(true, |w| w.eq("id", "1"))
-    pub fn do_if(&mut self, test: bool, method: fn(s: &mut Self) -> &mut Self) -> &mut Self {
+    /// for example:
+    ///  wrapper.if_do(&1,true, |w,arg| w.eq("id", arg))
+    pub fn do_if<'s, T>(&'s mut self, arg: &T, test: bool, method: fn(s: &'s mut Self, arg: &T) -> &'s mut Self) -> &'s mut Self {
         if test {
-            return method(self);
+            return method(self, arg);
         }
         return self;
     }
 
     /// choose witch equal conditions
     /// for example:
-    ///         wrapper.choose(&[
+    ///         wrapper.choose(&1,&[
     ///                 (arg==0,|w|  w.eq("a", "0")),
     ///                 (arg==1,|w|  w.eq("a", "1")),
     ///                 (arg==2,|w|  w.eq("a", "2")),],|w|  w)
@@ -149,13 +149,13 @@ impl Wrapper {
     ///       _ => w
     ///    }
     ///
-    pub fn do_choose(&mut self, whens: &[(bool, fn(s: &mut Wrapper) -> &mut Wrapper)], otherwise: fn(s: &mut Self) -> &mut Self) -> &mut Self {
+    pub fn do_choose<'s, T>(&'s mut self, arg: &T, whens: &[(bool, fn(s: &'s mut Wrapper, arg: &T) -> &'s mut Wrapper)], otherwise: fn(s: &'s mut Self, arg: &T) -> &'s mut Self) -> &'s mut Self {
         for (test, method) in whens {
             if *test {
-                return method(self);
+                return method(self, arg);
             }
         }
-        return otherwise(self);
+        return otherwise(self, arg);
     }
 
 
@@ -541,7 +541,7 @@ mod test {
     fn test_do_is_some() {
         let p = Option::<i32>::Some(1);
         let w = Wrapper::new(&DriverType::Postgres)
-            .do_if(p.is_some(), |w| w.eq("a", "1"))
+            .do_if(&p, p.is_some(), |w, arg| w.eq("a", arg))
             .check().unwrap();
         println!("sql:{:?}", w.sql.as_str());
         println!("arg:{:?}", w.args.clone());
@@ -551,11 +551,11 @@ mod test {
     fn test_choose() {
         let arg = 0;
         let w = Wrapper::new(&DriverType::Postgres)
-            .do_choose(&[
-                (arg == 0, |w| w.eq("a", "0")),
-                (arg == 1, |w| w.eq("a", "1")),
-                (arg == 2, |w| w.eq("a", "2")),
-            ], |w| w)
+            .do_choose(&arg, &[
+                (arg == 0, |w, arg| w.eq("a", arg)),
+                (arg == 1, |w, arg| w.eq("a", arg)),
+                (arg == 2, |w, arg| w.eq("a", arg)),
+            ], |w, arg| w)
             .check().unwrap();
         println!("sql:{:?}", w.sql.as_str());
         println!("arg:{:?}", w.args.clone());
