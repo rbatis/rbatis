@@ -98,16 +98,16 @@ impl Wrapper {
     ///  let w = Wrapper::new(&DriverType::Postgres).eq("a", "1").check().unwrap();
     ///  let w2 = Wrapper::new(&DriverType::Postgres).eq("b", "2")
     ///             .and()
-    ///             .link_right_wrapper(&w)
+    ///             .right_link_wrapper(&w)
     ///             .check().unwrap();
     ///  println!("sql:{:?}", w2.sql.as_str());  // sql:"a =  $1 a =  $2 "
     ///  println!("arg:{:?}", w2.args.clone()); // arg:[String("1"), String("2")]
     ///
-    pub fn link_right_wrapper(&mut self, arg: &Wrapper) -> &mut Self {
-        self.link_right(&arg.driver_type, &arg.sql, &arg.args)
+    pub fn right_link_wrapper(&mut self, arg: &Wrapper) -> &mut Self {
+        self.right_link(&arg.driver_type, &arg.sql, &arg.args)
     }
 
-    pub fn link_right(&mut self, driver_type: &DriverType, sql: &str, args: &Vec<Value>) -> &mut Self {
+    pub fn right_link(&mut self, driver_type: &DriverType, sql: &str, args: &Vec<Value>) -> &mut Self {
         let mut new_sql = sql.to_string();
         if driver_type.eq(&DriverType::Postgres) {
             let arg_old_len = args.len();
@@ -124,6 +124,41 @@ impl Wrapper {
     }
 
 
+    /// do method,if test is true
+   /// for example:
+   ///  wrapper.if_do(true, |w| w.eq("id", "1"))
+    pub fn do_if(&mut self, test: bool, method: fn(s: &mut Self) -> &mut Self) -> &mut Self {
+        if test {
+            return method(self);
+        }
+        return self;
+    }
+
+    /// choose witch equal conditions
+    /// for example:
+    ///         wrapper.choose(&[
+    ///                 (arg==0,|w|  w.eq("a", "0")),
+    ///                 (arg==1,|w|  w.eq("a", "1")),
+    ///                 (arg==2,|w|  w.eq("a", "2")),],|w|  w)
+    ///
+    /// equal to same as:
+    ///   match arg {
+    ///       0 => w.eq("a", "0")),
+    ///       1 => w.eq("a", "1")),
+    ///       2 => w.eq("a", "2")),
+    ///       _ => w
+    ///    }
+    ///
+    pub fn do_choose(&mut self, whens: &[(bool, fn(s: &mut Wrapper) -> &mut Wrapper)], otherwise: fn(s: &mut Self) -> &mut Self) -> &mut Self {
+        for (test, method) in whens {
+            if *test {
+                return method(self);
+            }
+        }
+        return otherwise(self);
+    }
+
+
     pub fn set_sql(&mut self, sql: &str) -> &mut Self {
         self.sql = sql.replace(" and ", " AND ").replace(" or ", " OR ").replace(" where ", " WHERE ");
         self
@@ -133,16 +168,6 @@ impl Wrapper {
         let s = sql.replace(" and ", " AND ").replace(" or ", " OR ").replace(" where ", " WHERE ");
         self.sql.push_str(s.as_str());
         self
-    }
-
-    /// do method,if test is true
-    /// for example:
-    ///  wrapper.if_do(true, |w| w.eq("id", "1"))
-    pub fn if_do(&mut self, test: bool, method: fn(s: &mut Self) -> &mut Self) -> &mut Self {
-        if test {
-            return method(self);
-        }
-        return self;
     }
 
     pub fn trim_sql(&mut self, sql: &str) -> &mut Self {
@@ -502,7 +527,7 @@ mod test {
         let w = Wrapper::new(&DriverType::Postgres).eq("a", "1").check().unwrap();
         let w2 = Wrapper::new(&DriverType::Postgres).eq("b", "2")
             .and()
-            .link_right_wrapper(&w)
+            .right_link_wrapper(&w)
             .check().unwrap();
 
         println!("sql:{:?}", w2.sql.as_str());
@@ -516,7 +541,21 @@ mod test {
     fn test_do_is_some() {
         let p = Option::<i32>::Some(1);
         let w = Wrapper::new(&DriverType::Postgres)
-            .if_do(p.is_some(), |w| w.eq("a", "1"))
+            .do_if(p.is_some(), |w| w.eq("a", "1"))
+            .check().unwrap();
+        println!("sql:{:?}", w.sql.as_str());
+        println!("arg:{:?}", w.args.clone());
+    }
+
+    #[test]
+    fn test_choose() {
+        let arg = 0;
+        let w = Wrapper::new(&DriverType::Postgres)
+            .do_choose(&[
+                (arg == 0, |w| w.eq("a", "0")),
+                (arg == 1, |w| w.eq("a", "1")),
+                (arg == 2, |w| w.eq("a", "2")),
+            ], |w| w)
             .check().unwrap();
         println!("sql:{:?}", w.sql.as_str());
         println!("arg:{:?}", w.args.clone());
