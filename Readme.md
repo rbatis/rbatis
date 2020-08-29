@@ -19,8 +19,8 @@
 ##### 和其他语言对比性能压测(环境（docker）仅供参考)
 | 语言 | 框架     | 数据库 | count语句（1万次） | 纳秒/每操作（低越好） | 查询数/秒Qps(高越好) |内存（低越好） |
 | ------ | ------ | ------ |------ |------ |------ |------ |
-| Rust   | rbatis  - tokio Runtime      | mysql(docker with 1CPU,1G Mem)    | select count(1) from table;    | 965649 ns/op   |  1035 Qps/s  |  2.1MB   |      
-| Golang | GoMybatis - goroutines    | mysql(docker with 1CPU,1G Mem)    | select count(1) from table;   | 1184503 ns/op  |  844  Qps/s   |  28.4MB  |     
+| Rust   | rbatis/tokio  | mysql(docker with 1CPU,1G Mem)    | select count(1) from table;    | 965649 ns/op   |  1035 Qps/s  |  2.1MB   |      
+| Golang | GoMybatis/Std   | mysql(docker with 1CPU,1G Mem)    | select count(1) from table;   | 1184503 ns/op  |  844  Qps/s   |  28.4MB  |     
 
 
 * 使用最通用的json数据结构（基于serde_json）进行传参和通讯
