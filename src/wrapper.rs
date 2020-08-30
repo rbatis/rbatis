@@ -126,7 +126,8 @@ impl Wrapper {
 
     /// do method,if test is true
     /// for example:
-    ///  wrapper.if_do(&1,true, |w,arg| w.eq("id", arg))
+    ///  let arg = 1;
+    ///  wrapper.if_do(true, |w,arg| w.eq("id", arg))
     pub fn do_if<'s, F>(&'s mut self, test: bool, method: F) -> &'s mut Self
         where F: FnOnce(&'s mut Self) -> &'s mut Self {
         if test {
