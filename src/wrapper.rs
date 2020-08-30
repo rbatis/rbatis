@@ -137,6 +137,26 @@ impl Wrapper {
     }
 
 
+    ///match cases
+    /// for example:
+    ///  let p = Option::<i32>::Some(1);
+    ///         let w = Wrapper::new(&DriverType::Postgres)
+    ///             .do_match(&[
+    ///                 Case::new(p.is_some(),|w| w),
+    ///                 Case::new(p.is_none(),|w| w),
+    ///             ], |w| w)
+    ///             .check().unwrap();
+    pub fn do_match<'s, F>(&'s mut self, cases: &'s [Case], default: F) -> &'s mut Self
+        where F: FnOnce(&'s mut Self) -> &'s mut Self {
+        for x in cases {
+            if x.test {
+                return x.call_func(self);
+            }
+        }
+        return default(self);
+    }
+
+
     pub fn set_sql(&mut self, sql: &str) -> &mut Self {
         self.sql = sql.replace(" and ", " AND ").replace(" or ", " OR ").replace(" where ", " WHERE ");
         self
@@ -444,6 +464,26 @@ impl Wrapper {
     }
 }
 
+pub struct Case {
+    test: bool,
+    func: Box<dyn Fn(&mut Wrapper) -> &mut Wrapper>,
+}
+
+impl Case {
+    pub fn new<F>(test: bool, f: F) -> Self
+        where F: 'static + Fn(&mut Wrapper) -> &mut Wrapper {
+        Self {
+            test,
+            func: Box::new(f),
+        }
+    }
+
+    pub fn call_func<'s,'a>(&'s self, w: &'a mut Wrapper) -> &'a mut Wrapper {
+        (self.func)(w)
+    }
+}
+
+
 mod test {
     use serde_json::json;
     use serde_json::Map;
@@ -451,7 +491,7 @@ mod test {
     use rbatis_core::db::DriverType;
 
     use crate::utils::bencher::Bencher;
-    use crate::wrapper::Wrapper;
+    use crate::wrapper::{Case, Wrapper};
 
     #[test]
     fn test_select() {
@@ -520,6 +560,20 @@ mod test {
         let p = Option::<i32>::Some(1);
         let w = Wrapper::new(&DriverType::Postgres)
             .do_if(p.is_some(), |w| w.eq("a", p))
+            .check().unwrap();
+        println!("sql:{:?}", w.sql.as_str());
+        println!("arg:{:?}", w.args.clone());
+    }
+
+
+    #[test]
+    fn test_do_match() {
+        let p = 1;
+        let w = Wrapper::new(&DriverType::Postgres)
+            .do_match(&[
+                Case::new(p==0, |w| w.eq("a","some")),
+                Case::new(p==2, |w| w.eq("a","none")),
+            ], |w| w.eq("a","default"))
             .check().unwrap();
         println!("sql:{:?}", w.sql.as_str());
         println!("arg:{:?}", w.args.clone());
