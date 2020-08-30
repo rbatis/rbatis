@@ -127,35 +127,12 @@ impl Wrapper {
     /// do method,if test is true
     /// for example:
     ///  wrapper.if_do(&1,true, |w,arg| w.eq("id", arg))
-    pub fn do_if<'s, T>(&'s mut self, arg: &T, test: bool, method: fn(s: &'s mut Self, arg: &T) -> &'s mut Self) -> &'s mut Self {
+    pub fn do_if<'s, F>(&'s mut self, test: bool, method: F) -> &'s mut Self
+        where F: FnOnce(&'s mut Self) -> &'s mut Self {
         if test {
-            return method(self, arg);
+            return method(self);
         }
         return self;
-    }
-
-    /// choose witch equal conditions
-    /// for example:
-    ///         wrapper.choose(&1,&[
-    ///                 (arg==0,|w|  w.eq("a", "0")),
-    ///                 (arg==1,|w|  w.eq("a", "1")),
-    ///                 (arg==2,|w|  w.eq("a", "2")),],|w|  w)
-    ///
-    /// equal to same as:
-    ///   match arg {
-    ///       0 => w.eq("a", "0")),
-    ///       1 => w.eq("a", "1")),
-    ///       2 => w.eq("a", "2")),
-    ///       _ => w
-    ///    }
-    ///
-    pub fn do_choose<'s, T>(&'s mut self, arg: &T, whens: &[(bool, fn(s: &'s mut Wrapper, arg: &T) -> &'s mut Wrapper)], otherwise: fn(s: &'s mut Self, arg: &T) -> &'s mut Self) -> &'s mut Self {
-        for (test, method) in whens {
-            if *test {
-                return method(self, arg);
-            }
-        }
-        return otherwise(self, arg);
     }
 
 
@@ -541,21 +518,7 @@ mod test {
     fn test_do_is_some() {
         let p = Option::<i32>::Some(1);
         let w = Wrapper::new(&DriverType::Postgres)
-            .do_if(&p, p.is_some(), |w, arg| w.eq("a", arg))
-            .check().unwrap();
-        println!("sql:{:?}", w.sql.as_str());
-        println!("arg:{:?}", w.args.clone());
-    }
-
-    #[test]
-    fn test_choose() {
-        let arg = 0;
-        let w = Wrapper::new(&DriverType::Postgres)
-            .do_choose(&arg, &[
-                (arg == 0, |w, arg| w.eq("a", arg)),
-                (arg == 1, |w, arg| w.eq("a", arg)),
-                (arg == 2, |w, arg| w.eq("a", arg)),
-            ], |w, arg| w)
+            .do_if(p.is_some(), |w| w.eq("a", p))
             .check().unwrap();
         println!("sql:{:?}", w.sql.as_str());
         println!("arg:{:?}", w.args.clone());
