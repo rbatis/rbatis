@@ -7,7 +7,6 @@ use syn;
 
 use crate::proc_macro::TokenStream;
 
-
 #[proc_macro_derive(CRUDEnable)]
 pub fn hello_macro_derive(input: TokenStream) -> TokenStream {
     // 构建 Rust 代码所代表的语法树
@@ -18,10 +17,10 @@ pub fn hello_macro_derive(input: TokenStream) -> TokenStream {
     impl_macro(&ast)
 }
 
-fn impl_macro(ast: &syn::DeriveInput) -> TokenStream {
-    let name = &ast.ident;
+///filter id_type
+fn find_id_type_ident(arg: &syn::Data) -> Ident {
     let mut id_type = Ident::new("String", Span::call_site());
-    match &ast.data {
+    match &arg {
         syn::Data::Struct(ref data_struct) => match data_struct.fields {
             // field: (0) a: String
             syn::Fields::Named(ref fields_named) => {
@@ -30,7 +29,7 @@ fn impl_macro(ast: &syn::DeriveInput) -> TokenStream {
                     let ty = format!("{}", field.ty.to_token_stream());
                     //println!("named struct field: ({}) {}: {}", index, field_name, field.ty.to_token_stream());
                     if field_name.eq("id") {
-                        let mut inner_type = ty.trim().replace(" ","").to_string();
+                        let mut inner_type = ty.trim().replace(" ", "").to_string();
                         if inner_type.starts_with("Option<") {
                             inner_type = inner_type.trim_start_matches("Option<").trim_end_matches(">").to_string();
                         }
@@ -41,21 +40,19 @@ fn impl_macro(ast: &syn::DeriveInput) -> TokenStream {
                     }
                 }
             }
-            syn::Fields::Unnamed(_) => {
-
-            }
-            syn::Fields::Unit => {
-
-            }
-
+            syn::Fields::Unnamed(_) => {}
+            syn::Fields::Unit => {}
         },
         _ => (),
     }
+    id_type
+}
 
-   // let snake_name=string_util::to_snake_name;
 
+fn impl_macro(ast: &syn::DeriveInput) -> TokenStream {
+    let name = &ast.ident;
+    let id_type = find_id_type_ident(&ast.data);
     let gen = quote! {
-
         impl CRUDEnable for #name {
             //识别的表id字段类型
             type IdType = #id_type;
