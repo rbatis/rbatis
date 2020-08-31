@@ -25,10 +25,10 @@ fn find_id_type_ident(arg: &syn::Data) -> Ident {
             // field: (0) a: String
             syn::Fields::Named(ref fields_named) => {
                 for (_, field) in fields_named.named.iter().enumerate() {
-                    let field_name = format!("{}", field.ident.to_token_stream());
-                    let ty = format!("{}", field.ty.to_token_stream());
                     //println!("named struct field: ({}) {}: {}", index, field_name, field.ty.to_token_stream());
+                    let field_name = format!("{}", field.ident.to_token_stream());
                     if field_name.eq("id") {
+                        let ty = format!("{}", field.ty.to_token_stream());
                         let mut inner_type = ty.trim().replace(" ", "").to_string();
                         if inner_type.starts_with("Option<") {
                             inner_type = inner_type.trim_start_matches("Option<").trim_end_matches(">").to_string();
