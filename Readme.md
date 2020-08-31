@@ -53,6 +53,7 @@ fast_log="1.2.2"
 #rbatis支持，版本必须保持一致(必须)
 rbatis-core = { version = "1.5.0", features = ["all"]}
 rbatis =  { version = "1.5.0" } 
+rbatis-macro-driver = { version = "1.5.0" }
 
 #BigDecimal支持(非必须，适合金额计算场景)
 bigdecimal = "0.1.2"
@@ -61,8 +62,8 @@ bigdecimal = "0.1.2"
 
 ##### 一分钟快速学会， QueryWrapper，常用方法(详见example/crud_test.rs)
 ```rust
-///表结构
-#[derive(Serialize, Deserialize, Clone, Debug)]
+///数据库表模型
+#[derive(CRUDEnable,Serialize, Deserialize, Clone, Debug)]
 pub struct BizActivity {
     pub id: Option<String>,
     pub name: Option<String>,
@@ -78,10 +79,10 @@ pub struct BizActivity {
     pub delete_flag: Option<i32>,
 }
 
-/// 实现CRUDEnable接口,以支持自动识别。自动识别表名为'biz_activity'如果不正确，可以重写 fn table_name()方法！
-impl CRUDEnable for BizActivity {
-    type IdType = String;
-}
+// (可选) 手动实现，不使用上面的derive(CRUDEnable),可重写table_name方法。手动实现能支持IDE智能提示
+// impl CRUDEnable for BizActivity {
+//     type IdType = String;
+// }
 
 #[actix_rt::main]
 async fn main() {
