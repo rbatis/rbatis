@@ -8,6 +8,11 @@
 #[macro_use]
 extern crate lazy_static;
 
+#[macro_use]
+extern crate rbatis_macro_driver;
+
+mod crud_test;
+
 use std::convert::Infallible;
 use std::sync::Mutex;
 use std::thread::sleep;
@@ -27,10 +32,10 @@ use rbatis::wrapper::Wrapper;
 use rbatis_core::db::DBPool;
 use rbatis_core::types::chrono::NaiveDateTime;
 
-mod crud_test;
 
 ///数据库表模型,支持BigDecimal ,DateTime ,rust基本类型（int,float,uint,string,Vec,Array）
-#[derive(Serialize, Deserialize, Clone, Debug)]
+/// CRUDEnable 特性会自动识别 id为表的id类型(识别String)，自动识别结构体名称为蛇形命名的表名 biz_activity。没有id的表 请手动指定
+#[derive(CRUDEnable,Serialize, Deserialize, Clone, Debug)]
 pub struct BizActivity {
     pub id: Option<String>,
     pub name: Option<String>,
@@ -46,10 +51,10 @@ pub struct BizActivity {
     pub delete_flag: Option<i32>,
 }
 
-impl CRUDEnable for BizActivity {
-    type IdType = String;
-}
-
+// (可选) 手动实现，不使用上面的derive(CRUDEnable),可重写table_name方法。手动实现能支持IDE智能提示
+// impl CRUDEnable for BizActivity {
+//     type IdType = String;
+// }
 
 //示例 mysql 链接地址
 pub const MYSQL_URL: &'static str = "mysql://root:123456@localhost:3306/test";
@@ -83,6 +88,11 @@ async fn main() {
     app.listen(addr).await.unwrap();
 }
 
+///测试打印表名称
+#[test]
+pub fn test_table_info() {
+    println!("table_name: {}",BizActivity::table_name());
+}
 
 // 示例-打印日志
 #[test]
