@@ -62,6 +62,8 @@ bigdecimal = "0.1.2"
 
 ##### 一分钟快速学会， QueryWrapper，常用方法(详见example/crud_test.rs)
 ```rust
+#[macro_use]
+extern crate rbatis_macro_driver;
 ///数据库表模型
 #[derive(CRUDEnable,Serialize, Deserialize, Clone, Debug)]
 pub struct BizActivity {
