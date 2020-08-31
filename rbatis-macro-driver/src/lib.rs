@@ -1,6 +1,5 @@
 extern crate proc_macro;
 
-
 use proc_macro2::{Ident, Span};
 use quote::quote;
 use quote::ToTokens;
@@ -21,8 +20,6 @@ pub fn hello_macro_derive(input: TokenStream) -> TokenStream {
 
 fn impl_macro(ast: &syn::DeriveInput) -> TokenStream {
     let name = &ast.ident;
-
-
     let mut id_type = Ident::new("String", Span::call_site());
     match &ast.data {
         syn::Data::Struct(ref data_struct) => match data_struct.fields {
@@ -44,15 +41,6 @@ fn impl_macro(ast: &syn::DeriveInput) -> TokenStream {
                     }
                 }
             }
-            //// field: (0) : String
-            // syn::Fields::Unnamed(ref fields_unnamed) => {
-            //     for (index, field) in fields_unnamed.unnamed.iter().enumerate() {
-            //         println!("unnamed struct field: ({}): {}", index, field.ty.to_token_stream())
-            //      }
-            // }
-            // syn::Fields::Unit => {
-            //      println!("unit struct field: None")
-            // }
             syn::Fields::Unnamed(_) => {
 
             }
@@ -64,27 +52,10 @@ fn impl_macro(ast: &syn::DeriveInput) -> TokenStream {
         _ => (),
     }
 
+   // let snake_name=string_util::to_snake_name;
 
     let gen = quote! {
 
-    fn snake_name(name: &String) -> String {
-        let chs = name.chars();
-        let mut new_name = String::new();
-        let mut index = 0;
-        let chs_len = name.len();
-        for x in chs {
-            if x.is_uppercase() {
-                if index != 0 && (index + 1) != chs_len {
-                    new_name.push_str("_");
-                }
-                new_name.push_str(x.to_lowercase().to_string().as_str());
-            } else {
-                new_name.push(x);
-            }
-            index += 1;
-        }
-        return new_name;
-    }
         impl CRUDEnable for #name {
             //识别的表id字段类型
             type IdType = #id_type;
@@ -94,7 +65,7 @@ fn impl_macro(ast: &syn::DeriveInput) -> TokenStream {
                  let mut name = stringify!(#name).to_string();
                  let names: Vec<&str> = name.split("::").collect();
                  name = names.get(names.len() - 1).unwrap().to_string();
-                 return snake_name(&name);
+                 return rbatis::utils::string_util::to_snake_name(&name);
             }
         }
     };
