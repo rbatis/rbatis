@@ -82,9 +82,15 @@ pub struct BizActivity {
 }
 
 // (可选) 手动实现，不使用上面的derive(CRUDEnable),可重写table_name方法。手动实现能支持IDE智能提示
-// impl CRUDEnable for BizActivity {
-//     type IdType = String;
-// }
+//impl CRUDEnable for BizActivity {
+//    type IdType = String;    
+//    fn table_name()->String{
+//        "biz_activity".to_string()
+//    }
+//    fn table_fields()->String{
+//        "id,name,delete_flag".to_string()
+//    }
+//}
 
 #[actix_rt::main]
 async fn main() {
