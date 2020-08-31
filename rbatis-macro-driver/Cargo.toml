@@ -1,8 +1,11 @@
 [package]
 name = "rbatis-macro-driver"
 version = "1.5.0"
-authors = ["zhuxiujia <zhuxiujia@qq.com>"]
+description = "Rust ORM Framework High Performance高性能Rust ORM框架(JSON based)"
+readme = "Readme.md"
+authors = ["ce <zhuxiujia@qq.com>"]
 edition = "2018"
+license = "MIT"
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
