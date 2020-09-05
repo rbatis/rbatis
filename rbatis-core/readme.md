@@ -12,8 +12,8 @@ fn main()  -> Result<u64, rbatis_core::Error>{
            //Automatic judgment of database type
            let pool = DBPool::new("mysql://root:123456@localhost:3306/test").await?;
            let mut conn = pool.acquire().await?;
-           let count:u64=onn.execute("SELECT count(1) FROM biz_activity;").await?;
-           println("{}",count);
+           let count:u64 = conn.execute("SELECT count(1) FROM biz_activity;").await?;
+           println("count: {}",count);
            return count;
         }
     );
