@@ -7,7 +7,6 @@ use futures_core::future::BoxFuture;
 use sha1::Sha1;
 
 use crate::connection::{Connect, Connection};
-use crate::executor::Executor;
 use crate::mysql::protocol::{
     AuthPlugin, AuthSwitch, Capabilities, ComPing, Handshake, HandshakeResponse, Quit
 };
@@ -279,7 +278,7 @@ impl MySqlConnection {
 
         establish(&mut stream, &url).await?;
 
-        let mut self_ = Self {
+        let self_ = Self {
             stream,
             current_row_values: Vec::with_capacity(10),
             is_ready: true,

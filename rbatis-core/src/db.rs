@@ -3,6 +3,7 @@ use std::time::Duration;
 use serde::{Deserialize, Serialize};
 use serde::de::DeserializeOwned;
 
+use crate::connection::Connection;
 use crate::cursor::Cursor;
 use crate::Error;
 use crate::executor::Executor;
@@ -484,6 +485,41 @@ impl DBPoolConn {
             &DriverType::Sqlite => {
                 let data = self.sqlite.as_mut().unwrap().execute(sql.sqlite.unwrap()).await?;
                 return Ok(data);
+            }
+        }
+    }
+
+    pub async fn begin(self) -> crate::Result<DBTx> {
+        match &self.driver_type {
+            &DriverType::None => {
+                return Err(Error::from("un init DBPool!"));
+            }
+            &DriverType::Mysql => {
+                let data = self.mysql.unwrap().begin().await?;
+                return Ok(DBTx {
+                    driver_type: self.driver_type,
+                    mysql: Some(data),
+                    postgres: None,
+                    sqlite: None,
+                });
+            }
+            &DriverType::Postgres => {
+                let data = self.postgres.unwrap().begin().await?;
+                return Ok(DBTx {
+                    driver_type: self.driver_type,
+                    mysql: None,
+                    postgres: Some(data),
+                    sqlite: None,
+                });
+            }
+            &DriverType::Sqlite => {
+                let data = self.sqlite.unwrap().begin().await?;
+                return Ok(DBTx {
+                    driver_type: self.driver_type,
+                    mysql: None,
+                    postgres: None,
+                    sqlite: Some(Mutex::new(data)),
+                });
             }
         }
     }
