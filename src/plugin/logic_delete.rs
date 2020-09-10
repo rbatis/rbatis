@@ -26,8 +26,8 @@ impl RbatisLogicDeletePlugin {
     pub fn new(column: &str) -> Self {
         Self {
             column: column.to_string(),
-            deleted: 0,
-            un_deleted: 1,
+            deleted: 1,
+            un_deleted: 0,
         }
     }
     pub fn new_opt(column: &str, deleted: i32, un_deleted: i32) -> Self {
