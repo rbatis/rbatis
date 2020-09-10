@@ -106,6 +106,7 @@ impl Rbatis {
         return Ok(());
     }
 
+    /// load xml data into rbatis
     pub fn load_xml(&mut self, mapper_name: &str, data: &str) -> Result<(), rbatis_core::Error> {
         let xml = Xml::parser(data);
         self.mapper_node_map.insert(mapper_name.to_string(), xml);
@@ -128,14 +129,26 @@ impl Rbatis {
     }
 
     /// begin tx,for new conn
-    pub async fn begin(&self, tx_id: &str) -> Result<u64, rbatis_core::Error> {
-        if tx_id.is_empty() {
+    pub async fn begin(&self, new_tx_id: &str) -> Result<u64, rbatis_core::Error> {
+        if new_tx_id.is_empty() {
             return Err(rbatis_core::Error::from("[rbatis] tx_id can not be empty"));
         }
         let conn = self.get_pool()?.begin().await?;
         //send tx to context
-        self.context.insert(tx_id.to_string(), conn);
-        info!("[rbatis] [{}] Begin", tx_id);
+        self.context.insert(new_tx_id.to_string(), conn);
+        info!("[rbatis] [{}] Begin", new_tx_id);
+        return Ok(1);
+    }
+
+    /// begin tx,with an exist conn
+    pub async fn begin_with_conn(&self, new_tx_id: &str, db_conn: DBPoolConn) -> Result<u64, rbatis_core::Error> {
+        if new_tx_id.is_empty() {
+            return Err(rbatis_core::Error::from("[rbatis] tx_id can not be empty"));
+        }
+        let conn = db_conn.begin().await?;
+        //send tx to context
+        self.context.insert(new_tx_id.to_string(), conn);
+        info!("[rbatis] [{}] Begin", new_tx_id);
         return Ok(1);
     }
 
@@ -292,9 +305,9 @@ impl Rbatis {
 
     fn xml_to_sql(&self, mapper: &str, method: &str, arg: &serde_json::Value) -> Result<(String, Vec<serde_json::Value>), rbatis_core::Error> {
         let x = self.mapper_node_map.get(mapper);
-        let x = x.to_result(|| format!("[rabtis] mapper:{} not init to rbatis", mapper))?;
+        let x = x.to_result(|| format!("[rabtis] mapper:'{}' not load into rbatis", mapper))?;
         let node_type = x.get(method);
-        let node_type = node_type.to_result(|| format!("[rabtis] mapper:{}.{}() not init to rbatis", mapper, method))?;
+        let node_type = node_type.to_result(|| format!("[rabtis] mapper:'{}.{}()' not load into rbatis", mapper, method))?;
         let mut arg_array = vec![];
 
         let driver_type = self.driver_type()?;

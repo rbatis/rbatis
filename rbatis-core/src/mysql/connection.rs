@@ -7,7 +7,6 @@ use futures_core::future::BoxFuture;
 use sha1::Sha1;
 
 use crate::connection::{Connect, Connection};
-use crate::executor::Executor;
 use crate::mysql::protocol::{
     AuthPlugin, AuthSwitch, Capabilities, ComPing, Handshake, HandshakeResponse, Quit
 };
@@ -279,7 +278,7 @@ impl MySqlConnection {
 
         establish(&mut stream, &url).await?;
 
-        let mut self_ = Self {
+        let self_ = Self {
             stream,
             current_row_values: Vec::with_capacity(10),
             is_ready: true,
@@ -310,12 +309,6 @@ impl MySqlConnection {
         // --
 
         // https://mathiasbynens.be/notes/mysql-utf8mb4
-
-        self_.execute(r#"
-SET sql_mode=(SELECT CONCAT(@@sql_mode, ',PIPES_AS_CONCAT,NO_ENGINE_SUBSTITUTION,NO_ZERO_DATE,NO_ZERO_IN_DATE'));
-SET time_zone = '+00:00';
-SET NAMES utf8mb4 COLLATE utf8mb4_unicode_ci;
-        "#).await?;
 
         Ok(self_)
     }

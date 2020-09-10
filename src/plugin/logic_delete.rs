@@ -17,13 +17,27 @@ pub trait LogicDelete: Send + Sync {
 
 
 pub struct RbatisLogicDeletePlugin {
-    pub column: String
+    pub column: String,
+    pub deleted: i32,
+    pub un_deleted: i32,
 }
 
 impl RbatisLogicDeletePlugin {
     pub fn new(column: &str) -> Self {
         Self {
-            column: column.to_string()
+            column: column.to_string(),
+            deleted: 1,
+            un_deleted: 0,
+        }
+    }
+    pub fn new_opt(column: &str, deleted: i32, un_deleted: i32) -> Self {
+        if deleted == un_deleted {
+            panic!("[rbaits] deleted can not equal to un_deleted on RbatisLogicDeletePlugin::new_opt(column: &str, deleted: i32, un_deleted: i32)")
+        }
+        Self {
+            column: column.to_string(),
+            deleted,
+            un_deleted,
         }
     }
 }
@@ -34,11 +48,11 @@ impl LogicDelete for RbatisLogicDeletePlugin {
     }
 
     fn deleted(&self) -> i32 {
-        0
+        self.deleted
     }
 
     fn un_deleted(&self) -> i32 {
-        1
+        self.un_deleted
     }
 
 
@@ -48,7 +62,7 @@ impl LogicDelete for RbatisLogicDeletePlugin {
             let new_sql = format!("UPDATE {} SET {} = {}", table_name, self.column(), self.deleted()) + sql_where;
             Ok(new_sql)
         } else if !sql_where.is_empty() {
-            let new_sql = format!("DELETE FROM {}", table_name) + sql_where;
+            let new_sql = format!("DELETE FROM {} {}", table_name, sql_where.trim_start());
             Ok(new_sql)
         } else {
             Err(Error::from("[rbatis] del data must have where sql!"))
@@ -82,5 +96,4 @@ mod tests {
         let result = r.create_sql(&DriverType::Mysql, "test", &table_fields, sql_where);
         assert!(result.is_err());
     }
-    
 }

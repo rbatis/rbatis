@@ -1,0 +1,18 @@
+[package]
+name = "rbatis-macro-driver"
+version = "1.5.1"
+description = "rbatis macro driver 高性能Rust ORM框架 宏系统支持"
+readme = "Readme.md"
+authors = ["ce <zhuxiujia@qq.com>"]
+edition = "2018"
+license = "MIT"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[lib]
+proc-macro = true
+
+[dependencies]
+syn = "1.0.39"
+quote = "1.0.7"
+proc-macro2 = "1.0.19"

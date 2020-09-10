@@ -14,7 +14,7 @@ use rbatis_core::Error;
 use rbatis_core::types::chrono::NaiveDateTime;
 use rbatis_core::value::DateTimeNow;
 
-#[derive(Serialize, Deserialize, Clone, Debug)]
+#[derive(CRUDEnable,Serialize, Deserialize, Clone, Debug)]
 pub struct BizActivity {
     pub id: Option<String>,
     pub name: Option<String>,
@@ -30,10 +30,10 @@ pub struct BizActivity {
     pub delete_flag: Option<i32>,
 }
 
-/// 必须实现 CRUDEntity接口，如果表名 不正确，可以重写 fn table_name() -> String 方法！
-impl CRUDEnable for BizActivity {
-    type IdType = String;
-}
+// (可选) 手动实现，不使用上面的derive(CRUDEnable),可重写table_name方法。手动实现能支持IDE智能提示
+// impl CRUDEnable for BizActivity {
+//     type IdType = String;
+// }
 
 pub async fn init_rbatis() -> Rbatis {
     fast_log::log::init_log("requests.log", &RuntimeType::Std);
@@ -118,7 +118,7 @@ pub fn test_remove_by_id() {
     async_std::task::block_on(async {
         let mut rb = init_rbatis().await;
         //设置 逻辑删除插件
-        rb.logic_plugin = Some(Box::new(RbatisLogicDeletePlugin::new("delete_flag")));
+        rb.logic_plugin = Some(Box::new(RbatisLogicDeletePlugin::new_opt("delete_flag",1,0)));
         rb.link("mysql://root:123456@localhost:3306/test").await.unwrap();
         let r = rb.remove_by_id::<BizActivity>("", &"1".to_string()).await;
         if r.is_err() {

@@ -113,14 +113,11 @@ impl PageRequest {
     pub fn new(current: u64, size: u64) -> Self {
         return PageRequest::new_total(current, size, 0);
     }
+
     pub fn new_total(current: u64, size: u64, total: u64) -> Self {
+        let mut current = current;
         if current < 1 {
-            return Self {
-                total,
-                size,
-                current: 1 as u64,
-                serch_count: true,
-            };
+            current = 1;
         }
         return Self {
             total,

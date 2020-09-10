@@ -53,9 +53,14 @@ pub trait CRUDEnable: Send + Sync + Serialize + DeserializeOwned {
     ///
     #[inline]
     fn table_fields() -> String {
-        let a: Self = serde_json::from_str("{}").unwrap();
-        let v = serde_json::to_value(&a).unwrap();
+        let bean: serde_json::Result<Self> = serde_json::from_str("{}");
+        if bean.is_err() {
+            //if json decode fail,return '*'
+            return " * ".to_string();
+        }
+        let v = serde_json::to_value(&bean.unwrap()).unwrap_or(serde_json::Value::Null);
         if !v.is_object() {
+            //if json decode fail,return '*'
             return " * ".to_string();
         }
         let m = v.as_object().unwrap();
@@ -68,8 +73,8 @@ pub trait CRUDEnable: Send + Sync + Serialize + DeserializeOwned {
         return format!(" {} ", fields);
     }
 
-
-    fn to_value_map<C>(db_type: &DriverType, arg: &C) -> Result<serde_json::Map<String, Value>>
+    /// make an Map<table_field,value>
+    fn make_field_value_map<C>(db_type: &DriverType, arg: &C) -> Result<serde_json::Map<String, Value>>
         where C: CRUDEnable {
         let json = serde_json::to_value(arg).unwrap_or(serde_json::Value::Null);
         if json.eq(&serde_json::Value::Null) {
@@ -81,7 +86,8 @@ pub trait CRUDEnable: Send + Sync + Serialize + DeserializeOwned {
         return Ok(json.as_object().unwrap().to_owned());
     }
 
-    fn fields(map: &serde_json::Map<String, Value>) -> Result<String> {
+    ///make fields
+    fn make_fields(map: &serde_json::Map<String, Value>) -> Result<String> {
         let mut sql = String::new();
         for (k, v) in map {
             sql = sql + k.as_str() + ",";
@@ -91,7 +97,7 @@ pub trait CRUDEnable: Send + Sync + Serialize + DeserializeOwned {
     }
 
     ///return (sql,args)
-    fn values(index: &mut usize, db_type: &DriverType, map: &serde_json::Map<String, serde_json::Value>) -> Result<(String, Vec<serde_json::Value>)> {
+    fn make_sql_arg(index: &mut usize, db_type: &DriverType, map: &serde_json::Map<String, serde_json::Value>) -> Result<(String, Vec<serde_json::Value>)> {
         let mut sql = String::new();
         let mut arr = vec![];
         for (k, v) in map {
@@ -115,24 +121,28 @@ pub trait CRUDEnable: Send + Sync + Serialize + DeserializeOwned {
 impl<T> CRUDEnable for Option<T> where T: CRUDEnable {
     type IdType = T::IdType;
 
+    ///Bean's table name
     fn table_name() -> String {
         T::table_name()
     }
 
+    ///Bean's table fields
     fn table_fields() -> String {
         T::table_fields()
     }
 
-    fn to_value_map<C>(db_type: &DriverType, arg: &C) -> Result<Map<String, Value>> where C: CRUDEnable {
-        T::to_value_map(db_type, arg)
+    ///
+    fn make_field_value_map<C>(db_type: &DriverType, arg: &C) -> Result<Map<String, Value>> where C: CRUDEnable {
+        T::make_field_value_map(db_type, arg)
     }
 
-    fn fields(map: &Map<String, Value>) -> Result<String> {
-        T::fields(map)
+    fn make_fields(map: &Map<String, Value>) -> Result<String> {
+        T::make_fields(map)
     }
 
-    fn values(index: &mut usize, db_type: &DriverType, map: &Map<String, Value>) -> Result<(String, Vec<Value>)> {
-        T::values(index, db_type, map)
+    ///return sql,args
+    fn make_sql_arg(index: &mut usize, db_type: &DriverType, map: &Map<String, Value>) -> Result<(String, Vec<Value>)> {
+        T::make_sql_arg(index, db_type, map)
     }
 }
 
@@ -206,10 +216,10 @@ impl CRUD for Rbatis {
     /// save one entity to database
     async fn save<T>(&self, tx_id: &str, entity: &T) -> Result<u64>
         where T: CRUDEnable {
-        let map = T::to_value_map(&self.driver_type()?, entity)?;
+        let map = T::make_field_value_map(&self.driver_type()?, entity)?;
         let mut index = 0;
-        let (values, args) = T::values(&mut index, &self.driver_type()?, &map)?;
-        let sql = format!("INSERT INTO {} ({}) VALUES ({})", T::table_name(), T::fields(&map)?, values);
+        let (values, args) = T::make_sql_arg(&mut index, &self.driver_type()?, &map)?;
+        let sql = format!("INSERT INTO {} ({}) VALUES ({})", T::table_name(), T::make_fields(&map)?, values);
         return self.exec_prepare(tx_id, sql.as_str(), &args).await;
     }
 
@@ -229,11 +239,11 @@ impl CRUD for Rbatis {
         let mut fields = "".to_string();
         let mut field_index = 0;
         for x in args {
-            let map = T::to_value_map(&self.driver_type()?, x)?;
+            let map = T::make_field_value_map(&self.driver_type()?, x)?;
             if fields.is_empty() {
-                fields = T::fields(&map)?;
+                fields = T::make_fields(&map)?;
             }
-            let (values, args) = T::values(&mut field_index, &self.driver_type()?, &map)?;
+            let (values, args) = T::make_sql_arg(&mut field_index, &self.driver_type()?, &map)?;
             value_arr = value_arr + format!("({}),", values).as_str();
             for x in args {
                 arg_arr.push(x);
@@ -248,7 +258,7 @@ impl CRUD for Rbatis {
         let where_sql = arg.sql.as_str();
         let mut sql = String::new();
         if self.logic_plugin.is_some() {
-            sql = self.logic_plugin.as_ref().unwrap().create_sql(&self.driver_type()?, T::table_name().as_str(), &T::table_fields().split(",").collect(),make_where_sql(where_sql).as_str())?;
+            sql = self.logic_plugin.as_ref().unwrap().create_sql(&self.driver_type()?, T::table_name().as_str(), &T::table_fields().split(",").collect(), make_where_sql(where_sql).as_str())?;
         } else {
             sql = format!("DELETE FROM {} {}", T::table_name(), make_where_sql(where_sql));
         }
@@ -258,7 +268,7 @@ impl CRUD for Rbatis {
     async fn remove_by_id<T>(&self, tx_id: &str, id: &T::IdType) -> Result<u64> where T: CRUDEnable {
         let mut sql = String::new();
         if self.logic_plugin.is_some() {
-            sql = self.logic_plugin.as_ref().unwrap().create_sql(&self.driver_type()?, T::table_name().as_str(), &T::table_fields().split(",").collect(),format!(" WHERE id = {}", id).as_str())?;
+            sql = self.logic_plugin.as_ref().unwrap().create_sql(&self.driver_type()?, T::table_name().as_str(), &T::table_fields().split(",").collect(), format!(" WHERE id = {}", id).as_str())?;
         } else {
             sql = format!("DELETE FROM {} WHERE id = {}", T::table_name(), id);
         }
@@ -280,7 +290,7 @@ impl CRUD for Rbatis {
 
     async fn update_by_wrapper<T>(&self, tx_id: &str, arg: &T, w: &Wrapper) -> Result<u64> where T: CRUDEnable {
         let mut args = vec![];
-        let map = T::to_value_map(&self.driver_type()?, arg)?;
+        let map = T::make_field_value_map(&self.driver_type()?, arg)?;
         let driver_type = &self.driver_type()?;
         let mut sets = String::new();
         for (k, v) in map {
@@ -301,13 +311,13 @@ impl CRUD for Rbatis {
         wrapper.args = args;
         if !w.sql.is_empty() {
             wrapper.sql.push_str(" WHERE ");
-            wrapper = wrapper.link_right_wrapper(w).check()?;
+            wrapper = wrapper.right_link_wrapper(w).check()?;
         }
         return self.exec_prepare(tx_id, wrapper.sql.as_str(), &wrapper.args).await;
     }
 
     async fn update_by_id<T>(&self, tx_id: &str, arg: &T) -> Result<u64> where T: CRUDEnable {
-        let args = T::to_value_map(&self.driver_type()?, arg)?;
+        let args = T::make_field_value_map(&self.driver_type()?, arg)?;
         let id_field = args.get("id");
         if id_field.is_none() {
             return Err(Error::from("[rbaits] arg not have \"id\" field! "));
@@ -329,7 +339,7 @@ impl CRUD for Rbatis {
     }
 
     async fn fetch_by_id<T>(&self, tx_id: &str, id: &T::IdType) -> Result<T> where T: CRUDEnable {
-        let w = Wrapper::new(&self.driver_type().unwrap()).eq("id", id).check()?;
+        let w = Wrapper::new(&self.driver_type()?).eq("id", id).check()?;
         return self.fetch_by_wrapper(tx_id, &w).await;
     }
 
