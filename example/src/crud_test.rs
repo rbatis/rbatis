@@ -14,7 +14,7 @@ use rbatis_core::Error;
 use rbatis_core::types::chrono::NaiveDateTime;
 use rbatis_core::value::DateTimeNow;
 
-#[derive(Serialize, Deserialize, Clone, Debug)]
+#[derive(CRUDEnable,Serialize, Deserialize, Clone, Debug)]
 pub struct BizActivity {
     pub id: Option<String>,
     pub name: Option<String>,
@@ -30,10 +30,10 @@ pub struct BizActivity {
     pub delete_flag: Option<i32>,
 }
 
-/// 必须实现 CRUDEntity接口，如果表名 不正确，可以重写 fn table_name() -> String 方法！
-impl CRUDEnable for BizActivity {
-    type IdType = String;
-}
+// (可选) 手动实现，不使用上面的derive(CRUDEnable),可重写table_name方法。手动实现能支持IDE智能提示
+// impl CRUDEnable for BizActivity {
+//     type IdType = String;
+// }
 
 pub async fn init_rbatis() -> Rbatis {
     fast_log::log::init_log("requests.log", &RuntimeType::Std);

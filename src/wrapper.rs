@@ -1,5 +1,6 @@
 use std::ops::Add;
 
+use futures_core::core_reexport::any::Any;
 use serde::{Deserialize, Serialize};
 use serde_json::{json, Map, Value};
 
@@ -97,16 +98,16 @@ impl Wrapper {
     ///  let w = Wrapper::new(&DriverType::Postgres).eq("a", "1").check().unwrap();
     ///  let w2 = Wrapper::new(&DriverType::Postgres).eq("b", "2")
     ///             .and()
-    ///             .link_right_wrapper(&w)
+    ///             .right_link_wrapper(&w)
     ///             .check().unwrap();
     ///  println!("sql:{:?}", w2.sql.as_str());  // sql:"a =  $1 a =  $2 "
     ///  println!("arg:{:?}", w2.args.clone()); // arg:[String("1"), String("2")]
     ///
-    pub fn link_right_wrapper(&mut self, arg: &Wrapper) -> &mut Self {
-        self.link_right(&arg.driver_type, &arg.sql, &arg.args)
+    pub fn right_link_wrapper(&mut self, arg: &Wrapper) -> &mut Self {
+        self.right_link(&arg.driver_type, &arg.sql, &arg.args)
     }
 
-    pub fn link_right(&mut self, driver_type: &DriverType, sql: &str, args: &Vec<Value>) -> &mut Self {
+    pub fn right_link(&mut self, driver_type: &DriverType, sql: &str, args: &Vec<Value>) -> &mut Self {
         let mut new_sql = sql.to_string();
         if driver_type.eq(&DriverType::Postgres) {
             let arg_old_len = args.len();
@@ -120,6 +121,39 @@ impl Wrapper {
             self.args.push(x.clone());
         }
         self
+    }
+
+
+    /// do method,if test is true
+    /// for example:
+    ///  let arg = 1;
+    ///  wrapper.if_do(true, |w,arg| w.eq("id", arg))
+    pub fn do_if<'s, F>(&'s mut self, test: bool, method: F) -> &'s mut Self
+        where F: FnOnce(&'s mut Self) -> &'s mut Self {
+        if test {
+            return method(self);
+        }
+        return self;
+    }
+
+
+    ///match cases
+    /// for example:
+    ///  let p = Option::<i32>::Some(1);
+    ///         let w = Wrapper::new(&DriverType::Postgres)
+    ///             .do_match(&[
+    ///                 Case::new(p.is_some(),|w| w),
+    ///                 Case::new(p.is_none(),|w| w),
+    ///             ], |w| w)
+    ///             .check().unwrap();
+    pub fn do_match<'s, F>(&'s mut self, cases: &'s [Case], default: F) -> &'s mut Self
+        where F: FnOnce(&'s mut Self) -> &'s mut Self {
+        for x in cases {
+            if x.test {
+                return x.call_func(self);
+            }
+        }
+        return default(self);
     }
 
 
@@ -430,6 +464,26 @@ impl Wrapper {
     }
 }
 
+pub struct Case {
+    test: bool,
+    func: Box<dyn Fn(&mut Wrapper) -> &mut Wrapper>,
+}
+
+impl Case {
+    pub fn new<F>(test: bool, f: F) -> Self
+        where F: 'static + Fn(&mut Wrapper) -> &mut Wrapper {
+        Self {
+            test,
+            func: Box::new(f),
+        }
+    }
+
+    pub fn call_func<'s,'a>(&'s self, w: &'a mut Wrapper) -> &'a mut Wrapper {
+        (self.func)(w)
+    }
+}
+
+
 mod test {
     use serde_json::json;
     use serde_json::Map;
@@ -437,7 +491,7 @@ mod test {
     use rbatis_core::db::DriverType;
 
     use crate::utils::bencher::Bencher;
-    use crate::wrapper::Wrapper;
+    use crate::wrapper::{Case, Wrapper};
 
     #[test]
     fn test_select() {
@@ -491,7 +545,7 @@ mod test {
         let w = Wrapper::new(&DriverType::Postgres).eq("a", "1").check().unwrap();
         let w2 = Wrapper::new(&DriverType::Postgres).eq("b", "2")
             .and()
-            .link_right_wrapper(&w)
+            .right_link_wrapper(&w)
             .check().unwrap();
 
         println!("sql:{:?}", w2.sql.as_str());
@@ -499,5 +553,29 @@ mod test {
 
         let ms: Vec<&str> = w.sql.matches("$").collect();
         assert_eq!(ms.len(), w.args.len());
+    }
+
+    #[test]
+    fn test_do_is_some() {
+        let p = Option::<i32>::Some(1);
+        let w = Wrapper::new(&DriverType::Postgres)
+            .do_if(p.is_some(), |w| w.eq("a", p))
+            .check().unwrap();
+        println!("sql:{:?}", w.sql.as_str());
+        println!("arg:{:?}", w.args.clone());
+    }
+
+
+    #[test]
+    fn test_do_match() {
+        let p = 1;
+        let w = Wrapper::new(&DriverType::Postgres)
+            .do_match(&[
+                Case::new(p==0, |w| w.eq("a","some")),
+                Case::new(p==2, |w| w.eq("a","none")),
+            ], |w| w.eq("a","default"))
+            .check().unwrap();
+        println!("sql:{:?}", w.sql.as_str());
+        println!("arg:{:?}", w.args.clone());
     }
 }

@@ -9,7 +9,7 @@
 
 
 ##### way not diesel,way not sqlx ? 为什么不选择diesel,sqlx之类的框架?
-| 框架    | 协程异步async高并发 | 使用难度 | 符合企业化规范（支持xml,无需重复编译）| logic del逻辑删除插件| page分页插件
+| 框架    | 协程异步async高并发 | 使用难度 | 同时支持Xml/Wrapper/内置增删改查 | logic del逻辑删除插件| page分页插件
 | ------ | ------ |------ |------ |------ |------ |
 | rbatis | √     | 非常简单   |   √     |    √     |   √     |  
 | sqlx   | √     | 难（强依赖宏和 莫名其妙的环境变量）       |   x     |   x     |   x     |  
@@ -17,10 +17,10 @@
 
 
 ##### 和其他语言对比性能压测(环境（docker）仅供参考)
-| 语言 | 框架     | 数据库 | 查询语句 | 纳秒/每操作（低越好） | 查询数/秒Qps(高越好) |内存（低越好） |
+| 语言 | 框架     | 数据库 | count语句（1万次） | 纳秒/每操作（低越好） | 查询数/秒Qps(高越好) |内存（低越好） |
 | ------ | ------ | ------ |------ |------ |------ |------ |
-| Rust   | rbatis  - tokio Runtime      | mysql(docker with 1CPU,1G Mem)    | select count(1) from table; 10000次    | 965649 ns/op   |  1035 Qps/s  |  2.1MB   |      
-| Golang | GoMybatis - goroutines    | mysql(docker with 1CPU,1G Mem)    | select count(1) from table; 10000次    | 1184503 ns/op  |  844  Qps/s   |  28.4MB  |     
+| Rust语言   | rbatis/tokio  | mysql(docker with 1CPU,1G Mem)    | select count(1) from table;    | 965649 ns/op   |  1035 Qps/s  |  2.1MB   |      
+| Go语言 | GoMybatis/http   | mysql(docker with 1CPU,1G Mem)    | select count(1) from table;   | 1184503 ns/op  |  844  Qps/s   |  28.4MB  |     
 
 
 * 使用最通用的json数据结构（基于serde_json）进行传参和通讯
@@ -50,19 +50,23 @@ chrono = { version = "0.4", features = ["serde"] }
 log = "0.4"
 fast_log="1.2.2"
 
-#rbatis支持，版本必须保持一致(必须)
-rbatis-core = { version = "1.4.5", features = ["all"]}
-rbatis =  { version = "1.4.5" } 
 
-#BigDecimal支持(非必须，适合金额计算场景)
+#BigDecimal支持(可选)
 bigdecimal = "0.1.2"
+
+#rbatis支持，版本保持一致(必须)
+rbatis-core = { version = "1.5.1", features = ["all"]}
+rbatis =  { version = "1.5.1" } 
+rbatis-macro-driver = { version = "1.5.1" }
 
 ```
 
 ##### 一分钟快速学会， QueryWrapper，常用方法(详见example/crud_test.rs)
 ```rust
-///表结构
-#[derive(Serialize, Deserialize, Clone, Debug)]
+#[macro_use]
+extern crate rbatis_macro_driver;
+///数据库表模型
+#[derive(CRUDEnable,Serialize, Deserialize, Clone, Debug)]
 pub struct BizActivity {
     pub id: Option<String>,
     pub name: Option<String>,
@@ -78,10 +82,16 @@ pub struct BizActivity {
     pub delete_flag: Option<i32>,
 }
 
-/// 实现CRUDEnable接口,以支持自动识别。自动识别表名为'biz_activity'如果不正确，可以重写 fn table_name()方法！
-impl CRUDEnable for BizActivity {
-    type IdType = String;
-}
+// (可选) 手动实现，不使用上面的derive(CRUDEnable),可重写table_name方法。手动实现能支持IDE智能提示
+//impl CRUDEnable for BizActivity {
+//    type IdType = String;    
+//    fn table_name()->String{
+//        "biz_activity".to_string()
+//    }
+//    fn table_fields()->String{
+//        "id,name,delete_flag".to_string()
+//    }
+//}
 
 #[actix_rt::main]
 async fn main() {

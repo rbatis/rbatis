@@ -2,12 +2,13 @@
 members = [
     ".",
     "rbatis-core",
+    "rbatis-macro-driver",
     "example"
 ]
 
 [package]
 name = "rbatis"
-version = "1.4.5"
+version = "1.5.1"
 description = "Rust ORM Framework High Performance高性能Rust ORM框架(JSON based)"
 readme = "Readme.md"
 authors = ["ce <zhuxiujia@qq.com>"]
@@ -21,7 +22,7 @@ runtime-async-std = ["rbatis-core/runtime-async-std"]
 runtime-tokio = ["rbatis-core/runtime-tokio"]
 
 [dependencies]
-rbatis-core = { version = "1.4.5", path = "rbatis-core", default-features = false, features = ["all"] }
+rbatis-core = { version = "1.5.1", path = "rbatis-core", default-features = false, features = ["all"] }
 chrono = { version = "0.4", features = ["serde"] }
 xml-rs = "0.8"
 lazy_static = "1.4.0"

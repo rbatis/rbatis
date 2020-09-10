@@ -34,3 +34,4 @@ tokio = { version = "0.2", features = ["full"] }
 #rbatis dep
 rbatis = { path = "../" }
 rbatis-core = { path = "../rbatis-core", features = ["all"] }
+rbatis-macro-driver = { path = "../rbatis-macro-driver"}
