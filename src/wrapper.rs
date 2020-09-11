@@ -481,7 +481,7 @@ impl Case {
     }
 }
 
-
+#[cfg(test)]
 mod test {
     use serde_json::json;
     use serde_json::Map;
