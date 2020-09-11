@@ -119,6 +119,7 @@ pub trait CRUDEnable: Send + Sync + Serialize + DeserializeOwned {
 
 
 impl<T> CRUDEnable for Option<T> where T: CRUDEnable {
+    /// macro id type that is automatically determined,or you can Rewrite it
     type IdType = T::IdType;
 
     ///Bean's table name
@@ -131,7 +132,7 @@ impl<T> CRUDEnable for Option<T> where T: CRUDEnable {
         T::table_fields()
     }
 
-    ///
+
     fn make_field_value_map<C>(db_type: &DriverType, arg: &C) -> Result<Map<String, Value>> where C: CRUDEnable {
         T::make_field_value_map(db_type, arg)
     }
