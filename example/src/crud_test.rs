@@ -40,7 +40,7 @@ mod test {
         let rb = Rbatis::new();
         rb.link("mysql://root:123456@localhost:3306/test").await.unwrap();
 
-        // or use opt custom pool
+        // custom pool(自定义连接池)
         // let mut opt = PoolOptions::new();
         // opt.max_size = 20;
         // rb.link_opt("mysql://root:123456@localhost:3306/test", &opt).await.unwrap();
