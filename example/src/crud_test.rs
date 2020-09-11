@@ -162,7 +162,7 @@ pub fn test_update_by_wrapper() {
         };
 
         let w = rb.new_wrapper().eq("id", "12312").check().unwrap();
-        let r = rb.update_by_wrapper("", &activity, &w).await;
+        let r = rb.update_by_wrapper("", &activity, &w,false).await;
         if r.is_err() {
             println!("{}", r.err().unwrap().to_string());
         }

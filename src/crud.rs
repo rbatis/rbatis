@@ -197,7 +197,7 @@ pub trait CRUD {
     async fn remove_by_id<T>(&self, tx_id: &str, id: &T::IdType) -> Result<u64> where T: CRUDEnable;
     async fn remove_batch_by_id<T>(&self, tx_id: &str, ids: &[T::IdType]) -> Result<u64> where T: CRUDEnable;
 
-    async fn update_by_wrapper<T>(&self, tx_id: &str, arg: &T, w: &Wrapper) -> Result<u64> where T: CRUDEnable;
+    async fn update_by_wrapper<T>(&self, tx_id: &str, arg: &T, w: &Wrapper, update_null_value: bool) -> Result<u64> where T: CRUDEnable;
     async fn update_by_id<T>(&self, tx_id: &str, arg: &T) -> Result<u64> where T: CRUDEnable;
     async fn update_batch_by_id<T>(&self, tx_id: &str, ids: &[T]) -> Result<u64> where T: CRUDEnable;
 
@@ -288,18 +288,19 @@ impl CRUD for Rbatis {
         return self.remove_by_wrapper::<T>(tx_id, &w).await;
     }
 
-    async fn update_by_wrapper<T>(&self, tx_id: &str, arg: &T, w: &Wrapper) -> Result<u64> where T: CRUDEnable {
+    /// update arg by wrapper
+    async fn update_by_wrapper<T>(&self, tx_id: &str, arg: &T, w: &Wrapper, update_null_value: bool) -> Result<u64> where T: CRUDEnable {
         let mut args = vec![];
         let map = T::make_field_value_map(&self.driver_type()?, arg)?;
         let driver_type = &self.driver_type()?;
         let mut sets = String::new();
         for (k, v) in map {
-            //filter null
-            if v.is_null() {
-                continue;
-            }
             //filter id
             if k.eq("id") {
+                continue;
+            }
+            //filter null
+            if !update_null_value && v.is_null() {
                 continue;
             }
             sets.push_str(format!(" {} = {},", k, driver_type.stmt_convert(args.len())).as_str());
@@ -322,7 +323,7 @@ impl CRUD for Rbatis {
         if id_field.is_none() {
             return Err(Error::from("[rbaits] arg not have \"id\" field! "));
         }
-        self.update_by_wrapper(tx_id, arg, Wrapper::new(&self.driver_type()?).eq("id", id_field.unwrap())).await
+        self.update_by_wrapper(tx_id, arg, Wrapper::new(&self.driver_type()?).eq("id", id_field.unwrap()),false).await
     }
 
     async fn update_batch_by_id<T>(&self, tx_id: &str, args: &[T]) -> Result<u64> where T: CRUDEnable {
@@ -566,7 +567,7 @@ mod test {
             };
 
             let w = Wrapper::new(&rb.driver_type().unwrap()).eq("id", "12312").check().unwrap();
-            let r = rb.update_by_wrapper("", &activity, &w).await;
+            let r = rb.update_by_wrapper("", &activity, &w,false).await;
             if r.is_err() {
                 println!("{}", r.err().unwrap().to_string());
             }
