@@ -8,8 +8,6 @@ use rbatis_core::convert::StmtConvert;
 use rbatis_core::db::DriverType;
 use rbatis_core::Error;
 
-use crate::crud::CRUDEnable;
-
 /// when sql not end with WHERE,AND,OR it will be append " AND "
 macro_rules! add_and {
         ($self:tt) => {
