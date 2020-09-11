@@ -1,4 +1,3 @@
-#![allow(unused_imports)]
 #![allow(unreachable_patterns)]
 #![allow(unused_variables)]
 #![allow(unused_assignments)]
@@ -14,11 +13,8 @@ extern crate rbatis_macro_driver;
 mod crud_test;
 
 use std::convert::Infallible;
-use std::sync::Mutex;
 use std::thread::sleep;
 use std::time::Duration;
-
-use chrono::DateTime;
 use fast_log::log::RuntimeType;
 use log::info;
 use serde::{Deserialize, Serialize};
@@ -26,9 +22,8 @@ use serde_json::{json, Value};
 use tide::Request;
 
 use rbatis::crud::{CRUD, CRUDEnable};
-use rbatis::plugin::page::{IPageRequest, Page, PageRequest};
+use rbatis::plugin::page::{ Page, PageRequest};
 use rbatis::rbatis::Rbatis;
-use rbatis::wrapper::Wrapper;
 use rbatis_core::db::DBPool;
 use rbatis_core::types::chrono::NaiveDateTime;
 
