@@ -554,7 +554,7 @@ mod test {
     }
 
     #[test]
-    fn test_do_is_some() {
+    fn test_do_if() {
         let p = Option::<i32>::Some(1);
         let w = Wrapper::new(&DriverType::Postgres)
             .do_if(p.is_some(), |w| w.eq("a", p))
