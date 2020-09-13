@@ -80,11 +80,11 @@ mod tests {
         let table_fields = vec!["name", "age", "del"];
         let sql_where = "";
         let result = r.create_sql(&DriverType::Mysql, "test", &table_fields, sql_where).unwrap();
-        assert_eq!("UPDATE test SET del = 0", &result);
+        assert_eq!("UPDATE test SET del = 1", &result);
 
         let sql_where = " WHERE name = 'zhangsan'";
         let result = r.create_sql(&DriverType::Mysql, "test", &table_fields, sql_where).unwrap();
-        assert_eq!("UPDATE test SET del = 0 WHERE name = 'zhangsan'", &result);
+        assert_eq!("UPDATE test SET del = 1 WHERE name = 'zhangsan'", &result);
 
         let table_fields = vec!["name", "age"];
         let sql_where = " WHERE name = 'zhangsan'";
