@@ -3,11 +3,11 @@ use serde::de::DeserializeOwned;
 
 use crate::connection::ConnectionSource;
 use crate::cursor::Cursor;
+use crate::decode::json_decode;
 use crate::executor::Execute;
 use crate::pool::Pool;
 use crate::sqlite::{Sqlite, SqliteArguments, SqliteConnection, SqliteRow};
 use crate::sqlite::statement::Step;
-use crate::decode::json_decode;
 
 pub struct SqliteCursor<'c, 'q> {
     pub(super) source: ConnectionSource<'c, SqliteConnection>,
@@ -75,7 +75,7 @@ impl<'c, 'q> Cursor<'c, 'q> for SqliteCursor<'c, 'q> {
                 let keys = row.values;
                 for x in 0..keys {
                     let key = x.to_string();
-                    let v: serde_json::Value = row.json_decode_impl(key.as_str()).unwrap();
+                    let v: serde_json::Value = row.json_decode_impl(key.as_str())?;
                     m.insert(key, v);
                 }
                 arr.push(serde_json::Value::Object(m));
