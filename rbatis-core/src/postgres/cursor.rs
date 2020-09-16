@@ -1,16 +1,15 @@
-use std::sync::Arc;
-
 use futures_core::future::BoxFuture;
 use serde::de::DeserializeOwned;
+use std::sync::Arc;
 
 use crate::connection::ConnectionSource;
 use crate::cursor::Cursor;
+use crate::decode::json_decode;
 use crate::executor::Execute;
 use crate::pool::Pool;
 use crate::postgres::{PgArguments, PgConnection, PgRow, Postgres};
 use crate::postgres::protocol::{DataRow, Message, ReadyForQuery, RowDescription};
 use crate::postgres::row::Statement;
-use crate::decode::json_decode;
 
 pub struct PgCursor<'c, 'q> {
     source: ConnectionSource<'c, PgConnection>,
@@ -70,7 +69,7 @@ impl<'c, 'q> Cursor<'c, 'q> for PgCursor<'c, 'q> {
                 let keys = row.statement.names.keys();
                 for x in keys {
                     let key = x.to_string();
-                    let v: serde_json::Value = row.json_decode_impl(key.as_str()).unwrap();
+                    let v: serde_json::Value = row.json_decode_impl(key.as_str())?;
                     m.insert(key, v);
                 }
                 arr.push(serde_json::Value::Object(m));
