@@ -11,6 +11,7 @@ extern crate lazy_static;
 extern crate rbatis_macro_driver;
 
 mod crud_test;
+mod sqlite_test;
 
 use std::convert::Infallible;
 use std::thread::sleep;
