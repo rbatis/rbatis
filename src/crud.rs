@@ -431,6 +431,20 @@ mod test {
         }
     }
 
+
+    #[derive(Serialize, Deserialize, Clone, Debug)]
+    pub struct BizActivityNoDel {
+        pub id: Option<String>,
+        pub name: Option<String>
+    }
+    impl CRUDEnable for BizActivityNoDel{
+        type IdType = String;
+        fn table_name() -> String {
+            "biz_activity".to_string()
+        }
+    }
+
+
     #[test]
     pub fn test_ids() {
         let vec = vec![BizActivity {
@@ -613,6 +627,23 @@ mod test {
 
             let w = Wrapper::new(&rb.driver_type().unwrap()).eq("id", "12312").check().unwrap();
             let r: Result<BizActivity, Error> = rb.fetch_by_wrapper("", &w).await;
+            if r.is_err() {
+                println!("{}", r.err().unwrap().to_string());
+            }
+        });
+    }
+
+    #[test]
+    pub fn test_fetch_no_del() {
+        async_std::task::block_on(async {
+            fast_log::log::init_log("requests.log", &RuntimeType::Std);
+            let mut rb = Rbatis::new();
+            //设置 逻辑删除插件
+            rb.logic_plugin = Some(Box::new(RbatisLogicDeletePlugin::new("delete_flag")));
+            rb.link("mysql://root:123456@localhost:3306/test").await.unwrap();
+
+            let w = Wrapper::new(&rb.driver_type().unwrap()).eq("id", "12312").check().unwrap();
+            let r: Result<BizActivityNoDel, Error> = rb.fetch_by_wrapper("", &w).await;
             if r.is_err() {
                 println!("{}", r.err().unwrap().to_string());
             }
