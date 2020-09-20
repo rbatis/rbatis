@@ -256,15 +256,19 @@ impl CRUD for Rbatis {
         return self.exec_prepare(tx_id, sql.as_str(), &arg_arr).await;
     }
 
-    async fn remove_by_wrapper<T>(&self, tx_id: &str, arg: &Wrapper) -> Result<u64> where T: CRUDEnable {
-        let where_sql = arg.sql.as_str();
+    async fn remove_by_wrapper<T>(&self, tx_id: &str, w: &Wrapper) -> Result<u64> where T: CRUDEnable {
+        let w = match w.checked {
+            false => w.clone().check()?,
+            _ => w.clone()
+        };
+        let where_sql = w.sql.as_str();
         let mut sql = String::new();
         if self.logic_plugin.is_some() {
             sql = self.logic_plugin.as_ref().unwrap().create_remove_sql(&self.driver_type()?, T::table_name().as_str(), &T::table_fields(), make_where_sql(where_sql).as_str())?;
         } else {
             sql = format!("DELETE FROM {} {}", T::table_name(), make_where_sql(where_sql));
         }
-        return self.exec_prepare(tx_id, sql.as_str(), &arg.args).await;
+        return self.exec_prepare(tx_id, sql.as_str(), &w.args).await;
     }
 
     async fn remove_by_id<T>(&self, tx_id: &str, id: &T::IdType) -> Result<u64> where T: CRUDEnable {
@@ -292,6 +296,10 @@ impl CRUD for Rbatis {
 
     /// update arg by wrapper
     async fn update_by_wrapper<T>(&self, tx_id: &str, arg: &T, w: &Wrapper, update_null_value: bool) -> Result<u64> where T: CRUDEnable {
+        let w = match w.checked {
+            false => w.clone().check()?,
+            _ => w.clone()
+        };
         let mut args = vec![];
         let map = T::make_field_value_map(&self.driver_type()?, arg)?;
         let driver_type = &self.driver_type()?;
@@ -314,7 +322,7 @@ impl CRUD for Rbatis {
         wrapper.args = args;
         if !w.sql.is_empty() {
             wrapper.sql.push_str(" WHERE ");
-            wrapper = wrapper.right_link_wrapper(w).check()?;
+            wrapper = wrapper.right_link_wrapper(&w).check()?;
         }
         return self.exec_prepare(tx_id, wrapper.sql.as_str(), &wrapper.args).await;
     }
@@ -337,7 +345,11 @@ impl CRUD for Rbatis {
     }
 
     async fn fetch_by_wrapper<T>(&self, tx_id: &str, w: &Wrapper) -> Result<T> where T: CRUDEnable {
-        let sql = make_select_sql::<T>(&self, w)?;
+        let w = match w.checked {
+            false => w.clone().check()?,
+            _ => w.clone()
+        };
+        let sql = make_select_sql::<T>(&self, &w)?;
         return self.fetch_prepare(tx_id, sql.as_str(), &w.args).await;
     }
 
@@ -347,7 +359,11 @@ impl CRUD for Rbatis {
     }
 
     async fn list_by_wrapper<T>(&self, tx_id: &str, w: &Wrapper) -> Result<Vec<T>> where T: CRUDEnable {
-        let sql = make_select_sql::<T>(&self, w)?;
+        let w = match w.checked {
+            false => w.clone().check()?,
+            _ => w.clone()
+        };
+        let sql = make_select_sql::<T>(&self, &w)?;
         return self.fetch_prepare(tx_id, sql.as_str(), &w.args).await;
     }
 
@@ -361,7 +377,11 @@ impl CRUD for Rbatis {
     }
 
     async fn fetch_page_by_wrapper<T>(&self, tx_id: &str, w: &Wrapper, page: &dyn IPageRequest) -> Result<Page<T>> where T: CRUDEnable {
-        let sql = make_select_sql::<T>(&self, w)?;
+        let w = match w.checked {
+            false => w.clone().check()?,
+            _ => w.clone()
+        };
+        let sql = make_select_sql::<T>(&self, &w)?;
         self.fetch_page(tx_id, sql.as_str(), &w.args, page).await
     }
 }
@@ -435,9 +455,10 @@ mod test {
     #[derive(Serialize, Deserialize, Clone, Debug)]
     pub struct BizActivityNoDel {
         pub id: Option<String>,
-        pub name: Option<String>
+        pub name: Option<String>,
     }
-    impl CRUDEnable for BizActivityNoDel{
+
+    impl CRUDEnable for BizActivityNoDel {
         type IdType = String;
         fn table_name() -> String {
             "biz_activity".to_string()
