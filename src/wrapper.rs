@@ -53,6 +53,7 @@ pub struct Wrapper {
     pub sql: String,
     pub args: Vec<serde_json::Value>,
     pub error: Option<Error>,
+    pub checked: bool
 }
 
 impl Wrapper {
@@ -62,6 +63,7 @@ impl Wrapper {
             sql: "".to_string(),
             args: vec![],
             error: None,
+            checked: false
         }
     }
 
@@ -71,6 +73,7 @@ impl Wrapper {
             sql: sql.to_string(),
             args: args.clone(),
             error: None,
+            checked: false
         }
     }
 
@@ -87,6 +90,7 @@ impl Wrapper {
             sql: self.sql.clone(),
             args: self.args.clone(),
             error: self.error.clone(),
+            checked: true
         };
         return Ok(clone);
     }
