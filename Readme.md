@@ -32,8 +32,7 @@
 * [示例代码（需要Clion导入）](https://github.com/rbatis/rbatis/tree/master/example/src)
 * [示例项目（需要Clion导入）](https://github.com/rbatis/abs_admin)
 
-
-##### 项目实战 https://github.com/rbatis/abs_admin
+##### 实战(编写Rust后台服务) https://github.com/rbatis/abs_admin
 
 ##### 使用方法：添加依赖(Cargo.toml)
 ``` rust
