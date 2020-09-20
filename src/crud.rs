@@ -9,6 +9,7 @@ use rbatis_core::db::DriverType;
 use rbatis_core::Error;
 use rbatis_core::Result;
 
+use crate::plugin::logic_delete::LogicAction;
 use crate::plugin::page::{IPageRequest, Page};
 use crate::rbatis::Rbatis;
 use crate::sql::Date;
@@ -259,7 +260,7 @@ impl CRUD for Rbatis {
         let where_sql = arg.sql.as_str();
         let mut sql = String::new();
         if self.logic_plugin.is_some() {
-            sql = self.logic_plugin.as_ref().unwrap().create_sql(&self.driver_type()?, T::table_name().as_str(), &T::table_fields().split(",").collect(), make_where_sql(where_sql).as_str())?;
+            sql = self.logic_plugin.as_ref().unwrap().create_remove_sql(&self.driver_type()?, T::table_name().as_str(), &T::table_fields(), make_where_sql(where_sql).as_str())?;
         } else {
             sql = format!("DELETE FROM {} {}", T::table_name(), make_where_sql(where_sql));
         }
@@ -269,7 +270,7 @@ impl CRUD for Rbatis {
     async fn remove_by_id<T>(&self, tx_id: &str, id: &T::IdType) -> Result<u64> where T: CRUDEnable {
         let mut sql = String::new();
         if self.logic_plugin.is_some() {
-            sql = self.logic_plugin.as_ref().unwrap().create_sql(&self.driver_type()?, T::table_name().as_str(), &T::table_fields().split(",").collect(), format!(" WHERE id = {}", id).as_str())?;
+            sql = self.logic_plugin.as_ref().unwrap().create_remove_sql(&self.driver_type()?, T::table_name().as_str(), &T::table_fields(), format!(" WHERE id = {}", id).as_str())?;
         } else {
             sql = format!("DELETE FROM {} WHERE id = {}", T::table_name(), id);
         }
@@ -324,7 +325,7 @@ impl CRUD for Rbatis {
         if id_field.is_none() {
             return Err(Error::from("[rbaits] arg not have \"id\" field! "));
         }
-        self.update_by_wrapper(tx_id, arg, Wrapper::new(&self.driver_type()?).eq("id", id_field.unwrap()),false).await
+        self.update_by_wrapper(tx_id, arg, Wrapper::new(&self.driver_type()?).eq("id", id_field.unwrap()), false).await
     }
 
     async fn update_batch_by_id<T>(&self, tx_id: &str, args: &[T]) -> Result<u64> where T: CRUDEnable {
@@ -372,21 +373,16 @@ fn make_where_sql(arg: &str) -> String {
 }
 
 fn make_select_sql<T>(rb: &Rbatis, w: &Wrapper) -> Result<String> where T: CRUDEnable {
-    let fields = T::table_fields();
-    let where_sql = String::new();
+    let where_sql = w.sql.clone();
     let mut sql = String::new();
     if rb.logic_plugin.is_some() {
-        let mut where_sql = w.sql.clone();
-        if !where_sql.is_empty() {
-            where_sql = " AND ".to_string() + where_sql.as_str();
-        }
-        sql = format!("SELECT {} FROM {} WHERE {} = {} {}", fields, T::table_name(), rb.logic_plugin.as_ref().unwrap().column(), rb.logic_plugin.as_ref().unwrap().un_deleted(), where_sql);
+        let logic_ref = rb.logic_plugin.as_ref().unwrap();
+        return logic_ref.create_select_sql(&rb.driver_type()?, &T::table_name(), &T::table_fields(), &where_sql);
+    }
+    if !where_sql.is_empty() {
+        sql = format!("SELECT {} FROM {} WHERE {}", T::table_fields(), T::table_name(), where_sql);
     } else {
-        let mut where_sql = w.sql.clone();
-        if !where_sql.is_empty() {
-            where_sql = " WHERE ".to_string() + where_sql.as_str();
-        }
-        sql = format!("SELECT {} FROM {} {}", fields, T::table_name(), where_sql);
+        sql = format!("SELECT {} FROM {}", T::table_fields(), T::table_name());
     }
     Ok(sql)
 }
@@ -568,7 +564,7 @@ mod test {
             };
 
             let w = Wrapper::new(&rb.driver_type().unwrap()).eq("id", "12312").check().unwrap();
-            let r = rb.update_by_wrapper("", &activity, &w,false).await;
+            let r = rb.update_by_wrapper("", &activity, &w, false).await;
             if r.is_err() {
                 println!("{}", r.err().unwrap().to_string());
             }
