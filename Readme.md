@@ -16,11 +16,11 @@
 | diesel | x     | 简单（缺xml支持） |   x     |  x     |  x     |  
 
 
-##### 和其他语言对比性能压测(环境（docker）仅供参考)
-| 语言 | 框架     | 数据库 | SQL语句（1万次） | 纳秒/每操作（低越好） | 查询数/秒Qps(高越好) |内存（低越好） |
+##### 和Go语言对比性能(环境（docker）仅供参考)
+| 框架     | 数据库 | SQL语句（1万次） | 纳秒/每操作（低越好） | 查询数/秒Qps(高越好) |内存（低越好） |
 | ------ | ------ | ------ |------ |------ |------ |------ |
-| Rust语言   | rbatis/tokio  | mysql(docker with 1CPU,1G Mem)    | select count(1) from table;    | 965649 ns/op   |  1035 Qps/s  |  2.1MB   |      
-| Go语言 | GoMybatis/http   | mysql(docker with 1CPU,1G Mem)    | select count(1) from table;   | 1184503 ns/op  |  844  Qps/s   |  28.4MB  |     
+| Rust语言-rbatis/tokio  | mysql(docker with 1CPU,1G Mem)    | select count(1) from table;    | 965649 ns/op   |  1035 Qps/s  |  2.1MB   |      
+| Go语言-GoMybatis/http   | mysql(docker with 1CPU,1G Mem)    | select count(1) from table;   | 1184503 ns/op  |  844  Qps/s   |  28.4MB  |     
 
 
 * 使用最通用的json数据结构（基于serde_json）进行传参和通讯
