@@ -413,6 +413,14 @@ async fn main() -> std::io::Result<()> {
 | TiDB             | √     |
 | CockroachDB      | √     |
 
+### 平台测试通过
+| 平台    | 已支持 |
+| ------ | ------ |
+| Linux                   | √     | 
+| Apple/MacOS             | √     |  
+| Windows               | √     |
+
+
 ### 进度表-按照顺序实现
 | 功能    | 已支持 |
 | ------ | ------ |
