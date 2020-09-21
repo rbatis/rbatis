@@ -13,6 +13,7 @@ mod test {
     use rbatis_core::Error;
     use rbatis_core::types::chrono::NaiveDateTime;
     use rbatis_core::value::DateTimeNow;
+    use rbatis_core::types::BigDecimal;
 
     #[derive(CRUDEnable, Serialize, Deserialize, Clone, Debug)]
     pub struct BizActivity {
@@ -26,7 +27,7 @@ mod test {
         pub status: Option<i32>,
         pub remark: Option<String>,
         pub create_time: Option<NaiveDateTime>,
-        pub version: Option<i32>,
+        pub version: Option<BigDecimal>,
         pub delete_flag: Option<i32>,
     }
 
@@ -63,7 +64,7 @@ mod test {
                 status: Some(1),
                 remark: None,
                 create_time: Some(NaiveDateTime::now()),
-                version: Some(1),
+                version: Some(BigDecimal::from(1)),
                 delete_flag: Some(1),
             };
             let r = rb.save("", &activity).await;
@@ -88,7 +89,7 @@ mod test {
                 status: Some(1),
                 remark: None,
                 create_time: Some(NaiveDateTime::now()),
-                version: Some(1),
+                version: Some(BigDecimal::from(1)),
                 delete_flag: Some(1),
             };
             let args = vec![activity.clone(), activity];
@@ -158,7 +159,7 @@ mod test {
                 status: Some(1),
                 remark: None,
                 create_time: Some(NaiveDateTime::now()),
-                version: Some(1),
+                version: Some(BigDecimal::from(1)),
                 delete_flag: Some(1),
             };
 
@@ -189,7 +190,7 @@ mod test {
                 status: Some(1),
                 remark: None,
                 create_time: Some(NaiveDateTime::now()),
-                version: Some(1),
+                version: Some(BigDecimal::from(1)),
                 delete_flag: Some(1),
             };
             let r = rb.update_by_id("", &activity).await;
