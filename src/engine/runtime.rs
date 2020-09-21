@@ -34,7 +34,7 @@ impl RbatisEngine {
         }
         let cached = self.cache_read(lexer_arg.as_str());
         if cached.is_none() {
-            let nodes = parser(lexer_arg.to_string(), &self.opt_map);
+            let nodes = parser(lexer_arg.as_str(), &self.opt_map);
             if nodes.is_err() {
                 return Result::Err(nodes.err().unwrap());
             }
@@ -75,7 +75,7 @@ impl RbatisEngine {
 
     /// no cache mode to run engine
     pub fn eval_no_cache(&self, lexer_arg: &str, arg: &Value) -> Result<Value, rbatis_core::Error> {
-        let nodes = parser(lexer_arg.to_string(), &self.opt_map);
+        let nodes = parser(lexer_arg, &self.opt_map);
         if nodes.is_err() {
             return Result::Err(nodes.err().unwrap());
         }

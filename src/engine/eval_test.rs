@@ -10,7 +10,7 @@ use crate::engine::runtime::OptMap;
 
 #[test]
 fn test_eval_arg() {
-    let box_node = parser::parser(String::from("startTime == null"), &OptMap::new()).unwrap();
+    let box_node = parser::parser("startTime == null", &OptMap::new()).unwrap();
     let john = json!({
         "n":1,
         "name": "John Doe",
@@ -42,7 +42,7 @@ fn test_eval_arg() {
 
 #[test]
 fn test_mem_gc() {
-    let box_node: Node = parser::parser(String::from("'1'+'1'"), &OptMap::new()).unwrap();
+    let box_node: Node = parser::parser("'1'+'1'", &OptMap::new()).unwrap();
     let john = json!({
         "n":1,
         "name": "John Doe",
