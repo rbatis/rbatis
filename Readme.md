@@ -16,11 +16,11 @@
 | diesel | x     | 简单（缺xml支持） |   x     |  x     |  x     |  
 
 
-##### 和其他语言对比性能压测(环境（docker）仅供参考)
-| 语言 | 框架     | 数据库 | count语句（1万次） | 纳秒/每操作（低越好） | 查询数/秒Qps(高越好) |内存（低越好） |
-| ------ | ------ | ------ |------ |------ |------ |------ |
-| Rust语言   | rbatis/tokio  | mysql(docker with 1CPU,1G Mem)    | select count(1) from table;    | 965649 ns/op   |  1035 Qps/s  |  2.1MB   |      
-| Go语言 | GoMybatis/http   | mysql(docker with 1CPU,1G Mem)    | select count(1) from table;   | 1184503 ns/op  |  844  Qps/s   |  28.4MB  |     
+##### 和Go语言对比性能(环境（docker）仅供参考)
+| 框架     | Mysql（docker） | SQL语句（1万次） | 纳秒/每操作（低越好） | Qps(高越好) |内存消耗（低越好） |
+|  ------ | ------ |------ |------ |------ |------ |
+| Rust语言-rbatis/tokio  |  1CPU,1G内存    | select count(1) from table;    | 965649 ns/op   |  1035 Qps/s  |  2.1MB   |      
+| Go语言-GoMybatis/http   |  1CPU,1G内存   | select count(1) from table;   | 1184503 ns/op  |  844  Qps/s   |  28.4MB  |     
 
 
 * 使用最通用的json数据结构（基于serde_json）进行传参和通讯
@@ -32,8 +32,7 @@
 * [示例代码（需要Clion导入）](https://github.com/rbatis/rbatis/tree/master/example/src)
 * [示例项目（需要Clion导入）](https://github.com/rbatis/abs_admin)
 
-
-##### 项目实战 https://github.com/rbatis/abs_admin
+##### 实战(编写Rust后台服务) https://github.com/rbatis/abs_admin
 
 ##### 使用方法：添加依赖(Cargo.toml)
 ``` rust
@@ -412,6 +411,14 @@ async fn main() -> std::io::Result<()> {
 | Sqlite           | √     |  
 | TiDB             | √     |
 | CockroachDB      | √     |
+
+### 平台测试通过
+| 平台    | 已支持 |
+| ------ | ------ |
+| Linux                   | √     | 
+| Apple/MacOS             | √     |  
+| Windows               | √     |
+
 
 ### 进度表-按照顺序实现
 | 功能    | 已支持 |
