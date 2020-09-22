@@ -49,218 +49,195 @@ mod test {
     }
 
 
-    #[test]
-    pub fn test_save() {
-        async_std::task::block_on(async {
-            let rb = init_rbatis().await;
-            let activity = BizActivity {
-                id: Some("12312".to_string()),
-                name: Some("123".to_string()),
-                pc_link: None,
-                h5_link: None,
-                pc_banner_img: None,
-                h5_banner_img: None,
-                sort: Some("1".to_string()),
-                status: Some(1),
-                remark: None,
-                create_time: Some(NaiveDateTime::now()),
-                version: Some(BigDecimal::from(1)),
-                delete_flag: Some(1),
-            };
-            let r = rb.save("", &activity).await;
-            if r.is_err() {
-                println!("{}", r.err().unwrap().to_string());
-            }
-        });
+    #[async_std::test]
+    pub async fn test_save() {
+        let rb = init_rbatis().await;
+        let activity = BizActivity {
+            id: Some("12312".to_string()),
+            name: Some("123".to_string()),
+            pc_link: None,
+            h5_link: None,
+            pc_banner_img: None,
+            h5_banner_img: None,
+            sort: Some("1".to_string()),
+            status: Some(1),
+            remark: None,
+            create_time: Some(NaiveDateTime::now()),
+            version: Some(BigDecimal::from(1)),
+            delete_flag: Some(1),
+        };
+        let r = rb.save("", &activity).await;
+        if r.is_err() {
+            println!("{}", r.err().unwrap().to_string());
+        }
     }
 
-    #[test]
-    pub fn test_save_batch() {
-        async_std::task::block_on(async {
-            let rb = init_rbatis().await;
-            let activity = BizActivity {
-                id: Some("12312".to_string()),
-                name: Some("test_1".to_string()),
-                pc_link: None,
-                h5_link: None,
-                pc_banner_img: None,
-                h5_banner_img: None,
-                sort: None,
-                status: Some(1),
-                remark: None,
-                create_time: Some(NaiveDateTime::now()),
-                version: Some(BigDecimal::from(1)),
-                delete_flag: Some(1),
-            };
-            let args = vec![activity.clone(), activity];
-            let r = rb.save_batch("", &args).await;
-            if r.is_err() {
-                println!("{}", r.err().unwrap().to_string());
-            }
-        });
+    #[async_std::test]
+    pub async fn test_save_batch() {
+        let rb = init_rbatis().await;
+        let activity = BizActivity {
+            id: Some("12312".to_string()),
+            name: Some("test_1".to_string()),
+            pc_link: None,
+            h5_link: None,
+            pc_banner_img: None,
+            h5_banner_img: None,
+            sort: None,
+            status: Some(1),
+            remark: None,
+            create_time: Some(NaiveDateTime::now()),
+            version: Some(BigDecimal::from(1)),
+            delete_flag: Some(1),
+        };
+        let args = vec![activity.clone(), activity];
+        let r = rb.save_batch("", &args).await;
+        if r.is_err() {
+            println!("{}", r.err().unwrap().to_string());
+        }
     }
 
 
-    #[test]
-    pub fn test_remove_batch_by_id() {
-        async_std::task::block_on(async {
-            let mut rb = init_rbatis().await;
-            rb.logic_plugin = Some(Box::new(RbatisLogicDeletePlugin::new("delete_flag")));
-            rb.link("mysql://root:123456@localhost:3306/test").await.unwrap();
-            let r = rb.remove_batch_by_id::<BizActivity>("", &["1".to_string(), "2".to_string()]).await;
-            if r.is_err() {
-                println!("{}", r.err().unwrap().to_string());
-            }
-        });
+    #[async_std::test]
+    pub async fn test_remove_batch_by_id() {
+        let mut rb = init_rbatis().await;
+        rb.logic_plugin = Some(Box::new(RbatisLogicDeletePlugin::new("delete_flag")));
+        rb.link("mysql://root:123456@localhost:3306/test").await.unwrap();
+        let r = rb.remove_batch_by_id::<BizActivity>("", &["1".to_string(), "2".to_string()]).await;
+        if r.is_err() {
+            println!("{}", r.err().unwrap().to_string());
+        }
     }
 
 
-    #[test]
-    pub fn test_remove_by_id() {
-        async_std::task::block_on(async {
-            let mut rb = init_rbatis().await;
-            //设置 逻辑删除插件
-            rb.logic_plugin = Some(Box::new(RbatisLogicDeletePlugin::new_opt("delete_flag", 1, 0)));
-            rb.link("mysql://root:123456@localhost:3306/test").await.unwrap();
-            let r = rb.remove_by_id::<BizActivity>("", &"1".to_string()).await;
-            if r.is_err() {
-                println!("{}", r.err().unwrap().to_string());
-            }
-        });
+    #[async_std::test]
+    pub async fn test_remove_by_id() {
+        let mut rb = init_rbatis().await;
+        //设置 逻辑删除插件
+        rb.logic_plugin = Some(Box::new(RbatisLogicDeletePlugin::new_opt("delete_flag", 1, 0)));
+        rb.link("mysql://root:123456@localhost:3306/test").await.unwrap();
+        let r = rb.remove_by_id::<BizActivity>("", &"1".to_string()).await;
+        if r.is_err() {
+            println!("{}", r.err().unwrap().to_string());
+        }
     }
 
-    #[test]
-    pub fn test_fetch_by_id() {
-        async_std::task::block_on(async {
-            let mut rb = init_rbatis().await;
-            //设置 逻辑删除插件
-            rb.logic_plugin = Some(Box::new(RbatisLogicDeletePlugin::new("delete_flag")));
-            rb.link("mysql://root:123456@localhost:3306/test").await.unwrap();
-            let r = rb.fetch_by_id::<Option<BizActivity>>("", &"1".to_string()).await.unwrap();
-            println!("{}", serde_json::to_string(&r).unwrap());
-        });
+    #[async_std::test]
+    pub async fn test_fetch_by_id() {
+        let mut rb = init_rbatis().await;
+        //设置 逻辑删除插件
+        rb.logic_plugin = Some(Box::new(RbatisLogicDeletePlugin::new("delete_flag")));
+        rb.link("mysql://root:123456@localhost:3306/test").await.unwrap();
+        let r = rb.fetch_by_id::<Option<BizActivity>>("", &"1".to_string()).await.unwrap();
+        println!("{}", serde_json::to_string(&r).unwrap());
     }
 
-    #[test]
-    pub fn test_update_by_wrapper() {
-        async_std::task::block_on(async {
-            let mut rb = init_rbatis().await;
-            //设置 逻辑删除插件
-            rb.logic_plugin = Some(Box::new(RbatisLogicDeletePlugin::new("delete_flag")));
+    #[async_std::test]
+    pub async fn test_update_by_wrapper() {
+        let mut rb = init_rbatis().await;
+        //设置 逻辑删除插件
+        rb.logic_plugin = Some(Box::new(RbatisLogicDeletePlugin::new("delete_flag")));
 
-            let activity = BizActivity {
-                id: Some("12312".to_string()),
-                name: None,
-                pc_link: None,
-                h5_link: None,
-                pc_banner_img: None,
-                h5_banner_img: None,
-                sort: None,
-                status: Some(1),
-                remark: None,
-                create_time: Some(NaiveDateTime::now()),
-                version: Some(BigDecimal::from(1)),
-                delete_flag: Some(1),
-            };
+        let activity = BizActivity {
+            id: Some("12312".to_string()),
+            name: None,
+            pc_link: None,
+            h5_link: None,
+            pc_banner_img: None,
+            h5_banner_img: None,
+            sort: None,
+            status: Some(1),
+            remark: None,
+            create_time: Some(NaiveDateTime::now()),
+            version: Some(BigDecimal::from(1)),
+            delete_flag: Some(1),
+        };
 
-            let w = rb.new_wrapper().eq("id", "12312").check().unwrap();
-            let r = rb.update_by_wrapper("", &activity, &w, false).await;
-            if r.is_err() {
-                println!("{}", r.err().unwrap().to_string());
-            }
-        });
+        let w = rb.new_wrapper().eq("id", "12312").check().unwrap();
+        let r = rb.update_by_wrapper("", &activity, &w, false).await;
+        if r.is_err() {
+            println!("{}", r.err().unwrap().to_string());
+        }
     }
 
 
-    #[test]
-    pub fn test_update_by_id() {
-        async_std::task::block_on(async {
-            let mut rb = init_rbatis().await;
-            //设置 逻辑删除插件
-            rb.logic_plugin = Some(Box::new(RbatisLogicDeletePlugin::new("delete_flag")));
+    #[async_std::test]
+    pub async fn test_update_by_id() {
+        let mut rb = init_rbatis().await;
+        //设置 逻辑删除插件
+        rb.logic_plugin = Some(Box::new(RbatisLogicDeletePlugin::new("delete_flag")));
 
-            let activity = BizActivity {
-                id: Some("12312".to_string()),
-                name: None,
-                pc_link: None,
-                h5_link: None,
-                pc_banner_img: None,
-                h5_banner_img: None,
-                sort: None,
-                status: Some(1),
-                remark: None,
-                create_time: Some(NaiveDateTime::now()),
-                version: Some(BigDecimal::from(1)),
-                delete_flag: Some(1),
-            };
-            let r = rb.update_by_id("", &activity).await;
-            if r.is_err() {
-                println!("{}", r.err().unwrap().to_string());
-            }
-        });
+        let activity = BizActivity {
+            id: Some("12312".to_string()),
+            name: None,
+            pc_link: None,
+            h5_link: None,
+            pc_banner_img: None,
+            h5_banner_img: None,
+            sort: None,
+            status: Some(1),
+            remark: None,
+            create_time: Some(NaiveDateTime::now()),
+            version: Some(BigDecimal::from(1)),
+            delete_flag: Some(1),
+        };
+        let r = rb.update_by_id("", &activity).await;
+        if r.is_err() {
+            println!("{}", r.err().unwrap().to_string());
+        }
     }
 
-    #[test]
-    pub fn test_fetch_by_wrapper() {
-        async_std::task::block_on(async {
-            let mut rb = init_rbatis().await;
-            //设置 逻辑删除插件
-            rb.logic_plugin = Some(Box::new(RbatisLogicDeletePlugin::new("delete_flag")));
-            let w = rb.new_wrapper().eq("id", "1").check().unwrap();
-            let r: Result<Option<BizActivity>, Error> = rb.fetch_by_wrapper("", &w).await;
-            println!("is_some:{:?}", r);
-            if r.is_err() {
-                println!("{}", r.err().unwrap().to_string());
-            }
-        });
+    #[async_std::test]
+    pub async fn test_fetch_by_wrapper() {
+        let mut rb = init_rbatis().await;
+        //设置 逻辑删除插件
+        rb.logic_plugin = Some(Box::new(RbatisLogicDeletePlugin::new("delete_flag")));
+        let w = rb.new_wrapper().eq("id", "1").check().unwrap();
+        let r: Result<Option<BizActivity>, Error> = rb.fetch_by_wrapper("", &w).await;
+        println!("is_some:{:?}", r);
+        if r.is_err() {
+            println!("{}", r.err().unwrap().to_string());
+        }
     }
 
 
-    #[test]
-    pub fn test_fetch_page_by_wrapper() {
-        async_std::task::block_on(async {
-            let mut rb = init_rbatis().await;
-            //设置 逻辑删除插件
-            rb.logic_plugin = Some(Box::new(RbatisLogicDeletePlugin::new("delete_flag")));
+    #[async_std::test]
+    pub async fn test_fetch_page_by_wrapper() {
+        let mut rb = init_rbatis().await;
+        //设置 逻辑删除插件
+        rb.logic_plugin = Some(Box::new(RbatisLogicDeletePlugin::new("delete_flag")));
 
-            let w = rb.new_wrapper()
-                .eq("delete_flag", 1)
-                .check().unwrap();
-            let r: Page<BizActivity> = rb.fetch_page_by_wrapper("", &w, &PageRequest::new(1, 20)).await.unwrap();
-            println!("{}", serde_json::to_string(&r).unwrap());
-        });
+        let w = rb.new_wrapper()
+            .eq("delete_flag", 1)
+            .check().unwrap();
+        let r: Page<BizActivity> = rb.fetch_page_by_wrapper("", &w, &PageRequest::new(1, 20)).await.unwrap();
+        println!("{}", serde_json::to_string(&r).unwrap());
     }
 
-    #[test]
-    pub fn test_list() {
-        async_std::task::block_on(async {
-            let mut rb = init_rbatis().await;
-            //设置 逻辑删除插件
-            rb.logic_plugin = Some(Box::new(RbatisLogicDeletePlugin::new("delete_flag")));
-            let r: Vec<BizActivity> = rb.list("").await.unwrap();
-            println!("{}", serde_json::to_string(&r).unwrap());
-        });
+    #[async_std::test]
+    pub async fn test_list() {
+        let mut rb = init_rbatis().await;
+        //设置 逻辑删除插件
+        rb.logic_plugin = Some(Box::new(RbatisLogicDeletePlugin::new("delete_flag")));
+        let r: Vec<BizActivity> = rb.list("").await.unwrap();
+        println!("{}", serde_json::to_string(&r).unwrap());
     }
 
 
-   lazy_static! {
+    lazy_static! {
      static ref RB:Rbatis=Rbatis::new();
    }
 
     /// RB是本地依赖Rbatis引用的名称,例如  dao::RB, com::xxx::RB....都可以
     /// 第二个参数是标准的驱动sql，注意对应数据库参数mysql为？,pg为$1...
     #[sql(RB, "select * from biz_activity where id = ?")]
-    pub async fn select(name: &str) -> rbatis_core::Result<BizActivity> {
+    pub async fn select(name: &str) -> rbatis_core::Result<BizActivity> {}
 
-    }
 
-    #[test]
-    pub fn test_fn() {
-        async_std::task::block_on(async {
-            fast_log::log::init_log("requests.log", &RuntimeType::Std);
-            RB.link("mysql://root:123456@localhost:3306/test").await.unwrap();
-            let a = select("1").await.unwrap();
-            println!("{:?}", a);
-        })
+    #[async_std::test]
+    pub async fn test_macro() {
+        fast_log::log::init_log("requests.log", &RuntimeType::Std);
+        RB.link("mysql://root:123456@localhost:3306/test").await.unwrap();
+        let a = select("1").await.unwrap();
+        println!("{:?}", a);
     }
 }

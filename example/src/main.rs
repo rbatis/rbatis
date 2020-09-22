@@ -6,15 +6,13 @@
 
 #[macro_use]
 extern crate lazy_static;
-
 #[macro_use]
 extern crate rbatis_macro_driver;
-
-mod crud_test;
 
 use std::convert::Infallible;
 use std::thread::sleep;
 use std::time::Duration;
+
 use fast_log::log::RuntimeType;
 use log::info;
 use serde::{Deserialize, Serialize};
@@ -22,15 +20,16 @@ use serde_json::{json, Value};
 use tide::Request;
 
 use rbatis::crud::{CRUD, CRUDEnable};
-use rbatis::plugin::page::{ Page, PageRequest};
+use rbatis::plugin::page::{Page, PageRequest};
 use rbatis::rbatis::Rbatis;
 use rbatis_core::db::DBPool;
 use rbatis_core::types::chrono::NaiveDateTime;
 
+mod crud_test;
 
 ///数据库表模型,支持BigDecimal ,DateTime ,rust基本类型（int,float,uint,string,Vec,Array）
 /// CRUDEnable 特性会自动识别 id为表的id类型(识别String)，自动识别结构体名称为蛇形命名的表名 biz_activity。没有id的表 请手动指定
-#[derive(CRUDEnable,Serialize, Deserialize, Clone, Debug)]
+#[derive(CRUDEnable, Serialize, Deserialize, Clone, Debug)]
 pub struct BizActivity {
     pub id: Option<String>,
     pub name: Option<String>,
@@ -86,7 +85,7 @@ async fn main() {
 ///测试打印表名称
 #[test]
 pub fn test_table_info() {
-    println!("table_name: {}",BizActivity::table_name());
+    println!("table_name: {}", BizActivity::table_name());
 }
 
 // 示例-打印日志
@@ -99,47 +98,35 @@ pub fn test_log() {
 }
 
 //示例-Rbatis直接使用驱动
-#[test]
-pub fn test_use_driver() {
-    async_std::task::block_on(
-        async move {
-            fast_log::log::init_log("requests.log", &RuntimeType::Std).unwrap();
-            let pool = DBPool::new(MYSQL_URL).await.unwrap();
-            let mut conn = pool.acquire().await.unwrap();
-            let mut c = conn.fetch("SELECT count(1) FROM biz_activity;").unwrap();
-            let r: serde_json::Value = c.decode_json().await.unwrap();
-            println!("done:{:?}", r);
-        }
-    );
+#[async_std::test]
+pub async fn test_use_driver() {
+    fast_log::log::init_log("requests.log", &RuntimeType::Std).unwrap();
+    let pool = DBPool::new(MYSQL_URL).await.unwrap();
+    let mut conn = pool.acquire().await.unwrap();
+    let mut c = conn.fetch("SELECT count(1) FROM biz_activity;").unwrap();
+    let r: serde_json::Value = c.decode_json().await.unwrap();
+    println!("done:{:?}", r);
 }
 
 //示例-Rbatis直接使用驱动-prepared stmt sql
-#[test]
-pub fn test_prepare_sql() {
-    async_std::task::block_on(
-        async move {
-            fast_log::log::init_log("requests.log", &RuntimeType::Std).unwrap();
-            let rb = Rbatis::new();
-            rb.link(MYSQL_URL).await.unwrap();
-            let arg = &vec![json!(1), json!("test%")];
-            let r: Vec<BizActivity> = rb.fetch_prepare("", "SELECT * FROM biz_activity WHERE delete_flag =  ? AND name like ?", arg).await.unwrap();
-            println!("done:{}", serde_json::to_string(&r).unwrap_or(String::new()));
-            //
-            // let a=r.get(0).unwrap();
-            // rb.save(a).await.unwrap();
-        }
-    );
+#[async_std::test]
+pub async fn test_prepare_sql() {
+    fast_log::log::init_log("requests.log", &RuntimeType::Std).unwrap();
+    let rb = Rbatis::new();
+    rb.link(MYSQL_URL).await.unwrap();
+    let arg = &vec![json!(1), json!("test%")];
+    let r: Vec<BizActivity> = rb.fetch_prepare("", "SELECT * FROM biz_activity WHERE delete_flag =  ? AND name like ?", arg).await.unwrap();
+    println!("done:{}", serde_json::to_string(&r).unwrap_or(String::new()));
 }
 
 
 //示例-Rbatis使用py风格的语法查询
-#[test]
-pub fn test_py_sql() {
-    async_std::task::block_on(async move {
-        fast_log::log::init_log("requests.log", &RuntimeType::Std).unwrap();
-        let rb = Rbatis::new();
-        rb.link(MYSQL_URL).await.unwrap();
-        let py = r#"
+#[async_std::test]
+pub async fn test_py_sql() {
+    fast_log::log::init_log("requests.log", &RuntimeType::Std).unwrap();
+    let rb = Rbatis::new();
+    rb.link(MYSQL_URL).await.unwrap();
+    let py = r#"
     SELECT * FROM biz_activity
     WHERE delete_flag = #{delete_flag}
     if name != null:
@@ -150,52 +137,45 @@ pub fn test_py_sql() {
          for item in ids:
            #{item},
       )"#;
-        let data: serde_json::Value = rb.py_fetch("", py, &json!({   "delete_flag": 1 })).await.unwrap();
-        println!("{}", data);
-    });
+    let data: serde_json::Value = rb.py_fetch("", py, &json!({   "delete_flag": 1 })).await.unwrap();
+    println!("{}", data);
 }
 
 //示例-Rbatis语法分页
-#[test]
-pub fn test_sql_page() {
-    async_std::task::block_on(async move {
-        fast_log::log::init_log("requests.log", &RuntimeType::Std).unwrap();
-        let rb = Rbatis::new();
-        rb.link(MYSQL_URL).await.unwrap();
-        let wraper = rb.new_wrapper()
-            .eq("delete_flag", 1).check().unwrap();
-        let data: Page<BizActivity> = rb.fetch_page_by_wrapper("", &wraper, &PageRequest::new(1, 20)).await.unwrap();
-        println!("{}", serde_json::to_string(&data).unwrap());
-    });
+#[async_std::test]
+pub async fn test_sql_page() {
+    fast_log::log::init_log("requests.log", &RuntimeType::Std).unwrap();
+    let rb = Rbatis::new();
+    rb.link(MYSQL_URL).await.unwrap();
+    let wraper = rb.new_wrapper()
+        .eq("delete_flag", 1).check().unwrap();
+    let data: Page<BizActivity> = rb.fetch_page_by_wrapper("", &wraper, &PageRequest::new(1, 20)).await.unwrap();
+    println!("{}", serde_json::to_string(&data).unwrap());
 }
 
 //示例-Rbatis使用py风格的语法分页
-#[test]
-pub fn test_py_sql_page() {
-    async_std::task::block_on(async move {
-        fast_log::log::init_log("requests.log", &RuntimeType::Std).unwrap();
-        let rb = Rbatis::new();
-        rb.link(MYSQL_URL).await.unwrap();
-        let py = r#"
+#[async_std::test]
+pub async fn test_py_sql_page() {
+    fast_log::log::init_log("requests.log", &RuntimeType::Std).unwrap();
+    let rb = Rbatis::new();
+    rb.link(MYSQL_URL).await.unwrap();
+    let py = r#"
     SELECT * FROM biz_activity
     WHERE delete_flag = #{delete_flag}
     if name != null:
       AND name like #{name+'%'}"#;
-        let data: Page<BizActivity> = rb.py_fetch_page("", py, &json!({   "delete_flag": 1 }), &PageRequest::new(1, 20)).await.unwrap();
-        println!("{}", serde_json::to_string(&data).unwrap());
-    });
+    let data: Page<BizActivity> = rb.py_fetch_page("", py, &json!({   "delete_flag": 1 }), &PageRequest::new(1, 20)).await.unwrap();
+    println!("{}", serde_json::to_string(&data).unwrap());
 }
 
 //示例-Rbatis使用传统XML风格的语法查询
-#[test]
-pub fn test_xml_sql() {
-    async_std::task::block_on(
-        async move {
-            fast_log::log::init_log("requests.log", &RuntimeType::Std).unwrap();
-            let mut rb = Rbatis::new();
-            rb.link(MYSQL_URL).await.unwrap();
-            //xml数据建议以 XXMapper.xml 的格式存储管理
-            rb.load_xml("test", r#"
+#[async_std::test]
+pub async fn test_xml_sql() {
+    fast_log::log::init_log("requests.log", &RuntimeType::Std).unwrap();
+    let mut rb = Rbatis::new();
+    rb.link(MYSQL_URL).await.unwrap();
+    //xml数据建议以 XXMapper.xml 的格式存储管理
+    rb.load_xml("test", r#"
 <mapper>
     <sql id="columns">id,name,pc_link,h5_link,pc_banner_img,h5_banner_img,sort,status,remark,version,create_time,delete_flag</sql>
     <select id="select_by_condition">
@@ -210,7 +190,7 @@ pub fn test_xml_sql() {
         <if test="page != null and size != null">limit #{page}, #{size}</if>
     </select>
 </mapper>"#).unwrap();
-            let arg = &json!({
+    let arg = &json!({
             "delete_flag": 1,
             "name": "test",
             "startTime": null,
@@ -218,49 +198,43 @@ pub fn test_xml_sql() {
             "page": 0,
             "size": 20
             });
-            let data: Vec<BizActivity> = rb.xml_fetch("", "test", "select_by_condition", arg).await.unwrap();
-            println!("{}", serde_json::to_string(&data).unwrap_or("".to_string()));
-        }
-    )
+    let data: Vec<BizActivity> = rb.xml_fetch("", "test", "select_by_condition", arg).await.unwrap();
+    println!("{}", serde_json::to_string(&data).unwrap_or("".to_string()));
 }
 
 //示例-Rbatis使用事务
-#[test]
-pub fn test_tx() {
-    async_std::task::block_on(async {
-        fast_log::log::init_log("requests.log", &RuntimeType::Std).unwrap();
-        let rb = Rbatis::new();
-        rb.link(MYSQL_URL).await.unwrap();
-        let tx_id = "1";
-        rb.begin(tx_id).await.unwrap();
-        let v: serde_json::Value = rb.fetch(tx_id, "SELECT count(1) FROM biz_activity;").await.unwrap();
-        println!("{}", v.clone());
-        rb.commit(tx_id).await.unwrap();
-    });
+#[async_std::test]
+pub async fn test_tx() {
+    fast_log::log::init_log("requests.log", &RuntimeType::Std).unwrap();
+    let rb = Rbatis::new();
+    rb.link(MYSQL_URL).await.unwrap();
+    let tx_id = "1";
+    rb.begin(tx_id).await.unwrap();
+    let v: serde_json::Value = rb.fetch(tx_id, "SELECT count(1) FROM biz_activity;").await.unwrap();
+    println!("{}", v.clone());
+    rb.commit(tx_id).await.unwrap();
 }
 
 /// 示例-Rbatis使用web框架Tide、async_std
-#[test]
-pub fn test_tide() {
-    async_std::task::block_on(async {
-        fast_log::log::init_log("requests.log", &RuntimeType::Std).unwrap();
-        RB.link(MYSQL_URL).await.unwrap();
-        let mut app = tide::new();
-        app.at("/").get(|_: Request<()>| async move {
-            // println!("accept req[{} /test] arg: {:?}",req.url().to_string(),a);
-            let v = RB.fetch("", "SELECT count(1) FROM biz_activity;").await;
-            if v.is_ok() {
-                let data: Value = v.unwrap();
-                Ok(data.to_string())
-            } else {
-                Ok(v.err().unwrap().to_string())
-            }
-        });
-        //app.at("/").get(|_| async { Ok("Hello, world!") });
-        let addr = "0.0.0.0:8000";
-        println!("server on http://{}", addr);
-        app.listen(addr).await.unwrap();
+#[async_std::test]
+pub async fn test_tide() {
+    fast_log::log::init_log("requests.log", &RuntimeType::Std).unwrap();
+    RB.link(MYSQL_URL).await.unwrap();
+    let mut app = tide::new();
+    app.at("/").get(|_: Request<()>| async move {
+        // println!("accept req[{} /test] arg: {:?}",req.url().to_string(),a);
+        let v = RB.fetch("", "SELECT count(1) FROM biz_activity;").await;
+        if v.is_ok() {
+            let data: Value = v.unwrap();
+            Ok(data.to_string())
+        } else {
+            Ok(v.err().unwrap().to_string())
+        }
     });
+    //app.at("/").get(|_| async { Ok("Hello, world!") });
+    let addr = "0.0.0.0:8000";
+    println!("server on http://{}", addr);
+    app.listen(addr).await.unwrap();
 }
 
 
