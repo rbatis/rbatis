@@ -1,6 +1,4 @@
 use std::collections::HashMap;
-use std::io::Read;
-
 
 //find like ?,$
 pub fn find_all_sql_opt(arg: &str) -> usize {
