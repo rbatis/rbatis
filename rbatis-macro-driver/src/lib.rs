@@ -4,9 +4,12 @@ use proc_macro2::{Ident, Span};
 use quote::{quote, TokenStreamExt};
 use quote::ToTokens;
 use syn;
-use syn::{AttributeArgs, BareFnArg, Expr, FnArg, ForeignItemFn, ItemFn, NestedMeta, parse_macro_input, TypeBareFn};
+use syn::{AttributeArgs, BareFnArg, Expr, FnArg, ForeignItemFn, ItemFn, NestedMeta, parse_macro_input, TypeBareFn, ReturnType, Type, Path};
 
 use crate::proc_macro::TokenStream;
+use std::process::Output;
+use syn::parse::Parse;
+use proc_macro2::TokenTree::Punct;
 
 mod string_util;
 
@@ -92,7 +95,23 @@ macro_rules! gen_macro_json_arg_array {
 }
 
 fn impl_macro_sql(func: &syn::ItemFn, args: &AttributeArgs) -> TokenStream {
-    let return_ty = &func.sig.output.to_token_stream();
+    let mut return_ty = func.sig.output.to_token_stream();
+    match &func.sig.output{
+        ReturnType::Type(_,b)=>{
+            return_ty = b.to_token_stream();
+        }
+        _ => {}
+    }
+
+    println!("return_ty:{:#?}",return_ty);
+
+    let mut s=format!("{}", return_ty);
+    if !s.starts_with("rbatis_core :: Result") && !s.starts_with("Result") && !s.starts_with("std :: result :: Result"){
+        return_ty = quote! {
+             rbatis_core :: Result <#return_ty>
+        };
+    }
+
     let func_name = format!("{}", func.sig.ident.to_token_stream());
     let rbatis_meta = args.get(0).unwrap();
     let field_name = format!("{}", rbatis_meta.to_token_stream());
@@ -139,7 +158,7 @@ fn impl_macro_sql(func: &syn::ItemFn, args: &AttributeArgs) -> TokenStream {
 
     if is_select {
         let gen = quote! {
-        pub async fn #func_name_ident(#func_args_stream) #return_ty {
+        pub async fn #func_name_ident(#func_args_stream) -> #return_ty {
            #args_gen
               log::info!("[rbatis] [{}] Query ==> {}", "", #sql_ident);
               log::info!("[rbatis] [{}] Args  ==> {}", "", serde_json::to_string(&args).unwrap_or("".to_string()));
