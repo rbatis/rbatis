@@ -79,7 +79,12 @@ pub fn sql(args: TokenStream, this: TokenStream) -> TokenStream {
     let args = parse_macro_input!(args as AttributeArgs);
     let func = syn::parse(this).unwrap();
 
-    impl_macro_sql(&func, &args)
+    let stream=impl_macro_sql(&func, &args);
+
+    println!("gen rust code:{}",format!("{}", stream));
+    println!("proc_macro_attribute sql end............");
+
+    stream
 }
 
 macro_rules! gen_macro_json_arg_array {
