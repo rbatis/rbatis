@@ -118,10 +118,15 @@ fn impl_macro_sql(target_fn: &ItemFn, args: &AttributeArgs) -> TokenStream {
 
     //fetch fn arg names
     let mut fn_arg_name_vec = vec![];
+    let mut tx_id_ident = quote! {""};
     for arg in &target_fn.sig.inputs {
         match arg {
             FnArg::Typed(t) => {
                 let arg_name = format!("{}", t.pat.to_token_stream());
+                if arg_name.contains("tx_id") {
+                    tx_id_ident = t.pat.to_token_stream();
+                    continue;
+                }
                 fn_arg_name_vec.push(arg_name);
                 //println!("arg_name {}", arg_name);
             }
@@ -157,8 +162,8 @@ fn impl_macro_sql(target_fn: &ItemFn, args: &AttributeArgs) -> TokenStream {
         let gen = quote! {
         pub async fn #func_name_ident(#func_args_stream) -> #return_ty {
            #args_gen
-              log::info!("[rbatis] [{}] Query ==> {}", "", #sql_ident);
-              log::info!("[rbatis] [{}] Args  ==> {}", "", serde_json::to_string(&args).unwrap_or("".to_string()));
+              log::info!("[rbatis] [{}] Query ==> {}", #tx_id_ident, #sql_ident);
+              log::info!("[rbatis] [{}] Args  ==> {}", #tx_id_ident, serde_json::to_string(&args).unwrap_or("".to_string()));
               return #rbatis_ident.fetch_prepare("",#sql_ident,&args).await;
         }
     };
@@ -167,8 +172,8 @@ fn impl_macro_sql(target_fn: &ItemFn, args: &AttributeArgs) -> TokenStream {
         let gen = quote! {
         pub async fn #func_name_ident(#func_args_stream) #return_ty {
            #args_gen
-              log::info!("[rbatis] [{}] Exec ==> {}", "", #sql_ident);
-              log::info!("[rbatis] [{}] Args  ==> {}", "", serde_json::to_string(&args).unwrap_or("".to_string()));
+              log::info!("[rbatis] [{}] Exec ==> {}", #tx_id_ident, #sql_ident);
+              log::info!("[rbatis] [{}] Args  ==> {}", #tx_id_ident, serde_json::to_string(&args).unwrap_or("".to_string()));
               return #rbatis_ident.exec_prepare("",#sql_ident,&args).await;
         }
     };
