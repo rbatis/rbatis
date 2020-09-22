@@ -1,7 +1,7 @@
 extern crate proc_macro;
 
 use proc_macro2::{Ident, Span};
-use quote::quote;
+use quote::{quote, TokenStreamExt};
 use quote::ToTokens;
 use syn;
 use syn::{AttributeArgs, BareFnArg, FnArg, ForeignItemFn, ItemFn, NestedMeta, parse_macro_input, TypeBareFn, Expr};
@@ -82,6 +82,10 @@ pub fn sql(args: TokenStream, this: TokenStream) -> TokenStream {
     impl_macro_sql(&func, &args)
 }
 
+macro_rules! gen_macro_json_arg_array {
+    () => {};
+}
+
 fn impl_macro_sql(func: &syn::ItemFn, args: &AttributeArgs) -> TokenStream {
 
     let func_name = format!("{}", func.sig.ident.to_token_stream());
@@ -120,15 +124,21 @@ fn impl_macro_sql(func: &syn::ItemFn, args: &AttributeArgs) -> TokenStream {
     let rbatis_ident = Ident::new(&field_name, Span::call_site());
     let is_select = sql.starts_with("select ") || sql.starts_with("SELECT ");
 
-
-   // let func_arg0=Ident::new(&fn_arg_name_vec[0],Span::call_site());
-
-
+    //append all args
+    let mut args_gen = quote! {
+         let mut args =vec![];
+    };
+    for item in fn_arg_name_vec {
+        let item_ident=Ident::new(&item, Span::call_site());
+        args_gen=quote! {
+            #args_gen
+            args.push(serde_json::to_value(#item_ident).unwrap_or(serde_json::Value::Null));
+       };
+    }
     let gen = quote! {
         pub async fn #func_name_ident(#func_args_stream) -> rbatis_core::Result<serde_json::Value>{
            //Ok("".to_string())
-           let mut args =vec![];
-           args.push(serde_json::to_value(name).unwrap_or(serde_json::Value::Null));
+           #args_gen
            log::info!("[rbatis] sql {}",#sql_ident);
            #rbatis_ident.fetch_prepare("",#sql_ident,&args).await
         }
