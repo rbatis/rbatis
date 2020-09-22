@@ -17,7 +17,7 @@ use crate::utils::time_util;
 
 #[test]
 fn test_parser() {
-    let box_node = parser::parser("a == 1 && a != 0", &OptMap::new()).unwrap();
+    let box_node = parser::parse("a == 1 && a != 0", &OptMap::new()).unwrap();
     let john = json!({
         "a":1,
         "name": "John Doe",
@@ -38,7 +38,7 @@ fn test_parser() {
 
 #[test]
 fn test_benchmark() {
-    let box_node = parser::parser("1<=2", &OptMap::new()).unwrap();
+    let box_node = parser::parse("1<=2", &OptMap::new()).unwrap();
     let john = json!({
         "name": "John Doe",
     });

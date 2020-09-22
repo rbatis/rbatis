@@ -20,7 +20,7 @@ use crate::ast::node::string_node::StringNode;
 use crate::ast::node::trim_node::TrimNode;
 use crate::ast::node::when_node::WhenNode;
 use crate::ast::node::where_node::WhereNode;
-use crate::engine::parser::parser;
+use crate::engine::parser::parse;
 use crate::engine::runtime::RbatisEngine;
 use crate::utils::bencher::Bencher;
 

@@ -7,7 +7,7 @@ use crate::engine::node::Node;
 use crate::engine::node::NodeType::{NBinary, NOpt};
 use crate::engine::runtime::{is_number, OptMap, parser_tokens};
 
-pub fn parser(express: &str, opt_map: &OptMap) -> Result<Node, rbatis_core::Error> {
+pub fn parse(express: &str, opt_map: &OptMap) -> Result<Node, rbatis_core::Error> {
     let express = express.replace("none", "null").replace("None", "null");
     let tokens = parser_tokens(&express, opt_map);
     let mut nodes = vec![];
