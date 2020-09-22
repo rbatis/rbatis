@@ -1,12 +1,13 @@
 extern crate proc_macro;
 
 use proc_macro2::{Ident, Span};
-use quote::{quote};
+use quote::quote;
 use quote::ToTokens;
 use syn;
-use syn::{AttributeArgs, parse_macro_input, ReturnType, FnArg};
+use syn::{AttributeArgs, FnArg, ItemFn, parse_macro_input, ReturnType};
 
 use crate::proc_macro::TokenStream;
+
 mod string_util;
 
 #[proc_macro_derive(CRUDEnable)]
@@ -76,7 +77,7 @@ pub fn sql(args: TokenStream, this: TokenStream) -> TokenStream {
 
     // this
     let args = parse_macro_input!(args as AttributeArgs);
-    let target_fn = syn::parse(this).unwrap();
+    let target_fn: ItemFn = syn::parse(this).unwrap();
 
     let stream = impl_macro_sql(&target_fn, &args);
 
@@ -90,19 +91,19 @@ macro_rules! gen_macro_json_arg_array {
     () => {};
 }
 
-fn impl_macro_sql(target_fn: &syn::ItemFn, args: &AttributeArgs) -> TokenStream {
+fn impl_macro_sql(target_fn: &ItemFn, args: &AttributeArgs) -> TokenStream {
     let mut return_ty = target_fn.sig.output.to_token_stream();
-    match &target_fn.sig.output{
-        ReturnType::Type(_,b)=>{
+    match &target_fn.sig.output {
+        ReturnType::Type(_, b) => {
             return_ty = b.to_token_stream();
         }
         _ => {}
     }
 
-    println!("return_ty:{:#?}",return_ty);
+    println!("return_ty:{:#?}", return_ty);
 
-    let mut s=format!("{}", return_ty);
-    if !s.starts_with("rbatis_core :: Result") && !s.starts_with("Result") && !s.starts_with("std :: result :: Result"){
+    let mut s = format!("{}", return_ty);
+    if !s.starts_with("rbatis_core :: Result") && !s.starts_with("Result") && !s.starts_with("std :: result :: Result") {
         return_ty = quote! {
              rbatis_core :: Result <#return_ty>
         };
