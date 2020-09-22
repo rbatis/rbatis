@@ -76,7 +76,7 @@ fn impl_macro(ast: &syn::DeriveInput) -> TokenStream {
 /// sql create macro
 #[proc_macro_attribute]
 pub fn sql(args: TokenStream, this: TokenStream) -> TokenStream {
-    println!("proc_macro_attribute sql start............");
+    println!("............proc_macro_attribute sql start............");
 
     // this
     let args = parse_macro_input!(args as AttributeArgs);
@@ -84,8 +84,8 @@ pub fn sql(args: TokenStream, this: TokenStream) -> TokenStream {
 
     let stream = impl_macro_sql(&func, &args);
 
-    println!("gen rust code:\n {}", format!("{}", stream));
-    println!("proc_macro_attribute sql end............");
+    println!("............gen rust code:\n {}", format!("{}", stream));
+    println!("............proc_macro_attribute sql end............");
 
     stream
 }
