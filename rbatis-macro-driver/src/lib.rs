@@ -90,9 +90,9 @@ macro_rules! gen_macro_json_arg_array {
     () => {};
 }
 
-fn impl_macro_sql(func: &syn::ItemFn, args: &AttributeArgs) -> TokenStream {
-    let mut return_ty = func.sig.output.to_token_stream();
-    match &func.sig.output{
+fn impl_macro_sql(target_fn: &syn::ItemFn, args: &AttributeArgs) -> TokenStream {
+    let mut return_ty = target_fn.sig.output.to_token_stream();
+    match &target_fn.sig.output{
         ReturnType::Type(_,b)=>{
             return_ty = b.to_token_stream();
         }
@@ -108,7 +108,7 @@ fn impl_macro_sql(func: &syn::ItemFn, args: &AttributeArgs) -> TokenStream {
         };
     }
 
-    let func_name = format!("{}", func.sig.ident.to_token_stream());
+    let func_name = format!("{}", target_fn.sig.ident.to_token_stream());
     let rbatis_meta = args.get(0).unwrap();
     let field_name = format!("{}", rbatis_meta.to_token_stream());
 
@@ -117,7 +117,7 @@ fn impl_macro_sql(func: &syn::ItemFn, args: &AttributeArgs) -> TokenStream {
 
     //fetch fn arg names
     let mut fn_arg_name_vec = vec![];
-    for arg in &func.sig.inputs {
+    for arg in &target_fn.sig.inputs {
         match arg {
             FnArg::Typed(t) => {
                 let arg_name = format!("{}", t.pat.to_token_stream());
@@ -135,7 +135,7 @@ fn impl_macro_sql(func: &syn::ItemFn, args: &AttributeArgs) -> TokenStream {
     }
 
     let sql_ident = sql_meta;
-    let func_args_stream = func.sig.inputs.to_token_stream();
+    let func_args_stream = target_fn.sig.inputs.to_token_stream();
     let func_name_ident = Ident::new(&func_name, Span::call_site());
     let rbatis_ident = Ident::new(&field_name, Span::call_site());
     //append all args
