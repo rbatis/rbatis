@@ -76,9 +76,9 @@ pub fn sql(args: TokenStream, this: TokenStream) -> TokenStream {
 
     // this
     let args = parse_macro_input!(args as AttributeArgs);
-    let func = syn::parse(this).unwrap();
+    let target_fn = syn::parse(this).unwrap();
 
-    let stream = impl_macro_sql(&func, &args);
+    let stream = impl_macro_sql(&target_fn, &args);
 
     println!("............gen rust code:\n {}", format!("{}", stream));
     println!("............proc_macro_attribute sql end............");
