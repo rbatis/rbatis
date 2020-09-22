@@ -137,7 +137,6 @@ fn impl_macro_sql(func: &syn::ItemFn, args: &AttributeArgs) -> TokenStream {
     }
     let gen = quote! {
         pub async fn #func_name_ident(#func_args_stream) -> rbatis_core::Result<serde_json::Value>{
-           //Ok("".to_string())
            #args_gen
            log::info!("[rbatis] sql {}",#sql_ident);
            #rbatis_ident.fetch_prepare("",#sql_ident,&args).await
