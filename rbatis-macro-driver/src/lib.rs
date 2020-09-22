@@ -54,10 +54,7 @@ fn impl_macro(ast: &syn::DeriveInput) -> TokenStream {
     let id_type = find_id_type_ident(&ast.data);
     let gen = quote! {
         impl CRUDEnable for #name {
-            //识别的表id字段类型
             type IdType = #id_type;
-
-            //识别的表名
             fn table_name() -> String {
                  let mut name = stringify!(#name).to_string();
                  let names: Vec<&str> = name.split("::").collect();
