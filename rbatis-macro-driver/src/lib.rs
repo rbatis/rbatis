@@ -4,7 +4,7 @@ use proc_macro2::{Ident, Span};
 use quote::{quote, TokenStreamExt};
 use quote::ToTokens;
 use syn;
-use syn::{AttributeArgs, BareFnArg, FnArg, ForeignItemFn, ItemFn, NestedMeta, parse_macro_input, TypeBareFn, Expr};
+use syn::{AttributeArgs, BareFnArg, Expr, FnArg, ForeignItemFn, ItemFn, NestedMeta, parse_macro_input, TypeBareFn};
 
 use crate::proc_macro::TokenStream;
 
@@ -87,15 +87,12 @@ macro_rules! gen_macro_json_arg_array {
 }
 
 fn impl_macro_sql(func: &syn::ItemFn, args: &AttributeArgs) -> TokenStream {
-
     let func_name = format!("{}", func.sig.ident.to_token_stream());
     let rbatis_meta = args.get(0).unwrap();
     let field_name = format!("{}", rbatis_meta.to_token_stream());
-    println!("rbatis_name {}", &field_name);
 
     let sql_meta = args.get(1).unwrap();
     let sql = format!("{}", sql_meta.to_token_stream());
-    println!("sql_str {}", &sql);
 
     //fetch fn arg names
     let mut fn_arg_name_vec = vec![];
@@ -116,8 +113,6 @@ fn impl_macro_sql(func: &syn::ItemFn, args: &AttributeArgs) -> TokenStream {
         panic!("[rbatis] fn arg len must equal to the sql's arg len!  fn: {}", func_name);
     }
 
-    println!("sql:{}",&sql);
-
     let sql_ident = sql_meta;
     let func_args_stream = func.sig.inputs.to_token_stream();
     let func_name_ident = Ident::new(&func_name, Span::call_site());
@@ -129,8 +124,8 @@ fn impl_macro_sql(func: &syn::ItemFn, args: &AttributeArgs) -> TokenStream {
          let mut args =vec![];
     };
     for item in fn_arg_name_vec {
-        let item_ident=Ident::new(&item, Span::call_site());
-        args_gen=quote! {
+        let item_ident = Ident::new(&item, Span::call_site());
+        args_gen = quote! {
             #args_gen
             args.push(serde_json::to_value(#item_ident).unwrap_or(serde_json::Value::Null));
        };
@@ -138,7 +133,8 @@ fn impl_macro_sql(func: &syn::ItemFn, args: &AttributeArgs) -> TokenStream {
     let gen = quote! {
         pub async fn #func_name_ident(#func_args_stream) -> rbatis_core::Result<serde_json::Value>{
            #args_gen
-           log::info!("[rbatis] sql {}",#sql_ident);
+           log::info!("[rbatis] [{}] Query ==> {}", "", #sql_ident);
+           log::info!("[rbatis] [{}] Args  ==> {}", "", serde_json::to_string(&args).unwrap_or("".to_string()));
            #rbatis_ident.fetch_prepare("",#sql_ident,&args).await
         }
     };

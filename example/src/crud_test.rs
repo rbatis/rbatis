@@ -247,6 +247,8 @@ mod test {
      static ref RB:Rbatis=Rbatis::new();
    }
 
+    /// RB是本地依赖Rbatis引用的名称,例如  dao::RB, com::xxx::RB....都可以
+    /// 第二个参数是标准的驱动sql，注意对应数据库参数mysql为？,pg为$1...
     #[sql(RB, "select * from biz_activity where id = ?")]
     pub async fn select(name: &str) -> rbatis_core::Result<serde_json::Value> {
 
