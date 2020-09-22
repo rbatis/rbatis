@@ -1,16 +1,12 @@
 extern crate proc_macro;
 
 use proc_macro2::{Ident, Span};
-use quote::{quote, TokenStreamExt};
+use quote::{quote};
 use quote::ToTokens;
 use syn;
-use syn::{AttributeArgs, BareFnArg, Expr, FnArg, ForeignItemFn, ItemFn, NestedMeta, parse_macro_input, TypeBareFn, ReturnType, Type, Path};
+use syn::{AttributeArgs, parse_macro_input, ReturnType, FnArg};
 
 use crate::proc_macro::TokenStream;
-use std::process::Output;
-use syn::parse::Parse;
-use proc_macro2::TokenTree::Punct;
-
 mod string_util;
 
 #[proc_macro_derive(CRUDEnable)]
