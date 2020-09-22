@@ -4,8 +4,11 @@ use proc_macro2::{Ident, Span};
 use quote::quote;
 use quote::ToTokens;
 use syn;
+use syn::{AttributeArgs, BareFnArg, FnArg, ForeignItemFn, ItemFn, NestedMeta, parse_macro_input, TypeBareFn, Expr};
 
 use crate::proc_macro::TokenStream;
+
+mod string_util;
 
 #[proc_macro_derive(CRUDEnable)]
 pub fn hello_macro_derive(input: TokenStream) -> TokenStream {
@@ -66,3 +69,69 @@ fn impl_macro(ast: &syn::DeriveInput) -> TokenStream {
     gen.into()
 }
 
+
+/// sql create macro
+#[proc_macro_attribute]
+pub fn sql(args: TokenStream, this: TokenStream) -> TokenStream {
+    println!("proc_macro_attribute sql start............");
+
+    // this
+    let args = parse_macro_input!(args as AttributeArgs);
+    let func = syn::parse(this).unwrap();
+
+    impl_macro_sql(&func, &args)
+}
+
+fn impl_macro_sql(func: &syn::ItemFn, args: &AttributeArgs) -> TokenStream {
+
+    let func_name = format!("{}", func.sig.ident.to_token_stream());
+    let rbatis_meta = args.get(0).unwrap();
+    let field_name = format!("{}", rbatis_meta.to_token_stream());
+    println!("rbatis_name {}", &field_name);
+
+    let sql_meta = args.get(1).unwrap();
+    let sql = format!("{}", sql_meta.to_token_stream());
+    println!("sql_str {}", &sql);
+
+    //fetch fn arg names
+    let mut fn_arg_name_vec = vec![];
+    for arg in &func.sig.inputs {
+        match arg {
+            FnArg::Typed(t) => {
+                let arg_name = format!("{}", t.pat.to_token_stream());
+                fn_arg_name_vec.push(arg_name);
+                //println!("arg_name {}", arg_name);
+            }
+            _ => {}
+        }
+    }
+
+    //check sql
+    let arg_num = string_util::find_all_sql_opt(&sql);
+    if arg_num != fn_arg_name_vec.len() {
+        panic!("[rbatis] fn arg len must equal to the sql's arg len!  fn: {}", func_name);
+    }
+
+    println!("sql:{}",&sql);
+
+    let sql_ident = sql_meta;
+    let func_args_stream = func.sig.inputs.to_token_stream();
+    let func_name_ident = Ident::new(&func_name, Span::call_site());
+    let rbatis_ident = Ident::new(&field_name, Span::call_site());
+    let is_select = sql.starts_with("select ") || sql.starts_with("SELECT ");
+
+
+   // let func_arg0=Ident::new(&fn_arg_name_vec[0],Span::call_site());
+
+
+    let gen = quote! {
+        pub async fn #func_name_ident(#func_args_stream) -> rbatis_core::Result<serde_json::Value>{
+           //Ok("".to_string())
+           let mut args =vec![];
+           args.push(serde_json::to_value(name).unwrap_or(serde_json::Value::Null));
+           log::info!("[rbatis] sql {}",#sql_ident);
+           #rbatis_ident.fetch_prepare("",#sql_ident,&args).await
+        }
+    };
+    gen.into()
+}

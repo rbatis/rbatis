@@ -1,4 +1,3 @@
-
 ///test CRUD
 #[cfg(test)]
 mod test {
@@ -11,9 +10,10 @@ mod test {
     use rbatis::plugin::page::{Page, PageRequest};
     use rbatis::rbatis::Rbatis;
     use rbatis_core::Error;
+    use rbatis_core::types::BigDecimal;
     use rbatis_core::types::chrono::NaiveDateTime;
     use rbatis_core::value::DateTimeNow;
-    use rbatis_core::types::BigDecimal;
+    use rbatis_macro_driver::sql;
 
     #[derive(CRUDEnable, Serialize, Deserialize, Clone, Debug)]
     pub struct BizActivity {
@@ -240,5 +240,25 @@ mod test {
             let r: Vec<BizActivity> = rb.list("").await.unwrap();
             println!("{}", serde_json::to_string(&r).unwrap());
         });
+    }
+
+
+   lazy_static! {
+     static ref RB:Rbatis=Rbatis::new();
+   }
+
+    #[sql(RB, "select * from biz_activity where id = ?")]
+    pub async fn select(name: &str) -> rbatis_core::Result<serde_json::Value> {
+
+    }
+
+    #[test]
+    pub fn test_fn() {
+        async_std::task::block_on(async {
+            fast_log::log::init_log("requests.log", &RuntimeType::Std);
+            RB.link("mysql://root:123456@localhost:3306/test").await.unwrap();
+            let a = select("1").await.unwrap();
+            println!("{}", a);
+        })
     }
 }
