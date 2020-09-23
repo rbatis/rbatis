@@ -143,19 +143,24 @@ impl Py {
                                 }
                             }
                             NodeType::NString(node) => {
+                                let mut nodes=vec![];
                                 let mut news = node.value.clone();
                                 for x in &parserd {
                                     match x {
                                         NodeType::NString(new_snode) => {
                                             news = news + new_snode.value.as_str();
+                                            *node = StringNode::new(news.as_str());
                                         }
-                                        _ => {
-                                            return Err(rbatis_core::Error::from("[rbatis] parser node fail,string node' child must be same string node!: ".to_string() + child_str.as_str()));
+                                        parserd => {
+                                          let clone_parserd=parserd.clone();
+                                          nodes.push(clone_parserd);
                                         }
                                     }
                                 }
-                                if news.len() != node.value.len() {
-                                    *node = StringNode::new(news.as_str());
+                                if !nodes.is_empty(){
+                                    for x in nodes {
+                                        pys.push(x);
+                                    }
                                 }
                             }
                             _ => {
@@ -346,9 +351,8 @@ pub fn test_py_interpreter_parser() {
 
 #[test]
 pub fn test_exec() {
-    let s = "
-    SELECT * FROM biz_activity
-      AND del = 2
+    let s = "SELECT * FROM biz_activity
+      Where del = 2
     if  name!=null:
       name = #{name}
     AND delete_flag1 = #{del}
