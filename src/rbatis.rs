@@ -294,7 +294,7 @@ impl Rbatis {
 
 
     fn py_to_sql(&self, py: &str, arg: &serde_json::Value) -> Result<(String, Vec<serde_json::Value>), rbatis_core::Error> {
-        let nodes = Py::parser_and_cache(py)?;
+        let nodes = Py::parse_and_cache(py)?;
         let mut arg_array = vec![];
         let mut env = arg.clone();
         let driver_type = self.driver_type()?;

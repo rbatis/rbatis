@@ -34,7 +34,7 @@ pub struct Py {}
 impl Py {
     /// parser and cache py data sql,return an vec node type
     ///编译并且缓存py slq数据，返回node type 数组
-    pub fn parser_and_cache(arg: &str) -> Result<Vec<NodeType>, rbatis_core::Error> {
+    pub fn parse_and_cache(arg: &str) -> Result<Vec<NodeType>, rbatis_core::Error> {
         let rd = PY_PARSER_MAP.try_read();
         if rd.is_err() {
             let nods = Py::parser(arg)?;
@@ -402,6 +402,6 @@ pub fn bench_exec() {
     trim 'AND ':
       AND delete_flag2 = #{del}
     WHERE id  = '2';";
-        let pys = Py::parser_and_cache(s);
+        let pys = Py::parse_and_cache(s);
     });
 }
