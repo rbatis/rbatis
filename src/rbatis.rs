@@ -108,7 +108,7 @@ impl Rbatis {
 
     /// load xml data into rbatis
     pub fn load_xml(&mut self, mapper_name: &str, data: &str) -> Result<(), rbatis_core::Error> {
-        let xml = Xml::parser(data);
+        let xml = Xml::parse(data);
         self.mapper_node_map.insert(mapper_name.to_string(), xml);
         return Ok(());
     }
