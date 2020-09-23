@@ -235,11 +235,24 @@ mod test {
     fn select(name: &str) -> BizActivity {}
 
 
+    #[py_sql(RB, "select * from biz_activity where id = #{name}
+                  if name != '':
+                    and name=#{name}")]
+    fn py_select(name: &str) -> Option<BizActivity> {}
+
     #[async_std::test]
-    pub async fn test_macro() {
+    pub async fn test_macro_select() {
         fast_log::log::init_log("requests.log", &RuntimeType::Std);
         RB.link("mysql://root:123456@localhost:3306/test").await.unwrap();
         let a = select("1").await.unwrap();
+        println!("{:?}", a);
+    }
+
+    #[async_std::test]
+    pub async fn test_macro_py_select() {
+        fast_log::log::init_log("requests.log", &RuntimeType::Std);
+        RB.link("mysql://root:123456@localhost:3306/test").await.unwrap();
+        let a = py_select("1").await.unwrap();
         println!("{:?}", a);
     }
 }
