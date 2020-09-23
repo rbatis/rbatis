@@ -26,12 +26,12 @@ use crate::utils::xml_loader::{Element, load_xml};
 pub struct Xml {}
 
 impl Xml {
-    pub fn parser(xml_content: &str) -> HashMap<String, NodeType> {
-        return parser(xml_content);
+    pub fn parse(xml_content: &str) -> HashMap<String, NodeType> {
+        return parse(xml_content);
     }
 }
 
-pub fn parser(xml_content: &str) -> HashMap<String, NodeType> {
+pub fn parse(xml_content: &str) -> HashMap<String, NodeType> {
     let nodes = load_xml(xml_content);
     let data = loop_decode_xml(&nodes);
     let mut m = HashMap::new();
