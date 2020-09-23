@@ -170,7 +170,7 @@ fn impl_macro_sql(target_fn: &ItemFn, args: &AttributeArgs) -> TokenStream {
         return gen.into();
     } else {
         let gen = quote! {
-        pub async fn #func_name_ident(#func_args_stream) #return_ty {
+        pub async fn #func_name_ident(#func_args_stream) -> #return_ty {
            #args_gen
               log::info!("[rbatis] [{}] Exec ==> {}", #tx_id_ident, #sql_ident);
               log::info!("[rbatis] [{}] Args  ==> {}", #tx_id_ident, serde_json::to_string(&args).unwrap_or("".to_string()));
