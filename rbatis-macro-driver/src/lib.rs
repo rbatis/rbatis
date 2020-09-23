@@ -262,9 +262,7 @@ fn impl_macro_py_sql(target_fn: &ItemFn, args: &AttributeArgs) -> TokenStream {
     if is_select {
         let gen = quote! {
         pub async fn #func_name_ident(#func_args_stream) -> #return_ty {
-           #args_gen
-              log::info!("[rbatis] [{}] Query ==> {}", #tx_id_ident, #sql_ident);
-              log::info!("[rbatis] [{}] Args  ==> {}", #tx_id_ident, serde_json::to_string(&args).unwrap_or("".to_string()));
+              #args_gen
               return #rbatis_ident.py_fetch("",#sql_ident,&args).await;
         }
     };
@@ -272,9 +270,7 @@ fn impl_macro_py_sql(target_fn: &ItemFn, args: &AttributeArgs) -> TokenStream {
     } else {
         let gen = quote! {
         pub async fn #func_name_ident(#func_args_stream) -> #return_ty {
-           #args_gen
-              log::info!("[rbatis] [{}] Exec ==> {}", #tx_id_ident, #sql_ident);
-              log::info!("[rbatis] [{}] Args  ==> {}", #tx_id_ident, serde_json::to_string(&args).unwrap_or("".to_string()));
+              #args_gen
               return #rbatis_ident.py_exec("",#sql_ident,&args).await;
         }
     };
