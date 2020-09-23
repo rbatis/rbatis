@@ -190,6 +190,30 @@ rb.update_by_wrapper("", &activity, &w).await;
         println!("{:?}", a);
     }
 ```
+```rust
+    lazy_static! {
+     static ref RB:Rbatis=Rbatis::new();
+   }
+
+    /// 宏根据方法定义生成执行逻辑，又点类似于 java/mybatis的@select动态sql
+    /// RB是本地依赖Rbatis引用的名称,例如  dao::RB, com::xxx::RB....都可以
+    /// 第二个参数是标准的驱动sql，注意对应数据库参数mysql为？,pg为$1...
+    /// 宏会自动转换函数为  pub async fn select(name: &str) -> rbatis_core::Result<BizActivity> {}
+    ///
+    #[py_sql(RB, "select * from biz_activity where id = #{name}
+                  if name != '':
+                    and name=#{name}")]
+    fn py_select(name: &str) -> Option<BizActivity> {}
+    //其他写法： pub async fn select(name: &str) -> rbatis_core::Result<BizActivity> {}
+
+    #[async_std::test]
+    pub async fn test_macro_py_select() {
+        fast_log::log::init_log("requests.log", &RuntimeType::Std);
+        RB.link("mysql://root:123456@localhost:3306/test").await.unwrap();
+        let a = py_select("1").await.unwrap();
+        println!("{:?}", a);
+    }
+```
 
 
 
