@@ -152,6 +152,9 @@ mod json;
 
 #[cfg(feature = "ipnetwork")]
 mod ipnetwork;
+// TODO Create new feature geo for all databases
+#[cfg(feature = "postgres")]
+mod point;
 
 // Implement `Decode` for all postgres types
 // The concept of a nullable `RawValue` is db-specific
@@ -204,7 +207,7 @@ pub(crate) fn try_resolve_type_name(oid: u32) -> Option<&'static str> {
 
         TypeId::CIDR => "CIDR",
         TypeId::INET => "INET",
-
+        TypeId::POINT => "POINT",
         TypeId::ARRAY_BOOL => "BOOL[]",
 
         TypeId::ARRAY_CHAR => "\"CHAR\"[]",

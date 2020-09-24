@@ -1,4 +1,5 @@
 use std::str::from_utf8;
+use geo_types::{Point};
 
 use crate::decode::Decode;
 use crate::error::UnexpectedNullError;
@@ -186,6 +187,14 @@ impl<'c> RawValue<'c> for PgValue<'c> {
             }
             "TIMESTAMPTZ" => {
                 let r: crate::Result<chrono::NaiveDateTime> = Decode::<'_, Postgres>::decode(self.clone());
+                if r.is_err() {
+                    return Err(r.err().unwrap());
+                }
+                let t = serde_json::to_value(&r.unwrap());
+                return Ok(t.unwrap_or(serde_json::Value::Null));
+            }
+             "POINT" =>{
+                let r: crate::Result<Point<f64>> = Decode::<'_, Postgres>::decode(self.clone());
                 if r.is_err() {
                     return Err(r.err().unwrap());
                 }
