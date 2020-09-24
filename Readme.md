@@ -50,7 +50,7 @@ log = "0.4"
 fast_log="1.2.2"
 
 #BigDecimal支持(可选)
-bigdecimal = "0.1.2"
+bigdecimal = "0.2"
 
 #rbatis支持，版本保持一致(必须)
 rbatis-core = { version = "1.5.8", features = ["all"]}
