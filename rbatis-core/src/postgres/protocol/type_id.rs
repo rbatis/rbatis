@@ -15,7 +15,7 @@ impl TypeId {
     // Scalar
 
     pub(crate) const BOOL: TypeId = TypeId(16);
-
+    pub(crate) const POINT: TypeId = TypeId(600);
     pub(crate) const CHAR: TypeId = TypeId(18);
 
     pub(crate) const INT2: TypeId = TypeId(21);
@@ -80,6 +80,7 @@ impl TypeId {
 
     pub(crate) const ARRAY_CIDR: TypeId = TypeId(651);
     pub(crate) const ARRAY_INET: TypeId = TypeId(1041);
+    pub(crate) const ARRAY_POINT: TypeId = TypeId(1017);
 
     // JSON
 
