@@ -53,9 +53,9 @@ fast_log="1.2.2"
 bigdecimal = "0.1.2"
 
 #rbatis支持，版本保持一致(必须)
-rbatis-core = { version = "1.5.7", features = ["all"]}
-rbatis =  { version = "1.5.7" } 
-rbatis-macro-driver = { version = "1.5.7" }
+rbatis-core = { version = "1.5.8", features = ["all"]}
+rbatis =  { version = "1.5.8" } 
+rbatis-macro-driver = { version = "1.5.8" }
 
 ```
 
