@@ -37,7 +37,7 @@ impl Py {
     pub fn parse_and_cache(arg: &str) -> Result<Vec<NodeType>, rbatis_core::Error> {
         let rd = PY_PARSER_MAP.try_read();
         if rd.is_err() {
-            let nods = Py::parser(arg)?;
+            let nods = Py::parse(arg)?;
             Py::try_cache_into(arg, nods.clone());
             return Ok(nods);
         } else {
@@ -46,7 +46,7 @@ impl Py {
             if nodes.is_some() {
                 return Ok(nodes.unwrap().clone());
             } else {
-                let nods = Py::parser(arg)?;
+                let nods = Py::parse(arg)?;
                 drop(rd);
                 Py::try_cache_into(arg, nods.clone());
                 return Ok(nods);
@@ -63,7 +63,7 @@ impl Py {
 
     /// parser py string data
     /// 解析py语法
-    pub fn parser(arg: &str) -> Result<Vec<NodeType>, rbatis_core::Error> {
+    pub fn parse(arg: &str) -> Result<Vec<NodeType>, rbatis_core::Error> {
         let line_space_map = Py::create_line_space_map(arg);
         let mut pys = vec![];
         let ls = arg.lines();
@@ -91,7 +91,7 @@ impl Py {
                 }
                 if !child_str.is_empty() && pys.last_mut().is_some() {
                     let last: &mut NodeType = pys.last_mut().unwrap();
-                    let parserd = Py::parser(child_str.as_str())?;
+                    let parserd = Py::parse(child_str.as_str())?;
                     if !parserd.is_empty() {
                         match last {
                             NodeType::NTrim(node) => {
@@ -328,7 +328,7 @@ impl Py {
 
 
 #[test]
-pub fn test_py_interpreter_parser() {
+pub fn test_py_interpreter_parse() {
     let s = "
     SELECT * FROM biz_activity
     if  name!=null:
@@ -345,7 +345,7 @@ pub fn test_py_interpreter_parser() {
       AND delete_flag = #{del2}
     WHERE id  = '2';";
     //println!("{}", s);
-    let pys = Py::parser(s);
+    let pys = Py::parse(s);
     println!("{:?}", pys);
 }
 
@@ -368,7 +368,7 @@ pub fn test_exec() {
         #{item},
     )
     WHERE id  = '2';";
-    let pys = Py::parser(s).unwrap();
+    let pys = Py::parse(s).unwrap();
     //println!("{:?}", pys);
     //for x in &pys {
     // println!("{:?}", x.clone());
