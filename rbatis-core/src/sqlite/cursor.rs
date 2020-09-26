@@ -3,11 +3,11 @@ use serde::de::DeserializeOwned;
 
 use crate::connection::ConnectionSource;
 use crate::cursor::Cursor;
+use crate::decode::json_decode;
 use crate::executor::Execute;
 use crate::pool::Pool;
 use crate::sqlite::{Sqlite, SqliteArguments, SqliteConnection, SqliteRow};
 use crate::sqlite::statement::Step;
-use crate::decode::json_decode;
 
 pub struct SqliteCursor<'c, 'q> {
     pub(super) source: ConnectionSource<'c, SqliteConnection>,
@@ -71,12 +71,9 @@ impl<'c, 'q> Cursor<'c, 'q> for SqliteCursor<'c, 'q> {
             let mut arr = vec![];
             while let Some(row) = self.next().await? as Option<SqliteRow<'_>> {
                 let mut m = serde_json::Map::new();
-                //TODO is sqlite column is true?
-                let keys = row.values;
-                for x in 0..keys {
-                    let key = x.to_string();
-                    let v: serde_json::Value = row.json_decode_impl(key.as_str()).unwrap();
-                    m.insert(key, v);
+                for key in &row.column_keys {
+                    let v: serde_json::Value = row.json_decode_impl(key.as_str())?;
+                    m.insert(key.clone(), v);
                 }
                 arr.push(serde_json::Value::Object(m));
             }
@@ -109,8 +106,13 @@ async fn next<'a, 'c: 'a, 'q: 'a>(
 
         match step {
             Step::Row => {
+                let column_size = statement.data_count();
+                let mut column_keys = Vec::with_capacity(column_size);
+                for index in 0..column_size {
+                    column_keys.push(statement.column_name(index).to_string());
+                }
                 return Ok(Some(SqliteRow {
-                    values: statement.data_count(),
+                    column_keys,
                     statement: key,
                     connection: conn,
                 }));

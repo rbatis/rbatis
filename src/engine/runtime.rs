@@ -5,7 +5,7 @@ use std::sync::RwLock;
 use serde_json::Value;
 
 use crate::engine::node::Node;
-use crate::engine::parser::parser;
+use crate::engine::parser::parse;
 
 lazy_static! {
    /// for engine: if cache not have expr value,it will be redo parser code.not wait cache return for no blocking
@@ -34,7 +34,7 @@ impl RbatisEngine {
         }
         let cached = self.cache_read(lexer_arg.as_str());
         if cached.is_none() {
-            let nodes = parser(lexer_arg.to_string(), &self.opt_map);
+            let nodes = parse(lexer_arg.as_str(), &self.opt_map);
             if nodes.is_err() {
                 return Result::Err(nodes.err().unwrap());
             }
@@ -75,7 +75,7 @@ impl RbatisEngine {
 
     /// no cache mode to run engine
     pub fn eval_no_cache(&self, lexer_arg: &str, arg: &Value) -> Result<Value, rbatis_core::Error> {
-        let nodes = parser(lexer_arg.to_string(), &self.opt_map);
+        let nodes = parse(lexer_arg, &self.opt_map);
         if nodes.is_err() {
             return Result::Err(nodes.err().unwrap());
         }

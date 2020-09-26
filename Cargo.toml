@@ -8,7 +8,7 @@ members = [
 
 [package]
 name = "rbatis"
-version = "1.5.1"
+version = "1.5.8"
 description = "Rust ORM Framework High Performance高性能Rust ORM框架(JSON based)"
 readme = "Readme.md"
 authors = ["ce <zhuxiujia@qq.com>"]
@@ -22,7 +22,7 @@ runtime-async-std = ["rbatis-core/runtime-async-std"]
 runtime-tokio = ["rbatis-core/runtime-tokio"]
 
 [dependencies]
-rbatis-core = { version = "1.5.1", path = "rbatis-core", default-features = false, features = ["all"] }
+rbatis-core = { version = "1.5.8", path = "rbatis-core", default-features = false, features = ["all"] }
 chrono = { version = "0.4", features = ["serde"] }
 xml-rs = "0.8"
 lazy_static = "1.4.0"
@@ -33,7 +33,7 @@ serde_json = "1.0"
 serde_yaml = "0.8"
 
 #async
-async-std = { version = "1.6.0" }
+async-std = { version = "1.6" }
 tokio = { version = "0.2", features = ["full"] }
 
 uuid = { version = "0.8", features = ["serde", "v4"] }

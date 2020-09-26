@@ -108,7 +108,7 @@ impl Rbatis {
 
     /// load xml data into rbatis
     pub fn load_xml(&mut self, mapper_name: &str, data: &str) -> Result<(), rbatis_core::Error> {
-        let xml = Xml::parser(data);
+        let xml = Xml::parse(data);
         self.mapper_node_map.insert(mapper_name.to_string(), xml);
         return Ok(());
     }
@@ -294,7 +294,7 @@ impl Rbatis {
 
 
     fn py_to_sql(&self, py: &str, arg: &serde_json::Value) -> Result<(String, Vec<serde_json::Value>), rbatis_core::Error> {
-        let nodes = Py::parser_and_cache(py)?;
+        let nodes = Py::parse_and_cache(py)?;
         let mut arg_array = vec![];
         let mut env = arg.clone();
         let driver_type = self.driver_type()?;
