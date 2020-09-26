@@ -25,16 +25,16 @@ impl PagePlugin for RbatisPagePlugin {
         sql = sql.replace("select ", "SELECT ");
         sql = sql.replace("from ", "FROM ");
         sql = sql.trim().to_string();
-        let limit_sql = driver_type.page_limit_sql(page.offset(), page.get_size())?;
-        sql = sql + limit_sql.as_str();
-        if !sql.starts_with("SELECT ") && !sql.contains("FROM ") {
-            return Err(rbatis_core::Error::from("[rbatis] xml_fetch_page() sql must contains 'select ' And 'from '"));
-        }
         let mut count_sql = sql.clone();
         if page.is_serch_count() {
             //make count sql
             let sql_vec: Vec<&str> = count_sql.split("FROM ").collect();
             count_sql = "SELECT count(1) FROM ".to_string() + sql_vec[1];
+        }
+        let limit_sql = driver_type.page_limit_sql(page.offset(), page.get_size())?;
+        sql = sql + limit_sql.as_str();
+        if !sql.starts_with("SELECT ") && !sql.contains("FROM ") {
+            return Err(rbatis_core::Error::from("[rbatis] xml_fetch_page() sql must contains 'select ' And 'from '"));
         }
         return Ok((count_sql, sql));
     }
@@ -309,5 +309,18 @@ mod test {
         println!("get_pages:{}", page.get_pages());
         println!("page_string:{}", page.to_string());
         assert_eq!(page.offset(), 10);
+    }
+
+
+    
+    #[test]
+    pub fn test_create_page_sql() {
+        use super::*;
+        use rbatis_core::db::DriverType;
+        let page: Page<i32> = Page::new(2, 10);
+        let p =  RbatisPagePlugin{};
+        let result = p.create_page_sql(&DriverType::Mysql, "", "SELECT * FROM TABLES", &vec![], &page);
+        let result = result.unwrap();
+        assert_eq!(("SELECT count(1) FROM TABLES".to_owned(), "SELECT * FROM TABLES LIMIT 10,10".to_owned()), result)
     }
 }
