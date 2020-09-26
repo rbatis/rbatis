@@ -27,12 +27,12 @@ use crate::ast::node::node_type::NodeType;
 use crate::ast::node::select_node::SelectNode;
 use crate::ast::node::update_node::UpdateNode;
 use crate::engine::runtime::RbatisEngine;
+use crate::plugin::intercept::SqlIntercept;
 use crate::plugin::logic_delete::{LogicDelete, RbatisLogicDeletePlugin};
 use crate::plugin::page::{IPage, IPageRequest, Page, PagePlugin, RbatisPagePlugin};
 use crate::sql::PageLimit;
 use crate::utils::error_util::ToResult;
 use crate::wrapper::Wrapper;
-use crate::plugin::intercept::SqlIntercept;
 
 /// rbatis engine
 pub struct Rbatis {
@@ -186,9 +186,9 @@ impl Rbatis {
         where T: DeserializeOwned {
 
         //sql intercept
-        let mut sql=sql.to_string();
+        let mut sql = sql.to_string();
         for item in &self.sql_intercepts {
-            item.do_intercept(&mut sql,&mut vec![]);
+            item.do_intercept(self, &mut sql, &mut vec![], false);
         }
 
         info!("[rbatis] [{}] Query ==> {}", tx_id, sql.as_str());
@@ -224,9 +224,9 @@ impl Rbatis {
     pub async fn exec(&self, tx_id: &str, sql: &str) -> Result<u64, rbatis_core::Error> {
 
         //sql intercept
-        let mut sql=sql.to_string();
+        let mut sql = sql.to_string();
         for item in &self.sql_intercepts {
-            item.do_intercept(&mut sql,&mut vec![]);
+            item.do_intercept(self, &mut sql, &mut vec![], false);
         }
 
         info!("[rbatis] [{}] Exec ==> :{}", tx_id, &sql);
@@ -259,10 +259,10 @@ impl Rbatis {
         where T: DeserializeOwned {
 
         //sql intercept
-        let mut sql=sql.to_string();
+        let mut sql = sql.to_string();
         let mut args = args.clone();
         for item in &self.sql_intercepts {
-            item.do_intercept(&mut sql,&mut args);
+            item.do_intercept(self, &mut sql, &mut args, true);
         }
 
         info!("[rbatis] [{}] Query ==> {}", tx_id, &sql);
@@ -296,10 +296,10 @@ impl Rbatis {
     pub async fn exec_prepare(&self, tx_id: &str, sql: &str, args: &Vec<serde_json::Value>) -> Result<u64, rbatis_core::Error> {
 
         //sql intercept
-        let mut sql=sql.to_string();
+        let mut sql = sql.to_string();
         let mut args = args.clone();
         for item in &self.sql_intercepts {
-            item.do_intercept(&mut sql,&mut args);
+            item.do_intercept(self, &mut sql, &mut args, true);
         }
 
         info!("[rbatis] [{}] Exec ==> {}", tx_id, &sql);
