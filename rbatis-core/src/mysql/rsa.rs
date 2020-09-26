@@ -101,25 +101,25 @@ fn oaep_encrypt<R: Rng, D: Digest>(
     let k = (pub_key.n.bits() + 7) / 8;
 
     let mut digest = D::new();
-    let h_size = D::output_size();
+    let h_size = D::output_size() as u64;
 
-    if msg.len() > k - 2 * h_size - 2 {
+    if msg.len() > (k - 2 * h_size - 2) as usize {
         return Err(protocol_err!("mysql: password too long").into());
     }
 
-    let mut em = vec![0u8; k];
+    let mut em = vec![0u8; k as usize];
 
     let (_, payload) = em.split_at_mut(1);
-    let (seed, db) = payload.split_at_mut(h_size);
+    let (seed, db) = payload.split_at_mut(h_size as usize);
     rng.fill(seed);
 
     // Data block DB =  pHash || PS || 01 || M
     let db_len = k - h_size - 1;
 
     let p_hash = digest.result_reset();
-    db[0..h_size].copy_from_slice(&*p_hash);
-    db[db_len - msg.len() - 1] = 1;
-    db[db_len - msg.len()..].copy_from_slice(msg);
+    db[0..h_size as usize].copy_from_slice(&*p_hash);
+    db[(db_len - msg.len() as u64 - 1) as usize] = 1;
+    db[(db_len - msg.len() as u64) as usize..].copy_from_slice(msg);
 
     oeap_mgf1_xor(db, &mut digest, seed);
     oeap_mgf1_xor(seed, &mut digest, db);

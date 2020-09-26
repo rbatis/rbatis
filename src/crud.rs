@@ -9,6 +9,7 @@ use rbatis_core::db::DriverType;
 use rbatis_core::Error;
 use rbatis_core::Result;
 
+use crate::plugin::logic_delete::LogicAction;
 use crate::plugin::page::{IPageRequest, Page};
 use crate::rbatis::Rbatis;
 use crate::sql::Date;
@@ -119,6 +120,7 @@ pub trait CRUDEnable: Send + Sync + Serialize + DeserializeOwned {
 
 
 impl<T> CRUDEnable for Option<T> where T: CRUDEnable {
+    /// macro id type that is automatically determined,or you can Rewrite it
     type IdType = T::IdType;
 
     ///Bean's table name
@@ -131,7 +133,7 @@ impl<T> CRUDEnable for Option<T> where T: CRUDEnable {
         T::table_fields()
     }
 
-    ///
+
     fn make_field_value_map<C>(db_type: &DriverType, arg: &C) -> Result<Map<String, Value>> where C: CRUDEnable {
         T::make_field_value_map(db_type, arg)
     }
@@ -197,7 +199,7 @@ pub trait CRUD {
     async fn remove_by_id<T>(&self, tx_id: &str, id: &T::IdType) -> Result<u64> where T: CRUDEnable;
     async fn remove_batch_by_id<T>(&self, tx_id: &str, ids: &[T::IdType]) -> Result<u64> where T: CRUDEnable;
 
-    async fn update_by_wrapper<T>(&self, tx_id: &str, arg: &T, w: &Wrapper) -> Result<u64> where T: CRUDEnable;
+    async fn update_by_wrapper<T>(&self, tx_id: &str, arg: &T, w: &Wrapper, update_null_value: bool) -> Result<u64> where T: CRUDEnable;
     async fn update_by_id<T>(&self, tx_id: &str, arg: &T) -> Result<u64> where T: CRUDEnable;
     async fn update_batch_by_id<T>(&self, tx_id: &str, ids: &[T]) -> Result<u64> where T: CRUDEnable;
 
@@ -254,21 +256,25 @@ impl CRUD for Rbatis {
         return self.exec_prepare(tx_id, sql.as_str(), &arg_arr).await;
     }
 
-    async fn remove_by_wrapper<T>(&self, tx_id: &str, arg: &Wrapper) -> Result<u64> where T: CRUDEnable {
-        let where_sql = arg.sql.as_str();
+    async fn remove_by_wrapper<T>(&self, tx_id: &str, w: &Wrapper) -> Result<u64> where T: CRUDEnable {
+        let w = match w.checked {
+            false => w.clone().check()?,
+            _ => w.clone()
+        };
+        let where_sql = w.sql.as_str();
         let mut sql = String::new();
         if self.logic_plugin.is_some() {
-            sql = self.logic_plugin.as_ref().unwrap().create_sql(&self.driver_type()?, T::table_name().as_str(), &T::table_fields().split(",").collect(), make_where_sql(where_sql).as_str())?;
+            sql = self.logic_plugin.as_ref().unwrap().create_remove_sql(&self.driver_type()?, T::table_name().as_str(), &T::table_fields(), make_where_sql(where_sql).as_str())?;
         } else {
             sql = format!("DELETE FROM {} {}", T::table_name(), make_where_sql(where_sql));
         }
-        return self.exec_prepare(tx_id, sql.as_str(), &arg.args).await;
+        return self.exec_prepare(tx_id, sql.as_str(), &w.args).await;
     }
 
     async fn remove_by_id<T>(&self, tx_id: &str, id: &T::IdType) -> Result<u64> where T: CRUDEnable {
         let mut sql = String::new();
         if self.logic_plugin.is_some() {
-            sql = self.logic_plugin.as_ref().unwrap().create_sql(&self.driver_type()?, T::table_name().as_str(), &T::table_fields().split(",").collect(), format!(" WHERE id = {}", id).as_str())?;
+            sql = self.logic_plugin.as_ref().unwrap().create_remove_sql(&self.driver_type()?, T::table_name().as_str(), &T::table_fields(), format!(" WHERE id = {}", id).as_str())?;
         } else {
             sql = format!("DELETE FROM {} WHERE id = {}", T::table_name(), id);
         }
@@ -288,18 +294,23 @@ impl CRUD for Rbatis {
         return self.remove_by_wrapper::<T>(tx_id, &w).await;
     }
 
-    async fn update_by_wrapper<T>(&self, tx_id: &str, arg: &T, w: &Wrapper) -> Result<u64> where T: CRUDEnable {
+    /// update arg by wrapper
+    async fn update_by_wrapper<T>(&self, tx_id: &str, arg: &T, w: &Wrapper, update_null_value: bool) -> Result<u64> where T: CRUDEnable {
+        let w = match w.checked {
+            false => w.clone().check()?,
+            _ => w.clone()
+        };
         let mut args = vec![];
         let map = T::make_field_value_map(&self.driver_type()?, arg)?;
         let driver_type = &self.driver_type()?;
         let mut sets = String::new();
         for (k, v) in map {
-            //filter null
-            if v.is_null() {
-                continue;
-            }
             //filter id
             if k.eq("id") {
+                continue;
+            }
+            //filter null
+            if !update_null_value && v.is_null() {
                 continue;
             }
             sets.push_str(format!(" {} = {},", k, driver_type.stmt_convert(args.len())).as_str());
@@ -311,7 +322,7 @@ impl CRUD for Rbatis {
         wrapper.args = args;
         if !w.sql.is_empty() {
             wrapper.sql.push_str(" WHERE ");
-            wrapper = wrapper.right_link_wrapper(w).check()?;
+            wrapper = wrapper.right_link_wrapper(&w).check()?;
         }
         return self.exec_prepare(tx_id, wrapper.sql.as_str(), &wrapper.args).await;
     }
@@ -322,7 +333,7 @@ impl CRUD for Rbatis {
         if id_field.is_none() {
             return Err(Error::from("[rbaits] arg not have \"id\" field! "));
         }
-        self.update_by_wrapper(tx_id, arg, Wrapper::new(&self.driver_type()?).eq("id", id_field.unwrap())).await
+        self.update_by_wrapper(tx_id, arg, Wrapper::new(&self.driver_type()?).eq("id", id_field.unwrap()), false).await
     }
 
     async fn update_batch_by_id<T>(&self, tx_id: &str, args: &[T]) -> Result<u64> where T: CRUDEnable {
@@ -334,7 +345,11 @@ impl CRUD for Rbatis {
     }
 
     async fn fetch_by_wrapper<T>(&self, tx_id: &str, w: &Wrapper) -> Result<T> where T: CRUDEnable {
-        let sql = make_select_sql::<T>(&self, w)?;
+        let w = match w.checked {
+            false => w.clone().check()?,
+            _ => w.clone()
+        };
+        let sql = make_select_sql::<T>(&self, &w)?;
         return self.fetch_prepare(tx_id, sql.as_str(), &w.args).await;
     }
 
@@ -344,7 +359,11 @@ impl CRUD for Rbatis {
     }
 
     async fn list_by_wrapper<T>(&self, tx_id: &str, w: &Wrapper) -> Result<Vec<T>> where T: CRUDEnable {
-        let sql = make_select_sql::<T>(&self, w)?;
+        let w = match w.checked {
+            false => w.clone().check()?,
+            _ => w.clone()
+        };
+        let sql = make_select_sql::<T>(&self, &w)?;
         return self.fetch_prepare(tx_id, sql.as_str(), &w.args).await;
     }
 
@@ -358,7 +377,11 @@ impl CRUD for Rbatis {
     }
 
     async fn fetch_page_by_wrapper<T>(&self, tx_id: &str, w: &Wrapper, page: &dyn IPageRequest) -> Result<Page<T>> where T: CRUDEnable {
-        let sql = make_select_sql::<T>(&self, w)?;
+        let w = match w.checked {
+            false => w.clone().check()?,
+            _ => w.clone()
+        };
+        let sql = make_select_sql::<T>(&self, &w)?;
         self.fetch_page(tx_id, sql.as_str(), &w.args, page).await
     }
 }
@@ -370,21 +393,16 @@ fn make_where_sql(arg: &str) -> String {
 }
 
 fn make_select_sql<T>(rb: &Rbatis, w: &Wrapper) -> Result<String> where T: CRUDEnable {
-    let fields = T::table_fields();
-    let where_sql = String::new();
+    let where_sql = w.sql.clone();
     let mut sql = String::new();
     if rb.logic_plugin.is_some() {
-        let mut where_sql = w.sql.clone();
-        if !where_sql.is_empty() {
-            where_sql = " AND ".to_string() + where_sql.as_str();
-        }
-        sql = format!("SELECT {} FROM {} WHERE {} = {} {}", fields, T::table_name(), rb.logic_plugin.as_ref().unwrap().column(), rb.logic_plugin.as_ref().unwrap().un_deleted(), where_sql);
+        let logic_ref = rb.logic_plugin.as_ref().unwrap();
+        return logic_ref.create_select_sql(&rb.driver_type()?, &T::table_name(), &T::table_fields(), &where_sql);
+    }
+    if !where_sql.is_empty() {
+        sql = format!("SELECT {} FROM {} WHERE {}", T::table_fields(), T::table_name(), where_sql);
     } else {
-        let mut where_sql = w.sql.clone();
-        if !where_sql.is_empty() {
-            where_sql = " WHERE ".to_string() + where_sql.as_str();
-        }
-        sql = format!("SELECT {} FROM {} {}", fields, T::table_name(), where_sql);
+        sql = format!("SELECT {} FROM {}", T::table_fields(), T::table_name());
     }
     Ok(sql)
 }
@@ -432,6 +450,21 @@ mod test {
             self.id.clone()
         }
     }
+
+
+    #[derive(Serialize, Deserialize, Clone, Debug)]
+    pub struct BizActivityNoDel {
+        pub id: Option<String>,
+        pub name: Option<String>,
+    }
+
+    impl CRUDEnable for BizActivityNoDel {
+        type IdType = String;
+        fn table_name() -> String {
+            "biz_activity".to_string()
+        }
+    }
+
 
     #[test]
     pub fn test_ids() {
@@ -566,7 +599,7 @@ mod test {
             };
 
             let w = Wrapper::new(&rb.driver_type().unwrap()).eq("id", "12312").check().unwrap();
-            let r = rb.update_by_wrapper("", &activity, &w).await;
+            let r = rb.update_by_wrapper("", &activity, &w, false).await;
             if r.is_err() {
                 println!("{}", r.err().unwrap().to_string());
             }
@@ -615,6 +648,23 @@ mod test {
 
             let w = Wrapper::new(&rb.driver_type().unwrap()).eq("id", "12312").check().unwrap();
             let r: Result<BizActivity, Error> = rb.fetch_by_wrapper("", &w).await;
+            if r.is_err() {
+                println!("{}", r.err().unwrap().to_string());
+            }
+        });
+    }
+
+    #[test]
+    pub fn test_fetch_no_del() {
+        async_std::task::block_on(async {
+            fast_log::log::init_log("requests.log", &RuntimeType::Std);
+            let mut rb = Rbatis::new();
+            //设置 逻辑删除插件
+            rb.logic_plugin = Some(Box::new(RbatisLogicDeletePlugin::new("delete_flag")));
+            rb.link("mysql://root:123456@localhost:3306/test").await.unwrap();
+
+            let w = Wrapper::new(&rb.driver_type().unwrap()).eq("id", "12312").check().unwrap();
+            let r: Result<BizActivityNoDel, Error> = rb.fetch_by_wrapper("", &w).await;
             if r.is_err() {
                 println!("{}", r.err().unwrap().to_string());
             }

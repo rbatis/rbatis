@@ -6,7 +6,7 @@ use serde::de::DeserializeOwned;
 
 #[derive(Debug)]
 pub struct SqliteRow<'c> {
-    pub(super) values: usize,
+    pub(super) column_keys: Vec<String>,
     pub(super) statement: Option<usize>,
     pub(super) connection: &'c SqliteConnection,
 }
@@ -42,7 +42,7 @@ impl<'c> Row<'c> for SqliteRow<'c> {
 
     #[inline]
     fn len(&self) -> usize {
-        self.values
+        self.column_keys.len()
     }
 
     #[doc(hidden)]

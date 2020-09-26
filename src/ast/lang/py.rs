@@ -20,7 +20,7 @@ use crate::ast::node::string_node::StringNode;
 use crate::ast::node::trim_node::TrimNode;
 use crate::ast::node::when_node::WhenNode;
 use crate::ast::node::where_node::WhereNode;
-use crate::engine::parser::parser;
+use crate::engine::parser::parse;
 use crate::engine::runtime::RbatisEngine;
 use crate::utils::bencher::Bencher;
 
@@ -34,10 +34,10 @@ pub struct Py {}
 impl Py {
     /// parser and cache py data sql,return an vec node type
     ///编译并且缓存py slq数据，返回node type 数组
-    pub fn parser_and_cache(arg: &str) -> Result<Vec<NodeType>, rbatis_core::Error> {
+    pub fn parse_and_cache(arg: &str) -> Result<Vec<NodeType>, rbatis_core::Error> {
         let rd = PY_PARSER_MAP.try_read();
         if rd.is_err() {
-            let nods = Py::parser(arg)?;
+            let nods = Py::parse(arg)?;
             Py::try_cache_into(arg, nods.clone());
             return Ok(nods);
         } else {
@@ -46,7 +46,7 @@ impl Py {
             if nodes.is_some() {
                 return Ok(nodes.unwrap().clone());
             } else {
-                let nods = Py::parser(arg)?;
+                let nods = Py::parse(arg)?;
                 drop(rd);
                 Py::try_cache_into(arg, nods.clone());
                 return Ok(nods);
@@ -63,7 +63,7 @@ impl Py {
 
     /// parser py string data
     /// 解析py语法
-    pub fn parser(arg: &str) -> Result<Vec<NodeType>, rbatis_core::Error> {
+    pub fn parse(arg: &str) -> Result<Vec<NodeType>, rbatis_core::Error> {
         let line_space_map = Py::create_line_space_map(arg);
         let mut pys = vec![];
         let ls = arg.lines();
@@ -91,7 +91,7 @@ impl Py {
                 }
                 if !child_str.is_empty() && pys.last_mut().is_some() {
                     let last: &mut NodeType = pys.last_mut().unwrap();
-                    let parserd = Py::parser(child_str.as_str())?;
+                    let parserd = Py::parse(child_str.as_str())?;
                     if !parserd.is_empty() {
                         match last {
                             NodeType::NTrim(node) => {
@@ -143,19 +143,24 @@ impl Py {
                                 }
                             }
                             NodeType::NString(node) => {
+                                let mut nodes=vec![];
                                 let mut news = node.value.clone();
                                 for x in &parserd {
                                     match x {
                                         NodeType::NString(new_snode) => {
                                             news = news + new_snode.value.as_str();
+                                            *node = StringNode::new(news.as_str());
                                         }
-                                        _ => {
-                                            return Err(rbatis_core::Error::from("[rbatis] parser node fail,string node' child must be same string node!: ".to_string() + child_str.as_str()));
+                                        parserd => {
+                                          let clone_parserd=parserd.clone();
+                                          nodes.push(clone_parserd);
                                         }
                                     }
                                 }
-                                if news.len() != node.value.len() {
-                                    *node = StringNode::new(news.as_str());
+                                if !nodes.is_empty(){
+                                    for x in nodes {
+                                        pys.push(x);
+                                    }
                                 }
                             }
                             _ => {
@@ -323,7 +328,7 @@ impl Py {
 
 
 #[test]
-pub fn test_py_interpreter_parser() {
+pub fn test_py_interpreter_parse() {
     let s = "
     SELECT * FROM biz_activity
     if  name!=null:
@@ -340,15 +345,14 @@ pub fn test_py_interpreter_parser() {
       AND delete_flag = #{del2}
     WHERE id  = '2';";
     //println!("{}", s);
-    let pys = Py::parser(s);
+    let pys = Py::parse(s);
     println!("{:?}", pys);
 }
 
 #[test]
 pub fn test_exec() {
-    let s = "
-    SELECT * FROM biz_activity
-      AND del = 2
+    let s = "SELECT * FROM biz_activity
+      Where del = 2
     if  name!=null:
       name = #{name}
     AND delete_flag1 = #{del}
@@ -364,7 +368,7 @@ pub fn test_exec() {
         #{item},
     )
     WHERE id  = '2';";
-    let pys = Py::parser(s).unwrap();
+    let pys = Py::parse(s).unwrap();
     //println!("{:?}", pys);
     //for x in &pys {
     // println!("{:?}", x.clone());
@@ -402,6 +406,6 @@ pub fn bench_exec() {
     trim 'AND ':
       AND delete_flag2 = #{del}
     WHERE id  = '2';";
-        let pys = Py::parser_and_cache(s);
+        let pys = Py::parse_and_cache(s);
     });
 }

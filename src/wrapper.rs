@@ -8,8 +8,6 @@ use rbatis_core::convert::StmtConvert;
 use rbatis_core::db::DriverType;
 use rbatis_core::Error;
 
-use crate::crud::CRUDEnable;
-
 /// when sql not end with WHERE,AND,OR it will be append " AND "
 macro_rules! add_and {
         ($self:tt) => {
@@ -55,6 +53,7 @@ pub struct Wrapper {
     pub sql: String,
     pub args: Vec<serde_json::Value>,
     pub error: Option<Error>,
+    pub checked: bool
 }
 
 impl Wrapper {
@@ -64,6 +63,7 @@ impl Wrapper {
             sql: "".to_string(),
             args: vec![],
             error: None,
+            checked: false
         }
     }
 
@@ -73,6 +73,7 @@ impl Wrapper {
             sql: sql.to_string(),
             args: args.clone(),
             error: None,
+            checked: false
         }
     }
 
@@ -89,6 +90,7 @@ impl Wrapper {
             sql: self.sql.clone(),
             args: self.args.clone(),
             error: self.error.clone(),
+            checked: true
         };
         return Ok(clone);
     }
@@ -483,7 +485,7 @@ impl Case {
     }
 }
 
-
+#[cfg(test)]
 mod test {
     use serde_json::json;
     use serde_json::Map;
@@ -556,7 +558,7 @@ mod test {
     }
 
     #[test]
-    fn test_do_is_some() {
+    fn test_do_if() {
         let p = Option::<i32>::Some(1);
         let w = Wrapper::new(&DriverType::Postgres)
             .do_if(p.is_some(), |w| w.eq("a", p))

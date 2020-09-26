@@ -114,6 +114,10 @@ impl PageRequest {
         return PageRequest::new_total(current, size, 0);
     }
 
+    pub fn new_option(current: &Option<u64>, size: &Option<u64>) -> Self {
+        return PageRequest::new(current.unwrap_or(1), size.unwrap_or(10));
+    }
+
     pub fn new_total(current: u64, size: u64, total: u64) -> Self {
         let mut current = current;
         if current < 1 {
@@ -188,6 +192,11 @@ impl<T> Page<T> {
     pub fn new(current: u64, size: u64) -> Self {
         return Page::new_total(current, size, 0);
     }
+
+    pub fn new_option(current: &Option<u64>, size: &Option<u64>) -> Self {
+        return Page::new(current.unwrap_or(1), size.unwrap_or(10));
+    }
+
     pub fn new_total(current: u64, size: u64, total: u64) -> Self {
         if current < 1 {
             return Self {

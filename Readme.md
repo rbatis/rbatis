@@ -16,11 +16,11 @@
 | diesel | x     | 简单（缺xml支持） |   x     |  x     |  x     |  
 
 
-##### 和其他语言对比性能压测(环境（docker）仅供参考)
-| 语言 | 框架     | 数据库 | count语句（1万次） | 纳秒/每操作（低越好） | 查询数/秒Qps(高越好) |内存（低越好） |
-| ------ | ------ | ------ |------ |------ |------ |------ |
-| Rust语言   | rbatis/tokio  | mysql(docker with 1CPU,1G Mem)    | select count(1) from table;    | 965649 ns/op   |  1035 Qps/s  |  2.1MB   |      
-| Go语言 | GoMybatis/http   | mysql(docker with 1CPU,1G Mem)    | select count(1) from table;   | 1184503 ns/op  |  844  Qps/s   |  28.4MB  |     
+##### 和Go语言对比性能(环境（docker）仅供参考)
+| 框架     | Mysql（docker） | SQL语句（1万次） | 纳秒/每操作（低越好） | Qps(高越好) |内存消耗（低越好） |
+|  ------ | ------ |------ |------ |------ |------ |
+| Rust语言-rbatis/tokio  |  1CPU,1G内存    | select count(1) from table;    | 965649 ns/op   |  1035 Qps/s  |  2.1MB   |      
+| Go语言-GoMybatis/http   |  1CPU,1G内存   | select count(1) from table;   | 1184503 ns/op  |  844  Qps/s   |  28.4MB  |     
 
 
 * 使用最通用的json数据结构（基于serde_json）进行传参和通讯
@@ -32,8 +32,7 @@
 * [示例代码（需要Clion导入）](https://github.com/rbatis/rbatis/tree/master/example/src)
 * [示例项目（需要Clion导入）](https://github.com/rbatis/abs_admin)
 
-
-##### 项目实战 https://github.com/rbatis/abs_admin
+##### 实战(编写Rust后台服务) https://github.com/rbatis/abs_admin
 
 ##### 使用方法：添加依赖(Cargo.toml)
 ``` rust
@@ -52,12 +51,12 @@ fast_log="1.2.2"
 
 
 #BigDecimal支持(可选)
-bigdecimal = "0.1.2"
+bigdecimal = "0.2"
 
 #rbatis支持，版本保持一致(必须)
-rbatis-core = { version = "1.5.1", features = ["all"]}
-rbatis =  { version = "1.5.1" } 
-rbatis-macro-driver = { version = "1.5.1" }
+rbatis-core = { version = "1.5.8", features = ["all"]}
+rbatis =  { version = "1.5.8" } 
+rbatis-macro-driver = { version = "1.5.8" }
 
 ```
 
@@ -65,7 +64,7 @@ rbatis-macro-driver = { version = "1.5.1" }
 ```rust
 #[macro_use]
 extern crate rbatis_macro_driver;
-///数据库表模型
+///数据库表模型 CRUDEnable也可以写成 impl CRUDEnable for BizActivity{}
 #[derive(CRUDEnable,Serialize, Deserialize, Clone, Debug)]
 pub struct BizActivity {
     pub id: Option<String>,
@@ -167,6 +166,57 @@ rb.update_by_wrapper("", &activity, &w).await;
 
 ///...还有更多方法，请查看crud.rs
 ```
+
+
+#### 智能宏映射（新功能）
+```rust
+    lazy_static! {
+     static ref RB:Rbatis=Rbatis::new();
+   }
+
+    /// 宏根据方法定义生成执行逻辑，又点类似于 java/mybatis的@select动态sql
+    /// RB是本地依赖Rbatis引用的名称,例如  dao::RB, com::xxx::RB....都可以
+    /// 第二个参数是标准的驱动sql，注意对应数据库参数mysql为？,pg为$1...
+    /// 宏会自动转换函数为  pub async fn select(name: &str) -> rbatis_core::Result<BizActivity> {}
+    ///
+    #[sql(RB, "select * from biz_activity where id = ?")]
+    fn select(name: &str) -> BizActivity {}
+    //其他写法： pub async fn select(name: &str) -> rbatis_core::Result<BizActivity> {}
+
+    #[async_std::test]
+    pub async fn test_macro() {
+        fast_log::log::init_log("requests.log", &RuntimeType::Std);
+        RB.link("mysql://root:123456@localhost:3306/test").await.unwrap();
+        let a = select("1").await.unwrap();
+        println!("{:?}", a);
+    }
+```
+```rust
+    lazy_static! {
+     static ref RB:Rbatis=Rbatis::new();
+   }
+
+    /// 宏根据方法定义生成执行逻辑，又点类似于 java/mybatis的@select动态sql
+    /// RB是本地依赖Rbatis引用的名称,例如  dao::RB, com::xxx::RB....都可以
+    /// 第二个参数是标准的驱动sql，注意对应数据库参数mysql为？,pg为$1...
+    /// 宏会自动转换函数为  pub async fn select(name: &str) -> rbatis_core::Result<BizActivity> {}
+    ///
+    #[py_sql(RB, "select * from biz_activity where id = #{name}
+                  if name != '':
+                    and name=#{name}")]
+    fn py_select(name: &str) -> Option<BizActivity> {}
+    //其他写法： pub async fn select(name: &str) -> rbatis_core::Result<BizActivity> {}
+
+    #[async_std::test]
+    pub async fn test_macro_py_select() {
+        fast_log::log::init_log("requests.log", &RuntimeType::Std);
+        RB.link("mysql://root:123456@localhost:3306/test").await.unwrap();
+        let a = py_select("1").await.unwrap();
+        println!("{:?}", a);
+    }
+```
+
+
 
 ##### 逻辑删除插件使用(逻辑删除针对Rbatis提供的查询方法和删除方法有效，例如方法 list**(),remove**()，fetch**())
 ```rust
@@ -414,6 +464,14 @@ async fn main() -> std::io::Result<()> {
 | TiDB             | √     |
 | CockroachDB      | √     |
 
+### 平台测试通过
+| 平台    | 已支持 |
+| ------ | ------ |
+| Linux                   | √     | 
+| Apple/MacOS             | √     |  
+| Windows               | √     |
+
+
 ### 进度表-按照顺序实现
 | 功能    | 已支持 |
 | ------ | ------ |
@@ -478,5 +536,5 @@ rbatis-core = { features = ["runtime-async-std","all-type"]}
 # TODO 即将到来的特性
 
 
-## 为了大家有一款称心如意的ORM框架，编写非常非常耗时且不容易，欢迎微信捐赠支持~或者~右上角点下star
+## 为了称心如意的ORM框架，您的支持永远是我们的动力，迫切欢迎微信捐赠支持我们 ~或者~右上角点下star
 ![Image text](https://zhuxiujia.github.io/gomybatis.io/assets/wx_account.jpg)
