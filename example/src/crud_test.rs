@@ -258,13 +258,14 @@ mod test {
 
     #[async_std::test]
     pub async fn test_macro_py_select() {
-        let mut rbatis = Rbatis::new();
         fast_log::log::init_log("requests.log", &RuntimeType::Std);
-        rbatis.link("mysql://root:123456@localhost:3306/test").await.unwrap();
+        //use static ref
         RB.link("mysql://root:123456@localhost:3306/test").await.unwrap();
         let a = py_select("1").await.unwrap();
         println!("{:?}", a);
-
+        // use arg value
+        let mut rbatis = Rbatis::new();
+        rbatis.link("mysql://root:123456@localhost:3306/test").await.unwrap();
         let a = py_select_rb(&rbatis, "1").await.unwrap();
         println!("{:?}", a);
     }
