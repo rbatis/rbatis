@@ -13,6 +13,7 @@ use crate::plugin::logic_delete::LogicAction;
 use crate::plugin::page::{IPageRequest, Page};
 use crate::rbatis::Rbatis;
 use crate::sql::Date;
+use crate::sql::date::DateCast;
 use crate::utils::string_util::to_snake_name;
 use crate::wrapper::Wrapper;
 
@@ -101,23 +102,38 @@ pub trait CRUDEnable: Send + Sync + Serialize + DeserializeOwned {
     fn make_sql_arg(index: &mut usize, db_type: &DriverType, map: &serde_json::Map<String, serde_json::Value>) -> Result<(String, Vec<serde_json::Value>)> {
         let mut sql = String::new();
         let mut arr = vec![];
+        let chains = Self::cast_chain();
         for (k, v) in map {
-            //date convert
-            if (k.contains("time") || k.contains("date")) && v.is_string() {
-                let (new_sql, new_value) = db_type.date_convert(v, *index)?;
-                sql = sql + new_sql.as_str() + ",";
-                arr.push(new_value);
-            } else {
-                sql = sql + db_type.stmt_convert(*index).as_str() + ",";
-                arr.push(v.to_owned());
+            //cast convert
+            let mut temp_sql = db_type.stmt_convert(*index);
+            // cast column name
+            for chain in &chains {
+                if chain.is_cast_column(k) {
+                    let (sql, value) = chain.do_cast(&db_type, &temp_sql, &v)?;
+                    temp_sql = sql;
+                }
             }
+            sql = sql + temp_sql.as_str() + ",";
+            arr.push(v.to_owned());
             *index += 1;
         }
         sql.pop();//remove ','
         return Ok((sql, arr));
     }
+
+    /// return cast chain,you also can rewrite this method
+    fn cast_chain() -> Vec<Box<dyn CRUDColumnCast>> {
+        let mut chain: Vec<Box<dyn CRUDColumnCast>> = vec![];
+        chain.push(Box::new(DateCast {}));
+        chain
+    }
 }
 
+/// cast sql cloumn and return new sql
+pub trait CRUDColumnCast {
+    fn is_cast_column(&self, column: &str) -> bool;
+    fn do_cast(&self, driver_type: &DriverType, sql: &str, value: &serde_json::Value) -> rbatis_core::Result<(String, Value)>;
+}
 
 impl<T> CRUDEnable for Option<T> where T: CRUDEnable {
     /// macro id type that is automatically determined,or you can Rewrite it
