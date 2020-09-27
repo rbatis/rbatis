@@ -102,14 +102,14 @@ pub trait CRUDEnable: Send + Sync + Serialize + DeserializeOwned {
     fn make_sql_arg(index: &mut usize, db_type: &DriverType, map: &serde_json::Map<String, serde_json::Value>) -> Result<(String, Vec<serde_json::Value>)> {
         let mut sql = String::new();
         let mut arr = vec![];
-        let chains = Self::cast_chain();
+        let chains = Self::format_chain();
         for (k, v) in map {
             //cast convert
             let mut temp_sql = db_type.stmt_convert(*index);
             // cast column name
             for chain in &chains {
-                if chain.is_cast_column(k) {
-                    let (sql, value) = chain.do_cast(&db_type, &temp_sql, &v)?;
+                if chain.is_need_format(k) {
+                    let (sql, value) = chain.do_format(&db_type, &temp_sql, &v)?;
                     temp_sql = sql;
                 }
             }
@@ -122,17 +122,17 @@ pub trait CRUDEnable: Send + Sync + Serialize + DeserializeOwned {
     }
 
     /// return cast chain,you also can rewrite this method
-    fn cast_chain() -> Vec<Box<dyn CRUDColumnCast>> {
-        let mut chain: Vec<Box<dyn CRUDColumnCast>> = vec![];
+    fn format_chain() -> Vec<Box<dyn ColumnFormat>> {
+        let mut chain: Vec<Box<dyn ColumnFormat>> = vec![];
         chain.push(Box::new(DateCast {}));
         chain
     }
 }
 
 /// cast sql cloumn and return new sql
-pub trait CRUDColumnCast {
-    fn is_cast_column(&self, column: &str) -> bool;
-    fn do_cast(&self, driver_type: &DriverType, sql: &str, value: &serde_json::Value) -> rbatis_core::Result<(String, Value)>;
+pub trait ColumnFormat {
+    fn is_need_format(&self, column: &str) -> bool;
+    fn do_format(&self, driver_type: &DriverType, sql: &str, value: &serde_json::Value) -> rbatis_core::Result<(String, Value)>;
 }
 
 impl<T> CRUDEnable for Option<T> where T: CRUDEnable {
