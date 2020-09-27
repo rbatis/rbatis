@@ -33,14 +33,14 @@ impl ColumnFormat for DateCast {
     }
 
     fn do_format(&self, driver_type: &DriverType, sql: &str, value: &serde_json::Value) -> rbatis_core::Result<(String, Value)> {
-        let mut sql = String::new();
+        let mut new_sql = String::new();
         match driver_type {
             DriverType::Postgres => {
-                sql = format!(" {}::timestamp ", sql);
+                new_sql = format!(" {}::timestamp ", sql);
             }
             _ => {}
         }
-        return Ok((sql, value.to_owned()));
+        return Ok((new_sql, value.to_owned()));
     }
 }
 
