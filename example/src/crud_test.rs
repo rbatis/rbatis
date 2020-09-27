@@ -261,7 +261,7 @@ mod test {
         let mut rbatis = Rbatis::new();
         fast_log::log::init_log("requests.log", &RuntimeType::Std);
         rbatis.link("mysql://root:123456@localhost:3306/test").await.unwrap();
-
+        RB.link("mysql://root:123456@localhost:3306/test").await.unwrap();
         let a = py_select("1").await.unwrap();
         println!("{:?}", a);
 

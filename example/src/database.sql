@@ -14,4 +14,4 @@ CREATE TABLE `biz_activity` (
   PRIMARY KEY (`id`) USING BTREE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 ROW_FORMAT=COMPACT COMMENT='运营管理-活动管理';
 
-INSERT INTO `biz_activity` VALUES ('1','活动1',NULL,NULL,'1',1,1,'fff','2019-12-12 00:00:00',1,NULL,NULL),('178','test_insret','','','1',1,0,'','2020-06-17 20:08:13',1,NULL,NULL),('221','test','','','0',0,0,'','2020-06-17 20:10:23',1,NULL,NULL),('222','test','','','0',0,0,'','2020-06-17 20:10:23',1,NULL,NULL),('223','test','','','0',0,0,'','2020-06-17 20:10:23',1,NULL,NULL);
+INSERT INTO `biz_activity` VALUES ('1','活动1',NULL,NULL,'1',1,1,'fff','2019-12-12 00:00:00',0,NULL,NULL),('178','test_insret','','','1',1,0,'','2020-06-17 20:08:13',0,NULL,NULL),('221','test','','','0',0,0,'','2020-06-17 20:10:23',0,NULL,NULL),('222','test','','','0',0,0,'','2020-06-17 20:10:23',0,NULL,NULL),('223','test','','','0',0,0,'','2020-06-17 20:10:23',0,NULL,NULL);
