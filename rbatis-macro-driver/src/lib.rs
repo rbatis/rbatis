@@ -255,6 +255,9 @@ fn impl_macro_py_sql(target_fn: &ItemFn, args: &AttributeArgs) -> TokenStream {
         match arg {
             FnArg::Typed(t) => {
                 let arg_name = format!("{}", t.pat.to_token_stream());
+                if arg_name.eq(&field_name) {
+                    continue;
+                }
                 if arg_name.contains("tx_id") {
                     tx_id_ident = t.pat.to_token_stream();
                     continue;

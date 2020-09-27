@@ -234,11 +234,19 @@ mod test {
     #[sql(RB, "select * from biz_activity where id = ?")]
     fn select(name: &str) -> BizActivity {}
 
-
+    /// Use static RB ref
+    /// 使用全局变量例子
     #[py_sql(RB, "select * from biz_activity where id = #{name}
                   if name != '':
                     and name=#{name}")]
-    fn py_select(name: &str) -> Option<BizActivity> {}
+    fn py_select_RB(name: &str) -> Option<BizActivity> {}
+
+    /// Use Arg rbatis ref
+    /// 使用参数变量例子
+    #[py_sql(rbatis, "select * from biz_activity where id = #{name}
+                  if name != '':
+                    and name=#{name}")]
+    fn py_select(rbatis: &Rbatis, name: &str) -> Option<BizActivity> {}
 
     #[async_std::test]
     pub async fn test_macro_select() {
@@ -250,9 +258,10 @@ mod test {
 
     #[async_std::test]
     pub async fn test_macro_py_select() {
+        let mut rbatis = Rbatis::new();
         fast_log::log::init_log("requests.log", &RuntimeType::Std);
-        RB.link("mysql://root:123456@localhost:3306/test").await.unwrap();
-        let a = py_select("1").await.unwrap();
+        rbatis.link("mysql://root:123456@localhost:3306/test").await.unwrap();
+        let a = py_select(&rbatis, "1").await.unwrap();
         println!("{:?}", a);
     }
 }
