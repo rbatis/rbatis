@@ -13,7 +13,7 @@ use crate::plugin::logic_delete::LogicAction;
 use crate::plugin::page::{IPageRequest, Page};
 use crate::rbatis::Rbatis;
 use crate::sql::Date;
-use crate::sql::date::DateCast;
+use crate::sql::date::DateFormat;
 use crate::utils::string_util::to_snake_name;
 use crate::wrapper::Wrapper;
 
@@ -124,7 +124,7 @@ pub trait CRUDEnable: Send + Sync + Serialize + DeserializeOwned {
     /// return cast chain,you also can rewrite this method
     fn format_chain() -> Vec<Box<dyn ColumnFormat>> {
         let mut chain: Vec<Box<dyn ColumnFormat>> = vec![];
-        chain.push(Box::new(DateCast {}));
+        chain.push(Box::new(DateFormat {}));
         chain
     }
 }

@@ -22,9 +22,9 @@ impl Date for DriverType {
 }
 
 #[derive(Copy, Clone, Debug)]
-pub struct DateCast {}
+pub struct DateFormat {}
 
-impl ColumnFormat for DateCast {
+impl ColumnFormat for DateFormat {
     fn is_need_format(&self, column: &str) -> bool {
         if column.contains("date") || column.contains("time") {
             return true;
