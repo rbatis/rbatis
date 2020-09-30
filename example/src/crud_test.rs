@@ -207,7 +207,7 @@ mod test {
         rb.logic_plugin = Some(Box::new(RbatisLogicDeletePlugin::new("delete_flag")));
 
         let w = rb.new_wrapper()
-            .eq("delete_flag", 1)
+            .eq("delete_flag", 0)
             .check().unwrap();
         let r: Page<BizActivity> = rb.fetch_page_by_wrapper("", &w, &PageRequest::new(1, 20)).await.unwrap();
         println!("{}", serde_json::to_string(&r).unwrap());
