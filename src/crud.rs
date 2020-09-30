@@ -36,7 +36,6 @@ pub trait CRUDEnable: Send + Sync + Serialize + DeserializeOwned {
     ///
     ///
     ///
-    #[inline]
     fn table_name() -> String {
         let type_name = std::any::type_name::<Self>();
         let mut name = type_name.to_string();
@@ -52,7 +51,6 @@ pub trait CRUDEnable: Send + Sync + Serialize + DeserializeOwned {
     ///
     /// you also can impl this method for static string
     ///
-    #[inline]
     fn table_fields() -> String {
         let bean: serde_json::Result<Self> = serde_json::from_str("{}");
         if bean.is_err() {
