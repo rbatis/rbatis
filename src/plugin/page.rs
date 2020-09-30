@@ -25,12 +25,12 @@ impl PagePlugin for RbatisPagePlugin {
         sql = sql.replace("select ", "SELECT ");
         sql = sql.replace("from ", "FROM ");
         sql = sql.trim().to_string();
+        let mut count_sql = sql.clone();
         let limit_sql = driver_type.page_limit_sql(page.offset(), page.get_size())?;
         sql = sql + limit_sql.as_str();
         if !sql.starts_with("SELECT ") && !sql.contains("FROM ") {
             return Err(rbatis_core::Error::from("[rbatis] xml_fetch_page() sql must contains 'select ' And 'from '"));
         }
-        let mut count_sql = sql.clone();
         if page.is_serch_count() {
             //make count sql
             let sql_vec: Vec<&str> = count_sql.split("FROM ").collect();
