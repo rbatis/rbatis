@@ -408,11 +408,11 @@ impl Rbatis {
     }
 
     /// fetch page result(prepare sql)
-    pub async fn fetch_page<T>(&self, tx_id: &str, sql: &str, args: &Vec<serde_json::Value>, page: &dyn IPageRequest) -> Result<Page<T>, rbatis_core::Error>
+    pub async fn fetch_page<T>(&self, tx_id: &str, sql: &str, args: &Vec<serde_json::Value>, page_request: &dyn IPageRequest) -> Result<Page<T>, rbatis_core::Error>
         where T: DeserializeOwned + Serialize + Send + Sync {
-        let mut page_result = Page::new(page.get_current(), page.get_size());
-        let (count_sql, sql) = self.page_plugin.create_page_sql(&self.driver_type()?, tx_id, sql, args, page)?;
-        if page.is_serch_count() {
+        let mut page_result = Page::new(page_request.get_current(), page_request.get_size());
+        let (count_sql, sql) = self.page_plugin.create_page_sql(&self.driver_type()?, tx_id, sql, args, page_request)?;
+        if page_request.is_serch_count() {
             //make count sql
             let total: Option<u64> = self.fetch_prepare(tx_id, count_sql.as_str(), args).await?;
             page_result.set_total(total.unwrap_or(0));
