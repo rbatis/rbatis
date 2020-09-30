@@ -107,7 +107,7 @@ pub trait CRUDEnable: Send + Sync + Serialize + DeserializeOwned {
             let mut temp_sql = db_type.stmt_convert(*index);
             // cast column name
             for chain in &chains {
-                if chain.is_need_format(k) {
+                if chain.need_format(db_type, k) {
                     let (sql, value) = chain.do_format(&db_type, &temp_sql, &v)?;
                     temp_sql = sql;
                 }
@@ -130,7 +130,7 @@ pub trait CRUDEnable: Send + Sync + Serialize + DeserializeOwned {
 
 /// cast sql cloumn and return new sql
 pub trait ColumnFormat {
-    fn is_need_format(&self, column: &str) -> bool;
+    fn need_format(&self, driver_type: &DriverType, column: &str) -> bool;
     fn do_format(&self, driver_type: &DriverType, sql: &str, value: &serde_json::Value) -> rbatis_core::Result<(String, Value)>;
 }
 

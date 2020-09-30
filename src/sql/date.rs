@@ -9,7 +9,11 @@ use crate::crud::ColumnFormat;
 pub struct DateFormat {}
 
 impl ColumnFormat for DateFormat {
-    fn is_need_format(&self, column: &str) -> bool {
+    fn need_format(&self, driver_type: &DriverType, column: &str) -> bool {
+        //DateTime only pg need format
+        if !driver_type.eq(&DriverType::Postgres) {
+            return false;
+        }
         if column.contains("date") || column.contains("time") {
             return true;
         }
