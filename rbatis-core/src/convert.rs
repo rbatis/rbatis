@@ -9,13 +9,13 @@ impl StmtConvert for DriverType {
     fn stmt_convert(&self, index: usize) -> String {
         match &self {
             DriverType::Postgres => {
-                format!(" ${} ", index + 1)
+                format!("${}", index + 1)
             }
             DriverType::Mysql => {
-                " ? ".to_string()
+                "?".to_string()
             }
             DriverType::Sqlite => {
-                " ? ".to_string()
+                "?".to_string()
             }
             DriverType::None => {
                 panic!("[rbatis] un support none for driver type!")
