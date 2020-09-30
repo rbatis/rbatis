@@ -24,7 +24,7 @@ impl ColumnFormat for DateFormat {
         let mut new_sql = String::new();
         match driver_type {
             DriverType::Postgres => {
-                new_sql = format!(" {}::timestamp ", sql);
+                new_sql = format!("{}::timestamp", sql);
             }
             _ => {}
         }
