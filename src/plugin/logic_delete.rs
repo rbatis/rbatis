@@ -76,13 +76,18 @@ impl LogicDelete for RbatisLogicDeletePlugin {
     }
 
     fn create_select_sql(&self, driver_type: &DriverType, table_name: &str, table_fields: &str, where_sql: &str) -> Result<String, Error> {
-        let mut where_sql = where_sql.to_string();
+        let mut where_sql = where_sql.trim().to_string();
         let mut sql = String::new();
         if table_fields.contains(self.column()) {
             if where_sql.is_empty() {
                 where_sql = format!("{} = {}", self.column(), self.un_deleted());
             } else {
-                where_sql = format!("{} = {} AND ", self.column(), self.un_deleted()) + where_sql.as_str();
+                let mut add_and = String::new();
+                if where_sql.starts_with("ORDER BY") || where_sql.starts_with("GROUP BY") {
+                    where_sql = format!("{} = {} ", self.column(), self.un_deleted()) + where_sql.as_str();
+                } else {
+                    where_sql = format!("{} = {} AND ", self.column(), self.un_deleted()) + where_sql.as_str();
+                }
             }
         }
         if !where_sql.is_empty() {
