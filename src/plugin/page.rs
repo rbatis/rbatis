@@ -21,22 +21,24 @@ pub struct RbatisPagePlugin {}
 
 impl PagePlugin for RbatisPagePlugin {
     fn create_page_sql<>(&self, driver_type: &DriverType, tx_id: &str, sql: &str, args: &Vec<Value>, page: &dyn IPageRequest) -> Result<(String, String), rbatis_core::Error> {
+        //default sql
         let mut sql = sql.to_owned();
         sql = sql.replace("select ", "SELECT ");
         sql = sql.replace("from ", "FROM ");
         sql = sql.trim().to_string();
-        let mut count_sql = sql.clone();
-        let limit_sql = driver_type.page_limit_sql(page.offset(), page.get_size())?;
-        sql = sql + limit_sql.as_str();
         if !sql.starts_with("SELECT ") && !sql.contains("FROM ") {
             return Err(rbatis_core::Error::from("[rbatis] xml_fetch_page() sql must contains 'select ' And 'from '"));
         }
+        //count sql
+        let mut count_sql = sql.clone();
         if page.is_serch_count() {
             //make count sql
             let sql_vec: Vec<&str> = count_sql.split("FROM ").collect();
             count_sql = "SELECT count(1) FROM ".to_string() + sql_vec[1];
         }
-        return Ok((count_sql, sql));
+        //limit sql
+        let limit_sql = driver_type.page_limit_sql(page.offset(), page.get_size())?;
+        return Ok((count_sql, sql + limit_sql.as_str()));
     }
 }
 
