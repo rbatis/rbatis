@@ -261,7 +261,9 @@ impl Wrapper {
             return self;
         }
         let mut index = 0;
-        self.sql = self.sql.trim_end_matches(" WHERE").trim_end_matches("WHERE ").to_string();
+        self.sql = self.sql.trim_end_matches(" WHERE")
+            .trim_end_matches(" AND ")
+            .trim_end_matches(" OR ").to_string();
         self.sql.push_str(" ORDER BY ");
         for x in columns {
             if is_asc {
@@ -283,7 +285,9 @@ impl Wrapper {
             return self;
         }
         let mut index = 0;
-        self.sql = self.sql.trim_end_matches(" WHERE").trim_end_matches("WHERE ").to_string();
+        self.sql = self.sql.trim_end_matches(" WHERE")
+            .trim_end_matches(" AND")
+            .trim_end_matches(" OR").to_string();
         self.sql.push_str(" GROUP BY ");
         for x in columns {
             self.sql.push_str(x);
