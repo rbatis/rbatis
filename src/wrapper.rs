@@ -189,14 +189,12 @@ impl Wrapper {
     /// link wrapper sql, if end with where , do nothing
     pub fn and(&mut self) -> &mut Self {
         add_and!(self);
-        self.sql.push_str(" AND ");
         self
     }
 
     /// link wrapper sql, if end with where , do nothing
     pub fn or(&mut self) -> &mut Self {
         add_or!(self);
-        self.sql.push_str(" OR ");
         self
     }
 
@@ -573,9 +571,22 @@ mod test {
         let p = 1;
         let w = Wrapper::new(&DriverType::Postgres)
             .do_match(&[
-                Case::new(p==0, |w| w.eq("a","some")),
-                Case::new(p==2, |w| w.eq("a","none")),
-            ], |w| w.eq("a","default"))
+                Case::new(p == 0, |w| w.eq("a", "some")),
+                Case::new(p == 2, |w| w.eq("a", "none")),
+            ], |w| w.eq("a", "default"))
+            .check().unwrap();
+        println!("sql:{:?}", w.sql.as_str());
+        println!("arg:{:?}", w.args.clone());
+    }
+
+    #[test]
+    fn test_wp() {
+        let mut w = Wrapper::new(&DriverType::Postgres)
+            .eq("1", "1")
+            .or()
+            .like("TITLE", "title")
+            .or()
+            .like("ORIGINAL_NAME", "saf")
             .check().unwrap();
         println!("sql:{:?}", w.sql.as_str());
         println!("arg:{:?}", w.args.clone());
