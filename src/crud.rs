@@ -118,7 +118,9 @@ pub trait CRUDEnable: Send + Sync + Serialize + DeserializeOwned {
         return Ok((sql, arr));
     }
 
-    /// return cast chain,you also can rewrite this method
+    /// return cast chain,
+    /// you also can rewrite this method,
+    /// but do not forget push DateFormat(if you need)
     fn format_chain() -> Vec<Box<dyn ColumnFormat>> {
         let mut chain: Vec<Box<dyn ColumnFormat>> = vec![];
         chain.push(Box::new(DateFormat {}));
