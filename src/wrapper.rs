@@ -11,7 +11,7 @@ use rbatis_core::Error;
 /// when sql not end with WHERE,AND,OR it will be append " AND "
 macro_rules! add_and {
         ($self:tt) => {
-          if !$self.sql.ends_with(" WHERE ") && !$self.sql.ends_with(" AND ") && !$self.sql.ends_with(" OR ") {
+          if !$self.sql.ends_with(" WHERE ") && !$self.sql.ends_with(" AND ") && !$self.sql.ends_with(" OR ") && !$self.sql.ends_with("(") {
              $self.sql.push_str(" AND ");
           }
         };
@@ -19,7 +19,7 @@ macro_rules! add_and {
 
 macro_rules! add_or {
         ($self:tt) => {
-          if !$self.sql.ends_with(" WHERE ") && !$self.sql.ends_with(" AND ") && !$self.sql.ends_with(" OR ") {
+          if !$self.sql.ends_with(" WHERE ") && !$self.sql.ends_with(" AND ") && !$self.sql.ends_with(" OR ") && !$self.sql.ends_with("(") {
               $self.sql.push_str(" OR ");
           }
         };
@@ -102,7 +102,7 @@ impl Wrapper {
     /// .and()
     /// .push_wrapper(&w)
     /// .check().unwrap();
-    /// println!("sql:{:?}", w2.sql.as_str());  // sql:"b = $1 AND ( AND a = $2)"
+    /// println!("sql:{:?}", w2.sql.as_str());  // sql:"b = ? AND (a = ?)"
     /// println!("arg:{:?}", w2.args.clone()); // arg:[String("2"), String("1")]
     ///
     pub fn push_wrapper(&mut self, arg: &Wrapper) -> &mut Self {
@@ -648,5 +648,19 @@ mod test {
             .check().unwrap();
         println!("sql:{:?}", w.sql.as_str());
         println!("arg:{:?}", w.args.clone());
+    }
+
+    #[test]
+    fn test_push_wrapper() {
+        let mut W1 = Wrapper::new(&DriverType::Mysql);
+        let mut W2 = W1.clone();
+
+        let w2 = W1
+            .eq("b", "2")
+            .and()
+            .push_wrapper(&W2.push_sql("(").eq("a", "1").push_sql(")").check().unwrap())
+            .check().unwrap();
+        println!("sql:{:?}", w2.sql.as_str());
+        println!("arg:{:?}", w2.args.clone());
     }
 }
