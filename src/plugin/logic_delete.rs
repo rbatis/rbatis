@@ -82,7 +82,6 @@ impl LogicDelete for RbatisLogicDeletePlugin {
             if where_sql.is_empty() {
                 where_sql = format!("{} = {}", self.column(), self.un_deleted());
             } else {
-                let mut add_and = String::new();
                 if where_sql.starts_with("ORDER BY") || where_sql.starts_with("GROUP BY") {
                     where_sql = format!("{} = {} ", self.column(), self.un_deleted()) + where_sql.as_str();
                 } else {

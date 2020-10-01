@@ -53,7 +53,7 @@ pub struct Wrapper {
     pub sql: String,
     pub args: Vec<serde_json::Value>,
     pub error: Option<Error>,
-    pub checked: bool
+    pub checked: bool,
 }
 
 impl Wrapper {
@@ -63,7 +63,7 @@ impl Wrapper {
             sql: "".to_string(),
             args: vec![],
             error: None,
-            checked: false
+            checked: false,
         }
     }
 
@@ -73,7 +73,7 @@ impl Wrapper {
             sql: sql.to_string(),
             args: args.clone(),
             error: None,
-            checked: false
+            checked: false,
         }
     }
 
@@ -90,7 +90,7 @@ impl Wrapper {
             sql: self.sql.clone(),
             args: self.args.clone(),
             error: self.error.clone(),
-            checked: true
+            checked: true,
         };
         return Ok(clone);
     }
@@ -170,6 +170,28 @@ impl Wrapper {
         self
     }
 
+    pub fn set_args<T>(&mut self, args: &[T]) -> &mut Self where T: Serialize {
+        let v = serde_json::to_value(args).unwrap_or(serde_json::Value::Null);
+        if v.is_null() {
+            return self;
+        }
+        if v.is_array() {
+            self.args = v.as_array().unwrap_or(&vec![]).to_owned();
+        }
+        self
+    }
+
+    pub fn push_arg<T>(&mut self, arg: &T) -> &mut Self where T: Serialize {
+        let v = serde_json::to_value(arg).unwrap_or(serde_json::Value::Null);
+        self.args.push(v);
+        self
+    }
+
+    pub fn pop_arg(&mut self) -> &mut Self{
+        self.args.pop();
+        self
+    }
+
     pub fn trim_sql(&mut self, sql: &str) -> &mut Self {
         self.sql = self.sql.trim().to_string();
         self
@@ -208,7 +230,11 @@ impl Wrapper {
     pub fn all_eq<T>(&mut self, arg: &T) -> &mut Self
         where T: Serialize {
         add_and!(self);
-        let v = serde_json::to_value(arg).unwrap();
+        let v = serde_json::to_value(arg).unwrap_or(serde_json::Value::Null);
+        if v.is_null(){
+            self.error = Some(Error::from("[rbatis] wrapper all_eq only support object struct!"));
+            return self;
+        }
         if !v.is_object() {
             self.error = Some(Error::from("[rbatis] wrapper all_eq only support object struct!"));
             return self;
@@ -235,7 +261,7 @@ impl Wrapper {
     pub fn eq<T>(&mut self, column: &str, obj: T) -> &mut Self
         where T: Serialize {
         add_and!(self);
-        let v = serde_json::to_value(obj).unwrap();
+        let v = serde_json::to_value(obj).unwrap_or(serde_json::Value::Null);
         self.sql.push_str(column);
         self.sql.push_str(format!(" = {}", self.driver_type.stmt_convert(self.args.len())).as_str());
         self.args.push(v);
@@ -248,7 +274,7 @@ impl Wrapper {
     pub fn ne<T>(&mut self, column: &str, obj: T) -> &mut Self
         where T: Serialize {
         add_and!(self);
-        let v = serde_json::to_value(obj).unwrap();
+        let v = serde_json::to_value(obj).unwrap_or(serde_json::Value::Null);
         self.sql.push_str(column);
         self.sql.push_str(format!(" <> {}", self.driver_type.stmt_convert(self.args.len())).as_str());
         self.args.push(v);
@@ -303,7 +329,7 @@ impl Wrapper {
     pub fn gt<T>(&mut self, column: &str, obj: T) -> &mut Self
         where T: Serialize {
         add_and!(self);
-        let v = serde_json::to_value(obj).unwrap();
+        let v = serde_json::to_value(obj).unwrap_or(serde_json::Value::Null);
         self.sql.push_str(column);
         self.sql.push_str(format!(" > {}", self.driver_type.stmt_convert(self.args.len())).as_str());
         self.args.push(v);
@@ -313,7 +339,7 @@ impl Wrapper {
     pub fn ge<T>(&mut self, column: &str, obj: T) -> &mut Self
         where T: Serialize {
         add_and!(self);
-        let v = serde_json::to_value(obj).unwrap();
+        let v = serde_json::to_value(obj).unwrap_or(serde_json::Value::Null);
         self.sql.push_str(column);
         self.sql.push_str(format!(" >= {}", self.driver_type.stmt_convert(self.args.len())).as_str());
         self.args.push(v);
@@ -324,7 +350,7 @@ impl Wrapper {
     pub fn lt<T>(&mut self, column: &str, obj: T) -> &mut Self
         where T: Serialize {
         add_and!(self);
-        let v = serde_json::to_value(obj).unwrap();
+        let v = serde_json::to_value(obj).unwrap_or(serde_json::Value::Null);
         self.sql.push_str(column);
         self.sql.push_str(format!(" < {}", self.driver_type.stmt_convert(self.args.len())).as_str());
         self.args.push(v);
@@ -336,7 +362,7 @@ impl Wrapper {
     pub fn le<T>(&mut self, column: &str, obj: T) -> &mut Self
         where T: Serialize {
         add_and!(self);
-        let v = serde_json::to_value(obj).unwrap();
+        let v = serde_json::to_value(obj).unwrap_or(serde_json::Value::Null);
         self.sql.push_str(column);
         self.sql.push_str(format!(" <= {}", self.driver_type.stmt_convert(self.args.len())).as_str());
         self.args.push(v);
@@ -346,8 +372,8 @@ impl Wrapper {
     pub fn between<T>(&mut self, column: &str, min: T, max: T) -> &mut Self
         where T: Serialize {
         add_and!(self);
-        let min_v = serde_json::to_value(min).unwrap();
-        let max_v = serde_json::to_value(max).unwrap();
+        let min_v = serde_json::to_value(min).unwrap_or(serde_json::Value::Null);
+        let max_v = serde_json::to_value(max).unwrap_or(serde_json::Value::Null);
         self.sql.push_str(column);
         self.sql.push_str(format!(" BETWEEN {} AND {}", self.driver_type.stmt_convert(self.args.len()), self.driver_type.stmt_convert(self.args.len() + 1)).as_str());
         self.args.push(min_v);
@@ -358,8 +384,8 @@ impl Wrapper {
     pub fn not_between<T>(&mut self, column: &str, min: T, max: T) -> &mut Self
         where T: Serialize {
         add_and!(self);
-        let min_v = serde_json::to_value(min).unwrap();
-        let max_v = serde_json::to_value(max).unwrap();
+        let min_v = serde_json::to_value(min).unwrap_or(serde_json::Value::Null);
+        let max_v = serde_json::to_value(max).unwrap_or(serde_json::Value::Null);
         self.sql.push_str(column);
         self.sql.push_str(format!(" NOT BETWEEN {} AND {}", self.driver_type.stmt_convert(self.args.len()), self.driver_type.stmt_convert(self.args.len() + 1)).as_str());
         self.args.push(min_v);
@@ -370,7 +396,7 @@ impl Wrapper {
     pub fn like<T>(&mut self, column: &str, obj: T) -> &mut Self
         where T: Serialize {
         add_and!(self);
-        let v = serde_json::to_value(obj).unwrap();
+        let v = serde_json::to_value(obj).unwrap_or(serde_json::Value::Null);
         self.sql.push_str(column);
         self.sql.push_str(format!(" LIKE '%{}%'", self.driver_type.stmt_convert(self.args.len())).as_str());
         self.args.push(v);
@@ -379,7 +405,7 @@ impl Wrapper {
     pub fn like_left<T>(&mut self, column: &str, obj: T) -> &mut Self
         where T: Serialize {
         add_and!(self);
-        let v = serde_json::to_value(obj).unwrap();
+        let v = serde_json::to_value(obj).unwrap_or(serde_json::Value::Null);
         self.sql.push_str(column);
         self.sql.push_str(format!(" LIKE '%{}'", self.driver_type.stmt_convert(self.args.len())).as_str());
         self.args.push(v);
@@ -389,7 +415,7 @@ impl Wrapper {
     pub fn like_right<T>(&mut self, column: &str, obj: T) -> &mut Self
         where T: Serialize {
         add_and!(self);
-        let v = serde_json::to_value(obj).unwrap();
+        let v = serde_json::to_value(obj).unwrap_or(serde_json::Value::Null);
         self.sql.push_str(column);
         self.sql.push_str(format!(" LIKE '{}%'", self.driver_type.stmt_convert(self.args.len())).as_str());
         self.args.push(v);
@@ -399,7 +425,7 @@ impl Wrapper {
     pub fn not_like<T>(&mut self, column: &str, obj: T) -> &mut Self
         where T: Serialize {
         add_and!(self);
-        let v = serde_json::to_value(obj).unwrap();
+        let v = serde_json::to_value(obj).unwrap_or(serde_json::Value::Null);
         self.sql.push_str(column);
         self.sql.push_str(format!(" NOT LIKE '%{}%'", self.driver_type.stmt_convert(self.args.len())).as_str());
         self.args.push(v);
@@ -426,7 +452,7 @@ impl Wrapper {
         if obj.len() == 0 {
             return self;
         }
-        let v = serde_json::to_value(obj).unwrap();
+        let v = serde_json::to_value(obj).unwrap_or(serde_json::Value::Null);
         self.sql.push_str(column);
         let vec = v.as_array().unwrap();
         let mut sqls = String::new();
@@ -443,7 +469,7 @@ impl Wrapper {
     pub fn not_in<T>(&mut self, column: &str, obj: &[T]) -> &mut Self
         where T: Serialize {
         add_and!(self);
-        let v = serde_json::to_value(obj).unwrap();
+        let v = serde_json::to_value(obj).unwrap_or(serde_json::Value::Null);
         self.sql.push_str(column);
         let vec = v.as_array().unwrap();
         let mut sqls = String::new();
@@ -482,7 +508,7 @@ impl Case {
         }
     }
 
-    pub fn call_func<'s,'a>(&'s self, w: &'a mut Wrapper) -> &'a mut Wrapper {
+    pub fn call_func<'s, 'a>(&'s self, w: &'a mut Wrapper) -> &'a mut Wrapper {
         (self.func)(w)
     }
 }
@@ -585,12 +611,23 @@ mod test {
 
     #[test]
     fn test_wp() {
-        let mut w = Wrapper::new(&DriverType::Postgres)
+        let  w = Wrapper::new(&DriverType::Postgres)
             .eq("1", "1")
             .or()
             .like("TITLE", "title")
             .or()
             .like("ORIGINAL_NAME", "saf")
+            .check().unwrap();
+        println!("sql:{:?}", w.sql.as_str());
+        println!("arg:{:?}", w.args.clone());
+    }
+
+    #[test]
+    fn test_push_arg() {
+        let  w = Wrapper::new(&DriverType::Mysql)
+            .push_sql("?,?")
+            .push_arg(&1)
+            .push_arg(&"asdfasdfa")
             .check().unwrap();
         println!("sql:{:?}", w.sql.as_str());
         println!("arg:{:?}", w.args.clone());
