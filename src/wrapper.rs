@@ -569,10 +569,10 @@ mod test {
     ///  use Time: 0.51 s,each:5100 nano/op  use TPS: 196078.431372549 TPS/s
     #[test]
     fn bench_select() {
+        let mut map = Map::new();
+        map.insert("a".to_string(), json!("1"));
         let mut b = Bencher::new(100000);
-        b.iter(|| {
-            let mut m = Map::new();
-            m.insert("a".to_string(), json!("1"));
+        b.iter(&mut map,|m| {
             let w = Wrapper::new(&DriverType::Mysql).eq("id", 1)
                 .ne("id", 1)
                 .in_array("id", &[1, 2, 3])

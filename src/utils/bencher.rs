@@ -15,11 +15,11 @@ impl Bencher {
         };
     }
 
-    pub fn iter(&mut self, func: fn()) {
+    pub fn iter<T,F>(&mut self, arg:&T,func: F) where F:Fn(&T) {
         let mut current = 0;
         self.now = Local::now().timestamp_millis();
         loop {
-            func();
+            func(arg);
             if current == self.total - 1 {
                 let end = Local::now().timestamp_millis();
                 use_time(self.total, self.now, end);
