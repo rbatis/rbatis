@@ -393,19 +393,17 @@ pub fn test_exec() {
 #[test]
 pub fn bench_exec() {
     let mut b = Bencher::new(1000000);
-    b.iter(|| {
-        let s = "
-    SELECT * FROM biz_activity
-    if  name!=null:
-      name = #{name}
-    AND delete_flag1 = #{del}
-    if  age!=1:
-       AND age = 2
-       if  age!=1:
-         AND age = 3
-    trim 'AND ':
-      AND delete_flag2 = #{del}
-    WHERE id  = '2';";
-        let pys = Py::parse_and_cache(s);
+    let mut sql ="asdfsdaflakagjsda".to_string();
+    b.iter(&mut sql,|s| {
+        let s= s.ends_with("WHERE")
+            || s.ends_with("AND")
+            || s.ends_with("OR")
+            || s.ends_with("(")
+            || s.ends_with(",")
+            || s.ends_with("=")
+            || s.ends_with("+")
+            || s.ends_with("-")
+            || s.ends_with("*")
+            || s.ends_with("/");
     });
 }
