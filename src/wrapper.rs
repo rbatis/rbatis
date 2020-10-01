@@ -97,13 +97,13 @@ impl Wrapper {
 
     /// link left Wrapper to this Wrapper
     /// for Example:
-    ///  let w = Wrapper::new(&DriverType::Postgres).eq("a", "1").check().unwrap();
-    ///  let w2 = Wrapper::new(&DriverType::Postgres).eq("b", "2")
-    ///             .and()
-    ///             .right_link_wrapper(&w)
-    ///             .check().unwrap();
-    ///  println!("sql:{:?}", w2.sql.as_str());  // sql:"a =  $1 a =  $2 "
-    ///  println!("arg:{:?}", w2.args.clone()); // arg:[String("1"), String("2")]
+    /// let w = Wrapper::new(&DriverType::Postgres).push_sql("(").eq("a", "1").push_sql(")").check().unwrap();
+    /// let w2 = Wrapper::new(&DriverType::Postgres).eq("b", "2")
+    /// .and()
+    /// .push_wrapper(&w)
+    /// .check().unwrap();
+    /// println!("sql:{:?}", w2.sql.as_str());  // sql:"b = $1 AND ( AND a = $2)"
+    /// println!("arg:{:?}", w2.args.clone()); // arg:[String("2"), String("1")]
     ///
     pub fn push_wrapper(&mut self, arg: &Wrapper) -> &mut Self {
         self.push(&arg.sql, &arg.args)
