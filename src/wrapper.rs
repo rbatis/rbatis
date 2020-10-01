@@ -105,22 +105,29 @@ impl Wrapper {
     ///  println!("sql:{:?}", w2.sql.as_str());  // sql:"a =  $1 a =  $2 "
     ///  println!("arg:{:?}", w2.args.clone()); // arg:[String("1"), String("2")]
     ///
-    pub fn right_link_wrapper(&mut self, arg: &Wrapper) -> &mut Self {
-        self.right_link(&arg.driver_type, &arg.sql, &arg.args)
+    pub fn push_wrapper(&mut self, arg: &Wrapper) -> &mut Self {
+        self.push(&arg.sql, &arg.args)
     }
 
-    pub fn right_link(&mut self, driver_type: &DriverType, sql: &str, args: &Vec<Value>) -> &mut Self {
+    /// push sql,args into self
+    pub fn push<T>(&mut self, sql: &str, args: &[T]) -> &mut Self
+        where T: Serialize {
         let mut new_sql = sql.to_string();
-        if driver_type.eq(&DriverType::Postgres) {
-            let arg_old_len = args.len();
-            for index in 0..arg_old_len {
-                let str = driver_type.stmt_convert(index);
-                new_sql = new_sql.replace(str.as_str(), driver_type.stmt_convert(index + arg_old_len).as_str());
+        if self.driver_type.eq(&DriverType::Postgres) {
+            for index in 0..args.len() {
+                let str = self.driver_type.stmt_convert(index);
+                new_sql = new_sql.replace(str.as_str(), self.driver_type.stmt_convert(index + args.len()).as_str());
             }
         }
         self.sql.push_str(new_sql.as_str());
+
+        let args = serde_json::to_value(args).unwrap_or(serde_json::Value::Null);
+        if args.is_null() {
+            return self;
+        }
+        let args = args.as_array().unwrap();
         for x in args {
-            self.args.push(x.clone());
+            self.args.push(x.to_owned());
         }
         self
     }
@@ -187,7 +194,7 @@ impl Wrapper {
         self
     }
 
-    pub fn pop_arg(&mut self) -> &mut Self{
+    pub fn pop_arg(&mut self) -> &mut Self {
         self.args.pop();
         self
     }
@@ -231,7 +238,7 @@ impl Wrapper {
         where T: Serialize {
         add_and!(self);
         let v = serde_json::to_value(arg).unwrap_or(serde_json::Value::Null);
-        if v.is_null(){
+        if v.is_null() {
             self.error = Some(Error::from("[rbatis] wrapper all_eq only support object/map struct!"));
             return self;
         }
@@ -585,7 +592,7 @@ mod test {
         let w = Wrapper::new(&DriverType::Postgres).eq("a", "1").check().unwrap();
         let w2 = Wrapper::new(&DriverType::Postgres).eq("b", "2")
             .and()
-            .right_link_wrapper(&w)
+            .push_wrapper(&w)
             .check().unwrap();
 
         println!("sql:{:?}", w2.sql.as_str());
@@ -621,7 +628,7 @@ mod test {
 
     #[test]
     fn test_wp() {
-        let  w = Wrapper::new(&DriverType::Postgres)
+        let w = Wrapper::new(&DriverType::Postgres)
             .eq("1", "1")
             .or()
             .like("TITLE", "title")
@@ -634,7 +641,7 @@ mod test {
 
     #[test]
     fn test_push_arg() {
-        let  w = Wrapper::new(&DriverType::Mysql)
+        let w = Wrapper::new(&DriverType::Mysql)
             .push_sql("?,?")
             .push_arg(1)
             .push_arg("asdfasdfa")

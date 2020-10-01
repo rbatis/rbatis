@@ -336,7 +336,7 @@ impl CRUD for Rbatis {
         wrapper.args = args;
         if !w.sql.is_empty() {
             wrapper.sql.push_str(" WHERE ");
-            wrapper = wrapper.right_link_wrapper(&w).check()?;
+            wrapper = wrapper.push_wrapper(&w).check()?;
         }
         return self.exec_prepare(tx_id, wrapper.sql.as_str(), &wrapper.args).await;
     }
