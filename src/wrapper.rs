@@ -232,11 +232,11 @@ impl Wrapper {
         add_and!(self);
         let v = serde_json::to_value(arg).unwrap_or(serde_json::Value::Null);
         if v.is_null(){
-            self.error = Some(Error::from("[rbatis] wrapper all_eq only support object struct!"));
+            self.error = Some(Error::from("[rbatis] wrapper all_eq only support object/map struct!"));
             return self;
         }
         if !v.is_object() {
-            self.error = Some(Error::from("[rbatis] wrapper all_eq only support object struct!"));
+            self.error = Some(Error::from("[rbatis] wrapper all_eq only support object/map struct!"));
             return self;
         }
         let map = v.as_object().unwrap();
