@@ -653,13 +653,13 @@ mod test {
 
     #[test]
     fn test_push_wrapper() {
-        let mut W1 = Wrapper::new(&DriverType::Mysql);
-        let mut W2 = W1.clone();
+        let mut w1 = Wrapper::new(&DriverType::Mysql);
+        let mut w2 = w1.clone();
 
-        let w2 = W1
+        let w2 = w1
             .eq("b", "2")
             .and()
-            .push_wrapper(&W2.push_sql("(").eq("a", "1").push_sql(")").check().unwrap())
+            .push_wrapper(&w2.push_sql("(").eq("a", "1").push_sql(")").check().unwrap())
             .check().unwrap();
         println!("sql:{:?}", w2.sql.as_str());
         println!("arg:{:?}", w2.args.clone());

@@ -30,6 +30,22 @@ impl Bencher {
             }
         }
     }
+
+    pub fn iter_mut<T,F>(&mut self, arg:&mut T,func: F) where F:Fn(&mut T) {
+        let mut current = 0;
+        self.now = Local::now().timestamp_millis();
+        loop {
+            func(arg);
+            if current == self.total - 1 {
+                let end = Local::now().timestamp_millis();
+                use_time(self.total, self.now, end);
+                use_tps(self.total, self.now, end);
+                break;
+            } else {
+                current = current + 1;
+            }
+        }
+    }
 }
 
 fn use_tps(total: i32, start: i64, end: i64) {
