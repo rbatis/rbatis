@@ -181,7 +181,7 @@ impl Wrapper {
         self
     }
 
-    pub fn push_arg<T>(&mut self, arg: &T) -> &mut Self where T: Serialize {
+    pub fn push_arg<T>(&mut self, arg: T) -> &mut Self where T: Serialize {
         let v = serde_json::to_value(arg).unwrap_or(serde_json::Value::Null);
         self.args.push(v);
         self
@@ -227,7 +227,7 @@ impl Wrapper {
     }
 
     /// arg: JsonObject or struct{} or map[String,**]
-    pub fn all_eq<T>(&mut self, arg: &T) -> &mut Self
+    pub fn all_eq<T>(&mut self, arg: T) -> &mut Self
         where T: Serialize {
         add_and!(self);
         let v = serde_json::to_value(arg).unwrap_or(serde_json::Value::Null);
@@ -626,8 +626,8 @@ mod test {
     fn test_push_arg() {
         let  w = Wrapper::new(&DriverType::Mysql)
             .push_sql("?,?")
-            .push_arg(&1)
-            .push_arg(&"asdfasdfa")
+            .push_arg(1)
+            .push_arg("asdfasdfa")
             .check().unwrap();
         println!("sql:{:?}", w.sql.as_str());
         println!("arg:{:?}", w.args.clone());
