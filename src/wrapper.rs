@@ -11,7 +11,7 @@ use rbatis_core::Error;
 /// when sql not end with WHERE,AND,OR it will be append " AND "
 macro_rules! add_and {
         ($self:tt) => {
-          if !$self.sql.ends_with(" WHERE ") && !$self.sql.ends_with(" AND ") && !$self.sql.ends_with(" OR ") && !$self.sql.ends_with("(") {
+          if !$self.sql.ends_with(" WHERE ") && !$self.sql.ends_with(" AND ") && !$self.sql.ends_with(" OR ") && !$self.sql.ends_with("(") && !$self.sql.ends_with("( ") {
              $self.sql.push_str(" AND ");
           }
         };
@@ -19,7 +19,7 @@ macro_rules! add_and {
 
 macro_rules! add_or {
         ($self:tt) => {
-          if !$self.sql.ends_with(" WHERE ") && !$self.sql.ends_with(" AND ") && !$self.sql.ends_with(" OR ") && !$self.sql.ends_with("(") {
+          if !$self.sql.ends_with(" WHERE ") && !$self.sql.ends_with(" AND ") && !$self.sql.ends_with(" OR ") && !$self.sql.ends_with("(") && !$self.sql.ends_with("( ") {
               $self.sql.push_str(" OR ");
           }
         };
