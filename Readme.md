@@ -537,8 +537,6 @@ rbatis-core = { features = ["runtime-async-std","all-type"]}
 
 ### 和Rbatis相关项目
 * Log日志库 https://github.com/rbatis/fast_log
-* Rbatis/Core  https://github.com/rbatis/rbatis/tree/master/rbatis-core
-
 
 # TODO 即将到来的特性
 
