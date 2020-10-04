@@ -143,7 +143,7 @@ impl Py {
                                 }
                             }
                             NodeType::NString(node) => {
-                                let mut nodes=vec![];
+                                let mut nodes = vec![];
                                 let mut news = node.value.clone();
                                 for x in &parserd {
                                     match x {
@@ -152,12 +152,12 @@ impl Py {
                                             *node = StringNode::new(news.as_str());
                                         }
                                         parserd => {
-                                          let clone_parserd=parserd.clone();
-                                          nodes.push(clone_parserd);
+                                            let clone_parserd = parserd.clone();
+                                            nodes.push(clone_parserd);
                                         }
                                     }
                                 }
-                                if !nodes.is_empty(){
+                                if !nodes.is_empty() {
                                     for x in nodes {
                                         pys.push(x);
                                     }
@@ -244,9 +244,13 @@ impl Py {
                 }));
             } else if trim_x.starts_with("bind ") {
                 trim_x = trim_x["bind ".len()..].trim();
+                let name_value: Vec<&str> = trim_x.split(",").collect();
+                if name_value.len() != 2 {
+                    return Err(rbatis_core::Error::from("[rbatis] parser express fail:".to_string() + trim_x));
+                }
                 return Ok(NodeType::NBind(BindNode {
-                    name: "".to_string(),
-                    value: "".to_string(),
+                    name: name_value[0].to_owned(),
+                    value: name_value[1].to_owned(),
                 }));
             } else if trim_x.starts_with("set ") {
                 trim_x = trim_x["set ".len()..].trim();
@@ -393,9 +397,9 @@ pub fn test_exec() {
 #[test]
 pub fn bench_exec() {
     let mut b = Bencher::new(1000000);
-    let mut sql ="asdfsdaflakagjsda".to_string();
-    b.iter(&mut sql,|s| {
-        let s= s.ends_with("WHERE")
+    let mut sql = "asdfsdaflakagjsda".to_string();
+    b.iter(&mut sql, |s| {
+        let s = s.ends_with("WHERE")
             || s.ends_with("AND")
             || s.ends_with("OR")
             || s.ends_with("(")
