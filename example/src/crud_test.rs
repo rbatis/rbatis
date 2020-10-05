@@ -207,7 +207,7 @@ mod test {
         rb.logic_plugin = Some(Box::new(RbatisLogicDeletePlugin::new("delete_flag")));
 
         let w = rb.new_wrapper()
-            .order_by(false,&["create_time"])
+            .order_by(false, &["create_time"])
             .check().unwrap();
         let r: Page<BizActivity> = rb.fetch_page_by_wrapper("", &w, &PageRequest::new(1, 20)).await.unwrap();
         println!("{}", serde_json::to_string(&r).unwrap());
@@ -271,8 +271,6 @@ mod test {
     }
 
 
-
-
     /// join method,you can use
     /// JOIN:
     /// LEFT JOIN:
@@ -285,7 +283,7 @@ mod test {
     pub async fn test_join() {
         fast_log::log::init_log("requests.log", &RuntimeType::Std);
         RB.link("mysql://root:123456@localhost:3306/test").await.unwrap();
-        let results=join_select(&RB,"test").await.unwrap();
-        println!("data: {:?}",results);
+        let results = join_select(&RB, "test").await.unwrap();
+        println!("data: {:?}", results);
     }
 }

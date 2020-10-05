@@ -79,7 +79,7 @@ pub(crate) fn impl_macro_py_sql(target_fn: &ItemFn, args: &AttributeArgs) -> Tok
         let gen = quote! {
         pub async fn #func_name_ident(#func_args_stream) -> #return_ty {
               #args_gen
-              return #rbatis_ident.py_fetch("",#sql_ident,&args).await;
+              return #rbatis_ident.py_fetch(#tx_id_ident,#sql_ident,&args).await;
         }
     };
         return gen.into();
@@ -87,7 +87,7 @@ pub(crate) fn impl_macro_py_sql(target_fn: &ItemFn, args: &AttributeArgs) -> Tok
         let gen = quote! {
         pub async fn #func_name_ident(#func_args_stream) -> #return_ty {
               #args_gen
-              return #rbatis_ident.py_exec("",#sql_ident,&args).await;
+              return #rbatis_ident.py_exec(#tx_id_ident,#sql_ident,&args).await;
         }
     };
         return gen.into();
