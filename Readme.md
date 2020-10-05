@@ -298,7 +298,6 @@ rb.update_by_wrapper("", &activity, &w).await;
 
 #### logging system with fast_log here as an example
 ``` rust
- //main函数加入
  use log::{error, info, warn};
  fn  main(){
       fast_log::log::init_log("requests.log", &RuntimeType::Std).unwrap();
