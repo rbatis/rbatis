@@ -36,7 +36,9 @@ use crate::wrapper::Wrapper;
 
 /// rbatis engine
 pub struct Rbatis {
+    // the connection pool,use OnceCell init this
     pub pool: OnceCell<DBPool>,
+    // the engine run some express for example:'1+1'=2
     pub engine: RbatisEngine,
     // map<mapper_name,map<method_name,NodeType>>
     pub mapper_node_map: HashMap<String, HashMap<String, NodeType>>,
