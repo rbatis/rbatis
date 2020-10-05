@@ -370,67 +370,6 @@ impl<'q> DBQuery<'q> {
         }
         return Ok(());
     }
-
-
-    pub fn bind_mysql_value<T>(&mut self, t: T) -> crate::Result<()>
-        where
-            T: Type<MySql>,
-            T: Encode<MySql>, {
-        match &self.driver_type {
-            &DriverType::None => {
-                return Err(Error::from("un init DBPool!"));
-            }
-            &DriverType::Mysql => {
-                let mut q = self.mysql.take().unwrap();
-                q = q.bind(t);
-                self.mysql = Some(q);
-            }
-            _ => {
-                return Err(Error::from("only support mysql type value!"));
-            }
-        }
-        return Ok(());
-    }
-
-    pub fn bind_pg_value<T>(&mut self, t: T) -> crate::Result<()>
-        where
-            T: Type<Postgres>,
-            T: Encode<Postgres>, {
-        match &self.driver_type {
-            &DriverType::None => {
-                return Err(Error::from("un init DBPool!"));
-            }
-            &DriverType::Postgres => {
-                let mut q = self.postgres.take().unwrap();
-                q = q.bind(t);
-                self.postgres = Some(q);
-            }
-            _ => {
-                return Err(Error::from("only support mysql type value!"));
-            }
-        }
-        return Ok(());
-    }
-
-    pub fn bind_sqlite_value<T>(&mut self, t: T) -> crate::Result<()>
-        where
-            T: Type<Sqlite>,
-            T: Encode<Sqlite>, {
-        match &self.driver_type {
-            &DriverType::None => {
-                return Err(Error::from("un init DBPool!"));
-            }
-            &DriverType::Sqlite => {
-                let mut q = self.sqlite.take().unwrap();
-                q = q.bind(t);
-                self.sqlite = Some(q);
-            }
-            _ => {
-                return Err(Error::from("only support mysql type value!"));
-            }
-        }
-        return Ok(());
-    }
 }
 
 
