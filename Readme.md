@@ -19,7 +19,7 @@
 | ------ | ------ |------ |------ |------ |------ |
 | rbatis | √     | easy   |   √     |    √     |   √     |  
 | sqlx   | √     | hard (depends on macros and env. variables) |   x     |   x     |   x     |  
-| diesel | x     | easy (lacks support for xml) |   x     |  x     |  x     |  
+| diesel | x     | hard (use FFI,unsafe) |   x     |  x     |  x     |  
 
 ##### Performance comparison with Go-lang (in a docker environment)
 | Framework     | Mysql（docker） | SQL statement（10k） | ns/operation（lower is better） | Qps(higher is better) |Memory usage(lower is better） |
