@@ -34,8 +34,8 @@
  (in theory, if all io operations are replaced with async_std/tokio, it could achieve higher concurrency than Go-lang)
 * supports logging, customizable logging based on `log` crate
 * used 100% safe Rust with `#![forbid(unsafe_code)]` enabled
-* [example (import into Clion!)](https://github.com/rbatis/rbatis/tree/master/example/src)
-* [website back end/admin example(import into Clion!)](https://github.com/rbatis/abs_admin)
+* [rbatis/example (import into Clion!)](https://github.com/rbatis/rbatis/tree/master/example/src)
+* [website back end example(import into Clion!)](https://github.com/rbatis/abs_admin)
 
 ##### Example Rust backend service https://github.com/rbatis/abs_admin
 
