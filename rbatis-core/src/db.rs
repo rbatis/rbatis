@@ -313,6 +313,9 @@ impl<'q> DBQuery<'q> {
                             q = q.bind(n.as_i64().unwrap());
                         }
                     }
+                    serde_json::Value::Bool(b) => {
+                        q = q.bind(Option::Some(b));
+                    }
                     _ => {
                         q = q.bind(Some(t.to_string().as_str()));
                     }
@@ -337,6 +340,9 @@ impl<'q> DBQuery<'q> {
                             q = q.bind(n.as_i64().unwrap());
                         }
                     }
+                    serde_json::Value::Bool(b) => {
+                        q = q.bind(Option::Some(b));
+                    }
                     _ => {
                         q = q.bind(Some(t.to_string().as_str()));
                     }
@@ -360,6 +366,9 @@ impl<'q> DBQuery<'q> {
                         } else if n.is_i64() {
                             q = q.bind(n.as_i64().unwrap());
                         }
+                    }
+                    serde_json::Value::Bool(b) => {
+                        q = q.bind(Option::Some(b));
                     }
                     _ => {
                         q = q.bind(Some(t.to_string().as_str()));
