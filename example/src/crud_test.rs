@@ -276,7 +276,10 @@ mod test {
     /// LEFT JOIN:
     /// RIGHT JOIN:
     /// FULL JOIN:
-    #[py_sql(rbatis, "SELECT a1.name as name,a2.create_time as create_time FROM test.biz_activity a1,biz_activity a2 where a1.id=a2.id and a1.name=#{name}")]
+    #[py_sql(rbatis, "SELECT a1.name as name,a2.create_time as create_time
+                      FROM test.biz_activity a1,biz_activity a2
+                      WHERE a1.id=a2.id
+                      AND a1.name=#{name}")]
     fn join_select(rbatis: &Rbatis, name: &str) -> Option<Vec<BizActivity>> {}
 
     #[async_std::test]
