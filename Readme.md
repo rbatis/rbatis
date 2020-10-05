@@ -185,7 +185,7 @@ rb.update_by_wrapper("", &activity, &w).await;
     ///
     #[sql(RB, "select * from biz_activity where id = ?")]
     fn select(name: &str) -> BizActivity {}
-    //其他写法： pub async fn select(name: &str) -> rbatis_core::Result<BizActivity> {}
+    //or： pub async fn select(name: &str) -> rbatis_core::Result<BizActivity> {}
 
     #[async_std::test]
     pub async fn test_macro() {
@@ -204,7 +204,7 @@ rb.update_by_wrapper("", &activity, &w).await;
                   if name != '':
                     and name=#{name}")]
     fn py_select(name: &str) -> Option<BizActivity> {}
-    //其他写法： pub async fn select(name: &str) -> rbatis_core::Result<BizActivity> {}
+    //or： pub async fn select(name: &str) -> rbatis_core::Result<BizActivity> {}
 
     #[async_std::test]
     pub async fn test_macro_py_select() {
@@ -476,14 +476,13 @@ async fn main() -> std::io::Result<()> {
 | ------ | ------ |
 | CRUD, with built-in CRUD template (built-in CRUD supports logical deletes)                  | √     |
 | LogSystem (logging component)                                          | √     | 
-| Tx(task/事务嵌套/注解声明式事务)                                | √     |   
+| Tx(task/Nested transactions)                                | √     |   
 | Py(using py-like xml-equivalent statement in SQL)                         | √     | 
-| SlowSqlCount(内置慢查询日志分析)                              | √     | 
 | async/await support                                             | √     | 
 | PagePlugin(Pagincation)                                         | √     |
-| LogicDelPlugin(逻辑删除插件)                                 | √    |
-| DataBaseConvertPlugin(数据库表结构转换为配置插件)               | x     | 
-| web(可视化Web UI)                                            | x     |  
+| LogicDelPlugin                                 | √    |
+| DataBaseConvertPlugin(The database table structure is converted to the configuration plug-in)    | x     | 
+| web(Web UI)                                            | x     |  
 
 
 * Conlusion: Assuming zero time consumed on IO, single threaded benchmark achieves 200K QPS or TPS, which is a few times more performant than GC languages like Go or java.
@@ -513,5 +512,6 @@ rbatis-core = { features = ["runtime-async-std","all-type"]}
 # TODO and Upcoming features
 
 
+## In order to achieve the satisfaction of ORM framework, your support is always our motivation, we are eager to welcome WeChat to donate to support us ~ or ~ star at the top right corner
 ## 为了称心如意的ORM框架，您的支持永远是我们的动力，迫切欢迎微信捐赠支持我们 ~或者~右上角点下star
 ![Image text](https://zhuxiujia.github.io/gomybatis.io/assets/wx_account.jpg)
