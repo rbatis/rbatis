@@ -33,12 +33,11 @@ use crate::plugin::page::{IPage, IPageRequest, Page, PagePlugin, RbatisPagePlugi
 use crate::sql::PageLimit;
 use crate::utils::error_util::ToResult;
 use crate::wrapper::Wrapper;
-use crossbeam_utils::atomic::AtomicCell;
 
 /// rbatis engine
 pub struct Rbatis {
     // the connection pool,use OnceCell init this
-    pub pool: AtomicCell<DBPool>,
+    pub pool: OnceCell<DBPool>,
     // the engine run some express for example:'1+1'=2
     pub engine: RbatisEngine,
     // map<mapper_name,map<method_name,NodeType>>
