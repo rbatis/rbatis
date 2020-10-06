@@ -45,6 +45,5 @@ async-trait = "0.1.31"
 
 futures-core = { version = "0.3.5" }
 crossbeam-queue = "0.2.3"
-crossbeam_utils = "0.7.2"
 once_cell = "1.4.1"
 dashmap = "3.11.10"
