@@ -6,7 +6,7 @@
 
 
 #### A highly performant ORM framework written in Rust, inspired by Mybatis and MybatisPlus. 
-#### Dynamic sql, no runtime, no Garbage Collector, and low Memory use. 
+#### Dynamic SQL, no runtime, no Garbage Collector, and low memory use. 
 #### Supports async_std, tokio
 #### This crate uses #![forbid(unsafe_code)] to ensure everything is implemented in 100% safe Rust.
 
@@ -19,13 +19,13 @@
 | ------ | ------ |------ |------ |------ |------ |
 | rbatis | √     | easy   |   √     |    √     |   √     |  
 | sqlx   | √     | hard (depends on macros and env. variables) |   x     |   x     |   x     |  
-| diesel | x     | hard (use FFI,unsafe) |   x     |  x     |  x     |  
+| diesel | x     | hard (use FFI, unsafe) |   x     |  x     |  x     |  
 
-##### Performance comparison with Go-lang (in a docker environment)
+##### Performance comparison with Golang (in a docker environment)
 | Framework     | Mysql（docker） | SQL statement（10k） | ns/operation（lower is better） | Qps(higher is better) |Memory usage(lower is better） |
 |  ------ | ------ |------ |------ |------ |------ |
-| Rust-rbatis/tokio  |  1CPU, 1G memoty    | select count(1) from table;    | 965649 ns/op   |  1035 Qps/s  |  2.1MB   |      
-| Go-GoMybatis/http   |  1CPU, 1G memory   | select count(1) from table;   | 1184503 ns/op  |  844  Qps/s   |  28.4MB  |     
+| Rust-rbatis/tokio  |  1 CPU, 1G memory    | select count(1) from table;    | 965649 ns/op   |  1035 Qps/s  |  2.1MB   |      
+| Go-GoMybatis/http   |  1 CPU, 1G memory   | select count(1) from table;   | 1184503 ns/op  |  844  Qps/s   |  28.4MB  |     
 
 * used json with serde_json for passing parameters and communication
 * high performance, single threaded benchmark can easily achieve 200,000 QPS - data returned from database directly (zero lookup time) on a Windows 10 6 core i7 with 16 GB memory machine. Performace will be better using multiple threads, and it outperforms Go's GoMyBatis.
@@ -484,7 +484,7 @@ async fn main() -> std::io::Result<()> {
 | web(Web UI)                                            | x     |  
 
 
-* Conlusion: Assuming zero time consumed on IO, single threaded benchmark achieves 200K QPS or TPS, which is a few times more performant than GC languages like Go or java.
+* Conlusion: Assuming zero time consumed on IO, single threaded benchmark achieves 200K QPS or TPS, which is a few times more performant than GC languages like Go or Java.
 
 ### FAQ
 * Support for DateTime and BigDecimal? <br/>
@@ -508,9 +508,9 @@ rbatis-core = { features = ["runtime-async-std","all-type"]}
 ### Related Projects
 * Logging: https://github.com/rbatis/fast_log
 
-# TODO and Upcoming features
+# TODO and upcoming features
 
 
-## In order to achieve the satisfaction of ORM framework, your support is always our motivation, we are eager to welcome WeChat to donate to support us ~ or ~ star at the top right corner
+## In order to achieve the satisfaction of this ORM framework, your support is always our motivation, we are eager to welcome WeChat to donate to support us ~ or ~ star at the top right corner
 ## 为了称心如意的ORM框架，您的支持永远是我们的动力，迫切欢迎微信捐赠支持我们 ~或者~右上角点下star
 ![Image text](https://zhuxiujia.github.io/gomybatis.io/assets/wx_account.jpg)
