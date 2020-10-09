@@ -6,6 +6,7 @@ use log::{error, info, LevelFilter, warn};
 use once_cell::sync::OnceCell;
 use serde::de::DeserializeOwned;
 use serde::ser::Serialize;
+use serde_json::Number;
 
 use rbatis_core::connection::Connection;
 use rbatis_core::cursor::Cursor;
@@ -32,6 +33,7 @@ use crate::plugin::logic_delete::{LogicDelete, RbatisLogicDeletePlugin};
 use crate::plugin::page::{IPage, IPageRequest, Page, PagePlugin, RbatisPagePlugin};
 use crate::sql::PageLimit;
 use crate::utils::error_util::ToResult;
+use crate::utils::page_util::get_count;
 use crate::wrapper::Wrapper;
 
 /// rbatis engine
@@ -423,8 +425,8 @@ impl Rbatis {
         let (count_sql, sql) = self.page_plugin.create_page_sql(&self.driver_type()?, tx_id, sql, args, page_request)?;
         if page_request.is_serch_count() {
             //make count sql
-            let total: Option<u64> = self.fetch_prepare(tx_id, count_sql.as_str(), args).await?;
-            page_result.set_total(total.unwrap_or(0));
+            let total: serde_json::Value = self.fetch_prepare(tx_id, count_sql.as_str(), args).await?;
+            page_result.set_total(get_count(&total).unwrap_or(0));
             page_result.pages = page_result.get_pages();
             if page_result.get_total() == 0 {
                 return Ok(page_result);
