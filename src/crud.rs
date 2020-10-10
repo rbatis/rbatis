@@ -73,6 +73,7 @@ pub trait CRUDEnable: Send + Sync + Serialize + DeserializeOwned {
     }
 
     /// make an Map<table_column,value>
+    ///TODO macro driver auto create this methods
     fn make_column_value_map(&self, db_type: &DriverType) -> Result<serde_json::Map<String, Value>> {
         let json = serde_json::to_value(self).unwrap_or(serde_json::Value::Null);
         if json.eq(&serde_json::Value::Null) {
@@ -85,6 +86,7 @@ pub trait CRUDEnable: Send + Sync + Serialize + DeserializeOwned {
     }
 
     ///return (value sql,args)
+    ///TODO macro driver auto create this methods
     fn make_value_sql_arg(&self, db_type: &DriverType, index: &mut usize) -> Result<(String, Vec<serde_json::Value>)> {
         let mut sql = String::new();
         let mut arr = vec![];
