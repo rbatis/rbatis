@@ -11,7 +11,9 @@ pub struct DateFormat {}
 impl ColumnFormat for DateFormat {
     fn format(&self, driver_type: &DriverType, column: &str) -> rbatis_core::Result<String> {
         let mut new_sql = String::new();
-        if driver_type.eq(&DriverType::Postgres) && (column.ends_with("date") || column.ends_with("time")) {
+        if driver_type.eq(&DriverType::Postgres) && (
+            column.ends_with("date") || column.ends_with("time")
+                || column.ends_with("Date") || column.ends_with("Time")) {
             new_sql = format!("{}::timestamp", column);
         }
         return Ok(new_sql);
