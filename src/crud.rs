@@ -51,7 +51,7 @@ pub trait CRUDEnable: Send + Sync + Serialize + DeserializeOwned {
     ///
     /// you also can impl this method for static string
     ///
-    fn table_fields() -> String {
+    fn table_columns() -> String {
         let bean: serde_json::Result<Self> = serde_json::from_str("{}");
         if bean.is_err() {
             //if json decode fail,return '*'
@@ -143,8 +143,8 @@ impl<T> CRUDEnable for Option<T> where T: CRUDEnable {
     }
 
     ///Bean's table fields
-    fn table_fields() -> String {
-        T::table_fields()
+    fn table_columns() -> String {
+        T::table_columns()
     }
 
 
@@ -278,7 +278,7 @@ impl CRUD for Rbatis {
         let where_sql = w.sql.as_str();
         let mut sql = String::new();
         if self.logic_plugin.is_some() {
-            sql = self.logic_plugin.as_ref().unwrap().create_remove_sql(&self.driver_type()?, T::table_name().as_str(), &T::table_fields(), make_where_sql(where_sql).as_str())?;
+            sql = self.logic_plugin.as_ref().unwrap().create_remove_sql(&self.driver_type()?, T::table_name().as_str(), &T::table_columns(), make_where_sql(where_sql).as_str())?;
         } else {
             sql = format!("DELETE FROM {} {}", T::table_name(), make_where_sql(where_sql));
         }
@@ -288,7 +288,7 @@ impl CRUD for Rbatis {
     async fn remove_by_id<T>(&self, tx_id: &str, id: &T::IdType) -> Result<u64> where T: CRUDEnable {
         let mut sql = String::new();
         if self.logic_plugin.is_some() {
-            sql = self.logic_plugin.as_ref().unwrap().create_remove_sql(&self.driver_type()?, T::table_name().as_str(), &T::table_fields(), format!(" WHERE id = {}", id).as_str())?;
+            sql = self.logic_plugin.as_ref().unwrap().create_remove_sql(&self.driver_type()?, T::table_name().as_str(), &T::table_columns(), format!(" WHERE id = {}", id).as_str())?;
         } else {
             sql = format!("DELETE FROM {} WHERE id = {}", T::table_name(), id);
         }
@@ -411,12 +411,12 @@ fn make_select_sql<T>(rb: &Rbatis, w: &Wrapper) -> Result<String> where T: CRUDE
     let mut sql = String::new();
     if rb.logic_plugin.is_some() {
         let logic_ref = rb.logic_plugin.as_ref().unwrap();
-        return logic_ref.create_select_sql(&rb.driver_type()?, &T::table_name(), &T::table_fields(), &where_sql);
+        return logic_ref.create_select_sql(&rb.driver_type()?, &T::table_name(), &T::table_columns(), &where_sql);
     }
     if !where_sql.is_empty() {
-        sql = format!("SELECT {} FROM {} WHERE {}", T::table_fields(), T::table_name(), where_sql);
+        sql = format!("SELECT {} FROM {} WHERE {}", T::table_columns(), T::table_name(), where_sql);
     } else {
-        sql = format!("SELECT {} FROM {}", T::table_fields(), T::table_name());
+        sql = format!("SELECT {} FROM {}", T::table_columns(), T::table_name());
     }
     Ok(sql)
 }
