@@ -73,8 +73,8 @@ pub trait CRUDEnable: Send + Sync + Serialize + DeserializeOwned {
     }
 
     /// make an Map<table_field,value>
-    fn make_column_value_map(db_type: &DriverType, arg: &Self) -> Result<serde_json::Map<String, Value>> {
-        let json = serde_json::to_value(arg).unwrap_or(serde_json::Value::Null);
+    fn make_column_value_map(&self, db_type: &DriverType) -> Result<serde_json::Map<String, Value>> {
+        let json = serde_json::to_value(self).unwrap_or(serde_json::Value::Null);
         if json.eq(&serde_json::Value::Null) {
             return Err(Error::from("[rbaits] to_value_map() fail!"));
         }
@@ -85,11 +85,11 @@ pub trait CRUDEnable: Send + Sync + Serialize + DeserializeOwned {
     }
 
     ///return (sql,args)
-    fn make_sql_arg(index: &mut usize, db_type: &DriverType, arg: &Self) -> Result<(String, Vec<serde_json::Value>)> {
+    fn make_sql_arg(&self, index: &mut usize, db_type: &DriverType) -> Result<(String, Vec<serde_json::Value>)> {
         let mut sql = String::new();
         let mut arr = vec![];
         let chains = Self::format_chain();
-        let map = Self::make_column_value_map(db_type, arg)?;
+        let map = Self::make_column_value_map(self, db_type)?;
         for (k, v) in map {
             //cast convert
             let mut temp_sql = db_type.stmt_convert(*index);
@@ -138,18 +138,18 @@ impl<T> CRUDEnable for Option<T> where T: CRUDEnable {
         T::format_chain()
     }
 
-    fn make_column_value_map(db_type: &DriverType, arg: &Self) -> Result<serde_json::Map<String, Value>> {
-        if arg.is_none() {
+    fn make_column_value_map(&self, db_type: &DriverType) -> Result<serde_json::Map<String, Value>> {
+        if self.is_none() {
             return Err(rbatis_core::Error::from("[rbatis] can not make_column_value_map() for None value!"));
         }
-        T::make_column_value_map(db_type, arg.as_ref().unwrap())
+        T::make_column_value_map(self.as_ref().unwrap(), db_type)
     }
 
-    fn make_sql_arg(index: &mut usize, db_type: &DriverType, arg: &Self) -> Result<(String, Vec<serde_json::Value>)> {
-        if arg.is_none() {
+    fn make_sql_arg(&self, index: &mut usize, db_type: &DriverType) -> Result<(String, Vec<serde_json::Value>)> {
+        if self.is_none() {
             return Err(rbatis_core::Error::from("[rbatis] can not make_sql_arg() for None value!"));
         }
-        T::make_sql_arg(index, db_type, arg.as_ref().unwrap())
+        T::make_sql_arg(self.as_ref().unwrap(), index, db_type)
     }
 }
 
@@ -224,7 +224,7 @@ impl CRUD for Rbatis {
     async fn save<T>(&self, tx_id: &str, entity: &T) -> Result<u64>
         where T: CRUDEnable {
         let mut index = 0;
-        let (values, args) = T::make_sql_arg(&mut index, &self.driver_type()?, entity)?;
+        let (values, args) = entity.make_sql_arg(&mut index, &self.driver_type()?)?;
         let sql = format!("INSERT INTO {} ({}) VALUES ({})", T::table_name(), T::table_columns(), values);
         return self.exec_prepare(tx_id, sql.as_str(), &args).await;
     }
@@ -248,7 +248,7 @@ impl CRUD for Rbatis {
             if columns.is_empty() {
                 columns = T::table_columns();
             }
-            let (values, args) = T::make_sql_arg(&mut field_index, &self.driver_type()?, &x)?;
+            let (values, args) = x.make_sql_arg(&mut field_index, &self.driver_type()?)?;
             value_arr = value_arr + format!("({}),", values).as_str();
             for x in args {
                 arg_arr.push(x);
@@ -305,7 +305,7 @@ impl CRUD for Rbatis {
         };
         let mut args = vec![];
         let mut idx = 0;
-        let map = T::make_column_value_map(&self.driver_type()?, arg)?;
+        let map = arg.make_column_value_map(&self.driver_type()?)?;
         let driver_type = &self.driver_type()?;
         let mut sets = String::new();
         for (k, v) in map {
@@ -332,7 +332,7 @@ impl CRUD for Rbatis {
     }
 
     async fn update_by_id<T>(&self, tx_id: &str, arg: &T) -> Result<u64> where T: CRUDEnable {
-        let map = T::make_column_value_map(&self.driver_type()?, arg)?;
+        let map = arg.make_column_value_map(&self.driver_type()?)?;
         self.update_by_wrapper(tx_id, arg, Wrapper::new(&self.driver_type()?).eq("id", map.get("id")), false).await
     }
 
