@@ -390,10 +390,15 @@ impl Wrapper {
         self.and();
         let v = serde_json::to_value(obj).unwrap_or(serde_json::Value::Null);
         self.sql.push_str(column);
-        self.sql.push_str(format!(" LIKE '%{}%'", self.driver_type.stmt_convert(self.args.len())).as_str());
-        self.args.push(v);
+        self.sql.push_str(format!(" LIKE {}", self.driver_type.stmt_convert(self.args.len())).as_str());
+        if v.is_string() {
+            self.args.push(json!("%".to_string()+v.as_str().unwrap()+"%"));
+        } else {
+            self.args.push(json!("%".to_string()+v.to_string().as_str()+"%"));
+        }
         self
     }
+
     pub fn like_left<T>(&mut self, column: &str, obj: T) -> &mut Self
         where T: Serialize {
         self.and();
@@ -556,7 +561,7 @@ mod test {
         let mut map = Map::new();
         map.insert("a".to_string(), json!("1"));
         let mut b = Bencher::new(100000);
-        b.iter(&mut map,|m| {
+        b.iter(&mut map, |m| {
             let w = Wrapper::new(&DriverType::Mysql).eq("id", 1)
                 .ne("id", 1)
                 .in_array("id", &[1, 2, 3])
