@@ -84,8 +84,8 @@ pub trait CRUDEnable: Send + Sync + Serialize + DeserializeOwned {
         return Ok(json.as_object().unwrap().to_owned());
     }
 
-    ///return (sql,args)
-    fn make_sql_arg(&self, db_type: &DriverType, index: &mut usize) -> Result<(String, Vec<serde_json::Value>)> {
+    ///return (value sql,args)
+    fn make_value_sql_arg(&self, db_type: &DriverType, index: &mut usize) -> Result<(String, Vec<serde_json::Value>)> {
         let mut sql = String::new();
         let mut arr = vec![];
         let chains = Self::format_chain();
@@ -145,11 +145,11 @@ impl<T> CRUDEnable for Option<T> where T: CRUDEnable {
         T::make_column_value_map(self.as_ref().unwrap(), db_type)
     }
 
-    fn make_sql_arg(&self, db_type: &DriverType, index: &mut usize) -> Result<(String, Vec<serde_json::Value>)> {
+    fn make_value_sql_arg(&self, db_type: &DriverType, index: &mut usize) -> Result<(String, Vec<serde_json::Value>)> {
         if self.is_none() {
             return Err(rbatis_core::Error::from("[rbatis] can not make_sql_arg() for None value!"));
         }
-        T::make_sql_arg(self.as_ref().unwrap(), db_type, index)
+        T::make_value_sql_arg(self.as_ref().unwrap(), db_type, index)
     }
 }
 
@@ -224,7 +224,7 @@ impl CRUD for Rbatis {
     async fn save<T>(&self, tx_id: &str, entity: &T) -> Result<u64>
         where T: CRUDEnable {
         let mut index = 0;
-        let (values, args) = entity.make_sql_arg(&self.driver_type()?, &mut index)?;
+        let (values, args) = entity.make_value_sql_arg(&self.driver_type()?, &mut index)?;
         let sql = format!("INSERT INTO {} ({}) VALUES ({})", T::table_name(), T::table_columns(), values);
         return self.exec_prepare(tx_id, sql.as_str(), &args).await;
     }
@@ -248,7 +248,7 @@ impl CRUD for Rbatis {
             if columns.is_empty() {
                 columns = T::table_columns();
             }
-            let (values, args) = x.make_sql_arg(&self.driver_type()?, &mut field_index)?;
+            let (values, args) = x.make_value_sql_arg(&self.driver_type()?, &mut field_index)?;
             value_arr = value_arr + format!("({}),", values).as_str();
             for x in args {
                 arg_arr.push(x);
