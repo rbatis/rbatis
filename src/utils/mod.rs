@@ -7,4 +7,3 @@ pub mod bencher;
 pub mod join_in;
 pub mod error_util;
 pub mod array_util;
-pub mod page_util;
