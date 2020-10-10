@@ -9,14 +9,13 @@ use crate::crud::ColumnFormat;
 pub struct DateFormat {}
 
 impl ColumnFormat for DateFormat {
-    fn format(&self, driver_type: &DriverType, column: &str) -> rbatis_core::Result<String> {
-        let mut new_sql = column.to_string();
+    fn format(&self, driver_type: &DriverType, column: &str, value_sql: &mut String) -> rbatis_core::Result<()> {
         if driver_type.eq(&DriverType::Postgres) && (
             column.ends_with("date") || column.ends_with("time")
                 || column.ends_with("Date") || column.ends_with("Time")) {
-            new_sql = format!("{}::timestamp", column);
+            *value_sql = format!("{}::timestamp", value_sql);
         }
-        return Ok(new_sql);
+        return Ok(());
     }
 }
 

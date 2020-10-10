@@ -99,7 +99,7 @@ pub trait CRUDEnable: Send + Sync + Serialize + DeserializeOwned {
             let mut column_sql = db_type.stmt_convert(*index);
             // cast column name
             for chain in &chains {
-                column_sql = chain.format(&db_type, &column_sql)?;
+                chain.format(&db_type, column, &mut column_sql)?;
             }
             sql = sql + column_sql.as_str() + ",";
             arr.push(v.to_owned());
@@ -120,7 +120,9 @@ pub trait CRUDEnable: Send + Sync + Serialize + DeserializeOwned {
 
 /// cast sql cloumn and return new sql
 pub trait ColumnFormat: Send + Sync {
-    fn format(&self, driver_type: &DriverType, column: &str) -> rbatis_core::Result<String>;
+    ///column: table column
+    ///value_sql: set column = value_sql
+    fn format(&self, driver_type: &DriverType, column: &str, value_sql: &mut String) -> rbatis_core::Result<()>;
 }
 
 impl<T> CRUDEnable for Option<T> where T: CRUDEnable {
@@ -310,20 +312,20 @@ impl CRUD for Rbatis {
 
         let chain = T::format_chain();
         let mut sets = String::new();
-        for (k, v) in map {
+        for (column, v) in map {
             //filter id
-            if k.eq("id") {
+            if column.eq("id") {
                 continue;
             }
             //filter null
             if !update_null_value && v.is_null() {
                 continue;
             }
-            let mut column = driver_type.stmt_convert(args.len());
+            let mut value_column = driver_type.stmt_convert(args.len());
             for item in &chain {
-                column = item.format(driver_type, &k)?;
+                item.format(driver_type, &column, &mut value_column)?;
             }
-            sets.push_str(format!(" {} = {},", k, column).as_str());
+            sets.push_str(format!(" {} = {},", column, value_column).as_str());
             args.push(v);
         }
         sets.pop();
