@@ -89,13 +89,17 @@ pub trait CRUDEnable: Send + Sync + Serialize + DeserializeOwned {
         let mut sql = String::new();
         let mut arr = vec![];
         let chains = Self::format_chain();
-        let map = Self::make_column_value_map(self, db_type)?;
-        for (k, v) in map {
+
+        let cols = Self::table_columns();
+        let columns: Vec<&str> = cols.split(",").collect();
+        let map = self.make_column_value_map(db_type)?;
+        for column in &columns {
+            let v = map.get(&column.to_string()).unwrap_or(&serde_json::Value::Null);
             //cast convert
             let mut temp_sql = db_type.stmt_convert(*index);
             // cast column name
             for chain in &chains {
-                if chain.need_format(db_type, &k) {
+                if chain.need_format(db_type, column) {
                     let (sql, value) = chain.do_format(&db_type, &temp_sql, &v)?;
                     temp_sql = sql;
                 }
