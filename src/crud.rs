@@ -96,15 +96,14 @@ pub trait CRUDEnable: Send + Sync + Serialize + DeserializeOwned {
         for column in &columns {
             let v = map.get(&column.to_string()).unwrap_or(&serde_json::Value::Null);
             //cast convert
-            let mut temp_sql = db_type.stmt_convert(*index);
+            let mut column_sql = db_type.stmt_convert(*index);
             // cast column name
             for chain in &chains {
                 if chain.need_format(db_type, column) {
-                    let (sql, value) = chain.do_format(&db_type, &temp_sql, &v)?;
-                    temp_sql = sql;
+                    column_sql = chain.do_format(&db_type, &column_sql)?;
                 }
             }
-            sql = sql + temp_sql.as_str() + ",";
+            sql = sql + column_sql.as_str() + ",";
             arr.push(v.to_owned());
             *index += 1;
         }
@@ -124,7 +123,7 @@ pub trait CRUDEnable: Send + Sync + Serialize + DeserializeOwned {
 /// cast sql cloumn and return new sql
 pub trait ColumnFormat {
     fn need_format(&self, driver_type: &DriverType, column: &str) -> bool;
-    fn do_format(&self, driver_type: &DriverType, sql: &str, value: &serde_json::Value) -> rbatis_core::Result<(String, Value)>;
+    fn do_format(&self, driver_type: &DriverType, sql: &str) -> rbatis_core::Result<String>;
 }
 
 impl<T> CRUDEnable for Option<T> where T: CRUDEnable {
