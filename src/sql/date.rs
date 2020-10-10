@@ -9,24 +9,10 @@ use crate::crud::ColumnFormat;
 pub struct DateFormat {}
 
 impl ColumnFormat for DateFormat {
-    fn need_format(&self, driver_type: &DriverType, column: &str) -> bool {
-        //DateTime only pg need format
-        if !driver_type.eq(&DriverType::Postgres) {
-            return false;
-        }
-        if column.contains("date") || column.contains("time") {
-            return true;
-        }
-        return false;
-    }
-
-    fn do_format(&self, driver_type: &DriverType, column: &str) -> rbatis_core::Result<String> {
+    fn format(&self, driver_type: &DriverType, column: &str) -> rbatis_core::Result<String> {
         let mut new_sql = String::new();
-        match driver_type {
-            DriverType::Postgres => {
-                new_sql = format!("{}::timestamp", column);
-            }
-            _ => {}
+        if driver_type.eq(&DriverType::Postgres) && (column.contains("date") || column.contains("time")) {
+            new_sql = format!("{}::timestamp", column);
         }
         return Ok(new_sql);
     }
