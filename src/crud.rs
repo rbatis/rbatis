@@ -119,7 +119,7 @@ pub trait CRUDEnable: Send + Sync + Serialize + DeserializeOwned {
 }
 
 /// cast sql cloumn and return new sql
-pub trait ColumnFormat {
+pub trait ColumnFormat: Send + Sync {
     fn format(&self, driver_type: &DriverType, column: &str) -> rbatis_core::Result<String>;
 }
 
@@ -307,6 +307,8 @@ impl CRUD for Rbatis {
         let mut idx = 0;
         let map = arg.make_column_value_map(&self.driver_type()?)?;
         let driver_type = &self.driver_type()?;
+
+        let chain = T::format_chain();
         let mut sets = String::new();
         for (k, v) in map {
             //filter id
@@ -317,7 +319,11 @@ impl CRUD for Rbatis {
             if !update_null_value && v.is_null() {
                 continue;
             }
-            sets.push_str(format!(" {} = {},", k, driver_type.stmt_convert(args.len())).as_str());
+            let mut column = driver_type.stmt_convert(args.len());
+            for item in &chain {
+                column = item.format(driver_type, &k)?;
+            }
+            sets.push_str(format!(" {} = {},", k, column).as_str());
             args.push(v);
         }
         sets.pop();
@@ -332,8 +338,16 @@ impl CRUD for Rbatis {
     }
 
     async fn update_by_id<T>(&self, tx_id: &str, arg: &T) -> Result<u64> where T: CRUDEnable {
-        let map = arg.make_column_value_map(&self.driver_type()?)?;
-        self.update_by_wrapper(tx_id, arg, Wrapper::new(&self.driver_type()?).eq("id", map.get("id")), false).await
+        let map = serde_json::to_value(arg).unwrap();
+        if !map.is_object() {
+            return Err(rbatis_core::Error::from("[rbatis] update_by_id() arg must be an object/struct!"));
+        }
+        let map = map.as_object().unwrap();
+        let id = map.get("id");
+        if id.is_none() {
+            return Err(rbatis_core::Error::from("[rbatis] update_by_id() arg's id can no be none!"));
+        }
+        self.update_by_wrapper(tx_id, arg, Wrapper::new(&self.driver_type()?).eq("id", id), false).await
     }
 
     async fn update_batch_by_id<T>(&self, tx_id: &str, args: &[T]) -> Result<u64> where T: CRUDEnable {
