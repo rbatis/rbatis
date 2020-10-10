@@ -51,13 +51,6 @@ pub(crate) fn impl_macro_sql(target_fn: &ItemFn, args: &AttributeArgs) -> TokenS
             _ => {}
         }
     }
-
-    //check sql
-    let arg_num = string_util::find_all_sql_opt(&sql);
-    if arg_num != fn_arg_name_vec.len() {
-        panic!("[rbatis] fn arg len must equal to the sql's arg len!  fn: {}", func_name);
-    }
-
     let sql_ident = sql_meta;
     let func_args_stream = target_fn.sig.inputs.to_token_stream();
     let func_name_ident = Ident::new(&func_name, Span::call_site());
