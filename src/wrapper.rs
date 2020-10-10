@@ -389,13 +389,15 @@ impl Wrapper {
         where T: Serialize {
         self.and();
         let v = serde_json::to_value(obj).unwrap_or(serde_json::Value::Null);
+        let mut v_str = String::new();
+        if v.is_string() {
+            v_str = "%".to_string() + v.as_str().unwrap() + "%";
+        } else {
+            v_str = "%".to_string() + v.to_string().as_str() + "%";
+        }
         self.sql.push_str(column);
         self.sql.push_str(format!(" LIKE {}", self.driver_type.stmt_convert(self.args.len())).as_str());
-        if v.is_string() {
-            self.args.push(json!("%".to_string()+v.as_str().unwrap()+"%"));
-        } else {
-            self.args.push(json!("%".to_string()+v.to_string().as_str()+"%"));
-        }
+        self.args.push(json!(v_str));
         self
     }
 
