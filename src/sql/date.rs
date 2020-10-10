@@ -20,15 +20,15 @@ impl ColumnFormat for DateFormat {
         return false;
     }
 
-    fn do_format(&self, driver_type: &DriverType, sql: &str, value: &serde_json::Value) -> rbatis_core::Result<(String, Value)> {
+    fn do_format(&self, driver_type: &DriverType, column: &str) -> rbatis_core::Result<String> {
         let mut new_sql = String::new();
         match driver_type {
             DriverType::Postgres => {
-                new_sql = format!("{}::timestamp", sql);
+                new_sql = format!("{}::timestamp", column);
             }
             _ => {}
         }
-        return Ok((new_sql, value.to_owned()));
+        return Ok(new_sql);
     }
 }
 
