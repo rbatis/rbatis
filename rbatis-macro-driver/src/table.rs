@@ -75,7 +75,7 @@ pub(crate) fn impl_macro(ast: &syn::DeriveInput) -> TokenStream {
                  return rbatis::utils::string_util::to_snake_name(&name);
             }
 
-            fn table_fields() -> String{
+            fn table_columns() -> String{
                  #fields
             }
         }
