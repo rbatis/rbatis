@@ -1,8 +1,9 @@
 use proc_macro2::{Ident, Span};
-use quote::quote;
+use quote::{format_ident, quote};
 use quote::ToTokens;
 use syn;
 use syn::{AttributeArgs, Data, FnArg, ItemFn, parse_macro_input, ReturnType};
+use syn::ext::IdentExt;
 
 use crate::proc_macro::TokenStream;
 
@@ -48,7 +49,7 @@ pub(crate) fn impl_macro(ast: &syn::DeriveInput) -> TokenStream {
         syn::Data::Struct(s) => {
             let mut index = 0;
             for field in &s.fields {
-                let field_name = &field.ident.to_token_stream().to_string();
+                let field_name = &field.ident.as_ref().map(|ele| ele.unraw()).to_token_stream().to_string();
                 if index == 0 {
                     fields = quote! {
                        #fields+#field_name
