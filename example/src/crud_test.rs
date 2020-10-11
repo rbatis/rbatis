@@ -15,6 +15,18 @@ mod test {
     use rbatis_core::value::DateTimeNow;
     use rbatis_macro_driver::sql;
 
+    #[test]
+    pub fn test_raw_identifiers() {
+        #[derive(CRUDEnable, Serialize, Deserialize, Clone, Debug)]
+        pub struct BizActivity {
+            pub id: Option<String>,
+            // pub type: Option<String>, // type is a keyword, so need to named `r#type`.
+            pub r#type: Option<String>,
+        }
+
+        assert_eq!("id,type".to_string(), BizActivity::table_columns());
+    }
+
     #[derive(CRUDEnable, Serialize, Deserialize, Clone, Debug)]
     pub struct BizActivity {
         pub id: Option<String>,
