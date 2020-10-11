@@ -463,6 +463,7 @@ impl Wrapper {
         self
     }
 
+    /// gen sql: * in (*,*,*)
     pub fn in_array<T>(&mut self, column: &str, obj: &[T]) -> &mut Self
         where T: Serialize {
         self.and();
@@ -481,6 +482,12 @@ impl Wrapper {
         sqls.pop();
         self.sql.push_str(format!(" IN ({})", sqls).as_str());
         self
+    }
+
+    /// gen sql: * in (*,*,*)
+    pub fn in_<T>(&mut self, column: &str, obj: &[T]) -> &mut Self
+        where T: Serialize {
+        self.in_array(column,obj)
     }
 
     pub fn not_in<T>(&mut self, column: &str, obj: &[T]) -> &mut Self
@@ -585,6 +592,7 @@ mod test {
             let w = Wrapper::new(&DriverType::Mysql).eq("id", 1)
                 .ne("id", 1)
                 .in_array("id", &[1, 2, 3])
+                .in_("id",&[1,2,3])
                 .not_in("id", &[1, 2, 3])
                 .all_eq(&m)
                 .like("name", 1)
