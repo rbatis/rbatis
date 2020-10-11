@@ -4,7 +4,7 @@ use syn::{AttributeArgs, Data, FnArg, ItemFn, parse_macro_input, ReturnType};
 
 use crate::proc_macro::TokenStream;
 
-mod table;
+mod crud_enable;
 mod sql;
 mod string_util;
 mod py_sql;
@@ -16,7 +16,7 @@ pub fn hello_macro_derive(input: TokenStream) -> TokenStream {
     let ast = syn::parse(input).unwrap();
 
     // 构建 trait 实现
-    table::impl_macro(&ast)
+    crud_enable::impl_macro(&ast)
 }
 
 
