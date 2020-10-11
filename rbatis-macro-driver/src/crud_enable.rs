@@ -1,5 +1,5 @@
 use proc_macro2::{Ident, Span};
-use quote::{format_ident, quote};
+use quote::quote;
 use quote::ToTokens;
 use syn;
 use syn::{AttributeArgs, Data, FnArg, ItemFn, parse_macro_input, ReturnType};
