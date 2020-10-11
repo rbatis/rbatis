@@ -405,9 +405,15 @@ impl Wrapper {
         where T: Serialize {
         self.and();
         let v = serde_json::to_value(obj).unwrap_or(serde_json::Value::Null);
+        let mut v_str = String::new();
+        if v.is_string() {
+            v_str = format!("%{}", v.as_str().unwrap());
+        } else {
+            v_str = format!("%{}", v.to_string());
+        }
         self.sql.push_str(column);
-        self.sql.push_str(format!(" LIKE '%{}'", self.driver_type.stmt_convert(self.args.len())).as_str());
-        self.args.push(v);
+        self.sql.push_str(format!(" LIKE {}", self.driver_type.stmt_convert(self.args.len())).as_str());
+        self.args.push(json!(v_str));
         self
     }
 
@@ -415,9 +421,15 @@ impl Wrapper {
         where T: Serialize {
         self.and();
         let v = serde_json::to_value(obj).unwrap_or(serde_json::Value::Null);
+        let mut v_str = String::new();
+        if v.is_string() {
+            v_str = format!("{}%", v.as_str().unwrap());
+        } else {
+            v_str = format!("{}%", v.to_string());
+        }
         self.sql.push_str(column);
-        self.sql.push_str(format!(" LIKE '{}%'", self.driver_type.stmt_convert(self.args.len())).as_str());
-        self.args.push(v);
+        self.sql.push_str(format!(" LIKE {}", self.driver_type.stmt_convert(self.args.len())).as_str());
+        self.args.push(json!(v_str));
         self
     }
 
@@ -425,9 +437,15 @@ impl Wrapper {
         where T: Serialize {
         self.and();
         let v = serde_json::to_value(obj).unwrap_or(serde_json::Value::Null);
+        let mut v_str = String::new();
+        if v.is_string() {
+            v_str = format!("%{}%", v.as_str().unwrap());
+        } else {
+            v_str = format!("%{}%", v.to_string());
+        }
         self.sql.push_str(column);
-        self.sql.push_str(format!(" NOT LIKE '%{}%'", self.driver_type.stmt_convert(self.args.len())).as_str());
-        self.args.push(v);
+        self.sql.push_str(format!(" NOT LIKE {}", self.driver_type.stmt_convert(self.args.len())).as_str());
+        self.args.push(json!(v_str));
         self
     }
 
