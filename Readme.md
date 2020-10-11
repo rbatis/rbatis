@@ -91,7 +91,7 @@ pub struct BizActivity {
 //    fn table_name()->String{
 //        "biz_activity".to_string()
 //    }
-//    fn table_fields()->String{
+//    fn table_columns()->String{
 //        "id,name,delete_flag".to_string()
 //    }
 //}
