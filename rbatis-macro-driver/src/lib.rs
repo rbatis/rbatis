@@ -6,7 +6,6 @@ use crate::proc_macro::TokenStream;
 
 mod crud_enable;
 mod sql;
-mod string_util;
 mod py_sql;
 
 #[proc_macro_derive(CRUDEnable)]
