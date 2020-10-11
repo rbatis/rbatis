@@ -86,7 +86,6 @@ pub trait CRUDEnable: Send + Sync + Serialize + DeserializeOwned {
     }
 
     ///return (value sql,args)
-    ///TODO macro driver auto create this methods
     fn make_value_sql_arg(&self, db_type: &DriverType, index: &mut usize) -> Result<(String, Vec<serde_json::Value>)> {
         let mut sql = String::new();
         let mut arr = vec![];
