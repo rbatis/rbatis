@@ -5,7 +5,6 @@ use syn;
 use syn::{AttributeArgs, Data, FnArg, ItemFn, parse_macro_input, ReturnType};
 
 use crate::proc_macro::TokenStream;
-use crate::string_util;
 
 ///TODO Redundant code deletion
 pub(crate) fn impl_macro_py_sql(target_fn: &ItemFn, args: &AttributeArgs) -> TokenStream {
