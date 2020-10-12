@@ -48,6 +48,9 @@ fn test_node_run() {
         Eq { express: "1 != null", eq: json!(true) },
         Eq { express: "1 + 2 != nil && 1 > 0 ", eq: json!(true) },
         Eq { express: "1 + 2 != nil && 2 < b*8 ", eq: json!(true) },
+        Eq { express: "-1 != nil", eq: json!(true) },
+        Eq { express: "-1 != -2 && -1 == 2-3 ", eq: json!(true) },
+        Eq { express: "-1 == a*-1 ", eq: json!(true) },
     ];
 
 

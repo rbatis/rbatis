@@ -155,17 +155,15 @@ pub fn parser_tokens(s: &String, opt_map: &OptMap) -> Vec<String> {
         //opt node
         if is_opt {
             //println!("is opt:{}", item);
-            if result.len() == 0 && item.eq(&'-') {
-                temp_arg.push(item);
-                continue;
+            if item.eq(&'-') && (result.len() == 0 || opt_map.is_opt(result.back().unwrap_or(&"".to_string()))) {
+                trim_push_back("0", &mut result);
+            }
+            if item.eq(&'+') && (result.len() == 0 || opt_map.is_opt(result.back().unwrap_or(&"".to_string()))) {
+                trim_push_back("0", &mut result);
             }
             if result.len() > 0 {
                 let def = String::new();
                 let back = result.back().unwrap_or(&def).clone();
-                if back.len() >= 2 && item.eq(&'-') {
-                    temp_arg.push(item);
-                    continue;
-                }
                 if back != "" && opt_map.is_opt(back.as_str()) {
                     result.pop_back();
                     let mut new_item = back.clone().to_string();
@@ -185,7 +183,7 @@ pub fn parser_tokens(s: &String, opt_map: &OptMap) -> Vec<String> {
     return v;
 }
 
-fn trim_push_back(arg: &String, list: &mut LinkedList<String>) {
+fn trim_push_back(arg: &str, list: &mut LinkedList<String>) {
     let trim_str = arg.trim().to_string();
     if trim_str.is_empty() {
         return;
