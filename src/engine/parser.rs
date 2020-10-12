@@ -16,7 +16,7 @@ pub fn parse(express: &str, opt_map: &OptMap) -> Result<Node, rbatis_core::Error
         if node.node_type == NOpt {
             let is_allow_opt = opt_map.is_allow_opt(item.as_str());
             if !is_allow_opt {
-                panic!("[rbatis] find not support opt:".to_owned() + item.as_str());
+                panic!("[rbatis] py parser find not support opt: {} ,in express: {}", &item, &express);
             }
         }
         nodes.push(Box::new(node));
