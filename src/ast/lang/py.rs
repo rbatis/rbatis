@@ -143,23 +143,11 @@ impl Py {
                                 }
                             }
                             NodeType::NString(node) => {
-                                let mut nodes = vec![];
-                                let mut news = node.value.clone();
                                 for x in &parserd {
                                     match x {
-                                        NodeType::NString(new_snode) => {
-                                            news = news + new_snode.value.as_str();
-                                            *node = StringNode::new(news.as_str());
-                                        }
                                         parserd => {
-                                            let clone_parserd = parserd.clone();
-                                            nodes.push(clone_parserd);
+                                            pys.push(parserd.clone());
                                         }
-                                    }
-                                }
-                                if !nodes.is_empty() {
-                                    for x in nodes {
-                                        pys.push(x);
                                     }
                                 }
                             }
@@ -355,7 +343,7 @@ pub fn test_py_interpreter_parse() {
 #[test]
 pub fn test_exec() {
     let s = "SELECT * FROM biz_activity
-      Where del = 2
+      Where del = 0
     if  name!=null:
       name = #{name}
     AND delete_flag1 = #{del}
@@ -377,7 +365,7 @@ pub fn test_exec() {
           AND age = 0
     WHERE id  = '2';";
     let pys = Py::parse(s).unwrap();
-    //println!("{:?}", pys);
+    println!("{:#?}", pys);
     //for x in &pys {
     // println!("{:?}", x.clone());
     //}
