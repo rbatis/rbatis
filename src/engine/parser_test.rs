@@ -17,7 +17,8 @@ use crate::utils::time_util;
 
 #[test]
 fn test_parser() {
-    let box_node = parser::parse("a == 1 && a != 0", &OptMap::new()).unwrap();
+    let box_node = parser::parse("-1 != -2", &OptMap::new()).unwrap();
+    println!("{:#?}", &box_node);
     let john = json!({
         "a":1,
         "name": "John Doe",
