@@ -2,7 +2,7 @@ use proc_macro2::{Ident, Span};
 use quote::quote;
 use quote::ToTokens;
 use syn;
-use syn::{AttributeArgs, Data, FnArg, ItemFn, parse_macro_input, ReturnType};
+use syn::{AttributeArgs, Data, parse_macro_input, ReturnType};
 use syn::ext::IdentExt;
 
 use crate::proc_macro::TokenStream;
@@ -40,7 +40,6 @@ fn find_id_type_ident(arg: &syn::Data) -> Ident {
 
 
 pub(crate) fn impl_macro(ast: &syn::DeriveInput) -> TokenStream {
-    println!("............proc_macro_struct sql start............");
     let name = &ast.ident;
     let id_type = find_id_type_ident(&ast.data);
     /// gen fields token
@@ -65,15 +64,17 @@ pub(crate) fn impl_macro(ast: &syn::DeriveInput) -> TokenStream {
         _ => {}
     }
 
+    //gen table name
+    let mut table_name = name.to_string();
+    let names: Vec<&str> = table_name.split("::").collect();
+    table_name = names.get(names.len() - 1).unwrap().to_string();
+    table_name = to_snake_name(&table_name);
     let gen = quote! {
         impl CRUDEnable for #name {
             type IdType = #id_type;
 
             fn table_name() -> String {
-                 let mut name = stringify!(#name).to_string();
-                 let names: Vec<&str> = name.split("::").collect();
-                 name = names.get(names.len() - 1).unwrap().to_string();
-                 return rbatis::utils::string_util::to_snake_name(&name);
+                 #table_name.to_string()
             }
 
             fn table_columns() -> String{
@@ -81,7 +82,24 @@ pub(crate) fn impl_macro(ast: &syn::DeriveInput) -> TokenStream {
             }
         }
     };
-    println!("............gen rust code:\n {}", format!("{}", gen));
-    println!("............proc_macro_struct sql end............");
     gen.into()
+}
+
+fn to_snake_name(name: &String) -> String {
+    let chs = name.chars();
+    let mut new_name = String::new();
+    let mut index = 0;
+    let chs_len = name.len();
+    for x in chs {
+        if x.is_uppercase() {
+            if index != 0 && (index + 1) != chs_len {
+                new_name.push_str("_");
+            }
+            new_name.push_str(x.to_lowercase().to_string().as_str());
+        } else {
+            new_name.push(x);
+        }
+        index += 1;
+    }
+    return new_name;
 }
