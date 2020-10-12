@@ -117,6 +117,7 @@ pub fn parser_tokens(s: &String, opt_map: &OptMap) -> Vec<String> {
     //str
     let mut find_str = false;
     let mut temp_str = String::new();
+
     //opt
     let mut temp_arg = String::new();
     let mut index: i32 = -1;
@@ -153,9 +154,17 @@ pub fn parser_tokens(s: &String, opt_map: &OptMap) -> Vec<String> {
         //opt node
         if is_opt {
             //println!("is opt:{}", item);
+            if result.len() == 0 && item.eq(&'-') {
+                temp_arg.push(item);
+                continue;
+            }
             if result.len() > 0 {
                 let def = String::new();
                 let back = result.back().unwrap_or(&def).clone();
+                if back.len() >= 2 && item.eq(&'-') {
+                    temp_arg.push(item);
+                    continue;
+                }
                 if back != "" && opt_map.is_opt(back.as_str()) {
                     result.pop_back();
                     let mut new_item = back.clone().to_string();
