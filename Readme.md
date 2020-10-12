@@ -27,7 +27,7 @@
 | Rust-rbatis/tokio  |  1 CPU, 1G memory    | select count(1) from table;    | 965649 ns/op   |  1035 Qps/s  |  2.1MB   |      
 | Go-GoMybatis/http   |  1 CPU, 1G memory   | select count(1) from table;   | 1184503 ns/op  |  844  Qps/s   |  28.4MB  |     
 
-* XML files for Java/Mybatis can be used with simple modifications，Easy project migration from java to Rust
+* If necessary, you can use the same XML file data as Mybatis，Easy project migration from java to Rust
 * used json with serde_json for passing parameters and communication
 * high performance, single threaded benchmark can easily achieve 200,000 QPS - data returned from database directly (zero lookup time) on a Windows 10 6 core i7 with 16 GB memory machine. Performace will be better using multiple threads, and it outperforms Go's GoMyBatis.
 * supports logical deletes, pagination, py-like SQL and basic Mybatis functionalities.
