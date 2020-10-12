@@ -51,6 +51,7 @@ fn test_node_run() {
         Eq { express: "-1 != nil", eq: json!(true) },
         Eq { express: "-1 != -2 && -1 == 2-3 ", eq: json!(true) },
         Eq { express: "-1 == a*-1 ", eq: json!(true) },
+        Eq { express: "-1 + a*-1 ", eq: json!(-2.0) },
     ];
 
 
@@ -63,7 +64,7 @@ fn test_node_run() {
         let result_value = &item.eq.clone();
         if !result.eq(result_value) {
             // println!("exe express fail:".to_owned()+item);
-            panic!("[rbatis] >>>>>>>>>>>>>>>>>>>>>exe fail express:'".to_owned() + item.clone().express + "'");
+            panic!("[rbatis] >>>>>>>>>>>>>>>>>>>>>exe fail express:'{}',result:{}",&item.express,&result);
         }
         index += 1;
     }
