@@ -88,7 +88,8 @@ impl RbatisEngine {
 pub fn is_number(arg: &String) -> bool {
     let chars = arg.chars();
     for item in chars {
-        if item == '.' ||
+        if item == '-' ||
+            item == '.' ||
             item == '0' ||
             item == '1' ||
             item == '2' ||
