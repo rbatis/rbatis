@@ -69,7 +69,7 @@ pub trait CRUDEnable: Send + Sync + Serialize + DeserializeOwned {
             fields.push_str(",");
         }
         fields.pop();
-        return format!(" {} ", fields);
+        return format!("{}", fields);
     }
 
     /// make an Map<table_column,value>
