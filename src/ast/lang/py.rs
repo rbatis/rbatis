@@ -187,7 +187,6 @@ impl Py {
         let mut trim_x = x.trim();
         if trim_x.ends_with(":") {
             trim_x = trim_x[0..trim_x.len() - 1].trim();
-
             if trim_x.starts_with("if ") {
                 trim_x = trim_x["if ".len()..].trim();
                 return Ok(NodeType::NIf(IfNode {
@@ -225,14 +224,14 @@ impl Py {
                 } else {
                     return Err(rbatis_core::Error::from("[rbatis] parser express fail:".to_string() + trim_x));
                 }
-            } else if trim_x.starts_with("choose ") {
-                trim_x = trim_x["choose ".len()..].trim();
+            } else if trim_x.starts_with("choose") {
+                trim_x = trim_x["choose".len()..].trim();
                 return Ok(NodeType::NChoose(ChooseNode {
                     when_nodes: None,
                     otherwise_node: None,
                 }));
-            } else if trim_x.starts_with("otherwise ") {
-                trim_x = trim_x["otherwise ".len()..].trim();
+            } else if trim_x.starts_with("otherwise") {
+                trim_x = trim_x["otherwise".len()..].trim();
                 return Ok(NodeType::NOtherwise(OtherwiseNode {
                     childs: vec![],
                 }));
@@ -252,13 +251,13 @@ impl Py {
                     name: name_value[0].to_owned(),
                     value: name_value[1].to_owned(),
                 }));
-            } else if trim_x.starts_with("set ") {
-                trim_x = trim_x["set ".len()..].trim();
+            } else if trim_x.starts_with("set") {
+                trim_x = trim_x["set".len()..].trim();
                 return Ok(NodeType::NSet(SetNode {
                     childs: vec![]
                 }));
-            } else if trim_x.starts_with("where ") {
-                trim_x = trim_x["where ".len()..].trim();
+            } else if trim_x.starts_with("where") {
+                trim_x = trim_x["where".len()..].trim();
                 return Ok(NodeType::NWhere(WhereNode {
                     childs: vec![]
                 }));
@@ -371,6 +370,11 @@ pub fn test_exec() {
       for item in ids:
         #{item},
     )
+    choose:
+        when age==27:
+          AND age = 27
+        otherwise:
+          AND age = 0
     WHERE id  = '2';";
     let pys = Py::parse(s).unwrap();
     //println!("{:?}", pys);
@@ -389,8 +393,8 @@ pub fn test_exec() {
         "ids":[1,2,3]
     });
     let r = crate::ast::node::node::do_child_nodes(&DriverType::Mysql, &pys, &mut env, &mut engine, &mut arg_array).unwrap();
-    println!("{}", r.clone());
-    println!("{:?}", arg_array.clone());
+    println!("result sql:{}", r.clone());
+    println!("arg array:{:?}", arg_array.clone());
 }
 
 //cargo.exe test --release --color=always --package rbatis --lib ast::lang::py::bench_exec  --nocapture --exact
