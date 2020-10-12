@@ -10,15 +10,9 @@ use crate::engine::runtime::OptMap;
 
 #[test]
 fn test_eval_arg() {
-    let box_node = parser::parse("startTime == null", &OptMap::new()).unwrap();
+    let box_node = parser::parse("-1 == -1", &OptMap::new()).unwrap();
+    println!("{:#?}", box_node);
     let john = json!({
-        "n":1,
-        "name": "John Doe",
-        "startTime":"1",
-        "endTime":"1",
-         "age": {
-           "yes":"sadf"
-        }
     });
     let v = box_node.eval(&john).unwrap();
     println!("{:?}", v);
