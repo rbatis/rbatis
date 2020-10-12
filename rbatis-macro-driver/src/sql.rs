@@ -72,9 +72,7 @@ pub(crate) fn impl_macro_sql(target_fn: &ItemFn, args: &AttributeArgs) -> TokenS
         let gen = quote! {
         pub async fn #func_name_ident(#func_args_stream) -> #return_ty {
            #args_gen
-              log::info!("[rbatis] [{}] Query ==> {}", #tx_id_ident, #sql_ident);
-              log::info!("[rbatis] [{}] Args  ==> {}", #tx_id_ident, serde_json::to_string(&args).unwrap_or("".to_string()));
-              return #rbatis_ident.fetch_prepare(#tx_id_ident,#sql_ident,&args).await;
+           return #rbatis_ident.fetch_prepare(#tx_id_ident,#sql_ident,&args).await;
         }
     };
         return gen.into();
@@ -82,9 +80,7 @@ pub(crate) fn impl_macro_sql(target_fn: &ItemFn, args: &AttributeArgs) -> TokenS
         let gen = quote! {
         pub async fn #func_name_ident(#func_args_stream) -> #return_ty {
            #args_gen
-              log::info!("[rbatis] [{}] Exec ==> {}", #tx_id_ident, #sql_ident);
-              log::info!("[rbatis] [{}] Args ==> {}", #tx_id_ident, serde_json::to_string(&args).unwrap_or("".to_string()));
-              return #rbatis_ident.exec_prepare(#tx_id_ident,#sql_ident,&args).await;
+           return #rbatis_ident.exec_prepare(#tx_id_ident,#sql_ident,&args).await;
         }
     };
         return gen.into();
