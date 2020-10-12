@@ -342,15 +342,14 @@ pub fn test_py_interpreter_parse() {
 
 #[test]
 pub fn test_exec() {
-    let s = "SELECT * FROM biz_activity
-      Where del = 0
+    let s = "SELECT * FROM biz_activity where
     if  name!=null:
       name = #{name}
     AND delete_flag1 = #{del}
-    if  age!=1:
-       AND age = 2
-       if  age!=1:
-         AND age = 3
+    if  age != 1:
+       AND age = 1
+       if  age != 1:
+         AND age = 2
     trim 'AND ':
       AND delete_flag2 = #{del}
     AND ids in (
@@ -363,7 +362,7 @@ pub fn test_exec() {
           AND age = 27
         otherwise:
           AND age = 0
-    WHERE id  = '2';";
+    WHERE id  = 'end';";
     let pys = Py::parse(s).unwrap();
     println!("{:#?}", pys);
     //for x in &pys {
