@@ -5,6 +5,7 @@ use syn;
 use syn::{AttributeArgs, Data, FnArg, ItemFn, parse_macro_input, ReturnType};
 
 use crate::proc_macro::TokenStream;
+use crate::util::{find_return_type, get_fn_args};
 
 //impl sql macro
 pub(crate) fn impl_macro_sql(target_fn: &ItemFn, args: &AttributeArgs) -> TokenStream {
@@ -34,40 +35,6 @@ pub(crate) fn impl_macro_sql(target_fn: &ItemFn, args: &AttributeArgs) -> TokenS
        }
     };
     return gen_token_temple.into();
-}
-
-
-//find and check method return type
-fn find_return_type(target_fn: &ItemFn) -> proc_macro2::TokenStream {
-    let mut return_ty = target_fn.sig.output.to_token_stream();
-    match &target_fn.sig.output {
-        ReturnType::Type(_, b) => {
-            return_ty = b.to_token_stream();
-        }
-        _ => {}
-    }
-    let mut s = format!("{}", return_ty);
-    if !s.starts_with("rbatis_core :: Result") && !s.starts_with("Result") && !s.starts_with("std :: result :: Result") {
-        return_ty = quote! {
-             rbatis_core :: Result <#return_ty>
-        };
-    }
-    return_ty
-}
-
-fn get_fn_args(target_fn: &ItemFn) -> Vec<String> {
-    let mut fn_arg_name_vec = vec![];
-    for arg in &target_fn.sig.inputs {
-        match arg {
-            FnArg::Typed(t) => {
-                let arg_name = format!("{}", t.pat.to_token_stream());
-                fn_arg_name_vec.push(arg_name);
-                //println!("arg_name {}", arg_name);
-            }
-            _ => {}
-        }
-    }
-    fn_arg_name_vec
 }
 
 fn filter_args_tx_id(rbatis_name: &str, fn_arg_name_vec: &Vec<String>) -> (proc_macro2::TokenStream, proc_macro2::TokenStream) {
