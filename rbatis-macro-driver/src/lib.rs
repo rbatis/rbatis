@@ -42,6 +42,14 @@ pub fn sql(args: TokenStream, this: TokenStream) -> TokenStream {
 }
 
 /// py sql create macro
+/// for example:
+///
+///
+///  also,you can use arg  tx_id:&str,RB:&Rbatis
+///     #[py_sql(RB, "select * from biz_activity where id = #{name}
+///                   if name != '':
+///                     and name=#{name}")]
+/// pub async fn py_select_rb(rbatis: &Rbatis, name: &str) -> Option<BizActivity> {}
 #[proc_macro_attribute]
 pub fn py_sql(args: TokenStream, this: TokenStream) -> TokenStream {
     println!("............gen macro py_sql start............");
