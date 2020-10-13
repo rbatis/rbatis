@@ -9,13 +9,13 @@ use crate::proc_macro::TokenStream;
 //impl sql macro
 pub(crate) fn impl_macro_sql(target_fn: &ItemFn, args: &AttributeArgs) -> TokenStream {
     let mut return_ty = find_return_type(target_fn);
+    let func_name_ident = target_fn.sig.ident.to_token_stream();
     let func_name = format!("{}", target_fn.sig.ident.to_token_stream());
-    let rbatis_name = format!("{}", args.get(0).unwrap().to_token_stream());
+    let rbatis_ident = args.get(0).unwrap().to_token_stream();
+    let rbatis_name = format!("{}", rbatis_ident);
     let sql_ident = args.get(1).unwrap().to_token_stream();
     let sql = format!("{}", sql_ident).trim().to_string();
     let func_args_stream = target_fn.sig.inputs.to_token_stream();
-    let func_name_ident = Ident::new(&func_name, Span::call_site());
-    let rbatis_ident = Ident::new(&rbatis_name, Span::call_site());
     //append all args
     let (sql_args_gen, tx_id_ident) = filter_args_tx_id(&rbatis_name, &get_fn_args(target_fn));
     let mut call_method = quote! {};
@@ -26,14 +26,14 @@ pub(crate) fn impl_macro_sql(target_fn: &ItemFn, args: &AttributeArgs) -> TokenS
         call_method = quote! {execute_parperd};
     }
     //gen rust code templete
-    let token_temple = quote! {
+    let gen_token_temple = quote! {
        pub async fn #func_name_ident(#func_args_stream) -> #return_ty{
            let mut args =vec![];
            #sql_args_gen
            return #rbatis_ident.#call_method(#tx_id_ident,#sql_ident,&args).await;
        }
     };
-    return token_temple.into();
+    return gen_token_temple.into();
 }
 
 
