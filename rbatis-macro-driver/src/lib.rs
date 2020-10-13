@@ -4,6 +4,7 @@ use syn::{AttributeArgs, Data, ItemFn, parse_macro_input, ReturnType};
 
 use crate::proc_macro::TokenStream;
 
+mod util;
 mod crud_enable;
 mod sql;
 mod py_sql;
