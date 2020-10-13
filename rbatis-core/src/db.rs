@@ -481,7 +481,7 @@ impl DBPoolConn {
         }
     }
 
-    pub async fn execute_parperd(&mut self, sql: DBQuery<'_>) -> crate::Result<u64> {
+    pub async fn exec_prepare(&mut self, sql: DBQuery<'_>) -> crate::Result<u64> {
         match &self.driver_type {
             &DriverType::None => {
                 return Err(Error::from("un init DBPool!"));
@@ -764,7 +764,7 @@ impl DBTx {
         }
     }
 
-    pub async fn execute_parperd(&mut self, sql: DBQuery<'_>) -> crate::Result<u64> {
+    pub async fn exec_prepare(&mut self, sql: DBQuery<'_>) -> crate::Result<u64> {
         match &self.driver_type {
             &DriverType::None => {
                 return Err(Error::from("un init DBPool!"));
