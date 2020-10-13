@@ -40,7 +40,7 @@ pub(crate) fn impl_macro_sql(target_fn: &ItemFn, args: &AttributeArgs) -> TokenS
                 if arg_name.eq(&field_name) {
                     continue;
                 }
-                if arg_name.contains("tx_id") {
+                if arg_name.eq("tx_id") {
                     tx_id_ident = t.pat.to_token_stream();
                     continue;
                 }

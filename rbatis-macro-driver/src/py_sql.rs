@@ -40,9 +40,9 @@ pub(crate) fn impl_macro_py_sql(target_fn: &ItemFn, args: &AttributeArgs) -> Tok
                 if arg_name.eq(&field_name) {
                     continue;
                 }
-                if arg_name.contains("tx_id") {
+                if arg_name.eq("tx_id") {
+                    //tx_id allow insert into arg map
                     tx_id_ident = t.pat.to_token_stream();
-                    continue;
                 }
                 fn_arg_name_vec.push(arg_name);
                 //println!("arg_name {}", arg_name);
