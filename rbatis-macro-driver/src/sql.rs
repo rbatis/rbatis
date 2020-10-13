@@ -23,7 +23,7 @@ pub(crate) fn impl_macro_sql(target_fn: &ItemFn, args: &AttributeArgs) -> TokenS
     if is_select {
         call_method = quote! {fetch_prepare};
     } else {
-        call_method = quote! {execute_parperd};
+        call_method = quote! {exec_prepare};
     }
     //gen rust code templete
     let gen_token_temple = quote! {

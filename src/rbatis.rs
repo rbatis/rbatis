@@ -311,7 +311,7 @@ impl Rbatis {
         if tx_id.is_empty() {
             let q: DBQuery = self.bind_arg(&sql, &args)?;
             let mut conn = self.get_pool()?.acquire().await?;
-            result = conn.execute_parperd(q).await;
+            result = conn.exec_prepare(q).await;
         } else {
             let q: DBQuery = self.bind_arg(&sql, &args)?;
             let conn = self.tx_context.get_mut(tx_id);
@@ -319,7 +319,7 @@ impl Rbatis {
                 return Err(rbatis_core::Error::from(format!("[rbatis] tx:{} not exist！", tx_id)));
             }
             let mut conn = conn.unwrap();
-            result = conn.execute_parperd(q).await;
+            result = conn.exec_prepare(q).await;
         }
         if result.is_ok() {
             info!("[rbatis] [{}] RowsAffected <== {}", tx_id, result.as_ref().unwrap());
