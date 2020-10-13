@@ -7,6 +7,53 @@ use syn::ext::IdentExt;
 
 use crate::proc_macro::TokenStream;
 
+///impl CRUDEnable
+pub(crate) fn impl_macro(ast: &syn::DeriveInput) -> TokenStream {
+    let name = &ast.ident;
+    let id_type = find_id_type_ident(&ast.data);
+    /// gen fields token
+    let mut fields = quote! { String::new() };
+    match &ast.data {
+        syn::Data::Struct(s) => {
+            let mut index = 0;
+            for field in &s.fields {
+                let field_name = &field.ident.as_ref().map(|ele| ele.unraw()).to_token_stream().to_string();
+                if index == 0 {
+                    fields = quote! {
+                       #fields+#field_name
+                     };
+                } else {
+                    fields = quote! {
+                       #fields+","+#field_name
+                     };
+                }
+                index += 1;
+            }
+        }
+        _ => {}
+    }
+    //gen table name
+    let mut table_name = name.to_string();
+    let names: Vec<&str> = table_name.split("::").collect();
+    table_name = names.get(names.len() - 1).unwrap().to_string();
+    table_name = to_snake_name(&table_name);
+    let gen = quote! {
+        impl CRUDEnable for #name {
+            type IdType = #id_type;
+
+            fn table_name() -> String {
+                 #table_name.to_string()
+            }
+
+            fn table_columns() -> String{
+                 #fields
+            }
+        }
+    };
+    gen.into()
+}
+
+
 ///filter id_type
 fn find_id_type_ident(arg: &syn::Data) -> Ident {
     let mut id_type = Ident::new("String", Span::call_site());
@@ -36,53 +83,6 @@ fn find_id_type_ident(arg: &syn::Data) -> Ident {
         _ => (),
     }
     id_type
-}
-
-
-pub(crate) fn impl_macro(ast: &syn::DeriveInput) -> TokenStream {
-    let name = &ast.ident;
-    let id_type = find_id_type_ident(&ast.data);
-    /// gen fields token
-    let mut fields = quote! { String::new() };
-    match &ast.data {
-        syn::Data::Struct(s) => {
-            let mut index = 0;
-            for field in &s.fields {
-                let field_name = &field.ident.as_ref().map(|ele| ele.unraw()).to_token_stream().to_string();
-                if index == 0 {
-                    fields = quote! {
-                       #fields+#field_name
-                     };
-                } else {
-                    fields = quote! {
-                       #fields+","+#field_name
-                     };
-                }
-                index += 1;
-            }
-        }
-        _ => {}
-    }
-
-    //gen table name
-    let mut table_name = name.to_string();
-    let names: Vec<&str> = table_name.split("::").collect();
-    table_name = names.get(names.len() - 1).unwrap().to_string();
-    table_name = to_snake_name(&table_name);
-    let gen = quote! {
-        impl CRUDEnable for #name {
-            type IdType = #id_type;
-
-            fn table_name() -> String {
-                 #table_name.to_string()
-            }
-
-            fn table_columns() -> String{
-                 #fields
-            }
-        }
-    };
-    gen.into()
 }
 
 fn to_snake_name(name: &String) -> String {
