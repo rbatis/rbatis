@@ -27,12 +27,12 @@ pub fn hello_macro_derive(input: TokenStream) -> TokenStream {
 
 /// sql create macro
 #[proc_macro_attribute]
-pub fn sql(args: TokenStream, this: TokenStream) -> TokenStream {
+pub fn sql(args: TokenStream, func: TokenStream) -> TokenStream {
     println!("............gen macro sql start............");
 
     // this
     let args = parse_macro_input!(args as AttributeArgs);
-    let target_fn: ItemFn = syn::parse(this).unwrap();
+    let target_fn: ItemFn = syn::parse(func).unwrap();
 
     let stream = sql::impl_macro_sql(&target_fn, &args);
 
@@ -52,12 +52,12 @@ pub fn sql(args: TokenStream, this: TokenStream) -> TokenStream {
 ///                     and name=#{name}")]
 /// pub async fn py_select_rb(rbatis: &Rbatis, name: &str) -> Option<BizActivity> {}
 #[proc_macro_attribute]
-pub fn py_sql(args: TokenStream, this: TokenStream) -> TokenStream {
+pub fn py_sql(args: TokenStream, func: TokenStream) -> TokenStream {
     println!("............gen macro py_sql start............");
 
     // this
     let args = parse_macro_input!(args as AttributeArgs);
-    let target_fn: ItemFn = syn::parse(this).unwrap();
+    let target_fn: ItemFn = syn::parse(func).unwrap();
 
     let stream = py_sql::impl_macro_py_sql(&target_fn, &args);
 
