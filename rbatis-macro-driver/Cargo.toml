@@ -6,6 +6,9 @@ readme = "Readme.md"
 authors = ["ce <zhuxiujia@qq.com>"]
 edition = "2018"
 license = "MIT"
+documentation = "https://rbatis.github.io/rbatis.io/#/"
+repository = "https://github.com/rbatis/rbatis"
+homepage = "https://rbatis.github.io/rbatis.io/#/"
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
