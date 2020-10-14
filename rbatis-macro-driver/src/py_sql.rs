@@ -5,7 +5,7 @@ use syn;
 use syn::{AttributeArgs, Data, FnArg, ItemFn, parse_macro_input, ReturnType};
 
 use crate::proc_macro::TokenStream;
-use crate::util::{filter_fn_args, find_return_type, get_fn_args};
+use crate::util::{filter_fn_args, find_return_type, get_fn_args, get_page_req_ident};
 
 ///py_sql macro
 ///support args for  tx_id:&str,RB:&Rbatis,page:&PageRequest
@@ -29,20 +29,9 @@ pub(crate) fn impl_macro_py_sql(target_fn: &ItemFn, args: &AttributeArgs) -> Tok
     }
     //check use page method
     let mut page_req = quote! {};
-    if return_ty.to_string().contains("Page")
-        && func_args_stream.to_string().contains("PageRequest") {
-        let page_reqs = filter_fn_args(target_fn, "", "& PageRequest");
-        if page_reqs.len() > 1 {
-            panic!("[rbatis] {} only support on arg of '**:&PageRequest'!", func_name_ident.to_string());
-        }
-        if page_reqs.len() == 0 {
-            panic!("[rbatis] {} method arg must have arg Type '**:&PageRequest'!", func_name_ident.to_string());
-        }
-        let req = page_reqs.get("& PageRequest").unwrap_or(&"".to_string()).to_owned();
-        if req.eq("") {
-            panic!("[rbatis] {} method arg must have arg Type '**:&PageRequest'!", func_name_ident.to_string());
-        }
-        let req = Ident::new(&req, Span::call_site());
+    if return_ty.to_string().contains("Page <")
+        && func_args_stream.to_string().contains("& PageRequest") {
+        let req = get_page_req_ident(target_fn, &func_name_ident.to_string());
         page_req = quote! {,#req};
         call_method = quote! {py_fetch_page};
     }
