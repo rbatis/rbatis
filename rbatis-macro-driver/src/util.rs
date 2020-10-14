@@ -51,7 +51,6 @@ pub(crate) fn filter_fn_args(target_fn: &ItemFn, arg_name: &str, arg_type: &str)
                     map.insert(arg_name.to_string(), arg_name_value.clone());
                 }
                 let arg_type_name = t.ty.to_token_stream().to_string();
-                println!("tttt :{}", &arg_type_name);
                 if arg_type.eq(&arg_type_name) {
                     map.insert(arg_type.to_string(), arg_name_value.clone());
                 }
@@ -60,4 +59,20 @@ pub(crate) fn filter_fn_args(target_fn: &ItemFn, arg_name: &str, arg_type: &str)
         }
     }
     map
+}
+
+pub(crate) fn get_page_req_ident(target_fn: &ItemFn, func_name: &str) -> Ident {
+    let page_reqs = filter_fn_args(target_fn, "", "& PageRequest");
+    if page_reqs.len() > 1 {
+        panic!("[rbatis] {} only support on arg of '**:&PageRequest'!", func_name);
+    }
+    if page_reqs.len() == 0 {
+        panic!("[rbatis] {} method arg must have arg Type '**:&PageRequest'!", func_name);
+    }
+    let req = page_reqs.get("& PageRequest").unwrap_or(&"".to_string()).to_owned();
+    if req.eq("") {
+        panic!("[rbatis] {} method arg must have arg Type '**:&PageRequest'!", func_name);
+    }
+    let req = Ident::new(&req, Span::call_site());
+    req
 }

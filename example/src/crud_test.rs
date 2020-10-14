@@ -318,4 +318,19 @@ mod test {
         let a = py_select_page(&PageRequest::new(1, 10), "test").await.unwrap();
         println!("{:?}", a);
     }
+
+
+    /// Use sql_select_page
+   /// 使用分页宏例子
+    #[sql(RB, "select * from biz_activity where delete_flag = 0 and name = ?")]
+    fn sql_select_page(page_req: &PageRequest, name: &str) -> Page<BizActivity> {}
+
+    #[async_std::test]
+    pub async fn test_macro_sql_select_page() {
+        fast_log::log::init_log("requests.log", &RuntimeType::Std);
+        //use static ref
+        RB.link("mysql://root:123456@localhost:3306/test").await.unwrap();
+        let a = sql_select_page(&PageRequest::new(1, 10), "test").await.unwrap();
+        println!("{:?}", a);
+    }
 }
