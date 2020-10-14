@@ -8,6 +8,9 @@ edition = "2018"
 authors = [
     "zxj <zhuxiujia@qq.com>"
 ]
+documentation = "https://rbatis.github.io/rbatis.io/#/"
+repository = "https://github.com/rbatis/rbatis"
+homepage = "https://rbatis.github.io/rbatis.io/#/"
 
 [features]
 default = ["runtime-async-std"]
