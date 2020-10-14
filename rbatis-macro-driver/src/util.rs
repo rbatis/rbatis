@@ -1,3 +1,5 @@
+use std::collections::HashMap;
+
 use proc_macro2::{Ident, Span};
 use quote::quote;
 use quote::ToTokens;
@@ -37,4 +39,25 @@ pub(crate) fn get_fn_args(target_fn: &ItemFn) -> Vec<String> {
         }
     }
     fn_arg_name_vec
+}
+
+pub(crate) fn filter_fn_args(target_fn: &ItemFn, arg_name: &str, arg_type: &str) -> std::collections::HashMap<String, String> {
+    let mut map = HashMap::new();
+    for arg in &target_fn.sig.inputs {
+        match arg {
+            FnArg::Typed(t) => {
+                let arg_name_value = format!("{}", t.pat.to_token_stream());
+                if arg_name.eq(&arg_name_value) {
+                    map.insert(arg_name.to_string(), arg_name_value.clone());
+                }
+                let arg_type_name = t.ty.to_token_stream().to_string();
+                println!("tttt :{}", &arg_type_name);
+                if arg_type.eq(&arg_type_name) {
+                    map.insert(arg_type.to_string(), arg_name_value.clone());
+                }
+            }
+            _ => {}
+        }
+    }
+    map
 }
