@@ -33,8 +33,7 @@ impl PagePlugin for RbatisPagePlugin {
         let mut count_sql = sql.clone();
         if page.is_serch_count() {
             //make count sql
-            let sql_vec: Vec<&str> = count_sql.split("FROM ").collect();
-            count_sql = "SELECT count(1) FROM ".to_string() + sql_vec[1];
+            count_sql = format!("SELECT count(1) FROM ({})table_count",count_sql);
         }
         //limit sql
         let limit_sql = driver_type.page_limit_sql(page.offset(), page.get_size())?;
