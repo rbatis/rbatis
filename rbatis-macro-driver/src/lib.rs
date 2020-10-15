@@ -1,3 +1,4 @@
+#![allow(unused_assignments)]
 extern crate proc_macro;
 
 use syn::{AttributeArgs, Data, ItemFn, parse_macro_input, ReturnType};
@@ -12,13 +13,8 @@ mod py_sql;
 #[proc_macro_derive(CRUDEnable)]
 pub fn hello_macro_derive(input: TokenStream) -> TokenStream {
     println!("............gen impl CRUDEnable start............");
-    // 构建 Rust 代码所代表的语法树
-    // 以便可以进行操作
     let ast = syn::parse(input).unwrap();
-
-    // 构建 trait 实现
     let stream = crud_enable::impl_macro(&ast);
-
     println!("............gen impl CRUDEnable:\n {}", format!("{}", stream));
     println!("............gen impl CRUDEnable end............");
     stream

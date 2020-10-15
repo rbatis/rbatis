@@ -11,7 +11,7 @@ use crate::util::{filter_fn_args, find_return_type, get_fn_args, get_page_req_id
 ///support args for  tx_id:&str,RB:&Rbatis,page:&PageRequest
 ///support return for Page<*>
 pub(crate) fn impl_macro_py_sql(target_fn: &ItemFn, args: &AttributeArgs) -> TokenStream {
-    let mut return_ty = find_return_type(target_fn);
+    let return_ty = find_return_type(target_fn);
     let func_name_ident = target_fn.sig.ident.to_token_stream();
     let rbatis_ident = args.get(0).unwrap().to_token_stream();
     let rbatis_name = format!("{}", rbatis_ident);
