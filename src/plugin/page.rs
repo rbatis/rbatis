@@ -13,6 +13,11 @@ use crate::sql::PageLimit;
 pub trait PagePlugin: Send + Sync {
     /// return 2 sql for select ,  (count_sql,select_sql)
     fn create_page_sql(&self, driver_type: &DriverType, tx_id: &str, sql: &str, args: &Vec<serde_json::Value>, page: &dyn IPageRequest) -> Result<(String, String), rbatis_core::Error>;
+
+    /// auto make count sql,also you can rewrite this method
+    fn make_count_sql(&self, sql: &str) -> String {
+        format!("SELECT count(1) FROM ({})table_count", sql)
+    }
 }
 
 #[derive(Copy, Clone, Debug)]
@@ -33,7 +38,7 @@ impl PagePlugin for RbatisPagePlugin {
         let mut count_sql = sql.clone();
         if page.is_serch_count() {
             //make count sql
-            count_sql = format!("SELECT count(1) FROM ({})table_count",count_sql);
+            count_sql = self.make_count_sql(&count_sql);
         }
         //limit sql
         let limit_sql = driver_type.page_limit_sql(page.offset(), page.get_size())?;
