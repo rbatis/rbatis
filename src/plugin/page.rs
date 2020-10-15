@@ -12,7 +12,7 @@ use crate::sql::PageLimit;
 ///default page plugin
 pub trait PagePlugin: Send + Sync {
     /// return 2 sql for select ,  (count_sql,select_sql)
-    fn create_page_sql(&self, driver_type: &DriverType, tx_id: &str, sql: &str, args: &Vec<serde_json::Value>, page: &dyn IPageRequest) -> Result<(String, String), rbatis_core::Error>;
+    fn make_page_sql(&self, driver_type: &DriverType, tx_id: &str, sql: &str, args: &Vec<serde_json::Value>, page: &dyn IPageRequest) -> Result<(String, String), rbatis_core::Error>;
 
     /// auto make count sql,also you can rewrite this method
     fn make_count_sql(&self, sql: &str) -> String {
@@ -25,7 +25,7 @@ pub struct RbatisPagePlugin {}
 
 
 impl PagePlugin for RbatisPagePlugin {
-    fn create_page_sql<>(&self, driver_type: &DriverType, tx_id: &str, sql: &str, args: &Vec<Value>, page: &dyn IPageRequest) -> Result<(String, String), rbatis_core::Error> {
+    fn make_page_sql<>(&self, driver_type: &DriverType, tx_id: &str, sql: &str, args: &Vec<Value>, page: &dyn IPageRequest) -> Result<(String, String), rbatis_core::Error> {
         //default sql
         let mut sql = sql.to_owned();
         sql = sql.replace("select ", "SELECT ");
