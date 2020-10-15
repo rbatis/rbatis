@@ -147,7 +147,6 @@ impl<'a, K: Eq + Hash, V> DerefMut for RefMut<'a, K, V> {
 mod test {
     use crate::lock::SyncMap;
     use std::collections::HashMap;
-    use dashmap::lock::RwLock;
     use std::sync::Arc;
     use std::ops::Deref;
 
