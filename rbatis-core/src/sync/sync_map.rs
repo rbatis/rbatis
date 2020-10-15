@@ -44,12 +44,12 @@ impl<'a, K: 'a + Eq + Hash, V: 'a> SyncMap<K, V> where K: Eq + Hash {
         w.clear();
     }
 
-    pub async fn shrink_to_fit(&mut self) {
+    pub async fn shrink_to_fit(&self) {
         let mut w = self.shard.write().await;
         w.shrink_to_fit();
     }
 
-    pub async fn reserve(&mut self, additional: usize) {
+    pub async fn reserve(&self, additional: usize) {
         let mut w = self.shard.write().await;
         w.reserve(additional)
     }
@@ -223,7 +223,7 @@ mod test {
     //cargo test --release --color=always --package rbatis-core --lib sync::sync_map::test::bench_test --no-fail-fast -- --exact -Z unstable-options --format=json --show-output
     #[test]
     fn bench_test(){
-        let m = Arc::new(SyncMap::new());
+        let mut m = Arc::new(SyncMap::new());
         async_std::task::block_on(async {
             let s = m.insert(1, "default".to_string()).await;
             drop(s);
@@ -238,6 +238,8 @@ mod test {
                     break;
                 }
             }
+            m.shrink_to_fit().await;
+            println!("done");
         });
     }
 
