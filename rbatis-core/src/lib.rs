@@ -73,4 +73,4 @@ pub mod db;
 
 pub mod convert;
 
-pub mod lock;
+pub mod sync;
