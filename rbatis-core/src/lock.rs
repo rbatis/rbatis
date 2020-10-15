@@ -3,7 +3,7 @@ use std::collections::hash_map::RandomState;
 use std::collections::HashMap;
 use std::borrow::{Borrow, BorrowMut};
 use std::hash::Hash;
-use std::ops::Deref;
+use std::ops::{Deref, DerefMut};
 use crate::runtime::{RwLock, RwLockReadGuard, RwLockWriteGuard};
 
 
@@ -65,6 +65,7 @@ pub unsafe fn change_lifetime_mut<'a, 'b, T>(x: &'a mut T) -> &'b mut T {
     &mut *(x as *mut T)
 }
 
+#[derive(Debug)]
 pub struct Ref<'a, K, V>
     where K: Eq + Hash {
     _guard: RwLockReadGuard<'a, HashMap<K, V, RandomState>>,
@@ -92,7 +93,7 @@ impl<'a, K: Eq + Hash, V> Deref for Ref<'a, K, V> {
     }
 }
 
-
+#[derive(Debug)]
 pub struct RefMut<'a, K, V, S = RandomState> {
     _guard: RwLockWriteGuard<'a, HashMap<K, V, S>>,
     v: Option<&'a mut V>,
@@ -108,15 +109,29 @@ impl<'a, K: Eq + Hash, V> RefMut<'a, K, V> {
         s
     }
 
-    // pub fn value(&self) -> &V {
-    //     self.v.unwrap()
-    // }
-    //
-    // pub fn value_mut(&mut self) -> &mut V {
-    //     self.v.unwrap()
-    // }
+    pub fn value(&self) -> &V {
+        self.v.as_ref().unwrap()
+    }
+
+    pub fn value_mut(&mut self) -> &mut V {
+        self.v.as_mut().unwrap()
+    }
 }
 
+
+impl<'a, K: Eq + Hash, V> Deref for RefMut<'a, K, V> {
+    type Target = V;
+
+    fn deref(&self) -> &V {
+        self.value()
+    }
+}
+
+impl<'a, K: Eq + Hash, V> DerefMut for RefMut<'a, K, V> {
+    fn deref_mut(&mut self) -> &mut V {
+        self.value_mut()
+    }
+}
 
 
 #[cfg(test)]
@@ -125,15 +140,26 @@ mod test {
     use std::collections::HashMap;
     use dashmap::lock::RwLock;
     use std::sync::Arc;
+    use std::ops::Deref;
 
     #[test]
     fn test_map() {
         let m = Arc::new(SyncMap::new());
         async_std::task::block_on(async {
-            let v = m.insert(1, "sad".to_string()).await;
+            let v = m.insert(1, "default".to_string()).await;
             let r = m.get(&1).await;
             let rv=r.unwrap().v;
             println!("r:{:?}", &rv);
+            assert_eq!("default",format!("{}",&rv.unwrap()));
+
+            drop(rv);
+
+            let mut mut_v=m.get_mut(&1).await.unwrap();
+            *mut_v="changed".to_string();
+            drop(mut_v);
+            let r = m.get(&1).await;
+            println!("r:{:?}", &r.as_ref().unwrap().deref());
+            assert_eq!("changed",format!("{}",&r.as_ref().unwrap().deref()));
         });
     }
 }
