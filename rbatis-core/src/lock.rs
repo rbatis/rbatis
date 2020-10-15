@@ -23,6 +23,14 @@ impl<'a, K: 'a + Eq + Hash, V: 'a> SyncMap<K, V> where K: Eq + Hash {
         w.insert(key, value)
     }
 
+    pub async fn remove<Q>(&self, key: &Q) -> Option<V>
+        where
+            K: Borrow<Q>,
+            Q: Hash + Eq + ?Sized{
+        let mut w =   self.shard.write().await;
+        w.remove(key)
+    }
+
     pub async fn get<Q>(&'a self, k: &Q) -> Option<Ref<'a, K, V>>
         where K: Borrow<Q>,
               Q: Hash + Eq + ?Sized {
