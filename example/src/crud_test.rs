@@ -208,7 +208,7 @@ mod test {
 
         let w = rb.new_wrapper()
             .like("name", "test")
-            .order_by(false, &["create_time"])
+            //.order_by(false, &["create_time"])
             .check().unwrap();
         let r: Page<BizActivity> = rb.fetch_page_by_wrapper("", &w, &PageRequest::new(1, 20)).await.unwrap();
         println!("{}", serde_json::to_string(&r).unwrap());
