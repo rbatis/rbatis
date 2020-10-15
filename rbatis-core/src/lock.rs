@@ -6,7 +6,8 @@ use std::hash::Hash;
 use std::ops::{Deref, DerefMut};
 use crate::runtime::{RwLock, RwLockReadGuard, RwLockWriteGuard};
 
-
+/// SyncMap impl the Send and Sync
+/// it use of RwLock,so it's safe! but we went convert lifetime ,so use some lifetime convert unsafe method(but it is safe)
 pub struct SyncMap<K, V> where K: Eq + Hash {
     shard: RwLock<HashMap<K, V, RandomState>>,
 }
