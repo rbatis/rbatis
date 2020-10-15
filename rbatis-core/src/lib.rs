@@ -9,6 +9,8 @@
 #![cfg_attr(docsrs, feature(doc_cfg))]
 #![cfg_attr(all(test, feature = "bench"), feature(test))]
 // #![warn(missing_docs)]
+#![allow(unused_imports)]
+#![allow(unused_assignments)]
 
 #[cfg(all(test, feature = "bench"))]
 extern crate test;

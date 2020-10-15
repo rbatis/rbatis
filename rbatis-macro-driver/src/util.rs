@@ -17,7 +17,7 @@ pub(crate) fn find_return_type(target_fn: &ItemFn) -> proc_macro2::TokenStream {
         }
         _ => {}
     }
-    let mut s = format!("{}", return_ty);
+    let s = format!("{}", return_ty);
     if !s.starts_with("rbatis_core :: Result") && !s.starts_with("Result") && !s.starts_with("std :: result :: Result") {
         return_ty = quote! {
              rbatis_core :: Result <#return_ty>

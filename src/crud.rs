@@ -307,7 +307,6 @@ impl CRUD for Rbatis {
             _ => w.clone()
         };
         let mut args = vec![];
-        let mut idx = 0;
         let map = arg.make_column_value_map(&self.driver_type()?)?;
         let driver_type = &self.driver_type()?;
 
