@@ -33,7 +33,7 @@ use crate::plugin::page::{IPage, IPageRequest, Page, PagePlugin, RbatisPagePlugi
 use crate::sql::PageLimit;
 use crate::utils::error_util::ToResult;
 use crate::wrapper::Wrapper;
-use rbatis_core::lock::SyncMap;
+use rbatis_core::sync::sync_map::SyncMap;
 
 /// rbatis engine
 pub struct Rbatis {
