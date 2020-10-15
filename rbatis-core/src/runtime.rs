@@ -19,7 +19,8 @@ pub(crate) use async_std::{
     sync::MutexGuard,
 
     sync::RwLock,
-    sync::RwLockReadGuard
+    sync::RwLockReadGuard,
+    sync::RwLockWriteGuard
 };
 
 #[cfg(feature = "runtime-tokio")]
@@ -33,5 +34,6 @@ pub(crate) use tokio::{
     sync::Mutex,
     sync::MutexGuard,
     sync::RwLock,
-    sync::RwLockReadGuard
+    sync::RwLockReadGuard,
+    sync::RwLockWriteGuard
 };
