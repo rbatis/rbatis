@@ -16,7 +16,10 @@ pub(crate) use async_std::{
     task::sleep,
     task::spawn,
     sync::Mutex,
-    sync::MutexGuard
+    sync::MutexGuard,
+
+    sync::RwLock,
+    sync::RwLockReadGuard
 };
 
 #[cfg(feature = "runtime-tokio")]
@@ -28,5 +31,7 @@ pub(crate) use tokio::{
     time::delay_for as sleep,
     time::timeout,
     sync::Mutex,
-    sync::MutexGuard
+    sync::MutexGuard,
+    sync::RwLock,
+    sync::RwLockReadGuard
 };
