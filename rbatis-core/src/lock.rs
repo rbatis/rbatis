@@ -1,5 +1,6 @@
 #![allow(unsafe_code)]
-use std::collections::hash_map::RandomState;
+
+use std::collections::hash_map::{RandomState, Entry};
 use std::collections::HashMap;
 use std::borrow::{Borrow, BorrowMut};
 use std::hash::Hash;
@@ -9,13 +10,19 @@ use crate::runtime::{RwLock, RwLockReadGuard, RwLockWriteGuard};
 /// SyncMap impl the Send and Sync
 /// it use of RwLock,so it's safe! but we went convert lifetime ,so use some lifetime convert unsafe method(but it is safe)
 pub struct SyncMap<K, V> where K: Eq + Hash {
-    shard: RwLock<HashMap<K, V, RandomState>>,
+    pub shard: RwLock<HashMap<K, V, RandomState>>,
 }
 
 impl<'a, K: 'a + Eq + Hash, V: 'a> SyncMap<K, V> where K: Eq + Hash {
     pub fn new() -> Self {
         Self {
             shard: RwLock::new(HashMap::new())
+        }
+    }
+
+    pub fn with_capacity(capacity: usize) -> Self {
+        Self {
+            shard: RwLock::new(HashMap::with_capacity(capacity))
         }
     }
 
@@ -27,9 +34,32 @@ impl<'a, K: 'a + Eq + Hash, V: 'a> SyncMap<K, V> where K: Eq + Hash {
     pub async fn remove<Q>(&self, key: &Q) -> Option<V>
         where
             K: Borrow<Q>,
-            Q: Hash + Eq + ?Sized{
-        let mut w =   self.shard.write().await;
+            Q: Hash + Eq + ?Sized {
+        let mut w = self.shard.write().await;
         w.remove(key)
+    }
+
+    pub async fn clear(&self){
+        let mut w = self.shard.write().await;
+        w.clear();
+    }
+
+    pub async fn shrink_to_fit(&mut self) {
+        let mut w = self.shard.write().await;
+        w.shrink_to_fit();
+    }
+
+    pub async fn reserve(&mut self, additional: usize) {
+        let mut w = self.shard.write().await;
+        w.reserve(additional)
+    }
+
+    pub async fn read(&self) -> RwLockReadGuard<'_, HashMap<K, V, RandomState>> {
+        self.shard.read().await
+    }
+
+    pub async fn write(&self) -> RwLockWriteGuard<'_, HashMap<K, V, RandomState>> {
+        self.shard.write().await
     }
 
     pub async fn get<Q>(&'a self, k: &Q) -> Option<Ref<'a, K, V>>
@@ -63,7 +93,6 @@ impl<'a, K: 'a + Eq + Hash, V: 'a> SyncMap<K, V> where K: Eq + Hash {
             }
         }
     }
-
 }
 
 pub unsafe fn change_lifetime_const<'a, 'b, T>(x: &'a T) -> &'b T {
@@ -109,7 +138,6 @@ pub struct RefMut<'a, K, V, S = RandomState> {
 }
 
 impl<'a, K: Eq + Hash, V> RefMut<'a, K, V> {
-
     pub fn new(guard: RwLockWriteGuard<'a, HashMap<K, V, RandomState>>, v: Option<&'a mut V>) -> Self {
         let mut s = Self {
             _guard: guard,
@@ -149,6 +177,7 @@ mod test {
     use std::collections::HashMap;
     use std::sync::Arc;
     use std::ops::Deref;
+    use futures_util::StreamExt;
 
     #[test]
     fn test_map() {
@@ -156,18 +185,32 @@ mod test {
         async_std::task::block_on(async {
             let v = m.insert(1, "default".to_string()).await;
             let r = m.get(&1).await;
-            let rv=r.unwrap().v;
+            let rv = r.unwrap().v;
             println!("r:{:?}", &rv);
-            assert_eq!("default",format!("{}",&rv.unwrap()));
+            assert_eq!("default", format!("{}", &rv.unwrap()));
 
             drop(rv);
 
-            let mut mut_v=m.get_mut(&1).await.unwrap();
-            *mut_v="changed".to_string();
+            let mut mut_v = m.get_mut(&1).await.unwrap();
+            *mut_v = "changed".to_string();
             drop(mut_v);
             let r = m.get(&1).await;
             println!("r:{:?}", &r.as_ref().unwrap().deref());
-            assert_eq!("changed",format!("{}",&r.as_ref().unwrap().deref()));
+            assert_eq!("changed", format!("{}", &r.as_ref().unwrap().deref()));
+        });
+    }
+
+    #[test]
+    fn test_map_for() {
+        let m = Arc::new(SyncMap::new());
+        async_std::task::block_on(async {
+            let mut lock= m.write().await;
+            lock.insert(1,1);
+            drop(lock);
+            let mut lock= m.read().await;
+            for (k,v) in lock.deref(){
+               println!("k:{},v:{}",k,v);
+            }
         });
     }
 }
