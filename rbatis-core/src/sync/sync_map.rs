@@ -173,11 +173,11 @@ impl<'a, K: Eq + Hash, V> DerefMut for RefMut<'a, K, V> {
 
 #[cfg(test)]
 mod test {
-    use crate::lock::SyncMap;
     use std::collections::HashMap;
     use std::sync::Arc;
     use std::ops::Deref;
     use futures_util::StreamExt;
+    use crate::sync::sync_map::SyncMap;
 
     #[test]
     fn test_map() {
