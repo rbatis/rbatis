@@ -194,6 +194,9 @@ where
                 // [connect] will raise an error when past deadline
                 // [connect] returns None if its okay to retry
                 if let Some(conn) = self.connect(deadline, guard).await? {
+                    if self.size.load(Ordering::Relaxed) > self.options.min_size {
+                        return Ok(());
+                    }
                     self.idle_conns
                         .push(conn.into_idle().into_leakable())
                         .expect("BUG: connection queue overflow in init_min_connections");
