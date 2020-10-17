@@ -1,7 +1,5 @@
 use std::cell::Cell;
 use std::collections::HashMap;
-
-use log::{error, info, LevelFilter, warn};
 use once_cell::sync::OnceCell;
 use serde::de::DeserializeOwned;
 use serde::ser::Serialize;
@@ -15,6 +13,7 @@ use rbatis_core::executor::Executor;
 use rbatis_core::pool::{Pool, PoolConnection};
 use rbatis_core::query::{query, Query};
 use rbatis_core::query_as::query_as;
+use rbatis_core::sync::sync_map::SyncMap;
 use rbatis_core::transaction::Transaction;
 
 use crate::ast::ast::RbatisAST;
@@ -28,12 +27,12 @@ use crate::ast::node::select_node::SelectNode;
 use crate::ast::node::update_node::UpdateNode;
 use crate::engine::runtime::RbatisEngine;
 use crate::plugin::intercept::SqlIntercept;
+use crate::plugin::log::{LogPlugin, RbatisLog};
 use crate::plugin::logic_delete::{LogicDelete, RbatisLogicDeletePlugin};
 use crate::plugin::page::{IPage, IPageRequest, Page, PagePlugin, RbatisPagePlugin};
 use crate::sql::PageLimit;
 use crate::utils::error_util::ToResult;
 use crate::wrapper::Wrapper;
-use rbatis_core::sync::sync_map::SyncMap;
 
 /// rbatis engine
 pub struct Rbatis {
@@ -51,6 +50,8 @@ pub struct Rbatis {
     pub sql_intercepts: Vec<Box<dyn SqlIntercept>>,
     // logic delete plugin
     pub logic_plugin: Option<Box<dyn LogicDelete>>,
+    // log plugin
+    pub log_plugin: Box<dyn LogPlugin>,
 }
 
 impl<'r> Default for Rbatis {
@@ -69,6 +70,7 @@ impl Rbatis {
             page_plugin: Box::new(RbatisPagePlugin {}),
             sql_intercepts: vec![],
             logic_plugin: None,
+            log_plugin: Box::new(RbatisLog {}),
         };
     }
 
@@ -143,7 +145,7 @@ impl Rbatis {
         let conn = self.get_pool()?.begin().await?;
         //send tx to context
         self.tx_context.insert(new_tx_id.to_string(), conn).await;
-        info!("[rbatis] [{}] Begin", new_tx_id);
+        self.log_plugin.info(&format!("[rbatis] [{}] Begin", new_tx_id));
         return Ok(1);
     }
 
@@ -155,7 +157,7 @@ impl Rbatis {
         let conn = db_conn.begin().await?;
         //send tx to context
         self.tx_context.insert(new_tx_id.to_string(), conn).await;
-        info!("[rbatis] [{}] Begin", new_tx_id);
+        self.log_plugin.info(&format!("[rbatis] [{}] Begin", new_tx_id));
         return Ok(1);
     }
 
@@ -167,7 +169,7 @@ impl Rbatis {
         }
         let mut tx = tx.unwrap();
         let result = tx.commit().await?;
-        info!("[rbatis] [{}] Commit", tx_id);
+        self.log_plugin.info(&format!("[rbatis] [{}] Commit", tx_id));
         return Ok(result);
     }
 
@@ -179,7 +181,7 @@ impl Rbatis {
         }
         let mut tx = tx_op.unwrap();
         let result = tx.rollback().await?;
-        info!("[rbatis] [{}] Rollback", tx_id);
+        self.log_plugin.info(&format!("[rbatis] [{}] Rollback", tx_id));
         return Ok(result);
     }
 
@@ -194,7 +196,7 @@ impl Rbatis {
             item.do_intercept(self, &mut sql, &mut vec![], false);
         }
 
-        info!("[rbatis] [{}] Query ==> {}", tx_id, sql.as_str());
+        self.log_plugin.info(&format!("[rbatis] [{}] Query ==> {}", tx_id, sql.as_str()));
         let data;
         let fetch_num;
         if tx_id.is_empty() {
@@ -219,7 +221,7 @@ impl Rbatis {
             fetch_num = json.len();
             data = rbatis_core::decode::json_decode::<T>(json)?;
         }
-        info!("[rbatis] [{}] ReturnRows <== {}", tx_id, fetch_num);
+        self.log_plugin.info(&format!("[rbatis] [{}] ReturnRows <== {}", tx_id, fetch_num));
         return Ok(data);
     }
 
@@ -232,7 +234,7 @@ impl Rbatis {
             item.do_intercept(self, &mut sql, &mut vec![], false);
         }
 
-        info!("[rbatis] [{}] Exec ==> :{}", tx_id, &sql);
+        self.log_plugin.info(&format!("[rbatis] [{}] Exec ==> :{}", tx_id, &sql));
         let data;
         if tx_id.is_empty() {
             let mut conn = self.get_pool()?.acquire().await?;
@@ -245,7 +247,7 @@ impl Rbatis {
             let mut conn = conn.unwrap();
             data = conn.execute(&sql).await?;
         }
-        info!("[rbatis] [{}] RowsAffected <== {}", tx_id, &data);
+        self.log_plugin.info(&format!("[rbatis] [{}] RowsAffected <== {}", tx_id, &data));
         return Ok(data);
     }
 
@@ -268,8 +270,8 @@ impl Rbatis {
             item.do_intercept(self, &mut sql, &mut args, true);
         }
 
-        info!("[rbatis] [{}] Query ==> {}", tx_id, &sql);
-        info!("[rbatis] [{}] Args  ==> {}", tx_id, serde_json::to_string(&args).unwrap_or("".to_string()));
+        self.log_plugin.info(&format!("[rbatis] [{}] Query ==> {}", tx_id, &sql));
+        self.log_plugin.info(&format!("[rbatis] [{}] Args  ==> {}", tx_id, serde_json::to_string(&args).unwrap_or("".to_string())));
         let result;
         let return_num;
         if tx_id.is_empty() {
@@ -291,7 +293,7 @@ impl Rbatis {
             return_num = json.len();
             result = rbatis_core::decode::json_decode::<T>(json)?;
         }
-        info!("[rbatis] [{}] ReturnRows <== {}", tx_id, return_num);
+        self.log_plugin.info(&format!("[rbatis] [{}] ReturnRows <== {}", tx_id, return_num));
         return Ok(result);
     }
 
@@ -305,8 +307,8 @@ impl Rbatis {
             item.do_intercept(self, &mut sql, &mut args, true);
         }
 
-        info!("[rbatis] [{}] Exec ==> {}", tx_id, &sql);
-        info!("[rbatis] [{}] Args ==> {}", tx_id, serde_json::to_string(&args).unwrap_or("".to_string()));
+        self.log_plugin.info(&format!("[rbatis] [{}] Exec ==> {}", tx_id, &sql));
+        self.log_plugin.info(&format!("[rbatis] [{}] Args ==> {}", tx_id, serde_json::to_string(&args).unwrap_or("".to_string())));
         let result;
         if tx_id.is_empty() {
             let q: DBQuery = self.bind_arg(&sql, &args)?;
@@ -322,9 +324,9 @@ impl Rbatis {
             result = conn.exec_prepare(q).await;
         }
         if result.is_ok() {
-            info!("[rbatis] [{}] RowsAffected <== {}", tx_id, result.as_ref().unwrap());
+            self.log_plugin.info(&format!("[rbatis] [{}] RowsAffected <== {}", tx_id, result.as_ref().unwrap()));
         } else {
-            info!("[rbatis] [{}] RowsAffected <== {}", tx_id, 0);
+            self.log_plugin.info(&format!("[rbatis] [{}] RowsAffected <== {}", tx_id, 0));
         }
         return result;
     }
