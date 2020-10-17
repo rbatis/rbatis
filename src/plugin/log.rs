@@ -1,6 +1,3 @@
-use log::{debug, error, info, LevelFilter, trace, warn};
-use log::Level;
-
 /// log plugin
 pub trait LogPlugin: Send + Sync {
     fn error(&self, data: &str);
@@ -11,6 +8,7 @@ pub trait LogPlugin: Send + Sync {
 }
 
 
+use log::{debug, error, info, LevelFilter, trace, warn};
 pub struct RbatisLog {}
 
 impl LogPlugin for RbatisLog {
