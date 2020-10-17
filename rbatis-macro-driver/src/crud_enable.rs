@@ -9,11 +9,36 @@ use crate::proc_macro::TokenStream;
 
 ///impl CRUDEnable
 pub(crate) fn impl_macro(ast: &syn::DeriveInput) -> TokenStream {
-    let name = &ast.ident;
+    let table_name = gen_table_name(&ast.ident);
     let id_type = find_id_type_ident(&ast.data);
-    /// gen fields token
+    let mut fields = gen_fields(&ast.data);
+    let gen = quote! {
+        impl CRUDEnable for #name {
+            type IdType = #id_type;
+
+            fn table_name() -> String {
+                 #table_name.to_string()
+            }
+
+            fn table_columns() -> String{
+                 #fields
+            }
+        }
+    };
+    gen.into()
+}
+
+fn gen_table_name(data:&syn::Ident)->String{
+    let mut table_name = data.to_string();
+    let names: Vec<&str> = table_name.split("::").collect();
+    table_name = names.get(names.len() - 1).unwrap().to_string();
+    table_name = to_snake_name(&table_name);
+    table_name
+}
+
+fn gen_fields(data:&syn::Data) -> proc_macro2::TokenStream {
     let mut fields = quote! { String::new() };
-    match &ast.data {
+    match &data {
         syn::Data::Struct(s) => {
             let mut index = 0;
             for field in &s.fields {
@@ -32,25 +57,7 @@ pub(crate) fn impl_macro(ast: &syn::DeriveInput) -> TokenStream {
         }
         _ => {}
     }
-    //gen table name
-    let mut table_name = name.to_string();
-    let names: Vec<&str> = table_name.split("::").collect();
-    table_name = names.get(names.len() - 1).unwrap().to_string();
-    table_name = to_snake_name(&table_name);
-    let gen = quote! {
-        impl CRUDEnable for #name {
-            type IdType = #id_type;
-
-            fn table_name() -> String {
-                 #table_name.to_string()
-            }
-
-            fn table_columns() -> String{
-                 #fields
-            }
-        }
-    };
-    gen.into()
+    fields
 }
 
 
