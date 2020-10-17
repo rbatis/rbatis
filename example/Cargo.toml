@@ -34,4 +34,5 @@ tokio = { version = "0.2", features = ["full"] }
 #rbatis dep
 rbatis = { path = "../" }
 rbatis-core = { path = "../rbatis-core", features = ["all"] }
+# alse you can disable Compile log just add  ,default-features=false, features = ["no_print"]
 rbatis-macro-driver = { path = "../rbatis-macro-driver"}

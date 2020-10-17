@@ -4,19 +4,21 @@ extern crate proc_macro;
 use syn::{AttributeArgs, Data, ItemFn, parse_macro_input, ReturnType};
 
 use crate::proc_macro::TokenStream;
+use crate::util::println;
 
 mod util;
 mod crud_enable;
 mod sql;
 mod py_sql;
 
+
 #[proc_macro_derive(CRUDEnable)]
 pub fn hello_macro_derive(input: TokenStream) -> TokenStream {
-    println!("............gen impl CRUDEnable start............");
+    println(&format!("............gen impl CRUDEnable start............"));
     let ast = syn::parse(input).unwrap();
     let stream = crud_enable::impl_macro(&ast);
-    println!("............gen impl CRUDEnable:\n {}", format!("{}", stream));
-    println!("............gen impl CRUDEnable end............");
+    println(&format!("............gen impl CRUDEnable:\n {}", format!("{}", stream)));
+    println(&format!("............gen impl CRUDEnable end............"));
     stream
 }
 
@@ -27,7 +29,7 @@ pub fn hello_macro_derive(input: TokenStream) -> TokenStream {
 ///     fn select(name: &str) -> BizActivity {}
 #[proc_macro_attribute]
 pub fn sql(args: TokenStream, func: TokenStream) -> TokenStream {
-    println!("............gen macro sql start............");
+    println(&format!("............gen macro sql start............"));
 
     // this
     let args = parse_macro_input!(args as AttributeArgs);
@@ -35,8 +37,8 @@ pub fn sql(args: TokenStream, func: TokenStream) -> TokenStream {
 
     let stream = sql::impl_macro_sql(&target_fn, &args);
 
-    println!("............gen macro sql:\n {}", format!("{}", stream));
-    println!("............gen macro sql end............");
+    println(&format!("............gen macro sql:\n {}", format!("{}", stream)));
+    println(&format!("............gen macro sql end............"));
 
     stream
 }
@@ -52,7 +54,7 @@ pub fn sql(args: TokenStream, func: TokenStream) -> TokenStream {
 /// pub async fn py_select_rb(rbatis: &Rbatis, name: &str) -> Option<BizActivity> {}
 #[proc_macro_attribute]
 pub fn py_sql(args: TokenStream, func: TokenStream) -> TokenStream {
-    println!("............gen macro py_sql start............");
+    println(&format!("............gen macro py_sql start............"));
 
     // this
     let args = parse_macro_input!(args as AttributeArgs);
@@ -60,8 +62,8 @@ pub fn py_sql(args: TokenStream, func: TokenStream) -> TokenStream {
 
     let stream = py_sql::impl_macro_py_sql(&target_fn, &args);
 
-    println!("............gen macro py_sql :\n {}", format!("{}", stream));
-    println!("............gen macro py_sql end............");
+    println(&format!("............gen macro py_sql :\n {}", format!("{}", stream)));
+    println(&format!("............gen macro py_sql end............"));
 
     stream
 }

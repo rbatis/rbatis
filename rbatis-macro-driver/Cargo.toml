@@ -12,6 +12,14 @@ homepage = "https://rbatis.github.io/rbatis.io/#/"
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
+[features]
+default = ["print"]
+# default is print Compile info
+print=[]
+# this trait disable print compile info
+no_print=[]
+
+
 [lib]
 proc-macro = true
 
