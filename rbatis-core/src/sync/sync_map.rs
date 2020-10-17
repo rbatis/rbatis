@@ -112,7 +112,7 @@ pub struct Ref<'a, K, V>
 
 impl<'a, K, V> Ref<'a, K, V> where K: Eq + Hash {
     pub fn new(guard: RwLockReadGuard<'a, HashMap<K, V, RandomState>>, v: Option<&'a V>) -> Self {
-        let mut s = Self {
+        let s = Self {
             _guard: guard,
             v: v,
         };
@@ -139,7 +139,7 @@ pub struct RefMut<'a, K, V, S = RandomState> {
 
 impl<'a, K: Eq + Hash, V> RefMut<'a, K, V> {
     pub fn new(guard: RwLockWriteGuard<'a, HashMap<K, V, RandomState>>, v: Option<&'a mut V>) -> Self {
-        let mut s = Self {
+        let s = Self {
             _guard: guard,
             v: v,
         };
