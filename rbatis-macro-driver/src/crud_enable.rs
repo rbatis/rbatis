@@ -9,6 +9,7 @@ use crate::proc_macro::TokenStream;
 
 ///impl CRUDEnable
 pub(crate) fn impl_macro(ast: &syn::DeriveInput) -> TokenStream {
+    let name = &ast.ident;
     let table_name = gen_table_name(&ast.ident);
     let id_type = find_id_type_ident(&ast.data);
     let mut fields = gen_fields(&ast.data);
