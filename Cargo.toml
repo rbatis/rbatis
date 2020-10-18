@@ -37,7 +37,7 @@ serde_yaml = "0.8"
 
 #async
 async-std = { version = "1.6" }
-tokio = { version = "0.2", features = ["full"] }
+tokio = { version = "0.3", features = ["full"] }
 
 uuid = { version = "0.8", features = ["serde", "v4"] }
 log = "0.4"
