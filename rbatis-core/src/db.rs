@@ -671,7 +671,6 @@ impl DBTx {
     }
 
 
-    ///TODO find better way reduce the same code
     pub fn fetch<'q>(&mut self, sql: &'q str) -> crate::Result<DBCursor<'_, 'q>> {
         match &self.driver_type {
             &DriverType::None => {
@@ -696,6 +695,7 @@ impl DBTx {
                 });
             }
             &DriverType::Sqlite => {
+                //TODO edit to .lock().await
                 let m = self.sqlite.as_mut().unwrap().get_mut();
                 let data = m.fetch(sql);
                 return Ok(DBCursor {
