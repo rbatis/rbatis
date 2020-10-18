@@ -752,6 +752,7 @@ impl DBTx {
                 });
             }
             &DriverType::Sqlite => {
+                //TODO edit to .lock().await
                 let tx = self.sqlite.as_mut().unwrap().get_mut();
                 let data = tx.fetch(sql.sqlite.unwrap());
                 return Ok(DBCursor {
