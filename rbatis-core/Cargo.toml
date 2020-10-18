@@ -32,6 +32,7 @@ bench = []
 
 [dependencies]
 async-std = { version = "1.6", optional = true }
+tokio = { version = "0.3", optional = true }
 async-stream = { version = "0.2.1", default-features = false }
 base64 = { version = "0.12.0", default-features = false, optional = true, features = ["std"] }
 bigdecimal_ = { version = "0.2.0", optional = true, package = "bigdecimal", features = ["serde"] }
@@ -58,7 +59,6 @@ percent-encoding = "2.1.0"
 rand = { version = "0.7.3", default-features = false, optional = true, features = ["std"] }
 sha-1 = { version = "0.8.2", default-features = false, optional = true }
 sha2 = { version = "0.8.1", default-features = false, optional = true }
-tokio = { version = "0.2", default-features = false, features = ["dns", "fs", "time", "tcp"], optional = true }
 url = { version = "2.1.1", default-features = false }
 uuid = { version = "0.8.1", default-features = false, optional = true, features = ["std"] }
 serde = { version = "1.0", features = ["derive"], optional = true }
