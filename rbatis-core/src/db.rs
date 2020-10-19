@@ -18,6 +18,7 @@ use crate::runtime::Mutex;
 use crate::sqlite::{Sqlite, SqliteConnection, SqliteCursor, SqlitePool};
 use crate::transaction::Transaction;
 use crate::types::Type;
+use crate::decode::json_decode;
 
 #[derive(Debug, Clone, Copy)]
 pub struct PoolOptions {
@@ -446,37 +447,32 @@ impl DBPoolConn {
         }
     }
 
-    pub fn fetch_parperd<'q>(&mut self, sql: DBQuery<'q>) -> crate::Result<DBCursor<'_, 'q>> {
+    pub async fn fetch_parperd<'q, T>(&mut self, sql: DBQuery<'q>) -> crate::Result<(T, usize)>
+        where T: DeserializeOwned {
         match &self.driver_type {
             &DriverType::None => {
                 return Err(Error::from("un init DBPool!"));
             }
             &DriverType::Mysql => {
-                let data = self.mysql.as_mut().unwrap().cursor(sql.mysql.unwrap());
-                return Ok(DBCursor {
-                    driver_type: DriverType::Mysql,
-                    mysql: Some(data),
-                    postgres: None,
-                    sqlite: None,
-                });
+                let mut data:MySqlCursor = self.mysql.as_mut().unwrap().cursor(sql.mysql.unwrap());
+                let json_array = data.fetch_json().await?;
+                let return_len=json_array.len();
+                let result = json_decode::<T>(json_array)?;
+                Ok((result, return_len))
             }
             &DriverType::Postgres => {
-                let data = self.postgres.as_mut().unwrap().cursor(sql.postgres.unwrap());
-                return Ok(DBCursor {
-                    driver_type: DriverType::Postgres,
-                    mysql: None,
-                    postgres: Some(data),
-                    sqlite: None,
-                });
+                let mut data:PgCursor = self.postgres.as_mut().unwrap().cursor(sql.postgres.unwrap());
+                let json_array = data.fetch_json().await?;
+                let return_len=json_array.len();
+                let result = json_decode::<T>(json_array)?;
+                Ok((result, return_len))
             }
             &DriverType::Sqlite => {
-                let data = self.sqlite.as_mut().unwrap().cursor(sql.sqlite.unwrap());
-                return Ok(DBCursor {
-                    driver_type: DriverType::Sqlite,
-                    mysql: None,
-                    postgres: None,
-                    sqlite: Some(data),
-                });
+                let mut data:SqliteCursor = self.sqlite.as_mut().unwrap().cursor(sql.sqlite.unwrap());
+                let json_array = data.fetch_json().await?;
+                let return_len=json_array.len();
+                let result = json_decode::<T>(json_array)?;
+                Ok((result, return_len))
             }
         }
     }
@@ -728,39 +724,33 @@ impl DBTx {
         }
     }
 
-    pub fn fetch_parperd<'q>(&mut self, sql: DBQuery<'q>) -> crate::Result<DBCursor<'_, 'q>> {
+    pub async fn fetch_parperd<'q,T>(&mut self, sql: DBQuery<'q>) -> crate::Result<(T, usize)>
+        where T: DeserializeOwned {
         match &self.driver_type {
             &DriverType::None => {
                 return Err(Error::from("un init DBPool!"));
             }
             &DriverType::Mysql => {
-                let data = self.mysql.as_mut().unwrap().cursor(sql.mysql.unwrap());
-                return Ok(DBCursor {
-                    driver_type: DriverType::Mysql,
-                    mysql: Some(data),
-                    postgres: None,
-                    sqlite: None,
-                });
+                let mut data:MySqlCursor = self.mysql.as_mut().unwrap().cursor(sql.mysql.unwrap());
+                let json_array = data.fetch_json().await?;
+                let return_len=json_array.len();
+                let result = json_decode::<T>(json_array)?;
+                Ok((result, return_len))
             }
             &DriverType::Postgres => {
-                let data = self.postgres.as_mut().unwrap().cursor(sql.postgres.unwrap());
-                return Ok(DBCursor {
-                    driver_type: DriverType::Postgres,
-                    mysql: None,
-                    postgres: Some(data),
-                    sqlite: None,
-                });
+                let mut data:PgCursor = self.postgres.as_mut().unwrap().cursor(sql.postgres.unwrap());
+                let json_array = data.fetch_json().await?;
+                let return_len=json_array.len();
+                let result = json_decode::<T>(json_array)?;
+                Ok((result, return_len))
             }
             &DriverType::Sqlite => {
-                //TODO edit to .lock().await
-                let tx = self.sqlite.as_mut().unwrap().get_mut();
-                let data = tx.cursor(sql.sqlite.unwrap());
-                return Ok(DBCursor {
-                    driver_type: DriverType::Sqlite,
-                    mysql: None,
-                    postgres: None,
-                    sqlite: Some(data),
-                });
+                let mut mutex_guard = self.sqlite.as_mut().unwrap().lock().await;
+                let mut data:SqliteCursor = mutex_guard.cursor(sql.sqlite.unwrap());
+                let json_array = data.fetch_json().await?;
+                let return_len=json_array.len();
+                let result = json_decode::<T>(json_array)?;
+                Ok((result, return_len))
             }
         }
     }
