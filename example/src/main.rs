@@ -103,8 +103,7 @@ pub async fn test_use_driver() {
     fast_log::log::init_log("requests.log", &RuntimeType::Std).unwrap();
     let pool = DBPool::new(MYSQL_URL).await.unwrap();
     let mut conn = pool.acquire().await.unwrap();
-    let mut c = conn.fetch("SELECT count(1) FROM biz_activity;").unwrap();
-    let r: serde_json::Value = c.decode_json().await.unwrap();
+    let (r,_) = conn.fetch::<serde_json::Value>("SELECT count(1) FROM biz_activity;").await.unwrap();
     println!("done:{:?}", r);
 }
 
