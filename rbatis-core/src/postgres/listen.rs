@@ -201,11 +201,11 @@ impl Executor for PgListener {
         self.connection().execute(query)
     }
 
-    fn fetch<'q, E>(&mut self, query: E) -> PgCursor<'_, 'q>
+    fn cursor<'q, E>(&mut self, query: E) -> PgCursor<'_, 'q>
     where
         E: Execute<'q, Self::Database>,
     {
-        self.connection().fetch(query)
+        self.connection().cursor(query)
     }
 
     #[doc(hidden)]

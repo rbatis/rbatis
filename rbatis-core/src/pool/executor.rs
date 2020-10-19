@@ -27,7 +27,7 @@ where
         Box::pin(async move { self.acquire().await?.execute(query).await })
     }
 
-    fn fetch<'e, 'q, E>(&'e mut self, query: E) -> <Self::Database as HasCursor<'_, 'q>>::Cursor
+    fn cursor<'e, 'q, E>(&'e mut self, query: E) -> <Self::Database as HasCursor<'_, 'q>>::Cursor
     where
         E: Execute<'q, DB>,
     {
@@ -79,11 +79,11 @@ where
         (**self).execute(query)
     }
 
-    fn fetch<'e, 'q, E>(&'e mut self, query: E) -> <C::Database as HasCursor<'_, 'q>>::Cursor
+    fn cursor<'e, 'q, E>(&'e mut self, query: E) -> <C::Database as HasCursor<'_, 'q>>::Cursor
     where
         E: Execute<'q, Self::Database>,
     {
-        (**self).fetch(query)
+        (**self).cursor(query)
     }
 
     #[doc(hidden)]
@@ -111,6 +111,6 @@ where
     where
         E: Execute<'q, Self::Database>,
     {
-        (**self).fetch(query)
+        (**self).cursor(query)
     }
 }
