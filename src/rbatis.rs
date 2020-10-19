@@ -197,32 +197,23 @@ impl Rbatis {
         }
 
         self.log_plugin.info(&format!("[rbatis] [{}] Query ==> {}", tx_id, sql.as_str()));
-        let data;
-        let fetch_num;
+        let mut result;
+        let mut fetch_num=0;
         if tx_id.is_empty() {
             let mut conn = self.get_pool()?.acquire().await?;
-            let mut c = conn.fetch(sql.as_str())?;
-            let json = c.fetch_json().await?;
-            fetch_num = json.len();
-            data = rbatis_core::decode::json_decode::<T>(json)?;
+            let (data,fetch_num) = conn.fetch(sql.as_str()).await?;
+            result = data;
         } else {
             let conn = self.tx_context.get_mut(tx_id).await;
             if conn.is_none() {
                 return Err(rbatis_core::Error::from(format!("[rbatis] tx:{} not exist！", tx_id)));
             }
             let mut conn = conn.unwrap();
-            let c = conn.fetch(sql.as_str());
-            if c.is_err() {
-                let e = c.err().unwrap();
-                return Err(e);
-            }
-            let mut c = c.unwrap();
-            let json = c.fetch_json().await?;
-            fetch_num = json.len();
-            data = rbatis_core::decode::json_decode::<T>(json)?;
+            let (data,fetch_num) = conn.fetch(sql.as_str()).await?;
+            result = data;
         }
         self.log_plugin.info(&format!("[rbatis] [{}] ReturnRows <== {}", tx_id, fetch_num));
-        return Ok(data);
+        return Ok(result);
     }
 
     /// exec sql(row sql)
