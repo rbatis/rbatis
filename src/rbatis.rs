@@ -201,16 +201,18 @@ impl Rbatis {
         let mut fetch_num = 0;
         if tx_id.is_empty() {
             let mut conn = self.get_pool()?.acquire().await?;
-            let (data, fetch_num) = conn.fetch(sql.as_str()).await?;
+            let (data, num) = conn.fetch(sql.as_str()).await?;
             result = data;
+            fetch_num = num;
         } else {
             let conn = self.tx_context.get_mut(tx_id).await;
             if conn.is_none() {
                 return Err(rbatis_core::Error::from(format!("[rbatis] tx:{} not exist！", tx_id)));
             }
             let mut conn = conn.unwrap();
-            let (data, fetch_num) = conn.fetch(sql.as_str()).await?;
+            let (data, num) = conn.fetch(sql.as_str()).await?;
             result = data;
+            fetch_num = num;
         }
         self.log_plugin.info(&format!("[rbatis] [{}] ReturnRows <== {}", tx_id, fetch_num));
         return Ok(result);
@@ -268,8 +270,9 @@ impl Rbatis {
         if tx_id.is_empty() {
             let mut conn = self.get_pool()?.acquire().await?;
             let q: DBQuery = self.bind_arg(&sql, &args)?;
-            let (result, return_num) = conn.fetch_parperd(q).await?;
+            let (result, num) = conn.fetch_parperd(q).await?;
             result_data = result;
+            return_num = num;
         } else {
             let q: DBQuery = self.bind_arg(&sql, &args)?;
             let conn = self.tx_context.get_mut(tx_id).await;
@@ -277,8 +280,9 @@ impl Rbatis {
                 return Err(rbatis_core::Error::from(format!("[rbatis] tx:{} not exist！", tx_id)));
             }
             let mut conn = conn.unwrap();
-            let (result, return_num) = conn.fetch_parperd(q).await?;
+            let (result, num) = conn.fetch_parperd(q).await?;
             result_data = result;
+            return_num = num;
         }
         self.log_plugin.info(&format!("[rbatis] [{}] ReturnRows <== {}", tx_id, return_num));
         return Ok(result_data);
