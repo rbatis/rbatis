@@ -115,7 +115,7 @@ impl Executor for SqliteConnection {
         })
     }
 
-    fn fetch<'q, E>(&mut self, query: E) -> SqliteCursor<'_, 'q>
+    fn cursor<'q, E>(&mut self, query: E) -> SqliteCursor<'_, 'q>
     where
         E: Execute<'q, Self::Database>,
     {

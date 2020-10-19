@@ -397,7 +397,7 @@ impl DBPoolConn {
                 return Err(Error::from("un init DBPool!"));
             }
             &DriverType::Mysql => {
-                let data = self.mysql.as_mut().unwrap().fetch(sql);
+                let data = self.mysql.as_mut().unwrap().cursor(sql);
                 return Ok(DBCursor {
                     driver_type: DriverType::Mysql,
                     mysql: Some(data),
@@ -406,7 +406,7 @@ impl DBPoolConn {
                 });
             }
             &DriverType::Postgres => {
-                let data = self.postgres.as_mut().unwrap().fetch(sql);
+                let data = self.postgres.as_mut().unwrap().cursor(sql);
                 return Ok(DBCursor {
                     driver_type: DriverType::Postgres,
                     mysql: None,
@@ -415,7 +415,7 @@ impl DBPoolConn {
                 });
             }
             &DriverType::Sqlite => {
-                let data = self.sqlite.as_mut().unwrap().fetch(sql);
+                let data = self.sqlite.as_mut().unwrap().cursor(sql);
                 return Ok(DBCursor {
                     driver_type: DriverType::Sqlite,
                     mysql: None,
@@ -452,7 +452,7 @@ impl DBPoolConn {
                 return Err(Error::from("un init DBPool!"));
             }
             &DriverType::Mysql => {
-                let data = self.mysql.as_mut().unwrap().fetch(sql.mysql.unwrap());
+                let data = self.mysql.as_mut().unwrap().cursor(sql.mysql.unwrap());
                 return Ok(DBCursor {
                     driver_type: DriverType::Mysql,
                     mysql: Some(data),
@@ -461,7 +461,7 @@ impl DBPoolConn {
                 });
             }
             &DriverType::Postgres => {
-                let data = self.postgres.as_mut().unwrap().fetch(sql.postgres.unwrap());
+                let data = self.postgres.as_mut().unwrap().cursor(sql.postgres.unwrap());
                 return Ok(DBCursor {
                     driver_type: DriverType::Postgres,
                     mysql: None,
@@ -470,7 +470,7 @@ impl DBPoolConn {
                 });
             }
             &DriverType::Sqlite => {
-                let data = self.sqlite.as_mut().unwrap().fetch(sql.sqlite.unwrap());
+                let data = self.sqlite.as_mut().unwrap().cursor(sql.sqlite.unwrap());
                 return Ok(DBCursor {
                     driver_type: DriverType::Sqlite,
                     mysql: None,
@@ -677,7 +677,7 @@ impl DBTx {
                 return Err(Error::from("un init DBPool!"));
             }
             &DriverType::Mysql => {
-                let data = self.mysql.as_mut().unwrap().fetch(sql);
+                let data = self.mysql.as_mut().unwrap().cursor(sql);
                 return Ok(DBCursor {
                     driver_type: DriverType::Mysql,
                     mysql: Some(data),
@@ -686,7 +686,7 @@ impl DBTx {
                 });
             }
             &DriverType::Postgres => {
-                let data = self.postgres.as_mut().unwrap().fetch(sql);
+                let data = self.postgres.as_mut().unwrap().cursor(sql);
                 return Ok(DBCursor {
                     driver_type: DriverType::Postgres,
                     mysql: None,
@@ -697,7 +697,7 @@ impl DBTx {
             &DriverType::Sqlite => {
                 //TODO edit to .lock().await
                 let m = self.sqlite.as_mut().unwrap().get_mut();
-                let data = m.fetch(sql);
+                let data = m.cursor(sql);
                 return Ok(DBCursor {
                     driver_type: DriverType::Sqlite,
                     mysql: None,
@@ -734,7 +734,7 @@ impl DBTx {
                 return Err(Error::from("un init DBPool!"));
             }
             &DriverType::Mysql => {
-                let data = self.mysql.as_mut().unwrap().fetch(sql.mysql.unwrap());
+                let data = self.mysql.as_mut().unwrap().cursor(sql.mysql.unwrap());
                 return Ok(DBCursor {
                     driver_type: DriverType::Mysql,
                     mysql: Some(data),
@@ -743,7 +743,7 @@ impl DBTx {
                 });
             }
             &DriverType::Postgres => {
-                let data = self.postgres.as_mut().unwrap().fetch(sql.postgres.unwrap());
+                let data = self.postgres.as_mut().unwrap().cursor(sql.postgres.unwrap());
                 return Ok(DBCursor {
                     driver_type: DriverType::Postgres,
                     mysql: None,
@@ -754,7 +754,7 @@ impl DBTx {
             &DriverType::Sqlite => {
                 //TODO edit to .lock().await
                 let tx = self.sqlite.as_mut().unwrap().get_mut();
-                let data = tx.fetch(sql.sqlite.unwrap());
+                let data = tx.cursor(sql.sqlite.unwrap());
                 return Ok(DBCursor {
                     driver_type: DriverType::Sqlite,
                     mysql: None,

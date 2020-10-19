@@ -190,7 +190,7 @@ impl Executor for super::MySqlConnection {
         })
     }
 
-    fn fetch<'q, E>(&mut self, query: E) -> MySqlCursor<'_, 'q>
+    fn cursor<'q, E>(&mut self, query: E) -> MySqlCursor<'_, 'q>
     where
         E: Execute<'q, Self::Database>,
     {

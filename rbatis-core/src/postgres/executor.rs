@@ -496,7 +496,7 @@ impl Executor for super::PgConnection {
         })
     }
 
-    fn fetch<'q, E>(&mut self, query: E) -> PgCursor<'_, 'q>
+    fn cursor<'q, E>(&mut self, query: E) -> PgCursor<'_, 'q>
     where
         E: Execute<'q, Self::Database>,
     {
