@@ -272,15 +272,13 @@ impl Rbatis {
 
         self.log_plugin.info(&format!("[rbatis] [{}] Query ==> {}", tx_id, &sql));
         self.log_plugin.info(&format!("[rbatis] [{}] Args  ==> {}", tx_id, serde_json::to_string(&args).unwrap_or("".to_string())));
-        let result;
-        let return_num;
+        let mut result_data;
+        let mut return_num = 0;
         if tx_id.is_empty() {
             let mut conn = self.get_pool()?.acquire().await?;
             let q: DBQuery = self.bind_arg(&sql, &args)?;
-            let mut c = conn.fetch_parperd(q)?;
-            let json_array = c.fetch_json().await?;
-            return_num = json_array.len();
-            result = rbatis_core::decode::json_decode::<T>(json_array)?;
+            let (result,return_num) = conn.fetch_parperd(q).await?;
+            result_data = result;
         } else {
             let q: DBQuery = self.bind_arg(&sql, &args)?;
             let conn = self.tx_context.get_mut(tx_id).await;
@@ -288,13 +286,11 @@ impl Rbatis {
                 return Err(rbatis_core::Error::from(format!("[rbatis] tx:{} not exist！", tx_id)));
             }
             let mut conn = conn.unwrap();
-            let mut c = conn.fetch_parperd(q)?;
-            let json = c.fetch_json().await?;
-            return_num = json.len();
-            result = rbatis_core::decode::json_decode::<T>(json)?;
+            let  (result,return_num) = conn.fetch_parperd(q).await?;
+            result_data = result;
         }
         self.log_plugin.info(&format!("[rbatis] [{}] ReturnRows <== {}", tx_id, return_num));
-        return Ok(result);
+        return Ok(result_data);
     }
 
     /// exec sql(prepare sql)
