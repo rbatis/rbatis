@@ -45,7 +45,6 @@ fast_log = "1.2.3"
 
 #async trait
 async-trait = "0.1.31"
-
-futures-core = { version = "0.3.5" }
+futures-core = { version = "0.3.6" }
 crossbeam-queue = "0.2.3"
 once_cell = "1.4.1"
