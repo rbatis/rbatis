@@ -26,10 +26,10 @@ tide = "0.12.0"
 log = "0.4"
 fast_log = "1.2.3"
 
-
 #runtime
-async-std = { version = "1.6", features = ["attributes"] }
 tokio = { version = "0.2", features = ["full"] }
+#choose tokio dep,or you can use default
+async-std = { version = "1.6", features = ["attributes","tokio02"] }
 
 #rbatis dep
 rbatis = { path = "../" }
