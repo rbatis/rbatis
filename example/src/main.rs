@@ -251,12 +251,6 @@ async fn hello(_: hyper::Request<hyper::Body>) -> Result<hyper::Response<hyper::
 #[async_std::test]
 //#[tokio::test] //也可以使用tokio::test
 pub async fn test_hyper() {
-    // 实例化 运行时
-    // let RT:Mutex<tokio::runtime::Runtime> = Mutex::new(tokio::runtime::Builder::new()
-    //     .basic_scheduler()
-    //     .enable_all()
-    //     .build()
-    //     .unwrap());
     fast_log::log::init_log("requests.log", &RuntimeType::Std).unwrap();
     RB.link(MYSQL_URL).await.unwrap();
     let make_svc = hyper::service::make_service_fn(|_conn| {
