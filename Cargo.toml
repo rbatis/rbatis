@@ -8,7 +8,7 @@ members = [
 
 [package]
 name = "rbatis"
-version = "1.7.22"
+version = "1.7.23"
 description = "Rust ORM Framework High Performance高性能Rust ORM框架(JSON based)"
 readme = "Readme.md"
 authors = ["ce <zhuxiujia@qq.com>"]
@@ -20,7 +20,7 @@ homepage = "https://rbatis.github.io/rbatis.io/#/"
 [features]
 
 [dependencies]
-rbatis-core = { version = "1.7.22", path = "rbatis-core" }
+rbatis-core = { version = "1.7.23", path = "rbatis-core" }
 chrono = { version = "0.4", features = ["serde"] }
 xml-rs = "0.8"
 lazy_static = "1.4.0"
