@@ -17,15 +17,10 @@ license = "MIT"
 documentation = "https://rbatis.github.io/rbatis.io/#/"
 repository = "https://github.com/rbatis/rbatis"
 homepage = "https://rbatis.github.io/rbatis.io/#/"
-
-
 [features]
-default = ["runtime-async-std"]
-runtime-async-std = ["rbatis-core/runtime-async-std"]
-runtime-tokio = ["rbatis-core/runtime-tokio"]
 
 [dependencies]
-rbatis-core = { version = "1.7.22", path = "rbatis-core", default-features = false, features = ["all"] }
+rbatis-core = { version = "1.7.22", path = "rbatis-core" }
 chrono = { version = "0.4", features = ["serde"] }
 xml-rs = "0.8"
 lazy_static = "1.4.0"
@@ -37,8 +32,6 @@ serde_yaml = "0.8"
 
 #async
 async-std = { version = "1.6" }
-tokio = { version = "0.3", features = ["full"] }
-
 uuid = { version = "0.8", features = ["serde", "v4"] }
 log = "0.4"
 fast_log = "1.2.3"
