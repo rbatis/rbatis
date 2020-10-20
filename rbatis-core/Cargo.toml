@@ -12,7 +12,7 @@ repository = "https://github.com/rbatis/rbatis"
 homepage = "https://rbatis.github.io/rbatis.io/#/"
 
 [features]
-# only use runtime-async-std,Because it already supports TokIO-02,03
+# only use runtime async-std,Because async-std already supports TokIO-02,03
 default = ["all"]
 unstable = []
 # intended mainly for CI and docs
