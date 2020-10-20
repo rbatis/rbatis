@@ -29,7 +29,7 @@ pub(crate) use tokio::{
     io::{AsyncRead, AsyncReadExt, AsyncWrite},
     net::TcpStream,
     task::spawn,
-    time::delay_for as sleep,
+    time::sleep,
     time::timeout,
     sync::Mutex,
     sync::MutexGuard,

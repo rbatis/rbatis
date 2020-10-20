@@ -43,9 +43,9 @@ chrono = { version = "0.4.10", default-features = false, features = ["clock"], o
 crossbeam-queue = "0.2.3"
 crossbeam-utils = { version = "0.7.2", default-features = false }
 digest = { version = "0.8.1", default-features = false, optional = true, features = ["std"] }
-futures-channel = { version = "0.3.4", default-features = false, features = ["alloc", "std"] }
-futures-core = { version = "0.3.4", default-features = false }
-futures-util = { version = "0.3.4", default-features = false }
+futures-channel = { version = "0.3.6", default-features = false, features = ["alloc", "std"] }
+futures-core = { version = "0.3.6", default-features = false }
+futures-util = { version = "0.3.6", default-features = false }
 generic-array = { version = "0.12.3", default-features = false, optional = true }
 hex = "0.4.2"
 hmac = { version = "0.7.1", default-features = false, optional = true }
