@@ -82,16 +82,7 @@ macro_rules! forward_pin (
 );
 
 impl AsyncRead for MaybeTlsStream {
-    #[cfg(feature = "runtime-tokio")]
-    fn poll_read(
-        mut self: Pin<&mut Self>,
-        cx: &mut Context,
-        buf: &mut tokio::io::ReadBuf<'_>,
-    ) -> Poll<io::Result<()>> {
-        forward_pin!(self.poll_read(cx, buf))
-    }
 
-    #[cfg(feature = "runtime-async-std")]
     fn poll_read(
         mut self: Pin<&mut Self>,
         cx: &mut Context,
@@ -100,7 +91,6 @@ impl AsyncRead for MaybeTlsStream {
         forward_pin!(self.poll_read(cx, buf))
     }
 
-    #[cfg(feature = "runtime-async-std")]
     fn poll_read_vectored(
         mut self: Pin<&mut Self>,
         cx: &mut Context,
@@ -123,17 +113,10 @@ impl AsyncWrite for MaybeTlsStream {
         forward_pin!(self.poll_flush(cx))
     }
 
-    #[cfg(feature = "runtime-async-std")]
     fn poll_close(mut self: Pin<&mut Self>, cx: &mut Context) -> Poll<io::Result<()>> {
         forward_pin!(self.poll_close(cx))
     }
 
-    #[cfg(feature = "runtime-tokio")]
-    fn poll_shutdown(mut self: Pin<&mut Self>, cx: &mut Context) -> Poll<io::Result<()>> {
-        forward_pin!(self.poll_shutdown(cx))
-    }
-
-    #[cfg(feature = "runtime-async-std")]
     fn poll_write_vectored(
         mut self: Pin<&mut Self>,
         cx: &mut Context,
