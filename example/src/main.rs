@@ -247,9 +247,9 @@ async fn hello(_: hyper::Request<hyper::Body>) -> Result<hyper::Response<hyper::
     }
 }
 
-// 示例-Rbatis使用web框架hyper/AsyncStd(async std也依赖了tokio)
+// 示例-hyper /AsyncStd(async std也依赖了tokio,所以它也支持~)
 #[async_std::test]
-//#[tokio::test]
+//#[tokio::test] //也可以使用tokio::test
 pub async fn test_hyper() {
     // 实例化 运行时
     // let RT:Mutex<tokio::runtime::Runtime> = Mutex::new(tokio::runtime::Builder::new()
