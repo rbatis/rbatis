@@ -34,7 +34,7 @@ serde_yaml = "0.8"
 async-std = { version = "1.6" }
 uuid = { version = "0.8", features = ["serde", "v4"] }
 log = "0.4"
-fast_log = "1.2.3"
+fast_log = "1.2.4"
 
 #async trait
 async-trait = "0.1.31"
