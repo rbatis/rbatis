@@ -14,7 +14,6 @@ mod py_sql;
 
 #[proc_macro_derive(CRUDEnable)]
 pub fn hello_macro_derive(input: TokenStream) -> TokenStream {
-    println(&format!("............gen impl CRUDEnable start............"));
     let ast = syn::parse(input).unwrap();
     let stream = crud_enable::impl_macro(&ast);
     println(&format!("............gen impl CRUDEnable:\n {}", format!("{}", stream)));
@@ -29,9 +28,6 @@ pub fn hello_macro_derive(input: TokenStream) -> TokenStream {
 ///     fn select(name: &str) -> BizActivity {}
 #[proc_macro_attribute]
 pub fn sql(args: TokenStream, func: TokenStream) -> TokenStream {
-    println(&format!("............gen macro sql start............"));
-
-    // this
     let args = parse_macro_input!(args as AttributeArgs);
     let target_fn: ItemFn = syn::parse(func).unwrap();
 
@@ -54,9 +50,6 @@ pub fn sql(args: TokenStream, func: TokenStream) -> TokenStream {
 /// pub async fn py_select_rb(rbatis: &Rbatis, name: &str) -> Option<BizActivity> {}
 #[proc_macro_attribute]
 pub fn py_sql(args: TokenStream, func: TokenStream) -> TokenStream {
-    println(&format!("............gen macro py_sql start............"));
-
-    // this
     let args = parse_macro_input!(args as AttributeArgs);
     let target_fn: ItemFn = syn::parse(func).unwrap();
 
