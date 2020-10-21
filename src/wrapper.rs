@@ -599,6 +599,7 @@ mod test {
             let w = Wrapper::new(&DriverType::Mysql).eq("id", 1)
                 .ne("id", 1)
                 .in_array("id", &[1, 2, 3])
+                .r#in("id",&[1,2,3])
                 .in_("id",&[1,2,3])
                 .not_in("id", &[1, 2, 3])
                 .all_eq(&m)
