@@ -18,6 +18,8 @@ use rbatis_core::Error;
 ///             .ne("id", 1)
 ///             .and()
 ///             .in_array("id", &[1, 2, 3])
+///             .in_("id", &[1, 2, 3])
+///             .r#in("id", &[1, 2, 3])
 ///             .and()
 ///             .not_in("id", &[1, 2, 3])
 ///             .and()
