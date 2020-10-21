@@ -490,6 +490,13 @@ impl Wrapper {
         self.in_array(column,obj)
     }
 
+    /// gen sql: * in (*,*,*)
+    pub fn r#in<T>(&mut self, column: &str, obj: &[T]) -> &mut Self
+        where T: Serialize {
+        self.in_array(column,obj)
+    }
+
+
     pub fn not_in<T>(&mut self, column: &str, obj: &[T]) -> &mut Self
         where T: Serialize {
         self.and();
