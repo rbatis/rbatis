@@ -22,7 +22,7 @@ pub trait CRUDEnable: Send + Sync + Serialize + DeserializeOwned {
     /// IdType = String
     /// IdType = i32
     ///
-    type IdType: Send + Sync + DeserializeOwned + Serialize + Display;
+    type IdType: Send + Sync + Serialize + Display;
     /// get table name,default is type name for snake name
     ///
     /// for Example:  struct  BizActivity{} =>  "biz_activity"
