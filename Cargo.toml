@@ -20,10 +20,11 @@ homepage = "https://rbatis.github.io/rbatis.io/#/"
 
 [features]
 default = ["async-io"]
-tokio02 = ["rbatis-core/tokio02"]
-async-io = ["rbatis-core"]
+tokio02 = ["rbatis-core/tokio02", "async-std/tokio02"]
+async-io = ["rbatis-core", "async-std"]
 
 [dependencies]
+async-std = { version = "1.6", optional = true }
 rbatis-core = { version = "1.7.24", path = "rbatis-core", optional = true }
 chrono = { version = "0.4", features = ["serde"] }
 xml-rs = "0.8"
