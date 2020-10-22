@@ -501,6 +501,9 @@ rbatis-core， Cargo.toml add rbatis-core = "*"
 ```rust
 # add the line below in Cargo.toml to used async_std
 async-std = { version = "1.6", features = ["attributes","tokio02"] }
+rbatis-core = {  default-features = false ,  features = ["all","tokio02"] }
+rbatis = {  default-features = false , , features = ["tokio02"] }
+
 # or use default
 async-std = { version = "1.6", features = ["attributes"] }
 ```
