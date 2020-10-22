@@ -18,6 +18,9 @@ documentation = "https://rbatis.github.io/rbatis.io/#/"
 repository = "https://github.com/rbatis/rbatis"
 homepage = "https://rbatis.github.io/rbatis.io/#/"
 [features]
+default = ["async-io"]
+tokio02 = ["async-std/tokio02"]
+async-io = ["async-std"]
 
 [dependencies]
 rbatis-core = { version = "1.7.23", path = "rbatis-core" }
@@ -31,7 +34,7 @@ serde_json = "1.0"
 serde_yaml = "0.8"
 
 #async
-async-std = { version = "1.6" }
+async-std = { version = "1.6", optional = true }
 uuid = { version = "0.8", features = ["serde", "v4"] }
 log = "0.4"
 fast_log = "1.2.4"

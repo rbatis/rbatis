@@ -12,8 +12,10 @@ repository = "https://github.com/rbatis/rbatis"
 homepage = "https://rbatis.github.io/rbatis.io/#/"
 
 [features]
-# only use runtime async-std,Because async-std already supports TokIO-02,03
-default = ["all"]
+default = ["all", "async-io"]
+tokio02 = ["async-std/tokio02"]
+async-io = ["async-std"]
+
 unstable = []
 # intended mainly for CI and docs
 all = ["all-database", "all-type"]
@@ -22,7 +24,7 @@ all-type = ["bigdecimal", "json", "chrono", "ipnetwork", "uuid"]
 # we need a feature which activates `num-bigint` as well because
 # `bigdecimal` uses types from it but does not reexport (tsk tsk)
 bigdecimal = ["bigdecimal_", "num-bigint"]
-postgres = ["md-5", "sha2", "base64", "sha-1", "rand", "hmac", "futures-channel/sink", "futures-util/sink","geo-types"]
+postgres = ["md-5", "sha2", "base64", "sha-1", "rand", "hmac", "futures-channel/sink", "futures-util/sink", "geo-types"]
 json = ["serde", "serde_json"]
 mysql = ["sha-1", "sha2", "generic-array", "num-bigint", "base64", "digest", "rand"]
 sqlite = ["libsqlite3-sys"]
@@ -30,7 +32,7 @@ sqlite = ["libsqlite3-sys"]
 bench = []
 
 [dependencies]
-async-std = { version = "1.6" }
+async-std = { version = "1.6", optional = true }
 async-stream = { version = "0.2.1", default-features = false }
 base64 = { version = "0.12.0", default-features = false, optional = true, features = ["std"] }
 bigdecimal_ = { version = "0.2.0", optional = true, package = "bigdecimal", features = ["serde"] }
@@ -48,7 +50,7 @@ generic-array = { version = "0.12.3", default-features = false, optional = true 
 hex = "0.4.2"
 hmac = { version = "0.7.1", default-features = false, optional = true }
 ipnetwork = { version = "0.16.0", default-features = false, optional = true }
-geo-types = {version = "0.6.0", features = ["serde"], optional = true }
+geo-types = { version = "0.6.0", features = ["serde"], optional = true }
 libc = "0.2.68"
 log = { version = "0.4.8", default-features = false }
 md-5 = { version = "0.8.0", default-features = false, optional = true }
