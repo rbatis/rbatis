@@ -459,8 +459,9 @@ async fn main() -> std::io::Result<()> {
 | Mysql            | √     |   
 | Postgres         | √     |  
 | Sqlite           | √     |  
-| TiDB             | √     |
-| CockroachDB      | √     |
+| MariaDB(Mysql)             | √     |
+| TiDB(Mysql)             | √     |
+| CockroachDB(Postgres)      | √     |
 
 ### Supported OS/Platforms
 | platform   | is supported |
