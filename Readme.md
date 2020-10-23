@@ -500,12 +500,9 @@ rbatis-core， Cargo.toml add rbatis-core = "*"
 * How to select `async/.await` runtime? <br/>
 ```rust
 # add the line below in Cargo.toml to used async_std
-async-std = { version = "1.6", features = ["attributes","tokio02"] }
-rbatis-core = {  default-features = false ,  features = ["all","tokio02"] }
-rbatis = {  default-features = false , features = ["tokio02"] }
-
-# or use default
-async-std = { version = "1.6", features = ["attributes"] }
+async-std = { version = "*", features = ["attributes","tokio02"] }
+rbatis-core = { version = "*", default-features = false ,  features = ["all","tokio02"] }
+rbatis = { version = "*", default-features = false , features = ["tokio02"] }
 ```
 
 ### Related Projects
