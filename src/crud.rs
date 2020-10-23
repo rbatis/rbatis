@@ -423,6 +423,7 @@ fn make_select_sql<T>(rb: &Rbatis, w: &Wrapper) -> Result<String> where T: CRUDE
     Ok(sql)
 }
 
+#[cfg(test)]
 mod test {
     use chrono::{DateTime, Utc};
     use fast_log::log::RuntimeType;

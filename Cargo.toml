@@ -29,20 +29,19 @@ rbatis-core = { version = "1.7.24", path = "rbatis-core", optional = true }
 chrono = { version = "0.4", features = ["serde"] }
 xml-rs = "0.8"
 lazy_static = "1.4.0"
-
 #serde
 serde = { version = "1.0", features = ["derive"] }
 serde_json = "1.0"
 serde_yaml = "0.8"
-
 #uuid
 uuid = { version = "0.8", features = ["serde", "v4"] }
 #log
 log = "0.4"
-fast_log = "1.2.5"
-
 #async trait
 async-trait = "0.1.31"
 futures-core = { version = "0.3.6" }
 crossbeam-queue = "0.2.3"
 once_cell = "1.4.1"
+
+[dev-dependencies]
+fast_log = "1.2.5"
