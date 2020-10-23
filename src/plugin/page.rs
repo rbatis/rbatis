@@ -310,7 +310,7 @@ impl<T> ToString for Page<T> where T: Send + Sync + Serialize {
     }
 }
 
-
+#[cfg(test)]
 mod test {
     use crate::plugin::page::{IPage, IPageRequest, Page};
 
