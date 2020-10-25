@@ -1,7 +1,6 @@
 ///test CRUD
 #[cfg(test)]
 mod test {
-    use fast_log::log::RuntimeType;
     use serde::Deserialize;
     use serde::Serialize;
 
@@ -37,7 +36,7 @@ mod test {
 // }
 
     pub async fn init_rbatis() -> Rbatis {
-        fast_log::log::init_log("requests.log", &RuntimeType::Std);
+        fast_log::init_log("requests.log", 1000,log::Level::Info,None);
         let rb = Rbatis::new();
         rb.link("mysql://root:123456@localhost:3306/test").await.unwrap();
 
@@ -251,7 +250,7 @@ mod test {
 
     #[async_std::test]
     pub async fn test_macro_select() {
-        fast_log::log::init_log("requests.log", &RuntimeType::Std);
+        fast_log::init_log("requests.log", 1000,log::Level::Info,None);
         RB.link("mysql://root:123456@localhost:3306/test").await.unwrap();
         let a = select("1").await.unwrap();
         println!("{:?}", a);
@@ -259,7 +258,7 @@ mod test {
 
     #[async_std::test]
     pub async fn test_macro_py_select() {
-        fast_log::log::init_log("requests.log", &RuntimeType::Std);
+        fast_log::init_log("requests.log", 1000,log::Level::Info,None);
         //use static ref
         RB.link("mysql://root:123456@localhost:3306/test").await.unwrap();
         let a = py_select("1").await.unwrap();
@@ -285,7 +284,7 @@ mod test {
 
     #[async_std::test]
     pub async fn test_join() {
-        fast_log::log::init_log("requests.log", &RuntimeType::Std);
+        fast_log::init_log("requests.log", 1000,log::Level::Info,None);
         RB.link("mysql://root:123456@localhost:3306/test").await.unwrap();
         let results = join_select(&RB, "test").await.unwrap();
         println!("data: {:?}", results);
@@ -312,7 +311,7 @@ mod test {
 
     #[async_std::test]
     pub async fn test_macro_py_select_page() {
-        fast_log::log::init_log("requests.log", &RuntimeType::Std);
+        fast_log::init_log("requests.log", 1000,log::Level::Info,None);
         //use static ref
         RB.link("mysql://root:123456@localhost:3306/test").await.unwrap();
         let a = py_select_page(&PageRequest::new(1, 10), "test").await.unwrap();
@@ -327,7 +326,7 @@ mod test {
 
     #[async_std::test]
     pub async fn test_macro_sql_select_page() {
-        fast_log::log::init_log("requests.log", &RuntimeType::Std);
+        fast_log::init_log("requests.log", 1000,log::Level::Info,None);
         //use static ref
         RB.link("mysql://root:123456@localhost:3306/test").await.unwrap();
         let a = sql_select_page(&PageRequest::new(1, 10), "test").await.unwrap();

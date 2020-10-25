@@ -300,7 +300,7 @@ rb.update_by_wrapper("", &activity, &w).await;
 ``` rust
  use log::{error, info, warn};
  fn  main(){
-      fast_log::log::init_log("requests.log", &RuntimeType::Std).unwrap();
+      fast_log::init_log("requests.log", 1000,log::Level::Info,None);
       info!("print data");
  }
 ```
@@ -343,7 +343,7 @@ pub struct Activity {
 fn main() {
     async_std::task::block_on(
            async move {
-               fast_log::log::init_log("requests.log", &RuntimeType::Std).unwrap();
+               fast_log::init_log("requests.log", 1000,log::Level::Info,None);
                let mut rb = Rbatis::new();
                rb.link("mysql://root:123456@localhost:3306/test").await.unwrap();
                //xml数据建议以 XXMapper.xml 的格式存储管理
@@ -428,7 +428,7 @@ async fn index() -> impl Responder {
 #[actix_rt::main]
 async fn main() -> std::io::Result<()> {
     //日志
-    fast_log::log::init_log("requests.log", &RuntimeType::Std).unwrap();
+    fast_log::init_log("requests.log", 1000,log::Level::Info,None);
     //链接数据库
     RB.link("mysql://root:123456@localhost:3306/test").await.unwrap();
     //http路由
