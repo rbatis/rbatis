@@ -34,5 +34,5 @@ async-std = { version = "1.6", features = ["attributes","tokio02"] }
 #rbatis dep
 rbatis = { path = "../" }
 rbatis-core = { path = "../rbatis-core", features = ["all"] }
-#if disable print, use default-features=false, features = ["no_print"]
+#if disable print, use features = ["no_print"]
 rbatis-macro-driver = { path = "../rbatis-macro-driver"}
