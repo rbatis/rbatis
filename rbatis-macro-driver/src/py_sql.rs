@@ -2,10 +2,10 @@ use proc_macro2::{Ident, Span};
 use quote::quote;
 use quote::ToTokens;
 use syn;
-use syn::{AttributeArgs, Data, FnArg, ItemFn, parse_macro_input, ReturnType};
+use syn::{AttributeArgs, ItemFn};
 
 use crate::proc_macro::TokenStream;
-use crate::util::{filter_fn_args, find_return_type, get_fn_args, get_page_req_ident};
+use crate::util::{find_return_type, get_fn_args, get_page_req_ident};
 
 ///py_sql macro
 ///support args for  tx_id:&str,RB:&Rbatis,page:&PageRequest
