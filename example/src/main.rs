@@ -281,11 +281,10 @@ mod test {
         server.await.unwrap();
     }
 
+    //cargo.exe test --release --color=always --package example --bin example test::bench_test --no-fail-fast -- --exact -Z unstable-options --show-output
     #[async_std::test]
     pub async fn bench_test(){
-        fast_log::log::init_log("requests.log", &RuntimeType::Std).unwrap();
         RB.link(MYSQL_URL).await.unwrap();
-
         let total = 1000;
         let mut current = 0;
         let now = SystemTime::now();
