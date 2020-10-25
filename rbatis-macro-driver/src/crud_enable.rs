@@ -2,7 +2,6 @@ use proc_macro2::{Ident, Span};
 use quote::quote;
 use quote::ToTokens;
 use syn;
-use syn::{AttributeArgs, Data, parse_macro_input, ReturnType};
 use syn::ext::IdentExt;
 
 use crate::proc_macro::TokenStream;
@@ -12,7 +11,7 @@ pub(crate) fn impl_macro(ast: &syn::DeriveInput) -> TokenStream {
     let name = &ast.ident;
     let table_name = gen_table_name(&ast.ident);
     let id_type = find_id_type_ident(&ast.data);
-    let mut fields = gen_fields(&ast.data);
+    let fields = gen_fields(&ast.data);
     let gen = quote! {
         impl CRUDEnable for #name {
             type IdType = #id_type;

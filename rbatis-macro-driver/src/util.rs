@@ -4,9 +4,7 @@ use proc_macro2::{Ident, Span};
 use quote::quote;
 use quote::ToTokens;
 use syn;
-use syn::{AttributeArgs, Data, FnArg, ItemFn, parse_macro_input, ReturnType};
-
-use crate::proc_macro::TokenStream;
+use syn::{ FnArg, ItemFn, ReturnType};
 
 
 #[cfg(feature = "print")]
