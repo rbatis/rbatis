@@ -6,7 +6,6 @@ pub struct Bencher {
 }
 
 impl Bencher {
-
     pub fn new(total: u64) -> Self {
         return Self {
             total,
@@ -73,8 +72,8 @@ impl Bencher {
         println!("use Time: {:?} s,each:{} nano/op", &t, t.as_nanos() / (total as u128));
     }
 
-    pub fn cost(start:SystemTime){
-        println!("cost_decode:{:?}",SystemTime::now().duration_since(start).unwrap());
+    pub fn cost(method: &str, start: SystemTime) {
+        println!("cost_{}:{:?}", method, SystemTime::now().duration_since(start).unwrap());
     }
 }
 
