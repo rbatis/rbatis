@@ -281,7 +281,9 @@ mod test {
         server.await.unwrap();
     }
 
-    //cargo.exe test --release --color=always --package example --bin example test::bench_test --no-fail-fast -- --exact -Z unstable-options --show-output
+    //golang                       : BenchmarkQps-12   1297457 ns/op
+    //rust(30% fast with golang)   : 975.3122ms ,each:975312 nano/op
+    //cargo test --release --color=always --package example --bin example test::bench_qps --no-fail-fast -- --exact -Z unstable-options --show-output
     #[async_std::test]
     pub async fn bench_qps(){
         RB.link(MYSQL_URL).await.unwrap();
@@ -289,7 +291,7 @@ mod test {
         let mut current = 0;
         let now = SystemTime::now();
         loop {
-            let v:rbatis_core::Result<serde_json::Value> = RB.fetch("", "SELECT count(1) FROM biz_activity;").await;
+            let v:rbatis_core::Result<serde_json::Value> = RB.fetch("", "select count(1) from biz_activity WHERE delete_flag = 1;").await;
             if current == total - 1 {
                 let end = SystemTime::now();
                 Bencher::time(total, now, end);
