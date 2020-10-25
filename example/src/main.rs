@@ -282,7 +282,7 @@ mod test {
     }
 
     //golang                       : BenchmarkQps-12   1297457 ns/op
-    //rust(30% fast with golang)   : 975.3122ms ,each:975312 nano/op
+    //rust(30% fast with golang)   : 975.3122ms   ,each:975312 ns/op
     //cargo test --release --color=always --package example --bin example test::bench_qps --no-fail-fast -- --exact -Z unstable-options --show-output
     #[async_std::test]
     pub async fn bench_qps(){
