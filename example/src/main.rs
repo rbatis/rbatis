@@ -286,7 +286,7 @@ mod test {
         fast_log::log::init_log("requests.log", &RuntimeType::Std).unwrap();
         RB.link(MYSQL_URL).await.unwrap();
 
-        let total = 100000;
+        let total = 1000;
         let mut current = 0;
         let now = SystemTime::now();
         loop {
@@ -294,7 +294,6 @@ mod test {
             if current == total - 1 {
                 let end = SystemTime::now();
                 Bencher::use_time(total, now, end);
-                Bencher::use_tps(total, now, end);
                 break;
             } else {
                 current = current + 1;
