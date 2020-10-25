@@ -79,7 +79,7 @@ async fn main() {
 mod test {
     use std::convert::Infallible;
     use std::thread::sleep;
-    use std::time::Duration;
+    use std::time::{Duration, SystemTime};
 
     use fast_log::log::RuntimeType;
     use serde_json::Value;
@@ -92,6 +92,7 @@ mod test {
     use serde_json::{json};
     use rbatis::crud::CRUDEnable;
     use crate::{BizActivity};
+    use rbatis::utils::bencher::Bencher;
 
     pub const MYSQL_URL: &'static str = "mysql://root:123456@localhost:3306/test";
 
@@ -278,5 +279,26 @@ mod test {
         let server = hyper::Server::bind(&addr).serve(make_svc);
         println!("Listening on http://{}", addr);
         server.await.unwrap();
+    }
+
+    #[async_std::test]
+    pub async fn bench_test(){
+        fast_log::log::init_log("requests.log", &RuntimeType::Std).unwrap();
+        RB.link(MYSQL_URL).await.unwrap();
+
+        let total = 100000;
+        let mut current = 0;
+        let now = SystemTime::now();
+        loop {
+            let v:serde_json::Value = RB.fetch("", "SELECT count(1) FROM biz_activity;").await.unwrap();
+            if current == total - 1 {
+                let end = SystemTime::now();
+                Bencher::use_time(total, now, end);
+                Bencher::use_tps(total, now, end);
+                break;
+            } else {
+                current = current + 1;
+            }
+        }
     }
 }

@@ -21,8 +21,8 @@ impl Bencher {
             func();
             if current == self.total - 1 {
                 let end = SystemTime::now();
-                use_time(self.total, self.now, end);
-                use_tps(self.total, self.now, end);
+                Self::use_time(self.total, self.now, end);
+                Self::use_tps(self.total, self.now, end);
                 break;
             } else {
                 current = current + 1;
@@ -37,8 +37,8 @@ impl Bencher {
             func(arg);
             if current == self.total - 1 {
                 let end = SystemTime::now();
-                use_time(self.total, self.now, end);
-                use_tps(self.total, self.now, end);
+                Self::use_time(self.total, self.now, end);
+                Self::use_tps(self.total, self.now, end);
                 break;
             } else {
                 current = current + 1;
@@ -53,23 +53,25 @@ impl Bencher {
             func(arg);
             if current == self.total - 1 {
                 let end = SystemTime::now();
-                use_time(self.total, self.now, end);
-                use_tps(self.total, self.now, end);
+                Self::use_time(self.total, self.now, end);
+                Self::use_tps(self.total, self.now, end);
                 break;
             } else {
                 current = current + 1;
             }
         }
     }
+
+    pub fn use_tps(total: u64, start: SystemTime, end: SystemTime) {
+        let time = end.duration_since(start).unwrap();
+        println!("use TPS: {} TPS/s", total / time.as_secs());
+    }
+
+    //计算每个操作耗时nano纳秒
+    pub fn use_time(total: u64, start: SystemTime, end: SystemTime) {
+        let t = end.duration_since(start).unwrap();
+        println!("use Time: {:?} s,each:{} nano/op", &t, t.as_nanos() / (total as u128));
+    }
 }
 
-fn use_tps(total: u64, start: SystemTime, end: SystemTime) {
-    let time = end.duration_since(start).unwrap();
-    println!("use TPS: {} TPS/s", total / time.as_secs());
-}
 
-//计算每个操作耗时nano纳秒
-fn use_time(total: u64, start: SystemTime, end: SystemTime) {
-    let t = end.duration_since(start).unwrap();
-    println!("use Time: {:?} s,each:{} nano/op", &t, t.as_nanos() / (total as u128));
-}
