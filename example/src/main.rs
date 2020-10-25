@@ -283,7 +283,7 @@ mod test {
 
     //cargo.exe test --release --color=always --package example --bin example test::bench_test --no-fail-fast -- --exact -Z unstable-options --show-output
     #[async_std::test]
-    pub async fn bench_test(){
+    pub async fn bench_qps(){
         RB.link(MYSQL_URL).await.unwrap();
         let total = 1000;
         let mut current = 0;
