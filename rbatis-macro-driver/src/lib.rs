@@ -15,10 +15,10 @@ mod py_sql;
 pub fn hello_macro_derive(input: TokenStream) -> TokenStream {
     let ast = syn::parse(input).unwrap();
     let stream = crud_enable::impl_macro(&ast);
-    #[cfg(feature = "print")]
-    println!("............gen impl CRUDEnable:\n {}", stream);
-    #[cfg(feature = "print")]
-    println!("............gen impl CRUDEnable end............");
+    if !cfg!(feature = "no_print") {
+        println!("............gen impl CRUDEnable:\n {}", stream);
+        println!("............gen impl CRUDEnable end............");
+    }
     stream
 }
 
@@ -31,13 +31,11 @@ pub fn hello_macro_derive(input: TokenStream) -> TokenStream {
 pub fn sql(args: TokenStream, func: TokenStream) -> TokenStream {
     let args = parse_macro_input!(args as AttributeArgs);
     let target_fn: ItemFn = syn::parse(func).unwrap();
-
     let stream = sql::impl_macro_sql(&target_fn, &args);
-
-    #[cfg(feature = "print")]
-    println!("............gen macro sql:\n {}", stream);
-    #[cfg(feature = "print")]
-    println!("............gen macro sql end............");
+    if !cfg!(feature = "no_print") {
+        println!("............gen macro sql:\n {}", stream);
+        println!("............gen macro sql end............");
+    }
 
     stream
 }
@@ -55,13 +53,10 @@ pub fn sql(args: TokenStream, func: TokenStream) -> TokenStream {
 pub fn py_sql(args: TokenStream, func: TokenStream) -> TokenStream {
     let args = parse_macro_input!(args as AttributeArgs);
     let target_fn: ItemFn = syn::parse(func).unwrap();
-
     let stream = py_sql::impl_macro_py_sql(&target_fn, &args);
-
-    #[cfg(feature = "print")]
-    println!("............gen macro py_sql :\n {}", stream);
-    #[cfg(feature = "print")]
-    println!("............gen macro py_sql end............");
-
+    if !cfg!(feature = "no_print") {
+        println!("............gen macro py_sql :\n {}", stream);
+        println!("............gen macro py_sql end............");
+    }
     stream
 }
