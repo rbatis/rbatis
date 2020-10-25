@@ -72,6 +72,10 @@ impl Bencher {
         let t = end.duration_since(start).unwrap();
         println!("use Time: {:?} s,each:{} nano/op", &t, t.as_nanos() / (total as u128));
     }
+
+    pub fn cost(start:SystemTime){
+        println!("cost_decode:{:?}",SystemTime::now().duration_since(start).unwrap());
+    }
 }
 
 
