@@ -6,16 +6,6 @@ use quote::ToTokens;
 use syn;
 use syn::{ FnArg, ItemFn, ReturnType};
 
-
-#[cfg(feature = "print")]
-pub(crate) fn println(info: &str) {
-    println!("{}", info);
-}
-
-#[cfg(feature = "no_print")]
-pub(crate) fn println(info: &str) {}
-
-
 //find and check method return type
 pub(crate) fn find_return_type(target_fn: &ItemFn) -> proc_macro2::TokenStream {
     let mut return_ty = target_fn.sig.output.to_token_stream();
