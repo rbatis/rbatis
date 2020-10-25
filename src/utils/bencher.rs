@@ -69,7 +69,7 @@ impl Bencher {
     //计算每个操作耗时nano纳秒
     pub fn time(total: u64, start: SystemTime, end: SystemTime) {
         let t = end.duration_since(start).unwrap();
-        println!("use Time: {:?} s,each:{} nano/op", &t, t.as_nanos() / (total as u128));
+        println!("use Time: {:?} ,each:{} nano/op", &t, t.as_nanos() / (total as u128));
     }
 
     pub fn cost(method: &str, start: SystemTime) {
