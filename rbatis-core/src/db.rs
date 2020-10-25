@@ -215,6 +215,53 @@ impl DBPool {
         }
     }
 
+    /// Attempts to retrieve a connection from the pool if there is one available.
+    ///
+    /// Returns `None` immediately if there are no idle connections available in the pool.
+    pub fn try_acquire(&self) -> crate::Result<Option<DBPoolConn>> {
+        match &self.driver_type {
+            &DriverType::None => {
+                return Err(Error::from("un init DBPool!"));
+            }
+            &DriverType::Mysql => {
+                let conn = self.mysql.as_ref().unwrap().try_acquire();
+                if conn.is_none(){
+                    return Ok(None);
+                }
+                return Ok(Some(DBPoolConn {
+                    driver_type: DriverType::Mysql,
+                    mysql: Some(conn.unwrap()),
+                    postgres: None,
+                    sqlite: None,
+                }));
+            }
+            &DriverType::Postgres => {
+                let conn = self.postgres.as_ref().unwrap().try_acquire();
+                if conn.is_none(){
+                    return Ok(None);
+                }
+                return Ok(Some(DBPoolConn {
+                    driver_type: DriverType::Postgres,
+                    mysql: None,
+                    postgres: Some(conn.unwrap()),
+                    sqlite: None,
+                }));
+            }
+            &DriverType::Sqlite => {
+                let conn = self.sqlite.as_ref().unwrap().try_acquire();
+                if conn.is_none(){
+                    return Ok(None);
+                }
+                return Ok(Some(DBPoolConn {
+                    driver_type: DriverType::Sqlite,
+                    mysql: None,
+                    postgres: None,
+                    sqlite: Some(conn.unwrap()),
+                }));
+            }
+        }
+    }
+
     pub async fn begin(&self) -> crate::Result<DBTx> {
         match &self.driver_type {
             &DriverType::None => {
