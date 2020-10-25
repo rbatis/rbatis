@@ -289,10 +289,11 @@ mod test {
         let mut current = 0;
         let now = SystemTime::now();
         loop {
-            let v:serde_json::Value = RB.fetch("", "SELECT count(1) FROM biz_activity;").await.unwrap();
+            let v:rbatis_core::Result<serde_json::Value> = RB.fetch("", "SELECT count(1) FROM biz_activity;").await;
             if current == total - 1 {
                 let end = SystemTime::now();
-                Bencher::use_time(total, now, end);
+                Bencher::time(total, now, end);
+                Bencher::qps(total, now, end);
                 break;
             } else {
                 current = current + 1;

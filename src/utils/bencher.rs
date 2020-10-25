@@ -21,8 +21,8 @@ impl Bencher {
             func();
             if current == self.total - 1 {
                 let end = SystemTime::now();
-                Self::use_time(self.total, self.now, end);
-                Self::use_tps(self.total, self.now, end);
+                Self::time(self.total, self.now, end);
+                Self::qps(self.total, self.now, end);
                 break;
             } else {
                 current = current + 1;
@@ -37,8 +37,8 @@ impl Bencher {
             func(arg);
             if current == self.total - 1 {
                 let end = SystemTime::now();
-                Self::use_time(self.total, self.now, end);
-                Self::use_tps(self.total, self.now, end);
+                Self::time(self.total, self.now, end);
+                Self::qps(self.total, self.now, end);
                 break;
             } else {
                 current = current + 1;
@@ -53,8 +53,8 @@ impl Bencher {
             func(arg);
             if current == self.total - 1 {
                 let end = SystemTime::now();
-                Self::use_time(self.total, self.now, end);
-                Self::use_tps(self.total, self.now, end);
+                Self::time(self.total, self.now, end);
+                Self::qps(self.total, self.now, end);
                 break;
             } else {
                 current = current + 1;
@@ -62,13 +62,13 @@ impl Bencher {
         }
     }
 
-    pub fn use_tps(total: u64, start: SystemTime, end: SystemTime) {
+    pub fn qps(total: u64, start: SystemTime, end: SystemTime) {
         let time = end.duration_since(start).unwrap();
-        println!("use TPS: {} TPS/s", (total as u128 * 1000000000 as u128 / time.as_nanos() as u128));
+        println!("use TPS: {} QPS/s", (total as u128 * 1000000000 as u128 / time.as_nanos() as u128));
     }
 
     //计算每个操作耗时nano纳秒
-    pub fn use_time(total: u64, start: SystemTime, end: SystemTime) {
+    pub fn time(total: u64, start: SystemTime, end: SystemTime) {
         let t = end.duration_since(start).unwrap();
         println!("use Time: {:?} s,each:{} nano/op", &t, t.as_nanos() / (total as u128));
     }
