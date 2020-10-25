@@ -10,19 +10,13 @@ extern crate lazy_static;
 extern crate rbatis_macro_driver;
 
 use std::convert::Infallible;
-use std::thread::sleep;
-use std::time::Duration;
-
 use fast_log::log::RuntimeType;
-use log::info;
 use serde::{Deserialize, Serialize};
 use serde_json::{json, Value};
 use tide::Request;
 
-use rbatis::crud::{CRUD, CRUDEnable};
-use rbatis::plugin::page::{Page, PageRequest};
+use rbatis::crud::{CRUDEnable};
 use rbatis::rbatis::Rbatis;
-use rbatis_core::db::DBPool;
 use rbatis_core::types::chrono::NaiveDateTime;
 
 mod crud_test;
