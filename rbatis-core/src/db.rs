@@ -439,8 +439,34 @@ pub struct DBPoolConn {
 
 
 impl DBPoolConn {
+    pub fn check_alive(&self) -> crate::Result<()> {
+        match &self.driver_type {
+            &DriverType::None => {
+                return Err(Error::from("un init DBPool!"));
+            }
+            &DriverType::Mysql => {
+                if self.mysql.is_none() {
+                    return Err(Error::from("un init DBPoolConn!"));
+                }
+            }
+            &DriverType::Postgres => {
+                if self.postgres.is_none() {
+                    return Err(Error::from("un init DBPoolConn!"));
+                }
+            }
+            &DriverType::Sqlite => {
+                if self.sqlite.is_none() {
+                    return Err(Error::from("un init DBPoolConn!"));
+                }
+            }
+        }
+
+        return Ok(());
+    }
+
     pub async fn fetch<'q, T>(&mut self, sql: &'q str) -> crate::Result<(T, usize)>
         where T: DeserializeOwned {
+        self.check_alive()?;
         match &self.driver_type {
             &DriverType::None => {
                 return Err(Error::from("un init DBPool!"));
@@ -470,6 +496,7 @@ impl DBPoolConn {
     }
 
     pub async fn execute(&mut self, sql: &str) -> crate::Result<u64> {
+        self.check_alive()?;
         match &self.driver_type {
             &DriverType::None => {
                 return Err(Error::from("un init DBPool!"));
@@ -491,6 +518,7 @@ impl DBPoolConn {
 
     pub async fn fetch_parperd<'q, T>(&mut self, sql: DBQuery<'q>) -> crate::Result<(T, usize)>
         where T: DeserializeOwned {
+        self.check_alive()?;
         match &self.driver_type {
             &DriverType::None => {
                 return Err(Error::from("un init DBPool!"));
@@ -520,6 +548,7 @@ impl DBPoolConn {
     }
 
     pub async fn exec_prepare(&mut self, sql: DBQuery<'_>) -> crate::Result<u64> {
+        self.check_alive()?;
         match &self.driver_type {
             &DriverType::None => {
                 return Err(Error::from("un init DBPool!"));
@@ -540,6 +569,7 @@ impl DBPoolConn {
     }
 
     pub async fn begin(self) -> crate::Result<DBTx> {
+        self.check_alive()?;
         match &self.driver_type {
             &DriverType::None => {
                 return Err(Error::from("un init DBPool!"));
@@ -575,6 +605,7 @@ impl DBPoolConn {
     }
 
     pub async fn ping(&mut self) -> crate::Result<()> {
+        self.check_alive()?;
         match &self.driver_type {
             &DriverType::None => {
                 return Err(Error::from("un init DBPool!"));
@@ -597,19 +628,19 @@ impl DBPoolConn {
                 return Err(Error::from("un init DBPool!"));
             }
             &DriverType::Mysql => {
-                if self.mysql.is_none(){
+                if self.mysql.is_none() {
                     return Ok(());
                 }
                 return Ok(self.mysql.take().unwrap().close().await?);
             }
             &DriverType::Postgres => {
-                if self.postgres.is_none(){
+                if self.postgres.is_none() {
                     return Ok(());
                 }
                 return Ok(self.postgres.take().unwrap().close().await?);
             }
             &DriverType::Sqlite => {
-                if self.sqlite.is_none(){
+                if self.sqlite.is_none() {
                     return Ok(());
                 }
                 return Ok(self.sqlite.take().unwrap().close().await?);
