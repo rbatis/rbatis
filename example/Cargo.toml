@@ -24,7 +24,7 @@ tide = "0.12.0"
 
 
 log = "0.4"
-fast_log = "1.2.8"
+fast_log = "1.2.9"
 
 #runtime
 tokio = { version = "0.2", features = ["full"] }
