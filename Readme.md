@@ -189,7 +189,7 @@ rb.update_by_wrapper("", &activity, &w).await;
 
     #[async_std::test]
     pub async fn test_macro() {
-        fast_log::log::init_log("requests.log", &RuntimeType::Std);
+        fast_log::init_log("requests.log", 1000,log::Level::Info,None);
         RB.link("mysql://root:123456@localhost:3306/test").await.unwrap();
         let a = select("1").await.unwrap();
         println!("{:?}", a);
@@ -208,7 +208,7 @@ rb.update_by_wrapper("", &activity, &w).await;
 
     #[async_std::test]
     pub async fn test_macro_py_select() {
-        fast_log::log::init_log("requests.log", &RuntimeType::Std);
+        fast_log::init_log("requests.log", 1000,log::Level::Info,None);
         RB.link("mysql://root:123456@localhost:3306/test").await.unwrap();
         let a = py_select("1").await.unwrap();
         println!("{:?}", a);
