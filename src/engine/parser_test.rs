@@ -44,7 +44,7 @@ fn test_benchmark() {
         "name": "John Doe",
     });
     let total = 10000000;
-    let now = SystemTime::now();
+    let now = std::time::Instant::now();
     for _ in 0..total {
         for _ in 0..1 {
             box_node.clone();

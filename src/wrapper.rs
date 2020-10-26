@@ -595,7 +595,7 @@ mod test {
         let mut map = Map::new();
         map.insert("a".to_string(), json!("1"));
         let mut b = Bencher::new(100000);
-        b.iter(&mut map, |m| {
+        b.iter_mut(&mut map, |m| {
             let w = Wrapper::new(&DriverType::Mysql).eq("id", 1)
                 .ne("id", 1)
                 .in_array("id", &[1, 2, 3])
