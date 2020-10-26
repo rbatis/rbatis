@@ -591,19 +591,28 @@ impl DBPoolConn {
         }
     }
 
-    pub async fn close(&mut self) -> crate::Result<()> {
+    pub async fn close(mut self) -> crate::Result<()> {
         match &self.driver_type {
             &DriverType::None => {
                 return Err(Error::from("un init DBPool!"));
             }
             &DriverType::Mysql => {
-                return Ok(self.mysql.as_mut().unwrap().close().await?);
+                if self.mysql.is_none(){
+                    return Err(Error::from("un init Conn!"));
+                }
+                return Ok(self.mysql.take().unwrap().close().await?);
             }
             &DriverType::Postgres => {
-                return Ok(self.postgres.as_mut().unwrap().close().await?);
+                if self.postgres.is_none(){
+                    return Err(Error::from("un init Conn!"));
+                }
+                return Ok(self.postgres.take().unwrap().close().await?);
             }
             &DriverType::Sqlite => {
-                return Ok(self.sqlite.as_mut().unwrap().close().await?);
+                if self.sqlite.is_none(){
+                    return Err(Error::from("un init Conn!"));
+                }
+                return Ok(self.sqlite.take().unwrap().close().await?);
             }
         }
     }
