@@ -116,7 +116,7 @@ fn benchmark_arg_node() {
     let arg_node = Node::new_arg("sex.a");
 
     let total = 100000;
-    let now = SystemTime::now();
+    let now = std::time::Instant::now();
     for i in 0..total {
         arg_node.eval(&john);
     }
@@ -148,7 +148,7 @@ fn benchmark_parser_token() {
     let opt_map = OptMap::new();
 
     let total = 100000;
-    let now = SystemTime::now();
+    let now = std::time::Instant::now();
     for i in 0..total {
         runtime::parser_tokens(&s, &opt_map);
     }

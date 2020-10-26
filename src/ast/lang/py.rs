@@ -389,7 +389,7 @@ pub fn test_exec() {
 pub fn bench_exec() {
     let mut b = Bencher::new(1000000);
     let mut sql = "asdfsdaflakagjsda".to_string();
-    b.iter(&mut sql, |s| {
+    b.iter_mut(&mut sql, |s| {
         let s = s.ends_with("WHERE")
             || s.ends_with("AND")
             || s.ends_with("OR")
