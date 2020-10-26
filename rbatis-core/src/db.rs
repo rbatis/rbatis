@@ -598,19 +598,19 @@ impl DBPoolConn {
             }
             &DriverType::Mysql => {
                 if self.mysql.is_none(){
-                    return Err(Error::from("un init Conn!"));
+                    return Ok(());
                 }
                 return Ok(self.mysql.take().unwrap().close().await?);
             }
             &DriverType::Postgres => {
                 if self.postgres.is_none(){
-                    return Err(Error::from("un init Conn!"));
+                    return Ok(());
                 }
                 return Ok(self.postgres.take().unwrap().close().await?);
             }
             &DriverType::Sqlite => {
                 if self.sqlite.is_none(){
-                    return Err(Error::from("un init Conn!"));
+                    return Ok(());
                 }
                 return Ok(self.sqlite.take().unwrap().close().await?);
             }
