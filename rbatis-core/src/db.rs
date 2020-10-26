@@ -225,7 +225,7 @@ impl DBPool {
             }
             &DriverType::Mysql => {
                 let conn = self.mysql.as_ref().unwrap().try_acquire();
-                if conn.is_none(){
+                if conn.is_none() {
                     return Ok(None);
                 }
                 return Ok(Some(DBPoolConn {
@@ -237,7 +237,7 @@ impl DBPool {
             }
             &DriverType::Postgres => {
                 let conn = self.postgres.as_ref().unwrap().try_acquire();
-                if conn.is_none(){
+                if conn.is_none() {
                     return Ok(None);
                 }
                 return Ok(Some(DBPoolConn {
@@ -249,7 +249,7 @@ impl DBPool {
             }
             &DriverType::Sqlite => {
                 let conn = self.sqlite.as_ref().unwrap().try_acquire();
-                if conn.is_none(){
+                if conn.is_none() {
                     return Ok(None);
                 }
                 return Ok(Some(DBPoolConn {
@@ -570,6 +570,23 @@ impl DBPoolConn {
                     postgres: None,
                     sqlite: Some(Mutex::new(data)),
                 });
+            }
+        }
+    }
+
+    pub async fn ping(&mut self) -> crate::Result<()> {
+        match &self.driver_type {
+            &DriverType::None => {
+                return Err(Error::from("un init DBPool!"));
+            }
+            &DriverType::Mysql => {
+                return Ok(self.mysql.as_mut().unwrap().ping().await?);
+            }
+            &DriverType::Postgres => {
+                return Ok(self.postgres.as_mut().unwrap().ping().await?);
+            }
+            &DriverType::Sqlite => {
+                return Ok(self.sqlite.as_mut().unwrap().ping().await?);
             }
         }
     }
