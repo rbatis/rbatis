@@ -590,6 +590,23 @@ impl DBPoolConn {
             }
         }
     }
+
+    pub async fn close(&mut self) -> crate::Result<()> {
+        match &self.driver_type {
+            &DriverType::None => {
+                return Err(Error::from("un init DBPool!"));
+            }
+            &DriverType::Mysql => {
+                return Ok(self.mysql.as_mut().unwrap().close().await?);
+            }
+            &DriverType::Postgres => {
+                return Ok(self.postgres.as_mut().unwrap().close().await?);
+            }
+            &DriverType::Sqlite => {
+                return Ok(self.sqlite.as_mut().unwrap().close().await?);
+            }
+        }
+    }
 }
 
 
