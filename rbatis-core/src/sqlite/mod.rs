@@ -5,6 +5,9 @@
 // invariants.
 #![allow(unsafe_code)]
 
+
+mod sqlx_value;
+
 mod arguments;
 mod connection;
 mod cursor;

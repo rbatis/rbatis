@@ -25,6 +25,7 @@ mod type_info;
 pub mod types;
 mod util;
 mod value;
+mod sqlx_value;
 
 /// An alias for [`crate::pool::Pool`], specialized for **MySQL**.
 #[cfg_attr(docsrs, doc(cfg(feature = "mysql")))]
