@@ -5,8 +5,10 @@ use sqlx_core::type_info::TypeInfo;
 use sqlx_core::types::BigDecimal;
 use sqlx_core::value::ValueRef;
 
-use crate::convert::JsonCodec;
-use crate::sqlite::type_info::SqliteType;
+use crate::convert::{JsonCodec, RefJsonCodec};
+use sqlx_core::sqlite::SqliteRow;
+use sqlx_core::row::Row;
+use sqlx_core::column::Column;
 
 impl<'c> JsonCodec for SqliteValueRef<'c> {
     fn try_to_json(self) -> crate::Result<serde_json::Value> {
@@ -67,5 +69,22 @@ impl<'c> JsonCodec for SqliteValueRef<'c> {
                 unimplemented!()
             }
         };
+    }
+}
+
+impl RefJsonCodec for Vec<SqliteRow>{
+    fn try_to_json(&self) -> crate::Result<serde_json::Value> {
+        let mut arr = vec![];
+        for row in self {
+            let mut m = serde_json::Map::new();
+            let columns = row.columns();
+            for x in columns {
+                let key = x.name();
+                let v:SqliteValueRef = row.get(key);
+                m.insert(key.to_owned(), v.try_to_json()?);
+            }
+            arr.push(serde_json::Value::Object(m));
+        }
+        Ok(Value::from(arr))
     }
 }

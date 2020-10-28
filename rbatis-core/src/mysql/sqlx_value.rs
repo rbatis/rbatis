@@ -1,11 +1,13 @@
 use sqlx_core::decode::Decode;
 use sqlx_core::error::BoxDynError;
-use sqlx_core::mysql::MySql;
+use sqlx_core::mysql::{MySql, MySqlRow, MySqlValueRef, MySqlValue};
 use sqlx_core::type_info::TypeInfo;
 use sqlx_core::types::BigDecimal;
 use sqlx_core::value::ValueRef;
 
-use crate::convert::JsonCodec;
+use crate::convert::{JsonCodec, RefJsonCodec};
+use sqlx_core::row::Row;
+use sqlx_core::column::Column;
 
 impl<'r> JsonCodec for sqlx_core::mysql::MySqlValueRef<'r> {
     fn try_to_json(self) -> crate::Result<serde_json::Value> {
@@ -133,5 +135,23 @@ impl<'r> JsonCodec for sqlx_core::mysql::MySqlValueRef<'r> {
             }
             _ => return Err(crate::Error::from(format!("un support database type for:{:?}!", type_string))),
         }
+    }
+}
+
+
+impl RefJsonCodec for Vec<MySqlRow>{
+    fn try_to_json(&self) -> crate::Result<serde_json::Value> {
+        let mut arr = vec![];
+        for row in self {
+            let mut m = serde_json::Map::new();
+            let columns = row.columns();
+            for x in columns {
+                let key = x.name();
+                let v:MySqlValueRef = row.get(key);
+                m.insert(key.to_owned(), v.try_to_json()?);
+            }
+            arr.push(serde_json::Value::Object(m));
+        }
+        Ok(Value::from(arr))
     }
 }
