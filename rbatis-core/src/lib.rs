@@ -72,6 +72,8 @@ pub use error::{Error, Result};
 
 pub mod db;
 
+pub mod sqlx_db;
+
 pub mod convert;
 
 pub mod sync;
