@@ -287,7 +287,7 @@ impl DBPool {
         }
     }
 
-    pub async fn begin<'a>(&'a self) -> crate::Result<DBTx> {
+    pub async fn begin(&self) -> crate::Result<DBTx> {
         match &self.driver_type {
             &DriverType::None => {
                 return Err(Error::from("un init DBPool!"));
@@ -702,7 +702,7 @@ pub struct DBTx {
 }
 
 
-impl DBTx {
+impl DBTx{
     pub async fn commit(&mut self) -> crate::Result<()> {
         match &self.driver_type {
             &DriverType::None => {
