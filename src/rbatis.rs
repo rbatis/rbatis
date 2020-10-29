@@ -4,17 +4,9 @@ use once_cell::sync::OnceCell;
 use serde::de::DeserializeOwned;
 use serde::ser::Serialize;
 use serde_json::Number;
-
-use rbatis_core::connection::Connection;
-use rbatis_core::cursor::Cursor;
 use rbatis_core::sqlx_db::{DBPool, DBPoolConn, DBQuery, DBTx, PoolOptions};
 use rbatis_core::Error;
-use rbatis_core::executor::Executor;
-use rbatis_core::pool::{Pool, PoolConnection};
-use rbatis_core::query::{query, Query};
-use rbatis_core::query_as::query_as;
 use rbatis_core::sync::sync_map::SyncMap;
-use rbatis_core::transaction::Transaction;
 
 use crate::ast::ast::RbatisAST;
 use crate::ast::lang::py::Py;
@@ -36,7 +28,7 @@ use crate::wrapper::Wrapper;
 use rbatis_core::db::DriverType;
 
 /// rbatis engine
-pub struct Rbatis<'a> {
+pub struct Rbatis {
     // the connection pool,use OnceCell init this
     pub pool: OnceCell<DBPool>,
     // the engine run some express for example:'1+1'=2
@@ -44,7 +36,7 @@ pub struct Rbatis<'a> {
     // map<mapper_name,map<method_name,NodeType>>
     pub mapper_node_map: HashMap<String, HashMap<String, NodeType>>,
     //context of tx
-    pub tx_context: SyncMap<String, DBTx<'a>>,
+    pub tx_context: SyncMap<String, DBTx<'_>>,
     // page plugin
     pub page_plugin: Box<dyn PagePlugin>,
     // sql intercept vec chain
@@ -55,13 +47,13 @@ pub struct Rbatis<'a> {
     pub log_plugin: Box<dyn LogPlugin>,
 }
 
-impl<'r> Default for Rbatis<'r> {
-    fn default() -> Rbatis<'r> {
+impl<'r> Default for Rbatis {
+    fn default() -> Rbatis {
         Rbatis::new()
     }
 }
 
-impl <'a>Rbatis<'a> {
+impl Rbatis {
     pub fn new() -> Self {
         return Self {
             pool: OnceCell::new(),
@@ -139,11 +131,11 @@ impl <'a>Rbatis<'a> {
     }
 
     /// begin tx,for new conn
-    pub async fn begin(&'a self, new_tx_id: &str) -> Result<u64, rbatis_core::Error> {
+    pub async fn begin(&self, new_tx_id: &str) -> Result<u64, rbatis_core::Error> {
         if new_tx_id.is_empty() {
             return Err(rbatis_core::Error::from("[rbatis] tx_id can not be empty"));
         }
-        let conn = self.get_pool()?.begin().await?;
+        let conn:DBTx = self.get_pool()?.begin().await?;
         //send tx to context
         self.tx_context.insert(new_tx_id.to_string(), conn).await;
         self.log_plugin.info(&format!("[rbatis] [{}] Begin", new_tx_id));

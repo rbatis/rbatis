@@ -1,7 +1,4 @@
 //! Errorand Result types.
-
-use crate::database::Database;
-use crate::types::Type;
 use std::any::type_name;
 use std::error::Error as StdError;
 use std::fmt::{self, Debug, Display};
@@ -85,21 +82,6 @@ impl Error {
             E: StdError + Send + Sync + 'static,
     {
         Error::Decode(err.into())
-    }
-
-    #[allow(dead_code)]
-    pub(crate) fn mismatched_types<DB: Database, T>(expected: DB::TypeInfo) -> Self
-        where
-            T: Type<DB>,
-    {
-        let ty_name = type_name::<T>();
-
-        return decode_err!(
-            "mismatched types; Rust type `{}` (as SQL type {}) is not compatible with SQL type {}",
-            ty_name,
-            T::type_info(),
-            expected
-        );
     }
 }
 
