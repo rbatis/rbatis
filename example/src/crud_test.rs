@@ -12,7 +12,7 @@ mod test {
     use rbatis_macro_driver::sql;
     use chrono::NaiveDateTime;
     use bigdecimal_::BigDecimal;
-    use rbatis_core::types::Now;
+    use rbatis_core::value::DateTimeNow;
 
     #[derive(CRUDEnable, Serialize, Deserialize, Clone, Debug)]
     pub struct BizActivity {
