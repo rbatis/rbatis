@@ -212,7 +212,7 @@ impl Rbatis {
     }
 
     /// exec sql(row sql)
-    pub async fn exec(&self, tx_id: &str, sql: &str) -> Result<u64, rbatis_core::Error> {
+    pub async fn exec(&self, tx_id: &str, sql: &str) -> Result<DBExecResult, rbatis_core::Error> {
 
         //sql intercept
         let mut sql = sql.to_string();
@@ -233,7 +233,7 @@ impl Rbatis {
             let mut conn = conn.unwrap();
             data = conn.execute(&sql).await?;
         }
-        self.log_plugin.info(&format!("[rbatis] [{}] RowsAffected <== {}", tx_id, &data));
+        self.log_plugin.info(&format!("[rbatis] [{}] RowsAffected <== {}", tx_id, &data.rows_affected));
         return Ok(data);
     }
 
