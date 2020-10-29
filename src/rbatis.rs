@@ -36,7 +36,7 @@ pub struct Rbatis {
     // map<mapper_name,map<method_name,NodeType>>
     pub mapper_node_map: HashMap<String, HashMap<String, NodeType>>,
     //context of tx
-    pub tx_context: SyncMap<String, DBTx<'_>>,
+    pub tx_context: SyncMap<String, DBTx>,
     // page plugin
     pub page_plugin: Box<dyn PagePlugin>,
     // sql intercept vec chain
