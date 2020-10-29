@@ -10,6 +10,7 @@ use sqlx_core::sqlite::SqliteRow;
 use sqlx_core::row::Row;
 use sqlx_core::column::Column;
 use crate::db_adapter::convert_result;
+use serde_json::{json, Value};
 
 impl<'c> JsonCodec for SqliteValueRef<'c> {
     fn try_to_json(self) -> crate::Result<serde_json::Value> {
@@ -20,32 +21,32 @@ impl<'c> JsonCodec for SqliteValueRef<'c> {
                 Ok(serde_json::Value::Null)
             }
             "TEXT" => {
-                let r: Result<String, BoxDynError> = Decode::<'_, Sqlite>::decode(self);
+                let r: Result<Option<String>, BoxDynError> = Decode::<'_, Sqlite>::decode(self);
                 if r.is_err() {
                     return Err(crate::Error::from(r.err().unwrap().to_string()));
                 }
-                Ok(serde_json::Value::from(r.unwrap()))
+                 return Ok(json!(r.unwrap()));
             }
             "BOOLEAN" => {
-                let r: Result<bool, BoxDynError> = Decode::<'_, Sqlite>::decode(self);
+                let r: Result<Option<bool>, BoxDynError> = Decode::<'_, Sqlite>::decode(self);
                 if r.is_err() {
                     return Err(crate::Error::from(r.err().unwrap().to_string()));
                 }
-                Ok(serde_json::Value::from(r.unwrap()))
+                 return Ok(json!(r.unwrap()));
             }
             "INTEGER" => {
-                let r: Result<i64, BoxDynError> = Decode::<'_, Sqlite>::decode(self);
+                let r: Result<Option<i64>, BoxDynError> = Decode::<'_, Sqlite>::decode(self);
                 if r.is_err() {
                     return Err(crate::Error::from(r.err().unwrap().to_string()));
                 }
-                Ok(serde_json::Value::from(r.unwrap()))
+                 return Ok(json!(r.unwrap()));
             }
             "REAL" => {
-                let r: Result<f64, BoxDynError> = Decode::<'_, Sqlite>::decode(self);
+                let r: Result<Option<f64>, BoxDynError> = Decode::<'_, Sqlite>::decode(self);
                 if r.is_err() {
                     return Err(crate::Error::from(r.err().unwrap().to_string()));
                 }
-                Ok(serde_json::Value::from(r.unwrap()))
+                 return Ok(json!(r.unwrap()));
             }
             "NUMERIC" => {
                 //TODO impl type

@@ -10,6 +10,7 @@ use sqlx_core::postgres::PgRow;
 use sqlx_core::row::Row;
 use sqlx_core::column::Column;
 use crate::db_adapter::convert_result;
+use serde_json::{json, Value};
 
 impl<'c> JsonCodec for PgValueRef<'c> {
     fn try_to_json(self) -> crate::Result<serde_json::Value> {
@@ -17,74 +18,69 @@ impl<'c> JsonCodec for PgValueRef<'c> {
         match type_string.as_str() {
             "NUMERIC" => {
                 //decimal
-                let r: Result<BigDecimal, BoxDynError> = Decode::<'_, Postgres>::decode(self);
+                let r: Result<Option<BigDecimal>, BoxDynError> = Decode::<'_, Postgres>::decode(self);
                 if r.is_err() {
                     return Err(crate::Error::from(r.err().unwrap().to_string()));
                 }
-                return Ok(serde_json::Value::from(r.unwrap().to_string()));
+                if r.as_ref().unwrap().is_none(){
+                    return Ok(serde_json::Value::Null);
+                }
+                return Ok(json!(r.unwrap().unwrap().to_string()));
             }
             "BOOL" => {
-                let r: Result<bool, BoxDynError> = Decode::<'_, Postgres>::decode(self);
+                let r: Result<Option<bool>, BoxDynError> = Decode::<'_, Postgres>::decode(self);
                 if r.is_err() {
                     return Err(crate::Error::from(r.err().unwrap().to_string()));
                 }
-                return Ok(serde_json::Value::from(r.unwrap()));
+                 return Ok(json!(r.unwrap()));
             }
             "BYTEA" => {
                 unimplemented!();
             }
             "FLOAT4" => {
-                let r: Result<f32, BoxDynError> = Decode::<'_, Postgres>::decode(self);
+                let r: Result<Option<f32>, BoxDynError> = Decode::<'_, Postgres>::decode(self);
                 if r.is_err() {
                     return Err(crate::Error::from(r.err().unwrap().to_string()));
                 }
-                return Ok(serde_json::Value::from(r.unwrap()));
+                 return Ok(json!(r.unwrap()));
             }
             "FLOAT8" => {
-                let r: Result<f64, BoxDynError> = Decode::<'_, Postgres>::decode(self);
+                let r: Result<Option<f64>, BoxDynError> = Decode::<'_, Postgres>::decode(self);
                 if r.is_err() {
                     return Err(crate::Error::from(r.err().unwrap().to_string()));
                 }
-                return Ok(serde_json::Value::from(r.unwrap()));
+                 return Ok(json!(r.unwrap()));
             }
             "INT2" => {
-                let r: Result<i16, BoxDynError> = Decode::<'_, Postgres>::decode(self);
+                let r: Result<Option<i16>, BoxDynError> = Decode::<'_, Postgres>::decode(self);
                 if r.is_err() {
                     return Err(crate::Error::from(r.err().unwrap().to_string()));
                 }
-                return Ok(serde_json::Value::from(r.unwrap()));
+                 return Ok(json!(r.unwrap()));
             }
             "INT4" => {
-                let r: Result<i32, BoxDynError> = Decode::<'_, Postgres>::decode(self);
+                let r: Result<Option<i32>, BoxDynError> = Decode::<'_, Postgres>::decode(self);
                 if r.is_err() {
                     return Err(crate::Error::from(r.err().unwrap().to_string()));
                 }
-                return Ok(serde_json::Value::from(r.unwrap()));
+                 return Ok(json!(r.unwrap()));
             }
             "INT8" => {
-                let r: Result<i64, BoxDynError> = Decode::<'_, Postgres>::decode(self);
+                let r: Result<Option<i64>, BoxDynError> = Decode::<'_, Postgres>::decode(self);
                 if r.is_err() {
                     return Err(crate::Error::from(r.err().unwrap().to_string()));
                 }
-                return Ok(serde_json::Value::from(r.unwrap()));
+                 return Ok(json!(r.unwrap()));
             }
-            "TEXT" | "VARCHAR" | "BPCHAR" | "CHAR" => {
-                let r: Result<String, BoxDynError> = Decode::<'_, Postgres>::decode(self);
+            "TEXT" | "VARCHAR" | "BPCHAR" | "CHAR" | "UUID" => {
+                let r: Result<Option<String>, BoxDynError> = Decode::<'_, Postgres>::decode(self);
                 if r.is_err() {
                     return Err(crate::Error::from(r.err().unwrap().to_string()));
                 }
-                return Ok(serde_json::Value::from(r.unwrap()));
+                 return Ok(json!(r.unwrap()));
             }
-            "UUID" => {
-                let r: Result<String, BoxDynError> = Decode::<'_, Postgres>::decode(self);
-                if r.is_err() {
-                    return Err(crate::Error::from(r.err().unwrap().to_string()));
-                }
-                return Ok(serde_json::Value::from(r.unwrap()));
-            }
-
             "TIME" => {
-                let r: Result<chrono::NaiveTime, BoxDynError> = Decode::<'_, Postgres>::decode(self);
+                let r: Result<Option<chrono::NaiveTime>, BoxDynError> = Decode::<'_, Postgres>::decode(self);
                 if r.is_err() {
                     return Err(crate::Error::from(r.err().unwrap().to_string()));
                 }
@@ -92,7 +88,7 @@ impl<'c> JsonCodec for PgValueRef<'c> {
                 return Ok(t.unwrap_or(serde_json::Value::Null));
             }
             "DATE" => {
-                let r: Result<chrono::NaiveDate, BoxDynError> = Decode::<'_, Postgres>::decode(self);
+                let r: Result<Option<chrono::NaiveDate>, BoxDynError> = Decode::<'_, Postgres>::decode(self);
                 if r.is_err() {
                     return Err(crate::Error::from(r.err().unwrap().to_string()));
                 }
@@ -100,7 +96,7 @@ impl<'c> JsonCodec for PgValueRef<'c> {
                 return Ok(t.unwrap_or(serde_json::Value::Null));
             }
             "TIMESTAMP" => {
-                let r: Result<chrono::NaiveDateTime, BoxDynError> = Decode::<'_, Postgres>::decode(self);
+                let r: Result<Option<chrono::NaiveDateTime>, BoxDynError> = Decode::<'_, Postgres>::decode(self);
                 if r.is_err() {
                     return Err(crate::Error::from(r.err().unwrap().to_string()));
                 }
@@ -108,7 +104,7 @@ impl<'c> JsonCodec for PgValueRef<'c> {
                 return Ok(t.unwrap_or(serde_json::Value::Null));
             }
             "TIMESTAMPTZ" => {
-                let r: Result<chrono::NaiveDateTime, BoxDynError> = Decode::<'_, Postgres>::decode(self);
+                let r: Result<Option<chrono::NaiveDateTime>, BoxDynError> = Decode::<'_, Postgres>::decode(self);
                 if r.is_err() {
                     return Err(crate::Error::from(r.err().unwrap().to_string()));
                 }

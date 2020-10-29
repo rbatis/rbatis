@@ -9,6 +9,7 @@ use sqlx_core::value::ValueRef;
 
 use crate::convert::{JsonCodec, RefJsonCodec};
 use crate::db_adapter::convert_result;
+use serde_json::{json, Value};
 
 impl<'r> JsonCodec for sqlx_core::mssql::MssqlValueRef<'r> {
     fn try_to_json(self) -> crate::Result<serde_json::Value> {
@@ -19,54 +20,54 @@ impl<'r> JsonCodec for sqlx_core::mssql::MssqlValueRef<'r> {
                 return Ok(serde_json::Value::Null);
             }
             "TINYINT" => {
-                let r: Result<i8, BoxDynError> = Decode::<'_, Mssql>::decode(self);
+                let r: Result<Option<i8>, BoxDynError> = Decode::<'_, Mssql>::decode(self);
                 if r.is_err() {
                     return Err(crate::Error::from(r.err().unwrap().to_string()));
                 }
-                return Ok(serde_json::Value::from(r.unwrap()));
+                return Ok(json!(r.unwrap()));
             }
             "SMALLINT" => {
-                let r: Result<i16, BoxDynError> = Decode::<'_, Mssql>::decode(self);
+                let r: Result<Option<i16>, BoxDynError> = Decode::<'_, Mssql>::decode(self);
                 if r.is_err() {
                     return Err(crate::Error::from(r.err().unwrap().to_string()));
                 }
-                return Ok(serde_json::Value::from(r.unwrap()));
+                return Ok(json!(r.unwrap()));
             }
             "INT" => {
-                let r: Result<i32, BoxDynError> = Decode::<'_, Mssql>::decode(self);
+                let r: Result<Option<i32>, BoxDynError> = Decode::<'_, Mssql>::decode(self);
                 if r.is_err() {
                     return Err(crate::Error::from(r.err().unwrap().to_string()));
                 }
-                return Ok(serde_json::Value::from(r.unwrap()));
+                return Ok(json!(r.unwrap()));
             }
             "BIGINT" => {
-                let r: Result<i64, BoxDynError> = Decode::<'_, Mssql>::decode(self);
+                let r: Result<Option<i64>, BoxDynError> = Decode::<'_, Mssql>::decode(self);
                 if r.is_err() {
                     return Err(crate::Error::from(r.err().unwrap().to_string()));
                 }
-                return Ok(serde_json::Value::from(r.unwrap()));
+                return Ok(json!(r.unwrap()));
             }
             "REAL" => {
-                let r: Result<f32, BoxDynError> = Decode::<'_, Mssql>::decode(self);
+                let r: Result<Option<f32>, BoxDynError> = Decode::<'_, Mssql>::decode(self);
                 if r.is_err() {
                     return Err(crate::Error::from(r.err().unwrap().to_string()));
                 }
-                return Ok(serde_json::Value::from(r.unwrap()));
+                return Ok(json!(r.unwrap()));
             }
             "FLOAT" => {
-                let r: Result<f64, BoxDynError> = Decode::<'_, Mssql>::decode(self);
+                let r: Result<Option<f64>, BoxDynError> = Decode::<'_, Mssql>::decode(self);
                 if r.is_err() {
                     return Err(crate::Error::from(r.err().unwrap().to_string()));
                 }
-                return Ok(serde_json::Value::from(r.unwrap()));
+                return Ok(json!(r.unwrap()));
             }
 
             "VARCHAR" | "NVARCHAR" | "BIGVARCHAR" | "CHAR" | "BIGCHAR" | "NCHAR" => {
-                let r: Result<String, BoxDynError> = Decode::<'_, Mssql>::decode(self);
+                let r: Result<Option<String>, BoxDynError> = Decode::<'_, Mssql>::decode(self);
                 if r.is_err() {
                     return Err(crate::Error::from(r.err().unwrap().to_string()));
                 }
-                return Ok(serde_json::Value::from(r.unwrap()));
+                return Ok(json!(r.unwrap()));
             }
 
             //TODO convert types
