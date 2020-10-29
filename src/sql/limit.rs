@@ -14,6 +14,10 @@ impl PageLimit for DriverType {
             DriverType::Sqlite => {
                 Ok(format!(" LIMIT {} OFFSET {}", size, offset))
             }
+            DriverType::Mssql => {
+                //sqlserver
+                Ok(format!(" OFFSET {} ROWS FETCH NEXT {} ROWS ONLY", offset,size))
+            }
             DriverType::None => {
                 Err(rbatis_core::Error::from(format!("[rbatis] not support now for DriverType:{:?}", DriverType::None)))
             }
