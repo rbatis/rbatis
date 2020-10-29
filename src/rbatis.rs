@@ -172,7 +172,7 @@ impl Rbatis {
         if tx_op.is_none() {
             return Err(rbatis_core::Error::from(format!("[rbatis] tx:{} not exist！", tx_id)));
         }
-        let mut tx = tx_op.unwrap();
+        let tx = tx_op.unwrap();
         let result = tx.rollback().await?;
         self.log_plugin.info(&format!("[rbatis] [{}] Rollback", tx_id));
         return Ok(result);
