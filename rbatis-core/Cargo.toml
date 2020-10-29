@@ -12,13 +12,10 @@ repository = "https://github.com/rbatis/rbatis"
 homepage = "https://rbatis.github.io/rbatis.io/#/"
 
 [features]
-default = ["all", "async-io"]
-tokio02 = ["async-std/tokio02"]
-async-io = ["async-std"]
-
-# intended mainly for CI and docs
-all = []
-
+default = ["all"]
+tokio02 = ["async-std/tokio02","sqlx-core/runtime-tokio"]
+async-io = ["async-std","sqlx-core"]
+all = ["async-io"]
 [dependencies]
 async-std = { version = "1.6", optional = true }
 async-stream = { version = "0.2.1", default-features = false }
@@ -30,6 +27,6 @@ log = { version = "0.4.8", default-features = false }
 serde = { version = "1.0", features = ["derive"] }
 serde_json = { version = "1.0", features = ["raw_value"] }
 
-sqlx-core = { version = "0.4.0-beta.1", features = ["all-databases", "all-types"] }
+sqlx-core = { version = "0.4.0-beta.1", features = ["all-databases", "all-types"], optional = true }
 
 
