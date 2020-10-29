@@ -20,6 +20,7 @@ homepage = "https://rbatis.github.io/rbatis.io/#/"
 
 [features]
 default = ["async-io"]
+actix = ["rbatis-core/actix", "async-std"]
 tokio02 = ["rbatis-core/tokio02", "async-std/tokio02"]
 async-io = ["rbatis-core", "async-std"]
 
