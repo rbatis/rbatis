@@ -152,6 +152,6 @@ impl RefJsonCodec for Vec<MySqlRow>{
             }
             arr.push(serde_json::Value::Object(m));
         }
-        Ok(Value::from(arr))
+        Ok(serde_json::Value::from(arr))
     }
 }
