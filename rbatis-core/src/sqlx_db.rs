@@ -2,26 +2,25 @@ use std::time::Duration;
 
 use serde::{Deserialize, Serialize};
 use serde::de::DeserializeOwned;
+use sqlx_core::acquire::Acquire;
+use sqlx_core::arguments::{Arguments, IntoArguments};
 use sqlx_core::connection::Connection;
 use sqlx_core::database::Database;
+use sqlx_core::done::Done;
 use sqlx_core::encode::Encode;
 use sqlx_core::executor::Executor;
+use sqlx_core::mysql::{MySql, MySqlArguments, MySqlConnection, MySqlDone, MySqlPool, MySqlRow};
 use sqlx_core::pool::PoolConnection;
-use sqlx_core::mysql::{MySql, MySqlArguments, MySqlConnection, MySqlPool, MySqlRow, MySqlDone};
-use sqlx_core::postgres::{Postgres, PgConnection, PgArguments, PgConnectOptions, PgPool, PgRow, PgDone};
-use sqlx_core::sqlite::{Sqlite, SqliteArguments, SqliteConnection, SqlitePool, SqliteRow, SqliteDone};
+use sqlx_core::postgres::{PgArguments, PgConnection, PgConnectOptions, PgDone, PgPool, PgRow, Postgres};
 use sqlx_core::query::{Query, query};
+use sqlx_core::sqlite::{Sqlite, SqliteArguments, SqliteConnection, SqliteDone, SqlitePool, SqliteRow};
 use sqlx_core::transaction::Transaction;
 use sqlx_core::types::Type;
 
+use crate::convert::RefJsonCodec;
+use crate::db::DriverType;
 use crate::decode::json_decode;
 use crate::Error;
-use crate::convert::RefJsonCodec;
-use sqlx_core::done::Done;
-
-use sqlx_core::arguments::{Arguments, IntoArguments};
-use crate::db::DriverType;
-use sqlx_core::acquire::Acquire;
 use crate::runtime::Mutex;
 
 #[derive(Debug, Clone, Copy)]
@@ -547,7 +546,7 @@ impl DBPoolConn {
         }
     }
 
-    pub async fn execute(&mut self, sql: &str) -> crate::Result<u64> {
+    pub async fn execute(&mut self, sql: &str) -> crate::Result<DBExecResult> {
         self.check_alive()?;
         match &self.driver_type {
             &DriverType::None => {
@@ -555,15 +554,15 @@ impl DBPoolConn {
             }
             &DriverType::Mysql => {
                 let data: MySqlDone = convert_result(self.mysql.as_mut().unwrap().execute(sql).await)?;
-                return Ok(data.rows_affected());
+                return Ok(DBExecResult::from(data));
             }
             &DriverType::Postgres => {
                 let data: PgDone = convert_result(self.postgres.as_mut().unwrap().execute(sql).await)?;
-                return Ok(data.rows_affected());
+                return Ok(DBExecResult::from(data));
             }
             &DriverType::Sqlite => {
                 let data: SqliteDone = convert_result(self.sqlite.as_mut().unwrap().execute(sql).await)?;
-                return Ok(data.rows_affected());
+                return Ok(DBExecResult::from(data));
             }
         }
     }
@@ -796,22 +795,22 @@ impl DBTx {
         }
     }
 
-    pub async fn execute(&mut self, sql: &str) -> crate::Result<u64> {
+    pub async fn execute(&mut self, sql: &str) -> crate::Result<DBExecResult> {
         match &self.driver_type {
             &DriverType::None => {
                 return Err(Error::from("un init DBPool!"));
             }
             &DriverType::Mysql => {
                 let data: MySqlDone = convert_result(self.mysql.as_mut().unwrap().execute(sql).await)?;
-                return Ok(data.rows_affected());
+                return Ok(DBExecResult::from(data));
             }
             &DriverType::Postgres => {
                 let data: PgDone = convert_result(self.postgres.as_mut().unwrap().execute(sql).await)?;
-                return Ok(data.rows_affected());
+                return Ok(DBExecResult::from(data));
             }
             &DriverType::Sqlite => {
                 let data: SqliteDone = convert_result(self.sqlite.as_mut().unwrap().lock().await.execute(sql).await)?;
-                return Ok(data.rows_affected());
+                return Ok(DBExecResult::from(data));
             }
         }
     }
@@ -859,6 +858,7 @@ impl From<MySqlDone> for DBExecResult {
         }
     }
 }
+
 impl From<PgDone> for DBExecResult {
     fn from(arg: PgDone) -> Self {
         Self {
@@ -867,6 +867,7 @@ impl From<PgDone> for DBExecResult {
         }
     }
 }
+
 impl From<SqliteDone> for DBExecResult {
     fn from(arg: SqliteDone) -> Self {
         Self {
