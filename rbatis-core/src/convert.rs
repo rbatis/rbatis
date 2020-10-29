@@ -21,6 +21,9 @@ impl StmtConvert for DriverType {
             DriverType::Sqlite => {
                 "?".to_string()
             }
+            DriverType::Mssql => {
+                "?".to_string()
+            }
             DriverType::None => {
                 panic!("[rbatis] un support none for driver type!")
             }

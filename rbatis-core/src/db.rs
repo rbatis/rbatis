@@ -48,4 +48,5 @@ pub enum DriverType {
     Mysql = 1,
     Postgres = 2,
     Sqlite = 3,
+    Mssql = 4,
 }
