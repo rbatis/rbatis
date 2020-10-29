@@ -8,8 +8,8 @@ use sqlx_core::encode::Encode;
 use sqlx_core::executor::Executor;
 use sqlx_core::pool::PoolConnection;
 use sqlx_core::mysql::{MySql, MySqlArguments, MySqlConnection, MySqlPool, MySqlRow, MySqlDone};
-use sqlx_core::postgres::{Postgres,PgConnection,PgArguments, PgConnectOptions, PgPool, PgRow, PgDone};
-use sqlx_core::sqlite::{Sqlite,SqliteArguments, SqliteConnection, SqlitePool, SqliteRow, SqliteDone};
+use sqlx_core::postgres::{Postgres, PgConnection, PgArguments, PgConnectOptions, PgPool, PgRow, PgDone};
+use sqlx_core::sqlite::{Sqlite, SqliteArguments, SqliteConnection, SqlitePool, SqliteRow, SqliteDone};
 use sqlx_core::query::{Query, query};
 use sqlx_core::transaction::Transaction;
 use sqlx_core::types::Type;
@@ -21,6 +21,7 @@ use sqlx_core::done::Done;
 
 use sqlx_core::arguments::{Arguments, IntoArguments};
 use crate::db::DriverType;
+use sqlx_core::acquire::Acquire;
 
 #[derive(Debug, Clone, Copy)]
 pub struct PoolOptions {
@@ -285,46 +286,19 @@ impl DBPool {
         }
     }
 
-    pub async fn begin<'a>(&'a self) -> crate::Result<DBTx<'a>> {
+    pub async fn begin(&self) -> crate::Result<DBTx<'_>> {
         match &self.driver_type {
             &DriverType::None => {
                 return Err(Error::from("un init DBPool!"));
             }
             &DriverType::Mysql => {
-                let result = self.mysql.as_ref().unwrap().begin().await;
-                if result.is_err() {
-                    return Err(crate::Error::from(result.err().unwrap().to_string()));
-                }
-                Ok(DBTx {
-                    driver_type: DriverType::Mysql,
-                    mysql: Some(result.unwrap()),
-                    postgres: None,
-                    sqlite: None,
-                })
+                DBTx::begin(DBPoolConn::new_mysql(convert_result(self.mysql.as_ref().unwrap().acquire().await)?)).await
             }
             &DriverType::Postgres => {
-                let result = self.postgres.as_ref().unwrap().begin().await;
-                if result.is_err() {
-                    return Err(crate::Error::from(result.err().unwrap().to_string()));
-                }
-                Ok(DBTx {
-                    driver_type: DriverType::Postgres,
-                    mysql: None,
-                    postgres: Some(result.unwrap()),
-                    sqlite: None,
-                })
+                DBTx::begin(DBPoolConn::new_pg(convert_result(self.postgres.as_ref().unwrap().acquire().await)?)).await
             }
             &DriverType::Sqlite => {
-                let result = self.sqlite.as_ref().unwrap().begin().await;
-                if result.is_err() {
-                    return Err(crate::Error::from(result.err().unwrap().to_string()));
-                }
-                Ok(DBTx {
-                    driver_type: DriverType::Sqlite,
-                    mysql: None,
-                    postgres: None,
-                    sqlite: Some(result.unwrap()),
-                })
+                DBTx::begin(DBPoolConn::new_sqlite(convert_result(self.sqlite.as_ref().unwrap().acquire().await)?)).await
             }
         }
     }
@@ -474,6 +448,34 @@ pub struct DBPoolConn {
 
 
 impl DBPoolConn {
+
+    pub fn new_mysql(arg:PoolConnection<MySql>)->Self{
+        Self{
+            driver_type:DriverType::Mysql,
+            mysql:Some(arg),
+            postgres:None,
+            sqlite:None
+        }
+    }
+
+    pub fn new_pg(arg:PoolConnection<Postgres>)->Self{
+        Self{
+            driver_type:DriverType::Mysql,
+            mysql:None,
+            postgres:Some(arg),
+            sqlite:None
+        }
+    }
+
+    pub fn new_sqlite(arg:PoolConnection<Sqlite>)->Self{
+        Self{
+            driver_type:DriverType::Mysql,
+            mysql:None,
+            postgres:None,
+            sqlite:Some(arg)
+        }
+    }
+
     pub fn check_alive(&self) -> crate::Result<()> {
         match &self.driver_type {
             &DriverType::None => {
@@ -537,15 +539,15 @@ impl DBPoolConn {
                 return Err(Error::from("un init DBPool!"));
             }
             &DriverType::Mysql => {
-                let data:MySqlDone = convert_result(self.mysql.as_mut().unwrap().execute(sql).await)?;
+                let data: MySqlDone = convert_result(self.mysql.as_mut().unwrap().execute(sql).await)?;
                 return Ok(data.rows_affected());
             }
             &DriverType::Postgres => {
-                let data:PgDone = convert_result(self.postgres.as_mut().unwrap().execute(sql).await)?;
+                let data: PgDone = convert_result(self.postgres.as_mut().unwrap().execute(sql).await)?;
                 return Ok(data.rows_affected());
             }
             &DriverType::Sqlite => {
-                let data:SqliteDone = convert_result(self.sqlite.as_mut().unwrap().execute(sql).await)?;
+                let data: SqliteDone = convert_result(self.sqlite.as_mut().unwrap().execute(sql).await)?;
                 return Ok(data.rows_affected());
             }
         }
@@ -589,52 +591,34 @@ impl DBPoolConn {
                 return Err(Error::from("un init DBPool!"));
             }
             &DriverType::Mysql => {
-                let result:MySqlDone= convert_result( self.mysql.as_mut().unwrap().execute(sql.mysql.unwrap()).await)?;
+                let result: MySqlDone = convert_result(self.mysql.as_mut().unwrap().execute(sql.mysql.unwrap()).await)?;
                 return Ok(result.rows_affected());
             }
             &DriverType::Postgres => {
-                let data:PgDone = convert_result( self.postgres.as_mut().unwrap().execute(sql.postgres.unwrap()).await)?;
+                let data: PgDone = convert_result(self.postgres.as_mut().unwrap().execute(sql.postgres.unwrap()).await)?;
                 return Ok(data.rows_affected());
             }
             &DriverType::Sqlite => {
-                let data:SqliteDone = convert_result(self.sqlite.as_mut().unwrap().execute(sql.sqlite.unwrap()).await)?;
+                let data: SqliteDone = convert_result(self.sqlite.as_mut().unwrap().execute(sql.sqlite.unwrap()).await)?;
                 return Ok(data.rows_affected());
             }
         }
     }
 
-    pub async fn begin<'a>(&'a mut self) -> crate::Result<DBTx<'a>> {
+    pub async fn begin(mut self) -> crate::Result<DBTx<'static>> {
         self.check_alive()?;
         match &self.driver_type {
             &DriverType::None => {
                 return Err(Error::from("un init DBPool!"));
             }
             &DriverType::Mysql => {
-                let data = convert_result(self.mysql.as_mut().unwrap().begin().await)?;
-                return Ok(DBTx {
-                    driver_type: self.driver_type,
-                    mysql: Some(data),
-                    postgres: None,
-                    sqlite: None,
-                });
+                DBTx::begin(DBPoolConn::new_mysql(self.mysql.take().unwrap())).await
             }
             &DriverType::Postgres => {
-                let data = convert_result(self.postgres.as_mut().unwrap().begin().await)?;
-                return Ok(DBTx {
-                    driver_type: self.driver_type,
-                    mysql: None,
-                    postgres: Some(data),
-                    sqlite: None,
-                });
+                DBTx::begin(DBPoolConn::new_pg(self.postgres.take().unwrap())).await
             }
             &DriverType::Sqlite => {
-                let data = convert_result(self.sqlite.as_mut().unwrap().begin().await)?;
-                return Ok(DBTx {
-                    driver_type: self.driver_type,
-                    mysql: None,
-                    postgres: None,
-                    sqlite: Some(data),
-                });
+                DBTx::begin(DBPoolConn::new_sqlite(self.sqlite.take().unwrap())).await
             }
         }
     }
@@ -663,15 +647,15 @@ impl DBPoolConn {
                 return Err(Error::from("un init DBPool!"));
             }
             &DriverType::Mysql => {
-                self.mysql=None;
+                self.mysql = None;
                 return Ok(());
             }
             &DriverType::Postgres => {
-                self.postgres=None;
+                self.postgres = None;
                 return Ok(());
             }
             &DriverType::Sqlite => {
-                self.sqlite=None;
+                self.sqlite = None;
                 return Ok(());
             }
         }
@@ -681,12 +665,38 @@ impl DBPoolConn {
 
 pub struct DBTx<'a> {
     pub driver_type: DriverType,
+    pub conn: DBPoolConn,
     pub mysql: Option<Transaction<'a, MySql>>,
     pub postgres: Option<Transaction<'a, Postgres>>,
     pub sqlite: Option<Transaction<'a, Sqlite>>,
 }
 
+
 impl <'a>DBTx<'a> {
+    pub async fn begin<'b>(arg: DBPoolConn) -> crate::Result<DBTx<'b>> {
+        let mut tx = DBTx {
+            driver_type: DriverType::None,
+            conn: arg,
+            mysql: None,
+            postgres: None,
+            sqlite: None,
+        };
+        tx.do_begin().await?;
+        Ok(tx)
+    }
+
+    async fn do_begin(&mut self) -> crate::Result<()> {
+        match &self.conn.driver_type {
+            DriverType::Mysql => {
+                let result = self.conn.mysql.as_mut().unwrap().begin().await;
+                //self.mysql = Some(result.unwrap());
+            }
+            //TODO
+            _ => {}
+        }
+        return Ok(());
+    }
+
     pub async fn commit(&mut self) -> crate::Result<()> {
         match &self.driver_type {
             &DriverType::None => {
@@ -765,7 +775,7 @@ impl <'a>DBTx<'a> {
                 Ok((result, return_len))
             }
             &DriverType::Postgres => {
-                let mut data: Vec<PgRow> = convert_result( self.postgres.as_mut().unwrap().fetch_all(sql.postgres.unwrap()).await)?;
+                let mut data: Vec<PgRow> = convert_result(self.postgres.as_mut().unwrap().fetch_all(sql.postgres.unwrap()).await)?;
                 let json_array = data.try_to_json()?.as_array().unwrap().to_owned();
                 let return_len = json_array.len();
                 let result = json_decode::<T>(json_array)?;
@@ -787,15 +797,15 @@ impl <'a>DBTx<'a> {
                 return Err(Error::from("un init DBPool!"));
             }
             &DriverType::Mysql => {
-                let data:MySqlDone = convert_result(self.mysql.as_mut().unwrap().execute(sql).await)?;
+                let data: MySqlDone = convert_result(self.mysql.as_mut().unwrap().execute(sql).await)?;
                 return Ok(data.rows_affected());
             }
             &DriverType::Postgres => {
-                let data:PgDone = convert_result(self.postgres.as_mut().unwrap().execute(sql).await)?;
+                let data: PgDone = convert_result(self.postgres.as_mut().unwrap().execute(sql).await)?;
                 return Ok(data.rows_affected());
             }
             &DriverType::Sqlite => {
-                let data:SqliteDone = convert_result(self.sqlite.as_mut().unwrap().execute(sql).await)?;
+                let data: SqliteDone = convert_result(self.sqlite.as_mut().unwrap().execute(sql).await)?;
                 return Ok(data.rows_affected());
             }
         }
@@ -808,15 +818,15 @@ impl <'a>DBTx<'a> {
                 return Err(Error::from("un init DBPool!"));
             }
             &DriverType::Mysql => {
-                let data:MySqlDone = convert_result(self.mysql.as_mut().unwrap().execute(sql.mysql.unwrap()).await)?;
+                let data: MySqlDone = convert_result(self.mysql.as_mut().unwrap().execute(sql.mysql.unwrap()).await)?;
                 return Ok(data.rows_affected());
             }
             &DriverType::Postgres => {
-                let data:PgDone = convert_result(self.postgres.as_mut().unwrap().execute(sql.postgres.unwrap()).await)?;
+                let data: PgDone = convert_result(self.postgres.as_mut().unwrap().execute(sql.postgres.unwrap()).await)?;
                 return Ok(data.rows_affected());
             }
             &DriverType::Sqlite => {
-                let data:SqliteDone = convert_result(self.sqlite.as_mut().unwrap().execute(sql.sqlite.unwrap()).await)?;
+                let data: SqliteDone = convert_result(self.sqlite.as_mut().unwrap().execute(sql.sqlite.unwrap()).await)?;
                 return Ok(data.rows_affected());
             }
         }
