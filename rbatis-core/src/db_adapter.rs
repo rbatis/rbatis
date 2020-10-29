@@ -163,7 +163,7 @@ impl DBPool {
                 return Err(crate::Error::from(p.err().unwrap().to_string()));
             }
             pool.sqlite = Some(p.unwrap());
-        } else if driver.starts_with("mssql") {
+        } else if driver.starts_with("mssql") || driver.starts_with("sqlserver") {
             pool.driver_type = DriverType::Mssql;
             let build = sqlx_core::pool::PoolOptions::<Mssql>::new()
                 .max_connections(opt.max_size)
