@@ -47,7 +47,7 @@ pub struct Rbatis {
     pub log_plugin: Box<dyn LogPlugin>,
 }
 
-impl<'r> Default for Rbatis {
+impl Default for Rbatis {
     fn default() -> Rbatis {
         Rbatis::new()
     }
