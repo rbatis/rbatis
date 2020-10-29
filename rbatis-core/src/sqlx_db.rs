@@ -845,3 +845,9 @@ pub fn convert_result<T>(arg: Result<T, sqlx_core::error::Error>) -> crate::Resu
     }
     return Ok(arg.unwrap());
 }
+
+#[derive(Debug, Default)]
+pub struct DBExecResult {
+    pub(super) rows_affected: u64,
+    pub(super) last_insert_id: u64,
+}
