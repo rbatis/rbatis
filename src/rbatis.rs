@@ -4,7 +4,7 @@ use once_cell::sync::OnceCell;
 use serde::de::DeserializeOwned;
 use serde::ser::Serialize;
 use serde_json::Number;
-use rbatis_core::sqlx_db::{DBPool, DBPoolConn, DBQuery, DBTx, PoolOptions};
+use rbatis_core::sqlx_db::{DBPool, DBPoolConn, DBQuery, DBTx, PoolOptions, DBExecResult};
 use rbatis_core::Error;
 use rbatis_core::sync::sync_map::SyncMap;
 
@@ -282,7 +282,7 @@ impl Rbatis {
     }
 
     /// exec sql(prepare sql)
-    pub async fn exec_prepare(&self, tx_id: &str, sql: &str, args: &Vec<serde_json::Value>) -> Result<u64, rbatis_core::Error> {
+    pub async fn exec_prepare(&self, tx_id: &str, sql: &str, args: &Vec<serde_json::Value>) -> Result<DBExecResult, rbatis_core::Error> {
 
         //sql intercept
         let mut sql = sql.to_string();
@@ -308,7 +308,7 @@ impl Rbatis {
             result = conn.exec_prepare(q).await;
         }
         if result.is_ok() {
-            self.log_plugin.info(&format!("[rbatis] [{}] RowsAffected <== {}", tx_id, result.as_ref().unwrap()));
+            self.log_plugin.info(&format!("[rbatis] [{}] RowsAffected <== {:#?}", tx_id, result.as_ref()));
         } else {
             self.log_plugin.info(&format!("[rbatis] [{}] RowsAffected <== {}", tx_id, 0));
         }
@@ -348,7 +348,7 @@ impl Rbatis {
     }
 
     /// exec sql(prepare sql)
-    pub async fn xml_exec<Ser>(&self, tx_id: &str, mapper: &str, method: &str, arg: &Ser) -> Result<u64, rbatis_core::Error>
+    pub async fn xml_exec<Ser>(&self, tx_id: &str, mapper: &str, method: &str, arg: &Ser) -> Result<DBExecResult, rbatis_core::Error>
         where Ser: Serialize + Send + Sync {
         let json = serde_json::to_value(arg).unwrap_or(serde_json::Value::Null);
         let (sql, args) = self.xml_to_sql(mapper, method, &json)?;
@@ -396,7 +396,7 @@ impl Rbatis {
     ///       )"#;
     ///         let data: u64 = rb.py_exec("", py, &json!({   "delete_flag": 1 })).await.unwrap();
     ///
-    pub async fn py_exec<Ser>(&self, tx_id: &str, py: &str, arg: &Ser) -> Result<u64, rbatis_core::Error>
+    pub async fn py_exec<Ser>(&self, tx_id: &str, py: &str, arg: &Ser) -> Result<DBExecResult, rbatis_core::Error>
         where Ser: Serialize + Send + Sync {
         let json = serde_json::to_value(arg).unwrap_or(serde_json::Value::Null);
         let (sql, args) = self.py_to_sql(py, &json)?;

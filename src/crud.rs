@@ -15,6 +15,7 @@ use crate::rbatis::Rbatis;
 use crate::sql::date::DateFormat;
 use crate::utils::string_util::to_snake_name;
 use crate::wrapper::Wrapper;
+use rbatis_core::sqlx_db::DBExecResult;
 
 /// DB Table model trait
 pub trait CRUDEnable: Send + Sync + Serialize + DeserializeOwned {
@@ -199,8 +200,8 @@ impl<C> Ids<C> for Vec<C> where C: Id {
 #[async_trait]
 pub trait CRUD {
     /// tx_id: Transaction id,default ""
-    async fn save<T>(&self, tx_id: &str, entity: &T) -> Result<u64> where T: CRUDEnable;
-    async fn save_batch<T>(&self, tx_id: &str, entity: &[T]) -> Result<u64> where T: CRUDEnable;
+    async fn save<T>(&self, tx_id: &str, entity: &T) -> Result<DBExecResult> where T: CRUDEnable;
+    async fn save_batch<T>(&self, tx_id: &str, entity: &[T]) -> Result<DBExecResult> where T: CRUDEnable;
 
 
     async fn remove_by_wrapper<T>(&self, tx_id: &str, w: &Wrapper) -> Result<u64> where T: CRUDEnable;
@@ -224,7 +225,7 @@ pub trait CRUD {
 #[async_trait]
 impl CRUD for Rbatis {
     /// save one entity to database
-    async fn save<T>(&self, tx_id: &str, entity: &T) -> Result<u64>
+    async fn save<T>(&self, tx_id: &str, entity: &T) -> Result<DBExecResult>
         where T: CRUDEnable {
         let mut index = 0;
         let (values, args) = entity.make_value_sql_arg(&self.driver_type()?, &mut index)?;
@@ -239,9 +240,12 @@ impl CRUD for Rbatis {
     /// [rbatis] Exec ==>   INSERT INTO biz_activity (id,name,version) VALUES ( ? , ? , ?),( ? , ? , ?)
     ///
     ///
-    async fn save_batch<T>(&self, tx_id: &str, args: &[T]) -> Result<u64> where T: CRUDEnable {
+    async fn save_batch<T>(&self, tx_id: &str, args: &[T]) -> Result<DBExecResult> where T: CRUDEnable {
         if args.is_empty() {
-            return Ok(0);
+            return Ok(DBExecResult{
+                rows_affected: 0,
+                last_insert_id: None
+            });
         }
         let mut value_arr = String::new();
         let mut arg_arr = vec![];
@@ -274,7 +278,7 @@ impl CRUD for Rbatis {
         } else {
             sql = format!("DELETE FROM {} {}", T::table_name(), make_where_sql(where_sql));
         }
-        return self.exec_prepare(tx_id, sql.as_str(), &w.args).await;
+        return Ok(self.exec_prepare(tx_id, sql.as_str(), &w.args).await?.rows_affected);
     }
 
     async fn remove_by_id<T>(&self, tx_id: &str, id: &T::IdType) -> Result<u64> where T: CRUDEnable {
@@ -284,7 +288,7 @@ impl CRUD for Rbatis {
         } else {
             sql = format!("DELETE FROM {} WHERE id = {}", T::table_name(), id);
         }
-        return self.exec_prepare(tx_id, sql.as_str(), &vec![]).await;
+        return Ok(self.exec_prepare(tx_id, sql.as_str(), &vec![]).await?.rows_affected);
     }
 
     ///remove batch id
@@ -336,7 +340,7 @@ impl CRUD for Rbatis {
             wrapper.sql.push_str(" WHERE ");
             wrapper = wrapper.push_wrapper(&w).check()?;
         }
-        return self.exec_prepare(tx_id, wrapper.sql.as_str(), &wrapper.args).await;
+        return Ok(self.exec_prepare(tx_id, wrapper.sql.as_str(), &wrapper.args).await?.rows_affected);
     }
 
     async fn update_by_id<T>(&self, tx_id: &str, arg: &T) -> Result<u64> where T: CRUDEnable {
