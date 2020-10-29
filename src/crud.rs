@@ -15,7 +15,7 @@ use crate::rbatis::Rbatis;
 use crate::sql::date::DateFormat;
 use crate::utils::string_util::to_snake_name;
 use crate::wrapper::Wrapper;
-use rbatis_core::sqlx_db::DBExecResult;
+use rbatis_core::db_adapter::DBExecResult;
 
 /// DB Table model trait
 pub trait CRUDEnable: Send + Sync + Serialize + DeserializeOwned {

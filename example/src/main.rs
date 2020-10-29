@@ -89,7 +89,7 @@ mod test {
     use rbatis::crud::CRUDEnable;
     use crate::{BizActivity};
     use rbatis::utils::bencher::Bencher;
-    use rbatis_core::sqlx_db::DBPool;
+    use rbatis_core::db_adapter::DBPool;
 
     pub const MYSQL_URL: &'static str = "mysql://root:123456@localhost:3306/test";
 
