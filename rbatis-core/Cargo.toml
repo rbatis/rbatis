@@ -16,11 +16,8 @@ default = ["all", "async-io"]
 tokio02 = ["async-std/tokio02"]
 async-io = ["async-std"]
 
-unstable = []
 # intended mainly for CI and docs
 all = []
-# intended for internal benchmarking, do not use
-bench = []
 
 [dependencies]
 async-std = { version = "1.6", optional = true }
