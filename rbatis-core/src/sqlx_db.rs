@@ -292,13 +292,28 @@ impl DBPool {
                 return Err(Error::from("un init DBPool!"));
             }
             &DriverType::Mysql => {
-                DBTx::begin(DBPoolConn::new_mysql(convert_result(self.mysql.as_ref().unwrap().acquire().await)?)).await
+               Ok(DBTx{
+                    driver_type: self.driver_type,
+                    mysql: Some(convert_result(self.mysql.as_ref().unwrap().begin().await)?),
+                    postgres: None,
+                    sqlite: None
+                })
             }
             &DriverType::Postgres => {
-                DBTx::begin(DBPoolConn::new_pg(convert_result(self.postgres.as_ref().unwrap().acquire().await)?)).await
+                Ok(DBTx{
+                    driver_type: self.driver_type,
+                    postgres: Some(convert_result(self.postgres.as_ref().unwrap().begin().await)?),
+                    mysql: None,
+                    sqlite: None
+                })
             }
             &DriverType::Sqlite => {
-                DBTx::begin(DBPoolConn::new_sqlite(convert_result(self.sqlite.as_ref().unwrap().acquire().await)?)).await
+                Ok(DBTx{
+                    driver_type: self.driver_type,
+                    sqlite: Some(convert_result(self.sqlite.as_ref().unwrap().begin().await)?),
+                    postgres: None,
+                    mysql: None
+                })
             }
         }
     }
@@ -605,20 +620,35 @@ impl DBPoolConn {
         }
     }
 
-    pub async fn begin(mut self) -> crate::Result<DBTx<'static>> {
+    pub async fn begin(&mut self) -> crate::Result<DBTx<'_>> {
         self.check_alive()?;
         match &self.driver_type {
             &DriverType::None => {
                 return Err(Error::from("un init DBPool!"));
             }
             &DriverType::Mysql => {
-                DBTx::begin(DBPoolConn::new_mysql(self.mysql.take().unwrap())).await
+                Ok(DBTx{
+                    driver_type: self.driver_type,
+                    mysql: Some(convert_result(self.mysql.as_mut().unwrap().begin().await)?),
+                    postgres: None,
+                    sqlite: None
+                })
             }
             &DriverType::Postgres => {
-                DBTx::begin(DBPoolConn::new_pg(self.postgres.take().unwrap())).await
+                Ok(DBTx{
+                    driver_type: self.driver_type,
+                    postgres: Some(convert_result(self.postgres.as_mut().unwrap().begin().await)?),
+                    mysql: None,
+                    sqlite: None
+                })
             }
             &DriverType::Sqlite => {
-                DBTx::begin(DBPoolConn::new_sqlite(self.sqlite.take().unwrap())).await
+                Ok(DBTx{
+                    driver_type: self.driver_type,
+                    sqlite: Some(convert_result(self.sqlite.as_mut().unwrap().begin().await)?),
+                    postgres: None,
+                    mysql: None
+                })
             }
         }
     }
@@ -665,7 +695,6 @@ impl DBPoolConn {
 
 pub struct DBTx<'a> {
     pub driver_type: DriverType,
-    pub conn: DBPoolConn,
     pub mysql: Option<Transaction<'a, MySql>>,
     pub postgres: Option<Transaction<'a, Postgres>>,
     pub sqlite: Option<Transaction<'a, Sqlite>>,
@@ -673,30 +702,6 @@ pub struct DBTx<'a> {
 
 
 impl <'a>DBTx<'a> {
-    pub async fn begin<'b>(arg: DBPoolConn) -> crate::Result<DBTx<'b>> {
-        let mut tx = DBTx {
-            driver_type: DriverType::None,
-            conn: arg,
-            mysql: None,
-            postgres: None,
-            sqlite: None,
-        };
-        tx.do_begin().await?;
-        Ok(tx)
-    }
-
-    async fn do_begin(&mut self) -> crate::Result<()> {
-        match &self.conn.driver_type {
-            DriverType::Mysql => {
-                let result = self.conn.mysql.as_mut().unwrap().begin().await;
-                //self.mysql = Some(result.unwrap());
-            }
-            //TODO
-            _ => {}
-        }
-        return Ok(());
-    }
-
     pub async fn commit(&mut self) -> crate::Result<()> {
         match &self.driver_type {
             &DriverType::None => {
