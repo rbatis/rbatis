@@ -52,7 +52,7 @@ chrono = { version = "0.4", features = ["serde"] }
 
 # logging (required)
 log = "0.4"
-fast_log="1.3.0"
+fast_log="1.3"
 
 # BigDecimal (optional)
 bigdecimal = "0.2"
