@@ -8,6 +8,7 @@ use sqlx_core::value::ValueRef;
 use crate::convert::{JsonCodec, RefJsonCodec};
 use sqlx_core::row::Row;
 use sqlx_core::column::Column;
+use crate::sqlx_db::convert_result;
 
 impl<'r> JsonCodec for sqlx_core::mysql::MySqlValueRef<'r> {
     fn try_to_json(self) -> crate::Result<serde_json::Value> {
@@ -147,7 +148,7 @@ impl RefJsonCodec for Vec<MySqlRow>{
             let columns = row.columns();
             for x in columns {
                 let key = x.name();
-                let v:MySqlValueRef = row.get(key);
+                let v:MySqlValueRef = convert_result(row.try_get_raw(key))?;
                 m.insert(key.to_owned(), v.try_to_json()?);
             }
             arr.push(serde_json::Value::Object(m));

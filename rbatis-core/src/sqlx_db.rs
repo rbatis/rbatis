@@ -381,7 +381,7 @@ pub struct DBQuery<'q> {
 }
 
 impl<'q> DBQuery<'q> {
-    pub fn bind_value(&mut self, t: &serde_json::Value) -> crate::Result<()> {
+    pub fn bind_value(&mut self, t: &'q serde_json::Value) -> crate::Result<()> {
         match &self.driver_type {
             &DriverType::None => {
                 return Err(Error::from("un init DBPool!"));
@@ -671,22 +671,16 @@ impl DBPoolConn {
                 return Err(Error::from("un init DBPool!"));
             }
             &DriverType::Mysql => {
-                if self.mysql.is_none() {
-                    return Ok(());
-                }
-                return convert_result(self.mysql.take().unwrap().close().await);
+                self.mysql=None;
+                return Ok(());
             }
             &DriverType::Postgres => {
-                if self.postgres.is_none() {
-                    return Ok(());
-                }
-                return convert_result(self.postgres.take().unwrap().close().await);
+                self.postgres=None;
+                return Ok(());
             }
             &DriverType::Sqlite => {
-                if self.sqlite.is_none() {
-                    return Ok(());
-                }
-                return convert_result(self.sqlite.take().unwrap().close().await);
+                self.sqlite=None;
+                return Ok(());
             }
         }
     }
@@ -707,36 +701,30 @@ impl <'a>DBTx<'a> {
                 return Err(Error::from("un init DBPool!"));
             }
             &DriverType::Mysql => {
-                let data = self.mysql.take().unwrap().commit().await?;
-                Ok(data)
+                convert_result(self.mysql.take().unwrap().commit().await)
             }
             &DriverType::Postgres => {
-                let data = self.postgres.take().unwrap().commit().await?;
-                Ok(data)
+                convert_result(self.postgres.take().unwrap().commit().await)
             }
             &DriverType::Sqlite => {
-                let data = self.sqlite.take().unwrap().commit().await?;
-                Ok(data)
+                convert_result(self.sqlite.take().unwrap().commit().await)
             }
         }
     }
 
-    pub async fn rollback(&mut self) -> crate::Result<()> {
+    pub async fn rollback(mut self) -> crate::Result<()> {
         match &self.driver_type {
             &DriverType::None => {
                 return Err(Error::from("un init DBPool!"));
             }
             &DriverType::Mysql => {
-                let data = self.mysql.as_mut().unwrap().rollback().await?;
-                Ok(data)
+                convert_result(self.mysql.take().unwrap().rollback().await)
             }
             &DriverType::Postgres => {
-                let data = self.postgres.as_mut().unwrap().rollback().await?;
-                Ok(data)
+                convert_result(self.postgres.take().unwrap().rollback().await)
             }
             &DriverType::Sqlite => {
-                let data = self.sqlite.as_mut().unwrap().rollback().await?;
-                Ok(data)
+                convert_result(self.sqlite.take().unwrap().rollback().await)
             }
         }
     }
@@ -748,21 +736,21 @@ impl <'a>DBTx<'a> {
                 return Err(Error::from("un init DBPool!"));
             }
             &DriverType::Mysql => {
-                let mut data: Vec<MySqlRow> = self.mysql.as_mut().unwrap().fetch_all(sql).await?;
+                let mut data: Vec<MySqlRow> = convert_result(self.mysql.as_mut().unwrap().fetch_all(sql).await)?;
                 let json_array = data.try_to_json()?.as_array().unwrap().to_owned();
                 let return_len = json_array.len();
                 let result = json_decode::<T>(json_array)?;
                 Ok((result, return_len))
             }
             &DriverType::Postgres => {
-                let mut data: Vec<PgRow> = self.postgres.as_mut().unwrap().fetch_all(sql).await?;
+                let mut data: Vec<PgRow> = convert_result(self.postgres.as_mut().unwrap().fetch_all(sql).await)?;
                 let json_array = data.try_to_json()?.as_array().unwrap().to_owned();
                 let return_len = json_array.len();
                 let result = json_decode::<T>(json_array)?;
                 Ok((result, return_len))
             }
             &DriverType::Sqlite => {
-                let mut data: Vec<SqliteRow> = self.sqlite.as_mut().unwrap().fetch_all(sql).await?;
+                let mut data: Vec<SqliteRow> = convert_result(self.sqlite.as_mut().unwrap().fetch_all(sql).await)?;
                 let json_array = data.try_to_json()?.as_array().unwrap().to_owned();
                 let return_len = json_array.len();
                 let result = json_decode::<T>(json_array)?;
@@ -778,21 +766,21 @@ impl <'a>DBTx<'a> {
                 return Err(Error::from("un init DBPool!"));
             }
             &DriverType::Mysql => {
-                let mut data: Vec<MySqlRow> = self.mysql.as_mut().unwrap().fetch_all(sql.mysql.unwrap()).await?;
+                let mut data: Vec<MySqlRow> = convert_result(self.mysql.as_mut().unwrap().fetch_all(sql.mysql.unwrap()).await)?;
                 let json_array = data.try_to_json()?.as_array().unwrap().to_owned();
                 let return_len = json_array.len();
                 let result = json_decode::<T>(json_array)?;
                 Ok((result, return_len))
             }
             &DriverType::Postgres => {
-                let mut data: Vec<PgRow> = self.postgres.as_mut().unwrap().fetch_all(sql.postgres.unwrap()).await?;
+                let mut data: Vec<PgRow> = convert_result( self.postgres.as_mut().unwrap().fetch_all(sql.postgres.unwrap()).await)?;
                 let json_array = data.try_to_json()?.as_array().unwrap().to_owned();
                 let return_len = json_array.len();
                 let result = json_decode::<T>(json_array)?;
                 Ok((result, return_len))
             }
             &DriverType::Sqlite => {
-                let mut data: Vec<SqliteRow> = self.sqlite.as_mut().unwrap().fetch_all(sql.sqlite.unwrap()).await?;
+                let mut data: Vec<SqliteRow> = convert_result(self.sqlite.as_mut().unwrap().fetch_all(sql.sqlite.unwrap()).await)?;
                 let json_array = data.try_to_json()?.as_array().unwrap().to_owned();
                 let return_len = json_array.len();
                 let result = json_decode::<T>(json_array)?;
@@ -807,16 +795,16 @@ impl <'a>DBTx<'a> {
                 return Err(Error::from("un init DBPool!"));
             }
             &DriverType::Mysql => {
-                let data = self.mysql.as_mut().unwrap().execute(sql).await?;
-                return Ok(data);
+                let data:MySqlDone = convert_result(self.mysql.as_mut().unwrap().execute(sql).await)?;
+                return Ok(data.rows_affected());
             }
             &DriverType::Postgres => {
-                let data = self.postgres.as_mut().unwrap().execute(sql).await?;
-                return Ok(data);
+                let data:PgDone = convert_result(self.postgres.as_mut().unwrap().execute(sql).await)?;
+                return Ok(data.rows_affected());
             }
             &DriverType::Sqlite => {
-                let data = self.sqlite.as_mut().unwrap().execute(sql).await?;
-                return Ok(data);
+                let data:SqliteDone = convert_result(self.sqlite.as_mut().unwrap().execute(sql).await)?;
+                return Ok(data.rows_affected());
             }
         }
     }
@@ -828,22 +816,22 @@ impl <'a>DBTx<'a> {
                 return Err(Error::from("un init DBPool!"));
             }
             &DriverType::Mysql => {
-                let data = self.mysql.as_mut().unwrap().execute(sql.mysql.unwrap()).await?;
-                return Ok(data);
+                let data:MySqlDone = convert_result(self.mysql.as_mut().unwrap().execute(sql.mysql.unwrap()).await)?;
+                return Ok(data.rows_affected());
             }
             &DriverType::Postgres => {
-                let data = self.postgres.as_mut().unwrap().execute(sql.postgres.unwrap()).await?;
-                return Ok(data);
+                let data:PgDone = convert_result(self.postgres.as_mut().unwrap().execute(sql.postgres.unwrap()).await)?;
+                return Ok(data.rows_affected());
             }
             &DriverType::Sqlite => {
-                let data = self.sqlite.as_mut().unwrap().execute(sql.sqlite.unwrap()).await?;
-                return Ok(data);
+                let data:SqliteDone = convert_result(self.sqlite.as_mut().unwrap().execute(sql.sqlite.unwrap()).await)?;
+                return Ok(data.rows_affected());
             }
         }
     }
 }
 
-fn convert_result<T>(arg: Result<T, sqlx_core::error::Error>) -> crate::Result<T> {
+pub fn convert_result<T>(arg: Result<T, sqlx_core::error::Error>) -> crate::Result<T> {
     if arg.is_err() {
         return Err(crate::Error::from(arg.err().unwrap().to_string()));
     }

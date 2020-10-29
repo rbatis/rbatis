@@ -8,6 +8,8 @@ use sqlx_core::value::ValueRef;
 use crate::convert::{JsonCodec, RefJsonCodec};
 use sqlx_core::postgres::PgRow;
 use sqlx_core::row::Row;
+use sqlx_core::column::Column;
+use crate::sqlx_db::convert_result;
 
 impl<'c> JsonCodec for PgValueRef<'c> {
     fn try_to_json(self) -> crate::Result<serde_json::Value> {
@@ -122,12 +124,12 @@ impl<'c> JsonCodec for PgValueRef<'c> {
 impl RefJsonCodec for Vec<PgRow>{
     fn try_to_json(&self) -> crate::Result<serde_json::Value> {
         let mut arr = vec![];
-        for row in &self {
+        for row in self {
             let mut m = serde_json::Map::new();
             let columns = row.columns();
             for x in columns {
                 let key = x.name();
-                let v:PgValueRef = row.get(key);
+                let v:PgValueRef = convert_result(row.try_get_raw(key))?;
                 m.insert(key.to_owned(), v.try_to_json()?);
             }
             arr.push(serde_json::Value::Object(m));
