@@ -4,7 +4,7 @@ use once_cell::sync::OnceCell;
 use serde::de::DeserializeOwned;
 use serde::ser::Serialize;
 use serde_json::Number;
-use rbatis_core::sqlx_db::{DBPool, DBPoolConn, DBQuery, DBTx, PoolOptions, DBExecResult};
+use rbatis_core::db_adapter::{DBPool, DBPoolConn, DBQuery, DBTx, PoolOptions, DBExecResult};
 use rbatis_core::Error;
 use rbatis_core::sync::sync_map::SyncMap;
 

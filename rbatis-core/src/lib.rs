@@ -31,7 +31,7 @@ pub mod decode;
 
 pub use error::{Error, Result};
 
-pub mod sqlx_db;
+pub mod db_adapter;
 
 pub mod convert;
 
