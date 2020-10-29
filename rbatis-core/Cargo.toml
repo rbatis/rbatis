@@ -13,6 +13,7 @@ homepage = "https://rbatis.github.io/rbatis.io/#/"
 
 [features]
 default = ["all"]
+actix = ["async-std","sqlx-core/runtime-actix"]
 tokio02 = ["async-std/tokio02","sqlx-core/runtime-tokio"]
 async-io = ["async-std","sqlx-core"]
 all = ["async-io"]
