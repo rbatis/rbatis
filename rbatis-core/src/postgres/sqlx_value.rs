@@ -132,6 +132,6 @@ impl RefJsonCodec for Vec<PgRow>{
             }
             arr.push(serde_json::Value::Object(m));
         }
-        Ok(Value::from(arr))
+        Ok(serde_json::Value::from(arr))
     }
 }
