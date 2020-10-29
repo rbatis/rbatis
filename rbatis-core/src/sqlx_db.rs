@@ -408,7 +408,7 @@ impl<'q> DBQuery<'q> {
                         q = q.bind(Option::Some(b));
                     }
                     _ => {
-                        q = q.bind(Some(t.to_string().as_str()));
+                        q = q.bind(Some(t.to_string()));
                     }
                 }
                 self.mysql = Some(q);
@@ -435,7 +435,7 @@ impl<'q> DBQuery<'q> {
                         q = q.bind(Option::Some(b));
                     }
                     _ => {
-                        q = q.bind(Some(t.to_string().as_str()));
+                        q = q.bind(Some(t.to_string()));
                     }
                 }
                 self.postgres = Some(q);
@@ -462,7 +462,7 @@ impl<'q> DBQuery<'q> {
                         q = q.bind(Option::Some(b));
                     }
                     _ => {
-                        q = q.bind(Some(t.to_string().as_str()));
+                        q = q.bind(Some(t.to_string()));
                     }
                 }
                 self.sqlite = Some(q);
@@ -611,14 +611,14 @@ impl DBPoolConn {
         }
     }
 
-    pub async fn begin(self) -> crate::Result<DBTx<'static>> {
+    pub async fn begin<'a>(&'a mut self) -> crate::Result<DBTx<'a>> {
         self.check_alive()?;
         match &self.driver_type {
             &DriverType::None => {
                 return Err(Error::from("un init DBPool!"));
             }
             &DriverType::Mysql => {
-                let data = convert_result(self.mysql.unwrap().begin().await)?;
+                let data = convert_result(self.mysql.as_mut().unwrap().begin().await)?;
                 return Ok(DBTx {
                     driver_type: self.driver_type,
                     mysql: Some(data),
@@ -627,7 +627,7 @@ impl DBPoolConn {
                 });
             }
             &DriverType::Postgres => {
-                let data = convert_result(self.postgres.unwrap().begin().await)?;
+                let data = convert_result(self.postgres.as_mut().unwrap().begin().await)?;
                 return Ok(DBTx {
                     driver_type: self.driver_type,
                     mysql: None,
@@ -636,7 +636,7 @@ impl DBPoolConn {
                 });
             }
             &DriverType::Sqlite => {
-                let data = convert_result(self.sqlite.unwrap().begin().await)?;
+                let data = convert_result(self.sqlite.as_mut().unwrap().begin().await)?;
                 return Ok(DBTx {
                     driver_type: self.driver_type,
                     mysql: None,
