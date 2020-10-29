@@ -9,6 +9,7 @@ use crate::convert::{JsonCodec, RefJsonCodec};
 use sqlx_core::sqlite::SqliteRow;
 use sqlx_core::row::Row;
 use sqlx_core::column::Column;
+use crate::sqlx_db::convert_result;
 
 impl<'c> JsonCodec for SqliteValueRef<'c> {
     fn try_to_json(self) -> crate::Result<serde_json::Value> {
@@ -80,7 +81,7 @@ impl RefJsonCodec for Vec<SqliteRow>{
             let columns = row.columns();
             for x in columns {
                 let key = x.name();
-                let v:SqliteValueRef = row.get(key);
+                let v:SqliteValueRef = convert_result( row.try_get_raw(key))?;
                 m.insert(key.to_owned(), v.try_to_json()?);
             }
             arr.push(serde_json::Value::Object(m));
