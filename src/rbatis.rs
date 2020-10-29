@@ -7,7 +7,7 @@ use serde_json::Number;
 
 use rbatis_core::connection::Connection;
 use rbatis_core::cursor::Cursor;
-use rbatis_core::db::{DBPool, DBPoolConn, DBQuery, DBTx, DriverType, PoolOptions};
+use rbatis_core::sqlx_db::{DBPool, DBPoolConn, DBQuery, DBTx, PoolOptions};
 use rbatis_core::Error;
 use rbatis_core::executor::Executor;
 use rbatis_core::pool::{Pool, PoolConnection};
@@ -33,9 +33,10 @@ use crate::plugin::page::{IPage, IPageRequest, Page, PagePlugin, RbatisPagePlugi
 use crate::sql::PageLimit;
 use crate::utils::error_util::ToResult;
 use crate::wrapper::Wrapper;
+use rbatis_core::db::DriverType;
 
 /// rbatis engine
-pub struct Rbatis {
+pub struct Rbatis<'a> {
     // the connection pool,use OnceCell init this
     pub pool: OnceCell<DBPool>,
     // the engine run some express for example:'1+1'=2
@@ -43,7 +44,7 @@ pub struct Rbatis {
     // map<mapper_name,map<method_name,NodeType>>
     pub mapper_node_map: HashMap<String, HashMap<String, NodeType>>,
     //context of tx
-    pub tx_context: SyncMap<String, DBTx>,
+    pub tx_context: SyncMap<String, DBTx<'a>>,
     // page plugin
     pub page_plugin: Box<dyn PagePlugin>,
     // sql intercept vec chain
@@ -54,13 +55,13 @@ pub struct Rbatis {
     pub log_plugin: Box<dyn LogPlugin>,
 }
 
-impl<'r> Default for Rbatis {
-    fn default() -> Rbatis {
+impl<'r> Default for Rbatis<'r> {
+    fn default() -> Rbatis<'r> {
         Rbatis::new()
     }
 }
 
-impl Rbatis {
+impl <'a>Rbatis<'a> {
     pub fn new() -> Self {
         return Self {
             pool: OnceCell::new(),
@@ -138,7 +139,7 @@ impl Rbatis {
     }
 
     /// begin tx,for new conn
-    pub async fn begin(&self, new_tx_id: &str) -> Result<u64, rbatis_core::Error> {
+    pub async fn begin(&'a self, new_tx_id: &str) -> Result<u64, rbatis_core::Error> {
         if new_tx_id.is_empty() {
             return Err(rbatis_core::Error::from("[rbatis] tx_id can not be empty"));
         }
@@ -149,20 +150,20 @@ impl Rbatis {
         return Ok(1);
     }
 
-    /// begin tx,with an exist conn
-    pub async fn begin_with_conn(&self, new_tx_id: &str, db_conn: DBPoolConn) -> Result<u64, rbatis_core::Error> {
-        if new_tx_id.is_empty() {
-            return Err(rbatis_core::Error::from("[rbatis] tx_id can not be empty"));
-        }
-        let conn = db_conn.begin().await?;
-        //send tx to context
-        self.tx_context.insert(new_tx_id.to_string(), conn).await;
-        self.log_plugin.info(&format!("[rbatis] [{}] Begin", new_tx_id));
-        return Ok(1);
-    }
+    // /// begin tx,with an exist conn
+    // pub async fn begin_with_conn(&self, new_tx_id: &str, mut db_conn: DBPoolConn) -> Result<u64, rbatis_core::Error> {
+    //     if new_tx_id.is_empty() {
+    //         return Err(rbatis_core::Error::from("[rbatis] tx_id can not be empty"));
+    //     }
+    //     let conn = db_conn.begin().await?;
+    //     //send tx to context
+    //     self.tx_context.insert(new_tx_id.to_string(), conn).await;
+    //     self.log_plugin.info(&format!("[rbatis] [{}] Begin", new_tx_id));
+    //     return Ok(1);
+    // }
 
     /// commit tx,and return conn
-    pub async fn commit(&self, tx_id: &str) -> Result<DBPoolConn, rbatis_core::Error> {
+    pub async fn commit(&self, tx_id: &str) -> Result<(), rbatis_core::Error> {
         let tx = self.tx_context.remove(tx_id).await;
         if tx.is_none() {
             return Err(rbatis_core::Error::from(format!("[rbatis] tx:{} not exist！", tx_id)));
@@ -174,7 +175,7 @@ impl Rbatis {
     }
 
     /// rollback tx,and return conn
-    pub async fn rollback(&self, tx_id: &str) -> Result<DBPoolConn, rbatis_core::Error> {
+    pub async fn rollback(&self, tx_id: &str) -> Result<(), rbatis_core::Error> {
         let tx_op = self.tx_context.remove(tx_id).await;
         if tx_op.is_none() {
             return Err(rbatis_core::Error::from(format!("[rbatis] tx:{} not exist！", tx_id)));
@@ -244,7 +245,7 @@ impl Rbatis {
         return Ok(data);
     }
 
-    fn bind_arg<'a>(&self, sql: &'a str, arg: &Vec<serde_json::Value>) -> Result<DBQuery<'a>, rbatis_core::Error> {
+    fn bind_arg<'arg>(&self, sql: &'arg str, arg: &Vec<serde_json::Value>) -> Result<DBQuery<'arg>, rbatis_core::Error> {
         let mut q: DBQuery = self.get_pool()?.make_query(sql)?;
         for x in arg {
             q.bind_value(x);

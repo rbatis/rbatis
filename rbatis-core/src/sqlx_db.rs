@@ -22,6 +22,7 @@ use sqlx_core::done::Done;
 use sqlx_core::arguments::{Arguments, IntoArguments};
 use crate::db::DriverType;
 use sqlx_core::acquire::Acquire;
+use crate::runtime::Mutex;
 
 #[derive(Debug, Clone, Copy)]
 pub struct PoolOptions {
@@ -310,7 +311,7 @@ impl DBPool {
             &DriverType::Sqlite => {
                 Ok(DBTx{
                     driver_type: self.driver_type,
-                    sqlite: Some(convert_result(self.sqlite.as_ref().unwrap().begin().await)?),
+                    sqlite: Some(Mutex::new(convert_result(self.sqlite.as_ref().unwrap().begin().await)?)),
                     postgres: None,
                     mysql: None
                 })
@@ -645,7 +646,7 @@ impl DBPoolConn {
             &DriverType::Sqlite => {
                 Ok(DBTx{
                     driver_type: self.driver_type,
-                    sqlite: Some(convert_result(self.sqlite.as_mut().unwrap().begin().await)?),
+                    sqlite: Some(Mutex::new(convert_result(self.sqlite.as_mut().unwrap().begin().await)?)),
                     postgres: None,
                     mysql: None
                 })
@@ -697,7 +698,7 @@ pub struct DBTx<'a> {
     pub driver_type: DriverType,
     pub mysql: Option<Transaction<'a, MySql>>,
     pub postgres: Option<Transaction<'a, Postgres>>,
-    pub sqlite: Option<Transaction<'a, Sqlite>>,
+    pub sqlite: Option<Mutex<Transaction<'a, Sqlite>>>,
 }
 
 
@@ -714,7 +715,7 @@ impl <'a>DBTx<'a> {
                 convert_result(self.postgres.take().unwrap().commit().await)
             }
             &DriverType::Sqlite => {
-                convert_result(self.sqlite.take().unwrap().commit().await)
+                convert_result(self.sqlite.take().unwrap().into_inner().commit().await)
             }
         }
     }
@@ -731,7 +732,7 @@ impl <'a>DBTx<'a> {
                 convert_result(self.postgres.take().unwrap().rollback().await)
             }
             &DriverType::Sqlite => {
-                convert_result(self.sqlite.take().unwrap().rollback().await)
+                convert_result(self.sqlite.take().unwrap().into_inner().rollback().await)
             }
         }
     }
@@ -757,7 +758,7 @@ impl <'a>DBTx<'a> {
                 Ok((result, return_len))
             }
             &DriverType::Sqlite => {
-                let mut data: Vec<SqliteRow> = convert_result(self.sqlite.as_mut().unwrap().fetch_all(sql).await)?;
+                let mut data: Vec<SqliteRow> = convert_result(self.sqlite.as_mut().unwrap().lock().await.fetch_all(sql).await)?;
                 let json_array = data.try_to_json()?.as_array().unwrap().to_owned();
                 let return_len = json_array.len();
                 let result = json_decode::<T>(json_array)?;
@@ -787,7 +788,7 @@ impl <'a>DBTx<'a> {
                 Ok((result, return_len))
             }
             &DriverType::Sqlite => {
-                let mut data: Vec<SqliteRow> = convert_result(self.sqlite.as_mut().unwrap().fetch_all(sql.sqlite.unwrap()).await)?;
+                let mut data: Vec<SqliteRow> = convert_result(self.sqlite.as_mut().unwrap().lock().await.fetch_all(sql.sqlite.unwrap()).await)?;
                 let json_array = data.try_to_json()?.as_array().unwrap().to_owned();
                 let return_len = json_array.len();
                 let result = json_decode::<T>(json_array)?;
@@ -810,7 +811,7 @@ impl <'a>DBTx<'a> {
                 return Ok(data.rows_affected());
             }
             &DriverType::Sqlite => {
-                let data: SqliteDone = convert_result(self.sqlite.as_mut().unwrap().execute(sql).await)?;
+                let data: SqliteDone = convert_result(self.sqlite.as_mut().unwrap().lock().await.execute(sql).await)?;
                 return Ok(data.rows_affected());
             }
         }
@@ -831,7 +832,7 @@ impl <'a>DBTx<'a> {
                 return Ok(data.rows_affected());
             }
             &DriverType::Sqlite => {
-                let data: SqliteDone = convert_result(self.sqlite.as_mut().unwrap().execute(sql.sqlite.unwrap()).await)?;
+                let data: SqliteDone = convert_result(self.sqlite.as_mut().unwrap().lock().await.execute(sql.sqlite.unwrap()).await)?;
                 return Ok(data.rows_affected());
             }
         }
