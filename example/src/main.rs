@@ -15,7 +15,7 @@ use tide::Request;
 
 use rbatis::crud::CRUDEnable;
 use rbatis::rbatis::Rbatis;
-use rbatis_core::types::chrono::NaiveDateTime;
+use chrono::NaiveDateTime;
 
 mod crud_test;
 
@@ -47,7 +47,7 @@ pub const MYSQL_URL: &'static str = "mysql://root:123456@localhost:3306/test";
 
 // 示例-Rbatis示例初始化(必须)
 lazy_static! {
-  static ref RB:Rbatis<'static>=Rbatis::new();
+  static ref RB:Rbatis=Rbatis::new();
 }
 
 
@@ -84,12 +84,12 @@ mod test {
     use rbatis::crud::CRUD;
     use rbatis::plugin::page::{Page, PageRequest};
     use rbatis::rbatis::Rbatis;
-    use rbatis_core::db::DBPool;
     use log::{info};
     use serde_json::{json};
     use rbatis::crud::CRUDEnable;
     use crate::{BizActivity};
     use rbatis::utils::bencher::Bencher;
+    use rbatis_core::sqlx_db::DBPool;
 
     pub const MYSQL_URL: &'static str = "mysql://root:123456@localhost:3306/test";
 
@@ -221,7 +221,7 @@ mod test {
     #[async_std::test]
     pub async fn test_tx() {
         fast_log::init_log("requests.log", 1000,log::Level::Info,true);
-        let rb = Rbatis::new();
+        let rb:Rbatis = Rbatis::new();
         rb.link(MYSQL_URL).await.unwrap();
         let tx_id = "1";
         rb.begin(tx_id).await.unwrap();

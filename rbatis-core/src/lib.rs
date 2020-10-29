@@ -20,60 +20,23 @@ extern crate bigdecimal_ as bigdecimal;
 
 mod runtime;
 
+mod mysql;
+mod postgres;
+mod sqlite;
+
 #[macro_use]
 pub mod error;
 
-#[cfg(any(feature = "mysql", feature = "postgres"))]
-#[macro_use]
-mod io;
-
-pub mod connection;
-pub mod cursor;
-pub mod database;
-pub mod value;
-
-#[macro_use]
-pub mod executor;
-
-pub mod transaction;
-mod url;
-
-#[macro_use]
-pub mod arguments;
 pub mod decode;
 
-#[doc(hidden)]
-pub mod describe;
-
-pub mod encode;
-pub mod pool;
-pub mod query;
-
-#[macro_use]
-pub mod query_as;
-
-pub mod types;
-
-#[macro_use]
-pub mod row;
-
-
-#[cfg_attr(docsrs, doc(cfg(feature = "mysql")))]
-pub mod mysql;
-
-
-#[cfg_attr(docsrs, doc(cfg(feature = "postgres")))]
-pub mod postgres;
-
-#[cfg_attr(docsrs, doc(cfg(feature = "sqlite")))]
-pub mod sqlite;
-
 pub use error::{Error, Result};
-
-pub mod db;
 
 pub mod sqlx_db;
 
 pub mod convert;
 
 pub mod sync;
+
+pub mod db;
+
+pub mod types;

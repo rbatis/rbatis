@@ -9,10 +9,10 @@ mod test {
     use rbatis::plugin::page::{Page, PageRequest};
     use rbatis::rbatis::Rbatis;
     use rbatis_core::Error;
-    use rbatis_core::types::BigDecimal;
-    use rbatis_core::types::chrono::NaiveDateTime;
-    use rbatis_core::value::DateTimeNow;
     use rbatis_macro_driver::sql;
+    use chrono::NaiveDateTime;
+    use bigdecimal_::BigDecimal;
+    use rbatis_core::types::Now;
 
     #[derive(CRUDEnable, Serialize, Deserialize, Clone, Debug)]
     pub struct BizActivity {
