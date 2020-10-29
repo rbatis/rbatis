@@ -20,6 +20,7 @@ use crate::convert::RefJsonCodec;
 use sqlx_core::done::Done;
 
 use sqlx_core::arguments::{Arguments, IntoArguments};
+use crate::db::DriverType;
 
 #[derive(Debug, Clone, Copy)]
 pub struct PoolOptions {
@@ -56,15 +57,6 @@ impl PoolOptions {
     pub fn new() -> Self {
         PoolOptions::default()
     }
-}
-
-
-#[derive(Serialize, Deserialize, Debug, Clone, Copy, Eq, PartialEq)]
-pub enum DriverType {
-    None = 0,
-    Mysql = 1,
-    Postgres = 2,
-    Sqlite = 3,
 }
 
 #[derive(Debug)]
@@ -293,7 +285,7 @@ impl DBPool {
         }
     }
 
-    pub async fn begin(&self) -> crate::Result<DBTx<'_>> {
+    pub async fn begin<'a>(&'a self) -> crate::Result<DBTx<'a>> {
         match &self.driver_type {
             &DriverType::None => {
                 return Err(Error::from("un init DBPool!"));
@@ -381,7 +373,7 @@ pub struct DBQuery<'q> {
 }
 
 impl<'q> DBQuery<'q> {
-    pub fn bind_value(&mut self, t: &'q serde_json::Value) -> crate::Result<()> {
+    pub fn bind_value(&mut self, t: &serde_json::Value) -> crate::Result<()> {
         match &self.driver_type {
             &DriverType::None => {
                 return Err(Error::from("un init DBPool!"));
@@ -390,7 +382,7 @@ impl<'q> DBQuery<'q> {
                 let mut q = self.mysql.take().unwrap();
                 match t {
                     serde_json::Value::String(s) => {
-                        q = q.bind(Some(s));
+                        q = q.bind(Some(s.to_owned()));
                     }
                     serde_json::Value::Null => {
                         q = q.bind(Option::<String>::None);
@@ -405,7 +397,7 @@ impl<'q> DBQuery<'q> {
                         }
                     }
                     serde_json::Value::Bool(b) => {
-                        q = q.bind(Option::Some(b));
+                        q = q.bind(Option::Some(b.to_owned()));
                     }
                     _ => {
                         q = q.bind(Some(t.to_string()));
@@ -417,7 +409,7 @@ impl<'q> DBQuery<'q> {
                 let mut q = self.postgres.take().unwrap();
                 match t {
                     serde_json::Value::String(s) => {
-                        q = q.bind(Some(s));
+                        q = q.bind(Some(s.to_owned()));
                     }
                     serde_json::Value::Null => {
                         q = q.bind(Option::<String>::None);
@@ -432,7 +424,7 @@ impl<'q> DBQuery<'q> {
                         }
                     }
                     serde_json::Value::Bool(b) => {
-                        q = q.bind(Option::Some(b));
+                        q = q.bind(Option::Some(b.to_owned()));
                     }
                     _ => {
                         q = q.bind(Some(t.to_string()));
@@ -444,7 +436,7 @@ impl<'q> DBQuery<'q> {
                 let mut q = self.sqlite.take().unwrap();
                 match t {
                     serde_json::Value::String(s) => {
-                        q = q.bind(Some(s));
+                        q = q.bind(Some(s.to_owned()));
                     }
                     serde_json::Value::Null => {
                         q = q.bind(Option::<String>::None);
@@ -459,7 +451,7 @@ impl<'q> DBQuery<'q> {
                         }
                     }
                     serde_json::Value::Bool(b) => {
-                        q = q.bind(Option::Some(b));
+                        q = q.bind(Option::Some(b.to_owned()));
                     }
                     _ => {
                         q = q.bind(Some(t.to_string()));
