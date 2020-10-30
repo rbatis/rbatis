@@ -19,7 +19,7 @@ impl<'r> JsonCodec for sqlx_core::mysql::MySqlValueRef<'r> {
             "NULL" => {
                 return Ok(serde_json::Value::Null);
             }
-            "NEWDECIMAL" => {
+            "DECIMAL" => {
                 let r: Result<Option<BigDecimal>, BoxDynError> = Decode::<'_, MySql>::decode(self);
                 if r.is_err() {
                     return Err(crate::Error::from(r.err().unwrap().to_string()));
