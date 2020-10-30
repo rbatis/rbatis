@@ -90,6 +90,7 @@ mod test {
     use crate::{BizActivity};
     use rbatis::utils::bencher::Bencher;
     use rbatis_core::db_adapter::DBPool;
+    use rbatis_core::db::PoolOptions;
 
     pub const MYSQL_URL: &'static str = "mysql://root:123456@localhost:3306/test";
 
@@ -283,8 +284,11 @@ mod test {
     //cargo test --release --color=always --package example --bin example test::bench_qps --no-fail-fast -- --exact -Z unstable-options --show-output
     #[async_std::test]
     pub async fn bench_qps(){
-        RB.link(MYSQL_URL).await.unwrap();
-        let total = 1000;
+        let mut opts=PoolOptions::default();
+        //test_before_acquire = false will improve performance
+        opts.test_before_acquire = true;
+        RB.link_opt(MYSQL_URL,&opts).await.unwrap();
+        let total = 10000;
         let mut current = 0;
         let now = SystemTime::now();
         loop {
