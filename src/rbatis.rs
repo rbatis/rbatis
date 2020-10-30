@@ -4,7 +4,7 @@ use once_cell::sync::OnceCell;
 use serde::de::DeserializeOwned;
 use serde::ser::Serialize;
 use serde_json::Number;
-use rbatis_core::db_adapter::{DBPool, DBPoolConn, DBQuery, DBTx, PoolOptions, DBExecResult};
+use rbatis_core::db_adapter::{DBPool, DBPoolConn, DBQuery, DBTx, DBExecResult};
 use rbatis_core::Error;
 use rbatis_core::sync::sync_map::SyncMap;
 
@@ -25,7 +25,7 @@ use crate::plugin::page::{IPage, IPageRequest, Page, PagePlugin, RbatisPagePlugi
 use crate::sql::PageLimit;
 use crate::utils::error_util::ToResult;
 use crate::wrapper::Wrapper;
-use rbatis_core::db::DriverType;
+use rbatis_core::db::{DriverType, PoolOptions};
 
 /// rbatis engine
 pub struct Rbatis {
