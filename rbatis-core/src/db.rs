@@ -6,9 +6,9 @@ use chrono::NaiveDateTime;
 
 #[derive(Debug, Clone, Copy)]
 pub struct PoolOptions {
-    pub max_size: u32,
+    pub max_connections: u32,
+    pub min_connections: u32,
     pub connect_timeout: Duration,
-    pub min_size: u32,
     pub max_lifetime: Option<Duration>,
     pub idle_timeout: Option<Duration>,
     pub test_on_acquire: bool,
@@ -18,9 +18,9 @@ impl Default for PoolOptions {
     fn default() -> Self {
         Self {
             // pool a maximum of 10 connections to the same database
-            max_size: 10,
+            max_connections: 10,
             // don't open connections until necessary
-            min_size: 0,
+            min_connections: 0,
             // try to connect for 10 seconds before erroring
             connect_timeout: Duration::from_secs(60),
             // reap connections that have been alive > 30 minutes

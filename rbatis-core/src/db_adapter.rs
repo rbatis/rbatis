@@ -19,47 +19,10 @@ use sqlx_core::transaction::Transaction;
 use sqlx_core::types::Type;
 
 use crate::convert::RefJsonCodec;
-use crate::db::DriverType;
+use crate::db::{DriverType, PoolOptions};
 use crate::decode::json_decode;
 use crate::Error;
 use crate::runtime::Mutex;
-
-#[derive(Debug, Clone, Copy)]
-pub struct PoolOptions {
-    pub max_size: u32,
-    pub connect_timeout: Duration,
-    pub min_size: u32,
-    pub max_lifetime: Option<Duration>,
-    pub idle_timeout: Option<Duration>,
-    pub test_on_acquire: bool,
-}
-
-impl Default for PoolOptions {
-    fn default() -> Self {
-        Self {
-            // pool a maximum of 10 connections to the same database
-            max_size: 10,
-            // don't open connections until necessary
-            min_size: 0,
-            // try to connect for 10 seconds before erroring
-            connect_timeout: Duration::from_secs(60),
-            // reap connections that have been alive > 30 minutes
-            // prevents unbounded live-leaking of memory due to naive prepared statement caching
-            // see src/cache.rs for context
-            max_lifetime: Some(Duration::from_secs(1800)),
-            // don't reap connections based on idle time
-            idle_timeout: None,
-            // If true, test the health of a connection on acquire
-            test_on_acquire: true,
-        }
-    }
-}
-
-impl PoolOptions {
-    pub fn new() -> Self {
-        PoolOptions::default()
-    }
-}
 
 #[derive(Debug)]
 pub struct DBPool {
@@ -127,11 +90,12 @@ impl DBPool {
         if driver.starts_with("mysql") {
             pool.driver_type = DriverType::Mysql;
             let build = sqlx_core::pool::PoolOptions::<MySql>::default()
-                .max_connections(opt.max_size)
+                .max_connections(opt.max_connections)
                 .max_lifetime(opt.max_lifetime)
                 .connect_timeout(opt.connect_timeout)
-                .min_connections(opt.min_size)
-                .idle_timeout(opt.idle_timeout);
+                .min_connections(opt.min_connections)
+                .idle_timeout(opt.idle_timeout)
+                .test_before_acquire(opt.test_on_acquire);
             let p = build.connect_lazy(driver);
             if p.is_err() {
                 return Err(crate::Error::from(p.err().unwrap().to_string()));
@@ -140,11 +104,12 @@ impl DBPool {
         } else if driver.starts_with("postgres") {
             pool.driver_type = DriverType::Postgres;
             let build = sqlx_core::pool::PoolOptions::<Postgres>::new()
-                .max_connections(opt.max_size)
+                .max_connections(opt.max_connections)
                 .max_lifetime(opt.max_lifetime)
                 .connect_timeout(opt.connect_timeout)
-                .min_connections(opt.min_size)
-                .idle_timeout(opt.idle_timeout);
+                .min_connections(opt.min_connections)
+                .idle_timeout(opt.idle_timeout)
+                .test_before_acquire(opt.test_on_acquire);
             let p = build.connect_lazy(driver);
             if p.is_err() {
                 return Err(crate::Error::from(p.err().unwrap().to_string()));
@@ -153,11 +118,12 @@ impl DBPool {
         } else if driver.starts_with("sqlite") {
             pool.driver_type = DriverType::Sqlite;
             let build = sqlx_core::pool::PoolOptions::<Sqlite>::new()
-                .max_connections(opt.max_size)
+                .max_connections(opt.max_connections)
                 .max_lifetime(opt.max_lifetime)
                 .connect_timeout(opt.connect_timeout)
-                .min_connections(opt.min_size)
-                .idle_timeout(opt.idle_timeout);
+                .min_connections(opt.min_connections)
+                .idle_timeout(opt.idle_timeout)
+                .test_before_acquire(opt.test_on_acquire);
             let p = build.connect_lazy(driver);
             if p.is_err() {
                 return Err(crate::Error::from(p.err().unwrap().to_string()));
@@ -166,11 +132,12 @@ impl DBPool {
         } else if driver.starts_with("mssql") || driver.starts_with("sqlserver") {
             pool.driver_type = DriverType::Mssql;
             let build = sqlx_core::pool::PoolOptions::<Mssql>::new()
-                .max_connections(opt.max_size)
+                .max_connections(opt.max_connections)
                 .max_lifetime(opt.max_lifetime)
                 .connect_timeout(opt.connect_timeout)
-                .min_connections(opt.min_size)
-                .idle_timeout(opt.idle_timeout);
+                .min_connections(opt.min_connections)
+                .idle_timeout(opt.idle_timeout)
+                .test_before_acquire(opt.test_on_acquire);
             let p = build.connect_lazy(driver);
             if p.is_err() {
                 return Err(crate::Error::from(p.err().unwrap().to_string()));
