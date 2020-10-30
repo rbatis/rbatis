@@ -11,7 +11,7 @@ pub struct PoolOptions {
     pub connect_timeout: Duration,
     pub max_lifetime: Option<Duration>,
     pub idle_timeout: Option<Duration>,
-    pub test_on_acquire: bool,
+    pub test_before_acquire: bool,
 }
 
 impl Default for PoolOptions {
@@ -30,7 +30,7 @@ impl Default for PoolOptions {
             // don't reap connections based on idle time
             idle_timeout: None,
             // If true, test the health of a connection on acquire
-            test_on_acquire: true,
+            test_before_acquire: true,
         }
     }
 }

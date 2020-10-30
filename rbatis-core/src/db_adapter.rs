@@ -95,7 +95,7 @@ impl DBPool {
                 .connect_timeout(opt.connect_timeout)
                 .min_connections(opt.min_connections)
                 .idle_timeout(opt.idle_timeout)
-                .test_before_acquire(opt.test_on_acquire);
+                .test_before_acquire(opt.test_before_acquire);
             let p = build.connect_lazy(driver);
             if p.is_err() {
                 return Err(crate::Error::from(p.err().unwrap().to_string()));
@@ -109,7 +109,7 @@ impl DBPool {
                 .connect_timeout(opt.connect_timeout)
                 .min_connections(opt.min_connections)
                 .idle_timeout(opt.idle_timeout)
-                .test_before_acquire(opt.test_on_acquire);
+                .test_before_acquire(opt.test_before_acquire);
             let p = build.connect_lazy(driver);
             if p.is_err() {
                 return Err(crate::Error::from(p.err().unwrap().to_string()));
@@ -123,7 +123,7 @@ impl DBPool {
                 .connect_timeout(opt.connect_timeout)
                 .min_connections(opt.min_connections)
                 .idle_timeout(opt.idle_timeout)
-                .test_before_acquire(opt.test_on_acquire);
+                .test_before_acquire(opt.test_before_acquire);
             let p = build.connect_lazy(driver);
             if p.is_err() {
                 return Err(crate::Error::from(p.err().unwrap().to_string()));
@@ -137,7 +137,7 @@ impl DBPool {
                 .connect_timeout(opt.connect_timeout)
                 .min_connections(opt.min_connections)
                 .idle_timeout(opt.idle_timeout)
-                .test_before_acquire(opt.test_on_acquire);
+                .test_before_acquire(opt.test_before_acquire);
             let p = build.connect_lazy(driver);
             if p.is_err() {
                 return Err(crate::Error::from(p.err().unwrap().to_string()));
