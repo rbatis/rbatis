@@ -178,7 +178,6 @@ mod test {
     use std::collections::HashMap;
     use std::sync::Arc;
     use std::ops::Deref;
-    use futures_util::StreamExt;
     use crate::sync::sync_map::SyncMap;
     use std::time::SystemTime;
     use chrono::Local;
