@@ -25,6 +25,8 @@ impl Display for Error {
     }
 }
 
+impl StdError for Error {}
+
 impl From<io::Error> for Error {
     #[inline]
     fn from(err: io::Error) -> Self {
