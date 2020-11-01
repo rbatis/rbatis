@@ -63,7 +63,7 @@ impl Bencher {
 
     pub fn qps(total: u64, start: SystemTime, end: SystemTime) {
         let time = end.duration_since(start).unwrap();
-        println!("use TPS: {} QPS/s", (total as u128 * 1000000000 as u128 / time.as_nanos() as u128));
+        println!("use QPS: {} QPS/s", (total as u128 * 1000000000 as u128 / time.as_nanos() as u128));
     }
 
     //计算每个操作耗时nano纳秒

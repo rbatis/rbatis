@@ -486,7 +486,7 @@ async fn main() -> std::io::Result<()> {
 | web(Web UI)                                            | x     |  
 
 
-* Conlusion: Assuming zero time consumed on IO, single threaded benchmark achieves 200K QPS or TPS, which is a few times more performant than GC languages like Go or Java.
+* Conlusion: Assuming zero time consumed on IO, single threaded benchmark achieves 200K QPS or QPS, which is a few times more performant than GC languages like Go or Java.
 
 ### FAQ
 * Support for DateTime and BigDecimal? <br/>
