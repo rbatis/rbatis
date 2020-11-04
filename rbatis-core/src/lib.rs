@@ -18,14 +18,11 @@ extern crate test;
 #[cfg(feature = "bigdecimal")]
 extern crate bigdecimal_ as bigdecimal;
 
-mod runtime;
+pub mod runtime;
 
 mod mysql;
 mod postgres;
 mod sqlite;
-
-#[cfg(feature = "snowflake")]
-pub mod snowflake;
 
 #[macro_use]
 pub mod error;

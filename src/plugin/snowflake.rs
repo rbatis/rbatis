@@ -1,7 +1,7 @@
 use std::time::{SystemTime, Instant};
 use rustflake::Snowflake;
 use std::sync::{Mutex, MutexGuard, TryLockError};
-use crate::runtime::Mutex as AsyncMutex;
+use rbatis_core::runtime::Mutex as AsyncMutex;
 
 lazy_static!(
    pub static ref SNOWFLAKE:Mutex<Snowflake> = Mutex::new(Snowflake::default());
@@ -27,7 +27,7 @@ pub fn block_snowflake_id() -> i64 {
 
 #[cfg(test)]
 mod test {
-    use crate::snowflake::{block_snowflake_id, async_snowflake_id};
+    use crate::plugin::snowflake::{block_snowflake_id, async_snowflake_id};
 
     #[test]
     fn test_new_block_id() {
