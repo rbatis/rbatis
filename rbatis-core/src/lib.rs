@@ -18,7 +18,7 @@ extern crate test;
 #[cfg(feature = "bigdecimal")]
 extern crate bigdecimal_ as bigdecimal;
 
-mod runtime;
+pub mod runtime;
 
 mod mysql;
 mod postgres;
@@ -26,6 +26,10 @@ mod sqlite;
 
 #[macro_use]
 pub mod error;
+
+#[macro_use]
+extern crate lazy_static;
+
 
 pub mod decode;
 
