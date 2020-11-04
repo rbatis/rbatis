@@ -1,6 +1,6 @@
 #![allow(unused_imports)]
 
-pub(crate) use async_std::{
+pub use async_std::{
     fs,
     future::timeout,
     io::prelude::ReadExt as AsyncReadExt,
