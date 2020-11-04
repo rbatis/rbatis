@@ -39,9 +39,9 @@ pub(crate) fn impl_macro_sql(target_fn: &ItemFn, args: &AttributeArgs) -> TokenS
     //gen rust code templete
     let gen_token_temple = quote! {
        pub async fn #func_name_ident(#func_args_stream) -> #return_ty{
-           let mut args =vec![];
+           let mut rb_args =vec![];
            #sql_args_gen
-           return #rbatis_ident.#call_method(#tx_id_ident,#sql_ident,&args #page_req).await;
+           return #rbatis_ident.#call_method(#tx_id_ident,#sql_ident,&rb_args #page_req).await;
        }
     };
     return gen_token_temple.into();
@@ -72,7 +72,7 @@ fn filter_args_tx_id(rbatis_name: &str, fn_arg_name_vec: &Vec<String>, skip_name
         }
         sql_args_gen = quote! {
             #sql_args_gen
-            args.push(serde_json::to_value(#item_ident).unwrap_or(serde_json::Value::Null));
+            rb_args.push(serde_json::to_value(#item_ident).unwrap_or(serde_json::Value::Null));
        };
     }
     (sql_args_gen, tx_id_ident)
