@@ -24,8 +24,15 @@ mod mysql;
 mod postgres;
 mod sqlite;
 
+#[cfg(feature = "snowflake")]
+pub mod snowflake;
+
 #[macro_use]
 pub mod error;
+
+#[macro_use]
+extern crate lazy_static;
+
 
 pub mod decode;
 
