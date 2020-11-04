@@ -506,12 +506,11 @@ async-std = { version = "*", features = ["attributes","tokio02"] }
 rbatis-core = { version = "*", default-features = false ,  features = ["all","tokio02"] }
 rbatis = { version = "*", default-features = false , features = ["tokio02"] }
 ```
+# changelog
+[changelog](https://github.com/rbatis/rbatis/releases/)
 
 ### Related Projects
 * Logging: https://github.com/rbatis/fast_log
-
-# TODO and upcoming features
-
 
 ## In order to achieve the satisfaction of this ORM framework, your support is always our motivation, we are eager to welcome WeChat to donate to support us ~ or ~ star at the top right corner
 ## 为了称心如意的ORM框架，您的支持永远是我们的动力，迫切欢迎微信捐赠支持我们 ~或者~右上角点下star
