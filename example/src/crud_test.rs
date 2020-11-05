@@ -13,7 +13,7 @@ mod test {
     use chrono::NaiveDateTime;
     use bigdecimal_::BigDecimal;
     use rbatis_core::value::DateTimeNow;
-    use fast_log::filter::{ModuleFilter, Filter};
+    use fast_log::filter::{ModuleFilter};
 
     #[derive(CRUDEnable, Serialize, Deserialize, Clone, Debug)]
     pub struct BizActivity {

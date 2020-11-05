@@ -96,7 +96,7 @@ mod test {
     use rbatis::utils::bencher::Bencher;
     use rbatis_core::db_adapter::DBPool;
     use rbatis_core::db::PoolOptions;
-    use fast_log::filter::{ModuleFilter, Filter};
+    use fast_log::filter::{ModuleFilter};
 
     pub const MYSQL_URL: &'static str = "mysql://root:123456@localhost:3306/test";
 
