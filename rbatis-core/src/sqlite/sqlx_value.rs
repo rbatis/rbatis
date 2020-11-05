@@ -14,7 +14,6 @@ use serde_json::{json, Value};
 
 impl<'c> JsonCodec for SqliteValueRef<'c> {
     fn try_to_json(self) -> crate::Result<serde_json::Value> {
-        //TODO batter way to match type replace use string match
         let type_string = self.type_info().name().to_owned();
         return match type_string.as_str() {
             "NULL" => {
@@ -48,6 +47,13 @@ impl<'c> JsonCodec for SqliteValueRef<'c> {
                 }
                  return Ok(json!(r.unwrap()));
             }
+            "BLOB" => {
+                let r: Result<Option<Vec<u8>>, BoxDynError> = Decode::<'_, Sqlite>::decode(self);
+                if r.is_err() {
+                    return Err(crate::Error::from(r.err().unwrap().to_string()));
+                }
+                return Ok(json!(r.unwrap()));
+            }
             "NUMERIC" => {
                 //TODO impl type
                 unimplemented!()
@@ -62,9 +68,6 @@ impl<'c> JsonCodec for SqliteValueRef<'c> {
             }
             "DATETIME" => {
                 //TODO impl type
-                unimplemented!()
-            }
-            "BLOB" => {
                 unimplemented!()
             }
             _ => {

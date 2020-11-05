@@ -13,7 +13,6 @@ use sqlx_core::types::{BigDecimal, Json};
 
 impl<'r> JsonCodec for sqlx_core::mysql::MySqlValueRef<'r> {
     fn try_to_json(self) -> crate::Result<serde_json::Value> {
-        //TODO batter way to match type replace use string match
         let type_string = self.type_info().name().to_owned();
         match type_string.as_str() {
             "NULL" => {
