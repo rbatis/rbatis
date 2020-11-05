@@ -9,14 +9,14 @@ extern crate lazy_static;
 #[macro_use]
 extern crate rbatis_macro_driver;
 
+use chrono::NaiveDateTime;
+use fast_log::filter::ModuleFilter;
 use serde::{Deserialize, Serialize};
 use serde_json::{json, Value};
 use tide::Request;
 
 use rbatis::crud::CRUDEnable;
 use rbatis::rbatis::Rbatis;
-use chrono::NaiveDateTime;
-use fast_log::filter::{ModuleFilter};
 
 mod crud_test;
 
@@ -55,11 +55,11 @@ lazy_static! {
 //启动web服务，并且对表执行 count统计
 #[async_std::main]
 async fn main() {
-            fast_log::init_log("requests.log",
-                           1000,
-                           log::Level::Info,
-                           Some(Box::new(ModuleFilter::new_exclude(vec!["sqlx".to_string()]))),
-                           true);
+    fast_log::init_log("requests.log",
+                       1000,
+                       log::Level::Info,
+                       Some(Box::new(ModuleFilter::new_exclude(vec!["sqlx".to_string()]))),
+                       true);
     RB.link(MYSQL_URL).await.unwrap();
     let mut app = tide::new();
     app.at("/").get(|_: Request<()>| async move {
@@ -84,20 +84,22 @@ mod test {
     use std::convert::Infallible;
     use std::thread::sleep;
     use std::time::{Duration, SystemTime};
+
+    use fast_log::filter::ModuleFilter;
+    use log::info;
+    use serde_json::json;
     use serde_json::Value;
 
     use rbatis::crud::CRUD;
+    use rbatis::crud::CRUDEnable;
     use rbatis::plugin::page::{Page, PageRequest};
     use rbatis::rbatis::Rbatis;
-    use log::{info};
-    use serde_json::{json};
-    use rbatis::crud::CRUDEnable;
-    use crate::{BizActivity};
     use rbatis::utils::bencher::Bencher;
-    use rbatis_core::db_adapter::DBPool;
-    use rbatis_core::db::PoolOptions;
-    use fast_log::filter::{ModuleFilter};
     use rbatis::wrapper::Wrapper;
+    use rbatis_core::db::PoolOptions;
+    use rbatis_core::db_adapter::DBPool;
+
+    use crate::BizActivity;
 
     pub const MYSQL_URL: &'static str = "mysql://root:123456@localhost:3306/test";
 
@@ -116,7 +118,7 @@ mod test {
     #[test]
     pub fn test_log() {
         //1 启用日志(可选，不添加则不加载日志库)
-                fast_log::init_log("requests.log",
+        fast_log::init_log("requests.log",
                            1000,
                            log::Level::Info,
                            Some(Box::new(ModuleFilter::new_exclude(vec!["sqlx".to_string()]))),
@@ -128,7 +130,7 @@ mod test {
     //示例-Rbatis直接使用驱动
     #[async_std::test]
     pub async fn test_use_driver() {
-                fast_log::init_log("requests.log",
+        fast_log::init_log("requests.log",
                            1000,
                            log::Level::Info,
                            Some(Box::new(ModuleFilter::new_exclude(vec!["sqlx".to_string()]))),
@@ -147,15 +149,15 @@ mod test {
                            log::Level::Info,
                            Some(Box::new(ModuleFilter::new_exclude(vec!["sqlx".to_string()]))),
                            true);
-        let rb=Rbatis::new();
+        let rb = Rbatis::new();
         rb.link(MYSQL_URL).await.unwrap();
-        let mut w =rb.new_wrapper()
+        let w = rb.new_wrapper()
             .push_sql("SELECT count(1) FROM biz_activity WHERE ")
-            .r#in("delete_flag",&[0,1])
+            .r#in("delete_flag", &[0, 1])
             .and()
-            .ne("delete_flag",-1)
+            .ne("delete_flag", -1)
             .check().unwrap();
-        let (r, _):(serde_json::Value,rbatis_core::Error) = rb.fetch_prepare_wrapper("", &mut w).await.unwrap();
+        let (r, _): (serde_json::Value, rbatis_core::Error) = rb.fetch_prepare_wrapper("", &w).await.unwrap();
         println!("done:{:?}", r);
         //Query ==> SELECT count(1) FROM biz_activity WHERE delete_flag IN ( ? , ? ) AND delete_flag <> ?
         //Args  ==> [0,1,-1]
@@ -164,7 +166,7 @@ mod test {
     //示例-Rbatis直接使用驱动-prepared stmt sql
     #[async_std::test]
     pub async fn test_prepare_sql() {
-                fast_log::init_log("requests.log",
+        fast_log::init_log("requests.log",
                            1000,
                            log::Level::Info,
                            Some(Box::new(ModuleFilter::new_exclude(vec!["sqlx".to_string()]))),
@@ -180,7 +182,7 @@ mod test {
     //示例-Rbatis使用py风格的语法查询
     #[async_std::test]
     pub async fn test_py_sql() {
-                fast_log::init_log("requests.log",
+        fast_log::init_log("requests.log",
                            1000,
                            log::Level::Info,
                            Some(Box::new(ModuleFilter::new_exclude(vec!["sqlx".to_string()]))),
@@ -205,7 +207,7 @@ mod test {
     //示例-Rbatis语法分页
     #[async_std::test]
     pub async fn test_sql_page() {
-                fast_log::init_log("requests.log",
+        fast_log::init_log("requests.log",
                            1000,
                            log::Level::Info,
                            Some(Box::new(ModuleFilter::new_exclude(vec!["sqlx".to_string()]))),
@@ -221,7 +223,7 @@ mod test {
     //示例-Rbatis使用py风格的语法分页
     #[async_std::test]
     pub async fn test_py_sql_page() {
-                fast_log::init_log("requests.log",
+        fast_log::init_log("requests.log",
                            1000,
                            log::Level::Info,
                            Some(Box::new(ModuleFilter::new_exclude(vec!["sqlx".to_string()]))),
@@ -240,7 +242,7 @@ mod test {
     //示例-Rbatis使用传统XML风格的语法查询
     #[async_std::test]
     pub async fn test_xml_sql() {
-                fast_log::init_log("requests.log",
+        fast_log::init_log("requests.log",
                            1000,
                            log::Level::Info,
                            Some(Box::new(ModuleFilter::new_exclude(vec!["sqlx".to_string()]))),
@@ -278,12 +280,12 @@ mod test {
     //示例-Rbatis使用事务
     #[async_std::test]
     pub async fn test_tx() {
-                fast_log::init_log("requests.log",
+        fast_log::init_log("requests.log",
                            1000,
                            log::Level::Info,
                            Some(Box::new(ModuleFilter::new_exclude(vec!["sqlx".to_string()]))),
                            true);
-        let rb:Rbatis = Rbatis::new();
+        let rb: Rbatis = Rbatis::new();
         rb.link(MYSQL_URL).await.unwrap();
         let tx_id = "1";
         rb.begin(tx_id).await.unwrap();
@@ -295,7 +297,7 @@ mod test {
     /// 示例-Rbatis使用web框架Tide、async_std
     #[async_std::test]
     pub async fn test_tide() {
-                fast_log::init_log("requests.log",
+        fast_log::init_log("requests.log",
                            1000,
                            log::Level::Info,
                            Some(Box::new(ModuleFilter::new_exclude(vec!["sqlx".to_string()]))),
@@ -333,7 +335,7 @@ mod test {
     #[async_std::test]
     //#[tokio::test] //也可以使用tokio::test
     pub async fn test_hyper() {
-                fast_log::init_log("requests.log",
+        fast_log::init_log("requests.log",
                            1000,
                            log::Level::Info,
                            Some(Box::new(ModuleFilter::new_exclude(vec!["sqlx".to_string()]))),
@@ -352,16 +354,16 @@ mod test {
     //rust(30% fast with golang)   : 975.3122ms   ,each:975312 ns/op
     //cargo test --release --color=always --package example --bin example test::bench_qps --no-fail-fast -- --exact -Z unstable-options --show-output
     #[async_std::test]
-    pub async fn bench_qps(){
-        let mut opts=PoolOptions::default();
+    pub async fn bench_qps() {
+        let mut opts = PoolOptions::default();
         //test_before_acquire = false will improve performance
         opts.test_before_acquire = true;
-        RB.link_opt(MYSQL_URL,&opts).await.unwrap();
+        RB.link_opt(MYSQL_URL, &opts).await.unwrap();
         let total = 10000;
         let mut current = 0;
         let now = SystemTime::now();
         loop {
-            let v:rbatis_core::Result<serde_json::Value> = RB.fetch("", "select count(1) from biz_activity WHERE delete_flag = 1;").await;
+            let v: rbatis_core::Result<serde_json::Value> = RB.fetch("", "select count(1) from biz_activity WHERE delete_flag = 1;").await;
             if current == total - 1 {
                 let end = SystemTime::now();
                 Bencher::time(total, now, end);
