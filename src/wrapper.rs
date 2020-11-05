@@ -68,14 +68,8 @@ impl Wrapper {
         //remove and ,or
         self.trim_and();
         self.trim_or();
-        let clone = Wrapper {
-            driver_type: self.driver_type.clone(),
-            sql: self.sql.clone(),
-            args: self.args.clone(),
-            error: self.error.clone(),
-            checked: true,
-        };
-        return Ok(clone);
+        self.checked = true;
+        return Ok(self.clone());
     }
 
     /// link left Wrapper to this Wrapper

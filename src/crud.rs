@@ -242,9 +242,9 @@ impl CRUD for Rbatis {
     ///
     async fn save_batch<T>(&self, tx_id: &str, args: &[T]) -> Result<DBExecResult> where T: CRUDEnable {
         if args.is_empty() {
-            return Ok(DBExecResult{
+            return Ok(DBExecResult {
                 rows_affected: 0,
-                last_insert_id: None
+                last_insert_id: None,
             });
         }
         let mut value_arr = String::new();
@@ -267,10 +267,7 @@ impl CRUD for Rbatis {
     }
 
     async fn remove_by_wrapper<T>(&self, tx_id: &str, w: &Wrapper) -> Result<u64> where T: CRUDEnable {
-        let w = match w.checked {
-            false => w.clone().check()?,
-            _ => w.clone()
-        };
+        let w=w.clone().check()?;
         let where_sql = w.sql.as_str();
         let mut sql = String::new();
         if self.logic_plugin.is_some() {
@@ -306,10 +303,8 @@ impl CRUD for Rbatis {
 
     /// update arg by wrapper
     async fn update_by_wrapper<T>(&self, tx_id: &str, arg: &T, w: &Wrapper, update_null_value: bool) -> Result<u64> where T: CRUDEnable {
-        let w = match w.checked {
-            false => w.clone().check()?,
-            _ => w.clone()
-        };
+        let mut w=w.clone();
+        let w=w.clone().check()?;
         let mut args = vec![];
         let map = arg.make_column_value_map(&self.driver_type()?)?;
         let driver_type = &self.driver_type()?;
@@ -365,10 +360,7 @@ impl CRUD for Rbatis {
     }
 
     async fn fetch_by_wrapper<T>(&self, tx_id: &str, w: &Wrapper) -> Result<T> where T: CRUDEnable {
-        let w = match w.checked {
-            false => w.clone().check()?,
-            _ => w.clone()
-        };
+        let w=w.clone().check()?;
         let sql = make_select_sql::<T>(&self, &w)?;
         return self.fetch_prepare(tx_id, sql.as_str(), &w.args).await;
     }
@@ -379,10 +371,7 @@ impl CRUD for Rbatis {
     }
 
     async fn list_by_wrapper<T>(&self, tx_id: &str, w: &Wrapper) -> Result<Vec<T>> where T: CRUDEnable {
-        let w = match w.checked {
-            false => w.clone().check()?,
-            _ => w.clone()
-        };
+        let w=w.clone().check()?;
         let sql = make_select_sql::<T>(&self, &w)?;
         return self.fetch_prepare(tx_id, sql.as_str(), &w.args).await;
     }
@@ -397,10 +386,7 @@ impl CRUD for Rbatis {
     }
 
     async fn fetch_page_by_wrapper<T>(&self, tx_id: &str, w: &Wrapper, page: &dyn IPageRequest) -> Result<Page<T>> where T: CRUDEnable {
-        let w = match w.checked {
-            false => w.clone().check()?,
-            _ => w.clone()
-        };
+        let w=w.clone().check()?;
         let sql = make_select_sql::<T>(&self, &w)?;
         self.fetch_page(tx_id, sql.as_str(), &w.args, page).await
     }
@@ -525,7 +511,7 @@ mod test {
                 delete_flag: Some(1),
             };
 
-            fast_log::init_log("requests.log", 1000,log::Level::Info, true);
+            fast_log::init_log("requests.log", 1000, log::Level::Info, true);
             let rb = Rbatis::new();
             rb.link("mysql://root:123456@localhost:3306/test").await.unwrap();
             let r = rb.save("", &activity).await;
@@ -554,7 +540,7 @@ mod test {
             };
             let args = vec![activity.clone(), activity];
 
-            fast_log::init_log("requests.log", 1000,log::Level::Info, true);
+            fast_log::init_log("requests.log", 1000, log::Level::Info, true);
             let rb = Rbatis::new();
             rb.link("mysql://root:123456@localhost:3306/test").await.unwrap();
             let r = rb.save_batch("", &args).await;
@@ -568,7 +554,7 @@ mod test {
     #[test]
     pub fn test_remove_batch_by_id() {
         async_std::task::block_on(async {
-            fast_log::init_log("requests.log", 1000,log::Level::Info, true);
+            fast_log::init_log("requests.log", 1000, log::Level::Info, true);
             let mut rb = Rbatis::new();
             rb.logic_plugin = Some(Box::new(RbatisLogicDeletePlugin::new("delete_flag")));
             rb.link("mysql://root:123456@localhost:3306/test").await.unwrap();
@@ -583,7 +569,7 @@ mod test {
     #[test]
     pub fn test_remove_by_id() {
         async_std::task::block_on(async {
-            fast_log::init_log("requests.log", 1000,log::Level::Info, true);
+            fast_log::init_log("requests.log", 1000, log::Level::Info, true);
             let mut rb = Rbatis::new();
             //设置 逻辑删除插件
             rb.logic_plugin = Some(Box::new(RbatisLogicDeletePlugin::new("delete_flag")));
@@ -598,7 +584,7 @@ mod test {
     #[test]
     pub fn test_update_by_wrapper() {
         async_std::task::block_on(async {
-            fast_log::init_log("requests.log", 1000,log::Level::Info, true);
+            fast_log::init_log("requests.log", 1000, log::Level::Info, true);
             let mut rb = Rbatis::new();
             //设置 逻辑删除插件
             rb.logic_plugin = Some(Box::new(RbatisLogicDeletePlugin::new("delete_flag")));
@@ -631,7 +617,7 @@ mod test {
     #[test]
     pub fn test_update_by_id() {
         async_std::task::block_on(async {
-            fast_log::init_log("requests.log", 1000,log::Level::Info, true);
+            fast_log::init_log("requests.log", 1000, log::Level::Info, true);
             let mut rb = Rbatis::new();
             //设置 逻辑删除插件
             rb.logic_plugin = Some(Box::new(RbatisLogicDeletePlugin::new("delete_flag")));
@@ -661,7 +647,7 @@ mod test {
     #[test]
     pub fn test_fetch_by_wrapper() {
         async_std::task::block_on(async {
-            fast_log::init_log("requests.log", 1000,log::Level::Info, true);
+            fast_log::init_log("requests.log", 1000, log::Level::Info, true);
             let mut rb = Rbatis::new();
             //设置 逻辑删除插件
             rb.logic_plugin = Some(Box::new(RbatisLogicDeletePlugin::new("delete_flag")));
@@ -678,7 +664,7 @@ mod test {
     #[test]
     pub fn test_fetch_no_del() {
         async_std::task::block_on(async {
-            fast_log::init_log("requests.log", 1000,log::Level::Info, true);
+            fast_log::init_log("requests.log", 1000, log::Level::Info, true);
             let mut rb = Rbatis::new();
             //设置 逻辑删除插件
             rb.logic_plugin = Some(Box::new(RbatisLogicDeletePlugin::new("delete_flag")));
@@ -695,7 +681,7 @@ mod test {
     #[test]
     pub fn test_fetch_page_by_wrapper() {
         async_std::task::block_on(async {
-            fast_log::init_log("requests.log", 1000,log::Level::Info, true);
+            fast_log::init_log("requests.log", 1000, log::Level::Info, true);
             let mut rb = Rbatis::new();
             //设置 逻辑删除插件
             rb.logic_plugin = Some(Box::new(RbatisLogicDeletePlugin::new("delete_flag")));
