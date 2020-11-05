@@ -316,20 +316,14 @@ impl Rbatis {
         return result;
     }
 
-    pub async fn fetch_prepare_wrapper<T>(&self, tx_id: &str, w: &Wrapper) -> Result<T, rbatis_core::Error>
+    pub async fn fetch_prepare_wrapper<T>(&self, tx_id: &str, w: &mut Wrapper) -> Result<T, rbatis_core::Error>
         where T: DeserializeOwned {
-        let mut w = w.to_owned();
-        if w.checked {
-            w = w.check()?;
-        }
+        let w=w.clone().check()?;
         self.fetch_prepare(tx_id, w.sql.as_str(), &w.args).await
     }
 
-    pub async fn exec_prepare_wrapper(&self, tx_id: &str, w: &Wrapper) -> Result<DBExecResult, rbatis_core::Error> {
-        let mut w = w.to_owned();
-        if w.checked {
-            w = w.check()?;
-        }
+    pub async fn exec_prepare_wrapper(&self, tx_id: &str, w: &mut Wrapper) -> Result<DBExecResult, rbatis_core::Error> {
+        let w=w.clone().check()?;
         self.exec_prepare(tx_id, w.sql.as_str(), &w.args).await
     }
 
