@@ -152,7 +152,7 @@ impl<'r> JsonCodec for sqlx_core::mysql::MySqlValueRef<'r> {
                 let t = serde_json::to_value(&r.unwrap());
                 return Ok(t.unwrap_or(serde_json::Value::Null));
             }
-            "JSON" => {
+            "JSON" | "GEOMETRY" => {
                 let r: Result<Option<serde_json::Value>, BoxDynError> = Decode::<'_, MySql>::decode(self);
                 if r.is_err() {
                     return Err(crate::Error::from(r.err().unwrap().to_string()));
@@ -160,7 +160,6 @@ impl<'r> JsonCodec for sqlx_core::mysql::MySqlValueRef<'r> {
                 let t = serde_json::to_value(&r.unwrap());
                 return Ok(t.unwrap_or(serde_json::Value::Null));
             }
-            //TODO support "GEOMETRY",
             _ => return Err(crate::Error::from(format!("un support database type for:{:?}!", type_string))),
         }
     }
