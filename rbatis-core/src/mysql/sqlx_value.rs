@@ -157,8 +157,7 @@ impl<'r> JsonCodec for sqlx_core::mysql::MySqlValueRef<'r> {
                 if r.is_err() {
                     return Err(crate::Error::from(r.err().unwrap().to_string()));
                 }
-                let t = serde_json::to_value(&r.unwrap());
-                return Ok(t.unwrap_or(serde_json::Value::Null));
+                return Ok(r.unwrap().unwrap_or(serde_json::Value::Null));
             }
             _ => return Err(crate::Error::from(format!("un support database type for:{:?}!", type_string))),
         }
