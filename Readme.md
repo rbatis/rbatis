@@ -8,7 +8,7 @@
 #### Dynamic SQL, no runtime, no Garbage Collector, and low memory use. 
 #### Supports async_std, tokio
 #### This crate uses #![forbid(unsafe_code)] to ensure everything is implemented in 100% safe Rust.
-#### faster than golang 30%! 
+#### 30% faster than golang's mybatis!
 
 [![Build Status](https://travis-ci.org/zhuxiujia/rbatis.svg?branch=master)](https://travis-ci.org/zhuxiujia/rbatis)
 
