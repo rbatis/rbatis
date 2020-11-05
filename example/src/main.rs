@@ -151,11 +151,17 @@ mod test {
                            true);
         let rb = Rbatis::new();
         rb.link(MYSQL_URL).await.unwrap();
+
+        let name = "test";
         let w = rb.new_wrapper()
             .push_sql("SELECT count(1) FROM biz_activity WHERE ")
             .r#in("delete_flag", &[0, 1])
             .and()
             .ne("delete_flag", -1)
+            .do_if(!name.is_empty(),|w|{
+                w.and().like("name",name);
+                return w;
+            })
             .check().unwrap();
         let (r, _): (serde_json::Value, rbatis_core::Error) = rb.fetch_prepare_wrapper("", &w).await.unwrap();
         println!("done:{:?}", r);
