@@ -135,7 +135,7 @@ impl Rbatis {
         if new_tx_id.is_empty() {
             return Err(rbatis_core::Error::from("[rbatis] tx_id can not be empty"));
         }
-        let conn:DBTx = self.get_pool()?.begin().await?;
+        let conn: DBTx = self.get_pool()?.begin().await?;
         //send tx to context
         self.tx_context.insert(new_tx_id.to_string(), conn).await;
         self.log_plugin.info(&format!("[rbatis] [{}] Begin", new_tx_id));
@@ -237,6 +237,7 @@ impl Rbatis {
         return Ok(data);
     }
 
+
     fn bind_arg<'arg>(&self, sql: &'arg str, arg: &Vec<serde_json::Value>) -> Result<DBQuery<'arg>, rbatis_core::Error> {
         let mut q: DBQuery = self.get_pool()?.make_query(sql)?;
         for x in arg {
@@ -315,6 +316,22 @@ impl Rbatis {
         return result;
     }
 
+    pub async fn fetch_prepare_wrapper<T>(&self, tx_id: &str, w: &Wrapper) -> Result<T, rbatis_core::Error>
+        where T: DeserializeOwned {
+        let mut w = w.to_owned();
+        if w.checked {
+            w = w.check()?;
+        }
+        self.fetch_prepare(tx_id, w.sql.as_str(), &w.args).await
+    }
+
+    pub async fn exec_prepare_wrapper(&self, tx_id: &str, w: &Wrapper) -> Result<DBExecResult, rbatis_core::Error> {
+        let mut w = w.to_owned();
+        if w.checked {
+            w = w.check()?;
+        }
+        self.exec_prepare(tx_id, w.sql.as_str(), &w.args).await
+    }
 
     fn py_to_sql(&self, py: &str, arg: &serde_json::Value) -> Result<(String, Vec<serde_json::Value>), rbatis_core::Error> {
         let nodes = Py::parse_and_cache(py)?;
