@@ -97,6 +97,7 @@ mod test {
     use rbatis_core::db_adapter::DBPool;
     use rbatis_core::db::PoolOptions;
     use fast_log::filter::{ModuleFilter};
+    use rbatis::wrapper::Wrapper;
 
     pub const MYSQL_URL: &'static str = "mysql://root:123456@localhost:3306/test";
 
@@ -136,6 +137,28 @@ mod test {
         let mut conn = pool.acquire().await.unwrap();
         let (r, _) = conn.fetch::<serde_json::Value>("SELECT count(1) FROM biz_activity;").await.unwrap();
         println!("done:{:?}", r);
+    }
+
+    //示例-Rbatis直接使用驱动+Wrapper
+    #[async_std::test]
+    pub async fn test_use_driver_wrapper() {
+        fast_log::init_log("requests.log",
+                           1000,
+                           log::Level::Info,
+                           Some(Box::new(ModuleFilter::new_exclude(vec!["sqlx".to_string()]))),
+                           true);
+        let rb=Rbatis::new();
+        rb.link(MYSQL_URL).await.unwrap();
+        let mut w =rb.new_wrapper()
+            .push_sql("SELECT count(1) FROM biz_activity WHERE ")
+            .r#in("delete_flag",&[0,1])
+            .and()
+            .ne("delete_flag",-1)
+            .check().unwrap();
+        let (r, _):(serde_json::Value,rbatis_core::Error) = rb.fetch_prepare_wrapper("", &mut w).await.unwrap();
+        println!("done:{:?}", r);
+        //Query ==> SELECT count(1) FROM biz_activity WHERE delete_flag IN ( ? , ? ) AND delete_flag <> ?
+        //Args  ==> [0,1,-1]
     }
 
     //示例-Rbatis直接使用驱动-prepared stmt sql
