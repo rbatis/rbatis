@@ -16,6 +16,7 @@ use tide::Request;
 use rbatis::crud::CRUDEnable;
 use rbatis::rbatis::Rbatis;
 use chrono::NaiveDateTime;
+use fast_log::filter::{ModuleFilter};
 
 mod crud_test;
 
@@ -54,7 +55,11 @@ lazy_static! {
 //启动web服务，并且对表执行 count统计
 #[async_std::main]
 async fn main() {
-    fast_log::init_log("requests.log", 1000,log::Level::Info,true);
+            fast_log::init_log("requests.log",
+                           1000,
+                           log::Level::Info,
+                           Some(Box::new(ModuleFilter::new_exclude(vec!["sqlx".to_string()]))),
+                           true);
     RB.link(MYSQL_URL).await.unwrap();
     let mut app = tide::new();
     app.at("/").get(|_: Request<()>| async move {
@@ -91,6 +96,7 @@ mod test {
     use rbatis::utils::bencher::Bencher;
     use rbatis_core::db_adapter::DBPool;
     use rbatis_core::db::PoolOptions;
+    use fast_log::filter::{ModuleFilter, Filter};
 
     pub const MYSQL_URL: &'static str = "mysql://root:123456@localhost:3306/test";
 
@@ -109,7 +115,11 @@ mod test {
     #[test]
     pub fn test_log() {
         //1 启用日志(可选，不添加则不加载日志库)
-        fast_log::init_log("requests.log", 1000,log::Level::Info,true);
+                fast_log::init_log("requests.log",
+                           1000,
+                           log::Level::Info,
+                           Some(Box::new(ModuleFilter::new_exclude(vec!["sqlx".to_string()]))),
+                           true);
         info!("print data");
         sleep(Duration::from_secs(1));
     }
@@ -117,7 +127,11 @@ mod test {
     //示例-Rbatis直接使用驱动
     #[async_std::test]
     pub async fn test_use_driver() {
-        fast_log::init_log("requests.log", 1000,log::Level::Info,true);
+                fast_log::init_log("requests.log",
+                           1000,
+                           log::Level::Info,
+                           Some(Box::new(ModuleFilter::new_exclude(vec!["sqlx".to_string()]))),
+                           true);
         let pool = DBPool::new(MYSQL_URL).await.unwrap();
         let mut conn = pool.acquire().await.unwrap();
         let (r, _) = conn.fetch::<serde_json::Value>("SELECT count(1) FROM biz_activity;").await.unwrap();
@@ -127,7 +141,11 @@ mod test {
     //示例-Rbatis直接使用驱动-prepared stmt sql
     #[async_std::test]
     pub async fn test_prepare_sql() {
-        fast_log::init_log("requests.log", 1000,log::Level::Info,true);
+                fast_log::init_log("requests.log",
+                           1000,
+                           log::Level::Info,
+                           Some(Box::new(ModuleFilter::new_exclude(vec!["sqlx".to_string()]))),
+                           true);
         let rb = Rbatis::new();
         rb.link(MYSQL_URL).await.unwrap();
         let arg = &vec![json!(1), json!("test%")];
@@ -139,7 +157,11 @@ mod test {
     //示例-Rbatis使用py风格的语法查询
     #[async_std::test]
     pub async fn test_py_sql() {
-        fast_log::init_log("requests.log", 1000,log::Level::Info,true);
+                fast_log::init_log("requests.log",
+                           1000,
+                           log::Level::Info,
+                           Some(Box::new(ModuleFilter::new_exclude(vec!["sqlx".to_string()]))),
+                           true);
         let rb = Rbatis::new();
         rb.link(MYSQL_URL).await.unwrap();
         let py = r#"
@@ -160,7 +182,11 @@ mod test {
     //示例-Rbatis语法分页
     #[async_std::test]
     pub async fn test_sql_page() {
-        fast_log::init_log("requests.log", 1000,log::Level::Info,true);
+                fast_log::init_log("requests.log",
+                           1000,
+                           log::Level::Info,
+                           Some(Box::new(ModuleFilter::new_exclude(vec!["sqlx".to_string()]))),
+                           true);
         let rb = Rbatis::new();
         rb.link(MYSQL_URL).await.unwrap();
         let wraper = rb.new_wrapper()
@@ -172,7 +198,11 @@ mod test {
     //示例-Rbatis使用py风格的语法分页
     #[async_std::test]
     pub async fn test_py_sql_page() {
-        fast_log::init_log("requests.log", 1000,log::Level::Info,true);
+                fast_log::init_log("requests.log",
+                           1000,
+                           log::Level::Info,
+                           Some(Box::new(ModuleFilter::new_exclude(vec!["sqlx".to_string()]))),
+                           true);
         let rb = Rbatis::new();
         rb.link(MYSQL_URL).await.unwrap();
         let py = r#"
@@ -187,7 +217,11 @@ mod test {
     //示例-Rbatis使用传统XML风格的语法查询
     #[async_std::test]
     pub async fn test_xml_sql() {
-        fast_log::init_log("requests.log", 1000,log::Level::Info,true);
+                fast_log::init_log("requests.log",
+                           1000,
+                           log::Level::Info,
+                           Some(Box::new(ModuleFilter::new_exclude(vec!["sqlx".to_string()]))),
+                           true);
         let mut rb = Rbatis::new();
         rb.link(MYSQL_URL).await.unwrap();
         //xml数据建议以 XXMapper.xml 的格式存储管理
@@ -221,7 +255,11 @@ mod test {
     //示例-Rbatis使用事务
     #[async_std::test]
     pub async fn test_tx() {
-        fast_log::init_log("requests.log", 1000,log::Level::Info,true);
+                fast_log::init_log("requests.log",
+                           1000,
+                           log::Level::Info,
+                           Some(Box::new(ModuleFilter::new_exclude(vec!["sqlx".to_string()]))),
+                           true);
         let rb:Rbatis = Rbatis::new();
         rb.link(MYSQL_URL).await.unwrap();
         let tx_id = "1";
@@ -234,7 +272,11 @@ mod test {
     /// 示例-Rbatis使用web框架Tide、async_std
     #[async_std::test]
     pub async fn test_tide() {
-        fast_log::init_log("requests.log", 1000,log::Level::Info,true);
+                fast_log::init_log("requests.log",
+                           1000,
+                           log::Level::Info,
+                           Some(Box::new(ModuleFilter::new_exclude(vec!["sqlx".to_string()]))),
+                           true);
         RB.link(MYSQL_URL).await.unwrap();
         let mut app = tide::new();
         app.at("/").get(|_: tide::Request<()>| async move {
@@ -268,7 +310,11 @@ mod test {
     #[async_std::test]
     //#[tokio::test] //也可以使用tokio::test
     pub async fn test_hyper() {
-        fast_log::init_log("requests.log", 1000,log::Level::Info,true);
+                fast_log::init_log("requests.log",
+                           1000,
+                           log::Level::Info,
+                           Some(Box::new(ModuleFilter::new_exclude(vec!["sqlx".to_string()]))),
+                           true);
         RB.link(MYSQL_URL).await.unwrap();
         let make_svc = hyper::service::make_service_fn(|_conn| {
             async { Ok::<_, Infallible>(hyper::service::service_fn(hello)) }
