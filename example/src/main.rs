@@ -159,8 +159,6 @@ mod test {
             .check().unwrap();
         let (r, _): (serde_json::Value, rbatis_core::Error) = rb.fetch_prepare_wrapper("", &w).await.unwrap();
         println!("done:{:?}", r);
-        //Query ==> SELECT count(1) FROM biz_activity WHERE delete_flag IN ( ? , ? ) AND delete_flag <> ?
-        //Args  ==> [0,1,-1]
     }
 
     //示例-Rbatis直接使用驱动-prepared stmt sql
