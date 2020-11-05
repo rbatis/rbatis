@@ -9,7 +9,7 @@ use sqlx_core::row::Row;
 use sqlx_core::column::Column;
 use crate::db_adapter::convert_result;
 use serde_json::{json, Value};
-use sqlx_core::types::BigDecimal;
+use sqlx_core::types::{BigDecimal, Json};
 
 impl<'r> JsonCodec for sqlx_core::mysql::MySqlValueRef<'r> {
     fn try_to_json(self) -> crate::Result<serde_json::Value> {
@@ -152,14 +152,18 @@ impl<'r> JsonCodec for sqlx_core::mysql::MySqlValueRef<'r> {
                 let t = serde_json::to_value(&r.unwrap());
                 return Ok(t.unwrap_or(serde_json::Value::Null));
             }
-            "JSON" | "GEOMETRY" => {
-                let r: Result<Option<serde_json::Value>, BoxDynError> = Decode::<'_, MySql>::decode(self);
+            "JSON" => {
+                let r: Result<Option<Json<serde_json::Value>>, BoxDynError> = Decode::<'_, MySql>::decode(self);
                 if r.is_err() {
                     return Err(crate::Error::from(r.err().unwrap().to_string()));
                 }
-                return Ok(r.unwrap().unwrap_or(serde_json::Value::Null));
+                let data=serde_json::to_value(r.unwrap());
+                return Ok(data.unwrap_or(serde_json::Value::Null));
             }
-            _ => return Err(crate::Error::from(format!("un support database type for:{:?}!", type_string))),
+            _ => {
+                //TODO "GEOMETRY" support. for now you can cast to string or json
+                return Err(crate::Error::from(format!("un support database type for:{:?}!", type_string)))
+            },
         }
     }
 }
