@@ -303,7 +303,6 @@ impl CRUD for Rbatis {
 
     /// update arg by wrapper
     async fn update_by_wrapper<T>(&self, tx_id: &str, arg: &T, w: &Wrapper, update_null_value: bool) -> Result<u64> where T: CRUDEnable {
-        let mut w=w.clone();
         let w=w.clone().check()?;
         let mut args = vec![];
         let map = arg.make_column_value_map(&self.driver_type()?)?;
