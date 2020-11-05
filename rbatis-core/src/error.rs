@@ -113,5 +113,4 @@ fn test_json_error(){
     let e=Error::from("fuck");
     let s= serde_json::to_string(&e).unwrap();
     println!("{}",s.as_str());
-    let new_e:Error=serde_json::from_str(s.as_str()).unwrap();
 }

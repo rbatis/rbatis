@@ -1,5 +1,6 @@
 //! Types and traits for decoding values from the database.
 use serde::de::DeserializeOwned;
+
 use crate::Error;
 
 /// decode json vec to an object
@@ -77,7 +78,7 @@ pub fn json_decode<T: ?Sized>(datas: Vec<serde_json::Value>) -> Result<T, crate:
         return Result::Ok(decode_result.unwrap());
     } else {
         let e = decode_result.err().unwrap().to_string();
-        return Result::Err(Error::from(format!("[rbatis] json decode: {}, fail:{}" ,type_name, e)));
+        return Result::Err(Error::from(format!("[rbatis] json decode: {}, fail:{}", type_name, e)));
     }
 }
 
@@ -95,4 +96,35 @@ fn is_array(type_name: &str) -> bool {
         return true;
     }
     return false;
+}
+
+
+#[cfg(test)]
+mod test {
+    use std::collections::{HashMap, BTreeMap, HashSet};
+    use serde_json::json;
+
+    use crate::decode::json_decode;
+
+    #[test]
+    fn test_decode_hashmap() {
+        let m: HashMap<String, serde_json::Value> = json_decode(vec![json!(
+        {
+        "a":"1",
+        "b":2
+        }
+        )]).unwrap();
+        println!("{:#?}", m);
+    }
+
+    #[test]
+    fn test_decode_btree_map() {
+        let m: BTreeMap<String, serde_json::Value> = json_decode(vec![json!(
+        {
+        "a":"1",
+        "b":2
+        }
+        )]).unwrap();
+        println!("{:#?}", m);
+    }
 }
