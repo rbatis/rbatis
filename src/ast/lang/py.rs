@@ -157,10 +157,14 @@ impl Py {
             }
 
             let node = Py::parser_node(x, *line_space_map.get(&line).unwrap() as usize)?;
-
-
-            pys.push(node);
-            //当前node
+            match node {
+                NodeType::Null => {
+                    continue;
+                }
+                _ => {
+                    pys.push(node);
+                }
+            }
         }
         return Ok(pys);
     }
@@ -169,7 +173,9 @@ impl Py {
         let mut trim_x = x.trim();
         if trim_x.ends_with(":") {
             trim_x = trim_x[0..trim_x.len() - 1].trim();
-            if trim_x.starts_with("if ") {
+            if trim_x.starts_with("//") {
+                return Ok(NodeType::Null);
+            } else if trim_x.starts_with("if ") {
                 trim_x = trim_x["if ".len()..].trim();
                 return Ok(NodeType::NIf(IfNode {
                     childs: vec![],
@@ -331,6 +337,7 @@ mod test {
     pub fn test_py_interpreter_parse() {
         let s = "
     SELECT * FROM biz_activity
+    //判断名称是否null
     if  name!=null:
       AND delete_flag = #{del}
       AND version = 1
