@@ -9,7 +9,6 @@ use serde_json::Value;
 
 use crate::engine::{parser, runtime};
 use crate::engine::node::{Node, NodeType};
-//use test::Bencher;
 use crate::engine::node::NodeType::{NNumber, NOpt};
 use crate::engine::runtime::OptMap;
 use crate::utils;
@@ -58,21 +57,3 @@ fn test_benchmark() {
 //    let ten_millis = time::Duration::from_secs(1000*60);
 //    thread::sleep(ten_millis);
 }
-
-//#[bench]
-//fn bench_parser_token(b: &mut Bencher) {
-//    let optMap = OptMap::new();
-//    let m= &OptMap::new();
-//    let now=Local::now();
-//    b.iter(|| {
-//        runtime::parser_tokens(&String::from("n == 1"), &optMap);
-//    });
-//}
-//
-//#[bench]
-//fn bench_parser(b: &mut Bencher) {
-//    let m= &OptMap::new();
-//    b.iter(|| {
-//        parser::parser(String::from(" a + b"), m);
-//    });
-//}

@@ -13,8 +13,6 @@ use crate::engine::node::NodeType::{NArg, NString};
 use crate::engine::runtime::{is_number, OptMap};
 use crate::utils::time_util;
 
-//use test::Bencher;
-
 #[derive(Clone, PartialEq)]
 struct Eq<'a> {
     pub express: &'a str,
@@ -154,12 +152,3 @@ fn benchmark_parser_token() {
     }
     time_util::count_time_qps("benchmark_parser_token", total, now);
 }
-
-
-//#[bench]
-//fn bench_node_eval(b: &mut Bencher) {
-//    let rc=Rc::new("asdf".to_string());
-//    b.iter(|| {
-//        rc.clone();
-//    });
-//}
