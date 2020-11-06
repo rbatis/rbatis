@@ -22,12 +22,13 @@ homepage = "https://rbatis.github.io/rbatis.io/#/"
 default = ["async-io"]
 actix = ["rbatis-core/actix", "async-std"]
 tokio02 = ["rbatis-core/tokio02", "async-std/tokio02"]
+tokio03 = ["rbatis-core/tokio03", "async-std/tokio03"]
 async-io = ["rbatis-core", "async-std"]
 
 snowflake = ["rustflake"]
 
 [dependencies]
-async-std = { version = "1.6", optional = true }
+async-std = { version = "1.7", optional = true }
 rbatis-core = { version = "1.8.7", path = "rbatis-core", optional = true }
 chrono = { version = "0.4", features = ["serde"] }
 xml-rs = "0.8"

@@ -15,11 +15,12 @@ homepage = "https://rbatis.github.io/rbatis.io/#/"
 default = ["all"]
 actix = ["async-std", "sqlx-core/runtime-actix"]
 tokio02 = ["async-std/tokio02", "sqlx-core/runtime-tokio"]
+tokio03 = ["async-std/tokio03", "sqlx-core/runtime-tokio"]
 async-io = ["async-std", "sqlx-core"]
 all = ["async-io"]
 
 [dependencies]
-async-std = { version = "1.6", optional = true }
+async-std = { version = "1.7", optional = true }
 async-stream = { version = "0.2.1", default-features = false }
 bigdecimal_ = { version = "0.2.0", package = "bigdecimal", features = ["serde"] }
 chrono = { version = "0.4.10", default-features = false, features = ["clock"] }
