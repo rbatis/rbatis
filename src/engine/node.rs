@@ -10,7 +10,7 @@ use serde_json::value::Value::{Null, Number};
 
 use crate::engine::eval::eval;
 use crate::engine::node::NodeType::{NArg, NBinary, NBool, NNull, NNumber, NOpt, NString};
-use crate::engine::runtime::{is_number, OptMap, parser_tokens};
+use crate::engine::runtime::{is_number, OptMap, parse_tokens};
 
 #[derive(Clone, PartialEq, Debug)]
 pub enum NodeType {
@@ -195,7 +195,7 @@ impl Node {
     }
 
     //根据string 解析单个node
-    pub fn parser(data: &str, opt: &OptMap) -> Self {
+    pub fn parse(data: &str, opt: &OptMap) -> Self {
         // println!("data={}", &data);
         let mut first_index = 0;
         let mut last_index = 0;

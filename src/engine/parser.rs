@@ -5,14 +5,14 @@ use std::ops::Deref;
 
 use crate::engine::node::Node;
 use crate::engine::node::NodeType::{NBinary, NOpt};
-use crate::engine::runtime::{is_number, OptMap, parser_tokens};
+use crate::engine::runtime::{is_number, OptMap, parse_tokens};
 
 pub fn parse(express: &str, opt_map: &OptMap) -> Result<Node, rbatis_core::Error> {
     let express = express.replace("none", "null").replace("None", "null");
-    let tokens = parser_tokens(&express, opt_map);
+    let tokens = parse_tokens(&express, opt_map);
     let mut nodes = vec![];
     for item in tokens {
-        let node = Node::parser(item.as_str(), opt_map);
+        let node = Node::parse(item.as_str(), opt_map);
         if node.node_type == NOpt {
             let is_allow_opt = opt_map.is_allow_opt(item.as_str());
             if !is_allow_opt {

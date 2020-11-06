@@ -39,10 +39,10 @@ impl Element {
 
 pub fn load_xml(file_content: &str) -> Vec<Element> {
     let parser = EventReader::from_str(file_content);
-    return parser_func(parser);
+    return parse_func(parser);
 }
 
-fn parser_func(parser: EventReader<&[u8]>) -> Vec<Element> {
+fn parse_func(parser: EventReader<&[u8]>) -> Vec<Element> {
     let mut depth = 0;
 
     let mut temp_element = &mut Element {
