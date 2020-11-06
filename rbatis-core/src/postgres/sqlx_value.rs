@@ -321,7 +321,7 @@ impl<'c> JsonCodec for PgValueRef<'c> {
                 // "CIRCLE", "CIRCLE[]",
                 // "MACADDR8","MACADDR8[]",
                 // "MACADDR","MACADDR[]",
-                // you can use json to decode this
+                //  you can use already supported types to decode this
                 return Err(crate::Error::from(format!("un support database type for:{:?}!", type_string)));
             }
         }

@@ -110,6 +110,7 @@ impl<'r> JsonCodec for sqlx_core::mssql::MssqlValueRef<'r> {
             //     let t = serde_json::to_value(&r.unwrap());
             //     return Ok(t.unwrap_or(serde_json::Value::Null));
             // }
+            // you can use already supported types to decode this
             _ => return Err(crate::Error::from(format!("un support database type for:{:?}!", type_string))),
         }
     }

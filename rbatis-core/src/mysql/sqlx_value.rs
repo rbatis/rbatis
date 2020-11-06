@@ -160,7 +160,7 @@ impl<'r> JsonCodec for sqlx_core::mysql::MySqlValueRef<'r> {
                 return Ok(data.unwrap_or(serde_json::Value::Null));
             }
             _ => {
-                //TODO "GEOMETRY" support. for now you can cast to string or json
+                //TODO "GEOMETRY" support. for now you can use already supported types to decode this
                 return Err(crate::Error::from(format!("un support database type for:{:?}!", type_string)))
             },
         }
