@@ -4,9 +4,6 @@
 // interface with the inherently unsafe C module. This unsafe code is contained
 // to the sqlite module.
 #![cfg_attr(feature = "sqlite", deny(unsafe_code))]
-#![recursion_limit = "512"]
-#![cfg_attr(docsrs, feature(doc_cfg))]
-#![cfg_attr(all(test, feature = "bench"), feature(test))]
 // #![warn(missing_docs)]
 #![allow(unused_imports)]
 #![allow(unused_assignments)]
