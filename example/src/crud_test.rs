@@ -243,15 +243,15 @@ mod test {
     /// 使用全局变量例子
     #[py_sql(RB, "select * from biz_activity where id = #{name}
                   if name != '':
-                    and name=#{name}")]
+                    and name != #{name}")]
     fn py_select(name: &str) -> Option<BizActivity> {}
 
     /// Use Arg rbatis ref
     /// 使用参数变量例子
     #[py_sql(rbatis, "select * from biz_activity where id = #{name}
-                  //注释:筛选名字
+                  //注释信息
                   if name != '':
-                    and name=#{name}")]
+                    and name != #{name}")]
     fn py_select_rb(rbatis: &Rbatis, name: &str) -> Option<BizActivity> {}
 
     #[async_std::test]
