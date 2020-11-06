@@ -2,7 +2,7 @@
 pub trait QPS {
     fn qps(&self, total: u64);
     fn time(&self, total: u64);
-    fn cost(&self, total: u64);
+    fn cost(&self);
 }
 
 impl QPS for std::time::Instant {
@@ -16,7 +16,7 @@ impl QPS for std::time::Instant {
         println!("use Time: {:?} ,each:{} ns/op", &time, time.as_nanos() / (total as u128));
     }
 
-    fn cost(&self, total: u64) {
+    fn cost(&self) {
         let time = self.elapsed();
         println!("cost:{:?}", time);
     }
