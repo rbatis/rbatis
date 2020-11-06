@@ -150,7 +150,7 @@ fn benchmark_parser_token() {
     let total = 100000;
     let now = std::time::Instant::now();
     for i in 0..total {
-        runtime::parser_tokens(&s, &opt_map);
+        runtime::parse_tokens(&s, &opt_map);
     }
     time_util::count_time_qps("benchmark_parser_token", total, now);
 }
