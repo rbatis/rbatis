@@ -177,7 +177,7 @@ impl Py {
                 }));
             } else if trim_x.starts_with("for ") {
                 if !trim_x.contains(" in ") {
-                    return Err(rbatis_core::Error::from("[rbatis] parser express fail:".to_string() + trim_x));
+                    return Err(rbatis_core::Error::from("[rbatis] parser express fail:".to_string() + x));
                 }
                 trim_x = trim_x["for ".len()..].trim();
                 let in_index = trim_x.find(" in ").unwrap();
@@ -213,7 +213,7 @@ impl Py {
                         prefix_overrides: trim_x.to_string(),
                     }));
                 } else {
-                    return Err(rbatis_core::Error::from("[rbatis] parser express fail:".to_string() + trim_x));
+                    return Err(rbatis_core::Error::from(format!("[rbatis] express trim value must be string value, for example:  trim 'value',error express: {}", x)));
                 }
             } else if trim_x.starts_with("choose") {
                 trim_x = trim_x["choose".len()..].trim();
@@ -236,7 +236,7 @@ impl Py {
                 trim_x = trim_x["bind ".len()..].trim();
                 let name_value: Vec<&str> = trim_x.split(",").collect();
                 if name_value.len() != 2 {
-                    return Err(rbatis_core::Error::from("[rbatis] parser express fail:".to_string() + trim_x));
+                    return Err(rbatis_core::Error::from("[rbatis] parser express fail:".to_string() + x));
                 }
                 return Ok(NodeType::NBind(BindNode {
                     name: name_value[0].to_owned(),
@@ -254,7 +254,7 @@ impl Py {
                 }));
             } else {
                 // unkonw tag
-                return Err(rbatis_core::Error::from("[rbatis] unknow tag: ".to_string() + trim_x));
+                return Err(rbatis_core::Error::from("[rbatis] unknow tag: ".to_string() + x));
             }
         } else {
             //string,replace space to only one
@@ -321,7 +321,7 @@ impl Py {
 }
 
 #[cfg(test)]
-mod test{
+mod test {
     use crate::ast::lang::py::Py;
     use rbatis_core::db::DriverType;
     use crate::engine::runtime::RbatisEngine;
@@ -348,7 +348,14 @@ mod test{
     WHERE id  = '2';";
         //println!("{}", s);
         let pys = Py::parse(s);
-        println!("{:?}", pys);
+        match pys {
+            Ok(v) => {
+                println!("{:?}", v);
+            }
+            Err(e) => {
+                println!("{:?}", e.to_string());
+            }
+        }
     }
 
     #[test]
