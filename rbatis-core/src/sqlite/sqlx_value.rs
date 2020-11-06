@@ -56,6 +56,7 @@ impl<'c> JsonCodec for SqliteValueRef<'c> {
             }
             _ => {
                 //TODO "NUMERIC" |"DATE" | "TIME" | "DATETIME"
+                //you can use already supported types to decode this
                 return Err(crate::Error::from(format!("un support database type for:{:?}!", type_string)));
             }
         };
