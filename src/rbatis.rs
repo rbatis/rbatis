@@ -258,7 +258,7 @@ impl Rbatis {
         }
 
         self.log_plugin.info(&format!("[rbatis] [{}] Query ==> {}", tx_id, &sql));
-        self.log_plugin.info(&format!("[rbatis] [{}] Args  ==> {}", tx_id, serde_json::to_string(&args).unwrap_or("".to_string())));
+        self.log_plugin.info(&format!("[rbatis] [{}] Args  ==> {}", tx_id, json!(&args)));
         let result_data;
         let mut return_num = 0;
         if tx_id.is_empty() {
@@ -293,7 +293,7 @@ impl Rbatis {
         }
 
         self.log_plugin.info(&format!("[rbatis] [{}] Exec ==> {}", tx_id, &sql));
-        self.log_plugin.info(&format!("[rbatis] [{}] Args ==> {}", tx_id, serde_json::to_string(&args).unwrap_or("".to_string())));
+        self.log_plugin.info(&format!("[rbatis] [{}] Args ==> {}", tx_id, json!(&args)));
         let result;
         if tx_id.is_empty() {
             let q: DBQuery = self.bind_arg(&sql, &args)?;
