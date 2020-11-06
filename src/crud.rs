@@ -510,7 +510,7 @@ mod test {
                 delete_flag: Some(1),
             };
 
-            fast_log::init_log("requests.log", 1000, log::Level::Info, true);
+            fast_log::init_log("requests.log", 1000, log::Level::Info, None, true);
             let rb = Rbatis::new();
             rb.link("mysql://root:123456@localhost:3306/test").await.unwrap();
             let r = rb.save("", &activity).await;
@@ -539,7 +539,7 @@ mod test {
             };
             let args = vec![activity.clone(), activity];
 
-            fast_log::init_log("requests.log", 1000, log::Level::Info, true);
+            fast_log::init_log("requests.log", 1000, log::Level::Info, None, true);
             let rb = Rbatis::new();
             rb.link("mysql://root:123456@localhost:3306/test").await.unwrap();
             let r = rb.save_batch("", &args).await;
@@ -553,7 +553,7 @@ mod test {
     #[test]
     pub fn test_remove_batch_by_id() {
         async_std::task::block_on(async {
-            fast_log::init_log("requests.log", 1000, log::Level::Info, true);
+            fast_log::init_log("requests.log", 1000, log::Level::Info, None, true);
             let mut rb = Rbatis::new();
             rb.logic_plugin = Some(Box::new(RbatisLogicDeletePlugin::new("delete_flag")));
             rb.link("mysql://root:123456@localhost:3306/test").await.unwrap();
@@ -568,7 +568,7 @@ mod test {
     #[test]
     pub fn test_remove_by_id() {
         async_std::task::block_on(async {
-            fast_log::init_log("requests.log", 1000, log::Level::Info, true);
+            fast_log::init_log("requests.log", 1000, log::Level::Info, None, true);
             let mut rb = Rbatis::new();
             //设置 逻辑删除插件
             rb.logic_plugin = Some(Box::new(RbatisLogicDeletePlugin::new("delete_flag")));
@@ -583,7 +583,7 @@ mod test {
     #[test]
     pub fn test_update_by_wrapper() {
         async_std::task::block_on(async {
-            fast_log::init_log("requests.log", 1000, log::Level::Info, true);
+            fast_log::init_log("requests.log", 1000, log::Level::Info, None, true);
             let mut rb = Rbatis::new();
             //设置 逻辑删除插件
             rb.logic_plugin = Some(Box::new(RbatisLogicDeletePlugin::new("delete_flag")));
@@ -616,7 +616,7 @@ mod test {
     #[test]
     pub fn test_update_by_id() {
         async_std::task::block_on(async {
-            fast_log::init_log("requests.log", 1000, log::Level::Info, true);
+            fast_log::init_log("requests.log", 1000, log::Level::Info, None, true);
             let mut rb = Rbatis::new();
             //设置 逻辑删除插件
             rb.logic_plugin = Some(Box::new(RbatisLogicDeletePlugin::new("delete_flag")));
@@ -646,7 +646,7 @@ mod test {
     #[test]
     pub fn test_fetch_by_wrapper() {
         async_std::task::block_on(async {
-            fast_log::init_log("requests.log", 1000, log::Level::Info, true);
+            fast_log::init_log("requests.log", 1000, log::Level::Info, None, true);
             let mut rb = Rbatis::new();
             //设置 逻辑删除插件
             rb.logic_plugin = Some(Box::new(RbatisLogicDeletePlugin::new("delete_flag")));
@@ -663,7 +663,7 @@ mod test {
     #[test]
     pub fn test_fetch_no_del() {
         async_std::task::block_on(async {
-            fast_log::init_log("requests.log", 1000, log::Level::Info, true);
+            fast_log::init_log("requests.log", 1000, log::Level::Info, None, true);
             let mut rb = Rbatis::new();
             //设置 逻辑删除插件
             rb.logic_plugin = Some(Box::new(RbatisLogicDeletePlugin::new("delete_flag")));
@@ -680,7 +680,7 @@ mod test {
     #[test]
     pub fn test_fetch_page_by_wrapper() {
         async_std::task::block_on(async {
-            fast_log::init_log("requests.log", 1000, log::Level::Info, true);
+            fast_log::init_log("requests.log", 1000, log::Level::Info, None, true);
             let mut rb = Rbatis::new();
             //设置 逻辑删除插件
             rb.logic_plugin = Some(Box::new(RbatisLogicDeletePlugin::new("delete_flag")));
