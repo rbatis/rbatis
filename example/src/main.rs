@@ -95,7 +95,6 @@ mod test {
     use rbatis::plugin::page::{Page, PageRequest};
     use rbatis::rbatis::Rbatis;
     use rbatis::utils::bencher::Bencher;
-    use rbatis::wrapper::Wrapper;
     use rbatis_core::db::PoolOptions;
     use rbatis_core::db_adapter::DBPool;
 

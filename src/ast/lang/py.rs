@@ -159,7 +159,7 @@ impl Py {
             let node = Py::parser_node(x, *line_space_map.get(&line).unwrap() as usize)?;
             match node {
                 NodeType::Null => {
-                    continue;
+                    //do nothing
                 }
                 _ => {
                     pys.push(node);
@@ -171,11 +171,12 @@ impl Py {
 
     fn parser_node(x: &str, space: usize) -> Result<NodeType, rbatis_core::Error> {
         let mut trim_x = x.trim();
+        if trim_x.starts_with("//") {
+            return Ok(NodeType::Null);
+        }
         if trim_x.ends_with(":") {
             trim_x = trim_x[0..trim_x.len() - 1].trim();
-            if trim_x.starts_with("//") {
-                return Ok(NodeType::Null);
-            } else if trim_x.starts_with("if ") {
+            if trim_x.starts_with("if ") {
                 trim_x = trim_x["if ".len()..].trim();
                 return Ok(NodeType::NIf(IfNode {
                     childs: vec![],

@@ -249,6 +249,7 @@ mod test {
     /// Use Arg rbatis ref
     /// 使用参数变量例子
     #[py_sql(rbatis, "select * from biz_activity where id = #{name}
+                  //注释:筛选名字
                   if name != '':
                     and name=#{name}")]
     fn py_select_rb(rbatis: &Rbatis, name: &str) -> Option<BizActivity> {}
