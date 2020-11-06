@@ -555,8 +555,8 @@ mod test {
 
     use rbatis_core::db::DriverType;
 
-    use crate::utils::bencher::Bencher;
     use crate::wrapper::{Case, Wrapper};
+    use crate::utils::bencher::QPS;
 
     #[test]
     fn test_select() {
@@ -589,15 +589,16 @@ mod test {
     fn bench_select() {
         let mut map = Map::new();
         map.insert("a".to_string(), json!("1"));
-        let mut b = Bencher::new(100000);
-        b.iter_mut(&mut map, |m| {
+        let total=100000;
+        let now=std::time::Instant::now();
+        for _ in 0..total{
             let w = Wrapper::new(&DriverType::Mysql).eq("id", 1)
                 .ne("id", 1)
                 .in_array("id", &[1, 2, 3])
                 .r#in("id",&[1,2,3])
                 .in_("id",&[1,2,3])
                 .not_in("id", &[1, 2, 3])
-                .all_eq(&m)
+                .all_eq(&map)
                 .like("name", 1)
                 .or()
                 .not_like("name", "asdf")
@@ -605,7 +606,9 @@ mod test {
                 .group_by(&["id"])
                 .order_by(true, &["id", "name"])
                 .check().unwrap();
-        });
+        }
+        now.time(total);
+        now.qps(total);
     }
 
     #[test]

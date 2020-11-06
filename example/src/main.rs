@@ -94,7 +94,7 @@ mod test {
     use rbatis::crud::CRUDEnable;
     use rbatis::plugin::page::{Page, PageRequest};
     use rbatis::rbatis::Rbatis;
-    use rbatis::utils::bencher::Bencher;
+    use rbatis::utils::bencher::QPS;
     use rbatis_core::db::PoolOptions;
     use rbatis_core::db_adapter::DBPool;
 
@@ -364,13 +364,13 @@ mod test {
         RB.link_opt(MYSQL_URL, &opts).await.unwrap();
         let total = 10000;
         let mut current = 0;
-        let now = SystemTime::now();
+        let now = std::time::Instant::now();
         loop {
             let v: rbatis_core::Result<serde_json::Value> = RB.fetch("", "select count(1) from biz_activity WHERE delete_flag = 1;").await;
             if current == total - 1 {
                 let end = SystemTime::now();
-                Bencher::time(total, now, end);
-                Bencher::qps(total, now, end);
+                now.time(total);
+                now.qps(total);
                 break;
             } else {
                 current = current + 1;

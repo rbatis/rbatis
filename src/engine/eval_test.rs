@@ -1,4 +1,3 @@
-//use test::Bencher;
 use std::{thread, time};
 
 use chrono::Local;
@@ -17,22 +16,6 @@ fn test_eval_arg() {
     let v = box_node.eval(&john).unwrap();
     println!("{:?}", v);
 }
-
-
-//#[bench]
-//fn bench_parser(b: &mut Bencher) {
-//    let mut boxNode= parser::parser(String::from("'1'+'1'"), &OptMap::new()).unwrap();
-//    let john = json!({
-//        "n":1,
-//        "name": "John Doe",
-//         "age": {
-//           "yes":"sadf"
-//        }
-//    });
-//    b.iter(|| {
-//        boxNode.eval(&john);
-//    });
-//}
 
 #[test]
 fn test_mem_gc() {

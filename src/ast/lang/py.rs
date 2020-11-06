@@ -332,7 +332,6 @@ mod test {
     use crate::ast::lang::py::Py;
     use rbatis_core::db::DriverType;
     use crate::engine::runtime::RbatisEngine;
-    use crate::utils::bencher::Bencher;
 
     #[test]
     pub fn test_py_interpreter_parse() {
