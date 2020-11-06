@@ -299,16 +299,29 @@ impl<'c> JsonCodec for PgValueRef<'c> {
                 return Ok(t.unwrap_or(serde_json::Value::Null));
             }
             _ => {
-                //TODO "JSONPATH","JSONPATH[]","INT8RANGE",
-                // "INT8RANGE[]","DATERANGE","DATERANGE[]",
-                // "TSTZRANGE","TSTZRANGE[]","TSRANGE","TSRANGE[]",
-                // "NUMRANGE","NUMRANGE[]","INT4RANGE","INT4RANGE[]",
-                // "RECORD","RECORD[]","VARBIT" "VARBIT[]" "BIT" "BIT[]"
-                // "TIMETZ" "TIMETZ[]" "INTERVAL[]" "POINT","POINT[],"
-                // LSEG","LSEG[]","PATH","PATH[]","BOX","BOX[]",
-                // "POLYGON","POLYGON[]","LINE","LINE[]","CIRCLE",
-                // "CIRCLE[]","MACADDR8","MACADDR8[]","MACADDR",
-                // "MACADDR[]", you can use json to decode this
+                //TODO
+                // "JSONPATH","JSONPATH[]",
+                // "INT8RANGE","INT8RANGE[]",
+                // "DATERANGE","DATERANGE[]",
+                // "TSTZRANGE","TSTZRANGE[]",
+                // "TSRANGE","TSRANGE[]",
+                // "NUMRANGE","NUMRANGE[]",
+                // "INT4RANGE","INT4RANGE[]",
+                // "RECORD","RECORD[]"
+                // ,"VARBIT" "VARBIT[]"
+                // "BIT" "BIT[]"
+                // "TIMETZ" "TIMETZ[]"
+                // "INTERVAL[]"
+                // "POINT","POINT[],"
+                // LSEG","LSEG[]",
+                // "PATH","PATH[]",
+                // "BOX","BOX[]",
+                // "POLYGON","POLYGON[]",
+                // "LINE","LINE[]",
+                // "CIRCLE", "CIRCLE[]",
+                // "MACADDR8","MACADDR8[]",
+                // "MACADDR","MACADDR[]",
+                // you can use json to decode this
                 return Err(crate::Error::from(format!("un support database type for:{:?}!", type_string)));
             }
         }
