@@ -187,7 +187,7 @@ mod test {
     fn test_map() {
         let m = Arc::new(SyncMap::new());
         async_std::task::block_on(async {
-            let v = m.insert(1, "default".to_string()).await;
+             m.insert(1, "default".to_string()).await;
             let r = m.get(&1).await;
             let rv = r.unwrap().v;
             println!("r:{:?}", &rv);
@@ -211,7 +211,7 @@ mod test {
             let mut lock= m.write().await;
             lock.insert(1,1);
             drop(lock);
-            let mut lock= m.read().await;
+            let lock= m.read().await;
             for (k,v) in lock.deref(){
                println!("k:{},v:{}",k,v);
             }
@@ -224,7 +224,7 @@ mod test {
     //cargo test --release --color=always --package rbatis-core --lib sync::sync_map::test::bench_test --no-fail-fast -- --exact -Z unstable-options --format=json --show-output
     #[test]
     fn bench_test(){
-        let mut m = Arc::new(SyncMap::new());
+        let m = Arc::new(SyncMap::new());
         async_std::task::block_on(async {
             let s = m.insert(1, "default".to_string()).await;
             drop(s);
@@ -232,7 +232,7 @@ mod test {
             let total = 100000;
             let now=Local::now().timestamp_millis();
             for current in 0..total{
-                let v=  m.get(&1).await;
+                m.get(&1).await;
                 if current == total - 1 {
                     let end = Local::now().timestamp_millis();
                     print_use_time(total,now as i64,end as i64);
