@@ -2,12 +2,8 @@ use std::collections::HashMap;
 use std::hash::Hash;
 use std::ops::Index;
 use std::sync::{Mutex, RwLock};
-
 use serde_json::json;
 use serde_json::Value;
-
-use rbatis_core::db::DriverType;
-
 use crate::ast::ast::RbatisAST;
 use crate::ast::node::bind_node::BindNode;
 use crate::ast::node::choose_node::ChooseNode;
@@ -21,8 +17,6 @@ use crate::ast::node::trim_node::TrimNode;
 use crate::ast::node::when_node::WhenNode;
 use crate::ast::node::where_node::WhereNode;
 use crate::engine::parser::parse;
-use crate::engine::runtime::RbatisEngine;
-use crate::utils::bencher::Bencher;
 
 lazy_static! {
   static ref PY_PARSER_MAP: RwLock<HashMap<String,Vec<NodeType>>> = RwLock::new(HashMap::new());
@@ -188,11 +182,20 @@ impl Py {
                 trim_x = trim_x["for ".len()..].trim();
                 let in_index = trim_x.find(" in ").unwrap();
                 let col = trim_x[in_index + " in ".len()..].trim();
-                let item = trim_x[..in_index].trim();
+                let mut item = trim_x[..in_index].trim();
+                let mut index = "";
+                if item.contains(",") {
+                    let items: Vec<&str> = item.split(",").collect();
+                    if items.len() != 2 {
+                        return Err(rbatis_core::Error::from(format!("[rbatis][py] parse fail 'for ,' must be 'for arg1,arg2 in ...',value:'{}'", x)));
+                    }
+                    index = items[0];
+                    item = items[1];
+                }
                 return Ok(NodeType::NForEach(ForEachNode {
                     childs: vec![],
                     collection: col.to_string(),
-                    index: "".to_string(),
+                    index: index.to_string(),
                     item: item.to_string(),
                     open: "".to_string(),
                     close: "".to_string(),
@@ -317,10 +320,16 @@ impl Py {
     }
 }
 
+#[cfg(test)]
+mod test{
+    use crate::ast::lang::py::Py;
+    use rbatis_core::db::DriverType;
+    use crate::engine::runtime::RbatisEngine;
+    use crate::utils::bencher::Bencher;
 
-#[test]
-pub fn test_py_interpreter_parse() {
-    let s = "
+    #[test]
+    pub fn test_py_interpreter_parse() {
+        let s = "
     SELECT * FROM biz_activity
     if  name!=null:
       AND delete_flag = #{del}
@@ -332,17 +341,19 @@ pub fn test_py_interpreter_parse() {
       yes
     for item in ids:
       #{item}
+    for index,item in ids:
+      #{item}
     trim 'AND':
       AND delete_flag = #{del2}
     WHERE id  = '2';";
-    //println!("{}", s);
-    let pys = Py::parse(s);
-    println!("{:?}", pys);
-}
+        //println!("{}", s);
+        let pys = Py::parse(s);
+        println!("{:?}", pys);
+    }
 
-#[test]
-pub fn test_exec() {
-    let s = "SELECT * FROM biz_activity where
+    #[test]
+    pub fn test_exec() {
+        let s = "SELECT * FROM biz_activity where
     if  name!=null:
       name = #{name}
     AND delete_flag1 = #{del}
@@ -363,42 +374,43 @@ pub fn test_exec() {
         otherwise:
           AND age = 0
     WHERE id  = 'end';";
-    let pys = Py::parse(s).unwrap();
-    println!("{:#?}", pys);
-    //for x in &pys {
-    // println!("{:?}", x.clone());
-    //}
-    //println!("pys:len:{}", pys.len());
+        let pys = Py::parse(s).unwrap();
+        println!("{:#?}", pys);
+        //for x in &pys {
+        // println!("{:?}", x.clone());
+        //}
+        //println!("pys:len:{}", pys.len());
 
 
-    let mut arg_array = vec![];
-    let mut engine = RbatisEngine::new();
-    let mut env = json!({
+        let mut arg_array = vec![];
+        let mut engine = RbatisEngine::new();
+        let mut env = json!({
         "name": "1",
         "age": 27,
         "del":1,
         "ids":[1,2,3]
     });
-    let r = crate::ast::node::node::do_child_nodes(&DriverType::Mysql, &pys, &mut env, &mut engine, &mut arg_array).unwrap();
-    println!("result sql:{}", r.clone());
-    println!("arg array:{:?}", arg_array.clone());
-}
+        let r = crate::ast::node::node::do_child_nodes(&DriverType::Mysql, &pys, &mut env, &mut engine, &mut arg_array).unwrap();
+        println!("result sql:{}", r.clone());
+        println!("arg array:{:?}", arg_array.clone());
+    }
 
-//cargo.exe test --release --color=always --package rbatis --lib ast::lang::py::bench_exec  --nocapture --exact
-#[test]
-pub fn bench_exec() {
-    let mut b = Bencher::new(1000000);
-    let mut sql = "asdfsdaflakagjsda".to_string();
-    b.iter_mut(&mut sql, |s| {
-        let s = s.ends_with("WHERE")
-            || s.ends_with("AND")
-            || s.ends_with("OR")
-            || s.ends_with("(")
-            || s.ends_with(",")
-            || s.ends_with("=")
-            || s.ends_with("+")
-            || s.ends_with("-")
-            || s.ends_with("*")
-            || s.ends_with("/");
-    });
+    //cargo.exe test --release --color=always --package rbatis --lib ast::lang::py::bench_exec  --nocapture --exact
+    #[test]
+    pub fn bench_exec() {
+        let mut b = Bencher::new(1000000);
+        let mut sql = "asdfsdaflakagjsda".to_string();
+        b.iter_mut(&mut sql, |s| {
+            let s = s.ends_with("WHERE")
+                || s.ends_with("AND")
+                || s.ends_with("OR")
+                || s.ends_with("(")
+                || s.ends_with(",")
+                || s.ends_with("=")
+                || s.ends_with("+")
+                || s.ends_with("-")
+                || s.ends_with("*")
+                || s.ends_with("/");
+        });
+    }
 }
