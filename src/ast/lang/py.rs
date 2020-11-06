@@ -401,23 +401,4 @@ mod test {
         println!("result sql:{}", r.clone());
         println!("arg array:{:?}", arg_array.clone());
     }
-
-    //cargo.exe test --release --color=always --package rbatis --lib ast::lang::py::bench_exec  --nocapture --exact
-    #[test]
-    pub fn bench_exec() {
-        let mut b = Bencher::new(1000000);
-        let mut sql = "asdfsdaflakagjsda".to_string();
-        b.iter_mut(&mut sql, |s| {
-            let s = s.ends_with("WHERE")
-                || s.ends_with("AND")
-                || s.ends_with("OR")
-                || s.ends_with("(")
-                || s.ends_with(",")
-                || s.ends_with("=")
-                || s.ends_with("+")
-                || s.ends_with("-")
-                || s.ends_with("*")
-                || s.ends_with("/");
-        });
-    }
 }
