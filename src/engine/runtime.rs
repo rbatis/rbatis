@@ -110,7 +110,7 @@ pub fn is_number(arg: &String) -> bool {
 }
 
 
-///将原始字符串解析为 去除空格的token数组
+///parse token to vec
 pub fn parse_tokens(s: &String, opt_map: &OptMap) -> Vec<String> {
     let chars = s.chars();
     let chars_len = s.len() as i32;
@@ -238,18 +238,16 @@ impl<'a> OptMap<'a> {
         }
     }
 
-    ///非运算>算术运算符>关系运算符>逻辑运算符里的与运算>逻辑运算符里的或运算
+    ///The or operation in the nonoperational > arithmetic operator > relational operator > logical operator and operation > logical operator
     pub fn priority_array(&self) -> &Vec<&str> {
         return &self.allow_sorted;
     }
 
-    ///是否是操作符
     pub fn is_opt(&self, arg: &str) -> bool {
         let opt = self.map.get(arg);
         return opt.is_none() == false;
     }
 
-    ///是否为有效的操作符
     pub fn is_allow_opt(&self, arg: &str) -> bool {
         for item in &self.allow_sorted {
             if arg == *item {
