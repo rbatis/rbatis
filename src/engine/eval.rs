@@ -143,8 +143,9 @@ fn is_eq_object(lefts: &Map<String, Value>, rights: &Map<String, Value>) -> bool
 
 #[cfg(test)]
 mod test {
-    use serde_json::Value;
     use serde::{Deserialize, Serialize};
+    use serde_json::Value;
+
     use crate::engine::eval::eval;
     use crate::utils::time_util;
 
