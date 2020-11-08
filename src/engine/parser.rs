@@ -21,7 +21,7 @@ pub fn parse(express: &str, opt_map: &OptMap) -> Result<Node, rbatis_core::Error
         }
         nodes.push(Box::new(node));
     }
-    //TODO check nodes
+    fix_null_items(&mut nodes);
     for item in opt_map.priority_array() {
         find_replace_opt(opt_map, &express, &item, &mut nodes);
     }
@@ -32,47 +32,56 @@ pub fn parse(express: &str, opt_map: &OptMap) -> Result<Node, rbatis_core::Error
     }
 }
 
+
+fn fix_null_items(node_arg: &mut Vec<Box<Node>>) {
+    let len = node_arg.len();
+    if len == 0 {
+        return;
+    }
+    if node_arg.get(0).unwrap().node_type() == NOpt {
+        node_arg.insert(0, Box::new(Node::new_null()));
+    }
+    if len - 1 == 0 {
+        return;
+    }
+    if node_arg.get(len - 1).unwrap().node_type() == NOpt {
+        node_arg.push(Box::new(Node::new_null()));
+    }
+    let index = 0;
+    for index in 1..(len - 1) {
+        let last_index = (index - 1) as usize;
+        let last = node_arg.get(last_index);
+        let current = node_arg.get(index).unwrap();
+        if current.node_type() == NOpt && last.as_ref().unwrap().node_type() == NOpt {
+            node_arg.insert(index, Box::new(Node::new_null()));
+            fix_null_items(node_arg);
+            return;
+        }
+    }
+    return;
+}
+
 fn find_replace_opt(opt_map: &OptMap, express: &String, operator: &str, node_arg: &mut Vec<Box<Node>>) {
     //let nodes=vec![];
     let mut index = 0 as i32;
     let node_arg_len = node_arg.len();
-    let null_node = Box::new(Node::new_null());
     for item in node_arg.clone() {
+        let left_index = index - 1;
+        let right_index = (index + 1) as usize;
         let item_type = item.node_type();
-        if item_type as i32 == NOpt as i32 && operator == item.opt().unwrap() {
-            let left_index = index - 1;
-            let right_index = (index + 1) as usize;
-
-            let left_node;
-            if left_index < 0 {
-                left_node = None;
-            } else {
-                left_node = node_arg.get(left_index as usize);
-            }
-            let right_node = node_arg.get(right_index);
-            let have_left = left_node.is_some();
-            let have_right = right_node.is_some();
-
-            let left = left_node.unwrap_or(&null_node).clone();
-            let right = right_node.unwrap_or(&null_node).clone();
+        if item_type == NOpt && operator == item.opt().unwrap() {
+            let left = node_arg[left_index as usize].clone();
+            let right = node_arg[right_index].clone();
             let binary_node = Node::new_binary(left, right, item.opt().unwrap());
 
-            if have_right {
-                node_arg.remove(right_index);
-            }
+            node_arg.remove(right_index);
             node_arg.remove(index as usize);
-            if have_left {
-                node_arg.remove(left_index as usize);
-            }
-            if left_index >= 0 {
-                node_arg.insert(left_index as usize, Box::new(binary_node));
-            } else {
-                node_arg.push(Box::new(binary_node));
-            }
+            node_arg.remove(left_index as usize);
+            node_arg.insert(left_index as usize, Box::new(binary_node));
             if have_opt(node_arg) {
                 find_replace_opt(opt_map, express, operator, node_arg);
+                return;
             }
-            break;
         }
         index = index + 1;
     }
@@ -131,19 +140,16 @@ pub fn parse_tokens(s: &String, opt_map: &OptMap) -> Vec<String> {
         }
         //opt node
         if is_opt {
-            //println!("is opt:{}", item);
-            if item.eq(&'-') && (result.len() == 0 || opt_map.is_opt(result.back().unwrap_or(&"".to_string()))) {
-                trim_push_back("0", &mut result);
-            }
-            if item.eq(&'+') && (result.len() == 0 || opt_map.is_opt(result.back().unwrap_or(&"".to_string()))) {
-                trim_push_back("0", &mut result);
-            }
             if result.len() > 0 {
                 let def = String::new();
                 let back = result.back().unwrap_or(&def).clone();
+                if back.len() >= 2 {
+                    trim_push_back(&item.to_string(), &mut result);
+                    continue;
+                }
                 if back != "" && opt_map.is_opt(back.as_str()) {
                     result.pop_back();
-                    let mut new_item = back.clone().to_string();
+                    let mut new_item = back.clone();
                     new_item.push(item);
                     trim_push_back(&new_item, &mut result);
                     continue;

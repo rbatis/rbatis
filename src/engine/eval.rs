@@ -101,6 +101,9 @@ pub fn eval(left: &Value,
         }
     }
     if op == "+" {
+        if left.is_null() && right.is_number(){
+            return Result::Ok(json!(right.as_f64().unwrap()));
+        }
         if left.is_number() && right.is_number() {
             return Result::Ok(json!(left.as_f64().unwrap() + right.as_f64().unwrap()));
         } else if left.is_string() && right.is_string() {
@@ -110,9 +113,10 @@ pub fn eval(left: &Value,
         }
     }
     if op == "-" {
-        let booll = left.is_number();
-        let boolr = right.is_number();
-        if booll && boolr {
+        if left.is_null() && right.is_number(){
+            return Result::Ok(json!(0.0 - right.as_f64().unwrap()));
+        }
+        if left.is_number() && right.is_number() {
             return Result::Ok(json!(left.as_f64().unwrap() - right.as_f64().unwrap()));
         }
     }
