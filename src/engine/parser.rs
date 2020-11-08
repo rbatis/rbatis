@@ -25,6 +25,7 @@ pub fn parse(express: &str, opt_map: &OptMap) -> Result<Node, rbatis_core::Error
     for item in opt_map.priority_array() {
         find_replace_opt(opt_map, &express, &item, &mut nodes);
     }
+    println!("af: {:#?}", &nodes);
     if nodes.len() > 0 {
         return Result::Ok(nodes[0].deref().clone());
     } else {
@@ -34,25 +35,24 @@ pub fn parse(express: &str, opt_map: &OptMap) -> Result<Node, rbatis_core::Error
 
 
 fn fix_null_items(node_arg: &mut Vec<Box<Node>>) {
-    let len = node_arg.len();
+    let mut len = node_arg.len();
     if len == 0 {
         return;
     }
     if node_arg.get(0).unwrap().node_type() == NOpt {
         node_arg.insert(0, Box::new(Node::new_null()));
+        len = node_arg.len();
     }
-    if len - 1 == 0 {
-        return;
-    }
-    if node_arg.get(len - 1).unwrap().node_type() == NOpt {
+    if len != 0 && node_arg.get(len - 1).unwrap().node_type() == NOpt {
         node_arg.push(Box::new(Node::new_null()));
+        len = node_arg.len();
     }
-    let index = 0;
-    for index in 1..(len - 1) {
+    let index = 1;
+    for index in 1..len {
         let last_index = (index - 1) as usize;
-        let last = node_arg.get(last_index);
+        let last = node_arg.get(last_index).unwrap();
         let current = node_arg.get(index).unwrap();
-        if current.node_type() == NOpt && last.as_ref().unwrap().node_type() == NOpt {
+        if current.node_type() == NOpt && last.node_type() == NOpt {
             node_arg.insert(index, Box::new(Node::new_null()));
             fix_null_items(node_arg);
             return;
@@ -73,7 +73,6 @@ fn find_replace_opt(opt_map: &OptMap, express: &String, operator: &str, node_arg
             let left = node_arg[left_index as usize].clone();
             let right = node_arg[right_index].clone();
             let binary_node = Node::new_binary(left, right, item.opt().unwrap());
-
             node_arg.remove(right_index);
             node_arg.remove(index as usize);
             node_arg.remove(left_index as usize);
@@ -143,7 +142,7 @@ pub fn parse_tokens(s: &String, opt_map: &OptMap) -> Vec<String> {
             if result.len() > 0 {
                 let def = String::new();
                 let back = result.back().unwrap_or(&def).clone();
-                if back.len() >= 2 {
+                if opt_map.is_opt(&format!("{}{}", &back, &item)) == false {
                     trim_push_back(&item.to_string(), &mut result);
                     continue;
                 }
