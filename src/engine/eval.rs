@@ -69,8 +69,8 @@ pub fn eval(left: &Value,
         let booll = left.is_number();
         let boolr = right.is_number();
         if booll && boolr {
-            let l=left.as_f64().unwrap();
-            let r=right.as_f64().unwrap();
+            let l = left.as_f64().unwrap();
+            let r = right.as_f64().unwrap();
             let result = l % r;
             return Result::Ok(json!(result));
         }
@@ -79,9 +79,28 @@ pub fn eval(left: &Value,
         let booll = left.is_i64();
         let boolr = right.is_i64();
         if booll && boolr {
-            let l=left.as_i64().unwrap();
-            let r=right.as_i64().unwrap();
+            let l = left.as_i64().unwrap();
+            let r = right.as_i64().unwrap();
             let result = l ^ r;
+            return Result::Ok(json!(result));
+        }
+    }
+    if op == "**" {
+        let booll = left.is_number();
+        let boolr = right.is_u64();
+        if boolr == false {
+            return Result::Err(rbatis_core::Error::from(format!("[rbatis] only support number ** uint! express:{}{}{}", left, op, right)));
+        }
+        if booll && boolr {
+            let left_v = left.as_i64().unwrap() as f64;
+            let right_v = right.as_i64().unwrap();
+            if right_v == 0 {
+                return Result::Ok(json!(left_v));
+            }
+            let mut result = left_v.clone();
+            for _ in 1..right_v {
+                result = left_v * result;
+            }
             return Result::Ok(json!(result));
         }
     }
@@ -218,7 +237,8 @@ mod test {
         assert_eq!(eval(&json!({"a":"1"}), &json!({"a":"1"}), "==").unwrap(), true);
         assert_eq!(eval(&json!({"a":"1"}), &json!({"a":"2"}), "==").unwrap(), false);
         assert_eq!(eval(&json!(4), &json!(3), "%").unwrap().as_f64().unwrap(), 1.0);
-        assert_eq!(eval(&json!(2), &json!(4), "^").unwrap().as_i64().unwrap(), 2^4);
+        assert_eq!(eval(&json!(2), &json!(4), "^").unwrap().as_i64().unwrap(), 2 ^ 4);
+        assert_eq!(eval(&json!(2), &json!(3), "**").unwrap().as_i64().unwrap(), 8);
     }
 
 
