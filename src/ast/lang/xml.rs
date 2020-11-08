@@ -150,7 +150,7 @@ pub fn loop_decode_xml(xml_vec: &Vec<Element>) -> Vec<NodeType> {
             })),
             "if" => nodes.push(NodeType::NIf(IfNode {
                 childs: child_nodes,
-                test: xml.get_attr("test"),
+                test: xml.get_attr("test").replace(" and ", " && ").replace(" or ", " || "),
             })),
             "trim" => nodes.push(NodeType::NTrim(TrimNode {
                 childs: child_nodes,
@@ -174,7 +174,7 @@ pub fn loop_decode_xml(xml_vec: &Vec<Element>) -> Vec<NodeType> {
             })),
             "when" => nodes.push(NodeType::NWhen(WhenNode {
                 childs: child_nodes,
-                test: xml.get_attr("test"),
+                test: xml.get_attr("test").replace(" and ", " && ").replace(" or ", " || "),
             })),
             "where" => nodes.push(NodeType::NWhere(WhereNode {
                 childs: child_nodes,

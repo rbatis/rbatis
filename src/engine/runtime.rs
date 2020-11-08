@@ -29,9 +29,6 @@ impl RbatisEngine {
     ///eval express with arg value,if cache have value it will no run parser expr.
     pub fn eval(&self, expr: &str, arg: &Value) -> Result<Value, rbatis_core::Error> {
         let mut lexer_arg = expr.to_string();
-        if expr.find(" and ").is_some() {
-            lexer_arg = lexer_arg.replace(" and ", " && ");
-        }
         let cached = self.cache_read(lexer_arg.as_str());
         if cached.is_none() {
             let nodes = parse(lexer_arg.as_str(), &self.opt_map);
