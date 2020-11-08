@@ -59,7 +59,7 @@ fn find_replace_opt(opt_map: &OptMap, express: &String, operator: &str, node_arg
     }
 }
 
-fn have_opt(node_arg: &mut Vec<Box<Node>>) -> bool {
+fn have_opt(node_arg: &Vec<Box<Node>>) -> bool {
     for item in node_arg {
         if item.node_type() as i32 == NOpt as i32 {
             return true;
