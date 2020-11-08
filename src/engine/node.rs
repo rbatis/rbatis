@@ -3,6 +3,8 @@ use std::fmt::{Display, Error, Formatter};
 use std::ops::Deref;
 use std::ptr::null;
 
+use serde::Deserialize;
+use serde::Serialize;
 use serde_json::{Map, Value};
 use serde_json;
 use serde_json::json;
@@ -12,7 +14,7 @@ use crate::engine::eval::eval;
 use crate::engine::node::NodeType::{NArg, NBinary, NBool, NNull, NNumber, NOpt, NString};
 use crate::engine::runtime::{is_number, OptMap};
 
-#[derive(Clone, PartialEq, Debug)]
+#[derive(Clone, PartialEq, Debug, Serialize, Deserialize)]
 pub enum NodeType {
     NArg = 1,
     //参数节点
@@ -45,11 +47,11 @@ impl Display for NodeType {
 
 
 //抽象语法树节点
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, Serialize, Deserialize)]
 pub struct Node {
+    pub left: Option<Box<Node>>,
     pub value: Value,
-    pub left_binary_node: Option<Box<Node>>,
-    pub right_binary_node: Option<Box<Node>>,
+    pub right: Option<Box<Node>>,
     pub node_type: NodeType,
 }
 
@@ -89,8 +91,8 @@ impl Node {
 
     pub fn eval(&self, env: &Value) -> Result<Value, rbatis_core::Error> {
         if self.equal_node_type(&NBinary) {
-            let left_v = self.left_binary_node.as_ref().unwrap().eval(env).unwrap_or(Value::Null);
-            let right_v = self.right_binary_node.as_ref().unwrap().eval(env).unwrap_or(Value::Null);
+            let left_v = self.left.as_ref().unwrap().eval(env).unwrap_or(Value::Null);
+            let right_v = self.right.as_ref().unwrap().eval(env).unwrap_or(Value::Null);
             let opt = self.to_string();
             return eval(&left_v, &right_v, opt);
         } else if self.equal_node_type(&NArg) {
@@ -122,8 +124,8 @@ impl Node {
     pub fn new_null() -> Self {
         Self {
             value: Value::Null,
-            left_binary_node: None,
-            right_binary_node: None,
+            left: None,
+            right: None,
             node_type: NNull,
         }
     }
@@ -131,40 +133,40 @@ impl Node {
         let d: Vec<&str> = arg.split(".").collect();
         Self {
             value: json!(d),
-            left_binary_node: None,
-            right_binary_node: None,
+            left: None,
+            right: None,
             node_type: NArg,
         }
     }
     pub fn new_string(arg: &str) -> Self {
         Self {
             value: Value::String(arg.to_string()),
-            left_binary_node: None,
-            right_binary_node: None,
+            left: None,
+            right: None,
             node_type: NString,
         }
     }
     pub fn new_number_f64(arg: f64) -> Self {
         Self {
             value: json!(arg),
-            left_binary_node: None,
-            right_binary_node: None,
+            left: None,
+            right: None,
             node_type: NNumber,
         }
     }
     pub fn new_number_i64(arg: i64) -> Self {
         Self {
             value: json!(arg),
-            left_binary_node: None,
-            right_binary_node: None,
+            left: None,
+            right: None,
             node_type: NNumber,
         }
     }
     pub fn new_number_u64(arg: u64) -> Self {
         Self {
             value: json!(arg),
-            left_binary_node: None,
-            right_binary_node: None,
+            left: None,
+            right: None,
             node_type: NNumber,
         }
     }
@@ -172,24 +174,24 @@ impl Node {
     pub fn new_bool(arg: bool) -> Self {
         Self {
             value: Value::Bool(arg),
-            left_binary_node: None,
-            right_binary_node: None,
+            left: None,
+            right: None,
             node_type: NBool,
         }
     }
     pub fn new_binary(arg_lef: Box<Node>, arg_right: Box<Node>, opt: &str) -> Self {
         Self {
             value: Value::from(opt),
-            left_binary_node: Option::Some(arg_lef),
-            right_binary_node: Option::Some(arg_right),
+            left: Option::Some(arg_lef),
+            right: Option::Some(arg_right),
             node_type: NBinary,
         }
     }
     pub fn new_opt(arg: &str) -> Self {
         Self {
             value: Value::String(arg.to_string()),
-            left_binary_node: None,
-            right_binary_node: None,
+            left: None,
+            right: None,
             node_type: NOpt,
         }
     }
