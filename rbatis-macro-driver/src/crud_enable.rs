@@ -28,7 +28,7 @@ pub(crate) fn impl_macro(ast: &syn::DeriveInput) -> TokenStream {
     gen.into()
 }
 
-fn gen_table_name(data:&syn::Ident)->String{
+fn gen_table_name(data: &syn::Ident) -> String {
     let mut table_name = data.to_string();
     let names: Vec<&str> = table_name.split("::").collect();
     table_name = names.get(names.len() - 1).unwrap().to_string();
@@ -36,7 +36,7 @@ fn gen_table_name(data:&syn::Ident)->String{
     table_name
 }
 
-fn gen_fields(data:&syn::Data) -> proc_macro2::TokenStream {
+fn gen_fields(data: &syn::Data) -> proc_macro2::TokenStream {
     let mut fields = quote! { String::new() };
     match &data {
         syn::Data::Struct(s) => {

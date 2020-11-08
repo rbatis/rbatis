@@ -6,6 +6,7 @@ use serde_json::{Map, Value};
 
 use rbatis_core::convert::StmtConvert;
 use rbatis_core::db::DriverType;
+use rbatis_core::db_adapter::DBExecResult;
 use rbatis_core::Error;
 use rbatis_core::Result;
 
@@ -15,7 +16,6 @@ use crate::rbatis::Rbatis;
 use crate::sql::date::DateFormat;
 use crate::utils::string_util::to_snake_name;
 use crate::wrapper::Wrapper;
-use rbatis_core::db_adapter::DBExecResult;
 
 /// DB Table model trait
 pub trait CRUDEnable: Send + Sync + Serialize + DeserializeOwned {
@@ -267,7 +267,7 @@ impl CRUD for Rbatis {
     }
 
     async fn remove_by_wrapper<T>(&self, tx_id: &str, w: &Wrapper) -> Result<u64> where T: CRUDEnable {
-        let w=w.clone().check()?;
+        let w = w.clone().check()?;
         let where_sql = w.sql.as_str();
         let mut sql = String::new();
         if self.logic_plugin.is_some() {
@@ -303,7 +303,7 @@ impl CRUD for Rbatis {
 
     /// update arg by wrapper
     async fn update_by_wrapper<T>(&self, tx_id: &str, arg: &T, w: &Wrapper, update_null_value: bool) -> Result<u64> where T: CRUDEnable {
-        let w=w.clone().check()?;
+        let w = w.clone().check()?;
         let mut args = vec![];
         let map = arg.make_column_value_map(&self.driver_type()?)?;
         let driver_type = &self.driver_type()?;
@@ -359,7 +359,7 @@ impl CRUD for Rbatis {
     }
 
     async fn fetch_by_wrapper<T>(&self, tx_id: &str, w: &Wrapper) -> Result<T> where T: CRUDEnable {
-        let w=w.clone().check()?;
+        let w = w.clone().check()?;
         let sql = make_select_sql::<T>(&self, &w)?;
         return self.fetch_prepare(tx_id, sql.as_str(), &w.args).await;
     }
@@ -370,7 +370,7 @@ impl CRUD for Rbatis {
     }
 
     async fn list_by_wrapper<T>(&self, tx_id: &str, w: &Wrapper) -> Result<Vec<T>> where T: CRUDEnable {
-        let w=w.clone().check()?;
+        let w = w.clone().check()?;
         let sql = make_select_sql::<T>(&self, &w)?;
         return self.fetch_prepare(tx_id, sql.as_str(), &w.args).await;
     }
@@ -385,7 +385,7 @@ impl CRUD for Rbatis {
     }
 
     async fn fetch_page_by_wrapper<T>(&self, tx_id: &str, w: &Wrapper, page: &dyn IPageRequest) -> Result<Page<T>> where T: CRUDEnable {
-        let w=w.clone().check()?;
+        let w = w.clone().check()?;
         let sql = make_select_sql::<T>(&self, &w)?;
         self.fetch_page(tx_id, sql.as_str(), &w.args, page).await
     }
@@ -415,7 +415,6 @@ fn make_select_sql<T>(rb: &Rbatis, w: &Wrapper) -> Result<String> where T: CRUDE
 #[cfg(test)]
 mod test {
     use chrono::{DateTime, Utc};
-
     use serde::de::DeserializeOwned;
     use serde::Deserialize;
     use serde::Serialize;
