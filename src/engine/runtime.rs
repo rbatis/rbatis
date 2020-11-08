@@ -193,8 +193,6 @@ fn trim_push_back(arg: &str, list: &mut LinkedList<String>) {
 
 #[derive(Clone, Debug)]
 pub struct OptMap<'a> {
-    //列表
-    pub list: Vec<&'a str>,
     //全部操作符
     pub map: HashMap<&'a str, bool>,
     //复合操作符
@@ -233,7 +231,6 @@ impl<'a> OptMap<'a> {
         }
 
         Self {
-            list,
             map: all,
             mul_ops_map,
             single_opt_map,
