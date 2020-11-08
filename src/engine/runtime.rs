@@ -240,8 +240,8 @@ impl<'a> OptMap<'a> {
     }
 
     ///非运算>算术运算符>关系运算符>逻辑运算符里的与运算>逻辑运算符里的或运算
-    pub fn priority_array(&self) -> Vec<&str> {
-        return self.allow_sorted.clone();
+    pub fn priority_array(&self) -> &Vec<&str> {
+        return &self.allow_sorted;
     }
 
     ///是否是操作符
