@@ -209,7 +209,7 @@ impl<'a> OptMap<'a> {
         let mut mul_ops_map = HashMap::new();
         let mut single_opt_map = HashMap::new();
 
-        //全部操作符
+        //all opt
         let list = vec![
             "[", "]", "(", ")",
             "%", "^", "*", "/", "+", "-",
@@ -217,11 +217,11 @@ impl<'a> OptMap<'a> {
             "==", "!=", ">=", "<=", "&&", "||"
         ];
 
-        //全部
+        //all opt map
         for item in &list {
             all.insert(item.to_owned(), true);
         }
-        //单操作符和多操作符
+        //single opt and mul opt
         for item in &list {
             if item.len() > 1 {
                 mul_ops_map.insert(item.to_owned(), true);
@@ -234,7 +234,6 @@ impl<'a> OptMap<'a> {
             map: all,
             mul_ops_map,
             single_opt_map,
-            //非运算>算术运算符>关系运算符>逻辑运算符里的与运算>逻辑运算符里的或运算
             allow_sorted: vec!["%", "^", "*", "/", "+", "-", "<=", "<", ">=", ">", "!=", "==", "&&", "||"],
         }
     }
