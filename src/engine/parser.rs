@@ -40,7 +40,7 @@ fn find_replace_opt(opt_map: &OptMap, express: &String, operator: &str, node_arg
     for item in node_arg.clone() {
         let item_type = item.node_type();
         if item_type as i32 == NOpt as i32 && operator == item.opt().unwrap() {
-            let left_index = (index - 1);
+            let left_index = index - 1;
             let right_index = (index + 1) as usize;
 
             let left_node;
