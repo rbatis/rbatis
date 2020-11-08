@@ -224,6 +224,7 @@ pub fn loop_decode_xml(xml_vec: &Vec<Element>) -> Vec<NodeType> {
                 }))
             }
             "" => {
+                //string node not allow ' and ' or ' or '
                 let data = xml.data.as_str();
                 let tag = xml.tag.as_str();
                 let string_node = StringNode::new(data);
