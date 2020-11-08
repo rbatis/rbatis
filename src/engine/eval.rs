@@ -238,7 +238,7 @@ mod test {
         assert_eq!(eval(&json!({"a":"1"}), &json!({"a":"2"}), "==").unwrap(), false);
         assert_eq!(eval(&json!(4), &json!(3), "%").unwrap().as_f64().unwrap(), 1.0);
         assert_eq!(eval(&json!(2), &json!(4), "^").unwrap().as_i64().unwrap(), 2 ^ 4);
-        assert_eq!(eval(&json!(2), &json!(3), "**").unwrap().as_i64().unwrap(), 8);
+        assert_eq!(eval(&json!(2), &json!(3), "**").unwrap().as_f64().unwrap(), 8.0);
     }
 
 
