@@ -28,15 +28,14 @@ impl RbatisEngine {
 
     ///eval express with arg value,if cache have value it will no run parser expr.
     pub fn eval(&self, expr: &str, arg: &Value) -> Result<Value, rbatis_core::Error> {
-        let mut lexer_arg = expr.to_string();
-        let cached = self.cache_read(lexer_arg.as_str());
+        let cached = self.cache_read(expr);
         if cached.is_none() {
-            let nodes = parse(lexer_arg.as_str(), &self.opt_map);
+            let nodes = parse(expr, &self.opt_map);
             if nodes.is_err() {
                 return Result::Err(nodes.err().unwrap());
             }
             let node = nodes.unwrap();
-            self.cache_insert(lexer_arg.to_string(), node.clone());
+            self.cache_insert(expr.to_string(), node.clone());
             return node.eval(arg);
         } else {
             let nodes = cached.unwrap();
