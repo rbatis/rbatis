@@ -1,15 +1,11 @@
 extern crate serde_json;
 
 use std::any::Any;
-use std::iter::Map;
 use std::time::SystemTime;
 
 use chrono::Local;
-use serde::{Deserialize, Serialize};
-use serde_json::json;
+use serde_json::{json, Map};
 use serde_json::Value;
-
-use crate::utils::time_util;
 
 pub fn eval(left: &Value,
             right: &Value,
@@ -100,14 +96,61 @@ fn eq(left: &Value, right: &Value) -> bool {
         return left.as_str().unwrap().eq(right.as_str().unwrap());
     } else if left.is_boolean() && right.is_boolean() {
         return left.as_bool() == right.as_bool();
+    } else if left.is_array() && !right.is_array() {
+        return false;
+    } else if left.is_object() && !right.is_object() {
+        return false;
+    } else if left.is_array() && right.is_array() {
+        return is_eq_array(left.as_array().unwrap(), right.as_array().unwrap());
+    } else if left.is_object() && right.is_object() {
+        return is_eq_object(left.as_object().unwrap(), right.as_object().unwrap());
     } else {
         return false;
     }
 }
 
-#[test]
-fn test_parser() {
-    let john = json!({
+fn is_eq_array(lefts: &Vec<Value>, rights: &Vec<Value>) -> bool {
+    if lefts.len() != rights.len() {
+        return false;
+    }
+    for left in lefts {
+        for right in rights {
+            if eq(&left, &right) == false {
+                return false;
+            }
+        }
+    }
+    return true;
+}
+
+fn is_eq_object(lefts: &Map<String, Value>, rights: &Map<String, Value>) -> bool {
+    if lefts.len() != rights.len() {
+        return false;
+    }
+    for (k, left) in lefts {
+        let right = rights.get(k);
+        if right.is_none() {
+            return false;
+        }
+        let right = right.unwrap();
+        if eq(left, right) == false {
+            return false;
+        }
+    }
+    return true;
+}
+
+
+#[cfg(test)]
+mod test {
+    use serde_json::Value;
+    use serde::{Deserialize, Serialize};
+    use crate::engine::eval::eval;
+    use crate::utils::time_util;
+
+    #[test]
+    fn test_parser() {
+        let john = json!({
         "name": "John Doe",
         "age": Value::Null,
         "phones": [
@@ -115,59 +158,74 @@ fn test_parser() {
             "+44 2345678"
         ]
     });
-
-
-    let age = &john["age"];
-    println!("{}", *age);
-}
-
-#[derive(Serialize, Deserialize, Debug)]
-struct Point {
-    x: i32,
-    y: i32,
-}
-
-#[test]
-fn test_take_value() {
-    let point = Point { x: 1, y: 2 };
-
-    let serialized = serde_json::to_string(&point).unwrap();
-    println!("serialized = {}", serialized);
-
-    //create serde_json::Value
-    let john = json!(point);
-    println!("{}", john["x"]);
-
-    let deserialized: Point = serde_json::from_str(&serialized).unwrap();
-    println!("deserialized = {:?}", deserialized);
-}
-
-#[test]
-fn benchmark_fromstr() {
-    let point = Point { x: 1, y: 2 };
-
-    let serialized = serde_json::to_string(&point).unwrap();
-    println!("serialized = {}", serialized);
-
-    let total = 100000;
-    let now = std::time::Instant::now();
-    for i in 0..total {
-        let deserialized: Point = serde_json::from_str(&serialized).unwrap();
-        // println!("deserialized = {:?}", deserialized);
+        let age = &john["age"];
+        println!("{}", *age);
     }
-    time_util::count_time_qps("benchmark_fromstr", total, now);
-}
 
-#[test]
-fn benchmark_to_string() {
-    let point = Point { x: 1, y: 2 };
+    #[derive(Serialize, Deserialize, Debug)]
+    struct Point {
+        x: i32,
+        y: i32,
+    }
 
+    #[test]
+    fn test_take_value() {
+        let point = Point { x: 1, y: 2 };
 
-    let total = 100000;
-    let now = std::time::Instant::now();
-    for i in 0..total {
         let serialized = serde_json::to_string(&point).unwrap();
-        let deserialized: Value = serde_json::from_str(&serialized).unwrap();
+        println!("serialized = {}", serialized);
+
+        //create serde_json::Value
+        let john = json!(point);
+        println!("{}", john["x"]);
+
+        let deserialized: Point = serde_json::from_str(&serialized).unwrap();
+        println!("deserialized = {:?}", deserialized);
     }
-    time_util::count_time_qps("benchmark_to_string", total, now);
+
+    #[test]
+    fn test_array_eq() {
+        assert_eq!(eval(&json!([{"a":1}]), &json!([]), "==").unwrap(), false);
+        assert_eq!(eval(&json!([{"a":1}]), &json!([{"a":2}]), "==").unwrap(), false);
+        assert_eq!(eval(&json!([{"a":1}]), &json!([{"a":1}]), "==").unwrap(), true);
+        assert_eq!(eval(&json!([{"a":1}]), &json!([{}]), "==").unwrap(), false);
+    }
+
+    #[test]
+    fn test_object_eq() {
+        assert_eq!(eval(&json!({"a":1}), &json!({"b":1}), "==").unwrap(), false);
+        assert_eq!(eval(&json!({"a":"1"}), &json!({"a":"1"}), "==").unwrap(), true);
+        assert_eq!(eval(&json!({"a":"1"}), &json!({"a":"2"}), "==").unwrap(), false);
+    }
+
+
+    #[test]
+    fn benchmark_fromstr() {
+        let point = Point { x: 1, y: 2 };
+
+        let serialized = serde_json::to_string(&point).unwrap();
+        println!("serialized = {}", serialized);
+
+        let total = 100000;
+        let now = std::time::Instant::now();
+        for i in 0..total {
+            let deserialized: Point = serde_json::from_str(&serialized).unwrap();
+            // println!("deserialized = {:?}", deserialized);
+        }
+        time_util::count_time_qps("benchmark_fromstr", total, now);
+    }
+
+    #[test]
+    fn benchmark_to_string() {
+        let point = Point { x: 1, y: 2 };
+
+
+        let total = 100000;
+        let now = std::time::Instant::now();
+        for i in 0..total {
+            let serialized = serde_json::to_string(&point).unwrap();
+            let deserialized: Value = serde_json::from_str(&serialized).unwrap();
+        }
+        time_util::count_time_qps("benchmark_to_string", total, now);
+    }
 }
