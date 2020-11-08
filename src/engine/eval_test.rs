@@ -9,6 +9,7 @@ mod test {
     use crate::engine::node::Node;
     use crate::engine::runtime::OptMap;
     use crate::utils::time_util;
+    use crate::engine::parser::parse_tokens;
 
     #[test]
     fn test_eval_arg() {
@@ -165,7 +166,7 @@ mod test {
         let total = 100000;
         let now = std::time::Instant::now();
         for i in 0..total {
-            runtime::parse_tokens(&s, &opt_map);
+            parse_tokens(&s, &opt_map);
         }
         time_util::count_time_qps("benchmark_parser_token", total, now);
     }
