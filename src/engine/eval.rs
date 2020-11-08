@@ -97,14 +97,7 @@ pub fn eval(left: &Value,
         if booll && boolr {
             let left_v = left.as_i64().unwrap() as f64;
             let right_v = right.as_i64().unwrap();
-            if right_v == 0 {
-                return Result::Ok(json!(left_v));
-            }
-            let mut result = left_v.clone();
-            for _ in 1..right_v {
-                result = left_v * result;
-            }
-            return Result::Ok(json!(result));
+            return Result::Ok(json!(left_v.powi(right_v as i32)));
         }
     }
     if op == "+" {

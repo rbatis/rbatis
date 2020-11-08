@@ -55,7 +55,9 @@ mod test {
         let exec_expr = |arg: &serde_json::Value, expr: &str| -> serde_json::Value{
             println!("{}", expr.clone());
             let box_node = parser::parse(expr, &OptMap::new()).unwrap();
-            box_node.eval(arg).unwrap()
+            let v=box_node.eval(arg).unwrap();
+            println!("'{}' -> {}", expr.clone(),&v);
+            v
         };
         assert_eq!(exec_expr(&arg, "d.a == null"), json!(true));
         assert_eq!(exec_expr(&arg, "1 == 1.0"), json!(true));
