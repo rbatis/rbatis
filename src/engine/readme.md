@@ -22,28 +22,37 @@
 
 #### for example:
 ```
-            Eq { express: "d.a == null", eq: json!(true) },
-            Eq { express: "1 == 1.0", eq: json!(true) },
-            Eq { express: "'2019-02-26' == '2019-02-26'", eq: json!(true) },
-            Eq { express: "`f`+`s`", eq: json!("fs") },
-            Eq { express: "a +1 > b * 8", eq: json!(false) },
-            Eq { express: "a >= 0", eq: json!(true) },
-            Eq { express: "'a'+c", eq: json!("ac") },
-            Eq { express: "b", eq: json!(2) },
-            Eq { express: "a < 1", eq: json!(false) },
-            Eq { express: "a +1 > b*8", eq: json!(false) },
-            Eq { express: "a * b == 2", eq: json!(true) },
-            Eq { express: "a - b == 0", eq: json!(false) },
-            Eq { express: "a >= 0 && a != 0", eq: json!(true) },
-            Eq { express: "a == 1 && a != 0", eq: json!(true) },
-            Eq { express: "1 > 3 ", eq: json!(false) },
-            Eq { express: "1 + 2 != nil", eq: json!(true) },
-            Eq { express: "1 != null", eq: json!(true) },
-            Eq { express: "1 + 2 != nil && 1 > 0 ", eq: json!(true) },
-            Eq { express: "1 + 2 != nil && 2 < b*8 ", eq: json!(true) },
-            Eq { express: "-1 != nil", eq: json!(true) },
-            Eq { express: "-1 != -2 && -1 == 2-3 ", eq: json!(true) },
-            Eq { express: "-1 == a*-1 ", eq: json!(true) },
-            Eq { express: "-1 + a*-1 ", eq: json!(-2.0) },
-            Eq { express: "2 ** 3", eq: json!(8.0) },
+#[test]
+    fn test_node_run() {
+        let arg = json!({"a":1,"b":2,"c":"c", "d":null,});
+        let parse_func = |arg: &serde_json::Value, expr: &str| -> serde_json::Value{
+            println!("{}", expr.clone());
+            let box_node = parser::parse(expr, &OptMap::new()).unwrap();
+            box_node.eval(arg).unwrap()
+        };
+        assert_eq!(parse_func(&arg, "d.a == null"), json!(true));
+        assert_eq!(parse_func(&arg, "1 == 1.0"), json!(true));
+        assert_eq!(parse_func(&arg, "'2019-02-26' == '2019-02-26'"), json!(true));
+        assert_eq!(parse_func(&arg, "`f`+`s`"), json!("fs"));
+        assert_eq!(parse_func(&arg, "a +1 > b * 8"), json!(false));
+        assert_eq!(parse_func(&arg, "a >= 0"), json!(true));
+        assert_eq!(parse_func(&arg, "'a'+c"), json!("ac"));
+        assert_eq!(parse_func(&arg, "b"), json!(2));
+        assert_eq!(parse_func(&arg, "a < 1"), json!(false));
+        assert_eq!(parse_func(&arg, "a +1 > b*8"), json!(false));
+        assert_eq!(parse_func(&arg, "a * b == 2"), json!(true));
+        assert_eq!(parse_func(&arg, "a - b == 0"), json!(false));
+        assert_eq!(parse_func(&arg, "a >= 0 && a != 0"), json!(true));
+        assert_eq!(parse_func(&arg, "a == 1 && a != 0"), json!(true));
+        assert_eq!(parse_func(&arg, "1 > 3 "), json!(false));
+        assert_eq!(parse_func(&arg, "1 + 2 != nil"), json!(true));
+        assert_eq!(parse_func(&arg, "1 != null"), json!(true));
+        assert_eq!(parse_func(&arg, "1 + 2 != nil && 1 > 0 "), json!(true));
+        assert_eq!(parse_func(&arg, "1 + 2 != nil && 2 < b*8 "), json!(true));
+        assert_eq!(parse_func(&arg, "-1 != nil"), json!(true));
+        assert_eq!(parse_func(&arg, "-1 != -2 && -1 == 2-3 "), json!(true));
+        assert_eq!(parse_func(&arg, "-1 == a*-1 "), json!(true));
+        assert_eq!(parse_func(&arg, "-1 + a*-1 "), json!(-2.0));
+        assert_eq!(parse_func(&arg, "2 ** 3"), json!(8.0));
+    }
 ```
