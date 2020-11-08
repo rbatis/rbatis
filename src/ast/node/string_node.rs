@@ -18,7 +18,7 @@ pub struct StringNode {
     //去重的，需要替换的要sql转换express map
     pub express_map: HashMap<String, String>,
     //去重的，需要替换的免sql转换express map
-    pub no_convert_express_map: HashMap<String, String>,
+    pub express_map_no_convert: HashMap<String, String>,
 }
 
 impl StringNode {
@@ -27,14 +27,14 @@ impl StringNode {
         for item in &string_util::find_convert_string(v) {
             express_map.insert(item.clone(), "#{".to_owned() + item.as_str() + "}");
         }
-        let mut no_convert_express_map = HashMap::new();
+        let mut express_map_no_convert = HashMap::new();
         for item in &string_util::find_no_convert_string(v) {
-            no_convert_express_map.insert(item.clone(), "${".to_owned() + item.as_str() + "}");
+            express_map_no_convert.insert(item.clone(), "${".to_owned() + item.as_str() + "}");
         }
         Self {
             value: v.to_string(),
-            express_map: express_map,
-            no_convert_express_map: no_convert_express_map,
+            express_map,
+            express_map_no_convert,
         }
     }
 }
@@ -53,7 +53,7 @@ impl RbatisAST for StringNode {
                 arg_array.push(v);
             }
         }
-        for (item, value) in &self.no_convert_express_map {
+        for (item, value) in &self.express_map_no_convert {
             result = result.replace(value, env.get(item).unwrap_or(&Value::String(String::new())).as_str().unwrap_or(""));
         }
         return Result::Ok(result);

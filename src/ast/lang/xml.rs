@@ -150,7 +150,7 @@ pub fn loop_decode_xml(xml_vec: &Vec<Element>) -> Vec<NodeType> {
             })),
             "if" => nodes.push(NodeType::NIf(IfNode {
                 childs: child_nodes,
-                test: xml.get_attr("test").replace(" and ", " && ").replace(" or ", " || "),
+                test: replace_test(xml.get_attr("test")),
             })),
             "trim" => nodes.push(NodeType::NTrim(TrimNode {
                 childs: child_nodes,
@@ -174,7 +174,7 @@ pub fn loop_decode_xml(xml_vec: &Vec<Element>) -> Vec<NodeType> {
             })),
             "when" => nodes.push(NodeType::NWhen(WhenNode {
                 childs: child_nodes,
-                test: xml.get_attr("test").replace(" and ", " && ").replace(" or ", " || "),
+                test: replace_test(xml.get_attr("test")),
             })),
             "where" => nodes.push(NodeType::NWhere(WhereNode {
                 childs: child_nodes,
@@ -184,7 +184,7 @@ pub fn loop_decode_xml(xml_vec: &Vec<Element>) -> Vec<NodeType> {
             })),
             "bind" => nodes.push(NodeType::NBind(BindNode {
                 name: xml.get_attr("name"),
-                value: xml.get_attr("value"),
+                value: replace_test(xml.get_attr("value")),
             })),
             "include" => {
                 if child_nodes.len() > 0 {
@@ -226,8 +226,8 @@ pub fn loop_decode_xml(xml_vec: &Vec<Element>) -> Vec<NodeType> {
             "" => {
                 let data = xml.data.as_str();
                 let tag = xml.tag.as_str();
-                let n = StringNode::new(data);
-                nodes.push(NodeType::NString(n));
+                let string_node = StringNode::new(data);
+                nodes.push(NodeType::NString(string_node));
             }
             _ => {}
         }
@@ -235,6 +235,9 @@ pub fn loop_decode_xml(xml_vec: &Vec<Element>) -> Vec<NodeType> {
     return nodes;
 }
 
+fn replace_test(test:String) ->String{
+    test.replace(" and ", " && ").replace(" or ", " || ")
+}
 
 pub fn filter_result_map_result_nodes(arg: &Vec<NodeType>) -> Vec<ResultMapResultNode> {
     let mut data = vec![];
