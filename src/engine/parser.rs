@@ -36,20 +36,39 @@ fn find_replace_opt(opt_map: &OptMap, express: &String, operator: &str, node_arg
     //let nodes=vec![];
     let mut index = 0 as i32;
     let node_arg_len = node_arg.len();
+    let null_node = Box::new(Node::new_null());
     for item in node_arg.clone() {
         let item_type = item.node_type();
         if item_type as i32 == NOpt as i32 && operator == item.opt().unwrap() {
-            let left_index = (index - 1) as usize;
+            let left_index = (index - 1);
             let right_index = (index + 1) as usize;
-            let left = node_arg[left_index].clone();
-            let right = node_arg[right_index].clone();
+
+            let left_node;
+            if left_index < 0 {
+                left_node = None;
+            } else {
+                left_node = node_arg.get(left_index as usize);
+            }
+            let right_node = node_arg.get(right_index);
+            let have_left = left_node.is_some();
+            let have_right = right_node.is_some();
+
+            let left = left_node.unwrap_or(&null_node).clone();
+            let right = right_node.unwrap_or(&null_node).clone();
             let binary_node = Node::new_binary(left, right, item.opt().unwrap());
 
-            node_arg.remove(right_index);
+            if have_right {
+                node_arg.remove(right_index);
+            }
             node_arg.remove(index as usize);
-            node_arg.remove(left_index);
-
-            node_arg.insert(left_index, Box::new(binary_node));
+            if have_left {
+                node_arg.remove(left_index as usize);
+            }
+            if left_index >= 0 {
+                node_arg.insert(left_index as usize, Box::new(binary_node));
+            } else {
+                node_arg.push(Box::new(binary_node));
+            }
             if have_opt(node_arg) {
                 find_replace_opt(opt_map, express, operator, node_arg);
             }
