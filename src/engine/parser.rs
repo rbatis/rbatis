@@ -25,7 +25,6 @@ pub fn parse(express: &str, opt_map: &OptMap) -> Result<Node, rbatis_core::Error
     for item in opt_map.priority_array() {
         find_replace_opt(opt_map, &express, &item, &mut nodes);
     }
-    println!("af: {:#?}", &nodes);
     if nodes.len() > 0 {
         return Result::Ok(nodes[0].deref().clone());
     } else {
