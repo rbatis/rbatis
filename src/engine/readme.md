@@ -2,12 +2,12 @@
 
 #### support opt
 
-| opt    | supported |
+| opt    | doc  |
 | ------ | ------ |
 |   %     |        | 
-|   ^     |        | 
+|   ^     |   xor     | 
 |   *     |        | 
-|   **     |        | 
+|   **     |   exponentiation     | 
 |   /     |        | 
 |   +     |        | 
 |   -     |        | 
