@@ -51,9 +51,43 @@ pub fn eval(left: &Value,
             return Result::Ok(Value::Bool(left.as_f64() < right.as_f64()));
         }
     }
+    if op == "*" {
+        let booll = left.is_number();
+        let boolr = right.is_number();
+        if booll && boolr {
+            return Result::Ok(json!(left.as_f64().unwrap() * right.as_f64().unwrap()));
+        }
+    }
+    if op == "/" {
+        let booll = left.is_number();
+        let boolr = right.is_number();
+        if booll && boolr {
+            return Result::Ok(json!(left.as_f64().unwrap() / right.as_f64().unwrap()));
+        }
+    }
+    if op == "%" {
+        let booll = left.is_number();
+        let boolr = right.is_number();
+        if booll && boolr {
+            let l=left.as_f64().unwrap();
+            let r=right.as_f64().unwrap();
+            let result = l % r;
+            return Result::Ok(json!(result));
+        }
+    }
+    if op == "^" {
+        let booll = left.is_i64();
+        let boolr = right.is_i64();
+        if booll && boolr {
+            let l=left.as_i64().unwrap();
+            let r=right.as_i64().unwrap();
+            let result = l ^ r;
+            return Result::Ok(json!(result));
+        }
+    }
     if op == "+" {
         if left.is_number() && right.is_number() {
-            return Result::Ok(Value::Number(serde_json::Number::from_f64(left.as_f64().unwrap() + right.as_f64().unwrap()).unwrap()));
+            return Result::Ok(json!(left.as_f64().unwrap() + right.as_f64().unwrap()));
         } else if left.is_string() && right.is_string() {
             return Result::Ok(Value::from(left.as_str().unwrap().to_owned() + right.as_str().unwrap()));
         } else {
@@ -64,21 +98,7 @@ pub fn eval(left: &Value,
         let booll = left.is_number();
         let boolr = right.is_number();
         if booll && boolr {
-            return Result::Ok(Value::Number(serde_json::Number::from_f64(left.as_f64().unwrap() - right.as_f64().unwrap()).unwrap()));
-        }
-    }
-    if op == "*" {
-        let booll = left.is_number();
-        let boolr = right.is_number();
-        if booll && boolr {
-            return Result::Ok(Value::Number(serde_json::Number::from_f64(left.as_f64().unwrap() * right.as_f64().unwrap()).unwrap()));
-        }
-    }
-    if op == "/" {
-        let booll = left.is_number();
-        let boolr = right.is_number();
-        if booll && boolr {
-            return Result::Ok(Value::Number(serde_json::Number::from_f64(left.as_f64().unwrap() / right.as_f64().unwrap()).unwrap()));
+            return Result::Ok(json!(left.as_f64().unwrap() - right.as_f64().unwrap()));
         }
     }
     return Result::Err(rbatis_core::Error::from("[rbatis] un support opt = ".to_owned() + op));
@@ -197,6 +217,8 @@ mod test {
         assert_eq!(eval(&json!({"a":1}), &json!({"b":1}), "==").unwrap(), false);
         assert_eq!(eval(&json!({"a":"1"}), &json!({"a":"1"}), "==").unwrap(), true);
         assert_eq!(eval(&json!({"a":"1"}), &json!({"a":"2"}), "==").unwrap(), false);
+        assert_eq!(eval(&json!(4), &json!(3), "%").unwrap().as_f64().unwrap(), 1.0);
+        assert_eq!(eval(&json!(2), &json!(4), "^").unwrap().as_i64().unwrap(), 2^4);
     }
 
 

@@ -202,96 +202,60 @@ pub struct OptMap<'a> {
     //单操作符
     pub single_opt_map: HashMap<&'a str, bool>,
 
-    pub allow_priority_array: Vec<&'a str>,
+    pub allow_sorted: Vec<&'a str>,
 }
 
 impl<'a> OptMap<'a> {
     pub fn new() -> Self {
-        let mut list = Vec::new();
-        let mut def_map = HashMap::new();
+        let mut all = HashMap::new();
         let mut mul_ops_map = HashMap::new();
         let mut single_opt_map = HashMap::new();
 
-        //list 顺序加入操作符
-        list.push("*");
-        list.push("/");
-        list.push("%");
-        list.push("^");
-        list.push("+");
-        list.push("-");
+        //全部操作符
+        let list = vec![
+            "[", "]", "(", ")",
+            "%", "^", "*", "/", "+", "-",
+            "@", "#", "$", "=", "!", ">", "<", "&", "|",
+            "==", "!=", ">=", "<=", "&&", "||"
+        ];
 
-        list.push("(");
-        list.push(")");
-        list.push("@");
-        list.push("#");
-        list.push("$");
-        list.push("&");
-        list.push("|");
-        list.push("=");
-        list.push("!");
-        list.push(">");
-        list.push("<");
-
-        list.push("&&");
-        list.push("||");
-        list.push("==");
-        list.push("!=");
-        list.push(">=");
-        list.push("<=");
-
-
-        //全部加入map集合
-        for item in &mut list {
-            def_map.insert(*item, true);
+        //全部
+        for item in &list {
+            all.insert(item.to_owned(), true);
         }
-        //加入单操作符和多操作符
-        for item in &mut list {
+        //单操作符和多操作符
+        for item in &list {
             if item.len() > 1 {
-                mul_ops_map.insert(item.clone(), true);
+                mul_ops_map.insert(item.to_owned(), true);
             } else {
-                single_opt_map.insert(item.clone(), true);
+                single_opt_map.insert(item.to_owned(), true);
             }
         }
 
-
-        let mut vecs = vec![];
-        vecs.push("*");
-        vecs.push("/");
-        vecs.push("+");
-        vecs.push("-");
-        vecs.push("<=");
-        vecs.push("<");
-        vecs.push(">=");
-        vecs.push(">");
-        vecs.push("!=");
-        vecs.push("==");
-        vecs.push("&&");
-        vecs.push("||");
-
-
         Self {
-            list: list,
-            map: def_map,
-            mul_ops_map: mul_ops_map,
-            single_opt_map: single_opt_map,
-            allow_priority_array: vecs,
+            list,
+            map: all,
+            mul_ops_map,
+            single_opt_map,
+            //非运算>算术运算符>关系运算符>逻辑运算符里的与运算>逻辑运算符里的或运算
+            allow_sorted: vec!["%", "^", "*", "/", "+", "-", "<=", "<", ">=", ">", "!=", "==", "&&", "||"],
         }
     }
 
-    //乘除优先于加减 计算优于比较,
+    ///非运算>算术运算符>关系运算符>逻辑运算符里的与运算>逻辑运算符里的或运算
     pub fn priority_array(&self) -> Vec<&str> {
-        return self.allow_priority_array.clone();
+        return self.allow_sorted.clone();
     }
 
-    //是否是操作符
+    ///是否是操作符
     pub fn is_opt(&self, arg: &str) -> bool {
         let opt = self.map.get(arg);
         return opt.is_none() == false;
     }
 
-    //是否为有效的操作符
+    ///是否为有效的操作符
     pub fn is_allow_opt(&self, arg: &str) -> bool {
-        for item in &self.allow_priority_array {
+        for item in &self.allow_sorted {
             if arg == *item {
                 return true;
             }
