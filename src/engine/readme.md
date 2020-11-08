@@ -1,7 +1,26 @@
 ## express engine
 
-> support opt
+#### support opt
 
+| opt    | supported |
+| ------ | ------ |
+|   %     |        | 
+|   ^     |        | 
+|   *     |        | 
+|   **     |        | 
+|   /     |        | 
+|   +     |        | 
+|   -     |        | 
+|   <=     |        | 
+|   <     |        | 
+|   >     |        | 
+|   >=     |        | 
+|   !=     |        | 
+|   ==     |        | 
+|   &&     |        | 
+|   ||     |        | 
+
+#### for example:
 ```
             Eq { express: "d.a == null", eq: json!(true) },
             Eq { express: "1 == 1.0", eq: json!(true) },
