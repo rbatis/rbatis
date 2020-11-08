@@ -235,11 +235,11 @@ pub fn loop_decode_xml(xml_vec: &Vec<Element>) -> Vec<NodeType> {
     return nodes;
 }
 
-fn replace_test(test:String) ->String{
+fn replace_test(test: String) -> String {
     test.replace(" and ", " && ").replace(" or ", " || ")
 }
 
-pub fn filter_result_map_result_nodes(arg: &Vec<NodeType>) -> Vec<ResultMapResultNode> {
+fn filter_result_map_result_nodes(arg: &Vec<NodeType>) -> Vec<ResultMapResultNode> {
     let mut data = vec![];
     for x in arg {
         if let NodeType::NResultMapResultNode(result_node) = x {
@@ -249,7 +249,7 @@ pub fn filter_result_map_result_nodes(arg: &Vec<NodeType>) -> Vec<ResultMapResul
     return data;
 }
 
-pub fn filter_result_map_id_nodes(arg: &Vec<NodeType>) -> Option<ResultMapIdNode> {
+fn filter_result_map_id_nodes(arg: &Vec<NodeType>) -> Option<ResultMapIdNode> {
     for x in arg {
         if let NodeType::NResultMapIdNode(id_node) = x {
             return Option::Some(id_node.clone());
@@ -258,7 +258,7 @@ pub fn filter_result_map_id_nodes(arg: &Vec<NodeType>) -> Option<ResultMapIdNode
     return Option::None;
 }
 
-pub fn filter_when_nodes(arg: &Vec<NodeType>) -> Option<Vec<NodeType>> {
+fn filter_when_nodes(arg: &Vec<NodeType>) -> Option<Vec<NodeType>> {
     let mut data = vec![];
     for x in arg {
         if let NodeType::NWhen(when_node) = x {
@@ -273,7 +273,7 @@ pub fn filter_when_nodes(arg: &Vec<NodeType>) -> Option<Vec<NodeType>> {
 }
 
 
-pub fn filter_otherwise_nodes(arg: Vec<NodeType>) -> Option<Box<NodeType>> {
+fn filter_otherwise_nodes(arg: Vec<NodeType>) -> Option<Box<NodeType>> {
     let mut data = vec![];
     for x in arg {
         if let NodeType::NOtherwise(node) = x {
