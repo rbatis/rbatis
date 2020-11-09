@@ -179,11 +179,11 @@ impl Node {
             node_type: NBool,
         }
     }
-    pub fn new_binary(arg_lef: Box<Node>, arg_right: Box<Node>, opt: &str) -> Self {
+    pub fn new_binary(arg_lef: Node, arg_right: Node, opt: &str) -> Self {
         Self {
             value: Value::from(opt),
-            left: Option::Some(arg_lef),
-            right: Option::Some(arg_right),
+            left: Option::Some(Box::new(arg_lef)),
+            right: Option::Some(Box::new(arg_right)),
             node_type: NBinary,
         }
     }
