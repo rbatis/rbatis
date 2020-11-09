@@ -176,11 +176,16 @@ impl Wrapper {
         self
     }
 
-    fn is_start_opt(&self) -> bool {
+    fn is_end_with_opt(&self) -> bool {
         let sql = self.sql.trim_end();
         sql.ends_with("WHERE")
             || sql.ends_with("AND")
             || sql.ends_with("OR")
+            || sql.ends_with("SELECT")
+            || sql.ends_with("DELETE")
+            || sql.ends_with("UPDATE")
+            || sql.ends_with("AS")
+            || sql.ends_with("FROM")
             || sql.ends_with("(")
             || sql.ends_with(",")
             || sql.ends_with("=")
@@ -192,7 +197,7 @@ impl Wrapper {
 
     /// link wrapper sql, if end with where , do nothing
     pub fn and(&mut self) -> &mut Self {
-        if !self.is_start_opt() {
+        if !self.is_end_with_opt() {
             self.sql.push_str(" AND ");
         }
         self
@@ -200,7 +205,7 @@ impl Wrapper {
 
     /// link wrapper sql, if end with where , do nothing
     pub fn or(&mut self) -> &mut Self {
-        if !self.is_start_opt() {
+        if !self.is_end_with_opt() {
             self.sql.push_str(" OR ");
         }
         self
