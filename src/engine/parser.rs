@@ -6,6 +6,7 @@ use std::ops::Deref;
 use crate::engine::node::Node;
 use crate::engine::node::NodeType::{NBinary, NOpt};
 use crate::engine::runtime::{is_number, OptMap};
+use log::kv::Source;
 
 pub fn parse(express: &str, opt_map: &OptMap) -> Result<Node, rbatis_core::Error> {
     let express = express.replace("none", "null").replace("None", "null");
@@ -62,12 +63,15 @@ fn fix_null_items(node_arg: &mut Vec<Box<Node>>) {
 
 fn find_replace_opt(opt_map: &OptMap, express: &String, operator: &str, node_arg: &mut Vec<Box<Node>>) {
     //let nodes=vec![];
-    let mut index = 0 as i32;
     let node_arg_len = node_arg.len();
-    for item in node_arg.clone() {
+    if node_arg_len == 1 {
+        return;
+    }
+    for index in 1..(node_arg_len - 1) {
+        let item = node_arg.get(index).unwrap();
+        let item_type = item.node_type();
         let left_index = index - 1;
         let right_index = (index + 1) as usize;
-        let item_type = item.node_type();
         if item_type == NOpt && operator == item.opt().unwrap() {
             let left = node_arg[left_index as usize].clone();
             let right = node_arg[right_index].clone();
@@ -81,7 +85,6 @@ fn find_replace_opt(opt_map: &OptMap, express: &String, operator: &str, node_arg
                 return;
             }
         }
-        index = index + 1;
     }
 }
 
