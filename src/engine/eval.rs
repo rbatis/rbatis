@@ -10,121 +10,123 @@ use serde_json::Value;
 pub fn eval(left: &Value,
             right: &Value,
             op: &str) -> Result<Value, rbatis_core::Error> {
-    if op == "&&" {
-        return Result::Ok(Value::Bool(left.as_bool().unwrap() && right.as_bool().unwrap()));
-    }
-    if op == "||" {
-        return Result::Ok(Value::Bool(left.as_bool().unwrap() || right.as_bool().unwrap()));
-    }
-
-    if op == "==" {
-        return Result::Ok(Value::Bool(eq(left, right)));
-    }
-    if op == "!=" {
-        return Result::Ok(Value::Bool(!eq(left, right)));
-    }
-    if op == ">=" {
-        let booll = left.is_number();
-        let boolr = right.is_number();
-        if booll && boolr {
-            return Result::Ok(Value::Bool(left.as_f64() >= right.as_f64()));
+    match op {
+        "&&" => {
+            return Result::Ok(Value::Bool(left.as_bool().unwrap() && right.as_bool().unwrap()));
         }
-    }
-    if op == "<=" {
-        let booll = left.is_number();
-        let boolr = right.is_number();
-        if booll && boolr {
-            return Result::Ok(Value::Bool(left.as_f64() <= right.as_f64()));
+        "||" => {
+            return Result::Ok(Value::Bool(left.as_bool().unwrap() || right.as_bool().unwrap()));
         }
-    }
-    if op == ">" {
-        let booll = left.is_number();
-        let boolr = right.is_number();
-        if booll && boolr {
-            return Result::Ok(Value::Bool(left.as_f64() > right.as_f64()));
+        "==" => {
+            return Result::Ok(Value::Bool(eq(left, right)));
         }
-    }
-    if op == "<" {
-        let booll = left.is_number();
-        let boolr = right.is_number();
-        if booll && boolr {
-            return Result::Ok(Value::Bool(left.as_f64() < right.as_f64()));
+        "!=" => {
+            return Result::Ok(Value::Bool(!eq(left, right)));
         }
-    }
-    if op == "*" {
-        let booll = left.is_number();
-        let boolr = right.is_number();
-        if booll && boolr {
-            return Result::Ok(json!(left.as_f64().unwrap() * right.as_f64().unwrap()));
+        ">=" => {
+            let booll = left.is_number();
+            let boolr = right.is_number();
+            if booll && boolr {
+                return Result::Ok(Value::Bool(left.as_f64() >= right.as_f64()));
+            }
         }
-    }
-    if op == "/" {
-        let booll = left.is_number();
-        let boolr = right.is_number();
-        if booll && boolr {
-            return Result::Ok(json!(left.as_f64().unwrap() / right.as_f64().unwrap()));
+        "<=" => {
+            let booll = left.is_number();
+            let boolr = right.is_number();
+            if booll && boolr {
+                return Result::Ok(Value::Bool(left.as_f64() <= right.as_f64()));
+            }
         }
-    }
-    if op == "%" {
-        let booll = left.is_number();
-        let boolr = right.is_number();
-        if booll && boolr {
-            let l = left.as_f64().unwrap();
-            let r = right.as_f64().unwrap();
-            let result = l % r;
-            return Result::Ok(json!(result));
+        ">" => {
+            let booll = left.is_number();
+            let boolr = right.is_number();
+            if booll && boolr {
+                return Result::Ok(Value::Bool(left.as_f64() > right.as_f64()));
+            }
         }
-    }
-    if op == "^" {
-        let booll = left.is_i64();
-        let boolr = right.is_i64();
-        if booll == false || boolr == false {
-            return Result::Err(rbatis_core::Error::from(format!("[rbatis] only support 'int ** int'! express:{}{}{}", left, op, right)));
+        "<" => {
+            let booll = left.is_number();
+            let boolr = right.is_number();
+            if booll && boolr {
+                return Result::Ok(Value::Bool(left.as_f64() < right.as_f64()));
+            }
         }
-        if booll && boolr {
-            let l = left.as_i64().unwrap();
-            let r = right.as_i64().unwrap();
-            let result = l ^ r;
-            return Result::Ok(json!(result));
+        "*" => {
+            let booll = left.is_number();
+            let boolr = right.is_number();
+            if booll && boolr {
+                return Result::Ok(json!(left.as_f64().unwrap() * right.as_f64().unwrap()));
+            }
         }
-    }
-    if op == "**" {
-        let booll = left.is_number();
-        let boolr = right.is_u64();
-        if boolr == false {
-            return Result::Err(rbatis_core::Error::from(format!("[rbatis] only support 'number ** uint'! express:{}{}{}", left, op, right)));
+        "/" => {
+            let booll = left.is_number();
+            let boolr = right.is_number();
+            if booll && boolr {
+                return Result::Ok(json!(left.as_f64().unwrap() / right.as_f64().unwrap()));
+            }
         }
-        if booll && boolr {
-            let left_v = left.as_i64().unwrap() as f64;
-            let right_v = right.as_i64().unwrap();
-            return Result::Ok(json!(left_v.powi(right_v as i32)));
+        "%" => {
+            let booll = left.is_number();
+            let boolr = right.is_number();
+            if booll && boolr {
+                let l = left.as_f64().unwrap();
+                let r = right.as_f64().unwrap();
+                let result = l % r;
+                return Result::Ok(json!(result));
+            }
         }
-    }
-    if op == "+" {
-        if left.is_null() && right.is_number() {
-            return Result::Ok(right.clone());
+        "^" => {
+            let booll = left.is_i64();
+            let boolr = right.is_i64();
+            if booll == false || boolr == false {
+                return Result::Err(rbatis_core::Error::from(format!("[rbatis] only support 'int ** int'! express:{}{}{}", left, op, right)));
+            }
+            if booll && boolr {
+                let l = left.as_i64().unwrap();
+                let r = right.as_i64().unwrap();
+                let result = l ^ r;
+                return Result::Ok(json!(result));
+            }
         }
-        if right.is_null() && left.is_number() {
-            return Result::Ok(left.clone());
+        "**" => {
+            let booll = left.is_number();
+            let boolr = right.is_u64();
+            if boolr == false {
+                return Result::Err(rbatis_core::Error::from(format!("[rbatis] only support 'number ** uint'! express:{}{}{}", left, op, right)));
+            }
+            if booll && boolr {
+                let left_v = left.as_i64().unwrap() as f64;
+                let right_v = right.as_i64().unwrap();
+                return Result::Ok(json!(left_v.powi(right_v as i32)));
+            }
         }
-        if left.is_number() && right.is_number() {
-            return Result::Ok(json!(left.as_f64().unwrap() + right.as_f64().unwrap()));
-        } else if left.is_string() && right.is_string() {
-            return Result::Ok(Value::from(left.as_str().unwrap().to_owned() + right.as_str().unwrap()));
-        } else {
-            return Result::Err(rbatis_core::Error::from("[rbatis] un support diffrent type '+' opt"));
+        "+" => {
+            if left.is_null() && right.is_number() {
+                return Result::Ok(right.clone());
+            }
+            if right.is_null() && left.is_number() {
+                return Result::Ok(left.clone());
+            }
+            if left.is_number() && right.is_number() {
+                return Result::Ok(json!(left.as_f64().unwrap() + right.as_f64().unwrap()));
+            } else if left.is_string() && right.is_string() {
+                return Result::Ok(Value::from(left.as_str().unwrap().to_owned() + right.as_str().unwrap()));
+            } else {
+                return Result::Err(rbatis_core::Error::from("[rbatis] un support diffrent type '+' opt"));
+            }
         }
-    }
-    if op == "-" {
-        if left.is_null() && right.is_number() {
-            return Result::Ok(json!(0.0 - right.as_f64().unwrap()));
+        "-" => {
+            if left.is_null() && right.is_number() {
+                return Result::Ok(json!(0.0 - right.as_f64().unwrap()));
+            }
+            if right.is_null() && left.is_number() {
+                return Result::Ok(left.clone());
+            }
+            if left.is_number() && right.is_number() {
+                return Result::Ok(json!(left.as_f64().unwrap() - right.as_f64().unwrap()));
+            }
         }
-        if right.is_null() && left.is_number() {
-            return Result::Ok(left.clone());
-        }
-        if left.is_number() && right.is_number() {
-            return Result::Ok(json!(left.as_f64().unwrap() - right.as_f64().unwrap()));
-        }
+        _ => {}
     }
     return Result::Err(rbatis_core::Error::from(format!("[rbatis] eval error express:{} {} {}", left, op, right)));
 }
