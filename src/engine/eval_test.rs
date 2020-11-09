@@ -84,6 +84,11 @@ mod test {
         assert_eq!(exec_expr(&arg, "-1 == a*-1 "), json!(true));
         assert_eq!(exec_expr(&arg, "0-1 + a*0-1 "), json!(-2.0));
         assert_eq!(exec_expr(&arg, "2 ** 3"), json!(8.0));
+        assert_eq!(exec_expr(&arg, "0-1 + -1*0-1 "), json!(-2.0));
+        assert_eq!(exec_expr(&arg, "1-"), json!(1));
+        assert_eq!(exec_expr(&arg, "-1"), json!(-1.0));
+        assert_eq!(exec_expr(&arg, "1- -1"), json!(0.0));
+        assert_eq!(exec_expr(&arg, "1-2 -1+"), json!(-2.0));
     }
 
 
