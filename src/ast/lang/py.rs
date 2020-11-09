@@ -183,12 +183,12 @@ impl Py {
                     test: trim_x.to_string(),
                 }));
             } else if trim_x.starts_with("for ") {
-                if !trim_x.contains(" in ") {
+                if !trim_x.contains("in ") {
                     return Err(rbatis_core::Error::from("[rbatis] parser express fail:".to_string() + x));
                 }
                 trim_x = trim_x["for ".len()..].trim();
-                let in_index = trim_x.find(" in ").unwrap();
-                let col = trim_x[in_index + " in ".len()..].trim();
+                let in_index = trim_x.find("in ").unwrap();
+                let col = trim_x[in_index + "in ".len()..].trim();
                 let mut item = trim_x[..in_index].trim();
                 let mut index = "";
                 if item.contains(",") {
