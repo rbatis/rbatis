@@ -126,7 +126,7 @@ pub fn eval(left: &Value,
             return Result::Ok(json!(left.as_f64().unwrap() - right.as_f64().unwrap()));
         }
     }
-    return Result::Err(rbatis_core::Error::from(format!("[rbatis] eval un support express:{} {} {}", left, op, right)));
+    return Result::Err(rbatis_core::Error::from(format!("[rbatis] eval error express:{} {} {}", left, op, right)));
 }
 
 
