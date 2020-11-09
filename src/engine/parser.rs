@@ -20,31 +20,31 @@ pub fn parse(express: &str, opt_map: &OptMap) -> Result<Node, rbatis_core::Error
                 panic!("[rbatis] py parser find not support opt: {} ,in express: {}", &item, &express);
             }
         }
-        nodes.push(Box::new(node));
+        nodes.push(node);
     }
     fix_null_items(&mut nodes);
     for item in opt_map.priority_array() {
         find_replace_opt(opt_map, &express, &item, &mut nodes);
     }
     if nodes.len() > 0 {
-        return Result::Ok(nodes[0].deref().clone());
+        return Result::Ok(nodes[0].to_owned());
     } else {
         return Result::Err(rbatis_core::Error::from("[rbatis] parser express fail".to_string()));
     }
 }
 
 
-fn fix_null_items(node_arg: &mut Vec<Box<Node>>) {
+fn fix_null_items(node_arg: &mut Vec<Node>) {
     let mut len = node_arg.len();
     if len == 0 {
         return;
     }
     if node_arg.get(0).unwrap().node_type() == NOpt {
-        node_arg.insert(0, Box::new(Node::new_null()));
+        node_arg.insert(0, Node::new_null());
         len = node_arg.len();
     }
     if len != 0 && node_arg.get(len - 1).unwrap().node_type() == NOpt {
-        node_arg.push(Box::new(Node::new_null()));
+        node_arg.push(Node::new_null());
         len = node_arg.len();
     }
     let index = 1;
@@ -53,7 +53,7 @@ fn fix_null_items(node_arg: &mut Vec<Box<Node>>) {
         let last = node_arg.get(last_index).unwrap();
         let current = node_arg.get(index).unwrap();
         if current.node_type() == NOpt && last.node_type() == NOpt {
-            node_arg.insert(index, Box::new(Node::new_null()));
+            node_arg.insert(index, Node::new_null());
             fix_null_items(node_arg);
             return;
         }
@@ -61,8 +61,7 @@ fn fix_null_items(node_arg: &mut Vec<Box<Node>>) {
     return;
 }
 
-fn find_replace_opt(opt_map: &OptMap, express: &String, operator: &str, node_arg: &mut Vec<Box<Node>>) {
-    //let nodes=vec![];
+fn find_replace_opt(opt_map: &OptMap, express: &String, operator: &str, node_arg: &mut Vec<Node>) {
     let node_arg_len = node_arg.len();
     if node_arg_len == 1 {
         return;
@@ -79,7 +78,7 @@ fn find_replace_opt(opt_map: &OptMap, express: &String, operator: &str, node_arg
             node_arg.remove(right_index);
             node_arg.remove(index);
             node_arg.remove(left_index);
-            node_arg.insert(left_index, Box::new(binary_node));
+            node_arg.insert(left_index, binary_node);
             if have_opt(node_arg) {
                 find_replace_opt(opt_map, express, operator, node_arg);
                 return;
@@ -88,7 +87,7 @@ fn find_replace_opt(opt_map: &OptMap, express: &String, operator: &str, node_arg
     }
 }
 
-fn have_opt(node_arg: &Vec<Box<Node>>) -> bool {
+fn have_opt(node_arg: &Vec<Node>) -> bool {
     for item in node_arg {
         if item.node_type() as i32 == NOpt as i32 {
             return true;
