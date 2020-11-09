@@ -71,15 +71,15 @@ fn find_replace_opt(opt_map: &OptMap, express: &String, operator: &str, node_arg
         let item = node_arg.get(index).unwrap();
         let item_type = item.node_type();
         let left_index = index - 1;
-        let right_index = (index + 1) as usize;
+        let right_index = index + 1;
         if item_type == NOpt && operator == item.opt().unwrap() {
-            let left = node_arg[left_index as usize].clone();
+            let left = node_arg[left_index].clone();
             let right = node_arg[right_index].clone();
             let binary_node = Node::new_binary(left, right, item.opt().unwrap());
             node_arg.remove(right_index);
-            node_arg.remove(index as usize);
-            node_arg.remove(left_index as usize);
-            node_arg.insert(left_index as usize, Box::new(binary_node));
+            node_arg.remove(index);
+            node_arg.remove(left_index);
+            node_arg.insert(left_index, Box::new(binary_node));
             if have_opt(node_arg) {
                 find_replace_opt(opt_map, express, operator, node_arg);
                 return;
