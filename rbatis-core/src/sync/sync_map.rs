@@ -179,8 +179,8 @@ mod test {
     use std::sync::Arc;
     use std::ops::Deref;
     use crate::sync::sync_map::SyncMap;
-    use std::time::SystemTime;
-    use chrono::Local;
+    use std::time::Instant;
+    use std::time::Duration;
 
 
     #[test]
@@ -230,12 +230,11 @@ mod test {
             drop(s);
 
             let total = 100000;
-            let now=Local::now().timestamp_millis();
+            let now=Instant::now();
             for current in 0..total{
                 m.get(&1).await;
                 if current == total - 1 {
-                    let end = Local::now().timestamp_millis();
-                    print_use_time(total,now as i64,end as i64);
+                    time(total,now.elapsed());
                     break;
                 }
             }
@@ -244,9 +243,7 @@ mod test {
         });
     }
 
-    fn print_use_time(total: i32, start: i64, end: i64) {
-        let mut time = (end - start) as f64;
-        time = time / 1000.0;
-        println!("use Time: {} s,each:{} nano/op", time, time * 1000000000.0 / (total as f64));
+    fn time(total: u64,time:Duration) {
+        println!("use Time: {:?} ,each:{} ns/op", &time, time.as_nanos() / (total as u128));
     }
 }
