@@ -278,10 +278,10 @@ impl Wrapper {
             return self;
         }
         let mut index = 0;
-        self.sql = self.sql.trim_end_matches(" WHERE ")
-            .trim_end_matches(" AND ")
-            .trim_end_matches(" OR ").to_string();
-        self.sql.push_str(" ORDER BY ");
+        self.sql = self.sql.trim_end_matches("WHERE")
+            .trim_end_matches("AND")
+            .trim_end_matches("OR").to_string();
+        self.sql.push_str("ORDER BY");
         for x in columns {
             if is_asc {
                 self.sql.push_str(format!("{} ASC", x).as_str());
