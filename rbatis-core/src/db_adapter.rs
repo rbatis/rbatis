@@ -249,7 +249,7 @@ impl DBPool {
                     return Err(crate::Error::from(conn.err().unwrap().to_string()));
                 }
                 return Ok(DBPoolConn {
-                    driver_type: DriverType::Sqlite,
+                    driver_type: DriverType::Mssql,
                     mysql: None,
                     postgres: None,
                     sqlite: None,
