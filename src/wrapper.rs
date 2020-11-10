@@ -278,10 +278,10 @@ impl Wrapper {
             return self;
         }
         let mut index = 0;
-        self.sql = self.sql.trim_end_matches("WHERE")
+        self.sql = self.sql.trim().trim_end_matches("WHERE")
             .trim_end_matches("AND")
             .trim_end_matches("OR").to_string();
-        self.sql.push_str("ORDER BY");
+        self.sql.push_str(" ORDER BY");
         for x in columns {
             if is_asc {
                 self.sql.push_str(format!("{} ASC", x).as_str());
@@ -302,9 +302,9 @@ impl Wrapper {
             return self;
         }
         let mut index = 0;
-        self.sql = self.sql.trim_end_matches(" WHERE ")
-            .trim_end_matches(" AND ")
-            .trim_end_matches(" OR ").to_string();
+        self.sql = self.sql.trim().trim_end_matches("WHERE")
+            .trim_end_matches("AND")
+            .trim_end_matches("OR").to_string();
         self.sql.push_str(" GROUP BY ");
         for x in columns {
             self.sql.push_str(x);
@@ -514,21 +514,15 @@ impl Wrapper {
     }
 
     pub fn trim_and(&mut self) -> &mut Self {
-        self.sql = self.sql
-            .trim_start_matches(" AND ")
-            .trim_end_matches(" AND ")
-            .trim_start_matches("AND ")
-            .trim_end_matches(" AND")
+        self.sql = self.sql.trim()
+            .trim_start_matches("AND")
             .to_string();
         self
     }
 
     pub fn trim_or(&mut self) -> &mut Self {
-        self.sql = self.sql.
-            trim_start_matches(" OR ")
-            .trim_end_matches(" OR ")
-            .trim_start_matches("OR ")
-            .trim_end_matches(" OR")
+        self.sql = self.sql.trim()
+            .trim_start_matches("OR")
             .to_string();
         self
     }
