@@ -281,7 +281,7 @@ impl Wrapper {
         self.sql = self.sql.trim().trim_end_matches("WHERE")
             .trim_end_matches("AND")
             .trim_end_matches("OR").to_string();
-        self.sql.push_str(" ORDER BY");
+        self.sql.push_str(" ORDER BY ");
         for x in columns {
             if is_asc {
                 self.sql.push_str(format!("{} ASC", x).as_str());
@@ -302,7 +302,8 @@ impl Wrapper {
             return self;
         }
         let mut index = 0;
-        self.sql = self.sql.trim().trim_end_matches("WHERE")
+        self.sql = self.sql.trim()
+            .trim_end_matches("WHERE")
             .trim_end_matches("AND")
             .trim_end_matches("OR").to_string();
         self.sql.push_str(" GROUP BY ");
@@ -556,6 +557,17 @@ mod test {
 
     use crate::wrapper::{Case, Wrapper};
     use crate::utils::bencher::QPS;
+
+
+    #[test]
+    fn test_trim(){
+        let mut w=Wrapper::new(&DriverType::Mysql);
+        w.push_sql("WHERE ");
+        w.order_by(true,&["id"]);
+        println!("sql:{:?}", w.sql.as_str());
+        println!("arg:{:?}", w.args.clone());
+        assert_eq!("ORDER BY id ASC",w.sql.as_str().trim());
+    }
 
     #[test]
     fn test_select() {
