@@ -55,6 +55,9 @@ pub fn eval(left: &Value,
             let booll = left.is_number();
             let boolr = right.is_number();
             if booll && boolr {
+                if left.is_i64() && right.is_i64(){
+                    return Result::Ok(json!(left.as_i64().unwrap() * right.as_i64().unwrap()));
+                }
                 return Result::Ok(json!(left.as_f64().unwrap() * right.as_f64().unwrap()));
             }
         }
@@ -62,6 +65,9 @@ pub fn eval(left: &Value,
             let booll = left.is_number();
             let boolr = right.is_number();
             if booll && boolr {
+                if left.is_i64() && right.is_i64(){
+                    return Result::Ok(json!(left.as_i64().unwrap() / right.as_i64().unwrap()));
+                }
                 return Result::Ok(json!(left.as_f64().unwrap() / right.as_f64().unwrap()));
             }
         }
@@ -69,6 +75,9 @@ pub fn eval(left: &Value,
             let booll = left.is_number();
             let boolr = right.is_number();
             if booll && boolr {
+                if left.is_i64() && right.is_i64(){
+                    return Result::Ok(json!(left.as_i64().unwrap() % right.as_i64().unwrap()));
+                }
                 let l = left.as_f64().unwrap();
                 let r = right.as_f64().unwrap();
                 let result = l % r;
@@ -82,6 +91,9 @@ pub fn eval(left: &Value,
                 return Result::Err(rbatis_core::Error::from(format!("[rbatis] only support 'int ** int'! express:{}{}{}", left, op, right)));
             }
             if booll && boolr {
+                if left.is_i64() && right.is_i64(){
+                    return Result::Ok(json!(left.as_i64().unwrap() ^ right.as_i64().unwrap()));
+                }
                 let l = left.as_i64().unwrap();
                 let r = right.as_i64().unwrap();
                 let result = l ^ r;
@@ -108,6 +120,9 @@ pub fn eval(left: &Value,
                 return Result::Ok(left.clone());
             }
             if left.is_number() && right.is_number() {
+                if left.is_i64() && right.is_i64(){
+                    return Result::Ok(json!(left.as_i64().unwrap() + right.as_i64().unwrap()));
+                }
                 return Result::Ok(json!(left.as_f64().unwrap() + right.as_f64().unwrap()));
             } else if left.is_string() && right.is_string() {
                 return Result::Ok(Value::from(left.as_str().unwrap().to_owned() + right.as_str().unwrap()));
@@ -123,6 +138,9 @@ pub fn eval(left: &Value,
                 return Result::Ok(left.clone());
             }
             if left.is_number() && right.is_number() {
+                if left.is_i64() && right.is_i64(){
+                    return Result::Ok(json!(left.as_i64().unwrap() - right.as_i64().unwrap()));
+                }
                 return Result::Ok(json!(left.as_f64().unwrap() - right.as_f64().unwrap()));
             }
         }

@@ -88,6 +88,9 @@ impl Py {
                     let parserd = Py::parse(child_str.as_str())?;
                     if !parserd.is_empty() {
                         match last {
+                            NodeType::NBind(node) => {
+
+                            }
                             NodeType::NTrim(node) => {
                                 node.childs = parserd;
                             }
@@ -241,9 +244,9 @@ impl Py {
                 }));
             } else if trim_x.starts_with("bind ") {
                 trim_x = trim_x["bind ".len()..].trim();
-                let name_value: Vec<&str> = trim_x.split(",").collect();
+                let name_value: Vec<&str> = trim_x.split("=").collect();
                 if name_value.len() != 2 {
-                    return Err(rbatis_core::Error::from("[rbatis] parser express fail:".to_string() + x));
+                    return Err(rbatis_core::Error::from("[rbatis] parser bind express fail:".to_string() + x));
                 }
                 return Ok(NodeType::NBind(BindNode {
                     name: name_value[0].to_owned(),
@@ -407,5 +410,28 @@ mod test {
         let r = crate::ast::node::node::do_child_nodes(&DriverType::Mysql, &pys, &mut env, &mut engine, &mut arg_array).unwrap();
         println!("result sql:{}", r.clone());
         println!("arg array:{:?}", arg_array.clone());
+    }
+
+    #[test]
+    fn bind_test(){
+        let mut env = json!({
+        "name": "1",
+        "age": 27,
+        "del":1,
+        "ids":[1,2,3]
+    });
+
+        let s = "
+                       bind name=1+1:
+                       select ${name}
+                       ";
+        let pys = Py::parse(s).unwrap();
+        println!("{:#?}", pys);
+
+        let mut arg_array = vec![];
+        let mut engine = RbatisEngine::new();
+        let r = crate::ast::node::node::do_child_nodes(&DriverType::Mysql, &pys, &mut env, &mut engine, &mut arg_array).unwrap();
+        println!("result: {}", &r);
+        println!("arg: {:?}", arg_array.clone());
     }
 }

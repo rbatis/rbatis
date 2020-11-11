@@ -54,7 +54,15 @@ impl RbatisAST for StringNode {
             }
         }
         for (item, value) in &self.express_map_no_convert {
-            result = result.replace(value, env.get(item).unwrap_or(&Value::String(String::new())).as_str().unwrap_or(""));
+            let v= env.get(item);
+            match v{
+                Some(v)=>{
+                    result = result.replace(value, &v.to_string());
+                }
+                _=>{
+                    result = result.replace(value, "");
+                }
+            }
         }
         return Result::Ok(result);
     }
