@@ -54,12 +54,16 @@ impl RbatisAST for StringNode {
             }
         }
         for (item, value) in &self.express_map_no_convert {
-            let v= env.get(item);
-            match v{
-                Some(v)=>{
-                    result = result.replace(value, &v.as_str().unwrap());
+            let v = env.get(item);
+            match v {
+                Some(v) => {
+                    if v.is_string() {
+                        result = result.replace(value, &v.as_str().unwrap());
+                    } else {
+                        result = result.replace(value, &v.to_string());
+                    }
                 }
-                _=>{
+                _ => {
                     result = result.replace(value, "");
                 }
             }
