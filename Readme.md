@@ -44,8 +44,8 @@
 # add this library,and cargo install
 
 # json (required)
-serde = { version = "1.0", features = ["derive"] }
-serde_json = "1.0"
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"
 
 # Date time (required)
 chrono = { version = "0.4", features = ["serde"] }
