@@ -59,7 +59,7 @@ impl Py {
     /// 解析py语法
     pub fn parse(arg: &str) -> Result<Vec<NodeType>, rbatis_core::Error> {
         let line_space_map = Py::create_line_space_map(arg);
-        let mut pys = vec![];
+        let mut main_node = vec![];
         let ls = arg.lines();
         let mut skip_line = -1;
         let mut space = -1;
@@ -83,8 +83,8 @@ impl Py {
                 if skip != -1 {
                     skip_line = skip;
                 }
-                if !child_str.is_empty() && pys.last_mut().is_some() {
-                    let last: &mut NodeType = pys.last_mut().unwrap();
+                if !child_str.is_empty() && main_node.last_mut().is_some() {
+                    let last: &mut NodeType = main_node.last_mut().unwrap();
                     let parserd = Py::parse(child_str.as_str())?;
                     if !parserd.is_empty() {
                         match last {
@@ -115,22 +115,19 @@ impl Py {
                             NodeType::NWhere(node) => {
                                 node.childs = parserd;
                             }
-                            NodeType::NSet(node) => {
-                                node.childs = parserd;
-                            }
                             NodeType::NWhere(node) => {
                                 node.childs = parserd;
                             }
                             NodeType::NChoose(node) => {
                                 for x in &parserd {
                                     match x {
-                                        NodeType::NWhen(wnode) => {
+                                        NodeType::NWhen(_) => {
                                             if node.when_nodes.is_none() {
                                                 node.when_nodes = Some(vec![]);
                                             }
                                             node.when_nodes.as_mut().unwrap().push(x.clone());
                                         }
-                                        NodeType::NOtherwise(onode) => {
+                                        NodeType::NOtherwise(_) => {
                                             node.otherwise_node = Some(Box::new(x.clone()));
                                         }
                                         _ => {
@@ -143,7 +140,7 @@ impl Py {
                                 for x in &parserd {
                                     match x {
                                         parserd => {
-                                            pys.push(parserd.clone());
+                                            main_node.push(parserd.clone());
                                         }
                                     }
                                 }
@@ -165,11 +162,11 @@ impl Py {
                     //do nothing
                 }
                 _ => {
-                    pys.push(node);
+                    main_node.push(node);
                 }
             }
         }
-        return Ok(pys);
+        return Ok(main_node);
     }
 
     fn parse_node(x: &str, space: usize) -> Result<NodeType, rbatis_core::Error> {
