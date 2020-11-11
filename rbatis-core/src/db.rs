@@ -1,8 +1,8 @@
 use std::time::Duration;
 
+use chrono::NaiveDateTime;
 use serde::{Deserialize, Serialize};
 use serde::de::DeserializeOwned;
-use chrono::NaiveDateTime;
 
 #[derive(Debug, Clone, Copy)]
 pub struct PoolOptions {
@@ -49,4 +49,17 @@ pub enum DriverType {
     Postgres = 2,
     Sqlite = 3,
     Mssql = 4,
+}
+
+impl DriverType {
+    pub fn is_number_type(&self) -> bool {
+        match self {
+            DriverType::Postgres => {
+                return true;
+            }
+            _ => {
+                return false;
+            }
+        }
+    }
 }

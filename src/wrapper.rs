@@ -90,8 +90,13 @@ impl Wrapper {
     pub fn push<T>(&mut self, sql: &str, args: &[T]) -> &mut Self
         where T: Serialize {
         let mut new_sql = sql.to_string();
-        if self.driver_type.eq(&DriverType::Postgres) {
+        if self.driver_type.is_number_type() {
+            let self_arg_len=self.args.len();
             for index in 0..args.len() {
+                let str = self.driver_type.stmt_convert(index);
+                new_sql = new_sql.replace(str.as_str(), self.driver_type.stmt_convert(index + args.len()).as_str());
+            }
+            for index in args.len()..self_arg_len {
                 let str = self.driver_type.stmt_convert(index);
                 new_sql = new_sql.replace(str.as_str(), self.driver_type.stmt_convert(index + args.len()).as_str());
             }
@@ -687,15 +692,19 @@ mod test {
 
     #[test]
     fn test_push_wrapper() {
-        let mut w1 = Wrapper::new(&DriverType::Mysql);
+        let mut w1 = Wrapper::new(&DriverType::Postgres);
         let mut w2 = w1.clone();
 
         let w2 = w1
-            .eq("b", "2")
+            .eq("b", "b")
+            .eq("b1", "b1")
+            .eq("b2", "b2")
             .and()
-            .push_wrapper(&w2.push_sql("(").eq("a", "1").push_sql(")").check().unwrap())
+            .push_wrapper(&w2.push_sql("(").eq("a", "a").push_sql(")").check().unwrap())
             .check().unwrap();
         println!("sql:{:?}", w2.sql.as_str());
         println!("arg:{:?}", w2.args.clone());
+        assert_eq!(w2.sql.contains("b = $1"),true);
+        assert_eq!(w2.sql.contains("a = $4"),true);
     }
 }
