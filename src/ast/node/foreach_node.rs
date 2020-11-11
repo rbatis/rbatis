@@ -43,8 +43,8 @@ impl RbatisAST for ForEachNode {
                 index = index + 1;
                 //build temp arg
                 let mut obj_map = serde_json::Map::new();
-                obj_map.insert("item".to_string(), item.clone());
-                obj_map.insert("index".to_string(), json!(index));
+                obj_map.insert(self.item.to_string(), item.clone());
+                obj_map.insert(self.index.to_string(), json!(index));
                 let mut temp_arg: Value = Value::Object(obj_map);
                 let item_result = do_child_nodes(convert, &self.childs, &mut temp_arg, engine, arg_array)?;
                 result = result + item_result.as_str();
@@ -64,8 +64,8 @@ impl RbatisAST for ForEachNode {
                 index = index + 1;
                 //build temp arg
                 let mut obj_map = serde_json::Map::new();
-                obj_map.insert("item".to_string(), item.clone());
-                obj_map.insert("index".to_string(), json!(key));
+                obj_map.insert(self.item.to_string(), item.clone());
+                obj_map.insert(self.index.to_string(), json!(key));
                 let mut temp_arg: Value = Value::Object(obj_map);
                 let item_result = do_child_nodes(convert, &self.childs, &mut temp_arg, engine, arg_array)?;
                 result = result + item_result.as_str();

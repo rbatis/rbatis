@@ -14,6 +14,7 @@ mod test {
     use bigdecimal_::BigDecimal;
     use rbatis_core::value::DateTimeNow;
     use fast_log::filter::{ModuleFilter};
+    use rbatis_core::db_adapter::DBExecResult;
 
     #[derive(CRUDEnable, Serialize, Deserialize, Clone, Debug)]
     pub struct BizActivity {
@@ -358,4 +359,44 @@ mod test {
         let a = sql_select_page(&PageRequest::new(1, 10), "test").await.unwrap();
         println!("{:?}", a);
     }
+
+    #[py_sql(RB, "insert into biz_activity
+                  (
+                  trim ',':
+                   for key,item in arg:
+                     ${key},
+                  ) VALUES (
+                  trim ',':
+                    for v in arg:
+                      #{v},
+                  )   ")]
+    fn py_insert(arg: &BizActivity) -> DBExecResult {}
+
+
+    #[async_std::test]
+    pub async fn test_py_insert() {
+        fast_log::init_log("requests.log",
+                           1000,
+                           log::Level::Info,
+                           Some(Box::new(ModuleFilter::new_exclude(vec!["sqlx".to_string()]))),
+                           true);
+        //use static ref
+        RB.link("mysql://root:123456@localhost:3306/test").await.unwrap();
+        let a = py_insert(&BizActivity{
+            id: Some("12312".to_string()),
+            name: Some("123".to_string()),
+            pc_link: None,
+            h5_link: None,
+            pc_banner_img: None,
+            h5_banner_img: None,
+            sort: Some("1".to_string()),
+            status: Some(1),
+            remark: None,
+            create_time: Some(NaiveDateTime::now()),
+            version: Some(BigDecimal::from(1)),
+            delete_flag: Some(1),
+        }).await.unwrap();
+        println!("{:?}", a);
+    }
+
 }
