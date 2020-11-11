@@ -17,6 +17,7 @@ use crate::ast::node::trim_node::TrimNode;
 use crate::ast::node::when_node::WhenNode;
 use crate::ast::node::where_node::WhereNode;
 use crate::engine::parser::parse;
+use rbatis_core::Error;
 
 lazy_static! {
   static ref PY_PARSER_MAP: RwLock<HashMap<String,Vec<NodeType>>> = RwLock::new(HashMap::new());
@@ -61,127 +62,47 @@ impl Py {
         let line_space_map = Py::create_line_space_map(arg);
         let mut main_node = vec![];
         let ls = arg.lines();
-        let mut skip_line = -1;
         let mut space = -1;
         let mut line = -1;
+        let mut skip = -1;
         for x in ls {
             line += 1;
-            if x.is_empty() {
+            if x.is_empty() || (skip != -1 && line <= skip) {
                 continue;
             }
-            if skip_line != -1 && line <= skip_line {
-                continue;
-            }
-
             let count_index = *line_space_map.get(&line).unwrap();
             if space == -1 {
                 space = count_index;
             }
-            if count_index > space {
-                let (child_str, skip) = Py::find_child_str(line, count_index, arg, &line_space_map);
-                //println!("child_str: {},{}",skip,child_str.replace("\n",""));
-                if skip != -1 {
-                    skip_line = skip;
-                }
-                if !child_str.is_empty() && main_node.last_mut().is_some() {
-                    let last: &mut NodeType = main_node.last_mut().unwrap();
-                    let parserd = Py::parse(child_str.as_str())?;
-                    if !parserd.is_empty() {
-                        match last {
-                            NodeType::NBind(node) => {
-
-                            }
-                            NodeType::NTrim(node) => {
-                                node.childs = parserd;
-                            }
-                            NodeType::NIf(node) => {
-                                node.childs = parserd;
-                            }
-                            NodeType::NForEach(node) => {
-                                node.childs = parserd;
-                            }
-                            NodeType::NOtherwise(node) => {
-                                node.childs = parserd;
-                            }
-                            NodeType::NWhen(node) => {
-                                node.childs = parserd;
-                            }
-                            NodeType::NInclude(node) => {
-                                node.childs = parserd;
-                            }
-                            NodeType::NSet(node) => {
-                                node.childs = parserd;
-                            }
-                            NodeType::NWhere(node) => {
-                                node.childs = parserd;
-                            }
-                            NodeType::NWhere(node) => {
-                                node.childs = parserd;
-                            }
-                            NodeType::NChoose(node) => {
-                                for x in &parserd {
-                                    match x {
-                                        NodeType::NWhen(_) => {
-                                            if node.when_nodes.is_none() {
-                                                node.when_nodes = Some(vec![]);
-                                            }
-                                            node.when_nodes.as_mut().unwrap().push(x.clone());
-                                        }
-                                        NodeType::NOtherwise(_) => {
-                                            node.otherwise_node = Some(Box::new(x.clone()));
-                                        }
-                                        _ => {
-                                            return Err(rbatis_core::Error::from("[rbatis] parser node fail,choose node' child must be when and otherwise nodes!: ".to_string() + child_str.as_str()));
-                                        }
-                                    }
-                                }
-                            }
-                            NodeType::NString(node) => {
-                                for x in &parserd {
-                                    match x {
-                                        parserd => {
-                                            main_node.push(parserd.clone());
-                                        }
-                                    }
-                                }
-                            }
-                            _ => {
-                                return Err(rbatis_core::Error::from("[rbatis] not support node  type in sql!: ".to_string() + child_str.as_str()));
-                            }
-                        }
-                    }
-                }
+            let (child_str, do_skip) = Py::find_child_str(line, count_index, arg, &line_space_map);
+            if do_skip != -1 && do_skip >= skip {
+                skip = do_skip;
             }
-            if skip_line != -1 && line <= skip_line {
-                continue;
+            let parserd;
+            if !child_str.is_empty() {
+                parserd = Py::parse(child_str.as_str())?;
+            } else {
+                parserd = vec![];
             }
-
-            let node = Py::parse_node(x, *line_space_map.get(&line).unwrap() as usize)?;
-            match node {
-                NodeType::Null => {
-                    //do nothing
-                }
-                _ => {
-                    main_node.push(node);
-                }
-            }
+            Py::parse_node(&mut main_node, x, *line_space_map.get(&line).unwrap() as usize, parserd)?;
         }
         return Ok(main_node);
     }
 
-    fn parse_node(x: &str, space: usize) -> Result<NodeType, rbatis_core::Error> {
+    fn parse_node(main_node: &mut Vec<NodeType>, x: &str, space: usize, childs: Vec<NodeType>) -> Result<(), rbatis_core::Error> {
         let mut trim_x = x.trim();
         if trim_x.starts_with("//") {
-            return Ok(NodeType::Null);
+            return Ok(());
         }
         if trim_x.ends_with(":") {
             trim_x = trim_x[0..trim_x.len() - 1].trim();
             if trim_x.starts_with("if ") {
                 trim_x = trim_x["if ".len()..].trim();
-                return Ok(NodeType::NIf(IfNode {
-                    childs: vec![],
+                main_node.push(NodeType::NIf(IfNode {
+                    childs: childs,
                     test: trim_x.to_string(),
                 }));
+                return Ok(());
             } else if trim_x.starts_with("for ") {
                 if !trim_x.contains("in ") {
                     return Err(rbatis_core::Error::from("[rbatis] parser express fail:".to_string() + x));
@@ -199,8 +120,8 @@ impl Py {
                     index = items[0];
                     item = items[1];
                 }
-                return Ok(NodeType::NForEach(ForEachNode {
-                    childs: vec![],
+                main_node.push(NodeType::NForEach(ForEachNode {
+                    childs: childs,
                     collection: col.to_string(),
                     index: index.to_string(),
                     item: item.to_string(),
@@ -208,70 +129,99 @@ impl Py {
                     close: "".to_string(),
                     separator: "".to_string(),
                 }));
+                return Ok(());
             } else if trim_x.starts_with("trim ") {
                 trim_x = trim_x["trim ".len()..].trim();
                 if trim_x.starts_with("'") && trim_x.ends_with("'") {
                     trim_x = trim_x[1..trim_x.len() - 1].trim();
-                    return Ok(NodeType::NTrim(TrimNode {
-                        childs: vec![],
+                    main_node.push(NodeType::NTrim(TrimNode {
+                        childs: childs,
                         prefix: "".to_string(),
                         suffix: "".to_string(),
                         suffix_overrides: trim_x.to_string(),
                         prefix_overrides: trim_x.to_string(),
                     }));
+                    return Ok(());
                 } else {
                     return Err(rbatis_core::Error::from(format!("[rbatis] express trim value must be string value, for example:  trim 'value',error express: {}", x)));
                 }
             } else if trim_x.starts_with("choose") {
                 trim_x = trim_x["choose".len()..].trim();
-                return Ok(NodeType::NChoose(ChooseNode {
+                let mut node = ChooseNode {
                     when_nodes: None,
                     otherwise_node: None,
-                }));
+                };
+                for x in &childs {
+                    match x {
+                        NodeType::NWhen(_) => {
+                            if node.when_nodes.is_none() {
+                                node.when_nodes = Some(vec![]);
+                            }
+                            node.when_nodes.as_mut().unwrap().push(x.clone());
+                        }
+                        NodeType::NOtherwise(_) => {
+                            node.otherwise_node = Some(Box::new(x.clone()));
+                        }
+                        _ => {
+                            return Err(rbatis_core::Error::from("[rbatis] parser node fail,choose node' child must be when and otherwise nodes!".to_string()));
+                        }
+                    }
+                }
+                main_node.push(NodeType::NChoose(node));
+                return Ok(());
             } else if trim_x.starts_with("otherwise") {
                 trim_x = trim_x["otherwise".len()..].trim();
-                return Ok(NodeType::NOtherwise(OtherwiseNode {
-                    childs: vec![],
+                main_node.push(NodeType::NOtherwise(OtherwiseNode {
+                    childs: childs,
                 }));
+                return Ok(());
             } else if trim_x.starts_with("when ") {
                 trim_x = trim_x["when ".len()..].trim();
-                return Ok(NodeType::NWhen(WhenNode {
-                    childs: vec![],
+                main_node.push(NodeType::NWhen(WhenNode {
+                    childs: childs,
                     test: trim_x.to_string(),
                 }));
+                return Ok(());
             } else if trim_x.starts_with("bind ") {
                 trim_x = trim_x["bind ".len()..].trim();
                 let name_value: Vec<&str> = trim_x.split("=").collect();
                 if name_value.len() != 2 {
                     return Err(rbatis_core::Error::from("[rbatis] parser bind express fail:".to_string() + x));
                 }
-                return Ok(NodeType::NBind(BindNode {
+                main_node.push(NodeType::NBind(BindNode {
                     name: name_value[0].to_owned(),
                     value: name_value[1].to_owned(),
                 }));
+                return Ok(());
             } else if trim_x.starts_with("set") {
                 trim_x = trim_x["set".len()..].trim();
-                return Ok(NodeType::NSet(SetNode {
-                    childs: vec![]
+                main_node.push(NodeType::NSet(SetNode {
+                    childs: childs
                 }));
+                return Ok(());
             } else if trim_x.starts_with("where") {
                 trim_x = trim_x["where".len()..].trim();
-                return Ok(NodeType::NWhere(WhereNode {
-                    childs: vec![]
+                main_node.push(NodeType::NWhere(WhereNode {
+                    childs: childs
                 }));
+                return Ok(());
             } else {
                 // unkonw tag
                 return Err(rbatis_core::Error::from("[rbatis] unknow tag: ".to_string() + x));
             }
         } else {
             //string,replace space to only one
-            let s_node;
+            let mut data = x.to_owned();
             if space <= 1 {
-                s_node = StringNode::new(x);
+                data = x.to_string();
             } else {
-                s_node = StringNode::new(x[(space - 1)..].as_ref());
+                data = x[(space - 1)..].to_string();
             }
-            return Ok(NodeType::NString(s_node));
+            main_node.push(NodeType::NString(StringNode::new(&data)));
+            for x in childs {
+                main_node.push(x);
+            }
+            return Ok(());
         }
     }
 
@@ -299,8 +249,9 @@ impl Py {
         let lines = arg.lines();
         for x in lines {
             line += 1;
-            if line >= line_index {
-                if *m.get(&line).unwrap() >= space_index {
+            if line > line_index {
+                let cached_space = *m.get(&line).unwrap();
+                if cached_space > space_index {
                     result = result + x + "\n";
                     skip_line = line;
                 } else {
@@ -409,8 +360,9 @@ mod test {
         println!("arg array:{:?}", arg_array.clone());
     }
 
+
     #[test]
-    fn bind_test(){
+    fn bind_test() {
         let mut env = json!({
         "name": "1",
         "age": 27,
@@ -419,9 +371,19 @@ mod test {
     });
 
         let s = "
-                       bind name=1+1:
+                       bind name=1+0:
+                       if 1==1:
+                              select 2
                        select ${name}
+                         select 3
+                           select 4
+                       (
+                       trim ',':
+                         for item in ids:
+                             ${item},
+                       )
                        ";
+
         let pys = Py::parse(s).unwrap();
         println!("{:#?}", pys);
 
@@ -430,5 +392,26 @@ mod test {
         let r = crate::ast::node::node::do_child_nodes(&DriverType::Mysql, &pys, &mut env, &mut engine, &mut arg_array).unwrap();
         println!("result: {}", &r);
         println!("arg: {:?}", arg_array.clone());
+    }
+
+    #[test]
+    fn test_find() {
+        let s = "
+                       bind name=1+0:
+                       if 1==1:
+                              select 2
+                       select ${name}
+                         select 3
+                           select 4
+                       ";
+        let line_space_map = Py::create_line_space_map(s);
+        println!("m:{:#?}", &line_space_map);
+        let (child_str, do_skip) = Py::find_child_str(4,
+                                                      "                       ".len() as i32,
+                                                      s,
+                                                      &line_space_map);
+
+        println!("child_str: \n{}", &child_str);
+        println!("skip: {}", do_skip);
     }
 }

@@ -57,7 +57,7 @@ impl RbatisAST for StringNode {
             let v= env.get(item);
             match v{
                 Some(v)=>{
-                    result = result.replace(value, &v.to_string());
+                    result = result.replace(value, &v.as_str().unwrap());
                 }
                 _=>{
                     result = result.replace(value, "");
