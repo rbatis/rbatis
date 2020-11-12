@@ -18,10 +18,10 @@ mod test {
 
     #[crud(
     IdType:String,
-    id_column_name:"id",
+    id_name:"id",
     table_name:"biz_activity",
     table_columns:"id,name,version,delete_flag")]
-    
+
     #[derive(Serialize, Deserialize, Clone, Debug)]
     pub struct BizActivity {
         pub id: Option<String>,

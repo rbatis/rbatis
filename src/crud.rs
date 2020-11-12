@@ -27,7 +27,7 @@ pub trait CRUDEnable: Send + Sync + Serialize + DeserializeOwned {
 
 
     ///table id column
-    fn id_column_name() -> String {
+    fn id_name() -> String {
         "id".to_string()
     }
 
@@ -291,7 +291,7 @@ impl CRUD for Rbatis {
         if self.logic_plugin.is_some() {
             sql = self.logic_plugin.as_ref().unwrap().create_remove_sql(&self.driver_type()?, T::table_name().as_str(), &T::table_columns(), format!(" WHERE id = {}", id).as_str())?;
         } else {
-            sql = format!("DELETE FROM {} WHERE {} = {}", T::table_name(), T::id_column_name(), id);
+            sql = format!("DELETE FROM {} WHERE {} = {}", T::table_name(), T::id_name(), id);
         }
         return Ok(self.exec_prepare(tx_id, sql.as_str(), &vec![]).await?.rows_affected);
     }
@@ -305,7 +305,7 @@ impl CRUD for Rbatis {
         if ids.is_empty() {
             return Ok(0);
         }
-        let w = Wrapper::new(&self.driver_type()?).and().in_array(&T::id_column_name(), &ids).check()?;
+        let w = Wrapper::new(&self.driver_type()?).and().in_array(&T::id_name(), &ids).check()?;
         return self.remove_by_wrapper::<T>(tx_id, &w).await;
     }
 
@@ -320,7 +320,7 @@ impl CRUD for Rbatis {
         let mut sets = String::new();
         for (column, v) in map {
             //filter id
-            if column.eq(&T::id_column_name()) {
+            if column.eq(&T::id_name()) {
                 continue;
             }
             //filter null
@@ -351,11 +351,11 @@ impl CRUD for Rbatis {
             return Err(rbatis_core::Error::from("[rbatis] update_by_id() arg must be an object/struct!"));
         }
         let map = map.as_object().unwrap();
-        let id = map.get(&T::id_column_name());
+        let id = map.get(&T::id_name());
         if id.is_none() {
             return Err(rbatis_core::Error::from("[rbatis] update_by_id() arg's id can no be none!"));
         }
-        self.update_by_wrapper(tx_id, arg, Wrapper::new(&self.driver_type()?).eq(&T::id_column_name(), id), false).await
+        self.update_by_wrapper(tx_id, arg, Wrapper::new(&self.driver_type()?).eq(&T::id_name(), id), false).await
     }
 
     async fn update_batch_by_id<T>(&self, tx_id: &str, args: &[T]) -> Result<u64> where T: CRUDEnable {
@@ -373,7 +373,7 @@ impl CRUD for Rbatis {
     }
 
     async fn fetch_by_id<T>(&self, tx_id: &str, id: &T::IdType) -> Result<T> where T: CRUDEnable {
-        let w = Wrapper::new(&self.driver_type()?).eq(&T::id_column_name(), id).check()?;
+        let w = Wrapper::new(&self.driver_type()?).eq(&T::id_name(), id).check()?;
         return self.fetch_by_wrapper(tx_id, &w).await;
     }
 
@@ -388,7 +388,7 @@ impl CRUD for Rbatis {
     }
 
     async fn list_by_ids<T>(&self, tx_id: &str, ids: &[T::IdType]) -> Result<Vec<T>> where T: CRUDEnable {
-        let w = Wrapper::new(&self.driver_type()?).in_array(&T::id_column_name(), ids).check()?;
+        let w = Wrapper::new(&self.driver_type()?).in_array(&T::id_name(), ids).check()?;
         return self.list_by_wrapper(tx_id, &w).await;
     }
 
