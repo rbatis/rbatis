@@ -111,7 +111,7 @@ fn to_snake_name(name: &String) -> String {
     return new_name;
 }
 
-
+/// impl the crud macro
 pub(crate) fn impl_crud(args: TokenStream, input: TokenStream) -> TokenStream {
     let input_clone: proc_macro2::TokenStream = input.clone().into();
     let ast = syn::parse(input).unwrap();

@@ -16,9 +16,9 @@ mod test {
     use fast_log::filter::{ModuleFilter};
     use rbatis_core::db_adapter::DBExecResult;
 
-    #[crud(
-    IdType:String,
+    #[crud_enable(
     id_name:"id",
+    IdType:String,
     table_name:"biz_activity",
     table_columns:"id,name,version,delete_flag")]
 

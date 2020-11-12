@@ -62,6 +62,6 @@ pub fn py_sql(args: TokenStream, func: TokenStream) -> TokenStream {
 }
 
 #[proc_macro_attribute]
-pub fn crud(args: TokenStream, input: TokenStream) -> TokenStream {
+pub fn crud_enable(args: TokenStream, input: TokenStream) -> TokenStream {
     crud_enable::impl_crud(args,input)
 }
