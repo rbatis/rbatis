@@ -66,7 +66,7 @@ pub trait CRUDEnable: Send + Sync + Serialize + DeserializeOwned {
             //if json decode fail,return '*'
             return " * ".to_string();
         }
-        let v = serde_json::to_value(&bean.unwrap()).unwrap_or(serde_json::Value::Null);
+        let v = json!(&bean.unwrap());
         if !v.is_object() {
             //if json decode fail,return '*'
             return " * ".to_string();
@@ -84,7 +84,7 @@ pub trait CRUDEnable: Send + Sync + Serialize + DeserializeOwned {
     /// make an Map<table_column,value>
     ///TODO macro driver auto create this methods
     fn make_column_value_map(&self, db_type: &DriverType) -> Result<serde_json::Map<String, Value>> {
-        let json = serde_json::to_value(self).unwrap_or(serde_json::Value::Null);
+        let json = json!(self);
         if json.eq(&serde_json::Value::Null) {
             return Err(Error::from("[rbaits] to_value_map() fail!"));
         }
@@ -346,7 +346,7 @@ impl CRUD for Rbatis {
     }
 
     async fn update_by_id<T>(&self, tx_id: &str, arg: &T) -> Result<u64> where T: CRUDEnable {
-        let map = serde_json::to_value(arg).unwrap();
+        let map = json!(arg);
         if !map.is_object() {
             return Err(rbatis_core::Error::from("[rbatis] update_by_id() arg must be an object/struct!"));
         }
