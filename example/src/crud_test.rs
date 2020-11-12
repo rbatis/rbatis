@@ -18,7 +18,7 @@ mod test {
 
     #[crud_enable(
     id_name:"id",
-    IdType:String,
+    id_type:String,
     table_name:"biz_activity",
     table_columns:"id,name,version,delete_flag")]
 
