@@ -16,7 +16,13 @@ mod test {
     use fast_log::filter::{ModuleFilter};
     use rbatis_core::db_adapter::DBExecResult;
 
-    #[derive(CRUDEnable, Serialize, Deserialize, Clone, Debug)]
+    #[crud(
+    IdType:String,
+    id_column_name:"id",
+    table_name:"biz_activity",
+    table_columns:"id,name,version,delete_flag")]
+    
+    #[derive(Serialize, Deserialize, Clone, Debug)]
     pub struct BizActivity {
         pub id: Option<String>,
         pub name: Option<String>,
@@ -371,6 +377,9 @@ mod test {
                       #{v},
                   )   ")]
     fn py_insert(arg: &BizActivity) -> DBExecResult {}
+
+
+
 
 
     #[async_std::test]
