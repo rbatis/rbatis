@@ -176,6 +176,9 @@ fn read_config(arg: &str) -> CrudEnableConfig {
     let mut map = HashMap::new();
     for item in keys {
         let item = item.trim().replace("\n", "");
+        if item.is_empty(){
+            continue;
+        }
         let kvs: Vec<&str> = item.split(":").collect();
         if kvs.len() != 2usize {
             panic!("[rbaits] crud_enable must be key:\"value\"");
