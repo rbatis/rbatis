@@ -16,12 +16,15 @@ mod test {
     use fast_log::filter::{ModuleFilter};
     use rbatis_core::db_adapter::DBExecResult;
 
-    #[crud_enable(
-    id_name:"id",
-    id_type:String,
-    table_name:"biz_activity",
-    table_columns:"id,name,version,delete_flag")]
 
+    ///Or another way to write it
+    // #[crud_enable(
+    //      id_name:id|
+    //      id_type:String|
+    //      table_name:biz_activity|
+    //      table_columns:id,name,version,delete_flag
+    // )]
+    #[crud_enable(table_name:biz_activity)]
     #[derive(Serialize, Deserialize, Clone, Debug)]
     pub struct BizActivity {
         pub id: Option<String>,

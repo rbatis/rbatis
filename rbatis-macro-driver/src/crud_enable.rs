@@ -5,16 +5,43 @@ use syn;
 use syn::ext::IdentExt;
 
 use crate::proc_macro::TokenStream;
+use std::collections::HashMap;
 
 ///impl CRUDEnable
-pub(crate) fn impl_macro(ast: &syn::DeriveInput) -> TokenStream {
+pub(crate) fn impl_crud_driver(ast: &syn::DeriveInput, arg_id_type: &str, arg_id_name: &str, arg_table_name: &str, arg_table_columns: &str) -> TokenStream {
     let name = &ast.ident;
-    let table_name = gen_table_name(&ast.ident);
-    let id_type = find_id_type_ident(&ast.data);
-    let fields = gen_fields(&ast.data);
+    let id_name;
+    if arg_id_name.is_empty() {
+        id_name = "id".to_token_stream();
+    } else {
+        id_name = arg_id_name.to_token_stream();
+    }
+    let id_type;
+    if arg_id_type.is_empty() {
+        id_type = find_id_type_ident(&ast.data).to_token_stream();
+    } else {
+        id_type = Ident::new(arg_id_type, Span::call_site()).to_token_stream();
+    }
+    let table_name;
+    if arg_table_name.is_empty() {
+        table_name = gen_table_name(&ast.ident).to_token_stream();
+    } else {
+        table_name = quote! {#arg_table_name};
+    }
+    let fields;
+    if arg_table_columns.is_empty() {
+        fields = gen_fields(&ast.data);
+    } else {
+        fields = quote! {#arg_table_columns.to_string()};
+    }
+
     let gen = quote! {
         impl CRUDEnable for #name {
             type IdType = #id_type;
+
+            fn id_name() -> String {
+                 #id_name.to_string()
+            }
 
             fn table_name() -> String {
                  #table_name.to_string()
@@ -111,11 +138,21 @@ fn to_snake_name(name: &String) -> String {
     return new_name;
 }
 
+#[derive(Debug)]
+pub struct CrudEnableConfig {
+    pub id_name: String,
+    pub id_type: String,
+    pub table_name: String,
+    pub table_columns: String,
+}
+
 /// impl the crud macro
 pub(crate) fn impl_crud(args: TokenStream, input: TokenStream) -> TokenStream {
+    let arg_str = args.to_string();
+    let config = read_config(&arg_str);
     let input_clone: proc_macro2::TokenStream = input.clone().into();
     let ast = syn::parse(input).unwrap();
-    let stream = impl_macro(&ast);
+    let stream = impl_crud_driver(&ast, &config.id_type, &config.id_name, &config.table_name, &config.table_columns);
     let s: proc_macro2::TokenStream = stream.into();
     let qt = quote! {
        #input_clone
@@ -123,8 +160,34 @@ pub(crate) fn impl_crud(args: TokenStream, input: TokenStream) -> TokenStream {
        #s
     };
     if !cfg!(feature = "no_print") {
-        println!("............gen impl crud:\n {}", qt);
-        println!("............gen impl crud end............");
+        println!("............gen impl crud_enable:\n {}", qt);
+        println!("............gen impl crud_enable end............");
     }
     qt.into()
+}
+
+///read config
+///     id_name:id|
+///     id_type:String|
+///     table_name:biz_activity|
+///     table_columns:id,name,version,delete_flag
+fn read_config(arg: &str) -> CrudEnableConfig {
+    let keys: Vec<&str> = arg.split("|").collect();
+    let mut map = HashMap::new();
+    for item in keys {
+        let item = item.trim().replace("\n", "");
+        let kvs: Vec<&str> = item.split(":").collect();
+        if kvs.len() != 2usize {
+            panic!("[rbaits] crud_enable must be key:\"value\"");
+        }
+        let key = kvs[0].trim();
+        let value = kvs[1].trim();
+        map.insert(key.to_string(), value.to_string());
+    }
+    return CrudEnableConfig {
+        id_name: map.get("id_name").unwrap_or(&"".to_string()).to_string(),
+        id_type: map.get("id_type").unwrap_or(&"".to_string()).to_string(),
+        table_name: map.get("table_name").unwrap_or(&"".to_string()).to_string(),
+        table_columns: map.get("table_columns").unwrap_or(&"".to_string()).to_string(),
+    };
 }
