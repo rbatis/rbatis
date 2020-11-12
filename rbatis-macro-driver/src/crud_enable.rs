@@ -110,3 +110,21 @@ fn to_snake_name(name: &String) -> String {
     }
     return new_name;
 }
+
+
+pub(crate) fn impl_crud(args: TokenStream, input: TokenStream) -> TokenStream {
+    let input_clone: proc_macro2::TokenStream = input.clone().into();
+    let ast = syn::parse(input).unwrap();
+    let stream = impl_macro(&ast);
+    let s: proc_macro2::TokenStream = stream.into();
+    let qt = quote! {
+       #input_clone
+
+       #s
+    };
+    if !cfg!(feature = "no_print") {
+        println!("............gen impl crud:\n {}", qt);
+        println!("............gen impl crud end............");
+    }
+    qt.into()
+}
