@@ -20,3 +20,4 @@ pub mod rbatis;
 pub mod sql;
 pub mod crud;
 pub mod wrapper;
+pub use rbatis_core as core;
