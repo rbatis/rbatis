@@ -1,6 +1,6 @@
 use std::collections::HashMap;
 
-use rbatis_core::Error;
+use crate::core::Error;
 
 use crate::ast::node::node_type::NodeType;
 

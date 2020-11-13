@@ -4,11 +4,11 @@ use serde::export::fmt::Display;
 use serde::Serialize;
 use serde_json::{Map, Value};
 
-use rbatis_core::convert::StmtConvert;
-use rbatis_core::db::DriverType;
-use rbatis_core::db_adapter::DBExecResult;
-use rbatis_core::Error;
-use rbatis_core::Result;
+use crate::core::convert::StmtConvert;
+use crate::core::db::DriverType;
+use crate::core::db_adapter::DBExecResult;
+use crate::core::Error;
+use crate::core::Result;
 
 use crate::plugin::logic_delete::LogicAction;
 use crate::plugin::page::{IPageRequest, Page};
@@ -132,7 +132,7 @@ pub trait CRUDEnable: Send + Sync + Serialize + DeserializeOwned {
 pub trait ColumnFormat: Send + Sync {
     ///column: table column
     ///value_sql: set column = value_sql
-    fn format(&self, driver_type: &DriverType, column: &str, value_sql: &mut String, value: &serde_json::Value) -> rbatis_core::Result<()>;
+    fn format(&self, driver_type: &DriverType, column: &str, value_sql: &mut String, value: &serde_json::Value) -> crate::core::Result<()>;
 }
 
 impl<T> CRUDEnable for Option<T> where T: CRUDEnable {
@@ -152,14 +152,14 @@ impl<T> CRUDEnable for Option<T> where T: CRUDEnable {
 
     fn make_column_value_map(&self, db_type: &DriverType) -> Result<serde_json::Map<String, Value>> {
         if self.is_none() {
-            return Err(rbatis_core::Error::from("[rbatis] can not make_column_value_map() for None value!"));
+            return Err(crate::core::Error::from("[rbatis] can not make_column_value_map() for None value!"));
         }
         T::make_column_value_map(self.as_ref().unwrap(), db_type)
     }
 
     fn make_value_sql_arg(&self, db_type: &DriverType, index: &mut usize) -> Result<(String, Vec<serde_json::Value>)> {
         if self.is_none() {
-            return Err(rbatis_core::Error::from("[rbatis] can not make_sql_arg() for None value!"));
+            return Err(crate::core::Error::from("[rbatis] can not make_sql_arg() for None value!"));
         }
         T::make_value_sql_arg(self.as_ref().unwrap(), db_type, index)
     }
@@ -348,12 +348,12 @@ impl CRUD for Rbatis {
     async fn update_by_id<T>(&self, tx_id: &str, arg: &T) -> Result<u64> where T: CRUDEnable {
         let map = json!(arg);
         if !map.is_object() {
-            return Err(rbatis_core::Error::from("[rbatis] update_by_id() arg must be an object/struct!"));
+            return Err(crate::core::Error::from("[rbatis] update_by_id() arg must be an object/struct!"));
         }
         let map = map.as_object().unwrap();
         let id = map.get(&T::id_name());
         if id.is_none() {
-            return Err(rbatis_core::Error::from("[rbatis] update_by_id() arg's id can no be none!"));
+            return Err(crate::core::Error::from("[rbatis] update_by_id() arg's id can no be none!"));
         }
         self.update_by_wrapper(tx_id, arg, Wrapper::new(&self.driver_type()?).eq(&T::id_name(), id), false).await
     }
@@ -427,7 +427,7 @@ mod test {
     use serde::Deserialize;
     use serde::Serialize;
 
-    use rbatis_core::Error;
+    use crate::core::Error;
 
     use crate::crud::{CRUD, CRUDEnable, Id, Ids};
     use crate::plugin::logic_delete::RbatisLogicDeletePlugin;

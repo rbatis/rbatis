@@ -1,7 +1,7 @@
 use serde_json::{json, Value};
 
-use rbatis_core::convert::StmtConvert;
-use rbatis_core::db::DriverType;
+use crate::core::convert::StmtConvert;
+use crate::core::db::DriverType;
 
 use crate::ast::ast::RbatisAST;
 use crate::ast::node::node::{create_deep, do_child_nodes, print_child, SqlNodePrint};
@@ -19,7 +19,7 @@ pub struct TrimNode {
 }
 
 impl RbatisAST for TrimNode {
-    fn eval(&self, convert: &impl StmtConvert, env: &mut Value, engine: &RbatisEngine, arg_array: &mut Vec<Value>) -> Result<String, rbatis_core::Error> {
+    fn eval(&self, convert: &impl StmtConvert, env: &mut Value, engine: &RbatisEngine, arg_array: &mut Vec<Value>) -> Result<String, crate::core::Error> {
         let result_value = do_child_nodes(convert, &self.childs, env, engine, arg_array)?;
         let mut result = result_value.as_str().trim();
         if !self.prefix_overrides.is_empty() {

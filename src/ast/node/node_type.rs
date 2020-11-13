@@ -1,6 +1,6 @@
 use serde_json::{json, Value};
 
-use rbatis_core::convert::StmtConvert;
+use crate::core::convert::StmtConvert;
 
 use crate::ast::ast::RbatisAST;
 use crate::ast::node::bind_node::BindNode;
@@ -125,7 +125,7 @@ impl NodeType {
 }
 
 impl<'a> RbatisAST for NodeType {
-    fn eval(&self, convert: &impl StmtConvert, env: &mut Value, engine: &RbatisEngine, arg_array: &mut Vec<Value>) -> Result<String, rbatis_core::Error> {
+    fn eval(&self, convert: &impl StmtConvert, env: &mut Value, engine: &RbatisEngine, arg_array: &mut Vec<Value>) -> Result<String, crate::core::Error> {
         match self {
             NodeType::NResultMapIdNode(node) => return node.eval(convert, env, engine, arg_array),
             NodeType::NResultMapResultNode(node) => return node.eval(convert, env, engine, arg_array),

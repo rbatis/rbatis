@@ -27,7 +27,7 @@ impl RbatisEngine {
     }
 
     ///eval express with arg value,if cache have value it will no run parser expr.
-    pub fn eval(&self, expr: &str, arg: &Value) -> Result<Value, rbatis_core::Error> {
+    pub fn eval(&self, expr: &str, arg: &Value) -> Result<Value, crate::core::Error> {
         let cached = self.cache_read(expr);
         if cached.is_none() {
             let nodes = parse(expr, &self.opt_map);
@@ -59,10 +59,10 @@ impl RbatisEngine {
     }
 
     /// save to cache,if fail nothing to do.
-    fn cache_insert(&self, key: String, node: Node) -> Result<(), rbatis_core::Error> {
+    fn cache_insert(&self, key: String, node: Node) -> Result<(), crate::core::Error> {
         let cache_write = EXPR_CACHE.try_write();
         if cache_write.is_err() {
-            return Err(rbatis_core::Error::from(cache_write.err().unwrap().to_string()));
+            return Err(crate::core::Error::from(cache_write.err().unwrap().to_string()));
         }
         let mut cache_write = cache_write.unwrap();
         cache_write.insert(key, node);
@@ -70,7 +70,7 @@ impl RbatisEngine {
     }
 
     /// no cache mode to run engine
-    pub fn eval_no_cache(&self, lexer_arg: &str, arg: &Value) -> Result<Value, rbatis_core::Error> {
+    pub fn eval_no_cache(&self, lexer_arg: &str, arg: &Value) -> Result<Value, crate::core::Error> {
         let nodes = parse(lexer_arg, &self.opt_map);
         if nodes.is_err() {
             return Result::Err(nodes.err().unwrap());

@@ -2,9 +2,9 @@ use std::ops::Add;
 
 use serde::{Deserialize, Serialize};
 use serde_json::{json, Map, Value};
-use rbatis_core::convert::StmtConvert;
-use rbatis_core::db::DriverType;
-use rbatis_core::Error;
+use crate::core::convert::StmtConvert;
+use crate::core::db::DriverType;
+use crate::core::Error;
 
 /// you can serialize to JSON, and Clone, Debug
 /// use json rpc send this Wrapper to server
@@ -558,7 +558,7 @@ mod test {
     use serde_json::json;
     use serde_json::Map;
 
-    use rbatis_core::db::DriverType;
+    use crate::core::db::DriverType;
 
     use crate::wrapper::{Case, Wrapper};
     use crate::utils::bencher::QPS;

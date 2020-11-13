@@ -184,11 +184,11 @@ rb.update_by_wrapper("", &activity, &w).await;
     /// Macro generates execution logic based on method definition, similar to @select dynamic SQL of Java/Mybatis
     /// RB is the name referenced locally by Rbatis, for example DAO ::RB, com:: XXX ::RB... Can be
     /// The second parameter is the standard driver SQL. Note that the corresponding database parameter mysql is? , pg is $1...
-    /// macro auto edit method to  'pub async fn select(name: &str) -> rbatis_core::Result<BizActivity> {}'
+    /// macro auto edit method to  'pub async fn select(name: &str) -> rbatis::core::Result<BizActivity> {}'
     ///
     #[sql(RB, "select * from biz_activity where id = ?")]
     fn select(name: &str) -> BizActivity {}
-    //or： pub async fn select(name: &str) -> rbatis_core::Result<BizActivity> {}
+    //or： pub async fn select(name: &str) -> rbatis::core::Result<BizActivity> {}
 
     #[async_std::test]
     pub async fn test_macro() {
@@ -211,7 +211,7 @@ rb.update_by_wrapper("", &activity, &w).await;
                   if name != '':
                     and name=#{name}")]
     fn py_select(name: &str) -> Option<BizActivity> {}
-    //or： pub async fn select(name: &str) -> rbatis_core::Result<BizActivity> {}
+    //or： pub async fn select(name: &str) -> rbatis::core::Result<BizActivity> {}
 
     #[async_std::test]
     pub async fn test_macro_py_select() {
@@ -324,7 +324,7 @@ rb.update_by_wrapper("", &activity, &w).await;
 #### Customize connection pool's size, timeout, active number of connections, and etc.
 
 ```rust
-use rbatis_core::db::PoolOptions;
+use rbatis::core::db::PoolOptions;
 
 pub async fn init_rbatis() -> Rbatis {
 let rb = Rbatis::new();
@@ -440,7 +440,7 @@ lazy_static! {
 }
 
 async fn index() -> impl Responder {
-    let v:Result<i32,rbatis_core::Error> = RB.fetch("", "SELECT count(1) FROM biz_activity;").await;
+    let v:Result<i32,rbatis::core::Error> = RB.fetch("", "SELECT count(1) FROM biz_activity;").await;
     HttpResponse::Ok().body(format!("count(1)={}",v.unwrap_or(0)))
 }
 

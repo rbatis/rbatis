@@ -5,14 +5,14 @@ use serde::{Deserialize, Serialize};
 use serde::de::DeserializeOwned;
 use serde_json::Value;
 
-use rbatis_core::db::DriverType;
+use crate::core::db::DriverType;
 
 use crate::sql::PageLimit;
 
 ///default page plugin
 pub trait PagePlugin: Send + Sync {
     /// return 2 sql for select ,  (count_sql,select_sql)
-    fn make_page_sql(&self, driver_type: &DriverType, tx_id: &str, sql: &str, args: &Vec<serde_json::Value>, page: &dyn IPageRequest) -> Result<(String, String), rbatis_core::Error>;
+    fn make_page_sql(&self, driver_type: &DriverType, tx_id: &str, sql: &str, args: &Vec<serde_json::Value>, page: &dyn IPageRequest) -> Result<(String, String), crate::core::Error>;
 
     /// auto make count sql,also you can rewrite this method
     fn make_count_sql(&self, sql: &str) -> String {
@@ -44,7 +44,7 @@ pub struct RbatisPagePlugin {}
 
 
 impl PagePlugin for RbatisPagePlugin {
-    fn make_page_sql<>(&self, driver_type: &DriverType, tx_id: &str, sql: &str, args: &Vec<Value>, page: &dyn IPageRequest) -> Result<(String, String), rbatis_core::Error> {
+    fn make_page_sql<>(&self, driver_type: &DriverType, tx_id: &str, sql: &str, args: &Vec<Value>, page: &dyn IPageRequest) -> Result<(String, String), crate::core::Error> {
         //default sql
         let mut sql = sql.to_owned();
         sql = sql.replace("select ", "SELECT ");
@@ -52,7 +52,7 @@ impl PagePlugin for RbatisPagePlugin {
         sql = sql.replace("order by ", "ORDER BY ");
         sql = sql.trim().to_string();
         if !sql.starts_with("SELECT ") && !sql.contains("FROM ") {
-            return Err(rbatis_core::Error::from("[rbatis] xml_fetch_page() sql must contains 'select ' And 'from '"));
+            return Err(crate::core::Error::from("[rbatis] xml_fetch_page() sql must contains 'select ' And 'from '"));
         }
         //count sql
         let mut count_sql = sql.clone();

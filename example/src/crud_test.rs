@@ -8,13 +8,13 @@ mod test {
     use rbatis::plugin::logic_delete::RbatisLogicDeletePlugin;
     use rbatis::plugin::page::{Page, PageRequest};
     use rbatis::rbatis::Rbatis;
-    use rbatis_core::Error;
+    use rbatis::core::Error;
     use rbatis_macro_driver::sql;
     use chrono::NaiveDateTime;
     use bigdecimal_::BigDecimal;
-    use rbatis_core::value::DateTimeNow;
+    use rbatis::core::value::DateTimeNow;
     use fast_log::filter::{ModuleFilter};
-    use rbatis_core::db_adapter::DBExecResult;
+    use rbatis::core::db_adapter::DBExecResult;
 
 
     ///
@@ -247,7 +247,7 @@ mod test {
 
     /// RB是本地依赖Rbatis引用的名称,例如  dao::RB, com::xxx::RB....都可以
     /// 第二个参数是标准的驱动sql，注意对应数据库参数mysql为？,pg为$1...
-    /// 宏会自动转换函数为  pub async fn select(name: &str) -> rbatis_core::Result<BizActivity> {}
+    /// 宏会自动转换函数为  pub async fn select(name: &str) -> rbatis::core::Result<BizActivity> {}
     ///
     #[sql(RB, "select * from biz_activity where id = ?")]
     fn select(name: &str) -> BizActivity {}

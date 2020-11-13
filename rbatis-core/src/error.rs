@@ -4,10 +4,10 @@ use std::error::Error as StdError;
 use std::fmt::{self, Debug, Display};
 use std::io;
 
-/// A specialized `Result` type for rbatis_core.
+/// A specialized `Result` type for rbatis::core.
 pub type Result<T> = std::result::Result<T, Error>;
 
-/// A generic error that represents all the ways a method can fail inside of rbatis_core.
+/// A generic error that represents all the ways a method can fail inside of rbatis::core.
 #[derive(Debug)]
 #[non_exhaustive]
 pub enum Error {

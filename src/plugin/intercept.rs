@@ -6,5 +6,5 @@ pub trait SqlIntercept: Send + Sync {
     fn name(&self) -> &str;
     /// do intercept sql/args
     /// is_prepared_sql: if is run in prepared_sql=ture
-    fn do_intercept(&self, rb: &Rbatis, sql: &mut String, args: &mut Vec<serde_json::Value>, is_prepared_sql: bool) -> Result<(), rbatis_core::Error>;
+    fn do_intercept(&self, rb: &Rbatis, sql: &mut String, args: &mut Vec<serde_json::Value>, is_prepared_sql: bool) -> Result<(), crate::core::Error>;
 }

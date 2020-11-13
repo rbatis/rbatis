@@ -9,7 +9,7 @@ use serde_json::Value;
 
 pub fn eval(left: &Value,
             right: &Value,
-            op: &str) -> Result<Value, rbatis_core::Error> {
+            op: &str) -> Result<Value, crate::core::Error> {
     match op {
         "&&" => {
             return Result::Ok(Value::Bool(left.as_bool().unwrap() && right.as_bool().unwrap()));
@@ -88,7 +88,7 @@ pub fn eval(left: &Value,
             let booll = left.is_i64();
             let boolr = right.is_i64();
             if booll == false || boolr == false {
-                return Result::Err(rbatis_core::Error::from(format!("[rbatis] only support 'int ** int'! express:{}{}{}", left, op, right)));
+                return Result::Err(crate::core::Error::from(format!("[rbatis] only support 'int ** int'! express:{}{}{}", left, op, right)));
             }
             if booll && boolr {
                 if left.is_i64() && right.is_i64(){
@@ -104,7 +104,7 @@ pub fn eval(left: &Value,
             let booll = left.is_number();
             let boolr = right.is_u64();
             if boolr == false {
-                return Result::Err(rbatis_core::Error::from(format!("[rbatis] only support 'number ** uint'! express:{}{}{}", left, op, right)));
+                return Result::Err(crate::core::Error::from(format!("[rbatis] only support 'number ** uint'! express:{}{}{}", left, op, right)));
             }
             if booll && boolr {
                 let left_v = left.as_i64().unwrap() as f64;
@@ -127,7 +127,7 @@ pub fn eval(left: &Value,
             } else if left.is_string() && right.is_string() {
                 return Result::Ok(Value::from(left.as_str().unwrap().to_owned() + right.as_str().unwrap()));
             } else {
-                return Result::Err(rbatis_core::Error::from("[rbatis] un support diffrent type '+' opt"));
+                return Result::Err(crate::core::Error::from("[rbatis] un support diffrent type '+' opt"));
             }
         }
         "-" => {
@@ -149,7 +149,7 @@ pub fn eval(left: &Value,
         }
         _ => {}
     }
-    return Result::Err(rbatis_core::Error::from(format!("[rbatis] eval error express:{} {} {}", left, op, right)));
+    return Result::Err(crate::core::Error::from(format!("[rbatis] eval error express:{} {} {}", left, op, right)));
 }
 
 

@@ -1,7 +1,7 @@
 use serde_json::Value;
 
-use rbatis_core::db::DriverType;
-use rbatis_core::Error;
+use crate::core::db::DriverType;
+use crate::core::Error;
 
 /// Logic Delete Plugin trait
 pub trait LogicDelete: Send + Sync {
@@ -12,9 +12,9 @@ pub trait LogicDelete: Send + Sync {
     /// un deleted data,must be i32
     fn un_deleted(&self) -> i32;
     /// create_remove_sql
-    fn create_remove_sql(&self, driver_type: &DriverType, table_name: &str, table_fields: &str, sql_where: &str) -> Result<String, rbatis_core::Error>;
+    fn create_remove_sql(&self, driver_type: &DriverType, table_name: &str, table_fields: &str, sql_where: &str) -> Result<String, crate::core::Error>;
     /// create_select_sql
-    fn create_select_sql(&self, driver_type: &DriverType, table_name: &str, table_fields: &str, sql_where: &str) -> Result<String, rbatis_core::Error>;
+    fn create_select_sql(&self, driver_type: &DriverType, table_name: &str, table_fields: &str, sql_where: &str) -> Result<String, crate::core::Error>;
 }
 
 pub enum LogicAction {

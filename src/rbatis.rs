@@ -4,9 +4,9 @@ use once_cell::sync::OnceCell;
 use serde::de::DeserializeOwned;
 use serde::ser::Serialize;
 use serde_json::Number;
-use rbatis_core::db_adapter::{DBPool, DBPoolConn, DBQuery, DBTx, DBExecResult};
-use rbatis_core::Error;
-use rbatis_core::sync::sync_map::SyncMap;
+use crate::core::db_adapter::{DBPool, DBPoolConn, DBQuery, DBTx, DBExecResult};
+use crate::core::Error;
+use crate::core::sync::sync_map::SyncMap;
 
 use crate::ast::ast::RbatisAST;
 use crate::ast::lang::py::Py;
@@ -25,7 +25,7 @@ use crate::plugin::page::{IPage, IPageRequest, Page, PagePlugin, RbatisPagePlugi
 use crate::sql::PageLimit;
 use crate::utils::error_util::ToResult;
 use crate::wrapper::Wrapper;
-use rbatis_core::db::{DriverType, PoolOptions};
+use crate::core::db::{DriverType, PoolOptions};
 
 /// rbatis engine
 pub struct Rbatis {
@@ -84,7 +84,7 @@ impl Rbatis {
     }
 
     /// link pool
-    pub async fn link(&self, url: &str) -> Result<(), rbatis_core::Error> {
+    pub async fn link(&self, url: &str) -> Result<(), crate::core::Error> {
         if url.is_empty() {
             return Err(Error::from("[rbatis] link url is empty!"));
         }
@@ -97,7 +97,7 @@ impl Rbatis {
 
     /// link pool by options
     /// for example:
-    pub async fn link_opt(&self, url: &str, opt: &PoolOptions) -> Result<(), rbatis_core::Error> {
+    pub async fn link_opt(&self, url: &str, opt: &PoolOptions) -> Result<(), crate::core::Error> {
         if url.is_empty() {
             return Err(Error::from("[rbatis] link url is empty!"));
         }
@@ -109,31 +109,31 @@ impl Rbatis {
     }
 
     /// load xml data into rbatis
-    pub fn load_xml(&mut self, mapper_name: &str, data: &str) -> Result<(), rbatis_core::Error> {
+    pub fn load_xml(&mut self, mapper_name: &str, data: &str) -> Result<(), crate::core::Error> {
         let xml = Xml::parse(data);
         self.mapper_node_map.insert(mapper_name.to_string(), xml);
         return Ok(());
     }
 
     /// get conn pool
-    pub fn get_pool(&self) -> Result<&DBPool, rbatis_core::Error> {
+    pub fn get_pool(&self) -> Result<&DBPool, crate::core::Error> {
         let p = self.pool.get();
         if p.is_none() {
-            return Err(rbatis_core::Error::from("[rbatis] rbatis pool not inited!"));
+            return Err(crate::core::Error::from("[rbatis] rbatis pool not inited!"));
         }
         return Ok(p.unwrap());
     }
 
     /// get driver type
-    pub fn driver_type(&self) -> Result<DriverType, rbatis_core::Error> {
+    pub fn driver_type(&self) -> Result<DriverType, crate::core::Error> {
         let pool = self.get_pool()?;
         Ok(pool.driver_type)
     }
 
     /// begin tx,for new conn
-    pub async fn begin(&self, new_tx_id: &str) -> Result<u64, rbatis_core::Error> {
+    pub async fn begin(&self, new_tx_id: &str) -> Result<u64, crate::core::Error> {
         if new_tx_id.is_empty() {
-            return Err(rbatis_core::Error::from("[rbatis] tx_id can not be empty"));
+            return Err(crate::core::Error::from("[rbatis] tx_id can not be empty"));
         }
         let conn: DBTx = self.get_pool()?.begin().await?;
         //send tx to context
@@ -143,9 +143,9 @@ impl Rbatis {
     }
 
     // /// begin tx,with an exist conn
-    // pub async fn begin_with_conn(&self, new_tx_id: &str, mut db_conn: DBPoolConn) -> Result<u64, rbatis_core::Error> {
+    // pub async fn begin_with_conn(&self, new_tx_id: &str, mut db_conn: DBPoolConn) -> Result<u64, crate::core::Error> {
     //     if new_tx_id.is_empty() {
-    //         return Err(rbatis_core::Error::from("[rbatis] tx_id can not be empty"));
+    //         return Err(crate::core::Error::from("[rbatis] tx_id can not be empty"));
     //     }
     //     let conn = db_conn.begin().await?;
     //     //send tx to context
@@ -155,10 +155,10 @@ impl Rbatis {
     // }
 
     /// commit tx,and return conn
-    pub async fn commit(&self, tx_id: &str) -> Result<(), rbatis_core::Error> {
+    pub async fn commit(&self, tx_id: &str) -> Result<(), crate::core::Error> {
         let tx = self.tx_context.remove(tx_id).await;
         if tx.is_none() {
-            return Err(rbatis_core::Error::from(format!("[rbatis] tx:{} not exist！", tx_id)));
+            return Err(crate::core::Error::from(format!("[rbatis] tx:{} not exist！", tx_id)));
         }
         let mut tx = tx.unwrap();
         let result = tx.commit().await?;
@@ -167,10 +167,10 @@ impl Rbatis {
     }
 
     /// rollback tx,and return conn
-    pub async fn rollback(&self, tx_id: &str) -> Result<(), rbatis_core::Error> {
+    pub async fn rollback(&self, tx_id: &str) -> Result<(), crate::core::Error> {
         let tx_op = self.tx_context.remove(tx_id).await;
         if tx_op.is_none() {
-            return Err(rbatis_core::Error::from(format!("[rbatis] tx:{} not exist！", tx_id)));
+            return Err(crate::core::Error::from(format!("[rbatis] tx:{} not exist！", tx_id)));
         }
         let tx = tx_op.unwrap();
         let result = tx.rollback().await?;
@@ -180,7 +180,7 @@ impl Rbatis {
 
 
     /// fetch result(row sql)
-    pub async fn fetch<T>(&self, tx_id: &str, sql: &str) -> Result<T, rbatis_core::Error>
+    pub async fn fetch<T>(&self, tx_id: &str, sql: &str) -> Result<T, crate::core::Error>
         where T: DeserializeOwned {
 
         //sql intercept
@@ -200,7 +200,7 @@ impl Rbatis {
         } else {
             let conn = self.tx_context.get_mut(tx_id).await;
             if conn.is_none() {
-                return Err(rbatis_core::Error::from(format!("[rbatis] tx:{} not exist！", tx_id)));
+                return Err(crate::core::Error::from(format!("[rbatis] tx:{} not exist！", tx_id)));
             }
             let mut conn = conn.unwrap();
             let (data, num) = conn.fetch(sql.as_str()).await?;
@@ -212,7 +212,7 @@ impl Rbatis {
     }
 
     /// exec sql(row sql)
-    pub async fn exec(&self, tx_id: &str, sql: &str) -> Result<DBExecResult, rbatis_core::Error> {
+    pub async fn exec(&self, tx_id: &str, sql: &str) -> Result<DBExecResult, crate::core::Error> {
 
         //sql intercept
         let mut sql = sql.to_string();
@@ -228,7 +228,7 @@ impl Rbatis {
         } else {
             let conn = self.tx_context.get_mut(tx_id).await;
             if conn.is_none() {
-                return Err(rbatis_core::Error::from(format!("[rbatis] tx:{} not exist！", tx_id)));
+                return Err(crate::core::Error::from(format!("[rbatis] tx:{} not exist！", tx_id)));
             }
             let mut conn = conn.unwrap();
             data = conn.execute(&sql).await?;
@@ -238,7 +238,7 @@ impl Rbatis {
     }
 
 
-    fn bind_arg<'arg>(&self, sql: &'arg str, arg: &Vec<serde_json::Value>) -> Result<DBQuery<'arg>, rbatis_core::Error> {
+    fn bind_arg<'arg>(&self, sql: &'arg str, arg: &Vec<serde_json::Value>) -> Result<DBQuery<'arg>, crate::core::Error> {
         let mut q: DBQuery = self.get_pool()?.make_query(sql)?;
         for x in arg {
             q.bind_value(x);
@@ -247,7 +247,7 @@ impl Rbatis {
     }
 
     /// fetch result(prepare sql)
-    pub async fn fetch_prepare<T>(&self, tx_id: &str, sql: &str, args: &Vec<serde_json::Value>) -> Result<T, rbatis_core::Error>
+    pub async fn fetch_prepare<T>(&self, tx_id: &str, sql: &str, args: &Vec<serde_json::Value>) -> Result<T, crate::core::Error>
         where T: DeserializeOwned {
 
         //sql intercept
@@ -271,7 +271,7 @@ impl Rbatis {
             let q: DBQuery = self.bind_arg(&sql, &args)?;
             let conn = self.tx_context.get_mut(tx_id).await;
             if conn.is_none() {
-                return Err(rbatis_core::Error::from(format!("[rbatis] tx:{} not exist！", tx_id)));
+                return Err(crate::core::Error::from(format!("[rbatis] tx:{} not exist！", tx_id)));
             }
             let mut conn = conn.unwrap();
             let (result, num) = conn.fetch_parperd(q).await?;
@@ -283,7 +283,7 @@ impl Rbatis {
     }
 
     /// exec sql(prepare sql)
-    pub async fn exec_prepare(&self, tx_id: &str, sql: &str, args: &Vec<serde_json::Value>) -> Result<DBExecResult, rbatis_core::Error> {
+    pub async fn exec_prepare(&self, tx_id: &str, sql: &str, args: &Vec<serde_json::Value>) -> Result<DBExecResult, crate::core::Error> {
 
         //sql intercept
         let mut sql = sql.to_string();
@@ -303,7 +303,7 @@ impl Rbatis {
             let q: DBQuery = self.bind_arg(&sql, &args)?;
             let conn = self.tx_context.get_mut(tx_id).await;
             if conn.is_none() {
-                return Err(rbatis_core::Error::from(format!("[rbatis] tx:{} not exist！", tx_id)));
+                return Err(crate::core::Error::from(format!("[rbatis] tx:{} not exist！", tx_id)));
             }
             let mut conn = conn.unwrap();
             result = conn.exec_prepare(q).await;
@@ -316,18 +316,18 @@ impl Rbatis {
         return result;
     }
 
-    pub async fn fetch_prepare_wrapper<T>(&self, tx_id: &str, w: &Wrapper) -> Result<T, rbatis_core::Error>
+    pub async fn fetch_prepare_wrapper<T>(&self, tx_id: &str, w: &Wrapper) -> Result<T, crate::core::Error>
         where T: DeserializeOwned {
         let w=w.clone().check()?;
         self.fetch_prepare(tx_id, w.sql.as_str(), &w.args).await
     }
 
-    pub async fn exec_prepare_wrapper(&self, tx_id: &str, w: &Wrapper) -> Result<DBExecResult, rbatis_core::Error> {
+    pub async fn exec_prepare_wrapper(&self, tx_id: &str, w: &Wrapper) -> Result<DBExecResult, crate::core::Error> {
         let w=w.clone().check()?;
         self.exec_prepare(tx_id, w.sql.as_str(), &w.args).await
     }
 
-    fn py_to_sql(&self, py: &str, arg: &serde_json::Value) -> Result<(String, Vec<serde_json::Value>), rbatis_core::Error> {
+    fn py_to_sql(&self, py: &str, arg: &serde_json::Value) -> Result<(String, Vec<serde_json::Value>), crate::core::Error> {
         let nodes = Py::parse_and_cache(py)?;
         let mut arg_array = vec![];
         let mut env = arg.clone();
@@ -337,7 +337,7 @@ impl Rbatis {
         return Ok((sql, arg_array));
     }
 
-    fn xml_to_sql(&self, mapper: &str, method: &str, arg: &serde_json::Value) -> Result<(String, Vec<serde_json::Value>), rbatis_core::Error> {
+    fn xml_to_sql(&self, mapper: &str, method: &str, arg: &serde_json::Value) -> Result<(String, Vec<serde_json::Value>), crate::core::Error> {
         let x = self.mapper_node_map.get(mapper);
         let x = x.to_result(|| format!("[rabtis] mapper:'{}' not load into rbatis", mapper))?;
         let node_type = x.get(method);
@@ -351,7 +351,7 @@ impl Rbatis {
     }
 
     /// fetch result(prepare sql)
-    pub async fn xml_fetch<T, Ser>(&self, tx_id: &str, mapper: &str, method: &str, arg: &Ser) -> Result<T, rbatis_core::Error>
+    pub async fn xml_fetch<T, Ser>(&self, tx_id: &str, mapper: &str, method: &str, arg: &Ser) -> Result<T, crate::core::Error>
         where T: DeserializeOwned, Ser: Serialize + Send + Sync {
         let json = json!(arg);
         let (sql, args) = self.xml_to_sql(mapper, method, &json)?;
@@ -359,7 +359,7 @@ impl Rbatis {
     }
 
     /// exec sql(prepare sql)
-    pub async fn xml_exec<Ser>(&self, tx_id: &str, mapper: &str, method: &str, arg: &Ser) -> Result<DBExecResult, rbatis_core::Error>
+    pub async fn xml_exec<Ser>(&self, tx_id: &str, mapper: &str, method: &str, arg: &Ser) -> Result<DBExecResult, crate::core::Error>
         where Ser: Serialize + Send + Sync {
         let json = json!(arg);
         let (sql, args) = self.xml_to_sql(mapper, method, &json)?;
@@ -383,7 +383,7 @@ impl Rbatis {
     ///       )"#;
     ///         let data: serde_json::Value = rb.py_fetch("", py, &json!({   "delete_flag": 1 })).await.unwrap();
     ///
-    pub async fn py_fetch<T, Ser>(&self, tx_id: &str, py: &str, arg: &Ser) -> Result<T, rbatis_core::Error>
+    pub async fn py_fetch<T, Ser>(&self, tx_id: &str, py: &str, arg: &Ser) -> Result<T, crate::core::Error>
         where T: DeserializeOwned,
               Ser: Serialize + Send + Sync {
         let json = json!(arg);
@@ -407,7 +407,7 @@ impl Rbatis {
     ///       )"#;
     ///         let data: u64 = rb.py_exec("", py, &json!({   "delete_flag": 1 })).await.unwrap();
     ///
-    pub async fn py_exec<Ser>(&self, tx_id: &str, py: &str, arg: &Ser) -> Result<DBExecResult, rbatis_core::Error>
+    pub async fn py_exec<Ser>(&self, tx_id: &str, py: &str, arg: &Ser) -> Result<DBExecResult, crate::core::Error>
         where Ser: Serialize + Send + Sync {
         let json = json!(arg);
         let (sql, args) = self.py_to_sql(py, &json)?;
@@ -415,7 +415,7 @@ impl Rbatis {
     }
 
     /// fetch page result(prepare sql)
-    pub async fn fetch_page<T>(&self, tx_id: &str, sql: &str, args: &Vec<serde_json::Value>, page_request: &dyn IPageRequest) -> Result<Page<T>, rbatis_core::Error>
+    pub async fn fetch_page<T>(&self, tx_id: &str, sql: &str, args: &Vec<serde_json::Value>, page_request: &dyn IPageRequest) -> Result<Page<T>, crate::core::Error>
         where T: DeserializeOwned + Serialize + Send + Sync {
         let mut page_result = Page::new(page_request.get_current(), page_request.get_size());
         let (count_sql, sql) = self.page_plugin.make_page_sql(&self.driver_type()?, tx_id, sql, args, page_request)?;
@@ -436,7 +436,7 @@ impl Rbatis {
 
 
     /// fetch result(prepare sql)
-    pub async fn xml_fetch_page<T, Ser>(&self, tx_id: &str, mapper: &str, method: &str, arg: &Ser, page: &dyn IPageRequest) -> Result<Page<T>, rbatis_core::Error>
+    pub async fn xml_fetch_page<T, Ser>(&self, tx_id: &str, mapper: &str, method: &str, arg: &Ser, page: &dyn IPageRequest) -> Result<Page<T>, crate::core::Error>
         where T: DeserializeOwned + Serialize + Send + Sync, Ser: Serialize + Send + Sync {
         let json = json!(arg);
         let (sql, args) = self.xml_to_sql(mapper, method, &json)?;
@@ -444,7 +444,7 @@ impl Rbatis {
     }
 
     /// fetch result(prepare sql)
-    pub async fn py_fetch_page<T, Ser>(&self, tx_id: &str, py: &str, arg: &Ser, page: &dyn IPageRequest) -> Result<Page<T>, rbatis_core::Error>
+    pub async fn py_fetch_page<T, Ser>(&self, tx_id: &str, py: &str, arg: &Ser, page: &dyn IPageRequest) -> Result<Page<T>, crate::core::Error>
         where T: DeserializeOwned + Serialize + Send + Sync,
               Ser: Serialize + Send + Sync {
         let json = json!(arg);
