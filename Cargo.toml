@@ -8,7 +8,7 @@ members = [
 
 [package]
 name = "rbatis"
-version = "1.8.16"
+version = "1.8.17"
 description = "Rust ORM Framework High Performance(JSON based)"
 readme = "Readme.md"
 authors = ["ce <zhuxiujia@qq.com>"]
@@ -28,7 +28,7 @@ async-io = ["rbatis-core", "async-std"]
 snowflake = ["rustflake"]
 
 [dependencies]
-rbatis-core = { version = "1.8.16", path = "rbatis-core", optional = true }
+rbatis-core = { version = "1.8.17", path = "rbatis-core", optional = true }
 async-std = { version = "1.7", optional = true }
 chrono = { version = "0.4", features = ["serde"] }
 xml-rs = "0.8"
