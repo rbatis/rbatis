@@ -132,6 +132,9 @@ pub fn eval(left: &Value,
         }
         "-" => {
             if left.is_null() && right.is_number() {
+                if right.is_i64(){
+                    return Result::Ok(json!(0 - right.as_i64().unwrap()));
+                }
                 return Result::Ok(json!(0.0 - right.as_f64().unwrap()));
             }
             if right.is_null() && left.is_number() {
