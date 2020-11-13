@@ -52,7 +52,7 @@ mod test {
 
     #[test]
     fn test_node_run() {
-        let arg = json!({"a":1,"b":2,"c":"c", "d":null,});
+        let arg = json!({"a":1,"b":2,"c":"c", "d":null,"e":[1],"f":[{"field":1}]});
         let exec_expr = |arg: &serde_json::Value, expr: &str| -> serde_json::Value{
             println!("{}", expr.clone());
             let box_node = parser::parse(expr, &OptMap::new()).unwrap();
@@ -89,6 +89,9 @@ mod test {
         assert_eq!(exec_expr(&arg, "-1"), json!(-1));
         assert_eq!(exec_expr(&arg, "1- -1"), json!(0));
         assert_eq!(exec_expr(&arg, "1-2 -1+"), json!(-2));
+        assert_eq!(exec_expr(&arg, "e[1]"), json!(null));
+        assert_eq!(exec_expr(&arg, "e[0]"), json!(1));
+        assert_eq!(exec_expr(&arg, "f[0].field"), json!(1));
     }
 
 

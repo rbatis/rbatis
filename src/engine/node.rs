@@ -13,6 +13,7 @@ use serde_json::value::Value::{Null, Number};
 use crate::engine::eval::eval;
 use crate::engine::node::NodeType::{NArg, NBinary, NBool, NNull, NNumber, NOpt, NString};
 use crate::engine::runtime::{is_number, OptMap};
+use log::kv::Source;
 
 #[derive(Clone, PartialEq, Debug, Serialize, Deserialize)]
 pub enum NodeType {
@@ -105,7 +106,17 @@ impl Node {
             let mut v = env;
             for item in arr {
                 let item_str = item.as_str().unwrap();
-                v = v.get(item_str).unwrap_or(&Value::Null);
+                if v.is_object() {
+                    v = v.get(item_str).unwrap_or(&Value::Null);
+                } else if v.is_array() {
+                    let item_index = item_str.parse::<usize>();
+                    if item_index.is_err() {
+                        return Result::Ok(serde_json::Value::Null);
+                    }
+                    let item_index = item_index.unwrap();
+                    let arr_ref = v.as_array().unwrap();
+                    v = arr_ref.get(item_index).unwrap_or(&Value::Null);
+                }
                 if v.is_null() || index + 1 >= arr_len {
                     return Result::Ok(v.clone());
                 }
@@ -130,7 +141,8 @@ impl Node {
         }
     }
     pub fn new_arg(arg: &str) -> Self {
-        let d: Vec<&str> = arg.split(".").collect();
+        let new_arg = arg.replace("]", "").replace("[", ".");
+        let d: Vec<&str> = new_arg.split(".").collect();
         Self {
             value: json!(d),
             left: None,
