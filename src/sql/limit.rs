@@ -1,9 +1,9 @@
-use rbatis_core::db::DriverType;
+use crate::core::db::DriverType;
 
 use crate::sql::PageLimit;
 
 impl PageLimit for DriverType {
-    fn page_limit_sql(&self, offset: u64, size: u64) -> rbatis_core::Result<String> {
+    fn page_limit_sql(&self, offset: u64, size: u64) -> crate::core::Result<String> {
         return match self {
             DriverType::Mysql => {
                 Ok(format!(" LIMIT {},{}", offset, size))
@@ -19,7 +19,7 @@ impl PageLimit for DriverType {
                 Ok(format!(" OFFSET {} ROWS FETCH NEXT {} ROWS ONLY", offset,size))
             }
             DriverType::None => {
-                Err(rbatis_core::Error::from(format!("[rbatis] not support now for DriverType:{:?}", DriverType::None)))
+                Err(crate::core::Error::from(format!("[rbatis] not support now for DriverType:{:?}", DriverType::None)))
             }
         };
     }

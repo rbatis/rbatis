@@ -3,8 +3,8 @@ use std::ops::DerefMut;
 
 use serde_json::{json, Value};
 
-use rbatis_core::convert::StmtConvert;
-use rbatis_core::db::DriverType;
+use crate::core::convert::StmtConvert;
+use crate::core::db::DriverType;
 
 use crate::ast::ast::RbatisAST;
 use crate::ast::node::node::{create_deep, print_child, SqlNodePrint};
@@ -21,7 +21,7 @@ pub struct ChooseNode {
 }
 
 impl RbatisAST for ChooseNode {
-    fn eval(&self, convert: &impl StmtConvert, env: &mut Value, engine: &RbatisEngine, arg_array: &mut Vec<Value>) -> Result<String, rbatis_core::Error> {
+    fn eval(&self, convert: &impl StmtConvert, env: &mut Value, engine: &RbatisEngine, arg_array: &mut Vec<Value>) -> Result<String, crate::core::Error> {
         if self.when_nodes.is_none() == false {
             for item in self.when_nodes.clone().unwrap() {
                 let s = item.eval(convert, env, engine, arg_array);

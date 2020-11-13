@@ -17,7 +17,7 @@ use crate::ast::node::trim_node::TrimNode;
 use crate::ast::node::when_node::WhenNode;
 use crate::ast::node::where_node::WhereNode;
 use crate::engine::parser::parse;
-use rbatis_core::Error;
+use crate::core::Error;
 
 lazy_static! {
   static ref PY_PARSER_MAP: RwLock<HashMap<String,Vec<NodeType>>> = RwLock::new(HashMap::new());
@@ -29,7 +29,7 @@ pub struct Py {}
 impl Py {
     /// parser and cache py data sql,return an vec node type
     ///编译并且缓存py slq数据，返回node type 数组
-    pub fn parse_and_cache(arg: &str) -> Result<Vec<NodeType>, rbatis_core::Error> {
+    pub fn parse_and_cache(arg: &str) -> Result<Vec<NodeType>, crate::core::Error> {
         let rd = PY_PARSER_MAP.try_read();
         if rd.is_err() {
             let nods = Py::parse(arg)?;
@@ -58,7 +58,7 @@ impl Py {
 
     /// parser py string data
     /// 解析py语法
-    pub fn parse(arg: &str) -> Result<Vec<NodeType>, rbatis_core::Error> {
+    pub fn parse(arg: &str) -> Result<Vec<NodeType>, crate::core::Error> {
         let line_space_map = Py::create_line_space_map(arg);
         let mut main_node = vec![];
         let ls = arg.lines();
@@ -89,7 +89,7 @@ impl Py {
         return Ok(main_node);
     }
 
-    fn parse_node(main_node: &mut Vec<NodeType>, x: &str, space: usize, childs: Vec<NodeType>) -> Result<(), rbatis_core::Error> {
+    fn parse_node(main_node: &mut Vec<NodeType>, x: &str, space: usize, childs: Vec<NodeType>) -> Result<(), crate::core::Error> {
         let mut trim_x = x.trim();
         if trim_x.starts_with("//") {
             return Ok(());
@@ -105,7 +105,7 @@ impl Py {
                 return Ok(());
             } else if trim_x.starts_with("for ") {
                 if !trim_x.contains("in ") {
-                    return Err(rbatis_core::Error::from("[rbatis] parser express fail:".to_string() + x));
+                    return Err(crate::core::Error::from("[rbatis] parser express fail:".to_string() + x));
                 }
                 trim_x = trim_x["for ".len()..].trim();
                 let in_index = trim_x.find("in ").unwrap();
@@ -115,7 +115,7 @@ impl Py {
                 if item.contains(",") {
                     let items: Vec<&str> = item.split(",").collect();
                     if items.len() != 2 {
-                        return Err(rbatis_core::Error::from(format!("[rbatis][py] parse fail 'for ,' must be 'for arg1,arg2 in ...',value:'{}'", x)));
+                        return Err(crate::core::Error::from(format!("[rbatis][py] parse fail 'for ,' must be 'for arg1,arg2 in ...',value:'{}'", x)));
                     }
                     index = items[0];
                     item = items[1];
@@ -143,7 +143,7 @@ impl Py {
                     }));
                     return Ok(());
                 } else {
-                    return Err(rbatis_core::Error::from(format!("[rbatis] express trim value must be string value, for example:  trim 'value',error express: {}", x)));
+                    return Err(crate::core::Error::from(format!("[rbatis] express trim value must be string value, for example:  trim 'value',error express: {}", x)));
                 }
             } else if trim_x.starts_with("choose") {
                 trim_x = trim_x["choose".len()..].trim();
@@ -163,7 +163,7 @@ impl Py {
                             node.otherwise_node = Some(Box::new(x.clone()));
                         }
                         _ => {
-                            return Err(rbatis_core::Error::from("[rbatis] parser node fail,choose node' child must be when and otherwise nodes!".to_string()));
+                            return Err(crate::core::Error::from("[rbatis] parser node fail,choose node' child must be when and otherwise nodes!".to_string()));
                         }
                     }
                 }
@@ -186,7 +186,7 @@ impl Py {
                 trim_x = trim_x["bind ".len()..].trim();
                 let name_value: Vec<&str> = trim_x.split("=").collect();
                 if name_value.len() != 2 {
-                    return Err(rbatis_core::Error::from("[rbatis] parser bind express fail:".to_string() + x));
+                    return Err(crate::core::Error::from("[rbatis] parser bind express fail:".to_string() + x));
                 }
                 main_node.push(NodeType::NBind(BindNode {
                     name: name_value[0].to_owned(),
@@ -207,7 +207,7 @@ impl Py {
                 return Ok(());
             } else {
                 // unkonw tag
-                return Err(rbatis_core::Error::from("[rbatis] unknow tag: ".to_string() + x));
+                return Err(crate::core::Error::from("[rbatis] unknow tag: ".to_string() + x));
             }
         } else {
             //string,replace space to only one
@@ -281,7 +281,7 @@ impl Py {
 #[cfg(test)]
 mod test {
     use crate::ast::lang::py::Py;
-    use rbatis_core::db::DriverType;
+    use crate::core::db::DriverType;
     use crate::engine::runtime::RbatisEngine;
 
     #[test]

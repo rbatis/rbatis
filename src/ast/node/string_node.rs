@@ -2,8 +2,8 @@ use std::collections::HashMap;
 
 use serde_json::{json, Value};
 
-use rbatis_core::convert::StmtConvert;
-use rbatis_core::db::DriverType;
+use crate::core::convert::StmtConvert;
+use crate::core::db::DriverType;
 
 use crate::ast::ast::RbatisAST;
 use crate::ast::node::node::{create_deep, SqlNodePrint};
@@ -40,7 +40,7 @@ impl StringNode {
 }
 
 impl RbatisAST for StringNode {
-    fn eval(&self, convert: &impl StmtConvert, env: &mut Value, engine: &RbatisEngine, arg_array: &mut Vec<Value>) -> Result<String, rbatis_core::Error> {
+    fn eval(&self, convert: &impl StmtConvert, env: &mut Value, engine: &RbatisEngine, arg_array: &mut Vec<Value>) -> Result<String, crate::core::Error> {
         let mut result = self.value.clone();
         for (item, value) in &self.express_map {
             result = result.replace(value, convert.stmt_convert(arg_array.len()).as_str());

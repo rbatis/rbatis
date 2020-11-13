@@ -95,8 +95,8 @@ mod test {
     use rbatis::plugin::page::{Page, PageRequest};
     use rbatis::rbatis::Rbatis;
     use rbatis::utils::bencher::QPS;
-    use rbatis_core::db::PoolOptions;
-    use rbatis_core::db_adapter::DBPool;
+    use rbatis::core::db::PoolOptions;
+    use rbatis::core::db_adapter::DBPool;
 
     use crate::BizActivity;
 
@@ -159,7 +159,7 @@ mod test {
             .ne("delete_flag", -1)
             .do_if(!name.is_empty(),|w|w.and().like("name",name))
             .check().unwrap();
-        let (r, _): (serde_json::Value, rbatis_core::Error) = rb.fetch_prepare_wrapper("", &w).await.unwrap();
+        let (r, _): (serde_json::Value, rbatis::core::Error) = rb.fetch_prepare_wrapper("", &w).await.unwrap();
         println!("done:{:?}", r);
     }
 
@@ -363,7 +363,7 @@ mod test {
         let mut current = 0;
         let now = std::time::Instant::now();
         loop {
-            let v: rbatis_core::Result<serde_json::Value> = RB.fetch("", "select count(1) from biz_activity WHERE delete_flag = 1;").await;
+            let v: rbatis::core::Result<serde_json::Value> = RB.fetch("", "select count(1) from biz_activity WHERE delete_flag = 1;").await;
             if current == total - 1 {
                 let end = SystemTime::now();
                 now.time(total);

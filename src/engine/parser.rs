@@ -8,7 +8,7 @@ use crate::engine::node::NodeType::{NBinary, NOpt};
 use crate::engine::runtime::{is_number, OptMap};
 use log::kv::Source;
 
-pub fn parse(express: &str, opt_map: &OptMap) -> Result<Node, rbatis_core::Error> {
+pub fn parse(express: &str, opt_map: &OptMap) -> Result<Node, crate::core::Error> {
     let express = express.replace("none", "null").replace("None", "null");
     let tokens = parse_tokens(&express, opt_map);
     let mut nodes = vec![];
@@ -29,7 +29,7 @@ pub fn parse(express: &str, opt_map: &OptMap) -> Result<Node, rbatis_core::Error
     if nodes.len() > 0 {
         return Result::Ok(nodes[0].to_owned());
     } else {
-        return Result::Err(rbatis_core::Error::from("[rbatis] parser express fail".to_string()));
+        return Result::Err(crate::core::Error::from("[rbatis] parser express fail".to_string()));
     }
 }
 
