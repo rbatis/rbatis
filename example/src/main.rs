@@ -157,10 +157,7 @@ mod test {
             .r#in("delete_flag", &[0, 1])
             .and()
             .ne("delete_flag", -1)
-            .do_if(!name.is_empty(),|w|{
-                w.and().like("name",name);
-                return w;
-            })
+            .do_if(!name.is_empty(),|w|w.and().like("name",name))
             .check().unwrap();
         let (r, _): (serde_json::Value, rbatis_core::Error) = rb.fetch_prepare_wrapper("", &w).await.unwrap();
         println!("done:{:?}", r);
