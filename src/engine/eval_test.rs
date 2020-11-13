@@ -92,6 +92,7 @@ mod test {
         assert_eq!(exec_expr(&arg, "e[1]"), json!(null));
         assert_eq!(exec_expr(&arg, "e[0]"), json!(1));
         assert_eq!(exec_expr(&arg, "f[0].field"), json!(1));
+        assert_eq!(exec_expr(&arg, "f.0.field"), json!(1));
     }
 
 
