@@ -7,19 +7,13 @@
 // #![warn(missing_docs)]
 #![allow(unused_imports)]
 #![allow(unused_assignments)]
-
-#[cfg(all(test, feature = "bench"))]
-extern crate test;
-
-// HACK: Allow a feature name the same name as a dependency
-#[cfg(feature = "bigdecimal")]
-extern crate bigdecimal_ as bigdecimal;
-
 pub mod runtime;
 
+/// database
 mod mysql;
 mod postgres;
 mod sqlite;
+mod mssql;
 
 #[macro_use]
 pub mod error;
@@ -41,5 +35,3 @@ pub mod sync;
 pub mod db;
 
 pub mod value;
-
-pub mod mssql;
