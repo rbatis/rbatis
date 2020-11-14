@@ -257,7 +257,7 @@ impl Rbatis {
         for item in &self.sql_intercepts {
             item.do_intercept(self, &mut sql, &mut args, true);
         }
-        self.log_plugin.info(&format!("[rbatis] [{}] Query ==> {}\n{}[rbatis] [{}] Args ==> {}", tx_id, &sql, string_util::LOG_SPACE, tx_id, json!(&args)));
+        self.log_plugin.info(&format!("[rbatis] [{}] Query ==> {}\n{}[rbatis] [{}] Args ==> {}", tx_id, &sql, string_util::LOG_SPACE, tx_id, serde_json::Value::Array(args.clone()).to_string()));
         let result_data;
         let mut return_num = 0;
         if tx_id.is_empty() {
@@ -290,7 +290,7 @@ impl Rbatis {
         for item in &self.sql_intercepts {
             item.do_intercept(self, &mut sql, &mut args, true);
         }
-        self.log_plugin.info(&format!("[rbatis] [{}] Exec ==> {}\n{}[rbatis] [{}] Args ==> {}", tx_id, &sql, string_util::LOG_SPACE, tx_id, json!(&args)));
+        self.log_plugin.info(&format!("[rbatis] [{}] Exec ==> {}\n{}[rbatis] [{}] Args ==> {}", tx_id, &sql, string_util::LOG_SPACE, tx_id, serde_json::Value::Array(args.clone()).to_string()));
         let result;
         if tx_id.is_empty() {
             let q: DBQuery = self.bind_arg(&sql, &args)?;
