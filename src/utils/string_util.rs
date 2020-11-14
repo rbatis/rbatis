@@ -1,6 +1,9 @@
 use std::collections::HashMap;
 use std::io::Read;
 
+//2020-11-15 00:31:25.803227700 +08:00 INFO rbatis::plugin::log
+pub const LOG_SPACE:&'static str="                                                                ";
+
 //find like #{*} value *
 pub fn find_convert_string(arg: &str) -> Vec<String> {
     let mut finds = HashMap::new();

@@ -26,6 +26,7 @@ use crate::sql::PageLimit;
 use crate::utils::error_util::ToResult;
 use crate::wrapper::Wrapper;
 use crate::core::db::{DriverType, PoolOptions};
+use crate::utils::string_util;
 
 /// rbatis engine
 pub struct Rbatis {
@@ -256,9 +257,7 @@ impl Rbatis {
         for item in &self.sql_intercepts {
             item.do_intercept(self, &mut sql, &mut args, true);
         }
-
-        self.log_plugin.info(&format!("[rbatis] [{}] Query ==> {}", tx_id, &sql));
-        self.log_plugin.info(&format!("[rbatis] [{}] Args  ==> {}", tx_id, json!(&args)));
+        self.log_plugin.info(&format!("[rbatis] [{}] Query ==> {}\n{}[rbatis] [{}] Args ==> {}", tx_id, &sql, string_util::LOG_SPACE, tx_id, json!(&args)));
         let result_data;
         let mut return_num = 0;
         if tx_id.is_empty() {
@@ -291,9 +290,7 @@ impl Rbatis {
         for item in &self.sql_intercepts {
             item.do_intercept(self, &mut sql, &mut args, true);
         }
-
-        self.log_plugin.info(&format!("[rbatis] [{}] Exec ==> {}", tx_id, &sql));
-        self.log_plugin.info(&format!("[rbatis] [{}] Args ==> {}", tx_id, json!(&args)));
+        self.log_plugin.info(&format!("[rbatis] [{}] Exec ==> {}\n{}[rbatis] [{}] Args ==> {}", tx_id, &sql, string_util::LOG_SPACE, tx_id, json!(&args)));
         let result;
         if tx_id.is_empty() {
             let q: DBQuery = self.bind_arg(&sql, &args)?;
