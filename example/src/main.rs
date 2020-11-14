@@ -58,7 +58,7 @@ async fn main() {
     fast_log::init_log("requests.log",
                        1000,
                        log::Level::Info,
-                       Some(Box::new(ModuleFilter::new_exclude(vec!["sqlx".to_string()]))),
+                       Some(Box::new(ModuleFilter::new_exclude(vec!["sqlx".to_string(),"tide".to_string()]))),
                        true);
     RB.link(MYSQL_URL).await.unwrap();
     let mut app = tide::new();
