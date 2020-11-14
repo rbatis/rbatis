@@ -74,8 +74,8 @@ async fn main() {
         }
     });
     //app.at("/").get(|_| async { Ok("Hello, world!") });
-    let addr = "127.0.0.1:8000";
-    println!("http server listen on http://{}", addr);
+    let addr = "0.0.0.0:8000";
+    println!("http server listen on http://localhost:8000");
     app.listen(addr).await.unwrap();
 }
 
