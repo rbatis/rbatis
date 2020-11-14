@@ -21,7 +21,7 @@ bigdecimal_ = { version = "0.2.0", package = "bigdecimal", features = ["serde"] 
 actix-web = "2.0"
 actix-rt = "1.0"
 hyper = "0.13"
-tide = "0.12.0"
+tide = "0.15"
 
 
 log = "0.4"
