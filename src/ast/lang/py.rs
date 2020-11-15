@@ -2,8 +2,10 @@ use std::collections::HashMap;
 use std::hash::Hash;
 use std::ops::Index;
 use std::sync::{Mutex, RwLock};
+
 use serde_json::json;
 use serde_json::Value;
+
 use crate::ast::ast::RbatisAST;
 use crate::ast::node::bind_node::BindNode;
 use crate::ast::node::choose_node::ChooseNode;
@@ -16,24 +18,21 @@ use crate::ast::node::string_node::StringNode;
 use crate::ast::node::trim_node::TrimNode;
 use crate::ast::node::when_node::WhenNode;
 use crate::ast::node::where_node::WhereNode;
-use crate::engine::parser::parse;
 use crate::core::Error;
+use crate::engine::parser::parse;
 
-lazy_static! {
-  static ref PY_PARSER_MAP: RwLock<HashMap<String,Vec<NodeType>>> = RwLock::new(HashMap::new());
+/// Py lang,make sure Send+Sync
+pub struct Py {
+    pub cache: RwLock<HashMap<String, Vec<NodeType>>>
 }
-
-pub struct Py {}
-
 
 impl Py {
     /// parser and cache py data sql,return an vec node type
-    ///编译并且缓存py slq数据，返回node type 数组
-    pub fn parse_and_cache(arg: &str) -> Result<Vec<NodeType>, crate::core::Error> {
-        let rd = PY_PARSER_MAP.try_read();
+    pub fn parse_and_cache(&self, arg: &str) -> Result<Vec<NodeType>, crate::core::Error> {
+        let rd = self.cache.try_read();
         if rd.is_err() {
             let nods = Py::parse(arg)?;
-            Py::try_cache_into(arg, nods.clone());
+            self.try_cache_into(arg, nods.clone());
             return Ok(nods);
         } else {
             let rd = rd.unwrap();
@@ -43,21 +42,20 @@ impl Py {
             } else {
                 let nods = Py::parse(arg)?;
                 drop(rd);
-                Py::try_cache_into(arg, nods.clone());
+                self.try_cache_into(arg, nods.clone());
                 return Ok(nods);
             }
         }
     }
 
-    fn try_cache_into(py: &str, arg: Vec<NodeType>) {
-        let rd = PY_PARSER_MAP.try_write();
+    fn try_cache_into(&self, py: &str, arg: Vec<NodeType>) {
+        let rd = self.cache.try_write();
         if rd.is_ok() {
             rd.unwrap().insert(py.to_string(), arg);
         }
     }
 
     /// parser py string data
-    /// 解析py语法
     pub fn parse(arg: &str) -> Result<Vec<NodeType>, crate::core::Error> {
         let line_space_map = Py::create_line_space_map(arg);
         let mut main_node = vec![];

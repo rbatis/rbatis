@@ -1,7 +1,5 @@
 use serde_json::{json, Value};
 
-use crate::core::convert::StmtConvert;
-
 use crate::ast::ast::RbatisAST;
 use crate::ast::node::bind_node::BindNode;
 use crate::ast::node::choose_node::ChooseNode;
@@ -23,8 +21,10 @@ use crate::ast::node::trim_node::TrimNode;
 use crate::ast::node::update_node::UpdateNode;
 use crate::ast::node::when_node::WhenNode;
 use crate::ast::node::where_node::WhereNode;
+use crate::core::convert::StmtConvert;
 use crate::engine::node::Node;
 use crate::engine::runtime::RbatisEngine;
+use crate::ast::node::custom_node::CustomNode;
 
 #[derive(Clone, Debug)]
 pub enum NodeType {
@@ -40,6 +40,7 @@ pub enum NodeType {
     NInclude(IncludeNode),
     NSet(SetNode),
     NWhere(WhereNode),
+    NCustomNode(Box<CustomNode>),
 
     NSqlNode(SqlNode),
     //CRUD
@@ -47,7 +48,6 @@ pub enum NodeType {
     NUpdateNode(UpdateNode),
     NDeleteNode(DeleteNode),
     NSelectNode(SelectNode),
-
     //ResultMap
     NResultMapNode(ResultMapNode),
     NResultMapIdNode(ResultMapIdNode),
@@ -93,6 +93,7 @@ impl NodeType {
             NodeType::NSet(node) => return Some(&node.childs),
             NodeType::NWhere(node) => return Some(&node.childs),
             NodeType::NSqlNode(node) => return Some(&node.childs),
+            NodeType::NCustomNode(node) => return Some(&node.childs),
         }
     }
     pub fn childs_mut(&mut self) -> Option<&mut Vec<NodeType>> {
@@ -120,6 +121,7 @@ impl NodeType {
             NodeType::NWhere(node) => return Some(&mut node.childs),
 
             NodeType::NSqlNode(node) => return Some(&mut node.childs),
+            NodeType::NCustomNode(node) => return Some(&mut node.childs),
         }
     }
 }
@@ -150,6 +152,8 @@ impl<'a> RbatisAST for NodeType {
             NodeType::NWhere(node) => return node.eval(convert, env, engine, arg_array),
 
             NodeType::NSqlNode(node) => return node.eval(convert, env, engine, arg_array),
+
+            NodeType::NCustomNode(node) => return  node.eval(convert, env, engine, arg_array),
         }
     }
 }
@@ -180,6 +184,7 @@ impl SqlNodePrint for NodeType {
             NodeType::NWhere(node) => return node.print(deep),
 
             NodeType::NSqlNode(node) => return node.print(deep),
+            NodeType::NCustomNode(node) => return node.print(deep),
         }
     }
 }

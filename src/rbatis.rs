@@ -1,12 +1,10 @@
 use std::cell::Cell;
 use std::collections::HashMap;
+
 use once_cell::sync::OnceCell;
 use serde::de::DeserializeOwned;
 use serde::ser::Serialize;
 use serde_json::Number;
-use crate::core::db_adapter::{DBPool, DBPoolConn, DBQuery, DBTx, DBExecResult};
-use crate::core::Error;
-use crate::core::sync::sync_map::SyncMap;
 
 use crate::ast::ast::RbatisAST;
 use crate::ast::lang::py::Py;
@@ -17,6 +15,10 @@ use crate::ast::node::node::do_child_nodes;
 use crate::ast::node::node_type::NodeType;
 use crate::ast::node::select_node::SelectNode;
 use crate::ast::node::update_node::UpdateNode;
+use crate::core::db::{DriverType, PoolOptions};
+use crate::core::db_adapter::{DBExecResult, DBPool, DBPoolConn, DBQuery, DBTx};
+use crate::core::Error;
+use crate::core::sync::sync_map::SyncMap;
 use crate::engine::runtime::RbatisEngine;
 use crate::plugin::intercept::SqlIntercept;
 use crate::plugin::log::{LogPlugin, RbatisLog};
@@ -24,9 +26,8 @@ use crate::plugin::logic_delete::{LogicDelete, RbatisLogicDeletePlugin};
 use crate::plugin::page::{IPage, IPageRequest, Page, PagePlugin, RbatisPagePlugin};
 use crate::sql::PageLimit;
 use crate::utils::error_util::ToResult;
-use crate::wrapper::Wrapper;
-use crate::core::db::{DriverType, PoolOptions};
 use crate::utils::string_util;
+use crate::wrapper::Wrapper;
 
 /// rbatis engine
 pub struct Rbatis {
@@ -34,8 +35,10 @@ pub struct Rbatis {
     pub pool: OnceCell<DBPool>,
     // the engine run some express for example:'1+1'=2
     pub engine: RbatisEngine,
-    // map<mapper_name,map<method_name,NodeType>>
-    pub mapper_node_map: HashMap<String, HashMap<String, NodeType>>,
+    //py lang
+    pub py: Py,
+    //xml lang
+    pub xml: Xml,
     //context of tx
     pub tx_context: SyncMap<String, DBTx>,
     // page plugin
@@ -58,13 +61,14 @@ impl Rbatis {
     pub fn new() -> Self {
         return Self {
             pool: OnceCell::new(),
-            mapper_node_map: HashMap::new(),
             engine: RbatisEngine::new(),
             tx_context: SyncMap::new(),
             page_plugin: Box::new(RbatisPagePlugin {}),
             sql_intercepts: vec![],
             logic_plugin: None,
             log_plugin: Box::new(RbatisLog {}),
+            py: Py { cache: Default::default() },
+            xml: Xml { cache: Default::default() },
         };
     }
 
@@ -77,11 +81,6 @@ impl Rbatis {
         Wrapper::new(&driver.unwrap_or_else(|_| {
             panic!("[rbatis] .new_wrapper() method must be call .link(url) to init first!");
         }))
-    }
-
-    pub fn check(&self) {
-        println!("self.pool: {:?}", self.pool);
-        println!("self.mapper_node_map: {:?}", self.mapper_node_map);
     }
 
     /// link pool
@@ -112,7 +111,7 @@ impl Rbatis {
     /// load xml data into rbatis
     pub fn load_xml(&mut self, mapper_name: &str, data: &str) -> Result<(), crate::core::Error> {
         let xml = Xml::parse(data);
-        self.mapper_node_map.insert(mapper_name.to_string(), xml);
+        self.xml.cache.insert(mapper_name.to_string(), xml);
         return Ok(());
     }
 
@@ -315,17 +314,17 @@ impl Rbatis {
 
     pub async fn fetch_prepare_wrapper<T>(&self, tx_id: &str, w: &Wrapper) -> Result<T, crate::core::Error>
         where T: DeserializeOwned {
-        let w=w.clone().check()?;
+        let w = w.clone().check()?;
         self.fetch_prepare(tx_id, w.sql.as_str(), &w.args).await
     }
 
     pub async fn exec_prepare_wrapper(&self, tx_id: &str, w: &Wrapper) -> Result<DBExecResult, crate::core::Error> {
-        let w=w.clone().check()?;
+        let w = w.clone().check()?;
         self.exec_prepare(tx_id, w.sql.as_str(), &w.args).await
     }
 
     fn py_to_sql(&self, py: &str, arg: &serde_json::Value) -> Result<(String, Vec<serde_json::Value>), crate::core::Error> {
-        let nodes = Py::parse_and_cache(py)?;
+        let nodes = self.py.parse_and_cache(py)?;
         let mut arg_array = vec![];
         let mut env = arg.clone();
         let driver_type = self.driver_type()?;
@@ -335,7 +334,7 @@ impl Rbatis {
     }
 
     fn xml_to_sql(&self, mapper: &str, method: &str, arg: &serde_json::Value) -> Result<(String, Vec<serde_json::Value>), crate::core::Error> {
-        let x = self.mapper_node_map.get(mapper);
+        let x = self.xml.cache.get(mapper);
         let x = x.to_result(|| format!("[rabtis] mapper:'{}' not load into rbatis", mapper))?;
         let node_type = x.get(method);
         let node_type = node_type.to_result(|| format!("[rabtis] mapper:'{}.{}()' not load into rbatis", mapper, method))?;
