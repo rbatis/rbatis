@@ -23,7 +23,7 @@ pub struct ChooseNode {
 impl RbatisAST for ChooseNode {
     fn eval(&self, convert: &crate::core::db::DriverType, env: &mut Value, engine: &RbatisEngine, arg_array: &mut Vec<Value>) -> Result<String, crate::core::Error> {
         if self.when_nodes.is_none() == false {
-            for item in self.when_nodes.clone().unwrap() {
+            for item in self.when_nodes.as_ref().unwrap() {
                 let s = item.eval(convert, env, engine, arg_array);
                 if s.is_ok() {
                     return s;
@@ -31,7 +31,7 @@ impl RbatisAST for ChooseNode {
             }
         }
         if self.otherwise_node.is_none() == false {
-            return self.otherwise_node.clone().unwrap().deref_mut().eval(convert, env, engine, arg_array);
+            return self.otherwise_node.as_ref().unwrap().eval(convert, env, engine, arg_array);
         }
         return Result::Ok("".to_string());
     }
