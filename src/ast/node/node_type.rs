@@ -24,7 +24,6 @@ use crate::ast::node::where_node::WhereNode;
 use crate::core::convert::StmtConvert;
 use crate::engine::node::Node;
 use crate::engine::runtime::RbatisEngine;
-use crate::ast::node::custom_node::CustomNode;
 
 #[derive(Clone, Debug)]
 pub enum NodeType {
@@ -40,7 +39,6 @@ pub enum NodeType {
     NInclude(IncludeNode),
     NSet(SetNode),
     NWhere(WhereNode),
-    NCustomNode(CustomNode),
 
     NSqlNode(SqlNode),
     //CRUD
@@ -93,7 +91,6 @@ impl NodeType {
             NodeType::NSet(node) => return Some(&node.childs),
             NodeType::NWhere(node) => return Some(&node.childs),
             NodeType::NSqlNode(node) => return Some(&node.childs),
-            NodeType::NCustomNode(node) => return Some(&node.childs),
         }
     }
     pub fn childs_mut(&mut self) -> Option<&mut Vec<NodeType>> {
@@ -121,7 +118,6 @@ impl NodeType {
             NodeType::NWhere(node) => return Some(&mut node.childs),
 
             NodeType::NSqlNode(node) => return Some(&mut node.childs),
-            NodeType::NCustomNode(node) => return Some(&mut node.childs),
         }
     }
 }
@@ -150,10 +146,7 @@ impl<'a> RbatisAST for NodeType {
             NodeType::NInclude(node) => return node.eval(convert, env, engine, arg_array),
             NodeType::NSet(node) => return node.eval(convert, env, engine, arg_array),
             NodeType::NWhere(node) => return node.eval(convert, env, engine, arg_array),
-
             NodeType::NSqlNode(node) => return node.eval(convert, env, engine, arg_array),
-
-            NodeType::NCustomNode(node) => return  node.eval(convert, env, engine, arg_array),
         }
     }
 }
@@ -184,7 +177,6 @@ impl SqlNodePrint for NodeType {
             NodeType::NWhere(node) => return node.print(deep),
 
             NodeType::NSqlNode(node) => return node.print(deep),
-            NodeType::NCustomNode(node) => return node.print(deep),
         }
     }
 }
