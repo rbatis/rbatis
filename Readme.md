@@ -15,7 +15,7 @@
 ![Image text](logo.png)
 
 ##### Why not diesel or not sqlx ? 
-| Framework    | Async/.await | Learning curve | Supports for py/Wrapper/built-in CRUD | Logical delete plugin| Pagination plugin
+| Framework    | Async/.await | Learning curve | Dynamic SQL/py/Wrapper/built-in CRUD | Logical delete plugin| Pagination plugin
 | ------ | ------ |------ |------ |------ |------ |
 | rbatis | √     | easy   |   √     |    √     |   √     |  
 | sqlx   | √     | hard (depends on macros and env. variables) |   x     |   x     |   x     |  
