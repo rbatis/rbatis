@@ -206,7 +206,7 @@ impl Py {
                     for index in 0..len {
                         let index = len - 1 - index;
                         let item = vecs[index];
-                        childs = vec![Self::parse_trim_node(item, main_node, x, space, childs.clone())?];
+                        childs = vec![Self::parse_trim_node(item, main_node, x, space, childs)?];
                         if index == 0 {
                             for x in &childs {
                                 x.print_node();
