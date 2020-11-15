@@ -52,7 +52,7 @@ impl PagePlugin for RbatisPagePlugin {
         sql = sql.replace("order by ", "ORDER BY ");
         sql = sql.trim().to_string();
         if !sql.starts_with("SELECT ") && !sql.contains("FROM ") {
-            return Err(crate::core::Error::from("[rbatis] xml_fetch_page() sql must contains 'select ' And 'from '"));
+            return Err(crate::core::Error::from("[rbatis] make_page_sql() sql must contains 'select ' And 'from '"));
         }
         //count sql
         let mut count_sql = sql.clone();
