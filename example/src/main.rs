@@ -239,43 +239,6 @@ mod test {
         println!("{}", serde_json::to_string(&data).unwrap());
     }
 
-    //示例-Rbatis使用传统XML风格的语法查询
-    #[async_std::test]
-    pub async fn test_xml_sql() {
-        fast_log::init_log("requests.log",
-                           1000,
-                           log::Level::Info,
-                           Some(Box::new(ModuleFilter::new_exclude(vec!["sqlx".to_string()]))),
-                           true);
-        let mut rb = Rbatis::new();
-        rb.link(MYSQL_URL).await.unwrap();
-        //xml数据建议以 XXMapper.xml 的格式存储管理
-        rb.load_xml("test", r#"
-<mapper>
-    <sql id="columns">id,name,pc_link,h5_link,pc_banner_img,h5_banner_img,sort,status,remark,version,create_time,delete_flag</sql>
-    <select id="select_by_condition">
-        <bind name="pattern" value="'%' + name + '%'"/>
-        select <include refid="columns"/> from biz_activity
-        <where>
-            <if test="name != null">and name like #{pattern}</if>
-            <if test="startTime != null">and create_time >= #{startTime}</if>
-            <if test="endTime != null">and create_time &lt;= #{endTime}</if>
-        </where>
-        order by create_time desc
-        <if test="page != null and size != null">limit #{page}, #{size}</if>
-    </select>
-</mapper>"#).unwrap();
-        let arg = &json!({
-            "delete_flag": 1,
-            "name": "test",
-            "startTime": null,
-            "endTime": null,
-            "page": 0,
-            "size": 20
-            });
-        let data: Vec<BizActivity> = rb.xml_fetch("", "test", "select_by_condition", arg).await.unwrap();
-        println!("{}", serde_json::to_string(&data).unwrap_or("".to_string()));
-    }
 
     //示例-Rbatis使用事务
     #[async_std::test]

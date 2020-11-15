@@ -31,7 +31,6 @@ snowflake = ["rustflake"]
 rbatis-core = { version = "1.8.18", path = "rbatis-core", optional = true }
 async-std = { version = "1.7", optional = true }
 chrono = { version = "0.4", features = ["serde"] }
-xml-rs = "0.8"
 lazy_static = "1.4.0"
 #serde
 serde = { version = "1", features = ["derive"] }

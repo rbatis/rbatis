@@ -8,13 +8,8 @@ use serde_json::Number;
 
 use crate::ast::ast::RbatisAST;
 use crate::ast::lang::py::Py;
-use crate::ast::lang::xml::Xml;
-use crate::ast::node::delete_node::DeleteNode;
-use crate::ast::node::insert_node::InsertNode;
 use crate::ast::node::node::do_child_nodes;
 use crate::ast::node::node_type::NodeType;
-use crate::ast::node::select_node::SelectNode;
-use crate::ast::node::update_node::UpdateNode;
 use crate::core::db::{DriverType, PoolOptions};
 use crate::core::db_adapter::{DBExecResult, DBPool, DBPoolConn, DBQuery, DBTx};
 use crate::core::Error;
@@ -37,8 +32,6 @@ pub struct Rbatis {
     pub engine: RbatisEngine,
     //py lang
     pub py: Py,
-    //xml lang
-    pub xml: Xml,
     //context of tx
     pub tx_context: SyncMap<String, DBTx>,
     // page plugin
@@ -68,7 +61,6 @@ impl Rbatis {
             logic_plugin: None,
             log_plugin: Box::new(RbatisLog {}),
             py: Py { cache: Default::default() },
-            xml: Xml { cache: Default::default() },
         };
     }
 
@@ -105,13 +97,6 @@ impl Rbatis {
         self.pool.get_or_init(|| {
             pool
         });
-        return Ok(());
-    }
-
-    /// load xml data into rbatis
-    pub fn load_xml(&mut self, mapper_name: &str, data: &str) -> Result<(), crate::core::Error> {
-        let xml = Xml::parse(data);
-        self.xml.cache.insert(mapper_name.to_string(), xml);
         return Ok(());
     }
 
@@ -333,36 +318,6 @@ impl Rbatis {
         return Ok((sql, arg_array));
     }
 
-    fn xml_to_sql(&self, mapper: &str, method: &str, arg: &serde_json::Value) -> Result<(String, Vec<serde_json::Value>), crate::core::Error> {
-        let x = self.xml.cache.get(mapper);
-        let x = x.to_result(|| format!("[rabtis] mapper:'{}' not load into rbatis", mapper))?;
-        let node_type = x.get(method);
-        let node_type = node_type.to_result(|| format!("[rabtis] mapper:'{}.{}()' not load into rbatis", mapper, method))?;
-        let mut arg_array = vec![];
-
-        let driver_type = self.driver_type()?;
-        let mut sql = node_type.eval(&driver_type, &mut arg.clone(), &self.engine, &mut arg_array)?;
-        sql = sql.trim().to_string();
-        return Ok((sql, arg_array));
-    }
-
-    /// fetch result(prepare sql)
-    pub async fn xml_fetch<T, Ser>(&self, tx_id: &str, mapper: &str, method: &str, arg: &Ser) -> Result<T, crate::core::Error>
-        where T: DeserializeOwned, Ser: Serialize + Send + Sync {
-        let json = json!(arg);
-        let (sql, args) = self.xml_to_sql(mapper, method, &json)?;
-        return self.fetch_prepare(tx_id, sql.as_str(), &args).await;
-    }
-
-    /// exec sql(prepare sql)
-    pub async fn xml_exec<Ser>(&self, tx_id: &str, mapper: &str, method: &str, arg: &Ser) -> Result<DBExecResult, crate::core::Error>
-        where Ser: Serialize + Send + Sync {
-        let json = json!(arg);
-        let (sql, args) = self.xml_to_sql(mapper, method, &json)?;
-        return self.exec_prepare(tx_id, sql.as_str(), &args).await;
-    }
-
-
     /// fetch query result(prepare sql)
     ///for example:
     ///
@@ -428,15 +383,6 @@ impl Rbatis {
         page_result.set_records(data.unwrap_or(vec![]));
         page_result.pages = page_result.get_pages();
         return Ok(page_result);
-    }
-
-
-    /// fetch result(prepare sql)
-    pub async fn xml_fetch_page<T, Ser>(&self, tx_id: &str, mapper: &str, method: &str, arg: &Ser, page: &dyn IPageRequest) -> Result<Page<T>, crate::core::Error>
-        where T: DeserializeOwned + Serialize + Send + Sync, Ser: Serialize + Send + Sync {
-        let json = json!(arg);
-        let (sql, args) = self.xml_to_sql(mapper, method, &json)?;
-        return self.fetch_page::<T>(tx_id, sql.as_str(), &args, page).await;
     }
 
     /// fetch result(prepare sql)

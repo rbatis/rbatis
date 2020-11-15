@@ -301,7 +301,10 @@ mod test {
       #{item}
     trim 'AND':
       AND delete_flag = #{del2}
-    WHERE id  = '2';";
+    set:
+        a=1
+    where:
+        id  = '2';";
         //println!("{}", s);
         let pys = Py::parse(s);
         match pys {
