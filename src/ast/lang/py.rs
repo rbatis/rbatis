@@ -40,8 +40,8 @@ impl Py {
             if nodes.is_some() {
                 return Ok(nodes.unwrap().clone());
             } else {
-                let nods = Py::parse(arg)?;
                 drop(rd);
+                let nods = Py::parse(arg)?;
                 self.try_cache_into(arg, nods.clone());
                 return Ok(nods);
             }
