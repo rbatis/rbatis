@@ -40,7 +40,7 @@ pub enum NodeType {
     NInclude(IncludeNode),
     NSet(SetNode),
     NWhere(WhereNode),
-    NCustomNode(Box<CustomNode>),
+    NCustomNode(CustomNode),
 
     NSqlNode(SqlNode),
     //CRUD
