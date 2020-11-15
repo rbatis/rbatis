@@ -24,7 +24,6 @@ use crate::engine::runtime::RbatisEngine;
 use crate::utils::xml_loader::{Element, load_xml};
 
 pub struct Xml {
-    // map<mapper_name,map<method_name,NodeType>>
     pub cache: HashMap<String, HashMap<String, NodeType>>,
 }
 

@@ -7,21 +7,18 @@ use serde_json::Value;
 use crate::engine::node::Node;
 use crate::engine::parser::parse;
 
-lazy_static! {
-   /// for engine: if cache not have expr value,it will be redo parser code.not wait cache return for no blocking
-   /// global expr cache,use RwLock but not blocking
-   static ref  EXPR_CACHE: RwLock<HashMap<String, Node>> = RwLock::new(HashMap::new());
-}
 
 /// the express engine for  exe code on runtime
-#[derive(Clone, Debug)]
+#[derive(Debug)]
 pub struct RbatisEngine {
+    pub expr_cache: RwLock<HashMap<String, Node>>,
     pub opt_map: OptMap<'static>,
 }
 
 impl RbatisEngine {
     pub fn new() -> Self {
         return Self {
+            expr_cache: Default::default(),
             opt_map: OptMap::new(),
         };
     }
@@ -45,7 +42,7 @@ impl RbatisEngine {
 
     /// read from cache,if not exist return null
     fn cache_read(&self, arg: &str) -> Option<Node> {
-        let cache_read = EXPR_CACHE.try_read();
+        let cache_read = self.expr_cache.try_read();
         if cache_read.is_err() {
             return Option::None;
         }
@@ -60,7 +57,7 @@ impl RbatisEngine {
 
     /// save to cache,if fail nothing to do.
     fn cache_insert(&self, key: String, node: Node) -> Result<(), crate::core::Error> {
-        let cache_write = EXPR_CACHE.try_write();
+        let cache_write = self.expr_cache.try_write();
         if cache_write.is_err() {
             return Err(crate::core::Error::from(cache_write.err().unwrap().to_string()));
         }
