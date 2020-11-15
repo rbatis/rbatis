@@ -21,7 +21,7 @@ pub struct ChooseNode {
 }
 
 impl RbatisAST for ChooseNode {
-    fn eval(&self, convert: &impl StmtConvert, env: &mut Value, engine: &RbatisEngine, arg_array: &mut Vec<Value>) -> Result<String, crate::core::Error> {
+    fn eval(&self, convert: &crate::core::db::DriverType, env: &mut Value, engine: &RbatisEngine, arg_array: &mut Vec<Value>) -> Result<String, crate::core::Error> {
         if self.when_nodes.is_none() == false {
             for item in self.when_nodes.clone().unwrap() {
                 let s = item.eval(convert, env, engine, arg_array);

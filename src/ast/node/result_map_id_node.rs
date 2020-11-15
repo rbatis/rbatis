@@ -18,7 +18,7 @@ pub struct ResultMapIdNode {
 
 
 impl RbatisAST for ResultMapIdNode {
-    fn eval(&self, convert: &impl StmtConvert, env: &mut Value, engine: &RbatisEngine, arg_array: &mut Vec<Value>) -> Result<String, crate::core::Error> {
+    fn eval(&self, convert: &crate::core::db::DriverType, env: &mut Value, engine: &RbatisEngine, arg_array: &mut Vec<Value>) -> Result<String, crate::core::Error> {
         return Result::Ok("".to_string());
     }
 }

@@ -127,7 +127,7 @@ impl NodeType {
 }
 
 impl<'a> RbatisAST for NodeType {
-    fn eval(&self, convert: &impl StmtConvert, env: &mut Value, engine: &RbatisEngine, arg_array: &mut Vec<Value>) -> Result<String, crate::core::Error> {
+    fn eval(&self, convert: &crate::core::db::DriverType, env: &mut Value, engine: &RbatisEngine, arg_array: &mut Vec<Value>) -> Result<String, crate::core::Error> {
         match self {
             NodeType::NResultMapIdNode(node) => return node.eval(convert, env, engine, arg_array),
             NodeType::NResultMapResultNode(node) => return node.eval(convert, env, engine, arg_array),

@@ -18,7 +18,7 @@ pub struct WhenNode {
 
 
 impl RbatisAST for WhenNode {
-    fn eval(&self, convert: &impl StmtConvert, env: &mut Value, engine: &RbatisEngine, arg_array: &mut Vec<Value>) -> Result<String, crate::core::Error> {
+    fn eval(&self, convert: &crate::core::db::DriverType, env: &mut Value, engine: &RbatisEngine, arg_array: &mut Vec<Value>) -> Result<String, crate::core::Error> {
         let result = engine.eval(self.test.as_str(), env)?;
         if !result.is_boolean() {
             return Result::Err(crate::core::Error::from("[rbatis] test:'".to_owned() + self.test.as_str() + "' is not return bool!"));

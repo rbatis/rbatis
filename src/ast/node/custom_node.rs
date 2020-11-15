@@ -14,7 +14,7 @@ pub struct CustomNode {
 }
 
 impl RbatisAST for CustomNode {
-    fn eval(&self, convert: &impl StmtConvert, env: &mut Value, engine: &RbatisEngine, arg_result: &mut Vec<Value>) -> Result<String, Error> {
+    fn eval(&self, convert: &crate::core::db::DriverType, env: &mut Value, engine: &RbatisEngine, arg_result: &mut Vec<Value>) -> Result<String, Error> {
         //TODO
         unimplemented!()
     }
