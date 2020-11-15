@@ -368,10 +368,10 @@ mod test {
 
     #[py_sql(RB, "insert into biz_activity
                   (
-                  trim ',':for key,item in arg:
+                  trim ',': for key,item in arg:
                      ${key},
                   ) VALUES (
-                  trim ',':for v in arg:
+                  trim ',': for v in arg:
                       #{v},
                   )   ")]
     fn py_insert(arg: &BizActivity) -> DBExecResult {}

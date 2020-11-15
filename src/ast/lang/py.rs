@@ -199,8 +199,8 @@ impl Py {
         }
         if trim_x.ends_with(":") {
             trim_x = trim_x[0..trim_x.len() - 1].trim();
-            if trim_x.contains(":") {
-                let vecs: Vec<&str> = trim_x.split(":").collect();
+            if trim_x.contains(": ") {
+                let vecs: Vec<&str> = trim_x.split(": ").collect();
                 if vecs.len() > 1 {
                     let len = vecs.len();
                     for index in 0..len {
