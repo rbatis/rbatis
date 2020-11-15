@@ -18,18 +18,14 @@ pub struct ForEachNode {
     pub collection: String,
     pub index: String,
     pub item: String,
-    pub open: String,
-    pub close: String,
-    pub separator: String,
+    // pub open: String,
+    // pub close: String,
+    // pub separator: String,
 }
 
 impl RbatisAST for ForEachNode {
     fn eval(&self, convert: &crate::core::db::DriverType, env: &mut Value, engine: &RbatisEngine, arg_array: &mut Vec<Value>) -> Result<String, crate::core::Error> {
         let mut result = String::new();
-
-        //open
-        result = result + self.open.as_str();
-
         let collection_value = utils::value_util::get_deep_value(self.collection.as_str(), env);
         if collection_value.is_null() {
             return Result::Err(crate::core::Error::from("[rbatis] collection name:".to_owned() + self.collection.as_str() + " is none value!"));
@@ -38,7 +34,6 @@ impl RbatisAST for ForEachNode {
             let collection = collection_value.as_array().unwrap();
             let collection_len = collection.len() as i32;
             let mut index = -1;
-            let have_separator = !self.separator.is_empty();
             for item in collection {
                 index = index + 1;
                 //build temp arg
@@ -48,18 +43,12 @@ impl RbatisAST for ForEachNode {
                 let mut temp_arg: Value = Value::Object(obj_map);
                 let item_result = do_child_nodes(convert, &self.childs, &mut temp_arg, engine, arg_array)?;
                 result = result + item_result.as_str();
-                if have_separator && (index + 1) < collection_len {
-                    result = result + self.separator.as_str();
-                }
             }
-            //close
-            result = result + self.close.as_str();
             return Result::Ok(result);
         }else if collection_value.is_object(){
             let collection = collection_value.as_object().unwrap();
             let collection_len = collection.len() as i32;
             let mut index = -1;
-            let have_separator = !self.separator.is_empty();
             for (key,item) in collection {
                 index = index + 1;
                 //build temp arg
@@ -69,12 +58,7 @@ impl RbatisAST for ForEachNode {
                 let mut temp_arg: Value = Value::Object(obj_map);
                 let item_result = do_child_nodes(convert, &self.childs, &mut temp_arg, engine, arg_array)?;
                 result = result + item_result.as_str();
-                if have_separator && (index + 1) < collection_len {
-                    result = result + self.separator.as_str();
-                }
             }
-            //close
-            result = result + self.close.as_str();
             return Result::Ok(result);
         }else{
             return Result::Err(crate::core::Error::from("[rbatis] collection name:".to_owned() + self.collection.as_str() + " is not a array or object/map value!"));
@@ -88,9 +72,6 @@ impl SqlNodePrint for ForEachNode {
         result = result + " collection=\"" + self.collection.as_str() + "\"";
         result = result + " index=\"" + self.index.as_str() + "\"";
         result = result + " item=\"" + self.item.as_str() + "\"";
-        result = result + " open=\"" + self.open.as_str() + "\"";
-        result = result + " close=\"" + self.close.as_str() + "\"";
-        result = result + " separator=\"" + self.separator.as_str() + "\"";
         result = result + " >";
 
         result = result + print_child(self.childs.as_ref(), deep + 1).as_str();
@@ -107,9 +88,6 @@ pub fn test_for_each_node() {
         collection: "arg".to_string(),
         index: "index".to_string(),
         item: "item".to_string(),
-        open: "(".to_string(),
-        close: ")".to_string(),
-        separator: ",".to_string(),
     };
     let mut john = json!({
         "arg": [1,2,3],
@@ -128,9 +106,6 @@ pub fn test_for_each_object_node() {
         collection: "arg".to_string(),
         index: "index".to_string(),
         item: "item".to_string(),
-        open: "(".to_string(),
-        close: ")".to_string(),
-        separator: ",".to_string(),
     };
     let mut john = json!({
         "arg": {

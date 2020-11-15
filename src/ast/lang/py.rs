@@ -123,9 +123,6 @@ impl Py {
                     collection: col.to_string(),
                     index: index.to_string(),
                     item: item.to_string(),
-                    open: "".to_string(),
-                    close: "".to_string(),
-                    separator: "".to_string(),
                 }));
                 return Ok(());
             } else if trim_x.starts_with("trim ") {
