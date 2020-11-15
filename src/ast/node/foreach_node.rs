@@ -18,9 +18,6 @@ pub struct ForEachNode {
     pub collection: String,
     pub index: String,
     pub item: String,
-    // pub open: String,
-    // pub close: String,
-    // pub separator: String,
 }
 
 impl RbatisAST for ForEachNode {
