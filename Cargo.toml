@@ -23,7 +23,7 @@ default = ["async-io"]
 actix = ["rbatis-core/actix", "async-std"]
 tokio02 = ["rbatis-core/tokio02", "async-std/tokio02"]
 tokio03 = ["rbatis-core/tokio03", "async-std/tokio03"]
-async-io = ["rbatis-core", "async-std"]
+async-io = ["rbatis-core/async-io", "async-std"]
 
 snowflake = ["rustflake"]
 
