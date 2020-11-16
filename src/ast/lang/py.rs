@@ -48,11 +48,13 @@ impl Py {
         }
     }
 
-    fn try_cache_into(&self, py: &str, arg: Vec<NodeType>) {
+    fn try_cache_into(&self, py: &str, arg: Vec<NodeType>) ->Option<Vec<NodeType>>{
         let rd = self.cache.try_write();
         if rd.is_ok() {
             rd.unwrap().insert(py.to_string(), arg);
+            return None;
         }
+        return Some(arg);
     }
 
     /// parser py string data
@@ -138,16 +140,16 @@ impl Py {
                 when_nodes: None,
                 otherwise_node: None,
             };
-            for x in &childs {
+            for x in childs {
                 match x {
                     NodeType::NWhen(_) => {
                         if node.when_nodes.is_none() {
                             node.when_nodes = Some(vec![]);
                         }
-                        node.when_nodes.as_mut().unwrap().push(x.clone());
+                        node.when_nodes.as_mut().unwrap().push(x);
                     }
                     NodeType::NOtherwise(_) => {
-                        node.otherwise_node = Some(Box::new(x.clone()));
+                        node.otherwise_node = Some(Box::new(x));
                     }
                     _ => {
                         return Err(crate::core::Error::from("[rbatis] parser node fail,choose node' child must be when and otherwise nodes!".to_string()));
