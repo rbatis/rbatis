@@ -1,5 +1,4 @@
 use std::time::Duration;
-
 use serde::{Deserialize, Serialize};
 use serde::de::DeserializeOwned;
 use sqlx_core::acquire::Acquire;
@@ -9,21 +8,23 @@ use sqlx_core::database::Database;
 use sqlx_core::done::Done;
 use sqlx_core::encode::Encode;
 use sqlx_core::executor::Executor;
-use sqlx_core::mssql::{Mssql, MssqlArguments, MssqlConnection, MssqlDone, MssqlPool, MssqlRow, MssqlConnectOptions};
-use sqlx_core::mysql::{MySql, MySqlArguments, MySqlConnection, MySqlDone, MySqlPool, MySqlRow, MySqlConnectOptions};
-use sqlx_core::pool::PoolConnection;
-use sqlx_core::postgres::{PgArguments, PgConnection, PgConnectOptions, PgDone, PgPool, PgRow, Postgres, PgPoolOptions};
 use sqlx_core::query::{Query, query};
-use sqlx_core::sqlite::{Sqlite, SqliteArguments, SqliteConnection, SqliteDone, SqlitePool, SqliteRow, SqliteConnectOptions};
+use sqlx_core::pool::PoolConnection;
 use sqlx_core::transaction::Transaction;
 use sqlx_core::types::Type;
-
 use crate::convert::RefJsonCodec;
 use crate::db::{DriverType, PoolOptions};
 use crate::decode::json_decode;
 use crate::Error;
 use crate::runtime::Mutex;
 use std::str::FromStr;
+
+//databases
+use sqlx_core::mssql::{Mssql, MssqlArguments, MssqlConnection, MssqlDone, MssqlPool, MssqlRow, MssqlConnectOptions};
+use sqlx_core::mysql::{MySql, MySqlArguments, MySqlConnection, MySqlDone, MySqlPool, MySqlRow, MySqlConnectOptions};
+use sqlx_core::postgres::{Postgres, PgArguments, PgConnection, PgConnectOptions, PgDone, PgPool, PgRow, PgPoolOptions};
+use sqlx_core::sqlite::{Sqlite, SqliteArguments, SqliteConnection, SqliteDone, SqlitePool, SqliteRow, SqliteConnectOptions};
+
 
 #[derive(Debug)]
 pub struct DBPool {
@@ -46,12 +47,12 @@ impl DBPool {
             mssql: None,
         };
         if driver.starts_with("mysql") {
-            let opt=MySqlConnectOptions::from_str(driver);
-            if opt.is_err(){
-                return Err(Error::from(format!("{:?}",opt.err().unwrap())));
+            let opt = MySqlConnectOptions::from_str(driver);
+            if opt.is_err() {
+                return Err(Error::from(format!("{:?}", opt.err().unwrap())));
             }
             let mut opt = opt.unwrap();
-            opt.log_slow_statements(log::LevelFilter::Off,Duration::from_secs(0));
+            opt.log_slow_statements(log::LevelFilter::Off, Duration::from_secs(0));
             opt.log_statements(log::LevelFilter::Off);
             pool.driver_type = DriverType::Mysql;
             let conn = MySqlPool::connect_with(opt).await;
@@ -60,12 +61,12 @@ impl DBPool {
             }
             pool.mysql = Some(conn.unwrap());
         } else if driver.starts_with("postgres") {
-            let opt=PgConnectOptions::from_str(driver);
-            if opt.is_err(){
-                return Err(Error::from(format!("{:?}",opt.err().unwrap())));
+            let opt = PgConnectOptions::from_str(driver);
+            if opt.is_err() {
+                return Err(Error::from(format!("{:?}", opt.err().unwrap())));
             }
             let mut opt = opt.unwrap();
-            opt.log_slow_statements(log::LevelFilter::Off,Duration::from_secs(0));
+            opt.log_slow_statements(log::LevelFilter::Off, Duration::from_secs(0));
             opt.log_statements(log::LevelFilter::Off);
             pool.driver_type = DriverType::Postgres;
             let conn = PgPool::connect_with(opt).await;
@@ -74,12 +75,12 @@ impl DBPool {
             }
             pool.postgres = Some(conn.unwrap());
         } else if driver.starts_with("sqlite") {
-            let opt=SqliteConnectOptions::from_str(driver);
-            if opt.is_err(){
-                return Err(Error::from(format!("{:?}",opt.err().unwrap())));
+            let opt = SqliteConnectOptions::from_str(driver);
+            if opt.is_err() {
+                return Err(Error::from(format!("{:?}", opt.err().unwrap())));
             }
             let mut opt = opt.unwrap();
-            opt.log_slow_statements(log::LevelFilter::Off,Duration::from_secs(0));
+            opt.log_slow_statements(log::LevelFilter::Off, Duration::from_secs(0));
             opt.log_statements(log::LevelFilter::Off);
             pool.driver_type = DriverType::Sqlite;
             let conn = SqlitePool::connect_with(opt).await;
@@ -88,12 +89,12 @@ impl DBPool {
             }
             pool.sqlite = Some(conn.unwrap());
         } else if driver.starts_with("mssql") || driver.starts_with("sqlserver") {
-            let opt=MssqlConnectOptions::from_str(driver);
-            if opt.is_err(){
-                return Err(Error::from(format!("{:?}",opt.err().unwrap())));
+            let opt = MssqlConnectOptions::from_str(driver);
+            if opt.is_err() {
+                return Err(Error::from(format!("{:?}", opt.err().unwrap())));
             }
             let mut opt = opt.unwrap();
-            opt.log_slow_statements(log::LevelFilter::Off,Duration::from_secs(0));
+            opt.log_slow_statements(log::LevelFilter::Off, Duration::from_secs(0));
             opt.log_statements(log::LevelFilter::Off);
             pool.driver_type = DriverType::Mssql;
             let conn = MssqlPool::connect_with(opt).await;
@@ -117,12 +118,12 @@ impl DBPool {
             mssql: None,
         };
         if driver.starts_with("mysql") {
-            let conn_opt=MySqlConnectOptions::from_str(driver);
-            if conn_opt.is_err(){
-                return Err(Error::from(format!("{:?}",conn_opt.err().unwrap())));
+            let conn_opt = MySqlConnectOptions::from_str(driver);
+            if conn_opt.is_err() {
+                return Err(Error::from(format!("{:?}", conn_opt.err().unwrap())));
             }
             let mut conn_opt = conn_opt.unwrap();
-            conn_opt.log_slow_statements(log::LevelFilter::Off,Duration::from_secs(0));
+            conn_opt.log_slow_statements(log::LevelFilter::Off, Duration::from_secs(0));
             conn_opt.log_statements(log::LevelFilter::Off);
 
             pool.driver_type = DriverType::Mysql;
@@ -139,12 +140,12 @@ impl DBPool {
             }
             pool.mysql = Some(p.unwrap());
         } else if driver.starts_with("postgres") {
-            let conn_opt=PgConnectOptions::from_str(driver);
-            if conn_opt.is_err(){
-                return Err(Error::from(format!("{:?}",conn_opt.err().unwrap())));
+            let conn_opt = PgConnectOptions::from_str(driver);
+            if conn_opt.is_err() {
+                return Err(Error::from(format!("{:?}", conn_opt.err().unwrap())));
             }
             let mut conn_opt = conn_opt.unwrap();
-            conn_opt.log_slow_statements(log::LevelFilter::Off,Duration::from_secs(0));
+            conn_opt.log_slow_statements(log::LevelFilter::Off, Duration::from_secs(0));
             conn_opt.log_statements(log::LevelFilter::Off);
             pool.driver_type = DriverType::Postgres;
             let build = sqlx_core::pool::PoolOptions::<Postgres>::new()
@@ -160,12 +161,12 @@ impl DBPool {
             }
             pool.postgres = Some(p.unwrap());
         } else if driver.starts_with("sqlite") {
-            let conn_opt=SqliteConnectOptions::from_str(driver);
-            if conn_opt.is_err(){
-                return Err(Error::from(format!("{:?}",conn_opt.err().unwrap())));
+            let conn_opt = SqliteConnectOptions::from_str(driver);
+            if conn_opt.is_err() {
+                return Err(Error::from(format!("{:?}", conn_opt.err().unwrap())));
             }
             let mut conn_opt = conn_opt.unwrap();
-            conn_opt.log_slow_statements(log::LevelFilter::Off,Duration::from_secs(0));
+            conn_opt.log_slow_statements(log::LevelFilter::Off, Duration::from_secs(0));
             conn_opt.log_statements(log::LevelFilter::Off);
             pool.driver_type = DriverType::Sqlite;
             let build = sqlx_core::pool::PoolOptions::<Sqlite>::new()
@@ -181,12 +182,12 @@ impl DBPool {
             }
             pool.sqlite = Some(p.unwrap());
         } else if driver.starts_with("mssql") || driver.starts_with("sqlserver") {
-            let conn_opt=MssqlConnectOptions::from_str(driver);
-            if conn_opt.is_err(){
-                return Err(Error::from(format!("{:?}",conn_opt.err().unwrap())));
+            let conn_opt = MssqlConnectOptions::from_str(driver);
+            if conn_opt.is_err() {
+                return Err(Error::from(format!("{:?}", conn_opt.err().unwrap())));
             }
             let mut conn_opt = conn_opt.unwrap();
-            conn_opt.log_slow_statements(log::LevelFilter::Off,Duration::from_secs(0));
+            conn_opt.log_slow_statements(log::LevelFilter::Off, Duration::from_secs(0));
             conn_opt.log_statements(log::LevelFilter::Off);
             pool.driver_type = DriverType::Mssql;
             let build = sqlx_core::pool::PoolOptions::<Mssql>::new()
