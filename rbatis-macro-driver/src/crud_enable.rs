@@ -1,3 +1,5 @@
+use std::collections::HashMap;
+
 use proc_macro2::{Ident, Span};
 use quote::quote;
 use quote::ToTokens;
@@ -5,7 +7,6 @@ use syn;
 use syn::ext::IdentExt;
 
 use crate::proc_macro::TokenStream;
-use std::collections::HashMap;
 
 ///impl CRUDEnable
 pub(crate) fn impl_crud_driver(ast: &syn::DeriveInput, arg_id_type: &str, arg_id_name: &str, arg_table_name: &str, arg_table_columns: &str) -> TokenStream {
@@ -65,16 +66,16 @@ fn gen_table_name(data: &syn::Ident) -> String {
 }
 
 fn gen_fields(data: &syn::Data) -> proc_macro2::TokenStream {
-    let mut fields=String::new();
+    let mut fields = String::new();
     match &data {
         syn::Data::Struct(s) => {
             let mut index = 0;
             for field in &s.fields {
                 let field_name = &field.ident.as_ref().map(|ele| ele.unraw()).to_token_stream().to_string();
                 if index == 0 {
-                    fields=fields+field_name
+                    fields = fields + field_name
                 } else {
-                    fields=fields+","+field_name
+                    fields = fields + "," + field_name
                 }
                 index += 1;
             }
@@ -175,7 +176,7 @@ fn read_config(arg: &str) -> CrudEnableConfig {
     let mut map = HashMap::new();
     for item in keys {
         let item = item.trim().replace("\n", "");
-        if item.is_empty(){
+        if item.is_empty() {
             continue;
         }
         let kvs: Vec<&str> = item.split(":").collect();
