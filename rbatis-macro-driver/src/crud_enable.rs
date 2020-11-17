@@ -30,7 +30,8 @@ pub(crate) fn impl_crud_driver(ast: &syn::DeriveInput, arg_id_type: &str, arg_id
     }
     let fields;
     if arg_table_columns.is_empty() {
-        fields = gen_fields(&ast.data);
+        let new_fields = gen_fields(&ast.data);
+        fields = quote! {#new_fields.to_string()};
     } else {
         fields = quote! {#arg_table_columns.to_string()};
     }
@@ -64,27 +65,25 @@ fn gen_table_name(data: &syn::Ident) -> String {
 }
 
 fn gen_fields(data: &syn::Data) -> proc_macro2::TokenStream {
-    let mut fields = quote! { String::new() };
+    let mut fields=String::new();
     match &data {
         syn::Data::Struct(s) => {
             let mut index = 0;
             for field in &s.fields {
                 let field_name = &field.ident.as_ref().map(|ele| ele.unraw()).to_token_stream().to_string();
                 if index == 0 {
-                    fields = quote! {
-                       #fields+#field_name
-                     };
+                    fields=fields+field_name
                 } else {
-                    fields = quote! {
-                       #fields+","+#field_name
-                     };
+                    fields=fields+","+field_name
                 }
                 index += 1;
             }
         }
-        _ => {}
+        _ => {
+            panic!("[rbatis] only support struct for crud_enable's macro!")
+        }
     }
-    fields
+    fields.to_token_stream()
 }
 
 
