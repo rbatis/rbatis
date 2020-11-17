@@ -1,8 +1,6 @@
 extern crate serde_json;
 
-use std::any::Any;
 use std::time::SystemTime;
-
 use chrono::Local;
 use serde_json::{json, Map};
 use serde_json::Value;

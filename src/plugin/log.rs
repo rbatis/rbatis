@@ -2,6 +2,10 @@ use log::{debug, error, info, LevelFilter, trace, warn};
 use std::ops::Deref;
 /// log plugin
 pub trait LogPlugin: Send + Sync {
+    ///the name
+    fn name(&self) -> &str{
+        std::any::type_name::<Self>()
+    }
     fn is_enable(&self) -> bool;
     fn do_log(&self, data: &str);
     fn error(&self, data: &str);
