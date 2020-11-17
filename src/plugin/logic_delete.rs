@@ -5,6 +5,10 @@ use crate::core::Error;
 
 /// Logic Delete Plugin trait
 pub trait LogicDelete: Send + Sync {
+    ///the name
+    fn name(&self) -> &str{
+        std::any::type_name::<Self>()
+    }
     /// database column
     fn column(&self) -> &str;
     /// deleted data,must be i32

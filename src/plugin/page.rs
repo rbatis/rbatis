@@ -11,6 +11,10 @@ use crate::sql::PageLimit;
 
 ///default page plugin
 pub trait PagePlugin: Send + Sync {
+    ///the name
+    fn name(&self) -> &str{
+        std::any::type_name::<Self>()
+    }
     /// return 2 sql for select ,  (count_sql,select_sql)
     fn make_page_sql(&self, driver_type: &DriverType, tx_id: &str, sql: &str, args: &Vec<serde_json::Value>, page: &dyn IPageRequest) -> Result<(String, String), crate::core::Error>;
 
