@@ -46,6 +46,11 @@ impl From<std::string::String> for Error {
     }
 }
 
+impl From<&dyn std::error::Error> for Error {
+    fn from(arg: &dyn std::error::Error) -> Self {
+        return Error::E(arg.to_string());
+    }
+}
 
 impl Clone for Error {
     fn clone(&self) -> Self {
