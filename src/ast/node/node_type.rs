@@ -5,7 +5,7 @@ use crate::ast::node::bind_node::BindNode;
 use crate::ast::node::choose_node::ChooseNode;
 use crate::ast::node::foreach_node::ForEachNode;
 use crate::ast::node::if_node::IfNode;
-use crate::ast::node::node::SqlNodePrint;
+
 use crate::ast::node::otherwise_node::OtherwiseNode;
 use crate::ast::node::set_node::SetNode;
 use crate::ast::node::string_node::StringNode;
@@ -28,17 +28,12 @@ pub enum NodeType {
     NWhen(WhenNode),
     NBind(BindNode),
     NSet(SetNode),
-    NWhere(WhereNode)
+    NWhere(WhereNode),
 }
 
 impl NodeType {
-    pub fn print_node(&self) -> String {
-        return self.print(0);
-    }
-
     pub fn childs(&self) -> Option<&Vec<NodeType>> {
         match self {
-
             NodeType::Null => return None,
             NodeType::NString(node) => return None,
             NodeType::NIf(node) => return Some(&node.childs),
@@ -54,7 +49,6 @@ impl NodeType {
     }
     pub fn childs_mut(&mut self) -> Option<&mut Vec<NodeType>> {
         match self {
-
             NodeType::Null => return None,
             NodeType::NString(node) => return None,
             NodeType::NIf(node) => return Some(&mut node.childs),
@@ -66,7 +60,6 @@ impl NodeType {
             NodeType::NBind(node) => return None,
             NodeType::NSet(node) => return Some(&mut node.childs),
             NodeType::NWhere(node) => return Some(&mut node.childs),
-
         }
     }
 }
@@ -85,26 +78,6 @@ impl<'a> RbatisAST for NodeType {
             NodeType::NBind(node) => return node.eval(convert, env, engine, arg_array),
             NodeType::NSet(node) => return node.eval(convert, env, engine, arg_array),
             NodeType::NWhere(node) => return node.eval(convert, env, engine, arg_array),
-        }
-    }
-}
-
-impl SqlNodePrint for NodeType {
-    fn print(&self, deep: i32) -> String {
-        match self {
-
-            NodeType::Null => return "null".to_string(),
-            NodeType::NString(node) => return node.print(deep),
-            NodeType::NIf(node) => return node.print(deep),
-            NodeType::NTrim(node) => return node.print(deep),
-            NodeType::NForEach(node) => return node.print(deep),
-            NodeType::NChoose(node) => return node.print(deep),
-            NodeType::NOtherwise(node) => return node.print(deep),
-            NodeType::NWhen(node) => return node.print(deep),
-            NodeType::NBind(node) => return node.print(deep),
-            NodeType::NSet(node) => return node.print(deep),
-            NodeType::NWhere(node) => return node.print(deep),
-
         }
     }
 }

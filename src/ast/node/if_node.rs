@@ -5,7 +5,7 @@ use crate::core::convert::StmtConvert;
 use crate::core::db::DriverType;
 
 use crate::ast::ast::RbatisAST;
-use crate::ast::node::node::{create_deep, do_child_nodes, print_child, SqlNodePrint};
+use crate::ast::node::node::{do_child_nodes};
 use crate::ast::node::node_type::NodeType;
 use crate::ast::node::string_node::StringNode;
 use crate::engine::runtime::RbatisEngine;
@@ -28,17 +28,6 @@ impl RbatisAST for IfNode {
         return Result::Ok("".to_string());
     }
 }
-
-impl SqlNodePrint for IfNode {
-    fn print(&self, deep: i32) -> String {
-        let mut result = create_deep(deep) + "<if ";
-        result = result + " test=\"" + self.test.as_str() + "\" >";
-        result = result + print_child(self.childs.as_ref(), deep + 1).as_str();
-        result = result + create_deep(deep).as_str() + "</if>";
-        return result;
-    }
-}
-
 
 #[test]
 pub fn test_if_node() {

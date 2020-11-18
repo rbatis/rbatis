@@ -7,7 +7,6 @@ use crate::core::convert::StmtConvert;
 use crate::core::db::DriverType;
 
 use crate::ast::ast::RbatisAST;
-use crate::ast::node::node::{create_deep, print_child, SqlNodePrint};
 use crate::ast::node::node_type::NodeType;
 use crate::ast::node::node_type::NodeType::NString;
 use crate::ast::node::otherwise_node::OtherwiseNode;
@@ -34,16 +33,6 @@ impl RbatisAST for ChooseNode {
             return self.otherwise_node.as_ref().unwrap().eval(convert, env, engine, arg_array);
         }
         return Result::Ok("".to_string());
-    }
-}
-
-impl SqlNodePrint for ChooseNode {
-    fn print(&self, deep: i32) -> String {
-        let mut result = create_deep(deep) + "<choose>";
-        result = result + print_child(self.when_nodes.as_ref().unwrap(), deep + 1).as_str();
-        result = result + self.otherwise_node.as_ref().unwrap().print(deep).as_str();
-        result = result + create_deep(deep).as_str() + "</choose>";
-        return result;
     }
 }
 

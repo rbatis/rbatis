@@ -211,7 +211,6 @@ impl Py {
                         childs = vec![Self::parse_trim_node(item, main_node, x, space, childs)?];
                         if index == 0 {
                             for x in &childs {
-                                x.print_node();
                                 main_node.push(x.clone());
                             }
                             return Ok(());

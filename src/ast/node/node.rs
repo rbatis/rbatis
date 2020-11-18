@@ -21,11 +21,6 @@ use crate::engine::runtime::RbatisEngine;
 
 use super::node_type::NodeType;
 
-pub trait SqlNodePrint {
-    fn print(&self, deep: i32) -> String;
-}
-
-
 //执行子所有节点
 pub fn do_child_nodes(convert: &crate::core::db::DriverType, child_nodes: &Vec<NodeType>, env: &mut Value, engine: &RbatisEngine, arg_array: &mut Vec<Value>) -> Result<String, crate::core::Error> {
     let mut s = String::new();
@@ -35,25 +30,6 @@ pub fn do_child_nodes(convert: &crate::core::db::DriverType, child_nodes: &Vec<N
     }
     return Result::Ok(s);
 }
-
-
-pub fn print_child(arg: &Vec<impl SqlNodePrint>, deep: i32) -> String {
-    let mut result = String::new();
-    for x in arg {
-        let item = x.print(deep);
-        result = result + "" + item.as_str();
-    }
-    return result;
-}
-
-pub fn create_deep(deep: i32) -> String {
-    let mut s = "\n".to_string();
-    for index in 0..deep {
-        s = s + "  ";
-    }
-    return s;
-}
-
 
 #[test]
 fn test_string_node() {
