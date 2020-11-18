@@ -70,18 +70,18 @@ impl TxManager {
     }
 
     /// begin tx,for new conn
-    pub async fn begin(&self, new_tx_id: &str, pool: &DBPool) -> Result<(), crate::core::Error> {
+    pub async fn begin(&self, new_tx_id: &str, pool: &DBPool) -> Result<u64, crate::core::Error> {
         if new_tx_id.is_empty() {
             return Err(crate::core::Error::from("[rbatis] tx_id can not be empty"));
         }
         let conn: DBTx = pool.begin().await?;
         //send tx to context
         self.tx_context.insert(new_tx_id.to_string(), (conn, TxState::StateBegin(Instant::now()))).await;
-        return Ok(());
+        return Ok(1);
     }
 
     /// commit tx,and return conn
-    pub async fn commit(&self, tx_id: &str) -> Result<i64, crate::core::Error> {
+    pub async fn commit(&self, tx_id: &str) -> Result<u64, crate::core::Error> {
         let tx_op = self.tx_context.remove(tx_id).await;
         if tx_op.is_none() {
             return Err(crate::core::Error::from(format!("[rbatis] tx:{} not exist！", tx_id)));
@@ -92,7 +92,7 @@ impl TxManager {
     }
 
     /// rollback tx,and return conn
-    pub async fn rollback(&self, tx_id: &str) -> Result<i64, crate::core::Error> {
+    pub async fn rollback(&self, tx_id: &str) -> Result<u64, crate::core::Error> {
         let tx_op = self.tx_context.remove(tx_id).await;
         if tx_op.is_none() {
             return Err(crate::core::Error::from(format!("[rbatis] tx:{} not exist！", tx_id)));
