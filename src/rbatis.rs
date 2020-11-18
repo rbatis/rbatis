@@ -25,6 +25,9 @@ use crate::utils::error_util::ToResult;
 use crate::utils::string_util;
 use crate::wrapper::Wrapper;
 
+use std::borrow::BorrowMut;
+use async_std::sync::Arc;
+
 /// rbatis engine
 pub struct Rbatis {
     // the connection pool,use OnceCell init this
@@ -34,7 +37,7 @@ pub struct Rbatis {
     //py lang
     pub py: Py,
     //tx manager
-    pub tx_manager: TxManager,
+    pub tx_manager: Arc<TxManager>,
     // page plugin
     pub page_plugin: Box<dyn PagePlugin>,
     // sql intercept vec chain
@@ -51,12 +54,22 @@ impl Default for Rbatis {
     }
 }
 
+impl Drop for Rbatis{
+    fn drop(&mut self) {
+        let manager= &self.tx_manager;
+        async_std::task::block_on(async {
+            manager.set_alive(false).await;
+        });
+    }
+}
+
+
 impl Rbatis {
     pub fn new() -> Self {
         return Self {
             pool: OnceCell::new(),
             engine: RbatisEngine::new(),
-            tx_manager: TxManager::new(),
+            tx_manager: Arc::new(TxManager::new()),
             page_plugin: Box::new(RbatisPagePlugin {}),
             sql_intercepts: vec![],
             logic_plugin: None,
@@ -85,6 +98,7 @@ impl Rbatis {
         self.pool.get_or_init(|| {
             pool
         });
+        TxManager::tx_polling_check(&self.tx_manager);
         return Ok(());
     }
 

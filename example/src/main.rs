@@ -84,24 +84,25 @@ mod test {
     use std::convert::Infallible;
     use std::thread::sleep;
     use std::time::{Duration, SystemTime};
+
     use log::info;
     use serde_json::json;
     use serde_json::Value;
 
+    use rbatis::ast::ast::RbatisAST;
+    use rbatis::ast::node::custom_node::{CustomNode, CustomNodeGenerate};
+    use rbatis::ast::node::node_type::NodeType;
+    use rbatis::core::db::{DriverType, PoolOptions};
+    use rbatis::core::db_adapter::DBPool;
+    use rbatis::core::Error;
     use rbatis::crud::CRUD;
     use rbatis::crud::CRUDEnable;
+    use rbatis::engine::runtime::RbatisEngine;
     use rbatis::plugin::page::{Page, PageRequest};
     use rbatis::rbatis::Rbatis;
     use rbatis::utils::bencher::QPS;
-    use rbatis::core::db::{PoolOptions, DriverType};
-    use rbatis::core::db_adapter::DBPool;
 
     use crate::BizActivity;
-    use rbatis::ast::node::custom_node::{CustomNodeGenerate, CustomNode};
-    use rbatis::ast::node::node_type::NodeType;
-    use rbatis::core::Error;
-    use rbatis::ast::ast::RbatisAST;
-    use rbatis::engine::runtime::RbatisEngine;
 
     pub const MYSQL_URL: &'static str = "mysql://root:123456@localhost:3306/test";
 
@@ -300,6 +301,28 @@ mod test {
         let v: serde_json::Value = rb.fetch(tx_id, "SELECT count(1) FROM biz_activity;").await.unwrap();
         println!("{}", v.clone());
         rb.commit(tx_id).await.unwrap();
+    }
+
+
+    //示例-Rbatis使用事务
+    #[async_std::test]
+    pub async fn test_tx_manager() {
+        fast_log::init_log("requests.log",
+                           1000,
+                           log::Level::Info,
+                           None,
+                           true);
+
+        let rb: Rbatis = Rbatis::new();
+        rb.link(MYSQL_URL).await.unwrap();
+        let tx_id = "1";
+        rb.begin(tx_id).await.unwrap();
+        let v: serde_json::Value = rb.fetch(tx_id, "SELECT count(1) FROM biz_activity;").await.unwrap();
+        println!("{}", v.clone());
+        let am=rb.tx_manager.clone();
+        drop(rb);
+        println!("alive: {:?}",&am.alive);
+        //rb.commit(tx_id).await.unwrap();
     }
 
     /// 示例-Rbatis使用web框架Tide、async_std
