@@ -234,13 +234,11 @@ impl Node {
         } else if first_index == 0 && last_index == (data.len() - 1) && first_index != last_index {
             let new_str = data.replace("'", "").replace("`", "");
             return Node::new_string(new_str.as_str());
-        } else if is_number(&data.to_string()) {
+        } else if let Ok(n)= is_number(&data.to_string()) {
             if data.find(".").unwrap_or(0) != 0 {
-                let parsed = data.parse().unwrap();
-                return Node::new_number_f64(parsed);
+                return Node::new_number_f64(n);
             } else {
-                let parsed = data.parse().unwrap();
-                return Node::new_number_i64(parsed);
+                return Node::new_number_i64(n as i64);
             }
         } else {
             return Node::new_arg(data);
