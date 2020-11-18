@@ -319,10 +319,8 @@ mod test {
         rb.begin(tx_id).await.unwrap();
         let v: serde_json::Value = rb.fetch(tx_id, "SELECT count(1) FROM biz_activity;").await.unwrap();
         println!("{}", v.clone());
-        let am=rb.tx_manager.clone();
         drop(rb);
-        println!("alive: {:?}",&am.alive);
-        //rb.commit(tx_id).await.unwrap();
+        sleep(Duration::from_secs(10));
     }
 
     /// 示例-Rbatis使用web框架Tide、async_std

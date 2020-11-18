@@ -8,6 +8,7 @@ use rbatis_core::db_adapter::DBPool;
 
 use crate::core::db_adapter::DBTx;
 use crate::core::sync::sync_map::{RefMut, SyncMap};
+use crate::plugin::log::LogPlugin;
 use crate::rbatis::Rbatis;
 
 pub struct TxManager {
@@ -15,14 +16,8 @@ pub struct TxManager {
     pub tx_out_of_time: Duration,
     pub check_interval: Duration,
     pub alive: RwLock<bool>,
+    pub log_plugin: Option<Box<dyn LogPlugin>>,
 }
-
-impl Drop for TxManager {
-    fn drop(&mut self) {
-        println!("drop");
-    }
-}
-
 
 pub enum TxState {
     StateBegin(Instant),
@@ -31,12 +26,13 @@ pub enum TxState {
 
 
 impl TxManager {
-    pub fn new() -> Self {
+    pub fn new(plugin: Box<dyn LogPlugin>) -> Self {
         Self {
             tx_context: SyncMap::new(),
             tx_out_of_time: Duration::from_secs(10),
             check_interval: Duration::from_secs(5),
             alive: RwLock::new(true),
+            log_plugin: Some(plugin),
         }
     }
 
@@ -49,6 +45,19 @@ impl TxManager {
     }
 
 
+    fn is_enable_log(&self) -> bool {
+        self.log_plugin.is_some() && self.log_plugin.as_ref().unwrap().is_enable()
+    }
+
+    fn do_log(&self, arg: &str) {
+        match &self.log_plugin {
+            Some(v) => {
+                v.do_log(arg);
+            }
+            _ => {}
+        }
+    }
+
     ///polling check tx alive
     pub fn tx_polling_check(manager: &Arc<TxManager>) {
         let manager = manager.clone();
@@ -57,17 +66,21 @@ impl TxManager {
                 if manager.get_alive().await.deref() == &false {
                     //rollback all
                     let m = manager.tx_context.read().await;
-                    let mut rollback_ids =vec![];
+                    let mut rollback_ids = vec![];
                     for (k, (tx, state)) in m.deref() {
                         rollback_ids.push(k.to_string());
                     }
                     drop(m);
                     for tx_id in &rollback_ids {
-                        println!("[rbatis] rollback tx_id:{},Because the manager exits", tx_id);
+                        if manager.is_enable_log() {
+                            manager.do_log(&format!("[rbatis] rollback tx_id:{},Because the manager exits", tx_id));
+                        }
                         manager.rollback(tx_id).await;
                     }
+                    if manager.is_enable_log() {
+                        manager.do_log("[rbatis] tx_polling_check will be exit;");
+                    }
                     drop(manager);
-                    println!("tx_polling_check exit;");
                     return;
                 }
                 let m = manager.tx_context.read().await;
@@ -95,7 +108,9 @@ impl TxManager {
                 match &mut need_rollback {
                     Some(v) => {
                         for tx_id in v {
-                            println!("[rbatis] rollback tx_id:{},out of time:{:?}", tx_id, &manager.tx_out_of_time);
+                            if manager.is_enable_log() {
+                                manager.do_log(&format!("[rbatis] rollback tx_id:{},out of time:{:?}", tx_id, &manager.tx_out_of_time));
+                            }
                             manager.rollback(tx_id).await;
                         }
                         //shrink_to_fit
