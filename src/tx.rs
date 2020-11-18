@@ -61,6 +61,7 @@ impl TxManager {
                     for tx_id in v {
                         m.remove(tx_id);
                     }
+                    m.shrink_to_fit();
                 }
                 _ => {}
             }
