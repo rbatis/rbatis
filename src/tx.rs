@@ -14,7 +14,7 @@ use crate::rbatis::Rbatis;
 pub struct TxManager {
     pub tx_context: SyncMap<String, (DBTx, TxState)>,
     pub tx_out_of_time: Duration,
-    pub check_interval: Duration,
+    pub tx_check_interval: Duration,
     pub alive: RwLock<bool>,
     pub log_plugin: Option<Box<dyn LogPlugin>>,
 }
@@ -26,11 +26,11 @@ pub enum TxState {
 
 
 impl TxManager {
-    pub fn new(plugin: Box<dyn LogPlugin>) -> Self {
+    pub fn new(plugin: Box<dyn LogPlugin>, tx_out_of_time: Duration, check_interval: Duration) -> Self {
         Self {
             tx_context: SyncMap::new(),
-            tx_out_of_time: Duration::from_secs(10),
-            check_interval: Duration::from_secs(5),
+            tx_out_of_time,
+            tx_check_interval: check_interval,
             alive: RwLock::new(true),
             log_plugin: Some(plugin),
         }
@@ -40,6 +40,7 @@ impl TxManager {
         let mut l = self.alive.write().await;
         *l = alive;
     }
+
     pub async fn get_alive(&self) -> RwLockReadGuard<'_, bool> {
         self.alive.read().await
     }
@@ -118,7 +119,7 @@ impl TxManager {
                     }
                     _ => {}
                 }
-                crate::core::runtime::sleep(manager.check_interval).await;
+                crate::core::runtime::sleep(manager.tx_check_interval).await;
             }
         });
     }
