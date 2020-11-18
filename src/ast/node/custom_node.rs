@@ -9,14 +9,27 @@ use crate::core::Error;
 
 ///CustomNode Generate,you can custom py lang parse
 pub trait CustomNodeGenerate: Send + Sync {
+    ///the name
+    fn name(&self) -> &str {
+        std::any::type_name::<Self>()
+    }
     ///generate return an Option<CustomNode>,if return None,parser will be skip this build
-    fn generate(&self,express: &str, child_nodes: Vec<NodeType>) -> Result<Option<CustomNode>, Error>;
+    fn generate(&self, express: &str, child_nodes: Vec<NodeType>) -> Result<Option<CustomNode>, Error>;
 }
 
 #[derive(Clone, Debug)]
 pub struct CustomNode {
     pub childs: Vec<NodeType>,
     ptr: Arc<Box<dyn RbatisAST>>,
+}
+
+impl CustomNode {
+    pub fn from<T>(body: T, childs: Vec<NodeType>) -> Self where T: RbatisAST + 'static {
+        Self {
+            childs,
+            ptr: Arc::new(Box::new(body)),
+        }
+    }
 }
 
 impl RbatisAST for CustomNode {

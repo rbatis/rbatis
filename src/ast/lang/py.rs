@@ -33,7 +33,7 @@ impl Py {
     pub fn parse_and_cache(&self, arg: &str) -> Result<Vec<NodeType>, crate::core::Error> {
         let rd = self.cache.try_read();
         if rd.is_err() {
-            let nods = Py::parse(arg,&self.generate)?;
+            let nods = Py::parse(arg, &self.generate)?;
             self.try_cache_into(arg, nods.clone());
             return Ok(nods);
         } else {
@@ -43,7 +43,7 @@ impl Py {
                 return Ok(nodes.unwrap().clone());
             } else {
                 drop(rd);
-                let nods = Py::parse(arg,&self.generate)?;
+                let nods = Py::parse(arg, &self.generate)?;
                 self.try_cache_into(arg, nods.clone());
                 return Ok(nods);
             }
@@ -59,8 +59,12 @@ impl Py {
         return Some(arg);
     }
 
+    pub fn add_gen<T>(&mut self, arg: T) where T: CustomNodeGenerate + 'static {
+        self.generate.push(Box::new(arg));
+    }
+
     /// parser py string data
-    pub fn parse(arg: &str,generates:&Vec<Box<dyn CustomNodeGenerate>>) -> Result<Vec<NodeType>, crate::core::Error> {
+    pub fn parse(arg: &str, generates: &Vec<Box<dyn CustomNodeGenerate>>) -> Result<Vec<NodeType>, crate::core::Error> {
         let line_space_map = Py::create_line_space_map(arg);
         let mut main_node = vec![];
         let ls = arg.lines();
@@ -82,16 +86,16 @@ impl Py {
             }
             let parserd;
             if !child_str.is_empty() {
-                parserd = Py::parse(child_str.as_str(),generates)?;
+                parserd = Py::parse(child_str.as_str(), generates)?;
             } else {
                 parserd = vec![];
             }
-            Py::parse_node(generates,&mut main_node, x, *line_space_map.get(&line).unwrap() as usize, parserd)?;
+            Py::parse_node(generates, &mut main_node, x, *line_space_map.get(&line).unwrap() as usize, parserd)?;
         }
         return Ok(main_node);
     }
 
-    fn parse_trim_node(generates:&Vec<Box<dyn CustomNodeGenerate>>,trim_x: &str, main_node: &mut Vec<NodeType>, x: &str, space: usize, childs: Vec<NodeType>) -> Result<NodeType, crate::core::Error> {
+    fn parse_trim_node(generates: &Vec<Box<dyn CustomNodeGenerate>>, trim_x: &str, main_node: &mut Vec<NodeType>, x: &str, space: usize, childs: Vec<NodeType>) -> Result<NodeType, crate::core::Error> {
         let mut trim_x = trim_x.clone();
         if trim_x.starts_with("if ") {
             trim_x = trim_x["if ".len()..].trim();
@@ -192,8 +196,8 @@ impl Py {
             }));
         } else {
             for g in generates {
-                let gen=g.generate(trim_x,childs.clone())?;
-                if gen.is_some(){
+                let gen = g.generate(trim_x, childs.clone())?;
+                if gen.is_some() {
                     return Ok(NodeType::NCustom(gen.unwrap()));
                 }
             }
@@ -203,7 +207,7 @@ impl Py {
     }
 
 
-    fn parse_node(generates:&Vec<Box<dyn CustomNodeGenerate>>,main_node: &mut Vec<NodeType>, x: &str, space: usize, mut childs: Vec<NodeType>) -> Result<(), crate::core::Error> {
+    fn parse_node(generates: &Vec<Box<dyn CustomNodeGenerate>>, main_node: &mut Vec<NodeType>, x: &str, space: usize, mut childs: Vec<NodeType>) -> Result<(), crate::core::Error> {
         let mut trim_x = x.trim();
         if trim_x.starts_with("//") {
             return Ok(());
@@ -217,7 +221,7 @@ impl Py {
                     for index in 0..len {
                         let index = len - 1 - index;
                         let item = vecs[index];
-                        childs = vec![Self::parse_trim_node(generates,item, main_node, x, space, childs)?];
+                        childs = vec![Self::parse_trim_node(generates, item, main_node, x, space, childs)?];
                         if index == 0 {
                             for x in &childs {
                                 main_node.push(x.clone());
@@ -227,7 +231,7 @@ impl Py {
                     }
                 }
             }
-            let node = Self::parse_trim_node(generates,trim_x, main_node, x, space, childs)?;
+            let node = Self::parse_trim_node(generates, trim_x, main_node, x, space, childs)?;
             main_node.push(node);
             return Ok(());
         } else {
@@ -329,7 +333,7 @@ mod test {
     where:
         id  = '2';";
         //println!("{}", s);
-        let pys = Py::parse(s,&vec![]);
+        let pys = Py::parse(s, &vec![]);
         match pys {
             Ok(v) => {
                 println!("{:?}", v);
@@ -363,7 +367,7 @@ mod test {
         otherwise:
           AND age = 0
     WHERE id  = 'end';";
-        let pys = Py::parse(s,&vec![]).unwrap();
+        let pys = Py::parse(s, &vec![]).unwrap();
         println!("{:#?}", pys);
         //for x in &pys {
         // println!("{:?}", x.clone());
@@ -408,7 +412,7 @@ mod test {
                        )
                        ";
 
-        let pys = Py::parse(s,&vec![]).unwrap();
+        let pys = Py::parse(s, &vec![]).unwrap();
         println!("{:#?}", pys);
 
         let mut arg_array = vec![];

@@ -58,7 +58,7 @@ async fn main() {
     fast_log::init_log("requests.log",
                        1000,
                        log::Level::Info,
-                       Some(Box::new(ModuleFilter::new_exclude(vec!["sqlx".to_string(),"tide".to_string()]))),
+                       Some(Box::new(ModuleFilter::new_exclude(vec!["sqlx".to_string(), "tide".to_string()]))),
                        true);
     RB.link(MYSQL_URL).await.unwrap();
     let mut app = tide::new();
@@ -84,8 +84,6 @@ mod test {
     use std::convert::Infallible;
     use std::thread::sleep;
     use std::time::{Duration, SystemTime};
-
-    use fast_log::filter::ModuleFilter;
     use log::info;
     use serde_json::json;
     use serde_json::Value;
@@ -95,10 +93,15 @@ mod test {
     use rbatis::plugin::page::{Page, PageRequest};
     use rbatis::rbatis::Rbatis;
     use rbatis::utils::bencher::QPS;
-    use rbatis::core::db::PoolOptions;
+    use rbatis::core::db::{PoolOptions, DriverType};
     use rbatis::core::db_adapter::DBPool;
 
     use crate::BizActivity;
+    use rbatis::ast::node::custom_node::{CustomNodeGenerate, CustomNode};
+    use rbatis::ast::node::node_type::NodeType;
+    use rbatis::core::Error;
+    use rbatis::ast::ast::RbatisAST;
+    use rbatis::engine::runtime::RbatisEngine;
 
     pub const MYSQL_URL: &'static str = "mysql://root:123456@localhost:3306/test";
 
@@ -120,7 +123,7 @@ mod test {
         fast_log::init_log("requests.log",
                            1000,
                            log::Level::Info,
-                           Some(Box::new(ModuleFilter::new_exclude(vec!["sqlx".to_string()]))),
+                           None,
                            true);
         info!("print data");
         sleep(Duration::from_secs(1));
@@ -132,7 +135,7 @@ mod test {
         fast_log::init_log("requests.log",
                            1000,
                            log::Level::Info,
-                           Some(Box::new(ModuleFilter::new_exclude(vec!["sqlx".to_string()]))),
+                           None,
                            true);
         let pool = DBPool::new(MYSQL_URL).await.unwrap();
         let mut conn = pool.acquire().await.unwrap();
@@ -146,7 +149,7 @@ mod test {
         fast_log::init_log("requests.log",
                            1000,
                            log::Level::Info,
-                           Some(Box::new(ModuleFilter::new_exclude(vec!["sqlx".to_string()]))),
+                           None,
                            true);
         let rb = Rbatis::new();
         rb.link(MYSQL_URL).await.unwrap();
@@ -157,7 +160,7 @@ mod test {
             .r#in("delete_flag", &[0, 1])
             .and()
             .ne("delete_flag", -1)
-            .do_if(!name.is_empty(),|w|w.and().like("name",name))
+            .do_if(!name.is_empty(), |w| w.and().like("name", name))
             .check().unwrap();
         let (r, _): (serde_json::Value, rbatis::core::Error) = rb.fetch_prepare_wrapper("", &w).await.unwrap();
         println!("done:{:?}", r);
@@ -169,7 +172,7 @@ mod test {
         fast_log::init_log("requests.log",
                            1000,
                            log::Level::Info,
-                           Some(Box::new(ModuleFilter::new_exclude(vec!["sqlx".to_string()]))),
+                           None,
                            true);
         let rb = Rbatis::new();
         rb.link(MYSQL_URL).await.unwrap();
@@ -185,7 +188,7 @@ mod test {
         fast_log::init_log("requests.log",
                            1000,
                            log::Level::Info,
-                           Some(Box::new(ModuleFilter::new_exclude(vec!["sqlx".to_string()]))),
+                           None,
                            true);
         let rb = Rbatis::new();
         rb.link(MYSQL_URL).await.unwrap();
@@ -210,7 +213,7 @@ mod test {
         fast_log::init_log("requests.log",
                            1000,
                            log::Level::Info,
-                           Some(Box::new(ModuleFilter::new_exclude(vec!["sqlx".to_string()]))),
+                           None,
                            true);
         let rb = Rbatis::new();
         rb.link(MYSQL_URL).await.unwrap();
@@ -226,7 +229,7 @@ mod test {
         fast_log::init_log("requests.log",
                            1000,
                            log::Level::Info,
-                           Some(Box::new(ModuleFilter::new_exclude(vec!["sqlx".to_string()]))),
+                           None,
                            true);
         let rb = Rbatis::new();
         rb.link(MYSQL_URL).await.unwrap();
@@ -240,13 +243,55 @@ mod test {
     }
 
 
+    #[derive(Debug)]
+    pub struct MyNode {}
+
+    impl RbatisAST for MyNode {
+        fn eval(&self, convert: &DriverType, env: &mut Value, engine: &RbatisEngine, arg_result: &mut Vec<Value>) -> Result<String, Error> {
+            Ok(" AND id = 1 ".to_string())
+        }
+    }
+
+    pub struct MyGen {}
+
+    impl CustomNodeGenerate for MyGen {
+        fn generate(&self, express: &str, child_nodes: Vec<NodeType>) -> Result<Option<CustomNode>, Error> {
+            if express.starts_with("custom") {
+                return Ok(Option::from(CustomNode::from(MyNode {}, child_nodes)));
+            }
+            //skip
+            return Ok(None);
+        }
+    }
+
+    //示例-Rbatis扩展py风格的语法
+    #[async_std::test]
+    pub async fn test_py_sql_custom() {
+        fast_log::init_log("requests.log",
+                           1000,
+                           log::Level::Info,
+                           None,
+                           true);
+        let mut rb = Rbatis::new();
+        rb.link(MYSQL_URL).await.unwrap();
+        rb.py.add_gen(MyGen {});
+        let py = "
+    SELECT * FROM biz_activity
+    WHERE delete_flag = 0
+    custom :
+    ";
+        let data: Page<BizActivity> = rb.py_fetch_page("", py, &json!({}), &PageRequest::new(1, 20)).await.unwrap();
+        println!("{}", serde_json::to_string(&data).unwrap());
+    }
+
+
     //示例-Rbatis使用事务
     #[async_std::test]
     pub async fn test_tx() {
         fast_log::init_log("requests.log",
                            1000,
                            log::Level::Info,
-                           Some(Box::new(ModuleFilter::new_exclude(vec!["sqlx".to_string()]))),
+                           None,
                            true);
         let rb: Rbatis = Rbatis::new();
         rb.link(MYSQL_URL).await.unwrap();
@@ -263,7 +308,7 @@ mod test {
         fast_log::init_log("requests.log",
                            1000,
                            log::Level::Info,
-                           Some(Box::new(ModuleFilter::new_exclude(vec!["sqlx".to_string()]))),
+                           None,
                            true);
         RB.link(MYSQL_URL).await.unwrap();
         let mut app = tide::new();
@@ -301,7 +346,7 @@ mod test {
         fast_log::init_log("requests.log",
                            1000,
                            log::Level::Info,
-                           Some(Box::new(ModuleFilter::new_exclude(vec!["sqlx".to_string()]))),
+                           None,
                            true);
         RB.link(MYSQL_URL).await.unwrap();
         let make_svc = hyper::service::make_service_fn(|_conn| {
