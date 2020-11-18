@@ -9,7 +9,6 @@ use crate::core::db::DriverType;
 use crate::core::db_adapter::DBExecResult;
 use crate::core::Error;
 use crate::core::Result;
-
 use crate::plugin::logic_delete::LogicAction;
 use crate::plugin::page::{IPageRequest, Page};
 use crate::rbatis::Rbatis;
@@ -428,7 +427,6 @@ mod test {
     use serde::Serialize;
 
     use crate::core::Error;
-
     use crate::crud::{CRUD, CRUDEnable, Id, Ids};
     use crate::plugin::logic_delete::RbatisLogicDeletePlugin;
     use crate::plugin::page::{Page, PageRequest};

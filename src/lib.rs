@@ -12,6 +12,8 @@ extern crate once_cell;
 extern crate serde_json;
 extern crate serde_yaml;
 
+pub use rbatis_core as core;
+
 pub mod ast;
 pub mod utils;
 pub mod engine;
@@ -20,4 +22,4 @@ pub mod rbatis;
 pub mod sql;
 pub mod crud;
 pub mod wrapper;
-pub use rbatis_core as core;
+

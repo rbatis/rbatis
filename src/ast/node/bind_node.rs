@@ -1,12 +1,11 @@
 use serde_json::{json, Value};
 
-use crate::core::convert::StmtConvert;
-
 use crate::ast::ast::RbatisAST;
+use crate::ast::node::node_type::NodeType;
+use crate::core::convert::StmtConvert;
+use crate::core::db::DriverType;
 use crate::engine;
 use crate::engine::runtime::RbatisEngine;
-use crate::core::db::DriverType;
-use crate::ast::node::node_type::NodeType;
 
 #[derive(Clone, Debug)]
 pub struct BindNode {
@@ -14,8 +13,8 @@ pub struct BindNode {
     pub value: String,
 }
 
-impl BindNode{
-    pub fn from(source:&str, express:&str, childs:Vec<NodeType>) ->Result<Self,crate::core::Error>{
+impl BindNode {
+    pub fn from(source: &str, express: &str, childs: Vec<NodeType>) -> Result<Self, crate::core::Error> {
         let express = express["bind ".len()..].trim();
         let name_value: Vec<&str> = express.split("=").collect();
         if name_value.len() != 2 {

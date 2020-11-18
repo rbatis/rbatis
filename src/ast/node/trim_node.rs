@@ -1,12 +1,11 @@
 use serde_json::{json, Value};
 
-use crate::core::convert::StmtConvert;
-use crate::core::db::DriverType;
-
 use crate::ast::ast::RbatisAST;
-use crate::ast::node::node::{do_child_nodes};
+use crate::ast::node::node::do_child_nodes;
 use crate::ast::node::node_type::NodeType;
 use crate::ast::node::string_node::StringNode;
+use crate::core::convert::StmtConvert;
+use crate::core::db::DriverType;
 use crate::engine::runtime::RbatisEngine;
 
 #[derive(Clone, Debug)]
@@ -18,8 +17,8 @@ pub struct TrimNode {
     pub prefix_overrides: String,
 }
 
-impl TrimNode{
-    pub fn from(source:&str,express:&str,childs:Vec<NodeType>)->Result<Self,crate::core::Error>{
+impl TrimNode {
+    pub fn from(source: &str, express: &str, childs: Vec<NodeType>) -> Result<Self, crate::core::Error> {
         let express = express["trim ".len()..].trim();
         if express.starts_with("'") && express.ends_with("'") {
             let express = express[1..express.len() - 1].trim();

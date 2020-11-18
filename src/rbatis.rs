@@ -123,7 +123,7 @@ impl Rbatis {
         let conn: DBTx = self.get_pool()?.begin().await?;
         //send tx to context
         self.tx_context.insert(new_tx_id.to_string(), conn).await;
-        if self.log_plugin.is_enable(){
+        if self.log_plugin.is_enable() {
             self.log_plugin.do_log(&format!("[rbatis] [{}] Begin", new_tx_id));
         }
         return Ok(1);

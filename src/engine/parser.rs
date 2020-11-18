@@ -3,10 +3,11 @@ use std::collections::HashMap;
 use std::collections::linked_list::LinkedList;
 use std::ops::Deref;
 
+use log::kv::Source;
+
 use crate::engine::node::Node;
 use crate::engine::node::NodeType::{NBinary, NOpt};
-use crate::engine::runtime::{OptMap};
-use log::kv::Source;
+use crate::engine::runtime::OptMap;
 
 pub fn parse(express: &str, opt_map: &OptMap) -> Result<Node, crate::core::Error> {
     let express = express.replace("none", "null").replace("None", "null");

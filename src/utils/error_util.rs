@@ -1,8 +1,7 @@
 use std::collections::HashMap;
 
-use crate::core::Error;
-
 use crate::ast::node::node_type::NodeType;
+use crate::core::Error;
 
 pub trait ToResult<T> {
     fn to_result<F>(&self, fail_method: F) -> Result<&T, Error>

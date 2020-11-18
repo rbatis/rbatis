@@ -1,4 +1,3 @@
-
 pub trait QPS {
     fn qps(&self, total: u64);
     fn time(&self, total: u64);

@@ -3,7 +3,7 @@ use crate::rbatis::Rbatis;
 /// sql intercept
 pub trait SqlIntercept: Send + Sync {
     ///the name
-    fn name(&self) -> &str{
+    fn name(&self) -> &str {
         std::any::type_name::<Self>()
     }
     /// do intercept sql/args

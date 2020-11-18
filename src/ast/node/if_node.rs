@@ -1,13 +1,12 @@
 use serde_json::{json, Value};
 use serde_json::ser::State::Rest;
 
-use crate::core::convert::StmtConvert;
-use crate::core::db::DriverType;
-
 use crate::ast::ast::RbatisAST;
-use crate::ast::node::node::{do_child_nodes};
+use crate::ast::node::node::do_child_nodes;
 use crate::ast::node::node_type::NodeType;
 use crate::ast::node::string_node::StringNode;
+use crate::core::convert::StmtConvert;
+use crate::core::db::DriverType;
 use crate::engine::runtime::RbatisEngine;
 
 #[derive(Clone, Debug)]
@@ -16,8 +15,8 @@ pub struct IfNode {
     pub test: String,
 }
 
-impl IfNode{
-    pub fn from(express:&str,childs: Vec<NodeType>) -> Result<Self, crate::core::Error> {
+impl IfNode {
+    pub fn from(express: &str, childs: Vec<NodeType>) -> Result<Self, crate::core::Error> {
         let express = express["if".len()..].trim();
         return Ok(IfNode {
             childs: childs,

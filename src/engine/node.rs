@@ -3,6 +3,7 @@ use std::fmt::{Display, Error, Formatter};
 use std::ops::Deref;
 use std::ptr::null;
 
+use log::kv::Source;
 use serde::Deserialize;
 use serde::Serialize;
 use serde_json::{Map, Value};
@@ -12,8 +13,7 @@ use serde_json::value::Value::{Null, Number};
 
 use crate::engine::eval::eval;
 use crate::engine::node::NodeType::{NArg, NBinary, NBool, NNull, NNumber, NOpt, NString};
-use crate::engine::runtime::{OptMap};
-use log::kv::Source;
+use crate::engine::runtime::OptMap;
 
 #[derive(Clone, PartialEq, Debug, Serialize, Deserialize)]
 pub enum NodeType {
@@ -220,7 +220,7 @@ impl Node {
         }
         if data == "" || data == "null" {
             return Node::new_null();
-        } else if let Ok(n)=data.parse::<bool>() {
+        } else if let Ok(n) = data.parse::<bool>() {
             return Node::new_bool(n);
         } else if opt.is_opt(data) {
             return Node::new_opt(data);

@@ -1,9 +1,11 @@
-use log::{debug, error, info, LevelFilter, trace, warn};
 use std::ops::Deref;
+
+use log::{debug, error, info, LevelFilter, trace, warn};
+
 /// log plugin
 pub trait LogPlugin: Send + Sync {
     ///the name
-    fn name(&self) -> &str{
+    fn name(&self) -> &str {
         std::any::type_name::<Self>()
     }
     fn is_enable(&self) -> bool;

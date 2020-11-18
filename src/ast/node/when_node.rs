@@ -2,11 +2,10 @@ use std::borrow::BorrowMut;
 
 use serde_json::{json, Value};
 
-use crate::core::convert::StmtConvert;
-
 use crate::ast::ast::RbatisAST;
-use crate::ast::node::node::{do_child_nodes};
+use crate::ast::node::node::do_child_nodes;
 use crate::ast::node::node_type::NodeType;
+use crate::core::convert::StmtConvert;
 use crate::engine::runtime::RbatisEngine;
 
 #[derive(Clone, Debug)]
@@ -16,8 +15,8 @@ pub struct WhenNode {
 
 }
 
-impl WhenNode{
-    pub fn from(source:&str, express:&str, childs:Vec<NodeType>) ->Result<Self,crate::core::Error>{
+impl WhenNode {
+    pub fn from(source: &str, express: &str, childs: Vec<NodeType>) -> Result<Self, crate::core::Error> {
         let express = express["when ".len()..].trim();
         return Ok(WhenNode {
             childs,

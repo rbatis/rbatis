@@ -2,7 +2,6 @@ use serde_json::Value;
 
 use crate::core::convert::StmtConvert;
 use crate::core::db::DriverType;
-
 use crate::crud::ColumnFormat;
 
 #[derive(Copy, Clone, Debug)]
