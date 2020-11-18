@@ -22,4 +22,5 @@ pub mod rbatis;
 pub mod sql;
 pub mod crud;
 pub mod wrapper;
+pub mod tx;
 
