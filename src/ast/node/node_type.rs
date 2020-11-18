@@ -15,6 +15,7 @@ use crate::ast::node::where_node::WhereNode;
 use crate::core::convert::StmtConvert;
 use crate::engine::node::Node;
 use crate::engine::runtime::RbatisEngine;
+use crate::ast::node::custom_node::CustomNode;
 
 #[derive(Clone, Debug)]
 pub enum NodeType {
@@ -29,6 +30,7 @@ pub enum NodeType {
     NBind(BindNode),
     NSet(SetNode),
     NWhere(WhereNode),
+    NCustom(CustomNode),
 }
 
 impl NodeType {
@@ -45,6 +47,7 @@ impl NodeType {
             NodeType::NBind(node) => return None,
             NodeType::NSet(node) => return Some(&node.childs),
             NodeType::NWhere(node) => return Some(&node.childs),
+            NodeType::NCustom(node) => return Some(&node.childs),
         }
     }
     pub fn childs_mut(&mut self) -> Option<&mut Vec<NodeType>> {
@@ -60,6 +63,7 @@ impl NodeType {
             NodeType::NBind(node) => return None,
             NodeType::NSet(node) => return Some(&mut node.childs),
             NodeType::NWhere(node) => return Some(&mut node.childs),
+            NodeType::NCustom(node) => return Some(&mut node.childs),
         }
     }
 }
@@ -78,6 +82,7 @@ impl<'a> RbatisAST for NodeType {
             NodeType::NBind(node) => return node.eval(convert, env, engine, arg_array),
             NodeType::NSet(node) => return node.eval(convert, env, engine, arg_array),
             NodeType::NWhere(node) => return node.eval(convert, env, engine, arg_array),
+            NodeType::NCustom(node) => return node.eval(convert, env, engine, arg_array),
         }
     }
 }

@@ -79,14 +79,10 @@ impl RbatisEngine {
 
 #[derive(Clone, Debug)]
 pub struct OptMap<'a> {
-    //全部操作符
-    pub map: HashMap<&'a str, bool>,
-    //复合操作符
-    pub mul_ops_map: HashMap<&'a str, bool>,
-    //单操作符
+    pub all_opt: HashMap<&'a str, bool>,
+    pub group_opt_map: HashMap<&'a str, bool>,
     pub single_opt_map: HashMap<&'a str, bool>,
-
-    pub allow_sorted: Vec<&'a str>,
+    pub allow_opt_sorted: Vec<&'a str>,
 }
 
 impl<'a> OptMap<'a> {
@@ -117,25 +113,25 @@ impl<'a> OptMap<'a> {
         }
 
         Self {
-            map: all,
-            mul_ops_map,
+            all_opt: all,
+            group_opt_map: mul_ops_map,
             single_opt_map,
-            allow_sorted: vec!["%", "^", "*","**", "/", "+", "-", "<=", "<", ">=", ">", "!=", "==", "&&", "||"],
+            allow_opt_sorted: vec!["%", "^", "*", "**", "/", "+", "-", "<=", "<", ">=", ">", "!=", "==", "&&", "||"],
         }
     }
 
     ///The or operation in the nonoperational > arithmetic operator > relational operator > logical operator and operation > logical operator
     pub fn priority_array(&self) -> &Vec<&str> {
-        return &self.allow_sorted;
+        return &self.allow_opt_sorted;
     }
 
     pub fn is_opt(&self, arg: &str) -> bool {
-        let opt = self.map.get(arg);
+        let opt = self.all_opt.get(arg);
         return opt.is_none() == false;
     }
 
     pub fn is_allow_opt(&self, arg: &str) -> bool {
-        for item in &self.allow_sorted {
+        for item in &self.allow_opt_sorted {
             if arg == *item {
                 return true;
             }

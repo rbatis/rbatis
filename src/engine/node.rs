@@ -46,8 +46,6 @@ impl Display for NodeType {
     }
 }
 
-
-//抽象语法树节点
 #[derive(Clone, Debug, Serialize, Deserialize)]
 pub struct Node {
     pub left: Option<Box<Node>>,
@@ -208,7 +206,6 @@ impl Node {
         }
     }
 
-    //根据string 解析单个node
     pub fn parse(data: &str, opt: &OptMap) -> Self {
         // println!("data={}", &data);
         let mut first_index = 0;
