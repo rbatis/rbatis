@@ -18,6 +18,24 @@ pub struct TrimNode {
     pub prefix_overrides: String,
 }
 
+impl TrimNode{
+    pub fn from(source:&str,express:&str,childs:Vec<NodeType>)->Result<Self,crate::core::Error>{
+        let express = express["trim ".len()..].trim();
+        if express.starts_with("'") && express.ends_with("'") {
+            let express = express[1..express.len() - 1].trim();
+            return Ok(TrimNode {
+                childs: childs,
+                prefix: "".to_string(),
+                suffix: "".to_string(),
+                suffix_overrides: express.to_string(),
+                prefix_overrides: express.to_string(),
+            });
+        } else {
+            return Err(crate::core::Error::from(format!("[rbatis] express trim value must be string value, for example:  trim 'value',error express: {}", source)));
+        }
+    }
+}
+
 impl RbatisAST for TrimNode {
     fn eval(&self, convert: &crate::core::db::DriverType, env: &mut Value, engine: &RbatisEngine, arg_array: &mut Vec<Value>) -> Result<String, crate::core::Error> {
         let result_value = do_child_nodes(convert, &self.childs, env, engine, arg_array)?;

@@ -21,6 +21,7 @@ use crate::ast::node::where_node::WhereNode;
 use crate::core::Error;
 use crate::engine::parser::parse;
 use crate::ast::node::custom_node::{CustomNodeGenerate, CustomNode};
+use crate::engine::node::Node;
 
 /// Py lang,make sure Send+Sync
 pub struct Py {
@@ -95,114 +96,34 @@ impl Py {
         return Ok(main_node);
     }
 
-    fn parse_trim_node(generates: &Vec<Box<dyn CustomNodeGenerate>>, trim_x: &str, main_node: &mut Vec<NodeType>, x: &str, space: usize, childs: Vec<NodeType>) -> Result<NodeType, crate::core::Error> {
-        let mut trim_x = trim_x.clone();
-        if trim_x.starts_with("if ") {
-            trim_x = trim_x["if ".len()..].trim();
-            return Ok(NodeType::NIf(IfNode {
-                childs: childs,
-                test: trim_x.to_string(),
-            }));
-        } else if trim_x.starts_with("for ") {
-            if !trim_x.contains("in ") {
-                return Err(crate::core::Error::from("[rbatis] parser express fail:".to_string() + x));
-            }
-            trim_x = trim_x["for ".len()..].trim();
-            let in_index = trim_x.find("in ").unwrap();
-            let col = trim_x[in_index + "in ".len()..].trim();
-            let mut item = trim_x[..in_index].trim();
-            let mut index = "";
-            if item.contains(",") {
-                let items: Vec<&str> = item.split(",").collect();
-                if items.len() != 2 {
-                    return Err(crate::core::Error::from(format!("[rbatis][py] parse fail 'for ,' must be 'for arg1,arg2 in ...',value:'{}'", x)));
-                }
-                index = items[0];
-                item = items[1];
-            }
-            return Ok(NodeType::NForEach(ForEachNode {
-                childs: childs,
-                collection: col.to_string(),
-                index: index.to_string(),
-                item: item.to_string(),
-            }));
-        } else if trim_x.starts_with("trim ") {
-            trim_x = trim_x["trim ".len()..].trim();
-            if trim_x.starts_with("'") && trim_x.ends_with("'") {
-                trim_x = trim_x[1..trim_x.len() - 1].trim();
-                return Ok(NodeType::NTrim(TrimNode {
-                    childs: childs,
-                    prefix: "".to_string(),
-                    suffix: "".to_string(),
-                    suffix_overrides: trim_x.to_string(),
-                    prefix_overrides: trim_x.to_string(),
-                }));
-            } else {
-                return Err(crate::core::Error::from(format!("[rbatis] express trim value must be string value, for example:  trim 'value',error express: {}", x)));
-            }
-        } else if trim_x.starts_with("choose") {
-            trim_x = trim_x["choose".len()..].trim();
-            let mut node = ChooseNode {
-                when_nodes: None,
-                otherwise_node: None,
-            };
-            for x in childs {
-                match x {
-                    NodeType::NWhen(_) => {
-                        if node.when_nodes.is_none() {
-                            node.when_nodes = Some(vec![]);
-                        }
-                        node.when_nodes.as_mut().unwrap().push(x);
-                    }
-                    NodeType::NOtherwise(_) => {
-                        node.otherwise_node = Some(Box::new(x));
-                    }
-                    _ => {
-                        return Err(crate::core::Error::from("[rbatis] parser node fail,choose node' child must be when and otherwise nodes!".to_string()));
-                    }
-                }
-            }
-            return Ok(NodeType::NChoose(node));
-        } else if trim_x.starts_with("otherwise") {
-            trim_x = trim_x["otherwise".len()..].trim();
-            return Ok(NodeType::NOtherwise(OtherwiseNode {
-                childs: childs,
-            }));
-        } else if trim_x.starts_with("when ") {
-            trim_x = trim_x["when ".len()..].trim();
-            return Ok(NodeType::NWhen(WhenNode {
-                childs: childs,
-                test: trim_x.to_string(),
-            }));
-        } else if trim_x.starts_with("bind ") {
-            trim_x = trim_x["bind ".len()..].trim();
-            let name_value: Vec<&str> = trim_x.split("=").collect();
-            if name_value.len() != 2 {
-                return Err(crate::core::Error::from("[rbatis] parser bind express fail:".to_string() + x));
-            }
-            return Ok(NodeType::NBind(BindNode {
-                name: name_value[0].to_owned(),
-                value: name_value[1].to_owned(),
-            }));
-        } else if trim_x.starts_with("set") {
-            trim_x = trim_x["set".len()..].trim();
-            return Ok(NodeType::NSet(SetNode {
-                childs: childs
-            }));
-        } else if trim_x.starts_with("where") {
-            trim_x = trim_x["where".len()..].trim();
-            return Ok(NodeType::NWhere(WhereNode {
-                childs: childs
-            }));
+    fn parse_trim_node(generates: &Vec<Box<dyn CustomNodeGenerate>>, trim_express: &str, main_node: &mut Vec<NodeType>, source_str: &str, space: usize, childs: Vec<NodeType>) -> Result<NodeType, crate::core::Error> {
+        if trim_express.starts_with("if") {
+            return Ok(NodeType::NIf(IfNode::from(trim_express, childs)?));
+        } else if trim_express.starts_with("for") {
+            return Ok(NodeType::NForEach(ForEachNode::from(source_str, &trim_express, childs)?));
+        } else if trim_express.starts_with("trim") {
+            return Ok(NodeType::NTrim(TrimNode::from(source_str, trim_express, childs)?));
+        } else if trim_express.starts_with("choose") {
+           return Ok(NodeType::NChoose(ChooseNode::from(source_str, trim_express, childs)?))
+        } else if trim_express.starts_with("otherwise") {
+            return Ok(NodeType::NOtherwise(OtherwiseNode::from(source_str, trim_express, childs)?));
+        } else if trim_express.starts_with("when") {
+            return Ok(NodeType::NWhen(WhenNode::from(source_str, trim_express, childs)?));
+        } else if trim_express.starts_with("bind") {
+            return Ok(NodeType::NBind(BindNode::from(source_str, trim_express, childs)?));
+        } else if trim_express.starts_with("set") {
+            return Ok(NodeType::NSet(SetNode::from(source_str, trim_express, childs)?));
+        } else if trim_express.starts_with("where") {
+            return Ok(NodeType::NWhere(WhereNode::from(source_str, trim_express, childs)?));
         } else {
             for g in generates {
-                let gen = g.generate(trim_x, childs.clone())?;
+                let gen = g.generate(trim_express, childs.clone())?;
                 if gen.is_some() {
                     return Ok(NodeType::NCustom(gen.unwrap()));
                 }
             }
             // unkonw tag
-            return Err(crate::core::Error::from("[rbatis] unknow tag: ".to_string() + x));
+            return Err(crate::core::Error::from("[rbatis] unknow tag: ".to_string() + source_str));
         }
     }
 
