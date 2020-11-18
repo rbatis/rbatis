@@ -1,4 +1,4 @@
-use std::time::{Duration, SystemTime, Instant};
+use std::time::{Duration, Instant, SystemTime};
 
 pub fn count_time_qps(tag: &str, total: u128, start: Instant) {
     print_qps(tag, total, start);

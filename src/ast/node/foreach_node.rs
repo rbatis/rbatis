@@ -2,13 +2,12 @@ use std::collections::HashMap;
 
 use serde_json::{json, Map, Value};
 
-use crate::core::convert::StmtConvert;
-use crate::core::db::DriverType;
-
 use crate::ast::ast::RbatisAST;
-use crate::ast::node::node::{do_child_nodes};
+use crate::ast::node::node::do_child_nodes;
 use crate::ast::node::node_type::NodeType;
 use crate::ast::node::string_node::StringNode;
+use crate::core::convert::StmtConvert;
+use crate::core::db::DriverType;
 use crate::engine::runtime::RbatisEngine;
 use crate::utils;
 
@@ -21,7 +20,7 @@ pub struct ForEachNode {
 }
 
 impl ForEachNode {
-    pub fn from(source:&str,express: &str, childs: Vec<NodeType>) -> Result<Self, crate::core::Error> {
+    pub fn from(source: &str, express: &str, childs: Vec<NodeType>) -> Result<Self, crate::core::Error> {
         if !express.contains("in ") {
             return Err(crate::core::Error::from("[rbatis] parser express fail:".to_string() + source));
         }

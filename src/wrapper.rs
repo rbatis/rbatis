@@ -2,6 +2,7 @@ use std::ops::Add;
 
 use serde::{Deserialize, Serialize};
 use serde_json::{json, Map, Value};
+
 use crate::core::convert::StmtConvert;
 use crate::core::db::DriverType;
 use crate::core::Error;
@@ -91,7 +92,7 @@ impl Wrapper {
         where T: Serialize {
         let mut new_sql = sql.to_string();
         if self.driver_type.is_number_type() {
-            let self_arg_len=self.args.len();
+            let self_arg_len = self.args.len();
             for index in 0..args.len() {
                 let str = self.driver_type.stmt_convert(index);
                 new_sql = new_sql.replace(str.as_str(), self.driver_type.stmt_convert(index + args.len()).as_str());
@@ -492,13 +493,13 @@ impl Wrapper {
     /// gen sql: * in (*,*,*)
     pub fn in_<T>(&mut self, column: &str, obj: &[T]) -> &mut Self
         where T: Serialize {
-        self.in_array(column,obj)
+        self.in_array(column, obj)
     }
 
     /// gen sql: * in (*,*,*)
     pub fn r#in<T>(&mut self, column: &str, obj: &[T]) -> &mut Self
         where T: Serialize {
-        self.in_array(column,obj)
+        self.in_array(column, obj)
     }
 
 
@@ -559,19 +560,17 @@ mod test {
     use serde_json::Map;
 
     use crate::core::db::DriverType;
-
-    use crate::wrapper::{Case, Wrapper};
     use crate::utils::bencher::QPS;
-
+    use crate::wrapper::{Case, Wrapper};
 
     #[test]
-    fn test_trim(){
-        let mut w=Wrapper::new(&DriverType::Mysql);
+    fn test_trim() {
+        let mut w = Wrapper::new(&DriverType::Mysql);
         w.push_sql("WHERE ");
-        w.order_by(true,&["id"]);
+        w.order_by(true, &["id"]);
         println!("sql:{:?}", w.sql.as_str());
         println!("arg:{:?}", w.args.clone());
-        assert_eq!("ORDER BY id ASC",w.sql.as_str().trim());
+        assert_eq!("ORDER BY id ASC", w.sql.as_str().trim());
     }
 
     #[test]
@@ -605,14 +604,14 @@ mod test {
     fn bench_select() {
         let mut map = Map::new();
         map.insert("a".to_string(), json!("1"));
-        let total=100000;
-        let now=std::time::Instant::now();
-        for _ in 0..total{
+        let total = 100000;
+        let now = std::time::Instant::now();
+        for _ in 0..total {
             let w = Wrapper::new(&DriverType::Mysql).eq("id", 1)
                 .ne("id", 1)
                 .in_array("id", &[1, 2, 3])
-                .r#in("id",&[1,2,3])
-                .in_("id",&[1,2,3])
+                .r#in("id", &[1, 2, 3])
+                .in_("id", &[1, 2, 3])
                 .not_in("id", &[1, 2, 3])
                 .all_eq(&map)
                 .like("name", 1)
@@ -704,7 +703,7 @@ mod test {
             .check().unwrap();
         println!("sql:{:?}", w2.sql.as_str());
         println!("arg:{:?}", w2.args.clone());
-        assert_eq!(w2.sql.contains("b = $1"),true);
-        assert_eq!(w2.sql.contains("a = $4"),true);
+        assert_eq!(w2.sql.contains("b = $1"), true);
+        assert_eq!(w2.sql.contains("a = $4"), true);
     }
 }

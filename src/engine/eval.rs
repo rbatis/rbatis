@@ -1,6 +1,7 @@
 extern crate serde_json;
 
 use std::time::SystemTime;
+
 use chrono::Local;
 use serde_json::{json, Map};
 use serde_json::Value;
@@ -53,7 +54,7 @@ pub fn eval(left: &Value,
             let booll = left.is_number();
             let boolr = right.is_number();
             if booll && boolr {
-                if left.is_i64() && right.is_i64(){
+                if left.is_i64() && right.is_i64() {
                     return Result::Ok(json!(left.as_i64().unwrap() * right.as_i64().unwrap()));
                 }
                 return Result::Ok(json!(left.as_f64().unwrap() * right.as_f64().unwrap()));
@@ -63,7 +64,7 @@ pub fn eval(left: &Value,
             let booll = left.is_number();
             let boolr = right.is_number();
             if booll && boolr {
-                if left.is_i64() && right.is_i64(){
+                if left.is_i64() && right.is_i64() {
                     return Result::Ok(json!(left.as_i64().unwrap() / right.as_i64().unwrap()));
                 }
                 return Result::Ok(json!(left.as_f64().unwrap() / right.as_f64().unwrap()));
@@ -73,7 +74,7 @@ pub fn eval(left: &Value,
             let booll = left.is_number();
             let boolr = right.is_number();
             if booll && boolr {
-                if left.is_i64() && right.is_i64(){
+                if left.is_i64() && right.is_i64() {
                     return Result::Ok(json!(left.as_i64().unwrap() % right.as_i64().unwrap()));
                 }
                 let l = left.as_f64().unwrap();
@@ -89,7 +90,7 @@ pub fn eval(left: &Value,
                 return Result::Err(crate::core::Error::from(format!("[rbatis] only support 'int ** int'! express:{}{}{}", left, op, right)));
             }
             if booll && boolr {
-                if left.is_i64() && right.is_i64(){
+                if left.is_i64() && right.is_i64() {
                     return Result::Ok(json!(left.as_i64().unwrap() ^ right.as_i64().unwrap()));
                 }
                 let l = left.as_i64().unwrap();
@@ -118,7 +119,7 @@ pub fn eval(left: &Value,
                 return Result::Ok(left.clone());
             }
             if left.is_number() && right.is_number() {
-                if left.is_i64() && right.is_i64(){
+                if left.is_i64() && right.is_i64() {
                     return Result::Ok(json!(left.as_i64().unwrap() + right.as_i64().unwrap()));
                 }
                 return Result::Ok(json!(left.as_f64().unwrap() + right.as_f64().unwrap()));
@@ -130,7 +131,7 @@ pub fn eval(left: &Value,
         }
         "-" => {
             if left.is_null() && right.is_number() {
-                if right.is_i64(){
+                if right.is_i64() {
                     return Result::Ok(json!(0 - right.as_i64().unwrap()));
                 }
                 return Result::Ok(json!(0.0 - right.as_f64().unwrap()));
@@ -139,7 +140,7 @@ pub fn eval(left: &Value,
                 return Result::Ok(left.clone());
             }
             if left.is_number() && right.is_number() {
-                if left.is_i64() && right.is_i64(){
+                if left.is_i64() && right.is_i64() {
                     return Result::Ok(json!(left.as_i64().unwrap() - right.as_i64().unwrap()));
                 }
                 return Result::Ok(json!(left.as_f64().unwrap() - right.as_f64().unwrap()));

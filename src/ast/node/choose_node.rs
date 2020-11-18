@@ -3,14 +3,13 @@ use std::ops::DerefMut;
 
 use serde_json::{json, Value};
 
-use crate::core::convert::StmtConvert;
-use crate::core::db::DriverType;
-
 use crate::ast::ast::RbatisAST;
 use crate::ast::node::node_type::NodeType;
 use crate::ast::node::node_type::NodeType::NString;
 use crate::ast::node::otherwise_node::OtherwiseNode;
 use crate::ast::node::string_node::StringNode;
+use crate::core::convert::StmtConvert;
+use crate::core::db::DriverType;
 use crate::engine::runtime::RbatisEngine;
 
 #[derive(Clone, Debug)]
@@ -19,9 +18,9 @@ pub struct ChooseNode {
     pub otherwise_node: Option<Box<NodeType>>,
 }
 
-impl ChooseNode{
-    pub fn from(source:&str, express:&str, childs:Vec<NodeType>) ->Result<Self,crate::core::Error>{
-        let  express = express["choose".len()..].trim();
+impl ChooseNode {
+    pub fn from(source: &str, express: &str, childs: Vec<NodeType>) -> Result<Self, crate::core::Error> {
+        let express = express["choose".len()..].trim();
         let mut node = ChooseNode {
             when_nodes: None,
             otherwise_node: None,

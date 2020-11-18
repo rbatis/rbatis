@@ -6,13 +6,12 @@ use serde::de::DeserializeOwned;
 use serde_json::Value;
 
 use crate::core::db::DriverType;
-
 use crate::sql::PageLimit;
 
 ///default page plugin
 pub trait PagePlugin: Send + Sync {
     ///the name
-    fn name(&self) -> &str{
+    fn name(&self) -> &str {
         std::any::type_name::<Self>()
     }
     /// return 2 sql for select ,  (count_sql,select_sql)

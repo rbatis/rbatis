@@ -1,5 +1,5 @@
 #[cfg(test)]
-mod test{
+mod test {
     use core::time;
     use std::thread;
     use std::thread::Thread;
@@ -59,5 +59,4 @@ mod test{
 //    let ten_millis = time::Duration::from_secs(1000*60);
 //    thread::sleep(ten_millis);
     }
-
 }

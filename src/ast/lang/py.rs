@@ -1,6 +1,6 @@
 use std::collections::HashMap;
 use std::hash::Hash;
-use std::ops::{Index, Deref};
+use std::ops::{Deref, Index};
 use std::sync::{Mutex, RwLock};
 
 use serde_json::json;
@@ -9,6 +9,7 @@ use serde_json::Value;
 use crate::ast::ast::RbatisAST;
 use crate::ast::node::bind_node::BindNode;
 use crate::ast::node::choose_node::ChooseNode;
+use crate::ast::node::custom_node::{CustomNode, CustomNodeGenerate};
 use crate::ast::node::foreach_node::ForEachNode;
 use crate::ast::node::if_node::IfNode;
 use crate::ast::node::node_type::NodeType;
@@ -19,9 +20,8 @@ use crate::ast::node::trim_node::TrimNode;
 use crate::ast::node::when_node::WhenNode;
 use crate::ast::node::where_node::WhereNode;
 use crate::core::Error;
-use crate::engine::parser::parse;
-use crate::ast::node::custom_node::{CustomNodeGenerate, CustomNode};
 use crate::engine::node::Node;
+use crate::engine::parser::parse;
 
 /// Py lang,make sure Send+Sync
 pub struct Py {
@@ -104,7 +104,7 @@ impl Py {
         } else if trim_express.starts_with("trim") {
             return Ok(NodeType::NTrim(TrimNode::from(source_str, trim_express, childs)?));
         } else if trim_express.starts_with("choose") {
-           return Ok(NodeType::NChoose(ChooseNode::from(source_str, trim_express, childs)?))
+            return Ok(NodeType::NChoose(ChooseNode::from(source_str, trim_express, childs)?));
         } else if trim_express.starts_with("otherwise") {
             return Ok(NodeType::NOtherwise(OtherwiseNode::from(source_str, trim_express, childs)?));
         } else if trim_express.starts_with("when") {

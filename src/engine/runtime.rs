@@ -7,7 +7,6 @@ use serde_json::Value;
 use crate::engine::node::Node;
 use crate::engine::parser::parse;
 
-
 /// the express engine for  exe code on runtime
 #[derive(Debug)]
 pub struct RbatisEngine {
@@ -94,7 +93,7 @@ impl<'a> OptMap<'a> {
         //all opt
         let list = vec![
             "(", ")",
-            "%", "^", "*","**", "/", "+", "-",
+            "%", "^", "*", "**", "/", "+", "-",
             "@", "#", "$", "=", "!", ">", "<", "&", "|",
             "==", "!=", ">=", "<=", "&&", "||"
         ];

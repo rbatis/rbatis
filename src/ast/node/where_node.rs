@@ -1,10 +1,9 @@
 use serde_json::{json, Value};
 
-use crate::core::convert::StmtConvert;
-
 use crate::ast::ast::RbatisAST;
-use crate::ast::node::node::{do_child_nodes};
+use crate::ast::node::node::do_child_nodes;
 use crate::ast::node::node_type::NodeType;
+use crate::core::convert::StmtConvert;
 use crate::engine::runtime::RbatisEngine;
 
 #[derive(Clone, Debug)]
@@ -12,8 +11,8 @@ pub struct WhereNode {
     pub childs: Vec<NodeType>,
 }
 
-impl WhereNode{
-    pub fn from(source:&str, express:&str, childs:Vec<NodeType>) ->Result<Self,crate::core::Error>{
+impl WhereNode {
+    pub fn from(source: &str, express: &str, childs: Vec<NodeType>) -> Result<Self, crate::core::Error> {
         let express = express["where".len()..].trim();
         return Ok(WhereNode {
             childs

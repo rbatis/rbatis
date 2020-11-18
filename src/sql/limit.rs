@@ -1,5 +1,4 @@
 use crate::core::db::DriverType;
-
 use crate::sql::PageLimit;
 
 impl PageLimit for DriverType {
@@ -16,7 +15,7 @@ impl PageLimit for DriverType {
             }
             DriverType::Mssql => {
                 //sqlserver
-                Ok(format!(" OFFSET {} ROWS FETCH NEXT {} ROWS ONLY", offset,size))
+                Ok(format!(" OFFSET {} ROWS FETCH NEXT {} ROWS ONLY", offset, size))
             }
             DriverType::None => {
                 Err(crate::core::Error::from(format!("[rbatis] not support now for DriverType:{:?}", DriverType::None)))
