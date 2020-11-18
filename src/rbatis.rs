@@ -20,6 +20,7 @@ use crate::plugin::log::{LogPlugin, RbatisLog};
 use crate::plugin::logic_delete::{LogicDelete, RbatisLogicDeletePlugin};
 use crate::plugin::page::{IPage, IPageRequest, Page, PagePlugin, RbatisPagePlugin};
 use crate::sql::PageLimit;
+use crate::tx::{TxManager, TxState};
 use crate::utils::error_util::ToResult;
 use crate::utils::string_util;
 use crate::wrapper::Wrapper;
@@ -32,8 +33,8 @@ pub struct Rbatis {
     pub engine: RbatisEngine,
     //py lang
     pub py: Py,
-    //context of tx
-    pub tx_context: SyncMap<String, DBTx>,
+    //tx manager
+    pub tx_manager: TxManager,
     // page plugin
     pub page_plugin: Box<dyn PagePlugin>,
     // sql intercept vec chain
@@ -55,7 +56,7 @@ impl Rbatis {
         return Self {
             pool: OnceCell::new(),
             engine: RbatisEngine::new(),
-            tx_context: SyncMap::new(),
+            tx_manager: TxManager::new(),
             page_plugin: Box::new(RbatisPagePlugin {}),
             sql_intercepts: vec![],
             logic_plugin: None,
@@ -120,23 +121,16 @@ impl Rbatis {
         if new_tx_id.is_empty() {
             return Err(crate::core::Error::from("[rbatis] tx_id can not be empty"));
         }
-        let conn: DBTx = self.get_pool()?.begin().await?;
-        //send tx to context
-        self.tx_context.insert(new_tx_id.to_string(), conn).await;
+        let result= self.tx_manager.begin(new_tx_id,self.get_pool()?).await?;
         if self.log_plugin.is_enable() {
             self.log_plugin.do_log(&format!("[rbatis] [{}] Begin", new_tx_id));
         }
-        return Ok(1);
+        return Ok(result);
     }
 
     /// commit tx,and return conn
-    pub async fn commit(&self, tx_id: &str) -> Result<(), crate::core::Error> {
-        let tx = self.tx_context.remove(tx_id).await;
-        if tx.is_none() {
-            return Err(crate::core::Error::from(format!("[rbatis] tx:{} not exist！", tx_id)));
-        }
-        let mut tx = tx.unwrap();
-        let result = tx.commit().await?;
+    pub async fn commit(&self, tx_id: &str) -> Result<u64, crate::core::Error> {
+        let result= self.tx_manager.commit(tx_id).await?;
         if self.log_plugin.is_enable() {
             self.log_plugin.do_log(&format!("[rbatis] [{}] Commit", tx_id));
         }
@@ -144,13 +138,8 @@ impl Rbatis {
     }
 
     /// rollback tx,and return conn
-    pub async fn rollback(&self, tx_id: &str) -> Result<(), crate::core::Error> {
-        let tx_op = self.tx_context.remove(tx_id).await;
-        if tx_op.is_none() {
-            return Err(crate::core::Error::from(format!("[rbatis] tx:{} not exist！", tx_id)));
-        }
-        let tx = tx_op.unwrap();
-        let result = tx.rollback().await?;
+    pub async fn rollback(&self, tx_id: &str) -> Result<u64, crate::core::Error> {
+        let result= self.tx_manager.rollback(tx_id).await?;
         if self.log_plugin.is_enable() {
             self.log_plugin.do_log(&format!("[rbatis] [{}] Rollback", tx_id));
         }
@@ -178,12 +167,12 @@ impl Rbatis {
             result = data;
             fetch_num = num;
         } else {
-            let conn = self.tx_context.get_mut(tx_id).await;
+            let conn = self.tx_manager.get_mut(tx_id).await;
             if conn.is_none() {
                 return Err(crate::core::Error::from(format!("[rbatis] tx:{} not exist！", tx_id)));
             }
             let mut conn = conn.unwrap();
-            let (data, num) = conn.fetch(sql.as_str()).await?;
+            let (data, num) = conn.value_mut().0.fetch(sql.as_str()).await?;
             result = data;
             fetch_num = num;
         }
@@ -209,12 +198,12 @@ impl Rbatis {
             let mut conn = self.get_pool()?.acquire().await?;
             data = conn.execute(&sql).await?;
         } else {
-            let conn = self.tx_context.get_mut(tx_id).await;
+            let conn = self.tx_manager.get_mut(tx_id).await;
             if conn.is_none() {
                 return Err(crate::core::Error::from(format!("[rbatis] tx:{} not exist！", tx_id)));
             }
             let mut conn = conn.unwrap();
-            data = conn.execute(&sql).await?;
+            data = conn.value_mut().0.execute(&sql).await?;
         }
         if self.log_plugin.is_enable() {
             self.log_plugin.do_log(&format!("[rbatis] [{}] RowsAffected <== {}", tx_id, &data.rows_affected));
@@ -254,12 +243,12 @@ impl Rbatis {
             return_num = num;
         } else {
             let q: DBQuery = self.bind_arg(&sql, &args)?;
-            let conn = self.tx_context.get_mut(tx_id).await;
+            let conn = self.tx_manager.get_mut(tx_id).await;
             if conn.is_none() {
                 return Err(crate::core::Error::from(format!("[rbatis] tx:{} not exist！", tx_id)));
             }
             let mut conn = conn.unwrap();
-            let (result, num) = conn.fetch_parperd(q).await?;
+            let (result, num) = conn.value_mut().0.fetch_parperd(q).await?;
             result_data = result;
             return_num = num;
         }
@@ -288,12 +277,12 @@ impl Rbatis {
             result = conn.exec_prepare(q).await;
         } else {
             let q: DBQuery = self.bind_arg(&sql, &args)?;
-            let conn = self.tx_context.get_mut(tx_id).await;
+            let conn = self.tx_manager.get_mut(tx_id).await;
             if conn.is_none() {
                 return Err(crate::core::Error::from(format!("[rbatis] tx:{} not exist！", tx_id)));
             }
             let mut conn = conn.unwrap();
-            result = conn.exec_prepare(q).await;
+            result = conn.value_mut().0.exec_prepare(q).await;
         }
         if self.log_plugin.is_enable() {
             if result.is_ok() {
