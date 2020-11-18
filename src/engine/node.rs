@@ -234,7 +234,7 @@ impl Node {
         } else if first_index == 0 && last_index == (data.len() - 1) && first_index != last_index {
             let new_str = data.replace("'", "").replace("`", "");
             return Node::new_string(new_str.as_str());
-        } else if let Ok(n)= is_number(&data.to_string()) {
+        } else if let Ok(n) = is_number(&data.to_string()) {
             if data.find(".").unwrap_or(0) != 0 {
                 return Node::new_number_f64(n);
             } else {
