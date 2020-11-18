@@ -12,5 +12,7 @@ pub use async_std::{
     sync::MutexGuard,
     sync::RwLock,
     sync::RwLockReadGuard,
-    sync::RwLockWriteGuard
+    sync::RwLockWriteGuard,
+    task::block_on,
+    task::spawn_blocking,
 };
