@@ -3,12 +3,9 @@ use serde_json::{json, Value};
 use crate::core::convert::StmtConvert;
 
 use crate::ast::ast::RbatisAST;
-use crate::ast::node::node::{create_deep, SqlNodePrint};
 use crate::engine;
 use crate::engine::runtime::RbatisEngine;
 use crate::core::db::DriverType;
-
-const TEMPLETE_BIND: &'static str = "<bind #{attr}>#{body}</bind>";
 
 #[derive(Clone, Debug)]
 pub struct BindNode {
@@ -21,14 +18,6 @@ impl RbatisAST for BindNode {
         let r = engine.eval(self.value.as_str(), env)?;
         env[self.name.as_str()] = r;
         return Result::Ok("".to_string());
-    }
-}
-
-impl SqlNodePrint for BindNode {
-    fn print(&self, deep: i32) -> String {
-        let mut data = create_deep(deep) + TEMPLETE_BIND.replace("#{attr}", (self.name.clone() + "=\"" + self.value.as_str() + "\"").as_str()).as_str();
-        data = data.replace("#{body}", create_deep(deep).as_str());
-        return data;
     }
 }
 

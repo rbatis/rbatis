@@ -6,7 +6,6 @@ use crate::core::convert::StmtConvert;
 use crate::core::db::DriverType;
 
 use crate::ast::ast::RbatisAST;
-use crate::ast::node::node::{create_deep, SqlNodePrint};
 use crate::engine;
 use crate::engine::runtime::RbatisEngine;
 use crate::utils::string_util;
@@ -69,14 +68,6 @@ impl RbatisAST for StringNode {
             }
         }
         return Result::Ok(result);
-    }
-}
-
-impl SqlNodePrint for StringNode {
-    fn print(&self, deep: i32) -> String {
-        let mut result = create_deep(deep);
-        result = result + self.value.as_str();
-        return result;
     }
 }
 

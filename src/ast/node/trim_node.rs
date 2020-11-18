@@ -4,7 +4,7 @@ use crate::core::convert::StmtConvert;
 use crate::core::db::DriverType;
 
 use crate::ast::ast::RbatisAST;
-use crate::ast::node::node::{create_deep, do_child_nodes, print_child, SqlNodePrint};
+use crate::ast::node::node::{do_child_nodes};
 use crate::ast::node::node_type::NodeType;
 use crate::ast::node::string_node::StringNode;
 use crate::engine::runtime::RbatisEngine;
@@ -38,19 +38,6 @@ impl RbatisAST for TrimNode {
         let mut new_buffer = String::new();
         new_buffer = new_buffer + " " + self.prefix.as_str() + " " + result + " " + self.suffix.as_str();
         return Result::Ok(new_buffer);
-    }
-}
-
-impl SqlNodePrint for TrimNode {
-    fn print(&self, deep: i32) -> String {
-        let mut result = create_deep(deep) + "<trim ";
-        result = result + " prefix=\"" + self.prefix.as_str() + "\"";
-        result = result + " suffix=\"" + self.suffix.as_str() + "\"";
-        result = result + " suffix_overrides=\"" + self.suffix_overrides.as_str() + "\"";
-        result = result + " prefix_overrides=\"" + self.prefix_overrides.as_str() + "\"";
-        result = result + print_child(self.childs.as_ref(), deep + 1).as_str();
-        result = result + create_deep(deep).as_str() + "</trim>";
-        return result;
     }
 }
 
