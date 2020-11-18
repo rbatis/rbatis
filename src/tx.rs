@@ -2,7 +2,7 @@ use std::collections::HashMap;
 use std::ops::{Deref, DerefMut};
 use std::time::{Duration, Instant};
 
-use async_std::sync::{Arc, RwLock, RwLockReadGuard};
+use crate::core::runtime::{Arc, RwLock, RwLockReadGuard};
 
 use rbatis_core::db_adapter::DBPool;
 
@@ -71,7 +71,7 @@ impl TxManager {
     ///polling check tx alive
     pub fn tx_polling_check(manager: &Arc<TxManager>) {
         let manager = manager.clone();
-        async_std::task::spawn(async move {
+        crate::core::runtime::spawn(async move {
             loop {
                 if manager.get_alive().await.deref() == &false {
                     //rollback all
