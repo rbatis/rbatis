@@ -56,9 +56,9 @@ impl Default for Rbatis {
 
 impl Drop for Rbatis{
     fn drop(&mut self) {
-        let manager= &self.tx_manager;
         async_std::task::block_on(async {
-            manager.set_alive(false).await;
+            //notice tx manager exit
+            &self.tx_manager.set_alive(false).await;
         });
     }
 }
@@ -69,7 +69,7 @@ impl Rbatis {
         return Self {
             pool: OnceCell::new(),
             engine: RbatisEngine::new(),
-            tx_manager: Arc::new(TxManager::new()),
+            tx_manager: Arc::new(TxManager::new(Box::new(RbatisLog::default()))),
             page_plugin: Box::new(RbatisPagePlugin {}),
             sql_intercepts: vec![],
             logic_plugin: None,
@@ -112,6 +112,7 @@ impl Rbatis {
         self.pool.get_or_init(|| {
             pool
         });
+        TxManager::tx_polling_check(&self.tx_manager);
         return Ok(());
     }
 
