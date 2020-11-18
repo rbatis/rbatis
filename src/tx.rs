@@ -70,7 +70,6 @@ impl TxManager {
                     println!("tx_polling_check exit;");
                     return;
                 }
-                println!("run");
                 let m = manager.tx_context.read().await;
                 let mut need_rollback = None;
                 for (k, (tx, state)) in m.deref() {
