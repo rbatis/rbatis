@@ -1,6 +1,7 @@
 use std::borrow::BorrowMut;
 use std::cell::Cell;
 use std::collections::HashMap;
+use std::time::Duration;
 
 use async_std::sync::Arc;
 use once_cell::sync::OnceCell;
@@ -65,10 +66,16 @@ impl Drop for Rbatis {
 
 impl Rbatis {
     pub fn new() -> Self {
+        return Self::new_with_param(Duration::from_secs(60), Duration::from_secs(10));
+    }
+
+    pub fn new_with_param(tx_out_of_time: Duration, check_interval: Duration) -> Self {
         return Self {
             pool: OnceCell::new(),
             engine: RbatisEngine::new(),
-            tx_manager: Arc::new(TxManager::new(Box::new(RbatisLog::default()))),
+            tx_manager: Arc::new(TxManager::new(Box::new(RbatisLog::default()),
+                                                tx_out_of_time,
+                                                check_interval)),
             page_plugin: Box::new(RbatisPagePlugin {}),
             sql_intercepts: vec![],
             logic_plugin: None,
@@ -76,6 +83,7 @@ impl Rbatis {
             py: Py { cache: Default::default(), generate: vec![] },
         };
     }
+
 
     /// try return an new wrapper,if not call the link() method,it will be panic!
     pub fn new_wrapper(&self) -> Wrapper {
