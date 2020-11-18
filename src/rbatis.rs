@@ -1,6 +1,8 @@
+use std::borrow::BorrowMut;
 use std::cell::Cell;
 use std::collections::HashMap;
 
+use async_std::sync::Arc;
 use once_cell::sync::OnceCell;
 use serde::de::DeserializeOwned;
 use serde::ser::Serialize;
@@ -24,9 +26,6 @@ use crate::tx::{TxManager, TxState};
 use crate::utils::error_util::ToResult;
 use crate::utils::string_util;
 use crate::wrapper::Wrapper;
-
-use std::borrow::BorrowMut;
-use async_std::sync::Arc;
 
 /// rbatis engine
 pub struct Rbatis {
@@ -54,7 +53,7 @@ impl Default for Rbatis {
     }
 }
 
-impl Drop for Rbatis{
+impl Drop for Rbatis {
     fn drop(&mut self) {
         async_std::task::block_on(async {
             //notice tx manager exit
@@ -95,10 +94,15 @@ impl Rbatis {
             return Err(Error::from("[rbatis] link url is empty!"));
         }
         let pool = DBPool::new(url).await?;
+        match self.pool.get() {
+            None => {
+                TxManager::tx_polling_check(&self.tx_manager);
+            }
+            _ => {}
+        }
         self.pool.get_or_init(|| {
             pool
         });
-        TxManager::tx_polling_check(&self.tx_manager);
         return Ok(());
     }
 
@@ -109,10 +113,15 @@ impl Rbatis {
             return Err(Error::from("[rbatis] link url is empty!"));
         }
         let pool = DBPool::new_opt(url, opt).await?;
+        match self.pool.get() {
+            None => {
+                TxManager::tx_polling_check(&self.tx_manager);
+            }
+            _ => {}
+        }
         self.pool.get_or_init(|| {
             pool
         });
-        TxManager::tx_polling_check(&self.tx_manager);
         return Ok(());
     }
 
@@ -136,7 +145,7 @@ impl Rbatis {
         if new_tx_id.is_empty() {
             return Err(crate::core::Error::from("[rbatis] tx_id can not be empty"));
         }
-        let result= self.tx_manager.begin(new_tx_id,self.get_pool()?).await?;
+        let result = self.tx_manager.begin(new_tx_id, self.get_pool()?).await?;
         if self.log_plugin.is_enable() {
             self.log_plugin.do_log(&format!("[rbatis] [{}] Begin", new_tx_id));
         }
@@ -145,7 +154,7 @@ impl Rbatis {
 
     /// commit tx,and return conn
     pub async fn commit(&self, tx_id: &str) -> Result<u64, crate::core::Error> {
-        let result= self.tx_manager.commit(tx_id).await?;
+        let result = self.tx_manager.commit(tx_id).await?;
         if self.log_plugin.is_enable() {
             self.log_plugin.do_log(&format!("[rbatis] [{}] Commit", tx_id));
         }
@@ -154,7 +163,7 @@ impl Rbatis {
 
     /// rollback tx,and return conn
     pub async fn rollback(&self, tx_id: &str) -> Result<u64, crate::core::Error> {
-        let result= self.tx_manager.rollback(tx_id).await?;
+        let result = self.tx_manager.rollback(tx_id).await?;
         if self.log_plugin.is_enable() {
             self.log_plugin.do_log(&format!("[rbatis] [{}] Rollback", tx_id));
         }
