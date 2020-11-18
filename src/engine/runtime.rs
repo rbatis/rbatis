@@ -78,28 +78,12 @@ impl RbatisEngine {
 }
 
 
-pub fn is_number(arg: &String) -> bool {
-    let chars = arg.chars();
-    for item in chars {
-        if item == '-' ||
-            item == '.' ||
-            item == '0' ||
-            item == '1' ||
-            item == '2' ||
-            item == '3' ||
-            item == '4' ||
-            item == '5' ||
-            item == '6' ||
-            item == '7' ||
-            item == '8' ||
-            item == '9'
-        {
-            // nothing do
-        } else {
-            return false;
-        }
+pub fn is_number(arg: &String) -> Result<f64,crate::core::Error> {
+    let result=arg.parse::<f64>();
+    if result.is_err(){
+        return Err(crate::core::Error::from("[rbaits] parse float error!"));
     }
-    return true;
+    return Ok(result.unwrap());
 }
 
 
