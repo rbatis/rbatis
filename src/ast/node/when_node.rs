@@ -16,6 +16,16 @@ pub struct WhenNode {
 
 }
 
+impl WhenNode{
+    pub fn from(source:&str, express:&str, childs:Vec<NodeType>) ->Result<Self,crate::core::Error>{
+        let express = express["when ".len()..].trim();
+        return Ok(WhenNode {
+            childs,
+            test: express.to_string(),
+        });
+    }
+}
+
 
 impl RbatisAST for WhenNode {
     fn eval(&self, convert: &crate::core::db::DriverType, env: &mut Value, engine: &RbatisEngine, arg_array: &mut Vec<Value>) -> Result<String, crate::core::Error> {

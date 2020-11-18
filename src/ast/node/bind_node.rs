@@ -6,11 +6,26 @@ use crate::ast::ast::RbatisAST;
 use crate::engine;
 use crate::engine::runtime::RbatisEngine;
 use crate::core::db::DriverType;
+use crate::ast::node::node_type::NodeType;
 
 #[derive(Clone, Debug)]
 pub struct BindNode {
     pub name: String,
     pub value: String,
+}
+
+impl BindNode{
+    pub fn from(source:&str, express:&str, childs:Vec<NodeType>) ->Result<Self,crate::core::Error>{
+        let express = express["bind ".len()..].trim();
+        let name_value: Vec<&str> = express.split("=").collect();
+        if name_value.len() != 2 {
+            return Err(crate::core::Error::from("[rbatis] parser bind express fail:".to_string() + source));
+        }
+        return Ok(BindNode {
+            name: name_value[0].to_owned(),
+            value: name_value[1].to_owned(),
+        });
+    }
 }
 
 impl RbatisAST for BindNode {

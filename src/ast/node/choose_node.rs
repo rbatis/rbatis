@@ -19,6 +19,33 @@ pub struct ChooseNode {
     pub otherwise_node: Option<Box<NodeType>>,
 }
 
+impl ChooseNode{
+    pub fn from(source:&str, express:&str, childs:Vec<NodeType>) ->Result<Self,crate::core::Error>{
+        let  express = express["choose".len()..].trim();
+        let mut node = ChooseNode {
+            when_nodes: None,
+            otherwise_node: None,
+        };
+        for x in childs {
+            match x {
+                NodeType::NWhen(_) => {
+                    if node.when_nodes.is_none() {
+                        node.when_nodes = Some(vec![]);
+                    }
+                    node.when_nodes.as_mut().unwrap().push(x);
+                }
+                NodeType::NOtherwise(_) => {
+                    node.otherwise_node = Some(Box::new(x));
+                }
+                _ => {
+                    return Err(crate::core::Error::from("[rbatis] parser node fail,choose node' child must be when and otherwise nodes!".to_string()));
+                }
+            }
+        }
+        return Ok(node);
+    }
+}
+
 impl RbatisAST for ChooseNode {
     fn eval(&self, convert: &crate::core::db::DriverType, env: &mut Value, engine: &RbatisEngine, arg_array: &mut Vec<Value>) -> Result<String, crate::core::Error> {
         if self.when_nodes.is_none() == false {
