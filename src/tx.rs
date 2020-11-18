@@ -12,6 +12,13 @@ pub struct TxManager {
     pub tx_context: SyncMap<String, (DBTx, TxState)>,
     pub tx_out_of_time: Duration,
     pub check_interval: Duration,
+    pub alive: bool,
+}
+
+impl Drop for TxManager {
+    fn drop(&mut self) {
+        self.alive = false;
+    }
 }
 
 
@@ -27,12 +34,16 @@ impl TxManager {
             tx_context: SyncMap::new(),
             tx_out_of_time: Duration::from_secs(10),
             check_interval: Duration::from_secs(5),
+            alive: true,
         }
     }
 
     ///polling check tx alive
     pub async fn tx_polling_check(&self) {
         loop {
+            if self.alive == false {
+                return;
+            }
             let m = self.tx_context.read().await;
             let mut need_rollback = None;
             for (k, (tx, state)) in m.deref() {
