@@ -35,8 +35,7 @@ impl TxManager {
         loop {
             let m = self.tx_context.read().await;
             let mut need_rollback = None;
-            let mref = m.deref();
-            for (k, (tx, state)) in mref {
+            for (k, (tx, state)) in m.deref() {
                 match state {
                     TxState::StateBegin(instant) => {
                         let out_time = instant.elapsed();
