@@ -57,11 +57,11 @@ impl TxManager {
             drop(m);
             match &mut need_rollback {
                 Some(v) => {
-                    let mut m = self.tx_context.write().await;
                     for tx_id in v {
-                        m.remove(tx_id);
+                        self.rollback(tx_id).await;
                     }
-                    m.shrink_to_fit();
+                    //shrink_to_fit
+                    self.tx_context.shrink_to_fit().await;
                 }
                 _ => {}
             }
