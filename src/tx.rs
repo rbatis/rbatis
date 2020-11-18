@@ -2,6 +2,8 @@ use std::collections::HashMap;
 use std::ops::{Deref, DerefMut};
 use std::time::{Duration, Instant};
 
+use async_std::sync::{Arc, RwLock, RwLockReadGuard};
+
 use rbatis_core::db_adapter::DBPool;
 
 use crate::core::db_adapter::DBTx;
@@ -12,12 +14,12 @@ pub struct TxManager {
     pub tx_context: SyncMap<String, (DBTx, TxState)>,
     pub tx_out_of_time: Duration,
     pub check_interval: Duration,
-    pub alive: bool,
+    pub alive: RwLock<bool>,
 }
 
 impl Drop for TxManager {
     fn drop(&mut self) {
-        self.alive = false;
+        println!("drop");
     }
 }
 
@@ -34,51 +36,77 @@ impl TxManager {
             tx_context: SyncMap::new(),
             tx_out_of_time: Duration::from_secs(10),
             check_interval: Duration::from_secs(5),
-            alive: true,
+            alive: RwLock::new(true),
         }
     }
 
+    pub async fn set_alive(&self, alive: bool) {
+        let mut l = self.alive.write().await;
+        *l = alive;
+    }
+    pub async fn get_alive(&self) -> RwLockReadGuard<'_, bool> {
+        self.alive.read().await
+    }
+
+
     ///polling check tx alive
-    pub async fn tx_polling_check(&self) {
-        loop {
-            if self.alive == false {
-                return;
-            }
-            let m = self.tx_context.read().await;
-            let mut need_rollback = None;
-            for (k, (tx, state)) in m.deref() {
-                match state {
-                    TxState::StateBegin(instant) => {
-                        let out_time = instant.elapsed();
-                        if out_time > self.tx_out_of_time {
-                            if need_rollback == None {
-                                need_rollback = Some(vec![]);
-                            }
-                            match &mut need_rollback {
-                                Some(v) => {
-                                    v.push(k.to_string());
+    pub fn tx_polling_check(manager: &Arc<TxManager>) {
+        let manager = manager.clone();
+        async_std::task::spawn(async move {
+            loop {
+                if manager.get_alive().await.deref() == &false {
+                    //rollback all
+                    let m = manager.tx_context.read().await;
+                    let mut rollback_ids =vec![];
+                    for (k, (tx, state)) in m.deref() {
+                        rollback_ids.push(k.to_string());
+                    }
+                    drop(m);
+                    for tx_id in &rollback_ids {
+                        println!("[rbatis] rollback tx_id:{},Because the manager exits", tx_id);
+                        manager.rollback(tx_id).await;
+                    }
+                    drop(manager);
+                    println!("tx_polling_check exit;");
+                    return;
+                }
+                println!("run");
+                let m = manager.tx_context.read().await;
+                let mut need_rollback = None;
+                for (k, (tx, state)) in m.deref() {
+                    match state {
+                        TxState::StateBegin(instant) => {
+                            let out_time = instant.elapsed();
+                            if out_time > manager.tx_out_of_time {
+                                if need_rollback == None {
+                                    need_rollback = Some(vec![]);
                                 }
-                                _ => {}
+                                match &mut need_rollback {
+                                    Some(v) => {
+                                        v.push(k.to_string());
+                                    }
+                                    _ => {}
+                                }
                             }
                         }
+                        _ => {}
+                    }
+                }
+                drop(m);
+                match &mut need_rollback {
+                    Some(v) => {
+                        for tx_id in v {
+                            println!("[rbatis] rollback tx_id:{},out of time:{:?}", tx_id, &manager.tx_out_of_time);
+                            manager.rollback(tx_id).await;
+                        }
+                        //shrink_to_fit
+                        manager.tx_context.shrink_to_fit().await;
                     }
                     _ => {}
                 }
+                crate::core::runtime::sleep(manager.check_interval).await;
             }
-            drop(m);
-            match &mut need_rollback {
-                Some(v) => {
-                    for tx_id in v {
-                        println!("[rbatis] rollback tx_id:{},out of time:{:?}", tx_id, &self.tx_out_of_time);
-                        self.rollback(tx_id).await;
-                    }
-                    //shrink_to_fit
-                    self.tx_context.shrink_to_fit().await;
-                }
-                _ => {}
-            }
-            crate::core::runtime::sleep(self.check_interval).await;
-        }
+        });
     }
 
 
