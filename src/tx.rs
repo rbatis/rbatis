@@ -19,6 +19,15 @@ pub struct TxManager {
     pub log_plugin: Option<Box<dyn LogPlugin>>,
 }
 
+impl Drop for TxManager{
+    fn drop(&mut self) {
+        if self.is_enable_log() {
+            self.do_log("[rbatis] tx_polling_check exit;");
+        }
+    }
+}
+
+
 pub enum TxState {
     StateBegin(Instant),
     StateFinish(Instant),
@@ -77,9 +86,6 @@ impl TxManager {
                             manager.do_log(&format!("[rbatis] rollback tx_id:{},Because the manager exits", tx_id));
                         }
                         manager.rollback(tx_id).await;
-                    }
-                    if manager.is_enable_log() {
-                        manager.do_log("[rbatis] tx_polling_check will be exit;");
                     }
                     drop(manager);
                     return;
