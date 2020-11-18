@@ -81,24 +81,24 @@ impl TxManager {
     }
 
     /// commit tx,and return conn
-    pub async fn commit(&self, tx_id: &str) -> Result<(), crate::core::Error> {
+    pub async fn commit(&self, tx_id: &str) -> Result<i64, crate::core::Error> {
         let tx_op = self.tx_context.remove(tx_id).await;
         if tx_op.is_none() {
             return Err(crate::core::Error::from(format!("[rbatis] tx:{} not exist！", tx_id)));
         }
         let (mut tx, state): (DBTx, TxState) = tx_op.unwrap();
         let result = tx.commit().await?;
-        return Ok(result);
+        return Ok(1);
     }
 
     /// rollback tx,and return conn
-    pub async fn rollback(&self, tx_id: &str) -> Result<(), crate::core::Error> {
+    pub async fn rollback(&self, tx_id: &str) -> Result<i64, crate::core::Error> {
         let tx_op = self.tx_context.remove(tx_id).await;
         if tx_op.is_none() {
             return Err(crate::core::Error::from(format!("[rbatis] tx:{} not exist！", tx_id)));
         }
         let (tx, state): (DBTx, TxState) = tx_op.unwrap();
         let result = tx.rollback().await?;
-        return Ok(result);
+        return Ok(1);
     }
 }
