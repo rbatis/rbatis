@@ -77,16 +77,6 @@ impl RbatisEngine {
     }
 }
 
-
-pub fn is_number(arg: &String) -> Result<f64,crate::core::Error> {
-    let result=arg.parse::<f64>();
-    if result.is_err(){
-        return Err(crate::core::Error::from("[rbaits] parse float error!"));
-    }
-    return Ok(result.unwrap());
-}
-
-
 #[derive(Clone, Debug)]
 pub struct OptMap<'a> {
     //全部操作符

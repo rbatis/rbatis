@@ -12,7 +12,7 @@ use serde_json::value::Value::{Null, Number};
 
 use crate::engine::eval::eval;
 use crate::engine::node::NodeType::{NArg, NBinary, NBool, NNull, NNumber, NOpt, NString};
-use crate::engine::runtime::{is_number, OptMap};
+use crate::engine::runtime::{OptMap};
 use log::kv::Source;
 
 #[derive(Clone, PartialEq, Debug, Serialize, Deserialize)]
@@ -223,18 +223,14 @@ impl Node {
         }
         if data == "" || data == "null" {
             return Node::new_null();
-        } else if data == "true" || data == "false" {
-            if data == "true" {
-                return Node::new_bool(true);
-            } else {
-                return Node::new_bool(false);
-            }
+        } else if let Ok(n)=data.parse::<bool>() {
+            return Node::new_bool(n);
         } else if opt.is_opt(data) {
             return Node::new_opt(data);
         } else if first_index == 0 && last_index == (data.len() - 1) && first_index != last_index {
             let new_str = data.replace("'", "").replace("`", "");
             return Node::new_string(new_str.as_str());
-        } else if let Ok(n) = is_number(&data.to_string()) {
+        } else if let Ok(n) = data.parse::<f64>() {
             if data.find(".").unwrap_or(0) != 0 {
                 return Node::new_number_f64(n);
             } else {

@@ -5,7 +5,7 @@ use std::ops::Deref;
 
 use crate::engine::node::Node;
 use crate::engine::node::NodeType::{NBinary, NOpt};
-use crate::engine::runtime::{is_number, OptMap};
+use crate::engine::runtime::{OptMap};
 use log::kv::Source;
 
 pub fn parse(express: &str, opt_map: &OptMap) -> Result<Node, crate::core::Error> {
