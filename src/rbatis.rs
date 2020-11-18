@@ -60,7 +60,7 @@ impl Rbatis {
             sql_intercepts: vec![],
             logic_plugin: None,
             log_plugin: Box::new(RbatisLog::default()),
-            py: Py { cache: Default::default() },
+            py: Py { cache: Default::default(), generate: vec![] },
         };
     }
 

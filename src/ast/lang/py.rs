@@ -1,6 +1,6 @@
 use std::collections::HashMap;
 use std::hash::Hash;
-use std::ops::Index;
+use std::ops::{Index, Deref};
 use std::sync::{Mutex, RwLock};
 
 use serde_json::json;
@@ -20,10 +20,12 @@ use crate::ast::node::when_node::WhenNode;
 use crate::ast::node::where_node::WhereNode;
 use crate::core::Error;
 use crate::engine::parser::parse;
+use crate::ast::node::custom_node::{CustomNodeGenerate, CustomNode};
 
 /// Py lang,make sure Send+Sync
 pub struct Py {
-    pub cache: RwLock<HashMap<String, Vec<NodeType>>>
+    pub cache: RwLock<HashMap<String, Vec<NodeType>>>,
+    pub generate: Vec<Box<dyn CustomNodeGenerate>>,
 }
 
 impl Py {
@@ -31,7 +33,7 @@ impl Py {
     pub fn parse_and_cache(&self, arg: &str) -> Result<Vec<NodeType>, crate::core::Error> {
         let rd = self.cache.try_read();
         if rd.is_err() {
-            let nods = Py::parse(arg)?;
+            let nods = Py::parse(arg,&self.generate)?;
             self.try_cache_into(arg, nods.clone());
             return Ok(nods);
         } else {
@@ -41,14 +43,14 @@ impl Py {
                 return Ok(nodes.unwrap().clone());
             } else {
                 drop(rd);
-                let nods = Py::parse(arg)?;
+                let nods = Py::parse(arg,&self.generate)?;
                 self.try_cache_into(arg, nods.clone());
                 return Ok(nods);
             }
         }
     }
 
-    fn try_cache_into(&self, py: &str, arg: Vec<NodeType>) ->Option<Vec<NodeType>>{
+    fn try_cache_into(&self, py: &str, arg: Vec<NodeType>) -> Option<Vec<NodeType>> {
         let rd = self.cache.try_write();
         if rd.is_ok() {
             rd.unwrap().insert(py.to_string(), arg);
@@ -58,7 +60,7 @@ impl Py {
     }
 
     /// parser py string data
-    pub fn parse(arg: &str) -> Result<Vec<NodeType>, crate::core::Error> {
+    pub fn parse(arg: &str,generates:&Vec<Box<dyn CustomNodeGenerate>>) -> Result<Vec<NodeType>, crate::core::Error> {
         let line_space_map = Py::create_line_space_map(arg);
         let mut main_node = vec![];
         let ls = arg.lines();
@@ -80,16 +82,16 @@ impl Py {
             }
             let parserd;
             if !child_str.is_empty() {
-                parserd = Py::parse(child_str.as_str())?;
+                parserd = Py::parse(child_str.as_str(),generates)?;
             } else {
                 parserd = vec![];
             }
-            Py::parse_node(&mut main_node, x, *line_space_map.get(&line).unwrap() as usize, parserd)?;
+            Py::parse_node(generates,&mut main_node, x, *line_space_map.get(&line).unwrap() as usize, parserd)?;
         }
         return Ok(main_node);
     }
 
-    fn parse_trim_node(trim_x: &str, main_node: &mut Vec<NodeType>, x: &str, space: usize, childs: Vec<NodeType>) -> Result<NodeType, crate::core::Error> {
+    fn parse_trim_node(generates:&Vec<Box<dyn CustomNodeGenerate>>,trim_x: &str, main_node: &mut Vec<NodeType>, x: &str, space: usize, childs: Vec<NodeType>) -> Result<NodeType, crate::core::Error> {
         let mut trim_x = trim_x.clone();
         if trim_x.starts_with("if ") {
             trim_x = trim_x["if ".len()..].trim();
@@ -189,12 +191,19 @@ impl Py {
                 childs: childs
             }));
         } else {
+            for g in generates {
+                let gen=g.generate(trim_x,childs.clone())?;
+                if gen.is_some(){
+                    return Ok(NodeType::NCustom(gen.unwrap()));
+                }
+            }
             // unkonw tag
             return Err(crate::core::Error::from("[rbatis] unknow tag: ".to_string() + x));
         }
     }
 
-    fn parse_node(main_node: &mut Vec<NodeType>, x: &str, space: usize, mut childs: Vec<NodeType>) -> Result<(), crate::core::Error> {
+
+    fn parse_node(generates:&Vec<Box<dyn CustomNodeGenerate>>,main_node: &mut Vec<NodeType>, x: &str, space: usize, mut childs: Vec<NodeType>) -> Result<(), crate::core::Error> {
         let mut trim_x = x.trim();
         if trim_x.starts_with("//") {
             return Ok(());
@@ -208,7 +217,7 @@ impl Py {
                     for index in 0..len {
                         let index = len - 1 - index;
                         let item = vecs[index];
-                        childs = vec![Self::parse_trim_node(item, main_node, x, space, childs)?];
+                        childs = vec![Self::parse_trim_node(generates,item, main_node, x, space, childs)?];
                         if index == 0 {
                             for x in &childs {
                                 main_node.push(x.clone());
@@ -218,7 +227,7 @@ impl Py {
                     }
                 }
             }
-            let node = Self::parse_trim_node(trim_x, main_node, x, space, childs)?;
+            let node = Self::parse_trim_node(generates,trim_x, main_node, x, space, childs)?;
             main_node.push(node);
             return Ok(());
         } else {
@@ -320,7 +329,7 @@ mod test {
     where:
         id  = '2';";
         //println!("{}", s);
-        let pys = Py::parse(s);
+        let pys = Py::parse(s,&vec![]);
         match pys {
             Ok(v) => {
                 println!("{:?}", v);
@@ -354,7 +363,7 @@ mod test {
         otherwise:
           AND age = 0
     WHERE id  = 'end';";
-        let pys = Py::parse(s).unwrap();
+        let pys = Py::parse(s,&vec![]).unwrap();
         println!("{:#?}", pys);
         //for x in &pys {
         // println!("{:?}", x.clone());
@@ -399,7 +408,7 @@ mod test {
                        )
                        ";
 
-        let pys = Py::parse(s).unwrap();
+        let pys = Py::parse(s,&vec![]).unwrap();
         println!("{:#?}", pys);
 
         let mut arg_array = vec![];
