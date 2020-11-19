@@ -104,7 +104,7 @@ impl Rbatis {
         let pool = DBPool::new(url).await?;
         match self.pool.get() {
             None => {
-                TxManager::tx_polling_check(&self.tx_manager);
+                TxManager::polling_tx_check(&self.tx_manager);
             }
             _ => {}
         }
@@ -123,7 +123,7 @@ impl Rbatis {
         let pool = DBPool::new_opt(url, opt).await?;
         match self.pool.get() {
             None => {
-                TxManager::tx_polling_check(&self.tx_manager);
+                TxManager::polling_tx_check(&self.tx_manager);
             }
             _ => {}
         }

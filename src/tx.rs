@@ -22,10 +22,10 @@ pub struct TxManager {
     pub log_plugin: Option<Box<dyn LogPlugin>>,
 }
 
-impl Drop for TxManager{
+impl Drop for TxManager {
     fn drop(&mut self) {
         if self.is_enable_log() {
-            self.do_log("[rbatis] tx_polling_check exit;");
+            self.do_log("[rbatis] [TxManager] exit;");
         }
     }
 }
@@ -72,7 +72,7 @@ impl TxManager {
     }
 
     ///polling check tx alive
-    pub fn tx_polling_check(manager: &Arc<TxManager>) {
+    pub fn polling_tx_check(manager: &Arc<TxManager>) {
         let manager = manager.clone();
         crate::core::runtime::spawn(async move {
             loop {
