@@ -4,14 +4,28 @@ use crate::core::convert::StmtConvert;
 use crate::core::db::DriverType;
 use crate::crud::ColumnFormat;
 
-#[derive(Copy, Clone, Debug)]
-pub struct DateFormat {}
+#[derive(Clone, Debug)]
+pub struct DateFormat<'a> {
+    pub keys: Vec<&'a str>,
+}
 
-impl ColumnFormat for DateFormat {
+impl<'a> DateFormat<'a> {
+    fn is_end_with(&'a self, column: &'a str) -> bool {
+        for item in &self.keys {
+            if column.ends_with(*item) {
+                return true;
+            }
+        }
+        return false;
+    }
+}
+
+
+impl<'a> ColumnFormat for DateFormat<'a> {
     fn format(&self, driver_type: &DriverType, column: &str, value_sql: &mut String, value: &serde_json::Value) -> crate::core::Result<()> {
         if driver_type.eq(&DriverType::Postgres)
             && !value.is_null()
-            && (column.ends_with("date") || column.ends_with("time") || column.ends_with("Date") || column.ends_with("Time")) {
+            && self.is_end_with(column) {
             *value_sql = format!("{}::timestamp", value_sql);
         }
         return Ok(());

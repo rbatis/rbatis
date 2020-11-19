@@ -122,7 +122,7 @@ pub trait CRUDEnable: Send + Sync + Serialize + DeserializeOwned {
     /// you also can rewrite this method,
     /// but do not forget push DateFormat(if you need)
     fn format_chain() -> Vec<Box<dyn ColumnFormat>> {
-        let chain: Vec<Box<dyn ColumnFormat>> = vec![Box::new(DateFormat {})];
+        let chain: Vec<Box<dyn ColumnFormat>> = vec![Box::new(DateFormat { keys: vec!["date"] })];
         return chain;
     }
 }
