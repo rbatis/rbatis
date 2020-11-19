@@ -47,7 +47,7 @@ mod test {
                 fast_log::init_log("requests.log",
                            1000,
                            log::Level::Info,
-                           Some(Box::new(ModuleFilter::new_exclude(vec!["sqlx".to_string()]))),
+                           None,
                            true);
         let rb = Rbatis::new();
         rb.link("mysql://root:123456@localhost:3306/test").await.unwrap();
@@ -266,7 +266,7 @@ mod test {
         fast_log::init_log("requests.log",
                            1000,
                            log::Level::Info,
-                           Some(Box::new(ModuleFilter::new_exclude(vec!["sqlx".to_string()]))),
+                           None,
                            true);
         RB.link("mysql://root:123456@localhost:3306/test").await.unwrap();
         let a = select("1").await.unwrap();
@@ -278,7 +278,7 @@ mod test {
                 fast_log::init_log("requests.log",
                            1000,
                            log::Level::Info,
-                           Some(Box::new(ModuleFilter::new_exclude(vec!["sqlx".to_string()]))),
+                           None,
                            true);
         //use static ref
         RB.link("mysql://root:123456@localhost:3306/test").await.unwrap();
@@ -308,7 +308,7 @@ mod test {
                 fast_log::init_log("requests.log",
                            1000,
                            log::Level::Info,
-                           Some(Box::new(ModuleFilter::new_exclude(vec!["sqlx".to_string()]))),
+                           None,
                            true);
         RB.link("mysql://root:123456@localhost:3306/test").await.unwrap();
         let results = join_select(&RB, "test").await.unwrap();
@@ -339,7 +339,7 @@ mod test {
                 fast_log::init_log("requests.log",
                            1000,
                            log::Level::Info,
-                           Some(Box::new(ModuleFilter::new_exclude(vec!["sqlx".to_string()]))),
+                           None,
                            true);
         //use static ref
         RB.link("mysql://root:123456@localhost:3306/test").await.unwrap();
@@ -358,7 +358,7 @@ mod test {
                 fast_log::init_log("requests.log",
                            1000,
                            log::Level::Info,
-                           Some(Box::new(ModuleFilter::new_exclude(vec!["sqlx".to_string()]))),
+                           None,
                            true);
         //use static ref
         RB.link("mysql://root:123456@localhost:3306/test").await.unwrap();
@@ -385,7 +385,7 @@ mod test {
         fast_log::init_log("requests.log",
                            1000,
                            log::Level::Info,
-                           Some(Box::new(ModuleFilter::new_exclude(vec!["sqlx".to_string()]))),
+                           None,
                            true);
         //use static ref
         RB.link("mysql://root:123456@localhost:3306/test").await.unwrap();
