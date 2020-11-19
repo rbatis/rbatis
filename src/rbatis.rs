@@ -3,7 +3,7 @@ use std::cell::Cell;
 use std::collections::HashMap;
 use std::time::Duration;
 
-use async_std::sync::Arc;
+use crate::core::runtime::Arc;
 use once_cell::sync::OnceCell;
 use serde::de::DeserializeOwned;
 use serde::ser::Serialize;
@@ -56,7 +56,7 @@ impl Default for Rbatis {
 
 impl Drop for Rbatis {
     fn drop(&mut self) {
-        async_std::task::block_on(async {
+        crate::core::runtime::block_on(async {
             //notice tx manager exit
             &self.tx_manager.set_alive(false).await;
         });

@@ -1,7 +1,7 @@
 use std::ops::Deref;
 use std::ptr::NonNull;
 
-use async_std::sync::{Arc, Mutex};
+use crate::core::runtime::{Arc, Mutex};
 use serde_json::Value;
 
 use crate::ast::ast::RbatisAST;
