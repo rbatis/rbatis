@@ -13,7 +13,6 @@ mod test {
     use chrono::NaiveDateTime;
     use bigdecimal_::BigDecimal;
     use rbatis::core::value::DateTimeNow;
-    use fast_log::filter::{ModuleFilter};
     use rbatis::core::db_adapter::DBExecResult;
 
 
