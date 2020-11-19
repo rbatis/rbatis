@@ -192,7 +192,7 @@ rb.update_by_wrapper("", &activity, &w).await;
                 fast_log::init_log("requests.log", 
                            1000,
                            log::Level::Info,
-                           Some(Box::new(ModuleFilter::new_exclude(vec!["sqlx".to_string()]))),
+                           None,
                            true);
         RB.link("mysql://root:123456@localhost:3306/test").await.unwrap();
         let a = select("1").await.unwrap();
@@ -215,7 +215,7 @@ rb.update_by_wrapper("", &activity, &w).await;
                 fast_log::init_log("requests.log", 
                            1000,
                            log::Level::Info,
-                           Some(Box::new(ModuleFilter::new_exclude(vec!["sqlx".to_string()]))),
+                           None,
                            true);
         RB.link("mysql://root:123456@localhost:3306/test").await.unwrap();
         let a = py_select("1").await.unwrap();
@@ -311,7 +311,7 @@ rb.update_by_wrapper("", &activity, &w).await;
               fast_log::init_log("requests.log", 
                            1000,
                            log::Level::Info,
-                           Some(Box::new(ModuleFilter::new_exclude(vec!["sqlx".to_string()]))),
+                           None,
                            true);
       info!("print data");
  }
@@ -363,7 +363,7 @@ async fn main() -> std::io::Result<()> {
             fast_log::init_log("requests.log", 
                            1000,
                            log::Level::Info,
-                           Some(Box::new(ModuleFilter::new_exclude(vec!["sqlx".to_string()]))),
+                           None,
                            true);
     //链接数据库
     RB.link("mysql://root:123456@localhost:3306/test").await.unwrap();
