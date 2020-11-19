@@ -11,6 +11,9 @@ use crate::core::sync::sync_map::{RefMut, SyncMap};
 use crate::plugin::log::LogPlugin;
 use crate::rbatis::Rbatis;
 
+///the Transaction manager，It manages the life cycle of transactions and provides access across threads
+///every tx_check_interval check tx is out of time(tx_out_of_time).if out, rollback tx.
+///if tx manager will be drop, manager will rollback all of tx.
 pub struct TxManager {
     pub tx_context: SyncMap<String, (DBTx, TxState)>,
     pub tx_out_of_time: Duration,
