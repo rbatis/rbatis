@@ -19,7 +19,7 @@ pub struct TxManager {
     pub tx_out_of_time: Duration,
     pub tx_check_interval: Duration,
     pub alive: RwLock<bool>,
-    pub log_plugin: Option<Box<dyn LogPlugin>>,
+    pub log_plugin: Option<Arc<Box<dyn LogPlugin>>>,
 }
 
 impl Drop for TxManager {
@@ -38,7 +38,7 @@ pub enum TxState {
 
 
 impl TxManager {
-    pub fn new(plugin: Box<dyn LogPlugin>, tx_out_of_time: Duration, check_interval: Duration) -> Self {
+    pub fn new(plugin: Arc<Box<dyn LogPlugin>>, tx_out_of_time: Duration, check_interval: Duration) -> Self {
         Self {
             tx_context: SyncMap::new(),
             tx_out_of_time,
