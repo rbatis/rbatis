@@ -45,7 +45,7 @@ pub struct Rbatis {
     // logic delete plugin
     pub logic_plugin: Option<Box<dyn LogicDelete>>,
     // log plugin
-    pub log_plugin: Box<dyn LogPlugin>,
+    pub log_plugin: Arc<Box<dyn LogPlugin>>,
 }
 
 impl Default for Rbatis {
@@ -70,16 +70,15 @@ impl Rbatis {
     }
 
     pub fn new_with_param(tx_out_of_time: Duration, check_interval: Duration) -> Self {
+        let log_plugin = Arc::new(Box::new(RbatisLog::default()) as Box<dyn LogPlugin>);
         return Self {
             pool: OnceCell::new(),
             engine: RbatisEngine::new(),
-            tx_manager: Arc::new(TxManager::new(Box::new(RbatisLog::default()),
-                                                tx_out_of_time,
-                                                check_interval)),
+            tx_manager: Arc::new(TxManager::new(log_plugin.clone(), tx_out_of_time, check_interval)),
             page_plugin: Box::new(RbatisPagePlugin {}),
             sql_intercepts: vec![],
             logic_plugin: None,
-            log_plugin: Box::new(RbatisLog::default()),
+            log_plugin,
             py: Py { cache: Default::default(), generate: vec![] },
         };
     }
