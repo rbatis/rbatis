@@ -132,6 +132,33 @@ impl Rbatis {
         return Ok(());
     }
 
+    pub fn set_log_plugin<T>(&mut self, arg: T) where T: LogPlugin + 'static {
+        self.log_plugin = Arc::new(Box::new(arg));
+    }
+
+    pub fn set_logic_plugin<T>(&mut self, arg: Option<T>) where T: LogicDelete + 'static {
+        match arg {
+            Some(v) => {
+                self.logic_plugin = Some(Box::new(v));
+            }
+            None => {
+                self.logic_plugin = None;
+            }
+        }
+    }
+
+    pub fn set_page_plugin<T>(&mut self, arg: T) where T: PagePlugin + 'static {
+        self.page_plugin = Box::new(arg);
+    }
+
+    pub fn add_sql_intercept<T>(&mut self, arg: T) where T: SqlIntercept + 'static {
+        self.sql_intercepts.push(Box::new(arg));
+    }
+
+    pub fn set_sql_intercepts<T>(&mut self, arg: Vec<Box<dyn SqlIntercept>>) {
+        self.sql_intercepts = arg;
+    }
+
     /// get conn pool
     pub fn get_pool(&self) -> Result<&DBPool, crate::core::Error> {
         let p = self.pool.get();
