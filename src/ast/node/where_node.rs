@@ -21,6 +21,9 @@ impl WhereNode {
 }
 
 impl RbatisAST for WhereNode {
+    fn name() -> &'static str {
+        "where"
+    }
     fn eval(&self, convert: &crate::core::db::DriverType, env: &mut Value, engine: &RbatisEngine, arg_array: &mut Vec<Value>) -> Result<String, crate::core::Error> {
         let result = do_child_nodes(convert, &self.childs, env, engine, arg_array)?;
         let s = result.trim().to_string();

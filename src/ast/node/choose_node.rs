@@ -46,6 +46,10 @@ impl ChooseNode {
 }
 
 impl RbatisAST for ChooseNode {
+    fn name() -> &'static str {
+        "choose"
+    }
+
     fn eval(&self, convert: &crate::core::db::DriverType, env: &mut Value, engine: &RbatisEngine, arg_array: &mut Vec<Value>) -> Result<String, crate::core::Error> {
         if self.when_nodes.is_none() == false {
             for item in self.when_nodes.as_ref().unwrap() {

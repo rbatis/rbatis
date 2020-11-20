@@ -3,7 +3,7 @@ use serde_json::{json, Value};
 use crate::ast::ast::RbatisAST;
 use crate::ast::node::bind_node::BindNode;
 use crate::ast::node::choose_node::ChooseNode;
-use crate::ast::node::custom_node::CustomNode;
+use crate::ast::node::proxy_node::ProxyNode;
 use crate::ast::node::foreach_node::ForEachNode;
 use crate::ast::node::if_node::IfNode;
 use crate::ast::node::otherwise_node::OtherwiseNode;
@@ -29,7 +29,7 @@ pub enum NodeType {
     NBind(BindNode),
     NSet(SetNode),
     NWhere(WhereNode),
-    NCustom(CustomNode),
+    NCustom(ProxyNode),
 }
 
 impl NodeType {
@@ -68,6 +68,10 @@ impl NodeType {
 }
 
 impl<'a> RbatisAST for NodeType {
+    fn name() -> &'static str where Self: Sized {
+        "node_type"
+    }
+
     fn eval(&self, convert: &crate::core::db::DriverType, env: &mut Value, engine: &RbatisEngine, arg_array: &mut Vec<Value>) -> Result<String, crate::core::Error> {
         match self {
             NodeType::Null => return Result::Ok(String::new()),

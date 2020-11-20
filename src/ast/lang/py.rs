@@ -9,7 +9,7 @@ use serde_json::Value;
 use crate::ast::ast::RbatisAST;
 use crate::ast::node::bind_node::BindNode;
 use crate::ast::node::choose_node::ChooseNode;
-use crate::ast::node::custom_node::{CustomNode, CustomNodeGenerate};
+use crate::ast::node::proxy_node::{ProxyNode, CustomNodeGenerate};
 use crate::ast::node::foreach_node::ForEachNode;
 use crate::ast::node::if_node::IfNode;
 use crate::ast::node::node_type::NodeType;
@@ -97,23 +97,23 @@ impl Py {
     }
 
     fn parse_trim_node(generates: &Vec<Box<dyn CustomNodeGenerate>>, trim_express: &str, main_node: &mut Vec<NodeType>, source_str: &str, space: usize, childs: Vec<NodeType>) -> Result<NodeType, crate::core::Error> {
-        if trim_express.starts_with("if") {
+        if trim_express.starts_with(IfNode::name()) {
             return Ok(NodeType::NIf(IfNode::from(trim_express, childs)?));
-        } else if trim_express.starts_with("for") {
+        } else if trim_express.starts_with(ForEachNode::name()) {
             return Ok(NodeType::NForEach(ForEachNode::from(source_str, &trim_express, childs)?));
-        } else if trim_express.starts_with("trim") {
+        } else if trim_express.starts_with(TrimNode::name()) {
             return Ok(NodeType::NTrim(TrimNode::from(source_str, trim_express, childs)?));
-        } else if trim_express.starts_with("choose") {
+        } else if trim_express.starts_with(ChooseNode::name()) {
             return Ok(NodeType::NChoose(ChooseNode::from(source_str, trim_express, childs)?));
-        } else if trim_express.starts_with("otherwise") {
+        } else if trim_express.starts_with(OtherwiseNode::name()) {
             return Ok(NodeType::NOtherwise(OtherwiseNode::from(source_str, trim_express, childs)?));
-        } else if trim_express.starts_with("when") {
+        } else if trim_express.starts_with(WhenNode::name()) {
             return Ok(NodeType::NWhen(WhenNode::from(source_str, trim_express, childs)?));
-        } else if trim_express.starts_with("bind") {
+        } else if trim_express.starts_with(BindNode::name()) {
             return Ok(NodeType::NBind(BindNode::from(source_str, trim_express, childs)?));
-        } else if trim_express.starts_with("set") {
+        } else if trim_express.starts_with(SetNode::name()) {
             return Ok(NodeType::NSet(SetNode::from(source_str, trim_express, childs)?));
-        } else if trim_express.starts_with("where") {
+        } else if trim_express.starts_with(WhereNode::name()) {
             return Ok(NodeType::NWhere(WhereNode::from(source_str, trim_express, childs)?));
         } else {
             for g in generates {
