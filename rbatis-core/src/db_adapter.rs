@@ -19,19 +19,27 @@ use crate::Error;
 use crate::runtime::Mutex;
 use std::str::FromStr;
 
-//databases
+#[cfg(feature = "mssql")]
 use sqlx_core::mssql::{Mssql, MssqlArguments, MssqlConnection, MssqlDone, MssqlPool, MssqlRow, MssqlConnectOptions};
+#[cfg(feature = "mysql")]
 use sqlx_core::mysql::{MySql, MySqlArguments, MySqlConnection, MySqlDone, MySqlPool, MySqlRow, MySqlConnectOptions};
+#[cfg(feature = "postgres")]
 use sqlx_core::postgres::{Postgres, PgArguments, PgConnection, PgConnectOptions, PgDone, PgPool, PgRow, PgPoolOptions};
+#[cfg(feature = "sqlite")]
 use sqlx_core::sqlite::{Sqlite, SqliteArguments, SqliteConnection, SqliteDone, SqlitePool, SqliteRow, SqliteConnectOptions};
+
 
 
 #[derive(Debug)]
 pub struct DBPool {
     pub driver_type: DriverType,
+    #[cfg(feature = "mysql")]
     pub mysql: Option<MySqlPool>,
+    #[cfg(feature = "postgres")]
     pub postgres: Option<PgPool>,
+    #[cfg(feature = "sqlite")]
     pub sqlite: Option<SqlitePool>,
+    #[cfg(any(feature = "mssql"))]
     pub mssql: Option<MssqlPool>,
 }
 
@@ -41,67 +49,99 @@ impl DBPool {
     pub async fn new(driver: &str) -> crate::Result<DBPool> {
         let mut pool = Self {
             driver_type: DriverType::None,
+            #[cfg(feature = "mysql")]
             mysql: None,
+            #[cfg(feature = "postgres")]
             postgres: None,
+            #[cfg(feature = "sqlite")]
             sqlite: None,
+            #[cfg(any(feature = "mssql"))]
             mssql: None,
         };
         if driver.starts_with("mysql") {
-            let opt = MySqlConnectOptions::from_str(driver);
-            if opt.is_err() {
-                return Err(Error::from(format!("{:?}", opt.err().unwrap())));
-            }
-            let mut opt = opt.unwrap();
-            opt.log_slow_statements(log::LevelFilter::Off, Duration::from_secs(0));
-            opt.log_statements(log::LevelFilter::Off);
-            pool.driver_type = DriverType::Mysql;
-            let conn = MySqlPool::connect_with(opt).await;
-            if conn.is_err() {
-                return Err(crate::Error::from(conn.err().unwrap().to_string()));
-            }
-            pool.mysql = Some(conn.unwrap());
+            #[cfg(feature = "mysql")]
+                {
+                    let opt = MySqlConnectOptions::from_str(driver);
+                    if opt.is_err() {
+                        return Err(Error::from(format!("{:?}", opt.err().unwrap())));
+                    }
+                    let mut opt = opt.unwrap();
+                    opt.log_slow_statements(log::LevelFilter::Off, Duration::from_secs(0));
+                    opt.log_statements(log::LevelFilter::Off);
+                    pool.driver_type = DriverType::Mysql;
+                    let conn = MySqlPool::connect_with(opt).await;
+                    if conn.is_err() {
+                        return Err(crate::Error::from(conn.err().unwrap().to_string()));
+                    }
+                    pool.mysql = Some(conn.unwrap());
+                }
+            #[cfg(not(feature = "mysql"))]
+                {
+                    return Err(Error::from("[rbatis] not enable mysql feature!"));
+                }
         } else if driver.starts_with("postgres") {
-            let opt = PgConnectOptions::from_str(driver);
-            if opt.is_err() {
-                return Err(Error::from(format!("{:?}", opt.err().unwrap())));
-            }
-            let mut opt = opt.unwrap();
-            opt.log_slow_statements(log::LevelFilter::Off, Duration::from_secs(0));
-            opt.log_statements(log::LevelFilter::Off);
-            pool.driver_type = DriverType::Postgres;
-            let conn = PgPool::connect_with(opt).await;
-            if conn.is_err() {
-                return Err(crate::Error::from(conn.err().unwrap().to_string()));
-            }
-            pool.postgres = Some(conn.unwrap());
+            #[cfg(feature = "postgres")]
+                {
+                    let opt = PgConnectOptions::from_str(driver);
+                    if opt.is_err() {
+                        return Err(Error::from(format!("{:?}", opt.err().unwrap())));
+                    }
+                    let mut opt = opt.unwrap();
+                    opt.log_slow_statements(log::LevelFilter::Off, Duration::from_secs(0));
+                    opt.log_statements(log::LevelFilter::Off);
+                    pool.driver_type = DriverType::Postgres;
+                    let conn = PgPool::connect_with(opt).await;
+                    if conn.is_err() {
+                        return Err(crate::Error::from(conn.err().unwrap().to_string()));
+                    }
+                    pool.postgres = Some(conn.unwrap());
+                }
+            #[cfg(not(feature = "postgres"))]
+                {
+                    return Err(Error::from("[rbatis] not enable postgres feature!"));
+                }
         } else if driver.starts_with("sqlite") {
-            let opt = SqliteConnectOptions::from_str(driver);
-            if opt.is_err() {
-                return Err(Error::from(format!("{:?}", opt.err().unwrap())));
-            }
-            let mut opt = opt.unwrap();
-            opt.log_slow_statements(log::LevelFilter::Off, Duration::from_secs(0));
-            opt.log_statements(log::LevelFilter::Off);
-            pool.driver_type = DriverType::Sqlite;
-            let conn = SqlitePool::connect_with(opt).await;
-            if conn.is_err() {
-                return Err(crate::Error::from(conn.err().unwrap().to_string()));
-            }
-            pool.sqlite = Some(conn.unwrap());
+            #[cfg(feature = "sqlite")]
+                {
+                    let opt = SqliteConnectOptions::from_str(driver);
+                    if opt.is_err() {
+                        return Err(Error::from(format!("{:?}", opt.err().unwrap())));
+                    }
+                    let mut opt = opt.unwrap();
+                    opt.log_slow_statements(log::LevelFilter::Off, Duration::from_secs(0));
+                    opt.log_statements(log::LevelFilter::Off);
+                    pool.driver_type = DriverType::Sqlite;
+                    let conn = SqlitePool::connect_with(opt).await;
+                    if conn.is_err() {
+                        return Err(crate::Error::from(conn.err().unwrap().to_string()));
+                    }
+                    pool.sqlite = Some(conn.unwrap());
+                }
+            #[cfg(not(feature = "sqlite"))]
+                {
+                    return Err(Error::from("[rbatis] not enable sqlite feature!"));
+                }
         } else if driver.starts_with("mssql") || driver.starts_with("sqlserver") {
-            let opt = MssqlConnectOptions::from_str(driver);
-            if opt.is_err() {
-                return Err(Error::from(format!("{:?}", opt.err().unwrap())));
-            }
-            let mut opt = opt.unwrap();
-            opt.log_slow_statements(log::LevelFilter::Off, Duration::from_secs(0));
-            opt.log_statements(log::LevelFilter::Off);
-            pool.driver_type = DriverType::Mssql;
-            let conn = MssqlPool::connect_with(opt).await;
-            if conn.is_err() {
-                return Err(crate::Error::from(conn.err().unwrap().to_string()));
-            }
-            pool.mssql = Some(conn.unwrap());
+            #[cfg(feature = "mssql")]
+                {
+                    let opt = MssqlConnectOptions::from_str(driver);
+                    if opt.is_err() {
+                        return Err(Error::from(format!("{:?}", opt.err().unwrap())));
+                    }
+                    let mut opt = opt.unwrap();
+                    opt.log_slow_statements(log::LevelFilter::Off, Duration::from_secs(0));
+                    opt.log_statements(log::LevelFilter::Off);
+                    pool.driver_type = DriverType::Mssql;
+                    let conn = MssqlPool::connect_with(opt).await;
+                    if conn.is_err() {
+                        return Err(crate::Error::from(conn.err().unwrap().to_string()));
+                    }
+                    pool.mssql = Some(conn.unwrap());
+                }
+            #[cfg(not(feature = "sqlite"))]
+                {
+                    return Err(Error::from("[rbatis] not enable mssql feature!"));
+                }
         } else {
             return Err(Error::from("unsupport driver type!"));
         }
@@ -112,96 +152,128 @@ impl DBPool {
     pub async fn new_opt(driver: &str, opt: &PoolOptions) -> crate::Result<DBPool> {
         let mut pool = Self {
             driver_type: DriverType::None,
+            #[cfg(feature = "mysql")]
             mysql: None,
+            #[cfg(feature = "postgres")]
             postgres: None,
+            #[cfg(feature = "sqlite")]
             sqlite: None,
+            #[cfg(any(feature = "mssql"))]
             mssql: None,
         };
         if driver.starts_with("mysql") {
-            let conn_opt = MySqlConnectOptions::from_str(driver);
-            if conn_opt.is_err() {
-                return Err(Error::from(format!("{:?}", conn_opt.err().unwrap())));
-            }
-            let mut conn_opt = conn_opt.unwrap();
-            conn_opt.log_slow_statements(log::LevelFilter::Off, Duration::from_secs(0));
-            conn_opt.log_statements(log::LevelFilter::Off);
+            #[cfg(feature = "mysql")]
+                {
+                let conn_opt = MySqlConnectOptions::from_str(driver);
+                if conn_opt.is_err() {
+                    return Err(Error::from(format!("{:?}", conn_opt.err().unwrap())));
+                }
+                let mut conn_opt = conn_opt.unwrap();
+                conn_opt.log_slow_statements(log::LevelFilter::Off, Duration::from_secs(0));
+                conn_opt.log_statements(log::LevelFilter::Off);
 
-            pool.driver_type = DriverType::Mysql;
-            let build = sqlx_core::pool::PoolOptions::<MySql>::default()
-                .max_connections(opt.max_connections)
-                .max_lifetime(opt.max_lifetime)
-                .connect_timeout(opt.connect_timeout)
-                .min_connections(opt.min_connections)
-                .idle_timeout(opt.idle_timeout)
-                .test_before_acquire(opt.test_before_acquire);
-            let p = build.connect_with(conn_opt).await;
-            if p.is_err() {
-                return Err(crate::Error::from(p.err().unwrap().to_string()));
+                pool.driver_type = DriverType::Mysql;
+                let build = sqlx_core::pool::PoolOptions::<MySql>::default()
+                    .max_connections(opt.max_connections)
+                    .max_lifetime(opt.max_lifetime)
+                    .connect_timeout(opt.connect_timeout)
+                    .min_connections(opt.min_connections)
+                    .idle_timeout(opt.idle_timeout)
+                    .test_before_acquire(opt.test_before_acquire);
+                let p = build.connect_with(conn_opt).await;
+                if p.is_err() {
+                    return Err(crate::Error::from(p.err().unwrap().to_string()));
+                }
+                pool.mysql = Some(p.unwrap());
             }
-            pool.mysql = Some(p.unwrap());
+            #[cfg(not(feature = "mysql"))]
+            {
+                return Err(Error::from("[rbatis] not enable feature!"));
+            }
         } else if driver.starts_with("postgres") {
-            let conn_opt = PgConnectOptions::from_str(driver);
-            if conn_opt.is_err() {
-                return Err(Error::from(format!("{:?}", conn_opt.err().unwrap())));
+            #[cfg(feature = "postgres")]
+            {
+                let conn_opt = PgConnectOptions::from_str(driver);
+                if conn_opt.is_err() {
+                    return Err(Error::from(format!("{:?}", conn_opt.err().unwrap())));
+                }
+                let mut conn_opt = conn_opt.unwrap();
+                conn_opt.log_slow_statements(log::LevelFilter::Off, Duration::from_secs(0));
+                conn_opt.log_statements(log::LevelFilter::Off);
+                pool.driver_type = DriverType::Postgres;
+                let build = sqlx_core::pool::PoolOptions::<Postgres>::new()
+                    .max_connections(opt.max_connections)
+                    .max_lifetime(opt.max_lifetime)
+                    .connect_timeout(opt.connect_timeout)
+                    .min_connections(opt.min_connections)
+                    .idle_timeout(opt.idle_timeout)
+                    .test_before_acquire(opt.test_before_acquire);
+                let p = build.connect_with(conn_opt).await;
+                if p.is_err() {
+                    return Err(crate::Error::from(p.err().unwrap().to_string()));
+                }
+                pool.postgres = Some(p.unwrap());
             }
-            let mut conn_opt = conn_opt.unwrap();
-            conn_opt.log_slow_statements(log::LevelFilter::Off, Duration::from_secs(0));
-            conn_opt.log_statements(log::LevelFilter::Off);
-            pool.driver_type = DriverType::Postgres;
-            let build = sqlx_core::pool::PoolOptions::<Postgres>::new()
-                .max_connections(opt.max_connections)
-                .max_lifetime(opt.max_lifetime)
-                .connect_timeout(opt.connect_timeout)
-                .min_connections(opt.min_connections)
-                .idle_timeout(opt.idle_timeout)
-                .test_before_acquire(opt.test_before_acquire);
-            let p = build.connect_with(conn_opt).await;
-            if p.is_err() {
-                return Err(crate::Error::from(p.err().unwrap().to_string()));
+            #[cfg(not(feature = "postgres"))]
+            {
+                return Err(Error::from("[rbatis] not enable feature!"));
             }
-            pool.postgres = Some(p.unwrap());
         } else if driver.starts_with("sqlite") {
-            let conn_opt = SqliteConnectOptions::from_str(driver);
-            if conn_opt.is_err() {
-                return Err(Error::from(format!("{:?}", conn_opt.err().unwrap())));
+            #[cfg(feature = "sqlite")]
+               {
+                let conn_opt = SqliteConnectOptions::from_str(driver);
+                if conn_opt.is_err() {
+                    return Err(Error::from(format!("{:?}", conn_opt.err().unwrap())));
+                }
+                let mut conn_opt = conn_opt.unwrap();
+                conn_opt.log_slow_statements(log::LevelFilter::Off, Duration::from_secs(0));
+                conn_opt.log_statements(log::LevelFilter::Off);
+                pool.driver_type = DriverType::Sqlite;
+                let build = sqlx_core::pool::PoolOptions::<Sqlite>::new()
+                    .max_connections(opt.max_connections)
+                    .max_lifetime(opt.max_lifetime)
+                    .connect_timeout(opt.connect_timeout)
+                    .min_connections(opt.min_connections)
+                    .idle_timeout(opt.idle_timeout)
+                    .test_before_acquire(opt.test_before_acquire);
+                let p = build.connect_with(conn_opt).await;
+                if p.is_err() {
+                    return Err(crate::Error::from(p.err().unwrap().to_string()));
+                }
+                pool.sqlite = Some(p.unwrap());
             }
-            let mut conn_opt = conn_opt.unwrap();
-            conn_opt.log_slow_statements(log::LevelFilter::Off, Duration::from_secs(0));
-            conn_opt.log_statements(log::LevelFilter::Off);
-            pool.driver_type = DriverType::Sqlite;
-            let build = sqlx_core::pool::PoolOptions::<Sqlite>::new()
-                .max_connections(opt.max_connections)
-                .max_lifetime(opt.max_lifetime)
-                .connect_timeout(opt.connect_timeout)
-                .min_connections(opt.min_connections)
-                .idle_timeout(opt.idle_timeout)
-                .test_before_acquire(opt.test_before_acquire);
-            let p = build.connect_with(conn_opt).await;
-            if p.is_err() {
-                return Err(crate::Error::from(p.err().unwrap().to_string()));
+            #[cfg(not(feature = "sqlite"))]
+            {
+                return Err(Error::from("[rbatis] not enable feature!"));
             }
-            pool.sqlite = Some(p.unwrap());
         } else if driver.starts_with("mssql") || driver.starts_with("sqlserver") {
-            let conn_opt = MssqlConnectOptions::from_str(driver);
-            if conn_opt.is_err() {
-                return Err(Error::from(format!("{:?}", conn_opt.err().unwrap())));
+            #[cfg(feature = "mssql")]
+              {
+                let conn_opt = MssqlConnectOptions::from_str(driver);
+                if conn_opt.is_err() {
+                    return Err(Error::from(format!("{:?}", conn_opt.err().unwrap())));
+                }
+                let mut conn_opt = conn_opt.unwrap();
+                conn_opt.log_slow_statements(log::LevelFilter::Off, Duration::from_secs(0));
+                conn_opt.log_statements(log::LevelFilter::Off);
+                pool.driver_type = DriverType::Mssql;
+                let build = sqlx_core::pool::PoolOptions::<Mssql>::new()
+                    .max_connections(opt.max_connections)
+                    .max_lifetime(opt.max_lifetime)
+                    .connect_timeout(opt.connect_timeout)
+                    .min_connections(opt.min_connections)
+                    .idle_timeout(opt.idle_timeout)
+                    .test_before_acquire(opt.test_before_acquire);
+                let p = build.connect_with(conn_opt).await;
+                if p.is_err() {
+                    return Err(crate::Error::from(p.err().unwrap().to_string()));
+                }
+                pool.mssql = Some(p.unwrap());
             }
-            let mut conn_opt = conn_opt.unwrap();
-            conn_opt.log_slow_statements(log::LevelFilter::Off, Duration::from_secs(0));
-            conn_opt.log_statements(log::LevelFilter::Off);
-            pool.driver_type = DriverType::Mssql;
-            let build = sqlx_core::pool::PoolOptions::<Mssql>::new()
-                .max_connections(opt.max_connections)
-                .max_lifetime(opt.max_lifetime)
-                .connect_timeout(opt.connect_timeout)
-                .min_connections(opt.min_connections)
-                .idle_timeout(opt.idle_timeout)
-                .test_before_acquire(opt.test_before_acquire);
-            let p = build.connect_with(conn_opt).await;
-            if p.is_err() {
-                return Err(crate::Error::from(p.err().unwrap().to_string()));
+            #[cfg(not(feature = "mssql"))]
+            {
+                return Err(Error::from("[rbatis] not enable feature!"));
             }
-            pool.mssql = Some(p.unwrap());
         } else {
             return Err(Error::from("unsupport driver type!"));
         }
@@ -214,43 +286,55 @@ impl DBPool {
                 return Err(Error::from("un init DBPool!"));
             }
             &DriverType::Mysql => {
-                let q: Query<MySql, MySqlArguments> = query(sql);
                 return Ok(DBQuery {
                     driver_type: DriverType::Mysql,
-                    mysql: Some(q),
+                    #[cfg(feature = "mysql")]
+                    mysql: Some(query(sql)),
+                    #[cfg(feature = "postgres")]
                     postgres: None,
+                    #[cfg(feature = "sqlite")]
                     sqlite: None,
+                    #[cfg(any(feature = "mssql"))]
                     mssql: None,
                 });
             }
             &DriverType::Postgres => {
-                let q: Query<Postgres, PgArguments> = query(sql);
                 return Ok(DBQuery {
                     driver_type: DriverType::Postgres,
+                    #[cfg(feature = "mysql")]
                     mysql: None,
-                    postgres: Some(q),
+                    #[cfg(feature = "postgres")]
+                    postgres: Some(query(sql)),
+                    #[cfg(feature = "sqlite")]
                     sqlite: None,
+                    #[cfg(any(feature = "mssql"))]
                     mssql: None,
                 });
             }
             &DriverType::Sqlite => {
-                let q: Query<Sqlite, SqliteArguments> = query(sql);
                 return Ok(DBQuery {
                     driver_type: DriverType::Sqlite,
+                    #[cfg(feature = "mysql")]
                     mysql: None,
+                    #[cfg(feature = "mysql")]
                     postgres: None,
-                    sqlite: Some(q),
+                    #[cfg(feature = "sqlite")]
+                    sqlite: Some(query(sql)),
+                    #[cfg(feature = "mysql")]
                     mssql: None,
                 });
             }
             &DriverType::Mssql => {
-                let q: Query<Mssql, MssqlArguments> = query(sql);
                 return Ok(DBQuery {
                     driver_type: DriverType::Mssql,
+                    #[cfg(feature = "mysql")]
                     mysql: None,
+                    #[cfg(feature = "postgres")]
                     postgres: None,
+                    #[cfg(feature = "sqlite")]
                     sqlite: None,
-                    mssql: Some(q),
+                    #[cfg(any(feature = "mssql"))]
+                    mssql: Some(query(sql)),
                 });
             }
         }
@@ -270,9 +354,13 @@ impl DBPool {
                 }
                 return Ok(DBPoolConn {
                     driver_type: DriverType::Mysql,
+                    #[cfg(feature = "mysql")]
                     mysql: Some(conn.unwrap()),
+                    #[cfg(feature = "postgres")]
                     postgres: None,
+                    #[cfg(feature = "sqlite")]
                     sqlite: None,
+                    #[cfg(any(feature = "mssql"))]
                     mssql: None,
                 });
             }
@@ -283,9 +371,13 @@ impl DBPool {
                 }
                 return Ok(DBPoolConn {
                     driver_type: DriverType::Postgres,
+                    #[cfg(feature = "mysql")]
                     mysql: None,
+                    #[cfg(feature = "postgres")]
                     postgres: Some(conn.unwrap()),
+                    #[cfg(feature = "sqlite")]
                     sqlite: None,
+                    #[cfg(any(feature = "mssql"))]
                     mssql: None,
                 });
             }
@@ -296,9 +388,13 @@ impl DBPool {
                 }
                 return Ok(DBPoolConn {
                     driver_type: DriverType::Sqlite,
+                    #[cfg(feature = "mysql")]
                     mysql: None,
+                    #[cfg(feature = "postgres")]
                     postgres: None,
+                    #[cfg(feature = "sqlite")]
                     sqlite: Some(conn.unwrap()),
+                    #[cfg(any(feature = "mssql"))]
                     mssql: None,
                 });
             }
@@ -309,9 +405,13 @@ impl DBPool {
                 }
                 return Ok(DBPoolConn {
                     driver_type: DriverType::Mssql,
+                    #[cfg(feature = "mysql")]
                     mysql: None,
+                    #[cfg(feature = "postgres")]
                     postgres: None,
+                    #[cfg(feature = "sqlite")]
                     sqlite: None,
+                    #[cfg(any(feature = "mssql"))]
                     mssql: Some(conn.unwrap()),
                 });
             }
@@ -333,9 +433,13 @@ impl DBPool {
                 }
                 return Ok(Some(DBPoolConn {
                     driver_type: self.driver_type,
+                    #[cfg(feature = "mysql")]
                     mysql: Some(conn.unwrap()),
+                    #[cfg(feature = "postgres")]
                     postgres: None,
+                    #[cfg(feature = "sqlite")]
                     sqlite: None,
+                    #[cfg(any(feature = "mssql"))]
                     mssql: None,
                 }));
             }
@@ -346,9 +450,13 @@ impl DBPool {
                 }
                 return Ok(Some(DBPoolConn {
                     driver_type: self.driver_type,
+                    #[cfg(feature = "mysql")]
                     mysql: None,
+                    #[cfg(feature = "mysql")]
                     postgres: Some(conn.unwrap()),
+                    #[cfg(feature = "mysql")]
                     sqlite: None,
+                    #[cfg(feature = "mysql")]
                     mssql: None,
                 }));
             }
@@ -359,9 +467,13 @@ impl DBPool {
                 }
                 return Ok(Some(DBPoolConn {
                     driver_type: self.driver_type,
+                    #[cfg(feature = "mysql")]
                     mysql: None,
+                    #[cfg(feature = "postgres")]
                     postgres: None,
+                    #[cfg(feature = "sqlite")]
                     sqlite: Some(conn.unwrap()),
+                    #[cfg(feature = "mssql")]
                     mssql: None,
                 }));
             }
@@ -372,9 +484,13 @@ impl DBPool {
                 }
                 return Ok(Some(DBPoolConn {
                     driver_type: self.driver_type,
+                    #[cfg(feature = "postgres")]
                     mysql: None,
+                    #[cfg(feature = "postgres")]
                     postgres: None,
+                    #[cfg(feature = "sqlite")]
                     sqlite: None,
+                    #[cfg(feature = "mssql")]
                     mssql: Some(conn.unwrap()),
                 }));
             }
@@ -389,36 +505,52 @@ impl DBPool {
             &DriverType::Mysql => {
                 Ok(DBTx {
                     driver_type: self.driver_type,
+                    #[cfg(feature = "postgres")]
                     mysql: Some(convert_result(self.mysql.as_ref().unwrap().begin().await)?),
+                    #[cfg(feature = "postgres")]
                     postgres: None,
+                    #[cfg(feature = "sqlite")]
                     sqlite: None,
+                    #[cfg(feature = "mssql")]
                     mssql: None,
                 })
             }
             &DriverType::Postgres => {
                 Ok(DBTx {
                     driver_type: self.driver_type,
+                    #[cfg(feature = "postgres")]
                     postgres: Some(convert_result(self.postgres.as_ref().unwrap().begin().await)?),
+                    #[cfg(feature = "mysql")]
                     mysql: None,
+                    #[cfg(feature = "sqlite")]
                     sqlite: None,
+                    #[cfg(feature = "mssql")]
                     mssql: None,
                 })
             }
             &DriverType::Sqlite => {
                 Ok(DBTx {
                     driver_type: self.driver_type,
+                    #[cfg(feature = "sqlite")]
                     sqlite: Some(Mutex::new(convert_result(self.sqlite.as_ref().unwrap().begin().await)?)),
+                    #[cfg(feature = "postgres")]
                     postgres: None,
+                    #[cfg(feature = "mysql")]
                     mysql: None,
+                    #[cfg(feature = "mssql")]
                     mssql: None,
                 })
             }
             &DriverType::Mssql => {
                 Ok(DBTx {
                     driver_type: self.driver_type,
+                    #[cfg(feature = "mssql")]
                     mssql: Some(convert_result(self.mssql.as_ref().unwrap().begin().await)?),
+                    #[cfg(feature = "mysql")]
                     mysql: None,
+                    #[cfg(feature = "postgres")]
                     postgres: None,
+                    #[cfg(feature = "sqlite")]
                     sqlite: None,
                 })
             }
@@ -428,34 +560,75 @@ impl DBPool {
 
 pub struct DBConnection {
     pub driver_type: DriverType,
+    #[cfg(feature = "mysql")]
     pub mysql: Option<MySqlConnection>,
+    #[cfg(feature = "postgres")]
     pub postgres: Option<PgConnection>,
+    #[cfg(feature = "sqlite")]
     pub sqlite: Option<SqliteConnection>,
+    #[cfg(feature = "mssql")]
+    pub mssql:Option<MssqlConnection>
 }
 
 impl DBConnection {
+
+    #[cfg(feature = "mysql")]
     pub fn new_my(arg: MySqlConnection) -> Self {
         Self {
             driver_type: DriverType::Mysql,
+            #[cfg(feature = "mysql")]
             mysql: Some(arg),
+            #[cfg(feature = "postgres")]
             postgres: None,
+            #[cfg(feature = "sqlite")]
             sqlite: None,
+            #[cfg(feature = "mssql")]
+            mssql: None,
         }
     }
+
+    #[cfg(feature = "sqlite")]
     pub fn new_sqlite(arg: SqliteConnection) -> Self {
         Self {
             driver_type: DriverType::Sqlite,
+            #[cfg(feature = "mysql")]
             mysql: None,
+            #[cfg(feature = "postgres")]
             postgres: None,
+            #[cfg(feature = "sqlite")]
             sqlite: Some(arg),
+            #[cfg(feature = "mssql")]
+            mssql: None,
         }
     }
+
+    #[cfg(feature = "postgres")]
     pub fn new_pg(arg: PgConnection) -> Self {
         Self {
             driver_type: DriverType::Postgres,
+            #[cfg(feature = "mysql")]
             mysql: None,
+            #[cfg(feature = "postgres")]
             postgres: Some(arg),
+            #[cfg(feature = "sqlite")]
             sqlite: None,
+            #[cfg(feature = "mssql")]
+            mssql: None,
+        }
+    }
+
+    #[cfg(feature = "mssql")]
+    pub fn new_mssql(arg: MssqlConnection) -> Self {
+        Self {
+            driver_type: DriverType::Postgres,
+            #[cfg(feature = "mysql")]
+            mysql: None,
+            #[cfg(feature = "postgres")]
+            postgres: None,
+            #[cfg(feature = "sqlite")]
+            sqlite: None,
+            #[cfg(feature = "mssql")]
+            mssql: Some(arg),
         }
     }
 }
@@ -463,9 +636,13 @@ impl DBConnection {
 
 pub struct DBQuery<'q> {
     pub driver_type: DriverType,
+    #[cfg(feature = "mysql")]
     pub mysql: Option<Query<'q, MySql, MySqlArguments>>,
+    #[cfg(feature = "postgres")]
     pub postgres: Option<Query<'q, Postgres, PgArguments>>,
+    #[cfg(feature = "sqlite")]
     pub sqlite: Option<Query<'q, Sqlite, SqliteArguments<'q>>>,
+    #[cfg(feature = "mssql")]
     pub mssql: Option<Query<'q, Mssql, MssqlArguments>>,
 }
 
@@ -591,9 +768,13 @@ impl<'q> DBQuery<'q> {
 
 pub struct DBPoolConn {
     pub driver_type: DriverType,
+    #[cfg(feature = "mysql")]
     pub mysql: Option<PoolConnection<MySql>>,
+    #[cfg(feature = "postgres")]
     pub postgres: Option<PoolConnection<Postgres>>,
+    #[cfg(feature = "sqlite")]
     pub sqlite: Option<PoolConnection<Sqlite>>,
+    #[cfg(feature = "mssql")]
     pub mssql: Option<PoolConnection<Mssql>>,
 }
 
@@ -604,21 +785,25 @@ impl DBPoolConn {
             &DriverType::None => {
                 return Err(Error::from("un init DBPool!"));
             }
+            #[cfg(feature = "mysql")]
             &DriverType::Mysql => {
                 if self.mysql.is_none() {
                     return Err(Error::from("un init DBPoolConn!"));
                 }
             }
+            #[cfg(feature = "postgres")]
             &DriverType::Postgres => {
                 if self.postgres.is_none() {
                     return Err(Error::from("un init DBPoolConn!"));
                 }
             }
+            #[cfg(feature = "sqlite")]
             &DriverType::Sqlite => {
                 if self.sqlite.is_none() {
                     return Err(Error::from("un init DBPoolConn!"));
                 }
             }
+            #[cfg(feature = "mssql")]
             &DriverType::Mssql => {
                 if self.mssql.is_none() {
                     return Err(Error::from("un init DBPoolConn!"));
@@ -636,6 +821,7 @@ impl DBPoolConn {
             &DriverType::None => {
                 return Err(Error::from("un init DBPool!"));
             }
+            #[cfg(feature = "mysql")]
             &DriverType::Mysql => {
                 let async_stream: Vec<MySqlRow> = convert_result(self.mysql.as_mut().unwrap().fetch_all(sql).await)?;
                 let json_array = async_stream.try_to_json()?.as_array().unwrap().to_owned();
@@ -643,6 +829,7 @@ impl DBPoolConn {
                 let result = json_decode::<T>(json_array)?;
                 Ok((result, return_len))
             }
+            #[cfg(feature = "postgres")]
             &DriverType::Postgres => {
                 let async_stream: Vec<PgRow> = convert_result(self.postgres.as_mut().unwrap().fetch_all(sql).await)?;
                 let json_array = async_stream.try_to_json()?.as_array().unwrap().to_owned();
@@ -650,6 +837,7 @@ impl DBPoolConn {
                 let result = json_decode::<T>(json_array)?;
                 Ok((result, return_len))
             }
+            #[cfg(feature = "sqlite")]
             &DriverType::Sqlite => {
                 let data: Vec<SqliteRow> = convert_result(self.sqlite.as_mut().unwrap().fetch_all(sql).await)?;
                 let json_array = data.try_to_json()?.as_array().unwrap().to_owned();
@@ -657,6 +845,7 @@ impl DBPoolConn {
                 let result = json_decode::<T>(json_array)?;
                 Ok((result, return_len))
             }
+            #[cfg(feature = "mssql")]
             &DriverType::Mssql => {
                 let async_stream: Vec<MssqlRow> = convert_result(self.mssql.as_mut().unwrap().fetch_all(sql).await)?;
                 let json_array = async_stream.try_to_json()?.as_array().unwrap().to_owned();
@@ -673,18 +862,22 @@ impl DBPoolConn {
             &DriverType::None => {
                 return Err(Error::from("un init DBPool!"));
             }
+            #[cfg(feature = "mysql")]
             &DriverType::Mysql => {
                 let data: MySqlDone = convert_result(self.mysql.as_mut().unwrap().execute(sql).await)?;
                 return Ok(DBExecResult::from(data));
             }
+            #[cfg(feature = "postgres")]
             &DriverType::Postgres => {
                 let data: PgDone = convert_result(self.postgres.as_mut().unwrap().execute(sql).await)?;
                 return Ok(DBExecResult::from(data));
             }
+            #[cfg(feature = "sqlite")]
             &DriverType::Sqlite => {
                 let data: SqliteDone = convert_result(self.sqlite.as_mut().unwrap().execute(sql).await)?;
                 return Ok(DBExecResult::from(data));
             }
+            #[cfg(feature = "mssql")]
             &DriverType::Mssql => {
                 let data: MssqlDone = convert_result(self.mssql.as_mut().unwrap().execute(sql).await)?;
                 return Ok(DBExecResult::from(data));
@@ -699,6 +892,7 @@ impl DBPoolConn {
             &DriverType::None => {
                 return Err(Error::from("un init DBPool!"));
             }
+            #[cfg(feature = "mysql")]
             &DriverType::Mysql => {
                 let data: Vec<MySqlRow> = convert_result(self.mysql.as_mut().unwrap().fetch_all(sql.mysql.unwrap()).await)?;
                 let json_array = data.try_to_json()?.as_array().unwrap().to_owned();
@@ -706,6 +900,7 @@ impl DBPoolConn {
                 let result = json_decode::<T>(json_array)?;
                 Ok((result, return_len))
             }
+            #[cfg(feature = "postgres")]
             &DriverType::Postgres => {
                 let data: Vec<PgRow> = convert_result(self.postgres.as_mut().unwrap().fetch_all(sql.postgres.unwrap()).await)?;
                 let json_array = data.try_to_json()?.as_array().unwrap().to_owned();
@@ -713,6 +908,7 @@ impl DBPoolConn {
                 let result = json_decode::<T>(json_array)?;
                 Ok((result, return_len))
             }
+            #[cfg(feature = "sqlite")]
             &DriverType::Sqlite => {
                 let data: Vec<SqliteRow> = convert_result(self.sqlite.as_mut().unwrap().fetch_all(sql.sqlite.unwrap()).await)?;
                 let json_array = data.try_to_json()?.as_array().unwrap().to_owned();
@@ -720,6 +916,7 @@ impl DBPoolConn {
                 let result = json_decode::<T>(json_array)?;
                 Ok((result, return_len))
             }
+            #[cfg(feature = "mssql")]
             &DriverType::Mssql => {
                 let data: Vec<MssqlRow> = convert_result(self.mssql.as_mut().unwrap().fetch_all(sql.mssql.unwrap()).await)?;
                 let json_array = data.try_to_json()?.as_array().unwrap().to_owned();
@@ -736,18 +933,22 @@ impl DBPoolConn {
             &DriverType::None => {
                 return Err(Error::from("un init DBPool!"));
             }
+            #[cfg(feature = "mysql")]
             &DriverType::Mysql => {
                 let result: MySqlDone = convert_result(self.mysql.as_mut().unwrap().execute(sql.mysql.unwrap()).await)?;
                 return Ok(DBExecResult::from(result));
             }
+            #[cfg(feature = "postgres")]
             &DriverType::Postgres => {
                 let data: PgDone = convert_result(self.postgres.as_mut().unwrap().execute(sql.postgres.unwrap()).await)?;
                 return Ok(DBExecResult::from(data));
             }
+            #[cfg(feature = "sqlite")]
             &DriverType::Sqlite => {
                 let data: SqliteDone = convert_result(self.sqlite.as_mut().unwrap().execute(sql.sqlite.unwrap()).await)?;
                 return Ok(DBExecResult::from(data));
             }
+            #[cfg(feature = "mssql")]
             &DriverType::Mssql => {
                 let data: MssqlDone = convert_result(self.mssql.as_mut().unwrap().execute(sql.mssql.unwrap()).await)?;
                 return Ok(DBExecResult::from(data));
@@ -764,36 +965,52 @@ impl DBPoolConn {
             &DriverType::Mysql => {
                 Ok(DBTx {
                     driver_type: self.driver_type,
+                    #[cfg(feature = "mysql")]
                     mysql: Some(convert_result(self.mysql.as_mut().unwrap().begin().await)?),
+                    #[cfg(feature = "postgres")]
                     postgres: None,
+                    #[cfg(feature = "sqlite")]
                     sqlite: None,
+                    #[cfg(feature = "mssql")]
                     mssql: None,
                 })
             }
             &DriverType::Postgres => {
                 Ok(DBTx {
                     driver_type: self.driver_type,
+                    #[cfg(feature = "postgres")]
                     postgres: Some(convert_result(self.postgres.as_mut().unwrap().begin().await)?),
+                    #[cfg(feature = "mysql")]
                     mysql: None,
+                    #[cfg(feature = "sqlite")]
                     sqlite: None,
+                    #[cfg(feature = "mssql")]
                     mssql: None,
                 })
             }
             &DriverType::Sqlite => {
                 Ok(DBTx {
                     driver_type: self.driver_type,
+                    #[cfg(feature = "sqlite")]
                     sqlite: Some(Mutex::new(convert_result(self.sqlite.as_mut().unwrap().begin().await)?)),
+                    #[cfg(feature = "postgres")]
                     postgres: None,
+                    #[cfg(feature = "mysql")]
                     mysql: None,
+                    #[cfg(feature = "mssql")]
                     mssql: None,
                 })
             }
             &DriverType::Mssql => {
                 Ok(DBTx {
                     driver_type: self.driver_type,
+                    #[cfg(feature = "mssql")]
                     mssql: Some(convert_result(self.mssql.as_mut().unwrap().begin().await)?),
+                    #[cfg(feature = "mysql")]
                     mysql: None,
+                    #[cfg(feature = "sqlite")]
                     sqlite: None,
+                    #[cfg(feature = "postgres")]
                     postgres: None,
                 })
             }
@@ -849,9 +1066,13 @@ impl DBPoolConn {
 
 pub struct DBTx {
     pub driver_type: DriverType,
+    #[cfg(feature = "mysql")]
     pub mysql: Option<Transaction<'static, MySql>>,
+    #[cfg(feature = "postgres")]
     pub postgres: Option<Transaction<'static, Postgres>>,
+    #[cfg(feature = "sqlite")]
     pub sqlite: Option<Mutex<Transaction<'static, Sqlite>>>,
+    #[cfg(feature = "mssql")]
     pub mssql: Option<Transaction<'static, Mssql>>,
 }
 
@@ -903,6 +1124,7 @@ impl DBTx {
             &DriverType::None => {
                 return Err(Error::from("un init DBPool!"));
             }
+            #[cfg(feature = "mysql")]
             &DriverType::Mysql => {
                 let data: Vec<MySqlRow> = convert_result(self.mysql.as_mut().unwrap().fetch_all(sql).await)?;
                 let json_array = data.try_to_json()?.as_array().unwrap().to_owned();
@@ -910,6 +1132,7 @@ impl DBTx {
                 let result = json_decode::<T>(json_array)?;
                 Ok((result, return_len))
             }
+            #[cfg(feature = "postgres")]
             &DriverType::Postgres => {
                 let data: Vec<PgRow> = convert_result(self.postgres.as_mut().unwrap().fetch_all(sql).await)?;
                 let json_array = data.try_to_json()?.as_array().unwrap().to_owned();
@@ -917,6 +1140,7 @@ impl DBTx {
                 let result = json_decode::<T>(json_array)?;
                 Ok((result, return_len))
             }
+            #[cfg(feature = "sqlite")]
             &DriverType::Sqlite => {
                 let data: Vec<SqliteRow> = convert_result(self.sqlite.as_mut().unwrap().lock().await.fetch_all(sql).await)?;
                 let json_array = data.try_to_json()?.as_array().unwrap().to_owned();
@@ -924,6 +1148,7 @@ impl DBTx {
                 let result = json_decode::<T>(json_array)?;
                 Ok((result, return_len))
             }
+            #[cfg(feature = "mssql")]
             &DriverType::Mssql => {
                 let data: Vec<MssqlRow> = convert_result(self.mssql.as_mut().unwrap().fetch_all(sql).await)?;
                 let json_array = data.try_to_json()?.as_array().unwrap().to_owned();
@@ -940,6 +1165,7 @@ impl DBTx {
             &DriverType::None => {
                 return Err(Error::from("un init DBPool!"));
             }
+            #[cfg(feature = "mysql")]
             &DriverType::Mysql => {
                 let data: Vec<MySqlRow> = convert_result(self.mysql.as_mut().unwrap().fetch_all(sql.mysql.unwrap()).await)?;
                 let json_array = data.try_to_json()?.as_array().unwrap().to_owned();
@@ -947,6 +1173,7 @@ impl DBTx {
                 let result = json_decode::<T>(json_array)?;
                 Ok((result, return_len))
             }
+            #[cfg(feature = "postgres")]
             &DriverType::Postgres => {
                 let data: Vec<PgRow> = convert_result(self.postgres.as_mut().unwrap().fetch_all(sql.postgres.unwrap()).await)?;
                 let json_array = data.try_to_json()?.as_array().unwrap().to_owned();
@@ -954,6 +1181,7 @@ impl DBTx {
                 let result = json_decode::<T>(json_array)?;
                 Ok((result, return_len))
             }
+            #[cfg(feature = "sqlite")]
             &DriverType::Sqlite => {
                 let data: Vec<SqliteRow> = convert_result(self.sqlite.as_mut().unwrap().lock().await.fetch_all(sql.sqlite.unwrap()).await)?;
                 let json_array = data.try_to_json()?.as_array().unwrap().to_owned();
@@ -961,6 +1189,7 @@ impl DBTx {
                 let result = json_decode::<T>(json_array)?;
                 Ok((result, return_len))
             }
+            #[cfg(feature = "mssql")]
             &DriverType::Mssql => {
                 let data: Vec<MssqlRow> = convert_result(self.mssql.as_mut().unwrap().fetch_all(sql.mssql.unwrap()).await)?;
                 let json_array = data.try_to_json()?.as_array().unwrap().to_owned();
@@ -976,18 +1205,22 @@ impl DBTx {
             &DriverType::None => {
                 return Err(Error::from("un init DBPool!"));
             }
+            #[cfg(feature = "mysql")]
             &DriverType::Mysql => {
                 let data: MySqlDone = convert_result(self.mysql.as_mut().unwrap().execute(sql).await)?;
                 return Ok(DBExecResult::from(data));
             }
+            #[cfg(feature = "postgres")]
             &DriverType::Postgres => {
                 let data: PgDone = convert_result(self.postgres.as_mut().unwrap().execute(sql).await)?;
                 return Ok(DBExecResult::from(data));
             }
+            #[cfg(feature = "sqlite")]
             &DriverType::Sqlite => {
                 let data: SqliteDone = convert_result(self.sqlite.as_mut().unwrap().lock().await.execute(sql).await)?;
                 return Ok(DBExecResult::from(data));
             }
+            #[cfg(feature = "mssql")]
             &DriverType::Mssql => {
                 let data: MssqlDone = convert_result(self.mssql.as_mut().unwrap().execute(sql).await)?;
                 return Ok(DBExecResult::from(data));
@@ -1001,18 +1234,22 @@ impl DBTx {
             &DriverType::None => {
                 return Err(Error::from("un init DBPool!"));
             }
+            #[cfg(feature = "mysql")]
             &DriverType::Mysql => {
                 let data: MySqlDone = convert_result(self.mysql.as_mut().unwrap().execute(sql.mysql.unwrap()).await)?;
                 return Ok(DBExecResult::from(data));
             }
+            #[cfg(feature = "postgres")]
             &DriverType::Postgres => {
                 let data: PgDone = convert_result(self.postgres.as_mut().unwrap().execute(sql.postgres.unwrap()).await)?;
                 return Ok(DBExecResult::from(data));
             }
+            #[cfg(feature = "sqlite")]
             &DriverType::Sqlite => {
                 let data: SqliteDone = convert_result(self.sqlite.as_mut().unwrap().lock().await.execute(sql.sqlite.unwrap()).await)?;
                 return Ok(DBExecResult::from(data));
             }
+            #[cfg(feature = "mssql")]
             &DriverType::Mssql => {
                 let data: MssqlDone = convert_result(self.mssql.as_mut().unwrap().execute(sql.mssql.unwrap()).await)?;
                 return Ok(DBExecResult::from(data));
@@ -1034,6 +1271,7 @@ pub struct DBExecResult {
     pub last_insert_id: Option<i64>,
 }
 
+#[cfg(feature = "mysql")]
 impl From<MySqlDone> for DBExecResult {
     fn from(arg: MySqlDone) -> Self {
         Self {
@@ -1043,6 +1281,7 @@ impl From<MySqlDone> for DBExecResult {
     }
 }
 
+#[cfg(feature = "postgres")]
 impl From<PgDone> for DBExecResult {
     fn from(arg: PgDone) -> Self {
         Self {
@@ -1052,6 +1291,7 @@ impl From<PgDone> for DBExecResult {
     }
 }
 
+#[cfg(feature = "sqlite")]
 impl From<SqliteDone> for DBExecResult {
     fn from(arg: SqliteDone) -> Self {
         Self {
@@ -1061,6 +1301,7 @@ impl From<SqliteDone> for DBExecResult {
     }
 }
 
+#[cfg(feature = "mssql")]
 impl From<MssqlDone> for DBExecResult {
     fn from(arg: MssqlDone) -> Self {
         Self {
