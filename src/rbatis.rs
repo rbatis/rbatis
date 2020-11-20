@@ -27,6 +27,7 @@ use crate::tx::{TxManager, TxState};
 use crate::utils::error_util::ToResult;
 use crate::utils::string_util;
 use crate::wrapper::Wrapper;
+use crate::ast::node::custom_node::CustomNodeGenerate;
 
 /// rbatis engine
 pub struct Rbatis {
@@ -69,6 +70,16 @@ pub struct RbatisOption {
     pub tx_lock_wait_timeout: Duration,
     /// rbatis tx manager check tx interval
     pub tx_check_interval: Duration,
+    /// custom py lang
+    pub generate: Vec<Box<dyn CustomNodeGenerate>>,
+    /// page plugin
+    pub page_plugin: Box<dyn PagePlugin>,
+    /// sql intercept vec chain
+    pub sql_intercepts: Vec<Box<dyn SqlIntercept>>,
+    /// logic delete plugin
+    pub logic_plugin: Option<Box<dyn LogicDelete>>,
+    /// log plugin
+    pub log_plugin: Arc<Box<dyn LogPlugin>>,
 }
 
 impl Default for RbatisOption {
@@ -76,6 +87,11 @@ impl Default for RbatisOption {
         Self {
             tx_lock_wait_timeout: Duration::from_secs(60),
             tx_check_interval: Duration::from_secs(5),
+            generate: vec![],
+            page_plugin: Box::new(RbatisPagePlugin {}),
+            sql_intercepts: vec![],
+            logic_plugin: None,
+            log_plugin: Arc::new(Box::new(RbatisLog::default()) as Box<dyn LogPlugin>),
         }
     }
 }
@@ -85,17 +101,17 @@ impl Rbatis {
         return Self::new_with_opt(RbatisOption::default());
     }
 
+    ///new Rbatis from Option
     pub fn new_with_opt(option: RbatisOption) -> Self {
-        let log_plugin = Arc::new(Box::new(RbatisLog::default()) as Box<dyn LogPlugin>);
         return Self {
             pool: OnceCell::new(),
             engine: RbatisEngine::new(),
-            tx_manager: Arc::new(TxManager::new(log_plugin.clone(), option.tx_lock_wait_timeout, option.tx_check_interval)),
-            page_plugin: Box::new(RbatisPagePlugin {}),
-            sql_intercepts: vec![],
-            logic_plugin: None,
-            log_plugin,
-            py: Py { cache: Default::default(), generate: vec![] },
+            tx_manager: Arc::new(TxManager::new(option.log_plugin.clone(), option.tx_lock_wait_timeout, option.tx_check_interval)),
+            page_plugin: option.page_plugin,
+            sql_intercepts: option.sql_intercepts,
+            logic_plugin: option.logic_plugin,
+            log_plugin: option.log_plugin,
+            py: Py { cache: Default::default(), generate: option.generate },
         };
     }
 
