@@ -1,6 +1,4 @@
 use serde_json::Value;
-use sqlx_core::mysql::MySqlValue;
-
 use crate::db::DriverType;
 use crate::Result;
 
