@@ -248,7 +248,7 @@ mod test {
     pub struct MyNode {}
 
     impl RbatisAST for MyNode {
-        fn name() -> &str {
+        fn name() -> &'static str {
             "custom"
         }
 
@@ -261,7 +261,7 @@ mod test {
 
     impl CustomNodeGenerate for MyGen {
         fn generate(&self, express: &str, child_nodes: Vec<NodeType>) -> Result<Option<ProxyNode>, Error> {
-            if express.starts_with(MyGen::name()) {
+            if express.starts_with(MyNode::name()) {
                 return Ok(Option::from(ProxyNode::from(MyNode {}, child_nodes)));
             }
             //skip
