@@ -1,3 +1,4 @@
+#![allow(unreachable_patterns)]
 use serde_json::Value;
 use crate::db::DriverType;
 use crate::Result;
@@ -24,6 +25,9 @@ impl StmtConvert for DriverType {
             }
             DriverType::None => {
                 panic!("[rbatis] un support none for driver type!")
+            }
+            _=> {
+                panic!("[rbatis] feature not enable!")
             }
         }
     }
