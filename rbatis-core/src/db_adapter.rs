@@ -1,3 +1,5 @@
+#![allow(unreachable_patterns)]
+
 use std::time::Duration;
 use serde::{Deserialize, Serialize};
 use serde::de::DeserializeOwned;
@@ -39,7 +41,7 @@ pub struct DBPool {
     pub postgres: Option<PgPool>,
     #[cfg(feature = "sqlite")]
     pub sqlite: Option<SqlitePool>,
-    #[cfg(any(feature = "mssql"))]
+    #[cfg(feature = "mssql")]
     pub mssql: Option<MssqlPool>,
 }
 
@@ -55,7 +57,7 @@ impl DBPool {
             postgres: None,
             #[cfg(feature = "sqlite")]
             sqlite: None,
-            #[cfg(any(feature = "mssql"))]
+            #[cfg(feature = "mssql")]
             mssql: None,
         };
         if driver.starts_with("mysql") {
@@ -158,7 +160,7 @@ impl DBPool {
             postgres: None,
             #[cfg(feature = "sqlite")]
             sqlite: None,
-            #[cfg(any(feature = "mssql"))]
+            #[cfg(feature = "mssql")]
             mssql: None,
         };
         if driver.starts_with("mysql") {
@@ -294,7 +296,7 @@ impl DBPool {
                     postgres: None,
                     #[cfg(feature = "sqlite")]
                     sqlite: None,
-                    #[cfg(any(feature = "mssql"))]
+                    #[cfg(feature = "mssql")]
                     mssql: None,
                 });
             }
@@ -307,7 +309,7 @@ impl DBPool {
                     postgres: Some(query(sql)),
                     #[cfg(feature = "sqlite")]
                     sqlite: None,
-                    #[cfg(any(feature = "mssql"))]
+                    #[cfg(feature = "mssql")]
                     mssql: None,
                 });
             }
@@ -333,7 +335,7 @@ impl DBPool {
                     postgres: None,
                     #[cfg(feature = "sqlite")]
                     sqlite: None,
-                    #[cfg(any(feature = "mssql"))]
+                    #[cfg(feature = "mssql")]
                     mssql: Some(query(sql)),
                 });
             }
@@ -361,7 +363,7 @@ impl DBPool {
                     postgres: None,
                     #[cfg(feature = "sqlite")]
                     sqlite: None,
-                    #[cfg(any(feature = "mssql"))]
+                    #[cfg(feature = "mssql")]
                     mssql: None,
                 });
             }
@@ -379,7 +381,7 @@ impl DBPool {
                     postgres: Some(conn.unwrap()),
                     #[cfg(feature = "sqlite")]
                     sqlite: None,
-                    #[cfg(any(feature = "mssql"))]
+                    #[cfg(feature = "mssql")]
                     mssql: None,
                 });
             }
@@ -397,7 +399,7 @@ impl DBPool {
                     postgres: None,
                     #[cfg(feature = "sqlite")]
                     sqlite: Some(conn.unwrap()),
-                    #[cfg(any(feature = "mssql"))]
+                    #[cfg(feature = "mssql")]
                     mssql: None,
                 });
             }
@@ -415,12 +417,11 @@ impl DBPool {
                     postgres: None,
                     #[cfg(feature = "sqlite")]
                     sqlite: None,
-                    #[cfg(any(feature = "mssql"))]
+                    #[cfg(feature = "mssql")]
                     mssql: Some(conn.unwrap()),
                 });
             }
 
-            #[cfg(feature = "mysql")]
             _ => {
                 return Err(Error::from("[rbatis] feature not enable!"))
             }
@@ -449,7 +450,7 @@ impl DBPool {
                     postgres: None,
                     #[cfg(feature = "sqlite")]
                     sqlite: None,
-                    #[cfg(any(feature = "mssql"))]
+                    #[cfg(feature = "mssql")]
                     mssql: None,
                 }));
             }
