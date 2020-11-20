@@ -42,10 +42,10 @@ actix-sqlite =["async-std", "sqlx-core/runtime-actix-rustls","sqlite"]
 actix-mssql = ["async-std", "sqlx-core/runtime-actix-rustls","mssql"]
 
 all-database = ["sqlx-core/all-databases","mysql","postgres","sqlite","mssql"]
-mysql = ["sqlx-core/mysql","sqlx-core/any"]
-postgres = ["sqlx-core/postgres","sqlx-core/any"]
-sqlite = ["sqlx-core/sqlite","sqlx-core/any"]
-mssql = ["sqlx-core/mssql","sqlx-core/any"]
+mysql = ["sqlx-core/mysql"]
+postgres = ["sqlx-core/postgres"]
+sqlite = ["sqlx-core/sqlite"]
+mssql = ["sqlx-core/mssql"]
 
 
 [dependencies]
