@@ -36,6 +36,9 @@ impl TrimNode {
 }
 
 impl RbatisAST for TrimNode {
+    fn name() -> &'static str {
+        "trim"
+    }
     fn eval(&self, convert: &crate::core::db::DriverType, env: &mut Value, engine: &RbatisEngine, arg_array: &mut Vec<Value>) -> Result<String, crate::core::Error> {
         let result_value = do_child_nodes(convert, &self.childs, env, engine, arg_array)?;
         let mut result = result_value.as_str().trim();

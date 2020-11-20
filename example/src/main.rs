@@ -90,7 +90,7 @@ mod test {
     use serde_json::Value;
 
     use rbatis::ast::ast::RbatisAST;
-    use rbatis::ast::node::custom_node::{CustomNode, CustomNodeGenerate};
+    use rbatis::ast::node::proxy_node::{ProxyNode, CustomNodeGenerate};
     use rbatis::ast::node::node_type::NodeType;
     use rbatis::core::db::{DriverType, PoolOptions};
     use rbatis::core::db_adapter::DBPool;
@@ -248,6 +248,10 @@ mod test {
     pub struct MyNode {}
 
     impl RbatisAST for MyNode {
+        fn name() -> &str {
+            "custom"
+        }
+
         fn eval(&self, convert: &DriverType, env: &mut Value, engine: &RbatisEngine, arg_result: &mut Vec<Value>) -> Result<String, Error> {
             Ok(" AND id = 1 ".to_string())
         }
@@ -256,9 +260,9 @@ mod test {
     pub struct MyGen {}
 
     impl CustomNodeGenerate for MyGen {
-        fn generate(&self, express: &str, child_nodes: Vec<NodeType>) -> Result<Option<CustomNode>, Error> {
-            if express.starts_with("custom") {
-                return Ok(Option::from(CustomNode::from(MyNode {}, child_nodes)));
+        fn generate(&self, express: &str, child_nodes: Vec<NodeType>) -> Result<Option<ProxyNode>, Error> {
+            if express.starts_with(MyGen::name()) {
+                return Ok(Option::from(ProxyNode::from(MyNode {}, child_nodes)));
             }
             //skip
             return Ok(None);

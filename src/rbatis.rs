@@ -27,7 +27,7 @@ use crate::tx::{TxManager, TxState};
 use crate::utils::error_util::ToResult;
 use crate::utils::string_util;
 use crate::wrapper::Wrapper;
-use crate::ast::node::custom_node::CustomNodeGenerate;
+use crate::ast::node::proxy_node::CustomNodeGenerate;
 
 /// rbatis engine
 pub struct Rbatis {

@@ -10,4 +10,4 @@ pub mod trim_node;
 pub mod when_node;
 pub mod set_node;
 pub mod where_node;
-pub mod custom_node;
+pub mod proxy_node;
