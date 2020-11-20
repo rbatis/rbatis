@@ -8,34 +8,12 @@ pub trait LogPlugin: Send + Sync {
     fn name(&self) -> &str {
         std::any::type_name::<Self>()
     }
-    fn is_enable(&self) -> bool;
-    fn do_log(&self, data: &str);
-    fn error(&self, data: &str);
-    fn warn(&self, data: &str);
-    fn info(&self, data: &str);
-    fn debug(&self, data: &str);
-    fn trace(&self, data: &str);
-}
-
-pub struct RbatisLog {
-    pub filter: LevelFilter
-}
-
-impl Default for RbatisLog {
-    fn default() -> Self {
-        Self {
-            filter: log::LevelFilter::Info
-        }
+    fn get_level_filter(&self) -> &LevelFilter;
+    fn is_enable(&self) -> bool{
+        return !self.get_level_filter().eq(&log::LevelFilter::Off);
     }
-}
-
-impl LogPlugin for RbatisLog {
-    fn is_enable(&self) -> bool {
-        return !self.filter.eq(&log::LevelFilter::Off);
-    }
-
     fn do_log(&self, data: &str) {
-        match self.filter {
+        match self.get_level_filter() {
             log::LevelFilter::Error => {
                 self.error(data);
             }
@@ -53,6 +31,29 @@ impl LogPlugin for RbatisLog {
             }
             _ => {}
         }
+    }
+    fn error(&self, data: &str);
+    fn warn(&self, data: &str);
+    fn info(&self, data: &str);
+    fn debug(&self, data: &str);
+    fn trace(&self, data: &str);
+}
+
+pub struct RbatisLog {
+    pub level_filter: LevelFilter
+}
+
+impl Default for RbatisLog {
+    fn default() -> Self {
+        Self {
+            level_filter: log::LevelFilter::Info
+        }
+    }
+}
+
+impl LogPlugin for RbatisLog {
+    fn get_level_filter(&self) -> &LevelFilter {
+        &self.level_filter
     }
 
     fn error(&self, data: &str) {
