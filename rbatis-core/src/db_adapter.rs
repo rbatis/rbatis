@@ -464,11 +464,11 @@ impl DBPool {
                     driver_type: self.driver_type,
                     #[cfg(feature = "mysql")]
                     mysql: None,
-                    #[cfg(feature = "mysql")]
+                    #[cfg(feature = "postgres")]
                     postgres: Some(conn.unwrap()),
-                    #[cfg(feature = "mysql")]
+                    #[cfg(feature = "sqlite")]
                     sqlite: None,
-                    #[cfg(feature = "mysql")]
+                    #[cfg(feature = "mssql")]
                     mssql: None,
                 }));
             }
