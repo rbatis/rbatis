@@ -12,11 +12,11 @@ use crate::plugin::log::LogPlugin;
 use crate::rbatis::Rbatis;
 
 ///the Transaction manager，It manages the life cycle of transactions and provides access across threads
-///every tx_check_interval check tx is out of time(tx_out_of_time).if out, rollback tx.
+///every tx_check_interval check tx is out of time(tx_lock_wait_timeout).if out, rollback tx.
 ///if tx manager will be drop, manager will rollback all of tx.
 pub struct TxManager {
     pub tx_context: SyncMap<String, (DBTx, TxState)>,
-    pub tx_out_of_time: Duration,
+    pub tx_lock_wait_timeout: Duration,
     pub tx_check_interval: Duration,
     pub alive: RwLock<bool>,
     pub log_plugin: Option<Arc<Box<dyn LogPlugin>>>,
@@ -38,11 +38,11 @@ pub enum TxState {
 
 
 impl TxManager {
-    pub fn new(plugin: Arc<Box<dyn LogPlugin>>, tx_out_of_time: Duration, check_interval: Duration) -> Self {
+    pub fn new(plugin: Arc<Box<dyn LogPlugin>>, tx_lock_wait_timeout: Duration, tx_check_interval: Duration) -> Self {
         Self {
             tx_context: SyncMap::new(),
-            tx_out_of_time,
-            tx_check_interval: check_interval,
+            tx_lock_wait_timeout,
+            tx_check_interval,
             alive: RwLock::new(true),
             log_plugin: Some(plugin),
         }
@@ -99,7 +99,7 @@ impl TxManager {
                     match state {
                         TxState::StateBegin(instant) => {
                             let out_time = instant.elapsed();
-                            if out_time > manager.tx_out_of_time {
+                            if out_time > manager.tx_lock_wait_timeout {
                                 if need_rollback == None {
                                     need_rollback = Some(vec![]);
                                 }
@@ -119,7 +119,7 @@ impl TxManager {
                     Some(v) => {
                         for tx_id in v {
                             if manager.is_enable_log() {
-                                manager.do_log(&format!("[rbatis] rollback tx_id:{},out of time:{:?}", tx_id, &manager.tx_out_of_time));
+                                manager.do_log(&format!("[rbatis] rollback tx_id:{},out of time:{:?}", tx_id, &manager.tx_lock_wait_timeout));
                             }
                             manager.rollback(tx_id).await;
                         }
