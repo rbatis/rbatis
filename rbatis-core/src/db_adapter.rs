@@ -316,11 +316,11 @@ impl DBPool {
                     driver_type: DriverType::Sqlite,
                     #[cfg(feature = "mysql")]
                     mysql: None,
-                    #[cfg(feature = "mysql")]
+                    #[cfg(feature = "postgres")]
                     postgres: None,
                     #[cfg(feature = "sqlite")]
                     sqlite: Some(query(sql)),
-                    #[cfg(feature = "mysql")]
+                    #[cfg(feature = "mssql")]
                     mssql: None,
                 });
             }
@@ -347,6 +347,7 @@ impl DBPool {
             &DriverType::None => {
                 return Err(Error::from("un init DBPool!"));
             }
+            #[cfg(feature = "mysql")]
             &DriverType::Mysql => {
                 let conn = self.mysql.as_ref().unwrap().acquire().await;
                 if conn.is_err() {
@@ -364,6 +365,7 @@ impl DBPool {
                     mssql: None,
                 });
             }
+            #[cfg(feature = "postgres")]
             &DriverType::Postgres => {
                 let conn = self.postgres.as_ref().unwrap().acquire().await;
                 if conn.is_err() {
@@ -381,6 +383,7 @@ impl DBPool {
                     mssql: None,
                 });
             }
+            #[cfg(feature = "sqlite")]
             &DriverType::Sqlite => {
                 let conn = self.sqlite.as_ref().unwrap().acquire().await;
                 if conn.is_err() {
@@ -398,6 +401,7 @@ impl DBPool {
                     mssql: None,
                 });
             }
+            #[cfg(feature = "mssql")]
             &DriverType::Mssql => {
                 let conn = self.mssql.as_ref().unwrap().acquire().await;
                 if conn.is_err() {
@@ -415,6 +419,11 @@ impl DBPool {
                     mssql: Some(conn.unwrap()),
                 });
             }
+
+            #[cfg(feature = "mysql")]
+            _ => {
+                return Err(Error::from("[rbatis] feature not enable!"))
+            }
         }
     }
 
@@ -426,6 +435,7 @@ impl DBPool {
             &DriverType::None => {
                 return Err(Error::from("un init DBPool!"));
             }
+            #[cfg(feature = "mysql")]
             &DriverType::Mysql => {
                 let conn = self.mysql.as_ref().unwrap().try_acquire();
                 if conn.is_none() {
@@ -443,6 +453,7 @@ impl DBPool {
                     mssql: None,
                 }));
             }
+            #[cfg(feature = "postgres")]
             &DriverType::Postgres => {
                 let conn = self.postgres.as_ref().unwrap().try_acquire();
                 if conn.is_none() {
@@ -460,6 +471,7 @@ impl DBPool {
                     mssql: None,
                 }));
             }
+            #[cfg(feature = "sqlite")]
             &DriverType::Sqlite => {
                 let conn = self.sqlite.as_ref().unwrap().try_acquire();
                 if conn.is_none() {
@@ -477,6 +489,7 @@ impl DBPool {
                     mssql: None,
                 }));
             }
+            #[cfg(feature = "mssql")]
             &DriverType::Mssql => {
                 let conn = self.mssql.as_ref().unwrap().try_acquire();
                 if conn.is_none() {
@@ -494,6 +507,10 @@ impl DBPool {
                     mssql: Some(conn.unwrap()),
                 }));
             }
+
+            _ => {
+                return Err(Error::from("[rbatis] feature not enable!"))
+            }
         }
     }
 
@@ -505,7 +522,7 @@ impl DBPool {
             &DriverType::Mysql => {
                 Ok(DBTx {
                     driver_type: self.driver_type,
-                    #[cfg(feature = "postgres")]
+                    #[cfg(feature = "mysql")]
                     mysql: Some(convert_result(self.mysql.as_ref().unwrap().begin().await)?),
                     #[cfg(feature = "postgres")]
                     postgres: None,
@@ -652,6 +669,7 @@ impl<'q> DBQuery<'q> {
             &DriverType::None => {
                 return Err(Error::from("un init DBPool!"));
             }
+            #[cfg(feature = "mysql")]
             &DriverType::Mysql => {
                 let mut q = self.mysql.take().unwrap();
                 match t {
@@ -679,6 +697,7 @@ impl<'q> DBQuery<'q> {
                 }
                 self.mysql = Some(q);
             }
+            #[cfg(feature = "postgres")]
             &DriverType::Postgres => {
                 let mut q = self.postgres.take().unwrap();
                 match t {
@@ -706,6 +725,7 @@ impl<'q> DBQuery<'q> {
                 }
                 self.postgres = Some(q);
             }
+            #[cfg(feature = "sqlite")]
             &DriverType::Sqlite => {
                 let mut q = self.sqlite.take().unwrap();
                 match t {
@@ -733,6 +753,7 @@ impl<'q> DBQuery<'q> {
                 }
                 self.sqlite = Some(q);
             }
+            #[cfg(feature = "mssql")]
             &DriverType::Mssql => {
                 let mut q = self.mssql.take().unwrap();
                 match t {
@@ -759,6 +780,9 @@ impl<'q> DBQuery<'q> {
                     }
                 }
                 self.mssql = Some(q);
+            }
+            _ => {
+                return Err(Error::from("[rbatis] feature not enable!"))
             }
         }
         return Ok(());
@@ -809,6 +833,9 @@ impl DBPoolConn {
                     return Err(Error::from("un init DBPoolConn!"));
                 }
             }
+            _ => {
+                return Err(Error::from("[rbatis] feature not enable!"))
+            }
         }
 
         return Ok(());
@@ -853,6 +880,9 @@ impl DBPoolConn {
                 let result = json_decode::<T>(json_array)?;
                 Ok((result, return_len))
             }
+            _ => {
+                return Err(Error::from("[rbatis] feature not enable!"))
+            }
         }
     }
 
@@ -881,6 +911,9 @@ impl DBPoolConn {
             &DriverType::Mssql => {
                 let data: MssqlDone = convert_result(self.mssql.as_mut().unwrap().execute(sql).await)?;
                 return Ok(DBExecResult::from(data));
+            }
+            _ => {
+                return Err(Error::from("[rbatis] feature not enable!"))
             }
         }
     }
@@ -924,6 +957,9 @@ impl DBPoolConn {
                 let result = json_decode::<T>(json_array)?;
                 Ok((result, return_len))
             }
+            _ => {
+                return Err(Error::from("[rbatis] feature not enable!"))
+            }
         }
     }
 
@@ -952,6 +988,9 @@ impl DBPoolConn {
             &DriverType::Mssql => {
                 let data: MssqlDone = convert_result(self.mssql.as_mut().unwrap().execute(sql.mssql.unwrap()).await)?;
                 return Ok(DBExecResult::from(data));
+            }
+            _ => {
+                return Err(Error::from("[rbatis] feature not enable!"))
             }
         }
     }
@@ -1023,17 +1062,24 @@ impl DBPoolConn {
             &DriverType::None => {
                 return Err(Error::from("un init DBPool!"));
             }
+            #[cfg(feature = "mysql")]
             &DriverType::Mysql => {
                 return Ok(convert_result(self.mysql.as_mut().unwrap().ping().await)?);
             }
+            #[cfg(feature = "postgres")]
             &DriverType::Postgres => {
                 return Ok(convert_result(self.postgres.as_mut().unwrap().ping().await)?);
             }
+            #[cfg(feature = "sqlite")]
             &DriverType::Sqlite => {
                 return Ok(convert_result(self.sqlite.as_mut().unwrap().ping().await)?);
             }
+            #[cfg(feature = "mssql")]
             &DriverType::Mssql => {
                 return Ok(convert_result(self.mssql.as_mut().unwrap().ping().await)?);
+            }
+            _ => {
+                return Err(Error::from("[rbatis] feature not enable!"))
             }
         }
     }
@@ -1043,21 +1089,28 @@ impl DBPoolConn {
             &DriverType::None => {
                 return Err(Error::from("un init DBPool!"));
             }
+            #[cfg(feature = "mysql")]
             &DriverType::Mysql => {
                 self.mysql = None;
                 return Ok(());
             }
+            #[cfg(feature = "postgres")]
             &DriverType::Postgres => {
                 self.postgres = None;
                 return Ok(());
             }
+            #[cfg(feature = "sqlite")]
             &DriverType::Sqlite => {
                 self.sqlite = None;
                 return Ok(());
             }
+            #[cfg(feature = "mssql")]
             &DriverType::Mssql => {
                 self.mssql = None;
                 return Ok(());
+            }
+            _ => {
+                return Err(Error::from("[rbatis] feature not enable!"))
             }
         }
     }
@@ -1083,17 +1136,24 @@ impl DBTx {
             &DriverType::None => {
                 return Err(Error::from("un init DBPool!"));
             }
+            #[cfg(feature = "mysql")]
             &DriverType::Mysql => {
                 convert_result(self.mysql.take().unwrap().commit().await)
             }
+            #[cfg(feature = "postgres")]
             &DriverType::Postgres => {
                 convert_result(self.postgres.take().unwrap().commit().await)
             }
+            #[cfg(feature = "sqlite")]
             &DriverType::Sqlite => {
                 convert_result(self.sqlite.take().unwrap().into_inner().commit().await)
             }
+            #[cfg(feature = "mssql")]
             &DriverType::Mssql => {
                 convert_result(self.mssql.take().unwrap().commit().await)
+            }
+            _ => {
+                return Err(Error::from("[rbatis] feature not enable!"))
             }
         }
     }
@@ -1103,17 +1163,24 @@ impl DBTx {
             &DriverType::None => {
                 return Err(Error::from("un init DBPool!"));
             }
+            #[cfg(feature = "mysql")]
             &DriverType::Mysql => {
                 convert_result(self.mysql.take().unwrap().rollback().await)
             }
+            #[cfg(feature = "postgres")]
             &DriverType::Postgres => {
                 convert_result(self.postgres.take().unwrap().rollback().await)
             }
+            #[cfg(feature = "sqlite")]
             &DriverType::Sqlite => {
                 convert_result(self.sqlite.take().unwrap().into_inner().rollback().await)
             }
+            #[cfg(feature = "mssql")]
             &DriverType::Mssql => {
                 convert_result(self.mssql.take().unwrap().rollback().await)
+            }
+            _ => {
+                return Err(Error::from("[rbatis] feature not enable!"))
             }
         }
     }
@@ -1156,6 +1223,9 @@ impl DBTx {
                 let result = json_decode::<T>(json_array)?;
                 Ok((result, return_len))
             }
+            _ => {
+                return Err(Error::from("[rbatis] feature not enable!"))
+            }
         }
     }
 
@@ -1197,6 +1267,9 @@ impl DBTx {
                 let result = json_decode::<T>(json_array)?;
                 Ok((result, return_len))
             }
+            _ => {
+                return Err(Error::from("[rbatis] feature not enable!"))
+            }
         }
     }
 
@@ -1224,6 +1297,9 @@ impl DBTx {
             &DriverType::Mssql => {
                 let data: MssqlDone = convert_result(self.mssql.as_mut().unwrap().execute(sql).await)?;
                 return Ok(DBExecResult::from(data));
+            }
+            _ => {
+                return Err(Error::from("[rbatis] feature not enable!"))
             }
         }
     }
@@ -1253,6 +1329,9 @@ impl DBTx {
             &DriverType::Mssql => {
                 let data: MssqlDone = convert_result(self.mssql.as_mut().unwrap().execute(sql.mssql.unwrap()).await)?;
                 return Ok(DBExecResult::from(data));
+            }
+            _ => {
+                return Err(Error::from("[rbatis] feature not enable!"))
             }
         }
     }
