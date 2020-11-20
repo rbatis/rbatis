@@ -63,18 +63,34 @@ impl Drop for Rbatis {
     }
 }
 
+///Rbatis Options
+pub struct RbatisOption {
+    /// the tx lock timeout, if out of time tx will be rollback
+    pub tx_lock_wait_timeout: Duration,
+    /// rbatis tx manager check tx interval
+    pub tx_check_interval: Duration,
+}
+
+impl Default for RbatisOption {
+    fn default() -> Self {
+        Self {
+            tx_lock_wait_timeout: Duration::from_secs(60),
+            tx_check_interval: Duration::from_secs(5),
+        }
+    }
+}
 
 impl Rbatis {
     pub fn new() -> Self {
-        return Self::new_with_param(Duration::from_secs(60), Duration::from_secs(10));
+        return Self::new_with_opt(RbatisOption::default());
     }
 
-    pub fn new_with_param(tx_out_of_time: Duration, check_interval: Duration) -> Self {
+    pub fn new_with_opt(option: RbatisOption) -> Self {
         let log_plugin = Arc::new(Box::new(RbatisLog::default()) as Box<dyn LogPlugin>);
         return Self {
             pool: OnceCell::new(),
             engine: RbatisEngine::new(),
-            tx_manager: Arc::new(TxManager::new(log_plugin.clone(), tx_out_of_time, check_interval)),
+            tx_manager: Arc::new(TxManager::new(log_plugin.clone(), option.tx_lock_wait_timeout, option.tx_check_interval)),
             page_plugin: Box::new(RbatisPagePlugin {}),
             sql_intercepts: vec![],
             logic_plugin: None,
