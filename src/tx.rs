@@ -43,7 +43,7 @@ impl TxManager {
             tx_context: SyncMap::new(),
             tx_lock_wait_timeout,
             tx_check_interval,
-            alive: RwLock::new(true),
+            alive: RwLock::new(false),
             closed: RwLock::new(false),
             log_plugin: Some(plugin),
         }
