@@ -1,6 +1,8 @@
 #![allow(unreachable_patterns)]
 
+use std::str::FromStr;
 use std::time::Duration;
+
 use serde::{Deserialize, Serialize};
 use serde::de::DeserializeOwned;
 use sqlx_core::acquire::Acquire;
@@ -10,27 +12,24 @@ use sqlx_core::database::Database;
 use sqlx_core::done::Done;
 use sqlx_core::encode::Encode;
 use sqlx_core::executor::Executor;
-use sqlx_core::query::{Query, query};
+#[cfg(feature = "mssql")]
+use sqlx_core::mssql::{Mssql, MssqlArguments, MssqlConnection, MssqlConnectOptions, MssqlDone, MssqlPool, MssqlRow};
+#[cfg(feature = "mysql")]
+use sqlx_core::mysql::{MySql, MySqlArguments, MySqlConnection, MySqlConnectOptions, MySqlDone, MySqlPool, MySqlRow};
 use sqlx_core::pool::PoolConnection;
+#[cfg(feature = "postgres")]
+use sqlx_core::postgres::{PgArguments, PgConnection, PgConnectOptions, PgDone, PgPool, PgPoolOptions, PgRow, Postgres};
+use sqlx_core::query::{Query, query};
+#[cfg(feature = "sqlite")]
+use sqlx_core::sqlite::{Sqlite, SqliteArguments, SqliteConnection, SqliteConnectOptions, SqliteDone, SqlitePool, SqliteRow};
 use sqlx_core::transaction::Transaction;
 use sqlx_core::types::Type;
+
 use crate::convert::RefJsonCodec;
 use crate::db::{DriverType, PoolOptions};
 use crate::decode::json_decode;
 use crate::Error;
 use crate::runtime::Mutex;
-use std::str::FromStr;
-
-#[cfg(feature = "mssql")]
-use sqlx_core::mssql::{Mssql, MssqlArguments, MssqlConnection, MssqlDone, MssqlPool, MssqlRow, MssqlConnectOptions};
-#[cfg(feature = "mysql")]
-use sqlx_core::mysql::{MySql, MySqlArguments, MySqlConnection, MySqlDone, MySqlPool, MySqlRow, MySqlConnectOptions};
-#[cfg(feature = "postgres")]
-use sqlx_core::postgres::{Postgres, PgArguments, PgConnection, PgConnectOptions, PgDone, PgPool, PgRow, PgPoolOptions};
-#[cfg(feature = "sqlite")]
-use sqlx_core::sqlite::{Sqlite, SqliteArguments, SqliteConnection, SqliteDone, SqlitePool, SqliteRow, SqliteConnectOptions};
-
-
 
 #[derive(Debug)]
 pub struct DBPool {
@@ -166,116 +165,116 @@ impl DBPool {
         if driver.starts_with("mysql") {
             #[cfg(feature = "mysql")]
                 {
-                let conn_opt = MySqlConnectOptions::from_str(driver);
-                if conn_opt.is_err() {
-                    return Err(Error::from(format!("{:?}", conn_opt.err().unwrap())));
-                }
-                let mut conn_opt = conn_opt.unwrap();
-                conn_opt.log_slow_statements(log::LevelFilter::Off, Duration::from_secs(0));
-                conn_opt.log_statements(log::LevelFilter::Off);
+                    let conn_opt = MySqlConnectOptions::from_str(driver);
+                    if conn_opt.is_err() {
+                        return Err(Error::from(format!("{:?}", conn_opt.err().unwrap())));
+                    }
+                    let mut conn_opt = conn_opt.unwrap();
+                    conn_opt.log_slow_statements(log::LevelFilter::Off, Duration::from_secs(0));
+                    conn_opt.log_statements(log::LevelFilter::Off);
 
-                pool.driver_type = DriverType::Mysql;
-                let build = sqlx_core::pool::PoolOptions::<MySql>::default()
-                    .max_connections(opt.max_connections)
-                    .max_lifetime(opt.max_lifetime)
-                    .connect_timeout(opt.connect_timeout)
-                    .min_connections(opt.min_connections)
-                    .idle_timeout(opt.idle_timeout)
-                    .test_before_acquire(opt.test_before_acquire);
-                let p = build.connect_with(conn_opt).await;
-                if p.is_err() {
-                    return Err(crate::Error::from(p.err().unwrap().to_string()));
+                    pool.driver_type = DriverType::Mysql;
+                    let build = sqlx_core::pool::PoolOptions::<MySql>::default()
+                        .max_connections(opt.max_connections)
+                        .max_lifetime(opt.max_lifetime)
+                        .connect_timeout(opt.connect_timeout)
+                        .min_connections(opt.min_connections)
+                        .idle_timeout(opt.idle_timeout)
+                        .test_before_acquire(opt.test_before_acquire);
+                    let p = build.connect_with(conn_opt).await;
+                    if p.is_err() {
+                        return Err(crate::Error::from(p.err().unwrap().to_string()));
+                    }
+                    pool.mysql = Some(p.unwrap());
                 }
-                pool.mysql = Some(p.unwrap());
-            }
             #[cfg(not(feature = "mysql"))]
-            {
-                return Err(Error::from("[rbatis] not enable feature!"));
-            }
+                {
+                    return Err(Error::from("[rbatis] not enable feature!"));
+                }
         } else if driver.starts_with("postgres") {
             #[cfg(feature = "postgres")]
-            {
-                let conn_opt = PgConnectOptions::from_str(driver);
-                if conn_opt.is_err() {
-                    return Err(Error::from(format!("{:?}", conn_opt.err().unwrap())));
+                {
+                    let conn_opt = PgConnectOptions::from_str(driver);
+                    if conn_opt.is_err() {
+                        return Err(Error::from(format!("{:?}", conn_opt.err().unwrap())));
+                    }
+                    let mut conn_opt = conn_opt.unwrap();
+                    conn_opt.log_slow_statements(log::LevelFilter::Off, Duration::from_secs(0));
+                    conn_opt.log_statements(log::LevelFilter::Off);
+                    pool.driver_type = DriverType::Postgres;
+                    let build = sqlx_core::pool::PoolOptions::<Postgres>::new()
+                        .max_connections(opt.max_connections)
+                        .max_lifetime(opt.max_lifetime)
+                        .connect_timeout(opt.connect_timeout)
+                        .min_connections(opt.min_connections)
+                        .idle_timeout(opt.idle_timeout)
+                        .test_before_acquire(opt.test_before_acquire);
+                    let p = build.connect_with(conn_opt).await;
+                    if p.is_err() {
+                        return Err(crate::Error::from(p.err().unwrap().to_string()));
+                    }
+                    pool.postgres = Some(p.unwrap());
                 }
-                let mut conn_opt = conn_opt.unwrap();
-                conn_opt.log_slow_statements(log::LevelFilter::Off, Duration::from_secs(0));
-                conn_opt.log_statements(log::LevelFilter::Off);
-                pool.driver_type = DriverType::Postgres;
-                let build = sqlx_core::pool::PoolOptions::<Postgres>::new()
-                    .max_connections(opt.max_connections)
-                    .max_lifetime(opt.max_lifetime)
-                    .connect_timeout(opt.connect_timeout)
-                    .min_connections(opt.min_connections)
-                    .idle_timeout(opt.idle_timeout)
-                    .test_before_acquire(opt.test_before_acquire);
-                let p = build.connect_with(conn_opt).await;
-                if p.is_err() {
-                    return Err(crate::Error::from(p.err().unwrap().to_string()));
-                }
-                pool.postgres = Some(p.unwrap());
-            }
             #[cfg(not(feature = "postgres"))]
-            {
-                return Err(Error::from("[rbatis] not enable feature!"));
-            }
+                {
+                    return Err(Error::from("[rbatis] not enable feature!"));
+                }
         } else if driver.starts_with("sqlite") {
             #[cfg(feature = "sqlite")]
-               {
-                let conn_opt = SqliteConnectOptions::from_str(driver);
-                if conn_opt.is_err() {
-                    return Err(Error::from(format!("{:?}", conn_opt.err().unwrap())));
+                {
+                    let conn_opt = SqliteConnectOptions::from_str(driver);
+                    if conn_opt.is_err() {
+                        return Err(Error::from(format!("{:?}", conn_opt.err().unwrap())));
+                    }
+                    let mut conn_opt = conn_opt.unwrap();
+                    conn_opt.log_slow_statements(log::LevelFilter::Off, Duration::from_secs(0));
+                    conn_opt.log_statements(log::LevelFilter::Off);
+                    pool.driver_type = DriverType::Sqlite;
+                    let build = sqlx_core::pool::PoolOptions::<Sqlite>::new()
+                        .max_connections(opt.max_connections)
+                        .max_lifetime(opt.max_lifetime)
+                        .connect_timeout(opt.connect_timeout)
+                        .min_connections(opt.min_connections)
+                        .idle_timeout(opt.idle_timeout)
+                        .test_before_acquire(opt.test_before_acquire);
+                    let p = build.connect_with(conn_opt).await;
+                    if p.is_err() {
+                        return Err(crate::Error::from(p.err().unwrap().to_string()));
+                    }
+                    pool.sqlite = Some(p.unwrap());
                 }
-                let mut conn_opt = conn_opt.unwrap();
-                conn_opt.log_slow_statements(log::LevelFilter::Off, Duration::from_secs(0));
-                conn_opt.log_statements(log::LevelFilter::Off);
-                pool.driver_type = DriverType::Sqlite;
-                let build = sqlx_core::pool::PoolOptions::<Sqlite>::new()
-                    .max_connections(opt.max_connections)
-                    .max_lifetime(opt.max_lifetime)
-                    .connect_timeout(opt.connect_timeout)
-                    .min_connections(opt.min_connections)
-                    .idle_timeout(opt.idle_timeout)
-                    .test_before_acquire(opt.test_before_acquire);
-                let p = build.connect_with(conn_opt).await;
-                if p.is_err() {
-                    return Err(crate::Error::from(p.err().unwrap().to_string()));
-                }
-                pool.sqlite = Some(p.unwrap());
-            }
             #[cfg(not(feature = "sqlite"))]
-            {
-                return Err(Error::from("[rbatis] not enable feature!"));
-            }
+                {
+                    return Err(Error::from("[rbatis] not enable feature!"));
+                }
         } else if driver.starts_with("mssql") || driver.starts_with("sqlserver") {
             #[cfg(feature = "mssql")]
-              {
-                let conn_opt = MssqlConnectOptions::from_str(driver);
-                if conn_opt.is_err() {
-                    return Err(Error::from(format!("{:?}", conn_opt.err().unwrap())));
+                {
+                    let conn_opt = MssqlConnectOptions::from_str(driver);
+                    if conn_opt.is_err() {
+                        return Err(Error::from(format!("{:?}", conn_opt.err().unwrap())));
+                    }
+                    let mut conn_opt = conn_opt.unwrap();
+                    conn_opt.log_slow_statements(log::LevelFilter::Off, Duration::from_secs(0));
+                    conn_opt.log_statements(log::LevelFilter::Off);
+                    pool.driver_type = DriverType::Mssql;
+                    let build = sqlx_core::pool::PoolOptions::<Mssql>::new()
+                        .max_connections(opt.max_connections)
+                        .max_lifetime(opt.max_lifetime)
+                        .connect_timeout(opt.connect_timeout)
+                        .min_connections(opt.min_connections)
+                        .idle_timeout(opt.idle_timeout)
+                        .test_before_acquire(opt.test_before_acquire);
+                    let p = build.connect_with(conn_opt).await;
+                    if p.is_err() {
+                        return Err(crate::Error::from(p.err().unwrap().to_string()));
+                    }
+                    pool.mssql = Some(p.unwrap());
                 }
-                let mut conn_opt = conn_opt.unwrap();
-                conn_opt.log_slow_statements(log::LevelFilter::Off, Duration::from_secs(0));
-                conn_opt.log_statements(log::LevelFilter::Off);
-                pool.driver_type = DriverType::Mssql;
-                let build = sqlx_core::pool::PoolOptions::<Mssql>::new()
-                    .max_connections(opt.max_connections)
-                    .max_lifetime(opt.max_lifetime)
-                    .connect_timeout(opt.connect_timeout)
-                    .min_connections(opt.min_connections)
-                    .idle_timeout(opt.idle_timeout)
-                    .test_before_acquire(opt.test_before_acquire);
-                let p = build.connect_with(conn_opt).await;
-                if p.is_err() {
-                    return Err(crate::Error::from(p.err().unwrap().to_string()));
-                }
-                pool.mssql = Some(p.unwrap());
-            }
             #[cfg(not(feature = "mssql"))]
-            {
-                return Err(Error::from("[rbatis] not enable feature!"));
-            }
+                {
+                    return Err(Error::from("[rbatis] not enable feature!"));
+                }
         } else {
             return Err(Error::from("unsupport driver type!"));
         }
@@ -423,7 +422,7 @@ impl DBPool {
             }
 
             _ => {
-                return Err(Error::from("[rbatis] feature not enable!"))
+                return Err(Error::from("[rbatis] feature not enable!"));
             }
         }
     }
@@ -510,7 +509,7 @@ impl DBPool {
             }
 
             _ => {
-                return Err(Error::from("[rbatis] feature not enable!"))
+                return Err(Error::from("[rbatis] feature not enable!"));
             }
         }
     }
@@ -574,6 +573,33 @@ impl DBPool {
             }
         }
     }
+
+    pub async fn close(&self) {
+        match &self.driver_type {
+            &DriverType::None => {
+                return;
+            }
+            #[cfg(feature = "mysql")]
+            &DriverType::Mysql => {
+                self.mysql.as_ref().unwrap().close().await
+            }
+            #[cfg(feature = "postgres")]
+            &DriverType::Postgres => {
+                self.postgres.as_ref().unwrap().close().await
+            }
+            #[cfg(feature = "sqlite")]
+            &DriverType::Sqlite => {
+                self.sqlite.as_ref().unwrap().close().await
+            }
+            #[cfg(feature = "mssql")]
+            &DriverType::Mssql => {
+                self.mssql.as_ref().unwrap().close().await
+            }
+            _ => {
+                return;
+            }
+        }
+    }
 }
 
 pub struct DBConnection {
@@ -585,11 +611,10 @@ pub struct DBConnection {
     #[cfg(feature = "sqlite")]
     pub sqlite: Option<SqliteConnection>,
     #[cfg(feature = "mssql")]
-    pub mssql:Option<MssqlConnection>
+    pub mssql: Option<MssqlConnection>,
 }
 
 impl DBConnection {
-
     #[cfg(feature = "mysql")]
     pub fn new_my(arg: MySqlConnection) -> Self {
         Self {
@@ -783,7 +808,7 @@ impl<'q> DBQuery<'q> {
                 self.mssql = Some(q);
             }
             _ => {
-                return Err(Error::from("[rbatis] feature not enable!"))
+                return Err(Error::from("[rbatis] feature not enable!"));
             }
         }
         return Ok(());
@@ -835,7 +860,7 @@ impl DBPoolConn {
                 }
             }
             _ => {
-                return Err(Error::from("[rbatis] feature not enable!"))
+                return Err(Error::from("[rbatis] feature not enable!"));
             }
         }
 
@@ -882,7 +907,7 @@ impl DBPoolConn {
                 Ok((result, return_len))
             }
             _ => {
-                return Err(Error::from("[rbatis] feature not enable!"))
+                return Err(Error::from("[rbatis] feature not enable!"));
             }
         }
     }
@@ -914,7 +939,7 @@ impl DBPoolConn {
                 return Ok(DBExecResult::from(data));
             }
             _ => {
-                return Err(Error::from("[rbatis] feature not enable!"))
+                return Err(Error::from("[rbatis] feature not enable!"));
             }
         }
     }
@@ -959,7 +984,7 @@ impl DBPoolConn {
                 Ok((result, return_len))
             }
             _ => {
-                return Err(Error::from("[rbatis] feature not enable!"))
+                return Err(Error::from("[rbatis] feature not enable!"));
             }
         }
     }
@@ -991,7 +1016,7 @@ impl DBPoolConn {
                 return Ok(DBExecResult::from(data));
             }
             _ => {
-                return Err(Error::from("[rbatis] feature not enable!"))
+                return Err(Error::from("[rbatis] feature not enable!"));
             }
         }
     }
@@ -1080,7 +1105,7 @@ impl DBPoolConn {
                 return Ok(convert_result(self.mssql.as_mut().unwrap().ping().await)?);
             }
             _ => {
-                return Err(Error::from("[rbatis] feature not enable!"))
+                return Err(Error::from("[rbatis] feature not enable!"));
             }
         }
     }
@@ -1111,7 +1136,7 @@ impl DBPoolConn {
                 return Ok(());
             }
             _ => {
-                return Err(Error::from("[rbatis] feature not enable!"))
+                return Err(Error::from("[rbatis] feature not enable!"));
             }
         }
     }
@@ -1154,7 +1179,7 @@ impl DBTx {
                 convert_result(self.mssql.take().unwrap().commit().await)
             }
             _ => {
-                return Err(Error::from("[rbatis] feature not enable!"))
+                return Err(Error::from("[rbatis] feature not enable!"));
             }
         }
     }
@@ -1181,7 +1206,7 @@ impl DBTx {
                 convert_result(self.mssql.take().unwrap().rollback().await)
             }
             _ => {
-                return Err(Error::from("[rbatis] feature not enable!"))
+                return Err(Error::from("[rbatis] feature not enable!"));
             }
         }
     }
@@ -1225,7 +1250,7 @@ impl DBTx {
                 Ok((result, return_len))
             }
             _ => {
-                return Err(Error::from("[rbatis] feature not enable!"))
+                return Err(Error::from("[rbatis] feature not enable!"));
             }
         }
     }
@@ -1269,7 +1294,7 @@ impl DBTx {
                 Ok((result, return_len))
             }
             _ => {
-                return Err(Error::from("[rbatis] feature not enable!"))
+                return Err(Error::from("[rbatis] feature not enable!"));
             }
         }
     }
@@ -1300,7 +1325,7 @@ impl DBTx {
                 return Ok(DBExecResult::from(data));
             }
             _ => {
-                return Err(Error::from("[rbatis] feature not enable!"))
+                return Err(Error::from("[rbatis] feature not enable!"));
             }
         }
     }
@@ -1332,7 +1357,7 @@ impl DBTx {
                 return Ok(DBExecResult::from(data));
             }
             _ => {
-                return Err(Error::from("[rbatis] feature not enable!"))
+                return Err(Error::from("[rbatis] feature not enable!"));
             }
         }
     }
