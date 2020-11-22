@@ -78,7 +78,7 @@ pub fn json_decode<T: ?Sized>(datas: Vec<serde_json::Value>) -> Result<T, crate:
         return Result::Ok(decode_result.unwrap());
     } else {
         let e = decode_result.err().unwrap().to_string();
-        return Result::Err(Error::from(format!("[rbatis] json decode fail type_name:  {},err: {}", type_name, e)));
+        return Result::Err(Error::from(format!("[rbatis] json_decode fail decode_type:  {},serde_err: {}", type_name, e)));
     }
 }
 
