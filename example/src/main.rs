@@ -163,7 +163,7 @@ mod test {
             .ne("delete_flag", -1)
             .do_if(!name.is_empty(), |w| w.and().like("name", name))
             .check().unwrap();
-        let (r, _): (serde_json::Value, rbatis::core::Error) = rb.fetch_prepare_wrapper("", &w).await.unwrap();
+        let r: serde_json::Value = rb.fetch_prepare_wrapper("", &w).await.unwrap();
         println!("done:{:?}", r);
     }
 
