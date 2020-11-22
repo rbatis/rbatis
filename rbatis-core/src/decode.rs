@@ -78,7 +78,7 @@ pub fn json_decode<T: ?Sized>(datas: Vec<serde_json::Value>) -> Result<T, crate:
         return Result::Ok(decode_result.unwrap());
     } else {
         let e = decode_result.err().unwrap().to_string();
-        return Result::Err(Error::from(format!("[rbatis] json decode fail '{}',info :'{}'", type_name, e)));
+        return Result::Err(Error::from(format!("[rbatis] json decode fail type_name:  {},err: {}", type_name, e)));
     }
 }
 
@@ -101,7 +101,8 @@ fn is_array(type_name: &str) -> bool {
 
 #[cfg(test)]
 mod test {
-    use std::collections::{HashMap, BTreeMap, HashSet};
+    use std::collections::{BTreeMap, HashMap, HashSet};
+
     use serde_json::json;
 
     use crate::decode::json_decode;
