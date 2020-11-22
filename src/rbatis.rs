@@ -59,7 +59,7 @@ impl Drop for Rbatis {
     fn drop(&mut self) {
         crate::core::runtime::block_on(async {
             //notice tx manager exit
-            self.tx_manager.set_alive(false).await;
+            self.tx_manager.close().await;
             self.pool.get_mut().unwrap().close().await;
         });
     }
@@ -87,7 +87,7 @@ impl Default for RbatisOption {
     fn default() -> Self {
         Self {
             tx_lock_wait_timeout: Duration::from_secs(60),
-            tx_check_interval: Duration::from_secs(5),
+            tx_check_interval: Duration::from_secs(1),
             generate: vec![],
             page_plugin: Box::new(RbatisPagePlugin {}),
             sql_intercepts: vec![],

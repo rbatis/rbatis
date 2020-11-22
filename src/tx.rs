@@ -2,11 +2,10 @@ use std::collections::HashMap;
 use std::ops::{Deref, DerefMut};
 use std::time::{Duration, Instant};
 
-use crate::core::runtime::{Arc, RwLock, RwLockReadGuard};
-
 use rbatis_core::db_adapter::DBPool;
 
 use crate::core::db_adapter::DBTx;
+use crate::core::runtime::{Arc, RwLock, RwLockReadGuard};
 use crate::core::sync::sync_map::{RefMut, SyncMap};
 use crate::plugin::log::LogPlugin;
 use crate::rbatis::Rbatis;
@@ -19,6 +18,7 @@ pub struct TxManager {
     pub tx_lock_wait_timeout: Duration,
     pub tx_check_interval: Duration,
     pub alive: RwLock<bool>,
+    pub closed: RwLock<bool>,
     pub log_plugin: Option<Arc<Box<dyn LogPlugin>>>,
 }
 
@@ -44,6 +44,7 @@ impl TxManager {
             tx_lock_wait_timeout,
             tx_check_interval,
             alive: RwLock::new(true),
+            closed: RwLock::new(false),
             log_plugin: Some(plugin),
         }
     }
@@ -57,6 +58,25 @@ impl TxManager {
         self.alive.read().await
     }
 
+    async fn set_closed(&self, alive: bool) {
+        let mut l = self.closed.write().await;
+        *l = alive;
+    }
+
+    pub async fn get_closed(&self) -> RwLockReadGuard<'_, bool> {
+        self.closed.read().await
+    }
+
+    pub async fn close(&self) {
+        self.set_alive(false).await;
+        loop {
+            if self.get_closed().await.eq(&true) {
+                return;
+            } else {
+                crate::core::runtime::yield_now().await;
+            }
+        }
+    }
 
     fn is_enable_log(&self) -> bool {
         self.log_plugin.is_some() && self.log_plugin.as_ref().unwrap().is_enable()
@@ -90,7 +110,7 @@ impl TxManager {
                         }
                         manager.rollback(tx_id).await;
                     }
-                    drop(manager);
+                    manager.set_closed(true).await;
                     return;
                 }
                 let m = manager.tx_context.read().await;

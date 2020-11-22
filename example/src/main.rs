@@ -90,8 +90,8 @@ mod test {
     use serde_json::Value;
 
     use rbatis::ast::ast::RbatisAST;
-    use rbatis::ast::node::proxy_node::{ProxyNode, CustomNodeGenerate};
     use rbatis::ast::node::node_type::NodeType;
+    use rbatis::ast::node::proxy_node::{CustomNodeGenerate, ProxyNode};
     use rbatis::core::db::{DriverType, PoolOptions};
     use rbatis::core::db_adapter::DBPool;
     use rbatis::core::Error;
@@ -406,5 +406,20 @@ mod test {
                 current = current + 1;
             }
         }
+    }
+
+    #[async_std::test]
+    pub async fn test_drop_rb() {
+        fast_log::init_log("requests.log",
+                           1000,
+                           log::Level::Info,
+                           None,
+                           true);
+
+        let time=std::time::Instant::now();
+        let rb = Rbatis::new();
+        rb.link(MYSQL_URL).await.unwrap();
+        drop(rb);
+        println!("drop RB use:{:?}",&time.elapsed());
     }
 }
