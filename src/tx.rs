@@ -94,7 +94,7 @@ impl TxManager {
     }
 
     ///polling check tx alive
-    pub fn polling_tx_check(manager: &Arc<TxManager>) {
+    pub fn polling_check(manager: &Arc<TxManager>) {
         let is_alive = crate::core::runtime::block_on(async {
             manager.get_alive().await.eq(&true)
         });
