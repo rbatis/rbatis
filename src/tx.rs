@@ -68,12 +68,14 @@ impl TxManager {
     }
 
     pub async fn close(&self) {
-        self.set_alive(false).await;
-        loop {
-            if self.get_closed().await.eq(&true) {
-                return;
-            } else {
-                crate::core::runtime::yield_now().await;
+        if self.get_alive().await.eq(&true) {
+            self.set_alive(false).await;
+            loop {
+                if self.get_closed().await.eq(&true) {
+                    return;
+                } else {
+                    crate::core::runtime::yield_now().await;
+                }
             }
         }
     }
