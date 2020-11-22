@@ -17,8 +17,8 @@ pub struct TxManager {
     pub tx_context: SyncMap<String, (DBTx, TxState)>,
     pub tx_lock_wait_timeout: Duration,
     pub tx_check_interval: Duration,
-    pub alive: RwLock<bool>,
-    pub closed: RwLock<bool>,
+    alive: RwLock<bool>,
+    closed: RwLock<bool>,
     pub log_plugin: Option<Arc<Box<dyn LogPlugin>>>,
 }
 
@@ -49,7 +49,7 @@ impl TxManager {
         }
     }
 
-    pub async fn set_alive(&self, alive: bool) {
+    async fn set_alive(&self, alive: bool) {
         let mut l = self.alive.write().await;
         *l = alive;
     }
@@ -68,7 +68,7 @@ impl TxManager {
     }
 
     pub async fn close(&self) {
-        if self.get_alive().await.eq(&true) {
+        if self.get_alive().await.eq(&true) && self.get_closed().await.eq(&false) {
             self.set_alive(false).await;
             loop {
                 if self.get_closed().await.eq(&true) {
