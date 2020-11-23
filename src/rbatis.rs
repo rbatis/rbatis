@@ -60,7 +60,12 @@ impl Drop for Rbatis {
         crate::core::runtime::block_on(async {
             //notice tx manager exit
             self.tx_manager.close().await;
-            self.pool.get_mut().unwrap().close().await;
+            match self.pool.get_mut(){
+                Some(p)=>{
+                    p.close().await;
+                }
+                _ => {}
+            }
         });
     }
 }
