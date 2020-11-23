@@ -5,7 +5,7 @@ use std::time::{Duration, Instant};
 use rbatis_core::db_adapter::DBPool;
 
 use crate::core::db_adapter::DBTx;
-use crate::core::runtime::{Arc, RwLock, RwLockReadGuard};
+use crate::core::runtime::{Arc, Receiver, RwLock, RwLockReadGuard, Sender};
 use crate::core::sync::sync_map::{RefMut, SyncMap};
 use crate::plugin::log::LogPlugin;
 use crate::rbatis::Rbatis;
@@ -18,16 +18,9 @@ pub struct TxManager {
     pub tx_lock_wait_timeout: Duration,
     pub tx_check_interval: Duration,
     alive: RwLock<bool>,
-    closed: RwLock<bool>,
+    close_sender: Sender<bool>,
+    close_recv: Receiver<bool>,
     pub log_plugin: Option<Arc<Box<dyn LogPlugin>>>,
-}
-
-impl Drop for TxManager {
-    fn drop(&mut self) {
-        if self.is_enable_log() {
-            self.do_log("[rbatis] [TxManager] exit;");
-        }
-    }
 }
 
 
@@ -38,15 +31,20 @@ pub enum TxState {
 
 
 impl TxManager {
-    pub fn new(plugin: Arc<Box<dyn LogPlugin>>, tx_lock_wait_timeout: Duration, tx_check_interval: Duration) -> Self {
-        Self {
+    pub fn new_arc(plugin: Arc<Box<dyn LogPlugin>>, tx_lock_wait_timeout: Duration, tx_check_interval: Duration) -> Arc<Self> {
+        let (s, r) = crate::core::runtime::channel(1);
+        let s = Self {
             tx_context: SyncMap::new(),
             tx_lock_wait_timeout,
             tx_check_interval,
             alive: RwLock::new(false),
-            closed: RwLock::new(false),
+            close_sender: s,
+            close_recv: r,
             log_plugin: Some(plugin),
-        }
+        };
+        let arc = Arc::new(s);
+        TxManager::polling_check(&arc.clone());
+        arc
     }
 
     async fn set_alive(&self, alive: bool) {
@@ -58,25 +56,11 @@ impl TxManager {
         self.alive.read().await
     }
 
-    async fn set_closed(&self, alive: bool) {
-        let mut l = self.closed.write().await;
-        *l = alive;
-    }
-
-    pub async fn get_closed(&self) -> RwLockReadGuard<'_, bool> {
-        self.closed.read().await
-    }
 
     pub async fn close(&self) {
-        if self.get_alive().await.eq(&true) && self.get_closed().await.eq(&false) {
+        if self.get_alive().await.eq(&true) {
             self.set_alive(false).await;
-            loop {
-                if self.get_closed().await.eq(&true) {
-                    return;
-                } else {
-                    crate::core::runtime::yield_now().await;
-                }
-            }
+            let r = self.close_recv.recv().await;
         }
     }
 
@@ -94,7 +78,7 @@ impl TxManager {
     }
 
     ///polling check tx alive
-    pub fn polling_check(manager: &Arc<TxManager>) {
+    fn polling_check(manager: &Arc<TxManager>) {
         let is_alive = crate::core::runtime::block_on(async {
             manager.get_alive().await.eq(&true)
         });
@@ -118,7 +102,8 @@ impl TxManager {
                         }
                         manager.rollback(tx_id).await;
                     }
-                    manager.set_closed(true).await;
+                    //notice close
+                    manager.close_sender.send(true);
                     return;
                 }
                 let m = manager.tx_context.read().await;
