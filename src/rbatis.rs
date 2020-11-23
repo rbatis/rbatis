@@ -3,7 +3,6 @@ use std::cell::Cell;
 use std::collections::HashMap;
 use std::time::Duration;
 
-use crate::core::runtime::Arc;
 use once_cell::sync::OnceCell;
 use serde::de::DeserializeOwned;
 use serde::ser::Serialize;
@@ -13,9 +12,11 @@ use crate::ast::ast::RbatisAST;
 use crate::ast::lang::py::Py;
 use crate::ast::node::node::do_child_nodes;
 use crate::ast::node::node_type::NodeType;
+use crate::ast::node::proxy_node::CustomNodeGenerate;
 use crate::core::db::{DriverType, PoolOptions};
 use crate::core::db_adapter::{DBExecResult, DBPool, DBPoolConn, DBQuery, DBTx};
 use crate::core::Error;
+use crate::core::runtime::Arc;
 use crate::core::sync::sync_map::SyncMap;
 use crate::engine::runtime::RbatisEngine;
 use crate::plugin::intercept::SqlIntercept;
@@ -27,7 +28,6 @@ use crate::tx::{TxManager, TxState};
 use crate::utils::error_util::ToResult;
 use crate::utils::string_util;
 use crate::wrapper::Wrapper;
-use crate::ast::node::proxy_node::CustomNodeGenerate;
 
 /// rbatis engine
 pub struct Rbatis {
@@ -107,7 +107,7 @@ impl Rbatis {
         return Self {
             pool: OnceCell::new(),
             engine: RbatisEngine::new(),
-            tx_manager: Arc::new(TxManager::new(option.log_plugin.clone(), option.tx_lock_wait_timeout, option.tx_check_interval)),
+            tx_manager: TxManager::new_arc(option.log_plugin.clone(), option.tx_lock_wait_timeout, option.tx_check_interval),
             page_plugin: option.page_plugin,
             sql_intercepts: option.sql_intercepts,
             logic_plugin: option.logic_plugin,
@@ -130,20 +130,7 @@ impl Rbatis {
 
     /// link pool
     pub async fn link(&self, url: &str) -> Result<(), crate::core::Error> {
-        if url.is_empty() {
-            return Err(Error::from("[rbatis] link url is empty!"));
-        }
-        let pool = DBPool::new(url).await?;
-        match self.pool.get() {
-            None => {
-                TxManager::polling_check(&self.tx_manager);
-            }
-            _ => {}
-        }
-        self.pool.get_or_init(|| {
-            pool
-        });
-        return Ok(());
+        return Ok(self.link_opt(url, &PoolOptions::default()).await?);
     }
 
     /// link pool by options
@@ -152,16 +139,12 @@ impl Rbatis {
         if url.is_empty() {
             return Err(Error::from("[rbatis] link url is empty!"));
         }
-        let pool = DBPool::new_opt(url, opt).await?;
-        match self.pool.get() {
-            None => {
-                TxManager::polling_check(&self.tx_manager);
-            }
-            _ => {}
+        if self.pool.get().is_none() {
+            let pool = DBPool::new_opt(url, opt).await?;
+            self.pool.get_or_init(|| {
+                return pool;
+            });
         }
-        self.pool.get_or_init(|| {
-            pool
-        });
         return Ok(());
     }
 

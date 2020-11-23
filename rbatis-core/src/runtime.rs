@@ -16,5 +16,8 @@ pub use async_std::{
     task::block_on,
     task::spawn_blocking,
     sync::Arc,
-    task::yield_now
+    task::yield_now,
+    sync::channel,
+    sync::Sender,
+    sync::Receiver
 };
