@@ -30,6 +30,8 @@ use crate::db::{DriverType, PoolOptions};
 use crate::decode::json_decode;
 use crate::Error;
 use crate::runtime::Mutex;
+use sqlx_core::mysql::MySqlSslMode;
+use sqlx_core::postgres::PgSslMode;
 
 #[derive(Debug)]
 pub struct DBPool {
@@ -48,105 +50,7 @@ pub struct DBPool {
 impl DBPool {
     //new with default opt
     pub async fn new(driver: &str) -> crate::Result<DBPool> {
-        let mut pool = Self {
-            driver_type: DriverType::None,
-            #[cfg(feature = "mysql")]
-            mysql: None,
-            #[cfg(feature = "postgres")]
-            postgres: None,
-            #[cfg(feature = "sqlite")]
-            sqlite: None,
-            #[cfg(feature = "mssql")]
-            mssql: None,
-        };
-        if driver.starts_with("mysql") {
-            #[cfg(feature = "mysql")]
-                {
-                    let opt = MySqlConnectOptions::from_str(driver);
-                    if opt.is_err() {
-                        return Err(Error::from(format!("{:?}", opt.err().unwrap())));
-                    }
-                    let mut opt = opt.unwrap();
-                    opt.log_slow_statements(log::LevelFilter::Off, Duration::from_secs(0));
-                    opt.log_statements(log::LevelFilter::Off);
-                    pool.driver_type = DriverType::Mysql;
-                    let conn = MySqlPool::connect_with(opt).await;
-                    if conn.is_err() {
-                        return Err(crate::Error::from(conn.err().unwrap().to_string()));
-                    }
-                    pool.mysql = Some(conn.unwrap());
-                }
-            #[cfg(not(feature = "mysql"))]
-                {
-                    return Err(Error::from("[rbatis] not enable mysql feature!"));
-                }
-        } else if driver.starts_with("postgres") {
-            #[cfg(feature = "postgres")]
-                {
-                    let opt = PgConnectOptions::from_str(driver);
-                    if opt.is_err() {
-                        return Err(Error::from(format!("{:?}", opt.err().unwrap())));
-                    }
-                    let mut opt = opt.unwrap();
-                    opt.log_slow_statements(log::LevelFilter::Off, Duration::from_secs(0));
-                    opt.log_statements(log::LevelFilter::Off);
-                    pool.driver_type = DriverType::Postgres;
-                    let conn = PgPool::connect_with(opt).await;
-                    if conn.is_err() {
-                        return Err(crate::Error::from(conn.err().unwrap().to_string()));
-                    }
-                    pool.postgres = Some(conn.unwrap());
-                }
-            #[cfg(not(feature = "postgres"))]
-                {
-                    return Err(Error::from("[rbatis] not enable postgres feature!"));
-                }
-        } else if driver.starts_with("sqlite") {
-            #[cfg(feature = "sqlite")]
-                {
-                    let opt = SqliteConnectOptions::from_str(driver);
-                    if opt.is_err() {
-                        return Err(Error::from(format!("{:?}", opt.err().unwrap())));
-                    }
-                    let mut opt = opt.unwrap();
-                    opt.log_slow_statements(log::LevelFilter::Off, Duration::from_secs(0));
-                    opt.log_statements(log::LevelFilter::Off);
-                    pool.driver_type = DriverType::Sqlite;
-                    let conn = SqlitePool::connect_with(opt).await;
-                    if conn.is_err() {
-                        return Err(crate::Error::from(conn.err().unwrap().to_string()));
-                    }
-                    pool.sqlite = Some(conn.unwrap());
-                }
-            #[cfg(not(feature = "sqlite"))]
-                {
-                    return Err(Error::from("[rbatis] not enable sqlite feature!"));
-                }
-        } else if driver.starts_with("mssql") || driver.starts_with("sqlserver") {
-            #[cfg(feature = "mssql")]
-                {
-                    let opt = MssqlConnectOptions::from_str(driver);
-                    if opt.is_err() {
-                        return Err(Error::from(format!("{:?}", opt.err().unwrap())));
-                    }
-                    let mut opt = opt.unwrap();
-                    opt.log_slow_statements(log::LevelFilter::Off, Duration::from_secs(0));
-                    opt.log_statements(log::LevelFilter::Off);
-                    pool.driver_type = DriverType::Mssql;
-                    let conn = MssqlPool::connect_with(opt).await;
-                    if conn.is_err() {
-                        return Err(crate::Error::from(conn.err().unwrap().to_string()));
-                    }
-                    pool.mssql = Some(conn.unwrap());
-                }
-            #[cfg(not(feature = "sqlite"))]
-                {
-                    return Err(Error::from("[rbatis] not enable mssql feature!"));
-                }
-        } else {
-            return Err(Error::from("unsupport driver type!"));
-        }
-        return Ok(pool);
+        return Self::new_opt(driver, &PoolOptions::default()).await;
     }
 
     //new_opt
@@ -172,6 +76,7 @@ impl DBPool {
                     let mut conn_opt = conn_opt.unwrap();
                     conn_opt.log_slow_statements(log::LevelFilter::Off, Duration::from_secs(0));
                     conn_opt.log_statements(log::LevelFilter::Off);
+                    conn_opt = conn_opt.ssl_mode(MySqlSslMode::Disabled);
 
                     pool.driver_type = DriverType::Mysql;
                     let build = sqlx_core::pool::PoolOptions::<MySql>::default()
@@ -201,6 +106,7 @@ impl DBPool {
                     let mut conn_opt = conn_opt.unwrap();
                     conn_opt.log_slow_statements(log::LevelFilter::Off, Duration::from_secs(0));
                     conn_opt.log_statements(log::LevelFilter::Off);
+                    conn_opt = conn_opt.ssl_mode(PgSslMode::Disable);
                     pool.driver_type = DriverType::Postgres;
                     let build = sqlx_core::pool::PoolOptions::<Postgres>::new()
                         .max_connections(opt.max_connections)
