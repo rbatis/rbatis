@@ -14,7 +14,7 @@ pub fn find_convert_string(arg: &str) -> Map<String, Value> {
     let mut index: i32 = -1;
     for v in &chars {
         index = index + 1;
-        if *v == '#' as u8 || *v == '$' as u8 {
+        if last_index == -1 && (*v == '#' as u8 || *v == '$' as u8) {
             let next = chars.get(index as usize + 1);
             let next_char = '{' as u8;
             if next.is_some() && next.unwrap().eq(&next_char) {
