@@ -51,8 +51,6 @@ mssql = ["sqlx-core/mssql"]
 [dependencies]
 async-std = { version = "1.7", optional = true }
 chrono = { version = "0.4.10", default-features = false, features = ["clock"] }
-crossbeam-queue = "0.2.3"
-crossbeam-utils = { version = "0.7.2", default-features = false }
 log = { version = "0.4", default-features = false }
 serde = { version = "1", features = ["derive"] }
 serde_json = { version = "1", features = ["raw_value"] }
