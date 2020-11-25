@@ -34,7 +34,7 @@ pub fn json_decode<T: ?Sized>(datas: Vec<serde_json::Value>) -> Result<T, crate:
             "alloc::string::String" => {
                 //decode struct
                 if datas.len() > 1 {
-                    return Result::Err(Error::from(format!("[rbatis] rows.affected_rows > 1,but decode one result({})!", type_name)));
+                    return Result::Err(Error::from(format!("[rbatis] rows.rows_affected > 1,but decode one result({})!", type_name)));
                 }
                 for item in datas {
                     match item {
@@ -63,7 +63,7 @@ pub fn json_decode<T: ?Sized>(datas: Vec<serde_json::Value>) -> Result<T, crate:
             _ => {
                 //decode struct
                 if datas.len() > 1 {
-                    return Result::Err(Error::from(format!("[rbatis] rows.affected_rows > 1,but decode one result({})!", type_name)));
+                    return Result::Err(Error::from(format!("[rbatis] rows.rows_affected > 1,but decode one result({})!", type_name)));
                 }
                 //decode single object
                 for x in datas {
