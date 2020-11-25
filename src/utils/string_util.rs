@@ -1,4 +1,3 @@
-
 use std::io::Read;
 use serde_json::map::Map;
 use serde_json::Value;
@@ -7,33 +6,31 @@ use serde_json::Value;
 pub const LOG_SPACE: &'static str = "                                                                ";
 
 //find like #{*,*},${*,*} value *
-pub fn find_convert_string(arg: &str) -> Map<String,Value> {
-    let mut finds = Map::new();
-    let chars = arg.bytes();
-    let item = &mut String::new();
+pub fn find_convert_string(arg: &str) -> Map<String, Value> {
+    let mut results = Map::new();
+    let chars: Vec<u8> = arg.bytes().collect();
+    let mut item = String::new();
     let mut last_index: i32 = -1;
-    let mut start_index: i32 = -1;
-    let str_bytes: Vec<u8> = arg.bytes().collect();
-
-    let mut index = -1;
-    for v in chars {
+    let mut index: i32 = -1;
+    for v in &chars {
         index = index + 1;
-        if v == '#' as u8 || v == '$' as u8 {
-            last_index = index;
+        if *v == '#' as u8 || *v == '$' as u8 {
+            let next = chars.get(index as usize + 1);
+            let next_char = '{' as u8;
+            if next.is_some() && next.unwrap().eq(&next_char) {
+                last_index = index;
+            }
+            continue;
         }
-        if v == '{' as u8 && last_index == (index - 1) {
-            start_index = index + 1;
-        }
-        if v == '}' as u8 && start_index != -1 {
-            *item = String::from_utf8(str_bytes[start_index as usize..index as usize].to_vec()).unwrap();
-            let value = String::from_utf8(str_bytes[(start_index-2) as usize..(index+1) as usize].to_vec()).unwrap();
-            finds.insert(item.clone(), serde_json::Value::String(value));
+        if *v == '}' as u8 && last_index != -1 {
+            item = String::from_utf8(chars[(last_index + 2) as usize..index as usize].to_vec()).unwrap();
+            let value = String::from_utf8(chars[last_index as usize..(index + 1) as usize].to_vec()).unwrap();
+            results.insert(item.clone(), serde_json::Value::String(value));
             item.clear();
-            start_index = -1;
             last_index = -1;
         }
     }
-    return finds;
+    return results;
 }
 
 
@@ -66,4 +63,36 @@ pub fn to_snake_name(name: &String) -> String {
         index += 1;
     }
     return new_name;
+}
+
+#[cfg(test)]
+mod test {
+    use crate::utils::string_util::find_convert_string;
+
+    #[test]
+    fn test_find() {
+        let sql = "select #{column} from #{table} where #{where}";
+        let finds = find_convert_string(sql);
+        let mut index = 0;
+        for (k, v) in &finds {
+            if index == 0 {
+                assert_eq!(k, "column");
+            }
+            if index == 1 {
+                assert_eq!(k, "table");
+            }
+            if index == 2 {
+                assert_eq!(k, "where");
+            }
+            index += 1;
+        }
+        println!("{:?}", finds);
+    }
+
+    #[test]
+    fn test_find_fail() {
+        let sql = "select #{column   #{  }";
+        let finds = find_convert_string(sql);
+        println!("{:?}", finds);
+    }
 }
