@@ -1,4 +1,4 @@
-use std::collections::HashMap;
+use serde_json::map::Map;
 
 use serde_json::{json, Value};
 
@@ -9,25 +9,26 @@ use crate::engine;
 use crate::engine::runtime::RbatisEngine;
 use crate::utils::string_util;
 
+
 ///string抽象节点
 #[derive(Clone, Debug)]
 pub struct StringNode {
     pub value: String,
     //去重的，需要替换的要sql转换express map
-    pub express_map: HashMap<String, String>,
+    pub express_map: Map<String, Value>,
     //去重的，需要替换的免sql转换express map
-    pub express_map_no_convert: HashMap<String, String>,
+    pub express_map_no_convert: Map<String, Value>,
 }
 
 impl StringNode {
     pub fn new(v: &str) -> Self {
-        let mut express_map = HashMap::new();
+        let mut express_map = Map::new();
         for item in &string_util::find_convert_string(v) {
-            express_map.insert(item.clone(), "#{".to_owned() + item.as_str() + "}");
+            express_map.insert(item.clone(), Value::String("#{".to_owned() + item.as_str() + "}"));
         }
-        let mut express_map_no_convert = HashMap::new();
+        let mut express_map_no_convert = Map::new();
         for item in &string_util::find_no_convert_string(v) {
-            express_map_no_convert.insert(item.clone(), "${".to_owned() + item.as_str() + "}");
+            express_map_no_convert.insert(item.clone(), Value::String("${".to_owned() + item.as_str() + "}"));
         }
         Self {
             value: v.to_string(),
@@ -44,6 +45,7 @@ impl RbatisAST for StringNode {
     fn eval(&self, convert: &crate::core::db::DriverType, env: &mut Value, engine: &RbatisEngine, arg_array: &mut Vec<Value>) -> Result<String, crate::core::Error> {
         let mut result = self.value.clone();
         for (item, value) in &self.express_map {
+            let value = value.as_str().unwrap_or("");
             result = result.replace(value, convert.stmt_convert(arg_array.len()).as_str());
             let get_v = env.get(item);
             if get_v.is_none() {
@@ -55,6 +57,7 @@ impl RbatisAST for StringNode {
             }
         }
         for (item, value) in &self.express_map_no_convert {
+            let value = value.as_str().unwrap_or("");
             let v = env.get(item);
             match v {
                 Some(v) => {

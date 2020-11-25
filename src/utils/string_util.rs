@@ -1,12 +1,12 @@
-use std::collections::HashMap;
-use std::io::Read;
 
+use std::io::Read;
+use serde_json::map::Map;
 //2020-11-15 00:31:25.803227700 +08:00 INFO rbatis::plugin::log
 pub const LOG_SPACE: &'static str = "                                                                ";
 
 //find like #{*} value *
 pub fn find_convert_string(arg: &str) -> Vec<String> {
-    let mut finds = HashMap::new();
+    let mut finds = Map::new();
     let chars = arg.bytes();
     let item = &mut String::new();
     let mut last_index: i32 = -1;
@@ -16,20 +16,20 @@ pub fn find_convert_string(arg: &str) -> Vec<String> {
     let mut index = -1;
     for v in chars {
         index = index + 1;
-        if v == 35 {
+        if v == '#' as u8 {
             last_index = index;
         }
-        if v == 123 && last_index == (index - 1) {
+        if v == '{' as u8 && last_index == (index - 1) {
             start_index = index + 1;
         }
-        if v == 125 && start_index != -1 {
+        if v == '}' as u8 && start_index != -1 {
             *item = String::from_utf8(str_bytes[start_index as usize..index as usize].to_vec()).unwrap();
             //去掉逗号之后的部分
             if item.contains(',') {
                 let vecs: Vec<&str> = item.split(",").collect();
                 *item = vecs[0].to_string();
             }
-            finds.insert(item.clone(), 1);
+            finds.insert(item.clone(), serde_json::Value::Null);
             item.clear();
             start_index = -1;
             last_index = -1;
@@ -45,7 +45,7 @@ pub fn find_convert_string(arg: &str) -> Vec<String> {
 
 //find like ${*} value *
 pub fn find_no_convert_string(arg: &str) -> Vec<String> {
-    let mut finds = HashMap::new();
+    let mut finds = Map::new();
     let chars = arg.bytes();
     let mut item = String::new();
     let mut last_index: i32 = -1;
@@ -55,20 +55,20 @@ pub fn find_no_convert_string(arg: &str) -> Vec<String> {
     let mut index = -1;
     for v in chars {
         index = index + 1;
-        if v == 36 {
+        if v == '$' as u8 {
             last_index = index;
         }
-        if v == 123 && last_index == (index - 1) {
+        if v == '{' as u8 && last_index == (index - 1) {
             start_index = index + 1;
         }
-        if v == 125 && start_index != -1 {
+        if v == '}' as u8 && start_index != -1 {
             item = String::from_utf8(str_bytes[start_index as usize..index as usize].to_vec()).unwrap();
             //去掉逗号之后的部分
             if item.contains(',') {
                 let vecs: Vec<&str> = item.split(",").collect();
                 item = vecs[0].to_string();
             }
-            finds.insert(item.clone(), 1);
+            finds.insert(item.clone(), serde_json::Value::Null);
             start_index = -1;
             last_index = -1;
         }
