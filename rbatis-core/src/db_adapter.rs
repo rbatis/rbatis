@@ -15,10 +15,10 @@ use sqlx_core::executor::Executor;
 #[cfg(feature = "mssql")]
 use sqlx_core::mssql::{Mssql, MssqlArguments, MssqlConnection, MssqlConnectOptions, MssqlDone, MssqlPool, MssqlRow};
 #[cfg(feature = "mysql")]
-use sqlx_core::mysql::{MySql, MySqlArguments, MySqlConnection, MySqlConnectOptions, MySqlDone, MySqlPool, MySqlRow};
+use sqlx_core::mysql::{MySql, MySqlArguments, MySqlConnection, MySqlConnectOptions, MySqlDone, MySqlPool, MySqlRow,MySqlSslMode};
 use sqlx_core::pool::PoolConnection;
 #[cfg(feature = "postgres")]
-use sqlx_core::postgres::{PgArguments, PgConnection, PgConnectOptions, PgDone, PgPool, PgPoolOptions, PgRow, Postgres};
+use sqlx_core::postgres::{PgArguments, PgConnection, PgConnectOptions, PgDone, PgPool, PgPoolOptions, PgRow, Postgres,PgSslMode};
 use sqlx_core::query::{Query, query};
 #[cfg(feature = "sqlite")]
 use sqlx_core::sqlite::{Sqlite, SqliteArguments, SqliteConnection, SqliteConnectOptions, SqliteDone, SqlitePool, SqliteRow};
@@ -30,8 +30,6 @@ use crate::db::{DriverType, PoolOptions};
 use crate::decode::json_decode;
 use crate::Error;
 use crate::runtime::Mutex;
-use sqlx_core::mysql::MySqlSslMode;
-use sqlx_core::postgres::PgSslMode;
 
 #[derive(Debug)]
 pub struct DBPool {
