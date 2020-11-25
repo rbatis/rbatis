@@ -65,12 +65,11 @@ async fn main() {
     app.at("/").get(|_: Request<()>| async move {
         // println!("accept req[{} /test] arg: {:?}",req.url().to_string(),a);
         let arg = &vec![json!(1)];
-        let v = RB.fetch_prepare("", "SELECT count(1) FROM biz_activity where delete_flag = ?;", arg).await;
+        let v = RB.fetch_prepare::<Value>("", "SELECT count(1) FROM biz_activity where delete_flag = ?;", arg).await;
         if v.is_ok() {
-            let data: Value = v.unwrap();
-            Ok(data.to_string())
+            Ok(json!(v.unwrap()).to_string())
         } else {
-            Ok(v.err().unwrap().to_string())
+            Ok(format!("{}",v.err().unwrap()))
         }
     });
     //app.at("/").get(|_| async { Ok("Hello, world!") });
