@@ -12,24 +12,24 @@ use sqlx_core::database::Database;
 use sqlx_core::done::Done;
 use sqlx_core::encode::Encode;
 use sqlx_core::executor::Executor;
-#[cfg(feature = "mssql")]
-use sqlx_core::mssql::{Mssql, MssqlArguments, MssqlConnection, MssqlConnectOptions, MssqlDone, MssqlPool, MssqlRow};
-#[cfg(feature = "mysql")]
-use sqlx_core::mysql::{MySql, MySqlArguments, MySqlConnection, MySqlConnectOptions, MySqlDone, MySqlPool, MySqlRow,MySqlSslMode};
 use sqlx_core::pool::PoolConnection;
-#[cfg(feature = "postgres")]
-use sqlx_core::postgres::{PgArguments, PgConnection, PgConnectOptions, PgDone, PgPool, PgPoolOptions, PgRow, Postgres,PgSslMode};
 use sqlx_core::query::{Query, query};
-#[cfg(feature = "sqlite")]
-use sqlx_core::sqlite::{Sqlite, SqliteArguments, SqliteConnection, SqliteConnectOptions, SqliteDone, SqlitePool, SqliteRow};
 use sqlx_core::transaction::Transaction;
 use sqlx_core::types::Type;
-
 use crate::convert::RefJsonCodec;
 use crate::db::{DriverType, PoolOptions};
 use crate::decode::json_decode;
 use crate::Error;
 use crate::runtime::Mutex;
+
+#[cfg(feature = "mssql")]
+use sqlx_core::mssql::{Mssql, MssqlArguments, MssqlConnection, MssqlConnectOptions, MssqlDone, MssqlPool, MssqlRow};
+#[cfg(feature = "mysql")]
+use sqlx_core::mysql::{MySql, MySqlArguments, MySqlConnection, MySqlConnectOptions, MySqlDone, MySqlPool, MySqlRow,MySqlSslMode};
+#[cfg(feature = "postgres")]
+use sqlx_core::postgres::{PgArguments, PgConnection, PgConnectOptions, PgDone, PgPool, PgPoolOptions, PgRow, Postgres,PgSslMode};
+#[cfg(feature = "sqlite")]
+use sqlx_core::sqlite::{Sqlite, SqliteArguments, SqliteConnection, SqliteConnectOptions, SqliteDone, SqlitePool, SqliteRow};
 
 #[derive(Debug)]
 pub struct DBPool {
