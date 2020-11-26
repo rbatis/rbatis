@@ -5,37 +5,80 @@ use std::ops::Deref;
 
 use log::kv::Source;
 
+use crate::core::Error;
 use crate::engine::node::Node;
 use crate::engine::node::NodeType::{NBinary, NOpt};
 use crate::engine::runtime::OptMap;
 
-pub fn parse(express: &str, opt_map: &OptMap) -> Result<Node, crate::core::Error> {
+pub fn parse(express: &str, opt_map: &OptMap) -> Result<Node, Error> {
     let express = express.replace("none", "null").replace("None", "null");
     let tokens = parse_tokens(&express, opt_map);
+    //check '(',')' num
+    let mut opens = 0;
+    let mut closes = 0;
+    for x in &tokens {
+        if x == "(" {
+            opens += 1;
+        }
+        if x == ")" {
+            closes += 1;
+        }
+    }
+    if opens != closes {
+        return Err(Error::from(format!("[rbatis] py parser find '(' num not equal ')' num,in express: '{}'", &express)));
+    }
     let mut nodes = vec![];
-    for item in tokens {
+    let mut temp_nodes = vec![];
+    let mut use_temp = false;
+    for item in &tokens {
+        if item == "(" {
+            use_temp = true;
+            continue;
+        }
+        if item == ")" {
+            use_temp = false;
+            nodes.push(to_binary_node(&mut temp_nodes, &opt_map,&express)?);
+            temp_nodes.clear();
+            continue;
+        }
         let node = Node::parse(item.as_str(), opt_map);
         if node.node_type == NOpt {
             let is_allow_opt = opt_map.is_allow_opt(item.as_str());
             if !is_allow_opt {
-                panic!("[rbatis] py parser find not support opt: '{}' ,in express: '{}'", &item, &express);
+                return Err(Error::from(format!("[rbatis] py parser find not support opt: '{}' ,in express: '{}'", &item, &express)));
             }
         }
-        nodes.push(node);
+        if use_temp {
+            temp_nodes.push(node);
+        } else {
+            nodes.push(node);
+        }
     }
-    fix_null_items(&mut nodes);
+    return to_binary_node(&mut nodes, opt_map,&express);
+}
+
+
+fn to_binary_node(nodes: &mut Vec<Node>, opt_map: &OptMap,express:&str) -> Result<Node, Error> {
+    let nodes_len = nodes.len();
+    if nodes_len == 0 {
+        return Result::Err(crate::core::Error::from("[rbatis] parser express '()' fail".to_string()));
+    }
+    if nodes_len == 1 {
+        return Ok(nodes[0].to_owned());
+    }
+    fill_lost_node_null(nodes);
     for item in opt_map.priority_array() {
-        find_replace_opt(opt_map, &express, &item, &mut nodes);
+        find_replace_opt(opt_map, express, &item, nodes);
     }
     if nodes.len() > 0 {
         return Result::Ok(nodes[0].to_owned());
     } else {
-        return Result::Err(crate::core::Error::from("[rbatis] parser express fail".to_string()));
+        return Result::Err(crate::core::Error::from("[rbatis] fail parser express:".to_string()+express));
     }
 }
 
 
-fn fix_null_items(node_arg: &mut Vec<Node>) {
+fn fill_lost_node_null(node_arg: &mut Vec<Node>) {
     let mut len = node_arg.len();
     if len == 0 {
         return;
@@ -55,14 +98,14 @@ fn fix_null_items(node_arg: &mut Vec<Node>) {
         let current = node_arg.get(index).unwrap();
         if current.node_type() == NOpt && last.node_type() == NOpt {
             node_arg.insert(index, Node::new_null());
-            fix_null_items(node_arg);
+            fill_lost_node_null(node_arg);
             return;
         }
     }
     return;
 }
 
-fn find_replace_opt(opt_map: &OptMap, express: &String, operator: &str, node_arg: &mut Vec<Node>) {
+fn find_replace_opt(opt_map: &OptMap, express: &str, operator: &str, node_arg: &mut Vec<Node>) {
     let node_arg_len = node_arg.len();
     if node_arg_len == 1 {
         return;

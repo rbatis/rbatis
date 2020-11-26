@@ -63,6 +63,9 @@ mod test {
         assert_eq!(exec_expr(&arg, "f.0.field"), json!(1));
         assert_eq!(exec_expr(&arg, "0.1"), json!(0.1));
         assert_eq!(exec_expr(&arg, "1"), json!(1));
+        assert_eq!(exec_expr(&arg, "(1+1)"), json!(2));
+        assert_eq!(exec_expr(&arg, "(1+5)>5"), json!(true));
+        assert_eq!(exec_expr(&arg, "(18*19)<19*19"), json!(true));
     }
 
     #[test]
