@@ -13,20 +13,7 @@ use crate::engine::runtime::OptMap;
 pub fn parse(express: &str, opt_map: &OptMap) -> Result<Node, Error> {
     let express = express.replace("none", "null").replace("None", "null");
     let tokens = parse_tokens(&express, opt_map);
-    //check '(',')' num
-    let mut opens = 0;
-    let mut closes = 0;
-    for x in &tokens {
-        if x == "(" {
-            opens += 1;
-        }
-        if x == ")" {
-            closes += 1;
-        }
-    }
-    if opens != closes {
-        return Err(Error::from(format!("[rbatis] py parser find '(' num not equal ')' num,in express: '{}'", &express)));
-    }
+    check_tokens_open_close(&tokens, &express)?;
     let mut nodes = vec![];
     let mut temp_nodes = vec![];
     let mut use_temp = false;
@@ -37,7 +24,7 @@ pub fn parse(express: &str, opt_map: &OptMap) -> Result<Node, Error> {
         }
         if item == ")" {
             use_temp = false;
-            nodes.push(to_binary_node(&mut temp_nodes, &opt_map,&express)?);
+            nodes.push(to_binary_node(&mut temp_nodes, &opt_map, &express)?);
             temp_nodes.clear();
             continue;
         }
@@ -54,11 +41,29 @@ pub fn parse(express: &str, opt_map: &OptMap) -> Result<Node, Error> {
             nodes.push(node);
         }
     }
-    return to_binary_node(&mut nodes, opt_map,&express);
+    return to_binary_node(&mut nodes, opt_map, &express);
+}
+
+/// check '(',')' num
+fn check_tokens_open_close(tokens: &Vec<String>, express: &str) -> Result<(), Error> {
+    let mut open_nums = 0;
+    let mut close_nums = 0;
+    for x in tokens {
+        if x == "(" {
+            open_nums += 1;
+        }
+        if x == ")" {
+            close_nums += 1;
+        }
+    }
+    if open_nums != close_nums {
+        return Err(Error::from(format!("[rbatis] py parser find '(' num not equal ')' num,in express: '{}'", &express)));
+    }
+    Ok(())
 }
 
 
-fn to_binary_node(nodes: &mut Vec<Node>, opt_map: &OptMap,express:&str) -> Result<Node, Error> {
+fn to_binary_node(nodes: &mut Vec<Node>, opt_map: &OptMap, express: &str) -> Result<Node, Error> {
     let nodes_len = nodes.len();
     if nodes_len == 0 {
         return Result::Err(crate::core::Error::from("[rbatis] parser express '()' fail".to_string()));
@@ -73,7 +78,7 @@ fn to_binary_node(nodes: &mut Vec<Node>, opt_map: &OptMap,express:&str) -> Resul
     if nodes.len() > 0 {
         return Result::Ok(nodes[0].to_owned());
     } else {
-        return Result::Err(crate::core::Error::from("[rbatis] fail parser express:".to_string()+express));
+        return Result::Err(crate::core::Error::from("[rbatis] fail parser express:".to_string() + express));
     }
 }
 
