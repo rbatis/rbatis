@@ -14,34 +14,86 @@ pub fn parse(express: &str, opt_map: &OptMap) -> Result<Node, Error> {
     let express = express.replace("none", "null").replace("None", "null");
     let tokens = parse_tokens(&express, opt_map);
     check_tokens_open_close(&tokens, &express)?;
-    let mut nodes = vec![];
+    let mut nodes = loop_parse_temp_node(&tokens, opt_map, &express)?;
+    return to_binary_node(&mut nodes, opt_map, &express);
+}
+
+fn loop_parse_temp_node(tokens: &[String], opt_map: &OptMap, express: &str) -> Result<Vec<Node>, Error> {
+    let len = tokens.len();
+    let mut result = vec![];
     let mut temp_nodes = vec![];
-    let mut use_temp = false;
-    for item in &tokens {
-        if item == "(" {
-            use_temp = true;
+    let mut find_open = false;
+    let mut index: i32 = -1;
+    //skip
+    let mut skip_start: i32 = -1;
+    let mut skip_end: i32 = -1;
+    for item in tokens {
+        index += 1;
+        if skip_start != -1 && skip_end != -1 {
+            if index >= skip_start && index <= skip_end {
+                continue;
+            }
+        }
+        if find_open == false && item == "(" {
+            find_open = true;
             continue;
         }
-        if item == ")" {
-            use_temp = false;
-            nodes.push(to_binary_node(&mut temp_nodes, &opt_map, &express)?);
+        if find_open == true && item == ")" {
+            find_open = false;
+            result.push(to_binary_node(&mut temp_nodes, &opt_map, &express)?);
             temp_nodes.clear();
             continue;
         }
-        let node = Node::parse(item.as_str(), opt_map);
-        if node.node_type == NOpt {
-            let is_allow_opt = opt_map.is_allow_opt(item.as_str());
-            if !is_allow_opt {
-                return Err(Error::from(format!("[rbatis] py parser find not support opt: '{}' ,in express: '{}'", &item, &express)));
+        if item == "(" {
+            let end = find_first_end(tokens, index) as usize;
+            let sub_tokens = &tokens[index as usize..end];
+            let new_nodes = loop_parse_temp_node(&sub_tokens, opt_map, express)?;
+            for node in new_nodes {
+                if node.node_type == NOpt {
+                    let is_allow_opt = opt_map.is_allow_opt(item.as_str());
+                    if !is_allow_opt {
+                        return Err(Error::from(format!("[rbatis] py parser find not support opt: '{}' ,in express: '{}'", &item, &express)));
+                    }
+                }
+                if find_open {
+                    temp_nodes.push(node);
+                } else {
+                    result.push(node);
+                }
+            }
+            skip_start = index;
+            skip_end = skip_start + (sub_tokens.len() - 1) as i32;
+        } else {
+            let node = Node::parse(item.as_str(), opt_map);
+            if node.node_type == NOpt {
+                let is_allow_opt = opt_map.is_allow_opt(item.as_str());
+                if !is_allow_opt {
+                    return Err(Error::from(format!("[rbatis] py parser find not support opt: '{}' ,in express: '{}'", &item, &express)));
+                }
+            }
+            if find_open {
+                temp_nodes.push(node);
+            } else {
+                result.push(node);
             }
         }
-        if use_temp {
-            temp_nodes.push(node);
-        } else {
-            nodes.push(node);
+    }
+    return Ok(result);
+}
+
+
+fn find_first_end(arg: &[String], start: i32) -> i32 {
+    let mut index = -1;
+    for x in arg {
+        index += 1;
+        if index <= start {
+            continue;
+        }
+        if x == ")" {
+            return index + 1;
         }
     }
-    return to_binary_node(&mut nodes, opt_map, &express);
+    return index;
 }
 
 /// check '(',')' num
@@ -66,7 +118,7 @@ fn check_tokens_open_close(tokens: &Vec<String>, express: &str) -> Result<(), Er
 fn to_binary_node(nodes: &mut Vec<Node>, opt_map: &OptMap, express: &str) -> Result<Node, Error> {
     let nodes_len = nodes.len();
     if nodes_len == 0 {
-        return Result::Err(crate::core::Error::from("[rbatis] parser express '()' fail".to_string()));
+        return Result::Err(crate::core::Error::from(format!("[rbatis] parser express '{}' fail", express)));
     }
     if nodes_len == 1 {
         return Ok(nodes[0].to_owned());
@@ -78,7 +130,7 @@ fn to_binary_node(nodes: &mut Vec<Node>, opt_map: &OptMap, express: &str) -> Res
     if nodes.len() > 0 {
         return Result::Ok(nodes[0].to_owned());
     } else {
-        return Result::Err(crate::core::Error::from("[rbatis] fail parser express:".to_string() + express));
+        return Result::Err(crate::core::Error::from(format!("[rbatis] parser express '{}' fail", express)));
     }
 }
 
