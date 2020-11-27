@@ -163,7 +163,7 @@ fn to_binary_node(nodes: &mut Vec<Node>, opt_map: &OptMap, express: &str) -> Res
         return Ok(nodes[0].to_owned());
     }
     for item in opt_map.priority_array() {
-        find_replace_opt(opt_map, express, &item, nodes);
+        replace_to_binary_node(opt_map, express, &item, nodes);
     }
     if nodes.len() > 0 {
         return Result::Ok(nodes[0].to_owned());
@@ -173,7 +173,7 @@ fn to_binary_node(nodes: &mut Vec<Node>, opt_map: &OptMap, express: &str) -> Res
 }
 
 
-fn find_replace_opt(opt_map: &OptMap, express: &str, operator: &str, node_arg: &mut Vec<Node>) {
+fn replace_to_binary_node(opt_map: &OptMap, express: &str, operator: &str, node_arg: &mut Vec<Node>) {
     let node_arg_len = node_arg.len();
     if node_arg_len == 1 {
         return;
@@ -192,7 +192,7 @@ fn find_replace_opt(opt_map: &OptMap, express: &str, operator: &str, node_arg: &
             node_arg.remove(left_index);
             node_arg.insert(left_index, binary_node);
             if have_opt(node_arg) {
-                find_replace_opt(opt_map, express, operator, node_arg);
+                replace_to_binary_node(opt_map, express, operator, node_arg);
                 return;
             }
         }
