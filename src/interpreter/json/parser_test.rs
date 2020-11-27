@@ -39,6 +39,17 @@ mod test {
         println!("result >>>>>>>>>>   =  {}", box_node.eval(&john).unwrap());
     }
 
+    //cargo test --release --package rbatis --lib interpreter::json::parser_test::test::test_benchmark_parse --no-fail-fast -- --exact -Z unstable-options  --show-output
+    #[test]
+    fn test_benchmark_parse() {
+        let total = 10000;
+        let now = std::time::Instant::now();
+        for _ in 0..total {
+            let box_node = parser::parse("1+1", &OptMap::new()).unwrap();
+        }
+        now.time(total)
+    }
+
     #[test]
     fn test_benchmark() {
         let box_node = parser::parse("1+1", &OptMap::new()).unwrap();

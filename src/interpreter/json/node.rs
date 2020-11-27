@@ -87,8 +87,8 @@ impl Node {
 
     pub fn eval(&self, env: &Value) -> Result<Value, crate::core::Error> {
         if self.equal_node_type(&NBinary) {
-            let left_v = self.left.as_ref().unwrap().eval(env).unwrap_or(Value::Null);
-            let right_v = self.right.as_ref().unwrap().eval(env).unwrap_or(Value::Null);
+            let left_v = self.left.as_ref().unwrap().eval(env)?;
+            let right_v = self.right.as_ref().unwrap().eval(env)?;
             let opt = self.to_string();
             return eval(&left_v, &right_v, opt);
         } else if self.equal_node_type(&NArg) {

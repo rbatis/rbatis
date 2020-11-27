@@ -49,14 +49,14 @@ mod test {
         assert_eq!(exec_expr(&arg, "1 + 2 != null && 2 < b*8 "), json!(true));
         assert_eq!(exec_expr(&arg, "-1 != null"), json!(true));
         assert_eq!(exec_expr(&arg, "-1 != -2 && -1 == 2-3 "), json!(true));
-        assert_eq!(exec_expr(&arg, "-1 == a*-1 "), json!(true));
+        assert_eq!(exec_expr(&arg, "-3 == b*-1-1 "), json!(true));
         assert_eq!(exec_expr(&arg, "0-1 + a*0-1 "), json!(-2));
         assert_eq!(exec_expr(&arg, "2 ** 3"), json!(8.0));
         assert_eq!(exec_expr(&arg, "0-1 + -1*0-1 "), json!(-2));
         assert_eq!(exec_expr(&arg, "1-"), json!(1));
         assert_eq!(exec_expr(&arg, "-1"), json!(-1));
-        assert_eq!(exec_expr(&arg, "1- -1"), json!(0));
-        assert_eq!(exec_expr(&arg, "1-2 -1+"), json!(-2));
+        assert_eq!(exec_expr(&arg, "1- -1"), json!(1--1));
+        assert_eq!(exec_expr(&arg, "1-2 -1+"), json!(1-2-1));
         assert_eq!(exec_expr(&arg, "e[1]"), json!(null));
         assert_eq!(exec_expr(&arg, "e[0]"), json!(1));
         assert_eq!(exec_expr(&arg, "f[0].field"), json!(1));
