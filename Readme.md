@@ -57,8 +57,8 @@ fast_log="1.3"
 bigdecimal = "0.2"
 
 # rbatis, must maintain the same versions (required)
-rbatis =  { version = "1.8.35" } 
-rbatis-macro-driver = { version = "1.8.35" }
+rbatis =  { version = "1.8.36" } 
+rbatis-macro-driver = { version = "1.8.36" }
 ```
 
 ##### Quick example: QueryWrapper and common usages (see example/crud_test.rs for details)
