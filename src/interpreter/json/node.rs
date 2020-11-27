@@ -11,6 +11,7 @@ use serde_json::value::Value::{Null, Number};
 use crate::interpreter::json::eval::eval;
 use crate::interpreter::json::node::NodeType::{NArg, NBinary, NBool, NNull, NNumber, NOpt, NString};
 use crate::interpreter::json::runtime::OptMap;
+use async_std::sync::Arc;
 
 #[derive(Clone, PartialEq, Debug, Serialize, Deserialize)]
 pub enum NodeType {
@@ -45,9 +46,9 @@ impl Display for NodeType {
 
 #[derive(Clone, Debug, Serialize, Deserialize)]
 pub struct Node {
-    pub left: Option<Box<Node>>,
+    pub left: Option<Arc<Node>>,
     pub value: Value,
-    pub right: Option<Box<Node>>,
+    pub right: Option<Arc<Node>>,
     pub node_type: NodeType,
 }
 
@@ -189,8 +190,8 @@ impl Node {
     pub fn new_binary(arg_lef: Node, arg_right: Node, opt: &str) -> Self {
         Self {
             value: Value::from(opt),
-            left: Option::Some(Box::new(arg_lef)),
-            right: Option::Some(Box::new(arg_right)),
+            left: Option::Some(Arc::new(arg_lef)),
+            right: Option::Some(Arc::new(arg_right)),
             node_type: NBinary,
         }
     }

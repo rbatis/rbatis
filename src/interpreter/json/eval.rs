@@ -268,35 +268,4 @@ mod test {
         assert_eq!(eval(&json!(2), &json!(4), "^").unwrap().as_i64().unwrap(), 2 ^ 4);
         assert_eq!(eval(&json!(2), &json!(3), "**").unwrap().as_f64().unwrap(), 8.0);
     }
-
-
-    #[test]
-    fn benchmark_fromstr() {
-        let point = Point { x: 1, y: 2 };
-
-        let serialized = serde_json::to_string(&point).unwrap();
-        println!("serialized = {}", serialized);
-
-        let total = 100000;
-        let now = std::time::Instant::now();
-        for i in 0..total {
-            let deserialized: Point = serde_json::from_str(&serialized).unwrap();
-            // println!("deserialized = {:?}", deserialized);
-        }
-        time_util::count_time_qps("benchmark_fromstr", total, now);
-    }
-
-    #[test]
-    fn benchmark_to_string() {
-        let point = Point { x: 1, y: 2 };
-
-
-        let total = 100000;
-        let now = std::time::Instant::now();
-        for i in 0..total {
-            let serialized = serde_json::to_string(&point).unwrap();
-            let deserialized: Value = serde_json::from_str(&serialized).unwrap();
-        }
-        time_util::count_time_qps("benchmark_to_string", total, now);
-    }
 }
