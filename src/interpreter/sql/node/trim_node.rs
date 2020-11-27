@@ -1,12 +1,12 @@
 use serde_json::{json, Value};
 
-use crate::ast::ast::RbatisAST;
-use crate::ast::node::node::do_child_nodes;
-use crate::ast::node::node_type::NodeType;
-use crate::ast::node::string_node::StringNode;
+use crate::interpreter::sql::ast::RbatisAST;
+use crate::interpreter::sql::node::node::do_child_nodes;
+use crate::interpreter::sql::node::node_type::NodeType;
+use crate::interpreter::sql::node::string_node::StringNode;
 use crate::core::convert::StmtConvert;
 use crate::core::db::DriverType;
-use crate::engine::runtime::RbatisEngine;
+use crate::interpreter::json::runtime::RbatisEngine;
 
 #[derive(Clone, Debug)]
 pub struct TrimNode {

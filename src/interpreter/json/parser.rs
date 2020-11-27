@@ -6,9 +6,9 @@ use std::ops::Deref;
 use log::kv::Source;
 
 use crate::core::Error;
-use crate::engine::node::Node;
-use crate::engine::node::NodeType::{NBinary, NOpt};
-use crate::engine::runtime::OptMap;
+use crate::interpreter::json::node::Node;
+use crate::interpreter::json::node::NodeType::{NBinary, NOpt};
+use crate::interpreter::json::runtime::OptMap;
 
 pub fn parse(express: &str, opt_map: &OptMap) -> Result<Node, Error> {
     let express = express.replace("none", "null").replace("None", "null");

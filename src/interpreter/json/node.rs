@@ -11,9 +11,9 @@ use serde_json;
 use serde_json::json;
 use serde_json::value::Value::{Null, Number};
 
-use crate::engine::eval::eval;
-use crate::engine::node::NodeType::{NArg, NBinary, NBool, NNull, NNumber, NOpt, NString};
-use crate::engine::runtime::OptMap;
+use crate::interpreter::json::eval::eval;
+use crate::interpreter::json::node::NodeType::{NArg, NBinary, NBool, NNull, NNumber, NOpt, NString};
+use crate::interpreter::json::runtime::OptMap;
 
 #[derive(Clone, PartialEq, Debug, Serialize, Deserialize)]
 pub enum NodeType {

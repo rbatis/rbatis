@@ -1,6 +1,4 @@
 use std::collections::HashMap;
-
-use crate::ast::node::node_type::NodeType;
 use crate::core::Error;
 
 pub trait ToResult<T> {

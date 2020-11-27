@@ -213,7 +213,7 @@ mod test {
     use serde::{Deserialize, Serialize};
     use serde_json::Value;
 
-    use crate::engine::eval::eval;
+    use crate::interpreter::json::eval::eval;
     use crate::utils::time_util;
 
     #[test]

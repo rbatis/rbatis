@@ -6,22 +6,22 @@ use std::sync::{Mutex, RwLock};
 use serde_json::json;
 use serde_json::Value;
 
-use crate::ast::ast::RbatisAST;
-use crate::ast::node::bind_node::BindNode;
-use crate::ast::node::choose_node::ChooseNode;
-use crate::ast::node::proxy_node::{ProxyNode, CustomNodeGenerate};
-use crate::ast::node::foreach_node::ForEachNode;
-use crate::ast::node::if_node::IfNode;
-use crate::ast::node::node_type::NodeType;
-use crate::ast::node::otherwise_node::OtherwiseNode;
-use crate::ast::node::set_node::SetNode;
-use crate::ast::node::string_node::StringNode;
-use crate::ast::node::trim_node::TrimNode;
-use crate::ast::node::when_node::WhenNode;
-use crate::ast::node::where_node::WhereNode;
+use crate::interpreter::sql::ast::RbatisAST;
+use crate::interpreter::sql::node::bind_node::BindNode;
+use crate::interpreter::sql::node::choose_node::ChooseNode;
+use crate::interpreter::sql::node::proxy_node::{ProxyNode, CustomNodeGenerate};
+use crate::interpreter::sql::node::foreach_node::ForEachNode;
+use crate::interpreter::sql::node::if_node::IfNode;
+use crate::interpreter::sql::node::node_type::NodeType;
+use crate::interpreter::sql::node::otherwise_node::OtherwiseNode;
+use crate::interpreter::sql::node::set_node::SetNode;
+use crate::interpreter::sql::node::string_node::StringNode;
+use crate::interpreter::sql::node::trim_node::TrimNode;
+use crate::interpreter::sql::node::when_node::WhenNode;
+use crate::interpreter::sql::node::where_node::WhereNode;
 use crate::core::Error;
-use crate::engine::node::Node;
-use crate::engine::parser::parse;
+use crate::interpreter::json::node::Node;
+use crate::interpreter::json::parser::parse;
 
 /// Py lang,make sure Send+Sync
 pub struct Py {
@@ -226,9 +226,10 @@ impl Py {
 
 #[cfg(test)]
 mod test {
-    use crate::ast::lang::py::Py;
+    use crate::interpreter::sql::py_sql::py::Py;
     use crate::core::db::DriverType;
-    use crate::engine::runtime::RbatisEngine;
+    use crate::interpreter::json::runtime::RbatisEngine;
+    use crate::interpreter::sql::node::node::do_child_nodes;
 
     #[test]
     pub fn test_py_interpreter_parse() {
@@ -304,7 +305,7 @@ mod test {
         "del":1,
         "ids":[1,2,3]
     });
-        let r = crate::ast::node::node::do_child_nodes(&DriverType::Mysql, &pys, &mut env, &mut engine, &mut arg_array).unwrap();
+        let r = do_child_nodes(&DriverType::Mysql, &pys, &mut env, &mut engine, &mut arg_array).unwrap();
         println!("result sql:{}", r.clone());
         println!("arg array:{:?}", arg_array.clone());
     }
@@ -338,7 +339,7 @@ mod test {
 
         let mut arg_array = vec![];
         let mut engine = RbatisEngine::new();
-        let r = crate::ast::node::node::do_child_nodes(&DriverType::Mysql, &pys, &mut env, &mut engine, &mut arg_array).unwrap();
+        let r = do_child_nodes(&DriverType::Mysql, &pys, &mut env, &mut engine, &mut arg_array).unwrap();
         println!("result: {}", &r);
         println!("arg: {:?}", arg_array.clone());
     }
