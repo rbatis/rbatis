@@ -10,10 +10,51 @@ use crate::interpreter::json::runtime::OptMap;
 
 pub fn parse(express: &str, opt_map: &OptMap) -> Result<Node, Error> {
     let express = express.replace("none", "null").replace("None", "null");
-    let tokens = parse_tokens(&express, opt_map);
+    let mut tokens = parse_tokens(&express, opt_map);
+    tokens = fill_lost_token(&tokens, opt_map);
     check_tokens_open_close(&tokens, &express)?;
     let mut nodes = loop_parse_temp_node(&tokens, opt_map, &express)?;
     return to_binary_node(&mut nodes, opt_map, &express);
+}
+
+fn fill_lost_token(arg: &Vec<String>, opt_map: &OptMap) -> Vec<String> {
+    let mut new = vec![];
+    let len = arg.len();
+    let mut index = -1;
+    let mut last = "".to_string();
+    let mut jump: i32 = -1;
+    for item in arg {
+        index += 1;
+        if jump != -1 && index == jump {
+            jump = -1;
+            last = item.to_string();
+            continue;
+        }
+        if item != "(" && index == 0 && opt_map.is_opt(item) {
+            new.push("null".to_string());
+        }
+        if last != ")"
+            && item != "(" && item != ")"
+            && index >= 1
+            && (opt_map.is_opt(&last))
+            && opt_map.is_opt(item) {
+            new.push("(".to_string());
+            new.push("null".to_string());
+            new.push(item.to_string());
+            new.push(arg[(index + 1) as usize].to_string());
+            new.push(")".to_string());
+            jump = index + 1;
+            last = item.to_string();
+            continue;
+        } else {
+            new.push(item.to_string());
+        }
+        if item != ")" && (index + 1) as usize == len && opt_map.is_opt(item) {
+            new.push("null".to_string());
+        }
+        last = item.to_string();
+    }
+    new
 }
 
 fn loop_parse_temp_node(tokens: &[String], opt_map: &OptMap, express: &str) -> Result<Vec<Node>, Error> {
@@ -121,7 +162,6 @@ fn to_binary_node(nodes: &mut Vec<Node>, opt_map: &OptMap, express: &str) -> Res
     if nodes_len == 1 {
         return Ok(nodes[0].to_owned());
     }
-    fill_lost_node_null(nodes);
     for item in opt_map.priority_array() {
         find_replace_opt(opt_map, express, &item, nodes);
     }
@@ -132,33 +172,6 @@ fn to_binary_node(nodes: &mut Vec<Node>, opt_map: &OptMap, express: &str) -> Res
     }
 }
 
-
-fn fill_lost_node_null(node_arg: &mut Vec<Node>) {
-    let mut len = node_arg.len();
-    if len == 0 {
-        return;
-    }
-    if node_arg.get(0).unwrap().node_type() == NOpt {
-        node_arg.insert(0, Node::new_null());
-        len = node_arg.len();
-    }
-    if len != 0 && node_arg.get(len - 1).unwrap().node_type() == NOpt {
-        node_arg.push(Node::new_null());
-        len = node_arg.len();
-    }
-    let index = 1;
-    for index in 1..len {
-        let last_index = (index - 1) as usize;
-        let last = node_arg.get(last_index).unwrap();
-        let current = node_arg.get(index).unwrap();
-        if current.node_type() == NOpt && last.node_type() == NOpt {
-            node_arg.insert(index, Node::new_null());
-            fill_lost_node_null(node_arg);
-            return;
-        }
-    }
-    return;
-}
 
 fn find_replace_opt(opt_map: &OptMap, express: &str, operator: &str, node_arg: &mut Vec<Node>) {
     let node_arg_len = node_arg.len();
