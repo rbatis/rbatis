@@ -41,7 +41,7 @@ mod test {
 
     #[test]
     fn test_benchmark() {
-        let box_node = parser::parse("1+1+1+1+1+1+1+1+1+1+1+1+1+1+1+1+1+1+1+1+1+1+1+1+1+1+1+1+1+1+1+1+1+1+1+1", &OptMap::new()).unwrap();
+        let box_node = parser::parse("1+1", &OptMap::new()).unwrap();
         let john = json!({
         "name": "John Doe",
     });
