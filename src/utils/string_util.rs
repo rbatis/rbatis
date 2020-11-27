@@ -1,4 +1,6 @@
+use std::collections::BTreeMap;
 use std::io::Read;
+
 use serde_json::map::Map;
 use serde_json::Value;
 
@@ -6,8 +8,8 @@ use serde_json::Value;
 pub const LOG_SPACE: &'static str = "                                                                ";
 
 //find like #{*,*},${*,*} value *
-pub fn find_convert_string(arg: &str) -> Map<String, Value> {
-    let mut results = Map::new();
+pub fn find_convert_string(arg: &str) -> BTreeMap<String, String> {
+    let mut results = BTreeMap::new();
     let chars: Vec<u8> = arg.bytes().collect();
     let mut item = String::new();
     let mut last_index: i32 = -1;
@@ -25,7 +27,7 @@ pub fn find_convert_string(arg: &str) -> Map<String, Value> {
         if *v == '}' as u8 && last_index != -1 {
             item = String::from_utf8(chars[(last_index + 2) as usize..index as usize].to_vec()).unwrap();
             let value = String::from_utf8(chars[last_index as usize..(index + 1) as usize].to_vec()).unwrap();
-            results.insert(item.clone(), serde_json::Value::String(value));
+            results.insert(item.clone(), value);
             item.clear();
             last_index = -1;
         }
