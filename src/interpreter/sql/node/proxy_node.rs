@@ -4,10 +4,10 @@ use std::ptr::NonNull;
 use crate::core::runtime::{Arc, Mutex};
 use serde_json::Value;
 
-use crate::ast::ast::RbatisAST;
-use crate::ast::node::node_type::NodeType;
+use crate::interpreter::sql::ast::RbatisAST;
+use crate::interpreter::sql::node::node_type::NodeType;
 use crate::core::Error;
-use crate::engine::runtime::RbatisEngine;
+use crate::interpreter::json::runtime::RbatisEngine;
 
 ///CustomNode Generate,you can custom py lang parse
 pub trait CustomNodeGenerate: Send + Sync {

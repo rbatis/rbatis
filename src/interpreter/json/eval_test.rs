@@ -5,10 +5,10 @@ mod test {
     use chrono::Local;
     use serde_json::{json, Value};
 
-    use crate::engine::{parser, runtime};
-    use crate::engine::node::Node;
-    use crate::engine::parser::parse_tokens;
-    use crate::engine::runtime::OptMap;
+    use crate::interpreter::json::{parser, runtime};
+    use crate::interpreter::json::node::Node;
+    use crate::interpreter::json::parser::parse_tokens;
+    use crate::interpreter::json::runtime::OptMap;
     use crate::utils::time_util;
 
     #[test]

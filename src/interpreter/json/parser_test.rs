@@ -9,10 +9,10 @@ mod test {
     use serde_json::json;
     use serde_json::Value;
 
-    use crate::engine::{parser, runtime};
-    use crate::engine::node::{Node, NodeType};
-    use crate::engine::node::NodeType::{NNumber, NOpt};
-    use crate::engine::runtime::OptMap;
+    use crate::interpreter::json::{parser, runtime};
+    use crate::interpreter::json::node::{Node, NodeType};
+    use crate::interpreter::json::node::NodeType::{NNumber, NOpt};
+    use crate::interpreter::json::runtime::OptMap;
     use crate::utils;
     use crate::utils::time_util;
 

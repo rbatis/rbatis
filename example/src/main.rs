@@ -88,15 +88,15 @@ mod test {
     use serde_json::json;
     use serde_json::Value;
 
-    use rbatis::ast::ast::RbatisAST;
-    use rbatis::ast::node::node_type::NodeType;
-    use rbatis::ast::node::proxy_node::{CustomNodeGenerate, ProxyNode};
+    use rbatis::interpreter::sql::ast::RbatisAST;
+    use rbatis::interpreter::sql::node::node_type::NodeType;
+    use rbatis::interpreter::sql::node::proxy_node::{CustomNodeGenerate, ProxyNode};
     use rbatis::core::db::{DriverType, PoolOptions};
     use rbatis::core::db_adapter::DBPool;
     use rbatis::core::Error;
     use rbatis::crud::CRUD;
     use rbatis::crud::CRUDEnable;
-    use rbatis::engine::runtime::RbatisEngine;
+    use rbatis::interpreter::json::runtime::RbatisEngine;
     use rbatis::plugin::page::{Page, PageRequest};
     use rbatis::rbatis::Rbatis;
     use rbatis::utils::bencher::QPS;
