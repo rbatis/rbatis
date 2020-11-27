@@ -3,8 +3,6 @@ use std::collections::HashMap;
 use std::collections::linked_list::LinkedList;
 use std::ops::Deref;
 
-use log::kv::Source;
-
 use crate::core::Error;
 use crate::interpreter::json::node::Node;
 use crate::interpreter::json::node::NodeType::{NBinary, NOpt};
