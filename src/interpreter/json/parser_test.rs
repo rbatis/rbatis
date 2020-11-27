@@ -14,6 +14,7 @@ mod test {
     use crate::interpreter::json::node::NodeType::{NNumber, NOpt};
     use crate::interpreter::json::runtime::OptMap;
     use crate::utils;
+    use crate::utils::bencher::QPS;
     use crate::utils::time_util;
 
     #[test]
@@ -47,16 +48,8 @@ mod test {
         let total = 10000000;
         let now = std::time::Instant::now();
         for _ in 0..total {
-            for _ in 0..1 {
-                box_node.clone();
-                // box_node.clone();
-                // n2.eval(&john);
-            }
+            box_node.eval(&john);
         }
-        utils::time_util::print_each_time("test_benchmark", total, now);
-        utils::time_util::print_qps("test_benchmark", total, now);
-
-//    let ten_millis = time::Duration::from_secs(1000*60);
-//    thread::sleep(ten_millis);
+        now.time(total)
     }
 }
