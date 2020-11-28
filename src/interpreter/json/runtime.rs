@@ -5,7 +5,7 @@ use std::sync::RwLock;
 use serde_json::Value;
 
 use crate::interpreter::json::lexer::lexer;
-use crate::interpreter::json::node::Node;
+use crate::interpreter::json::ast::Node;
 use crate::interpreter::json::parser::parse;
 use crate::interpreter::json::token::TokenMap;
 

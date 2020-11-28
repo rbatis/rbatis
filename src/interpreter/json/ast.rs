@@ -10,7 +10,7 @@ use serde_json::json;
 use serde_json::value::Value::{Null, Number};
 
 use crate::interpreter::json::eval::eval;
-use crate::interpreter::json::node::NodeType::{NArg, NBinary, NBool, NNull, NNumber, NOpt, NString};
+use crate::interpreter::json::ast::NodeType::{NArg, NBinary, NBool, NNull, NNumber, NOpt, NString};
 use crate::interpreter::json::token::TokenMap;
 
 #[derive(Clone, PartialEq, Debug, Serialize, Deserialize)]

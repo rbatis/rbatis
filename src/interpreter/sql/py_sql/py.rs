@@ -20,7 +20,7 @@ use crate::interpreter::sql::node::trim_node::TrimNode;
 use crate::interpreter::sql::node::when_node::WhenNode;
 use crate::interpreter::sql::node::where_node::WhereNode;
 use crate::core::Error;
-use crate::interpreter::json::node::Node;
+use crate::interpreter::json::ast::Node;
 use crate::interpreter::json::lexer::lexer;
 
 /// Py lang,make sure Send+Sync
