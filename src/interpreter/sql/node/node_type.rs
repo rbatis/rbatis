@@ -13,7 +13,7 @@ use crate::interpreter::sql::node::trim_node::TrimNode;
 use crate::interpreter::sql::node::when_node::WhenNode;
 use crate::interpreter::sql::node::where_node::WhereNode;
 use crate::core::convert::StmtConvert;
-use crate::interpreter::json::node::Node;
+use crate::interpreter::json::ast::Node;
 use crate::interpreter::json::runtime::Runtime;
 
 #[derive(Clone, Debug)]

@@ -7,7 +7,7 @@ mod test {
 
     use crate::interpreter::json::{lexer, runtime};
     use crate::interpreter::json::lexer::parse_tokens;
-    use crate::interpreter::json::node::Node;
+    use crate::interpreter::json::ast::Node;
     use crate::interpreter::json::token::TokenMap;
     use crate::utils::time_util;
 

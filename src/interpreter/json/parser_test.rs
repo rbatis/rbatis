@@ -10,8 +10,8 @@ mod test {
     use serde_json::Value;
 
     use crate::interpreter::json::{lexer, runtime};
-    use crate::interpreter::json::node::{Node, NodeType};
-    use crate::interpreter::json::node::NodeType::{NNumber, NOpt};
+    use crate::interpreter::json::ast::{Node, NodeType};
+    use crate::interpreter::json::ast::NodeType::{NNumber, NOpt};
     use crate::interpreter::json::parser::parse;
     use crate::interpreter::json::token::TokenMap;
     use crate::utils;

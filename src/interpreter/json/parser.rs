@@ -1,6 +1,6 @@
 use crate::core::Error;
-use crate::interpreter::json::node::Node;
-use crate::interpreter::json::node::NodeType::NOpt;
+use crate::interpreter::json::ast::Node;
+use crate::interpreter::json::ast::NodeType::NOpt;
 use crate::interpreter::json::token::TokenMap;
 
 /// parse token to node

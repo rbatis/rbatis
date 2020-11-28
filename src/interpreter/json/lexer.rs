@@ -1,7 +1,7 @@
 use std::collections::LinkedList;
 
 use crate::core::Error;
-use crate::interpreter::json::node::Node;
+use crate::interpreter::json::ast::Node;
 use crate::interpreter::json::token::TokenMap;
 use crate::interpreter::json::parser::parse;
 
