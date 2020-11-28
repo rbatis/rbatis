@@ -68,7 +68,7 @@ mod test {
         assert_eq!(exec_expr(&arg, "(18*19)<19*19"), json!((18*19)<19*19));
         assert_eq!(exec_expr(&arg, "2*(1+1)"), json!(2*(1+1)));
         assert_eq!(exec_expr(&arg, "2*(1+(1+1)+1)"), json!(2*(1+(1+1)+1)));
-        assert_eq!(exec_expr(&arg, "(1+2)+(8*(2+1)*9)"), json!((1+2)+(8*(2+1)*9)));
+        assert_eq!(exec_expr(&arg, "(((34 + 21) / 5) - 12) * 348"), json!((((34 + 21) / 5) - 12) * 348));
     }
 
     #[test]

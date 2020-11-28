@@ -84,7 +84,7 @@ fn loop_parse_temp_node(tokens: &[String], opt_map: &OptMap, express: &str) -> R
             continue;
         }
         if item == "(" {
-            let end = find_first_end(tokens, index) as usize;
+            let end = find_eq_end(tokens, index) as usize;
             let sub_tokens = &tokens[index as usize..end];
             let new_nodes = loop_parse_temp_node(&sub_tokens, opt_map, express)?;
             for node in new_nodes {
@@ -121,15 +121,26 @@ fn loop_parse_temp_node(tokens: &[String], opt_map: &OptMap, express: &str) -> R
 }
 
 
-fn find_first_end(arg: &[String], start: i32) -> i32 {
+fn find_eq_end(arg: &[String], start: i32) -> i32 {
     let mut index = -1;
+    let mut open = 0;
+    let mut close = 0;
     for x in arg {
         index += 1;
         if index <= start {
+            if index == start{
+                open += 1;
+            }
             continue;
         }
+        if x == "(" {
+            open += 1;
+        }
         if x == ")" {
-            return index + 1;
+            close += 1;
+            if close == open {
+                return index + 1;
+            }
         }
     }
     return index;
