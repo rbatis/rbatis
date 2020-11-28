@@ -12,15 +12,16 @@ mod test {
     use crate::interpreter::json::{lexer, runtime};
     use crate::interpreter::json::node::{Node, NodeType};
     use crate::interpreter::json::node::NodeType::{NNumber, NOpt};
+    use crate::interpreter::json::parser::parse;
+    use crate::interpreter::json::token::TokenMap;
     use crate::utils;
     use crate::utils::bencher::QPS;
     use crate::utils::time_util;
-    use crate::interpreter::json::token::TokenMap;
 
     #[test]
     fn test_lexer() {
-        let box_node = lexer::parse("-1 == -a", &TokenMap::new()).unwrap();
-        println!("{:#?}", &box_node);
+        let node = lexer::lexer_parse_node("-1 == -a", &TokenMap::new()).unwrap();
+        println!("{:#?}", &node);
         let john = json!({
         "a":1,
         "name": "John Doe",
@@ -36,7 +37,7 @@ mod test {
             "+44 2345678"
         ]
     });
-        println!("result >>>>>>>>>>   =  {}", box_node.eval(&john).unwrap());
+        println!("result >>>>>>>>>>   =  {}", node.eval(&john).unwrap());
     }
 
     //cargo test --release --package rbatis --lib interpreter::json::lexer_test::test::test_benchmark_parse --no-fail-fast -- --exact -Z unstable-tokenions  --show-output
@@ -45,14 +46,14 @@ mod test {
         let total = 10000;
         let now = std::time::Instant::now();
         for _ in 0..total {
-            let box_node = lexer::parse("1+1", &TokenMap::new()).unwrap();
+            let box_node = lexer::lexer("1+1", &TokenMap::new()).unwrap();
         }
         now.time(total)
     }
 
     #[test]
     fn test_benchmark() {
-        let box_node = lexer::parse("1+1", &TokenMap::new()).unwrap();
+        let box_node = lexer::lexer_parse_node("1+1", &TokenMap::new()).unwrap();
         let john = json!({
         "name": "John Doe",
     });
