@@ -4,7 +4,6 @@ mod test {
     use serde::Deserialize;
     use serde::Serialize;
 
-    use rbatis::crud::{CRUD, CRUDEnable};
     use rbatis::plugin::logic_delete::RbatisLogicDeletePlugin;
     use rbatis::plugin::page::{Page, PageRequest};
     use rbatis::rbatis::Rbatis;
@@ -14,7 +13,7 @@ mod test {
     use bigdecimal_::BigDecimal;
     use rbatis::core::value::DateTimeNow;
     use rbatis::core::db_adapter::DBExecResult;
-
+    use rbatis::crud::CRUD;
 
     ///
     ///Or another way to write it
@@ -23,6 +22,23 @@ mod test {
     #[crud_enable]
     #[derive(Serialize, Deserialize, Clone, Debug)]
     pub struct BizActivity {
+        pub id: Option<String>,
+        pub name: Option<String>,
+        pub pc_link: Option<String>,
+        pub h5_link: Option<String>,
+        pub pc_banner_img: Option<String>,
+        pub h5_banner_img: Option<String>,
+        pub sort: Option<String>,
+        pub status: Option<i32>,
+        pub remark: Option<String>,
+        pub create_time: Option<NaiveDateTime>,
+        pub version: Option<BigDecimal>,
+        pub delete_flag: Option<i32>,
+    }
+
+    #[crud_enable]
+    #[derive(Serialize, Deserialize, Clone, Debug)]
+    pub struct BizActivity2 {
         pub id: Option<String>,
         pub name: Option<String>,
         pub pc_link: Option<String>,
@@ -316,6 +332,7 @@ mod test {
 
     #[test]
     pub fn test_raw_identifiers() {
+        use rbatis::crud::CRUDEnable;
         #[derive(CRUDEnable, Serialize, Deserialize, Clone, Debug)]
         pub struct BizActivity {
             pub id: Option<String>,
