@@ -38,7 +38,7 @@ pub(crate) fn impl_crud_driver(ast: &syn::DeriveInput, arg_id_type: &str, arg_id
     }
 
     let gen = quote! {
-        impl CRUDEnable for #name {
+        impl rbatis::crud::CRUDEnable for #name {
             type IdType = #id_type;
 
             fn id_name() -> String {
@@ -156,7 +156,6 @@ pub(crate) fn impl_crud(args: TokenStream, input: TokenStream) -> TokenStream {
     let s: proc_macro2::TokenStream = stream.into();
     let qt = quote! {
        #input_clone
-
        #s
     };
     if !cfg!(feature = "no_print") {

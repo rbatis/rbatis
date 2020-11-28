@@ -14,8 +14,6 @@ use fast_log::filter::ModuleFilter;
 use serde::{Deserialize, Serialize};
 use serde_json::{json, Value};
 use tide::Request;
-
-use rbatis::crud::CRUDEnable;
 use rbatis::rbatis::Rbatis;
 
 mod crud_test;
