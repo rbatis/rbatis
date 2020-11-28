@@ -14,7 +14,7 @@ use crate::interpreter::sql::node::when_node::WhenNode;
 use crate::interpreter::sql::node::where_node::WhereNode;
 use crate::core::convert::StmtConvert;
 use crate::interpreter::json::node::Node;
-use crate::interpreter::json::runtime::RbatisEngine;
+use crate::interpreter::json::runtime::Runtime;
 
 #[derive(Clone, Debug)]
 pub enum NodeType {
@@ -72,7 +72,7 @@ impl<'a> RbatisAST for NodeType {
         "node_type"
     }
 
-    fn eval(&self, convert: &crate::core::db::DriverType, env: &mut Value, engine: &RbatisEngine, arg_array: &mut Vec<Value>) -> Result<String, crate::core::Error> {
+    fn eval(&self, convert: &crate::core::db::DriverType, env: &mut Value, engine: &Runtime, arg_array: &mut Vec<Value>) -> Result<String, crate::core::Error> {
         match self {
             NodeType::Null => return Result::Ok(String::new()),
             NodeType::NString(node) => return node.eval(convert, env, engine, arg_array),

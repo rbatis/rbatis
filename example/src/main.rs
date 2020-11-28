@@ -95,7 +95,7 @@ mod test {
     use rbatis::core::Error;
     use rbatis::crud::CRUD;
     use rbatis::crud::CRUDEnable;
-    use rbatis::interpreter::json::runtime::RbatisEngine;
+    use rbatis::interpreter::json::runtime::Runtime;
     use rbatis::plugin::page::{Page, PageRequest};
     use rbatis::rbatis::Rbatis;
     use rbatis::utils::bencher::QPS;
@@ -250,7 +250,7 @@ mod test {
             "custom"
         }
 
-        fn eval(&self, convert: &DriverType, env: &mut Value, engine: &RbatisEngine, arg_result: &mut Vec<Value>) -> Result<String, Error> {
+        fn eval(&self, convert: &DriverType, env: &mut Value, engine: &Runtime, arg_result: &mut Vec<Value>) -> Result<String, Error> {
             Ok(" AND id = 1 ".to_string())
         }
     }

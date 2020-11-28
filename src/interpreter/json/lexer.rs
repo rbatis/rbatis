@@ -6,9 +6,9 @@ use std::ops::Deref;
 use crate::core::Error;
 use crate::interpreter::json::node::Node;
 use crate::interpreter::json::node::NodeType::{NBinary, NOpt};
-use crate::interpreter::json::runtime::OptMap;
+use crate::interpreter::json::token::TokenMap;
 
-pub fn parse(express: &str, opt_map: &OptMap) -> Result<Node, Error> {
+pub fn parse(express: &str, opt_map: &TokenMap) -> Result<Node, Error> {
     let express = express.replace("none", "null").replace("None", "null");
     let mut tokens = parse_tokens(&express, opt_map);
     tokens = fill_lost_token(&tokens, opt_map);
@@ -17,7 +17,7 @@ pub fn parse(express: &str, opt_map: &OptMap) -> Result<Node, Error> {
     return to_binary_node(&mut nodes, opt_map, &express);
 }
 
-fn fill_lost_token(arg: &Vec<String>, opt_map: &OptMap) -> Vec<String> {
+fn fill_lost_token(arg: &Vec<String>, opt_map: &TokenMap) -> Vec<String> {
     let mut new = vec![];
     let len = arg.len();
     let mut index = -1;
@@ -30,14 +30,14 @@ fn fill_lost_token(arg: &Vec<String>, opt_map: &OptMap) -> Vec<String> {
             last = item.to_string();
             continue;
         }
-        if item != "(" && index == 0 && opt_map.is_opt(item) {
+        if item != "(" && index == 0 && opt_map.is_token(item) {
             new.push("null".to_string());
         }
         if last != ")"
             && item != "(" && item != ")"
             && index >= 1
-            && (opt_map.is_opt(&last))
-            && opt_map.is_opt(item) {
+            && (opt_map.is_token(&last))
+            && opt_map.is_token(item) {
             new.push("(".to_string());
             new.push("null".to_string());
             new.push(item.to_string());
@@ -49,7 +49,7 @@ fn fill_lost_token(arg: &Vec<String>, opt_map: &OptMap) -> Vec<String> {
         } else {
             new.push(item.to_string());
         }
-        if item != ")" && (index + 1) as usize == len && opt_map.is_opt(item) {
+        if item != ")" && (index + 1) as usize == len && opt_map.is_token(item) {
             new.push("null".to_string());
         }
         last = item.to_string();
@@ -57,7 +57,7 @@ fn fill_lost_token(arg: &Vec<String>, opt_map: &OptMap) -> Vec<String> {
     new
 }
 
-fn loop_parse_temp_node(tokens: &[String], opt_map: &OptMap, express: &str) -> Result<Vec<Node>, Error> {
+fn loop_parse_temp_node(tokens: &[String], opt_map: &TokenMap, express: &str) -> Result<Vec<Node>, Error> {
     let len = tokens.len();
     let mut result = vec![];
     let mut temp_nodes = vec![];
@@ -89,7 +89,7 @@ fn loop_parse_temp_node(tokens: &[String], opt_map: &OptMap, express: &str) -> R
             let new_nodes = loop_parse_temp_node(&sub_tokens, opt_map, express)?;
             for node in new_nodes {
                 if node.node_type == NOpt {
-                    let is_allow_opt = opt_map.is_allow_opt(item.as_str());
+                    let is_allow_opt = opt_map.is_allow_token(item.as_str());
                     if !is_allow_opt {
                         return Err(Error::from(format!("[rbatis] py lexer find not support opt: '{}' ,in express: '{}'", &item, &express)));
                     }
@@ -105,7 +105,7 @@ fn loop_parse_temp_node(tokens: &[String], opt_map: &OptMap, express: &str) -> R
         } else {
             let node = Node::parse(item.as_str(), opt_map);
             if node.node_type == NOpt {
-                let is_allow_opt = opt_map.is_allow_opt(item.as_str());
+                let is_allow_opt = opt_map.is_allow_token(item.as_str());
                 if !is_allow_opt {
                     return Err(Error::from(format!("[rbatis] py lexer find not support opt: '{}' ,in express: '{}'", &item, &express)));
                 }
@@ -165,7 +165,7 @@ fn check_tokens_open_close(tokens: &Vec<String>, express: &str) -> Result<(), Er
 }
 
 
-fn to_binary_node(nodes: &mut Vec<Node>, opt_map: &OptMap, express: &str) -> Result<Node, Error> {
+fn to_binary_node(nodes: &mut Vec<Node>, opt_map: &TokenMap, express: &str) -> Result<Node, Error> {
     let nodes_len = nodes.len();
     if nodes_len == 0 {
         return Result::Err(crate::core::Error::from(format!("[rbatis] lexer express '{}' fail", express)));
@@ -184,7 +184,7 @@ fn to_binary_node(nodes: &mut Vec<Node>, opt_map: &OptMap, express: &str) -> Res
 }
 
 
-fn replace_to_binary_node(opt_map: &OptMap, express: &str, operator: &str, node_arg: &mut Vec<Node>) {
+fn replace_to_binary_node(opt_map: &TokenMap, express: &str, operator: &str, node_arg: &mut Vec<Node>) {
     let node_arg_len = node_arg.len();
     if node_arg_len == 1 {
         return;
@@ -220,7 +220,7 @@ fn have_opt(node_arg: &Vec<Node>) -> bool {
 }
 
 ///parse token to vec
-pub fn parse_tokens(s: &String, opt_map: &OptMap) -> Vec<String> {
+pub fn parse_tokens(s: &String, opt_map: &TokenMap) -> Vec<String> {
     let chars = s.chars();
     let chars_len = s.len() as i32;
     let mut result = LinkedList::new();
@@ -233,7 +233,7 @@ pub fn parse_tokens(s: &String, opt_map: &OptMap) -> Vec<String> {
     let mut index: i32 = -1;
     for item in chars {
         index = index + 1;
-        let is_opt = opt_map.is_opt(item.to_string().as_str());
+        let is_opt = opt_map.is_token(item.to_string().as_str());
         if item == '\'' || item == '`' {
             if find_str {
                 //第二次找到
@@ -266,11 +266,11 @@ pub fn parse_tokens(s: &String, opt_map: &OptMap) -> Vec<String> {
             if result.len() > 0 {
                 let def = String::new();
                 let back = result.back().unwrap_or(&def).clone();
-                if opt_map.is_opt(&format!("{}{}", &back, &item)) == false {
+                if opt_map.is_token(&format!("{}{}", &back, &item)) == false {
                     trim_push_back(&item.to_string(), &mut result);
                     continue;
                 }
-                if back != "" && opt_map.is_opt(back.as_str()) {
+                if back != "" && opt_map.is_token(back.as_str()) {
                     result.pop_back();
                     let mut new_item = back.clone();
                     new_item.push(item);
