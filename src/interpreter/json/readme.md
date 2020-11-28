@@ -1,8 +1,8 @@
 ## json express interpreter engine
 
-#### support opt
+#### support token
 
-| opt    | doc  |
+| token    | doc  |
 | ------ | ------ |
 |   %     |        | 
 |   ^     |   xor     | 

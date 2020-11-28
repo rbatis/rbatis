@@ -64,7 +64,7 @@ impl Node {
     pub fn to_bool(&self) -> bool {
         return self.value.as_bool().unwrap();
     }
-    pub fn to_opt(&self) -> &str {
+    pub fn to_token(&self) -> &str {
         return self.value.as_str().unwrap();
     }
     pub fn node_type(&self) -> NodeType {
@@ -89,8 +89,8 @@ impl Node {
         if self.equal_node_type(&NBinary) {
             let left_v = self.left.as_ref().unwrap().eval(env)?;
             let right_v = self.right.as_ref().unwrap().eval(env)?;
-            let opt = self.to_string();
-            return eval(&left_v, &right_v, opt);
+            let token = self.to_string();
+            return eval(&left_v, &right_v, token);
         } else if self.equal_node_type(&NArg) {
             let arr = self.value.as_array().unwrap();
             let arr_len = arr.len() as i32;
@@ -122,7 +122,7 @@ impl Node {
         return Result::Ok(self.value.clone());
     }
 
-    pub fn opt(&self) -> Option<&str> {
+    pub fn token(&self) -> Option<&str> {
         return self.value.as_str();
     }
 
@@ -186,15 +186,15 @@ impl Node {
             node_type: NBool,
         }
     }
-    pub fn new_binary(arg_lef: Node, arg_right: Node, opt: &str) -> Self {
+    pub fn new_binary(arg_lef: Node, arg_right: Node, token: &str) -> Self {
         Self {
-            value: Value::from(opt),
+            value: Value::from(token),
             left: Option::Some(Box::new(arg_lef)),
             right: Option::Some(Box::new(arg_right)),
             node_type: NBinary,
         }
     }
-    pub fn new_opt(arg: &str) -> Self {
+    pub fn new_token(arg: &str) -> Self {
         Self {
             value: Value::String(arg.to_string()),
             left: None,
@@ -203,7 +203,7 @@ impl Node {
         }
     }
 
-    pub fn parse(data: &str, opt: &TokenMap) -> Self {
+    pub fn parse(data: &str, token: &TokenMap) -> Self {
         // println!("data={}", &data);
         let mut first_index = 0;
         let mut last_index = 0;
@@ -219,8 +219,8 @@ impl Node {
             return Node::new_null();
         } else if let Ok(n) = data.parse::<bool>() {
             return Node::new_bool(n);
-        } else if opt.is_token(data) {
-            return Node::new_opt(data);
+        } else if token.is_token(data) {
+            return Node::new_token(data);
         } else if first_index == 0 && last_index == (data.len() - 1) && first_index != last_index {
             let new_str = data.replace("'", "").replace("`", "");
             return Node::new_string(new_str.as_str());

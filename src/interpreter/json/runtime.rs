@@ -12,14 +12,14 @@ use crate::interpreter::json::token::TokenMap;
 #[derive(Debug)]
 pub struct Runtime {
     pub expr_cache: RwLock<HashMap<String, Node>>,
-    pub opt_map: TokenMap<'static>,
+    pub token_map: TokenMap<'static>,
 }
 
 impl Runtime {
     pub fn new() -> Self {
         return Self {
             expr_cache: Default::default(),
-            opt_map: TokenMap::new(),
+            token_map: TokenMap::new(),
         };
     }
 
@@ -27,7 +27,7 @@ impl Runtime {
     pub fn eval(&self, expr: &str, arg: &Value) -> Result<Value, crate::core::Error> {
         let cached = self.cache_read(expr);
         if cached.is_none() {
-            let nodes = parse(expr, &self.opt_map);
+            let nodes = parse(expr, &self.token_map);
             if nodes.is_err() {
                 return Result::Err(nodes.err().unwrap());
             }
@@ -68,7 +68,7 @@ impl Runtime {
 
     /// no cache mode to run engine
     pub fn eval_no_cache(&self, lexer_arg: &str, arg: &Value) -> Result<Value, crate::core::Error> {
-        let nodes = parse(lexer_arg, &self.opt_map);
+        let nodes = parse(lexer_arg, &self.token_map);
         if nodes.is_err() {
             return Result::Err(nodes.err().unwrap());
         }
