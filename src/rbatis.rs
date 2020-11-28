@@ -8,7 +8,7 @@ use serde::de::DeserializeOwned;
 use serde::ser::Serialize;
 use serde_json::Number;
 
-use crate::interpreter::sql::py_sql::py::Py;
+use crate::interpreter::sql::py_sql::Py;
 use crate::interpreter::sql::ast::RbatisAST;
 use crate::interpreter::sql::node::node::do_child_nodes;
 use crate::interpreter::sql::node::node_type::NodeType;

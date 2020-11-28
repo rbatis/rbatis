@@ -226,7 +226,7 @@ impl Py {
 
 #[cfg(test)]
 mod test {
-    use crate::interpreter::sql::py_sql::py::Py;
+    use crate::interpreter::sql::py_sql::Py;
     use crate::core::db::DriverType;
     use crate::interpreter::json::runtime::Runtime;
     use crate::interpreter::sql::node::node::do_child_nodes;
