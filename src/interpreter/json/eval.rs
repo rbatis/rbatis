@@ -217,7 +217,7 @@ mod test {
     use crate::utils::time_util;
 
     #[test]
-    fn test_parser() {
+    fn test_lexer() {
         let john = json!({
         "name": "John Doe",
         "age": Value::Null,

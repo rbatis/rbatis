@@ -91,7 +91,7 @@ fn loop_parse_temp_node(tokens: &[String], opt_map: &OptMap, express: &str) -> R
                 if node.node_type == NOpt {
                     let is_allow_opt = opt_map.is_allow_opt(item.as_str());
                     if !is_allow_opt {
-                        return Err(Error::from(format!("[rbatis] py parser find not support opt: '{}' ,in express: '{}'", &item, &express)));
+                        return Err(Error::from(format!("[rbatis] py lexer find not support opt: '{}' ,in express: '{}'", &item, &express)));
                     }
                 }
                 if find_open {
@@ -107,7 +107,7 @@ fn loop_parse_temp_node(tokens: &[String], opt_map: &OptMap, express: &str) -> R
             if node.node_type == NOpt {
                 let is_allow_opt = opt_map.is_allow_opt(item.as_str());
                 if !is_allow_opt {
-                    return Err(Error::from(format!("[rbatis] py parser find not support opt: '{}' ,in express: '{}'", &item, &express)));
+                    return Err(Error::from(format!("[rbatis] py lexer find not support opt: '{}' ,in express: '{}'", &item, &express)));
                 }
             }
             if find_open {
@@ -148,7 +148,7 @@ fn check_tokens_open_close(tokens: &Vec<String>, express: &str) -> Result<(), Er
         }
     }
     if open_nums != close_nums {
-        return Err(Error::from(format!("[rbatis] py parser find '(' num not equal ')' num,in express: '{}'", &express)));
+        return Err(Error::from(format!("[rbatis] py lexer find '(' num not equal ')' num,in express: '{}'", &express)));
     }
     Ok(())
 }
@@ -157,7 +157,7 @@ fn check_tokens_open_close(tokens: &Vec<String>, express: &str) -> Result<(), Er
 fn to_binary_node(nodes: &mut Vec<Node>, opt_map: &OptMap, express: &str) -> Result<Node, Error> {
     let nodes_len = nodes.len();
     if nodes_len == 0 {
-        return Result::Err(crate::core::Error::from(format!("[rbatis] parser express '{}' fail", express)));
+        return Result::Err(crate::core::Error::from(format!("[rbatis] lexer express '{}' fail", express)));
     }
     if nodes_len == 1 {
         return Ok(nodes[0].to_owned());
@@ -168,7 +168,7 @@ fn to_binary_node(nodes: &mut Vec<Node>, opt_map: &OptMap, express: &str) -> Res
     if nodes.len() > 0 {
         return Result::Ok(nodes[0].to_owned());
     } else {
-        return Result::Err(crate::core::Error::from(format!("[rbatis] parser express '{}' fail", express)));
+        return Result::Err(crate::core::Error::from(format!("[rbatis] lexer express '{}' fail", express)));
     }
 }
 

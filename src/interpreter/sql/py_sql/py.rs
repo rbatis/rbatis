@@ -21,7 +21,7 @@ use crate::interpreter::sql::node::when_node::WhenNode;
 use crate::interpreter::sql::node::where_node::WhereNode;
 use crate::core::Error;
 use crate::interpreter::json::node::Node;
-use crate::interpreter::json::parser::parse;
+use crate::interpreter::json::lexer::parse;
 
 /// Py lang,make sure Send+Sync
 pub struct Py {
