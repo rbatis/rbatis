@@ -4,8 +4,9 @@ use std::sync::RwLock;
 
 use serde_json::Value;
 
+use crate::interpreter::json::lexer::lexer;
 use crate::interpreter::json::node::Node;
-use crate::interpreter::json::lexer::parse;
+use crate::interpreter::json::parser::parse;
 use crate::interpreter::json::token::TokenMap;
 
 /// the express engine for  exe code on runtime
@@ -27,11 +28,8 @@ impl Runtime {
     pub fn eval(&self, expr: &str, arg: &Value) -> Result<Value, crate::core::Error> {
         let cached = self.cache_read(expr);
         if cached.is_none() {
-            let nodes = parse(expr, &self.token_map);
-            if nodes.is_err() {
-                return Result::Err(nodes.err().unwrap());
-            }
-            let node = nodes.unwrap();
+            let tokens = lexer(expr, &self.token_map)?;
+            let node = parse(&self.token_map, &tokens, expr)?;
             self.cache_insert(expr.to_string(), node.clone());
             return node.eval(arg);
         } else {
@@ -68,11 +66,8 @@ impl Runtime {
 
     /// no cache mode to run engine
     pub fn eval_no_cache(&self, lexer_arg: &str, arg: &Value) -> Result<Value, crate::core::Error> {
-        let nodes = parse(lexer_arg, &self.token_map);
-        if nodes.is_err() {
-            return Result::Err(nodes.err().unwrap());
-        }
-        let node = nodes.unwrap();
+        let tokens = lexer(lexer_arg, &self.token_map)?;
+        let node = parse(&self.token_map, &tokens, lexer_arg)?;
         return node.eval(arg);
     }
 }
