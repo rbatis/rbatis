@@ -12,14 +12,14 @@ mod test {
     use crate::interpreter::json::{lexer, runtime};
     use crate::interpreter::json::node::{Node, NodeType};
     use crate::interpreter::json::node::NodeType::{NNumber, NOpt};
-    use crate::interpreter::json::runtime::OptMap;
     use crate::utils;
     use crate::utils::bencher::QPS;
     use crate::utils::time_util;
+    use crate::interpreter::json::token::TokenMap;
 
     #[test]
     fn test_lexer() {
-        let box_node = lexer::parse("-1 == -a", &OptMap::new()).unwrap();
+        let box_node = lexer::parse("-1 == -a", &TokenMap::new()).unwrap();
         println!("{:#?}", &box_node);
         let john = json!({
         "a":1,
@@ -45,14 +45,14 @@ mod test {
         let total = 10000;
         let now = std::time::Instant::now();
         for _ in 0..total {
-            let box_node = lexer::parse("1+1", &OptMap::new()).unwrap();
+            let box_node = lexer::parse("1+1", &TokenMap::new()).unwrap();
         }
         now.time(total)
     }
 
     #[test]
     fn test_benchmark() {
-        let box_node = lexer::parse("1+1", &OptMap::new()).unwrap();
+        let box_node = lexer::parse("1+1", &TokenMap::new()).unwrap();
         let john = json!({
         "name": "John Doe",
     });

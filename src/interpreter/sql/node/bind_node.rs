@@ -5,7 +5,7 @@ use crate::interpreter::sql::node::node_type::NodeType;
 use crate::core::convert::StmtConvert;
 use crate::core::db::DriverType;
 use crate::interpreter::json;
-use crate::interpreter::json::runtime::RbatisEngine;
+use crate::interpreter::json::runtime::Runtime;
 
 #[derive(Clone, Debug)]
 pub struct BindNode {
@@ -31,7 +31,7 @@ impl RbatisAST for BindNode {
     fn name() -> &'static str {
         "bind"
     }
-    fn eval(&self, convert: &crate::core::db::DriverType, env: &mut Value, engine: &RbatisEngine, arg_array: &mut Vec<Value>) -> Result<String, crate::core::Error> {
+    fn eval(&self, convert: &crate::core::db::DriverType, env: &mut Value, engine: &Runtime, arg_array: &mut Vec<Value>) -> Result<String, crate::core::Error> {
         let r = engine.eval(self.value.as_str(), env)?;
         env[self.name.as_str()] = r;
         return Result::Ok("".to_string());
@@ -41,7 +41,7 @@ impl RbatisAST for BindNode {
 
 #[test]
 fn test_bind_node() {
-    let mut engine = RbatisEngine::new();
+    let mut engine = Runtime::new();
     let bind_node = BindNode {
         name: "a".to_string(),
         value: "a+1".to_string(),

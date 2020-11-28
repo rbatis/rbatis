@@ -8,8 +8,8 @@ mod test {
     use crate::interpreter::json::{lexer, runtime};
     use crate::interpreter::json::node::Node;
     use crate::interpreter::json::lexer::parse_tokens;
-    use crate::interpreter::json::runtime::OptMap;
     use crate::utils::time_util;
+    use crate::interpreter::json::token::TokenMap;
 
     #[test]
     fn test_node_run() {
@@ -23,7 +23,7 @@ mod test {
          });
         let exec_expr = |arg: &serde_json::Value, expr: &str| -> serde_json::Value{
             println!("{}", expr.clone());
-            let box_node = lexer::parse(expr, &OptMap::new()).unwrap();
+            let box_node = lexer::parse(expr, &TokenMap::new()).unwrap();
             let v = box_node.eval(arg).unwrap();
             println!("'{}' -> {}", expr.clone(), &v);
             v
@@ -73,7 +73,7 @@ mod test {
 
     #[test]
     fn test_eval_arg() {
-        let box_node = lexer::parse("-1 == -1", &OptMap::new()).unwrap();
+        let box_node = lexer::parse("-1 == -1", &TokenMap::new()).unwrap();
         println!("{:#?}", box_node);
         let john = json!({
     });
@@ -83,7 +83,7 @@ mod test {
 
     #[test]
     fn test_mem_gc() {
-        let box_node: Node = lexer::parse("'1'+'1'", &OptMap::new()).unwrap();
+        let box_node: Node = lexer::parse("'1'+'1'", &TokenMap::new()).unwrap();
         let john = json!({
         "n":1,
         "name": "John Doe",

@@ -10,7 +10,7 @@ use serde_json::value::Value::{Null, Number};
 
 use crate::interpreter::json::eval::eval;
 use crate::interpreter::json::node::NodeType::{NArg, NBinary, NBool, NNull, NNumber, NOpt, NString};
-use crate::interpreter::json::runtime::OptMap;
+use crate::interpreter::json::token::TokenMap;
 
 #[derive(Clone, PartialEq, Debug, Serialize, Deserialize)]
 pub enum NodeType {
@@ -203,7 +203,7 @@ impl Node {
         }
     }
 
-    pub fn parse(data: &str, opt: &OptMap) -> Self {
+    pub fn parse(data: &str, opt: &TokenMap) -> Self {
         // println!("data={}", &data);
         let mut first_index = 0;
         let mut last_index = 0;
@@ -219,7 +219,7 @@ impl Node {
             return Node::new_null();
         } else if let Ok(n) = data.parse::<bool>() {
             return Node::new_bool(n);
-        } else if opt.is_opt(data) {
+        } else if opt.is_token(data) {
             return Node::new_opt(data);
         } else if first_index == 0 && last_index == (data.len() - 1) && first_index != last_index {
             let new_str = data.replace("'", "").replace("`", "");

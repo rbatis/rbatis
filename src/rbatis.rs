@@ -18,7 +18,7 @@ use crate::core::db_adapter::{DBExecResult, DBPool, DBPoolConn, DBQuery, DBTx};
 use crate::core::Error;
 use crate::core::runtime::Arc;
 use crate::core::sync::sync_map::SyncMap;
-use crate::interpreter::json::runtime::RbatisEngine;
+use crate::interpreter::json::runtime::Runtime;
 use crate::plugin::intercept::SqlIntercept;
 use crate::plugin::log::{LogPlugin, RbatisLog};
 use crate::plugin::logic_delete::{LogicDelete, RbatisLogicDeletePlugin};
@@ -34,7 +34,7 @@ pub struct Rbatis {
     // the connection pool,use OnceCell init this
     pub pool: OnceCell<DBPool>,
     // the engine run some express for example:'1+1'=2
-    pub engine: RbatisEngine,
+    pub engine: Runtime,
     //py lang
     pub py: Py,
     //tx manager
@@ -111,7 +111,7 @@ impl Rbatis {
     pub fn new_with_opt(option: RbatisOption) -> Self {
         return Self {
             pool: OnceCell::new(),
-            engine: RbatisEngine::new(),
+            engine: Runtime::new(),
             tx_manager: TxManager::new_arc(option.log_plugin.clone(), option.tx_lock_wait_timeout, option.tx_check_interval),
             page_plugin: option.page_plugin,
             sql_intercepts: option.sql_intercepts,

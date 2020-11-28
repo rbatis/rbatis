@@ -6,7 +6,7 @@ use serde_json::map::Map;
 use crate::core::convert::StmtConvert;
 use crate::core::db::DriverType;
 use crate::interpreter::json;
-use crate::interpreter::json::runtime::RbatisEngine;
+use crate::interpreter::json::runtime::Runtime;
 use crate::interpreter::sql::ast::RbatisAST;
 use crate::utils::string_util;
 
@@ -31,7 +31,7 @@ impl RbatisAST for StringNode {
     fn name() -> &'static str {
         "string"
     }
-    fn eval(&self, convert: &crate::core::db::DriverType, env: &mut Value, engine: &RbatisEngine, arg_array: &mut Vec<Value>) -> Result<String, crate::core::Error> {
+    fn eval(&self, convert: &crate::core::db::DriverType, env: &mut Value, engine: &Runtime, arg_array: &mut Vec<Value>) -> Result<String, crate::core::Error> {
         let mut result = self.value.clone();
         for (item, value) in &self.express_map {
             if value.starts_with("#") {
@@ -71,7 +71,7 @@ pub fn test_string_node() {
     let mut john = json!({
         "arg": 2,
     });
-    let mut engine = RbatisEngine::new();
+    let mut engine = Runtime::new();
     let s_node = StringNode::new("arg+1=#{arg+1}");
     let mut arg_array = vec![];
 

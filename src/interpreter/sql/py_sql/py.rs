@@ -228,7 +228,7 @@ impl Py {
 mod test {
     use crate::interpreter::sql::py_sql::py::Py;
     use crate::core::db::DriverType;
-    use crate::interpreter::json::runtime::RbatisEngine;
+    use crate::interpreter::json::runtime::Runtime;
     use crate::interpreter::sql::node::node::do_child_nodes;
 
     #[test]
@@ -298,7 +298,7 @@ mod test {
 
 
         let mut arg_array = vec![];
-        let mut engine = RbatisEngine::new();
+        let mut engine = Runtime::new();
         let mut env = json!({
         "name": "1",
         "age": 27,
@@ -338,7 +338,7 @@ mod test {
         println!("{:#?}", pys);
 
         let mut arg_array = vec![];
-        let mut engine = RbatisEngine::new();
+        let mut engine = Runtime::new();
         let r = do_child_nodes(&DriverType::Mysql, &pys, &mut env, &mut engine, &mut arg_array).unwrap();
         println!("result: {}", &r);
         println!("arg: {:?}", arg_array.clone());
