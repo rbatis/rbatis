@@ -2,7 +2,7 @@ use std::collections::HashMap;
 
 #[derive(Clone, Debug)]
 pub struct TokenMap<'a> {
-    pub all_opt: HashMap<&'a str, bool>,
+    pub all_token: HashMap<&'a str, bool>,
     pub group_token_map: HashMap<&'a str, bool>,
     pub single_token_map: HashMap<&'a str, bool>,
     //sorted
@@ -13,7 +13,7 @@ impl<'a> TokenMap<'a> {
     pub fn new() -> Self {
         let mut all = HashMap::new();
         let mut mul_ops_map = HashMap::new();
-        let mut single_opt_map = HashMap::new();
+        let mut single_token_map = HashMap::new();
 
         //all token
         let list = vec![
@@ -23,23 +23,23 @@ impl<'a> TokenMap<'a> {
             "==", "!=", ">=", "<=", "&&", "||"
         ];
 
-        //all opt map
+        //all token map
         for item in &list {
             all.insert(item.to_owned(), true);
         }
-        //single opt and mul opt
+        //single token and mul token
         for item in &list {
             if item.len() > 1 {
                 mul_ops_map.insert(item.to_owned(), true);
             } else {
-                single_opt_map.insert(item.to_owned(), true);
+                single_token_map.insert(item.to_owned(), true);
             }
         }
 
         Self {
-            all_opt: all,
+            all_token: all,
             group_token_map: mul_ops_map,
-            single_token_map: single_opt_map,
+            single_token_map: single_token_map,
             allow_calculate_token: vec!["%", "^", "*", "**", "/", "+", "-", "<=", "<", ">=", ">", "!=", "==", "&&", "||"],
         }
     }
@@ -50,8 +50,8 @@ impl<'a> TokenMap<'a> {
     }
 
     pub fn is_token(&self, arg: &str) -> bool {
-        let opt = self.all_opt.get(arg);
-        return opt.is_none() == false;
+        let token = self.all_token.get(arg);
+        return token.is_none() == false;
     }
 
     pub fn is_allow_token(&self, arg: &str) -> bool {

@@ -126,7 +126,7 @@ pub fn eval(left: &Value,
             } else if left.is_string() && right.is_string() {
                 return Result::Ok(Value::from(left.as_str().unwrap().to_owned() + right.as_str().unwrap()));
             } else {
-                return Result::Err(crate::core::Error::from("[rbatis] un support diffrent type '+' opt"));
+                return Result::Err(crate::core::Error::from("[rbatis] un support diffrent type '+' token"));
             }
         }
         "-" => {

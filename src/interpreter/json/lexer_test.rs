@@ -39,7 +39,7 @@ mod test {
         println!("result >>>>>>>>>>   =  {}", box_node.eval(&john).unwrap());
     }
 
-    //cargo test --release --package rbatis --lib interpreter::json::lexer_test::test::test_benchmark_parse --no-fail-fast -- --exact -Z unstable-options  --show-output
+    //cargo test --release --package rbatis --lib interpreter::json::lexer_test::test::test_benchmark_parse --no-fail-fast -- --exact -Z unstable-tokenions  --show-output
     #[test]
     fn test_benchmark_parse() {
         let total = 10000;
