@@ -9,7 +9,7 @@ mod test {
     use serde_json::json;
     use serde_json::Value;
 
-    use crate::interpreter::json::{parser, runtime};
+    use crate::interpreter::json::{lexer, runtime};
     use crate::interpreter::json::node::{Node, NodeType};
     use crate::interpreter::json::node::NodeType::{NNumber, NOpt};
     use crate::interpreter::json::runtime::OptMap;
@@ -18,8 +18,8 @@ mod test {
     use crate::utils::time_util;
 
     #[test]
-    fn test_parser() {
-        let box_node = parser::parse("-1 == -a", &OptMap::new()).unwrap();
+    fn test_lexer() {
+        let box_node = lexer::parse("-1 == -a", &OptMap::new()).unwrap();
         println!("{:#?}", &box_node);
         let john = json!({
         "a":1,
@@ -39,20 +39,20 @@ mod test {
         println!("result >>>>>>>>>>   =  {}", box_node.eval(&john).unwrap());
     }
 
-    //cargo test --release --package rbatis --lib interpreter::json::parser_test::test::test_benchmark_parse --no-fail-fast -- --exact -Z unstable-options  --show-output
+    //cargo test --release --package rbatis --lib interpreter::json::lexer_test::test::test_benchmark_parse --no-fail-fast -- --exact -Z unstable-options  --show-output
     #[test]
     fn test_benchmark_parse() {
         let total = 10000;
         let now = std::time::Instant::now();
         for _ in 0..total {
-            let box_node = parser::parse("1+1", &OptMap::new()).unwrap();
+            let box_node = lexer::parse("1+1", &OptMap::new()).unwrap();
         }
         now.time(total)
     }
 
     #[test]
     fn test_benchmark() {
-        let box_node = parser::parse("1+1", &OptMap::new()).unwrap();
+        let box_node = lexer::parse("1+1", &OptMap::new()).unwrap();
         let john = json!({
         "name": "John Doe",
     });

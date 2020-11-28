@@ -27,7 +27,7 @@
         let arg = json!({"a":1,"b":2,"c":"c", "d":null,});
         let exec_expr = |arg: &serde_json::Value, expr: &str| -> serde_json::Value{
             println!("{}", expr.clone());
-            let box_node = parser::parse(expr, &OptMap::new()).unwrap();
+            let box_node = lexer::parse(expr, &OptMap::new()).unwrap();
             box_node.eval(arg).unwrap()
         };
         assert_eq!(exec_expr(&arg, "d.a == null"), json!(true));

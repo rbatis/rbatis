@@ -5,7 +5,7 @@ use std::sync::RwLock;
 use serde_json::Value;
 
 use crate::interpreter::json::node::Node;
-use crate::interpreter::json::parser::parse;
+use crate::interpreter::json::lexer::parse;
 
 /// the express engine for  exe code on runtime
 #[derive(Debug)]
@@ -22,7 +22,7 @@ impl RbatisEngine {
         };
     }
 
-    ///eval express with arg value,if cache have value it will no run parser expr.
+    ///eval express with arg value,if cache have value it will no run lexer expr.
     pub fn eval(&self, expr: &str, arg: &Value) -> Result<Value, crate::core::Error> {
         let cached = self.cache_read(expr);
         if cached.is_none() {
