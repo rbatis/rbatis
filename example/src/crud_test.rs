@@ -59,11 +59,7 @@ mod test {
 // }
 
     pub async fn init_rbatis() -> Rbatis {
-                fast_log::init_log("requests.log",
-                           1000,
-                           log::Level::Info,
-                           None,
-                           true);
+        fast_log::init_log("requests.log", 1000, log::Level::Info, None, true);
         let rb = Rbatis::new();
         rb.link("mysql://root:123456@localhost:3306/test").await.unwrap();
 
@@ -278,11 +274,7 @@ mod test {
 
     #[async_std::test]
     pub async fn test_macro_select() {
-        fast_log::init_log("requests.log",
-                           1000,
-                           log::Level::Info,
-                           None,
-                           true);
+        fast_log::init_log("requests.log", 1000, log::Level::Info, None, true);
         RB.link("mysql://root:123456@localhost:3306/test").await.unwrap();
         let a = select("1").await.unwrap();
         println!("{:?}", a);
@@ -290,11 +282,7 @@ mod test {
 
     #[async_std::test]
     pub async fn test_macro_py_select() {
-                fast_log::init_log("requests.log",
-                           1000,
-                           log::Level::Info,
-                           None,
-                           true);
+        fast_log::init_log("requests.log", 1000, log::Level::Info, None, true);
         //use static ref
         RB.link("mysql://root:123456@localhost:3306/test").await.unwrap();
         let a = py_select("1").await.unwrap();
@@ -320,11 +308,7 @@ mod test {
 
     #[async_std::test]
     pub async fn test_join() {
-                fast_log::init_log("requests.log",
-                           1000,
-                           log::Level::Info,
-                           None,
-                           true);
+        fast_log::init_log("requests.log", 1000, log::Level::Info, None, true);
         RB.link("mysql://root:123456@localhost:3306/test").await.unwrap();
         let results = join_select(&RB, "test").await.unwrap();
         println!("data: {:?}", results);
@@ -352,11 +336,7 @@ mod test {
 
     #[async_std::test]
     pub async fn test_macro_py_select_page() {
-                fast_log::init_log("requests.log",
-                           1000,
-                           log::Level::Info,
-                           None,
-                           true);
+        fast_log::init_log("requests.log", 1000, log::Level::Info, None, true);
         //use static ref
         RB.link("mysql://root:123456@localhost:3306/test").await.unwrap();
         let a = py_select_page(&PageRequest::new(1, 10), "test").await.unwrap();
@@ -371,11 +351,7 @@ mod test {
 
     #[async_std::test]
     pub async fn test_macro_sql_select_page() {
-                fast_log::init_log("requests.log",
-                           1000,
-                           log::Level::Info,
-                           None,
-                           true);
+        fast_log::init_log("requests.log", 1000, log::Level::Info, None, true);
         //use static ref
         RB.link("mysql://root:123456@localhost:3306/test").await.unwrap();
         let a = sql_select_page(&PageRequest::new(1, 10), "test").await.unwrap();
@@ -398,11 +374,7 @@ mod test {
 
     #[async_std::test]
     pub async fn test_py_insert() {
-        fast_log::init_log("requests.log",
-                           1000,
-                           log::Level::Info,
-                           None,
-                           true);
+        fast_log::init_log("requests.log", 1000, log::Level::Info, None, true);
         //use static ref
         RB.link("mysql://root:123456@localhost:3306/test").await.unwrap();
         let a = py_insert(&BizActivity{
