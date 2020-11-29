@@ -189,11 +189,7 @@ rb.update_by_wrapper("", &activity, &w).await;
 
     #[async_std::test]
     pub async fn test_macro() {
-                fast_log::init_log("requests.log", 
-                           1000,
-                           log::Level::Info,
-                           None,
-                           true);
+        fast_log::init_log("requests.log", 1000, log::Level::Info, None, true);
         RB.link("mysql://root:123456@localhost:3306/test").await.unwrap();
         let a = select("1").await.unwrap();
         println!("{:?}", a);
@@ -212,11 +208,7 @@ rb.update_by_wrapper("", &activity, &w).await;
 
     #[async_std::test]
     pub async fn test_macro_py_select() {
-                fast_log::init_log("requests.log", 
-                           1000,
-                           log::Level::Info,
-                           None,
-                           true);
+        fast_log::init_log("requests.log", 1000, log::Level::Info, None, true);
         RB.link("mysql://root:123456@localhost:3306/test").await.unwrap();
         let a = py_select("1").await.unwrap();
         println!("{:?}", a);
@@ -308,11 +300,7 @@ rb.update_by_wrapper("", &activity, &w).await;
 ``` rust
  use log::{error, info, warn};
  fn  main(){
-              fast_log::init_log("requests.log", 
-                           1000,
-                           log::Level::Info,
-                           None,
-                           true);
+      fast_log::init_log("requests.log", 1000, log::Level::Info, None, true);
       info!("print data");
  }
 ```
@@ -360,11 +348,7 @@ async fn index() -> impl Responder {
 #[actix_rt::main]
 async fn main() -> std::io::Result<()> {
     //日志
-            fast_log::init_log("requests.log", 
-                           1000,
-                           log::Level::Info,
-                           None,
-                           true);
+    fast_log::init_log("requests.log", 1000, log::Level::Info, None, true);
     //链接数据库
     RB.link("mysql://root:123456@localhost:3306/test").await.unwrap();
     //http路由
