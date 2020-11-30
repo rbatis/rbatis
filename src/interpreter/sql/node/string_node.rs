@@ -15,7 +15,7 @@ use crate::utils::string_util;
 pub struct StringNode {
     pub value: String,
     //去重的，需要替换的要sql转换express map
-    pub express_map: BTreeMap<String, String>,
+    pub express_map: BTreeMap<i32, (String,String)>,
 }
 
 impl StringNode {
@@ -33,7 +33,7 @@ impl RbatisAST for StringNode {
     }
     fn eval(&self, convert: &crate::core::db::DriverType, env: &mut Value, engine: &Runtime, arg_array: &mut Vec<Value>) -> Result<String, crate::core::Error> {
         let mut result = self.value.clone();
-        for (item, value) in &self.express_map {
+        for (_,(item, value)) in &self.express_map {
             if value.starts_with("#") {
                 let item = item.as_str();
                 result = result.replace(value, convert.stmt_convert(arg_array.len()).as_str());

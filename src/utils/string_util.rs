@@ -8,7 +8,7 @@ use serde_json::Value;
 pub const LOG_SPACE: &'static str = "                                                                ";
 
 //find like #{*,*},${*,*} value *
-pub fn find_convert_string(arg: &str) -> BTreeMap<String, String> {
+pub fn find_convert_string(arg: &str) -> BTreeMap<i32, (String,String)> {
     let mut results = BTreeMap::new();
     let chars: Vec<u8> = arg.bytes().collect();
     let mut item = String::new();
@@ -27,7 +27,7 @@ pub fn find_convert_string(arg: &str) -> BTreeMap<String, String> {
         if *v == '}' as u8 && last_index != -1 {
             item = String::from_utf8(chars[(last_index + 2) as usize..index as usize].to_vec()).unwrap();
             let value = String::from_utf8(chars[last_index as usize..(index + 1) as usize].to_vec()).unwrap();
-            results.insert(item.clone(), value);
+            results.insert(index,(item.clone(), value));
             item.clear();
             last_index = -1;
         }
@@ -73,18 +73,18 @@ mod test {
 
     #[test]
     fn test_find() {
-        let sql = "select #{column} from #{table} where #{where}";
+        let sql = "update user set name=#{name}, password=#{password} ,sex=#{sex}, phone=#{phone}, delete_flag=#{flag},";
         let finds = find_convert_string(sql);
         let mut index = 0;
-        for (k, v) in &finds {
+        for (_, (k,v)) in &finds {
             if index == 0 {
-                assert_eq!(k, "column");
+                assert_eq!(k, "name");
             }
             if index == 1 {
-                assert_eq!(k, "table");
+                assert_eq!(k, "password");
             }
             if index == 2 {
-                assert_eq!(k, "where");
+                assert_eq!(k, "sex");
             }
             index += 1;
         }

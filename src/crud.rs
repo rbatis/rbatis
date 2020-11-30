@@ -696,4 +696,26 @@ mod test {
             println!("{}", serde_json::to_string(&r).unwrap());
         });
     }
+
+    #[test]
+     fn test_insert(){
+        async_std::task::block_on(async {
+            fast_log::init_log("requests.log", 1000, log::Level::Info, None, true);
+            let mut rb = Rbatis::new();
+            //设置 逻辑删除插件
+            rb.logic_plugin = Some(Box::new(RbatisLogicDeletePlugin::new("delete_flag")));
+            rb.link("mysql://root:123456@localhost:3306/test").await.unwrap();
+
+            let py_sql = r#"
+                        update user set name=#{name}, password=#{password} ,sex=#{sex}, phone=#{phone}, delete_flag=#{flag},
+                        create_datetime=current_timestamp(), update_datetime=current_timestamp() where id=#{id}
+                    "#;
+            rb.py_exec(
+                "",
+                py_sql,
+                &json!({"name":"name", "password":"ps_encode","sex": "sex", "phone": "phone", "flag":0, "id": "u.id"})
+            )
+                .await.unwrap();
+        });
+    }
 }
