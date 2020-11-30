@@ -1,4 +1,4 @@
-use std::collections::BTreeMap;
+use std::collections::{BTreeMap, HashMap};
 use std::io::Read;
 
 use serde_json::map::Map;
@@ -8,7 +8,8 @@ use serde_json::Value;
 pub const LOG_SPACE: &'static str = "                                                                ";
 
 //find like #{*,*},${*,*} value *
-pub fn find_convert_string(arg: &str) -> BTreeMap<i32, (String,String)> {
+pub fn find_convert_string(arg: &str) -> BTreeMap<i32, (String, String)> {
+    let mut cache_map = HashMap::new();
     let mut results = BTreeMap::new();
     let chars: Vec<u8> = arg.bytes().collect();
     let mut item = String::new();
@@ -26,8 +27,14 @@ pub fn find_convert_string(arg: &str) -> BTreeMap<i32, (String,String)> {
         }
         if *v == '}' as u8 && last_index != -1 {
             item = String::from_utf8(chars[(last_index + 2) as usize..index as usize].to_vec()).unwrap();
+            if cache_map.get(&item).is_some() {
+                item.clear();
+                last_index = -1;
+                continue;
+            }
             let value = String::from_utf8(chars[last_index as usize..(index + 1) as usize].to_vec()).unwrap();
-            results.insert(index,(item.clone(), value));
+            results.insert(index, (item.clone(), value.clone()));
+            cache_map.insert(item.clone(), value);
             item.clear();
             last_index = -1;
         }
@@ -73,10 +80,11 @@ mod test {
 
     #[test]
     fn test_find() {
-        let sql = "update user set name=#{name}, password=#{password} ,sex=#{sex}, phone=#{phone}, delete_flag=#{flag},";
+        let sql = "update user set name=#{name}, password=#{password} ,sex=#{sex}, phone=#{phone}, delete_flag=#{flag}, #{name}";
         let finds = find_convert_string(sql);
+        assert_eq!(finds.len(), 5);
         let mut index = 0;
-        for (_, (k,v)) in &finds {
+        for (_, (k, v)) in &finds {
             if index == 0 {
                 assert_eq!(k, "name");
             }
@@ -85,6 +93,12 @@ mod test {
             }
             if index == 2 {
                 assert_eq!(k, "sex");
+            }
+            if index == 3 {
+                assert_eq!(k, "phone");
+            }
+            if index == 4 {
+                assert_eq!(k, "flag");
             }
             index += 1;
         }
