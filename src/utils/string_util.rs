@@ -1,4 +1,4 @@
-use std::collections::{BTreeMap, HashMap};
+use std::collections::{BTreeMap, HashSet};
 use std::io::Read;
 
 use serde_json::map::Map;
@@ -8,8 +8,8 @@ use serde_json::Value;
 pub const LOG_SPACE: &'static str = "                                                                ";
 
 //find like #{*,*},${*,*} value *
-pub fn find_convert_string(arg: &str) -> BTreeMap<i32, (String, String)> {
-    let mut cache_map = HashMap::new();
+pub fn find_convert_string(arg: &str) -> Vec<(String, String)> {
+    let mut cache_set = HashSet::new();
     let mut results = BTreeMap::new();
     let chars: Vec<u8> = arg.bytes().collect();
     let mut item = String::new();
@@ -27,19 +27,24 @@ pub fn find_convert_string(arg: &str) -> BTreeMap<i32, (String, String)> {
         }
         if *v == '}' as u8 && last_index != -1 {
             item = String::from_utf8(chars[(last_index + 2) as usize..index as usize].to_vec()).unwrap();
-            if cache_map.get(&item).is_some() {
+            if cache_set.get(&item).is_some() {
                 item.clear();
                 last_index = -1;
                 continue;
             }
             let value = String::from_utf8(chars[last_index as usize..(index + 1) as usize].to_vec()).unwrap();
             results.insert(index, (item.clone(), value.clone()));
-            cache_map.insert(item.clone(), value);
+            cache_set.insert(item.clone());
             item.clear();
             last_index = -1;
         }
     }
-    return results;
+
+    let mut array =vec![];
+    for (_,(k,v)) in results {
+        array.push((k,v))
+    }
+    return array;
 }
 
 
@@ -84,7 +89,7 @@ mod test {
         let finds = find_convert_string(sql);
         assert_eq!(finds.len(), 5);
         let mut index = 0;
-        for (_, (k, v)) in &finds {
+        for (k, v) in &finds {
             if index == 0 {
                 assert_eq!(k, "name");
             }
