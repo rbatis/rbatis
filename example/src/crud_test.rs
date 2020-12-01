@@ -358,19 +358,14 @@ mod test {
         println!("{:?}", a);
     }
 
-    #[py_sql(RB, "insert into biz_activity
-                  (
-                  trim ',': for key,item in arg:
+    #[py_sql(RB, "insert into biz_activity(
+                  trim ',': for key,item in arg: if item != null:
                      ${key},
                   ) VALUES (
-                  trim ',': for v in arg:
+                  trim ',': for v in arg: if v != null:
                       #{v},
                   )   ")]
     fn py_insert(arg: &BizActivity) -> DBExecResult {}
-
-
-
-
 
     #[async_std::test]
     pub async fn test_py_insert() {
