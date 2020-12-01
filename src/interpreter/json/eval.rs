@@ -5,10 +5,11 @@ use std::time::SystemTime;
 use chrono::Local;
 use serde_json::{json, Map};
 use serde_json::Value;
+use crate::core::Result;
 
 pub fn eval(left: &Value,
             right: &Value,
-            op: &str) -> Result<Value, crate::core::Error> {
+            op: &str) -> Result<Value> {
     match op {
         "&&" => {
             return Result::Ok(Value::Bool(left.as_bool().unwrap() && right.as_bool().unwrap()));
