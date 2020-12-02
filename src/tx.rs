@@ -78,7 +78,7 @@ impl TxManager {
     }
 
     ///polling check tx alive
-    fn polling_check(manager: Arc<TxManager>) {
+    fn polling_check(manager: Arc<Self>) {
         crate::core::runtime::spawn(async move {
             loop {
                 if manager.get_alive().await.deref() == &false {
