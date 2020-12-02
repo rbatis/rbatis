@@ -43,7 +43,7 @@ impl TxManager {
             log_plugin: Some(plugin),
         };
         let arc = Arc::new(s);
-        TxManager::polling_check(&arc.clone());
+        TxManager::polling_check(arc.clone());
         arc
     }
 
@@ -78,14 +78,7 @@ impl TxManager {
     }
 
     ///polling check tx alive
-    fn polling_check(manager: &Arc<TxManager>) {
-        let is_alive = crate::core::runtime::block_on(async {
-            manager.get_alive().await.eq(&true)
-        });
-        if is_alive {
-            return;
-        }
-        let manager = manager.clone();
+    fn polling_check(manager: Arc<TxManager>) {
         crate::core::runtime::spawn(async move {
             loop {
                 if manager.get_alive().await.deref() == &false {
