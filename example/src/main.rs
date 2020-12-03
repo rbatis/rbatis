@@ -257,6 +257,7 @@ mod test {
         fast_log::init_log("requests.log", 1000, log::Level::Info, None, true);
         let rb: Rbatis = Rbatis::new();
         rb.link(MYSQL_URL).await.unwrap();
+        //let (tx_id,_)=rb.begin_tx().await.unwrap();//also you can use begin_tx()
         let tx_id = "tx:1";
         rb.begin(tx_id).await.unwrap();
         let v: serde_json::Value = rb.fetch(tx_id, "SELECT count(1) FROM biz_activity;").await.unwrap();
