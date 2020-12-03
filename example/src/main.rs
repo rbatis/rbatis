@@ -14,7 +14,6 @@ use serde::{Deserialize, Serialize};
 use serde_json::{json, Value};
 use tide::Request;
 use rbatis::rbatis::Rbatis;
-
 mod crud_test;
 
 ///数据库表模型,支持BigDecimal ,DateTime ,rust基本类型（int,float,uint,string,Vec,Array）
@@ -257,12 +256,12 @@ mod test {
         fast_log::init_log("requests.log", 1000, log::Level::Info, None, true);
         let rb: Rbatis = Rbatis::new();
         rb.link(MYSQL_URL).await.unwrap();
-        //let (tx_id,_)=rb.begin_tx().await.unwrap();//also you can use begin_tx()
-        let tx_id = "tx:1";
-        rb.begin(tx_id).await.unwrap();
-        let v: serde_json::Value = rb.fetch(tx_id, "SELECT count(1) FROM biz_activity;").await.unwrap();
+        //let (context_id,_)=rb.begin_tx().await.unwrap();//also you can use begin_tx()
+        let context_id = "tx:1";
+        rb.begin(context_id).await.unwrap();
+        let v: serde_json::Value = rb.fetch(context_id, "SELECT count(1) FROM biz_activity;").await.unwrap();
         println!("{}", v.clone());
-        rb.commit(tx_id).await.unwrap();
+        rb.commit(context_id).await.unwrap();
     }
 
 
@@ -270,15 +269,29 @@ mod test {
     #[async_std::test]
     pub async fn test_tx_manager() {
         fast_log::init_log("requests.log", 1000, log::Level::Info, None, true);
-
         let rb: Rbatis = Rbatis::new();
         rb.link(MYSQL_URL).await.unwrap();
-        let tx_id = "1";
-        rb.begin(tx_id).await.unwrap();
-        let v: serde_json::Value = rb.fetch(tx_id, "SELECT count(1) FROM biz_activity;").await.unwrap();
+        let tx_id=rb.begin_tx().await.unwrap();
+        let v: serde_json::Value = rb.fetch(&tx_id, "SELECT count(1) FROM biz_activity;").await.unwrap();
         println!("{}", v.clone());
         drop(rb);
         sleep(Duration::from_secs(10));
+    }
+
+
+    #[py_sql(rb, "select * from biz_activity")]
+    async fn py_select_data(rb:&Rbatis,ctx_id:&str) -> Result<Vec<BizActivity>,rbatis::core::Error> {}
+
+    //示例-Rbatis使用宏事务
+    #[async_std::test]
+    pub async fn test_tx_py() {
+        fast_log::init_log("requests.log", 1000, log::Level::Info, None, true);
+        let rb: Rbatis = Rbatis::new();
+        rb.link(MYSQL_URL).await.unwrap();
+
+        let tx_id=rb.begin_tx().await.unwrap();
+        let v = py_select_data(&rb,&tx_id).await.unwrap();
+        println!("{:?}", v);
     }
 
     /// 示例-Rbatis使用web框架Tide、async_std
