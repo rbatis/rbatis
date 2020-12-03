@@ -279,7 +279,7 @@ mod test {
     }
 
 
-    /// tx_id  is => context_id
+    //tx_id: is context_id
     #[py_sql(rb, "select * from biz_activity")]
     async fn py_select_data(rb:&Rbatis,tx_id:&str) -> Result<Vec<BizActivity>,rbatis::core::Error> {}
 
