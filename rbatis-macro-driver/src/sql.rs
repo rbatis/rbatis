@@ -35,29 +35,29 @@ pub(crate) fn impl_macro_sql(target_fn: &ItemFn, args: &AttributeArgs) -> TokenS
         call_method = quote! {fetch_page};
     }
     //append all args
-    let (sql_args_gen, tx_id_ident) = filter_args_tx_id(&rbatis_name, &get_fn_args(target_fn), &[page_req_str]);
+    let (sql_args_gen, context_id_ident) = filter_args_context_id(&rbatis_name, &get_fn_args(target_fn), &[page_req_str]);
     //gen rust code templete
     let gen_token_temple = quote! {
        pub async fn #func_name_ident(#func_args_stream) -> #return_ty{
            let mut rb_args =vec![];
            #sql_args_gen
-           return #rbatis_ident.#call_method(#tx_id_ident,#sql_ident,&rb_args #page_req).await;
+           return #rbatis_ident.#call_method(#context_id_ident,#sql_ident,&rb_args #page_req).await;
        }
     };
     return gen_token_temple.into();
 }
 
-fn filter_args_tx_id(rbatis_name: &str, fn_arg_name_vec: &Vec<String>, skip_names: &[String]) -> (proc_macro2::TokenStream, proc_macro2::TokenStream) {
+fn filter_args_context_id(rbatis_name: &str, fn_arg_name_vec: &Vec<String>, skip_names: &[String]) -> (proc_macro2::TokenStream, proc_macro2::TokenStream) {
     let mut sql_args_gen = quote! {};
-    let mut tx_id_ident = quote! {""};
+    let mut context_id_ident = quote! {""};
     for item in fn_arg_name_vec {
         let item_ident = Ident::new(&item, Span::call_site());
         let item_ident_name = item_ident.to_string();
         if item.eq(&rbatis_name) {
             continue;
         }
-        if item.eq("tx_id") {
-            tx_id_ident = item_ident.to_token_stream();
+        if item.eq("ctx_id") ||item.eq("context_id") || item.eq("tx_id") {
+            context_id_ident = item_ident.to_token_stream();
             continue;
         }
         let mut do_continue = false;
@@ -75,5 +75,5 @@ fn filter_args_tx_id(rbatis_name: &str, fn_arg_name_vec: &Vec<String>, skip_name
             rb_args.push(serde_json::to_value(#item_ident).unwrap_or(serde_json::Value::Null));
        };
     }
-    (sql_args_gen, tx_id_ident)
+    (sql_args_gen, context_id_ident)
 }

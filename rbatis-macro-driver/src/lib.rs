@@ -44,7 +44,7 @@ pub fn sql(args: TokenStream, func: TokenStream) -> TokenStream {
 /// for example:
 ///
 ///
-///  also,you can use arg  tx_id:&str,RB:&Rbatis
+///  also,you can use arg  context_id:&str,RB:&Rbatis
 ///     #[py_sql(RB, "select * from biz_activity where id = #{name}
 ///                   if name != '':
 ///                     and name=#{name}")]

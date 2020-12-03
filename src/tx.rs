@@ -89,11 +89,11 @@ impl TxManager {
                         rollback_ids.push(k.to_string());
                     }
                     drop(m);
-                    for tx_id in &rollback_ids {
+                    for context_id in &rollback_ids {
                         if manager.is_enable_log() {
-                            manager.do_log(&format!("[rbatis] rollback tx_id:{},Because the manager exits", tx_id));
+                            manager.do_log(&format!("[rbatis] rollback context_id:{},Because the manager exits", context_id));
                         }
-                        manager.rollback(tx_id).await;
+                        manager.rollback(context_id).await;
                     }
                     //notice close
                     manager.close_sender.send(true);
@@ -123,11 +123,11 @@ impl TxManager {
                 drop(m);
                 match &mut need_rollback {
                     Some(v) => {
-                        for tx_id in v {
+                        for context_id in v {
                             if manager.is_enable_log() {
-                                manager.do_log(&format!("[rbatis] rollback tx_id:{},out of time:{:?}", tx_id, &manager.tx_lock_wait_timeout));
+                                manager.do_log(&format!("[rbatis] rollback context_id:{},out of time:{:?}", context_id, &manager.tx_lock_wait_timeout));
                             }
-                            manager.rollback(tx_id).await;
+                            manager.rollback(context_id).await;
                         }
                         //shrink_to_fit
                         manager.tx_context.shrink_to_fit().await;
@@ -140,40 +140,40 @@ impl TxManager {
     }
 
 
-    pub async fn get_mut<'a>(&'a self, tx_id: &str) -> Option<RefMut<'a, String, (DBTx, TxState)>> {
-        self.tx_context.get_mut(tx_id).await
+    pub async fn get_mut<'a>(&'a self, context_id: &str) -> Option<RefMut<'a, String, (DBTx, TxState)>> {
+        self.tx_context.get_mut(context_id).await
     }
 
     /// begin tx,for new conn
-    pub async fn begin(&self, new_tx_id: &str, pool: &DBPool) -> Result<u64, crate::core::Error> {
-        if new_tx_id.is_empty() {
-            return Err(crate::core::Error::from("[rbatis] tx_id can not be empty"));
+    pub async fn begin(&self, new_context_id: &str, pool: &DBPool) -> Result<String, crate::core::Error> {
+        if new_context_id.is_empty() {
+            return Err(crate::core::Error::from("[rbatis] context_id can not be empty"));
         }
         let conn: DBTx = pool.begin().await?;
         //send tx to context
-        self.tx_context.insert(new_tx_id.to_string(), (conn, TxState::StateBegin(Instant::now()))).await;
-        return Ok(1);
+        self.tx_context.insert(new_context_id.to_string(), (conn, TxState::StateBegin(Instant::now()))).await;
+        return Ok(new_context_id.to_string());
     }
 
     /// commit tx,and return conn
-    pub async fn commit(&self, tx_id: &str) -> Result<u64, crate::core::Error> {
-        let tx_op = self.tx_context.remove(tx_id).await;
+    pub async fn commit(&self, context_id: &str) -> Result<String, crate::core::Error> {
+        let tx_op = self.tx_context.remove(context_id).await;
         if tx_op.is_none() {
-            return Err(crate::core::Error::from(format!("[rbatis] tx:{} not exist！", tx_id)));
+            return Err(crate::core::Error::from(format!("[rbatis] tx:{} not exist！", context_id)));
         }
         let (mut tx, state): (DBTx, TxState) = tx_op.unwrap();
         let result = tx.commit().await?;
-        return Ok(1);
+        return Ok(context_id.to_string());
     }
 
     /// rollback tx,and return conn
-    pub async fn rollback(&self, tx_id: &str) -> Result<u64, crate::core::Error> {
-        let tx_op = self.tx_context.remove(tx_id).await;
+    pub async fn rollback(&self, context_id: &str) -> Result<String, crate::core::Error> {
+        let tx_op = self.tx_context.remove(context_id).await;
         if tx_op.is_none() {
-            return Err(crate::core::Error::from(format!("[rbatis] tx:{} not exist！", tx_id)));
+            return Err(crate::core::Error::from(format!("[rbatis] tx:{} not exist！", context_id)));
         }
         let (tx, state): (DBTx, TxState) = tx_op.unwrap();
         let result = tx.rollback().await?;
-        return Ok(1);
+        return Ok(context_id.to_string());
     }
 }
