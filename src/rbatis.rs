@@ -266,7 +266,7 @@ impl Rbatis {
         if context_id.starts_with("tx:") {
             let conn = self.tx_manager.get_mut(context_id).await;
             if conn.is_none() {
-                return Err(Error::from(format!("[rbatis] tx:{} not exist！", context_id)));
+                return Err(Error::from(format!("[rbatis] transaction:{} not exist！", context_id)));
             }
             let mut conn = conn.unwrap();
             let (data, num) = conn.value_mut().0.fetch(sql.as_str()).await?;
@@ -299,7 +299,7 @@ impl Rbatis {
         if context_id.starts_with("tx:") {
             let conn = self.tx_manager.get_mut(context_id).await;
             if conn.is_none() {
-                return Err(Error::from(format!("[rbatis] tx:{} not exist！", context_id)));
+                return Err(Error::from(format!("[rbatis] transaction:{} not exist！", context_id)));
             }
             let mut conn = conn.unwrap();
             data = conn.value_mut().0.execute(&sql).await?;
@@ -342,7 +342,7 @@ impl Rbatis {
             let q: DBQuery = self.bind_arg(&sql, &args)?;
             let conn = self.tx_manager.get_mut(context_id).await;
             if conn.is_none() {
-                return Err(Error::from(format!("[rbatis] tx:{} not exist！", context_id)));
+                return Err(Error::from(format!("[rbatis] transaction:{} not exist！", context_id)));
             }
             let mut conn = conn.unwrap();
             let (result, num) = conn.value_mut().0.fetch_parperd(q).await?;
@@ -378,7 +378,7 @@ impl Rbatis {
             let q: DBQuery = self.bind_arg(&sql, &args)?;
             let conn = self.tx_manager.get_mut(context_id).await;
             if conn.is_none() {
-                return Err(Error::from(format!("[rbatis] tx:{} not exist！", context_id)));
+                return Err(Error::from(format!("[rbatis] transaction:{} not exist！", context_id)));
             }
             let mut conn = conn.unwrap();
             result = conn.value_mut().0.exec_prepare(q).await;
