@@ -69,11 +69,13 @@ impl TxManager {
     }
 
     fn do_log(&self, arg: &str) {
-        match &self.log_plugin {
-            Some(v) => {
-                v.do_log(arg);
+        if self.is_enable_log(){
+            match &self.log_plugin {
+                Some(v) => {
+                    v.do_log(arg);
+                }
+                _ => {}
             }
-            _ => {}
         }
     }
 
@@ -152,6 +154,9 @@ impl TxManager {
         let conn: DBTx = pool.begin().await?;
         //send tx to context
         self.tx_context.insert(new_context_id.to_string(), (conn, TxState::StateBegin(Instant::now()))).await;
+        if self.is_enable_log() {
+            self.do_log(&format!("[rbatis] [{}] Begin", new_context_id));
+        }
         return Ok(new_context_id.to_string());
     }
 
@@ -163,6 +168,9 @@ impl TxManager {
         }
         let (mut tx, state): (DBTx, TxState) = tx_op.unwrap();
         let result = tx.commit().await?;
+        if self.is_enable_log() {
+            self.do_log(&format!("[rbatis] [{}] Commit", context_id));
+        }
         return Ok(context_id.to_string());
     }
 
@@ -174,6 +182,46 @@ impl TxManager {
         }
         let (tx, state): (DBTx, TxState) = tx_op.unwrap();
         let result = tx.rollback().await?;
+        if self.is_enable_log() {
+            self.do_log(&format!("[rbatis] [{}] Rollback", context_id));
+        }
         return Ok(context_id.to_string());
+    }
+}
+
+/// the TxGuard just like an  Lock Guard,
+/// if TxGuard Drop, this tx will be commit or rollback
+pub struct TxGuard {
+    pub tx_id: String,
+    pub is_drop_commit: bool,
+    pub manager: Option<Arc<TxManager>>,
+}
+
+impl TxGuard {
+    pub fn new(tx_id: &str, is_drop_commit: bool, manager: Arc<TxManager>) -> Self{
+        Self{
+            tx_id: tx_id.to_string(),
+            is_drop_commit,
+            manager: Some(manager)
+        }
+    }
+}
+
+impl Drop for TxGuard {
+    fn drop(&mut self) {
+        if self.manager.is_none() {
+            return;
+        }
+        let tx_id = self.tx_id.clone();
+        let is_drop_commit = self.is_drop_commit;
+        let manager = self.manager.take().unwrap();
+        crate::core::runtime::spawn(async move {
+            if is_drop_commit {
+                manager.commit(&tx_id).await;
+            } else {
+                manager.rollback(&tx_id).await;
+            }
+            drop(manager);
+        });
     }
 }

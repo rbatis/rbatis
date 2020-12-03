@@ -14,6 +14,7 @@ use serde::{Deserialize, Serialize};
 use serde_json::{json, Value};
 use tide::Request;
 use rbatis::rbatis::Rbatis;
+
 mod crud_test;
 
 ///数据库表模型,支持BigDecimal ,DateTime ,rust基本类型（int,float,uint,string,Vec,Array）
@@ -62,7 +63,7 @@ async fn main() {
         if v.is_ok() {
             Ok(json!(v.unwrap()).to_string())
         } else {
-            Ok(format!("{}",v.err().unwrap()))
+            Ok(format!("{}", v.err().unwrap()))
         }
     });
     //app.at("/").get(|_| async { Ok("Hello, world!") });
@@ -267,21 +268,19 @@ mod test {
 
     //示例-Rbatis使用事务
     #[async_std::test]
-    pub async fn test_tx_manager() {
+    pub async fn test_tx_commit() {
         fast_log::init_log("requests.log", 1000, log::Level::Info, None, true);
         let rb: Rbatis = Rbatis::new();
         rb.link(MYSQL_URL).await.unwrap();
-        let tx_id=rb.begin_tx().await.unwrap();
+        let tx_id = rb.begin_tx().await.unwrap();
         let v: serde_json::Value = rb.fetch(&tx_id, "SELECT count(1) FROM biz_activity;").await.unwrap();
         println!("{}", v.clone());
-        drop(rb);
-        sleep(Duration::from_secs(10));
+        rb.commit(&tx_id).await.unwrap();
     }
-
 
     //tx_id: is context_id
     #[py_sql(rb, "select * from biz_activity")]
-    async fn py_select_data(rb:&Rbatis,tx_id:&str) -> Result<Vec<BizActivity>,rbatis::core::Error> {}
+    async fn py_select_data(rb: &Rbatis, tx_id: &str) -> Result<Vec<BizActivity>, rbatis::core::Error> {}
 
     //示例-Rbatis使用宏事务
     #[async_std::test]
@@ -290,10 +289,26 @@ mod test {
         let rb: Rbatis = Rbatis::new();
         rb.link(MYSQL_URL).await.unwrap();
 
-        let tx_id=rb.begin_tx().await.unwrap();
-        let v = py_select_data(&rb,&tx_id).await.unwrap();
+        let tx_id = rb.begin_tx().await.unwrap();
+        let v = py_select_data(&rb, &tx_id).await.unwrap();
         println!("{:?}", v);
+        rb.commit(&tx_id).await.unwrap();
     }
+
+    //示例-Rbatis使用事务,类似golang defer，守卫如果被回收则 释放事务
+    #[async_std::test]
+    pub async fn test_tx_commit_defer() {
+        fast_log::init_log("requests.log", 1000, log::Level::Info, None, true);
+        let rb: Rbatis = Rbatis::new();
+        rb.link(MYSQL_URL).await.unwrap();
+        let guard = rb.begin_tx_defer(true).await.unwrap();
+        let v: serde_json::Value = rb.fetch(&guard.tx_id, "SELECT count(1) FROM biz_activity;").await.unwrap();
+        // tx will be commit
+        drop(guard);
+        println!("{}", v.clone());
+        sleep(Duration::from_secs(1));
+    }
+
 
     /// 示例-Rbatis使用web框架Tide、async_std
     #[async_std::test]
@@ -372,10 +387,10 @@ mod test {
     pub async fn test_drop_rb() {
         fast_log::init_log("requests.log", 1000, log::Level::Info, None, true);
 
-        let time=std::time::Instant::now();
+        let time = std::time::Instant::now();
         let rb = Rbatis::new();
         rb.link(MYSQL_URL).await.unwrap();
         drop(rb);
-        println!("drop RB use:{:?}",&time.elapsed());
+        println!("drop RB use:{:?}", &time.elapsed());
     }
 }
