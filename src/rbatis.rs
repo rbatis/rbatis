@@ -208,7 +208,7 @@ impl Rbatis {
             return Err(Error::from("[rbatis] context_id can not be empty"));
         }
         if !context_id.starts_with("tx:") {
-            return Err(Error::from(format!("[rbatis] context_id: {}  must be start with 'tx', for example: tx:{}", context_id, context_id)));
+            return Err(Error::from(format!("[rbatis] context_id: {}  must be start with 'tx:', for example: tx:{}", context_id, context_id)));
         }
         let result = self.tx_manager.begin(context_id, self.get_pool()?).await?;
         if self.log_plugin.is_enable() {
@@ -223,7 +223,7 @@ impl Rbatis {
             return Err(Error::from("[rbatis] context_id can not be empty"));
         }
         if !context_id.starts_with("tx:") {
-            return Err(Error::from(format!("[rbatis] context_id: {} must be start with 'tx', for example: tx:{}", context_id, context_id)));
+            return Err(Error::from(format!("[rbatis] context_id: {} must be start with 'tx:', for example: tx:{}", context_id, context_id)));
         }
         let result = self.tx_manager.commit(context_id).await?;
         if self.log_plugin.is_enable() {
@@ -238,7 +238,7 @@ impl Rbatis {
             return Err(Error::from("[rbatis] context_id can not be empty"));
         }
         if !context_id.starts_with("tx:") {
-            return Err(Error::from(format!("[rbatis] context_id: {} must be start with 'tx', for example: tx:{}", context_id, context_id)));
+            return Err(Error::from(format!("[rbatis] context_id: {} must be start with 'tx:', for example: tx:{}", context_id, context_id)));
         }
         let result = self.tx_manager.rollback(context_id).await?;
         if self.log_plugin.is_enable() {
