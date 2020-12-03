@@ -104,6 +104,7 @@ impl Default for RbatisOption {
 }
 
 impl Rbatis {
+    ///create an Rbatis
     pub fn new() -> Self {
         return Self::new_with_opt(RbatisOption::default());
     }
@@ -197,6 +198,7 @@ impl Rbatis {
     }
 
     /// begin tx,for new conn,return (String(context_id/tx_id),u64)
+    /// tx_id must be 'tx:'+id,this method default is 'tx:'+uuid
     pub async fn begin_tx(&self) -> Result<String, Error> {
         let new_context_id = format!("tx:{}", Uuid::new_v4().to_string());
         return Ok(self.begin(&new_context_id).await?);
@@ -313,6 +315,7 @@ impl Rbatis {
     }
 
 
+    /// bind arg into DBQuery
     fn bind_arg<'arg>(&self, sql: &'arg str, arg: &Vec<serde_json::Value>) -> Result<DBQuery<'arg>, Error> {
         let mut q: DBQuery = self.get_pool()?.make_query(sql)?;
         for x in arg {
@@ -406,6 +409,7 @@ impl Rbatis {
         self.exec_prepare(context_id, w.sql.as_str(), &w.args).await
     }
 
+    /// py str into py ast,run get sql,arg result
     fn py_to_sql(&self, py: &str, arg: &serde_json::Value) -> Result<(String, Vec<serde_json::Value>), Error> {
         let nodes = self.py.parse_and_cache(py)?;
         let mut arg_array = vec![];
