@@ -332,7 +332,7 @@ impl Rbatis {
             item.do_intercept(self, &mut sql, &mut args, true);
         }
         if self.log_plugin.is_enable() {
-            self.log_plugin.do_log(&format!("[rbatis] [{}] Query ==> {}\n{}[rbatis] [{}] Args ==> {}", context_id, &sql, string_util::LOG_SPACE, context_id, serde_json::Value::Array(args.clone()).to_string()));
+            self.log_plugin.do_log(&format!("[rbatis] [{}] Query ==> {}\n{}[rbatis] [{}] Args  ==> {}", context_id, &sql, string_util::LOG_SPACE, context_id, serde_json::Value::Array(args.clone()).to_string()));
         }
         let result_data;
         let mut return_num = 0;
@@ -369,7 +369,7 @@ impl Rbatis {
             item.do_intercept(self, &mut sql, &mut args, true);
         }
         if self.log_plugin.is_enable() {
-            self.log_plugin.do_log(&format!("[rbatis] [{}] Exec ==> {}\n{}[rbatis] [{}] Args ==> {}", context_id, &sql, string_util::LOG_SPACE, context_id, serde_json::Value::Array(args.clone()).to_string()));
+            self.log_plugin.do_log(&format!("[rbatis] [{}] Exec  ==> {}\n{}[rbatis] [{}] Args  ==> {}", context_id, &sql, string_util::LOG_SPACE, context_id, serde_json::Value::Array(args.clone()).to_string()));
         }
         let result;
         if context_id.starts_with("tx:") {
