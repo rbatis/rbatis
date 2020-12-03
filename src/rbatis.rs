@@ -24,7 +24,7 @@ use crate::plugin::log::{LogPlugin, RbatisLog};
 use crate::plugin::logic_delete::{LogicDelete, RbatisLogicDeletePlugin};
 use crate::plugin::page::{IPage, IPageRequest, Page, PagePlugin, RbatisPagePlugin};
 use crate::sql::PageLimit;
-use crate::tx::{TxManager, TxState};
+use crate::tx::{TxManager, TxState, TxGuard};
 use crate::utils::error_util::ToResult;
 use crate::utils::string_util;
 use crate::wrapper::Wrapper;
@@ -197,6 +197,14 @@ impl Rbatis {
         Ok(pool.driver_type)
     }
 
+
+    /// begin tx,if TxGuard Drop, tx will be commit(is_drop_commit==true) or rollback(is_drop_commit==false)
+    pub async fn begin_tx_defer(&self, drop_commit: bool) -> Result<TxGuard, Error> {
+        let tx_id = self.begin_tx().await?;
+        let guard = TxGuard::new(&tx_id, drop_commit, self.tx_manager.clone());
+        return Ok(guard);
+    }
+
     /// begin tx,for new conn,return (String(context_id/tx_id),u64)
     /// tx_id must be 'tx:'+id,this method default is 'tx:'+uuid
     pub async fn begin_tx(&self) -> Result<String, Error> {
@@ -213,9 +221,6 @@ impl Rbatis {
             return Err(Error::from(format!("[rbatis] context_id: {}  must be start with 'tx:', for example: tx:{}", context_id, context_id)));
         }
         let result = self.tx_manager.begin(context_id, self.get_pool()?).await?;
-        if self.log_plugin.is_enable() {
-            self.log_plugin.do_log(&format!("[rbatis] [{}] Begin", context_id));
-        }
         return Ok(result);
     }
 
@@ -228,9 +233,6 @@ impl Rbatis {
             return Err(Error::from(format!("[rbatis] context_id: {} must be start with 'tx:', for example: tx:{}", context_id, context_id)));
         }
         let result = self.tx_manager.commit(context_id).await?;
-        if self.log_plugin.is_enable() {
-            self.log_plugin.do_log(&format!("[rbatis] [{}] Commit", context_id));
-        }
         return Ok(result);
     }
 
@@ -243,9 +245,6 @@ impl Rbatis {
             return Err(Error::from(format!("[rbatis] context_id: {} must be start with 'tx:', for example: tx:{}", context_id, context_id)));
         }
         let result = self.tx_manager.rollback(context_id).await?;
-        if self.log_plugin.is_enable() {
-            self.log_plugin.do_log(&format!("[rbatis] [{}] Rollback", context_id));
-        }
         return Ok(result);
     }
 
