@@ -301,13 +301,16 @@ mod test {
         fast_log::init_log("requests.log", 1000, log::Level::Info, None, true);
         let rb: Rbatis = Rbatis::new();
         rb.link(MYSQL_URL).await.unwrap();
-        let guard = rb.begin_tx_defer(true).await.unwrap();
-        let v: serde_json::Value = rb.fetch(&guard.tx_id, "SELECT count(1) FROM biz_activity;").await.unwrap();
-        // tx will be commit
-        drop(guard);
-        println!("{}", v.clone());
-        sleep(Duration::from_secs(1));
+        forget_commit(&rb).await.unwrap();
     }
+
+    pub async fn forget_commit(rb:&Rbatis) -> rbatis::core::Result<serde_json::Value>{
+        // tx will be commit.when func end
+        let guard = rb.begin_tx_defer(true).await?;
+        let v: serde_json::Value = rb.fetch(&guard.tx_id, "SELECT count(1) FROM biz_activity;").await?;
+        return Ok(v);
+    }
+
 
 
     /// 示例-Rbatis使用web框架Tide、async_std
