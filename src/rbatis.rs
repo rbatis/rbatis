@@ -28,6 +28,7 @@ use crate::tx::{TxManager, TxState};
 use crate::utils::error_util::ToResult;
 use crate::utils::string_util;
 use crate::wrapper::Wrapper;
+use uuid::Uuid;
 
 /// rbatis engine
 pub struct Rbatis {
@@ -193,6 +194,12 @@ impl Rbatis {
     pub fn driver_type(&self) -> Result<DriverType, crate::core::Error> {
         let pool = self.get_pool()?;
         Ok(pool.driver_type)
+    }
+
+    /// begin tx,for new conn,return (tx_id,u64)
+    pub async fn begin_tx(&self) -> Result<(String,u64), crate::core::Error> {
+        let new_tx_id = format!("tx:{}",Uuid::new_v4().to_string());
+        return Ok((new_tx_id.clone(),self.begin(&new_tx_id).await?));
     }
 
     /// begin tx,for new conn
