@@ -279,8 +279,9 @@ mod test {
     }
 
 
+    /// tx_id  is => context_id
     #[py_sql(rb, "select * from biz_activity")]
-    async fn py_select_data(rb:&Rbatis,ctx_id:&str) -> Result<Vec<BizActivity>,rbatis::core::Error> {}
+    async fn py_select_data(rb:&Rbatis,tx_id:&str) -> Result<Vec<BizActivity>,rbatis::core::Error> {}
 
     //示例-Rbatis使用宏事务
     #[async_std::test]
