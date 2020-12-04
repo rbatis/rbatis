@@ -488,9 +488,13 @@ impl DBConnectOption {
         conn_opt.log_statements(log::LevelFilter::Off);
         return Ok(DBConnectOption {
             driver_type: DriverType::Mysql,
+            #[cfg(feature = "mysql")]
             mysql: Some(conn_opt),
+            #[cfg(feature = "postgres")]
             postgres: None,
+            #[cfg(feature = "sqlite")]
             sqlite: None,
+            #[cfg(feature = "mssql")]
             mssql: None,
         });
     }
@@ -501,9 +505,13 @@ impl DBConnectOption {
         conn_opt.log_statements(log::LevelFilter::Off);
         return Ok(Self {
             driver_type: DriverType::Postgres,
+            #[cfg(feature = "mysql")]
             mysql: None,
+            #[cfg(feature = "postgres")]
             postgres: Some(conn_opt),
+            #[cfg(feature = "sqlite")]
             sqlite: None,
+            #[cfg(feature = "mssql")]
             mssql: None,
         });
     }
@@ -515,9 +523,13 @@ impl DBConnectOption {
         conn_opt.log_statements(log::LevelFilter::Off);
         return Ok(Self {
             driver_type: DriverType::Sqlite,
+            #[cfg(feature = "mysql")]
             mysql: None,
+            #[cfg(feature = "postgres")]
             postgres: None,
+            #[cfg(feature = "sqlite")]
             sqlite: Some(conn_opt),
+            #[cfg(feature = "mssql")]
             mssql: None,
         });
     }
@@ -529,9 +541,13 @@ impl DBConnectOption {
         conn_opt.log_statements(log::LevelFilter::Off);
         return Ok(Self {
             driver_type: DriverType::Mssql,
+            #[cfg(feature = "mysql")]
             mysql: None,
+            #[cfg(feature = "postgres")]
             postgres: None,
+            #[cfg(feature = "sqlite")]
             sqlite: None,
+            #[cfg(feature = "mssql")]
             mssql: Some(conn_opt),
         });
     }
