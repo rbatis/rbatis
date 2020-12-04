@@ -6,7 +6,7 @@ use serde_json::{Map, Value};
 
 use crate::core::convert::StmtConvert;
 use crate::core::db::DriverType;
-use crate::core::db_adapter::DBExecResult;
+use crate::core::db::DBExecResult;
 use crate::core::Error;
 use crate::core::Result;
 use crate::plugin::logic_delete::LogicAction;

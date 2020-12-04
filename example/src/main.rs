@@ -85,8 +85,7 @@ mod test {
     use rbatis::interpreter::sql::ast::RbatisAST;
     use rbatis::interpreter::sql::node::node_type::NodeType;
     use rbatis::interpreter::sql::node::proxy_node::{CustomNodeGenerate, ProxyNode};
-    use rbatis::core::db::{DriverType, PoolOptions};
-    use rbatis::core::db_adapter::DBPool;
+    use rbatis::core::db::{DBPool, DriverType, DBPoolOptions};
     use rbatis::core::Error;
     use rbatis::crud::CRUD;
     use rbatis::crud::CRUDEnable;
@@ -304,13 +303,12 @@ mod test {
         forget_commit(&rb).await.unwrap();
     }
 
-    pub async fn forget_commit(rb:&Rbatis) -> rbatis::core::Result<serde_json::Value>{
+    pub async fn forget_commit(rb: &Rbatis) -> rbatis::core::Result<serde_json::Value> {
         // tx will be commit.when func end
         let guard = rb.begin_tx_defer(true).await?;
         let v: serde_json::Value = rb.fetch(&guard.tx_id, "SELECT count(1) FROM biz_activity;").await?;
         return Ok(v);
     }
-
 
 
     /// 示例-Rbatis使用web框架Tide、async_std
@@ -366,7 +364,7 @@ mod test {
     //cargo test --release --color=always --package example --bin example test::bench_qps --no-fail-fast -- --exact -Z unstable-options --show-output
     #[async_std::test]
     pub async fn bench_qps() {
-        let mut opts = PoolOptions::default();
+        let mut opts = DBPoolOptions::default();
         //test_before_acquire = false will improve performance
         opts.test_before_acquire = true;
         RB.link_opt(MYSQL_URL, &opts).await.unwrap();

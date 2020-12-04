@@ -8,7 +8,7 @@ use sqlx_core::types::BigDecimal;
 use sqlx_core::value::ValueRef;
 
 use crate::convert::{JsonCodec, RefJsonCodec};
-use crate::db_adapter::convert_result;
+use crate::db::convert_result;
 use serde_json::{json, Value};
 
 impl<'r> JsonCodec for sqlx_core::mssql::MssqlValueRef<'r> {

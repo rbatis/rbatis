@@ -1,11 +1,14 @@
-use std::time::Duration;
+pub mod db_adapter;
 
+pub use db_adapter::{DBTx,DBQuery,DBPool,DBConnectionOption,DBConnection,DBExecResult,DBPoolConn,convert_result};
+
+use std::time::Duration;
 use chrono::NaiveDateTime;
 use serde::{Deserialize, Serialize};
 use serde::de::DeserializeOwned;
 
 #[derive(Debug, Clone, Copy)]
-pub struct PoolOptions {
+pub struct DBPoolOptions {
     pub max_connections: u32,
     pub min_connections: u32,
     pub connect_timeout: Duration,
@@ -14,7 +17,7 @@ pub struct PoolOptions {
     pub test_before_acquire: bool,
 }
 
-impl Default for PoolOptions {
+impl Default for DBPoolOptions {
     fn default() -> Self {
         Self {
             // pool a maximum of 10 connections to the same database
@@ -35,9 +38,9 @@ impl Default for PoolOptions {
     }
 }
 
-impl PoolOptions {
+impl DBPoolOptions {
     pub fn new() -> Self {
-        PoolOptions::default()
+        DBPoolOptions::default()
     }
 }
 
