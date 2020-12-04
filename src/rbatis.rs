@@ -143,7 +143,9 @@ impl Rbatis {
 
     /// link pool by DBPoolOptions
     /// for example:
-    ///
+    ///          let mut opt = PoolOptions::new();
+    ///          opt.max_size = 20;
+    ///          rb.link_opt("mysql://root:123456@localhost:3306/test", &opt).await.unwrap();
     pub async fn link_opt(&self, driver_url: &str, pool_options: &DBPoolOptions) -> Result<(), Error> {
         if driver_url.is_empty() {
             return Err(Error::from("[rbatis] link url is empty!"));
@@ -158,6 +160,9 @@ impl Rbatis {
     }
 
     /// link pool by DBConnectOption and DBPoolOptions
+    /// for example:
+    ///         let db_cfg=DBConnectOption::from("mysql://root:123456@localhost:3306/test")?;
+    ///         rb.link_cfg(&db_cfg,PoolOptions::new());
     pub async fn link_cfg(&self, connect_option: &DBConnectOption, pool_options: &DBPoolOptions) -> Result<(), Error> {
         if self.pool.get().is_none() {
             let pool = DBPool::new_opt(connect_option, pool_options).await?;
