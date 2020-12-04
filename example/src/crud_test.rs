@@ -12,7 +12,7 @@ mod test {
     use chrono::NaiveDateTime;
     use bigdecimal_::BigDecimal;
     use rbatis::core::value::DateTimeNow;
-    use rbatis::core::db_adapter::DBExecResult;
+    use rbatis::core::db::DBExecResult;
     use rbatis::crud::CRUD;
 
     ///
@@ -372,7 +372,7 @@ mod test {
         fast_log::init_log("requests.log", 1000, log::Level::Info, None, true);
         //use static ref
         RB.link("mysql://root:123456@localhost:3306/test").await.unwrap();
-        let a = py_insert(&BizActivity{
+        let a = py_insert(&BizActivity {
             id: Some("12312".to_string()),
             name: Some("123".to_string()),
             pc_link: None,
@@ -388,5 +388,4 @@ mod test {
         }).await.unwrap();
         println!("{:?}", a);
     }
-
 }

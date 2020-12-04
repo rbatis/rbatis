@@ -8,8 +8,8 @@ use serde::de::DeserializeOwned;
 use serde::ser::Serialize;
 use serde_json::Number;
 
-use crate::core::db::{DriverType, PoolOptions};
-use crate::core::db_adapter::{DBExecResult, DBPool, DBPoolConn, DBQuery, DBTx};
+use crate::core::db::{DriverType, DBPoolOptions};
+use crate::core::db::{DBExecResult, DBPool, DBPoolConn, DBQuery, DBTx};
 use crate::core::Error;
 use crate::core::runtime::Arc;
 use crate::core::sync::sync_map::SyncMap;
@@ -137,17 +137,17 @@ impl Rbatis {
 
     /// link pool
     pub async fn link(&self, url: &str) -> Result<(), Error> {
-        return Ok(self.link_opt(url, &PoolOptions::default()).await?);
+        return Ok(self.link_opt(url, &DBPoolOptions::default()).await?);
     }
 
     /// link pool by options
     /// for example:
-    pub async fn link_opt(&self, url: &str, opt: &PoolOptions) -> Result<(), Error> {
+    pub async fn link_opt(&self, url: &str, opt: &DBPoolOptions) -> Result<(), Error> {
         if url.is_empty() {
             return Err(Error::from("[rbatis] link url is empty!"));
         }
         if self.pool.get().is_none() {
-            let pool = DBPool::new_opt(url, opt).await?;
+            let pool = DBPool::new_opt_str(url, opt).await?;
             self.pool.get_or_init(|| {
                 return pool;
             });

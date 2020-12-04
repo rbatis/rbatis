@@ -26,12 +26,10 @@ pub mod decode;
 
 pub use error::{Error, Result};
 
-pub mod db_adapter;
+pub mod db;
 
 pub mod convert;
 
 pub mod sync;
-
-pub mod db;
 
 pub mod value;

@@ -2,9 +2,8 @@ use std::collections::HashMap;
 use std::ops::{Deref, DerefMut};
 use std::time::{Duration, Instant};
 
-use rbatis_core::db_adapter::DBPool;
-
-use crate::core::db_adapter::DBTx;
+use crate::core::db::DBPool;
+use crate::core::db::DBTx;
 use crate::core::runtime::{Arc, Receiver, RwLock, RwLockReadGuard, Sender};
 use crate::core::sync::sync_map::{RefMut, SyncMap};
 use crate::plugin::log::LogPlugin;
@@ -69,7 +68,7 @@ impl TxManager {
     }
 
     fn do_log(&self, arg: &str) {
-        if self.is_enable_log(){
+        if self.is_enable_log() {
             match &self.log_plugin {
                 Some(v) => {
                     v.do_log(arg);
@@ -198,11 +197,11 @@ pub struct TxGuard {
 }
 
 impl TxGuard {
-    pub fn new(tx_id: &str, is_drop_commit: bool, manager: Arc<TxManager>) -> Self{
-        Self{
+    pub fn new(tx_id: &str, is_drop_commit: bool, manager: Arc<TxManager>) -> Self {
+        Self {
             tx_id: tx_id.to_string(),
             is_drop_commit,
-            manager: Some(manager)
+            manager: Some(manager),
         }
     }
 }

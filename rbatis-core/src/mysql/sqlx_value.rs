@@ -7,7 +7,7 @@ use sqlx_core::value::ValueRef;
 use crate::convert::{JsonCodec, RefJsonCodec};
 use sqlx_core::row::Row;
 use sqlx_core::column::Column;
-use crate::db_adapter::convert_result;
+use crate::db::convert_result;
 use serde_json::{json, Value};
 use sqlx_core::types::{BigDecimal, Json};
 
