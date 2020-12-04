@@ -12,7 +12,7 @@ mod test {
     use chrono::NaiveDateTime;
     use bigdecimal_::BigDecimal;
     use rbatis::core::value::DateTimeNow;
-    use rbatis::core::db::DBExecResult;
+    use rbatis::core::db::{DBExecResult};
     use rbatis::crud::CRUD;
 
     ///
@@ -62,6 +62,10 @@ mod test {
         fast_log::init_log("requests.log", 1000, log::Level::Info, None, true);
         let rb = Rbatis::new();
         rb.link("mysql://root:123456@localhost:3306/test").await.unwrap();
+
+        // custom connection option(自定义连接参数)
+        // let db_cfg=DBConnectOption::from("mysql://root:123456@localhost:3306/test")?;
+        // rb.link_cfg(&db_cfg,PoolOptions::new());
 
         // custom pool(自定义连接池)
         // let mut opt = PoolOptions::new();
