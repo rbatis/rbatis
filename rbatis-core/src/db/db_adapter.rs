@@ -53,12 +53,12 @@ impl DBPool {
 
     //new with str
     pub async fn new_opt_str(driver: &str, opt: &DBPoolOptions) -> crate::Result<DBPool> {
-        let conn_opt = DBConnectionOption::from(driver)?;
+        let conn_opt = DBConnectOption::from(driver)?;
         return Self::new_opt(&conn_opt, opt).await;
     }
 
     //new_opt from DBConnectionOption option and PoolOptions
-    pub async fn new_opt(driver: &DBConnectionOption, opt: &DBPoolOptions) -> crate::Result<DBPool> {
+    pub async fn new_opt(driver: &DBConnectOption, opt: &DBPoolOptions) -> crate::Result<DBPool> {
         let mut pool = Self {
             driver_type: DriverType::None,
             #[cfg(feature = "mysql")]
@@ -466,9 +466,9 @@ impl DBPool {
     }
 }
 
-/// DBConnectionOption all of support Database Options abstract struct.
+/// DBConnectOption all of support Database Options abstract struct.
 /// use from(url:&str) or use from_mysql(),from_pg().... or other method init this.
-pub struct DBConnectionOption {
+pub struct DBConnectOption {
     pub driver_type: DriverType,
     #[cfg(feature = "mysql")]
     pub mysql: Option<MySqlConnectOptions>,
@@ -480,13 +480,13 @@ pub struct DBConnectionOption {
     pub mssql: Option<MssqlConnectOptions>,
 }
 
-impl DBConnectionOption {
+impl DBConnectOption {
     #[cfg(feature = "mysql")]
     pub fn from_mysql(conn_opt: &MySqlConnectOptions) -> Result<Self> {
         let mut conn_opt = conn_opt.clone();
         conn_opt.log_slow_statements(log::LevelFilter::Off, Duration::from_secs(0));
         conn_opt.log_statements(log::LevelFilter::Off);
-        return Ok(DBConnectionOption {
+        return Ok(DBConnectOption {
             driver_type: DriverType::Mysql,
             mysql: Some(conn_opt),
             postgres: None,
