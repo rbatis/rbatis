@@ -466,6 +466,8 @@ impl DBPool {
     }
 }
 
+/// DBConnectionOption all of support Database Options abstract struct.
+/// use from(url:&str) or use from_mysql(),from_pg().... or other method init this.
 pub struct DBConnectionOption {
     pub driver_type: DriverType,
     #[cfg(feature = "mysql")]

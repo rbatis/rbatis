@@ -29,6 +29,7 @@ use crate::utils::error_util::ToResult;
 use crate::utils::string_util;
 use crate::wrapper::Wrapper;
 use uuid::Uuid;
+use rbatis_core::db::DBConnectionOption;
 
 /// rbatis engine
 pub struct Rbatis {
@@ -136,18 +137,29 @@ impl Rbatis {
     }
 
     /// link pool
-    pub async fn link(&self, url: &str) -> Result<(), Error> {
-        return Ok(self.link_opt(url, &DBPoolOptions::default()).await?);
+    pub async fn link(&self, driver_url: &str) -> Result<(), Error> {
+        return Ok(self.link_opt(driver_url, &DBPoolOptions::default()).await?);
     }
 
-    /// link pool by options
+    /// link pool by DBPoolOptions
     /// for example:
-    pub async fn link_opt(&self, url: &str, opt: &DBPoolOptions) -> Result<(), Error> {
-        if url.is_empty() {
+    pub async fn link_opt(&self, driver_url: &str, opt: &DBPoolOptions) -> Result<(), Error> {
+        if driver_url.is_empty() {
             return Err(Error::from("[rbatis] link url is empty!"));
         }
         if self.pool.get().is_none() {
-            let pool = DBPool::new_opt_str(url, opt).await?;
+            let pool = DBPool::new_opt_str(driver_url, opt).await?;
+            self.pool.get_or_init(|| {
+                return pool;
+            });
+        }
+        return Ok(());
+    }
+
+    /// link pool by DBConnectionOption and DBPoolOptions
+    pub async fn link_cfg(&self, cfg: &DBConnectionOption, opt: &DBPoolOptions) -> Result<(), Error> {
+        if self.pool.get().is_none() {
+            let pool = DBPool::new_opt(cfg, opt).await?;
             self.pool.get_or_init(|| {
                 return pool;
             });
