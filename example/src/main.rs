@@ -36,7 +36,7 @@ pub struct BizActivity {
     pub delete_flag: Option<i32>,
 }
 
-// (可选) 手动实现，不使用上面的derive(CRUDEnable),可重写table_name方法。手动实现能支持IDE智能提示
+// (可选) 手动实现，不使用上面的derive(CRUDEnable)和#[crud_enable],可重写table_name方法。手动实现能支持IDE智能提示
 // impl CRUDEnable for BizActivity {
 //     type IdType = String;
 // }
