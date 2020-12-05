@@ -76,7 +76,7 @@ async fn main() {
 mod test {
     use std::convert::Infallible;
     use std::thread::sleep;
-    use std::time::{Duration, SystemTime};
+    use std::time::{Duration};
 
     use log::info;
     use serde_json::json;
@@ -374,7 +374,6 @@ mod test {
         loop {
             let v: rbatis::core::Result<serde_json::Value> = RB.fetch("", "select count(1) from biz_activity WHERE delete_flag = 1;").await;
             if current == total - 1 {
-                let end = SystemTime::now();
                 now.time(total);
                 now.qps(total);
                 break;
