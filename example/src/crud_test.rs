@@ -299,11 +299,6 @@ mod test {
     }
 
 
-    /// join method,you can use
-    /// JOIN:
-    /// LEFT JOIN:
-    /// RIGHT JOIN:
-    /// FULL JOIN:
     #[py_sql(rbatis, "SELECT a1.name as name,a2.create_time as create_time
                       FROM test.biz_activity a1,biz_activity a2
                       WHERE a1.id=a2.id
