@@ -369,18 +369,12 @@ mod test {
         opts.test_before_acquire = true;
         RB.link_opt(MYSQL_URL, &opts).await.unwrap();
         let total = 10000;
-        let mut current = 0;
         let now = std::time::Instant::now();
-        loop {
+        for _ in 0..total{
             let v: rbatis::core::Result<serde_json::Value> = RB.fetch("", "select count(1) from biz_activity WHERE delete_flag = 1;").await;
-            if current == total - 1 {
-                now.time(total);
-                now.qps(total);
-                break;
-            } else {
-                current = current + 1;
-            }
         }
+        now.time(total);
+        now.qps(total);
     }
 
     #[async_std::test]
