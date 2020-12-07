@@ -20,36 +20,35 @@ homepage = "https://rbatis.github.io/rbatis.io/#/"
 
 [features]
 default = ["async-io"]
-actix = ["rbatis-core/actix", "async-std"]
-tokio02 = ["rbatis-core/tokio02", "async-std/tokio02"]
-tokio03 = ["rbatis-core/tokio03", "async-std/tokio03"]
-async-io = ["rbatis-core/async-io", "async-std"]
+actix = ["rbatis-core/actix"]
+tokio02 = ["rbatis-core/tokio02"]
+tokio03 = ["rbatis-core/tokio03"]
+async-io = ["rbatis-core/async-io"]
 
-async-io-mysql =["rbatis-core/async-io-mysql","async-std"]
-async-io-postgres = ["rbatis-core/async-io-postgres","async-std"]
-async-io-sqlite =["rbatis-core/async-io-sqlite","async-std"]
-async-io-mssql = ["rbatis-core/async-io-mssql","async-std"]
+async-io-mysql =["rbatis-core/async-io-mysql"]
+async-io-postgres = ["rbatis-core/async-io-postgres"]
+async-io-sqlite =["rbatis-core/async-io-sqlite"]
+async-io-mssql = ["rbatis-core/async-io-mssql"]
 
-tokio03-mysql =["rbatis-core/tokio03-mysql","async-std/tokio03"]
-tokio03-postgres = ["rbatis-core/tokio03-postgres","async-std/tokio03"]
-tokio03-sqlite =["rbatis-core/tokio03-sqlite","async-std/tokio03"]
-tokio03-mssql = ["rbatis-core/tokio03-mssql","async-std/tokio03"]
+tokio03-mysql =["rbatis-core/tokio03-mysql"]
+tokio03-postgres = ["rbatis-core/tokio03-postgres"]
+tokio03-sqlite =["rbatis-core/tokio03-sqlite"]
+tokio03-mssql = ["rbatis-core/tokio03-mssql"]
 
-tokio02-mysql =["rbatis-core/tokio02-mysql","async-std/tokio02"]
-tokio02-postgres = ["rbatis-core/tokio02-postgres","async-std/tokio02"]
-tokio02-sqlite =["rbatis-core/tokio02-sqlite","async-std/tokio02"]
-tokio02-mssql = ["rbatis-core/tokio02-mssql","async-std/tokio02"]
+tokio02-mysql =["rbatis-core/tokio02-mysql"]
+tokio02-postgres = ["rbatis-core/tokio02-postgres"]
+tokio02-sqlite =["rbatis-core/tokio02-sqlite"]
+tokio02-mssql = ["rbatis-core/tokio02-mssql"]
 
-actix-mysql = ["rbatis-core/actix-mysql","async-std/tokio02"]
-actix-postgres = ["rbatis-core/actix-postgres","async-std/tokio02"]
-actix-sqlite = ["rbatis-core/actix-sqlite","async-std/tokio02"]
-actix-mssql = ["rbatis-core/actix-mssql","async-std/tokio02"]
+actix-mysql = ["rbatis-core/actix-mysql"]
+actix-postgres = ["rbatis-core/actix-postgres"]
+actix-sqlite = ["rbatis-core/actix-sqlite"]
+actix-mssql = ["rbatis-core/actix-mssql"]
 
 snowflake = ["rustflake"]
 
 [dependencies]
 rbatis-core = { version = "1.8.42", path = "rbatis-core", default-features = false, optional = true }
-async-std = { version = "1.7", optional = true }
 chrono = { version = "0.4", features = ["serde"] }
 lazy_static = "1.4"
 #serde
@@ -67,3 +66,4 @@ once_cell = "1.5"
 rustflake = { version = "0.1", package = "rustflake", optional = true }
 [dev-dependencies]
 fast_log = "1.3"
+async-std = { version = "1.7", features = ["attributes"] }

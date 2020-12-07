@@ -15,33 +15,33 @@ homepage = "https://rbatis.github.io/rbatis.io/#/"
 default = ["async-io"]
 
 #runtime(all of database) (use this you should add default-features = false)
-actix = ["async-std", "sqlx-core/runtime-actix-rustls","all-database"]
-tokio02 = ["async-std/tokio02", "sqlx-core/runtime-tokio-rustls","all-database"]
-tokio03 = ["async-std/tokio03", "sqlx-core/runtime-tokio-rustls","all-database"]
-async-io = ["async-std", "sqlx-core/runtime-async-std-rustls","all-database"]
+actix = ["async-std",  "sqlx-core/runtime-actix-rustls", "all-database"]
+tokio02 = ["async-std/tokio02", "sqlx-core/runtime-tokio-rustls", "all-database"]
+tokio03 = ["async-std/tokio03", "sqlx-core/runtime-tokio-rustls", "all-database"]
+async-io = ["async-std", "sqlx-core/runtime-async-std-rustls", "all-database"]
 
 #runtime(one of database) (use this you should add default-features = false)
-async-io-mysql =["async-std", "sqlx-core/runtime-async-std-rustls","mysql"]
-async-io-postgres = ["async-std", "sqlx-core/runtime-async-std-rustls","postgres"]
-async-io-sqlite =["async-std", "sqlx-core/runtime-async-std-rustls","sqlite"]
-async-io-mssql = ["async-std", "sqlx-core/runtime-async-std-rustls","mssql"]
+async-io-mysql = ["async-std", "sqlx-core/runtime-async-std-rustls", "mysql"]
+async-io-postgres = ["async-std", "sqlx-core/runtime-async-std-rustls", "postgres"]
+async-io-sqlite = ["async-std", "sqlx-core/runtime-async-std-rustls", "sqlite"]
+async-io-mssql = ["async-std", "sqlx-core/runtime-async-std-rustls", "mssql"]
 
-tokio03-mysql =["async-std/tokio03", "sqlx-core/runtime-tokio-rustls","mysql"]
-tokio03-postgres = ["async-std/tokio03", "sqlx-core/runtime-tokio-rustls","postgres"]
-tokio03-sqlite =["async-std/tokio03", "sqlx-core/runtime-tokio-rustls","sqlite"]
-tokio03-mssql = ["async-std/tokio03", "sqlx-core/runtime-tokio-rustls","mssql"]
+tokio03-mysql = ["async-std/tokio03", "sqlx-core/runtime-tokio-rustls", "mysql"]
+tokio03-postgres = ["async-std/tokio03", "sqlx-core/runtime-tokio-rustls", "postgres"]
+tokio03-sqlite = ["async-std/tokio03", "sqlx-core/runtime-tokio-rustls", "sqlite"]
+tokio03-mssql = ["async-std/tokio03", "sqlx-core/runtime-tokio-rustls", "mssql"]
 
-tokio02-mysql =["async-std/tokio02", "sqlx-core/runtime-tokio-rustls","mysql"]
-tokio02-postgres = ["async-std/tokio02", "sqlx-core/runtime-tokio-rustls","postgres"]
-tokio02-sqlite =["async-std/tokio02", "sqlx-core/runtime-tokio-rustls","sqlite"]
-tokio02-mssql = ["async-std/tokio02", "sqlx-core/runtime-tokio-rustls","mssql"]
+tokio02-mysql = ["async-std/tokio02", "sqlx-core/runtime-tokio-rustls", "mysql"]
+tokio02-postgres = ["async-std/tokio02", "sqlx-core/runtime-tokio-rustls", "postgres"]
+tokio02-sqlite = ["async-std/tokio02", "sqlx-core/runtime-tokio-rustls", "sqlite"]
+tokio02-mssql = ["async-std/tokio02", "sqlx-core/runtime-tokio-rustls", "mssql"]
 
-actix-mysql =["async-std/tokio02", "sqlx-core/runtime-actix-rustls","mysql"]
-actix-postgres = ["async-std/tokio02", "sqlx-core/runtime-actix-rustls","postgres"]
-actix-sqlite =["async-std/tokio02", "sqlx-core/runtime-actix-rustls","sqlite"]
-actix-mssql = ["async-std/tokio02", "sqlx-core/runtime-actix-rustls","mssql"]
+actix-mysql = ["async-std/tokio02", "sqlx-core/runtime-actix-rustls", "mysql"]
+actix-postgres = ["async-std/tokio02", "sqlx-core/runtime-actix-rustls", "postgres"]
+actix-sqlite = ["async-std/tokio02", "sqlx-core/runtime-actix-rustls", "sqlite"]
+actix-mssql = ["async-std/tokio02", "sqlx-core/runtime-actix-rustls", "mssql"]
 
-all-database = ["sqlx-core/all-databases","mysql","postgres","sqlite","mssql"]
+all-database = ["sqlx-core/all-databases", "mysql", "postgres", "sqlite", "mssql"]
 mysql = ["sqlx-core/mysql"]
 postgres = ["sqlx-core/postgres"]
 sqlite = ["sqlx-core/sqlite"]
@@ -49,13 +49,13 @@ mssql = ["sqlx-core/mssql"]
 
 
 [dependencies]
-async-std = { version = "1.7", optional = true }
-chrono = { version = "0.4", default-features = false, features = ["clock","serde"] }
+async-std = { version = "1.7", optional = true, features = ["attributes","unstable"] }
+chrono = { version = "0.4", default-features = false, features = ["clock", "serde"] }
 log = { version = "0.4", default-features = false }
 serde = { version = "1", features = ["derive"] }
 serde_json = { version = "1", features = ["raw_value"] }
 lazy_static = "1.4"
 
-time = {version = "0.2.16",features = ["serde"]}
-ipnetwork = {version = "0.17.0",features = ["serde"]}
+time = { version = "0.2.16", features = ["serde"] }
+ipnetwork = { version = "0.17.0", features = ["serde"] }
 sqlx-core = { version = "0.4.0", features = ["all-types"], optional = true }

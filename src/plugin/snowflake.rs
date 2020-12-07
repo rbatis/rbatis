@@ -39,7 +39,7 @@ mod test {
 
     #[test]
     fn test_new_async_id() {
-        async_std::task::block_on(async {
+        crate::core::runtime::block_on(async {
             println!("{}", async_snowflake_id().await);
             println!("{}", async_snowflake_id().await);
         });
