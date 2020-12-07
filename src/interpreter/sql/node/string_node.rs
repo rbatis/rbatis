@@ -1,4 +1,4 @@
-use std::collections::BTreeMap;
+use std::collections::{LinkedList};
 
 use serde_json::{json, Value};
 use serde_json::map::Map;
@@ -15,7 +15,7 @@ use crate::utils::string_util;
 pub struct StringNode {
     pub value: String,
     //去重的，需要替换的要sql转换express map
-    pub express_map: Vec<(String,String)>,
+    pub express_map: LinkedList<(String,String)>,
 }
 
 impl StringNode {
