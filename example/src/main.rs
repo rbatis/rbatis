@@ -36,7 +36,7 @@ pub struct BizActivity {
     pub delete_flag: Option<i32>,
 }
 
-// (可选) 手动实现，不使用上面的derive(CRUDEnable),可重写table_name方法。手动实现能支持IDE智能提示
+// (可选) 手动实现，不使用上面的derive(CRUDEnable)和#[crud_enable],可重写table_name方法。手动实现能支持IDE智能提示
 // impl CRUDEnable for BizActivity {
 //     type IdType = String;
 // }
@@ -76,7 +76,7 @@ async fn main() {
 mod test {
     use std::convert::Infallible;
     use std::thread::sleep;
-    use std::time::{Duration, SystemTime};
+    use std::time::{Duration};
 
     use log::info;
     use serde_json::json;
@@ -369,19 +369,12 @@ mod test {
         opts.test_before_acquire = true;
         RB.link_opt(MYSQL_URL, &opts).await.unwrap();
         let total = 10000;
-        let mut current = 0;
         let now = std::time::Instant::now();
-        loop {
+        for _ in 0..total{
             let v: rbatis::core::Result<serde_json::Value> = RB.fetch("", "select count(1) from biz_activity WHERE delete_flag = 1;").await;
-            if current == total - 1 {
-                let end = SystemTime::now();
-                now.time(total);
-                now.qps(total);
-                break;
-            } else {
-                current = current + 1;
-            }
         }
+        now.time(total);
+        now.qps(total);
     }
 
     #[async_std::test]
