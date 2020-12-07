@@ -48,7 +48,7 @@ pub trait CRUDEnable: Send + Sync + Serialize + DeserializeOwned {
         let type_name = std::any::type_name::<Self>();
         let mut name = type_name.to_string();
         let names: Vec<&str> = name.split("::").collect();
-        name = names.get(names.len() - 1).unwrap().to_string();
+        name = names.get(names.len() - 1).unwrap_or(&"").to_string();
         return to_snake_name(&name);
     }
 

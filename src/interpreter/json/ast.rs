@@ -54,19 +54,19 @@ pub struct Node {
 
 impl Node {
     pub fn to_number(&self) -> f64 {
-        return self.value.as_f64().unwrap();
+        return self.value.as_f64().unwrap_or(0.0);
     }
     pub fn to_string(&self) -> &str {
-        return self.value.as_str().unwrap();
+        return self.value.as_str().unwrap_or("");
     }
     pub fn to_arg(&self) -> &str {
-        return self.value.as_str().unwrap();
+        return self.value.as_str().unwrap_or("");
     }
     pub fn to_bool(&self) -> bool {
-        return self.value.as_bool().unwrap();
+        return self.value.as_bool().unwrap_or(false);
     }
     pub fn to_token(&self) -> &str {
-        return self.value.as_str().unwrap();
+        return self.value.as_str().unwrap_or("");
     }
     pub fn node_type(&self) -> NodeType {
         return self.node_type.clone();
