@@ -21,29 +21,29 @@ homepage = "https://rbatis.github.io/rbatis.io/#/"
 [features]
 default = ["async-io"]
 actix = ["rbatis-core/actix", "async-std"]
-tokio02 = ["async-std", "rbatis-core/tokio02", "async-std/tokio02"]
-tokio03 = ["async-std", "rbatis-core/tokio03", "async-std/tokio03"]
+tokio02 = ["rbatis-core/tokio02", "async-std/tokio02"]
+tokio03 = ["rbatis-core/tokio03", "async-std/tokio03"]
 async-io = ["rbatis-core/async-io", "async-std"]
 
-async-io-mysql = ["rbatis-core/async-io-mysql", "async-std"]
-async-io-postgres = ["rbatis-core/async-io-postgres", "async-std"]
-async-io-sqlite = ["rbatis-core/async-io-sqlite", "async-std"]
-async-io-mssql = ["rbatis-core/async-io-mssql", "async-std"]
+async-io-mysql =["rbatis-core/async-io-mysql","async-std"]
+async-io-postgres = ["rbatis-core/async-io-postgres","async-std"]
+async-io-sqlite =["rbatis-core/async-io-sqlite","async-std"]
+async-io-mssql = ["rbatis-core/async-io-mssql","async-std"]
 
-tokio03-mysql = ["rbatis-core/tokio03-mysql", "async-std/tokio03", "async-std"]
-tokio03-postgres = ["rbatis-core/tokio03-postgres", "async-std/tokio03", "async-std"]
-tokio03-sqlite = ["rbatis-core/tokio03-sqlite", "async-std/tokio03", "async-std"]
-tokio03-mssql = ["rbatis-core/tokio03-mssql", "async-std/tokio03", "async-std"]
+tokio03-mysql =["rbatis-core/tokio03-mysql","async-std/tokio03"]
+tokio03-postgres = ["rbatis-core/tokio03-postgres","async-std/tokio03"]
+tokio03-sqlite =["rbatis-core/tokio03-sqlite","async-std/tokio03"]
+tokio03-mssql = ["rbatis-core/tokio03-mssql","async-std/tokio03"]
 
-tokio02-mysql = ["rbatis-core/tokio02-mysql", "async-std/tokio02", "async-std"]
-tokio02-postgres = ["rbatis-core/tokio02-postgres", "async-std/tokio02", "async-std"]
-tokio02-sqlite = ["rbatis-core/tokio02-sqlite", "async-std/tokio02", "async-std"]
-tokio02-mssql = ["rbatis-core/tokio02-mssql", "async-std/tokio02", "async-std"]
+tokio02-mysql =["rbatis-core/tokio02-mysql","async-std/tokio02"]
+tokio02-postgres = ["rbatis-core/tokio02-postgres","async-std/tokio02"]
+tokio02-sqlite =["rbatis-core/tokio02-sqlite","async-std/tokio02"]
+tokio02-mssql = ["rbatis-core/tokio02-mssql","async-std/tokio02"]
 
-actix-mysql = ["rbatis-core/actix-mysql", "async-std/tokio02", "async-std"]
-actix-postgres = ["rbatis-core/actix-postgres", "async-std/tokio02", "async-std"]
-actix-sqlite = ["rbatis-core/actix-sqlite", "async-std/tokio02", "async-std"]
-actix-mssql = ["rbatis-core/actix-mssql", "async-std/tokio02", "async-std"]
+actix-mysql = ["rbatis-core/actix-mysql","async-std/tokio02"]
+actix-postgres = ["rbatis-core/actix-postgres","async-std/tokio02"]
+actix-sqlite = ["rbatis-core/actix-sqlite","async-std/tokio02"]
+actix-mssql = ["rbatis-core/actix-mssql","async-std/tokio02"]
 
 snowflake = ["rustflake"]
 
@@ -54,7 +54,7 @@ chrono = { version = "0.4", features = ["serde"] }
 lazy_static = "1.4"
 #serde
 serde = { version = "1", features = ["derive"] }
-serde_json = { version = "1", features = ["preserve_order"] }
+serde_json = {version = "1",features = ["preserve_order"]}
 serde_yaml = "0.8"
 #uuid
 uuid = { version = "0.8", features = ["serde", "v4"] }
