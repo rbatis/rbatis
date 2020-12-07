@@ -213,14 +213,19 @@ impl Drop for TxGuard {
         }
         let tx_id = self.tx_id.clone();
         let is_drop_commit = self.is_drop_commit;
-        let manager = self.manager.take().unwrap();
-        crate::core::runtime::spawn(async move {
-            if is_drop_commit {
-                manager.commit(&tx_id).await;
-            } else {
-                manager.rollback(&tx_id).await;
+        let manager = self.manager.take();
+        match manager {
+            Some(m) => {
+                crate::core::runtime::spawn(async move {
+                    if is_drop_commit {
+                        m.commit(&tx_id).await;
+                    } else {
+                        m.rollback(&tx_id).await;
+                    }
+                    drop(m);
+                });
             }
-            drop(manager);
-        });
+            _ => {}
+        }
     }
 }
