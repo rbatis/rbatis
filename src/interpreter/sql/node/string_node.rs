@@ -34,8 +34,11 @@ impl RbatisAST for StringNode {
     fn eval(&self, convert: &crate::core::db::DriverType, env: &mut Value, engine: &Runtime, arg_array: &mut Vec<Value>) -> Result<String, crate::core::Error> {
         let mut result = self.value.clone();
         for (item, value) in &self.express_map {
+            if item.is_empty(){
+                result = result.replace(value, "");
+                continue;
+            }
             if value.starts_with("#") {
-                let item = item.as_str();
                 result = result.replace(value, convert.stmt_convert(arg_array.len()).as_str());
                 let get_v = env.get(item);
                 if get_v.is_none() {
