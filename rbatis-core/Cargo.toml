@@ -36,10 +36,10 @@ tokio02-postgres = ["async-std/tokio02", "sqlx-core/runtime-tokio-rustls","postg
 tokio02-sqlite =["async-std/tokio02", "sqlx-core/runtime-tokio-rustls","sqlite"]
 tokio02-mssql = ["async-std/tokio02", "sqlx-core/runtime-tokio-rustls","mssql"]
 
-actix-mysql =["async-std", "sqlx-core/runtime-actix-rustls","mysql"]
-actix-postgres = ["async-std", "sqlx-core/runtime-actix-rustls","postgres"]
-actix-sqlite =["async-std", "sqlx-core/runtime-actix-rustls","sqlite"]
-actix-mssql = ["async-std", "sqlx-core/runtime-actix-rustls","mssql"]
+actix-mysql =["async-std/tokio02", "sqlx-core/runtime-actix-rustls","mysql"]
+actix-postgres = ["async-std/tokio02", "sqlx-core/runtime-actix-rustls","postgres"]
+actix-sqlite =["async-std/tokio02", "sqlx-core/runtime-actix-rustls","sqlite"]
+actix-mssql = ["async-std/tokio02", "sqlx-core/runtime-actix-rustls","mssql"]
 
 all-database = ["sqlx-core/all-databases","mysql","postgres","sqlite","mssql"]
 mysql = ["sqlx-core/mysql"]
