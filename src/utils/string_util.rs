@@ -1,4 +1,4 @@
-use std::collections::{BTreeMap, HashSet};
+use std::collections::{BTreeMap, HashSet, LinkedList};
 use std::io::Read;
 
 use serde_json::map::Map;
@@ -8,9 +8,9 @@ use serde_json::Value;
 pub const LOG_SPACE: &'static str = "                                                                ";
 
 //find like #{*,*},${*,*} value *
-pub fn find_convert_string(arg: &str) -> Vec<(String, String)> {
-    let mut cache_set = HashSet::new();
-    let mut results = BTreeMap::new();
+pub fn find_convert_string(arg: &str) -> LinkedList<(String, String)> {
+    let mut list = LinkedList::new();
+    let mut cache = HashSet::new();
     let chars: Vec<u8> = arg.bytes().collect();
     let mut item = String::new();
     let mut last_index: i32 = -1;
@@ -27,24 +27,18 @@ pub fn find_convert_string(arg: &str) -> Vec<(String, String)> {
         }
         if *v == '}' as u8 && last_index != -1 {
             item = String::from_utf8(chars[(last_index + 2) as usize..index as usize].to_vec()).unwrap();
-            if cache_set.get(&item).is_some() {
+            if cache.get(&item).is_some() {
                 item.clear();
                 last_index = -1;
                 continue;
             }
-            let value = String::from_utf8(chars[last_index as usize..(index + 1) as usize].to_vec()).unwrap();
-            results.insert(index, (item.clone(), value.clone()));
-            cache_set.insert(item.clone());
+            cache.insert(item.clone());
+            list.push_back((item.clone(),format!("#{}{}{}","{",&item,"}")));
             item.clear();
             last_index = -1;
         }
     }
-
-    let mut array =vec![];
-    for (_,(k,v)) in results {
-        array.push((k,v))
-    }
-    return array;
+    return list;
 }
 
 
