@@ -32,8 +32,9 @@ pub fn find_convert_string(arg: &str) -> LinkedList<(String, String)> {
                 last_index = -1;
                 continue;
             }
+            let value = String::from_utf8(chars[last_index as usize..(index + 1) as usize].to_vec()).unwrap();
             cache.insert(item.clone());
-            list.push_back((item.clone(),format!("#{}{}{}","{",&item,"}")));
+            list.push_back((item.clone(),value));
             item.clear();
             last_index = -1;
         }

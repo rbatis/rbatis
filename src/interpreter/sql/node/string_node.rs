@@ -55,8 +55,13 @@ impl RbatisAST for StringNode {
                             result = result.replace(value, &v.to_string());
                         }
                     }
-                    _ => {
-                        result = result.replace(value, "");
+                    None => {
+                        let v = engine.eval(item, env).unwrap();
+                        if v.is_string() {
+                            result = result.replace(value, &v.as_str().unwrap());
+                        } else {
+                            result = result.replace(value, &v.to_string());
+                        }
                     }
                 }
             }
@@ -65,16 +70,40 @@ impl RbatisAST for StringNode {
     }
 }
 
+#[cfg(test)]
+mod test{
+    use crate::interpreter::json::runtime::Runtime;
+    use crate::interpreter::sql::node::string_node::StringNode;
+    use crate::core::db::DriverType;
+    use crate::interpreter::sql::ast::RbatisAST;
 
-#[test]
-pub fn test_string_node() {
-    let mut john = json!({
+    #[test]
+    pub fn test_string_node() {
+        let mut john = json!({
         "arg": 2,
     });
-    let mut engine = Runtime::new();
-    let s_node = StringNode::new("arg+1=#{arg+1}");
-    let mut arg_array = vec![];
+        let mut engine = Runtime::new();
+        let s_node = StringNode::new("arg+1=#{arg+1}");
+        let mut arg_array = vec![];
 
-    let r = s_node.eval(&DriverType::Mysql, &mut john, &mut engine, &mut arg_array).unwrap();
-    println!("{}", r);
+        let r = s_node.eval(&DriverType::Mysql, &mut john, &mut engine, &mut arg_array).unwrap();
+        println!("{}", r);
+        assert_eq!(r,"arg+1=?");
+        assert_eq!(arg_array.len(),1);
+    }
+
+    #[test]
+    pub fn test_string_node_replace() {
+        let mut john = json!({
+        "arg": 2,
+    });
+        let mut engine = Runtime::new();
+        let s_node = StringNode::new("arg+1=${arg+1}");
+        let mut arg_array = vec![];
+        let r = s_node.eval(&DriverType::Mysql, &mut john, &mut engine, &mut arg_array).unwrap();
+        println!("r:{}", r);
+        assert_eq!(r,"arg+1=3");
+        assert_eq!(arg_array.len(),0);
+    }
+
 }
