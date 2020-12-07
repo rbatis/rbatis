@@ -42,7 +42,7 @@ impl RbatisAST for StringNode {
                 result = result.replace(value, convert.stmt_convert(arg_array.len()).as_str());
                 let get_v = env.get(item);
                 if get_v.is_none() {
-                    let v = engine.eval(item, env).unwrap();
+                    let v = engine.eval(item, env)?;
                     arg_array.push(v);
                 } else {
                     let v = get_v.unwrap().clone();
@@ -59,7 +59,7 @@ impl RbatisAST for StringNode {
                         }
                     }
                     None => {
-                        let v = engine.eval(item, env).unwrap();
+                        let v = engine.eval(item, env)?;
                         if v.is_string() {
                             result = result.replace(value, &v.as_str().unwrap());
                         } else {
