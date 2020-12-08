@@ -24,10 +24,12 @@ mod test {
         let exec_expr = |arg: &serde_json::Value, expr: &str| -> serde_json::Value{
             println!("{}", expr.clone());
             let box_node = lexer::lexer_parse_node(expr, &TokenMap::new()).unwrap();
+            //println!("{:#?}", &box_node);
             let v = box_node.eval(arg).unwrap();
             println!("'{}' -> {}", expr.clone(), &v);
             v
         };
+        assert_eq!(exec_expr(&arg, "-1 == -a"), json!(true));
         assert_eq!(exec_expr(&arg, "d.a == null"), json!(true));
         assert_eq!(exec_expr(&arg, "1 == 1.0"), json!(true));
         assert_eq!(exec_expr(&arg, "'2019-02-26' == '2019-02-26'"), json!(true));
@@ -73,7 +75,7 @@ mod test {
 
     #[test]
     fn test_eval_arg() {
-        let box_node = lexer::lexer_parse_node("-1 == -1", &TokenMap::new()).unwrap();
+        let box_node = lexer::lexer_parse_node("-1 == -a", &TokenMap::new()).unwrap();
         println!("{:#?}", box_node);
         let john = json!({
     });

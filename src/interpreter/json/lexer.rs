@@ -2,20 +2,61 @@ use std::collections::LinkedList;
 
 use crate::core::Error;
 use crate::interpreter::json::ast::Node;
-use crate::interpreter::json::token::TokenMap;
 use crate::interpreter::json::parser::parse;
+use crate::interpreter::json::token::TokenMap;
 
 ///lexer
 pub fn lexer(express: &str, token_map: &TokenMap) -> Result<Vec<String>, Error> {
     let express = express.replace("none", "null").replace("None", "null");
-    let tokens = parse_tokens(&express, token_map);
+    let mut tokens = parse_tokens(&express, token_map);
+    fill_lost_token(&mut tokens, token_map);
     return Ok(tokens);
+}
+
+//fill lost node to  '+1'  =>  ['(','null',"+",'1',')']
+fn fill_lost_token(arg: &mut Vec<String>, opt_map: &TokenMap) {
+    let len = arg.len();
+    let mut last = "".to_string();
+    for index in 0..len {
+        let item = arg[index].clone();
+        if item != "(" && index == 0 && opt_map.is_token(&item) {
+            let mut right = "null".to_string();
+            if arg.get((index + 1) as usize).is_some() {
+                right = arg.remove((index + 1) as usize);
+            }
+            let current = arg.remove(0);
+            arg.insert(0,")".to_string());
+            arg.insert(0,right);
+            arg.insert(0,current);
+            arg.insert(0,"null".to_string());
+            arg.insert(0,"(".to_string());
+            return fill_lost_token(arg, opt_map);
+        }
+        if last != ")"
+            && item != "(" && item != ")"
+            && index >= 1
+            && (opt_map.is_token(&last))
+            && opt_map.is_token(&item) {
+            let mut right = "null".to_string();
+            if arg.get((index + 1) as usize).is_some() {
+                right = arg.remove((index + 1) as usize);
+            }
+            let current = arg.remove(index);
+            arg.insert(index,")".to_string());
+            arg.insert(index,right);
+            arg.insert(index,current);
+            arg.insert(index,"null".to_string());
+            arg.insert(index,"(".to_string());
+            return fill_lost_token(arg, opt_map);
+        }
+        last = item.to_string();
+    }
 }
 
 /// lexer and parse
 pub fn lexer_parse_node(express: &str, token_map: &TokenMap) -> Result<Node, Error> {
-    let tokens=lexer(express,token_map)?;
-    return Ok(parse(token_map,&tokens,express)?);
+    let tokens = lexer(express, token_map)?;
+    return Ok(parse(token_map, &tokens, express)?);
 }
 
 ///parse token to vec
@@ -94,4 +135,17 @@ fn trim_push_back(arg: &str, list: &mut LinkedList<String>) {
         return;
     }
     list.push_back(trim_str);
+}
+
+#[cfg(test)]
+mod test{
+    use crate::interpreter::json::lexer::lexer;
+    use crate::interpreter::json::token::TokenMap;
+
+    #[test]
+    fn test_fill(){
+        let l=lexer("-1 == -a",&TokenMap::new()).unwrap();
+        println!("{:?}",&l);
+        assert_eq!(l,vec!["(","null","-","1",")","==","(","null","-","a",")"])
+    }
 }
