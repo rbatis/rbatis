@@ -25,11 +25,11 @@ fn fill_lost_token(arg: &mut Vec<String>, opt_map: &TokenMap) {
                 right = arg.remove((index + 1) as usize);
             }
             let current = arg.remove(0);
-            arg.insert(0,")".to_string());
-            arg.insert(0,right);
-            arg.insert(0,current);
-            arg.insert(0,"null".to_string());
-            arg.insert(0,"(".to_string());
+            arg.insert(0, ")".to_string());
+            arg.insert(0, right);
+            arg.insert(0, current);
+            arg.insert(0, "null".to_string());
+            arg.insert(0, "(".to_string());
             return fill_lost_token(arg, opt_map);
         }
         if last != ")"
@@ -42,12 +42,28 @@ fn fill_lost_token(arg: &mut Vec<String>, opt_map: &TokenMap) {
                 right = arg.remove((index + 1) as usize);
             }
             let current = arg.remove(index);
-            arg.insert(index,")".to_string());
-            arg.insert(index,right);
-            arg.insert(index,current);
-            arg.insert(index,"null".to_string());
-            arg.insert(index,"(".to_string());
+            arg.insert(index, ")".to_string());
+            arg.insert(index, right);
+            arg.insert(index, current);
+            arg.insert(index, "null".to_string());
+            arg.insert(index, "(".to_string());
             return fill_lost_token(arg, opt_map);
+        }
+        if item != ")" && (index + 1) as usize == len && opt_map.is_token(&item) {
+            let right = "null".to_string();
+            let current = arg.remove(index);
+            let last;
+            if (index - 1) as i32 >= 0 {
+                last = arg.remove(index - 1);
+            } else {
+                last = "null".to_string();
+            }
+            let index = index - 1;
+            arg.insert(index, ")".to_string());
+            arg.insert(index, right);
+            arg.insert(index, current);
+            arg.insert(index, last);
+            arg.insert(index, "(".to_string());
         }
         last = item.to_string();
     }
@@ -138,14 +154,35 @@ fn trim_push_back(arg: &str, list: &mut LinkedList<String>) {
 }
 
 #[cfg(test)]
-mod test{
+mod test {
     use crate::interpreter::json::lexer::lexer;
     use crate::interpreter::json::token::TokenMap;
 
     #[test]
-    fn test_fill(){
-        let l=lexer("-1 == -a",&TokenMap::new()).unwrap();
-        println!("{:?}",&l);
-        assert_eq!(l,vec!["(","null","-","1",")","==","(","null","-","a",")"])
+    fn test_fill() {
+        let l = lexer("-1 == -a", &TokenMap::new()).unwrap();
+        println!("{:?}", &l);
+        assert_eq!(l, vec!["(", "null", "-", "1", ")", "==", "(", "null", "-", "a", ")"])
+    }
+
+    #[test]
+    fn test_fill_first() {
+        let l = lexer("-1 == -1", &TokenMap::new()).unwrap();
+        println!("{:?}", &l);
+        assert_eq!(l,vec!["(","null","-","1",")","==","(","null","-","1",")"])
+    }
+
+    #[test]
+    fn test_fill_last() {
+        let l = lexer("-1 == 1-", &TokenMap::new()).unwrap();
+        println!("{:?}", &l);
+        assert_eq!(l,vec!["(","null","-","1",")","==","(","1","-","null",")"])
+    }
+
+    #[test]
+    fn test_fill_center() {
+        let l = lexer("-1 == -1 && -1 == -2", &TokenMap::new()).unwrap();
+        println!("{:?}", &l);
+        assert_eq!(l,vec!["(", "null", "-", "1", ")", "==", "(", "null", "-", "1", ")", "&&", "(", "null", "-", "1", ")", "==", "(", "null", "-", "2", ")"])
     }
 }
