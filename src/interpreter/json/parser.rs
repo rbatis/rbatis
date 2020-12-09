@@ -102,7 +102,7 @@ fn to_binary_node(nodes: &mut Vec<Node>, token_map: &TokenMap, express: &str) ->
         return Ok(nodes[0].to_owned());
     }
     for item in token_map.priority_array() {
-        replace_to_binary_node(token_map, express, &item, nodes);
+        loop_replace_to_binary_node(token_map, express, &item, nodes);
     }
     if nodes.len() > 0 {
         return Result::Ok(nodes[0].to_owned());
@@ -136,7 +136,7 @@ fn find_eq_end(arg: &[String], start: i32) -> i32 {
     return index;
 }
 
-fn replace_to_binary_node(token_map: &TokenMap, express: &str, operator: &str, node_arg: &mut Vec<Node>) {
+fn loop_replace_to_binary_node(token_map: &TokenMap, express: &str, operator: &str, node_arg: &mut Vec<Node>) {
     let node_arg_len = node_arg.len();
     if node_arg_len == 1 {
         return;
@@ -155,7 +155,7 @@ fn replace_to_binary_node(token_map: &TokenMap, express: &str, operator: &str, n
             node_arg.remove(left_index);
             node_arg.insert(left_index, binary_node);
             if have_token(node_arg) {
-                replace_to_binary_node(token_map, express, operator, node_arg);
+                loop_replace_to_binary_node(token_map, express, operator, node_arg);
                 return;
             }
         }
