@@ -9,12 +9,12 @@ use crate::interpreter::json::token::TokenMap;
 pub fn lexer(express: &str, token_map: &TokenMap) -> Result<Vec<String>, Error> {
     let express = express.replace("none", "null").replace("None", "null");
     let mut tokens = parse_tokens(&express, token_map);
-    fill_lost_token(0, &mut tokens, token_map);
+    loop_fill_lost_token(0, &mut tokens, token_map);
     return Ok(tokens);
 }
 
 //fill lost node to  '+1'  =>  ['(','null',"+",'1',')']
-fn fill_lost_token(start_index: usize, arg: &mut Vec<String>, opt_map: &TokenMap) {
+fn loop_fill_lost_token(start_index: usize, arg: &mut Vec<String>, opt_map: &TokenMap) {
     let len = arg.len();
     let mut last = "".to_string();
     for index in start_index..len {
@@ -30,7 +30,7 @@ fn fill_lost_token(start_index: usize, arg: &mut Vec<String>, opt_map: &TokenMap
             arg.insert(0, current);
             arg.insert(0, "null".to_string());
             arg.insert(0, "(".to_string());
-            return fill_lost_token(4, arg, opt_map);
+            return loop_fill_lost_token(4, arg, opt_map);
         }
         if index >= 1 &&
             last != ")"
@@ -47,7 +47,7 @@ fn fill_lost_token(start_index: usize, arg: &mut Vec<String>, opt_map: &TokenMap
             arg.insert(index, current);
             arg.insert(index, "null".to_string());
             arg.insert(index, "(".to_string());
-            return fill_lost_token(index + 5, arg, opt_map);
+            return loop_fill_lost_token(index + 5, arg, opt_map);
         }
         if (index + 1) as usize == len && item != ")" && opt_map.is_token(&item) {
             let right = "null".to_string();
