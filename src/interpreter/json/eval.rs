@@ -13,10 +13,14 @@ pub fn eval(left: &Value,
             op: &str) -> Result<Value> {
     match op {
         "&&" => {
-            return Result::Ok(Value::Bool(left.as_bool().unwrap() && right.as_bool().unwrap()));
+            if left.is_boolean() && right.is_boolean() {
+                return Result::Ok(Value::Bool(left.as_bool().unwrap_or(false) && right.as_bool().unwrap_or(false)));
+            }
         }
         "||" => {
-            return Result::Ok(Value::Bool(left.as_bool().unwrap() || right.as_bool().unwrap()));
+            if left.is_boolean() && right.is_boolean() {
+                return Result::Ok(Value::Bool(left.as_bool().unwrap_or(false) || right.as_bool().unwrap_or(false)));
+            }
         }
         "==" => {
             return Result::Ok(Value::Bool(eq(left, right)));
@@ -24,79 +28,14 @@ pub fn eval(left: &Value,
         "!=" => {
             return Result::Ok(Value::Bool(!eq(left, right)));
         }
-        ">=" => {
-            let left_v = left.as_f64().unwrap_or(0.0);
-            let right_v = right.as_f64().unwrap_or(0.0);
-            return Result::Ok(json!(left_v >= right_v));
-        }
-        "<=" => {
-            let left_v = left.as_f64().unwrap_or(0.0);
-            let right_v = right.as_f64().unwrap_or(0.0);
-            return Result::Ok(json!(left_v <= right_v));
-        }
-        ">" => {
-            let left_v = left.as_f64().unwrap_or(0.0);
-            let right_v = right.as_f64().unwrap_or(0.0);
-            return Result::Ok(json!(left_v > right_v));
-        }
-        "<" => {
-            let left_v = left.as_f64().unwrap_or(0.0);
-            let right_v = right.as_f64().unwrap_or(0.0);
-            return Result::Ok(json!(left_v < right_v));
-        }
-        "*" => {
-            let left_v = left.as_f64().unwrap_or(0.0);
-            let right_v = right.as_f64().unwrap_or(0.0);
-            if left.is_i64() && right.is_i64() {
-                return Result::Ok(json!(left_v as i64 * right_v as i64));
-            }
-            return Result::Ok(json!(left_v * right_v));
-        }
-        "/" => {
-            let left_v = left.as_f64().unwrap_or(0.0);
-            let right_v = right.as_f64();
-            if right_v.is_some() {
-                if left.is_i64() && right.is_i64() {
-                    return Result::Ok(json!(left_v as i64 / right_v.unwrap() as i64));
-                }
-                return Result::Ok(json!(left_v / right_v.unwrap()));
-            } else {
-                return Result::Err(Error::from(format!("[rbatis] express '{} / null' Infinity!", left_v)));
-            }
-        }
-        "%" => {
-            let left_v = left.as_f64().unwrap_or(0.0);
-            let right_v = right.as_f64();
-            if right_v.is_some() {
-                if left.is_i64() && right.is_i64() {
-                    return Result::Ok(json!(left_v as i64 % right_v.unwrap() as i64));
-                }
-                return Result::Ok(json!(left_v % right_v.unwrap()));
-            } else {
-                return Result::Err(Error::from(format!("[rbatis] express '{} % null' Infinity!", left_v)));
-            }
-        }
-        "^" => {
-            if !(left.is_i64() || left.is_null()) || !(right.is_i64() || right.is_null()) {
-                return Result::Err(crate::core::Error::from(format!("[rbatis] only support 'int ^ int'! express:{}{}{}", left, op, right)));
-            }
-            let left_v = left.as_i64().unwrap_or(0);
-            let right_v = right.as_i64().unwrap_or(0);
-            if left.is_i64() && right.is_i64() {
-                return Result::Ok(json!(left_v as i64 ^ right_v as i64));
-            }
-            return Result::Ok(json!(left_v ^ right_v));
-        }
-        "**" => {
-            if right.is_u64() == false {
-                return Result::Err(crate::core::Error::from(format!("[rbatis] only support 'number ** uint'! express:{}{}{}", left, op, right)));
-            }
-            let left_v = left.as_f64().unwrap_or(0.0);
-            let right_v = right.as_f64().unwrap();
-            return Result::Ok(json!(left_v.powf(right_v)));
-        }
         "+" => {
-            if left.is_string() || right.is_string() {
+            //allow null,string,number
+            let left_is_string = left.is_string();
+            let right_is_string = right.is_string();
+            if !(left.is_null() || left_is_string || left.is_number()) || !(right.is_null() || right_is_string || right.is_number()) {
+                return Result::Err(crate::core::Error::from(format!("[rbatis] eval error express:{} {} {}", left, op, right)));
+            }
+            if left_is_string || right_is_string {
                 let left_v = left.as_str().unwrap_or("");
                 let right_v = right.as_str().unwrap_or("");
                 return Result::Ok(json!(left_v.to_string()+right_v));
@@ -111,17 +50,96 @@ pub fn eval(left: &Value,
                 return Result::Ok(json!(left_v + right_v));
             }
         }
-        "-" => {
-            let left_v = left.as_f64().unwrap_or(0.0);
-            let right_v = right.as_f64().unwrap_or(0.0);
-            let left_i64 = left.is_i64() || left.is_null();
-            let right_i64 = right.is_i64() || right.is_null();
-            if left_i64 && right_i64 {
-                return Result::Ok(json!(left_v as i64 - right_v as i64));
+        _ => {
+            //allow number,null
+            if !(left.is_number() || left.is_null()) || !(right.is_number() || right.is_null()) {
+                return Result::Err(crate::core::Error::from(format!("[rbatis] eval error express:{} {} {}", left, op, right)));
             }
-            return Result::Ok(json!(left_v - right_v));
+            match op {
+                ">=" => {
+                    let left_v = left.as_f64().unwrap_or(0.0);
+                    let right_v = right.as_f64().unwrap_or(0.0);
+                    return Result::Ok(json!(left_v >= right_v));
+                }
+                "<=" => {
+                    let left_v = left.as_f64().unwrap_or(0.0);
+                    let right_v = right.as_f64().unwrap_or(0.0);
+                    return Result::Ok(json!(left_v <= right_v));
+                }
+                ">" => {
+                    let left_v = left.as_f64().unwrap_or(0.0);
+                    let right_v = right.as_f64().unwrap_or(0.0);
+                    return Result::Ok(json!(left_v > right_v));
+                }
+                "<" => {
+                    let left_v = left.as_f64().unwrap_or(0.0);
+                    let right_v = right.as_f64().unwrap_or(0.0);
+                    return Result::Ok(json!(left_v < right_v));
+                }
+                "*" => {
+                    let left_v = left.as_f64().unwrap_or(0.0);
+                    let right_v = right.as_f64().unwrap_or(0.0);
+                    if left.is_i64() && right.is_i64() {
+                        return Result::Ok(json!(left_v as i64 * right_v as i64));
+                    }
+                    return Result::Ok(json!(left_v * right_v));
+                }
+                "/" => {
+                    let left_v = left.as_f64().unwrap_or(0.0);
+                    let right_v = right.as_f64();
+                    if right_v.is_some() {
+                        if left.is_i64() && right.is_i64() {
+                            return Result::Ok(json!(left_v as i64 / right_v.unwrap() as i64));
+                        }
+                        return Result::Ok(json!(left_v / right_v.unwrap()));
+                    } else {
+                        return Result::Err(Error::from(format!("[rbatis] express '{} / null' Infinity!", left_v)));
+                    }
+                }
+                "%" => {
+                    let left_v = left.as_f64().unwrap_or(0.0);
+                    let right_v = right.as_f64();
+                    if right_v.is_some() {
+                        if left.is_i64() && right.is_i64() {
+                            return Result::Ok(json!(left_v as i64 % right_v.unwrap() as i64));
+                        }
+                        return Result::Ok(json!(left_v % right_v.unwrap()));
+                    } else {
+                        return Result::Err(Error::from(format!("[rbatis] express '{} % null' Infinity!", left_v)));
+                    }
+                }
+                "^" => {
+                    if !(left.is_i64() || left.is_null()) || !(right.is_i64() || right.is_null()) {
+                        return Result::Err(crate::core::Error::from(format!("[rbatis] only support 'int ^ int'! express:{}{}{}", left, op, right)));
+                    }
+                    let left_v = left.as_i64().unwrap_or(0);
+                    let right_v = right.as_i64().unwrap_or(0);
+                    if left.is_i64() && right.is_i64() {
+                        return Result::Ok(json!(left_v as i64 ^ right_v as i64));
+                    }
+                    return Result::Ok(json!(left_v ^ right_v));
+                }
+                "**" => {
+                    if right.is_u64() == false {
+                        return Result::Err(crate::core::Error::from(format!("[rbatis] only support 'number ** uint'! express:{}{}{}", left, op, right)));
+                    }
+                    let left_v = left.as_f64().unwrap_or(0.0);
+                    let right_v = right.as_f64().unwrap();
+                    return Result::Ok(json!(left_v.powf(right_v)));
+                }
+                "-" => {
+                    let left_v = left.as_f64().unwrap_or(0.0);
+                    let right_v = right.as_f64().unwrap_or(0.0);
+                    let left_i64 = left.is_i64() || left.is_null();
+                    let right_i64 = right.is_i64() || right.is_null();
+                    if left_i64 && right_i64 {
+                        return Result::Ok(json!(left_v as i64 - right_v as i64));
+                    }
+                    return Result::Ok(json!(left_v - right_v));
+                }
+                _ => {}
+            }
         }
-        _ => {}
     }
     return Result::Err(crate::core::Error::from(format!("[rbatis] eval error express:{} {} {}", left, op, right)));
 }

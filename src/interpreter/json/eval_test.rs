@@ -72,6 +72,8 @@ mod test {
         assert_eq!(exec_expr(&arg, "2*(1+(1+1)+1)"), json!(2*(1+(1+1)+1)));
         assert_eq!(exec_expr(&arg, "(((34 + 21) / 5) - 12) * 348"), json!((((34 + 21) / 5) - 12) * 348));
         assert_eq!(exec_expr(&arg, "null ^ null"), json!(0 ^ 0));
+        assert_eq!(exec_expr(&arg, "null >= 0"), json!(true));
+        assert_eq!(exec_expr(&arg, "null <= a"), json!(true));
     }
 
     #[test]
