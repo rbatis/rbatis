@@ -420,12 +420,7 @@ No, moving away from IOE is recommended.
 * Which crate should be depended on if only the driver is needed? <br/>
 rbatis-core， Cargo.toml add rbatis-core = "*"
 * How to select `async/.await` runtime? <br/>
-```rust
-# add the line below in Cargo.toml to used async_std
-async-std = { version = "*", features = ["attributes","tokio02"] }
-rbatis-core = { version = "*", default-features = false ,  features = ["all","tokio02"] }
-rbatis = { version = "*", default-features = false , features = ["tokio02"] }
-```
+see https://rbatis.github.io/rbatis.io/
 # changelog
 [changelog](https://github.com/rbatis/rbatis/releases/)
 
