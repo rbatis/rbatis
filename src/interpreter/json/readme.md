@@ -4,23 +4,25 @@
 
 | token    | doc  |
 | ------ | ------ |
+|   (*)    |    brackets    | 
 |   %     |        | 
 |   ^     |   xor     | 
 |   *     |        | 
-|   **     |   exponentiation     | 
+|   **     |   square     | 
 |   /     |        | 
 |   +     |        | 
 |   -     |        | 
 |   <=     |        | 
 |   <     |        | 
 |   >     |        | 
-|   >=     |        | 
+|   > =     |        | 
 |   !=     |        | 
 |   ==     |        | 
 |   &&     |        | 
 |   ||     |        | 
 
 #### for example:
+
 ```
     #[test]
     fn test_node_run() {
