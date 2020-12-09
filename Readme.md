@@ -402,8 +402,7 @@ async fn main() -> std::io::Result<()> {
 | async/await support                                             | √     | 
 | PagePlugin(Pagincation)                                         | √     |
 | LogicDelPlugin                                 | √    |
-| DataBaseConvertPlugin(The database table structure is converted to the configuration plug-in)    | x     | 
-| web(Web UI)                                            | x     |  
+| DataBase Table ConvertPage(Web UI,Coming soon)                          | x     | 
 
 
 * Conlusion: Assuming zero time consumed on IO, single threaded benchmark achieves 200K QPS or QPS, which is a few times more performant than GC languages like Go or Java.
