@@ -20,7 +20,7 @@ impl StmtConvert for DriverType {
                 "?".to_string()
             }
             DriverType::Mssql => {
-                "?".to_string()
+                format!("@p{}", index + 1)
             }
             DriverType::None => {
                 panic!("[rbatis] un support none for driver type!")
