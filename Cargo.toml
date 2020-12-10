@@ -66,4 +66,4 @@ once_cell = "1.5"
 rustflake = { version = "0.1", package = "rustflake", optional = true }
 [dev-dependencies]
 fast_log = "1.3"
-async-std = { version = "1.7", features = ["attributes"] }
+async-std = { version = "1.8", features = ["attributes"] }
