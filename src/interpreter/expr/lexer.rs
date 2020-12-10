@@ -1,9 +1,9 @@
 use std::collections::LinkedList;
 
 use crate::core::Error;
-use crate::interpreter::json::ast::Node;
-use crate::interpreter::json::parser::parse;
-use crate::interpreter::json::token::TokenMap;
+use crate::interpreter::expr::ast::Node;
+use crate::interpreter::expr::parser::parse;
+use crate::interpreter::expr::token::TokenMap;
 
 ///lexer
 pub fn lexer(express: &str, token_map: &TokenMap) -> Result<Vec<String>, Error> {
@@ -155,8 +155,8 @@ fn trim_push_back(arg: &str, list: &mut LinkedList<String>) {
 
 #[cfg(test)]
 mod test {
-    use crate::interpreter::json::lexer::lexer;
-    use crate::interpreter::json::token::TokenMap;
+    use crate::interpreter::expr::lexer::lexer;
+    use crate::interpreter::expr::token::TokenMap;
 
     #[test]
     fn test_fill() {

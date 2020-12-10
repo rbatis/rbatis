@@ -20,21 +20,21 @@ use crate::interpreter::sql::node::trim_node::TrimNode;
 use crate::interpreter::sql::node::when_node::WhenNode;
 use crate::interpreter::sql::node::where_node::WhereNode;
 use crate::core::Error;
-use crate::interpreter::json::ast::Node;
-use crate::interpreter::json::lexer::lexer;
+use crate::interpreter::expr::ast::Node;
+use crate::interpreter::expr::lexer::lexer;
 
 /// Py lang,make sure Send+Sync
-pub struct Py {
+pub struct PyRuntime {
     pub cache: RwLock<HashMap<String, Vec<NodeType>>>,
     pub generate: Vec<Box<dyn CustomNodeGenerate>>,
 }
 
-impl Py {
+impl PyRuntime {
     /// parser and cache py data sql,return an vec node type
     pub fn parse_and_cache(&self, arg: &str) -> Result<Vec<NodeType>, crate::core::Error> {
         let rd = self.cache.try_read();
         if rd.is_err() {
-            let nods = Py::parse(arg, &self.generate)?;
+            let nods = PyRuntime::parse(arg, &self.generate)?;
             self.try_cache_into(arg, nods.clone());
             return Ok(nods);
         } else {
@@ -44,7 +44,7 @@ impl Py {
                 return Ok(nodes.unwrap().clone());
             } else {
                 drop(rd);
-                let nods = Py::parse(arg, &self.generate)?;
+                let nods = PyRuntime::parse(arg, &self.generate)?;
                 self.try_cache_into(arg, nods.clone());
                 return Ok(nods);
             }
@@ -66,7 +66,7 @@ impl Py {
 
     /// parser py string data
     pub fn parse(arg: &str, generates: &Vec<Box<dyn CustomNodeGenerate>>) -> Result<Vec<NodeType>, crate::core::Error> {
-        let line_space_map = Py::create_line_space_map(arg);
+        let line_space_map = PyRuntime::create_line_space_map(arg);
         let mut main_node = vec![];
         let ls = arg.lines();
         let mut space = -1;
@@ -81,17 +81,17 @@ impl Py {
             if space == -1 {
                 space = count_index;
             }
-            let (child_str, do_skip) = Py::find_child_str(line, count_index, arg, &line_space_map);
+            let (child_str, do_skip) = PyRuntime::find_child_str(line, count_index, arg, &line_space_map);
             if do_skip != -1 && do_skip >= skip {
                 skip = do_skip;
             }
             let parserd;
             if !child_str.is_empty() {
-                parserd = Py::parse(child_str.as_str(), generates)?;
+                parserd = PyRuntime::parse(child_str.as_str(), generates)?;
             } else {
                 parserd = vec![];
             }
-            Py::parse_node(generates, &mut main_node, x, *line_space_map.get(&line).unwrap() as usize, parserd)?;
+            PyRuntime::parse_node(generates, &mut main_node, x, *line_space_map.get(&line).unwrap() as usize, parserd)?;
         }
         return Ok(main_node);
     }
@@ -216,7 +216,7 @@ impl Py {
         let mut line = -1;
         for x in lines {
             line += 1;
-            let space = Py::count_space(x);
+            let space = PyRuntime::count_space(x);
             //dothing
             m.insert(line, space);
         }
@@ -226,9 +226,9 @@ impl Py {
 
 #[cfg(test)]
 mod test {
-    use crate::interpreter::sql::py_sql::Py;
+    use crate::interpreter::sql::py_sql::PyRuntime;
     use crate::core::db::DriverType;
-    use crate::interpreter::json::runtime::Runtime;
+    use crate::interpreter::expr::runtime::ExprRuntime;
     use crate::interpreter::sql::node::node::do_child_nodes;
 
     #[test]
@@ -255,7 +255,7 @@ mod test {
     where:
         id  = '2';";
         //println!("{}", s);
-        let pys = Py::parse(s, &vec![]);
+        let pys = PyRuntime::parse(s, &vec![]);
         match pys {
             Ok(v) => {
                 println!("{:?}", v);
@@ -289,7 +289,7 @@ mod test {
         otherwise:
           AND age = 0
     WHERE id  = 'end';";
-        let pys = Py::parse(s, &vec![]).unwrap();
+        let pys = PyRuntime::parse(s, &vec![]).unwrap();
         println!("{:#?}", pys);
         //for x in &pys {
         // println!("{:?}", x.clone());
@@ -298,7 +298,7 @@ mod test {
 
 
         let mut arg_array = vec![];
-        let mut engine = Runtime::new();
+        let mut engine = ExprRuntime::new();
         let mut env = json!({
         "name": "1",
         "age": 27,
@@ -334,11 +334,11 @@ mod test {
                        )
                        ";
 
-        let pys = Py::parse(s, &vec![]).unwrap();
+        let pys = PyRuntime::parse(s, &vec![]).unwrap();
         println!("{:#?}", pys);
 
         let mut arg_array = vec![];
-        let mut engine = Runtime::new();
+        let mut engine = ExprRuntime::new();
         let r = do_child_nodes(&DriverType::Mysql, &pys, &mut env, &mut engine, &mut arg_array).unwrap();
         println!("result: {}", &r);
         println!("arg: {:?}", arg_array.clone());
@@ -354,12 +354,12 @@ mod test {
                          select 3
                            select 4
                        ";
-        let line_space_map = Py::create_line_space_map(s);
+        let line_space_map = PyRuntime::create_line_space_map(s);
         println!("m:{:#?}", &line_space_map);
-        let (child_str, do_skip) = Py::find_child_str(4,
-                                                      "                       ".len() as i32,
-                                                      s,
-                                                      &line_space_map);
+        let (child_str, do_skip) = PyRuntime::find_child_str(4,
+                                                             "                       ".len() as i32,
+                                                             s,
+                                                             &line_space_map);
 
         println!("child_str: \n{}", &child_str);
         println!("skip: {}", do_skip);

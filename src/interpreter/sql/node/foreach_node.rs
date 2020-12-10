@@ -8,7 +8,7 @@ use crate::interpreter::sql::node::node_type::NodeType;
 use crate::interpreter::sql::node::string_node::StringNode;
 use crate::core::convert::StmtConvert;
 use crate::core::db::DriverType;
-use crate::interpreter::json::runtime::Runtime;
+use crate::interpreter::expr::runtime::ExprRuntime;
 use crate::utils;
 
 #[derive(Clone, Debug)]
@@ -50,7 +50,7 @@ impl RbatisAST for ForEachNode {
     fn name() -> &'static str {
         "for"
     }
-    fn eval(&self, convert: &crate::core::db::DriverType, env: &mut Value, engine: &Runtime, arg_array: &mut Vec<Value>) -> Result<String, crate::core::Error> {
+    fn eval(&self, convert: &crate::core::db::DriverType, env: &mut Value, engine: &ExprRuntime, arg_array: &mut Vec<Value>) -> Result<String, crate::core::Error> {
         let mut result = String::new();
         let collection_value = utils::value_util::get_deep_value(self.collection.as_str(), env);
         if collection_value.is_null() {
@@ -95,7 +95,7 @@ impl RbatisAST for ForEachNode {
 
 #[test]
 pub fn test_for_each_node() {
-    let mut engine = Runtime::new();
+    let mut engine = ExprRuntime::new();
     let n = ForEachNode {
         childs: vec![NodeType::NString(StringNode::new("index:#{index},item:#{item}"))],
         collection: "arg".to_string(),
@@ -113,7 +113,7 @@ pub fn test_for_each_node() {
 
 #[test]
 pub fn test_for_each_object_node() {
-    let mut engine = Runtime::new();
+    let mut engine = ExprRuntime::new();
     let n = ForEachNode {
         childs: vec![NodeType::NString(StringNode::new("index:#{index},item:#{item}"))],
         collection: "arg".to_string(),

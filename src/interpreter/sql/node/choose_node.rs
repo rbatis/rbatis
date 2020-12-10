@@ -10,7 +10,7 @@ use crate::interpreter::sql::node::otherwise_node::OtherwiseNode;
 use crate::interpreter::sql::node::string_node::StringNode;
 use crate::core::convert::StmtConvert;
 use crate::core::db::DriverType;
-use crate::interpreter::json::runtime::Runtime;
+use crate::interpreter::expr::runtime::ExprRuntime;
 
 #[derive(Clone, Debug)]
 pub struct ChooseNode {
@@ -50,7 +50,7 @@ impl RbatisAST for ChooseNode {
         "choose"
     }
 
-    fn eval(&self, convert: &crate::core::db::DriverType, env: &mut Value, engine: &Runtime, arg_array: &mut Vec<Value>) -> Result<String, crate::core::Error> {
+    fn eval(&self, convert: &crate::core::db::DriverType, env: &mut Value, engine: &ExprRuntime, arg_array: &mut Vec<Value>) -> Result<String, crate::core::Error> {
         if self.when_nodes.is_none() == false {
             for item in self.when_nodes.as_ref().unwrap() {
                 let s = item.eval(convert, env, engine, arg_array);
@@ -69,7 +69,7 @@ impl RbatisAST for ChooseNode {
 
 #[test]
 pub fn test_choose_node() {
-    let mut engine = Runtime::new();
+    let mut engine = ExprRuntime::new();
     let mut john = json!({
         "arg": 2,
     });

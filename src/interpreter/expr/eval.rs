@@ -158,7 +158,7 @@ mod test {
     use serde::{Deserialize, Serialize};
     use serde_json::Value;
 
-    use crate::interpreter::json::eval::eval;
+    use crate::interpreter::expr::eval::eval;
     use crate::utils::time_util;
 
     #[test]

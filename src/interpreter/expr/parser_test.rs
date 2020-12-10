@@ -9,11 +9,11 @@ mod test {
     use serde_json::json;
     use serde_json::Value;
 
-    use crate::interpreter::json::{lexer, runtime};
-    use crate::interpreter::json::ast::{Node, NodeType};
-    use crate::interpreter::json::ast::NodeType::{NNumber, NOpt};
-    use crate::interpreter::json::parser::parse;
-    use crate::interpreter::json::token::TokenMap;
+    use crate::interpreter::expr::{lexer, runtime};
+    use crate::interpreter::expr::ast::{Node, NodeType};
+    use crate::interpreter::expr::ast::NodeType::{NNumber, NOpt};
+    use crate::interpreter::expr::parser::parse;
+    use crate::interpreter::expr::token::TokenMap;
     use crate::utils;
     use crate::utils::bencher::QPS;
     use crate::utils::time_util;

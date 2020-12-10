@@ -6,7 +6,7 @@ use crate::interpreter::sql::node::node_type::NodeType;
 use crate::interpreter::sql::node::string_node::StringNode;
 use crate::core::convert::StmtConvert;
 use crate::core::db::DriverType;
-use crate::interpreter::json::runtime::Runtime;
+use crate::interpreter::expr::runtime::ExprRuntime;
 
 #[derive(Clone, Debug)]
 pub struct TrimNode {
@@ -39,7 +39,7 @@ impl RbatisAST for TrimNode {
     fn name() -> &'static str {
         "trim"
     }
-    fn eval(&self, convert: &crate::core::db::DriverType, env: &mut Value, engine: &Runtime, arg_array: &mut Vec<Value>) -> Result<String, crate::core::Error> {
+    fn eval(&self, convert: &crate::core::db::DriverType, env: &mut Value, engine: &ExprRuntime, arg_array: &mut Vec<Value>) -> Result<String, crate::core::Error> {
         let result_value = do_child_nodes(convert, &self.childs, env, engine, arg_array)?;
         let mut result = result_value.as_str().trim();
         if !self.prefix_overrides.is_empty() {
@@ -64,7 +64,7 @@ impl RbatisAST for TrimNode {
 
 #[test]
 pub fn test_trim_node() {
-    let mut engine = Runtime::new();
+    let mut engine = ExprRuntime::new();
     let node = TrimNode {
         childs: vec![NodeType::NString(StringNode::new("1trim value1"))],
         prefix: "(".to_string(),

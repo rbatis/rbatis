@@ -7,7 +7,7 @@ use crate::interpreter::sql::node::node_type::NodeType;
 use crate::interpreter::sql::node::string_node::StringNode;
 use crate::core::convert::StmtConvert;
 use crate::core::db::DriverType;
-use crate::interpreter::json::runtime::Runtime;
+use crate::interpreter::expr::runtime::ExprRuntime;
 
 #[derive(Clone, Debug)]
 pub struct IfNode {
@@ -29,7 +29,7 @@ impl RbatisAST for IfNode {
     fn name() -> &'static str {
         "if"
     }
-    fn eval(&self, convert: &crate::core::db::DriverType, env: &mut Value, engine: &Runtime, arg_array: &mut Vec<Value>) -> Result<String, crate::core::Error> {
+    fn eval(&self, convert: &crate::core::db::DriverType, env: &mut Value, engine: &ExprRuntime, arg_array: &mut Vec<Value>) -> Result<String, crate::core::Error> {
         let result = engine.eval(self.test.as_str(), env)?;
         if !result.is_boolean() {
             return Result::Err(crate::core::Error::from("[rbatis] express:'".to_owned() + self.test.as_str() + "' is not return bool value!"));
@@ -50,7 +50,7 @@ pub fn test_if_node() {
     let mut john = json!({
         "arg": 1,
     });
-    let mut engine = Runtime::new();
+    let mut engine = ExprRuntime::new();
     let mut arg_array = vec![];
 
     println!("{}", node.eval(&DriverType::Mysql, &mut john, &mut engine, &mut arg_array).unwrap());

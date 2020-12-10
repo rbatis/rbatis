@@ -16,12 +16,12 @@ use crate::interpreter::sql::node::when_node::WhenNode;
 use crate::interpreter::sql::node::where_node::WhereNode;
 use crate::core::convert::StmtConvert;
 use crate::core::db::DriverType;
-use crate::interpreter::json::runtime::Runtime;
+use crate::interpreter::expr::runtime::ExprRuntime;
 
 use super::node_type::NodeType;
 
 //执行子所有节点
-pub fn do_child_nodes(convert: &crate::core::db::DriverType, child_nodes: &Vec<NodeType>, env: &mut Value, engine: &Runtime, arg_array: &mut Vec<Value>) -> Result<String, crate::core::Error> {
+pub fn do_child_nodes(convert: &crate::core::db::DriverType, child_nodes: &Vec<NodeType>, env: &mut Value, engine: &ExprRuntime, arg_array: &mut Vec<Value>) -> Result<String, crate::core::Error> {
     let mut s = String::new();
     for item in child_nodes {
         let item_result = item.eval(convert, env, engine, arg_array)?;
@@ -32,7 +32,7 @@ pub fn do_child_nodes(convert: &crate::core::db::DriverType, child_nodes: &Vec<N
 
 #[test]
 fn test_string_node() {
-    let mut engine = Runtime::new();
+    let mut engine = ExprRuntime::new();
     let mut john = json!({
         "name": "John Doe",
     });

@@ -13,12 +13,12 @@ use crate::core::db::{DBExecResult, DBPool, DBPoolConn, DBQuery, DBTx};
 use crate::core::Error;
 use crate::core::runtime::Arc;
 use crate::core::sync::sync_map::SyncMap;
-use crate::interpreter::json::runtime::Runtime;
+use crate::interpreter::expr::runtime::ExprRuntime;
 use crate::interpreter::sql::ast::RbatisAST;
 use crate::interpreter::sql::node::node::do_child_nodes;
 use crate::interpreter::sql::node::node_type::NodeType;
 use crate::interpreter::sql::node::proxy_node::CustomNodeGenerate;
-use crate::interpreter::sql::py_sql::Py;
+use crate::interpreter::sql::py_sql::PyRuntime;
 use crate::plugin::intercept::SqlIntercept;
 use crate::plugin::log::{LogPlugin, RbatisLog};
 use crate::plugin::logic_delete::{LogicDelete, RbatisLogicDeletePlugin};
@@ -35,10 +35,10 @@ use rbatis_core::db::DBConnectOption;
 pub struct Rbatis {
     // the connection pool,use OnceCell init this
     pub pool: OnceCell<DBPool>,
-    // the engine run some express for example:'1+1'=2
-    pub engine: Runtime,
-    //py lang
-    pub py: Py,
+    // the runtime run some express for example:'1+1'=2
+    pub runtime_expr: ExprRuntime,
+    //py lang runtime run some express for py_sql
+    pub runtime_py: PyRuntime,
     //tx manager
     pub tx_manager: Arc<TxManager>,
     // page plugin
@@ -114,13 +114,13 @@ impl Rbatis {
     pub fn new_with_opt(option: RbatisOption) -> Self {
         return Self {
             pool: OnceCell::new(),
-            engine: Runtime::new(),
+            runtime_expr: ExprRuntime::new(),
             tx_manager: TxManager::new_arc(option.log_plugin.clone(), option.tx_lock_wait_timeout, option.tx_check_interval),
             page_plugin: option.page_plugin,
             sql_intercepts: option.sql_intercepts,
             logic_plugin: option.logic_plugin,
             log_plugin: option.log_plugin,
-            py: Py { cache: Default::default(), generate: option.generate },
+            runtime_py: PyRuntime { cache: Default::default(), generate: option.generate },
         };
     }
 
@@ -428,11 +428,11 @@ impl Rbatis {
 
     /// py str into py ast,run get sql,arg result
     fn py_to_sql(&self, py: &str, arg: &serde_json::Value) -> Result<(String, Vec<serde_json::Value>), Error> {
-        let nodes = self.py.parse_and_cache(py)?;
+        let nodes = self.runtime_py.parse_and_cache(py)?;
         let mut arg_array = vec![];
         let mut env = arg.clone();
         let driver_type = Box::new(self.driver_type()?);
-        let mut sql = do_child_nodes(&driver_type, &nodes, &mut env, &self.engine, &mut arg_array)?;
+        let mut sql = do_child_nodes(&driver_type, &nodes, &mut env, &self.runtime_expr, &mut arg_array)?;
         sql = sql.trim().to_string();
         return Ok((sql, arg_array));
     }
