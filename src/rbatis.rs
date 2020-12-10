@@ -7,9 +7,7 @@ use once_cell::sync::OnceCell;
 use serde::de::DeserializeOwned;
 use serde::ser::Serialize;
 use serde_json::Number;
-
-use crate::core::db::{DriverType, DBPoolOptions};
-use crate::core::db::{DBExecResult, DBPool, DBPoolConn, DBQuery, DBTx};
+use crate::core::db::{DriverType, DBPoolOptions, DBExecResult, DBPool, DBPoolConn, DBQuery, DBTx};
 use crate::core::Error;
 use crate::core::runtime::Arc;
 use crate::core::sync::sync_map::SyncMap;
