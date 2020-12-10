@@ -7,7 +7,7 @@ use serde_json::Value;
 use crate::interpreter::sql::ast::RbatisAST;
 use crate::interpreter::sql::node::node_type::NodeType;
 use crate::core::Error;
-use crate::interpreter::json::runtime::Runtime;
+use crate::interpreter::expr::runtime::ExprRuntime;
 
 ///CustomNode Generate,you can custom py lang parse
 pub trait CustomNodeGenerate: Send + Sync {
@@ -35,7 +35,7 @@ impl RbatisAST for ProxyNode {
         "proxy"
     }
 
-    fn eval(&self, convert: &crate::core::db::DriverType, env: &mut Value, engine: &Runtime, arg_array: &mut Vec<Value>) -> Result<String, crate::core::Error> {
+    fn eval(&self, convert: &crate::core::db::DriverType, env: &mut Value, engine: &ExprRuntime, arg_array: &mut Vec<Value>) -> Result<String, crate::core::Error> {
         self.ptr.deref().eval(convert, env, engine, arg_array)
     }
 }

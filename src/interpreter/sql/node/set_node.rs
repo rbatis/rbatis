@@ -4,7 +4,7 @@ use crate::interpreter::sql::ast::RbatisAST;
 use crate::interpreter::sql::node::node::do_child_nodes;
 use crate::interpreter::sql::node::node_type::NodeType;
 use crate::core::convert::StmtConvert;
-use crate::interpreter::json::runtime::Runtime;
+use crate::interpreter::expr::runtime::ExprRuntime;
 
 #[derive(Clone, Debug)]
 pub struct SetNode {
@@ -24,7 +24,7 @@ impl RbatisAST for SetNode {
     fn name() -> &'static str {
         "set"
     }
-    fn eval(&self, convert: &crate::core::db::DriverType, env: &mut Value, engine: &Runtime, arg_array: &mut Vec<Value>) -> Result<String, crate::core::Error> {
+    fn eval(&self, convert: &crate::core::db::DriverType, env: &mut Value, engine: &ExprRuntime, arg_array: &mut Vec<Value>) -> Result<String, crate::core::Error> {
         return do_child_nodes(convert, &self.childs, env, engine, arg_array);
     }
 }

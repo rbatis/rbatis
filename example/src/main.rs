@@ -89,7 +89,7 @@ mod test {
     use rbatis::core::Error;
     use rbatis::crud::CRUD;
     use rbatis::crud::CRUDEnable;
-    use rbatis::interpreter::json::runtime::Runtime;
+    use rbatis::interpreter::json::runtime::ExprRuntime;
     use rbatis::plugin::page::{Page, PageRequest};
     use rbatis::rbatis::Rbatis;
     use rbatis::utils::bencher::QPS;
@@ -216,7 +216,7 @@ mod test {
             "custom"
         }
 
-        fn eval(&self, convert: &DriverType, env: &mut Value, engine: &Runtime, arg_result: &mut Vec<Value>) -> Result<String, Error> {
+        fn eval(&self, convert: &DriverType, env: &mut Value, engine: &ExprRuntime, arg_result: &mut Vec<Value>) -> Result<String, Error> {
             Ok(" AND id = 1 ".to_string())
         }
     }
@@ -239,7 +239,7 @@ mod test {
         fast_log::init_log("requests.log", 1000, log::Level::Info, None, true);
         let mut rb = Rbatis::new();
         rb.link(MYSQL_URL).await.unwrap();
-        rb.py.add_gen(MyGen {});
+        rb.runtime_py.add_gen(MyGen {});
         let py = "
     SELECT * FROM biz_activity
     WHERE delete_flag = 0

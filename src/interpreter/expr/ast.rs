@@ -9,9 +9,9 @@ use serde_json;
 use serde_json::json;
 use serde_json::value::Value::{Null, Number};
 
-use crate::interpreter::json::eval::eval;
-use crate::interpreter::json::ast::NodeType::{NArg, NBinary, NBool, NNull, NNumber, NOpt, NString};
-use crate::interpreter::json::token::TokenMap;
+use crate::interpreter::expr::eval::eval;
+use crate::interpreter::expr::ast::NodeType::{NArg, NBinary, NBool, NNull, NNumber, NOpt, NString};
+use crate::interpreter::expr::token::TokenMap;
 
 #[derive(Clone, PartialEq, Debug, Serialize, Deserialize)]
 pub enum NodeType {
