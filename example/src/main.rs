@@ -89,7 +89,7 @@ mod test {
     use rbatis::core::Error;
     use rbatis::crud::CRUD;
     use rbatis::crud::CRUDEnable;
-    use rbatis::interpreter::json::runtime::ExprRuntime;
+    use rbatis::interpreter::expr::runtime::ExprRuntime;
     use rbatis::plugin::page::{Page, PageRequest};
     use rbatis::rbatis::Rbatis;
     use rbatis::utils::bencher::QPS;
