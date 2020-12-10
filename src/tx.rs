@@ -31,7 +31,7 @@ pub enum TxState {
 
 impl TxManager {
     pub fn new_arc(plugin: Arc<Box<dyn LogPlugin>>, tx_lock_wait_timeout: Duration, tx_check_interval: Duration) -> Arc<Self> {
-        let (s, r) = crate::core::runtime::channel(1);
+        let (s, r) = crate::core::runtime::channel::bounded(1);
         let s = Self {
             tx_context: SyncMap::new(),
             tx_lock_wait_timeout,
