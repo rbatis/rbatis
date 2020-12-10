@@ -152,7 +152,6 @@ mod test {
         let mut rb = init_rbatis().await;
         //设置 逻辑删除插件
         rb.logic_plugin = Some(Box::new(RbatisLogicDeletePlugin::new("delete_flag")));
-        rb.link("mysql://root:123456@localhost:3306/test").await.unwrap();
         let r = rb.fetch_by_id::<Option<BizActivity>>("", &"1".to_string()).await.unwrap();
         println!("{}", serde_json::to_string(&r).unwrap());
     }
