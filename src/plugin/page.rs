@@ -65,7 +65,15 @@ impl PagePlugin for RbatisPagePlugin {
         }
         //limit sql
         let limit_sql = driver_type.page_limit_sql(page.offset(), page.get_size())?;
-        return Ok((count_sql, sql + limit_sql.as_str()));
+        match driver_type {
+            DriverType::Mssql => {
+                sql = format!("SELECT a.*, 0 AS ORDER_V FROM ({})a ORDER BY ORDER_V OFFSET 0 ROWS FETCH NEXT 1000 ROWS ONLY", limit_sql);
+            }
+            _ => {
+                sql = sql + limit_sql.as_str();
+            }
+        }
+        return Ok((count_sql, sql));
     }
 }
 
