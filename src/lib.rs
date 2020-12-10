@@ -10,7 +10,6 @@ extern crate lazy_static;
 extern crate once_cell;
 #[macro_use]
 extern crate serde_json;
-extern crate serde_yaml;
 
 pub use rbatis_core as core;
 
