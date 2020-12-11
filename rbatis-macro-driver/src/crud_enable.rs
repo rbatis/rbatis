@@ -150,11 +150,14 @@ pub struct CrudEnableConfig {
 pub(crate) fn impl_crud(args: TokenStream, input: TokenStream) -> TokenStream {
     let arg_str = args.to_string();
     let config = read_config(&arg_str);
+    let token_string = input.to_string();
     let input_clone: proc_macro2::TokenStream = input.clone().into();
+    let driver_token = gen_driver_token(&token_string);
     let ast = syn::parse(input).unwrap();
     let stream = impl_crud_driver(&ast, &config.id_type, &config.id_name, &config.table_name, &config.table_columns);
     let s: proc_macro2::TokenStream = stream.into();
     let qt = quote! {
+       #driver_token
        #input_clone
        #s
     };
@@ -163,6 +166,19 @@ pub(crate) fn impl_crud(args: TokenStream, input: TokenStream) -> TokenStream {
         println!("............gen impl crud_enable end............");
     }
     qt.into()
+}
+
+fn gen_driver_token(token_string: &str) -> proc_macro2::TokenStream {
+    let have_ser_driver_macro = token_string.contains("Serialize") || token_string.contains("Deserialize");
+    let driver_token;
+    if have_ser_driver_macro {
+        driver_token = quote! {}
+    } else {
+        driver_token = quote! {
+           #[derive(Serialize, Deserialize)]
+        }
+    }
+    return driver_token;
 }
 
 ///read config
