@@ -20,7 +20,7 @@ mod test {
     // #[crud_enable(table_name:biz_activity)]
     // #[crud_enable(id_name:id|id_type:String|table_name:biz_activity|table_columns:id,name,version,delete_flag)]
     #[crud_enable]
-    #[derive(Serialize, Deserialize, Clone, Debug)]
+    #[derive(Clone, Debug)]
     pub struct BizActivity {
         pub id: Option<String>,
         pub name: Option<String>,
@@ -37,7 +37,7 @@ mod test {
     }
 
     #[crud_enable]
-    #[derive(Serialize, Deserialize, Clone, Debug)]
+    #[derive(Clone, Debug)]
     pub struct BizActivity2 {
         pub id: Option<String>,
         pub name: Option<String>,
