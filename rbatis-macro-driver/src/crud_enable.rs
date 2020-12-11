@@ -169,13 +169,13 @@ pub(crate) fn impl_crud(args: TokenStream, input: TokenStream) -> TokenStream {
 }
 
 fn gen_driver_token(token_string: &str) -> proc_macro2::TokenStream {
-    let have_ser_driver_macro = token_string.contains("Serialize") || token_string.contains("Deserialize");
+    let have_ser_driver_macro = token_string.contains("Serialize") && token_string.contains("Deserialize");
     let driver_token;
     if have_ser_driver_macro {
         driver_token = quote! {}
     } else {
         driver_token = quote! {
-           #[derive(Serialize, Deserialize)]
+           #[derive(serde::Serialize, serde::Deserialize)]
         }
     }
     return driver_token;
