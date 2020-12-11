@@ -10,7 +10,6 @@ extern crate lazy_static;
 extern crate rbatis_macro_driver;
 
 use chrono::NaiveDateTime;
-use serde::{Deserialize, Serialize};
 use serde_json::{json, Value};
 use tide::Request;
 use rbatis::rbatis::Rbatis;
