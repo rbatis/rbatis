@@ -56,16 +56,9 @@ async fn main() {
     RB.link(MYSQL_URL).await.unwrap();
     let mut app = tide::new();
     app.at("/").get(|_: Request<()>| async move {
-        // println!("accept req[{} /test] arg: {:?}",req.url().to_string(),a);
-        let arg = &vec![json!(1)];
-        let v = RB.fetch_prepare::<Value>("", "SELECT count(1) FROM biz_activity where delete_flag = ?;", arg).await;
-        if v.is_ok() {
-            Ok(json!(v.unwrap()).to_string())
-        } else {
-            Ok(format!("{}", v.err().unwrap()))
-        }
+        let v = RB.fetch_prepare::<Value>("", "SELECT count(1) FROM biz_activity where delete_flag = ?;", &vec![json!(1)]).await;
+        Ok(format!("{:?}",v))
     });
-    //app.at("/").get(|_| async { Ok("Hello, world!") });
     let addr = "0.0.0.0:8000";
     println!("http server listen on http://localhost:8000");
     app.listen(addr).await.unwrap();
