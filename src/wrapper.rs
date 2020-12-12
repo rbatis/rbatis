@@ -7,7 +7,7 @@ use crate::core::convert::StmtConvert;
 use crate::core::db::DriverType;
 use crate::core::Error;
 
-/// The packing of the SQL
+/// The packing/Wrapper of the SQL
 /// SQL passed into the Wrapper keep the keyword uppercase
 ///
 /// for Example:
