@@ -135,15 +135,15 @@ impl Wrapper {
     ///  let p = Option::<i32>::Some(1);
     ///         let w = Wrapper::new(&DriverType::Postgres)
     ///             .do_match(&[
-    ///                 Case::new(p.is_some(),|w| w),
-    ///                 Case::new(p.is_none(),|w| w),
-    ///             ], |w| w)
+    ///                 (p == 0, |w| w.eq("a", "some")),
+    ///                 (p == 1, |w| w.eq("a", "some")),
+    ///             ], |w| w.eq("a", "default"))
     ///             .check().unwrap();
-    pub fn do_match<'s, F>(&'s mut self, cases: &'s [Case], default: F) -> &'s mut Self
+    pub fn do_match<'s, F>(&'s mut self, cases: &[(bool, fn(&mut Wrapper) -> &mut Wrapper)], default: F) -> &'s mut Self
         where F: FnOnce(&'s mut Self) -> &'s mut Self {
-        for x in cases {
-            if x.test {
-                return x.call_func(self);
+        for (test,case) in cases {
+            if *test {
+                return case(self);
             }
         }
         return default(self);
@@ -545,25 +545,6 @@ impl Wrapper {
     }
 }
 
-pub struct Case {
-    test: bool,
-    func: Box<dyn Fn(&mut Wrapper) -> &mut Wrapper>,
-}
-
-impl Case {
-    pub fn new<F>(test: bool, f: F) -> Self
-        where F: 'static + Fn(&mut Wrapper) -> &mut Wrapper {
-        Self {
-            test,
-            func: Box::new(f),
-        }
-    }
-
-    pub fn call_func<'s, 'a>(&'s self, w: &'a mut Wrapper) -> &'a mut Wrapper {
-        (self.func)(w)
-    }
-}
-
 #[cfg(test)]
 mod test {
     use serde_json::json;
@@ -571,7 +552,7 @@ mod test {
 
     use crate::core::db::DriverType;
     use crate::utils::bencher::QPS;
-    use crate::wrapper::{Case, Wrapper};
+    use crate::wrapper::Wrapper;
 
     #[test]
     fn test_trim() {
@@ -667,8 +648,8 @@ mod test {
         let p = 1;
         let w = Wrapper::new(&DriverType::Postgres)
             .do_match(&[
-                Case::new(p == 0, |w| w.eq("a", "some")),
-                Case::new(p == 2, |w| w.eq("a", "none")),
+                (p == 0, |w| w.eq("a", "some")),
+                (p == 1, |w| w.eq("a", "some")),
             ], |w| w.eq("a", "default"))
             .check().unwrap();
         println!("sql:{:?}", w.sql.as_str());
