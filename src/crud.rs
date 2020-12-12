@@ -5,8 +5,8 @@ use serde::Serialize;
 use serde_json::{Map, Value};
 
 use crate::core::convert::StmtConvert;
-use crate::core::db::DriverType;
 use crate::core::db::DBExecResult;
+use crate::core::db::DriverType;
 use crate::core::Error;
 use crate::core::Result;
 use crate::plugin::logic_delete::LogicAction;
@@ -411,7 +411,7 @@ fn make_select_sql<T>(rb: &Rbatis, w: &Wrapper) -> Result<String> where T: CRUDE
         let logic_ref = rb.logic_plugin.as_ref().unwrap();
         return logic_ref.create_select_sql(&rb.driver_type()?, &T::table_name(), &T::table_columns(), &where_sql);
     }
-    if !where_sql.is_empty() {
+    if !where_sql.is_empty() && !where_sql.starts_with("ORDER") && !where_sql.starts_with("GROUP") {
         sql = format!("SELECT {} FROM {} WHERE {}", T::table_columns(), T::table_name(), where_sql);
     } else {
         sql = format!("SELECT {} FROM {}", T::table_columns(), T::table_name());
