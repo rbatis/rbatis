@@ -224,6 +224,14 @@ mod test {
         }
     }
 
+    #[async_std::test]
+    pub async fn test_list_by_wrapper() {
+        let rb = init_rbatis().await;
+        let w = rb.new_wrapper()
+            .order_by(true,&["id"]).check().unwrap();
+        let r:Vec<BizActivity> = rb.list_by_wrapper("", &w).await.unwrap();
+        println!("is_some:{:?}", r);
+    }
 
     #[async_std::test]
     pub async fn test_fetch_page_by_wrapper() {

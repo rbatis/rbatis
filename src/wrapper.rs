@@ -523,6 +523,7 @@ impl Wrapper {
     pub fn trim_and(&mut self) -> &mut Self {
         self.sql = self.sql.trim()
             .trim_end_matches("AND")
+            .trim_start_matches("AND ")
             .to_string();
         self
     }
@@ -530,6 +531,7 @@ impl Wrapper {
     pub fn trim_or(&mut self) -> &mut Self {
         self.sql = self.sql.trim()
             .trim_end_matches("OR")
+            .trim_start_matches("OR ")
             .to_string();
         self
     }
