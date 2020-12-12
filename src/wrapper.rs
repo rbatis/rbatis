@@ -190,14 +190,14 @@ impl Wrapper {
 
     fn is_end_with_opt(&self) -> bool {
         let sql = self.sql.trim_end();
-        sql.ends_with("WHERE")
-            || sql.ends_with("AND")
-            || sql.ends_with("OR")
-            || sql.ends_with("SELECT")
-            || sql.ends_with("DELETE")
-            || sql.ends_with("UPDATE")
-            || sql.ends_with("AS")
-            || sql.ends_with("FROM")
+        sql.ends_with(" WHERE")
+            || sql.ends_with(" AND")
+            || sql.ends_with(" OR")
+            || sql.ends_with(" SELECT")
+            || sql.ends_with(" DELETE")
+            || sql.ends_with(" UPDATE")
+            || sql.ends_with(" AS")
+            || sql.ends_with(" FROM")
             || sql.ends_with("(")
             || sql.ends_with(",")
             || sql.ends_with("=")
