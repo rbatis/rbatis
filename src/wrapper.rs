@@ -150,12 +150,22 @@ impl Wrapper {
 
 
     pub fn set_sql(&mut self, sql: &str) -> &mut Self {
-        self.sql = sql.replace(" and ", " AND ").replace(" or ", " OR ").replace(" where ", " WHERE ");
+        self.sql = sql
+            .replace(" and", " AND")
+            .replace("and ", "AND ")
+            .replace(" or", " OR")
+            .replace("or ", "OR ")
+            .replace(" where ", " WHERE ");
         self
     }
 
     pub fn push_sql(&mut self, sql: &str) -> &mut Self {
-        let s = sql.replace(" and ", " AND ").replace(" or ", " OR ").replace(" where ", " WHERE ");
+        let s = sql
+            .replace(" and", " AND")
+            .replace("and ", "AND ")
+            .replace(" or", " OR")
+            .replace("or ", "OR ")
+            .replace(" where ", " WHERE ");
         self.sql.push_str(s.as_str());
         self
     }
