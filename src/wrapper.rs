@@ -194,10 +194,13 @@ impl Wrapper {
             || sql.ends_with(" AND")
             || sql.ends_with(" OR")
             || sql.ends_with(" SELECT")
+            || sql.ends_with(" INSERT")
+            || sql.ends_with(" INTO")
             || sql.ends_with(" DELETE")
             || sql.ends_with(" UPDATE")
             || sql.ends_with(" AS")
             || sql.ends_with(" FROM")
+            || sql.ends_with(" IN")
             || sql.ends_with("(")
             || sql.ends_with(",")
             || sql.ends_with("=")
@@ -205,6 +208,12 @@ impl Wrapper {
             || sql.ends_with("-")
             || sql.ends_with("*")
             || sql.ends_with("/")
+            || sql.ends_with("%")
+            || sql.ends_with("^")
+            || sql.ends_with(">")
+            || sql.ends_with("<")
+            || sql.ends_with("&")
+            || sql.ends_with("|")
     }
 
     /// link wrapper sql, if end with where , do nothing
@@ -713,5 +722,16 @@ mod test {
         println!("arg:{:?}", w2.args.clone());
         assert_eq!(w2.sql.contains("b = $1"), true);
         assert_eq!(w2.sql.contains("a = $4"), true);
+    }
+
+    #[test]
+    fn test_bench_is_end_opt() {
+        let w = Wrapper::new(&DriverType::Postgres);
+        let total = 100000;
+        let now = std::time::Instant::now();
+        for _ in 0..total {
+            w.is_end_with_opt();
+        }
+        now.time(total);
     }
 }
