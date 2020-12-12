@@ -7,11 +7,12 @@ use crate::core::convert::StmtConvert;
 use crate::core::db::DriverType;
 use crate::core::Error;
 
-/// you can serialize to JSON, and Clone, Debug
-/// use json rpc send this Wrapper to server
+/// The packing of the SQL
+/// SQL passed into the Wrapper keep the keyword uppercase
 ///
 /// for Example:
 ///         let w = Wrapper::new(&DriverType::Mysql)
+///             .push_sql(“id == 1”)
 ///             .eq("id", 1)
 ///             .and()
 ///             .ne("id", 1)
