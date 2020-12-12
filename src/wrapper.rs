@@ -597,7 +597,7 @@ mod test {
     }
 
 
-    ///cargo test --release --color=always --package rbatis --lib wrapper::test::bench_select --no-fail-fast -- --exact -Z unstable-options --show-output
+    ///cargo test --release --package rbatis --lib wrapper::test::bench_select
     ///run with windows10:
     ///  use Time: 0.51 s,each:5100 nano/op  use QPS: 196078.431372549 QPS/s
     #[test]
