@@ -636,10 +636,12 @@ mod test {
     fn test_do_if() {
         let p = Option::<i32>::Some(1);
         let w = Wrapper::new(&DriverType::Postgres)
-            .do_if(p.is_some(), |w| w.eq("a", p))
+            .do_if(p.is_some(), |w| w.eq("a", p.clone()))
             .check().unwrap();
         println!("sql:{:?}", w.sql.as_str());
         println!("arg:{:?}", w.args.clone());
+        assert_eq!(&w.sql,"a = $1");
+        assert_eq!(&w.args[0],&json!(p));
     }
 
 
@@ -648,12 +650,11 @@ mod test {
         let p = 1;
         let w = Wrapper::new(&DriverType::Postgres)
             .do_match(&[
-                (p == 0, |w| w.eq("a", "some")),
-                (p == 1, |w| w.eq("a", "some")),
-            ], |w| w.eq("a", "default"))
+                (p == 0, |w| w.eq("0", "some")),
+                (p == 1, |w| w.eq("1", "some")),
+            ], |w| w.eq("default", "default"))
             .check().unwrap();
-        println!("sql:{:?}", w.sql.as_str());
-        println!("arg:{:?}", w.args.clone());
+        assert_eq!(&w.sql,"1 = $1");
     }
 
     #[test]
