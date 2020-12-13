@@ -1,3 +1,4 @@
+use std::collections::HashMap;
 use std::ops::Add;
 
 use serde::{Deserialize, Serialize};
@@ -37,6 +38,7 @@ pub struct Wrapper {
     pub driver_type: DriverType,
     pub sql: String,
     pub args: Vec<serde_json::Value>,
+    pub formats: HashMap<String, String>,
     pub error: Option<Error>,
     pub checked: bool,
 }
@@ -47,6 +49,7 @@ impl Wrapper {
             driver_type: driver_type.clone(),
             sql: "".to_string(),
             args: vec![],
+            formats: Default::default(),
             error: None,
             checked: false,
         }
@@ -57,12 +60,13 @@ impl Wrapper {
             driver_type: driver_type.clone(),
             sql: sql.to_string(),
             args: args.clone(),
+            formats: HashMap::new(),
             error: None,
             checked: false,
         }
     }
 
-    //check is done？and return cloned Wrapper
+    /// check is done？and return cloned Wrapper
     pub fn check(&mut self) -> Result<Wrapper, Error> {
         if self.error.is_some() {
             return Err(self.error.take().unwrap());
@@ -72,6 +76,11 @@ impl Wrapper {
         self.trim_or();
         self.checked = true;
         return Ok(self.clone());
+    }
+
+    pub fn set_formats(&mut self, formats: HashMap<String, String>) -> &mut Self {
+        self.formats = formats;
+        self
     }
 
     /// link left Wrapper to this Wrapper
@@ -260,13 +269,26 @@ impl Wrapper {
         self
     }
 
+    ///format column
+    fn do_format_column(&self, column: &str, data: String) -> String {
+        let source = self.formats.get(column);
+        match source {
+            Some(s) => {
+                return s.replace("{}", &data);
+            }
+            _ => {
+                return data.to_string();
+            }
+        }
+    }
+
     /// equal
     /// for example:
     ///  eq("a",1) " a = 1 "
     pub fn eq<T>(&mut self, column: &str, obj: T) -> &mut Self
         where T: Serialize {
         self.and();
-        self.sql.push_str(format!("{} = {}", column, self.driver_type.stmt_convert(self.args.len())).as_str());
+        self.sql.push_str(&format!("{} = {}", column, self.do_format_column(column, self.driver_type.stmt_convert(self.args.len()))));
         self.args.push(json!(obj));
         self
     }
@@ -275,7 +297,7 @@ impl Wrapper {
     pub fn ne<T>(&mut self, column: &str, obj: T) -> &mut Self
         where T: Serialize {
         self.and();
-        self.sql.push_str(format!("{} <> {}", column, self.driver_type.stmt_convert(self.args.len())).as_str());
+        self.sql.push_str(&format!("{} <> {}", column, self.do_format_column(column, self.driver_type.stmt_convert(self.args.len()))));
         self.args.push(json!(obj));
         self
     }
@@ -329,7 +351,7 @@ impl Wrapper {
     pub fn gt<T>(&mut self, column: &str, obj: T) -> &mut Self
         where T: Serialize {
         self.and();
-        self.sql.push_str(format!("{} > {}", column, self.driver_type.stmt_convert(self.args.len())).as_str());
+        self.sql.push_str(&format!("{} > {}", column, self.do_format_column(column, self.driver_type.stmt_convert(self.args.len()))));
         self.args.push(json!(obj));
         self
     }
@@ -337,7 +359,7 @@ impl Wrapper {
     pub fn ge<T>(&mut self, column: &str, obj: T) -> &mut Self
         where T: Serialize {
         self.and();
-        self.sql.push_str(format!("{} >= {}", column, self.driver_type.stmt_convert(self.args.len())).as_str());
+        self.sql.push_str(&format!("{} >= {}", column, self.do_format_column(column, self.driver_type.stmt_convert(self.args.len()))));
         self.args.push(json!(obj));
         self
     }
@@ -346,7 +368,7 @@ impl Wrapper {
     pub fn lt<T>(&mut self, column: &str, obj: T) -> &mut Self
         where T: Serialize {
         self.and();
-        self.sql.push_str(format!("{} < {}", column, self.driver_type.stmt_convert(self.args.len())).as_str());
+        self.sql.push_str(&format!("{} < {}", column, self.do_format_column(column, self.driver_type.stmt_convert(self.args.len()))));
         self.args.push(json!(obj));
         self
     }
@@ -355,7 +377,7 @@ impl Wrapper {
     pub fn le<T>(&mut self, column: &str, obj: T) -> &mut Self
         where T: Serialize {
         self.and();
-        self.sql.push_str(format!("{} <= {}", column, self.driver_type.stmt_convert(self.args.len())).as_str());
+        self.sql.push_str(&format!("{} <= {}", column, self.do_format_column(column, self.driver_type.stmt_convert(self.args.len()))));
         self.args.push(json!(obj));
         self
     }
@@ -363,7 +385,7 @@ impl Wrapper {
     pub fn between<T>(&mut self, column: &str, min: T, max: T) -> &mut Self
         where T: Serialize {
         self.and();
-        self.sql.push_str(format!("{} BETWEEN {} AND {}", column, self.driver_type.stmt_convert(self.args.len()), self.driver_type.stmt_convert(self.args.len() + 1)).as_str());
+        self.sql.push_str(&format!("{} BETWEEN {} AND {}", column, self.do_format_column(column, self.driver_type.stmt_convert(self.args.len())), self.do_format_column(column, self.driver_type.stmt_convert(self.args.len() + 1))));
         self.args.push(json!(min));
         self.args.push(json!(max));
         self
@@ -372,7 +394,7 @@ impl Wrapper {
     pub fn not_between<T>(&mut self, column: &str, min: T, max: T) -> &mut Self
         where T: Serialize {
         self.and();
-        self.sql.push_str(format!("{} NOT BETWEEN {} AND {}", column, self.driver_type.stmt_convert(self.args.len()), self.driver_type.stmt_convert(self.args.len() + 1)).as_str());
+        self.sql.push_str(&format!("{} NOT BETWEEN {} AND {}", column, self.do_format_column(column, self.driver_type.stmt_convert(self.args.len())), self.do_format_column(column, self.driver_type.stmt_convert(self.args.len() + 1))));
         self.args.push(json!(min));
         self.args.push(json!(max));
         self
@@ -388,7 +410,7 @@ impl Wrapper {
         } else {
             v_str = format!("%{}%", v.to_string());
         }
-        self.sql.push_str(format!("{} LIKE {}", column, self.driver_type.stmt_convert(self.args.len())).as_str());
+        self.sql.push_str(&format!("{} LIKE {}", column, self.do_format_column(column, self.driver_type.stmt_convert(self.args.len()))));
         self.args.push(json!(v_str));
         self
     }
@@ -403,7 +425,7 @@ impl Wrapper {
         } else {
             v_str = format!("%{}", v.to_string());
         }
-        self.sql.push_str(format!("{} LIKE {}", column, self.driver_type.stmt_convert(self.args.len())).as_str());
+        self.sql.push_str(&format!("{} LIKE {}", column, self.do_format_column(column, self.driver_type.stmt_convert(self.args.len()))));
         self.args.push(json!(v_str));
         self
     }
@@ -418,7 +440,7 @@ impl Wrapper {
         } else {
             v_str = format!("{}%", v.to_string());
         }
-        self.sql.push_str(format!("{} LIKE {}", column, self.driver_type.stmt_convert(self.args.len())).as_str());
+        self.sql.push_str(&format!("{} LIKE {}", column, self.do_format_column(column, self.driver_type.stmt_convert(self.args.len()))));
         self.args.push(json!(v_str));
         self
     }
@@ -433,7 +455,7 @@ impl Wrapper {
         } else {
             v_str = format!("%{}%", v.to_string());
         }
-        self.sql.push_str(format!("{} NOT LIKE {}", column, self.driver_type.stmt_convert(self.args.len())).as_str());
+        self.sql.push_str(&format!("{} NOT LIKE {}", column, self.do_format_column(column, self.driver_type.stmt_convert(self.args.len()))));
         self.args.push(json!(v_str));
         self
     }
@@ -459,17 +481,16 @@ impl Wrapper {
         if obj.len() == 0 {
             return self;
         }
-        let v = json!(obj);
-        self.sql.push_str(column);
-        let vec = v.as_array().unwrap();
+        let arr = json!(obj);
+        let vec = arr.as_array().unwrap();
         let mut sqls = String::new();
         for x in vec {
-            sqls.push_str(format!(" {} ", self.driver_type.stmt_convert(self.args.len())).as_str());
+            sqls.push_str(&format!(" {} ", self.do_format_column(column, self.driver_type.stmt_convert(self.args.len()))));
             sqls.push_str(",");
             self.args.push(x.clone());
         }
         sqls.pop();
-        self.sql.push_str(format!(" IN ({})", sqls).as_str());
+        self.sql.push_str(format!("{} IN ({})", column, sqls).as_str());
         self
     }
 
@@ -489,17 +510,16 @@ impl Wrapper {
     pub fn not_in<T>(&mut self, column: &str, obj: &[T]) -> &mut Self
         where T: Serialize {
         self.and();
-        let v = json!(obj);
-        self.sql.push_str(column);
-        let vec = v.as_array().unwrap();
+        let arr = json!(obj);
+        let vec = arr.as_array().unwrap();
         let mut sqls = String::new();
         for x in vec {
-            sqls.push_str(format!(" {} ", self.driver_type.stmt_convert(self.args.len())).as_str());
+            sqls.push_str(&format!(" {} ", self.do_format_column(column, self.driver_type.stmt_convert(self.args.len()))));
             sqls.push_str(",");
             self.args.push(x.clone());
         }
         sqls.pop();
-        self.sql.push_str(format!(" NOT IN ({})", sqls).as_str());
+        self.sql.push_str(format!("{} NOT IN ({})", column, sqls).as_str());
         self
     }
 
