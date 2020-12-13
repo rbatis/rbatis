@@ -309,7 +309,7 @@ impl Rbatis {
             item.do_intercept(self, &mut sql, &mut vec![], false);
         }
         if self.log_plugin.is_enable() {
-            self.log_plugin.do_log(&format!("[rbatis] [{}] Exec ==> :{}", context_id, &sql));
+            self.log_plugin.do_log(&format!("[rbatis] [{}] Exec  ==> {}", context_id, &sql));
         }
         let data;
         if context_id.starts_with("tx:") {
