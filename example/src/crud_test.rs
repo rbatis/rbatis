@@ -1,23 +1,23 @@
 ///test CRUD
 #[cfg(test)]
 mod test {
+    use bigdecimal_::BigDecimal;
+    use chrono::NaiveDateTime;
     use serde::Deserialize;
     use serde::Serialize;
+    use uuid::Uuid;
 
+    use rbatis::core::db::DBExecResult;
+    use rbatis::core::Error;
+    use rbatis::core::value::DateTimeNow;
+    use rbatis::crud::CRUD;
     use rbatis::plugin::logic_delete::RbatisLogicDeletePlugin;
     use rbatis::plugin::page::{Page, PageRequest};
     use rbatis::rbatis::Rbatis;
-    use rbatis::core::Error;
     use rbatis_macro_driver::sql;
-    use chrono::NaiveDateTime;
-    use bigdecimal_::BigDecimal;
-    use rbatis::core::value::DateTimeNow;
-    use rbatis::core::db::{DBExecResult};
-    use rbatis::crud::CRUD;
-    use uuid::Uuid;
 
     ///
-    ///Or another way to write it
+        ///Or another way to write it
     // #[crud_enable(table_name:biz_activity)]
     // #[crud_enable(id_name:id|id_type:String|table_name:biz_activity|table_columns:id,name,version,delete_flag)]
     #[crud_enable]
@@ -229,8 +229,8 @@ mod test {
     pub async fn test_list_by_wrapper() {
         let rb = init_rbatis().await;
         let w = rb.new_wrapper()
-            .order_by(true,&["id"]).check().unwrap();
-        let r:Vec<BizActivity> = rb.list_by_wrapper("", &w).await.unwrap();
+            .order_by(true, &["id"]).check().unwrap();
+        let r: Vec<BizActivity> = rb.list_by_wrapper("", &w).await.unwrap();
         println!("is_some:{:?}", r);
     }
 
@@ -411,20 +411,21 @@ mod test {
     }
 
     #[async_std::test]
-    pub async fn test_pg_uuid(){
+    pub async fn test_pg_uuid() {
         fast_log::init_log("requests.log", 1000, log::Level::Info, None, true);
-        RB.link("postgres://postgres:123456@localhost:5432/postgres").await.unwrap();
+        let rb = Rbatis::new();
+        rb.link("postgres://postgres:123456@localhost:5432/postgres").await.unwrap();
         #[crud_enable]
         #[derive(Clone, Debug)]
         pub struct BizUuid {
             pub id: Option<Uuid>,
-            pub name: Option<String>
+            pub name: Option<String>,
         }
         //make table
-        RB.exec("","CREATE TABLE biz_uuid( id uuid, name VARCHAR, PRIMARY KEY(id));").await;
-        RB.exec("","INSERT INTO biz_uuid (id,name) VALUES ('df07fea2-b819-4e05-b86d-dfc15a5f52a9','uuid')").await;
-        let w=RB.new_wrapper().push_sql("id = 'df07fea2-b819-4e05-b86d-dfc15a5f52a9'::uuid").check().unwrap();
-        let data:BizUuid = RB.fetch_by_wrapper("",&w).await.unwrap();
-        println!("{:?}",data);
+        rb.exec("", "CREATE TABLE biz_uuid( id uuid, name VARCHAR, PRIMARY KEY(id));").await;
+        rb.exec("", "INSERT INTO biz_uuid (id,name) VALUES ('df07fea2-b819-4e05-b86d-dfc15a5f52a9','uuid')").await;
+        let w = rb.new_wrapper().push_sql("id = 'df07fea2-b819-4e05-b86d-dfc15a5f52a9'::uuid").check().unwrap();
+        let data: BizUuid = rb.fetch_by_wrapper("", &w).await.unwrap();
+        println!("{:?}", data);
     }
 }
