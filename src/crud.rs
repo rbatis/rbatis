@@ -294,18 +294,13 @@ impl CRUD for Rbatis {
     async fn remove_by_id<T>(&self, context_id: &str, id: &T::IdType) -> Result<u64> where T: CRUDEnable {
         let mut sql = String::new();
         let id_value = json!(id);
-        let id_str;
-        if id_value.is_string() {
-            id_str = format!("'{}'", id);
-        } else {
-            id_str = format!("{}", id);
-        }
+        let id_str = T::do_format_column(&T::id_name(), self.driver_type()?.stmt_convert(0));
         if self.logic_plugin.is_some() {
             sql = self.logic_plugin.as_ref().unwrap().create_remove_sql(&self.driver_type()?, T::table_name().as_str(), &T::table_columns(), format!(" WHERE id = {}", id_str).as_str())?;
         } else {
             sql = format!("DELETE FROM {} WHERE {} = {}", T::table_name(), T::id_name(), id_str);
         }
-        return Ok(self.exec_prepare(context_id, sql.as_str(), &vec![]).await?.rows_affected);
+        return Ok(self.exec_prepare(context_id, sql.as_str(), &vec![id_value]).await?.rows_affected);
     }
 
     ///remove batch id
