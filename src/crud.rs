@@ -311,7 +311,7 @@ impl CRUD for Rbatis {
         if ids.is_empty() {
             return Ok(0);
         }
-        let w = Wrapper::new(&self.driver_type()?).and().in_array(&T::id_name(), &ids).check()?;
+        let w = self.new_wrapper_table::<T>().and().in_array(&T::id_name(), &ids).check()?;
         return self.remove_by_wrapper::<T>(context_id, &w).await;
     }
 
@@ -339,7 +339,7 @@ impl CRUD for Rbatis {
             args.push(v);
         }
         sets.pop();
-        let mut wrapper = Wrapper::new(&self.driver_type()?);
+        let mut wrapper = self.new_wrapper_table::<T>();
         wrapper.sql = format!("UPDATE {} SET {}", T::table_name(), sets);
         wrapper.args = args;
         if !w.sql.is_empty() {
@@ -359,7 +359,7 @@ impl CRUD for Rbatis {
         if id.is_none() {
             return Err(crate::core::Error::from("[rbatis] update_by_id() arg's id can no be none!"));
         }
-        self.update_by_wrapper(context_id, arg, Wrapper::new(&self.driver_type()?).eq(&T::id_name(), id), false).await
+        self.update_by_wrapper(context_id, arg, self.new_wrapper_table::<T>().eq(&T::id_name(), id), false).await
     }
 
     async fn update_batch_by_id<T>(&self, context_id: &str, args: &[T]) -> Result<u64> where T: CRUDEnable {
@@ -377,7 +377,7 @@ impl CRUD for Rbatis {
     }
 
     async fn fetch_by_id<T>(&self, context_id: &str, id: &T::IdType) -> Result<T> where T: CRUDEnable {
-        let w = Wrapper::new(&self.driver_type()?).eq(&T::id_name(), id).check()?;
+        let w = self.new_wrapper_table::<T>().eq(&T::id_name(), id).check()?;
         return self.fetch_by_wrapper(context_id, &w).await;
     }
 
@@ -388,11 +388,11 @@ impl CRUD for Rbatis {
     }
 
     async fn list<T>(&self, context_id: &str) -> Result<Vec<T>> where T: CRUDEnable {
-        return self.list_by_wrapper(context_id, &Wrapper::new(&self.driver_type()?)).await;
+        return self.list_by_wrapper(context_id, &self.new_wrapper_table::<T>()).await;
     }
 
     async fn list_by_ids<T>(&self, context_id: &str, ids: &[T::IdType]) -> Result<Vec<T>> where T: CRUDEnable {
-        let w = Wrapper::new(&self.driver_type()?).in_array(&T::id_name(), ids).check()?;
+        let w = self.new_wrapper_table::<T>().in_array(&T::id_name(), ids).check()?;
         return self.list_by_wrapper(context_id, &w).await;
     }
 

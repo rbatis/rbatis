@@ -417,7 +417,7 @@ mod test {
         let rb = Rbatis::new();
         rb.link("postgres://postgres:123456@localhost:5432/postgres").await.unwrap();
 
-        #[crud_enable(column_format:id:{}::uuid)]
+        #[crud_enable(formats:id:{}::uuid)]
         #[derive(Clone, Debug)]
         pub struct BizUuid {
             pub id: Option<Uuid>,
@@ -429,10 +429,7 @@ mod test {
         //insert table
         rb.save("", &BizUuid { id: Some(uuid), name: Some("test".to_string()) }).await;
         //query table
-        let w = rb.new_wrapper_table::<BizUuid>()
-            .eq("id",&uuid.clone())
-            .check().unwrap();
-        let data: BizUuid = rb.fetch_by_wrapper("", &w).await.unwrap();
+        let data: BizUuid = rb.fetch_by_id("", &uuid).await.unwrap();
         println!("{:?}", data);
         //remove table
         let uuid=Uuid::from_str("df07fea2-b819-4e05-b86d-dfc15a5f52a9").unwrap();

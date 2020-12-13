@@ -9,7 +9,7 @@ use syn::ext::IdentExt;
 use crate::proc_macro::TokenStream;
 
 ///impl CRUDEnable
-pub(crate) fn impl_crud_driver(ast: &syn::DeriveInput, arg_id_type: &str, arg_id_name: &str, arg_table_name: &str, arg_table_columns: &str, arg_column_format: &str) -> TokenStream {
+pub(crate) fn impl_crud_driver(ast: &syn::DeriveInput, arg_id_type: &str, arg_id_name: &str, arg_table_name: &str, arg_table_columns: &str, arg_formats: &str) -> TokenStream {
     let name = &ast.ident;
     let id_name;
     if arg_id_name.is_empty() {
@@ -39,15 +39,15 @@ pub(crate) fn impl_crud_driver(ast: &syn::DeriveInput, arg_id_type: &str, arg_id
     let mut formats = quote! {
        let mut m = std::collections::HashMap::new();
     };
-    if arg_column_format.is_empty() {
+    if arg_formats.is_empty() {
         formats = quote! {
           return std::collections::HashMap::new();
         }
     } else {
-        let items: Vec<&str> = arg_column_format.split(",").collect();
+        let items: Vec<&str> = arg_formats.split(",").collect();
         for item in items {
             if !item.contains(":") {
-                panic!("[rbatis] crud_enable[column_format: format_str ] format_str must be column:format_value ")
+                panic!("[rbatis] crud_enable[formats: format_str ] format_str must be column:format_value ")
             }
             let index = item.find(":").unwrap();
             let column = item[0..index].to_string();
@@ -170,7 +170,7 @@ pub struct CrudEnableConfig {
     pub id_type: String,
     pub table_name: String,
     pub table_columns: String,
-    pub column_format: String,
+    pub formats: String,
 }
 
 /// impl the crud macro
@@ -181,7 +181,7 @@ pub(crate) fn impl_crud(args: TokenStream, input: TokenStream) -> TokenStream {
     let input_clone: proc_macro2::TokenStream = input.clone().into();
     let driver_token = gen_driver_token(&token_string);
     let ast = syn::parse(input).unwrap();
-    let stream = impl_crud_driver(&ast, &config.id_type, &config.id_name, &config.table_name, &config.table_columns, &config.column_format);
+    let stream = impl_crud_driver(&ast, &config.id_type, &config.id_name, &config.table_name, &config.table_columns, &config.formats);
     let s: proc_macro2::TokenStream = stream.into();
     let qt = quote! {
        #driver_token
@@ -213,7 +213,7 @@ fn gen_driver_token(token_string: &str) -> proc_macro2::TokenStream {
 ///     id_type:String|
 ///     table_name:biz_activity|
 ///     table_columns:id,name,version,delete_flag|
-///     column_format:id:{}::uuid
+///     formats:id:{}::uuid
 fn read_config(arg: &str) -> CrudEnableConfig {
     let keys: Vec<&str> = arg.split("|").collect();
     let mut map = HashMap::new();
@@ -235,6 +235,6 @@ fn read_config(arg: &str) -> CrudEnableConfig {
         id_type: map.get("id_type").unwrap_or(&"".to_string()).to_string(),
         table_name: map.get("table_name").unwrap_or(&"".to_string()).to_string(),
         table_columns: map.get("table_columns").unwrap_or(&"".to_string()).to_string(),
-        column_format: map.get("column_format").unwrap_or(&"".to_string()).to_string(),
+        formats: map.get("formats").unwrap_or(&"".to_string()).to_string(),
     };
 }
