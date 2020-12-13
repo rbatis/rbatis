@@ -270,8 +270,6 @@ impl Wrapper {
         self.sql.push_str(column);
         self.sql.push_str(format!(" = {}", self.driver_type.stmt_convert(self.args.len())).as_str());
         self.args.push(v);
-
-
         self
     }
 
