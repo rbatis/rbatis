@@ -14,6 +14,7 @@ mod test {
     use rbatis::core::value::DateTimeNow;
     use rbatis::core::db::{DBExecResult};
     use rbatis::crud::CRUD;
+    use uuid::Uuid;
 
     ///
     ///Or another way to write it
@@ -407,5 +408,23 @@ mod test {
         let ret = select_activities(1).await;
 
         log::info!("result is : {:?}", ret);
+    }
+
+    #[async_std::test]
+    pub async fn test_pg_uuid(){
+        fast_log::init_log("requests.log", 1000, log::Level::Info, None, true);
+        RB.link("postgres://postgres:123456@localhost:5432/postgres").await.unwrap();
+        #[crud_enable]
+        #[derive(Clone, Debug)]
+        pub struct BizUuid {
+            pub id: Option<Uuid>,
+            pub name: Option<String>
+        }
+        //make table
+        RB.exec("","CREATE TABLE biz_uuid( id uuid, name VARCHAR, PRIMARY KEY(id));").await;
+        RB.exec("","INSERT INTO biz_uuid (id,name) VALUES ('df07fea2-b819-4e05-b86d-dfc15a5f52a9','uuid')").await;
+        let w=RB.new_wrapper().push_sql("id = 'df07fea2-b819-4e05-b86d-dfc15a5f52a9'::uuid").check().unwrap();
+        let data:BizUuid = RB.fetch_by_wrapper("",&w).await.unwrap();
+        println!("{:?}",data);
     }
 }
