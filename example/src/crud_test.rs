@@ -418,7 +418,7 @@ mod test {
         rb.link("postgres://postgres:123456@localhost:5432/postgres").await.unwrap();
 
         #[crud_enable(column_format:id:{}::uuid)]
-        #[derive(Serialize, Deserialize, Clone, Debug)]
+        #[derive(Clone, Debug)]
         pub struct BizUuid {
             pub id: Option<Uuid>,
             pub name: Option<String>,
