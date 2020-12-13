@@ -412,7 +412,7 @@ mod test {
     }
 
     #[async_std::test]
-    pub async fn test_pg_uuid() {
+    pub async fn test_postgres_uuid() {
         fast_log::init_log("requests.log", 1000, log::Level::Info, None, true);
         let rb = Rbatis::new();
         rb.link("postgres://postgres:123456@localhost:5432/postgres").await.unwrap();
@@ -423,14 +423,18 @@ mod test {
             pub id: Option<Uuid>,
             pub name: Option<String>,
         }
+        let uuid = Uuid::from_str("df07fea2-b819-4e05-b86d-dfc15a5f52a9").unwrap();
         //make table
         rb.exec("", "CREATE TABLE biz_uuid( id uuid, name VARCHAR, PRIMARY KEY(id));").await;
-        //rb.exec("", "INSERT INTO biz_uuid (id,name) VALUES ('df07fea2-b819-4e05-b86d-dfc15a5f52a9','uuid')").await;
-        let uuid = Uuid::from_str("df07fea2-b819-4e05-b86d-dfc15a5f52a9").unwrap();
+        //insert table
         rb.save("", &BizUuid { id: Some(uuid), name: Some("test".to_string()) }).await;
-        let w = rb.new_wrapper().push_sql("id = 'df07fea2-b819-4e05-b86d-dfc15a5f52a9'::uuid").check().unwrap();
+        //query table
+        let w = rb.new_wrapper_table::<BizUuid>()
+            .eq("id",&uuid.clone())
+            .check().unwrap();
         let data: BizUuid = rb.fetch_by_wrapper("", &w).await.unwrap();
         println!("{:?}", data);
+        //remove table
         let uuid=Uuid::from_str("df07fea2-b819-4e05-b86d-dfc15a5f52a9").unwrap();
         rb.remove_by_id::<BizUuid>("",&uuid).await;
     }

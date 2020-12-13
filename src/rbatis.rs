@@ -28,6 +28,7 @@ use crate::utils::string_util;
 use crate::wrapper::Wrapper;
 use uuid::Uuid;
 use rbatis_core::db::DBConnectOption;
+use crate::crud::CRUDEnable;
 
 /// rbatis engine
 pub struct Rbatis {
@@ -132,6 +133,19 @@ impl Rbatis {
         Wrapper::new(&driver.unwrap_or_else(|_| {
             panic!("[rbatis] .new_wrapper() method must be call .link(url) to init first!");
         }))
+    }
+
+    /// try return an new wrapper and set table formats,if not call the link() method,it will be panic!
+    pub fn new_wrapper_table<T>(&self) -> Wrapper where T:CRUDEnable {
+        let driver = self.driver_type();
+        if driver.as_ref().unwrap().eq(&DriverType::None) {
+            panic!("[rbatis] .new_wrapper() method must be call .link(url) to init first!");
+        }
+        let mut w= Wrapper::new(&driver.unwrap_or_else(|_| {
+            panic!("[rbatis] .new_wrapper() method must be call .link(url) to init first!");
+        }));
+        w.set_formats(T::formats());
+        return w;
     }
 
     /// link pool
