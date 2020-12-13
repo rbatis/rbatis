@@ -1,27 +1,27 @@
+use serde_json::{json, Value};
+use sqlx_core::column::Column;
 use sqlx_core::decode::Decode;
 use sqlx_core::error::BoxDynError;
 use sqlx_core::postgres::{PgValue, PgValueRef, Postgres};
+use sqlx_core::postgres::PgRow;
+use sqlx_core::postgres::types::{PgMoney, PgTimeTz};
+use sqlx_core::row::Row;
 use sqlx_core::type_info::TypeInfo;
-use sqlx_core::types::{BigDecimal, Json};
+use sqlx_core::types::{BigDecimal, Json, Uuid};
+use sqlx_core::types::chrono::{FixedOffset, NaiveTime};
+use sqlx_core::types::ipnetwork::IpNetwork;
+use sqlx_core::types::time::Time;
 use sqlx_core::value::ValueRef;
 
 use crate::convert::{JsonCodec, RefJsonCodec};
-use sqlx_core::postgres::PgRow;
-use sqlx_core::row::Row;
-use sqlx_core::column::Column;
 use crate::db::convert_result;
-use serde_json::{json, Value};
-use sqlx_core::types::ipnetwork::IpNetwork;
-use sqlx_core::types::time::Time;
-use sqlx_core::postgres::types::{PgTimeTz, PgMoney};
-use sqlx_core::types::chrono::{NaiveTime, FixedOffset};
 use crate::postgres::PgInterval;
 
 impl<'c> JsonCodec for PgValueRef<'c> {
     fn try_to_json(self) -> crate::Result<serde_json::Value> {
         let type_string = self.type_info().name().to_owned();
         match type_string.as_str() {
-            "VOID" =>{
+            "VOID" => {
                 return Ok(serde_json::Value::Null);
             }
             "NUMERIC" => {
@@ -44,14 +44,14 @@ impl<'c> JsonCodec for PgValueRef<'c> {
                 if r.as_ref().unwrap().is_none() {
                     return Ok(serde_json::Value::Null);
                 }
-                let data=r.unwrap().unwrap();
-                let mut datas =vec![];
+                let data = r.unwrap().unwrap();
+                let mut datas = vec![];
                 for x in data {
                     datas.push(x.to_string());
                 }
                 return Ok(json!(datas));
             }
-            "MONEY" =>{
+            "MONEY" => {
                 //decimal
                 let r: Result<Option<PgMoney>, BoxDynError> = Decode::<'_, Postgres>::decode(self);
                 if r.is_err() {
@@ -71,8 +71,8 @@ impl<'c> JsonCodec for PgValueRef<'c> {
                 if r.as_ref().unwrap().is_none() {
                     return Ok(serde_json::Value::Null);
                 }
-                let data=r.unwrap().unwrap();
-                let mut datas =vec![];
+                let data = r.unwrap().unwrap();
+                let mut datas = vec![];
                 for x in data {
                     datas.push(x.0.to_string());
                 }
@@ -186,14 +186,14 @@ impl<'c> JsonCodec for PgValueRef<'c> {
                 return Ok(json!(r.unwrap()));
             }
 
-            "TEXT" | "NAME" | "VARCHAR" | "BPCHAR" | "CHAR" | "UUID" | "\"CHAR\"" | "UNKNOWN" => {
+            "TEXT" | "NAME" | "VARCHAR" | "BPCHAR" | "CHAR" | "\"CHAR\"" | "UNKNOWN" => {
                 let r: Result<Option<String>, BoxDynError> = Decode::<'_, Postgres>::decode(self);
                 if r.is_err() {
                     return Err(crate::Error::from(r.err().unwrap().to_string()));
                 }
                 return Ok(json!(r.unwrap()));
             }
-            "TEXT[]" | "CHAR[]" | "VARCHAR[]" | "\"CHAR\"[]" | "NAME[]" | "UUID[]" => {
+            "TEXT[]" | "CHAR[]" | "VARCHAR[]" | "\"CHAR\"[]" | "NAME[]" => {
                 let r: Result<Option<Vec<String>>, BoxDynError> = Decode::<'_, Postgres>::decode(self);
                 if r.is_err() {
                     return Err(crate::Error::from(r.err().unwrap().to_string()));
@@ -201,7 +201,23 @@ impl<'c> JsonCodec for PgValueRef<'c> {
                 return Ok(json!(r.unwrap()));
             }
 
-            "JSON" | "JSON[]" |"JSONB" | "JSONB[]" => {
+            "UUID" => {
+                let r: Result<Option<Uuid>, BoxDynError> = Decode::<'_, Postgres>::decode(self);
+                if r.is_err() {
+                    return Err(crate::Error::from(r.err().unwrap().to_string()));
+                }
+                return Ok(json!(r.unwrap()));
+            }
+
+            "UUID[]" => {
+                let r: Result<Option<Vec<Uuid>>, BoxDynError> = Decode::<'_, Postgres>::decode(self);
+                if r.is_err() {
+                    return Err(crate::Error::from(r.err().unwrap().to_string()));
+                }
+                return Ok(json!(r.unwrap()));
+            }
+
+            "JSON" | "JSON[]" | "JSONB" | "JSONB[]" => {
                 let r: Result<Option<Json<serde_json::Value>>, BoxDynError> = Decode::<'_, Postgres>::decode(self);
                 if r.is_err() {
                     return Err(crate::Error::from(r.err().unwrap().to_string()));
