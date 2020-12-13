@@ -756,9 +756,9 @@ impl<'q> DBQuery<'q> {
                     serde_json::Value::Number(n) => {
                         if n.is_f64() {
                             q = q.bind(n.as_f64().unwrap());
-                        } else if n.is_u64() {
-                            q = q.bind(n.as_u64().unwrap());
                         } else if n.is_i64() {
+                            q = q.bind(n.as_i64().unwrap());
+                        } else if n.is_u64() {
                             q = q.bind(n.as_i64().unwrap());
                         }
                     }
@@ -784,9 +784,9 @@ impl<'q> DBQuery<'q> {
                     serde_json::Value::Number(n) => {
                         if n.is_f64() {
                             q = q.bind(n.as_f64().unwrap());
-                        } else if n.is_u64() {
-                            q = q.bind(n.as_u64().unwrap());
                         } else if n.is_i64() {
+                            q = q.bind(n.as_i64().unwrap());
+                        } else if n.is_u64() {
                             q = q.bind(n.as_i64().unwrap());
                         }
                     }
@@ -812,9 +812,9 @@ impl<'q> DBQuery<'q> {
                     serde_json::Value::Number(n) => {
                         if n.is_f64() {
                             q = q.bind(n.as_f64().unwrap());
-                        } else if n.is_u64() {
-                            q = q.bind(n.as_u64().unwrap());
                         } else if n.is_i64() {
+                            q = q.bind(n.as_i64().unwrap());
+                        } else if n.is_u64() {
                             q = q.bind(n.as_i64().unwrap());
                         }
                     }
