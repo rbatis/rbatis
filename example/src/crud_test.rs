@@ -424,14 +424,16 @@ mod test {
             pub name: Option<String>,
         }
         let uuid = Uuid::from_str("df07fea2-b819-4e05-b86d-dfc15a5f52a9").unwrap();
-        //make table
+        //create table
         rb.exec("", "CREATE TABLE biz_uuid( id uuid, name VARCHAR, PRIMARY KEY(id));").await;
         //insert table
         rb.save("", &BizUuid { id: Some(uuid), name: Some("test".to_string()) }).await;
+        //update table
+        rb.update_by_id("",&BizUuid{ id: Some(uuid.clone()), name: Some("test_updated".to_string()) }).await;
         //query table
         let data: BizUuid = rb.fetch_by_id("", &uuid).await.unwrap();
         println!("{:?}", data);
-        //remove table
+        //delete table
         let uuid=Uuid::from_str("df07fea2-b819-4e05-b86d-dfc15a5f52a9").unwrap();
         rb.remove_by_id::<BizUuid>("",&uuid).await;
     }
