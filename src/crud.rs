@@ -96,7 +96,7 @@ pub trait CRUDEnable: Send + Sync + Serialize + DeserializeOwned {
 
     ///format column
     fn do_format_column(column: &str, data: String) -> String {
-        let m = Self::format_chain();
+        let m = Self::formats();
         let source = m.get(column);
         match source {
             Some(s) => {
@@ -113,7 +113,7 @@ pub trait CRUDEnable: Send + Sync + Serialize + DeserializeOwned {
     fn make_value_sql_arg(&self, db_type: &DriverType, index: &mut usize) -> Result<(String, Vec<serde_json::Value>)> {
         let mut sql = String::new();
         let mut arr = vec![];
-        let chains = Self::format_chain();
+        let chains = Self::formats();
 
         let cols = Self::table_columns();
         let columns: Vec<&str> = cols.split(",").collect();
@@ -134,7 +134,7 @@ pub trait CRUDEnable: Send + Sync + Serialize + DeserializeOwned {
     /// return cast chain
     /// column:format_str
     /// for example: HashMap<"id",“{}::uuid”>
-    fn format_chain() -> HashMap<String, String> {
+    fn formats() -> HashMap<String, String> {
         return HashMap::new();
     }
 }
@@ -151,8 +151,8 @@ impl<T> CRUDEnable for Option<T> where T: CRUDEnable {
         T::table_columns()
     }
 
-    fn format_chain() -> HashMap<String, String> {
-        T::format_chain()
+    fn formats() -> HashMap<String, String> {
+        T::formats()
     }
 
     fn make_column_value_map(&self, db_type: &DriverType) -> Result<serde_json::Map<String, Value>> {
@@ -322,7 +322,7 @@ impl CRUD for Rbatis {
         let map = arg.make_column_value_map(&self.driver_type()?)?;
         let driver_type = &self.driver_type()?;
 
-        let chain = T::format_chain();
+        let chain = T::formats();
         let mut sets = String::new();
         for (column, v) in map {
             //filter id

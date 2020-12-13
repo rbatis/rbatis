@@ -75,7 +75,7 @@ pub(crate) fn impl_crud_driver(ast: &syn::DeriveInput, arg_id_type: &str, arg_id
                  #fields
             }
 
-            fn format_chain() -> std::collections::HashMap<String, String> {
+            fn formats() -> std::collections::HashMap<String, String> {
                  #formats
             }
         }
