@@ -1,3 +1,5 @@
+use std::collections::HashMap;
+
 use async_trait::async_trait;
 use serde::de::DeserializeOwned;
 use serde::export::fmt::Display;
@@ -12,7 +14,6 @@ use crate::core::Result;
 use crate::plugin::logic_delete::LogicAction;
 use crate::plugin::page::{IPageRequest, Page};
 use crate::rbatis::Rbatis;
-use crate::sql::date::DateFormat;
 use crate::utils::string_util::to_snake_name;
 use crate::wrapper::Wrapper;
 
@@ -93,6 +94,21 @@ pub trait CRUDEnable: Send + Sync + Serialize + DeserializeOwned {
         return Ok(json.as_object().unwrap().to_owned());
     }
 
+    ///format column
+    fn do_format_column(column: &str, data: String) -> String {
+        let m = Self::format_chain();
+        let source = m.get(column);
+        match source {
+            Some(s) => {
+                return s.replace("{}", &data);
+            }
+            _ => {
+                return data.to_string();
+            }
+        }
+    }
+
+
     ///return (value sql,args)
     fn make_value_sql_arg(&self, db_type: &DriverType, index: &mut usize) -> Result<(String, Vec<serde_json::Value>)> {
         let mut sql = String::new();
@@ -106,10 +122,7 @@ pub trait CRUDEnable: Send + Sync + Serialize + DeserializeOwned {
             let v = map.get(&column.to_string()).unwrap_or(&serde_json::Value::Null);
             //cast convert
             let mut column_sql = db_type.stmt_convert(*index);
-            // cast column name
-            for chain in &chains {
-                chain.format(&db_type, column, &mut column_sql, v)?;
-            }
+            column_sql = Self::do_format_column(column, column_sql);
             sql = sql + column_sql.as_str() + ",";
             arr.push(v.to_owned());
             *index += 1;
@@ -118,21 +131,14 @@ pub trait CRUDEnable: Send + Sync + Serialize + DeserializeOwned {
         return Ok((sql, arr));
     }
 
-    /// return cast chain,
-    /// you also can rewrite this method,
-    /// but do not forget push DateFormat(if you need)
-    fn format_chain() -> Vec<Box<dyn ColumnFormat>> {
-        let chain: Vec<Box<dyn ColumnFormat>> = vec![Box::new(DateFormat { keys: vec!["date"] })];
-        return chain;
+    /// return cast chain
+    /// column:format_str
+    /// for example: HashMap<"id",“{}::uuid”>
+    fn format_chain() -> HashMap<String, String> {
+        return HashMap::new();
     }
 }
 
-/// cast sql cloumn and return new sql
-pub trait ColumnFormat: Send + Sync {
-    ///column: table column
-    ///value_sql: set column = value_sql
-    fn format(&self, driver_type: &DriverType, column: &str, value_sql: &mut String, value: &serde_json::Value) -> crate::core::Result<()>;
-}
 
 impl<T> CRUDEnable for Option<T> where T: CRUDEnable {
     type IdType = T::IdType;
@@ -145,7 +151,7 @@ impl<T> CRUDEnable for Option<T> where T: CRUDEnable {
         T::table_columns()
     }
 
-    fn format_chain() -> Vec<Box<dyn ColumnFormat>> {
+    fn format_chain() -> HashMap<String, String> {
         T::format_chain()
     }
 
@@ -287,10 +293,17 @@ impl CRUD for Rbatis {
 
     async fn remove_by_id<T>(&self, context_id: &str, id: &T::IdType) -> Result<u64> where T: CRUDEnable {
         let mut sql = String::new();
-        if self.logic_plugin.is_some() {
-            sql = self.logic_plugin.as_ref().unwrap().create_remove_sql(&self.driver_type()?, T::table_name().as_str(), &T::table_columns(), format!(" WHERE id = {}", id).as_str())?;
+        let id_value = json!(id);
+        let id_str;
+        if id_value.is_string() {
+            id_str = format!("'{}'", id);
         } else {
-            sql = format!("DELETE FROM {} WHERE {} = {}", T::table_name(), T::id_name(), id);
+            id_str = format!("{}", id);
+        }
+        if self.logic_plugin.is_some() {
+            sql = self.logic_plugin.as_ref().unwrap().create_remove_sql(&self.driver_type()?, T::table_name().as_str(), &T::table_columns(), format!(" WHERE id = {}", id_str).as_str())?;
+        } else {
+            sql = format!("DELETE FROM {} WHERE {} = {}", T::table_name(), T::id_name(), id_str);
         }
         return Ok(self.exec_prepare(context_id, sql.as_str(), &vec![]).await?.rows_affected);
     }
@@ -327,9 +340,7 @@ impl CRUD for Rbatis {
                 continue;
             }
             let mut value_column = driver_type.stmt_convert(args.len());
-            for item in &chain {
-                item.format(driver_type, &column, &mut value_column, &v)?;
-            }
+            value_column = T::do_format_column(&column, value_column);
             sets.push_str(format!(" {} = {},", column, value_column).as_str());
             args.push(v);
         }
