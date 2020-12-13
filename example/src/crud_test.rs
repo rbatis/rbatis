@@ -394,4 +394,18 @@ mod test {
         }).await.unwrap();
         println!("{:?}", a);
     }
+
+    #[async_std::test]
+    pub async fn test_macro_sql_select() {
+        fast_log::init_log("requests.log", 1000, log::Level::Info, None, true);
+        //use static ref
+        RB.link("mysql://root:123456@localhost:3306/test").await.unwrap();
+
+        #[py_sql(RB, "select * from biz_activity where delete_flag = #{del}")]
+        fn select_activities(del: i32) -> Vec<BizActivity> {}
+
+        let ret = select_activities(1).await;
+
+        log::info!("result is : {:?}", ret);
+    }
 }
