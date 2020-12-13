@@ -121,9 +121,7 @@ pub trait CRUDEnable: Send + Sync + Serialize + DeserializeOwned {
         for column in &columns {
             let v = map.get(&column.to_string()).unwrap_or(&serde_json::Value::Null);
             //cast convert
-            let mut column_sql = db_type.stmt_convert(*index);
-            column_sql = Self::do_format_column(column, column_sql);
-            sql = sql + column_sql.as_str() + ",";
+            sql = sql + Self::do_format_column(column, db_type.stmt_convert(*index)).as_str() + ",";
             arr.push(v.to_owned());
             *index += 1;
         }
@@ -333,9 +331,7 @@ impl CRUD for Rbatis {
             if !update_null_value && v.is_null() {
                 continue;
             }
-            let mut value_column = driver_type.stmt_convert(args.len());
-            value_column = T::do_format_column(&column, value_column);
-            sets.push_str(format!(" {} = {},", column, value_column).as_str());
+            sets.push_str(format!(" {} = {},", column, T::do_format_column(&column, driver_type.stmt_convert(args.len()))).as_str());
             args.push(v);
         }
         sets.pop();
