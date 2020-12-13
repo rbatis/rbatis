@@ -1,9 +1,7 @@
 ///test CRUD
 #[cfg(test)]
 mod test {
-    use std::collections::HashMap;
     use std::str::FromStr;
-
     use bigdecimal_::BigDecimal;
     use chrono::NaiveDateTime;
     use serde::Deserialize;
@@ -13,7 +11,7 @@ mod test {
     use rbatis::core::db::DBExecResult;
     use rbatis::core::Error;
     use rbatis::core::value::DateTimeNow;
-    use rbatis::crud::{CRUD, CRUDEnable};
+    use rbatis::crud::{CRUD};
     use rbatis::plugin::logic_delete::RbatisLogicDeletePlugin;
     use rbatis::plugin::page::{Page, PageRequest};
     use rbatis::rbatis::Rbatis;
@@ -418,25 +416,13 @@ mod test {
         fast_log::init_log("requests.log", 1000, log::Level::Info, None, true);
         let rb = Rbatis::new();
         rb.link("postgres://postgres:123456@localhost:5432/postgres").await.unwrap();
+
+        #[crud_enable(column_format:id:{}::uuid)]
         #[derive(Serialize, Deserialize, Clone, Debug)]
         pub struct BizUuid {
             pub id: Option<Uuid>,
             pub name: Option<String>,
         }
-        impl CRUDEnable for BizUuid {
-            type IdType = Uuid;
-
-            fn id_name() -> String {
-                "id".to_string()
-            }
-
-            fn format_chain() -> HashMap<String, String> {
-                let mut m = HashMap::new();
-                m.insert("id".to_string(), "{}::uuid".to_string());
-                m
-            }
-        }
-
         //make table
         rb.exec("", "CREATE TABLE biz_uuid( id uuid, name VARCHAR, PRIMARY KEY(id));").await;
         //rb.exec("", "INSERT INTO biz_uuid (id,name) VALUES ('df07fea2-b819-4e05-b86d-dfc15a5f52a9','uuid')").await;
@@ -445,7 +431,6 @@ mod test {
         let w = rb.new_wrapper().push_sql("id = 'df07fea2-b819-4e05-b86d-dfc15a5f52a9'::uuid").check().unwrap();
         let data: BizUuid = rb.fetch_by_wrapper("", &w).await.unwrap();
         println!("{:?}", data);
-
         let uuid=Uuid::from_str("df07fea2-b819-4e05-b86d-dfc15a5f52a9").unwrap();
         rb.remove_by_id::<BizUuid>("",&uuid).await;
     }

@@ -9,7 +9,7 @@ use syn::ext::IdentExt;
 use crate::proc_macro::TokenStream;
 
 ///impl CRUDEnable
-pub(crate) fn impl_crud_driver(ast: &syn::DeriveInput, arg_id_type: &str, arg_id_name: &str, arg_table_name: &str, arg_table_columns: &str) -> TokenStream {
+pub(crate) fn impl_crud_driver(ast: &syn::DeriveInput, arg_id_type: &str, arg_id_name: &str, arg_table_name: &str, arg_table_columns: &str, arg_column_format: &str) -> TokenStream {
     let name = &ast.ident;
     let id_name;
     if arg_id_name.is_empty() {
@@ -36,7 +36,29 @@ pub(crate) fn impl_crud_driver(ast: &syn::DeriveInput, arg_id_type: &str, arg_id
     } else {
         fields = quote! {#arg_table_columns.to_string()};
     }
-
+    let mut formats = quote! {
+       let mut m = std::collections::HashMap::new();
+    };
+    if arg_column_format.is_empty() {
+        formats = quote! {
+          return std::collections::HashMap::new();
+        }
+    } else {
+        let items: Vec<&str> = arg_column_format.split(",").collect();
+        for item in items {
+            if !item.contains(":") {
+                panic!("[rbatis] crud_enable[column_format: format_str ] format_str must be column:format_value ")
+            }
+            let index = item.find(":").unwrap();
+            let column = item[0..index].to_string();
+            let format_str = item[index + 1..item.len()].to_string();
+            formats = quote! {
+               #formats
+               m.insert(#column.to_string(),#format_str.to_string());
+            };
+        }
+        formats = quote! { #formats  return m; };
+    }
     let gen = quote! {
         impl rbatis::crud::CRUDEnable for #name {
             type IdType = #id_type;
@@ -51,6 +73,10 @@ pub(crate) fn impl_crud_driver(ast: &syn::DeriveInput, arg_id_type: &str, arg_id
 
             fn table_columns() -> String{
                  #fields
+            }
+
+            fn format_chain() -> std::collections::HashMap<String, String> {
+                 #formats
             }
         }
     };
@@ -144,6 +170,7 @@ pub struct CrudEnableConfig {
     pub id_type: String,
     pub table_name: String,
     pub table_columns: String,
+    pub column_format: String,
 }
 
 /// impl the crud macro
@@ -154,7 +181,7 @@ pub(crate) fn impl_crud(args: TokenStream, input: TokenStream) -> TokenStream {
     let input_clone: proc_macro2::TokenStream = input.clone().into();
     let driver_token = gen_driver_token(&token_string);
     let ast = syn::parse(input).unwrap();
-    let stream = impl_crud_driver(&ast, &config.id_type, &config.id_name, &config.table_name, &config.table_columns);
+    let stream = impl_crud_driver(&ast, &config.id_type, &config.id_name, &config.table_name, &config.table_columns, &config.column_format);
     let s: proc_macro2::TokenStream = stream.into();
     let qt = quote! {
        #driver_token
@@ -185,7 +212,8 @@ fn gen_driver_token(token_string: &str) -> proc_macro2::TokenStream {
 ///     id_name:id|
 ///     id_type:String|
 ///     table_name:biz_activity|
-///     table_columns:id,name,version,delete_flag
+///     table_columns:id,name,version,delete_flag|
+///     column_format:id:{}::uuid
 fn read_config(arg: &str) -> CrudEnableConfig {
     let keys: Vec<&str> = arg.split("|").collect();
     let mut map = HashMap::new();
@@ -194,18 +222,19 @@ fn read_config(arg: &str) -> CrudEnableConfig {
         if item.is_empty() {
             continue;
         }
-        let kvs: Vec<&str> = item.split(":").collect();
-        if kvs.len() != 2usize {
-            panic!("[rbaits] crud_enable must be key:\"value\"");
+        if !item.contains(":") {
+            panic!("[rbaits] crud_enable must be key:value");
         }
-        let key = kvs[0].trim();
-        let value = kvs[1].trim();
-        map.insert(key.to_string(), value.to_string());
+        let index = item.find(":").unwrap();
+        let key = item[0..index].replace(" ", "").to_string();
+        let value = item[index + 1..item.len()].replace(" ", "").to_string();
+        map.insert(key, value);
     }
     return CrudEnableConfig {
         id_name: map.get("id_name").unwrap_or(&"".to_string()).to_string(),
         id_type: map.get("id_type").unwrap_or(&"".to_string()).to_string(),
         table_name: map.get("table_name").unwrap_or(&"".to_string()).to_string(),
         table_columns: map.get("table_columns").unwrap_or(&"".to_string()).to_string(),
+        column_format: map.get("column_format").unwrap_or(&"".to_string()).to_string(),
     };
 }

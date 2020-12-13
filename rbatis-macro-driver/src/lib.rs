@@ -14,7 +14,7 @@ mod py_sql;
 #[proc_macro_derive(CRUDEnable)]
 pub fn hello_macro_derive(input: TokenStream) -> TokenStream {
     let ast = syn::parse(input).unwrap();
-    let stream = crud_enable::impl_crud_driver(&ast,"","","","");
+    let stream = crud_enable::impl_crud_driver(&ast,"","","","","");
     if !cfg!(feature = "no_print") {
         println!("............gen impl CRUDEnable:\n {}", stream);
         println!("............gen impl CRUDEnable end............");
