@@ -77,19 +77,23 @@ pub fn to_snake_name(name: &String) -> String {
 ///input 'strings' => strings
 pub fn un_packing_string(column: &str) -> String {
     let mut column = column.to_string();
-    if column.len() > 2 &&
-        (column.starts_with("'") && column.ends_with("'"))
-        || (column.starts_with("`") && column.ends_with("`"))
-        || (column.starts_with("\"") && column.ends_with("\""))
-    {
-        column = column[1..column.len() - 1].to_string();
+    if column.len() >= 2 {
+        if column.starts_with("'") && column.ends_with("'") {
+            column = column[column.find("'").unwrap()+"'".len()..column.rfind("'").unwrap()].to_string();
+        }
+        if column.starts_with("`") && column.ends_with("`") {
+            column = column[column.find("`").unwrap()+"`".len()..column.rfind("`").unwrap()].to_string();
+        }
+        if column.starts_with("\"") && column.ends_with("\"") {
+            column = column[column.find("\"").unwrap()+"\"".len()..column.rfind("\"").unwrap()].to_string();
+        }
     }
     return column;
 }
 
 #[cfg(test)]
 mod test {
-    use crate::utils::string_util::find_convert_string;
+    use crate::utils::string_util::{find_convert_string, un_packing_string};
 
     #[test]
     fn test_find() {
@@ -123,5 +127,14 @@ mod test {
         let sql = "select #{column   #{  }";
         let finds = find_convert_string(sql);
         println!("{:?}", finds);
+    }
+
+    #[test]
+    fn test_un_pack_string() {
+        assert_eq!(un_packing_string(""), "");
+        assert_eq!(un_packing_string("''"), "");
+        assert_eq!(un_packing_string("``"), "");
+        assert_eq!(un_packing_string("\"\""), "");
+        assert_eq!(un_packing_string("`a`"), "a");
     }
 }
