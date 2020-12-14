@@ -2,6 +2,7 @@
 #[cfg(test)]
 mod test {
     use std::str::FromStr;
+
     use bigdecimal_::BigDecimal;
     use chrono::NaiveDateTime;
     use serde::Deserialize;
@@ -11,7 +12,7 @@ mod test {
     use rbatis::core::db::DBExecResult;
     use rbatis::core::Error;
     use rbatis::core::value::DateTimeNow;
-    use rbatis::crud::{CRUD};
+    use rbatis::crud::CRUD;
     use rbatis::plugin::logic_delete::RbatisLogicDeletePlugin;
     use rbatis::plugin::page::{Page, PageRequest};
     use rbatis::rbatis::Rbatis;
@@ -19,7 +20,7 @@ mod test {
 
     ///Or another way to write it
     // #[crud_enable(table_name:biz_activity)]
-    // #[crud_enable(id_name:id|id_type:String|table_name:biz_activity|table_columns:id,name,version,delete_flag|formats_pg:id:{}::uuid)]
+    //#[crud_enable(id_name:"id"|id_type:"String"|table_name:"biz_activity"|table_columns:"id,name,version,delete_flag"|formats_pg:"id:{}::uuid")]
     #[crud_enable]
     #[derive(Clone, Debug)]
     pub struct BizActivity {
@@ -419,7 +420,7 @@ mod test {
         //'formats_pg' use postgres format
         //'id' ->  table column 'id'
         //'{}::uuid' -> format data str
-        #[crud_enable(formats_pg:"id:{}::uuid")]
+        #[crud_enable(formats_pg: "id:{}::uuid")]
         #[derive(Clone, Debug)]
         pub struct BizUuid {
             pub id: Option<Uuid>,
@@ -431,11 +432,11 @@ mod test {
         //insert table
         rb.save("", &BizUuid { id: Some(uuid), name: Some("test".to_string()) }).await;
         //update table
-        rb.update_by_id("",&BizUuid{ id: Some(uuid.clone()), name: Some("test_updated".to_string()) }).await;
+        rb.update_by_id("", &BizUuid { id: Some(uuid.clone()), name: Some("test_updated".to_string()) }).await;
         //query table
         let data: BizUuid = rb.fetch_by_id("", &uuid).await.unwrap();
         println!("{:?}", data);
         //delete table
-        rb.remove_by_id::<BizUuid>("",&uuid).await;
+        rb.remove_by_id::<BizUuid>("", &uuid).await;
     }
 }
