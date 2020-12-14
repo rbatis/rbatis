@@ -419,7 +419,7 @@ mod test {
         //'formats_pg' use postgres format
         //'id' ->  table column 'id'
         //'{}::uuid' -> format data str
-        #[crud_enable(formats_pg:id:{}::uuid)]
+        #[crud_enable(formats_pg:"id:{}::uuid")]
         #[derive(Clone, Debug)]
         pub struct BizUuid {
             pub id: Option<Uuid>,
