@@ -79,13 +79,13 @@ pub fn un_packing_string(column: &str) -> String {
     let mut column = column.to_string();
     if column.len() >= 2 {
         if column.starts_with("'") && column.ends_with("'") {
-            column = column[column.find("'").unwrap()+"'".len()..column.rfind("'").unwrap()].to_string();
+            column = column[1..column.len() - 1].to_string();
         }
         if column.starts_with("`") && column.ends_with("`") {
-            column = column[column.find("`").unwrap()+"`".len()..column.rfind("`").unwrap()].to_string();
+            column = column[1..column.len() - 1].to_string();
         }
         if column.starts_with("\"") && column.ends_with("\"") {
-            column = column[column.find("\"").unwrap()+"\"".len()..column.rfind("\"").unwrap()].to_string();
+            column = column[1..column.len() - 1].to_string();
         }
     }
     return column;
@@ -136,5 +136,6 @@ mod test {
         assert_eq!(un_packing_string("``"), "");
         assert_eq!(un_packing_string("\"\""), "");
         assert_eq!(un_packing_string("`a`"), "a");
+        assert_eq!(un_packing_string("\""), "\"");
     }
 }
