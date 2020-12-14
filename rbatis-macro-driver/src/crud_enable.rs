@@ -269,7 +269,10 @@ fn read_config(arg: &str) -> CrudEnableConfig {
         }
         let index = item.find(":").unwrap();
         let key = item[0..index].replace(" ", "").to_string();
-        let value = item[index + 1..item.len()].replace(" ", "").to_string();
+        let mut value = item[index + 1..item.len()].replace(" ", "").to_string();
+        if value.len() >= 2 && value.starts_with("\"") && value.ends_with("\"") {
+            value = value[1..value.len() - 1].to_string();
+        }
         map.insert(key, value);
     }
     let mut formats = HashMap::new();
