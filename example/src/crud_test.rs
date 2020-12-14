@@ -17,10 +17,9 @@ mod test {
     use rbatis::rbatis::Rbatis;
     use rbatis_macro_driver::sql;
 
-    ///
-            ///Or another way to write it
+    ///Or another way to write it
     // #[crud_enable(table_name:biz_activity)]
-    // #[crud_enable(id_name:id|id_type:String|table_name:biz_activity|table_columns:id,name,version,delete_flag)]
+    // #[crud_enable(id_name:id|id_type:String|table_name:biz_activity|table_columns:id,name,version,delete_flag|formats_pg:id:{}::uuid)]
     #[crud_enable]
     #[derive(Clone, Debug)]
     pub struct BizActivity {
