@@ -144,7 +144,7 @@ impl Rbatis {
         let mut w= Wrapper::new(&driver.unwrap_or_else(|_| {
             panic!("[rbatis] .new_wrapper() method must be call .link(url) to init first!");
         }));
-        w.set_formats(T::formats());
+        w.set_formats(T::formats(&self.driver_type().unwrap()));
         return w;
     }
 

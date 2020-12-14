@@ -95,8 +95,8 @@ pub trait CRUDEnable: Send + Sync + Serialize + DeserializeOwned {
     }
 
     ///format column
-    fn do_format_column(column: &str, data: String) -> String {
-        let m = Self::formats();
+    fn do_format_column(driver_type: &DriverType, column: &str, data: String) -> String {
+        let m = Self::formats(driver_type);
         let source = m.get(column);
         match source {
             Some(s) => {
@@ -113,15 +113,13 @@ pub trait CRUDEnable: Send + Sync + Serialize + DeserializeOwned {
     fn make_value_sql_arg(&self, db_type: &DriverType, index: &mut usize) -> Result<(String, Vec<serde_json::Value>)> {
         let mut sql = String::new();
         let mut arr = vec![];
-        let chains = Self::formats();
-
         let cols = Self::table_columns();
         let columns: Vec<&str> = cols.split(",").collect();
         let map = self.make_column_value_map(db_type)?;
         for column in &columns {
             let v = map.get(&column.to_string()).unwrap_or(&serde_json::Value::Null);
             //cast convert
-            sql = sql + Self::do_format_column(column, db_type.stmt_convert(*index)).as_str() + ",";
+            sql = sql + Self::do_format_column(db_type, column, db_type.stmt_convert(*index)).as_str() + ",";
             arr.push(v.to_owned());
             *index += 1;
         }
@@ -132,7 +130,7 @@ pub trait CRUDEnable: Send + Sync + Serialize + DeserializeOwned {
     /// return cast chain
     /// column:format_str
     /// for example: HashMap<"id",“{}::uuid”>
-    fn formats() -> HashMap<String, String> {
+    fn formats(driver_type: &crate::core::db::DriverType) -> HashMap<String, String> {
         return HashMap::new();
     }
 }
@@ -149,8 +147,8 @@ impl<T> CRUDEnable for Option<T> where T: CRUDEnable {
         T::table_columns()
     }
 
-    fn formats() -> HashMap<String, String> {
-        T::formats()
+    fn formats(driver_type: &DriverType) -> HashMap<String, String> {
+        T::formats(driver_type)
     }
 
     fn make_column_value_map(&self, db_type: &DriverType) -> Result<serde_json::Map<String, Value>> {
@@ -291,7 +289,7 @@ impl CRUD for Rbatis {
 
     async fn remove_by_id<T>(&self, context_id: &str, id: &T::IdType) -> Result<u64> where T: CRUDEnable {
         let mut sql = String::new();
-        let id_str = T::do_format_column(&T::id_name(), self.driver_type()?.stmt_convert(0));
+        let id_str = T::do_format_column(&self.driver_type()?, &T::id_name(), self.driver_type()?.stmt_convert(0));
         if self.logic_plugin.is_some() {
             sql = self.logic_plugin.as_ref().unwrap().create_remove_sql(&self.driver_type()?, T::table_name().as_str(), &T::table_columns(), format!(" WHERE id = {}", id_str).as_str())?;
         } else {
@@ -320,7 +318,7 @@ impl CRUD for Rbatis {
         let map = arg.make_column_value_map(&self.driver_type()?)?;
         let driver_type = &self.driver_type()?;
 
-        let chain = T::formats();
+        let chain = T::formats(&self.driver_type()?);
         let mut sets = String::new();
         for (column, v) in map {
             //filter id
@@ -331,7 +329,7 @@ impl CRUD for Rbatis {
             if !update_null_value && v.is_null() {
                 continue;
             }
-            sets.push_str(format!(" {} = {},", column, T::do_format_column(&column, driver_type.stmt_convert(args.len()))).as_str());
+            sets.push_str(format!(" {} = {},", column, T::do_format_column(&self.driver_type()?, &column, driver_type.stmt_convert(args.len()))).as_str());
             args.push(v);
         }
         sets.pop();

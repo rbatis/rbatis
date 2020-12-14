@@ -417,7 +417,10 @@ mod test {
         let rb = Rbatis::new();
         rb.link("postgres://postgres:123456@localhost:5432/postgres").await.unwrap();
 
-        #[crud_enable(formats:id:{}::uuid)]
+        //'formats_pg' use postgres format
+        //'id' ->  table column 'id'
+        //'{}::uuid' -> format data str
+        #[crud_enable(formats_pg:id:{}::uuid)]
         #[derive(Clone, Debug)]
         pub struct BizUuid {
             pub id: Option<Uuid>,
@@ -434,7 +437,6 @@ mod test {
         let data: BizUuid = rb.fetch_by_id("", &uuid).await.unwrap();
         println!("{:?}", data);
         //delete table
-        let uuid=Uuid::from_str("df07fea2-b819-4e05-b86d-dfc15a5f52a9").unwrap();
         rb.remove_by_id::<BizUuid>("",&uuid).await;
     }
 }
