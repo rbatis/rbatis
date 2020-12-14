@@ -34,7 +34,7 @@ pub fn find_convert_string(arg: &str) -> LinkedList<(String, String)> {
             }
             let value = String::from_utf8(chars[last_index as usize..(index + 1) as usize].to_vec()).unwrap();
             cache.insert(item.clone());
-            list.push_back((item.clone(),value));
+            list.push_back((item.clone(), value));
             item.clear();
             last_index = -1;
         }
@@ -72,6 +72,19 @@ pub fn to_snake_name(name: &String) -> String {
         index += 1;
     }
     return new_name;
+}
+
+///input 'strings' => strings
+pub fn un_packing_string(column: &str) -> String {
+    let mut column = column.to_string();
+    if column.len() > 2 &&
+        (column.starts_with("'") && column.ends_with("'"))
+        || (column.starts_with("`") && column.ends_with("`"))
+        || (column.starts_with("\"") && column.ends_with("\""))
+    {
+        column = column[1..column.len() - 1].to_string();
+    }
+    return column;
 }
 
 #[cfg(test)]

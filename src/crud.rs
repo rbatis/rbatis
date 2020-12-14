@@ -116,7 +116,6 @@ pub trait CRUDEnable: Send + Sync + Serialize + DeserializeOwned {
         }
     }
 
-
     ///return (value sql,args)
     fn make_value_sql_arg(&self, db_type: &DriverType, index: &mut usize) -> Result<(String, Vec<serde_json::Value>)> {
         let mut sql = String::new();
@@ -125,9 +124,10 @@ pub trait CRUDEnable: Send + Sync + Serialize + DeserializeOwned {
         let columns: Vec<&str> = cols.split(",").collect();
         let map = self.make_column_value_map(db_type)?;
         for column in &columns {
+            let mut column = crate::utils::string_util::un_packing_string(column);
             let v = map.get(&column.to_string()).unwrap_or(&serde_json::Value::Null);
             //cast convert
-            sql = sql + Self::do_format_column(db_type, column, db_type.stmt_convert(*index)).as_str() + ",";
+            sql = sql + Self::do_format_column(db_type, &column, db_type.stmt_convert(*index)).as_str() + ",";
             arr.push(v.to_owned());
             *index += 1;
         }
