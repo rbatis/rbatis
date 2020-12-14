@@ -256,6 +256,13 @@ fn gen_driver_token(token_string: &str) -> proc_macro2::TokenStream {
 ///     table_name:biz_activity|
 ///     table_columns:id,name,version,delete_flag|
 ///     formats_pg:id:{}::uuid,name:{}::string
+///
+///
+///     id_name:"id"|
+///     id_type:"String"|
+///     table_name:"biz_activity"|
+///     table_columns:"id,name,version,delete_flag"|
+///     formats_pg:"id:{}::uuid,name:{}::string"
 fn read_config(arg: &str) -> CrudEnableConfig {
     let keys: Vec<&str> = arg.split("|").collect();
     let mut map = HashMap::new();
