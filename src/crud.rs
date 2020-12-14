@@ -18,6 +18,14 @@ use crate::utils::string_util::to_snake_name;
 use crate::wrapper::Wrapper;
 
 /// DB Table model trait
+///
+/// if use #[crud_enable] impl Table struct,
+/// for example:
+///  #[crud_enable(id_name:id | id_type:String | table_name:biz_activity| table_columns:id,name,version,delete_flag| formats_pg:id:{}::uuid,name:{}::string)]
+///
+/// if use impl CRUDEnable for Table struct,
+/// you must impl IdType and id_name() method!
+///
 pub trait CRUDEnable: Send + Sync + Serialize + DeserializeOwned {
     /// your table id type,for example:
     /// IdType = String
