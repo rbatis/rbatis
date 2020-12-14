@@ -136,14 +136,8 @@ impl Rbatis {
     }
 
     /// try return an new wrapper and set table formats,if not call the link() method,it will be panic!
-    pub fn new_wrapper_table<T>(&self) -> Wrapper where T:CRUDEnable {
-        let driver = self.driver_type();
-        if driver.as_ref().unwrap().eq(&DriverType::None) {
-            panic!("[rbatis] .new_wrapper() method must be call .link(url) to init first!");
-        }
-        let mut w= Wrapper::new(&driver.unwrap_or_else(|_| {
-            panic!("[rbatis] .new_wrapper() method must be call .link(url) to init first!");
-        }));
+    pub fn new_wrapper_table<T>(&self) -> Wrapper where T: CRUDEnable {
+        let mut w = self.new_wrapper();
         w.set_formats(T::formats(&self.driver_type().unwrap()));
         return w;
     }
