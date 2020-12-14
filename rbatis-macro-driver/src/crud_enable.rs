@@ -43,7 +43,7 @@ pub(crate) fn impl_crud_driver(ast: &syn::DeriveInput, arg_id_type: &str, arg_id
     if !arg_formats.is_empty() {
         for (k, v) in arg_formats {
             match k.as_str() {
-                "formats_mysql" | "formats_my" => {
+                "formats_mysql" => {
                     formats_mysql = gen_format(v);
                 }
                 "formats_pg" | "formats_postgres" => {
