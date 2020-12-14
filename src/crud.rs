@@ -21,7 +21,7 @@ use crate::wrapper::Wrapper;
 ///
 /// if use #[crud_enable] impl Table struct,
 /// for example:
-///  #[crud_enable(id_name:id | id_type:String | table_name:biz_activity| table_columns:id,name,version,delete_flag| formats_pg:id:{}::uuid,name:{}::string)]
+///  #[crud_enable(id_name:"id"|id_type:"String"|table_name:"biz_activity"|table_columns:"id,name,version,delete_flag"|formats_pg:"id:{}::uuid")]
 ///
 /// if use impl CRUDEnable for Table struct,
 /// you must impl IdType and id_name() method!
