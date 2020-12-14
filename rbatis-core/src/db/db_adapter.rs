@@ -1268,7 +1268,7 @@ impl DBTx {
                 let return_len = json_array.len();
                 let result = json_decode::<T>(json_array)?;
                 Ok((result, return_len))
-            }
+            }/**/
             _ => {
                 return Err(Error::from("[rbatis] feature not enable!"));
             }

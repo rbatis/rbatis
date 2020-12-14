@@ -9,7 +9,7 @@ use syn::ext::IdentExt;
 use crate::proc_macro::TokenStream;
 
 ///impl CRUDEnable
-pub(crate) fn impl_crud_driver(ast: &syn::DeriveInput, arg_id_type: &str, arg_id_name: &str, arg_table_name: &str, arg_table_columns: &str, arg_formats: &str) -> TokenStream {
+pub(crate) fn impl_crud_driver(ast: &syn::DeriveInput, arg_id_type: &str, arg_id_name: &str, arg_table_name: &str, arg_table_columns: &str, arg_formats: &HashMap<String, String>) -> TokenStream {
     let name = &ast.ident;
     let id_name;
     if arg_id_name.is_empty() {
@@ -36,28 +36,28 @@ pub(crate) fn impl_crud_driver(ast: &syn::DeriveInput, arg_id_type: &str, arg_id
     } else {
         fields = quote! {#arg_table_columns.to_string()};
     }
-    let mut formats = quote! {
-       let mut m = std::collections::HashMap::new();
-    };
-    if arg_formats.is_empty() {
-        formats = quote! {
-          return std::collections::HashMap::new();
-        }
-    } else {
-        let items: Vec<&str> = arg_formats.split(",").collect();
-        for item in items {
-            if !item.contains(":") {
-                panic!("[rbatis] crud_enable[formats: format_str ] format_str must be column:format_value ")
+    let mut formats_mysql = proc_macro2::TokenStream::new();
+    let mut formats_pg = proc_macro2::TokenStream::new();
+    let mut formats_sqlite = proc_macro2::TokenStream::new();
+    let mut formats_mssql = proc_macro2::TokenStream::new();
+    if !arg_formats.is_empty() {
+        for (k, v) in arg_formats {
+            match k.as_str() {
+                "formats_mysql" | "formats_my" => {
+                    formats_mysql = gen_format(v);
+                }
+                "formats_pg" | "formats_postgres" => {
+                    formats_pg = gen_format(v);
+                }
+                "formats_sqlite" => {
+                    formats_sqlite = gen_format(v);
+                }
+                "formats_mssql" => {
+                    formats_mssql = gen_format(v);
+                }
+                _ => {}
             }
-            let index = item.find(":").unwrap();
-            let column = item[0..index].to_string();
-            let format_str = item[index + 1..item.len()].to_string();
-            formats = quote! {
-               #formats
-               m.insert(#column.to_string(),#format_str.to_string());
-            };
         }
-        formats = quote! { #formats  return m; };
     }
     let gen = quote! {
         impl rbatis::crud::CRUDEnable for #name {
@@ -75,12 +75,54 @@ pub(crate) fn impl_crud_driver(ast: &syn::DeriveInput, arg_id_type: &str, arg_id
                  #fields
             }
 
-            fn formats() -> std::collections::HashMap<String, String> {
-                 #formats
+            fn formats(driver_type: &rbatis::core::db::DriverType) -> std::collections::HashMap<String, String> {
+                  let mut m = std::collections::HashMap::new();
+                  match driver_type{
+                    rbatis::core::db::DriverType::Mysql=>{
+                         #formats_mysql
+                         return m;
+                    },
+                    rbatis::core::db::DriverType::Postgres=>{
+                         #formats_pg
+                         return m;
+                    },
+                    rbatis::core::db::DriverType::Sqlite=>{
+                         #formats_sqlite
+                         return m;
+                    },
+                    rbatis::core::db::DriverType::Mssql=>{
+                         #formats_mssql
+                         return m;
+                    },
+                    rbatis::core::db::DriverType::None=>{
+                         return m;
+                    },
+                 }
             }
         }
     };
     gen.into()
+}
+
+fn gen_format(v: &str) -> proc_macro2::TokenStream {
+    let mut formats = quote! {};
+    let items: Vec<&str> = v.split(",").collect();
+    for item in items {
+        if !item.contains(":") {
+            panic!(format!("[rbatis] [crud_enable] format_str:'{}' must be [column]:[format_string],for example ->  '{}'  ", item, "formats_pg:id:{}::uuid"));
+        }
+        if !item.contains("{}") {
+            panic!(format!("[rbatis] [crud_enable] format_str:'{}' must be [column]:[format_string],for example ->  '{}'  ", item, "formats_pg:id:{}::uuid"));
+        }
+        let index = item.find(":").unwrap();
+        let column = item[0..index].to_string();
+        let format_str = item[index + 1..item.len()].to_string();
+        formats = quote! {
+                           #formats
+                           m.insert(#column.to_string(),#format_str.to_string());
+                        };
+    }
+    return formats;
 }
 
 fn gen_table_name(data: &syn::Ident) -> String {
@@ -170,7 +212,7 @@ pub struct CrudEnableConfig {
     pub id_type: String,
     pub table_name: String,
     pub table_columns: String,
-    pub formats: String,
+    pub formats: HashMap<String, String>,
 }
 
 /// impl the crud macro
@@ -213,7 +255,7 @@ fn gen_driver_token(token_string: &str) -> proc_macro2::TokenStream {
 ///     id_type:String|
 ///     table_name:biz_activity|
 ///     table_columns:id,name,version,delete_flag|
-///     formats:id:{}::uuid
+///     formats_pg:id:{}::uuid
 fn read_config(arg: &str) -> CrudEnableConfig {
     let keys: Vec<&str> = arg.split("|").collect();
     let mut map = HashMap::new();
@@ -230,11 +272,25 @@ fn read_config(arg: &str) -> CrudEnableConfig {
         let value = item[index + 1..item.len()].replace(" ", "").to_string();
         map.insert(key, value);
     }
+    let mut formats = HashMap::new();
+    for (k, v) in &map {
+        if k.starts_with("formats") {
+            if !(k.ends_with("formats_pg")
+                || k.ends_with("formats_postgres")
+                || k.ends_with("formats_mysql")
+                || k.ends_with("formats_my")
+                || k.ends_with("formats_sqlite")
+                || k.ends_with("formats_mssql")) {
+                panic!("[rbatis] formats must be formats_pg, formats_mysql,formats_sqlite,formats_mssql!");
+            }
+            formats.insert(k.to_owned(), v.to_owned());
+        }
+    }
     return CrudEnableConfig {
         id_name: map.get("id_name").unwrap_or(&"".to_string()).to_string(),
         id_type: map.get("id_type").unwrap_or(&"".to_string()).to_string(),
         table_name: map.get("table_name").unwrap_or(&"".to_string()).to_string(),
         table_columns: map.get("table_columns").unwrap_or(&"".to_string()).to_string(),
-        formats: map.get("formats").unwrap_or(&"".to_string()).to_string(),
+        formats: formats,
     };
 }

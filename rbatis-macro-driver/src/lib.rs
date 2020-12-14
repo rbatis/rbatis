@@ -4,6 +4,7 @@ extern crate proc_macro;
 use syn::{AttributeArgs, ItemFn, parse_macro_input};
 
 use crate::proc_macro::TokenStream;
+use std::collections::HashMap;
 
 mod util;
 mod crud_enable;
@@ -14,7 +15,7 @@ mod py_sql;
 #[proc_macro_derive(CRUDEnable)]
 pub fn hello_macro_derive(input: TokenStream) -> TokenStream {
     let ast = syn::parse(input).unwrap();
-    let stream = crud_enable::impl_crud_driver(&ast,"","","","","");
+    let stream = crud_enable::impl_crud_driver(&ast,"","","","",&HashMap::new());
     if !cfg!(feature = "no_print") {
         println!("............gen impl CRUDEnable:\n {}", stream);
         println!("............gen impl CRUDEnable end............");
