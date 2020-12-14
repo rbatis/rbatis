@@ -408,6 +408,9 @@ async fn main() -> std::io::Result<()> {
 * Conlusion: Assuming zero time consumed on IO, single threaded benchmark achieves 200K QPS or QPS, which is a few times more performant than GC languages like Go or Java.
 
 ### FAQ
+* Postgres Types Define Please see Doc<br/>
+(中文)https://rbatis.github.io/rbatis.io/#/?id=%e6%95%b0%e6%8d%ae%e5%ba%93%e5%88%97%e6%a0%bc%e5%bc%8f%e5%8c%96%e5%ae%8f
+(En)https://rbatis.github.io/rbatis.io/#/README_EN?id=database-column-formatting-macro
 * Support for DateTime and BigDecimal? <br/>
 Currently supports chrono::NaiveDateTime和bigdecimal::BigDecimal
 * Supports for `async/.await` <br/>
