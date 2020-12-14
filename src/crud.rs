@@ -124,7 +124,7 @@ pub trait CRUDEnable: Send + Sync + Serialize + DeserializeOwned {
         let columns: Vec<&str> = cols.split(",").collect();
         let map = self.make_column_value_map(db_type)?;
         for column in &columns {
-            let mut column = crate::utils::string_util::un_packing_string(column);
+            let column = crate::utils::string_util::un_packing_string(column);
             let v = map.get(&column.to_string()).unwrap_or(&serde_json::Value::Null);
             //cast convert
             sql = sql + Self::do_format_column(db_type, &column, db_type.stmt_convert(*index)).as_str() + ",";
