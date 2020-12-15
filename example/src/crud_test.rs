@@ -80,10 +80,9 @@ mod test {
     #[async_std::test]
     pub async fn test_save() {
         let rb = init_rbatis().await;
-        let id = "12312".to_string();
         let activity = BizActivity {
-            id: Some(id.clone()),
-            name: Some("123".to_string()),
+            id: Some("12312".to_string()),
+            name: Some("12312".to_string()),
             pc_link: None,
             h5_link: None,
             pc_banner_img: None,
@@ -95,7 +94,7 @@ mod test {
             version: Some(BigDecimal::from(1)),
             delete_flag: Some(1),
         };
-        rb.remove_by_id::<BizActivity>("",&id).await;
+        rb.remove_by_id::<BizActivity>("",&"12312".to_string()).await;
         let r = rb.save("", &activity).await;
         if r.is_err() {
             println!("{}", r.err().unwrap().to_string());
@@ -112,14 +111,15 @@ mod test {
             h5_link: None,
             pc_banner_img: None,
             h5_banner_img: None,
-            sort: None,
+            sort: Some("1".to_string()),
             status: Some(1),
             remark: None,
             create_time: Some(NaiveDateTime::now()),
             version: Some(BigDecimal::from(1)),
             delete_flag: Some(1),
         };
-        let args = vec![activity.clone(), activity];
+        rb.remove_by_id::<BizActivity>("",&"12312".to_string()).await;
+        let args = vec![activity];
         let r = rb.save_batch("", &args).await;
         if r.is_err() {
             println!("{}", r.err().unwrap().to_string());
