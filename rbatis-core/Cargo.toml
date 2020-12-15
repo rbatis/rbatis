@@ -14,6 +14,8 @@ homepage = "https://rbatis.github.io/rbatis.io/#/"
 [features]
 default = ["async-io"]
 
+debug_mode = []
+
 #runtime(all of database) (use this you should add default-features = false)
 actix = ["async-std",  "sqlx-core/runtime-actix-rustls", "all-database"]
 tokio02 = ["async-std/tokio02", "sqlx-core/runtime-tokio-rustls", "all-database"]
