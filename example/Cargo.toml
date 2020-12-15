@@ -33,7 +33,7 @@ tokio = { version = "0.2", features = ["full"] }
 #choose tokio dep,or you can use default
 async-std = { version = "1.8", features = ["attributes","tokio02","tokio03"] }
 
-#rbatis dep
-rbatis = { path = "../" }
+#rbatis dep,debug_mode show json decode data
+rbatis = { path = "../", features = ["debug_mode"] }
 #if disable print, use features = ["no_print"]
 rbatis-macro-driver = { path = "../rbatis-macro-driver"}

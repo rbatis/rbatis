@@ -20,6 +20,9 @@ homepage = "https://rbatis.github.io/rbatis.io/#/"
 
 [features]
 default = ["async-io"]
+
+debug_mode = ["rbatis-core/debug_mode"]
+
 actix = ["rbatis-core/actix"]
 tokio02 = ["rbatis-core/tokio02"]
 tokio03 = ["rbatis-core/tokio03"]
