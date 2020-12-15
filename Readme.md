@@ -67,7 +67,7 @@ rbatis-macro-driver = { version = "1.8" }
 extern crate rbatis_macro_driver;
 /// may also write `CRUDEnable` as `impl CRUDEnable for BizActivity{}`
 /// #[crud_enable( table_name:biz_activity)]
-/// #[crud_enable( id_name:id |  id_type:String |  table_name:biz_activity |  table_columns:id,name,delete_flag )]
+/// #[crud_enable(id_name:"id"|id_type:"String"|table_name:"biz_activity"|table_columns:"id,name,version,delete_flag"|formats_pg:"id:{}::uuid")]
 #[crud_enable]
 #[derive(Clone, Debug)]
 pub struct BizActivity {
