@@ -76,7 +76,7 @@ pub fn json_decode<T: ?Sized>(datas: Vec<serde_json::Value>) -> Result<T, crate:
 
     //debug_mode feature print json_decode json data
     #[cfg(feature = "debug_mode")]
-    log::info!("[rbatis] [json_decode] => {}",js);
+    println!("[rbatis] [json_decode] => {:#}",js);
 
     let decode_result = serde_json::from_value(js);
     if decode_result.is_ok() {
