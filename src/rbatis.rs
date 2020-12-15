@@ -335,7 +335,7 @@ impl Rbatis {
         }
         if self.log_plugin.is_enable() {
             if result.is_ok() {
-                self.log_plugin.do_log(&format!("[rbatis] [{}] RowsAffected <== {},LastInsertId <== {:?}", context_id, result.as_ref().unwrap().rows_affected, result.as_ref().unwrap().last_insert_id));
+                self.log_plugin.do_log(&format!("[rbatis] [{}] RowsAffected <== {}", context_id, result.as_ref().unwrap().rows_affected));
             } else {
                 self.log_plugin.do_log(&format!("[rbatis] [{}] RowsAffected <== {}", context_id, 0));
             }
@@ -419,7 +419,7 @@ impl Rbatis {
         }
         if self.log_plugin.is_enable() {
             if result.is_ok() {
-                self.log_plugin.do_log(&format!("[rbatis] [{}] RowsAffected <== {},LastInsertId <== {:?}", context_id, result.as_ref().unwrap().rows_affected, result.as_ref().unwrap().last_insert_id));
+                self.log_plugin.do_log(&format!("[rbatis] [{}] RowsAffected <== {}", context_id, result.as_ref().unwrap().rows_affected));
             } else {
                 self.log_plugin.do_log(&format!("[rbatis] [{}] RowsAffected <== {}", context_id, 0));
             }
