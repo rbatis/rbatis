@@ -7,10 +7,15 @@ use once_cell::sync::OnceCell;
 use serde::de::DeserializeOwned;
 use serde::ser::Serialize;
 use serde_json::Number;
-use crate::core::db::{DriverType, DBPoolOptions, DBExecResult, DBPool, DBPoolConn, DBQuery, DBTx};
+use uuid::Uuid;
+
+use rbatis_core::db::DBConnectOption;
+
+use crate::core::db::{DBExecResult, DBPool, DBPoolConn, DBPoolOptions, DBQuery, DBTx, DriverType};
 use crate::core::Error;
 use crate::core::runtime::Arc;
 use crate::core::sync::sync_map::SyncMap;
+use crate::crud::CRUDEnable;
 use crate::interpreter::expr::runtime::ExprRuntime;
 use crate::interpreter::sql::ast::RbatisAST;
 use crate::interpreter::sql::node::node::do_child_nodes;
@@ -22,13 +27,10 @@ use crate::plugin::log::{LogPlugin, RbatisLog};
 use crate::plugin::logic_delete::{LogicDelete, RbatisLogicDeletePlugin};
 use crate::plugin::page::{IPage, IPageRequest, Page, PagePlugin, RbatisPagePlugin};
 use crate::sql::PageLimit;
-use crate::tx::{TxManager, TxState, TxGuard};
+use crate::tx::{TxGuard, TxManager, TxState};
 use crate::utils::error_util::ToResult;
 use crate::utils::string_util;
 use crate::wrapper::Wrapper;
-use uuid::Uuid;
-use rbatis_core::db::DBConnectOption;
-use crate::crud::CRUDEnable;
 
 /// rbatis engine
 pub struct Rbatis {
@@ -319,22 +321,26 @@ impl Rbatis {
         if self.log_plugin.is_enable() {
             self.log_plugin.do_log(&format!("[rbatis] [{}] Exec  ==> {}", context_id, &sql));
         }
-        let data;
+        let result;
         if context_id.starts_with("tx:") {
             let conn = self.tx_manager.get_mut(context_id).await;
             if conn.is_none() {
                 return Err(Error::from(format!("[rbatis] transaction:{} not exist！", context_id)));
             }
             let mut conn = conn.unwrap();
-            data = conn.value_mut().0.execute(&sql).await?;
+            result = conn.value_mut().0.execute(&sql).await;
         } else {
             let mut conn = self.get_pool()?.acquire().await?;
-            data = conn.execute(&sql).await?;
+            result = conn.execute(&sql).await;
         }
         if self.log_plugin.is_enable() {
-            self.log_plugin.do_log(&format!("[rbatis] [{}] RowsAffected <== {}", context_id, &data.rows_affected));
+            if result.is_ok() {
+                self.log_plugin.do_log(&format!("[rbatis] [{}] RowsAffected <== {},LastInsertId <== {:?}", context_id, result.as_ref().unwrap().rows_affected, result.as_ref().unwrap().last_insert_id));
+            } else {
+                self.log_plugin.do_log(&format!("[rbatis] [{}] RowsAffected <== {}", context_id, 0));
+            }
         }
-        return Ok(data);
+        return result;
     }
 
 
@@ -413,7 +419,7 @@ impl Rbatis {
         }
         if self.log_plugin.is_enable() {
             if result.is_ok() {
-                self.log_plugin.do_log(&format!("[rbatis] [{}] RowsAffected <== {:#?}", context_id, result.as_ref()));
+                self.log_plugin.do_log(&format!("[rbatis] [{}] RowsAffected <== {},LastInsertId <== {:?}", context_id, result.as_ref().unwrap().rows_affected, result.as_ref().unwrap().last_insert_id));
             } else {
                 self.log_plugin.do_log(&format!("[rbatis] [{}] RowsAffected <== {}", context_id, 0));
             }
