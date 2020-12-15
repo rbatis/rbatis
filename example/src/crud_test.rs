@@ -80,8 +80,9 @@ mod test {
     #[async_std::test]
     pub async fn test_save() {
         let rb = init_rbatis().await;
+        let id = "12312".to_string();
         let activity = BizActivity {
-            id: Some("12312".to_string()),
+            id: Some(id.clone()),
             name: Some("123".to_string()),
             pc_link: None,
             h5_link: None,
@@ -94,6 +95,7 @@ mod test {
             version: Some(BigDecimal::from(1)),
             delete_flag: Some(1),
         };
+        rb.remove_by_id::<BizActivity>("",&id).await;
         let r = rb.save("", &activity).await;
         if r.is_err() {
             println!("{}", r.err().unwrap().to_string());
