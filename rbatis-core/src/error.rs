@@ -79,6 +79,7 @@ impl Serialize for Error {
 
 
 struct ErrorVisitor;
+
 impl<'de> Visitor<'de> for ErrorVisitor {
     type Value = String;
 
@@ -99,7 +100,6 @@ impl<'de> Visitor<'de> for ErrorVisitor {
     {
         Ok(v.to_string())
     }
-
 }
 
 impl<'de> Deserialize<'de> for Error {
@@ -113,9 +113,23 @@ impl<'de> Deserialize<'de> for Error {
 }
 
 
+pub trait OptionToResult<T> {
+    fn to_result(self, error_str: &str) -> Result<T>;
+}
+
+impl<T> OptionToResult<T> for Option<T> {
+    fn to_result(self, error_str: &str) -> Result<T> {
+        if self.is_some() {
+            Ok(self.unwrap())
+        } else {
+            Err(Error::from(error_str))
+        }
+    }
+}
+
 #[test]
-fn test_json_error(){
-    let e=Error::from("fuck");
-    let s= serde_json::to_string(&e).unwrap();
-    println!("{}",s.as_str());
+fn test_json_error() {
+    let e = Error::from("fuck");
+    let s = serde_json::to_string(&e).unwrap();
+    println!("{}", s.as_str());
 }
