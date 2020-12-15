@@ -94,7 +94,7 @@ mod test {
             version: Some(BigDecimal::from(1)),
             delete_flag: Some(1),
         };
-        rb.remove_by_id::<BizActivity>("",&"12312".to_string()).await;
+        rb.remove_by_id::<BizActivity>("", &"12312".to_string()).await;
         let r = rb.save("", &activity).await;
         if r.is_err() {
             println!("{}", r.err().unwrap().to_string());
@@ -118,8 +118,10 @@ mod test {
             version: Some(BigDecimal::from(1)),
             delete_flag: Some(1),
         };
-        rb.remove_by_id::<BizActivity>("",&"12312".to_string()).await;
-        let args = vec![activity];
+        let mut activity2 = activity.clone();
+        activity2.id = Some("12313".to_string());
+        rb.remove_batch_by_id::<BizActivity>("", &["12312".to_string(), "12313".to_string()]).await;
+        let args = vec![activity, activity2];
         let r = rb.save_batch("", &args).await;
         if r.is_err() {
             println!("{}", r.err().unwrap().to_string());
