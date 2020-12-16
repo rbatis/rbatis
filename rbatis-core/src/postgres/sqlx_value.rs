@@ -224,7 +224,7 @@ impl<'c> JsonCodec for PgValueRef<'c> {
 
 impl RefJsonCodec for Vec<PgRow> {
     fn try_to_json(&self) -> crate::Result<serde_json::Value> {
-        let mut arr = vec![];
+        let mut arr = Vec::with_capacity(self.len());
         for row in self {
             let mut m = serde_json::Map::new();
             let columns = row.columns();
