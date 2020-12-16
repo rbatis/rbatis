@@ -13,7 +13,7 @@ use sqlx_core::types::ipnetwork::IpNetwork;
 use sqlx_core::types::time::Time;
 use sqlx_core::value::ValueRef;
 
-use crate::convert::{JsonCodec, RefJsonCodec};
+use crate::convert::{JsonCodec, RefJsonCodec, ResultCodec};
 use crate::db::convert_result;
 use crate::postgres::PgInterval;
 
@@ -26,292 +26,172 @@ impl<'c> JsonCodec for PgValueRef<'c> {
             }
             "NUMERIC" => {
                 //decimal
-                let r: Result<Option<BigDecimal>, BoxDynError> = Decode::<'_, Postgres>::decode(self);
-                if r.is_err() {
-                    return Err(crate::Error::from(r.err().unwrap().to_string()));
-                }
-                return Ok(json!(r.unwrap()));
+                let r: Option<BigDecimal> = Decode::<'_, Postgres>::decode(self).into_result()?;
+                return Ok(json!(r));
             }
             "NUMERIC[]" => {
                 //decimal
-                let r: Result<Option<Vec<BigDecimal>>, BoxDynError> = Decode::<'_, Postgres>::decode(self);
-                if r.is_err() {
-                    return Err(crate::Error::from(r.err().unwrap().to_string()));
-                }
-                if r.as_ref().unwrap().is_none() {
-                    return Ok(serde_json::Value::Null);
-                }
-                let data = r.unwrap().unwrap();
-                let mut datas = vec![];
-                for x in data {
-                    datas.push(x.to_string());
-                }
-                return Ok(json!(datas));
+                let r: Option<Vec<BigDecimal>> = Decode::<'_, Postgres>::decode(self).into_result()?;
+                return Ok(json!(r));
             }
             "MONEY" => {
                 //decimal
-                let r: Result<Option<PgMoney>, BoxDynError> = Decode::<'_, Postgres>::decode(self);
-                if r.is_err() {
-                    return Err(crate::Error::from(r.err().unwrap().to_string()));
-                }
-                if r.as_ref().unwrap().is_none() {
+                let r: Option<PgMoney> = Decode::<'_, Postgres>::decode(self).into_result()?;
+                if r.is_none() {
                     return Ok(serde_json::Value::Null);
                 }
-                return Ok(json!(r.unwrap().unwrap().0.to_string()));
+                return Ok(json!(r.unwrap().0.to_string()));
             }
             "MONEY[]" => {
                 //decimal
-                let r: Result<Option<Vec<PgMoney>>, BoxDynError> = Decode::<'_, Postgres>::decode(self);
-                if r.is_err() {
-                    return Err(crate::Error::from(r.err().unwrap().to_string()));
-                }
-                if r.as_ref().unwrap().is_none() {
+                let r: Option<Vec<PgMoney>> = Decode::<'_, Postgres>::decode(self).into_result()?;
+                if r.is_none() {
                     return Ok(serde_json::Value::Null);
                 }
-                let data = r.unwrap().unwrap();
-                let mut datas = vec![];
+                let data = r.unwrap();
+                let mut datas = Vec::with_capacity(data.len());
                 for x in data {
                     datas.push(x.0.to_string());
                 }
                 return Ok(json!(datas));
             }
             "BOOL" => {
-                let r: Result<Option<bool>, BoxDynError> = Decode::<'_, Postgres>::decode(self);
-                if r.is_err() {
-                    return Err(crate::Error::from(r.err().unwrap().to_string()));
-                }
-                return Ok(json!(r.unwrap()));
+                let r: Option<bool> = Decode::<'_, Postgres>::decode(self).into_result()?;
+                return Ok(json!(r));
             }
             "BOOL[]" => {
-                let r: Result<Vec<bool>, BoxDynError> = Decode::<'_, Postgres>::decode(self);
-                if r.is_err() {
-                    return Err(crate::Error::from(r.err().unwrap().to_string()));
-                }
-                return Ok(json!(r.unwrap()));
+                let r: Vec<bool> = Decode::<'_, Postgres>::decode(self).into_result()?;
+                return Ok(json!(r));
             }
             "BYTEA" | "BYTEA[]" => {
-                let r: Result<Option<Vec<u8>>, BoxDynError> = Decode::<'_, Postgres>::decode(self);
-                if r.is_err() {
-                    return Err(crate::Error::from(r.err().unwrap().to_string()));
-                }
-                return Ok(json!(r.unwrap()));
+                let r: Option<Vec<u8>> = Decode::<'_, Postgres>::decode(self).into_result()?;
+                return Ok(json!(r));
             }
             "FLOAT4" => {
-                let r: Result<Option<f32>, BoxDynError> = Decode::<'_, Postgres>::decode(self);
-                if r.is_err() {
-                    return Err(crate::Error::from(r.err().unwrap().to_string()));
-                }
-                return Ok(json!(r.unwrap()));
+                let r: Option<f32> = Decode::<'_, Postgres>::decode(self).into_result()?;
+                return Ok(json!(r));
             }
             "FLOAT4[]" => {
-                let r: Result<Option<Vec<f32>>, BoxDynError> = Decode::<'_, Postgres>::decode(self);
-                if r.is_err() {
-                    return Err(crate::Error::from(r.err().unwrap().to_string()));
-                }
-                return Ok(json!(r.unwrap()));
+                let r: Option<Vec<f32>> = Decode::<'_, Postgres>::decode(self).into_result()?;
+                return Ok(json!(r));
             }
             "FLOAT8" => {
-                let r: Result<Option<f64>, BoxDynError> = Decode::<'_, Postgres>::decode(self);
-                if r.is_err() {
-                    return Err(crate::Error::from(r.err().unwrap().to_string()));
-                }
-                return Ok(json!(r.unwrap()));
+                let r: Option<f64> = Decode::<'_, Postgres>::decode(self).into_result()?;
+                return Ok(json!(r));
             }
             "FLOAT8[]" => {
-                let r: Result<Option<Vec<f64>>, BoxDynError> = Decode::<'_, Postgres>::decode(self);
-                if r.is_err() {
-                    return Err(crate::Error::from(r.err().unwrap().to_string()));
-                }
-                return Ok(json!(r.unwrap()));
+                let r: Option<Vec<f64>> = Decode::<'_, Postgres>::decode(self).into_result()?;
+                return Ok(json!(r));
             }
             "INT2" => {
-                let r: Result<Option<i16>, BoxDynError> = Decode::<'_, Postgres>::decode(self);
-                if r.is_err() {
-                    return Err(crate::Error::from(r.err().unwrap().to_string()));
-                }
-                return Ok(json!(r.unwrap()));
+                let r: Option<i16> = Decode::<'_, Postgres>::decode(self).into_result()?;
+                return Ok(json!(r));
             }
             "INT2[]" => {
-                let r: Result<Option<Vec<i16>>, BoxDynError> = Decode::<'_, Postgres>::decode(self);
-                if r.is_err() {
-                    return Err(crate::Error::from(r.err().unwrap().to_string()));
-                }
-                return Ok(json!(r.unwrap()));
+                let r: Option<Vec<i16>> = Decode::<'_, Postgres>::decode(self).into_result()?;
+                return Ok(json!(r));
             }
             "INT4" => {
-                let r: Result<Option<i32>, BoxDynError> = Decode::<'_, Postgres>::decode(self);
-                if r.is_err() {
-                    return Err(crate::Error::from(r.err().unwrap().to_string()));
-                }
-                return Ok(json!(r.unwrap()));
+                let r: Option<i32> = Decode::<'_, Postgres>::decode(self).into_result()?;
+                return Ok(json!(r));
             }
             "INT4[]" => {
-                let r: Result<Option<Vec<i32>>, BoxDynError> = Decode::<'_, Postgres>::decode(self);
-                if r.is_err() {
-                    return Err(crate::Error::from(r.err().unwrap().to_string()));
-                }
-                return Ok(json!(r.unwrap()));
+                let r: Option<Vec<i32>> = Decode::<'_, Postgres>::decode(self).into_result()?;
+
+                return Ok(json!(r));
             }
             "INT8" => {
-                let r: Result<Option<i64>, BoxDynError> = Decode::<'_, Postgres>::decode(self);
-                if r.is_err() {
-                    return Err(crate::Error::from(r.err().unwrap().to_string()));
-                }
-                return Ok(json!(r.unwrap()));
+                let r: Option<i64> = Decode::<'_, Postgres>::decode(self).into_result()?;
+                return Ok(json!(r));
             }
             "INT8[]" => {
-                let r: Result<Option<Vec<i64>>, BoxDynError> = Decode::<'_, Postgres>::decode(self);
-                if r.is_err() {
-                    return Err(crate::Error::from(r.err().unwrap().to_string()));
-                }
-                return Ok(json!(r.unwrap()));
+                let r: Option<Vec<i64>> = Decode::<'_, Postgres>::decode(self).into_result()?;
+                return Ok(json!(r));
             }
-
             "OID" => {
-                let r: Result<Option<u32>, BoxDynError> = Decode::<'_, Postgres>::decode(self);
-                if r.is_err() {
-                    return Err(crate::Error::from(r.err().unwrap().to_string()));
-                }
-                return Ok(json!(r.unwrap()));
+                let r: Option<u32> = Decode::<'_, Postgres>::decode(self).into_result()?;
+                return Ok(json!(r));
             }
-
             "OID[]" => {
-                let r: Result<Option<Vec<u32>>, BoxDynError> = Decode::<'_, Postgres>::decode(self);
-                if r.is_err() {
-                    return Err(crate::Error::from(r.err().unwrap().to_string()));
-                }
-                return Ok(json!(r.unwrap()));
+                let r: Option<Vec<u32>> = Decode::<'_, Postgres>::decode(self).into_result()?;
+                return Ok(json!(r));
             }
-
             "TEXT" | "NAME" | "VARCHAR" | "BPCHAR" | "CHAR" | "\"CHAR\"" | "UNKNOWN" => {
-                let r: Result<Option<String>, BoxDynError> = Decode::<'_, Postgres>::decode(self);
-                if r.is_err() {
-                    return Err(crate::Error::from(r.err().unwrap().to_string()));
-                }
-                return Ok(json!(r.unwrap()));
+                let r: Option<String> = Decode::<'_, Postgres>::decode(self).into_result()?;
+                return Ok(json!(r));
             }
             "TEXT[]" | "CHAR[]" | "VARCHAR[]" | "\"CHAR\"[]" | "NAME[]" => {
-                let r: Result<Option<Vec<String>>, BoxDynError> = Decode::<'_, Postgres>::decode(self);
-                if r.is_err() {
-                    return Err(crate::Error::from(r.err().unwrap().to_string()));
-                }
-                return Ok(json!(r.unwrap()));
+                let r: Option<Vec<String>> = Decode::<'_, Postgres>::decode(self).into_result()?;
+                return Ok(json!(r));
             }
-
             "UUID" => {
-                let r: Result<Option<Uuid>, BoxDynError> = Decode::<'_, Postgres>::decode(self);
-                if r.is_err() {
-                    return Err(crate::Error::from(r.err().unwrap().to_string()));
-                }
-                return Ok(json!(r.unwrap()));
+                let r: Option<Uuid> = Decode::<'_, Postgres>::decode(self).into_result()?;
+                return Ok(json!(r));
             }
-
             "UUID[]" => {
-                let r: Result<Option<Vec<Uuid>>, BoxDynError> = Decode::<'_, Postgres>::decode(self);
-                if r.is_err() {
-                    return Err(crate::Error::from(r.err().unwrap().to_string()));
-                }
-                return Ok(json!(r.unwrap()));
+                let r: Option<Vec<Uuid>> = Decode::<'_, Postgres>::decode(self).into_result()?;
+                return Ok(json!(r));
             }
-
-            "JSON" | "JSON[]" | "JSONB" | "JSONB[]" => {
-                let r: Result<Option<Json<serde_json::Value>>, BoxDynError> = Decode::<'_, Postgres>::decode(self);
-                if r.is_err() {
-                    return Err(crate::Error::from(r.err().unwrap().to_string()));
-                }
-                return Ok(json!(r.unwrap()));
+            "JSON" | "JSONB" => {
+                let r: Option<Json<serde_json::Value>> = Decode::<'_, Postgres>::decode(self).into_result()?;
+                return Ok(json!(r));
+            }
+            "JSON[]" | "JSONB[]" => {
+                let r: Option<Vec<Json<serde_json::Value>>> = Decode::<'_, Postgres>::decode(self).into_result()?;
+                return Ok(json!(r));
             }
             "TIME" => {
-                let r: Result<Option<Time>, BoxDynError> = Decode::<'_, Postgres>::decode(self);
-                if r.is_err() {
-                    return Err(crate::Error::from(r.err().unwrap().to_string()));
-                }
-                return Ok(json!(r.unwrap()));
+                let r: Option<Time> = Decode::<'_, Postgres>::decode(self).into_result()?;
+                return Ok(json!(r));
             }
             "TIME[]" => {
-                let r: Result<Option<Vec<Time>>, BoxDynError> = Decode::<'_, Postgres>::decode(self);
-                if r.is_err() {
-                    return Err(crate::Error::from(r.err().unwrap().to_string()));
-                }
-                return Ok(json!(r.unwrap()));
+                let r: Option<Vec<Time>> = Decode::<'_, Postgres>::decode(self).into_result()?;
+                return Ok(json!(r));
             }
             "DATE" => {
-                let r: Result<Option<chrono::NaiveDate>, BoxDynError> = Decode::<'_, Postgres>::decode(self);
-                if r.is_err() {
-                    return Err(crate::Error::from(r.err().unwrap().to_string()));
-                }
-                return Ok(json!(r.unwrap()));
+                let r: Option<chrono::NaiveDate> = Decode::<'_, Postgres>::decode(self).into_result()?;
+                return Ok(json!(r));
             }
             "DATE[]" => {
-                let r: Result<Option<Vec<chrono::NaiveDate>>, BoxDynError> = Decode::<'_, Postgres>::decode(self);
-                if r.is_err() {
-                    return Err(crate::Error::from(r.err().unwrap().to_string()));
-                }
-                return Ok(json!(r.unwrap()));
+                let r: Option<Vec<chrono::NaiveDate>> = Decode::<'_, Postgres>::decode(self).into_result()?;
+                return Ok(json!(r));
             }
             "TIMESTAMP" => {
-                let r: Result<Option<chrono::NaiveDateTime>, BoxDynError> = Decode::<'_, Postgres>::decode(self);
-                if r.is_err() {
-                    return Err(crate::Error::from(r.err().unwrap().to_string()));
-                }
-                return Ok(json!(r.unwrap()));
+                let r: Option<chrono::NaiveDateTime> = Decode::<'_, Postgres>::decode(self).into_result()?;
+                return Ok(json!(r));
             }
             "TIMESTAMP[]" => {
-                let r: Result<Option<Vec<chrono::NaiveDateTime>>, BoxDynError> = Decode::<'_, Postgres>::decode(self);
-                if r.is_err() {
-                    return Err(crate::Error::from(r.err().unwrap().to_string()));
-                }
-                return Ok(json!(r.unwrap()));
+                let r: Option<Vec<chrono::NaiveDateTime>> = Decode::<'_, Postgres>::decode(self).into_result()?;
+                return Ok(json!(r));
             }
             "TIMESTAMPTZ" => {
-                let r: Result<Option<chrono::NaiveDateTime>, BoxDynError> = Decode::<'_, Postgres>::decode(self);
-                if r.is_err() {
-                    return Err(crate::Error::from(r.err().unwrap().to_string()));
-                }
-                return Ok(json!(r.unwrap()));
+                let r: Option<chrono::NaiveDateTime> = Decode::<'_, Postgres>::decode(self).into_result()?;
+                return Ok(json!(r));
             }
             "TIMESTAMPTZ[]" => {
-                let r: Result<Option<Vec<chrono::NaiveDateTime>>, BoxDynError> = Decode::<'_, Postgres>::decode(self);
-                if r.is_err() {
-                    return Err(crate::Error::from(r.err().unwrap().to_string()));
-                }
-                return Ok(json!(r.unwrap()));
+                let r: Option<Vec<chrono::NaiveDateTime>> = Decode::<'_, Postgres>::decode(self).into_result()?;
+                return Ok(json!(r));
             }
             "CIDR" | "INET" => {
-                let r: Result<Option<IpNetwork>, BoxDynError> = Decode::<'_, Postgres>::decode(self);
-                if r.is_err() {
-                    return Err(crate::Error::from(r.err().unwrap().to_string()));
-                }
-                return Ok(json!(r.unwrap()));
+                let r: Option<IpNetwork> = Decode::<'_, Postgres>::decode(self).into_result()?;
+                return Ok(json!(r));
             }
             "CIDR[]" | "INET[]" => {
-                let r: Result<Option<Vec<IpNetwork>>, BoxDynError> = Decode::<'_, Postgres>::decode(self);
-                if r.is_err() {
-                    return Err(crate::Error::from(r.err().unwrap().to_string()));
-                }
-                return Ok(json!(r.unwrap()));
+                let r: Option<Vec<IpNetwork>> = Decode::<'_, Postgres>::decode(self).into_result()?;
+                return Ok(json!(r));
             }
 
             "INTERVAL" => {
-                let r: Result<Option<sqlx_core::postgres::types::PgInterval>, BoxDynError> = Decode::<'_, Postgres>::decode(self);
-                if r.is_err() {
-                    return Err(crate::Error::from(r.err().unwrap().to_string()));
-                }
-                return Ok(json!(PgInterval::from(r.unwrap().unwrap())));
+                let r: Option<sqlx_core::postgres::types::PgInterval> = Decode::<'_, Postgres>::decode(self).into_result()?;
+                return Ok(json!(PgInterval::from(r.unwrap())));
             }
             "VARBIT" | "BIT" => {
-                let r: Result<Option<bit_vec::BitVec>, BoxDynError> = Decode::<'_, Postgres>::decode(self);
-                if r.is_err() {
-                    return Err(crate::Error::from(r.err().unwrap().to_string()));
-                }
-                return Ok(json!(r.unwrap()));
+                let r: Option<bit_vec::BitVec> = Decode::<'_, Postgres>::decode(self).into_result()?;
+                return Ok(json!(r));
             }
             "VARBIT[]" | "BIT[]" => {
-                let r: Result<Option<Vec<bit_vec::BitVec>>, BoxDynError> = Decode::<'_, Postgres>::decode(self);
-                if r.is_err() {
-                    return Err(crate::Error::from(r.err().unwrap().to_string()));
-                }
-                return Ok(json!(r.unwrap()));
+                let r: Option<Vec<bit_vec::BitVec>> = Decode::<'_, Postgres>::decode(self).into_result()?;
+                return Ok(json!(r));
             }
             _ => {
                 //TODO

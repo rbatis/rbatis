@@ -40,3 +40,7 @@ pub trait RefJsonCodec {
     /// to an json value
     fn try_to_json(&self) -> Result<Value>;
 }
+
+pub trait ResultCodec<T>{
+    fn into_result(self) -> Result<T>;
+}
