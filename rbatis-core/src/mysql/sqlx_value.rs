@@ -4,7 +4,7 @@ use sqlx_core::mysql::{MySql, MySqlRow, MySqlValueRef, MySqlValue};
 use sqlx_core::type_info::TypeInfo;
 use sqlx_core::value::ValueRef;
 
-use crate::convert::{JsonCodec, RefJsonCodec};
+use crate::convert::{JsonCodec, RefJsonCodec, ResultCodec};
 use sqlx_core::row::Row;
 use sqlx_core::column::Column;
 use crate::db::convert_result;
@@ -19,142 +19,88 @@ impl<'r> JsonCodec for sqlx_core::mysql::MySqlValueRef<'r> {
                 return Ok(serde_json::Value::Null);
             }
             "DECIMAL" => {
-                let r: Result<Option<BigDecimal>, BoxDynError> = Decode::<'_, MySql>::decode(self);
-                if r.is_err() {
-                    return Err(crate::Error::from(r.err().unwrap().to_string()));
-                }
-                return Ok(json!(r.unwrap()));
+                let r: Option<BigDecimal> = Decode::<'_, MySql>::decode(self).into_result()?;
+                return Ok(json!(r));
             }
             "BIGINT UNSIGNED" => {
-                let r: Result<Option<u64>, BoxDynError> = Decode::<'_, MySql>::decode(self);
-                if r.is_err() {
-                    return Err(crate::Error::from(r.err().unwrap().to_string()));
-                }
-                return Ok(json!(r.unwrap()));
+                let r: Option<u64> = Decode::<'_, MySql>::decode(self).into_result()?;
+                return Ok(json!(r));
             }
             "BIGINT" => {
-                let r: Result<Option<i64>, BoxDynError> = Decode::<'_, MySql>::decode(self);
-                if r.is_err() {
-                    return Err(crate::Error::from(r.err().unwrap().to_string()));
-                }
-                return Ok(json!(r.unwrap()));
+                let r: Option<i64> = Decode::<'_, MySql>::decode(self).into_result()?;
+                return Ok(json!(r));
             }
             "INT UNSIGNED" | "MEDIUMINT UNSIGNED" => {
-                let r: Result<Option<u32>, BoxDynError> = Decode::<'_, MySql>::decode(self);
-                if r.is_err() {
-                    return Err(crate::Error::from(r.err().unwrap().to_string()));
-                }
-                return Ok(json!(r.unwrap()));
+                let r: Option<u32> = Decode::<'_, MySql>::decode(self).into_result()?;
+                return Ok(json!(r));
             }
             "INT" | "MEDIUMINT" => {
-                let r: Result<Option<i32>, BoxDynError> = Decode::<'_, MySql>::decode(self);
-                if r.is_err() {
-                    return Err(crate::Error::from(r.err().unwrap().to_string()));
-                }
-                return Ok(json!(r.unwrap()));
+                let r: Option<i32> = Decode::<'_, MySql>::decode(self).into_result()?;
+                return Ok(json!(r));
             }
             "SMALLINT" => {
-                let r: Result<Option<i16>, BoxDynError> = Decode::<'_, MySql>::decode(self);
-                if r.is_err() {
-                    return Err(crate::Error::from(r.err().unwrap().to_string()));
-                }
-                return Ok(json!(r.unwrap()));
+                let r: Option<i16> = Decode::<'_, MySql>::decode(self).into_result()?;
+                return Ok(json!(r));
             }
             "SMALLINT UNSIGNED" => {
-                let r: Result<Option<u16>, BoxDynError> = Decode::<'_, MySql>::decode(self);
-                if r.is_err() {
-                    return Err(crate::Error::from(r.err().unwrap().to_string()));
-                }
-                return Ok(json!(r.unwrap()));
+                let r: Option<u16> = Decode::<'_, MySql>::decode(self).into_result()?;
+                return Ok(json!(r));
             }
             "TINYINT UNSIGNED" => {
-                let r: Result<Option<u8>, BoxDynError> = Decode::<'_, MySql>::decode(self);
-                if r.is_err() {
-                    return Err(crate::Error::from(r.err().unwrap().to_string()));
-                }
-                return Ok(json!(r.unwrap()));
+                let r: Option<u8> = Decode::<'_, MySql>::decode(self).into_result()?;
+                return Ok(json!(r));
             }
             "TINYINT" => {
-                let r: Result<Option<i8>, BoxDynError> = Decode::<'_, MySql>::decode(self);
-                if r.is_err() {
-                    return Err(crate::Error::from(r.err().unwrap().to_string()));
-                }
-                return Ok(json!(r.unwrap()));
+                let r: Option<i8> = Decode::<'_, MySql>::decode(self).into_result()?;
+                return Ok(json!(r));
             }
             "FLOAT" => {
-                let r: Result<Option<f32>, BoxDynError> = Decode::<'_, MySql>::decode(self);
-                if r.is_err() {
-                    return Err(crate::Error::from(r.err().unwrap().to_string()));
-                }
-                return Ok(json!(r.unwrap()));
+                let r: Option<f32> = Decode::<'_, MySql>::decode(self).into_result()?;
+
+                return Ok(json!(r));
             }
             "DOUBLE" => {
-                let r: Result<Option<f64>, BoxDynError> = Decode::<'_, MySql>::decode(self);
-                if r.is_err() {
-                    return Err(crate::Error::from(r.err().unwrap().to_string()));
-                }
-                return Ok(json!(r.unwrap()));
+                let r: Option<f64> = Decode::<'_, MySql>::decode(self).into_result()?;
+
+                return Ok(json!(r));
             }
             "BINARY" | "VARBINARY" | "CHAR" | "VARCHAR" | "TEXT" | "ENUM" => {
-                let r: Result<Option<String>, BoxDynError> = Decode::<'_, MySql>::decode(self);
-                if r.is_err() {
-                    return Err(crate::Error::from(r.err().unwrap().to_string()));
-                }
-                return Ok(json!(r.unwrap()));
+                let r: Option<String> = Decode::<'_, MySql>::decode(self).into_result()?;
+
+                return Ok(json!(r));
             }
             "BLOB" | "TINYBLOB" | "MEDIUMBLOB" | "LONGBLOB" | "TINYTEXT" | "MEDIUMTEXT" | "LONGTEXT" => {
-                let r: Result<Option<Vec<u8>>, BoxDynError> = Decode::<'_, MySql>::decode(self);
-                if r.is_err() {
-                    return Err(crate::Error::from(r.err().unwrap().to_string()));
-                }
-                return Ok(json!(r.unwrap()));
+                let r: Option<Vec<u8>> = Decode::<'_, MySql>::decode(self).into_result()?;
+                return Ok(json!(r));
             }
             "BIT" | "BOOLEAN" => {
-                let r: Result<Option<u8>, BoxDynError> = Decode::<'_, MySql>::decode(self);
-                if r.is_err() {
-                    return Err(crate::Error::from(r.err().unwrap().to_string()));
-                }
-                return Ok(json!(r.unwrap()));
+                let r: Option<u8> = Decode::<'_, MySql>::decode(self).into_result()?;
+                return Ok(json!(r));
             }
             "DATE" => {
-                let r: Result<Option<chrono::NaiveDate>, BoxDynError> = Decode::<'_, MySql>::decode(self);
-                if r.is_err() {
-                    return Err(crate::Error::from(r.err().unwrap().to_string()));
-                }
-                return Ok(json!(r.unwrap()));
+                let r: Option<chrono::NaiveDate> = Decode::<'_, MySql>::decode(self).into_result()?;
+                return Ok(json!(r));
             }
             "TIME" | "YEAR" => {
-                let r: Result<Option<chrono::NaiveTime>, BoxDynError> = Decode::<'_, MySql>::decode(self);
-                if r.is_err() {
-                    return Err(crate::Error::from(r.err().unwrap().to_string()));
-                }
-                return Ok(json!(r.unwrap()));
+                let r: Option<chrono::NaiveTime> = Decode::<'_, MySql>::decode(self).into_result()?;
+                return Ok(json!(r));
             }
             "DATETIME" => {
-                let r: Result<Option<chrono::NaiveDateTime>, BoxDynError> = Decode::<'_, MySql>::decode(self);
-                if r.is_err() {
-                    return Err(crate::Error::from(r.err().unwrap().to_string()));
-                }
-                return Ok(json!(r.unwrap()));
+                let r: Option<chrono::NaiveDateTime> = Decode::<'_, MySql>::decode(self).into_result()?;
+                return Ok(json!(r));
             }
             "TIMESTAMP" => {
-                let r: Result<Option<chrono::NaiveDateTime>, BoxDynError> = Decode::<'_, MySql>::decode(self);
-                if r.is_err() {
-                    return Err(crate::Error::from(r.err().unwrap().to_string()));
-                }
-                return Ok(json!(r.unwrap()));
+                let r: Option<chrono::NaiveDateTime> = Decode::<'_, MySql>::decode(self).into_result()?;
+                return Ok(json!(r));
             }
             "JSON" => {
-                let r: Result<Option<Json<serde_json::Value>>, BoxDynError> = Decode::<'_, MySql>::decode(self);
-                if r.is_err() {
-                    return Err(crate::Error::from(r.err().unwrap().to_string()));
-                }
-                return Ok(json!(r.unwrap()));
+                let r: Option<Json<serde_json::Value>> = Decode::<'_, MySql>::decode(self).into_result()?;
+                return Ok(json!(r));
             }
             _ => {
                 //TODO "GEOMETRY" support. for now you can use already supported types to decode this
-                return Err(crate::Error::from(format!("un support database type for:{:?}!", type_string)))
-            },
+                return Err(crate::Error::from(format!("un support database type for:{:?}!", type_string)));
+            }
         }
     }
 }

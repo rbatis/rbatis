@@ -4,7 +4,7 @@ use sqlx_core::sqlite::{Sqlite, SqliteValue, SqliteValueRef};
 use sqlx_core::type_info::TypeInfo;
 use sqlx_core::value::ValueRef;
 
-use crate::convert::{JsonCodec, RefJsonCodec};
+use crate::convert::{JsonCodec, RefJsonCodec, ResultCodec};
 use sqlx_core::sqlite::SqliteRow;
 use sqlx_core::row::Row;
 use sqlx_core::column::Column;
@@ -19,39 +19,24 @@ impl<'c> JsonCodec for SqliteValueRef<'c> {
                 Ok(serde_json::Value::Null)
             }
             "TEXT" => {
-                let r: Result<Option<String>, BoxDynError> = Decode::<'_, Sqlite>::decode(self);
-                if r.is_err() {
-                    return Err(crate::Error::from(r.err().unwrap().to_string()));
-                }
-                 return Ok(json!(r.unwrap()));
+                let r: Option<String> = Decode::<'_, Sqlite>::decode(self).into_result()?;
+                return Ok(json!(r));
             }
             "BOOLEAN" => {
-                let r: Result<Option<bool>, BoxDynError> = Decode::<'_, Sqlite>::decode(self);
-                if r.is_err() {
-                    return Err(crate::Error::from(r.err().unwrap().to_string()));
-                }
-                 return Ok(json!(r.unwrap()));
+                let r: Option<bool> = Decode::<'_, Sqlite>::decode(self).into_result()?;
+                return Ok(json!(r));
             }
             "INTEGER" => {
-                let r: Result<Option<i64>, BoxDynError> = Decode::<'_, Sqlite>::decode(self);
-                if r.is_err() {
-                    return Err(crate::Error::from(r.err().unwrap().to_string()));
-                }
-                 return Ok(json!(r.unwrap()));
+                let r: Option<i64> = Decode::<'_, Sqlite>::decode(self).into_result()?;
+                return Ok(json!(r));
             }
             "REAL" => {
-                let r: Result<Option<f64>, BoxDynError> = Decode::<'_, Sqlite>::decode(self);
-                if r.is_err() {
-                    return Err(crate::Error::from(r.err().unwrap().to_string()));
-                }
-                 return Ok(json!(r.unwrap()));
+                let r: Option<f64> = Decode::<'_, Sqlite>::decode(self).into_result()?;
+                return Ok(json!(r));
             }
             "BLOB" => {
-                let r: Result<Option<Vec<u8>>, BoxDynError> = Decode::<'_, Sqlite>::decode(self);
-                if r.is_err() {
-                    return Err(crate::Error::from(r.err().unwrap().to_string()));
-                }
-                return Ok(json!(r.unwrap()));
+                let r: Option<Vec<u8>> = Decode::<'_, Sqlite>::decode(self).into_result()?;
+                return Ok(json!(r));
             }
             _ => {
                 //TODO "NUMERIC" |"DATE" | "TIME" | "DATETIME"
@@ -62,7 +47,7 @@ impl<'c> JsonCodec for SqliteValueRef<'c> {
     }
 }
 
-impl RefJsonCodec for Vec<SqliteRow>{
+impl RefJsonCodec for Vec<SqliteRow> {
     fn try_to_json(&self) -> crate::Result<serde_json::Value> {
         let mut arr = vec![];
         for row in self {
@@ -70,7 +55,7 @@ impl RefJsonCodec for Vec<SqliteRow>{
             let columns = row.columns();
             for x in columns {
                 let key = x.name();
-                let v:SqliteValueRef = convert_result( row.try_get_raw(key))?;
+                let v: SqliteValueRef = convert_result(row.try_get_raw(key))?;
                 m.insert(key.to_owned(), v.try_to_json()?);
             }
             arr.push(serde_json::Value::Object(m));
