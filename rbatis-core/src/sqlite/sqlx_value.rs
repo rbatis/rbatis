@@ -2,7 +2,6 @@ use sqlx_core::decode::Decode;
 use sqlx_core::error::BoxDynError;
 use sqlx_core::sqlite::{Sqlite, SqliteValue, SqliteValueRef};
 use sqlx_core::type_info::TypeInfo;
-use sqlx_core::types::BigDecimal;
 use sqlx_core::value::ValueRef;
 
 use crate::convert::{JsonCodec, RefJsonCodec};

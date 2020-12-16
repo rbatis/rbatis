@@ -23,10 +23,7 @@ impl<'r> JsonCodec for sqlx_core::mysql::MySqlValueRef<'r> {
                 if r.is_err() {
                     return Err(crate::Error::from(r.err().unwrap().to_string()));
                 }
-                if r.as_ref().unwrap().is_none() {
-                    return Ok(serde_json::Value::Null);
-                }
-                return Ok(json!(r.unwrap().unwrap().to_string()));
+                return Ok(json!(r.unwrap()));
             }
             "BIGINT UNSIGNED" => {
                 let r: Result<Option<u64>, BoxDynError> = Decode::<'_, MySql>::decode(self);
