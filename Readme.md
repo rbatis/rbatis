@@ -423,6 +423,8 @@ No, moving away from IOE is recommended.
 rbatis-core， Cargo.toml add rbatis-core = "*"
 * How to select `async/.await` runtime? <br/>
 see https://rbatis.github.io/rbatis.io/
+* How to use '::uuid','::timestamp' on PostgreSQL? <br/>
+see https://rbatis.github.io/rbatis.io/#/README_EN?id=database-column-formatting-macro
 # changelog
 [changelog](https://github.com/rbatis/rbatis/releases/)
 
