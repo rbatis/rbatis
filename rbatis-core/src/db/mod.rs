@@ -1,6 +1,6 @@
 pub mod db_adapter;
 
-pub use db_adapter::{DBTx, DBQuery, DBPool, DBConnectOption, DBConnection, DBExecResult, DBPoolConn, convert_result};
+pub use db_adapter::{DBTx, DBQuery, DBPool, DBConnectOption, DBConnection, DBExecResult, DBPoolConn};
 
 use std::time::Duration;
 use chrono::NaiveDateTime;

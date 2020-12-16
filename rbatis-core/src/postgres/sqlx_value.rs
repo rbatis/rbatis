@@ -14,7 +14,6 @@ use sqlx_core::types::time::Time;
 use sqlx_core::value::ValueRef;
 
 use crate::convert::{JsonCodec, RefJsonCodec, ResultCodec};
-use crate::db::convert_result;
 use crate::postgres::PgInterval;
 
 impl<'c> JsonCodec for PgValueRef<'c> {
@@ -230,7 +229,7 @@ impl RefJsonCodec for Vec<PgRow> {
             let columns = row.columns();
             for x in columns {
                 let key = x.name();
-                let v: PgValueRef = convert_result(row.try_get_raw(key))?;
+                let v: PgValueRef = row.try_get_raw(key).into_result()?;
                 m.insert(key.to_owned(), v.try_to_json()?);
             }
             arr.push(serde_json::Value::Object(m));
