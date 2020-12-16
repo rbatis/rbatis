@@ -30,10 +30,7 @@ impl<'c> JsonCodec for PgValueRef<'c> {
                 if r.is_err() {
                     return Err(crate::Error::from(r.err().unwrap().to_string()));
                 }
-                if r.as_ref().unwrap().is_none() {
-                    return Ok(serde_json::Value::Null);
-                }
-                return Ok(json!(r.unwrap().unwrap().to_string()));
+                return Ok(json!(r.unwrap()));
             }
             "NUMERIC[]" => {
                 //decimal
@@ -222,24 +219,21 @@ impl<'c> JsonCodec for PgValueRef<'c> {
                 if r.is_err() {
                     return Err(crate::Error::from(r.err().unwrap().to_string()));
                 }
-                let data = serde_json::to_value(r.unwrap());
-                return Ok(data.unwrap_or(serde_json::Value::Null));
+                return Ok(json!(r.unwrap()));
             }
             "TIME" => {
                 let r: Result<Option<Time>, BoxDynError> = Decode::<'_, Postgres>::decode(self);
                 if r.is_err() {
                     return Err(crate::Error::from(r.err().unwrap().to_string()));
                 }
-                let t = json!(&r.unwrap());
-                return Ok(t);
+                return Ok(json!(r.unwrap()));
             }
             "TIME[]" => {
                 let r: Result<Option<Vec<Time>>, BoxDynError> = Decode::<'_, Postgres>::decode(self);
                 if r.is_err() {
                     return Err(crate::Error::from(r.err().unwrap().to_string()));
                 }
-                let t = json!(&r.unwrap());
-                return Ok(t);
+                return Ok(json!(r.unwrap()));
             }
             "DATE" => {
                 let r: Result<Option<chrono::NaiveDate>, BoxDynError> = Decode::<'_, Postgres>::decode(self);
