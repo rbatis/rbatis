@@ -314,6 +314,22 @@ impl<'c> JsonCodec for PgValueRef<'c> {
                 let t = serde_json::to_value(PgInterval::from(r.unwrap().unwrap()));
                 return Ok(t.unwrap_or(serde_json::Value::Null));
             }
+            "VARBIT" | "BIT" => {
+                let r: Result<Option<bit_vec::BitVec>, BoxDynError> = Decode::<'_, Postgres>::decode(self);
+                if r.is_err() {
+                    return Err(crate::Error::from(r.err().unwrap().to_string()));
+                }
+                let t = serde_json::to_value(r.unwrap());
+                return Ok(t.unwrap_or(serde_json::Value::Null));
+            }
+            "VARBIT[]" | "BIT[]" => {
+                let r: Result<Option<Vec<bit_vec::BitVec>>, BoxDynError> = Decode::<'_, Postgres>::decode(self);
+                if r.is_err() {
+                    return Err(crate::Error::from(r.err().unwrap().to_string()));
+                }
+                let t = serde_json::to_value(r.unwrap());
+                return Ok(t.unwrap_or(serde_json::Value::Null));
+            }
             _ => {
                 //TODO
                 // "JSONPATH","JSONPATH[]",
@@ -324,8 +340,6 @@ impl<'c> JsonCodec for PgValueRef<'c> {
                 // "NUMRANGE","NUMRANGE[]",
                 // "INT4RANGE","INT4RANGE[]",
                 // "RECORD","RECORD[]"
-                // ,"VARBIT" "VARBIT[]"
-                // "BIT" "BIT[]"
                 // "TIMETZ" "TIMETZ[]"
                 // "INTERVAL[]"
                 // "POINT","POINT[],"

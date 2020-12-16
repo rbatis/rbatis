@@ -17,7 +17,7 @@ default = ["async-io"]
 debug_mode = []
 
 #runtime(all of database) (use this you should add default-features = false)
-actix = ["async-std",  "sqlx-core/runtime-actix-rustls", "all-database"]
+actix = ["async-std", "sqlx-core/runtime-actix-rustls", "all-database"]
 tokio02 = ["async-std/tokio02", "sqlx-core/runtime-tokio-rustls", "all-database"]
 tokio03 = ["async-std/tokio03", "sqlx-core/runtime-tokio-rustls", "all-database"]
 async-io = ["async-std", "sqlx-core/runtime-async-std-rustls", "all-database"]
@@ -51,7 +51,7 @@ mssql = ["sqlx-core/mssql"]
 
 
 [dependencies]
-async-std = { version = "1.8", optional = true, features = ["attributes","unstable"] }
+async-std = { version = "1.8", optional = true, features = ["attributes", "unstable"] }
 chrono = { version = "0.4", default-features = false, features = ["clock", "serde"] }
 log = { version = "0.4", default-features = false }
 serde = { version = "1", features = ["derive"] }
@@ -61,3 +61,4 @@ lazy_static = "1.4"
 time = { version = "0.2.16", features = ["serde"] }
 ipnetwork = { version = "0.17.0", features = ["serde"] }
 sqlx-core = { version = "0.4.0", features = ["all-types"], optional = true }
+bit-vec = { version = "0.6", features = ["serde"] }
