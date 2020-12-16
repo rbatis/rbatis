@@ -7,7 +7,6 @@ use sqlx_core::value::ValueRef;
 use crate::convert::{JsonCodec, RefJsonCodec, ResultCodec};
 use sqlx_core::row::Row;
 use sqlx_core::column::Column;
-use crate::db::convert_result;
 use serde_json::{json, Value};
 use sqlx_core::types::{BigDecimal, Json};
 
@@ -114,7 +113,7 @@ impl RefJsonCodec for Vec<MySqlRow> {
             let columns = row.columns();
             for x in columns {
                 let key = x.name();
-                let v: MySqlValueRef = convert_result(row.try_get_raw(key))?;
+                let v: MySqlValueRef = row.try_get_raw(key).into_result()?;
                 m.insert(key.to_owned(), v.try_to_json()?);
             }
             arr.push(serde_json::Value::Object(m));

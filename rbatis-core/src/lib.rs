@@ -19,7 +19,7 @@ mod mssql;
 pub mod error;
 
 
-mod errors;
+pub mod results;
 
 #[macro_use]
 extern crate lazy_static;

@@ -25,7 +25,7 @@ use sqlx_core::executor::Executor;
 use sqlx_core::transaction::Transaction;
 use sqlx_core::types::Type;
 use sqlx_core::query::{Query, query};
-use crate::convert::RefJsonCodec;
+use crate::convert::{RefJsonCodec, ResultCodec};
 use crate::db::{DriverType, DBPoolOptions};
 use crate::decode::json_decode;
 use crate::Error;
@@ -387,7 +387,7 @@ impl DBPool {
                 Ok(DBTx {
                     driver_type: self.driver_type,
                     #[cfg(feature = "mysql")]
-                    mysql: Some(convert_result(self.mysql.as_ref().unwrap().begin().await)?),
+                    mysql: Some(self.mysql.as_ref().unwrap().begin().await.into_result()?),
                     #[cfg(feature = "postgres")]
                     postgres: None,
                     #[cfg(feature = "sqlite")]
@@ -400,7 +400,7 @@ impl DBPool {
                 Ok(DBTx {
                     driver_type: self.driver_type,
                     #[cfg(feature = "postgres")]
-                    postgres: Some(convert_result(self.postgres.as_ref().unwrap().begin().await)?),
+                    postgres: Some(self.postgres.as_ref().unwrap().begin().await.into_result()?),
                     #[cfg(feature = "mysql")]
                     mysql: None,
                     #[cfg(feature = "sqlite")]
@@ -413,7 +413,7 @@ impl DBPool {
                 Ok(DBTx {
                     driver_type: self.driver_type,
                     #[cfg(feature = "sqlite")]
-                    sqlite: Some(Mutex::new(convert_result(self.sqlite.as_ref().unwrap().begin().await)?)),
+                    sqlite: Some(Mutex::new(self.sqlite.as_ref().unwrap().begin().await.into_result()?)),
                     #[cfg(feature = "postgres")]
                     postgres: None,
                     #[cfg(feature = "mysql")]
@@ -426,7 +426,7 @@ impl DBPool {
                 Ok(DBTx {
                     driver_type: self.driver_type,
                     #[cfg(feature = "mssql")]
-                    mssql: Some(convert_result(self.mssql.as_ref().unwrap().begin().await)?),
+                    mssql: Some(self.mssql.as_ref().unwrap().begin().await.into_result()?),
                     #[cfg(feature = "mysql")]
                     mysql: None,
                     #[cfg(feature = "postgres")]
@@ -896,7 +896,7 @@ impl DBPoolConn {
             }
             #[cfg(feature = "mysql")]
             &DriverType::Mysql => {
-                let async_stream: Vec<MySqlRow> = convert_result(self.mysql.as_mut().unwrap().fetch_all(sql).await)?;
+                let async_stream: Vec<MySqlRow> = self.mysql.as_mut().unwrap().fetch_all(sql).await.into_result()?;
                 let json_array = async_stream.try_to_json()?.as_array().unwrap().to_owned();
                 let return_len = json_array.len();
                 let result = json_decode::<T>(json_array)?;
@@ -904,7 +904,7 @@ impl DBPoolConn {
             }
             #[cfg(feature = "postgres")]
             &DriverType::Postgres => {
-                let async_stream: Vec<PgRow> = convert_result(self.postgres.as_mut().unwrap().fetch_all(sql).await)?;
+                let async_stream: Vec<PgRow> = self.postgres.as_mut().unwrap().fetch_all(sql).await.into_result()?;
                 let json_array = async_stream.try_to_json()?.as_array().unwrap().to_owned();
                 let return_len = json_array.len();
                 let result = json_decode::<T>(json_array)?;
@@ -912,7 +912,7 @@ impl DBPoolConn {
             }
             #[cfg(feature = "sqlite")]
             &DriverType::Sqlite => {
-                let data: Vec<SqliteRow> = convert_result(self.sqlite.as_mut().unwrap().fetch_all(sql).await)?;
+                let data: Vec<SqliteRow> = self.sqlite.as_mut().unwrap().fetch_all(sql).await.into_result()?;
                 let json_array = data.try_to_json()?.as_array().unwrap().to_owned();
                 let return_len = json_array.len();
                 let result = json_decode::<T>(json_array)?;
@@ -920,7 +920,7 @@ impl DBPoolConn {
             }
             #[cfg(feature = "mssql")]
             &DriverType::Mssql => {
-                let async_stream: Vec<MssqlRow> = convert_result(self.mssql.as_mut().unwrap().fetch_all(sql).await)?;
+                let async_stream: Vec<MssqlRow> = self.mssql.as_mut().unwrap().fetch_all(sql).await.into_result()?;
                 let json_array = async_stream.try_to_json()?.as_array().unwrap().to_owned();
                 let return_len = json_array.len();
                 let result = json_decode::<T>(json_array)?;
@@ -940,22 +940,22 @@ impl DBPoolConn {
             }
             #[cfg(feature = "mysql")]
             &DriverType::Mysql => {
-                let data: MySqlDone = convert_result(self.mysql.as_mut().unwrap().execute(sql).await)?;
+                let data: MySqlDone = self.mysql.as_mut().unwrap().execute(sql).await.into_result()?;
                 return Ok(DBExecResult::from(data));
             }
             #[cfg(feature = "postgres")]
             &DriverType::Postgres => {
-                let data: PgDone = convert_result(self.postgres.as_mut().unwrap().execute(sql).await)?;
+                let data: PgDone = self.postgres.as_mut().unwrap().execute(sql).await.into_result()?;
                 return Ok(DBExecResult::from(data));
             }
             #[cfg(feature = "sqlite")]
             &DriverType::Sqlite => {
-                let data: SqliteDone = convert_result(self.sqlite.as_mut().unwrap().execute(sql).await)?;
+                let data: SqliteDone = self.sqlite.as_mut().unwrap().execute(sql).await.into_result()?;
                 return Ok(DBExecResult::from(data));
             }
             #[cfg(feature = "mssql")]
             &DriverType::Mssql => {
-                let data: MssqlDone = convert_result(self.mssql.as_mut().unwrap().execute(sql).await)?;
+                let data: MssqlDone = self.mssql.as_mut().unwrap().execute(sql).await.into_result()?;
                 return Ok(DBExecResult::from(data));
             }
             _ => {
@@ -973,7 +973,7 @@ impl DBPoolConn {
             }
             #[cfg(feature = "mysql")]
             &DriverType::Mysql => {
-                let data: Vec<MySqlRow> = convert_result(self.mysql.as_mut().unwrap().fetch_all(sql.mysql.unwrap()).await)?;
+                let data: Vec<MySqlRow> = self.mysql.as_mut().unwrap().fetch_all(sql.mysql.unwrap()).await.into_result()?;
                 let json_array = data.try_to_json()?.as_array().unwrap().to_owned();
                 let return_len = json_array.len();
                 let result = json_decode::<T>(json_array)?;
@@ -981,7 +981,7 @@ impl DBPoolConn {
             }
             #[cfg(feature = "postgres")]
             &DriverType::Postgres => {
-                let data: Vec<PgRow> = convert_result(self.postgres.as_mut().unwrap().fetch_all(sql.postgres.unwrap()).await)?;
+                let data: Vec<PgRow> = self.postgres.as_mut().unwrap().fetch_all(sql.postgres.unwrap()).await.into_result()?;
                 let json_array = data.try_to_json()?.as_array().unwrap().to_owned();
                 let return_len = json_array.len();
                 let result = json_decode::<T>(json_array)?;
@@ -989,7 +989,7 @@ impl DBPoolConn {
             }
             #[cfg(feature = "sqlite")]
             &DriverType::Sqlite => {
-                let data: Vec<SqliteRow> = convert_result(self.sqlite.as_mut().unwrap().fetch_all(sql.sqlite.unwrap()).await)?;
+                let data: Vec<SqliteRow> = self.sqlite.as_mut().unwrap().fetch_all(sql.sqlite.unwrap()).await.into_result()?;
                 let json_array = data.try_to_json()?.as_array().unwrap().to_owned();
                 let return_len = json_array.len();
                 let result = json_decode::<T>(json_array)?;
@@ -997,7 +997,7 @@ impl DBPoolConn {
             }
             #[cfg(feature = "mssql")]
             &DriverType::Mssql => {
-                let data: Vec<MssqlRow> = convert_result(self.mssql.as_mut().unwrap().fetch_all(sql.mssql.unwrap()).await)?;
+                let data: Vec<MssqlRow> = self.mssql.as_mut().unwrap().fetch_all(sql.mssql.unwrap()).await.into_result()?;
                 let json_array = data.try_to_json()?.as_array().unwrap().to_owned();
                 let return_len = json_array.len();
                 let result = json_decode::<T>(json_array)?;
@@ -1017,22 +1017,22 @@ impl DBPoolConn {
             }
             #[cfg(feature = "mysql")]
             &DriverType::Mysql => {
-                let result: MySqlDone = convert_result(self.mysql.as_mut().unwrap().execute(sql.mysql.unwrap()).await)?;
+                let result: MySqlDone = self.mysql.as_mut().unwrap().execute(sql.mysql.unwrap()).await.into_result()?;
                 return Ok(DBExecResult::from(result));
             }
             #[cfg(feature = "postgres")]
             &DriverType::Postgres => {
-                let data: PgDone = convert_result(self.postgres.as_mut().unwrap().execute(sql.postgres.unwrap()).await)?;
+                let data: PgDone = self.postgres.as_mut().unwrap().execute(sql.postgres.unwrap()).await.into_result()?;
                 return Ok(DBExecResult::from(data));
             }
             #[cfg(feature = "sqlite")]
             &DriverType::Sqlite => {
-                let data: SqliteDone = convert_result(self.sqlite.as_mut().unwrap().execute(sql.sqlite.unwrap()).await)?;
+                let data: SqliteDone = self.sqlite.as_mut().unwrap().execute(sql.sqlite.unwrap()).await.into_result()?;
                 return Ok(DBExecResult::from(data));
             }
             #[cfg(feature = "mssql")]
             &DriverType::Mssql => {
-                let data: MssqlDone = convert_result(self.mssql.as_mut().unwrap().execute(sql.mssql.unwrap()).await)?;
+                let data: MssqlDone = self.mssql.as_mut().unwrap().execute(sql.mssql.unwrap()).await.into_result()?;
                 return Ok(DBExecResult::from(data));
             }
             _ => {
@@ -1051,7 +1051,7 @@ impl DBPoolConn {
                 Ok(DBTx {
                     driver_type: self.driver_type,
                     #[cfg(feature = "mysql")]
-                    mysql: Some(convert_result(self.mysql.as_mut().unwrap().begin().await)?),
+                    mysql: Some(self.mysql.as_mut().unwrap().begin().await.into_result()?),
                     #[cfg(feature = "postgres")]
                     postgres: None,
                     #[cfg(feature = "sqlite")]
@@ -1064,7 +1064,7 @@ impl DBPoolConn {
                 Ok(DBTx {
                     driver_type: self.driver_type,
                     #[cfg(feature = "postgres")]
-                    postgres: Some(convert_result(self.postgres.as_mut().unwrap().begin().await)?),
+                    postgres: Some(self.postgres.as_mut().unwrap().begin().await.into_result()?),
                     #[cfg(feature = "mysql")]
                     mysql: None,
                     #[cfg(feature = "sqlite")]
@@ -1077,7 +1077,7 @@ impl DBPoolConn {
                 Ok(DBTx {
                     driver_type: self.driver_type,
                     #[cfg(feature = "sqlite")]
-                    sqlite: Some(Mutex::new(convert_result(self.sqlite.as_mut().unwrap().begin().await)?)),
+                    sqlite: Some(Mutex::new(self.sqlite.as_mut().unwrap().begin().await.into_result()?)),
                     #[cfg(feature = "postgres")]
                     postgres: None,
                     #[cfg(feature = "mysql")]
@@ -1090,7 +1090,7 @@ impl DBPoolConn {
                 Ok(DBTx {
                     driver_type: self.driver_type,
                     #[cfg(feature = "mssql")]
-                    mssql: Some(convert_result(self.mssql.as_mut().unwrap().begin().await)?),
+                    mssql: Some(self.mssql.as_mut().unwrap().begin().await.into_result()?),
                     #[cfg(feature = "mysql")]
                     mysql: None,
                     #[cfg(feature = "sqlite")]
@@ -1110,19 +1110,19 @@ impl DBPoolConn {
             }
             #[cfg(feature = "mysql")]
             &DriverType::Mysql => {
-                return Ok(convert_result(self.mysql.as_mut().unwrap().ping().await)?);
+                return Ok(self.mysql.as_mut().unwrap().ping().await.into_result()?);
             }
             #[cfg(feature = "postgres")]
             &DriverType::Postgres => {
-                return Ok(convert_result(self.postgres.as_mut().unwrap().ping().await)?);
+                return Ok(self.postgres.as_mut().unwrap().ping().await.into_result()?);
             }
             #[cfg(feature = "sqlite")]
             &DriverType::Sqlite => {
-                return Ok(convert_result(self.sqlite.as_mut().unwrap().ping().await)?);
+                return Ok(self.sqlite.as_mut().unwrap().ping().await.into_result()?);
             }
             #[cfg(feature = "mssql")]
             &DriverType::Mssql => {
-                return Ok(convert_result(self.mssql.as_mut().unwrap().ping().await)?);
+                return Ok(self.mssql.as_mut().unwrap().ping().await.into_result()?);
             }
             _ => {
                 return Err(Error::from("[rbatis] feature not enable!"));
@@ -1184,19 +1184,19 @@ impl DBTx {
             }
             #[cfg(feature = "mysql")]
             &DriverType::Mysql => {
-                convert_result(self.mysql.take().unwrap().commit().await)
+                self.mysql.take().unwrap().commit().await.into_result()
             }
             #[cfg(feature = "postgres")]
             &DriverType::Postgres => {
-                convert_result(self.postgres.take().unwrap().commit().await)
+                self.postgres.take().unwrap().commit().await.into_result()
             }
             #[cfg(feature = "sqlite")]
             &DriverType::Sqlite => {
-                convert_result(self.sqlite.take().unwrap().into_inner().commit().await)
+                self.sqlite.take().unwrap().into_inner().commit().await.into_result()
             }
             #[cfg(feature = "mssql")]
             &DriverType::Mssql => {
-                convert_result(self.mssql.take().unwrap().commit().await)
+                self.mssql.take().unwrap().commit().await.into_result()
             }
             _ => {
                 return Err(Error::from("[rbatis] feature not enable!"));
@@ -1211,19 +1211,19 @@ impl DBTx {
             }
             #[cfg(feature = "mysql")]
             &DriverType::Mysql => {
-                convert_result(self.mysql.take().unwrap().rollback().await)
+                self.mysql.take().unwrap().rollback().await.into_result()
             }
             #[cfg(feature = "postgres")]
             &DriverType::Postgres => {
-                convert_result(self.postgres.take().unwrap().rollback().await)
+                self.postgres.take().unwrap().rollback().await.into_result()
             }
             #[cfg(feature = "sqlite")]
             &DriverType::Sqlite => {
-                convert_result(self.sqlite.take().unwrap().into_inner().rollback().await)
+                self.sqlite.take().unwrap().into_inner().rollback().await.into_result()
             }
             #[cfg(feature = "mssql")]
             &DriverType::Mssql => {
-                convert_result(self.mssql.take().unwrap().rollback().await)
+                self.mssql.take().unwrap().rollback().await.into_result()
             }
             _ => {
                 return Err(Error::from("[rbatis] feature not enable!"));
@@ -1239,7 +1239,7 @@ impl DBTx {
             }
             #[cfg(feature = "mysql")]
             &DriverType::Mysql => {
-                let data: Vec<MySqlRow> = convert_result(self.mysql.as_mut().unwrap().fetch_all(sql).await)?;
+                let data: Vec<MySqlRow> = self.mysql.as_mut().unwrap().fetch_all(sql).await.into_result()?;
                 let json_array = data.try_to_json()?.as_array().unwrap().to_owned();
                 let return_len = json_array.len();
                 let result = json_decode::<T>(json_array)?;
@@ -1247,7 +1247,7 @@ impl DBTx {
             }
             #[cfg(feature = "postgres")]
             &DriverType::Postgres => {
-                let data: Vec<PgRow> = convert_result(self.postgres.as_mut().unwrap().fetch_all(sql).await)?;
+                let data: Vec<PgRow> = self.postgres.as_mut().unwrap().fetch_all(sql).await.into_result()?;
                 let json_array = data.try_to_json()?.as_array().unwrap().to_owned();
                 let return_len = json_array.len();
                 let result = json_decode::<T>(json_array)?;
@@ -1255,7 +1255,7 @@ impl DBTx {
             }
             #[cfg(feature = "sqlite")]
             &DriverType::Sqlite => {
-                let data: Vec<SqliteRow> = convert_result(self.sqlite.as_mut().unwrap().lock().await.fetch_all(sql).await)?;
+                let data: Vec<SqliteRow> = self.sqlite.as_mut().unwrap().lock().await.fetch_all(sql).await.into_result()?;
                 let json_array = data.try_to_json()?.as_array().unwrap().to_owned();
                 let return_len = json_array.len();
                 let result = json_decode::<T>(json_array)?;
@@ -1263,7 +1263,7 @@ impl DBTx {
             }
             #[cfg(feature = "mssql")]
             &DriverType::Mssql => {
-                let data: Vec<MssqlRow> = convert_result(self.mssql.as_mut().unwrap().fetch_all(sql).await)?;
+                let data: Vec<MssqlRow> = self.mssql.as_mut().unwrap().fetch_all(sql).await.into_result()?;
                 let json_array = data.try_to_json()?.as_array().unwrap().to_owned();
                 let return_len = json_array.len();
                 let result = json_decode::<T>(json_array)?;
@@ -1283,7 +1283,7 @@ impl DBTx {
             }
             #[cfg(feature = "mysql")]
             &DriverType::Mysql => {
-                let data: Vec<MySqlRow> = convert_result(self.mysql.as_mut().unwrap().fetch_all(sql.mysql.unwrap()).await)?;
+                let data: Vec<MySqlRow> = self.mysql.as_mut().unwrap().fetch_all(sql.mysql.unwrap()).await.into_result()?;
                 let json_array = data.try_to_json()?.as_array().unwrap().to_owned();
                 let return_len = json_array.len();
                 let result = json_decode::<T>(json_array)?;
@@ -1291,7 +1291,7 @@ impl DBTx {
             }
             #[cfg(feature = "postgres")]
             &DriverType::Postgres => {
-                let data: Vec<PgRow> = convert_result(self.postgres.as_mut().unwrap().fetch_all(sql.postgres.unwrap()).await)?;
+                let data: Vec<PgRow> = self.postgres.as_mut().unwrap().fetch_all(sql.postgres.unwrap()).await.into_result()?;
                 let json_array = data.try_to_json()?.as_array().unwrap().to_owned();
                 let return_len = json_array.len();
                 let result = json_decode::<T>(json_array)?;
@@ -1299,7 +1299,7 @@ impl DBTx {
             }
             #[cfg(feature = "sqlite")]
             &DriverType::Sqlite => {
-                let data: Vec<SqliteRow> = convert_result(self.sqlite.as_mut().unwrap().lock().await.fetch_all(sql.sqlite.unwrap()).await)?;
+                let data: Vec<SqliteRow> = self.sqlite.as_mut().unwrap().lock().await.fetch_all(sql.sqlite.unwrap()).await.into_result()?;
                 let json_array = data.try_to_json()?.as_array().unwrap().to_owned();
                 let return_len = json_array.len();
                 let result = json_decode::<T>(json_array)?;
@@ -1307,7 +1307,7 @@ impl DBTx {
             }
             #[cfg(feature = "mssql")]
             &DriverType::Mssql => {
-                let data: Vec<MssqlRow> = convert_result(self.mssql.as_mut().unwrap().fetch_all(sql.mssql.unwrap()).await)?;
+                let data: Vec<MssqlRow> = self.mssql.as_mut().unwrap().fetch_all(sql.mssql.unwrap()).await.into_result()?;
                 let json_array = data.try_to_json()?.as_array().unwrap().to_owned();
                 let return_len = json_array.len();
                 let result = json_decode::<T>(json_array)?;
@@ -1326,22 +1326,22 @@ impl DBTx {
             }
             #[cfg(feature = "mysql")]
             &DriverType::Mysql => {
-                let data: MySqlDone = convert_result(self.mysql.as_mut().unwrap().execute(sql).await)?;
+                let data: MySqlDone = self.mysql.as_mut().unwrap().execute(sql).await.into_result()?;
                 return Ok(DBExecResult::from(data));
             }
             #[cfg(feature = "postgres")]
             &DriverType::Postgres => {
-                let data: PgDone = convert_result(self.postgres.as_mut().unwrap().execute(sql).await)?;
+                let data: PgDone = self.postgres.as_mut().unwrap().execute(sql).await.into_result()?;
                 return Ok(DBExecResult::from(data));
             }
             #[cfg(feature = "sqlite")]
             &DriverType::Sqlite => {
-                let data: SqliteDone = convert_result(self.sqlite.as_mut().unwrap().lock().await.execute(sql).await)?;
+                let data: SqliteDone = self.sqlite.as_mut().unwrap().lock().await.execute(sql).await.into_result()?;
                 return Ok(DBExecResult::from(data));
             }
             #[cfg(feature = "mssql")]
             &DriverType::Mssql => {
-                let data: MssqlDone = convert_result(self.mssql.as_mut().unwrap().execute(sql).await)?;
+                let data: MssqlDone = self.mssql.as_mut().unwrap().execute(sql).await.into_result()?;
                 return Ok(DBExecResult::from(data));
             }
             _ => {
@@ -1358,22 +1358,22 @@ impl DBTx {
             }
             #[cfg(feature = "mysql")]
             &DriverType::Mysql => {
-                let data: MySqlDone = convert_result(self.mysql.as_mut().unwrap().execute(sql.mysql.unwrap()).await)?;
+                let data: MySqlDone = self.mysql.as_mut().unwrap().execute(sql.mysql.unwrap()).await.into_result()?;
                 return Ok(DBExecResult::from(data));
             }
             #[cfg(feature = "postgres")]
             &DriverType::Postgres => {
-                let data: PgDone = convert_result(self.postgres.as_mut().unwrap().execute(sql.postgres.unwrap()).await)?;
+                let data: PgDone = self.postgres.as_mut().unwrap().execute(sql.postgres.unwrap()).await.into_result()?;
                 return Ok(DBExecResult::from(data));
             }
             #[cfg(feature = "sqlite")]
             &DriverType::Sqlite => {
-                let data: SqliteDone = convert_result(self.sqlite.as_mut().unwrap().lock().await.execute(sql.sqlite.unwrap()).await)?;
+                let data: SqliteDone = self.sqlite.as_mut().unwrap().lock().await.execute(sql.sqlite.unwrap()).await.into_result()?;
                 return Ok(DBExecResult::from(data));
             }
             #[cfg(feature = "mssql")]
             &DriverType::Mssql => {
-                let data: MssqlDone = convert_result(self.mssql.as_mut().unwrap().execute(sql.mssql.unwrap()).await)?;
+                let data: MssqlDone = self.mssql.as_mut().unwrap().execute(sql.mssql.unwrap()).await.into_result()?;
                 return Ok(DBExecResult::from(data));
             }
             _ => {
@@ -1381,13 +1381,6 @@ impl DBTx {
             }
         }
     }
-}
-
-pub fn convert_result<T>(arg: std::result::Result<T, sqlx_core::error::Error>) -> Result<T> {
-    if arg.is_err() {
-        return Err(crate::Error::from(arg.err().unwrap().to_string()));
-    }
-    return Ok(arg.unwrap());
 }
 
 #[derive(Serialize, Deserialize, Clone, Debug)]

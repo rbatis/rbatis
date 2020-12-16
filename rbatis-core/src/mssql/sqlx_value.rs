@@ -8,7 +8,6 @@ use sqlx_core::types::BigDecimal;
 use sqlx_core::value::ValueRef;
 
 use crate::convert::{JsonCodec, RefJsonCodec, ResultCodec};
-use crate::db::convert_result;
 use serde_json::{json, Value};
 
 impl<'r> JsonCodec for sqlx_core::mssql::MssqlValueRef<'r> {
@@ -104,7 +103,7 @@ impl RefJsonCodec for Vec<MssqlRow> {
             let columns = row.columns();
             for x in columns {
                 let key = x.name();
-                let v: MssqlValueRef = convert_result(row.try_get_raw(key))?;
+                let v: MssqlValueRef = row.try_get_raw(key).into_result()?;
                 m.insert(key.to_owned(), v.try_to_json()?);
             }
             arr.push(serde_json::Value::Object(m));
