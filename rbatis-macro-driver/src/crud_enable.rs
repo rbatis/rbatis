@@ -288,7 +288,6 @@ fn read_config(arg: &str) -> CrudEnableConfig {
             if !(k.ends_with("formats_pg")
                 || k.ends_with("formats_postgres")
                 || k.ends_with("formats_mysql")
-                || k.ends_with("formats_my")
                 || k.ends_with("formats_sqlite")
                 || k.ends_with("formats_mssql")) {
                 panic!("[rbatis] formats must be formats_pg, formats_mysql,formats_sqlite,formats_mssql!");
