@@ -124,40 +124,35 @@ impl<'r> JsonCodec for sqlx_core::mysql::MySqlValueRef<'r> {
                 if r.is_err() {
                     return Err(crate::Error::from(r.err().unwrap().to_string()));
                 }
-                let t = serde_json::to_value(&r.unwrap());
-                return Ok(t.unwrap_or(serde_json::Value::Null));
+                return Ok(json!(r.unwrap()));
             }
             "TIME" | "YEAR" => {
                 let r: Result<Option<chrono::NaiveTime>, BoxDynError> = Decode::<'_, MySql>::decode(self);
                 if r.is_err() {
                     return Err(crate::Error::from(r.err().unwrap().to_string()));
                 }
-                let t = serde_json::to_value(&r.unwrap());
-                return Ok(t.unwrap_or(serde_json::Value::Null));
+                return Ok(json!(r.unwrap()));
             }
             "DATETIME" => {
                 let r: Result<Option<chrono::NaiveDateTime>, BoxDynError> = Decode::<'_, MySql>::decode(self);
                 if r.is_err() {
                     return Err(crate::Error::from(r.err().unwrap().to_string()));
                 }
-                let t = serde_json::to_value(&r.unwrap());
-                return Ok(t.unwrap_or(serde_json::Value::Null));
+                return Ok(json!(r.unwrap()));
             }
             "TIMESTAMP" => {
                 let r: Result<Option<chrono::NaiveDateTime>, BoxDynError> = Decode::<'_, MySql>::decode(self);
                 if r.is_err() {
                     return Err(crate::Error::from(r.err().unwrap().to_string()));
                 }
-                let t = serde_json::to_value(&r.unwrap());
-                return Ok(t.unwrap_or(serde_json::Value::Null));
+                return Ok(json!(r.unwrap()));
             }
             "JSON" => {
                 let r: Result<Option<Json<serde_json::Value>>, BoxDynError> = Decode::<'_, MySql>::decode(self);
                 if r.is_err() {
                     return Err(crate::Error::from(r.err().unwrap().to_string()));
                 }
-                let data=serde_json::to_value(r.unwrap());
-                return Ok(data.unwrap_or(serde_json::Value::Null));
+                return Ok(json!(r.unwrap()));
             }
             _ => {
                 //TODO "GEOMETRY" support. for now you can use already supported types to decode this

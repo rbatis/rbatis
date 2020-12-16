@@ -246,64 +246,56 @@ impl<'c> JsonCodec for PgValueRef<'c> {
                 if r.is_err() {
                     return Err(crate::Error::from(r.err().unwrap().to_string()));
                 }
-                let t = serde_json::to_value(&r.unwrap());
-                return Ok(t.unwrap_or(serde_json::Value::Null));
+                return Ok(json!(r.unwrap()));
             }
             "DATE[]" => {
                 let r: Result<Option<Vec<chrono::NaiveDate>>, BoxDynError> = Decode::<'_, Postgres>::decode(self);
                 if r.is_err() {
                     return Err(crate::Error::from(r.err().unwrap().to_string()));
                 }
-                let t = serde_json::to_value(&r.unwrap());
-                return Ok(t.unwrap_or(serde_json::Value::Null));
+                return Ok(json!(r.unwrap()));
             }
             "TIMESTAMP" => {
                 let r: Result<Option<chrono::NaiveDateTime>, BoxDynError> = Decode::<'_, Postgres>::decode(self);
                 if r.is_err() {
                     return Err(crate::Error::from(r.err().unwrap().to_string()));
                 }
-                let t = serde_json::to_value(&r.unwrap());
-                return Ok(t.unwrap_or(serde_json::Value::Null));
+                return Ok(json!(r.unwrap()));
             }
             "TIMESTAMP[]" => {
                 let r: Result<Option<Vec<chrono::NaiveDateTime>>, BoxDynError> = Decode::<'_, Postgres>::decode(self);
                 if r.is_err() {
                     return Err(crate::Error::from(r.err().unwrap().to_string()));
                 }
-                let t = serde_json::to_value(&r.unwrap());
-                return Ok(t.unwrap_or(serde_json::Value::Null));
+                return Ok(json!(r.unwrap()));
             }
             "TIMESTAMPTZ" => {
                 let r: Result<Option<chrono::NaiveDateTime>, BoxDynError> = Decode::<'_, Postgres>::decode(self);
                 if r.is_err() {
                     return Err(crate::Error::from(r.err().unwrap().to_string()));
                 }
-                let t = serde_json::to_value(&r.unwrap());
-                return Ok(t.unwrap_or(serde_json::Value::Null));
+                return Ok(json!(r.unwrap()));
             }
             "TIMESTAMPTZ[]" => {
                 let r: Result<Option<Vec<chrono::NaiveDateTime>>, BoxDynError> = Decode::<'_, Postgres>::decode(self);
                 if r.is_err() {
                     return Err(crate::Error::from(r.err().unwrap().to_string()));
                 }
-                let t = serde_json::to_value(&r.unwrap());
-                return Ok(t.unwrap_or(serde_json::Value::Null));
+                return Ok(json!(r.unwrap()));
             }
             "CIDR" | "INET" => {
                 let r: Result<Option<IpNetwork>, BoxDynError> = Decode::<'_, Postgres>::decode(self);
                 if r.is_err() {
                     return Err(crate::Error::from(r.err().unwrap().to_string()));
                 }
-                let t = serde_json::to_value(&r.unwrap());
-                return Ok(t.unwrap_or(serde_json::Value::Null));
+                return Ok(json!(r.unwrap()));
             }
             "CIDR[]" | "INET[]" => {
                 let r: Result<Option<Vec<IpNetwork>>, BoxDynError> = Decode::<'_, Postgres>::decode(self);
                 if r.is_err() {
                     return Err(crate::Error::from(r.err().unwrap().to_string()));
                 }
-                let t = serde_json::to_value(&r.unwrap());
-                return Ok(t.unwrap_or(serde_json::Value::Null));
+                return Ok(json!(r.unwrap()));
             }
 
             "INTERVAL" => {
@@ -311,24 +303,21 @@ impl<'c> JsonCodec for PgValueRef<'c> {
                 if r.is_err() {
                     return Err(crate::Error::from(r.err().unwrap().to_string()));
                 }
-                let t = serde_json::to_value(PgInterval::from(r.unwrap().unwrap()));
-                return Ok(t.unwrap_or(serde_json::Value::Null));
+                return Ok(json!(PgInterval::from(r.unwrap().unwrap())));
             }
             "VARBIT" | "BIT" => {
                 let r: Result<Option<bit_vec::BitVec>, BoxDynError> = Decode::<'_, Postgres>::decode(self);
                 if r.is_err() {
                     return Err(crate::Error::from(r.err().unwrap().to_string()));
                 }
-                let t = serde_json::to_value(r.unwrap());
-                return Ok(t.unwrap_or(serde_json::Value::Null));
+                return Ok(json!(r.unwrap()));
             }
             "VARBIT[]" | "BIT[]" => {
                 let r: Result<Option<Vec<bit_vec::BitVec>>, BoxDynError> = Decode::<'_, Postgres>::decode(self);
                 if r.is_err() {
                     return Err(crate::Error::from(r.err().unwrap().to_string()));
                 }
-                let t = serde_json::to_value(r.unwrap());
-                return Ok(t.unwrap_or(serde_json::Value::Null));
+                return Ok(json!(r.unwrap()));
             }
             _ => {
                 //TODO
