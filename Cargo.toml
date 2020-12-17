@@ -8,7 +8,7 @@ members = [
 
 [package]
 name = "rbatis"
-version = "1.8.50"
+version = "1.8.51"
 description = "Rust ORM Framework High Performance(JSON based)"
 readme = "Readme.md"
 authors = ["ce <zhuxiujia@qq.com>"]
@@ -53,7 +53,7 @@ actix-mssql = ["rbatis-core/actix-mssql"]
 snowflake = ["rustflake"]
 
 [dependencies]
-rbatis-core = { version = "1.8.50", path = "rbatis-core", default-features = false, optional = true }
+rbatis-core = { version = "1.8.51", path = "rbatis-core", default-features = false, optional = true }
 chrono = { version = "0.4", features = ["serde"] }
 lazy_static = "1.4"
 #serde
