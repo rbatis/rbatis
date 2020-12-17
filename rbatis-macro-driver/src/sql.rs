@@ -16,7 +16,10 @@ pub(crate) fn impl_macro_sql(target_fn: &ItemFn, args: &AttributeArgs) -> TokenS
     let sql_ident = args.get(1).unwrap().to_token_stream();
     let sql = format!("{}", sql_ident).trim().to_string();
     let func_args_stream = target_fn.sig.inputs.to_token_stream();
-
+    let is_async = target_fn.sig.asyncness.is_some();
+    if !is_async {
+        panic!(format!("[rbaits] 'fn {}({})' must be  async fn! ", func_name_ident, func_args_stream));
+    }
     let mut call_method = quote! {};
     let is_select = sql.starts_with("select ") || sql.starts_with("SELECT ") || sql.starts_with("\"select ") || sql.starts_with("\"SELECT ");
     if is_select {
