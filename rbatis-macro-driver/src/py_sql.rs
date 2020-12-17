@@ -18,6 +18,10 @@ pub(crate) fn impl_macro_py_sql(target_fn: &ItemFn, args: &AttributeArgs) -> Tok
     let sql_ident = args.get(1).unwrap().to_token_stream();
     let sql = format!("{}", sql_ident).trim().to_string();
     let func_args_stream = target_fn.sig.inputs.to_token_stream();
+    let is_async = target_fn.sig.asyncness.is_some();
+    if !is_async {
+        panic!(format!("[rbaits] 'fn {}({})' must be  async fn! ", func_name_ident, func_args_stream));
+    }
     //append all args
     let (sql_args_gen, context_id_ident) = filter_args_context_id(&rbatis_name, &get_fn_args(target_fn));
     let is_select = sql.starts_with("select ") || sql.starts_with("SELECT ") || sql.starts_with("\"select ") || sql.starts_with("\"SELECT ");
@@ -36,15 +40,14 @@ pub(crate) fn impl_macro_py_sql(target_fn: &ItemFn, args: &AttributeArgs) -> Tok
         call_method = quote! {py_fetch_page};
     }
     //gen rust code templete
-    let gen_token_temple = quote! {
-        pub async fn #func_name_ident(#func_args_stream) -> #return_ty {
+    return quote! {
+          pub async fn #func_name_ident(#func_args_stream) -> #return_ty {
             let mut rb_args = serde_json::Map::new();
             #sql_args_gen
             let mut rb_args = serde_json::Value::from(rb_args);
             return #rbatis_ident.#call_method(#context_id_ident,#sql_ident,&rb_args #page_req).await;
-       }
-    };
-    return gen_token_temple.into();
+          }
+       }.into();
 }
 
 fn filter_args_context_id(rbatis_name: &str, fn_arg_name_vec: &Vec<String>) -> (proc_macro2::TokenStream, proc_macro2::TokenStream) {
@@ -56,7 +59,7 @@ fn filter_args_context_id(rbatis_name: &str, fn_arg_name_vec: &Vec<String>) -> (
         if item.eq(&rbatis_name) {
             continue;
         }
-        if item.eq("ctx_id") ||item.eq("context_id") || item.eq("tx_id") {
+        if item.eq("ctx_id") || item.eq("context_id") || item.eq("tx_id") {
             context_id_ident = item_ident.to_token_stream();
         }
         sql_args_gen = quote! {
