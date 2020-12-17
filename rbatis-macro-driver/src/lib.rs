@@ -27,7 +27,7 @@ pub fn hello_macro_derive(input: TokenStream) -> TokenStream {
 /// auto create sql macro,this macro use RB.fetch_prepare and RB.exec_prepare
 /// for example:
 ///     #[sql(RB, "select * from biz_activity where id = ?")]
-///     fn select(name: &str) -> BizActivity {}
+///     async fn select(name: &str) -> BizActivity {}
 #[proc_macro_attribute]
 pub fn sql(args: TokenStream, func: TokenStream) -> TokenStream {
     let args = parse_macro_input!(args as AttributeArgs);

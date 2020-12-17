@@ -184,7 +184,7 @@ rb.update_by_wrapper("", &activity, &w).await;
     /// macro auto edit method to  'pub async fn select(name: &str) -> rbatis::core::Result<BizActivity> {}'
     ///
     #[sql(RB, "select * from biz_activity where id = ?")]
-    fn select(name: &str) -> BizActivity {}
+    async fn select(name: &str) -> BizActivity {}
     //or： pub async fn select(name: &str) -> rbatis::core::Result<BizActivity> {}
 
     #[async_std::test]
@@ -203,7 +203,7 @@ rb.update_by_wrapper("", &activity, &w).await;
     #[py_sql(RB, "select * from biz_activity where id = #{name}
                   if name != '':
                     and name=#{name}")]
-    fn py_select(name: &str) -> Option<BizActivity> {}
+    async fn py_select(name: &str) -> Option<BizActivity> {}
     //or： pub async fn select(name: &str) -> rbatis::core::Result<BizActivity> {}
 
     #[async_std::test]
