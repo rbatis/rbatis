@@ -3,7 +3,7 @@
 mod test {
     use std::str::FromStr;
 
-    use bigdecimal_::BigDecimal;
+    use bigdecimal::BigDecimal;
     use chrono::NaiveDateTime;
     use serde::Deserialize;
     use serde::Serialize;

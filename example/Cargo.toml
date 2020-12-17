@@ -16,7 +16,7 @@ chrono = { version = "0.4", features = ["serde"] }
 uuid = "0.8"
 lazy_static = "1.4.0"
 
-bigdecimal_ = { version = "0.2.0", package = "bigdecimal", features = ["serde"] }
+bigdecimal = { version = "0.2.0", features = ["serde"] }
 
 #web library
 actix-web = "2.0"
