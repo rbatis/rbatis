@@ -225,6 +225,7 @@ impl Rbatis {
 
 
     /// begin tx,if TxGuard Drop, tx will be commit(when_drop_commit==true) or rollback(when_drop_commit==false)
+    /// tx_id must be 'tx:'+id,this method default is 'tx:'+uuid
     pub async fn begin_tx_defer(&self, when_drop_commit: bool) -> Result<TxGuard, Error> {
         let tx_id = self.begin_tx().await?;
         let guard = TxGuard::new(&tx_id, when_drop_commit, self.tx_manager.clone());
