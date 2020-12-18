@@ -226,6 +226,10 @@ impl Rbatis {
 
     /// begin tx,if TxGuard Drop, tx will be commit(when_drop_commit==true) or rollback(when_drop_commit==false)
     /// tx_id must be 'tx:'+id,this method default is 'tx:'+uuid
+    /// for example:
+    ///         let guard = RB.begin_tx_defer(true).await?;
+    ///         let v: serde_json::Value = RB.fetch(&guard.tx_id, "SELECT count(1) FROM biz_activity;").await?;
+    ///
     pub async fn begin_tx_defer(&self, when_drop_commit: bool) -> Result<TxGuard, Error> {
         let tx_id = self.begin_tx().await?;
         let guard = TxGuard::new(&tx_id, when_drop_commit, self.tx_manager.clone());
@@ -234,12 +238,24 @@ impl Rbatis {
 
     /// begin tx,for new conn,return (String(context_id/tx_id),u64)
     /// tx_id must be 'tx:'+id,this method default is 'tx:'+uuid
+    ///
+    /// for example:
+    ///  let tx_id = rb.begin_tx().await.unwrap();
+    ///  let v: serde_json::Value = rb.fetch(&tx_id, "SELECT count(1) FROM biz_activity;").await.unwrap();
+    ///
     pub async fn begin_tx(&self) -> Result<String, Error> {
         let new_context_id = format!("tx:{}", Uuid::new_v4().to_string());
         return Ok(self.begin(&new_context_id).await?);
     }
 
     /// begin tx,if TxGuard Drop, tx will be commit(when_drop_commit==true) or rollback(when_drop_commit==false)
+    /// arg context_id must be 'tx:***'
+    ///
+    /// for example:
+    ///         let context_id = "tx:1";
+    ///         let tx_id = rb.begin_defer(context_id,true).await.unwrap();
+    ///         let v: serde_json::Value = rb.fetch(&tx_id, "SELECT count(1) FROM biz_activity;").await.unwrap();
+    ///
     pub async fn begin_defer(&self, context_id: &str, when_drop_commit: bool) -> Result<TxGuard, Error> {
         let tx_id = self.begin(context_id).await?;
         let guard = TxGuard::new(&tx_id, when_drop_commit, self.tx_manager.clone());
@@ -247,6 +263,15 @@ impl Rbatis {
     }
 
     /// begin tx,for new conn,return <u64(tx num),Error>
+    /// arg context_id must be 'tx:***'
+    ///
+    /// for example:
+    ///         let context_id = "tx:1";
+    ///         rb.begin(context_id).await.unwrap();
+    ///         let v: serde_json::Value = rb.fetch(context_id, "SELECT count(1) FROM biz_activity;").await.unwrap();
+    ///         println!("{}", v.clone());
+    ///         rb.commit(context_id).await.unwrap();
+    ///
     pub async fn begin(&self, context_id: &str) -> Result<String, Error> {
         if context_id.is_empty() {
             return Err(Error::from("[rbatis] context_id can not be empty"));
@@ -284,6 +309,10 @@ impl Rbatis {
 
 
     /// fetch result(row sql)
+    ///
+    /// for example:
+    ///     let v: serde_json::Value = rb.fetch(context_id, "SELECT count(1) FROM biz_activity;").await?;
+    ///
     pub async fn fetch<T>(&self, context_id: &str, sql: &str) -> Result<T, Error>
         where T: DeserializeOwned {
 
@@ -319,6 +348,9 @@ impl Rbatis {
     }
 
     /// exec sql(row sql)
+    /// for example:
+    ///     rb.exec("", "CREATE TABLE biz_uuid( id uuid, name VARCHAR, PRIMARY KEY(id));").await;
+    ///
     pub async fn exec(&self, context_id: &str, sql: &str) -> Result<DBExecResult, Error> {
 
         //sql intercept
@@ -362,6 +394,10 @@ impl Rbatis {
     }
 
     /// fetch result(prepare sql)
+    ///
+    /// for example:
+    ///     let v = RB.fetch_prepare::<Value>("", "SELECT count(1) FROM biz_activity where delete_flag = ?;", &vec![json!(1)]).await;
+    ///
     pub async fn fetch_prepare<T>(&self, context_id: &str, sql: &str, args: &Vec<serde_json::Value>) -> Result<T, Error>
         where T: DeserializeOwned {
 
@@ -400,6 +436,10 @@ impl Rbatis {
     }
 
     /// exec sql(prepare sql)
+    ///
+    /// for example:
+    ///      let v = RB.exec_prepare::<Value>("", "SELECT count(1) FROM biz_activity where delete_flag = ?;", &vec![json!(1)]).await;
+    ///
     pub async fn exec_prepare(&self, context_id: &str, sql: &str, args: &Vec<serde_json::Value>) -> Result<DBExecResult, Error> {
 
         //sql intercept
@@ -435,12 +475,26 @@ impl Rbatis {
         return result;
     }
 
+    /// fetch data by a wrapper
+    ///
+    /// for example:
+    ///  let name = "test";
+    ///         let w = RB.new_wrapper()
+    ///             .push_sql("SELECT count(1) FROM biz_activity WHERE ")
+    ///             .r#in("delete_flag", &[0, 1])
+    ///             .and()
+    ///             .ne("delete_flag", -1)
+    ///             .do_if(!name.is_empty(), |w| w.and().like("name", name))
+    ///             .check().unwrap();
+    ///         let r: serde_json::Value = rb.fetch_prepare_wrapper("", &w).await.unwrap();
+    ///
     pub async fn fetch_prepare_wrapper<T>(&self, context_id: &str, w: &Wrapper) -> Result<T, Error>
         where T: DeserializeOwned {
         let w = w.clone().check()?;
         self.fetch_prepare(context_id, w.sql.as_str(), &w.args).await
     }
 
+    /// exec sql by a wrapper
     pub async fn exec_prepare_wrapper(&self, context_id: &str, w: &Wrapper) -> Result<DBExecResult, Error> {
         let w = w.clone().check()?;
         self.exec_prepare(context_id, w.sql.as_str(), &w.args).await
