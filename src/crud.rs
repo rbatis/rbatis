@@ -216,7 +216,6 @@ impl<C> Ids<C> for Vec<C> where C: Id {
 
 #[async_trait]
 pub trait CRUD {
-    /// context_id: Transaction id,default ""
     async fn save<T>(&self, context_id: &str, entity: &T) -> Result<DBExecResult> where T: CRUDEnable;
     async fn save_batch<T>(&self, context_id: &str, entity: &[T]) -> Result<DBExecResult> where T: CRUDEnable;
 
@@ -233,7 +232,6 @@ pub trait CRUD {
     async fn fetch_by_id<T>(&self, context_id: &str, id: &T::IdType) -> Result<T> where T: CRUDEnable;
     async fn fetch_page_by_wrapper<T>(&self, context_id: &str, w: &Wrapper, page: &dyn IPageRequest) -> Result<Page<T>> where T: CRUDEnable;
 
-    ///fetch all record
     async fn list<T>(&self, context_id: &str) -> Result<Vec<T>> where T: CRUDEnable;
     async fn list_by_wrapper<T>(&self, context_id: &str, w: &Wrapper) -> Result<Vec<T>> where T: CRUDEnable;
     async fn list_by_ids<T>(&self, context_id: &str, ids: &[T::IdType]) -> Result<Vec<T>> where T: CRUDEnable;
@@ -283,6 +281,7 @@ impl CRUD for Rbatis {
         return self.exec_prepare(context_id, sql.as_str(), &arg_arr).await;
     }
 
+    /// remove database record by a wrapper
     async fn remove_by_wrapper<T>(&self, context_id: &str, w: &Wrapper) -> Result<u64> where T: CRUDEnable {
         let w = w.clone().check()?;
         let where_sql = w.sql.as_str();
@@ -295,6 +294,7 @@ impl CRUD for Rbatis {
         return Ok(self.exec_prepare(context_id, sql.as_str(), &w.args).await?.rows_affected);
     }
 
+    /// remove database record by id
     async fn remove_by_id<T>(&self, context_id: &str, id: &T::IdType) -> Result<u64> where T: CRUDEnable {
         let mut sql = String::new();
         let id_str = T::do_format_column(&self.driver_type()?, &T::id_name(), self.driver_type()?.stmt_convert(0));
@@ -351,6 +351,7 @@ impl CRUD for Rbatis {
         return Ok(self.exec_prepare(context_id, wrapper.sql.as_str(), &wrapper.args).await?.rows_affected);
     }
 
+    /// update database record by id
     async fn update_by_id<T>(&self, context_id: &str, arg: &T) -> Result<u64> where T: CRUDEnable {
         let map = json!(arg);
         if !map.is_object() {
@@ -364,6 +365,7 @@ impl CRUD for Rbatis {
         self.update_by_wrapper(context_id, arg, self.new_wrapper_table::<T>().eq(&T::id_name(), id), false).await
     }
 
+    /// remove batch database record by args
     async fn update_batch_by_id<T>(&self, context_id: &str, args: &[T]) -> Result<u64> where T: CRUDEnable {
         let mut updates = 0;
         for x in args {
@@ -372,32 +374,38 @@ impl CRUD for Rbatis {
         Ok(updates)
     }
 
+    /// fetch database record by a wrapper
     async fn fetch_by_wrapper<T>(&self, context_id: &str, w: &Wrapper) -> Result<T> where T: CRUDEnable {
         let w = w.clone().check()?;
         let sql = make_select_sql::<T>(&self, &w)?;
         return self.fetch_prepare(context_id, sql.as_str(), &w.args).await;
     }
 
+    /// fetch database record by id
     async fn fetch_by_id<T>(&self, context_id: &str, id: &T::IdType) -> Result<T> where T: CRUDEnable {
         let w = self.new_wrapper_table::<T>().eq(&T::id_name(), id).check()?;
         return self.fetch_by_wrapper(context_id, &w).await;
     }
 
+    /// fetch database record list by a wrapper
     async fn list_by_wrapper<T>(&self, context_id: &str, w: &Wrapper) -> Result<Vec<T>> where T: CRUDEnable {
         let w = w.clone().check()?;
         let sql = make_select_sql::<T>(&self, &w)?;
         return self.fetch_prepare(context_id, sql.as_str(), &w.args).await;
     }
 
+    /// fetch database record list
     async fn list<T>(&self, context_id: &str) -> Result<Vec<T>> where T: CRUDEnable {
         return self.list_by_wrapper(context_id, &self.new_wrapper_table::<T>()).await;
     }
 
+    /// fetch database record list by a id array
     async fn list_by_ids<T>(&self, context_id: &str, ids: &[T::IdType]) -> Result<Vec<T>> where T: CRUDEnable {
         let w = self.new_wrapper_table::<T>().in_array(&T::id_name(), ids).check()?;
         return self.list_by_wrapper(context_id, &w).await;
     }
 
+    /// fetch page database record list by a wrapper
     async fn fetch_page_by_wrapper<T>(&self, context_id: &str, w: &Wrapper, page: &dyn IPageRequest) -> Result<Page<T>> where T: CRUDEnable {
         let w = w.clone().check()?;
         let sql = make_select_sql::<T>(&self, &w)?;
