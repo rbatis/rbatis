@@ -224,10 +224,10 @@ impl Rbatis {
     }
 
 
-    /// begin tx,if TxGuard Drop, tx will be commit(drop_commit==true) or rollback(drop_commit==false)
-    pub async fn begin_tx_defer(&self, drop_commit: bool) -> Result<TxGuard, Error> {
+    /// begin tx,if TxGuard Drop, tx will be commit(when_drop_commit==true) or rollback(when_drop_commit==false)
+    pub async fn begin_tx_defer(&self, when_drop_commit: bool) -> Result<TxGuard, Error> {
         let tx_id = self.begin_tx().await?;
-        let guard = TxGuard::new(&tx_id, drop_commit, self.tx_manager.clone());
+        let guard = TxGuard::new(&tx_id, when_drop_commit, self.tx_manager.clone());
         return Ok(guard);
     }
 
@@ -236,6 +236,13 @@ impl Rbatis {
     pub async fn begin_tx(&self) -> Result<String, Error> {
         let new_context_id = format!("tx:{}", Uuid::new_v4().to_string());
         return Ok(self.begin(&new_context_id).await?);
+    }
+
+    /// begin tx,if TxGuard Drop, tx will be commit(when_drop_commit==true) or rollback(when_drop_commit==false)
+    pub async fn begin_defer(&self, context_id: &str, when_drop_commit: bool) -> Result<TxGuard, Error> {
+        let tx_id = self.begin(context_id).await?;
+        let guard = TxGuard::new(&tx_id, when_drop_commit, self.tx_manager.clone());
+        return Ok(guard);
     }
 
     /// begin tx,for new conn,return <u64(tx num),Error>
