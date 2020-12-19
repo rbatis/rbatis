@@ -17,18 +17,12 @@ use crate::interpreter::expr::token::TokenMap;
 #[derive(Clone, PartialEq, Debug, Serialize, Deserialize)]
 pub enum NodeType {
     NArg = 1,
-    //参数节点
     NString = 2,
-    //string 节点
     NNumber = 3,
-    //number节点
     NBool = 4,
-    //bool节点
     NNull = 5,
-    //空节点
     NBinary = 6,
-    //二元计算节点
-    NOpt = 7,           //操作符节点
+    NOpt = 7,
 }
 
 impl Display for NodeType {
