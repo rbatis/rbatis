@@ -183,8 +183,18 @@ mod test {
             "+44 2345678"
         ]
     });
-        let numb = Node::new_number_f64(1.02 as f64);
+        let numb = Node::new_f64(1.02 as f64);
         numb.eval(&john);
         // println!("{}", value);
+    }
+
+    #[test]
+    fn test_gen(){
+        let node=Node::new_binary(Node::new_i64(1), Node::new_i64(1), "+");
+        println!("{}",node.eval(&serde_json::Value::Null).unwrap());
+        let f = ||{
+            //ast lower
+
+        };
     }
 }

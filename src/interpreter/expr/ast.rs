@@ -130,7 +130,7 @@ impl Node {
             node_type: NString,
         }
     }
-    pub fn new_number_f64(arg: f64) -> Self {
+    pub fn new_f64(arg: f64) -> Self {
         Self {
             value: json!(arg),
             left: None,
@@ -138,7 +138,7 @@ impl Node {
             node_type: NNumber,
         }
     }
-    pub fn new_number_i64(arg: i64) -> Self {
+    pub fn new_i64(arg: i64) -> Self {
         Self {
             value: json!(arg),
             left: None,
@@ -146,7 +146,7 @@ impl Node {
             node_type: NNumber,
         }
     }
-    pub fn new_number_u64(arg: u64) -> Self {
+    pub fn new_u64(arg: u64) -> Self {
         Self {
             value: json!(arg),
             left: None,
@@ -203,9 +203,9 @@ impl Node {
             return Node::new_string(new_str.as_str());
         } else if let Ok(n) = data.parse::<f64>() {
             if data.find(".").unwrap_or(0) != 0 {
-                return Node::new_number_f64(n);
+                return Node::new_f64(n);
             } else {
-                return Node::new_number_i64(n as i64);
+                return Node::new_i64(n as i64);
             }
         } else {
             return Node::new_arg(data);
