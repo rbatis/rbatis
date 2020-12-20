@@ -218,10 +218,11 @@ impl TxGuard {
             Some(m) => {
                 let result = m.commit(&self.tx_id).await?;
                 self.manager = None;
+                return Ok(result);
             }
             _ => {}
         }
-        return Result::Ok(String::new());
+        return Result::Ok(self.tx_id.clone());
     }
 
     pub async fn try_rollback(&mut self) -> Result<String, crate::core::Error> {
@@ -229,10 +230,11 @@ impl TxGuard {
             Some(m) => {
                 let result = m.rollback(&self.tx_id).await?;
                 self.manager = None;
+                return Ok(result);
             }
             _ => {}
         }
-        return Result::Ok(String::new());
+        return Result::Ok(self.tx_id.clone());
     }
 }
 
