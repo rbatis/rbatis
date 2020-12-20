@@ -213,7 +213,7 @@ impl TxGuard {
         }
     }
 
-    pub async fn commit(&mut self) -> Result<String, crate::core::Error> {
+    pub async fn try_commit(&mut self) -> Result<String, crate::core::Error> {
         match &mut self.manager {
             Some(m) => {
                 let result = m.commit(&self.tx_id).await?;
@@ -224,7 +224,7 @@ impl TxGuard {
         return Result::Ok(String::new());
     }
 
-    pub async fn rollback(&mut self) -> Result<String, crate::core::Error> {
+    pub async fn try_rollback(&mut self) -> Result<String, crate::core::Error> {
         match &mut self.manager {
             Some(m) => {
                 let result = m.rollback(&self.tx_id).await?;
