@@ -13,6 +13,7 @@ use crate::rbatis::Rbatis;
 ///every tx_check_interval check tx is out of time(tx_lock_wait_timeout).if out, rollback tx.
 ///if tx manager will be drop, manager will rollback all of tx.
 pub struct TxManager {
+    pub tx_prefix: String,
     pub tx_context: SyncMap<String, (DBTx, TxState)>,
     pub tx_lock_wait_timeout: Duration,
     pub tx_check_interval: Duration,
@@ -33,6 +34,7 @@ impl TxManager {
     pub fn new_arc(plugin: Arc<Box<dyn LogPlugin>>, tx_lock_wait_timeout: Duration, tx_check_interval: Duration) -> Arc<Self> {
         let (s, r) = crate::core::runtime::channel::bounded(1);
         let s = Self {
+            tx_prefix: "tx:".to_string(),
             tx_context: SyncMap::new(),
             tx_lock_wait_timeout,
             tx_check_interval,
@@ -185,6 +187,11 @@ impl TxManager {
             self.do_log(&format!("[rbatis] [{}] Rollback", context_id));
         }
         return Ok(context_id.to_string());
+    }
+
+    /// context_id is 'tx:' prifix ?
+    pub fn is_tx_prifix_id(&self, context_id: &str) -> bool {
+        return context_id.starts_with(&self.tx_prefix);
     }
 }
 

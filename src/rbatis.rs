@@ -244,7 +244,7 @@ impl Rbatis {
     ///  let v: serde_json::Value = rb.fetch(&tx_id, "SELECT count(1) FROM biz_activity;").await.unwrap();
     ///
     pub async fn begin_tx(&self) -> Result<String, Error> {
-        let new_context_id = format!("tx:{}", Uuid::new_v4().to_string());
+        let new_context_id = format!("{}{}", &self.tx_manager.tx_prefix, Uuid::new_v4().to_string());
         return Ok(self.begin(&new_context_id).await?);
     }
 
@@ -276,8 +276,8 @@ impl Rbatis {
         if context_id.is_empty() {
             return Err(Error::from("[rbatis] context_id can not be empty"));
         }
-        if !context_id.starts_with("tx:") {
-            return Err(Error::from(format!("[rbatis] context_id: {}  must be start with 'tx:', for example: tx:{}", context_id, context_id)));
+        if !self.tx_manager.is_tx_prifix_id(context_id) {
+            return Err(Error::from(format!("[rbatis] context_id: {}  must be start with '{}', for example: {}{}", &self.tx_manager.tx_prefix, &self.tx_manager.tx_prefix, context_id, context_id)));
         }
         let result = self.tx_manager.begin(context_id, self.get_pool()?).await?;
         return Ok(result);
@@ -288,8 +288,8 @@ impl Rbatis {
         if context_id.is_empty() {
             return Err(Error::from("[rbatis] context_id can not be empty"));
         }
-        if !context_id.starts_with("tx:") {
-            return Err(Error::from(format!("[rbatis] context_id: {} must be start with 'tx:', for example: tx:{}", context_id, context_id)));
+        if !self.tx_manager.is_tx_prifix_id(context_id) {
+            return Err(Error::from(format!("[rbatis] context_id: {} must be start with '{}', for example: {}{}",&self.tx_manager.tx_prefix,&self.tx_manager.tx_prefix, context_id, context_id)));
         }
         let result = self.tx_manager.commit(context_id).await?;
         return Ok(result);
@@ -300,8 +300,8 @@ impl Rbatis {
         if context_id.is_empty() {
             return Err(Error::from("[rbatis] context_id can not be empty"));
         }
-        if !context_id.starts_with("tx:") {
-            return Err(Error::from(format!("[rbatis] context_id: {} must be start with 'tx:', for example: tx:{}", context_id, context_id)));
+        if !self.tx_manager.is_tx_prifix_id(context_id) {
+            return Err(Error::from(format!("[rbatis] context_id: {} must be start with '{}', for example: {}{}",&self.tx_manager.tx_prefix,&self.tx_manager.tx_prefix, context_id, context_id)));
         }
         let result = self.tx_manager.rollback(context_id).await?;
         return Ok(result);
@@ -326,7 +326,7 @@ impl Rbatis {
         }
         let result;
         let mut fetch_num = 0;
-        if context_id.starts_with("tx:") {
+        if self.tx_manager.is_tx_prifix_id(context_id) {
             let conn = self.tx_manager.get_mut(context_id).await;
             if conn.is_none() {
                 return Err(Error::from(format!("[rbatis] transaction:{} not exist！", context_id)));
@@ -362,7 +362,7 @@ impl Rbatis {
             self.log_plugin.do_log(&format!("[rbatis] [{}] Exec  ==> {}", context_id, &sql));
         }
         let result;
-        if context_id.starts_with("tx:") {
+        if self.tx_manager.is_tx_prifix_id(context_id) {
             let conn = self.tx_manager.get_mut(context_id).await;
             if conn.is_none() {
                 return Err(Error::from(format!("[rbatis] transaction:{} not exist！", context_id)));
@@ -412,7 +412,7 @@ impl Rbatis {
         }
         let result_data;
         let mut return_num = 0;
-        if context_id.starts_with("tx:") {
+        if self.tx_manager.is_tx_prifix_id(context_id) {
             let q: DBQuery = self.bind_arg(&sql, &args)?;
             let conn = self.tx_manager.get_mut(context_id).await;
             if conn.is_none() {
@@ -452,7 +452,7 @@ impl Rbatis {
             self.log_plugin.do_log(&format!("[rbatis] [{}] Exec  ==> {}\n{}[rbatis] [{}] Args  ==> {}", context_id, &sql, string_util::LOG_SPACE, context_id, serde_json::Value::Array(args.clone()).to_string()));
         }
         let result;
-        if context_id.starts_with("tx:") {
+        if self.tx_manager.is_tx_prifix_id(context_id) {
             let q: DBQuery = self.bind_arg(&sql, &args)?;
             let conn = self.tx_manager.get_mut(context_id).await;
             if conn.is_none() {
