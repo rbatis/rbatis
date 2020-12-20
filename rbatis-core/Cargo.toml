@@ -60,7 +60,7 @@ lazy_static = "1.4"
 
 time = { version = "0.2.16", features = ["serde"] }
 ipnetwork = { version = "0.17.0", features = ["serde"] }
-sqlx-core = { version = "0.4.0", features = ["all-types"], optional = true }
+sqlx-core = { version = "0.4.2", features = ["all-types"], optional = true }
 
 #only pg
 bit-vec = { version = "0.6", features = ["serde"], optional = true }
