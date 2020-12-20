@@ -31,10 +31,10 @@ pub enum TxState {
 
 
 impl TxManager {
-    pub fn new_arc(plugin: Arc<Box<dyn LogPlugin>>, tx_lock_wait_timeout: Duration, tx_check_interval: Duration) -> Arc<Self> {
+    pub fn new_arc(tx_prefix: &str, plugin: Arc<Box<dyn LogPlugin>>, tx_lock_wait_timeout: Duration, tx_check_interval: Duration) -> Arc<Self> {
         let (s, r) = crate::core::runtime::channel::bounded(1);
         let s = Self {
-            tx_prefix: "tx:".to_string(),
+            tx_prefix: tx_prefix.to_string(),
             tx_context: SyncMap::new(),
             tx_lock_wait_timeout,
             tx_check_interval,
