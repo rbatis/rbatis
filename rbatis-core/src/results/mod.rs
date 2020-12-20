@@ -1,5 +1,6 @@
-use crate::convert::ResultCodec;
 use sqlx_core::error::BoxDynError;
+
+use crate::convert::ResultCodec;
 
 /// convert sqlx-Result to rbatis-core Result
 impl<T> ResultCodec<T> for Result<T, BoxDynError> {

@@ -1,15 +1,16 @@
 use std::ops::Deref;
 
 use log::{debug, error, info, LevelFilter, trace, warn};
+use serde::export::fmt::Debug;
 
 /// log plugin
-pub trait LogPlugin: Send + Sync {
+pub trait LogPlugin: Send + Sync + Debug {
     ///the name
     fn name(&self) -> &str {
         std::any::type_name::<Self>()
     }
     fn get_level_filter(&self) -> &LevelFilter;
-    fn is_enable(&self) -> bool{
+    fn is_enable(&self) -> bool {
         return !self.get_level_filter().eq(&log::LevelFilter::Off);
     }
     fn do_log(&self, data: &str) {
@@ -39,6 +40,7 @@ pub trait LogPlugin: Send + Sync {
     fn trace(&self, data: &str);
 }
 
+#[derive(Debug)]
 pub struct RbatisLog {
     pub level_filter: LevelFilter
 }

@@ -1,4 +1,5 @@
 use serde_json::Value;
+
 use crate::db::DriverType;
 use crate::Result;
 
@@ -42,6 +43,6 @@ pub trait RefJsonCodec {
 }
 
 ///result convert
-pub trait ResultCodec<T>{
+pub trait ResultCodec<T> {
     fn into_result(self) -> Result<T>;
 }

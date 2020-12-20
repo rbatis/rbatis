@@ -33,6 +33,7 @@ use crate::utils::string_util;
 use crate::wrapper::Wrapper;
 
 /// rbatis engine
+#[derive(Debug)]
 pub struct Rbatis {
     // the connection pool,use OnceCell init this
     pub pool: OnceCell<DBPool>,

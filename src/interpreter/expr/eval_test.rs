@@ -6,8 +6,8 @@ mod test {
     use serde_json::{json, Value};
 
     use crate::interpreter::expr::{lexer, runtime};
-    use crate::interpreter::expr::lexer::parse_tokens;
     use crate::interpreter::expr::ast::Node;
+    use crate::interpreter::expr::lexer::parse_tokens;
     use crate::interpreter::expr::token::TokenMap;
     use crate::utils::time_util;
 
@@ -189,12 +189,11 @@ mod test {
     }
 
     #[test]
-    fn test_gen(){
-        let node=Node::new_binary(Node::new_i64(1), Node::new_i64(1), "+");
-        println!("{}",node.eval(&serde_json::Value::Null).unwrap());
-        let f = ||{
+    fn test_gen() {
+        let node = Node::new_binary(Node::new_i64(1), Node::new_i64(1), "+");
+        println!("{}", node.eval(&serde_json::Value::Null).unwrap());
+        let f = || {
             //ast lower
-
         };
     }
 }

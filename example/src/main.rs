@@ -12,6 +12,7 @@ extern crate rbatis_macro_driver;
 use chrono::NaiveDateTime;
 use serde_json::{json, Value};
 use tide::Request;
+
 use rbatis::rbatis::Rbatis;
 
 mod crud_test;
@@ -57,7 +58,7 @@ async fn main() {
     let mut app = tide::new();
     app.at("/").get(|_: Request<()>| async move {
         let v = RB.fetch_prepare::<Value>("", "SELECT count(1) FROM biz_activity where delete_flag = ?;", &vec![json!(1)]).await;
-        Ok(format!("{:?}",v))
+        Ok(format!("{:?}", v))
     });
     let addr = "0.0.0.0:8000";
     println!("http server listen on http://localhost:8000");
@@ -68,20 +69,20 @@ async fn main() {
 mod test {
     use std::convert::Infallible;
     use std::thread::sleep;
-    use std::time::{Duration};
+    use std::time::Duration;
 
     use log::info;
     use serde_json::json;
     use serde_json::Value;
 
-    use rbatis::interpreter::sql::ast::RbatisAST;
-    use rbatis::interpreter::sql::node::node_type::NodeType;
-    use rbatis::interpreter::sql::node::proxy_node::{CustomNodeGenerate, ProxyNode};
-    use rbatis::core::db::{DBPool, DriverType, DBPoolOptions};
+    use rbatis::core::db::{DBPool, DBPoolOptions, DriverType};
     use rbatis::core::Error;
     use rbatis::crud::CRUD;
     use rbatis::crud::CRUDEnable;
     use rbatis::interpreter::expr::runtime::ExprRuntime;
+    use rbatis::interpreter::sql::ast::RbatisAST;
+    use rbatis::interpreter::sql::node::node_type::NodeType;
+    use rbatis::interpreter::sql::node::proxy_node::{CustomNodeGenerate, ProxyNode};
     use rbatis::plugin::page::{Page, PageRequest};
     use rbatis::rbatis::Rbatis;
     use rbatis::utils::bencher::QPS;
@@ -213,6 +214,7 @@ mod test {
         }
     }
 
+    #[derive(Debug)]
     pub struct MyGen {}
 
     impl CustomNodeGenerate for MyGen {
@@ -362,7 +364,7 @@ mod test {
         RB.link_opt(MYSQL_URL, &opts).await.unwrap();
         let total = 10000;
         let now = std::time::Instant::now();
-        for _ in 0..total{
+        for _ in 0..total {
             let v: rbatis::core::Result<serde_json::Value> = RB.fetch("", "select count(1) from biz_activity WHERE delete_flag = 1;").await;
         }
         now.time(total);

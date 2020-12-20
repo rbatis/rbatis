@@ -1,16 +1,17 @@
 use std::ops::Deref;
 use std::ptr::NonNull;
 
-use crate::core::runtime::{Arc, Mutex};
+use serde::export::fmt::Debug;
 use serde_json::Value;
 
+use crate::core::Error;
+use crate::core::runtime::{Arc, Mutex};
+use crate::interpreter::expr::runtime::ExprRuntime;
 use crate::interpreter::sql::ast::RbatisAST;
 use crate::interpreter::sql::node::node_type::NodeType;
-use crate::core::Error;
-use crate::interpreter::expr::runtime::ExprRuntime;
 
 ///CustomNode Generate,you can custom py lang parse
-pub trait CustomNodeGenerate: Send + Sync {
+pub trait CustomNodeGenerate: Send + Sync + Debug {
     ///generate return an Option<CustomNode>,if return None,parser will be skip this build
     fn generate(&self, express: &str, child_nodes: Vec<NodeType>) -> Result<Option<ProxyNode>, Error>;
 }

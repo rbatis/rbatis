@@ -1,6 +1,7 @@
 # 1 建议使用Intellij Clion克隆本项目
 
 # 2 建议使用docker快速启动mysql数据库
+
 ```cmd
 docker run -p 3306:3306 --name mysql -e MYSQL_ROOT_PASSWORD=123456 -d mysql:5.7
 ```

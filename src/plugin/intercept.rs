@@ -1,7 +1,9 @@
+use serde::export::fmt::Debug;
+
 use crate::rbatis::Rbatis;
 
 /// sql intercept
-pub trait SqlIntercept: Send + Sync {
+pub trait SqlIntercept: Send + Sync + Debug {
     ///the name
     fn name(&self) -> &str {
         std::any::type_name::<Self>()

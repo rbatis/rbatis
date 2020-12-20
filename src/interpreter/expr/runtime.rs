@@ -4,8 +4,8 @@ use std::sync::RwLock;
 
 use serde_json::Value;
 
-use crate::interpreter::expr::lexer::lexer;
 use crate::interpreter::expr::ast::Node;
+use crate::interpreter::expr::lexer::lexer;
 use crate::interpreter::expr::parser::parse;
 use crate::interpreter::expr::token::TokenMap;
 

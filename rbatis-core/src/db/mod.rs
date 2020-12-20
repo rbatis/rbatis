@@ -1,11 +1,12 @@
-pub mod db_adapter;
-
-pub use db_adapter::{DBTx, DBQuery, DBPool, DBConnectOption, DBConnection, DBExecResult, DBPoolConn};
-
 use std::time::Duration;
+
 use chrono::NaiveDateTime;
 use serde::{Deserialize, Serialize};
 use serde::de::DeserializeOwned;
+
+pub use db_adapter::{DBConnection, DBConnectOption, DBExecResult, DBPool, DBPoolConn, DBQuery, DBTx};
+
+pub mod db_adapter;
 
 #[derive(Debug, Clone, Copy)]
 pub struct DBPoolOptions {

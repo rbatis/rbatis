@@ -15,7 +15,7 @@ homepage = "https://rbatis.github.io/rbatis.io/#/"
 [features]
 default = []
 # this trait disable print compile info
-no_print=[]
+no_print = []
 [lib]
 proc-macro = true
 [dependencies]
