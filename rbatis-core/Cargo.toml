@@ -45,7 +45,7 @@ actix-mssql = ["async-std/tokio02", "sqlx-core/runtime-actix-rustls", "mssql"]
 
 all-database = ["sqlx-core/all-databases", "mysql", "postgres", "sqlite", "mssql", "bit-vec"]
 mysql = ["sqlx-core/mysql"]
-postgres = ["sqlx-core/postgres","bit-vec"]
+postgres = ["sqlx-core/postgres", "bit-vec"]
 sqlite = ["sqlx-core/sqlite"]
 mssql = ["sqlx-core/mssql"]
 

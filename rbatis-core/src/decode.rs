@@ -76,7 +76,7 @@ pub fn json_decode<T: ?Sized>(datas: Vec<serde_json::Value>) -> Result<T, crate:
 
     //debug_mode feature print json_decode json data
     #[cfg(feature = "debug_mode")]
-    println!("[rbatis] [debug_mode] => {:#}",js);
+    println!("[rbatis] [debug_mode] => {:#}", js);
 
     let decode_result = serde_json::from_value(js);
     if decode_result.is_ok() {
@@ -88,7 +88,7 @@ pub fn json_decode<T: ?Sized>(datas: Vec<serde_json::Value>) -> Result<T, crate:
 }
 
 fn is_array(type_name: &str) -> bool {
-    if  type_name.starts_with("[")
+    if type_name.starts_with("[")
         || type_name.starts_with("&[")
         || type_name.starts_with("alloc::collections::linked_list")
         || type_name.starts_with("alloc::collections::vec_deque")
@@ -114,7 +114,7 @@ mod test {
 
     use serde_json::json;
 
-    use crate::decode::{json_decode, is_array};
+    use crate::decode::{is_array, json_decode};
 
     #[test]
     fn test_decode_hashmap() {
@@ -139,8 +139,8 @@ mod test {
     }
 
     #[test]
-    fn test_is_array(){
-       let dq_name=std::any::type_name::<VecDeque::<i32>>();
-       assert_eq!(is_array(dq_name),true);
+    fn test_is_array() {
+        let dq_name = std::any::type_name::<VecDeque::<i32>>();
+        assert_eq!(is_array(dq_name), true);
     }
 }

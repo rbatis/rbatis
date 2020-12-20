@@ -1,4 +1,4 @@
-use std::collections::{LinkedList};
+use std::collections::LinkedList;
 
 use serde_json::{json, Value};
 use serde_json::map::Map;
@@ -15,7 +15,7 @@ use crate::utils::string_util;
 pub struct StringNode {
     pub value: String,
     //去重的，需要替换的要sql转换express map
-    pub express_map: LinkedList<(String,String)>,
+    pub express_map: LinkedList<(String, String)>,
 }
 
 impl StringNode {
@@ -34,7 +34,7 @@ impl RbatisAST for StringNode {
     fn eval(&self, convert: &crate::core::db::DriverType, env: &mut Value, engine: &ExprRuntime, arg_array: &mut Vec<Value>) -> Result<String, crate::core::Error> {
         let mut result = self.value.clone();
         for (item, value) in &self.express_map {
-            if item.is_empty(){
+            if item.is_empty() {
                 result = result.replace(value, "");
                 continue;
             }
@@ -74,11 +74,11 @@ impl RbatisAST for StringNode {
 }
 
 #[cfg(test)]
-mod test{
-    use crate::interpreter::expr::runtime::ExprRuntime;
-    use crate::interpreter::sql::node::string_node::StringNode;
+mod test {
     use crate::core::db::DriverType;
+    use crate::interpreter::expr::runtime::ExprRuntime;
     use crate::interpreter::sql::ast::RbatisAST;
+    use crate::interpreter::sql::node::string_node::StringNode;
 
     #[test]
     pub fn test_string_node() {
@@ -91,8 +91,8 @@ mod test{
 
         let r = s_node.eval(&DriverType::Mysql, &mut john, &mut engine, &mut arg_array).unwrap();
         println!("{}", r);
-        assert_eq!(r,"arg+1=?");
-        assert_eq!(arg_array.len(),1);
+        assert_eq!(r, "arg+1=?");
+        assert_eq!(arg_array.len(), 1);
     }
 
     #[test]
@@ -105,8 +105,7 @@ mod test{
         let mut arg_array = vec![];
         let r = s_node.eval(&DriverType::Mysql, &mut john, &mut engine, &mut arg_array).unwrap();
         println!("r:{}", r);
-        assert_eq!(r,"arg+1=3");
-        assert_eq!(arg_array.len(),0);
+        assert_eq!(r, "arg+1=3");
+        assert_eq!(arg_array.len(), 0);
     }
-
 }

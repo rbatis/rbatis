@@ -1,10 +1,11 @@
+use serde::export::fmt::Debug;
 use serde_json::Value;
 
 use crate::core::db::DriverType;
 use crate::core::Error;
 
 /// Logic Delete Plugin trait
-pub trait LogicDelete: Send + Sync {
+pub trait LogicDelete: Send + Sync + Debug {
     ///the name
     fn name(&self) -> &str {
         std::any::type_name::<Self>()
@@ -26,6 +27,7 @@ pub enum LogicAction {
     Delete,
 }
 
+#[derive(Debug)]
 pub struct RbatisLogicDeletePlugin {
     pub column: String,
     pub deleted: i32,

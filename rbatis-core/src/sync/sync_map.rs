@@ -1,14 +1,16 @@
 #![allow(unsafe_code)]
 
-use std::collections::hash_map::{RandomState, Entry};
-use std::collections::HashMap;
 use std::borrow::{Borrow, BorrowMut};
+use std::collections::hash_map::{Entry, RandomState};
+use std::collections::HashMap;
 use std::hash::Hash;
 use std::ops::{Deref, DerefMut};
+
 use crate::runtime::{RwLock, RwLockReadGuard, RwLockWriteGuard};
 
 /// SyncMap impl the Send and Sync
 /// it use of RwLock,so it's safe! but we went convert lifetime ,so use some lifetime convert unsafe method(but it is safe)
+#[derive(Debug)]
 pub struct SyncMap<K, V> where K: Eq + Hash {
     pub shard: RwLock<HashMap<K, V, RandomState>>,
 }
@@ -39,7 +41,7 @@ impl<'a, K: 'a + Eq + Hash, V: 'a> SyncMap<K, V> where K: Eq + Hash {
         w.remove(key)
     }
 
-    pub async fn clear(&self){
+    pub async fn clear(&self) {
         let mut w = self.shard.write().await;
         w.clear();
     }
@@ -176,18 +178,18 @@ impl<'a, K: Eq + Hash, V> DerefMut for RefMut<'a, K, V> {
 #[cfg(test)]
 mod test {
     use std::collections::HashMap;
-    use std::sync::Arc;
     use std::ops::Deref;
-    use crate::sync::sync_map::SyncMap;
-    use std::time::Instant;
+    use std::sync::Arc;
     use std::time::Duration;
+    use std::time::Instant;
 
+    use crate::sync::sync_map::SyncMap;
 
     #[test]
     fn test_map() {
         let m = Arc::new(SyncMap::new());
         async_std::task::block_on(async {
-             m.insert(1, "default".to_string()).await;
+            m.insert(1, "default".to_string()).await;
             let r = m.get(&1).await;
             let rv = r.unwrap().v;
             println!("r:{:?}", &rv);
@@ -208,12 +210,12 @@ mod test {
     fn test_map_for() {
         let m = Arc::new(SyncMap::new());
         async_std::task::block_on(async {
-            let mut lock= m.write().await;
-            lock.insert(1,1);
+            let mut lock = m.write().await;
+            lock.insert(1, 1);
             drop(lock);
-            let lock= m.read().await;
-            for (k,v) in lock.deref(){
-               println!("k:{},v:{}",k,v);
+            let lock = m.read().await;
+            for (k, v) in lock.deref() {
+                println!("k:{},v:{}", k, v);
             }
         });
     }
@@ -223,18 +225,18 @@ mod test {
     //test command:
     //cargo test --release --color=always --package rbatis-core --lib sync::sync_map::test::bench_test --no-fail-fast -- --exact -Z unstable-options --format=json --show-output
     #[test]
-    fn bench_test(){
+    fn bench_test() {
         let m = Arc::new(SyncMap::new());
         async_std::task::block_on(async {
             let s = m.insert(1, "default".to_string()).await;
             drop(s);
 
             let total = 100000;
-            let now=Instant::now();
-            for current in 0..total{
+            let now = Instant::now();
+            for current in 0..total {
                 m.get(&1).await;
                 if current == total - 1 {
-                    time(total,now.elapsed());
+                    time(total, now.elapsed());
                     break;
                 }
             }
@@ -243,7 +245,7 @@ mod test {
         });
     }
 
-    fn time(total: u64,time:Duration) {
+    fn time(total: u64, time: Duration) {
         println!("use Time: {:?} ,each:{} ns/op", &time, time.as_nanos() / (total as u128));
     }
 }

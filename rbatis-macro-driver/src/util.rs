@@ -4,7 +4,7 @@ use proc_macro2::{Ident, Span};
 use quote::quote;
 use quote::ToTokens;
 use syn;
-use syn::{ FnArg, ItemFn, ReturnType};
+use syn::{FnArg, ItemFn, ReturnType};
 
 //find and check method return type
 pub(crate) fn find_return_type(target_fn: &ItemFn) -> proc_macro2::TokenStream {

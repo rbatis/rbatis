@@ -1,8 +1,11 @@
 ## rbatis-core driver
+
 rbatis 核心驱动程序
 
 #### support bigdecimal,json decode,async_std,tokio
+
 #### 支持serde_json解码,支持BigDecimal，支持序列化，反序列化，支持async_std和tokio,支持自动判断数据库类型(支持mysql，pg，sqlite，tidb等等相关驱动)
+
 ```rust
 
 fn main()  -> Result<u64, rbatis_core::Error>{

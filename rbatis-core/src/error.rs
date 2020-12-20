@@ -4,6 +4,10 @@ use std::error::Error as StdError;
 use std::fmt::{self, Debug, Display};
 use std::io;
 
+use serde::{Deserialize, Deserializer};
+use serde::de::Visitor;
+use serde::ser::{Serialize, Serializer};
+
 /// A specialized `Result` type for rbatis::core.
 pub type Result<T> = std::result::Result<T, Error>;
 
@@ -62,10 +66,6 @@ impl Clone for Error {
     }
 }
 
-
-use serde::ser::{Serialize, Serializer};
-use serde::{Deserialize, Deserializer};
-use serde::de::{Visitor};
 
 // This is what #[derive(Serialize)] would generate.
 impl Serialize for Error {

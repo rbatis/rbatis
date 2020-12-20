@@ -3,13 +3,14 @@ use std::future::Future;
 use futures_core::future::BoxFuture;
 use serde::{Deserialize, Serialize};
 use serde::de::DeserializeOwned;
+use serde::export::fmt::Debug;
 use serde_json::Value;
 
 use crate::core::db::DriverType;
 use crate::sql::PageLimit;
 
 ///default page plugin
-pub trait PagePlugin: Send + Sync {
+pub trait PagePlugin: Send + Sync + Debug {
     ///the name
     fn name(&self) -> &str {
         std::any::type_name::<Self>()

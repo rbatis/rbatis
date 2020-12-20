@@ -1,34 +1,36 @@
 #![allow(unreachable_patterns)]
 
-#[cfg(feature = "mssql")]
-use sqlx_core::mssql::{Mssql, MssqlArguments, MssqlConnection, MssqlConnectOptions, MssqlDone, MssqlPool, MssqlRow};
-#[cfg(feature = "mysql")]
-use sqlx_core::mysql::{MySql, MySqlArguments, MySqlConnection, MySqlConnectOptions, MySqlDone, MySqlPool, MySqlRow, MySqlSslMode};
-#[cfg(feature = "postgres")]
-use sqlx_core::postgres::{PgArguments, PgConnection, PgConnectOptions, PgDone, PgPool, PgPoolOptions, PgRow, PgSslMode, Postgres};
-#[cfg(feature = "sqlite")]
-use sqlx_core::sqlite::{Sqlite, SqliteArguments, SqliteConnection, SqliteConnectOptions, SqliteDone, SqlitePool, SqliteRow};
 //other import
 use std::str::FromStr;
 use std::time::Duration;
-use crate::Result;
+
 use serde::{Deserialize, Serialize};
 use serde::de::DeserializeOwned;
 use sqlx_core::acquire::Acquire;
-use sqlx_core::pool::PoolConnection;
 use sqlx_core::arguments::{Arguments, IntoArguments};
 use sqlx_core::connection::{Connection, ConnectOptions};
 use sqlx_core::database::Database;
 use sqlx_core::done::Done;
 use sqlx_core::encode::Encode;
 use sqlx_core::executor::Executor;
+#[cfg(feature = "mssql")]
+use sqlx_core::mssql::{Mssql, MssqlArguments, MssqlConnection, MssqlConnectOptions, MssqlDone, MssqlPool, MssqlRow};
+#[cfg(feature = "mysql")]
+use sqlx_core::mysql::{MySql, MySqlArguments, MySqlConnection, MySqlConnectOptions, MySqlDone, MySqlPool, MySqlRow, MySqlSslMode};
+use sqlx_core::pool::PoolConnection;
+#[cfg(feature = "postgres")]
+use sqlx_core::postgres::{PgArguments, PgConnection, PgConnectOptions, PgDone, PgPool, PgPoolOptions, PgRow, PgSslMode, Postgres};
+use sqlx_core::query::{Query, query};
+#[cfg(feature = "sqlite")]
+use sqlx_core::sqlite::{Sqlite, SqliteArguments, SqliteConnection, SqliteConnectOptions, SqliteDone, SqlitePool, SqliteRow};
 use sqlx_core::transaction::Transaction;
 use sqlx_core::types::Type;
-use sqlx_core::query::{Query, query};
+
 use crate::convert::{RefJsonCodec, ResultCodec};
-use crate::db::{DriverType, DBPoolOptions};
+use crate::db::{DBPoolOptions, DriverType};
 use crate::decode::json_decode;
 use crate::Error;
+use crate::Result;
 use crate::runtime::Mutex;
 
 #[derive(Debug)]
@@ -468,6 +470,7 @@ impl DBPool {
 
 /// DBConnectOption all of support Database Options abstract struct.
 /// use from(url:&str) or use from_mysql(),from_pg().... or other method init this.
+#[derive(Debug)]
 pub struct DBConnectOption {
     pub driver_type: DriverType,
     #[cfg(feature = "mysql")]
@@ -621,7 +624,7 @@ impl DBConnectOption {
     }
 }
 
-
+#[derive(Debug)]
 pub struct DBConnection {
     pub driver_type: DriverType,
     #[cfg(feature = "mysql")]
@@ -695,7 +698,6 @@ impl DBConnection {
         }
     }
 }
-
 
 pub struct DBQuery<'q> {
     pub driver_type: DriverType,
@@ -835,7 +837,7 @@ impl<'q> DBQuery<'q> {
     }
 }
 
-
+#[derive(Debug)]
 pub struct DBPoolConn {
     pub driver_type: DriverType,
     #[cfg(feature = "mysql")]
@@ -1162,7 +1164,7 @@ impl DBPoolConn {
     }
 }
 
-
+#[derive(Debug)]
 pub struct DBTx {
     pub driver_type: DriverType,
     #[cfg(feature = "mysql")]

@@ -1,4 +1,5 @@
 use std::collections::HashMap;
+
 use crate::core::Error;
 
 pub trait ToResult<T> {

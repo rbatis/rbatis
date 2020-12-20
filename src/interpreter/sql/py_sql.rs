@@ -6,24 +6,25 @@ use std::sync::{Mutex, RwLock};
 use serde_json::json;
 use serde_json::Value;
 
+use crate::core::Error;
+use crate::interpreter::expr::ast::Node;
+use crate::interpreter::expr::lexer::lexer;
 use crate::interpreter::sql::ast::RbatisAST;
 use crate::interpreter::sql::node::bind_node::BindNode;
 use crate::interpreter::sql::node::choose_node::ChooseNode;
-use crate::interpreter::sql::node::proxy_node::{ProxyNode, CustomNodeGenerate};
 use crate::interpreter::sql::node::foreach_node::ForEachNode;
 use crate::interpreter::sql::node::if_node::IfNode;
 use crate::interpreter::sql::node::node_type::NodeType;
 use crate::interpreter::sql::node::otherwise_node::OtherwiseNode;
+use crate::interpreter::sql::node::proxy_node::{CustomNodeGenerate, ProxyNode};
 use crate::interpreter::sql::node::set_node::SetNode;
 use crate::interpreter::sql::node::string_node::StringNode;
 use crate::interpreter::sql::node::trim_node::TrimNode;
 use crate::interpreter::sql::node::when_node::WhenNode;
 use crate::interpreter::sql::node::where_node::WhereNode;
-use crate::core::Error;
-use crate::interpreter::expr::ast::Node;
-use crate::interpreter::expr::lexer::lexer;
 
 /// Py lang,make sure Send+Sync
+#[derive(Debug)]
 pub struct PyRuntime {
     pub cache: RwLock<HashMap<String, Vec<NodeType>>>,
     pub generate: Vec<Box<dyn CustomNodeGenerate>>,
@@ -226,10 +227,10 @@ impl PyRuntime {
 
 #[cfg(test)]
 mod test {
-    use crate::interpreter::sql::py_sql::PyRuntime;
     use crate::core::db::DriverType;
     use crate::interpreter::expr::runtime::ExprRuntime;
     use crate::interpreter::sql::node::node::do_child_nodes;
+    use crate::interpreter::sql::py_sql::PyRuntime;
 
     #[test]
     pub fn test_py_interpreter_parse() {

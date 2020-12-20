@@ -1,14 +1,14 @@
+use serde_json::{json, Value};
+use sqlx_core::column::Column;
 use sqlx_core::decode::Decode;
 use sqlx_core::error::BoxDynError;
+use sqlx_core::row::Row;
 use sqlx_core::sqlite::{Sqlite, SqliteValue, SqliteValueRef};
+use sqlx_core::sqlite::SqliteRow;
 use sqlx_core::type_info::TypeInfo;
 use sqlx_core::value::ValueRef;
 
 use crate::convert::{JsonCodec, RefJsonCodec, ResultCodec};
-use sqlx_core::sqlite::SqliteRow;
-use sqlx_core::row::Row;
-use sqlx_core::column::Column;
-use serde_json::{json, Value};
 
 impl<'c> JsonCodec for SqliteValueRef<'c> {
     fn try_to_json(self) -> crate::Result<serde_json::Value> {

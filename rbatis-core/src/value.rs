@@ -1,4 +1,4 @@
-use chrono::{NaiveDateTime, NaiveDate, Local};
+use chrono::{Local, NaiveDate, NaiveDateTime};
 
 pub trait DateTimeNow {
     fn now() -> NaiveDateTime;

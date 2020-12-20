@@ -3,6 +3,12 @@
 // #![warn(missing_docs)]
 #![allow(unused_imports)]
 #![allow(unused_assignments)]
+
+#[macro_use]
+extern crate lazy_static;
+
+pub use error::{Error, Result};
+
 pub mod runtime;
 
 /// database
@@ -21,13 +27,8 @@ pub mod error;
 
 pub mod results;
 
-#[macro_use]
-extern crate lazy_static;
-
 
 pub mod decode;
-
-pub use error::{Error, Result};
 
 pub mod db;
 

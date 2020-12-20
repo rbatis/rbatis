@@ -59,7 +59,7 @@ fn filter_args_context_id(rbatis_name: &str, fn_arg_name_vec: &Vec<String>, skip
         if item.eq(&rbatis_name) {
             continue;
         }
-        if item.eq("ctx_id") ||item.eq("context_id") || item.eq("tx_id") {
+        if item.eq("ctx_id") || item.eq("context_id") || item.eq("tx_id") {
             context_id_ident = item_ident.to_token_stream();
             continue;
         }
