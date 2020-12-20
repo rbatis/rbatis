@@ -212,6 +212,28 @@ impl TxGuard {
             manager: Some(manager),
         }
     }
+
+    pub async fn commit(&mut self) -> Result<String, crate::core::Error> {
+        match &mut self.manager {
+            Some(m) => {
+                let result = m.commit(&self.tx_id).await?;
+                self.manager = None;
+            }
+            _ => {}
+        }
+        return Result::Ok(String::new());
+    }
+
+    pub async fn rollback(&mut self) -> Result<String, crate::core::Error> {
+        match &mut self.manager {
+            Some(m) => {
+                let result = m.rollback(&self.tx_id).await?;
+                self.manager = None;
+            }
+            _ => {}
+        }
+        return Result::Ok(String::new());
+    }
 }
 
 impl Drop for TxGuard {
@@ -221,19 +243,14 @@ impl Drop for TxGuard {
         }
         let tx_id = self.tx_id.clone();
         let is_drop_commit = self.is_drop_commit;
-        let manager = self.manager.take();
-        match manager {
-            Some(m) => {
-                crate::core::runtime::spawn(async move {
-                    if is_drop_commit {
-                        m.commit(&tx_id).await;
-                    } else {
-                        m.rollback(&tx_id).await;
-                    }
-                    drop(m);
-                });
+        let manager = self.manager.take().unwrap();
+        crate::core::runtime::spawn(async move {
+            if is_drop_commit {
+                manager.commit(&tx_id).await;
+            } else {
+                manager.rollback(&tx_id).await;
             }
-            _ => {}
-        }
+            drop(manager);
+        });
     }
 }
