@@ -89,6 +89,8 @@ pub struct RbatisOption {
     pub logic_plugin: Option<Box<dyn LogicDelete>>,
     /// log plugin
     pub log_plugin: Arc<Box<dyn LogPlugin>>,
+    ///tx_prefix,default is 'tx:'
+    pub tx_prefix: String,
 }
 
 impl Default for RbatisOption {
@@ -101,6 +103,7 @@ impl Default for RbatisOption {
             sql_intercepts: vec![],
             logic_plugin: None,
             log_plugin: Arc::new(Box::new(RbatisLog::default()) as Box<dyn LogPlugin>),
+            tx_prefix: "tx:".to_string(),
         }
     }
 }
@@ -116,7 +119,7 @@ impl Rbatis {
         return Self {
             pool: OnceCell::new(),
             runtime_expr: ExprRuntime::new(),
-            tx_manager: TxManager::new_arc(option.log_plugin.clone(), option.tx_lock_wait_timeout, option.tx_check_interval),
+            tx_manager: TxManager::new_arc(&option.tx_prefix, option.log_plugin.clone(), option.tx_lock_wait_timeout, option.tx_check_interval),
             page_plugin: option.page_plugin,
             sql_intercepts: option.sql_intercepts,
             logic_plugin: option.logic_plugin,
@@ -289,7 +292,7 @@ impl Rbatis {
             return Err(Error::from("[rbatis] context_id can not be empty"));
         }
         if !self.tx_manager.is_tx_prifix_id(context_id) {
-            return Err(Error::from(format!("[rbatis] context_id: {} must be start with '{}', for example: {}{}",&self.tx_manager.tx_prefix,&self.tx_manager.tx_prefix, context_id, context_id)));
+            return Err(Error::from(format!("[rbatis] context_id: {} must be start with '{}', for example: {}{}", &self.tx_manager.tx_prefix, &self.tx_manager.tx_prefix, context_id, context_id)));
         }
         let result = self.tx_manager.commit(context_id).await?;
         return Ok(result);
@@ -301,7 +304,7 @@ impl Rbatis {
             return Err(Error::from("[rbatis] context_id can not be empty"));
         }
         if !self.tx_manager.is_tx_prifix_id(context_id) {
-            return Err(Error::from(format!("[rbatis] context_id: {} must be start with '{}', for example: {}{}",&self.tx_manager.tx_prefix,&self.tx_manager.tx_prefix, context_id, context_id)));
+            return Err(Error::from(format!("[rbatis] context_id: {} must be start with '{}', for example: {}{}", &self.tx_manager.tx_prefix, &self.tx_manager.tx_prefix, context_id, context_id)));
         }
         let result = self.tx_manager.rollback(context_id).await?;
         return Ok(result);
