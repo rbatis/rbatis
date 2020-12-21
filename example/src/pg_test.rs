@@ -14,7 +14,7 @@ pub async fn test_select_point() {
     let rb = Rbatis::new();
     rb.link("postgres://postgres:123456@localhost:5432/postgres").await.unwrap();
     //create table
-    rb.exec("",r#"CREATE TABLE "public"."Untitled" ( "id" int4, "po" point);"#).await;
+    rb.exec("",r#"CREATE TABLE "public"."p" ( "id" int4, "po" point);"#).await;
     //insert point
     rb.exec_prepare("", "insert into p (id,po) values (1,Point($1,$2))",&vec![json!(1),json!(2)]).await.unwrap();
     //query table
