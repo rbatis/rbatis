@@ -213,8 +213,9 @@ impl<'c> JsonCodec for PgValueRef<'c> {
                 // "CIRCLE", "CIRCLE[]",
                 // "MACADDR8","MACADDR8[]",
                 // "MACADDR","MACADDR[]",
-                //  you can use already supported types to decode this
-                return Err(crate::Error::from(format!("un support database type for:{:?}!", type_string)));
+                //  you can use already Vec<u8> types to decode this
+                let r: Option<Vec<u8>> = Decode::<'_, Postgres>::decode(self).into_result()?;
+                return Ok(json!(r));
             }
         }
     }
