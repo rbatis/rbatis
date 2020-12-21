@@ -404,7 +404,6 @@ impl Rbatis {
     ///
     pub async fn fetch_prepare<T>(&self, context_id: &str, sql: &str, args: &Vec<serde_json::Value>) -> Result<T, Error>
         where T: DeserializeOwned {
-
         //sql intercept
         let mut sql = sql.to_string();
         let mut args = args.clone();
@@ -445,7 +444,6 @@ impl Rbatis {
     ///      let v = RB.exec_prepare::<Value>("", "SELECT count(1) FROM biz_activity where delete_flag = ?;", &vec![json!(1)]).await;
     ///
     pub async fn exec_prepare(&self, context_id: &str, sql: &str, args: &Vec<serde_json::Value>) -> Result<DBExecResult, Error> {
-
         //sql intercept
         let mut sql = sql.to_string();
         let mut args = args.clone();
