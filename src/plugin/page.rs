@@ -20,19 +20,19 @@ pub trait PagePlugin: Send + Sync + Debug {
 
     /// auto make count sql,also you can rewrite this method
     fn make_count_sql(&self, sql: &str) -> String {
-        let sql: Vec<&str> = sql.split("FROM ").collect();
+        let sql: Vec<&str> = sql.split(" FROM ").collect();
         let mut where_sql = sql[1].clone().to_owned();
         //remove order by
-        if where_sql.contains("ORDER BY") {
-            let where_sqls: Vec<&str> = where_sql.split("ORDER BY").collect();
+        if where_sql.contains(" ORDER BY ") {
+            let where_sqls: Vec<&str> = where_sql.split(" ORDER BY ").collect();
             let mut new_sql = String::new();
             for item in &where_sqls[0..where_sqls.len() - 1].to_vec() {
                 new_sql.push_str(item);
             }
             where_sql = new_sql;
         }
-        if where_sql.contains("LIMIT") {
-            let where_sqls: Vec<&str> = where_sql.split("LIMIT").collect();
+        if where_sql.contains(" LIMIT ") {
+            let where_sqls: Vec<&str> = where_sql.split(" LIMIT ").collect();
             let mut new_sql = String::new();
             for item in &where_sqls[0..where_sqls.len() - 1].to_vec() {
                 new_sql.push_str(item);
