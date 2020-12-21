@@ -98,7 +98,8 @@ impl<'r> JsonCodec for sqlx_core::mysql::MySqlValueRef<'r> {
             }
             _ => {
                 //TODO "GEOMETRY" support. for now you can use already supported types to decode this
-                return Err(crate::Error::from(format!("un support database type for:{:?}!", type_string)));
+                let r: Option<Vec<u8>> = Decode::<'_, MySql>::decode(self).into_result()?;
+                return Ok(json!(r));
             }
         }
     }

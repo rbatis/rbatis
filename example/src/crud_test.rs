@@ -38,23 +38,6 @@ mod test {
         pub delete_flag: Option<i32>,
     }
 
-    #[crud_enable]
-    #[derive(Clone, Debug)]
-    pub struct BizActivity2 {
-        pub id: Option<String>,
-        pub name: Option<String>,
-        pub pc_link: Option<String>,
-        pub h5_link: Option<String>,
-        pub pc_banner_img: Option<String>,
-        pub h5_banner_img: Option<String>,
-        pub sort: Option<String>,
-        pub status: Option<i32>,
-        pub remark: Option<String>,
-        pub create_time: Option<NaiveDateTime>,
-        pub version: Option<BigDecimal>,
-        pub delete_flag: Option<i32>,
-    }
-
 // (可选) 手动实现，不使用上面的derive(CRUDEnable),可重写table_name方法。手动实现能支持IDE智能提示
 // impl CRUDEnable for BizActivity {
 //     type IdType = String;
