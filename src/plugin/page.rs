@@ -23,7 +23,8 @@ pub trait PagePlugin: Send + Sync + Debug {
         let sql: Vec<&str> = sql.split(" FROM ").collect();
         let mut where_sql = sql[1].clone().to_owned();
         //remove order by
-        if where_sql.contains(" ORDER BY ") {
+        if where_sql.contains(" ORDER BY ") || where_sql.contains(" order by ") {
+            where_sql.replace(" order by ", " ORDER BY ");
             let where_sqls: Vec<&str> = where_sql.split(" ORDER BY ").collect();
             let mut new_sql = String::new();
             for item in &where_sqls[0..where_sqls.len() - 1].to_vec() {
@@ -31,7 +32,8 @@ pub trait PagePlugin: Send + Sync + Debug {
             }
             where_sql = new_sql;
         }
-        if where_sql.contains(" LIMIT ") {
+        if where_sql.contains(" LIMIT ") || where_sql.contains(" limit ") {
+            where_sql.replace(" limit ", " LIMIT ");
             let where_sqls: Vec<&str> = where_sql.split(" LIMIT ").collect();
             let mut new_sql = String::new();
             for item in &where_sqls[0..where_sqls.len() - 1].to_vec() {
@@ -52,8 +54,7 @@ impl PagePlugin for RbatisPagePlugin {
         //default sql
         let mut sql = sql.to_owned();
         sql = sql.replace("select ", "SELECT ");
-        sql = sql.replace("from ", "FROM ");
-        sql = sql.replace("order by ", "ORDER BY ");
+        sql = sql.replace(" from ", " FROM ");
         sql = sql.trim().to_string();
         if !sql.starts_with("SELECT ") && !sql.contains("FROM ") {
             return Err(crate::core::Error::from("[rbatis] make_page_sql() sql must contains 'select ' And 'from '"));
