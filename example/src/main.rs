@@ -16,7 +16,7 @@ use tide::Request;
 use rbatis::rbatis::Rbatis;
 
 mod crud_test;
-mod pg_test;
+mod point_test;
 
 ///数据库表模型,支持BigDecimal ,DateTime ,rust基本类型（int,float,uint,string,Vec,Array）
 /// CRUDEnable 特性会自动识别 id为表的id类型(识别String)，自动识别结构体名称为蛇形命名的表名 biz_activity。没有id的表 请手动指定
