@@ -64,7 +64,7 @@ fn filter_args_context_id(rbatis_name: &str, fn_arg_name_vec: &Vec<String>) -> (
         }
         sql_args_gen = quote! {
             #sql_args_gen
-            rb_args.insert(#item_ident_name.to_string(),serde_json::to_value(#item_ident).unwrap_or(serde_json::Value::Null));
+            rb_args.insert(#item_ident_name.to_string(),serde_json::json!(#item_ident));
        };
     }
     (sql_args_gen, context_id_ident)

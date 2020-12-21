@@ -75,7 +75,7 @@ fn filter_args_context_id(rbatis_name: &str, fn_arg_name_vec: &Vec<String>, skip
         }
         sql_args_gen = quote! {
             #sql_args_gen
-            rb_args.push(serde_json::to_value(#item_ident).unwrap_or(serde_json::Value::Null));
+            rb_args.push(serde_json::json!(#item_ident));
        };
     }
     (sql_args_gen, context_id_ident)
