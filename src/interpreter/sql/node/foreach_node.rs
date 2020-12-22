@@ -1,14 +1,11 @@
 use std::collections::HashMap;
-
 use serde_json::{json, Map, Value};
-
 use crate::core::convert::StmtConvert;
 use crate::core::db::DriverType;
 use crate::interpreter::expr::runtime::ExprRuntime;
 use crate::interpreter::sql::ast::RbatisAST;
 use crate::interpreter::sql::node::node::do_child_nodes;
 use crate::interpreter::sql::node::node_type::NodeType;
-use crate::interpreter::sql::node::string_node::StringNode;
 use crate::utils;
 
 #[derive(Clone, Debug)]
@@ -46,10 +43,6 @@ impl ForEachNode {
     }
 }
 
-lazy_static!(
-static ref EMPTY_MAP:serde_json::Map<String,Value> = serde_json::Map::new();
-);
-
 impl RbatisAST for ForEachNode {
     fn name() -> &'static str {
         "for"
@@ -63,31 +56,43 @@ impl RbatisAST for ForEachNode {
         if collection_value.is_array() {
             let collection = collection_value.as_array().unwrap();
             let collection_len = collection.len() as i32;
-            //build temp arg
-            let obj_map = env.as_object().unwrap_or(&EMPTY_MAP).clone();
-            let mut obj_map = json!(obj_map);
             let mut index = -1;
+
+            let mut obj = None;
+            let mut arg = env;
+            if !arg.is_object() {
+                obj = Some(serde_json::Value::Object(serde_json::Map::new()));
+                arg = obj.as_mut().unwrap();
+            }
             for item in collection {
                 index = index + 1;
-                obj_map.as_object_mut().unwrap().insert(self.item.to_string(), item.clone());
-                obj_map.as_object_mut().unwrap().insert(self.index.to_string(), json!(index));
-                let item_result = do_child_nodes(convert, &self.childs, &mut obj_map, engine, arg_array)?;
+                arg.as_object_mut().unwrap().insert(self.item.to_string(), item.clone());
+                arg.as_object_mut().unwrap().insert(self.index.to_string(), json!(index));
+                let item_result = do_child_nodes(convert, &self.childs, arg, engine, arg_array)?;
                 result = result + item_result.as_str();
+                arg.as_object_mut().unwrap().remove(&self.item);
+                arg.as_object_mut().unwrap().remove(&self.index);
             }
             return Result::Ok(result);
         } else if collection_value.is_object() {
             let collection = collection_value.as_object().unwrap();
             let collection_len = collection.len() as i32;
-            //build temp arg
-            let obj_map = env.as_object().unwrap_or(&EMPTY_MAP).clone();
-            let mut obj_map = json!(obj_map);
             let mut index = -1;
+
+            let mut obj = None;
+            let mut arg = env;
+            if !arg.is_object() {
+                obj = Some(serde_json::Value::Object(serde_json::Map::new()));
+                arg = obj.as_mut().unwrap();
+            }
             for (key, item) in collection {
                 index = index + 1;
-                obj_map.as_object_mut().unwrap().insert(self.item.to_string(), item.clone());
-                obj_map.as_object_mut().unwrap().insert(self.index.to_string(), json!(key));
-                let item_result = do_child_nodes(convert, &self.childs, &mut obj_map, engine, arg_array)?;
+                arg.as_object_mut().unwrap().insert(self.item.to_string(), item.clone());
+                arg.as_object_mut().unwrap().insert(self.index.to_string(), json!(key));
+                let item_result = do_child_nodes(convert, &self.childs, arg, engine, arg_array)?;
                 result = result + item_result.as_str();
+                arg.as_object_mut().unwrap().remove(&self.item);
+                arg.as_object_mut().unwrap().remove(&self.index);
             }
             return Result::Ok(result);
         } else {
@@ -97,40 +102,66 @@ impl RbatisAST for ForEachNode {
 }
 
 
-#[test]
-pub fn test_for_each_node() {
-    let mut engine = ExprRuntime::new();
-    let n = ForEachNode {
-        childs: vec![NodeType::NString(StringNode::new("index:#{index},item:#{item}"))],
-        collection: "arg".to_string(),
-        index: "index".to_string(),
-        item: "item".to_string(),
-    };
-    let mut john = json!({
+#[cfg(test)]
+mod test{
+    use crate::core::db::DriverType;
+    use crate::interpreter::sql::node::foreach_node::ForEachNode;
+    use crate::interpreter::expr::runtime::ExprRuntime;
+    use crate::interpreter::sql::node::node_type::NodeType;
+    use crate::interpreter::sql::node::string_node::StringNode;
+    use crate::interpreter::sql::ast::RbatisAST;
+
+    #[test]
+    pub fn test_for_each_node() {
+        let mut engine = ExprRuntime::new();
+        let n = ForEachNode {
+            childs: vec![NodeType::NString(StringNode::new("index:#{index},item:#{item}"))],
+            collection: "arg".to_string(),
+            index: "index".to_string(),
+            item: "item".to_string(),
+        };
+        let mut john = json!({
         "arg": [1,2,3],
     });
-    let mut arg_array = vec![];
-    let r = n.eval(&DriverType::Mysql, &mut john, &mut engine, &mut arg_array);
-    println!("{}", r.unwrap_or("null".to_string()));
-    println!("{}", json!(arg_array));
-}
+        let mut arg_array = vec![];
+        let r = n.eval(&DriverType::Mysql, &mut john, &mut engine, &mut arg_array);
+        println!("{}", r.unwrap_or("null".to_string()));
+        println!("{}", json!(arg_array));
+    }
 
-#[test]
-pub fn test_for_each_object_node() {
-    let mut engine = ExprRuntime::new();
-    let n = ForEachNode {
-        childs: vec![NodeType::NString(StringNode::new("index:#{index},item:#{item}"))],
-        collection: "arg".to_string(),
-        index: "index".to_string(),
-        item: "item".to_string(),
-    };
-    let mut john = json!({
+    #[test]
+    pub fn test_for_each_object_node() {
+        let mut engine = ExprRuntime::new();
+        let n = ForEachNode {
+            childs: vec![NodeType::NString(StringNode::new("index:#{index},item:#{item}"))],
+            collection: "arg".to_string(),
+            index: "index".to_string(),
+            item: "item".to_string(),
+        };
+        let mut john = json!({
         "arg": {
            "id":1
         },
     });
-    let mut arg_array = vec![];
-    let r = n.eval(&DriverType::Mysql, &mut john, &mut engine, &mut arg_array);
-    println!("{}", r.unwrap_or("null".to_string()));
-    println!("{}", json!(arg_array));
+        let mut arg_array = vec![];
+        let r = n.eval(&DriverType::Mysql, &mut john, &mut engine, &mut arg_array);
+        println!("{}", r.unwrap_or("null".to_string()));
+        println!("{}", json!(arg_array));
+    }
+
+    #[test]
+    pub fn test_for_each_node_none() {
+        let mut engine = ExprRuntime::new();
+        let n = ForEachNode {
+            childs: vec![NodeType::NString(StringNode::new("index:#{index},item:#{item}"))],
+            collection: "arg".to_string(),
+            index: "index".to_string(),
+            item: "item".to_string(),
+        };
+        let mut john = json!(null);
+        let mut arg_array = vec![];
+        let r = n.eval(&DriverType::Mysql, &mut john, &mut engine, &mut arg_array);
+        println!("{}", r.unwrap_or("null".to_string()));
+        println!("{}", json!(arg_array));
+    }
 }
