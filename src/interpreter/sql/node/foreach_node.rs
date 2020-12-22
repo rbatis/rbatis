@@ -51,48 +51,34 @@ impl RbatisAST for ForEachNode {
         let mut result = String::new();
         let collection_value = utils::value_util::get_deep_value(self.collection.as_str(), env);
         if collection_value.is_null() {
-            return Result::Err(crate::core::Error::from("[rbatis] collection name:".to_owned() + self.collection.as_str() + " is none value!"));
+            return Result::Ok(result);
         }
         if collection_value.is_array() {
             let collection = collection_value.as_array().unwrap();
             let collection_len = collection.len() as i32;
             let mut index = -1;
-
-            let mut obj = None;
-            let mut arg = env;
-            if !arg.is_object() {
-                obj = Some(serde_json::Value::Object(serde_json::Map::new()));
-                arg = obj.as_mut().unwrap();
-            }
             for item in collection {
                 index = index + 1;
-                arg.as_object_mut().unwrap().insert(self.item.to_string(), item.clone());
-                arg.as_object_mut().unwrap().insert(self.index.to_string(), json!(index));
-                let item_result = do_child_nodes(convert, &self.childs, arg, engine, arg_array)?;
+                env.as_object_mut().unwrap().insert(self.item.to_string(), item.clone());
+                env.as_object_mut().unwrap().insert(self.index.to_string(), json!(index));
+                let item_result = do_child_nodes(convert, &self.childs, env, engine, arg_array)?;
                 result = result + item_result.as_str();
-                arg.as_object_mut().unwrap().remove(&self.item);
-                arg.as_object_mut().unwrap().remove(&self.index);
+                env.as_object_mut().unwrap().remove(&self.item);
+                env.as_object_mut().unwrap().remove(&self.index);
             }
             return Result::Ok(result);
         } else if collection_value.is_object() {
             let collection = collection_value.as_object().unwrap();
             let collection_len = collection.len() as i32;
             let mut index = -1;
-
-            let mut obj = None;
-            let mut arg = env;
-            if !arg.is_object() {
-                obj = Some(serde_json::Value::Object(serde_json::Map::new()));
-                arg = obj.as_mut().unwrap();
-            }
             for (key, item) in collection {
                 index = index + 1;
-                arg.as_object_mut().unwrap().insert(self.item.to_string(), item.clone());
-                arg.as_object_mut().unwrap().insert(self.index.to_string(), json!(key));
-                let item_result = do_child_nodes(convert, &self.childs, arg, engine, arg_array)?;
+                env.as_object_mut().unwrap().insert(self.item.to_string(), item.clone());
+                env.as_object_mut().unwrap().insert(self.index.to_string(), json!(key));
+                let item_result = do_child_nodes(convert, &self.childs, env, engine, arg_array)?;
                 result = result + item_result.as_str();
-                arg.as_object_mut().unwrap().remove(&self.item);
-                arg.as_object_mut().unwrap().remove(&self.index);
+                env.as_object_mut().unwrap().remove(&self.item);
+                env.as_object_mut().unwrap().remove(&self.index);
             }
             return Result::Ok(result);
         } else {
