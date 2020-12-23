@@ -46,7 +46,7 @@ impl RbatisAST for PrintNode {
             env.as_object_mut().unwrap().insert("arg_array".to_string(), json!(arg_array));
         }
         let r = engine.eval(self.express.as_str(), env)?;
-        println!("{}", r);
+        println!("{}: {}",self.express, r);
         return Ok(serde_json::Value::Null);
     }
 }
