@@ -504,14 +504,7 @@ impl Rbatis {
 
     /// py str into py ast,run get sql,arg result
     fn py_to_sql(&self, py: &str, arg: &serde_json::Value) -> Result<(String, Vec<serde_json::Value>), Error> {
-        let nodes = self.runtime_py.parse_and_cache(py)?;
-        let mut arg_array = vec![];
-        let mut env = arg.clone();
-        let driver_type = Box::new(self.driver_type()?);
-        let mut sql = String::new();
-        do_child_nodes(&driver_type, &nodes, &mut env, &self.runtime_expr, &mut arg_array,&mut sql)?;
-        sql = sql.trim().to_string();
-        return Ok((sql, arg_array));
+        return self.runtime_py.eval(&self.driver_type()?, py, &mut arg.clone(), &self.runtime_expr);
     }
 
     /// fetch query result(prepare sql)

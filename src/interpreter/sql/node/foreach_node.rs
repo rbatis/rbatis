@@ -6,9 +6,9 @@ use crate::core::convert::StmtConvert;
 use crate::core::db::DriverType;
 use crate::interpreter::expr::runtime::ExprRuntime;
 use crate::interpreter::sql::ast::RbatisAST;
-use crate::interpreter::sql::node::node::do_child_nodes;
 use crate::interpreter::sql::node::node_type::NodeType;
 use crate::utils;
+use crate::interpreter::sql::node::node::do_child_nodes;
 
 #[derive(Clone, Debug)]
 pub struct ForEachNode {
@@ -60,8 +60,8 @@ impl RbatisAST for ForEachNode {
             let mut index = -1;
             for item in collection {
                 index = index + 1;
-                env.as_object_mut().unwrap().insert(self.item.to_string(), item.clone());
-                env.as_object_mut().unwrap().insert(self.index.to_string(), json!(index));
+                env[&self.item] = item.clone();
+                env[&self.index] = json!(index);
                 do_child_nodes(convert, &self.childs, env, engine, arg_array, arg_sql)?;
                 env.as_object_mut().unwrap().remove(&self.item);
                 env.as_object_mut().unwrap().remove(&self.index);
@@ -73,8 +73,8 @@ impl RbatisAST for ForEachNode {
             let mut index = -1;
             for (key, item) in collection {
                 index = index + 1;
-                env.as_object_mut().unwrap().insert(self.item.to_string(), item.clone());
-                env.as_object_mut().unwrap().insert(self.index.to_string(), json!(key));
+                env[&self.item] = item.clone();
+                env[&self.index] = json!(key);
                 do_child_nodes(convert, &self.childs, env, engine, arg_array, arg_sql)?;
                 env.as_object_mut().unwrap().remove(&self.item);
                 env.as_object_mut().unwrap().remove(&self.index);
