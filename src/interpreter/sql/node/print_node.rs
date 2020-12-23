@@ -39,8 +39,12 @@ impl RbatisAST for PrintNode {
         if !env.is_object() {
             return Err(Error::from("[rbatis] print node arg must be json object! you can use empty json for example: {}"));
         }
-        env.as_object_mut().unwrap().insert("sql".to_string(), json!(arg_sql));
-        env.as_object_mut().unwrap().insert("arg_array".to_string(), json!(arg_array));
+        if self.express.contains("sql"){
+            env.as_object_mut().unwrap().insert("sql".to_string(), json!(arg_sql));
+        }
+        if self.express.contains("arg_array"){
+            env.as_object_mut().unwrap().insert("arg_array".to_string(), json!(arg_array));
+        }
         let r = engine.eval(self.express.as_str(), env)?;
         println!("{}", r);
         return Ok(serde_json::Value::Null);
