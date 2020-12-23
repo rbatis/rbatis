@@ -9,20 +9,22 @@ use serde_json::Value;
 use crate::core::Error;
 use crate::interpreter::expr::ast::Node;
 use crate::interpreter::expr::lexer::lexer;
+use crate::interpreter::expr::runtime::ExprRuntime;
 use crate::interpreter::sql::ast::RbatisAST;
 use crate::interpreter::sql::node::bind_node::BindNode;
 use crate::interpreter::sql::node::choose_node::ChooseNode;
 use crate::interpreter::sql::node::foreach_node::ForEachNode;
 use crate::interpreter::sql::node::if_node::IfNode;
+use crate::interpreter::sql::node::node::do_child_nodes;
 use crate::interpreter::sql::node::node_type::NodeType;
 use crate::interpreter::sql::node::otherwise_node::OtherwiseNode;
+use crate::interpreter::sql::node::print_node::PrintNode;
 use crate::interpreter::sql::node::proxy_node::{CustomNodeGenerate, ProxyNode};
 use crate::interpreter::sql::node::set_node::SetNode;
 use crate::interpreter::sql::node::string_node::StringNode;
 use crate::interpreter::sql::node::trim_node::TrimNode;
 use crate::interpreter::sql::node::when_node::WhenNode;
 use crate::interpreter::sql::node::where_node::WhereNode;
-use crate::interpreter::sql::node::print_node::PrintNode;
 
 /// Py lang,make sure Send+Sync
 #[derive(Debug)]
@@ -32,6 +34,18 @@ pub struct PyRuntime {
 }
 
 impl PyRuntime {
+    ///eval with cache
+    pub fn eval(&self, driver_type: &crate::core::db::DriverType, py_sql: &str, env: &mut Value, engine: &ExprRuntime) -> Result<(String, Vec<serde_json::Value>), Error> {
+        if !env.is_object() {
+            return Result::Err(Error::from("[rbatis] py_sql Requires that the parameter be an json object!"));
+        }
+        let nodes = self.parse_and_cache(py_sql)?;
+        let mut sql = String::new();
+        let mut arg_array = vec![];
+        do_child_nodes(driver_type, &nodes, env, engine, &mut arg_array, &mut sql)?;
+        sql = sql.trim().to_string();
+        return Ok((sql, arg_array));
+    }
     /// parser and cache py data sql,return an vec node type
     pub fn parse_and_cache(&self, arg: &str) -> Result<Vec<NodeType>, crate::core::Error> {
         let rd = self.cache.try_read();
@@ -46,9 +60,9 @@ impl PyRuntime {
                 return Ok(nodes.unwrap().clone());
             } else {
                 drop(rd);
-                let nods = PyRuntime::parse(arg, &self.generate)?;
-                self.try_cache_into(arg, nods.clone());
-                return Ok(nods);
+                let nodes = PyRuntime::parse(arg, &self.generate)?;
+                self.try_cache_into(arg, nodes.clone());
+                return Ok(nodes);
             }
         }
     }
@@ -314,7 +328,7 @@ mod test {
         "ids":[1,2,3]
     });
         let mut r = String::new();
-        do_child_nodes(&DriverType::Mysql, &pys, &mut env, &mut engine, &mut arg_array,&mut r).unwrap();
+        do_child_nodes(&DriverType::Mysql, &pys, &mut env, &mut engine, &mut arg_array, &mut r).unwrap();
         println!("result sql:{}", r);
         println!("arg array:{:?}", arg_array.clone());
     }
@@ -348,8 +362,8 @@ mod test {
 
         let mut arg_array = vec![];
         let mut engine = ExprRuntime::new();
-        let mut r=String::new();
-        do_child_nodes(&DriverType::Mysql, &pys, &mut env, &mut engine, &mut arg_array,&mut r).unwrap();
+        let mut r = String::new();
+        do_child_nodes(&DriverType::Mysql, &pys, &mut env, &mut engine, &mut arg_array, &mut r).unwrap();
         println!("result: {}", &r);
         println!("arg: {:?}", arg_array.clone());
     }
@@ -389,7 +403,7 @@ mod test {
         let mut engine = ExprRuntime::new();
         let mut env = json!({ "name": "1", "age": 27 });
         let mut r = String::new();
-        do_child_nodes(&DriverType::Mysql, &pys, &mut env, &mut engine, &mut arg_array,&mut r).unwrap();
+        do_child_nodes(&DriverType::Mysql, &pys, &mut env, &mut engine, &mut arg_array, &mut r).unwrap();
         println!("result sql:{}", r.clone());
         println!("arg array:{:?}", arg_array.clone());
     }

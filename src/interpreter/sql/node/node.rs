@@ -21,7 +21,7 @@ use crate::interpreter::sql::node::where_node::WhereNode;
 use super::node_type::NodeType;
 
 //执行子所有节点
-pub fn do_child_nodes(convert: &crate::core::db::DriverType, child_nodes: &Vec<NodeType>, env: &mut Value, engine: &ExprRuntime, arg_array: &mut Vec<Value>, arg_sql: &mut String) -> Result<serde_json::Value, crate::core::Error> {
+pub(crate)fn do_child_nodes(convert: &crate::core::db::DriverType, child_nodes: &Vec<NodeType>, env: &mut Value, engine: &ExprRuntime, arg_array: &mut Vec<Value>, arg_sql: &mut String) -> Result<serde_json::Value, crate::core::Error> {
     for item in child_nodes {
         item.eval(convert, env, engine, arg_array, arg_sql)?;
     }
