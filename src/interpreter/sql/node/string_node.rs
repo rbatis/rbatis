@@ -31,7 +31,7 @@ impl RbatisAST for StringNode {
     fn name() -> &'static str {
         "string"
     }
-    fn eval(&self, convert: &crate::core::db::DriverType, env: &mut Value, engine: &ExprRuntime, arg_array: &mut Vec<Value>) -> Result<String, crate::core::Error> {
+    fn eval(&self, convert: &crate::core::db::DriverType, env: &mut Value, engine: &ExprRuntime, arg_array: &mut Vec<Value>, arg_sql: &mut String) -> Result<serde_json::Value, crate::core::Error> {
         let mut result = self.value.clone();
         for (item, value) in &self.express_map {
             if item.is_empty() {
@@ -69,7 +69,8 @@ impl RbatisAST for StringNode {
                 }
             }
         }
-        return Result::Ok(result);
+        arg_sql.push_str(result.as_str());
+        return Result::Ok(serde_json::Value::Null);
     }
 }
 
@@ -89,7 +90,8 @@ mod test {
         let s_node = StringNode::new("arg+1=#{arg+1}");
         let mut arg_array = vec![];
 
-        let r = s_node.eval(&DriverType::Mysql, &mut john, &mut engine, &mut arg_array).unwrap();
+        let mut r = String::new();
+        s_node.eval(&DriverType::Mysql, &mut john, &mut engine, &mut arg_array, &mut r).unwrap();
         println!("{}", r);
         assert_eq!(r, "arg+1=?");
         assert_eq!(arg_array.len(), 1);
@@ -103,7 +105,8 @@ mod test {
         let mut engine = ExprRuntime::new();
         let s_node = StringNode::new("arg+1=${arg+1}");
         let mut arg_array = vec![];
-        let r = s_node.eval(&DriverType::Mysql, &mut john, &mut engine, &mut arg_array).unwrap();
+        let mut r = String::new();
+        s_node.eval(&DriverType::Mysql, &mut john, &mut engine, &mut arg_array, &mut r).unwrap();
         println!("r:{}", r);
         assert_eq!(r, "arg+1=3");
         assert_eq!(arg_array.len(), 0);

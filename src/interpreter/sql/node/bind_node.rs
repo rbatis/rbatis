@@ -2,11 +2,11 @@ use serde_json::{json, Value};
 
 use crate::core::convert::StmtConvert;
 use crate::core::db::DriverType;
+use crate::core::Error;
 use crate::interpreter::expr;
 use crate::interpreter::expr::runtime::ExprRuntime;
 use crate::interpreter::sql::ast::RbatisAST;
 use crate::interpreter::sql::node::node_type::NodeType;
-use crate::core::Error;
 
 #[derive(Clone, Debug)]
 pub struct BindNode {
@@ -19,7 +19,7 @@ impl BindNode {
         "let"
     }
     pub fn from(source: &str, express: &str, childs: Vec<NodeType>) -> Result<Self, crate::core::Error> {
-        let source=source.trim();
+        let source = source.trim();
         if express.starts_with(Self::def_name()) {
             let express = express[Self::def_name().len()..].trim();
             let name_value: Vec<&str> = express.split("=").collect();
@@ -50,10 +50,10 @@ impl RbatisAST for BindNode {
     fn name() -> &'static str {
         "bind"
     }
-    fn eval(&self, convert: &crate::core::db::DriverType, env: &mut Value, engine: &ExprRuntime, arg_array: &mut Vec<Value>) -> Result<String, crate::core::Error> {
+    fn eval(&self, convert: &crate::core::db::DriverType, env: &mut Value, engine: &ExprRuntime, arg_array: &mut Vec<Value>, arg_sql: &mut String) -> Result<serde_json::Value, crate::core::Error> {
         let r = engine.eval(self.value.as_str(), env)?;
         env[self.name.as_str()] = r;
-        return Result::Ok("".to_string());
+        return Result::Ok(serde_json::Value::Null);
     }
 }
 
@@ -72,9 +72,8 @@ fn test_bind_node() {
 
     let mut arg_array = vec![];
 
-    let r = bind_node.eval(&DriverType::Mysql, &mut john, &mut engine, &mut arg_array).unwrap();
-
-
+    let mut r = "".to_string();
+    bind_node.eval(&DriverType::Mysql, &mut john, &mut engine, &mut arg_array, &mut r).unwrap();
     println!("r={}", r);
     println!("john[a]={}", john["a"]);
 }

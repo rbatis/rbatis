@@ -24,8 +24,8 @@ impl RbatisAST for SetNode {
     fn name() -> &'static str {
         "set"
     }
-    fn eval(&self, convert: &crate::core::db::DriverType, env: &mut Value, engine: &ExprRuntime, arg_array: &mut Vec<Value>) -> Result<String, crate::core::Error> {
-        return do_child_nodes(convert, &self.childs, env, engine, arg_array);
+    fn eval(&self, convert: &crate::core::db::DriverType, env: &mut Value, engine: &ExprRuntime, arg_array: &mut Vec<Value>, arg_sql: &mut String) -> Result<serde_json::Value, crate::core::Error> {
+        return do_child_nodes(convert, &self.childs, env, engine, arg_array, arg_sql);
     }
 }
 

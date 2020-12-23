@@ -50,19 +50,24 @@ impl RbatisAST for ChooseNode {
         "choose"
     }
 
-    fn eval(&self, convert: &crate::core::db::DriverType, env: &mut Value, engine: &ExprRuntime, arg_array: &mut Vec<Value>) -> Result<String, crate::core::Error> {
+    fn eval(&self, convert: &crate::core::db::DriverType, env: &mut Value, engine: &ExprRuntime, arg_array: &mut Vec<Value>, arg_sql: &mut String) -> Result<serde_json::Value, crate::core::Error> {
         if self.when_nodes.is_none() == false {
+            let mut when_index = 0;
             for item in self.when_nodes.as_ref().unwrap() {
-                let s = item.eval(convert, env, engine, arg_array);
-                if s.is_ok() {
-                    return s;
+                let v = item.eval(convert, env, engine, arg_array, arg_sql)?;
+                if v.is_boolean() && v.as_bool().unwrap() == true {
+                    return Result::Ok(serde_json::Value::Null);
                 }
+                when_index += 1;
             }
         }
-        if self.otherwise_node.is_none() == false {
-            return self.otherwise_node.as_ref().unwrap().eval(convert, env, engine, arg_array);
+        match &self.otherwise_node {
+            Some(other) => {
+                return other.eval(convert, env, engine, arg_array, arg_sql);
+            }
+            _ => {}
         }
-        return Result::Ok("".to_string());
+        return Result::Ok(serde_json::Value::Null);
     }
 }
 
@@ -81,7 +86,7 @@ pub fn test_choose_node() {
     };
     let mut arg_array = vec![];
 
-
-    let r = c.eval(&DriverType::Mysql, &mut john, &mut engine, &mut arg_array);
-    println!("{}", r.unwrap());
+    let mut r = String::new();
+    c.eval(&DriverType::Mysql, &mut john, &mut engine, &mut arg_array, &mut r);
+    println!("{}", r);
 }

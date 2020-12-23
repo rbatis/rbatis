@@ -29,15 +29,15 @@ impl RbatisAST for IfNode {
     fn name() -> &'static str {
         "if"
     }
-    fn eval(&self, convert: &crate::core::db::DriverType, env: &mut Value, engine: &ExprRuntime, arg_array: &mut Vec<Value>) -> Result<String, crate::core::Error> {
+    fn eval(&self, convert: &crate::core::db::DriverType, env: &mut Value, engine: &ExprRuntime, arg_array: &mut Vec<Value>, arg_sql: &mut String) -> Result<serde_json::Value, crate::core::Error> {
         let result = engine.eval(self.test.as_str(), env)?;
         if !result.is_boolean() {
             return Result::Err(crate::core::Error::from("[rbatis] express:'".to_owned() + self.test.as_str() + "' is not return bool value!"));
         }
         if result.as_bool().unwrap() {
-            return do_child_nodes(convert, &self.childs, env, engine, arg_array);
+            return do_child_nodes(convert, &self.childs, env, engine, arg_array, arg_sql);
         }
-        return Result::Ok("".to_string());
+        return Result::Ok(serde_json::Value::Null);
     }
 }
 
@@ -52,6 +52,7 @@ pub fn test_if_node() {
     });
     let mut engine = ExprRuntime::new();
     let mut arg_array = vec![];
-
-    println!("{}", node.eval(&DriverType::Mysql, &mut john, &mut engine, &mut arg_array).unwrap());
+    let mut sql = String::new();
+    node.eval(&DriverType::Mysql, &mut john, &mut engine, &mut arg_array, &mut sql).unwrap();
+    println!("{}", sql);
 }

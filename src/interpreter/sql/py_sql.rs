@@ -275,6 +275,8 @@ mod test {
         let s = "SELECT * FROM biz_activity where
     let info = 'yes':
     bind infos = 'ok':
+    print info:
+    print infos:
     if  name!=null:
       name = #{name}
     AND delete_flag1 = #{del}
@@ -282,6 +284,7 @@ mod test {
        AND age = 1
        if  age != 1:
          AND age = 2
+    AND
     trim 'AND ':
       AND delete_flag2 = #{del}
     AND ids in (
@@ -290,10 +293,10 @@ mod test {
         #{item},
     )
     choose:
-        when age==27:
-          AND age = 27
+        when age == -1:
+          AND age = -1
         _:
-          AND age = 0
+          age = 0
     choose:
         when age==27:
           AND age = 27
@@ -302,12 +305,6 @@ mod test {
     WHERE id  = 'end';";
         let pys = PyRuntime::parse(s, &vec![]).unwrap();
         println!("{:#?}", pys);
-        //for x in &pys {
-        // println!("{:?}", x.clone());
-        //}
-        //println!("pys:len:{}", pys.len());
-
-
         let mut arg_array = vec![];
         let mut engine = ExprRuntime::new();
         let mut env = json!({
@@ -316,8 +313,9 @@ mod test {
         "del":1,
         "ids":[1,2,3]
     });
-        let r = do_child_nodes(&DriverType::Mysql, &pys, &mut env, &mut engine, &mut arg_array).unwrap();
-        println!("result sql:{}", r.clone());
+        let mut r = String::new();
+        do_child_nodes(&DriverType::Mysql, &pys, &mut env, &mut engine, &mut arg_array,&mut r).unwrap();
+        println!("result sql:{}", r);
         println!("arg array:{:?}", arg_array.clone());
     }
 
@@ -350,7 +348,8 @@ mod test {
 
         let mut arg_array = vec![];
         let mut engine = ExprRuntime::new();
-        let r = do_child_nodes(&DriverType::Mysql, &pys, &mut env, &mut engine, &mut arg_array).unwrap();
+        let mut r=String::new();
+        do_child_nodes(&DriverType::Mysql, &pys, &mut env, &mut engine, &mut arg_array,&mut r).unwrap();
         println!("result: {}", &r);
         println!("arg: {:?}", arg_array.clone());
     }
@@ -389,7 +388,8 @@ mod test {
         let mut arg_array = vec![];
         let mut engine = ExprRuntime::new();
         let mut env = json!({ "name": "1", "age": 27 });
-        let r = do_child_nodes(&DriverType::Mysql, &pys, &mut env, &mut engine, &mut arg_array).unwrap();
+        let mut r = String::new();
+        do_child_nodes(&DriverType::Mysql, &pys, &mut env, &mut engine, &mut arg_array,&mut r).unwrap();
         println!("result sql:{}", r.clone());
         println!("arg array:{:?}", arg_array.clone());
     }

@@ -7,5 +7,5 @@ use crate::interpreter::expr::runtime::ExprRuntime;
 /// Abstract syntax tree node
 pub trait RbatisAST: Send + Sync + Debug {
     fn name() -> &'static str where Self: Sized;
-    fn eval(&self, convert: &crate::core::db::DriverType, env: &mut Value, engine: &ExprRuntime, arg_result: &mut Vec<Value>) -> Result<String, crate::core::Error>;
+    fn eval(&self, convert: &crate::core::db::DriverType, env: &mut Value, engine: &ExprRuntime, arg_result: &mut Vec<Value>,arg_sql:&mut String) -> Result<serde_json::Value, crate::core::Error>;
 }

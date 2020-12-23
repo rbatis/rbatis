@@ -1,5 +1,7 @@
 use std::collections::HashMap;
+
 use serde_json::{json, Map, Value};
+
 use crate::core::convert::StmtConvert;
 use crate::core::db::DriverType;
 use crate::interpreter::expr::runtime::ExprRuntime;
@@ -47,11 +49,10 @@ impl RbatisAST for ForEachNode {
     fn name() -> &'static str {
         "for"
     }
-    fn eval(&self, convert: &crate::core::db::DriverType, env: &mut Value, engine: &ExprRuntime, arg_array: &mut Vec<Value>) -> Result<String, crate::core::Error> {
-        let mut result = String::new();
-        let collection_value = engine.eval(self.collection.as_str(),env)?;
+    fn eval(&self, convert: &crate::core::db::DriverType, env: &mut Value, engine: &ExprRuntime, arg_array: &mut Vec<Value>, arg_sql: &mut String) -> Result<serde_json::Value, crate::core::Error> {
+        let collection_value = engine.eval(self.collection.as_str(), env)?;
         if collection_value.is_null() {
-            return Result::Ok(result);
+            return Result::Ok(serde_json::Value::Null);
         }
         if collection_value.is_array() {
             let collection = collection_value.as_array().unwrap();
@@ -61,12 +62,11 @@ impl RbatisAST for ForEachNode {
                 index = index + 1;
                 env.as_object_mut().unwrap().insert(self.item.to_string(), item.clone());
                 env.as_object_mut().unwrap().insert(self.index.to_string(), json!(index));
-                let item_result = do_child_nodes(convert, &self.childs, env, engine, arg_array)?;
-                result = result + item_result.as_str();
+                do_child_nodes(convert, &self.childs, env, engine, arg_array, arg_sql)?;
                 env.as_object_mut().unwrap().remove(&self.item);
                 env.as_object_mut().unwrap().remove(&self.index);
             }
-            return Result::Ok(result);
+            return Result::Ok(serde_json::Value::Null);
         } else if collection_value.is_object() {
             let collection = collection_value.as_object().unwrap();
             let collection_len = collection.len() as i32;
@@ -75,12 +75,11 @@ impl RbatisAST for ForEachNode {
                 index = index + 1;
                 env.as_object_mut().unwrap().insert(self.item.to_string(), item.clone());
                 env.as_object_mut().unwrap().insert(self.index.to_string(), json!(key));
-                let item_result = do_child_nodes(convert, &self.childs, env, engine, arg_array)?;
-                result = result + item_result.as_str();
+                do_child_nodes(convert, &self.childs, env, engine, arg_array, arg_sql)?;
                 env.as_object_mut().unwrap().remove(&self.item);
                 env.as_object_mut().unwrap().remove(&self.index);
             }
-            return Result::Ok(result);
+            return Result::Ok(serde_json::Value::Null);
         } else {
             return Result::Err(crate::core::Error::from("[rbatis] collection name:".to_owned() + self.collection.as_str() + " is not a array or object/map value!"));
         }
@@ -89,13 +88,13 @@ impl RbatisAST for ForEachNode {
 
 
 #[cfg(test)]
-mod test{
+mod test {
     use crate::core::db::DriverType;
-    use crate::interpreter::sql::node::foreach_node::ForEachNode;
     use crate::interpreter::expr::runtime::ExprRuntime;
+    use crate::interpreter::sql::ast::RbatisAST;
+    use crate::interpreter::sql::node::foreach_node::ForEachNode;
     use crate::interpreter::sql::node::node_type::NodeType;
     use crate::interpreter::sql::node::string_node::StringNode;
-    use crate::interpreter::sql::ast::RbatisAST;
 
     #[test]
     pub fn test_for_each_node() {
@@ -110,8 +109,9 @@ mod test{
         "arg": [1,2,3],
     });
         let mut arg_array = vec![];
-        let r = n.eval(&DriverType::Mysql, &mut john, &mut engine, &mut arg_array);
-        println!("{}", r.unwrap_or("null".to_string()));
+        let mut r = String::new();
+        n.eval(&DriverType::Mysql, &mut john, &mut engine, &mut arg_array, &mut r).unwrap();
+        println!("{}", r);
         println!("{}", json!(arg_array));
     }
 
@@ -130,8 +130,9 @@ mod test{
         },
     });
         let mut arg_array = vec![];
-        let r = n.eval(&DriverType::Mysql, &mut john, &mut engine, &mut arg_array);
-        println!("{}", r.unwrap_or("null".to_string()));
+        let mut r = String::new();
+        n.eval(&DriverType::Mysql, &mut john, &mut engine, &mut arg_array, &mut r);
+        println!("{}", r);
         println!("{}", json!(arg_array));
     }
 
@@ -146,8 +147,9 @@ mod test{
         };
         let mut john = json!(null);
         let mut arg_array = vec![];
-        let r = n.eval(&DriverType::Mysql, &mut john, &mut engine, &mut arg_array);
-        println!("{}", r.unwrap_or("null".to_string()));
+        let mut r = String::new();
+        n.eval(&DriverType::Mysql, &mut john, &mut engine, &mut arg_array, &mut r);
+        println!("{}", r);
         println!("{}", json!(arg_array));
     }
 }

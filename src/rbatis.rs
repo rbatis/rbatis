@@ -508,7 +508,8 @@ impl Rbatis {
         let mut arg_array = vec![];
         let mut env = arg.clone();
         let driver_type = Box::new(self.driver_type()?);
-        let mut sql = do_child_nodes(&driver_type, &nodes, &mut env, &self.runtime_expr, &mut arg_array)?;
+        let mut sql = String::new();
+        do_child_nodes(&driver_type, &nodes, &mut env, &self.runtime_expr, &mut arg_array,&mut sql)?;
         sql = sql.trim().to_string();
         return Ok((sql, arg_array));
     }
