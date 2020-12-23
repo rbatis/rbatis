@@ -22,11 +22,6 @@ pub trait LogicDelete: Send + Sync + Debug {
     fn create_select_sql(&self, driver_type: &DriverType, table_name: &str, table_fields: &str, sql_where: &str) -> Result<String, crate::core::Error>;
 }
 
-pub enum LogicAction {
-    Select,
-    Delete,
-}
-
 #[derive(Debug)]
 pub struct RbatisLogicDeletePlugin {
     pub column: String,
