@@ -15,6 +15,7 @@ use crate::interpreter::sql::node::string_node::StringNode;
 use crate::interpreter::sql::node::trim_node::TrimNode;
 use crate::interpreter::sql::node::when_node::WhenNode;
 use crate::interpreter::sql::node::where_node::WhereNode;
+use crate::interpreter::sql::node::print_node::PrintNode;
 
 #[derive(Clone, Debug)]
 pub enum NodeType {
@@ -29,6 +30,7 @@ pub enum NodeType {
     NBind(BindNode),
     NSet(SetNode),
     NWhere(WhereNode),
+    NPrint(PrintNode),
     NCustom(ProxyNode),
 }
 
@@ -46,6 +48,7 @@ impl NodeType {
             NodeType::NBind(node) => return None,
             NodeType::NSet(node) => return Some(&node.childs),
             NodeType::NWhere(node) => return Some(&node.childs),
+            NodeType::NPrint(node) => return Some(&node.childs),
             NodeType::NCustom(node) => return Some(&node.childs),
         }
     }
@@ -62,6 +65,7 @@ impl NodeType {
             NodeType::NBind(node) => return None,
             NodeType::NSet(node) => return Some(&mut node.childs),
             NodeType::NWhere(node) => return Some(&mut node.childs),
+            NodeType::NPrint(node) => return Some(&mut node.childs),
             NodeType::NCustom(node) => return Some(&mut node.childs),
         }
     }
@@ -85,6 +89,7 @@ impl<'a> RbatisAST for NodeType {
             NodeType::NBind(node) => return node.eval(convert, env, engine, arg_array),
             NodeType::NSet(node) => return node.eval(convert, env, engine, arg_array),
             NodeType::NWhere(node) => return node.eval(convert, env, engine, arg_array),
+            NodeType::NPrint(node) => return node.eval(convert, env, engine, arg_array),
             NodeType::NCustom(node) => return node.eval(convert, env, engine, arg_array),
         }
     }

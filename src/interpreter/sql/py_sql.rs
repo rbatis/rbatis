@@ -22,6 +22,7 @@ use crate::interpreter::sql::node::string_node::StringNode;
 use crate::interpreter::sql::node::trim_node::TrimNode;
 use crate::interpreter::sql::node::when_node::WhenNode;
 use crate::interpreter::sql::node::where_node::WhereNode;
+use crate::interpreter::sql::node::print_node::PrintNode;
 
 /// Py lang,make sure Send+Sync
 #[derive(Debug)]
@@ -116,6 +117,8 @@ impl PyRuntime {
             return Ok(NodeType::NSet(SetNode::from(source_str, trim_express, childs)?));
         } else if trim_express.starts_with(WhereNode::name()) {
             return Ok(NodeType::NWhere(WhereNode::from(source_str, trim_express, childs)?));
+        } else if trim_express.starts_with(PrintNode::name()) {
+            return Ok(NodeType::NPrint(PrintNode::from(source_str, trim_express, childs)?));
         } else {
             for g in generates {
                 let gen = g.generate(trim_express, childs.clone())?;
@@ -371,5 +374,23 @@ mod test {
 
         println!("child_str: \n{}", &child_str);
         println!("skip: {}", do_skip);
+    }
+
+    #[test]
+    pub fn test_print() {
+        let s = "SELECT * FROM biz_activity where
+                         print sql:
+                             hello this is sql data
+                         print arg_array:
+                         print name:
+                         print 1+1:
+                       ";
+        let pys = PyRuntime::parse(s, &vec![]).unwrap();
+        let mut arg_array = vec![];
+        let mut engine = ExprRuntime::new();
+        let mut env = json!({ "name": "1", "age": 27 });
+        let r = do_child_nodes(&DriverType::Mysql, &pys, &mut env, &mut engine, &mut arg_array).unwrap();
+        println!("result sql:{}", r.clone());
+        println!("arg array:{:?}", arg_array.clone());
     }
 }
