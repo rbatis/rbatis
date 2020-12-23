@@ -83,11 +83,8 @@ impl DBPool {
                     .min_connections(opt.min_connections)
                     .idle_timeout(opt.idle_timeout)
                     .test_before_acquire(opt.test_before_acquire);
-                let p = build.connect_with(driver.mysql.clone().unwrap()).await;
-                if p.is_err() {
-                    return Err(crate::Error::from(p.err().unwrap().to_string()));
-                }
-                pool.mysql = Some(p.unwrap());
+                let p = build.connect_with(driver.mysql.clone().unwrap()).await.into_result()?;
+                pool.mysql = Some(p);
                 return Ok(pool);
             }
             #[cfg(feature = "postgres")]
@@ -100,11 +97,8 @@ impl DBPool {
                     .min_connections(opt.min_connections)
                     .idle_timeout(opt.idle_timeout)
                     .test_before_acquire(opt.test_before_acquire);
-                let p = build.connect_with(driver.postgres.clone().unwrap()).await;
-                if p.is_err() {
-                    return Err(crate::Error::from(p.err().unwrap().to_string()));
-                }
-                pool.postgres = Some(p.unwrap());
+                let p = build.connect_with(driver.postgres.clone().unwrap()).await.into_result()?;
+                pool.postgres = Some(p);
                 return Ok(pool);
             }
             #[cfg(feature = "sqlite")]
@@ -117,11 +111,8 @@ impl DBPool {
                     .min_connections(opt.min_connections)
                     .idle_timeout(opt.idle_timeout)
                     .test_before_acquire(opt.test_before_acquire);
-                let p = build.connect_with(driver.sqlite.clone().unwrap()).await;
-                if p.is_err() {
-                    return Err(crate::Error::from(p.err().unwrap().to_string()));
-                }
-                pool.sqlite = Some(p.unwrap());
+                let p = build.connect_with(driver.sqlite.clone().unwrap()).await.into_result()?;
+                pool.sqlite = Some(p);
                 return Ok(pool);
             }
             #[cfg(feature = "mssql")]
@@ -134,11 +125,8 @@ impl DBPool {
                     .min_connections(opt.min_connections)
                     .idle_timeout(opt.idle_timeout)
                     .test_before_acquire(opt.test_before_acquire);
-                let p = build.connect_with(driver.mssql.clone().unwrap()).await;
-                if p.is_err() {
-                    return Err(crate::Error::from(p.err().unwrap().to_string()));
-                }
-                pool.mssql = Some(p.unwrap());
+                let p = build.connect_with(driver.mssql.clone().unwrap()).await.into_result()?;
+                pool.mssql = Some(p);
                 return Ok(pool);
             }
             _ => {
@@ -216,14 +204,10 @@ impl DBPool {
             }
             #[cfg(feature = "mysql")]
             &DriverType::Mysql => {
-                let conn = self.mysql.as_ref().unwrap().acquire().await;
-                if conn.is_err() {
-                    return Err(crate::Error::from(conn.err().unwrap().to_string()));
-                }
                 return Ok(DBPoolConn {
                     driver_type: DriverType::Mysql,
                     #[cfg(feature = "mysql")]
-                    mysql: Some(conn.unwrap()),
+                    mysql: Some(self.mysql.as_ref().unwrap().acquire().await.into_result()?),
                     #[cfg(feature = "postgres")]
                     postgres: None,
                     #[cfg(feature = "sqlite")]
@@ -234,16 +218,12 @@ impl DBPool {
             }
             #[cfg(feature = "postgres")]
             &DriverType::Postgres => {
-                let conn = self.postgres.as_ref().unwrap().acquire().await;
-                if conn.is_err() {
-                    return Err(crate::Error::from(conn.err().unwrap().to_string()));
-                }
                 return Ok(DBPoolConn {
                     driver_type: DriverType::Postgres,
                     #[cfg(feature = "mysql")]
                     mysql: None,
                     #[cfg(feature = "postgres")]
-                    postgres: Some(conn.unwrap()),
+                    postgres: Some(self.postgres.as_ref().unwrap().acquire().await.into_result()?),
                     #[cfg(feature = "sqlite")]
                     sqlite: None,
                     #[cfg(feature = "mssql")]
@@ -252,10 +232,6 @@ impl DBPool {
             }
             #[cfg(feature = "sqlite")]
             &DriverType::Sqlite => {
-                let conn = self.sqlite.as_ref().unwrap().acquire().await;
-                if conn.is_err() {
-                    return Err(crate::Error::from(conn.err().unwrap().to_string()));
-                }
                 return Ok(DBPoolConn {
                     driver_type: DriverType::Sqlite,
                     #[cfg(feature = "mysql")]
@@ -263,17 +239,13 @@ impl DBPool {
                     #[cfg(feature = "postgres")]
                     postgres: None,
                     #[cfg(feature = "sqlite")]
-                    sqlite: Some(conn.unwrap()),
+                    sqlite: Some(self.sqlite.as_ref().unwrap().acquire().await.into_result()?),
                     #[cfg(feature = "mssql")]
                     mssql: None,
                 });
             }
             #[cfg(feature = "mssql")]
             &DriverType::Mssql => {
-                let conn = self.mssql.as_ref().unwrap().acquire().await;
-                if conn.is_err() {
-                    return Err(crate::Error::from(conn.err().unwrap().to_string()));
-                }
                 return Ok(DBPoolConn {
                     driver_type: DriverType::Mssql,
                     #[cfg(feature = "mysql")]
@@ -283,7 +255,7 @@ impl DBPool {
                     #[cfg(feature = "sqlite")]
                     sqlite: None,
                     #[cfg(feature = "mssql")]
-                    mssql: Some(conn.unwrap()),
+                    mssql: Some(self.mssql.as_ref().unwrap().acquire().await.into_result()?),
                 });
             }
 
@@ -559,11 +531,7 @@ impl DBConnectOption {
         if driver.starts_with("mysql") {
             #[cfg(feature = "mysql")]
                 {
-                    let conn_opt = MySqlConnectOptions::from_str(driver);
-                    if conn_opt.is_err() {
-                        return Err(Error::from(format!("{:?}", conn_opt.err().unwrap())));
-                    }
-                    let mut conn_opt = conn_opt.unwrap();
+                    let mut conn_opt = MySqlConnectOptions::from_str(driver).into_result()?;
                     if !driver.contains("ssl-mode") {
                         conn_opt = conn_opt.ssl_mode(MySqlSslMode::Disabled);
                     }
@@ -576,11 +544,7 @@ impl DBConnectOption {
         } else if driver.starts_with("postgres") {
             #[cfg(feature = "postgres")]
                 {
-                    let conn_opt = PgConnectOptions::from_str(driver);
-                    if conn_opt.is_err() {
-                        return Err(Error::from(format!("{:?}", conn_opt.err().unwrap())));
-                    }
-                    let mut conn_opt = conn_opt.unwrap();
+                    let mut conn_opt = PgConnectOptions::from_str(driver).into_result()?;
                     if !driver.contains("ssl-mode") {
                         conn_opt = conn_opt.ssl_mode(PgSslMode::Disable);
                     }
@@ -593,11 +557,7 @@ impl DBConnectOption {
         } else if driver.starts_with("sqlite") {
             #[cfg(feature = "sqlite")]
                 {
-                    let conn_opt = SqliteConnectOptions::from_str(driver);
-                    if conn_opt.is_err() {
-                        return Err(Error::from(format!("{:?}", conn_opt.err().unwrap())));
-                    }
-                    let conn_opt = conn_opt.unwrap();
+                    let conn_opt = SqliteConnectOptions::from_str(driver).into_result()?;
                     return Self::from_sqlite(&conn_opt);
                 }
             #[cfg(not(feature = "sqlite"))]
@@ -607,11 +567,7 @@ impl DBConnectOption {
         } else if driver.starts_with("mssql") || driver.starts_with("sqlserver") {
             #[cfg(feature = "mssql")]
                 {
-                    let conn_opt = MssqlConnectOptions::from_str(driver);
-                    if conn_opt.is_err() {
-                        return Err(Error::from(format!("{:?}", conn_opt.err().unwrap())));
-                    }
-                    let conn_opt = conn_opt.unwrap();
+                    let conn_opt = MssqlConnectOptions::from_str(driver).into_result()?;
                     return Self::from_mssql(&conn_opt);
                 }
             #[cfg(not(feature = "mssql"))]
