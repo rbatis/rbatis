@@ -210,8 +210,9 @@ mod test {
             "custom"
         }
 
-        fn eval(&self, convert: &DriverType, env: &mut Value, engine: &ExprRuntime, arg_result: &mut Vec<Value>) -> Result<String, Error> {
-            Ok(" AND id = 1 ".to_string())
+        fn eval(&self, convert: &DriverType, env: &mut Value, engine: &ExprRuntime, arg_result: &mut Vec<Value>,arg_sql:&mut String) -> Result<serde_json::Value, Error> {
+            *arg_sql = " AND id = 1 ".to_string();
+            Ok(serde_json::Value::Null)
         }
     }
 
