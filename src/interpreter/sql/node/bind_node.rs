@@ -6,6 +6,7 @@ use crate::interpreter::expr;
 use crate::interpreter::expr::runtime::ExprRuntime;
 use crate::interpreter::sql::ast::RbatisAST;
 use crate::interpreter::sql::node::node_type::NodeType;
+use crate::core::Error;
 
 #[derive(Clone, Debug)]
 pub struct BindNode {
@@ -14,16 +15,34 @@ pub struct BindNode {
 }
 
 impl BindNode {
+    pub fn def_name() -> &'static str {
+        "let"
+    }
     pub fn from(source: &str, express: &str, childs: Vec<NodeType>) -> Result<Self, crate::core::Error> {
-        let express = express["bind ".len()..].trim();
-        let name_value: Vec<&str> = express.split("=").collect();
-        if name_value.len() != 2 {
-            return Err(crate::core::Error::from("[rbatis] parser bind express fail:".to_string() + source));
+        let source=source.trim();
+        if express.starts_with(Self::def_name()) {
+            let express = express[Self::def_name().len()..].trim();
+            let name_value: Vec<&str> = express.split("=").collect();
+            if name_value.len() != 2 {
+                return Err(crate::core::Error::from("[rbatis] parser bind express fail:".to_string() + source));
+            }
+            return Ok(BindNode {
+                name: name_value[0].to_owned(),
+                value: name_value[1].to_owned(),
+            });
+        } else if express.starts_with(Self::name()) {
+            let express = express[Self::name().len()..].trim();
+            let name_value: Vec<&str> = express.split("=").collect();
+            if name_value.len() != 2 {
+                return Err(crate::core::Error::from("[rbatis] parser bind express fail:".to_string() + source));
+            }
+            return Ok(BindNode {
+                name: name_value[0].to_owned(),
+                value: name_value[1].to_owned(),
+            });
+        } else {
+            return Err(Error::from("[rbaits] OtherwiseNode must start with '_:' or 'otherwise:'"));
         }
-        return Ok(BindNode {
-            name: name_value[0].to_owned(),
-            value: name_value[1].to_owned(),
-        });
     }
 }
 
