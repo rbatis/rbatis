@@ -12,7 +12,6 @@ use crate::interpreter::sql::node::node_type::NodeType;
 pub struct WhenNode {
     pub childs: Vec<NodeType>,
     pub test: String,
-
 }
 
 impl WhenNode {
@@ -25,19 +24,19 @@ impl WhenNode {
     }
 }
 
-
 impl RbatisAST for WhenNode {
     fn name() -> &'static str {
         "when"
     }
-    fn eval(&self, convert: &crate::core::db::DriverType, env: &mut Value, engine: &ExprRuntime, arg_array: &mut Vec<Value>) -> Result<String, crate::core::Error> {
+    fn eval(&self, convert: &crate::core::db::DriverType, env: &mut Value, engine: &ExprRuntime, arg_array: &mut Vec<Value>, arg_sql: &mut String) -> Result<serde_json::Value, crate::core::Error> {
         let result = engine.eval(self.test.as_str(), env)?;
         if !result.is_boolean() {
             return Result::Err(crate::core::Error::from("[rbatis] test:'".to_owned() + self.test.as_str() + "' is not return bool!"));
         }
-        if result.as_bool().unwrap() {
-            return do_child_nodes(convert, &self.childs, env, engine, arg_array);
+        let is_ok = result.as_bool().unwrap();
+        if is_ok {
+            do_child_nodes(convert, &self.childs, env, engine, arg_array, arg_sql)?;
         }
-        return Result::Ok("".to_string());
+        return Ok(result);
     }
 }

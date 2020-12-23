@@ -36,7 +36,7 @@ impl RbatisAST for ProxyNode {
         "proxy"
     }
 
-    fn eval(&self, convert: &crate::core::db::DriverType, env: &mut Value, engine: &ExprRuntime, arg_array: &mut Vec<Value>) -> Result<String, crate::core::Error> {
-        self.ptr.deref().eval(convert, env, engine, arg_array)
+    fn eval(&self, convert: &crate::core::db::DriverType, env: &mut Value, engine: &ExprRuntime, arg_array: &mut Vec<Value>, arg_sql: &mut String) -> Result<serde_json::Value, crate::core::Error> {
+        self.ptr.deref().eval(convert, env, engine, arg_array, arg_sql)
     }
 }

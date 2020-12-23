@@ -21,13 +21,11 @@ use crate::interpreter::sql::node::where_node::WhereNode;
 use super::node_type::NodeType;
 
 //执行子所有节点
-pub fn do_child_nodes(convert: &crate::core::db::DriverType, child_nodes: &Vec<NodeType>, env: &mut Value, engine: &ExprRuntime, arg_array: &mut Vec<Value>) -> Result<String, crate::core::Error> {
-    let mut s = String::new();
+pub fn do_child_nodes(convert: &crate::core::db::DriverType, child_nodes: &Vec<NodeType>, env: &mut Value, engine: &ExprRuntime, arg_array: &mut Vec<Value>, arg_sql: &mut String) -> Result<serde_json::Value, crate::core::Error> {
     for item in child_nodes {
-        let item_result = item.eval(convert, env, engine, arg_array)?;
-        s = s + item_result.as_str();
+        item.eval(convert, env, engine, arg_array, arg_sql)?;
     }
-    return Result::Ok(s);
+    return Result::Ok(serde_json::Value::Null);
 }
 
 #[test]
@@ -39,6 +37,7 @@ fn test_string_node() {
     let str_node = NodeType::NString(StringNode::new("select * from ${name} where name = #{name}"));
     let mut arg_array = vec![];
 
-    let result = str_node.eval(&DriverType::Mysql, &mut john, &mut engine, &mut arg_array).unwrap();
+    let mut result = "".to_string();
+    str_node.eval(&DriverType::Mysql, &mut john, &mut engine, &mut arg_array, &mut result).unwrap();
     println!("{}", result);
 }

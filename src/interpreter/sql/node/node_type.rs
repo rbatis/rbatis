@@ -9,13 +9,13 @@ use crate::interpreter::sql::node::choose_node::ChooseNode;
 use crate::interpreter::sql::node::foreach_node::ForEachNode;
 use crate::interpreter::sql::node::if_node::IfNode;
 use crate::interpreter::sql::node::otherwise_node::OtherwiseNode;
+use crate::interpreter::sql::node::print_node::PrintNode;
 use crate::interpreter::sql::node::proxy_node::ProxyNode;
 use crate::interpreter::sql::node::set_node::SetNode;
 use crate::interpreter::sql::node::string_node::StringNode;
 use crate::interpreter::sql::node::trim_node::TrimNode;
 use crate::interpreter::sql::node::when_node::WhenNode;
 use crate::interpreter::sql::node::where_node::WhereNode;
-use crate::interpreter::sql::node::print_node::PrintNode;
 
 #[derive(Clone, Debug)]
 pub enum NodeType {
@@ -76,21 +76,21 @@ impl<'a> RbatisAST for NodeType {
         "node_type"
     }
 
-    fn eval(&self, convert: &crate::core::db::DriverType, env: &mut Value, engine: &ExprRuntime, arg_array: &mut Vec<Value>) -> Result<String, crate::core::Error> {
+    fn eval(&self, convert: &crate::core::db::DriverType, env: &mut Value, engine: &ExprRuntime, arg_array: &mut Vec<Value>, arg_sql: &mut String) -> Result<serde_json::Value, crate::core::Error> {
         match self {
-            NodeType::Null => return Result::Ok(String::new()),
-            NodeType::NString(node) => return node.eval(convert, env, engine, arg_array),
-            NodeType::NIf(node) => return node.eval(convert, env, engine, arg_array),
-            NodeType::NTrim(node) => return node.eval(convert, env, engine, arg_array),
-            NodeType::NForEach(node) => return node.eval(convert, env, engine, arg_array),
-            NodeType::NChoose(node) => return node.eval(convert, env, engine, arg_array),
-            NodeType::NOtherwise(node) => return node.eval(convert, env, engine, arg_array),
-            NodeType::NWhen(node) => return node.eval(convert, env, engine, arg_array),
-            NodeType::NBind(node) => return node.eval(convert, env, engine, arg_array),
-            NodeType::NSet(node) => return node.eval(convert, env, engine, arg_array),
-            NodeType::NWhere(node) => return node.eval(convert, env, engine, arg_array),
-            NodeType::NPrint(node) => return node.eval(convert, env, engine, arg_array),
-            NodeType::NCustom(node) => return node.eval(convert, env, engine, arg_array),
+            NodeType::Null => return Result::Ok(serde_json::Value::Null),
+            NodeType::NString(node) => return node.eval(convert, env, engine, arg_array, arg_sql),
+            NodeType::NIf(node) => return node.eval(convert, env, engine, arg_array, arg_sql),
+            NodeType::NTrim(node) => return node.eval(convert, env, engine, arg_array, arg_sql),
+            NodeType::NForEach(node) => return node.eval(convert, env, engine, arg_array, arg_sql),
+            NodeType::NChoose(node) => return node.eval(convert, env, engine, arg_array, arg_sql),
+            NodeType::NOtherwise(node) => return node.eval(convert, env, engine, arg_array, arg_sql),
+            NodeType::NWhen(node) => return node.eval(convert, env, engine, arg_array, arg_sql),
+            NodeType::NBind(node) => return node.eval(convert, env, engine, arg_array, arg_sql),
+            NodeType::NSet(node) => return node.eval(convert, env, engine, arg_array, arg_sql),
+            NodeType::NWhere(node) => return node.eval(convert, env, engine, arg_array, arg_sql),
+            NodeType::NPrint(node) => return node.eval(convert, env, engine, arg_array, arg_sql),
+            NodeType::NCustom(node) => return node.eval(convert, env, engine, arg_array, arg_sql),
         }
     }
 }
