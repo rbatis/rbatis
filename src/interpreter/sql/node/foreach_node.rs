@@ -21,7 +21,7 @@ impl ForEachNode {
         if !express.contains("in ") {
             return Err(crate::core::Error::from("[rbatis] parser express fail:".to_string() + source));
         }
-        let express = express["for ".len()..].trim();
+        let express = express[Self::name().len()..].trim();
         let in_index = express.find("in ").unwrap();
         let col = express[in_index + "in ".len()..].trim();
         let mut item = express[..in_index].trim();

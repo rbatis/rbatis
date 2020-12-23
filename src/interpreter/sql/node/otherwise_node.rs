@@ -5,6 +5,7 @@ use crate::interpreter::expr::runtime::ExprRuntime;
 use crate::interpreter::sql::ast::RbatisAST;
 use crate::interpreter::sql::node::node::do_child_nodes;
 use crate::interpreter::sql::node::node_type::NodeType;
+use crate::core::Error;
 
 #[derive(Clone, Debug)]
 pub struct OtherwiseNode {
@@ -12,11 +13,22 @@ pub struct OtherwiseNode {
 }
 
 impl OtherwiseNode {
+    pub fn def_name() -> &'static str {
+        "_"
+    }
+
     pub fn from(source: &str, express: &str, childs: Vec<NodeType>) -> Result<Self, crate::core::Error> {
-        let express = express["otherwise".len()..].trim();
-        return Ok(OtherwiseNode {
-            childs,
-        });
+        let source=source.trim();
+        if source.starts_with(Self::def_name()) {
+            return Ok(OtherwiseNode {
+                childs,
+            });
+        } else if source.starts_with(Self::name()) {
+            return Ok(OtherwiseNode {
+                childs,
+            });
+        }
+        return Err(Error::from("[rbaits] OtherwiseNode must start with '_:' or 'otherwise:'"));
     }
 }
 

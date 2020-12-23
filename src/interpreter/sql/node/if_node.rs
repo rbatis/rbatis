@@ -17,7 +17,7 @@ pub struct IfNode {
 
 impl IfNode {
     pub fn from(express: &str, childs: Vec<NodeType>) -> Result<Self, crate::core::Error> {
-        let express = express["if".len()..].trim();
+        let express = express[Self::name().len()..].trim();
         return Ok(IfNode {
             childs: childs,
             test: express.to_string(),

@@ -13,7 +13,7 @@ pub struct SetNode {
 
 impl SetNode {
     pub fn from(source: &str, express: &str, childs: Vec<NodeType>) -> Result<Self, crate::core::Error> {
-        let trim_x = express["set".len()..].trim();
+        let trim_x = express[Self::name().len()..].trim();
         return Ok(SetNode {
             childs
         });

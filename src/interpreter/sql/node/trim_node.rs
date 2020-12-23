@@ -19,7 +19,7 @@ pub struct TrimNode {
 
 impl TrimNode {
     pub fn from(source: &str, express: &str, childs: Vec<NodeType>) -> Result<Self, crate::core::Error> {
-        let express = express["trim ".len()..].trim();
+        let express = express[Self::name().len()..].trim();
         if express.starts_with("'") && express.ends_with("'") {
             let express = express[1..express.len() - 1].trim();
             return Ok(TrimNode {

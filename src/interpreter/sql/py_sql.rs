@@ -106,11 +106,11 @@ impl PyRuntime {
             return Ok(NodeType::NTrim(TrimNode::from(source_str, trim_express, childs)?));
         } else if trim_express.starts_with(ChooseNode::name()) {
             return Ok(NodeType::NChoose(ChooseNode::from(source_str, trim_express, childs)?));
-        } else if trim_express.starts_with(OtherwiseNode::name()) {
+        } else if trim_express.starts_with(OtherwiseNode::def_name()) || trim_express.starts_with(OtherwiseNode::name()) {
             return Ok(NodeType::NOtherwise(OtherwiseNode::from(source_str, trim_express, childs)?));
         } else if trim_express.starts_with(WhenNode::name()) {
             return Ok(NodeType::NWhen(WhenNode::from(source_str, trim_express, childs)?));
-        } else if trim_express.starts_with(BindNode::name()) {
+        } else if trim_express.starts_with(BindNode::def_name()) || trim_express.starts_with(BindNode::name()) {
             return Ok(NodeType::NBind(BindNode::from(source_str, trim_express, childs)?));
         } else if trim_express.starts_with(SetNode::name()) {
             return Ok(NodeType::NSet(SetNode::from(source_str, trim_express, childs)?));
@@ -237,7 +237,7 @@ mod test {
         let s = "
     SELECT * FROM biz_activity
     //判断名称是否null
-    if  name!=null:
+    if name!=null:
       AND delete_flag = #{del}
       AND version = 1
       if  age!=1:
@@ -270,6 +270,8 @@ mod test {
     #[test]
     pub fn test_exec() {
         let s = "SELECT * FROM biz_activity where
+    let info = 'yes':
+    bind infos = 'ok':
     if  name!=null:
       name = #{name}
     AND delete_flag1 = #{del}
@@ -284,6 +286,11 @@ mod test {
       for item in ids:
         #{item},
     )
+    choose:
+        when age==27:
+          AND age = 27
+        _:
+          AND age = 0
     choose:
         when age==27:
           AND age = 27

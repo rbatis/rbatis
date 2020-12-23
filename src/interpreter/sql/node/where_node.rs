@@ -13,7 +13,7 @@ pub struct WhereNode {
 
 impl WhereNode {
     pub fn from(source: &str, express: &str, childs: Vec<NodeType>) -> Result<Self, crate::core::Error> {
-        let express = express["where".len()..].trim();
+        let express = express[Self::name().len()..].trim();
         return Ok(WhereNode {
             childs
         });
