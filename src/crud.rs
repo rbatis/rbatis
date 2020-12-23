@@ -12,7 +12,6 @@ use crate::core::db::DBExecResult;
 use crate::core::db::DriverType;
 use crate::core::Error;
 use crate::core::Result;
-use crate::plugin::logic_delete::LogicAction;
 use crate::plugin::page::{IPageRequest, Page};
 use crate::rbatis::Rbatis;
 use crate::utils::string_util::to_snake_name;
