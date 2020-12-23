@@ -7,7 +7,7 @@ use serde::export::fmt::Display;
 use serde::Serialize;
 use serde_json::{Map, Value};
 
-use crate::core::convert::{StmtConvert, ResultCodec};
+use crate::core::convert::{ResultCodec, StmtConvert};
 use crate::core::db::DBExecResult;
 use crate::core::db::DriverType;
 use crate::core::Error;
@@ -212,25 +212,6 @@ impl<C> Ids<C> for Vec<C> where C: Id {
             }
         }
         vec
-    }
-}
-
-pub trait MapKey<K, V> where V: Serialize + DeserializeOwned {
-    fn map_key(&self, key_name: &str) -> Result<HashMap<K, V>>;
-}
-
-impl<K, V> MapKey<K, V> for Vec<V> where V: Serialize + DeserializeOwned, K: Serialize + DeserializeOwned + Eq + Hash {
-    fn map_key(&self, key_name: &str) -> Result<HashMap<K, V>> {
-        let mut result = serde_json::Map::new();
-        let v = json!(self);
-        let arr = v.as_array().unwrap();
-        for x in arr {
-            if x.is_object() {
-                let key_value = x[key_name].clone();
-                result.insert(key_value.to_string(), x.to_owned());
-            }
-        }
-        return serde_json::from_value(json!(result)).into_result();
     }
 }
 
@@ -754,23 +735,5 @@ mod test {
             )
                 .await.unwrap();
         });
-    }
-
-    #[test]
-    fn test_map_key() {
-        #[derive(Serialize, Deserialize, Clone, Debug)]
-        pub struct Test {
-            pub id: Option<i32>,
-            pub name: Option<String>,
-        }
-        let data = vec![Test {
-            id: Some(1),
-            name: Some("sdfa".to_string()),
-        }, Test {
-            id: Some(2),
-            name: Some("sdfa".to_string()),
-        }];
-        let map: HashMap<i32, Test> = data.map_key("id").unwrap();
-        println!("map:{:?}", map);
     }
 }
