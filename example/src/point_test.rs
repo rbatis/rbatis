@@ -5,6 +5,7 @@ use serde_json::json;
 #[derive(Clone, Debug)]
 pub struct P {
     pub id: i32,
+    ///Postgres Point is not currently supported, but Vec is used instead
     pub po: Vec<u8>,
 }
 
