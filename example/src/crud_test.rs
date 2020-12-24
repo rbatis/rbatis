@@ -1,4 +1,3 @@
-///test CRUD
 #[cfg(test)]
 mod test {
     use bigdecimal::BigDecimal;

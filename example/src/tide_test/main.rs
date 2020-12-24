@@ -1,9 +1,3 @@
-#![allow(unreachable_patterns)]
-#![allow(unused_variables)]
-#![allow(unused_assignments)]
-#![allow(unused_must_use)]
-#![allow(dead_code)]
-
 #[macro_use]
 extern crate lazy_static;
 #[macro_use]
@@ -13,17 +7,7 @@ use chrono::NaiveDateTime;
 use serde_json::{json, Value};
 use tide::Request;
 use rbatis::rbatis::Rbatis;
-
-mod crud_test;
-mod un_support_type_test;
-mod raw_driver_test;
-mod wrapper_test;
-mod page_test;
-mod format_test;
-mod custom_py_sql_test;
-mod macro_test;
-mod raw_identifiers_test;
-mod transaction_test;
+use rbatis::crud::CRUD;
 
 
 ///数据库表模型,支持BigDecimal ,DateTime ,rust基本类型（int,float,uint,string,Vec,Array）
@@ -58,7 +42,6 @@ lazy_static! {
   static ref RB:Rbatis=Rbatis::new();
 }
 
-
 //启动web服务，并且对表执行 count统计
 #[async_std::main]
 async fn main() {
@@ -66,7 +49,7 @@ async fn main() {
     RB.link(MYSQL_URL).await.unwrap();
     let mut app = tide::new();
     app.at("/").get(|_: Request<()>| async move {
-        let v = RB.fetch_prepare::<Value>("", "SELECT count(1) FROM biz_activity where delete_flag = ?;", &vec![json!(1)]).await;
+        let v = RB.list::<BizActivity>("").await;
         Ok(format!("{:?}", v))
     });
     let addr = "0.0.0.0:8000";
