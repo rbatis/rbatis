@@ -9,6 +9,6 @@ pub fn json_join<T, JoinIn>(value: &T, key: &str, join_in: JoinIn) -> Result<Val
     if !arg.is_object() {
         return Err("json_join value must be a object!".to_string());
     }
-    arg.as_object_mut().unwrap().insert(key.to_string(), serde_json::to_value(join_in).unwrap());
+    arg[key] = json!(join_in);
     return Result::Ok(arg);
 }
