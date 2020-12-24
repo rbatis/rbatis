@@ -5,6 +5,7 @@ mod test {
     use rbatis::plugin::page::{Page, PageRequest};
     use rbatis::crud::CRUD;
 
+    lazy_static! { static ref RB:Rbatis=Rbatis::new();}
 
     #[async_std::test]
     pub async fn test_sql_page() {
@@ -31,11 +32,6 @@ mod test {
         let data: Page<BizActivity> = rb.py_fetch_page("", py, &serde_json::json!({   "delete_flag": 1 }), &PageRequest::new(1, 20)).await.unwrap();
         println!("{}", serde_json::to_string(&data).unwrap());
     }
-
-
-    lazy_static! {
-  static ref RB:Rbatis=Rbatis::new();
-}
 
     #[py_sql(RB, "select * from biz_activity where delete_flag = 0
                   if name != '':
