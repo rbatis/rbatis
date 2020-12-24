@@ -3,9 +3,7 @@ mod test {
     use crate::BizActivity;
     use rbatis::rbatis::Rbatis;
 
-    lazy_static! {
-  static ref RB:Rbatis=Rbatis::new();
-}
+    lazy_static! { static ref RB:Rbatis=Rbatis::new();}
 
     #[py_sql(RB, "select * from biz_activity where id = #{name}
                   if name != '':
