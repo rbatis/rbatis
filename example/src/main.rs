@@ -21,7 +21,7 @@ mod wrapper_test;
 mod page_test;
 mod format_test;
 mod custom_py_sql_test;
-mod py_sql_test;
+mod macro_test;
 mod raw_identifiers_test;
 mod transaction_test;
 
