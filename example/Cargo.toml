@@ -14,6 +14,9 @@ path = "src/actix_web_test/main.rs"
 name = "tide-test"
 path = "src/tide_test/main.rs"
 
+[[bin]]
+name = "hyper-test"
+path = "src/hyper_test/main.rs"
 
 [dependencies]
 #serde and base types
