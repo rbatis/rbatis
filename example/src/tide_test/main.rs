@@ -52,7 +52,7 @@ async fn main() {
         let v = RB.list::<BizActivity>("").await;
         Ok(format!("{:?}", v))
     });
-    let addr = "0.0.0.0:8000";
-    println!("http server listen on http://localhost:8000");
+    let addr = "127.0.0.1:8000";
+    println!("http server listen on {}",addr);
     app.listen(addr).await.unwrap();
 }
