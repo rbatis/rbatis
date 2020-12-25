@@ -53,6 +53,6 @@ async fn main() {
         Ok(format!("{:?}", v))
     });
     let addr = "127.0.0.1:8000";
-    println!("http server listen on {}",addr);
+    println!("http server listen on http://{}",addr);
     app.listen(addr).await.unwrap();
 }
