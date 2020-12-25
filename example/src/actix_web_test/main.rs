@@ -35,7 +35,7 @@ lazy_static! {
 
 async fn index() -> impl Responder {
     let v = RB.list::<BizActivity>("").await.unwrap();
-    HttpResponse::Ok().body(serde_json::to_string(&v).unwrap())
+    HttpResponse::Ok().body(serde_json::json!(v).to_string())
 }
 
 #[actix_web::main]

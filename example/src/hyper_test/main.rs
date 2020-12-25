@@ -37,8 +37,7 @@ lazy_static! {
 
 async fn hello(_: Request<Body>) -> Result<Response<Body>, Infallible> {
     let v = RB.list::<BizActivity>("").await.unwrap();
-    let data=serde_json::to_string(&v).unwrap();
-    Ok(Response::new(Body::from(data)))
+    Ok(Response::new(Body::from(serde_json::json!(v).to_string())))
 }
 
 #[tokio::main]

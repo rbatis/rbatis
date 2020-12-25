@@ -50,7 +50,7 @@ async fn main() {
     let mut app = tide::new();
     app.at("/").get(|_: Request<()>| async move {
         let v = RB.list::<BizActivity>("").await;
-        Ok(format!("{:?}", v))
+        Ok(serde_json::json!(v).to_string())
     });
     let addr = "127.0.0.1:8000";
     println!("http server listen on http://{}",addr);
