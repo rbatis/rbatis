@@ -49,7 +49,7 @@ impl RbatisAST for ForEachNode {
     }
     fn eval(&self, convert: &crate::core::db::DriverType, env: &mut Value, engine: &ExprRuntime, arg_array: &mut Vec<Value>) -> Result<String, crate::core::Error> {
         let mut result = String::new();
-        let collection_value = utils::value_util::get_deep_value(self.collection.as_str(), env);
+        let collection_value = engine.eval(self.collection.as_str(),env);
         if collection_value.is_null() {
             return Result::Ok(result);
         }
