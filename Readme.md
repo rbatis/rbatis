@@ -1,4 +1,4 @@
-* [Website-English](https://rbatis.github.io/rbatis.io/#/README_EN)
+* [Website-English](https://rbatis.github.io/rbatis.io/#/en/)
 
 * [官网/文档](https://rbatis.github.io/rbatis.io/)
 
@@ -428,7 +428,7 @@ async fn main() -> std::io::Result<()> {
 
 * Postgres Types Define Please see Doc<br/>
   (中文)https://rbatis.github.io/rbatis.io/#/?id=%e6%95%b0%e6%8d%ae%e5%ba%93%e5%88%97%e6%a0%bc%e5%bc%8f%e5%8c%96%e5%ae%8f
-  (En)https://rbatis.github.io/rbatis.io/#/README_EN?id=database-column-formatting-macro
+  (En)https://rbatis.github.io/rbatis.io/#/en/?id=database-column-formatting-macro
 * Support for DateTime and BigDecimal? <br/>
   Currently supports chrono::NaiveDateTime和bigdecimal::BigDecimal
 * Supports for `async/.await` <br/>
@@ -443,9 +443,9 @@ async fn main() -> std::io::Result<()> {
 * How to select `async/.await` runtime? <br/>
   see https://rbatis.github.io/rbatis.io/
 * column "id" is of type uuid but expression is of type text'? <br/>
-  see https://rbatis.github.io/rbatis.io/#/README_EN?id=database-column-formatting-macro
+  see https://rbatis.github.io/rbatis.io/#/en/?id=database-column-formatting-macro
 * How to use '::uuid','::timestamp' on PostgreSQL? <br/>
-  see https://rbatis.github.io/rbatis.io/#/README_EN?id=database-column-formatting-macro
+  see https://rbatis.github.io/rbatis.io/#/en/?id=database-column-formatting-macro
 
 # changelog
 
