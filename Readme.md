@@ -1,4 +1,4 @@
-* [Website-English](https://rbatis.github.io/rbatis.io/#/en/)
+* [Website](https://rbatis.github.io/rbatis.io/#/en/)
 
 * [官网/文档](https://rbatis.github.io/rbatis.io/)
 
