@@ -445,7 +445,7 @@ mod test {
     use serde::Serialize;
 
     use crate::core::Error;
-    use crate::crud::{CRUD, CRUDEnable, Id, Ids, MapKey};
+    use crate::crud::{CRUD, CRUDEnable, Id, Ids};
     use crate::plugin::logic_delete::RbatisLogicDeletePlugin;
     use crate::plugin::page::{Page, PageRequest};
     use crate::rbatis::Rbatis;
