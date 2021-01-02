@@ -25,15 +25,20 @@ use crate::interpreter::sql::node::string_node::StringNode;
 use crate::interpreter::sql::node::trim_node::TrimNode;
 use crate::interpreter::sql::node::when_node::WhenNode;
 use crate::interpreter::sql::node::where_node::WhereNode;
+use dashmap::DashMap;
 
 /// Py lang,make sure Send+Sync
 #[derive(Debug)]
 pub struct PyRuntime {
-    pub cache: RwLock<HashMap<String, Vec<NodeType>>>,
+    pub cache: DashMap<String, Vec<NodeType>>,
     pub generate: Vec<Box<dyn CustomNodeGenerate>>,
 }
 
 impl PyRuntime {
+
+    pub fn new(generate: Vec<Box<dyn CustomNodeGenerate>>)->Self{
+        Self{ cache: Default::default(), generate: generate }
+    }
     ///eval with cache
     pub fn eval(&self, driver_type: &crate::core::db::DriverType, py_sql: &str, env: &mut Value, engine: &ExprRuntime) -> Result<(String, Vec<serde_json::Value>), Error> {
         if !env.is_object() {
@@ -48,32 +53,20 @@ impl PyRuntime {
     }
     /// parser and cache py data sql,return an vec node type
     pub fn parse_and_cache(&self, arg: &str) -> Result<Vec<NodeType>, crate::core::Error> {
-        let rd = self.cache.try_read();
-        if rd.is_err() {
+        let rd = self.cache.get(arg);
+        if rd.is_none() {
             let nods = PyRuntime::parse(arg, &self.generate)?;
             self.try_cache_into(arg, nods.clone());
             return Ok(nods);
         } else {
-            let rd = rd.unwrap();
-            let nodes = rd.get(&arg.to_string());
-            if nodes.is_some() {
-                return Ok(nodes.unwrap().clone());
-            } else {
-                drop(rd);
-                let nodes = PyRuntime::parse(arg, &self.generate)?;
-                self.try_cache_into(arg, nodes.clone());
-                return Ok(nodes);
-            }
+            let nodes = rd.unwrap();
+            return Ok(nodes.clone());
         }
     }
 
     fn try_cache_into(&self, py: &str, arg: Vec<NodeType>) -> Option<Vec<NodeType>> {
-        let rd = self.cache.try_write();
-        if rd.is_ok() {
-            rd.unwrap().insert(py.to_string(), arg);
-            return None;
-        }
-        return Some(arg);
+        let rd = self.cache.insert(py.to_string(), arg);
+        return rd;
     }
 
     pub fn add_gen<T>(&mut self, arg: T) where T: CustomNodeGenerate + 'static {
@@ -248,6 +241,8 @@ mod test {
     use crate::interpreter::expr::runtime::ExprRuntime;
     use crate::interpreter::sql::node::node::do_child_nodes;
     use crate::interpreter::sql::py_sql::PyRuntime;
+    use serde_json::Value;
+    use crate::utils::bencher::QPS;
 
     #[test]
     pub fn test_py_interpreter_parse() {
@@ -406,5 +401,29 @@ mod test {
         do_child_nodes(&DriverType::Mysql, &pys, &mut env, &mut engine, &mut arg_array, &mut r).unwrap();
         println!("result sql:{}", r.clone());
         println!("arg array:{:?}", arg_array.clone());
+    }
+
+    //cargo test --release --package rbatis --lib interpreter::sql::py_sql::test::test_bench --no-fail-fast -- --exact -Z unstable-options --show-output
+    #[test]
+    fn test_bench() {
+        let runtime = PyRuntime::new(vec![]);
+        let mut engine =ExprRuntime::new();
+
+        //(Windows10 6Core16GBMem) use Time: 916.1591ms ,each:916 ns/op use QPS: 1091470 QPS/s
+        let py_sql="SELECT * FROM biz_activity where
+    if  name!=null:
+      name = #{name}
+    WHERE id  = 'end';";
+        let mut env=serde_json::json!({});
+
+        runtime.eval(&DriverType::Mysql, &py_sql, &mut env, &mut engine).unwrap();
+
+        let total = 1000000;
+        let now = std::time::Instant::now();
+        for _ in 0..total {
+            runtime.eval(&DriverType::Mysql, &py_sql, &mut env, &mut engine).unwrap();
+        }
+        now.time(total);
+        now.qps(total);
     }
 }

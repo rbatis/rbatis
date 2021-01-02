@@ -8,11 +8,13 @@ use crate::interpreter::expr::ast::Node;
 use crate::interpreter::expr::lexer::lexer;
 use crate::interpreter::expr::parser::parse;
 use crate::interpreter::expr::token::TokenMap;
+use dashmap::DashMap;
+use dashmap::mapref::one::Ref;
 
 /// the express engine for  exe code on runtime
 #[derive(Debug)]
 pub struct ExprRuntime {
-    pub expr_cache: RwLock<HashMap<String, Node>>,
+    pub expr_cache: DashMap<String, Node>,
     pub token_map: TokenMap<'static>,
 }
 
@@ -39,29 +41,19 @@ impl ExprRuntime {
     }
 
     /// read from cache,if not exist return null
-    fn cache_read(&self, arg: &str) -> Option<Node> {
-        let cache_read = self.expr_cache.try_read();
-        if cache_read.is_err() {
+    fn cache_read(&self, arg: &str) -> Option<Ref<String, Node>> {
+        let cache_read = self.expr_cache.get(arg);
+        if cache_read.is_none() {
             return Option::None;
         }
         let cache_read = cache_read.unwrap();
-        let r = cache_read.get(arg);
-        return if r.is_none() {
-            Option::None
-        } else {
-            r.cloned()
-        };
+        return Some(cache_read);
     }
 
     /// save to cache,if fail nothing to do.
-    fn cache_insert(&self, key: String, node: Node) -> Result<(), crate::core::Error> {
-        let cache_write = self.expr_cache.try_write();
-        if cache_write.is_err() {
-            return Err(crate::core::Error::from(cache_write.err().unwrap().to_string()));
-        }
-        let mut cache_write = cache_write.unwrap();
-        cache_write.insert(key, node);
-        return Ok(());
+    fn cache_insert(&self, key: String, node: Node) -> Option<Node> {
+        let cache_write = self.expr_cache.insert(key, node);
+        return cache_write;
     }
 
     /// no cache mode to run engine
@@ -72,3 +64,26 @@ impl ExprRuntime {
     }
 }
 
+
+#[cfg(test)]
+mod test {
+    use crate::interpreter::expr::runtime::ExprRuntime;
+    use crate::utils::bencher::QPS;
+
+    //cargo test --release --package rbatis --lib interpreter::expr::runtime::test::test_bench --no-fail-fast -- --exact -Z unstable-options --show-output
+    #[test]
+    fn test_bench() {
+        let runtime = ExprRuntime::new();
+        runtime.eval("1+1", &serde_json::Value::Null);
+        runtime.eval("1+1", &serde_json::Value::Null);
+
+        let total = 1000000;
+        let now = std::time::Instant::now();
+        for _ in 0..total {
+            let r = runtime.eval("1+1", &serde_json::Value::Null).unwrap();//use Time: 1.5752844s ,each:1575 ns/op use QPS: 634793 QPS/s
+            //println!("{}",r);
+        }
+        now.time(total);
+        now.qps(total);
+    }
+}
