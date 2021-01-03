@@ -532,7 +532,7 @@ impl DBConnectOption {
             #[cfg(feature = "mysql")]
                 {
                     let mut conn_opt = MySqlConnectOptions::from_str(driver).into_result()?;
-                    if !driver.contains("ssl-mode") && !driver.contains("sslmode") {
+                    if !driver.contains("ssl-mode") {
                         conn_opt = conn_opt.ssl_mode(MySqlSslMode::Disabled);
                     }
                     return Self::from_mysql(&conn_opt);
