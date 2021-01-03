@@ -33,7 +33,7 @@ use crate::Error;
 use crate::Result;
 use crate::runtime::Mutex;
 
-#[derive(Debug,Clone)]
+#[derive(Debug, Clone)]
 pub struct DBPool {
     pub driver_type: DriverType,
     #[cfg(feature = "mysql")]
@@ -442,7 +442,7 @@ impl DBPool {
 
 /// DBConnectOption all of support Database Options abstract struct.
 /// use from(url:&str) or use from_mysql(),from_pg().... or other method init this.
-#[derive(Debug,Clone)]
+#[derive(Debug, Clone)]
 pub struct DBConnectOption {
     pub driver_type: DriverType,
     #[cfg(feature = "mysql")]
@@ -532,7 +532,7 @@ impl DBConnectOption {
             #[cfg(feature = "mysql")]
                 {
                     let mut conn_opt = MySqlConnectOptions::from_str(driver).into_result()?;
-                    if !driver.contains("ssl-mode") {
+                    if !driver.contains("ssl-mode") && !driver.contains("sslmode") {
                         conn_opt = conn_opt.ssl_mode(MySqlSslMode::Disabled);
                     }
                     return Self::from_mysql(&conn_opt);
@@ -545,7 +545,7 @@ impl DBConnectOption {
             #[cfg(feature = "postgres")]
                 {
                     let mut conn_opt = PgConnectOptions::from_str(driver).into_result()?;
-                    if !driver.contains("ssl-mode") {
+                    if !driver.contains("ssl-mode") && !driver.contains("sslmode") {
                         conn_opt = conn_opt.ssl_mode(PgSslMode::Disable);
                     }
                     return Self::from_pg(&conn_opt);
