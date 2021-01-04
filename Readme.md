@@ -244,8 +244,8 @@ println ! ("{}", r.err().unwrap().to_string());
 ```rust
         let mut rb = Rbatis::new();
 rb.link("mysql://root:123456@localhost:3306/test").await.unwrap();
-//框架默认RbatisPagePlugin，如果需要自定义的话需要结构体 必须实现impl PagePlugin for Plugin***{}，例如：
-//rb.page_plugin = Box::new(RbatisPagePlugin {});
+//框架默认RbatisReplacePagePlugin，如果需要自定义的话需要结构体 必须实现impl PagePlugin for Plugin***{}，例如：
+//rb.page_plugin = Box::new(RbatisReplacePagePlugin {});
 
 let req = PageRequest::new(1, 20);
 let wraper= rb.new_wrapper()
