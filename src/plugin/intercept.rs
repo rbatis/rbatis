@@ -34,23 +34,8 @@ impl RbatisDynTableNameIntercept {
 
 impl SqlIntercept for RbatisDynTableNameIntercept {
     fn do_intercept(&self, rb: &Rbatis, sql: &mut String, args: &mut Vec<Value>, is_prepared_sql: bool) -> Result<(), Error> {
-        let mut index=-1;
-        for x in args {
-            index+=1;
-            if x.is_string() {
-                let x = x.as_str().unwrap();
-                if x.starts_with("dyn_table(") && x.ends_with(")") && x.contains(",") {
-                    let replace = x["dyn_table(".len()..(x.len() - 1) as usize].to_string();
-                    let sp: Vec<&str> = replace.split(",").collect();
-                    if sp.len() != 2 {
-                        continue;
-                    }
-                    *sql = sql.replace(sp[0], sp[1]);
-                    //TODO delete '?','$1'
-                    //sql.rfind(rb.driver_type()?.stmt_convert(index))
-                }
-            }
-        }
+        //TODO
+        unimplemented!();
         return Ok(());
     }
 }
