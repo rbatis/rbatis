@@ -36,6 +36,6 @@ impl SqlIntercept for RbatisDynTableNameIntercept {
     fn do_intercept(&self, rb: &Rbatis, sql: &mut String, args: &mut Vec<Value>, is_prepared_sql: bool) -> Result<(), Error> {
         //TODO
         unimplemented!();
-        return Ok(());
+        //return Ok(());
     }
 }
