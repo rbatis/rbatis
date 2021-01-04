@@ -305,7 +305,7 @@ impl PagePlugin for RbatisReplacePagePlugin {
         sql = sql.replace(" from ", " FROM ");
         sql = sql.trim().to_string();
         if !sql.starts_with("SELECT ") && !sql.contains("FROM ") {
-            return Err(crate::core::Error::from("[rbatis] make_page_sql() sql must contains 'select ' And 'from '"));
+            return Err(crate::core::Error::from("[rbatis] make_page_sql() sql must contains 'SELECT ' And 'FROM '"));
         }
         //count sql
         let mut count_sql = sql.clone();
@@ -346,7 +346,7 @@ impl PagePlugin for RbatisPackPagePlugin {
         sql = sql.replace(" from ", " FROM ");
         sql = sql.trim().to_string();
         if !sql.starts_with("SELECT ") && !sql.contains("FROM ") {
-            return Err(crate::core::Error::from("[rbatis] make_page_sql() sql must contains 'select ' And 'from '"));
+            return Err(crate::core::Error::from("[rbatis] make_page_sql() sql must contains 'SELECT ' And 'FROM '"));
         }
         //count sql
         let mut count_sql = sql.clone();
