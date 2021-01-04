@@ -275,28 +275,22 @@ impl<T> ToString for Page<T> where T: Send + Sync + Serialize {
 #[derive(Copy, Clone, Debug)]
 pub struct RbatisReplacePagePlugin {}
 
+
 impl RbatisReplacePagePlugin {
     fn make_count_sql(&self, sql: &str) -> String {
-        let sql: Vec<&str> = sql.split(" FROM ").collect();
-        let mut where_sql = sql[1].clone().to_owned();
+        let mut from_index = sql.find(" FROM ");
+        if from_index.is_some() {
+            from_index = Option::Some(from_index.unwrap() + " FROM ".len());
+        }
+        let mut where_sql = sql[from_index.unwrap_or(0)..sql.len()].to_string();
         where_sql = where_sql.replace(" order by ", " ORDER BY ");
         where_sql = where_sql.replace(" limit ", " LIMIT ");
         //remove order by
         if where_sql.contains(" ORDER BY ") {
-            let where_sqls: Vec<&str> = where_sql.split(" ORDER BY ").collect();
-            let mut new_sql = String::new();
-            for item in &where_sqls[0..where_sqls.len() - 1].to_vec() {
-                new_sql.push_str(item);
-            }
-            where_sql = new_sql;
+            where_sql = where_sql[0..where_sql.rfind(" ORDER BY ").unwrap_or(where_sql.len())].to_string();
         }
         if where_sql.contains(" LIMIT ") {
-            let where_sqls: Vec<&str> = where_sql.split(" LIMIT ").collect();
-            let mut new_sql = String::new();
-            for item in &where_sqls[0..where_sqls.len() - 1].to_vec() {
-                new_sql.push_str(item);
-            }
-            where_sql = new_sql;
+            where_sql = where_sql[0..where_sql.rfind(" LIMIT ").unwrap_or(where_sql.len())].to_string();
         }
         format!("SELECT count(1) FROM {}", where_sql)
     }
@@ -377,7 +371,7 @@ impl PagePlugin for RbatisPackPagePlugin {
 
 #[cfg(test)]
 mod test {
-    use crate::plugin::page::{IPage, IPageRequest, Page};
+    use crate::plugin::page::{IPage, IPageRequest, Page, RbatisReplacePagePlugin};
 
     #[test]
     pub fn test_page() {
@@ -392,5 +386,12 @@ mod test {
         println!("get_pages:{}", page.get_pages());
         println!("page_string:{}", page.to_string());
         assert_eq!(page.offset(), 10);
+    }
+
+    #[test]
+    fn test_make_count() {
+        let plugin = RbatisReplacePagePlugin {};
+        let sql = plugin.make_count_sql("biz_activity where id = 1 and ORDER BY id DESC and ORDER BY id DESC");
+        println!("sql:{}", sql);
     }
 }
