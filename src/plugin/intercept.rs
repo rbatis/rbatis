@@ -5,6 +5,7 @@ use rbatis_core::Error;
 
 use crate::crud::CRUDEnable;
 use crate::rbatis::Rbatis;
+use crate::core::convert::StmtConvert;
 
 /// sql intercept
 pub trait SqlIntercept: Send + Sync + Debug {
@@ -33,7 +34,9 @@ impl RbatisDynTableNameIntercept {
 
 impl SqlIntercept for RbatisDynTableNameIntercept {
     fn do_intercept(&self, rb: &Rbatis, sql: &mut String, args: &mut Vec<Value>, is_prepared_sql: bool) -> Result<(), Error> {
+        let mut index=-1;
         for x in args {
+            index+=1;
             if x.is_string() {
                 let x = x.as_str().unwrap();
                 if x.starts_with("dyn_table(") && x.ends_with(")") && x.contains(",") {
@@ -43,6 +46,8 @@ impl SqlIntercept for RbatisDynTableNameIntercept {
                         continue;
                     }
                     *sql = sql.replace(sp[0], sp[1]);
+                    //TODO delete '?','$1'
+                    //sql.rfind(rb.driver_type()?.stmt_convert(index))
                 }
             }
         }
