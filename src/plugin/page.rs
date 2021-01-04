@@ -17,66 +17,6 @@ pub trait PagePlugin: Send + Sync + Debug {
     }
     /// return 2 sql for select ,  (count_sql,select_sql)
     fn make_page_sql(&self, driver_type: &DriverType, context_id: &str, sql: &str, args: &Vec<serde_json::Value>, page: &dyn IPageRequest) -> Result<(String, String), crate::core::Error>;
-
-    /// auto make count sql,also you can rewrite this method
-    fn make_count_sql(&self, sql: &str) -> String {
-        let sql: Vec<&str> = sql.split(" FROM ").collect();
-        let mut where_sql = sql[1].clone().to_owned();
-        //remove order by
-        if where_sql.contains(" ORDER BY ") || where_sql.contains(" order by ") {
-            where_sql.replace(" order by ", " ORDER BY ");
-            let where_sqls: Vec<&str> = where_sql.split(" ORDER BY ").collect();
-            let mut new_sql = String::new();
-            for item in &where_sqls[0..where_sqls.len() - 1].to_vec() {
-                new_sql.push_str(item);
-            }
-            where_sql = new_sql;
-        }
-        if where_sql.contains(" LIMIT ") || where_sql.contains(" limit ") {
-            where_sql.replace(" limit ", " LIMIT ");
-            let where_sqls: Vec<&str> = where_sql.split(" LIMIT ").collect();
-            let mut new_sql = String::new();
-            for item in &where_sqls[0..where_sqls.len() - 1].to_vec() {
-                new_sql.push_str(item);
-            }
-            where_sql = new_sql;
-        }
-        format!("SELECT count(1) FROM {}", where_sql)
-    }
-}
-
-#[derive(Copy, Clone, Debug)]
-pub struct RbatisPagePlugin {}
-
-
-impl PagePlugin for RbatisPagePlugin {
-    fn make_page_sql<>(&self, driver_type: &DriverType, context_id: &str, sql: &str, args: &Vec<Value>, page: &dyn IPageRequest) -> Result<(String, String), crate::core::Error> {
-        //default sql
-        let mut sql = sql.to_owned();
-        sql = sql.replace("select ", "SELECT ");
-        sql = sql.replace(" from ", " FROM ");
-        sql = sql.trim().to_string();
-        if !sql.starts_with("SELECT ") && !sql.contains("FROM ") {
-            return Err(crate::core::Error::from("[rbatis] make_page_sql() sql must contains 'select ' And 'from '"));
-        }
-        //count sql
-        let mut count_sql = sql.clone();
-        if page.is_serch_count() {
-            //make count sql
-            count_sql = self.make_count_sql(&count_sql);
-        }
-        //limit sql
-        let limit_sql = driver_type.page_limit_sql(page.offset(), page.get_size())?;
-        match driver_type {
-            DriverType::Mssql => {
-                sql = format!("SELECT RB_DATA.*, 0 AS RB_DATA_ORDER FROM ({})RB_DATA ORDER BY RB_DATA_ORDER {}", sql, limit_sql);
-            }
-            _ => {
-                sql = sql + limit_sql.as_str();
-            }
-        }
-        return Ok((count_sql, sql));
-    }
 }
 
 
@@ -330,6 +270,110 @@ impl<T> ToString for Page<T> where T: Send + Sync + Serialize {
         }
     }
 }
+
+///use Replace page plugin
+#[derive(Copy, Clone, Debug)]
+pub struct RbatisReplacePagePlugin {}
+
+impl RbatisReplacePagePlugin {
+    fn make_count_sql(&self, sql: &str) -> String {
+        let sql: Vec<&str> = sql.split(" FROM ").collect();
+        let mut where_sql = sql[1].clone().to_owned();
+        where_sql = where_sql.replace(" order by ", " ORDER BY ");
+        where_sql = where_sql.replace(" limit ", " LIMIT ");
+        //remove order by
+        if where_sql.contains(" ORDER BY ") {
+            let where_sqls: Vec<&str> = where_sql.split(" ORDER BY ").collect();
+            let mut new_sql = String::new();
+            for item in &where_sqls[0..where_sqls.len() - 1].to_vec() {
+                new_sql.push_str(item);
+            }
+            where_sql = new_sql;
+        }
+        if where_sql.contains(" LIMIT ") {
+            let where_sqls: Vec<&str> = where_sql.split(" LIMIT ").collect();
+            let mut new_sql = String::new();
+            for item in &where_sqls[0..where_sqls.len() - 1].to_vec() {
+                new_sql.push_str(item);
+            }
+            where_sql = new_sql;
+        }
+        format!("SELECT count(1) FROM {}", where_sql)
+    }
+}
+
+
+impl PagePlugin for RbatisReplacePagePlugin {
+    fn make_page_sql<>(&self, driver_type: &DriverType, context_id: &str, sql: &str, args: &Vec<Value>, page: &dyn IPageRequest) -> Result<(String, String), crate::core::Error> {
+        //default sql
+        let mut sql = sql.to_owned();
+        sql = sql.replace("select ", "SELECT ");
+        sql = sql.replace(" from ", " FROM ");
+        sql = sql.trim().to_string();
+        if !sql.starts_with("SELECT ") && !sql.contains("FROM ") {
+            return Err(crate::core::Error::from("[rbatis] make_page_sql() sql must contains 'select ' And 'from '"));
+        }
+        //count sql
+        let mut count_sql = sql.clone();
+        if page.is_serch_count() {
+            //make count sql
+            count_sql = self.make_count_sql(&count_sql);
+        }
+        //limit sql
+        let limit_sql = driver_type.page_limit_sql(page.offset(), page.get_size())?;
+        match driver_type {
+            DriverType::Mssql => {
+                sql = format!("SELECT RB_DATA.*, 0 AS RB_DATA_ORDER FROM ({})RB_DATA ORDER BY RB_DATA_ORDER {}", sql, limit_sql);
+            }
+            _ => {
+                sql = sql + limit_sql.as_str();
+            }
+        }
+        return Ok((count_sql, sql));
+    }
+}
+
+///use pack sql page plugin
+#[derive(Copy, Clone, Debug)]
+pub struct RbatisPackPagePlugin {}
+
+impl RbatisPackPagePlugin {
+    fn make_count_sql(&self, sql: &str) -> String {
+        format!("SELECT count(1) FROM ({}) a", sql)
+    }
+}
+
+
+impl PagePlugin for RbatisPackPagePlugin {
+    fn make_page_sql<>(&self, driver_type: &DriverType, context_id: &str, sql: &str, args: &Vec<Value>, page: &dyn IPageRequest) -> Result<(String, String), crate::core::Error> {
+        //default sql
+        let mut sql = sql.to_owned();
+        sql = sql.replace("select ", "SELECT ");
+        sql = sql.replace(" from ", " FROM ");
+        sql = sql.trim().to_string();
+        if !sql.starts_with("SELECT ") && !sql.contains("FROM ") {
+            return Err(crate::core::Error::from("[rbatis] make_page_sql() sql must contains 'select ' And 'from '"));
+        }
+        //count sql
+        let mut count_sql = sql.clone();
+        if page.is_serch_count() {
+            //make count sql
+            count_sql = self.make_count_sql(&count_sql);
+        }
+        //limit sql
+        let limit_sql = driver_type.page_limit_sql(page.offset(), page.get_size())?;
+        match driver_type {
+            DriverType::Mssql => {
+                sql = format!("SELECT RB_DATA.*, 0 AS RB_DATA_ORDER FROM ({})RB_DATA ORDER BY RB_DATA_ORDER {}", sql, limit_sql);
+            }
+            _ => {
+                sql = sql + limit_sql.as_str();
+            }
+        }
+        return Ok((count_sql, sql));
+    }
+}
+
 
 #[cfg(test)]
 mod test {
