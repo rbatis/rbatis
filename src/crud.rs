@@ -158,7 +158,6 @@ impl<T> CRUDEnable for Option<T> where T: CRUDEnable {
     fn formats(driver_type: &DriverType) -> HashMap<String, String> {
         T::formats(driver_type)
     }
-
     fn make_column_value_map(&self, db_type: &DriverType) -> Result<serde_json::Map<String, Value>> {
         if self.is_none() {
             return Err(crate::core::Error::from("[rbatis] can not make_column_value_map() for None value!"));
@@ -297,9 +296,10 @@ impl CRUD for Rbatis {
     /// remove database record by id
     async fn remove_by_id<T>(&self, context_id: &str, id: &T::IdType) -> Result<u64> where T: CRUDEnable {
         let mut sql = String::new();
-        let id_str = T::do_format_column(&self.driver_type()?, &T::id_name(), self.driver_type()?.stmt_convert(0));
+        let driver_type = &self.driver_type()?;
+        let id_str = T::do_format_column(&driver_type, &T::id_name(), driver_type.stmt_convert(0));
         if self.logic_plugin.is_some() {
-            sql = self.logic_plugin.as_ref().unwrap().create_remove_sql(&self.driver_type()?, T::table_name().as_str(), &T::table_columns(), format!(" WHERE id = {}", id_str).as_str())?;
+            sql = self.logic_plugin.as_ref().unwrap().create_remove_sql(&driver_type, T::table_name().as_str(), &T::table_columns(), format!(" WHERE id = {}", id_str).as_str())?;
         } else {
             sql = format!("DELETE FROM {} WHERE {} = {}", T::table_name(), T::id_name(), id_str);
         }
@@ -323,10 +323,9 @@ impl CRUD for Rbatis {
     async fn update_by_wrapper<T>(&self, context_id: &str, arg: &T, w: &Wrapper, update_null_value: bool) -> Result<u64> where T: CRUDEnable {
         let w = w.clone().check()?;
         let mut args = vec![];
-        let map = arg.make_column_value_map(&self.driver_type()?)?;
         let driver_type = &self.driver_type()?;
+        let map = arg.make_column_value_map(&driver_type)?;
 
-        let chain = T::formats(&self.driver_type()?);
         let mut sets = String::new();
         for (column, v) in map {
             //filter id
@@ -337,7 +336,7 @@ impl CRUD for Rbatis {
             if !update_null_value && v.is_null() {
                 continue;
             }
-            sets.push_str(format!(" {} = {},", column, T::do_format_column(&self.driver_type()?, &column, driver_type.stmt_convert(args.len()))).as_str());
+            sets.push_str(format!(" {} = {},", column, T::do_format_column(&driver_type, &column, driver_type.stmt_convert(args.len()))).as_str());
             args.push(v);
         }
         sets.pop();
