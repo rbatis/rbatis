@@ -65,7 +65,7 @@ mod test {
         let plugin_name = std::any::type_name::<RbatisPackPagePlugin>().to_string();
         println!("plugin_name:{}", &plugin_name);
         let req = PageRequest::new_plugin(plugin_name, 1, 10, 0);
-        let data: Page<BizActivity> = rb.fetch_page_by_wrapper("RbatisPackPagePlugin", &wraper, &req).await.unwrap();
+        let data: Page<BizActivity> = rb.fetch_page_by_wrapper("", &wraper, &req).await.unwrap();
         println!("{}", serde_json::to_string(&data).unwrap());
     }
 }
