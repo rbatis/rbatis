@@ -100,10 +100,10 @@ impl PageRequest {
     }
 
     pub fn new_total(current: u64, size: u64, total: u64) -> Self {
-        return PageRequest::new_plugin(String::new(),current,size,total);
+        return PageRequest::new_plugin(String::new(), current, size, total);
     }
 
-    pub fn new_plugin(plugin:String,current: u64, size: u64, total: u64) -> Self {
+    pub fn new_plugin(plugin: String, current: u64, size: u64, total: u64) -> Self {
         let mut current = current;
         if current < 1 {
             current = 1;
@@ -129,7 +129,6 @@ impl Default for PageRequest {
 }
 
 impl IPageRequest for PageRequest {
-
     fn get_size(&self) -> u64 {
         self.size
     }
@@ -379,6 +378,7 @@ impl PagePlugin for RbatisPackPagePlugin {
 ///mix page plugin
 #[derive(Debug)]
 pub struct RbatisPagePlugin {
+    pub pack: RbatisPackPagePlugin,
     pub replace: RbatisReplacePagePlugin,
 }
 
@@ -391,6 +391,7 @@ impl RbatisPagePlugin {
 impl Default for RbatisPagePlugin {
     fn default() -> Self {
         Self {
+            pack: RbatisPackPagePlugin {},
             replace: RbatisReplacePagePlugin {},
         }
     }
@@ -398,7 +399,11 @@ impl Default for RbatisPagePlugin {
 
 impl PagePlugin for RbatisPagePlugin {
     fn make_page_sql(&self, driver_type: &DriverType, context_id: &str, sql: &str, args: &Vec<Value>, page: &dyn IPageRequest) -> Result<(String, String), Error> {
-        return self.replace.make_page_sql(driver_type, context_id, &sql, args, page);
+        if sql.contains("GROUP BY") || sql.contains("group by") || sql.contains("Group By") {
+            return self.pack.make_page_sql(driver_type, context_id, sql, args, page);
+        } else {
+            return self.replace.make_page_sql(driver_type, context_id, sql, args, page);
+        }
     }
 }
 
