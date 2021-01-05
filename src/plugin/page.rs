@@ -6,6 +6,8 @@ use serde::de::DeserializeOwned;
 use serde::export::fmt::Debug;
 use serde_json::Value;
 
+use rbatis_core::Error;
+
 use crate::core::db::DriverType;
 use crate::sql::PageLimit;
 
@@ -365,6 +367,39 @@ impl PagePlugin for RbatisPackPagePlugin {
             }
         }
         return Ok((count_sql, sql));
+    }
+}
+
+
+///mix page plugin
+#[derive(Copy, Clone, Debug)]
+pub struct RbatisPagePlugin {
+    pub pack: RbatisPackPagePlugin,
+    pub replace: RbatisReplacePagePlugin,
+}
+
+impl RbatisPagePlugin {
+    pub fn new() -> Self {
+        return Self::default();
+    }
+}
+
+impl Default for RbatisPagePlugin {
+    fn default() -> Self {
+        Self {
+            pack: RbatisPackPagePlugin {},
+            replace: RbatisReplacePagePlugin {},
+        }
+    }
+}
+
+impl PagePlugin for RbatisPagePlugin {
+    fn make_page_sql(&self, driver_type: &DriverType, context_id: &str, sql: &str, args: &Vec<Value>, page: &dyn IPageRequest) -> Result<(String, String), Error> {
+        if sql.contains("GROUP BY") || sql.contains("group by") {
+            return self.pack.make_page_sql(driver_type, context_id, sql, args, page);
+        } else {
+            return self.replace.make_page_sql(driver_type, context_id, sql, args, page);
+        }
     }
 }
 

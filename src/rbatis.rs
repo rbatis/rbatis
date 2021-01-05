@@ -25,7 +25,7 @@ use crate::interpreter::sql::py_sql::PyRuntime;
 use crate::plugin::intercept::SqlIntercept;
 use crate::plugin::log::{LogPlugin, RbatisLog};
 use crate::plugin::logic_delete::{LogicDelete, RbatisLogicDeletePlugin};
-use crate::plugin::page::{IPage, IPageRequest, Page, PagePlugin, RbatisReplacePagePlugin};
+use crate::plugin::page::{IPage, IPageRequest, Page, PagePlugin, RbatisPagePlugin};
 use crate::sql::PageLimit;
 use crate::tx::{TxGuard, TxManager, TxState};
 use crate::utils::error_util::ToResult;
@@ -100,7 +100,7 @@ impl Default for RbatisOption {
             tx_lock_wait_timeout: Duration::from_secs(60),
             tx_check_interval: Duration::from_secs(1),
             generate: vec![],
-            page_plugin: Box::new(RbatisReplacePagePlugin {}),
+            page_plugin: Box::new(RbatisPagePlugin::new()),
             sql_intercepts: vec![],
             logic_plugin: None,
             log_plugin: Arc::new(Box::new(RbatisLog::default()) as Box<dyn LogPlugin>),
