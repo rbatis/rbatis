@@ -46,4 +46,16 @@ mod test {
         let a = py_select_page(&PageRequest::new(1, 10), "test").await.unwrap();
         println!("{:?}", a);
     }
+
+    #[py_sql(RB, "select * from biz_activity group by id")]
+    async fn group_by(page_req: &PageRequest) -> Page<BizActivity> {}
+
+    #[async_std::test]
+    pub async fn test_group_by_page() {
+        fast_log::init_log("requests.log", 1000, log::Level::Info, None, true);
+        //use static ref
+        RB.link("mysql://root:123456@localhost:3306/test").await.unwrap();
+        let a = group_by(&PageRequest::new(1, 10)).await.unwrap();
+        println!("{:?}", a);
+    }
 }
