@@ -395,10 +395,12 @@ impl Default for RbatisPagePlugin {
 
 impl PagePlugin for RbatisPagePlugin {
     fn make_page_sql(&self, driver_type: &DriverType, context_id: &str, sql: &str, args: &Vec<Value>, page: &dyn IPageRequest) -> Result<(String, String), Error> {
-        if sql.contains("GROUP BY") || sql.contains("group by") {
-            return self.pack.make_page_sql(driver_type, context_id, sql, args, page);
+        let replace_sql = sql.replace("Group By", "GROUP BY")
+            .replace("group by", "GROUP BY");
+        if replace_sql.contains("GROUP BY") {
+            return self.pack.make_page_sql(driver_type, context_id, &sql, args, page);
         } else {
-            return self.replace.make_page_sql(driver_type, context_id, sql, args, page);
+            return self.replace.make_page_sql(driver_type, context_id, &sql, args, page);
         }
     }
 }
