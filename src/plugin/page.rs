@@ -24,6 +24,7 @@ pub trait PagePlugin: Send + Sync + Debug {
 
 ///Page interface, support get_pages() and offset()
 pub trait IPageRequest: Send + Sync {
+    fn plugin(&self) -> &str;
     fn get_size(&self) -> u64;
     fn get_current(&self) -> u64;
     fn get_total(&self) -> u64;
@@ -65,6 +66,7 @@ pub trait IPage<T>: IPageRequest {
 
 #[derive(Serialize, Deserialize, Clone, Debug)]
 pub struct Page<T> {
+    pub plugin: String,
     ///data
     pub records: Vec<T>,
     ///total num
@@ -88,6 +90,8 @@ pub struct PageRequest {
     ///current index
     pub current: u64,
     pub serch_count: bool,
+    ///page plugin
+    pub plugin: String,
 }
 
 impl PageRequest {
@@ -109,6 +113,7 @@ impl PageRequest {
             size,
             current,
             serch_count: true,
+            plugin: String::new(),
         };
     }
 }
@@ -120,11 +125,16 @@ impl Default for PageRequest {
             size: 10,
             current: 1,
             serch_count: true,
+            plugin: "".to_string(),
         };
     }
 }
 
 impl IPageRequest for PageRequest {
+    fn plugin(&self) -> &str {
+        &self.plugin
+    }
+
     fn get_size(&self) -> u64 {
         self.size
     }
@@ -181,6 +191,7 @@ impl<T> Page<T> {
     pub fn new_total(current: u64, size: u64, total: u64) -> Self {
         if current < 1 {
             return Self {
+                plugin: "".to_string(),
                 total,
                 pages: 0,
                 size,
@@ -190,6 +201,7 @@ impl<T> Page<T> {
             };
         }
         return Self {
+            plugin: "".to_string(),
             total,
             pages: 0,
             size,
@@ -203,6 +215,7 @@ impl<T> Page<T> {
 impl<T> Default for Page<T> {
     fn default() -> Self {
         return Page {
+            plugin: "".to_string(),
             records: vec![],
             total: 0,
             pages: 0,
@@ -215,6 +228,10 @@ impl<T> Default for Page<T> {
 
 impl<T> IPageRequest for Page<T>
     where T: Send + Sync {
+    fn plugin(&self) -> &str {
+        &self.plugin
+    }
+
     fn get_size(&self) -> u64 {
         self.size
     }
@@ -372,9 +389,9 @@ impl PagePlugin for RbatisPackPagePlugin {
 
 
 ///mix page plugin
-#[derive(Copy, Clone, Debug)]
+#[derive(Debug)]
 pub struct RbatisPagePlugin {
-    pub pack: RbatisPackPagePlugin,
+    pub plugins: Vec<Box<dyn PagePlugin>>,
     pub replace: RbatisReplacePagePlugin,
 }
 
@@ -387,7 +404,7 @@ impl RbatisPagePlugin {
 impl Default for RbatisPagePlugin {
     fn default() -> Self {
         Self {
-            pack: RbatisPackPagePlugin {},
+            plugins: vec![],
             replace: RbatisReplacePagePlugin {},
         }
     }
@@ -395,13 +412,12 @@ impl Default for RbatisPagePlugin {
 
 impl PagePlugin for RbatisPagePlugin {
     fn make_page_sql(&self, driver_type: &DriverType, context_id: &str, sql: &str, args: &Vec<Value>, page: &dyn IPageRequest) -> Result<(String, String), Error> {
-        let replace_sql = sql.replace("Group By", "GROUP BY")
-            .replace("group by", "GROUP BY");
-        if replace_sql.contains("GROUP BY") {
-            return self.pack.make_page_sql(driver_type, context_id, &sql, args, page);
-        } else {
-            return self.replace.make_page_sql(driver_type, context_id, &sql, args, page);
+        for x in &self.plugins {
+            if x.name().eq(page.plugin()) {
+                return x.make_page_sql(driver_type, context_id, &sql, args, page);
+            }
         }
+        return self.replace.make_page_sql(driver_type, context_id, &sql, args, page);
     }
 }
 
