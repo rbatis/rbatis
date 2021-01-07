@@ -3,7 +3,7 @@ mod test {
     use rbatis::interpreter::sql::ast::RbatisAST;
     use rbatis::core::db::DriverType;
     use serde_json::Value;
-    use rbatis::interpreter::sql::node::proxy_node::{CustomNodeGenerate, ProxyNode};
+    use rbatis::interpreter::sql::node::proxy_node::{NodeFactory, ProxyNode};
     use rbatis::core::Error;
     use rbatis::interpreter::sql::node::node_type::NodeType;
     use rbatis::rbatis::Rbatis;
@@ -26,10 +26,10 @@ mod test {
     }
 
     #[derive(Debug)]
-    pub struct MyGen {}
+    pub struct MyNodeFactory {}
 
-    impl CustomNodeGenerate for MyGen {
-        fn generate(&self, express: &str, child_nodes: Vec<NodeType>) -> Result<Option<ProxyNode>, Error> {
+    impl NodeFactory for MyNodeFactory {
+        fn try_new(&self, express: &str, child_nodes: Vec<NodeType>) -> Result<Option<ProxyNode>, Error> {
             if express.starts_with(MyNode::name()) {
                 return Ok(Option::from(ProxyNode::from(MyNode {}, child_nodes)));
             }
@@ -43,7 +43,7 @@ mod test {
         fast_log::init_log("requests.log", 1000, log::Level::Info, None, true);
         let mut rb = Rbatis::new();
         rb.link("mysql://root:123456@localhost:3306/test").await.unwrap();
-        rb.runtime_py.add_gen(MyGen {});
+        rb.runtime_py.add_gen(MyNodeFactory {});
         let py = "
     SELECT * FROM biz_activity
     WHERE delete_flag = 0

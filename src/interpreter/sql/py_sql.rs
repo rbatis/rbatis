@@ -19,7 +19,7 @@ use crate::interpreter::sql::node::node::do_child_nodes;
 use crate::interpreter::sql::node::node_type::NodeType;
 use crate::interpreter::sql::node::otherwise_node::OtherwiseNode;
 use crate::interpreter::sql::node::print_node::PrintNode;
-use crate::interpreter::sql::node::proxy_node::{CustomNodeGenerate, ProxyNode};
+use crate::interpreter::sql::node::proxy_node::{NodeFactory, ProxyNode};
 use crate::interpreter::sql::node::set_node::SetNode;
 use crate::interpreter::sql::node::string_node::StringNode;
 use crate::interpreter::sql::node::trim_node::TrimNode;
@@ -31,12 +31,12 @@ use dashmap::DashMap;
 #[derive(Debug)]
 pub struct PyRuntime {
     pub cache: DashMap<String, Vec<NodeType>>,
-    pub generate: Vec<Box<dyn CustomNodeGenerate>>,
+    pub generate: Vec<Box<dyn NodeFactory>>,
 }
 
 impl PyRuntime {
 
-    pub fn new(generate: Vec<Box<dyn CustomNodeGenerate>>)->Self{
+    pub fn new(generate: Vec<Box<dyn NodeFactory>>) ->Self{
         Self{ cache: Default::default(), generate: generate }
     }
     ///eval with cache
@@ -69,12 +69,12 @@ impl PyRuntime {
         return rd;
     }
 
-    pub fn add_gen<T>(&mut self, arg: T) where T: CustomNodeGenerate + 'static {
+    pub fn add_gen<T>(&mut self, arg: T) where T: NodeFactory + 'static {
         self.generate.push(Box::new(arg));
     }
 
     /// parser py string data
-    pub fn parse(arg: &str, generates: &Vec<Box<dyn CustomNodeGenerate>>) -> Result<Vec<NodeType>, crate::core::Error> {
+    pub fn parse(arg: &str, generates: &Vec<Box<dyn NodeFactory>>) -> Result<Vec<NodeType>, crate::core::Error> {
         let line_space_map = PyRuntime::create_line_space_map(arg);
         let mut main_node = vec![];
         let ls = arg.lines();
@@ -105,7 +105,7 @@ impl PyRuntime {
         return Ok(main_node);
     }
 
-    fn parse_trim_node(generates: &Vec<Box<dyn CustomNodeGenerate>>, trim_express: &str, main_node: &mut Vec<NodeType>, source_str: &str, space: usize, childs: Vec<NodeType>) -> Result<NodeType, crate::core::Error> {
+    fn parse_trim_node(factorys: &Vec<Box<dyn NodeFactory>>, trim_express: &str, main_node: &mut Vec<NodeType>, source_str: &str, space: usize, childs: Vec<NodeType>) -> Result<NodeType, crate::core::Error> {
         if trim_express.starts_with(IfNode::name()) {
             return Ok(NodeType::NIf(IfNode::from(trim_express, childs)?));
         } else if trim_express.starts_with(ForEachNode::name()) {
@@ -127,8 +127,8 @@ impl PyRuntime {
         } else if trim_express.starts_with(PrintNode::name()) {
             return Ok(NodeType::NPrint(PrintNode::from(source_str, trim_express, childs)?));
         } else {
-            for g in generates {
-                let gen = g.generate(trim_express, childs.clone())?;
+            for f in factorys {
+                let gen = f.try_new(trim_express, childs.clone())?;
                 if gen.is_some() {
                     return Ok(NodeType::NCustom(gen.unwrap()));
                 }
@@ -139,7 +139,7 @@ impl PyRuntime {
     }
 
 
-    fn parse_node(generates: &Vec<Box<dyn CustomNodeGenerate>>, main_node: &mut Vec<NodeType>, x: &str, space: usize, mut childs: Vec<NodeType>) -> Result<(), crate::core::Error> {
+    fn parse_node(generates: &Vec<Box<dyn NodeFactory>>, main_node: &mut Vec<NodeType>, x: &str, space: usize, mut childs: Vec<NodeType>) -> Result<(), crate::core::Error> {
         let mut trim_x = x.trim();
         if trim_x.starts_with("//") {
             return Ok(());
