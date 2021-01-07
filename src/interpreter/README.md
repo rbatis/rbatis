@@ -1,4 +1,4 @@
 the interpreter runtime.
 
-* json interpreter runtime support(just like java's ONGL express)
+* js interpreter runtime support(just like java's ONGL express)
 * py_sql interpreter runtime support
