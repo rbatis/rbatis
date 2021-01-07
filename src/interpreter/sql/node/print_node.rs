@@ -3,8 +3,8 @@ use serde_json::{json, Value};
 use crate::core::convert::StmtConvert;
 use crate::core::db::DriverType;
 use crate::core::Error;
-use crate::interpreter::expr;
-use crate::interpreter::expr::runtime::ExprRuntime;
+use rexpr;
+use rexpr::runtime::RExprRuntime;
 use crate::interpreter::sql::ast::RbatisAST;
 use crate::interpreter::sql::node::node::do_child_nodes;
 use crate::interpreter::sql::node::node_type::NodeType;
@@ -34,7 +34,7 @@ impl RbatisAST for PrintNode {
     fn name() -> &'static str {
         "print"
     }
-    fn eval(&self, convert: &crate::core::db::DriverType, env: &mut Value, engine: &ExprRuntime, arg_array: &mut Vec<Value>, arg_sql: &mut String) -> Result<serde_json::Value, crate::core::Error> {
+    fn eval(&self, convert: &crate::core::db::DriverType, env: &mut Value, engine: &RExprRuntime, arg_array: &mut Vec<Value>, arg_sql: &mut String) -> Result<serde_json::Value, crate::core::Error> {
         do_child_nodes(convert, &self.childs, env, engine, arg_array, arg_sql)?;
         if !env.is_object() {
             return Err(Error::from("[rbatis] print node arg must be json object! you can use empty json for example: {}"));
@@ -54,7 +54,7 @@ impl RbatisAST for PrintNode {
 #[cfg(test)]
 mod test {
     use crate::core::db::DriverType;
-    use crate::interpreter::expr::runtime::ExprRuntime;
+    use rexpr::runtime::RExprRuntime;
     use crate::interpreter::sql::ast::RbatisAST;
     use crate::interpreter::sql::node::node_type::NodeType;
     use crate::interpreter::sql::node::print_node::PrintNode;
@@ -64,7 +64,7 @@ mod test {
     fn test_node() {
         let node = PrintNode::from("print sql", "print sql", vec![NodeType::NString(StringNode::new("yes"))]).unwrap();
         let mut john = json!({"arg": 1});
-        let mut engine = ExprRuntime::new();
+        let mut engine = RExprRuntime::new();
         let mut arg_array = vec![];
         let mut r = String::new();
         node.eval(&DriverType::Mysql, &mut john, &mut engine, &mut arg_array, &mut r).unwrap();

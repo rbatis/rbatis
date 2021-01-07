@@ -6,7 +6,7 @@ use serde_json::Value;
 
 use crate::core::Error;
 use crate::core::runtime::{Arc, Mutex};
-use crate::interpreter::expr::runtime::ExprRuntime;
+use rexpr::runtime::RExprRuntime;
 use crate::interpreter::sql::ast::RbatisAST;
 use crate::interpreter::sql::node::node_type::NodeType;
 
@@ -36,7 +36,7 @@ impl RbatisAST for ProxyNode {
         "proxy"
     }
 
-    fn eval(&self, convert: &crate::core::db::DriverType, env: &mut Value, engine: &ExprRuntime, arg_array: &mut Vec<Value>, arg_sql: &mut String) -> Result<serde_json::Value, crate::core::Error> {
+    fn eval(&self, convert: &crate::core::db::DriverType, env: &mut Value, engine: &RExprRuntime, arg_array: &mut Vec<Value>, arg_sql: &mut String) -> Result<serde_json::Value, crate::core::Error> {
         self.ptr.deref().eval(convert, env, engine, arg_array, arg_sql)
     }
 }

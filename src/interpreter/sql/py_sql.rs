@@ -7,9 +7,9 @@ use serde_json::json;
 use serde_json::Value;
 
 use crate::core::Error;
-use crate::interpreter::expr::ast::Node;
-use crate::interpreter::expr::lexer::lexer;
-use crate::interpreter::expr::runtime::ExprRuntime;
+use rexpr::ast::Node;
+use rexpr::lexer::lexer;
+use rexpr::runtime::RExprRuntime;
 use crate::interpreter::sql::ast::RbatisAST;
 use crate::interpreter::sql::node::bind_node::BindNode;
 use crate::interpreter::sql::node::choose_node::ChooseNode;
@@ -40,7 +40,7 @@ impl PyRuntime {
         Self{ cache: Default::default(), generate: generate }
     }
     ///eval with cache
-    pub fn eval(&self, driver_type: &crate::core::db::DriverType, py_sql: &str, env: &mut Value, engine: &ExprRuntime) -> Result<(String, Vec<serde_json::Value>), Error> {
+    pub fn eval(&self, driver_type: &crate::core::db::DriverType, py_sql: &str, env: &mut Value, engine: &RExprRuntime) -> Result<(String, Vec<serde_json::Value>), Error> {
         if !env.is_object() {
             return Result::Err(Error::from("[rbatis] py_sql Requires that the parameter be an json object!"));
         }
@@ -238,7 +238,7 @@ impl PyRuntime {
 #[cfg(test)]
 mod test {
     use crate::core::db::DriverType;
-    use crate::interpreter::expr::runtime::ExprRuntime;
+    use rexpr::runtime::RExprRuntime;
     use crate::interpreter::sql::node::node::do_child_nodes;
     use crate::interpreter::sql::py_sql::PyRuntime;
     use serde_json::Value;
@@ -315,7 +315,7 @@ mod test {
         let pys = PyRuntime::parse(s, &vec![]).unwrap();
         println!("{:#?}", pys);
         let mut arg_array = vec![];
-        let mut engine = ExprRuntime::new();
+        let mut engine = RExprRuntime::new();
         let mut env = json!({
         "name": "1",
         "age": 27,
@@ -356,7 +356,7 @@ mod test {
         println!("{:#?}", pys);
 
         let mut arg_array = vec![];
-        let mut engine = ExprRuntime::new();
+        let mut engine = RExprRuntime::new();
         let mut r = String::new();
         do_child_nodes(&DriverType::Mysql, &pys, &mut env, &mut engine, &mut arg_array, &mut r).unwrap();
         println!("result: {}", &r);
@@ -395,7 +395,7 @@ mod test {
                        ";
         let pys = PyRuntime::parse(s, &vec![]).unwrap();
         let mut arg_array = vec![];
-        let mut engine = ExprRuntime::new();
+        let mut engine = RExprRuntime::new();
         let mut env = json!({ "name": "1", "age": 27 });
         let mut r = String::new();
         do_child_nodes(&DriverType::Mysql, &pys, &mut env, &mut engine, &mut arg_array, &mut r).unwrap();
@@ -407,7 +407,7 @@ mod test {
     #[test]
     fn test_bench() {
         let runtime = PyRuntime::new(vec![]);
-        let mut engine =ExprRuntime::new();
+        let mut engine =RExprRuntime::new();
 
         //(Windows10 6Core16GBMem) use Time: 916.1591ms ,each:916 ns/op use QPS: 1091470 QPS/s
         let py_sql="SELECT * FROM biz_activity where

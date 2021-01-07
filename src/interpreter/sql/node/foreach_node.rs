@@ -4,7 +4,7 @@ use serde_json::{json, Map, Value};
 
 use crate::core::convert::StmtConvert;
 use crate::core::db::DriverType;
-use crate::interpreter::expr::runtime::ExprRuntime;
+use rexpr::runtime::RExprRuntime;
 use crate::interpreter::sql::ast::RbatisAST;
 use crate::interpreter::sql::node::node_type::NodeType;
 use crate::utils;
@@ -49,7 +49,7 @@ impl RbatisAST for ForEachNode {
     fn name() -> &'static str {
         "for"
     }
-    fn eval(&self, convert: &crate::core::db::DriverType, env: &mut Value, engine: &ExprRuntime, arg_array: &mut Vec<Value>, arg_sql: &mut String) -> Result<serde_json::Value, crate::core::Error> {
+    fn eval(&self, convert: &crate::core::db::DriverType, env: &mut Value, engine: &RExprRuntime, arg_array: &mut Vec<Value>, arg_sql: &mut String) -> Result<serde_json::Value, crate::core::Error> {
         let collection_value = engine.eval(self.collection.as_str(), env)?;
         if collection_value.is_null() {
             return Result::Ok(serde_json::Value::Null);
@@ -90,7 +90,7 @@ impl RbatisAST for ForEachNode {
 #[cfg(test)]
 mod test {
     use crate::core::db::DriverType;
-    use crate::interpreter::expr::runtime::ExprRuntime;
+    use rexpr::runtime::RExprRuntime;
     use crate::interpreter::sql::ast::RbatisAST;
     use crate::interpreter::sql::node::foreach_node::ForEachNode;
     use crate::interpreter::sql::node::node_type::NodeType;
@@ -98,7 +98,7 @@ mod test {
 
     #[test]
     pub fn test_for_each_node() {
-        let mut engine = ExprRuntime::new();
+        let mut engine = RExprRuntime::new();
         let n = ForEachNode {
             childs: vec![NodeType::NString(StringNode::new("index:#{index},item:#{item}"))],
             collection: "arg".to_string(),
@@ -117,7 +117,7 @@ mod test {
 
     #[test]
     pub fn test_for_each_object_node() {
-        let mut engine = ExprRuntime::new();
+        let mut engine = RExprRuntime::new();
         let n = ForEachNode {
             childs: vec![NodeType::NString(StringNode::new("index:#{index},item:#{item}"))],
             collection: "arg".to_string(),
@@ -138,7 +138,7 @@ mod test {
 
     #[test]
     pub fn test_for_each_node_none() {
-        let mut engine = ExprRuntime::new();
+        let mut engine = RExprRuntime::new();
         let n = ForEachNode {
             childs: vec![NodeType::NString(StringNode::new("index:#{index},item:#{item}"))],
             collection: "arg".to_string(),

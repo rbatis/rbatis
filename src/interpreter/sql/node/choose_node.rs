@@ -5,7 +5,7 @@ use serde_json::{json, Value};
 
 use crate::core::convert::StmtConvert;
 use crate::core::db::DriverType;
-use crate::interpreter::expr::runtime::ExprRuntime;
+use rexpr::runtime::RExprRuntime;
 use crate::interpreter::sql::ast::RbatisAST;
 use crate::interpreter::sql::node::node_type::NodeType;
 use crate::interpreter::sql::node::node_type::NodeType::NString;
@@ -50,7 +50,7 @@ impl RbatisAST for ChooseNode {
         "choose"
     }
 
-    fn eval(&self, convert: &crate::core::db::DriverType, env: &mut Value, engine: &ExprRuntime, arg_array: &mut Vec<Value>, arg_sql: &mut String) -> Result<serde_json::Value, crate::core::Error> {
+    fn eval(&self, convert: &crate::core::db::DriverType, env: &mut Value, engine: &RExprRuntime, arg_array: &mut Vec<Value>, arg_sql: &mut String) -> Result<serde_json::Value, crate::core::Error> {
         if self.when_nodes.is_none() == false {
             let mut when_index = 0;
             for item in self.when_nodes.as_ref().unwrap() {
@@ -74,7 +74,7 @@ impl RbatisAST for ChooseNode {
 
 #[test]
 pub fn test_choose_node() {
-    let mut engine = ExprRuntime::new();
+    let mut engine = RExprRuntime::new();
     let mut john = json!({
         "arg": 2,
     });

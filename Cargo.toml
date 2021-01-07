@@ -53,6 +53,7 @@ actix-mssql = ["rbatis-core/actix-mssql"]
 snowflake = ["rustflake"]
 
 [dependencies]
+rexpr = {version = "1.0"}
 rbatis-core = { version = "1.8.57", path = "rbatis-core", default-features = false, optional = true }
 chrono = { version = "0.4", features = ["serde"] }
 lazy_static = "1.4"
