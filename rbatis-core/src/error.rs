@@ -7,6 +7,7 @@ use std::io;
 use serde::{Deserialize, Deserializer};
 use serde::de::Visitor;
 use serde::ser::{Serialize, Serializer};
+use sqlx_core::error::BoxDynError;
 
 /// A specialized `Result` type for rbatis::core.
 pub type Result<T> = std::result::Result<T, Error>;
@@ -61,6 +62,20 @@ impl From<rexpr::error::Error> for crate::Error{
         crate::Error::E(format!("[rbatis]{}",e.to_string()))
     }
 }
+
+
+impl From<sqlx_core::error::BoxDynError> for crate::Error {
+    fn from(arg: BoxDynError) -> Self {
+        return crate::Error::from(arg.to_string());
+    }
+}
+
+impl From<sqlx_core::error::Error> for crate::Error {
+    fn from(arg: sqlx_core::error::Error) -> Self {
+        return crate::Error::from(arg.to_string());
+    }
+}
+
 
 impl Clone for Error {
     fn clone(&self) -> Self {
