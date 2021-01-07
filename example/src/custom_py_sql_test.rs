@@ -3,13 +3,13 @@ mod test {
     use rbatis::interpreter::sql::ast::RbatisAST;
     use rbatis::core::db::DriverType;
     use serde_json::Value;
-    use rbatis::interpreter::expr::runtime::ExprRuntime;
     use rbatis::interpreter::sql::node::proxy_node::{CustomNodeGenerate, ProxyNode};
     use rbatis::core::Error;
     use rbatis::interpreter::sql::node::node_type::NodeType;
     use rbatis::rbatis::Rbatis;
     use crate::BizActivity;
     use rbatis::plugin::page::{Page, PageRequest};
+    use rexpr::runtime::RExprRuntime;
 
     #[derive(Debug)]
     pub struct MyNode {}
@@ -19,7 +19,7 @@ mod test {
             "custom"
         }
 
-        fn eval(&self, convert: &DriverType, env: &mut Value, engine: &ExprRuntime, arg_result: &mut Vec<Value>, arg_sql: &mut String) -> Result<serde_json::Value, Error> {
+        fn eval(&self, convert: &DriverType, env: &mut Value, engine: &RExprRuntime, arg_result: &mut Vec<Value>, arg_sql: &mut String) -> Result<serde_json::Value, Error> {
             *arg_sql = " AND id = 1 ".to_string();
             Ok(serde_json::Value::Null)
         }

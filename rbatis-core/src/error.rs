@@ -56,6 +56,12 @@ impl From<&dyn std::error::Error> for Error {
     }
 }
 
+impl From<rexpr::error::Error> for crate::Error{
+    fn from(e: rexpr::error::Error) -> Self {
+        crate::Error::E(format!("[rbatis]{}",e.to_string()))
+    }
+}
+
 impl Clone for Error {
     fn clone(&self) -> Self {
         Error::from(self.to_string())

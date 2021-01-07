@@ -5,8 +5,8 @@ use serde_json::map::Map;
 
 use crate::core::convert::StmtConvert;
 use crate::core::db::DriverType;
-use crate::interpreter::expr;
-use crate::interpreter::expr::runtime::ExprRuntime;
+use rexpr;
+use rexpr::runtime::RExprRuntime;
 use crate::interpreter::sql::ast::RbatisAST;
 use crate::utils::string_util;
 
@@ -31,7 +31,7 @@ impl RbatisAST for StringNode {
     fn name() -> &'static str {
         "string"
     }
-    fn eval(&self, convert: &crate::core::db::DriverType, env: &mut Value, engine: &ExprRuntime, arg_array: &mut Vec<Value>, arg_sql: &mut String) -> Result<serde_json::Value, crate::core::Error> {
+    fn eval(&self, convert: &crate::core::db::DriverType, env: &mut Value, engine: &RExprRuntime, arg_array: &mut Vec<Value>, arg_sql: &mut String) -> Result<serde_json::Value, crate::core::Error> {
         let mut result = self.value.clone();
         for (item, value) in &self.express_map {
             if item.is_empty() {
@@ -77,7 +77,7 @@ impl RbatisAST for StringNode {
 #[cfg(test)]
 mod test {
     use crate::core::db::DriverType;
-    use crate::interpreter::expr::runtime::ExprRuntime;
+    use rexpr::runtime::RExprRuntime;
     use crate::interpreter::sql::ast::RbatisAST;
     use crate::interpreter::sql::node::string_node::StringNode;
 
@@ -86,7 +86,7 @@ mod test {
         let mut john = json!({
         "arg": 2,
     });
-        let mut engine = ExprRuntime::new();
+        let mut engine = RExprRuntime::new();
         let s_node = StringNode::new("arg+1=#{arg+1}");
         let mut arg_array = vec![];
 
@@ -102,7 +102,7 @@ mod test {
         let mut john = json!({
         "arg": 2,
     });
-        let mut engine = ExprRuntime::new();
+        let mut engine = RExprRuntime::new();
         let s_node = StringNode::new("arg+1=${arg+1}");
         let mut arg_array = vec![];
         let mut r = String::new();

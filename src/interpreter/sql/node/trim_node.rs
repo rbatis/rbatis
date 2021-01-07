@@ -2,7 +2,7 @@ use serde_json::{json, Value};
 
 use crate::core::convert::StmtConvert;
 use crate::core::db::DriverType;
-use crate::interpreter::expr::runtime::ExprRuntime;
+use rexpr::runtime::RExprRuntime;
 use crate::interpreter::sql::ast::RbatisAST;
 use crate::interpreter::sql::node::node::do_child_nodes;
 use crate::interpreter::sql::node::node_type::NodeType;
@@ -33,7 +33,7 @@ impl RbatisAST for TrimNode {
     fn name() -> &'static str {
         "trim"
     }
-    fn eval(&self, convert: &crate::core::db::DriverType, env: &mut Value, engine: &ExprRuntime, arg_array: &mut Vec<Value>, arg_sql: &mut String) -> Result<serde_json::Value, crate::core::Error> {
+    fn eval(&self, convert: &crate::core::db::DriverType, env: &mut Value, engine: &RExprRuntime, arg_array: &mut Vec<Value>, arg_sql: &mut String) -> Result<serde_json::Value, crate::core::Error> {
         let mut child_sql = String::new();
         do_child_nodes(convert, &self.childs, env, engine, arg_array, &mut child_sql)?;
         let mut result = child_sql.as_str().trim();
@@ -52,7 +52,7 @@ impl RbatisAST for TrimNode {
 
 #[test]
 pub fn test_trim_node() {
-    let mut engine = ExprRuntime::new();
+    let mut engine = RExprRuntime::new();
     let node = TrimNode {
         childs: vec![NodeType::NString(StringNode::new("1trim value1"))],
         trim: "1".to_string(),

@@ -16,7 +16,7 @@ use crate::core::Error;
 use crate::core::runtime::Arc;
 use crate::core::sync::sync_map::SyncMap;
 use crate::crud::CRUDEnable;
-use crate::interpreter::expr::runtime::ExprRuntime;
+use rexpr::runtime::RExprRuntime;
 use crate::interpreter::sql::ast::RbatisAST;
 use crate::interpreter::sql::node::node::do_child_nodes;
 use crate::interpreter::sql::node::node_type::NodeType;
@@ -38,7 +38,7 @@ pub struct Rbatis {
     // the connection pool,use OnceCell init this
     pub pool: OnceCell<DBPool>,
     // the runtime run some express for example:'1+1'=2
-    pub runtime_expr: ExprRuntime,
+    pub runtime_expr: RExprRuntime,
     //py lang runtime run some express for py_sql
     pub runtime_py: PyRuntime,
     //tx manager
@@ -119,7 +119,7 @@ impl Rbatis {
     pub fn new_with_opt(option: RbatisOption) -> Self {
         return Self {
             pool: OnceCell::new(),
-            runtime_expr: ExprRuntime::new(),
+            runtime_expr: RExprRuntime::new(),
             tx_manager: TxManager::new_arc(&option.tx_prefix, option.log_plugin.clone(), option.tx_lock_wait_timeout, option.tx_check_interval),
             page_plugin: option.page_plugin,
             sql_intercepts: option.sql_intercepts,

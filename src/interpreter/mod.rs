@@ -1,2 +1,3 @@
-pub mod expr;
+use rexpr::error::Error;
+
 pub mod sql;

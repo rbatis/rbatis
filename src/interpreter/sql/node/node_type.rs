@@ -1,8 +1,5 @@
 use serde_json::{json, Value};
-
 use crate::core::convert::StmtConvert;
-use crate::interpreter::expr::ast::Node;
-use crate::interpreter::expr::runtime::ExprRuntime;
 use crate::interpreter::sql::ast::RbatisAST;
 use crate::interpreter::sql::node::bind_node::BindNode;
 use crate::interpreter::sql::node::choose_node::ChooseNode;
@@ -16,6 +13,7 @@ use crate::interpreter::sql::node::string_node::StringNode;
 use crate::interpreter::sql::node::trim_node::TrimNode;
 use crate::interpreter::sql::node::when_node::WhenNode;
 use crate::interpreter::sql::node::where_node::WhereNode;
+use rexpr::runtime::RExprRuntime;
 
 #[derive(Clone, Debug)]
 pub enum NodeType {
@@ -76,7 +74,7 @@ impl<'a> RbatisAST for NodeType {
         "node_type"
     }
 
-    fn eval(&self, convert: &crate::core::db::DriverType, env: &mut Value, engine: &ExprRuntime, arg_array: &mut Vec<Value>, arg_sql: &mut String) -> Result<serde_json::Value, crate::core::Error> {
+    fn eval(&self, convert: &crate::core::db::DriverType, env: &mut Value, engine: &RExprRuntime, arg_array: &mut Vec<Value>, arg_sql: &mut String) -> Result<serde_json::Value, crate::core::Error> {
         match self {
             NodeType::Null => return Result::Ok(serde_json::Value::Null),
             NodeType::NString(node) => return node.eval(convert, env, engine, arg_array, arg_sql),

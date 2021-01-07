@@ -3,7 +3,7 @@ use std::borrow::BorrowMut;
 use serde_json::{json, Value};
 
 use crate::core::convert::StmtConvert;
-use crate::interpreter::expr::runtime::ExprRuntime;
+use rexpr::runtime::RExprRuntime;
 use crate::interpreter::sql::ast::RbatisAST;
 use crate::interpreter::sql::node::node::do_child_nodes;
 use crate::interpreter::sql::node::node_type::NodeType;
@@ -28,7 +28,7 @@ impl RbatisAST for WhenNode {
     fn name() -> &'static str {
         "when"
     }
-    fn eval(&self, convert: &crate::core::db::DriverType, env: &mut Value, engine: &ExprRuntime, arg_array: &mut Vec<Value>, arg_sql: &mut String) -> Result<serde_json::Value, crate::core::Error> {
+    fn eval(&self, convert: &crate::core::db::DriverType, env: &mut Value, engine: &RExprRuntime, arg_array: &mut Vec<Value>, arg_sql: &mut String) -> Result<serde_json::Value, crate::core::Error> {
         let result = engine.eval(self.test.as_str(), env)?;
         if !result.is_boolean() {
             return Result::Err(crate::core::Error::from("[rbatis] test:'".to_owned() + self.test.as_str() + "' is not return bool!"));

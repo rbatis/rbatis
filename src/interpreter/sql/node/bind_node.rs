@@ -3,8 +3,8 @@ use serde_json::{json, Value};
 use crate::core::convert::StmtConvert;
 use crate::core::db::DriverType;
 use crate::core::Error;
-use crate::interpreter::expr;
-use crate::interpreter::expr::runtime::ExprRuntime;
+use rexpr;
+use rexpr::runtime::RExprRuntime;
 use crate::interpreter::sql::ast::RbatisAST;
 use crate::interpreter::sql::node::node_type::NodeType;
 
@@ -50,7 +50,7 @@ impl RbatisAST for BindNode {
     fn name() -> &'static str {
         "bind"
     }
-    fn eval(&self, convert: &crate::core::db::DriverType, env: &mut Value, engine: &ExprRuntime, arg_array: &mut Vec<Value>, arg_sql: &mut String) -> Result<serde_json::Value, crate::core::Error> {
+    fn eval(&self, convert: &crate::core::db::DriverType, env: &mut Value, engine: &RExprRuntime, arg_array: &mut Vec<Value>, arg_sql: &mut String) -> Result<serde_json::Value, crate::core::Error> {
         let r = engine.eval(self.value.as_str(), env)?;
         env[self.name.as_str()] = r;
         return Result::Ok(serde_json::Value::Null);
@@ -60,7 +60,7 @@ impl RbatisAST for BindNode {
 
 #[test]
 fn test_bind_node() {
-    let mut engine = ExprRuntime::new();
+    let mut engine = RExprRuntime::new();
     let bind_node = BindNode {
         name: "a".to_string(),
         value: "a+1".to_string(),

@@ -4,7 +4,7 @@ use serde_json::{json, Value};
 
 use crate::core::convert::StmtConvert;
 use crate::core::db::DriverType;
-use crate::interpreter::expr::runtime::ExprRuntime;
+use rexpr::runtime::RExprRuntime;
 use crate::interpreter::sql::ast::RbatisAST;
 use crate::interpreter::sql::node::bind_node::BindNode;
 use crate::interpreter::sql::node::choose_node::ChooseNode;
@@ -21,7 +21,7 @@ use crate::interpreter::sql::node::where_node::WhereNode;
 use super::node_type::NodeType;
 
 //执行子所有节点
-pub(crate)fn do_child_nodes(convert: &crate::core::db::DriverType, child_nodes: &Vec<NodeType>, env: &mut Value, engine: &ExprRuntime, arg_array: &mut Vec<Value>, arg_sql: &mut String) -> Result<serde_json::Value, crate::core::Error> {
+pub(crate)fn do_child_nodes(convert: &crate::core::db::DriverType, child_nodes: &Vec<NodeType>, env: &mut Value, engine: &RExprRuntime, arg_array: &mut Vec<Value>, arg_sql: &mut String) -> Result<serde_json::Value, crate::core::Error> {
     for item in child_nodes {
         item.eval(convert, env, engine, arg_array, arg_sql)?;
     }
@@ -30,7 +30,7 @@ pub(crate)fn do_child_nodes(convert: &crate::core::db::DriverType, child_nodes: 
 
 #[test]
 fn test_string_node() {
-    let mut engine = ExprRuntime::new();
+    let mut engine = RExprRuntime::new();
     let mut john = json!({
         "name": "John Doe",
     });
