@@ -20,7 +20,7 @@ use rexpr::runtime::RExprRuntime;
 use crate::interpreter::sql::ast::RbatisAST;
 use crate::interpreter::sql::node::node::do_child_nodes;
 use crate::interpreter::sql::node::node_type::NodeType;
-use crate::interpreter::sql::node::proxy_node::CustomNodeGenerate;
+use crate::interpreter::sql::node::proxy_node::NodeFactory;
 use crate::interpreter::sql::py_sql::PyRuntime;
 use crate::plugin::intercept::SqlIntercept;
 use crate::plugin::log::{LogPlugin, RbatisLog};
@@ -81,7 +81,7 @@ pub struct RbatisOption {
     /// rbatis tx manager check tx interval
     pub tx_check_interval: Duration,
     /// custom py lang
-    pub generate: Vec<Box<dyn CustomNodeGenerate>>,
+    pub generate: Vec<Box<dyn NodeFactory>>,
     /// page plugin
     pub page_plugin: Box<dyn PagePlugin>,
     /// sql intercept vec chain

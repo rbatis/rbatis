@@ -11,9 +11,9 @@ use crate::interpreter::sql::ast::RbatisAST;
 use crate::interpreter::sql::node::node_type::NodeType;
 
 ///CustomNode Generate,you can custom py lang parse
-pub trait CustomNodeGenerate: Send + Sync + Debug {
+pub trait NodeFactory: Send + Sync + Debug {
     ///generate return an Option<CustomNode>,if return None,parser will be skip this build
-    fn generate(&self, express: &str, child_nodes: Vec<NodeType>) -> Result<Option<ProxyNode>, Error>;
+    fn try_new(&self, express: &str, child_nodes: Vec<NodeType>) -> Result<Option<ProxyNode>, Error>;
 }
 
 #[derive(Clone, Debug)]
