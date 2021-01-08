@@ -73,7 +73,7 @@ rbatis-macro-driver = { version = "1.8" }
 
 ```rust
 #[macro_use]
-extern crate rbatis_macro_driver;
+extern crate rbatis;
 
 /// may also write `CRUDEnable` as `impl CRUDEnable for BizActivity{}`
 /// #[crud_enable( table_name:biz_activity)]
