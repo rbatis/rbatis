@@ -17,10 +17,12 @@ mod py_sql;
 pub fn hello_macro_derive(input: TokenStream) -> TokenStream {
     let ast = syn::parse(input).unwrap();
     let stream = crud_enable::impl_crud_driver(&ast, "", "", "", "", &HashMap::new());
-    if !cfg!(feature = "no_print") {
+    #[cfg(feature = "debug_mode")]
+    {
         println!("............gen impl CRUDEnable:\n {}", stream);
         println!("............gen impl CRUDEnable end............");
     }
+
     stream
 }
 
@@ -34,7 +36,8 @@ pub fn sql(args: TokenStream, func: TokenStream) -> TokenStream {
     let args = parse_macro_input!(args as AttributeArgs);
     let target_fn: ItemFn = syn::parse(func).unwrap();
     let stream = sql::impl_macro_sql(&target_fn, &args);
-    if !cfg!(feature = "no_print") {
+    #[cfg(feature = "debug_mode")]
+    {
         println!("............gen macro sql:\n {}", stream);
         println!("............gen macro sql end............");
     }
@@ -56,7 +59,8 @@ pub fn py_sql(args: TokenStream, func: TokenStream) -> TokenStream {
     let args = parse_macro_input!(args as AttributeArgs);
     let target_fn: ItemFn = syn::parse(func).unwrap();
     let stream = py_sql::impl_macro_py_sql(&target_fn, &args);
-    if !cfg!(feature = "no_print") {
+    #[cfg(feature = "debug_mode")]
+    {
         println!("............gen macro py_sql :\n {}", stream);
         println!("............gen macro py_sql end............");
     }

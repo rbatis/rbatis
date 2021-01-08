@@ -22,39 +22,44 @@ homepage = "https://rbatis.github.io/rbatis.io/#/"
 default = ["async-io"]
 
 # debug_mode feature will show decode json data
-debug_mode = ["rbatis-core/debug_mode"]
+debug_mode = ["rbatis-core/debug_mode","rbatis-macro-driver/debug_mode"]
+default_mode = ["rbatis-core","rbatis-macro-driver"]
 
 #runtime-all-database
-actix = ["rbatis-core/actix"]
-tokio02 = ["rbatis-core/tokio02"]
-tokio03 = ["rbatis-core/tokio03"]
-async-io = ["rbatis-core/async-io"]
+actix = ["default_mode","rbatis-core/actix"]
+tokio02 = ["default_mode","rbatis-core/tokio02"]
+tokio03 = ["default_mode","rbatis-core/tokio03"]
+async-io = ["default_mode","rbatis-core/async-io"]
 #async_std-database
-async-io-mysql = ["rbatis-core/async-io-mysql"]
-async-io-postgres = ["rbatis-core/async-io-postgres"]
-async-io-sqlite = ["rbatis-core/async-io-sqlite"]
-async-io-mssql = ["rbatis-core/async-io-mssql"]
+async-io-mysql = ["default_mode","rbatis-core/async-io-mysql"]
+async-io-postgres = ["default_mode","rbatis-core/async-io-postgres"]
+async-io-sqlite = ["default_mode","rbatis-core/async-io-sqlite"]
+async-io-mssql = ["default_mode","rbatis-core/async-io-mssql"]
 #tokio03-database
-tokio03-mysql = ["rbatis-core/tokio03-mysql"]
-tokio03-postgres = ["rbatis-core/tokio03-postgres"]
-tokio03-sqlite = ["rbatis-core/tokio03-sqlite"]
-tokio03-mssql = ["rbatis-core/tokio03-mssql"]
+tokio03-mysql = ["default_mode","rbatis-core/tokio03-mysql"]
+tokio03-postgres = ["default_mode","rbatis-core/tokio03-postgres"]
+tokio03-sqlite = ["default_mode","rbatis-core/tokio03-sqlite"]
+tokio03-mssql = ["default_mode","rbatis-core/tokio03-mssql"]
 #tokio02-database
-tokio02-mysql = ["rbatis-core/tokio02-mysql"]
-tokio02-postgres = ["rbatis-core/tokio02-postgres"]
-tokio02-sqlite = ["rbatis-core/tokio02-sqlite"]
-tokio02-mssql = ["rbatis-core/tokio02-mssql"]
+tokio02-mysql = ["default_mode","rbatis-core/tokio02-mysql"]
+tokio02-postgres = ["default_mode","rbatis-core/tokio02-postgres"]
+tokio02-sqlite = ["default_mode","rbatis-core/tokio02-sqlite"]
+tokio02-mssql = ["default_mode","rbatis-core/tokio02-mssql"]
 #actix-database
-actix-mysql = ["rbatis-core/actix-mysql"]
-actix-postgres = ["rbatis-core/actix-postgres"]
-actix-sqlite = ["rbatis-core/actix-sqlite"]
-actix-mssql = ["rbatis-core/actix-mssql"]
+actix-mysql = ["default_mode","rbatis-core/actix-mysql"]
+actix-postgres = ["default_mode","rbatis-core/actix-postgres"]
+actix-sqlite = ["default_mode","rbatis-core/actix-sqlite"]
+actix-mssql = ["default_mode","rbatis-core/actix-mssql"]
+
+
 #Distributed unique ID snowflake ID
 snowflake = ["rustflake"]
 
 [dependencies]
 rexpr = {version = "1.0"}
-rbatis-core = { version = "1.8.58", path = "rbatis-core", default-features = false, optional = true }
+rbatis-core = { path = "rbatis-core", default-features = false, optional = true }
+rbatis-macro-driver = {  path = "rbatis-macro-driver", default-features = false, optional = true}
+
 chrono = { version = "0.4", features = ["serde"] }
 lazy_static = "1.4"
 #serde
