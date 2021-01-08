@@ -57,16 +57,15 @@ serde_json = "1"
 # Date time (required)
 chrono = { version = "0.4", features = ["serde"] }
 
-# logging (required)
+# logging lib(required)
 log = "0.4"
 fast_log="1.3"
 
-# BigDecimal (optional)
+# BigDecimal lib(optional)
 bigdecimal = "0.2"
 
-# rbatis, must maintain the same versions (required)
+# rbatis lib(required)
 rbatis =  { version = "1.8" } 
-rbatis-macro-driver = { version = "1.8" }
 ```
 
 ##### Quick example: QueryWrapper and common usages (see example/crud_test.rs for details)
