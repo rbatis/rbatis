@@ -7,7 +7,7 @@
 #[macro_use]
 extern crate lazy_static;
 #[macro_use]
-extern crate rbatis_macro_driver;
+extern crate rbatis;
 
 mod crud_test;
 mod un_support_type_test;
