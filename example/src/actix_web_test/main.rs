@@ -2,7 +2,7 @@
 #[macro_use]
 extern crate lazy_static;
 #[macro_use]
-extern crate rbatis_macro_driver;
+extern crate rbatis;
 
 use actix_web::{App, HttpResponse, HttpServer, Responder, web};
 use chrono::NaiveDateTime;

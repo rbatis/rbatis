@@ -2,7 +2,7 @@
 #[macro_use]
 extern crate lazy_static;
 #[macro_use]
-extern crate rbatis_macro_driver;
+extern crate rbatis;
 
 use std::convert::Infallible;
 use hyper::service::{make_service_fn, service_fn};
