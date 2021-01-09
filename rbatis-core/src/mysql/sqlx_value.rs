@@ -18,87 +18,87 @@ impl<'r> JsonCodec for sqlx_core::mysql::MySqlValueRef<'r> {
                 return Ok(serde_json::Value::Null);
             }
             "DECIMAL" => {
-                let r: Option<BigDecimal> = Decode::<'_, MySql>::decode(self).into_result()?;
+                let r: Option<BigDecimal> = Decode::<'_, MySql>::decode(self)?;
                 return Ok(json!(r));
             }
             "BIGINT UNSIGNED" => {
-                let r: Option<u64> = Decode::<'_, MySql>::decode(self).into_result()?;
+                let r: Option<u64> = Decode::<'_, MySql>::decode(self)?;
                 return Ok(json!(r));
             }
             "BIGINT" => {
-                let r: Option<i64> = Decode::<'_, MySql>::decode(self).into_result()?;
+                let r: Option<i64> = Decode::<'_, MySql>::decode(self)?;
                 return Ok(json!(r));
             }
             "INT UNSIGNED" | "MEDIUMINT UNSIGNED" => {
-                let r: Option<u32> = Decode::<'_, MySql>::decode(self).into_result()?;
+                let r: Option<u32> = Decode::<'_, MySql>::decode(self)?;
                 return Ok(json!(r));
             }
             "INT" | "MEDIUMINT" => {
-                let r: Option<i32> = Decode::<'_, MySql>::decode(self).into_result()?;
+                let r: Option<i32> = Decode::<'_, MySql>::decode(self)?;
                 return Ok(json!(r));
             }
             "SMALLINT" => {
-                let r: Option<i16> = Decode::<'_, MySql>::decode(self).into_result()?;
+                let r: Option<i16> = Decode::<'_, MySql>::decode(self)?;
                 return Ok(json!(r));
             }
             "SMALLINT UNSIGNED" => {
-                let r: Option<u16> = Decode::<'_, MySql>::decode(self).into_result()?;
+                let r: Option<u16> = Decode::<'_, MySql>::decode(self)?;
                 return Ok(json!(r));
             }
             "TINYINT UNSIGNED" => {
-                let r: Option<u8> = Decode::<'_, MySql>::decode(self).into_result()?;
+                let r: Option<u8> = Decode::<'_, MySql>::decode(self)?;
                 return Ok(json!(r));
             }
             "TINYINT" => {
-                let r: Option<i8> = Decode::<'_, MySql>::decode(self).into_result()?;
+                let r: Option<i8> = Decode::<'_, MySql>::decode(self)?;
                 return Ok(json!(r));
             }
             "FLOAT" => {
-                let r: Option<f32> = Decode::<'_, MySql>::decode(self).into_result()?;
+                let r: Option<f32> = Decode::<'_, MySql>::decode(self)?;
 
                 return Ok(json!(r));
             }
             "DOUBLE" => {
-                let r: Option<f64> = Decode::<'_, MySql>::decode(self).into_result()?;
+                let r: Option<f64> = Decode::<'_, MySql>::decode(self)?;
 
                 return Ok(json!(r));
             }
             "BINARY" | "VARBINARY" | "CHAR" | "VARCHAR" | "TEXT" | "ENUM" => {
-                let r: Option<String> = Decode::<'_, MySql>::decode(self).into_result()?;
+                let r: Option<String> = Decode::<'_, MySql>::decode(self)?;
 
                 return Ok(json!(r));
             }
             "BLOB" | "TINYBLOB" | "MEDIUMBLOB" | "LONGBLOB" | "TINYTEXT" | "MEDIUMTEXT" | "LONGTEXT" => {
-                let r: Option<Vec<u8>> = Decode::<'_, MySql>::decode(self).into_result()?;
+                let r: Option<Vec<u8>> = Decode::<'_, MySql>::decode(self)?;
                 return Ok(json!(r));
             }
             "BIT" | "BOOLEAN" => {
-                let r: Option<u8> = Decode::<'_, MySql>::decode(self).into_result()?;
+                let r: Option<u8> = Decode::<'_, MySql>::decode(self)?;
                 return Ok(json!(r));
             }
             "DATE" => {
-                let r: Option<chrono::NaiveDate> = Decode::<'_, MySql>::decode(self).into_result()?;
+                let r: Option<chrono::NaiveDate> = Decode::<'_, MySql>::decode(self)?;
                 return Ok(json!(r));
             }
             "TIME" | "YEAR" => {
-                let r: Option<chrono::NaiveTime> = Decode::<'_, MySql>::decode(self).into_result()?;
+                let r: Option<chrono::NaiveTime> = Decode::<'_, MySql>::decode(self)?;
                 return Ok(json!(r));
             }
             "DATETIME" => {
-                let r: Option<chrono::NaiveDateTime> = Decode::<'_, MySql>::decode(self).into_result()?;
+                let r: Option<chrono::NaiveDateTime> = Decode::<'_, MySql>::decode(self)?;
                 return Ok(json!(r));
             }
             "TIMESTAMP" => {
-                let r: Option<chrono::NaiveDateTime> = Decode::<'_, MySql>::decode(self).into_result()?;
+                let r: Option<chrono::NaiveDateTime> = Decode::<'_, MySql>::decode(self)?;
                 return Ok(json!(r));
             }
             "JSON" => {
-                let r: Option<Json<serde_json::Value>> = Decode::<'_, MySql>::decode(self).into_result()?;
+                let r: Option<Json<serde_json::Value>> = Decode::<'_, MySql>::decode(self)?;
                 return Ok(json!(r));
             }
             _ => {
                 //TODO "GEOMETRY" support. for now you can use already supported types to decode this
-                let r: Option<Vec<u8>> = Decode::<'_, MySql>::decode(self).into_result()?;
+                let r: Option<Vec<u8>> = Decode::<'_, MySql>::decode(self)?;
                 return Ok(json!(r));
             }
         }
@@ -114,7 +114,7 @@ impl RefJsonCodec for Vec<MySqlRow> {
             let columns = row.columns();
             for x in columns {
                 let key = x.name();
-                let v: MySqlValueRef = row.try_get_raw(key).into_result()?;
+                let v: MySqlValueRef = row.try_get_raw(key)?;
                 m.insert(key.to_owned(), v.try_to_json()?);
             }
             arr.push(serde_json::Value::Object(m));

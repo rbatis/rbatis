@@ -19,32 +19,32 @@ impl<'r> JsonCodec for sqlx_core::mssql::MssqlValueRef<'r> {
                 return Ok(serde_json::Value::Null);
             }
             "TINYINT" => {
-                let r: Option<i8> = Decode::<'_, Mssql>::decode(self).into_result()?;
+                let r: Option<i8> = Decode::<'_, Mssql>::decode(self)?;
                 return Ok(json!(r));
             }
             "SMALLINT" => {
-                let r: Option<i16> = Decode::<'_, Mssql>::decode(self).into_result()?;
+                let r: Option<i16> = Decode::<'_, Mssql>::decode(self)?;
                 return Ok(json!(r));
             }
             "INT" => {
-                let r: Option<i32> = Decode::<'_, Mssql>::decode(self).into_result()?;
+                let r: Option<i32> = Decode::<'_, Mssql>::decode(self)?;
                 return Ok(json!(r));
             }
             "BIGINT" => {
-                let r: Option<i64> = Decode::<'_, Mssql>::decode(self).into_result()?;
+                let r: Option<i64> = Decode::<'_, Mssql>::decode(self)?;
                 return Ok(json!(r));
             }
             "REAL" => {
-                let r: Option<f32> = Decode::<'_, Mssql>::decode(self).into_result()?;
+                let r: Option<f32> = Decode::<'_, Mssql>::decode(self)?;
                 return Ok(json!(r));
             }
             "FLOAT" => {
-                let r: Option<f64> = Decode::<'_, Mssql>::decode(self).into_result()?;
+                let r: Option<f64> = Decode::<'_, Mssql>::decode(self)?;
                 return Ok(json!(r));
             }
 
             "VARCHAR" | "NVARCHAR" | "BIGVARCHAR" | "CHAR" | "BIGCHAR" | "NCHAR" => {
-                let r: Option<String> = Decode::<'_, Mssql>::decode(self).into_result()?;
+                let r: Option<String> = Decode::<'_, Mssql>::decode(self)?;
                 return Ok(json!(r));
             }
 
@@ -103,7 +103,7 @@ impl RefJsonCodec for Vec<MssqlRow> {
             let columns = row.columns();
             for x in columns {
                 let key = x.name();
-                let v: MssqlValueRef = row.try_get_raw(key).into_result()?;
+                let v: MssqlValueRef = row.try_get_raw(key)?;
                 m.insert(key.to_owned(), v.try_to_json()?);
             }
             arr.push(serde_json::Value::Object(m));

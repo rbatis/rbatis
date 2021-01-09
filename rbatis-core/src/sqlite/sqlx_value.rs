@@ -18,29 +18,29 @@ impl<'c> JsonCodec for SqliteValueRef<'c> {
                 Ok(serde_json::Value::Null)
             }
             "TEXT" => {
-                let r: Option<String> = Decode::<'_, Sqlite>::decode(self).into_result()?;
+                let r: Option<String> = Decode::<'_, Sqlite>::decode(self)?;
                 return Ok(json!(r));
             }
             "BOOLEAN" => {
-                let r: Option<bool> = Decode::<'_, Sqlite>::decode(self).into_result()?;
+                let r: Option<bool> = Decode::<'_, Sqlite>::decode(self)?;
                 return Ok(json!(r));
             }
             "INTEGER" => {
-                let r: Option<i64> = Decode::<'_, Sqlite>::decode(self).into_result()?;
+                let r: Option<i64> = Decode::<'_, Sqlite>::decode(self)?;
                 return Ok(json!(r));
             }
             "REAL" => {
-                let r: Option<f64> = Decode::<'_, Sqlite>::decode(self).into_result()?;
+                let r: Option<f64> = Decode::<'_, Sqlite>::decode(self)?;
                 return Ok(json!(r));
             }
             "BLOB" => {
-                let r: Option<Vec<u8>> = Decode::<'_, Sqlite>::decode(self).into_result()?;
+                let r: Option<Vec<u8>> = Decode::<'_, Sqlite>::decode(self)?;
                 return Ok(json!(r));
             }
             _ => {
                 //TODO "NUMERIC" |"DATE" | "TIME" | "DATETIME"
                 //you can use already supported types to decode this
-                let r: Option<Vec<u8>> = Decode::<'_, Sqlite>::decode(self).into_result()?;
+                let r: Option<Vec<u8>> = Decode::<'_, Sqlite>::decode(self)?;
                 return Ok(json!(r));
             }
         };
@@ -55,7 +55,7 @@ impl RefJsonCodec for Vec<SqliteRow> {
             let columns = row.columns();
             for x in columns {
                 let key = x.name();
-                let v: SqliteValueRef = row.try_get_raw(key).into_result()?;
+                let v: SqliteValueRef = row.try_get_raw(key)?;
                 m.insert(key.to_owned(), v.try_to_json()?);
             }
             arr.push(serde_json::Value::Object(m));
