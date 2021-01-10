@@ -116,7 +116,7 @@ pub trait CRUDEnable: Send + Sync + Serialize + DeserializeOwned {
         }
     }
 
-    ///return (value sql,args)
+    ///return (columns_sql,values_sql,args)
     fn make_value_sql_arg(&self, db_type: &DriverType, index: &mut usize) -> Result<(String, String, Vec<serde_json::Value>)> {
         let mut value_sql = String::new();
         let mut arr = vec![];
