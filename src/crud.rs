@@ -273,7 +273,7 @@ impl CRUD for Rbatis {
         let mut field_index = 0;
         for x in args {
             let (columns,values, args) = x.make_value_sql_arg(&self.driver_type()?, &mut field_index)?;
-            if columns.is_empty() {
+            if column_sql.is_empty() {
                 column_sql = columns;
             }
             value_arr = value_arr + format!("({}),", values).as_str();
