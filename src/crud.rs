@@ -253,7 +253,7 @@ impl CRUD for Rbatis {
             let mut index = 0;
             let (columns, values, args) = entity.make_value_sql_arg(&self.driver_type()?, &mut index)?;
             let table_name = choose_dyn_table_name::<T>(&w);
-            w.insert_into_columns_values(&table_name, &columns, &values);
+            w.insert_into(&table_name, &columns, &values);
             for x in args {
                 w.args.push(x);
             }
