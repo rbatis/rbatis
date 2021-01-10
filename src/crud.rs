@@ -126,6 +126,9 @@ pub trait CRUDEnable: Send + Sync + Serialize + DeserializeOwned {
         for column in &columns {
             let column = crate::utils::string_util::un_packing_string(column);
             let v = map.get(&column.to_string()).unwrap_or(&serde_json::Value::Null);
+            if Self::id_name().eq(&column) && v.eq(&serde_json::Value::Null) {
+                continue;
+            }
             //cast convert
             sql = sql + Self::do_format_column(db_type, &column, db_type.stmt_convert(*index)).as_str() + ",";
             arr.push(v.to_owned());
