@@ -75,19 +75,19 @@ pub fn to_snake_name(name: &String) -> String {
 }
 
 ///input 'strings' => strings
-pub fn un_packing_string(column: &str) -> String {
+pub fn un_packing_string(column: &str) -> &str {
     if column.len() >= 2 {
         if column.starts_with("'") && column.ends_with("'") {
-            return column[1..column.len() - 1].to_string();
+            return &column[1..column.len() - 1];
         }
         if column.starts_with("`") && column.ends_with("`") {
-            return column[1..column.len() - 1].to_string();
+            return &column[1..column.len() - 1];
         }
         if column.starts_with("\"") && column.ends_with("\"") {
-            return column[1..column.len() - 1].to_string();
+            return &column[1..column.len() - 1];
         }
     }
-    return column.to_string();
+    return column;
 }
 
 #[cfg(test)]
