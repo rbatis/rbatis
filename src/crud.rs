@@ -90,7 +90,6 @@ pub trait CRUDEnable: Send + Sync + Serialize + DeserializeOwned {
     }
 
     /// make an Map<table_column,value>
-    ///TODO macro driver auto create this methods
     fn make_column_value_map(&self, db_type: &DriverType) -> Result<serde_json::Map<String, Value>> {
         let json = json!(self);
         if json.eq(&serde_json::Value::Null) {
@@ -126,12 +125,12 @@ pub trait CRUDEnable: Send + Sync + Serialize + DeserializeOwned {
         let mut column_sql = String::new();
         for column in &columns {
             let column = crate::utils::string_util::un_packing_string(column);
-            let v = map.get(&column.to_string()).unwrap_or(&serde_json::Value::Null);
-            if Self::id_name().eq(&column) && v.eq(&serde_json::Value::Null) {
+            let v = map.get(column).unwrap_or(&serde_json::Value::Null);
+            if Self::id_name().eq(column) && v.eq(&serde_json::Value::Null) {
                 continue;
             }
             //cast convert
-            column_sql = column_sql + &*column + ",";
+            column_sql = column_sql + column + ",";
             value_sql = value_sql + Self::do_format_column(db_type, &column, db_type.stmt_convert(*index)).as_str() + ",";
             arr.push(v.to_owned());
             *index += 1;
