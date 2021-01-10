@@ -538,6 +538,15 @@ impl Wrapper {
             .to_string();
         self
     }
+
+    pub fn insert_into_columns_values(&mut self, table_name: &str, columns: &str, values: &str) -> &mut Self {
+        if values.starts_with("(") && values.ends_with(")") {
+            self.sql = format!("INSERT INTO {} ({}) VALUES ({})", table_name, columns, values);
+        } else {
+            self.sql = format!("INSERT INTO {} ({}) VALUES {}", table_name, columns, values);
+        }
+        self
+    }
 }
 
 #[cfg(test)]

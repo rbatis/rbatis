@@ -220,6 +220,7 @@ impl<C> Ids<C> for Vec<C> where C: Id {
 
 #[async_trait]
 pub trait CRUD {
+    async fn save_by_wrapper<T>(&self, context_id: &str, entity: &T, w: &Wrapper) -> Result<DBExecResult> where T: CRUDEnable;
     async fn save<T>(&self, context_id: &str, entity: &T) -> Result<DBExecResult> where T: CRUDEnable;
     async fn save_batch<T>(&self, context_id: &str, entity: &[T]) -> Result<DBExecResult> where T: CRUDEnable;
 
@@ -243,6 +244,23 @@ pub trait CRUD {
 
 #[async_trait]
 impl CRUD for Rbatis {
+    /// save by wrapper
+    async fn save_by_wrapper<T>(&self, context_id: &str, entity: &T, w: &Wrapper) -> Result<DBExecResult> where T: CRUDEnable {
+        if w.sql.starts_with("INSERT INTO") {
+            return self.exec_prepare(context_id, &w.sql, &w.args).await;
+        } else {
+            let mut w = w.clone();
+            let mut index = 0;
+            let (columns, values, args) = entity.make_value_sql_arg(&self.driver_type()?, &mut index)?;
+            let table_name = choose_dyn_table_name::<T>(&w);
+            w.insert_into_columns_values(&table_name, &columns, &values);
+            for x in args {
+                w.args.push(x);
+            }
+            return self.exec_prepare(context_id, &w.sql, &w.args).await;
+        }
+    }
+
     /// save one entity to database
     async fn save<T>(&self, context_id: &str, entity: &T) -> Result<DBExecResult>
         where T: CRUDEnable {
