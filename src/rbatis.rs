@@ -492,13 +492,11 @@ impl Rbatis {
     ///
     pub async fn fetch_prepare_wrapper<T>(&self, context_id: &str, w: &Wrapper) -> Result<T, Error>
         where T: DeserializeOwned {
-        let w = w.clone().check()?;
         self.fetch_prepare(context_id, w.sql.as_str(), &w.args).await
     }
 
     /// exec sql by a wrapper
     pub async fn exec_prepare_wrapper(&self, context_id: &str, w: &Wrapper) -> Result<DBExecResult, Error> {
-        let w = w.clone().check()?;
         self.exec_prepare(context_id, w.sql.as_str(), &w.args).await
     }
 
