@@ -117,12 +117,13 @@ pub trait CRUDEnable: Send + Sync + Serialize + DeserializeOwned {
     }
 
     ///return (value sql,args)
-    fn make_value_sql_arg(&self, db_type: &DriverType, index: &mut usize) -> Result<(String, Vec<serde_json::Value>)> {
-        let mut sql = String::new();
+    fn make_value_sql_arg(&self, db_type: &DriverType, index: &mut usize) -> Result<(String, String, Vec<serde_json::Value>)> {
+        let mut value_sql = String::new();
         let mut arr = vec![];
         let cols = Self::table_columns();
         let columns: Vec<&str> = cols.split(",").collect();
         let map = self.make_column_value_map(db_type)?;
+        let mut column_sql = String::new();
         for column in &columns {
             let column = crate::utils::string_util::un_packing_string(column);
             let v = map.get(&column.to_string()).unwrap_or(&serde_json::Value::Null);
@@ -130,12 +131,14 @@ pub trait CRUDEnable: Send + Sync + Serialize + DeserializeOwned {
                 continue;
             }
             //cast convert
-            sql = sql + Self::do_format_column(db_type, &column, db_type.stmt_convert(*index)).as_str() + ",";
+            column_sql = column_sql + &*column + ",";
+            value_sql = value_sql + Self::do_format_column(db_type, &column, db_type.stmt_convert(*index)).as_str() + ",";
             arr.push(v.to_owned());
             *index += 1;
         }
-        sql.pop();//remove ','
-        return Ok((sql, arr));
+        column_sql.pop();//remove ','
+        value_sql.pop();//remove ','
+        return Ok((column_sql, value_sql, arr));
     }
 
     /// return cast chain
@@ -168,7 +171,7 @@ impl<T> CRUDEnable for Option<T> where T: CRUDEnable {
         T::make_column_value_map(self.as_ref().unwrap(), db_type)
     }
 
-    fn make_value_sql_arg(&self, db_type: &DriverType, index: &mut usize) -> Result<(String, Vec<serde_json::Value>)> {
+    fn make_value_sql_arg(&self, db_type: &DriverType, index: &mut usize) -> Result<(String,String, Vec<serde_json::Value>)> {
         if self.is_none() {
             return Err(crate::core::Error::from("[rbatis] can not make_sql_arg() for None value!"));
         }
@@ -245,8 +248,8 @@ impl CRUD for Rbatis {
     async fn save<T>(&self, context_id: &str, entity: &T) -> Result<DBExecResult>
         where T: CRUDEnable {
         let mut index = 0;
-        let (values, args) = entity.make_value_sql_arg(&self.driver_type()?, &mut index)?;
-        let sql = format!("INSERT INTO {} ({}) VALUES ({})", T::table_name(), T::table_columns(), values);
+        let (columns,values, args) = entity.make_value_sql_arg(&self.driver_type()?, &mut index)?;
+        let sql = format!("INSERT INTO {} ({}) VALUES ({})", T::table_name(), columns, values);
         return self.exec_prepare(context_id, sql.as_str(), &args).await;
     }
 
@@ -266,20 +269,20 @@ impl CRUD for Rbatis {
         }
         let mut value_arr = String::new();
         let mut arg_arr = vec![];
-        let mut columns = "".to_string();
+        let mut column_sql = "".to_string();
         let mut field_index = 0;
         for x in args {
+            let (columns,values, args) = x.make_value_sql_arg(&self.driver_type()?, &mut field_index)?;
             if columns.is_empty() {
-                columns = T::table_columns();
+                column_sql = columns;
             }
-            let (values, args) = x.make_value_sql_arg(&self.driver_type()?, &mut field_index)?;
             value_arr = value_arr + format!("({}),", values).as_str();
             for x in args {
                 arg_arr.push(x);
             }
         }
         value_arr.pop();//pop ','
-        let sql = format!("INSERT INTO {} ({}) VALUES {}", T::table_name(), columns, value_arr);
+        let sql = format!("INSERT INTO {} ({}) VALUES {}", T::table_name(), column_sql, value_arr);
         return self.exec_prepare(context_id, sql.as_str(), &arg_arr).await;
     }
 
