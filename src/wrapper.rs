@@ -71,9 +71,11 @@ impl Wrapper {
         if self.error.is_some() {
             return Err(self.error.take().unwrap());
         }
+        self.trim_space();
         //remove and ,or
         self.trim_and();
         self.trim_or();
+        //remove WHERE AND
         self.checked = true;
         return Ok(self.clone());
     }
@@ -523,11 +525,16 @@ impl Wrapper {
         self
     }
 
+    pub fn trim_space(&mut self) -> &mut Self {
+        self.sql = self.sql.replace("  ", " ");
+        return self;
+    }
+
     pub fn trim_and(&mut self) -> &mut Self {
         self.sql = self.sql.trim()
             .trim_start_matches("AND ")
             .trim_end_matches(" AND")
-            .to_string();
+            .replace(" WHERE AND ", " WHERE ");
         self
     }
 
@@ -535,7 +542,7 @@ impl Wrapper {
         self.sql = self.sql
             .trim_start_matches("OR ")
             .trim_end_matches(" OR")
-            .to_string();
+            .replace(" WHERE OR ", " WHERE ");
         self
     }
 
