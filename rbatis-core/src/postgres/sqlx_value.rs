@@ -15,6 +15,7 @@ use sqlx_core::value::ValueRef;
 
 use crate::convert::{JsonCodec, RefJsonCodec, ResultCodec};
 use crate::postgres::PgInterval;
+use chrono::Utc;
 
 impl<'c> JsonCodec for PgValueRef<'c> {
     fn try_to_json(self) -> crate::Result<serde_json::Value> {
@@ -164,11 +165,11 @@ impl<'c> JsonCodec for PgValueRef<'c> {
                 return Ok(json!(r));
             }
             "TIMESTAMPTZ" => {
-                let r: Option<chrono::NaiveDateTime> = Decode::<'_, Postgres>::decode(self)?;
+                let r: Option<chrono::DateTime<Utc>> = Decode::<'_, Postgres>::decode(self)?;
                 return Ok(json!(r));
             }
             "TIMESTAMPTZ[]" => {
-                let r: Option<Vec<chrono::NaiveDateTime>> = Decode::<'_, Postgres>::decode(self)?;
+                let r: Option<Vec<chrono::DateTime<Utc>>> = Decode::<'_, Postgres>::decode(self)?;
                 return Ok(json!(r));
             }
             "CIDR" | "INET" => {
