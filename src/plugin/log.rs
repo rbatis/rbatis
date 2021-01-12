@@ -1,7 +1,7 @@
 use std::ops::Deref;
 
 use log::{debug, error, info, LevelFilter, trace, warn};
-use serde::export::fmt::Debug;
+use std::fmt::{Display, Debug};
 
 /// log plugin
 pub trait LogPlugin: Send + Sync + Debug {

@@ -3,7 +3,7 @@ use std::hash::Hash;
 
 use async_trait::async_trait;
 use serde::de::DeserializeOwned;
-use serde::export::fmt::Display;
+use std::fmt::Display;
 use serde::Serialize;
 use serde_json::{Map, Value};
 

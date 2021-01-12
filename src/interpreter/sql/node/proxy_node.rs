@@ -1,7 +1,7 @@
 use std::ops::Deref;
 use std::ptr::NonNull;
 
-use serde::export::fmt::Debug;
+use std::fmt::{Display, Debug};
 use serde_json::Value;
 
 use crate::core::Error;
