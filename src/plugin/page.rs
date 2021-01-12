@@ -3,7 +3,7 @@ use std::future::Future;
 use futures_core::future::BoxFuture;
 use serde::{Deserialize, Serialize};
 use serde::de::DeserializeOwned;
-use serde::export::fmt::Debug;
+use std::fmt::{Display, Debug};
 use serde_json::Value;
 
 use rbatis_core::Error;
