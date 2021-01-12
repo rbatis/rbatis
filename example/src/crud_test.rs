@@ -68,7 +68,7 @@ mod test {
             version: Some(BigDecimal::from(1)),
             delete_flag: Some(1),
         };
-        rb.remove_by_id::<BizActivity>("", &"12312".to_string()).await;
+        rb.remove_by_id::<BizActivity>("", activity.id.as_ref().unwrap()).await;
         let r = rb.save("", &activity).await;
         if r.is_err() {
             println!("{}", r.err().unwrap().to_string());
