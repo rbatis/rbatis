@@ -384,7 +384,7 @@ impl CRUD for Rbatis {
         if id.is_none() {
             return Err(crate::core::Error::from("[rbatis] update_by_id() arg's id can no be none!"));
         }
-        self.update_by_wrapper(context_id, arg, self.new_wrapper_table::<T>().eq(&T::id_name(), id), false).await
+        self.update_by_wrapper(context_id, arg, self.new_wrapper_table::<T>().push_sql(&format!("{} = {}",&T::id_name(), id.as_ref().unwrap())), false).await
     }
 
     /// remove batch database record by args
