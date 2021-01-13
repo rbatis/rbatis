@@ -548,7 +548,7 @@ impl Wrapper {
     }
 
     pub fn trim_or(&mut self) -> &mut Self {
-        self.sql = self.sql
+        self.sql = self.sql.trim()
             .trim_start_matches("OR ")
             .trim_end_matches(" OR")
             .to_string();
