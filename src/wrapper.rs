@@ -72,13 +72,21 @@ impl Wrapper {
             return Err(self.error.take().unwrap());
         }
         self.trim_space();
-        //remove and ,or
+        self.trim_value(" WHERE ORDER BY "," ORDER BY ");
+        self.trim_value(" WHERE GROUP BY "," GROUP BY ");
+        self.trim_value(" WHERE OR "," WHERE ");
+        self.trim_value(" WHERE AND "," WHERE ");
         self.trim_and();
         self.trim_or();
-        //remove WHERE AND
         self.checked = true;
         return Ok(self.clone());
     }
+
+    pub fn trim_value(&mut self,from:&str,to:&str)->&mut Self{
+        self.sql = self.sql.replace(from,to);
+        self
+    }
+
 
     pub fn set_formats(&mut self, formats: HashMap<String, String>) -> &mut Self {
         self.formats = formats;
@@ -534,7 +542,7 @@ impl Wrapper {
         self.sql = self.sql.trim()
             .trim_start_matches("AND ")
             .trim_end_matches(" AND")
-            .replace(" WHERE AND ", " WHERE ");
+            .to_string();
         self
     }
 
@@ -542,7 +550,7 @@ impl Wrapper {
         self.sql = self.sql
             .trim_start_matches("OR ")
             .trim_end_matches(" OR")
-            .replace(" WHERE OR ", " WHERE ");
+            .to_string();
         self
     }
 
@@ -568,8 +576,9 @@ mod test {
     #[test]
     fn test_trim() {
         let mut w = Wrapper::new(&DriverType::Mysql);
-        w.push_sql("WHERE ");
+        w.push_sql(" WHERE ");
         w.order_by(true, &["id"]);
+        w = w.check().unwrap();
         println!("sql:{:?}", w.sql.as_str());
         println!("arg:{:?}", w.args.clone());
         assert_eq!("ORDER BY id ASC", w.sql.as_str().trim());
