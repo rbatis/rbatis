@@ -48,12 +48,12 @@ async fn main() {
     let routes = warp::get()
         .and(warp::query::query())
         // and_then create a `Future` that will simply wait N seconds...
-        .and_then(sleepy);
+        .and_then(handler);
 
     warp::serve(routes).run(([127, 0, 0, 1], 8000)).await;
 }
 
-async fn sleepy(arg:HashMap<String,serde_json::Value>) -> Result<impl warp::Reply, Infallible> {
+async fn handler(arg:HashMap<String,serde_json::Value>) -> Result<impl warp::Reply, Infallible> {
     let v = RB.list::<BizActivity>("").await.unwrap();
     Ok(format!("{}", serde_json::json!(v)))
 }
