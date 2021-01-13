@@ -18,6 +18,10 @@ path = "src/tide_test/main.rs"
 name = "hyper-test"
 path = "src/hyper_test/main.rs"
 
+[[bin]]
+name = "warp-test"
+path = "src/warp_test/main.rs"
+
 [dependencies]
 #serde and base types
 serde = { version = "1", features = ["derive"] }
@@ -26,12 +30,6 @@ chrono = { version = "0.4", features = ["serde"] }
 uuid = "0.8"
 lazy_static = "1.4.0"
 bigdecimal = { version = "0.2.0", features = ["serde"] }
-#web lib
-actix-web = "3"
-actix-http = "2.0"
-actix-rt = "1.0"
-hyper = "0.13"
-tide = "0.15"
 #log lib
 log = "0.4"
 fast_log = "1.3"
@@ -42,3 +40,12 @@ async-std = { version = "1.8", features = ["attributes", "tokio02", "tokio03"] }
 rbatis = { path = "../", features = ["debug_mode"] }
 #(not necessary)only use custom py_sql
 rexpr = {version="1.0"}
+
+
+#web lib
+actix-web = "3"
+actix-http = "2.0"
+actix-rt = "1.0"
+hyper = "0.13"
+tide = "0.15"
+warp = "0.2"
