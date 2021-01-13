@@ -152,6 +152,10 @@ pub trait CRUDEnable: Send + Sync + Serialize + DeserializeOwned {
 impl<T> CRUDEnable for Option<T> where T: CRUDEnable {
     type IdType = T::IdType;
 
+    fn id_name() -> String{
+        T::id_name()
+    }
+
     fn table_name() -> String {
         T::table_name()
     }
