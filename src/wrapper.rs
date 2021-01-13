@@ -71,19 +71,20 @@ impl Wrapper {
         if self.error.is_some() {
             return Err(self.error.take().unwrap());
         }
+        self.sql = format!(" {} ", self.sql);
         self.trim_space();
-        self.trim_value(" WHERE ORDER BY "," ORDER BY ");
-        self.trim_value(" WHERE GROUP BY "," GROUP BY ");
-        self.trim_value(" WHERE OR "," WHERE ");
-        self.trim_value(" WHERE AND "," WHERE ");
+        self.trim_value(" WHERE ORDER BY ", " ORDER BY ");
+        self.trim_value(" WHERE GROUP BY ", " GROUP BY ");
+        self.trim_value(" WHERE OR ", " WHERE ");
+        self.trim_value(" WHERE AND ", " WHERE ");
         self.trim_and();
         self.trim_or();
         self.checked = true;
         return Ok(self.clone());
     }
 
-    pub fn trim_value(&mut self,from:&str,to:&str)->&mut Self{
-        self.sql = self.sql.replace(from,to);
+    pub fn trim_value(&mut self, from: &str, to: &str) -> &mut Self {
+        self.sql = self.sql.replace(from, to);
         self
     }
 
