@@ -67,29 +67,29 @@ impl Wrapper {
     }
 
     /// check is done？and return cloned Wrapper
-    pub fn check(&mut self) -> Result<Wrapper, Error> {
+    pub fn check(mut self) -> Result<Wrapper, Error> {
         if self.error.is_some() {
             return Err(self.error.take().unwrap());
         }
         self.sql = format!(" {} ", self.sql);
-        self.trim_space();
-        self.trim_value(" WHERE ORDER BY ", " ORDER BY ");
-        self.trim_value(" WHERE GROUP BY ", " GROUP BY ");
-        self.trim_value(" WHERE OR ", " WHERE ");
-        self.trim_value(" WHERE AND ", " WHERE ");
-        self.trim_and();
-        self.trim_or();
+        self = self.trim_space()
+            .trim_value(" WHERE ORDER BY ", " ORDER BY ")
+            .trim_value(" WHERE GROUP BY ", " GROUP BY ")
+            .trim_value(" WHERE OR ", " WHERE ")
+            .trim_value(" WHERE AND ", " WHERE ")
+            .trim_and()
+            .trim_or();
         self.checked = true;
-        return Ok(self.clone());
+        return Ok(self);
     }
 
-    pub fn trim_value(&mut self, from: &str, to: &str) -> &mut Self {
+    pub fn trim_value(mut self, from: &str, to: &str) -> Self {
         self.sql = self.sql.replace(from, to);
         self
     }
 
 
-    pub fn set_formats(&mut self, formats: HashMap<String, String>) -> &mut Self {
+    pub fn set_formats(mut self, formats: HashMap<String, String>) -> Self {
         self.formats = formats;
         self
     }
@@ -104,12 +104,12 @@ impl Wrapper {
     /// println!("sql:{:?}", w2.sql.as_str());  // sql:"b = ? AND (a = ?)"
     /// println!("arg:{:?}", w2.args.clone()); // arg:[String("2"), String("1")]
     ///
-    pub fn push_wrapper(&mut self, arg: &Wrapper) -> &mut Self {
+    pub fn push_wrapper(self, arg: &Wrapper) -> Self {
         self.push(&arg.sql, &arg.args)
     }
 
     /// push sql,args into self
-    pub fn push<T>(&mut self, sql: &str, args: &[T]) -> &mut Self
+    pub fn push<T>(mut self, sql: &str, args: &[T]) -> Self
         where T: Serialize {
         let mut new_sql = sql.to_string();
         if self.driver_type.is_number_type() {
@@ -141,8 +141,8 @@ impl Wrapper {
     /// for example:
     ///  let arg = 1;
     ///  wrapper.do_if(true, |w| w.eq("id"))
-    pub fn do_if<'s, F>(&'s mut self, test: bool, method: F) -> &'s mut Self
-        where F: FnOnce(&'s mut Self) -> &'s mut Self {
+    pub fn do_if<'s, F>(self, test: bool, method: F) -> Self
+        where F: FnOnce(Self) -> Self {
         if test {
             return method(self);
         }
@@ -159,8 +159,8 @@ impl Wrapper {
     ///                 (p == 1, |w| w.eq("a", "some")),
     ///             ], |w| w.eq("a", "default"))
     ///             .check().unwrap();
-    pub fn do_match<'s, F>(&'s mut self, cases: &[(bool, fn(&mut Wrapper) -> &mut Wrapper)], default: F) -> &'s mut Self
-        where F: FnOnce(&'s mut Self) -> &'s mut Self {
+    pub fn do_match<'s, F>(self, cases: &[(bool, fn(Wrapper) -> Wrapper)], default: F) -> Self
+        where F: FnOnce(Self) -> Self {
         for (test, case) in cases {
             if *test {
                 return case(self);
@@ -170,7 +170,7 @@ impl Wrapper {
     }
 
 
-    pub fn set_sql(&mut self, sql: &str) -> &mut Self {
+    pub fn set_sql(mut self, sql: &str) -> Self {
         self.sql = sql
             .replace(" and ", " AND ")
             .replace(" or ", " OR ")
@@ -178,7 +178,7 @@ impl Wrapper {
         self
     }
 
-    pub fn push_sql(&mut self, sql: &str) -> &mut Self {
+    pub fn push_sql(mut self, sql: &str) -> Self {
         let s = sql
             .replace(" and ", " AND ")
             .replace(" or ", " OR ")
@@ -187,7 +187,7 @@ impl Wrapper {
         self
     }
 
-    pub fn set_args<T>(&mut self, args: &[T]) -> &mut Self where T: Serialize {
+    pub fn set_args<T>(mut self, args: &[T]) -> Self where T: Serialize {
         let v = json!(args);
         if v.is_null() {
             return self;
@@ -198,13 +198,13 @@ impl Wrapper {
         self
     }
 
-    pub fn push_arg<T>(&mut self, arg: T) -> &mut Self where T: Serialize {
+    pub fn push_arg<T>(mut self, arg: T) -> Self where T: Serialize {
         let v = json!(arg);
         self.args.push(v);
         self
     }
 
-    pub fn pop_arg(&mut self) -> &mut Self {
+    pub fn pop_arg(mut self) -> Self {
         self.args.pop();
         self
     }
@@ -230,7 +230,7 @@ impl Wrapper {
     }
 
     /// link wrapper sql, if end with where , do nothing
-    pub fn and(&mut self) -> &mut Self {
+    pub fn and(mut self) -> Self {
         if !self.not_allow_and_or() {
             self.sql.push_str(" AND ");
         }
@@ -238,23 +238,23 @@ impl Wrapper {
     }
 
     /// link wrapper sql, if end with where , do nothing
-    pub fn or(&mut self) -> &mut Self {
+    pub fn or(mut self) -> Self {
         if !self.not_allow_and_or() {
             self.sql.push_str(" OR ");
         }
         self
     }
 
-    pub fn having(&mut self, sql_having: &str) -> &mut Self {
-        self.and();
+    pub fn having(mut self, sql_having: &str) -> Self {
+        self = self.and();
         self.sql.push_str(format!(" HAVING {} ", sql_having).as_str());
         self
     }
 
     /// arg: JsonObject or struct{} or map[String,**]
-    pub fn all_eq<T>(&mut self, arg: T) -> &mut Self
+    pub fn all_eq<T>(mut self, arg: T) -> Self
         where T: Serialize {
-        self.and();
+        self = self.and();
         let v = json!(arg);
         if v.is_null() {
             self.error = Some(Error::from("[rbatis] wrapper all_eq only support object/map struct!"));
@@ -271,7 +271,7 @@ impl Wrapper {
         let len = map.len();
         let mut index = 0;
         for (k, v) in map {
-            self.eq(k.as_str(), v);
+            self = self.eq(k.as_str(), v);
             if (index + 1) != len {
                 self.sql.push_str(" , ");
                 index += 1;
@@ -296,24 +296,24 @@ impl Wrapper {
     /// equal
     /// for example:
     ///  eq("a",1) " a = 1 "
-    pub fn eq<T>(&mut self, column: &str, obj: T) -> &mut Self
+    pub fn eq<T>(mut self, column: &str, obj: T) -> Self
         where T: Serialize {
-        self.and();
+        self = self.and();
         self.sql.push_str(&format!("{} = {}", column, self.do_format_column(column, self.driver_type.stmt_convert(self.args.len()))));
         self.args.push(json!(obj));
         self
     }
 
     /// not equal
-    pub fn ne<T>(&mut self, column: &str, obj: T) -> &mut Self
+    pub fn ne<T>(mut self, column: &str, obj: T) -> Self
         where T: Serialize {
-        self.and();
+        self = self.and();
         self.sql.push_str(&format!("{} <> {}", column, self.do_format_column(column, self.driver_type.stmt_convert(self.args.len()))));
         self.args.push(json!(obj));
         self
     }
 
-    pub fn order_by(&mut self, is_asc: bool, columns: &[&str]) -> &mut Self {
+    pub fn order_by(mut self, is_asc: bool, columns: &[&str]) -> Self {
         let len = columns.len();
         if len == 0 {
             return self;
@@ -337,7 +337,7 @@ impl Wrapper {
         self
     }
 
-    pub fn group_by(&mut self, columns: &[&str]) -> &mut Self {
+    pub fn group_by(mut self, columns: &[&str]) -> Self {
         let len = columns.len();
         if len == 0 {
             return self;
@@ -359,61 +359,61 @@ impl Wrapper {
     }
 
     ///  sql:   column > obj
-    pub fn gt<T>(&mut self, column: &str, obj: T) -> &mut Self
+    pub fn gt<T>(mut self, column: &str, obj: T) -> Self
         where T: Serialize {
-        self.and();
+        self = self.and();
         self.sql.push_str(&format!("{} > {}", column, self.do_format_column(column, self.driver_type.stmt_convert(self.args.len()))));
         self.args.push(json!(obj));
         self
     }
     ///  sql:   column >= obj
-    pub fn ge<T>(&mut self, column: &str, obj: T) -> &mut Self
+    pub fn ge<T>(mut self, column: &str, obj: T) -> Self
         where T: Serialize {
-        self.and();
+        self = self.and();
         self.sql.push_str(&format!("{} >= {}", column, self.do_format_column(column, self.driver_type.stmt_convert(self.args.len()))));
         self.args.push(json!(obj));
         self
     }
 
     ///  sql:   column < obj
-    pub fn lt<T>(&mut self, column: &str, obj: T) -> &mut Self
+    pub fn lt<T>(mut self, column: &str, obj: T) -> Self
         where T: Serialize {
-        self.and();
+        self = self.and();
         self.sql.push_str(&format!("{} < {}", column, self.do_format_column(column, self.driver_type.stmt_convert(self.args.len()))));
         self.args.push(json!(obj));
         self
     }
 
     ///  sql:   column <= obj
-    pub fn le<T>(&mut self, column: &str, obj: T) -> &mut Self
+    pub fn le<T>(mut self, column: &str, obj: T) -> Self
         where T: Serialize {
-        self.and();
+        self = self.and();
         self.sql.push_str(&format!("{} <= {}", column, self.do_format_column(column, self.driver_type.stmt_convert(self.args.len()))));
         self.args.push(json!(obj));
         self
     }
 
-    pub fn between<T>(&mut self, column: &str, min: T, max: T) -> &mut Self
+    pub fn between<T>(mut self, column: &str, min: T, max: T) -> Self
         where T: Serialize {
-        self.and();
+        self = self.and();
         self.sql.push_str(&format!("{} BETWEEN {} AND {}", column, self.do_format_column(column, self.driver_type.stmt_convert(self.args.len())), self.do_format_column(column, self.driver_type.stmt_convert(self.args.len() + 1))));
         self.args.push(json!(min));
         self.args.push(json!(max));
         self
     }
 
-    pub fn not_between<T>(&mut self, column: &str, min: T, max: T) -> &mut Self
+    pub fn not_between<T>(mut self, column: &str, min: T, max: T) -> Self
         where T: Serialize {
-        self.and();
+        self = self.and();
         self.sql.push_str(&format!("{} NOT BETWEEN {} AND {}", column, self.do_format_column(column, self.driver_type.stmt_convert(self.args.len())), self.do_format_column(column, self.driver_type.stmt_convert(self.args.len() + 1))));
         self.args.push(json!(min));
         self.args.push(json!(max));
         self
     }
 
-    pub fn like<T>(&mut self, column: &str, obj: T) -> &mut Self
+    pub fn like<T>(mut self, column: &str, obj: T) -> Self
         where T: Serialize {
-        self.and();
+        self = self.and();
         let v = json!(obj);
         let mut v_str = String::new();
         if v.is_string() {
@@ -426,9 +426,9 @@ impl Wrapper {
         self
     }
 
-    pub fn like_left<T>(&mut self, column: &str, obj: T) -> &mut Self
+    pub fn like_left<T>(mut self, column: &str, obj: T) -> Self
         where T: Serialize {
-        self.and();
+        self = self.and();
         let v = json!(obj);
         let mut v_str = String::new();
         if v.is_string() {
@@ -441,9 +441,9 @@ impl Wrapper {
         self
     }
 
-    pub fn like_right<T>(&mut self, column: &str, obj: T) -> &mut Self
+    pub fn like_right<T>(mut self, column: &str, obj: T) -> Self
         where T: Serialize {
-        self.and();
+        self = self.and();
         let v = json!(obj);
         let mut v_str = String::new();
         if v.is_string() {
@@ -456,9 +456,9 @@ impl Wrapper {
         self
     }
 
-    pub fn not_like<T>(&mut self, column: &str, obj: T) -> &mut Self
+    pub fn not_like<T>(mut self, column: &str, obj: T) -> Self
         where T: Serialize {
-        self.and();
+        self = self.and();
         let v = json!(obj);
         let mut v_str = String::new();
         if v.is_string() {
@@ -471,24 +471,24 @@ impl Wrapper {
         self
     }
 
-    pub fn is_null(&mut self, column: &str) -> &mut Self {
-        self.and();
+    pub fn is_null(mut self, column: &str) -> Self {
+        self = self.and();
         self.sql.push_str(column);
         self.sql.push_str(" IS NULL");
         self
     }
 
-    pub fn is_not_null(&mut self, column: &str) -> &mut Self {
-        self.and();
+    pub fn is_not_null(mut self, column: &str) -> Self {
+        self = self.and();
         self.sql.push_str(column);
         self.sql.push_str(" IS NOT NULL");
         self
     }
 
     /// gen sql: * in (*,*,*)
-    pub fn in_array<T>(&mut self, column: &str, obj: &[T]) -> &mut Self
+    pub fn in_array<T>(mut self, column: &str, obj: &[T]) -> Self
         where T: Serialize {
-        self.and();
+        self = self.and();
         if obj.len() == 0 {
             return self;
         }
@@ -506,21 +506,21 @@ impl Wrapper {
     }
 
     /// gen sql: * in (*,*,*)
-    pub fn in_<T>(&mut self, column: &str, obj: &[T]) -> &mut Self
+    pub fn in_<T>(self, column: &str, obj: &[T]) -> Self
         where T: Serialize {
         self.in_array(column, obj)
     }
 
     /// gen sql: * in (*,*,*)
-    pub fn r#in<T>(&mut self, column: &str, obj: &[T]) -> &mut Self
+    pub fn r#in<T>(self, column: &str, obj: &[T]) -> Self
         where T: Serialize {
         self.in_array(column, obj)
     }
 
 
-    pub fn not_in<T>(&mut self, column: &str, obj: &[T]) -> &mut Self
+    pub fn not_in<T>(mut self, column: &str, obj: &[T]) -> Self
         where T: Serialize {
-        self.and();
+        self = self.and();
         let arr = json!(obj);
         let vec = arr.as_array().unwrap();
         let mut sqls = String::new();
@@ -534,12 +534,12 @@ impl Wrapper {
         self
     }
 
-    pub fn trim_space(&mut self) -> &mut Self {
+    pub fn trim_space(mut self) -> Self {
         self.sql = self.sql.replace("  ", " ");
         return self;
     }
 
-    pub fn trim_and(&mut self) -> &mut Self {
+    pub fn trim_and(mut self) -> Self {
         self.sql = self.sql.trim()
             .trim_start_matches("AND ")
             .trim_end_matches(" AND")
@@ -547,7 +547,7 @@ impl Wrapper {
         self
     }
 
-    pub fn trim_or(&mut self) -> &mut Self {
+    pub fn trim_or(mut self) -> Self {
         self.sql = self.sql.trim()
             .trim_start_matches("OR ")
             .trim_end_matches(" OR")
@@ -555,7 +555,7 @@ impl Wrapper {
         self
     }
 
-    pub fn insert_into(&mut self, table_name: &str, columns: &str, values: &str) -> &mut Self {
+    pub fn insert_into(mut self, table_name: &str, columns: &str, values: &str) -> Self {
         if values.starts_with("(") && values.ends_with(")") {
             self.sql = format!("INSERT INTO {} ({}) VALUES ({})", table_name, columns, values);
         } else {
@@ -577,8 +577,8 @@ mod test {
     #[test]
     fn test_trim() {
         let mut w = Wrapper::new(&DriverType::Mysql);
-        w.push_sql(" WHERE ");
-        w.order_by(true, &["id"]);
+        w = w.push_sql(" WHERE ")
+            .order_by(true, &["id"]);
         w = w.check().unwrap();
         println!("sql:{:?}", w.sql.as_str());
         println!("arg:{:?}", w.args.clone());
@@ -704,8 +704,8 @@ mod test {
 
     #[test]
     fn test_push_wrapper() {
-        let mut w1 = Wrapper::new(&DriverType::Postgres);
-        let mut w2 = w1.clone();
+        let w1 = Wrapper::new(&DriverType::Postgres);
+        let w2 = w1.clone();
 
         let w2 = w1
             .eq("b", "b")
