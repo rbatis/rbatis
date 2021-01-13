@@ -230,11 +230,6 @@ pub(crate) fn impl_crud(args: TokenStream, input: TokenStream) -> TokenStream {
        #input_clone
        #s
     };
-    #[cfg(feature = "postgres")]
-    {
-        println!("............gen impl crud_enable:\n {}", qt);
-        println!("............gen impl crud_enable end............");
-    }
     qt.into()
 }
 
