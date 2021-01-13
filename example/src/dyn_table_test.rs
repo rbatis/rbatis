@@ -3,7 +3,7 @@ use rbatis::rbatis::Rbatis;
 use rbatis::crud::CRUD;
 
 #[async_std::test]
-pub async fn test_remove_batch_by_id() {
+pub async fn test_dyn_table_name() {
     fast_log::init_log("requests.log", 1000, log::Level::Info, None, true);
     let rb = Rbatis::new();
     rb.link("mysql://root:123456@localhost:3306/test").await.unwrap();
