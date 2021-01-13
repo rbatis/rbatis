@@ -69,5 +69,12 @@ pub fn py_sql(args: TokenStream, func: TokenStream) -> TokenStream {
 
 #[proc_macro_attribute]
 pub fn crud_enable(args: TokenStream, input: TokenStream) -> TokenStream {
-    crud_enable::impl_crud(args, input)
+    let stream = crud_enable::impl_crud(args, input);
+    #[cfg(feature = "debug_mode")]
+        {
+            println!("............gen impl CRUDEnable:\n {}", stream);
+            println!("............gen impl CRUDEnable end............");
+        }
+
+    return stream;
 }
