@@ -4,7 +4,8 @@ use crate::core::db::DriverType;
 pub trait SqlUpperCase {
     fn to_upper_case(&self, sql: &str) -> String {
         let sql = format!(" {} ", sql);
-        sql.replace(" select ", " SELECT ")
+        sql.replace("  ", " ")
+            .replace(" select ", " SELECT ")
             .replace(" delete ", " DELETE ")
             .replace(" update ", " UPDATE ")
             .replace(" insert ", " INSERT ")
