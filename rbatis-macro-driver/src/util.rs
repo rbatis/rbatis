@@ -74,3 +74,10 @@ pub(crate) fn get_page_req_ident(target_fn: &ItemFn, func_name: &str) -> Ident {
     let req = Ident::new(&req, Span::call_site());
     req
 }
+
+
+//find and check method return type
+pub(crate) fn find_fn_body(target_fn: &ItemFn) -> proc_macro2::TokenStream {
+    let return_ty = target_fn.block.to_token_stream();
+    return_ty
+}
