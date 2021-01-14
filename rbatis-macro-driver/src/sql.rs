@@ -5,7 +5,7 @@ use syn;
 use syn::{AttributeArgs, ItemFn};
 
 use crate::proc_macro::TokenStream;
-use crate::util::{find_return_type, get_fn_args, get_page_req_ident};
+use crate::util::{find_return_type, get_fn_args, get_page_req_ident, find_fn_body};
 
 //impl sql macro
 pub(crate) fn impl_macro_sql(target_fn: &ItemFn, args: &AttributeArgs) -> TokenStream {
@@ -16,6 +16,7 @@ pub(crate) fn impl_macro_sql(target_fn: &ItemFn, args: &AttributeArgs) -> TokenS
     let sql_ident = args.get(1).unwrap().to_token_stream();
     let sql = format!("{}", sql_ident).trim().to_string();
     let func_args_stream = target_fn.sig.inputs.to_token_stream();
+    let fn_body = find_fn_body(target_fn);
     let is_async = target_fn.sig.asyncness.is_some();
     if !is_async {
         panic!(format!("[rbaits] 'fn {}({})' must be  async fn! ", func_name_ident, func_args_stream));
@@ -44,6 +45,7 @@ pub(crate) fn impl_macro_sql(target_fn: &ItemFn, args: &AttributeArgs) -> TokenS
        pub async fn #func_name_ident(#func_args_stream) -> #return_ty{
            let mut rb_args =vec![];
            #sql_args_gen
+           #fn_body
            return #rbatis_ident.#call_method(#context_id_ident,#sql_ident,&rb_args #page_req).await;
        }
     };
