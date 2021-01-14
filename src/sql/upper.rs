@@ -15,6 +15,12 @@ pub trait SqlUpperCase {
             .replace(" group by ", " GROUP BY ")
             .replace(" order by ", " ORDER BY ")
             .replace(" limit ", " LIMIT ")
+
+            //not allow
+            .replace(" WHERE ORDER BY ", " ORDER BY ")
+            .replace(" WHERE GROUP BY ", " GROUP BY ")
+            .replace(" WHERE OR ", " WHERE ")
+            .replace(" WHERE AND ", " WHERE ")
     }
 }
 

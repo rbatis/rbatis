@@ -40,7 +40,7 @@ pub struct Wrapper {
     pub sql: String,
     pub args: Vec<serde_json::Value>,
     pub formats: HashMap<String, String>,
-    pub error: Option<Error>
+    pub error: Option<Error>,
 }
 
 impl Wrapper {
@@ -50,7 +50,7 @@ impl Wrapper {
             sql: "".to_string(),
             args: vec![],
             formats: Default::default(),
-            error: None
+            error: None,
         }
     }
 
@@ -60,7 +60,7 @@ impl Wrapper {
             sql: sql.to_string(),
             args: args.clone(),
             formats: HashMap::new(),
-            error: None
+            error: None,
         }
     }
 
@@ -71,10 +71,6 @@ impl Wrapper {
         }
         self.sql = self.driver_type.to_upper_case(&self.sql);
         self = self
-            .trim_value(" WHERE ORDER BY ", " ORDER BY ")
-            .trim_value(" WHERE GROUP BY ", " GROUP BY ")
-            .trim_value(" WHERE OR ", " WHERE ")
-            .trim_value(" WHERE AND ", " WHERE ")
             .trim_and()
             .trim_or();
         return Ok(self);
@@ -168,19 +164,15 @@ impl Wrapper {
 
 
     pub fn set_sql(mut self, sql: &str) -> Self {
-        self.sql = sql
-            .replace(" and ", " AND ")
-            .replace(" or ", " OR ")
-            .replace(" where ", " WHERE ");
+        self.sql = sql.to_owned();
+        self.sql = self.driver_type.to_upper_case(&self.sql);
         self
     }
 
     pub fn push_sql(mut self, sql: &str) -> Self {
-        let s = sql
-            .replace(" and ", " AND ")
-            .replace(" or ", " OR ")
-            .replace(" where ", " WHERE ");
+        let s = sql.to_owned();
         self.sql.push_str(s.as_str());
+        self.sql = self.driver_type.to_upper_case(&self.sql);
         self
     }
 
