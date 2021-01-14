@@ -7,6 +7,7 @@ use serde_json::{json, Map, Value};
 use crate::core::convert::StmtConvert;
 use crate::core::db::DriverType;
 use crate::core::Error;
+use crate::sql::upper::SqlUpperCase;
 
 /// The packing/Wrapper of the SQL
 /// SQL passed into the Wrapper keep the keyword uppercase
@@ -68,7 +69,7 @@ impl Wrapper {
         if self.error.is_some() {
             return Err(self.error.take().unwrap());
         }
-        self.sql = format!(" {} ", self.sql);
+        self.sql = format!(" {} ", self.driver_type.to_upper_case(&self.sql));
         self = self.trim_space()
             .trim_value(" WHERE ORDER BY ", " ORDER BY ")
             .trim_value(" WHERE GROUP BY ", " GROUP BY ")

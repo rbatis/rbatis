@@ -289,8 +289,6 @@ impl RbatisReplacePagePlugin {
             from_index = Option::Some(from_index.unwrap() + " FROM ".len());
         }
         let mut where_sql = sql[from_index.unwrap_or(0)..sql.len()].to_string();
-        where_sql = where_sql.replace(" order by ", " ORDER BY ");
-        where_sql = where_sql.replace(" limit ", " LIMIT ");
         //remove order by
         if where_sql.contains(" ORDER BY ") {
             where_sql = where_sql[0..where_sql.rfind(" ORDER BY ").unwrap_or(where_sql.len())].to_string();
@@ -306,10 +304,7 @@ impl RbatisReplacePagePlugin {
 impl PagePlugin for RbatisReplacePagePlugin {
     fn make_page_sql<>(&self, driver_type: &DriverType, context_id: &str, sql: &str, args: &Vec<Value>, page: &dyn IPageRequest) -> Result<(String, String), crate::core::Error> {
         //default sql
-        let mut sql = sql.to_owned();
-        sql = sql.replace("select ", "SELECT ");
-        sql = sql.replace(" from ", " FROM ");
-        sql = sql.trim().to_string();
+        let mut sql = sql.trim().to_owned();
         if !sql.starts_with("SELECT ") && !sql.contains("FROM ") {
             return Err(crate::core::Error::from("[rbatis] make_page_sql() sql must contains 'SELECT ' And 'FROM '"));
         }
@@ -347,10 +342,7 @@ impl RbatisPackPagePlugin {
 impl PagePlugin for RbatisPackPagePlugin {
     fn make_page_sql<>(&self, driver_type: &DriverType, context_id: &str, sql: &str, args: &Vec<Value>, page: &dyn IPageRequest) -> Result<(String, String), crate::core::Error> {
         //default sql
-        let mut sql = sql.to_owned();
-        sql = sql.replace("select ", "SELECT ");
-        sql = sql.replace(" from ", " FROM ");
-        sql = sql.trim().to_string();
+        let mut sql = sql.trim().to_owned();
         if !sql.starts_with("SELECT ") && !sql.contains("FROM ") {
             return Err(crate::core::Error::from("[rbatis] make_page_sql() sql must contains 'SELECT ' And 'FROM '"));
         }
@@ -399,7 +391,7 @@ impl Default for RbatisPagePlugin {
 
 impl PagePlugin for RbatisPagePlugin {
     fn make_page_sql(&self, driver_type: &DriverType, context_id: &str, sql: &str, args: &Vec<Value>, page: &dyn IPageRequest) -> Result<(String, String), Error> {
-        if sql.contains("GROUP BY") || sql.contains("group by") || sql.contains("Group By") {
+        if sql.contains(" GROUP BY "){
             return self.pack.make_page_sql(driver_type, context_id, sql, args, page);
         } else {
             return self.replace.make_page_sql(driver_type, context_id, sql, args, page);

@@ -31,6 +31,7 @@ use crate::tx::{TxGuard, TxManager, TxState};
 use crate::utils::error_util::ToResult;
 use crate::utils::string_util;
 use crate::wrapper::Wrapper;
+use crate::sql::upper::SqlUpperCase;
 
 /// rbatis engine
 #[derive(Debug)]
@@ -555,8 +556,9 @@ impl Rbatis {
     /// fetch page result(prepare sql)
     pub async fn fetch_page<T>(&self, context_id: &str, sql: &str, args: &Vec<serde_json::Value>, page_request: &dyn IPageRequest) -> Result<Page<T>, Error>
         where T: DeserializeOwned + Serialize + Send + Sync {
+        let sql=self.driver_type()?.to_upper_case(sql);
         let mut page_result = Page::new(page_request.get_current(), page_request.get_size());
-        let (count_sql, sql) = self.page_plugin.make_page_sql(&self.driver_type()?, context_id, sql, args, page_request)?;
+        let (count_sql, sql) = self.page_plugin.make_page_sql(&self.driver_type()?, context_id, &sql, args, page_request)?;
         if page_request.is_serch_count() {
             //make count sql
             let total: Option<u64> = self.fetch_prepare(context_id, count_sql.as_str(), args).await?;

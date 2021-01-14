@@ -1,8 +1,6 @@
 use serde_json::Value;
 
 pub mod limit;
+pub mod upper;
 
-pub trait PageLimit {
-    /// return  sql
-    fn page_limit_sql(&self, offset: u64, size: u64) -> crate::core::Result<String>;
-}
+pub use limit::PageLimit;
