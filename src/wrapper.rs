@@ -39,8 +39,7 @@ pub struct Wrapper {
     pub sql: String,
     pub args: Vec<serde_json::Value>,
     pub formats: HashMap<String, String>,
-    pub error: Option<Error>,
-    pub is_checked: bool,
+    pub error: Option<Error>
 }
 
 impl Wrapper {
@@ -50,8 +49,7 @@ impl Wrapper {
             sql: "".to_string(),
             args: vec![],
             formats: Default::default(),
-            error: None,
-            is_checked: false,
+            error: None
         }
     }
 
@@ -61,8 +59,7 @@ impl Wrapper {
             sql: sql.to_string(),
             args: args.clone(),
             formats: HashMap::new(),
-            error: None,
-            is_checked: false,
+            error: None
         }
     }
 
@@ -79,7 +76,6 @@ impl Wrapper {
             .trim_value(" WHERE AND ", " WHERE ")
             .trim_and()
             .trim_or();
-        self.is_checked = true;
         return Ok(self);
     }
 
