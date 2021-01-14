@@ -326,7 +326,7 @@ impl CRUD for Rbatis {
         let driver_type = &self.driver_type()?;
         let id_str = T::do_format_column(&driver_type, &T::id_name(), driver_type.stmt_convert(0));
         if self.logic_plugin.is_some() {
-            sql = self.logic_plugin.as_ref().unwrap().create_remove_sql(&driver_type, T::table_name().as_str(), &T::table_columns(), format!(" WHERE id = {}", id_str).as_str())?;
+            sql = self.logic_plugin.as_ref().unwrap().create_remove_sql(&driver_type, T::table_name().as_str(), &T::table_columns(), format!(" WHERE {} = {}", T::id_name(),id_str).as_str())?;
         } else {
             sql = format!("DELETE FROM {} WHERE {} = {}", T::table_name(), T::id_name(), id_str);
         }
