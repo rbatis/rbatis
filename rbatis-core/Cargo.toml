@@ -1,6 +1,6 @@
 [package]
 name = "rbatis-core"
-version = "1.8.64"
+version = "1.8.65"
 description = "Core of rbatis, the rust SQL toolkit. Not intended to be used directly."
 license = "Apache-2.0"
 edition = "2018"
