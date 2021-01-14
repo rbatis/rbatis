@@ -1,5 +1,10 @@
 use crate::core::db::DriverType;
-use crate::sql::PageLimit;
+
+pub trait PageLimit {
+    /// return  sql
+    fn page_limit_sql(&self, offset: u64, size: u64) -> crate::core::Result<String>;
+}
+
 
 impl PageLimit for DriverType {
     fn page_limit_sql(&self, offset: u64, size: u64) -> crate::core::Result<String> {
