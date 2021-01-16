@@ -1,7 +1,6 @@
 [workspace]
 members = [
     ".",
-    "rbatis-core",
     "rbatis-macro-driver",
     "example"
 ]
@@ -57,7 +56,7 @@ snowflake = ["rustflake"]
 
 [dependencies]
 rexpr = { version = "1.0" }
-rbatis-core = { version = "1.8.65", path = "rbatis-core", default-features = false, optional = true }
+rbatis-core = { version = "1.8.65", default-features = false, optional = true }
 rbatis-macro-driver = { version = "1.8.65", path = "rbatis-macro-driver", default-features = false, optional = true }
 
 chrono = { version = "0.4", features = ["serde"] }
