@@ -1,14 +1,14 @@
 use std::collections::LinkedList;
 
-use serde_json::{json, Value};
 use serde_json::map::Map;
+use serde_json::{json, Value};
 
 use crate::core::convert::StmtConvert;
 use crate::core::db::DriverType;
-use rexpr;
-use rexpr::runtime::RExprRuntime;
 use crate::interpreter::sql::ast::RbatisAST;
 use crate::utils::string_util;
+use rexpr;
+use rexpr::runtime::RExprRuntime;
 
 ///string抽象节点
 #[derive(Clone, Debug)]
@@ -31,7 +31,14 @@ impl RbatisAST for StringNode {
     fn name() -> &'static str {
         "string"
     }
-    fn eval(&self, convert: &crate::core::db::DriverType, env: &mut Value, engine: &RExprRuntime, arg_array: &mut Vec<Value>, arg_sql: &mut String) -> Result<serde_json::Value, crate::core::Error> {
+    fn eval(
+        &self,
+        convert: &crate::core::db::DriverType,
+        env: &mut Value,
+        engine: &RExprRuntime,
+        arg_array: &mut Vec<Value>,
+        arg_sql: &mut String,
+    ) -> Result<serde_json::Value, crate::core::Error> {
         let mut result = self.value.clone();
         for (item, value) in &self.express_map {
             if item.is_empty() {
@@ -77,21 +84,29 @@ impl RbatisAST for StringNode {
 #[cfg(test)]
 mod test {
     use crate::core::db::DriverType;
-    use rexpr::runtime::RExprRuntime;
     use crate::interpreter::sql::ast::RbatisAST;
     use crate::interpreter::sql::node::string_node::StringNode;
+    use rexpr::runtime::RExprRuntime;
 
     #[test]
     pub fn test_string_node() {
         let mut john = json!({
-        "arg": 2,
-    });
+            "arg": 2,
+        });
         let mut engine = RExprRuntime::new();
         let s_node = StringNode::new("arg+1=#{arg+1}");
         let mut arg_array = vec![];
 
         let mut r = String::new();
-        s_node.eval(&DriverType::Mysql, &mut john, &mut engine, &mut arg_array, &mut r).unwrap();
+        s_node
+            .eval(
+                &DriverType::Mysql,
+                &mut john,
+                &mut engine,
+                &mut arg_array,
+                &mut r,
+            )
+            .unwrap();
         println!("{}", r);
         assert_eq!(r, "arg+1=?");
         assert_eq!(arg_array.len(), 1);
@@ -100,13 +115,21 @@ mod test {
     #[test]
     pub fn test_string_node_replace() {
         let mut john = json!({
-        "arg": 2,
-    });
+            "arg": 2,
+        });
         let mut engine = RExprRuntime::new();
         let s_node = StringNode::new("arg+1=${arg+1}");
         let mut arg_array = vec![];
         let mut r = String::new();
-        s_node.eval(&DriverType::Mysql, &mut john, &mut engine, &mut arg_array, &mut r).unwrap();
+        s_node
+            .eval(
+                &DriverType::Mysql,
+                &mut john,
+                &mut engine,
+                &mut arg_array,
+                &mut r,
+            )
+            .unwrap();
         println!("r:{}", r);
         assert_eq!(r, "arg+1=3");
         assert_eq!(arg_array.len(), 0);

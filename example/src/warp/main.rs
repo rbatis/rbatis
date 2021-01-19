@@ -4,14 +4,14 @@ extern crate lazy_static;
 #[macro_use]
 extern crate rbatis;
 
+use chrono::NaiveDateTime;
+use rbatis::crud::CRUD;
+use rbatis::rbatis::Rbatis;
+use std::collections::HashMap;
 use std::convert::Infallible;
 use std::str::FromStr;
 use std::time::Duration;
 use warp::Filter;
-use std::collections::HashMap;
-use chrono::NaiveDateTime;
-use rbatis::rbatis::Rbatis;
-use rbatis::crud::CRUD;
 
 #[crud_enable]
 #[derive(Clone, Debug)]
@@ -35,7 +35,7 @@ pub const MYSQL_URL: &'static str = "mysql://root:123456@localhost:3306/test";
 
 // 示例-Rbatis示例初始化(必须)
 lazy_static! {
-  static ref RB:Rbatis=Rbatis::new();
+    static ref RB: Rbatis = Rbatis::new();
 }
 
 #[tokio::main]
@@ -53,9 +53,7 @@ async fn main() {
     warp::serve(routes).run(([127, 0, 0, 1], 8000)).await;
 }
 
-async fn handler(arg:HashMap<String,serde_json::Value>) -> Result<impl warp::Reply, Infallible> {
+async fn handler(arg: HashMap<String, serde_json::Value>) -> Result<impl warp::Reply, Infallible> {
     let v = RB.list::<BizActivity>("").await.unwrap();
     Ok(format!("{}", serde_json::json!(v)))
 }
-
-

@@ -3,15 +3,14 @@ extern crate proc_macro;
 
 use std::collections::HashMap;
 
-use syn::{AttributeArgs, ItemFn, parse_macro_input};
+use syn::{parse_macro_input, AttributeArgs, ItemFn};
 
 use crate::proc_macro::TokenStream;
 
-mod util;
 mod crud_enable;
-mod sql;
 mod py_sql;
-
+mod sql;
+mod util;
 
 #[proc_macro_derive(CRUDEnable)]
 pub fn hello_macro_derive(input: TokenStream) -> TokenStream {
@@ -25,7 +24,6 @@ pub fn hello_macro_derive(input: TokenStream) -> TokenStream {
 
     stream
 }
-
 
 /// auto create sql macro,this macro use RB.fetch_prepare and RB.exec_prepare
 /// for example:
@@ -71,10 +69,10 @@ pub fn py_sql(args: TokenStream, func: TokenStream) -> TokenStream {
 pub fn crud_enable(args: TokenStream, input: TokenStream) -> TokenStream {
     let stream = crud_enable::impl_crud(args, input);
     #[cfg(feature = "debug_mode")]
-        {
-            println!("............gen impl CRUDEnable:\n {}", stream);
-            println!("............gen impl CRUDEnable end............");
-        }
+    {
+        println!("............gen impl CRUDEnable:\n {}", stream);
+        println!("............gen impl CRUDEnable end............");
+    }
 
     return stream;
 }

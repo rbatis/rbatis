@@ -1,4 +1,3 @@
-use serde_json::{json, Value};
 use crate::core::convert::StmtConvert;
 use crate::interpreter::sql::ast::RbatisAST;
 use crate::interpreter::sql::node::bind_node::BindNode;
@@ -14,6 +13,7 @@ use crate::interpreter::sql::node::trim_node::TrimNode;
 use crate::interpreter::sql::node::when_node::WhenNode;
 use crate::interpreter::sql::node::where_node::WhereNode;
 use rexpr::runtime::RExprRuntime;
+use serde_json::{json, Value};
 
 #[derive(Clone, Debug)]
 pub enum NodeType {
@@ -70,11 +70,21 @@ impl NodeType {
 }
 
 impl<'a> RbatisAST for NodeType {
-    fn name() -> &'static str where Self: Sized {
+    fn name() -> &'static str
+    where
+        Self: Sized,
+    {
         "node_type"
     }
 
-    fn eval(&self, convert: &crate::core::db::DriverType, env: &mut Value, engine: &RExprRuntime, arg_array: &mut Vec<Value>, arg_sql: &mut String) -> Result<serde_json::Value, crate::core::Error> {
+    fn eval(
+        &self,
+        convert: &crate::core::db::DriverType,
+        env: &mut Value,
+        engine: &RExprRuntime,
+        arg_array: &mut Vec<Value>,
+        arg_sql: &mut String,
+    ) -> Result<serde_json::Value, crate::core::Error> {
         match self {
             NodeType::Null => return Result::Ok(serde_json::Value::Null),
             NodeType::NString(node) => return node.eval(convert, env, engine, arg_array, arg_sql),
@@ -82,7 +92,9 @@ impl<'a> RbatisAST for NodeType {
             NodeType::NTrim(node) => return node.eval(convert, env, engine, arg_array, arg_sql),
             NodeType::NForEach(node) => return node.eval(convert, env, engine, arg_array, arg_sql),
             NodeType::NChoose(node) => return node.eval(convert, env, engine, arg_array, arg_sql),
-            NodeType::NOtherwise(node) => return node.eval(convert, env, engine, arg_array, arg_sql),
+            NodeType::NOtherwise(node) => {
+                return node.eval(convert, env, engine, arg_array, arg_sql)
+            }
             NodeType::NWhen(node) => return node.eval(convert, env, engine, arg_array, arg_sql),
             NodeType::NBind(node) => return node.eval(convert, env, engine, arg_array, arg_sql),
             NodeType::NSet(node) => return node.eval(convert, env, engine, arg_array, arg_sql),
@@ -92,6 +104,3 @@ impl<'a> RbatisAST for NodeType {
         }
     }
 }
-
-
-

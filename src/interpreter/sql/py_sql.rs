@@ -7,9 +7,6 @@ use serde_json::json;
 use serde_json::Value;
 
 use crate::core::Error;
-use rexpr::ast::Node;
-use rexpr::lexer::lexer;
-use rexpr::runtime::RExprRuntime;
 use crate::interpreter::sql::ast::RbatisAST;
 use crate::interpreter::sql::node::bind_node::BindNode;
 use crate::interpreter::sql::node::choose_node::ChooseNode;
@@ -26,6 +23,9 @@ use crate::interpreter::sql::node::trim_node::TrimNode;
 use crate::interpreter::sql::node::when_node::WhenNode;
 use crate::interpreter::sql::node::where_node::WhereNode;
 use dashmap::DashMap;
+use rexpr::ast::Node;
+use rexpr::lexer::lexer;
+use rexpr::runtime::RExprRuntime;
 
 /// Py lang,make sure Send+Sync
 #[derive(Debug)]
@@ -35,14 +35,24 @@ pub struct PyRuntime {
 }
 
 impl PyRuntime {
-
-    pub fn new(generate: Vec<Box<dyn NodeFactory>>) ->Self{
-        Self{ cache: Default::default(), generate: generate }
+    pub fn new(generate: Vec<Box<dyn NodeFactory>>) -> Self {
+        Self {
+            cache: Default::default(),
+            generate: generate,
+        }
     }
     ///eval with cache
-    pub fn eval(&self, driver_type: &crate::core::db::DriverType, py_sql: &str, env: &mut Value, engine: &RExprRuntime) -> Result<(String, Vec<serde_json::Value>), Error> {
+    pub fn eval(
+        &self,
+        driver_type: &crate::core::db::DriverType,
+        py_sql: &str,
+        env: &mut Value,
+        engine: &RExprRuntime,
+    ) -> Result<(String, Vec<serde_json::Value>), Error> {
         if !env.is_object() {
-            return Result::Err(Error::from("[rbatis] py_sql Requires that the parameter be an json object!"));
+            return Result::Err(Error::from(
+                "[rbatis] py_sql Requires that the parameter be an json object!",
+            ));
         }
         let nodes = self.parse_and_cache(py_sql)?;
         let mut sql = String::new();
@@ -69,12 +79,18 @@ impl PyRuntime {
         return rd;
     }
 
-    pub fn add_gen<T>(&mut self, arg: T) where T: NodeFactory + 'static {
+    pub fn add_gen<T>(&mut self, arg: T)
+    where
+        T: NodeFactory + 'static,
+    {
         self.generate.push(Box::new(arg));
     }
 
     /// parser py string data
-    pub fn parse(arg: &str, generates: &Vec<Box<dyn NodeFactory>>) -> Result<Vec<NodeType>, crate::core::Error> {
+    pub fn parse(
+        arg: &str,
+        generates: &Vec<Box<dyn NodeFactory>>,
+    ) -> Result<Vec<NodeType>, crate::core::Error> {
         let line_space_map = PyRuntime::create_line_space_map(arg);
         let mut main_node = vec![];
         let ls = arg.lines();
@@ -90,7 +106,8 @@ impl PyRuntime {
             if space == -1 {
                 space = count_index;
             }
-            let (child_str, do_skip) = PyRuntime::find_child_str(line, count_index, arg, &line_space_map);
+            let (child_str, do_skip) =
+                PyRuntime::find_child_str(line, count_index, arg, &line_space_map);
             if do_skip != -1 && do_skip >= skip {
                 skip = do_skip;
             }
@@ -100,32 +117,85 @@ impl PyRuntime {
             } else {
                 parserd = vec![];
             }
-            PyRuntime::parse_node(generates, &mut main_node, x, *line_space_map.get(&line).unwrap() as usize, parserd)?;
+            PyRuntime::parse_node(
+                generates,
+                &mut main_node,
+                x,
+                *line_space_map.get(&line).unwrap() as usize,
+                parserd,
+            )?;
         }
         return Ok(main_node);
     }
 
-    fn parse_trim_node(factorys: &Vec<Box<dyn NodeFactory>>, trim_express: &str, main_node: &mut Vec<NodeType>, source_str: &str, space: usize, childs: Vec<NodeType>) -> Result<NodeType, crate::core::Error> {
+    fn parse_trim_node(
+        factorys: &Vec<Box<dyn NodeFactory>>,
+        trim_express: &str,
+        main_node: &mut Vec<NodeType>,
+        source_str: &str,
+        space: usize,
+        childs: Vec<NodeType>,
+    ) -> Result<NodeType, crate::core::Error> {
         if trim_express.starts_with(IfNode::name()) {
             return Ok(NodeType::NIf(IfNode::from(trim_express, childs)?));
         } else if trim_express.starts_with(ForEachNode::name()) {
-            return Ok(NodeType::NForEach(ForEachNode::from(source_str, &trim_express, childs)?));
+            return Ok(NodeType::NForEach(ForEachNode::from(
+                source_str,
+                &trim_express,
+                childs,
+            )?));
         } else if trim_express.starts_with(TrimNode::name()) {
-            return Ok(NodeType::NTrim(TrimNode::from(source_str, trim_express, childs)?));
+            return Ok(NodeType::NTrim(TrimNode::from(
+                source_str,
+                trim_express,
+                childs,
+            )?));
         } else if trim_express.starts_with(ChooseNode::name()) {
-            return Ok(NodeType::NChoose(ChooseNode::from(source_str, trim_express, childs)?));
-        } else if trim_express.starts_with(OtherwiseNode::def_name()) || trim_express.starts_with(OtherwiseNode::name()) {
-            return Ok(NodeType::NOtherwise(OtherwiseNode::from(source_str, trim_express, childs)?));
+            return Ok(NodeType::NChoose(ChooseNode::from(
+                source_str,
+                trim_express,
+                childs,
+            )?));
+        } else if trim_express.starts_with(OtherwiseNode::def_name())
+            || trim_express.starts_with(OtherwiseNode::name())
+        {
+            return Ok(NodeType::NOtherwise(OtherwiseNode::from(
+                source_str,
+                trim_express,
+                childs,
+            )?));
         } else if trim_express.starts_with(WhenNode::name()) {
-            return Ok(NodeType::NWhen(WhenNode::from(source_str, trim_express, childs)?));
-        } else if trim_express.starts_with(BindNode::def_name()) || trim_express.starts_with(BindNode::name()) {
-            return Ok(NodeType::NBind(BindNode::from(source_str, trim_express, childs)?));
+            return Ok(NodeType::NWhen(WhenNode::from(
+                source_str,
+                trim_express,
+                childs,
+            )?));
+        } else if trim_express.starts_with(BindNode::def_name())
+            || trim_express.starts_with(BindNode::name())
+        {
+            return Ok(NodeType::NBind(BindNode::from(
+                source_str,
+                trim_express,
+                childs,
+            )?));
         } else if trim_express.starts_with(SetNode::name()) {
-            return Ok(NodeType::NSet(SetNode::from(source_str, trim_express, childs)?));
+            return Ok(NodeType::NSet(SetNode::from(
+                source_str,
+                trim_express,
+                childs,
+            )?));
         } else if trim_express.starts_with(WhereNode::name()) {
-            return Ok(NodeType::NWhere(WhereNode::from(source_str, trim_express, childs)?));
+            return Ok(NodeType::NWhere(WhereNode::from(
+                source_str,
+                trim_express,
+                childs,
+            )?));
         } else if trim_express.starts_with(PrintNode::name()) {
-            return Ok(NodeType::NPrint(PrintNode::from(source_str, trim_express, childs)?));
+            return Ok(NodeType::NPrint(PrintNode::from(
+                source_str,
+                trim_express,
+                childs,
+            )?));
         } else {
             for f in factorys {
                 let gen = f.try_new(trim_express, childs.clone())?;
@@ -134,12 +204,19 @@ impl PyRuntime {
                 }
             }
             // unkonw tag
-            return Err(crate::core::Error::from("[rbatis] unknow tag: ".to_string() + source_str));
+            return Err(crate::core::Error::from(
+                "[rbatis] unknow tag: ".to_string() + source_str,
+            ));
         }
     }
 
-
-    fn parse_node(generates: &Vec<Box<dyn NodeFactory>>, main_node: &mut Vec<NodeType>, x: &str, space: usize, mut childs: Vec<NodeType>) -> Result<(), crate::core::Error> {
+    fn parse_node(
+        generates: &Vec<Box<dyn NodeFactory>>,
+        main_node: &mut Vec<NodeType>,
+        x: &str,
+        space: usize,
+        mut childs: Vec<NodeType>,
+    ) -> Result<(), crate::core::Error> {
         let mut trim_x = x.trim();
         if trim_x.starts_with("//") {
             return Ok(());
@@ -153,7 +230,9 @@ impl PyRuntime {
                     for index in 0..len {
                         let index = len - 1 - index;
                         let item = vecs[index];
-                        childs = vec![Self::parse_trim_node(generates, item, main_node, x, space, childs)?];
+                        childs = vec![Self::parse_trim_node(
+                            generates, item, main_node, x, space, childs,
+                        )?];
                         if index == 0 {
                             for x in &childs {
                                 main_node.push(x.clone());
@@ -199,7 +278,12 @@ impl PyRuntime {
     }
 
     ///find_child_str
-    fn find_child_str(line_index: i32, space_index: i32, arg: &str, m: &HashMap<i32, i32>) -> (String, i32) {
+    fn find_child_str(
+        line_index: i32,
+        space_index: i32,
+        arg: &str,
+        m: &HashMap<i32, i32>,
+    ) -> (String, i32) {
         let mut result = String::new();
         let mut skip_line = -1;
         let mut line = -1;
@@ -238,11 +322,11 @@ impl PyRuntime {
 #[cfg(test)]
 mod test {
     use crate::core::db::DriverType;
-    use rexpr::runtime::RExprRuntime;
     use crate::interpreter::sql::node::node::do_child_nodes;
     use crate::interpreter::sql::py_sql::PyRuntime;
-    use serde_json::Value;
     use crate::utils::bencher::QPS;
+    use rexpr::runtime::RExprRuntime;
+    use serde_json::Value;
 
     #[test]
     pub fn test_py_interpreter_parse() {
@@ -317,26 +401,33 @@ mod test {
         let mut arg_array = vec![];
         let mut engine = RExprRuntime::new();
         let mut env = json!({
-        "name": "1",
-        "age": 27,
-        "del":1,
-        "ids":[1,2,3]
-    });
+            "name": "1",
+            "age": 27,
+            "del":1,
+            "ids":[1,2,3]
+        });
         let mut r = String::new();
-        do_child_nodes(&DriverType::Mysql, &pys, &mut env, &mut engine, &mut arg_array, &mut r).unwrap();
+        do_child_nodes(
+            &DriverType::Mysql,
+            &pys,
+            &mut env,
+            &mut engine,
+            &mut arg_array,
+            &mut r,
+        )
+        .unwrap();
         println!("result sql:{}", r);
         println!("arg array:{:?}", arg_array.clone());
     }
 
-
     #[test]
     fn bind_test() {
         let mut env = json!({
-        "name": "1",
-        "age": 27,
-        "del":1,
-        "ids":[1,2,3]
-    });
+            "name": "1",
+            "age": 27,
+            "del":1,
+            "ids":[1,2,3]
+        });
 
         let s = "
                        bind name=1+0:
@@ -358,7 +449,15 @@ mod test {
         let mut arg_array = vec![];
         let mut engine = RExprRuntime::new();
         let mut r = String::new();
-        do_child_nodes(&DriverType::Mysql, &pys, &mut env, &mut engine, &mut arg_array, &mut r).unwrap();
+        do_child_nodes(
+            &DriverType::Mysql,
+            &pys,
+            &mut env,
+            &mut engine,
+            &mut arg_array,
+            &mut r,
+        )
+        .unwrap();
         println!("result: {}", &r);
         println!("arg: {:?}", arg_array.clone());
     }
@@ -375,10 +474,12 @@ mod test {
                        ";
         let line_space_map = PyRuntime::create_line_space_map(s);
         println!("m:{:#?}", &line_space_map);
-        let (child_str, do_skip) = PyRuntime::find_child_str(4,
-                                                             "                       ".len() as i32,
-                                                             s,
-                                                             &line_space_map);
+        let (child_str, do_skip) = PyRuntime::find_child_str(
+            4,
+            "                       ".len() as i32,
+            s,
+            &line_space_map,
+        );
 
         println!("child_str: \n{}", &child_str);
         println!("skip: {}", do_skip);
@@ -398,7 +499,15 @@ mod test {
         let mut engine = RExprRuntime::new();
         let mut env = json!({ "name": "1", "age": 27 });
         let mut r = String::new();
-        do_child_nodes(&DriverType::Mysql, &pys, &mut env, &mut engine, &mut arg_array, &mut r).unwrap();
+        do_child_nodes(
+            &DriverType::Mysql,
+            &pys,
+            &mut env,
+            &mut engine,
+            &mut arg_array,
+            &mut r,
+        )
+        .unwrap();
         println!("result sql:{}", r.clone());
         println!("arg array:{:?}", arg_array.clone());
     }
@@ -407,21 +516,25 @@ mod test {
     #[test]
     fn test_bench() {
         let runtime = PyRuntime::new(vec![]);
-        let mut engine =RExprRuntime::new();
+        let mut engine = RExprRuntime::new();
 
         //(Windows10 6Core16GBMem) use Time: 916.1591ms ,each:916 ns/op use QPS: 1091470 QPS/s
-        let py_sql="SELECT * FROM biz_activity where
+        let py_sql = "SELECT * FROM biz_activity where
     if  name!=null:
       name = #{name}
     WHERE id  = 'end';";
-        let mut env=serde_json::json!({});
+        let mut env = serde_json::json!({});
 
-        runtime.eval(&DriverType::Mysql, &py_sql, &mut env, &mut engine).unwrap();
+        runtime
+            .eval(&DriverType::Mysql, &py_sql, &mut env, &mut engine)
+            .unwrap();
 
         let total = 1000000;
         let now = std::time::Instant::now();
         for _ in 0..total {
-            runtime.eval(&DriverType::Mysql, &py_sql, &mut env, &mut engine).unwrap();
+            runtime
+                .eval(&DriverType::Mysql, &py_sql, &mut env, &mut engine)
+                .unwrap();
         }
         now.time(total);
         now.qps(total);

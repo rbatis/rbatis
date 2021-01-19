@@ -12,11 +12,10 @@ use uuid::Uuid;
 use rbatis_core::db::DBConnectOption;
 
 use crate::core::db::{DBExecResult, DBPool, DBPoolConn, DBPoolOptions, DBQuery, DBTx, DriverType};
-use crate::core::Error;
 use crate::core::runtime::Arc;
 use crate::core::sync::sync_map::SyncMap;
+use crate::core::Error;
 use crate::crud::CRUDEnable;
-use rexpr::runtime::RExprRuntime;
 use crate::interpreter::sql::ast::RbatisAST;
 use crate::interpreter::sql::node::node::do_child_nodes;
 use crate::interpreter::sql::node::node_type::NodeType;
@@ -26,12 +25,13 @@ use crate::plugin::intercept::SqlIntercept;
 use crate::plugin::log::{LogPlugin, RbatisLog};
 use crate::plugin::logic_delete::{LogicDelete, RbatisLogicDeletePlugin};
 use crate::plugin::page::{IPage, IPageRequest, Page, PagePlugin, RbatisPagePlugin};
+use crate::sql::upper::SqlUpperCase;
 use crate::sql::PageLimit;
 use crate::tx::{TxGuard, TxManager, TxState};
 use crate::utils::error_util::ToResult;
 use crate::utils::string_util;
 use crate::wrapper::Wrapper;
-use crate::sql::upper::SqlUpperCase;
+use rexpr::runtime::RExprRuntime;
 
 /// rbatis engine
 #[derive(Debug)]
@@ -121,15 +121,22 @@ impl Rbatis {
         return Self {
             pool: OnceCell::new(),
             runtime_expr: RExprRuntime::new(),
-            tx_manager: TxManager::new_arc(&option.tx_prefix, option.log_plugin.clone(), option.tx_lock_wait_timeout, option.tx_check_interval),
+            tx_manager: TxManager::new_arc(
+                &option.tx_prefix,
+                option.log_plugin.clone(),
+                option.tx_lock_wait_timeout,
+                option.tx_check_interval,
+            ),
             page_plugin: option.page_plugin,
             sql_intercepts: option.sql_intercepts,
             logic_plugin: option.logic_plugin,
             log_plugin: option.log_plugin,
-            runtime_py: PyRuntime { cache: Default::default(), generate: option.generate },
+            runtime_py: PyRuntime {
+                cache: Default::default(),
+                generate: option.generate,
+            },
         };
     }
-
 
     /// try return an new wrapper,if not call the link() method,it will be panic!
     pub fn new_wrapper(&self) -> Wrapper {
@@ -143,9 +150,12 @@ impl Rbatis {
     }
 
     /// try return an new wrapper and set table formats,if not call the link() method,it will be panic!
-    pub fn new_wrapper_table<T>(&self) -> Wrapper where T: CRUDEnable {
+    pub fn new_wrapper_table<T>(&self) -> Wrapper
+    where
+        T: CRUDEnable,
+    {
         let mut w = self.new_wrapper();
-        w=w.set_formats(T::formats(&self.driver_type().unwrap()));
+        w = w.set_formats(T::formats(&self.driver_type().unwrap()));
         return w;
     }
 
@@ -159,7 +169,11 @@ impl Rbatis {
     ///          let mut opt = PoolOptions::new();
     ///          opt.max_size = 20;
     ///          rb.link_opt("mysql://root:123456@localhost:3306/test", &opt).await.unwrap();
-    pub async fn link_opt(&self, driver_url: &str, pool_options: &DBPoolOptions) -> Result<(), Error> {
+    pub async fn link_opt(
+        &self,
+        driver_url: &str,
+        pool_options: &DBPoolOptions,
+    ) -> Result<(), Error> {
         if driver_url.is_empty() {
             return Err(Error::from("[rbatis] link url is empty!"));
         }
@@ -176,7 +190,11 @@ impl Rbatis {
     /// for example:
     ///         let db_cfg=DBConnectOption::from("mysql://root:123456@localhost:3306/test")?;
     ///         rb.link_cfg(&db_cfg,PoolOptions::new());
-    pub async fn link_cfg(&self, connect_option: &DBConnectOption, pool_options: &DBPoolOptions) -> Result<(), Error> {
+    pub async fn link_cfg(
+        &self,
+        connect_option: &DBConnectOption,
+        pool_options: &DBPoolOptions,
+    ) -> Result<(), Error> {
         if self.pool.get().is_none() {
             let pool = DBPool::new_opt(connect_option, pool_options).await?;
             self.pool.get_or_init(|| {
@@ -186,11 +204,17 @@ impl Rbatis {
         return Ok(());
     }
 
-    pub fn set_log_plugin<T>(&mut self, arg: T) where T: LogPlugin + 'static {
+    pub fn set_log_plugin<T>(&mut self, arg: T)
+    where
+        T: LogPlugin + 'static,
+    {
         self.log_plugin = Arc::new(Box::new(arg));
     }
 
-    pub fn set_logic_plugin<T>(&mut self, arg: Option<T>) where T: LogicDelete + 'static {
+    pub fn set_logic_plugin<T>(&mut self, arg: Option<T>)
+    where
+        T: LogicDelete + 'static,
+    {
         match arg {
             Some(v) => {
                 self.logic_plugin = Some(Box::new(v));
@@ -201,11 +225,17 @@ impl Rbatis {
         }
     }
 
-    pub fn set_page_plugin<T>(&mut self, arg: T) where T: PagePlugin + 'static {
+    pub fn set_page_plugin<T>(&mut self, arg: T)
+    where
+        T: PagePlugin + 'static,
+    {
         self.page_plugin = Box::new(arg);
     }
 
-    pub fn add_sql_intercept<T>(&mut self, arg: T) where T: SqlIntercept + 'static {
+    pub fn add_sql_intercept<T>(&mut self, arg: T)
+    where
+        T: SqlIntercept + 'static,
+    {
         self.sql_intercepts.push(Box::new(arg));
     }
 
@@ -228,7 +258,6 @@ impl Rbatis {
         Ok(pool.driver_type)
     }
 
-
     /// begin tx,if TxGuard Drop, tx will be commit(when_drop_commit==true) or rollback(when_drop_commit==false)
     /// tx_id must be 'tx:'+id,this method default is 'tx:'+uuid
     /// for example:
@@ -249,7 +278,11 @@ impl Rbatis {
     ///  let v: serde_json::Value = rb.fetch(&tx_id, "SELECT count(1) FROM biz_activity;").await.unwrap();
     ///
     pub async fn begin_tx(&self) -> Result<String, Error> {
-        let new_context_id = format!("{}{}", &self.tx_manager.tx_prefix, Uuid::new_v4().to_string());
+        let new_context_id = format!(
+            "{}{}",
+            &self.tx_manager.tx_prefix,
+            Uuid::new_v4().to_string()
+        );
         return Ok(self.begin(&new_context_id).await?);
     }
 
@@ -261,7 +294,11 @@ impl Rbatis {
     ///         let tx_id = rb.begin_defer(context_id,true).await.unwrap();
     ///         let v: serde_json::Value = rb.fetch(&tx_id, "SELECT count(1) FROM biz_activity;").await.unwrap();
     ///
-    pub async fn begin_defer(&self, context_id: &str, when_drop_commit: bool) -> Result<TxGuard, Error> {
+    pub async fn begin_defer(
+        &self,
+        context_id: &str,
+        when_drop_commit: bool,
+    ) -> Result<TxGuard, Error> {
         let tx_id = self.begin(context_id).await?;
         let guard = TxGuard::new(&tx_id, when_drop_commit, self.tx_manager.clone());
         return Ok(guard);
@@ -282,7 +319,10 @@ impl Rbatis {
             return Err(Error::from("[rbatis] context_id can not be empty"));
         }
         if !self.tx_manager.is_tx_prifix_id(context_id) {
-            return Err(Error::from(format!("[rbatis] context_id: {}  must be start with '{}', for example: {}{}", &self.tx_manager.tx_prefix, &self.tx_manager.tx_prefix, context_id, context_id)));
+            return Err(Error::from(format!(
+                "[rbatis] context_id: {}  must be start with '{}', for example: {}{}",
+                &self.tx_manager.tx_prefix, &self.tx_manager.tx_prefix, context_id, context_id
+            )));
         }
         let result = self.tx_manager.begin(context_id, self.get_pool()?).await?;
         return Ok(result);
@@ -294,7 +334,10 @@ impl Rbatis {
             return Err(Error::from("[rbatis] context_id can not be empty"));
         }
         if !self.tx_manager.is_tx_prifix_id(context_id) {
-            return Err(Error::from(format!("[rbatis] context_id: {} must be start with '{}', for example: {}{}", &self.tx_manager.tx_prefix, &self.tx_manager.tx_prefix, context_id, context_id)));
+            return Err(Error::from(format!(
+                "[rbatis] context_id: {} must be start with '{}', for example: {}{}",
+                &self.tx_manager.tx_prefix, &self.tx_manager.tx_prefix, context_id, context_id
+            )));
         }
         let result = self.tx_manager.commit(context_id).await?;
         return Ok(result);
@@ -306,12 +349,14 @@ impl Rbatis {
             return Err(Error::from("[rbatis] context_id can not be empty"));
         }
         if !self.tx_manager.is_tx_prifix_id(context_id) {
-            return Err(Error::from(format!("[rbatis] context_id: {} must be start with '{}', for example: {}{}", &self.tx_manager.tx_prefix, &self.tx_manager.tx_prefix, context_id, context_id)));
+            return Err(Error::from(format!(
+                "[rbatis] context_id: {} must be start with '{}', for example: {}{}",
+                &self.tx_manager.tx_prefix, &self.tx_manager.tx_prefix, context_id, context_id
+            )));
         }
         let result = self.tx_manager.rollback(context_id).await?;
         return Ok(result);
     }
-
 
     /// fetch result(row sql)
     ///
@@ -319,22 +364,30 @@ impl Rbatis {
     ///     let v: serde_json::Value = rb.fetch(context_id, "SELECT count(1) FROM biz_activity;").await?;
     ///
     pub async fn fetch<T>(&self, context_id: &str, sql: &str) -> Result<T, Error>
-        where T: DeserializeOwned {
-
+    where
+        T: DeserializeOwned,
+    {
         //sql intercept
         let mut sql = sql.to_string();
         for item in &self.sql_intercepts {
             item.do_intercept(self, &mut sql, &mut vec![], false);
         }
         if self.log_plugin.is_enable() {
-            self.log_plugin.do_log(&format!("[rbatis] [{}] Query ==> {}", context_id, sql.as_str()));
+            self.log_plugin.do_log(&format!(
+                "[rbatis] [{}] Query ==> {}",
+                context_id,
+                sql.as_str()
+            ));
         }
         let result;
         let mut fetch_num = 0;
         if self.tx_manager.is_tx_prifix_id(context_id) {
             let conn = self.tx_manager.get_mut(context_id).await;
             if conn.is_none() {
-                return Err(Error::from(format!("[rbatis] transaction:{} not exist！", context_id)));
+                return Err(Error::from(format!(
+                    "[rbatis] transaction:{} not exist！",
+                    context_id
+                )));
             }
             let mut conn = conn.unwrap();
             let (data, num) = conn.value_mut().0.fetch(sql.as_str()).await?;
@@ -347,7 +400,10 @@ impl Rbatis {
             fetch_num = num;
         }
         if self.log_plugin.is_enable() {
-            self.log_plugin.do_log(&format!("[rbatis] [{}] ReturnRows <== {}", context_id, fetch_num));
+            self.log_plugin.do_log(&format!(
+                "[rbatis] [{}] ReturnRows <== {}",
+                context_id, fetch_num
+            ));
         }
         return Ok(result);
     }
@@ -357,20 +413,23 @@ impl Rbatis {
     ///     rb.exec("", "CREATE TABLE biz_uuid( id uuid, name VARCHAR, PRIMARY KEY(id));").await;
     ///
     pub async fn exec(&self, context_id: &str, sql: &str) -> Result<DBExecResult, Error> {
-
         //sql intercept
         let mut sql = sql.to_string();
         for item in &self.sql_intercepts {
             item.do_intercept(self, &mut sql, &mut vec![], false);
         }
         if self.log_plugin.is_enable() {
-            self.log_plugin.do_log(&format!("[rbatis] [{}] Exec  ==> {}", context_id, &sql));
+            self.log_plugin
+                .do_log(&format!("[rbatis] [{}] Exec  ==> {}", context_id, &sql));
         }
         let result;
         if self.tx_manager.is_tx_prifix_id(context_id) {
             let conn = self.tx_manager.get_mut(context_id).await;
             if conn.is_none() {
-                return Err(Error::from(format!("[rbatis] transaction:{} not exist！", context_id)));
+                return Err(Error::from(format!(
+                    "[rbatis] transaction:{} not exist！",
+                    context_id
+                )));
             }
             let mut conn = conn.unwrap();
             result = conn.value_mut().0.execute(&sql).await;
@@ -380,17 +439,25 @@ impl Rbatis {
         }
         if self.log_plugin.is_enable() {
             if result.is_ok() {
-                self.log_plugin.do_log(&format!("[rbatis] [{}] RowsAffected <== {}", context_id, result.as_ref().unwrap().rows_affected));
+                self.log_plugin.do_log(&format!(
+                    "[rbatis] [{}] RowsAffected <== {}",
+                    context_id,
+                    result.as_ref().unwrap().rows_affected
+                ));
             } else {
-                self.log_plugin.do_log(&format!("[rbatis] [{}] RowsAffected <== {}", context_id, 0));
+                self.log_plugin
+                    .do_log(&format!("[rbatis] [{}] RowsAffected <== {}", context_id, 0));
             }
         }
         return result;
     }
 
-
     /// bind arg into DBQuery
-    fn bind_arg<'arg>(&self, sql: &'arg str, arg: &Vec<serde_json::Value>) -> Result<DBQuery<'arg>, Error> {
+    fn bind_arg<'arg>(
+        &self,
+        sql: &'arg str,
+        arg: &Vec<serde_json::Value>,
+    ) -> Result<DBQuery<'arg>, Error> {
         let mut q: DBQuery = self.get_pool()?.make_query(sql)?;
         for x in arg {
             q.bind_value(x);
@@ -403,8 +470,15 @@ impl Rbatis {
     /// for example:
     ///     let v = RB.fetch_prepare::<Value>("", "SELECT count(1) FROM biz_activity where delete_flag = ?;", &vec![json!(1)]).await;
     ///
-    pub async fn fetch_prepare<T>(&self, context_id: &str, sql: &str, args: &Vec<serde_json::Value>) -> Result<T, Error>
-        where T: DeserializeOwned {
+    pub async fn fetch_prepare<T>(
+        &self,
+        context_id: &str,
+        sql: &str,
+        args: &Vec<serde_json::Value>,
+    ) -> Result<T, Error>
+    where
+        T: DeserializeOwned,
+    {
         //sql intercept
         let mut sql = sql.to_string();
         let mut args = args.clone();
@@ -412,7 +486,14 @@ impl Rbatis {
             item.do_intercept(self, &mut sql, &mut args, true);
         }
         if self.log_plugin.is_enable() {
-            self.log_plugin.do_log(&format!("[rbatis] [{}] Query ==> {}\n{}[rbatis] [{}] Args  ==> {}", context_id, &sql, string_util::LOG_SPACE, context_id, serde_json::Value::Array(args.clone()).to_string()));
+            self.log_plugin.do_log(&format!(
+                "[rbatis] [{}] Query ==> {}\n{}[rbatis] [{}] Args  ==> {}",
+                context_id,
+                &sql,
+                string_util::LOG_SPACE,
+                context_id,
+                serde_json::Value::Array(args.clone()).to_string()
+            ));
         }
         let result_data;
         let mut return_num = 0;
@@ -420,7 +501,10 @@ impl Rbatis {
             let q: DBQuery = self.bind_arg(&sql, &args)?;
             let conn = self.tx_manager.get_mut(context_id).await;
             if conn.is_none() {
-                return Err(Error::from(format!("[rbatis] transaction:{} not exist！", context_id)));
+                return Err(Error::from(format!(
+                    "[rbatis] transaction:{} not exist！",
+                    context_id
+                )));
             }
             let mut conn = conn.unwrap();
             let (result, num) = conn.value_mut().0.fetch_parperd(q).await?;
@@ -434,7 +518,10 @@ impl Rbatis {
             return_num = num;
         }
         if self.log_plugin.is_enable() {
-            self.log_plugin.do_log(&format!("[rbatis] [{}] ReturnRows <== {}", context_id, return_num));
+            self.log_plugin.do_log(&format!(
+                "[rbatis] [{}] ReturnRows <== {}",
+                context_id, return_num
+            ));
         }
         return Ok(result_data);
     }
@@ -444,7 +531,12 @@ impl Rbatis {
     /// for example:
     ///      let v = RB.exec_prepare::<Value>("", "SELECT count(1) FROM biz_activity where delete_flag = ?;", &vec![json!(1)]).await;
     ///
-    pub async fn exec_prepare(&self, context_id: &str, sql: &str, args: &Vec<serde_json::Value>) -> Result<DBExecResult, Error> {
+    pub async fn exec_prepare(
+        &self,
+        context_id: &str,
+        sql: &str,
+        args: &Vec<serde_json::Value>,
+    ) -> Result<DBExecResult, Error> {
         //sql intercept
         let mut sql = sql.to_string();
         let mut args = args.clone();
@@ -452,14 +544,24 @@ impl Rbatis {
             item.do_intercept(self, &mut sql, &mut args, true);
         }
         if self.log_plugin.is_enable() {
-            self.log_plugin.do_log(&format!("[rbatis] [{}] Exec  ==> {}\n{}[rbatis] [{}] Args  ==> {}", context_id, &sql, string_util::LOG_SPACE, context_id, serde_json::Value::Array(args.clone()).to_string()));
+            self.log_plugin.do_log(&format!(
+                "[rbatis] [{}] Exec  ==> {}\n{}[rbatis] [{}] Args  ==> {}",
+                context_id,
+                &sql,
+                string_util::LOG_SPACE,
+                context_id,
+                serde_json::Value::Array(args.clone()).to_string()
+            ));
         }
         let result;
         if self.tx_manager.is_tx_prifix_id(context_id) {
             let q: DBQuery = self.bind_arg(&sql, &args)?;
             let conn = self.tx_manager.get_mut(context_id).await;
             if conn.is_none() {
-                return Err(Error::from(format!("[rbatis] transaction:{} not exist！", context_id)));
+                return Err(Error::from(format!(
+                    "[rbatis] transaction:{} not exist！",
+                    context_id
+                )));
             }
             let mut conn = conn.unwrap();
             result = conn.value_mut().0.exec_prepare(q).await;
@@ -470,9 +572,14 @@ impl Rbatis {
         }
         if self.log_plugin.is_enable() {
             if result.is_ok() {
-                self.log_plugin.do_log(&format!("[rbatis] [{}] RowsAffected <== {}", context_id, result.as_ref().unwrap().rows_affected));
+                self.log_plugin.do_log(&format!(
+                    "[rbatis] [{}] RowsAffected <== {}",
+                    context_id,
+                    result.as_ref().unwrap().rows_affected
+                ));
             } else {
-                self.log_plugin.do_log(&format!("[rbatis] [{}] RowsAffected <== {}", context_id, 0));
+                self.log_plugin
+                    .do_log(&format!("[rbatis] [{}] RowsAffected <== {}", context_id, 0));
             }
         }
         return result;
@@ -492,18 +599,34 @@ impl Rbatis {
     ///         let r: serde_json::Value = rb.fetch_prepare_wrapper("", &w).await.unwrap();
     ///
     pub async fn fetch_prepare_wrapper<T>(&self, context_id: &str, w: &Wrapper) -> Result<T, Error>
-        where T: DeserializeOwned {
-        self.fetch_prepare(context_id, w.sql.as_str(), &w.args).await
+    where
+        T: DeserializeOwned,
+    {
+        self.fetch_prepare(context_id, w.sql.as_str(), &w.args)
+            .await
     }
 
     /// exec sql by a wrapper
-    pub async fn exec_prepare_wrapper(&self, context_id: &str, w: &Wrapper) -> Result<DBExecResult, Error> {
+    pub async fn exec_prepare_wrapper(
+        &self,
+        context_id: &str,
+        w: &Wrapper,
+    ) -> Result<DBExecResult, Error> {
         self.exec_prepare(context_id, w.sql.as_str(), &w.args).await
     }
 
     /// py str into py ast,run get sql,arg result
-    fn py_to_sql(&self, py: &str, arg: &serde_json::Value) -> Result<(String, Vec<serde_json::Value>), Error> {
-        return self.runtime_py.eval(&self.driver_type()?, py, &mut arg.clone(), &self.runtime_expr);
+    fn py_to_sql(
+        &self,
+        py: &str,
+        arg: &serde_json::Value,
+    ) -> Result<(String, Vec<serde_json::Value>), Error> {
+        return self.runtime_py.eval(
+            &self.driver_type()?,
+            py,
+            &mut arg.clone(),
+            &self.runtime_expr,
+        );
     }
 
     /// fetch query result(prepare sql)
@@ -523,8 +646,10 @@ impl Rbatis {
     ///         let data: serde_json::Value = rb.py_fetch("", py, &json!({   "delete_flag": 1 })).await.unwrap();
     ///
     pub async fn py_fetch<T, Ser>(&self, context_id: &str, py: &str, arg: &Ser) -> Result<T, Error>
-        where T: DeserializeOwned,
-              Ser: Serialize + Send + Sync {
+    where
+        T: DeserializeOwned,
+        Ser: Serialize + Send + Sync,
+    {
         let json = json!(arg);
         let (sql, args) = self.py_to_sql(py, &json)?;
         return self.fetch_prepare(context_id, sql.as_str(), &args).await;
@@ -546,22 +671,45 @@ impl Rbatis {
     ///       )"#;
     ///         let data: u64 = rb.py_exec("", py, &json!({   "delete_flag": 1 })).await.unwrap();
     ///
-    pub async fn py_exec<Ser>(&self, context_id: &str, py: &str, arg: &Ser) -> Result<DBExecResult, Error>
-        where Ser: Serialize + Send + Sync {
+    pub async fn py_exec<Ser>(
+        &self,
+        context_id: &str,
+        py: &str,
+        arg: &Ser,
+    ) -> Result<DBExecResult, Error>
+    where
+        Ser: Serialize + Send + Sync,
+    {
         let json = json!(arg);
         let (sql, args) = self.py_to_sql(py, &json)?;
         return self.exec_prepare(context_id, sql.as_str(), &args).await;
     }
 
     /// fetch page result(prepare sql)
-    pub async fn fetch_page<T>(&self, context_id: &str, sql: &str, args: &Vec<serde_json::Value>, page_request: &dyn IPageRequest) -> Result<Page<T>, Error>
-        where T: DeserializeOwned + Serialize + Send + Sync {
-        let sql=self.driver_type()?.to_upper_case(sql);
+    pub async fn fetch_page<T>(
+        &self,
+        context_id: &str,
+        sql: &str,
+        args: &Vec<serde_json::Value>,
+        page_request: &dyn IPageRequest,
+    ) -> Result<Page<T>, Error>
+    where
+        T: DeserializeOwned + Serialize + Send + Sync,
+    {
+        let sql = self.driver_type()?.to_upper_case(sql);
         let mut page_result = Page::new(page_request.get_current(), page_request.get_size());
-        let (count_sql, sql) = self.page_plugin.make_page_sql(&self.driver_type()?, context_id, &sql, args, page_request)?;
+        let (count_sql, sql) = self.page_plugin.make_page_sql(
+            &self.driver_type()?,
+            context_id,
+            &sql,
+            args,
+            page_request,
+        )?;
         if page_request.is_serch_count() {
             //make count sql
-            let total: Option<u64> = self.fetch_prepare(context_id, count_sql.as_str(), args).await?;
+            let total: Option<u64> = self
+                .fetch_prepare(context_id, count_sql.as_str(), args)
+                .await?;
             page_result.set_total(total.unwrap_or(0));
             page_result.pages = page_result.get_pages();
             if page_result.get_total() == 0 {
@@ -575,11 +723,21 @@ impl Rbatis {
     }
 
     /// fetch result(prepare sql)
-    pub async fn py_fetch_page<T, Ser>(&self, context_id: &str, py: &str, arg: &Ser, page: &dyn IPageRequest) -> Result<Page<T>, Error>
-        where T: DeserializeOwned + Serialize + Send + Sync,
-              Ser: Serialize + Send + Sync {
+    pub async fn py_fetch_page<T, Ser>(
+        &self,
+        context_id: &str,
+        py: &str,
+        arg: &Ser,
+        page: &dyn IPageRequest,
+    ) -> Result<Page<T>, Error>
+    where
+        T: DeserializeOwned + Serialize + Send + Sync,
+        Ser: Serialize + Send + Sync,
+    {
         let json = json!(arg);
         let (sql, args) = self.py_to_sql(py, &json)?;
-        return self.fetch_page::<T>(context_id, sql.as_str(), &args, page).await;
+        return self
+            .fetch_page::<T>(context_id, sql.as_str(), &args, page)
+            .await;
     }
 }

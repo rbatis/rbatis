@@ -9,7 +9,14 @@ use syn::ext::IdentExt;
 use crate::proc_macro::TokenStream;
 
 ///impl CRUDEnable
-pub(crate) fn impl_crud_driver(ast: &syn::DeriveInput, arg_id_type: &str, arg_id_name: &str, arg_table_name: &str, arg_table_columns: &str, arg_formats: &HashMap<String, String>) -> TokenStream {
+pub(crate) fn impl_crud_driver(
+    ast: &syn::DeriveInput,
+    arg_id_type: &str,
+    arg_id_name: &str,
+    arg_table_name: &str,
+    arg_table_columns: &str,
+    arg_formats: &HashMap<String, String>,
+) -> TokenStream {
     let name = &ast.ident;
     let id_name;
     if arg_id_name.is_empty() {
@@ -118,9 +125,9 @@ fn gen_format(v: &str) -> proc_macro2::TokenStream {
         let column = item[0..index].to_string();
         let format_str = item[index + 1..item.len()].to_string();
         formats = quote! {
-                           #formats
-                           m.insert(#column.to_string(),#format_str.to_string());
-                        };
+           #formats
+           m.insert(#column.to_string(),#format_str.to_string());
+        };
     }
     return formats;
 }
@@ -139,7 +146,12 @@ fn gen_fields(data: &syn::Data) -> proc_macro2::TokenStream {
         syn::Data::Struct(s) => {
             let mut index = 0;
             for field in &s.fields {
-                let field_name = &field.ident.as_ref().map(|ele| ele.unraw()).to_token_stream().to_string();
+                let field_name = &field
+                    .ident
+                    .as_ref()
+                    .map(|ele| ele.unraw())
+                    .to_token_stream()
+                    .to_string();
                 if index == 0 {
                     fields = fields + field_name
                 } else {
@@ -155,7 +167,6 @@ fn gen_fields(data: &syn::Data) -> proc_macro2::TokenStream {
     fields.to_token_stream()
 }
 
-
 ///filter id_type
 fn find_id_type_ident(arg: &syn::Data) -> Ident {
     let mut id_type = Ident::new("String", Span::call_site());
@@ -170,7 +181,10 @@ fn find_id_type_ident(arg: &syn::Data) -> Ident {
                         let ty = format!("{}", field.ty.to_token_stream());
                         let mut inner_type = ty.trim().replace(" ", "").to_string();
                         if inner_type.starts_with("Option<") {
-                            inner_type = inner_type.trim_start_matches("Option<").trim_end_matches(">").to_string();
+                            inner_type = inner_type
+                                .trim_start_matches("Option<")
+                                .trim_end_matches(">")
+                                .to_string();
                         }
                         //println!("id_type from:{}", &inner_type);
                         id_type = Ident::new(inner_type.as_str(), Span::call_site());
@@ -223,7 +237,14 @@ pub(crate) fn impl_crud(args: TokenStream, input: TokenStream) -> TokenStream {
     let input_clone: proc_macro2::TokenStream = input.clone().into();
     let driver_token = gen_driver_token(&token_string);
     let ast = syn::parse(input).unwrap();
-    let stream = impl_crud_driver(&ast, &config.id_type, &config.id_name, &config.table_name, &config.table_columns, &config.formats);
+    let stream = impl_crud_driver(
+        &ast,
+        &config.id_type,
+        &config.id_name,
+        &config.table_name,
+        &config.table_columns,
+        &config.formats,
+    );
     let s: proc_macro2::TokenStream = stream.into();
     let qt = quote! {
        #driver_token
@@ -234,7 +255,8 @@ pub(crate) fn impl_crud(args: TokenStream, input: TokenStream) -> TokenStream {
 }
 
 fn gen_driver_token(token_string: &str) -> proc_macro2::TokenStream {
-    let have_ser_driver_macro = token_string.contains("Serialize") && token_string.contains("Deserialize");
+    let have_ser_driver_macro =
+        token_string.contains("Serialize") && token_string.contains("Deserialize");
     let driver_token;
     if have_ser_driver_macro {
         driver_token = quote! {}
@@ -285,7 +307,8 @@ fn read_config(arg: &str) -> CrudEnableConfig {
                 || k.ends_with("formats_postgres")
                 || k.ends_with("formats_mysql")
                 || k.ends_with("formats_sqlite")
-                || k.ends_with("formats_mssql")) {
+                || k.ends_with("formats_mssql"))
+            {
                 panic!("[rbatis] formats must be formats_pg, formats_mysql,formats_sqlite,formats_mssql!");
             }
             formats.insert(k.to_owned(), v.to_owned());
@@ -295,7 +318,10 @@ fn read_config(arg: &str) -> CrudEnableConfig {
         id_name: map.get("id_name").unwrap_or(&"".to_string()).to_string(),
         id_type: map.get("id_type").unwrap_or(&"".to_string()).to_string(),
         table_name: map.get("table_name").unwrap_or(&"".to_string()).to_string(),
-        table_columns: map.get("table_columns").unwrap_or(&"".to_string()).to_string(),
+        table_columns: map
+            .get("table_columns")
+            .unwrap_or(&"".to_string())
+            .to_string(),
         formats: formats,
     };
 }

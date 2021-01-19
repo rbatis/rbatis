@@ -5,11 +5,10 @@ extern crate lazy_static;
 extern crate rbatis;
 
 use chrono::NaiveDateTime;
+use rbatis::crud::CRUD;
+use rbatis::rbatis::Rbatis;
 use serde_json::{json, Value};
 use tide::Request;
-use rbatis::rbatis::Rbatis;
-use rbatis::crud::CRUD;
-
 
 ///数据库表模型,支持BigDecimal ,DateTime ,rust基本类型（int,float,uint,string,Vec,Array）
 /// CRUDEnable 特性会自动识别 id为表的id类型(识别String)，自动识别结构体名称为蛇形命名的表名 biz_activity。没有id的表 请手动指定
@@ -40,7 +39,7 @@ pub const MYSQL_URL: &'static str = "mysql://root:123456@localhost:3306/test";
 
 // 示例-Rbatis示例初始化(必须)
 lazy_static! {
-  static ref RB:Rbatis=Rbatis::new();
+    static ref RB: Rbatis = Rbatis::new();
 }
 
 //启动web服务，并且对表执行 count统计
@@ -54,6 +53,6 @@ async fn main() {
         Ok(serde_json::json!(v).to_string())
     });
     let addr = "127.0.0.1:8000";
-    println!("http server listen on http://{}",addr);
+    println!("http server listen on http://{}", addr);
     app.listen(addr).await.unwrap();
 }

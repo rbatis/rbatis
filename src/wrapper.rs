@@ -70,9 +70,7 @@ impl Wrapper {
             return Err(self.error.take().unwrap());
         }
         self.sql = self.driver_type.to_upper_case(&self.sql);
-        self = self
-            .trim_and()
-            .trim_or();
+        self = self.trim_and().trim_or();
         return Ok(self);
     }
 
@@ -80,7 +78,6 @@ impl Wrapper {
         self.sql = self.sql.replace(from, to);
         self
     }
-
 
     pub fn set_formats(mut self, formats: HashMap<String, String>) -> Self {
         self.formats = formats;
@@ -103,17 +100,25 @@ impl Wrapper {
 
     /// push sql,args into self
     pub fn push<T>(mut self, sql: &str, args: &[T]) -> Self
-        where T: Serialize {
+    where
+        T: Serialize,
+    {
         let mut new_sql = sql.to_string();
         if self.driver_type.is_number_type() {
             let self_arg_len = self.args.len();
             for index in 0..args.len() {
                 let str = self.driver_type.stmt_convert(index);
-                new_sql = new_sql.replace(str.as_str(), self.driver_type.stmt_convert(index + args.len()).as_str());
+                new_sql = new_sql.replace(
+                    str.as_str(),
+                    self.driver_type.stmt_convert(index + args.len()).as_str(),
+                );
             }
             for index in args.len()..self_arg_len {
                 let str = self.driver_type.stmt_convert(index);
-                new_sql = new_sql.replace(str.as_str(), self.driver_type.stmt_convert(index + args.len()).as_str());
+                new_sql = new_sql.replace(
+                    str.as_str(),
+                    self.driver_type.stmt_convert(index + args.len()).as_str(),
+                );
             }
         }
         self.sql.push_str(new_sql.as_str());
@@ -129,19 +134,19 @@ impl Wrapper {
         self
     }
 
-
     /// do method,if test is true
     /// for example:
     ///  let arg = 1;
     ///  wrapper.do_if(true, |w| w.eq("id"))
     pub fn do_if<'s, F>(self, test: bool, method: F) -> Self
-        where F: FnOnce(Self) -> Self {
+    where
+        F: FnOnce(Self) -> Self,
+    {
         if test {
             return method(self);
         }
         return self;
     }
-
 
     ///match cases
     /// for example:
@@ -153,7 +158,9 @@ impl Wrapper {
     ///             ], |w| w.eq("a", "default"))
     ///             .check().unwrap();
     pub fn do_match<'s, F>(self, cases: &[(bool, fn(Wrapper) -> Wrapper)], default: F) -> Self
-        where F: FnOnce(Self) -> Self {
+    where
+        F: FnOnce(Self) -> Self,
+    {
         for (test, case) in cases {
             if *test {
                 return case(self);
@@ -161,7 +168,6 @@ impl Wrapper {
         }
         return default(self);
     }
-
 
     pub fn set_sql(mut self, sql: &str) -> Self {
         self.sql = sql.to_owned();
@@ -176,7 +182,10 @@ impl Wrapper {
         self
     }
 
-    pub fn set_args<T>(mut self, args: &[T]) -> Self where T: Serialize {
+    pub fn set_args<T>(mut self, args: &[T]) -> Self
+    where
+        T: Serialize,
+    {
         let v = json!(args);
         if v.is_null() {
             return self;
@@ -187,7 +196,10 @@ impl Wrapper {
         self
     }
 
-    pub fn push_arg<T>(mut self, arg: T) -> Self where T: Serialize {
+    pub fn push_arg<T>(mut self, arg: T) -> Self
+    where
+        T: Serialize,
+    {
         let v = json!(arg);
         self.args.push(v);
         self
@@ -236,21 +248,28 @@ impl Wrapper {
 
     pub fn having(mut self, sql_having: &str) -> Self {
         self = self.and();
-        self.sql.push_str(format!(" HAVING {} ", sql_having).as_str());
+        self.sql
+            .push_str(format!(" HAVING {} ", sql_having).as_str());
         self
     }
 
     /// arg: JsonObject or struct{} or map[String,**]
     pub fn all_eq<T>(mut self, arg: T) -> Self
-        where T: Serialize {
+    where
+        T: Serialize,
+    {
         self = self.and();
         let v = json!(arg);
         if v.is_null() {
-            self.error = Some(Error::from("[rbatis] wrapper all_eq only support object/map struct!"));
+            self.error = Some(Error::from(
+                "[rbatis] wrapper all_eq only support object/map struct!",
+            ));
             return self;
         }
         if !v.is_object() {
-            self.error = Some(Error::from("[rbatis] wrapper all_eq only support object/map struct!"));
+            self.error = Some(Error::from(
+                "[rbatis] wrapper all_eq only support object/map struct!",
+            ));
             return self;
         }
         let map = v.as_object().unwrap();
@@ -286,18 +305,30 @@ impl Wrapper {
     /// for example:
     ///  eq("a",1) " a = 1 "
     pub fn eq<T>(mut self, column: &str, obj: T) -> Self
-        where T: Serialize {
+    where
+        T: Serialize,
+    {
         self = self.and();
-        self.sql.push_str(&format!("{} = {}", column, self.do_format_column(column, self.driver_type.stmt_convert(self.args.len()))));
+        self.sql.push_str(&format!(
+            "{} = {}",
+            column,
+            self.do_format_column(column, self.driver_type.stmt_convert(self.args.len()))
+        ));
         self.args.push(json!(obj));
         self
     }
 
     /// not equal
     pub fn ne<T>(mut self, column: &str, obj: T) -> Self
-        where T: Serialize {
+    where
+        T: Serialize,
+    {
         self = self.and();
-        self.sql.push_str(&format!("{} <> {}", column, self.do_format_column(column, self.driver_type.stmt_convert(self.args.len()))));
+        self.sql.push_str(&format!(
+            "{} <> {}",
+            column,
+            self.do_format_column(column, self.driver_type.stmt_convert(self.args.len()))
+        ));
         self.args.push(json!(obj));
         self
     }
@@ -308,15 +339,19 @@ impl Wrapper {
             return self;
         }
         let mut index = 0;
-        self.sql = self.sql.trim().trim_end_matches(" WHERE")
+        self.sql = self
+            .sql
+            .trim()
+            .trim_end_matches(" WHERE")
             .trim_end_matches(" AND")
-            .trim_end_matches(" OR").to_string();
+            .trim_end_matches(" OR")
+            .to_string();
         self.sql.push_str(" ORDER BY ");
         for x in columns {
             if is_asc {
                 self.sql.push_str(format!("{} ASC", x).as_str());
             } else {
-                self.sql.push_str(format!("{} DESC", x, ).as_str());
+                self.sql.push_str(format!("{} DESC", x,).as_str());
             }
             if (index + 1) != len {
                 self.sql.push_str(" , ");
@@ -332,10 +367,13 @@ impl Wrapper {
             return self;
         }
         let mut index = 0;
-        self.sql = self.sql.trim()
+        self.sql = self
+            .sql
+            .trim()
             .trim_end_matches(" WHERE")
             .trim_end_matches(" AND")
-            .trim_end_matches(" OR").to_string();
+            .trim_end_matches(" OR")
+            .to_string();
         self.sql.push_str(" GROUP BY ");
         for x in columns {
             self.sql.push_str(x);
@@ -349,59 +387,99 @@ impl Wrapper {
 
     ///  sql:   column > obj
     pub fn gt<T>(mut self, column: &str, obj: T) -> Self
-        where T: Serialize {
+    where
+        T: Serialize,
+    {
         self = self.and();
-        self.sql.push_str(&format!("{} > {}", column, self.do_format_column(column, self.driver_type.stmt_convert(self.args.len()))));
+        self.sql.push_str(&format!(
+            "{} > {}",
+            column,
+            self.do_format_column(column, self.driver_type.stmt_convert(self.args.len()))
+        ));
         self.args.push(json!(obj));
         self
     }
     ///  sql:   column >= obj
     pub fn ge<T>(mut self, column: &str, obj: T) -> Self
-        where T: Serialize {
+    where
+        T: Serialize,
+    {
         self = self.and();
-        self.sql.push_str(&format!("{} >= {}", column, self.do_format_column(column, self.driver_type.stmt_convert(self.args.len()))));
+        self.sql.push_str(&format!(
+            "{} >= {}",
+            column,
+            self.do_format_column(column, self.driver_type.stmt_convert(self.args.len()))
+        ));
         self.args.push(json!(obj));
         self
     }
 
     ///  sql:   column < obj
     pub fn lt<T>(mut self, column: &str, obj: T) -> Self
-        where T: Serialize {
+    where
+        T: Serialize,
+    {
         self = self.and();
-        self.sql.push_str(&format!("{} < {}", column, self.do_format_column(column, self.driver_type.stmt_convert(self.args.len()))));
+        self.sql.push_str(&format!(
+            "{} < {}",
+            column,
+            self.do_format_column(column, self.driver_type.stmt_convert(self.args.len()))
+        ));
         self.args.push(json!(obj));
         self
     }
 
     ///  sql:   column <= obj
     pub fn le<T>(mut self, column: &str, obj: T) -> Self
-        where T: Serialize {
+    where
+        T: Serialize,
+    {
         self = self.and();
-        self.sql.push_str(&format!("{} <= {}", column, self.do_format_column(column, self.driver_type.stmt_convert(self.args.len()))));
+        self.sql.push_str(&format!(
+            "{} <= {}",
+            column,
+            self.do_format_column(column, self.driver_type.stmt_convert(self.args.len()))
+        ));
         self.args.push(json!(obj));
         self
     }
 
     pub fn between<T>(mut self, column: &str, min: T, max: T) -> Self
-        where T: Serialize {
+    where
+        T: Serialize,
+    {
         self = self.and();
-        self.sql.push_str(&format!("{} BETWEEN {} AND {}", column, self.do_format_column(column, self.driver_type.stmt_convert(self.args.len())), self.do_format_column(column, self.driver_type.stmt_convert(self.args.len() + 1))));
+        self.sql.push_str(&format!(
+            "{} BETWEEN {} AND {}",
+            column,
+            self.do_format_column(column, self.driver_type.stmt_convert(self.args.len())),
+            self.do_format_column(column, self.driver_type.stmt_convert(self.args.len() + 1))
+        ));
         self.args.push(json!(min));
         self.args.push(json!(max));
         self
     }
 
     pub fn not_between<T>(mut self, column: &str, min: T, max: T) -> Self
-        where T: Serialize {
+    where
+        T: Serialize,
+    {
         self = self.and();
-        self.sql.push_str(&format!("{} NOT BETWEEN {} AND {}", column, self.do_format_column(column, self.driver_type.stmt_convert(self.args.len())), self.do_format_column(column, self.driver_type.stmt_convert(self.args.len() + 1))));
+        self.sql.push_str(&format!(
+            "{} NOT BETWEEN {} AND {}",
+            column,
+            self.do_format_column(column, self.driver_type.stmt_convert(self.args.len())),
+            self.do_format_column(column, self.driver_type.stmt_convert(self.args.len() + 1))
+        ));
         self.args.push(json!(min));
         self.args.push(json!(max));
         self
     }
 
     pub fn like<T>(mut self, column: &str, obj: T) -> Self
-        where T: Serialize {
+    where
+        T: Serialize,
+    {
         self = self.and();
         let v = json!(obj);
         let mut v_str = String::new();
@@ -410,13 +488,19 @@ impl Wrapper {
         } else {
             v_str = format!("%{}%", v.to_string());
         }
-        self.sql.push_str(&format!("{} LIKE {}", column, self.do_format_column(column, self.driver_type.stmt_convert(self.args.len()))));
+        self.sql.push_str(&format!(
+            "{} LIKE {}",
+            column,
+            self.do_format_column(column, self.driver_type.stmt_convert(self.args.len()))
+        ));
         self.args.push(json!(v_str));
         self
     }
 
     pub fn like_left<T>(mut self, column: &str, obj: T) -> Self
-        where T: Serialize {
+    where
+        T: Serialize,
+    {
         self = self.and();
         let v = json!(obj);
         let mut v_str = String::new();
@@ -425,13 +509,19 @@ impl Wrapper {
         } else {
             v_str = format!("%{}", v.to_string());
         }
-        self.sql.push_str(&format!("{} LIKE {}", column, self.do_format_column(column, self.driver_type.stmt_convert(self.args.len()))));
+        self.sql.push_str(&format!(
+            "{} LIKE {}",
+            column,
+            self.do_format_column(column, self.driver_type.stmt_convert(self.args.len()))
+        ));
         self.args.push(json!(v_str));
         self
     }
 
     pub fn like_right<T>(mut self, column: &str, obj: T) -> Self
-        where T: Serialize {
+    where
+        T: Serialize,
+    {
         self = self.and();
         let v = json!(obj);
         let mut v_str = String::new();
@@ -440,13 +530,19 @@ impl Wrapper {
         } else {
             v_str = format!("{}%", v.to_string());
         }
-        self.sql.push_str(&format!("{} LIKE {}", column, self.do_format_column(column, self.driver_type.stmt_convert(self.args.len()))));
+        self.sql.push_str(&format!(
+            "{} LIKE {}",
+            column,
+            self.do_format_column(column, self.driver_type.stmt_convert(self.args.len()))
+        ));
         self.args.push(json!(v_str));
         self
     }
 
     pub fn not_like<T>(mut self, column: &str, obj: T) -> Self
-        where T: Serialize {
+    where
+        T: Serialize,
+    {
         self = self.and();
         let v = json!(obj);
         let mut v_str = String::new();
@@ -455,7 +551,11 @@ impl Wrapper {
         } else {
             v_str = format!("%{}%", v.to_string());
         }
-        self.sql.push_str(&format!("{} NOT LIKE {}", column, self.do_format_column(column, self.driver_type.stmt_convert(self.args.len()))));
+        self.sql.push_str(&format!(
+            "{} NOT LIKE {}",
+            column,
+            self.do_format_column(column, self.driver_type.stmt_convert(self.args.len()))
+        ));
         self.args.push(json!(v_str));
         self
     }
@@ -476,7 +576,9 @@ impl Wrapper {
 
     /// gen sql: * in (*,*,*)
     pub fn in_array<T>(mut self, column: &str, obj: &[T]) -> Self
-        where T: Serialize {
+    where
+        T: Serialize,
+    {
         self = self.and();
         if obj.len() == 0 {
             return self;
@@ -485,41 +587,54 @@ impl Wrapper {
         let vec = arr.as_array().unwrap();
         let mut sqls = String::new();
         for x in vec {
-            sqls.push_str(&format!(" {} ", self.do_format_column(column, self.driver_type.stmt_convert(self.args.len()))));
+            sqls.push_str(&format!(
+                " {} ",
+                self.do_format_column(column, self.driver_type.stmt_convert(self.args.len()))
+            ));
             sqls.push_str(",");
             self.args.push(x.clone());
         }
         sqls.pop();
-        self.sql.push_str(format!("{} IN ({})", column, sqls).as_str());
+        self.sql
+            .push_str(format!("{} IN ({})", column, sqls).as_str());
         self
     }
 
     /// gen sql: * in (*,*,*)
     pub fn in_<T>(self, column: &str, obj: &[T]) -> Self
-        where T: Serialize {
+    where
+        T: Serialize,
+    {
         self.in_array(column, obj)
     }
 
     /// gen sql: * in (*,*,*)
     pub fn r#in<T>(self, column: &str, obj: &[T]) -> Self
-        where T: Serialize {
+    where
+        T: Serialize,
+    {
         self.in_array(column, obj)
     }
 
-
     pub fn not_in<T>(mut self, column: &str, obj: &[T]) -> Self
-        where T: Serialize {
+    where
+        T: Serialize,
+    {
         self = self.and();
         let arr = json!(obj);
         let vec = arr.as_array().unwrap();
         let mut sqls = String::new();
         for x in vec {
-            sqls.push_str(&format!(" {} ", self.do_format_column(column, self.driver_type.stmt_convert(self.args.len()))));
+            sqls.push_str(&format!(
+                " {} ",
+                self.do_format_column(column, self.driver_type.stmt_convert(self.args.len()))
+            ));
             sqls.push_str(",");
             self.args.push(x.clone());
         }
         sqls.pop();
-        self.sql.push_str(format!("{} NOT IN ({})", column, sqls).as_str());
+        self.sql
+            .push_str(format!("{} NOT IN ({})", column, sqls).as_str());
         self
     }
 
@@ -529,7 +644,9 @@ impl Wrapper {
     }
 
     pub fn trim_and(mut self) -> Self {
-        self.sql = self.sql.trim()
+        self.sql = self
+            .sql
+            .trim()
             .trim_start_matches("AND ")
             .trim_end_matches(" AND")
             .to_string();
@@ -537,7 +654,9 @@ impl Wrapper {
     }
 
     pub fn trim_or(mut self) -> Self {
-        self.sql = self.sql.trim()
+        self.sql = self
+            .sql
+            .trim()
             .trim_start_matches("OR ")
             .trim_end_matches(" OR")
             .to_string();
@@ -546,7 +665,10 @@ impl Wrapper {
 
     pub fn insert_into(mut self, table_name: &str, columns: &str, values: &str) -> Self {
         if values.starts_with("(") && values.ends_with(")") {
-            self.sql = format!("INSERT INTO {} ({}) VALUES ({})", table_name, columns, values);
+            self.sql = format!(
+                "INSERT INTO {} ({}) VALUES ({})",
+                table_name, columns, values
+            );
         } else {
             self.sql = format!("INSERT INTO {} ({}) VALUES {}", table_name, columns, values);
         }
@@ -566,8 +688,7 @@ mod test {
     #[test]
     fn test_trim() {
         let mut w = Wrapper::new(&DriverType::Mysql);
-        w = w.push_sql(" WHERE ")
-            .order_by(true, &["id"]);
+        w = w.push_sql(" WHERE ").order_by(true, &["id"]);
         w = w.check().unwrap();
         println!("sql:{:?}", w.sql.as_str());
         println!("arg:{:?}", w.args.clone());
@@ -578,7 +699,8 @@ mod test {
     fn test_select() {
         let mut m = Map::new();
         m.insert("a".to_string(), json!("1"));
-        let w = Wrapper::new(&DriverType::Mysql).eq("id", 1)
+        let w = Wrapper::new(&DriverType::Mysql)
+            .eq("id", 1)
             .ne("id", 1)
             .in_array("id", &[1, 2, 3])
             .not_in("id", &[1, 2, 3])
@@ -589,14 +711,14 @@ mod test {
             .between("create_time", "2020-01-01 00:00:00", "2020-12-12 00:00:00")
             .group_by(&["id"])
             .order_by(true, &["id", "name"])
-            .check().unwrap();
+            .check()
+            .unwrap();
         println!("sql:{:?}", w.sql.as_str());
         println!("arg:{:?}", w.args.clone());
 
         let ms: Vec<&str> = w.sql.matches("?").collect();
         assert_eq!(ms.len(), w.args.len());
     }
-
 
     ///cargo test --release --package rbatis --lib wrapper::test::bench_select
     ///run with windows10:
@@ -608,7 +730,8 @@ mod test {
         let total = 100000;
         let now = std::time::Instant::now();
         for _ in 0..total {
-            let w = Wrapper::new(&DriverType::Mysql).eq("id", 1)
+            let w = Wrapper::new(&DriverType::Mysql)
+                .eq("id", 1)
                 .ne("id", 1)
                 .in_array("id", &[1, 2, 3])
                 .r#in("id", &[1, 2, 3])
@@ -621,7 +744,8 @@ mod test {
                 .between("create_time", "2020-01-01 00:00:00", "2020-12-12 00:00:00")
                 .group_by(&["id"])
                 .order_by(true, &["id", "name"])
-                .check().unwrap();
+                .check()
+                .unwrap();
         }
         now.time(total);
         now.qps(total);
@@ -629,11 +753,16 @@ mod test {
 
     #[test]
     fn test_link() {
-        let w = Wrapper::new(&DriverType::Postgres).eq("a", "1").check().unwrap();
-        let w2 = Wrapper::new(&DriverType::Postgres).eq("b", "2")
+        let w = Wrapper::new(&DriverType::Postgres)
+            .eq("a", "1")
+            .check()
+            .unwrap();
+        let w2 = Wrapper::new(&DriverType::Postgres)
+            .eq("b", "2")
             .and()
             .push_wrapper(&w)
-            .check().unwrap();
+            .check()
+            .unwrap();
 
         println!("sql:{:?}", w2.sql.as_str());
         println!("arg:{:?}", w2.args.clone());
@@ -647,23 +776,27 @@ mod test {
         let p = Option::<i32>::Some(1);
         let w = Wrapper::new(&DriverType::Postgres)
             .do_if(p.is_some(), |w| w.eq("a", p.clone()))
-            .check().unwrap();
+            .check()
+            .unwrap();
         println!("sql:{:?}", w.sql.as_str());
         println!("arg:{:?}", w.args.clone());
         assert_eq!(&w.sql, "a = $1");
         assert_eq!(&w.args[0], &json!(p));
     }
 
-
     #[test]
     fn test_do_match() {
         let p = 1;
         let w = Wrapper::new(&DriverType::Postgres)
-            .do_match(&[
-                (p == 0, |w| w.eq("0", "some")),
-                (p == 1, |w| w.eq("1", "some")),
-            ], |w| w.eq("default", "default"))
-            .check().unwrap();
+            .do_match(
+                &[
+                    (p == 0, |w| w.eq("0", "some")),
+                    (p == 1, |w| w.eq("1", "some")),
+                ],
+                |w| w.eq("default", "default"),
+            )
+            .check()
+            .unwrap();
         assert_eq!(&w.sql, "1 = $1");
     }
 
@@ -675,7 +808,8 @@ mod test {
             .like("TITLE", "title")
             .or()
             .like("ORIGINAL_NAME", "saf")
-            .check().unwrap();
+            .check()
+            .unwrap();
         println!("sql:{:?}", w.sql.as_str());
         println!("arg:{:?}", w.args.clone());
     }
@@ -686,7 +820,8 @@ mod test {
             .push_sql("?,?")
             .push_arg(1)
             .push_arg("asdfasdfa")
-            .check().unwrap();
+            .check()
+            .unwrap();
         println!("sql:{:?}", w.sql.as_str());
         println!("arg:{:?}", w.args.clone());
     }
@@ -702,7 +837,8 @@ mod test {
             .eq("b2", "b2")
             .and()
             .push_wrapper(&w2.push_sql("(").eq("a", "a").push_sql(")").check().unwrap())
-            .check().unwrap();
+            .check()
+            .unwrap();
         println!("sql:{:?}", w2.sql.as_str());
         println!("arg:{:?}", w2.args.clone());
         assert_eq!(w2.sql.contains("b = $1"), true);

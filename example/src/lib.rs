@@ -10,17 +10,17 @@ extern crate lazy_static;
 extern crate rbatis;
 
 mod crud_test;
-mod un_support_type_test;
-mod raw_driver_test;
-mod wrapper_test;
-mod page_test;
-mod format_test;
 mod custom_py_sql_test;
-mod raw_sql_macro_test;
-mod raw_identifiers_test;
-mod transaction_test;
-mod intercept_test;
 mod dyn_table_test;
+mod format_test;
+mod intercept_test;
+mod page_test;
+mod raw_driver_test;
+mod raw_identifiers_test;
+mod raw_sql_macro_test;
+mod transaction_test;
+mod un_support_type_test;
+mod wrapper_test;
 
 use chrono::NaiveDateTime;
 /// this is table model(see ../database.sql)
