@@ -4,10 +4,10 @@ extern crate lazy_static;
 #[macro_use]
 extern crate rbatis;
 
-use actix_web::{App, HttpResponse, HttpServer, Responder, web};
+use actix_web::{web, App, HttpResponse, HttpServer, Responder};
 use chrono::NaiveDateTime;
-use rbatis::rbatis::Rbatis;
 use rbatis::crud::CRUD;
+use rbatis::rbatis::Rbatis;
 
 #[crud_enable]
 #[derive(Clone, Debug)]
@@ -31,7 +31,7 @@ pub const MYSQL_URL: &'static str = "mysql://root:123456@localhost:3306/test";
 
 // 示例-Rbatis示例初始化(必须)
 lazy_static! {
-  static ref RB:Rbatis=Rbatis::new();
+    static ref RB: Rbatis = Rbatis::new();
 }
 
 async fn index() -> impl Responder {
@@ -46,10 +46,7 @@ async fn main() -> std::io::Result<()> {
     //ORM
     RB.link(MYSQL_URL).await.unwrap();
     //路由
-    HttpServer::new(|| {
-        App::new()
-            .route("/", web::get().to(index))
-    })
+    HttpServer::new(|| App::new().route("/", web::get().to(index)))
         .bind("127.0.0.1:8000")?
         .run()
         .await

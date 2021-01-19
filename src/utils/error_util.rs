@@ -4,12 +4,15 @@ use crate::core::Error;
 
 pub trait ToResult<T> {
     fn to_result<F>(&self, fail_method: F) -> Result<&T, Error>
-        where F: Fn() -> String;
+    where
+        F: Fn() -> String;
 }
 
 impl<T> ToResult<T> for Option<&T> {
     fn to_result<F>(&self, fail_method: F) -> Result<&T, Error>
-        where F: Fn() -> String {
+    where
+        F: Fn() -> String,
+    {
         if self.is_none() {
             return Err(Error::from(fail_method()));
         }

@@ -5,7 +5,8 @@ use serde_json::map::Map;
 use serde_json::Value;
 
 //2020-11-15 00:31:25.803227700 +08:00 INFO rbatis::plugin::log
-pub const LOG_SPACE: &'static str = "                                                                ";
+pub const LOG_SPACE: &'static str =
+    "                                                                ";
 
 //find like #{*,*},${*,*} value *
 pub fn find_convert_string(arg: &str) -> LinkedList<(String, String)> {
@@ -26,13 +27,16 @@ pub fn find_convert_string(arg: &str) -> LinkedList<(String, String)> {
             continue;
         }
         if *v == '}' as u8 && last_index != -1 {
-            item = String::from_utf8(chars[(last_index + 2) as usize..index as usize].to_vec()).unwrap();
+            item = String::from_utf8(chars[(last_index + 2) as usize..index as usize].to_vec())
+                .unwrap();
             if cache.get(&item).is_some() {
                 item.clear();
                 last_index = -1;
                 continue;
             }
-            let value = String::from_utf8(chars[last_index as usize..(index + 1) as usize].to_vec()).unwrap();
+            let value =
+                String::from_utf8(chars[last_index as usize..(index + 1) as usize].to_vec())
+                    .unwrap();
             cache.insert(item.clone());
             list.push_back((item.clone(), value));
             item.clear();
@@ -41,7 +45,6 @@ pub fn find_convert_string(arg: &str) -> LinkedList<(String, String)> {
     }
     return list;
 }
-
 
 pub fn count_string_num(s: &String, c: char) -> usize {
     let cs = s.chars();
@@ -53,7 +56,6 @@ pub fn count_string_num(s: &String, c: char) -> usize {
     }
     return num;
 }
-
 
 pub fn to_snake_name(name: &str) -> String {
     let chs = name.chars();

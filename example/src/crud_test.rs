@@ -2,8 +2,8 @@
 mod test {
     use bigdecimal::BigDecimal;
     use chrono::NaiveDateTime;
-    use rbatis::core::Error;
     use rbatis::core::value::DateTimeNow;
+    use rbatis::core::Error;
     use rbatis::crud::CRUD;
     use rbatis::plugin::logic_delete::RbatisLogicDeletePlugin;
     use rbatis::plugin::page::{Page, PageRequest};
@@ -29,15 +29,17 @@ mod test {
         pub delete_flag: Option<i32>,
     }
 
-// (可选) 手动实现，不使用上面的derive(CRUDEnable),可重写table_name方法。手动实现能支持IDE智能提示
-// impl CRUDEnable for BizActivity {
-//     type IdType = String;
-// }
+    // (可选) 手动实现，不使用上面的derive(CRUDEnable),可重写table_name方法。手动实现能支持IDE智能提示
+    // impl CRUDEnable for BizActivity {
+    //     type IdType = String;
+    // }
 
     pub async fn init_rbatis() -> Rbatis {
         fast_log::init_log("requests.log", 1000, log::Level::Info, None, true);
         let rb = Rbatis::new();
-        rb.link("mysql://root:123456@localhost:3306/test").await.unwrap();
+        rb.link("mysql://root:123456@localhost:3306/test")
+            .await
+            .unwrap();
 
         // custom connection option(自定义连接参数)
         // let db_cfg=DBConnectOption::from("mysql://root:123456@localhost:3306/test")?;
@@ -49,7 +51,6 @@ mod test {
         // rb.link_opt("mysql://root:123456@localhost:3306/test", &opt).await.unwrap();
         return rb;
     }
-
 
     #[async_std::test]
     pub async fn test_save() {
@@ -68,7 +69,8 @@ mod test {
             version: Some(BigDecimal::from(1)),
             delete_flag: Some(1),
         };
-        rb.remove_by_id::<BizActivity>("", activity.id.as_ref().unwrap()).await;
+        rb.remove_by_id::<BizActivity>("", activity.id.as_ref().unwrap())
+            .await;
         let r = rb.save("", &activity).await;
         if r.is_err() {
             println!("{}", r.err().unwrap().to_string());
@@ -94,7 +96,8 @@ mod test {
         };
         let mut activity2 = activity.clone();
         activity2.id = Some("12313".to_string());
-        rb.remove_batch_by_id::<BizActivity>("", &["12312".to_string(), "12313".to_string()]).await;
+        rb.remove_batch_by_id::<BizActivity>("", &["12312".to_string(), "12313".to_string()])
+            .await;
         let args = vec![activity, activity2];
         let r = rb.save_batch("", &args).await;
         if r.is_err() {
@@ -102,25 +105,33 @@ mod test {
         }
     }
 
-
     #[async_std::test]
     pub async fn test_remove_batch_by_id() {
         let mut rb = init_rbatis().await;
         rb.logic_plugin = Some(Box::new(RbatisLogicDeletePlugin::new("delete_flag")));
-        rb.link("mysql://root:123456@localhost:3306/test").await.unwrap();
-        let r = rb.remove_batch_by_id::<BizActivity>("", &["1".to_string(), "2".to_string()]).await;
+        rb.link("mysql://root:123456@localhost:3306/test")
+            .await
+            .unwrap();
+        let r = rb
+            .remove_batch_by_id::<BizActivity>("", &["1".to_string(), "2".to_string()])
+            .await;
         if r.is_err() {
             println!("{}", r.err().unwrap().to_string());
         }
     }
 
-
     #[async_std::test]
     pub async fn test_remove_by_id() {
         let mut rb = init_rbatis().await;
         //设置 逻辑删除插件
-        rb.logic_plugin = Some(Box::new(RbatisLogicDeletePlugin::new_opt("delete_flag", 1, 0)));
-        rb.link("mysql://root:123456@localhost:3306/test").await.unwrap();
+        rb.logic_plugin = Some(Box::new(RbatisLogicDeletePlugin::new_opt(
+            "delete_flag",
+            1,
+            0,
+        )));
+        rb.link("mysql://root:123456@localhost:3306/test")
+            .await
+            .unwrap();
         let r = rb.remove_by_id::<BizActivity>("", &"1".to_string()).await;
         if r.is_err() {
             println!("{}", r.err().unwrap().to_string());
@@ -132,7 +143,10 @@ mod test {
         let mut rb = init_rbatis().await;
         //设置 逻辑删除插件
         rb.logic_plugin = Some(Box::new(RbatisLogicDeletePlugin::new("delete_flag")));
-        let r = rb.fetch_by_id::<Option<BizActivity>>("", &"1".to_string()).await.unwrap();
+        let r = rb
+            .fetch_by_id::<Option<BizActivity>>("", &"1".to_string())
+            .await
+            .unwrap();
         println!("{}", serde_json::to_string(&r).unwrap());
     }
 
@@ -163,7 +177,6 @@ mod test {
             println!("{}", r.err().unwrap().to_string());
         }
     }
-
 
     #[async_std::test]
     pub async fn test_update_by_id() {
@@ -207,8 +220,7 @@ mod test {
     #[async_std::test]
     pub async fn test_list_by_wrapper() {
         let rb = init_rbatis().await;
-        let w = rb.new_wrapper()
-            .order_by(true, &["id"]).check().unwrap();
+        let w = rb.new_wrapper().order_by(true, &["id"]).check().unwrap();
         let r: Vec<BizActivity> = rb.list_by_wrapper("", &w).await.unwrap();
         println!("is_some:{:?}", r);
     }
@@ -219,11 +231,16 @@ mod test {
         //设置 逻辑删除插件
         rb.logic_plugin = Some(Box::new(RbatisLogicDeletePlugin::new("delete_flag")));
 
-        let w = rb.new_wrapper()
+        let w = rb
+            .new_wrapper()
             .like("name", "test")
             //.order_by(false, &["create_time"])
-            .check().unwrap();
-        let r: Page<BizActivity> = rb.fetch_page_by_wrapper("", &w, &PageRequest::new(1, 20)).await.unwrap();
+            .check()
+            .unwrap();
+        let r: Page<BizActivity> = rb
+            .fetch_page_by_wrapper("", &w, &PageRequest::new(1, 20))
+            .await
+            .unwrap();
         println!("{}", serde_json::to_string(&r).unwrap());
     }
 

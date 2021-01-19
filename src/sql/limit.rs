@@ -5,26 +5,23 @@ pub trait PageLimit {
     fn page_limit_sql(&self, offset: u64, size: u64) -> crate::core::Result<String>;
 }
 
-
 impl PageLimit for DriverType {
     fn page_limit_sql(&self, offset: u64, size: u64) -> crate::core::Result<String> {
         return match self {
-            DriverType::Mysql => {
-                Ok(format!(" LIMIT {},{}", offset, size))
-            }
-            DriverType::Postgres => {
-                Ok(format!(" LIMIT {} OFFSET {}", size, offset))
-            }
-            DriverType::Sqlite => {
-                Ok(format!(" LIMIT {} OFFSET {}", size, offset))
-            }
+            DriverType::Mysql => Ok(format!(" LIMIT {},{}", offset, size)),
+            DriverType::Postgres => Ok(format!(" LIMIT {} OFFSET {}", size, offset)),
+            DriverType::Sqlite => Ok(format!(" LIMIT {} OFFSET {}", size, offset)),
             DriverType::Mssql => {
                 //sqlserver
-                Ok(format!(" OFFSET {} ROWS FETCH NEXT {} ROWS ONLY", offset, size))
+                Ok(format!(
+                    " OFFSET {} ROWS FETCH NEXT {} ROWS ONLY",
+                    offset, size
+                ))
             }
-            DriverType::None => {
-                Err(crate::core::Error::from(format!("[rbatis] not support now for DriverType:{:?}", DriverType::None)))
-            }
+            DriverType::None => Err(crate::core::Error::from(format!(
+                "[rbatis] not support now for DriverType:{:?}",
+                DriverType::None
+            ))),
         };
     }
 }

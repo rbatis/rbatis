@@ -1,7 +1,7 @@
 use std::ops::Deref;
 
-use log::{debug, error, info, LevelFilter, trace, warn};
-use std::fmt::{Display, Debug};
+use log::{debug, error, info, trace, warn, LevelFilter};
+use std::fmt::{Debug, Display};
 
 /// log plugin
 pub trait LogPlugin: Send + Sync + Debug {
@@ -42,13 +42,13 @@ pub trait LogPlugin: Send + Sync + Debug {
 
 #[derive(Debug)]
 pub struct RbatisLog {
-    pub level_filter: LevelFilter
+    pub level_filter: LevelFilter,
 }
 
 impl Default for RbatisLog {
     fn default() -> Self {
         Self {
-            level_filter: log::LevelFilter::Info
+            level_filter: log::LevelFilter::Info,
         }
     }
 }

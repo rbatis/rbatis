@@ -4,12 +4,12 @@ extern crate lazy_static;
 #[macro_use]
 extern crate rbatis;
 
-use std::convert::Infallible;
+use chrono::NaiveDateTime;
 use hyper::service::{make_service_fn, service_fn};
 use hyper::{Body, Request, Response, Server};
-use chrono::NaiveDateTime;
-use rbatis::rbatis::Rbatis;
 use rbatis::crud::CRUD;
+use rbatis::rbatis::Rbatis;
+use std::convert::Infallible;
 
 #[crud_enable]
 #[derive(Clone, Debug)]
@@ -33,7 +33,7 @@ pub const MYSQL_URL: &'static str = "mysql://root:123456@localhost:3306/test";
 
 // 示例-Rbatis示例初始化(必须)
 lazy_static! {
-  static ref RB:Rbatis=Rbatis::new();
+    static ref RB: Rbatis = Rbatis::new();
 }
 
 async fn hello(_: Request<Body>) -> Result<Response<Body>, Infallible> {

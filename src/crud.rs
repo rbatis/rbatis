@@ -3,9 +3,9 @@ use std::hash::Hash;
 
 use async_trait::async_trait;
 use serde::de::DeserializeOwned;
-use std::fmt::Display;
 use serde::Serialize;
 use serde_json::{Map, Value};
+use std::fmt::Display;
 
 use crate::core::convert::{ResultCodec, StmtConvert};
 use crate::core::db::DBExecResult;
@@ -33,12 +33,10 @@ pub trait CRUDEnable: Send + Sync + Serialize + DeserializeOwned {
     ///
     type IdType: Send + Sync + Serialize + Display;
 
-
     ///table id column
     fn id_name() -> String {
         "id".to_string()
     }
-
 
     /// get table name,default is type name for snake name
     ///
@@ -90,13 +88,18 @@ pub trait CRUDEnable: Send + Sync + Serialize + DeserializeOwned {
     }
 
     /// make an Map<table_column,value>
-    fn make_column_value_map(&self, db_type: &DriverType) -> Result<serde_json::Map<String, Value>> {
+    fn make_column_value_map(
+        &self,
+        db_type: &DriverType,
+    ) -> Result<serde_json::Map<String, Value>> {
         let json = json!(self);
         if json.eq(&serde_json::Value::Null) {
             return Err(Error::from("[rbaits] to_value_map() fail!"));
         }
         if !json.is_object() {
-            return Err(Error::from("[rbaits] to_value_map() fail,data is not an object!"));
+            return Err(Error::from(
+                "[rbaits] to_value_map() fail,data is not an object!",
+            ));
         }
         return Ok(json.as_object().unwrap().to_owned());
     }
@@ -116,7 +119,11 @@ pub trait CRUDEnable: Send + Sync + Serialize + DeserializeOwned {
     }
 
     ///return (columns_sql,values_sql,args)
-    fn make_value_sql_arg(&self, db_type: &DriverType, index: &mut usize) -> Result<(String, String, Vec<serde_json::Value>)> {
+    fn make_value_sql_arg(
+        &self,
+        db_type: &DriverType,
+        index: &mut usize,
+    ) -> Result<(String, String, Vec<serde_json::Value>)> {
         let mut value_sql = String::new();
         let mut arr = vec![];
         let cols = Self::table_columns();
@@ -131,12 +138,14 @@ pub trait CRUDEnable: Send + Sync + Serialize + DeserializeOwned {
             }
             //cast convert
             column_sql = column_sql + column + ",";
-            value_sql = value_sql + Self::do_format_column(db_type, &column, db_type.stmt_convert(*index)).as_str() + ",";
+            value_sql = value_sql
+                + Self::do_format_column(db_type, &column, db_type.stmt_convert(*index)).as_str()
+                + ",";
             arr.push(v.to_owned());
             *index += 1;
         }
-        column_sql.pop();//remove ','
-        value_sql.pop();//remove ','
+        column_sql.pop(); //remove ','
+        value_sql.pop(); //remove ','
         return Ok((column_sql, value_sql, arr));
     }
 
@@ -148,11 +157,13 @@ pub trait CRUDEnable: Send + Sync + Serialize + DeserializeOwned {
     }
 }
 
-
-impl<T> CRUDEnable for Option<T> where T: CRUDEnable {
+impl<T> CRUDEnable for Option<T>
+where
+    T: CRUDEnable,
+{
     type IdType = T::IdType;
 
-    fn id_name() -> String{
+    fn id_name() -> String {
         T::id_name()
     }
 
@@ -167,16 +178,27 @@ impl<T> CRUDEnable for Option<T> where T: CRUDEnable {
     fn formats(driver_type: &DriverType) -> HashMap<String, String> {
         T::formats(driver_type)
     }
-    fn make_column_value_map(&self, db_type: &DriverType) -> Result<serde_json::Map<String, Value>> {
+    fn make_column_value_map(
+        &self,
+        db_type: &DriverType,
+    ) -> Result<serde_json::Map<String, Value>> {
         if self.is_none() {
-            return Err(crate::core::Error::from("[rbatis] can not make_column_value_map() for None value!"));
+            return Err(crate::core::Error::from(
+                "[rbatis] can not make_column_value_map() for None value!",
+            ));
         }
         T::make_column_value_map(self.as_ref().unwrap(), db_type)
     }
 
-    fn make_value_sql_arg(&self, db_type: &DriverType, index: &mut usize) -> Result<(String, String, Vec<serde_json::Value>)> {
+    fn make_value_sql_arg(
+        &self,
+        db_type: &DriverType,
+        index: &mut usize,
+    ) -> Result<(String, String, Vec<serde_json::Value>)> {
         if self.is_none() {
-            return Err(crate::core::Error::from("[rbatis] can not make_sql_arg() for None value!"));
+            return Err(crate::core::Error::from(
+                "[rbatis] can not make_sql_arg() for None value!",
+            ));
         }
         T::make_value_sql_arg(self.as_ref().unwrap(), db_type, index)
     }
@@ -204,12 +226,18 @@ pub trait Id {
 }
 
 /// fetch ids, must use Id trait  together
-pub trait Ids<C> where C: Id {
+pub trait Ids<C>
+where
+    C: Id,
+{
     ///get ids
     fn to_ids(&self) -> Vec<C::IdType>;
 }
 
-impl<C> Ids<C> for Vec<C> where C: Id {
+impl<C> Ids<C> for Vec<C>
+where
+    C: Id,
+{
     fn to_ids(&self) -> Vec<C::IdType> {
         let mut vec = vec![];
         for item in self {
@@ -224,40 +252,94 @@ impl<C> Ids<C> for Vec<C> where C: Id {
 
 #[async_trait]
 pub trait CRUD {
-    async fn save_by_wrapper<T>(&self, context_id: &str, entity: &T, w: &Wrapper) -> Result<DBExecResult> where T: CRUDEnable;
-    async fn save<T>(&self, context_id: &str, entity: &T) -> Result<DBExecResult> where T: CRUDEnable;
-    async fn save_batch<T>(&self, context_id: &str, entity: &[T]) -> Result<DBExecResult> where T: CRUDEnable;
+    async fn save_by_wrapper<T>(
+        &self,
+        context_id: &str,
+        entity: &T,
+        w: &Wrapper,
+    ) -> Result<DBExecResult>
+    where
+        T: CRUDEnable;
+    async fn save<T>(&self, context_id: &str, entity: &T) -> Result<DBExecResult>
+    where
+        T: CRUDEnable;
+    async fn save_batch<T>(&self, context_id: &str, entity: &[T]) -> Result<DBExecResult>
+    where
+        T: CRUDEnable;
 
+    async fn remove_by_wrapper<T>(&self, context_id: &str, w: &Wrapper) -> Result<u64>
+    where
+        T: CRUDEnable;
+    async fn remove_by_id<T>(&self, context_id: &str, id: &T::IdType) -> Result<u64>
+    where
+        T: CRUDEnable;
+    async fn remove_batch_by_id<T>(&self, context_id: &str, ids: &[T::IdType]) -> Result<u64>
+    where
+        T: CRUDEnable;
 
-    async fn remove_by_wrapper<T>(&self, context_id: &str, w: &Wrapper) -> Result<u64> where T: CRUDEnable;
-    async fn remove_by_id<T>(&self, context_id: &str, id: &T::IdType) -> Result<u64> where T: CRUDEnable;
-    async fn remove_batch_by_id<T>(&self, context_id: &str, ids: &[T::IdType]) -> Result<u64> where T: CRUDEnable;
+    async fn update_by_wrapper<T>(
+        &self,
+        context_id: &str,
+        arg: &T,
+        w: &Wrapper,
+        update_null_value: bool,
+    ) -> Result<u64>
+    where
+        T: CRUDEnable;
+    async fn update_by_id<T>(&self, context_id: &str, arg: &T) -> Result<u64>
+    where
+        T: CRUDEnable;
+    async fn update_batch_by_id<T>(&self, context_id: &str, ids: &[T]) -> Result<u64>
+    where
+        T: CRUDEnable;
 
-    async fn update_by_wrapper<T>(&self, context_id: &str, arg: &T, w: &Wrapper, update_null_value: bool) -> Result<u64> where T: CRUDEnable;
-    async fn update_by_id<T>(&self, context_id: &str, arg: &T) -> Result<u64> where T: CRUDEnable;
-    async fn update_batch_by_id<T>(&self, context_id: &str, ids: &[T]) -> Result<u64> where T: CRUDEnable;
+    async fn fetch_by_id<T>(&self, context_id: &str, id: &T::IdType) -> Result<T>
+    where
+        T: CRUDEnable;
+    async fn fetch_by_wrapper<T>(&self, context_id: &str, w: &Wrapper) -> Result<T>
+    where
+        T: CRUDEnable;
+    async fn fetch_page_by_wrapper<T>(
+        &self,
+        context_id: &str,
+        w: &Wrapper,
+        page: &dyn IPageRequest,
+    ) -> Result<Page<T>>
+    where
+        T: CRUDEnable;
 
-    async fn fetch_by_id<T>(&self, context_id: &str, id: &T::IdType) -> Result<T> where T: CRUDEnable;
-    async fn fetch_by_wrapper<T>(&self, context_id: &str, w: &Wrapper) -> Result<T> where T: CRUDEnable;
-    async fn fetch_page_by_wrapper<T>(&self, context_id: &str, w: &Wrapper, page: &dyn IPageRequest) -> Result<Page<T>> where T: CRUDEnable;
-
-    async fn list<T>(&self, context_id: &str) -> Result<Vec<T>> where T: CRUDEnable;
-    async fn list_by_ids<T>(&self, context_id: &str, ids: &[T::IdType]) -> Result<Vec<T>> where T: CRUDEnable;
-    async fn list_by_wrapper<T>(&self, context_id: &str, w: &Wrapper) -> Result<Vec<T>> where T: CRUDEnable;
+    async fn list<T>(&self, context_id: &str) -> Result<Vec<T>>
+    where
+        T: CRUDEnable;
+    async fn list_by_ids<T>(&self, context_id: &str, ids: &[T::IdType]) -> Result<Vec<T>>
+    where
+        T: CRUDEnable;
+    async fn list_by_wrapper<T>(&self, context_id: &str, w: &Wrapper) -> Result<Vec<T>>
+    where
+        T: CRUDEnable;
 }
 
 #[async_trait]
 impl CRUD for Rbatis {
     /// save by wrapper
-    async fn save_by_wrapper<T>(&self, context_id: &str, entity: &T, w: &Wrapper) -> Result<DBExecResult> where T: CRUDEnable {
+    async fn save_by_wrapper<T>(
+        &self,
+        context_id: &str,
+        entity: &T,
+        w: &Wrapper,
+    ) -> Result<DBExecResult>
+    where
+        T: CRUDEnable,
+    {
         if w.sql.starts_with("INSERT INTO") {
             return self.exec_prepare(context_id, &w.sql, &w.args).await;
         } else {
             let mut w = w.clone();
             let mut index = 0;
-            let (columns, values, args) = entity.make_value_sql_arg(&self.driver_type()?, &mut index)?;
+            let (columns, values, args) =
+                entity.make_value_sql_arg(&self.driver_type()?, &mut index)?;
             let table_name = choose_dyn_table_name::<T>(&w);
-            w=w.insert_into(&table_name, &columns, &values);
+            w = w.insert_into(&table_name, &columns, &values);
             for x in args {
                 w.args.push(x);
             }
@@ -267,10 +349,18 @@ impl CRUD for Rbatis {
 
     /// save one entity to database
     async fn save<T>(&self, context_id: &str, entity: &T) -> Result<DBExecResult>
-        where T: CRUDEnable {
+    where
+        T: CRUDEnable,
+    {
         let mut index = 0;
-        let (columns, values, args) = entity.make_value_sql_arg(&self.driver_type()?, &mut index)?;
-        let sql = format!("INSERT INTO {} ({}) VALUES ({})", T::table_name(), columns, values);
+        let (columns, values, args) =
+            entity.make_value_sql_arg(&self.driver_type()?, &mut index)?;
+        let sql = format!(
+            "INSERT INTO {} ({}) VALUES ({})",
+            T::table_name(),
+            columns,
+            values
+        );
         return self.exec_prepare(context_id, sql.as_str(), &args).await;
     }
 
@@ -281,7 +371,10 @@ impl CRUD for Rbatis {
     /// [rbatis] Exec ==>   INSERT INTO biz_activity (id,name,version) VALUES ( ? , ? , ?),( ? , ? , ?)
     ///
     ///
-    async fn save_batch<T>(&self, context_id: &str, args: &[T]) -> Result<DBExecResult> where T: CRUDEnable {
+    async fn save_batch<T>(&self, context_id: &str, args: &[T]) -> Result<DBExecResult>
+    where
+        T: CRUDEnable,
+    {
         if args.is_empty() {
             return Ok(DBExecResult {
                 rows_affected: 0,
@@ -293,7 +386,8 @@ impl CRUD for Rbatis {
         let mut column_sql = "".to_string();
         let mut field_index = 0;
         for x in args {
-            let (columns, values, args) = x.make_value_sql_arg(&self.driver_type()?, &mut field_index)?;
+            let (columns, values, args) =
+                x.make_value_sql_arg(&self.driver_type()?, &mut field_index)?;
             if column_sql.is_empty() {
                 column_sql = columns;
             }
@@ -302,35 +396,67 @@ impl CRUD for Rbatis {
                 arg_arr.push(x);
             }
         }
-        value_arr.pop();//pop ','
-        let sql = format!("INSERT INTO {} ({}) VALUES {}", T::table_name(), column_sql, value_arr);
+        value_arr.pop(); //pop ','
+        let sql = format!(
+            "INSERT INTO {} ({}) VALUES {}",
+            T::table_name(),
+            column_sql,
+            value_arr
+        );
         return self.exec_prepare(context_id, sql.as_str(), &arg_arr).await;
     }
 
     /// remove database record by a wrapper
-    async fn remove_by_wrapper<T>(&self, context_id: &str, w: &Wrapper) -> Result<u64> where T: CRUDEnable {
+    async fn remove_by_wrapper<T>(&self, context_id: &str, w: &Wrapper) -> Result<u64>
+    where
+        T: CRUDEnable,
+    {
         let table_name = choose_dyn_table_name::<T>(w);
         let where_sql = w.sql.as_str();
         let mut sql = String::new();
         if self.logic_plugin.is_some() {
-            sql = self.logic_plugin.as_ref().unwrap().create_remove_sql(&self.driver_type()?, &table_name, &T::table_columns(), make_where_sql(where_sql).as_str())?;
+            sql = self.logic_plugin.as_ref().unwrap().create_remove_sql(
+                &self.driver_type()?,
+                &table_name,
+                &T::table_columns(),
+                make_where_sql(where_sql).as_str(),
+            )?;
         } else {
             sql = format!("DELETE FROM {} {}", table_name, make_where_sql(where_sql));
         }
-        return Ok(self.exec_prepare(context_id, sql.as_str(), &w.args).await?.rows_affected);
+        return Ok(self
+            .exec_prepare(context_id, sql.as_str(), &w.args)
+            .await?
+            .rows_affected);
     }
 
     /// remove database record by id
-    async fn remove_by_id<T>(&self, context_id: &str, id: &T::IdType) -> Result<u64> where T: CRUDEnable {
+    async fn remove_by_id<T>(&self, context_id: &str, id: &T::IdType) -> Result<u64>
+    where
+        T: CRUDEnable,
+    {
         let mut sql = String::new();
         let driver_type = &self.driver_type()?;
         let id_str = T::do_format_column(&driver_type, &T::id_name(), driver_type.stmt_convert(0));
         if self.logic_plugin.is_some() {
-            sql = self.logic_plugin.as_ref().unwrap().create_remove_sql(&driver_type, T::table_name().as_str(), &T::table_columns(), format!(" WHERE {} = {}", T::id_name(),id_str).as_str())?;
+            sql = self.logic_plugin.as_ref().unwrap().create_remove_sql(
+                &driver_type,
+                T::table_name().as_str(),
+                &T::table_columns(),
+                format!(" WHERE {} = {}", T::id_name(), id_str).as_str(),
+            )?;
         } else {
-            sql = format!("DELETE FROM {} WHERE {} = {}", T::table_name(), T::id_name(), id_str);
+            sql = format!(
+                "DELETE FROM {} WHERE {} = {}",
+                T::table_name(),
+                T::id_name(),
+                id_str
+            );
         }
-        return Ok(self.exec_prepare(context_id, sql.as_str(), &vec![json!(id)]).await?.rows_affected);
+        return Ok(self
+            .exec_prepare(context_id, sql.as_str(), &vec![json!(id)])
+            .await?
+            .rows_affected);
     }
 
     ///remove batch id
@@ -338,16 +464,32 @@ impl CRUD for Rbatis {
     /// rb.remove_batch_by_id::<BizActivity>(&["1".to_string(),"2".to_string()]).await;
     /// [rbatis] Exec ==> DELETE FROM biz_activity WHERE id IN ( ? , ? )
     ///
-    async fn remove_batch_by_id<T>(&self, context_id: &str, ids: &[T::IdType]) -> Result<u64> where T: CRUDEnable {
+    async fn remove_batch_by_id<T>(&self, context_id: &str, ids: &[T::IdType]) -> Result<u64>
+    where
+        T: CRUDEnable,
+    {
         if ids.is_empty() {
             return Ok(0);
         }
-        let w = self.new_wrapper_table::<T>().and().in_array(&T::id_name(), &ids).check()?;
+        let w = self
+            .new_wrapper_table::<T>()
+            .and()
+            .in_array(&T::id_name(), &ids)
+            .check()?;
         return self.remove_by_wrapper::<T>(context_id, &w).await;
     }
 
     /// update arg by wrapper
-    async fn update_by_wrapper<T>(&self, context_id: &str, arg: &T, w: &Wrapper, update_null_value: bool) -> Result<u64> where T: CRUDEnable {
+    async fn update_by_wrapper<T>(
+        &self,
+        context_id: &str,
+        arg: &T,
+        w: &Wrapper,
+        update_null_value: bool,
+    ) -> Result<u64>
+    where
+        T: CRUDEnable,
+    {
         let table_name = choose_dyn_table_name::<T>(w);
         let mut args = vec![];
         let driver_type = &self.driver_type()?;
@@ -363,7 +505,18 @@ impl CRUD for Rbatis {
             if !update_null_value && v.is_null() {
                 continue;
             }
-            sets.push_str(format!(" {} = {},", column, T::do_format_column(&driver_type, &column, driver_type.stmt_convert(args.len()))).as_str());
+            sets.push_str(
+                format!(
+                    " {} = {},",
+                    column,
+                    T::do_format_column(
+                        &driver_type,
+                        &column,
+                        driver_type.stmt_convert(args.len())
+                    )
+                )
+                .as_str(),
+            );
             args.push(v);
         }
         sets.pop();
@@ -374,25 +527,47 @@ impl CRUD for Rbatis {
             wrapper.sql.push_str(" WHERE ");
             wrapper = wrapper.push_wrapper(&w).check()?;
         }
-        return Ok(self.exec_prepare(context_id, wrapper.sql.as_str(), &wrapper.args).await?.rows_affected);
+        return Ok(self
+            .exec_prepare(context_id, wrapper.sql.as_str(), &wrapper.args)
+            .await?
+            .rows_affected);
     }
 
     /// update database record by id
-    async fn update_by_id<T>(&self, context_id: &str, arg: &T) -> Result<u64> where T: CRUDEnable {
+    async fn update_by_id<T>(&self, context_id: &str, arg: &T) -> Result<u64>
+    where
+        T: CRUDEnable,
+    {
         let map = json!(arg);
         if !map.is_object() {
-            return Err(crate::core::Error::from("[rbatis] update_by_id() arg must be an object/struct!"));
+            return Err(crate::core::Error::from(
+                "[rbatis] update_by_id() arg must be an object/struct!",
+            ));
         }
         let map = map.as_object().unwrap();
         let id = map.get(&T::id_name());
         if id.is_none() {
-            return Err(crate::core::Error::from("[rbatis] update_by_id() arg's id can no be none!"));
+            return Err(crate::core::Error::from(
+                "[rbatis] update_by_id() arg's id can no be none!",
+            ));
         }
-        self.update_by_wrapper(context_id, arg, &self.new_wrapper_table::<T>().eq(&T::id_name(), id).check()?, false).await
+        self.update_by_wrapper(
+            context_id,
+            arg,
+            &self
+                .new_wrapper_table::<T>()
+                .eq(&T::id_name(), id)
+                .check()?,
+            false,
+        )
+        .await
     }
 
     /// remove batch database record by args
-    async fn update_batch_by_id<T>(&self, context_id: &str, args: &[T]) -> Result<u64> where T: CRUDEnable {
+    async fn update_batch_by_id<T>(&self, context_id: &str, args: &[T]) -> Result<u64>
+    where
+        T: CRUDEnable,
+    {
         let mut updates = 0;
         for x in args {
             updates += self.update_by_id(context_id, x).await?
@@ -401,43 +576,78 @@ impl CRUD for Rbatis {
     }
 
     /// fetch database record by a wrapper
-    async fn fetch_by_wrapper<T>(&self, context_id: &str, w: &Wrapper) -> Result<T> where T: CRUDEnable {
+    async fn fetch_by_wrapper<T>(&self, context_id: &str, w: &Wrapper) -> Result<T>
+    where
+        T: CRUDEnable,
+    {
         let sql = make_select_sql::<T>(&self, &w)?;
         return self.fetch_prepare(context_id, sql.as_str(), &w.args).await;
     }
 
     /// fetch database record by id
-    async fn fetch_by_id<T>(&self, context_id: &str, id: &T::IdType) -> Result<T> where T: CRUDEnable {
-        let w = self.new_wrapper_table::<T>().eq(&T::id_name(), id).check()?;
+    async fn fetch_by_id<T>(&self, context_id: &str, id: &T::IdType) -> Result<T>
+    where
+        T: CRUDEnable,
+    {
+        let w = self
+            .new_wrapper_table::<T>()
+            .eq(&T::id_name(), id)
+            .check()?;
         return self.fetch_by_wrapper(context_id, &w).await;
     }
 
     /// fetch database record list by a wrapper
-    async fn list_by_wrapper<T>(&self, context_id: &str, w: &Wrapper) -> Result<Vec<T>> where T: CRUDEnable {
+    async fn list_by_wrapper<T>(&self, context_id: &str, w: &Wrapper) -> Result<Vec<T>>
+    where
+        T: CRUDEnable,
+    {
         let sql = make_select_sql::<T>(&self, &w)?;
         return self.fetch_prepare(context_id, sql.as_str(), &w.args).await;
     }
 
     /// fetch database record list
-    async fn list<T>(&self, context_id: &str) -> Result<Vec<T>> where T: CRUDEnable {
-        return self.list_by_wrapper(context_id, &self.new_wrapper_table::<T>()).await;
+    async fn list<T>(&self, context_id: &str) -> Result<Vec<T>>
+    where
+        T: CRUDEnable,
+    {
+        return self
+            .list_by_wrapper(context_id, &self.new_wrapper_table::<T>())
+            .await;
     }
 
     /// fetch database record list by a id array
-    async fn list_by_ids<T>(&self, context_id: &str, ids: &[T::IdType]) -> Result<Vec<T>> where T: CRUDEnable {
-        let w = self.new_wrapper_table::<T>().in_array(&T::id_name(), ids).check()?;
+    async fn list_by_ids<T>(&self, context_id: &str, ids: &[T::IdType]) -> Result<Vec<T>>
+    where
+        T: CRUDEnable,
+    {
+        let w = self
+            .new_wrapper_table::<T>()
+            .in_array(&T::id_name(), ids)
+            .check()?;
         return self.list_by_wrapper(context_id, &w).await;
     }
 
     /// fetch page database record list by a wrapper
-    async fn fetch_page_by_wrapper<T>(&self, context_id: &str, w: &Wrapper, page: &dyn IPageRequest) -> Result<Page<T>> where T: CRUDEnable {
+    async fn fetch_page_by_wrapper<T>(
+        &self,
+        context_id: &str,
+        w: &Wrapper,
+        page: &dyn IPageRequest,
+    ) -> Result<Page<T>>
+    where
+        T: CRUDEnable,
+    {
         let sql = make_select_sql::<T>(&self, &w)?;
-        self.fetch_page(context_id, sql.as_str(), &w.args, page).await
+        self.fetch_page(context_id, sql.as_str(), &w.args, page)
+            .await
     }
 }
 
 /// choose table name
-fn choose_dyn_table_name<T>(w: &Wrapper) -> String where T: CRUDEnable {
+fn choose_dyn_table_name<T>(w: &Wrapper) -> String
+where
+    T: CRUDEnable,
+{
     let mut table_name = T::table_name();
     let table_name_format = w.formats.get("table_name");
     if table_name_format.is_some() {
@@ -455,20 +665,37 @@ fn choose_dyn_table_name<T>(w: &Wrapper) -> String where T: CRUDEnable {
 
 fn make_where_sql(arg: &str) -> String {
     let mut where_sql = arg.to_string();
-    where_sql = where_sql.trim_start().trim_start_matches("AND ").trim_start_matches("OR ").to_string();
+    where_sql = where_sql
+        .trim_start()
+        .trim_start_matches("AND ")
+        .trim_start_matches("OR ")
+        .to_string();
     format!(" WHERE {} ", where_sql)
 }
 
-fn make_select_sql<T>(rb: &Rbatis, w: &Wrapper) -> Result<String> where T: CRUDEnable {
+fn make_select_sql<T>(rb: &Rbatis, w: &Wrapper) -> Result<String>
+where
+    T: CRUDEnable,
+{
     let table_name = choose_dyn_table_name::<T>(w);
     let where_sql = w.sql.clone();
     let mut sql = String::new();
     if rb.logic_plugin.is_some() {
         let logic_ref = rb.logic_plugin.as_ref().unwrap();
-        return logic_ref.create_select_sql(&rb.driver_type()?, &table_name, &T::table_columns(), &where_sql);
+        return logic_ref.create_select_sql(
+            &rb.driver_type()?,
+            &table_name,
+            &T::table_columns(),
+            &where_sql,
+        );
     }
     if !where_sql.is_empty() && !where_sql.starts_with("ORDER") && !where_sql.starts_with("GROUP") {
-        sql = format!("SELECT {} FROM {} WHERE {}", T::table_columns(), table_name, where_sql);
+        sql = format!(
+            "SELECT {} FROM {} WHERE {}",
+            T::table_columns(),
+            table_name,
+            where_sql
+        );
     } else {
         sql = format!("SELECT {} FROM {}", T::table_columns(), table_name);
     }
@@ -486,7 +713,7 @@ mod test {
     use serde::Serialize;
 
     use crate::core::Error;
-    use crate::crud::{CRUD, CRUDEnable, Id, Ids};
+    use crate::crud::{CRUDEnable, Id, Ids, CRUD};
     use crate::plugin::logic_delete::RbatisLogicDeletePlugin;
     use crate::plugin::page::{Page, PageRequest};
     use crate::rbatis::Rbatis;
@@ -534,7 +761,6 @@ mod test {
         }
     }
 
-
     #[test]
     pub fn test_ids() {
         let vec = vec![BizActivity {
@@ -575,7 +801,9 @@ mod test {
 
             fast_log::init_log("requests.log", 1000, log::Level::Info, None, true);
             let rb = Rbatis::new();
-            rb.link("mysql://root:123456@localhost:3306/test").await.unwrap();
+            rb.link("mysql://root:123456@localhost:3306/test")
+                .await
+                .unwrap();
             let r = rb.save("", &activity).await;
             if r.is_err() {
                 println!("{}", r.err().unwrap().to_string());
@@ -604,7 +832,9 @@ mod test {
 
             fast_log::init_log("requests.log", 1000, log::Level::Info, None, true);
             let rb = Rbatis::new();
-            rb.link("mysql://root:123456@localhost:3306/test").await.unwrap();
+            rb.link("mysql://root:123456@localhost:3306/test")
+                .await
+                .unwrap();
             let r = rb.save_batch("", &args).await;
             if r.is_err() {
                 println!("{}", r.err().unwrap().to_string());
@@ -612,21 +842,23 @@ mod test {
         });
     }
 
-
     #[test]
     pub fn test_remove_batch_by_id() {
         crate::core::runtime::block_on(async {
             fast_log::init_log("requests.log", 1000, log::Level::Info, None, true);
             let mut rb = Rbatis::new();
             rb.logic_plugin = Some(Box::new(RbatisLogicDeletePlugin::new("delete_flag")));
-            rb.link("mysql://root:123456@localhost:3306/test").await.unwrap();
-            let r = rb.remove_batch_by_id::<BizActivity>("", &["1".to_string(), "2".to_string()]).await;
+            rb.link("mysql://root:123456@localhost:3306/test")
+                .await
+                .unwrap();
+            let r = rb
+                .remove_batch_by_id::<BizActivity>("", &["1".to_string(), "2".to_string()])
+                .await;
             if r.is_err() {
                 println!("{}", r.err().unwrap().to_string());
             }
         });
     }
-
 
     #[test]
     pub fn test_remove_by_id() {
@@ -635,7 +867,9 @@ mod test {
             let mut rb = Rbatis::new();
             //设置 逻辑删除插件
             rb.logic_plugin = Some(Box::new(RbatisLogicDeletePlugin::new("delete_flag")));
-            rb.link("mysql://root:123456@localhost:3306/test").await.unwrap();
+            rb.link("mysql://root:123456@localhost:3306/test")
+                .await
+                .unwrap();
             let r = rb.remove_by_id::<BizActivity>("", &"1".to_string()).await;
             if r.is_err() {
                 println!("{}", r.err().unwrap().to_string());
@@ -650,7 +884,9 @@ mod test {
             let mut rb = Rbatis::new();
             //设置 逻辑删除插件
             rb.logic_plugin = Some(Box::new(RbatisLogicDeletePlugin::new("delete_flag")));
-            rb.link("mysql://root:123456@localhost:3306/test").await.unwrap();
+            rb.link("mysql://root:123456@localhost:3306/test")
+                .await
+                .unwrap();
 
             let activity = BizActivity {
                 id: Some("12312".to_string()),
@@ -667,14 +903,16 @@ mod test {
                 delete_flag: Some(1),
             };
 
-            let w = Wrapper::new(&rb.driver_type().unwrap()).eq("id", "12312").check().unwrap();
+            let w = Wrapper::new(&rb.driver_type().unwrap())
+                .eq("id", "12312")
+                .check()
+                .unwrap();
             let r = rb.update_by_wrapper("", &activity, &w, false).await;
             if r.is_err() {
                 println!("{}", r.err().unwrap().to_string());
             }
         });
     }
-
 
     #[test]
     pub fn test_update_by_id() {
@@ -683,7 +921,9 @@ mod test {
             let mut rb = Rbatis::new();
             //设置 逻辑删除插件
             rb.logic_plugin = Some(Box::new(RbatisLogicDeletePlugin::new("delete_flag")));
-            rb.link("mysql://root:123456@localhost:3306/test").await.unwrap();
+            rb.link("mysql://root:123456@localhost:3306/test")
+                .await
+                .unwrap();
 
             let activity = BizActivity {
                 id: Some("12312".to_string()),
@@ -713,9 +953,14 @@ mod test {
             let mut rb = Rbatis::new();
             //设置 逻辑删除插件
             rb.logic_plugin = Some(Box::new(RbatisLogicDeletePlugin::new("delete_flag")));
-            rb.link("mysql://root:123456@localhost:3306/test").await.unwrap();
+            rb.link("mysql://root:123456@localhost:3306/test")
+                .await
+                .unwrap();
 
-            let w = Wrapper::new(&rb.driver_type().unwrap()).eq("id", "12312").check().unwrap();
+            let w = Wrapper::new(&rb.driver_type().unwrap())
+                .eq("id", "12312")
+                .check()
+                .unwrap();
             let r: Result<BizActivity, Error> = rb.fetch_by_wrapper("", &w).await;
             if r.is_err() {
                 println!("{}", r.err().unwrap().to_string());
@@ -730,9 +975,14 @@ mod test {
             let mut rb = Rbatis::new();
             //设置 逻辑删除插件
             rb.logic_plugin = Some(Box::new(RbatisLogicDeletePlugin::new("delete_flag")));
-            rb.link("mysql://root:123456@localhost:3306/test").await.unwrap();
+            rb.link("mysql://root:123456@localhost:3306/test")
+                .await
+                .unwrap();
 
-            let w = Wrapper::new(&rb.driver_type().unwrap()).eq("id", "12312").check().unwrap();
+            let w = Wrapper::new(&rb.driver_type().unwrap())
+                .eq("id", "12312")
+                .check()
+                .unwrap();
             let r: Result<BizActivityNoDel, Error> = rb.fetch_by_wrapper("", &w).await;
             if r.is_err() {
                 println!("{}", r.err().unwrap().to_string());
@@ -747,10 +997,15 @@ mod test {
             let mut rb = Rbatis::new();
             //设置 逻辑删除插件
             rb.logic_plugin = Some(Box::new(RbatisLogicDeletePlugin::new("delete_flag")));
-            rb.link("mysql://root:123456@localhost:3306/test").await.unwrap();
+            rb.link("mysql://root:123456@localhost:3306/test")
+                .await
+                .unwrap();
 
             let w = Wrapper::new(&rb.driver_type().unwrap()).check().unwrap();
-            let r: Page<BizActivity> = rb.fetch_page_by_wrapper("", &w, &PageRequest::new(1, 20)).await.unwrap();
+            let r: Page<BizActivity> = rb
+                .fetch_page_by_wrapper("", &w, &PageRequest::new(1, 20))
+                .await
+                .unwrap();
             println!("{}", serde_json::to_string(&r).unwrap());
         });
     }
@@ -762,7 +1017,9 @@ mod test {
             let mut rb = Rbatis::new();
             //设置 逻辑删除插件
             rb.logic_plugin = Some(Box::new(RbatisLogicDeletePlugin::new("delete_flag")));
-            rb.link("mysql://root:123456@localhost:3306/test").await.unwrap();
+            rb.link("mysql://root:123456@localhost:3306/test")
+                .await
+                .unwrap();
 
             let py_sql = r#"
                         update user set name=#{name}, password=#{password} ,sex=#{sex}, phone=#{phone}, delete_flag=#{flag},

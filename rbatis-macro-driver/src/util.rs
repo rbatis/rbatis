@@ -16,7 +16,11 @@ pub(crate) fn find_return_type(target_fn: &ItemFn) -> proc_macro2::TokenStream {
         _ => {}
     }
     let s = format!("{}", return_ty);
-    if !s.starts_with("rbatis_core :: Result") && !s.starts_with("rbatis :: core :: Result") && !s.starts_with("Result") && !s.starts_with("std :: result :: Result") {
+    if !s.starts_with("rbatis_core :: Result")
+        && !s.starts_with("rbatis :: core :: Result")
+        && !s.starts_with("Result")
+        && !s.starts_with("std :: result :: Result")
+    {
         return_ty = quote! {
              rbatis::core :: Result <#return_ty>
         };
@@ -39,7 +43,11 @@ pub(crate) fn get_fn_args(target_fn: &ItemFn) -> Vec<String> {
     fn_arg_name_vec
 }
 
-pub(crate) fn filter_fn_args(target_fn: &ItemFn, arg_name: &str, arg_type: &str) -> std::collections::HashMap<String, String> {
+pub(crate) fn filter_fn_args(
+    target_fn: &ItemFn,
+    arg_name: &str,
+    arg_type: &str,
+) -> std::collections::HashMap<String, String> {
     let mut map = HashMap::new();
     for arg in &target_fn.sig.inputs {
         match arg {
@@ -62,19 +70,30 @@ pub(crate) fn filter_fn_args(target_fn: &ItemFn, arg_name: &str, arg_type: &str)
 pub(crate) fn get_page_req_ident(target_fn: &ItemFn, func_name: &str) -> Ident {
     let page_reqs = filter_fn_args(target_fn, "", "& PageRequest");
     if page_reqs.len() > 1 {
-        panic!("[rbatis] {} only support on arg of '**:&PageRequest'!", func_name);
+        panic!(
+            "[rbatis] {} only support on arg of '**:&PageRequest'!",
+            func_name
+        );
     }
     if page_reqs.len() == 0 {
-        panic!("[rbatis] {} method arg must have arg Type '**:&PageRequest'!", func_name);
+        panic!(
+            "[rbatis] {} method arg must have arg Type '**:&PageRequest'!",
+            func_name
+        );
     }
-    let req = page_reqs.get("& PageRequest").unwrap_or(&"".to_string()).to_owned();
+    let req = page_reqs
+        .get("& PageRequest")
+        .unwrap_or(&"".to_string())
+        .to_owned();
     if req.eq("") {
-        panic!("[rbatis] {} method arg must have arg Type '**:&PageRequest'!", func_name);
+        panic!(
+            "[rbatis] {} method arg must have arg Type '**:&PageRequest'!",
+            func_name
+        );
     }
     let req = Ident::new(&req, Span::call_site());
     req
 }
-
 
 //find and check method return type
 pub(crate) fn find_fn_body(target_fn: &ItemFn) -> proc_macro2::TokenStream {

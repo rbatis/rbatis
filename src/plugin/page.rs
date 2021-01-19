@@ -1,10 +1,10 @@
 use std::future::Future;
 
 use futures_core::future::BoxFuture;
-use serde::{Deserialize, Serialize};
 use serde::de::DeserializeOwned;
-use std::fmt::{Display, Debug};
+use serde::{Deserialize, Serialize};
 use serde_json::Value;
+use std::fmt::{Debug, Display};
 
 use rbatis_core::Error;
 
@@ -18,9 +18,15 @@ pub trait PagePlugin: Send + Sync + Debug {
         std::any::type_name::<Self>()
     }
     /// return 2 sql for select ,  (count_sql,select_sql)
-    fn make_page_sql(&self, driver_type: &DriverType, context_id: &str, sql: &str, args: &Vec<serde_json::Value>, page: &dyn IPageRequest) -> Result<(String, String), crate::core::Error>;
+    fn make_page_sql(
+        &self,
+        driver_type: &DriverType,
+        context_id: &str,
+        sql: &str,
+        args: &Vec<serde_json::Value>,
+        page: &dyn IPageRequest,
+    ) -> Result<(String, String), crate::core::Error>;
 }
-
 
 ///Page interface, support get_pages() and offset()
 pub trait IPageRequest: Send + Sync {
@@ -54,7 +60,6 @@ pub trait IPageRequest: Send + Sync {
         }
     }
 }
-
 
 ///Page interface, support get_pages() and offset()
 pub trait IPage<T>: IPageRequest {
@@ -172,7 +177,6 @@ impl ToString for PageRequest {
     }
 }
 
-
 impl<T> Page<T> {
     pub fn new(current: u64, size: u64) -> Self {
         return Page::new_total(current, size, 0);
@@ -218,7 +222,9 @@ impl<T> Default for Page<T> {
 }
 
 impl<T> IPageRequest for Page<T>
-    where T: Send + Sync {
+where
+    T: Send + Sync,
+{
     fn get_size(&self) -> u64 {
         self.size
     }
@@ -252,7 +258,9 @@ impl<T> IPageRequest for Page<T>
 }
 
 impl<T> IPage<T> for Page<T>
-    where T: Send + Sync {
+where
+    T: Send + Sync,
+{
     fn get_records(&self) -> &Vec<T> {
         self.records.as_ref()
     }
@@ -266,7 +274,10 @@ impl<T> IPage<T> for Page<T>
     }
 }
 
-impl<T> ToString for Page<T> where T: Send + Sync + Serialize {
+impl<T> ToString for Page<T>
+where
+    T: Send + Sync + Serialize,
+{
     fn to_string(&self) -> String {
         let result = serde_json::to_string(self);
         if result.is_err() {
@@ -281,7 +292,6 @@ impl<T> ToString for Page<T> where T: Send + Sync + Serialize {
 #[derive(Copy, Clone, Debug)]
 pub struct RbatisReplacePagePlugin {}
 
-
 impl RbatisReplacePagePlugin {
     fn make_count_sql(&self, sql: &str) -> String {
         let mut from_index = sql.find(" FROM ");
@@ -291,22 +301,32 @@ impl RbatisReplacePagePlugin {
         let mut where_sql = sql[from_index.unwrap_or(0)..sql.len()].to_string();
         //remove order by
         if where_sql.contains(" ORDER BY ") {
-            where_sql = where_sql[0..where_sql.rfind(" ORDER BY ").unwrap_or(where_sql.len())].to_string();
+            where_sql =
+                where_sql[0..where_sql.rfind(" ORDER BY ").unwrap_or(where_sql.len())].to_string();
         }
         if where_sql.contains(" LIMIT ") {
-            where_sql = where_sql[0..where_sql.rfind(" LIMIT ").unwrap_or(where_sql.len())].to_string();
+            where_sql =
+                where_sql[0..where_sql.rfind(" LIMIT ").unwrap_or(where_sql.len())].to_string();
         }
         format!("SELECT count(1) FROM {}", where_sql)
     }
 }
 
-
 impl PagePlugin for RbatisReplacePagePlugin {
-    fn make_page_sql<>(&self, driver_type: &DriverType, context_id: &str, sql: &str, args: &Vec<Value>, page: &dyn IPageRequest) -> Result<(String, String), crate::core::Error> {
+    fn make_page_sql(
+        &self,
+        driver_type: &DriverType,
+        context_id: &str,
+        sql: &str,
+        args: &Vec<Value>,
+        page: &dyn IPageRequest,
+    ) -> Result<(String, String), crate::core::Error> {
         //default sql
         let mut sql = sql.trim().to_owned();
         if !sql.starts_with("SELECT ") && !sql.contains("FROM ") {
-            return Err(crate::core::Error::from("[rbatis] make_page_sql() sql must contains 'SELECT ' And 'FROM '"));
+            return Err(crate::core::Error::from(
+                "[rbatis] make_page_sql() sql must contains 'SELECT ' And 'FROM '",
+            ));
         }
         //count sql
         let mut count_sql = sql.clone();
@@ -338,13 +358,21 @@ impl RbatisPackPagePlugin {
     }
 }
 
-
 impl PagePlugin for RbatisPackPagePlugin {
-    fn make_page_sql<>(&self, driver_type: &DriverType, context_id: &str, sql: &str, args: &Vec<Value>, page: &dyn IPageRequest) -> Result<(String, String), crate::core::Error> {
+    fn make_page_sql(
+        &self,
+        driver_type: &DriverType,
+        context_id: &str,
+        sql: &str,
+        args: &Vec<Value>,
+        page: &dyn IPageRequest,
+    ) -> Result<(String, String), crate::core::Error> {
         //default sql
         let mut sql = sql.trim().to_owned();
         if !sql.starts_with("SELECT ") && !sql.contains("FROM ") {
-            return Err(crate::core::Error::from("[rbatis] make_page_sql() sql must contains 'SELECT ' And 'FROM '"));
+            return Err(crate::core::Error::from(
+                "[rbatis] make_page_sql() sql must contains 'SELECT ' And 'FROM '",
+            ));
         }
         //count sql
         let mut count_sql = sql.clone();
@@ -365,7 +393,6 @@ impl PagePlugin for RbatisPackPagePlugin {
         return Ok((count_sql, sql));
     }
 }
-
 
 ///mix page plugin
 #[derive(Debug)]
@@ -390,15 +417,25 @@ impl Default for RbatisPagePlugin {
 }
 
 impl PagePlugin for RbatisPagePlugin {
-    fn make_page_sql(&self, driver_type: &DriverType, context_id: &str, sql: &str, args: &Vec<Value>, page: &dyn IPageRequest) -> Result<(String, String), Error> {
-        if sql.contains(" GROUP BY "){
-            return self.pack.make_page_sql(driver_type, context_id, sql, args, page);
+    fn make_page_sql(
+        &self,
+        driver_type: &DriverType,
+        context_id: &str,
+        sql: &str,
+        args: &Vec<Value>,
+        page: &dyn IPageRequest,
+    ) -> Result<(String, String), Error> {
+        if sql.contains(" GROUP BY ") {
+            return self
+                .pack
+                .make_page_sql(driver_type, context_id, sql, args, page);
         } else {
-            return self.replace.make_page_sql(driver_type, context_id, sql, args, page);
+            return self
+                .replace
+                .make_page_sql(driver_type, context_id, sql, args, page);
         }
     }
 }
-
 
 #[cfg(test)]
 mod test {
@@ -422,7 +459,8 @@ mod test {
     #[test]
     fn test_make_count() {
         let plugin = RbatisReplacePagePlugin {};
-        let sql = plugin.make_count_sql("biz_activity where id = 1 and ORDER BY id DESC and ORDER BY id DESC");
+        let sql = plugin
+            .make_count_sql("biz_activity where id = 1 and ORDER BY id DESC and ORDER BY id DESC");
         println!("sql:{}", sql);
     }
 }
