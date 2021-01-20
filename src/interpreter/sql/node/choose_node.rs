@@ -66,7 +66,7 @@ impl RbatisAST for ChooseNode {
             let mut when_index = 0;
             for item in self.when_nodes.as_ref().unwrap() {
                 let v = item.eval(convert, env, engine, arg_array, arg_sql)?;
-                if v.is_boolean() && v.as_bool().unwrap() == true {
+                if v.as_bool().unwrap_or(false) == true {
                     return Result::Ok(serde_json::Value::Null);
                 }
                 when_index += 1;
