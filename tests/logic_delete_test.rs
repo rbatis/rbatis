@@ -1,7 +1,7 @@
 #[cfg(test)]
 mod tests {
-    use rbatis::plugin::logic_delete::{RbatisLogicDeletePlugin, LogicDelete};
     use rbatis::core::db::DriverType;
+    use rbatis::plugin::logic_delete::{LogicDelete, RbatisLogicDeletePlugin};
 
     #[test]
     fn test_logic_delete_plugin_create_sql() {
