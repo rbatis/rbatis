@@ -63,35 +63,3 @@ impl RbatisAST for PrintNode {
         return Ok(serde_json::Value::Null);
     }
 }
-
-#[cfg(test)]
-mod test {
-    use crate::core::db::DriverType;
-    use crate::interpreter::sql::ast::RbatisAST;
-    use crate::interpreter::sql::node::node_type::NodeType;
-    use crate::interpreter::sql::node::print_node::PrintNode;
-    use crate::interpreter::sql::node::string_node::StringNode;
-    use rexpr::runtime::RExprRuntime;
-
-    #[test]
-    fn test_node() {
-        let node = PrintNode::from(
-            "print sql",
-            "print sql",
-            vec![NodeType::NString(StringNode::new("yes"))],
-        )
-        .unwrap();
-        let mut john = json!({"arg": 1});
-        let mut engine = RExprRuntime::new();
-        let mut arg_array = vec![];
-        let mut r = String::new();
-        node.eval(
-            &DriverType::Mysql,
-            &mut john,
-            &mut engine,
-            &mut arg_array,
-            &mut r,
-        )
-        .unwrap();
-    }
-}
