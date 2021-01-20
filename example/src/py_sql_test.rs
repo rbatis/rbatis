@@ -26,7 +26,7 @@ mod test {
         println!("{:?}", a);
     }
 
-
+    ///select page must have  '?:&PageRequest' arg and return 'Page<?>'
     #[py_sql(
     rb,
     "select * from biz_activity where delete_flag = 0
