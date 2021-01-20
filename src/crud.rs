@@ -243,7 +243,12 @@ where
         for item in self {
             let id = item.get_id();
             if id.is_some() {
-                vec.push(id.unwrap());
+                match id{
+                    Some(id)=>{
+                        vec.push(id);
+                    }
+                    _ => {}
+                }
             }
         }
         vec

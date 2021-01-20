@@ -45,7 +45,7 @@ impl RbatisAST for IfNode {
                     + "' is not return bool value!",
             ));
         }
-        if result.as_bool().unwrap() {
+        if result.as_bool().unwrap_or(false) {
             return do_child_nodes(convert, &self.childs, env, engine, arg_array, arg_sql);
         }
         return Result::Ok(serde_json::Value::Null);

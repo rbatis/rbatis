@@ -46,7 +46,7 @@ impl RbatisAST for WhenNode {
                 "[rbatis] test:'".to_owned() + self.test.as_str() + "' is not return bool!",
             ));
         }
-        let is_ok = result.as_bool().unwrap();
+        let is_ok = result.as_bool().unwrap_or(false);
         if is_ok {
             do_child_nodes(convert, &self.childs, env, engine, arg_array, arg_sql)?;
         }
