@@ -436,4 +436,3 @@ impl PagePlugin for RbatisPagePlugin {
         }
     }
 }
-

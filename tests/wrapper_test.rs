@@ -1,10 +1,10 @@
 #[cfg(test)]
 mod test {
-    use serde_json::json;
-    use serde_json::Map;
     use rbatis::core::db::DriverType;
     use rbatis::utils::bencher::QPS;
     use rbatis::wrapper::Wrapper;
+    use serde_json::json;
+    use serde_json::Map;
 
     #[test]
     fn test_trim() {

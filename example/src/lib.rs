@@ -10,11 +10,12 @@ extern crate lazy_static;
 extern crate rbatis;
 
 mod crud_test;
-mod custom_py_sql_test;
 mod dyn_table_test;
 mod format_test;
 mod intercept_test;
 mod page_test;
+mod py_sql_custom_test;
+mod py_sql_test;
 mod raw_driver_test;
 mod raw_identifiers_test;
 mod raw_sql_macro_test;
