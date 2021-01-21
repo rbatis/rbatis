@@ -76,4 +76,4 @@ rustflake = { version = "0.1", package = "rustflake", optional = true }
 dashmap = { version = "4" }
 [dev-dependencies]
 fast_log = "1.3"
-async-std = { version = "1.8", features = ["attributes"] }
+async-std = { version = "1.9", features = ["attributes"] }
