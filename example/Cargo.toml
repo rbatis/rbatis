@@ -35,7 +35,7 @@ log = "0.4"
 fast_log = "1.3"
 #async runtime lib
 tokio = { version = "0.2", features = ["full"] }
-async-std = { version = "1.8", features = ["attributes", "tokio02", "tokio03"] }
+async-std = { version = "1.9", features = ["attributes", "tokio02", "tokio03"] }
 #rbatis lib
 rbatis = { path = "../", features = ["debug_mode"] }
 #(not necessary)only use custom py_sql
