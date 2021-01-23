@@ -64,7 +64,7 @@ impl Wrapper {
         }
     }
 
-    /// check is done？and return cloned Wrapper
+    /// check Wrapper(If you call push_sql and push_arg)
     pub fn check(mut self) -> Result<Wrapper, Error> {
         if self.error.is_some() {
             return Err(self.error.take().unwrap());
