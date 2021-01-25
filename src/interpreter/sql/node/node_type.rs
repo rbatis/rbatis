@@ -1,4 +1,3 @@
-use crate::core::convert::StmtConvert;
 use crate::interpreter::sql::ast::RbatisAST;
 use crate::interpreter::sql::node::bind_node::BindNode;
 use crate::interpreter::sql::node::choose_node::ChooseNode;

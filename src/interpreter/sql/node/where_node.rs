@@ -1,6 +1,5 @@
 use serde_json::{json, Value};
 
-use crate::core::convert::StmtConvert;
 use crate::interpreter::sql::ast::RbatisAST;
 use crate::interpreter::sql::node::node::do_child_nodes;
 use crate::interpreter::sql::node::node_type::NodeType;
