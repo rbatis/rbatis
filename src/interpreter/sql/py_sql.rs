@@ -61,7 +61,7 @@ impl PyRuntime {
         let cache_value=self.cache.get(py_sql);
         match cache_value {
             Some(v) => {
-                do_child_nodes(driver_type, v.value(), env, engine, &mut arg_array, &mut sql)?;
+                do_child_nodes(driver_type, &v, env, engine, &mut arg_array, &mut sql)?;
             }
             _ => {
                 self.cache.insert(py_sql.to_string(),Self::parse(py_sql, &self.generate)?);
