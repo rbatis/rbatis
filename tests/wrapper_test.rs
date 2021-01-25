@@ -41,7 +41,7 @@ mod test {
         assert_eq!(ms.len(), w.args.len());
     }
 
-    ///cargo test --release --package rbatis --lib test::bench_select
+    ///cargo test --release --package rbatis --test wrapper_test test::bench_select --no-fail-fast -- --exact -Z unstable-options --show-output
     ///run with windows10:
     ///  use Time: 0.51 s,each:5100 nano/op  use QPS: 196078.431372549 QPS/s
     #[test]
@@ -51,7 +51,7 @@ mod test {
         let total = 100000;
         let now = std::time::Instant::now();
         for _ in 0..total {
-            let w = Wrapper::new(&DriverType::Mysql)
+            Wrapper::new(&DriverType::Mysql)
                 .eq("id", 1)
                 .ne("id", 1)
                 .in_array("id", &[1, 2, 3])
