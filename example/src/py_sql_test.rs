@@ -1,15 +1,11 @@
 #[cfg(test)]
 mod test {
+    use crate::BizActivity;
     use rbatis::plugin::page::{Page, PageRequest};
     use rbatis::rbatis::Rbatis;
-    use crate::BizActivity;
-
 
     /// ctx_id Used to trace SQL records
-    #[py_sql(
-    rb,
-    "select * from biz_activity where delete_flag = 0"
-    )]
+    #[py_sql(rb, "select * from biz_activity where delete_flag = 0")]
     async fn py_ctx_id(rb: &Rbatis, ctx_id: &str) -> Vec<BizActivity> {}
 
     #[async_std::test]
@@ -20,16 +16,14 @@ mod test {
         rb.link("mysql://root:123456@localhost:3306/test")
             .await
             .unwrap();
-        let a = py_ctx_id(&rb, "test")
-            .await
-            .unwrap();
+        let a = py_ctx_id(&rb, "test").await.unwrap();
         println!("{:?}", a);
     }
 
     ///select page must have  '?:&PageRequest' arg and return 'Page<?>'
     #[py_sql(
-    rb,
-    "select * from biz_activity where delete_flag = 0
+        rb,
+        "select * from biz_activity where delete_flag = 0
                   if name != '':
                     and name=#{name}"
     )]
@@ -51,8 +45,8 @@ mod test {
 
     ///Commit the transaction
     #[py_sql(
-    rb,
-    "select * from biz_activity where delete_flag = 0
+        rb,
+        "select * from biz_activity where delete_flag = 0
                   if name != '':
                     and name=#{name}"
     )]
@@ -67,10 +61,8 @@ mod test {
             .await
             .unwrap();
         //guard will be Automatically commit or rollback transactions
-        let tx_guard=rb.begin_tx_defer(true).await.unwrap();
-        let a = py_sql_tx(&rb, &tx_guard.tx_id, "test")
-            .await
-            .unwrap();
+        let tx_guard = rb.begin_tx_defer(true).await.unwrap();
+        let a = py_sql_tx(&rb, &tx_guard.tx_id, "test").await.unwrap();
         println!("{:?}", a);
     }
 }

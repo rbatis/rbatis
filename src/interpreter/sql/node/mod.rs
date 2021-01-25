@@ -16,7 +16,6 @@ pub mod trim_node;
 pub mod when_node;
 pub mod where_node;
 
-
-pub fn parse_node(arg:&str)->rexpr::error::Result<Node>{
-    rexpr::lexer::lexer_parse_node(arg,&TokenMap::new())
+pub fn parse_node(arg: &str) -> rexpr::error::Result<Node> {
+    rexpr::lexer::lexer_parse_node(arg, &TokenMap::new())
 }

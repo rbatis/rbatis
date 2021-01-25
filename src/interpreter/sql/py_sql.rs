@@ -1,8 +1,14 @@
+use std::collections::hash_map::RandomState;
 use std::collections::HashMap;
 use std::hash::Hash;
 use std::ops::{Deref, Index};
 use std::sync::{Mutex, RwLock};
 
+use dashmap::DashMap;
+use dashmap::mapref::one::Ref;
+use rexpr::ast::Node;
+use rexpr::lexer::lexer;
+use rexpr::runtime::RExprRuntime;
 use serde_json::json;
 use serde_json::Value;
 
@@ -22,10 +28,6 @@ use crate::interpreter::sql::node::string_node::StringNode;
 use crate::interpreter::sql::node::trim_node::TrimNode;
 use crate::interpreter::sql::node::when_node::WhenNode;
 use crate::interpreter::sql::node::where_node::WhereNode;
-use dashmap::DashMap;
-use rexpr::ast::Node;
-use rexpr::lexer::lexer;
-use rexpr::runtime::RExprRuntime;
 
 /// Py lang,make sure Send+Sync
 #[derive(Debug)]
@@ -54,34 +56,24 @@ impl PyRuntime {
                 "[rbatis] py_sql Requires that the parameter be an json object!",
             ));
         }
-        let nodes = self.parse_and_cache(py_sql)?;
         let mut sql = String::new();
         let mut arg_array = vec![];
-        do_child_nodes(driver_type, &nodes, env, engine, &mut arg_array, &mut sql)?;
+        let cache_value=self.cache.get(py_sql);
+        match cache_value {
+            Some(v) => {
+                do_child_nodes(driver_type, v.value(), env, engine, &mut arg_array, &mut sql)?;
+            }
+            _ => {
+                self.cache.insert(py_sql.to_string(),Self::parse(py_sql, &self.generate)?);
+            }
+        }
         sql = sql.trim().to_string();
         return Ok((sql, arg_array));
     }
-    /// parser and cache py data sql,return an vec node type
-    pub fn parse_and_cache(&self, arg: &str) -> Result<Vec<NodeType>, crate::core::Error> {
-        let rd = self.cache.get(arg);
-        if rd.is_none() {
-            let nods = PyRuntime::parse(arg, &self.generate)?;
-            self.try_cache_into(arg, nods.clone());
-            return Ok(nods);
-        } else {
-            let nodes = rd.unwrap();
-            return Ok(nodes.clone());
-        }
-    }
-
-    fn try_cache_into(&self, py: &str, arg: Vec<NodeType>) -> Option<Vec<NodeType>> {
-        let rd = self.cache.insert(py.to_string(), arg);
-        return rd;
-    }
 
     pub fn add_gen<T>(&mut self, arg: T)
-    where
-        T: NodeFactory + 'static,
+        where
+            T: NodeFactory + 'static,
     {
         self.generate.push(Box::new(arg));
     }

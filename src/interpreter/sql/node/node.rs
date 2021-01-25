@@ -41,9 +41,8 @@ fn test_string_node() {
     let mut john = json!({
         "name": "John Doe",
     });
-    let str_node = NodeType::NString(StringNode::new(
-        "select * from ${name} where name = #{name}",
-    ).unwrap());
+    let str_node =
+        NodeType::NString(StringNode::new("select * from ${name} where name = #{name}").unwrap());
     let mut arg_array = vec![];
 
     let mut result = "".to_string();
