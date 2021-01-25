@@ -67,26 +67,3 @@ impl RbatisAST for TrimNode {
         return Result::Ok(serde_json::Value::Null);
     }
 }
-
-#[test]
-pub fn test_trim_node() {
-    let mut engine = RExprRuntime::new();
-    let node = TrimNode {
-        childs: vec![NodeType::NString(StringNode::new(&engine,"1trim value1").unwrap())],
-        trim: "1".to_string(),
-    };
-    let mut john = json!({
-        "arg": 2,
-    });
-    let mut arg_array = vec![];
-    let mut r = String::new();
-    node.eval(
-        &DriverType::Mysql,
-        &mut john,
-        &mut engine,
-        &mut arg_array,
-        &mut r,
-    )
-    .unwrap();
-    println!("{}", r)
-}
