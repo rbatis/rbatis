@@ -5,7 +5,6 @@ use crate::core::db::DriverType;
 use crate::core::Error;
 use crate::interpreter::sql::ast::RbatisAST;
 use crate::interpreter::sql::node::node_type::NodeType;
-use crate::interpreter::sql::node::parse_node;
 use rexpr;
 use rexpr::ast::Node;
 use rexpr::runtime::RExprRuntime;
@@ -22,6 +21,7 @@ impl BindNode {
         "let"
     }
     pub fn from(
+        runtime: &RExprRuntime,
         source: &str,
         express: &str,
         childs: Vec<NodeType>,
@@ -38,7 +38,7 @@ impl BindNode {
             return Ok(BindNode {
                 name: name_value[0].to_owned(),
                 value: name_value[1].to_owned(),
-                func: parse_node(name_value[1])?,
+                func: runtime.parse(name_value[1])?,
             });
         } else if express.starts_with(Self::name()) {
             let express = express[Self::name().len()..].trim();
@@ -51,7 +51,7 @@ impl BindNode {
             return Ok(BindNode {
                 name: name_value[0].to_owned(),
                 value: name_value[1].to_owned(),
-                func: parse_node(name_value[1])?,
+                func: runtime.parse(name_value[1])?,
             });
         } else {
             return Err(Error::from(
