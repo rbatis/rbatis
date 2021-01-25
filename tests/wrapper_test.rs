@@ -41,7 +41,7 @@ mod test {
         assert_eq!(ms.len(), w.args.len());
     }
 
-    ///cargo test --release --package rbatis --lib wrapper::test::bench_select
+    ///cargo test --release --package rbatis --lib test::bench_select
     ///run with windows10:
     ///  use Time: 0.51 s,each:5100 nano/op  use QPS: 196078.431372549 QPS/s
     #[test]
