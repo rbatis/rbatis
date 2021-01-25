@@ -6,27 +6,27 @@ use serde_json::{json, Value};
 use crate::core::convert::StmtConvert;
 use crate::core::db::DriverType;
 use crate::interpreter::sql::ast::RbatisAST;
+use crate::interpreter::sql::node::parse_node;
 use crate::utils::string_util;
 use rexpr;
-use rexpr::runtime::RExprRuntime;
 use rexpr::ast::Node;
-use crate::interpreter::sql::node::parse_node;
+use rexpr::runtime::RExprRuntime;
 
 ///string抽象节点
 #[derive(Clone, Debug)]
 pub struct StringNode {
     pub value: String,
     //去重的，需要替换的要sql转换express map
-    pub express_map: LinkedList<(String, String,Node)>,
+    pub express_map: LinkedList<(String, String, Node)>,
 }
 
 impl StringNode {
     pub fn new(v: &str) -> Result<Self, crate::core::Error> {
-        let mut express_map=LinkedList::new();
-        let list=string_util::find_convert_string(v);
-        for (k,v) in list {
-            let node=parse_node(&k)?;
-            express_map.push_back((k,v,node));
+        let mut express_map = LinkedList::new();
+        let list = string_util::find_convert_string(v);
+        for (k, v) in list {
+            let node = parse_node(&k)?;
+            express_map.push_back((k, v, node));
         }
         Ok(Self {
             value: v.to_string(),
@@ -48,7 +48,7 @@ impl RbatisAST for StringNode {
         arg_sql: &mut String,
     ) -> Result<serde_json::Value, crate::core::Error> {
         let mut result = self.value.clone();
-        for (item, value,node) in &self.express_map {
+        for (item, value, node) in &self.express_map {
             if item.is_empty() {
                 result = result.replace(value, "");
                 continue;

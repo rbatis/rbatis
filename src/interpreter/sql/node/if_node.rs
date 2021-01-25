@@ -6,16 +6,16 @@ use crate::core::db::DriverType;
 use crate::interpreter::sql::ast::RbatisAST;
 use crate::interpreter::sql::node::node::do_child_nodes;
 use crate::interpreter::sql::node::node_type::NodeType;
-use crate::interpreter::sql::node::string_node::StringNode;
-use rexpr::runtime::RExprRuntime;
-use rexpr::ast::Node;
 use crate::interpreter::sql::node::parse_node;
+use crate::interpreter::sql::node::string_node::StringNode;
+use rexpr::ast::Node;
+use rexpr::runtime::RExprRuntime;
 
 #[derive(Clone, Debug)]
 pub struct IfNode {
     pub childs: Vec<NodeType>,
     pub test: String,
-    pub test_func:Node,
+    pub test_func: Node,
 }
 
 impl IfNode {
@@ -62,7 +62,7 @@ pub fn test_if_node() {
     let node = IfNode {
         childs: vec![NodeType::NString(StringNode::new("yes").unwrap())],
         test: "arg == 1".to_string(),
-        test_func: engine.parse("arg == 1").unwrap()
+        test_func: engine.parse("arg == 1").unwrap(),
     };
     let mut john = json!({
         "arg": 1,
