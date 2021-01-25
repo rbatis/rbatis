@@ -7,11 +7,14 @@ use crate::interpreter::sql::ast::RbatisAST;
 use crate::interpreter::sql::node::node::do_child_nodes;
 use crate::interpreter::sql::node::node_type::NodeType;
 use rexpr::runtime::RExprRuntime;
+use rexpr::ast::Node;
+use crate::interpreter::sql::node::parse_node;
 
 #[derive(Clone, Debug)]
 pub struct WhenNode {
     pub childs: Vec<NodeType>,
     pub test: String,
+    pub test_fn: Node,
 }
 
 impl WhenNode {
@@ -24,6 +27,7 @@ impl WhenNode {
         return Ok(WhenNode {
             childs,
             test: express.to_string(),
+            test_fn: parse_node(express)?,
         });
     }
 }
@@ -40,7 +44,7 @@ impl RbatisAST for WhenNode {
         arg_array: &mut Vec<Value>,
         arg_sql: &mut String,
     ) -> Result<serde_json::Value, crate::core::Error> {
-        let result = engine.eval(self.test.as_str(), env)?;
+        let result = self.test_fn.eval(env)?;
         if !result.is_boolean() {
             return Result::Err(crate::core::Error::from(
                 "[rbatis] test:'".to_owned() + self.test.as_str() + "' is not return bool!",

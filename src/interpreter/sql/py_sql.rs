@@ -253,7 +253,7 @@ impl PyRuntime {
             } else {
                 data = x[(space - 1)..].to_string();
             }
-            main_node.push(NodeType::NString(StringNode::new(&data)));
+            main_node.push(NodeType::NString(StringNode::new(&data)?));
             for x in childs {
                 main_node.push(x);
             }

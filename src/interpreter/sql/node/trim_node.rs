@@ -71,7 +71,7 @@ impl RbatisAST for TrimNode {
 pub fn test_trim_node() {
     let mut engine = RExprRuntime::new();
     let node = TrimNode {
-        childs: vec![NodeType::NString(StringNode::new("1trim value1"))],
+        childs: vec![NodeType::NString(StringNode::new("1trim value1").unwrap())],
         trim: "1".to_string(),
     };
     let mut john = json!({

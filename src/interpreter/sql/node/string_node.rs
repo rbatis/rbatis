@@ -9,21 +9,29 @@ use crate::interpreter::sql::ast::RbatisAST;
 use crate::utils::string_util;
 use rexpr;
 use rexpr::runtime::RExprRuntime;
+use rexpr::ast::Node;
+use crate::interpreter::sql::node::parse_node;
 
 ///string抽象节点
 #[derive(Clone, Debug)]
 pub struct StringNode {
     pub value: String,
     //去重的，需要替换的要sql转换express map
-    pub express_map: LinkedList<(String, String)>,
+    pub express_map: LinkedList<(String, String,Node)>,
 }
 
 impl StringNode {
-    pub fn new(v: &str) -> Self {
-        Self {
-            value: v.to_string(),
-            express_map: string_util::find_convert_string(v),
+    pub fn new(v: &str) -> Result<Self, crate::core::Error> {
+        let mut express_map=LinkedList::new();
+        let list=string_util::find_convert_string(v);
+        for (k,v) in list {
+            let node=parse_node(&k)?;
+            express_map.push_back((k,v,node));
         }
+        Ok(Self {
+            value: v.to_string(),
+            express_map: express_map,
+        })
     }
 }
 
@@ -40,7 +48,7 @@ impl RbatisAST for StringNode {
         arg_sql: &mut String,
     ) -> Result<serde_json::Value, crate::core::Error> {
         let mut result = self.value.clone();
-        for (item, value) in &self.express_map {
+        for (item, value,node) in &self.express_map {
             if item.is_empty() {
                 result = result.replace(value, "");
                 continue;
@@ -49,7 +57,7 @@ impl RbatisAST for StringNode {
                 result = result.replace(value, convert.stmt_convert(arg_array.len()).as_str());
                 let get_v = env.get(item);
                 if get_v.is_none() {
-                    let v = engine.eval(item, env)?;
+                    let v = node.eval(env)?;
                     arg_array.push(v);
                 } else {
                     let v = get_v.unwrap().clone();
@@ -66,7 +74,7 @@ impl RbatisAST for StringNode {
                         }
                     }
                     None => {
-                        let v = engine.eval(item, env)?;
+                        let v = node.eval(env)?;
                         if v.is_string() {
                             result = result.replace(value, &v.as_str().unwrap());
                         } else {
