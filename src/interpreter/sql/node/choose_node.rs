@@ -4,13 +4,14 @@ use std::ops::DerefMut;
 use serde_json::{json, Value};
 
 use crate::core::convert::StmtConvert;
-use crate::core::db::DriverType;
+
 use crate::interpreter::sql::ast::RbatisAST;
 use crate::interpreter::sql::node::node_type::NodeType;
 use crate::interpreter::sql::node::node_type::NodeType::NString;
 use crate::interpreter::sql::node::otherwise_node::OtherwiseNode;
 use crate::interpreter::sql::node::string_node::StringNode;
 use rexpr::runtime::RExprRuntime;
+use crate::core::db::DriverType;
 
 #[derive(Clone, Debug)]
 pub struct ChooseNode {
@@ -56,7 +57,7 @@ impl RbatisAST for ChooseNode {
 
     fn eval(
         &self,
-        convert: &crate::core::db::DriverType,
+        convert: &dyn crate::interpreter::sql::StringConvert,
         env: &mut Value,
         engine: &RExprRuntime,
         arg_array: &mut Vec<Value>,
@@ -88,7 +89,7 @@ pub fn test_choose_node() {
     let mut john = json!({
         "arg": 2,
     });
-    let s_node = NString(StringNode::new("dsaf#{arg+1}").unwrap());
+    let s_node = NString(StringNode::new(&engine,"dsaf#{arg+1}").unwrap());
 
     let c = ChooseNode {
         when_nodes: Option::Some(vec![s_node]),

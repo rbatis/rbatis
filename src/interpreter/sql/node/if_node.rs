@@ -2,13 +2,14 @@ use serde_json::ser::State::Rest;
 use serde_json::{json, Value};
 
 use crate::core::convert::StmtConvert;
-use crate::core::db::DriverType;
+
 use crate::interpreter::sql::ast::RbatisAST;
 use crate::interpreter::sql::node::node::do_child_nodes;
 use crate::interpreter::sql::node::node_type::NodeType;
 use crate::interpreter::sql::node::string_node::StringNode;
 use rexpr::ast::Node;
 use rexpr::runtime::RExprRuntime;
+use crate::core::db::DriverType;
 
 #[derive(Clone, Debug)]
 pub struct IfNode {
@@ -38,7 +39,7 @@ impl RbatisAST for IfNode {
     }
     fn eval(
         &self,
-        convert: &crate::core::db::DriverType,
+        convert: &dyn crate::interpreter::sql::StringConvert,
         env: &mut Value,
         engine: &RExprRuntime,
         arg_array: &mut Vec<Value>,
@@ -63,7 +64,7 @@ impl RbatisAST for IfNode {
 pub fn test_if_node() {
     let mut engine = RExprRuntime::new();
     let node = IfNode {
-        childs: vec![NodeType::NString(StringNode::new("yes").unwrap())],
+        childs: vec![NodeType::NString(StringNode::new(&engine,"yes").unwrap())],
         test: "arg == 1".to_string(),
         test_func: engine.parse("arg == 1").unwrap(),
     };

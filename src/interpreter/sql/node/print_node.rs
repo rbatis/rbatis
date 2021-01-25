@@ -1,7 +1,7 @@
 use serde_json::{json, Value};
 
 use crate::core::convert::StmtConvert;
-use crate::core::db::DriverType;
+
 use crate::core::Error;
 use crate::interpreter::sql::ast::RbatisAST;
 use crate::interpreter::sql::node::node::do_child_nodes;
@@ -46,7 +46,7 @@ impl RbatisAST for PrintNode {
     }
     fn eval(
         &self,
-        convert: &crate::core::db::DriverType,
+        convert: &dyn crate::interpreter::sql::StringConvert,
         env: &mut Value,
         engine: &RExprRuntime,
         arg_array: &mut Vec<Value>,

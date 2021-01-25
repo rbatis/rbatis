@@ -21,7 +21,7 @@ mod test {
 
         fn eval(
             &self,
-            convert: &DriverType,
+            convert: &dyn rbatis::interpreter::sql::StringConvert,
             env: &mut Value,
             engine: &RExprRuntime,
             arg_result: &mut Vec<Value>,

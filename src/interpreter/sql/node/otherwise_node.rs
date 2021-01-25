@@ -40,7 +40,7 @@ impl RbatisAST for OtherwiseNode {
     }
     fn eval(
         &self,
-        convert: &crate::core::db::DriverType,
+        convert: &dyn crate::interpreter::sql::StringConvert,
         env: &mut Value,
         engine: &RExprRuntime,
         arg_array: &mut Vec<Value>,

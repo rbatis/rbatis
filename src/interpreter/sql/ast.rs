@@ -11,7 +11,7 @@ pub trait RbatisAST: Send + Sync + Debug {
         Self: Sized;
     fn eval(
         &self,
-        convert: &crate::core::db::DriverType,
+        convert: &dyn crate::interpreter::sql::StringConvert,
         env: &mut Value,
         engine: &RExprRuntime,
         arg_result: &mut Vec<Value>,

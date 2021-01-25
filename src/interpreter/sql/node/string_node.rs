@@ -4,12 +4,18 @@ use serde_json::map::Map;
 use serde_json::{json, Value};
 
 use crate::core::convert::StmtConvert;
-use crate::core::db::DriverType;
+
 use crate::interpreter::sql::ast::RbatisAST;
 use crate::utils::string_util;
 use rexpr;
 use rexpr::ast::Node;
 use rexpr::runtime::RExprRuntime;
+
+
+///the stmt replace str convert
+pub trait StringConvert {
+    fn convert(&self, index: usize) -> String;
+}
 
 ///string抽象节点
 #[derive(Clone, Debug)]
@@ -40,7 +46,7 @@ impl RbatisAST for StringNode {
     }
     fn eval(
         &self,
-        convert: &crate::core::db::DriverType,
+        convert: &dyn StringConvert,
         env: &mut Value,
         engine: &RExprRuntime,
         arg_array: &mut Vec<Value>,
@@ -53,7 +59,7 @@ impl RbatisAST for StringNode {
                 continue;
             }
             if value.starts_with("#") {
-                result = result.replace(value, convert.stmt_convert(arg_array.len()).as_str());
+                result = result.replace(value, convert.convert(arg_array.len()).as_str());
                 let get_v = env.get(item);
                 if get_v.is_none() {
                     let v = node.eval(env)?;
