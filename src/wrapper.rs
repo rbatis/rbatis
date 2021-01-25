@@ -69,7 +69,6 @@ impl Wrapper {
         if self.error.is_some() {
             return Err(self.error.take().unwrap());
         }
-        self.sql = self.driver_type.to_upper_case(&self.sql);
         self = self.trim_and().trim_or();
         return Ok(self);
     }
