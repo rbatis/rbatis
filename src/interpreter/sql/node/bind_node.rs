@@ -7,11 +7,14 @@ use crate::interpreter::sql::ast::RbatisAST;
 use crate::interpreter::sql::node::node_type::NodeType;
 use rexpr;
 use rexpr::runtime::RExprRuntime;
+use rexpr::ast::Node;
+use crate::interpreter::sql::node::parse_node;
 
 #[derive(Clone, Debug)]
 pub struct BindNode {
     pub name: String,
     pub value: String,
+    pub func: Node,
 }
 
 impl BindNode {
@@ -35,6 +38,7 @@ impl BindNode {
             return Ok(BindNode {
                 name: name_value[0].to_owned(),
                 value: name_value[1].to_owned(),
+                func: parse_node(name_value[1])?
             });
         } else if express.starts_with(Self::name()) {
             let express = express[Self::name().len()..].trim();
@@ -47,6 +51,7 @@ impl BindNode {
             return Ok(BindNode {
                 name: name_value[0].to_owned(),
                 value: name_value[1].to_owned(),
+                func: parse_node(name_value[1])?
             });
         } else {
             return Err(Error::from(
@@ -68,7 +73,7 @@ impl RbatisAST for BindNode {
         arg_array: &mut Vec<Value>,
         arg_sql: &mut String,
     ) -> Result<serde_json::Value, crate::core::Error> {
-        let r = engine.eval(self.value.as_str(), env)?;
+        let r = self.func.eval(env)?;
         env[self.name.as_str()] = r;
         return Result::Ok(serde_json::Value::Null);
     }
@@ -80,6 +85,7 @@ fn test_bind_node() {
     let bind_node = BindNode {
         name: "a".to_string(),
         value: "a+1".to_string(),
+        func: engine.parse("a+1").unwrap(),
     };
 
     let mut john = json!({

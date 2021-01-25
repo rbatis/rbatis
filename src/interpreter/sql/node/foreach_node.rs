@@ -9,6 +9,8 @@ use crate::interpreter::sql::node::node::do_child_nodes;
 use crate::interpreter::sql::node::node_type::NodeType;
 use crate::utils;
 use rexpr::runtime::RExprRuntime;
+use rexpr::ast::Node;
+use crate::interpreter::sql::node::parse_node;
 
 #[derive(Clone, Debug)]
 pub struct ForEachNode {
@@ -16,6 +18,7 @@ pub struct ForEachNode {
     pub collection: String,
     pub index: String,
     pub item: String,
+    pub get_collection_func:Node,
 }
 
 impl ForEachNode {
@@ -50,6 +53,7 @@ impl ForEachNode {
             collection: col.to_string(),
             index: index.to_string(),
             item: item.to_string(),
+            get_collection_func: parse_node(col)?
         });
     }
 }
@@ -66,7 +70,7 @@ impl RbatisAST for ForEachNode {
         arg_array: &mut Vec<Value>,
         arg_sql: &mut String,
     ) -> Result<serde_json::Value, crate::core::Error> {
-        let collection_value = engine.eval(self.collection.as_str(), env)?;
+        let collection_value = self.get_collection_func.eval( env)?;
         if collection_value.is_null() {
             return Result::Ok(serde_json::Value::Null);
         }

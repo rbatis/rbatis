@@ -8,11 +8,14 @@ use crate::interpreter::sql::node::node::do_child_nodes;
 use crate::interpreter::sql::node::node_type::NodeType;
 use rexpr;
 use rexpr::runtime::RExprRuntime;
+use rexpr::ast::Node;
+use crate::interpreter::sql::node::parse_node;
 
 #[derive(Clone, Debug)]
 pub struct PrintNode {
     pub express: String,
     pub childs: Vec<NodeType>,
+    pub express_func:Node,
 }
 
 impl PrintNode {
@@ -27,6 +30,7 @@ impl PrintNode {
             return Ok(PrintNode {
                 express: express.to_string(),
                 childs: childs,
+                express_func: parse_node(express)?,
             });
         } else {
             return Err(Error::from(
@@ -58,7 +62,7 @@ impl RbatisAST for PrintNode {
         if self.express.contains("arg_array") {
             env["arg_array"] = json!(arg_array);
         }
-        let r = engine.eval(self.express.as_str(), env)?;
+        let r = self.express_func.eval( env)?;
         println!("{}: {}", self.express, r);
         return Ok(serde_json::Value::Null);
     }
