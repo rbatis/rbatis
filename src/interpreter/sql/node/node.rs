@@ -35,26 +35,3 @@ pub(crate) fn do_child_nodes(
     }
     return Result::Ok(serde_json::Value::Null);
 }
-
-#[test]
-fn test_string_node() {
-    let mut engine = RExprRuntime::new();
-    let mut john = json!({
-        "name": "John Doe",
-    });
-    let str_node =
-        NodeType::NString(StringNode::new(&engine,"select * from ${name} where name = #{name}").unwrap());
-    let mut arg_array = vec![];
-
-    let mut result = "".to_string();
-    str_node
-        .eval(
-            &DriverType::Mysql,
-            &mut john,
-            &mut engine,
-            &mut arg_array,
-            &mut result,
-        )
-        .unwrap();
-    println!("{}", result);
-}

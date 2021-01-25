@@ -79,32 +79,3 @@ impl RbatisAST for BindNode {
         return Result::Ok(serde_json::Value::Null);
     }
 }
-
-#[test]
-fn test_bind_node() {
-    let mut engine = RExprRuntime::new();
-    let bind_node = BindNode {
-        name: "a".to_string(),
-        value: "a+1".to_string(),
-        func: engine.parse("a+1").unwrap(),
-    };
-
-    let mut john = json!({
-        "a": 1,
-    });
-
-    let mut arg_array = vec![];
-
-    let mut r = "".to_string();
-    bind_node
-        .eval(
-            &DriverType::Mysql,
-            &mut john,
-            &mut engine,
-            &mut arg_array,
-            &mut r,
-        )
-        .unwrap();
-    println!("r={}", r);
-    println!("john[a]={}", john["a"]);
-}

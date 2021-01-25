@@ -3,15 +3,12 @@ use std::ops::DerefMut;
 
 use serde_json::{json, Value};
 
-use crate::core::convert::StmtConvert;
-
 use crate::interpreter::sql::ast::RbatisAST;
 use crate::interpreter::sql::node::node_type::NodeType;
 use crate::interpreter::sql::node::node_type::NodeType::NString;
 use crate::interpreter::sql::node::otherwise_node::OtherwiseNode;
 use crate::interpreter::sql::node::string_node::StringNode;
 use rexpr::runtime::RExprRuntime;
-use crate::core::db::DriverType;
 
 #[derive(Clone, Debug)]
 pub struct ChooseNode {
@@ -81,29 +78,4 @@ impl RbatisAST for ChooseNode {
         }
         return Result::Ok(serde_json::Value::Null);
     }
-}
-
-#[test]
-pub fn test_choose_node() {
-    let mut engine = RExprRuntime::new();
-    let mut john = json!({
-        "arg": 2,
-    });
-    let s_node = NString(StringNode::new(&engine,"dsaf#{arg+1}").unwrap());
-
-    let c = ChooseNode {
-        when_nodes: Option::Some(vec![s_node]),
-        otherwise_node: None,
-    };
-    let mut arg_array = vec![];
-
-    let mut r = String::new();
-    c.eval(
-        &DriverType::Mysql,
-        &mut john,
-        &mut engine,
-        &mut arg_array,
-        &mut r,
-    );
-    println!("{}", r);
 }

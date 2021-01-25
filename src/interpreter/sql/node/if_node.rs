@@ -59,27 +59,3 @@ impl RbatisAST for IfNode {
         return Result::Ok(serde_json::Value::Null);
     }
 }
-
-#[test]
-pub fn test_if_node() {
-    let mut engine = RExprRuntime::new();
-    let node = IfNode {
-        childs: vec![NodeType::NString(StringNode::new(&engine,"yes").unwrap())],
-        test: "arg == 1".to_string(),
-        test_func: engine.parse("arg == 1").unwrap(),
-    };
-    let mut john = json!({
-        "arg": 1,
-    });
-    let mut arg_array = vec![];
-    let mut sql = String::new();
-    node.eval(
-        &DriverType::Mysql,
-        &mut john,
-        &mut engine,
-        &mut arg_array,
-        &mut sql,
-    )
-    .unwrap();
-    println!("{}", sql);
-}
