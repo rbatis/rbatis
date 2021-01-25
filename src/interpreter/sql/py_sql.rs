@@ -46,7 +46,7 @@ impl PyRuntime {
     ///eval with cache
     pub fn eval(
         &self,
-        driver_type: &crate::core::db::DriverType,
+        driver_type: &dyn crate::interpreter::sql::StringConvert,
         py_sql: &str,
         env: &mut Value,
         engine: &RExprRuntime,

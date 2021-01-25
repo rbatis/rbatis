@@ -3,7 +3,7 @@ use std::collections::HashMap;
 use serde_json::{json, Map, Value};
 
 use crate::core::convert::StmtConvert;
-use crate::core::db::DriverType;
+
 use crate::interpreter::sql::ast::RbatisAST;
 use crate::interpreter::sql::node::node::do_child_nodes;
 use crate::interpreter::sql::node::node_type::NodeType;
@@ -64,7 +64,7 @@ impl RbatisAST for ForEachNode {
     }
     fn eval(
         &self,
-        convert: &crate::core::db::DriverType,
+        convert: &dyn crate::interpreter::sql::StringConvert,
         env: &mut Value,
         engine: &RExprRuntime,
         arg_array: &mut Vec<Value>,

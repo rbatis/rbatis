@@ -17,6 +17,9 @@ extern crate rbatis_macro_driver;
 pub use rbatis_macro_driver::{crud_enable, py_sql, sql, CRUDEnable};
 
 pub use rbatis_core as core;
+use crate::interpreter::sql::StringConvert;
+use rbatis_core::db::DriverType;
+use crate::core::convert::StmtConvert;
 
 pub mod crud;
 pub mod interpreter;
@@ -26,3 +29,10 @@ pub mod sql;
 pub mod tx;
 pub mod utils;
 pub mod wrapper;
+
+
+impl StringConvert for crate::core::db::DriverType{
+    fn convert(&self, index: usize) -> String {
+        self.stmt_convert(index)
+    }
+}

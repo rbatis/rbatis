@@ -1,12 +1,13 @@
 use serde_json::{json, Value};
 
 use crate::core::convert::StmtConvert;
-use crate::core::db::DriverType;
+
 use crate::interpreter::sql::ast::RbatisAST;
 use crate::interpreter::sql::node::node::do_child_nodes;
 use crate::interpreter::sql::node::node_type::NodeType;
 use crate::interpreter::sql::node::string_node::StringNode;
 use rexpr::runtime::RExprRuntime;
+use crate::core::db::DriverType;
 
 #[derive(Clone, Debug)]
 pub struct TrimNode {
@@ -39,7 +40,7 @@ impl RbatisAST for TrimNode {
     }
     fn eval(
         &self,
-        convert: &crate::core::db::DriverType,
+        convert: &dyn crate::interpreter::sql::StringConvert,
         env: &mut Value,
         engine: &RExprRuntime,
         arg_array: &mut Vec<Value>,
@@ -71,7 +72,7 @@ impl RbatisAST for TrimNode {
 pub fn test_trim_node() {
     let mut engine = RExprRuntime::new();
     let node = TrimNode {
-        childs: vec![NodeType::NString(StringNode::new("1trim value1").unwrap())],
+        childs: vec![NodeType::NString(StringNode::new(&engine,"1trim value1").unwrap())],
         trim: "1".to_string(),
     };
     let mut john = json!({

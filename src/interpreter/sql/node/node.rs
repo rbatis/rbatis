@@ -3,7 +3,7 @@ use std::collections::HashMap;
 use serde_json::{json, Value};
 
 use crate::core::convert::StmtConvert;
-use crate::core::db::DriverType;
+
 use crate::interpreter::sql::ast::RbatisAST;
 use crate::interpreter::sql::node::bind_node::BindNode;
 use crate::interpreter::sql::node::choose_node::ChooseNode;
@@ -19,10 +19,11 @@ use crate::interpreter::sql::node::where_node::WhereNode;
 use rexpr::runtime::RExprRuntime;
 
 use super::node_type::NodeType;
+use crate::core::db::DriverType;
 
 //执行子所有节点
 pub(crate) fn do_child_nodes(
-    convert: &crate::core::db::DriverType,
+    convert: &dyn crate::interpreter::sql::StringConvert,
     child_nodes: &Vec<NodeType>,
     env: &mut Value,
     engine: &RExprRuntime,
@@ -42,7 +43,7 @@ fn test_string_node() {
         "name": "John Doe",
     });
     let str_node =
-        NodeType::NString(StringNode::new("select * from ${name} where name = #{name}").unwrap());
+        NodeType::NString(StringNode::new(&engine,"select * from ${name} where name = #{name}").unwrap());
     let mut arg_array = vec![];
 
     let mut result = "".to_string();
