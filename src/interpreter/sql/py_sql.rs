@@ -4,8 +4,8 @@ use std::hash::Hash;
 use std::ops::{Deref, Index};
 use std::sync::{Mutex, RwLock};
 
-use dashmap::DashMap;
 use dashmap::mapref::one::Ref;
+use dashmap::DashMap;
 use rexpr::ast::Node;
 use rexpr::lexer::lexer;
 use rexpr::runtime::RExprRuntime;
@@ -58,13 +58,16 @@ impl PyRuntime {
         }
         let mut sql = String::new();
         let mut arg_array = vec![];
-        let cache_value=self.cache.get(py_sql);
+        let cache_value = self.cache.get(py_sql);
         match cache_value {
             Some(v) => {
                 do_child_nodes(driver_type, &v, env, engine, &mut arg_array, &mut sql)?;
             }
             _ => {
-                self.cache.insert(py_sql.to_string(),Self::parse(py_sql, &self.generate)?);
+                self.cache.insert(
+                    py_sql.to_string(),
+                    Self::parse(engine, py_sql, &self.generate)?,
+                );
             }
         }
         sql = sql.trim().to_string();
@@ -72,14 +75,15 @@ impl PyRuntime {
     }
 
     pub fn add_gen<T>(&mut self, arg: T)
-        where
-            T: NodeFactory + 'static,
+    where
+        T: NodeFactory + 'static,
     {
         self.generate.push(Box::new(arg));
     }
 
     /// parser py string data
     pub fn parse(
+        runtime: &RExprRuntime,
         arg: &str,
         generates: &Vec<Box<dyn NodeFactory>>,
     ) -> Result<Vec<NodeType>, crate::core::Error> {
@@ -105,11 +109,12 @@ impl PyRuntime {
             }
             let parserd;
             if !child_str.is_empty() {
-                parserd = PyRuntime::parse(child_str.as_str(), generates)?;
+                parserd = PyRuntime::parse(runtime, child_str.as_str(), generates)?;
             } else {
                 parserd = vec![];
             }
             PyRuntime::parse_node(
+                runtime,
                 generates,
                 &mut main_node,
                 x,
@@ -121,6 +126,7 @@ impl PyRuntime {
     }
 
     fn parse_trim_node(
+        runtime: &RExprRuntime,
         factorys: &Vec<Box<dyn NodeFactory>>,
         trim_express: &str,
         main_node: &mut Vec<NodeType>,
@@ -129,9 +135,10 @@ impl PyRuntime {
         childs: Vec<NodeType>,
     ) -> Result<NodeType, crate::core::Error> {
         if trim_express.starts_with(IfNode::name()) {
-            return Ok(NodeType::NIf(IfNode::from(trim_express, childs)?));
+            return Ok(NodeType::NIf(IfNode::from(runtime, trim_express, childs)?));
         } else if trim_express.starts_with(ForEachNode::name()) {
             return Ok(NodeType::NForEach(ForEachNode::from(
+                runtime,
                 source_str,
                 &trim_express,
                 childs,
@@ -158,6 +165,7 @@ impl PyRuntime {
             )?));
         } else if trim_express.starts_with(WhenNode::name()) {
             return Ok(NodeType::NWhen(WhenNode::from(
+                runtime,
                 source_str,
                 trim_express,
                 childs,
@@ -166,6 +174,7 @@ impl PyRuntime {
             || trim_express.starts_with(BindNode::name())
         {
             return Ok(NodeType::NBind(BindNode::from(
+                runtime,
                 source_str,
                 trim_express,
                 childs,
@@ -184,6 +193,7 @@ impl PyRuntime {
             )?));
         } else if trim_express.starts_with(PrintNode::name()) {
             return Ok(NodeType::NPrint(PrintNode::from(
+                runtime,
                 source_str,
                 trim_express,
                 childs,
@@ -203,6 +213,7 @@ impl PyRuntime {
     }
 
     fn parse_node(
+        runtime: &RExprRuntime,
         generates: &Vec<Box<dyn NodeFactory>>,
         main_node: &mut Vec<NodeType>,
         x: &str,
@@ -223,7 +234,7 @@ impl PyRuntime {
                         let index = len - 1 - index;
                         let item = vecs[index];
                         childs = vec![Self::parse_trim_node(
-                            generates, item, main_node, x, space, childs,
+                            runtime, generates, item, main_node, x, space, childs,
                         )?];
                         if index == 0 {
                             for x in &childs {
@@ -234,7 +245,8 @@ impl PyRuntime {
                     }
                 }
             }
-            let node = Self::parse_trim_node(generates, trim_x, main_node, x, space, childs)?;
+            let node =
+                Self::parse_trim_node(runtime, generates, trim_x, main_node, x, space, childs)?;
             main_node.push(node);
             return Ok(());
         } else {
@@ -245,7 +257,7 @@ impl PyRuntime {
             } else {
                 data = x[(space - 1)..].to_string();
             }
-            main_node.push(NodeType::NString(StringNode::new(&data)?));
+            main_node.push(NodeType::NString(StringNode::new(runtime, &data)?));
             for x in childs {
                 main_node.push(x);
             }

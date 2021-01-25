@@ -6,7 +6,6 @@ use crate::core::db::DriverType;
 use crate::interpreter::sql::ast::RbatisAST;
 use crate::interpreter::sql::node::node::do_child_nodes;
 use crate::interpreter::sql::node::node_type::NodeType;
-use crate::interpreter::sql::node::parse_node;
 use crate::interpreter::sql::node::string_node::StringNode;
 use rexpr::ast::Node;
 use rexpr::runtime::RExprRuntime;
@@ -19,12 +18,16 @@ pub struct IfNode {
 }
 
 impl IfNode {
-    pub fn from(express: &str, childs: Vec<NodeType>) -> Result<Self, crate::core::Error> {
+    pub fn from(
+        runtime: &RExprRuntime,
+        express: &str,
+        childs: Vec<NodeType>,
+    ) -> Result<Self, crate::core::Error> {
         let express = express[Self::name().len()..].trim();
         return Ok(IfNode {
             childs: childs,
             test: express.to_string(),
-            test_func: parse_node(express)?,
+            test_func: runtime.parse(express)?,
         });
     }
 }

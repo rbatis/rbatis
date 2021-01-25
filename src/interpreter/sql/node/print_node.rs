@@ -6,7 +6,6 @@ use crate::core::Error;
 use crate::interpreter::sql::ast::RbatisAST;
 use crate::interpreter::sql::node::node::do_child_nodes;
 use crate::interpreter::sql::node::node_type::NodeType;
-use crate::interpreter::sql::node::parse_node;
 use rexpr;
 use rexpr::ast::Node;
 use rexpr::runtime::RExprRuntime;
@@ -20,6 +19,7 @@ pub struct PrintNode {
 
 impl PrintNode {
     pub fn from(
+        runtime: &RExprRuntime,
         source: &str,
         express: &str,
         childs: Vec<NodeType>,
@@ -30,7 +30,7 @@ impl PrintNode {
             return Ok(PrintNode {
                 express: express.to_string(),
                 childs: childs,
-                express_func: parse_node(express)?,
+                express_func: runtime.parse(express)?,
             });
         } else {
             return Err(Error::from(

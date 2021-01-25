@@ -7,7 +7,6 @@ use crate::core::db::DriverType;
 use crate::interpreter::sql::ast::RbatisAST;
 use crate::interpreter::sql::node::node::do_child_nodes;
 use crate::interpreter::sql::node::node_type::NodeType;
-use crate::interpreter::sql::node::parse_node;
 use crate::utils;
 use rexpr::ast::Node;
 use rexpr::runtime::RExprRuntime;
@@ -23,6 +22,7 @@ pub struct ForEachNode {
 
 impl ForEachNode {
     pub fn from(
+        runtime: &RExprRuntime,
         source: &str,
         express: &str,
         childs: Vec<NodeType>,
@@ -53,7 +53,7 @@ impl ForEachNode {
             collection: col.to_string(),
             index: index.to_string(),
             item: item.to_string(),
-            get_collection_func: parse_node(col)?,
+            get_collection_func: runtime.parse(col)?,
         });
     }
 }

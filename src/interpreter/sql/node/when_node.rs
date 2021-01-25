@@ -6,7 +6,6 @@ use crate::core::convert::StmtConvert;
 use crate::interpreter::sql::ast::RbatisAST;
 use crate::interpreter::sql::node::node::do_child_nodes;
 use crate::interpreter::sql::node::node_type::NodeType;
-use crate::interpreter::sql::node::parse_node;
 use rexpr::ast::Node;
 use rexpr::runtime::RExprRuntime;
 
@@ -19,6 +18,7 @@ pub struct WhenNode {
 
 impl WhenNode {
     pub fn from(
+        runtime: &RExprRuntime,
         source: &str,
         express: &str,
         childs: Vec<NodeType>,
@@ -27,7 +27,7 @@ impl WhenNode {
         return Ok(WhenNode {
             childs,
             test: express.to_string(),
-            test_fn: parse_node(express)?,
+            test_fn: runtime.parse(express)?,
         });
     }
 }

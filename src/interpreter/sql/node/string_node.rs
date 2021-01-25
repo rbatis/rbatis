@@ -6,7 +6,6 @@ use serde_json::{json, Value};
 use crate::core::convert::StmtConvert;
 use crate::core::db::DriverType;
 use crate::interpreter::sql::ast::RbatisAST;
-use crate::interpreter::sql::node::parse_node;
 use crate::utils::string_util;
 use rexpr;
 use rexpr::ast::Node;
@@ -21,11 +20,11 @@ pub struct StringNode {
 }
 
 impl StringNode {
-    pub fn new(v: &str) -> Result<Self, crate::core::Error> {
+    pub fn new(runtime: &RExprRuntime, v: &str) -> Result<Self, crate::core::Error> {
         let mut express_map = LinkedList::new();
         let list = string_util::find_convert_string(v);
         for (k, v) in list {
-            let node = parse_node(&k)?;
+            let node = runtime.parse(&k)?;
             express_map.push_back((k, v, node));
         }
         Ok(Self {
