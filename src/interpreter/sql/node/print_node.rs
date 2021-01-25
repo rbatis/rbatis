@@ -1,7 +1,3 @@
-use serde_json::{json, Value};
-
-use crate::core::convert::StmtConvert;
-
 use crate::core::Error;
 use crate::interpreter::sql::ast::RbatisAST;
 use crate::interpreter::sql::node::node::do_child_nodes;
@@ -9,6 +5,7 @@ use crate::interpreter::sql::node::node_type::NodeType;
 use rexpr;
 use rexpr::ast::Node;
 use rexpr::runtime::RExprRuntime;
+use serde_json::{json, Value};
 
 #[derive(Clone, Debug)]
 pub struct PrintNode {

@@ -1,9 +1,3 @@
-use std::collections::HashMap;
-
-use serde_json::{json, Value};
-
-use crate::core::convert::StmtConvert;
-
 use crate::interpreter::sql::ast::RbatisAST;
 use crate::interpreter::sql::node::bind_node::BindNode;
 use crate::interpreter::sql::node::choose_node::ChooseNode;
@@ -17,9 +11,10 @@ use crate::interpreter::sql::node::trim_node::TrimNode;
 use crate::interpreter::sql::node::when_node::WhenNode;
 use crate::interpreter::sql::node::where_node::WhereNode;
 use rexpr::runtime::RExprRuntime;
+use serde_json::{json, Value};
+use std::collections::HashMap;
 
 use super::node_type::NodeType;
-use crate::core::db::DriverType;
 
 //执行子所有节点
 pub(crate) fn do_child_nodes(

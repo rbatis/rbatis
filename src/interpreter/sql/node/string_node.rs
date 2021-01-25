@@ -1,16 +1,11 @@
-use std::collections::LinkedList;
-
-use serde_json::map::Map;
-use serde_json::{json, Value};
-
-use crate::core::convert::StmtConvert;
-
 use crate::interpreter::sql::ast::RbatisAST;
 use crate::utils::string_util;
 use rexpr;
 use rexpr::ast::Node;
 use rexpr::runtime::RExprRuntime;
-
+use serde_json::map::Map;
+use serde_json::{json, Value};
+use std::collections::LinkedList;
 
 ///the stmt replace str convert
 pub trait StringConvert {

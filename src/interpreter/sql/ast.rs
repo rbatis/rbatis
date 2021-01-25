@@ -1,8 +1,6 @@
+use rexpr::runtime::RExprRuntime;
 use serde_json::Value;
 use std::fmt::{Debug, Display};
-
-use crate::core::convert::StmtConvert;
-use rexpr::runtime::RExprRuntime;
 
 /// Abstract syntax tree node
 pub trait RbatisAST: Send + Sync + Debug {
