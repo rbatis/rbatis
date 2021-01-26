@@ -105,7 +105,10 @@ impl LogicDelete for RbatisLogicDeletePlugin {
         table_fields: &str,
         where_sql: &str,
     ) -> Result<String, Error> {
-        let mut where_sql = where_sql.trim().to_string();
+        let mut where_sql = where_sql
+            .replace(" order by "," ORDER BY ")
+            .replace(" group by "," GROUP BY ")
+            .trim().to_string();
         let mut sql = String::new();
         if table_fields.contains(self.column()) {
             if where_sql.is_empty() {

@@ -1,11 +1,11 @@
 #[cfg(test)]
 mod test {
     use crate::BizActivity;
+    use py_sql::ast::RbatisAST;
+    use py_sql::node::node_type::NodeType;
+    use py_sql::node::proxy_node::{NodeFactory, ProxyNode};
+    use py_sql::StringConvert;
     use rbatis::core::db::DriverType;
-    use rbatis::core::Error;
-    use rbatis::interpreter::sql::ast::RbatisAST;
-    use rbatis::interpreter::sql::node::node_type::NodeType;
-    use rbatis::interpreter::sql::node::proxy_node::{NodeFactory, ProxyNode};
     use rbatis::plugin::page::{Page, PageRequest};
     use rbatis::rbatis::Rbatis;
     use rexpr::runtime::RExprRuntime;
@@ -21,12 +21,12 @@ mod test {
 
         fn eval(
             &self,
-            convert: &dyn rbatis::interpreter::sql::StringConvert,
+            convert: &dyn StringConvert,
             env: &mut Value,
             engine: &RExprRuntime,
             arg_result: &mut Vec<Value>,
             arg_sql: &mut String,
-        ) -> Result<serde_json::Value, Error> {
+        ) -> Result<serde_json::Value, py_sql::error::Error> {
             *arg_sql = " AND id = 1 ".to_string();
             Ok(serde_json::Value::Null)
         }
@@ -40,7 +40,7 @@ mod test {
             &self,
             express: &str,
             child_nodes: Vec<NodeType>,
-        ) -> Result<Option<ProxyNode>, Error> {
+        ) -> Result<Option<ProxyNode>, py_sql::error::Error> {
             if express.starts_with(MyNode::name()) {
                 return Ok(Option::from(ProxyNode::from(MyNode {}, child_nodes)));
             }

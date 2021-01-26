@@ -294,6 +294,10 @@ pub struct RbatisReplacePagePlugin {}
 
 impl RbatisReplacePagePlugin {
     pub fn make_count_sql(&self, sql: &str) -> String {
+        let sql=sql
+            .replace(" from "," FROM ")
+            .replace(" order by "," ORDER BY ")
+            .replace(" limit "," LIMIT ");
         let mut from_index = sql.find(" FROM ");
         if from_index.is_some() {
             from_index = Option::Some(from_index.unwrap() + " FROM ".len());

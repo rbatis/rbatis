@@ -40,7 +40,7 @@ async-std = { version = "1.9", features = ["attributes", "tokio02", "tokio03"] }
 rbatis = { path = "../", features = ["debug_mode"] }
 #(not necessary)only use custom py_sql
 rexpr = {version="1.0"}
-
+py_sql = "1.0"
 
 #web lib
 actix-web = "3"
