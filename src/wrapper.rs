@@ -54,11 +54,11 @@ impl Wrapper {
         }
     }
 
-    pub fn from(driver_type: &DriverType, sql: &str, args: &Vec<serde_json::Value>) -> Self {
+    pub fn from(driver_type: &DriverType, sql: &str, args: Vec<serde_json::Value>) -> Self {
         Self {
             driver_type: driver_type.clone(),
             sql: sql.to_string(),
-            args: args.clone(),
+            args: args,
             formats: HashMap::new(),
             error: None,
         }
@@ -99,8 +99,8 @@ impl Wrapper {
 
     /// push sql,args into self
     pub fn push<T>(mut self, sql: &str, args: &[T]) -> Self
-    where
-        T: Serialize,
+        where
+            T: Serialize,
     {
         let mut new_sql = sql.to_string();
         if self.driver_type.is_number_type() {
@@ -138,8 +138,8 @@ impl Wrapper {
     ///  let arg = 1;
     ///  wrapper.do_if(true, |w| w.eq("id"))
     pub fn do_if<'s, F>(self, test: bool, method: F) -> Self
-    where
-        F: FnOnce(Self) -> Self,
+        where
+            F: FnOnce(Self) -> Self,
     {
         if test {
             return method(self);
@@ -157,8 +157,8 @@ impl Wrapper {
     ///             ], |w| w.eq("a", "default"))
     ///             .check().unwrap();
     pub fn do_match<'s, F>(self, cases: &[(bool, fn(Wrapper) -> Wrapper)], default: F) -> Self
-    where
-        F: FnOnce(Self) -> Self,
+        where
+            F: FnOnce(Self) -> Self,
     {
         for (test, case) in cases {
             if *test {
@@ -182,8 +182,8 @@ impl Wrapper {
     }
 
     pub fn set_args<T>(mut self, args: &[T]) -> Self
-    where
-        T: Serialize,
+        where
+            T: Serialize,
     {
         let v = json!(args);
         if v.is_null() {
@@ -196,8 +196,8 @@ impl Wrapper {
     }
 
     pub fn push_arg<T>(mut self, arg: T) -> Self
-    where
-        T: Serialize,
+        where
+            T: Serialize,
     {
         let v = json!(arg);
         self.args.push(v);
@@ -257,8 +257,8 @@ impl Wrapper {
 
     /// arg: JsonObject or struct{} or map[String,**]
     pub fn all_eq<T>(mut self, arg: T) -> Self
-    where
-        T: Serialize,
+        where
+            T: Serialize,
     {
         self = self.and();
         let v = json!(arg);
@@ -307,8 +307,8 @@ impl Wrapper {
     /// for example:
     ///  eq("a",1) " a = 1 "
     pub fn eq<T>(mut self, column: &str, obj: T) -> Self
-    where
-        T: Serialize,
+        where
+            T: Serialize,
     {
         self = self.and();
         self.sql.push_str(&format!(
@@ -322,8 +322,8 @@ impl Wrapper {
 
     /// not equal
     pub fn ne<T>(mut self, column: &str, obj: T) -> Self
-    where
-        T: Serialize,
+        where
+            T: Serialize,
     {
         self = self.and();
         self.sql.push_str(&format!(
@@ -353,7 +353,7 @@ impl Wrapper {
             if is_asc {
                 self.sql.push_str(format!("{} ASC", x).as_str());
             } else {
-                self.sql.push_str(format!("{} DESC", x,).as_str());
+                self.sql.push_str(format!("{} DESC", x, ).as_str());
             }
             if (index + 1) != len {
                 self.sql.push_str(" , ");
@@ -389,8 +389,8 @@ impl Wrapper {
 
     ///  sql:   column > obj
     pub fn gt<T>(mut self, column: &str, obj: T) -> Self
-    where
-        T: Serialize,
+        where
+            T: Serialize,
     {
         self = self.and();
         self.sql.push_str(&format!(
@@ -403,8 +403,8 @@ impl Wrapper {
     }
     ///  sql:   column >= obj
     pub fn ge<T>(mut self, column: &str, obj: T) -> Self
-    where
-        T: Serialize,
+        where
+            T: Serialize,
     {
         self = self.and();
         self.sql.push_str(&format!(
@@ -418,8 +418,8 @@ impl Wrapper {
 
     ///  sql:   column < obj
     pub fn lt<T>(mut self, column: &str, obj: T) -> Self
-    where
-        T: Serialize,
+        where
+            T: Serialize,
     {
         self = self.and();
         self.sql.push_str(&format!(
@@ -433,8 +433,8 @@ impl Wrapper {
 
     ///  sql:   column <= obj
     pub fn le<T>(mut self, column: &str, obj: T) -> Self
-    where
-        T: Serialize,
+        where
+            T: Serialize,
     {
         self = self.and();
         self.sql.push_str(&format!(
@@ -447,8 +447,8 @@ impl Wrapper {
     }
 
     pub fn between<T>(mut self, column: &str, min: T, max: T) -> Self
-    where
-        T: Serialize,
+        where
+            T: Serialize,
     {
         self = self.and();
         self.sql.push_str(&format!(
@@ -463,8 +463,8 @@ impl Wrapper {
     }
 
     pub fn not_between<T>(mut self, column: &str, min: T, max: T) -> Self
-    where
-        T: Serialize,
+        where
+            T: Serialize,
     {
         self = self.and();
         self.sql.push_str(&format!(
@@ -479,8 +479,8 @@ impl Wrapper {
     }
 
     pub fn like<T>(mut self, column: &str, obj: T) -> Self
-    where
-        T: Serialize,
+        where
+            T: Serialize,
     {
         self = self.and();
         let v = json!(obj);
@@ -500,8 +500,8 @@ impl Wrapper {
     }
 
     pub fn like_left<T>(mut self, column: &str, obj: T) -> Self
-    where
-        T: Serialize,
+        where
+            T: Serialize,
     {
         self = self.and();
         let v = json!(obj);
@@ -521,8 +521,8 @@ impl Wrapper {
     }
 
     pub fn like_right<T>(mut self, column: &str, obj: T) -> Self
-    where
-        T: Serialize,
+        where
+            T: Serialize,
     {
         self = self.and();
         let v = json!(obj);
@@ -542,8 +542,8 @@ impl Wrapper {
     }
 
     pub fn not_like<T>(mut self, column: &str, obj: T) -> Self
-    where
-        T: Serialize,
+        where
+            T: Serialize,
     {
         self = self.and();
         let v = json!(obj);
@@ -578,65 +578,71 @@ impl Wrapper {
 
     /// gen sql: * in (*,*,*)
     pub fn in_array<T>(mut self, column: &str, obj: &[T]) -> Self
-    where
-        T: Serialize,
+        where
+            T: Serialize,
     {
-        self = self.and();
         if obj.len() == 0 {
             return self;
         }
         let arr = json!(obj);
-        let vec = arr.as_array().unwrap();
-        let mut sqls = String::new();
-        for x in vec {
-            sqls.push_str(&format!(
-                " {} ",
-                self.do_format_column(column, self.driver_type.stmt_convert(self.args.len()))
-            ));
-            sqls.push_str(",");
-            self.args.push(x.clone());
+        match arr {
+            serde_json::Value::Array(vec) => {
+                self = self.and();
+                let mut sqls = String::new();
+                for x in vec {
+                    sqls.push_str(&format!(
+                        " {} ",
+                        self.do_format_column(column, self.driver_type.stmt_convert(self.args.len()))
+                    ));
+                    sqls.push_str(",");
+                    self.args.push(x);
+                }
+                sqls.pop();
+                self.sql.push_str(format!("{} IN ({})", column, sqls).as_str());
+            }
+            _ => {}
         }
-        sqls.pop();
-        self.sql
-            .push_str(format!("{} IN ({})", column, sqls).as_str());
         self
     }
 
     /// gen sql: * in (*,*,*)
     pub fn in_<T>(self, column: &str, obj: &[T]) -> Self
-    where
-        T: Serialize,
+        where
+            T: Serialize,
     {
         self.in_array(column, obj)
     }
 
     /// gen sql: * in (*,*,*)
     pub fn r#in<T>(self, column: &str, obj: &[T]) -> Self
-    where
-        T: Serialize,
+        where
+            T: Serialize,
     {
         self.in_array(column, obj)
     }
 
     pub fn not_in<T>(mut self, column: &str, obj: &[T]) -> Self
-    where
-        T: Serialize,
+        where
+            T: Serialize,
     {
-        self = self.and();
         let arr = json!(obj);
-        let vec = arr.as_array().unwrap();
-        let mut sqls = String::new();
-        for x in vec {
-            sqls.push_str(&format!(
-                " {} ",
-                self.do_format_column(column, self.driver_type.stmt_convert(self.args.len()))
-            ));
-            sqls.push_str(",");
-            self.args.push(x.clone());
+        match arr {
+            serde_json::Value::Array(vec) => {
+                self = self.and();
+                let mut sqls = String::new();
+                for x in vec {
+                    sqls.push_str(&format!(
+                        " {} ",
+                        self.do_format_column(column, self.driver_type.stmt_convert(self.args.len()))
+                    ));
+                    sqls.push_str(",");
+                    self.args.push(x);
+                }
+                sqls.pop();
+                self.sql.push_str(format!("{} NOT IN ({})", column, sqls).as_str());
+            }
+            _ => {}
         }
-        sqls.pop();
-        self.sql
-            .push_str(format!("{} NOT IN ({})", column, sqls).as_str());
         self
     }
 
