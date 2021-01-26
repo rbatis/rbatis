@@ -1,9 +1,9 @@
 #[cfg(test)]
 mod test {
+    use py_sql::py_sql::PyRuntime;
     use rbatis::utils::bencher::QPS;
     use rbatis_core::db::DriverType;
     use rexpr::runtime::RExprRuntime;
-    use py_sql::py_sql::PyRuntime;
 
     //cargo test --release --package rbatis --test py_sql_test test::test_bench_py_sqsl --no-fail-fast -- --exact -Z unstable-options --show-output
     #[test]
@@ -21,7 +21,7 @@ mod test {
         let total = 10000;
         let now = std::time::Instant::now();
         for _ in 0..total {
-            let (sql,arg) = py_runtime.eval(&DriverType::Mysql, "select * from table where
+            py_runtime.eval(&DriverType::Mysql, "select * from table where
                                                                                                 if 1 == 1:
                                                                                                    column = 1
                                                                                                 and age in (1,2,3)
