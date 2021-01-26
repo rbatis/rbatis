@@ -69,7 +69,7 @@ impl Wrapper {
         if self.error.is_some() {
             return Err(self.error.take().unwrap());
         }
-        self = self.trim_and().trim_or();
+        self = self.trim_and_or();
         return Ok(self);
     }
 
@@ -661,7 +661,19 @@ impl Wrapper {
             .trim()
             .trim_start_matches("OR ")
             .trim_end_matches(" OR")
-            .to_string();
+            .to_owned();
+        self
+    }
+
+    pub fn trim_and_or(mut self) -> Self {
+        self.sql = self
+            .sql
+            .trim()
+            .trim_start_matches("AND ")
+            .trim_end_matches(" AND")
+            .trim_start_matches("OR ")
+            .trim_end_matches(" OR")
+            .to_owned();
         self
     }
 
