@@ -298,7 +298,7 @@ impl Wrapper {
                 return s.replace("{}", &data);
             }
             _ => {
-                return data.to_string();
+                return data;
             }
         }
     }
