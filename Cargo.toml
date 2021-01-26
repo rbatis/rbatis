@@ -55,8 +55,9 @@ actix-mssql = ["default_mode", "rbatis-core/actix-mssql"]
 snowflake = ["rustflake"]
 
 [dependencies]
-rexpr = { version = "1.0" }
-rbatis-core = { version = "1.8.65", default-features = false, optional = true }
+rexpr = "1.0"
+py_sql = "1.0"
+rbatis-core = { git = "https://github.com/rbatis/rbatis-core.git", branch = "main", version = "1.8.65", default-features = false, optional = true }
 rbatis-macro-driver = { version = "1.8.65", path = "rbatis-macro-driver", default-features = false, optional = true }
 
 chrono = { version = "0.4", features = ["serde"] }

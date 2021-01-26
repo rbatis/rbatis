@@ -16,11 +16,6 @@ use crate::core::runtime::Arc;
 use crate::core::sync::sync_map::SyncMap;
 use crate::core::Error;
 use crate::crud::CRUDEnable;
-use crate::interpreter::sql::ast::RbatisAST;
-use crate::interpreter::sql::node::node::do_child_nodes;
-use crate::interpreter::sql::node::node_type::NodeType;
-use crate::interpreter::sql::node::proxy_node::NodeFactory;
-use crate::interpreter::sql::py_sql::PyRuntime;
 use crate::plugin::intercept::SqlIntercept;
 use crate::plugin::log::{LogPlugin, RbatisLog};
 use crate::plugin::logic_delete::{LogicDelete, RbatisLogicDeletePlugin};
@@ -31,6 +26,8 @@ use crate::tx::{TxGuard, TxManager, TxState};
 use crate::utils::error_util::ToResult;
 use crate::utils::string_util;
 use crate::wrapper::Wrapper;
+use py_sql::node::proxy_node::NodeFactory;
+use py_sql::py_sql::PyRuntime;
 use rexpr::runtime::RExprRuntime;
 
 /// rbatis engine
@@ -621,12 +618,15 @@ impl Rbatis {
         py: &str,
         arg: &serde_json::Value,
     ) -> Result<(String, Vec<serde_json::Value>), Error> {
-        return self.runtime_py.eval(
+        match self.runtime_py.eval(
             &self.driver_type()?,
             py,
             &mut arg.clone(),
             &self.runtime_expr,
-        );
+        ) {
+            Ok(v) => Ok(v),
+            Err(e) => Err(Error::from(e)),
+        }
     }
 
     /// fetch query result(prepare sql)
