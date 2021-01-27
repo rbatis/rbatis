@@ -73,5 +73,4 @@ mod test {
         now.time(total);
         now.qps(total);
     }
-
 }

@@ -9,15 +9,10 @@ mod test {
     use serde::Serialize;
 
     use rbatis::core::Error;
-    use rbatis::core::Error;
     use rbatis::crud::{CRUDEnable, Id, Ids, CRUD};
     use rbatis::plugin::logic_delete::RbatisLogicDeletePlugin;
-    use rbatis::plugin::logic_delete::RbatisLogicDeletePlugin;
-    use rbatis::plugin::page::{Page, PageRequest};
     use rbatis::plugin::page::{Page, PageRequest};
     use rbatis::rbatis::Rbatis;
-    use rbatis::rbatis::Rbatis;
-    use rbatis::wrapper::Wrapper;
     use rbatis::wrapper::Wrapper;
 
     #[derive(Serialize, Deserialize, Clone, Debug)]
@@ -312,7 +307,7 @@ mod test {
     }
 
     #[test]
-    fn test_insert() {
+    fn test_insert_order() {
         rbatis::core::runtime::block_on(async {
             fast_log::init_log("requests.log", 1000, log::Level::Info, None, true);
             let mut rb = Rbatis::new();
@@ -326,12 +321,12 @@ mod test {
                         update user set name=#{name}, password=#{password} ,sex=#{sex}, phone=#{phone}, delete_flag=#{flag},
                         create_datetime=current_timestamp(), update_datetime=current_timestamp() where id=#{id}
                     "#;
-            rb.py_exec(
-                "",
-                py_sql,
-                &json!({"name":"name", "password":"ps_encode","sex": "sex", "phone": "phone", "flag":0, "id": "u.id"}),
-            )
-                .await.unwrap();
+            let (sql,args)=rb.runtime_py.eval(&rb.driver_type().unwrap(),py_sql,    &mut serde_json::json!({"name":"name", "password":"ps_encode","sex": "sex", "phone": "phone", "flag":0, "id": "u.id"}),&rb.runtime_expr).unwrap();
+            assert_eq!(sql,"update user set name=?, password=? ,sex=?, phone=?, delete_flag=?, create_datetime=current_timestamp(), update_datetime=current_timestamp() where id=?");
+            assert_eq!(
+                serde_json::json!(args).to_string(),
+                serde_json::json!(["name", "ps_encode", "sex", "phone", 0, "u.id"]).to_string()
+            );
         });
     }
 }
