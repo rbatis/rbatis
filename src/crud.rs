@@ -16,6 +16,7 @@ use crate::plugin::page::{IPageRequest, Page};
 use crate::rbatis::Rbatis;
 use crate::utils::string_util::to_snake_name;
 use crate::wrapper::Wrapper;
+use crate::sql::upper::SqlReplaceCase;
 
 /// DB Table model trait
 ///
@@ -682,27 +683,23 @@ fn make_select_sql<T>(rb: &Rbatis, w: &Wrapper) -> Result<String>
 where
     T: CRUDEnable,
 {
+    let driver_type=rb.driver_type()?;
     let table_name = choose_dyn_table_name::<T>(w);
     let where_sql = w.sql.clone();
     let mut sql = String::new();
     if rb.logic_plugin.is_some() {
         let logic_ref = rb.logic_plugin.as_ref().unwrap();
         return logic_ref.create_select_sql(
-            &rb.driver_type()?,
+            &driver_type,
             &table_name,
             &T::table_columns(),
             &where_sql,
         );
     }
-    if !where_sql.is_empty() && !where_sql.starts_with("ORDER") && !where_sql.starts_with("GROUP") {
-        sql = format!(
-            "SELECT {} FROM {} WHERE {}",
-            T::table_columns(),
-            table_name,
-            where_sql
-        );
-    } else {
-        sql = format!("SELECT {} FROM {}", T::table_columns(), table_name);
-    }
-    Ok(sql)
+    Ok(format!(
+        "SELECT {} FROM {} {}",
+        T::table_columns(),
+        table_name,
+        driver_type.try_insert_where(&where_sql)
+    ))
 }
