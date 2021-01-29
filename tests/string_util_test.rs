@@ -1,10 +1,13 @@
 #[cfg(test)]
 mod test {
+    use rbatis::utils::bencher::QPS;
     use rbatis::utils::string_util::{find_convert_string, un_packing_string};
+
     #[test]
     fn test_find() {
-        let sql = "update user set name=#{name}, password=#{password} ,sex=#{sex}, phone=#{phone}, delete_flag=#{flag}, #{name}";
+        let sql = "update user set name=#{name}, password=#{password} ,sex=#{sex}, phone=#{phone}, delete_flag=#{flag}, #{name} #{ 1 + ";
         let finds = find_convert_string(sql);
+        println!("{:?}", finds);
         assert_eq!(finds.len(), 5);
         let mut index = 0;
         for (k, _) in &finds {
@@ -43,5 +46,18 @@ mod test {
         assert_eq!(un_packing_string("\"\""), "");
         assert_eq!(un_packing_string("`a`"), "a");
         assert_eq!(un_packing_string("\""), "\"");
+    }
+
+    ///cargo test --release --package rbatis --test string_util_test test::bench_find --no-fail-fast -- --exact -Z unstable-options --show-output
+    #[test]
+    fn bench_find() {
+        let sql = "update user set name=#{name}, password=#{password} ,sex=#{sex}, phone=#{phone}, delete_flag=#{flag}, #{name}";
+        let finds = find_convert_string(sql);
+        let total = 100000;
+        let now = std::time::Instant::now();
+        for _ in 0..total {
+            find_convert_string(sql);
+        }
+        now.time(total);
     }
 }

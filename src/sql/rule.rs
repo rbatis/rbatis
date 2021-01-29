@@ -14,11 +14,23 @@ pub trait SqlRule {
         } else {
             format!(" WHERE {} ", sql
                 .trim_start_matches("WHERE ")
-                .trim_start_matches("WHERE AND ")
-                .trim_start_matches("WHERE OR ")
                 .trim_start_matches("AND ")
                 .trim_start_matches("OR ")
             )
+        }
+    }
+
+    fn make_left_insert_where(&self, insert_sql: &str, where_sql: &str) -> String {
+        let sql = where_sql.trim()
+            .trim_start_matches("WHERE ")
+            .trim_start_matches("AND ")
+            .replace("  ", " ");
+        if sql.starts_with("ORDER BY") ||
+            sql.starts_with("GROUP BY") ||
+            sql.starts_with("LIMIT ") {
+            format!(" WHERE {} {}", insert_sql.trim().trim_end_matches(" AND"), sql)
+        } else {
+            format!(" WHERE {} AND {}", insert_sql.trim().trim_end_matches(" AND"), sql)
         }
     }
 }
