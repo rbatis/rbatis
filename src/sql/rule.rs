@@ -25,6 +25,9 @@ pub trait SqlRule {
             .trim_start_matches("WHERE ")
             .trim_start_matches("AND ")
             .replace("  ", " ");
+        if sql.is_empty() {
+            return insert_sql.to_string();
+        }
         if sql.starts_with("ORDER BY") ||
             sql.starts_with("GROUP BY") ||
             sql.starts_with("LIMIT ") {
