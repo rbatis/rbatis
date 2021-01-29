@@ -7,7 +7,7 @@ members = [
 
 [package]
 name = "rbatis"
-version = "1.8.65"
+version = "1.8.66"
 description = "Rust ORM Framework High Performance(JSON based)"
 readme = "Readme.md"
 authors = ["ce <zhuxiujia@qq.com>"]
@@ -62,8 +62,8 @@ snowflake = ["rustflake"]
 [dependencies]
 rexpr = "1.0"
 py_sql = "1.0"
-rbatis-core = { git = "https://github.com/rbatis/rbatis-core.git", branch = "main", version = "1.8.65", default-features = false, optional = true }
-rbatis-macro-driver = { version = "1.8.65", path = "rbatis-macro-driver", default-features = false, optional = true }
+rbatis-core = { git = "https://github.com/rbatis/rbatis-core.git", branch = "main", version = "1.8.66", default-features = false, optional = true }
+rbatis-macro-driver = { version = "1.8.66", path = "rbatis-macro-driver", default-features = false, optional = true }
 
 chrono = { version = "0.4", features = ["serde"] }
 lazy_static = "1.4"
