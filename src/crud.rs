@@ -538,15 +538,19 @@ impl CRUD for Rbatis {
         let mut wrapper = self.new_wrapper_table::<T>();
         wrapper.sql = format!("UPDATE {} SET {}", table_name, sets);
         wrapper.args = args;
-        if !w.sql.is_empty() {
-            wrapper.sql.push_str(" WHERE ");
-            match &self.version_lock_plugin {
-                Some(version_lock_plugin) => {
-                    if !old_version.eq(&serde_json::Value::Null) {
-                        wrapper = wrapper.eq(version_lock_plugin.column(), &old_version).and();
-                    }
+        //version lock
+        match &self.version_lock_plugin {
+            Some(version_lock_plugin) => {
+                if !old_version.eq(&serde_json::Value::Null) {
+                    wrapper.sql.push_str(" WHERE ");
+                    wrapper = wrapper.eq(version_lock_plugin.column(), &old_version).and();
                 }
-                _ => {}
+            }
+            _ => {}
+        }
+        if !w.sql.is_empty() {
+            if !wrapper.sql.contains(" WHERE ") {
+                wrapper.sql.push_str(" WHERE ");
             }
             wrapper = wrapper.push_wrapper(&w);
         }
