@@ -702,4 +702,13 @@ impl Wrapper {
         }
         self
     }
+
+    /// limit
+    /// for example:
+    ///  limit(1) " LIMIT 1 "
+    pub fn limit(mut self, limit: u64) -> Self
+    {
+        self.sql.push_str(&format!(" LIMIT {} ",limit));
+        self
+    }
 }
