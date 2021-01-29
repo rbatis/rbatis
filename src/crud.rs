@@ -418,7 +418,7 @@ impl CRUD for Rbatis {
         T: CRUDEnable,
     {
         let table_name = choose_dyn_table_name::<T>(w);
-        let where_sql = self.driver_type()?.try_add_where_sql(&w.sql);
+        let where_sql = self.driver_type()?.make_where(&w.sql);
         let mut sql = String::new();
         if self.logic_plugin.is_some() {
             sql = self.logic_plugin.as_ref().unwrap().create_remove_sql(
@@ -673,6 +673,6 @@ where
         "SELECT {} FROM {} {}",
         T::table_columns(),
         table_name,
-        driver_type.try_add_where_sql(&w.sql)
+        driver_type.make_where(&w.sql)
     ))
 }
