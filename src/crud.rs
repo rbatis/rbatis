@@ -14,7 +14,7 @@ use crate::core::Error;
 use crate::core::Result;
 use crate::plugin::page::{IPageRequest, Page};
 use crate::rbatis::Rbatis;
-use crate::sql::upper::SqlReplaceCase;
+use crate::sql::rule::SqlRule;
 use crate::utils::string_util::to_snake_name;
 use crate::wrapper::Wrapper;
 
