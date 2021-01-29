@@ -171,7 +171,7 @@ mod test {
             delete_flag: Some(1),
         };
 
-        let w = rb.new_wrapper().eq("id", "12312").check().unwrap();
+        let w = rb.new_wrapper().eq("id", "12312");
         let r = rb.update_by_wrapper("", &activity, &w, false).await;
         if r.is_err() {
             println!("{}", r.err().unwrap().to_string());
@@ -209,7 +209,7 @@ mod test {
         let mut rb = init_rbatis().await;
         //设置 逻辑删除插件
         rb.logic_plugin = Some(Box::new(RbatisLogicDeletePlugin::new("delete_flag")));
-        let w = rb.new_wrapper().eq("id", "1").check().unwrap();
+        let w = rb.new_wrapper().eq("id", "1");
         let r: Result<Option<BizActivity>, Error> = rb.fetch_by_wrapper("", &w).await;
         println!("is_some:{:?}", r);
         if r.is_err() {
@@ -220,7 +220,7 @@ mod test {
     #[async_std::test]
     pub async fn test_list_by_wrapper() {
         let rb = init_rbatis().await;
-        let w = rb.new_wrapper().order_by(true, &["id"]).check().unwrap();
+        let w = rb.new_wrapper().order_by(true, &["id"]);
         let r: Vec<BizActivity> = rb.list_by_wrapper("", &w).await.unwrap();
         println!("is_some:{:?}", r);
     }
@@ -235,8 +235,7 @@ mod test {
             .new_wrapper()
             .like("name", "test")
             //.order_by(false, &["create_time"])
-            .check()
-            .unwrap();
+            ;
         let r: Page<BizActivity> = rb
             .fetch_page_by_wrapper("", &w, &PageRequest::new(1, 20))
             .await

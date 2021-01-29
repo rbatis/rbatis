@@ -10,7 +10,6 @@ mod test {
     fn test_trim() {
         let mut w = Wrapper::new(&DriverType::Mysql);
         w = w.push_sql(" WHERE ").order_by(true, &["id"]);
-        w = w.check().unwrap();
         println!("sql:{:?}", w.sql.as_str());
         println!("arg:{:?}", w.args.clone());
         assert_eq!("ORDER BY id ASC", w.sql.as_str().trim());
@@ -31,9 +30,7 @@ mod test {
             .not_like("name", "asdf")
             .between("create_time", "2020-01-01 00:00:00", "2020-12-12 00:00:00")
             .group_by(&["id"])
-            .order_by(true, &["id", "name"])
-            .check()
-            .unwrap();
+            .order_by(true, &["id", "name"]);
         println!("sql:{:?}", w.sql.as_str());
         println!("arg:{:?}", w.args.clone());
 
@@ -64,9 +61,7 @@ mod test {
                 .not_like("name", "asdf")
                 .between("create_time", "2020-01-01 00:00:00", "2020-12-12 00:00:00")
                 .group_by(&["id"])
-                .order_by(true, &["id", "name"])
-                .check()
-                .unwrap();
+                .order_by(true, &["id", "name"]);
         }
         now.time(total);
         now.qps(total);
@@ -74,16 +69,11 @@ mod test {
 
     #[test]
     fn test_link() {
-        let w = Wrapper::new(&DriverType::Postgres)
-            .eq("a", "1")
-            .check()
-            .unwrap();
+        let w = Wrapper::new(&DriverType::Postgres).eq("a", "1");
         let w2 = Wrapper::new(&DriverType::Postgres)
             .eq("b", "2")
             .and()
-            .push_wrapper(&w)
-            .check()
-            .unwrap();
+            .push_wrapper(&w);
 
         println!("sql:{:?}", w2.sql.as_str());
         println!("arg:{:?}", w2.args.clone());
@@ -95,10 +85,7 @@ mod test {
     #[test]
     fn test_do_if() {
         let p = Option::<i32>::Some(1);
-        let w = Wrapper::new(&DriverType::Postgres)
-            .do_if(p.is_some(), |w| w.eq("a", p.clone()))
-            .check()
-            .unwrap();
+        let w = Wrapper::new(&DriverType::Postgres).do_if(p.is_some(), |w| w.eq("a", p.clone()));
         println!("sql:{:?}", w.sql.as_str());
         println!("arg:{:?}", w.args.clone());
         assert_eq!(&w.sql, "a = $1");
@@ -108,16 +95,13 @@ mod test {
     #[test]
     fn test_do_match() {
         let p = 1;
-        let w = Wrapper::new(&DriverType::Postgres)
-            .do_match(
-                &[
-                    (p == 0, |w| w.eq("0", "some")),
-                    (p == 1, |w| w.eq("1", "some")),
-                ],
-                |w| w.eq("default", "default"),
-            )
-            .check()
-            .unwrap();
+        let w = Wrapper::new(&DriverType::Postgres).do_match(
+            &[
+                (p == 0, |w| w.eq("0", "some")),
+                (p == 1, |w| w.eq("1", "some")),
+            ],
+            |w| w.eq("default", "default"),
+        );
         assert_eq!(&w.sql, "1 = $1");
     }
 
@@ -128,9 +112,7 @@ mod test {
             .or()
             .like("TITLE", "title")
             .or()
-            .like("ORIGINAL_NAME", "saf")
-            .check()
-            .unwrap();
+            .like("ORIGINAL_NAME", "saf");
         println!("sql:{:?}", w.sql.as_str());
         println!("arg:{:?}", w.args.clone());
     }
@@ -140,9 +122,7 @@ mod test {
         let w = Wrapper::new(&DriverType::Mysql)
             .push_sql("?,?")
             .push_arg(1)
-            .push_arg("asdfasdfa")
-            .check()
-            .unwrap();
+            .push_arg("asdfasdfa");
         println!("sql:{:?}", w.sql.as_str());
         println!("arg:{:?}", w.args.clone());
     }
@@ -157,9 +137,7 @@ mod test {
             .eq("b1", "b1")
             .eq("b2", "b2")
             .and()
-            .push_wrapper(&w2.push_sql("(").eq("a", "a").push_sql(")").check().unwrap())
-            .check()
-            .unwrap();
+            .push_wrapper(&w2.push_sql("(").eq("a", "a").push_sql(")"));
         println!("sql:{:?}", w2.sql.as_str());
         println!("arg:{:?}", w2.args.clone());
         assert_eq!(w2.sql.contains("b = $1"), true);

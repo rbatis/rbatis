@@ -32,7 +32,7 @@ mod test {
         rb.link("mysql://root:123456@localhost:3306/test")
             .await
             .unwrap();
-        let w = rb.new_wrapper().eq("id", "1").check().unwrap();
+        let w = rb.new_wrapper().eq("id", "1");
         let r: Result<Option<BizActivity>, Error> = rb.fetch_by_wrapper("", &w).await;
     }
 }

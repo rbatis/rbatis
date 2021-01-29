@@ -592,7 +592,7 @@ impl Rbatis {
     ///             .and()
     ///             .ne("delete_flag", -1)
     ///             .do_if(!name.is_empty(), |w| w.and().like("name", name))
-    ///             .check().unwrap();
+    ///             ;
     ///         let r: serde_json::Value = rb.fetch_prepare_wrapper("", &w).await.unwrap();
     ///
     pub async fn fetch_prepare_wrapper<T>(&self, context_id: &str, w: &Wrapper) -> Result<T, Error>

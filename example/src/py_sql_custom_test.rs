@@ -5,7 +5,6 @@ mod test {
     use py_sql::node::node_type::NodeType;
     use py_sql::node::proxy_node::{NodeFactory, ProxyNode};
     use py_sql::StringConvert;
-    use rbatis::core::db::DriverType;
     use rbatis::plugin::page::{Page, PageRequest};
     use rbatis::rbatis::Rbatis;
     use rexpr::runtime::RExprRuntime;
