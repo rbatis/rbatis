@@ -170,14 +170,14 @@ impl Wrapper {
 
     pub fn set_sql(mut self, sql: &str) -> Self {
         self.sql = sql.to_owned();
-        self.sql = self.driver_type.to_upper_case(&self.sql);
+        self.sql = self.driver_type.upper_case_sql(&self.sql);
         self
     }
 
     pub fn push_sql(mut self, sql: &str) -> Self {
         let s = sql.to_owned();
         self.sql.push_str(s.as_str());
-        self.sql = self.driver_type.to_upper_case(&self.sql);
+        self.sql = self.driver_type.upper_case_sql(&self.sql);
         self
     }
 

@@ -700,6 +700,6 @@ where
         "SELECT {} FROM {} {}",
         T::table_columns(),
         table_name,
-        driver_type.try_insert_where(&where_sql)
+        driver_type.try_add_where_sql(&where_sql)
     ))
 }
