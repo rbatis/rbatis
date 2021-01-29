@@ -2,7 +2,7 @@ use crate::core::db::DriverType;
 
 /// sql to up case
 pub trait SqlUpperCase {
-    fn to_upper_case(&self, sql: &str) -> String {
+    fn upper_case_sql(&self, sql: &str) -> String {
         let sql = format!(" {} ", sql);
         sql.replace("  ", " ")
             .replace(" select ", " SELECT ")
@@ -20,7 +20,7 @@ pub trait SqlUpperCase {
 
 
 pub trait SqlReplaceCase {
-    fn try_insert_where(&self, sql: &str) -> String {
+    fn try_add_where_sql(&self, sql: &str) -> String {
         let sql= sql.trim();
         if sql.is_empty(){
             return String::new();
