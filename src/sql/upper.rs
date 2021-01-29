@@ -22,7 +22,10 @@ pub trait SqlUpperCase {
 pub trait SqlReplaceCase {
     fn try_insert_where(&self, sql: &str) -> String {
         let sql= sql.trim();
-        if sql.starts_with("WHERE ") ||
+        if sql.is_empty(){
+            return String::new();
+        }
+        if  sql.starts_with("WHERE ") ||
             sql.starts_with("ORDER BY")||
             sql.starts_with("GROUP BY") ||
             sql.starts_with("AND ") ||

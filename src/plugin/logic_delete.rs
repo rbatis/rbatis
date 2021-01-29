@@ -3,6 +3,7 @@ use std::fmt::{Debug, Display};
 
 use crate::core::db::DriverType;
 use crate::core::Error;
+use crate::sql::upper::SqlReplaceCase;
 
 /// Logic Delete Plugin trait
 pub trait LogicDelete: Send + Sync + Debug {
@@ -124,14 +125,10 @@ impl LogicDelete for RbatisLogicDeletePlugin {
                 }
             }
         }
-        if !where_sql.is_empty() {
-            sql = format!(
-                "SELECT {} FROM {} WHERE {}",
-                table_fields, table_name, where_sql
-            );
-        } else {
-            sql = format!("SELECT {} FROM {}", table_fields, table_name);
-        }
+        sql = format!(
+            "SELECT {} FROM {} {}",
+            table_fields, table_name, driver_type.try_insert_where(&where_sql)
+        );
         Ok(sql)
     }
 }
