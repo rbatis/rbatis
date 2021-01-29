@@ -287,16 +287,16 @@ pub trait CRUD {
     async fn update_by_wrapper<T>(
         &self,
         context_id: &str,
-        arg: &T,
+        arg: &mut T,
         w: &Wrapper,
         update_null_value: bool,
     ) -> Result<u64>
         where
             T: CRUDEnable;
-    async fn update_by_id<T>(&self, context_id: &str, arg: &T) -> Result<u64>
+    async fn update_by_id<T>(&self, context_id: &str, arg: &mut T) -> Result<u64>
         where
             T: CRUDEnable;
-    async fn update_batch_by_id<T>(&self, context_id: &str, ids: &[T]) -> Result<u64>
+    async fn update_batch_by_id<T>(&self, context_id: &str, ids: &mut [T]) -> Result<u64>
         where
             T: CRUDEnable;
 
@@ -489,7 +489,7 @@ impl CRUD for Rbatis {
     async fn update_by_wrapper<T>(
         &self,
         context_id: &str,
-        arg: &T,
+        arg: &mut T,
         w: &Wrapper,
         update_null_value: bool,
     ) -> Result<u64>
@@ -500,9 +500,9 @@ impl CRUD for Rbatis {
         let mut args = vec![];
         let mut old_version = serde_json::Value::Null;
         let driver_type = &self.driver_type()?;
-        let map = arg.make_column_value_map(&driver_type)?;
+        let mut map = arg.make_column_value_map(&driver_type)?;
         let mut sets = String::new();
-        for (column, mut v) in map {
+        for (column, v) in &mut map {
             //filter id
             if column.eq(&T::id_name()) {
                 continue;
@@ -525,14 +525,14 @@ impl CRUD for Rbatis {
             );
             match &self.version_lock_plugin {
                 Some(version_lock_plugin) => {
-                    if version_lock_plugin.column().eq(&column) {
+                    if version_lock_plugin.column().eq(column) {
                         old_version = v.clone();
-                        v = version_lock_plugin.try_reduce_one(v);
+                        *v = version_lock_plugin.try_add_one(old_version.clone());
                     }
                 }
                 _ => {}
             }
-            args.push(v);
+            args.push(v.clone());
         }
         sets.pop();
         let mut wrapper = self.new_wrapper_table::<T>();
@@ -554,14 +554,18 @@ impl CRUD for Rbatis {
             }
             wrapper = wrapper.push_wrapper(&w);
         }
-        return Ok(self
+        let rows_affected = self
             .exec_prepare(context_id, wrapper.sql.as_str(), &wrapper.args)
             .await?
-            .rows_affected);
+            .rows_affected;
+        if rows_affected > 0 {
+            *arg = serde_json::from_value(serde_json::Value::Object(map)).into_result()?;
+        }
+        return Ok(rows_affected);
     }
 
     /// update database record by id
-    async fn update_by_id<T>(&self, context_id: &str, arg: &T) -> Result<u64>
+    async fn update_by_id<T>(&self, context_id: &str, arg: &mut T) -> Result<u64>
         where
             T: CRUDEnable,
     {
@@ -588,7 +592,7 @@ impl CRUD for Rbatis {
     }
 
     /// remove batch database record by args
-    async fn update_batch_by_id<T>(&self, context_id: &str, args: &[T]) -> Result<u64>
+    async fn update_batch_by_id<T>(&self, context_id: &str, args: &mut [T]) -> Result<u64>
         where
             T: CRUDEnable,
     {

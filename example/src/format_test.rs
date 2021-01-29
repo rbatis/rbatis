@@ -43,7 +43,7 @@ mod test {
         //update table
         rb.update_by_id(
             "",
-            &BizUuid {
+            &mut BizUuid {
                 id: Some(uuid.clone()),
                 name: Some("test_updated".to_string()),
             },

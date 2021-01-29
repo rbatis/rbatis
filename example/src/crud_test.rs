@@ -157,7 +157,7 @@ mod test {
         //设置 逻辑删除插件
         rb.logic_plugin = Some(Box::new(RbatisLogicDeletePlugin::new("delete_flag")));
         rb.version_lock_plugin = Some(Box::new(RbatisVersionLockPlugin::new("version")));
-        let activity = BizActivity {
+        let mut activity = BizActivity {
             id: Some("12312".to_string()),
             name: None,
             pc_link: None,
@@ -173,7 +173,7 @@ mod test {
         };
 
         let w = rb.new_wrapper().eq("id", "12312");
-        let r = rb.update_by_wrapper("", &activity, &w, false).await;
+        let r = rb.update_by_wrapper("", &mut activity, &w, false).await;
         if r.is_err() {
             println!("{}", r.err().unwrap().to_string());
         }
@@ -185,7 +185,7 @@ mod test {
         //设置 逻辑删除插件
         rb.logic_plugin = Some(Box::new(RbatisLogicDeletePlugin::new("delete_flag")));
 
-        let activity = BizActivity {
+        let mut activity = BizActivity {
             id: Some("12312".to_string()),
             name: None,
             pc_link: None,
@@ -199,7 +199,7 @@ mod test {
             version: Some(BigDecimal::from(1)),
             delete_flag: Some(1),
         };
-        let r = rb.update_by_id("", &activity).await;
+        let r = rb.update_by_id("", &mut activity).await;
         if r.is_err() {
             println!("{}", r.err().unwrap().to_string());
         }
