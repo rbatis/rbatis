@@ -177,6 +177,7 @@ mod test {
         if r.is_err() {
             println!("{}", r.err().unwrap().to_string());
         }
+        println!("new_version:{}",&activity.version.unwrap());
     }
 
     #[async_std::test]
