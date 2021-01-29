@@ -113,7 +113,10 @@ impl LogicDelete for RbatisLogicDeletePlugin {
             .to_string();
         let mut sql = String::new();
         if table_fields.contains(self.column()) {
-            where_sql = driver_type.make_left_insert_where(&format!("{} = {}", self.column(), self.un_deleted()),&where_sql);
+            where_sql = driver_type.make_left_insert_where(
+                &format!("{} = {}", self.column(), self.un_deleted()),
+                &where_sql,
+            );
         }
         sql = format!(
             "SELECT {} FROM {} {}",

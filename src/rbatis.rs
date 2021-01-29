@@ -20,6 +20,7 @@ use crate::plugin::intercept::SqlIntercept;
 use crate::plugin::log::{LogPlugin, RbatisLog};
 use crate::plugin::logic_delete::{LogicDelete, RbatisLogicDeletePlugin};
 use crate::plugin::page::{IPage, IPageRequest, Page, PagePlugin, RbatisPagePlugin};
+use crate::plugin::version_lock::{RbatisVersionLockPlugin, VersionLockPlugin};
 use crate::sql::upper::SqlUpperCase;
 use crate::sql::PageLimit;
 use crate::tx::{TxGuard, TxManager, TxState};
@@ -49,6 +50,9 @@ pub struct Rbatis {
     pub logic_plugin: Option<Box<dyn LogicDelete>>,
     // log plugin
     pub log_plugin: Arc<Box<dyn LogPlugin>>,
+
+    // version lock plugin
+    pub version_lock_plugin: Option<Box<dyn VersionLockPlugin>>,
 }
 
 impl Default for Rbatis {
@@ -90,6 +94,8 @@ pub struct RbatisOption {
     pub log_plugin: Arc<Box<dyn LogPlugin>>,
     ///tx_prefix,default is 'tx:'
     pub tx_prefix: String,
+    ///version lock plugin
+    pub version_lock_plugin: Option<Box<dyn VersionLockPlugin>>,
 }
 
 impl Default for RbatisOption {
@@ -103,6 +109,7 @@ impl Default for RbatisOption {
             logic_plugin: None,
             log_plugin: Arc::new(Box::new(RbatisLog::default()) as Box<dyn LogPlugin>),
             tx_prefix: "tx:".to_string(),
+            version_lock_plugin: None,
         }
     }
 }
@@ -132,6 +139,7 @@ impl Rbatis {
                 cache: Default::default(),
                 generate: option.generate,
             },
+            version_lock_plugin: None,
         };
     }
 

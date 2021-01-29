@@ -8,6 +8,7 @@ mod test {
     use rbatis::plugin::logic_delete::RbatisLogicDeletePlugin;
     use rbatis::plugin::page::{Page, PageRequest};
     use rbatis::rbatis::Rbatis;
+    use rbatis::plugin::version_lock::RbatisVersionLockPlugin;
 
     ///Or another way to write it
     // #[crud_enable(table_name:biz_activity)]
@@ -155,7 +156,7 @@ mod test {
         let mut rb = init_rbatis().await;
         //设置 逻辑删除插件
         rb.logic_plugin = Some(Box::new(RbatisLogicDeletePlugin::new("delete_flag")));
-
+        rb.version_lock_plugin = Some(Box::new(RbatisVersionLockPlugin::new("version")));
         let activity = BizActivity {
             id: Some("12312".to_string()),
             name: None,
