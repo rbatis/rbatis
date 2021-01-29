@@ -170,7 +170,7 @@ impl ToString for PageRequest {
     fn to_string(&self) -> String {
         let result = serde_json::to_string(self);
         if result.is_err() {
-            return "".to_string();
+            return String::new();
         } else {
             return result.unwrap();
         }
@@ -281,7 +281,7 @@ where
     fn to_string(&self) -> String {
         let result = serde_json::to_string(self);
         if result.is_err() {
-            return "".to_string();
+            return String::new();
         } else {
             return result.unwrap();
         }

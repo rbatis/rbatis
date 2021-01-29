@@ -315,12 +315,12 @@ fn read_config(arg: &str) -> CrudEnableConfig {
         }
     }
     return CrudEnableConfig {
-        id_name: map.get("id_name").unwrap_or(&"".to_string()).to_string(),
-        id_type: map.get("id_type").unwrap_or(&"".to_string()).to_string(),
-        table_name: map.get("table_name").unwrap_or(&"".to_string()).to_string(),
+        id_name: map.get("id_name").unwrap_or(&String::new()).to_string(),
+        id_type: map.get("id_type").unwrap_or(&String::new()).to_string(),
+        table_name: map.get("table_name").unwrap_or(&String::new()).to_string(),
         table_columns: map
             .get("table_columns")
-            .unwrap_or(&"".to_string())
+            .unwrap_or(&String::new())
             .to_string(),
         formats: formats,
     };

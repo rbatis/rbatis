@@ -35,7 +35,7 @@ pub(crate) fn impl_macro_sql(target_fn: &ItemFn, args: &AttributeArgs) -> TokenS
         call_method = quote! {exec_prepare};
     }
     //check use page method
-    let mut page_req_str = "".to_string();
+    let mut page_req_str = String::new();
     let mut page_req = quote! {};
     if return_ty.to_string().contains("Page <")
         && func_args_stream.to_string().contains("& PageRequest")

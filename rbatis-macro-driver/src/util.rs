@@ -83,7 +83,7 @@ pub(crate) fn get_page_req_ident(target_fn: &ItemFn, func_name: &str) -> Ident {
     }
     let req = page_reqs
         .get("& PageRequest")
-        .unwrap_or(&"".to_string())
+        .unwrap_or(&String::new())
         .to_owned();
     if req.eq("") {
         panic!(

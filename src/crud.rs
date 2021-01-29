@@ -389,7 +389,7 @@ impl CRUD for Rbatis {
         }
         let mut value_arr = String::new();
         let mut arg_arr = vec![];
-        let mut column_sql = "".to_string();
+        let mut column_sql = String::new();
         let mut field_index = 0;
         for x in args {
             let (columns, values, args) =
