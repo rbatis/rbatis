@@ -15,12 +15,25 @@ pub trait SqlUpperCase {
             .replace(" group by ", " GROUP BY ")
             .replace(" order by ", " ORDER BY ")
             .replace(" limit ", " LIMIT ")
-            //not allow
-            .replace(" WHERE ORDER BY ", " ORDER BY ")
-            .replace(" WHERE GROUP BY ", " GROUP BY ")
-            .replace(" WHERE OR ", " WHERE ")
-            .replace(" WHERE AND ", " WHERE ")
+    }
+}
+
+
+pub trait SqlReplaceCase {
+    fn try_insert_where(&self, sql: &str) -> String {
+        let sql= sql.trim();
+        if sql.starts_with("WHERE ") ||
+            sql.starts_with("ORDER BY")||
+            sql.starts_with("GROUP BY") ||
+            sql.starts_with("AND ") ||
+            sql.starts_with("OR "){
+            format!(" {} ", sql)
+        }else{
+            format!(" WHERE {} ", sql)
+        }
     }
 }
 
 impl SqlUpperCase for DriverType {}
+
+impl SqlReplaceCase for DriverType {}

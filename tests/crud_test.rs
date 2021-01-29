@@ -9,7 +9,7 @@ mod test {
     use serde::Serialize;
 
     use rbatis::core::Error;
-    use rbatis::crud::{CRUDEnable, Id, Ids, CRUD};
+    use rbatis::crud::{CRUD, CRUDEnable, Id, Ids};
     use rbatis::plugin::logic_delete::RbatisLogicDeletePlugin;
     use rbatis::plugin::page::{Page, PageRequest};
     use rbatis::rbatis::Rbatis;
@@ -321,12 +321,27 @@ mod test {
                         update user set name=#{name}, password=#{password} ,sex=#{sex}, phone=#{phone}, delete_flag=#{flag},
                         create_datetime=current_timestamp(), update_datetime=current_timestamp() where id=#{id}
                     "#;
-            let (sql,args)=rb.runtime_py.eval(&rb.driver_type().unwrap(),py_sql,    &mut serde_json::json!({"name":"name", "password":"ps_encode","sex": "sex", "phone": "phone", "flag":0, "id": "u.id"}),&rb.runtime_expr).unwrap();
-            assert_eq!(sql,"update user set name=?, password=? ,sex=?, phone=?, delete_flag=?, create_datetime=current_timestamp(), update_datetime=current_timestamp() where id=?");
+            let (sql, args) = rb.runtime_py.eval(&rb.driver_type().unwrap(), py_sql, &mut serde_json::json!({"name":"name", "password":"ps_encode","sex": "sex", "phone": "phone", "flag":0, "id": "u.id"}), &rb.runtime_expr).unwrap();
+            assert_eq!(sql, "update user set name=?, password=? ,sex=?, phone=?, delete_flag=?, create_datetime=current_timestamp(), update_datetime=current_timestamp() where id=?");
             assert_eq!(
                 serde_json::json!(args).to_string(),
                 serde_json::json!(["name", "ps_encode", "sex", "phone", 0, "u.id"]).to_string()
             );
         });
+    }
+
+    #[async_std::test]
+    pub async fn test_list_by_wrapper() {
+        fast_log::init_log("requests.log", 1000, log::Level::Info, None, true);
+        let mut rb = Rbatis::new();
+        rb.link("mysql://root:123456@localhost:3306/test")
+            .await
+            .unwrap();
+
+        let mut w = rb.new_wrapper();
+        w = w.order_by(true, &["id"]);
+        w = w.push_sql(" limit 50");
+        println!("{}", w.sql);
+        let b: Vec<BizActivity> = rb.list_by_wrapper("", &w).await.unwrap();
     }
 }
