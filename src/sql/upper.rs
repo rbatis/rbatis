@@ -31,7 +31,7 @@ pub trait SqlReplaceCase {
             sql.starts_with("LIMIT ") {
             format!(" {} ", sql)
         } else {
-            format!(" WHERE {} ", sql)
+            format!(" WHERE {} ", sql.trim_start_matches("AND ").trim_start_matches("OR "))
         }
     }
 }
