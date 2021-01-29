@@ -13,34 +13,28 @@ pub fn find_convert_string(arg: &str) -> LinkedList<(String, String)> {
     let mut list = LinkedList::new();
     let mut cache = HashSet::new();
     let chars: Vec<u8> = arg.bytes().collect();
-    let mut item = String::new();
-    let mut last_index: i32 = -1;
+    let mut item = String::with_capacity(arg.len());
     let mut index: i32 = -1;
     for v in &chars {
         index = index + 1;
-        if last_index == -1 && (*v == '#' as u8 || *v == '$' as u8) {
-            let next = chars.get(index as usize + 1);
-            let next_char = '{' as u8;
-            if next.is_some() && next.unwrap().eq(&next_char) {
-                last_index = index;
+        if !item.is_empty() {
+            item.push(*v as char);
+            if *v == '}' as u8 {
+                if cache.get(&item).is_some() {
+                    item.clear();
+                    continue;
+                }
+                let key = item[2..item.len() - 1].to_string();
+                cache.insert(item.clone());
+                list.push_back((key, item.clone()));
+                item.clear();
             }
             continue;
         }
-        if *v == '}' as u8 && last_index != -1 {
-            item = String::from_utf8(chars[(last_index + 2) as usize..index as usize].to_vec())
-                .unwrap();
-            if cache.get(&item).is_some() {
-                item.clear();
-                last_index = -1;
-                continue;
-            }
-            let value =
-                String::from_utf8(chars[last_index as usize..(index + 1) as usize].to_vec())
-                    .unwrap();
-            cache.insert(item.clone());
-            list.push_back((item.clone(), value));
-            item.clear();
-            last_index = -1;
+        if (*v == '#' as u8 || *v == '$' as u8)
+            && chars.get(index as usize + 1).eq(&Some(&('{' as u8)))
+        {
+            item.push(*v as char);
         }
     }
     return list;
