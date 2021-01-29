@@ -9,7 +9,7 @@ mod test {
     use serde::Serialize;
 
     use rbatis::core::Error;
-    use rbatis::crud::{CRUD, CRUDEnable, Id, Ids};
+    use rbatis::crud::{CRUDEnable, Id, Ids, CRUD};
     use rbatis::plugin::logic_delete::RbatisLogicDeletePlugin;
     use rbatis::plugin::page::{Page, PageRequest};
     use rbatis::rbatis::Rbatis;
@@ -82,12 +82,12 @@ mod test {
         rbatis::core::runtime::block_on(async {
             let activity = BizActivity {
                 id: Some("12312".to_string()),
-                name: None,
+                name: Some("111".to_string()),
                 pc_link: None,
                 h5_link: None,
                 pc_banner_img: None,
                 h5_banner_img: None,
-                sort: None,
+                sort: Some("0".to_string()),
                 status: Some(1),
                 remark: None,
                 create_time: Some("2020-02-09 00:00:00".to_string()),
@@ -100,6 +100,9 @@ mod test {
             rb.link("mysql://root:123456@localhost:3306/test")
                 .await
                 .unwrap();
+
+            rb.remove_by_id::<BizActivity>("", activity.id.as_ref().unwrap())
+                .await;
             let r = rb.save("", &activity).await;
             if r.is_err() {
                 println!("{}", r.err().unwrap().to_string());
@@ -170,6 +173,7 @@ mod test {
             if r.is_err() {
                 println!("{}", r.err().unwrap().to_string());
             }
+            //test_save(); //del after insert
         });
     }
 
@@ -199,10 +203,7 @@ mod test {
                 delete_flag: Some(1),
             };
 
-            let w = Wrapper::new(&rb.driver_type().unwrap())
-                .eq("id", "12312")
-                .check()
-                .unwrap();
+            let w = Wrapper::new(&rb.driver_type().unwrap()).eq("id", "12312");
             let r = rb.update_by_wrapper("", &activity, &w, false).await;
             if r.is_err() {
                 println!("{}", r.err().unwrap().to_string());
@@ -253,11 +254,8 @@ mod test {
                 .await
                 .unwrap();
 
-            let w = Wrapper::new(&rb.driver_type().unwrap())
-                .eq("id", "12312")
-                .check()
-                .unwrap();
-            let r: Result<BizActivity, Error> = rb.fetch_by_wrapper("", &w).await;
+            let w = Wrapper::new(&rb.driver_type().unwrap()).eq("id", "12312");
+            let r: Result<Option<BizActivity>, Error> = rb.fetch_by_wrapper("", &w).await;
             if r.is_err() {
                 println!("{}", r.err().unwrap().to_string());
             }
@@ -275,10 +273,7 @@ mod test {
                 .await
                 .unwrap();
 
-            let w = Wrapper::new(&rb.driver_type().unwrap())
-                .eq("id", "12312")
-                .check()
-                .unwrap();
+            let w = Wrapper::new(&rb.driver_type().unwrap()).eq("id", "12312");
             let r: Result<BizActivityNoDel, Error> = rb.fetch_by_wrapper("", &w).await;
             if r.is_err() {
                 println!("{}", r.err().unwrap().to_string());
@@ -297,7 +292,7 @@ mod test {
                 .await
                 .unwrap();
 
-            let w = Wrapper::new(&rb.driver_type().unwrap()).check().unwrap();
+            let w = rb.new_wrapper().order_by(true, &["id"]);
             let r: Page<BizActivity> = rb
                 .fetch_page_by_wrapper("", &w, &PageRequest::new(1, 20))
                 .await
