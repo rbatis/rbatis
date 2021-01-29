@@ -340,7 +340,7 @@ mod test {
 
         let mut w = rb.new_wrapper();
         w = w.order_by(true, &["id"]);
-        w = w.push_sql(" limit 50");
+        w = w.limit(50);
         println!("{}", w.sql);
         let b: Vec<BizActivity> = rb.list_by_wrapper("", &w).await.unwrap();
     }

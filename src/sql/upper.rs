@@ -20,18 +20,17 @@ pub trait SqlUpperCase {
 
 
 pub trait SqlReplaceCase {
-    fn try_add_where_sql(&self, sql: &str) -> String {
-        let sql= sql.trim();
-        if sql.is_empty(){
+    fn try_add_where_sql(&self, where_sql: &str) -> String {
+        let sql = where_sql.trim();
+        if sql.is_empty() {
             return String::new();
         }
-        if  sql.starts_with("WHERE ") ||
-            sql.starts_with("ORDER BY")||
-            sql.starts_with("GROUP BY") ||
-            sql.starts_with("AND ") ||
-            sql.starts_with("OR "){
+        if sql.starts_with("WHERE ") ||
+            sql.starts_with("ORDER BY ") ||
+            sql.starts_with("GROUP BY ") ||
+            sql.starts_with("LIMIT ") {
             format!(" {} ", sql)
-        }else{
+        } else {
             format!(" WHERE {} ", sql)
         }
     }
