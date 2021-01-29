@@ -418,17 +418,17 @@ impl CRUD for Rbatis {
         T: CRUDEnable,
     {
         let table_name = choose_dyn_table_name::<T>(w);
-        let where_sql = w.sql.as_str();
+        let where_sql = self.driver_type()?.try_add_where_sql(&w.sql);
         let mut sql = String::new();
         if self.logic_plugin.is_some() {
             sql = self.logic_plugin.as_ref().unwrap().create_remove_sql(
                 &self.driver_type()?,
                 &table_name,
                 &T::table_columns(),
-                make_where_sql(where_sql).as_str(),
+                &where_sql,
             )?;
         } else {
-            sql = format!("DELETE FROM {} {}", table_name, make_where_sql(where_sql));
+            sql = format!("DELETE FROM {} {}", table_name, &where_sql);
         }
         return Ok(self
             .exec_prepare(context_id, sql.as_str(), &w.args)
@@ -669,37 +669,25 @@ where
     return table_name;
 }
 
-fn make_where_sql(arg: &str) -> String {
-    let mut where_sql = arg.to_string();
-    where_sql = where_sql
-        .trim_start()
-        .trim_start_matches("AND ")
-        .trim_start_matches("OR ")
-        .to_string();
-    format!(" WHERE {} ", where_sql)
-}
-
 fn make_select_sql<T>(rb: &Rbatis, w: &Wrapper) -> Result<String>
 where
     T: CRUDEnable,
 {
     let driver_type=rb.driver_type()?;
     let table_name = choose_dyn_table_name::<T>(w);
-    let where_sql = w.sql.clone();
-    let mut sql = String::new();
     if rb.logic_plugin.is_some() {
         let logic_ref = rb.logic_plugin.as_ref().unwrap();
         return logic_ref.create_select_sql(
             &driver_type,
             &table_name,
             &T::table_columns(),
-            &where_sql,
+            &w.sql,
         );
     }
     Ok(format!(
         "SELECT {} FROM {} {}",
         T::table_columns(),
         table_name,
-        driver_type.try_add_where_sql(&where_sql)
+        driver_type.try_add_where_sql(&w.sql)
     ))
 }
