@@ -49,6 +49,11 @@ actix-mysql = ["default_mode", "rbatis-core/actix-mysql"]
 actix-postgres = ["default_mode", "rbatis-core/actix-postgres"]
 actix-sqlite = ["default_mode", "rbatis-core/actix-sqlite"]
 actix-mssql = ["default_mode", "rbatis-core/actix-mssql"]
+#tokio1.0-database
+tokio1-mysql = ["default_mode", "rbatis-core/tokio1-mysql"]
+tokio1-postgres = ["default_mode", "rbatis-core/tokio1-postgres"]
+tokio1-sqlite = ["default_mode", "rbatis-core/tokio1-sqlite"]
+tokio1-mssql = ["default_mode", "rbatis-core/tokio1-mssql"]
 
 
 #Distributed unique ID snowflake ID
