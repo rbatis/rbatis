@@ -127,7 +127,9 @@ impl LogicDelete for RbatisLogicDeletePlugin {
         }
         sql = format!(
             "SELECT {} FROM {} {}",
-            table_fields, table_name, driver_type.try_add_where_sql(&where_sql)
+            table_fields,
+            table_name,
+            driver_type.try_add_where_sql(&where_sql)
         );
         Ok(sql)
     }

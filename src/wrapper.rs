@@ -32,7 +32,7 @@ use crate::sql::upper::SqlUpperCase;
 ///             .between("create_time", "2020-01-01 00:00:00", "2020-12-12 00:00:00")
 ///             .group_by(&["id"])
 ///             .order_by(true, &["id", "name"])
-///             .check().unwrap();
+///             ;
 ///
 #[derive(Serialize, Deserialize, Clone, Debug)]
 pub struct Wrapper {
@@ -40,7 +40,6 @@ pub struct Wrapper {
     pub sql: String,
     pub args: Vec<serde_json::Value>,
     pub formats: HashMap<String, String>,
-    pub error: Option<Error>,
 }
 
 impl Wrapper {
@@ -50,7 +49,6 @@ impl Wrapper {
             sql: "".to_string(),
             args: vec![],
             formats: Default::default(),
-            error: None,
         }
     }
 
@@ -60,17 +58,7 @@ impl Wrapper {
             sql: sql.to_string(),
             args: args,
             formats: HashMap::new(),
-            error: None,
         }
-    }
-
-    /// check Wrapper(If you call push_sql and push_arg)
-    pub fn check(mut self) -> Result<Wrapper, Error> {
-        if self.error.is_some() {
-            return Err(self.error.take().unwrap());
-        }
-        self = self.trim_and_or();
-        return Ok(self);
     }
 
     pub fn trim_value(mut self, from: &str, to: &str) -> Self {
@@ -85,11 +73,10 @@ impl Wrapper {
 
     /// link left Wrapper to this Wrapper
     /// for Example:
-    /// let w = Wrapper::new(&DriverType::Postgres).push_sql("(").eq("a", "1").push_sql(")").check().unwrap();
+    /// let w = Wrapper::new(&DriverType::Postgres).push_sql("(").eq("a", "1").push_sql(")");
     /// let w2 = Wrapper::new(&DriverType::Postgres).eq("b", "2")
     /// .and()
-    /// .push_wrapper(&w)
-    /// .check().unwrap();
+    /// .push_wrapper(&w);
     /// println!("sql:{:?}", w2.sql.as_str());  // sql:"b = ? AND (a = ?)"
     /// println!("arg:{:?}", w2.args.clone()); // arg:[String("2"), String("1")]
     ///
@@ -155,7 +142,7 @@ impl Wrapper {
     ///                 (p == 0, |w| w.eq("a", "some")),
     ///                 (p == 1, |w| w.eq("a", "some")),
     ///             ], |w| w.eq("a", "default"))
-    ///             .check().unwrap();
+    ///             ;
     pub fn do_match<'s, F>(self, cases: &[(bool, fn(Wrapper) -> Wrapper)], default: F) -> Self
     where
         F: FnOnce(Self) -> Self,
@@ -263,15 +250,9 @@ impl Wrapper {
         self = self.and();
         let v = json!(arg);
         if v.is_null() {
-            self.error = Some(Error::from(
-                "[rbatis] wrapper all_eq only support object/map struct!",
-            ));
             return self;
         }
         if !v.is_object() {
-            self.error = Some(Error::from(
-                "[rbatis] wrapper all_eq only support object/map struct!",
-            ));
             return self;
         }
         let map = v.as_object().unwrap();
@@ -706,9 +687,8 @@ impl Wrapper {
     /// limit
     /// for example:
     ///  limit(1) " LIMIT 1 "
-    pub fn limit(mut self, limit: u64) -> Self
-    {
-        self.sql.push_str(&format!(" LIMIT {} ",limit));
+    pub fn limit(mut self, limit: u64) -> Self {
+        self.sql.push_str(&format!(" LIMIT {} ", limit));
         self
     }
 }

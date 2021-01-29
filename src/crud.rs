@@ -14,9 +14,9 @@ use crate::core::Error;
 use crate::core::Result;
 use crate::plugin::page::{IPageRequest, Page};
 use crate::rbatis::Rbatis;
+use crate::sql::upper::SqlReplaceCase;
 use crate::utils::string_util::to_snake_name;
 use crate::wrapper::Wrapper;
-use crate::sql::upper::SqlReplaceCase;
 
 /// DB Table model trait
 ///
@@ -480,8 +480,7 @@ impl CRUD for Rbatis {
         let w = self
             .new_wrapper_table::<T>()
             .and()
-            .in_array(&T::id_name(), &ids)
-            .check()?;
+            .in_array(&T::id_name(), &ids);
         return self.remove_by_wrapper::<T>(context_id, &w).await;
     }
 
@@ -531,7 +530,7 @@ impl CRUD for Rbatis {
         wrapper.args = args;
         if !w.sql.is_empty() {
             wrapper.sql.push_str(" WHERE ");
-            wrapper = wrapper.push_wrapper(&w).check()?;
+            wrapper = wrapper.push_wrapper(&w);
         }
         return Ok(self
             .exec_prepare(context_id, wrapper.sql.as_str(), &wrapper.args)
@@ -560,10 +559,7 @@ impl CRUD for Rbatis {
         self.update_by_wrapper(
             context_id,
             arg,
-            &self
-                .new_wrapper_table::<T>()
-                .eq(&T::id_name(), id)
-                .check()?,
+            &self.new_wrapper_table::<T>().eq(&T::id_name(), id),
             false,
         )
         .await
@@ -595,10 +591,7 @@ impl CRUD for Rbatis {
     where
         T: CRUDEnable,
     {
-        let w = self
-            .new_wrapper_table::<T>()
-            .eq(&T::id_name(), id)
-            .check()?;
+        let w = self.new_wrapper_table::<T>().eq(&T::id_name(), id);
         return self.fetch_by_wrapper(context_id, &w).await;
     }
 
@@ -626,10 +619,7 @@ impl CRUD for Rbatis {
     where
         T: CRUDEnable,
     {
-        let w = self
-            .new_wrapper_table::<T>()
-            .in_array(&T::id_name(), ids)
-            .check()?;
+        let w = self.new_wrapper_table::<T>().in_array(&T::id_name(), ids);
         return self.list_by_wrapper(context_id, &w).await;
     }
 
@@ -673,16 +663,11 @@ fn make_select_sql<T>(rb: &Rbatis, w: &Wrapper) -> Result<String>
 where
     T: CRUDEnable,
 {
-    let driver_type=rb.driver_type()?;
+    let driver_type = rb.driver_type()?;
     let table_name = choose_dyn_table_name::<T>(w);
     if rb.logic_plugin.is_some() {
         let logic_ref = rb.logic_plugin.as_ref().unwrap();
-        return logic_ref.create_select_sql(
-            &driver_type,
-            &table_name,
-            &T::table_columns(),
-            &w.sql,
-        );
+        return logic_ref.create_select_sql(&driver_type, &table_name, &T::table_columns(), &w.sql);
     }
     Ok(format!(
         "SELECT {} FROM {} {}",
