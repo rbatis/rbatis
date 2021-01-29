@@ -3,7 +3,7 @@ use std::fmt::{Debug, Display};
 
 use crate::core::db::DriverType;
 use crate::core::Error;
-use crate::sql::upper::SqlReplaceCase;
+use crate::sql::rule::SqlRule;
 
 /// Logic Delete Plugin trait
 pub trait LogicDelete: Send + Sync + Debug {
