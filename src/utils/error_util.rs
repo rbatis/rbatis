@@ -24,5 +24,5 @@ impl<T> ToResult<T> for Option<&T> {
 fn test_to_result() {
     let i = 1;
     let v = Option::Some(&i);
-    let r = v.to_result(|| "".to_string());
+    let r = v.to_result(|| String::new());
 }
