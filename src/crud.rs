@@ -527,7 +527,7 @@ impl CRUD for Rbatis {
                 Some(version_lock_plugin) => {
                     if version_lock_plugin.column().eq(&column) {
                         old_version = v.clone();
-                        v = version_lock_plugin.try_add_one(v);
+                        v = version_lock_plugin.try_reduce_one(v);
                     }
                 }
                 _ => {}
