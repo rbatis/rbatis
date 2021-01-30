@@ -128,7 +128,7 @@ async fn main() {
         .between("create_time", "2020-01-01 00:00:00", "2020-12-12 00:00:00")//sql:  create_time between '2020-01-01 00:00:00' and '2020-01-01 00:00:00'
         .group_by(&["id"])              //sql:  group by id
         .order_by(true, &["id", "name"])//sql:  group by id,name
-        .check().unwrap();
+        ;
 
     let activity = BizActivity {
         id: Some("12312".to_string()),
@@ -159,7 +159,7 @@ async fn main() {
 //Query ==> SELECT create_time,delete_flag,h5_banner_img,h5_link,id,name,pc_banner_img,pc_link,remark,sort,status,version  FROM biz_activity WHERE delete_flag = 1  AND id IN  (?) 
 
     ///query by wrapper
-    let w = rb.new_wrapper().eq("id", "1").check().unwrap();
+    let w = rb.new_wrapper().eq("id", "1");
     let r: Result<Option<BizActivity>, Error> = rb.fetch_by_wrapper("", &w).await;
 //Query ==> SELECT  create_time,delete_flag,h5_banner_img,h5_link,id,name,pc_banner_img,pc_link,remark,sort,status,version  FROM biz_activity WHERE delete_flag = 1  AND id =  ? 
 
@@ -172,7 +172,7 @@ async fn main() {
 //Exec ==> UPDATE biz_activity SET delete_flag = 0 WHERE id IN (  ?  ,  ?  ) 
 
     ///update
-    let w = rb.new_wrapper().eq("id", "12312").check().unwrap();
+    let w = rb.new_wrapper().eq("id", "12312");
     rb.update_by_wrapper("", &activity, &w).await;
 //Exec ==> UPDATE biz_activity SET  create_time =  ? , delete_flag =  ? , status =  ? , version =  ?  WHERE id =  ? 
 }
@@ -248,9 +248,7 @@ rb.link("mysql://root:123456@localhost:3306/test").await.unwrap();
 
 let req = PageRequest::new(1, 20);
 let wraper= rb.new_wrapper()
-.eq("delete_flag", 1)
-.check()
-.unwrap();
+.eq("delete_flag", 1);
 let data: Page<BizActivity> = rb.fetch_page_by_wrapper("", & wraper, & req).await.unwrap();
 println!("{}", serde_json::to_string(&data).unwrap());
 
