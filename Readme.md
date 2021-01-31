@@ -1,14 +1,6 @@
-* [WebSite](https://rbatis.github.io/rbatis.io/#/en/) | [简体中文](https://rbatis.github.io/rbatis.io/)
+[WebSite](https://rbatis.github.io/rbatis.io/#/en/) | [简体中文](https://rbatis.github.io/rbatis.io/)
 
-#### A highly performant ORM framework written in Rust, inspired by Mybatis and MybatisPlus.
-
-#### Dynamic SQL, no runtime, no Garbage Collector, and low memory use.
-
-#### Supports async_std, tokio
-
-#### This crate uses #![forbid(unsafe_code)] to ensure everything is implemented in 100% safe Rust.
-
-#### 30% faster than golang's mybatis!
+#### A highly Performant,Safe,Dynamic SQL ORM framework written in Rust, inspired by Mybatis and MybatisPlus.
 
 [![Build Status](https://travis-ci.org/zhuxiujia/rbatis.svg?branch=master)](https://travis-ci.org/zhuxiujia/rbatis)
 
