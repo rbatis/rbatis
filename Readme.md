@@ -31,7 +31,7 @@
 * supports logging, customizable logging based on `log` crate
 * used 100% safe Rust with `#![forbid(unsafe_code)]` enabled
 * [rbatis/example (import into Clion!)](https://github.com/rbatis/rbatis/tree/master/example/src)
-* [website back end example(import into Clion!)](https://github.com/rbatis/abs_admin)
+* [abs_admin project](https://github.com/rbatis/abs_admin)
 
 ##### Example Rust backend service https://github.com/rbatis/abs_admin
 
@@ -173,9 +173,9 @@ async fn main() {
 #### macros (new addition)
 
 ```rust
-    lazy_static! {
-     static ref RB:Rbatis=Rbatis::new();
-   }
+lazy_static! {
+   static ref RB:Rbatis=Rbatis::new();
+}
 
 /// Macro generates execution logic based on method definition, similar to @select dynamic SQL of Java/Mybatis
 /// RB is the name referenced locally by Rbatis, for example DAO ::RB, com:: XXX ::RB... Can be
@@ -183,7 +183,7 @@ async fn main() {
 /// macro auto edit method to  'pub async fn select(name: &str) -> rbatis::core::Result<BizActivity> {}'
 ///
 #[sql(RB, "select * from biz_activity where id = ?")]
-async fn select(name: &str) -> BizActivity {}
+pub async fn select(name: &str) -> BizActivity {}
 //or： pub async fn select(name: &str) -> rbatis::core::Result<BizActivity> {}
 
 #[async_std::test]
@@ -196,14 +196,14 @@ pub async fn test_macro() {
 ```
 
 ```rust
-    lazy_static! {
-     static ref RB:Rbatis=Rbatis::new();
-   }
+lazy_static! {
+  static ref RB:Rbatis=Rbatis::new();
+}
 
 #[py_sql(RB, "select * from biz_activity where id = #{name}
                   if name != '':
                     and name=#{name}")]
-async fn py_select(name: &str) -> Option<BizActivity> {}
+pub async fn py_select(name: &str) -> Option<BizActivity> {}
 //or： pub async fn select(name: &str) -> rbatis::core::Result<BizActivity> {}
 
 #[async_std::test]
@@ -218,20 +218,20 @@ pub async fn test_macro_py_select() {
 ##### How to use logical deletes plugin (works for fetching or removing functions provided by rbatis，e.g. list**(),remove**()，fetch**())
 
 ```rust
-   let mut rb = init_rbatis().await;
+let mut rb = init_rbatis().await;
 //rb.logic_plugin = Some(Box::new(RbatisLogicDeletePlugin::new_opt("delete_flag",1,0)));//Customize deleted/undeleted writing
 rb.logic_plugin = Some(Box::new(RbatisLogicDeletePlugin::new("delete_flag")));
 rb.link("mysql://root:123456@localhost:3306/test").await.unwrap();
 let r = rb.remove_batch_by_id::<BizActivity>("", & ["1".to_string(), "2".to_string()]).await;
 if r.is_err() {
-println ! ("{}", r.err().unwrap().to_string());
+  println ! ("{}", r.err().unwrap().to_string());
 }
 ```
 
 ##### How to use pagination plugin
 
 ```rust
-        let mut rb = Rbatis::new();
+let mut rb = Rbatis::new();
 rb.link("mysql://root:123456@localhost:3306/test").await.unwrap();
 //框架默认RbatisReplacePagePlugin，如果需要自定义的话需要结构体 必须实现impl PagePlugin for Plugin***{}，例如：
 //rb.page_plugin = Box::new(RbatisPagePlugin::new());
