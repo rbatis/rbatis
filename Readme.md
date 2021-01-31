@@ -1,6 +1,4 @@
-* [Website](https://rbatis.github.io/rbatis.io/#/en/)
-
-* [官网/文档](https://rbatis.github.io/rbatis.io/)
+* [WebSite](https://rbatis.github.io/rbatis.io/#/en/) | [简体中文](https://rbatis.github.io/rbatis.io/)
 
 #### A highly performant ORM framework written in Rust, inspired by Mybatis and MybatisPlus.
 
