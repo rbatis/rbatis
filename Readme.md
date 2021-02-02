@@ -86,6 +86,7 @@ pub struct BizActivity {
 }
 
 // (optional) manually implement instead of using `derive(CRUDEnable)`. This allows manually rewriting `table_name()` function and supports  code completion in IDE.
+// use rbatis::crud::CRUDEnable;
 //impl CRUDEnable for BizActivity {
 //    type IdType = String;    
 //    fn table_name()->String{
