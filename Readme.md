@@ -63,6 +63,7 @@ rbatis =  { version = "1.8" }
 ```rust
 #[macro_use]
 extern crate rbatis;
+use rbatis::crud::CRUD;
 
 /// may also write `CRUDEnable` as `impl CRUDEnable for BizActivity{}`
 /// #[crud_enable( table_name:biz_activity)]
