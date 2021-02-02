@@ -99,7 +99,7 @@ pub struct BizActivity {
 
 #[actix_rt::main]
 async fn main() {
-    /// initialize rbatis. May use `lazy_static` to define rbatis as a global variable because rbatis is thread safe
+    /// initialize rbatis. May use `lazy_static` crate to define rbatis as a global variable because rbatis is thread safe
     let rb = Rbatis::new();
     /// connect to database  
     rb.link("mysql://root:123456@localhost:3306/test").await.unwrap();
