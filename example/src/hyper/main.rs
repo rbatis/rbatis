@@ -41,7 +41,7 @@ async fn hello(_: Request<Body>) -> Result<Response<Body>, Infallible> {
     Ok(Response::new(Body::from(serde_json::json!(v).to_string())))
 }
 
-#[tokio::main]
+#[async_std::main]
 pub async fn main() -> Result<(), Box<dyn std::error::Error + Send + Sync>> {
     fast_log::init_log("requests.log", 1000, log::Level::Info, None, true);
     RB.link(MYSQL_URL).await.unwrap();
