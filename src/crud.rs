@@ -293,27 +293,6 @@ impl<C> Ids<C> for VecDeque<C>
     }
 }
 
-impl<C> Ids<C> for Vec<C>
-    where
-        C: CRUDEnable,
-{
-    fn to_ids(&self) -> Vec<C::IdType> {
-        let mut vec = vec![];
-        for item in self {
-            let id = item.get_id();
-            if id.is_some() {
-                match id {
-                    Some(id) => {
-                        vec.push(id.clone());
-                    }
-                    _ => {}
-                }
-            }
-        }
-        vec
-    }
-}
-
 impl<C> Ids<C> for LinkedList<C>
     where
         C: CRUDEnable,
@@ -423,6 +402,7 @@ pub trait CRUD {
     async fn fetch_by_id<T>(&self, context_id: &str, id: &T::IdType) -> Result<T>
         where
             T: CRUDEnable;
+
     async fn fetch_by_wrapper<T>(&self, context_id: &str, w: &Wrapper) -> Result<T>
         where
             T: CRUDEnable;
