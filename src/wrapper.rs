@@ -8,8 +8,8 @@ use crate::core::convert::StmtConvert;
 use crate::core::db::DriverType;
 use crate::core::Error;
 use crate::sql::upper::SqlUpperCase;
-use std::fmt::{Debug, Formatter};
 use std::fmt;
+use std::fmt::{Debug, Formatter};
 
 /// The packing/Wrapper of the SQL
 /// SQL passed into the Wrapper keep the keyword uppercase
@@ -41,20 +41,20 @@ pub struct Wrapper {
     pub driver_type: DriverType,
     pub sql: String,
     pub args: Vec<serde_json::Value>,
-    pub formats: HashMap<String, fn(arg:&str)->String>,
+    pub formats: HashMap<String, fn(arg: &str) -> String>,
 }
 
-impl Debug for Wrapper{
+impl Debug for Wrapper {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        let mut formats=HashMap::new();
-        for (k,v) in &self.formats {
-            formats.insert(k.to_string(),v(k));
+        let mut formats = HashMap::new();
+        for (k, v) in &self.formats {
+            formats.insert(k.to_string(), v(k));
         }
         f.debug_struct("Wrapper")
-            .field("driver_type",&self.driver_type)
-            .field("sql",&self.sql)
-            .field("args",&self.args)
-            .field("formats",&formats)
+            .field("driver_type", &self.driver_type)
+            .field("sql", &self.sql)
+            .field("args", &self.args)
+            .field("formats", &formats)
             .finish()
     }
 }
@@ -83,7 +83,7 @@ impl Wrapper {
         self
     }
 
-    pub fn set_formats(mut self, formats: HashMap<String, fn(arg:&str)->String>) -> Self {
+    pub fn set_formats(mut self, formats: HashMap<String, fn(arg: &str) -> String>) -> Self {
         self.formats = formats;
         self
     }

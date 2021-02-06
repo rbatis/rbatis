@@ -86,7 +86,6 @@ pub fn un_packing_string(column: &str) -> &str {
     return column;
 }
 
-
 //find like {*},{*} value *
 pub fn find_format_string(arg: &str) -> LinkedList<(String, String)> {
     let mut list = LinkedList::new();
@@ -112,6 +111,6 @@ pub fn find_format_string(arg: &str) -> LinkedList<(String, String)> {
 }
 
 #[test]
-fn test_find_formats(){
-    println!("{:?}",find_format_string("1111{}222{1}2"));
+fn test_find_formats() {
+    println!("{:?}", find_format_string("1111{}222{1}2"));
 }

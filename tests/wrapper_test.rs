@@ -13,7 +13,7 @@ mod test {
         println!("sql:{:?}", w.sql.as_str());
         println!("arg:{:?}", w.args.clone());
         assert_eq!("ORDER BY id ASC", w.sql.as_str().trim());
-        println!("{:?}",w);
+        println!("{:?}", w);
     }
 
     #[test]
