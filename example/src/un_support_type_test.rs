@@ -1,7 +1,7 @@
 ///this is postgres  database  !
 #[cfg(test)]
 mod test {
-    use rbatis::crud::{CRUD, CRUDEnable};
+    use rbatis::crud::{CRUD};
     use rbatis::rbatis::Rbatis;
     use serde_json::json;
     use uuid::Uuid;

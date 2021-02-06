@@ -1,4 +1,4 @@
-use std::collections::{HashMap, LinkedList};
+use std::collections::{HashMap, LinkedList, BTreeMap, HashSet, VecDeque};
 use std::hash::Hash;
 
 use async_trait::async_trait;
@@ -251,6 +251,48 @@ impl<C> Ids<C> for [C]
     }
 }
 
+impl<C> Ids<C> for HashSet<C>
+    where
+        C: CRUDEnable,
+{
+    fn to_ids(&self) -> Vec<C::IdType> {
+        let mut vec = vec![];
+        for item in self {
+            let id = item.get_id();
+            if id.is_some() {
+                match id {
+                    Some(id) => {
+                        vec.push(id.clone());
+                    }
+                    _ => {}
+                }
+            }
+        }
+        vec
+    }
+}
+
+impl<C> Ids<C> for VecDeque<C>
+    where
+        C: CRUDEnable,
+{
+    fn to_ids(&self) -> Vec<C::IdType> {
+        let mut vec = vec![];
+        for item in self {
+            let id = item.get_id();
+            if id.is_some() {
+                match id {
+                    Some(id) => {
+                        vec.push(id.clone());
+                    }
+                    _ => {}
+                }
+            }
+        }
+        vec
+    }
+}
+
 impl<C> Ids<C> for Vec<C>
     where
         C: CRUDEnable,
@@ -294,6 +336,27 @@ impl<C> Ids<C> for LinkedList<C>
 }
 
 impl<K, C> Ids<C> for HashMap<K, C>
+    where
+        C: CRUDEnable,
+{
+    fn to_ids(&self) -> Vec<C::IdType> {
+        let mut vec = vec![];
+        for (_, item) in self {
+            let id = item.get_id();
+            if id.is_some() {
+                match id {
+                    Some(id) => {
+                        vec.push(id.clone());
+                    }
+                    _ => {}
+                }
+            }
+        }
+        vec
+    }
+}
+
+impl<K, C> Ids<C> for BTreeMap<K, C>
     where
         C: CRUDEnable,
 {

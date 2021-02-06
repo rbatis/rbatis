@@ -5,38 +5,35 @@ use quote::quote;
 use quote::ToTokens;
 use syn;
 use syn::ext::IdentExt;
-
 use crate::proc_macro::TokenStream;
-use syn::Type;
 
 ///impl CRUDEnable
 pub(crate) fn impl_crud_driver(
     ast: &syn::DeriveInput,
-    arg_id_type: &str,
     arg_id_name: &str,
     arg_table_name: &str,
     arg_table_columns: &str,
     arg_formats: &HashMap<String, String>,
 ) -> TokenStream {
-    let mut arg_id_name = arg_id_name.to_owned();
-    if arg_id_name.is_empty() {
-        arg_id_name = "id".to_string();
+    let mut id_name = arg_id_name.to_owned();
+    if id_name.is_empty() {
+        id_name = "id".to_string();
     }
     let name = &ast.ident;
     let id_type_inner;
     let id_type_source;
-    match find_id_type_ident(&arg_id_name, &ast.data) {
+    match find_id_type_ident(&id_name, &ast.data) {
         Some((id_type_ident, id_type_ident_source)) => {
             id_type_inner = id_type_ident;
             id_type_source = id_type_ident_source;
         }
         None => {
-            panic!("[rbatis] can not find ident:{}", arg_id_name);
+            panic!("[rbatis] can not find ident:{}", id_name);
         }
     }
     // make return Option<&Self::IdType>
     let id_field_str = Ident::new(
-        &arg_id_name
+        &id_name
             .to_string()
             .trim_start_matches("\"")
             .trim_end_matches("\""),
@@ -93,7 +90,7 @@ pub(crate) fn impl_crud_driver(
             type IdType = #id_type_inner;
 
             fn id_name() -> String {
-                 #arg_id_name.to_string()
+                 #id_name.to_string()
             }
 
             fn get_id(&self) ->  Option<&Self::IdType>{
@@ -149,15 +146,14 @@ fn gen_format(v: &str) -> proc_macro2::TokenStream {
         }
         let index = item.find(":").unwrap();
         let column = item[0..index].to_string();
-        let mut format_str = item[index + 1..item.len()].to_string();
-
+        let format_str = item[index + 1..item.len()].to_string();
         let formats_data = find_format_string(&format_str);
         let mut args_quote = quote! {};
         if formats_data.is_empty() {
             args_quote = quote! {arg};
         } else {
             let mut index = 0;
-            for (inner, data) in formats_data {
+            for (_inner, _data) in formats_data {
                 if index == 0 {
                     args_quote = quote! {arg};
                 } else {
@@ -167,12 +163,11 @@ fn gen_format(v: &str) -> proc_macro2::TokenStream {
             }
         }
         //"id:{}::uuid"  ,  "id:{}"
-        let mut format_func = quote! {
+        let format_func = quote! {
               |arg:&str| -> String {
                   format!(#format_str,#args_quote)
               }
         };
-        println!("format_func:{}", format_func);
         formats = quote! {
            #formats
            m.insert(#column.to_string(),#format_func);
@@ -311,7 +306,6 @@ pub(crate) fn impl_crud(args: TokenStream, input: TokenStream) -> TokenStream {
     let ast = syn::parse(input).unwrap();
     let stream = impl_crud_driver(
         &ast,
-        &config.id_type,
         &config.id_name,
         &config.table_name,
         &config.table_columns,
