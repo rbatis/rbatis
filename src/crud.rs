@@ -626,14 +626,7 @@ impl CRUD for Rbatis {
     where
         T: CRUDEnable,
     {
-        let map = json!(arg);
-        if !map.is_object() {
-            return Err(crate::core::Error::from(
-                "[rbatis] update_by_id() arg must be an object/struct!",
-            ));
-        }
-        let map = map.as_object().unwrap();
-        let id = map.get(&T::id_name());
+        let id = arg.get_id();
         if id.is_none() {
             return Err(crate::core::Error::from(
                 "[rbatis] update_by_id() arg's id can no be none!",
@@ -642,7 +635,7 @@ impl CRUD for Rbatis {
         self.update_by_wrapper(
             context_id,
             arg,
-            &self.new_wrapper_table::<T>().eq(&T::id_name(), id),
+            &self.new_wrapper_table::<T>().eq(&T::id_name(), arg.get_id()),
             false,
         )
         .await
