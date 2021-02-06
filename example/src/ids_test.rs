@@ -1,0 +1,25 @@
+use rbatis::plugin::logic_delete::RbatisLogicDeletePlugin;
+use crate::BizActivity;
+use rbatis::rbatis::Rbatis;
+use rbatis::crud::{CRUD, Ids};
+collection
+/// This example shows a table collection  to an id array
+#[async_std::test]
+pub async fn test_fetch_by_ids() {
+    fast_log::init_log("requests.log", 1000, log::Level::Info, None, true);
+    let rb = Rbatis::new();
+    rb.link("mysql://root:123456@localhost:3306/test")
+        .await
+        .unwrap();
+
+    let biz_activitys=rb.list::<BizActivity>("").await.unwrap();
+
+    /// to_ids() support HashSet.to_ids(),Vec.to_ids(),Array.to_ids(),HashMap.to_ids(),LinkedList.to_ids()，BtreeMap.to_ids()....
+    let ids=biz_activitys.to_ids();
+
+    let r = rb
+        .list_by_ids::<Option<BizActivity>>("", &ids)
+        .await
+        .unwrap();
+    println!("{}", serde_json::to_string(&r).unwrap());
+}
