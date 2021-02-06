@@ -34,12 +34,12 @@ use crate::sql::upper::SqlUpperCase;
 ///             .order_by(true, &["id", "name"])
 ///             ;
 ///
-#[derive(Serialize, Deserialize, Clone, Debug)]
+#[derive(Clone)]
 pub struct Wrapper {
     pub driver_type: DriverType,
     pub sql: String,
     pub args: Vec<serde_json::Value>,
-    pub formats: HashMap<String, String>,
+    pub formats: HashMap<String, fn(arg:&str)->String>,
 }
 
 impl Wrapper {
@@ -66,7 +66,7 @@ impl Wrapper {
         self
     }
 
-    pub fn set_formats(mut self, formats: HashMap<String, String>) -> Self {
+    pub fn set_formats(mut self, formats: HashMap<String, fn(arg:&str)->String>) -> Self {
         self.formats = formats;
         self
     }
@@ -273,7 +273,7 @@ impl Wrapper {
         let source = self.formats.get(column);
         match source {
             Some(s) => {
-                return s.replace("{}", &data);
+                return s(&data);
             }
             _ => {
                 return data;

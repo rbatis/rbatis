@@ -82,7 +82,7 @@ pub(crate) fn impl_crud_driver(
                  #fields
             }
 
-            fn formats(driver_type: &rbatis::core::db::DriverType) -> std::collections::HashMap<String, String> {
+            fn formats(driver_type: &rbatis::core::db::DriverType) -> std::collections::HashMap<String, fn(arg:&str)->String> {
                   let mut m = std::collections::HashMap::new();
                   match driver_type{
                     rbatis::core::db::DriverType::Mysql=>{
@@ -123,13 +123,60 @@ fn gen_format(v: &str) -> proc_macro2::TokenStream {
         }
         let index = item.find(":").unwrap();
         let column = item[0..index].to_string();
-        let format_str = item[index + 1..item.len()].to_string();
+        let mut format_str = item[index + 1..item.len()].to_string();
+
+        let formats_data = find_format_string(&format_str);
+        let mut args_quote=quote!{};
+        if formats_data.is_empty() {
+            args_quote = quote! {arg};
+        } else {
+            let mut index = 0;
+            for (inner, data) in formats_data {
+                if index == 0 {
+                    args_quote = quote!{arg};
+                } else {
+                    args_quote = quote!{#args_quote,arg};
+                }
+                index += 1;
+            }
+        }
+        //"id:{}::uuid"  ,  "id:{}"
+        let mut format_func = quote! {
+              |arg:&str| -> String {
+                  format!(#format_str,#args_quote)
+              }
+        };
+        println!("format_func:{}",format_func);
         formats = quote! {
            #formats
-           m.insert(#column.to_string(),#format_str.to_string());
+           m.insert(#column.to_string(),#format_func);
         };
     }
     return formats;
+}
+
+//find like {*},{*} value *
+fn find_format_string(arg: &str) -> Vec<(String, String)> {
+    let mut list = Vec::new();
+    let chars: Vec<u8> = arg.bytes().collect();
+    let mut item = String::with_capacity(arg.len());
+    let mut index: i32 = -1;
+    for v in &chars {
+        index = index + 1;
+        if !item.is_empty() {
+            item.push(*v as char);
+            if *v == '}' as u8 {
+                let key = item[1..item.len() - 1].to_string();
+                list.push((key, item.clone()));
+                item.clear();
+            }
+            continue;
+        }
+        if *v == '{' as u8 {
+            item.push(*v as char);
+        }
+    }
+    return list;
 }
 
 fn gen_table_name(data: &syn::Ident) -> String {
