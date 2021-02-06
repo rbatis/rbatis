@@ -13,7 +13,7 @@ pub async fn test_dyn_table_name() {
     let mut w = rb.new_wrapper();
     //replace your dyn table name
     w.formats
-        .insert("table_name".to_string(), "biz_activity".to_string());
+        .insert("table_name".to_string(), |arg|"biz_activity".to_string());
     //support all of RB.*_wrapper() method
     let r = rb.fetch_by_wrapper::<BizActivity>("", &w).await;
     if r.is_err() {

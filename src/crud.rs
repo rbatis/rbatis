@@ -112,7 +112,7 @@ pub trait CRUDEnable: Send + Sync + Serialize + DeserializeOwned {
         let source = m.get(column);
         match source {
             Some(s) => {
-                return s.replace("{}", &data);
+                s(&data)
             }
             _ => {
                 return data.to_string();
@@ -154,7 +154,7 @@ pub trait CRUDEnable: Send + Sync + Serialize + DeserializeOwned {
     /// return cast chain
     /// column:format_str
     /// for example: HashMap<"id",“{}::uuid”>
-    fn formats(driver_type: &crate::core::db::DriverType) -> HashMap<String, String> {
+    fn formats(driver_type: &crate::core::db::DriverType) -> HashMap<String, fn(arg:&str)->String> {
         return HashMap::new();
     }
 }
@@ -177,7 +177,7 @@ impl<T> CRUDEnable for Option<T>
         T::table_columns()
     }
 
-    fn formats(driver_type: &DriverType) -> HashMap<String, String> {
+    fn formats(driver_type: &DriverType) -> HashMap<String, fn(arg:&str)->String> {
         T::formats(driver_type)
     }
     fn make_column_value_map(
@@ -675,9 +675,7 @@ fn choose_dyn_table_name<T>(w: &Wrapper) -> String
     if table_name_format.is_some() {
         match table_name_format {
             Some(table_name_format) => {
-                if !table_name_format.eq(&table_name) {
-                    table_name = table_name_format.to_owned();
-                }
+                table_name = table_name_format(&table_name);
             }
             _ => {}
         }
