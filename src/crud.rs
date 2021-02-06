@@ -153,7 +153,7 @@ pub trait CRUDEnable: Send + Sync + Serialize + DeserializeOwned {
 
     /// return cast chain
     /// column:format_str
-    /// for example: HashMap<"id",“{}::uuid”>
+    /// for example: HashMap<"id",|arg|“{}::uuid”.to_string()>
     fn formats(driver_type: &crate::core::db::DriverType) -> HashMap<String, fn(arg:&str)->String> {
         return HashMap::new();
     }
