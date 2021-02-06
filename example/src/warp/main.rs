@@ -54,6 +54,6 @@ async fn main() {
 }
 
 async fn handler(arg: HashMap<String, serde_json::Value>) -> Result<impl warp::Reply, Infallible> {
-    let v = RB.list::<BizActivity>("").await.unwrap();
+    let v = RB.fetch_list::<BizActivity>("").await.unwrap();
     Ok(format!("{}", serde_json::json!(v)))
 }

@@ -15,7 +15,7 @@ use crate::core::db::{DBExecResult, DBPool, DBPoolConn, DBPoolOptions, DBQuery, 
 use crate::core::runtime::Arc;
 use crate::core::sync::sync_map::SyncMap;
 use crate::core::Error;
-use crate::crud::CRUDEnable;
+use crate::crud::CRUDTable;
 use crate::plugin::intercept::SqlIntercept;
 use crate::plugin::log::{LogPlugin, RbatisLog};
 use crate::plugin::logic_delete::{LogicDelete, RbatisLogicDeletePlugin};
@@ -157,7 +157,7 @@ impl Rbatis {
     /// try return an new wrapper and set table formats,if not call the link() method,it will be panic!
     pub fn new_wrapper_table<T>(&self) -> Wrapper
     where
-        T: CRUDEnable,
+        T: CRUDTable,
     {
         let mut w = self.new_wrapper();
         w = w.set_formats(T::formats(&self.driver_type().unwrap()));

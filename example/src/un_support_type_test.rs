@@ -1,7 +1,7 @@
 ///this is postgres  database  !
 #[cfg(test)]
 mod test {
-    use rbatis::crud::{CRUD};
+    use rbatis::crud::CRUD;
     use rbatis::rbatis::Rbatis;
     use serde_json::json;
     use uuid::Uuid;
@@ -42,7 +42,7 @@ mod test {
         .unwrap();
         //query table
         let v: Vec<P> = rb
-            .list_by_wrapper("", &rb.new_wrapper_table::<P>().eq("id", 1))
+            .fetch_list_by_wrapper("", &rb.new_wrapper_table::<P>().eq("id", 1))
             .await
             .unwrap();
     }

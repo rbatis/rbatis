@@ -35,7 +35,7 @@ lazy_static! {
 }
 
 async fn index() -> impl Responder {
-    let v = RB.list::<BizActivity>("").await.unwrap();
+    let v = RB.fetch_list::<BizActivity>("").await.unwrap();
     HttpResponse::Ok().body(serde_json::json!(v).to_string())
 }
 

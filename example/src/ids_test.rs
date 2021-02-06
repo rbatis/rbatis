@@ -1,8 +1,7 @@
-use rbatis::plugin::logic_delete::RbatisLogicDeletePlugin;
 use crate::BizActivity;
+use rbatis::crud::{Ids, CRUD};
+use rbatis::plugin::logic_delete::RbatisLogicDeletePlugin;
 use rbatis::rbatis::Rbatis;
-use rbatis::crud::{CRUD, Ids};
-collection
 /// This example shows a table collection  to an id array
 #[async_std::test]
 pub async fn test_fetch_by_ids() {
@@ -12,13 +11,13 @@ pub async fn test_fetch_by_ids() {
         .await
         .unwrap();
 
-    let biz_activitys=rb.list::<BizActivity>("").await.unwrap();
+    let biz_activitys = rb.fetch_list::<BizActivity>("").await.unwrap();
 
     /// to_ids() support HashSet.to_ids(),Vec.to_ids(),Array.to_ids(),HashMap.to_ids(),LinkedList.to_ids()，BtreeMap.to_ids()....
-    let ids=biz_activitys.to_ids();
+    let ids = biz_activitys.to_ids();
 
     let r = rb
-        .list_by_ids::<Option<BizActivity>>("", &ids)
+        .fetch_list_by_ids::<Option<BizActivity>>("", &ids)
         .await
         .unwrap();
     println!("{}", serde_json::to_string(&r).unwrap());

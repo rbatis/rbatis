@@ -4,7 +4,7 @@ use std::fmt::{Debug, Display};
 use rbatis_core::Error;
 
 use crate::core::convert::StmtConvert;
-use crate::crud::CRUDEnable;
+use crate::crud::CRUDTable;
 use crate::rbatis::Rbatis;
 
 /// sql intercept

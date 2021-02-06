@@ -1,6 +1,6 @@
 ### rbatis macro driver
 
-### rbatis的过程宏项目，免去手写 impl CRUDEnable 接口的实现简化操作
+### rbatis的过程宏项目，免去手写 impl CRUDTable 接口的实现简化操作
 
 ### use way,使用方法
 
@@ -21,8 +21,8 @@ rbatis-macro-driver = { path = "../rbatis-macro-driver" }
 extern crate rbatis_macro_driver;
 
 ///数据库表模型,支持BigDecimal ,DateTime ,rust基本类型（int,float,uint,string,Vec,Array）
-/// CRUDEnable 特性会自动识别 id为表的id类型(识别String)，自动识别结构体名称为蛇形命名的表名 biz_activity。没有id的表 请手动指定
-#[derive(CRUDEnable, Serialize, Deserialize, Clone, Debug)]
+/// CRUDTable 特性会自动识别 id为表的id类型(识别String)，自动识别结构体名称为蛇形命名的表名 biz_activity。没有id的表 请手动指定
+#[derive(CRUDTable, Serialize, Deserialize, Clone, Debug)]
 pub struct BizActivity {
     pub id: Option<String>,
     pub name: Option<String>,

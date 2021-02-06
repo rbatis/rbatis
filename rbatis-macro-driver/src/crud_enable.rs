@@ -1,13 +1,13 @@
 use std::collections::HashMap;
 
+use crate::proc_macro::TokenStream;
 use proc_macro2::{Ident, Span};
 use quote::quote;
 use quote::ToTokens;
 use syn;
 use syn::ext::IdentExt;
-use crate::proc_macro::TokenStream;
 
-///impl CRUDEnable
+///impl CRUDTable
 pub(crate) fn impl_crud_driver(
     ast: &syn::DeriveInput,
     arg_id_name: &str,
@@ -86,7 +86,7 @@ pub(crate) fn impl_crud_driver(
         }
     }
     let gen = quote! {
-        impl rbatis::crud::CRUDEnable for #name {
+        impl rbatis::crud::CRUDTable for #name {
             type IdType = #id_type_inner;
 
             fn id_name() -> String {
