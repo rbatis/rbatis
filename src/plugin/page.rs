@@ -327,11 +327,6 @@ impl PagePlugin for RbatisReplacePagePlugin {
     ) -> Result<(String, String), crate::core::Error> {
         //default sql
         let mut sql = sql.trim().to_owned();
-        if !sql.starts_with("SELECT ") && !sql.contains("FROM ") {
-            return Err(crate::core::Error::from(
-                "[rbatis] make_page_sql() sql must contains 'SELECT ' And 'FROM '",
-            ));
-        }
         //count sql
         let mut count_sql = sql.clone();
         if page.is_serch_count() {
@@ -373,11 +368,6 @@ impl PagePlugin for RbatisPackPagePlugin {
     ) -> Result<(String, String), crate::core::Error> {
         //default sql
         let mut sql = sql.trim().to_owned();
-        if !sql.starts_with("SELECT ") && !sql.contains("FROM ") {
-            return Err(crate::core::Error::from(
-                "[rbatis] make_page_sql() sql must contains 'SELECT ' And 'FROM '",
-            ));
-        }
         //count sql
         let mut count_sql = sql.clone();
         if page.is_serch_count() {
