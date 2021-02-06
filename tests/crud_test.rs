@@ -9,7 +9,7 @@ mod test {
     use serde::Serialize;
 
     use rbatis::core::Error;
-    use rbatis::crud::{CRUDEnable, Id, Ids, CRUD};
+    use rbatis::crud::{CRUDEnable, Ids, CRUD};
     use rbatis::plugin::logic_delete::RbatisLogicDeletePlugin;
     use rbatis::plugin::page::{Page, PageRequest};
     use rbatis::rbatis::Rbatis;
@@ -34,13 +34,9 @@ mod test {
     /// 必须实现 CRUDEntity接口，如果表名 不正确，可以重写 fn table_name() -> String 方法！
     impl CRUDEnable for BizActivity {
         type IdType = String;
-    }
 
-    impl Id for BizActivity {
-        type IdType = String;
-
-        fn get_id(&self) -> Option<Self::IdType> {
-            self.id.clone()
+        fn get_id(&self) -> Option<&Self::IdType> {
+            self.id.as_ref()
         }
     }
 
@@ -52,6 +48,11 @@ mod test {
 
     impl CRUDEnable for BizActivityNoDel {
         type IdType = String;
+
+        fn get_id(&self) -> Option<&Self::IdType> {
+            self.id.as_ref()
+        }
+
         fn table_name() -> String {
             "biz_activity".to_string()
         }
@@ -188,7 +189,7 @@ mod test {
                 .await
                 .unwrap();
 
-            let activity = BizActivity {
+            let mut activity = BizActivity {
                 id: Some("12312".to_string()),
                 name: None,
                 pc_link: None,
@@ -204,7 +205,7 @@ mod test {
             };
 
             let w = Wrapper::new(&rb.driver_type().unwrap()).eq("id", "12312");
-            let r = rb.update_by_wrapper("", &activity, &w, false).await;
+            let r = rb.update_by_wrapper("", &mut activity, &w, false).await;
             if r.is_err() {
                 println!("{}", r.err().unwrap().to_string());
             }
@@ -222,7 +223,7 @@ mod test {
                 .await
                 .unwrap();
 
-            let activity = BizActivity {
+            let mut activity = BizActivity {
                 id: Some("12312".to_string()),
                 name: None,
                 pc_link: None,
@@ -236,7 +237,7 @@ mod test {
                 version: Some(1),
                 delete_flag: Some(1),
             };
-            let r = rb.update_by_id("", &activity).await;
+            let r = rb.update_by_id("", &mut activity).await;
             if r.is_err() {
                 println!("{}", r.err().unwrap().to_string());
             }

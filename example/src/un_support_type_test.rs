@@ -1,14 +1,23 @@
 ///this is postgres  database  !
 #[cfg(test)]
 mod test {
-    use rbatis::crud::CRUD;
+    use rbatis::crud::{CRUD, CRUDEnable};
     use rbatis::rbatis::Rbatis;
     use serde_json::json;
+    use uuid::Uuid;
 
     #[crud_enable]
     #[derive(Clone, Debug)]
     pub struct P {
         pub id: i32,
+        ///Postgres Point is not currently supported, but Vec is used instead
+        pub po: Vec<u8>,
+    }
+
+    #[crud_enable]
+    #[derive(Clone, Debug)]
+    pub struct P2 {
+        pub id: Uuid,
         ///Postgres Point is not currently supported, but Vec is used instead
         pub po: Vec<u8>,
     }

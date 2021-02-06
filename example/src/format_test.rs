@@ -16,8 +16,6 @@ mod test {
         pub name: Option<String>,
     }
 
-
-
     /// you may should use pg database! this is docker command for example:
     /// docker run -d --name postgres  -e POSTGRES_PASSWORD=123456 -p 5432:5432 -d postgres
     ///

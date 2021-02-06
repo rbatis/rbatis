@@ -7,6 +7,7 @@ use syn;
 use syn::ext::IdentExt;
 
 use crate::proc_macro::TokenStream;
+use syn::Type;
 
 ///impl CRUDEnable
 pub(crate) fn impl_crud_driver(
@@ -17,18 +18,39 @@ pub(crate) fn impl_crud_driver(
     arg_table_columns: &str,
     arg_formats: &HashMap<String, String>,
 ) -> TokenStream {
-    let name = &ast.ident;
-    let id_name;
+    let mut arg_id_name = arg_id_name.to_owned();
     if arg_id_name.is_empty() {
-        id_name = "id".to_token_stream();
-    } else {
-        id_name = arg_id_name.to_token_stream();
+        arg_id_name = "id".to_string();
     }
-    let id_type;
-    if arg_id_type.is_empty() {
-        id_type = find_id_type_ident(&ast.data).to_token_stream();
+    let name = &ast.ident;
+    let id_type_inner;
+    let id_type_source;
+    match find_id_type_ident(&arg_id_name, &ast.data) {
+        Some((id_type_ident, id_type_ident_source)) => {
+            id_type_inner = id_type_ident;
+            id_type_source = id_type_ident_source;
+        }
+        None => {
+            panic!("[rbatis] can not find ident:{}", arg_id_name);
+        }
+    }
+    // make return Option<&Self::IdType>
+    let id_field_str = Ident::new(
+        &arg_id_name
+            .to_string()
+            .trim_start_matches("\"")
+            .trim_end_matches("\""),
+        Span::call_site(),
+    );
+    let mut id_field = id_field_str.to_token_stream();
+    if id_type_source.to_string().contains("Option") {
+        id_field = quote! {
+          self.#id_field.as_ref()
+        };
     } else {
-        id_type = Ident::new(arg_id_type, Span::call_site()).to_token_stream();
+        id_field = quote! {
+           Option::<&#id_type_source>::from(&self.#id_field)
+        };
     }
     let table_name;
     if arg_table_name.is_empty() {
@@ -68,10 +90,14 @@ pub(crate) fn impl_crud_driver(
     }
     let gen = quote! {
         impl rbatis::crud::CRUDEnable for #name {
-            type IdType = #id_type;
+            type IdType = #id_type_inner;
 
             fn id_name() -> String {
-                 #id_name.to_string()
+                 #arg_id_name.to_string()
+            }
+
+            fn get_id(&self) ->  Option<&Self::IdType>{
+                #id_field
             }
 
             fn table_name() -> String {
@@ -126,16 +152,16 @@ fn gen_format(v: &str) -> proc_macro2::TokenStream {
         let mut format_str = item[index + 1..item.len()].to_string();
 
         let formats_data = find_format_string(&format_str);
-        let mut args_quote=quote!{};
+        let mut args_quote = quote! {};
         if formats_data.is_empty() {
             args_quote = quote! {arg};
         } else {
             let mut index = 0;
             for (inner, data) in formats_data {
                 if index == 0 {
-                    args_quote = quote!{arg};
+                    args_quote = quote! {arg};
                 } else {
-                    args_quote = quote!{#args_quote,arg};
+                    args_quote = quote! {#args_quote,arg};
                 }
                 index += 1;
             }
@@ -146,7 +172,7 @@ fn gen_format(v: &str) -> proc_macro2::TokenStream {
                   format!(#format_str,#args_quote)
               }
         };
-        println!("format_func:{}",format_func);
+        println!("format_func:{}", format_func);
         formats = quote! {
            #formats
            m.insert(#column.to_string(),#format_func);
@@ -215,16 +241,14 @@ fn gen_fields(data: &syn::Data) -> proc_macro2::TokenStream {
 }
 
 ///filter id_type
-fn find_id_type_ident(arg: &syn::Data) -> Ident {
-    let mut id_type = Ident::new("String", Span::call_site());
+fn find_id_type_ident(id_name: &str, arg: &syn::Data) -> Option<(Ident, proc_macro2::TokenStream)> {
     match &arg {
         syn::Data::Struct(ref data_struct) => match data_struct.fields {
             // field: (0) a: String
             syn::Fields::Named(ref fields_named) => {
                 for (_, field) in fields_named.named.iter().enumerate() {
-                    //println!("named struct field: ({}) {}: {}", index, field_name, field.ty.to_token_stream());
                     let field_name = format!("{}", field.ident.to_token_stream());
-                    if field_name.eq("id") {
+                    if field_name.trim().eq(id_name) {
                         let ty = format!("{}", field.ty.to_token_stream());
                         let mut inner_type = ty.trim().replace(" ", "").to_string();
                         if inner_type.starts_with("Option<") {
@@ -233,10 +257,11 @@ fn find_id_type_ident(arg: &syn::Data) -> Ident {
                                 .trim_end_matches(">")
                                 .to_string();
                         }
+                        let id_type = field.ty.to_token_stream();
                         //println!("id_type from:{}", &inner_type);
-                        id_type = Ident::new(inner_type.as_str(), Span::call_site());
+                        let id_type_ident = Ident::new(inner_type.as_str(), Span::call_site());
                         //println!("id_type:{}", &id_type);
-                        break;
+                        return Some((id_type_ident, id_type));
                     }
                 }
             }
@@ -245,7 +270,7 @@ fn find_id_type_ident(arg: &syn::Data) -> Ident {
         },
         _ => (),
     }
-    id_type
+    None
 }
 
 fn to_snake_name(name: &String) -> String {

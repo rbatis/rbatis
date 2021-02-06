@@ -7,8 +7,8 @@ mod test {
     use rbatis::crud::CRUD;
     use rbatis::plugin::logic_delete::RbatisLogicDeletePlugin;
     use rbatis::plugin::page::{Page, PageRequest};
-    use rbatis::rbatis::Rbatis;
     use rbatis::plugin::version_lock::RbatisVersionLockPlugin;
+    use rbatis::rbatis::Rbatis;
 
     ///Or another way to write it
     // #[crud_enable(table_name:biz_activity)]
@@ -177,7 +177,7 @@ mod test {
         if r.is_err() {
             println!("{}", r.err().unwrap().to_string());
         }
-        println!("new_version:{}",&activity.version.unwrap());
+        println!("new_version:{}", &activity.version.unwrap());
     }
 
     #[async_std::test]
