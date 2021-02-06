@@ -15,7 +15,7 @@ extern crate rbatis_macro_driver;
 
 pub use crate::core::{convert::StmtConvert, db::DriverType, error::Error, error::Result};
 pub use rbatis_core as core;
-pub use rbatis_macro_driver::{crud_enable, py_sql, sql, CRUDEnable};
+pub use rbatis_macro_driver::{crud_enable, py_sql, sql, CRUDTable};
 
 pub mod crud;
 pub mod plugin;

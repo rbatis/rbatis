@@ -30,8 +30,8 @@ mod test {
         pub delete_flag: Option<i32>,
     }
 
-    // (可选) 手动实现，不使用上面的derive(CRUDEnable),可重写table_name方法。手动实现能支持IDE智能提示
-    // impl CRUDEnable for BizActivity {
+    // (可选) 手动实现，不使用上面的derive(CRUDTable),可重写table_name方法。手动实现能支持IDE智能提示
+    // impl CRUDTable for BizActivity {
     //     type IdType = String;
     // }
 
@@ -223,7 +223,7 @@ mod test {
     pub async fn test_list_by_wrapper() {
         let rb = init_rbatis().await;
         let w = rb.new_wrapper().order_by(true, &["id"]);
-        let r: Vec<BizActivity> = rb.list_by_wrapper("", &w).await.unwrap();
+        let r: Vec<BizActivity> = rb.fetch_list_by_wrapper("", &w).await.unwrap();
         println!("is_some:{:?}", r);
     }
 
@@ -250,7 +250,7 @@ mod test {
         let mut rb = init_rbatis().await;
         //设置 逻辑删除插件
         rb.logic_plugin = Some(Box::new(RbatisLogicDeletePlugin::new("delete_flag")));
-        let r: Vec<BizActivity> = rb.list("").await.unwrap();
+        let r: Vec<BizActivity> = rb.fetch_list("").await.unwrap();
         println!("{}", serde_json::to_string(&r).unwrap());
     }
 }

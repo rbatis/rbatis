@@ -2,7 +2,7 @@
 mod test {
     #[test]
     pub fn test_raw_identifiers() {
-        use rbatis::crud::CRUDEnable;
+        use rbatis::crud::CRUDTable;
         #[crud_enable]
         #[derive(Clone, Debug)]
         pub struct BizActivity {

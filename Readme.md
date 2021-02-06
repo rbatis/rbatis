@@ -65,7 +65,7 @@ rbatis =  { version = "1.8" }
 extern crate rbatis;
 use rbatis::crud::CRUD;
 
-/// may also write `CRUDEnable` as `impl CRUDEnable for BizActivity{}`
+/// may also write `CRUDTable` as `impl CRUDTable for BizActivity{}`
 /// #[crud_enable( table_name:biz_activity)]
 /// #[crud_enable(id_name:"id"|id_type:"String"|table_name:"biz_activity"|table_columns:"id,name,version,delete_flag"|formats_pg:"id:{}::uuid")]
 #[crud_enable]
@@ -85,9 +85,9 @@ pub struct BizActivity {
     pub delete_flag: Option<i32>,
 }
 
-// (optional) manually implement instead of using `derive(CRUDEnable)`. This allows manually rewriting `table_name()` function and supports  code completion in IDE.
-// use rbatis::crud::CRUDEnable;
-//impl CRUDEnable for BizActivity {
+// (optional) manually implement instead of using `derive(CRUDTable)`. This allows manually rewriting `table_name()` function and supports  code completion in IDE.
+// use rbatis::crud::CRUDTable;
+//impl CRUDTable for BizActivity {
 //    type IdType = String;    
 //    fn table_name()->String{
 //        "biz_activity".to_string()

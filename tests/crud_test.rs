@@ -9,7 +9,7 @@ mod test {
     use serde::Serialize;
 
     use rbatis::core::Error;
-    use rbatis::crud::{CRUDEnable, Ids, CRUD};
+    use rbatis::crud::{CRUDTable, Ids, CRUD};
     use rbatis::plugin::logic_delete::RbatisLogicDeletePlugin;
     use rbatis::plugin::page::{Page, PageRequest};
     use rbatis::rbatis::Rbatis;
@@ -32,7 +32,7 @@ mod test {
     }
 
     /// 必须实现 CRUDEntity接口，如果表名 不正确，可以重写 fn table_name() -> String 方法！
-    impl CRUDEnable for BizActivity {
+    impl CRUDTable for BizActivity {
         type IdType = String;
 
         fn get_id(&self) -> Option<&Self::IdType> {
@@ -46,7 +46,7 @@ mod test {
         pub name: Option<String>,
     }
 
-    impl CRUDEnable for BizActivityNoDel {
+    impl CRUDTable for BizActivityNoDel {
         type IdType = String;
 
         fn get_id(&self) -> Option<&Self::IdType> {
@@ -338,6 +338,6 @@ mod test {
         w = w.order_by(true, &["id"]);
         w = w.limit(50);
         println!("{}", w.sql);
-        let b: Vec<BizActivity> = rb.list_by_wrapper("", &w).await.unwrap();
+        let b: Vec<BizActivity> = rb.fetch_list_by_wrapper("", &w).await.unwrap();
     }
 }

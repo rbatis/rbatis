@@ -12,14 +12,14 @@ mod py_sql;
 mod sql;
 mod util;
 
-#[proc_macro_derive(CRUDEnable)]
+#[proc_macro_derive(CRUDTable)]
 pub fn hello_macro_derive(input: TokenStream) -> TokenStream {
     let ast = syn::parse(input).unwrap();
     let stream = crud_enable::impl_crud_driver(&ast, "id", "", "", &HashMap::new());
     #[cfg(feature = "debug_mode")]
     {
-        println!("............gen impl CRUDEnable:\n {}", stream);
-        println!("............gen impl CRUDEnable end............");
+        println!("............gen impl CRUDTable:\n {}", stream);
+        println!("............gen impl CRUDTable end............");
     }
 
     stream
@@ -70,8 +70,8 @@ pub fn crud_enable(args: TokenStream, input: TokenStream) -> TokenStream {
     let stream = crud_enable::impl_crud(args, input);
     #[cfg(feature = "debug_mode")]
     {
-        println!("............gen impl CRUDEnable:\n {}", stream);
-        println!("............gen impl CRUDEnable end............");
+        println!("............gen impl CRUDTable:\n {}", stream);
+        println!("............gen impl CRUDTable end............");
     }
 
     return stream;

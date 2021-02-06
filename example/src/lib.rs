@@ -12,6 +12,7 @@ extern crate rbatis;
 mod crud_test;
 mod dyn_table_test;
 mod format_test;
+mod ids_test;
 mod intercept_test;
 mod page_test;
 mod py_sql_custom_test;
@@ -22,7 +23,6 @@ mod raw_sql_macro_test;
 mod transaction_test;
 mod un_support_type_test;
 mod wrapper_test;
-mod ids_test;
 
 use chrono::NaiveDateTime;
 /// this is table model(see ../database.sql)
