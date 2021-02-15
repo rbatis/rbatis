@@ -45,8 +45,11 @@ async fn main() -> std::io::Result<()> {
     fast_log::init_log("requests.log", 1000, log::Level::Info, None, true);
     //ORM
     RB.link(MYSQL_URL).await.unwrap();
-    //路由
-    HttpServer::new(|| App::new().route("/", web::get().to(index)))
+    //router
+    HttpServer::new(|| App::new()
+        //crate on actix-data
+        //.data(std::sync::Arc::new(Rbatis::new()))
+        .route("/", web::get().to(index)))
         .bind("127.0.0.1:8000")?
         .run()
         .await
