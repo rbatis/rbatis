@@ -28,10 +28,8 @@ pub struct BizActivity {
     pub delete_flag: Option<i32>,
 }
 
-//示例 mysql 链接地址
 pub const MYSQL_URL: &'static str = "mysql://root:123456@localhost:3306/test";
 
-// 示例-Rbatis示例初始化(必须)
 lazy_static! {
     static ref RB: Rbatis = Rbatis::new();
 }
