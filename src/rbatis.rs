@@ -590,36 +590,6 @@ impl Rbatis {
         return result;
     }
 
-    /// fetch data by a wrapper
-    ///
-    /// for example:
-    ///  let name = "test";
-    ///         let w = RB.new_wrapper()
-    ///             .push_sql("SELECT count(1) FROM biz_activity WHERE ")
-    ///             .r#in("delete_flag", &[0, 1])
-    ///             .and()
-    ///             .ne("delete_flag", -1)
-    ///             .do_if(!name.is_empty(), |w| w.and().like("name", name))
-    ///             ;
-    ///         let r: serde_json::Value = rb.fetch_prepare_wrapper("", &w).await.unwrap();
-    ///
-    pub async fn fetch_prepare_wrapper<T>(&self, context_id: &str, w: &Wrapper) -> Result<T, Error>
-    where
-        T: DeserializeOwned,
-    {
-        self.fetch_prepare(context_id, w.sql.as_str(), &w.args)
-            .await
-    }
-
-    /// exec sql by a wrapper
-    pub async fn exec_prepare_wrapper(
-        &self,
-        context_id: &str,
-        w: &Wrapper,
-    ) -> Result<DBExecResult, Error> {
-        self.exec_prepare(context_id, w.sql.as_str(), &w.args).await
-    }
-
     /// py str into py ast,run get sql,arg result
     fn py_to_sql(
         &self,
