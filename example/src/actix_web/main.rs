@@ -26,10 +26,10 @@ pub struct BizActivity {
     pub delete_flag: Option<i32>,
 }
 
-//示例 mysql 链接地址
+//mysql driver url
 pub const MYSQL_URL: &'static str = "mysql://root:123456@localhost:3306/test";
 
-// 示例-Rbatis示例初始化(必须)
+// init global rbatis pool
 lazy_static! {
     static ref RB: Rbatis = Rbatis::new();
 }
@@ -41,7 +41,7 @@ async fn index() -> impl Responder {
 
 #[actix_web::main]
 async fn main() -> std::io::Result<()> {
-    //日志追加器
+    //log
     fast_log::init_log("requests.log", 1000, log::Level::Info, None, true);
     //ORM
     RB.link(MYSQL_URL).await.unwrap();
