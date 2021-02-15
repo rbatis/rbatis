@@ -10,8 +10,6 @@ use rbatis::rbatis::Rbatis;
 use serde_json::{json, Value};
 use tide::Request;
 
-///数据库表模型,支持BigDecimal ,DateTime ,rust基本类型（int,float,uint,string,Vec,Array）
-/// CRUDTable 特性会自动识别 id为表的id类型(识别String)，自动识别结构体名称为蛇形命名的表名 biz_activity。没有id的表 请手动指定
 #[crud_enable]
 #[derive(Clone, Debug)]
 pub struct BizActivity {
@@ -29,20 +27,12 @@ pub struct BizActivity {
     pub delete_flag: Option<i32>,
 }
 
-// (可选) 手动实现，不使用上面的derive(CRUDTable)和#[crud_enable],可重写table_name方法。手动实现能支持IDE智能提示
-// impl CRUDTable for BizActivity {
-//     type IdType = String;
-// }
-
-//示例 mysql 链接地址
 pub const MYSQL_URL: &'static str = "mysql://root:123456@localhost:3306/test";
 
-// 示例-Rbatis示例初始化(必须)
 lazy_static! {
     static ref RB: Rbatis = Rbatis::new();
 }
 
-//启动web服务，并且对表执行 count统计
 #[async_std::main]
 async fn main() {
     fast_log::init_log("requests.log", 1000, log::Level::Info, None, true);
