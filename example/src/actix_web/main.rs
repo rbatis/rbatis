@@ -47,8 +47,12 @@ async fn main() -> std::io::Result<()> {
     RB.link(MYSQL_URL).await.unwrap();
     //router
     HttpServer::new(|| App::new()
-        //crate on actix-data
-        //.data(std::sync::Arc::new(Rbatis::new()))
+        // or you can crate on actix-data
+        // .data(std::sync::Arc::new({
+        //     let rb=Rbatis::new();
+        //     rb.link(MYSQL_URL).await.unwrap();
+        //     rb
+        // }))
         .route("/", web::get().to(index)))
         .bind("127.0.0.1:8000")?
         .run()
