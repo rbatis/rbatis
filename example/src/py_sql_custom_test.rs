@@ -50,17 +50,22 @@ mod test {
 
     #[async_std::test]
     pub async fn test_py_sql_custom() {
-        let wait=fast_log::init_log("requests.log", 1000, log::Level::Info, None, true).unwrap();
+        let wait = fast_log::init_log("requests.log", 1000, log::Level::Info, None, true).unwrap();
         let mut rb = Rbatis::new();
         rb.link("mysql://root:123456@localhost:3306/test")
             .await
             .unwrap();
         rb.runtime_py.add_gen(MyNodeFactory {});
         let data: Page<BizActivity> = rb
-            .py_fetch_page("", "
+            .py_fetch_page(
+                "",
+                "
             SELECT * FROM biz_activity WHERE delete_flag = 0
             custom :
-    ", &serde_json::json!({}), &PageRequest::new(1, 20))
+    ",
+                &serde_json::json!({}),
+                &PageRequest::new(1, 20),
+            )
             .await
             .unwrap();
         println!("{}", serde_json::to_string(&data).unwrap());

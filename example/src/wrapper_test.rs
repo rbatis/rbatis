@@ -1,8 +1,8 @@
 #[cfg(test)]
 mod test {
-    use rbatis::rbatis::Rbatis;
     use crate::BizActivity;
     use rbatis::crud::CRUD;
+    use rbatis::rbatis::Rbatis;
 
     #[async_std::test]
     pub async fn test_use_driver_wrapper() {
