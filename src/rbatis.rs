@@ -12,7 +12,6 @@ use uuid::Uuid;
 use rbatis_core::db::DBConnectOption;
 
 use crate::core::db::{DBExecResult, DBPool, DBPoolConn, DBPoolOptions, DBQuery, DBTx, DriverType};
-use crate::core::runtime::Arc;
 use crate::core::sync::sync_map::SyncMap;
 use crate::core::Error;
 use crate::crud::CRUDTable;
@@ -30,6 +29,7 @@ use crate::wrapper::Wrapper;
 use py_sql::node::proxy_node::NodeFactory;
 use py_sql::py_sql::PyRuntime;
 use rexpr::runtime::RExprRuntime;
+use std::sync::Arc;
 
 /// rbatis engine
 #[derive(Debug)]
@@ -63,7 +63,7 @@ impl Default for Rbatis {
 
 impl Drop for Rbatis {
     fn drop(&mut self) {
-        crate::core::runtime::block_on(async {
+        crate::core::runtime::task::block_on(async {
             //notice tx manager exit
             self.tx_manager.close().await;
             match self.pool.get_mut() {
