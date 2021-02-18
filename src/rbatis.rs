@@ -679,7 +679,7 @@ impl Rbatis {
             args,
             page_request,
         )?;
-        if page_request.is_serch_count() {
+        if page_request.is_search_count() {
             //make count sql
             let total: Option<u64> = self
                 .fetch_prepare(context_id, count_sql.as_str(), args)
