@@ -591,14 +591,14 @@ impl Rbatis {
     }
 
     /// py str into py ast,run get sql,arg result
-    fn py_to_sql<Arg>(&self, py: &str, arg: &Arg) -> Result<(String, Vec<serde_json::Value>), Error>
+    fn py_to_sql<Arg>(&self, py_sql: &str, arg: &Arg) -> Result<(String, Vec<serde_json::Value>), Error>
     where
         Arg: Serialize + Send + Sync,
     {
         let mut arg = json!(arg);
         match self
             .runtime_py
-            .eval(&self.driver_type()?, py, &mut arg, &self.runtime_expr)
+            .eval(&self.driver_type()?, py_sql, &mut arg, &self.runtime_expr)
         {
             Ok(v) => Ok(v),
             Err(e) => Err(Error::from(e)),
@@ -621,12 +621,12 @@ impl Rbatis {
     ///       )"#;
     ///         let data: serde_json::Value = rb.py_fetch("", py, &json!({   "delete_flag": 1 })).await.unwrap();
     ///
-    pub async fn py_fetch<T, Arg>(&self, context_id: &str, py: &str, arg: &Arg) -> Result<T, Error>
+    pub async fn py_fetch<T, Arg>(&self, context_id: &str, py_sql: &str, arg: &Arg) -> Result<T, Error>
     where
         T: DeserializeOwned,
         Arg: Serialize + Send + Sync,
     {
-        let (sql, args) = self.py_to_sql(py, arg)?;
+        let (sql, args) = self.py_to_sql(py_sql, arg)?;
         return self.fetch_prepare(context_id, sql.as_str(), &args).await;
     }
 
@@ -649,13 +649,13 @@ impl Rbatis {
     pub async fn py_exec<Arg>(
         &self,
         context_id: &str,
-        py: &str,
+        py_sql: &str,
         arg: &Arg,
     ) -> Result<DBExecResult, Error>
     where
         Arg: Serialize + Send + Sync,
     {
-        let (sql, args) = self.py_to_sql(py, arg)?;
+        let (sql, args) = self.py_to_sql(py_sql, arg)?;
         return self.exec_prepare(context_id, sql.as_str(), &args).await;
     }
 
@@ -700,7 +700,7 @@ impl Rbatis {
     pub async fn py_fetch_page<T, Arg>(
         &self,
         context_id: &str,
-        py: &str,
+        py_sql: &str,
         arg: &Arg,
         page_request: &dyn IPageRequest,
     ) -> Result<Page<T>, Error>
@@ -708,7 +708,7 @@ impl Rbatis {
         T: DeserializeOwned + Serialize + Send + Sync,
         Arg: Serialize + Send + Sync,
     {
-        let (sql, args) = self.py_to_sql(py, arg)?;
+        let (sql, args) = self.py_to_sql(py_sql, arg)?;
         return self
             .fetch_page::<T>(context_id, sql.as_str(), &args, page_request)
             .await;
