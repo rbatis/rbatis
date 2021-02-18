@@ -671,7 +671,7 @@ impl Rbatis {
         T: DeserializeOwned + Serialize + Send + Sync,
     {
         let sql = self.driver_type()?.upper_case_sql(sql);
-        let mut page_result = Page::new(page_request.get_current(), page_request.get_size());
+        let mut page_result = Page::new(page_request.get_page_no(), page_request.get_page_size());
         let (count_sql, sql) = self.page_plugin.make_page_sql(
             &self.driver_type()?,
             context_id,
