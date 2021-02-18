@@ -13,9 +13,9 @@ readme = "Readme.md"
 authors = ["ce <zhuxiujia@qq.com>"]
 edition = "2018"
 license = "Apache-2.0"
-documentation = "https://rbatis.github.io/rbatis.io/#/"
+documentation = "https://rbatis.github.io/rbatis.io/#/en/"
 repository = "https://github.com/rbatis/rbatis"
-homepage = "https://rbatis.github.io/rbatis.io/#/"
+homepage = "https://rbatis.github.io/rbatis.io/#/en/"
 
 [features]
 default = ["async-io"]
