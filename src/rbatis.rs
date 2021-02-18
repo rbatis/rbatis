@@ -672,6 +672,7 @@ impl Rbatis {
     {
         let sql = self.driver_type()?.upper_case_sql(sql);
         let mut page_result = Page::new(page_request.get_page_no(), page_request.get_page_size());
+        page_result.search_count = page_request.is_search_count();
         let (count_sql, sql) = self.page_plugin.make_page_sql(
             &self.driver_type()?,
             context_id,
