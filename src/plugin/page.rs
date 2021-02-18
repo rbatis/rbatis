@@ -33,12 +33,12 @@ pub trait IPageRequest: Send + Sync {
     fn get_page_size(&self) -> u64;
     fn get_page_no(&self) -> u64;
     fn get_total(&self) -> u64;
-    fn is_serch_count(&self) -> bool;
+    fn is_search_count(&self) -> bool;
 
     fn set_total(&mut self, arg: u64);
     fn set_page_size(&mut self, arg: u64);
     fn set_page_no(&mut self, arg: u64);
-    fn set_serch_count(&mut self, arg: bool);
+    fn set_search_count(&mut self, arg: bool);
 
     ///sum pages
     fn get_pages(&self) -> u64 {
@@ -92,7 +92,7 @@ pub struct PageRequest {
     pub page_no: u64,
     /// page page_size default 10
     pub page_size: u64,
-    pub serch_count: bool,
+    pub search_count: bool,
 }
 
 impl PageRequest {
@@ -117,7 +117,7 @@ impl PageRequest {
             total,
             page_size,
             page_no: page_no,
-            serch_count: true,
+            search_count: true,
         };
     }
 }
@@ -128,7 +128,7 @@ impl Default for PageRequest {
             total: 0,
             page_size: 10,
             page_no: 1,
-            serch_count: true,
+            search_count: true,
         };
     }
 }
@@ -146,8 +146,8 @@ impl IPageRequest for PageRequest {
         self.total
     }
 
-    fn is_serch_count(&self) -> bool {
-        self.serch_count
+    fn is_search_count(&self) -> bool {
+        self.search_count
     }
 
     fn set_total(&mut self, total: u64) {
@@ -162,8 +162,8 @@ impl IPageRequest for PageRequest {
         self.page_no = arg;
     }
 
-    fn set_serch_count(&mut self, arg: bool) {
-        self.serch_count = arg;
+    fn set_search_count(&mut self, arg: bool) {
+        self.search_count = arg;
     }
 }
 
@@ -237,7 +237,7 @@ impl<T> IPageRequest for Page<T>
         self.total
     }
 
-    fn is_serch_count(&self) -> bool {
+    fn is_search_count(&self) -> bool {
         self.search_count
     }
 
@@ -253,7 +253,7 @@ impl<T> IPageRequest for Page<T>
         self.page_no = arg;
     }
 
-    fn set_serch_count(&mut self, arg: bool) {
+    fn set_search_count(&mut self, arg: bool) {
         self.search_count = arg;
     }
 }
@@ -335,7 +335,7 @@ impl PagePlugin for RbatisReplacePagePlugin {
         }
         //count sql
         let mut count_sql = sql.clone();
-        if page.is_serch_count() {
+        if page.is_search_count() {
             //make count sql
             count_sql = self.make_count_sql(&count_sql);
         }
@@ -381,7 +381,7 @@ impl PagePlugin for RbatisPackPagePlugin {
         }
         //count sql
         let mut count_sql = sql.clone();
-        if page.is_serch_count() {
+        if page.is_search_count() {
             //make count sql
             count_sql = self.make_count_sql(&count_sql);
         }
