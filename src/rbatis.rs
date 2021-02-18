@@ -623,10 +623,10 @@ impl Rbatis {
     ///       )"#;
     ///         let data: serde_json::Value = rb.py_fetch("", py, &json!({   "delete_flag": 1 })).await.unwrap();
     ///
-    pub async fn py_fetch<T, Ser>(&self, context_id: &str, py: &str, arg: &Ser) -> Result<T, Error>
+    pub async fn py_fetch<T, Arg>(&self, context_id: &str, py: &str, arg: &Arg) -> Result<T, Error>
     where
         T: DeserializeOwned,
-        Ser: Serialize + Send + Sync,
+        Arg: Serialize + Send + Sync,
     {
         let json = json!(arg);
         let (sql, args) = self.py_to_sql(py, &json)?;
@@ -649,14 +649,14 @@ impl Rbatis {
     ///       )"#;
     ///         let data: u64 = rb.py_exec("", py, &json!({   "delete_flag": 1 })).await.unwrap();
     ///
-    pub async fn py_exec<Ser>(
+    pub async fn py_exec<Arg>(
         &self,
         context_id: &str,
         py: &str,
-        arg: &Ser,
+        arg: &Arg,
     ) -> Result<DBExecResult, Error>
     where
-        Ser: Serialize + Send + Sync,
+        Arg: Serialize + Send + Sync,
     {
         let json = json!(arg);
         let (sql, args) = self.py_to_sql(py, &json)?;
@@ -701,21 +701,21 @@ impl Rbatis {
     }
 
     /// fetch result(prepare sql)
-    pub async fn py_fetch_page<T, Ser>(
+    pub async fn py_fetch_page<T, Arg>(
         &self,
         context_id: &str,
         py: &str,
-        arg: &Ser,
-        page: &dyn IPageRequest,
+        arg: &Arg,
+        page_request: &dyn IPageRequest,
     ) -> Result<Page<T>, Error>
     where
         T: DeserializeOwned + Serialize + Send + Sync,
-        Ser: Serialize + Send + Sync,
+        Arg: Serialize + Send + Sync,
     {
         let json = json!(arg);
         let (sql, args) = self.py_to_sql(py, &json)?;
         return self
-            .fetch_page::<T>(context_id, sql.as_str(), &args, page)
+            .fetch_page::<T>(context_id, sql.as_str(), &args, page_request)
             .await;
     }
 }
