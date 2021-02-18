@@ -62,7 +62,7 @@ snowflake = ["rustflake"]
 [dependencies]
 rexpr = "1.0"
 py_sql = "1.0"
-rbatis-core = { git = "https://github.com/rbatis/rbatis-core.git", branch = "main", version = "1.8.68", default-features = false, optional = true }
+rbatis-core = { git = "https://github.com/rbatis/rbatis-core.git", branch = "main", version = "1.8.70", default-features = false, optional = true }
 rbatis-macro-driver = { version = "1.8.68", path = "rbatis-macro-driver", default-features = false, optional = true }
 
 chrono = { version = "0.4", features = ["serde"] }
