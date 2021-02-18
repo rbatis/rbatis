@@ -11,6 +11,9 @@ use rbatis_core::Error;
 use crate::core::db::DriverType;
 use crate::sql::PageLimit;
 
+/// default 10
+pub const DEFAULT_PAGE_SIZE: u64 = 10;
+
 ///default page plugin
 pub trait PagePlugin: Send + Sync + Debug {
     ///the name
@@ -97,11 +100,11 @@ pub struct PageRequest {
 
 impl PageRequest {
     pub fn new(page_no: u64, page_size: u64) -> Self {
-        return PageRequest::new_total(page_no, page_size, 10);
+        return PageRequest::new_total(page_no, page_size, DEFAULT_PAGE_SIZE);
     }
 
     pub fn new_option(page_no: &Option<u64>, page_size: &Option<u64>) -> Self {
-        return PageRequest::new(page_no.unwrap_or(1), page_size.unwrap_or(10));
+        return PageRequest::new(page_no.unwrap_or(1), page_size.unwrap_or(DEFAULT_PAGE_SIZE));
     }
 
     pub fn new_total(page_no: u64, page_size: u64, total: u64) -> Self {
@@ -126,7 +129,7 @@ impl Default for PageRequest {
     fn default() -> Self {
         return PageRequest {
             total: 0,
-            page_size: 10,
+            page_size: DEFAULT_PAGE_SIZE,
             page_no: 1,
             search_count: true,
         };
@@ -184,7 +187,7 @@ impl<T> Page<T> {
     }
 
     pub fn new_option(current: &Option<u64>, page_size: &Option<u64>) -> Self {
-        return Page::new(current.unwrap_or(1), page_size.unwrap_or(10));
+        return Page::new(current.unwrap_or(1), page_size.unwrap_or(DEFAULT_PAGE_SIZE));
     }
 
     pub fn new_total(page_no: u64, page_size: u64, total: u64) -> Self {
@@ -215,7 +218,7 @@ impl<T> Default for Page<T> {
             records: vec![],
             total: 0,
             pages: 0,
-            page_size: 10,
+            page_size: DEFAULT_PAGE_SIZE,
             page_no: 1,
             search_count: true,
         };
