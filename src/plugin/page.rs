@@ -30,31 +30,31 @@ pub trait PagePlugin: Send + Sync + Debug {
 
 ///Page interface, support get_pages() and offset()
 pub trait IPageRequest: Send + Sync {
-    fn get_size(&self) -> u64;
-    fn get_current(&self) -> u64;
+    fn get_page_size(&self) -> u64;
+    fn get_page_no(&self) -> u64;
     fn get_total(&self) -> u64;
     fn is_serch_count(&self) -> bool;
 
     fn set_total(&mut self, arg: u64);
-    fn set_size(&mut self, arg: u64);
-    fn set_current(&mut self, arg: u64);
+    fn set_page_size(&mut self, arg: u64);
+    fn set_page_no(&mut self, arg: u64);
     fn set_serch_count(&mut self, arg: bool);
 
     ///sum pages
     fn get_pages(&self) -> u64 {
-        if self.get_size() == 0 {
+        if self.get_page_size() == 0 {
             return 0;
         }
-        let mut pages = self.get_total() / self.get_size();
-        if self.get_total() % self.get_size() != 0 {
+        let mut pages = self.get_total() / self.get_page_size();
+        if self.get_total() % self.get_page_size() != 0 {
             pages = pages + 1;
         }
         return pages;
     }
     ///sum offset
     fn offset(&self) -> u64 {
-        if self.get_current() > 0 {
-            (self.get_current() - 1) * self.get_size()
+        if self.get_page_no() > 0 {
+            (self.get_page_no() - 1) * self.get_page_size()
         } else {
             0
         }
@@ -70,53 +70,53 @@ pub trait IPage<T>: IPageRequest {
 
 #[derive(Serialize, Deserialize, Clone, Debug)]
 pub struct Page<T> {
-    ///data
+    /// data
     pub records: Vec<T>,
-    ///total num
+    /// total num
     pub total: u64,
-    ///pages
+    /// pages
     pub pages: u64,
-    ///default 10
-    pub size: u64,
-    ///current index
-    pub current: u64,
-
-    pub serch_count: bool,
+    /// current page index
+    pub page_no: u64,
+    /// default 10
+    pub page_size: u64,
+    /// is search_count
+    pub search_count: bool,
 }
 
 #[derive(Serialize, Deserialize, Clone, Debug)]
 pub struct PageRequest {
-    ///total num
+    /// total num
     pub total: u64,
-    ///default 10
-    pub size: u64,
-    ///current index
-    pub current: u64,
+    /// current page index
+    pub page_no: u64,
+    /// page page_size default 10
+    pub page_size: u64,
     pub serch_count: bool,
 }
 
 impl PageRequest {
-    pub fn new(current: u64, size: u64) -> Self {
-        return PageRequest::new_total(current, size, 0);
+    pub fn new(page_no: u64, page_size: u64) -> Self {
+        return PageRequest::new_total(page_no, page_size, 0);
     }
 
-    pub fn new_option(current: &Option<u64>, size: &Option<u64>) -> Self {
-        return PageRequest::new(current.unwrap_or(1), size.unwrap_or(10));
+    pub fn new_option(page_no: &Option<u64>, page_size: &Option<u64>) -> Self {
+        return PageRequest::new(page_no.unwrap_or(1), page_size.unwrap_or(10));
     }
 
-    pub fn new_total(current: u64, size: u64, total: u64) -> Self {
-        return PageRequest::new_plugin(String::new(), current, size, total);
+    pub fn new_total(page_no: u64, page_size: u64, total: u64) -> Self {
+        return PageRequest::new_plugin(String::new(), page_no, page_size, total);
     }
 
-    pub fn new_plugin(plugin: String, current: u64, size: u64, total: u64) -> Self {
-        let mut current = current;
-        if current < 1 {
-            current = 1;
+    pub fn new_plugin(plugin: String, page_no: u64, page_size: u64, total: u64) -> Self {
+        let mut page_no = page_no;
+        if page_no < 1 {
+            page_no = 1;
         }
         return Self {
             total,
-            size,
-            current,
+            page_size,
+            page_no: page_no,
             serch_count: true,
         };
     }
@@ -126,19 +126,20 @@ impl Default for PageRequest {
     fn default() -> Self {
         return PageRequest {
             total: 0,
-            size: 10,
-            current: 1,
+            page_size: 10,
+            page_no: 1,
             serch_count: true,
         };
     }
 }
 
 impl IPageRequest for PageRequest {
-    fn get_size(&self) -> u64 {
-        self.size
+    fn get_page_size(&self) -> u64 {
+        self.page_size
     }
-    fn get_current(&self) -> u64 {
-        self.current
+
+    fn get_page_no(&self) -> u64 {
+        self.page_no
     }
 
     fn get_total(&self) -> u64 {
@@ -153,12 +154,12 @@ impl IPageRequest for PageRequest {
         self.total = total;
     }
 
-    fn set_size(&mut self, arg: u64) {
-        self.size = arg;
+    fn set_page_size(&mut self, arg: u64) {
+        self.page_size = arg;
     }
 
-    fn set_current(&mut self, arg: u64) {
-        self.current = arg;
+    fn set_page_no(&mut self, arg: u64) {
+        self.page_no = arg;
     }
 
     fn set_serch_count(&mut self, arg: bool) {
@@ -178,32 +179,32 @@ impl ToString for PageRequest {
 }
 
 impl<T> Page<T> {
-    pub fn new(current: u64, size: u64) -> Self {
-        return Page::new_total(current, size, 0);
+    pub fn new(current: u64, page_size: u64) -> Self {
+        return Page::new_total(current, page_size, 0);
     }
 
-    pub fn new_option(current: &Option<u64>, size: &Option<u64>) -> Self {
-        return Page::new(current.unwrap_or(1), size.unwrap_or(10));
+    pub fn new_option(current: &Option<u64>, page_size: &Option<u64>) -> Self {
+        return Page::new(current.unwrap_or(1), page_size.unwrap_or(10));
     }
 
-    pub fn new_total(current: u64, size: u64, total: u64) -> Self {
-        if current < 1 {
+    pub fn new_total(page_no: u64, page_size: u64, total: u64) -> Self {
+        if page_no < 1 {
             return Self {
                 total,
                 pages: 0,
-                size,
-                current: 1 as u64,
+                page_size: page_size,
+                page_no: 1 as u64,
                 records: vec![],
-                serch_count: true,
+                search_count: true,
             };
         }
         return Self {
             total,
             pages: 0,
-            size,
-            current,
+            page_size: page_size,
+            page_no,
             records: vec![],
-            serch_count: true,
+            search_count: true,
         };
     }
 }
@@ -214,22 +215,22 @@ impl<T> Default for Page<T> {
             records: vec![],
             total: 0,
             pages: 0,
-            size: 10,
-            current: 1,
-            serch_count: true,
+            page_size: 10,
+            page_no: 1,
+            search_count: true,
         };
     }
 }
 
 impl<T> IPageRequest for Page<T>
-where
-    T: Send + Sync,
+    where
+        T: Send + Sync,
 {
-    fn get_size(&self) -> u64 {
-        self.size
+    fn get_page_size(&self) -> u64 {
+        self.page_size
     }
-    fn get_current(&self) -> u64 {
-        self.current
+    fn get_page_no(&self) -> u64 {
+        self.page_no
     }
 
     fn get_total(&self) -> u64 {
@@ -237,29 +238,29 @@ where
     }
 
     fn is_serch_count(&self) -> bool {
-        self.serch_count
+        self.search_count
     }
 
     fn set_total(&mut self, total: u64) {
         self.total = total;
     }
 
-    fn set_size(&mut self, arg: u64) {
-        self.size = arg;
+    fn set_page_size(&mut self, arg: u64) {
+        self.page_size = arg;
     }
 
-    fn set_current(&mut self, arg: u64) {
-        self.current = arg;
+    fn set_page_no(&mut self, arg: u64) {
+        self.page_no = arg;
     }
 
     fn set_serch_count(&mut self, arg: bool) {
-        self.serch_count = arg;
+        self.search_count = arg;
     }
 }
 
 impl<T> IPage<T> for Page<T>
-where
-    T: Send + Sync,
+    where
+        T: Send + Sync,
 {
     fn get_records(&self) -> &Vec<T> {
         self.records.as_ref()
@@ -275,8 +276,8 @@ where
 }
 
 impl<T> ToString for Page<T>
-where
-    T: Send + Sync + Serialize,
+    where
+        T: Send + Sync + Serialize,
 {
     fn to_string(&self) -> String {
         let result = serde_json::to_string(self);
@@ -339,7 +340,7 @@ impl PagePlugin for RbatisReplacePagePlugin {
             count_sql = self.make_count_sql(&count_sql);
         }
         //limit sql
-        let limit_sql = driver_type.page_limit_sql(page.offset(), page.get_size())?;
+        let limit_sql = driver_type.page_limit_sql(page.offset(), page.get_page_size())?;
         match driver_type {
             DriverType::Mssql => {
                 sql = format!("SELECT RB_DATA.*, 0 AS RB_DATA_ORDER FROM ({})RB_DATA ORDER BY RB_DATA_ORDER {}", sql, limit_sql);
@@ -385,7 +386,7 @@ impl PagePlugin for RbatisPackPagePlugin {
             count_sql = self.make_count_sql(&count_sql);
         }
         //limit sql
-        let limit_sql = driver_type.page_limit_sql(page.offset(), page.get_size())?;
+        let limit_sql = driver_type.page_limit_sql(page.offset(), page.get_page_size())?;
         match driver_type {
             DriverType::Mssql => {
                 sql = format!("SELECT RB_DATA.*, 0 AS RB_DATA_ORDER FROM ({})RB_DATA ORDER BY RB_DATA_ORDER {}", sql, limit_sql);
