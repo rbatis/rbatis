@@ -97,7 +97,7 @@ pub struct PageRequest {
 
 impl PageRequest {
     pub fn new(page_no: u64, page_size: u64) -> Self {
-        return PageRequest::new_total(page_no, page_size, 0);
+        return PageRequest::new_total(page_no, page_size, 10);
     }
 
     pub fn new_option(page_no: &Option<u64>, page_size: &Option<u64>) -> Self {
