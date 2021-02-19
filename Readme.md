@@ -4,7 +4,7 @@
 
 [![Build Status](https://travis-ci.org/zhuxiujia/rbatis.svg?branch=master)](https://travis-ci.org/zhuxiujia/rbatis)
 [![doc.rs](https://docs.rs/rbatis/badge.svg)](https://docs.rs/rbatis/)
-[![](https://img.shields.io/crates/d/rbatis)]()
+[![](https://img.shields.io/crates/d/rbatis)](https://crates.io/crates/rbatis)
 
 ![Image text](logo.png)
 
