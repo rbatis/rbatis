@@ -12,7 +12,6 @@ use uuid::Uuid;
 use rbatis_core::db::DBConnectOption;
 
 use crate::core::db::{DBExecResult, DBPool, DBPoolConn, DBPoolOptions, DBQuery, DBTx, DriverType};
-use crate::core::runtime::Arc;
 use crate::core::sync::sync_map::SyncMap;
 use crate::core::Error;
 use crate::crud::CRUDTable;
@@ -30,6 +29,7 @@ use crate::wrapper::Wrapper;
 use py_sql::node::proxy_node::NodeFactory;
 use py_sql::py_sql::PyRuntime;
 use rexpr::runtime::RExprRuntime;
+use std::sync::Arc;
 
 /// rbatis engine
 #[derive(Debug)]
@@ -63,7 +63,7 @@ impl Default for Rbatis {
 
 impl Drop for Rbatis {
     fn drop(&mut self) {
-        crate::core::runtime::block_on(async {
+        crate::core::runtime::task::block_on(async {
             //notice tx manager exit
             self.tx_manager.close().await;
             match self.pool.get_mut() {
@@ -591,17 +591,15 @@ impl Rbatis {
     }
 
     /// py str into py ast,run get sql,arg result
-    fn py_to_sql(
-        &self,
-        py: &str,
-        arg: &serde_json::Value,
-    ) -> Result<(String, Vec<serde_json::Value>), Error> {
-        match self.runtime_py.eval(
-            &self.driver_type()?,
-            py,
-            &mut arg.clone(),
-            &self.runtime_expr,
-        ) {
+    fn py_to_sql<Arg>(&self, py_sql: &str, arg: &Arg) -> Result<(String, Vec<serde_json::Value>), Error>
+    where
+        Arg: Serialize + Send + Sync,
+    {
+        let mut arg = json!(arg);
+        match self
+            .runtime_py
+            .eval(&self.driver_type()?, py_sql, &mut arg, &self.runtime_expr)
+        {
             Ok(v) => Ok(v),
             Err(e) => Err(Error::from(e)),
         }
@@ -623,13 +621,12 @@ impl Rbatis {
     ///       )"#;
     ///         let data: serde_json::Value = rb.py_fetch("", py, &json!({   "delete_flag": 1 })).await.unwrap();
     ///
-    pub async fn py_fetch<T, Ser>(&self, context_id: &str, py: &str, arg: &Ser) -> Result<T, Error>
+    pub async fn py_fetch<T, Arg>(&self, context_id: &str, py_sql: &str, arg: &Arg) -> Result<T, Error>
     where
         T: DeserializeOwned,
-        Ser: Serialize + Send + Sync,
+        Arg: Serialize + Send + Sync,
     {
-        let json = json!(arg);
-        let (sql, args) = self.py_to_sql(py, &json)?;
+        let (sql, args) = self.py_to_sql(py_sql, arg)?;
         return self.fetch_prepare(context_id, sql.as_str(), &args).await;
     }
 
@@ -649,17 +646,16 @@ impl Rbatis {
     ///       )"#;
     ///         let data: u64 = rb.py_exec("", py, &json!({   "delete_flag": 1 })).await.unwrap();
     ///
-    pub async fn py_exec<Ser>(
+    pub async fn py_exec<Arg>(
         &self,
         context_id: &str,
-        py: &str,
-        arg: &Ser,
+        py_sql: &str,
+        arg: &Arg,
     ) -> Result<DBExecResult, Error>
     where
-        Ser: Serialize + Send + Sync,
+        Arg: Serialize + Send + Sync,
     {
-        let json = json!(arg);
-        let (sql, args) = self.py_to_sql(py, &json)?;
+        let (sql, args) = self.py_to_sql(py_sql, arg)?;
         return self.exec_prepare(context_id, sql.as_str(), &args).await;
     }
 
@@ -675,7 +671,8 @@ impl Rbatis {
         T: DeserializeOwned + Serialize + Send + Sync,
     {
         let sql = self.driver_type()?.upper_case_sql(sql);
-        let mut page_result = Page::new(page_request.get_current(), page_request.get_size());
+        let mut page_result = Page::new(page_request.get_page_no(), page_request.get_page_size());
+        page_result.search_count = page_request.is_search_count();
         let (count_sql, sql) = self.page_plugin.make_page_sql(
             &self.driver_type()?,
             context_id,
@@ -683,7 +680,7 @@ impl Rbatis {
             args,
             page_request,
         )?;
-        if page_request.is_serch_count() {
+        if page_request.is_search_count() {
             //make count sql
             let total: Option<u64> = self
                 .fetch_prepare(context_id, count_sql.as_str(), args)
@@ -701,21 +698,20 @@ impl Rbatis {
     }
 
     /// fetch result(prepare sql)
-    pub async fn py_fetch_page<T, Ser>(
+    pub async fn py_fetch_page<T, Arg>(
         &self,
         context_id: &str,
-        py: &str,
-        arg: &Ser,
-        page: &dyn IPageRequest,
+        py_sql: &str,
+        arg: &Arg,
+        page_request: &dyn IPageRequest,
     ) -> Result<Page<T>, Error>
     where
         T: DeserializeOwned + Serialize + Send + Sync,
-        Ser: Serialize + Send + Sync,
+        Arg: Serialize + Send + Sync,
     {
-        let json = json!(arg);
-        let (sql, args) = self.py_to_sql(py, &json)?;
+        let (sql, args) = self.py_to_sql(py_sql, arg)?;
         return self
-            .fetch_page::<T>(context_id, sql.as_str(), &args, page)
+            .fetch_page::<T>(context_id, sql.as_str(), &args, page_request)
             .await;
     }
 }

@@ -3,7 +3,7 @@ use std::time::{Instant, SystemTime};
 
 use rustflake::Snowflake;
 
-use crate::core::runtime::Mutex as AsyncMutex;
+use crate::core::runtime::sync::Mutex as AsyncMutex;
 
 lazy_static! {
     pub static ref SNOWFLAKE: Mutex<Snowflake> = Mutex::new(Snowflake::default());

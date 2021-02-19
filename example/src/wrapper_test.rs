@@ -1,5 +1,7 @@
 #[cfg(test)]
 mod test {
+    use crate::BizActivity;
+    use rbatis::crud::CRUD;
     use rbatis::rbatis::Rbatis;
 
     #[async_std::test]
@@ -18,7 +20,7 @@ mod test {
             .and()
             .ne("delete_flag", -1)
             .do_if(!name.is_empty(), |w| w.and().like("name", name));
-        let r: serde_json::Value = rb.fetch_prepare_wrapper("", &w).await.unwrap();
+        let r: Vec<BizActivity> = rb.fetch_list_by_wrapper("", &w).await.unwrap();
         println!("done:{:?}", r);
     }
 }
