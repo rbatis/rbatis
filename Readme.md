@@ -1,12 +1,12 @@
 [WebSite](https://rbatis.github.io/rbatis.io/#/en/) | [简体中文](https://rbatis.github.io/rbatis.io/)
 
-#### A highly Performant,Safe,Dynamic SQL ORM framework written in Rust, inspired by Mybatis and MybatisPlus.
-
 [![Build Status](https://travis-ci.org/zhuxiujia/rbatis.svg?branch=master)](https://travis-ci.org/zhuxiujia/rbatis)
 [![doc.rs](https://docs.rs/rbatis/badge.svg)](https://docs.rs/rbatis/)
 [![](https://img.shields.io/crates/d/rbatis)](https://crates.io/crates/rbatis)
 [![dependency status](https://deps.rs/crate/rbatis/1.8.71/status.svg)](https://deps.rs/crate/rbatis/1.8.71)
 [![GitHub release](https://img.shields.io/github/v/release/rbatis/rbatis)](https://github.com/rbatis/rbatis/releases)
+
+#### A highly Performant,Safe,Dynamic SQL ORM framework written in Rust, inspired by Mybatis and MybatisPlus.
 
 ![Image text](logo.png)
 
