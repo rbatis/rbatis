@@ -9,6 +9,7 @@ mod test {
     use rbatis::plugin::page::{Page, PageRequest};
     use rbatis::plugin::version_lock::RbatisVersionLockPlugin;
     use rbatis::rbatis::Rbatis;
+    use rbatis::plugin::snowflake::async_snowflake_id;
 
     ///Or another way to write it
     // #[crud_enable(table_name:biz_activity)]
@@ -52,6 +53,13 @@ mod test {
         // rb.link_opt("mysql://root:123456@localhost:3306/test", &opt).await.unwrap();
         return rb;
     }
+
+    #[async_std::test]
+    pub async fn test_snow_flake() {
+        let sn_id = async_snowflake_id().await;
+        println!("id:{}", sn_id);
+    }
+
 
     #[async_std::test]
     pub async fn test_save() {
