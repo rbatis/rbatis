@@ -3,6 +3,8 @@
 #### A highly Performant,Safe,Dynamic SQL ORM framework written in Rust, inspired by Mybatis and MybatisPlus.
 
 [![Build Status](https://travis-ci.org/zhuxiujia/rbatis.svg?branch=master)](https://travis-ci.org/zhuxiujia/rbatis)
+[![doc.rs](https://docs.rs/rbatis/badge.svg)](https://docs.rs/rbatis/)
+
 
 ![Image text](logo.png)
 
