@@ -5,6 +5,7 @@
 [![Build Status](https://travis-ci.org/zhuxiujia/rbatis.svg?branch=master)](https://travis-ci.org/zhuxiujia/rbatis)
 [![doc.rs](https://docs.rs/rbatis/badge.svg)](https://docs.rs/rbatis/)
 [![](https://img.shields.io/crates/d/rbatis)](https://crates.io/crates/rbatis)
+[![dependency status](https://deps.rs/crate/rbatis/1.8.71/status.svg)](https://deps.rs/crate/rbatis/1.8.71)
 
 ![Image text](logo.png)
 
