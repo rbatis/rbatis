@@ -6,6 +6,7 @@
 [![doc.rs](https://docs.rs/rbatis/badge.svg)](https://docs.rs/rbatis/)
 [![](https://img.shields.io/crates/d/rbatis)](https://crates.io/crates/rbatis)
 [![dependency status](https://deps.rs/crate/rbatis/1.8.71/status.svg)](https://deps.rs/crate/rbatis/1.8.71)
+![GitHub release (latest by date)](https://img.shields.io/github/v/release/rbatis/rbatis)
 
 ![Image text](logo.png)
 
