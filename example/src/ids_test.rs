@@ -2,7 +2,6 @@
 mod test {
     use crate::BizActivity;
     use rbatis::crud::{Ids, CRUD};
-    use rbatis::plugin::logic_delete::RbatisLogicDeletePlugin;
     use rbatis::rbatis::Rbatis;
 
     /// This example shows a table collection  to an id array
@@ -16,7 +15,7 @@ mod test {
 
         let biz_activitys = rb.fetch_list::<BizActivity>("").await.unwrap();
 
-        /// to_ids() support HashSet.to_ids(),Vec.to_ids(),Array.to_ids(),HashMap.to_ids(),LinkedList.to_ids()，BtreeMap.to_ids()....
+        //to_ids() support HashSet.to_ids(),Vec.to_ids(),Array.to_ids(),HashMap.to_ids(),LinkedList.to_ids()，BtreeMap.to_ids()....
         let ids = biz_activitys.to_ids();
 
         let r = rb

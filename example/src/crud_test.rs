@@ -7,9 +7,9 @@ mod test {
     use rbatis::crud::CRUD;
     use rbatis::plugin::logic_delete::RbatisLogicDeletePlugin;
     use rbatis::plugin::page::{Page, PageRequest};
+    use rbatis::plugin::snowflake::async_snowflake_id;
     use rbatis::plugin::version_lock::RbatisVersionLockPlugin;
     use rbatis::rbatis::Rbatis;
-    use rbatis::plugin::snowflake::async_snowflake_id;
 
     ///Or another way to write it
     // #[crud_enable(table_name:biz_activity)]
@@ -59,7 +59,6 @@ mod test {
         let sn_id = async_snowflake_id().await;
         println!("id:{}", sn_id);
     }
-
 
     #[async_std::test]
     pub async fn test_save() {
@@ -260,5 +259,11 @@ mod test {
         rb.logic_plugin = Some(Box::new(RbatisLogicDeletePlugin::new("delete_flag")));
         let r: Vec<BizActivity> = rb.fetch_list("").await.unwrap();
         println!("{}", serde_json::to_string(&r).unwrap());
+    }
+
+    #[test]
+    pub fn test_is_debug() {
+        let rb = Rbatis::new();
+        println!("is debug: {}", rb.is_debug_mode());
     }
 }
