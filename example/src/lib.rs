@@ -23,6 +23,7 @@ mod raw_sql_macro_test;
 mod transaction_test;
 mod un_support_type_test;
 mod wrapper_test;
+mod plugin_exclude_test;
 
 use chrono::NaiveDateTime;
 /// this is table model(see ../database.sql)
