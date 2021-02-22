@@ -76,7 +76,7 @@ impl RbatisVersionLockPlugin {
 impl VersionLockPlugin for RbatisVersionLockPlugin {
     fn is_allow(&self, context_id: &str) -> bool {
         for x in &self.excludes {
-            if context_id.contains(x) {
+            if context_id.starts_with(x) {
                 return false;
             }
         }
