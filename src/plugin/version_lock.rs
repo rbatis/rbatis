@@ -13,7 +13,12 @@ pub trait VersionLockPlugin: Send + Sync + Debug {
     fn column(&self) -> &str;
 
     /// set value = value + 1, support number and string value
-    fn try_add_one(&self, context_id: &str, old_value: &serde_json::Value, column: &str) -> serde_json::Value {
+    fn try_add_one(
+        &self,
+        context_id: &str,
+        old_value: &serde_json::Value,
+        column: &str,
+    ) -> serde_json::Value {
         if !self.is_allow(context_id) {
             return old_value.clone();
         }

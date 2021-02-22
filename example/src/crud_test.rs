@@ -164,12 +164,11 @@ mod test {
         //设置 逻辑删除插件
         rb.logic_plugin = Some(Box::new(RbatisLogicDeletePlugin::new("delete_flag")));
         let r = rb
-            .fetch_count_by_wrapper::<BizActivity>("",&rb.new_wrapper())
+            .fetch_count_by_wrapper::<BizActivity>("", &rb.new_wrapper())
             .await
             .unwrap();
         println!("count(1): {}", r);
     }
-
 
     #[async_std::test]
     pub async fn test_update_by_wrapper() {
