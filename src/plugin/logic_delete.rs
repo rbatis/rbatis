@@ -32,6 +32,7 @@ pub trait LogicDelete: Send + Sync + Debug {
     /// create_select_sql
     fn create_select_sql(
         &self,
+        context_id: &str,
         driver_type: &DriverType,
         table_name: &str,
         column: &str,
@@ -124,6 +125,7 @@ impl LogicDelete for RbatisLogicDeletePlugin {
 
     fn create_select_sql(
         &self,
+        context_id: &str,
         driver_type: &DriverType,
         table_name: &str,
         column: &str,
@@ -136,7 +138,7 @@ impl LogicDelete for RbatisLogicDeletePlugin {
             .trim()
             .to_string();
         let mut sql = String::new();
-        if table_fields.contains(self.column()) {
+        if self.is_allow(context_id) && table_fields.contains(self.column()) {
             where_sql = driver_type.make_left_insert_where(
                 &format!("{} = {}", self.column(), self.un_deleted()),
                 &where_sql,

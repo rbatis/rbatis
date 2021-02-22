@@ -163,8 +163,8 @@ pub trait CRUDTable: Send + Sync + Serialize + DeserializeOwned {
 }
 
 impl<T> CRUDTable for Option<T>
-where
-    T: CRUDTable,
+    where
+        T: CRUDTable,
 {
     type IdType = T::IdType;
 
@@ -222,16 +222,16 @@ where
 
 /// fetch ids, must use Id trait  together
 pub trait Ids<C>
-where
-    C: CRUDTable,
+    where
+        C: CRUDTable,
 {
     ///get ids
     fn to_ids(&self) -> Vec<C::IdType>;
 }
 
 impl<C> Ids<C> for [C]
-where
-    C: CRUDTable,
+    where
+        C: CRUDTable,
 {
     fn to_ids(&self) -> Vec<C::IdType> {
         let mut vec = vec![];
@@ -251,8 +251,8 @@ where
 }
 
 impl<C> Ids<C> for HashSet<C>
-where
-    C: CRUDTable,
+    where
+        C: CRUDTable,
 {
     fn to_ids(&self) -> Vec<C::IdType> {
         let mut vec = vec![];
@@ -272,8 +272,8 @@ where
 }
 
 impl<C> Ids<C> for VecDeque<C>
-where
-    C: CRUDTable,
+    where
+        C: CRUDTable,
 {
     fn to_ids(&self) -> Vec<C::IdType> {
         let mut vec = vec![];
@@ -293,8 +293,8 @@ where
 }
 
 impl<C> Ids<C> for LinkedList<C>
-where
-    C: CRUDTable,
+    where
+        C: CRUDTable,
 {
     fn to_ids(&self) -> Vec<C::IdType> {
         let mut vec = vec![];
@@ -314,8 +314,8 @@ where
 }
 
 impl<K, C> Ids<C> for HashMap<K, C>
-where
-    C: CRUDTable,
+    where
+        C: CRUDTable,
 {
     fn to_ids(&self) -> Vec<C::IdType> {
         let mut vec = vec![];
@@ -335,8 +335,8 @@ where
 }
 
 impl<K, C> Ids<C> for BTreeMap<K, C>
-where
-    C: CRUDTable,
+    where
+        C: CRUDTable,
 {
     fn to_ids(&self) -> Vec<C::IdType> {
         let mut vec = vec![];
@@ -363,24 +363,24 @@ pub trait CRUD {
         entity: &T,
         w: &Wrapper,
     ) -> Result<DBExecResult>
-    where
-        T: CRUDTable;
+        where
+            T: CRUDTable;
     async fn save<T>(&self, context_id: &str, entity: &T) -> Result<DBExecResult>
-    where
-        T: CRUDTable;
+        where
+            T: CRUDTable;
     async fn save_batch<T>(&self, context_id: &str, entity: &[T]) -> Result<DBExecResult>
-    where
-        T: CRUDTable;
+        where
+            T: CRUDTable;
 
     async fn remove_by_wrapper<T>(&self, context_id: &str, w: &Wrapper) -> Result<u64>
-    where
-        T: CRUDTable;
+        where
+            T: CRUDTable;
     async fn remove_by_id<T>(&self, context_id: &str, id: &T::IdType) -> Result<u64>
-    where
-        T: CRUDTable;
+        where
+            T: CRUDTable;
     async fn remove_batch_by_id<T>(&self, context_id: &str, ids: &[T::IdType]) -> Result<u64>
-    where
-        T: CRUDTable;
+        where
+            T: CRUDTable;
 
     async fn update_by_wrapper<T>(
         &self,
@@ -389,32 +389,32 @@ pub trait CRUD {
         w: &Wrapper,
         update_null_value: bool,
     ) -> Result<u64>
-    where
-        T: CRUDTable;
+        where
+            T: CRUDTable;
     /// update database record by id
     async fn update_by_id<T>(&self, context_id: &str, arg: &mut T) -> Result<u64>
-    where
-        T: CRUDTable;
+        where
+            T: CRUDTable;
 
     /// remove batch database record by args
     async fn update_batch_by_id<T>(&self, context_id: &str, ids: &mut [T]) -> Result<u64>
-    where
-        T: CRUDTable;
+        where
+            T: CRUDTable;
 
     /// fetch database record by id
     async fn fetch_by_id<T>(&self, context_id: &str, id: &T::IdType) -> Result<T>
-    where
-        T: CRUDTable;
+        where
+            T: CRUDTable;
 
     /// fetch database record by a wrapper
     async fn fetch_by_wrapper<T>(&self, context_id: &str, w: &Wrapper) -> Result<T>
-    where
-        T: CRUDTable;
+        where
+            T: CRUDTable;
 
     /// count database record by a wrapper
     async fn fetch_count_by_wrapper<T>(&self, context_id: &str, w: &Wrapper) -> Result<u64>
-    where
-        T: CRUDTable;
+        where
+            T: CRUDTable;
 
     /// fetch page database record list by a wrapper
     async fn fetch_page_by_wrapper<T>(
@@ -423,23 +423,23 @@ pub trait CRUD {
         w: &Wrapper,
         page: &dyn IPageRequest,
     ) -> Result<Page<T>>
-    where
-        T: CRUDTable;
+        where
+            T: CRUDTable;
 
     /// fetch database record list for all
     async fn fetch_list<T>(&self, context_id: &str) -> Result<Vec<T>>
-    where
-        T: CRUDTable;
+        where
+            T: CRUDTable;
 
     /// fetch database record list by a id array
     async fn fetch_list_by_ids<T>(&self, context_id: &str, ids: &[T::IdType]) -> Result<Vec<T>>
-    where
-        T: CRUDTable;
+        where
+            T: CRUDTable;
 
     /// fetch database record list by a wrapper
     async fn fetch_list_by_wrapper<T>(&self, context_id: &str, w: &Wrapper) -> Result<Vec<T>>
-    where
-        T: CRUDTable;
+        where
+            T: CRUDTable;
 }
 
 #[async_trait]
@@ -451,8 +451,8 @@ impl CRUD for Rbatis {
         entity: &T,
         w: &Wrapper,
     ) -> Result<DBExecResult>
-    where
-        T: CRUDTable,
+        where
+            T: CRUDTable,
     {
         if w.sql.starts_with("INSERT INTO") {
             return self.exec_prepare(context_id, &w.sql, &w.args).await;
@@ -472,8 +472,8 @@ impl CRUD for Rbatis {
 
     /// save one entity to database
     async fn save<T>(&self, context_id: &str, entity: &T) -> Result<DBExecResult>
-    where
-        T: CRUDTable,
+        where
+            T: CRUDTable,
     {
         let mut index = 0;
         let (columns, values, args) =
@@ -495,8 +495,8 @@ impl CRUD for Rbatis {
     ///
     ///
     async fn save_batch<T>(&self, context_id: &str, args: &[T]) -> Result<DBExecResult>
-    where
-        T: CRUDTable,
+        where
+            T: CRUDTable,
     {
         if args.is_empty() {
             return Ok(DBExecResult {
@@ -531,8 +531,8 @@ impl CRUD for Rbatis {
 
     /// remove database record by a wrapper
     async fn remove_by_wrapper<T>(&self, context_id: &str, w: &Wrapper) -> Result<u64>
-    where
-        T: CRUDTable,
+        where
+            T: CRUDTable,
     {
         let table_name = choose_dyn_table_name::<T>(w);
         let where_sql = self.driver_type()?.make_where(&w.sql);
@@ -556,8 +556,8 @@ impl CRUD for Rbatis {
 
     /// remove database record by id
     async fn remove_by_id<T>(&self, context_id: &str, id: &T::IdType) -> Result<u64>
-    where
-        T: CRUDTable,
+        where
+            T: CRUDTable,
     {
         let mut sql = String::new();
         let driver_type = &self.driver_type()?;
@@ -590,8 +590,8 @@ impl CRUD for Rbatis {
     /// [rbatis] Exec ==> DELETE FROM biz_activity WHERE id IN ( ? , ? )
     ///
     async fn remove_batch_by_id<T>(&self, context_id: &str, ids: &[T::IdType]) -> Result<u64>
-    where
-        T: CRUDTable,
+        where
+            T: CRUDTable,
     {
         if ids.is_empty() {
             return Ok(0);
@@ -611,8 +611,8 @@ impl CRUD for Rbatis {
         w: &Wrapper,
         update_null_value: bool,
     ) -> Result<u64>
-    where
-        T: CRUDTable,
+        where
+            T: CRUDTable,
     {
         let table_name = choose_dyn_table_name::<T>(w);
         let mut args = vec![];
@@ -639,7 +639,7 @@ impl CRUD for Rbatis {
                         driver_type.stmt_convert(args.len()),
                     )
                 )
-                .as_str(),
+                    .as_str(),
             );
             match &self.version_lock_plugin {
                 Some(version_lock_plugin) => {
@@ -683,8 +683,8 @@ impl CRUD for Rbatis {
 
     /// update database record by id
     async fn update_by_id<T>(&self, context_id: &str, arg: &mut T) -> Result<u64>
-    where
-        T: CRUDTable,
+        where
+            T: CRUDTable,
     {
         let id = arg.get_id();
         if id.is_none() {
@@ -702,13 +702,13 @@ impl CRUD for Rbatis {
                 .eq(&T::id_name(), arg.get_id()),
             false,
         )
-        .await
+            .await
     }
 
     /// remove batch database record by args
     async fn update_batch_by_id<T>(&self, context_id: &str, args: &mut [T]) -> Result<u64>
-    where
-        T: CRUDTable,
+        where
+            T: CRUDTable,
     {
         let mut updates = 0;
         for x in args {
@@ -719,26 +719,26 @@ impl CRUD for Rbatis {
 
     /// fetch database record by a wrapper
     async fn fetch_by_wrapper<T>(&self, context_id: &str, w: &Wrapper) -> Result<T>
-    where
-        T: CRUDTable,
+        where
+            T: CRUDTable,
     {
-        let sql = make_select_sql::<T>(&self, &T::table_columns(), &w)?;
+        let sql = make_select_sql::<T>(context_id, &self, &T::table_columns(), &w)?;
         return self.fetch_prepare(context_id, sql.as_str(), &w.args).await;
     }
 
     /// count database record by a wrapper
     async fn fetch_count_by_wrapper<T>(&self, context_id: &str, w: &Wrapper) -> Result<u64>
-    where
-        T: CRUDTable,
+        where
+            T: CRUDTable,
     {
-        let sql = make_select_sql::<T>(&self, "count(1)", &w)?;
+        let sql = make_select_sql::<T>(context_id, &self, "count(1)", &w)?;
         return self.fetch_prepare(context_id, sql.as_str(), &w.args).await;
     }
 
     /// fetch database record by id
     async fn fetch_by_id<T>(&self, context_id: &str, id: &T::IdType) -> Result<T>
-    where
-        T: CRUDTable,
+        where
+            T: CRUDTable,
     {
         let w = self.new_wrapper_table::<T>().eq(&T::id_name(), id);
         return self.fetch_by_wrapper(context_id, &w).await;
@@ -746,17 +746,17 @@ impl CRUD for Rbatis {
 
     /// fetch database record list by a wrapper
     async fn fetch_list_by_wrapper<T>(&self, context_id: &str, w: &Wrapper) -> Result<Vec<T>>
-    where
-        T: CRUDTable,
+        where
+            T: CRUDTable,
     {
-        let sql = make_select_sql::<T>(&self, &T::table_columns(), &w)?;
+        let sql = make_select_sql::<T>(context_id, &self, &T::table_columns(), &w)?;
         return self.fetch_prepare(context_id, sql.as_str(), &w.args).await;
     }
 
     /// fetch database record list for all
     async fn fetch_list<T>(&self, context_id: &str) -> Result<Vec<T>>
-    where
-        T: CRUDTable,
+        where
+            T: CRUDTable,
     {
         return self
             .fetch_list_by_wrapper(context_id, &self.new_wrapper_table::<T>())
@@ -765,8 +765,8 @@ impl CRUD for Rbatis {
 
     /// fetch database record list by a id array
     async fn fetch_list_by_ids<T>(&self, context_id: &str, ids: &[T::IdType]) -> Result<Vec<T>>
-    where
-        T: CRUDTable,
+        where
+            T: CRUDTable,
     {
         let w = self.new_wrapper_table::<T>().in_array(&T::id_name(), ids);
         return self.fetch_list_by_wrapper(context_id, &w).await;
@@ -779,10 +779,10 @@ impl CRUD for Rbatis {
         w: &Wrapper,
         page: &dyn IPageRequest,
     ) -> Result<Page<T>>
-    where
-        T: CRUDTable,
+        where
+            T: CRUDTable,
     {
-        let sql = make_select_sql::<T>(&self, &T::table_columns(), &w)?;
+        let sql = make_select_sql::<T>(context_id, &self, &T::table_columns(), &w)?;
         self.fetch_page(context_id, sql.as_str(), &w.args, page)
             .await
     }
@@ -790,8 +790,8 @@ impl CRUD for Rbatis {
 
 /// choose table name
 fn choose_dyn_table_name<T>(w: &Wrapper) -> String
-where
-    T: CRUDTable,
+    where
+        T: CRUDTable,
 {
     let mut table_name = T::table_name();
     let table_name_format = w.formats.get("table_name");
@@ -806,15 +806,16 @@ where
     return table_name;
 }
 
-fn make_select_sql<T>(rb: &Rbatis, column: &str, w: &Wrapper) -> Result<String>
-where
-    T: CRUDTable,
+fn make_select_sql<T>(context_id: &str, rb: &Rbatis, column: &str, w: &Wrapper) -> Result<String>
+    where
+        T: CRUDTable,
 {
     let driver_type = rb.driver_type()?;
     let table_name = choose_dyn_table_name::<T>(w);
     if rb.logic_plugin.is_some() {
         let logic_ref = rb.logic_plugin.as_ref().unwrap();
         return logic_ref.create_select_sql(
+            context_id,
             &driver_type,
             &table_name,
             column,
