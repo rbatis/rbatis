@@ -6,8 +6,6 @@ mod test {
     use rbatis::crud::CRUD;
     use chrono::NaiveDateTime;
     use rbatis::core::value::DateTimeNow;
-    use bigdecimal::BigDecimal;
-
     #[async_std::test]
     async fn plugin_exclude(){
         fast_log::init_log("requests.log", 1000, log::Level::Info, None, true);
