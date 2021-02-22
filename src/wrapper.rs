@@ -154,7 +154,7 @@ impl Wrapper {
     /// do method,if test is true
     /// for example:
     ///  let arg = 1;
-    ///  wrapper.do_if(true, |w| w.eq("id"))
+    ///  wrapper.do_if(true, |w| w.eq("id"),|w|w)
     pub fn do_if_else<'s, F>(self, test: bool, method_if: F, default: fn(Self) -> Self) -> Self
         where
             F: FnOnce(Self) -> Self,
