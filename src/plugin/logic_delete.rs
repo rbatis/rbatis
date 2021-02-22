@@ -30,6 +30,7 @@ pub trait LogicDelete: Send + Sync + Debug {
         &self,
         driver_type: &DriverType,
         table_name: &str,
+        column: &str,
         table_fields: &str,
         sql_where: &str,
     ) -> Result<String, crate::core::Error>;
@@ -103,6 +104,7 @@ impl LogicDelete for RbatisLogicDeletePlugin {
         &self,
         driver_type: &DriverType,
         table_name: &str,
+        column: &str,
         table_fields: &str,
         where_sql: &str,
     ) -> Result<String, Error> {
@@ -120,7 +122,7 @@ impl LogicDelete for RbatisLogicDeletePlugin {
         }
         sql = format!(
             "SELECT {} FROM {} {}",
-            table_fields,
+            column,
             table_name,
             driver_type.make_where(&where_sql)
         );
