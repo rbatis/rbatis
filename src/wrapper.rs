@@ -155,14 +155,14 @@ impl Wrapper {
     /// for example:
     ///  let arg = 1;
     ///  wrapper.do_if(true, |w| w.eq("id"),|w|w)
-    pub fn do_if_else<'s, F>(self, test: bool, method_if: F, default: fn(Self) -> Self) -> Self
+    pub fn do_if_else<'s, F>(self, test: bool, method_if: F, method_else: fn(Self) -> Self) -> Self
         where
             F: FnOnce(Self) -> Self,
     {
         if test {
             return method_if(self);
         } else {
-            return default(self);
+            return method_else(self);
         }
     }
 
