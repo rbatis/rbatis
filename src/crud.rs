@@ -539,6 +539,7 @@ impl CRUD for Rbatis {
         let mut sql = String::new();
         if self.logic_plugin.is_some() {
             sql = self.logic_plugin.as_ref().unwrap().create_remove_sql(
+                context_id,
                 &self.driver_type()?,
                 &table_name,
                 &T::table_columns(),
@@ -563,6 +564,7 @@ impl CRUD for Rbatis {
         let id_str = T::do_format_column(&driver_type, &T::id_name(), driver_type.stmt_convert(0));
         if self.logic_plugin.is_some() {
             sql = self.logic_plugin.as_ref().unwrap().create_remove_sql(
+                context_id,
                 &driver_type,
                 T::table_name().as_str(),
                 &T::table_columns(),
@@ -641,10 +643,8 @@ impl CRUD for Rbatis {
             );
             match &self.version_lock_plugin {
                 Some(version_lock_plugin) => {
-                    if version_lock_plugin.column().eq(column) {
-                        old_version = v.clone();
-                        *v = version_lock_plugin.try_add_one(old_version.clone());
-                    }
+                    old_version = v.clone();
+                    *v = version_lock_plugin.try_add_one(context_id, &old_version, column);
                 }
                 _ => {}
             }
@@ -655,12 +655,9 @@ impl CRUD for Rbatis {
         wrapper.sql = format!("UPDATE {} SET {}", table_name, sets);
         wrapper.args = args;
         //version lock
-        match &self.version_lock_plugin {
+        match self.version_lock_plugin.as_ref() {
             Some(version_lock_plugin) => {
-                if !old_version.eq(&serde_json::Value::Null) {
-                    wrapper.sql.push_str(" WHERE ");
-                    wrapper = wrapper.eq(version_lock_plugin.column(), &old_version).and();
-                }
+                wrapper.sql.push_str(&version_lock_plugin.as_ref().try_make_where_sql(context_id, &old_version));
             }
             _ => {}
         }

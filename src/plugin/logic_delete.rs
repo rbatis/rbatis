@@ -11,6 +11,9 @@ pub trait LogicDelete: Send + Sync + Debug {
     fn name(&self) -> &str {
         std::any::type_name::<Self>()
     }
+
+    fn is_allow(&self, context_id: &str) -> bool;
+
     /// database column
     fn column(&self) -> &str;
     /// deleted data,must be i32
@@ -20,6 +23,7 @@ pub trait LogicDelete: Send + Sync + Debug {
     /// create_remove_sql
     fn create_remove_sql(
         &self,
+        context_id: &str,
         driver_type: &DriverType,
         table_name: &str,
         table_fields: &str,
@@ -38,6 +42,7 @@ pub trait LogicDelete: Send + Sync + Debug {
 
 #[derive(Debug)]
 pub struct RbatisLogicDeletePlugin {
+    pub excludes: Vec<String>,
     pub column: String,
     pub deleted: i32,
     pub un_deleted: i32,
@@ -46,6 +51,7 @@ pub struct RbatisLogicDeletePlugin {
 impl RbatisLogicDeletePlugin {
     pub fn new(column: &str) -> Self {
         Self {
+            excludes: vec![],
             column: column.to_string(),
             deleted: 1,
             un_deleted: 0,
@@ -56,6 +62,7 @@ impl RbatisLogicDeletePlugin {
             panic!("[rbaits] deleted can not equal to un_deleted on RbatisLogicDeletePlugin::new_opt(column: &str, deleted: i32, un_deleted: i32)")
         }
         Self {
+            excludes: vec![],
             column: column.to_string(),
             deleted,
             un_deleted,
@@ -64,6 +71,15 @@ impl RbatisLogicDeletePlugin {
 }
 
 impl LogicDelete for RbatisLogicDeletePlugin {
+    fn is_allow(&self, context_id: &str) -> bool {
+        for x in &self.excludes {
+            if context_id.contains(x) {
+                return false;
+            }
+        }
+        return true;
+    }
+
     fn column(&self) -> &str {
         self.column.as_str()
     }
@@ -78,11 +94,17 @@ impl LogicDelete for RbatisLogicDeletePlugin {
 
     fn create_remove_sql(
         &self,
+        context_id: &str,
         driver_type: &DriverType,
         table_name: &str,
         table_fields: &str,
         sql_where: &str,
     ) -> Result<String, Error> {
+        if !self.is_allow(context_id) {
+            //make delete sql
+            let new_sql = format!("DELETE FROM {} {}", table_name, sql_where.trim_start());
+            return Ok(new_sql);
+        }
         return if table_fields.contains(self.column()) {
             //fields have column
             let new_sql = format!(
