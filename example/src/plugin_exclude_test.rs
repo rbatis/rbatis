@@ -4,6 +4,9 @@ mod test {
     use rbatis::plugin::logic_delete::RbatisLogicDeletePlugin;
     use crate::BizActivity;
     use rbatis::crud::CRUD;
+    use chrono::NaiveDateTime;
+    use rbatis::core::value::DateTimeNow;
+    use bigdecimal::BigDecimal;
 
     #[async_std::test]
     async fn plugin_exclude(){
@@ -22,5 +25,22 @@ mod test {
         rb.remove_by_id::<BizActivity>("", &id).await;
         //delete sql          "DELETE FROM biz_activity WHERE id = ?"
         rb.remove_by_id::<BizActivity>("exclude:", &id).await;
+
+
+        //fix data
+        rb.save("", &BizActivity {
+            id: Some("12312".to_string()),
+            name: Some("12312".to_string()),
+            pc_link: None,
+            h5_link: None,
+            pc_banner_img: None,
+            h5_banner_img: None,
+            sort: Some("1".to_string()),
+            status: Some(1),
+            remark: None,
+            create_time: Some(NaiveDateTime::now()),
+            version: Some(0),
+            delete_flag: Some(1),
+        }).await;
     }
 }
