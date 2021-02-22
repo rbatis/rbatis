@@ -18,6 +18,7 @@ pub trait SqlIntercept: Send + Sync + Debug {
     fn do_intercept(
         &self,
         rb: &Rbatis,
+        context_id: &str,
         sql: &mut String,
         args: &mut Vec<serde_json::Value>,
         is_prepared_sql: bool,

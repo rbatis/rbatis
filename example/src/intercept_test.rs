@@ -9,10 +9,12 @@ mod test {
 
     #[derive(Debug)]
     pub struct MyIntercept {}
+
     impl SqlIntercept for MyIntercept {
         fn do_intercept(
             &self,
             rb: &Rbatis,
+            context_id: &str,
             sql: &mut String,
             args: &mut Vec<Value>,
             is_prepared_sql: bool,

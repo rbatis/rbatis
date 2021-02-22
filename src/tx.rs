@@ -75,11 +75,11 @@ impl TxManager {
         self.log_plugin.is_some() && self.log_plugin.as_ref().unwrap().is_enable()
     }
 
-    fn do_log(&self, arg: &str) {
+    fn do_log(&self, context_id: &str, arg: &str) {
         if self.is_enable_log() {
             match &self.log_plugin {
                 Some(v) => {
-                    v.do_log(arg);
+                    v.do_log(context_id, arg);
                 }
                 _ => {}
             }
@@ -100,10 +100,13 @@ impl TxManager {
                     drop(m);
                     for context_id in &rollback_ids {
                         if manager.is_enable_log() {
-                            manager.do_log(&format!(
-                                "[rbatis] rollback context_id:{},Because the manager exits",
-                                context_id
-                            ));
+                            manager.do_log(
+                                context_id,
+                                &format!(
+                                    "[rbatis] rollback context_id:{},Because the manager exits",
+                                    context_id
+                                ),
+                            );
                         }
                         manager.rollback(context_id).await;
                     }
@@ -137,10 +140,13 @@ impl TxManager {
                     Some(v) => {
                         for context_id in v {
                             if manager.is_enable_log() {
-                                manager.do_log(&format!(
-                                    "[rbatis] rollback context_id:{},out of time:{:?}",
-                                    context_id, &manager.tx_lock_wait_timeout
-                                ));
+                                manager.do_log(
+                                    context_id,
+                                    &format!(
+                                        "[rbatis] rollback context_id:{},out of time:{:?}",
+                                        context_id, &manager.tx_lock_wait_timeout
+                                    ),
+                                );
                             }
                             manager.rollback(context_id).await;
                         }
@@ -181,7 +187,10 @@ impl TxManager {
             )
             .await;
         if self.is_enable_log() {
-            self.do_log(&format!("[rbatis] [{}] Begin", new_context_id));
+            self.do_log(
+                new_context_id,
+                &format!("[rbatis] [{}] Begin", new_context_id),
+            );
         }
         return Ok(new_context_id.to_string());
     }
@@ -198,7 +207,7 @@ impl TxManager {
         let (mut tx, state): (DBTx, TxState) = tx_op.unwrap();
         let result = tx.commit().await?;
         if self.is_enable_log() {
-            self.do_log(&format!("[rbatis] [{}] Commit", context_id));
+            self.do_log(context_id, &format!("[rbatis] [{}] Commit", context_id));
         }
         return Ok(context_id.to_string());
     }
@@ -215,7 +224,7 @@ impl TxManager {
         let (tx, state): (DBTx, TxState) = tx_op.unwrap();
         let result = tx.rollback().await?;
         if self.is_enable_log() {
-            self.do_log(&format!("[rbatis] [{}] Rollback", context_id));
+            self.do_log(context_id, &format!("[rbatis] [{}] Rollback", context_id));
         }
         return Ok(context_id.to_string());
     }

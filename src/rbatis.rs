@@ -375,14 +375,13 @@ impl Rbatis {
         //sql intercept
         let mut sql = sql.to_string();
         for item in &self.sql_intercepts {
-            item.do_intercept(self, &mut sql, &mut vec![], false);
+            item.do_intercept(self, context_id, &mut sql, &mut vec![], false);
         }
         if self.log_plugin.is_enable() {
-            self.log_plugin.do_log(&format!(
-                "[rbatis] [{}] Query ==> {}",
+            self.log_plugin.do_log(
                 context_id,
-                sql.as_str()
-            ));
+                &format!("[rbatis] [{}] Query ==> {}", context_id, sql.as_str()),
+            );
         }
         let result;
         let mut fetch_num = 0;
@@ -405,10 +404,10 @@ impl Rbatis {
             fetch_num = num;
         }
         if self.log_plugin.is_enable() {
-            self.log_plugin.do_log(&format!(
-                "[rbatis] [{}] ReturnRows <== {}",
-                context_id, fetch_num
-            ));
+            self.log_plugin.do_log(
+                context_id,
+                &format!("[rbatis] [{}] ReturnRows <== {}", context_id, fetch_num),
+            );
         }
         return Ok(result);
     }
@@ -421,11 +420,13 @@ impl Rbatis {
         //sql intercept
         let mut sql = sql.to_string();
         for item in &self.sql_intercepts {
-            item.do_intercept(self, &mut sql, &mut vec![], false);
+            item.do_intercept(self, context_id, &mut sql, &mut vec![], false);
         }
         if self.log_plugin.is_enable() {
-            self.log_plugin
-                .do_log(&format!("[rbatis] [{}] Exec  ==> {}", context_id, &sql));
+            self.log_plugin.do_log(
+                context_id,
+                &format!("[rbatis] [{}] Exec  ==> {}", context_id, &sql),
+            );
         }
         let result;
         if self.tx_manager.is_tx_prifix_id(context_id) {
@@ -444,14 +445,19 @@ impl Rbatis {
         }
         if self.log_plugin.is_enable() {
             if result.is_ok() {
-                self.log_plugin.do_log(&format!(
-                    "[rbatis] [{}] RowsAffected <== {}",
+                self.log_plugin.do_log(
                     context_id,
-                    result.as_ref().unwrap().rows_affected
-                ));
+                    &format!(
+                        "[rbatis] [{}] RowsAffected <== {}",
+                        context_id,
+                        result.as_ref().unwrap().rows_affected
+                    ),
+                );
             } else {
-                self.log_plugin
-                    .do_log(&format!("[rbatis] [{}] RowsAffected <== {}", context_id, 0));
+                self.log_plugin.do_log(
+                    context_id,
+                    &format!("[rbatis] [{}] RowsAffected <== {}", context_id, 0),
+                );
             }
         }
         return result;
@@ -488,17 +494,20 @@ impl Rbatis {
         let mut sql = sql.to_string();
         let mut args = args.clone();
         for item in &self.sql_intercepts {
-            item.do_intercept(self, &mut sql, &mut args, true);
+            item.do_intercept(self, context_id, &mut sql, &mut args, true);
         }
         if self.log_plugin.is_enable() {
-            self.log_plugin.do_log(&format!(
-                "[rbatis] [{}] Query ==> {}\n{}[rbatis] [{}] Args  ==> {}",
+            self.log_plugin.do_log(
                 context_id,
-                &sql,
-                string_util::LOG_SPACE,
-                context_id,
-                serde_json::Value::Array(args.clone()).to_string()
-            ));
+                &format!(
+                    "[rbatis] [{}] Query ==> {}\n{}[rbatis] [{}] Args  ==> {}",
+                    context_id,
+                    &sql,
+                    string_util::LOG_SPACE,
+                    context_id,
+                    serde_json::Value::Array(args.clone()).to_string()
+                ),
+            );
         }
         let result_data;
         let mut return_num = 0;
@@ -523,10 +532,10 @@ impl Rbatis {
             return_num = num;
         }
         if self.log_plugin.is_enable() {
-            self.log_plugin.do_log(&format!(
-                "[rbatis] [{}] ReturnRows <== {}",
-                context_id, return_num
-            ));
+            self.log_plugin.do_log(
+                context_id,
+                &format!("[rbatis] [{}] ReturnRows <== {}", context_id, return_num),
+            );
         }
         return Ok(result_data);
     }
@@ -546,17 +555,20 @@ impl Rbatis {
         let mut sql = sql.to_string();
         let mut args = args.clone();
         for item in &self.sql_intercepts {
-            item.do_intercept(self, &mut sql, &mut args, true);
+            item.do_intercept(self, context_id, &mut sql, &mut args, true);
         }
         if self.log_plugin.is_enable() {
-            self.log_plugin.do_log(&format!(
-                "[rbatis] [{}] Exec  ==> {}\n{}[rbatis] [{}] Args  ==> {}",
+            self.log_plugin.do_log(
                 context_id,
-                &sql,
-                string_util::LOG_SPACE,
-                context_id,
-                serde_json::Value::Array(args.clone()).to_string()
-            ));
+                &format!(
+                    "[rbatis] [{}] Exec  ==> {}\n{}[rbatis] [{}] Args  ==> {}",
+                    context_id,
+                    &sql,
+                    string_util::LOG_SPACE,
+                    context_id,
+                    serde_json::Value::Array(args.clone()).to_string()
+                ),
+            );
         }
         let result;
         if self.tx_manager.is_tx_prifix_id(context_id) {
@@ -577,14 +589,19 @@ impl Rbatis {
         }
         if self.log_plugin.is_enable() {
             if result.is_ok() {
-                self.log_plugin.do_log(&format!(
-                    "[rbatis] [{}] RowsAffected <== {}",
+                self.log_plugin.do_log(
                     context_id,
-                    result.as_ref().unwrap().rows_affected
-                ));
+                    &format!(
+                        "[rbatis] [{}] RowsAffected <== {}",
+                        context_id,
+                        result.as_ref().unwrap().rows_affected
+                    ),
+                );
             } else {
-                self.log_plugin
-                    .do_log(&format!("[rbatis] [{}] RowsAffected <== {}", context_id, 0));
+                self.log_plugin.do_log(
+                    context_id,
+                    &format!("[rbatis] [{}] RowsAffected <== {}", context_id, 0),
+                );
             }
         }
         return result;
