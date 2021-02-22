@@ -591,7 +591,11 @@ impl Rbatis {
     }
 
     /// py str into py ast,run get sql,arg result
-    fn py_to_sql<Arg>(&self, py_sql: &str, arg: &Arg) -> Result<(String, Vec<serde_json::Value>), Error>
+    fn py_to_sql<Arg>(
+        &self,
+        py_sql: &str,
+        arg: &Arg,
+    ) -> Result<(String, Vec<serde_json::Value>), Error>
     where
         Arg: Serialize + Send + Sync,
     {
@@ -621,7 +625,12 @@ impl Rbatis {
     ///       )"#;
     ///         let data: serde_json::Value = rb.py_fetch("", py, &json!({   "delete_flag": 1 })).await.unwrap();
     ///
-    pub async fn py_fetch<T, Arg>(&self, context_id: &str, py_sql: &str, arg: &Arg) -> Result<T, Error>
+    pub async fn py_fetch<T, Arg>(
+        &self,
+        context_id: &str,
+        py_sql: &str,
+        arg: &Arg,
+    ) -> Result<T, Error>
     where
         T: DeserializeOwned,
         Arg: Serialize + Send + Sync,
@@ -713,5 +722,13 @@ impl Rbatis {
         return self
             .fetch_page::<T>(context_id, sql.as_str(), &args, page_request)
             .await;
+    }
+
+    /// is debug mode
+    pub fn is_debug_mode(&self) -> bool {
+        if cfg!(feature = "debug_mode") {
+            return true;
+        }
+        return false;
     }
 }
