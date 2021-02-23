@@ -80,7 +80,7 @@ mod test {
 
     #[test]
     pub fn test_save() {
-        rbatis::core::runtime::block_on(async {
+        rbatis::core::runtime::task::block_on(async {
             let activity = BizActivity {
                 id: Some("12312".to_string()),
                 name: Some("111".to_string()),
@@ -113,7 +113,7 @@ mod test {
 
     #[test]
     pub fn test_save_batch() {
-        rbatis::core::runtime::block_on(async {
+        rbatis::core::runtime::task::block_on(async {
             let activity = BizActivity {
                 id: Some("12312".to_string()),
                 name: None,
@@ -144,7 +144,7 @@ mod test {
 
     #[test]
     pub fn test_remove_batch_by_id() {
-        rbatis::core::runtime::block_on(async {
+        rbatis::core::runtime::task::block_on(async {
             fast_log::init_log("requests.log", 1000, log::Level::Info, None, true);
             let mut rb = Rbatis::new();
             rb.logic_plugin = Some(Box::new(RbatisLogicDeletePlugin::new("delete_flag")));
@@ -162,7 +162,7 @@ mod test {
 
     #[test]
     pub fn test_remove_by_id() {
-        rbatis::core::runtime::block_on(async {
+        rbatis::core::runtime::task::block_on(async {
             fast_log::init_log("requests.log", 1000, log::Level::Info, None, true);
             let mut rb = Rbatis::new();
             //设置 逻辑删除插件
@@ -180,7 +180,7 @@ mod test {
 
     #[test]
     pub fn test_update_by_wrapper() {
-        rbatis::core::runtime::block_on(async {
+        rbatis::core::runtime::task::block_on(async {
             fast_log::init_log("requests.log", 1000, log::Level::Info, None, true);
             let mut rb = Rbatis::new();
             //设置 逻辑删除插件
@@ -214,7 +214,7 @@ mod test {
 
     #[test]
     pub fn test_update_by_id() {
-        rbatis::core::runtime::block_on(async {
+        rbatis::core::runtime::task::block_on(async {
             fast_log::init_log("requests.log", 1000, log::Level::Info, None, true);
             let mut rb = Rbatis::new();
             //设置 逻辑删除插件
@@ -246,7 +246,7 @@ mod test {
 
     #[test]
     pub fn test_fetch_by_wrapper() {
-        rbatis::core::runtime::block_on(async {
+        rbatis::core::runtime::task::block_on(async {
             fast_log::init_log("requests.log", 1000, log::Level::Info, None, true);
             let mut rb = Rbatis::new();
             //设置 逻辑删除插件
@@ -265,7 +265,7 @@ mod test {
 
     #[test]
     pub fn test_fetch_no_del() {
-        rbatis::core::runtime::block_on(async {
+        rbatis::core::runtime::task::block_on(async {
             fast_log::init_log("requests.log", 1000, log::Level::Info, None, true);
             let mut rb = Rbatis::new();
             //设置 逻辑删除插件
@@ -284,7 +284,7 @@ mod test {
 
     #[test]
     pub fn test_fetch_page_by_wrapper() {
-        rbatis::core::runtime::block_on(async {
+        rbatis::core::runtime::task::block_on(async {
             fast_log::init_log("requests.log", 1000, log::Level::Info, None, true);
             let mut rb = Rbatis::new();
             //设置 逻辑删除插件
@@ -304,7 +304,7 @@ mod test {
 
     #[test]
     fn test_insert_order() {
-        rbatis::core::runtime::block_on(async {
+        rbatis::core::runtime::task::block_on(async {
             fast_log::init_log("requests.log", 1000, log::Level::Info, None, true);
             let mut rb = Rbatis::new();
             //设置 逻辑删除插件
