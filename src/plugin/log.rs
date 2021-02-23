@@ -16,28 +16,43 @@ pub trait LogPlugin: Send + Sync + Debug {
     fn do_log(&self, context_id: &str, data: &str) {
         match self.get_level_filter() {
             log::LevelFilter::Error => {
-                self.error(data);
+                self.error(context_id, data);
             }
             log::LevelFilter::Warn => {
-                self.warn(data);
+                self.warn(context_id, data);
             }
             log::LevelFilter::Info => {
-                self.info(data);
+                self.info(context_id, data);
             }
             log::LevelFilter::Debug => {
-                self.debug(data);
+                self.debug(context_id, data);
             }
             log::LevelFilter::Trace => {
-                self.trace(data);
+                self.trace(context_id, data);
             }
             _ => {}
         }
     }
-    fn error(&self, data: &str);
-    fn warn(&self, data: &str);
-    fn info(&self, data: &str);
-    fn debug(&self, data: &str);
-    fn trace(&self, data: &str);
+
+    fn error(&self, context_id: &str, data: &str) {
+        error!("[rbatis] [{}] {}",context_id, data);
+    }
+
+    fn warn(&self, context_id: &str, data: &str) {
+        warn!("[rbatis] [{}] {}", context_id, data);
+    }
+
+    fn info(&self, context_id: &str, data: &str) {
+        info!("[rbatis] [{}] {}", context_id, data);
+    }
+
+    fn debug(&self, context_id: &str, data: &str) {
+        debug!("[rbatis] [{}] {}", context_id, data);
+    }
+
+    fn trace(&self, context_id: &str, data: &str) {
+        trace!("[rbatis] [{}] {}", context_id, data);
+    }
 }
 
 #[derive(Debug)]
@@ -56,25 +71,5 @@ impl Default for RbatisLog {
 impl LogPlugin for RbatisLog {
     fn get_level_filter(&self) -> &LevelFilter {
         &self.level_filter
-    }
-
-    fn error(&self, data: &str) {
-        error!("{}", data);
-    }
-
-    fn warn(&self, data: &str) {
-        warn!("{}", data);
-    }
-
-    fn info(&self, data: &str) {
-        info!("{}", data);
-    }
-
-    fn debug(&self, data: &str) {
-        debug!("{}", data);
-    }
-
-    fn trace(&self, data: &str) {
-        trace!("{}", data);
     }
 }

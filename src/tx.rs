@@ -79,7 +79,7 @@ impl TxManager {
         if self.is_enable_log() {
             match &self.log_plugin {
                 Some(v) => {
-                    v.do_log(context_id, arg);
+                    v.info(context_id, arg);
                 }
                 _ => {}
             }

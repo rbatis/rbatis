@@ -378,13 +378,12 @@ impl Rbatis {
             item.do_intercept(self, context_id, &mut sql, &mut vec![], false);
         }
         if self.log_plugin.is_enable() {
-            self.log_plugin.do_log(
+            self.log_plugin.info(
                 context_id,
-                &format!("[rbatis] [{}] Query ==> {}", context_id, sql.as_str()),
+                &format!("Query ==> {}", sql.as_str()),
             );
         }
-        let result;
-        let mut fetch_num = 0;
+        let result: Result<(T, usize), Error>;
         if self.tx_manager.is_tx_prifix_id(context_id) {
             let conn = self.tx_manager.get_mut(context_id).await;
             if conn.is_none() {
@@ -394,22 +393,28 @@ impl Rbatis {
                 )));
             }
             let mut conn = conn.unwrap();
-            let (data, num) = conn.value_mut().0.fetch(sql.as_str()).await?;
-            result = data;
-            fetch_num = num;
+            result = conn.value_mut().0.fetch(sql.as_str()).await;
         } else {
             let mut conn = self.get_pool()?.acquire().await?;
-            let (data, num) = conn.fetch(sql.as_str()).await?;
-            result = data;
-            fetch_num = num;
+            result = conn.fetch(sql.as_str()).await;
         }
         if self.log_plugin.is_enable() {
-            self.log_plugin.do_log(
-                context_id,
-                &format!("[rbatis] [{}] ReturnRows <== {}", context_id, fetch_num),
-            );
+            match &result {
+                Ok(result) => {
+                    self.log_plugin.info(
+                        context_id,
+                        &format!("ReturnRows <== {}", result.1),
+                    );
+                }
+                Err(e) => {
+                    self.log_plugin.error(
+                        context_id,
+                        &format!("ReturnErr  <== {}", e),
+                    );
+                }
+            }
         }
-        return Ok(result);
+        return Ok(result?.0);
     }
 
     /// exec sql(row sql)
@@ -423,9 +428,9 @@ impl Rbatis {
             item.do_intercept(self, context_id, &mut sql, &mut vec![], false);
         }
         if self.log_plugin.is_enable() {
-            self.log_plugin.do_log(
+            self.log_plugin.info(
                 context_id,
-                &format!("[rbatis] [{}] Exec  ==> {}", context_id, &sql),
+                &format!("Exec  ==> {}", &sql),
             );
         }
         let result;
@@ -444,20 +449,21 @@ impl Rbatis {
             result = conn.execute(&sql).await;
         }
         if self.log_plugin.is_enable() {
-            if result.is_ok() {
-                self.log_plugin.do_log(
-                    context_id,
-                    &format!(
-                        "[rbatis] [{}] RowsAffected <== {}",
+            match &result {
+                Ok(result) => {
+                    self.log_plugin.info(
                         context_id,
-                        result.as_ref().unwrap().rows_affected
-                    ),
-                );
-            } else {
-                self.log_plugin.do_log(
-                    context_id,
-                    &format!("[rbatis] [{}] RowsAffected <== {}", context_id, 0),
-                );
+                        &format!(
+                            "RowsAffected <== {}", result.rows_affected
+                        ),
+                    );
+                }
+                Err(e) => {
+                    self.log_plugin.error(
+                        context_id,
+                        &format!("ReturnErr  <== {}", e),
+                    );
+                }
             }
         }
         return result;
@@ -497,11 +503,10 @@ impl Rbatis {
             item.do_intercept(self, context_id, &mut sql, &mut args, true);
         }
         if self.log_plugin.is_enable() {
-            self.log_plugin.do_log(
+            self.log_plugin.info(
                 context_id,
                 &format!(
-                    "[rbatis] [{}] Query ==> {}\n{}[rbatis] [{}] Args  ==> {}",
-                    context_id,
+                    "Query ==> {}\n{}[rbatis] [{}] Args  ==> {}",
                     &sql,
                     string_util::LOG_SPACE,
                     context_id,
@@ -509,8 +514,7 @@ impl Rbatis {
                 ),
             );
         }
-        let result_data;
-        let mut return_num = 0;
+        let result: Result<(T, usize), Error>;
         if self.tx_manager.is_tx_prifix_id(context_id) {
             let q: DBQuery = self.bind_arg(&sql, &args)?;
             let conn = self.tx_manager.get_mut(context_id).await;
@@ -521,23 +525,29 @@ impl Rbatis {
                 )));
             }
             let mut conn = conn.unwrap();
-            let (result, num) = conn.value_mut().0.fetch_parperd(q).await?;
-            result_data = result;
-            return_num = num;
+            result = conn.value_mut().0.fetch_parperd(q).await;
         } else {
             let mut conn = self.get_pool()?.acquire().await?;
             let q: DBQuery = self.bind_arg(&sql, &args)?;
-            let (result, num) = conn.fetch_parperd(q).await?;
-            result_data = result;
-            return_num = num;
+            result = conn.fetch_parperd(q).await;
         }
         if self.log_plugin.is_enable() {
-            self.log_plugin.do_log(
-                context_id,
-                &format!("[rbatis] [{}] ReturnRows <== {}", context_id, return_num),
-            );
+            match &result {
+                Ok(result) => {
+                    self.log_plugin.info(
+                        context_id,
+                        &format!("ReturnRows <== {}", result.1),
+                    );
+                }
+                Err(e) => {
+                    self.log_plugin.error(
+                        context_id,
+                        &format!("ReturnErr  <== {}", e),
+                    );
+                }
+            }
         }
-        return Ok(result_data);
+        return Ok(result?.0);
     }
 
     /// exec sql(prepare sql)
@@ -558,11 +568,10 @@ impl Rbatis {
             item.do_intercept(self, context_id, &mut sql, &mut args, true);
         }
         if self.log_plugin.is_enable() {
-            self.log_plugin.do_log(
+            self.log_plugin.info(
                 context_id,
                 &format!(
-                    "[rbatis] [{}] Exec  ==> {}\n{}[rbatis] [{}] Args  ==> {}",
-                    context_id,
+                    "Exec  ==> {}\n{}[rbatis] [{}] Args  ==> {}",
                     &sql,
                     string_util::LOG_SPACE,
                     context_id,
@@ -588,20 +597,21 @@ impl Rbatis {
             result = conn.exec_prepare(q).await;
         }
         if self.log_plugin.is_enable() {
-            if result.is_ok() {
-                self.log_plugin.do_log(
-                    context_id,
-                    &format!(
-                        "[rbatis] [{}] RowsAffected <== {}",
+            match &result {
+                Ok(result) => {
+                    self.log_plugin.info(
                         context_id,
-                        result.as_ref().unwrap().rows_affected
-                    ),
-                );
-            } else {
-                self.log_plugin.do_log(
-                    context_id,
-                    &format!("[rbatis] [{}] RowsAffected <== {}", context_id, 0),
-                );
+                        &format!(
+                            "RowsAffected <== {}", result.rows_affected
+                        ),
+                    );
+                }
+                Err(e) => {
+                    self.log_plugin.error(
+                        context_id,
+                        &format!("ReturnErr  <== {}", e),
+                    );
+                }
             }
         }
         return result;
