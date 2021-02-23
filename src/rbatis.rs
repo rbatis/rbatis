@@ -16,7 +16,7 @@ use crate::core::sync::sync_map::SyncMap;
 use crate::core::Error;
 use crate::crud::CRUDTable;
 use crate::plugin::intercept::SqlIntercept;
-use crate::plugin::log::{LogPlugin, RbatisLog};
+use crate::plugin::log::{LogPlugin, RbatisLogPlugin};
 use crate::plugin::logic_delete::{LogicDelete, RbatisLogicDeletePlugin};
 use crate::plugin::page::{IPage, IPageRequest, Page, PagePlugin, RbatisPagePlugin};
 use crate::plugin::version_lock::{RbatisVersionLockPlugin, VersionLockPlugin};
@@ -107,7 +107,7 @@ impl Default for RbatisOption {
             page_plugin: Box::new(RbatisPagePlugin::new()),
             sql_intercepts: vec![],
             logic_plugin: None,
-            log_plugin: Arc::new(Box::new(RbatisLog::default()) as Box<dyn LogPlugin>),
+            log_plugin: Arc::new(Box::new(RbatisLogPlugin::default()) as Box<dyn LogPlugin>),
             tx_prefix: "tx:".to_string(),
             version_lock_plugin: None,
         }
