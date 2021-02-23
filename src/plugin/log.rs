@@ -30,37 +30,67 @@ pub trait LogPlugin: Send + Sync + Debug {
             log::LevelFilter::Trace => {
                 self.trace(context_id, data);
             }
-            _ => {}
+            log::LevelFilter::Off => {}
         }
     }
 
     fn error(&self, context_id: &str, data: &str) {
-        error!("[rbatis] [{}] {}",context_id, data);
+        let filter = self.get_level_filter();
+        if filter.eq(&LevelFilter::Off) {
+            return;
+        }
+        if filter.ge(&LevelFilter::Error) {
+            error!("[rbatis] [{}] {}", context_id, data);
+        }
     }
 
     fn warn(&self, context_id: &str, data: &str) {
-        warn!("[rbatis] [{}] {}", context_id, data);
+        let filter = self.get_level_filter();
+        if filter.eq(&LevelFilter::Off) {
+            return;
+        }
+        if filter.ge(&LevelFilter::Warn) {
+            warn!("[rbatis] [{}] {}", context_id, data);
+        }
     }
 
     fn info(&self, context_id: &str, data: &str) {
-        info!("[rbatis] [{}] {}", context_id, data);
+        let filter = self.get_level_filter();
+        if filter.eq(&LevelFilter::Off) {
+            return;
+        }
+        if filter.ge(&LevelFilter::Info) {
+            info!("[rbatis] [{}] {}", context_id, data);
+        }
     }
 
     fn debug(&self, context_id: &str, data: &str) {
-        debug!("[rbatis] [{}] {}", context_id, data);
+        let filter = self.get_level_filter();
+        if filter.eq(&LevelFilter::Off) {
+            return;
+        }
+        if filter.ge(&LevelFilter::Debug) {
+            debug!("[rbatis] [{}] {}", context_id, data);
+        }
     }
 
     fn trace(&self, context_id: &str, data: &str) {
-        trace!("[rbatis] [{}] {}", context_id, data);
+        let filter = self.get_level_filter();
+        if filter.eq(&LevelFilter::Off) {
+            return;
+        }
+        if filter.ge(&LevelFilter::Trace) {
+            trace!("[rbatis] [{}] {}", context_id, data);
+        }
     }
 }
 
 #[derive(Debug)]
-pub struct RbatisLog {
+pub struct RbatisLogPlugin {
     pub level_filter: LevelFilter,
 }
 
-impl Default for RbatisLog {
+impl Default for RbatisLogPlugin {
     fn default() -> Self {
         Self {
             level_filter: log::LevelFilter::Info,
@@ -68,7 +98,7 @@ impl Default for RbatisLog {
     }
 }
 
-impl LogPlugin for RbatisLog {
+impl LogPlugin for RbatisLogPlugin {
     fn get_level_filter(&self) -> &LevelFilter {
         &self.level_filter
     }
