@@ -77,7 +77,7 @@ mod test {
         return s;
     }
 
-    ///load file py_sql(every time run py_select_file)
+    ///load file py_sql(Each read file changes every time)
     #[py_sql(rb, load_file_str("py_sql.sql"))]
     async fn py_select_file(rb: &Rbatis, page_req: &PageRequest, name: &str) -> Page<BizActivity> {}
 
