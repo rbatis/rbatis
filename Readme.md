@@ -240,7 +240,7 @@ if r.is_err() {
 ```rust
 let mut rb = Rbatis::new();
 rb.link("mysql://root:123456@localhost:3306/test").await.unwrap();
-//框架默认RbatisReplacePagePlugin，如果需要自定义的话需要结构体 必须实现impl PagePlugin for Plugin***{}，例如：
+//replace page plugin
 //rb.page_plugin = Box::new(RbatisPagePlugin::new());
 
 let req = PageRequest::new(1, 20);
@@ -354,11 +354,11 @@ async fn index() -> impl Responder {
 
 #[actix_rt::main]
 async fn main() -> std::io::Result<()> {
-    //日志
+    //log
     fast_log::init_log("requests.log", 1000, log::Level::Info, None, true);
-    //链接数据库
+    //link database
     RB.link("mysql://root:123456@localhost:3306/test").await.unwrap();
-    //http路由
+    //http server
     HttpServer::new(|| {
         App::new()
             .route("/", web::get().to(index))
