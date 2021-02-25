@@ -82,11 +82,11 @@ mod test {
     async fn py_select_file(rb: &Rbatis, page_req: &PageRequest, name: &str) -> Page<BizActivity> {}
 
     lazy_static!(
-     pub static ref PySqlFileStr:String=load_file_str("py_sql.sql");
+     pub static ref PY_SQL_FILE_STR:String=load_file_str("py_sql.sql");
     );
 
     ///load file py_sql(only load file once)
-    #[py_sql(rb, PySqlFileStr)]
+    #[py_sql(rb, PY_SQL_FILE_STR)]
     async fn py_select_file_static(rb: &Rbatis, page_req: &PageRequest, name: &str) -> Page<BizActivity> {}
 
     /// test load py_sql from file
