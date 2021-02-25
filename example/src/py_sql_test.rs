@@ -77,10 +77,19 @@ mod test {
         return s;
     }
 
-    ///load file py_sql
+    ///load file py_sql(every time run py_select_file)
     #[py_sql(rb, load_file_str("py_sql.sql"))]
     async fn py_select_file(rb: &Rbatis, page_req: &PageRequest, name: &str) -> Page<BizActivity> {}
 
+    lazy_static!(
+     pub static ref PySqlFileStr:String=load_file_str("py_sql.sql");
+    );
+
+    ///load file py_sql(only load file once)
+    #[py_sql(rb, PySqlFileStr)]
+    async fn py_select_file_static(rb: &Rbatis, page_req: &PageRequest, name: &str) -> Page<BizActivity> {}
+
+    /// test load py_sql from file
     #[async_std::test]
     pub async fn test_py_select_file() {
         fast_log::init_log("requests.log", 1000, log::Level::Info, None, true);
@@ -89,9 +98,15 @@ mod test {
         rb.link("mysql://root:123456@localhost:3306/test")
             .await
             .unwrap();
-        let a = py_select_file(&rb, &PageRequest::new(1, 10), "test")
+
+        let mut result = py_select_file(&rb, &PageRequest::new(1, 10), "test")
             .await
             .unwrap();
-        println!("{:?}", a);
+        println!("{:?}", result);
+
+        result = py_select_file_static(&rb, &PageRequest::new(1, 10), "test")
+            .await
+            .unwrap();
+        println!("{:?}", result);
     }
 }
