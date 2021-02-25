@@ -452,6 +452,6 @@ async fn main() -> std::io::Result<()> {
 
 ## In order to achieve the satisfaction of this ORM framework, your support is always our motivation, we are eager to welcome WeChat to donate to support us ~ or ~ star at the top right corner
 
-## 为了称心如意的ORM框架，您的支持永远是我们的动力，迫切欢迎微信捐赠支持我们 ~或者~右上角点下star
+## 微信捐赠支持我们 ~或者~右上角点下star
 
 ![Image text](https://zhuxiujia.github.io/gomybatis.io/assets/wx_account.jpg)
