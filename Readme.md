@@ -423,7 +423,7 @@ async fn main() -> std::io::Result<()> {
 * Postgres Types Define Please see Doc<br/>
 >  [中文](https://rbatis.github.io/rbatis.io/#/?id=%e6%95%b0%e6%8d%ae%e5%ba%93%e5%88%97%e6%a0%bc%e5%bc%8f%e5%8c%96%e5%ae%8f)
 
->  [En Doc](https://rbatis.github.io/rbatis.io/#/en/?id=database-column-formatting-macro)
+>  [English Doc](https://rbatis.github.io/rbatis.io/#/en/?id=database-column-formatting-macro)
 * Support for DateTime and BigDecimal? <br/>
   Currently supports chrono::NaiveDateTime和bigdecimal::BigDecimal
 * Supports for `async/.await` <br/>
@@ -436,7 +436,7 @@ async fn main() -> std::io::Result<()> {
 * Which crate should be depended on if only the driver is needed? <br/>
   rbatis-core， Cargo.toml add rbatis-core = "*"
 * How to select `async/.await` runtime? <br/>
-  see https://rbatis.github.io/rbatis.io/
+  see https://rbatis.github.io/rbatis.io/#/en/
 * column "id" is of type uuid but expression is of type text'? <br/>
   see https://rbatis.github.io/rbatis.io/#/en/?id=database-column-formatting-macro
 * How to use '::uuid','::timestamp' on PostgreSQL? <br/>
