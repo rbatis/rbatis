@@ -1,6 +1,5 @@
 #[cfg(test)]
 mod test {
-    use rbatis::utils::bencher::QPS;
     use rbatis::utils::string_util::{find_convert_string, un_packing_string};
 
     #[test]
@@ -52,12 +51,9 @@ mod test {
     #[test]
     fn bench_find() {
         let sql = "update user set name=#{name}, password=#{password} ,sex=#{sex}, phone=#{phone}, delete_flag=#{flag}, #{name}";
-        let finds = find_convert_string(sql);
-        let total = 100000;
-        let now = std::time::Instant::now();
-        for _ in 0..total {
-            find_convert_string(sql);
-        }
-        now.time(total);
+        find_convert_string(sql);
+        rbatis::bench!(100000,{
+          find_convert_string(sql);
+        });
     }
 }

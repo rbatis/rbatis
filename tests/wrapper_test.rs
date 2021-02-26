@@ -1,7 +1,6 @@
 #[cfg(test)]
 mod test {
     use rbatis::core::db::DriverType;
-    use rbatis::utils::bencher::QPS;
     use rbatis::wrapper::Wrapper;
     use serde_json::json;
     use serde_json::Map;
@@ -47,9 +46,8 @@ mod test {
         let mut map = Map::new();
         map.insert("a".to_string(), json!("1"));
         let total = 100000;
-        let now = std::time::Instant::now();
-        for _ in 0..total {
-            Wrapper::new(&DriverType::Mysql)
+        rbatis::bench!(total,{
+         Wrapper::new(&DriverType::Mysql)
                 .eq("id", 1)
                 .ne("id", 1)
                 .in_array("id", &[1, 2, 3])
@@ -63,9 +61,7 @@ mod test {
                 .between("create_time", "2020-01-01 00:00:00", "2020-12-12 00:00:00")
                 .group_by(&["id"])
                 .order_by(true, &["id", "name"]);
-        }
-        now.time(total);
-        now.qps(total);
+        });
     }
 
     #[test]

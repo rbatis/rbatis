@@ -1,4 +1,5 @@
 pub mod array_util;
+#[macro_use]
 pub mod bencher;
 pub mod error_util;
 pub mod print_util;
