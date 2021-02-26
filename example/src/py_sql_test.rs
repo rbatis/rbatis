@@ -68,11 +68,10 @@ mod test {
         println!("{:?}", a);
     }
 
-
     ///load from file
-    fn load_file_str(file_name:&str)->String{
-        let mut f =File::open(file_name).unwrap();
-        let mut s=String::new();
+    fn load_file_str(file_name: &str) -> String {
+        let mut f = File::open(file_name).unwrap();
+        let mut s = String::new();
         f.read_to_string(&mut s);
         return s;
     }
@@ -81,13 +80,18 @@ mod test {
     #[py_sql(rb, load_file_str("py_sql.sql"))]
     async fn py_select_file(rb: &Rbatis, page_req: &PageRequest, name: &str) -> Page<BizActivity> {}
 
-    lazy_static!(
-     pub static ref PY_SQL_FILE_STR:String=load_file_str("py_sql.sql");
-    );
+    lazy_static! {
+        pub static ref PY_SQL_FILE_STR: String = load_file_str("py_sql.sql");
+    };
 
     ///load file py_sql(only load file once)
     #[py_sql(rb, PY_SQL_FILE_STR)]
-    async fn py_select_file_static(rb: &Rbatis, page_req: &PageRequest, name: &str) -> Page<BizActivity> {}
+    async fn py_select_file_static(
+        rb: &Rbatis,
+        page_req: &PageRequest,
+        name: &str,
+    ) -> Page<BizActivity> {
+    }
 
     /// test load py_sql from file
     #[async_std::test]

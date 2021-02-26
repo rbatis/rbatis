@@ -52,8 +52,8 @@ mod test {
     fn bench_find() {
         let sql = "update user set name=#{name}, password=#{password} ,sex=#{sex}, phone=#{phone}, delete_flag=#{flag}, #{name}";
         find_convert_string(sql);
-        rbatis::bench!(100000,{
-          find_convert_string(sql);
+        rbatis::bench!(100000, {
+            find_convert_string(sql);
         });
     }
 }

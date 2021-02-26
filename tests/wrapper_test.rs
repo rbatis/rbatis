@@ -45,9 +45,8 @@ mod test {
     fn bench_select() {
         let mut map = Map::new();
         map.insert("a".to_string(), json!("1"));
-        let total = 100000;
-        rbatis::bench!(total,{
-         Wrapper::new(&DriverType::Mysql)
+        rbatis::bench!(100000, {
+            Wrapper::new(&DriverType::Mysql)
                 .eq("id", 1)
                 .ne("id", 1)
                 .in_array("id", &[1, 2, 3])

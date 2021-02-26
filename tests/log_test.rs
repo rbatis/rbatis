@@ -1,6 +1,6 @@
 #[cfg(test)]
 mod test {
-    use rbatis::plugin::log::{RbatisLogPlugin, LogPlugin};
+    use rbatis::plugin::log::{LogPlugin, RbatisLogPlugin};
 
     #[test]
     fn test_level() {

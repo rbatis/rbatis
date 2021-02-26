@@ -156,8 +156,8 @@ impl Rbatis {
 
     /// try return an new wrapper and set table formats,if not call the link() method,it will be panic!
     pub fn new_wrapper_table<T>(&self) -> Wrapper
-        where
-            T: CRUDTable,
+    where
+        T: CRUDTable,
     {
         let mut w = self.new_wrapper();
         w = w.set_formats(T::formats(&self.driver_type().unwrap()));
@@ -209,13 +209,11 @@ impl Rbatis {
         return Ok(());
     }
 
-    pub fn set_log_plugin(&mut self, arg: impl LogPlugin + 'static)
-    {
+    pub fn set_log_plugin(&mut self, arg: impl LogPlugin + 'static) {
         self.log_plugin = Arc::new(Box::new(arg));
     }
 
-    pub fn set_logic_plugin(&mut self, arg: Option<impl LogicDelete + 'static>)
-    {
+    pub fn set_logic_plugin(&mut self, arg: Option<impl LogicDelete + 'static>) {
         match arg {
             Some(v) => {
                 self.logic_plugin = Some(Box::new(v));
@@ -226,13 +224,11 @@ impl Rbatis {
         }
     }
 
-    pub fn set_page_plugin(&mut self, arg: impl PagePlugin + 'static)
-    {
+    pub fn set_page_plugin(&mut self, arg: impl PagePlugin + 'static) {
         self.page_plugin = Box::new(arg);
     }
 
-    pub fn add_sql_intercept(&mut self, arg: impl SqlIntercept + 'static)
-    {
+    pub fn add_sql_intercept(&mut self, arg: impl SqlIntercept + 'static) {
         self.sql_intercepts.push(Box::new(arg));
     }
 
@@ -361,8 +357,8 @@ impl Rbatis {
     ///     let v: serde_json::Value = rb.fetch(context_id, "SELECT count(1) FROM biz_activity;").await?;
     ///
     pub async fn fetch<T>(&self, context_id: &str, sql: &str) -> Result<T, Error>
-        where
-            T: DeserializeOwned,
+    where
+        T: DeserializeOwned,
     {
         //sql intercept
         let mut sql = sql.to_string();
@@ -370,10 +366,8 @@ impl Rbatis {
             item.do_intercept(self, context_id, &mut sql, &mut vec![], false);
         }
         if self.log_plugin.is_enable() {
-            self.log_plugin.info(
-                context_id,
-                &format!("Query ==> {}", sql.as_str()),
-            );
+            self.log_plugin
+                .info(context_id, &format!("Query ==> {}", sql.as_str()));
         }
         let result: Result<(T, usize), Error>;
         if self.tx_manager.is_tx_prifix_id(context_id) {
@@ -393,16 +387,12 @@ impl Rbatis {
         if self.log_plugin.is_enable() {
             match &result {
                 Ok(result) => {
-                    self.log_plugin.info(
-                        context_id,
-                        &format!("ReturnRows <== {}", result.1),
-                    );
+                    self.log_plugin
+                        .info(context_id, &format!("ReturnRows <== {}", result.1));
                 }
                 Err(e) => {
-                    self.log_plugin.error(
-                        context_id,
-                        &format!("ReturnErr  <== {}", e),
-                    );
+                    self.log_plugin
+                        .error(context_id, &format!("ReturnErr  <== {}", e));
                 }
             }
         }
@@ -420,10 +410,8 @@ impl Rbatis {
             item.do_intercept(self, context_id, &mut sql, &mut vec![], false);
         }
         if self.log_plugin.is_enable() {
-            self.log_plugin.info(
-                context_id,
-                &format!("Exec  ==> {}", &sql),
-            );
+            self.log_plugin
+                .info(context_id, &format!("Exec  ==> {}", &sql));
         }
         let result;
         if self.tx_manager.is_tx_prifix_id(context_id) {
@@ -445,16 +433,12 @@ impl Rbatis {
                 Ok(result) => {
                     self.log_plugin.info(
                         context_id,
-                        &format!(
-                            "RowsAffected <== {}", result.rows_affected
-                        ),
+                        &format!("RowsAffected <== {}", result.rows_affected),
                     );
                 }
                 Err(e) => {
-                    self.log_plugin.error(
-                        context_id,
-                        &format!("ReturnErr  <== {}", e),
-                    );
+                    self.log_plugin
+                        .error(context_id, &format!("ReturnErr  <== {}", e));
                 }
             }
         }
@@ -485,8 +469,8 @@ impl Rbatis {
         sql: &str,
         args: &Vec<serde_json::Value>,
     ) -> Result<T, Error>
-        where
-            T: DeserializeOwned,
+    where
+        T: DeserializeOwned,
     {
         //sql intercept
         let mut sql = sql.to_string();
@@ -526,16 +510,12 @@ impl Rbatis {
         if self.log_plugin.is_enable() {
             match &result {
                 Ok(result) => {
-                    self.log_plugin.info(
-                        context_id,
-                        &format!("ReturnRows <== {}", result.1),
-                    );
+                    self.log_plugin
+                        .info(context_id, &format!("ReturnRows <== {}", result.1));
                 }
                 Err(e) => {
-                    self.log_plugin.error(
-                        context_id,
-                        &format!("ReturnErr  <== {}", e),
-                    );
+                    self.log_plugin
+                        .error(context_id, &format!("ReturnErr  <== {}", e));
                 }
             }
         }
@@ -593,16 +573,12 @@ impl Rbatis {
                 Ok(result) => {
                     self.log_plugin.info(
                         context_id,
-                        &format!(
-                            "RowsAffected <== {}", result.rows_affected
-                        ),
+                        &format!("RowsAffected <== {}", result.rows_affected),
                     );
                 }
                 Err(e) => {
-                    self.log_plugin.error(
-                        context_id,
-                        &format!("ReturnErr  <== {}", e),
-                    );
+                    self.log_plugin
+                        .error(context_id, &format!("ReturnErr  <== {}", e));
                 }
             }
         }
@@ -615,8 +591,8 @@ impl Rbatis {
         py_sql: &str,
         arg: &Arg,
     ) -> Result<(String, Vec<serde_json::Value>), Error>
-        where
-            Arg: Serialize + Send + Sync,
+    where
+        Arg: Serialize + Send + Sync,
     {
         let mut arg = json!(arg);
         match self
@@ -650,9 +626,9 @@ impl Rbatis {
         py_sql: &str,
         arg: &Arg,
     ) -> Result<T, Error>
-        where
-            T: DeserializeOwned,
-            Arg: Serialize + Send + Sync,
+    where
+        T: DeserializeOwned,
+        Arg: Serialize + Send + Sync,
     {
         let (sql, args) = self.py_to_sql(py_sql, arg)?;
         return self.fetch_prepare(context_id, sql.as_str(), &args).await;
@@ -680,8 +656,8 @@ impl Rbatis {
         py_sql: &str,
         arg: &Arg,
     ) -> Result<DBExecResult, Error>
-        where
-            Arg: Serialize + Send + Sync,
+    where
+        Arg: Serialize + Send + Sync,
     {
         let (sql, args) = self.py_to_sql(py_sql, arg)?;
         return self.exec_prepare(context_id, sql.as_str(), &args).await;
@@ -695,8 +671,8 @@ impl Rbatis {
         args: &Vec<serde_json::Value>,
         page_request: &dyn IPageRequest,
     ) -> Result<Page<T>, Error>
-        where
-            T: DeserializeOwned + Serialize + Send + Sync,
+    where
+        T: DeserializeOwned + Serialize + Send + Sync,
     {
         let sql = self.driver_type()?.upper_case_sql(sql);
         let mut page_result = Page::new(page_request.get_page_no(), page_request.get_page_size());
@@ -733,9 +709,9 @@ impl Rbatis {
         arg: &Arg,
         page_request: &dyn IPageRequest,
     ) -> Result<Page<T>, Error>
-        where
-            T: DeserializeOwned + Serialize + Send + Sync,
-            Arg: Serialize + Send + Sync,
+    where
+        T: DeserializeOwned + Serialize + Send + Sync,
+        Arg: Serialize + Send + Sync,
     {
         let (sql, args) = self.py_to_sql(py_sql, arg)?;
         return self

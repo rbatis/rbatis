@@ -17,9 +17,8 @@ mod test {
                                                                                                 and age = 2",
                                          &mut serde_json::json!({}), &engine).unwrap();
         println!("sql:{},arg:{:?}", sql, arg);
-        let total = 10000;
-        rbatis::bench!(total,{
-         py_runtime.eval(&DriverType::Mysql, "select * from table where
+        rbatis::bench!(10000, {
+            py_runtime.eval(&DriverType::Mysql, "select * from table where
                                                                                                 if 1 == 1:
                                                                                                    column = 1
                                                                                                 and age in (1,2,3)
@@ -42,10 +41,9 @@ mod test {
                                                                                                 and age = 2",
                                          &mut serde_json::json!({}), &engine).unwrap();
         println!("sql:{},arg:{:?}", sql, arg);
-        let total = 10000;
-        rbatis::bench!(total,{
-        {
-            py_runtime.eval(&DriverType::Mysql, "select * from table where
+        rbatis::bench!(10000, {
+            {
+                py_runtime.eval(&DriverType::Mysql, "select * from table where
                                                                   id = #{id}
                                                                   id != #{id}
                                                                   id in #{ids}
@@ -65,7 +63,7 @@ mod test {
                                                                   for item in order_by:
                                                                      #{item}",
                             &mut serde_json::json!({"id":1,"order_by":["id","name"],"ids":[1,2,3],"name":"asdf","map":{"a":1},"create_time":"2020-23-23"}), &engine).unwrap();
-        }
+            }
         });
     }
 }
