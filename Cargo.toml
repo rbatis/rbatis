@@ -56,9 +56,6 @@ tokio1-sqlite = ["default_mode", "rbatis-core/tokio1-sqlite"]
 tokio1-mssql = ["default_mode", "rbatis-core/tokio1-mssql"]
 
 
-#Distributed unique ID snowflake ID
-snowflake = ["rustflake"]
-
 [dependencies]
 rexpr = "1.0"
 py_sql = "1.0"
@@ -78,7 +75,6 @@ log = "0.4"
 async-trait = "0.1"
 futures-core = { version = "0.3" }
 once_cell = "1.5"
-rustflake = { version = "0.1", package = "rustflake", optional = true }
 dashmap = { version = "4" }
 [dev-dependencies]
 fast_log = "1.3"

@@ -37,7 +37,7 @@ fast_log = "1.3"
 tokio = { version = "0.2", features = ["full"] }
 async-std = { version = "1.9", features = ["attributes", "tokio1"] }
 #rbatis lib
-rbatis = { path = "../", features = ["debug_mode","snowflake"] }
+rbatis = { path = "../", features = ["debug_mode"] }
 #(not necessary)only use custom py_sql
 rexpr = { version = "1.0" }
 py_sql = "1.0"
