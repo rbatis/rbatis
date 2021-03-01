@@ -76,6 +76,10 @@ async-trait = "0.1"
 futures-core = { version = "0.3" }
 once_cell = "1.5"
 dashmap = { version = "4" }
+
+#object_id
+hex = "0.4.2"
+rand = "0.7"
 [dev-dependencies]
 fast_log = "1.3"
 async-std = { version = "1.9", features = ["attributes"] }
