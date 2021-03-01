@@ -7,7 +7,7 @@ mod test {
     use rbatis::crud::CRUD;
     use rbatis::plugin::logic_delete::RbatisLogicDeletePlugin;
     use rbatis::plugin::page::{Page, PageRequest};
-    use rbatis::plugin::snowflake::async_snowflake_id;
+    use rbatis::plugin::snowflake::new_snowflake_id;
     use rbatis::plugin::version_lock::RbatisVersionLockPlugin;
     use rbatis::rbatis::Rbatis;
 
@@ -56,7 +56,7 @@ mod test {
 
     #[async_std::test]
     pub async fn test_snow_flake() {
-        let sn_id = async_snowflake_id().await;
+        let sn_id = new_snowflake_id();
         println!("id:{}", sn_id);
     }
 

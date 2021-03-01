@@ -82,7 +82,7 @@ mod test {
 
     lazy_static! {
         pub static ref PY_SQL_FILE_STR: String = load_file_str("py_sql.sql");
-    };
+    }
 
     ///load file py_sql(only load file once)
     #[py_sql(rb, PY_SQL_FILE_STR)]
