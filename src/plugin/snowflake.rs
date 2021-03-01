@@ -74,7 +74,7 @@ lazy_static! {
     pub static ref SNOWFLAKE: Snowflake = Snowflake::default();
 }
 
-///if lock fail,will return -1
+///if lock fail,will return 0
 pub fn new_snowflake_id() -> i64 {
     SNOWFLAKE.generate()
 }
