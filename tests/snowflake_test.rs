@@ -7,6 +7,7 @@ mod test {
         println!("{}", new_snowflake_id());
     }
 
+    //cargo.exe test --release --package rbatis --test snowflake_test test::test_bench_new_block_id --no-fail-fast -- --exact -Z unstable-options --show-output
     #[test]
     fn test_bench_new_block_id() {
         rbatis::bench!(100000,{
