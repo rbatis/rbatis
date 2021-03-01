@@ -22,5 +22,6 @@ pub mod plugin;
 pub mod rbatis;
 pub mod sql;
 pub mod tx;
+#[macro_use]
 pub mod utils;
 pub mod wrapper;
