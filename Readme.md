@@ -171,6 +171,7 @@ async fn main() {
 //Exec ==> UPDATE biz_activity SET delete_flag = 0 WHERE id IN (  ?  ,  ?  ) 
 
   ///update
+  ///if use version_lock plugin,update will modify 'version'= version + 1
   let mut activity = activity.clone();
   let w = rb.new_wrapper().eq("id", "12312");
   rb.update_by_wrapper("", &mut activity, &w).await;
