@@ -65,6 +65,7 @@ rbatis =  { version = "1.8" }
 ##### Quick example: QueryWrapper and common usages (see example/crud_test.rs for details)
 
 ```rust
+//#[macro_use] define in 'root crate' or 'mod.rs' or 'main.rs'
 #[macro_use]
 extern crate rbatis;
 use rbatis::crud::CRUD;
