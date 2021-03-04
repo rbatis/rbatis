@@ -1,4 +1,4 @@
-/// Simplifies table construction by relying on the Default interface
+/// Simplifies table construction by relying on the Default trait
 ///
 /// step1:  impl Default
 /// impl Default for BizActivity{
