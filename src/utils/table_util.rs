@@ -22,7 +22,7 @@
 ///             });
 #[macro_export]
 macro_rules! table {
-         ($t:ty{ $($key:ident:$value:expr,)+ }) => {
+        ($t:ty{ $($key:ident:$value:expr$(,)?)+ }) => {
            {
             let mut temp_table_data = <$t>::default();
             $(temp_table_data.$key = $value.into();)+
