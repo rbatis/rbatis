@@ -33,6 +33,7 @@ macro_rules! table {
 /// take the target Vec member attribute Vec collection
 /// vec_ref: a reference to vec, field_name: the field name of the structure
 ///
+/// need impl Clone or #[derive(Clone, Debug)]
 /// for example:
 ///      struct SysUserRole{
 ///         pub role_id:String
@@ -62,6 +63,7 @@ macro_rules! table_field_vec {
 /// Gets the HashMap collection of member attributes of the target Vec
 /// vec_ref: vec reference，field_name: the field name of the structure
 ///
+/// need impl Clone or #[derive(Clone, Debug)]
 /// for example:
 ///      struct SysUserRole{
 ///         pub role_id:String
@@ -77,7 +79,7 @@ macro_rules! table_field_map {
     ($vec_ref:expr,$field_name:ident) => {{
         let mut ids = std::collections::HashMap::new();
         for item in $vec_ref {
-            match &item.$field_name {
+            match item.$field_name.as_ref() {
                 std::option::Option::Some(v) => {
                     ids.insert(v.clone(),item.clone());
                 }
