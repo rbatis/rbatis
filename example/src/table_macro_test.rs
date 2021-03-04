@@ -103,7 +103,7 @@ mod test {
             father_id: Some(1),
             childs: vec![],
         };
-        let all_record = rbatis::make_table_field_map!(vec![father,child],id);
+        let all_record = rbatis::make_table_field_map!(vec![child],id);
         father.recursive_set_childs(&all_record);
         println!("{:#?}", father);
     }
