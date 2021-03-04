@@ -33,7 +33,7 @@ pub trait CRUDTable: Send + Sync + Serialize + DeserializeOwned {
     /// IdType = String
     /// IdType = i32
     ///
-    type IdType: Send + Sync + Clone + Serialize + Display;
+    type IdType: Send + Sync + Clone + Serialize + Display+Eq+PartialEq;
 
     ///table id column
     fn id_name() -> String {
