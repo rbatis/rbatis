@@ -51,7 +51,7 @@ mod test {
     fn test_table_field_map() {
         let table = rbatis::table!(BizActivity{
               id:"1".to_string(),
-              name:"a".to_string(),
+              name:"a".to_string()
         });
         let table_vec = vec![table];
         let map = rbatis::table_field_map!(table_vec,name);
@@ -62,7 +62,7 @@ mod test {
     fn test_table_field_vec() {
         let table = rbatis::table!(BizActivity{
               id:"1".to_string(),
-              name:"a".to_string(),
+              name:"a".to_string()
         });
         let table_vec = vec![table];
         let names = rbatis::table_field_vec!(table_vec,name);
