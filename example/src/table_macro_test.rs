@@ -54,8 +54,9 @@ mod test {
               name:"a".to_string()
         });
         let table_vec = vec![table];
-        let map = rbatis::table_field_map!(table_vec,name);
+        let map = rbatis::table_field_map!(&table_vec,name);
         println!("{:#?}", map);
+        assert_eq!(map.len(),table_vec.len());
     }
 
     #[test]
@@ -65,7 +66,8 @@ mod test {
               name:"a".to_string()
         });
         let table_vec = vec![table];
-        let names = rbatis::table_field_vec!(table_vec,name);
+        let names = rbatis::table_field_vec!(&table_vec,name);
         println!("{:#?}", names);
+        assert_eq!(names.len(),table_vec.len());
     }
 }

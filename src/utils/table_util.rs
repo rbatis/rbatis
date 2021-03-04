@@ -49,7 +49,7 @@ macro_rules! table_field_vec {
     ($vec_ref:expr,$field_name:ident) => {{
         let mut ids = vec![];
         for item in $vec_ref {
-            match &item.$field_name {
+            match item.$field_name.as_ref() {
                 std::option::Option::Some(v) => {
                     ids.push(v.clone());
                 }
