@@ -225,7 +225,7 @@ mod test {
         //set logic plugin
         rb.logic_plugin = Some(Box::new(RbatisLogicDeletePlugin::new("delete_flag")));
         //macro make object
-        let mut activity = rbatis::table!(BizActivity{
+        let mut activity = rbatis::make_table!(BizActivity{
             id: "12312".to_string(),
             status: 1,
             create_time: NaiveDateTime::now(),

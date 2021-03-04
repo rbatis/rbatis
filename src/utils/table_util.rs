@@ -11,17 +11,17 @@
 ///      }
 /// }
 /// //step2: make struct
-/// let activity = rbatis::table!(BizActivity{
+/// let activity = rbatis::make_table!(BizActivity{
 ///             id : Some("12312".to_string()),
 ///             delete_flag : Some(1),
 ///             });
 /// //or use into trait
-/// let activity = rbatis::table!(BizActivity{
+/// let activity = rbatis::make_table!(BizActivity{
 ///             id : "12312".to_string(),
 ///             delete_flag : 1,
 ///             });
 #[macro_export]
-macro_rules! table {
+macro_rules! make_table {
         ($t:ty{ $($key:ident:$value:expr$(,)?)+ }) => {
            {
             let mut temp_table_data = <$t>::default();
@@ -39,13 +39,13 @@ macro_rules! table {
 ///         pub role_id:String
 ///      }
 ///      let user_roles: Vec<SysUserRole>;
-///      let role_ids = table_field_vec!(&user_roles,role_id); // role_ids: Vec<String>
+///      let role_ids = make_table_field_vec!(&user_roles,role_id); // role_ids: Vec<String>
 ///
 ///
 ///
 #[allow(unused_macros)]
 #[macro_export]
-macro_rules! table_field_vec {
+macro_rules! make_table_field_vec {
     ($vec_ref:expr,$field_name:ident) => {{
         let mut ids = vec![];
         for item in $vec_ref {
@@ -69,13 +69,13 @@ macro_rules! table_field_vec {
 ///         pub role_id:String
 ///      }
 ///      let user_roles: Vec<SysUserRole>;
-///      let role_ids = table_field_map!(&user_roles,role_id); // role_ids: HashMap<String,SysUserRole>
+///      let role_ids = make_table_field_map!(&user_roles,role_id); // role_ids: HashMap<String,SysUserRole>
 ///
 ///
 ///
 #[allow(unused_macros)]
 #[macro_export]
-macro_rules! table_field_map {
+macro_rules! make_table_field_map {
     ($vec_ref:expr,$field_name:ident) => {{
         let mut ids = std::collections::HashMap::new();
         for item in $vec_ref {
