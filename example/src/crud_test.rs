@@ -2,8 +2,9 @@
 mod test {
     use bigdecimal::BigDecimal;
     use chrono::NaiveDateTime;
-    use rbatis::core::value::DateTimeNow;
+
     use rbatis::core::Error;
+    use rbatis::core::value::DateTimeNow;
     use rbatis::crud::CRUD;
     use rbatis::plugin::logic_delete::RbatisLogicDeletePlugin;
     use rbatis::plugin::page::{Page, PageRequest};
@@ -29,6 +30,25 @@ mod test {
         pub create_time: Option<NaiveDateTime>,
         pub version: Option<BigDecimal>,
         pub delete_flag: Option<i32>,
+    }
+    
+    impl Default for BizActivity{
+        fn default() -> Self {
+            Self{
+                id: None,
+                name: None,
+                pc_link: None,
+                h5_link: None,
+                pc_banner_img: None,
+                h5_banner_img: None,
+                sort: None,
+                status: None,
+                remark: None,
+                create_time: None,
+                version: None,
+                delete_flag: None
+            }
+        }
     }
 
     // (可选) 手动实现，不使用上面的derive(CRUDTable),可重写table_name方法。手动实现能支持IDE智能提示
@@ -131,7 +151,7 @@ mod test {
     #[async_std::test]
     pub async fn test_remove_by_id() {
         let mut rb = init_rbatis().await;
-        //设置 逻辑删除插件
+        //set logic plugin
         rb.logic_plugin = Some(Box::new(RbatisLogicDeletePlugin::new_opt(
             "delete_flag",
             1,
@@ -149,7 +169,7 @@ mod test {
     #[async_std::test]
     pub async fn test_fetch_by_id() {
         let mut rb = init_rbatis().await;
-        //设置 逻辑删除插件
+        //set logic plugin
         rb.logic_plugin = Some(Box::new(RbatisLogicDeletePlugin::new("delete_flag")));
         let r = rb
             .fetch_by_id::<Option<BizActivity>>("", &"1".to_string())
@@ -161,7 +181,7 @@ mod test {
     #[async_std::test]
     pub async fn test_count_by_wrapper() {
         let mut rb = init_rbatis().await;
-        //设置 逻辑删除插件
+        //set logic plugin
         rb.logic_plugin = Some(Box::new(RbatisLogicDeletePlugin::new("delete_flag")));
         let r = rb
             .fetch_count_by_wrapper::<BizActivity>("", &rb.new_wrapper())
@@ -173,7 +193,7 @@ mod test {
     #[async_std::test]
     pub async fn test_update_by_wrapper() {
         let mut rb = init_rbatis().await;
-        //设置 逻辑删除插件
+        //set logic plugin
         rb.logic_plugin = Some(Box::new(RbatisLogicDeletePlugin::new("delete_flag")));
         rb.version_lock_plugin = Some(Box::new(RbatisVersionLockPlugin::new("version")));
         let mut activity = BizActivity {
@@ -202,23 +222,31 @@ mod test {
     #[async_std::test]
     pub async fn test_update_by_id() {
         let mut rb = init_rbatis().await;
-        //设置 逻辑删除插件
+        //set logic plugin
         rb.logic_plugin = Some(Box::new(RbatisLogicDeletePlugin::new("delete_flag")));
-
-        let mut activity = BizActivity {
-            id: Some("12312".to_string()),
-            name: None,
-            pc_link: None,
-            h5_link: None,
-            pc_banner_img: None,
-            h5_banner_img: None,
-            sort: None,
-            status: Some(1),
-            remark: None,
-            create_time: Some(NaiveDateTime::now()),
-            version: Some(BigDecimal::from(1)),
-            delete_flag: Some(1),
-        };
+        //macro make object
+        let mut activity = rbatis::table!(BizActivity{
+            id: "12312".to_string(),
+            status: 1,
+            create_time: NaiveDateTime::now(),
+            version: BigDecimal::from(1),
+            delete_flag: 1,
+        });
+        // or you can make source struct
+        // let mut activity = BizActivity {
+        //     id: Some("12312".to_string()),
+        //     name: None,
+        //     pc_link: None,
+        //     h5_link: None,
+        //     pc_banner_img: None,
+        //     h5_banner_img: None,
+        //     sort: None,
+        //     status: Some(1),
+        //     remark: None,
+        //     create_time: Some(NaiveDateTime::now()),
+        //     version: Some(BigDecimal::from(1)),
+        //     delete_flag: Some(1),
+        // };
         let r = rb.update_by_id("", &mut activity).await;
         if r.is_err() {
             println!("{}", r.err().unwrap().to_string());
@@ -228,7 +256,7 @@ mod test {
     #[async_std::test]
     pub async fn test_fetch_by_wrapper() {
         let mut rb = init_rbatis().await;
-        //设置 逻辑删除插件
+        //set logic plugin
         rb.logic_plugin = Some(Box::new(RbatisLogicDeletePlugin::new("delete_flag")));
         let w = rb.new_wrapper().eq("id", "1");
         let r: Result<Option<BizActivity>, Error> = rb.fetch_by_wrapper("", &w).await;
@@ -249,7 +277,7 @@ mod test {
     #[async_std::test]
     pub async fn test_fetch_page_by_wrapper() {
         let mut rb = init_rbatis().await;
-        //设置 逻辑删除插件
+        //set logic plugin
         rb.logic_plugin = Some(Box::new(RbatisLogicDeletePlugin::new("delete_flag")));
 
         let w = rb
@@ -267,7 +295,7 @@ mod test {
     #[async_std::test]
     pub async fn test_list() {
         let mut rb = init_rbatis().await;
-        //设置 逻辑删除插件
+        //set logic plugin
         rb.logic_plugin = Some(Box::new(RbatisLogicDeletePlugin::new("delete_flag")));
         let r: Vec<BizActivity> = rb.fetch_list("").await.unwrap();
         println!("{}", serde_json::to_string(&r).unwrap());
