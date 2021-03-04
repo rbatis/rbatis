@@ -1,0 +1,71 @@
+#[cfg(test)]
+mod test {
+    use bigdecimal::BigDecimal;
+    use chrono::NaiveDateTime;
+
+    #[crud_enable]
+    #[derive(Clone, Debug)]
+    pub struct BizActivity {
+        pub id: Option<String>,
+        pub name: Option<String>,
+        pub pc_link: Option<String>,
+        pub h5_link: Option<String>,
+        pub pc_banner_img: Option<String>,
+        pub h5_banner_img: Option<String>,
+        pub sort: Option<String>,
+        pub status: Option<i32>,
+        pub remark: Option<String>,
+        pub create_time: Option<NaiveDateTime>,
+        pub version: Option<BigDecimal>,
+        pub delete_flag: Option<i32>,
+    }
+
+    impl Default for BizActivity {
+        fn default() -> Self {
+            Self {
+                id: None,
+                name: None,
+                pc_link: None,
+                h5_link: None,
+                pc_banner_img: None,
+                h5_banner_img: None,
+                sort: None,
+                status: None,
+                remark: None,
+                create_time: None,
+                version: None,
+                delete_flag: None,
+            }
+        }
+    }
+
+    #[test]
+    fn test_make_table() {
+        let table = rbatis::table!(BizActivity{
+              id:"1".to_string(),
+        });
+        println!("{:#?}", table);
+    }
+
+    #[test]
+    fn test_table_field_map() {
+        let table = rbatis::table!(BizActivity{
+              id:"1".to_string(),
+              name:"a".to_string(),
+        });
+        let table_vec = vec![table];
+        let map = rbatis::table_field_map!(table_vec,name);
+        println!("{:#?}", map);
+    }
+
+    #[test]
+    fn test_table_field_vec() {
+        let table = rbatis::table!(BizActivity{
+              id:"1".to_string(),
+              name:"a".to_string(),
+        });
+        let table_vec = vec![table];
+        let names = rbatis::table_field_vec!(table_vec,name);
+        println!("{:#?}", names);
+    }
+}
