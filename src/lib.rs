@@ -46,45 +46,21 @@ pub mod wrapper;
 ///             id : Some("12312".to_string()),
 ///             delete_flag : Some(1),
 ///             });
+/// //or use into trait
+/// let activity = rbatis::table!(BizActivity{
+///             id : "12312".to_string(),
+///             delete_flag : 1,
+///             });
 #[macro_export]
 macro_rules! table {
          ($t:ty{ $($key:ident:$value:expr,)+ }) => {
            {
             let mut temp_table_data = <$t>::default();
-            $(temp_table_data.$key=$value;)+
+            $(temp_table_data.$key = $value.into();)+
             temp_table_data
            }
         }
 }
-/// Simplifies table construction by relying on the Default interface
-///
-/// //step1:  impl Default
-/// impl Default for BizActivity{
-///       fn default() -> Self {
-///          Self{
-///            id:None,
-///            name:None,
-///            delete_flag:None,
-///          }
-///      }
-/// }
-///  //step2: make struct
-/// let activity = rbatis::table_some!(BizActivity{
-///             id : "12312".to_string(),
-///             delete_flag : 1,
-///             });
-#[macro_export]
-macro_rules! table_some {
-         ($t:ty{ $($key:ident:$value:expr,)+ }) => {
-           {
-            let mut temp_table_data = <$t>::default();
-            $(temp_table_data.$key=Some($value);)+
-            temp_table_data
-           }
-        }
-}
-
-
 /// take the target Vec member attribute Vec collection
 /// vec_ref: a reference to vec, field_name: the field name of the structure
 ///
