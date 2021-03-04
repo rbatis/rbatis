@@ -13,7 +13,7 @@ pub trait FatherChildRelationship where Self: CRUDTable + Clone {
             for (key, x) in all_record {
                 if x.get_father_id().is_some() && self.get_id().eq(&x.get_father_id()) {
                     let mut item = x.clone();
-                    item.ecursive_set_childs(all_record);
+                    item.recursive_set_childs(all_record);
                     match &mut childs {
                         Some(childs) => {
                             childs.push(item);
