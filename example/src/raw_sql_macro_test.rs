@@ -25,10 +25,7 @@ mod test {
         let a = py_select("1").await.unwrap();
     }
 
-    /// RB是本地依赖Rbatis引用的名称,例如  dao::RB, com::xxx::RB....都可以
-    /// 第二个参数是标准的驱动sql，注意对应数据库参数mysql为？,pg为$1...
-    /// 宏会自动转换函数为  pub async fn select(name: &str) -> rbatis::core::Result<BizActivity> {}
-    ///
+    /// doc you can see https://rbatis.github.io/rbatis.io/#/en/
     #[sql(RB, "select * from biz_activity where id = ?")]
     async fn select(name: &str) -> BizActivity {}
 
