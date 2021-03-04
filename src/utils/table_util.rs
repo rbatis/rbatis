@@ -6,14 +6,14 @@ use crate::crud::CRUDTable;
 pub trait FatherChildRelationship where Self: CRUDTable + Clone {
     fn get_father_id(&self) -> Option<&Self::IdType>;
     fn set_childs(&mut self, arg: Vec<Self>);
-    ///loop_find_childs for Relationship
-    fn loop_find_childs(&mut self, all_record: &HashMap<Self::IdType, Self>) {
+    ///recursive_set_childs for Relationship
+    fn recursive_set_childs(&mut self, all_record: &HashMap<Self::IdType, Self>) {
         let mut childs: Option<Vec<Self>> = None;
         if self.get_id().is_some() {
             for (key, x) in all_record {
                 if x.get_father_id().is_some() && self.get_id().eq(&x.get_father_id()) {
                     let mut item = x.clone();
-                    item.loop_find_childs(all_record);
+                    item.ecursive_set_childs(all_record);
                     match &mut childs {
                         Some(childs) => {
                             childs.push(item);
