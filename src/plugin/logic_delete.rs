@@ -146,9 +146,10 @@ impl LogicDelete for RbatisLogicDeletePlugin {
             );
         }
         sql = format!(
-            "{}{} from {} {}",
+            "{}{}{}{} {}",
             crate::sql::TEMPLATE.select,
             column,
+            crate::sql::TEMPLATE.from,
             table_name,
             driver_type.make_where(&where_sql)
         );

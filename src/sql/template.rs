@@ -25,6 +25,7 @@ pub struct SqlTemplate {
     pub update:&'static str,
     pub select:&'static str,
     pub delete_from:&'static str,
+    pub from:&'static str,
 }
 
 impl Default for SqlTemplate {
@@ -50,7 +51,8 @@ impl Default for SqlTemplate {
             set: " set ",
             update: "update ",
             select: "select ",
-            delete_from: "delete from "
+            delete_from: "delete from ",
+            from: " from ",
         }
     }
 }
