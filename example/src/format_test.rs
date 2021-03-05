@@ -9,6 +9,7 @@ mod test {
     //'formats_pg' use postgres format
     //'id' ->  table column 'id'
     //'{}::uuid' -> format data str
+    // '\\,'   ->   This is an escape symbol
     #[crud_enable(formats_pg: "id:{}::uuid")]
     #[derive(Clone, Debug)]
     pub struct BizUuid {
