@@ -606,28 +606,22 @@ impl Wrapper {
         if obj.len() == 0 {
             return self;
         }
-        let arr = json!(obj);
-        match arr {
-            serde_json::Value::Array(vec) => {
-                self = self.and();
-                let mut sqls = String::new();
-                for x in vec {
-                    sqls.push_str(&format!(
-                        " {} ",
-                        self.do_format_column(
-                            column,
-                            self.driver_type.stmt_convert(self.args.len()),
-                        )
-                    ));
-                    sqls.push_str(",");
-                    self.args.push(x);
-                }
-                sqls.pop();
-                self.sql
-                    .push_str(format!("{}{} ({})", column, crate::sql::TEMPLATE.r#in, sqls).as_str());
-            }
-            _ => {}
+        self = self.and();
+        let mut sqls = String::with_capacity(obj.len()*10);
+        for x in obj {
+            sqls.push_str(&format!(
+                " {} ",
+                self.do_format_column(
+                    column,
+                    self.driver_type.stmt_convert(self.args.len()),
+                )
+            ));
+            sqls.push_str(",");
+            self.args.push(json!(x));
         }
+        sqls.pop();
+        self.sql
+            .push_str(format!("{}{} ({})", column, crate::sql::TEMPLATE.r#in, sqls).as_str());
         self
     }
 
@@ -651,28 +645,22 @@ impl Wrapper {
         where
             T: Serialize,
     {
-        let arr = json!(obj);
-        match arr {
-            serde_json::Value::Array(vec) => {
-                self = self.and();
-                let mut sqls = String::new();
-                for x in vec {
-                    sqls.push_str(&format!(
-                        " {} ",
-                        self.do_format_column(
-                            column,
-                            self.driver_type.stmt_convert(self.args.len()),
-                        )
-                    ));
-                    sqls.push_str(",");
-                    self.args.push(x);
-                }
-                sqls.pop();
-                self.sql
-                    .push_str(format!("{}{}{}({})", column, crate::sql::TEMPLATE.not, crate::sql::TEMPLATE.r#in.trim_start(), sqls).as_str());
-            }
-            _ => {}
+        self = self.and();
+        let mut sqls = String::new();
+        for x in obj {
+            sqls.push_str(&format!(
+                " {} ",
+                self.do_format_column(
+                    column,
+                    self.driver_type.stmt_convert(self.args.len()),
+                )
+            ));
+            sqls.push_str(",");
+            self.args.push(json!(x));
         }
+        sqls.pop();
+        self.sql
+            .push_str(format!("{}{}{}({})", column, crate::sql::TEMPLATE.not, crate::sql::TEMPLATE.r#in.trim_start(), sqls).as_str());
         self
     }
 
