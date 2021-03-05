@@ -646,7 +646,7 @@ impl Wrapper {
             T: Serialize,
     {
         self = self.and();
-        let mut sqls = String::new();
+        let mut sqls = String::with_capacity(obj.len()*10);
         for x in obj {
             sqls.push_str(&format!(
                 " {} ",
