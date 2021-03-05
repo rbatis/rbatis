@@ -8,10 +8,10 @@ mod test {
     #[test]
     fn test_trim() {
         let mut w = Wrapper::new(&DriverType::Mysql);
-        w = w.push_sql(" WHERE ").order_by(true, &["id"]);
+        w = w.push_sql(" where ").order_by(true, &["id"]);
         println!("sql:{:?}", w.sql.as_str());
         println!("arg:{:?}", w.args.clone());
-        assert_eq!("ORDER BY id ASC", w.sql.as_str().trim());
+        assert_eq!("ORDER by id ASC", w.sql.as_str().trim());
         println!("{:?}", w);
     }
 

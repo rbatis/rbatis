@@ -21,7 +21,7 @@ mod test {
     fn test_make_count() {
         let plugin = RbatisReplacePagePlugin {};
         let sql = plugin
-            .make_count_sql("biz_activity where id = 1 and ORDER BY id DESC and ORDER BY id DESC");
+            .make_count_sql("biz_activity where id = 1 and order by id DESC and order by id DESC");
         println!("sql:{}", sql);
     }
 }

@@ -26,9 +26,9 @@ pub(crate) fn impl_macro_sql(target_fn: &ItemFn, args: &AttributeArgs) -> TokenS
     }
     let mut call_method = quote! {};
     let is_select = sql.starts_with("select ")
-        || sql.starts_with("SELECT ")
+        || sql.starts_with("select ")
         || sql.starts_with("\"select ")
-        || sql.starts_with("\"SELECT ");
+        || sql.starts_with("\"select ");
     if is_select {
         call_method = quote! {fetch_prepare};
     } else {

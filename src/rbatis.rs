@@ -20,7 +20,6 @@ use crate::plugin::log::{LogPlugin, RbatisLogPlugin};
 use crate::plugin::logic_delete::{LogicDelete, RbatisLogicDeletePlugin};
 use crate::plugin::page::{IPage, IPageRequest, Page, PagePlugin, RbatisPagePlugin};
 use crate::plugin::version_lock::{RbatisVersionLockPlugin, VersionLockPlugin};
-use crate::sql::upper::SqlUpperCase;
 use crate::sql::PageLimit;
 use crate::tx::{TxGuard, TxManager, TxState};
 use crate::utils::error_util::ToResult;
@@ -255,7 +254,7 @@ impl Rbatis {
     /// tx_id must be 'tx:'+id,this method default is 'tx:'+uuid
     /// for example:
     ///         let guard = RB.begin_tx_defer(true).await?;
-    ///         let v: serde_json::Value = RB.fetch(&guard.tx_id, "SELECT count(1) FROM biz_activity;").await?;
+    ///         let v: serde_json::Value = RB.fetch(&guard.tx_id, "select count(1) from biz_activity;").await?;
     ///
     pub async fn begin_tx_defer(&self, when_drop_commit: bool) -> Result<TxGuard, Error> {
         let tx_id = self.begin_tx().await?;
@@ -268,7 +267,7 @@ impl Rbatis {
     ///
     /// for example:
     ///  let tx_id = rb.begin_tx().await.unwrap();
-    ///  let v: serde_json::Value = rb.fetch(&tx_id, "SELECT count(1) FROM biz_activity;").await.unwrap();
+    ///  let v: serde_json::Value = rb.fetch(&tx_id, "select count(1) from biz_activity;").await.unwrap();
     ///
     pub async fn begin_tx(&self) -> Result<String, Error> {
         let new_context_id = format!(
@@ -285,7 +284,7 @@ impl Rbatis {
     /// for example:
     ///         let context_id = "tx:1";
     ///         let tx_id = rb.begin_defer(context_id,true).await.unwrap();
-    ///         let v: serde_json::Value = rb.fetch(&tx_id, "SELECT count(1) FROM biz_activity;").await.unwrap();
+    ///         let v: serde_json::Value = rb.fetch(&tx_id, "select count(1) from biz_activity;").await.unwrap();
     ///
     pub async fn begin_defer(
         &self,
@@ -303,7 +302,7 @@ impl Rbatis {
     /// for example:
     ///         let context_id = "tx:1";
     ///         rb.begin(context_id).await.unwrap();
-    ///         let v: serde_json::Value = rb.fetch(context_id, "SELECT count(1) FROM biz_activity;").await.unwrap();
+    ///         let v: serde_json::Value = rb.fetch(context_id, "select count(1) from biz_activity;").await.unwrap();
     ///         println!("{}", v.clone());
     ///         rb.commit(context_id).await.unwrap();
     ///
@@ -354,7 +353,7 @@ impl Rbatis {
     /// fetch result(row sql)
     ///
     /// for example:
-    ///     let v: serde_json::Value = rb.fetch(context_id, "SELECT count(1) FROM biz_activity;").await?;
+    ///     let v: serde_json::Value = rb.fetch(context_id, "select count(1) from biz_activity;").await?;
     ///
     pub async fn fetch<T>(&self, context_id: &str, sql: &str) -> Result<T, Error>
     where
@@ -461,7 +460,7 @@ impl Rbatis {
     /// fetch result(prepare sql)
     ///
     /// for example:
-    ///     let v = RB.fetch_prepare::<Value>("", "SELECT count(1) FROM biz_activity where delete_flag = ?;", &vec![json!(1)]).await;
+    ///     let v = RB.fetch_prepare::<Value>("", "select count(1) from biz_activity where delete_flag = ?;", &vec![json!(1)]).await;
     ///
     pub async fn fetch_prepare<T>(
         &self,
@@ -525,7 +524,7 @@ impl Rbatis {
     /// exec sql(prepare sql)
     ///
     /// for example:
-    ///      let v = RB.exec_prepare::<Value>("", "SELECT count(1) FROM biz_activity where delete_flag = ?;", &vec![json!(1)]).await;
+    ///      let v = RB.exec_prepare::<Value>("", "select count(1) from biz_activity where delete_flag = ?;", &vec![json!(1)]).await;
     ///
     pub async fn exec_prepare(
         &self,
@@ -608,12 +607,12 @@ impl Rbatis {
     ///for example:
     ///
     ///         let py = r#"
-    ///     SELECT * FROM biz_activity
-    ///    WHERE delete_flag = #{delete_flag}
+    ///     select * from biz_activity
+    ///    where delete_flag = #{delete_flag}
     ///     if name != null:
-    ///       AND name like #{name+'%'}
+    ///       and name like #{name+'%'}
     ///     if ids != null:
-    ///       AND id in (
+    ///       and id in (
     ///       trim ',':
     ///          for item in ids:
     ///            #{item},
@@ -638,12 +637,12 @@ impl Rbatis {
     ///for example:
     ///
     ///         let py = r#"
-    ///     SELECT * FROM biz_activity
-    ///    WHERE delete_flag = #{delete_flag}
+    ///     select * from biz_activity
+    ///    where delete_flag = #{delete_flag}
     ///     if name != null:
-    ///       AND name like #{name+'%'}
+    ///       and name like #{name+'%'}
     ///     if ids != null:
-    ///       AND id in (
+    ///       and id in (
     ///       trim ',':
     ///          for item in ids:
     ///            #{item},
@@ -674,7 +673,6 @@ impl Rbatis {
     where
         T: DeserializeOwned + Serialize + Send + Sync,
     {
-        let sql = self.driver_type()?.upper_case_sql(sql);
         let mut page_result = Page::new(page_request.get_page_no(), page_request.get_page_size());
         page_result.search_count = page_request.is_search_count();
         let (count_sql, sql) = self.page_plugin.make_page_sql(

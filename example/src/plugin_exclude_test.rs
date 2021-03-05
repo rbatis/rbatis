@@ -19,9 +19,9 @@ mod test {
             .unwrap();
 
         let id = "12312".to_string();
-        //logic delete sql:   "UPDATE biz_activity SET delete_flag = 1 WHERE id = ?"
+        //logic delete sql:   "update biz_activity set delete_flag = 1 where id = ?"
         rb.remove_by_id::<BizActivity>("", &id).await;
-        //delete sql          "DELETE FROM biz_activity WHERE id = ?"
+        //delete sql          "delete from biz_activity where id = ?"
         rb.remove_by_id::<BizActivity>("disable_del:", &id).await;
 
         //fix data
@@ -58,9 +58,9 @@ mod test {
             .unwrap();
 
         let id = "12312".to_string();
-        //logic delete sql:   "SELECT * FROM biz_activity  WHERE delete_flag = 0 AND id = ? "
+        //logic delete sql:   "select * from biz_activity  where delete_flag = 0 and id = ? "
         rb.fetch_by_id::<BizActivity>("", &id).await;
-        //delete sql          "SELECT * FROM biz_activity  WHERE id = ? "
+        //delete sql          "select * from biz_activity  where id = ? "
         rb.fetch_by_id::<BizActivity>("disable_del:", &id).await;
     }
 }

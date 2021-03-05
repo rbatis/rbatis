@@ -30,9 +30,9 @@ pub(crate) fn impl_macro_py_sql(target_fn: &ItemFn, args: &AttributeArgs) -> Tok
     let (sql_args_gen, context_id_ident) =
         filter_args_context_id(&rbatis_name, &get_fn_args(target_fn));
     let is_select = sql.starts_with("select ")
-        || sql.starts_with("SELECT ")
+        || sql.starts_with("select ")
         || sql.starts_with("\"select ")
-        || sql.starts_with("\"SELECT ");
+        || sql.starts_with("\"select ");
     let mut call_method = quote! {};
     if is_select {
         call_method = quote! {py_fetch};

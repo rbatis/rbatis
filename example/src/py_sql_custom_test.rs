@@ -26,7 +26,7 @@ mod test {
             arg_result: &mut Vec<Value>,
             arg_sql: &mut String,
         ) -> Result<serde_json::Value, py_sql::error::Error> {
-            *arg_sql = " AND id = 1 ".to_string();
+            *arg_sql = " and id = 1 ".to_string();
             Ok(serde_json::Value::Null)
         }
     }
@@ -60,7 +60,7 @@ mod test {
             .py_fetch_page(
                 "",
                 "
-            SELECT * FROM biz_activity WHERE delete_flag = 0
+            select * from biz_activity where delete_flag = 0
             custom :
     ",
                 &serde_json::json!({}),

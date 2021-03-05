@@ -103,20 +103,20 @@ impl LogicDelete for RbatisLogicDeletePlugin {
     ) -> Result<String, Error> {
         if !self.is_allow(context_id) {
             //make delete sql
-            let new_sql = format!("DELETE FROM {} {}", table_name, sql_where.trim_start());
+            let new_sql = format!("delete from {} {}", table_name, sql_where.trim_start());
             return Ok(new_sql);
         }
         return if table_fields.contains(self.column()) {
             //fields have column
             let new_sql = format!(
-                "UPDATE {} SET {} = {}",
+                "update {} set {} = {}",
                 table_name,
                 self.column(),
                 self.deleted()
             ) + sql_where;
             Ok(new_sql)
         } else if !sql_where.is_empty() {
-            let new_sql = format!("DELETE FROM {} {}", table_name, sql_where.trim_start());
+            let new_sql = format!("delete from {} {}", table_name, sql_where.trim_start());
             Ok(new_sql)
         } else {
             Err(Error::from("[rbatis] del data must have where sql!"))
@@ -133,8 +133,6 @@ impl LogicDelete for RbatisLogicDeletePlugin {
         where_sql: &str,
     ) -> Result<String, Error> {
         let mut where_sql = where_sql
-            .replace(" order by ", " ORDER BY ")
-            .replace(" group by ", " GROUP BY ")
             .trim()
             .to_string();
         let mut sql = String::new();
@@ -145,7 +143,7 @@ impl LogicDelete for RbatisLogicDeletePlugin {
             );
         }
         sql = format!(
-            "SELECT {} FROM {} {}",
+            "select {} from {} {}",
             column,
             table_name,
             driver_type.make_where(&where_sql)

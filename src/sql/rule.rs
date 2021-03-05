@@ -6,15 +6,15 @@ pub trait SqlRule {
         if sql.is_empty() {
             return String::new();
         }
-        if sql.starts_with("ORDER BY ") || sql.starts_with("GROUP BY ") || sql.starts_with("LIMIT ")
+        if sql.starts_with("order by ") || sql.starts_with("group by ") || sql.starts_with("limit ")
         {
             sql.to_string()
         } else {
             format!(
-                " WHERE {} ",
-                sql.trim_start_matches("WHERE ")
-                    .trim_start_matches("AND ")
-                    .trim_start_matches("OR ")
+                " where {} ",
+                sql.trim_start_matches("where ")
+                    .trim_start_matches("and ")
+                    .trim_start_matches("or ")
             )
         }
     }
@@ -22,22 +22,22 @@ pub trait SqlRule {
     fn make_left_insert_where(&self, insert_sql: &str, where_sql: &str) -> String {
         let sql = where_sql
             .trim()
-            .trim_start_matches("WHERE ")
-            .trim_start_matches("AND ")
+            .trim_start_matches("where ")
+            .trim_start_matches("and ")
             .replace("  ", " ");
         if sql.is_empty() {
             return insert_sql.to_string();
         }
-        if sql.starts_with("ORDER BY") || sql.starts_with("GROUP BY") || sql.starts_with("LIMIT ") {
+        if sql.starts_with("order by") || sql.starts_with("group by") || sql.starts_with("limit ") {
             format!(
-                " WHERE {} {}",
-                insert_sql.trim().trim_end_matches(" AND"),
+                " where {} {}",
+                insert_sql.trim().trim_end_matches(" and"),
                 sql
             )
         } else {
             format!(
-                " WHERE {} AND {}",
-                insert_sql.trim().trim_end_matches(" AND"),
+                " where {} and {}",
+                insert_sql.trim().trim_end_matches(" and"),
                 sql
             )
         }
