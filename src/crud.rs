@@ -458,7 +458,7 @@ impl CRUD for Rbatis {
         where
             T: CRUDTable,
     {
-        if w.sql.starts_with("INSERT INTO") {
+        if w.sql.starts_with("insert into") {
             return self.exec_prepare(context_id, &w.sql, &w.args).await;
         } else {
             let mut w = w.clone();
@@ -483,7 +483,7 @@ impl CRUD for Rbatis {
         let (columns, values, args) =
             entity.make_value_sql_arg(&self.driver_type()?, &mut index)?;
         let sql = format!(
-            "INSERT INTO {} ({}) VALUES ({})",
+            "insert into {} ({}) values ({})",
             T::table_name(),
             columns,
             values
@@ -495,7 +495,7 @@ impl CRUD for Rbatis {
     ///
     /// for Example:
     /// rb.save_batch("",&vec![activity]);
-    /// [rbatis] Exec ==>   INSERT INTO biz_activity (id,name,version) VALUES ( ? , ? , ?),( ? , ? , ?)
+    /// [rbatis] Exec ==>   insert into biz_activity (id,name,version) values ( ? , ? , ?),( ? , ? , ?)
     ///
     ///
     async fn save_batch<T>(&self, context_id: &str, args: &[T]) -> Result<DBExecResult>
@@ -525,7 +525,7 @@ impl CRUD for Rbatis {
         }
         value_arr.pop(); //pop ','
         let sql = format!(
-            "INSERT INTO {} ({}) VALUES {}",
+            "insert into {} ({}) values {}",
             T::table_name(),
             column_sql,
             value_arr
@@ -539,7 +539,7 @@ impl CRUD for Rbatis {
     ///
     /// for Example:
     /// rb.save_batch_slice("",&vec![activity],0);
-    /// [rbatis] Exec ==>   INSERT INTO biz_activity (id,name,version) VALUES ( ? , ? , ?),( ? , ? , ?)
+    /// [rbatis] Exec ==>   insert into biz_activity (id,name,version) values ( ? , ? , ?),( ? , ? , ?)
     ///
     async fn save_batch_slice<T>(&self, context_id: &str, args: &[T], slice_len: usize) -> Result<DBExecResult>
         where
@@ -585,7 +585,7 @@ impl CRUD for Rbatis {
                 &where_sql,
             )?;
         } else {
-            sql = format!("DELETE FROM {} {}", table_name, &where_sql);
+            sql = format!("delete from {} {}", table_name, &where_sql);
         }
         return Ok(self
             .exec_prepare(context_id, sql.as_str(), &w.args)
@@ -607,11 +607,11 @@ impl CRUD for Rbatis {
                 &driver_type,
                 T::table_name().as_str(),
                 &T::table_columns(),
-                format!(" WHERE {} = {}", T::id_name(), id_str).as_str(),
+                format!(" where {} = {}", T::id_name(), id_str).as_str(),
             )?;
         } else {
             sql = format!(
-                "DELETE FROM {} WHERE {} = {}",
+                "delete from {} where {} = {}",
                 T::table_name(),
                 T::id_name(),
                 id_str
@@ -626,7 +626,7 @@ impl CRUD for Rbatis {
     ///remove batch id
     /// for Example :
     /// rb.remove_batch_by_id::<BizActivity>(&["1".to_string(),"2".to_string()]).await;
-    /// [rbatis] Exec ==> DELETE FROM biz_activity WHERE id IN ( ? , ? )
+    /// [rbatis] Exec ==> delete from biz_activity where id IN ( ? , ? )
     ///
     async fn remove_batch_by_id<T>(&self, context_id: &str, ids: &[T::IdType]) -> Result<u64>
         where
@@ -691,7 +691,7 @@ impl CRUD for Rbatis {
         }
         sets.pop();
         let mut wrapper = self.new_wrapper_table::<T>();
-        wrapper.sql = format!("UPDATE {} SET {}", table_name, sets);
+        wrapper.sql = format!("update {} set {}", table_name, sets);
         wrapper.args = args;
         //version lock
         match self.version_lock_plugin.as_ref() {
@@ -705,8 +705,8 @@ impl CRUD for Rbatis {
             _ => {}
         }
         if !w.sql.is_empty() {
-            if !wrapper.sql.contains(" WHERE ") {
-                wrapper.sql.push_str(" WHERE ");
+            if !wrapper.sql.contains(" where ") {
+                wrapper.sql.push_str(" where ");
             }
             wrapper = wrapper.push_wrapper(&w);
         }
@@ -863,7 +863,7 @@ fn make_select_sql<T>(context_id: &str, rb: &Rbatis, column: &str, w: &Wrapper) 
         );
     }
     Ok(format!(
-        "SELECT {} FROM {} {}",
+        "select {} from {} {}",
         column,
         table_name,
         driver_type.make_where(&w.sql)

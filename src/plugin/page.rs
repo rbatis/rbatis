@@ -298,25 +298,25 @@ pub struct RbatisReplacePagePlugin {}
 
 impl RbatisReplacePagePlugin {
     pub fn make_count_sql(&self, sql: &str) -> String {
-        let sql = sql
-            .replace(" from ", " FROM ")
-            .replace(" order by ", " ORDER BY ")
-            .replace(" limit ", " LIMIT ");
-        let mut from_index = sql.find(" FROM ");
+        // let sql = sql
+        //     .replace(" from ", " from ")
+        //     .replace(" order by ", " order by ")
+        //     .replace(" limit ", " limit ");
+        let mut from_index = sql.find(" from ");
         if from_index.is_some() {
-            from_index = Option::Some(from_index.unwrap() + " FROM ".len());
+            from_index = Option::Some(from_index.unwrap() + " from ".len());
         }
         let mut where_sql = sql[from_index.unwrap_or(0)..sql.len()].to_string();
         //remove order by
-        if where_sql.contains(" ORDER BY ") {
+        if where_sql.contains(" order by ") {
             where_sql =
-                where_sql[0..where_sql.rfind(" ORDER BY ").unwrap_or(where_sql.len())].to_string();
+                where_sql[0..where_sql.rfind(" order by ").unwrap_or(where_sql.len())].to_string();
         }
-        if where_sql.contains(" LIMIT ") {
+        if where_sql.contains(" limit ") {
             where_sql =
-                where_sql[0..where_sql.rfind(" LIMIT ").unwrap_or(where_sql.len())].to_string();
+                where_sql[0..where_sql.rfind(" limit ").unwrap_or(where_sql.len())].to_string();
         }
-        format!("SELECT count(1) FROM {}", where_sql)
+        format!("select count(1) from {}", where_sql)
     }
 }
 
@@ -331,9 +331,9 @@ impl PagePlugin for RbatisReplacePagePlugin {
     ) -> Result<(String, String), crate::core::Error> {
         //default sql
         let mut sql = sql.trim().to_owned();
-        if !sql.starts_with("SELECT ") && !sql.contains("FROM ") {
+        if !sql.starts_with("select ") && !sql.contains("from ") {
             return Err(crate::core::Error::from(
-                "[rbatis] make_page_sql() sql must contains 'SELECT ' And 'FROM '",
+                "[rbatis] make_page_sql() sql must contains 'select ' And 'from '",
             ));
         }
         //count sql
@@ -346,7 +346,7 @@ impl PagePlugin for RbatisReplacePagePlugin {
         let limit_sql = driver_type.page_limit_sql(page.offset(), page.get_page_size())?;
         match driver_type {
             DriverType::Mssql => {
-                sql = format!("SELECT RB_DATA.*, 0 AS RB_DATA_ORDER FROM ({})RB_DATA ORDER BY RB_DATA_ORDER {}", sql, limit_sql);
+                sql = format!("select RB_DATA.*, 0 AS RB_DATA_ORDER from ({})RB_DATA order by RB_DATA_ORDER {}", sql, limit_sql);
             }
             _ => {
                 sql = sql + limit_sql.as_str();
@@ -362,7 +362,7 @@ pub struct RbatisPackPagePlugin {}
 
 impl RbatisPackPagePlugin {
     fn make_count_sql(&self, sql: &str) -> String {
-        format!("SELECT count(1) FROM ({}) a", sql)
+        format!("select count(1) from ({}) a", sql)
     }
 }
 
@@ -377,9 +377,9 @@ impl PagePlugin for RbatisPackPagePlugin {
     ) -> Result<(String, String), crate::core::Error> {
         //default sql
         let mut sql = sql.trim().to_owned();
-        if !sql.starts_with("SELECT ") && !sql.contains("FROM ") {
+        if !sql.starts_with("select ") && !sql.contains("from ") {
             return Err(crate::core::Error::from(
-                "[rbatis] make_page_sql() sql must contains 'SELECT ' And 'FROM '",
+                "[rbatis] make_page_sql() sql must contains 'select ' And 'from '",
             ));
         }
         //count sql
@@ -392,7 +392,7 @@ impl PagePlugin for RbatisPackPagePlugin {
         let limit_sql = driver_type.page_limit_sql(page.offset(), page.get_page_size())?;
         match driver_type {
             DriverType::Mssql => {
-                sql = format!("SELECT RB_DATA.*, 0 AS RB_DATA_ORDER FROM ({})RB_DATA ORDER BY RB_DATA_ORDER {}", sql, limit_sql);
+                sql = format!("select RB_DATA.*, 0 AS RB_DATA_ORDER from ({})RB_DATA order by RB_DATA_ORDER {}", sql, limit_sql);
             }
             _ => {
                 sql = sql + limit_sql.as_str();
@@ -433,7 +433,7 @@ impl PagePlugin for RbatisPagePlugin {
         args: &Vec<Value>,
         page: &dyn IPageRequest,
     ) -> Result<(String, String), Error> {
-        if sql.contains(" GROUP BY ") {
+        if sql.contains(" group by ") {
             return self
                 .pack
                 .make_page_sql(driver_type, context_id, sql, args, page);

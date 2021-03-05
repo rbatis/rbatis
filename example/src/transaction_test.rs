@@ -13,7 +13,7 @@ mod test {
             .unwrap();
         let tx_id = rb.begin_tx().await.unwrap();
         let v: serde_json::Value = rb
-            .fetch(&tx_id, "SELECT count(1) FROM biz_activity;")
+            .fetch(&tx_id, "select count(1) from biz_activity;")
             .await
             .unwrap();
         println!("{}", v.clone());
@@ -58,7 +58,7 @@ mod test {
         // tx will be commit.when func end
         let guard = rb.begin_tx_defer(true).await?;
         let v: serde_json::Value = rb
-            .fetch(&guard.tx_id, "SELECT count(1) FROM biz_activity;")
+            .fetch(&guard.tx_id, "select count(1) from biz_activity;")
             .await?;
         return Ok(v);
     }

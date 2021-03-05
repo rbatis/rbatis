@@ -11,7 +11,7 @@ mod test {
             .unwrap();
         let mut conn = pool.acquire().await.unwrap();
         let (r, _) = conn
-            .fetch::<serde_json::Value>("SELECT count(1) FROM biz_activity;")
+            .fetch::<serde_json::Value>("select count(1) from biz_activity;")
             .await
             .unwrap();
         println!("done:{:?}", r);

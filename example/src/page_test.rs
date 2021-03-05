@@ -32,10 +32,10 @@ mod test {
             .await
             .unwrap();
         let py = r#"
-    SELECT * FROM biz_activity
-    WHERE delete_flag = #{delete_flag}
+    select * from biz_activity
+    where delete_flag = #{delete_flag}
     if name != null:
-      AND name like #{name+'%'}"#;
+      and name like #{name+'%'}"#;
         let data: Page<BizActivity> = rb
             .py_fetch_page(
                 "",
