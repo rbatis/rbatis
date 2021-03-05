@@ -28,6 +28,10 @@ pub struct SqlTemplate {
     pub from:&'static str,
     pub r#as:&'static str,
     pub offset:&'static str,
+    
+    //mssql
+    pub rows_fetch_next:&'static str,
+    pub rows_only:&'static str,
 }
 
 impl Default for SqlTemplate {
@@ -57,6 +61,8 @@ impl Default for SqlTemplate {
             from: " from ",
             r#as: " as ",
             offset: " offset ",
+            rows_fetch_next: " rows fetch next ",
+            rows_only: " rows only ",
         }
     }
 }
