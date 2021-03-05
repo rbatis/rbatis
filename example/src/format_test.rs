@@ -31,6 +31,11 @@ mod test {
         //create table
         rb.exec(
             "",
+            "DROP TABLE biz_uuid;",
+        )
+            .await;
+        rb.exec(
+            "",
             "CREATE TABLE biz_uuid( id uuid, name VARCHAR, PRIMARY KEY(id));",
         )
         .await;
