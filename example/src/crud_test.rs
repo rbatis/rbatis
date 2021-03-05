@@ -31,10 +31,10 @@ mod test {
         pub version: Option<BigDecimal>,
         pub delete_flag: Option<i32>,
     }
-    
-    impl Default for BizActivity{
+
+    impl Default for BizActivity {
         fn default() -> Self {
-            Self{
+            Self {
                 id: None,
                 name: None,
                 pc_link: None,
@@ -46,7 +46,7 @@ mod test {
                 remark: None,
                 create_time: None,
                 version: None,
-                delete_flag: None
+                delete_flag: None,
             }
         }
     }
@@ -128,6 +128,36 @@ mod test {
             .await;
         let args = vec![activity, activity2];
         let r = rb.save_batch("", &args).await;
+        if r.is_err() {
+            println!("{}", r.err().unwrap().to_string());
+        }
+    }
+
+    #[async_std::test]
+    pub async fn test_save_batch_slice() {
+        let rb = init_rbatis().await;
+        let activity = BizActivity {
+            id: Some("12312".to_string()),
+            name: Some("test_1".to_string()),
+            pc_link: None,
+            h5_link: None,
+            pc_banner_img: None,
+            h5_banner_img: None,
+            sort: Some("1".to_string()),
+            status: Some(1),
+            remark: None,
+            create_time: Some(NaiveDateTime::now()),
+            version: Some(BigDecimal::from(1)),
+            delete_flag: Some(1),
+        };
+        let mut activity2 = activity.clone();
+        activity2.id = Some("12313".to_string());
+        let mut activity3 = activity.clone();
+        activity3.id = Some("12314".to_string());
+        rb.remove_batch_by_id::<BizActivity>("", &["12312".to_string(), "12313".to_string(), "12314".to_string()])
+            .await;
+        let args = vec![activity, activity2, activity3];
+        let r = rb.save_batch_slice("", &args, 2).await;
         if r.is_err() {
             println!("{}", r.err().unwrap().to_string());
         }
