@@ -494,7 +494,7 @@ impl CRUD for Rbatis {
     /// save batch makes many value into  only one sql. make sure your data do not too long!
     ///
     /// for Example:
-    /// rb.save_batch(&vec![activity]);
+    /// rb.save_batch("",&vec![activity]);
     /// [rbatis] Exec ==>   INSERT INTO biz_activity (id,name,version) VALUES ( ? , ? , ?),( ? , ? , ?)
     ///
     ///
@@ -534,9 +534,11 @@ impl CRUD for Rbatis {
     }
 
     /// save batch slice makes many value into  many sql. make sure your slice_len do not too long!
+    /// slice_len = 0 : save all data
+    /// slice_len != 0 : save data with slice_len everytime until save all data
     ///
     /// for Example:
-    /// rb.save_batch(&vec![activity]);
+    /// rb.save_batch_slice("",&vec![activity],0);
     /// [rbatis] Exec ==>   INSERT INTO biz_activity (id,name,version) VALUES ( ? , ? , ?),( ? , ? , ?)
     ///
     async fn save_batch_slice<T>(&self, context_id: &str, args: &[T], slice_len: usize) -> Result<DBExecResult>
