@@ -100,3 +100,20 @@ pub(crate) fn find_fn_body(target_fn: &ItemFn) -> proc_macro2::TokenStream {
     let return_ty = target_fn.block.to_token_stream();
     return_ty
 }
+
+
+pub(crate) fn is_start_with_select(sql: &str) -> bool {
+    #[cfg(feature = "upper_case_sql")]
+        {
+            if sql.starts_with("SELECT ")
+                || sql.starts_with("SELECT ")
+                || sql.starts_with("\"SELECT ")
+                || sql.starts_with("\"SELECT "){
+                return true;
+            }
+        }
+    return sql.starts_with("select ")
+        || sql.starts_with("select ")
+        || sql.starts_with("\"select ")
+        || sql.starts_with("\"select ");
+}

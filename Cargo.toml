@@ -20,9 +20,12 @@ homepage = "https://rbatis.github.io/rbatis.io/#/en/"
 [features]
 default = ["async-io"]
 
-# debug_mode feature will show decode json data
+#debug_mode feature will show decode json data
 debug_mode = ["rbatis-core/debug_mode", "rbatis-macro-driver/debug_mode"]
 default_mode = ["rbatis-core", "rbatis-macro-driver"]
+
+#support upper case sql
+upper_case_sql = ["rbatis-macro-driver/upper_case_sql"]
 
 #runtime-all-database
 actix = ["default_mode", "rbatis-core/actix"]

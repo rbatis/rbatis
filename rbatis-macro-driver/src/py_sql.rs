@@ -5,7 +5,7 @@ use syn;
 use syn::{AttributeArgs, ItemFn};
 
 use crate::proc_macro::TokenStream;
-use crate::util::{find_fn_body, find_return_type, get_fn_args, get_page_req_ident};
+use crate::util::{find_fn_body, find_return_type, get_fn_args, get_page_req_ident, is_start_with_select};
 
 ///py_sql macro
 ///support args for  context_id:&str,RB:&Rbatis,page:&PageRequest
@@ -29,10 +29,7 @@ pub(crate) fn impl_macro_py_sql(target_fn: &ItemFn, args: &AttributeArgs) -> Tok
     //append all args
     let (sql_args_gen, context_id_ident) =
         filter_args_context_id(&rbatis_name, &get_fn_args(target_fn));
-    let is_select = sql.starts_with("select ")
-        || sql.starts_with("select ")
-        || sql.starts_with("\"select ")
-        || sql.starts_with("\"select ");
+    let is_select = is_start_with_select(&sql);
     let mut call_method = quote! {};
     if is_select {
         call_method = quote! {py_fetch};
