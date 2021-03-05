@@ -458,7 +458,7 @@ impl CRUD for Rbatis {
         where
             T: CRUDTable,
     {
-        if w.sql.starts_with("insert into") {
+        if w.sql.starts_with(crate::sql::TEMPLATE.insert_into) {
             return self.exec_prepare(context_id, &w.sql, &w.args).await;
         } else {
             let mut w = w.clone();
@@ -483,9 +483,11 @@ impl CRUD for Rbatis {
         let (columns, values, args) =
             entity.make_value_sql_arg(&self.driver_type()?, &mut index)?;
         let sql = format!(
-            "insert into {} ({}) values ({})",
+            "{} {} ({}){}({})",
+            crate::sql::TEMPLATE.insert_into,
             T::table_name(),
             columns,
+            crate::sql::TEMPLATE.values,
             values
         );
         return self.exec_prepare(context_id, sql.as_str(), &args).await;
@@ -525,9 +527,11 @@ impl CRUD for Rbatis {
         }
         value_arr.pop(); //pop ','
         let sql = format!(
-            "insert into {} ({}) values {}",
+            "{} {} ({}){}{}",
+            crate::sql::TEMPLATE.insert_into,
             T::table_name(),
             column_sql,
+            crate::sql::TEMPLATE.values,
             value_arr
         );
         return self.exec_prepare(context_id, sql.as_str(), &arg_arr).await;
@@ -585,7 +589,7 @@ impl CRUD for Rbatis {
                 &where_sql,
             )?;
         } else {
-            sql = format!("delete from {} {}", table_name, &where_sql);
+            sql = format!("{}{} {}", crate::sql::TEMPLATE.delete_from, table_name, &where_sql);
         }
         return Ok(self
             .exec_prepare(context_id, sql.as_str(), &w.args)
@@ -607,12 +611,14 @@ impl CRUD for Rbatis {
                 &driver_type,
                 T::table_name().as_str(),
                 &T::table_columns(),
-                format!(" where {} = {}", T::id_name(), id_str).as_str(),
+                format!("{}{} = {}", crate::sql::TEMPLATE.r#where, T::id_name(), id_str).as_str(),
             )?;
         } else {
             sql = format!(
-                "delete from {} where {} = {}",
+                "{} {} {} {} = {}",
+                crate::sql::TEMPLATE.delete_from,
                 T::table_name(),
+                crate::sql::TEMPLATE.r#where,
                 T::id_name(),
                 id_str
             );
@@ -691,7 +697,7 @@ impl CRUD for Rbatis {
         }
         sets.pop();
         let mut wrapper = self.new_wrapper_table::<T>();
-        wrapper.sql = format!("update {} set {}", table_name, sets);
+        wrapper.sql = format!("{}{}{}{}", crate::sql::TEMPLATE.update, table_name, crate::sql::TEMPLATE.set, sets);
         wrapper.args = args;
         //version lock
         match self.version_lock_plugin.as_ref() {
@@ -705,8 +711,8 @@ impl CRUD for Rbatis {
             _ => {}
         }
         if !w.sql.is_empty() {
-            if !wrapper.sql.contains(" where ") {
-                wrapper.sql.push_str(" where ");
+            if !wrapper.sql.contains(crate::sql::TEMPLATE.r#where) {
+                wrapper.sql.push_str(crate::sql::TEMPLATE.r#where);
             }
             wrapper = wrapper.push_wrapper(&w);
         }
@@ -863,8 +869,10 @@ fn make_select_sql<T>(context_id: &str, rb: &Rbatis, column: &str, w: &Wrapper) 
         );
     }
     Ok(format!(
-        "select {} from {} {}",
+        "{} {} {} {} {}",
+        crate::sql::TEMPLATE.select,
         column,
+        crate::sql::TEMPLATE.from,
         table_name,
         driver_type.make_where(&w.sql)
     ))
