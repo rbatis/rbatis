@@ -6,15 +6,18 @@ pub trait SqlRule {
         if sql.is_empty() {
             return String::new();
         }
-        if sql.starts_with("order by ") || sql.starts_with("group by ") || sql.starts_with("limit ")
+        if sql.starts_with(crate::sql::TEMPLATE.order_by.trim_start())
+            || sql.starts_with(crate::sql::TEMPLATE.group_by.trim_start())
+            || sql.starts_with(crate::sql::TEMPLATE.limit.trim_start())
         {
             sql.to_string()
         } else {
             format!(
-                " where {} ",
-                sql.trim_start_matches("where ")
-                    .trim_start_matches("and ")
-                    .trim_start_matches("or ")
+                " {} {} ",
+                crate::sql::TEMPLATE.r#where,
+                sql.trim_start_matches(crate::sql::TEMPLATE.r#where.trim_start())
+                    .trim_start_matches(crate::sql::TEMPLATE.and.trim_start())
+                    .trim_start_matches(crate::sql::TEMPLATE.or.trim_start())
             )
         }
     }
@@ -22,22 +25,27 @@ pub trait SqlRule {
     fn make_left_insert_where(&self, insert_sql: &str, where_sql: &str) -> String {
         let sql = where_sql
             .trim()
-            .trim_start_matches("where ")
-            .trim_start_matches("and ")
+            .trim_start_matches(crate::sql::TEMPLATE.r#where.trim_start())
+            .trim_start_matches(crate::sql::TEMPLATE.and.trim_start())
             .replace("  ", " ");
         if sql.is_empty() {
             return insert_sql.to_string();
         }
-        if sql.starts_with("order by") || sql.starts_with("group by") || sql.starts_with("limit ") {
+        if sql.starts_with(crate::sql::TEMPLATE.order_by.trim_start())
+            || sql.starts_with(crate::sql::TEMPLATE.group_by.trim_start())
+            || sql.starts_with(crate::sql::TEMPLATE.limit.trim_start()) {
             format!(
-                " where {} {}",
-                insert_sql.trim().trim_end_matches(" and"),
+                " {} {} {}",
+                crate::sql::TEMPLATE.r#where,
+                insert_sql.trim().trim_end_matches(crate::sql::TEMPLATE.and.trim_end()),
                 sql
             )
         } else {
             format!(
-                " where {} and {}",
-                insert_sql.trim().trim_end_matches(" and"),
+                " {} {} {} {}",
+                crate::sql::TEMPLATE.r#where,
+                insert_sql.trim().trim_end_matches(crate::sql::TEMPLATE.and.trim_end()),
+                crate::sql::TEMPLATE.and,
                 sql
             )
         }
