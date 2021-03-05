@@ -62,8 +62,8 @@ impl Wrapper {
     pub fn new(driver_type: &DriverType) -> Self {
         Self {
             driver_type: driver_type.clone(),
-            sql: String::new(),
-            args: vec![],
+            sql: String::with_capacity(200),
+            args: Vec::with_capacity(5),
             formats: Default::default(),
         }
     }
