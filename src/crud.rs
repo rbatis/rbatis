@@ -543,7 +543,7 @@ impl CRUD for Rbatis {
         where
             T: CRUDTable,
     {
-        if args.len() <= slice_len {
+        if slice_len == 0 || args.len() <= slice_len {
             return self.save_batch(context_id, args).await;
         } else {
             let mut temp_result = DBExecResult { rows_affected: 0, last_insert_id: None };
