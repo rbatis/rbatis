@@ -359,8 +359,8 @@ fn read_config(arg: &str) -> CrudEnableConfig {
             panic!("[rbaits] crud_enable must be key:value");
         }
         let index = item.find(":").unwrap();
-        let key = item[0..index].replace(" ", "").to_string();
-        let mut value = item[index + 1..item.len()].to_string();
+        let key = item[0..index].trim().to_string();
+        let mut value = item[index + 1..item.len()].trim().to_string();
         if value.len() >= 2 && value.starts_with("\"") && value.ends_with("\"") {
             value = value[1..value.len() - 1].to_string();
         }
