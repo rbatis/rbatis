@@ -2,6 +2,7 @@ lazy_static!(
   pub static ref TEMPLATE:SqlTemplate = SqlTemplate::default();
 );
 
+/// Most of the SQL keywords used by the rbatis
 pub struct SqlTemplate {
     pub r#where: &'static str,
     pub and: &'static str,
