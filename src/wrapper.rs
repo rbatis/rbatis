@@ -585,7 +585,7 @@ impl Wrapper {
         self = self.and();
         self.sql.push_str(column);
         self.sql.push_str(crate::sql::TEMPLATE.is);
-        self.sql.push_str(crate::sql::TEMPLATE.null);
+        self.sql.push_str(crate::sql::TEMPLATE.null.trim_start());
         self
     }
 
@@ -593,8 +593,8 @@ impl Wrapper {
         self = self.and();
         self.sql.push_str(column);
         self.sql.push_str(crate::sql::TEMPLATE.is);
-        self.sql.push_str(crate::sql::TEMPLATE.not);
-        self.sql.push_str(crate::sql::TEMPLATE.null);
+        self.sql.push_str(crate::sql::TEMPLATE.not.trim_start());
+        self.sql.push_str(crate::sql::TEMPLATE.null.trim_start());
         self
     }
 
@@ -669,7 +669,7 @@ impl Wrapper {
                 }
                 sqls.pop();
                 self.sql
-                    .push_str(format!("{}{}{}({})", column, crate::sql::TEMPLATE.not, crate::sql::TEMPLATE.r#in, sqls).as_str());
+                    .push_str(format!("{}{}{}({})", column, crate::sql::TEMPLATE.not, crate::sql::TEMPLATE.r#in.trim_start(), sqls).as_str());
             }
             _ => {}
         }
