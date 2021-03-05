@@ -5,7 +5,7 @@ use syn;
 use syn::{AttributeArgs, ItemFn};
 
 use crate::proc_macro::TokenStream;
-use crate::util::{find_fn_body, find_return_type, get_fn_args, get_page_req_ident};
+use crate::util::{find_fn_body, find_return_type, get_fn_args, get_page_req_ident, is_start_with_select};
 
 //impl sql macro
 pub(crate) fn impl_macro_sql(target_fn: &ItemFn, args: &AttributeArgs) -> TokenStream {
@@ -25,10 +25,7 @@ pub(crate) fn impl_macro_sql(target_fn: &ItemFn, args: &AttributeArgs) -> TokenS
         ));
     }
     let mut call_method = quote! {};
-    let is_select = sql.starts_with("select ")
-        || sql.starts_with("select ")
-        || sql.starts_with("\"select ")
-        || sql.starts_with("\"select ");
+    let is_select = is_start_with_select(&sql);
     if is_select {
         call_method = quote! {fetch_prepare};
     } else {
