@@ -2,7 +2,7 @@ use crate::DriverType;
 
 pub trait SqlRule {
     fn make_where(&self, where_sql: &str) -> String {
-        let sql = where_sql.trim_start().replace("  ", " ");
+        let sql = where_sql.trim_start();
         if sql.is_empty() {
             return String::new();
         }
@@ -26,8 +26,7 @@ pub trait SqlRule {
         let sql = where_sql
             .trim()
             .trim_start_matches(crate::sql::TEMPLATE.r#where.trim_start())
-            .trim_start_matches(crate::sql::TEMPLATE.and.trim_start())
-            .replace("  ", " ");
+            .trim_start_matches(crate::sql::TEMPLATE.and.trim_start());
         if sql.is_empty() {
             return insert_sql.to_string();
         }
