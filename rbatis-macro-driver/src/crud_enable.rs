@@ -137,7 +137,21 @@ pub(crate) fn impl_crud_driver(
 fn gen_format(v: &str) -> proc_macro2::TokenStream {
     let mut formats = quote! {};
     let items: Vec<&str> = v.split(",").collect();
-    for item in items {
+    let mut new_items = vec![];
+    let mut last = String::new();
+    for x in items {
+        if x.ends_with("\\") {
+            last = x.trim_end_matches("\\").to_string();
+        } else {
+            if !last.is_empty() {
+                new_items.push(last.to_string()+","+x);
+                last.clear();
+            }else{
+                new_items.push(x.to_string());
+            }
+        }
+    }
+    for item in new_items {
         if !item.contains(":") {
             panic!(format!("[rbatis] [crud_enable] format_str:'{}' must be [column]:[format_string],for example ->  '{}'  ", item, "formats_pg:id:{}::uuid"));
         }
