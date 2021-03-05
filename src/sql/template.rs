@@ -21,6 +21,10 @@ pub struct SqlTemplate {
     pub insert_into:&'static str,
     pub values:&'static str,
     pub limit:&'static str,
+    pub set:&'static str,
+    pub update:&'static str,
+    pub select:&'static str,
+    pub delete_from:&'static str,
 }
 
 impl Default for SqlTemplate {
@@ -43,6 +47,10 @@ impl Default for SqlTemplate {
             insert_into: "insert into ",
             values: " values ",
             limit: " limit ",
+            set: " set ",
+            update: "update ",
+            select: "select ",
+            delete_from: "delete from "
         }
     }
 }

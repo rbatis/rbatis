@@ -1,5 +1,6 @@
-use serde_json::Value;
 use std::fmt::{Debug, Display};
+
+use serde_json::Value;
 
 use crate::core::db::DriverType;
 use crate::core::Error;
@@ -103,20 +104,22 @@ impl LogicDelete for RbatisLogicDeletePlugin {
     ) -> Result<String, Error> {
         if !self.is_allow(context_id) {
             //make delete sql
-            let new_sql = format!("delete from {} {}", table_name, sql_where.trim_start());
+            let new_sql = format!("{}{} {}", crate::sql::TEMPLATE.delete_from, table_name, sql_where.trim_start());
             return Ok(new_sql);
         }
         return if table_fields.contains(self.column()) {
             //fields have column
             let new_sql = format!(
-                "update {} set {} = {}",
+                "{}{}{}{} = {}",
+                crate::sql::TEMPLATE.update,
                 table_name,
+                crate::sql::TEMPLATE.set,
                 self.column(),
                 self.deleted()
             ) + sql_where;
             Ok(new_sql)
         } else if !sql_where.is_empty() {
-            let new_sql = format!("delete from {} {}", table_name, sql_where.trim_start());
+            let new_sql = format!("{}{} {}", crate::sql::TEMPLATE.delete_from, table_name, sql_where.trim_start());
             Ok(new_sql)
         } else {
             Err(Error::from("[rbatis] del data must have where sql!"))
@@ -143,7 +146,8 @@ impl LogicDelete for RbatisLogicDeletePlugin {
             );
         }
         sql = format!(
-            "select {} from {} {}",
+            "{}{} from {} {}",
+            crate::sql::TEMPLATE.select,
             column,
             table_name,
             driver_type.make_where(&where_sql)
