@@ -185,6 +185,29 @@ async fn main() {
 
 ```rust
 lazy_static! {
+  static ref RB:Rbatis=Rbatis::new();
+}
+
+/// Other code writing way:
+/// pub async fn select(name: &str) -> rbatis::core::Result<BizActivity> {
+///   println!("py_select name:{}",name);
+/// }
+#[py_sql(RB, "select * from biz_activity where id = #{name}
+                  if name != '':
+                    and name=#{name}")]
+pub async fn py_select(name: &str) -> Option<BizActivity> {}
+
+#[async_std::test]
+pub async fn test_macro_py_select() {
+    fast_log::init_log("requests.log", 1000, log::Level::Info, None, true);
+    RB.link("mysql://root:123456@localhost:3306/test").await.unwrap();
+    let a = py_select("1").await.unwrap();
+    println!("{:?}", a);
+}
+```
+
+```rust
+lazy_static! {
    static ref RB:Rbatis=Rbatis::new();
 }
 
@@ -202,26 +225,6 @@ pub async fn test_macro() {
     fast_log::init_log("requests.log", 1000, log::Level::Info, None, true);
     RB.link("mysql://root:123456@localhost:3306/test").await.unwrap();
     let a = select("1").await.unwrap();
-    println!("{:?}", a);
-}
-```
-
-```rust
-lazy_static! {
-  static ref RB:Rbatis=Rbatis::new();
-}
-
-#[py_sql(RB, "select * from biz_activity where id = #{name}
-                  if name != '':
-                    and name=#{name}")]
-pub async fn py_select(name: &str) -> Option<BizActivity> {}
-//or： pub async fn select(name: &str) -> rbatis::core::Result<BizActivity> {}
-
-#[async_std::test]
-pub async fn test_macro_py_select() {
-    fast_log::init_log("requests.log", 1000, log::Level::Info, None, true);
-    RB.link("mysql://root:123456@localhost:3306/test").await.unwrap();
-    let a = py_select("1").await.unwrap();
     println!("{:?}", a);
 }
 ```
