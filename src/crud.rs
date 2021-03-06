@@ -527,7 +527,7 @@ impl CRUD for Rbatis {
         }
         value_arr.pop(); //pop ','
         let sql = format!(
-            "{} {} ({}){}{}",
+            "{}{} ({}){}{}",
             crate::sql::TEMPLATE.insert_into,
             T::table_name(),
             column_sql,
