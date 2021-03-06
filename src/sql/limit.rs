@@ -8,18 +8,18 @@ pub trait PageLimit {
 impl PageLimit for DriverType {
     fn page_limit_sql(&self, offset: u64, size: u64) -> crate::core::Result<String> {
         return match self {
-            DriverType::Mysql => Ok(format!(" {} {},{}", crate::sql::TEMPLATE.limit, offset, size)),
-            DriverType::Postgres => Ok(format!(" {} {} {} {}", crate::sql::TEMPLATE.limit, size, crate::sql::TEMPLATE.offset, offset)),
-            DriverType::Sqlite => Ok(format!(" {} {} {} {}", crate::sql::TEMPLATE.limit, size, crate::sql::TEMPLATE.offset, offset)),
+            DriverType::Mysql => Ok(format!(" {} {},{}", crate::sql::TEMPLATE.limit.value, offset, size)),
+            DriverType::Postgres => Ok(format!(" {} {} {} {}", crate::sql::TEMPLATE.limit.value, size, crate::sql::TEMPLATE.offset.value, offset)),
+            DriverType::Sqlite => Ok(format!(" {} {} {} {}", crate::sql::TEMPLATE.limit.value, size, crate::sql::TEMPLATE.offset.value, offset)),
             DriverType::Mssql => {
                 //sqlserver
                 Ok(format!(
                     " {} {} {} {} {}",
-                    crate::sql::TEMPLATE.offset,
+                    crate::sql::TEMPLATE.offset.value,
                     offset,
-                    crate::sql::TEMPLATE.rows_fetch_next,
+                    crate::sql::TEMPLATE.rows_fetch_next.value,
                     size,
-                    crate::sql::TEMPLATE.rows_only
+                    crate::sql::TEMPLATE.rows_only.value
                 ))
             }
             DriverType::None => Err(crate::core::Error::from(format!(

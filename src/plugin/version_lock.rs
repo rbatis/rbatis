@@ -51,7 +51,7 @@ pub trait VersionLockPlugin: Send + Sync + Debug {
             return String::default();
         }
         if !old_version.eq(&serde_json::Value::Null) {
-            format!("{} = {}", self.column(), old_version)
+            format!("{} = {} ", self.column(), old_version)
         } else {
             return String::default();
         }
