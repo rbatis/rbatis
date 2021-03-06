@@ -715,7 +715,9 @@ impl CRUD for Rbatis {
             _ => {}
         }
         if !w.sql.is_empty() {
-            wrapper = wrapper.and();
+            if !w.not_allow_add_and_on_start() {
+                wrapper = wrapper.and();
+            }
             wrapper = wrapper.push_wrapper(&w);
         }
         let rows_affected = self

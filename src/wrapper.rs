@@ -224,7 +224,7 @@ impl Wrapper {
         self
     }
 
-    fn not_allow_and_or(&self) -> bool {
+    pub fn not_allow_add_and_on_end(&self) -> bool {
         let sql = self.sql.trim_end();
         if sql.is_empty() {
             return true;
@@ -247,9 +247,34 @@ impl Wrapper {
             || sql.ends_with("|")
     }
 
+    pub fn not_allow_add_and_on_start(&self) -> bool {
+        let sql = self.sql.trim_start();
+        if sql.is_empty() {
+            return true;
+        }
+        sql.starts_with(crate::sql::TEMPLATE.r#where.right_space)
+            || sql.starts_with(crate::sql::TEMPLATE.and.right_space)
+            || sql.starts_with(crate::sql::TEMPLATE.or.right_space)
+            || sql.starts_with(crate::sql::TEMPLATE.order_by.right_space)
+            || sql.starts_with(crate::sql::TEMPLATE.group_by.right_space)
+            || sql.starts_with(")")
+            || sql.ends_with(",")
+            || sql.ends_with("=")
+            || sql.ends_with("+")
+            || sql.ends_with("-")
+            || sql.ends_with("*")
+            || sql.ends_with("/")
+            || sql.ends_with("%")
+            || sql.ends_with("^")
+            || sql.ends_with(">")
+            || sql.ends_with("<")
+            || sql.ends_with("&")
+            || sql.ends_with("|")
+    }
+
     /// link wrapper sql, if end with where , do nothing
     pub fn and(mut self) -> Self {
-        if !self.not_allow_and_or() {
+        if !self.not_allow_add_and_on_end() {
             self.sql.push_str(&crate::sql::TEMPLATE.and.left_right_space);
         }
         self
@@ -257,7 +282,7 @@ impl Wrapper {
 
     /// link wrapper sql, if end with where , do nothing
     pub fn or(mut self) -> Self {
-        if !self.not_allow_and_or() {
+        if !self.not_allow_add_and_on_end() {
             self.sql.push_str(&crate::sql::TEMPLATE.or.left_right_space);
         }
         self
@@ -300,7 +325,7 @@ impl Wrapper {
     }
 
     ///format column
-    fn do_format_column(&self, column: &str, data: String) -> String {
+    pub fn do_format_column(&self, column: &str, data: String) -> String {
         let source = self.formats.get(column);
         match source {
             Some(s) => {
