@@ -458,7 +458,7 @@ impl CRUD for Rbatis {
         where
             T: CRUDTable,
     {
-        if w.sql.starts_with(crate::sql::TEMPLATE.insert_into) {
+        if w.sql.starts_with(crate::sql::TEMPLATE.insert_into.value) {
             return self.exec_prepare(context_id, &w.sql, &w.args).await;
         } else {
             let mut w = w.clone();
@@ -483,11 +483,11 @@ impl CRUD for Rbatis {
         let (columns, values, args) =
             entity.make_value_sql_arg(&self.driver_type()?, &mut index)?;
         let sql = format!(
-            "{} {} ({}){}({})",
-            crate::sql::TEMPLATE.insert_into,
+            "{} {} ({}) {} ({})",
+            crate::sql::TEMPLATE.insert_into.value,
             T::table_name(),
             columns,
-            crate::sql::TEMPLATE.values,
+            crate::sql::TEMPLATE.values.value,
             values
         );
         return self.exec_prepare(context_id, sql.as_str(), &args).await;
@@ -527,11 +527,11 @@ impl CRUD for Rbatis {
         }
         value_arr.pop(); //pop ','
         let sql = format!(
-            "{}{} ({}){}{}",
-            crate::sql::TEMPLATE.insert_into,
+            "{} {} ({}) {} {}",
+            crate::sql::TEMPLATE.insert_into.value,
             T::table_name(),
             column_sql,
-            crate::sql::TEMPLATE.values,
+            crate::sql::TEMPLATE.values.value,
             value_arr
         );
         return self.exec_prepare(context_id, sql.as_str(), &arg_arr).await;
@@ -589,7 +589,7 @@ impl CRUD for Rbatis {
                 &where_sql,
             )?;
         } else {
-            sql = format!("{}{} {}", crate::sql::TEMPLATE.delete_from, table_name, &where_sql);
+            sql = format!("{} {} {}", crate::sql::TEMPLATE.delete_from.value, table_name, &where_sql);
         }
         return Ok(self
             .exec_prepare(context_id, sql.as_str(), &w.args)
@@ -611,14 +611,14 @@ impl CRUD for Rbatis {
                 &driver_type,
                 T::table_name().as_str(),
                 &T::table_columns(),
-                format!("{} {} = {}", crate::sql::TEMPLATE.r#where, T::id_name(), id_str).as_str(),
+                format!("{} {} = {}", crate::sql::TEMPLATE.r#where.value, T::id_name(), id_str).as_str(),
             )?;
         } else {
             sql = format!(
                 "{} {} {} {} = {}",
-                crate::sql::TEMPLATE.delete_from,
+                crate::sql::TEMPLATE.delete_from.value,
                 T::table_name(),
-                crate::sql::TEMPLATE.r#where,
+                crate::sql::TEMPLATE.r#where.value,
                 T::id_name(),
                 id_str
             );
@@ -697,8 +697,12 @@ impl CRUD for Rbatis {
         }
         sets.pop();
         let mut wrapper = self.new_wrapper_table::<T>();
-        wrapper.sql = format!("{} {} {} {}", crate::sql::TEMPLATE.update, table_name, crate::sql::TEMPLATE.set, sets);
+        wrapper.sql = format!("{} {} {} {} ", crate::sql::TEMPLATE.update.value, table_name, crate::sql::TEMPLATE.set.value, sets);
         wrapper.args = args;
+
+        if !wrapper.sql.contains(crate::sql::TEMPLATE.r#where.left_right_space) {
+            wrapper.sql.push_str(crate::sql::TEMPLATE.r#where.left_right_space);
+        }
         //version lock
         match self.version_lock_plugin.as_ref() {
             Some(version_lock_plugin) => {
@@ -711,9 +715,7 @@ impl CRUD for Rbatis {
             _ => {}
         }
         if !w.sql.is_empty() {
-            if !wrapper.sql.contains(crate::sql::TEMPLATE.r#where) {
-                wrapper.sql.push_str(crate::sql::TEMPLATE.r#where);
-            }
+            wrapper = wrapper.and();
             wrapper = wrapper.push_wrapper(&w);
         }
         let rows_affected = self
@@ -870,9 +872,9 @@ fn make_select_sql<T>(context_id: &str, rb: &Rbatis, column: &str, w: &Wrapper) 
     }
     Ok(format!(
         "{} {} {} {} {}",
-        crate::sql::TEMPLATE.select,
+        crate::sql::TEMPLATE.select.value,
         column,
-        crate::sql::TEMPLATE.from,
+        crate::sql::TEMPLATE.from.value,
         table_name,
         driver_type.make_where(&w.sql)
     ))
