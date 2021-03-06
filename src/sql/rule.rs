@@ -13,9 +13,9 @@ pub trait SqlRule {
             sql.to_string()
         } else {
             format!(
-                "{}{} ",
+                " {} {} ",
                 crate::sql::TEMPLATE.r#where,
-                sql.trim_start_matches(crate::sql::TEMPLATE.r#where.trim_start())
+                sql.trim_start_matches(crate::sql::TEMPLATE.r#where)
                     .trim_start_matches(crate::sql::TEMPLATE.and.trim_start())
                     .trim_start_matches(crate::sql::TEMPLATE.or.trim_start())
             )
@@ -34,7 +34,7 @@ pub trait SqlRule {
             || sql.starts_with(crate::sql::TEMPLATE.group_by.trim_start())
             || sql.starts_with(crate::sql::TEMPLATE.limit.trim_start()) {
             format!(
-                "{}{} {}",
+                " {} {} {}",
                 crate::sql::TEMPLATE.r#where,
                 insert_sql.trim().trim_end_matches(crate::sql::TEMPLATE.and.trim_end()),
                 sql
