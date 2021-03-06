@@ -36,8 +36,8 @@ fast_log = "1.3"
 #async runtime lib
 tokio = { version = "0.2", features = ["full"] }
 async-std = { version = "1.9", features = ["attributes", "tokio1"] }
-#rbatis lib
-rbatis = { path = "../", features = ["debug_mode"] }
+#rbatis lib(debug_mode will print json data, upper_case_sql)
+rbatis = { path = "../", features = ["debug_mode","upper_case_sql_keyword"] }
 #(not necessary)only use custom py_sql
 rexpr = { version = "1.0" }
 py_sql = "1.0"
