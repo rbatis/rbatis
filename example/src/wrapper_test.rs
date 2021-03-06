@@ -15,7 +15,6 @@ mod test {
         let name = "test";
         let w = rb
             .new_wrapper()
-            .push_sql("select count(1) from biz_activity where ")
             .r#in("delete_flag", &[0, 1])
             .and()
             .ne("delete_flag", -1)
