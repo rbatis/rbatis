@@ -700,12 +700,13 @@ impl CRUD for Rbatis {
         wrapper.sql = format!("{} {} {} {} ", crate::sql::TEMPLATE.update.value, table_name, crate::sql::TEMPLATE.set.value, sets);
         wrapper.args = args;
 
-        if !wrapper.sql.contains(crate::sql::TEMPLATE.r#where.left_right_space) {
-            wrapper.sql.push_str(crate::sql::TEMPLATE.r#where.left_right_space);
-        }
+
         //version lock
         match self.version_lock_plugin.as_ref() {
             Some(version_lock_plugin) => {
+                if !wrapper.sql.contains(crate::sql::TEMPLATE.r#where.left_right_space) {
+                    wrapper.sql.push_str(crate::sql::TEMPLATE.r#where.left_right_space);
+                }
                 wrapper.sql.push_str(
                     &version_lock_plugin
                         .as_ref()
@@ -715,11 +716,13 @@ impl CRUD for Rbatis {
             _ => {}
         }
         if !w.sql.is_empty() {
-            if !w.not_allow_add_and_on_start() {
-                wrapper = wrapper.and();
+            if !wrapper.sql.contains(crate::sql::TEMPLATE.r#where.left_right_space) {
+                wrapper.sql.push_str(crate::sql::TEMPLATE.r#where.left_right_space);
             }
+            wrapper = wrapper.and();
             wrapper = wrapper.push_wrapper(&w);
         }
+
         let rows_affected = self
             .exec_prepare(context_id, wrapper.sql.as_str(), &wrapper.args)
             .await?
