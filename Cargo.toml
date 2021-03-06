@@ -24,7 +24,7 @@ default = ["async-io"]
 debug_mode = ["rbatis-core/debug_mode", "rbatis-macro-driver/debug_mode"]
 default_mode = ["rbatis-core", "rbatis-macro-driver"]
 
-#support upper case sql
+#support upper case sql keyword
 upper_case_sql_keyword = ["rbatis-macro-driver/upper_case_sql_keyword"]
 
 #runtime-all-database
