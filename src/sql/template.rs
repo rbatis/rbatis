@@ -26,17 +26,17 @@ macro_rules! gen_template {
            }
            impl Default for SqlTemplates {
                fn default() -> Self {
-               if cfg!(feature = "upper_case_sql") {
-               Self{
+               if cfg!(feature = "upper_case_sql_keyword") {
+                 Self{
                   $(
                     $key:Keywords{
-                        value: string_to_static_str($value.to_string()),
-                        left_space:string_to_static_str(" ".to_string()+$value),
-                        right_space:string_to_static_str($value.to_string()+" "),
-                        left_right_space:string_to_static_str(format!(" {} ",$value.to_string())),
+                        value: string_to_static_str($value.to_uppercase()),
+                        left_space:string_to_static_str(" ".to_string()+&$value.to_uppercase()),
+                        right_space:string_to_static_str($value.to_uppercase()+" "),
+                        left_right_space:string_to_static_str(format!(" {} ",$value.to_uppercase())),
                     },
                   )+
-                  }
+                 }
                }else{
                  Self{
                   $(

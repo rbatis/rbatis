@@ -25,7 +25,7 @@ debug_mode = ["rbatis-core/debug_mode", "rbatis-macro-driver/debug_mode"]
 default_mode = ["rbatis-core", "rbatis-macro-driver"]
 
 #support upper case sql
-upper_case_sql = ["rbatis-macro-driver/upper_case_sql"]
+upper_case_sql_keyword = ["rbatis-macro-driver/upper_case_sql_keyword"]
 
 #runtime-all-database
 actix = ["default_mode", "rbatis-core/actix"]

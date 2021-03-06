@@ -15,7 +15,7 @@ homepage = "https://rbatis.github.io/rbatis.io/#/"
 [features]
 default = []
 debug_mode=[]
-upper_case_sql=[]
+upper_case_sql_keyword=[]
 [lib]
 proc-macro = true
 [dependencies]
