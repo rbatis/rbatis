@@ -704,14 +704,17 @@ impl CRUD for Rbatis {
         //version lock
         match self.version_lock_plugin.as_ref() {
             Some(version_lock_plugin) => {
-                if !wrapper.sql.contains(crate::sql::TEMPLATE.r#where.left_right_space) {
-                    wrapper.sql.push_str(crate::sql::TEMPLATE.r#where.left_right_space);
+                let version_sql = version_lock_plugin
+                    .as_ref()
+                    .try_make_where_sql(context_id, &old_version);
+                if !version_sql.is_empty() {
+                    if !wrapper.sql.contains(crate::sql::TEMPLATE.r#where.left_right_space) {
+                        wrapper.sql.push_str(crate::sql::TEMPLATE.r#where.left_right_space);
+                    }
+                    wrapper.sql.push_str(
+                        &version_sql,
+                    );
                 }
-                wrapper.sql.push_str(
-                    &version_lock_plugin
-                        .as_ref()
-                        .try_make_where_sql(context_id, &old_version),
-                );
             }
             _ => {}
         }
