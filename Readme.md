@@ -189,6 +189,9 @@ lazy_static! {
 }
 
 /// Other code writing way:
+/// #[py_sql(RB, "select * from biz_activity where id = #{name}
+///                 if name != '':
+///                      and name=#{name}")]
 /// pub async fn select(name: &str) -> rbatis::core::Result<BizActivity> {
 ///   println!("py_select name:{}",name);
 /// }
