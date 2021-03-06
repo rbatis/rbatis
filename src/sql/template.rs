@@ -1,6 +1,7 @@
 use std::convert::identity;
 lazy_static!(
   pub static ref TEMPLATE:SqlTemplate = SqlTemplate::default();
+  pub static ref TEMPLATES:SqlTemplates =SqlTemplates::default();
 );
 
 /// Most of the SQL keywords used by the rbatis

@@ -611,7 +611,7 @@ impl CRUD for Rbatis {
                 &driver_type,
                 T::table_name().as_str(),
                 &T::table_columns(),
-                format!("{}{} = {}", crate::sql::TEMPLATE.r#where, T::id_name(), id_str).as_str(),
+                format!("{} {} = {}", crate::sql::TEMPLATE.r#where, T::id_name(), id_str).as_str(),
             )?;
         } else {
             sql = format!(
@@ -697,7 +697,7 @@ impl CRUD for Rbatis {
         }
         sets.pop();
         let mut wrapper = self.new_wrapper_table::<T>();
-        wrapper.sql = format!("{}{}{}{}", crate::sql::TEMPLATE.update, table_name, crate::sql::TEMPLATE.set, sets);
+        wrapper.sql = format!("{} {} {} {}", crate::sql::TEMPLATE.update, table_name, crate::sql::TEMPLATE.set, sets);
         wrapper.args = args;
         //version lock
         match self.version_lock_plugin.as_ref() {
