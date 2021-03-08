@@ -103,12 +103,9 @@ pub(crate) fn find_fn_body(target_fn: &ItemFn) -> proc_macro2::TokenStream {
 
 
 pub(crate) fn is_start_with_select(sql: &str) -> bool {
+    let sql = sql.trim_start();
     return sql.starts_with("select ")
-        || sql.starts_with("select ")
-        || sql.starts_with("\"select ")
         || sql.starts_with("\"select ")
         || sql.starts_with("SELECT ")
-        || sql.starts_with("SELECT ")
-        || sql.starts_with("\"SELECT ")
         || sql.starts_with("\"SELECT ");
 }
