@@ -224,14 +224,14 @@ impl Wrapper {
         self
     }
 
-    fn not_allow_and_or(&self) -> bool {
+    pub fn not_allow_add_and_on_end(&self) -> bool {
         let sql = self.sql.trim_end();
         if sql.is_empty() {
             return true;
         }
-        sql.ends_with(crate::sql::TEMPLATE.r#where.trim_end())
-            || sql.ends_with(crate::sql::TEMPLATE.and.trim_end())
-            || sql.ends_with(crate::sql::TEMPLATE.or.trim_end())
+        sql.ends_with(crate::sql::TEMPLATE.r#where.left_space)
+            || sql.ends_with(crate::sql::TEMPLATE.and.left_space)
+            || sql.ends_with(crate::sql::TEMPLATE.or.left_space)
             || sql.ends_with("(")
             || sql.ends_with(",")
             || sql.ends_with("=")
@@ -249,16 +249,16 @@ impl Wrapper {
 
     /// link wrapper sql, if end with where , do nothing
     pub fn and(mut self) -> Self {
-        if !self.not_allow_and_or() {
-            self.sql.push_str(&crate::sql::TEMPLATE.and);
+        if !self.not_allow_add_and_on_end() {
+            self.sql.push_str(&crate::sql::TEMPLATE.and.left_right_space);
         }
         self
     }
 
     /// link wrapper sql, if end with where , do nothing
     pub fn or(mut self) -> Self {
-        if !self.not_allow_and_or() {
-            self.sql.push_str(&crate::sql::TEMPLATE.or);
+        if !self.not_allow_add_and_on_end() {
+            self.sql.push_str(&crate::sql::TEMPLATE.or.left_right_space);
         }
         self
     }
@@ -266,7 +266,7 @@ impl Wrapper {
     pub fn having(mut self, sql_having: &str) -> Self {
         self = self.and();
         self.sql
-            .push_str(format!("{} {} ", crate::sql::TEMPLATE.having, sql_having).as_str());
+            .push_str(format!("{} {} ", crate::sql::TEMPLATE.having.value, sql_having).as_str());
         self
     }
 
@@ -300,7 +300,7 @@ impl Wrapper {
     }
 
     ///format column
-    fn do_format_column(&self, column: &str, data: String) -> String {
+    pub fn do_format_column(&self, column: &str, data: String) -> String {
         let source = self.formats.get(column);
         match source {
             Some(s) => {
@@ -353,16 +353,16 @@ impl Wrapper {
         self.sql = self
             .sql
             .trim_end()
-            .trim_end_matches(crate::sql::TEMPLATE.r#where.trim_end())
-            .trim_end_matches(crate::sql::TEMPLATE.and.trim_end())
-            .trim_end_matches(crate::sql::TEMPLATE.or.trim_end())
+            .trim_end_matches(crate::sql::TEMPLATE.r#where.left_space)
+            .trim_end_matches(crate::sql::TEMPLATE.and.left_space)
+            .trim_end_matches(crate::sql::TEMPLATE.or.left_space)
             .to_string();
-        self.sql.push_str(&crate::sql::TEMPLATE.order_by);
+        self.sql.push_str(&crate::sql::TEMPLATE.order_by.left_right_space);
         for x in columns {
             if is_asc {
-                self.sql.push_str(format!("{}{}", x, crate::sql::TEMPLATE.asc).as_str());
+                self.sql.push_str(format!("{} {}", x, crate::sql::TEMPLATE.asc.value).as_str());
             } else {
-                self.sql.push_str(format!("{}{}", x, crate::sql::TEMPLATE.desc).as_str());
+                self.sql.push_str(format!("{} {}", x, crate::sql::TEMPLATE.desc.value).as_str());
             }
             if (index + 1) != len {
                 self.sql.push_str(",");
@@ -381,11 +381,11 @@ impl Wrapper {
         self.sql = self
             .sql
             .trim()
-            .trim_end_matches(crate::sql::TEMPLATE.r#where.trim_end())
-            .trim_end_matches(crate::sql::TEMPLATE.and.trim_end())
-            .trim_end_matches(crate::sql::TEMPLATE.or.trim_end())
+            .trim_end_matches(crate::sql::TEMPLATE.r#where.left_space)
+            .trim_end_matches(crate::sql::TEMPLATE.and.left_space)
+            .trim_end_matches(crate::sql::TEMPLATE.or.left_space)
             .to_string();
-        self.sql.push_str(&crate::sql::TEMPLATE.group_by);
+        self.sql.push_str(&crate::sql::TEMPLATE.group_by.left_right_space);
         for x in columns {
             self.sql.push_str(x);
             if (index + 1) != len {
@@ -461,11 +461,11 @@ impl Wrapper {
     {
         self = self.and();
         self.sql.push_str(&format!(
-            "{}{} {}{} {}",
+            "{} {} {} {} {}",
             column,
-            crate::sql::TEMPLATE.between,
+            crate::sql::TEMPLATE.between.value,
             self.do_format_column(column, self.driver_type.stmt_convert(self.args.len())),
-            crate::sql::TEMPLATE.and,
+            crate::sql::TEMPLATE.and.value,
             self.do_format_column(column, self.driver_type.stmt_convert(self.args.len() + 1))
         ));
         self.args.push(json!(min));
@@ -479,12 +479,12 @@ impl Wrapper {
     {
         self = self.and();
         self.sql.push_str(&format!(
-            "{}{}{} {}{} {}",
+            "{} {} {} {} {} {}",
             column,
-            crate::sql::TEMPLATE.not,
-            crate::sql::TEMPLATE.between.trim_start(),
+            crate::sql::TEMPLATE.not.value,
+            crate::sql::TEMPLATE.between.value,
             self.do_format_column(column, self.driver_type.stmt_convert(self.args.len())),
-            crate::sql::TEMPLATE.and,
+            crate::sql::TEMPLATE.and.value,
             self.do_format_column(column, self.driver_type.stmt_convert(self.args.len() + 1))
         ));
         self.args.push(json!(min));
@@ -505,9 +505,9 @@ impl Wrapper {
             v_str = format!("%{}%", v.to_string());
         }
         self.sql.push_str(&format!(
-            "{}{} {}",
+            "{} {} {}",
             column,
-            crate::sql::TEMPLATE.like,
+            crate::sql::TEMPLATE.like.value,
             self.do_format_column(column, self.driver_type.stmt_convert(self.args.len()))
         ));
         self.args.push(json!(v_str));
@@ -527,9 +527,9 @@ impl Wrapper {
             v_str = format!("%{}", v.to_string());
         }
         self.sql.push_str(&format!(
-            "{}{} {}",
+            "{} {} {}",
             column,
-            crate::sql::TEMPLATE.like,
+            crate::sql::TEMPLATE.like.value,
             self.do_format_column(column, self.driver_type.stmt_convert(self.args.len()))
         ));
         self.args.push(json!(v_str));
@@ -549,9 +549,9 @@ impl Wrapper {
             v_str = format!("{}%", v.to_string());
         }
         self.sql.push_str(&format!(
-            "{}{} {}",
+            "{} {} {}",
             column,
-            crate::sql::TEMPLATE.like,
+            crate::sql::TEMPLATE.like.value,
             self.do_format_column(column, self.driver_type.stmt_convert(self.args.len()))
         ));
         self.args.push(json!(v_str));
@@ -571,10 +571,10 @@ impl Wrapper {
             v_str = format!("%{}%", v.to_string());
         }
         self.sql.push_str(&format!(
-            "{}{}{} {}",
+            "{} {} {} {}",
             column,
-            crate::sql::TEMPLATE.not,
-            crate::sql::TEMPLATE.like.trim_start(),
+            crate::sql::TEMPLATE.not.value,
+            crate::sql::TEMPLATE.like.value,
             self.do_format_column(column, self.driver_type.stmt_convert(self.args.len()))
         ));
         self.args.push(json!(v_str));
@@ -584,17 +584,17 @@ impl Wrapper {
     pub fn is_null(mut self, column: &str) -> Self {
         self = self.and();
         self.sql.push_str(column);
-        self.sql.push_str(crate::sql::TEMPLATE.is);
-        self.sql.push_str(crate::sql::TEMPLATE.null.trim_start());
+        self.sql.push_str(crate::sql::TEMPLATE.is.left_right_space);
+        self.sql.push_str(crate::sql::TEMPLATE.null.right_space);
         self
     }
 
     pub fn is_not_null(mut self, column: &str) -> Self {
         self = self.and();
         self.sql.push_str(column);
-        self.sql.push_str(crate::sql::TEMPLATE.is);
-        self.sql.push_str(crate::sql::TEMPLATE.not.trim_start());
-        self.sql.push_str(crate::sql::TEMPLATE.null.trim_start());
+        self.sql.push_str(crate::sql::TEMPLATE.is.left_right_space);
+        self.sql.push_str(crate::sql::TEMPLATE.not.right_space);
+        self.sql.push_str(crate::sql::TEMPLATE.null.right_space);
         self
     }
 
@@ -606,28 +606,22 @@ impl Wrapper {
         if obj.len() == 0 {
             return self;
         }
-        let arr = json!(obj);
-        match arr {
-            serde_json::Value::Array(vec) => {
-                self = self.and();
-                let mut sqls = String::new();
-                for x in vec {
-                    sqls.push_str(&format!(
-                        " {} ",
-                        self.do_format_column(
-                            column,
-                            self.driver_type.stmt_convert(self.args.len()),
-                        )
-                    ));
-                    sqls.push_str(",");
-                    self.args.push(x);
-                }
-                sqls.pop();
-                self.sql
-                    .push_str(format!("{}{} ({})", column, crate::sql::TEMPLATE.r#in, sqls).as_str());
-            }
-            _ => {}
+        self = self.and();
+        let mut sqls = String::with_capacity(obj.len()*10);
+        for x in obj {
+            sqls.push_str(&format!(
+                " {} ",
+                self.do_format_column(
+                    column,
+                    self.driver_type.stmt_convert(self.args.len()),
+                )
+            ));
+            sqls.push_str(",");
+            self.args.push(json!(x));
         }
+        sqls.pop();
+        self.sql
+            .push_str(format!("{} {} ({})", column, crate::sql::TEMPLATE.r#in.value, sqls).as_str());
         self
     }
 
@@ -651,28 +645,22 @@ impl Wrapper {
         where
             T: Serialize,
     {
-        let arr = json!(obj);
-        match arr {
-            serde_json::Value::Array(vec) => {
-                self = self.and();
-                let mut sqls = String::new();
-                for x in vec {
-                    sqls.push_str(&format!(
-                        " {} ",
-                        self.do_format_column(
-                            column,
-                            self.driver_type.stmt_convert(self.args.len()),
-                        )
-                    ));
-                    sqls.push_str(",");
-                    self.args.push(x);
-                }
-                sqls.pop();
-                self.sql
-                    .push_str(format!("{}{}{}({})", column, crate::sql::TEMPLATE.not, crate::sql::TEMPLATE.r#in.trim_start(), sqls).as_str());
-            }
-            _ => {}
+        self = self.and();
+        let mut sqls = String::with_capacity(obj.len()*10);
+        for x in obj {
+            sqls.push_str(&format!(
+                " {} ",
+                self.do_format_column(
+                    column,
+                    self.driver_type.stmt_convert(self.args.len()),
+                )
+            ));
+            sqls.push_str(",");
+            self.args.push(json!(x));
         }
+        sqls.pop();
+        self.sql
+            .push_str(format!("{} {} {} ({})", column, crate::sql::TEMPLATE.not.value, crate::sql::TEMPLATE.r#in.value, sqls).as_str());
         self
     }
 
@@ -685,8 +673,8 @@ impl Wrapper {
         self.sql = self
             .sql
             .trim()
-            .trim_start_matches(crate::sql::TEMPLATE.and.trim_start())
-            .trim_end_matches(crate::sql::TEMPLATE.and.trim_end())
+            .trim_start_matches(crate::sql::TEMPLATE.and.right_space)
+            .trim_end_matches(crate::sql::TEMPLATE.and.left_space)
             .to_string();
         self
     }
@@ -695,8 +683,8 @@ impl Wrapper {
         self.sql = self
             .sql
             .trim()
-            .trim_start_matches(crate::sql::TEMPLATE.or.trim_start())
-            .trim_end_matches(crate::sql::TEMPLATE.or.trim_end())
+            .trim_start_matches(crate::sql::TEMPLATE.or.right_space)
+            .trim_end_matches(crate::sql::TEMPLATE.or.left_space)
             .to_owned();
         self
     }
@@ -705,10 +693,10 @@ impl Wrapper {
         self.sql = self
             .sql
             .trim()
-            .trim_start_matches(crate::sql::TEMPLATE.and.trim_start())
-            .trim_end_matches(crate::sql::TEMPLATE.and.trim_end())
-            .trim_start_matches(crate::sql::TEMPLATE.and.trim_start())
-            .trim_end_matches(crate::sql::TEMPLATE.and.trim_end())
+            .trim_start_matches(crate::sql::TEMPLATE.and.right_space)
+            .trim_end_matches(crate::sql::TEMPLATE.and.left_space)
+            .trim_start_matches(crate::sql::TEMPLATE.and.right_space)
+            .trim_end_matches(crate::sql::TEMPLATE.and.left_space)
             .to_owned();
         self
     }
@@ -716,14 +704,14 @@ impl Wrapper {
     pub fn insert_into(mut self, table_name: &str, columns: &str, values: &str) -> Self {
         if values.starts_with("(") && values.ends_with(")") {
             self.sql = format!(
-                "{}{} ({}){}({})",
-                crate::sql::TEMPLATE.insert_into,
+                "{} {} ({}) {} ({})",
+                crate::sql::TEMPLATE.insert_into.value,
                 table_name, columns,
-                crate::sql::TEMPLATE.values,
+                crate::sql::TEMPLATE.values.value,
                 values
             );
         } else {
-            self.sql = format!("{}{} ({}){}{}", crate::sql::TEMPLATE.insert_into, table_name, columns, crate::sql::TEMPLATE.values, values);
+            self.sql = format!("{} {} ({}) {} {}", crate::sql::TEMPLATE.insert_into.value, table_name, columns, crate::sql::TEMPLATE.values.value, values);
         }
         self
     }
@@ -732,7 +720,7 @@ impl Wrapper {
     /// for example:
     ///  limit(1) " limit 1 "
     pub fn limit(mut self, limit: u64) -> Self {
-        self.sql.push_str(&format!("{}{} ", crate::sql::TEMPLATE.limit, limit));
+        self.sql.push_str(&format!("{} {} ", crate::sql::TEMPLATE.limit.value, limit));
         self
     }
 }

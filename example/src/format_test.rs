@@ -9,6 +9,7 @@ mod test {
     //'formats_pg' use postgres format
     //'id' ->  table column 'id'
     //'{}::uuid' -> format data str
+    // '\\,'   ->   This is an escape symbol
     #[crud_enable(formats_pg: "id:{}::uuid")]
     #[derive(Clone, Debug)]
     pub struct BizUuid {
@@ -29,6 +30,11 @@ mod test {
 
         let uuid = Uuid::from_str("df07fea2-b819-4e05-b86d-dfc15a5f52a9").unwrap();
         //create table
+        rb.exec(
+            "",
+            "DROP TABLE biz_uuid;",
+        )
+            .await;
         rb.exec(
             "",
             "CREATE TABLE biz_uuid( id uuid, name VARCHAR, PRIMARY KEY(id));",
