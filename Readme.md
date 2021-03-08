@@ -106,6 +106,8 @@ pub struct BizActivity {
 
 #[async_std::main]
 async fn main() {
+  /// enable log crate to show sql logs
+  fast_log::init_log("requests.log", 1000, log::Level::Info, None, true);
   /// initialize rbatis. May use `lazy_static` crate to define rbatis as a global variable because rbatis is thread safe
   let rb = Rbatis::new();
   /// connect to database  
@@ -241,7 +243,7 @@ pub async fn test_macro() {
 ##### How to use logical deletes plugin (works for fetching or removing functions provided by rbatis，e.g. list**(),remove**()，fetch**())
 
 ```rust
-let mut rb = init_rbatis().await;
+let mut rb:Rbatis=Rbatis::new();
 //rb.logic_plugin = Some(Box::new(RbatisLogicDeletePlugin::new_opt("delete_flag",1,0)));//Customize deleted/undeleted writing
 rb.logic_plugin = Some(Box::new(RbatisLogicDeletePlugin::new("delete_flag")));
 rb.link("mysql://root:123456@localhost:3306/test").await.unwrap();
