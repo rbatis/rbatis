@@ -7,7 +7,7 @@ members = [
 
 [package]
 name = "rbatis"
-version = "1.8.76"
+version = "1.8.77"
 description = "Rust orM Framework High Performance(JSON based)"
 readme = "Readme.md"
 authors = ["ce <zhuxiujia@qq.com>"]
@@ -24,8 +24,8 @@ default = ["async-io"]
 debug_mode = ["rbatis-core/debug_mode", "rbatis-macro-driver/debug_mode"]
 default_mode = ["rbatis-core", "rbatis-macro-driver"]
 
-#support upper case sql
-upper_case_sql = ["rbatis-macro-driver/upper_case_sql"]
+#support upper case sql keyword
+upper_case_sql_keyword = ["rbatis-macro-driver/upper_case_sql_keyword"]
 
 #runtime-all-database
 actix = ["default_mode", "rbatis-core/actix"]

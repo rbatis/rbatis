@@ -137,7 +137,21 @@ pub(crate) fn impl_crud_driver(
 fn gen_format(v: &str) -> proc_macro2::TokenStream {
     let mut formats = quote! {};
     let items: Vec<&str> = v.split(",").collect();
-    for item in items {
+    let mut new_items = vec![];
+    let mut last = String::new();
+    for x in items {
+        if x.ends_with("\\") {
+            last = x.trim_end_matches("\\").to_string();
+        } else {
+            if !last.is_empty() {
+                new_items.push(last.to_string()+","+x);
+                last.clear();
+            }else{
+                new_items.push(x.to_string());
+            }
+        }
+    }
+    for item in new_items {
         if !item.contains(":") {
             panic!(format!("[rbatis] [crud_enable] format_str:'{}' must be [column]:[format_string],for example ->  '{}'  ", item, "formats_pg:id:{}::uuid"));
         }
@@ -359,8 +373,8 @@ fn read_config(arg: &str) -> CrudEnableConfig {
             panic!("[rbaits] crud_enable must be key:value");
         }
         let index = item.find(":").unwrap();
-        let key = item[0..index].replace(" ", "").to_string();
-        let mut value = item[index + 1..item.len()].replace(" ", "").to_string();
+        let key = item[0..index].trim().to_string();
+        let mut value = item[index + 1..item.len()].trim().to_string();
         if value.len() >= 2 && value.starts_with("\"") && value.ends_with("\"") {
             value = value[1..value.len() - 1].to_string();
         }

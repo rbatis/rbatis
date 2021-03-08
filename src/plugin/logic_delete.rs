@@ -104,22 +104,22 @@ impl LogicDelete for RbatisLogicDeletePlugin {
     ) -> Result<String, Error> {
         if !self.is_allow(context_id) {
             //make delete sql
-            let new_sql = format!("{}{} {}", crate::sql::TEMPLATE.delete_from, table_name, sql_where.trim_start());
+            let new_sql = format!("{} {} {}", crate::sql::TEMPLATE.delete_from.value, table_name, sql_where.trim_start());
             return Ok(new_sql);
         }
         return if table_fields.contains(self.column()) {
             //fields have column
             let new_sql = format!(
-                "{}{}{}{} = {}",
-                crate::sql::TEMPLATE.update,
+                "{} {} {} {} = {}",
+                crate::sql::TEMPLATE.update.value,
                 table_name,
-                crate::sql::TEMPLATE.set,
+                crate::sql::TEMPLATE.set.value,
                 self.column(),
                 self.deleted()
             ) + sql_where;
             Ok(new_sql)
         } else if !sql_where.is_empty() {
-            let new_sql = format!("{}{} {}", crate::sql::TEMPLATE.delete_from, table_name, sql_where.trim_start());
+            let new_sql = format!("{} {} {}", crate::sql::TEMPLATE.delete_from.value, table_name, sql_where.trim_start());
             Ok(new_sql)
         } else {
             Err(Error::from("[rbatis] del data must have where sql!"))
@@ -146,10 +146,10 @@ impl LogicDelete for RbatisLogicDeletePlugin {
             );
         }
         sql = format!(
-            "{}{}{}{} {}",
-            crate::sql::TEMPLATE.select,
+            "{} {} {} {} {}",
+            crate::sql::TEMPLATE.select.value,
             column,
-            crate::sql::TEMPLATE.from,
+            crate::sql::TEMPLATE.from.value,
             table_name,
             driver_type.make_where(&where_sql)
         );
