@@ -16,7 +16,7 @@ pub(crate) fn impl_macro_py_sql(target_fn: &ItemFn, args: &AttributeArgs) -> Tok
     let rbatis_ident = args.get(0).unwrap().to_token_stream();
     let rbatis_name = format!("{}", rbatis_ident);
     let sql_ident = args.get(1).unwrap().to_token_stream();
-    let mut sql = format!("{}", sql_ident).trim().to_string();
+    let sql = format!("{}", sql_ident).trim().to_string();
     let func_args_stream = target_fn.sig.inputs.to_token_stream();
     let fn_body = find_fn_body(target_fn);
     let is_async = target_fn.sig.asyncness.is_some();
@@ -29,7 +29,7 @@ pub(crate) fn impl_macro_py_sql(target_fn: &ItemFn, args: &AttributeArgs) -> Tok
     //append all args
     let (sql_args_gen, context_id_ident) =
         filter_args_context_id(&rbatis_name, &get_fn_args(target_fn));
-    let is_fetch = is_fetch_sql(&mut sql);
+    let is_fetch = is_fetch_sql(&sql);
     let mut call_method = quote! {};
     if is_fetch {
         call_method = quote! {py_fetch};

@@ -14,7 +14,7 @@ pub(crate) fn impl_macro_sql(target_fn: &ItemFn, args: &AttributeArgs) -> TokenS
     let rbatis_ident = args.get(0).unwrap().to_token_stream();
     let rbatis_name = format!("{}", rbatis_ident);
     let sql_ident = args.get(1).unwrap().to_token_stream();
-    let mut sql = format!("{}", sql_ident).trim().to_string();
+    let sql = format!("{}", sql_ident).trim().to_string();
     let func_args_stream = target_fn.sig.inputs.to_token_stream();
     let fn_body = find_fn_body(target_fn);
     let is_async = target_fn.sig.asyncness.is_some();
@@ -25,7 +25,7 @@ pub(crate) fn impl_macro_sql(target_fn: &ItemFn, args: &AttributeArgs) -> TokenS
         ));
     }
     let mut call_method = quote! {};
-    let is_fetch = is_fetch_sql(&mut sql);
+    let is_fetch = is_fetch_sql(&sql);
     if is_fetch {
         call_method = quote! {fetch_prepare};
     } else {
