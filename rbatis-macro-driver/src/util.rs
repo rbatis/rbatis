@@ -103,16 +103,12 @@ pub(crate) fn find_fn_body(target_fn: &ItemFn) -> proc_macro2::TokenStream {
 
 
 pub(crate) fn is_start_with_select(sql: &str) -> bool {
-    if cfg!(feature = "upper_case_sql") {
-        if sql.starts_with("SELECT ")
-            || sql.starts_with("SELECT ")
-            || sql.starts_with("\"SELECT ")
-            || sql.starts_with("\"SELECT ") {
-            return true;
-        }
-    }
     return sql.starts_with("select ")
         || sql.starts_with("select ")
         || sql.starts_with("\"select ")
-        || sql.starts_with("\"select ");
+        || sql.starts_with("\"select ")
+        || sql.starts_with("SELECT ")
+        || sql.starts_with("SELECT ")
+        || sql.starts_with("\"SELECT ")
+        || sql.starts_with("\"SELECT ");
 }
