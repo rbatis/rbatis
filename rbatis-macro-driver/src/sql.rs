@@ -5,7 +5,7 @@ use syn;
 use syn::{AttributeArgs, ItemFn};
 
 use crate::proc_macro::TokenStream;
-use crate::util::{find_fn_body, find_return_type, get_fn_args, get_page_req_ident, is_start_with_select};
+use crate::util::{find_fn_body, find_return_type, get_fn_args, get_page_req_ident, is_fetch_sql};
 
 //impl sql macro
 pub(crate) fn impl_macro_sql(target_fn: &ItemFn, args: &AttributeArgs) -> TokenStream {
@@ -14,7 +14,7 @@ pub(crate) fn impl_macro_sql(target_fn: &ItemFn, args: &AttributeArgs) -> TokenS
     let rbatis_ident = args.get(0).unwrap().to_token_stream();
     let rbatis_name = format!("{}", rbatis_ident);
     let sql_ident = args.get(1).unwrap().to_token_stream();
-    let sql = format!("{}", sql_ident).trim().to_string();
+    let mut sql = format!("{}", sql_ident).trim().to_string();
     let func_args_stream = target_fn.sig.inputs.to_token_stream();
     let fn_body = find_fn_body(target_fn);
     let is_async = target_fn.sig.asyncness.is_some();
@@ -25,8 +25,8 @@ pub(crate) fn impl_macro_sql(target_fn: &ItemFn, args: &AttributeArgs) -> TokenS
         ));
     }
     let mut call_method = quote! {};
-    let is_select = is_start_with_select(&sql);
-    if is_select {
+    let is_fetch = is_fetch_sql(&mut sql);
+    if is_fetch {
         call_method = quote! {fetch_prepare};
     } else {
         call_method = quote! {exec_prepare};
