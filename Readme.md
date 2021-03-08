@@ -184,6 +184,9 @@ async fn main() {
 #### macros (new addition)
 
 ```rust
+#[macro_use]
+extern crate lazy_static;
+
 lazy_static! {
    static ref RB:Rbatis=Rbatis::new();
 }
@@ -207,6 +210,9 @@ pub async fn test_macro() {
 ```
 
 ```rust
+#[macro_use]
+extern crate lazy_static;
+
 lazy_static! {
   static ref RB:Rbatis=Rbatis::new();
 }
@@ -347,6 +353,8 @@ pub async fn init_rbatis() -> Rbatis {
 ### How to use rbatis with Rust web frameworks (actix-web is used here as an example, but all web frameworks based on tokio or async_std are supported)
 
 ``` rust
+#[macro_use]
+extern crate lazy_static;
 lazy_static! {
    static ref RB:Rbatis=Rbatis::new();
 }
