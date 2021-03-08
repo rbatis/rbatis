@@ -102,16 +102,8 @@ pub(crate) fn find_fn_body(target_fn: &ItemFn) -> proc_macro2::TokenStream {
 }
 
 
-pub(crate) fn is_fetch_sql(source: &mut String) -> bool {
+pub(crate) fn is_fetch_sql(source: &str) -> bool {
     let sql = source.trim_start();
-    if sql.starts_with("fetch:") {
-        *source = source.trim_start().trim_start_matches("fetch:").to_string();
-        return true;
-    }
-    if sql.starts_with("exec:") {
-        *source = source.trim_start().trim_start_matches("exec:").to_string();
-        return false;
-    }
     let is_select = sql.starts_with("select ")
         || sql.starts_with("\"select ")
         || sql.starts_with("SELECT ")
