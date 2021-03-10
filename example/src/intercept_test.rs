@@ -3,9 +3,28 @@ mod test {
     use crate::BizActivity;
     use rbatis::core::Error;
     use rbatis::crud::CRUD;
-    use rbatis::plugin::intercept::SqlIntercept;
+    use rbatis::plugin::intercept::{SqlIntercept, BlockAttackDeleteInterceptor, BlockAttackUpdateInterceptor};
     use rbatis::rbatis::Rbatis;
     use serde_json::Value;
+
+
+
+    #[async_std::test]
+    pub async fn test_block_attack() {
+        fast_log::init_log("requests.log", 1000, log::Level::Info, None, true);
+        let mut rb = Rbatis::new();
+        rb.add_sql_intercept(BlockAttackDeleteInterceptor{});
+        rb.add_sql_intercept(BlockAttackUpdateInterceptor{});
+        rb.link("mysql://root:123456@localhost:3306/test")
+            .await
+            .unwrap();
+        let r=rb.exec("","delete from biz_activitys").await;
+        if r.is_err(){
+            println!("block success:{}",r.err().unwrap());
+        }
+    }
+
+
 
     #[derive(Debug)]
     pub struct MyIntercept {}
