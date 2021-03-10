@@ -5,6 +5,8 @@ mod test {
     use rbatis::rbatis::Rbatis;
     use std::str::FromStr;
     use uuid::Uuid;
+    use crate::BizActivity;
+    use rbatis::plugin::intercept::RbatisLogFormatSqlIntercept;
 
     //'formats_pg' use postgres format
     //'id' ->  table column 'id'
@@ -63,5 +65,50 @@ mod test {
         println!("{:?}", data);
         //delete table
         rb.remove_by_id::<BizUuid>("", &uuid).await;
+    }
+
+
+    /// Formatting precompiled SQL
+    ///
+    /// [] Exec  ==> insert into biz_activity (id,name,pc_link,h5_link,pc_banner_img,h5_banner_img,sort,status,remark,create_time,version,delete_flag)
+    /// values (?,?,?,?,?,?,?,?,?,?,?,?)
+    ///
+    /// into
+    ///
+    /// [rbatis] [] [format_sql]insert into biz_activity (id,name,pc_link,h5_link,pc_banner_img,h5_banner_img,sort,status,remark,create_time,version,delete_flag)
+    /// values ("12312","12312",null,null,null,null,"1",1,null,"2021-03-10T20:34:47.432751100",1,1)
+    ///
+    #[async_std::test]
+    pub async fn test_show_format_sql() {
+        fast_log::init_log("requests.log", 1000, log::Level::Info, None, true);
+        let mut rb = Rbatis::new();
+        //RbatisLogFormatSqlIntercept will show Formatted SQL(no precompiled symbols)
+        rb.add_sql_intercept(RbatisLogFormatSqlIntercept{});
+        rb.link("mysql://root:123456@localhost:3306/test")
+            .await
+            .unwrap();
+        use chrono::NaiveDateTime;
+        use rbatis::core::value::DateTimeNow;
+
+        let activity = BizActivity {
+            id: Some("12312".to_string()),
+            name: Some("12312".to_string()),
+            pc_link: None,
+            h5_link: None,
+            pc_banner_img: None,
+            h5_banner_img: None,
+            sort: Some("1".to_string()),
+            status: Some(1),
+            remark: None,
+            create_time: Some(NaiveDateTime::now()),
+            version: Some(1),
+            delete_flag: Some(1),
+        };
+        rb.remove_by_id::<BizActivity>("", activity.id.as_ref().unwrap())
+            .await;
+        let r = rb.save("", &activity).await;
+        if r.is_err() {
+            println!("{}", r.err().unwrap().to_string());
+        }
     }
 }
