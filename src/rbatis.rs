@@ -54,6 +54,12 @@ pub struct Rbatis {
     pub version_lock_plugin: Option<Box<dyn VersionLockPlugin>>,
 }
 
+impl Drop for Rbatis{
+    fn drop(&mut self) {
+        self.tx_manager.set_alive(false);
+    }
+}
+
 impl Default for Rbatis {
     fn default() -> Rbatis {
         Rbatis::new()
