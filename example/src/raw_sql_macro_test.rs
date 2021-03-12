@@ -15,7 +15,7 @@ mod test {
     )]
     async fn py_select(name: &str) -> Option<BizActivity> {}
 
-    #[async_std::test]
+    #[tokio::test]
     pub async fn test_macro_py_select() {
         fast_log::init_log("requests.log", 1000, log::Level::Info, None, true);
         //use static ref
@@ -29,7 +29,7 @@ mod test {
     #[sql(RB, "select * from biz_activity where id = ?")]
     async fn select(name: &str) -> BizActivity {}
 
-    #[async_std::test]
+    #[tokio::test]
     pub async fn test_macro_select() {
         fast_log::init_log("requests.log", 1000, log::Level::Info, None, true);
         RB.link("mysql://root:123456@localhost:3306/test")
@@ -48,7 +48,7 @@ mod test {
     )]
     async fn join_select(rbatis: &Rbatis, name: &str) -> Option<Vec<BizActivity>> {}
 
-    #[async_std::test]
+    #[tokio::test]
     pub async fn test_join() {
         fast_log::init_log("requests.log", 1000, log::Level::Info, None, true);
         RB.link("mysql://root:123456@localhost:3306/test")

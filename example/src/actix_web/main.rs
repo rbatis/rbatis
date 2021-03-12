@@ -49,7 +49,6 @@ async fn main() -> std::io::Result<()> {
         .enable_all()
         .build()
         .unwrap();
-    //ORM
     tokio_runtime.spawn(async{
         RB.link(MYSQL_URL).await.unwrap();
     }).await;

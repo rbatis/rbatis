@@ -37,14 +37,12 @@ pub struct BizActivity {
     pub version: Option<i32>,
     pub delete_flag: Option<i32>,
 }
-
-fn main() {
-    async_std::task::block_on(async {
+#[tokio::main]
+async fn main() {
         fast_log::init_log("requests.log", 1000, log::Level::Info, None, true);
         let rb = Rbatis::new();
         rb.link("mysql://root:123456@localhost:3306/test").await.unwrap();
         let r = rb.fetch_by_id::<Option<BizActivity>>("", &"1".to_string()).await.unwrap();
         println!("{}", serde_json::to_string(&r).unwrap());
-    });
 }
 ```

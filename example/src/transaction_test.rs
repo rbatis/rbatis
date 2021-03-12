@@ -4,7 +4,7 @@ mod test {
     use rbatis::rbatis::Rbatis;
 
     //示例-Rbatis使用事务
-    #[async_std::test]
+    #[tokio::test]
     pub async fn test_tx_commit() {
         fast_log::init_log("requests.log", 1000, log::Level::Info, None, true);
         let rb: Rbatis = Rbatis::new();
@@ -29,7 +29,7 @@ mod test {
     }
 
     //示例-Rbatis使用宏事务
-    #[async_std::test]
+    #[tokio::test]
     pub async fn test_tx_py() {
         fast_log::init_log("requests.log", 1000, log::Level::Info, None, true);
         let rb: Rbatis = Rbatis::new();
@@ -44,7 +44,7 @@ mod test {
     }
 
     //示例-Rbatis使用事务,类似golang defer，守卫如果被回收则 释放事务
-    #[async_std::test]
+    #[tokio::test]
     pub async fn test_tx_commit_defer() {
         fast_log::init_log("requests.log", 1000, log::Level::Info, None, true);
         let rb: Rbatis = Rbatis::new();

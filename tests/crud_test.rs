@@ -326,7 +326,7 @@ mod test {
         });
     }
 
-    #[async_std::test]
+    #[tokio::test]
     pub async fn test_list_by_wrapper() {
         fast_log::init_log("requests.log", 1000, log::Level::Info, None, true);
         let mut rb = Rbatis::new();
