@@ -44,7 +44,7 @@ async fn index() -> impl Responder {
 async fn main() -> std::io::Result<()> {
     //log
     fast_log::init_log("requests.log", 1000, log::Level::Info, None, true);
-    //actix1.0 runtime
+    //actix1.0 runtime(Actix-Web has not yet upgraded the Tokio version)
     let tokio_runtime = Builder::new_multi_thread()
         .enable_all()
         .build()
