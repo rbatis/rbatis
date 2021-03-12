@@ -18,51 +18,24 @@ repository = "https://github.com/rbatis/rbatis"
 homepage = "https://rbatis.github.io/rbatis.io/#/en/"
 
 [features]
-default = ["async-io"]
-
+default = ["default_mode","all-database"]
 #debug_mode feature will show decode json data
 debug_mode = ["rbatis-core/debug_mode", "rbatis-macro-driver/debug_mode"]
-default_mode = ["rbatis-core", "rbatis-macro-driver"]
-
+default_mode = ["rbatis-core","rbatis-macro-driver"]
 #support upper case sql keyword
 upper_case_sql_keyword = []
-
-#runtime-all-database
-actix = ["default_mode", "rbatis-core/actix"]
-tokio02 = ["default_mode", "rbatis-core/tokio02"]
-tokio03 = ["default_mode", "rbatis-core/tokio03"]
-async-io = ["default_mode", "rbatis-core/async-io"]
-#async_std-database
-async-io-mysql = ["default_mode", "rbatis-core/async-io-mysql"]
-async-io-postgres = ["default_mode", "rbatis-core/async-io-postgres"]
-async-io-sqlite = ["default_mode", "rbatis-core/async-io-sqlite"]
-async-io-mssql = ["default_mode", "rbatis-core/async-io-mssql"]
-#tokio03-database
-tokio03-mysql = ["default_mode", "rbatis-core/tokio03-mysql"]
-tokio03-postgres = ["default_mode", "rbatis-core/tokio03-postgres"]
-tokio03-sqlite = ["default_mode", "rbatis-core/tokio03-sqlite"]
-tokio03-mssql = ["default_mode", "rbatis-core/tokio03-mssql"]
-#tokio02-database
-tokio02-mysql = ["default_mode", "rbatis-core/tokio02-mysql"]
-tokio02-postgres = ["default_mode", "rbatis-core/tokio02-postgres"]
-tokio02-sqlite = ["default_mode", "rbatis-core/tokio02-sqlite"]
-tokio02-mssql = ["default_mode", "rbatis-core/tokio02-mssql"]
-#actix-database
-actix-mysql = ["default_mode", "rbatis-core/actix-mysql"]
-actix-postgres = ["default_mode", "rbatis-core/actix-postgres"]
-actix-sqlite = ["default_mode", "rbatis-core/actix-sqlite"]
-actix-mssql = ["default_mode", "rbatis-core/actix-mssql"]
-#tokio1.0-database
-tokio1-mysql = ["default_mode", "rbatis-core/tokio1-mysql"]
-tokio1-postgres = ["default_mode", "rbatis-core/tokio1-postgres"]
-tokio1-sqlite = ["default_mode", "rbatis-core/tokio1-sqlite"]
-tokio1-mssql = ["default_mode", "rbatis-core/tokio1-mssql"]
+#runtime  database
+all-database = ["default_mode", "rbatis-core/all-database"]
+mysql = ["default_mode", "rbatis-core/mysql"]
+postgres = ["default_mode", "rbatis-core/postgres"]
+sqlite = ["default_mode", "rbatis-core/sqlite"]
+mssql = ["default_mode", "rbatis-core/mssql"]
 
 
 [dependencies]
 rexpr = "1.0"
 py_sql = "1.0"
-rbatis-core = { version = "1.8.70", git = "https://github.com/rbatis/rbatis-core.git", branch = "main", default-features = false, optional = true }
+rbatis-core = { version = "1.8.79", git = "https://github.com/rbatis/rbatis-core.git", branch = "main", default-features = false, optional = true }
 rbatis-macro-driver = { version = "1.8.74", path = "rbatis-macro-driver", default-features = false, optional = true }
 
 chrono = { version = "0.4", features = ["serde"] }
@@ -85,4 +58,5 @@ hex = "0.4.2"
 rand = "0.7"
 [dev-dependencies]
 fast_log = "1.3"
+tokio = { version = "1.3.0", features = ["full"] }
 async-std = { version = "1.9", features = ["attributes"] }

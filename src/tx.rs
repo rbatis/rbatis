@@ -4,12 +4,14 @@ use std::time::{Duration, Instant};
 
 use crate::core::db::DBPool;
 use crate::core::db::DBTx;
-use crate::core::runtime::channel::{Receiver, Sender};
 use crate::core::runtime::sync::{RwLock, RwLockReadGuard};
 use crate::core::sync::sync_map::{RefMut, SyncMap};
 use crate::plugin::log::LogPlugin;
 use crate::rbatis::Rbatis;
 use std::sync::Arc;
+use crate::core::runtime::sync::broadcast::{Sender, Receiver};
+use std::rc::Rc;
+use std::sync::atomic::{AtomicBool, Ordering};
 
 ///the Transaction manager，It manages the life cycle of transactions and provides access across threads
 ///every tx_check_interval check tx is out of time(tx_lock_wait_timeout).if out, rollback tx.
@@ -20,10 +22,16 @@ pub struct TxManager {
     pub tx_context: SyncMap<String, (DBTx, TxState)>,
     pub tx_lock_wait_timeout: Duration,
     pub tx_check_interval: Duration,
-    alive: RwLock<bool>,
+    alive: AtomicBool,
     close_sender: Sender<bool>,
     close_recv: Receiver<bool>,
     pub log_plugin: Option<Arc<Box<dyn LogPlugin>>>,
+}
+
+impl Drop for TxManager {
+    fn drop(&mut self) {
+        self.set_alive(false);
+    }
 }
 
 #[derive(Debug)]
@@ -39,13 +47,13 @@ impl TxManager {
         tx_lock_wait_timeout: Duration,
         tx_check_interval: Duration,
     ) -> Arc<Self> {
-        let (s, r) = crate::core::runtime::channel::bounded(1);
+        let (s, r) = crate::core::runtime::sync::broadcast::channel(1);
         let s = Self {
             tx_prefix: tx_prefix.to_string(),
             tx_context: SyncMap::new(),
             tx_lock_wait_timeout,
             tx_check_interval,
-            alive: RwLock::new(false),
+            alive: AtomicBool::new(true),
             close_sender: s,
             close_recv: r,
             log_plugin: Some(plugin),
@@ -55,19 +63,18 @@ impl TxManager {
         arc
     }
 
-    async fn set_alive(&self, alive: bool) {
-        let mut l = self.alive.write().await;
-        *l = alive;
+    pub fn set_alive(&self, alive: bool) {
+        self.alive.compare_exchange(!alive, alive, Ordering::Acquire, Ordering::Relaxed);
     }
 
-    pub async fn get_alive(&self) -> RwLockReadGuard<'_, bool> {
-        self.alive.read().await
+    pub fn get_alive(&self) -> bool {
+        self.alive.fetch_or(false,Ordering::Relaxed)
     }
 
-    pub async fn close(&self) {
-        if self.get_alive().await.eq(&true) {
-            self.set_alive(false).await;
-            let r = self.close_recv.recv().await;
+    pub async fn close(&mut self) {
+        if self.get_alive().eq(&true) {
+            self.set_alive(false);
+            self.close_recv.recv().await;
         }
     }
 
@@ -90,7 +97,7 @@ impl TxManager {
     fn polling_check(manager: Arc<Self>) {
         crate::core::runtime::task::spawn(async move {
             loop {
-                if manager.get_alive().await.deref() == &false {
+                if manager.get_alive().eq(&false) {
                     //rollback all
                     let m = manager.tx_context.read().await;
                     let mut rollback_ids = vec![];
@@ -155,7 +162,7 @@ impl TxManager {
                     }
                     _ => {}
                 }
-                crate::core::runtime::task::sleep(manager.tx_check_interval).await;
+                crate::core::runtime::time::sleep(manager.tx_check_interval).await;
             }
         });
     }
