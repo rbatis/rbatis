@@ -8,6 +8,7 @@ use actix_web::{web, App, HttpResponse, HttpServer, Responder};
 use chrono::NaiveDateTime;
 use rbatis::crud::CRUD;
 use rbatis::rbatis::Rbatis;
+use rbatis::core::runtime::runtime::Builder;
 
 #[crud_enable]
 #[derive(Clone, Debug)]
@@ -43,8 +44,15 @@ async fn index() -> impl Responder {
 async fn main() -> std::io::Result<()> {
     //log
     fast_log::init_log("requests.log", 1000, log::Level::Info, None, true);
+    //actix1.0 runtime
+    let tokio_runtime = Builder::new_multi_thread()
+        .enable_all()
+        .build()
+        .unwrap();
     //ORM
-    RB.link(MYSQL_URL).await.unwrap();
+    tokio_runtime.spawn(async{
+        RB.link(MYSQL_URL).await.unwrap();
+    }).await;
     //router
     HttpServer::new(|| {
         App::new()
