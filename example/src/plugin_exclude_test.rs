@@ -6,7 +6,7 @@ mod test {
     use rbatis::crud::CRUD;
     use rbatis::plugin::logic_delete::RbatisLogicDeletePlugin;
     use rbatis::rbatis::Rbatis;
-    #[async_std::test]
+    #[tokio::test]
     async fn plugin_exclude_delete() {
         fast_log::init_log("requests.log", 1000, log::Level::Info, None, true);
         let mut rb = Rbatis::new();
@@ -45,7 +45,7 @@ mod test {
         .await;
     }
 
-    #[async_std::test]
+    #[tokio::test]
     async fn plugin_exclude_select() {
         fast_log::init_log("requests.log", 1000, log::Level::Info, None, true);
         let mut rb = Rbatis::new();

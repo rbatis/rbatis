@@ -10,7 +10,7 @@ mod test {
     #[py_sql(rb, "select * from biz_activity where delete_flag = 0")]
     async fn py_ctx_id(rb: &Rbatis, ctx_id: &str) -> Vec<BizActivity> {}
 
-    #[async_std::test]
+    #[tokio::test]
     pub async fn test_py_ctx_id() {
         fast_log::init_log("requests.log", 1000, log::Level::Info, None, true);
         //use static ref
@@ -31,7 +31,7 @@ mod test {
     )]
     async fn py_select_page(rb: &Rbatis, page_req: &PageRequest, name: &str) -> Page<BizActivity> {}
 
-    #[async_std::test]
+    #[tokio::test]
     pub async fn test_py_select_page() {
         fast_log::init_log("requests.log", 1000, log::Level::Info, None, true);
         //use static ref
@@ -54,7 +54,7 @@ mod test {
     )]
     async fn py_sql_tx(rb: &Rbatis, tx_id: &String, name: &str) -> Vec<BizActivity> {}
 
-    #[async_std::test]
+    #[tokio::test]
     pub async fn test_py_sql_tx() {
         fast_log::init_log("requests.log", 1000, log::Level::Info, None, true);
         //use static ref
@@ -94,7 +94,7 @@ mod test {
     }
 
     /// test load py_sql from file
-    #[async_std::test]
+    #[tokio::test]
     pub async fn test_py_select_file() {
         fast_log::init_log("requests.log", 1000, log::Level::Info, None, true);
         //use static ref

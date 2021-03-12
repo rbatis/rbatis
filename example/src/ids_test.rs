@@ -5,7 +5,7 @@ mod test {
     use rbatis::rbatis::Rbatis;
 
     /// This example shows a table collection  to an id array
-    #[async_std::test]
+    #[tokio::test]
     pub async fn test_fetch_by_ids() {
         fast_log::init_log("requests.log", 1000, log::Level::Info, None, true);
         let rb = Rbatis::new();

@@ -9,7 +9,7 @@ mod test {
         static ref RB: Rbatis = Rbatis::new();
     }
 
-    #[async_std::test]
+    #[tokio::test]
     pub async fn test_sql_page() {
         fast_log::init_log("requests.log", 1000, log::Level::Info, None, true);
         let rb = Rbatis::new();
@@ -24,7 +24,7 @@ mod test {
         println!("{}", serde_json::to_string(&data).unwrap());
     }
 
-    #[async_std::test]
+    #[tokio::test]
     pub async fn test_py_sql_page() {
         fast_log::init_log("requests.log", 1000, log::Level::Info, None, true);
         let rb = Rbatis::new();
@@ -56,7 +56,7 @@ mod test {
     )]
     async fn py_select_page(page_req: &PageRequest, name: &str) -> Page<BizActivity> {}
 
-    #[async_std::test]
+    #[tokio::test]
     pub async fn test_macro_py_select_page() {
         fast_log::init_log("requests.log", 1000, log::Level::Info, None, true);
         //use static ref
@@ -72,7 +72,7 @@ mod test {
     #[py_sql(RB, "select * from biz_activity group by id")]
     async fn group_by(page_req: &PageRequest) -> Page<BizActivity> {}
 
-    #[async_std::test]
+    #[tokio::test]
     pub async fn test_group_by_page() {
         fast_log::init_log("requests.log", 1000, log::Level::Info, None, true);
         //use static ref

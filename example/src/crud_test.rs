@@ -74,13 +74,13 @@ mod test {
         return rb;
     }
 
-    #[async_std::test]
+    #[tokio::test]
     pub async fn test_snow_flake() {
         let sn_id = new_snowflake_id();
         println!("id:{}", sn_id);
     }
 
-    #[async_std::test]
+    #[tokio::test]
     pub async fn test_save() {
         let rb = init_rbatis().await;
         let activity = BizActivity {
@@ -105,7 +105,7 @@ mod test {
         }
     }
 
-    #[async_std::test]
+    #[tokio::test]
     pub async fn test_save_batch() {
         let rb = init_rbatis().await;
         let activity = BizActivity {
@@ -133,7 +133,7 @@ mod test {
         }
     }
 
-    #[async_std::test]
+    #[tokio::test]
     pub async fn test_save_batch_slice() {
         let rb = init_rbatis().await;
         let activity = BizActivity {
@@ -163,7 +163,7 @@ mod test {
         }
     }
 
-    #[async_std::test]
+    #[tokio::test]
     pub async fn test_remove_batch_by_id() {
         let mut rb = init_rbatis().await;
         rb.logic_plugin = Some(Box::new(RbatisLogicDeletePlugin::new("delete_flag")));
@@ -178,7 +178,7 @@ mod test {
         }
     }
 
-    #[async_std::test]
+    #[tokio::test]
     pub async fn test_remove_by_id() {
         let mut rb = init_rbatis().await;
         //set logic plugin
@@ -196,7 +196,7 @@ mod test {
         }
     }
 
-    #[async_std::test]
+    #[tokio::test]
     pub async fn test_fetch_by_id() {
         let mut rb = init_rbatis().await;
         //set logic plugin
@@ -208,7 +208,7 @@ mod test {
         println!("{}", serde_json::to_string(&r).unwrap());
     }
 
-    #[async_std::test]
+    #[tokio::test]
     pub async fn test_count_by_wrapper() {
         let mut rb = init_rbatis().await;
         //set logic plugin
@@ -220,7 +220,7 @@ mod test {
         println!("count(1): {}", r);
     }
 
-    #[async_std::test]
+    #[tokio::test]
     pub async fn test_update_by_wrapper() {
         let mut rb = init_rbatis().await;
         //set logic plugin
@@ -249,7 +249,7 @@ mod test {
         println!("new_version:{}", &activity.version.unwrap());
     }
 
-    #[async_std::test]
+    #[tokio::test]
     pub async fn test_update_by_id() {
         let mut rb = init_rbatis().await;
         //set logic plugin
@@ -283,7 +283,7 @@ mod test {
         }
     }
 
-    #[async_std::test]
+    #[tokio::test]
     pub async fn test_fetch_by_wrapper() {
         let mut rb = init_rbatis().await;
         //set logic plugin
@@ -296,7 +296,7 @@ mod test {
         }
     }
 
-    #[async_std::test]
+    #[tokio::test]
     pub async fn test_list_by_wrapper() {
         let rb = init_rbatis().await;
         let w = rb.new_wrapper().order_by(true, &["id"]);
@@ -304,7 +304,7 @@ mod test {
         println!("is_some:{:?}", r);
     }
 
-    #[async_std::test]
+    #[tokio::test]
     pub async fn test_fetch_page_by_wrapper() {
         let mut rb = init_rbatis().await;
         //set logic plugin
@@ -322,7 +322,7 @@ mod test {
         println!("{}", serde_json::to_string(&r).unwrap());
     }
 
-    #[async_std::test]
+    #[tokio::test]
     pub async fn test_list() {
         let mut rb = init_rbatis().await;
         //set logic plugin

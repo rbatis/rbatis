@@ -9,7 +9,7 @@ mod test {
 
 
 
-    #[async_std::test]
+    #[tokio::test]
     pub async fn test_block_attack() {
         fast_log::init_log("requests.log", 1000, log::Level::Info, None, true);
         let mut rb = Rbatis::new();
@@ -45,7 +45,7 @@ mod test {
         }
     }
 
-    #[async_std::test]
+    #[tokio::test]
     pub async fn test_intercept() {
         fast_log::init_log("requests.log", 1000, log::Level::Info, None, true);
         let mut rb = Rbatis::new();

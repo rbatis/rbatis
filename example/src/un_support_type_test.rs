@@ -24,7 +24,7 @@ mod test {
 
     /// you may should use pg database! this is docker command for example:
     /// docker run -d --name postgres  -e POSTGRES_PASSWORD=123456 -p 5432:5432 -d postgres
-    #[async_std::test]
+    #[tokio::test]
     pub async fn test_select_point() {
         fast_log::init_log("requests.log", 1000, log::Level::Info, None, true);
         let rb = Rbatis::new();

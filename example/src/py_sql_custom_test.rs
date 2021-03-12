@@ -48,7 +48,7 @@ mod test {
         }
     }
 
-    #[async_std::test]
+    #[tokio::test]
     pub async fn test_py_sql_custom() {
         let wait = fast_log::init_log("requests.log", 1000, log::Level::Info, None, true).unwrap();
         let mut rb = Rbatis::new();

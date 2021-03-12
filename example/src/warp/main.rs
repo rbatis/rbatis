@@ -36,7 +36,7 @@ lazy_static! {
     static ref RB: Rbatis = Rbatis::new();
 }
 
-#[async_std::main]
+#[tokio::main]
 async fn main() {
     //LOG
     fast_log::init_log("requests.log", 1000, log::Level::Info, None, true);

@@ -22,7 +22,7 @@ mod test {
     /// you may should use pg database! this is docker command for example:
     /// docker run -d --name postgres  -e POSTGRES_PASSWORD=123456 -p 5432:5432 -d postgres
     ///
-    #[async_std::test]
+    #[tokio::test]
     pub async fn test_postgres_uuid() {
         fast_log::init_log("requests.log", 1000, log::Level::Info, None, true);
         let rb = Rbatis::new();
@@ -78,7 +78,7 @@ mod test {
     /// [rbatis] [] [format_sql]insert into biz_activity (id,name,pc_link,h5_link,pc_banner_img,h5_banner_img,sort,status,remark,create_time,version,delete_flag)
     /// values ("12312","12312",null,null,null,null,"1",1,null,"2021-03-10T20:34:47.432751100",1,1)
     ///
-    #[async_std::test]
+    #[tokio::test]
     pub async fn test_show_format_sql() {
         fast_log::init_log("requests.log", 1000, log::Level::Info, None, true);
         let mut rb = Rbatis::new();

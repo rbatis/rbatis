@@ -104,7 +104,7 @@ pub struct BizActivity {
 //}
 
 
-#[async_std::main]
+#[tokio::main]
 async fn main() {
   /// enable log crate to show sql logs
   fast_log::init_log("requests.log", 1000, log::Level::Info, None, true);
@@ -205,7 +205,7 @@ lazy_static! {
                     and name=#{name}")]
 pub async fn py_select(name: &str) -> Option<BizActivity> {}
 
-#[async_std::test]
+#[tokio::test]
 pub async fn test_macro_py_select() {
     fast_log::init_log("requests.log", 1000, log::Level::Info, None, true);
     RB.link("mysql://root:123456@localhost:3306/test").await.unwrap();
@@ -231,7 +231,7 @@ lazy_static! {
 pub async fn select(name: &str) -> BizActivity {}
 //or： pub async fn select(name: &str) -> rbatis::core::Result<BizActivity> {}
 
-#[async_std::test]
+#[tokio::test]
 pub async fn test_macro() {
     fast_log::init_log("requests.log", 1000, log::Level::Info, None, true);
     RB.link("mysql://root:123456@localhost:3306/test").await.unwrap();
@@ -347,7 +347,6 @@ pub async fn init_rbatis() -> Rbatis {
 #### `Async/.await` task support
 
 ``` rust
-   async_std::task::block_on(async {
         let rb = Rbatis::new();
         rb.link("mysql://root:123456@localhost:3306/test").await.unwrap();
         let context_id = "tx:1";//事务id号
@@ -355,7 +354,6 @@ pub async fn init_rbatis() -> Rbatis {
         let v: serde_json::Value = rb.fetch(context_id, "SELECT count(1) FROM biz_activity;").await.unwrap();
         println!("{}", v.clone());
         rb.commit(context_id).await.unwrap();
-    });
 ```
 
 ### How to use rbatis with Rust web frameworks (actix-web is used here as an example, but all web frameworks based on tokio or async_std are supported)
