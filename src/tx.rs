@@ -22,9 +22,7 @@ pub struct TxManager {
     pub tx_context: SyncMap<String, (DBTx, TxState)>,
     pub tx_lock_wait_timeout: Duration,
     pub tx_check_interval: Duration,
-    alive: AtomicBool,
-    close_sender: Sender<bool>,
-    close_recv: Receiver<bool>,
+    pub alive: AtomicBool,
     pub log_plugin: Option<Arc<Box<dyn LogPlugin>>>,
 }
 
@@ -47,15 +45,12 @@ impl TxManager {
         tx_lock_wait_timeout: Duration,
         tx_check_interval: Duration,
     ) -> Arc<Self> {
-        let (s, r) = crate::core::runtime::sync::broadcast::channel(1);
         let s = Self {
             tx_prefix: tx_prefix.to_string(),
             tx_context: SyncMap::new(),
             tx_lock_wait_timeout,
             tx_check_interval,
             alive: AtomicBool::new(true),
-            close_sender: s,
-            close_recv: r,
             log_plugin: Some(plugin),
         };
         let arc = Arc::new(s);
@@ -71,10 +66,9 @@ impl TxManager {
         self.alive.fetch_or(false,Ordering::Relaxed)
     }
 
-    pub async fn close(&mut self) {
+    pub fn close(&self) {
         if self.get_alive().eq(&true) {
             self.set_alive(false);
-            self.close_recv.recv().await;
         }
     }
 
@@ -117,8 +111,6 @@ impl TxManager {
                         }
                         manager.rollback(context_id).await;
                     }
-                    //notice close
-                    manager.close_sender.send(true);
                     return;
                 }
                 let m = manager.tx_context.read().await;
