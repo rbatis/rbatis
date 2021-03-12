@@ -49,7 +49,6 @@ pub struct Rbatis {
     pub logic_plugin: Option<Box<dyn LogicDelete>>,
     // log plugin
     pub log_plugin: Arc<Box<dyn LogPlugin>>,
-
     // version lock plugin
     pub version_lock_plugin: Option<Box<dyn VersionLockPlugin>>,
 }
