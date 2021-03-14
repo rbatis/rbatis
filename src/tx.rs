@@ -59,7 +59,7 @@ impl TxManager {
     }
 
     pub fn set_alive(&self, alive: bool) {
-        self.alive.compare_exchange(!alive, alive, Ordering::Acquire, Ordering::Relaxed);
+        self.alive.compare_exchange(!alive, alive, Ordering::Relaxed, Ordering::Relaxed);
     }
 
     pub fn get_alive(&self) -> bool {
@@ -91,6 +91,7 @@ impl TxManager {
     fn polling_check(manager: Arc<Self>) {
         crate::core::runtime::task::spawn(async move {
             loop {
+                println!("alive:{}",manager.get_alive());
                 if manager.get_alive().eq(&false) {
                     //rollback all
                     let m = manager.tx_context.read().await;
@@ -111,7 +112,7 @@ impl TxManager {
                         }
                         manager.rollback(context_id).await;
                     }
-                    return;
+                    break;
                 }
                 let m = manager.tx_context.read().await;
                 let mut need_rollback = None;
@@ -157,7 +158,7 @@ impl TxManager {
                 crate::core::runtime::time::sleep(manager.tx_check_interval).await;
             }
             #[cfg(feature = "debug_mode")]
-            {
+                {
                     match &manager.log_plugin {
                         Some(m) => {
                             m.info("", "[rbatis] TxManager exit!");
@@ -166,7 +167,7 @@ impl TxManager {
                             log::info!("[rbatis] TxManager exit!");
                         }
                     }
-            }
+                }
         });
     }
 
