@@ -160,7 +160,9 @@ impl TxManager {
                 Some(m) => {
                     m.info("", "[rbatis] TxManager exit!");
                 }
-                _ => {}
+                _ => {
+                    log::info!("[rbatis] TxManager exit!");
+                }
             }
         });
     }
