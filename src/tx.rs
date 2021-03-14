@@ -12,6 +12,7 @@ use std::sync::Arc;
 use crate::core::runtime::sync::broadcast::{Sender, Receiver};
 use std::rc::Rc;
 use std::sync::atomic::{AtomicBool, Ordering};
+use std::alloc::Global;
 
 ///the Transaction manager，It manages the life cycle of transactions and provides access across threads
 ///every tx_check_interval check tx is out of time(tx_lock_wait_timeout).if out, rollback tx.
@@ -63,7 +64,7 @@ impl TxManager {
     }
 
     pub fn get_alive(&self) -> bool {
-        self.alive.fetch_or(false,Ordering::Relaxed)
+        self.alive.fetch_or(false, Ordering::Relaxed)
     }
 
     pub fn close(&self) {
@@ -155,6 +156,12 @@ impl TxManager {
                     _ => {}
                 }
                 crate::core::runtime::time::sleep(manager.tx_check_interval).await;
+            }
+            match &manager.log_plugin {
+                Some(m) => {
+                    m.info("", "[rbatis] TxManager exit!");
+                }
+                _ => {}
             }
         });
     }
