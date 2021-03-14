@@ -156,13 +156,16 @@ impl TxManager {
                 }
                 crate::core::runtime::time::sleep(manager.tx_check_interval).await;
             }
-            match &manager.log_plugin {
-                Some(m) => {
-                    m.info("", "[rbatis] TxManager exit!");
-                }
-                _ => {
-                    log::info!("[rbatis] TxManager exit!");
-                }
+            #[cfg(feature = "debug_mode")]
+            {
+                    match &manager.log_plugin {
+                        Some(m) => {
+                            m.info("", "[rbatis] TxManager exit!");
+                        }
+                        _ => {
+                            log::info!("[rbatis] TxManager exit!");
+                        }
+                    }
             }
         });
     }
