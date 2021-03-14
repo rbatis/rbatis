@@ -12,7 +12,6 @@ use std::sync::Arc;
 use crate::core::runtime::sync::broadcast::{Sender, Receiver};
 use std::rc::Rc;
 use std::sync::atomic::{AtomicBool, Ordering};
-use std::alloc::Global;
 
 ///the Transaction manager，It manages the life cycle of transactions and provides access across threads
 ///every tx_check_interval check tx is out of time(tx_lock_wait_timeout).if out, rollback tx.
