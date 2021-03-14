@@ -91,7 +91,6 @@ impl TxManager {
     fn polling_check(manager: Arc<Self>) {
         crate::core::runtime::task::spawn(async move {
             loop {
-                println!("alive:{}",manager.get_alive());
                 if manager.get_alive().eq(&false) {
                     //rollback all
                     let m = manager.tx_context.read().await;
