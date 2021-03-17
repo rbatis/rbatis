@@ -106,7 +106,7 @@ pub(crate) fn impl_crud_driver(
             }
 
             fn formats(driver_type: &rbatis::core::db::DriverType) -> std::collections::HashMap<String, fn(arg:&str)->String> {
-                  let mut m = std::collections::HashMap::new();
+                  let mut m: std::collections::HashMap<String, fn(arg:&str)->String> = std::collections::HashMap::new();
                   match driver_type{
                     rbatis::core::db::DriverType::Mysql=>{
                          #formats_mysql
