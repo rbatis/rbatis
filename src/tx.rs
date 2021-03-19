@@ -9,7 +9,6 @@ use crate::core::sync::sync_map::{RefMut, SyncMap};
 use crate::plugin::log::LogPlugin;
 use crate::rbatis::Rbatis;
 use std::sync::Arc;
-use crate::core::runtime::sync::broadcast::{Sender, Receiver};
 use std::rc::Rc;
 use std::sync::atomic::{AtomicBool, Ordering};
 
@@ -154,7 +153,7 @@ impl TxManager {
                     }
                     _ => {}
                 }
-                crate::core::runtime::time::sleep(manager.tx_check_interval).await;
+                crate::core::runtime::task::sleep(manager.tx_check_interval).await;
             }
             #[cfg(feature = "debug_mode")]
                 {
