@@ -8,9 +8,9 @@ use crate::core::runtime::sync::{RwLock, RwLockReadGuard};
 use crate::core::sync::sync_map::{RefMut, SyncMap};
 use crate::plugin::log::LogPlugin;
 use crate::rbatis::Rbatis;
-use std::sync::Arc;
 use std::rc::Rc;
 use std::sync::atomic::{AtomicBool, Ordering};
+use std::sync::Arc;
 
 ///the Transaction manager，It manages the life cycle of transactions and provides access across threads
 ///every tx_check_interval check tx is out of time(tx_lock_wait_timeout).if out, rollback tx.
@@ -58,7 +58,8 @@ impl TxManager {
     }
 
     pub fn set_alive(&self, alive: bool) {
-        self.alive.compare_exchange(!alive, alive, Ordering::Relaxed, Ordering::Relaxed);
+        self.alive
+            .compare_exchange(!alive, alive, Ordering::Relaxed, Ordering::Relaxed);
     }
 
     pub fn get_alive(&self) -> bool {
@@ -156,16 +157,16 @@ impl TxManager {
                 crate::core::runtime::task::sleep(manager.tx_check_interval).await;
             }
             #[cfg(feature = "debug_mode")]
-                {
-                    match &manager.log_plugin {
-                        Some(m) => {
-                            m.info("", "[rbatis] TxManager exit!");
-                        }
-                        _ => {
-                            log::info!("[rbatis] TxManager exit!");
-                        }
+            {
+                match &manager.log_plugin {
+                    Some(m) => {
+                        m.info("", "[rbatis] TxManager exit!");
+                    }
+                    _ => {
+                        log::info!("[rbatis] TxManager exit!");
                     }
                 }
+            }
         });
     }
 
@@ -246,6 +247,7 @@ impl TxManager {
 
 /// the TxGuard just like an  Lock Guard,
 /// if TxGuard Drop, this tx will be commit or rollback
+#[derive(Debug)]
 pub struct TxGuard {
     pub tx_id: String,
     pub is_drop_commit: bool,

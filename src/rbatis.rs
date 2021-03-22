@@ -53,7 +53,7 @@ pub struct Rbatis {
     pub version_lock_plugin: Option<Box<dyn VersionLockPlugin>>,
 }
 
-impl Drop for Rbatis{
+impl Drop for Rbatis {
     fn drop(&mut self) {
         self.tx_manager.set_alive(false);
     }
@@ -66,6 +66,7 @@ impl Default for Rbatis {
 }
 
 ///Rbatis Options
+#[derive(Debug)]
 pub struct RbatisOption {
     /// the tx lock timeout, if out of time tx will be rollback
     pub tx_lock_wait_timeout: Duration,
@@ -145,8 +146,8 @@ impl Rbatis {
 
     /// try return an new wrapper and set table formats,if not call the link() method,it will be panic!
     pub fn new_wrapper_table<T>(&self) -> Wrapper
-        where
-            T: CRUDTable,
+    where
+        T: CRUDTable,
     {
         let mut w = self.new_wrapper();
         w = w.set_formats(T::formats(&self.driver_type().unwrap()));
@@ -346,8 +347,8 @@ impl Rbatis {
     ///     let v: serde_json::Value = rb.fetch(context_id, "select count(1) from biz_activity;").await?;
     ///
     pub async fn fetch<T>(&self, context_id: &str, sql: &str) -> Result<T, Error>
-        where
-            T: DeserializeOwned,
+    where
+        T: DeserializeOwned,
     {
         //sql intercept
         let mut sql = sql.to_string();
@@ -458,8 +459,8 @@ impl Rbatis {
         sql: &str,
         args: &Vec<serde_json::Value>,
     ) -> Result<T, Error>
-        where
-            T: DeserializeOwned,
+    where
+        T: DeserializeOwned,
     {
         //sql intercept
         let mut sql = sql.to_string();
@@ -580,8 +581,8 @@ impl Rbatis {
         py_sql: &str,
         arg: &Arg,
     ) -> Result<(String, Vec<serde_json::Value>), Error>
-        where
-            Arg: Serialize + Send + Sync,
+    where
+        Arg: Serialize + Send + Sync,
     {
         let mut arg = json!(arg);
         match self
@@ -615,9 +616,9 @@ impl Rbatis {
         py_sql: &str,
         arg: &Arg,
     ) -> Result<T, Error>
-        where
-            T: DeserializeOwned,
-            Arg: Serialize + Send + Sync,
+    where
+        T: DeserializeOwned,
+        Arg: Serialize + Send + Sync,
     {
         let (sql, args) = self.py_to_sql(py_sql, arg)?;
         return self.fetch_prepare(context_id, sql.as_str(), &args).await;
@@ -645,8 +646,8 @@ impl Rbatis {
         py_sql: &str,
         arg: &Arg,
     ) -> Result<DBExecResult, Error>
-        where
-            Arg: Serialize + Send + Sync,
+    where
+        Arg: Serialize + Send + Sync,
     {
         let (sql, args) = self.py_to_sql(py_sql, arg)?;
         return self.exec_prepare(context_id, sql.as_str(), &args).await;
@@ -660,8 +661,8 @@ impl Rbatis {
         args: &Vec<serde_json::Value>,
         page_request: &dyn IPageRequest,
     ) -> Result<Page<T>, Error>
-        where
-            T: DeserializeOwned + Serialize + Send + Sync,
+    where
+        T: DeserializeOwned + Serialize + Send + Sync,
     {
         let mut page_result = Page::new(page_request.get_page_no(), page_request.get_page_size());
         page_result.search_count = page_request.is_search_count();
@@ -697,9 +698,9 @@ impl Rbatis {
         arg: &Arg,
         page_request: &dyn IPageRequest,
     ) -> Result<Page<T>, Error>
-        where
-            T: DeserializeOwned + Serialize + Send + Sync,
-            Arg: Serialize + Send + Sync,
+    where
+        T: DeserializeOwned + Serialize + Send + Sync,
+        Arg: Serialize + Send + Sync,
     {
         let (sql, args) = self.py_to_sql(py_sql, arg)?;
         return self
