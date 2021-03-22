@@ -3,6 +3,7 @@ use std::sync::atomic::{AtomicI64, Ordering};
 
 use chrono::Utc;
 
+#[derive(Debug)]
 pub struct Snowflake {
     epoch: i64,
     worker_id: i64,
