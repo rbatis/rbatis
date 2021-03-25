@@ -24,8 +24,8 @@ mod test {
 
     ///select page must have  '?:&PageRequest' arg and return 'Page<?>'
     #[py_sql(
-        rb,
-        "select * from biz_activity where delete_flag = 0
+    rb,
+    "select * from biz_activity where delete_flag = 0
                   if name != '':
                     and name=#{name}"
     )]
@@ -47,8 +47,8 @@ mod test {
 
     ///Commit the transaction
     #[py_sql(
-        rb,
-        "select * from biz_activity where delete_flag = 0
+    rb,
+    "select * from biz_activity where delete_flag = 0
                   if name != '':
                     and name=#{name}"
     )]
@@ -69,19 +69,29 @@ mod test {
     }
 
     ///load from file
-    fn load_file_str(file_name: &str) -> String {
+    fn load_file_str(file_name: &str, method: &str) -> String {
+        //load all string
         let mut f = File::open(file_name).unwrap();
         let mut s = String::new();
         f.read_to_string(&mut s);
+
+        //find method
+        let methods: Vec<&str> = s.split("-- ").collect();
+        for x in methods {
+            if x.starts_with(method) {
+                let data = x.trim_start_matches(method).to_string();
+                return data;
+            }
+        }
         return s;
     }
 
     ///load file py_sql(Each read file changes every time)
-    #[py_sql(rb, load_file_str("py_sql.sql"))]
+    #[py_sql(rb, load_file_str("py_sql.sql", "py_select_file"))]
     async fn py_select_file(rb: &Rbatis, page_req: &PageRequest, name: &str) -> Page<BizActivity> {}
 
     lazy_static! {
-        pub static ref PY_SQL_FILE_STR: String = load_file_str("py_sql.sql");
+        pub static ref PY_SQL_FILE_STR: String = load_file_str("py_sql.sql","py_select_file");
     }
 
     ///load file py_sql(only load file once)
@@ -90,8 +100,7 @@ mod test {
         rb: &Rbatis,
         page_req: &PageRequest,
         name: &str,
-    ) -> Page<BizActivity> {
-    }
+    ) -> Page<BizActivity> {}
 
     /// test load py_sql from file
     #[tokio::test]
