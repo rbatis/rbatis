@@ -76,7 +76,7 @@ mod test {
         f.read_to_string(&mut s);
 
         //find method
-        let methods: Vec<&str> = s.split("-- ").collect();
+        let methods: Vec<&str> = s.split("--fn:").collect();
         for x in methods {
             if x.starts_with(method) {
                 let data = x.trim_start_matches(method).to_string();
