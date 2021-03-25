@@ -83,7 +83,7 @@ mod test {
                 return data;
             }
         }
-        return s;
+        panic!("not find method:'{}' in file:'{}'", method, file_name)
     }
 
     ///load file py_sql(Each read file changes every time)
