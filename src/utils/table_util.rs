@@ -162,7 +162,7 @@ macro_rules! make_table_field_map {
 ///         pub role_id:String
 ///      }
 ///      let user_roles: Vec<SysUserRole>;
-///      let role_ids = make_table_field_map!(&user_roles,role_id); // role_ids: HashMap<String,SysUserRole>
+///      let role_ids = make_table_field_map_btree!(&user_roles,role_id); // role_ids: HashMap<String,SysUserRole>
 ///
 ///
 ///
