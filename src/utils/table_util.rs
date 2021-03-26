@@ -1,4 +1,4 @@
-use std::collections::HashMap;
+use std::collections::{HashMap, BTreeMap};
 
 use crate::crud::CRUDTable;
 
@@ -6,14 +6,40 @@ use crate::crud::CRUDTable;
 pub trait FatherChildRelationship where Self: CRUDTable + Clone {
     fn get_father_id(&self) -> Option<&Self::IdType>;
     fn set_childs(&mut self, arg: Vec<Self>);
-    ///recursive_set_childs for Relationship
-    fn recursive_set_childs(&mut self, all_record: &HashMap<Self::IdType, Self>) {
+    ///set_childs for Relationship
+    fn set_childs_recursive(&mut self, all_record: &HashMap<Self::IdType, Self>) {
         let mut childs: Option<Vec<Self>> = None;
         if self.get_id().is_some() {
             for (key, x) in all_record {
                 if x.get_father_id().is_some() && self.get_id().eq(&x.get_father_id()) {
                     let mut item = x.clone();
-                    item.recursive_set_childs(all_record);
+                    item.set_childs_recursive(all_record);
+                    match &mut childs {
+                        Some(childs) => {
+                            childs.push(item);
+                        }
+                        None => {
+                            let mut vec = vec![];
+                            vec.push(item);
+                            childs = Some(vec);
+                        }
+                    }
+                }
+            }
+        }
+        if childs.is_some() {
+            self.set_childs(childs.unwrap())
+        }
+    }
+
+    ///set_childs for Relationship
+    fn set_childs_recursive_sorted(&mut self, all_record: &BTreeMap<Self::IdType, Self>) {
+        let mut childs: Option<Vec<Self>> = None;
+        if self.get_id().is_some() {
+            for (key, x) in all_record {
+                if x.get_father_id().is_some() && self.get_id().eq(&x.get_father_id()) {
+                    let mut item = x.clone();
+                    item.set_childs_recursive_sorted(all_record);
                     match &mut childs {
                         Some(childs) => {
                             childs.push(item);
@@ -115,6 +141,36 @@ macro_rules! make_table_field_vec {
 macro_rules! make_table_field_map {
     ($vec_ref:expr,$field_name:ident) => {{
         let mut ids = std::collections::HashMap::new();
+        for item in $vec_ref {
+            match item.$field_name.as_ref() {
+                std::option::Option::Some(v) => {
+                    ids.insert(v.clone(),item.clone());
+                }
+                _ => {}
+            }
+        }
+        ids
+    }};
+}
+
+/// Gets the HashMap collection of member attributes of the target Vec
+/// vec_ref: vec reference，field_name: the field name of the structure
+///
+/// need impl Clone or #[derive(Clone, Debug)]
+/// for example:
+///      struct SysUserRole{
+///         pub role_id:String
+///      }
+///      let user_roles: Vec<SysUserRole>;
+///      let role_ids = make_table_field_map!(&user_roles,role_id); // role_ids: HashMap<String,SysUserRole>
+///
+///
+///
+#[allow(unused_macros)]
+#[macro_export]
+macro_rules! make_table_field_map_btree {
+    ($vec_ref:expr,$field_name:ident) => {{
+        let mut ids = std::collections::BTreeMap::new();
         for item in $vec_ref {
             match item.$field_name.as_ref() {
                 std::option::Option::Some(v) => {
