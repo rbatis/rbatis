@@ -103,8 +103,8 @@ mod test {
             father_id: Some(1),
             childs: vec![],
         };
-        let all_record = rbatis::make_table_field_map_btree!(vec![child],id);
-        father.set_childs_recursive_btree(&all_record);
+        let all_record = rbatis::make_table_field_map!(vec![child],id);
+        father.set_childs_recursive(&all_record);
         println!("{:#?}", father);
     }
 }
