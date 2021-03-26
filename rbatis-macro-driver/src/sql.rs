@@ -19,10 +19,7 @@ pub(crate) fn impl_macro_sql(target_fn: &ItemFn, args: &AttributeArgs) -> TokenS
     let fn_body = find_fn_body(target_fn);
     let is_async = target_fn.sig.asyncness.is_some();
     if !is_async {
-        panic!(format!(
-            "[rbaits] 'fn {}({})' must be  async fn! ",
-            func_name_ident, func_args_stream
-        ));
+        panic!("[rbaits] 'fn {}({})' must be  async fn! ", func_name_ident, func_args_stream);
     }
     let mut call_method = quote! {};
     let is_fetch = is_fetch_sql(&sql);

@@ -153,10 +153,10 @@ fn gen_format(v: &str) -> proc_macro2::TokenStream {
     }
     for item in new_items {
         if !item.contains(":") {
-            panic!(format!("[rbatis] [crud_enable] format_str:'{}' must be [column]:[format_string],for example ->  '{}'  ", item, "formats_pg:id:{}::uuid"));
+            panic!("[rbatis] [crud_enable] format_str:'{}' must be [column]:[format_string],for example ->  '{}'  ", item, "formats_pg:id:{}::uuid");
         }
         if !item.contains("{}") {
-            panic!(format!("[rbatis] [crud_enable] format_str:'{}' must be [column]:[format_string],for example ->  '{}'  ", item, "formats_pg:id:{}::uuid"));
+            panic!("[rbatis] [crud_enable] format_str:'{}' must be [column]:[format_string],for example ->  '{}'  ", item, "formats_pg:id:{}::uuid");
         }
         let index = item.find(":").unwrap();
         let column = item[0..index].to_string();
