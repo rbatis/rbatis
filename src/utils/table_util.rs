@@ -33,13 +33,13 @@ pub trait FatherChildRelationship where Self: CRUDTable + Clone {
     }
 
     ///set_childs for Relationship
-    fn set_childs_recursive_sorted(&mut self, all_record: &BTreeMap<Self::IdType, Self>) {
+    fn set_childs_recursive_btree(&mut self, all_record: &BTreeMap<Self::IdType, Self>) {
         let mut childs: Option<Vec<Self>> = None;
         if self.get_id().is_some() {
             for (key, x) in all_record {
                 if x.get_father_id().is_some() && self.get_id().eq(&x.get_father_id()) {
                     let mut item = x.clone();
-                    item.set_childs_recursive_sorted(all_record);
+                    item.set_childs_recursive_btree(all_record);
                     match &mut childs {
                         Some(childs) => {
                             childs.push(item);
