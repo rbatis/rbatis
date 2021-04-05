@@ -43,36 +43,35 @@ mod test {
 
     #[test]
     fn test_make_table() {
-        let table = rbatis::make_table!(BizActivity{
-              id:"1".to_string(),
+        let table = rbatis::make_table!(BizActivity {
+            id: "1".to_string(),
         });
         println!("{:#?}", table);
     }
 
     #[test]
     fn test_table_field_map() {
-        let table = rbatis::make_table!(BizActivity{
-              id:"1".to_string(),
-              name:"a".to_string()
+        let table = rbatis::make_table!(BizActivity {
+            id: "1".to_string(),
+            name: "a".to_string()
         });
         let table_vec = vec![table];
-        let map = rbatis::make_table_field_map!(&table_vec,name);
+        let map = rbatis::make_table_field_map!(&table_vec, name);
         println!("{:#?}", map);
         assert_eq!(map.len(), table_vec.len());
     }
 
     #[test]
     fn test_table_field_vec() {
-        let table = rbatis::make_table!(BizActivity{
-              id:"1".to_string(),
-              name:"a".to_string()
+        let table = rbatis::make_table!(BizActivity {
+            id: "1".to_string(),
+            name: "a".to_string()
         });
         let table_vec = vec![table];
-        let names = rbatis::make_table_field_vec!(&table_vec,name);
+        let names = rbatis::make_table_field_vec!(&table_vec, name);
         println!("{:#?}", names);
         assert_eq!(names.len(), table_vec.len());
     }
-
 
     #[crud_enable]
     #[derive(Clone, Debug)]
@@ -103,7 +102,7 @@ mod test {
             father_id: Some(1),
             childs: vec![],
         };
-        let all_record = rbatis::make_table_field_map!(vec![child],id);
+        let all_record = rbatis::make_table_field_map!(vec![child], id);
         father.set_childs_recursive(&all_record);
         println!("{:#?}", father);
     }

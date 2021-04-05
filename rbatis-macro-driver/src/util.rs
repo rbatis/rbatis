@@ -101,7 +101,6 @@ pub(crate) fn find_fn_body(target_fn: &ItemFn) -> proc_macro2::TokenStream {
     return_ty
 }
 
-
 pub(crate) fn is_fetch_sql(source: &str) -> bool {
     let sql = source.trim_start();
     let is_select = sql.starts_with("select ")

@@ -1,9 +1,12 @@
-use std::collections::{HashMap, BTreeMap};
+use std::collections::{BTreeMap, HashMap};
 
 use crate::crud::CRUDTable;
 
 /// Father-Child Relationship
-pub trait FatherChildRelationship where Self: CRUDTable + Clone {
+pub trait FatherChildRelationship
+where
+    Self: CRUDTable + Clone,
+{
     fn get_father_id(&self) -> Option<&Self::IdType>;
     fn set_childs(&mut self, arg: Vec<Self>);
     ///set_childs for Relationship
@@ -58,8 +61,6 @@ pub trait FatherChildRelationship where Self: CRUDTable + Clone {
         }
     }
 }
-
-
 
 /// Simplifies table construction by relying on the Default trait
 ///
@@ -144,7 +145,7 @@ macro_rules! make_table_field_map {
         for item in $vec_ref {
             match item.$field_name.as_ref() {
                 std::option::Option::Some(v) => {
-                    ids.insert(v.clone(),item.clone());
+                    ids.insert(v.clone(), item.clone());
                 }
                 _ => {}
             }
@@ -174,7 +175,7 @@ macro_rules! make_table_field_map_btree {
         for item in $vec_ref {
             match item.$field_name.as_ref() {
                 std::option::Option::Some(v) => {
-                    ids.insert(v.clone(),item.clone());
+                    ids.insert(v.clone(), item.clone());
                 }
                 _ => {}
             }

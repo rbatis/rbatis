@@ -8,9 +8,26 @@ pub trait PageLimit {
 impl PageLimit for DriverType {
     fn page_limit_sql(&self, offset: u64, size: u64) -> crate::core::Result<String> {
         return match self {
-            DriverType::Mysql => Ok(format!(" {} {},{}", crate::sql::TEMPLATE.limit.value, offset, size)),
-            DriverType::Postgres => Ok(format!(" {} {} {} {}", crate::sql::TEMPLATE.limit.value, size, crate::sql::TEMPLATE.offset.value, offset)),
-            DriverType::Sqlite => Ok(format!(" {} {} {} {}", crate::sql::TEMPLATE.limit.value, size, crate::sql::TEMPLATE.offset.value, offset)),
+            DriverType::Mysql => Ok(format!(
+                " {} {},{}",
+                crate::sql::TEMPLATE.limit.value,
+                offset,
+                size
+            )),
+            DriverType::Postgres => Ok(format!(
+                " {} {} {} {}",
+                crate::sql::TEMPLATE.limit.value,
+                size,
+                crate::sql::TEMPLATE.offset.value,
+                offset
+            )),
+            DriverType::Sqlite => Ok(format!(
+                " {} {} {} {}",
+                crate::sql::TEMPLATE.limit.value,
+                size,
+                crate::sql::TEMPLATE.offset.value,
+                offset
+            )),
             DriverType::Mssql => {
                 //sqlserver
                 Ok(format!(

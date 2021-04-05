@@ -1,5 +1,5 @@
-use std::sync::Arc;
 use std::sync::atomic::{AtomicI64, Ordering};
+use std::sync::Arc;
 
 use chrono::Utc;
 
@@ -62,14 +62,16 @@ impl Snowflake {
             self.sequence.swap(0, Ordering::Relaxed);
         }
         self.time.swap(timestamp, Ordering::Relaxed);
-        (timestamp << 22) | (self.worker_id << 17) | (self.datacenter_id << 12) | self.sequence.fetch_or(0, Ordering::Relaxed)
+        (timestamp << 22)
+            | (self.worker_id << 17)
+            | (self.datacenter_id << 12)
+            | self.sequence.fetch_or(0, Ordering::Relaxed)
     }
 
     fn get_time(&self) -> i64 {
         Utc::now().timestamp_millis() - self.epoch
     }
 }
-
 
 lazy_static! {
     pub static ref SNOWFLAKE: Snowflake = Snowflake::default();
