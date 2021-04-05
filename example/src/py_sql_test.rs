@@ -24,8 +24,8 @@ mod test {
 
     ///select page must have  '?:&PageRequest' arg and return 'Page<?>'
     #[py_sql(
-    rb,
-    "select * from biz_activity where delete_flag = 0
+        rb,
+        "select * from biz_activity where delete_flag = 0
                   if name != '':
                     and name=#{name}"
     )]
@@ -47,8 +47,8 @@ mod test {
 
     ///Commit the transaction
     #[py_sql(
-    rb,
-    "select * from biz_activity where delete_flag = 0
+        rb,
+        "select * from biz_activity where delete_flag = 0
                   if name != '':
                     and name=#{name}"
     )]
@@ -91,7 +91,7 @@ mod test {
     async fn py_select_file(rb: &Rbatis, page_req: &PageRequest, name: &str) -> Page<BizActivity> {}
 
     lazy_static! {
-        pub static ref PY_SQL_FILE_STR: String = load_file_str("py_sql.sql","py_select_file");
+        pub static ref PY_SQL_FILE_STR: String = load_file_str("py_sql.sql", "py_select_file");
     }
 
     ///load file py_sql(only load file once)
@@ -100,7 +100,8 @@ mod test {
         rb: &Rbatis,
         page_req: &PageRequest,
         name: &str,
-    ) -> Page<BizActivity> {}
+    ) -> Page<BizActivity> {
+    }
 
     /// test load py_sql from file
     #[tokio::test]

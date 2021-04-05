@@ -144,9 +144,9 @@ fn gen_format(v: &str) -> proc_macro2::TokenStream {
             last = x.trim_end_matches("\\").to_string();
         } else {
             if !last.is_empty() {
-                new_items.push(last.to_string()+","+x);
+                new_items.push(last.to_string() + "," + x);
                 last.clear();
-            }else{
+            } else {
                 new_items.push(x.to_string());
             }
         }

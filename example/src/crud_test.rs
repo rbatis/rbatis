@@ -3,8 +3,8 @@ mod test {
     use bigdecimal::BigDecimal;
     use chrono::NaiveDateTime;
 
-    use rbatis::core::Error;
     use rbatis::core::value::DateTimeNow;
+    use rbatis::core::Error;
     use rbatis::crud::CRUD;
     use rbatis::plugin::logic_delete::RbatisLogicDeletePlugin;
     use rbatis::plugin::page::{Page, PageRequest};
@@ -154,8 +154,15 @@ mod test {
         activity2.id = Some("12313".to_string());
         let mut activity3 = activity.clone();
         activity3.id = Some("12314".to_string());
-        rb.remove_batch_by_id::<BizActivity>("", &["12312".to_string(), "12313".to_string(), "12314".to_string()])
-            .await;
+        rb.remove_batch_by_id::<BizActivity>(
+            "",
+            &[
+                "12312".to_string(),
+                "12313".to_string(),
+                "12314".to_string(),
+            ],
+        )
+        .await;
         let args = vec![activity, activity2, activity3];
         let r = rb.save_batch_slice("", &args, 2).await;
         if r.is_err() {
@@ -255,7 +262,7 @@ mod test {
         //set logic plugin
         rb.logic_plugin = Some(Box::new(RbatisLogicDeletePlugin::new("delete_flag")));
         //macro make object
-        let mut activity = rbatis::make_table!(BizActivity{
+        let mut activity = rbatis::make_table!(BizActivity {
             id: "12312".to_string(),
             status: 1,
             create_time: NaiveDateTime::now(),
