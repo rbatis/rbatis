@@ -21,10 +21,10 @@ mod py_sql_test;
 mod raw_driver_test;
 mod raw_identifiers_test;
 mod raw_sql_macro_test;
+mod table_macro_test;
 mod transaction_test;
 mod un_support_type_test;
 mod wrapper_test;
-mod table_macro_test;
 
 use chrono::NaiveDateTime;
 /// this is table model(see ../database.sql)

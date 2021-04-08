@@ -1,9 +1,7 @@
 //! ObjectId
 use std::{
     convert::TryInto,
-    error,
-    fmt,
-    result,
+    error, fmt, result,
     str::FromStr,
     sync::atomic::{AtomicUsize, Ordering},
     time::SystemTime,
@@ -12,7 +10,7 @@ use std::{
 use chrono::Utc;
 use hex::{self, FromHexError};
 use lazy_static::lazy_static;
-use rand::{Rng, thread_rng};
+use rand::{thread_rng, Rng};
 
 const TIMESTAMP_SIZE: usize = 4;
 const PROCESS_ID_SIZE: usize = 5;
@@ -201,17 +199,16 @@ impl fmt::Debug for ObjectId {
     }
 }
 
-
 #[cfg(test)]
 mod test {
     use chrono::{offset::TimeZone, Utc};
 
     #[test]
     fn test_new() {
-        println!("objectId:{}",super::ObjectId::new().to_string());
-        println!("objectId:{}",super::ObjectId::new().to_string());
-        println!("objectId:{}",super::ObjectId::new().to_string());
-        println!("objectId:{}",super::ObjectId::new().to_string());
+        println!("objectId:{}", super::ObjectId::new().to_string());
+        println!("objectId:{}", super::ObjectId::new().to_string());
+        println!("objectId:{}", super::ObjectId::new().to_string());
+        println!("objectId:{}", super::ObjectId::new().to_string());
     }
 
     #[test]

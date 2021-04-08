@@ -104,7 +104,12 @@ impl LogicDelete for RbatisLogicDeletePlugin {
     ) -> Result<String, Error> {
         if !self.is_allow(context_id) {
             //make delete sql
-            let new_sql = format!("{} {} {}", crate::sql::TEMPLATE.delete_from.value, table_name, sql_where.trim_start());
+            let new_sql = format!(
+                "{} {} {}",
+                crate::sql::TEMPLATE.delete_from.value,
+                table_name,
+                sql_where.trim_start()
+            );
             return Ok(new_sql);
         }
         return if table_fields.contains(self.column()) {
@@ -119,7 +124,12 @@ impl LogicDelete for RbatisLogicDeletePlugin {
             ) + sql_where;
             Ok(new_sql)
         } else if !sql_where.is_empty() {
-            let new_sql = format!("{} {} {}", crate::sql::TEMPLATE.delete_from.value, table_name, sql_where.trim_start());
+            let new_sql = format!(
+                "{} {} {}",
+                crate::sql::TEMPLATE.delete_from.value,
+                table_name,
+                sql_where.trim_start()
+            );
             Ok(new_sql)
         } else {
             Err(Error::from("[rbatis] del data must have where sql!"))
@@ -135,9 +145,7 @@ impl LogicDelete for RbatisLogicDeletePlugin {
         table_fields: &str,
         where_sql: &str,
     ) -> Result<String, Error> {
-        let mut where_sql = where_sql
-            .trim()
-            .to_string();
+        let mut where_sql = where_sql.trim().to_string();
         let mut sql = String::new();
         if self.is_allow(context_id) && table_fields.contains(self.column()) {
             where_sql = driver_type.make_left_insert_where(
