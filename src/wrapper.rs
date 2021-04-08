@@ -267,7 +267,7 @@ impl Wrapper {
     pub fn having(mut self, sql_having: &str) -> Self {
         self = self.and();
         self.sql
-            .push_str(format!("{} {} ", crate::sql::TEMPLATE.having.value, sql_having).as_str());
+            .push_str(format!(" {} {} ", crate::sql::TEMPLATE.having.value, sql_having).as_str());
         self
     }
 
@@ -623,7 +623,7 @@ impl Wrapper {
         }
         sqls.pop();
         self.sql.push_str(
-            format!("{} {} ({})", column, crate::sql::TEMPLATE.r#in.value, sqls).as_str(),
+            format!(" {} {} ({}) ", column, crate::sql::TEMPLATE.r#in.value, sqls).as_str(),
         );
         self
     }
@@ -737,7 +737,7 @@ impl Wrapper {
     ///  limit(1) " limit 1 "
     pub fn limit(mut self, limit: u64) -> Self {
         self.sql
-            .push_str(&format!("{} {} ", crate::sql::TEMPLATE.limit.value, limit));
+            .push_str(&format!(" {} {} ", crate::sql::TEMPLATE.limit.value, limit));
         self
     }
 }
