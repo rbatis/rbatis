@@ -92,22 +92,6 @@ pub trait CRUDTable: Send + Sync + Serialize + DeserializeOwned {
         return format!("{}", fields);
     }
 
-    /// make an Map<table_column,value>
-    fn make_column_value_map(
-        &self,
-        db_type: &DriverType,
-    ) -> Result<serde_json::Map<String, Value>> {
-        let json = json!(self);
-        if json.eq(&serde_json::Value::Null) {
-            return Err(Error::from("[rbaits] to_value_map() fail!"));
-        }
-        if !json.is_object() {
-            return Err(Error::from(
-                "[rbaits] to_value_map() fail,data is not an object!",
-            ));
-        }
-        return Ok(json.as_object().unwrap().to_owned());
-    }
 
     ///format column
     fn do_format_column(driver_type: &DriverType, column: &str, data: String) -> String {
@@ -131,9 +115,17 @@ pub trait CRUDTable: Send + Sync + Serialize + DeserializeOwned {
         let mut arr = vec![];
         let cols = Self::table_columns();
         let columns: Vec<&str> = cols.split(",").collect();
-        let map = self.make_column_value_map(db_type)?;
+        let map;
+        match serde_json::json!(self) {
+            serde_json::Value::Object(m) => {
+                map = m;
+            }
+            _ => {
+                return Err(Error::from("[rbatis] arg not an json object!"));
+            }
+        }
         let mut column_sql = String::new();
-        for column in &columns {
+        for column in columns {
             let column = crate::utils::string_util::un_packing_string(column);
             let v = map.get(column).unwrap_or(&serde_json::Value::Null);
             if Self::id_name().eq(column) && v.eq(&serde_json::Value::Null) {
@@ -193,17 +185,6 @@ impl<T> CRUDTable for Option<T>
 
     fn formats(driver_type: &DriverType) -> HashMap<String, fn(arg: &str) -> String> {
         T::formats(driver_type)
-    }
-    fn make_column_value_map(
-        &self,
-        db_type: &DriverType,
-    ) -> Result<serde_json::Map<String, Value>> {
-        if self.is_none() {
-            return Err(crate::core::Error::from(
-                "[rbatis] can not make_column_value_map() for None value!",
-            ));
-        }
-        T::make_column_value_map(self.as_ref().unwrap(), db_type)
     }
 
     fn make_value_sql_arg(
@@ -663,13 +644,25 @@ impl CRUD for Rbatis {
         let mut args = vec![];
         let mut old_version = serde_json::Value::Null;
         let driver_type = &self.driver_type()?;
-        let mut map = arg.make_column_value_map(&driver_type)?;
+        let columns = T::table_columns();
+        let columns_vec: Vec<&str> = columns.split(",").collect();
+        let map;
+        match serde_json::json!(arg) {
+            serde_json::Value::Object(m) => {
+                map = m;
+            }
+            _ => {
+                return Err(Error::from("[rbatis] arg not an json object!"));
+            }
+        }
+        let null = serde_json::Value::Null;
         let mut sets = String::new();
-        for (column, v) in &mut map {
+        for column in columns_vec {
             //filter id
             if column.eq(&T::id_name()) {
                 continue;
             }
+            let mut v = map.get(column).unwrap_or_else(|| &null).clone();
             //filter null
             if !update_null_value && v.is_null() {
                 continue;
@@ -689,7 +682,7 @@ impl CRUD for Rbatis {
             match &self.version_lock_plugin {
                 Some(version_lock_plugin) => {
                     old_version = v.clone();
-                    *v = version_lock_plugin.try_add_one(context_id, &old_version, column);
+                    v = version_lock_plugin.try_add_one(context_id, &old_version, column);
                 }
                 _ => {}
             }
