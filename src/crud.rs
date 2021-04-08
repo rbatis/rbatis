@@ -674,6 +674,10 @@ impl CRUD for Rbatis {
             if !update_null_value && v.is_null() {
                 continue;
             }
+            //filter none table column
+            if ! &T::table_columns().contains(column) {
+                continue;
+            }
             sets.push_str(
                 format!(
                     " {} = {},",

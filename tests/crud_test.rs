@@ -29,6 +29,9 @@ mod test {
         pub create_time: Option<String>,
         pub version: Option<i32>,
         pub delete_flag: Option<i32>,
+
+        //none talbe column
+        pub none_column: Option<String>
     }
 
     /// 必须实现 CRUDEntity接口，如果表名 不正确，可以重写 fn table_name() -> String 方法！
@@ -37,6 +40,10 @@ mod test {
 
         fn get_id(&self) -> Option<&Self::IdType> {
             self.id.as_ref()
+        }
+
+        fn table_columns() -> String {
+            "id,name,pc_link,h5_link,pc_banner_img,h5_banner_img,sort,status,remark,create_time,version,delete_flag".to_string()
         }
     }
 
@@ -73,6 +80,7 @@ mod test {
             create_time: Some("2020-02-09 00:00:00".to_string()),
             version: Some(1),
             delete_flag: Some(1),
+            none_column: None,
         }];
         let ids = vec.to_ids();
         println!("{:?}", ids);
@@ -94,6 +102,7 @@ mod test {
                 create_time: Some("2020-02-09 00:00:00".to_string()),
                 version: Some(1),
                 delete_flag: Some(1),
+                none_column: None,
             };
 
             fast_log::init_log("requests.log", 1000, log::Level::Info, None, true);
@@ -127,6 +136,7 @@ mod test {
                 create_time: Some("2020-02-09 00:00:00".to_string()),
                 version: Some(1),
                 delete_flag: Some(1),
+                none_column: None,
             };
             let args = vec![activity.clone(), activity];
 
@@ -202,10 +212,11 @@ mod test {
                 create_time: Some("2020-02-09 00:00:00".to_string()),
                 version: Some(1),
                 delete_flag: Some(1),
+                none_column: None,
             };
 
             let w = Wrapper::new(&rb.driver_type().unwrap()).eq("id", "12312");
-            let r = rb.update_by_wrapper("", &mut activity, &w, false).await;
+            let r = rb.update_by_wrapper("", &mut activity, &w, true).await;
             if r.is_err() {
                 println!("{}", r.err().unwrap().to_string());
             }
@@ -236,6 +247,7 @@ mod test {
                 create_time: Some("2020-02-09 00:00:00".to_string()),
                 version: Some(1),
                 delete_flag: Some(1),
+                none_column: None
             };
             let r = rb.update_by_id("", &mut activity).await;
             if r.is_err() {
