@@ -737,7 +737,7 @@ impl Wrapper {
     ///  limit(1) " limit 1 "
     pub fn limit(mut self, limit: u64) -> Self {
         self.sql
-            .push_str(&format!("{} {} ", crate::sql::TEMPLATE.limit.value, limit));
+            .push_str(&format!(" {} {} ", crate::sql::TEMPLATE.limit.value, limit));
         self
     }
 }
