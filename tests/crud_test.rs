@@ -30,7 +30,7 @@ mod test {
         pub version: Option<i32>,
         pub delete_flag: Option<i32>,
 
-        //none talbe column
+        //none table column
         pub none_column: Option<String>
     }
 
