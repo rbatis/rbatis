@@ -1,10 +1,10 @@
-use serde_json::Value;
-use std::fmt::{Debug, Display};
-use rbatis_core::Error;
 use crate::core::convert::StmtConvert;
 use crate::crud::CRUDTable;
 use crate::rbatis::Rbatis;
 use crate::DriverType;
+use rbatis_core::Error;
+use serde_json::Value;
+use std::fmt::{Debug, Display};
 
 /// sql intercept
 pub trait SqlIntercept: Send + Sync + Debug {
@@ -28,14 +28,25 @@ pub trait SqlIntercept: Send + Sync + Debug {
 pub struct RbatisLogFormatSqlIntercept {}
 
 impl SqlIntercept for RbatisLogFormatSqlIntercept {
-    fn do_intercept(&self, rb: &Rbatis, context_id: &str, sql: &mut String, args: &mut Vec<Value>, is_prepared_sql: bool) -> Result<(), Error> {
+    fn do_intercept(
+        &self,
+        rb: &Rbatis,
+        context_id: &str,
+        sql: &mut String,
+        args: &mut Vec<Value>,
+        is_prepared_sql: bool,
+    ) -> Result<(), Error> {
         let driver_type = rb.driver_type()?;
         match driver_type {
             DriverType::None => {}
             DriverType::Mysql | DriverType::Postgres | DriverType::Sqlite | DriverType::Mssql => {
                 let mut formated = format!("[format_sql]{}", sql);
                 for index in 0..args.len() {
-                    formated = formated.replacen(&driver_type.stmt_convert(index), &format!("{}", args.get(index).unwrap()), 1);
+                    formated = formated.replacen(
+                        &driver_type.stmt_convert(index),
+                        &format!("{}", args.get(index).unwrap()),
+                        1,
+                    );
                 }
                 rb.log_plugin.info(context_id, &formated);
             }
@@ -49,10 +60,22 @@ impl SqlIntercept for RbatisLogFormatSqlIntercept {
 pub struct BlockAttackDeleteInterceptor {}
 
 impl SqlIntercept for BlockAttackDeleteInterceptor {
-    fn do_intercept(&self, rb: &Rbatis, context_id: &str, sql: &mut String, args: &mut Vec<Value>, is_prepared_sql: bool) -> Result<(), Error> {
+    fn do_intercept(
+        &self,
+        rb: &Rbatis,
+        context_id: &str,
+        sql: &mut String,
+        args: &mut Vec<Value>,
+        is_prepared_sql: bool,
+    ) -> Result<(), Error> {
         let sql = sql.trim();
-        if sql.starts_with(crate::sql::TEMPLATE.delete_from.value) && !sql.contains(crate::sql::TEMPLATE.r#where.left_right_space) {
-            return Err(Error::from(format!("[rbatis][BlockAttackDeleteInterceptor] not allow attack sql:{}", sql)));
+        if sql.starts_with(crate::sql::TEMPLATE.delete_from.value)
+            && !sql.contains(crate::sql::TEMPLATE.r#where.left_right_space)
+        {
+            return Err(Error::from(format!(
+                "[rbatis][BlockAttackDeleteInterceptor] not allow attack sql:{}",
+                sql
+            )));
         }
         return Ok(());
     }
@@ -63,10 +86,22 @@ impl SqlIntercept for BlockAttackDeleteInterceptor {
 pub struct BlockAttackUpdateInterceptor {}
 
 impl SqlIntercept for BlockAttackUpdateInterceptor {
-    fn do_intercept(&self, rb: &Rbatis, context_id: &str, sql: &mut String, args: &mut Vec<Value>, is_prepared_sql: bool) -> Result<(), Error> {
+    fn do_intercept(
+        &self,
+        rb: &Rbatis,
+        context_id: &str,
+        sql: &mut String,
+        args: &mut Vec<Value>,
+        is_prepared_sql: bool,
+    ) -> Result<(), Error> {
         let sql = sql.trim();
-        if sql.starts_with(crate::sql::TEMPLATE.update.value) && !sql.contains(crate::sql::TEMPLATE.r#where.left_right_space) {
-            return Err(Error::from(format!("[rbatis][BlockAttackUpdateInterceptor] not allow attack sql:{}", sql)));
+        if sql.starts_with(crate::sql::TEMPLATE.update.value)
+            && !sql.contains(crate::sql::TEMPLATE.r#where.left_right_space)
+        {
+            return Err(Error::from(format!(
+                "[rbatis][BlockAttackUpdateInterceptor] not allow attack sql:{}",
+                sql
+            )));
         }
         return Ok(());
     }

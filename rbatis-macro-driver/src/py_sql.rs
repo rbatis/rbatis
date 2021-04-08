@@ -21,7 +21,10 @@ pub(crate) fn impl_macro_py_sql(target_fn: &ItemFn, args: &AttributeArgs) -> Tok
     let fn_body = find_fn_body(target_fn);
     let is_async = target_fn.sig.asyncness.is_some();
     if !is_async {
-        panic!("[rbaits] 'fn {}({})' must be  async fn! ", func_name_ident, func_args_stream);
+        panic!(
+            "[rbaits] 'fn {}({})' must be  async fn! ",
+            func_name_ident, func_args_stream
+        );
     }
     //append all args
     let (sql_args_gen, context_id_ident) =

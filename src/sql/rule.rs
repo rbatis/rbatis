@@ -32,18 +32,23 @@ pub trait SqlRule {
         }
         if sql.starts_with(crate::sql::TEMPLATE.order_by.right_space)
             || sql.starts_with(crate::sql::TEMPLATE.group_by.right_space)
-            || sql.starts_with(crate::sql::TEMPLATE.limit.right_space) {
+            || sql.starts_with(crate::sql::TEMPLATE.limit.right_space)
+        {
             format!(
                 " {} {} {}",
                 crate::sql::TEMPLATE.r#where.value,
-                insert_sql.trim().trim_end_matches(crate::sql::TEMPLATE.and.left_space),
+                insert_sql
+                    .trim()
+                    .trim_end_matches(crate::sql::TEMPLATE.and.left_space),
                 sql
             )
         } else {
             format!(
                 " {} {} {} {}",
                 crate::sql::TEMPLATE.r#where.value,
-                insert_sql.trim().trim_end_matches(crate::sql::TEMPLATE.and.left_space),
+                insert_sql
+                    .trim()
+                    .trim_end_matches(crate::sql::TEMPLATE.and.left_space),
                 crate::sql::TEMPLATE.and.value,
                 sql
             )

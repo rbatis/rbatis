@@ -10,8 +10,8 @@ mod test {
     //cargo test --release --package rbatis --test snowflake_test test::test_bench_new_block_id --no-fail-fast -- --exact -Z unstable-options --show-output
     #[test]
     fn test_bench_new_block_id() {
-        rbatis::bench!(100000,{
-          new_snowflake_id();
+        rbatis::bench!(100000, {
+            new_snowflake_id();
         });
     }
 }

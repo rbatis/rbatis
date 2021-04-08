@@ -102,8 +102,8 @@ impl Wrapper {
 
     /// push sql,args into self
     pub fn push<T>(mut self, sql: &str, args: &[T]) -> Self
-        where
-            T: Serialize,
+    where
+        T: Serialize,
     {
         let mut new_sql = sql.to_string();
         if self.driver_type.is_number_type() {
@@ -141,8 +141,8 @@ impl Wrapper {
     ///  let arg = 1;
     ///  wrapper.do_if(true, |w| w.eq("id"))
     pub fn do_if<'s, F>(self, test: bool, method: F) -> Self
-        where
-            F: FnOnce(Self) -> Self,
+    where
+        F: FnOnce(Self) -> Self,
     {
         if test {
             return method(self);
@@ -155,8 +155,8 @@ impl Wrapper {
     ///  let arg = 1;
     ///  wrapper.do_if(true, |w| w.eq("id"),|w|w)
     pub fn do_if_else<'s, F>(self, test: bool, method_if: F, method_else: fn(Self) -> Self) -> Self
-        where
-            F: FnOnce(Self) -> Self,
+    where
+        F: FnOnce(Self) -> Self,
     {
         if test {
             return method_if(self);
@@ -175,8 +175,8 @@ impl Wrapper {
     ///             ], |w| w.eq("a", "default"))
     ///             ;
     pub fn do_match<'s, F>(self, cases: &[(bool, fn(Wrapper) -> Wrapper)], default: F) -> Self
-        where
-            F: FnOnce(Self) -> Self,
+    where
+        F: FnOnce(Self) -> Self,
     {
         for (test, case) in cases {
             if *test {
@@ -197,8 +197,8 @@ impl Wrapper {
     }
 
     pub fn set_args<T>(mut self, args: &[T]) -> Self
-        where
-            T: Serialize,
+    where
+        T: Serialize,
     {
         let v = json!(args);
         if v.is_null() {
@@ -211,8 +211,8 @@ impl Wrapper {
     }
 
     pub fn push_arg<T>(mut self, arg: T) -> Self
-        where
-            T: Serialize,
+    where
+        T: Serialize,
     {
         let v = json!(arg);
         self.args.push(v);
@@ -250,7 +250,8 @@ impl Wrapper {
     /// link wrapper sql, if end with where , do nothing
     pub fn and(mut self) -> Self {
         if !self.not_allow_add_and_on_end() {
-            self.sql.push_str(&crate::sql::TEMPLATE.and.left_right_space);
+            self.sql
+                .push_str(&crate::sql::TEMPLATE.and.left_right_space);
         }
         self
     }
@@ -272,8 +273,8 @@ impl Wrapper {
 
     /// arg: JsonObject or struct{} or map[String,**]
     pub fn all_eq<T>(mut self, arg: T) -> Self
-        where
-            T: Serialize,
+    where
+        T: Serialize,
     {
         self = self.and();
         let v = json!(arg);
@@ -316,8 +317,8 @@ impl Wrapper {
     /// for example:
     ///  eq("a",1) " a = 1 "
     pub fn eq<T>(mut self, column: &str, obj: T) -> Self
-        where
-            T: Serialize,
+    where
+        T: Serialize,
     {
         self = self.and();
         self.sql.push_str(&format!(
@@ -331,8 +332,8 @@ impl Wrapper {
 
     /// not equal
     pub fn ne<T>(mut self, column: &str, obj: T) -> Self
-        where
-            T: Serialize,
+    where
+        T: Serialize,
     {
         self = self.and();
         self.sql.push_str(&format!(
@@ -357,12 +358,15 @@ impl Wrapper {
             .trim_end_matches(crate::sql::TEMPLATE.and.left_space)
             .trim_end_matches(crate::sql::TEMPLATE.or.left_space)
             .to_string();
-        self.sql.push_str(&crate::sql::TEMPLATE.order_by.left_right_space);
+        self.sql
+            .push_str(&crate::sql::TEMPLATE.order_by.left_right_space);
         for x in columns {
             if is_asc {
-                self.sql.push_str(format!("{} {}", x, crate::sql::TEMPLATE.asc.value).as_str());
+                self.sql
+                    .push_str(format!("{} {}", x, crate::sql::TEMPLATE.asc.value).as_str());
             } else {
-                self.sql.push_str(format!("{} {}", x, crate::sql::TEMPLATE.desc.value).as_str());
+                self.sql
+                    .push_str(format!("{} {}", x, crate::sql::TEMPLATE.desc.value).as_str());
             }
             if (index + 1) != len {
                 self.sql.push_str(",");
@@ -385,7 +389,8 @@ impl Wrapper {
             .trim_end_matches(crate::sql::TEMPLATE.and.left_space)
             .trim_end_matches(crate::sql::TEMPLATE.or.left_space)
             .to_string();
-        self.sql.push_str(&crate::sql::TEMPLATE.group_by.left_right_space);
+        self.sql
+            .push_str(&crate::sql::TEMPLATE.group_by.left_right_space);
         for x in columns {
             self.sql.push_str(x);
             if (index + 1) != len {
@@ -398,8 +403,8 @@ impl Wrapper {
 
     ///  sql:   column > obj
     pub fn gt<T>(mut self, column: &str, obj: T) -> Self
-        where
-            T: Serialize,
+    where
+        T: Serialize,
     {
         self = self.and();
         self.sql.push_str(&format!(
@@ -412,8 +417,8 @@ impl Wrapper {
     }
     ///  sql:   column >= obj
     pub fn ge<T>(mut self, column: &str, obj: T) -> Self
-        where
-            T: Serialize,
+    where
+        T: Serialize,
     {
         self = self.and();
         self.sql.push_str(&format!(
@@ -427,8 +432,8 @@ impl Wrapper {
 
     ///  sql:   column < obj
     pub fn lt<T>(mut self, column: &str, obj: T) -> Self
-        where
-            T: Serialize,
+    where
+        T: Serialize,
     {
         self = self.and();
         self.sql.push_str(&format!(
@@ -442,8 +447,8 @@ impl Wrapper {
 
     ///  sql:   column <= obj
     pub fn le<T>(mut self, column: &str, obj: T) -> Self
-        where
-            T: Serialize,
+    where
+        T: Serialize,
     {
         self = self.and();
         self.sql.push_str(&format!(
@@ -456,8 +461,8 @@ impl Wrapper {
     }
 
     pub fn between<T>(mut self, column: &str, min: T, max: T) -> Self
-        where
-            T: Serialize,
+    where
+        T: Serialize,
     {
         self = self.and();
         self.sql.push_str(&format!(
@@ -474,8 +479,8 @@ impl Wrapper {
     }
 
     pub fn not_between<T>(mut self, column: &str, min: T, max: T) -> Self
-        where
-            T: Serialize,
+    where
+        T: Serialize,
     {
         self = self.and();
         self.sql.push_str(&format!(
@@ -493,8 +498,8 @@ impl Wrapper {
     }
 
     pub fn like<T>(mut self, column: &str, obj: T) -> Self
-        where
-            T: Serialize,
+    where
+        T: Serialize,
     {
         self = self.and();
         let v = json!(obj);
@@ -515,8 +520,8 @@ impl Wrapper {
     }
 
     pub fn like_left<T>(mut self, column: &str, obj: T) -> Self
-        where
-            T: Serialize,
+    where
+        T: Serialize,
     {
         self = self.and();
         let v = json!(obj);
@@ -537,8 +542,8 @@ impl Wrapper {
     }
 
     pub fn like_right<T>(mut self, column: &str, obj: T) -> Self
-        where
-            T: Serialize,
+    where
+        T: Serialize,
     {
         self = self.and();
         let v = json!(obj);
@@ -559,8 +564,8 @@ impl Wrapper {
     }
 
     pub fn not_like<T>(mut self, column: &str, obj: T) -> Self
-        where
-            T: Serialize,
+    where
+        T: Serialize,
     {
         self = self.and();
         let v = json!(obj);
@@ -600,67 +605,70 @@ impl Wrapper {
 
     /// gen sql: * in (*,*,*)
     pub fn in_array<T>(mut self, column: &str, obj: &[T]) -> Self
-        where
-            T: Serialize,
+    where
+        T: Serialize,
     {
         if obj.len() == 0 {
             return self;
         }
         self = self.and();
-        let mut sqls = String::with_capacity(obj.len()*10);
+        let mut sqls = String::with_capacity(obj.len() * 10);
         for x in obj {
             sqls.push_str(&format!(
                 " {} ",
-                self.do_format_column(
-                    column,
-                    self.driver_type.stmt_convert(self.args.len()),
-                )
+                self.do_format_column(column, self.driver_type.stmt_convert(self.args.len()),)
             ));
             sqls.push_str(",");
             self.args.push(json!(x));
         }
         sqls.pop();
-        self.sql
-            .push_str(format!("{} {} ({})", column, crate::sql::TEMPLATE.r#in.value, sqls).as_str());
+        self.sql.push_str(
+            format!("{} {} ({})", column, crate::sql::TEMPLATE.r#in.value, sqls).as_str(),
+        );
         self
     }
 
     /// gen sql: * in (*,*,*)
     pub fn in_<T>(self, column: &str, obj: &[T]) -> Self
-        where
-            T: Serialize,
+    where
+        T: Serialize,
     {
         self.in_array(column, obj)
     }
 
     /// gen sql: * in (*,*,*)
     pub fn r#in<T>(self, column: &str, obj: &[T]) -> Self
-        where
-            T: Serialize,
+    where
+        T: Serialize,
     {
         self.in_array(column, obj)
     }
 
     pub fn not_in<T>(mut self, column: &str, obj: &[T]) -> Self
-        where
-            T: Serialize,
+    where
+        T: Serialize,
     {
         self = self.and();
-        let mut sqls = String::with_capacity(obj.len()*10);
+        let mut sqls = String::with_capacity(obj.len() * 10);
         for x in obj {
             sqls.push_str(&format!(
                 " {} ",
-                self.do_format_column(
-                    column,
-                    self.driver_type.stmt_convert(self.args.len()),
-                )
+                self.do_format_column(column, self.driver_type.stmt_convert(self.args.len()),)
             ));
             sqls.push_str(",");
             self.args.push(json!(x));
         }
         sqls.pop();
-        self.sql
-            .push_str(format!("{} {} {} ({})", column, crate::sql::TEMPLATE.not.value, crate::sql::TEMPLATE.r#in.value, sqls).as_str());
+        self.sql.push_str(
+            format!(
+                "{} {} {} ({})",
+                column,
+                crate::sql::TEMPLATE.not.value,
+                crate::sql::TEMPLATE.r#in.value,
+                sqls
+            )
+            .as_str(),
+        );
         self
     }
 
@@ -706,12 +714,20 @@ impl Wrapper {
             self.sql = format!(
                 "{} {} ({}) {} ({})",
                 crate::sql::TEMPLATE.insert_into.value,
-                table_name, columns,
+                table_name,
+                columns,
                 crate::sql::TEMPLATE.values.value,
                 values
             );
         } else {
-            self.sql = format!("{} {} ({}) {} {}", crate::sql::TEMPLATE.insert_into.value, table_name, columns, crate::sql::TEMPLATE.values.value, values);
+            self.sql = format!(
+                "{} {} ({}) {} {}",
+                crate::sql::TEMPLATE.insert_into.value,
+                table_name,
+                columns,
+                crate::sql::TEMPLATE.values.value,
+                values
+            );
         }
         self
     }
@@ -720,7 +736,8 @@ impl Wrapper {
     /// for example:
     ///  limit(1) " limit 1 "
     pub fn limit(mut self, limit: u64) -> Self {
-        self.sql.push_str(&format!("{} {} ", crate::sql::TEMPLATE.limit.value, limit));
+        self.sql
+            .push_str(&format!("{} {} ", crate::sql::TEMPLATE.limit.value, limit));
         self
     }
 }

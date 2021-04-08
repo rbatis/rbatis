@@ -1,12 +1,12 @@
 ///this is postgres  database  !
 #[cfg(test)]
 mod test {
+    use crate::BizActivity;
     use rbatis::crud::CRUD;
+    use rbatis::plugin::intercept::RbatisLogFormatSqlIntercept;
     use rbatis::rbatis::Rbatis;
     use std::str::FromStr;
     use uuid::Uuid;
-    use crate::BizActivity;
-    use rbatis::plugin::intercept::RbatisLogFormatSqlIntercept;
 
     //'formats_pg' use postgres format
     //'id' ->  table column 'id'
@@ -32,11 +32,7 @@ mod test {
 
         let uuid = Uuid::from_str("df07fea2-b819-4e05-b86d-dfc15a5f52a9").unwrap();
         //create table
-        rb.exec(
-            "",
-            "DROP TABLE biz_uuid;",
-        )
-            .await;
+        rb.exec("", "DROP TABLE biz_uuid;").await;
         rb.exec(
             "",
             "CREATE TABLE biz_uuid( id uuid, name VARCHAR, PRIMARY KEY(id));",
@@ -67,7 +63,6 @@ mod test {
         rb.remove_by_id::<BizUuid>("", &uuid).await;
     }
 
-
     /// Formatting precompiled SQL
     ///
     /// [] Exec  ==> insert into biz_activity (id,name,pc_link,h5_link,pc_banner_img,h5_banner_img,sort,status,remark,create_time,version,delete_flag)
@@ -83,7 +78,7 @@ mod test {
         fast_log::init_log("requests.log", 1000, log::Level::Info, None, true);
         let mut rb = Rbatis::new();
         //RbatisLogFormatSqlIntercept will show Formatted SQL(no precompiled symbols)
-        rb.add_sql_intercept(RbatisLogFormatSqlIntercept{});
+        rb.add_sql_intercept(RbatisLogFormatSqlIntercept {});
         rb.link("mysql://root:123456@localhost:3306/test")
             .await
             .unwrap();
