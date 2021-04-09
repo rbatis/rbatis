@@ -1,5 +1,4 @@
 use std::collections::HashMap;
-use std::fmt;
 use std::fmt::{Debug, Formatter};
 use std::ops::Add;
 
@@ -44,7 +43,7 @@ pub struct Wrapper {
 }
 
 impl Debug for Wrapper {
-    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         let mut formats = HashMap::new();
         for (k, v) in &self.formats {
             formats.insert(k.to_string(), v(k));
@@ -267,7 +266,7 @@ impl Wrapper {
     pub fn having(mut self, sql_having: &str) -> Self {
         self = self.and();
         self.sql
-            .push_str(format!("{} {} ", crate::sql::TEMPLATE.having.value, sql_having).as_str());
+            .push_str(format!(" {} {} ", crate::sql::TEMPLATE.having.value, sql_having).as_str());
         self
     }
 
@@ -623,7 +622,7 @@ impl Wrapper {
         }
         sqls.pop();
         self.sql.push_str(
-            format!("{} {} ({})", column, crate::sql::TEMPLATE.r#in.value, sqls).as_str(),
+            format!(" {} {} ({}) ", column, crate::sql::TEMPLATE.r#in.value, sqls).as_str(),
         );
         self
     }
