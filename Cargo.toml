@@ -7,7 +7,7 @@ members = [
 
 [package]
 name = "rbatis"
-version = "1.8.83"
+version = "1.8.84"
 description = "Rust orM Framework High Performance(JSON based)"
 readme = "Readme.md"
 authors = ["ce <zhuxiujia@qq.com>"]
@@ -40,7 +40,7 @@ async-io = ["rbatis-core/async-io"]
 [dependencies]
 rexpr = "1.0"
 py_sql = "1.0"
-rbatis-core = { version = "1.8.81", git = "https://github.com/rbatis/rbatis-core.git", branch = "main", default-features = false, optional = true }
+rbatis-core = { version = "1.8.82", git = "https://github.com/rbatis/rbatis-core.git", branch = "main", default-features = false, optional = true }
 rbatis-macro-driver = { version = "1.8.80", path = "rbatis-macro-driver", default-features = false, optional = true }
 
 chrono = { version = "0.4", features = ["serde"] }
