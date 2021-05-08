@@ -114,15 +114,28 @@ impl LogicDelete for RbatisLogicDeletePlugin {
         }
         return if table_fields.contains(self.column()) {
             //fields have column
-            let new_sql = format!(
-                "{} {} {} {} = {}",
-                crate::sql::TEMPLATE.update.value,
-                table_name,
-                crate::sql::TEMPLATE.set.value,
-                self.column(),
-                self.deleted()
-            ) + sql_where;
-            Ok(new_sql)
+            if sql_where.is_empty() {
+                let new_sql = format!(
+                    "{} {} {} {} = {}",
+                    crate::sql::TEMPLATE.update.value,
+                    table_name,
+                    crate::sql::TEMPLATE.set.value,
+                    self.column(),
+                    self.deleted()
+                ) + sql_where;
+                Ok(new_sql)
+            } else {
+                let new_sql = format!(
+                    "{} {} {} {} = {} {}",
+                    crate::sql::TEMPLATE.update.value,
+                    table_name,
+                    crate::sql::TEMPLATE.set.value,
+                    self.column(),
+                    self.deleted(),
+                    sql_where.trim_start()
+                );
+                Ok(new_sql)
+            }
         } else if !sql_where.is_empty() {
             let new_sql = format!(
                 "{} {} {}",
