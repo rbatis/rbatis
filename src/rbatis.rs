@@ -12,7 +12,6 @@ use uuid::Uuid;
 use rbatis_core::db::DBConnectOption;
 
 use crate::core::db::{DBExecResult, DBPool, DBPoolConn, DBPoolOptions, DBQuery, DBTx, DriverType};
-use crate::core::sync::sync_map::SyncMap;
 use crate::core::Error;
 use crate::crud::CRUDTable;
 use crate::plugin::intercept::SqlIntercept;
