@@ -6,16 +6,17 @@ use std::collections::HashMap;
 use syn::{parse_macro_input, AttributeArgs, ItemFn};
 
 use crate::proc_macro::TokenStream;
+use crate::macros::crud_enable_impl::{impl_crud_driver, impl_crud};
+use crate::macros::sql_impl::impl_macro_sql;
+use crate::macros::py_sql_impl::impl_macro_py_sql;
 
-mod crud_enable;
-mod py_sql;
-mod sql;
+mod macros;
 mod util;
 
 #[proc_macro_derive(CRUDTable)]
 pub fn hello_macro_derive(input: TokenStream) -> TokenStream {
     let ast = syn::parse(input).unwrap();
-    let stream = crud_enable::impl_crud_driver(&ast, "id", "", "", &HashMap::new());
+    let stream = impl_crud_driver(&ast, "id", "", "", &HashMap::new());
     #[cfg(feature = "debug_mode")]
     {
         println!("............gen impl CRUDTable:\n {}", stream);
@@ -33,7 +34,7 @@ pub fn hello_macro_derive(input: TokenStream) -> TokenStream {
 pub fn sql(args: TokenStream, func: TokenStream) -> TokenStream {
     let args = parse_macro_input!(args as AttributeArgs);
     let target_fn: ItemFn = syn::parse(func).unwrap();
-    let stream = sql::impl_macro_sql(&target_fn, &args);
+    let stream = impl_macro_sql(&target_fn, &args);
     #[cfg(feature = "debug_mode")]
     {
         println!("............gen macro sql:\n {}", stream);
@@ -56,7 +57,7 @@ pub fn sql(args: TokenStream, func: TokenStream) -> TokenStream {
 pub fn py_sql(args: TokenStream, func: TokenStream) -> TokenStream {
     let args = parse_macro_input!(args as AttributeArgs);
     let target_fn: ItemFn = syn::parse(func).unwrap();
-    let stream = py_sql::impl_macro_py_sql(&target_fn, &args);
+    let stream = impl_macro_py_sql(&target_fn, &args);
     #[cfg(feature = "debug_mode")]
     {
         println!("............gen macro py_sql :\n {}", stream);
@@ -67,7 +68,7 @@ pub fn py_sql(args: TokenStream, func: TokenStream) -> TokenStream {
 
 #[proc_macro_attribute]
 pub fn crud_enable(args: TokenStream, input: TokenStream) -> TokenStream {
-    let stream = crud_enable::impl_crud(args, input);
+    let stream = impl_crud(args, input);
     #[cfg(feature = "debug_mode")]
     {
         println!("............gen impl CRUDTable:\n {}", stream);
