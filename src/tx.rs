@@ -1,14 +1,17 @@
-use crate::core::db::DBPool;
-use crate::core::db::DBTx;
-use crate::core::sync::sync_map::{RefMut, SyncMap};
-use crate::plugin::log::LogPlugin;
-use crate::rbatis::Rbatis;
 use std::collections::HashMap;
 use std::ops::{Deref, DerefMut};
 use std::rc::Rc;
-use std::sync::atomic::{AtomicBool, Ordering};
 use std::sync::Arc;
+use std::sync::atomic::{AtomicBool, Ordering};
 use std::time::{Duration, Instant};
+
+use dashmap::DashMap;
+use dashmap::mapref::one::RefMut;
+
+use crate::core::db::DBPool;
+use crate::core::db::DBTx;
+use crate::plugin::log::LogPlugin;
+use crate::rbatis::Rbatis;
 
 ///the Transaction manager，It manages the life cycle of transactions and provides access across threads
 ///every tx_check_interval check tx is out of time(tx_lock_wait_timeout).if out, rollback tx.
@@ -16,7 +19,7 @@ use std::time::{Duration, Instant};
 #[derive(Debug)]
 pub struct TxManager {
     pub tx_prefix: String,
-    pub tx_context: SyncMap<String, (DBTx, TxState)>,
+    pub tx_context: DashMap<String, (DBTx, TxState)>,
     pub tx_lock_wait_timeout: Duration,
     pub tx_check_interval: Duration,
     pub alive: AtomicBool,
@@ -44,7 +47,7 @@ impl TxManager {
     ) -> Arc<Self> {
         let s = Self {
             tx_prefix: tx_prefix.to_string(),
-            tx_context: SyncMap::new(),
+            tx_context: DashMap::new(),
             tx_lock_wait_timeout,
             tx_check_interval,
             alive: AtomicBool::new(true),
@@ -91,12 +94,10 @@ impl TxManager {
             loop {
                 if manager.get_alive().eq(&false) {
                     //rollback all
-                    let m = manager.tx_context.read().await;
                     let mut rollback_ids = vec![];
-                    for (k, (tx, state)) in m.deref() {
-                        rollback_ids.push(k.to_string());
-                    }
-                    drop(m);
+                    manager.tx_context.iter().for_each(|a| {
+                        rollback_ids.push(a.key().to_string());
+                    });
                     for context_id in &rollback_ids {
                         if manager.is_enable_log() {
                             manager.do_log(
@@ -111,9 +112,10 @@ impl TxManager {
                     }
                     break;
                 }
-                let m = manager.tx_context.read().await;
                 let mut need_rollback = None;
-                for (k, (tx, state)) in m.deref() {
+                manager.tx_context.iter().for_each(|a| {
+                    let k = a.key();
+                    let (tx, state) = a.value();
                     match state {
                         TxState::StateBegin(instant) => {
                             let out_time = instant.elapsed();
@@ -131,8 +133,7 @@ impl TxManager {
                         }
                         _ => {}
                     }
-                }
-                drop(m);
+                });
                 match &mut need_rollback {
                     Some(v) => {
                         for context_id in v {
@@ -148,23 +149,23 @@ impl TxManager {
                             manager.rollback(context_id).await;
                         }
                         //shrink_to_fit
-                        manager.tx_context.shrink_to_fit().await;
+                        manager.tx_context.shrink_to_fit();
                     }
                     _ => {}
                 }
                 crate::core::runtime::task::sleep(manager.tx_check_interval).await;
             }
             #[cfg(feature = "debug_mode")]
-            {
-                match &manager.log_plugin {
-                    Some(m) => {
-                        m.info("", "[rbatis] TxManager exit!");
-                    }
-                    _ => {
-                        log::info!("[rbatis] TxManager exit!");
+                {
+                    match &manager.log_plugin {
+                        Some(m) => {
+                            m.info("", "[rbatis] TxManager exit!");
+                        }
+                        _ => {
+                            log::info!("[rbatis] TxManager exit!");
+                        }
                     }
                 }
-            }
         });
     }
 
@@ -172,7 +173,15 @@ impl TxManager {
         &'a self,
         context_id: &str,
     ) -> Option<RefMut<'a, String, (DBTx, TxState)>> {
-        self.tx_context.get_mut(context_id).await
+        let m = self.tx_context.get_mut(context_id);
+        match m {
+            Some(v) => {
+                return Some(v);
+            }
+            None => {
+                return None;
+            }
+        }
     }
 
     /// begin tx,for new conn
@@ -192,8 +201,7 @@ impl TxManager {
             .insert(
                 new_context_id.to_string(),
                 (conn, TxState::StateBegin(Instant::now())),
-            )
-            .await;
+            );
         if self.is_enable_log() {
             self.do_log(
                 new_context_id,
@@ -205,14 +213,14 @@ impl TxManager {
 
     /// commit tx,and return conn
     pub async fn commit(&self, context_id: &str) -> Result<String, crate::core::Error> {
-        let tx_op = self.tx_context.remove(context_id).await;
+        let tx_op = self.tx_context.remove(context_id);
         if tx_op.is_none() {
             return Err(crate::core::Error::from(format!(
                 "[rbatis] tx:{} not exist！",
                 context_id
             )));
         }
-        let (mut tx, state): (DBTx, TxState) = tx_op.unwrap();
+        let (mut tx, state): (DBTx, TxState) = tx_op.unwrap().1;
         let result = tx.commit().await?;
         if self.is_enable_log() {
             self.do_log(context_id, &format!("[rbatis] [{}] Commit", context_id));
@@ -222,14 +230,14 @@ impl TxManager {
 
     /// rollback tx,and return conn
     pub async fn rollback(&self, context_id: &str) -> Result<String, crate::core::Error> {
-        let tx_op = self.tx_context.remove(context_id).await;
+        let tx_op = self.tx_context.remove(context_id);
         if tx_op.is_none() {
             return Err(crate::core::Error::from(format!(
                 "[rbatis] tx:{} not exist！",
                 context_id
             )));
         }
-        let (tx, state): (DBTx, TxState) = tx_op.unwrap();
+        let (tx, state): (DBTx, TxState) = tx_op.unwrap().1;
         let result = tx.rollback().await?;
         if self.is_enable_log() {
             self.do_log(context_id, &format!("[rbatis] [{}] Rollback", context_id));
