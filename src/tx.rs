@@ -12,6 +12,16 @@ use crate::core::db::DBPool;
 use crate::core::db::DBTx;
 use crate::plugin::log::LogPlugin;
 use crate::rbatis::Rbatis;
+use std::future::Future;
+use std::env::Args;
+use std::pin::Pin;
+
+#[derive(Debug)]
+pub struct Tx {
+    pub tx_id: String,
+    pub tx: DBTx,
+    pub instant: Instant,
+}
 
 ///the Transaction manager，It manages the life cycle of transactions and provides access across threads
 ///every tx_check_interval check tx is out of time(tx_lock_wait_timeout).if out, rollback tx.
@@ -19,9 +29,8 @@ use crate::rbatis::Rbatis;
 #[derive(Debug)]
 pub struct TxManager {
     pub tx_prefix: String,
-    pub tx_context: DashMap<String, (DBTx, TxState)>,
+    pub tx_context: DashMap<String, Tx>,
     pub tx_lock_wait_timeout: Duration,
-    pub tx_check_interval: Duration,
     pub alive: AtomicBool,
     pub log_plugin: Option<Arc<Box<dyn LogPlugin>>>,
 }
@@ -32,29 +41,20 @@ impl Drop for TxManager {
     }
 }
 
-#[derive(Debug)]
-pub enum TxState {
-    StateBegin(Instant),
-    StateFinish(Instant),
-}
-
 impl TxManager {
     pub fn new_arc(
         tx_prefix: &str,
         plugin: Arc<Box<dyn LogPlugin>>,
         tx_lock_wait_timeout: Duration,
-        tx_check_interval: Duration,
     ) -> Arc<Self> {
         let s = Self {
             tx_prefix: tx_prefix.to_string(),
             tx_context: DashMap::new(),
             tx_lock_wait_timeout,
-            tx_check_interval,
             alive: AtomicBool::new(true),
             log_plugin: Some(plugin),
         };
         let arc = Arc::new(s);
-        TxManager::polling_check(arc.clone());
         arc
     }
 
@@ -88,91 +88,10 @@ impl TxManager {
         }
     }
 
-    ///polling check tx alive
-    fn polling_check(manager: Arc<Self>) {
-        crate::core::runtime::task::spawn(async move {
-            loop {
-                if manager.get_alive().eq(&false) {
-                    //rollback all
-                    let mut rollback_ids = vec![];
-                    manager.tx_context.iter().for_each(|a| {
-                        rollback_ids.push(a.key().to_string());
-                    });
-                    for context_id in &rollback_ids {
-                        if manager.is_enable_log() {
-                            manager.do_log(
-                                context_id,
-                                &format!(
-                                    "[rbatis] rollback context_id:{},Because the manager exits",
-                                    context_id
-                                ),
-                            );
-                        }
-                        manager.rollback(context_id).await;
-                    }
-                    break;
-                }
-                let mut need_rollback = None;
-                manager.tx_context.iter().for_each(|a| {
-                    let k = a.key();
-                    let (tx, state) = a.value();
-                    match state {
-                        TxState::StateBegin(instant) => {
-                            let out_time = instant.elapsed();
-                            if out_time > manager.tx_lock_wait_timeout {
-                                if need_rollback == None {
-                                    need_rollback = Some(vec![]);
-                                }
-                                match &mut need_rollback {
-                                    Some(v) => {
-                                        v.push(k.to_string());
-                                    }
-                                    _ => {}
-                                }
-                            }
-                        }
-                        _ => {}
-                    }
-                });
-                match &mut need_rollback {
-                    Some(v) => {
-                        for context_id in v {
-                            if manager.is_enable_log() {
-                                manager.do_log(
-                                    context_id,
-                                    &format!(
-                                        "[rbatis] rollback context_id:{},out of time:{:?}",
-                                        context_id, &manager.tx_lock_wait_timeout
-                                    ),
-                                );
-                            }
-                            manager.rollback(context_id).await;
-                        }
-                        //shrink_to_fit
-                        manager.tx_context.shrink_to_fit();
-                    }
-                    _ => {}
-                }
-                crate::core::runtime::task::sleep(manager.tx_check_interval).await;
-            }
-            #[cfg(feature = "debug_mode")]
-                {
-                    match &manager.log_plugin {
-                        Some(m) => {
-                            m.info("", "[rbatis] TxManager exit!");
-                        }
-                        _ => {
-                            log::info!("[rbatis] TxManager exit!");
-                        }
-                    }
-                }
-        });
-    }
-
     pub async fn get_mut<'a>(
         &'a self,
         context_id: &str,
-    ) -> Option<RefMut<'a, String, (DBTx, TxState)>> {
+    ) -> Option<RefMut<'a, String, Tx>> {
         let m = self.tx_context.get_mut(context_id);
         match m {
             Some(v) => {
@@ -196,11 +115,16 @@ impl TxManager {
             ));
         }
         let conn: DBTx = pool.begin().await?;
-        //send tx to context
+        let tx = Tx {
+            tx_id: new_context_id.to_string(),
+            tx: conn,
+            instant: Instant::now(),
+        };
+
         self.tx_context
             .insert(
                 new_context_id.to_string(),
-                (conn, TxState::StateBegin(Instant::now())),
+                tx,
             );
         if self.is_enable_log() {
             self.do_log(
@@ -220,8 +144,8 @@ impl TxManager {
                 context_id
             )));
         }
-        let (mut tx, state): (DBTx, TxState) = tx_op.unwrap().1;
-        let result = tx.commit().await?;
+        let (k, mut tx) = tx_op.unwrap();
+        let result = tx.tx.commit().await?;
         if self.is_enable_log() {
             self.do_log(context_id, &format!("[rbatis] [{}] Commit", context_id));
         }
@@ -237,16 +161,16 @@ impl TxManager {
                 context_id
             )));
         }
-        let (tx, state): (DBTx, TxState) = tx_op.unwrap().1;
-        let result = tx.rollback().await?;
+        let (k, tx) = tx_op.unwrap();
+        let result = tx.tx.rollback().await?;
         if self.is_enable_log() {
             self.do_log(context_id, &format!("[rbatis] [{}] Rollback", context_id));
         }
         return Ok(context_id.to_string());
     }
 
-    /// context_id is 'tx:' prifix ?
-    pub fn is_tx_prifix_id(&self, context_id: &str) -> bool {
+    /// context_id is 'tx:' prefix?
+    pub fn is_tx_id(&self, context_id: &str) -> bool {
         return context_id.starts_with(&self.tx_prefix);
     }
 }
