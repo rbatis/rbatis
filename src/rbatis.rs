@@ -118,6 +118,7 @@ impl Rbatis {
                 &option.tx_prefix,
                 option.log_plugin.clone(),
                 option.tx_lock_wait_timeout,
+                option.tx_check_interval,
             ),
             page_plugin: option.page_plugin,
             sql_intercepts: option.sql_intercepts,
