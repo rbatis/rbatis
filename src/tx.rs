@@ -15,6 +15,7 @@ use crate::rbatis::Rbatis;
 use std::future::Future;
 use std::env::Args;
 use std::pin::Pin;
+use std::borrow::Borrow;
 
 #[derive(Debug)]
 pub struct Tx {
@@ -29,8 +30,10 @@ pub struct Tx {
 #[derive(Debug)]
 pub struct TxManager {
     pub tx_prefix: String,
+    pub tx_timeout: DashMap<String, Instant>,
     pub tx_context: DashMap<String, Tx>,
     pub tx_lock_wait_timeout: Duration,
+    pub tx_check_interval: Duration,
     pub alive: AtomicBool,
     pub log_plugin: Option<Arc<Box<dyn LogPlugin>>>,
 }
@@ -46,15 +49,45 @@ impl TxManager {
         tx_prefix: &str,
         plugin: Arc<Box<dyn LogPlugin>>,
         tx_lock_wait_timeout: Duration,
+        tx_check_interval: Duration,
     ) -> Arc<Self> {
-        let s = Self {
+        let m = Self {
             tx_prefix: tx_prefix.to_string(),
             tx_context: DashMap::new(),
+            tx_timeout: DashMap::new(),
             tx_lock_wait_timeout,
+            tx_check_interval: Default::default(),
             alive: AtomicBool::new(true),
             log_plugin: Some(plugin),
         };
-        let arc = Arc::new(s);
+        let arc = Arc::new(m);
+
+        let arc_clone = arc.clone();
+        std::thread::spawn(move || {
+            loop {
+                std::thread::sleep(arc_clone.tx_lock_wait_timeout);
+                for x in arc_clone.tx_timeout.iter() {
+                    let tx_id = x.key();
+                    let value = x.value();
+                    if arc_clone.get_alive().eq(&false) {
+                        break;
+                    }
+                    if value.elapsed().gt(&arc_clone.tx_lock_wait_timeout) {
+                        futures::executor::block_on(async {
+                            let is_ok = arc_clone.rollback(&tx_id).await;
+                            #[cfg(feature = "debug_mode")]
+                                {
+                                    log::error!("[rbatis] tx:{} rollback error: {}", tx_id, is_ok.err().unwrap());
+                                }
+                        })
+                    }
+                }
+                if arc_clone.get_alive().eq(&false) {
+                    drop(arc_clone);
+                    break;
+                }
+            }
+        });
         arc
     }
 
@@ -120,7 +153,7 @@ impl TxManager {
             tx: conn,
             instant: Instant::now(),
         };
-
+        self.tx_timeout.insert(new_context_id.to_string(), tx.instant.clone());
         self.tx_context
             .insert(
                 new_context_id.to_string(),
@@ -146,6 +179,7 @@ impl TxManager {
         }
         let (k, mut tx) = tx_op.unwrap();
         let result = tx.tx.commit().await?;
+        self.tx_timeout.remove(&k);
         if self.is_enable_log() {
             self.do_log(context_id, &format!("[rbatis] [{}] Commit", context_id));
         }
@@ -163,6 +197,7 @@ impl TxManager {
         }
         let (k, tx) = tx_op.unwrap();
         let result = tx.tx.rollback().await?;
+        self.tx_timeout.remove(&k);
         if self.is_enable_log() {
             self.do_log(context_id, &format!("[rbatis] [{}] Rollback", context_id));
         }
