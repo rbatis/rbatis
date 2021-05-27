@@ -20,7 +20,7 @@ use crate::plugin::logic_delete::{LogicDelete, RbatisLogicDeletePlugin};
 use crate::plugin::page::{IPage, IPageRequest, Page, PagePlugin, RbatisPagePlugin};
 use crate::plugin::version_lock::{RbatisVersionLockPlugin, VersionLockPlugin};
 use crate::sql::PageLimit;
-use crate::tx::{TxGuard, TxManager, TxState};
+use crate::tx::{TxGuard, TxManager};
 use crate::utils::error_util::ToResult;
 use crate::utils::string_util;
 use crate::wrapper::Wrapper;
@@ -118,7 +118,6 @@ impl Rbatis {
                 &option.tx_prefix,
                 option.log_plugin.clone(),
                 option.tx_lock_wait_timeout,
-                option.tx_check_interval,
             ),
             page_plugin: option.page_plugin,
             sql_intercepts: option.sql_intercepts,
@@ -300,7 +299,7 @@ impl Rbatis {
         if context_id.is_empty() {
             return Err(Error::from("[rbatis] context_id can not be empty"));
         }
-        if !self.tx_manager.is_tx_prifix_id(context_id) {
+        if !self.tx_manager.is_tx_id(context_id) {
             return Err(Error::from(format!(
                 "[rbatis] context_id: {}  must be start with '{}', for example: {}{}",
                 &self.tx_manager.tx_prefix, &self.tx_manager.tx_prefix, context_id, context_id
@@ -315,7 +314,7 @@ impl Rbatis {
         if context_id.is_empty() {
             return Err(Error::from("[rbatis] context_id can not be empty"));
         }
-        if !self.tx_manager.is_tx_prifix_id(context_id) {
+        if !self.tx_manager.is_tx_id(context_id) {
             return Err(Error::from(format!(
                 "[rbatis] context_id: {} must be start with '{}', for example: {}{}",
                 &self.tx_manager.tx_prefix, &self.tx_manager.tx_prefix, context_id, context_id
@@ -330,7 +329,7 @@ impl Rbatis {
         if context_id.is_empty() {
             return Err(Error::from("[rbatis] context_id can not be empty"));
         }
-        if !self.tx_manager.is_tx_prifix_id(context_id) {
+        if !self.tx_manager.is_tx_id(context_id) {
             return Err(Error::from(format!(
                 "[rbatis] context_id: {} must be start with '{}', for example: {}{}",
                 &self.tx_manager.tx_prefix, &self.tx_manager.tx_prefix, context_id, context_id
@@ -359,7 +358,7 @@ impl Rbatis {
                 .info(context_id, &format!("Query ==> {}", sql.as_str()));
         }
         let result: Result<(T, usize), Error>;
-        if self.tx_manager.is_tx_prifix_id(context_id) {
+        if self.tx_manager.is_tx_id(context_id) {
             let conn = self.tx_manager.get_mut(context_id).await;
             if conn.is_none() {
                 return Err(Error::from(format!(
@@ -368,7 +367,7 @@ impl Rbatis {
                 )));
             }
             let mut conn = conn.unwrap();
-            result = conn.value_mut().0.fetch(sql.as_str()).await;
+            result = conn.value_mut().tx.fetch(sql.as_str()).await;
         } else {
             let mut conn = self.get_pool()?.acquire().await?;
             result = conn.fetch(sql.as_str()).await;
@@ -403,7 +402,7 @@ impl Rbatis {
                 .info(context_id, &format!("Exec  ==> {}", &sql));
         }
         let result;
-        if self.tx_manager.is_tx_prifix_id(context_id) {
+        if self.tx_manager.is_tx_id(context_id) {
             let conn = self.tx_manager.get_mut(context_id).await;
             if conn.is_none() {
                 return Err(Error::from(format!(
@@ -412,7 +411,7 @@ impl Rbatis {
                 )));
             }
             let mut conn = conn.unwrap();
-            result = conn.value_mut().0.execute(&sql).await;
+            result = conn.value_mut().tx.execute(&sql).await;
         } else {
             let mut conn = self.get_pool()?.acquire().await?;
             result = conn.execute(&sql).await;
@@ -480,7 +479,7 @@ impl Rbatis {
             );
         }
         let result: Result<(T, usize), Error>;
-        if self.tx_manager.is_tx_prifix_id(context_id) {
+        if self.tx_manager.is_tx_id(context_id) {
             let q: DBQuery = self.bind_arg(&sql, &args)?;
             let conn = self.tx_manager.get_mut(context_id).await;
             if conn.is_none() {
@@ -490,7 +489,7 @@ impl Rbatis {
                 )));
             }
             let mut conn = conn.unwrap();
-            result = conn.value_mut().0.fetch_parperd(q).await;
+            result = conn.value_mut().tx.fetch_parperd(q).await;
         } else {
             let mut conn = self.get_pool()?.acquire().await?;
             let q: DBQuery = self.bind_arg(&sql, &args)?;
@@ -541,7 +540,7 @@ impl Rbatis {
             );
         }
         let result;
-        if self.tx_manager.is_tx_prifix_id(context_id) {
+        if self.tx_manager.is_tx_id(context_id) {
             let q: DBQuery = self.bind_arg(&sql, &args)?;
             let conn = self.tx_manager.get_mut(context_id).await;
             if conn.is_none() {
@@ -551,7 +550,7 @@ impl Rbatis {
                 )));
             }
             let mut conn = conn.unwrap();
-            result = conn.value_mut().0.exec_prepare(q).await;
+            result = conn.value_mut().tx.exec_prepare(q).await;
         } else {
             let q: DBQuery = self.bind_arg(&sql, &args)?;
             let mut conn = self.get_pool()?.acquire().await?;
