@@ -435,7 +435,7 @@ impl Rbatis {
     }
 
     /// bind arg into DBQuery
-    fn bind_arg<'arg>(
+    pub fn bind_arg<'arg>(
         &self,
         sql: &'arg str,
         arg: &Vec<serde_json::Value>,
