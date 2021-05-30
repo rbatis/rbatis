@@ -4,10 +4,6 @@ use std::rc::Rc;
 use std::sync::Arc;
 use std::sync::atomic::{AtomicBool, Ordering};
 use std::time::{Duration, Instant};
-
-use dashmap::DashMap;
-use dashmap::mapref::one::RefMut;
-
 use crate::core::db::DBPool;
 use crate::core::db::DBTx;
 use crate::plugin::log::LogPlugin;
@@ -16,6 +12,7 @@ use std::future::Future;
 use std::env::Args;
 use std::pin::Pin;
 use std::borrow::Borrow;
+use crate::core::runtime::sync::{Mutex, MutexGuard, RwLock};
 
 #[derive(Debug)]
 pub struct Tx {
@@ -30,8 +27,8 @@ pub struct Tx {
 #[derive(Debug)]
 pub struct TxManager {
     pub tx_prefix: String,
-    pub tx_timeout: DashMap<String, Instant>,
-    pub tx_context: DashMap<String, Tx>,
+    pub tx_timeout: RwLock<HashMap<String, Instant>>,
+    pub tx_context: RwLock<HashMap<String, Mutex<Tx>>>,
     pub tx_lock_wait_timeout: Duration,
     pub tx_check_interval: Duration,
     pub alive: AtomicBool,
@@ -53,8 +50,8 @@ impl TxManager {
     ) -> Arc<Self> {
         let m = Self {
             tx_prefix: tx_prefix.to_string(),
-            tx_context: DashMap::new(),
-            tx_timeout: DashMap::new(),
+            tx_context: RwLock::new(HashMap::new()),
+            tx_timeout: RwLock::new(HashMap::new()),
             tx_lock_wait_timeout,
             tx_check_interval: Default::default(),
             alive: AtomicBool::new(true),
@@ -63,31 +60,31 @@ impl TxManager {
         let arc = Arc::new(m);
 
         let arc_clone = arc.clone();
-        std::thread::spawn(move || {
-            loop {
-                std::thread::sleep(arc_clone.tx_lock_wait_timeout);
-                for x in arc_clone.tx_timeout.iter() {
-                    let tx_id = x.key();
-                    let value = x.value();
-                    if arc_clone.get_alive().eq(&false) {
-                        break;
-                    }
-                    if value.elapsed().gt(&arc_clone.tx_lock_wait_timeout) {
-                        futures::executor::block_on(async {
-                            let is_ok = arc_clone.rollback(&tx_id).await;
-                            #[cfg(feature = "debug_mode")]
-                                {
-                                    log::error!("[rbatis] tx:{} rollback error: {}", tx_id, is_ok.err().unwrap());
-                                }
-                        })
-                    }
-                }
-                if arc_clone.get_alive().eq(&false) {
-                    drop(arc_clone);
-                    break;
-                }
-            }
-        });
+        // std::thread::spawn(move || {
+        //     loop {
+        //         std::thread::sleep(arc_clone.tx_lock_wait_timeout);
+        //         for x in arc_clone.tx_timeout.iter() {
+        //             let tx_id = x.key();
+        //             let value = x.value();
+        //             if arc_clone.get_alive().eq(&false) {
+        //                 break;
+        //             }
+        //             if value.elapsed().gt(&arc_clone.tx_lock_wait_timeout) {
+        //                 futures::executor::block_on(async {
+        //                     let is_ok = arc_clone.rollback(&tx_id).await;
+        //                     #[cfg(feature = "debug_mode")]
+        //                         {
+        //                             log::error!("[rbatis] tx:{} rollback error: {}", tx_id, is_ok.err().unwrap());
+        //                         }
+        //                 })
+        //             }
+        //         }
+        //         if arc_clone.get_alive().eq(&false) {
+        //             drop(arc_clone);
+        //             break;
+        //         }
+        //     }
+        // });
         arc
     }
 
@@ -121,21 +118,6 @@ impl TxManager {
         }
     }
 
-    pub async fn get_mut<'a>(
-        &'a self,
-        context_id: &str,
-    ) -> Option<RefMut<'a, String, Tx>> {
-        let m = self.tx_context.get_mut(context_id);
-        match m {
-            Some(v) => {
-                return Some(v);
-            }
-            None => {
-                return None;
-            }
-        }
-    }
-
     /// begin tx,for new conn
     pub async fn begin(
         &self,
@@ -153,11 +135,11 @@ impl TxManager {
             tx: conn,
             instant: Instant::now(),
         };
-        self.tx_timeout.insert(new_context_id.to_string(), tx.instant.clone());
-        self.tx_context
+        self.tx_timeout.write().await.insert(new_context_id.to_string(), tx.instant.clone());
+        self.tx_context.write().await
             .insert(
                 new_context_id.to_string(),
-                tx,
+                Mutex::new(tx),
             );
         if self.is_enable_log() {
             self.do_log(
@@ -170,16 +152,14 @@ impl TxManager {
 
     /// commit tx,and return conn
     pub async fn commit(&self, context_id: &str) -> Result<String, crate::core::Error> {
-        let tx_op = self.tx_context.remove(context_id);
-        if tx_op.is_none() {
-            return Err(crate::core::Error::from(format!(
+        let tx = self.tx_context.write().await.remove(context_id).ok_or_else(||{
+            crate::core::Error::from(format!(
                 "[rbatis] tx:{} not exist！",
                 context_id
-            )));
-        }
-        let (k, mut tx) = tx_op.unwrap();
-        let result = tx.tx.commit().await?;
-        self.tx_timeout.remove(&k);
+            ))
+        })?;
+        let result = tx.lock().await.tx.commit().await?;
+        self.tx_timeout.write().await.remove(context_id);
         if self.is_enable_log() {
             self.do_log(context_id, &format!("[rbatis] [{}] Commit", context_id));
         }
@@ -188,16 +168,14 @@ impl TxManager {
 
     /// rollback tx,and return conn
     pub async fn rollback(&self, context_id: &str) -> Result<String, crate::core::Error> {
-        let tx_op = self.tx_context.remove(context_id);
-        if tx_op.is_none() {
-            return Err(crate::core::Error::from(format!(
+        let tx = self.tx_context.write().await.remove(context_id).ok_or_else( ||{
+            crate::core::Error::from(format!(
                 "[rbatis] tx:{} not exist！",
                 context_id
-            )));
-        }
-        let (k, tx) = tx_op.unwrap();
-        let result = tx.tx.rollback().await?;
-        self.tx_timeout.remove(&k);
+            ))
+        })?;
+        let result = tx.into_inner().tx.rollback().await?;
+        self.tx_timeout.write().await.remove(context_id);
         if self.is_enable_log() {
             self.do_log(context_id, &format!("[rbatis] [{}] Rollback", context_id));
         }
