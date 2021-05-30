@@ -60,32 +60,32 @@ impl TxManager {
         let arc = Arc::new(m);
 
         let arc_clone = arc.clone();
-        std::thread::spawn(move || {
-            loop {
-                std::thread::sleep(arc_clone.tx_lock_wait_timeout);
-                crate::core::runtime::task::block_on(async{
-                    let guard= arc_clone.tx_timeout.read().await;
-                    for (tx_id,value) in guard.iter() {
-                        if arc_clone.get_alive().eq(&false) {
-                            break;
-                        }
-                        if value.elapsed().gt(&arc_clone.tx_lock_wait_timeout) {
-                            futures::executor::block_on(async {
-                                let is_ok = arc_clone.rollback(&tx_id).await;
-                                #[cfg(feature = "debug_mode")]
-                                    {
-                                        log::error!("[rbatis] tx:{} rollback error: {}", tx_id, is_ok.err().unwrap());
-                                    }
-                            })
-                        }
-                    }
-                });
-                if arc_clone.get_alive().eq(&false) {
-                    drop(arc_clone);
-                    break;
-                }
-            }
-        });
+        // std::thread::spawn(move || {
+        //     loop {
+        //         std::thread::sleep(arc_clone.tx_lock_wait_timeout);
+        //         crate::core::runtime::task::block_on(async{
+        //             let guard= arc_clone.tx_timeout.read().await;
+        //             for (tx_id,value) in guard.iter() {
+        //                 if arc_clone.get_alive().eq(&false) {
+        //                     break;
+        //                 }
+        //                 if value.elapsed().gt(&arc_clone.tx_lock_wait_timeout) {
+        //                     futures::executor::block_on(async {
+        //                         let is_ok = arc_clone.rollback(&tx_id).await;
+        //                         #[cfg(feature = "debug_mode")]
+        //                             {
+        //                                 log::error!("[rbatis] tx:{} rollback error: {}", tx_id, is_ok.err().unwrap());
+        //                             }
+        //                     })
+        //                 }
+        //             }
+        //         });
+        //         if arc_clone.get_alive().eq(&false) {
+        //             drop(arc_clone);
+        //             break;
+        //         }
+        //     }
+        // });
         arc
     }
 
@@ -159,7 +159,7 @@ impl TxManager {
                 context_id
             ))
         })?;
-        let result = tx.lock().await.tx.commit().await?;
+        let result = tx.into_inner().tx.commit().await?;
         self.tx_timeout.write().await.remove(context_id);
         if self.is_enable_log() {
             self.do_log(context_id, &format!("[rbatis] [{}] Commit", context_id));
