@@ -165,7 +165,7 @@ impl<'a> RBatisTxExecutor<'a> {
     pub async fn commit(&mut self) -> crate::Result<()> {
         self.conn.commit().await
     }
-    pub async fn rollback(mut self) -> crate::Result<()> {
+    pub async fn rollback(self) -> crate::Result<()> {
         self.conn.rollback().await
     }
 }
