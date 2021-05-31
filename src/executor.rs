@@ -12,6 +12,12 @@ use crate::utils::string_util;
 
 #[async_trait]
 pub trait Executor {
+    fn get_rbatis(&self) -> &Rbatis;
+
+    fn driver_type(&self) -> crate::Result<DriverType> {
+        self.get_rbatis().driver_type()
+    }
+
     async fn execute(&mut self, sql: &str, args: &Vec<serde_json::Value>) -> Result<DBExecResult, Error>;
     async fn fetch<T>(&mut self, sql: &str, args: &Vec<serde_json::Value>) -> Result<T, Error> where T: DeserializeOwned;
 
@@ -40,6 +46,11 @@ macro_rules! impl_executor {
     ($t:ty) => {
 #[async_trait]
 impl<'a> Executor for $t {
+
+    fn get_rbatis(&self)-> &Rbatis{
+        return &self.rb;
+    }
+
     async fn execute(&mut self, sql: &str, args: &Vec<serde_json::Value>) -> Result<DBExecResult, Error> {
         let mut sql = sql.to_string();
         let mut args = args.clone();
@@ -144,11 +155,11 @@ impl_executor!(RBatisConnExecutor<'a>);
 
 impl RBatisConnExecutor<'_> {
     pub async fn begin(&'static mut self) -> crate::Result<RBatisTxExecutor<'static>> {
-        let tx= self.conn.begin().await?;
-        return Ok(RBatisTxExecutor{
+        let tx = self.conn.begin().await?;
+        return Ok(RBatisTxExecutor {
             conn: tx,
             rb: &self.rb,
-        })
+        });
     }
 }
 
