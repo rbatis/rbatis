@@ -18,7 +18,7 @@ use uuid::Uuid;
 use crate::core::db::{DBExecResult, DBPool, DBPoolConn, DBPoolOptions, DBQuery, DBTx, DriverType};
 use crate::core::Error;
 use crate::crud::CRUDTable;
-use crate::executor::RBatisConnExecutor;
+use crate::executor::{RBatisConnExecutor, RBatisTxExecutor};
 use crate::plugin::intercept::SqlIntercept;
 use crate::plugin::log::{LogPlugin, RbatisLogPlugin};
 use crate::plugin::logic_delete::{LogicDelete, RbatisLogicDeletePlugin};
@@ -251,6 +251,23 @@ impl Rbatis {
             rb: &self
         });
     }
+
+    pub async fn acquire_begin(&self) -> Result<RBatisTxExecutor<'_>, Error> {
+        let pool = self.get_pool()?;
+        let conn = pool.begin().await?;
+        return Ok(RBatisTxExecutor {
+            sql: "".to_string(),
+            args: vec![],
+            conn: conn,
+            rb: &self
+        });
+    }
+
+
+
+
+
+
 
     /// begin tx,if TxGuard Drop, tx will be commit(when_drop_commit==true) or rollback(when_drop_commit==false)
     /// tx_id must be 'tx:'+id,this method default is 'tx:'+uuid
