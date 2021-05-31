@@ -3,8 +3,6 @@ use std::cell::Cell;
 use std::collections::HashMap;
 use std::sync::Arc;
 use std::time::Duration;
-
-use log::kv::Source;
 use once_cell::sync::OnceCell;
 use py_sql::node::proxy_node::NodeFactory;
 use py_sql::py_sql::PyRuntime;
