@@ -243,8 +243,6 @@ impl Rbatis {
         let pool = self.get_pool()?;
         let conn = pool.acquire().await?;
         return Ok(RBatisConnExecutor {
-            sql: "".to_string(),
-            args: vec![],
             conn: conn,
             rb: &self
         });
@@ -254,8 +252,6 @@ impl Rbatis {
         let pool = self.get_pool()?;
         let conn = pool.begin().await?;
         return Ok(RBatisTxExecutor {
-            sql: "".to_string(),
-            args: vec![],
             conn: conn,
             rb: &self
         });
