@@ -18,7 +18,7 @@ use crate::rbatis::Rbatis;
 use crate::sql::rule::SqlRule;
 use crate::utils::string_util::to_snake_name;
 use crate::wrapper::Wrapper;
-use crate::executor::{RBatisConnExecutor, Executor};
+use crate::executor::{RBatisConnExecutor, Executor, RBatisTxExecutor};
 
 /// DataBase Table Model trait
 ///
@@ -431,11 +431,12 @@ pub trait CRUD {
 
 
 
-
+macro_rules! impl_crud {
+    ($t:ty) => {
 
 #[async_trait]
-impl <'a>CRUD for RBatisConnExecutor<'a> {
-    /// save by wrapper
+impl <'a>CRUD for $t {
+            /// save by wrapper
     async fn save_by_wrapper<T>(
         &mut self,
         entity: &T,
@@ -867,7 +868,13 @@ impl <'a>CRUD for RBatisConnExecutor<'a> {
         let sql = make_select_sql::<T>( &self, &T::table_columns(), &w)?;
         self.fetch_page( sql.as_str(), &w.args, page).await
     }
+    }
+ }
 }
+
+
+impl_crud!(RBatisConnExecutor<'a>);
+impl_crud!(RBatisTxExecutor<'a>);
 
 /// choose table name
 fn choose_dyn_table_name<T>(w: &Wrapper) -> String
