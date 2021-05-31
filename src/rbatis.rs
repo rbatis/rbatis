@@ -239,6 +239,7 @@ impl Rbatis {
         Ok(pool.driver_type)
     }
 
+    /// get an DataBase Connection used for the next step
     pub async fn acquire(&self) -> Result<RBatisConnExecutor<'_>, Error> {
         let pool = self.get_pool()?;
         let conn = pool.acquire().await?;
@@ -248,6 +249,7 @@ impl Rbatis {
         });
     }
 
+    /// get an DataBase Connection,and call begin method,used for the next step
     pub async fn acquire_begin(&self) -> Result<RBatisTxExecutor<'_>, Error> {
         let pool = self.get_pool()?;
         let conn = pool.begin().await?;
@@ -256,66 +258,6 @@ impl Rbatis {
             rb: &self
         });
     }
-
-
-
-    // /// begin tx,for new conn,return <u64(tx num),Error>
-    // /// arg context_id must be 'tx:***'
-    // ///
-    // /// for example:
-    // ///         let context_id = "tx:1";
-    // ///         rb.begin(context_id).await.unwrap();
-    // ///         let v: serde_json::Value = rb.fetch(context_id, "select count(1) from biz_activity;").await.unwrap();
-    // ///         println!("{}", v.clone());
-    // ///         rb.commit(context_id).await.unwrap();
-    // ///
-    // #[deprecated]
-    // pub async fn begin(&self, context_id: &str) -> Result<String, Error> {
-    //     if context_id.is_empty() {
-    //         return Err(Error::from("[rbatis] context_id can not be empty"));
-    //     }
-    //     if !self.tx_manager.is_tx_id(context_id) {
-    //         return Err(Error::from(format!(
-    //             "[rbatis] context_id: {}  must be start with '{}', for example: {}{}",
-    //             &self.tx_manager.tx_prefix, &self.tx_manager.tx_prefix, context_id, context_id
-    //         )));
-    //     }
-    //     let result = self.tx_manager.begin(context_id, self.get_pool()?).await?;
-    //     return Ok(result);
-    // }
-
-    // /// commit tx,and return conn,return <u64(tx num),Error>
-    // #[deprecated]
-    // pub async fn commit(&self) -> Result<String, Error> {
-    //     if context_id.is_empty() {
-    //         return Err(Error::from("[rbatis] context_id can not be empty"));
-    //     }
-    //     if !self.tx_manager.is_tx_id(context_id) {
-    //         return Err(Error::from(format!(
-    //             "[rbatis] context_id: {} must be start with '{}', for example: {}{}",
-    //             &self.tx_manager.tx_prefix, &self.tx_manager.tx_prefix, context_id, context_id
-    //         )));
-    //     }
-    //     let result = self.tx_manager.commit(context_id).await?;
-    //     return Ok(result);
-    // }
-
-    // /// rollback tx,and return conn,return <u64(tx num),Error>
-    // #[deprecated]
-    // pub async fn rollback(&self, context_id: &str) -> Result<String, Error> {
-    //     if context_id.is_empty() {
-    //         return Err(Error::from("[rbatis] context_id can not be empty"));
-    //     }
-    //     if !self.tx_manager.is_tx_id(context_id) {
-    //         return Err(Error::from(format!(
-    //             "[rbatis] context_id: {} must be start with '{}', for example: {}{}",
-    //             &self.tx_manager.tx_prefix, &self.tx_manager.tx_prefix, context_id, context_id
-    //         )));
-    //     }
-    //     let result = self.tx_manager.rollback(context_id).await?;
-    //     return Ok(result);
-    // }
-
 
     /// is debug mode
     pub fn is_debug_mode(&self) -> bool {
