@@ -38,23 +38,35 @@ pub struct RBatisConnExecutor<'a> {
 #[async_trait]
 impl<'a> Executor for RBatisConnExecutor<'a> {
     async fn execute(&mut self, sql: &str, args: &Vec<serde_json::Value>) -> Result<DBExecResult, Error> {
-        if args.len() > 0 {
-            let q: DBQuery = self.bind_arg(&self.conn.driver_type, sql, args)?;
+        let mut sql = sql.to_string();
+        let mut args = args.clone();
+        let is_prepared = args.len() > 0;
+        for item in &self.sql_intercepts {
+            item.do_intercept(self, &mut sql, &mut args, is_prepared)?;
+        }
+        if is_prepared {
+            let q: DBQuery = self.bind_arg(&self.conn.driver_type, &sql, &args)?;
             let result = self.conn.exec_prepare(q).await;
             return result;
         } else {
-            let result = self.conn.execute(sql).await;
+            let result = self.conn.execute(&sql).await;
             return result;
         }
     }
 
     async fn fetch<T>(&mut self, sql: &str, args: &Vec<serde_json::Value>) -> Result<T, Error> where T: DeserializeOwned {
-        if args.len() > 0 {
-            let q: DBQuery = self.bind_arg(&self.conn.driver_type, sql, args)?;
+        let mut sql = sql.to_string();
+        let mut args = args.clone();
+        let is_prepared = args.len() > 0;
+        for item in &self.sql_intercepts {
+            item.do_intercept(self, &mut sql, &mut args, is_prepared)?;
+        }
+        if is_prepared {
+            let q: DBQuery = self.bind_arg(&self.conn.driver_type, &sql, &args)?;
             let result: (T, usize) = self.conn.fetch_parperd(q).await?;
             return Ok(result.0);
         } else {
-            let result: (T, usize) = self.conn.fetch(sql).await?;
+            let result: (T, usize) = self.conn.fetch(&sql).await?;
             return Ok(result.0);
         }
     }
@@ -69,23 +81,35 @@ pub struct RBatisTxExecutor<'a> {
 #[async_trait]
 impl<'a> Executor for RBatisTxExecutor<'a> {
     async fn execute(&mut self, sql: &str, args: &Vec<serde_json::Value>) -> Result<DBExecResult, Error> {
-        if args.len() > 0 {
-            let q: DBQuery = self.bind_arg(&self.conn.driver_type, sql, args)?;
+        let mut sql = sql.to_string();
+        let mut args = args.clone();
+        let is_prepared = args.len() > 0;
+        for item in &self.sql_intercepts {
+            item.do_intercept(self, &mut sql, &mut args, is_prepared)?;
+        }
+        if is_prepared {
+            let q: DBQuery = self.bind_arg(&self.conn.driver_type, &sql, &args)?;
             let result = self.conn.exec_prepare(q).await;
             return result;
         } else {
-            let result = self.conn.execute(sql).await;
+            let result = self.conn.execute(&sql).await;
             return result;
         }
     }
 
     async fn fetch<T>(&mut self, sql: &str, args: &Vec<serde_json::Value>) -> Result<T, Error> where T: DeserializeOwned {
-        if args.len() > 0 {
-            let q: DBQuery = self.bind_arg(&self.conn.driver_type, sql, args)?;
+        let mut sql = sql.to_string();
+        let mut args = args.clone();
+        let is_prepared = args.len() > 0;
+        for item in &self.sql_intercepts {
+            item.do_intercept(self, &mut sql, &mut args, is_prepared)?;
+        }
+        if is_prepared {
+            let q: DBQuery = self.bind_arg(&self.conn.driver_type, &sql, &args)?;
             let result: (T, usize) = self.conn.fetch_parperd(q).await?;
             return Ok(result.0);
         } else {
-            let result: (T, usize) = self.conn.fetch(sql).await?;
+            let result: (T, usize) = self.conn.fetch(&sql).await?;
             return Ok(result.0);
         }
     }

@@ -17,7 +17,6 @@ pub trait SqlIntercept: Send + Sync + Debug {
     fn do_intercept(
         &self,
         rb: &Rbatis,
-        context_id: &str,
         sql: &mut String,
         args: &mut Vec<serde_json::Value>,
         is_prepared_sql: bool,
@@ -31,7 +30,6 @@ impl SqlIntercept for RbatisLogFormatSqlIntercept {
     fn do_intercept(
         &self,
         rb: &Rbatis,
-        context_id: &str,
         sql: &mut String,
         args: &mut Vec<Value>,
         is_prepared_sql: bool,
@@ -48,7 +46,7 @@ impl SqlIntercept for RbatisLogFormatSqlIntercept {
                         1,
                     );
                 }
-                rb.log_plugin.info(context_id, &formated);
+                rb.log_plugin.info("",&formated);
             }
         }
         return Ok(());
@@ -63,7 +61,6 @@ impl SqlIntercept for BlockAttackDeleteInterceptor {
     fn do_intercept(
         &self,
         rb: &Rbatis,
-        context_id: &str,
         sql: &mut String,
         args: &mut Vec<Value>,
         is_prepared_sql: bool,
@@ -89,7 +86,6 @@ impl SqlIntercept for BlockAttackUpdateInterceptor {
     fn do_intercept(
         &self,
         rb: &Rbatis,
-        context_id: &str,
         sql: &mut String,
         args: &mut Vec<Value>,
         is_prepared_sql: bool,

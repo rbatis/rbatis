@@ -19,7 +19,7 @@ impl Rbatis{
         //sql intercept
         let mut sql = sql.to_string();
         for item in &self.sql_intercepts {
-            item.do_intercept(self, context_id, &mut sql, &mut vec![], false)?;
+            item.do_intercept(self,  &mut sql, &mut vec![], false)?;
         }
         if self.log_plugin.is_enable() {
             self.log_plugin
@@ -63,7 +63,7 @@ impl Rbatis{
         //sql intercept
         let mut sql = sql.to_string();
         for item in &self.sql_intercepts {
-            item.do_intercept(self, context_id, &mut sql, &mut vec![], false)?;
+            item.do_intercept(self, &mut sql, &mut vec![], false)?;
         }
         if self.log_plugin.is_enable() {
             self.log_plugin
@@ -132,7 +132,7 @@ impl Rbatis{
         let mut sql = sql.to_string();
         let mut args = args.clone();
         for item in &self.sql_intercepts {
-            item.do_intercept(self, context_id, &mut sql, &mut args, true)?;
+            item.do_intercept(self, &mut sql, &mut args, true)?;
         }
         if self.log_plugin.is_enable() {
             self.log_plugin.info(
@@ -194,7 +194,7 @@ impl Rbatis{
         let mut sql = sql.to_string();
         let mut args = args.clone();
         for item in &self.sql_intercepts {
-            item.do_intercept(self, context_id, &mut sql, &mut args, true)?;
+            item.do_intercept(self, &mut sql, &mut args, true)?;
         }
         if self.log_plugin.is_enable() {
             self.log_plugin.info(
