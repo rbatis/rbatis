@@ -96,7 +96,7 @@ impl<'a> Executor for RBatisTxExecutor<'a> {
 }
 
 
-
+/// impl Deref has all the capabilities of RBatis
 impl<'a> Deref for RBatisConnExecutor<'a> {
     type Target = Rbatis;
     fn deref(&self) -> &Self::Target {
@@ -104,6 +104,7 @@ impl<'a> Deref for RBatisConnExecutor<'a> {
     }
 }
 
+/// impl Deref has all the capabilities of RBatis
 impl<'a> Deref for RBatisTxExecutor<'a> {
     type Target = Rbatis;
     fn deref(&self) -> &Self::Target {
