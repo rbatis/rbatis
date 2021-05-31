@@ -7,6 +7,7 @@ use crate::core::db::{DBPool, DBPoolConn, DBQuery, DBTx};
 use crate::core::Error;
 use crate::DriverType;
 use crate::rbatis::Rbatis;
+use std::ops::Deref;
 
 #[async_trait]
 pub trait Executor {
@@ -37,7 +38,7 @@ pub struct RBatisConnExecutor<'a> {
 }
 
 #[async_trait]
-impl <'a>Executor for RBatisConnExecutor<'a> {
+impl<'a> Executor for RBatisConnExecutor<'a> {
     async fn execute(&mut self) -> Result<DBExecResult, Error> {
         if self.args.len() > 0 {
             let q: DBQuery = self.bind_arg(&self.conn.driver_type, &self.sql, &self.args)?;
@@ -70,7 +71,7 @@ pub struct RBatisTxExecutor<'a> {
 }
 
 #[async_trait]
-impl <'a>Executor for RBatisTxExecutor<'a> {
+impl<'a> Executor for RBatisTxExecutor<'a> {
     async fn execute(&mut self) -> Result<DBExecResult, Error> {
         if self.args.len() > 0 {
             let q: DBQuery = self.bind_arg(&self.conn.driver_type, &self.sql, &self.args)?;
@@ -91,5 +92,21 @@ impl <'a>Executor for RBatisTxExecutor<'a> {
             let result: (T, usize) = self.conn.fetch(&self.sql).await?;
             return Ok(result.0);
         }
+    }
+}
+
+
+
+impl<'a> Deref for RBatisConnExecutor<'a> {
+    type Target = Rbatis;
+    fn deref(&self) -> &Self::Target {
+        &self.rb
+    }
+}
+
+impl<'a> Deref for RBatisTxExecutor<'a> {
+    type Target = Rbatis;
+    fn deref(&self) -> &Self::Target {
+        &self.rb
     }
 }
