@@ -8,6 +8,7 @@ use actix_web::{web, App, HttpResponse, HttpServer, Responder};
 use chrono::NaiveDateTime;
 use rbatis::crud::CRUD;
 use rbatis::rbatis::Rbatis;
+use rbatis::core::value::DateTimeNow;
 
 #[crud_enable]
 #[derive(Clone, Debug)]
@@ -26,6 +27,25 @@ pub struct BizActivity {
     pub delete_flag: Option<i32>,
 }
 
+impl Default for BizActivity{
+    fn default() -> Self {
+        BizActivity{
+            id: None,
+            name: None,
+            pc_link: None,
+            h5_link: None,
+            pc_banner_img: None,
+            h5_banner_img: None,
+            sort: None,
+            status: None,
+            remark: None,
+            create_time: None,
+            version: None,
+            delete_flag: None
+        }
+    }
+}
+
 //mysql driver url
 pub const MYSQL_URL: &'static str = "mysql://root:123456@localhost:3306/test";
 
@@ -34,10 +54,21 @@ lazy_static! {
     static ref RB: Rbatis = Rbatis::new();
 }
 
+
 async fn index() -> impl Responder {
-    let v = RB.acquire().await.unwrap()
-        .fetch_list_by_wrapper::<BizActivity>(&RB.new_wrapper().limit(10)).await.unwrap();
-    HttpResponse::Ok().body(serde_json::json!(v).to_string())
+    let mut v = RB.acquire_begin().await.unwrap();
+    v.save(&rbatis::make_table!(BizActivity{
+            id: rbatis::plugin::snowflake::new_snowflake_id().to_string(),
+            name: "sdfsaf".to_string(),
+            status: 1,
+            create_time: NaiveDateTime::now(),
+            sort: "2".to_string(),
+            version: 1,
+            delete_flag: 1,
+    })).await;
+
+    v.commit().await;
+    HttpResponse::Ok().body("ok")
 }
 
 #[actix_web::main]
@@ -57,7 +88,7 @@ async fn main() -> std::io::Result<()> {
             // }))
             .route("/", web::get().to(index))
     })
-    .bind("127.0.0.1:8000")?
+    .bind("0.0.0.0:8000")?
     .run()
     .await
 }

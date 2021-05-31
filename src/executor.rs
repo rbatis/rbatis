@@ -142,6 +142,16 @@ impl<'a> Executor for $t {
 impl_executor!(RBatisConnExecutor<'a>);
 
 
+impl RBatisConnExecutor<'_> {
+    pub async fn begin(&'static mut self) -> crate::Result<RBatisTxExecutor<'static>> {
+        let tx= self.conn.begin().await?;
+        return Ok(RBatisTxExecutor{
+            conn: tx,
+            rb: &self.rb,
+        })
+    }
+}
+
 #[derive(Debug)]
 pub struct RBatisTxExecutor<'a> {
     pub conn: DBTx,
@@ -149,6 +159,16 @@ pub struct RBatisTxExecutor<'a> {
 }
 
 impl_executor!(RBatisTxExecutor<'a>);
+
+
+impl<'a> RBatisTxExecutor<'a> {
+    pub async fn commit(&mut self) -> crate::Result<()> {
+        self.conn.commit().await
+    }
+    pub async fn rollback(mut self) -> crate::Result<()> {
+        self.conn.rollback().await
+    }
+}
 
 
 /// impl Deref has all the capabilities of RBatis
