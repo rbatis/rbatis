@@ -429,6 +429,10 @@ pub trait CRUD {
         T: CRUDTable;
 }
 
+
+
+
+
 #[async_trait]
 impl <'a>CRUD for RBatisConnExecutor<'a> {
     /// save by wrapper
@@ -861,8 +865,7 @@ impl <'a>CRUD for RBatisConnExecutor<'a> {
         T: CRUDTable,
     {
         let sql = make_select_sql::<T>( &self, &T::table_columns(), &w)?;
-        self.fetch_page( "",sql.as_str(), &w.args, page)
-            .await
+        self.fetch_page( sql.as_str(), &w.args, page).await
     }
 }
 
