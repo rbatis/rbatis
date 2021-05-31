@@ -11,8 +11,8 @@ use std::ops::Deref;
 
 #[async_trait]
 pub trait Executor {
-    async fn execute(&mut self) -> Result<DBExecResult, Error>;
-    async fn fetch<T>(&mut self) -> Result<T, Error> where T: DeserializeOwned;
+    async fn execute(&mut self, sql: &str, args: &Vec<serde_json::Value>) -> Result<DBExecResult, Error>;
+    async fn fetch<T>(&mut self, sql: &str, args: &Vec<serde_json::Value>) -> Result<T, Error> where T: DeserializeOwned;
 
     /// bind arg into DBQuery
     fn bind_arg<'arg>(
@@ -31,32 +31,30 @@ pub trait Executor {
 
 #[derive(Debug)]
 pub struct RBatisConnExecutor<'a> {
-    pub sql: String,
-    pub args: Vec<serde_json::Value>,
     pub conn: DBPoolConn,
     pub rb: &'a Rbatis,
 }
 
 #[async_trait]
 impl<'a> Executor for RBatisConnExecutor<'a> {
-    async fn execute(&mut self) -> Result<DBExecResult, Error> {
-        if self.args.len() > 0 {
-            let q: DBQuery = self.bind_arg(&self.conn.driver_type, &self.sql, &self.args)?;
+    async fn execute(&mut self, sql: &str, args: &Vec<serde_json::Value>) -> Result<DBExecResult, Error> {
+        if args.len() > 0 {
+            let q: DBQuery = self.bind_arg(&self.conn.driver_type, sql, args)?;
             let result = self.conn.exec_prepare(q).await;
             return result;
         } else {
-            let result = self.conn.execute(&self.sql).await;
+            let result = self.conn.execute(sql).await;
             return result;
         }
     }
 
-    async fn fetch<T>(&mut self) -> Result<T, Error> where T: DeserializeOwned {
-        if self.args.len() > 0 {
-            let q: DBQuery = self.bind_arg(&self.conn.driver_type, &self.sql, &self.args)?;
+    async fn fetch<T>(&mut self, sql: &str, args: &Vec<serde_json::Value>) -> Result<T, Error> where T: DeserializeOwned {
+        if args.len() > 0 {
+            let q: DBQuery = self.bind_arg(&self.conn.driver_type, sql, args)?;
             let result: (T, usize) = self.conn.fetch_parperd(q).await?;
             return Ok(result.0);
         } else {
-            let result: (T, usize) = self.conn.fetch(&self.sql).await?;
+            let result: (T, usize) = self.conn.fetch(sql).await?;
             return Ok(result.0);
         }
     }
@@ -64,32 +62,30 @@ impl<'a> Executor for RBatisConnExecutor<'a> {
 
 #[derive(Debug)]
 pub struct RBatisTxExecutor<'a> {
-    pub sql: String,
-    pub args: Vec<serde_json::Value>,
     pub conn: DBTx,
     pub rb: &'a Rbatis,
 }
 
 #[async_trait]
 impl<'a> Executor for RBatisTxExecutor<'a> {
-    async fn execute(&mut self) -> Result<DBExecResult, Error> {
-        if self.args.len() > 0 {
-            let q: DBQuery = self.bind_arg(&self.conn.driver_type, &self.sql, &self.args)?;
+    async fn execute(&mut self, sql: &str, args: &Vec<serde_json::Value>) -> Result<DBExecResult, Error> {
+        if args.len() > 0 {
+            let q: DBQuery = self.bind_arg(&self.conn.driver_type, sql, args)?;
             let result = self.conn.exec_prepare(q).await;
             return result;
         } else {
-            let result = self.conn.execute(&self.sql).await;
+            let result = self.conn.execute(sql).await;
             return result;
         }
     }
 
-    async fn fetch<T>(&mut self) -> Result<T, Error> where T: DeserializeOwned {
-        if self.args.len() > 0 {
-            let q: DBQuery = self.bind_arg(&self.conn.driver_type, &self.sql, &self.args)?;
+    async fn fetch<T>(&mut self, sql: &str, args: &Vec<serde_json::Value>) -> Result<T, Error> where T: DeserializeOwned {
+        if args.len() > 0 {
+            let q: DBQuery = self.bind_arg(&self.conn.driver_type, sql, args)?;
             let result: (T, usize) = self.conn.fetch_parperd(q).await?;
             return Ok(result.0);
         } else {
-            let result: (T, usize) = self.conn.fetch(&self.sql).await?;
+            let result: (T, usize) = self.conn.fetch(sql).await?;
             return Ok(result.0);
         }
     }

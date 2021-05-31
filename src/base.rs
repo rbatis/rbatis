@@ -183,6 +183,7 @@ impl Rbatis{
     /// for example:
     ///      let v = RB.exec_prepare::<Value>("", "select count(1) from biz_activity where delete_flag = ?;", &vec![json!(1)]).await;
     ///
+    #[deprecated]
     pub async fn exec_prepare(
         &self,
         context_id: &str,
