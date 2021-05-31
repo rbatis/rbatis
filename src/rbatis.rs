@@ -1,19 +1,24 @@
 use std::borrow::BorrowMut;
 use std::cell::Cell;
 use std::collections::HashMap;
+use std::sync::Arc;
 use std::time::Duration;
 
+use log::kv::Source;
 use once_cell::sync::OnceCell;
+use py_sql::node::proxy_node::NodeFactory;
+use py_sql::py_sql::PyRuntime;
+use rbatis_core::db::DBConnectOption;
+use rexpr::runtime::RExprRuntime;
 use serde::de::DeserializeOwned;
 use serde::ser::Serialize;
 use serde_json::Number;
 use uuid::Uuid;
 
-use rbatis_core::db::DBConnectOption;
-
 use crate::core::db::{DBExecResult, DBPool, DBPoolConn, DBPoolOptions, DBQuery, DBTx, DriverType};
 use crate::core::Error;
 use crate::crud::CRUDTable;
+use crate::executor::RBatisConnExecutor;
 use crate::plugin::intercept::SqlIntercept;
 use crate::plugin::log::{LogPlugin, RbatisLogPlugin};
 use crate::plugin::logic_delete::{LogicDelete, RbatisLogicDeletePlugin};
@@ -24,11 +29,6 @@ use crate::tx::{TxGuard, TxManager};
 use crate::utils::error_util::ToResult;
 use crate::utils::string_util;
 use crate::wrapper::Wrapper;
-use py_sql::node::proxy_node::NodeFactory;
-use py_sql::py_sql::PyRuntime;
-use rexpr::runtime::RExprRuntime;
-use std::sync::Arc;
-use log::kv::Source;
 
 /// rbatis engine
 #[derive(Debug)]
@@ -239,6 +239,17 @@ impl Rbatis {
     pub fn driver_type(&self) -> Result<DriverType, Error> {
         let pool = self.get_pool()?;
         Ok(pool.driver_type)
+    }
+
+    pub async fn acquire(&self) -> Result<RBatisConnExecutor<'_>, Error> {
+        let pool = self.get_pool()?;
+        let conn = pool.acquire().await?;
+        return Ok(RBatisConnExecutor {
+            sql: "".to_string(),
+            args: vec![],
+            conn: conn,
+            rb: &self
+        });
     }
 
     /// begin tx,if TxGuard Drop, tx will be commit(when_drop_commit==true) or rollback(when_drop_commit==false)

@@ -6,6 +6,7 @@ use serde_json::Value;
 use crate::core::db::{DBPool, DBPoolConn, DBQuery, DBTx};
 use crate::core::Error;
 use crate::DriverType;
+use crate::rbatis::Rbatis;
 
 #[async_trait]
 pub trait Executor {
@@ -28,14 +29,15 @@ pub trait Executor {
 }
 
 #[derive(Debug)]
-pub struct RBatisConnExecutor {
+pub struct RBatisConnExecutor<'a> {
     pub sql: String,
     pub args: Vec<serde_json::Value>,
     pub conn: DBPoolConn,
+    pub rb: &'a Rbatis,
 }
 
 #[async_trait]
-impl Executor for RBatisConnExecutor {
+impl <'a>Executor for RBatisConnExecutor<'a> {
     async fn execute(&mut self) -> Result<DBExecResult, Error> {
         if self.args.len() > 0 {
             let q: DBQuery = self.bind_arg(&self.conn.driver_type, &self.sql, &self.args)?;
@@ -60,14 +62,15 @@ impl Executor for RBatisConnExecutor {
 }
 
 #[derive(Debug)]
-pub struct RBatisTxExecutor {
+pub struct RBatisTxExecutor<'a> {
     pub sql: String,
     pub args: Vec<serde_json::Value>,
     pub conn: DBTx,
+    pub rb: &'a Rbatis,
 }
 
 #[async_trait]
-impl Executor for RBatisTxExecutor {
+impl <'a>Executor for RBatisTxExecutor<'a> {
     async fn execute(&mut self) -> Result<DBExecResult, Error> {
         if self.args.len() > 0 {
             let q: DBQuery = self.bind_arg(&self.conn.driver_type, &self.sql, &self.args)?;
