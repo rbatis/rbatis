@@ -56,7 +56,8 @@ lazy_static! {
 
 
 async fn index() -> impl Responder {
-    let mut v = RB.acquire_begin().await.unwrap();
+    let mut conn = RB.acquire().await.unwrap();
+    let mut v= conn.begin().await.unwrap();
     v.save(&rbatis::make_table!(BizActivity{
             id: rbatis::plugin::snowflake::new_snowflake_id().to_string(),
             name: "sdfsaf".to_string(),

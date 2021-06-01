@@ -23,7 +23,6 @@ use crate::plugin::logic_delete::{LogicDelete, RbatisLogicDeletePlugin};
 use crate::plugin::page::{IPage, IPageRequest, Page, PagePlugin, RbatisPagePlugin};
 use crate::plugin::version_lock::{RbatisVersionLockPlugin, VersionLockPlugin};
 use crate::sql::PageLimit;
-use crate::tx::{TxGuard, TxManager};
 use crate::utils::error_util::ToResult;
 use crate::utils::string_util;
 use crate::wrapper::Wrapper;
@@ -37,8 +36,6 @@ pub struct Rbatis {
     pub runtime_expr: RExprRuntime,
     //py lang runtime run some express for py_sql
     pub runtime_py: PyRuntime,
-    //tx manager
-    pub tx_manager: Arc<TxManager>,
     // page plugin
     pub page_plugin: Box<dyn PagePlugin>,
     // sql intercept vec chain
@@ -51,12 +48,6 @@ pub struct Rbatis {
     pub version_lock_plugin: Option<Box<dyn VersionLockPlugin>>,
 }
 
-impl Drop for Rbatis {
-    fn drop(&mut self) {
-        self.tx_manager.set_alive(false);
-    }
-}
-
 impl Default for Rbatis {
     fn default() -> Rbatis {
         Rbatis::new()
@@ -66,10 +57,6 @@ impl Default for Rbatis {
 ///Rbatis Options
 #[derive(Debug)]
 pub struct RbatisOption {
-    /// the tx lock timeout, if out of time tx will be rollback
-    pub tx_lock_wait_timeout: Duration,
-    /// rbatis tx manager check tx interval
-    pub tx_check_interval: Duration,
     /// custom py lang
     pub generate: Vec<Box<dyn NodeFactory>>,
     /// page plugin
@@ -80,8 +67,6 @@ pub struct RbatisOption {
     pub logic_plugin: Option<Box<dyn LogicDelete>>,
     /// log plugin
     pub log_plugin: Arc<Box<dyn LogPlugin>>,
-    ///tx_prefix,default is 'tx:'
-    pub tx_prefix: String,
     ///version lock plugin
     pub version_lock_plugin: Option<Box<dyn VersionLockPlugin>>,
 }
@@ -89,14 +74,11 @@ pub struct RbatisOption {
 impl Default for RbatisOption {
     fn default() -> Self {
         Self {
-            tx_lock_wait_timeout: Duration::from_secs(60),
-            tx_check_interval: Duration::from_secs(1),
             generate: vec![],
             page_plugin: Box::new(RbatisPagePlugin::new()),
             sql_intercepts: vec![],
             logic_plugin: None,
             log_plugin: Arc::new(Box::new(RbatisLogPlugin::default()) as Box<dyn LogPlugin>),
-            tx_prefix: "tx:".to_string(),
             version_lock_plugin: None,
         }
     }
@@ -113,12 +95,6 @@ impl Rbatis {
         return Self {
             pool: OnceCell::new(),
             runtime_expr: RExprRuntime::new(),
-            tx_manager: TxManager::new_arc(
-                &option.tx_prefix,
-                option.log_plugin.clone(),
-                option.tx_lock_wait_timeout,
-                option.tx_check_interval,
-            ),
             page_plugin: option.page_plugin,
             sql_intercepts: option.sql_intercepts,
             logic_plugin: option.logic_plugin,
