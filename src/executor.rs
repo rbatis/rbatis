@@ -153,19 +153,19 @@ impl<'a> Executor for $t {
 impl_executor!(RBatisConnExecutor<'a>);
 
 
-impl RBatisConnExecutor<'_> {
-    pub async fn begin(&'static mut self) -> crate::Result<RBatisTxExecutor<'static>> {
+impl <'a>RBatisConnExecutor<'a> {
+    pub async fn begin(&'a mut self) -> crate::Result<RBatisTxExecutor<'a>> {
         let tx = self.conn.begin().await?;
         return Ok(RBatisTxExecutor {
             conn: tx,
-            rb: &self.rb,
+            rb: self.rb,
         });
     }
 }
 
 #[derive(Debug)]
 pub struct RBatisTxExecutor<'a> {
-    pub conn: DBTx,
+    pub conn: DBTx<'a>,
     pub rb: &'a Rbatis,
 }
 
