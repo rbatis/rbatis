@@ -1,7 +1,7 @@
 #[cfg(test)]
 mod test {
     use crate::BizActivity;
-    use rbatis::crud::{Ids, CRUDMut};
+    use rbatis::crud::{Ids, CRUDMut, CRUD};
     use rbatis::rbatis::Rbatis;
 
     /// This example shows a table collection  to an id array
@@ -13,7 +13,7 @@ mod test {
             .await
             .unwrap();
 
-        let biz_activitys = rb.fetch_list::<BizActivity>("").await.unwrap();
+        let biz_activitys = rb.fetch_list::<BizActivity>().await.unwrap();
 
         //to_ids() support HashSet.to_ids(),Vec.to_ids(),Array.to_ids(),HashMap.to_ids(),LinkedList.to_ids()，BtreeMap.to_ids()....
         let ids = biz_activitys.to_ids();

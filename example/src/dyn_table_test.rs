@@ -17,7 +17,7 @@ mod test {
         w.formats
             .insert("table_name".to_string(), |arg| "biz_activity".to_string());
         //support all of RB.*_wrapper() method
-        let r = rb.fetch_list_by_wrapper::<BizActivity>("", &w).await;
+        let r = rb.fetch_list_by_wrapper::<BizActivity>( &w).await;
         if r.is_err() {
             println!("{}", r.err().unwrap().to_string());
         }

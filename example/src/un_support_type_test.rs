@@ -44,7 +44,7 @@ mod test {
         .unwrap();
         //query table
         let v: Vec<P> = rb
-            .fetch_list_by_wrapper("", &rb.new_wrapper_table::<P>().eq("id", 1))
+            .fetch_list_by_wrapper( &rb.new_wrapper_table::<P>().eq("id", 1))
             .await
             .unwrap();
     }
