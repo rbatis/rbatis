@@ -1,7 +1,7 @@
 #[cfg(test)]
 mod test {
     use crate::BizActivity;
-    use rbatis::crud::CRUDMut;
+    use rbatis::crud::{CRUDMut, CRUD};
     use rbatis::plugin::page::{Page, PageRequest};
     use rbatis::rbatis::Rbatis;
 

@@ -5,7 +5,7 @@ mod test {
 
     use rbatis::core::value::DateTimeNow;
     use rbatis::core::Error;
-    use rbatis::crud::CRUDMut;
+    use rbatis::crud::{CRUDMut, CRUD};
     use rbatis::plugin::logic_delete::RbatisLogicDeletePlugin;
     use rbatis::plugin::page::{Page, PageRequest};
     use rbatis::plugin::snowflake::new_snowflake_id;
@@ -97,9 +97,9 @@ mod test {
             version: Some(BigDecimal::from(1)),
             delete_flag: Some(1),
         };
-        rb.remove_by_id::<BizActivity>("", activity.id.as_ref().unwrap())
+        rb.remove_by_id::<BizActivity>( activity.id.as_ref().unwrap())
             .await;
-        let r = rb.save("", &activity).await;
+        let r = rb.save( &activity).await;
         if r.is_err() {
             println!("{}", r.err().unwrap().to_string());
         }
@@ -124,10 +124,10 @@ mod test {
         };
         let mut activity2 = activity.clone();
         activity2.id = Some("12313".to_string());
-        rb.remove_batch_by_id::<BizActivity>("", &["12312".to_string(), "12313".to_string()])
+        rb.remove_batch_by_id::<BizActivity>( &["12312".to_string(), "12313".to_string()])
             .await;
         let args = vec![activity, activity2];
-        let r = rb.save_batch("", &args).await;
+        let r = rb.save_batch( &args).await;
         if r.is_err() {
             println!("{}", r.err().unwrap().to_string());
         }
@@ -164,7 +164,7 @@ mod test {
         )
         .await;
         let args = vec![activity, activity2, activity3];
-        let r = rb.save_batch_slice("", &args, 2).await;
+        let r = rb.save_batch_slice( &args, 2).await;
         if r.is_err() {
             println!("{}", r.err().unwrap().to_string());
         }
@@ -178,7 +178,7 @@ mod test {
             .await
             .unwrap();
         let r = rb
-            .remove_batch_by_id::<BizActivity>("", &["1".to_string(), "2".to_string()])
+            .remove_batch_by_id::<BizActivity>( &["1".to_string(), "2".to_string()])
             .await;
         if r.is_err() {
             println!("{}", r.err().unwrap().to_string());
@@ -197,7 +197,7 @@ mod test {
         rb.link("mysql://root:123456@localhost:3306/test")
             .await
             .unwrap();
-        let r = rb.remove_by_id::<BizActivity>("", &"1".to_string()).await;
+        let r = rb.remove_by_id::<BizActivity>( &"1".to_string()).await;
         if r.is_err() {
             println!("{}", r.err().unwrap().to_string());
         }
@@ -209,7 +209,7 @@ mod test {
         //set logic plugin
         rb.logic_plugin = Some(Box::new(RbatisLogicDeletePlugin::new("delete_flag")));
         let r = rb
-            .fetch_by_id::<Option<BizActivity>>("", &"1".to_string())
+            .fetch_by_id::<Option<BizActivity>>( &"1".to_string())
             .await
             .unwrap();
         println!("{}", serde_json::to_string(&r).unwrap());
@@ -221,7 +221,7 @@ mod test {
         //set logic plugin
         rb.logic_plugin = Some(Box::new(RbatisLogicDeletePlugin::new("delete_flag")));
         let r = rb
-            .fetch_count_by_wrapper::<BizActivity>("", &rb.new_wrapper())
+            .fetch_count_by_wrapper::<BizActivity>( &rb.new_wrapper())
             .await
             .unwrap();
         println!("count(1): {}", r);
@@ -249,7 +249,7 @@ mod test {
         };
 
         let w = rb.new_wrapper().eq("id", "12312");
-        let r = rb.update_by_wrapper("", &mut activity, &w, false).await;
+        let r = rb.update_by_wrapper( &mut activity, &w, false).await;
         if r.is_err() {
             println!("{}", r.err().unwrap().to_string());
         }
@@ -284,7 +284,7 @@ mod test {
         //     version: Some(BigDecimal::from(1)),
         //     delete_flag: Some(1),
         // };
-        let r = rb.update_by_id("", &mut activity).await;
+        let r = rb.update_by_id( &mut activity).await;
         if r.is_err() {
             println!("{}", r.err().unwrap().to_string());
         }
@@ -296,7 +296,7 @@ mod test {
         //set logic plugin
         rb.logic_plugin = Some(Box::new(RbatisLogicDeletePlugin::new("delete_flag")));
         let w = rb.new_wrapper().eq("id", "1");
-        let r: Result<Option<BizActivity>, Error> = rb.fetch_by_wrapper("", &w).await;
+        let r: Result<Option<BizActivity>, Error> = rb.fetch_by_wrapper( &w).await;
         println!("is_some:{:?}", r);
         if r.is_err() {
             println!("{}", r.err().unwrap().to_string());
@@ -307,7 +307,7 @@ mod test {
     pub async fn test_list_by_wrapper() {
         let rb = init_rbatis().await;
         let w = rb.new_wrapper().order_by(true, &["id"]);
-        let r: Vec<BizActivity> = rb.fetch_list_by_wrapper("", &w).await.unwrap();
+        let r: Vec<BizActivity> = rb.fetch_list_by_wrapper( &w).await.unwrap();
         println!("is_some:{:?}", r);
     }
 
@@ -323,7 +323,7 @@ mod test {
             //.order_by(false, &["create_time"])
             ;
         let r: Page<BizActivity> = rb
-            .fetch_page_by_wrapper("", &w, &PageRequest::new(1, 20))
+            .fetch_page_by_wrapper( &w, &PageRequest::new(1, 20))
             .await
             .unwrap();
         println!("{}", serde_json::to_string(&r).unwrap());

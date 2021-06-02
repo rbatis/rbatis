@@ -2,7 +2,7 @@
 mod test {
     use crate::BizActivity;
     use rbatis::core::Error;
-    use rbatis::crud::CRUDMut;
+    use rbatis::crud::{CRUDMut, CRUD};
     use rbatis::plugin::intercept::{
         BlockAttackDeleteInterceptor, BlockAttackUpdateInterceptor, SqlIntercept,
     };
@@ -31,7 +31,6 @@ mod test {
         fn do_intercept(
             &self,
             rb: &Rbatis,
-            context_id: &str,
             sql: &mut String,
             args: &mut Vec<Value>,
             is_prepared_sql: bool,
