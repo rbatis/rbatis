@@ -338,8 +338,101 @@ impl<K, C> Ids<C> for BTreeMap<K, C>
     }
 }
 
+
 #[async_trait]
 pub trait CRUD {
+    async fn save_by_wrapper<T>(
+        &self,
+        entity: &T,
+        w: &Wrapper,
+    ) -> Result<DBExecResult>
+        where
+            T: CRUDTable;
+    async fn save<T>(&self, entity: &T) -> Result<DBExecResult>
+        where
+            T: CRUDTable;
+    async fn save_batch<T>(&self, entity: &[T]) -> Result<DBExecResult>
+        where
+            T: CRUDTable;
+
+    async fn save_batch_slice<T>(
+        &self,
+        entity: &[T],
+        slice_len: usize,
+    ) -> Result<DBExecResult>
+        where
+            T: CRUDTable;
+
+    async fn remove_by_wrapper<T>(&self, w: &Wrapper) -> Result<u64>
+        where
+            T: CRUDTable;
+    async fn remove_by_id<T>(&self, id: &T::IdType) -> Result<u64>
+        where
+            T: CRUDTable;
+    async fn remove_batch_by_id<T>(&self, ids: &[T::IdType]) -> Result<u64>
+        where
+            T: CRUDTable;
+
+    async fn update_by_wrapper<T>(
+        &self,
+        arg: &mut T,
+        w: &Wrapper,
+        update_null_value: bool,
+    ) -> Result<u64>
+        where
+            T: CRUDTable;
+    /// update database record by id
+    async fn update_by_id<T>(&self, arg: &mut T) -> Result<u64>
+        where
+            T: CRUDTable;
+
+    /// remove batch database record by args
+    async fn update_batch_by_id<T>(&self, ids: &mut [T]) -> Result<u64>
+        where
+            T: CRUDTable;
+
+    /// fetch database record by id
+    async fn fetch_by_id<T>(&self, id: &T::IdType) -> Result<T>
+        where
+            T: CRUDTable;
+
+    /// fetch database record by a wrapper
+    async fn fetch_by_wrapper<T>(&self, w: &Wrapper) -> Result<T>
+        where
+            T: CRUDTable;
+
+    /// count database record by a wrapper
+    async fn fetch_count_by_wrapper<T>(&self, w: &Wrapper) -> Result<u64>
+        where
+            T: CRUDTable;
+
+    /// fetch page database record list by a wrapper
+    async fn fetch_page_by_wrapper<T>(
+        &self,
+        w: &Wrapper,
+        page: &dyn IPageRequest,
+    ) -> Result<Page<T>>
+        where
+            T: CRUDTable;
+
+    /// fetch database record list for all
+    async fn fetch_list<T>(&self) -> Result<Vec<T>>
+        where
+            T: CRUDTable;
+
+    /// fetch database record list by a id array
+    async fn fetch_list_by_ids<T>(&self, ids: &[T::IdType]) -> Result<Vec<T>>
+        where
+            T: CRUDTable;
+
+    /// fetch database record list by a wrapper
+    async fn fetch_list_by_wrapper<T>(&self, w: &Wrapper) -> Result<Vec<T>>
+        where
+            T: CRUDTable;
+}
+
+#[async_trait]
+pub trait CRUDMut {
     async fn save_by_wrapper<T>(
         &mut self,
         entity: &T,
@@ -415,7 +508,7 @@ pub trait CRUD {
             T: CRUDTable;
 
     /// fetch database record list for all
-    async fn fetch_list<T>(&mut self, context_id: &str) -> Result<Vec<T>>
+    async fn fetch_list<T>(&mut self) -> Result<Vec<T>>
         where
             T: CRUDTable;
 
@@ -835,7 +928,7 @@ pub trait ImplCRUD: Base {
     }
 
     /// fetch database record list for all
-    async fn fetch_list<T>(&mut self, context_id: &str) -> Result<Vec<T>>
+    async fn fetch_list<T>(&mut self) -> Result<Vec<T>>
         where
             T: CRUDTable,
     {
@@ -914,4 +1007,109 @@ fn make_select_sql<T>(rb: &Rbatis, column: &str, w: &Wrapper) -> Result<String>
         table_name,
         driver_type.make_where(&w.sql)
     ))
+}
+
+#[async_trait]
+impl CRUD for Rbatis {
+    async fn save_by_wrapper<T>(&self, entity: &T, w: &Wrapper) -> Result<DBExecResult> where
+        T: CRUDTable {
+        let mut conn = self.acquire().await?;
+        conn.save_by_wrapper(entity, w).await
+    }
+
+    async fn save<T>(&self, entity: &T) -> Result<DBExecResult> where
+        T: CRUDTable {
+        let mut conn = self.acquire().await?;
+        conn.save(entity).await
+    }
+
+    async fn save_batch<T>(&self, entity: &[T]) -> Result<DBExecResult> where
+        T: CRUDTable {
+        let mut conn = self.acquire().await?;
+        conn.save_batch(entity).await
+    }
+
+    async fn save_batch_slice<T>(&self, entity: &[T], slice_len: usize) -> Result<DBExecResult> where
+        T: CRUDTable {
+        let mut conn = self.acquire().await?;
+        conn.save_batch_slice(entity, slice_len).await
+    }
+
+    async fn remove_by_wrapper<T>(&self, w: &Wrapper) -> Result<u64> where
+        T: CRUDTable {
+        let mut conn = self.acquire().await?;
+        conn.remove_by_wrapper::<T>(w).await
+    }
+
+    async fn remove_by_id<T>(&self, id: &<T as CRUDTable>::IdType) -> Result<u64> where
+        T: CRUDTable {
+        let mut conn = self.acquire().await?;
+        conn.remove_by_id::<T>(id).await
+    }
+
+    async fn remove_batch_by_id<T>(&self, ids: &[<T as CRUDTable>::IdType]) -> Result<u64> where
+        T: CRUDTable {
+        let mut conn = self.acquire().await?;
+        conn.remove_batch_by_id::<T>(ids).await
+    }
+
+    async fn update_by_wrapper<T>(&self, arg: &mut T, w: &Wrapper, update_null_value: bool) -> Result<u64> where
+        T: CRUDTable {
+        let mut conn = self.acquire().await?;
+        conn.update_by_wrapper(arg,w,update_null_value).await
+    }
+
+    async fn update_by_id<T>(&self, arg: &mut T) -> Result<u64> where
+        T: CRUDTable {
+        let mut conn = self.acquire().await?;
+        conn.update_by_id(arg).await
+    }
+
+    async fn update_batch_by_id<T>(&self, ids: &mut [T]) -> Result<u64> where
+        T: CRUDTable {
+        let mut conn = self.acquire().await?;
+        conn.update_batch_by_id(ids).await
+    }
+
+    async fn fetch_by_id<T>(&self, id: &<T as CRUDTable>::IdType) -> Result<T> where
+        T: CRUDTable {
+        let mut conn = self.acquire().await?;
+        conn.fetch_by_id(id).await
+    }
+
+    async fn fetch_by_wrapper<T>(&self, w: &Wrapper) -> Result<T> where
+        T: CRUDTable {
+        let mut conn = self.acquire().await?;
+        conn.fetch_by_wrapper(w).await
+    }
+
+    async fn fetch_count_by_wrapper<T>(&self, w: &Wrapper) -> Result<u64> where
+        T: CRUDTable {
+        let mut conn = self.acquire().await?;
+        conn.fetch_count_by_wrapper::<T>(w).await
+    }
+
+    async fn fetch_page_by_wrapper<T>(&self, w: &Wrapper, page: &dyn IPageRequest) -> Result<Page<T>> where
+        T: CRUDTable {
+        let mut conn = self.acquire().await?;
+        conn.fetch_page_by_wrapper::<T>(w,page).await
+    }
+
+    async fn fetch_list<T>(&self) -> Result<Vec<T>> where
+        T: CRUDTable {
+        let mut conn = self.acquire().await?;
+        conn.fetch_list().await
+    }
+
+    async fn fetch_list_by_ids<T>(&self, ids: &[<T as CRUDTable>::IdType]) -> Result<Vec<T>> where
+        T: CRUDTable {
+        let mut conn = self.acquire().await?;
+        conn.fetch_list_by_ids(ids).await
+    }
+
+    async fn fetch_list_by_wrapper<T>(&self, w: &Wrapper) -> Result<Vec<T>> where
+        T: CRUDTable {
+        let mut conn = self.acquire().await?;
+        conn.fetch_list_by_wrapper(w).await
+    }
 }

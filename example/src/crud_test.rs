@@ -5,7 +5,7 @@ mod test {
 
     use rbatis::core::value::DateTimeNow;
     use rbatis::core::Error;
-    use rbatis::crud::CRUD;
+    use rbatis::crud::CRUDMut;
     use rbatis::plugin::logic_delete::RbatisLogicDeletePlugin;
     use rbatis::plugin::page::{Page, PageRequest};
     use rbatis::plugin::snowflake::new_snowflake_id;
