@@ -9,7 +9,7 @@ use crate::executor::{RBatisConnExecutor, RBatisTxExecutor, Executor};
 use async_trait::async_trait;
 
 #[async_trait]
-pub trait Base: Executor {
+pub trait PySql: Executor {
     /// py str into py ast,run get sql,arg result
     fn py_to_sql<Arg>(
         &self,
@@ -141,6 +141,6 @@ pub trait Base: Executor {
     }
 }
 
-impl<'a> Base for RBatisConnExecutor<'a> {}
+impl<'a> PySql for RBatisConnExecutor<'a> {}
 
-impl<'a> Base for RBatisTxExecutor<'a> {}
+impl<'a> PySql for RBatisTxExecutor<'a> {}

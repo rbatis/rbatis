@@ -19,7 +19,7 @@ use crate::sql::rule::SqlRule;
 use crate::utils::string_util::to_snake_name;
 use crate::wrapper::Wrapper;
 use crate::executor::{RBatisConnExecutor, Executor, RBatisTxExecutor};
-use crate::base::Base;
+use crate::py::PySql;
 
 /// DataBase Table Model trait
 ///
@@ -524,7 +524,7 @@ pub trait CRUDMut {
 }
 
 #[async_trait]
-pub trait ImplCRUD: Base {
+pub trait ImplCRUD: PySql {
     /// save by wrapper
     async fn save_by_wrapper<T>(
         &mut self,
