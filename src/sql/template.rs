@@ -30,7 +30,7 @@ macro_rules! gen_template {
                   $(
                     $key:Keywords{
                         value: string_to_static_str($value.to_uppercase()),
-                        left_space:string_to_static_str(" ".to_string()+&$value.to_uppercase()),
+                        left_space:string_to_static_str(" ".to_string()+$value.to_uppercase().as_str()),
                         right_space:string_to_static_str($value.to_uppercase()+" "),
                         left_right_space:string_to_static_str(format!(" {} ",$value.to_uppercase())),
                     },
