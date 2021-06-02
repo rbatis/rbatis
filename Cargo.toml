@@ -18,10 +18,10 @@ repository = "https://github.com/rbatis/rbatis"
 homepage = "https://rbatis.github.io/rbatis.io/#/en/"
 
 [features]
-default = ["default_mode","all-database"]
+default = ["default_mode", "all-database"]
 #debug_mode feature will show decode json data
 debug_mode = ["rbatis-core/debug_mode", "rbatis-macro-driver/debug_mode"]
-default_mode = ["rbatis-core","rbatis-macro-driver"]
+default_mode = ["rbatis-core", "rbatis-macro-driver"]
 #support upper case sql keyword
 upper_case_sql_keyword = []
 #runtime  database
@@ -40,8 +40,11 @@ async-io = ["rbatis-core/async-io"]
 [dependencies]
 rexpr = "1.0"
 py_sql = "1.0"
+rbatis_sql = { version = "1.0.0", git = "https://github.com/rbatis/rbatis_sql.git", branch = "main" }
 rbatis-core = { version = "1.8.88", git = "https://github.com/rbatis/rbatis-core.git", branch = "main", default-features = false, optional = true }
 rbatis-macro-driver = { version = "1.8.87", path = "rbatis-macro-driver", default-features = false, optional = true }
+
+
 
 chrono = { version = "0.4", features = ["serde"] }
 lazy_static = "1.4"
@@ -55,7 +58,7 @@ log = "0.4"
 #async trait
 async-trait = "0.1"
 futures-core = { version = "0.3" }
-futures = { version = "0.3"}
+futures = { version = "0.3" }
 once_cell = "1.7"
 #object_id
 hex = "0.4"
