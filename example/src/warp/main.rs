@@ -5,7 +5,7 @@ extern crate lazy_static;
 extern crate rbatis;
 
 use chrono::NaiveDateTime;
-use rbatis::crud::CRUDMut;
+use rbatis::crud::{CRUDMut, CRUD};
 use rbatis::rbatis::Rbatis;
 use std::collections::HashMap;
 use std::convert::Infallible;
@@ -52,6 +52,6 @@ async fn main() {
 }
 
 async fn handler(arg: HashMap<String, serde_json::Value>) -> Result<impl warp::Reply, Infallible> {
-    let v = RB.fetch_list::<BizActivity>("").await.unwrap();
+    let v = RB.fetch_list::<BizActivity>().await.unwrap();
     Ok(format!("{}", serde_json::json!(v)))
 }

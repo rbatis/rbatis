@@ -5,7 +5,7 @@ extern crate lazy_static;
 extern crate rbatis;
 
 use chrono::NaiveDateTime;
-use rbatis::crud::CRUDMut;
+use rbatis::crud::{CRUDMut, CRUD};
 use rbatis::rbatis::Rbatis;
 use serde_json::{json, Value};
 use tide::Request;
@@ -39,7 +39,7 @@ async fn main() {
     RB.link(MYSQL_URL).await.unwrap();
     let mut app = tide::new();
     app.at("/").get(|_: Request<()>| async move {
-        let v = RB.fetch_list::<BizActivity>("").await;
+        let v = RB.fetch_list::<BizActivity>().await;
         Ok(serde_json::json!(v).to_string())
     });
     let addr = "127.0.0.1:8000";

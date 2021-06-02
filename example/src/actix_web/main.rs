@@ -56,20 +56,8 @@ lazy_static! {
 
 
 async fn index() -> impl Responder {
-    let mut conn = RB.acquire().await.unwrap();
-    let mut v= conn.begin().await.unwrap();
-    v.save(&rbatis::make_table!(BizActivity{
-            id: rbatis::plugin::snowflake::new_snowflake_id().to_string(),
-            name: "sdfsaf".to_string(),
-            status: 1,
-            create_time: NaiveDateTime::now(),
-            sort: "2".to_string(),
-            version: 1,
-            delete_flag: 1,
-    })).await;
-
-    v.commit().await;
-    HttpResponse::Ok().body("ok")
+    let v = RB.fetch_list::<BizActivity>().await.unwrap();
+    HttpResponse::Ok().body(serde_json::json!(v).to_string())
 }
 
 #[actix_web::main]

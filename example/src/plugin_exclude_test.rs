@@ -3,7 +3,7 @@ mod test {
     use crate::BizActivity;
     use chrono::NaiveDateTime;
     use rbatis::core::value::DateTimeNow;
-    use rbatis::crud::CRUDMut;
+    use rbatis::crud::{CRUDMut, CRUD};
     use rbatis::plugin::logic_delete::RbatisLogicDeletePlugin;
     use rbatis::rbatis::Rbatis;
     #[tokio::test]
