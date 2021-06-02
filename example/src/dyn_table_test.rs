@@ -1,7 +1,7 @@
 #[cfg(test)]
 mod test {
     use crate::BizActivity;
-    use rbatis::crud::CRUD;
+    use rbatis::crud::CRUDMut;
     use rbatis::rbatis::Rbatis;
 
     #[tokio::test]

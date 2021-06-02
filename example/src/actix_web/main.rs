@@ -6,7 +6,7 @@ extern crate rbatis;
 
 use actix_web::{web, App, HttpResponse, HttpServer, Responder};
 use chrono::NaiveDateTime;
-use rbatis::crud::{ImplCRUD};
+use rbatis::crud::{ImplCRUD, CRUD};
 use rbatis::rbatis::Rbatis;
 use rbatis::core::value::DateTimeNow;
 

@@ -5,7 +5,7 @@ extern crate lazy_static;
 extern crate rbatis;
 
 use chrono::NaiveDateTime;
-use rbatis::crud::CRUD;
+use rbatis::crud::CRUDMut;
 use rbatis::rbatis::Rbatis;
 use std::collections::HashMap;
 use std::convert::Infallible;

@@ -2,7 +2,7 @@
 #[cfg(test)]
 mod test {
     use crate::BizActivity;
-    use rbatis::crud::CRUD;
+    use rbatis::crud::CRUDMut;
     use rbatis::plugin::intercept::RbatisLogFormatSqlIntercept;
     use rbatis::rbatis::Rbatis;
     use std::str::FromStr;

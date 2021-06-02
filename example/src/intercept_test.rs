@@ -2,7 +2,7 @@
 mod test {
     use crate::BizActivity;
     use rbatis::core::Error;
-    use rbatis::crud::CRUD;
+    use rbatis::crud::CRUDMut;
     use rbatis::plugin::intercept::{
         BlockAttackDeleteInterceptor, BlockAttackUpdateInterceptor, SqlIntercept,
     };

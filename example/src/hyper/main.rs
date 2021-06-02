@@ -7,7 +7,7 @@ extern crate rbatis;
 use chrono::NaiveDateTime;
 use hyper::service::{make_service_fn, service_fn};
 use hyper::{Body, Request, Response, Server};
-use rbatis::crud::CRUD;
+use rbatis::crud::CRUDMut;
 use rbatis::rbatis::Rbatis;
 use std::convert::Infallible;
 
