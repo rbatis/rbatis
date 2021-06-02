@@ -146,12 +146,8 @@ impl Rbatis {
         if driver_url.is_empty() {
             return Err(Error::from("[rbatis] link url is empty!"));
         }
-        if self.pool.get().is_none() {
-            let pool = DBPool::new_opt_str(driver_url, pool_options).await?;
-            self.pool.get_or_init(|| {
-                return pool;
-            });
-        }
+        let pool = DBPool::new_opt_str(driver_url, pool_options).await?;
+        self.pool.set( pool);
         return Ok(());
     }
 
@@ -164,12 +160,8 @@ impl Rbatis {
         connect_option: &DBConnectOption,
         pool_options: &DBPoolOptions,
     ) -> Result<(), Error> {
-        if self.pool.get().is_none() {
-            let pool = DBPool::new_opt(connect_option, pool_options).await?;
-            self.pool.get_or_init(|| {
-                return pool;
-            });
-        }
+        let pool = DBPool::new_opt(connect_option, pool_options).await?;
+        self.pool.set( pool);
         return Ok(());
     }
 
