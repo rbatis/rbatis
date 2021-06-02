@@ -12,6 +12,8 @@ extern crate once_cell;
 extern crate rbatis_macro_driver;
 #[macro_use]
 extern crate serde_json;
+#[macro_use]
+extern crate rbatis_sql;
 
 pub use rbatis_core as core;
 
