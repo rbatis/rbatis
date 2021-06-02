@@ -8,7 +8,7 @@ mod test {
 
     /// ctx_id Used to trace SQL records
     #[py_sql(rb, "select * from biz_activity where delete_flag = 0")]
-    async fn py_ctx_id(rb: &Rbatis, ctx_id: &str) -> Vec<BizActivity> {}
+    async fn py_ctx_id(rb: &Rbatis, ctx_id: &str) -> Vec<BizActivity> {todo!()}
 
     #[tokio::test]
     pub async fn test_py_ctx_id() {
@@ -29,7 +29,7 @@ mod test {
                   if name != '':
                     and name=#{name}"
     )]
-    async fn py_select_page(rb: &Rbatis, page_req: &PageRequest, name: &str) -> Page<BizActivity> {}
+    async fn py_select_page(rb: &Rbatis, page_req: &PageRequest, name: &str) -> Page<BizActivity> {todo!()}
 
     #[tokio::test]
     pub async fn test_py_select_page() {
@@ -52,7 +52,7 @@ mod test {
                   if name != '':
                     and name=#{name}"
     )]
-    async fn py_sql_tx(rb: &Rbatis, tx_id: &String, name: &str) -> Vec<BizActivity> {}
+    async fn py_sql_tx(rb: &Rbatis, tx_id: &String, name: &str) -> Vec<BizActivity> {todo!()}
 
     #[tokio::test]
     pub async fn test_py_sql_tx() {
@@ -88,7 +88,7 @@ mod test {
 
     ///load file py_sql(Each read file changes every time)
     #[py_sql(rb, load_file_str("py_sql.sql", "py_select_file"))]
-    async fn py_select_file(rb: &Rbatis, page_req: &PageRequest, name: &str) -> Page<BizActivity> {}
+    async fn py_select_file(rb: &Rbatis, page_req: &PageRequest, name: &str) -> Page<BizActivity> {todo!()}
 
     lazy_static! {
         pub static ref PY_SQL_FILE_STR: String = load_file_str("py_sql.sql", "py_select_file");
@@ -100,8 +100,7 @@ mod test {
         rb: &Rbatis,
         page_req: &PageRequest,
         name: &str,
-    ) -> Page<BizActivity> {
-    }
+    ) -> Page<BizActivity> {todo!()}
 
     /// test load py_sql from file
     #[tokio::test]

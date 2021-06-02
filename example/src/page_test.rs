@@ -18,7 +18,7 @@ mod test {
             .unwrap();
         let wraper = rb.new_wrapper().eq("delete_flag", 0);
         let data: Page<BizActivity> = rb
-            .fetch_page_by_wrapper("", &wraper, &PageRequest::new(1, 20))
+            .fetch_page_by_wrapper(&wraper, &PageRequest::new(1, 20))
             .await
             .unwrap();
         println!("{}", serde_json::to_string(&data).unwrap());
@@ -54,7 +54,7 @@ mod test {
                   if name != '':
                     and name=#{name}"
     )]
-    async fn py_select_page(page_req: &PageRequest, name: &str) -> Page<BizActivity> {}
+    async fn py_select_page(page_req: &PageRequest, name: &str) -> Page<BizActivity> {todo!()}
 
     #[tokio::test]
     pub async fn test_macro_py_select_page() {
@@ -70,7 +70,7 @@ mod test {
     }
 
     #[py_sql(RB, "select * from biz_activity group by id")]
-    async fn group_by(page_req: &PageRequest) -> Page<BizActivity> {}
+    async fn group_by(page_req: &PageRequest) -> Page<BizActivity> {todo!()}
 
     #[tokio::test]
     pub async fn test_group_by_page() {

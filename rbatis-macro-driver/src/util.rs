@@ -98,7 +98,8 @@ pub(crate) fn get_page_req_ident(target_fn: &ItemFn, func_name: &str) -> Ident {
 //find and check method return type
 pub(crate) fn find_fn_body(target_fn: &ItemFn) -> proc_macro2::TokenStream {
     let return_ty = target_fn.block.to_token_stream();
-    return_ty
+    //del todos
+    return_ty.to_string().replace("todo! ()","").to_token_stream()
 }
 
 pub(crate) fn is_fetch_sql(source: &str) -> bool {

@@ -25,8 +25,7 @@ mod test {
     async fn py_select_data(
         rb: &Rbatis,
         tx_id: &str,
-    ) -> Result<Vec<BizActivity>, rbatis::core::Error> {
-    }
+    ) -> Result<Vec<BizActivity>, rbatis::core::Error> { todo!()}
 
     //示例-Rbatis使用宏事务
     #[tokio::test]

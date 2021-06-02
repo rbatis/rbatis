@@ -49,7 +49,6 @@ mod test {
         .await;
         //update table
         rb.update_by_id(
-            "",
             &mut BizUuid {
                 id: Some(uuid.clone()),
                 name: Some("test_updated".to_string()),
@@ -99,7 +98,7 @@ mod test {
             version: Some(1),
             delete_flag: Some(1),
         };
-        rb.remove_by_id::<BizActivity>("", activity.id.as_ref().unwrap())
+        rb.remove_by_id::<BizActivity>( activity.id.as_ref().unwrap())
             .await;
         let r = rb.save("", &activity).await;
         if r.is_err() {
