@@ -51,7 +51,7 @@ pub(crate) fn impl_macro_sql(target_fn: &ItemFn, args: &AttributeArgs) -> TokenS
            let mut rb_args =vec![];
            #sql_args_gen
            #fn_body
-           return #rbatis_ident.#call_method(#context_id_ident,&#sql_ident,&rb_args #page_req).await;
+           return #rbatis_ident.#call_method(&#sql_ident,&rb_args #page_req).await;
        }
     };
     return gen_token_temple.into();

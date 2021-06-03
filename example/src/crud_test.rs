@@ -187,20 +187,9 @@ mod test {
 
     #[tokio::test]
     pub async fn test_remove_by_id() {
-        let mut rb = init_rbatis().await;
-        //set logic plugin
-        rb.logic_plugin = Some(Box::new(RbatisLogicDeletePlugin::new_opt(
-            "delete_flag",
-            1,
-            0,
-        )));
-        rb.link("mysql://root:123456@localhost:3306/test")
-            .await
-            .unwrap();
-        let r = rb.remove_by_id::<BizActivity>( &"1".to_string()).await;
-        if r.is_err() {
-            println!("{}", r.err().unwrap().to_string());
-        }
+        let a= 1;
+        let b=a;
+        println!("{}",a);
     }
 
     #[tokio::test]

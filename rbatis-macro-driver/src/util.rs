@@ -97,9 +97,20 @@ pub(crate) fn get_page_req_ident(target_fn: &ItemFn, func_name: &str) -> Ident {
 
 //find and check method return type
 pub(crate) fn find_fn_body(target_fn: &ItemFn) -> proc_macro2::TokenStream {
-    let return_ty = target_fn.block.to_token_stream();
     //del todos
-    return_ty.to_string().replace("todo! ()","").to_token_stream()
+    let mut removes=vec![];
+    let mut index=0;
+    let mut target_fn=target_fn.clone();
+    for x in &target_fn.block.stmts {
+        if x.to_token_stream().to_string().eq("todo ! ()"){
+            removes.push(index);
+        }
+        index+=1;
+    }
+    for x in removes {
+        target_fn.block.stmts.remove(x);
+    }
+    target_fn.to_token_stream()
 }
 
 pub(crate) fn is_fetch_sql(source: &str) -> bool {
