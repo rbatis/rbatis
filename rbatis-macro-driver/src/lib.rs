@@ -66,6 +66,11 @@ pub fn py_sql(args: TokenStream, func: TokenStream) -> TokenStream {
     stream
 }
 
+
+/// CRUD table,You can define functionality using the following properties
+/// #[crud_table]
+/// #[crud_table(table_name:"biz_activity")]
+/// #[crud_table(table_name:"biz_activity" | table_columns:"id,name,version,delete_flag" | formats_pg:"id:{}::uuid,name:{}::string")]
 #[proc_macro_attribute]
 pub fn crud_table(args: TokenStream, input: TokenStream) -> TokenStream {
     let stream = impl_crud(args, input);
