@@ -16,7 +16,7 @@ mod util;
 #[proc_macro_derive(CRUDTable)]
 pub fn hello_macro_derive(input: TokenStream) -> TokenStream {
     let ast = syn::parse(input).unwrap();
-    let stream = impl_crud_driver(&ast, "id", "", "", &HashMap::new());
+    let stream = impl_crud_driver(&ast, "", "", &HashMap::new());
     #[cfg(feature = "debug_mode")]
     {
         println!("............gen impl CRUDTable:\n {}", stream);
