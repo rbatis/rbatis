@@ -29,11 +29,16 @@ pub(crate) fn impl_crud_driver(
     } else {
         fields = quote! {#arg_table_columns.to_string()};
     }
-
     //gen get method
+    let arg_table_columns_vec: Vec<&str> = arg_table_columns.split(",").collect();
     let mut items = quote! {};
+    let mut index = 0;
     for ident in field_idents {
-        let ident_name = ident.to_string();
+        let mut ident_name = ident.to_string();
+        if !arg_table_columns.is_empty() {
+            //if use custom name
+            ident_name = arg_table_columns_vec.get(index).expect("[rbatis] custom table columns must be use same location index, for example:  #[crud_enable(table_columns:\"id,name\")] pub struct Example{ pub id:String,pub name:String }  ").to_string();
+        }
         let item = quote! {
             #ident_name => {
                 return serde_json::json!(&self.#ident);
@@ -42,7 +47,8 @@ pub(crate) fn impl_crud_driver(
         items = quote! {
             #items
             #item
-        }
+        };
+        index += 1;
     }
     let mut get_matchs = quote! {
         return match column {
