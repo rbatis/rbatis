@@ -5,7 +5,7 @@ mod test {
 
     use rbatis::utils::table_util::FatherChildRelationship;
 
-    #[crud_enable]
+    #[crud_table]
     #[derive(Clone, Debug)]
     pub struct BizActivity {
         pub id: Option<String>,
@@ -73,7 +73,7 @@ mod test {
         assert_eq!(names.len(), table_vec.len());
     }
 
-    #[crud_enable]
+    #[crud_table]
     #[derive(Clone, Debug)]
     pub struct FatherChildVO {
         pub id: Option<i32>,

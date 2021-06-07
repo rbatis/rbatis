@@ -6,7 +6,7 @@ use std::collections::HashMap;
 use syn::{parse_macro_input, AttributeArgs, ItemFn};
 
 use crate::proc_macro::TokenStream;
-use crate::macros::crud_enable_impl::{impl_crud_driver, impl_crud};
+use crate::macros::crud_table_impl::{impl_crud_driver, impl_crud};
 use crate::macros::sql_impl::impl_macro_sql;
 use crate::macros::py_sql_impl::impl_macro_py_sql;
 
@@ -67,7 +67,7 @@ pub fn py_sql(args: TokenStream, func: TokenStream) -> TokenStream {
 }
 
 #[proc_macro_attribute]
-pub fn crud_enable(args: TokenStream, input: TokenStream) -> TokenStream {
+pub fn crud_table(args: TokenStream, input: TokenStream) -> TokenStream {
     let stream = impl_crud(args, input);
     #[cfg(feature = "debug_mode")]
     {

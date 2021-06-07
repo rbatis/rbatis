@@ -11,7 +11,7 @@ use rbatis::crud::{CRUDMut, CRUD};
 use rbatis::rbatis::Rbatis;
 use std::convert::Infallible;
 
-#[crud_enable]
+#[crud_table]
 #[derive(Clone, Debug)]
 pub struct BizActivity {
     pub id: Option<String>,

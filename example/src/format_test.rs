@@ -12,7 +12,7 @@ mod test {
     //'id' ->  table column 'id'
     //'{}::uuid' -> format data str
     // '\\,'   ->   This is an escape symbol
-    #[crud_enable(formats_pg: "id:{}::uuid")]
+    #[crud_table(formats_pg: "id:{}::uuid")]
     #[derive(Clone, Debug)]
     pub struct BizUuid {
         pub id: Option<Uuid>,

@@ -13,7 +13,7 @@ use std::str::FromStr;
 use std::time::Duration;
 use warp::Filter;
 
-#[crud_enable]
+#[crud_table]
 #[derive(Clone, Debug)]
 pub struct BizActivity {
     pub id: Option<String>,

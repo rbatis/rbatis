@@ -6,7 +6,7 @@ mod test {
     use serde_json::json;
     use uuid::Uuid;
 
-    #[crud_enable]
+    #[crud_table]
     #[derive(Clone, Debug)]
     pub struct P {
         pub id: i32,
@@ -14,7 +14,7 @@ mod test {
         pub po: Vec<u8>,
     }
 
-    #[crud_enable]
+    #[crud_table]
     #[derive(Clone, Debug)]
     pub struct P2 {
         pub id: Uuid,

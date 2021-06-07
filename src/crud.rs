@@ -24,9 +24,9 @@ use crate::py::PySql;
 
 /// DataBase Table Model trait
 ///
-/// if use #[crud_enable] impl Table struct,
+/// if use #[crud_table] impl Table struct,
 /// for example:
-///  #[crud_enable(id_name:"id"|id_type:"String"|table_name:"biz_activity"|table_columns:"id,name,version,delete_flag"|formats_pg:"id:{}::uuid")]
+///  #[crud_table(id_name:"id"|id_type:"String"|table_name:"biz_activity"|table_columns:"id,name,version,delete_flag"|formats_pg:"id:{}::uuid")]
 ///
 /// if use impl CRUDTable for Table struct,
 /// you must impl IdType and id_name() method!
@@ -95,7 +95,7 @@ pub trait CRUDTable: Send + Sync + Serialize + DeserializeOwned {
         }
     }
 
-    ///return (columns_sql,values_sql,args)
+    ///return (columns_sql,columns_values_sql,args)
     fn make_value_sql_arg(
         &self,
         db_type: &DriverType,

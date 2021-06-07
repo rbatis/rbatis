@@ -15,7 +15,7 @@ extern crate serde_json;
 
 pub use rbatis_core as core;
 
-pub use rbatis_macro_driver::{crud_enable, py_sql, sql, CRUDTable};
+pub use rbatis_macro_driver::{crud_table, py_sql, sql, CRUDTable};
 
 pub use crate::core::{convert::StmtConvert, db::DriverType, error::Error, error::Result};
 

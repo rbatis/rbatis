@@ -3,7 +3,7 @@ mod test {
     #[test]
     pub fn test_raw_identifiers() {
         use rbatis::crud::CRUDTable;
-        #[crud_enable]
+        #[crud_table]
         #[derive(Clone, Debug)]
         pub struct BizActivity {
             pub id: Option<String>,

@@ -72,9 +72,9 @@ extern crate rbatis;
 use rbatis::crud::CRUD;
 
 /// may also write `CRUDTable` as `impl CRUDTable for BizActivity{}`
-/// #[crud_enable( table_name:biz_activity)]
-/// #[crud_enable(id_name:"id"|id_type:"String"|table_name:"biz_activity"|table_columns:"id,name,version,delete_flag"|formats_pg:"id:{}::uuid")]
-#[crud_enable]
+/// #[crud_table( table_name:biz_activity)]
+/// #[crud_table(id_name:"id"|id_type:"String"|table_name:"biz_activity"|table_columns:"id,name,version,delete_flag"|formats_pg:"id:{}::uuid")]
+#[crud_table]
 #[derive(Clone, Debug)]
 pub struct BizActivity {
   pub id: Option<String>,
