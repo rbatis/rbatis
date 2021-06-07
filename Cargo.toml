@@ -40,7 +40,6 @@ async-io = ["rbatis-core/async-io"]
 [dependencies]
 rexpr = "1.0"
 py_sql = "1.0"
-rbatis_sql = { version = "1.0.0", git = "https://github.com/rbatis/rbatis_sql.git", branch = "main" }
 rbatis-core = { version = "1.8.88", git = "https://github.com/rbatis/rbatis-core.git", branch = "main", default-features = false, optional = true }
 rbatis-macro-driver = { version = "1.8.87", path = "rbatis-macro-driver", default-features = false, optional = true }
 
