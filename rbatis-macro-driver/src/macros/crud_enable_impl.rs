@@ -1,11 +1,11 @@
 use std::collections::HashMap;
 
 use crate::proc_macro::TokenStream;
-use proc_macro2::{Ident, Span};
+use proc_macro2::{Ident};
 use quote::quote;
 use quote::ToTokens;
 use syn;
-use syn::ext::IdentExt;
+
 
 ///impl CRUDTable
 pub(crate) fn impl_crud_driver(
@@ -60,7 +60,7 @@ pub(crate) fn impl_crud_driver(
         };
         index += 1;
     }
-    let mut get_matchs = quote! {
+    let get_matchs = quote! {
         return match column {
             #items
             _ => { serde_json::Value::Null }
@@ -230,7 +230,6 @@ fn gen_fields(data: &syn::Data) -> Vec<Ident> {
     let mut fields = vec![];
     match &data {
         syn::Data::Struct(s) => {
-            let mut index = 0;
             for field in &s.fields {
                 match &field.ident {
                     None => {}
