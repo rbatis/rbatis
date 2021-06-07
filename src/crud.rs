@@ -60,6 +60,7 @@ pub trait CRUDTable: Send + Sync + Serialize + DeserializeOwned {
     ///
     /// you also can impl this method for static string
     ///
+    /// If a macro is used, the method is overridden by the macro
     fn table_columns() -> String {
         let bean: serde_json::Result<Self> = serde_json::from_str("{}");
         if bean.is_err() {
@@ -140,6 +141,8 @@ pub trait CRUDTable: Send + Sync + Serialize + DeserializeOwned {
     }
 
 
+    /// return table column value
+    /// If a macro is used, the method is overridden by the macro
     fn get(&self, column: &str) -> serde_json::Value {
         let s = serde_json::json!(self);
         let value = s.get(column);

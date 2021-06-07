@@ -21,13 +21,37 @@ pub(crate) fn impl_crud_driver(
     } else {
         table_name = quote! {#arg_table_name};
     }
+    let field_idents = gen_fields(&ast.data);
     let fields;
     if arg_table_columns.is_empty() {
-        let new_fields = gen_fields(&ast.data);
+        let new_fields = gen_fields_names(&field_idents);
         fields = quote! {#new_fields.to_string()};
     } else {
         fields = quote! {#arg_table_columns.to_string()};
     }
+
+    //gen get method
+    let mut items = quote! {};
+    for ident in field_idents {
+        let ident_name = ident.to_string();
+        let item = quote! {
+            #ident_name => {
+                return serde_json::json!(&self.#ident);
+            }
+        };
+        items = quote! {
+            #items
+            #item
+        }
+    }
+    let mut get_matchs = quote! {
+        return match column {
+            #items
+            _ => { serde_json::Value::Null }
+        }
+    };
+
+
     let mut formats_mysql = proc_macro2::TokenStream::new();
     let mut formats_pg = proc_macro2::TokenStream::new();
     let mut formats_sqlite = proc_macro2::TokenStream::new();
@@ -51,8 +75,15 @@ pub(crate) fn impl_crud_driver(
             }
         }
     }
+
+
     let gen = quote! {
         impl rbatis::crud::CRUDTable for #name {
+
+            fn get(&self, column: &str) -> serde_json::Value {
+                #get_matchs
+            }
+
             fn table_name() -> String {
                  #table_name.to_string()
             }
@@ -178,8 +209,9 @@ fn gen_table_name(data: &syn::Ident) -> String {
     table_name
 }
 
-fn gen_fields(data: &syn::Data) -> proc_macro2::TokenStream {
-    let mut fields = String::new();
+
+fn gen_fields(data: &syn::Data) -> Vec<Ident> {
+    let mut fields = vec![];
     match &data {
         syn::Data::Struct(s) => {
             let mut index = 0;
@@ -187,20 +219,33 @@ fn gen_fields(data: &syn::Data) -> proc_macro2::TokenStream {
                 let field_name = &field
                     .ident
                     .as_ref()
-                    .map(|ele| ele.unraw())
-                    .to_token_stream()
-                    .to_string();
-                if index == 0 {
-                    fields = fields + field_name
-                } else {
-                    fields = fields + "," + field_name
+                    .map(|ele| ele.unraw());
+                match field_name {
+                    Some(v) => {
+                        fields.push(v.clone());
+                    }
+                    _ => {}
                 }
-                index += 1;
             }
         }
         _ => {
             panic!("[rbatis] only support struct for crud_enable's macro!")
         }
+    }
+    fields
+}
+
+fn gen_fields_names(data: &Vec<Ident>) -> proc_macro2::TokenStream {
+    let mut fields = String::new();
+    let mut index = 0;
+    for field in data {
+        let field_name = field.to_string();
+        if index == 0 {
+            fields = fields + &field_name
+        } else {
+            fields = fields + "," + &field_name
+        }
+        index += 1;
     }
     fields.to_token_stream()
 }
