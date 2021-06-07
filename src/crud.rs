@@ -266,7 +266,7 @@ pub trait CRUD {
             T: CRUDTable;
 
     /// fetch database record list by a id array
-    async fn fetch_list_by_columns<T, V>(&self, column: &str, column_values: &[V]) -> Result<Vec<T>>
+    async fn fetch_list_by_column<T, V>(&self, column: &str, column_values: &[V]) -> Result<Vec<T>>
         where
             T: CRUDTable, V: Serialize + Send + Sync;
 
@@ -357,7 +357,7 @@ pub trait CRUDMut {
             T: CRUDTable;
 
     /// fetch database record list by a id array
-    async fn fetch_list_by_columns<T, V>(&mut self, column: &str, column_values: &[V]) -> Result<Vec<T>>
+    async fn fetch_list_by_column<T, V>(&mut self, column: &str, column_values: &[V]) -> Result<Vec<T>>
         where
             T: CRUDTable, V: Serialize + Send + Sync;
 
@@ -786,7 +786,7 @@ pub trait ImplCRUD: PySql {
     }
 
     /// fetch database record list by a id array
-    async fn fetch_list_by_columns<T, V>(&mut self, column: &str, column_values: &[V]) -> Result<Vec<T>>
+    async fn fetch_list_by_column<T, V>(&mut self, column: &str, column_values: &[V]) -> Result<Vec<T>>
         where
             T: CRUDTable, V: Serialize + Send + Sync,
     {
@@ -954,10 +954,10 @@ impl CRUD for Rbatis {
         conn.fetch_list().await
     }
 
-    async fn fetch_list_by_columns<T, V>(&self, column: &str, column_values: &[V]) -> Result<Vec<T>> where
+    async fn fetch_list_by_column<T, V>(&self, column: &str, column_values: &[V]) -> Result<Vec<T>> where
         T: CRUDTable, V: Serialize + Send + Sync {
         let mut conn = self.acquire().await?;
-        conn.fetch_list_by_columns::<T, V>(column, column_values).await
+        conn.fetch_list_by_column::<T, V>(column, column_values).await
     }
 
     async fn fetch_list_by_wrapper<T>(&self, w: &Wrapper) -> Result<Vec<T>> where
