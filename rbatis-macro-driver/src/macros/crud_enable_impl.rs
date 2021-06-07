@@ -37,7 +37,7 @@ pub(crate) fn impl_crud_driver(
         let mut ident_name = ident.to_string();
         if !arg_table_columns.is_empty() {
             //if use custom name
-            ident_name = arg_table_columns_vec.get(index).expect("[rbatis] custom table columns must be use same location index, for example:  #[crud_enable(table_columns:\"id,name\")] pub struct Example{ pub id:String,pub name:String }  ").to_string();
+            ident_name = arg_table_columns_vec.get(index).expect("[rbatis] #[crud_enable] custom table columns must be use same location index, for example:  #[crud_enable(table_columns:\"id,name\")] pub struct Example{ pub id:String,pub name:String }  ").to_string();
         }
         let item = quote! {
             #ident_name => {
@@ -146,10 +146,10 @@ fn gen_format(v: &str) -> proc_macro2::TokenStream {
     }
     for item in new_items {
         if !item.contains(":") {
-            panic!("[rbatis] [crud_enable] format_str:'{}' must be [column]:[format_string],for example ->  '{}'  ", item, "formats_pg:id:{}::uuid");
+            panic!("[rbatis] #[crud_enable] format_str:'{}' must be [column]:[format_string],for example ->  '{}'  ", item, "formats_pg:id:{}::uuid");
         }
         if !item.contains("{}") {
-            panic!("[rbatis] [crud_enable] format_str:'{}' must be [column]:[format_string],for example ->  '{}'  ", item, "formats_pg:id:{}::uuid");
+            panic!("[rbatis] #[crud_enable] format_str:'{}' must be [column]:[format_string],for example ->  '{}'  ", item, "formats_pg:id:{}::uuid");
         }
         let index = item.find(":").unwrap();
         let column = item[0..index].to_string();
@@ -235,7 +235,7 @@ fn gen_fields(data: &syn::Data) -> Vec<Ident> {
             }
         }
         _ => {
-            panic!("[rbatis] only support struct for crud_enable's macro!")
+            panic!("[rbatis] #[crud_enable] only support struct for crud_enable's macro!")
         }
     }
     fields
@@ -336,7 +336,7 @@ fn read_config(arg: &str) -> CrudEnableConfig {
             continue;
         }
         if !item.contains(":") {
-            panic!("[rbaits] crud_enable must be key:value");
+            panic!("[rbaits] #[crud_enable] crud_enable must be key:value");
         }
         let index = item.find(":").unwrap();
         let key = item[0..index].trim().to_string();
@@ -355,7 +355,7 @@ fn read_config(arg: &str) -> CrudEnableConfig {
                 || k.ends_with("formats_sqlite")
                 || k.ends_with("formats_mssql"))
             {
-                panic!("[rbatis] formats must be formats_pg, formats_mysql,formats_sqlite,formats_mssql!");
+                panic!("[rbatis] #[crud_enable] formats must be formats_pg, formats_mysql,formats_sqlite,formats_mssql!");
             }
             formats.insert(k.to_owned(), v.to_owned());
         }
