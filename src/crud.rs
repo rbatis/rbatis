@@ -194,16 +194,16 @@ pub trait CRUD {
     ) -> Result<DBExecResult>
         where
             T: CRUDTable;
-    async fn save<T>(&self, entity: &T) -> Result<DBExecResult>
+    async fn save<T>(&self, table: &T) -> Result<DBExecResult>
         where
             T: CRUDTable;
-    async fn save_batch<T>(&self, entity: &[T]) -> Result<DBExecResult>
+    async fn save_batch<T>(&self, tables: &[T]) -> Result<DBExecResult>
         where
             T: CRUDTable;
 
     async fn save_batch_slice<T>(
         &self,
-        entity: &[T],
+        tables: &[T],
         slice_len: usize,
     ) -> Result<DBExecResult>
         where
@@ -212,34 +212,34 @@ pub trait CRUD {
     async fn remove_by_wrapper<T>(&self, w: &Wrapper) -> Result<u64>
         where
             T: CRUDTable;
-    async fn remove_by_column<T, V>(&self, column: &str, column_value: &V) -> Result<u64> where T: CRUDTable, V: Serialize + Send + Sync;
+    async fn remove_by_column<T, C>(&self, column: &str, column_value: &C) -> Result<u64> where T: CRUDTable, C: Serialize + Send + Sync;
 
-    async fn remove_batch_by_column<T, V>(&self, column: &str, column_values: &[V]) -> Result<u64>
+    async fn remove_batch_by_column<T, C>(&self, column: &str, column_values: &[C]) -> Result<u64>
         where
-            T: CRUDTable, V: Serialize + Send + Sync;
+            T: CRUDTable, C: Serialize + Send + Sync;
 
     async fn update_by_wrapper<T>(
         &self,
-        arg: &mut T,
+        table: &mut T,
         w: &Wrapper,
         update_null_value: bool,
     ) -> Result<u64>
         where
             T: CRUDTable;
     /// update database record by id
-    async fn update_by_column<T>(&self, column: &str, arg: &mut T) -> Result<u64>
+    async fn update_by_column<T>(&self, column: &str, table: &mut T) -> Result<u64>
         where
             T: CRUDTable;
 
     /// remove batch database record by args
-    async fn update_batch_by_column<T>(&self, column: &str, column_values: &mut [T]) -> Result<u64>
+    async fn update_batch_by_column<T>(&self, column: &str, tables: &mut [T]) -> Result<u64>
         where
             T: CRUDTable;
 
     /// fetch database record by id
-    async fn fetch_by_column<T, V>(&self, column: &str, value: &V) -> Result<T>
+    async fn fetch_by_column<T, C>(&self, column: &str, value: &C) -> Result<T>
         where
-            T: CRUDTable, V: Serialize + Send + Sync;
+            T: CRUDTable, C: Serialize + Send + Sync;
 
     /// fetch database record by a wrapper
     async fn fetch_by_wrapper<T>(&self, w: &Wrapper) -> Result<T>
@@ -266,9 +266,9 @@ pub trait CRUD {
             T: CRUDTable;
 
     /// fetch database record list by a id array
-    async fn fetch_list_by_column<T, V>(&self, column: &str, column_values: &[V]) -> Result<Vec<T>>
+    async fn fetch_list_by_column<T, C>(&self, column: &str, column_values: &[C]) -> Result<Vec<T>>
         where
-            T: CRUDTable, V: Serialize + Send + Sync;
+            T: CRUDTable, C: Serialize + Send + Sync;
 
     /// fetch database record list by a wrapper
     async fn fetch_list_by_wrapper<T>(&self, w: &Wrapper) -> Result<Vec<T>>
@@ -303,34 +303,34 @@ pub trait CRUDMut {
     async fn remove_by_wrapper<T>(&mut self, w: &Wrapper) -> Result<u64>
         where
             T: CRUDTable;
-    async fn remove_by_column<T, V>(&mut self, column: &str, column_value: &V) -> Result<u64> where T: CRUDTable, V: Serialize + Send + Sync;
+    async fn remove_by_column<T, C>(&mut self, column: &str, column_value: &C) -> Result<u64> where T: CRUDTable, C: Serialize + Send + Sync;
 
-    async fn remove_batch_by_column<T, V>(&mut self, column: &str, column_values: &[V]) -> Result<u64>
+    async fn remove_batch_by_column<T, C>(&mut self, column: &str, column_values: &[C]) -> Result<u64>
         where
-            T: CRUDTable, V: Serialize + Send + Sync;
+            T: CRUDTable, C: Serialize + Send + Sync;
 
     async fn update_by_wrapper<T>(
         &mut self,
-        arg: &mut T,
+        table: &mut T,
         w: &Wrapper,
         update_null_value: bool,
     ) -> Result<u64>
         where
             T: CRUDTable;
     /// update database record by id
-    async fn update_by_column<T>(&mut self, column: &str, arg: &mut T) -> Result<u64>
+    async fn update_by_column<T>(&mut self, column: &str, table: &mut T) -> Result<u64>
         where
             T: CRUDTable;
 
-    /// remove batch database record by args
-    async fn update_batch_by_column<T>(&mut self, column: &str, column_values: &mut [T]) -> Result<u64>
+    /// remove batch database record by tables
+    async fn update_batch_by_column<T>(&mut self, column: &str, tables: &mut [T]) -> Result<u64>
         where
             T: CRUDTable;
 
     /// fetch database record by id
-    async fn fetch_by_column<T, V>(&mut self, column: &str, value: &V) -> Result<T>
+    async fn fetch_by_column<T, C>(&mut self, column: &str, value: &C) -> Result<T>
         where
-            T: CRUDTable, V: Serialize + Send + Sync;
+            T: CRUDTable, C: Serialize + Send + Sync;
 
     /// fetch database record by a wrapper
     async fn fetch_by_wrapper<T>(&mut self, w: &Wrapper) -> Result<T>
@@ -357,9 +357,9 @@ pub trait CRUDMut {
             T: CRUDTable;
 
     /// fetch database record list by a id array
-    async fn fetch_list_by_column<T, V>(&mut self, column: &str, column_values: &[V]) -> Result<Vec<T>>
+    async fn fetch_list_by_column<T, C>(&mut self, column: &str, column_values: &[C]) -> Result<Vec<T>>
         where
-            T: CRUDTable, V: Serialize + Send + Sync;
+            T: CRUDTable, C: Serialize + Send + Sync;
 
     /// fetch database record list by a wrapper
     async fn fetch_list_by_wrapper<T>(&mut self, w: &Wrapper) -> Result<Vec<T>>
@@ -372,7 +372,7 @@ pub trait ImplCRUD: PySql {
     /// save by wrapper
     async fn save_by_wrapper<T>(
         &mut self,
-        entity: &T,
+        table: &T,
         w: &Wrapper,
     ) -> Result<DBExecResult>
         where
@@ -383,9 +383,9 @@ pub trait ImplCRUD: PySql {
         } else {
             let mut w = w.clone();
             let mut index = 0;
-            let (columns, values, args) = entity.make_value_sql_arg(&self.driver_type()?, &mut index)?;
+            let (columns, column_values, args) = table.make_value_sql_arg(&self.driver_type()?, &mut index)?;
             let table_name = choose_dyn_table_name::<T>(&w);
-            w = w.insert_into(&table_name, &columns, &values);
+            w = w.insert_into(&table_name, &columns, &column_values);
             for x in args {
                 w.args.push(x);
             }
@@ -415,15 +415,15 @@ pub trait ImplCRUD: PySql {
     /// save batch makes many value into  only one sql. make sure your data do not too long!
     ///
     /// for Example:
-    /// rb.save_batch("",&vec![activity]);
+    /// rb.save_batch("",&Cec![activity]);
     /// [rbatis] Exec ==>   insert into biz_activity (id,name,version) values ( ? , ? , ?),( ? , ? , ?)
     ///
     ///
-    async fn save_batch<T>(&mut self, args: &[T]) -> Result<DBExecResult>
+    async fn save_batch<T>(&mut self, tables: &[T]) -> Result<DBExecResult>
         where
             T: CRUDTable,
     {
-        if args.is_empty() {
+        if tables.is_empty() {
             return Ok(DBExecResult {
                 rows_affected: 0,
                 last_insert_id: None,
@@ -433,7 +433,7 @@ pub trait ImplCRUD: PySql {
         let mut arg_arr = vec![];
         let mut column_sql = String::new();
         let mut field_index = 0;
-        for x in args {
+        for x in tables {
             let (columns, values, args) =
                 x.make_value_sql_arg(&self.driver_type()?, &mut field_index)?;
             if column_sql.is_empty() {
@@ -461,26 +461,26 @@ pub trait ImplCRUD: PySql {
     /// slice_len != 0 : save data with slice_len everytime until save all data
     ///
     /// for Example:
-    /// rb.save_batch_slice("",&vec![activity],0);
+    /// rb.save_batch_slice("",&Cec![activity],0);
     /// [rbatis] Exec ==>   insert into biz_activity (id,name,version) values ( ? , ? , ?),( ? , ? , ?)
     ///
     async fn save_batch_slice<T>(
         &mut self,
-        args: &[T],
+        tables: &[T],
         slice_len: usize,
     ) -> Result<DBExecResult>
         where
             T: CRUDTable,
     {
-        if slice_len == 0 || args.len() <= slice_len {
-            return self.save_batch(args).await;
+        if slice_len == 0 || tables.len() <= slice_len {
+            return self.save_batch(tables).await;
         } else {
             let mut temp_result = DBExecResult {
                 rows_affected: 0,
                 last_insert_id: None,
             };
-            let total = args.len();
-            let mut pages = args.len() / slice_len;
+            let total = tables.len();
+            let mut pages = tables.len() / slice_len;
             if total % slice_len != 0 {
                 pages = pages + 1;
             }
@@ -489,7 +489,7 @@ pub trait ImplCRUD: PySql {
                 if temp_len > total {
                     temp_len = total;
                 }
-                let temp = &args[page * slice_len..temp_len];
+                let temp = &tables[page * slice_len..temp_len];
                 let result = self.save_batch(temp).await?;
                 temp_result.last_insert_id = result.last_insert_id;
                 temp_result.rows_affected = result.rows_affected + temp_result.rows_affected;
@@ -529,9 +529,9 @@ pub trait ImplCRUD: PySql {
     }
 
     /// remove database record by id
-    async fn remove_by_column<T, V>(&mut self, column: &str, value: &V) -> Result<u64>
+    async fn remove_by_column<T, C>(&mut self, column: &str, value: &C) -> Result<u64>
         where
-            T: CRUDTable, V: Serialize + Send + Sync,
+            T: CRUDTable, C: Serialize + Send + Sync,
     {
         let mut sql = String::new();
         let driver_type = &self.driver_type()?;
@@ -571,9 +571,9 @@ pub trait ImplCRUD: PySql {
     /// rb.remove_batch_by_column::<BizActivity>(&["1".to_string(),"2".to_string()]).await;
     /// [rbatis] Exec ==> delete from biz_activity where id IN ( ? , ? )
     ///
-    async fn remove_batch_by_column<T, V>(&mut self, column: &str, values: &[V]) -> Result<u64>
+    async fn remove_batch_by_column<T, C>(&mut self, column: &str, values: &[C]) -> Result<u64>
         where
-            T: CRUDTable, V: Serialize + Send + Sync
+            T: CRUDTable, C: Serialize + Send + Sync
     {
         if values.is_empty() {
             return Ok(0);
@@ -591,7 +591,7 @@ pub trait ImplCRUD: PySql {
     /// skips:  vec!["column"] ->  will skip  column fields
     async fn update_by_wrapper<T>(
         &mut self,
-        arg: &mut T,
+        table: &mut T,
         w: &Wrapper,
         skips: Vec<&str>,
     ) -> Result<u64>
@@ -605,7 +605,7 @@ pub trait ImplCRUD: PySql {
         let columns = T::table_columns();
         let columns_vec: Vec<&str> = columns.split(",").collect();
         let map;
-        match serde_json::json!(arg) {
+        match serde_json::json!(table) {
             serde_json::Value::Object(m) => {
                 map = m;
             }
@@ -704,20 +704,21 @@ pub trait ImplCRUD: PySql {
             .await?
             .rows_affected;
         if rows_affected > 0 {
-            *arg = serde_json::from_value(serde_json::Value::Object(map)).into_result()?;
+            *table = serde_json::from_value(serde_json::Value::Object(map)).into_result()?;
         }
         return Ok(rows_affected);
     }
 
     /// update database record by id
-    async fn update_by_column<T, V>(&mut self, column: &str, value: V, arg: &mut T) -> Result<u64>
+    async fn update_by_column<T>(&mut self, column: &str, table: &mut T) -> Result<u64>
         where
-            T: CRUDTable, V: Serialize + Send + Sync
+            T: CRUDTable
     {
         let rb = self
             .get_rbatis();
+        let value = table.get(column);
         self.update_by_wrapper(
-            arg,
+            table,
             &rb
                 .new_wrapper_table::<T>()
                 .eq(column, value),
@@ -733,8 +734,7 @@ pub trait ImplCRUD: PySql {
     {
         let mut updates = 0;
         for x in args {
-            let v = x.get(column);
-            updates += self.update_by_column(column, v, x).await?
+            updates += self.update_by_column(column, x).await?
         }
         Ok(updates)
     }
@@ -758,9 +758,9 @@ pub trait ImplCRUD: PySql {
     }
 
     /// fetch database record by value
-    async fn fetch_by_column<T, V>(&mut self, column: &str, value: &V) -> Result<T>
+    async fn fetch_by_column<T, C>(&mut self, column: &str, value: &C) -> Result<T>
         where
-            T: CRUDTable, V: Serialize + Send + Sync,
+            T: CRUDTable, C: Serialize + Send + Sync,
     {
         let w = self.get_rbatis().new_wrapper_table::<T>().eq(&column, value);
         return self.fetch_by_wrapper(&w).await;
@@ -786,9 +786,9 @@ pub trait ImplCRUD: PySql {
     }
 
     /// fetch database record list by a id array
-    async fn fetch_list_by_column<T, V>(&mut self, column: &str, column_values: &[V]) -> Result<Vec<T>>
+    async fn fetch_list_by_column<T, C>(&mut self, column: &str, column_values: &[C]) -> Result<Vec<T>>
         where
-            T: CRUDTable, V: Serialize + Send + Sync,
+            T: CRUDTable, C: Serialize + Send + Sync,
     {
         let w = self.get_rbatis().new_wrapper_table::<T>().in_array(&column, column_values);
         return self.fetch_list_by_wrapper(&w).await;
@@ -889,45 +889,44 @@ impl CRUD for Rbatis {
         conn.remove_by_wrapper::<T>(w).await
     }
 
-    async fn remove_by_column<T, V>(&self, column: &str, value: &V) -> Result<u64> where
-        T: CRUDTable, V: Serialize + Send + Sync {
+    async fn remove_by_column<T, C>(&self, column: &str, value: &C) -> Result<u64> where
+        T: CRUDTable, C: Serialize + Send + Sync {
         let mut conn = self.acquire().await?;
-        conn.remove_by_column::<T, V>(column, value).await
+        conn.remove_by_column::<T, C>(column, value).await
     }
 
-    async fn remove_batch_by_column<T, V>(&self, column: &str, values: &[V]) -> Result<u64> where
-        T: CRUDTable, V: Serialize + Send + Sync {
+    async fn remove_batch_by_column<T, C>(&self, column: &str, values: &[C]) -> Result<u64> where
+        T: CRUDTable, C: Serialize + Send + Sync {
         let mut conn = self.acquire().await?;
-        conn.remove_batch_by_column::<T, V>(column, values).await
+        conn.remove_batch_by_column::<T, C>(column, values).await
     }
 
-    async fn update_by_wrapper<T>(&self, arg: &mut T, w: &Wrapper, update_null_value: bool) -> Result<u64> where
+    async fn update_by_wrapper<T>(&self, table: &mut T, w: &Wrapper, update_null_value: bool) -> Result<u64> where
         T: CRUDTable {
         let mut conn = self.acquire().await?;
         if update_null_value {
-            conn.update_by_wrapper(arg, w, vec!["null"]).await
+            conn.update_by_wrapper(table, w, vec!["null"]).await
         } else {
-            conn.update_by_wrapper(arg, w, vec![]).await
+            conn.update_by_wrapper(table, w, vec![]).await
         }
     }
 
-    async fn update_by_column<T>(&self, column: &str, arg: &mut T) -> Result<u64> where
+    async fn update_by_column<T>(&self, column: &str, table: &mut T) -> Result<u64> where
         T: CRUDTable {
         let mut conn = self.acquire().await?;
-        let value = arg.get(column);
-        conn.update_by_column(column, value, arg).await
+        conn.update_by_column(column, table).await
     }
 
-    async fn update_batch_by_column<T>(&self, column: &str, column_values: &mut [T]) -> Result<u64> where
+    async fn update_batch_by_column<T>(&self, column: &str, args: &mut [T]) -> Result<u64> where
         T: CRUDTable {
         let mut conn = self.acquire().await?;
-        conn.update_batch_by_column::<T>(column, column_values).await
+        conn.update_batch_by_column::<T>(column, args).await
     }
 
-    async fn fetch_by_column<T, V>(&self, column: &str, value: &V) -> Result<T> where
-        T: CRUDTable, V: Serialize + Send + Sync {
+    async fn fetch_by_column<T, C>(&self, column: &str, value: &C) -> Result<T> where
+        T: CRUDTable, C: Serialize + Send + Sync {
         let mut conn = self.acquire().await?;
-        conn.fetch_by_column::<T, V>(column, value).await
+        conn.fetch_by_column::<T, C>(column, value).await
     }
 
     async fn fetch_by_wrapper<T>(&self, w: &Wrapper) -> Result<T> where
@@ -954,10 +953,10 @@ impl CRUD for Rbatis {
         conn.fetch_list().await
     }
 
-    async fn fetch_list_by_column<T, V>(&self, column: &str, column_values: &[V]) -> Result<Vec<T>> where
-        T: CRUDTable, V: Serialize + Send + Sync {
+    async fn fetch_list_by_column<T, C>(&self, column: &str, column_values: &[C]) -> Result<Vec<T>> where
+        T: CRUDTable, C: Serialize + Send + Sync {
         let mut conn = self.acquire().await?;
-        conn.fetch_list_by_column::<T, V>(column, column_values).await
+        conn.fetch_list_by_column::<T, C>(column, column_values).await
     }
 
     async fn fetch_list_by_wrapper<T>(&self, w: &Wrapper) -> Result<Vec<T>> where
