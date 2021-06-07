@@ -28,7 +28,7 @@ mod wrapper_test;
 
 use chrono::NaiveDateTime;
 /// this is table model(see ../database.sql)
-#[crud_enable]
+#[crud_table]
 #[derive(Clone, Debug)]
 pub struct BizActivity {
     pub id: Option<String>,

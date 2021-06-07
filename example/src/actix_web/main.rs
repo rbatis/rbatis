@@ -9,7 +9,7 @@ use chrono::NaiveDateTime;
 use rbatis::crud::{ImplCRUD, CRUD};
 use rbatis::rbatis::Rbatis;
 
-#[crud_enable]
+#[crud_table]
 #[derive(Clone, Debug)]
 pub struct BizActivity {
     pub id: Option<String>,

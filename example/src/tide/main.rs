@@ -10,7 +10,7 @@ use rbatis::rbatis::Rbatis;
 use serde_json::{json, Value};
 use tide::Request;
 
-#[crud_enable]
+#[crud_table]
 #[derive(Clone, Debug)]
 pub struct BizActivity {
     pub id: Option<String>,
