@@ -21,6 +21,7 @@ use crate::wrapper::Wrapper;
 use crate::executor::{RBatisConnExecutor, Executor, RBatisTxExecutor};
 use crate::py::PySql;
 
+
 /// DataBase Table Model trait
 ///
 /// if use #[crud_enable] impl Table struct,
@@ -31,20 +32,6 @@ use crate::py::PySql;
 /// you must impl IdType and id_name() method!
 ///
 pub trait CRUDTable: Send + Sync + Serialize + DeserializeOwned {
-    /// your table id type,for example:
-    /// IdType = String
-    /// IdType = i32
-    ///
-    type IdType: Send + Sync + Clone + Serialize + Display + Eq + PartialEq;
-
-    ///table id column
-    fn id_name() -> String {
-        "id".to_string()
-    }
-
-    /// get struct id field
-    fn get_id(&self) -> Option<&Self::IdType>;
-
     /// get table name,default is type name for snake name
     ///
     /// for Example:  struct  BizActivity{} =>  "biz_activity"
@@ -130,9 +117,6 @@ pub trait CRUDTable: Send + Sync + Serialize + DeserializeOwned {
         for column in columns {
             let column = crate::utils::string_util::un_packing_string(column);
             let v = map.get(column).unwrap_or(&serde_json::Value::Null);
-            if Self::id_name().eq(column) && v.eq(&serde_json::Value::Null) {
-                continue;
-            }
             //cast convert
             column_sql = column_sql + column + ",";
             value_sql = value_sql
@@ -154,29 +138,24 @@ pub trait CRUDTable: Send + Sync + Serialize + DeserializeOwned {
     ) -> HashMap<String, fn(arg: &str) -> String> {
         return HashMap::new();
     }
+
+
+    fn get(&self, column: &str) -> serde_json::Value {
+        let s = serde_json::json!(self);
+        let value = s.get(column);
+        match value {
+            None => { return serde_json::Value::Null; }
+            Some(v) => {
+                return v.clone();
+            }
+        }
+    }
 }
 
 impl<T> CRUDTable for Option<T>
     where
         T: CRUDTable,
 {
-    type IdType = T::IdType;
-
-    fn id_name() -> String {
-        T::id_name()
-    }
-
-    fn get_id(&self) -> Option<&Self::IdType> {
-        match self {
-            Some(s) => {
-                return s.get_id();
-            }
-            None => {
-                return None;
-            }
-        }
-    }
-
     fn table_name() -> String {
         T::table_name()
     }
@@ -202,142 +181,6 @@ impl<T> CRUDTable for Option<T>
         T::make_value_sql_arg(self.as_ref().unwrap(), db_type, index)
     }
 }
-
-/// fetch ids, must use Id trait  together
-pub trait Ids<C>
-    where
-        C: CRUDTable,
-{
-    ///get ids
-    fn to_ids(&self) -> Vec<C::IdType>;
-}
-
-impl<C> Ids<C> for [C]
-    where
-        C: CRUDTable,
-{
-    fn to_ids(&self) -> Vec<C::IdType> {
-        let mut vec = vec![];
-        for item in self {
-            let id = item.get_id();
-            if id.is_some() {
-                match id {
-                    Some(id) => {
-                        vec.push(id.clone());
-                    }
-                    _ => {}
-                }
-            }
-        }
-        vec
-    }
-}
-
-impl<C> Ids<C> for HashSet<C>
-    where
-        C: CRUDTable,
-{
-    fn to_ids(&self) -> Vec<C::IdType> {
-        let mut vec = vec![];
-        for item in self {
-            let id = item.get_id();
-            if id.is_some() {
-                match id {
-                    Some(id) => {
-                        vec.push(id.clone());
-                    }
-                    _ => {}
-                }
-            }
-        }
-        vec
-    }
-}
-
-impl<C> Ids<C> for VecDeque<C>
-    where
-        C: CRUDTable,
-{
-    fn to_ids(&self) -> Vec<C::IdType> {
-        let mut vec = vec![];
-        for item in self {
-            let id = item.get_id();
-            if id.is_some() {
-                match id {
-                    Some(id) => {
-                        vec.push(id.clone());
-                    }
-                    _ => {}
-                }
-            }
-        }
-        vec
-    }
-}
-
-impl<C> Ids<C> for LinkedList<C>
-    where
-        C: CRUDTable,
-{
-    fn to_ids(&self) -> Vec<C::IdType> {
-        let mut vec = vec![];
-        for item in self {
-            let id = item.get_id();
-            if id.is_some() {
-                match id {
-                    Some(id) => {
-                        vec.push(id.clone());
-                    }
-                    _ => {}
-                }
-            }
-        }
-        vec
-    }
-}
-
-impl<K, C> Ids<C> for HashMap<K, C>
-    where
-        C: CRUDTable,
-{
-    fn to_ids(&self) -> Vec<C::IdType> {
-        let mut vec = vec![];
-        for (_, item) in self {
-            let id = item.get_id();
-            if id.is_some() {
-                match id {
-                    Some(id) => {
-                        vec.push(id.clone());
-                    }
-                    _ => {}
-                }
-            }
-        }
-        vec
-    }
-}
-
-impl<K, C> Ids<C> for BTreeMap<K, C>
-    where
-        C: CRUDTable,
-{
-    fn to_ids(&self) -> Vec<C::IdType> {
-        let mut vec = vec![];
-        for (_, item) in self {
-            let id = item.get_id();
-            if id.is_some() {
-                match id {
-                    Some(id) => {
-                        vec.push(id.clone());
-                    }
-                    _ => {}
-                }
-            }
-        }
-        vec
-    }
-}
-
 
 #[async_trait]
 pub trait CRUD {
@@ -366,12 +209,11 @@ pub trait CRUD {
     async fn remove_by_wrapper<T>(&self, w: &Wrapper) -> Result<u64>
         where
             T: CRUDTable;
-    async fn remove_by_id<T>(&self, id: &T::IdType) -> Result<u64>
+    async fn remove_by_column<T, V>(&self, column: &str, id: &V) -> Result<u64> where T: CRUDTable, V: Serialize + Send + Sync;
+
+    async fn remove_batch_by_column<T, V>(&self, column: &str, ids: &[V]) -> Result<u64>
         where
-            T: CRUDTable;
-    async fn remove_batch_by_id<T>(&self, ids: &[T::IdType]) -> Result<u64>
-        where
-            T: CRUDTable;
+            T: CRUDTable, V: Serialize + Send + Sync;
 
     async fn update_by_wrapper<T>(
         &self,
@@ -382,19 +224,19 @@ pub trait CRUD {
         where
             T: CRUDTable;
     /// update database record by id
-    async fn update_by_id<T>(&self, arg: &mut T) -> Result<u64>
+    async fn update_by_column<T>(&self, column: &str, arg: &mut T) -> Result<u64>
         where
             T: CRUDTable;
 
     /// remove batch database record by args
-    async fn update_batch_by_id<T>(&self, ids: &mut [T]) -> Result<u64>
+    async fn update_batch_by_column<T>(&self, column: &str, ids: &mut [T]) -> Result<u64>
         where
             T: CRUDTable;
 
     /// fetch database record by id
-    async fn fetch_by_id<T>(&self, id: &T::IdType) -> Result<T>
+    async fn fetch_by_column<T, V>(&self, column: &str, value: &V) -> Result<T>
         where
-            T: CRUDTable;
+            T: CRUDTable, V: Serialize + Send + Sync;
 
     /// fetch database record by a wrapper
     async fn fetch_by_wrapper<T>(&self, w: &Wrapper) -> Result<T>
@@ -421,9 +263,9 @@ pub trait CRUD {
             T: CRUDTable;
 
     /// fetch database record list by a id array
-    async fn fetch_list_by_ids<T>(&self, ids: &[T::IdType]) -> Result<Vec<T>>
+    async fn fetch_list_by_columns<T, V>(&self, column: &str, ids: &[V]) -> Result<Vec<T>>
         where
-            T: CRUDTable;
+            T: CRUDTable, V: Serialize + Send + Sync;
 
     /// fetch database record list by a wrapper
     async fn fetch_list_by_wrapper<T>(&self, w: &Wrapper) -> Result<Vec<T>>
@@ -458,12 +300,11 @@ pub trait CRUDMut {
     async fn remove_by_wrapper<T>(&mut self, w: &Wrapper) -> Result<u64>
         where
             T: CRUDTable;
-    async fn remove_by_id<T>(&mut self, id: &T::IdType) -> Result<u64>
+    async fn remove_by_column<T, V>(&mut self, column: &str, id: &V) -> Result<u64> where T: CRUDTable, V: Serialize + Send + Sync;
+
+    async fn remove_batch_by_column<T, V>(&mut self, column: &str, ids: &[V]) -> Result<u64>
         where
-            T: CRUDTable;
-    async fn remove_batch_by_id<T>(&mut self, ids: &[T::IdType]) -> Result<u64>
-        where
-            T: CRUDTable;
+            T: CRUDTable, V: Serialize + Send + Sync;
 
     async fn update_by_wrapper<T>(
         &mut self,
@@ -474,19 +315,19 @@ pub trait CRUDMut {
         where
             T: CRUDTable;
     /// update database record by id
-    async fn update_by_id<T>(&mut self, arg: &mut T) -> Result<u64>
+    async fn update_by_column<T>(&mut self, column: &str, arg: &mut T) -> Result<u64>
         where
             T: CRUDTable;
 
     /// remove batch database record by args
-    async fn update_batch_by_id<T>(&mut self, ids: &mut [T]) -> Result<u64>
+    async fn update_batch_by_column<T>(&mut self, column: &str, ids: &mut [T]) -> Result<u64>
         where
             T: CRUDTable;
 
     /// fetch database record by id
-    async fn fetch_by_id<T>(&mut self, id: &T::IdType) -> Result<T>
+    async fn fetch_by_column<T, V>(&mut self, column: &str, value: &V) -> Result<T>
         where
-            T: CRUDTable;
+            T: CRUDTable, V: Serialize + Send + Sync;
 
     /// fetch database record by a wrapper
     async fn fetch_by_wrapper<T>(&mut self, w: &Wrapper) -> Result<T>
@@ -513,9 +354,9 @@ pub trait CRUDMut {
             T: CRUDTable;
 
     /// fetch database record list by a id array
-    async fn fetch_list_by_ids<T>(&mut self, ids: &[T::IdType]) -> Result<Vec<T>>
+    async fn fetch_list_by_columns<T, V>(&mut self, column: &str, values: &[V]) -> Result<Vec<T>>
         where
-            T: CRUDTable;
+            T: CRUDTable, V: Serialize + Send + Sync;
 
     /// fetch database record list by a wrapper
     async fn fetch_list_by_wrapper<T>(&mut self, w: &Wrapper) -> Result<Vec<T>>
@@ -685,13 +526,13 @@ pub trait ImplCRUD: PySql {
     }
 
     /// remove database record by id
-    async fn remove_by_id<T>(&mut self, id: &T::IdType) -> Result<u64>
+    async fn remove_by_column<T, V>(&mut self, column: &str, value: &V) -> Result<u64>
         where
-            T: CRUDTable,
+            T: CRUDTable, V: Serialize + Send + Sync,
     {
         let mut sql = String::new();
         let driver_type = &self.driver_type()?;
-        let id_str = T::do_format_column(&driver_type, &T::id_name(), driver_type.stmt_convert(0));
+        let id_str = T::do_format_column(&driver_type, column, driver_type.stmt_convert(0));
         if self.get_rbatis().logic_plugin.is_some() {
             sql = self.get_rbatis().logic_plugin.as_ref().unwrap().create_remove_sql(
                 "",
@@ -701,7 +542,7 @@ pub trait ImplCRUD: PySql {
                 format!(
                     "{} {} = {}",
                     crate::sql::TEMPLATE.r#where.value,
-                    T::id_name(),
+                    column,
                     id_str
                 )
                     .as_str(),
@@ -712,33 +553,33 @@ pub trait ImplCRUD: PySql {
                 crate::sql::TEMPLATE.delete_from.value,
                 T::table_name(),
                 crate::sql::TEMPLATE.r#where.value,
-                T::id_name(),
+                column,
                 id_str
             );
         }
         return Ok(self
-            .execute(&sql, &vec![json!(id)])
+            .execute(&sql, &vec![json!(value)])
             .await?
             .rows_affected);
     }
 
     ///remove batch id
     /// for Example :
-    /// rb.remove_batch_by_id::<BizActivity>(&["1".to_string(),"2".to_string()]).await;
+    /// rb.remove_batch_by_column::<BizActivity>(&["1".to_string(),"2".to_string()]).await;
     /// [rbatis] Exec ==> delete from biz_activity where id IN ( ? , ? )
     ///
-    async fn remove_batch_by_id<T>(&mut self, ids: &[T::IdType]) -> Result<u64>
+    async fn remove_batch_by_column<T, V>(&mut self, column: &str, values: &[V]) -> Result<u64>
         where
-            T: CRUDTable,
+            T: CRUDTable, V: Serialize + Send + Sync
     {
-        if ids.is_empty() {
+        if values.is_empty() {
             return Ok(0);
         }
         let w = self
             .get_rbatis()
             .new_wrapper_table::<T>()
             .and()
-            .in_array(&T::id_name(), &ids);
+            .in_array(column, values);
         return self.remove_by_wrapper::<T>(&w).await;
     }
 
@@ -747,7 +588,7 @@ pub trait ImplCRUD: PySql {
         &mut self,
         arg: &mut T,
         w: &Wrapper,
-        update_null_value: bool,
+        skips: Vec<&str>,
     ) -> Result<u64>
         where
             T: CRUDTable,
@@ -769,14 +610,23 @@ pub trait ImplCRUD: PySql {
         }
         let null = serde_json::Value::Null;
         let mut sets = String::new();
+        let mut skip_null_value = false;
+        for x in &skips {
+            if "null".eq(*x) {
+                skip_null_value = true;
+            }
+        }
+
         for column in columns_vec {
-            //filter id
-            if column.eq(&T::id_name()) {
-                continue;
+            //filter
+            for x in &skips {
+                if column.eq(*x) {
+                    continue;
+                }
             }
             let mut v = map.get(column).unwrap_or_else(|| &null).clone();
             //filter null
-            if !update_null_value && v.is_null() {
+            if skip_null_value && v.is_null() {
                 continue;
             }
             sets.push_str(
@@ -855,38 +705,31 @@ pub trait ImplCRUD: PySql {
     }
 
     /// update database record by id
-    async fn update_by_id<T>(&mut self, arg: &mut T) -> Result<u64>
+    async fn update_by_column<T, V>(&mut self, column: &str, value: V, arg: &mut T) -> Result<u64>
         where
-            T: CRUDTable,
+            T: CRUDTable, V: Serialize + Send + Sync
     {
-        let id = arg.get_id();
-        if id.is_none() {
-            let id_name = T::id_name();
-            return Err(crate::core::Error::from(format!(
-                "[rbatis] update_by_id() arg.{} can no be none!",
-                id_name
-            )));
-        }
         let rb = self
             .get_rbatis();
         self.update_by_wrapper(
             arg,
             &rb
                 .new_wrapper_table::<T>()
-                .eq(&T::id_name(), arg.get_id()),
-            false,
+                .eq(column, value),
+            vec![],
         )
             .await
     }
 
     /// remove batch database record by args
-    async fn update_batch_by_id<T>(&mut self, args: &mut [T]) -> Result<u64>
+    async fn update_batch_by_column<T>(&mut self, column: &str, args: &mut [T]) -> Result<u64>
         where
-            T: CRUDTable,
+            T: CRUDTable
     {
         let mut updates = 0;
         for x in args {
-            updates += self.update_by_id(x).await?
+            let v = x.get(column);
+            updates += self.update_by_column(column, v, x).await?
         }
         Ok(updates)
     }
@@ -909,12 +752,12 @@ pub trait ImplCRUD: PySql {
         return self.fetch(sql.as_str(), &w.args).await;
     }
 
-    /// fetch database record by id
-    async fn fetch_by_id<T>(&mut self, id: &T::IdType) -> Result<T>
+    /// fetch database record by value
+    async fn fetch_by_column<T, V>(&mut self, column: &str, value: &V) -> Result<T>
         where
-            T: CRUDTable,
+            T: CRUDTable, V: Serialize + Send + Sync,
     {
-        let w = self.get_rbatis().new_wrapper_table::<T>().eq(&T::id_name(), id);
+        let w = self.get_rbatis().new_wrapper_table::<T>().eq(&column, value);
         return self.fetch_by_wrapper(&w).await;
     }
 
@@ -938,11 +781,11 @@ pub trait ImplCRUD: PySql {
     }
 
     /// fetch database record list by a id array
-    async fn fetch_list_by_ids<T>(&mut self, ids: &[T::IdType]) -> Result<Vec<T>>
+    async fn fetch_list_by_columns<T, V>(&mut self, column: &str, values: &[V]) -> Result<Vec<T>>
         where
-            T: CRUDTable,
+            T: CRUDTable, V: Serialize + Send + Sync,
     {
-        let w = self.get_rbatis().new_wrapper_table::<T>().in_array(&T::id_name(), ids);
+        let w = self.get_rbatis().new_wrapper_table::<T>().in_array(&column, values);
         return self.fetch_list_by_wrapper(&w).await;
     }
 
@@ -1041,40 +884,45 @@ impl CRUD for Rbatis {
         conn.remove_by_wrapper::<T>(w).await
     }
 
-    async fn remove_by_id<T>(&self, id: &<T as CRUDTable>::IdType) -> Result<u64> where
-        T: CRUDTable {
+    async fn remove_by_column<T, V>(&self, column: &str, value: &V) -> Result<u64> where
+        T: CRUDTable, V: Serialize + Send + Sync {
         let mut conn = self.acquire().await?;
-        conn.remove_by_id::<T>(id).await
+        conn.remove_by_column::<T, V>(column, value).await
     }
 
-    async fn remove_batch_by_id<T>(&self, ids: &[<T as CRUDTable>::IdType]) -> Result<u64> where
-        T: CRUDTable {
+    async fn remove_batch_by_column<T, V>(&self, column: &str, values: &[V]) -> Result<u64> where
+        T: CRUDTable, V: Serialize + Send + Sync {
         let mut conn = self.acquire().await?;
-        conn.remove_batch_by_id::<T>(ids).await
+        conn.remove_batch_by_column::<T, V>(column, values).await
     }
 
     async fn update_by_wrapper<T>(&self, arg: &mut T, w: &Wrapper, update_null_value: bool) -> Result<u64> where
         T: CRUDTable {
         let mut conn = self.acquire().await?;
-        conn.update_by_wrapper(arg,w,update_null_value).await
+        if update_null_value {
+            conn.update_by_wrapper(arg, w, vec!["null"]).await
+        } else {
+            conn.update_by_wrapper(arg, w, vec![]).await
+        }
     }
 
-    async fn update_by_id<T>(&self, arg: &mut T) -> Result<u64> where
+    async fn update_by_column<T>(&self, column: &str, arg: &mut T) -> Result<u64> where
         T: CRUDTable {
         let mut conn = self.acquire().await?;
-        conn.update_by_id(arg).await
+        let value = arg.get(column);
+        conn.update_by_column(column, value, arg).await
     }
 
-    async fn update_batch_by_id<T>(&self, ids: &mut [T]) -> Result<u64> where
+    async fn update_batch_by_column<T>(&self, column: &str, ids: &mut [T]) -> Result<u64> where
         T: CRUDTable {
         let mut conn = self.acquire().await?;
-        conn.update_batch_by_id(ids).await
+        conn.update_batch_by_column::<T>(column, ids).await
     }
 
-    async fn fetch_by_id<T>(&self, id: &<T as CRUDTable>::IdType) -> Result<T> where
-        T: CRUDTable {
+    async fn fetch_by_column<T, V>(&self, column: &str, value: &V) -> Result<T> where
+        T: CRUDTable, V: Serialize + Send + Sync {
         let mut conn = self.acquire().await?;
-        conn.fetch_by_id(id).await
+        conn.fetch_by_column::<T, V>(column, value).await
     }
 
     async fn fetch_by_wrapper<T>(&self, w: &Wrapper) -> Result<T> where
@@ -1092,7 +940,7 @@ impl CRUD for Rbatis {
     async fn fetch_page_by_wrapper<T>(&self, w: &Wrapper, page: &dyn IPageRequest) -> Result<Page<T>> where
         T: CRUDTable {
         let mut conn = self.acquire().await?;
-        conn.fetch_page_by_wrapper::<T>(w,page).await
+        conn.fetch_page_by_wrapper::<T>(w, page).await
     }
 
     async fn fetch_list<T>(&self) -> Result<Vec<T>> where
@@ -1101,10 +949,10 @@ impl CRUD for Rbatis {
         conn.fetch_list().await
     }
 
-    async fn fetch_list_by_ids<T>(&self, ids: &[<T as CRUDTable>::IdType]) -> Result<Vec<T>> where
-        T: CRUDTable {
+    async fn fetch_list_by_columns<T, V>(&self, column: &str, ids: &[V]) -> Result<Vec<T>> where
+        T: CRUDTable, V: Serialize + Send + Sync {
         let mut conn = self.acquire().await?;
-        conn.fetch_list_by_ids(ids).await
+        conn.fetch_list_by_columns::<T, V>(column, ids).await
     }
 
     async fn fetch_list_by_wrapper<T>(&self, w: &Wrapper) -> Result<Vec<T>> where

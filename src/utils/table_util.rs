@@ -2,65 +2,6 @@ use std::collections::{BTreeMap, HashMap};
 
 use crate::crud::CRUDTable;
 
-/// Father-Child Relationship
-pub trait FatherChildRelationship
-where
-    Self: CRUDTable + Clone,
-{
-    fn get_father_id(&self) -> Option<&Self::IdType>;
-    fn set_childs(&mut self, arg: Vec<Self>);
-    ///set_childs for Relationship
-    fn set_childs_recursive(&mut self, all_record: &HashMap<Self::IdType, Self>) {
-        let mut childs: Option<Vec<Self>> = None;
-        if self.get_id().is_some() {
-            for (key, x) in all_record {
-                if x.get_father_id().is_some() && self.get_id().eq(&x.get_father_id()) {
-                    let mut item = x.clone();
-                    item.set_childs_recursive(all_record);
-                    match &mut childs {
-                        Some(childs) => {
-                            childs.push(item);
-                        }
-                        None => {
-                            let mut vec = vec![];
-                            vec.push(item);
-                            childs = Some(vec);
-                        }
-                    }
-                }
-            }
-        }
-        if childs.is_some() {
-            self.set_childs(childs.unwrap())
-        }
-    }
-
-    ///set_childs for Relationship
-    fn set_childs_recursive_btree(&mut self, all_record: &BTreeMap<Self::IdType, Self>) {
-        let mut childs: Option<Vec<Self>> = None;
-        if self.get_id().is_some() {
-            for (key, x) in all_record {
-                if x.get_father_id().is_some() && self.get_id().eq(&x.get_father_id()) {
-                    let mut item = x.clone();
-                    item.set_childs_recursive_btree(all_record);
-                    match &mut childs {
-                        Some(childs) => {
-                            childs.push(item);
-                        }
-                        None => {
-                            let mut vec = vec![];
-                            vec.push(item);
-                            childs = Some(vec);
-                        }
-                    }
-                }
-            }
-        }
-        if childs.is_some() {
-            self.set_childs(childs.unwrap())
-        }
-    }
-}
 
 /// Simplifies table construction by relying on the Default trait
 ///

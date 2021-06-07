@@ -10,45 +10,11 @@ use syn::ext::IdentExt;
 ///impl CRUDTable
 pub(crate) fn impl_crud_driver(
     ast: &syn::DeriveInput,
-    arg_id_name: &str,
     arg_table_name: &str,
     arg_table_columns: &str,
     arg_formats: &HashMap<String, String>,
 ) -> TokenStream {
-    let mut id_name = arg_id_name.to_owned();
-    if id_name.is_empty() {
-        id_name = "id".to_string();
-    }
     let name = &ast.ident;
-    let id_type_inner;
-    let id_type_source;
-    match find_id_type_ident(&id_name, &ast.data) {
-        Some((id_type_ident, id_type_ident_source)) => {
-            id_type_inner = id_type_ident;
-            id_type_source = id_type_ident_source;
-        }
-        None => {
-            panic!("[rbatis] can not find ident:{}", id_name);
-        }
-    }
-    // make return Option<&Self::IdType>
-    let id_field_str = Ident::new(
-        &id_name
-            .to_string()
-            .trim_start_matches("\"")
-            .trim_end_matches("\""),
-        Span::call_site(),
-    );
-    let mut id_field = id_field_str.to_token_stream();
-    if id_type_source.to_string().contains("Option") {
-        id_field = quote! {
-          self.#id_field.as_ref()
-        };
-    } else {
-        id_field = quote! {
-           Option::<&#id_type_source>::from(&self.#id_field)
-        };
-    }
     let table_name;
     if arg_table_name.is_empty() {
         table_name = gen_table_name(&ast.ident).to_token_stream();
@@ -87,16 +53,6 @@ pub(crate) fn impl_crud_driver(
     }
     let gen = quote! {
         impl rbatis::crud::CRUDTable for #name {
-            type IdType = #id_type_inner;
-
-            fn id_name() -> String {
-                 #id_name.to_string()
-            }
-
-            fn get_id(&self) ->  Option<&Self::IdType>{
-                #id_field
-            }
-
             fn table_name() -> String {
                  #table_name.to_string()
             }
@@ -249,39 +205,6 @@ fn gen_fields(data: &syn::Data) -> proc_macro2::TokenStream {
     fields.to_token_stream()
 }
 
-///filter id_type
-fn find_id_type_ident(id_name: &str, arg: &syn::Data) -> Option<(Ident, proc_macro2::TokenStream)> {
-    match &arg {
-        syn::Data::Struct(ref data_struct) => match data_struct.fields {
-            // field: (0) a: String
-            syn::Fields::Named(ref fields_named) => {
-                for (_, field) in fields_named.named.iter().enumerate() {
-                    let field_name = format!("{}", field.ident.to_token_stream());
-                    if field_name.trim().eq(id_name) {
-                        let ty = format!("{}", field.ty.to_token_stream());
-                        let mut inner_type = ty.trim().replace(" ", "").to_string();
-                        if inner_type.starts_with("Option<") {
-                            inner_type = inner_type
-                                .trim_start_matches("Option<")
-                                .trim_end_matches(">")
-                                .to_string();
-                        }
-                        let id_type = field.ty.to_token_stream();
-                        //println!("id_type from:{}", &inner_type);
-                        let id_type_ident = Ident::new(inner_type.as_str(), Span::call_site());
-                        //println!("id_type:{}", &id_type);
-                        return Some((id_type_ident, id_type));
-                    }
-                }
-            }
-            syn::Fields::Unnamed(_) => {}
-            syn::Fields::Unit => {}
-        },
-        _ => (),
-    }
-    None
-}
-
 fn to_snake_name(name: &String) -> String {
     let chs = name.chars();
     let mut new_name = String::new();
@@ -303,8 +226,6 @@ fn to_snake_name(name: &String) -> String {
 
 #[derive(Debug)]
 pub struct CrudEnableConfig {
-    pub id_name: String,
-    pub id_type: String,
     pub table_name: String,
     pub table_columns: String,
     pub formats: HashMap<String, String>,
@@ -320,7 +241,6 @@ pub(crate) fn impl_crud(args: TokenStream, input: TokenStream) -> TokenStream {
     let ast = syn::parse(input).unwrap();
     let stream = impl_crud_driver(
         &ast,
-        &config.id_name,
         &config.table_name,
         &config.table_columns,
         &config.formats,
@@ -349,15 +269,10 @@ fn gen_driver_token(token_string: &str) -> proc_macro2::TokenStream {
 }
 
 ///read config
-///     id_name:id|
-///     id_type:String|
 ///     table_name:biz_activity|
 ///     table_columns:id,name,version,delete_flag|
 ///     formats_pg:id:{}::uuid,name:{}::string
 ///
-///
-///     id_name:"id"|
-///     id_type:"String"|
 ///     table_name:"biz_activity"|
 ///     table_columns:"id,name,version,delete_flag"|
 ///     formats_pg:"id:{}::uuid,name:{}::string"
@@ -395,8 +310,6 @@ fn read_config(arg: &str) -> CrudEnableConfig {
         }
     }
     return CrudEnableConfig {
-        id_name: map.get("id_name").unwrap_or(&String::new()).to_string(),
-        id_type: map.get("id_type").unwrap_or(&String::new()).to_string(),
         table_name: map.get("table_name").unwrap_or(&String::new()).to_string(),
         table_columns: map
             .get("table_columns")
