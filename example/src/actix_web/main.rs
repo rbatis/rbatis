@@ -8,7 +8,6 @@ use actix_web::{web, App, HttpResponse, HttpServer, Responder};
 use chrono::NaiveDateTime;
 use rbatis::crud::{ImplCRUD, CRUD};
 use rbatis::rbatis::Rbatis;
-use rbatis::core::value::DateTimeNow;
 
 #[crud_enable]
 #[derive(Clone, Debug)]
