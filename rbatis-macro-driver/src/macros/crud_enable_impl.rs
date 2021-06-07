@@ -39,11 +39,21 @@ pub(crate) fn impl_crud_driver(
             //if use custom name
             ident_name = arg_table_columns_vec.get(index).expect("[rbatis] #[crud_enable] custom table columns must be use same location index, for example:  #[crud_enable(table_columns:\"id,name\")] pub struct Example{ pub id:String,pub name:String }  ").to_string();
         }
-        let item = quote! {
+        let item;
+        if ident_name.starts_with("r#") {
+            let ident_name_no = ident_name.trim_start_matches("r#").to_string();
+            item = quote! {
+                #ident_name | #ident_name_no => {
+                return serde_json::json!(&self.#ident);
+                }
+             };
+        } else {
+            item = quote! {
             #ident_name => {
                 return serde_json::json!(&self.#ident);
             }
-        };
+          };
+        }
         items = quote! {
             #items
             #item
@@ -222,15 +232,11 @@ fn gen_fields(data: &syn::Data) -> Vec<Ident> {
         syn::Data::Struct(s) => {
             let mut index = 0;
             for field in &s.fields {
-                let field_name = &field
-                    .ident
-                    .as_ref()
-                    .map(|ele| ele.unraw());
-                match field_name {
+                match &field.ident {
+                    None => {}
                     Some(v) => {
                         fields.push(v.clone());
                     }
-                    _ => {}
                 }
             }
         }
