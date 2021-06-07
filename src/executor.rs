@@ -62,7 +62,7 @@ impl<'a> Executor for $t {
             self.log_plugin.info(
                 "",
                 &format!(
-                    "Exec  ==> {}\n{}[rbatis] [{}] Args  ==> {}",
+                    "Exec   ==> {}\n{}[rbatis] [{}] Args   ==> {}",
                     &sql,
                     string_util::LOG_SPACE,
                     "",
@@ -105,7 +105,7 @@ impl<'a> Executor for $t {
             self.log_plugin.info(
                 "",
                 &format!(
-                    "Fetch  ==> {}\n{}[rbatis] [{}] Args  ==> {}",
+                    "Fetch  ==> {}\n{}[rbatis] [{}] Args   ==> {}",
                     &sql,
                     string_util::LOG_SPACE,
                     "",
