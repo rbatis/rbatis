@@ -587,6 +587,8 @@ pub trait ImplCRUD: PySql {
     }
 
     /// update arg by wrapper
+    /// skips:  vec!["null"] ->  will skip  null fields
+    /// skips:  vec!["column"] ->  will skip  column fields
     async fn update_by_wrapper<T>(
         &mut self,
         arg: &mut T,
