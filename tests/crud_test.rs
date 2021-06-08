@@ -9,7 +9,7 @@ mod test {
     use serde::Serialize;
 
     use rbatis::core::Error;
-    use rbatis::crud::{CRUDTable, Ids, CRUDMut, CRUD};
+    use rbatis::crud::{CRUDTable, CRUDMut, CRUD};
     use rbatis::plugin::logic_delete::RbatisLogicDeletePlugin;
     use rbatis::plugin::page::{Page, PageRequest};
     use rbatis::rbatis::Rbatis;

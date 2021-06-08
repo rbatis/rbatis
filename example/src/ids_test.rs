@@ -1,7 +1,7 @@
 #[cfg(test)]
 mod test {
     use crate::BizActivity;
-    use rbatis::crud::{Ids, CRUDMut, CRUD};
+    use rbatis::crud::{CRUDMut, CRUD};
     use rbatis::rbatis::Rbatis;
 
     /// This example shows a table collection  to an id array
