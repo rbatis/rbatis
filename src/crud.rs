@@ -189,7 +189,7 @@ impl<T> CRUDTable for Option<T>
 pub trait CRUD {
     async fn save_by_wrapper<T>(
         &self,
-        entity: &T,
+        table: &T,
         w: &Wrapper,
     ) -> Result<DBExecResult>
         where
@@ -280,21 +280,21 @@ pub trait CRUD {
 pub trait CRUDMut {
     async fn save_by_wrapper<T>(
         &mut self,
-        entity: &T,
+        table: &T,
         w: &Wrapper,
     ) -> Result<DBExecResult>
         where
             T: CRUDTable;
-    async fn save<T>(&mut self, entity: &T) -> Result<DBExecResult>
+    async fn save<T>(&mut self, table: &T) -> Result<DBExecResult>
         where
             T: CRUDTable;
-    async fn save_batch<T>(&mut self, entity: &[T]) -> Result<DBExecResult>
+    async fn save_batch<T>(&mut self, tables: &[T]) -> Result<DBExecResult>
         where
             T: CRUDTable;
 
     async fn save_batch_slice<T>(
         &mut self,
-        entity: &[T],
+        tables: &[T],
         slice_len: usize,
     ) -> Result<DBExecResult>
         where
@@ -394,13 +394,13 @@ pub trait ImplCRUD: PySql {
     }
 
     /// save one entity to database
-    async fn save<T>(&mut self, entity: &T) -> Result<DBExecResult>
+    async fn save<T>(&mut self, table: &T) -> Result<DBExecResult>
         where
             T: CRUDTable,
     {
         let mut index = 0;
         let (columns, values, args) =
-            entity.make_value_sql_arg(&self.driver_type()?, &mut index)?;
+            table.make_value_sql_arg(&self.driver_type()?, &mut index)?;
         let sql = format!(
             "{} {} ({}) {} ({})",
             crate::sql::TEMPLATE.insert_into.value,
@@ -859,28 +859,28 @@ fn make_select_sql<T>(rb: &Rbatis, column: &str, w: &Wrapper) -> Result<String>
 
 #[async_trait]
 impl CRUD for Rbatis {
-    async fn save_by_wrapper<T>(&self, entity: &T, w: &Wrapper) -> Result<DBExecResult> where
+    async fn save_by_wrapper<T>(&self, table: &T, w: &Wrapper) -> Result<DBExecResult> where
         T: CRUDTable {
         let mut conn = self.acquire().await?;
-        conn.save_by_wrapper(entity, w).await
+        conn.save_by_wrapper(table, w).await
     }
 
-    async fn save<T>(&self, entity: &T) -> Result<DBExecResult> where
+    async fn save<T>(&self, table: &T) -> Result<DBExecResult> where
         T: CRUDTable {
         let mut conn = self.acquire().await?;
-        conn.save(entity).await
+        conn.save(table).await
     }
 
-    async fn save_batch<T>(&self, entity: &[T]) -> Result<DBExecResult> where
+    async fn save_batch<T>(&self, tables: &[T]) -> Result<DBExecResult> where
         T: CRUDTable {
         let mut conn = self.acquire().await?;
-        conn.save_batch(entity).await
+        conn.save_batch(tables).await
     }
 
-    async fn save_batch_slice<T>(&self, entity: &[T], slice_len: usize) -> Result<DBExecResult> where
+    async fn save_batch_slice<T>(&self, tables: &[T], slice_len: usize) -> Result<DBExecResult> where
         T: CRUDTable {
         let mut conn = self.acquire().await?;
-        conn.save_batch_slice(entity, slice_len).await
+        conn.save_batch_slice(tables, slice_len).await
     }
 
     async fn remove_by_wrapper<T>(&self, w: &Wrapper) -> Result<u64> where
