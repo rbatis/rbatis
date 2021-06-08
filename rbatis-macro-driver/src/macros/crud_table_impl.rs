@@ -250,7 +250,7 @@ fn gen_fields_names(data: &Vec<Ident>) -> proc_macro2::TokenStream {
     let mut fields = String::new();
     let mut index = 0;
     for field in data {
-        let field_name = field.to_string();
+        let field_name = field.to_string().trim_start_matches("r#").to_string();
         if index == 0 {
             fields = fields + &field_name
         } else {
