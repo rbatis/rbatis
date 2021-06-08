@@ -246,7 +246,7 @@ fn gen_fields(data: &syn::Data) -> Vec<Ident> {
     fields
 }
 
-fn gen_fields_names(data: &Vec<Ident>) -> proc_macro2::TokenStream {
+fn gen_fields_names(data: &Vec<Ident>) -> String {
     let mut fields = String::new();
     let mut index = 0;
     for field in data {
@@ -258,7 +258,7 @@ fn gen_fields_names(data: &Vec<Ident>) -> proc_macro2::TokenStream {
         }
         index += 1;
     }
-    fields.to_token_stream()
+    fields
 }
 
 fn to_snake_name(name: &String) -> String {

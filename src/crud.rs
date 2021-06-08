@@ -12,15 +12,14 @@ use crate::core::db::DBExecResult;
 use crate::core::db::DriverType;
 use crate::core::Error;
 use crate::core::Result;
+use crate::executor::{Executor, RBatisConnExecutor, RBatisTxExecutor};
 use crate::plugin::page::{IPageRequest, Page};
 use crate::plugin::version_lock::VersionLockPlugin;
+use crate::py::PySql;
 use crate::rbatis::Rbatis;
 use crate::sql::rule::SqlRule;
 use crate::utils::string_util::to_snake_name;
 use crate::wrapper::Wrapper;
-use crate::executor::{RBatisConnExecutor, Executor, RBatisTxExecutor};
-use crate::py::PySql;
-
 
 /// DataBase Table Model trait
 ///
@@ -722,7 +721,7 @@ pub trait ImplCRUD: PySql {
             &rb
                 .new_wrapper_table::<T>()
                 .eq(column, value),
-            vec![],
+            vec!["null", "id"],
         )
             .await
     }
