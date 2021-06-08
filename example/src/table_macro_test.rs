@@ -3,8 +3,6 @@ mod test {
     use bigdecimal::BigDecimal;
     use chrono::NaiveDateTime;
 
-    use rbatis::utils::table_util::FatherChildRelationship;
-
     #[crud_table]
     #[derive(Clone, Debug)]
     pub struct BizActivity {
@@ -71,39 +69,5 @@ mod test {
         let names = rbatis::make_table_field_vec!(&table_vec, name);
         println!("{:#?}", names);
         assert_eq!(names.len(), table_vec.len());
-    }
-
-    #[crud_table]
-    #[derive(Clone, Debug)]
-    pub struct FatherChildVO {
-        pub id: Option<i32>,
-        pub father_id: Option<i32>,
-        pub childs: Vec<FatherChildVO>,
-    }
-
-    impl FatherChildRelationship for FatherChildVO {
-        fn get_father_id(&self) -> Option<&Self::IdType> {
-            self.father_id.as_ref()
-        }
-        fn set_childs(&mut self, arg: Vec<Self>) {
-            self.childs = arg;
-        }
-    }
-
-    #[test]
-    fn test_to_father_child_relationship() {
-        let mut father = FatherChildVO {
-            id: Some(1),
-            father_id: None,
-            childs: vec![],
-        };
-        let child = FatherChildVO {
-            id: Some(2),
-            father_id: Some(1),
-            childs: vec![],
-        };
-        let all_record = rbatis::make_table_field_map!(vec![child], id);
-        father.set_childs_recursive(&all_record);
-        println!("{:#?}", father);
     }
 }
