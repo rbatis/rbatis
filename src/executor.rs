@@ -9,6 +9,7 @@ use crate::DriverType;
 use crate::rbatis::Rbatis;
 use std::ops::Deref;
 use crate::utils::string_util;
+use futures::Future;
 
 
 #[async_trait]
@@ -18,19 +19,6 @@ pub trait RbatisRef {
     fn driver_type(&self) -> crate::Result<DriverType> {
         self.get_rbatis().driver_type()
     }
-}
-
-impl RbatisRef for Rbatis{
-    fn get_rbatis(&self) -> &Rbatis {
-        &self
-    }
-}
-
-#[async_trait]
-pub trait Executor:RbatisRef {
-
-    async fn execute(&mut self, sql: &str, args: &Vec<serde_json::Value>) -> Result<DBExecResult, Error>;
-    async fn fetch<T>(&mut self, sql: &str, args: &Vec<serde_json::Value>) -> Result<T, Error> where T: DeserializeOwned;
 
     /// bind arg into DBQuery
     fn bind_arg<'arg>(
@@ -47,6 +35,18 @@ pub trait Executor:RbatisRef {
     }
 }
 
+impl RbatisRef for Rbatis {
+    fn get_rbatis(&self) -> &Rbatis {
+        &self
+    }
+}
+
+#[async_trait]
+pub trait ExecutorMut: RbatisRef {
+    async fn exec(&mut self, sql: &str, args: &Vec<serde_json::Value>) -> Result<DBExecResult, Error>;
+    async fn fetch<T>(&mut self, sql: &str, args: &Vec<serde_json::Value>) -> Result<T, Error> where T: DeserializeOwned;
+}
+
 #[derive(Debug)]
 pub struct RBatisConnExecutor<'a> {
     pub conn: DBPoolConn,
@@ -56,8 +56,8 @@ pub struct RBatisConnExecutor<'a> {
 macro_rules! impl_executor {
     ($t:ty) => {
 #[async_trait]
-impl<'a> Executor for $t {
-    async fn execute(&mut self, sql: &str, args: &Vec<serde_json::Value>) -> Result<DBExecResult, Error> {
+impl<'a> ExecutorMut for $t {
+    async fn exec(&mut self, sql: &str, args: &Vec<serde_json::Value>) -> Result<DBExecResult, Error> {
         let mut sql = sql.to_string();
         let mut args = args.clone();
         let is_prepared = args.len() > 0;
@@ -179,16 +179,16 @@ impl RBatisConnExecutor<'_> {
 pub struct RBatisTxExecutor<'a> {
     pub conn: DBTx<'a>,
     pub rb: &'a Rbatis,
+    // pub callback: fn(s:Self),
 }
 
 impl_executor!(RBatisTxExecutor<'_>);
-
 
 impl<'a> RBatisTxExecutor<'a> {
     pub async fn commit(&mut self) -> crate::Result<()> {
         self.conn.commit().await
     }
-    pub async fn rollback(self) -> crate::Result<()> {
+    pub async fn rollback(mut self) -> crate::Result<()> {
         self.conn.rollback().await
     }
 }
@@ -207,5 +207,55 @@ impl<'a> Deref for RBatisTxExecutor<'a> {
     type Target = Rbatis;
     fn deref(&self) -> &Self::Target {
         &self.rb
+    }
+}
+
+
+pub struct RBatisTxExecutorGuard<'a> {
+    pub tx: RBatisTxExecutor<'a>,
+    pub callback: fn(s:&mut RBatisTxExecutor<'a>),
+}
+
+impl <'a>RBatisTxExecutor<'a> {
+    pub fn to_defer(self,callback: fn(s:&mut Self))->RBatisTxExecutorGuard<'a>{
+        RBatisTxExecutorGuard{
+            tx: self,
+            callback: callback
+        }
+    }
+}
+
+
+impl Drop for RBatisTxExecutorGuard<'_>{
+    fn drop(&mut self) {
+        (self.callback)(&mut self.tx);
+    }
+}
+
+/// impl Deref has all the capabilities of RBatis
+impl<'a> Deref for RBatisTxExecutorGuard<'a> {
+    type Target = Rbatis;
+    fn deref(&self) -> &Self::Target {
+        &self.tx.rb
+    }
+}
+
+
+
+
+#[async_trait]
+pub trait Executor: RbatisRef {
+    async fn exec(&self, sql: &str, args: &Vec<serde_json::Value>) -> Result<DBExecResult, Error>;
+    async fn fetch<T>(&self, sql: &str, args: &Vec<serde_json::Value>) -> Result<T, Error> where T: DeserializeOwned;
+}
+
+#[async_trait]
+impl Executor for Rbatis {
+    async fn exec(&self, sql: &str, args: &Vec<Value>) -> Result<DBExecResult, Error> {
+        self.acquire().await?.exec(sql, args).await
+    }
+
+    async fn fetch<T>(&self, sql: &str, args: &Vec<Value>) -> Result<T, Error> where T: DeserializeOwned {
+        self.acquire().await?.fetch(sql, args).await
     }
 }

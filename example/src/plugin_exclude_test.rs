@@ -20,13 +20,12 @@ mod test {
 
         let id = "12312".to_string();
         //logic delete sql:   "update biz_activity set delete_flag = 1 where id = ?"
-        rb.remove_by_id::<BizActivity>( &id).await;
+        rb.remove_by_column::<BizActivity,_>( "id",&id).await;
         //delete sql          "delete from biz_activity where id = ?"
-        rb.remove_by_id::<BizActivity>("disable_del:", &id).await;
+        rb.remove_by_column::<BizActivity,_>("id", &id).await;
 
         //fix data
         rb.save(
-            "",
             &BizActivity {
                 id: Some("12312".to_string()),
                 name: Some("12312".to_string()),
@@ -59,8 +58,8 @@ mod test {
 
         let id = "12312".to_string();
         //logic delete sql:   "select * from biz_activity  where delete_flag = 0 and id = ? "
-        rb.fetch_by_id::<BizActivity>( &id).await;
+        rb.fetch_by_column::<BizActivity,_>( "id",&id).await;
         //delete sql          "select * from biz_activity  where id = ? "
-        rb.fetch_by_id::<BizActivity>("disable_del:", &id).await;
+        rb.fetch_by_column::<BizActivity,_>("id", &id).await;
     }
 }

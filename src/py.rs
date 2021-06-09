@@ -5,7 +5,7 @@ use serde::de::DeserializeOwned;
 use crate::utils::string_util;
 use serde::Serialize;
 use crate::plugin::page::{IPageRequest, Page, IPage};
-use crate::executor::{RBatisConnExecutor, RBatisTxExecutor, Executor, RbatisRef};
+use crate::executor::{RBatisConnExecutor, RBatisTxExecutor, ExecutorMut, RbatisRef};
 use async_trait::async_trait;
 use crate::crud::CRUDMut;
 

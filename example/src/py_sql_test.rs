@@ -8,7 +8,7 @@ mod test {
 
     /// ctx_id Used to trace SQL records
     #[py_sql(rb, "select * from biz_activity where delete_flag = 0")]
-    async fn py_ctx_id(rb: &Rbatis, ctx_id: &str) -> Vec<BizActivity> {todo!()}
+    async fn py_ctx_id(rb: &Rbatis, ctx_id: &str) -> Vec<BizActivity> { todo!() }
 
     #[tokio::test]
     pub async fn test_py_ctx_id() {
@@ -24,12 +24,12 @@ mod test {
 
     ///select page must have  '?:&PageRequest' arg and return 'Page<?>'
     #[py_sql(
-        rb,
-        "select * from biz_activity where delete_flag = 0
+    rb,
+    "select * from biz_activity where delete_flag = 0
                   if name != '':
                     and name=#{name}"
     )]
-    async fn py_select_page(rb: &Rbatis, page_req: &PageRequest, name: &str) -> Page<BizActivity> {todo!()}
+    async fn py_select_page(rb: &Rbatis, page_req: &PageRequest, name: &str) -> Page<BizActivity> { todo!() }
 
     #[tokio::test]
     pub async fn test_py_select_page() {
@@ -47,26 +47,13 @@ mod test {
 
     ///Commit the transaction
     #[py_sql(
-        rb,
-        "select * from biz_activity where delete_flag = 0
+    rb,
+    "select * from biz_activity where delete_flag = 0
                   if name != '':
                     and name=#{name}"
     )]
-    async fn py_sql_tx(rb: &Rbatis, tx_id: &String, name: &str) -> Vec<BizActivity> {todo!()}
+    async fn py_sql_tx(rb: &Rbatis, tx_id: &String, name: &str) -> Vec<BizActivity> { todo!() }
 
-    #[tokio::test]
-    pub async fn test_py_sql_tx() {
-        fast_log::init_log("requests.log", 1000, log::Level::Info, None, true);
-        //use static ref
-        let rb = Rbatis::new();
-        rb.link("mysql://root:123456@localhost:3306/test")
-            .await
-            .unwrap();
-        //guard will be Automatically commit or rollback transactions
-        let tx_guard = rb.begin_tx_defer(true).await.unwrap();
-        let a = py_sql_tx(&rb, &tx_guard.tx_id, "test").await.unwrap();
-        println!("{:?}", a);
-    }
 
     ///load from file
     fn load_file_str(file_name: &str, method: &str) -> String {
@@ -88,7 +75,7 @@ mod test {
 
     ///load file py_sql(Each read file changes every time)
     #[py_sql(rb, load_file_str("py_sql.sql", "py_select_file"))]
-    async fn py_select_file(rb: &Rbatis, page_req: &PageRequest, name: &str) -> Page<BizActivity> {todo!()}
+    async fn py_select_file(rb: &Rbatis, page_req: &PageRequest, name: &str) -> Page<BizActivity> { todo!() }
 
     lazy_static! {
         pub static ref PY_SQL_FILE_STR: String = load_file_str("py_sql.sql", "py_select_file");
@@ -100,7 +87,7 @@ mod test {
         rb: &Rbatis,
         page_req: &PageRequest,
         name: &str,
-    ) -> Page<BizActivity> {todo!()}
+    ) -> Page<BizActivity> { todo!() }
 
     /// test load py_sql from file
     #[tokio::test]

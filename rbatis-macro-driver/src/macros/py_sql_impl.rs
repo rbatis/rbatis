@@ -29,15 +29,18 @@ pub(crate) fn impl_macro_py_sql(target_fn: &ItemFn, args: &AttributeArgs) -> Tok
     //append all args
     let (sql_args_gen, context_id_ident) =
         filter_args_context_id(&rbatis_name, &get_fn_args(target_fn));
+
     let is_fetch = is_fetch_sql(&sql);
     let mut call_method = quote! {};
     if is_fetch {
         call_method = quote! {
+             use rbatis::executor::{Executor,ExecutorMut};
              #rbatis_ident.fetch(&sql,&rb_args).await
         };
     } else {
         call_method = quote! {
-             #rbatis_ident.execute(&sql,&rb_args).await
+             use rbatis::executor::{Executor,ExecutorMut};
+             #rbatis_ident.exec(&sql,&rb_args).await
         };
     }
     if return_ty.to_string().contains("Page <")
@@ -45,8 +48,7 @@ pub(crate) fn impl_macro_py_sql(target_fn: &ItemFn, args: &AttributeArgs) -> Tok
     {
         let page_ident = get_page_req_ident(target_fn, &func_name_ident.to_string());
         call_method = quote! {
-            use rbatis::py::{PySqlConvert};
-            let (sql, rb_args) = #rbatis_ident.py_to_sql(&#sql_ident, &rb_args)?;
+            use rbatis::crud::{CRUD,CRUDMut};
             #rbatis_ident.fetch_page(&sql,&rb_args,#page_ident).await
         };
     }
@@ -54,10 +56,11 @@ pub(crate) fn impl_macro_py_sql(target_fn: &ItemFn, args: &AttributeArgs) -> Tok
     return quote! {
        pub async fn #func_name_ident(#func_args_stream) -> #return_ty {
          let mut sql = #sql_ident.to_string();
-         let mut rb_args = serde_json::Map::new();
+         let mut rb_arg_map = serde_json::Map::new();
          #sql_args_gen
-         let mut rb_args = serde_json::Value::from(rb_args);
          #fn_body
+         use rbatis::py::{PySqlConvert};
+         let (sql, rb_args) = #rbatis_ident.py_to_sql(&#sql_ident, &rb_arg_map)?;
          #call_method
        }
     }
@@ -81,7 +84,7 @@ fn filter_args_context_id(
         }
         sql_args_gen = quote! {
              #sql_args_gen
-             rb_args.insert(#item_ident_name.to_string(),serde_json::json!(#item_ident));
+             rb_arg_map.insert(#item_ident_name.to_string(),serde_json::json!(#item_ident));
         };
     }
     (sql_args_gen, context_id_ident)

@@ -223,7 +223,7 @@ impl Rbatis {
         let conn = pool.begin().await?;
         return Ok(RBatisTxExecutor {
             conn: conn,
-            rb: &self
+            rb: &self,
         });
     }
 

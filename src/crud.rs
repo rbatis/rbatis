@@ -12,7 +12,7 @@ use crate::core::db::DBExecResult;
 use crate::core::db::DriverType;
 use crate::core::Error;
 use crate::core::Result;
-use crate::executor::{Executor, RBatisConnExecutor, RBatisTxExecutor};
+use crate::executor::{ExecutorMut, RBatisConnExecutor, RBatisTxExecutor};
 use crate::plugin::page::{IPageRequest, Page, IPage};
 use crate::plugin::version_lock::VersionLockPlugin;
 use crate::rbatis::Rbatis;
@@ -183,6 +183,30 @@ impl<T> CRUDTable for Option<T>
     }
 }
 
+
+pub trait Fields {
+    fn to_fields<T>(&self, column: &str) -> Vec<T> where T: DeserializeOwned;
+}
+
+impl <Table>Fields for Vec<Table> where Table:CRUDTable {
+    fn to_fields<T>(&self, column: &str) -> Vec<T> where T: DeserializeOwned {
+        let mut results = vec![];
+        for x in self {
+            let v = x.get(column);
+            results.push(v);
+        }
+        let d = serde_json::from_value(serde_json::Value::Array(results));
+        match d {
+            Ok(v) => {
+                return v;
+            }
+            _ => {}
+        }
+        return vec![];
+    }
+}
+
+
 #[async_trait]
 pub trait CRUD {
     async fn save_by_wrapper<T>(
@@ -285,7 +309,7 @@ pub trait CRUD {
 }
 
 #[async_trait]
-pub trait CRUDMut: Executor {
+pub trait CRUDMut: ExecutorMut {
     /// save by wrapper
     async fn save_by_wrapper<T>(
         &mut self,
@@ -296,7 +320,7 @@ pub trait CRUDMut: Executor {
             T: CRUDTable,
     {
         if w.sql.starts_with(crate::sql::TEMPLATE.insert_into.value) {
-            return self.execute(&w.sql, &w.args).await;
+            return self.exec(&w.sql, &w.args).await;
         } else {
             let mut w = w.clone();
             let mut index = 0;
@@ -306,7 +330,7 @@ pub trait CRUDMut: Executor {
             for x in args {
                 w.args.push(x);
             }
-            return self.execute(&w.sql, &w.args).await;
+            return self.exec(&w.sql, &w.args).await;
         }
     }
 
@@ -326,7 +350,7 @@ pub trait CRUDMut: Executor {
             crate::sql::TEMPLATE.values.value,
             values
         );
-        return self.execute(sql.as_str(), &args).await;
+        return self.exec(sql.as_str(), &args).await;
     }
 
     /// save batch makes many value into  only one sql. make sure your data do not too long!
@@ -370,7 +394,7 @@ pub trait CRUDMut: Executor {
             crate::sql::TEMPLATE.values.value,
             value_arr
         );
-        return self.execute(sql.as_str(), &arg_arr).await;
+        return self.exec(sql.as_str(), &arg_arr).await;
     }
 
     /// save batch slice makes many value into  many sql. make sure your slice_len do not too long!
@@ -440,7 +464,7 @@ pub trait CRUDMut: Executor {
             );
         }
         return Ok(self
-            .execute(sql.as_str(), &w.args)
+            .exec(sql.as_str(), &w.args)
             .await?
             .rows_affected);
     }
@@ -478,7 +502,7 @@ pub trait CRUDMut: Executor {
             );
         }
         return Ok(self
-            .execute(&sql, &vec![json!(value)])
+            .exec(&sql, &vec![json!(value)])
             .await?
             .rows_affected);
     }
@@ -617,7 +641,7 @@ pub trait CRUDMut: Executor {
         }
 
         let rows_affected = self
-            .execute(wrapper.sql.as_str(), &wrapper.args)
+            .exec(wrapper.sql.as_str(), &wrapper.args)
             .await?
             .rows_affected;
         if rows_affected > 0 {

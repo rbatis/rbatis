@@ -27,9 +27,9 @@ pub(crate) fn impl_macro_sql(target_fn: &ItemFn, args: &AttributeArgs) -> TokenS
     let mut call_method = quote! {};
     let is_fetch = is_fetch_sql(&sql);
     if is_fetch {
-        call_method = quote! {fetch_prepare};
+        call_method = quote! {fetch};
     } else {
-        call_method = quote! {exec_prepare};
+        call_method = quote! {exec};
     }
     //check use page method
     let mut page_req_str = String::new();
@@ -51,6 +51,7 @@ pub(crate) fn impl_macro_sql(target_fn: &ItemFn, args: &AttributeArgs) -> TokenS
            let mut rb_args =vec![];
            #sql_args_gen
            #fn_body
+           use rbatis::executor::{Executor,ExecutorMut};
            return #rbatis_ident.#call_method(&#sql_ident,&rb_args #page_req).await;
        }
     };
