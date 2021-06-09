@@ -97,7 +97,7 @@ mod test {
             version: Some(BigDecimal::from(1)),
             delete_flag: Some(1),
         };
-        rb.remove_by_id::<BizActivity>( activity.id.as_ref().unwrap())
+        rb.remove_by_column::<BizActivity,_>( "id",activity.id.as_ref().unwrap())
             .await;
         let r = rb.save( &activity).await;
         if r.is_err() {
@@ -124,7 +124,7 @@ mod test {
         };
         let mut activity2 = activity.clone();
         activity2.id = Some("12313".to_string());
-        rb.remove_batch_by_id::<BizActivity>( &["12312".to_string(), "12313".to_string()])
+        rb.remove_batch_by_column::<BizActivity,_>( "id",&["12312".to_string(), "12313".to_string()])
             .await;
         let args = vec![activity, activity2];
         let r = rb.save_batch( &args).await;
@@ -154,8 +154,7 @@ mod test {
         activity2.id = Some("12313".to_string());
         let mut activity3 = activity.clone();
         activity3.id = Some("12314".to_string());
-        rb.remove_batch_by_id::<BizActivity>(
-            "",
+        rb.remove_batch_by_column::<BizActivity,_>("id",
             &[
                 "12312".to_string(),
                 "12313".to_string(),
@@ -178,7 +177,7 @@ mod test {
             .await
             .unwrap();
         let r = rb
-            .remove_batch_by_id::<BizActivity>( &["1".to_string(), "2".to_string()])
+            .remove_batch_by_column::<BizActivity,_>( "id",&["1".to_string(), "2".to_string()])
             .await;
         if r.is_err() {
             println!("{}", r.err().unwrap().to_string());
@@ -198,7 +197,7 @@ mod test {
         //set logic plugin
         rb.logic_plugin = Some(Box::new(RbatisLogicDeletePlugin::new("delete_flag")));
         let r = rb
-            .fetch_by_id::<Option<BizActivity>>( &"1".to_string())
+            .fetch_by_column::<Option<BizActivity>,_>( "id",&"1".to_string())
             .await
             .unwrap();
         println!("{}", serde_json::to_string(&r).unwrap());
@@ -273,7 +272,7 @@ mod test {
         //     version: Some(BigDecimal::from(1)),
         //     delete_flag: Some(1),
         // };
-        let r = rb.update_by_id( &mut activity).await;
+        let r = rb.update_by_column( "id",&mut activity).await;
         if r.is_err() {
             println!("{}", r.err().unwrap().to_string());
         }
@@ -323,7 +322,7 @@ mod test {
         let mut rb = init_rbatis().await;
         //set logic plugin
         rb.logic_plugin = Some(Box::new(RbatisLogicDeletePlugin::new("delete_flag")));
-        let r: Vec<BizActivity> = rb.fetch_list("").await.unwrap();
+        let r: Vec<BizActivity> = rb.fetch_list().await.unwrap();
         println!("{}", serde_json::to_string(&r).unwrap());
     }
 

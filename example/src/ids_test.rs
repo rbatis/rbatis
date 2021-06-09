@@ -4,6 +4,8 @@ mod test {
     use rbatis::crud::{CRUDMut, CRUD};
     use rbatis::rbatis::Rbatis;
 
+    use rbatis::crud::Fields;
+
     /// This example shows a table collection  to an id array
     #[tokio::test]
     pub async fn test_fetch_by_ids() {
@@ -16,10 +18,10 @@ mod test {
         let biz_activitys = rb.fetch_list::<BizActivity>().await.unwrap();
 
         //to_ids() support HashSet.to_ids(),Vec.to_ids(),Array.to_ids(),HashMap.to_ids(),LinkedList.to_ids()，BtreeMap.to_ids()....
-        let ids = biz_activitys.to_ids();
+        let ids = biz_activitys.to_fields::<serde_json::Value>("id");
 
         let r = rb
-            .fetch_list_by_ids::<Option<BizActivity>>("", &ids)
+            .fetch_list_by_column::<Option<BizActivity>,_>("id", &ids)
             .await
             .unwrap();
         println!("{}", serde_json::to_string(&r).unwrap());

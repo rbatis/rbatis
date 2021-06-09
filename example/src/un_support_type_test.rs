@@ -5,6 +5,7 @@ mod test {
     use rbatis::rbatis::Rbatis;
     use serde_json::json;
     use uuid::Uuid;
+    use rbatis::executor::Executor;
 
     #[crud_table]
     #[derive(Clone, Debug)]
@@ -32,11 +33,10 @@ mod test {
             .await
             .unwrap();
         //create table
-        rb.exec("", r#"CREATE TABLE "public"."p" ( "id" int4, "po" point);"#)
+        rb.exec(r#"CREATE TABLE "public"."p" ( "id" int4, "po" point);"#,&vec![])
             .await;
         //insert point
-        rb.exec_prepare(
-            "",
+        rb.exec(
             "insert into p (id,po) values (1,Point($1,$2))",
             &vec![json!(1), json!(2)],
         )

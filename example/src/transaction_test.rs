@@ -2,6 +2,7 @@
 mod test {
     use crate::BizActivity;
     use rbatis::rbatis::Rbatis;
+    use rbatis::executor::{Executor, RbatisRef, RBatisTxExecutor};
 
     //示例-Rbatis使用事务
     #[tokio::test]
@@ -11,21 +12,18 @@ mod test {
         rb.link("mysql://root:123456@localhost:3306/test")
             .await
             .unwrap();
-        let tx_id = rb.begin_tx().await.unwrap();
-        let v: serde_json::Value = rb
-            .fetch(&tx_id, "select count(1) from biz_activity;")
+        let mut tx = rb.acquire_begin().await.unwrap();
+        let v: serde_json::Value = tx
+            .fetch("select count(1) from biz_activity;",&vec![])
             .await
             .unwrap();
         println!("{}", v.clone());
-        rb.commit(&tx_id).await.unwrap();
+        tx.commit().await.unwrap();
     }
 
     //tx_id: is context_id
     #[py_sql(rb, "select * from biz_activity")]
-    async fn py_select_data(
-        rb: &Rbatis,
-        tx_id: &str,
-    ) -> Result<Vec<BizActivity>, rbatis::core::Error> { todo!()}
+    async fn py_select_data(rb: &mut RBatisTxExecutor<'_>) -> Result<Vec<BizActivity>, rbatis::core::Error> { todo!()}
 
     //示例-Rbatis使用宏事务
     #[tokio::test]
@@ -36,10 +34,10 @@ mod test {
             .await
             .unwrap();
 
-        let tx_id = rb.begin_tx().await.unwrap();
-        let v = py_select_data(&rb, &tx_id).await.unwrap();
+        let mut tx = rb.acquire_begin().await.unwrap();
+        let v = py_select_data(&mut tx).await.unwrap();
         println!("{:?}", v);
-        rb.commit(&tx_id).await.unwrap();
+        tx.commit().await.unwrap();
     }
 
     //示例-Rbatis使用事务,类似golang defer，守卫如果被回收则 释放事务
@@ -55,9 +53,12 @@ mod test {
 
     pub async fn forget_commit(rb: &Rbatis) -> rbatis::core::Result<serde_json::Value> {
         // tx will be commit.when func end
-        let guard = rb.begin_tx_defer(true).await?;
-        let v: serde_json::Value = rb
-            .fetch(&guard.tx_id, "select count(1) from biz_activity;")
+        let tx = rb.acquire_begin().await?;
+        let guard=tx.to_defer(|s|{
+            println!("tx is drop!");
+        });
+        let v: serde_json::Value = guard
+            .fetch( "select count(1) from biz_activity;",&vec![])
             .await?;
         return Ok(v);
     }
