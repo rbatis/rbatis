@@ -10,13 +10,19 @@ use crate::rbatis::Rbatis;
 use std::ops::Deref;
 use crate::utils::string_util;
 
+
 #[async_trait]
-pub trait Executor {
+pub trait RbatisRef {
     fn get_rbatis(&self) -> &Rbatis;
 
     fn driver_type(&self) -> crate::Result<DriverType> {
         self.get_rbatis().driver_type()
     }
+}
+
+
+#[async_trait]
+pub trait Executor:RbatisRef {
 
     async fn execute(&mut self, sql: &str, args: &Vec<serde_json::Value>) -> Result<DBExecResult, Error>;
     async fn fetch<T>(&mut self, sql: &str, args: &Vec<serde_json::Value>) -> Result<T, Error> where T: DeserializeOwned;
@@ -46,11 +52,6 @@ macro_rules! impl_executor {
     ($t:ty) => {
 #[async_trait]
 impl<'a> Executor for $t {
-
-    fn get_rbatis(&self)-> &Rbatis{
-        return &self.rb;
-    }
-
     async fn execute(&mut self, sql: &str, args: &Vec<serde_json::Value>) -> Result<DBExecResult, Error> {
         let mut sql = sql.to_string();
         let mut args = args.clone();
@@ -147,11 +148,17 @@ impl<'a> Executor for $t {
         }
     }
 }
-    };
+
+impl RbatisRef for $t {
+    fn get_rbatis(&self) -> &Rbatis {
+    self.rb
+    }
 }
 
-impl_executor!(RBatisConnExecutor<'a>);
+};
+}
 
+impl_executor!(RBatisConnExecutor<'_>);
 
 impl RBatisConnExecutor<'_> {
     pub async fn begin(&mut self) -> crate::Result<RBatisTxExecutor<'_>> {
@@ -169,7 +176,7 @@ pub struct RBatisTxExecutor<'a> {
     pub rb: &'a Rbatis,
 }
 
-impl_executor!(RBatisTxExecutor<'a>);
+impl_executor!(RBatisTxExecutor<'_>);
 
 
 impl<'a> RBatisTxExecutor<'a> {

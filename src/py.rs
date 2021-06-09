@@ -5,11 +5,11 @@ use serde::de::DeserializeOwned;
 use crate::utils::string_util;
 use serde::Serialize;
 use crate::plugin::page::{IPageRequest, Page, IPage};
-use crate::executor::{RBatisConnExecutor, RBatisTxExecutor, Executor};
+use crate::executor::{RBatisConnExecutor, RBatisTxExecutor, Executor, RbatisRef};
 use async_trait::async_trait;
 
 #[async_trait]
-pub trait PySql: Executor {
+pub trait PySqlSupport: RbatisRef {
     /// py str into py ast,run get sql,arg result
     fn py_to_sql<Arg>(
         &self,
@@ -29,64 +29,16 @@ pub trait PySql: Executor {
             Err(e) => Err(Error::from(e)),
         }
     }
+}
 
-    /// fetch query result(prepare sql)
-    ///for example:
-    ///
-    ///         let py = r#"
-    ///     select * from biz_activity
-    ///    where delete_flag = #{delete_flag}
-    ///     if name != null:
-    ///       and name like #{name+'%'}
-    ///     if ids != null:
-    ///       and id in (
-    ///       trim ',':
-    ///          for item in ids:
-    ///            #{item},
-    ///       )"#;
-    ///         let data: serde_json::Value = rb.py_fetch("", py, &json!({   "delete_flag": 1 })).await.unwrap();
-    ///
-    async fn py_fetch<T, Arg>(
-        &mut self,
-        py_sql: &str,
-        arg: &Arg,
-    ) -> Result<T, Error>
-        where
-            T: DeserializeOwned,
-            Arg: Serialize + Send + Sync,
-    {
-        let (sql, args) = self.py_to_sql(py_sql, arg)?;
-        return self.fetch(sql.as_str(), &args).await;
-    }
 
-    /// exec sql(prepare sql)
-    ///for example:
-    ///
-    ///         let py = r#"
-    ///     select * from biz_activity
-    ///    where delete_flag = #{delete_flag}
-    ///     if name != null:
-    ///       and name like #{name+'%'}
-    ///     if ids != null:
-    ///       and id in (
-    ///       trim ',':
-    ///          for item in ids:
-    ///            #{item},
-    ///       )"#;
-    ///         let data: u64 = rb.py_exec("", py, &json!({   "delete_flag": 1 })).await.unwrap();
-    ///
-    async fn py_exec<Arg>(
-        &mut self,
-        py_sql: &str,
-        arg: &Arg,
-    ) -> Result<DBExecResult, Error>
-        where
-            Arg: Serialize + Send + Sync,
-    {
-        let (sql, args) = self.py_to_sql(py_sql, arg)?;
-        return self.execute(sql.as_str(), &args).await;
-    }
+impl<'a> PySqlSupport for RBatisConnExecutor<'a> {}
 
+impl<'a> PySqlSupport for RBatisTxExecutor<'a> {}
+
+
+#[async_trait]
+pub trait PySql: Executor + PySqlSupport {
     /// fetch page result(prepare sql)
     async fn fetch_page<T>(
         &mut self,
