@@ -15,7 +15,6 @@ use crate::core::Result;
 use crate::executor::{Executor, RBatisConnExecutor, RBatisTxExecutor};
 use crate::plugin::page::{IPageRequest, Page, IPage};
 use crate::plugin::version_lock::VersionLockPlugin;
-use crate::py::PySqlSupport;
 use crate::rbatis::Rbatis;
 use crate::sql::rule::SqlRule;
 use crate::utils::string_util::to_snake_name;

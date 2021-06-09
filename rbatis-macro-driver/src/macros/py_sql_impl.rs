@@ -18,7 +18,7 @@ pub(crate) fn impl_macro_py_sql(target_fn: &ItemFn, args: &AttributeArgs) -> Tok
     let sql_ident = args.get(1).unwrap().to_token_stream();
     let sql = format!("{}", sql_ident).trim().to_string();
     let func_args_stream = target_fn.sig.inputs.to_token_stream();
-    let fn_body = find_fn_body(target_fn);
+    let mut fn_body = find_fn_body(target_fn);
     let is_async = target_fn.sig.asyncness.is_some();
     if !is_async {
         panic!(
@@ -32,27 +32,33 @@ pub(crate) fn impl_macro_py_sql(target_fn: &ItemFn, args: &AttributeArgs) -> Tok
     let is_fetch = is_fetch_sql(&sql);
     let mut call_method = quote! {};
     if is_fetch {
-        call_method = quote! {py_fetch};
+        call_method = quote! {
+             #rbatis_ident.fetch(&sql,&rb_args).await
+        };
     } else {
-        call_method = quote! {py_exec};
+        call_method = quote! {
+             #rbatis_ident.execute(&sql,&rb_args).await
+        };
     }
-    //check use page method
-    let mut page_req = quote! {};
     if return_ty.to_string().contains("Page <")
         && func_args_stream.to_string().contains("& PageRequest")
     {
-        let req = get_page_req_ident(target_fn, &func_name_ident.to_string());
-        page_req = quote! {,#req};
-        call_method = quote! {py_fetch_page};
+        let page_ident = get_page_req_ident(target_fn, &func_name_ident.to_string());
+        call_method = quote! {
+            use rbatis::py::{PySqlConvert};
+            let (sql, rb_args) = #rbatis_ident.py_to_sql(&#sql_ident, &rb_args)?;
+            #rbatis_ident.fetch_page(&sql,&rb_args,#page_ident).await
+        };
     }
     //gen rust code templete
     return quote! {
        pub async fn #func_name_ident(#func_args_stream) -> #return_ty {
+         let mut sql = #sql_ident.to_string();
          let mut rb_args = serde_json::Map::new();
          #sql_args_gen
          let mut rb_args = serde_json::Value::from(rb_args);
          #fn_body
-         return #rbatis_ident.#call_method(&#sql_ident,&rb_args #page_req).await;
+         #call_method
        }
     }
     .into();

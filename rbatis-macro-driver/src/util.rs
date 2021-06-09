@@ -110,7 +110,7 @@ pub(crate) fn find_fn_body(target_fn: &ItemFn) -> proc_macro2::TokenStream {
     for x in removes {
         target_fn.block.stmts.remove(x);
     }
-    target_fn.to_token_stream()
+    target_fn.block.to_token_stream()
 }
 
 pub(crate) fn is_fetch_sql(source: &str) -> bool {

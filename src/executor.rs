@@ -20,6 +20,11 @@ pub trait RbatisRef {
     }
 }
 
+impl RbatisRef for Rbatis{
+    fn get_rbatis(&self) -> &Rbatis {
+        &self
+    }
+}
 
 #[async_trait]
 pub trait Executor:RbatisRef {
