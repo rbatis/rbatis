@@ -9,7 +9,7 @@ mod test {
     use serde::Serialize;
 
     use rbatis::core::Error;
-    use rbatis::crud::{CRUDTable, CRUDMut, CRUD};
+    use rbatis::crud::{CRUDTable, CRUDMut, CRUD, Fields};
     use rbatis::plugin::logic_delete::RbatisLogicDeletePlugin;
     use rbatis::plugin::page::{Page, PageRequest};
     use rbatis::rbatis::Rbatis;
@@ -32,13 +32,7 @@ mod test {
     }
 
     /// 必须实现 CRUDEntity接口，如果表名 不正确，可以重写 fn table_name() -> String 方法！
-    impl CRUDTable for BizActivity {
-        type IdType = String;
-
-        fn get_id(&self) -> Option<&Self::IdType> {
-            self.id.as_ref()
-        }
-    }
+    impl CRUDTable for BizActivity {}
 
     #[derive(Serialize, Deserialize, Clone, Debug)]
     pub struct BizActivityNoDel {
@@ -47,12 +41,6 @@ mod test {
     }
 
     impl CRUDTable for BizActivityNoDel {
-        type IdType = String;
-
-        fn get_id(&self) -> Option<&Self::IdType> {
-            self.id.as_ref()
-        }
-
         fn table_name() -> String {
             "biz_activity".to_string()
         }
@@ -74,7 +62,7 @@ mod test {
             version: Some(1),
             delete_flag: Some(1),
         }];
-        let ids = vec.to_ids();
+        let ids = vec.to_fields::<String>("id");
         println!("{:?}", ids);
     }
 
@@ -102,7 +90,7 @@ mod test {
                 .await
                 .unwrap();
 
-            rb.remove_by_id::<BizActivity>( activity.id.as_ref().unwrap())
+            rb.remove_by_column::<BizActivity,_>( "id",activity.id.as_ref().unwrap())
                 .await;
             let r = rb.save( &activity).await;
             if r.is_err() {
@@ -135,7 +123,7 @@ mod test {
             rb.link("mysql://root:123456@localhost:3306/test")
                 .await
                 .unwrap();
-            let r = rb.save_batch("", &args).await;
+            let r = rb.save_batch( &args).await;
             if r.is_err() {
                 println!("{}", r.err().unwrap().to_string());
             }
@@ -152,7 +140,7 @@ mod test {
                 .await
                 .unwrap();
             let r = rb
-                .remove_batch_by_id::<BizActivity>( &["1".to_string(), "2".to_string()])
+                .remove_batch_by_column::<BizActivity,_>( "id",&["1".to_string(), "2".to_string()])
                 .await;
             if r.is_err() {
                 println!("{}", r.err().unwrap().to_string());
@@ -170,7 +158,7 @@ mod test {
             rb.link("mysql://root:123456@localhost:3306/test")
                 .await
                 .unwrap();
-            let r = rb.remove_by_id::<BizActivity>( &"1".to_string()).await;
+            let r = rb.remove_by_column::<BizActivity,_>("id", &"1".to_string()).await;
             if r.is_err() {
                 println!("{}", r.err().unwrap().to_string());
             }
@@ -237,7 +225,7 @@ mod test {
                 version: Some(1),
                 delete_flag: Some(1),
             };
-            let r = rb.update_by_id(&mut activity).await;
+            let r = rb.update_by_column("id",&mut activity).await;
             if r.is_err() {
                 println!("{}", r.err().unwrap().to_string());
             }
