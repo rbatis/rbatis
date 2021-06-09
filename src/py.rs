@@ -32,32 +32,10 @@ pub trait PySqlConvert: RbatisRef {
     }
 }
 
-
 impl<'a> PySqlConvert for RBatisConnExecutor<'a> {}
 
 impl<'a> PySqlConvert for RBatisTxExecutor<'a> {}
 
+impl PySqlConvert for Rbatis{
 
-#[async_trait]
-pub trait PySqlSupport: CRUDMut+ PySqlConvert {
-    /// fetch result(prepare sql)
-    async fn py_fetch_page<T, Arg>(
-        &mut self,
-        py_sql: &str,
-        arg: &Arg,
-        page_request: &dyn IPageRequest,
-    ) -> Result<Page<T>, Error>
-        where
-            T: DeserializeOwned + Serialize + Send + Sync,
-            Arg: Serialize + Send + Sync,
-    {
-        let (sql, args) = self.py_to_sql(py_sql, arg)?;
-        return self
-            .fetch_page::<T>(sql.as_str(), &args, page_request)
-            .await;
-    }
 }
-
-impl<'a> PySqlSupport for RBatisConnExecutor<'a> {}
-
-impl<'a> PySqlSupport for RBatisTxExecutor<'a> {}

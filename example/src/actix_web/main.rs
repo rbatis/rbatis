@@ -8,7 +8,6 @@ use actix_web::{web, App, HttpResponse, HttpServer, Responder};
 use chrono::NaiveDateTime;
 use rbatis::crud::{CRUD};
 use rbatis::rbatis::Rbatis;
-use rbatis::py::PySqlSupport;
 
 #[crud_table]
 #[derive(Clone, Debug)]

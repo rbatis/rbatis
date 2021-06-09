@@ -16,7 +16,6 @@ mod ids_test;
 mod intercept_test;
 mod page_test;
 mod plugin_exclude_test;
-mod py_sql_custom_test;
 mod py_sql_test;
 mod raw_driver_test;
 mod raw_identifiers_test;
