@@ -13,9 +13,9 @@ use crate::core::db::DriverType;
 use crate::core::Error;
 use crate::core::Result;
 use crate::executor::{Executor, RBatisConnExecutor, RBatisTxExecutor};
-use crate::plugin::page::{IPageRequest, Page};
+use crate::plugin::page::{IPageRequest, Page, IPage};
 use crate::plugin::version_lock::VersionLockPlugin;
-use crate::py::PySql;
+use crate::py::PySqlSupport;
 use crate::rbatis::Rbatis;
 use crate::sql::rule::SqlRule;
 use crate::utils::string_util::to_snake_name;
@@ -273,101 +273,20 @@ pub trait CRUD {
     async fn fetch_list_by_wrapper<T>(&self, w: &Wrapper) -> Result<Vec<T>>
         where
             T: CRUDTable;
-}
 
-#[async_trait]
-pub trait CRUDMut {
-    async fn save_by_wrapper<T>(
-        &mut self,
-        table: &T,
-        w: &Wrapper,
-    ) -> Result<DBExecResult>
-        where
-            T: CRUDTable;
-    async fn save<T>(&mut self, table: &T) -> Result<DBExecResult>
-        where
-            T: CRUDTable;
-    async fn save_batch<T>(&mut self, tables: &[T]) -> Result<DBExecResult>
-        where
-            T: CRUDTable;
-
-    async fn save_batch_slice<T>(
-        &mut self,
-        tables: &[T],
-        slice_len: usize,
-    ) -> Result<DBExecResult>
-        where
-            T: CRUDTable;
-
-    async fn remove_by_wrapper<T>(&mut self, w: &Wrapper) -> Result<u64>
-        where
-            T: CRUDTable;
-    async fn remove_by_column<T, C>(&mut self, column: &str, column_value: &C) -> Result<u64> where T: CRUDTable, C: Serialize + Send + Sync;
-
-    async fn remove_batch_by_column<T, C>(&mut self, column: &str, column_values: &[C]) -> Result<u64>
-        where
-            T: CRUDTable, C: Serialize + Send + Sync;
-
-    async fn update_by_wrapper<T>(
-        &mut self,
-        table: &mut T,
-        w: &Wrapper,
-        update_null_value: bool,
-    ) -> Result<u64>
-        where
-            T: CRUDTable;
-    /// update database record by id
-    async fn update_by_column<T>(&mut self, column: &str, table: &mut T) -> Result<u64>
-        where
-            T: CRUDTable;
-
-    /// remove batch database record by tables
-    async fn update_batch_by_column<T>(&mut self, column: &str, tables: &mut [T]) -> Result<u64>
-        where
-            T: CRUDTable;
-
-    /// fetch database record by id
-    async fn fetch_by_column<T, C>(&mut self, column: &str, value: &C) -> Result<T>
-        where
-            T: CRUDTable, C: Serialize + Send + Sync;
-
-    /// fetch database record by a wrapper
-    async fn fetch_by_wrapper<T>(&mut self, w: &Wrapper) -> Result<T>
-        where
-            T: CRUDTable;
-
-    /// count database record by a wrapper
-    async fn fetch_count_by_wrapper<T>(&mut self, w: &Wrapper) -> Result<u64>
-        where
-            T: CRUDTable;
-
-    /// fetch page database record list by a wrapper
-    async fn fetch_page_by_wrapper<T>(
-        &mut self,
-        w: &Wrapper,
-        page: &dyn IPageRequest,
+    /// fetch page result(prepare sql)
+    async fn fetch_page<T>(
+        &self,
+        sql: &str,
+        args: &Vec<serde_json::Value>,
+        page_request: &dyn IPageRequest,
     ) -> Result<Page<T>>
         where
-            T: CRUDTable;
-
-    /// fetch database record list for all
-    async fn fetch_list<T>(&mut self) -> Result<Vec<T>>
-        where
-            T: CRUDTable;
-
-    /// fetch database record list by a id array
-    async fn fetch_list_by_column<T, C>(&mut self, column: &str, column_values: &[C]) -> Result<Vec<T>>
-        where
-            T: CRUDTable, C: Serialize + Send + Sync;
-
-    /// fetch database record list by a wrapper
-    async fn fetch_list_by_wrapper<T>(&mut self, w: &Wrapper) -> Result<Vec<T>>
-        where
-            T: CRUDTable;
+            T: DeserializeOwned + Serialize + Send + Sync;
 }
 
 #[async_trait]
-pub trait ImplCRUD: PySql {
+pub trait CRUDMut: Executor {
     /// save by wrapper
     async fn save_by_wrapper<T>(
         &mut self,
@@ -805,11 +724,48 @@ pub trait ImplCRUD: PySql {
         let sql = make_select_sql::<T>(self.get_rbatis(), &T::table_columns(), &w)?;
         self.fetch_page(sql.as_str(), &w.args, page).await
     }
+
+    /// fetch page result(prepare sql)
+    async fn fetch_page<T>(
+        &mut self,
+        sql: &str,
+        args: &Vec<serde_json::Value>,
+        page_request: &dyn IPageRequest,
+    ) -> Result<Page<T>>
+        where
+            T: DeserializeOwned + Serialize + Send + Sync,
+    {
+        let mut page_result = Page::new(page_request.get_page_no(), page_request.get_page_size());
+        page_result.search_count = page_request.is_search_count();
+        let (count_sql, sql) = self.get_rbatis().page_plugin.make_page_sql(
+            &self.driver_type()?,
+            "",
+            &sql,
+            args,
+            page_request,
+        )?;
+        if page_request.is_search_count() {
+            //make count sql
+            let total: Option<u64> = self
+                .fetch(&count_sql, args)
+                .await?;
+            page_result.set_total(total.unwrap_or(0));
+            page_result.pages = page_result.get_pages();
+            if page_result.get_total() == 0 {
+                return Ok(page_result);
+            }
+        }
+        let data: Option<Vec<T>> = self.fetch(sql.as_str(), args).await?;
+        page_result.set_records(data.unwrap_or(vec![]));
+        page_result.pages = page_result.get_pages();
+        return Ok(page_result);
+    }
 }
 
-impl ImplCRUD for RBatisConnExecutor<'_> {}
 
-impl ImplCRUD for RBatisTxExecutor<'_> {}
+impl CRUDMut for RBatisConnExecutor<'_> {}
+
+impl CRUDMut for RBatisTxExecutor<'_> {}
 
 /// choose table name
 fn choose_dyn_table_name<T>(w: &Wrapper) -> String
@@ -962,5 +918,19 @@ impl CRUD for Rbatis {
         T: CRUDTable {
         let mut conn = self.acquire().await?;
         conn.fetch_list_by_wrapper(w).await
+    }
+
+    /// fetch page result(prepare sql)
+    async fn fetch_page<T>(
+        &self,
+        sql: &str,
+        args: &Vec<serde_json::Value>,
+        page_request: &dyn IPageRequest,
+    ) -> Result<Page<T>>
+        where
+            T: DeserializeOwned + Serialize + Send + Sync,
+    {
+        let mut conn = self.acquire().await?;
+        conn.fetch_page(sql, args, page_request).await
     }
 }
