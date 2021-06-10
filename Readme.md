@@ -59,7 +59,7 @@ fast_log="1.3"
 bigdecimal = "0.2"
 
 # rbatis lib(required)
-rbatis =  { version = "1.8" } 
+rbatis =  { version = "2.0" } 
 ```
 
 ##### Quick example: QueryWrapper and common usages (see example/crud_test.rs for details)
@@ -72,8 +72,10 @@ extern crate rbatis;
 use rbatis::crud::CRUD;
 
 /// may also write `CRUDTable` as `impl CRUDTable for BizActivity{}`
-/// #[crud_table( table_name:biz_activity)]
-/// #[crud_table(id_name:"id"|id_type:"String"|table_name:"biz_activity"|table_columns:"id,name,version,delete_flag"|formats_pg:"id:{}::uuid")]
+/// #[crud_table]
+/// #[crud_table(table_name:biz_activity)]
+/// #[crud_table(table_name:"biz_activity"|table_columns:"id,name,version,delete_flag")]
+/// #[crud_table(table_name:"biz_activity"|table_columns:"id,name,version,delete_flag"|formats_pg:"id:{}::uuid")]
 #[crud_table]
 #[derive(Clone, Debug)]
 pub struct BizActivity {
@@ -140,43 +142,43 @@ async fn main() {
     delete_flag: Some(1),
   };
   /// saving
-  rb.save("", &activity).await;
+  rb.save(&activity).await;
 //Exec ==> INSERT INTO biz_activity (create_time,delete_flag,h5_banner_img,h5_link,id,name,pc_banner_img,pc_link,remark,sort,status,version) VALUES ( ? , ? , ? , ? , ? , ? , ? , ? , ? , ? , ? , ? )
 
   /// batch saving
-  rb.save_batch("", &vec![activity]).await;
+  rb.save_batch(&vec![activity]).await;
 //Exec ==> INSERT INTO biz_activity (create_time,delete_flag,h5_banner_img,h5_link,id,name,pc_banner_img,pc_link,remark,sort,status,version) VALUES ( ? , ? , ? , ? , ? , ? , ? , ? , ? , ? , ? , ? ),( ? , ? , ? , ? , ? , ? , ? , ? , ? , ? , ? , ? )
 
   /// The query, Option wrapper, is None if the data is not found
-  let result: Option<BizActivity> = rb.fetch_by_id("", &"1".to_string()).await.unwrap();
+  let result: Option<BizActivity> = rb.fetch_by_column("id",&"1".to_string()).await.unwrap();
 //Query ==> SELECT create_time,delete_flag,h5_banner_img,h5_link,id,name,pc_banner_img,pc_link,remark,sort,status,version  FROM biz_activity WHERE delete_flag = 1  AND id =  ? 
 
   /// query all
-  let result: Vec<BizActivity> = rb.list("").await.unwrap();
+  let result: Vec<BizActivity> = rb.list().await.unwrap();
 //Query ==> SELECT create_time,delete_flag,h5_banner_img,h5_link,id,name,pc_banner_img,pc_link,remark,sort,status,version  FROM biz_activity WHERE delete_flag = 1
 
   ///query by id vec
-  let result: Vec<BizActivity> = rb.list_by_ids("", &["1".to_string()]).await.unwrap();
+  let result: Vec<BizActivity> = rb.list_by_column("id",&["1".to_string()]).await.unwrap();
 //Query ==> SELECT create_time,delete_flag,h5_banner_img,h5_link,id,name,pc_banner_img,pc_link,remark,sort,status,version  FROM biz_activity WHERE delete_flag = 1  AND id IN  (?) 
 
   ///query by wrapper
   let w = rb.new_wrapper().eq("id", "1");
-  let r: Result<Option<BizActivity>, Error> = rb.fetch_by_wrapper("", &w).await;
+  let r: Result<Option<BizActivity>, Error> = rb.fetch_by_wrapper( &w).await;
 //Query ==> SELECT  create_time,delete_flag,h5_banner_img,h5_link,id,name,pc_banner_img,pc_link,remark,sort,status,version  FROM biz_activity WHERE delete_flag = 1  AND id =  ? 
 
   ///delete
-  rb.remove_by_id::<BizActivity>("", &"1".to_string()).await;
+  rb.remove_by_column::<BizActivity>("id", &"1".to_string()).await;
 //Exec ==> UPDATE biz_activity SET delete_flag = 0 WHERE id = 1
 
   ///delete batch
-  rb.remove_batch_by_id::<BizActivity>("", &["1".to_string(), "2".to_string()]).await;
+  rb.remove_batch_by_column::<BizActivity>("id", &["1".to_string(), "2".to_string()]).await;
 //Exec ==> UPDATE biz_activity SET delete_flag = 0 WHERE id IN (  ?  ,  ?  ) 
 
   ///update
   ///if version_lock plugin actived,update method will modify field 'version'= version + 1
   let mut activity = activity.clone();
   let w = rb.new_wrapper().eq("id", "12312");
-  rb.update_by_wrapper("", &mut activity, &w).await;
+  rb.update_by_wrapper( &mut activity, &w).await;
 //Exec ==> UPDATE biz_activity SET  create_time =  ? , delete_flag =  ? , status =  ? , version =  ?  WHERE id =  ? 
 }
 
@@ -247,7 +249,7 @@ let mut rb:Rbatis=Rbatis::new();
 //rb.logic_plugin = Some(Box::new(RbatisLogicDeletePlugin::new_opt("delete_flag",1,0)));//Customize deleted/undeleted writing
 rb.logic_plugin = Some(Box::new(RbatisLogicDeletePlugin::new("delete_flag")));
 rb.link("mysql://root:123456@localhost:3306/test").await.unwrap();
-let r = rb.remove_batch_by_id::<BizActivity>("", & ["1".to_string(), "2".to_string()]).await;
+let r = rb.remove_batch_by_id::<BizActivity>( & ["1".to_string(), "2".to_string()]).await;
 if r.is_err() {
   println ! ("{}", r.err().unwrap().to_string());
 }
@@ -264,7 +266,7 @@ rb.link("mysql://root:123456@localhost:3306/test").await.unwrap();
 let req = PageRequest::new(1, 20);
 let wraper= rb.new_wrapper()
 .eq("delete_flag", 1);
-let data: Page<BizActivity> = rb.fetch_page_by_wrapper("", & wraper, & req).await.unwrap();
+let data: Page<BizActivity> = rb.fetch_page_by_wrapper( & wraper, & req).await.unwrap();
 println!("{}", serde_json::to_string(&data).unwrap());
 
 //2020-07-10T21:28:40.036506700+08:00 INFO rbatis::rbatis - [rbatis] Query ==> SELECT count(1) FROM biz_activity  WHERE delete_flag =  ? LIMIT 0,20
@@ -317,7 +319,7 @@ println!("{}", serde_json::to_string(&data).unwrap());
              for item in ids:
                #{item},
           )"#;
-            let data: serde_json::Value = rb.py_fetch("", py, &json!({   "delete_flag": 1 })).await.unwrap();
+            let data: serde_json::Value = rb.py_fetch( py, &json!({   "delete_flag": 1 })).await.unwrap();
             println!("{}", data);
 ```
 
@@ -366,7 +368,7 @@ lazy_static! {
 }
 
 async fn index() -> impl Responder {
-    let v:Result<i32,rbatis::core::Error> = RB.fetch("", "SELECT count(1) FROM biz_activity;").await;
+    let v:Result<i32,rbatis::core::Error> = RB.fetch( "SELECT count(1) FROM biz_activity;",&vec![]).await;
     HttpResponse::Ok().body(format!("count(1)={}",v.unwrap_or(0)))
 }
 
@@ -431,6 +433,7 @@ async fn main() -> std::io::Result<()> {
 | async/await support                                             | √     | 
 | PagePlugin(Pagincation)                                         | √     |
 | LogicDelPlugin                                 | √    |
+| Html(using html(xml)  statement in SQL)                         | incoming     | 
 | DataBase Table ConvertPage(Web UI,Coming soon)                          | x     | 
 
 * Conlusion: Assuming zero time consumed on IO, single threaded benchmark achieves 200K QPS or QPS, which is a few times
