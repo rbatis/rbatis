@@ -346,7 +346,7 @@ pub async fn init_rbatis() -> Rbatis {
 }
 ```
 
-#### `Async/.await` task support
+#### Transaction
 
 ``` rust
         let rb = Rbatis::new();
