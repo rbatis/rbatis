@@ -365,9 +365,8 @@ pub async fn init_rbatis() -> Rbatis {
 # Transaction defer
 ``` rust
     pub async fn forget_commit(rb: &Rbatis) -> rbatis::core::Result<serde_json::Value> {
-        // tx will be commit.when func end
-        let tx = rb.acquire_begin().await?;
-        let tx=tx.to_defer(|tx|{
+         // tx will be commit.when func end
+        let tx = rb.acquire_begin().await?.defer(|tx|{
             println!("tx is drop!");
             async_std::task::block_on(async{ tx.rollback().await; });
         });

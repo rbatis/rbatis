@@ -217,7 +217,7 @@ pub struct RBatisTxExecutorGuard<'a> {
 }
 
 impl <'a>RBatisTxExecutor<'a> {
-    pub fn to_defer(self,callback: fn(s:Self))->RBatisTxExecutorGuard<'a>{
+    pub fn defer(self, callback: fn(s:Self)) ->RBatisTxExecutorGuard<'a>{
         RBatisTxExecutorGuard{
             tx: Some(self),
             callback: callback
