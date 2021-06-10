@@ -53,8 +53,7 @@ mod test {
 
     pub async fn forget_commit(rb: &Rbatis) -> rbatis::core::Result<serde_json::Value> {
         // tx will be commit.when func end
-        let tx = rb.acquire_begin().await?;
-        let tx=tx.to_defer(|tx|{
+        let tx = rb.acquire_begin().await?.defer(|tx|{
             println!("tx is drop!");
             async_std::task::block_on(async{ tx.rollback().await; });
         });
