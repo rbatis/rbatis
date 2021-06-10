@@ -351,11 +351,15 @@ pub async fn init_rbatis() -> Rbatis {
 ``` rust
         let rb = Rbatis::new();
         rb.link("mysql://root:123456@localhost:3306/test").await.unwrap();
-        let context_id = "tx:1";//事务id号
-        rb.begin(context_id).await.unwrap();
-        let v: serde_json::Value = rb.fetch(context_id, "SELECT count(1) FROM biz_activity;").await.unwrap();
+        let mut tx = rb.acquire_begin().await.unwrap();
+        let v: serde_json::Value = tx
+            .fetch("select count(1) from biz_activity;",&vec![])
+            .await
+            .unwrap();
         println!("{}", v.clone());
-        rb.commit(context_id).await.unwrap();
+        //rb.fetch**** and more method
+        tx.commit().await.unwrap();
+        //tx.begin().await
 ```
 
 ### How to use rbatis with Rust web frameworks (actix-web is used here as an example, but all web frameworks based on tokio or async_std are supported)
