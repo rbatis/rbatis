@@ -362,6 +362,23 @@ pub async fn init_rbatis() -> Rbatis {
         //tx.begin().await
 ```
 
+# Transaction defer
+``` rust
+    pub async fn forget_commit(rb: &Rbatis) -> rbatis::core::Result<serde_json::Value> {
+        // tx will be commit.when func end
+        let tx = rb.acquire_begin().await?;
+        let tx=tx.to_defer(|tx|{
+            println!("tx is drop!");
+            async_std::task::block_on(async{ tx.rollback().await; });
+        });
+        let v: serde_json::Value = tx
+            .fetch( "select count(1) from biz_activity;",&vec![])
+            .await?;
+        return Ok(v);
+    }
+```
+
+
 ### How to use rbatis with Rust web frameworks (actix-web is used here as an example, but all web frameworks based on tokio or async_std are supported)
 
 ``` rust
