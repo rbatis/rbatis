@@ -185,7 +185,7 @@ pub struct RBatisTxExecutor<'a> {
 impl_executor!(RBatisTxExecutor<'_>);
 
 impl<'a> RBatisTxExecutor<'a> {
-    pub async fn commit(&mut self) -> crate::Result<()> {
+    pub async fn commit(mut self) -> crate::Result<()> {
         self.conn.commit().await
     }
     pub async fn rollback(mut self) -> crate::Result<()> {
@@ -212,14 +212,14 @@ impl<'a> Deref for RBatisTxExecutor<'a> {
 
 
 pub struct RBatisTxExecutorGuard<'a> {
-    pub tx: RBatisTxExecutor<'a>,
-    pub callback: fn(s:&mut RBatisTxExecutor<'a>),
+    pub tx: Option<RBatisTxExecutor<'a>>,
+    pub callback: fn(s:RBatisTxExecutor<'a>),
 }
 
 impl <'a>RBatisTxExecutor<'a> {
-    pub fn to_defer(self,callback: fn(s:&mut Self))->RBatisTxExecutorGuard<'a>{
+    pub fn to_defer(self,callback: fn(s:Self))->RBatisTxExecutorGuard<'a>{
         RBatisTxExecutorGuard{
-            tx: self,
+            tx: Some(self),
             callback: callback
         }
     }
@@ -228,7 +228,12 @@ impl <'a>RBatisTxExecutor<'a> {
 
 impl Drop for RBatisTxExecutorGuard<'_>{
     fn drop(&mut self) {
-        (self.callback)(&mut self.tx);
+        match self.tx.take(){
+            None => {}
+            Some(tx) => {
+                (self.callback)(tx);
+            }
+        }
     }
 }
 
@@ -236,11 +241,9 @@ impl Drop for RBatisTxExecutorGuard<'_>{
 impl<'a> Deref for RBatisTxExecutorGuard<'a> {
     type Target = Rbatis;
     fn deref(&self) -> &Self::Target {
-        &self.tx.rb
+        &self.tx.as_ref().unwrap()
     }
 }
-
-
 
 
 #[async_trait]
