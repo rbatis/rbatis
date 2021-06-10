@@ -13,8 +13,6 @@ pub trait LogicDelete: Send + Sync + Debug {
         std::any::type_name::<Self>()
     }
 
-    fn is_allow(&self, context_id: &str) -> bool;
-
     /// database column
     fn column(&self) -> &str;
     /// deleted data,must be i32
@@ -24,7 +22,6 @@ pub trait LogicDelete: Send + Sync + Debug {
     /// create_remove_sql
     fn create_remove_sql(
         &self,
-        context_id: &str,
         driver_type: &DriverType,
         table_name: &str,
         table_fields: &str,
@@ -33,7 +30,6 @@ pub trait LogicDelete: Send + Sync + Debug {
     /// create_select_sql
     fn create_select_sql(
         &self,
-        context_id: &str,
         driver_type: &DriverType,
         table_name: &str,
         column: &str,
@@ -73,15 +69,6 @@ impl RbatisLogicDeletePlugin {
 }
 
 impl LogicDelete for RbatisLogicDeletePlugin {
-    fn is_allow(&self, context_id: &str) -> bool {
-        for x in &self.excludes {
-            if context_id.starts_with(x) {
-                return false;
-            }
-        }
-        return true;
-    }
-
     fn column(&self) -> &str {
         self.column.as_str()
     }
@@ -96,22 +83,11 @@ impl LogicDelete for RbatisLogicDeletePlugin {
 
     fn create_remove_sql(
         &self,
-        context_id: &str,
         driver_type: &DriverType,
         table_name: &str,
         table_fields: &str,
         sql_where: &str,
     ) -> Result<String, Error> {
-        if !self.is_allow(context_id) {
-            //make delete sql
-            let new_sql = format!(
-                "{} {} {}",
-                crate::sql::TEMPLATE.delete_from.value,
-                table_name,
-                sql_where.trim_start()
-            );
-            return Ok(new_sql);
-        }
         return if table_fields.contains(self.column()) {
             //fields have column
             if sql_where.is_empty() {
@@ -151,7 +127,6 @@ impl LogicDelete for RbatisLogicDeletePlugin {
 
     fn create_select_sql(
         &self,
-        context_id: &str,
         driver_type: &DriverType,
         table_name: &str,
         column: &str,
@@ -160,12 +135,6 @@ impl LogicDelete for RbatisLogicDeletePlugin {
     ) -> Result<String, Error> {
         let mut where_sql = where_sql.trim().to_string();
         let mut sql = String::new();
-        if self.is_allow(context_id) && table_fields.contains(self.column()) {
-            where_sql = driver_type.make_left_insert_where(
-                &format!("{} = {}", self.column(), self.un_deleted()),
-                &where_sql,
-            );
-        }
         sql = format!(
             "{} {} {} {} {}",
             crate::sql::TEMPLATE.select.value,

@@ -66,7 +66,6 @@ impl<'a> ExecutorMut for $t {
         }
         if self.log_plugin.is_enable() {
             self.log_plugin.info(
-                "",
                 &format!(
                     "Exec   ==> {}\n{}[rbatis] [{}] Args   ==> {}",
                     &sql,
@@ -87,13 +86,12 @@ impl<'a> ExecutorMut for $t {
             match &result {
                 Ok(result) => {
                     self.log_plugin.info(
-                        "",
                         &format!("RowsAffected <== {}", result.rows_affected),
                     );
                 }
                 Err(e) => {
                     self.log_plugin
-                        .error("", &format!("ReturnErr  <== {}", e));
+                        .error(&format!("ReturnErr  <== {}", e));
                 }
             }
         }
@@ -109,7 +107,6 @@ impl<'a> ExecutorMut for $t {
         }
         if self.log_plugin.is_enable() {
             self.log_plugin.info(
-                "",
                 &format!(
                     "Fetch  ==> {}\n{}[rbatis] [{}] Args   ==> {}",
                     &sql,
@@ -126,11 +123,11 @@ impl<'a> ExecutorMut for $t {
                 match &result {
                     Ok(result) => {
                         self.log_plugin
-                            .info("", &format!("ReturnRows <== {}", result.1));
+                            .info(&format!("ReturnRows <== {}", result.1));
                     }
                     Err(e) => {
                         self.log_plugin
-                            .error("", &format!("ReturnErr  <== {}", e));
+                            .error(&format!("ReturnErr  <== {}", e));
                     }
                 }
             }
@@ -141,11 +138,11 @@ impl<'a> ExecutorMut for $t {
                 match &result {
                     Ok(result) => {
                         self.log_plugin
-                            .info("", &format!("ReturnRows <== {}", result.1));
+                            .info(&format!("ReturnRows <== {}", result.1));
                     }
                     Err(e) => {
                         self.log_plugin
-                            .error("", &format!("ReturnErr  <== {}", e));
+                            .error(&format!("ReturnErr  <== {}", e));
                     }
                 }
             }
@@ -185,10 +182,10 @@ pub struct RBatisTxExecutor<'a> {
 impl_executor!(RBatisTxExecutor<'_>);
 
 impl<'a> RBatisTxExecutor<'a> {
-    pub async fn commit(mut self) -> crate::Result<()> {
+    pub async fn commit(self) -> crate::Result<()> {
         self.conn.commit().await
     }
-    pub async fn rollback(mut self) -> crate::Result<()> {
+    pub async fn rollback(self) -> crate::Result<()> {
         self.conn.rollback().await
     }
 }

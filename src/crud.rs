@@ -449,7 +449,6 @@ pub trait CRUDMut: ExecutorMut {
         let mut sql = String::new();
         if self.get_rbatis().logic_plugin.is_some() {
             sql = self.get_rbatis().logic_plugin.as_ref().unwrap().create_remove_sql(
-                "",
                 &self.driver_type()?,
                 &table_name,
                 &T::table_columns(),
@@ -479,7 +478,6 @@ pub trait CRUDMut: ExecutorMut {
         let id_str = T::do_format_column(&driver_type, column, driver_type.stmt_convert(0));
         if self.get_rbatis().logic_plugin.is_some() {
             sql = self.get_rbatis().logic_plugin.as_ref().unwrap().create_remove_sql(
-                "",
                 &driver_type,
                 T::table_name().as_str(),
                 &T::table_columns(),
@@ -590,7 +588,7 @@ pub trait CRUDMut: ExecutorMut {
             match &self.get_rbatis().version_lock_plugin {
                 Some(version_lock_plugin) => {
                     old_version = v.clone();
-                    v = version_lock_plugin.try_add_one("", &old_version, column);
+                    v = version_lock_plugin.try_add_one(&old_version, column);
                 }
                 _ => {}
             }
@@ -612,7 +610,7 @@ pub trait CRUDMut: ExecutorMut {
             Some(version_lock_plugin) => {
                 let version_sql = version_lock_plugin
                     .as_ref()
-                    .try_make_where_sql("", &old_version);
+                    .try_make_where_sql( &old_version);
                 if !version_sql.is_empty() {
                     if !wrapper
                         .sql
@@ -762,7 +760,6 @@ pub trait CRUDMut: ExecutorMut {
         page_result.search_count = page_request.is_search_count();
         let (count_sql, sql) = self.get_rbatis().page_plugin.make_page_sql(
             &self.driver_type()?,
-            "",
             &sql,
             args,
             page_request,
@@ -817,7 +814,6 @@ fn make_select_sql<T>(rb: &Rbatis, column: &str, w: &Wrapper) -> Result<String>
     if rb.logic_plugin.is_some() {
         let logic_ref = rb.logic_plugin.as_ref().unwrap();
         return logic_ref.create_select_sql(
-            "",
             &driver_type,
             &table_name,
             column,

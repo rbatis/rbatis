@@ -23,7 +23,6 @@ pub trait PagePlugin: Send + Sync + Debug {
     fn make_page_sql(
         &self,
         driver_type: &DriverType,
-        context_id: &str,
         sql: &str,
         args: &Vec<serde_json::Value>,
         page: &dyn IPageRequest,
@@ -334,7 +333,6 @@ impl PagePlugin for RbatisReplacePagePlugin {
     fn make_page_sql(
         &self,
         driver_type: &DriverType,
-        context_id: &str,
         sql: &str,
         args: &Vec<Value>,
         page: &dyn IPageRequest,
@@ -395,7 +393,6 @@ impl PagePlugin for RbatisPackPagePlugin {
     fn make_page_sql(
         &self,
         driver_type: &DriverType,
-        context_id: &str,
         sql: &str,
         args: &Vec<Value>,
         page: &dyn IPageRequest,
@@ -463,7 +460,6 @@ impl PagePlugin for RbatisPagePlugin {
     fn make_page_sql(
         &self,
         driver_type: &DriverType,
-        context_id: &str,
         sql: &str,
         args: &Vec<Value>,
         page: &dyn IPageRequest,
@@ -471,11 +467,11 @@ impl PagePlugin for RbatisPagePlugin {
         if sql.contains(crate::sql::TEMPLATE.group_by.left_right_space) {
             return self
                 .pack
-                .make_page_sql(driver_type, context_id, sql, args, page);
+                .make_page_sql(driver_type, sql, args, page);
         } else {
             return self
                 .replace
-                .make_page_sql(driver_type, context_id, sql, args, page);
+                .make_page_sql(driver_type, sql, args, page);
         }
     }
 }
