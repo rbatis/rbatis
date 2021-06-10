@@ -13,74 +13,74 @@ pub trait LogPlugin: Send + Sync + Debug {
     fn is_enable(&self) -> bool {
         return !self.get_level_filter().eq(&log::LevelFilter::Off);
     }
-    fn do_log(&self, context_id: &str, data: &str) {
+    fn do_log(&self, data: &str) {
         match self.get_level_filter() {
             log::LevelFilter::Error => {
-                self.error(context_id, data);
+                self.error(data);
             }
             log::LevelFilter::Warn => {
-                self.warn(context_id, data);
+                self.warn(data);
             }
             log::LevelFilter::Info => {
-                self.info(context_id, data);
+                self.info(data);
             }
             log::LevelFilter::Debug => {
-                self.debug(context_id, data);
+                self.debug(data);
             }
             log::LevelFilter::Trace => {
-                self.trace(context_id, data);
+                self.trace(data);
             }
             log::LevelFilter::Off => {}
         }
     }
 
-    fn error(&self, context_id: &str, data: &str) {
+    fn error(&self, data: &str) {
         let filter = self.get_level_filter();
         if filter.eq(&LevelFilter::Off) {
             return;
         }
         if filter.ge(&LevelFilter::Error) {
-            error!("[rbatis] [{}] {}", context_id, data);
+            error!("[rbatis] [] {}", data);
         }
     }
 
-    fn warn(&self, context_id: &str, data: &str) {
+    fn warn(&self, data: &str) {
         let filter = self.get_level_filter();
         if filter.eq(&LevelFilter::Off) {
             return;
         }
         if filter.ge(&LevelFilter::Warn) {
-            warn!("[rbatis] [{}] {}", context_id, data);
+            warn!("[rbatis] [] {}", data);
         }
     }
 
-    fn info(&self, context_id: &str, data: &str) {
+    fn info(&self, data: &str) {
         let filter = self.get_level_filter();
         if filter.eq(&LevelFilter::Off) {
             return;
         }
         if filter.ge(&LevelFilter::Info) {
-            info!("[rbatis] [{}] {}", context_id, data);
+            info!("[rbatis] [] {}", data);
         }
     }
 
-    fn debug(&self, context_id: &str, data: &str) {
+    fn debug(&self, data: &str) {
         let filter = self.get_level_filter();
         if filter.eq(&LevelFilter::Off) {
             return;
         }
         if filter.ge(&LevelFilter::Debug) {
-            debug!("[rbatis] [{}] {}", context_id, data);
+            debug!("[rbatis] [] {}", data);
         }
     }
 
-    fn trace(&self, context_id: &str, data: &str) {
+    fn trace(&self, data: &str) {
         let filter = self.get_level_filter();
         if filter.eq(&LevelFilter::Off) {
             return;
         }
         if filter.ge(&LevelFilter::Trace) {
-            trace!("[rbatis] [{}] {}", context_id, data);
+            trace!("[rbatis] [] {}", data);
         }
     }
 }

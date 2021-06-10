@@ -6,9 +6,9 @@ mod test {
     use std::fs::File;
     use std::io::Read;
 
-    /// ctx_id Used to trace SQL records
+
     #[py_sql(rb, "select * from biz_activity where delete_flag = 0")]
-    async fn py_ctx_id(rb: &Rbatis, ctx_id: &str) -> Vec<BizActivity> { todo!() }
+    async fn py_ctx_id(rb: &Rbatis) -> Vec<BizActivity> { todo!() }
 
     #[tokio::test]
     pub async fn test_py_ctx_id() {
@@ -18,7 +18,7 @@ mod test {
         rb.link("mysql://root:123456@localhost:3306/test")
             .await
             .unwrap();
-        let a = py_ctx_id(&rb, "test").await.unwrap();
+        let a = py_ctx_id(&rb).await.unwrap();
         println!("{:?}", a);
     }
 
