@@ -1,11 +1,13 @@
 #[cfg(test)]
 mod test {
-    use crate::BizActivity;
-    use rbatis::plugin::page::{Page, PageRequest};
-    use rbatis::rbatis::Rbatis;
     use std::fs::File;
     use std::io::Read;
 
+    use rbatis::executor::RbatisExecutor;
+    use rbatis::plugin::page::{Page, PageRequest};
+    use rbatis::rbatis::Rbatis;
+
+    use crate::BizActivity;
 
     #[py_sql(rb, "select * from biz_activity where delete_flag = 0")]
     async fn py_ctx_id(rb: &Rbatis) -> Vec<BizActivity> { todo!() }
@@ -29,7 +31,7 @@ mod test {
                   if name != '':
                     and name=#{name}"
     )]
-    async fn py_select_page(rb: &Rbatis, page_req: &PageRequest, name: &str) -> Page<BizActivity> { todo!() }
+    async fn py_select_page2(rb: &mut RbatisExecutor<'_>, page_req: &PageRequest, name: &str) -> Page<BizActivity> { todo!() }
 
     #[tokio::test]
     pub async fn test_py_select_page() {
@@ -39,7 +41,7 @@ mod test {
         rb.link("mysql://root:123456@localhost:3306/test")
             .await
             .unwrap();
-        let a = py_select_page(&rb, &PageRequest::new(1, 10), "test")
+        let a = py_select_page2(&mut RbatisExecutor::from(&rb), &PageRequest::new(1, 10), "test")
             .await
             .unwrap();
         println!("{:?}", a);
