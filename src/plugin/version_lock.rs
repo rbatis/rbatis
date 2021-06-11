@@ -1,5 +1,10 @@
 use serde_json::Number;
 use std::fmt::Debug;
+use crate::crud::CRUDTable;
+use serde::{Serialize, Deserialize, Serializer, Deserializer};
+use crate::DriverType;
+use std::collections::HashMap;
+use std::ops::Deref;
 
 pub trait VersionLockPlugin: Send + Sync + Debug {
     ///the name
@@ -66,5 +71,81 @@ impl RbatisVersionLockPlugin {
 impl VersionLockPlugin for RbatisVersionLockPlugin {
     fn column(&self) -> &str {
         &self.version_column
+    }
+}
+
+
+
+
+
+
+
+
+/// use this context will not use logic del
+pub struct TableNoVersion<T> where T: CRUDTable {
+    pub table: T,
+}
+
+impl<T> Serialize for TableNoVersion<T> where T: CRUDTable {
+    fn serialize<S>(&self, serializer: S) -> Result<<S as Serializer>::Ok, <S as Serializer>::Error> where
+        S: Serializer {
+        T::serialize(&self.table, serializer)
+    }
+}
+
+impl<'de, T> Deserialize<'de> for TableNoVersion<T> where T: CRUDTable {
+    fn deserialize<D>(deserializer: D) -> Result<Self, <D as Deserializer<'de>>::Error> where
+        D: Deserializer<'de> {
+        let result = T::deserialize(deserializer)?;
+        return Ok(TableNoVersion {
+            table: result,
+        });
+    }
+}
+
+
+impl<T> CRUDTable for TableNoVersion<T> where T: CRUDTable {
+    fn is_use_plugin(plugin_name: &str) -> bool {
+        if plugin_name.eq(std::any::type_name::<RbatisVersionLockPlugin>()) {
+            return false;
+        }
+        return true;
+    }
+
+    fn table_name() -> String {
+        T::table_name()
+    }
+
+    fn table_columns() -> String {
+        T::table_columns()
+    }
+
+    fn formats(driver_type: &DriverType) -> HashMap<String, fn(arg: &str) -> String> {
+        T::formats(driver_type)
+    }
+
+    fn make_value_sql_arg(
+        &self,
+        db_type: &DriverType,
+        index: &mut usize,
+    ) -> crate::Result<(String, String, Vec<serde_json::Value>)> {
+        T::make_value_sql_arg(&self.table, db_type, index)
+    }
+}
+
+impl<T> Deref for TableNoVersion<T> where T: CRUDTable {
+    type Target = T;
+
+    fn deref(&self) -> &Self::Target {
+        &self.table
+    }
+}
+
+
+impl<T> From<T> for TableNoVersion<T> where T: CRUDTable {
+    fn from(arg: T) -> Self {
+        TableNoVersion {
+            table: arg
+        }
     }
 }

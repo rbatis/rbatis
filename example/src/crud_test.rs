@@ -6,7 +6,7 @@ mod test {
     use rbatis::core::value::DateTimeNow;
     use rbatis::core::Error;
     use rbatis::crud::{CRUDMut, CRUD};
-    use rbatis::plugin::logic_delete::RbatisLogicDeletePlugin;
+    use rbatis::plugin::logic_delete::{RbatisLogicDeletePlugin, TableNoLogic};
     use rbatis::plugin::page::{Page, PageRequest};
     use rbatis::plugin::snowflake::new_snowflake_id;
     use rbatis::plugin::version_lock::RbatisVersionLockPlugin;
@@ -169,6 +169,7 @@ mod test {
         }
     }
 
+    /// use TableNoLogic to Temporary Disabling of Plugin
     #[tokio::test]
     pub async fn test_remove_batch_by_id() {
         let mut rb = init_rbatis().await;
@@ -177,7 +178,7 @@ mod test {
             .await
             .unwrap();
         let r = rb
-            .remove_batch_by_column::<BizActivity,_>( "id",&["1".to_string(), "2".to_string()])
+            .remove_batch_by_column::<TableNoLogic<BizActivity>,_>( "id",&["1".to_string(), "2".to_string()])
             .await;
         if r.is_err() {
             println!("{}", r.err().unwrap().to_string());

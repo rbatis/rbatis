@@ -5,6 +5,10 @@ use serde_json::Value;
 use crate::core::db::DriverType;
 use crate::core::Error;
 use crate::sql::rule::SqlRule;
+use crate::crud::CRUDTable;
+use std::ops::Deref;
+use std::collections::HashMap;
+use serde::{Serialize, Deserialize, Serializer, Deserializer};
 
 /// Logic Delete Plugin trait
 pub trait LogicDelete: Send + Sync + Debug {
@@ -144,5 +148,76 @@ impl LogicDelete for RbatisLogicDeletePlugin {
             driver_type.make_where(&where_sql)
         );
         Ok(sql)
+    }
+}
+
+
+
+/// use this context will not use logic del
+pub struct TableNoLogic<T> where T: CRUDTable {
+    pub table: T,
+}
+
+impl<T> Serialize for TableNoLogic<T> where T: CRUDTable {
+    fn serialize<S>(&self, serializer: S) -> Result<<S as Serializer>::Ok, <S as Serializer>::Error> where
+        S: Serializer {
+        T::serialize(&self.table, serializer)
+    }
+}
+
+impl<'de, T> Deserialize<'de> for TableNoLogic<T> where T: CRUDTable {
+    fn deserialize<D>(deserializer: D) -> Result<Self, <D as Deserializer<'de>>::Error> where
+        D: Deserializer<'de> {
+        let result = T::deserialize(deserializer)?;
+        return Ok(TableNoLogic {
+            table: result,
+        });
+    }
+}
+
+
+impl<T> CRUDTable for TableNoLogic<T> where T: CRUDTable {
+    fn is_use_plugin(plugin_name: &str) -> bool {
+        if plugin_name.eq(std::any::type_name::<RbatisLogicDeletePlugin>()) {
+            return false;
+        }
+        return true;
+    }
+
+    fn table_name() -> String {
+        T::table_name()
+    }
+
+    fn table_columns() -> String {
+        T::table_columns()
+    }
+
+    fn formats(driver_type: &DriverType) -> HashMap<String, fn(arg: &str) -> String> {
+        T::formats(driver_type)
+    }
+
+    fn make_value_sql_arg(
+        &self,
+        db_type: &DriverType,
+        index: &mut usize,
+    ) -> crate::Result<(String, String, Vec<serde_json::Value>)> {
+        T::make_value_sql_arg(&self.table, db_type, index)
+    }
+}
+
+impl<T> Deref for TableNoLogic<T> where T: CRUDTable {
+    type Target = T;
+
+    fn deref(&self) -> &Self::Target {
+        &self.table
+    }
+}
+
+
+impl<T> From<T> for TableNoLogic<T> where T: CRUDTable {
+    fn from(arg: T) -> Self {
+        TableNoLogic {
+            table: arg
+        }
     }
 }
