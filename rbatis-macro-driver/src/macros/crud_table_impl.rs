@@ -34,9 +34,6 @@ pub(crate) fn impl_crud_driver(
     let mut items = quote! {};
     let mut index = 0;
 
-    println!("ex:{:?},index:{}", arg_table_columns_vec, index);
-    println!("field_idents:{:?}", field_idents);
-
     for ident in field_idents {
         let mut ident_name = ident.to_string();
         if !arg_table_columns.is_empty() {
