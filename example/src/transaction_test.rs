@@ -12,7 +12,7 @@ mod test {
         rb.link("mysql://root:123456@localhost:3306/test")
             .await
             .unwrap();
-        let mut tx = rb.acquire_begin().await.unwrap();
+        let tx = rb.acquire_begin().await.unwrap();
         let v: serde_json::Value = tx
             .fetch("select count(1) from biz_activity;",&vec![])
             .await

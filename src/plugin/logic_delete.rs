@@ -133,7 +133,7 @@ impl LogicDelete for RbatisLogicDeletePlugin {
         table_fields: &str,
         where_sql: &str,
     ) -> Result<String, Error> {
-        let mut where_sql = where_sql.trim().to_string();
+        let where_sql = where_sql.trim().to_string();
         let mut sql = String::new();
         sql = format!(
             "{} {} {} {} {}",
