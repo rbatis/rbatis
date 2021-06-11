@@ -198,7 +198,7 @@ mod test {
         //set logic plugin
         rb.logic_plugin = Some(Box::new(RbatisLogicDeletePlugin::new("delete_flag")));
         let r = rb
-            .fetch_by_column::<Option<BizActivity>,_>( "id",&"1".to_string())
+            .fetch_by_column::<Option<BizActivity>,_>( "id",&"1")
             .await
             .unwrap();
         println!("{}", serde_json::to_string(&r).unwrap());
