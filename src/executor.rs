@@ -1,16 +1,20 @@
+use std::ops::Deref;
+
 use async_trait::async_trait;
+use futures::Future;
 use rbatis_core::db::DBExecResult;
 use serde::de::DeserializeOwned;
+use serde::Serialize;
 use serde_json::Value;
 
 use crate::core::db::{DBPool, DBPoolConn, DBQuery, DBTx};
 use crate::core::Error;
+use crate::crud::CRUD;
 use crate::DriverType;
+use crate::plugin::page::{IPageRequest, Page};
+use crate::py::PySqlConvert;
 use crate::rbatis::Rbatis;
-use std::ops::Deref;
 use crate::utils::string_util;
-use futures::Future;
-
 
 #[async_trait]
 pub trait RbatisRef {
@@ -210,22 +214,22 @@ impl<'a> Deref for RBatisTxExecutor<'a> {
 
 pub struct RBatisTxExecutorGuard<'a> {
     pub tx: Option<RBatisTxExecutor<'a>>,
-    pub callback: fn(s:RBatisTxExecutor<'a>),
+    pub callback: fn(s: RBatisTxExecutor<'a>),
 }
 
-impl <'a>RBatisTxExecutor<'a> {
-    pub fn defer(self, callback: fn(s:Self)) ->RBatisTxExecutorGuard<'a>{
-        RBatisTxExecutorGuard{
+impl<'a> RBatisTxExecutor<'a> {
+    pub fn defer(self, callback: fn(s: Self)) -> RBatisTxExecutorGuard<'a> {
+        RBatisTxExecutorGuard {
             tx: Some(self),
-            callback: callback
+            callback: callback,
         }
     }
 }
 
 
-impl Drop for RBatisTxExecutorGuard<'_>{
+impl Drop for RBatisTxExecutorGuard<'_> {
     fn drop(&mut self) {
-        match self.tx.take(){
+        match self.tx.take() {
             None => {}
             Some(tx) => {
                 (self.callback)(tx);
@@ -257,5 +261,121 @@ impl Executor for Rbatis {
 
     async fn fetch<T>(&self, sql: &str, args: &Vec<Value>) -> Result<T, Error> where T: DeserializeOwned {
         self.acquire().await?.fetch(sql, args).await
+    }
+}
+
+/// must be only one have Some(Value)
+pub struct RbatisExecutor<'a> {
+    pub rb: Option<&'a Rbatis>,
+    pub conn: Option<&'a mut RBatisConnExecutor<'a>>,
+    pub tx: Option<&'a mut RBatisTxExecutor<'a>>,
+    pub guard: Option<&'a mut RBatisTxExecutorGuard<'a>>,
+}
+
+impl RbatisExecutor<'_> {
+    /// py str into py ast,run get sql,arg result
+    pub fn py_to_sql<Arg>(
+        &self,
+        py_sql: &str,
+        arg: &Arg,
+    ) -> Result<(String, Vec<serde_json::Value>), Error>
+        where
+            Arg: Serialize + Send + Sync,
+    {
+        if self.rb.is_some() {
+            return self.rb.as_ref().unwrap().py_to_sql(py_sql, arg);
+        } else if self.conn.is_some() {
+            return self.conn.as_ref().unwrap().py_to_sql(py_sql, arg);
+        } else if self.tx.is_some() {
+            return self.tx.as_ref().unwrap().py_to_sql(py_sql, arg);
+        } else if self.guard.is_some() {
+            return self.guard.as_ref().unwrap().py_to_sql(py_sql, arg);
+        }
+        return Err(Error::from("[rbatis] executor must have an value!"));
+    }
+
+    pub async fn fetch_page<T>(&mut self, sql: &str, args: &Vec<Value>, page_request: &dyn IPageRequest) -> crate::Result<Page<T>>
+        where
+            T: DeserializeOwned + Serialize + Send + Sync {
+        if self.rb.is_some() {
+            return self.rb.as_ref().unwrap().fetch_page(sql, args, page_request).await;
+        } else if self.conn.is_some() {
+            return self.conn.as_deref_mut().unwrap().fetch_page(sql, args, page_request).await;
+        } else if self.tx.is_some() {
+            return self.tx.as_deref_mut().unwrap().fetch_page(sql, args, page_request).await;
+        } else if self.guard.is_some() {
+            return self.guard.as_ref().unwrap().fetch_page(sql, args, page_request).await;
+        }
+        return Err(Error::from("[rbatis] executor must have an value!"));
+    }
+
+    pub async fn exec(&mut self, sql: &str, args: &Vec<Value>) -> Result<DBExecResult, Error> {
+        if self.rb.is_some() {
+            return self.rb.as_ref().unwrap().exec(sql, args).await;
+        } else if self.conn.is_some() {
+            return self.conn.as_deref_mut().unwrap().exec(sql, args).await;
+        } else if self.tx.is_some() {
+            return self.tx.as_deref_mut().unwrap().exec(sql, args).await;
+        } else if self.guard.is_some() {
+            return self.guard.as_ref().unwrap().exec(sql, args).await;
+        }
+        return Err(Error::from("[rbatis] executor must have an value!"));
+    }
+
+    pub async fn fetch<T>(&mut self, sql: &str, args: &Vec<Value>) -> Result<T, Error> where T: DeserializeOwned {
+        if self.rb.is_some() {
+            return self.rb.as_ref().unwrap().fetch(sql, args).await;
+        } else if self.conn.is_some() {
+            return self.conn.as_deref_mut().unwrap().fetch(sql, args).await;
+        } else if self.tx.is_some() {
+            return self.tx.as_deref_mut().unwrap().fetch(sql, args).await;
+        } else if self.guard.is_some() {
+            return self.guard.as_ref().unwrap().fetch(sql, args).await;
+        }
+        return Err(Error::from("[rbatis] executor must have an value!"));
+    }
+}
+
+impl<'a> From<&'a Rbatis> for RbatisExecutor<'a> {
+    fn from(arg: &'a Rbatis) -> Self {
+        Self {
+            rb: Some(arg),
+            conn: None,
+            tx: None,
+            guard: None,
+        }
+    }
+}
+
+impl<'a> From<&'a mut RBatisConnExecutor<'a>> for RbatisExecutor<'a> {
+    fn from(arg: &'a mut RBatisConnExecutor<'a>) -> Self {
+        Self {
+            rb: None,
+            conn: Some(arg),
+            tx: None,
+            guard: None,
+        }
+    }
+}
+
+impl<'a> From<&'a mut RBatisTxExecutor<'a>> for RbatisExecutor<'a> {
+    fn from(arg: &'a mut RBatisTxExecutor<'a>) -> Self {
+        Self {
+            rb: None,
+            conn: None,
+            tx: Some(arg),
+            guard: None,
+        }
+    }
+}
+
+impl<'a> From<&'a mut RBatisTxExecutorGuard<'a>> for RbatisExecutor<'a> {
+    fn from(arg: &'a mut RBatisTxExecutorGuard<'a>) -> Self {
+        Self {
+            rb: None,
+            conn: None,
+            tx: None,
+            guard: Some(arg),
+        }
     }
 }
