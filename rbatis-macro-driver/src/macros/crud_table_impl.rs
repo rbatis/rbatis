@@ -33,11 +33,20 @@ pub(crate) fn impl_crud_driver(
     let arg_table_columns_vec: Vec<&str> = arg_table_columns.split(",").collect();
     let mut items = quote! {};
     let mut index = 0;
+
+    println!("ex:{:?},index:{}", arg_table_columns_vec, index);
+    println!("field_idents:{:?}", field_idents);
+
     for ident in field_idents {
         let mut ident_name = ident.to_string();
         if !arg_table_columns.is_empty() {
             //if use custom name
-            ident_name = arg_table_columns_vec.get(index).expect("[rbatis] #[crud_table] custom table columns must be use same location index, for example:  #[crud_table(table_columns:\"id,name\")] pub struct Example{ pub id:String,pub name:String }  ").to_string();
+            match arg_table_columns_vec.get(index) {
+                None => {}
+                Some(v) => {
+                    ident_name = v.to_string();
+                }
+            }
         }
         let item;
         if ident_name.starts_with("r#") {
