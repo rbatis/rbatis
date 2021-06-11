@@ -265,6 +265,10 @@ impl Executor for Rbatis {
 }
 
 /// must be only one have Some(Value)
+/// (&rb).into()
+/// (&mut tx).into()
+/// (&mut conn).into()
+/// (&mut guard).into()
 pub struct RbatisExecutor<'a> {
     pub rb: Option<&'a Rbatis>,
     pub conn: Option<&'a mut RBatisConnExecutor<'a>>,
