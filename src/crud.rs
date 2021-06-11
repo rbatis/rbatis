@@ -24,12 +24,15 @@ use crate::wrapper::Wrapper;
 ///
 /// if use #[crud_table] impl Table struct,
 /// for example:
-///  #[crud_table(id_name:"id"|id_type:"String"|table_name:"biz_activity"|table_columns:"id,name,version,delete_flag"|formats_pg:"id:{}::uuid")]
+///  #[crud_table(table_name:"biz_activity"|table_columns:"id,name,version,delete_flag"|formats_pg:"id:{}::uuid")]
 ///
 /// if use impl CRUDTable for Table struct,
 /// you must impl IdType and id_name() method!
 ///
 pub trait CRUDTable: Send + Sync + Serialize + DeserializeOwned {
+    /// is enable use plugin
+    fn is_use_plugin(plugin_name: &str) -> bool { true }
+
     /// get table name,default is type name for snake name
     ///
     /// for Example:  struct  BizActivity{} =>  "biz_activity"
@@ -188,7 +191,7 @@ pub trait Fields {
     fn to_fields<T>(&self, column: &str) -> Vec<T> where T: DeserializeOwned;
 }
 
-impl <Table>Fields for Vec<Table> where Table:CRUDTable {
+impl<Table> Fields for Vec<Table> where Table: CRUDTable {
     fn to_fields<T>(&self, column: &str) -> Vec<T> where T: DeserializeOwned {
         let mut results = vec![];
         for x in self {
@@ -447,7 +450,7 @@ pub trait CRUDMut: ExecutorMut {
         let table_name = choose_dyn_table_name::<T>(w);
         let where_sql = self.driver_type()?.make_where(&w.sql);
         let mut sql = String::new();
-        if self.get_rbatis().logic_plugin.is_some() {
+        if self.get_rbatis().logic_plugin.is_some() && T::is_use_plugin(self.get_rbatis().logic_plugin.as_ref().unwrap().name()) {
             sql = self.get_rbatis().logic_plugin.as_ref().unwrap().create_remove_sql(
                 &self.driver_type()?,
                 &table_name,
@@ -476,7 +479,7 @@ pub trait CRUDMut: ExecutorMut {
         let mut sql = String::new();
         let driver_type = &self.driver_type()?;
         let id_str = T::do_format_column(&driver_type, column, driver_type.stmt_convert(0));
-        if self.get_rbatis().logic_plugin.is_some() {
+        if self.get_rbatis().logic_plugin.is_some() && T::is_use_plugin(self.get_rbatis().logic_plugin.as_ref().unwrap().name()) {
             sql = self.get_rbatis().logic_plugin.as_ref().unwrap().create_remove_sql(
                 &driver_type,
                 T::table_name().as_str(),
@@ -587,8 +590,10 @@ pub trait CRUDMut: ExecutorMut {
             );
             match &self.get_rbatis().version_lock_plugin {
                 Some(version_lock_plugin) => {
-                    old_version = v.clone();
-                    v = version_lock_plugin.try_add_one(&old_version, column);
+                    if T::is_use_plugin(self.get_rbatis().version_lock_plugin.as_ref().unwrap().name()) {
+                        old_version = v.clone();
+                        v = version_lock_plugin.try_add_one(&old_version, column);
+                    }
                 }
                 _ => {}
             }
@@ -605,22 +610,25 @@ pub trait CRUDMut: ExecutorMut {
         );
         wrapper.args = args;
 
+
         //version lock
         match self.get_rbatis().version_lock_plugin.as_ref() {
             Some(version_lock_plugin) => {
-                let version_sql = version_lock_plugin
-                    .as_ref()
-                    .try_make_where_sql( &old_version);
-                if !version_sql.is_empty() {
-                    if !wrapper
-                        .sql
-                        .contains(crate::sql::TEMPLATE.r#where.left_right_space)
-                    {
-                        wrapper
+                if T::is_use_plugin(self.get_rbatis().version_lock_plugin.as_ref().unwrap().name()) {
+                    let version_sql = version_lock_plugin
+                        .as_ref()
+                        .try_make_where_sql(&old_version);
+                    if !version_sql.is_empty() {
+                        if !wrapper
                             .sql
-                            .push_str(crate::sql::TEMPLATE.r#where.left_right_space);
+                            .contains(crate::sql::TEMPLATE.r#where.left_right_space)
+                        {
+                            wrapper
+                                .sql
+                                .push_str(crate::sql::TEMPLATE.r#where.left_right_space);
+                        }
+                        wrapper.sql.push_str(&version_sql);
                     }
-                    wrapper.sql.push_str(&version_sql);
                 }
             }
             _ => {}
@@ -811,7 +819,7 @@ fn make_select_sql<T>(rb: &Rbatis, column: &str, w: &Wrapper) -> Result<String>
 {
     let driver_type = rb.driver_type()?;
     let table_name = choose_dyn_table_name::<T>(w);
-    if rb.logic_plugin.is_some() {
+    if rb.logic_plugin.is_some() && T::is_use_plugin(rb.logic_plugin.as_ref().unwrap().name()) {
         let logic_ref = rb.logic_plugin.as_ref().unwrap();
         return logic_ref.create_select_sql(
             &driver_type,
