@@ -819,16 +819,6 @@ fn make_select_sql<T>(rb: &Rbatis, column: &str, w: &Wrapper) -> Result<String>
 {
     let driver_type = rb.driver_type()?;
     let table_name = choose_dyn_table_name::<T>(w);
-    if rb.logic_plugin.is_some() && T::is_use_plugin(rb.logic_plugin.as_ref().unwrap().name()) {
-        let logic_ref = rb.logic_plugin.as_ref().unwrap();
-        return logic_ref.create_select_sql(
-            &driver_type,
-            &table_name,
-            column,
-            &T::table_columns(),
-            &w.sql,
-        );
-    }
     Ok(format!(
         "{} {} {} {} {}",
         crate::sql::TEMPLATE.select.value,
