@@ -31,15 +31,6 @@ pub trait LogicDelete: Send + Sync + Debug {
         table_fields: &str,
         sql_where: &str,
     ) -> Result<String, crate::core::Error>;
-    /// create_select_sql
-    fn create_select_sql(
-        &self,
-        driver_type: &DriverType,
-        table_name: &str,
-        column: &str,
-        table_fields: &str,
-        sql_where: &str,
-    ) -> Result<String, crate::core::Error>;
 }
 
 #[derive(Debug)]
@@ -127,27 +118,6 @@ impl LogicDelete for RbatisLogicDeletePlugin {
         } else {
             Err(Error::from("[rbatis] del data must have where sql!"))
         };
-    }
-
-    fn create_select_sql(
-        &self,
-        driver_type: &DriverType,
-        table_name: &str,
-        column: &str,
-        table_fields: &str,
-        where_sql: &str,
-    ) -> Result<String, Error> {
-        let where_sql = where_sql.trim().to_string();
-        let mut sql = String::new();
-        sql = format!(
-            "{} {} {} {} {}",
-            crate::sql::TEMPLATE.select.value,
-            column,
-            crate::sql::TEMPLATE.from.value,
-            table_name,
-            driver_type.make_where(&where_sql)
-        );
-        Ok(sql)
     }
 }
 
