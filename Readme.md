@@ -312,27 +312,6 @@ println!("{}", serde_json::to_string(&data).unwrap());
 }
 ```
 
-##### py-like sql example
-
-``` python
-//Execute to remote mysql and get the result. Supports any serializable type of SERde_JSON
-        let rb = Rbatis::new();
-        rb.link("mysql://root:123456@localhost:3306/test").await.unwrap();
-            let py = r#"
-        SELECT * FROM biz_activity
-        WHERE delete_flag = #{delete_flag}
-        if name != null:
-          AND name like #{name+'%'}
-        if ids != null:
-          AND id in (
-          trim ',':
-             for item in ids:
-               #{item},
-          )"#;
-            let data: serde_json::Value = rb.py_fetch( py, &json!({   "delete_flag": 1 })).await.unwrap();
-            println!("{}", data);
-```
-
 #### logging system with fast_log here as an example
 
 ``` rust
