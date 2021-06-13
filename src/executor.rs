@@ -12,7 +12,6 @@ use crate::core::Error;
 use crate::crud::CRUD;
 use crate::DriverType;
 use crate::plugin::page::{IPageRequest, Page};
-use crate::py::PySqlConvert;
 use crate::rbatis::Rbatis;
 use crate::utils::string_util;
 
@@ -277,26 +276,6 @@ pub struct RbatisExecutor<'a> {
 }
 
 impl RbatisExecutor<'_> {
-    /// py str into py ast,run get sql,arg result
-    pub fn py_to_sql<Arg>(
-        &self,
-        py_sql: &str,
-        arg: &Arg,
-    ) -> Result<(String, Vec<serde_json::Value>), Error>
-        where
-            Arg: Serialize + Send + Sync,
-    {
-        if self.rb.is_some() {
-            return self.rb.as_ref().unwrap().py_to_sql(py_sql, arg);
-        } else if self.conn.is_some() {
-            return self.conn.as_ref().unwrap().py_to_sql(py_sql, arg);
-        } else if self.tx.is_some() {
-            return self.tx.as_ref().unwrap().py_to_sql(py_sql, arg);
-        } else if self.guard.is_some() {
-            return self.guard.as_ref().unwrap().py_to_sql(py_sql, arg);
-        }
-        return Err(Error::from("[rbatis] executor must have an value!"));
-    }
 
     pub async fn fetch_page<T>(&mut self, sql: &str, args: &Vec<Value>, page_request: &dyn IPageRequest) -> crate::Result<Page<T>>
         where
