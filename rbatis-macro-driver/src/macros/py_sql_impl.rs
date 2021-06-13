@@ -51,6 +51,26 @@ pub(crate) fn impl_macro_py_sql(target_fn: &ItemFn, args: &AttributeArgs) -> Tok
         };
         println!("gen return");
     }
+
+
+    let mut deal_with = quote! {};
+    let mut scheme_ident = "?".to_token_stream();
+    if args.len() >= 3 {
+        let new_scheme_ident = args.get(2).unwrap().to_token_stream();
+        match new_scheme_ident.to_string().as_str() {
+            "pg" | "postgres" | "$" => {
+                scheme_ident = "$".to_token_stream();
+            }
+            "mssql" | "sqlserver" | "@p" | "@" => {
+                scheme_ident = "$".to_token_stream();
+                deal_with = quote! {
+                    sql = sql.replace("$","@p");
+                };
+            }
+            //mssql,mysql,sqlite....
+            _ => {}
+        }
+    }
     //gen rust code templete
     return quote! {
        pub async fn #func_name_ident(#func_args_stream) -> #return_ty {
@@ -61,10 +81,10 @@ pub(crate) fn impl_macro_py_sql(target_fn: &ItemFn, args: &AttributeArgs) -> Tok
          // use rbatis::py::{PySqlConvert};
          // let (sql, rb_args) = #rbatis_ident.py_to_sql(&#sql_ident, &rb_arg_map)?;
          use rbatis::rbatis_sql;
-         #[rb_py(#sql_ident,'?')]
+         #[rb_py(#sql_ident,#scheme_ident)]
          pub fn #func_name_ident(arg: &serde_json::Value) {}
-         let (sql, rb_args) = #func_name_ident(&serde_json::Value::Object(rb_arg_map));
-
+         let (mut sql,rb_args) = #func_name_ident(&serde_json::Value::Object(rb_arg_map));
+         #deal_with
          #call_method
        }
     }

@@ -25,10 +25,12 @@ mod test {
     }
 
 
+    /// RB is the name of the RBatis object
+    /// Pysql is the middle string data
+    /// The third parameter specifies the compatible database type (default MySQL, PG, MSSQL, SQLite)
     #[py_sql(RB, "select * from biz_activity where delete_flag = 0
                   if name != '':
-                    and name=#{name}"
-    )]
+                    and name=#{name}", "mysql")]
     async fn py_select_page(page_req: &PageRequest, name: &str) -> Page<BizActivity> { todo!() }
 
     #[tokio::test]
