@@ -461,7 +461,7 @@ async fn main() -> std::io::Result<()> {
 | async/await support                                             | √     | 
 | PagePlugin(Pagincation)                                         | √     |
 | LogicDelPlugin                                 | √    |
-| Html(using html(xml)  statement in SQL)                         | incoming     | 
+| Html(xml)   Compile time dynamic SQL)                         | √   | 
 | DataBase Table ConvertPage(Web UI,Coming soon)                          | x     | 
 
 * Conlusion: Assuming zero time consumed on IO, single threaded benchmark achieves 200K QPS or QPS, which is a few times
