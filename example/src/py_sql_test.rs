@@ -9,7 +9,7 @@ mod test {
 
     use crate::BizActivity;
 
-    #[py_sql(rb, "select * from biz_activity where delete_flag = 0","mysql")]
+    #[py_sql(rb, "select * from biz_activity where delete_flag = 0")]
     async fn py_ctx_id(rb: &Rbatis) -> Vec<BizActivity> { todo!() }
 
     #[tokio::test]
@@ -29,7 +29,7 @@ mod test {
     rb,
     "select * from biz_activity where delete_flag = 0
                   if name != '':
-                    and name=#{name}","mysql"
+                    and name=#{name}"
     )]
     async fn py_select_page(rb: &mut RbatisExecutor<'_>, page_req: &PageRequest, name: &str) -> Page<BizActivity> { todo!() }
 
@@ -52,7 +52,7 @@ mod test {
     rb,
     "select * from biz_activity where delete_flag = 0
                   if name != '':
-                    and name=#{name}","mysql")]
+                    and name=#{name}")]
     async fn py_sql_tx(rb: &Rbatis, tx_id: &String, name: &str) -> Vec<BizActivity> { todo!() }
 
 

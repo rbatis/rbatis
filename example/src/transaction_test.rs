@@ -21,7 +21,7 @@ mod test {
         tx.commit().await.unwrap();
     }
 
-    #[py_sql(rb, "select * from biz_activity", "mysql")]
+    #[py_sql(rb, "select * from biz_activity")]
     async fn py_select_data(rb: &mut RBatisTxExecutor<'_>) -> Result<Vec<BizActivity>, rbatis::core::Error> { todo!() }
 
     //示例-Rbatis使用宏事务

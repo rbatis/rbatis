@@ -27,10 +27,9 @@ mod test {
 
     /// RB is the name of the RBatis object
     /// Pysql is the middle string data
-    /// The third parameter specifies the compatible database type (default MySQL, PG, MSSQL, SQLite)
     #[py_sql(RB, "select * from biz_activity where delete_flag = 0
                   if name != '':
-                    and name=#{name}", "mysql")]
+                    and name=#{name}")]
     async fn py_select_page(page_req: &PageRequest, name: &str) -> Page<BizActivity> { todo!() }
 
     #[tokio::test]
@@ -46,7 +45,7 @@ mod test {
         println!("{:?}", a);
     }
 
-    #[py_sql(RB, "select * from biz_activity group by id","mysql")]
+    #[py_sql(RB, "select * from biz_activity group by id")]
     async fn group_by(page_req: &PageRequest) -> Page<BizActivity> { todo!() }
 
     #[tokio::test]

@@ -10,7 +10,7 @@ mod test {
     use crate::BizActivity;
 
     ///select page must have  '?:&PageRequest' arg and return 'Page<?>'
-    #[html_sql(rb, "example/example.html","mysql")]
+    #[html_sql(rb, "example/example.html")]
     async fn select_by_condition(rb: &mut RbatisExecutor<'_>, page_req: &PageRequest, name: &str) -> Page<BizActivity> { todo!() }
 
     #[tokio::test]

@@ -11,7 +11,7 @@ mod test {
         RB,
         "select * from biz_activity where id = #{name}
                   if name != '':
-                    and name != #{name}","mysql"
+                    and name != #{name}"
     )]
     async fn py_select(name: &str) -> Option<BizActivity> {todo!()}
 
@@ -44,7 +44,7 @@ mod test {
         "select a1.name as name,a2.create_time as create_time
                       from test.biz_activity a1,biz_activity a2
                       where a1.id=a2.id
-                      and a1.name=#{name}","mysql")]
+                      and a1.name=#{name}")]
     async fn join_select(rbatis: &Rbatis, name: &str) -> Option<Vec<BizActivity>> {todo!()}
 
     #[tokio::test]

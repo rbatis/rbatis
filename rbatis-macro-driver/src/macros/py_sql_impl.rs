@@ -2,7 +2,7 @@ use proc_macro2::{Ident, Span};
 use quote::quote;
 use quote::ToTokens;
 use syn;
-use syn::{AttributeArgs, ItemFn, File};
+use syn::{AttributeArgs, ItemFn};
 
 use crate::proc_macro::TokenStream;
 use crate::util::{find_fn_body, find_return_type, get_fn_args, get_page_req_ident, is_fetch_sql};
@@ -54,25 +54,6 @@ pub(crate) fn impl_macro_py_sql(target_fn: &ItemFn, args: &AttributeArgs) -> Tok
         println!("gen return");
     }
 
-
-    let mut deal_with = quote! {};
-    let mut scheme_ident = "?".to_token_stream();
-    let new_scheme_ident = args.get(2)
-        .expect("[rbatis] third parameter is miss, must have database type (default mysql, support pg, mssql, sqlite)")
-        .to_token_stream();
-    match new_scheme_ident.to_string().as_str() {
-        "pg" | "postgres" | "$" => {
-            scheme_ident = "$".to_token_stream();
-        }
-        "mssql" | "sqlserver" | "@p" | "@" => {
-            scheme_ident = "$".to_token_stream();
-            deal_with = quote! {
-                    sql = sql.replace("$","@p");
-                };
-        }
-        //mssql,mysql,sqlite....
-        _ => {}
-    }
     //gen rust code templete
     return quote! {
        pub async fn #func_name_ident(#func_args_stream) -> #return_ty {
@@ -80,31 +61,46 @@ pub(crate) fn impl_macro_py_sql(target_fn: &ItemFn, args: &AttributeArgs) -> Tok
          let mut rb_arg_map = serde_json::Map::new();
          #sql_args_gen
          #fn_body
-         // use rbatis::py::{PySqlConvert};
-         // let (sql, rb_args) = #rbatis_ident.py_to_sql(&#sql_ident, &rb_arg_map)?;
+         use rbatis::executor::{RbatisRef};
+         let driver_type = #rbatis_ident.get_rbatis().driver_type()?;
          use rbatis::rbatis_sql;
-         #[rb_py(#sql_ident,#scheme_ident)]
-         pub fn #func_name_ident(arg: &serde_json::Value) {}
-         let (mut sql,rb_args) = #func_name_ident(&serde_json::Value::Object(rb_arg_map));
-         #deal_with
-         #call_method
+         match driver_type{
+            rbatis::DriverType::Postgres => {
+                #[rb_py(#sql_ident,'$')]
+                pub fn #func_name_ident(arg: &serde_json::Value) {}
+                let (mut sql,rb_args) = #func_name_ident(&serde_json::Value::Object(rb_arg_map));
+                #call_method
+            }
+            rbatis::DriverType::Mssql => {
+                #[rb_py(#sql_ident,'$')]
+                pub fn #func_name_ident(arg: &serde_json::Value) {}
+                let (mut sql,rb_args) = #func_name_ident(&serde_json::Value::Object(rb_arg_map));
+                sql = sql.replace("$","@p");
+                #call_method
+            }
+            _=> {
+                #[rb_py(#sql_ident,'?')]
+                pub fn #func_name_ident(arg: &serde_json::Value) {}
+                let (mut sql,rb_args) = #func_name_ident(&serde_json::Value::Object(rb_arg_map));
+                #call_method
+            }
+         }
        }
     }
         .into();
 }
 
 
-
-fn find_node(arg:&Vec<Element>,name:&str)->Option<Element>{
+fn find_node(arg: &Vec<Element>, name: &str) -> Option<Element> {
     for x in arg {
-        match x.tag.as_str(){
-            "mapper"=>{
-                return find_node(&x.childs,name);
+        match x.tag.as_str() {
+            "mapper" => {
+                return find_node(&x.childs, name);
             }
-            "insert"|"select"|"update"|"delete"=>{
-                match x.attributes.get("id"){
-                    Some(v)=>{
-                        if v.eq(name){
+            "insert" | "select" | "update" | "delete" => {
+                match x.attributes.get("id") {
+                    Some(v) => {
+                        if v.eq(name) {
                             return Some(x.clone());
                         }
                     }
@@ -124,15 +120,15 @@ pub(crate) fn impl_macro_html_sql(target_fn: &ItemFn, args: &AttributeArgs) -> T
     let rbatis_name = format!("{}", rbatis_ident);
     let sql_ident = args.get(1).expect("[rbatis] miss html file name param!").to_token_stream();
 
-    let mut html=String::new();
-    let mut file_name =sql_ident.to_string();
-    if file_name.starts_with("\"") && file_name.ends_with("\""){
-        file_name=file_name[1..file_name.len()-1].to_string();
+    let mut html = String::new();
+    let mut file_name = sql_ident.to_string();
+    if file_name.starts_with("\"") && file_name.ends_with("\"") {
+        file_name = file_name[1..file_name.len() - 1].to_string();
     }
     let mut f = std::fs::File::open(&file_name).expect(&format!("File:\"{}\" does not exist", file_name));
     f.read_to_string(&mut html);
-    let nodes=crate::macros::html_loader::load_html(&html).expect(&format!("[rbatis] load html file:{} fail!",sql_ident));
-    let sql=find_node(&nodes,func_name_ident.to_string().as_str()).expect(&format!("[rbatis] load html file:{},method:{} fail!",sql_ident,sql_ident));
+    let nodes = crate::macros::html_loader::load_html(&html).expect(&format!("[rbatis] load html file:{} fail!", sql_ident));
+    let sql = find_node(&nodes, func_name_ident.to_string().as_str()).expect(&format!("[rbatis] load html file:{},method:{} fail!", sql_ident, sql_ident));
 
 
     let func_args_stream = target_fn.sig.inputs.to_token_stream();
@@ -170,39 +166,37 @@ pub(crate) fn impl_macro_html_sql(target_fn: &ItemFn, args: &AttributeArgs) -> T
         println!("gen return");
     }
 
-
-    let mut deal_with = quote! {};
-    let mut scheme_ident = "?".to_token_stream();
-    let new_scheme_ident = args.get(2)
-        .expect("[rbatis] third parameter is miss, must have database type (default mysql, support pg, mssql, sqlite)")
-        .to_token_stream();
-    match new_scheme_ident.to_string().as_str() {
-        "pg" | "postgres" | "$" => {
-            scheme_ident = "$".to_token_stream();
-        }
-        "mssql" | "sqlserver" | "@p" | "@" => {
-            scheme_ident = "$".to_token_stream();
-            deal_with = quote! {
-                    sql = sql.replace("$","@p");
-                };
-        }
-        //mssql,mysql,sqlite....
-        _ => {}
-    }
     //gen rust code templete
     return quote! {
        pub async fn #func_name_ident(#func_args_stream) -> #return_ty {
          let mut rb_arg_map = serde_json::Map::new();
          #sql_args_gen
          #fn_body
-         // use rbatis::py::{PySqlConvert};
-         // let (sql, rb_args) = #rbatis_ident.py_to_sql(&#sql_ident, &rb_arg_map)?;
+
+         use rbatis::executor::{RbatisRef};
+         let driver_type = #rbatis_ident.get_rbatis().driver_type()?;
          use rbatis::rbatis_sql;
-         #[rb_html(#sql_ident,#scheme_ident)]
-         pub fn #func_name_ident(arg: &serde_json::Value) {}
-         let (mut sql,rb_args) = #func_name_ident(&serde_json::Value::Object(rb_arg_map));
-         #deal_with
-         #call_method
+         match driver_type{
+            rbatis::DriverType::Postgres => {
+                #[rb_html(#sql_ident,'$')]
+                pub fn #func_name_ident(arg: &serde_json::Value) {}
+                let (mut sql,rb_args) = #func_name_ident(&serde_json::Value::Object(rb_arg_map));
+                #call_method
+            }
+            rbatis::DriverType::Mssql => {
+                #[rb_html(#sql_ident,'$')]
+                pub fn #func_name_ident(arg: &serde_json::Value) {}
+                let (mut sql,rb_args) = #func_name_ident(&serde_json::Value::Object(rb_arg_map));
+                sql = sql.replace("$","@p");
+                #call_method
+            }
+            _=> {
+                #[rb_html(#sql_ident,'?')]
+                pub fn #func_name_ident(arg: &serde_json::Value) {}
+                let (mut sql,rb_args) = #func_name_ident(&serde_json::Value::Object(rb_arg_map));
+                #call_method
+            }
+         }
        }
     }
         .into();

@@ -319,6 +319,22 @@ impl RbatisExecutor<'_> {
     }
 }
 
+impl <'a>RbatisRef for RbatisExecutor<'a>{
+    fn get_rbatis(&self) -> &Rbatis {
+        if self.rb.is_some(){
+            return self.rb.as_ref().unwrap();
+        }else if self.tx.is_some(){
+            return self.tx.as_ref().unwrap().get_rbatis();
+        }else if self.conn.is_some(){
+            return self.conn.as_ref().unwrap().get_rbatis();
+        }else if self.guard.is_some(){
+            return self.guard.as_ref().unwrap().get_rbatis();
+        }else{
+            panic!("[rbatis] executor must have one Some value!");
+        }
+    }
+}
+
 impl<'a> From<&'a Rbatis> for RbatisExecutor<'a> {
     fn from(arg: &'a Rbatis) -> Self {
         Self {
