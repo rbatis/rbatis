@@ -9,7 +9,7 @@ mod test {
 
     use crate::BizActivity;
 
-    #[py_sql(rb, "select * from biz_activity where delete_flag = 0")]
+    #[py_sql(rb, "select * from biz_activity where delete_flag = 0","mysql")]
     async fn py_ctx_id(rb: &Rbatis) -> Vec<BizActivity> { todo!() }
 
     #[tokio::test]
@@ -29,7 +29,7 @@ mod test {
     rb,
     "select * from biz_activity where delete_flag = 0
                   if name != '':
-                    and name=#{name}"
+                    and name=#{name}","mysql"
     )]
     async fn py_select_page(rb: &mut RbatisExecutor<'_>, page_req: &PageRequest, name: &str) -> Page<BizActivity> { todo!() }
 
@@ -52,8 +52,7 @@ mod test {
     rb,
     "select * from biz_activity where delete_flag = 0
                   if name != '':
-                    and name=#{name}"
-    )]
+                    and name=#{name}","mysql")]
     async fn py_sql_tx(rb: &Rbatis, tx_id: &String, name: &str) -> Vec<BizActivity> { todo!() }
 
 
@@ -73,42 +72,5 @@ mod test {
             }
         }
         panic!("not find method:'{}' in file:'{}'", method, file_name)
-    }
-
-    ///load file py_sql(Each read file changes every time)
-    #[py_sql(rb, load_file_str("py_sql.sql", "py_select_file"))]
-    async fn py_select_file(rb: &Rbatis, page_req: &PageRequest, name: &str) -> Page<BizActivity> { todo!() }
-
-    lazy_static! {
-        pub static ref PY_SQL_FILE_STR: String = load_file_str("py_sql.sql", "py_select_file");
-    }
-
-    ///load file py_sql(only load file once)
-    #[py_sql(rb, PY_SQL_FILE_STR)]
-    async fn py_select_file_static(
-        rb: &Rbatis,
-        page_req: &PageRequest,
-        name: &str,
-    ) -> Page<BizActivity> { todo!() }
-
-    /// test load py_sql from file
-    #[tokio::test]
-    pub async fn test_py_select_file() {
-        fast_log::init_log("requests.log", 1000, log::Level::Info, None, true);
-        //use static ref
-        let rb = Rbatis::new();
-        rb.link("mysql://root:123456@localhost:3306/test")
-            .await
-            .unwrap();
-
-        let mut result = py_select_file(&rb, &PageRequest::new(1, 10), "test")
-            .await
-            .unwrap();
-        println!("{:?}", result);
-
-        result = py_select_file_static(&rb, &PageRequest::new(1, 10), "test")
-            .await
-            .unwrap();
-        println!("{:?}", result);
     }
 }

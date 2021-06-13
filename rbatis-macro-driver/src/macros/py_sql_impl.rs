@@ -13,9 +13,9 @@ use crate::util::{find_fn_body, find_return_type, get_fn_args, get_page_req_iden
 pub(crate) fn impl_macro_py_sql(target_fn: &ItemFn, args: &AttributeArgs) -> TokenStream {
     let return_ty = find_return_type(target_fn);
     let func_name_ident = target_fn.sig.ident.to_token_stream();
-    let rbatis_ident = args.get(0).unwrap().to_token_stream();
+    let rbatis_ident = args.get(0).expect("[rbatis] miss rbatis ident param!").to_token_stream();
     let rbatis_name = format!("{}", rbatis_ident);
-    let sql_ident = args.get(1).unwrap().to_token_stream();
+    let sql_ident = args.get(1).expect("[rbatis] miss pysql param!").to_token_stream();
     let sql = format!("{}", sql_ident).trim().to_string();
     let func_args_stream = target_fn.sig.inputs.to_token_stream();
     let fn_body = find_fn_body(target_fn);
@@ -55,21 +55,21 @@ pub(crate) fn impl_macro_py_sql(target_fn: &ItemFn, args: &AttributeArgs) -> Tok
 
     let mut deal_with = quote! {};
     let mut scheme_ident = "?".to_token_stream();
-    if args.len() >= 3 {
-        let new_scheme_ident = args.get(2).unwrap().to_token_stream();
-        match new_scheme_ident.to_string().as_str() {
-            "pg" | "postgres" | "$" => {
-                scheme_ident = "$".to_token_stream();
-            }
-            "mssql" | "sqlserver" | "@p" | "@" => {
-                scheme_ident = "$".to_token_stream();
-                deal_with = quote! {
+    let new_scheme_ident = args.get(2)
+        .expect("[rbatis] third parameter is miss, must have database type (default mysql, support pg, mssql, sqlite)")
+        .to_token_stream();
+    match new_scheme_ident.to_string().as_str() {
+        "pg" | "postgres" | "$" => {
+            scheme_ident = "$".to_token_stream();
+        }
+        "mssql" | "sqlserver" | "@p" | "@" => {
+            scheme_ident = "$".to_token_stream();
+            deal_with = quote! {
                     sql = sql.replace("$","@p");
                 };
-            }
-            //mssql,mysql,sqlite....
-            _ => {}
         }
+        //mssql,mysql,sqlite....
+        _ => {}
     }
     //gen rust code templete
     return quote! {

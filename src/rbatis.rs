@@ -4,10 +4,7 @@ use std::collections::HashMap;
 use std::sync::Arc;
 use std::time::Duration;
 use once_cell::sync::OnceCell;
-use py_sql::node::proxy_node::NodeFactory;
-use py_sql::py_sql::PyRuntime;
 use rbatis_core::db::DBConnectOption;
-use rexpr::runtime::RExprRuntime;
 use serde::de::DeserializeOwned;
 use serde::ser::Serialize;
 use serde_json::Number;
@@ -32,10 +29,6 @@ use crate::wrapper::Wrapper;
 pub struct Rbatis {
     // the connection pool,use OnceCell init this
     pub pool: OnceCell<DBPool>,
-    // the runtime run some express for example:'1+1'=2
-    pub runtime_expr: RExprRuntime,
-    //py lang runtime run some express for py_sql
-    pub runtime_py: PyRuntime,
     // page plugin
     pub page_plugin: Box<dyn PagePlugin>,
     // sql intercept vec chain
@@ -57,8 +50,6 @@ impl Default for Rbatis {
 ///Rbatis Options
 #[derive(Debug)]
 pub struct RbatisOption {
-    /// custom py lang
-    pub generate: Vec<Box<dyn NodeFactory>>,
     /// page plugin
     pub page_plugin: Box<dyn PagePlugin>,
     /// sql intercept vec chain
@@ -74,7 +65,6 @@ pub struct RbatisOption {
 impl Default for RbatisOption {
     fn default() -> Self {
         Self {
-            generate: vec![],
             page_plugin: Box::new(RbatisPagePlugin::new()),
             sql_intercepts: vec![],
             logic_plugin: None,
@@ -94,15 +84,10 @@ impl Rbatis {
     pub fn new_with_opt(option: RbatisOption) -> Self {
         return Self {
             pool: OnceCell::new(),
-            runtime_expr: RExprRuntime::new(),
             page_plugin: option.page_plugin,
             sql_intercepts: option.sql_intercepts,
             logic_plugin: option.logic_plugin,
             log_plugin: option.log_plugin,
-            runtime_py: PyRuntime {
-                cache: Default::default(),
-                generate: option.generate,
-            },
             version_lock_plugin: None,
         };
     }

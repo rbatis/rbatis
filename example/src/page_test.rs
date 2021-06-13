@@ -46,7 +46,7 @@ mod test {
         println!("{:?}", a);
     }
 
-    #[py_sql(RB, "select * from biz_activity group by id")]
+    #[py_sql(RB, "select * from biz_activity group by id","mysql")]
     async fn group_by(page_req: &PageRequest) -> Page<BizActivity> { todo!() }
 
     #[tokio::test]

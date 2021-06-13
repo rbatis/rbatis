@@ -14,15 +14,15 @@ mod test {
             .unwrap();
         let tx = rb.acquire_begin().await.unwrap();
         let v: serde_json::Value = tx
-            .fetch("select count(1) from biz_activity;",&vec![])
+            .fetch("select count(1) from biz_activity;", &vec![])
             .await
             .unwrap();
         println!("{}", v.clone());
         tx.commit().await.unwrap();
     }
 
-    #[py_sql(rb, "select * from biz_activity")]
-    async fn py_select_data(rb: &mut RBatisTxExecutor<'_>) -> Result<Vec<BizActivity>, rbatis::core::Error> { todo!()}
+    #[py_sql(rb, "select * from biz_activity", "mysql")]
+    async fn py_select_data(rb: &mut RBatisTxExecutor<'_>) -> Result<Vec<BizActivity>, rbatis::core::Error> { todo!() }
 
     //示例-Rbatis使用宏事务
     #[tokio::test]
@@ -52,12 +52,12 @@ mod test {
 
     pub async fn forget_commit(rb: &Rbatis) -> rbatis::core::Result<serde_json::Value> {
         // tx will be commit.when func end
-        let tx = rb.acquire_begin().await?.defer(|tx|{
+        let tx = rb.acquire_begin().await?.defer(|tx| {
             println!("tx is drop!");
-            async_std::task::block_on(async{ tx.rollback().await; });
+            async_std::task::block_on(async { tx.rollback().await; });
         });
         let v: serde_json::Value = tx
-            .fetch( "select count(1) from biz_activity;",&vec![])
+            .fetch("select count(1) from biz_activity;", &vec![])
             .await?;
         return Ok(v);
     }
