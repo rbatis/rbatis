@@ -17,6 +17,7 @@ mod intercept_test;
 mod page_test;
 mod plugin_exclude_test;
 mod py_sql_test;
+mod html_sql_test;
 mod raw_driver_test;
 mod raw_identifiers_test;
 mod raw_sql_macro_test;
