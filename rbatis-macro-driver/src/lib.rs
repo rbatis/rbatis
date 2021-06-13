@@ -8,7 +8,7 @@ use syn::{parse_macro_input, AttributeArgs, ItemFn};
 use crate::proc_macro::TokenStream;
 use crate::macros::crud_table_impl::{impl_crud_driver, impl_crud};
 use crate::macros::sql_impl::impl_macro_sql;
-use crate::macros::py_sql_impl::impl_macro_py_sql;
+use crate::macros::py_sql_impl::{impl_macro_py_sql, impl_macro_html_sql};
 
 mod macros;
 mod util;
@@ -51,7 +51,7 @@ pub fn sql(args: TokenStream, func: TokenStream) -> TokenStream {
 ///  also,you can use arg  context_id:&str,RB:&Rbatis
 ///     #[py_sql(RB, "select * from biz_activity where id = #{name}
 ///                   if name != '':
-///                     and name=#{name}")]
+///                     and name=#{name}","mysql")]
 /// pub async fn py_select_rb(rbatis: &Rbatis, name: &str) -> Option<BizActivity> {}
 #[proc_macro_attribute]
 pub fn py_sql(args: TokenStream, func: TokenStream) -> TokenStream {
@@ -63,6 +63,25 @@ pub fn py_sql(args: TokenStream, func: TokenStream) -> TokenStream {
         println!("............gen macro py_sql :\n {}", stream);
         println!("............gen macro py_sql end............");
     }
+    stream
+}
+
+/// html sql create macro,this macro use RB.py_fetch and RB.py_exec
+/// for example:
+///
+///  also,you can use arg  context_id:&str,RB:&Rbatis
+/// #[py_sql(RB,"example/example.html","mysql")]
+/// pub async fn py_select_rb(rbatis: &Rbatis, name: &str) -> Option<BizActivity> {}
+#[proc_macro_attribute]
+pub fn html_sql(args: TokenStream, func: TokenStream) -> TokenStream {
+    let args = parse_macro_input!(args as AttributeArgs);
+    let target_fn: ItemFn = syn::parse(func).unwrap();
+    let stream = impl_macro_html_sql(&target_fn, &args);
+    #[cfg(feature = "debug_mode")]
+        {
+            println!("............gen macro html_sql :\n {}", stream);
+            println!("............gen macro html_sql end............");
+        }
     stream
 }
 
