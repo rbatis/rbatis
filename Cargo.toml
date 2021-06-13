@@ -42,8 +42,8 @@ rexpr = "1.0"
 py_sql = "1.0"
 rbatis-core = { version = "2.0.0", git = "https://github.com/rbatis/rbatis-core.git", branch = "main", default-features = false, optional = true }
 rbatis-macro-driver = { version = "2.0.0", path = "rbatis-macro-driver", default-features = false, optional = true }
-
-
+rbatis_sql = {version="1.0.0", git = "https://github.com/rbatis/rbatis_sql.git", branch = "main"}
+rbatis_sql_macro = {version="0.1.0"}
 
 chrono = { version = "0.4", features = ["serde"] }
 lazy_static = "1.4"

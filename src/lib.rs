@@ -10,6 +10,13 @@ extern crate lazy_static;
 extern crate once_cell;
 #[macro_use]
 extern crate rbatis_macro_driver;
+
+#[macro_use]
+pub extern crate rbatis_sql;
+
+pub use rbatis_sql::{rb_py,rb_html,expr};
+pub use rbatis_sql::ops::*;
+
 #[macro_use]
 extern crate serde_json;
 
