@@ -187,34 +187,42 @@ async fn main() {
 
 #### macros (new addition)
 
+* Important update (pysql removes runtime, directly compiles to static rust code)    This means that the performance of SQL generated using py_sql,html_sql is roughly similar to that of handwritten code.
+
+>  Because of the compile time, the annotations need to declare the database type to be used
+
 ```rust
-#[macro_use]
-extern crate lazy_static;
-
-lazy_static! {
-  static ref RB:Rbatis=Rbatis::new();
-}
-
-/// Other code writing way:
-/// #[py_sql(RB, "select * from biz_activity where id = #{name}
-///                 if name != '':
-///                      and name=#{name}")]
-/// pub async fn select(name: &str) -> rbatis::core::Result<BizActivity> {
-///   println!("py_select name:{}",name);
-/// }
-#[py_sql(RB, "select * from biz_activity where id = #{name}
+    #[py_sql(
+    rb,
+    "select * from biz_activity where delete_flag = 0
                   if name != '':
-                    and name=#{name}")]
-pub async fn py_select(name: &str) -> Option<BizActivity> {}
-
-#[tokio::test]
-pub async fn test_macro_py_select() {
-    fast_log::init_log("requests.log", 1000, log::Level::Info, None, true);
-    RB.link("mysql://root:123456@localhost:3306/test").await.unwrap();
-    let a = py_select("1").await.unwrap();
-    println!("{:?}", a);
-}
+                    and name=#{name}","mysql")]
+    async fn py_sql_tx(rb: &Rbatis, tx_id: &String, name: &str) -> Vec<BizActivity> { todo!() }
 ```
+* Added html_sql support, a form of organization similar to MyBatis, to facilitate migration of Java systems to Rust(Note that it is also compiled as Rust code at build time and performs close to handwritten code)  this is very faster
+
+>  Because of the compile time, the annotations need to declare the database type to be used
+
+```html
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.1//EN" "https://github.com/rbatis/rbatis_sql/raw/main/mybatis-3-mapper.dtd">
+<mapper>
+    <select id="select_by_condition">
+        select * from biz_activity where
+        <if test="name != ''">
+            name like #{name}
+        </if>
+    </select>
+</mapper>
+```
+
+```rust
+    ///select page must have  '?:&PageRequest' arg and return 'Page<?>'
+    #[html_sql(rb, "example/example.html","mysql")]
+    async fn select_by_condition(rb: &mut RbatisExecutor<'_>, page_req: &PageRequest, name: &str) -> Page<BizActivity> { todo!() }
+```
+
+
+
 
 ```rust
 #[macro_use]
