@@ -58,8 +58,13 @@ pub(crate) fn impl_macro_py_sql(target_fn: &ItemFn, args: &AttributeArgs) -> Tok
          let mut rb_arg_map = serde_json::Map::new();
          #sql_args_gen
          #fn_body
-         use rbatis::py::{PySqlConvert};
-         let (sql, rb_args) = #rbatis_ident.py_to_sql(&#sql_ident, &rb_arg_map)?;
+         // use rbatis::py::{PySqlConvert};
+         // let (sql, rb_args) = #rbatis_ident.py_to_sql(&#sql_ident, &rb_arg_map)?;
+         use rbatis::rbatis_sql;
+         #[rb_py(#sql_ident,'?')]
+         pub fn #func_name_ident(arg: &serde_json::Value) {}
+         let (sql, rb_args) = #func_name_ident(&serde_json::Value::Object(rb_arg_map));
+
          #call_method
        }
     }
