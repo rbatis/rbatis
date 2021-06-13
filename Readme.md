@@ -198,7 +198,7 @@ async fn main() {
     rb,
     "select * from biz_activity where delete_flag = 0
                   if name != '':
-                    and name=#{name}","mysql")]
+                    and name=#{name}")]
     async fn py_sql_tx(rb: &Rbatis, tx_id: &String, name: &str) -> Vec<BizActivity> { todo!() }
 ```
 * Added html_sql support, a form of organization similar to MyBatis, to facilitate migration of Java systems to Rust(Note that it is also compiled as Rust code at build time and performs close to handwritten code)  this is very faster
@@ -219,7 +219,7 @@ async fn main() {
 
 ```rust
     ///select page must have  '?:&PageRequest' arg and return 'Page<?>'
-    #[html_sql(rb, "example/example.html","mysql")]
+    #[html_sql(rb, "example/example.html")]
     async fn select_by_condition(rb: &mut RbatisExecutor<'_>, page_req: &PageRequest, name: &str) -> Page<BizActivity> { todo!() }
 ```
 
