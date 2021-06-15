@@ -40,8 +40,10 @@ impl SqlIntercept for RbatisLogFormatSqlIntercept {
             DriverType::Mysql | DriverType::Postgres | DriverType::Sqlite | DriverType::Mssql => {
                 let mut formated = format!("[format_sql]{}", sql);
                 for index in 0..args.len() {
+                    let mut data = String::new();
+                    driver_type.stmt_convert(index, &mut data);
                     formated = formated.replacen(
-                        &driver_type.stmt_convert(index),
+                        &data,
                         &format!("{}", args.get(index).unwrap()),
                         1,
                     );

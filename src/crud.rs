@@ -85,13 +85,14 @@ pub trait CRUDTable: Send + Sync + Serialize + DeserializeOwned {
 
 
     ///format column
-    fn do_format_column(driver_type: &DriverType, column: &str, data: String) -> String {
+    fn do_format_column(driver_type: &DriverType, column: &str, data: &mut String) {
         let m = Self::formats(driver_type);
         let source = m.get(column);
         match source {
-            Some(s) => s(&data),
+            Some(s) => {
+                *data=s(&data);
+            },
             _ => {
-                return data.to_string();
             }
         }
     }
@@ -121,8 +122,11 @@ pub trait CRUDTable: Send + Sync + Serialize + DeserializeOwned {
             let v = map.get(column).unwrap_or(&serde_json::Value::Null);
             //cast convert
             column_sql = column_sql + column + ",";
+            let mut data =String::new();
+            db_type.stmt_convert(*index,&mut data);
+            Self::do_format_column(db_type, &column, &mut data);
             value_sql = value_sql
-                + Self::do_format_column(db_type, &column, db_type.stmt_convert(*index)).as_str()
+                + data.as_str()
                 + ",";
             arr.push(v.to_owned());
             *index += 1;
@@ -478,7 +482,9 @@ pub trait CRUDMut: ExecutorMut {
     {
         let mut sql = String::new();
         let driver_type = &self.driver_type()?;
-        let id_str = T::do_format_column(&driver_type, column, driver_type.stmt_convert(0));
+        let mut data =String::new();
+        driver_type.stmt_convert(0,&mut data);
+        T::do_format_column(&driver_type, column, &mut data);
         if self.get_rbatis().logic_plugin.is_some() && T::is_use_plugin(self.get_rbatis().logic_plugin.as_ref().unwrap().name()) {
             sql = self.get_rbatis().logic_plugin.as_ref().unwrap().create_remove_sql(
                 &driver_type,
@@ -488,7 +494,7 @@ pub trait CRUDMut: ExecutorMut {
                     "{} {} = {}",
                     crate::sql::TEMPLATE.r#where.value,
                     column,
-                    id_str
+                    data
                 )
                     .as_str(),
             )?;
@@ -499,7 +505,7 @@ pub trait CRUDMut: ExecutorMut {
                 T::table_name(),
                 crate::sql::TEMPLATE.r#where.value,
                 column,
-                id_str
+                data
             );
         }
         return Ok(self
@@ -576,17 +582,20 @@ pub trait CRUDMut: ExecutorMut {
             if skip_null_value && v.is_null() {
                 continue;
             }
+
+            let mut data=String::new();
+            driver_type.stmt_convert(args.len(),&mut data);
+            T::do_format_column(
+                &driver_type,
+                &column,
+                &mut data,
+            );
             sets.push_str(
                 format!(
                     " {} = {},",
                     column,
-                    T::do_format_column(
-                        &driver_type,
-                        &column,
-                        driver_type.stmt_convert(args.len()),
-                    )
-                )
-                    .as_str(),
+                    data
+                ).as_str(),
             );
             match &self.get_rbatis().version_lock_plugin {
                 Some(version_lock_plugin) => {
