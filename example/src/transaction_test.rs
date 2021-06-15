@@ -2,7 +2,7 @@
 mod test {
     use crate::BizActivity;
     use rbatis::rbatis::Rbatis;
-    use rbatis::executor::{Executor, RbatisRef, RBatisTxExecutor};
+    use rbatis::executor::{Executor, RbatisRef, RBatisTxExecutor, ExecutorMut};
 
     //示例-Rbatis使用事务
     #[tokio::test]
@@ -12,13 +12,21 @@ mod test {
         rb.link("mysql://root:123456@localhost:3306/test")
             .await
             .unwrap();
-        let tx = rb.acquire_begin().await.unwrap();
-        let v: serde_json::Value = tx
-            .fetch("select count(1) from biz_activity;", &vec![])
+        let mut tx = rb.acquire_begin().await.unwrap();
+
+        let v= tx
+            .exec("update biz_activity set name = '6' where id = 1;", &vec![])
             .await
             .unwrap();
-        println!("{}", v.clone());
+
+        println!("{:?}", v);
         tx.commit().await.unwrap();
+
+        let v:serde_json::Value= rb
+            .fetch("select * from biz_activity where id = 1;", &vec![])
+            .await
+            .unwrap();
+        println!("result:{}",v.to_string());
     }
 
     #[py_sql(rb, "select * from biz_activity")]
@@ -52,7 +60,7 @@ mod test {
 
     pub async fn forget_commit(rb: &Rbatis) -> rbatis::core::Result<serde_json::Value> {
         // tx will be commit.when func end
-        let tx = rb.acquire_begin().await?.defer(|tx| {
+        let mut tx = rb.acquire_begin().await?.defer(|tx| {
             println!("tx is drop!");
             async_std::task::block_on(async { tx.rollback().await; });
         });
