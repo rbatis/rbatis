@@ -1,4 +1,4 @@
-use std::ops::Deref;
+use std::ops::{Deref, DerefMut};
 
 use async_trait::async_trait;
 use futures::Future;
@@ -9,7 +9,7 @@ use serde_json::Value;
 
 use crate::core::db::{DBPool, DBPoolConn, DBQuery, DBTx};
 use crate::core::Error;
-use crate::crud::CRUD;
+use crate::crud::{CRUD, CRUDMut};
 use crate::DriverType;
 use crate::plugin::page::{IPageRequest, Page};
 use crate::rbatis::Rbatis;
@@ -64,11 +64,11 @@ impl<'a> ExecutorMut for $t {
         let mut sql = sql.to_string();
         let mut args = args.clone();
         let is_prepared = args.len() > 0;
-        for item in &self.sql_intercepts {
-            item.do_intercept(self, &mut sql, &mut args, is_prepared)?;
+        for item in &self.get_rbatis().sql_intercepts {
+            item.do_intercept(self.get_rbatis(), &mut sql, &mut args, is_prepared)?;
         }
-        if self.log_plugin.is_enable() {
-            self.log_plugin.info(
+        if self.get_rbatis().log_plugin.is_enable() {
+            self.get_rbatis().log_plugin.info(
                 &format!(
                     "Exec   ==> {}\n{}[rbatis] [{}] Args   ==> {}",
                     &sql,
@@ -85,15 +85,15 @@ impl<'a> ExecutorMut for $t {
         } else {
             result = self.conn.execute(&sql).await;
         }
-        if self.log_plugin.is_enable() {
+        if self.get_rbatis().log_plugin.is_enable() {
             match &result {
                 Ok(result) => {
-                    self.log_plugin.info(
+                    self.get_rbatis().log_plugin.info(
                         &format!("RowsAffected <== {}", result.rows_affected),
                     );
                 }
                 Err(e) => {
-                    self.log_plugin
+                    self.get_rbatis().log_plugin
                         .error(&format!("ReturnErr  <== {}", e));
                 }
             }
@@ -105,11 +105,11 @@ impl<'a> ExecutorMut for $t {
         let mut sql = sql.to_string();
         let mut args = args.clone();
         let is_prepared = args.len() > 0;
-        for item in &self.sql_intercepts {
-            item.do_intercept(self, &mut sql, &mut args, is_prepared)?;
+        for item in &self.get_rbatis().sql_intercepts {
+            item.do_intercept(self.get_rbatis(), &mut sql, &mut args, is_prepared)?;
         }
-        if self.log_plugin.is_enable() {
-            self.log_plugin.info(
+        if self.get_rbatis().log_plugin.is_enable() {
+            self.get_rbatis().log_plugin.info(
                 &format!(
                     "Fetch  ==> {}\n{}[rbatis] [{}] Args   ==> {}",
                     &sql,
@@ -122,14 +122,14 @@ impl<'a> ExecutorMut for $t {
         if is_prepared {
             let q: DBQuery = self.bind_arg(&self.conn.driver_type, &sql, &args)?;
             let result = self.conn.fetch_parperd(q).await;
-            if self.log_plugin.is_enable() {
+            if self.get_rbatis().log_plugin.is_enable() {
                 match &result {
                     Ok(result) => {
-                        self.log_plugin
+                        self.get_rbatis().log_plugin
                             .info(&format!("ReturnRows <== {}", result.1));
                     }
                     Err(e) => {
-                        self.log_plugin
+                        self.get_rbatis().log_plugin
                             .error(&format!("ReturnErr  <== {}", e));
                     }
                 }
@@ -137,14 +137,14 @@ impl<'a> ExecutorMut for $t {
             return Ok(result?.0);
         } else {
             let result = self.conn.fetch(&sql.to_owned()).await;
-            if self.log_plugin.is_enable() {
+            if self.get_rbatis().log_plugin.is_enable() {
                 match &result {
                     Ok(result) => {
-                        self.log_plugin
+                        self.get_rbatis().log_plugin
                             .info(&format!("ReturnRows <== {}", result.1));
                     }
                     Err(e) => {
-                        self.log_plugin
+                        self.get_rbatis().log_plugin
                             .error(&format!("ReturnErr  <== {}", e));
                     }
                 }
@@ -186,27 +186,10 @@ impl_executor!(RBatisTxExecutor<'_>);
 
 impl<'a> RBatisTxExecutor<'a> {
     pub async fn commit(self) -> crate::Result<()> {
-        self.conn.commit().await
+        return Ok(self.conn.commit().await?);
     }
     pub async fn rollback(self) -> crate::Result<()> {
-        self.conn.rollback().await
-    }
-}
-
-
-/// impl Deref has all the capabilities of RBatis
-impl<'a> Deref for RBatisConnExecutor<'a> {
-    type Target = Rbatis;
-    fn deref(&self) -> &Self::Target {
-        &self.rb
-    }
-}
-
-/// impl Deref has all the capabilities of RBatis
-impl<'a> Deref for RBatisTxExecutor<'a> {
-    type Target = Rbatis;
-    fn deref(&self) -> &Self::Target {
-        &self.rb
+        return  Ok(self.conn.rollback().await?);
     }
 }
 
@@ -223,6 +206,32 @@ impl<'a> RBatisTxExecutor<'a> {
             callback: callback,
         }
     }
+
+    pub async fn fetch_page<T>(
+        &self,
+        sql: &str,
+        args: &Vec<serde_json::Value>,
+        page_request: &dyn IPageRequest,
+    )  -> crate::Result<Page<T>>
+        where
+            T: DeserializeOwned + Serialize + Send + Sync,
+    {
+        self.get_rbatis().fetch_page(sql,args,page_request).await
+    }
+}
+
+impl <'a>Deref for RBatisTxExecutorGuard<'a>{
+    type Target =RBatisTxExecutor<'a>;
+
+    fn deref(&self) -> &Self::Target {
+        &self.tx.as_ref().unwrap()
+    }
+}
+
+impl <'a>DerefMut for RBatisTxExecutorGuard<'a>{
+    fn deref_mut(&mut self) -> &mut Self::Target {
+        self.tx.as_mut().unwrap()
+    }
 }
 
 
@@ -234,14 +243,6 @@ impl Drop for RBatisTxExecutorGuard<'_> {
                 (self.callback)(tx);
             }
         }
-    }
-}
-
-/// impl Deref has all the capabilities of RBatis
-impl<'a> Deref for RBatisTxExecutorGuard<'a> {
-    type Target = Rbatis;
-    fn deref(&self) -> &Self::Target {
-        &self.tx.as_ref().unwrap()
     }
 }
 
@@ -300,7 +301,7 @@ impl RbatisExecutor<'_> {
         } else if self.tx.is_some() {
             return self.tx.as_deref_mut().unwrap().exec(sql, args).await;
         } else if self.guard.is_some() {
-            return self.guard.as_ref().unwrap().exec(sql, args).await;
+            return self.guard.as_deref_mut().unwrap().exec(sql, args).await;
         }
         return Err(Error::from("[rbatis] executor must have an value!"));
     }
@@ -313,7 +314,7 @@ impl RbatisExecutor<'_> {
         } else if self.tx.is_some() {
             return self.tx.as_deref_mut().unwrap().fetch(sql, args).await;
         } else if self.guard.is_some() {
-            return self.guard.as_ref().unwrap().fetch(sql, args).await;
+            return self.guard.as_deref_mut().unwrap().fetch(sql, args).await;
         }
         return Err(Error::from("[rbatis] executor must have an value!"));
     }
