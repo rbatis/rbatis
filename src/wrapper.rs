@@ -596,16 +596,18 @@ impl Wrapper {
             return self;
         }
         self = self.and();
-        push_sqls!(self.sql,column," ",crate::sql::TEMPLATE.r#in.value," (",);
-        for x in obj {
-            let mut convert_column = self.driver_type.stmt_convert(self.args.len());
-            self.do_format_column(column, &mut convert_column);
-            push_sqls!(self.sql," ",&convert_column.as_str()," ",);
-            self.sql.push_str(",");
-            self.args.push(json!(x));
+        if obj.len() > 0 {
+            push_sqls!(self.sql,column," ",crate::sql::TEMPLATE.r#in.value," (",);
+            for x in obj {
+                let mut convert_column = self.driver_type.stmt_convert(self.args.len());
+                self.do_format_column(column, &mut convert_column);
+                push_sqls!(self.sql," ",&convert_column.as_str()," ",);
+                self.sql.push_str(",");
+                self.args.push(json!(x));
+            }
+            self.sql.pop();
+            push_sqls!(self.sql,")",);
         }
-        self.sql.pop();
-        push_sqls!(self.sql,")",);
         self
     }
 
