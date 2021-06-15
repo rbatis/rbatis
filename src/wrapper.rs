@@ -360,11 +360,9 @@ impl Wrapper {
             .push_str(&crate::sql::TEMPLATE.order_by.left_right_space);
         for x in columns {
             if is_asc {
-                self.sql
-                    .push_str(format!("{} {}", x, crate::sql::TEMPLATE.asc.value).as_str());
+                push_sqls!(self.sql,x," ",crate::sql::TEMPLATE.asc.value,);
             } else {
-                self.sql
-                    .push_str(format!("{} {}", x, crate::sql::TEMPLATE.desc.value).as_str());
+                push_sqls!(self.sql,x," ",crate::sql::TEMPLATE.desc.value,);
             }
             if (index + 1) != len {
                 self.sql.push_str(",");
@@ -596,18 +594,16 @@ impl Wrapper {
             return self;
         }
         self = self.and();
-        if obj.len() > 0 {
-            push_sqls!(self.sql,column," ",crate::sql::TEMPLATE.r#in.value," (",);
-            for x in obj {
-                let mut convert_column = self.driver_type.stmt_convert(self.args.len());
-                self.do_format_column(column, &mut convert_column);
-                push_sqls!(self.sql," ",&convert_column.as_str()," ",);
-                self.sql.push_str(",");
-                self.args.push(json!(x));
-            }
-            self.sql.pop();
-            push_sqls!(self.sql,")",);
+        push_sqls!(self.sql,column," ",crate::sql::TEMPLATE.r#in.value," (",);
+        for x in obj {
+            let mut convert_column = self.driver_type.stmt_convert(self.args.len());
+            self.do_format_column(column, &mut convert_column);
+            push_sqls!(self.sql," ",&convert_column.as_str()," ",);
+            self.sql.push_str(",");
+            self.args.push(json!(x));
         }
+        self.sql.pop();
+        push_sqls!(self.sql,")",);
         self
     }
 
@@ -631,26 +627,20 @@ impl Wrapper {
         where
             T: Serialize,
     {
+        if obj.len() == 0 {
+            return self;
+        }
         self = self.and();
-        let mut sqls = String::with_capacity(obj.len() * 10);
+        push_sqls!(self.sql,column," ",crate::sql::TEMPLATE.not.value," ",crate::sql::TEMPLATE.r#in.value," (",);
         for x in obj {
             let mut convert_column = self.driver_type.stmt_convert(self.args.len());
             self.do_format_column(column, &mut convert_column);
-            push_sqls!(sqls," ",&convert_column.as_str()," ",);
-            sqls.push_str(",");
+            push_sqls!(self.sql," ",&convert_column.as_str()," ",);
+            self.sql.push_str(",");
             self.args.push(json!(x));
         }
-        sqls.pop();
-        self.sql.push_str(
-            format!(
-                "{} {} {} ({})",
-                column,
-                crate::sql::TEMPLATE.not.value,
-                crate::sql::TEMPLATE.r#in.value,
-                sqls
-            )
-                .as_str(),
-        );
+        self.sql.pop();
+        push_sqls!(self.sql,")",);
         self
     }
 
@@ -718,8 +708,7 @@ impl Wrapper {
     /// for example:
     ///  limit(1) " limit 1 "
     pub fn limit(mut self, limit: u64) -> Self {
-        self.sql
-            .push_str(&format!(" {} {} ", crate::sql::TEMPLATE.limit.value, limit));
+        push_sqls!(self.sql," ",crate::sql::TEMPLATE.limit.value," ",format_args!("{}",limit).as_str().unwrap()," ",);
         self
     }
 }
