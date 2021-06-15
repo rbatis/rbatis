@@ -805,7 +805,7 @@ fn choose_dyn_table_name<T>(w: &Wrapper) -> String
     if table_name_format.is_some() {
         match table_name_format {
             Some(table_name_format) => {
-                table_name = table_name_format(&table_name);
+                table_name = table_name_format.clone();
             }
             _ => {}
         }

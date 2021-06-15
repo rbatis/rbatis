@@ -109,7 +109,13 @@ impl Rbatis {
             T: CRUDTable,
     {
         let mut w = self.new_wrapper();
-        w = w.set_formats(T::formats(&self.driver_type().unwrap()));
+        let formats=T::formats(&self.driver_type().unwrap());
+        let mut wrapper_formats=HashMap::new();
+        for (k,v) in formats {
+            let r=v(k.as_str());
+            wrapper_formats.insert(k.clone(),r);
+        }
+        w = w.set_formats(wrapper_formats);
         return w;
     }
 
