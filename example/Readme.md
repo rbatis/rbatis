@@ -15,4 +15,4 @@ docker run -p 3306:3306 --name mysql -e MYSQL_ROOT_PASSWORD=123456 -d mysql:5.7
 #压测建议
 
 * 修改Cargo.toml,去除 rbatis  ["debug_mode"]
-* main.rs  fast_log::init_log debug_mode 设置false
+* main.rs  fast_log::init_log debug_mode 设置false,确认Console不打印日志
