@@ -42,6 +42,12 @@ pub struct Wrapper {
     pub formats: HashMap<String, fn(arg: &str) -> String>,
 }
 
+macro_rules! push_sqls {
+    ($i:expr,$($v:expr,)*) => {
+        $($i.push_str($v);)*
+    };
+}
+
 impl Debug for Wrapper {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         let mut formats = HashMap::new();
@@ -265,8 +271,7 @@ impl Wrapper {
 
     pub fn having(mut self, sql_having: &str) -> Self {
         self = self.and();
-        self.sql
-            .push_str(format!(" {} {} ", crate::sql::TEMPLATE.having.value, sql_having).as_str());
+        push_sqls!(self.sql," ",crate::sql::TEMPLATE.having.value," ",sql_having," ",);
         self
     }
 
