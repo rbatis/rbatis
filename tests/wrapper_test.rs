@@ -39,9 +39,11 @@ mod test {
         assert_eq!(ms.len(), w.args.len());
     }
 
+
     ///cargo test --release --package rbatis --test wrapper_test test::bench_select --no-fail-fast -- --exact -Z unstable-options --show-output
     ///run with windows10:
-    ///  use Time: 0.51 s,each:5100 nano/op  use QPS: 196078.431372549 QPS/s
+    ///(Windows)use Time: 0.51 s,each:5100 nano/op  use QPS: 196078.431372549 QPS/s
+    ///(MacOs) use Time: 1.718391272s ,each:17183 ns/op use QPS: 58193 QPS/s
     #[test]
     fn bench_select() {
         let mut map = Map::new();
