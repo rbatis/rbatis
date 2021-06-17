@@ -19,7 +19,7 @@ mod test {
     fn test_select() {
         let mut m = Map::new();
         m.insert("a".to_string(), json!("1"));
-        let w = Wrapper::new(&DriverType::Mysql)
+        let w = Wrapper::new(&DriverType::Postgres)
             .eq("id", 1)
             .ne("id", 1)
             .in_array("id", &[1, 2, 3])
