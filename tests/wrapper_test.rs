@@ -35,7 +35,7 @@ mod test {
         println!("sql:{:?}", w.sql.as_str());
         println!("arg:{:?}", w.args.clone());
 
-        let ms: Vec<&str> = w.sql.matches("?").collect();
+        let ms: Vec<&str> = w.sql.matches("$").collect();
         assert_eq!(ms.len(), w.args.len());
     }
 
