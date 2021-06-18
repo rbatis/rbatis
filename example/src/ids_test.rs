@@ -21,7 +21,7 @@ mod test {
         let ids = biz_activitys.to_fields::<serde_json::Value>("id");
 
         let r = rb
-            .fetch_list_by_column::<Option<BizActivity>,_>("id", &ids)
+            .fetch_list_by_column::<Option<BizActivity>, _>("id", &ids)
             .await
             .unwrap();
         println!("{}", serde_json::to_string(&r).unwrap());
