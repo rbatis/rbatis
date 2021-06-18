@@ -33,9 +33,9 @@ mod test {
 
         let uuid = Uuid::from_str("df07fea2-b819-4e05-b86d-dfc15a5f52a9").unwrap();
         //create table
-        rb.exec( "DROP TABLE biz_uuid;",&vec![]).await;
-        rb.exec("CREATE TABLE biz_uuid( id uuid, name VARCHAR, PRIMARY KEY(id));",&vec![])
-        .await;
+        rb.exec("DROP TABLE biz_uuid;", &vec![]).await;
+        rb.exec("CREATE TABLE biz_uuid( id uuid, name VARCHAR, PRIMARY KEY(id));", &vec![])
+            .await;
         //insert table
         rb.save(
             &BizUuid {
@@ -43,7 +43,7 @@ mod test {
                 name: Some("test".to_string()),
             },
         )
-        .await;
+            .await;
         //update table
         rb.update_by_column(
             "id",
@@ -52,12 +52,12 @@ mod test {
                 name: Some("test_updated".to_string()),
             },
         )
-        .await;
+            .await;
         //query table
         let data: BizUuid = rb.fetch_by_column("id", &uuid).await.unwrap();
         println!("{:?}", data);
         //delete table
-        rb.remove_by_column::<BizUuid,_>("id", &uuid).await;
+        rb.remove_by_column::<BizUuid, _>("id", &uuid).await;
     }
 
     /// Formatting precompiled SQL
@@ -96,9 +96,9 @@ mod test {
             version: Some(1),
             delete_flag: Some(1),
         };
-        rb.remove_by_column::<BizActivity,_>( "id",activity.id.as_ref().unwrap())
+        rb.remove_by_column::<BizActivity, _>("id", activity.id.as_ref().unwrap())
             .await;
-        let r = rb.save( &activity).await;
+        let r = rb.save(&activity).await;
         if r.is_err() {
             println!("{}", r.err().unwrap().to_string());
         }

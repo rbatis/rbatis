@@ -26,9 +26,9 @@ pub struct BizActivity {
     pub delete_flag: Option<i32>,
 }
 
-impl Default for BizActivity{
+impl Default for BizActivity {
     fn default() -> Self {
-        BizActivity{
+        BizActivity {
             id: None,
             name: None,
             pc_link: None,
@@ -40,7 +40,7 @@ impl Default for BizActivity{
             remark: None,
             create_time: None,
             version: None,
-            delete_flag: None
+            delete_flag: None,
         }
     }
 }
@@ -76,7 +76,7 @@ async fn main() -> std::io::Result<()> {
             // }))
             .route("/", web::get().to(index))
     })
-    .bind("0.0.0.0:8000")?
-    .run()
-    .await
+        .bind("0.0.0.0:8000")?
+        .run()
+        .await
 }

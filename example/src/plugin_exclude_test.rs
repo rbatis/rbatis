@@ -6,6 +6,7 @@ mod test {
     use rbatis::crud::{CRUDMut, CRUD};
     use rbatis::plugin::logic_delete::RbatisLogicDeletePlugin;
     use rbatis::rbatis::Rbatis;
+
     #[tokio::test]
     async fn plugin_exclude_delete() {
         fast_log::init_log("requests.log", 1000, log::Level::Info, None, true);
@@ -20,9 +21,9 @@ mod test {
 
         let id = "12312".to_string();
         //logic delete sql:   "update biz_activity set delete_flag = 1 where id = ?"
-        rb.remove_by_column::<BizActivity,_>( "id",&id).await;
+        rb.remove_by_column::<BizActivity, _>("id", &id).await;
         //delete sql          "delete from biz_activity where id = ?"
-        rb.remove_by_column::<BizActivity,_>("id", &id).await;
+        rb.remove_by_column::<BizActivity, _>("id", &id).await;
 
         //fix data
         rb.save(
@@ -41,7 +42,7 @@ mod test {
                 delete_flag: Some(1),
             },
         )
-        .await;
+            .await;
     }
 
     #[tokio::test]
@@ -58,8 +59,8 @@ mod test {
 
         let id = "12312".to_string();
         //logic delete sql:   "select * from biz_activity  where delete_flag = 0 and id = ? "
-        rb.fetch_by_column::<BizActivity,_>( "id",&id).await;
+        rb.fetch_by_column::<BizActivity, _>("id", &id).await;
         //delete sql          "select * from biz_activity  where id = ? "
-        rb.fetch_by_column::<BizActivity,_>("id", &id).await;
+        rb.fetch_by_column::<BizActivity, _>("id", &id).await;
     }
 }
