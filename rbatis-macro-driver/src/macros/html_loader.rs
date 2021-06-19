@@ -1,6 +1,6 @@
 use std::collections::HashMap;
-use html_parser::{Dom, Node, Result};
-use std::fmt::{Debug, Formatter};
+use html_parser::{Dom, Node};
+use std::fmt::{Debug};
 
 #[derive(Clone, Eq, PartialEq)]
 pub struct Element {
