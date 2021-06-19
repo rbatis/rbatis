@@ -56,6 +56,12 @@ pub struct RBatisConnExecutor<'a> {
     pub rb: &'a Rbatis,
 }
 
+impl<'a> RBatisConnExecutor<'a> {
+    pub fn as_executor(&'a mut self) -> RbatisExecutor<'a> {
+        self.into()
+    }
+}
+
 macro_rules! impl_executor {
     ($t:ty) => {
 #[async_trait]
@@ -182,6 +188,12 @@ pub struct RBatisTxExecutor<'a> {
     // pub callback: fn(s:Self),
 }
 
+impl<'a> RBatisTxExecutor<'a> {
+    pub fn as_executor(&'a mut self) -> RbatisExecutor<'a> {
+        self.into()
+    }
+}
+
 impl_executor!(RBatisTxExecutor<'_>);
 
 impl<'a> RBatisTxExecutor<'a> {
@@ -189,7 +201,7 @@ impl<'a> RBatisTxExecutor<'a> {
         return Ok(self.conn.commit().await?);
     }
     pub async fn rollback(self) -> crate::Result<()> {
-        return  Ok(self.conn.rollback().await?);
+        return Ok(self.conn.rollback().await?);
     }
 }
 
@@ -197,6 +209,12 @@ impl<'a> RBatisTxExecutor<'a> {
 pub struct RBatisTxExecutorGuard<'a> {
     pub tx: Option<RBatisTxExecutor<'a>>,
     pub callback: fn(s: RBatisTxExecutor<'a>),
+}
+
+impl<'a> RBatisTxExecutorGuard<'a> {
+    pub fn as_executor(&'a mut self) -> RbatisExecutor<'a> {
+        self.into()
+    }
 }
 
 impl<'a> RBatisTxExecutor<'a> {
@@ -212,23 +230,23 @@ impl<'a> RBatisTxExecutor<'a> {
         sql: &str,
         args: &Vec<serde_json::Value>,
         page_request: &dyn IPageRequest,
-    )  -> crate::Result<Page<T>>
+    ) -> crate::Result<Page<T>>
         where
             T: DeserializeOwned + Serialize + Send + Sync,
     {
-        self.get_rbatis().fetch_page(sql,args,page_request).await
+        self.get_rbatis().fetch_page(sql, args, page_request).await
     }
 }
 
-impl <'a>Deref for RBatisTxExecutorGuard<'a>{
-    type Target =RBatisTxExecutor<'a>;
+impl<'a> Deref for RBatisTxExecutorGuard<'a> {
+    type Target = RBatisTxExecutor<'a>;
 
     fn deref(&self) -> &Self::Target {
         &self.tx.as_ref().unwrap()
     }
 }
 
-impl <'a>DerefMut for RBatisTxExecutorGuard<'a>{
+impl<'a> DerefMut for RBatisTxExecutorGuard<'a> {
     fn deref_mut(&mut self) -> &mut Self::Target {
         self.tx.as_mut().unwrap()
     }
@@ -277,7 +295,6 @@ pub struct RbatisExecutor<'a> {
 }
 
 impl RbatisExecutor<'_> {
-
     pub async fn fetch_page<T>(&mut self, sql: &str, args: &Vec<Value>, page_request: &dyn IPageRequest) -> crate::Result<Page<T>>
         where
             T: DeserializeOwned + Serialize + Send + Sync {
@@ -320,17 +337,17 @@ impl RbatisExecutor<'_> {
     }
 }
 
-impl <'a>RbatisRef for RbatisExecutor<'a>{
+impl<'a> RbatisRef for RbatisExecutor<'a> {
     fn get_rbatis(&self) -> &Rbatis {
-        if self.rb.is_some(){
+        if self.rb.is_some() {
             return self.rb.as_ref().unwrap();
-        }else if self.tx.is_some(){
+        } else if self.tx.is_some() {
             return self.tx.as_ref().unwrap().get_rbatis();
-        }else if self.conn.is_some(){
+        } else if self.conn.is_some() {
             return self.conn.as_ref().unwrap().get_rbatis();
-        }else if self.guard.is_some(){
+        } else if self.guard.is_some() {
             return self.guard.as_ref().unwrap().get_rbatis();
-        }else{
+        } else {
             panic!("[rbatis] executor must have one Some value!");
         }
     }

@@ -13,7 +13,7 @@ use uuid::Uuid;
 use crate::core::db::{DBExecResult, DBPool, DBPoolConn, DBPoolOptions, DBQuery, DBTx, DriverType};
 use crate::core::Error;
 use crate::crud::CRUDTable;
-use crate::executor::{RBatisConnExecutor, RBatisTxExecutor};
+use crate::executor::{RBatisConnExecutor, RBatisTxExecutor, RbatisExecutor};
 use crate::plugin::intercept::SqlIntercept;
 use crate::plugin::log::{LogPlugin, RbatisLogPlugin};
 use crate::plugin::logic_delete::{LogicDelete, RbatisLogicDeletePlugin};
@@ -224,5 +224,9 @@ impl Rbatis {
             return true;
         }
         return false;
+    }
+
+    pub fn as_executor(&self)->RbatisExecutor<'_>{
+        self.into()
     }
 }
