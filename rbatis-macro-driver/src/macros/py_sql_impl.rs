@@ -126,7 +126,7 @@ pub(crate) fn impl_macro_html_sql(target_fn: &ItemFn, args: &AttributeArgs) -> T
         file_name = file_name[1..file_name.len() - 1].to_string();
     }
     let mut f = std::fs::File::open(&file_name).expect(&format!("File:\"{}\" does not exist", file_name));
-    f.read_to_string(&mut html);
+    f.read_to_string(&mut html).expect(&format!("File:\"{}\" read fail!", file_name));
     let nodes = crate::macros::html_loader::load_html(&html).expect(&format!("[rbatis] load html file:{} fail!", sql_ident));
     let sql = find_node(&nodes, func_name_ident.to_string().as_str()).expect(&format!("[rbatis] load html file:{},method:{} fail!", sql_ident, sql_ident));
 
