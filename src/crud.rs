@@ -90,10 +90,9 @@ pub trait CRUDTable: Send + Sync + Serialize + DeserializeOwned {
         let source = m.get(column);
         match source {
             Some(s) => {
-                *data=s(&data);
-            },
-            _ => {
+                *data = s(&data);
             }
+            _ => {}
         }
     }
 
@@ -122,8 +121,8 @@ pub trait CRUDTable: Send + Sync + Serialize + DeserializeOwned {
             let v = map.get(column).unwrap_or(&serde_json::Value::Null);
             //cast convert
             column_sql = column_sql + column + ",";
-            let mut data =String::new();
-            db_type.stmt_convert(*index,&mut data);
+            let mut data = String::new();
+            db_type.stmt_convert(*index, &mut data);
             Self::do_format_column(db_type, &column, &mut data);
             value_sql = value_sql
                 + data.as_str()
@@ -482,8 +481,8 @@ pub trait CRUDMut: ExecutorMut {
     {
         let mut sql = String::new();
         let driver_type = &self.driver_type()?;
-        let mut data =String::new();
-        driver_type.stmt_convert(0,&mut data);
+        let mut data = String::new();
+        driver_type.stmt_convert(0, &mut data);
         T::do_format_column(&driver_type, column, &mut data);
         if self.get_rbatis().logic_plugin.is_some() && T::is_use_plugin(self.get_rbatis().logic_plugin.as_ref().unwrap().name()) {
             sql = self.get_rbatis().logic_plugin.as_ref().unwrap().create_remove_sql(
@@ -583,8 +582,8 @@ pub trait CRUDMut: ExecutorMut {
                 continue;
             }
 
-            let mut data=String::new();
-            driver_type.stmt_convert(args.len(),&mut data);
+            let mut data = String::new();
+            driver_type.stmt_convert(args.len(), &mut data);
             T::do_format_column(
                 &driver_type,
                 &column,

@@ -122,7 +122,6 @@ impl LogicDelete for RbatisLogicDeletePlugin {
 }
 
 
-
 /// use this context will not use logic del
 pub struct TableNoLogic<T> where T: CRUDTable {
     pub table: T,

@@ -75,12 +75,6 @@ impl VersionLockPlugin for RbatisVersionLockPlugin {
 }
 
 
-
-
-
-
-
-
 /// use this context will not use logic del
 pub struct TableNoVersion<T> where T: CRUDTable {
     pub table: T,

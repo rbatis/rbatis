@@ -109,11 +109,11 @@ impl Rbatis {
             T: CRUDTable,
     {
         let mut w = self.new_wrapper();
-        let formats=T::formats(&self.driver_type().unwrap());
-        let mut wrapper_formats=HashMap::new();
-        for (k,v) in formats {
-            let r=v(k.as_str());
-            wrapper_formats.insert(k.clone(),r);
+        let formats = T::formats(&self.driver_type().unwrap());
+        let mut wrapper_formats = HashMap::new();
+        for (k, v) in formats {
+            let r = v(k.as_str());
+            wrapper_formats.insert(k.clone(), r);
         }
         w = w.set_formats(wrapper_formats);
         return w;
@@ -138,7 +138,7 @@ impl Rbatis {
             return Err(Error::from("[rbatis] link url is empty!"));
         }
         let pool = DBPool::new_opt_str(driver_url, pool_options).await?;
-        self.pool.set( pool);
+        self.pool.set(pool);
         return Ok(());
     }
 
@@ -152,7 +152,7 @@ impl Rbatis {
         pool_options: &DBPoolOptions,
     ) -> Result<(), Error> {
         let pool = DBPool::new_opt(connect_option, pool_options).await?;
-        self.pool.set( pool);
+        self.pool.set(pool);
         return Ok(());
     }
 
@@ -204,7 +204,7 @@ impl Rbatis {
         let conn = pool.acquire().await?;
         return Ok(RBatisConnExecutor {
             conn: conn,
-            rb: &self
+            rb: &self,
         });
     }
 
@@ -226,7 +226,8 @@ impl Rbatis {
         return false;
     }
 
-    pub fn as_executor(&self)->RbatisExecutor<'_>{
+    /// change ref to executor
+    pub fn as_executor(&self) -> RbatisExecutor<'_> {
         self.into()
     }
 }
