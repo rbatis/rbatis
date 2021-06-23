@@ -250,7 +250,7 @@ pub trait CRUD {
         &self,
         table: &mut T,
         w: &Wrapper,
-        skip_null: bool,
+        update_null: bool,
     ) -> Result<u64>
         where
             T: CRUDTable;
@@ -881,13 +881,13 @@ impl CRUD for Rbatis {
         conn.remove_batch_by_column::<T, C>(column, values).await
     }
 
-    async fn update_by_wrapper<T>(&self, table: &mut T, w: &Wrapper, skip_null: bool) -> Result<u64> where
+    async fn update_by_wrapper<T>(&self, table: &mut T, w: &Wrapper, update_null: bool) -> Result<u64> where
         T: CRUDTable {
         let mut conn = self.acquire().await?;
-        if skip_null {
-            conn.update_by_wrapper(table, w, vec!["null"]).await
-        } else {
+        if update_null {
             conn.update_by_wrapper(table, w, vec![]).await
+        } else {
+            conn.update_by_wrapper(table, w, vec!["null"]).await
         }
     }
 
