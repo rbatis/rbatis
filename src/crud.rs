@@ -551,7 +551,7 @@ pub trait CRUDMut: ExecutorMut {
         &mut self,
         table: &mut T,
         w: &Wrapper,
-        skips: Vec<&str>,
+        skips: &[&str],
     ) -> Result<u64>
         where
             T: CRUDTable,
@@ -574,7 +574,7 @@ pub trait CRUDMut: ExecutorMut {
         let null = serde_json::Value::Null;
         let mut sets = String::new();
         let mut skip_null_value = false;
-        for x in &skips {
+        for x in skips {
             if "null".eq(*x) {
                 skip_null_value = true;
             }
@@ -582,7 +582,7 @@ pub trait CRUDMut: ExecutorMut {
 
         for column in columns_vec {
             //filter
-            for x in &skips {
+            for x in skips {
                 if column.eq(*x) {
                     continue;
                 }
@@ -676,6 +676,7 @@ pub trait CRUDMut: ExecutorMut {
     }
 
     /// update database record by id
+    /// update sql will be skip null value and id column
     async fn update_by_column<T>(&mut self, column: &str, table: &mut T) -> Result<u64>
         where
             T: CRUDTable
@@ -688,7 +689,7 @@ pub trait CRUDMut: ExecutorMut {
             &rb
                 .new_wrapper_table::<T>()
                 .eq(column, value),
-            vec!["null", "id"],
+            &["null", "id"],
         )
             .await
     }
@@ -896,9 +897,9 @@ impl CRUD for Rbatis {
         T: CRUDTable {
         let mut conn = self.acquire().await?;
         if update_null {
-            conn.update_by_wrapper(table, w, vec![]).await
+            conn.update_by_wrapper(table, w, &[]).await
         } else {
-            conn.update_by_wrapper(table, w, vec!["null"]).await
+            conn.update_by_wrapper(table, w, &["null"]).await
         }
     }
 
