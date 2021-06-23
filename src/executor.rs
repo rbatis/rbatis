@@ -223,7 +223,8 @@ impl<'a> RBatisTxExecutor<'a> {
     /// for example:
     ///     tx.defer(|tx| {});
     ///
-    pub fn defer(self, callback: fn(s: Self)) -> RBatisTxExecutorGuard<'a> {
+    pub fn defer<Call>(self, callback: Call) -> RBatisTxExecutorGuard<'a>
+        where Call: 'a + FnMut(Self) {
         RBatisTxExecutorGuard {
             tx: Some(self),
             callback: Box::new(callback),
@@ -236,7 +237,9 @@ impl<'a> RBatisTxExecutor<'a> {
     ///             tx.rollback().await;
     ///         });
     ///
-    pub fn defer_async<F>(self, callback: fn(s: RBatisTxExecutor<'a>) -> F) -> RBatisTxExecutorGuard<'a> where F: 'a + Future<Output=()> {
+    pub fn defer_async<R, F>(self, mut callback: F) -> RBatisTxExecutorGuard<'a>
+        where R: 'a + Future<Output=()>,
+              F: 'a + FnMut(RBatisTxExecutor<'a>) -> R {
         RBatisTxExecutorGuard {
             tx: Some(self),
             callback: Box::new(move |arg| {
