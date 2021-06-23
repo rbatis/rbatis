@@ -256,12 +256,12 @@ pub trait CRUD {
             T: CRUDTable, C: Serialize + Send + Sync;
 
     /// update_by_wrapper
-    /// update_null: if true, will update data to null if param have null value
+    /// skips: use &["id","null"] will skip id column and null value param
     async fn update_by_wrapper<T>(
         &self,
         table: &mut T,
         w: &Wrapper,
-        update_null: bool,
+        skips: &[&str],
     ) -> Result<u64>
         where
             T: CRUDTable;
@@ -544,9 +544,8 @@ pub trait CRUDMut: ExecutorMut {
         return self.remove_by_wrapper::<T>(&w).await;
     }
 
-    /// update arg by wrapper
-    /// skips:  vec!["null"] ->  will skip  null fields
-    /// skips:  vec!["column"] ->  will skip  column fields
+    /// update_by_wrapper
+    /// skips: use &["id","null"] will skip id column and null value param
     async fn update_by_wrapper<T>(
         &mut self,
         table: &mut T,
@@ -582,10 +581,14 @@ pub trait CRUDMut: ExecutorMut {
 
         for column in columns_vec {
             //filter
+            let mut is_continue = false;
             for x in skips {
                 if column.eq(*x) {
-                    continue;
+                    is_continue = true;
                 }
+            }
+            if is_continue {
+                continue;
             }
             let mut v = map.get(column).unwrap_or_else(|| &null).clone();
             //filter null
@@ -893,14 +896,12 @@ impl CRUD for Rbatis {
         conn.remove_batch_by_column::<T, C>(column, values).await
     }
 
-    async fn update_by_wrapper<T>(&self, table: &mut T, w: &Wrapper, update_null: bool) -> Result<u64> where
+    /// update_by_wrapper
+    /// skips: use &["id","null"] will skip id column and null value param
+    async fn update_by_wrapper<T>(&self, table: &mut T, w: &Wrapper, skips: &[&str]) -> Result<u64> where
         T: CRUDTable {
         let mut conn = self.acquire().await?;
-        if update_null {
-            conn.update_by_wrapper(table, w, &[]).await
-        } else {
-            conn.update_by_wrapper(table, w, &["null"]).await
-        }
+        conn.update_by_wrapper(table, w, skips).await
     }
 
     async fn update_by_column<T>(&self, column: &str, table: &mut T) -> Result<u64> where
