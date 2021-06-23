@@ -180,7 +180,7 @@ async fn main() {
   ///if version_lock plugin actived,update method will modify field 'version'= version + 1
   let mut activity = activity.clone();
   let w = rb.new_wrapper().eq("id", "12312");
-  rb.update_by_wrapper( &mut activity, &w).await;
+  rb.update_by_wrapper( &mut activity, &w, &["id","null"]).await;
 //Exec ==> UPDATE biz_activity SET  create_time =  ? , delete_flag =  ? , status =  ? , version =  ?  WHERE id =  ? 
 }
 
