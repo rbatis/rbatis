@@ -4,6 +4,7 @@ mod test {
     use rbatis::rbatis::Rbatis;
     use rbatis::executor::{Executor, RbatisRef, RBatisTxExecutor, ExecutorMut};
     use rbatis::core::db::DBExecResult;
+    use std::cell::Cell;
 
     //示例-Rbatis使用事务
     #[tokio::test]
@@ -56,20 +57,26 @@ mod test {
         rb.link("mysql://root:123456@localhost:3306/test")
             .await
             .unwrap();
-        let exec = forget_commit(&rb).await.unwrap();
-        println!("tx_commit:{:?}", exec);
+        forget_commit(&rb).await.unwrap();
     }
 
-    pub async fn forget_commit(rb: &Rbatis) -> rbatis::core::Result<DBExecResult> {
+    pub async fn forget_commit(rb: &Rbatis) -> rbatis::core::Result<()> {
+        let mut is_success = Cell::new(false);
         // tx will be commit.when func end
         let mut tx = rb.acquire_begin().await?.defer_async(|tx| async {
-            tx.rollback().await;
-            println!("tx rollback success!");
+            if is_success.get() == false {
+                tx.rollback().await;
+                println!("tx rollback success!");
+            } else {
+                println!("do success,don't need rollback!");
+            }
         });
         let v = tx
             .exec("update biz_activity set name = '6' where id = 1;", &vec![])
-            .await
-            .unwrap();
-        return Ok(v);
+            .await;
+        if v.is_ok() {
+            is_success.set(true);
+        }
+        return Ok(());
     }
 }
