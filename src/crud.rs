@@ -222,13 +222,17 @@ pub trait CRUD {
     ) -> Result<DBExecResult>
         where
             T: CRUDTable;
+
     async fn save<T>(&self, table: &T) -> Result<DBExecResult>
         where
             T: CRUDTable;
+
     async fn save_batch<T>(&self, tables: &[T]) -> Result<DBExecResult>
         where
             T: CRUDTable;
 
+    /// save_batch_slice
+    /// batch save each slice_len every time
     async fn save_batch_slice<T>(
         &self,
         tables: &[T],
@@ -240,12 +244,19 @@ pub trait CRUD {
     async fn remove_by_wrapper<T>(&self, w: &Wrapper) -> Result<u64>
         where
             T: CRUDTable;
+
+    /// remove_by_column
+    /// column_value,column's value
     async fn remove_by_column<T, C>(&self, column: &str, column_value: &C) -> Result<u64> where T: CRUDTable, C: Serialize + Send + Sync;
 
+    /// remove_batch_by_column
+    /// column_values,column's value
     async fn remove_batch_by_column<T, C>(&self, column: &str, column_values: &[C]) -> Result<u64>
         where
             T: CRUDTable, C: Serialize + Send + Sync;
 
+    /// update_by_wrapper
+    /// update_null: if true, will update data to null if param have null value
     async fn update_by_wrapper<T>(
         &self,
         table: &mut T,
