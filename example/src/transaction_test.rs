@@ -62,9 +62,9 @@ mod test {
 
     pub async fn forget_commit(rb: &Rbatis) -> rbatis::core::Result<DBExecResult> {
         // tx will be commit.when func end
-        let mut tx = rb.acquire_begin().await?.defer(|tx| {
-            println!("tx is drop!");
-            async_std::task::block_on(async { tx.rollback().await; });
+        let mut tx = rb.acquire_begin().await?.defer_async(|tx| async {
+            tx.rollback().await;
+            println!("tx rollback success!");
         });
         let v = tx
             .exec("update biz_activity set name = '6' where id = 1;", &vec![])

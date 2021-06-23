@@ -14,6 +14,7 @@ use crate::DriverType;
 use crate::plugin::page::{IPageRequest, Page};
 use crate::rbatis::Rbatis;
 use crate::utils::string_util;
+use futures::executor::block_on;
 
 #[async_trait]
 pub trait RbatisRef {
@@ -208,7 +209,7 @@ impl<'a> RBatisTxExecutor<'a> {
 
 pub struct RBatisTxExecutorGuard<'a> {
     pub tx: Option<RBatisTxExecutor<'a>>,
-    pub callback: fn(s: RBatisTxExecutor<'a>),
+    pub callback: Box<dyn FnMut(RBatisTxExecutor<'a>) + 'a>,
 }
 
 impl<'a> RBatisTxExecutorGuard<'a> {
@@ -218,10 +219,29 @@ impl<'a> RBatisTxExecutorGuard<'a> {
 }
 
 impl<'a> RBatisTxExecutor<'a> {
+    /// defer an func
+    /// for example:
+    ///     tx.defer(|tx| {});
+    ///
     pub fn defer(self, callback: fn(s: Self)) -> RBatisTxExecutorGuard<'a> {
         RBatisTxExecutorGuard {
             tx: Some(self),
-            callback: callback,
+            callback: Box::new(callback),
+        }
+    }
+
+    /// defer and use future method
+    /// for example:
+    ///         tx.defer_async(|tx| async {
+    ///             tx.rollback().await;
+    ///         });
+    ///
+    pub fn defer_async<F: 'a>(self, callback: fn(s: RBatisTxExecutor<'a>) -> F) -> RBatisTxExecutorGuard<'a> where F: Future<Output=()> {
+        RBatisTxExecutorGuard {
+            tx: Some(self),
+            callback: Box::new(move |arg| {
+                block_on(callback(arg));
+            }),
         }
     }
 
