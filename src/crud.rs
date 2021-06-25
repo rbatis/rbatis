@@ -692,7 +692,7 @@ pub trait CRUDMut: ExecutorMut {
             &rb
                 .new_wrapper_table::<T>()
                 .eq(column, value),
-            &["null", "id"],
+            &["null", "id", column],
         )
             .await
     }
