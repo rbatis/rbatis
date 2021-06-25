@@ -3,6 +3,7 @@ lazy_static! {
     pub static ref TEMPLATE: SqlTemplates = SqlTemplates::default();
 }
 
+#[inline]
 fn string_to_static_str(s: String) -> &'static str {
     Box::leak(s.into_boxed_str())
 }
