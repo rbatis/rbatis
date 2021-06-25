@@ -186,7 +186,6 @@ impl RBatisConnExecutor<'_> {
 pub struct RBatisTxExecutor<'a> {
     pub conn: DBTx<'a>,
     pub rb: &'a Rbatis,
-    // pub callback: fn(s:Self),
 }
 
 impl<'a> RBatisTxExecutor<'a> {
