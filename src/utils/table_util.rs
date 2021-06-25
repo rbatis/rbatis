@@ -6,24 +6,16 @@ use crate::crud::CRUDTable;
 /// Simplifies table construction by relying on the Default trait
 ///
 /// step1:  impl Default
-/// impl Default for BizActivity{
-///       fn default() -> Self {
-///          Self{
-///            id:None,
-///            name:None,
-///            delete_flag:None,
-///          }
-///      }
+/// #[crud_table]
+/// #[derive(Clone, Debug, Default)]
+/// BizActivity{
 /// }
+///
 /// //step2: make struct
-/// let activity = rbatis::make_table!(BizActivity{
-///             id : Some("12312".to_string()),
-///             delete_flag : Some(1),
-///             });
-/// //or use into trait
 /// let activity = rbatis::make_table!(BizActivity{
 ///             id : "12312".to_string(),
 ///             delete_flag : 1,
+///             name:  None,
 ///             });
 #[macro_export]
 macro_rules! make_table {
