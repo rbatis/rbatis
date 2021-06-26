@@ -26,8 +26,6 @@ use crate::wrapper::Wrapper;
 /// for example:
 ///  #[crud_table(table_name:"biz_activity"|table_columns:"id,name,version,delete_flag"|formats_pg:"id:{}::uuid")]
 ///
-/// if use impl CRUDTable for Table struct,
-/// you must impl IdType and id_name() method!
 ///
 pub trait CRUDTable: Send + Sync + Serialize + DeserializeOwned {
     /// is enable use plugin

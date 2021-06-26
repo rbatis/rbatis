@@ -14,7 +14,7 @@ mod test {
 
     ///Or another way to write it
     // #[crud_table(table_name:biz_activity)]
-    // #[crud_table(id_name:"id"|id_type:"String"|table_name:"biz_activity"|table_columns:"id,name,version,delete_flag"|formats_pg:"id:{}::uuid")]
+    // #[crud_table(table_name:"biz_activity"|table_columns:"id,name,version,delete_flag"|formats_pg:"id:{}::uuid")]
     #[crud_table]
     #[derive(Clone, Debug)]
     pub struct BizActivity {
