@@ -355,10 +355,16 @@ pub async fn init_rbatis() -> Rbatis {
 ``` rust
     pub async fn forget_commit(rb: &Rbatis) -> rbatis::core::Result<serde_json::Value> {
          // tx will be commit.when func end
-        let tx = rb.acquire_begin().await?.defer(|tx|{
-            println!("tx is drop!");
-            async_std::task::block_on(async{ tx.rollback().await; });
+        let tx = rb
+        .acquire_begin().await?
+        .defer_async(|tx| async {
+            tx.rollback().await; 
         });
+        /// or use defer
+        ///.defer(|tx|{
+        ///    println!("tx is drop!");
+        ///   async_std::task::block_on(async{ tx.rollback().await; });
+        ///});
         let v: serde_json::Value = tx
             .fetch( "select count(1) from biz_activity;",&vec![])
             .await?;
