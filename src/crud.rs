@@ -958,9 +958,6 @@ impl CRUD for Rbatis {
 
     async fn fetch_list_by_wrapper<T>(&self, w: &Wrapper) -> Result<Vec<T>> where
         T: CRUDTable {
-        if column_values.is_empty() {
-            return Ok(vec![]);
-        }
         let mut conn = self.acquire().await?;
         conn.fetch_list_by_wrapper(w).await
     }
