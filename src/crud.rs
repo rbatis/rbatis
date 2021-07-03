@@ -758,6 +758,9 @@ pub trait CRUDMut: ExecutorMut {
         where
             T: CRUDTable, C: Serialize + Send + Sync,
     {
+        if column_values.is_empty(){
+            return Ok(vec![]);
+        }
         let w = self.get_rbatis().new_wrapper_table::<T>().in_array(&column, column_values);
         return self.fetch_list_by_wrapper(&w).await;
     }
@@ -946,12 +949,18 @@ impl CRUD for Rbatis {
 
     async fn fetch_list_by_column<T, C>(&self, column: &str, column_values: &[C]) -> Result<Vec<T>> where
         T: CRUDTable, C: Serialize + Send + Sync {
+        if column_values.is_empty() {
+            return Ok(vec![]);
+        }
         let mut conn = self.acquire().await?;
         conn.fetch_list_by_column::<T, C>(column, column_values).await
     }
 
     async fn fetch_list_by_wrapper<T>(&self, w: &Wrapper) -> Result<Vec<T>> where
         T: CRUDTable {
+        if column_values.is_empty() {
+            return Ok(vec![]);
+        }
         let mut conn = self.acquire().await?;
         conn.fetch_list_by_wrapper(w).await
     }
