@@ -117,6 +117,9 @@ pub trait CRUDTable: Send + Sync + Serialize + DeserializeOwned {
         for column in columns {
             let column = crate::utils::string_util::un_packing_string(column);
             let v = map.get(column).unwrap_or(&serde_json::Value::Null);
+            if v == &serde_json::Value::Null {
+                continue;
+            }
             //cast convert
             column_sql = column_sql + column + ",";
             let mut data = String::new();
