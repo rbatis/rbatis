@@ -7,7 +7,7 @@ use serde::de::DeserializeOwned;
 use serde::Serialize;
 use serde_json::Value;
 
-use crate::core::db::{DBPool, DBPoolConn, DBQuery, DBTx};
+use crate::core::db::{DBPool, DBPoolConn, DBQuery, DBTx, DBQueryBind};
 use crate::core::Error;
 use crate::crud::{CRUD, CRUDMut};
 use crate::DriverType;
