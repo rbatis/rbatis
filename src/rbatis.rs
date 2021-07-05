@@ -40,9 +40,8 @@ pub struct Rbatis {
     pub log_plugin: Arc<Box<dyn LogPlugin>>,
     // version lock plugin
     pub version_lock_plugin: Option<Box<dyn VersionLockPlugin>>,
-
     // sql param binder
-    pub encoder: Option<fn(q: &mut DBQuery, arg: &serde_json::Value) -> crate::Result<()>>,
+    pub encoder: fn(q: &mut DBQuery, arg: &serde_json::Value) -> crate::Result<()>,
 }
 
 impl Debug for Rbatis {
@@ -106,7 +105,10 @@ impl Rbatis {
             logic_plugin: option.logic_plugin,
             log_plugin: option.log_plugin,
             version_lock_plugin: None,
-            encoder: None,
+            encoder: |q,arg|{
+                q.bind_value(arg)?;
+                Ok(())
+            },
         };
     }
 
