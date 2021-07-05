@@ -48,6 +48,11 @@ pub struct Rbatis {
 impl Debug for Rbatis {
     fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
         f.debug_struct("Rbatis")
+            .field("pool",&self.pool)
+            .field("page_plugin",&self.page_plugin)
+            .field("sql_intercepts",&self.sql_intercepts)
+            .field("logic_plugin",&self.logic_plugin)
+            .field("version_lock_plugin",&self.version_lock_plugin)
             .finish()
     }
 }
