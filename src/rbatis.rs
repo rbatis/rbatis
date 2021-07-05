@@ -23,9 +23,10 @@ use crate::sql::PageLimit;
 use crate::utils::error_util::ToResult;
 use crate::utils::string_util;
 use crate::wrapper::Wrapper;
+use std::fmt::{Debug, Formatter};
 
 /// rbatis engine
-#[derive(Debug)]
+// #[derive(Debug)]
 pub struct Rbatis {
     // the connection pool,use OnceCell init this
     pub pool: OnceCell<DBPool>,
@@ -39,7 +40,18 @@ pub struct Rbatis {
     pub log_plugin: Arc<Box<dyn LogPlugin>>,
     // version lock plugin
     pub version_lock_plugin: Option<Box<dyn VersionLockPlugin>>,
+
+    // sql param binder
+    pub binder: Option<fn(q: &mut DBQuery, arg: &serde_json::Value) -> crate::Result<()>>,
 }
+
+impl Debug for Rbatis {
+    fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
+        f.debug_struct("Rbatis")
+            .finish()
+    }
+}
+
 
 impl Default for Rbatis {
     fn default() -> Rbatis {
@@ -89,6 +101,7 @@ impl Rbatis {
             logic_plugin: option.logic_plugin,
             log_plugin: option.log_plugin,
             version_lock_plugin: None,
+            binder: None,
         };
     }
 

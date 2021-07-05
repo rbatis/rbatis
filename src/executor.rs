@@ -7,7 +7,7 @@ use serde::de::DeserializeOwned;
 use serde::Serialize;
 use serde_json::Value;
 
-use crate::core::db::{DBPool, DBPoolConn, DBQuery, DBTx, DBQueryBind};
+use crate::core::db::{DBPool, DBPoolConn, DBQuery, DBTx};
 use crate::core::Error;
 use crate::crud::{CRUD, CRUDMut};
 use crate::DriverType;
@@ -15,6 +15,7 @@ use crate::plugin::page::{IPageRequest, Page};
 use crate::rbatis::Rbatis;
 use crate::utils::string_util;
 use futures::executor::block_on;
+
 
 #[async_trait]
 pub trait RbatisRef {
@@ -32,8 +33,14 @@ pub trait RbatisRef {
         arg: &Vec<serde_json::Value>,
     ) -> Result<DBQuery<'arg>, Error> {
         let mut q: DBQuery = DBPool::make_db_query(driver_type, sql)?;
-        for x in arg {
-            q.bind_value(x)?;
+        if let Some(binder) = self.get_rbatis().binder {
+            for x in arg {
+                binder(&mut q, x)?;
+            }
+        } else {
+            for x in arg {
+                q.bind_value(x)?;
+            }
         }
         return Ok(q);
     }
