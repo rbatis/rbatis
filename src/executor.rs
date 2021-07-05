@@ -33,14 +33,8 @@ pub trait RbatisRef {
         arg: &Vec<serde_json::Value>,
     ) -> Result<DBQuery<'arg>, Error> {
         let mut q: DBQuery = DBPool::make_db_query(driver_type, sql)?;
-        if let Some(binder) = self.get_rbatis().encoder {
-            for x in arg {
-                binder(&mut q, x)?;
-            }
-        } else {
-            for x in arg {
-                q.bind_value(x)?;
-            }
+        for x in arg {
+            (self.get_rbatis().encoder)(&mut q,x)?;
         }
         return Ok(q);
     }
