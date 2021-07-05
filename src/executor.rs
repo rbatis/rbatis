@@ -33,7 +33,7 @@ pub trait RbatisRef {
     ) -> Result<DBQuery<'arg>, Error> {
         let mut q: DBQuery = DBPool::make_db_query(driver_type, sql)?;
         for x in arg {
-            q.bind_value(x);
+            q.bind_value(x)?;
         }
         return Ok(q);
     }
