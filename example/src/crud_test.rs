@@ -239,7 +239,7 @@ mod test {
         };
 
         let w = rb.new_wrapper().eq("id", "12312");
-        let r = rb.update_by_wrapper(&mut activity, &w, &[Skip::Value(&Value::Null), Skip::Column("id")]).await;
+        let r = rb.update_by_wrapper(&mut activity, &w, &[Skip::Value(Value::Null), Skip::Column("id")]).await;
         if r.is_err() {
             println!("{}", r.err().unwrap().to_string());
         }
