@@ -144,11 +144,11 @@ async fn main() {
     delete_flag: Some(1),
   };
   /// saving
-  rb.save(&activity).await;
+  rb.save(&activity,&[]).await;
 //Exec ==> INSERT INTO biz_activity (create_time,delete_flag,h5_banner_img,h5_link,id,name,pc_banner_img,pc_link,remark,sort,status,version) VALUES ( ? , ? , ? , ? , ? , ? , ? , ? , ? , ? , ? , ? )
 
   /// batch saving
-  rb.save_batch(&vec![activity]).await;
+  rb.save_batch(&vec![activity],&[]).await;
 //Exec ==> INSERT INTO biz_activity (create_time,delete_flag,h5_banner_img,h5_link,id,name,pc_banner_img,pc_link,remark,sort,status,version) VALUES ( ? , ? , ? , ? , ? , ? , ? , ? , ? , ? , ? , ? ),( ? , ? , ? , ? , ? , ? , ? , ? , ? , ? , ? , ? )
 
   /// The query, Option wrapper, is None if the data is not found
