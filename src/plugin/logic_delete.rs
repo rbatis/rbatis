@@ -5,7 +5,7 @@ use serde_json::Value;
 use crate::core::db::DriverType;
 use crate::core::Error;
 use crate::sql::rule::SqlRule;
-use crate::crud::CRUDTable;
+use crate::crud::{CRUDTable, Skip};
 use std::ops::{Deref, DerefMut};
 use std::collections::HashMap;
 use serde::{Serialize, Deserialize, Serializer, Deserializer};
@@ -169,8 +169,9 @@ impl<T> CRUDTable for TableNoLogic<T> where T: CRUDTable {
         &self,
         db_type: &DriverType,
         index: &mut usize,
+        skips: &[Skip]
     ) -> crate::Result<(String, String, Vec<serde_json::Value>)> {
-        T::make_value_sql_arg(&self.table, db_type, index)
+        T::make_value_sql_arg(&self.table, db_type, index,skips)
     }
 }
 

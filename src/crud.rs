@@ -101,6 +101,7 @@ pub trait CRUDTable: Send + Sync + Serialize + DeserializeOwned {
         &self,
         db_type: &DriverType,
         index: &mut usize,
+        skips: &[Skip],
     ) -> Result<(String, String, Vec<serde_json::Value>)> {
         let mut value_sql = String::new();
         let mut arr = vec![];
@@ -117,8 +118,37 @@ pub trait CRUDTable: Send + Sync + Serialize + DeserializeOwned {
         }
         let mut column_sql = String::new();
         for column in columns {
+            let mut do_continue = false;
             let column = crate::utils::string_util::un_packing_string(column);
+            for x in skips {
+                match x {
+                    Skip::Column(skip_column) => {
+                        if column.eq(*skip_column) {
+                            do_continue = true;
+                            break;
+                        }
+                    }
+                    _ => {}
+                }
+            }
+            if do_continue {
+                continue;
+            }
             let v = map.get(column).unwrap_or(&serde_json::Value::Null);
+            for x in skips {
+                match x {
+                    Skip::Value(skip_value) => {
+                        if v.eq(*skip_value) {
+                            do_continue = true;
+                            break;
+                        }
+                    }
+                    _ => {}
+                }
+            }
+            if do_continue {
+                continue;
+            }
             //cast convert
             column_sql = column_sql + column + ",";
             let mut data = String::new();
@@ -179,13 +209,14 @@ impl<T> CRUDTable for Option<T>
         &self,
         db_type: &DriverType,
         index: &mut usize,
+        skips: &[Skip],
     ) -> Result<(String, String, Vec<serde_json::Value>)> {
         if self.is_none() {
             return Err(crate::core::Error::from(
                 "[rbatis] can not make_sql_arg() for None value!",
             ));
         }
-        T::make_value_sql_arg(self.as_ref().unwrap(), db_type, index)
+        T::make_value_sql_arg(self.as_ref().unwrap(), db_type, index, skips)
     }
 }
 
@@ -219,6 +250,7 @@ pub trait CRUD {
         &self,
         table: &T,
         w: &Wrapper,
+        skips: &[Skip],
     ) -> Result<DBExecResult>
         where
             T: CRUDTable;
@@ -332,6 +364,7 @@ pub trait CRUDMut: ExecutorMut {
         &mut self,
         table: &T,
         w: &Wrapper,
+        skips: &[Skip],
     ) -> Result<DBExecResult>
         where
             T: CRUDTable,
@@ -341,7 +374,7 @@ pub trait CRUDMut: ExecutorMut {
         } else {
             let mut w = w.clone();
             let mut index = 0;
-            let (columns, column_values, args) = table.make_value_sql_arg(&self.driver_type()?, &mut index)?;
+            let (columns, column_values, args) = table.make_value_sql_arg(&self.driver_type()?, &mut index, skips)?;
             let table_name = choose_dyn_table_name::<T>(&w);
             w = w.insert_into(&table_name, &columns, &column_values);
             for x in args {
@@ -358,7 +391,7 @@ pub trait CRUDMut: ExecutorMut {
     {
         let mut index = 0;
         let (columns, values, args) =
-            table.make_value_sql_arg(&self.driver_type()?, &mut index)?;
+            table.make_value_sql_arg(&self.driver_type()?, &mut index, &[])?;
         let sql = format!(
             "{} {} ({}) {} ({})",
             crate::sql::TEMPLATE.insert_into.value,
@@ -393,7 +426,7 @@ pub trait CRUDMut: ExecutorMut {
         let mut field_index = 0;
         for x in tables {
             let (columns, values, args) =
-                x.make_value_sql_arg(&self.driver_type()?, &mut field_index)?;
+                x.make_value_sql_arg(&self.driver_type()?, &mut field_index, &[])?;
             if column_sql.is_empty() {
                 column_sql = columns;
             }
@@ -868,10 +901,10 @@ fn make_select_sql<T>(rb: &Rbatis, column: &str, w: &Wrapper) -> Result<String>
 
 #[async_trait]
 impl CRUD for Rbatis {
-    async fn save_by_wrapper<T>(&self, table: &T, w: &Wrapper) -> Result<DBExecResult> where
+    async fn save_by_wrapper<T>(&self, table: &T, w: &Wrapper, skips: &[Skip]) -> Result<DBExecResult> where
         T: CRUDTable {
         let mut conn = self.acquire().await?;
-        conn.save_by_wrapper(table, w).await
+        conn.save_by_wrapper(table, w, skips).await
     }
 
     async fn save<T>(&self, table: &T) -> Result<DBExecResult> where
@@ -1065,8 +1098,9 @@ impl<T, P> CRUDTable for DynTableColumn<T, P> where T: CRUDTable, P: TableColumn
         &self,
         db_type: &DriverType,
         index: &mut usize,
+        skips: &[Skip],
     ) -> Result<(String, String, Vec<serde_json::Value>)> {
-        T::make_value_sql_arg(self, db_type, index)
+        T::make_value_sql_arg(self, db_type, index, skips)
     }
 
     /// return cast chain
