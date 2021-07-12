@@ -22,6 +22,10 @@ path = "src/hyper/main.rs"
 name = "warp"
 path = "src/warp/main.rs"
 
+[[bin]]
+name = "rocket"
+path = "src/rocket/main.rs"
+
 [dependencies]
 #serde and base types
 serde = { version = "1", features = ["derive"] }
@@ -49,3 +53,4 @@ actix-rt = "1.0"
 hyper = "0.14"
 tide = "0.16"
 warp = "0.3"
+rocket = "0.5.0-rc.1"
