@@ -1,6 +1,6 @@
 use serde_json::Number;
 use std::fmt::Debug;
-use crate::crud::CRUDTable;
+use crate::crud::{CRUDTable, Skip};
 use serde::{Serialize, Deserialize, Serializer, Deserializer};
 use crate::DriverType;
 use std::collections::HashMap;
@@ -122,8 +122,9 @@ impl<T> CRUDTable for TableNoVersion<T> where T: CRUDTable {
         &self,
         db_type: &DriverType,
         index: &mut usize,
+        skips: &[Skip],
     ) -> crate::Result<(String, String, Vec<serde_json::Value>)> {
-        T::make_value_sql_arg(&self.table, db_type, index)
+        T::make_value_sql_arg(&self.table, db_type, index,skips)
     }
 }
 
