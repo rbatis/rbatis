@@ -5,6 +5,7 @@ mod test {
     use rbatis::executor::{Executor, RbatisRef, RBatisTxExecutor, ExecutorMut};
     use rbatis::core::db::DBExecResult;
     use std::cell::Cell;
+    use async_std::sync::Mutex;
 
     //示例-Rbatis使用事务
     #[tokio::test]
@@ -61,10 +62,10 @@ mod test {
     }
 
     pub async fn forget_commit(rb: &Rbatis) -> rbatis::core::Result<()> {
-        let mut is_success = Cell::new(false);
+        let mut is_success = Mutex::new(Cell::new(false));
         // tx will be commit.when func end
         let mut tx = rb.acquire_begin().await?.defer_async(|tx| async {
-            if is_success.get() == false {
+            if is_success.lock().await.get().eq(&false) {
                 tx.rollback().await;
                 println!("tx rollback success!");
             } else {
@@ -75,7 +76,7 @@ mod test {
             .exec("update biz_activity set name = '6' where id = 1;", &vec![])
             .await;
         if v.is_ok() {
-            is_success.set(true);
+            is_success.lock().await.set(true);
         }
         return Ok(());
     }
