@@ -254,12 +254,12 @@ pub trait CRUD {
             T: CRUDTable, C: Serialize + Send + Sync;
 
     /// update_by_wrapper
-    /// skips: use &["id","null"] will skip id column and null value param
+    /// skips: use &[Skip::Null] will skip id column and null value param
     async fn update_by_wrapper<T>(
         &self,
         table: &mut T,
         w: &Wrapper,
-        skips: &[&str],
+        skips: &[Skip],
     ) -> Result<u64>
         where
             T: CRUDTable;
@@ -543,12 +543,12 @@ pub trait CRUDMut: ExecutorMut {
     }
 
     /// update_by_wrapper
-    /// skips: use &["id","null"] will skip id column and null value param
+    /// skips: use &[Skip::Value(&serde_json::Value::Null), Skip::Column("id"), Skip::Column(column)] will skip id column and null value param
     async fn update_by_wrapper<T>(
         &mut self,
         table: &mut T,
         w: &Wrapper,
-        skips: &[&str],
+        skips: &[Skip],
     ) -> Result<u64>
         where
             T: CRUDTable,
@@ -570,19 +570,19 @@ pub trait CRUDMut: ExecutorMut {
         }
         let null = serde_json::Value::Null;
         let mut sets = String::new();
-        let mut skip_null_value = false;
-        for x in skips {
-            if "null".eq(*x) {
-                skip_null_value = true;
-            }
-        }
 
         for column in columns_vec {
             //filter
             let mut is_continue = false;
             for x in skips {
-                if column.eq(*x) {
-                    is_continue = true;
+                match x {
+                    Skip::Column(skip_column) => {
+                        if skip_column.eq(&column) {
+                            is_continue = true;
+                            break;
+                        }
+                    }
+                    _ => {}
                 }
             }
             if is_continue {
@@ -590,10 +590,21 @@ pub trait CRUDMut: ExecutorMut {
             }
             let mut v = map.get(column).unwrap_or_else(|| &null).clone();
             //filter null
-            if skip_null_value && v.is_null() {
+            let is_null = v.is_null();
+            for x in skips {
+                match x {
+                    Skip::Value(skip_value) => {
+                        if (*skip_value).eq(&v) {
+                            is_continue = true;
+                            break;
+                        }
+                    }
+                    _ => {}
+                }
+            }
+            if is_continue {
                 continue;
             }
-
             let mut data = String::new();
             driver_type.stmt_convert(args.len(), &mut data);
             T::do_format_column(
@@ -690,7 +701,7 @@ pub trait CRUDMut: ExecutorMut {
             &rb
                 .new_wrapper_table::<T>()
                 .eq(column, value),
-            &["null", "id", column],
+            &[Skip::Value(&Value::Null), Skip::Column("id"), Skip::Column(column)],
         )
             .await
     }
@@ -758,7 +769,7 @@ pub trait CRUDMut: ExecutorMut {
         where
             T: CRUDTable, C: Serialize + Send + Sync,
     {
-        if column_values.is_empty(){
+        if column_values.is_empty() {
             return Ok(vec![]);
         }
         let w = self.get_rbatis().new_wrapper_table::<T>().in_array(&column, column_values);
@@ -898,8 +909,8 @@ impl CRUD for Rbatis {
     }
 
     /// update_by_wrapper
-    /// skips: use &["id","null"] will skip id column and null value param
-    async fn update_by_wrapper<T>(&self, table: &mut T, w: &Wrapper, skips: &[&str]) -> Result<u64> where
+    /// skips: use &[Skip::Value(&serde_json::Value::Null), Skip::Column("id"), Skip::Column(column)] will skip id column and null value param
+    async fn update_by_wrapper<T>(&self, table: &mut T, w: &Wrapper, skips: &[Skip]) -> Result<u64> where
         T: CRUDTable {
         let mut conn = self.acquire().await?;
         conn.update_by_wrapper(table, w, skips).await
@@ -975,4 +986,13 @@ impl CRUD for Rbatis {
         let mut conn = self.acquire().await?;
         conn.fetch_page(sql, args, page_request).await
     }
+}
+
+
+/// choose skip type
+pub enum Skip<'a> {
+    ///skip column
+    Column(&'a str),
+    ///skip serde json value ref
+    Value(&'a serde_json::Value),
 }

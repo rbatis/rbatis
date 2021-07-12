@@ -5,12 +5,13 @@ mod test {
 
     use rbatis::core::value::DateTimeNow;
     use rbatis::core::Error;
-    use rbatis::crud::{CRUDMut, CRUD};
+    use rbatis::crud::{CRUDMut, CRUD, Skip};
     use rbatis::plugin::logic_delete::{RbatisLogicDeletePlugin, TableNoLogic};
     use rbatis::plugin::page::{Page, PageRequest};
     use rbatis::plugin::snowflake::new_snowflake_id;
     use rbatis::plugin::version_lock::RbatisVersionLockPlugin;
     use rbatis::rbatis::Rbatis;
+    use serde_json::Value;
 
     ///Or another way to write it
     // #[crud_table(table_name:biz_activity)]
@@ -238,7 +239,7 @@ mod test {
         };
 
         let w = rb.new_wrapper().eq("id", "12312");
-        let r = rb.update_by_wrapper(&mut activity, &w, &["id","null"]).await;
+        let r = rb.update_by_wrapper(&mut activity, &w, &[Skip::Value(&Value::Null), Skip::Column("id")]).await;
         if r.is_err() {
             println!("{}", r.err().unwrap().to_string());
         }
