@@ -1000,35 +1000,36 @@ pub enum Skip<'a> {
 }
 
 
-pub trait ColumnProvider: Send + Sync {
+pub trait TableColumnProvider: Send + Sync {
+    fn table_name() -> String;
     fn table_columns() -> String;
 }
 
 /// DynColumn , can custom insert,update column
-pub struct DynColumn<T: CRUDTable, P: ColumnProvider> {
+pub struct DynTableColumn<T: CRUDTable, P: TableColumnProvider> {
     pub inner: T,
     pub p: PhantomData<P>,
 }
 
-impl<T, P> Serialize for DynColumn<T, P> where T: CRUDTable, P: ColumnProvider {
+impl<T, P> Serialize for DynTableColumn<T, P> where T: CRUDTable, P: TableColumnProvider {
     fn serialize<S>(&self, serializer: S) -> std::result::Result<<S as Serializer>::Ok, <S as Serializer>::Error> where
         S: Serializer {
         T::serialize(&self.inner, serializer)
     }
 }
 
-impl<'de, T, P> Deserialize<'de> for DynColumn<T, P> where T: CRUDTable, P: ColumnProvider {
+impl<'de, T, P> Deserialize<'de> for DynTableColumn<T, P> where T: CRUDTable, P: TableColumnProvider {
     fn deserialize<D>(deserializer: D) -> std::result::Result<Self, <D as Deserializer<'de>>::Error> where
         D: Deserializer<'de> {
         let result = T::deserialize(deserializer)?;
-        return Ok(DynColumn {
+        return Ok(DynTableColumn {
             inner: result,
             p: Default::default(),
         });
     }
 }
 
-impl<T, P> Deref for DynColumn<T, P> where T: CRUDTable, P: ColumnProvider {
+impl<T, P> Deref for DynTableColumn<T, P> where T: CRUDTable, P: TableColumnProvider {
     type Target = T;
 
     fn deref(&self) -> &Self::Target {
@@ -1036,13 +1037,13 @@ impl<T, P> Deref for DynColumn<T, P> where T: CRUDTable, P: ColumnProvider {
     }
 }
 
-impl<T, P> DerefMut for DynColumn<T, P> where T: CRUDTable, P: ColumnProvider {
+impl<T, P> DerefMut for DynTableColumn<T, P> where T: CRUDTable, P: TableColumnProvider {
     fn deref_mut(&mut self) -> &mut Self::Target {
         &mut self.inner
     }
 }
 
-impl<T, P> CRUDTable for DynColumn<T, P> where T: CRUDTable, P: ColumnProvider {
+impl<T, P> CRUDTable for DynTableColumn<T, P> where T: CRUDTable, P: TableColumnProvider {
     fn table_columns() -> String {
         P::table_columns()
     }
@@ -1051,13 +1052,12 @@ impl<T, P> CRUDTable for DynColumn<T, P> where T: CRUDTable, P: ColumnProvider {
     fn is_use_plugin(plugin_name: &str) -> bool { T::is_use_plugin(plugin_name) }
 
     fn table_name() -> String {
-        T::table_name()
+        P::table_name()
     }
-
 
     ///format column
     fn do_format_column(driver_type: &DriverType, column: &str, data: &mut String) {
-       T::do_format_column(driver_type,column,data)
+        T::do_format_column(driver_type, column, data)
     }
 
     ///return (columns_sql,columns_values_sql,args)
@@ -1066,7 +1066,7 @@ impl<T, P> CRUDTable for DynColumn<T, P> where T: CRUDTable, P: ColumnProvider {
         db_type: &DriverType,
         index: &mut usize,
     ) -> Result<(String, String, Vec<serde_json::Value>)> {
-        T::make_value_sql_arg(self,db_type,index)
+        T::make_value_sql_arg(self, db_type, index)
     }
 
     /// return cast chain
@@ -1075,13 +1075,13 @@ impl<T, P> CRUDTable for DynColumn<T, P> where T: CRUDTable, P: ColumnProvider {
     fn formats(
         driver_type: &crate::core::db::DriverType,
     ) -> HashMap<String, fn(arg: &str) -> String> {
-       T::formats(driver_type)
+        T::formats(driver_type)
     }
 
 
     /// return table column value
     /// If a macro is used, the method is overridden by the macro
     fn get(&self, column: &str) -> serde_json::Value {
-        T::get(self,column)
+        T::get(self, column)
     }
 }
