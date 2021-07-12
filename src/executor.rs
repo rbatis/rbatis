@@ -34,7 +34,7 @@ pub trait RbatisRef {
     ) -> Result<DBQuery<'arg>, Error> {
         let mut q: DBQuery = DBPool::make_db_query(driver_type, sql)?;
         for x in arg {
-            (self.get_rbatis().encoder)(&mut q,x)?;
+            (self.get_rbatis().encoder)(&mut q, x)?;
         }
         return Ok(q);
     }
@@ -209,7 +209,7 @@ impl<'a> RBatisTxExecutor<'a> {
 
 pub struct RBatisTxExecutorGuard<'a> {
     pub tx: Option<RBatisTxExecutor<'a>>,
-    pub callback: Box<dyn FnMut(RBatisTxExecutor<'a>) + 'a>,
+    pub callback: Box<dyn FnMut(RBatisTxExecutor<'a>) + Send + 'a>,
 }
 
 impl<'a> RBatisTxExecutorGuard<'a> {
@@ -224,7 +224,7 @@ impl<'a> RBatisTxExecutor<'a> {
     ///     tx.defer(|tx| {});
     ///
     pub fn defer<Call>(self, callback: Call) -> RBatisTxExecutorGuard<'a>
-        where Call: 'a + FnMut(Self) {
+        where Call: 'a + FnMut(Self) + Send {
         RBatisTxExecutorGuard {
             tx: Some(self),
             callback: Box::new(callback),
@@ -239,7 +239,7 @@ impl<'a> RBatisTxExecutor<'a> {
     ///
     pub fn defer_async<R, F>(self, mut callback: F) -> RBatisTxExecutorGuard<'a>
         where R: 'a + Future<Output=()>,
-              F: 'a + FnMut(RBatisTxExecutor<'a>) -> R {
+              F: 'a + Send + FnMut(RBatisTxExecutor<'a>) -> R {
         RBatisTxExecutorGuard {
             tx: Some(self),
             callback: Box::new(move |arg| {
