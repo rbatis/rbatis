@@ -21,6 +21,7 @@ use crate::utils::string_util::to_snake_name;
 use crate::wrapper::Wrapper;
 use std::marker::PhantomData;
 use std::ops::{Deref, DerefMut};
+use serde_json::value::Value::Null;
 
 /// DataBase Table Model trait
 ///
@@ -391,7 +392,7 @@ pub trait CRUDMut: ExecutorMut {
     {
         let mut index = 0;
         let (columns, values, args) =
-            table.make_value_sql_arg(&self.driver_type()?, &mut index, &[])?;
+            table.make_value_sql_arg(&self.driver_type()?, &mut index, &[Skip::Value(&Null)])?;
         let sql = format!(
             "{} {} ({}) {} ({})",
             crate::sql::TEMPLATE.insert_into.value,
@@ -426,7 +427,7 @@ pub trait CRUDMut: ExecutorMut {
         let mut field_index = 0;
         for x in tables {
             let (columns, values, args) =
-                x.make_value_sql_arg(&self.driver_type()?, &mut field_index, &[])?;
+                x.make_value_sql_arg(&self.driver_type()?, &mut field_index, &[Skip::Value(&Null)])?;
             if column_sql.is_empty() {
                 column_sql = columns;
             }
