@@ -260,7 +260,7 @@ pub trait CRUD {
         where
             T: CRUDTable;
 
-    async fn save_batch<T>(&self, tables: &[T],skips:&[Skip]) -> Result<DBExecResult>
+    async fn save_batch<T>(&self, tables: &[T], skips: &[Skip]) -> Result<DBExecResult>
         where
             T: CRUDTable;
 
@@ -270,7 +270,7 @@ pub trait CRUD {
         &self,
         tables: &[T],
         slice_len: usize,
-        skips:&[Skip]
+        skips: &[Skip],
     ) -> Result<DBExecResult>
         where
             T: CRUDTable;
@@ -916,16 +916,16 @@ impl CRUD for Rbatis {
         conn.save(table, skips).await
     }
 
-    async fn save_batch<T>(&self, tables: &[T],skips:&[Skip]) -> Result<DBExecResult> where
+    async fn save_batch<T>(&self, tables: &[T], skips: &[Skip]) -> Result<DBExecResult> where
         T: CRUDTable {
         let mut conn = self.acquire().await?;
-        conn.save_batch(tables,skips).await
+        conn.save_batch(tables, skips).await
     }
 
-    async fn save_batch_slice<T>(&self, tables: &[T], slice_len: usize,skips:&[Skip]) -> Result<DBExecResult> where
+    async fn save_batch_slice<T>(&self, tables: &[T], slice_len: usize, skips: &[Skip]) -> Result<DBExecResult> where
         T: CRUDTable {
         let mut conn = self.acquire().await?;
-        conn.save_batch_slice(tables, slice_len,skips).await
+        conn.save_batch_slice(tables, slice_len, skips).await
     }
 
     async fn remove_by_wrapper<T>(&self, w: &Wrapper) -> Result<u64> where
