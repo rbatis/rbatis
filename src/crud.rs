@@ -139,7 +139,7 @@ pub trait CRUDTable: Send + Sync + Serialize + DeserializeOwned {
             for x in skips {
                 match x {
                     Skip::Value(skip_value) => {
-                        if v.eq(*skip_value) {
+                        if v.eq(skip_value) {
                             do_continue = true;
                             break;
                         }
@@ -739,7 +739,7 @@ pub trait CRUDMut: ExecutorMut {
             &rb
                 .new_wrapper_table::<T>()
                 .eq(column, value),
-            &[Skip::Value(&Value::Null), Skip::Column("id"), Skip::Column(column)],
+            &[Skip::Value(Value::Null), Skip::Column("id"), Skip::Column(column)],
         )
             .await
     }
@@ -1032,7 +1032,14 @@ pub enum Skip<'a> {
     ///skip column
     Column(&'a str),
     ///skip serde json value ref
-    Value(&'a serde_json::Value),
+    Value(serde_json::Value),
+}
+
+impl<'a> Skip<'a> {
+    /// from serialize value
+    pub fn value<T>(arg: T) -> Self where T: Serialize {
+        Self::Value(serde_json::json!(arg))
+    }
 }
 
 
