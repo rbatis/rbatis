@@ -6,7 +6,7 @@ use crate::core::db::DriverType;
 use crate::core::Error;
 use crate::sql::rule::SqlRule;
 use crate::crud::CRUDTable;
-use std::ops::Deref;
+use std::ops::{Deref, DerefMut};
 use std::collections::HashMap;
 use serde::{Serialize, Deserialize, Serializer, Deserializer};
 
@@ -182,6 +182,11 @@ impl<T> Deref for TableNoLogic<T> where T: CRUDTable {
     }
 }
 
+impl<T> DerefMut for TableNoLogic<T> where T: CRUDTable {
+    fn deref_mut(&mut self) -> &mut Self::Target {
+        &mut self.table
+    }
+}
 
 impl<T> From<T> for TableNoLogic<T> where T: CRUDTable {
     fn from(arg: T) -> Self {
