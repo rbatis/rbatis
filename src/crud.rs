@@ -256,11 +256,11 @@ pub trait CRUD {
         where
             T: CRUDTable;
 
-    async fn save<T>(&self, table: &T) -> Result<DBExecResult>
+    async fn save<T>(&self, table: &T, skips: &[Skip]) -> Result<DBExecResult>
         where
             T: CRUDTable;
 
-    async fn save_batch<T>(&self, tables: &[T]) -> Result<DBExecResult>
+    async fn save_batch<T>(&self, tables: &[T],skips:&[Skip]) -> Result<DBExecResult>
         where
             T: CRUDTable;
 
@@ -270,6 +270,7 @@ pub trait CRUD {
         &self,
         tables: &[T],
         slice_len: usize,
+        skips:&[Skip]
     ) -> Result<DBExecResult>
         where
             T: CRUDTable;
@@ -386,13 +387,13 @@ pub trait CRUDMut: ExecutorMut {
     }
 
     /// save one entity to database
-    async fn save<T>(&mut self, table: &T) -> Result<DBExecResult>
+    async fn save<T>(&mut self, table: &T, skips: &[Skip]) -> Result<DBExecResult>
         where
             T: CRUDTable,
     {
         let mut index = 0;
         let (columns, values, args) =
-            table.make_value_sql_arg(&self.driver_type()?, &mut index, &[Skip::Value(&Null)])?;
+            table.make_value_sql_arg(&self.driver_type()?, &mut index, skips)?;
         let sql = format!(
             "{} {} ({}) {} ({})",
             crate::sql::TEMPLATE.insert_into.value,
@@ -411,7 +412,7 @@ pub trait CRUDMut: ExecutorMut {
     /// [rbatis] Exec ==>   insert into biz_activity (id,name,version) values ( ? , ? , ?),( ? , ? , ?)
     ///
     ///
-    async fn save_batch<T>(&mut self, tables: &[T]) -> Result<DBExecResult>
+    async fn save_batch<T>(&mut self, tables: &[T], skips: &[Skip]) -> Result<DBExecResult>
         where
             T: CRUDTable,
     {
@@ -427,7 +428,7 @@ pub trait CRUDMut: ExecutorMut {
         let mut field_index = 0;
         for x in tables {
             let (columns, values, args) =
-                x.make_value_sql_arg(&self.driver_type()?, &mut field_index, &[Skip::Value(&Null)])?;
+                x.make_value_sql_arg(&self.driver_type()?, &mut field_index, skips)?;
             if column_sql.is_empty() {
                 column_sql = columns;
             }
@@ -460,12 +461,13 @@ pub trait CRUDMut: ExecutorMut {
         &mut self,
         tables: &[T],
         slice_len: usize,
+        skips: &[Skip],
     ) -> Result<DBExecResult>
         where
             T: CRUDTable,
     {
         if slice_len == 0 || tables.len() <= slice_len {
-            return self.save_batch(tables).await;
+            return self.save_batch(tables, skips).await;
         } else {
             let mut temp_result = DBExecResult {
                 rows_affected: 0,
@@ -482,7 +484,7 @@ pub trait CRUDMut: ExecutorMut {
                     temp_len = total;
                 }
                 let temp = &tables[page * slice_len..temp_len];
-                let result = self.save_batch(temp).await?;
+                let result = self.save_batch(temp, skips).await?;
                 temp_result.last_insert_id = result.last_insert_id;
                 temp_result.rows_affected = result.rows_affected + temp_result.rows_affected;
             }
@@ -908,22 +910,22 @@ impl CRUD for Rbatis {
         conn.save_by_wrapper(table, w, skips).await
     }
 
-    async fn save<T>(&self, table: &T) -> Result<DBExecResult> where
+    async fn save<T>(&self, table: &T, skips: &[Skip]) -> Result<DBExecResult> where
         T: CRUDTable {
         let mut conn = self.acquire().await?;
-        conn.save(table).await
+        conn.save(table, skips).await
     }
 
-    async fn save_batch<T>(&self, tables: &[T]) -> Result<DBExecResult> where
+    async fn save_batch<T>(&self, tables: &[T],skips:&[Skip]) -> Result<DBExecResult> where
         T: CRUDTable {
         let mut conn = self.acquire().await?;
-        conn.save_batch(tables).await
+        conn.save_batch(tables,skips).await
     }
 
-    async fn save_batch_slice<T>(&self, tables: &[T], slice_len: usize) -> Result<DBExecResult> where
+    async fn save_batch_slice<T>(&self, tables: &[T], slice_len: usize,skips:&[Skip]) -> Result<DBExecResult> where
         T: CRUDTable {
         let mut conn = self.acquire().await?;
-        conn.save_batch_slice(tables, slice_len).await
+        conn.save_batch_slice(tables, slice_len,skips).await
     }
 
     async fn remove_by_wrapper<T>(&self, w: &Wrapper) -> Result<u64> where
@@ -1025,7 +1027,7 @@ impl CRUD for Rbatis {
 }
 
 
-/// choose skip type
+/// skip column or param value
 pub enum Skip<'a> {
     ///skip column
     Column(&'a str),
