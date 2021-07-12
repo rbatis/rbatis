@@ -4,7 +4,7 @@ use std::hash::Hash;
 
 use async_trait::async_trait;
 use serde::de::DeserializeOwned;
-use serde::Serialize;
+use serde::{Serialize, Serializer, Deserialize, Deserializer};
 use serde_json::{Map, Value};
 
 use crate::core::convert::{ResultCodec, StmtConvert};
@@ -19,6 +19,8 @@ use crate::rbatis::Rbatis;
 use crate::sql::rule::SqlRule;
 use crate::utils::string_util::to_snake_name;
 use crate::wrapper::Wrapper;
+use std::marker::PhantomData;
+use std::ops::{Deref, DerefMut};
 
 /// DataBase Table Model trait
 ///
@@ -995,4 +997,91 @@ pub enum Skip<'a> {
     Column(&'a str),
     ///skip serde json value ref
     Value(&'a serde_json::Value),
+}
+
+
+pub trait ColumnProvider: Send + Sync {
+    fn table_columns() -> String;
+}
+
+/// DynColumn , can custom insert,update column
+pub struct DynColumn<T: CRUDTable, P: ColumnProvider> {
+    pub inner: T,
+    pub p: PhantomData<P>,
+}
+
+impl<T, P> Serialize for DynColumn<T, P> where T: CRUDTable, P: ColumnProvider {
+    fn serialize<S>(&self, serializer: S) -> std::result::Result<<S as Serializer>::Ok, <S as Serializer>::Error> where
+        S: Serializer {
+        T::serialize(&self.inner, serializer)
+    }
+}
+
+impl<'de, T, P> Deserialize<'de> for DynColumn<T, P> where T: CRUDTable, P: ColumnProvider {
+    fn deserialize<D>(deserializer: D) -> std::result::Result<Self, <D as Deserializer<'de>>::Error> where
+        D: Deserializer<'de> {
+        let result = T::deserialize(deserializer)?;
+        return Ok(DynColumn {
+            inner: result,
+            p: Default::default(),
+        });
+    }
+}
+
+impl<T, P> Deref for DynColumn<T, P> where T: CRUDTable, P: ColumnProvider {
+    type Target = T;
+
+    fn deref(&self) -> &Self::Target {
+        &self.inner
+    }
+}
+
+impl<T, P> DerefMut for DynColumn<T, P> where T: CRUDTable, P: ColumnProvider {
+    fn deref_mut(&mut self) -> &mut Self::Target {
+        &mut self.inner
+    }
+}
+
+impl<T, P> CRUDTable for DynColumn<T, P> where T: CRUDTable, P: ColumnProvider {
+    fn table_columns() -> String {
+        P::table_columns()
+    }
+
+    /// is enable use plugin
+    fn is_use_plugin(plugin_name: &str) -> bool { T::is_use_plugin(plugin_name) }
+
+    fn table_name() -> String {
+        T::table_name()
+    }
+
+
+    ///format column
+    fn do_format_column(driver_type: &DriverType, column: &str, data: &mut String) {
+       T::do_format_column(driver_type,column,data)
+    }
+
+    ///return (columns_sql,columns_values_sql,args)
+    fn make_value_sql_arg(
+        &self,
+        db_type: &DriverType,
+        index: &mut usize,
+    ) -> Result<(String, String, Vec<serde_json::Value>)> {
+        T::make_value_sql_arg(self,db_type,index)
+    }
+
+    /// return cast chain
+    /// column:format_str
+    /// for example: HashMap<"id",|arg|“{}::uuid”.to_string()>
+    fn formats(
+        driver_type: &crate::core::db::DriverType,
+    ) -> HashMap<String, fn(arg: &str) -> String> {
+       T::formats(driver_type)
+    }
+
+
+    /// return table column value
+    /// If a macro is used, the method is overridden by the macro
+    fn get(&self, column: &str) -> serde_json::Value {
+        T::get(self,column)
+    }
 }
