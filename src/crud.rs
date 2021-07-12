@@ -1044,15 +1044,15 @@ impl<T, P> DerefMut for DynTableColumn<T, P> where T: CRUDTable, P: TableColumnP
 }
 
 impl<T, P> CRUDTable for DynTableColumn<T, P> where T: CRUDTable, P: TableColumnProvider {
-    fn table_columns() -> String {
-        P::table_columns()
-    }
-
     /// is enable use plugin
     fn is_use_plugin(plugin_name: &str) -> bool { T::is_use_plugin(plugin_name) }
 
     fn table_name() -> String {
         P::table_name()
+    }
+
+    fn table_columns() -> String {
+        P::table_columns()
     }
 
     ///format column
