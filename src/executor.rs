@@ -173,8 +173,8 @@ impl RbatisRef for $t {
 
 impl_executor!(RBatisConnExecutor<'_>);
 
-impl RBatisConnExecutor<'_> {
-    pub async fn begin(&mut self) -> crate::Result<RBatisTxExecutor<'_>> {
+impl <'a>RBatisConnExecutor<'a> {
+    pub async fn begin(self) -> crate::Result<RBatisTxExecutor<'a>> {
         let tx = self.conn.begin().await?;
         return Ok(RBatisTxExecutor {
             conn: tx,
@@ -185,7 +185,7 @@ impl RBatisConnExecutor<'_> {
 
 #[derive(Debug)]
 pub struct RBatisTxExecutor<'a> {
-    pub conn: DBTx<'a>,
+    pub conn: DBTx,
     pub rb: &'a Rbatis,
 }
 
@@ -198,16 +198,16 @@ impl<'a> RBatisTxExecutor<'a> {
 impl_executor!(RBatisTxExecutor<'_>);
 
 impl<'a> RBatisTxExecutor<'a> {
-    pub async fn commit(self) -> crate::Result<()> {
+    pub async fn commit(&mut self) -> crate::Result<()> {
         return Ok(self.conn.commit().await?);
     }
-    pub async fn rollback(self) -> crate::Result<()> {
+    pub async fn rollback(&mut self) -> crate::Result<()> {
         return Ok(self.conn.rollback().await?);
     }
 }
 
 impl<'a> Deref for RBatisTxExecutor<'a> {
-    type Target = DBTx<'a>;
+    type Target = DBTx;
 
     fn deref(&self) -> &Self::Target {
         &self.conn
@@ -231,13 +231,13 @@ impl<'a> RBatisTxExecutorGuard<'a> {
         self.into()
     }
 
-    pub async fn commit(mut self) -> crate::Result<()> {
-        let tx = self.tx.take().ok_or_else(|| Error::from("[rbatis] tx is committed"))?;
+    pub async fn commit(&mut self) -> crate::Result<()> {
+        let mut tx = self.tx.as_mut().ok_or_else(|| Error::from("[rbatis] tx is committed"))?;
         return Ok(tx.commit().await?);
     }
 
-    pub async fn rollback(mut self) -> crate::Result<()> {
-        let tx = self.tx.take().ok_or_else(|| Error::from("[rbatis] tx is committed"))?;
+    pub async fn rollback(&mut self) -> crate::Result<()> {
+        let mut tx = self.tx.as_mut().ok_or_else(|| Error::from("[rbatis] tx is committed"))?;
         return Ok(tx.rollback().await?);
     }
 }
