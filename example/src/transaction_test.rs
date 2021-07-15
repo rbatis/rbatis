@@ -6,9 +6,6 @@ mod test {
     use rbatis::core::db::DBExecResult;
     use std::cell::Cell;
     use async_std::sync::Mutex;
-    use std::thread::sleep;
-    use std::time::Duration;
-    use std::sync::Arc;
 
     //示例-Rbatis使用事务
     #[tokio::test]
@@ -61,22 +58,22 @@ mod test {
         rb.link("mysql://root:123456@localhost:3306/test")
             .await
             .unwrap();
-        async_std::task::spawn(async move{
-            forget_commit(&rb).await.unwrap();
-        });
-        sleep(Duration::from_secs(2));
+        forget_commit(&rb).await.unwrap();
     }
 
     pub async fn forget_commit(rb: &Rbatis) -> rbatis::core::Result<()> {
         // tx will be commit.when func end
-        let mut tx = rb.acquire_begin().await?.defer_async(|tx| async {
-            tx.rollback().await;
-            println!("tx rollback success!");
+        let mut tx = rb.acquire_begin().await?.defer_async(|mut tx1| async move {
+            if !tx1.is_done() {
+                tx1.rollback().await;
+                println!("tx rollback success!");
+            } else {
+                println!("do success,don't need rollback!");
+            }
         });
         let v = tx
             .exec("update biz_activity set name = '6' where id = 1;", &vec![])
             .await;
-        panic!("tx will panic not commit!");
         tx.commit().await;
         return Ok(());
     }
