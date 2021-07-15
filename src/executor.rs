@@ -206,6 +206,19 @@ impl<'a> RBatisTxExecutor<'a> {
     }
 }
 
+impl <'a>Deref for RBatisTxExecutor<'a>{
+    type Target = DBTx<'a>;
+
+    fn deref(&self) -> &Self::Target {
+       &self.conn
+    }
+}
+impl <'a> DerefMut for RBatisTxExecutor<'a>{
+    fn deref_mut(&mut self) -> &mut Self::Target {
+        &mut self.conn
+    }
+}
+
 
 pub struct RBatisTxExecutorGuard<'a> {
     pub tx: Option<RBatisTxExecutor<'a>>,

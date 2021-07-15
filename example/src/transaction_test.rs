@@ -62,10 +62,10 @@ mod test {
     }
 
     pub async fn forget_commit(rb: &Rbatis) -> rbatis::core::Result<()> {
-        let mut is_success = Mutex::new(Cell::new(false));
+        //let mut is_success = Mutex::new(Cell::new(false));
         // tx will be commit.when func end
         let mut tx = rb.acquire_begin().await?.defer_async(|tx| async {
-            if is_success.lock().await.get().eq(&false) {
+            if tx.is_done() {
                 tx.rollback().await;
                 println!("tx rollback success!");
             } else {
@@ -75,9 +75,6 @@ mod test {
         let v = tx
             .exec("update biz_activity set name = '6' where id = 1;", &vec![])
             .await;
-        if v.is_ok() {
-            is_success.lock().await.set(true);
-        }
         return Ok(());
     }
 }
