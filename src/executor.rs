@@ -173,7 +173,7 @@ impl RbatisRef for $t {
 
 impl_executor!(RBatisConnExecutor<'_>);
 
-impl <'a>RBatisConnExecutor<'a> {
+impl<'a> RBatisConnExecutor<'a> {
     pub async fn begin(self) -> crate::Result<RBatisTxExecutor<'a>> {
         let tx = self.conn.begin().await?;
         return Ok(RBatisTxExecutor {
@@ -206,6 +206,10 @@ impl<'a> RBatisTxExecutor<'a> {
     }
     pub async fn rollback(&mut self) -> crate::Result<()> {
         return Ok(self.conn.rollback().await?);
+    }
+
+    pub fn take(self) -> Option<DBPoolConn> {
+        return self.conn.take();
     }
 }
 
@@ -247,6 +251,17 @@ impl<'a> RBatisTxExecutorGuard<'a> {
     pub async fn rollback(&mut self) -> crate::Result<()> {
         let mut tx = self.tx.as_mut().ok_or_else(|| Error::from("[rbatis] tx is committed"))?;
         return Ok(tx.rollback().await?);
+    }
+
+    pub fn take(self) -> Option<DBPoolConn> {
+        match self.tx {
+            None => {
+                None
+            }
+            Some(s) => {
+                s.take()
+            }
+        }
     }
 }
 
