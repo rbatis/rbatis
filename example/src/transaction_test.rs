@@ -68,13 +68,14 @@ mod test {
                 tx1.rollback().await;
                 println!("tx rollback success!");
             } else {
-                println!("do success,don't need rollback!");
+                println!("don't need rollback!");
             }
         });
         let v = tx
             .exec("update biz_activity set name = '6' where id = 1;", &vec![])
             .await;
-        tx.commit().await;
+        //if commit, print 'don't need rollback!' ,if not,print 'tx rollback success!'
+        //tx.commit().await;
         return Ok(());
     }
 }
