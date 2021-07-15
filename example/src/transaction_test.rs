@@ -65,7 +65,7 @@ mod test {
         //let mut is_success = Mutex::new(Cell::new(false));
         // tx will be commit.when func end
         let mut tx = rb.acquire_begin().await?.defer_async(|tx| async {
-            if tx.is_done() {
+            if !tx.is_done() {
                 tx.rollback().await;
                 println!("tx rollback success!");
             } else {
