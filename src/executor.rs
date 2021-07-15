@@ -91,7 +91,7 @@ impl<'a> ExecutorMut for $t {
             let q: DBQuery = self.bind_arg(&self.conn.driver_type, &sql, &args)?;
             result = self.conn.exec_prepare(q).await;
         } else {
-            result = self.conn.execute(&sql).await;
+            result = self.conn.exec(&sql).await;
         }
         if self.get_rbatis().log_plugin.is_enable() {
             match &result {
@@ -208,8 +208,8 @@ impl<'a> RBatisTxExecutor<'a> {
         return Ok(self.conn.rollback().await?);
     }
 
-    pub fn take(self) -> Option<DBPoolConn> {
-        return self.conn.take();
+    pub fn take_conn(self) -> Option<DBPoolConn> {
+        return self.conn.take_conn();
     }
 }
 
@@ -253,13 +253,13 @@ impl<'a> RBatisTxExecutorGuard<'a> {
         return Ok(tx.rollback().await?);
     }
 
-    pub fn take(self) -> Option<DBPoolConn> {
-        match self.tx {
+    pub fn take_conn(mut self) -> Option<DBPoolConn> {
+        match self.tx.take() {
             None => {
                 None
             }
             Some(s) => {
-                s.take()
+                s.take_conn()
             }
         }
     }
