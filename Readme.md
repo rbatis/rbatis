@@ -366,8 +366,7 @@ pub async fn init_rbatis() -> Rbatis {
         let v = tx
             .exec("update biz_activity set name = '6' where id = 1;", &vec![])
             .await;
-        //if commit, print 'don't need rollback!' ,if not,print 'tx rollback success!'
-        //tx.commit().await;
+        //tx.commit().await;  //if commit, print 'don't need rollback!' ,if not,print 'tx rollback success!'
         return Ok(());
     }
 ```
