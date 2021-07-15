@@ -198,6 +198,9 @@ impl<'a> RBatisTxExecutor<'a> {
 impl_executor!(RBatisTxExecutor<'_>);
 
 impl<'a> RBatisTxExecutor<'a> {
+    pub async fn begin(&mut self) -> crate::Result<()> {
+        return Ok(self.conn.begin().await?);
+    }
     pub async fn commit(&mut self) -> crate::Result<()> {
         return Ok(self.conn.commit().await?);
     }
@@ -229,6 +232,11 @@ pub struct RBatisTxExecutorGuard<'a> {
 impl<'a> RBatisTxExecutorGuard<'a> {
     pub fn as_executor(&'a mut self) -> RbatisExecutor<'a> {
         self.into()
+    }
+
+    pub async fn begin(&mut self) -> crate::Result<()> {
+        let mut tx = self.tx.as_mut().ok_or_else(|| Error::from("[rbatis] tx is committed"))?;
+        return Ok(tx.begin().await?);
     }
 
     pub async fn commit(&mut self) -> crate::Result<()> {
