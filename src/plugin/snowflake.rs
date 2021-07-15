@@ -12,6 +12,21 @@ pub struct Snowflake {
     time: AtomicI64,
 }
 
+
+impl Clone for Snowflake {
+    fn clone(&self) -> Self {
+        let sequence = self.sequence.load(Ordering::Relaxed);
+        let time = self.time.load(Ordering::Relaxed);
+        Self {
+            epoch: self.epoch.clone(),
+            worker_id: self.worker_id.clone(),
+            datacenter_id: self.datacenter_id.clone(),
+            sequence: AtomicI64::new(sequence),
+            time: AtomicI64::new(time),
+        }
+    }
+}
+
 impl Snowflake {
     pub fn default() -> Snowflake {
         Snowflake {
