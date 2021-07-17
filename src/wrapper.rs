@@ -38,7 +38,7 @@ use crate::core::Error;
 pub struct Wrapper {
     pub driver_type: DriverType,
     pub sql: String,
-    pub args: Vec<serde_json::Value>,
+    pub args: Vec<Value>,
     pub formats: HashMap<String, String>,
 }
 
@@ -73,7 +73,7 @@ impl Wrapper {
         }
     }
 
-    pub fn from(driver_type: &DriverType, sql: &str, args: Vec<serde_json::Value>) -> Self {
+    pub fn from(driver_type: &DriverType, sql: &str, args: Vec<Value>) -> Self {
         Self {
             driver_type: driver_type.clone(),
             sql: sql.to_string(),
