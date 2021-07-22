@@ -500,7 +500,7 @@ async fn main() -> std::io::Result<()> {
 
 > 捐赠
 
-<img style="width: 400px;height: 600px;" width="400" height="600" src="https://raw.githubusercontent.com/rbatis/rbatis.io/master/docs/_media/wx_account.jpg" alt="zxj347284221" />
+<img style="width: 400px;height: 600px;" width="400" height="600" src="https://raw.githubusercontent.com/rbatis/rbatis.io/master/docs/_media/wx_account.png" alt="zxj347284221" />
 
 > 联系方式(添加好友请备注'rbatis')
 
