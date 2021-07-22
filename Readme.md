@@ -490,8 +490,14 @@ async fn main() -> std::io::Result<()> {
 
 * Logging: https://github.com/rbatis/fast_log
 
-## In order to achieve the satisfaction of this ORM framework, your support is always our motivation, we are eager to welcome WeChat to donate to support us ~ or ~ star at the top right corner
 
-## 微信捐赠支持我们 ~或者~右上角点下star
+# Contact/donation, or click on star [rbatis](https://github.com/rbatis/rbatis)
+# 联系方式/捐赠,或 [rbatis](https://github.com/rbatis/rbatis) 点star
 
-![Image text](https://zhuxiujia.github.io/gomybatis.io/assets/wx_account.jpg)
+<img style="width: 400px;height: 600px;" src="https://zhuxiujia.github.io/gomybatis.io/assets/wx_account.jpg"/>
+
+> 联系方式(添加好友请备注'rbatis')
+
+<img style="width: 400px;height: 500px;" src="wechat.jpg"/>
+
+* 微信群：先加微信，然后拉进群
