@@ -498,6 +498,6 @@ async fn main() -> std::io::Result<()> {
 
 > 联系方式(添加好友请备注'rbatis')
 
-<img style="width: 400px;height: 500px;" src="wechat.jpg"/>
+<img style="width: 400px;height: 500px;" src="https://zhuxiujia.github.io/gomybatis.io/assets/wechat.jpg"/>
 
 * 微信群：先加微信，然后拉进群
