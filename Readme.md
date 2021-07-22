@@ -4,7 +4,8 @@
 [![doc.rs](https://docs.rs/rbatis/badge.svg)](https://docs.rs/rbatis/)
 [![](https://img.shields.io/crates/d/rbatis)](https://crates.io/crates/rbatis)
 [![dependency status](https://deps.rs/crate/rbatis/1.8.71/status.svg)](https://deps.rs/crate/rbatis/1.8.71)
-[![GitHub release](https://img.shields.io/github/v/release/rbatis/rbatis)](https://github.com/rbatis/rbatis/releases)
+[![GitHub release](https://img.shields.io/github/v/release/rbatis/rbatis)](https://github.com/rbatis/rbatis/releases)+
+[![Gitter](https://badges.gitter.im/rbatis_orm/community.svg)](https://gitter.im/rbatis_orm/community?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge)
 
 #### A highly Performant,Safe,Dynamic SQL(Compile time) ORM framework written in Rust, inspired by Mybatis and MybatisPlus.
 
@@ -492,6 +493,9 @@ async fn main() -> std::io::Result<()> {
 
 
 # Contact/donation, or click on star [rbatis](https://github.com/rbatis/rbatis)
+
+* [![Gitter](https://badges.gitter.im/rbatis_orm/community.svg)](https://gitter.im/rbatis_orm/community?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge)
+
 # 联系方式/捐赠,或 [rbatis](https://github.com/rbatis/rbatis) 点star
 
 <img style="width: 400px;height: 600px;" src="https://zhuxiujia.github.io/gomybatis.io/assets/wx_account.jpg"/>
