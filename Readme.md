@@ -502,8 +502,8 @@ async fn main() -> std::io::Result<()> {
 
 <img style="width: 400px;height: 600px;" width="400" height="600" src="https://raw.githubusercontent.com/rbatis/rbatis.io/master/docs/_media/wx_account.png" alt="zxj347284221" />
 
-> 联系方式(添加好友请备注'rbatis')
+> 联系方式(添加好友请备注'rbatis') 微信群：先加微信，然后拉进群
 
 <img style="width: 400px;height: 500px;" width="400" height="500" src="https://raw.githubusercontent.com/rbatis/rbatis.io/master/docs/_media/wechat.jpg" alt="zxj347284221" />
 
-* 微信群：先加微信，然后拉进群
+
