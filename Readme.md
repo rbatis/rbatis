@@ -481,6 +481,11 @@ async fn main() -> std::io::Result<()> {
 
 [changelog](https://github.com/rbatis/rbatis/releases/)
 
+
+# roadmap
+
+[roadmap](roadmap.md)
+
 ### Related Projects
 
 * Logging: https://github.com/rbatis/fast_log
