@@ -498,10 +498,12 @@ async fn main() -> std::io::Result<()> {
 
 # 联系方式/捐赠,或 [rbatis](https://github.com/rbatis/rbatis) 点star
 
-<img style="width: 400px;height: 600px;" width="400" height="600" src="https://zhuxiujia.github.io/gomybatis.io/assets/wx_account.jpg" alt="zxj347284221" />
+> 捐赠
+
+<img style="width: 400px;height: 600px;" width="400" height="600" src="https://raw.githubusercontent.com/rbatis/rbatis.io/master/docs/_media/wx_account.jpg" alt="zxj347284221" />
 
 > 联系方式(添加好友请备注'rbatis')
 
-<img style="width: 400px;height: 500px;" width="400" height="500" src="https://zhuxiujia.github.io/gomybatis.io/assets/wechat.jpg" alt="zxj347284221" />
+<img style="width: 400px;height: 500px;" width="400" height="500" src="https://raw.githubusercontent.com/rbatis/rbatis.io/master/docs/_media/wechat.jpg" alt="zxj347284221" />
 
 * 微信群：先加微信，然后拉进群
