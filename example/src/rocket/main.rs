@@ -21,7 +21,7 @@ async fn main() {
     fast_log::init_log("requests.log", 1000, log::Level::Info, None, true);
     //link database,also you can use  lazy_static! { static ref RB: Rbatis = Rbatis::new(); } replace this
     let rb=Rbatis::new();
-    rb.link(MYSQL_URL).await.unwrap();
+    rb.link(MYSQL_URL).await.expect("rbatis link database fail.");
     let rb=Arc::new(rb);
     rocket::build()
         .mount("/", routes![hello])
