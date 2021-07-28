@@ -65,7 +65,7 @@ async fn main() -> std::io::Result<()> {
     fast_log::init_log("requests.log", 1000, log::Level::Info, None, true);
     let rbatis = Rbatis::new();
     //link database,also you can use  lazy_static! { static ref RB: Rbatis = Rbatis::new(); } replace this
-    rbatis.link(MYSQL_URL).await.expect("rbatis link database fail.");
+    rbatis.link(MYSQL_URL).await.expect("rbatis link database fail");
 
     println!("Starting server at: http://127.0.0.1:8000");
     let rb_clone = DBPool::new(rbatis);
