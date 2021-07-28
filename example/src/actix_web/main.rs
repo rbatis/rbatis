@@ -1,7 +1,5 @@
 #![allow(unused_must_use)]
 #[macro_use]
-extern crate lazy_static;
-#[macro_use]
 extern crate rbatis;
 
 use actix_web::{web, App, HttpResponse, HttpServer, Responder};
