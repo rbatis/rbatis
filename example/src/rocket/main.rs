@@ -19,7 +19,7 @@ async fn hello(rb:&State<Arc<Rbatis>>) -> String {
 async fn main() {
     //log
     fast_log::init_log("requests.log", 1000, log::Level::Info, None, true);
-    //link database
+    //link database,also you can use  lazy_static! { static ref RB: Rbatis = Rbatis::new(); } replace this
     let rb=Rbatis::new();
     rb.link(MYSQL_URL).await.unwrap();
     let rb=Arc::new(rb);
