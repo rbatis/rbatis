@@ -41,7 +41,7 @@ async fn main() {
     //LOG
     fast_log::init_log("requests.log", 1000, log::Level::Info, None, true);
     //ORM
-    RB.link(MYSQL_URL).await.unwrap();
+    RB.link(MYSQL_URL).await.expect("rbatis link database fail.");
 
     let routes = warp::get()
         .and(warp::query::query())
