@@ -42,7 +42,7 @@ async fn hello(_: Request<Body>) -> Result<Response<Body>, Infallible> {
 #[tokio::main]
 pub async fn main() -> Result<(), Box<dyn std::error::Error + Send + Sync>> {
     fast_log::init_log("requests.log", 1000, log::Level::Info, None, true);
-    RB.link(MYSQL_URL).await.expect("rbatis link database fail.");
+    RB.link(MYSQL_URL).await.expect("rbatis link database fail");
     let make_svc = make_service_fn(|_conn| async { Ok::<_, Infallible>(service_fn(hello)) });
     let addr = ([127, 0, 0, 1], 8000).into();
     let server = Server::bind(&addr).serve(make_svc);
