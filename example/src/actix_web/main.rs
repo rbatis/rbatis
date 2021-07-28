@@ -58,7 +58,7 @@ async fn main() -> std::io::Result<()> {
     fast_log::init_log("requests.log", 1000, log::Level::Info, None, true);
     //init rbatis . also you can use  lazy_static! { static ref RB: Rbatis = Rbatis::new(); } replace this
     let rb = Rbatis::new();
-    rb.link(MYSQL_URL).await.unwrap();
+    rb.link(MYSQL_URL).await.expect("rbatis link database fail.");
     let rb = Arc::new(rb);
     //router
     HttpServer::new(move || {
