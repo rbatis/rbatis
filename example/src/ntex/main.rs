@@ -63,10 +63,12 @@ async fn index(pool: web::types::Data<DBPool>) -> Result<HttpResponse, Error> {
 async fn main() -> std::io::Result<()> {
     //log
     fast_log::init_log("requests.log", 1000, log::Level::Info, None, true);
+
+    log::info!("linking database...");
     let rbatis = Rbatis::new();
     //link database,also you can use  lazy_static! { static ref RB: Rbatis = Rbatis::new(); } replace this
     rbatis.link(MYSQL_URL).await.expect("rbatis link database fail");
-
+    log::info!("linking database successful!");
     println!("Starting server at: http://127.0.0.1:8000");
     let rb_clone = DBPool::new(rbatis);
     // Start HTTP server
