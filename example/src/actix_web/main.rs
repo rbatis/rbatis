@@ -56,7 +56,7 @@ async fn index(rb: web::Data<Arc<Rbatis>>) -> impl Responder {
 async fn main() -> std::io::Result<()> {
     //log
     fast_log::init_log("requests.log", 1000, log::Level::Info, None, true);
-    //rbatis
+    //init rbatis . also you can use  lazy_static! { static ref RB: Rbatis = Rbatis::new(); } replace this
     let rb = Rbatis::new();
     rb.link(MYSQL_URL).await.unwrap();
     let rb = Arc::new(rb);
