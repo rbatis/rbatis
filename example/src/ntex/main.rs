@@ -56,7 +56,7 @@ type DBPool = Arc<Rbatis>;
 #[web::get("/")]
 async fn index(pool: web::types::Data<DBPool>) -> Result<HttpResponse, Error> {
     let v = pool.fetch_list::<BizActivity>().await.unwrap_or_default();
-    Ok(HttpResponse::Ok().json(&v))
+    Ok(HttpResponse::Ok().set_header("Content-Type","text/json;charset=UTF-8").json(&v))
 }
 
 #[ntex::main]
