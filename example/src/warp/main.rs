@@ -40,9 +40,11 @@ lazy_static! {
 async fn main() {
     //LOG
     fast_log::init_log("requests.log", 1000, log::Level::Info, None, true);
-    //ORM
-    RB.link(MYSQL_URL).await.unwrap();
 
+    log::info!("linking database...");
+    //ORM
+    RB.link(MYSQL_URL).await.expect("rbatis link database fail");
+    log::info!("linking database successful!");
     let routes = warp::get()
         .and(warp::query::query())
         // and_then create a `Future` that will simply wait N seconds...

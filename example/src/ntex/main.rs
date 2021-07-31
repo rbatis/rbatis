@@ -1,7 +1,5 @@
 #![allow(unused_must_use)]
 #[macro_use]
-extern crate lazy_static;
-#[macro_use]
 extern crate rbatis;
 
 use chrono::NaiveDateTime;
@@ -58,17 +56,19 @@ type DBPool = Arc<Rbatis>;
 #[web::get("/")]
 async fn index(pool: web::types::Data<DBPool>) -> Result<HttpResponse, Error> {
     let v = pool.fetch_list::<BizActivity>().await.unwrap_or_default();
-    Ok(HttpResponse::Ok().json(&v))
+    Ok(HttpResponse::Ok().set_header("Content-Type","text/json;charset=UTF-8").json(&v))
 }
 
 #[ntex::main]
 async fn main() -> std::io::Result<()> {
     //log
     fast_log::init_log("requests.log", 1000, log::Level::Info, None, true);
-    let rbatis = Rbatis::new();
-    //link database
-    rbatis.link(MYSQL_URL).await.unwrap();
 
+    log::info!("linking database...");
+    let rbatis = Rbatis::new();
+    //link database,also you can use  lazy_static! { static ref RB: Rbatis = Rbatis::new(); } replace this
+    rbatis.link(MYSQL_URL).await.expect("rbatis link database fail");
+    log::info!("linking database successful!");
     println!("Starting server at: http://127.0.0.1:8000");
     let rb_clone = DBPool::new(rbatis);
     // Start HTTP server
