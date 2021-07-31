@@ -1,13 +1,12 @@
 #![allow(unused_must_use)]
 #[macro_use]
-extern crate lazy_static;
-#[macro_use]
 extern crate rbatis;
 
 use actix_web::{web, App, HttpResponse, HttpServer, Responder};
 use chrono::NaiveDateTime;
 use rbatis::crud::{CRUD};
 use rbatis::rbatis::Rbatis;
+use rbatis::core::runtime::sync::Arc;
 
 #[crud_table]
 #[derive(Clone, Debug)]
@@ -48,32 +47,26 @@ impl Default for BizActivity {
 //mysql driver url
 pub const MYSQL_URL: &'static str = "mysql://root:123456@localhost:3306/test";
 
-// init global rbatis pool
-lazy_static! {
-    static ref RB: Rbatis = Rbatis::new();
-}
-
-
-async fn index() -> impl Responder {
-    let v = RB.fetch_list::<BizActivity>().await.unwrap();
-    HttpResponse::Ok().body(serde_json::json!(v).to_string())
+async fn index(rb: web::Data<Arc<Rbatis>>) -> impl Responder {
+    let v = rb.fetch_list::<BizActivity>().await.unwrap();
+    HttpResponse::Ok().set_header("Content-Type","text/json;charset=UTF-8").body(serde_json::json!(v).to_string())
 }
 
 #[actix_web::main]
 async fn main() -> std::io::Result<()> {
     //log
     fast_log::init_log("requests.log", 1000, log::Level::Info, None, true);
-    //link database
-    RB.link(MYSQL_URL).await.unwrap();
+    //init rbatis . also you can use  lazy_static! { static ref RB: Rbatis = Rbatis::new(); } replace this
+    log::info!("linking database...");
+    let rb = Rbatis::new();
+    rb.link(MYSQL_URL).await.expect("rbatis link database fail");
+    let rb = Arc::new(rb);
+    log::info!("linking database successful!");
     //router
-    HttpServer::new(|| {
+    HttpServer::new(move || {
         App::new()
-            // or you can crate on actix-data
-            // .data(std::sync::Arc::new({
-            //     let rb=Rbatis::new();
-            //     rb.link(MYSQL_URL).await.unwrap();
-            //     rb
-            // }))
+            //add into actix-web data
+            .data(rb.to_owned())
             .route("/", web::get().to(index))
     })
         .bind("0.0.0.0:8000")?

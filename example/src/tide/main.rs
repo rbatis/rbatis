@@ -36,7 +36,9 @@ lazy_static! {
 #[async_std::main]
 async fn main() {
     fast_log::init_log("requests.log", 1000, log::Level::Info, None, true);
-    RB.link(MYSQL_URL).await.unwrap();
+    log::info!("linking database...");
+    RB.link(MYSQL_URL).await.expect("rbatis link database fail");
+    log::info!("linking database successful!");
     let mut app = tide::new();
     app.at("/").get(|_: Request<()>| async move {
         let v = RB.fetch_list::<BizActivity>().await;
