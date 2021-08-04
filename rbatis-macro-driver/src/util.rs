@@ -98,26 +98,21 @@ pub(crate) fn get_page_req_ident(target_fn: &ItemFn, func_name: &str) -> Ident {
 //find and check method return type
 pub(crate) fn find_fn_body(target_fn: &ItemFn) -> proc_macro2::TokenStream {
     //del todos
-    let mut removes=vec![];
-    let mut index=0;
-    let mut target_fn=target_fn.clone();
+    let mut target_fn = target_fn.clone();
+    let mut new_stmts =vec![];
     for x in &target_fn.block.stmts {
-        if x.to_token_stream().to_string().eq("todo ! ()"){
-            removes.push(index);
+        let token=x.to_token_stream().to_string().replace("\n","").replace(" ","");
+        if token.eq("todo!()") || token.eq("unimplemented!()") {
+            //nothing to do
+        }else{
+            new_stmts.push(x.to_owned());
         }
-        index+=1;
     }
-    for x in removes {
-        target_fn.block.stmts.remove(x);
-    }
+    target_fn.block.stmts = new_stmts;
     target_fn.block.to_token_stream()
 }
 
-pub(crate) fn is_fetch_sql(source: &str) -> bool {
-    let sql = source.trim_start();
-    let is_select = sql.starts_with("select ")
-        || sql.starts_with("\"select ")
-        || sql.starts_with("SELECT ")
-        || sql.starts_with("\"SELECT ");
+pub(crate) fn is_fetch(return_source: &str) -> bool {
+    let is_select = !return_source.contains("DBExecResult");
     return is_select;
 }
