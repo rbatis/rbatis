@@ -5,7 +5,7 @@ use syn;
 use syn::{AttributeArgs, ItemFn};
 
 use crate::proc_macro::TokenStream;
-use crate::util::{find_fn_body, find_return_type, get_fn_args, get_page_req_ident, is_fetch_sql};
+use crate::util::{find_fn_body, find_return_type, get_fn_args, get_page_req_ident, is_fetch};
 use crate::macros::html_loader::Element;
 use std::io::Read;
 
@@ -30,7 +30,7 @@ pub(crate) fn impl_macro_py_sql(target_fn: &ItemFn, args: &AttributeArgs) -> Tok
     }
     //append all args
     let sql_args_gen = filter_args_context_id(&rbatis_name, &get_fn_args(target_fn));
-    let is_fetch = is_fetch_sql(&sql);
+    let is_fetch = is_fetch(&return_ty.to_string());
     let mut call_method = quote! {};
     if is_fetch {
         call_method = quote! {
@@ -142,7 +142,7 @@ pub(crate) fn impl_macro_html_sql(target_fn: &ItemFn, args: &AttributeArgs) -> T
     }
     //append all args
     let sql_args_gen = filter_args_context_id(&rbatis_name, &get_fn_args(target_fn));
-    let is_fetch = is_fetch_sql(&sql.childs.get(0).expect("[rbatis] html data must have first string node!").data);
+    let is_fetch = is_fetch(&return_ty.to_string());
     let mut call_method = quote! {};
     if is_fetch {
         call_method = quote! {

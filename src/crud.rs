@@ -1129,3 +1129,8 @@ impl<T, P> CRUDTable for DynTableColumn<T, P> where T: CRUDTable, P: TableColumn
         T::get(self, column)
     }
 }
+
+
+pub struct ExecResult{
+
+}
