@@ -1,4 +1,4 @@
 cd rbatis-macro-driver/
-cargo publish
+cargo publish --allow-dirty
 cd ..
-cargo publish
+cargo publish --allow-dirty
