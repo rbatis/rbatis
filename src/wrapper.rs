@@ -39,7 +39,7 @@ pub struct Wrapper {
     pub driver_type: DriverType,
     pub sql: String,
     pub args: Vec<Value>,
-    pub formats: HashMap<String, String>,
+    pub formats: HashMap<String, fn(arg: &str) -> String>,
 }
 
 macro_rules! push_sql {
@@ -58,7 +58,7 @@ impl Debug for Wrapper {
             .field("driver_type", &self.driver_type)
             .field("sql", &self.sql)
             .field("args", &self.args)
-            .field("formats", &formats)
+            //.field("formats", &formats)
             .finish()
     }
 }
@@ -87,7 +87,7 @@ impl Wrapper {
         self
     }
 
-    pub fn set_formats(mut self, formats: HashMap<String, String>) -> Self {
+    pub fn set_formats(mut self, formats: HashMap<String, fn(arg: &str) -> String>) -> Self {
         self.formats = formats;
         self
     }
@@ -316,8 +316,8 @@ impl Wrapper {
     pub fn do_format_column(&self, column: &str, data: &mut String) {
         let source = self.formats.get(column);
         match source {
-            Some(s) => {
-                *data = s.clone();
+            Some(f) => {
+                *data = f(&data);
             }
             _ => {}
         }
