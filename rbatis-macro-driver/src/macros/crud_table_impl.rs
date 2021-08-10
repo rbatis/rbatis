@@ -168,7 +168,7 @@ fn gen_format(v: &str) -> proc_macro2::TokenStream {
             panic!("[rbatis] #[crud_table] format_str:'{}' must be [column]:[format_string],for example ->  '{}'  ", item, "formats_pg:id:{}::uuid");
         }
         let index = item.find(":").unwrap();
-        let column = item[0..index].to_string();
+        let column = item[0..index].trim_start().to_string();
         let format_str = item[index + 1..item.len()].to_string();
         let formats_data = find_format_string(&format_str);
         let mut args_quote = quote! {};
@@ -193,8 +193,7 @@ fn gen_format(v: &str) -> proc_macro2::TokenStream {
         };
         formats = quote! {
            #formats
-           let trim_col = #column.trim_start();
-           m.insert(trim_col.to_string(),#format_func);
+           m.insert(#column,#format_func);
         };
     }
     return formats;
