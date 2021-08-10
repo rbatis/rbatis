@@ -96,10 +96,10 @@ pub struct BizActivity {
   pub delete_flag: Option<i32>,
 }
 
-// (optional) manually implement instead of using `derive(CRUDTable)`. This allows manually rewriting `table_name()` function and supports  code completion in IDE.
+/// (optional) manually implement instead of using `derive(CRUDTable)`. This allows manually rewriting `table_name()` function and supports  code completion in IDE.
+/// (option) but this struct require  #[derive(Serialize,Deserialize)]
 // use rbatis::crud::CRUDTable;
-//impl CRUDTable for BizActivity {
-//    type IdType = String;    
+//impl CRUDTable for BizActivity { 
 //    fn table_name()->String{
 //        "biz_activity".to_string()
 //    }

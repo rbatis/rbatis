@@ -52,9 +52,8 @@ mod test {
         }
     }
 
-    // (可选) 手动实现，不使用上面的derive(CRUDTable),可重写table_name方法。手动实现能支持IDE智能提示
+    // (option) but this require  #[derive(Serialize,Deserialize)]
     // impl CRUDTable for BizActivity {
-    //     type IdType = String;
     // }
 
     pub async fn init_rbatis() -> Rbatis {
