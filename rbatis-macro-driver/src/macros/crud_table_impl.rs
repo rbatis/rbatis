@@ -193,7 +193,7 @@ fn gen_format(v: &str) -> proc_macro2::TokenStream {
         };
         formats = quote! {
            #formats
-           m.insert(#column,#format_func);
+           m.insert(#column.to_string(),#format_func);
         };
     }
     return formats;
