@@ -1,6 +1,6 @@
 [package]
 name = "rbatis-macro-driver"
-version = "2.0.22"
+version = "2.0.24"
 description = "rbatis macro driver 高性能Rust orM框架 宏系统支持"
 readme = "Readme.md"
 authors = ["ce <zhuxiujia@qq.com>"]
