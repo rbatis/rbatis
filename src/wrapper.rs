@@ -2,6 +2,7 @@ use std::collections::HashMap;
 use std::fmt::{Debug, Formatter};
 use std::ops::Add;
 
+use bson::Bson;
 use serde::{Deserialize, Serialize};
 use serde_json::{json, Map, Value};
 
@@ -38,7 +39,7 @@ use crate::core::Error;
 pub struct Wrapper {
     pub driver_type: DriverType,
     pub sql: String,
-    pub args: Vec<Value>,
+    pub args: Vec<Bson>,
     pub formats: HashMap<String, fn(arg: &str) -> String>,
 }
 
@@ -73,7 +74,7 @@ impl Wrapper {
         }
     }
 
-    pub fn from(driver_type: &DriverType, sql: &str, args: Vec<Value>) -> Self {
+    pub fn from(driver_type: &DriverType, sql: &str, args: Vec<Bson>) -> Self {
         Self {
             driver_type: driver_type.clone(),
             sql: sql.to_string(),
@@ -134,14 +135,16 @@ impl Wrapper {
         }
         self.sql.push_str(new_sql.as_str());
 
-        let args = json!(args);
-        if args.is_null() {
+        let args = bson::to_bson(args).unwrap();
+        if args == Bson::Null {
             return self;
         }
+
         let args = args.as_array().unwrap();
         for x in args {
             self.args.push(x.to_owned());
         }
+
         self
     }
 
@@ -209,13 +212,15 @@ impl Wrapper {
     where
         T: Serialize,
     {
-        let v = json!(args);
-        if v.is_null() {
+        let v = bson::to_bson(args).unwrap();
+        if v == Bson::Null {
             return self;
         }
-        if v.is_array() {
-            self.args = v.as_array().unwrap_or(&vec![]).to_owned();
+
+        if let Some(a) = v.as_array() {
+            self.args = a.to_owned();
         }
+
         self
     }
 
@@ -223,7 +228,7 @@ impl Wrapper {
     where
         T: Serialize,
     {
-        let v = json!(arg);
+        let v = bson::to_bson(&arg).unwrap();
         self.args.push(v);
         self
     }
@@ -339,7 +344,7 @@ impl Wrapper {
             .stmt_convert(self.args.len(), &mut convert_column);
         self.do_format_column(column, &mut convert_column);
         push_sql!(self.sql, column, " = ", convert_column.as_str(),);
-        self.args.push(json!(obj));
+        self.args.push(bson::to_bson(&obj).unwrap());
         self
     }
 
@@ -354,7 +359,7 @@ impl Wrapper {
             .stmt_convert(self.args.len(), &mut convert_column);
         self.do_format_column(column, &mut convert_column);
         push_sql!(self.sql, column, " <> ", convert_column.as_str(),);
-        self.args.push(json!(obj));
+        self.args.push(bson::to_bson(&obj).unwrap());
         self
     }
 
@@ -423,7 +428,7 @@ impl Wrapper {
             .stmt_convert(self.args.len(), &mut convert_column);
         self.do_format_column(column, &mut convert_column);
         push_sql!(self.sql, column, " > ", &convert_column.as_str(),);
-        self.args.push(json!(obj));
+        self.args.push(bson::to_bson(&obj).unwrap());
         self
     }
     ///  sql:   column >= obj
@@ -437,7 +442,7 @@ impl Wrapper {
             .stmt_convert(self.args.len(), &mut convert_column);
         self.do_format_column(column, &mut convert_column);
         push_sql!(self.sql, column, " >= ", &convert_column.as_str(),);
-        self.args.push(json!(obj));
+        self.args.push(bson::to_bson(&obj).unwrap());
         self
     }
 
@@ -452,7 +457,7 @@ impl Wrapper {
             .stmt_convert(self.args.len(), &mut convert_column);
         self.do_format_column(column, &mut convert_column);
         push_sql!(self.sql, column, " < ", &convert_column.as_str(),);
-        self.args.push(json!(obj));
+        self.args.push(bson::to_bson(&obj).unwrap());
         self
     }
 
@@ -467,7 +472,7 @@ impl Wrapper {
             .stmt_convert(self.args.len(), &mut convert_column);
         self.do_format_column(column, &mut convert_column);
         push_sql!(self.sql, column, " <= ", &convert_column.as_str(),);
-        self.args.push(json!(obj));
+        self.args.push(bson::to_bson(&obj).unwrap());
         self
     }
 
@@ -502,8 +507,8 @@ impl Wrapper {
             &convert_column.as_str(),
         );
 
-        self.args.push(json!(min));
-        self.args.push(json!(max));
+        self.args.push(bson::to_bson(&min).unwrap());
+        self.args.push(bson::to_bson(&max).unwrap());
         self
     }
 
@@ -539,8 +544,8 @@ impl Wrapper {
             &convert_column.as_str(),
         );
 
-        self.args.push(json!(min));
-        self.args.push(json!(max));
+        self.args.push(bson::to_bson(&min).unwrap());
+        self.args.push(bson::to_bson(&max).unwrap());
         self
     }
 
@@ -549,10 +554,10 @@ impl Wrapper {
         T: Serialize,
     {
         self = self.and();
-        let v = json!(obj);
+        let v = bson::to_bson(&obj).unwrap();
         let mut v_str = String::new();
-        if v.is_string() {
-            v_str = format!("%{}%", v.as_str().unwrap());
+        if let Some(s) = v.as_str() {
+            v_str = format!("%{}%", s);
         } else {
             v_str = format!("%{}%", v.to_string());
         }
@@ -570,7 +575,7 @@ impl Wrapper {
             &convert_column.as_str(),
         );
 
-        self.args.push(json!(v_str));
+        self.args.push(bson::to_bson(&v_str).unwrap());
         self
     }
 
@@ -581,8 +586,8 @@ impl Wrapper {
         self = self.and();
         let v = json!(obj);
         let mut v_str = String::new();
-        if v.is_string() {
-            v_str = format!("%{}", v.as_str().unwrap());
+        if let Some(s) = v.as_str() {
+            v_str = format!("%{}", v);
         } else {
             v_str = format!("%{}", v.to_string());
         }
@@ -600,7 +605,7 @@ impl Wrapper {
             &convert_column.as_str(),
         );
 
-        self.args.push(json!(v_str));
+        self.args.push(bson::to_bson(&v_str).unwrap());
         self
     }
 
@@ -611,8 +616,8 @@ impl Wrapper {
         self = self.and();
         let v = json!(obj);
         let mut v_str = String::new();
-        if v.is_string() {
-            v_str = format!("{}%", v.as_str().unwrap());
+        if let Some(s) = v.as_str() {
+            v_str = format!("{}%", v);
         } else {
             v_str = format!("{}%", v.to_string());
         }
@@ -630,7 +635,7 @@ impl Wrapper {
             &convert_column.as_str(),
         );
 
-        self.args.push(json!(v_str));
+        self.args.push(bson::to_bson(&v_str).unwrap());
         self
     }
 
@@ -641,8 +646,8 @@ impl Wrapper {
         self = self.and();
         let v = json!(obj);
         let mut v_str = String::new();
-        if v.is_string() {
-            v_str = format!("%{}%", v.as_str().unwrap());
+        if let Some(s) = v.as_str() {
+            v_str = format!("%{}%", v);
         } else {
             v_str = format!("%{}%", v.to_string());
         }
@@ -660,7 +665,7 @@ impl Wrapper {
             " ",
             &convert_column.as_str(),
         );
-        self.args.push(json!(v_str));
+        self.args.push(bson::to_bson(&v_str).unwrap());
         self
     }
 
@@ -698,7 +703,7 @@ impl Wrapper {
             self.do_format_column(column, &mut convert_column);
             push_sql!(self.sql, " ", &convert_column.as_str(), " ",);
             self.sql.push_str(",");
-            self.args.push(json!(x));
+            self.args.push(bson::to_bson(&x).unwrap());
         }
         self.sql.pop();
         push_sql!(self.sql, ")",);
@@ -745,7 +750,7 @@ impl Wrapper {
             self.do_format_column(column, &mut convert_column);
             push_sql!(self.sql, " ", &convert_column.as_str(), " ",);
             self.sql.push_str(",");
-            self.args.push(json!(x));
+            self.args.push(bson::to_bson(&x).unwrap());
         }
         self.sql.pop();
         push_sql!(self.sql, ")",);

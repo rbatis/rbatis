@@ -1,13 +1,8 @@
+use bson::Bson;
 use once_cell::sync::OnceCell;
 use rbatis_core::db::DBConnectOption;
 use serde::de::DeserializeOwned;
 use serde::ser::Serialize;
-use serde_json::Number;
-use std::borrow::BorrowMut;
-use std::cell::Cell;
-use std::collections::HashMap;
-use std::sync::Arc;
-use std::time::Duration;
 use uuid::Uuid;
 
 use crate::core::db::{DBExecResult, DBPool, DBPoolConn, DBPoolOptions, DBQuery, DBTx, DriverType};
@@ -23,7 +18,13 @@ use crate::sql::PageLimit;
 use crate::utils::error_util::ToResult;
 use crate::utils::string_util;
 use crate::wrapper::Wrapper;
+
+use std::borrow::BorrowMut;
+use std::cell::Cell;
+use std::collections::HashMap;
 use std::fmt::{Debug, Formatter};
+use std::sync::Arc;
+use std::time::Duration;
 
 /// rbatis engine
 // #[derive(Debug)]
@@ -41,7 +42,7 @@ pub struct Rbatis {
     // version lock plugin
     pub version_lock_plugin: Option<Box<dyn VersionLockPlugin>>,
     // sql param binder
-    pub encoder: fn(q: &mut DBQuery, arg: &serde_json::Value) -> crate::Result<()>,
+    pub encoder: fn(q: &mut DBQuery, arg: &Bson) -> crate::Result<()>,
 }
 
 impl Debug for Rbatis {

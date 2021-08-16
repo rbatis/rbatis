@@ -3,9 +3,9 @@ use std::fmt::Display;
 use std::hash::Hash;
 
 use async_trait::async_trait;
+use bson::Bson;
 use serde::de::DeserializeOwned;
 use serde::{Deserialize, Deserializer, Serialize, Serializer};
-use serde_json::{Map, Value};
 
 use crate::core::convert::{ResultCodec, StmtConvert};
 use crate::core::db::DBExecResult;
@@ -19,7 +19,7 @@ use crate::rbatis::Rbatis;
 use crate::sql::rule::SqlRule;
 use crate::utils::string_util::to_snake_name;
 use crate::wrapper::Wrapper;
-use serde_json::value::Value::Null;
+
 use std::marker::PhantomData;
 use std::ops::{Deref, DerefMut};
 
@@ -104,20 +104,21 @@ pub trait CRUDTable: Send + Sync + Serialize + DeserializeOwned {
         db_type: &DriverType,
         index: &mut usize,
         skips: &[Skip],
-    ) -> Result<(String, String, Vec<serde_json::Value>)> {
+    ) -> Result<(String, String, Vec<Bson>)> {
         let mut value_sql = String::new();
         let mut arr = vec![];
         let cols = Self::table_columns();
         let columns: Vec<&str> = cols.split(",").collect();
-        let map;
-        match serde_json::json!(self) {
-            serde_json::Value::Object(m) => {
-                map = m;
-            }
-            _ => {
-                return Err(Error::from("[rbatis] arg not an json object!"));
-            }
-        }
+        let map =
+            bson::to_document(self).map_err(|_| Error::from("[rbatis] arg not an json object!"))?;
+        // match serde_json::json!(self) {
+        //     serde_json::Value::Object(m) => {
+        //         map = m;
+        //     }
+        //     _ => {
+        //         return Err(Error::from("[rbatis] arg not an json object!"));
+        //     }
+        // }
         let mut column_sql = String::new();
         for column in columns {
             let mut do_continue = false;
@@ -136,7 +137,7 @@ pub trait CRUDTable: Send + Sync + Serialize + DeserializeOwned {
             if do_continue {
                 continue;
             }
-            let v = map.get(column).unwrap_or(&serde_json::Value::Null);
+            let v = map.get(column).unwrap_or(&Bson::Null);
             for x in skips {
                 match x {
                     Skip::Value(skip_value) => {
@@ -211,7 +212,7 @@ where
         db_type: &DriverType,
         index: &mut usize,
         skips: &[Skip],
-    ) -> Result<(String, String, Vec<serde_json::Value>)> {
+    ) -> Result<(String, String, Vec<Bson>)> {
         if self.is_none() {
             return Err(crate::core::Error::from(
                 "[rbatis] can not make_sql_arg() for None value!",
@@ -359,7 +360,7 @@ pub trait CRUD {
     async fn fetch_page<T>(
         &self,
         sql: &str,
-        args: &Vec<serde_json::Value>,
+        args: &Vec<Bson>,
         page_request: &dyn IPageRequest,
     ) -> Result<Page<T>>
     where
@@ -574,7 +575,10 @@ pub trait CRUDMut: ExecutorMut {
                 data
             );
         }
-        return Ok(self.exec(&sql, &vec![json!(value)]).await?.rows_affected);
+        return Ok(self
+            .exec(&sql, &vec![bson::to_bson(&value).unwrap()])
+            .await?
+            .rows_affected);
     }
 
     ///remove batch id
@@ -611,20 +615,21 @@ pub trait CRUDMut: ExecutorMut {
     {
         let table_name = choose_dyn_table_name::<T>(w);
         let mut args = vec![];
-        let mut old_version = serde_json::Value::Null;
+        let mut old_version = Bson::Null;
         let driver_type = &self.driver_type()?;
         let columns = T::table_columns();
         let columns_vec: Vec<&str> = columns.split(",").collect();
-        let map;
-        match serde_json::json!(table) {
-            serde_json::Value::Object(m) => {
-                map = m;
-            }
-            _ => {
-                return Err(Error::from("[rbatis] arg not an json object!"));
-            }
-        }
-        let null = serde_json::Value::Null;
+        let map = bson::to_document(&table)
+            .map_err(|_| Error::from("[rbatis] arg not an bson object!"))?;
+        // match serde_json::json!(table) {
+        //     serde_json::Value::Object(m) => {
+        //         map = m;
+        //     }
+        //     _ => {
+        //         return Err(Error::from("[rbatis] arg not an json object!"));
+        //     }
+        // }
+        let null = Bson::Null;
         let mut sets = String::new();
 
         for column in columns_vec {
@@ -646,7 +651,7 @@ pub trait CRUDMut: ExecutorMut {
             }
             let mut v = map.get(column).unwrap_or_else(|| &null).clone();
             //filter null
-            let is_null = v.is_null();
+            let is_null = v == null;
             for x in skips {
                 match x {
                     Skip::Value(skip_value) => {
@@ -739,7 +744,8 @@ pub trait CRUDMut: ExecutorMut {
             .await?
             .rows_affected;
         if rows_affected > 0 {
-            *table = serde_json::from_value(serde_json::Value::Object(map)).into_result()?;
+            *table = bson::from_document(map)
+                .map_err(|_| Error::from("[rbatis] arg not an bson object!"))?;
         }
         return Ok(rows_affected);
     }
@@ -756,7 +762,7 @@ pub trait CRUDMut: ExecutorMut {
             table,
             &rb.new_wrapper_table::<T>().eq(column, value),
             &[
-                Skip::Value(Value::Null),
+                Skip::Value(Bson::Null),
                 Skip::Column("id"),
                 Skip::Column(column),
             ],
@@ -864,7 +870,7 @@ pub trait CRUDMut: ExecutorMut {
     async fn fetch_page<T>(
         &mut self,
         sql: &str,
-        args: &Vec<serde_json::Value>,
+        args: &Vec<Bson>,
         page_request: &dyn IPageRequest,
     ) -> Result<Page<T>>
     where
@@ -1098,7 +1104,7 @@ impl CRUD for Rbatis {
     async fn fetch_page<T>(
         &self,
         sql: &str,
-        args: &Vec<serde_json::Value>,
+        args: &Vec<Bson>,
         page_request: &dyn IPageRequest,
     ) -> Result<Page<T>>
     where
@@ -1114,16 +1120,16 @@ pub enum Skip<'a> {
     ///skip column
     Column(&'a str),
     ///skip serde json value ref
-    Value(serde_json::Value),
+    Value(Bson),
 }
 
 impl<'a> Skip<'a> {
     /// from serialize value
-    pub fn value<T>(arg: T) -> Self
+    pub fn value<T: Serialize>(arg: T) -> Self
     where
         T: Serialize,
     {
-        Self::Value(serde_json::json!(arg))
+        Self::Value(bson::to_bson(&arg).unwrap())
     }
 }
 
@@ -1222,7 +1228,7 @@ where
         db_type: &DriverType,
         index: &mut usize,
         skips: &[Skip],
-    ) -> Result<(String, String, Vec<serde_json::Value>)> {
+    ) -> Result<(String, String, Vec<Bson>)> {
         T::make_value_sql_arg(self, db_type, index, skips)
     }
 

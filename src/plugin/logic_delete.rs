@@ -1,13 +1,13 @@
-use std::fmt::{Debug, Display};
-
-use serde_json::Value;
-
 use crate::core::db::DriverType;
 use crate::core::Error;
 use crate::crud::{CRUDTable, Skip};
 use crate::sql::rule::SqlRule;
+
+use bson::Bson;
 use serde::{Deserialize, Deserializer, Serialize, Serializer};
+
 use std::collections::HashMap;
+use std::fmt::{Debug, Display};
 use std::ops::{Deref, DerefMut};
 
 /// Logic Delete Plugin trait
@@ -182,7 +182,7 @@ where
         db_type: &DriverType,
         index: &mut usize,
         skips: &[Skip],
-    ) -> crate::Result<(String, String, Vec<serde_json::Value>)> {
+    ) -> crate::Result<(String, String, Vec<Bson>)> {
         T::make_value_sql_arg(&self.table, db_type, index, skips)
     }
 }

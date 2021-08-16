@@ -1,11 +1,12 @@
 use std::ops::{Deref, DerefMut};
 
 use async_trait::async_trait;
+use bson::Bson;
+use futures::executor::block_on;
 use futures::Future;
 use rbatis_core::db::DBExecResult;
 use serde::de::DeserializeOwned;
 use serde::Serialize;
-use serde_json::Value;
 
 use crate::core::db::{DBPool, DBPoolConn, DBQuery, DBTx};
 use crate::core::Error;
@@ -14,7 +15,6 @@ use crate::plugin::page::{IPageRequest, Page};
 use crate::rbatis::Rbatis;
 use crate::utils::string_util;
 use crate::DriverType;
-use futures::executor::block_on;
 
 #[async_trait]
 pub trait RbatisRef {
@@ -29,7 +29,7 @@ pub trait RbatisRef {
         &self,
         driver_type: &DriverType,
         sql: &'arg str,
-        arg: &Vec<serde_json::Value>,
+        arg: &Vec<Bson>,
     ) -> Result<DBQuery<'arg>, Error> {
         let mut q: DBQuery = DBPool::make_db_query(driver_type, sql)?;
         for x in arg {
@@ -47,12 +47,8 @@ impl RbatisRef for Rbatis {
 
 #[async_trait]
 pub trait ExecutorMut: RbatisRef {
-    async fn exec(
-        &mut self,
-        sql: &str,
-        args: &Vec<serde_json::Value>,
-    ) -> Result<DBExecResult, Error>;
-    async fn fetch<T>(&mut self, sql: &str, args: &Vec<serde_json::Value>) -> Result<T, Error>
+    async fn exec(&mut self, sql: &str, args: &Vec<Bson>) -> Result<DBExecResult, Error>;
+    async fn fetch<T>(&mut self, sql: &str, args: &Vec<Bson>) -> Result<T, Error>
     where
         T: DeserializeOwned;
 }
@@ -73,11 +69,7 @@ macro_rules! impl_executor {
     ($t:ty) => {
         #[async_trait]
         impl<'a> ExecutorMut for $t {
-            async fn exec(
-                &mut self,
-                sql: &str,
-                args: &Vec<serde_json::Value>,
-            ) -> Result<DBExecResult, Error> {
+            async fn exec(&mut self, sql: &str, args: &Vec<Bson>) -> Result<DBExecResult, Error> {
                 let mut sql = sql.to_string();
                 let mut args = args.clone();
                 let is_prepared = args.len() > 0;
@@ -90,7 +82,7 @@ macro_rules! impl_executor {
                         &sql,
                         string_util::LOG_SPACE,
                         "",
-                        serde_json::Value::Array(args.clone()).to_string()
+                        Bson::Array(args.clone()).to_string()
                     ));
                 }
                 let result;
@@ -117,11 +109,7 @@ macro_rules! impl_executor {
                 return result;
             }
 
-            async fn fetch<T>(
-                &mut self,
-                sql: &str,
-                args: &Vec<serde_json::Value>,
-            ) -> Result<T, Error>
+            async fn fetch<T>(&mut self, sql: &str, args: &Vec<Bson>) -> Result<T, Error>
             where
                 T: DeserializeOwned,
             {
@@ -137,7 +125,7 @@ macro_rules! impl_executor {
                         &sql,
                         string_util::LOG_SPACE,
                         "",
-                        serde_json::Value::Array(args.clone()).to_string()
+                        Bson::Array(args.clone()).to_string()
                     ));
                 }
                 if is_prepared {
@@ -254,7 +242,7 @@ impl<'a> RBatisTxExecutorGuard<'a> {
     }
 
     pub async fn begin(&mut self) -> crate::Result<()> {
-        let mut tx = self
+        let tx = self
             .tx
             .as_mut()
             .ok_or_else(|| Error::from("[rbatis] tx is committed"))?;
@@ -262,7 +250,7 @@ impl<'a> RBatisTxExecutorGuard<'a> {
     }
 
     pub async fn commit(&mut self) -> crate::Result<()> {
-        let mut tx = self
+        let tx = self
             .tx
             .as_mut()
             .ok_or_else(|| Error::from("[rbatis] tx is committed"))?;
@@ -270,7 +258,7 @@ impl<'a> RBatisTxExecutorGuard<'a> {
     }
 
     pub async fn rollback(&mut self) -> crate::Result<()> {
-        let mut tx = self
+        let tx = self
             .tx
             .as_mut()
             .ok_or_else(|| Error::from("[rbatis] tx is committed"))?;
@@ -322,7 +310,7 @@ impl<'a> RBatisTxExecutor<'a> {
     pub async fn fetch_page<T>(
         &self,
         sql: &str,
-        args: &Vec<serde_json::Value>,
+        args: &Vec<Bson>,
         page_request: &dyn IPageRequest,
     ) -> crate::Result<Page<T>>
     where
@@ -359,19 +347,19 @@ impl Drop for RBatisTxExecutorGuard<'_> {
 
 #[async_trait]
 pub trait Executor: RbatisRef {
-    async fn exec(&self, sql: &str, args: &Vec<serde_json::Value>) -> Result<DBExecResult, Error>;
-    async fn fetch<T>(&self, sql: &str, args: &Vec<serde_json::Value>) -> Result<T, Error>
+    async fn exec(&self, sql: &str, args: &Vec<Bson>) -> Result<DBExecResult, Error>;
+    async fn fetch<T>(&self, sql: &str, args: &Vec<Bson>) -> Result<T, Error>
     where
         T: DeserializeOwned;
 }
 
 #[async_trait]
 impl Executor for Rbatis {
-    async fn exec(&self, sql: &str, args: &Vec<Value>) -> Result<DBExecResult, Error> {
+    async fn exec(&self, sql: &str, args: &Vec<Bson>) -> Result<DBExecResult, Error> {
         self.acquire().await?.exec(sql, args).await
     }
 
-    async fn fetch<T>(&self, sql: &str, args: &Vec<Value>) -> Result<T, Error>
+    async fn fetch<T>(&self, sql: &str, args: &Vec<Bson>) -> Result<T, Error>
     where
         T: DeserializeOwned,
     {
@@ -395,7 +383,7 @@ impl RbatisExecutor<'_> {
     pub async fn fetch_page<T>(
         &mut self,
         sql: &str,
-        args: &Vec<Value>,
+        args: &Vec<Bson>,
         page_request: &dyn IPageRequest,
     ) -> crate::Result<Page<T>>
     where
@@ -433,7 +421,7 @@ impl RbatisExecutor<'_> {
         return Err(Error::from("[rbatis] executor must have an value!"));
     }
 
-    pub async fn exec(&mut self, sql: &str, args: &Vec<Value>) -> Result<DBExecResult, Error> {
+    pub async fn exec(&mut self, sql: &str, args: &Vec<Bson>) -> Result<DBExecResult, Error> {
         if self.rb.is_some() {
             return self.rb.as_ref().unwrap().exec(sql, args).await;
         } else if self.conn.is_some() {
@@ -446,7 +434,7 @@ impl RbatisExecutor<'_> {
         return Err(Error::from("[rbatis] executor must have an value!"));
     }
 
-    pub async fn fetch<T>(&mut self, sql: &str, args: &Vec<Value>) -> Result<T, Error>
+    pub async fn fetch<T>(&mut self, sql: &str, args: &Vec<Bson>) -> Result<T, Error>
     where
         T: DeserializeOwned,
     {

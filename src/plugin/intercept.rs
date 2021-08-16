@@ -2,8 +2,10 @@ use crate::core::convert::StmtConvert;
 use crate::crud::CRUDTable;
 use crate::rbatis::Rbatis;
 use crate::DriverType;
+
+use bson::Bson;
 use rbatis_core::Error;
-use serde_json::Value;
+
 use std::fmt::{Debug, Display};
 
 /// sql intercept
@@ -18,7 +20,7 @@ pub trait SqlIntercept: Send + Sync + Debug {
         &self,
         rb: &Rbatis,
         sql: &mut String,
-        args: &mut Vec<serde_json::Value>,
+        args: &mut Vec<Bson>,
         is_prepared_sql: bool,
     ) -> Result<(), crate::core::Error>;
 }
@@ -31,7 +33,7 @@ impl SqlIntercept for RbatisLogFormatSqlIntercept {
         &self,
         rb: &Rbatis,
         sql: &mut String,
-        args: &mut Vec<Value>,
+        args: &mut Vec<Bson>,
         is_prepared_sql: bool,
     ) -> Result<(), Error> {
         let driver_type = rb.driver_type()?;
@@ -61,7 +63,7 @@ impl SqlIntercept for BlockAttackDeleteInterceptor {
         &self,
         rb: &Rbatis,
         sql: &mut String,
-        args: &mut Vec<Value>,
+        args: &mut Vec<Bson>,
         is_prepared_sql: bool,
     ) -> Result<(), Error> {
         let sql = sql.trim();
@@ -86,7 +88,7 @@ impl SqlIntercept for BlockAttackUpdateInterceptor {
         &self,
         rb: &Rbatis,
         sql: &mut String,
-        args: &mut Vec<Value>,
+        args: &mut Vec<Bson>,
         is_prepared_sql: bool,
     ) -> Result<(), Error> {
         let sql = sql.trim();

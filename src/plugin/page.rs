@@ -1,11 +1,11 @@
 use std::fmt::{Debug, Display};
 use std::future::Future;
 
+use bson::Bson;
 use futures_core::future::BoxFuture;
 use rbatis_core::Error;
 use serde::de::DeserializeOwned;
 use serde::{Deserialize, Serialize};
-use serde_json::Value;
 
 use crate::core::db::DriverType;
 use crate::sql::PageLimit;
@@ -24,7 +24,7 @@ pub trait PagePlugin: Send + Sync + Debug {
         &self,
         driver_type: &DriverType,
         sql: &str,
-        args: &Vec<serde_json::Value>,
+        args: &Vec<Bson>,
         page: &dyn IPageRequest,
     ) -> Result<(String, String), crate::core::Error>;
 }
@@ -334,7 +334,7 @@ impl PagePlugin for RbatisReplacePagePlugin {
         &self,
         driver_type: &DriverType,
         sql: &str,
-        args: &Vec<Value>,
+        args: &Vec<Bson>,
         page: &dyn IPageRequest,
     ) -> Result<(String, String), crate::core::Error> {
         //default sql
@@ -394,7 +394,7 @@ impl PagePlugin for RbatisPackPagePlugin {
         &self,
         driver_type: &DriverType,
         sql: &str,
-        args: &Vec<Value>,
+        args: &Vec<Bson>,
         page: &dyn IPageRequest,
     ) -> Result<(String, String), crate::core::Error> {
         //default sql
@@ -461,7 +461,7 @@ impl PagePlugin for RbatisPagePlugin {
         &self,
         driver_type: &DriverType,
         sql: &str,
-        args: &Vec<Value>,
+        args: &Vec<Bson>,
         page: &dyn IPageRequest,
     ) -> Result<(String, String), Error> {
         if sql.contains(crate::sql::TEMPLATE.group_by.left_right_space) {

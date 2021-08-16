@@ -1,7 +1,9 @@
 use crate::crud::{CRUDTable, Skip};
 use crate::DriverType;
+
+use bson::Bson;
 use serde::{Deserialize, Deserializer, Serialize, Serializer};
-use serde_json::Number;
+
 use std::collections::HashMap;
 use std::fmt::Debug;
 use std::ops::Deref;
@@ -15,33 +17,35 @@ pub trait VersionLockPlugin: Send + Sync + Debug {
     fn column(&self) -> &str;
 
     /// set value = value + 1, support number and string value
-    fn try_add_one(&self, old_value: &serde_json::Value, column: &str) -> serde_json::Value {
+    fn try_add_one(&self, old_value: &Bson, column: &str) -> Bson {
         if self.column().eq(column) {
             match old_value {
-                serde_json::Value::String(s) => {
+                Bson::String(s) => {
                     let version = s.parse::<i64>();
                     match version {
                         Ok(version) => {
-                            return serde_json::Value::String((version + 1).to_string());
+                            return Bson::String((version + 1).to_string());
                         }
                         _ => {}
                     }
                 }
-                serde_json::Value::Number(n) => {
-                    if n.is_i64() {
-                        return serde_json::json!(n.as_i64().unwrap_or(0) + 1);
-                    } else if n.is_u64() {
-                        return serde_json::json!(n.as_u64().unwrap_or(0) + 1);
-                    }
+
+                Bson::Int32(m) => {
+                    return Bson::Int32(m + 1);
                 }
+
+                Bson::Int64(m) => {
+                    return Bson::Int64(m + 1);
+                }
+
                 _ => {}
             }
         }
         return old_value.clone();
     }
 
-    fn try_make_where_sql(&self, old_version: &serde_json::Value) -> String {
-        if !old_version.eq(&serde_json::Value::Null) {
+    fn try_make_where_sql(&self, old_version: &Bson) -> String {
+        if !old_version.eq(&Bson::Null) {
             format!("{} = {} ", self.column(), old_version)
         } else {
             return String::default();
@@ -131,7 +135,7 @@ where
         db_type: &DriverType,
         index: &mut usize,
         skips: &[Skip],
-    ) -> crate::Result<(String, String, Vec<serde_json::Value>)> {
+    ) -> crate::Result<(String, String, Vec<Bson>)> {
         T::make_value_sql_arg(&self.table, db_type, index, skips)
     }
 }
