@@ -5,10 +5,10 @@ use std::collections::HashMap;
 
 use syn::{parse_macro_input, AttributeArgs, ItemFn};
 
-use crate::proc_macro::TokenStream;
-use crate::macros::crud_table_impl::{impl_crud_driver, impl_crud};
+use crate::macros::crud_table_impl::{impl_crud, impl_crud_driver};
+use crate::macros::py_sql_impl::{impl_macro_html_sql, impl_macro_py_sql};
 use crate::macros::sql_impl::impl_macro_sql;
-use crate::macros::py_sql_impl::{impl_macro_py_sql, impl_macro_html_sql};
+use crate::proc_macro::TokenStream;
 
 mod macros;
 mod util;
@@ -78,13 +78,12 @@ pub fn html_sql(args: TokenStream, func: TokenStream) -> TokenStream {
     let target_fn: ItemFn = syn::parse(func).unwrap();
     let stream = impl_macro_html_sql(&target_fn, &args);
     #[cfg(feature = "debug_mode")]
-        {
-            println!("............gen macro html_sql :\n {}", stream);
-            println!("............gen macro html_sql end............");
-        }
+    {
+        println!("............gen macro html_sql :\n {}", stream);
+        println!("............gen macro html_sql end............");
+    }
     stream
 }
-
 
 /// CRUD table,You can define functionality using the following properties
 /// #[crud_table]

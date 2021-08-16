@@ -3,12 +3,12 @@
 extern crate rbatis;
 
 use chrono::NaiveDateTime;
-use rbatis::crud::{CRUD};
-use rbatis::rbatis::Rbatis;
-use ntex::web::{middleware, App, Error, HttpResponse};
 use ntex::web;
-use std::sync::Arc;
+use ntex::web::{middleware, App, Error, HttpResponse};
+use rbatis::crud::CRUD;
+use rbatis::rbatis::Rbatis;
 use std::cell::Cell;
+use std::sync::Arc;
 
 #[crud_table]
 #[derive(Clone, Debug)]
@@ -46,17 +46,17 @@ impl Default for BizActivity {
     }
 }
 
-
 //mysql driver url
 pub const MYSQL_URL: &'static str = "mysql://root:123456@localhost:3306/test";
 
 type DBPool = Arc<Rbatis>;
 
-
 #[web::get("/")]
 async fn index(pool: web::types::Data<DBPool>) -> Result<HttpResponse, Error> {
     let v = pool.fetch_list::<BizActivity>().await.unwrap_or_default();
-    Ok(HttpResponse::Ok().set_header("Content-Type","text/json;charset=UTF-8").json(&v))
+    Ok(HttpResponse::Ok()
+        .set_header("Content-Type", "text/json;charset=UTF-8")
+        .json(&v))
 }
 
 #[ntex::main]
@@ -67,7 +67,10 @@ async fn main() -> std::io::Result<()> {
     log::info!("linking database...");
     let rbatis = Rbatis::new();
     //link database,also you can use  lazy_static! { static ref RB: Rbatis = Rbatis::new(); } replace this
-    rbatis.link(MYSQL_URL).await.expect("rbatis link database fail");
+    rbatis
+        .link(MYSQL_URL)
+        .await
+        .expect("rbatis link database fail");
     log::info!("linking database successful!");
     println!("Starting server at: http://127.0.0.1:8000");
     let rb_clone = DBPool::new(rbatis);
@@ -79,7 +82,7 @@ async fn main() -> std::io::Result<()> {
             .wrap(middleware::Logger::default())
             .service((index))
     })
-        .bind("127.0.0.1:8000")?
-        .run()
-        .await
+    .bind("127.0.0.1:8000")?
+    .run()
+    .await
 }

@@ -4,11 +4,11 @@ use serde_json::Value;
 
 use crate::core::db::DriverType;
 use crate::core::Error;
-use crate::sql::rule::SqlRule;
 use crate::crud::{CRUDTable, Skip};
-use std::ops::{Deref, DerefMut};
+use crate::sql::rule::SqlRule;
+use serde::{Deserialize, Deserializer, Serialize, Serializer};
 use std::collections::HashMap;
-use serde::{Serialize, Deserialize, Serializer, Deserializer};
+use std::ops::{Deref, DerefMut};
 
 /// Logic Delete Plugin trait
 pub trait LogicDelete: Send + Sync + Debug {
@@ -121,31 +121,43 @@ impl LogicDelete for RbatisLogicDeletePlugin {
     }
 }
 
-
 /// use this context will not use logic del
-pub struct TableNoLogic<T> where T: CRUDTable {
+pub struct TableNoLogic<T>
+where
+    T: CRUDTable,
+{
     pub table: T,
 }
 
-impl<T> Serialize for TableNoLogic<T> where T: CRUDTable {
-    fn serialize<S>(&self, serializer: S) -> Result<<S as Serializer>::Ok, <S as Serializer>::Error> where
-        S: Serializer {
+impl<T> Serialize for TableNoLogic<T>
+where
+    T: CRUDTable,
+{
+    fn serialize<S>(&self, serializer: S) -> Result<<S as Serializer>::Ok, <S as Serializer>::Error>
+    where
+        S: Serializer,
+    {
         T::serialize(&self.table, serializer)
     }
 }
 
-impl<'de, T> Deserialize<'de> for TableNoLogic<T> where T: CRUDTable {
-    fn deserialize<D>(deserializer: D) -> Result<Self, <D as Deserializer<'de>>::Error> where
-        D: Deserializer<'de> {
+impl<'de, T> Deserialize<'de> for TableNoLogic<T>
+where
+    T: CRUDTable,
+{
+    fn deserialize<D>(deserializer: D) -> Result<Self, <D as Deserializer<'de>>::Error>
+    where
+        D: Deserializer<'de>,
+    {
         let result = T::deserialize(deserializer)?;
-        return Ok(TableNoLogic {
-            table: result,
-        });
+        return Ok(TableNoLogic { table: result });
     }
 }
 
-
-impl<T> CRUDTable for TableNoLogic<T> where T: CRUDTable {
+impl<T> CRUDTable for TableNoLogic<T>
+where
+    T: CRUDTable,
+{
     fn is_use_plugin(plugin_name: &str) -> bool {
         if plugin_name.eq(std::any::type_name::<RbatisLogicDeletePlugin>()) {
             return false;
@@ -169,13 +181,16 @@ impl<T> CRUDTable for TableNoLogic<T> where T: CRUDTable {
         &self,
         db_type: &DriverType,
         index: &mut usize,
-        skips: &[Skip]
+        skips: &[Skip],
     ) -> crate::Result<(String, String, Vec<serde_json::Value>)> {
-        T::make_value_sql_arg(&self.table, db_type, index,skips)
+        T::make_value_sql_arg(&self.table, db_type, index, skips)
     }
 }
 
-impl<T> Deref for TableNoLogic<T> where T: CRUDTable {
+impl<T> Deref for TableNoLogic<T>
+where
+    T: CRUDTable,
+{
     type Target = T;
 
     fn deref(&self) -> &Self::Target {
@@ -183,16 +198,20 @@ impl<T> Deref for TableNoLogic<T> where T: CRUDTable {
     }
 }
 
-impl<T> DerefMut for TableNoLogic<T> where T: CRUDTable {
+impl<T> DerefMut for TableNoLogic<T>
+where
+    T: CRUDTable,
+{
     fn deref_mut(&mut self) -> &mut Self::Target {
         &mut self.table
     }
 }
 
-impl<T> From<T> for TableNoLogic<T> where T: CRUDTable {
+impl<T> From<T> for TableNoLogic<T>
+where
+    T: CRUDTable,
+{
     fn from(arg: T) -> Self {
-        TableNoLogic {
-            table: arg
-        }
+        TableNoLogic { table: arg }
     }
 }

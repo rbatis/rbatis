@@ -1,9 +1,9 @@
-use serde_json::Number;
-use std::fmt::Debug;
 use crate::crud::{CRUDTable, Skip};
-use serde::{Serialize, Deserialize, Serializer, Deserializer};
 use crate::DriverType;
+use serde::{Deserialize, Deserializer, Serialize, Serializer};
+use serde_json::Number;
 use std::collections::HashMap;
+use std::fmt::Debug;
 use std::ops::Deref;
 
 pub trait VersionLockPlugin: Send + Sync + Debug {
@@ -15,11 +15,7 @@ pub trait VersionLockPlugin: Send + Sync + Debug {
     fn column(&self) -> &str;
 
     /// set value = value + 1, support number and string value
-    fn try_add_one(
-        &self,
-        old_value: &serde_json::Value,
-        column: &str,
-    ) -> serde_json::Value {
+    fn try_add_one(&self, old_value: &serde_json::Value, column: &str) -> serde_json::Value {
         if self.column().eq(column) {
             match old_value {
                 serde_json::Value::String(s) => {
@@ -74,31 +70,43 @@ impl VersionLockPlugin for RbatisVersionLockPlugin {
     }
 }
 
-
 /// use this context will not use logic del
-pub struct TableNoVersion<T> where T: CRUDTable {
+pub struct TableNoVersion<T>
+where
+    T: CRUDTable,
+{
     pub table: T,
 }
 
-impl<T> Serialize for TableNoVersion<T> where T: CRUDTable {
-    fn serialize<S>(&self, serializer: S) -> Result<<S as Serializer>::Ok, <S as Serializer>::Error> where
-        S: Serializer {
+impl<T> Serialize for TableNoVersion<T>
+where
+    T: CRUDTable,
+{
+    fn serialize<S>(&self, serializer: S) -> Result<<S as Serializer>::Ok, <S as Serializer>::Error>
+    where
+        S: Serializer,
+    {
         T::serialize(&self.table, serializer)
     }
 }
 
-impl<'de, T> Deserialize<'de> for TableNoVersion<T> where T: CRUDTable {
-    fn deserialize<D>(deserializer: D) -> Result<Self, <D as Deserializer<'de>>::Error> where
-        D: Deserializer<'de> {
+impl<'de, T> Deserialize<'de> for TableNoVersion<T>
+where
+    T: CRUDTable,
+{
+    fn deserialize<D>(deserializer: D) -> Result<Self, <D as Deserializer<'de>>::Error>
+    where
+        D: Deserializer<'de>,
+    {
         let result = T::deserialize(deserializer)?;
-        return Ok(TableNoVersion {
-            table: result,
-        });
+        return Ok(TableNoVersion { table: result });
     }
 }
 
-
-impl<T> CRUDTable for TableNoVersion<T> where T: CRUDTable {
+impl<T> CRUDTable for TableNoVersion<T>
+where
+    T: CRUDTable,
+{
     fn is_use_plugin(plugin_name: &str) -> bool {
         if plugin_name.eq(std::any::type_name::<RbatisVersionLockPlugin>()) {
             return false;
@@ -124,11 +132,14 @@ impl<T> CRUDTable for TableNoVersion<T> where T: CRUDTable {
         index: &mut usize,
         skips: &[Skip],
     ) -> crate::Result<(String, String, Vec<serde_json::Value>)> {
-        T::make_value_sql_arg(&self.table, db_type, index,skips)
+        T::make_value_sql_arg(&self.table, db_type, index, skips)
     }
 }
 
-impl<T> Deref for TableNoVersion<T> where T: CRUDTable {
+impl<T> Deref for TableNoVersion<T>
+where
+    T: CRUDTable,
+{
     type Target = T;
 
     fn deref(&self) -> &Self::Target {
@@ -136,11 +147,11 @@ impl<T> Deref for TableNoVersion<T> where T: CRUDTable {
     }
 }
 
-
-impl<T> From<T> for TableNoVersion<T> where T: CRUDTable {
+impl<T> From<T> for TableNoVersion<T>
+where
+    T: CRUDTable,
+{
     fn from(arg: T) -> Self {
-        TableNoVersion {
-            table: arg
-        }
+        TableNoVersion { table: arg }
     }
 }

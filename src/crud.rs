@@ -4,7 +4,7 @@ use std::hash::Hash;
 
 use async_trait::async_trait;
 use serde::de::DeserializeOwned;
-use serde::{Serialize, Serializer, Deserialize, Deserializer};
+use serde::{Deserialize, Deserializer, Serialize, Serializer};
 use serde_json::{Map, Value};
 
 use crate::core::convert::{ResultCodec, StmtConvert};
@@ -13,15 +13,15 @@ use crate::core::db::DriverType;
 use crate::core::Error;
 use crate::core::Result;
 use crate::executor::{ExecutorMut, RBatisConnExecutor, RBatisTxExecutor};
-use crate::plugin::page::{IPageRequest, Page, IPage};
+use crate::plugin::page::{IPage, IPageRequest, Page};
 use crate::plugin::version_lock::VersionLockPlugin;
 use crate::rbatis::Rbatis;
 use crate::sql::rule::SqlRule;
 use crate::utils::string_util::to_snake_name;
 use crate::wrapper::Wrapper;
+use serde_json::value::Value::Null;
 use std::marker::PhantomData;
 use std::ops::{Deref, DerefMut};
-use serde_json::value::Value::Null;
 
 /// DataBase Table Model trait
 ///
@@ -32,7 +32,9 @@ use serde_json::value::Value::Null;
 ///
 pub trait CRUDTable: Send + Sync + Serialize + DeserializeOwned {
     /// is enable use plugin
-    fn is_use_plugin(plugin_name: &str) -> bool { true }
+    fn is_use_plugin(plugin_name: &str) -> bool {
+        true
+    }
 
     /// get table name,default is type name for snake name
     ///
@@ -83,7 +85,6 @@ pub trait CRUDTable: Send + Sync + Serialize + DeserializeOwned {
         fields.pop();
         return format!("{}", fields);
     }
-
 
     ///format column
     fn do_format_column(driver_type: &DriverType, column: &str, data: &mut String) {
@@ -155,9 +156,7 @@ pub trait CRUDTable: Send + Sync + Serialize + DeserializeOwned {
             let mut data = String::new();
             db_type.stmt_convert(*index, &mut data);
             Self::do_format_column(db_type, &column, &mut data);
-            value_sql = value_sql
-                + data.as_str()
-                + ",";
+            value_sql = value_sql + data.as_str() + ",";
             arr.push(v.to_owned());
             *index += 1;
         }
@@ -175,14 +174,15 @@ pub trait CRUDTable: Send + Sync + Serialize + DeserializeOwned {
         return HashMap::new();
     }
 
-
     /// return table column value
     /// If a macro is used, the method is overridden by the macro
     fn get(&self, column: &str) -> serde_json::Value {
         let s = serde_json::json!(self);
         let value = s.get(column);
         match value {
-            None => { return serde_json::Value::Null; }
+            None => {
+                return serde_json::Value::Null;
+            }
             Some(v) => {
                 return v.clone();
             }
@@ -191,8 +191,8 @@ pub trait CRUDTable: Send + Sync + Serialize + DeserializeOwned {
 }
 
 impl<T> CRUDTable for Option<T>
-    where
-        T: CRUDTable,
+where
+    T: CRUDTable,
 {
     fn table_name() -> String {
         T::table_name()
@@ -221,13 +221,20 @@ impl<T> CRUDTable for Option<T>
     }
 }
 
-
 pub trait Fields {
-    fn to_fields<T>(&self, column: &str) -> Vec<T> where T: DeserializeOwned;
+    fn to_fields<T>(&self, column: &str) -> Vec<T>
+    where
+        T: DeserializeOwned;
 }
 
-impl<Table> Fields for Vec<Table> where Table: CRUDTable {
-    fn to_fields<T>(&self, column: &str) -> Vec<T> where T: DeserializeOwned {
+impl<Table> Fields for Vec<Table>
+where
+    Table: CRUDTable,
+{
+    fn to_fields<T>(&self, column: &str) -> Vec<T>
+    where
+        T: DeserializeOwned,
+    {
         let mut results = vec![];
         for x in self {
             let v = x.get(column);
@@ -244,7 +251,6 @@ impl<Table> Fields for Vec<Table> where Table: CRUDTable {
     }
 }
 
-
 #[async_trait]
 pub trait CRUD {
     async fn save_by_wrapper<T>(
@@ -253,16 +259,16 @@ pub trait CRUD {
         w: &Wrapper,
         skips: &[Skip],
     ) -> Result<DBExecResult>
-        where
-            T: CRUDTable;
+    where
+        T: CRUDTable;
 
     async fn save<T>(&self, table: &T, skips: &[Skip]) -> Result<DBExecResult>
-        where
-            T: CRUDTable;
+    where
+        T: CRUDTable;
 
     async fn save_batch<T>(&self, tables: &[T], skips: &[Skip]) -> Result<DBExecResult>
-        where
-            T: CRUDTable;
+    where
+        T: CRUDTable;
 
     /// save_batch_slice
     /// batch save each slice_len every time
@@ -272,57 +278,57 @@ pub trait CRUD {
         slice_len: usize,
         skips: &[Skip],
     ) -> Result<DBExecResult>
-        where
-            T: CRUDTable;
+    where
+        T: CRUDTable;
 
     async fn remove_by_wrapper<T>(&self, w: &Wrapper) -> Result<u64>
-        where
-            T: CRUDTable;
+    where
+        T: CRUDTable;
 
     /// remove_by_column
     /// column_value,column's value
-    async fn remove_by_column<T, C>(&self, column: &str, column_value: &C) -> Result<u64> where T: CRUDTable, C: Serialize + Send + Sync;
+    async fn remove_by_column<T, C>(&self, column: &str, column_value: &C) -> Result<u64>
+    where
+        T: CRUDTable,
+        C: Serialize + Send + Sync;
 
     /// remove_batch_by_column
     /// column_values,column's value
     async fn remove_batch_by_column<T, C>(&self, column: &str, column_values: &[C]) -> Result<u64>
-        where
-            T: CRUDTable, C: Serialize + Send + Sync;
+    where
+        T: CRUDTable,
+        C: Serialize + Send + Sync;
 
     /// update_by_wrapper
     /// skips: use &[Skip::Null] will skip id column and null value param
-    async fn update_by_wrapper<T>(
-        &self,
-        table: &mut T,
-        w: &Wrapper,
-        skips: &[Skip],
-    ) -> Result<u64>
-        where
-            T: CRUDTable;
+    async fn update_by_wrapper<T>(&self, table: &mut T, w: &Wrapper, skips: &[Skip]) -> Result<u64>
+    where
+        T: CRUDTable;
     /// update database record by id
     async fn update_by_column<T>(&self, column: &str, table: &mut T) -> Result<u64>
-        where
-            T: CRUDTable;
+    where
+        T: CRUDTable;
 
     /// remove batch database record by args
     async fn update_batch_by_column<T>(&self, column: &str, tables: &mut [T]) -> Result<u64>
-        where
-            T: CRUDTable;
+    where
+        T: CRUDTable;
 
     /// fetch database record by id
     async fn fetch_by_column<T, C>(&self, column: &str, value: &C) -> Result<T>
-        where
-            T: CRUDTable, C: Serialize + Send + Sync;
+    where
+        T: CRUDTable,
+        C: Serialize + Send + Sync;
 
     /// fetch database record by a wrapper
     async fn fetch_by_wrapper<T>(&self, w: &Wrapper) -> Result<T>
-        where
-            T: CRUDTable;
+    where
+        T: CRUDTable;
 
     /// count database record by a wrapper
     async fn fetch_count_by_wrapper<T>(&self, w: &Wrapper) -> Result<u64>
-        where
-            T: CRUDTable;
+    where
+        T: CRUDTable;
 
     /// fetch page database record list by a wrapper
     async fn fetch_page_by_wrapper<T>(
@@ -330,23 +336,24 @@ pub trait CRUD {
         w: &Wrapper,
         page: &dyn IPageRequest,
     ) -> Result<Page<T>>
-        where
-            T: CRUDTable;
+    where
+        T: CRUDTable;
 
     /// fetch database record list for all
     async fn fetch_list<T>(&self) -> Result<Vec<T>>
-        where
-            T: CRUDTable;
+    where
+        T: CRUDTable;
 
     /// fetch database record list by a id array
     async fn fetch_list_by_column<T, C>(&self, column: &str, column_values: &[C]) -> Result<Vec<T>>
-        where
-            T: CRUDTable, C: Serialize + Send + Sync;
+    where
+        T: CRUDTable,
+        C: Serialize + Send + Sync;
 
     /// fetch database record list by a wrapper
     async fn fetch_list_by_wrapper<T>(&self, w: &Wrapper) -> Result<Vec<T>>
-        where
-            T: CRUDTable;
+    where
+        T: CRUDTable;
 
     /// fetch page result(prepare sql)
     async fn fetch_page<T>(
@@ -355,8 +362,8 @@ pub trait CRUD {
         args: &Vec<serde_json::Value>,
         page_request: &dyn IPageRequest,
     ) -> Result<Page<T>>
-        where
-            T: DeserializeOwned + Serialize + Send + Sync;
+    where
+        T: DeserializeOwned + Serialize + Send + Sync;
 }
 
 #[async_trait]
@@ -368,15 +375,16 @@ pub trait CRUDMut: ExecutorMut {
         w: &Wrapper,
         skips: &[Skip],
     ) -> Result<DBExecResult>
-        where
-            T: CRUDTable,
+    where
+        T: CRUDTable,
     {
         if w.sql.starts_with(crate::sql::TEMPLATE.insert_into.value) {
             return self.exec(&w.sql, &w.args).await;
         } else {
             let mut w = w.clone();
             let mut index = 0;
-            let (columns, column_values, args) = table.make_value_sql_arg(&self.driver_type()?, &mut index, skips)?;
+            let (columns, column_values, args) =
+                table.make_value_sql_arg(&self.driver_type()?, &mut index, skips)?;
             let table_name = choose_dyn_table_name::<T>(&w);
             w = w.insert_into(&table_name, &columns, &column_values);
             for x in args {
@@ -388,8 +396,8 @@ pub trait CRUDMut: ExecutorMut {
 
     /// save one entity to database
     async fn save<T>(&mut self, table: &T, skips: &[Skip]) -> Result<DBExecResult>
-        where
-            T: CRUDTable,
+    where
+        T: CRUDTable,
     {
         let mut index = 0;
         let (columns, values, args) =
@@ -413,8 +421,8 @@ pub trait CRUDMut: ExecutorMut {
     ///
     ///
     async fn save_batch<T>(&mut self, tables: &[T], skips: &[Skip]) -> Result<DBExecResult>
-        where
-            T: CRUDTable,
+    where
+        T: CRUDTable,
     {
         if tables.is_empty() {
             return Ok(DBExecResult {
@@ -463,8 +471,8 @@ pub trait CRUDMut: ExecutorMut {
         slice_len: usize,
         skips: &[Skip],
     ) -> Result<DBExecResult>
-        where
-            T: CRUDTable,
+    where
+        T: CRUDTable,
     {
         if slice_len == 0 || tables.len() <= slice_len {
             return self.save_batch(tables, skips).await;
@@ -494,19 +502,26 @@ pub trait CRUDMut: ExecutorMut {
 
     /// remove database record by a wrapper
     async fn remove_by_wrapper<T>(&mut self, w: &Wrapper) -> Result<u64>
-        where
-            T: CRUDTable,
+    where
+        T: CRUDTable,
     {
         let table_name = choose_dyn_table_name::<T>(w);
         let where_sql = self.driver_type()?.make_where(&w.sql);
         let mut sql = String::new();
-        if self.get_rbatis().logic_plugin.is_some() && T::is_use_plugin(self.get_rbatis().logic_plugin.as_ref().unwrap().name()) {
-            sql = self.get_rbatis().logic_plugin.as_ref().unwrap().create_remove_sql(
-                &self.driver_type()?,
-                &table_name,
-                &T::table_columns(),
-                &where_sql,
-            )?;
+        if self.get_rbatis().logic_plugin.is_some()
+            && T::is_use_plugin(self.get_rbatis().logic_plugin.as_ref().unwrap().name())
+        {
+            sql = self
+                .get_rbatis()
+                .logic_plugin
+                .as_ref()
+                .unwrap()
+                .create_remove_sql(
+                    &self.driver_type()?,
+                    &table_name,
+                    &T::table_columns(),
+                    &where_sql,
+                )?;
         } else {
             sql = format!(
                 "{} {} {}",
@@ -515,35 +530,40 @@ pub trait CRUDMut: ExecutorMut {
                 &where_sql
             );
         }
-        return Ok(self
-            .exec(sql.as_str(), &w.args)
-            .await?
-            .rows_affected);
+        return Ok(self.exec(sql.as_str(), &w.args).await?.rows_affected);
     }
 
     /// remove database record by id
     async fn remove_by_column<T, C>(&mut self, column: &str, value: &C) -> Result<u64>
-        where
-            T: CRUDTable, C: Serialize + Send + Sync,
+    where
+        T: CRUDTable,
+        C: Serialize + Send + Sync,
     {
         let mut sql = String::new();
         let driver_type = &self.driver_type()?;
         let mut data = String::new();
         driver_type.stmt_convert(0, &mut data);
         T::do_format_column(&driver_type, column, &mut data);
-        if self.get_rbatis().logic_plugin.is_some() && T::is_use_plugin(self.get_rbatis().logic_plugin.as_ref().unwrap().name()) {
-            sql = self.get_rbatis().logic_plugin.as_ref().unwrap().create_remove_sql(
-                &driver_type,
-                T::table_name().as_str(),
-                &T::table_columns(),
-                format!(
-                    "{} {} = {}",
-                    crate::sql::TEMPLATE.r#where.value,
-                    column,
-                    data
-                )
+        if self.get_rbatis().logic_plugin.is_some()
+            && T::is_use_plugin(self.get_rbatis().logic_plugin.as_ref().unwrap().name())
+        {
+            sql = self
+                .get_rbatis()
+                .logic_plugin
+                .as_ref()
+                .unwrap()
+                .create_remove_sql(
+                    &driver_type,
+                    T::table_name().as_str(),
+                    &T::table_columns(),
+                    format!(
+                        "{} {} = {}",
+                        crate::sql::TEMPLATE.r#where.value,
+                        column,
+                        data
+                    )
                     .as_str(),
-            )?;
+                )?;
         } else {
             sql = format!(
                 "{} {} {} {} = {}",
@@ -554,10 +574,7 @@ pub trait CRUDMut: ExecutorMut {
                 data
             );
         }
-        return Ok(self
-            .exec(&sql, &vec![json!(value)])
-            .await?
-            .rows_affected);
+        return Ok(self.exec(&sql, &vec![json!(value)]).await?.rows_affected);
     }
 
     ///remove batch id
@@ -566,8 +583,9 @@ pub trait CRUDMut: ExecutorMut {
     /// [rbatis] Exec ==> delete from biz_activity where id IN ( ? , ? )
     ///
     async fn remove_batch_by_column<T, C>(&mut self, column: &str, values: &[C]) -> Result<u64>
-        where
-            T: CRUDTable, C: Serialize + Send + Sync
+    where
+        T: CRUDTable,
+        C: Serialize + Send + Sync,
     {
         if values.is_empty() {
             return Ok(0);
@@ -588,8 +606,8 @@ pub trait CRUDMut: ExecutorMut {
         w: &Wrapper,
         skips: &[Skip],
     ) -> Result<u64>
-        where
-            T: CRUDTable,
+    where
+        T: CRUDTable,
     {
         let table_name = choose_dyn_table_name::<T>(w);
         let mut args = vec![];
@@ -645,21 +663,17 @@ pub trait CRUDMut: ExecutorMut {
             }
             let mut data = String::new();
             driver_type.stmt_convert(args.len(), &mut data);
-            T::do_format_column(
-                &driver_type,
-                &column,
-                &mut data,
-            );
-            sets.push_str(
-                format!(
-                    " {} = {},",
-                    column,
-                    data
-                ).as_str(),
-            );
+            T::do_format_column(&driver_type, &column, &mut data);
+            sets.push_str(format!(" {} = {},", column, data).as_str());
             match &self.get_rbatis().version_lock_plugin {
                 Some(version_lock_plugin) => {
-                    if T::is_use_plugin(self.get_rbatis().version_lock_plugin.as_ref().unwrap().name()) {
+                    if T::is_use_plugin(
+                        self.get_rbatis()
+                            .version_lock_plugin
+                            .as_ref()
+                            .unwrap()
+                            .name(),
+                    ) {
                         old_version = v.clone();
                         v = version_lock_plugin.try_add_one(&old_version, column);
                     }
@@ -679,11 +693,16 @@ pub trait CRUDMut: ExecutorMut {
         );
         wrapper.args = args;
 
-
         //version lock
         match self.get_rbatis().version_lock_plugin.as_ref() {
             Some(version_lock_plugin) => {
-                if T::is_use_plugin(self.get_rbatis().version_lock_plugin.as_ref().unwrap().name()) {
+                if T::is_use_plugin(
+                    self.get_rbatis()
+                        .version_lock_plugin
+                        .as_ref()
+                        .unwrap()
+                        .name(),
+                ) {
                     let version_sql = version_lock_plugin
                         .as_ref()
                         .try_make_where_sql(&old_version);
@@ -728,26 +747,27 @@ pub trait CRUDMut: ExecutorMut {
     /// update database record by id
     /// update sql will be skip null value and id column
     async fn update_by_column<T>(&mut self, column: &str, table: &mut T) -> Result<u64>
-        where
-            T: CRUDTable
+    where
+        T: CRUDTable,
     {
-        let rb = self
-            .get_rbatis();
+        let rb = self.get_rbatis();
         let value = table.get(column);
         self.update_by_wrapper(
             table,
-            &rb
-                .new_wrapper_table::<T>()
-                .eq(column, value),
-            &[Skip::Value(Value::Null), Skip::Column("id"), Skip::Column(column)],
+            &rb.new_wrapper_table::<T>().eq(column, value),
+            &[
+                Skip::Value(Value::Null),
+                Skip::Column("id"),
+                Skip::Column(column),
+            ],
         )
-            .await
+        .await
     }
 
     /// remove batch database record by args
     async fn update_batch_by_column<T>(&mut self, column: &str, args: &mut [T]) -> Result<u64>
-        where
-            T: CRUDTable
+    where
+        T: CRUDTable,
     {
         let mut updates = 0;
         for x in args {
@@ -758,8 +778,8 @@ pub trait CRUDMut: ExecutorMut {
 
     /// fetch database record by a wrapper
     async fn fetch_by_wrapper<T>(&mut self, w: &Wrapper) -> Result<T>
-        where
-            T: CRUDTable,
+    where
+        T: CRUDTable,
     {
         let sql = make_select_sql::<T>(self.get_rbatis(), &T::table_columns(), &w)?;
         return self.fetch(sql.as_str(), &w.args).await;
@@ -767,8 +787,8 @@ pub trait CRUDMut: ExecutorMut {
 
     /// count database record by a wrapper
     async fn fetch_count_by_wrapper<T>(&mut self, w: &Wrapper) -> Result<u64>
-        where
-            T: CRUDTable,
+    where
+        T: CRUDTable,
     {
         let sql = make_select_sql::<T>(self.get_rbatis(), "count(1)", &w)?;
         return self.fetch(sql.as_str(), &w.args).await;
@@ -776,17 +796,21 @@ pub trait CRUDMut: ExecutorMut {
 
     /// fetch database record by value
     async fn fetch_by_column<T, C>(&mut self, column: &str, value: &C) -> Result<T>
-        where
-            T: CRUDTable, C: Serialize + Send + Sync,
+    where
+        T: CRUDTable,
+        C: Serialize + Send + Sync,
     {
-        let w = self.get_rbatis().new_wrapper_table::<T>().eq(&column, value);
+        let w = self
+            .get_rbatis()
+            .new_wrapper_table::<T>()
+            .eq(&column, value);
         return self.fetch_by_wrapper(&w).await;
     }
 
     /// fetch database record list by a wrapper
     async fn fetch_list_by_wrapper<T>(&mut self, w: &Wrapper) -> Result<Vec<T>>
-        where
-            T: CRUDTable,
+    where
+        T: CRUDTable,
     {
         let sql = make_select_sql::<T>(self.get_rbatis(), &T::table_columns(), &w)?;
         return self.fetch(sql.as_str(), &w.args).await;
@@ -794,23 +818,32 @@ pub trait CRUDMut: ExecutorMut {
 
     /// fetch database record list for all
     async fn fetch_list<T>(&mut self) -> Result<Vec<T>>
-        where
-            T: CRUDTable,
+    where
+        T: CRUDTable,
     {
         let rb = self.get_rbatis();
-        return self.fetch_list_by_wrapper(&rb.new_wrapper_table::<T>())
+        return self
+            .fetch_list_by_wrapper(&rb.new_wrapper_table::<T>())
             .await;
     }
 
     /// fetch database record list by a id array
-    async fn fetch_list_by_column<T, C>(&mut self, column: &str, column_values: &[C]) -> Result<Vec<T>>
-        where
-            T: CRUDTable, C: Serialize + Send + Sync,
+    async fn fetch_list_by_column<T, C>(
+        &mut self,
+        column: &str,
+        column_values: &[C],
+    ) -> Result<Vec<T>>
+    where
+        T: CRUDTable,
+        C: Serialize + Send + Sync,
     {
         if column_values.is_empty() {
             return Ok(vec![]);
         }
-        let w = self.get_rbatis().new_wrapper_table::<T>().in_array(&column, column_values);
+        let w = self
+            .get_rbatis()
+            .new_wrapper_table::<T>()
+            .in_array(&column, column_values);
         return self.fetch_list_by_wrapper(&w).await;
     }
 
@@ -820,8 +853,8 @@ pub trait CRUDMut: ExecutorMut {
         w: &Wrapper,
         page: &dyn IPageRequest,
     ) -> Result<Page<T>>
-        where
-            T: CRUDTable,
+    where
+        T: CRUDTable,
     {
         let sql = make_select_sql::<T>(self.get_rbatis(), &T::table_columns(), &w)?;
         self.fetch_page(sql.as_str(), &w.args, page).await
@@ -834,8 +867,8 @@ pub trait CRUDMut: ExecutorMut {
         args: &Vec<serde_json::Value>,
         page_request: &dyn IPageRequest,
     ) -> Result<Page<T>>
-        where
-            T: DeserializeOwned + Serialize + Send + Sync,
+    where
+        T: DeserializeOwned + Serialize + Send + Sync,
     {
         let mut page_result = Page::new(page_request.get_page_no(), page_request.get_page_size());
         page_result.search_count = page_request.is_search_count();
@@ -847,9 +880,7 @@ pub trait CRUDMut: ExecutorMut {
         )?;
         if page_request.is_search_count() {
             //make count sql
-            let total: Option<u64> = self
-                .fetch(&count_sql, args)
-                .await?;
+            let total: Option<u64> = self.fetch(&count_sql, args).await?;
             page_result.set_total(total.unwrap_or(0));
             page_result.pages = page_result.get_pages();
             if page_result.get_total() == 0 {
@@ -863,15 +894,14 @@ pub trait CRUDMut: ExecutorMut {
     }
 }
 
-
 impl CRUDMut for RBatisConnExecutor<'_> {}
 
 impl CRUDMut for RBatisTxExecutor<'_> {}
 
 /// choose table name
 fn choose_dyn_table_name<T>(w: &Wrapper) -> String
-    where
-        T: CRUDTable,
+where
+    T: CRUDTable,
 {
     let mut table_name = T::table_name();
     let table_name_format = w.formats.get("table_name");
@@ -887,8 +917,8 @@ fn choose_dyn_table_name<T>(w: &Wrapper) -> String
 }
 
 fn make_select_sql<T>(rb: &Rbatis, column: &str, w: &Wrapper) -> Result<String>
-    where
-        T: CRUDTable,
+where
+    T: CRUDTable,
 {
     let driver_type = rb.driver_type()?;
     let table_name = choose_dyn_table_name::<T>(w);
@@ -904,109 +934,162 @@ fn make_select_sql<T>(rb: &Rbatis, column: &str, w: &Wrapper) -> Result<String>
 
 #[async_trait]
 impl CRUD for Rbatis {
-    async fn save_by_wrapper<T>(&self, table: &T, w: &Wrapper, skips: &[Skip]) -> Result<DBExecResult> where
-        T: CRUDTable {
+    async fn save_by_wrapper<T>(
+        &self,
+        table: &T,
+        w: &Wrapper,
+        skips: &[Skip],
+    ) -> Result<DBExecResult>
+    where
+        T: CRUDTable,
+    {
         let mut conn = self.acquire().await?;
         conn.save_by_wrapper(table, w, skips).await
     }
 
-    async fn save<T>(&self, table: &T, skips: &[Skip]) -> Result<DBExecResult> where
-        T: CRUDTable {
+    async fn save<T>(&self, table: &T, skips: &[Skip]) -> Result<DBExecResult>
+    where
+        T: CRUDTable,
+    {
         let mut conn = self.acquire().await?;
         conn.save(table, skips).await
     }
 
-    async fn save_batch<T>(&self, tables: &[T], skips: &[Skip]) -> Result<DBExecResult> where
-        T: CRUDTable {
+    async fn save_batch<T>(&self, tables: &[T], skips: &[Skip]) -> Result<DBExecResult>
+    where
+        T: CRUDTable,
+    {
         let mut conn = self.acquire().await?;
         conn.save_batch(tables, skips).await
     }
 
-    async fn save_batch_slice<T>(&self, tables: &[T], slice_len: usize, skips: &[Skip]) -> Result<DBExecResult> where
-        T: CRUDTable {
+    async fn save_batch_slice<T>(
+        &self,
+        tables: &[T],
+        slice_len: usize,
+        skips: &[Skip],
+    ) -> Result<DBExecResult>
+    where
+        T: CRUDTable,
+    {
         let mut conn = self.acquire().await?;
         conn.save_batch_slice(tables, slice_len, skips).await
     }
 
-    async fn remove_by_wrapper<T>(&self, w: &Wrapper) -> Result<u64> where
-        T: CRUDTable {
+    async fn remove_by_wrapper<T>(&self, w: &Wrapper) -> Result<u64>
+    where
+        T: CRUDTable,
+    {
         let mut conn = self.acquire().await?;
         conn.remove_by_wrapper::<T>(w).await
     }
 
-    async fn remove_by_column<T, C>(&self, column: &str, value: &C) -> Result<u64> where
-        T: CRUDTable, C: Serialize + Send + Sync {
+    async fn remove_by_column<T, C>(&self, column: &str, value: &C) -> Result<u64>
+    where
+        T: CRUDTable,
+        C: Serialize + Send + Sync,
+    {
         let mut conn = self.acquire().await?;
         conn.remove_by_column::<T, C>(column, value).await
     }
 
-    async fn remove_batch_by_column<T, C>(&self, column: &str, values: &[C]) -> Result<u64> where
-        T: CRUDTable, C: Serialize + Send + Sync {
+    async fn remove_batch_by_column<T, C>(&self, column: &str, values: &[C]) -> Result<u64>
+    where
+        T: CRUDTable,
+        C: Serialize + Send + Sync,
+    {
         let mut conn = self.acquire().await?;
         conn.remove_batch_by_column::<T, C>(column, values).await
     }
 
     /// update_by_wrapper
     /// skips: use &[Skip::Value(&serde_json::Value::Null), Skip::Column("id"), Skip::Column(column)] will skip id column and null value param
-    async fn update_by_wrapper<T>(&self, table: &mut T, w: &Wrapper, skips: &[Skip]) -> Result<u64> where
-        T: CRUDTable {
+    async fn update_by_wrapper<T>(&self, table: &mut T, w: &Wrapper, skips: &[Skip]) -> Result<u64>
+    where
+        T: CRUDTable,
+    {
         let mut conn = self.acquire().await?;
         conn.update_by_wrapper(table, w, skips).await
     }
 
-    async fn update_by_column<T>(&self, column: &str, table: &mut T) -> Result<u64> where
-        T: CRUDTable {
+    async fn update_by_column<T>(&self, column: &str, table: &mut T) -> Result<u64>
+    where
+        T: CRUDTable,
+    {
         let mut conn = self.acquire().await?;
         conn.update_by_column(column, table).await
     }
 
-    async fn update_batch_by_column<T>(&self, column: &str, args: &mut [T]) -> Result<u64> where
-        T: CRUDTable {
+    async fn update_batch_by_column<T>(&self, column: &str, args: &mut [T]) -> Result<u64>
+    where
+        T: CRUDTable,
+    {
         let mut conn = self.acquire().await?;
         conn.update_batch_by_column::<T>(column, args).await
     }
 
-    async fn fetch_by_column<T, C>(&self, column: &str, value: &C) -> Result<T> where
-        T: CRUDTable, C: Serialize + Send + Sync {
+    async fn fetch_by_column<T, C>(&self, column: &str, value: &C) -> Result<T>
+    where
+        T: CRUDTable,
+        C: Serialize + Send + Sync,
+    {
         let mut conn = self.acquire().await?;
         conn.fetch_by_column::<T, C>(column, value).await
     }
 
-    async fn fetch_by_wrapper<T>(&self, w: &Wrapper) -> Result<T> where
-        T: CRUDTable {
+    async fn fetch_by_wrapper<T>(&self, w: &Wrapper) -> Result<T>
+    where
+        T: CRUDTable,
+    {
         let mut conn = self.acquire().await?;
         conn.fetch_by_wrapper(w).await
     }
 
-    async fn fetch_count_by_wrapper<T>(&self, w: &Wrapper) -> Result<u64> where
-        T: CRUDTable {
+    async fn fetch_count_by_wrapper<T>(&self, w: &Wrapper) -> Result<u64>
+    where
+        T: CRUDTable,
+    {
         let mut conn = self.acquire().await?;
         conn.fetch_count_by_wrapper::<T>(w).await
     }
 
-    async fn fetch_page_by_wrapper<T>(&self, w: &Wrapper, page: &dyn IPageRequest) -> Result<Page<T>> where
-        T: CRUDTable {
+    async fn fetch_page_by_wrapper<T>(
+        &self,
+        w: &Wrapper,
+        page: &dyn IPageRequest,
+    ) -> Result<Page<T>>
+    where
+        T: CRUDTable,
+    {
         let mut conn = self.acquire().await?;
         conn.fetch_page_by_wrapper::<T>(w, page).await
     }
 
-    async fn fetch_list<T>(&self) -> Result<Vec<T>> where
-        T: CRUDTable {
+    async fn fetch_list<T>(&self) -> Result<Vec<T>>
+    where
+        T: CRUDTable,
+    {
         let mut conn = self.acquire().await?;
         conn.fetch_list().await
     }
 
-    async fn fetch_list_by_column<T, C>(&self, column: &str, column_values: &[C]) -> Result<Vec<T>> where
-        T: CRUDTable, C: Serialize + Send + Sync {
+    async fn fetch_list_by_column<T, C>(&self, column: &str, column_values: &[C]) -> Result<Vec<T>>
+    where
+        T: CRUDTable,
+        C: Serialize + Send + Sync,
+    {
         if column_values.is_empty() {
             return Ok(vec![]);
         }
         let mut conn = self.acquire().await?;
-        conn.fetch_list_by_column::<T, C>(column, column_values).await
+        conn.fetch_list_by_column::<T, C>(column, column_values)
+            .await
     }
 
-    async fn fetch_list_by_wrapper<T>(&self, w: &Wrapper) -> Result<Vec<T>> where
-        T: CRUDTable {
+    async fn fetch_list_by_wrapper<T>(&self, w: &Wrapper) -> Result<Vec<T>>
+    where
+        T: CRUDTable,
+    {
         let mut conn = self.acquire().await?;
         conn.fetch_list_by_wrapper(w).await
     }
@@ -1018,14 +1101,13 @@ impl CRUD for Rbatis {
         args: &Vec<serde_json::Value>,
         page_request: &dyn IPageRequest,
     ) -> Result<Page<T>>
-        where
-            T: DeserializeOwned + Serialize + Send + Sync,
+    where
+        T: DeserializeOwned + Serialize + Send + Sync,
     {
         let mut conn = self.acquire().await?;
         conn.fetch_page(sql, args, page_request).await
     }
 }
-
 
 /// skip column or param value
 pub enum Skip<'a> {
@@ -1037,11 +1119,13 @@ pub enum Skip<'a> {
 
 impl<'a> Skip<'a> {
     /// from serialize value
-    pub fn value<T>(arg: T) -> Self where T: Serialize {
+    pub fn value<T>(arg: T) -> Self
+    where
+        T: Serialize,
+    {
         Self::Value(serde_json::json!(arg))
     }
 }
-
 
 pub trait TableColumnProvider: Send + Sync {
     fn table_name() -> String;
@@ -1054,16 +1138,31 @@ pub struct DynTableColumn<T: CRUDTable, P: TableColumnProvider> {
     pub p: PhantomData<P>,
 }
 
-impl<T, P> Serialize for DynTableColumn<T, P> where T: CRUDTable, P: TableColumnProvider {
-    fn serialize<S>(&self, serializer: S) -> std::result::Result<<S as Serializer>::Ok, <S as Serializer>::Error> where
-        S: Serializer {
+impl<T, P> Serialize for DynTableColumn<T, P>
+where
+    T: CRUDTable,
+    P: TableColumnProvider,
+{
+    fn serialize<S>(
+        &self,
+        serializer: S,
+    ) -> std::result::Result<<S as Serializer>::Ok, <S as Serializer>::Error>
+    where
+        S: Serializer,
+    {
         T::serialize(&self.inner, serializer)
     }
 }
 
-impl<'de, T, P> Deserialize<'de> for DynTableColumn<T, P> where T: CRUDTable, P: TableColumnProvider {
-    fn deserialize<D>(deserializer: D) -> std::result::Result<Self, <D as Deserializer<'de>>::Error> where
-        D: Deserializer<'de> {
+impl<'de, T, P> Deserialize<'de> for DynTableColumn<T, P>
+where
+    T: CRUDTable,
+    P: TableColumnProvider,
+{
+    fn deserialize<D>(deserializer: D) -> std::result::Result<Self, <D as Deserializer<'de>>::Error>
+    where
+        D: Deserializer<'de>,
+    {
         let result = T::deserialize(deserializer)?;
         return Ok(DynTableColumn {
             inner: result,
@@ -1072,7 +1171,11 @@ impl<'de, T, P> Deserialize<'de> for DynTableColumn<T, P> where T: CRUDTable, P:
     }
 }
 
-impl<T, P> Deref for DynTableColumn<T, P> where T: CRUDTable, P: TableColumnProvider {
+impl<T, P> Deref for DynTableColumn<T, P>
+where
+    T: CRUDTable,
+    P: TableColumnProvider,
+{
     type Target = T;
 
     fn deref(&self) -> &Self::Target {
@@ -1080,15 +1183,25 @@ impl<T, P> Deref for DynTableColumn<T, P> where T: CRUDTable, P: TableColumnProv
     }
 }
 
-impl<T, P> DerefMut for DynTableColumn<T, P> where T: CRUDTable, P: TableColumnProvider {
+impl<T, P> DerefMut for DynTableColumn<T, P>
+where
+    T: CRUDTable,
+    P: TableColumnProvider,
+{
     fn deref_mut(&mut self) -> &mut Self::Target {
         &mut self.inner
     }
 }
 
-impl<T, P> CRUDTable for DynTableColumn<T, P> where T: CRUDTable, P: TableColumnProvider {
+impl<T, P> CRUDTable for DynTableColumn<T, P>
+where
+    T: CRUDTable,
+    P: TableColumnProvider,
+{
     /// is enable use plugin
-    fn is_use_plugin(plugin_name: &str) -> bool { T::is_use_plugin(plugin_name) }
+    fn is_use_plugin(plugin_name: &str) -> bool {
+        T::is_use_plugin(plugin_name)
+    }
 
     fn table_name() -> String {
         P::table_name()
@@ -1121,7 +1234,6 @@ impl<T, P> CRUDTable for DynTableColumn<T, P> where T: CRUDTable, P: TableColumn
     ) -> HashMap<String, fn(arg: &str) -> String> {
         T::formats(driver_type)
     }
-
 
     /// return table column value
     /// If a macro is used, the method is overridden by the macro

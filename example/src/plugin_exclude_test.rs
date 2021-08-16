@@ -41,9 +41,9 @@ mod test {
                 version: Some(0),
                 delete_flag: Some(1),
             },
-            &[]
+            &[],
         )
-            .await;
+        .await;
     }
 
     #[tokio::test]

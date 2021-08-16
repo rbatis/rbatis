@@ -1,13 +1,13 @@
-use std::borrow::BorrowMut;
-use std::cell::Cell;
-use std::collections::HashMap;
-use std::sync::Arc;
-use std::time::Duration;
 use once_cell::sync::OnceCell;
 use rbatis_core::db::DBConnectOption;
 use serde::de::DeserializeOwned;
 use serde::ser::Serialize;
 use serde_json::Number;
+use std::borrow::BorrowMut;
+use std::cell::Cell;
+use std::collections::HashMap;
+use std::sync::Arc;
+use std::time::Duration;
 use uuid::Uuid;
 
 use crate::core::db::{DBExecResult, DBPool, DBPoolConn, DBPoolOptions, DBQuery, DBTx, DriverType};
@@ -47,15 +47,14 @@ pub struct Rbatis {
 impl Debug for Rbatis {
     fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
         f.debug_struct("Rbatis")
-            .field("pool",&self.pool)
-            .field("page_plugin",&self.page_plugin)
-            .field("sql_intercepts",&self.sql_intercepts)
-            .field("logic_plugin",&self.logic_plugin)
-            .field("version_lock_plugin",&self.version_lock_plugin)
+            .field("pool", &self.pool)
+            .field("page_plugin", &self.page_plugin)
+            .field("sql_intercepts", &self.sql_intercepts)
+            .field("logic_plugin", &self.logic_plugin)
+            .field("version_lock_plugin", &self.version_lock_plugin)
             .finish()
     }
 }
-
 
 impl Default for Rbatis {
     fn default() -> Rbatis {
@@ -105,7 +104,7 @@ impl Rbatis {
             logic_plugin: option.logic_plugin,
             log_plugin: option.log_plugin,
             version_lock_plugin: None,
-            encoder: |q,arg|{
+            encoder: |q, arg| {
                 q.bind_value(arg)?;
                 Ok(())
             },
@@ -125,8 +124,8 @@ impl Rbatis {
 
     /// try return an new wrapper and set table formats,if not call the link() method,it will be panic!
     pub fn new_wrapper_table<T>(&self) -> Wrapper
-        where
-            T: CRUDTable,
+    where
+        T: CRUDTable,
     {
         let mut w = self.new_wrapper();
         let formats = T::formats(&self.driver_type().unwrap());

@@ -9,13 +9,12 @@ use serde_json::Value;
 
 use crate::core::db::{DBPool, DBPoolConn, DBQuery, DBTx};
 use crate::core::Error;
-use crate::crud::{CRUD, CRUDMut};
-use crate::DriverType;
+use crate::crud::{CRUDMut, CRUD};
 use crate::plugin::page::{IPageRequest, Page};
 use crate::rbatis::Rbatis;
 use crate::utils::string_util;
+use crate::DriverType;
 use futures::executor::block_on;
-
 
 #[async_trait]
 pub trait RbatisRef {
@@ -48,8 +47,14 @@ impl RbatisRef for Rbatis {
 
 #[async_trait]
 pub trait ExecutorMut: RbatisRef {
-    async fn exec(&mut self, sql: &str, args: &Vec<serde_json::Value>) -> Result<DBExecResult, Error>;
-    async fn fetch<T>(&mut self, sql: &str, args: &Vec<serde_json::Value>) -> Result<T, Error> where T: DeserializeOwned;
+    async fn exec(
+        &mut self,
+        sql: &str,
+        args: &Vec<serde_json::Value>,
+    ) -> Result<DBExecResult, Error>;
+    async fn fetch<T>(&mut self, sql: &str, args: &Vec<serde_json::Value>) -> Result<T, Error>
+    where
+        T: DeserializeOwned;
 }
 
 #[derive(Debug)]
@@ -66,109 +71,120 @@ impl<'a> RBatisConnExecutor<'a> {
 
 macro_rules! impl_executor {
     ($t:ty) => {
-#[async_trait]
-impl<'a> ExecutorMut for $t {
-    async fn exec(&mut self, sql: &str, args: &Vec<serde_json::Value>) -> Result<DBExecResult, Error> {
-        let mut sql = sql.to_string();
-        let mut args = args.clone();
-        let is_prepared = args.len() > 0;
-        for item in &self.get_rbatis().sql_intercepts {
-            item.do_intercept(self.get_rbatis(), &mut sql, &mut args, is_prepared)?;
-        }
-        if self.get_rbatis().log_plugin.is_enable() {
-            self.get_rbatis().log_plugin.info(
-                &format!(
-                    "Exec   ==> {}\n{}[rbatis] [{}] Args   ==> {}",
-                    &sql,
-                    string_util::LOG_SPACE,
-                    "",
-                    serde_json::Value::Array(args.clone()).to_string()
-                ),
-            );
-        }
-        let result;
-        if is_prepared {
-            let q: DBQuery = self.bind_arg(&self.conn.driver_type, &sql, &args)?;
-            result = self.conn.exec_prepare(q).await;
-        } else {
-            result = self.conn.exec(&sql).await;
-        }
-        if self.get_rbatis().log_plugin.is_enable() {
-            match &result {
-                Ok(result) => {
-                    self.get_rbatis().log_plugin.info(
-                        &format!("RowsAffected <== {}", result.rows_affected),
-                    );
+        #[async_trait]
+        impl<'a> ExecutorMut for $t {
+            async fn exec(
+                &mut self,
+                sql: &str,
+                args: &Vec<serde_json::Value>,
+            ) -> Result<DBExecResult, Error> {
+                let mut sql = sql.to_string();
+                let mut args = args.clone();
+                let is_prepared = args.len() > 0;
+                for item in &self.get_rbatis().sql_intercepts {
+                    item.do_intercept(self.get_rbatis(), &mut sql, &mut args, is_prepared)?;
                 }
-                Err(e) => {
-                    self.get_rbatis().log_plugin
-                        .error(&format!("ReturnErr  <== {}", e));
+                if self.get_rbatis().log_plugin.is_enable() {
+                    self.get_rbatis().log_plugin.info(&format!(
+                        "Exec   ==> {}\n{}[rbatis] [{}] Args   ==> {}",
+                        &sql,
+                        string_util::LOG_SPACE,
+                        "",
+                        serde_json::Value::Array(args.clone()).to_string()
+                    ));
+                }
+                let result;
+                if is_prepared {
+                    let q: DBQuery = self.bind_arg(&self.conn.driver_type, &sql, &args)?;
+                    result = self.conn.exec_prepare(q).await;
+                } else {
+                    result = self.conn.exec(&sql).await;
+                }
+                if self.get_rbatis().log_plugin.is_enable() {
+                    match &result {
+                        Ok(result) => {
+                            self.get_rbatis()
+                                .log_plugin
+                                .info(&format!("RowsAffected <== {}", result.rows_affected));
+                        }
+                        Err(e) => {
+                            self.get_rbatis()
+                                .log_plugin
+                                .error(&format!("ReturnErr  <== {}", e));
+                        }
+                    }
+                }
+                return result;
+            }
+
+            async fn fetch<T>(
+                &mut self,
+                sql: &str,
+                args: &Vec<serde_json::Value>,
+            ) -> Result<T, Error>
+            where
+                T: DeserializeOwned,
+            {
+                let mut sql = sql.to_string();
+                let mut args = args.clone();
+                let is_prepared = args.len() > 0;
+                for item in &self.get_rbatis().sql_intercepts {
+                    item.do_intercept(self.get_rbatis(), &mut sql, &mut args, is_prepared)?;
+                }
+                if self.get_rbatis().log_plugin.is_enable() {
+                    self.get_rbatis().log_plugin.info(&format!(
+                        "Fetch  ==> {}\n{}[rbatis] [{}] Args   ==> {}",
+                        &sql,
+                        string_util::LOG_SPACE,
+                        "",
+                        serde_json::Value::Array(args.clone()).to_string()
+                    ));
+                }
+                if is_prepared {
+                    let q: DBQuery = self.bind_arg(&self.conn.driver_type, &sql, &args)?;
+                    let result = self.conn.fetch_parperd(q).await;
+                    if self.get_rbatis().log_plugin.is_enable() {
+                        match &result {
+                            Ok(result) => {
+                                self.get_rbatis()
+                                    .log_plugin
+                                    .info(&format!("ReturnRows <== {}", result.1));
+                            }
+                            Err(e) => {
+                                self.get_rbatis()
+                                    .log_plugin
+                                    .error(&format!("ReturnErr  <== {}", e));
+                            }
+                        }
+                    }
+                    return Ok(result?.0);
+                } else {
+                    let result = self.conn.fetch(&sql.to_owned()).await;
+                    if self.get_rbatis().log_plugin.is_enable() {
+                        match &result {
+                            Ok(result) => {
+                                self.get_rbatis()
+                                    .log_plugin
+                                    .info(&format!("ReturnRows <== {}", result.1));
+                            }
+                            Err(e) => {
+                                self.get_rbatis()
+                                    .log_plugin
+                                    .error(&format!("ReturnErr  <== {}", e));
+                            }
+                        }
+                    }
+                    return Ok(result?.0);
                 }
             }
         }
-        return result;
-    }
 
-    async fn fetch<T>(&mut self, sql: &str, args: &Vec<serde_json::Value>) -> Result<T, Error> where T: DeserializeOwned {
-        let mut sql = sql.to_string();
-        let mut args = args.clone();
-        let is_prepared = args.len() > 0;
-        for item in &self.get_rbatis().sql_intercepts {
-            item.do_intercept(self.get_rbatis(), &mut sql, &mut args, is_prepared)?;
-        }
-        if self.get_rbatis().log_plugin.is_enable() {
-            self.get_rbatis().log_plugin.info(
-                &format!(
-                    "Fetch  ==> {}\n{}[rbatis] [{}] Args   ==> {}",
-                    &sql,
-                    string_util::LOG_SPACE,
-                    "",
-                    serde_json::Value::Array(args.clone()).to_string()
-                ),
-            );
-        }
-        if is_prepared {
-            let q: DBQuery = self.bind_arg(&self.conn.driver_type, &sql, &args)?;
-            let result = self.conn.fetch_parperd(q).await;
-            if self.get_rbatis().log_plugin.is_enable() {
-                match &result {
-                    Ok(result) => {
-                        self.get_rbatis().log_plugin
-                            .info(&format!("ReturnRows <== {}", result.1));
-                    }
-                    Err(e) => {
-                        self.get_rbatis().log_plugin
-                            .error(&format!("ReturnErr  <== {}", e));
-                    }
-                }
+        impl RbatisRef for $t {
+            fn get_rbatis(&self) -> &Rbatis {
+                self.rb
             }
-            return Ok(result?.0);
-        } else {
-            let result = self.conn.fetch(&sql.to_owned()).await;
-            if self.get_rbatis().log_plugin.is_enable() {
-                match &result {
-                    Ok(result) => {
-                        self.get_rbatis().log_plugin
-                            .info(&format!("ReturnRows <== {}", result.1));
-                    }
-                    Err(e) => {
-                        self.get_rbatis().log_plugin
-                            .error(&format!("ReturnErr  <== {}", e));
-                    }
-                }
-            }
-            return Ok(result?.0);
         }
-    }
-}
-
-impl RbatisRef for $t {
-    fn get_rbatis(&self) -> &Rbatis {
-    self.rb
-    }
-}
-
-};
+    };
 }
 
 impl_executor!(RBatisConnExecutor<'_>);
@@ -227,7 +243,6 @@ impl<'a> DerefMut for RBatisTxExecutor<'a> {
     }
 }
 
-
 pub struct RBatisTxExecutorGuard<'a> {
     pub tx: Option<RBatisTxExecutor<'a>>,
     pub callback: Box<dyn FnMut(RBatisTxExecutor<'a>) + Send + 'a>,
@@ -239,28 +254,33 @@ impl<'a> RBatisTxExecutorGuard<'a> {
     }
 
     pub async fn begin(&mut self) -> crate::Result<()> {
-        let mut tx = self.tx.as_mut().ok_or_else(|| Error::from("[rbatis] tx is committed"))?;
+        let mut tx = self
+            .tx
+            .as_mut()
+            .ok_or_else(|| Error::from("[rbatis] tx is committed"))?;
         return Ok(tx.begin().await?);
     }
 
     pub async fn commit(&mut self) -> crate::Result<()> {
-        let mut tx = self.tx.as_mut().ok_or_else(|| Error::from("[rbatis] tx is committed"))?;
+        let mut tx = self
+            .tx
+            .as_mut()
+            .ok_or_else(|| Error::from("[rbatis] tx is committed"))?;
         return Ok(tx.commit().await?);
     }
 
     pub async fn rollback(&mut self) -> crate::Result<()> {
-        let mut tx = self.tx.as_mut().ok_or_else(|| Error::from("[rbatis] tx is committed"))?;
+        let mut tx = self
+            .tx
+            .as_mut()
+            .ok_or_else(|| Error::from("[rbatis] tx is committed"))?;
         return Ok(tx.rollback().await?);
     }
 
     pub fn take_conn(mut self) -> Option<DBPoolConn> {
         match self.tx.take() {
-            None => {
-                None
-            }
-            Some(s) => {
-                s.take_conn()
-            }
+            None => None,
+            Some(s) => s.take_conn(),
         }
     }
 }
@@ -271,7 +291,9 @@ impl<'a> RBatisTxExecutor<'a> {
     ///     tx.defer(|tx| {});
     ///
     pub fn defer<Call>(self, callback: Call) -> RBatisTxExecutorGuard<'a>
-        where Call: 'a + FnMut(Self) + Send {
+    where
+        Call: 'a + FnMut(Self) + Send,
+    {
         RBatisTxExecutorGuard {
             tx: Some(self),
             callback: Box::new(callback),
@@ -285,8 +307,10 @@ impl<'a> RBatisTxExecutor<'a> {
     ///         });
     ///
     pub fn defer_async<R, F>(self, mut callback: F) -> RBatisTxExecutorGuard<'a>
-        where R: 'a + Future<Output=()>,
-              F: 'a + Send + FnMut(RBatisTxExecutor<'a>) -> R {
+    where
+        R: 'a + Future<Output = ()>,
+        F: 'a + Send + FnMut(RBatisTxExecutor<'a>) -> R,
+    {
         RBatisTxExecutorGuard {
             tx: Some(self),
             callback: Box::new(move |arg| {
@@ -301,8 +325,8 @@ impl<'a> RBatisTxExecutor<'a> {
         args: &Vec<serde_json::Value>,
         page_request: &dyn IPageRequest,
     ) -> crate::Result<Page<T>>
-        where
-            T: DeserializeOwned + Serialize + Send + Sync,
+    where
+        T: DeserializeOwned + Serialize + Send + Sync,
     {
         self.get_rbatis().fetch_page(sql, args, page_request).await
     }
@@ -322,7 +346,6 @@ impl<'a> DerefMut for RBatisTxExecutorGuard<'a> {
     }
 }
 
-
 impl Drop for RBatisTxExecutorGuard<'_> {
     fn drop(&mut self) {
         match self.tx.take() {
@@ -334,11 +357,12 @@ impl Drop for RBatisTxExecutorGuard<'_> {
     }
 }
 
-
 #[async_trait]
 pub trait Executor: RbatisRef {
     async fn exec(&self, sql: &str, args: &Vec<serde_json::Value>) -> Result<DBExecResult, Error>;
-    async fn fetch<T>(&self, sql: &str, args: &Vec<serde_json::Value>) -> Result<T, Error> where T: DeserializeOwned;
+    async fn fetch<T>(&self, sql: &str, args: &Vec<serde_json::Value>) -> Result<T, Error>
+    where
+        T: DeserializeOwned;
 }
 
 #[async_trait]
@@ -347,7 +371,10 @@ impl Executor for Rbatis {
         self.acquire().await?.exec(sql, args).await
     }
 
-    async fn fetch<T>(&self, sql: &str, args: &Vec<Value>) -> Result<T, Error> where T: DeserializeOwned {
+    async fn fetch<T>(&self, sql: &str, args: &Vec<Value>) -> Result<T, Error>
+    where
+        T: DeserializeOwned,
+    {
         self.acquire().await?.fetch(sql, args).await
     }
 }
@@ -365,17 +392,43 @@ pub struct RbatisExecutor<'a> {
 }
 
 impl RbatisExecutor<'_> {
-    pub async fn fetch_page<T>(&mut self, sql: &str, args: &Vec<Value>, page_request: &dyn IPageRequest) -> crate::Result<Page<T>>
-        where
-            T: DeserializeOwned + Serialize + Send + Sync {
+    pub async fn fetch_page<T>(
+        &mut self,
+        sql: &str,
+        args: &Vec<Value>,
+        page_request: &dyn IPageRequest,
+    ) -> crate::Result<Page<T>>
+    where
+        T: DeserializeOwned + Serialize + Send + Sync,
+    {
         if self.rb.is_some() {
-            return self.rb.as_ref().unwrap().fetch_page(sql, args, page_request).await;
+            return self
+                .rb
+                .as_ref()
+                .unwrap()
+                .fetch_page(sql, args, page_request)
+                .await;
         } else if self.conn.is_some() {
-            return self.conn.as_deref_mut().unwrap().fetch_page(sql, args, page_request).await;
+            return self
+                .conn
+                .as_deref_mut()
+                .unwrap()
+                .fetch_page(sql, args, page_request)
+                .await;
         } else if self.tx.is_some() {
-            return self.tx.as_deref_mut().unwrap().fetch_page(sql, args, page_request).await;
+            return self
+                .tx
+                .as_deref_mut()
+                .unwrap()
+                .fetch_page(sql, args, page_request)
+                .await;
         } else if self.guard.is_some() {
-            return self.guard.as_ref().unwrap().fetch_page(sql, args, page_request).await;
+            return self
+                .guard
+                .as_ref()
+                .unwrap()
+                .fetch_page(sql, args, page_request)
+                .await;
         }
         return Err(Error::from("[rbatis] executor must have an value!"));
     }
@@ -393,7 +446,10 @@ impl RbatisExecutor<'_> {
         return Err(Error::from("[rbatis] executor must have an value!"));
     }
 
-    pub async fn fetch<T>(&mut self, sql: &str, args: &Vec<Value>) -> Result<T, Error> where T: DeserializeOwned {
+    pub async fn fetch<T>(&mut self, sql: &str, args: &Vec<Value>) -> Result<T, Error>
+    where
+        T: DeserializeOwned,
+    {
         if self.rb.is_some() {
             return self.rb.as_ref().unwrap().fetch(sql, args).await;
         } else if self.conn.is_some() {

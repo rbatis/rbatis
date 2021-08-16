@@ -4,9 +4,9 @@ use quote::ToTokens;
 use syn;
 use syn::{AttributeArgs, ItemFn};
 
+use crate::macros::html_loader::Element;
 use crate::proc_macro::TokenStream;
 use crate::util::{find_fn_body, find_return_type, get_fn_args, get_page_req_ident, is_fetch};
-use crate::macros::html_loader::Element;
 use std::io::Read;
 
 ///py_sql macro
@@ -15,9 +15,15 @@ use std::io::Read;
 pub(crate) fn impl_macro_py_sql(target_fn: &ItemFn, args: &AttributeArgs) -> TokenStream {
     let return_ty = find_return_type(target_fn);
     let func_name_ident = target_fn.sig.ident.to_token_stream();
-    let rbatis_ident = args.get(0).expect("[rbatis] miss rbatis ident param!").to_token_stream();
+    let rbatis_ident = args
+        .get(0)
+        .expect("[rbatis] miss rbatis ident param!")
+        .to_token_stream();
     let rbatis_name = format!("{}", rbatis_ident);
-    let sql_ident = args.get(1).expect("[rbatis] miss pysql param!").to_token_stream();
+    let sql_ident = args
+        .get(1)
+        .expect("[rbatis] miss pysql param!")
+        .to_token_stream();
     let sql = format!("{}", sql_ident).trim().to_string();
     let func_args_stream = target_fn.sig.inputs.to_token_stream();
     let fn_body = find_fn_body(target_fn);
@@ -90,23 +96,20 @@ pub(crate) fn impl_macro_py_sql(target_fn: &ItemFn, args: &AttributeArgs) -> Tok
         .into();
 }
 
-
 fn find_node(arg: &Vec<Element>, name: &str) -> Option<Element> {
     for x in arg {
         match x.tag.as_str() {
             "mapper" => {
                 return find_node(&x.childs, name);
             }
-            "insert" | "select" | "update" | "delete" => {
-                match x.attributes.get("id") {
-                    Some(v) => {
-                        if v.eq(name) {
-                            return Some(x.clone());
-                        }
+            "insert" | "select" | "update" | "delete" => match x.attributes.get("id") {
+                Some(v) => {
+                    if v.eq(name) {
+                        return Some(x.clone());
                     }
-                    _ => {}
                 }
-            }
+                _ => {}
+            },
             _ => {}
         }
     }
@@ -116,20 +119,31 @@ fn find_node(arg: &Vec<Element>, name: &str) -> Option<Element> {
 pub(crate) fn impl_macro_html_sql(target_fn: &ItemFn, args: &AttributeArgs) -> TokenStream {
     let return_ty = find_return_type(target_fn);
     let func_name_ident = target_fn.sig.ident.to_token_stream();
-    let rbatis_ident = args.get(0).expect("[rbatis] miss rbatis ident param!").to_token_stream();
+    let rbatis_ident = args
+        .get(0)
+        .expect("[rbatis] miss rbatis ident param!")
+        .to_token_stream();
     let rbatis_name = format!("{}", rbatis_ident);
-    let sql_ident = args.get(1).expect("[rbatis] miss html file name param!").to_token_stream();
+    let sql_ident = args
+        .get(1)
+        .expect("[rbatis] miss html file name param!")
+        .to_token_stream();
 
     let mut html = String::new();
     let mut file_name = sql_ident.to_string();
     if file_name.starts_with("\"") && file_name.ends_with("\"") {
         file_name = file_name[1..file_name.len() - 1].to_string();
     }
-    let mut f = std::fs::File::open(&file_name).expect(&format!("File:\"{}\" does not exist", file_name));
-    f.read_to_string(&mut html).expect(&format!("File:\"{}\" read fail!", file_name));
-    let nodes = crate::macros::html_loader::load_html(&html).expect(&format!("[rbatis] load html file:{} fail!", sql_ident));
-    let sql = find_node(&nodes, func_name_ident.to_string().as_str()).expect(&format!("[rbatis] load html file:{},method:{} fail!", sql_ident, sql_ident));
-
+    let mut f =
+        std::fs::File::open(&file_name).expect(&format!("File:\"{}\" does not exist", file_name));
+    f.read_to_string(&mut html)
+        .expect(&format!("File:\"{}\" read fail!", file_name));
+    let nodes = crate::macros::html_loader::load_html(&html)
+        .expect(&format!("[rbatis] load html file:{} fail!", sql_ident));
+    let sql = find_node(&nodes, func_name_ident.to_string().as_str()).expect(&format!(
+        "[rbatis] load html file:{},method:{} fail!",
+        sql_ident, sql_ident
+    ));
 
     let func_args_stream = target_fn.sig.inputs.to_token_stream();
     let fn_body = find_fn_body(target_fn);

@@ -5,7 +5,7 @@ mod test {
 
     use rbatis::core::value::DateTimeNow;
     use rbatis::core::Error;
-    use rbatis::crud::{CRUDMut, CRUD, Skip};
+    use rbatis::crud::{CRUDMut, Skip, CRUD};
     use rbatis::plugin::logic_delete::{RbatisLogicDeletePlugin, TableNoLogic};
     use rbatis::plugin::page::{Page, PageRequest};
     use rbatis::plugin::snowflake::new_snowflake_id;
@@ -99,7 +99,7 @@ mod test {
         };
         rb.remove_by_column::<BizActivity, _>("id", activity.id.as_ref().unwrap())
             .await;
-        let r = rb.save(&activity,&[]).await;
+        let r = rb.save(&activity, &[]).await;
         if r.is_err() {
             println!("{}", r.err().unwrap().to_string());
         }
@@ -124,10 +124,13 @@ mod test {
         };
         let mut activity2 = activity.clone();
         activity2.id = Some("12313".to_string());
-        rb.remove_batch_by_column::<BizActivity, _>("id", &["12312".to_string(), "12313".to_string()])
-            .await;
+        rb.remove_batch_by_column::<BizActivity, _>(
+            "id",
+            &["12312".to_string(), "12313".to_string()],
+        )
+        .await;
         let args = vec![activity, activity2];
-        let r = rb.save_batch(&args,&[]).await;
+        let r = rb.save_batch(&args, &[]).await;
         if r.is_err() {
             println!("{}", r.err().unwrap().to_string());
         }
@@ -154,16 +157,17 @@ mod test {
         activity2.id = Some("12313".to_string());
         let mut activity3 = activity.clone();
         activity3.id = Some("12314".to_string());
-        rb.remove_batch_by_column::<BizActivity, _>("id",
-                                                    &[
-                                                        "12312".to_string(),
-                                                        "12313".to_string(),
-                                                        "12314".to_string(),
-                                                    ],
+        rb.remove_batch_by_column::<BizActivity, _>(
+            "id",
+            &[
+                "12312".to_string(),
+                "12313".to_string(),
+                "12314".to_string(),
+            ],
         )
-            .await;
+        .await;
         let args = vec![activity, activity2, activity3];
-        let r = rb.save_batch_slice(&args, 2,&[]).await;
+        let r = rb.save_batch_slice(&args, 2, &[]).await;
         if r.is_err() {
             println!("{}", r.err().unwrap().to_string());
         }
@@ -178,7 +182,10 @@ mod test {
             .await
             .unwrap();
         let r = rb
-            .remove_batch_by_column::<TableNoLogic<BizActivity>, _>("id", &["1".to_string(), "2".to_string()])
+            .remove_batch_by_column::<TableNoLogic<BizActivity>, _>(
+                "id",
+                &["1".to_string(), "2".to_string()],
+            )
             .await;
         if r.is_err() {
             println!("{}", r.err().unwrap().to_string());
@@ -238,7 +245,13 @@ mod test {
         };
 
         let w = rb.new_wrapper().eq("id", "12312");
-        let r = rb.update_by_wrapper(&mut activity, &w, &[Skip::Value(Value::Null), Skip::Column("id")]).await;
+        let r = rb
+            .update_by_wrapper(
+                &mut activity,
+                &w,
+                &[Skip::Value(Value::Null), Skip::Column("id")],
+            )
+            .await;
         if r.is_err() {
             println!("{}", r.err().unwrap().to_string());
         }

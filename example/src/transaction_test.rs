@@ -1,11 +1,11 @@
 #[cfg(test)]
 mod test {
     use crate::BizActivity;
-    use rbatis::rbatis::Rbatis;
-    use rbatis::executor::{Executor, RbatisRef, RBatisTxExecutor, ExecutorMut};
-    use rbatis::core::db::DBExecResult;
-    use std::cell::Cell;
     use async_std::sync::Mutex;
+    use rbatis::core::db::DBExecResult;
+    use rbatis::executor::{Executor, ExecutorMut, RBatisTxExecutor, RbatisRef};
+    use rbatis::rbatis::Rbatis;
+    use std::cell::Cell;
 
     //示例-Rbatis使用事务
     #[tokio::test]
@@ -33,7 +33,11 @@ mod test {
     }
 
     #[py_sql(rb, "select * from biz_activity")]
-    async fn py_select_data(rb: &mut RBatisTxExecutor<'_>) -> Result<Vec<BizActivity>, rbatis::core::Error> { todo!() }
+    async fn py_select_data(
+        rb: &mut RBatisTxExecutor<'_>,
+    ) -> Result<Vec<BizActivity>, rbatis::core::Error> {
+        todo!()
+    }
 
     //示例-Rbatis使用宏事务
     #[tokio::test]

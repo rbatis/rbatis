@@ -224,8 +224,8 @@ impl<T> Default for Page<T> {
 }
 
 impl<T> IPageRequest for Page<T>
-    where
-        T: Send + Sync,
+where
+    T: Send + Sync,
 {
     fn get_page_size(&self) -> u64 {
         self.page_size
@@ -260,8 +260,8 @@ impl<T> IPageRequest for Page<T>
 }
 
 impl<T> IPage<T> for Page<T>
-    where
-        T: Send + Sync,
+where
+    T: Send + Sync,
 {
     fn get_records(&self) -> &Vec<T> {
         self.records.as_ref()
@@ -277,8 +277,8 @@ impl<T> IPage<T> for Page<T>
 }
 
 impl<T> ToString for Page<T>
-    where
-        T: Send + Sync + Serialize,
+where
+    T: Send + Sync + Serialize,
 {
     fn to_string(&self) -> String {
         let result = serde_json::to_string(self);
@@ -465,13 +465,9 @@ impl PagePlugin for RbatisPagePlugin {
         page: &dyn IPageRequest,
     ) -> Result<(String, String), Error> {
         if sql.contains(crate::sql::TEMPLATE.group_by.left_right_space) {
-            return self
-                .pack
-                .make_page_sql(driver_type, sql, args, page);
+            return self.pack.make_page_sql(driver_type, sql, args, page);
         } else {
-            return self
-                .replace
-                .make_page_sql(driver_type, sql, args, page);
+            return self.replace.make_page_sql(driver_type, sql, args, page);
         }
     }
 }

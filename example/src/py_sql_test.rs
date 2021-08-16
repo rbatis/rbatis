@@ -10,7 +10,9 @@ mod test {
     use crate::BizActivity;
 
     #[py_sql(rb, "select * from biz_activity where delete_flag = 0")]
-    async fn py_ctx_id(rb: &Rbatis) -> Vec<BizActivity> { todo!() }
+    async fn py_ctx_id(rb: &Rbatis) -> Vec<BizActivity> {
+        todo!()
+    }
 
     #[tokio::test]
     pub async fn test_py_ctx_id() {
@@ -26,12 +28,18 @@ mod test {
 
     ///select page must have  '?:&PageRequest' arg and return 'Page<?>'
     #[py_sql(
-    rb,
-    "select * from biz_activity where delete_flag = 0
+        rb,
+        "select * from biz_activity where delete_flag = 0
                   if name != '':
                     and name=#{name}"
     )]
-    async fn py_select_page(rb: &mut RbatisExecutor<'_>, page_req: &PageRequest, name: &str) -> Page<BizActivity> { todo!() }
+    async fn py_select_page(
+        rb: &mut RbatisExecutor<'_>,
+        page_req: &PageRequest,
+        name: &str,
+    ) -> Page<BizActivity> {
+        todo!()
+    }
 
     #[tokio::test]
     pub async fn test_py_select_page() {
@@ -49,12 +57,14 @@ mod test {
 
     ///Commit the transaction
     #[py_sql(
-    rb,
-    "select * from biz_activity where delete_flag = 0
+        rb,
+        "select * from biz_activity where delete_flag = 0
                   if name != '':
-                    and name=#{name}")]
-    async fn py_sql_tx(rb: &Rbatis, tx_id: &String, name: &str) -> Vec<BizActivity> { todo!() }
-
+                    and name=#{name}"
+    )]
+    async fn py_sql_tx(rb: &Rbatis, tx_id: &String, name: &str) -> Vec<BizActivity> {
+        todo!()
+    }
 
     ///load from file
     fn load_file_str(file_name: &str, method: &str) -> String {

@@ -39,7 +39,6 @@ mod test {
         assert_eq!(ms.len(), w.args.len());
     }
 
-
     ///cargo test --release --package rbatis --test wrapper_test test::bench_select --no-fail-fast -- --exact -Z unstable-options --show-output
     ///run with windows10:
     ///(Windows)use Time: 0.51 s,each:5100 nano/op  use QPS: 196078.431372549 QPS/s

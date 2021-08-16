@@ -4,9 +4,9 @@ extern crate rbatis;
 
 use actix_web::{web, App, HttpResponse, HttpServer, Responder};
 use chrono::NaiveDateTime;
-use rbatis::crud::{CRUD};
-use rbatis::rbatis::Rbatis;
 use rbatis::core::runtime::sync::Arc;
+use rbatis::crud::CRUD;
+use rbatis::rbatis::Rbatis;
 
 #[crud_table]
 #[derive(Clone, Debug)]
@@ -49,7 +49,9 @@ pub const MYSQL_URL: &'static str = "mysql://root:123456@localhost:3306/test";
 
 async fn index(rb: web::Data<Arc<Rbatis>>) -> impl Responder {
     let v = rb.fetch_list::<BizActivity>().await.unwrap();
-    HttpResponse::Ok().set_header("Content-Type","text/json;charset=UTF-8").body(serde_json::json!(v).to_string())
+    HttpResponse::Ok()
+        .set_header("Content-Type", "text/json;charset=UTF-8")
+        .body(serde_json::json!(v).to_string())
 }
 
 #[actix_web::main]
@@ -69,7 +71,7 @@ async fn main() -> std::io::Result<()> {
             .data(rb.to_owned())
             .route("/", web::get().to(index))
     })
-        .bind("0.0.0.0:8000")?
-        .run()
-        .await
+    .bind("0.0.0.0:8000")?
+    .run()
+    .await
 }

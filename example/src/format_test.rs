@@ -3,11 +3,11 @@
 mod test {
     use crate::BizActivity;
     use rbatis::crud::{CRUDMut, CRUD};
+    use rbatis::executor::Executor;
     use rbatis::plugin::intercept::RbatisLogFormatSqlIntercept;
     use rbatis::rbatis::Rbatis;
     use std::str::FromStr;
     use uuid::Uuid;
-    use rbatis::executor::Executor;
 
     //'formats_pg' use postgres format
     //'id' ->  table column 'id'
@@ -34,17 +34,20 @@ mod test {
         let uuid = Uuid::from_str("df07fea2-b819-4e05-b86d-dfc15a5f52a9").unwrap();
         //create table
         rb.exec("DROP TABLE biz_uuid;", &vec![]).await;
-        rb.exec("CREATE TABLE biz_uuid( id uuid, name VARCHAR, PRIMARY KEY(id));", &vec![])
-            .await;
+        rb.exec(
+            "CREATE TABLE biz_uuid( id uuid, name VARCHAR, PRIMARY KEY(id));",
+            &vec![],
+        )
+        .await;
         //insert table
         rb.save(
             &BizUuid {
                 id: Some(uuid),
                 name: Some("test".to_string()),
             },
-            &[]
+            &[],
         )
-            .await;
+        .await;
         //update table
         rb.update_by_column(
             "id",
@@ -53,7 +56,7 @@ mod test {
                 name: Some("test_updated".to_string()),
             },
         )
-            .await;
+        .await;
         //query table
         let data: BizUuid = rb.fetch_by_column("id", &uuid).await.unwrap();
         println!("{:?}", data);
@@ -99,7 +102,7 @@ mod test {
         };
         rb.remove_by_column::<BizActivity, _>("id", activity.id.as_ref().unwrap())
             .await;
-        let r = rb.save(&activity,&[]).await;
+        let r = rb.save(&activity, &[]).await;
         if r.is_err() {
             println!("{}", r.err().unwrap().to_string());
         }

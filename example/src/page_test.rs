@@ -6,7 +6,7 @@ mod test {
     use rbatis::rbatis::Rbatis;
 
     lazy_static! {
-       pub static ref RB: Rbatis = Rbatis::new();
+        pub static ref RB: Rbatis = Rbatis::new();
     }
 
     #[tokio::test]
@@ -24,13 +24,17 @@ mod test {
         println!("{}", serde_json::to_string(&data).unwrap());
     }
 
-
     /// RB is the name of the RBatis object
     /// Pysql is the middle string data
-    #[py_sql(RB, "select * from biz_activity where delete_flag = 0
+    #[py_sql(
+        RB,
+        "select * from biz_activity where delete_flag = 0
                   if name != '':
-                    and name=#{name}")]
-    async fn py_select_page(page_req: &PageRequest, name: &str) -> Page<BizActivity> { todo!() }
+                    and name=#{name}"
+    )]
+    async fn py_select_page(page_req: &PageRequest, name: &str) -> Page<BizActivity> {
+        todo!()
+    }
 
     #[tokio::test]
     pub async fn test_macro_py_select_page() {
@@ -46,7 +50,9 @@ mod test {
     }
 
     #[py_sql(RB, "select * from biz_activity group by id")]
-    async fn group_by(page_req: &PageRequest) -> Page<BizActivity> { todo!() }
+    async fn group_by(page_req: &PageRequest) -> Page<BizActivity> {
+        todo!()
+    }
 
     #[tokio::test]
     pub async fn test_group_by_page() {

@@ -2,10 +2,10 @@
 #[cfg(test)]
 mod test {
     use rbatis::crud::{CRUDMut, CRUD};
+    use rbatis::executor::Executor;
     use rbatis::rbatis::Rbatis;
     use serde_json::json;
     use uuid::Uuid;
-    use rbatis::executor::Executor;
 
     #[crud_table]
     #[derive(Clone, Debug)]
@@ -33,15 +33,18 @@ mod test {
             .await
             .unwrap();
         //create table
-        rb.exec(r#"CREATE TABLE "public"."p" ( "id" int4, "po" point);"#, &vec![])
-            .await;
+        rb.exec(
+            r#"CREATE TABLE "public"."p" ( "id" int4, "po" point);"#,
+            &vec![],
+        )
+        .await;
         //insert point
         rb.exec(
             "insert into p (id,po) values (1,Point($1,$2))",
             &vec![json!(1), json!(2)],
         )
-            .await
-            .unwrap();
+        .await
+        .unwrap();
         //query table
         let v: Vec<P> = rb
             .fetch_list_by_wrapper(&rb.new_wrapper_table::<P>().eq("id", 1))

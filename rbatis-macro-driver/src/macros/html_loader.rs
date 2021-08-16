@@ -1,6 +1,6 @@
-use std::collections::HashMap;
 use html_parser::{Dom, Node};
-use std::fmt::{Debug};
+use std::collections::HashMap;
+use std::fmt::Debug;
 
 #[derive(Clone, Eq, PartialEq)]
 pub struct Element {
@@ -9,7 +9,6 @@ pub struct Element {
     pub attributes: HashMap<String, String>,
     pub childs: Vec<Element>,
 }
-
 
 impl Debug for Element {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
@@ -32,7 +31,6 @@ impl Debug for Element {
     }
 }
 
-
 pub fn as_element(args: &Vec<Node>) -> Vec<Element> {
     let mut els = vec![];
     for x in args {
@@ -49,10 +47,14 @@ pub fn as_element(args: &Vec<Node>) -> Vec<Element> {
             Node::Element(element) => {
                 el.tag = element.name.to_string();
                 if element.id.is_some() {
-                    el.attributes.insert("id".to_string(), element.id.as_ref().unwrap_or(&String::new()).clone());
+                    el.attributes.insert(
+                        "id".to_string(),
+                        element.id.as_ref().unwrap_or(&String::new()).clone(),
+                    );
                 }
                 for (k, v) in &element.attributes {
-                    el.attributes.insert(k.clone(), v.as_ref().unwrap_or(&String::new()).clone());
+                    el.attributes
+                        .insert(k.clone(), v.as_ref().unwrap_or(&String::new()).clone());
                 }
                 if !element.children.is_empty() {
                     let childs = as_element(&element.children);

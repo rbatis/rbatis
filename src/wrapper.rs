@@ -107,8 +107,8 @@ impl Wrapper {
 
     /// push sql,args into self
     pub fn push<T>(mut self, sql: &str, args: &[T]) -> Self
-        where
-            T: Serialize,
+    where
+        T: Serialize,
     {
         let mut new_sql = sql.to_string();
         if self.driver_type.is_number_type() {
@@ -118,22 +118,18 @@ impl Wrapper {
                 self.driver_type.stmt_convert(index, &mut convert_column);
 
                 let mut convert_column_new = String::new();
-                self.driver_type.stmt_convert(index + args.len(), &mut convert_column_new);
-                new_sql = new_sql.replace(
-                    convert_column.as_str(),
-                    convert_column_new.as_str(),
-                );
+                self.driver_type
+                    .stmt_convert(index + args.len(), &mut convert_column_new);
+                new_sql = new_sql.replace(convert_column.as_str(), convert_column_new.as_str());
             }
             for index in args.len()..self_arg_len {
                 let mut convert_column = String::new();
                 self.driver_type.stmt_convert(index, &mut convert_column);
 
                 let mut convert_column_new = String::new();
-                self.driver_type.stmt_convert(index + args.len(), &mut convert_column_new);
-                new_sql = new_sql.replace(
-                    convert_column.as_str(),
-                    convert_column_new.as_str(),
-                );
+                self.driver_type
+                    .stmt_convert(index + args.len(), &mut convert_column_new);
+                new_sql = new_sql.replace(convert_column.as_str(), convert_column_new.as_str());
             }
         }
         self.sql.push_str(new_sql.as_str());
@@ -154,8 +150,8 @@ impl Wrapper {
     ///  let arg = 1;
     ///  wrapper.do_if(true, |w| w.eq("id"))
     pub fn do_if<'s, F>(self, test: bool, method: F) -> Self
-        where
-            F: FnOnce(Self) -> Self,
+    where
+        F: FnOnce(Self) -> Self,
     {
         if test {
             return method(self);
@@ -168,8 +164,8 @@ impl Wrapper {
     ///  let arg = 1;
     ///  wrapper.do_if(true, |w| w.eq("id"),|w|w)
     pub fn do_if_else<'s, F>(self, test: bool, method_if: F, method_else: fn(Self) -> Self) -> Self
-        where
-            F: FnOnce(Self) -> Self,
+    where
+        F: FnOnce(Self) -> Self,
     {
         if test {
             return method_if(self);
@@ -188,8 +184,8 @@ impl Wrapper {
     ///             ], |w| w.eq("a", "default"))
     ///             ;
     pub fn do_match<'s, F>(self, cases: &[(bool, fn(Wrapper) -> Wrapper)], default: F) -> Self
-        where
-            F: FnOnce(Self) -> Self,
+    where
+        F: FnOnce(Self) -> Self,
     {
         for (test, case) in cases {
             if *test {
@@ -210,8 +206,8 @@ impl Wrapper {
     }
 
     pub fn set_args<T>(mut self, args: &[T]) -> Self
-        where
-            T: Serialize,
+    where
+        T: Serialize,
     {
         let v = json!(args);
         if v.is_null() {
@@ -224,8 +220,8 @@ impl Wrapper {
     }
 
     pub fn push_arg<T>(mut self, arg: T) -> Self
-        where
-            T: Serialize,
+    where
+        T: Serialize,
     {
         let v = json!(arg);
         self.args.push(v);
@@ -279,14 +275,21 @@ impl Wrapper {
 
     pub fn having(mut self, sql_having: &str) -> Self {
         self = self.and();
-        push_sql!(self.sql," ",crate::sql::TEMPLATE.having.value," ",sql_having," ",);
+        push_sql!(
+            self.sql,
+            " ",
+            crate::sql::TEMPLATE.having.value,
+            " ",
+            sql_having,
+            " ",
+        );
         self
     }
 
     /// arg: JsonObject or struct{} or map[String,**]
     pub fn all_eq<T>(mut self, arg: T) -> Self
-        where
-            T: Serialize,
+    where
+        T: Serialize,
     {
         self = self.and();
         let v = json!(arg);
@@ -327,28 +330,30 @@ impl Wrapper {
     /// for example:
     ///  eq("a",1) " a = 1 "
     pub fn eq<T>(mut self, column: &str, obj: T) -> Self
-        where
-            T: Serialize,
+    where
+        T: Serialize,
     {
         self = self.and();
         let mut convert_column = String::new();
-        self.driver_type.stmt_convert(self.args.len(), &mut convert_column);
+        self.driver_type
+            .stmt_convert(self.args.len(), &mut convert_column);
         self.do_format_column(column, &mut convert_column);
-        push_sql!(self.sql,column," = ",convert_column.as_str(),);
+        push_sql!(self.sql, column, " = ", convert_column.as_str(),);
         self.args.push(json!(obj));
         self
     }
 
     /// not equal
     pub fn ne<T>(mut self, column: &str, obj: T) -> Self
-        where
-            T: Serialize,
+    where
+        T: Serialize,
     {
         self = self.and();
         let mut convert_column = String::new();
-        self.driver_type.stmt_convert(self.args.len(), &mut convert_column);
+        self.driver_type
+            .stmt_convert(self.args.len(), &mut convert_column);
         self.do_format_column(column, &mut convert_column);
-        push_sql!(self.sql,column," <> ",convert_column.as_str(),);
+        push_sql!(self.sql, column, " <> ", convert_column.as_str(),);
         self.args.push(json!(obj));
         self
     }
@@ -370,9 +375,9 @@ impl Wrapper {
             .push_str(&crate::sql::TEMPLATE.order_by.left_right_space);
         for x in columns {
             if is_asc {
-                push_sql!(self.sql,x," ",crate::sql::TEMPLATE.asc.value,);
+                push_sql!(self.sql, x, " ", crate::sql::TEMPLATE.asc.value,);
             } else {
-                push_sql!(self.sql,x," ",crate::sql::TEMPLATE.desc.value,);
+                push_sql!(self.sql, x, " ", crate::sql::TEMPLATE.desc.value,);
             }
             if (index + 1) != len {
                 self.sql.push_str(",");
@@ -409,74 +414,93 @@ impl Wrapper {
 
     ///  sql:   column > obj
     pub fn gt<T>(mut self, column: &str, obj: T) -> Self
-        where
-            T: Serialize,
+    where
+        T: Serialize,
     {
         self = self.and();
         let mut convert_column = String::new();
-        self.driver_type.stmt_convert(self.args.len(), &mut convert_column);
+        self.driver_type
+            .stmt_convert(self.args.len(), &mut convert_column);
         self.do_format_column(column, &mut convert_column);
-        push_sql!(self.sql,column," > ", &convert_column.as_str(),);
+        push_sql!(self.sql, column, " > ", &convert_column.as_str(),);
         self.args.push(json!(obj));
         self
     }
     ///  sql:   column >= obj
     pub fn ge<T>(mut self, column: &str, obj: T) -> Self
-        where
-            T: Serialize,
+    where
+        T: Serialize,
     {
         self = self.and();
         let mut convert_column = String::new();
-        self.driver_type.stmt_convert(self.args.len(), &mut convert_column);
+        self.driver_type
+            .stmt_convert(self.args.len(), &mut convert_column);
         self.do_format_column(column, &mut convert_column);
-        push_sql!(self.sql,column," >= ", &convert_column.as_str(),);
+        push_sql!(self.sql, column, " >= ", &convert_column.as_str(),);
         self.args.push(json!(obj));
         self
     }
 
     ///  sql:   column < obj
     pub fn lt<T>(mut self, column: &str, obj: T) -> Self
-        where
-            T: Serialize,
+    where
+        T: Serialize,
     {
         self = self.and();
         let mut convert_column = String::new();
-        self.driver_type.stmt_convert(self.args.len(), &mut convert_column);
+        self.driver_type
+            .stmt_convert(self.args.len(), &mut convert_column);
         self.do_format_column(column, &mut convert_column);
-        push_sql!(self.sql,column," < ", &convert_column.as_str(),);
+        push_sql!(self.sql, column, " < ", &convert_column.as_str(),);
         self.args.push(json!(obj));
         self
     }
 
     ///  sql:   column <= obj
     pub fn le<T>(mut self, column: &str, obj: T) -> Self
-        where
-            T: Serialize,
+    where
+        T: Serialize,
     {
         self = self.and();
         let mut convert_column = String::new();
-        self.driver_type.stmt_convert(self.args.len(), &mut convert_column);
+        self.driver_type
+            .stmt_convert(self.args.len(), &mut convert_column);
         self.do_format_column(column, &mut convert_column);
-        push_sql!(self.sql,column," <= ", &convert_column.as_str(),);
+        push_sql!(self.sql, column, " <= ", &convert_column.as_str(),);
         self.args.push(json!(obj));
         self
     }
 
     pub fn between<T>(mut self, column: &str, min: T, max: T) -> Self
-        where
-            T: Serialize,
+    where
+        T: Serialize,
     {
         self = self.and();
 
         let mut convert_column = String::new();
-        self.driver_type.stmt_convert(self.args.len(), &mut convert_column);
+        self.driver_type
+            .stmt_convert(self.args.len(), &mut convert_column);
         self.do_format_column(column, &mut convert_column);
-        push_sql!(self.sql,column," ",crate::sql::TEMPLATE.between.value," ", &convert_column.as_str(),);
+        push_sql!(
+            self.sql,
+            column,
+            " ",
+            crate::sql::TEMPLATE.between.value,
+            " ",
+            &convert_column.as_str(),
+        );
 
         let mut convert_column = String::new();
-        self.driver_type.stmt_convert(self.args.len(), &mut convert_column);
+        self.driver_type
+            .stmt_convert(self.args.len(), &mut convert_column);
         self.do_format_column(column, &mut convert_column);
-        push_sql!(self.sql," ",crate::sql::TEMPLATE.and.value," ", &convert_column.as_str(),);
+        push_sql!(
+            self.sql,
+            " ",
+            crate::sql::TEMPLATE.and.value,
+            " ",
+            &convert_column.as_str(),
+        );
 
         self.args.push(json!(min));
         self.args.push(json!(max));
@@ -484,20 +508,36 @@ impl Wrapper {
     }
 
     pub fn not_between<T>(mut self, column: &str, min: T, max: T) -> Self
-        where
-            T: Serialize,
+    where
+        T: Serialize,
     {
         self = self.and();
 
         let mut convert_column = String::new();
-        self.driver_type.stmt_convert(self.args.len(), &mut convert_column);
+        self.driver_type
+            .stmt_convert(self.args.len(), &mut convert_column);
         self.do_format_column(column, &mut convert_column);
-        push_sql!(self.sql,column," ",crate::sql::TEMPLATE.not.value,crate::sql::TEMPLATE.between.value," ", &convert_column.as_str(),);
+        push_sql!(
+            self.sql,
+            column,
+            " ",
+            crate::sql::TEMPLATE.not.value,
+            crate::sql::TEMPLATE.between.value,
+            " ",
+            &convert_column.as_str(),
+        );
 
         let mut convert_column = String::new();
-        self.driver_type.stmt_convert(self.args.len(), &mut convert_column);
+        self.driver_type
+            .stmt_convert(self.args.len(), &mut convert_column);
         self.do_format_column(column, &mut convert_column);
-        push_sql!(self.sql," ",crate::sql::TEMPLATE.and.value," ", &convert_column.as_str(),);
+        push_sql!(
+            self.sql,
+            " ",
+            crate::sql::TEMPLATE.and.value,
+            " ",
+            &convert_column.as_str(),
+        );
 
         self.args.push(json!(min));
         self.args.push(json!(max));
@@ -505,8 +545,8 @@ impl Wrapper {
     }
 
     pub fn like<T>(mut self, column: &str, obj: T) -> Self
-        where
-            T: Serialize,
+    where
+        T: Serialize,
     {
         self = self.and();
         let v = json!(obj);
@@ -518,17 +558,25 @@ impl Wrapper {
         }
 
         let mut convert_column = String::new();
-        self.driver_type.stmt_convert(self.args.len(), &mut convert_column);
+        self.driver_type
+            .stmt_convert(self.args.len(), &mut convert_column);
         self.do_format_column(column, &mut convert_column);
-        push_sql!(self.sql,column," ",crate::sql::TEMPLATE.like.value," ", &convert_column.as_str(),);
+        push_sql!(
+            self.sql,
+            column,
+            " ",
+            crate::sql::TEMPLATE.like.value,
+            " ",
+            &convert_column.as_str(),
+        );
 
         self.args.push(json!(v_str));
         self
     }
 
     pub fn like_left<T>(mut self, column: &str, obj: T) -> Self
-        where
-            T: Serialize,
+    where
+        T: Serialize,
     {
         self = self.and();
         let v = json!(obj);
@@ -540,17 +588,25 @@ impl Wrapper {
         }
 
         let mut convert_column = String::new();
-        self.driver_type.stmt_convert(self.args.len(), &mut convert_column);
+        self.driver_type
+            .stmt_convert(self.args.len(), &mut convert_column);
         self.do_format_column(column, &mut convert_column);
-        push_sql!(self.sql,column," ",crate::sql::TEMPLATE.like.value," ", &convert_column.as_str(),);
+        push_sql!(
+            self.sql,
+            column,
+            " ",
+            crate::sql::TEMPLATE.like.value,
+            " ",
+            &convert_column.as_str(),
+        );
 
         self.args.push(json!(v_str));
         self
     }
 
     pub fn like_right<T>(mut self, column: &str, obj: T) -> Self
-        where
-            T: Serialize,
+    where
+        T: Serialize,
     {
         self = self.and();
         let v = json!(obj);
@@ -562,17 +618,25 @@ impl Wrapper {
         }
 
         let mut convert_column = String::new();
-        self.driver_type.stmt_convert(self.args.len(), &mut convert_column);
+        self.driver_type
+            .stmt_convert(self.args.len(), &mut convert_column);
         self.do_format_column(column, &mut convert_column);
-        push_sql!(self.sql,column," ",crate::sql::TEMPLATE.like.value," ", &convert_column.as_str(),);
+        push_sql!(
+            self.sql,
+            column,
+            " ",
+            crate::sql::TEMPLATE.like.value,
+            " ",
+            &convert_column.as_str(),
+        );
 
         self.args.push(json!(v_str));
         self
     }
 
     pub fn not_like<T>(mut self, column: &str, obj: T) -> Self
-        where
-            T: Serialize,
+    where
+        T: Serialize,
     {
         self = self.and();
         let v = json!(obj);
@@ -583,9 +647,19 @@ impl Wrapper {
             v_str = format!("%{}%", v.to_string());
         }
         let mut convert_column = String::new();
-        self.driver_type.stmt_convert(self.args.len(), &mut convert_column);
+        self.driver_type
+            .stmt_convert(self.args.len(), &mut convert_column);
         self.do_format_column(column, &mut convert_column);
-        push_sql!(self.sql,column," ",crate::sql::TEMPLATE.not.value," ",crate::sql::TEMPLATE.like.value," ", &convert_column.as_str(),);
+        push_sql!(
+            self.sql,
+            column,
+            " ",
+            crate::sql::TEMPLATE.not.value,
+            " ",
+            crate::sql::TEMPLATE.like.value,
+            " ",
+            &convert_column.as_str(),
+        );
         self.args.push(json!(v_str));
         self
     }
@@ -609,62 +683,72 @@ impl Wrapper {
 
     /// gen sql: * in (*,*,*)
     pub fn in_array<T>(mut self, column: &str, obj: &[T]) -> Self
-        where
-            T: Serialize,
+    where
+        T: Serialize,
     {
         if obj.len() == 0 {
             return self;
         }
         self = self.and();
-        push_sql!(self.sql,column," ",crate::sql::TEMPLATE.r#in.value," (",);
+        push_sql!(self.sql, column, " ", crate::sql::TEMPLATE.r#in.value, " (",);
         for x in obj {
             let mut convert_column = String::new();
-            self.driver_type.stmt_convert(self.args.len(), &mut convert_column);
+            self.driver_type
+                .stmt_convert(self.args.len(), &mut convert_column);
             self.do_format_column(column, &mut convert_column);
-            push_sql!(self.sql," ",&convert_column.as_str()," ",);
+            push_sql!(self.sql, " ", &convert_column.as_str(), " ",);
             self.sql.push_str(",");
             self.args.push(json!(x));
         }
         self.sql.pop();
-        push_sql!(self.sql,")",);
+        push_sql!(self.sql, ")",);
         self
     }
 
     /// gen sql: * in (*,*,*)
     pub fn in_<T>(self, column: &str, obj: &[T]) -> Self
-        where
-            T: Serialize,
+    where
+        T: Serialize,
     {
         self.in_array(column, obj)
     }
 
     /// gen sql: * in (*,*,*)
     pub fn r#in<T>(self, column: &str, obj: &[T]) -> Self
-        where
-            T: Serialize,
+    where
+        T: Serialize,
     {
         self.in_array(column, obj)
     }
 
     pub fn not_in<T>(mut self, column: &str, obj: &[T]) -> Self
-        where
-            T: Serialize,
+    where
+        T: Serialize,
     {
         if obj.len() == 0 {
             return self;
         }
         self = self.and();
-        push_sql!(self.sql,column," ",crate::sql::TEMPLATE.not.value," ",crate::sql::TEMPLATE.r#in.value," (",);
+        push_sql!(
+            self.sql,
+            column,
+            " ",
+            crate::sql::TEMPLATE.not.value,
+            " ",
+            crate::sql::TEMPLATE.r#in.value,
+            " (",
+        );
         for x in obj {
             let mut convert_column = String::new();
-            self.driver_type.stmt_convert(self.args.len(), &mut convert_column);
+            self.driver_type
+                .stmt_convert(self.args.len(), &mut convert_column);
             self.do_format_column(column, &mut convert_column);
-            push_sql!(self.sql," ",&convert_column.as_str()," ",);
+            push_sql!(self.sql, " ", &convert_column.as_str(), " ",);
             self.sql.push_str(",");
             self.args.push(json!(x));
         }
         self.sql.pop();
-        push_sql!(self.sql,")",);
+        push_sql!(self.sql, ")",);
         self
     }
 
@@ -733,7 +817,7 @@ impl Wrapper {
     ///  limit(1) " limit 1 "
     pub fn limit(mut self, limit: u64) -> Self {
         use std::fmt::Write;
-        push_sql!(self.sql," ",crate::sql::TEMPLATE.limit.value," ",);
+        push_sql!(self.sql, " ", crate::sql::TEMPLATE.limit.value, " ",);
         self.sql.write_fmt(format_args!("{}", limit));
         self.sql.push_str(" ");
         self

@@ -99,12 +99,16 @@ pub(crate) fn get_page_req_ident(target_fn: &ItemFn, func_name: &str) -> Ident {
 pub(crate) fn find_fn_body(target_fn: &ItemFn) -> proc_macro2::TokenStream {
     //del todos
     let mut target_fn = target_fn.clone();
-    let mut new_stmts =vec![];
+    let mut new_stmts = vec![];
     for x in &target_fn.block.stmts {
-        let token=x.to_token_stream().to_string().replace("\n","").replace(" ","");
+        let token = x
+            .to_token_stream()
+            .to_string()
+            .replace("\n", "")
+            .replace(" ", "");
         if token.eq("todo!()") || token.eq("unimplemented!()") {
             //nothing to do
-        }else{
+        } else {
             new_stmts.push(x.to_owned());
         }
     }
