@@ -5,13 +5,11 @@ extern crate lazy_static;
 extern crate rbatis;
 
 use chrono::NaiveDateTime;
-use rbatis::crud::{CRUDMut, CRUD};
-use rbatis::rbatis::Rbatis;
+use rbatis::{crud::CRUD, rbatis::Rbatis};
+use warp::Filter;
+
 use std::collections::HashMap;
 use std::convert::Infallible;
-use std::str::FromStr;
-use std::time::Duration;
-use warp::Filter;
 
 #[crud_table]
 #[derive(Clone, Debug)]

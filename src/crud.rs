@@ -109,16 +109,9 @@ pub trait CRUDTable: Send + Sync + Serialize + DeserializeOwned {
         let mut arr = vec![];
         let cols = Self::table_columns();
         let columns: Vec<&str> = cols.split(",").collect();
-        let map =
-            bson::to_document(self).map_err(|_| Error::from("[rbatis] arg not an json object!"))?;
-        // match serde_json::json!(self) {
-        //     serde_json::Value::Object(m) => {
-        //         map = m;
-        //     }
-        //     _ => {
-        //         return Err(Error::from("[rbatis] arg not an json object!"));
-        //     }
-        // }
+        let map = bson::to_document(self)
+            .map_err(|e| Error::from(format!("[rbatis] arg not an bson document {:?}!", e)))?;
+
         let mut column_sql = String::new();
         for column in columns {
             let mut do_continue = false;
@@ -621,14 +614,6 @@ pub trait CRUDMut: ExecutorMut {
         let columns_vec: Vec<&str> = columns.split(",").collect();
         let map = bson::to_document(&table)
             .map_err(|_| Error::from("[rbatis] arg not an bson object!"))?;
-        // match serde_json::json!(table) {
-        //     serde_json::Value::Object(m) => {
-        //         map = m;
-        //     }
-        //     _ => {
-        //         return Err(Error::from("[rbatis] arg not an json object!"));
-        //     }
-        // }
         let null = Bson::Null;
         let mut sets = String::new();
 
