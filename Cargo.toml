@@ -44,7 +44,7 @@ rbatis_sql = { version="2.0.15", git = "https://github.com/rbatis/rbatis_sql.git
 
 chrono = { version = "0.4", features = ["serde"] }
 lazy_static = "1.4"
-bson ={ version = "1.2", features = ["u2i"] }
+bson ={ version = "1.2", features = ["decimal128", "u2i"] }
 #serde
 serde = { version = "1", features = ["derive"] }
 serde_json = { version = "1" }
