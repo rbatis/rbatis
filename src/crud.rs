@@ -861,7 +861,7 @@ pub trait CRUDMut: ExecutorMut {
     where
         T: DeserializeOwned + Serialize + Send + Sync,
     {
-        let mut page_result = Page::new(page_request.get_page_no(), page_request.get_page_size());
+        let mut page_result = Page::new(page_request.get_page_no(), page_request.get_page_size(), page_request.is_asc_order());
         page_result.search_count = page_request.is_search_count();
         let (count_sql, sql) = self.get_rbatis().page_plugin.make_page_sql(
             &self.driver_type()?,

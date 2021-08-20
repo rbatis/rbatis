@@ -91,7 +91,7 @@ mod test {
         println!("sql:{:?}", w.sql.as_str());
         println!("arg:{:?}", w.args.clone());
         assert_eq!(&w.sql, "a = $1");
-        assert_eq!(&w.args[0], &json!(p));
+        assert_eq!(&w.args[0], &bson::to_bson(&p).unwrap());
     }
 
     #[test]

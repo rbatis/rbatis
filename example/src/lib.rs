@@ -45,3 +45,8 @@ pub struct BizActivity {
     pub version: Option<i32>,
     pub delete_flag: Option<i32>,
 }
+
+#[rbatis::py_sql(rb, "select * from biz_activity where delete_flag = 0")]
+    async fn py_ctx_id(rb: &rbatis::rbatis::Rbatis) -> Vec<BizActivity> {
+        todo!()
+    }

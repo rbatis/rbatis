@@ -9,26 +9,26 @@ mod tests {
         let table_fields = "name,age,del".to_string();
         let sql_where = "";
         let result = r
-            .create_remove_sql("", &DriverType::Mysql, "test", &table_fields, sql_where)
+            .create_remove_sql(&DriverType::Mysql, "test", &table_fields, sql_where)
             .unwrap();
         assert_eq!("update test set del = 1", &result);
 
         let sql_where = " where name = 'zhangsan'";
         let result = r
-            .create_remove_sql("", &DriverType::Mysql, "test", &table_fields, sql_where)
+            .create_remove_sql(&DriverType::Mysql, "test", &table_fields, sql_where)
             .unwrap();
         assert_eq!("update test set del = 1 where name = 'zhangsan'", &result);
 
         let table_fields = "name,age";
         let sql_where = " where name = 'zhangsan'";
         let result = r
-            .create_remove_sql("", &DriverType::Mysql, "test", &table_fields, sql_where)
+            .create_remove_sql(&DriverType::Mysql, "test", &table_fields, sql_where)
             .unwrap();
         assert_eq!("delete from test where name = 'zhangsan'", &result);
 
         let table_fields = "name,age";
         let sql_where = "";
-        let result = r.create_remove_sql("", &DriverType::Mysql, "test", &table_fields, sql_where);
+        let result = r.create_remove_sql(&DriverType::Mysql, "test", &table_fields, sql_where);
         assert!(result.is_err());
     }
 }

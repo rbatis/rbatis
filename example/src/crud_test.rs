@@ -3,6 +3,7 @@ mod test {
     use bigdecimal::BigDecimal;
     use chrono::NaiveDateTime;
 
+    use bson::Bson;
     use rbatis::core::value::DateTimeNow;
     use rbatis::core::Error;
     use rbatis::crud::{CRUDMut, Skip, CRUD};
@@ -11,7 +12,6 @@ mod test {
     use rbatis::plugin::snowflake::new_snowflake_id;
     use rbatis::plugin::version_lock::RbatisVersionLockPlugin;
     use rbatis::rbatis::Rbatis;
-    use serde_json::Value;
 
     ///Or another way to write it
     // #[crud_table(table_name:biz_activity)]
@@ -249,7 +249,7 @@ mod test {
             .update_by_wrapper(
                 &mut activity,
                 &w,
-                &[Skip::Value(Value::Null), Skip::Column("id")],
+                &[Skip::Value(Bson::Null), Skip::Column("id")],
             )
             .await;
         if r.is_err() {

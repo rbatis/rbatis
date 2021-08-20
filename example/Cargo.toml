@@ -36,6 +36,7 @@ path = "src/axum/main.rs"
 
 [dependencies]
 #serde and base types
+bson ={ version = "1.2", features = ["decimal128", "u2i"] }
 serde = { version = "1", features = ["derive"] }
 serde_json = "1"
 chrono = { version = "0.4", features = ["serde"] }

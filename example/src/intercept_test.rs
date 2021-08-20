@@ -1,6 +1,7 @@
 #[cfg(test)]
 mod test {
     use crate::BizActivity;
+    use bson::Bson;
     use rbatis::core::Error;
     use rbatis::crud::{CRUDMut, CRUD};
     use rbatis::executor::Executor;
@@ -8,7 +9,6 @@ mod test {
         BlockAttackDeleteInterceptor, BlockAttackUpdateInterceptor, SqlIntercept,
     };
     use rbatis::rbatis::Rbatis;
-    use serde_json::Value;
 
     #[tokio::test]
     pub async fn test_block_attack() {
@@ -33,7 +33,7 @@ mod test {
             &self,
             rb: &Rbatis,
             sql: &mut String,
-            args: &mut Vec<Value>,
+            args: &mut Vec<Bson>,
             is_prepared_sql: bool,
         ) -> Result<(), rbatis::core::Error> {
             println!(">>>>>> hello this is my inercept!>>>>>>");

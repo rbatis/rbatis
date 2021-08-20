@@ -92,7 +92,7 @@ mod test {
 
             rb.remove_by_column::<BizActivity, _>("id", activity.id.as_ref().unwrap())
                 .await;
-            let r = rb.save(&activity).await;
+            let r = rb.save(&activity, &[]).await;
             if r.is_err() {
                 println!("{}", r.err().unwrap().to_string());
             }
@@ -123,7 +123,7 @@ mod test {
             rb.link("mysql://root:123456@localhost:3306/test")
                 .await
                 .unwrap();
-            let r = rb.save_batch(&args).await;
+            let r = rb.save_batch(&args, &[]).await;
             if r.is_err() {
                 println!("{}", r.err().unwrap().to_string());
             }
@@ -195,7 +195,7 @@ mod test {
             };
 
             let w = Wrapper::new(&rb.driver_type().unwrap()).eq("id", "12312");
-            let r = rb.update_by_wrapper(&mut activity, &w, false).await;
+            let r = rb.update_by_wrapper(&mut activity, &w, &[]).await;
             if r.is_err() {
                 println!("{}", r.err().unwrap().to_string());
             }

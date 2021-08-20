@@ -1,10 +1,10 @@
 ///this is postgres  database  !
 #[cfg(test)]
 mod test {
+    use bson::Bson;
     use rbatis::crud::{CRUDMut, CRUD};
     use rbatis::executor::Executor;
     use rbatis::rbatis::Rbatis;
-    use serde_json::json;
     use uuid::Uuid;
 
     #[crud_table]
@@ -41,7 +41,7 @@ mod test {
         //insert point
         rb.exec(
             "insert into p (id,po) values (1,Point($1,$2))",
-            &vec![json!(1), json!(2)],
+            &vec![Bson::Int32(1), Bson::Int32(2)],
         )
         .await
         .unwrap();
