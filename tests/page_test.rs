@@ -4,7 +4,7 @@ mod test {
 
     #[test]
     pub fn test_page() {
-        let mut page: Page<i32> = Page::new(2, 10);
+        let mut page: Page<i32> = Page::new(2, 10, None);
         page.records.push(12);
         let s = serde_json::to_string(&page).unwrap();
         println!("{}", s.clone());

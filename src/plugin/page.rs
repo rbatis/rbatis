@@ -34,7 +34,7 @@ pub trait IPageRequest: Send + Sync {
     fn get_page_size(&self) -> u64;
     fn get_page_no(&self) -> u64;
     fn get_total(&self) -> u64;
-    fn is_asc_order(&self) -> bool;
+    fn is_asc_order(&self) -> Option<bool>;
     fn is_search_count(&self) -> bool;
 
     fn set_total(&mut self, arg: u64);
@@ -83,7 +83,7 @@ pub struct Page<T> {
     /// default 10
     pub page_size: u64,
     /// is ascending order
-    pub is_asc: bool,
+    pub is_asc: Option<bool>,
     /// is search_count
     pub search_count: bool,
 }
@@ -96,24 +96,24 @@ pub struct PageRequest {
     pub page_no: u64,
     /// page page_size default 10
     pub page_size: u64,
-    pub is_asc: bool,
+    pub is_asc: Option<bool>,
     pub search_count: bool,
 }
 
 impl PageRequest {
-    pub fn new(page_no: u64, page_size: u64, is_asc: bool) -> Self {
-        return PageRequest::new_total(page_no, page_size, DEFAULT_PAGE_SIZE, is_asc);
+    pub fn new(page_no: u64, page_size: u64) -> Self {
+        return PageRequest::new_total(page_no, page_size, DEFAULT_PAGE_SIZE);
     }
 
-    pub fn new_option(page_no: &Option<u64>, page_size: &Option<u64>, is_asc: bool) -> Self {
-        return PageRequest::new(page_no.unwrap_or(1), page_size.unwrap_or(DEFAULT_PAGE_SIZE), is_asc);
+    pub fn new_option(page_no: &Option<u64>, page_size: &Option<u64>) -> Self {
+        return PageRequest::new(page_no.unwrap_or(1), page_size.unwrap_or(DEFAULT_PAGE_SIZE));
     }
 
-    pub fn new_total(page_no: u64, page_size: u64, total: u64, is_asc: bool) -> Self {
-        return PageRequest::new_plugin(String::new(), page_no, page_size, total, is_asc);
+    pub fn new_total(page_no: u64, page_size: u64, total: u64) -> Self {
+        return PageRequest::new_plugin(String::new(), page_no, page_size, total);
     }
 
-    pub fn new_plugin(plugin: String, page_no: u64, page_size: u64, total: u64, is_asc: bool) -> Self {
+    pub fn new_plugin(plugin: String, page_no: u64, page_size: u64, total: u64) -> Self {
         let mut page_no = page_no;
         if page_no < 1 {
             page_no = 1;
@@ -122,7 +122,7 @@ impl PageRequest {
             total,
             page_size,
             page_no,
-            is_asc,
+            is_asc: None,
             search_count: true,
         };
     }
@@ -134,7 +134,7 @@ impl Default for PageRequest {
             total: 0,
             page_size: DEFAULT_PAGE_SIZE,
             page_no: 1,
-            is_asc: true,
+            is_asc: None,
             search_count: true,
         };
     }
@@ -153,7 +153,7 @@ impl IPageRequest for PageRequest {
         self.total
     }
 
-    fn is_asc_order(&self) -> bool {
+    fn is_asc_order(&self) -> Option<bool> {
         self.is_asc
     }
 
@@ -190,20 +190,20 @@ impl ToString for PageRequest {
 }
 
 impl<T> Page<T> {
-    pub fn new(current: u64, page_size: u64, is_asc: bool) -> Self {
+    pub fn new(current: u64, page_size: u64, is_asc: Option<bool>) -> Self {
         return Page::new_total(current, page_size, 0, is_asc);
     }
 
-    pub fn new_option(current: &Option<u64>, page_size: &Option<u64>, is_asc: bool) -> Self {
+    pub fn new_option(current: &Option<u64>, page_size: &Option<u64>, is_asc: Option<bool>) -> Self {
         return Page::new(current.unwrap_or(1), page_size.unwrap_or(DEFAULT_PAGE_SIZE), is_asc);
     }
 
-    pub fn new_total(page_no: u64, page_size: u64, total: u64, is_asc: bool) -> Self {
+    pub fn new_total(page_no: u64, page_size: u64, total: u64, is_asc: Option<bool>) -> Self {
         if page_no < 1 {
             return Self {
                 total,
                 pages: 0,
-                page_size: page_size,
+                page_size,
                 page_no: 1 as u64,
                 records: vec![],
                 is_asc,
@@ -213,10 +213,10 @@ impl<T> Page<T> {
         return Self {
             total,
             pages: 0,
-            page_size: page_size,
+            page_size,
             page_no,
             records: vec![],
-            is_asc: true,
+            is_asc,
             search_count: true,
         };
     }
@@ -230,7 +230,7 @@ impl<T> Default for Page<T> {
             pages: 0,
             page_size: DEFAULT_PAGE_SIZE,
             page_no: 1,
-            is_asc: true,
+            is_asc: None,
             search_count: true,
         };
     }
@@ -251,7 +251,7 @@ where
         self.total
     }
 
-    fn is_asc_order(&self) -> bool {
+    fn is_asc_order(&self) -> Option<bool> {
         self.is_asc
     }
 
