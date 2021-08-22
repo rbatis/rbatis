@@ -120,16 +120,22 @@ impl Wrapper {
 
                 let mut convert_column_new = String::new();
                 self.driver_type
-                    .stmt_convert(index + args.len(), &mut convert_column_new);
+                    .stmt_convert(index + args.len() + self.args.len(), &mut convert_column_new);
+
+                convert_column.push(' ');
+                convert_column_new.push(' ');
                 new_sql = new_sql.replace(convert_column.as_str(), convert_column_new.as_str());
             }
-            for index in args.len()..self_arg_len {
+            for index in 0..args.len() {
                 let mut convert_column = String::new();
-                self.driver_type.stmt_convert(index, &mut convert_column);
+                self.driver_type.stmt_convert(index + self.args.len() + args.len(), &mut convert_column);
 
                 let mut convert_column_new = String::new();
                 self.driver_type
-                    .stmt_convert(index + args.len(), &mut convert_column_new);
+                    .stmt_convert(index + self.args.len(), &mut convert_column_new);
+
+                convert_column.push(' ');
+                convert_column_new.push(' ');
                 new_sql = new_sql.replace(convert_column.as_str(), convert_column_new.as_str());
             }
         }
@@ -204,7 +210,9 @@ impl Wrapper {
     }
 
     pub fn push_sql(mut self, sql: &str) -> Self {
+        self.sql.push_str(" ");
         self.sql.push_str(sql);
+        self.sql.push_str(" ");
         self
     }
 
