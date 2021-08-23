@@ -147,7 +147,7 @@ mod test {
     }
 
     #[test]
-    fn test_push_wrapper_more_args() {
+    fn test_push_wrapper_with_more_args() {
         let t1_column_1 = [1, 2, 3, 4, 5, 6, 7, 8];
         let t2_column_1 = [10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20];
         let t2_column_2 = [100, 101];
@@ -156,14 +156,14 @@ mod test {
         let mut w2 = w1.clone();
 
         w1 = w1
-            .r#in("t1_colum_1", &t1_column_1)
+            .r#in("t1_column_1", &t1_column_1)
             .and()
-            .push_sql("t1_colum_1 in (SELECT t1_colum_1 FROM w2 WHERE ");
+            .push_sql("t1_column_1 in (SELECT t1_column_1 FROM t2 WHERE ");
 
         w2 = w2
-            .r#in("t2_colum_1", &t2_column_1)
+            .r#in("t2_column_1", &t2_column_1)
             .or()
-            .r#in("t2_colum_2", &t2_column_2);
+            .r#in("t2_column_2", &t2_column_2);
 
         let w = w1
             .push_wrapper(&w2)
@@ -172,29 +172,29 @@ mod test {
 
         println!("sql:{:?}", w.sql.as_str());
         println!("arg:{:?}", w.args.clone());
-        assert!(w.sql.contains("t1_colum_1 in ( $1 , $2 , $3 , $4 , $5 , $6 , $7 , $8"));
-        assert!(w.sql.contains("t2_colum_1 in ( $9 , $10 , $11 , $12 , $13 , $14 , $15 , $16 , $17 , $18 , $19"));
-        assert!(w.sql.contains("t2_colum_2 in ( $20 , $21"));
+        assert!(w.sql.contains("t1_column_1 in ( $1 , $2 , $3 , $4 , $5 , $6 , $7 , $8"));
+        assert!(w.sql.contains("t2_column_1 in ( $9 , $10 , $11 , $12 , $13 , $14 , $15 , $16 , $17 , $18 , $19"));
+        assert!(w.sql.contains("t2_column_2 in ( $20 , $21"));
     }
 
     #[test]
-    fn test_push_wrapper_same_count_args() {
+    fn test_push_wrapper_with_same_count_args() {
         let t1_column_1 = [1, 2, 3, 4, 5, 6, 7, 8];
-        let t2_column_1 = [11, 12, 13, 14, 15, 16, 17, 18];
+        let t2_column_1 = [11, 12, 13, 14, 15, 16, 17];
         let t2_column_2 = [101];
 
         let mut w1 = Wrapper::new(&DriverType::Postgres);
         let mut w2 = w1.clone();
 
         w1 = w1
-            .r#in("t1_colum_1", &t1_column_1)
+            .r#in("t1_column_1", &t1_column_1)
             .and()
-            .push_sql("t1_colum_1 in (SELECT t1_colum_1 FROM w2 WHERE ");
+            .push_sql("t1_column_1 in (SELECT t1_column_1 FROM t2 WHERE ");
 
         w2 = w2
-            .r#in("t2_colum_1", &t2_column_1)
+            .r#in("t2_column_1", &t2_column_1)
             .or()
-            .r#in("t2_colum_2", &t2_column_2);
+            .r#in("t2_column_2", &t2_column_2);
 
         let w = w1
             .push_wrapper(&w2)
@@ -203,13 +203,13 @@ mod test {
 
         println!("sql:{:?}", w.sql.as_str());
         println!("arg:{:?}", w.args.clone());
-        assert!(w.sql.contains("t1_colum_1 in ( $1 , $2 , $3 , $4 , $5 , $6 , $7 , $8"));
-        assert!(w.sql.contains("t2_colum_1 in ( $9 , $10 , $11 , $12 , $13 , $14 , $15 , $16"));
-        assert!(w.sql.contains("t2_colum_2 in ( $17"));
+        assert!(w.sql.contains("t1_column_1 in ( $1 , $2 , $3 , $4 , $5 , $6 , $7 , $8"));
+        assert!(w.sql.contains("t2_column_1 in ( $9 , $10 , $11 , $12 , $13 , $14 , $15"));
+        assert!(w.sql.contains("t2_column_2 in ( $16"));
     }
 
     #[test]
-    fn test_push_wrapper_less_args() {
+    fn test_push_wrapper_with_less_args() {
         let t1_column_1 = [1, 2, 3, 4, 5, 6, 7, 8];
         let t2_column_1 = [11, 12, 13, 14, 15];
         let t2_column_2 = [101];
@@ -218,14 +218,14 @@ mod test {
         let mut w2 = w1.clone();
 
         w1 = w1
-            .r#in("t1_colum_1", &t1_column_1)
+            .r#in("t1_column_1", &t1_column_1)
             .and()
-            .push_sql("t1_colum_1 in (SELECT t1_colum_1 FROM w2 WHERE ");
+            .push_sql("t1_column_1 in (SELECT t1_column_1 FROM t2 WHERE ");
 
         w2 = w2
-            .r#in("t2_colum_1", &t2_column_1)
+            .r#in("t2_column_1", &t2_column_1)
             .or()
-            .r#in("t2_colum_2", &t2_column_2);
+            .r#in("t2_column_2", &t2_column_2);
 
         let w = w1
             .push_wrapper(&w2)
@@ -234,8 +234,8 @@ mod test {
 
         println!("sql:{:?}", w.sql.as_str());
         println!("arg:{:?}", w.args.clone());
-        assert!(w.sql.contains("t1_colum_1 in ( $1 , $2 , $3 , $4 , $5 , $6 , $7 , $8"));
-        assert!(w.sql.contains("t2_colum_1 in ( $9 , $10 , $11 , $12 , $13"));
-        assert!(w.sql.contains("t2_colum_2 in ( $14"));
+        assert!(w.sql.contains("t1_column_1 in ( $1 , $2 , $3 , $4 , $5 , $6 , $7 , $8"));
+        assert!(w.sql.contains("t2_column_1 in ( $9 , $10 , $11 , $12 , $13"));
+        assert!(w.sql.contains("t2_column_2 in ( $14"));
     }
 }
