@@ -99,7 +99,7 @@ mod test {
         };
         rb.remove_by_column::<BizActivity, _>("id", activity.id.as_ref().unwrap())
             .await;
-        let r = rb.save(&activity,&[]).await;
+        let r = rb.save(&activity, &[]).await;
         if r.is_err() {
             println!("{}", r.err().unwrap().to_string());
         }
@@ -126,8 +126,8 @@ mod test {
         activity2.id = Some("12313".to_string());
         rb.remove_batch_by_column::<BizActivity, _>("id", &["12312".to_string(), "12313".to_string()])
             .await;
-        let args = vec![activity, activity2];
-        let r = rb.save_batch(&args,&[]).await;
+        let args = vec![&activity, &activity2];
+        let r = rb.save_batch(&args, &[]).await;
         if r.is_err() {
             println!("{}", r.err().unwrap().to_string());
         }
@@ -163,7 +163,7 @@ mod test {
         )
             .await;
         let args = vec![activity, activity2, activity3];
-        let r = rb.save_batch_slice(&args, 2,&[]).await;
+        let r = rb.save_batch_slice(&args, 2, &[]).await;
         if r.is_err() {
             println!("{}", r.err().unwrap().to_string());
         }
