@@ -34,12 +34,12 @@ pub struct Rbatis {
     pub page_plugin: Box<dyn PagePlugin>,
     // sql intercept vec chain
     pub sql_intercepts: Vec<Box<dyn SqlIntercept>>,
-    // logic delete plugin
-    pub logic_plugin: Option<Box<dyn LogicDelete>>,
     // log plugin
     pub log_plugin: Arc<Box<dyn LogPlugin>>,
+    // logic delete plugin
+    pub logic_plugin: Vec<Box<dyn LogicDelete>>,
     // version lock plugin
-    pub version_lock_plugin: Option<Box<dyn VersionLockPlugin>>,
+    pub version_lock_plugin: Vec<Box<dyn VersionLockPlugin>>,
     // sql param binder
     pub encoder: fn(q: &mut DBQuery, arg: &serde_json::Value) -> crate::Result<()>,
 }
@@ -70,12 +70,12 @@ pub struct RbatisOption {
     pub page_plugin: Box<dyn PagePlugin>,
     /// sql intercept vec chain
     pub sql_intercepts: Vec<Box<dyn SqlIntercept>>,
-    /// logic delete plugin
-    pub logic_plugin: Option<Box<dyn LogicDelete>>,
     /// log plugin
     pub log_plugin: Arc<Box<dyn LogPlugin>>,
-    ///version lock plugin
-    pub version_lock_plugin: Option<Box<dyn VersionLockPlugin>>,
+    /// logic delete plugin
+    pub logic_plugin: Vec<Box<dyn LogicDelete>>,
+    /// version lock plugin
+    pub version_lock_plugin: Vec<Box<dyn VersionLockPlugin>>,
 }
 
 impl Default for RbatisOption {
@@ -83,9 +83,9 @@ impl Default for RbatisOption {
         Self {
             page_plugin: Box::new(RbatisPagePlugin::new()),
             sql_intercepts: vec![],
-            logic_plugin: None,
+            logic_plugin: vec![],
             log_plugin: Arc::new(Box::new(RbatisLogPlugin::default()) as Box<dyn LogPlugin>),
-            version_lock_plugin: None,
+            version_lock_plugin: vec![],
         }
     }
 }
@@ -104,7 +104,7 @@ impl Rbatis {
             sql_intercepts: option.sql_intercepts,
             logic_plugin: option.logic_plugin,
             log_plugin: option.log_plugin,
-            version_lock_plugin: None,
+            version_lock_plugin: option.version_lock_plugin,
             encoder: |q,arg|{
                 q.bind_value(arg)?;
                 Ok(())
@@ -175,15 +175,12 @@ impl Rbatis {
         self.log_plugin = Arc::new(Box::new(arg));
     }
 
-    pub fn set_logic_plugin(&mut self, arg: Option<impl LogicDelete + 'static>) {
-        match arg {
-            Some(v) => {
-                self.logic_plugin = Some(Box::new(v));
-            }
-            None => {
-                self.logic_plugin = None;
-            }
-        }
+    pub fn set_logic_plugin(&mut self, arg: impl LogicDelete + 'static) {
+        self.logic_plugin.push(Box::new(arg));
+    }
+
+    pub fn set_version_plugin(&mut self, arg: impl VersionLockPlugin + 'static) {
+        self.version_lock_plugin.push(Box::new(arg));
     }
 
     pub fn set_page_plugin(&mut self, arg: impl PagePlugin + 'static) {
