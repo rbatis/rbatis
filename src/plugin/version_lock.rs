@@ -5,6 +5,7 @@ use serde::{Serialize, Deserialize, Serializer, Deserializer};
 use crate::DriverType;
 use std::collections::HashMap;
 use std::ops::Deref;
+use serde::de::DeserializeOwned;
 
 pub trait VersionLockPlugin: Send + Sync + Debug {
     ///the name
@@ -87,7 +88,7 @@ impl<T> Serialize for TableNoVersion<T> where T: CRUDTable {
     }
 }
 
-impl<'de, T> Deserialize<'de> for TableNoVersion<T> where T: CRUDTable {
+impl<'de, T> Deserialize<'de> for TableNoVersion<T> where T: CRUDTable+DeserializeOwned {
     fn deserialize<D>(deserializer: D) -> Result<Self, <D as Deserializer<'de>>::Error> where
         D: Deserializer<'de> {
         let result = T::deserialize(deserializer)?;

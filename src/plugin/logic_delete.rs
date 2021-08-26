@@ -9,6 +9,7 @@ use crate::crud::{CRUDTable, Skip};
 use std::ops::{Deref, DerefMut};
 use std::collections::HashMap;
 use serde::{Serialize, Deserialize, Serializer, Deserializer};
+use serde::de::DeserializeOwned;
 
 /// Logic Delete Plugin trait
 pub trait LogicDelete: Send + Sync + Debug {
@@ -134,7 +135,7 @@ impl<T> Serialize for TableNoLogic<T> where T: CRUDTable {
     }
 }
 
-impl<'de, T> Deserialize<'de> for TableNoLogic<T> where T: CRUDTable {
+impl<'de, T> Deserialize<'de> for TableNoLogic<T> where T: CRUDTable+DeserializeOwned {
     fn deserialize<D>(deserializer: D) -> Result<Self, <D as Deserializer<'de>>::Error> where
         D: Deserializer<'de> {
         let result = T::deserialize(deserializer)?;
