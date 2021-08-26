@@ -1,17 +1,18 @@
 use serde_json::Number;
-use std::fmt::Debug;
+use std::fmt::{Debug, Formatter};
 use crate::crud::{CRUDTable, Skip};
 use serde::{Serialize, Deserialize, Serializer, Deserializer};
 use crate::DriverType;
 use std::collections::HashMap;
 use std::ops::Deref;
 use serde::de::DeserializeOwned;
+use std::marker::PhantomData;
 
 pub trait VersionLockPlugin: Send + Sync + Debug {
+
     ///the name
-    fn name(&self) -> &str {
-        std::any::type_name::<Self>()
-    }
+    fn table_name(&self) -> String;
+
     /// database column must be i32 or i64 or time column!
     fn column(&self) -> &str;
 
@@ -54,94 +55,41 @@ pub trait VersionLockPlugin: Send + Sync + Debug {
     }
 }
 
-#[derive(Debug, Clone)]
-pub struct RbatisVersionLockPlugin {
+#[derive(Clone)]
+pub struct RbatisVersionLockPlugin<T> where T:CRUDTable{
     pub excludes: Vec<String>,
     pub version_column: String,
+    pub table:PhantomData<T>
 }
 
-impl RbatisVersionLockPlugin {
+impl <T>RbatisVersionLockPlugin<T> where T:CRUDTable{
     pub fn new(version_column: &str) -> Self {
         Self {
             excludes: vec![],
             version_column: version_column.to_owned(),
+            table: Default::default()
         }
     }
-}
 
-impl VersionLockPlugin for RbatisVersionLockPlugin {
-    fn column(&self) -> &str {
-        &self.version_column
-    }
-}
-
-
-/// use this context will not use logic del
-pub struct TableNoVersion<T> where T: CRUDTable {
-    pub table: T,
-}
-
-impl<T> Serialize for TableNoVersion<T> where T: CRUDTable {
-    fn serialize<S>(&self, serializer: S) -> Result<<S as Serializer>::Ok, <S as Serializer>::Error> where
-        S: Serializer {
-        T::serialize(&self.table, serializer)
-    }
-}
-
-impl<'de, T> Deserialize<'de> for TableNoVersion<T> where T: CRUDTable+DeserializeOwned {
-    fn deserialize<D>(deserializer: D) -> Result<Self, <D as Deserializer<'de>>::Error> where
-        D: Deserializer<'de> {
-        let result = T::deserialize(deserializer)?;
-        return Ok(TableNoVersion {
-            table: result,
-        });
-    }
-}
-
-
-impl<T> CRUDTable for TableNoVersion<T> where T: CRUDTable {
-    fn is_use_plugin(plugin_name: &str) -> bool {
-        if plugin_name.eq(std::any::type_name::<RbatisVersionLockPlugin>()) {
-            return false;
-        }
-        return true;
-    }
-
-    fn table_name() -> String {
+    pub fn table_name() -> String {
         T::table_name()
     }
 
-    fn table_columns() -> String {
-        T::table_columns()
-    }
+}
 
-    fn formats(driver_type: &DriverType) -> HashMap<String, fn(arg: &str) -> String> {
-        T::formats(driver_type)
-    }
-
-    fn make_value_sql_arg(
-        &self,
-        db_type: &DriverType,
-        index: &mut usize,
-        skips: &[Skip],
-    ) -> crate::Result<(String, String, Vec<serde_json::Value>)> {
-        T::make_value_sql_arg(&self.table, db_type, index,skips)
+impl<T> Debug for RbatisVersionLockPlugin<T> where T: CRUDTable {
+    fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
+        f.debug_struct("RbatisVersionLockPlugin")
+            .finish()
     }
 }
 
-impl<T> Deref for TableNoVersion<T> where T: CRUDTable {
-    type Target = T;
-
-    fn deref(&self) -> &Self::Target {
-        &self.table
+impl <T>VersionLockPlugin for RbatisVersionLockPlugin<T> where T:CRUDTable{
+    fn table_name(&self) -> String {
+        RbatisVersionLockPlugin::<T>::table_name()
     }
-}
 
-
-impl<T> From<T> for TableNoVersion<T> where T: CRUDTable {
-    fn from(arg: T) -> Self {
-        TableNoVersion {
-            table: arg
-        }
+    fn column(&self) -> &str {
+        &self.version_column
     }
 }

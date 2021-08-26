@@ -258,7 +258,7 @@ pub async fn test_macro() {
 ```rust
 let mut rb:Rbatis=Rbatis::new();
 //rb.logic_plugin = Some(Box::new(RbatisLogicDeletePlugin::new_opt("delete_flag",1,0)));//Customize deleted/undeleted writing
-rb.logic_plugin = Some(Box::new(RbatisLogicDeletePlugin::new("delete_flag")));
+rb.set_logic_plugin(RbatisLogicDeletePlugin::<BizActivity>::new("delete_flag"));;
 rb.link("mysql://root:123456@localhost:3306/test").await.unwrap();
 let r = rb.remove_batch_by_id::<BizActivity>( & ["1".to_string(), "2".to_string()]).await;
 if r.is_err() {

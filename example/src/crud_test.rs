@@ -6,7 +6,7 @@ mod test {
     use rbatis::core::value::DateTimeNow;
     use rbatis::core::Error;
     use rbatis::crud::{CRUDMut, CRUD, Skip};
-    use rbatis::plugin::logic_delete::{RbatisLogicDeletePlugin, TableNoLogic};
+    use rbatis::plugin::logic_delete::{RbatisLogicDeletePlugin};
     use rbatis::plugin::page::{Page, PageRequest};
     use rbatis::plugin::snowflake::new_snowflake_id;
     use rbatis::plugin::version_lock::RbatisVersionLockPlugin;
@@ -173,12 +173,12 @@ mod test {
     #[tokio::test]
     pub async fn test_remove_batch_by_id() {
         let mut rb = init_rbatis().await;
-        rb.logic_plugin = Some(Box::new(RbatisLogicDeletePlugin::new("delete_flag")));
+        rb.set_logic_plugin(RbatisLogicDeletePlugin::<BizActivity>::new("delete_flag"));;
         rb.link("mysql://root:123456@localhost:3306/test")
             .await
             .unwrap();
         let r = rb
-            .remove_batch_by_column::<TableNoLogic<BizActivity>, _>("id", &["1".to_string(), "2".to_string()])
+            .remove_batch_by_column::<BizActivity, _>("id", &["1".to_string(), "2".to_string()])
             .await;
         if r.is_err() {
             println!("{}", r.err().unwrap().to_string());
@@ -196,7 +196,7 @@ mod test {
     pub async fn test_fetch_by_id() {
         let mut rb = init_rbatis().await;
         //set logic plugin
-        rb.logic_plugin = Some(Box::new(RbatisLogicDeletePlugin::new("delete_flag")));
+        rb.set_logic_plugin(RbatisLogicDeletePlugin::<BizActivity>::new("delete_flag"));;
         let r = rb
             .fetch_by_column::<Option<BizActivity>, _>("id", &"1")
             .await
@@ -208,7 +208,7 @@ mod test {
     pub async fn test_count_by_wrapper() {
         let mut rb = init_rbatis().await;
         //set logic plugin
-        rb.logic_plugin = Some(Box::new(RbatisLogicDeletePlugin::new("delete_flag")));
+        rb.set_logic_plugin(RbatisLogicDeletePlugin::<BizActivity>::new("delete_flag"));;
         let r = rb
             .fetch_count_by_wrapper::<BizActivity>(&rb.new_wrapper())
             .await
@@ -220,8 +220,8 @@ mod test {
     pub async fn test_update_by_wrapper() {
         let mut rb = init_rbatis().await;
         //set logic plugin
-        rb.logic_plugin = Some(Box::new(RbatisLogicDeletePlugin::new("delete_flag")));
-        rb.version_lock_plugin = Some(Box::new(RbatisVersionLockPlugin::new("version")));
+        rb.set_logic_plugin(RbatisLogicDeletePlugin::<BizActivity>::new("delete_flag"));;
+        rb.set_version_plugin(RbatisVersionLockPlugin::<BizActivity>::new("version"));
         let mut activity = BizActivity {
             id: Some("12312".to_string()),
             name: None,
@@ -249,7 +249,7 @@ mod test {
     pub async fn test_update_by_id() {
         let mut rb = init_rbatis().await;
         //set logic plugin
-        rb.logic_plugin = Some(Box::new(RbatisLogicDeletePlugin::new("delete_flag")));
+        rb.set_logic_plugin(RbatisLogicDeletePlugin::<BizActivity>::new("delete_flag"));;
         //macro make object
         let mut activity = rbatis::make_table!(BizActivity {
             id: "12312".to_string(),
@@ -283,7 +283,7 @@ mod test {
     pub async fn test_fetch_by_wrapper() {
         let mut rb = init_rbatis().await;
         //set logic plugin
-        rb.logic_plugin = Some(Box::new(RbatisLogicDeletePlugin::new("delete_flag")));
+        rb.set_logic_plugin(RbatisLogicDeletePlugin::<BizActivity>::new("delete_flag"));;
         let w = rb.new_wrapper().eq("id", "1");
         let r: Result<Option<BizActivity>, Error> = rb.fetch_by_wrapper(&w).await;
         println!("is_some:{:?}", r);
@@ -304,7 +304,7 @@ mod test {
     pub async fn test_fetch_page_by_wrapper() {
         let mut rb = init_rbatis().await;
         //set logic plugin
-        rb.logic_plugin = Some(Box::new(RbatisLogicDeletePlugin::new("delete_flag")));
+        rb.set_logic_plugin(RbatisLogicDeletePlugin::<BizActivity>::new("delete_flag"));;
 
         let w = rb
             .new_wrapper()
@@ -322,7 +322,7 @@ mod test {
     pub async fn test_list() {
         let mut rb = init_rbatis().await;
         //set logic plugin
-        rb.logic_plugin = Some(Box::new(RbatisLogicDeletePlugin::new("delete_flag")));
+        rb.set_logic_plugin(RbatisLogicDeletePlugin::<BizActivity>::new("delete_flag"));;
         let r: Vec<BizActivity> = rb.fetch_list().await.unwrap();
         println!("{}", serde_json::to_string(&r).unwrap());
     }

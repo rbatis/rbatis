@@ -32,17 +32,13 @@ mod test {
     }
 
     /// 必须实现 CRUDEntity接口，如果表名 不正确，可以重写 fn table_name() -> String 方法！
-    impl CRUDTable for BizActivity {}
-
-    #[derive(Serialize, Deserialize, Clone, Debug)]
-    pub struct BizActivityNoDel {
-        pub id: Option<String>,
-        pub name: Option<String>,
-    }
-
-    impl CRUDTable for BizActivityNoDel {
+    impl CRUDTable for BizActivity {
         fn table_name() -> String {
             "biz_activity".to_string()
+        }
+
+        fn table_columns() -> String {
+            rbatis::crud::decode_table_columns::<Self>()
         }
     }
 
@@ -90,9 +86,9 @@ mod test {
                 .await
                 .unwrap();
 
-            rb.remove_by_column::<BizActivity,_>( "id",activity.id.as_ref().unwrap())
+            rb.remove_by_column::<BizActivity, _>("id", activity.id.as_ref().unwrap())
                 .await;
-            let r = rb.save( &activity).await;
+            let r = rb.save(&activity, &[]).await;
             if r.is_err() {
                 println!("{}", r.err().unwrap().to_string());
             }
@@ -123,7 +119,7 @@ mod test {
             rb.link("mysql://root:123456@localhost:3306/test")
                 .await
                 .unwrap();
-            let r = rb.save_batch( &args).await;
+            let r = rb.save_batch(&args, &[]).await;
             if r.is_err() {
                 println!("{}", r.err().unwrap().to_string());
             }
@@ -135,12 +131,12 @@ mod test {
         rbatis::core::runtime::task::block_on(async {
             fast_log::init_log("requests.log", 1000, log::Level::Info, None, true);
             let mut rb = Rbatis::new();
-            rb.logic_plugin = Some(Box::new(RbatisLogicDeletePlugin::new("delete_flag")));
+            rb.set_logic_plugin(RbatisLogicDeletePlugin::<BizActivity>::new("delete_flag"));
             rb.link("mysql://root:123456@localhost:3306/test")
                 .await
                 .unwrap();
             let r = rb
-                .remove_batch_by_column::<BizActivity,_>( "id",&["1".to_string(), "2".to_string()])
+                .remove_batch_by_column::<BizActivity, _>("id", &["1".to_string(), "2".to_string()])
                 .await;
             if r.is_err() {
                 println!("{}", r.err().unwrap().to_string());
@@ -154,11 +150,11 @@ mod test {
             fast_log::init_log("requests.log", 1000, log::Level::Info, None, true);
             let mut rb = Rbatis::new();
             //设置 逻辑删除插件
-            rb.logic_plugin = Some(Box::new(RbatisLogicDeletePlugin::new("delete_flag")));
+            rb.set_logic_plugin(RbatisLogicDeletePlugin::<BizActivity>::new("delete_flag"));
             rb.link("mysql://root:123456@localhost:3306/test")
                 .await
                 .unwrap();
-            let r = rb.remove_by_column::<BizActivity,_>("id", &"1".to_string()).await;
+            let r = rb.remove_by_column::<BizActivity, _>("id", &"1".to_string()).await;
             if r.is_err() {
                 println!("{}", r.err().unwrap().to_string());
             }
@@ -172,7 +168,8 @@ mod test {
             fast_log::init_log("requests.log", 1000, log::Level::Info, None, true);
             let mut rb = Rbatis::new();
             //设置 逻辑删除插件
-            rb.logic_plugin = Some(Box::new(RbatisLogicDeletePlugin::new("delete_flag")));
+            rb.set_logic_plugin(RbatisLogicDeletePlugin::<BizActivity>::new("delete_flag"));
+            ;
             rb.link("mysql://root:123456@localhost:3306/test")
                 .await
                 .unwrap();
@@ -193,7 +190,7 @@ mod test {
             };
 
             let w = Wrapper::new(&rb.driver_type().unwrap()).eq("id", "12312");
-            let r = rb.update_by_wrapper(&mut activity, &w, false).await;
+            let r = rb.update_by_wrapper(&mut activity, &w, &[]).await;
             if r.is_err() {
                 println!("{}", r.err().unwrap().to_string());
             }
@@ -206,7 +203,8 @@ mod test {
             fast_log::init_log("requests.log", 1000, log::Level::Info, None, true);
             let mut rb = Rbatis::new();
             //设置 逻辑删除插件
-            rb.logic_plugin = Some(Box::new(RbatisLogicDeletePlugin::new("delete_flag")));
+            rb.set_logic_plugin(RbatisLogicDeletePlugin::<BizActivity>::new("delete_flag"));
+            ;
             rb.link("mysql://root:123456@localhost:3306/test")
                 .await
                 .unwrap();
@@ -225,7 +223,7 @@ mod test {
                 version: Some(1),
                 delete_flag: Some(1),
             };
-            let r = rb.update_by_column("id",&mut activity).await;
+            let r = rb.update_by_column("id", &mut activity).await;
             if r.is_err() {
                 println!("{}", r.err().unwrap().to_string());
             }
@@ -238,7 +236,8 @@ mod test {
             fast_log::init_log("requests.log", 1000, log::Level::Info, None, true);
             let mut rb = Rbatis::new();
             //设置 逻辑删除插件
-            rb.logic_plugin = Some(Box::new(RbatisLogicDeletePlugin::new("delete_flag")));
+            rb.set_logic_plugin(RbatisLogicDeletePlugin::<BizActivity>::new("delete_flag"));
+            ;
             rb.link("mysql://root:123456@localhost:3306/test")
                 .await
                 .unwrap();
@@ -251,24 +250,6 @@ mod test {
         });
     }
 
-    #[test]
-    pub fn test_fetch_no_del() {
-        rbatis::core::runtime::task::block_on(async {
-            fast_log::init_log("requests.log", 1000, log::Level::Info, None, true);
-            let mut rb = Rbatis::new();
-            //设置 逻辑删除插件
-            rb.logic_plugin = Some(Box::new(RbatisLogicDeletePlugin::new("delete_flag")));
-            rb.link("mysql://root:123456@localhost:3306/test")
-                .await
-                .unwrap();
-
-            let w = Wrapper::new(&rb.driver_type().unwrap()).eq("id", "12312");
-            let r: Result<BizActivityNoDel, Error> = rb.fetch_by_wrapper( &w).await;
-            if r.is_err() {
-                println!("{}", r.err().unwrap().to_string());
-            }
-        });
-    }
 
     #[test]
     pub fn test_fetch_page_by_wrapper() {
@@ -276,7 +257,8 @@ mod test {
             fast_log::init_log("requests.log", 1000, log::Level::Info, None, true);
             let mut rb = Rbatis::new();
             //设置 逻辑删除插件
-            rb.logic_plugin = Some(Box::new(RbatisLogicDeletePlugin::new("delete_flag")));
+            rb.set_logic_plugin(RbatisLogicDeletePlugin::<BizActivity>::new("delete_flag"));
+            ;
             rb.link("mysql://root:123456@localhost:3306/test")
                 .await
                 .unwrap();

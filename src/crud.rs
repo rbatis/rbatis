@@ -22,6 +22,7 @@ use crate::wrapper::Wrapper;
 use std::marker::PhantomData;
 use std::ops::{Deref, DerefMut};
 use serde_json::value::Value::Null;
+use std::option::Option::Some;
 
 
 /// DataBase Table Model trait
@@ -32,8 +33,6 @@ use serde_json::value::Value::Null;
 ///
 ///
 pub trait CRUDTable: Send + Sync + Serialize {
-    /// is enable use plugin
-    fn is_use_plugin(plugin_name: &str) -> bool { true }
 
     /// get table name,default is type name for snake name
     ///
@@ -64,9 +63,7 @@ pub trait CRUDTable: Send + Sync + Serialize {
     /// you also can impl this method for static string
     ///
     /// If a macro is used, the method is overridden by the macro
-    fn table_columns() -> String {
-        unimplemented!()
-    }
+    fn table_columns() -> String;
 
     ///format column
     fn do_format_column(driver_type: &DriverType, column: &str, data: &mut String) {
@@ -173,9 +170,48 @@ pub trait CRUDTable: Send + Sync + Serialize {
     }
 }
 
-impl<T> CRUDTable for &T where T: CRUDTable {}
+/// decode columns from json and type
+pub fn decode_table_columns<T>() -> String where T:DeserializeOwned+Serialize {
+    let bean: serde_json::Result<T> = serde_json::from_str("{}");
+    if bean.is_err() {
+        //if json decode fail,return '*'
+        return " * ".to_string();
+    }
+    let v = json!(&bean.unwrap());
+    if !v.is_object() {
+        //if json decode fail,return '*'
+        return " * ".to_string();
+    }
+    let m = v.as_object().unwrap();
+    let mut fields = String::new();
+    for (k, _) in m {
+        fields.push_str(k);
+        fields.push_str(",");
+    }
+    fields.pop();
+    return format!("{}", fields);
+}
 
-impl<T> CRUDTable for &mut T where T: CRUDTable {}
+
+impl<T> CRUDTable for &T where T: CRUDTable {
+    fn table_name() -> String {
+        T::table_name()
+    }
+
+    fn table_columns() -> String {
+        T::table_columns()
+    }
+}
+
+impl<T> CRUDTable for &mut T where T: CRUDTable {
+    fn table_name() -> String {
+        T::table_name()
+    }
+
+    fn table_columns() -> String {
+        T::table_columns()
+    }
+}
 
 impl<T> CRUDTable for Option<T>
     where
@@ -487,14 +523,19 @@ pub trait CRUDMut: ExecutorMut {
         let table_name = choose_dyn_table_name::<T>(w);
         let where_sql = self.driver_type()?.make_where(&w.sql);
         let mut sql = String::new();
-        if self.get_rbatis().logic_plugin.is_some() && T::is_use_plugin(self.get_rbatis().logic_plugin.as_ref().unwrap().name()) {
-            sql = self.get_rbatis().logic_plugin.as_ref().unwrap().create_remove_sql(
-                &self.driver_type()?,
-                &table_name,
-                &T::table_columns(),
-                &where_sql,
-            )?;
-        } else {
+
+        for logic in &self.get_rbatis().logic_plugin{
+            if logic.table_name().eq(&T::table_name()){
+                sql = logic.create_remove_sql(
+                    &self.driver_type()?,
+                    &table_name,
+                    &T::table_columns(),
+                    &where_sql,
+                )?;
+                break;
+            }
+        }
+        if sql.is_empty() {
             sql = format!(
                 "{} {} {}",
                 crate::sql::TEMPLATE.delete_from.value,
@@ -518,20 +559,23 @@ pub trait CRUDMut: ExecutorMut {
         let mut data = String::new();
         driver_type.stmt_convert(0, &mut data);
         T::do_format_column(&driver_type, column, &mut data);
-        if self.get_rbatis().logic_plugin.is_some() && T::is_use_plugin(self.get_rbatis().logic_plugin.as_ref().unwrap().name()) {
-            sql = self.get_rbatis().logic_plugin.as_ref().unwrap().create_remove_sql(
-                &driver_type,
-                T::table_name().as_str(),
-                &T::table_columns(),
-                format!(
-                    "{} {} = {}",
-                    crate::sql::TEMPLATE.r#where.value,
-                    column,
-                    data
-                )
-                    .as_str(),
-            )?;
-        } else {
+        for plugin in &self.get_rbatis().logic_plugin {
+            if plugin.table_name().eq(&T::table_name()){
+                sql = plugin.create_remove_sql(
+                    &driver_type,
+                    T::table_name().as_str(),
+                    &T::table_columns(),
+                    format!(
+                        "{} {} = {}",
+                        crate::sql::TEMPLATE.r#where.value,
+                        column,
+                        data
+                    ).as_str(),
+                )?;
+                break;
+            }
+        }
+        if sql.is_empty() {
             sql = format!(
                 "{} {} {} {} = {}",
                 crate::sql::TEMPLATE.delete_from.value,
@@ -644,14 +688,11 @@ pub trait CRUDMut: ExecutorMut {
                     data
                 ).as_str(),
             );
-            match &self.get_rbatis().version_lock_plugin {
-                Some(version_lock_plugin) => {
-                    if T::is_use_plugin(self.get_rbatis().version_lock_plugin.as_ref().unwrap().name()) {
-                        old_version = v.clone();
-                        v = version_lock_plugin.try_add_one(&old_version, column);
-                    }
+            for version_lock_plugin in &self.get_rbatis().version_lock_plugin {
+                if version_lock_plugin.table_name().eq(&T::table_name()) {
+                    old_version = v.clone();
+                    v = version_lock_plugin.try_add_one(&old_version, column);
                 }
-                _ => {}
             }
             args.push(v.clone());
         }
@@ -668,26 +709,22 @@ pub trait CRUDMut: ExecutorMut {
 
 
         //version lock
-        match self.get_rbatis().version_lock_plugin.as_ref() {
-            Some(version_lock_plugin) => {
-                if T::is_use_plugin(self.get_rbatis().version_lock_plugin.as_ref().unwrap().name()) {
-                    let version_sql = version_lock_plugin
-                        .as_ref()
-                        .try_make_where_sql(&old_version);
-                    if !version_sql.is_empty() {
-                        if !wrapper
+        for version_lock_plugin in &self.get_rbatis().version_lock_plugin {
+            if version_lock_plugin.table_name().eq(&T::table_name()){
+                let version_sql = version_lock_plugin
+                    .try_make_where_sql(&old_version);
+                if !version_sql.is_empty() {
+                    if !wrapper
+                        .sql
+                        .contains(crate::sql::TEMPLATE.r#where.left_right_space)
+                    {
+                        wrapper
                             .sql
-                            .contains(crate::sql::TEMPLATE.r#where.left_right_space)
-                        {
-                            wrapper
-                                .sql
-                                .push_str(crate::sql::TEMPLATE.r#where.left_right_space);
-                        }
-                        wrapper.sql.push_str(&version_sql);
+                            .push_str(crate::sql::TEMPLATE.r#where.left_right_space);
                     }
+                    wrapper.sql.push_str(&version_sql);
                 }
             }
-            _ => {}
         }
         if !w.sql.is_empty() {
             if !wrapper
@@ -1074,8 +1111,6 @@ impl<T, P> DerefMut for DynTableColumn<T, P> where T: CRUDTable, P: TableColumnP
 }
 
 impl<T, P> CRUDTable for DynTableColumn<T, P> where T: CRUDTable, P: TableColumnProvider {
-    /// is enable use plugin
-    fn is_use_plugin(plugin_name: &str) -> bool { T::is_use_plugin(plugin_name) }
 
     fn table_name() -> String {
         P::table_name()
