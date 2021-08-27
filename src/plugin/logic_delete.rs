@@ -14,8 +14,6 @@ use std::marker::PhantomData;
 
 /// Logic Delete Plugin trait
 pub trait LogicDelete: Send + Sync + Debug {
-    ///the name
-    fn table_name(&self) -> String;
     /// database column
     fn column(&self) -> &str;
     /// deleted data,must be i32
@@ -32,27 +30,19 @@ pub trait LogicDelete: Send + Sync + Debug {
     ) -> Result<String, crate::core::Error>;
 }
 
-pub struct RbatisLogicDeletePlugin<T> where T:CRUDTable {
-    pub excludes: Vec<String>,
+pub struct RbatisLogicDeletePlugin {
     pub column: String,
     pub deleted: i32,
     pub un_deleted: i32,
-    t:PhantomData<T>,
 }
 
-impl <T>RbatisLogicDeletePlugin<T> where T:CRUDTable {
+impl RbatisLogicDeletePlugin {
     pub fn new(column: &str) -> Self {
         Self {
-            excludes: vec![],
             column: column.to_string(),
             deleted: 1,
             un_deleted: 0,
-            t: Default::default()
         }
-    }
-
-    pub fn table_name() -> String {
-       T::table_name()
     }
 
     pub fn new_opt(column: &str, deleted: i32, un_deleted: i32) -> Self {
@@ -60,26 +50,21 @@ impl <T>RbatisLogicDeletePlugin<T> where T:CRUDTable {
             panic!("[rbaits] deleted can not equal to un_deleted on RbatisLogicDeletePlugin::new_opt(column: &str, deleted: i32, un_deleted: i32)")
         }
         Self {
-            excludes: vec![],
             column: column.to_string(),
             deleted,
             un_deleted,
-            t: Default::default()
         }
     }
 }
 
-impl<T> Debug for RbatisLogicDeletePlugin<T> where T: CRUDTable {
+impl Debug for RbatisLogicDeletePlugin {
     fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
         f.debug_struct("RbatisLogicDeletePlugin")
             .finish()
     }
 }
 
-impl <T>LogicDelete for RbatisLogicDeletePlugin<T>  where T:CRUDTable {
-    fn table_name(&self) -> String {
-        RbatisLogicDeletePlugin::<T>::table_name()
-    }
+impl LogicDelete for RbatisLogicDeletePlugin {
 
     fn column(&self) -> &str {
         self.column.as_str()

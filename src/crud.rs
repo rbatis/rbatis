@@ -522,16 +522,13 @@ pub trait CRUDMut: ExecutorMut {
         let where_sql = self.driver_type()?.make_where(&w.sql);
         let mut sql = String::new();
 
-        for logic in &self.get_rbatis().logic_plugin {
-            if logic.table_name().eq(&T::table_name()) {
-                sql = logic.create_remove_sql(
-                    &self.driver_type()?,
-                    &table_name,
-                    &T::table_columns(),
-                    &where_sql,
-                )?;
-                break;
-            }
+        if let Some(logic) = &self.get_rbatis().logic_plugin {
+            sql = logic.create_remove_sql(
+                &self.driver_type()?,
+                &table_name,
+                &T::table_columns(),
+                &where_sql,
+            )?;
         }
         if sql.is_empty() {
             sql = format!(
@@ -557,21 +554,18 @@ pub trait CRUDMut: ExecutorMut {
         let mut data = String::new();
         driver_type.stmt_convert(0, &mut data);
         T::do_format_column(&driver_type, column, &mut data);
-        for plugin in &self.get_rbatis().logic_plugin {
-            if plugin.table_name().eq(&T::table_name()) {
-                sql = plugin.create_remove_sql(
-                    &driver_type,
-                    T::table_name().as_str(),
-                    &T::table_columns(),
-                    format!(
-                        "{} {} = {}",
-                        crate::sql::TEMPLATE.r#where.value,
-                        column,
-                        data
-                    ).as_str(),
-                )?;
-                break;
-            }
+        if let Some(logic) = &self.get_rbatis().logic_plugin {
+            sql = logic.create_remove_sql(
+                &driver_type,
+                T::table_name().as_str(),
+                &T::table_columns(),
+                format!(
+                    "{} {} = {}",
+                    crate::sql::TEMPLATE.r#where.value,
+                    column,
+                    data
+                ).as_str(),
+            )?;
         }
         if sql.is_empty() {
             sql = format!(
