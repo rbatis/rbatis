@@ -36,7 +36,7 @@ pub struct Rbatis {
     // log plugin
     pub log_plugin: Arc<Box<dyn LogPlugin>>,
     // logic delete plugin
-    pub logic_plugin: Vec<Box<dyn LogicDelete>>,
+    pub logic_plugin: Option<Box<dyn LogicDelete>>,
     // sql param binder
     pub encoder: fn(q: &mut DBQuery, arg: &serde_json::Value) -> crate::Result<()>,
 }
@@ -69,7 +69,7 @@ pub struct RbatisOption {
     /// log plugin
     pub log_plugin: Arc<Box<dyn LogPlugin>>,
     /// logic delete plugin
-    pub logic_plugin: Vec<Box<dyn LogicDelete>>,
+    pub logic_plugin: Option<Box<dyn LogicDelete>>,
 }
 
 impl Default for RbatisOption {
@@ -77,7 +77,7 @@ impl Default for RbatisOption {
         Self {
             page_plugin: Box::new(RbatisPagePlugin::new()),
             sql_intercepts: vec![],
-            logic_plugin: vec![],
+            logic_plugin: None,
             log_plugin: Arc::new(Box::new(RbatisLogPlugin::default()) as Box<dyn LogPlugin>),
         }
     }
@@ -168,7 +168,7 @@ impl Rbatis {
     }
 
     pub fn set_logic_plugin(&mut self, arg: impl LogicDelete + 'static) {
-        self.logic_plugin.push(Box::new(arg));
+        self.logic_plugin = Some(Box::new(arg));
     }
 
     pub fn set_page_plugin(&mut self, arg: impl PagePlugin + 'static) {
