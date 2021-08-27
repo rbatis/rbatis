@@ -523,12 +523,14 @@ pub trait CRUDMut: ExecutorMut {
         let mut sql = String::new();
 
         if let Some(logic) = &self.get_rbatis().logic_plugin {
-            sql = logic.create_remove_sql(
-                &self.driver_type()?,
-                &table_name,
-                &T::table_columns(),
-                &where_sql,
-            )?;
+            if w.dml.eq("where") && !where_sql.contains(logic.column()) {
+                sql = logic.create_remove_sql(
+                    &self.driver_type()?,
+                    &table_name,
+                    &T::table_columns(),
+                    &where_sql,
+                )?;
+            }
         }
         if sql.is_empty() {
             sql = format!(

@@ -37,6 +37,7 @@ use crate::core::Error;
 #[derive(Clone)]
 pub struct Wrapper {
     pub driver_type: DriverType,
+    pub dml: String,
     pub sql: String,
     pub args: Vec<Value>,
     pub formats: HashMap<String, fn(arg: &str) -> String>,
@@ -67,6 +68,7 @@ impl Wrapper {
     pub fn new(driver_type: &DriverType) -> Self {
         Self {
             driver_type: driver_type.clone(),
+            dml: "where".to_string(),
             sql: String::with_capacity(200),
             args: Vec::with_capacity(5),
             formats: Default::default(),
@@ -76,6 +78,7 @@ impl Wrapper {
     pub fn from(driver_type: &DriverType, sql: &str, args: Vec<Value>) -> Self {
         Self {
             driver_type: driver_type.clone(),
+            dml: "where".to_string(),
             sql: sql.to_string(),
             args: args,
             formats: HashMap::new(),
@@ -89,6 +92,11 @@ impl Wrapper {
 
     pub fn set_formats(mut self, formats: HashMap<String, fn(arg: &str) -> String>) -> Self {
         self.formats = formats;
+        self
+    }
+
+    pub fn set_option(mut self,option:&str)->Self{
+        self.dml = option.to_string();
         self
     }
 
