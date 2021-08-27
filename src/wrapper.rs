@@ -65,6 +65,7 @@ impl Debug for Wrapper {
 }
 
 impl Wrapper {
+
     pub fn new(driver_type: &DriverType) -> Self {
         Self {
             driver_type: driver_type.clone(),
@@ -72,16 +73,6 @@ impl Wrapper {
             sql: String::with_capacity(200),
             args: Vec::with_capacity(5),
             formats: Default::default(),
-        }
-    }
-
-    pub fn from(driver_type: &DriverType, sql: &str, args: Vec<Value>) -> Self {
-        Self {
-            driver_type: driver_type.clone(),
-            dml: "where".to_string(),
-            sql: sql.to_string(),
-            args: args,
-            formats: HashMap::new(),
         }
     }
 
