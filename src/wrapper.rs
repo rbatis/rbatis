@@ -59,6 +59,7 @@ impl Debug for Wrapper {
             .field("driver_type", &self.driver_type)
             .field("sql", &self.sql)
             .field("args", &self.args)
+            .field("dml", &self.dml)
             //.field("formats", &formats)
             .finish()
     }
