@@ -9,7 +9,6 @@ mod test {
     use rbatis::plugin::logic_delete::{RbatisLogicDeletePlugin};
     use rbatis::plugin::page::{Page, PageRequest};
     use rbatis::plugin::snowflake::new_snowflake_id;
-    use rbatis::plugin::version_lock::RbatisVersionLockPlugin;
     use rbatis::rbatis::Rbatis;
     use serde_json::Value;
 
@@ -29,7 +28,7 @@ mod test {
         pub status: Option<i32>,
         pub remark: Option<String>,
         pub create_time: Option<NaiveDateTime>,
-        pub version: Option<BigDecimal>,
+        pub version: Option<i64>,
         pub delete_flag: Option<i32>,
     }
 
@@ -94,7 +93,7 @@ mod test {
             status: Some(1),
             remark: None,
             create_time: Some(NaiveDateTime::now()),
-            version: Some(BigDecimal::from(1)),
+            version: Some(1),
             delete_flag: Some(1),
         };
         rb.remove_by_column::<BizActivity, _>("id", activity.id.as_ref().unwrap())
@@ -119,7 +118,7 @@ mod test {
             status: Some(1),
             remark: None,
             create_time: Some(NaiveDateTime::now()),
-            version: Some(BigDecimal::from(1)),
+            version: Some(1),
             delete_flag: Some(1),
         };
         let mut activity2 = activity.clone();
@@ -147,7 +146,7 @@ mod test {
             status: Some(1),
             remark: None,
             create_time: Some(NaiveDateTime::now()),
-            version: Some(BigDecimal::from(1)),
+            version: Some(1),
             delete_flag: Some(1),
         };
         let mut activity2 = activity.clone();
@@ -220,8 +219,7 @@ mod test {
     pub async fn test_update_by_wrapper() {
         let mut rb = init_rbatis().await;
         //set logic plugin
-        rb.set_logic_plugin(RbatisLogicDeletePlugin::<BizActivity>::new("delete_flag"));;
-        rb.set_version_plugin(RbatisVersionLockPlugin::<BizActivity>::new("version"));
+        rb.set_logic_plugin(RbatisLogicDeletePlugin::<BizActivity>::new("delete_flag"));
         let mut activity = BizActivity {
             id: Some("12312".to_string()),
             name: None,
@@ -233,7 +231,7 @@ mod test {
             status: Some(1),
             remark: None,
             create_time: Some(NaiveDateTime::now()),
-            version: Some(BigDecimal::from(1)),
+            version: Some(1),
             delete_flag: Some(1),
         };
 
@@ -255,7 +253,7 @@ mod test {
             id: "12312".to_string(),
             status: 1,
             create_time: NaiveDateTime::now(),
-            version: BigDecimal::from(1),
+            version: 1,
             delete_flag: 1,
         });
         // or you can make source struct
