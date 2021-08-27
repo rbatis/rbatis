@@ -87,8 +87,8 @@ impl Wrapper {
         self
     }
 
-    pub fn set_option(mut self,option:&str)->Self{
-        self.dml = option.to_string();
+    pub fn set_dml(mut self, dml:&str) ->Self{
+        self.dml = dml.to_string();
         self
     }
 
