@@ -63,9 +63,9 @@ mod test {
 
     pub async fn forget_commit(rb: &Rbatis) -> rbatis::core::Result<()> {
         // tx will be commit.when func end
-        let mut tx = rb.acquire_begin().await?.defer_async(|mut tx1| async move {
-            if !tx1.is_done() {
-                tx1.rollback().await;
+        let mut tx = rb.acquire_begin().await?.defer_async(|mut tx| async move {
+            if !tx.is_done() {
+                tx.rollback().await;
                 println!("tx rollback success!");
             } else {
                 println!("don't need rollback!");
