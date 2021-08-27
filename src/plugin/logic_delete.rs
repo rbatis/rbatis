@@ -84,7 +84,8 @@ impl LogicDelete for RbatisLogicDeletePlugin {
         table_fields: &str,
         sql_where: &str,
     ) -> Result<String, Error> {
-        return if table_fields.contains(&format!(",{}", self.column())) || table_fields.contains(&format!("{},", self.column())) {
+        let fields: Vec<&str> = table_fields.split(",").collect();
+        return if fields.contains(&self.column()) {
             //fields have column
             if sql_where.is_empty() {
                 let new_sql = format!(
