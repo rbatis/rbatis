@@ -65,7 +65,6 @@ impl Debug for RbatisLogicDeletePlugin {
 }
 
 impl LogicDelete for RbatisLogicDeletePlugin {
-
     fn column(&self) -> &str {
         self.column.as_str()
     }
@@ -85,7 +84,7 @@ impl LogicDelete for RbatisLogicDeletePlugin {
         table_fields: &str,
         sql_where: &str,
     ) -> Result<String, Error> {
-        return if table_fields.contains(self.column()) {
+        return if table_fields.contains(&format!(",{}", self.column())) || table_fields.contains(&format!("{},", self.column())) {
             //fields have column
             if sql_where.is_empty() {
                 let new_sql = format!(
