@@ -14,7 +14,6 @@ use crate::core::Error;
 use crate::core::Result;
 use crate::executor::{ExecutorMut, RBatisConnExecutor, RBatisTxExecutor};
 use crate::plugin::page::{IPageRequest, Page, IPage};
-use crate::plugin::version_lock::VersionLockPlugin;
 use crate::rbatis::Rbatis;
 use crate::sql::rule::SqlRule;
 use crate::utils::string_util::to_snake_name;
@@ -33,7 +32,6 @@ use std::option::Option::Some;
 ///
 ///
 pub trait CRUDTable: Send + Sync + Serialize {
-
     /// get table name,default is type name for snake name
     ///
     /// for Example:  struct  BizActivity{} =>  "biz_activity"
@@ -171,7 +169,7 @@ pub trait CRUDTable: Send + Sync + Serialize {
 }
 
 /// decode columns from json and type
-pub fn decode_table_columns<T>() -> String where T:DeserializeOwned+Serialize {
+pub fn decode_table_columns<T>() -> String where T: DeserializeOwned + Serialize {
     let bean: serde_json::Result<T> = serde_json::from_str("{}");
     if bean.is_err() {
         //if json decode fail,return '*'
@@ -316,21 +314,21 @@ pub trait CRUD {
     /// skips: use &[Skip::Null] will skip id column and null value param
     async fn update_by_wrapper<T>(
         &self,
-        table: &mut T,
+        table: &T,
         w: &Wrapper,
         skips: &[Skip],
     ) -> Result<u64>
         where
-            T: CRUDTable + DeserializeOwned;
+            T: CRUDTable;
     /// update database record by id
-    async fn update_by_column<T>(&self, column: &str, table: &mut T) -> Result<u64>
+    async fn update_by_column<T>(&self, column: &str, table: &T) -> Result<u64>
         where
-            T: CRUDTable + DeserializeOwned;
+            T: CRUDTable;
 
     /// remove batch database record by args
-    async fn update_batch_by_column<T>(&self, column: &str, tables: &mut [T]) -> Result<u64>
+    async fn update_batch_by_column<T>(&self, column: &str, tables: &[T]) -> Result<u64>
         where
-            T: CRUDTable + DeserializeOwned;
+            T: CRUDTable;
 
     /// fetch database record by id
     async fn fetch_by_column<T, C>(&self, column: &str, value: &C) -> Result<T>
@@ -524,8 +522,8 @@ pub trait CRUDMut: ExecutorMut {
         let where_sql = self.driver_type()?.make_where(&w.sql);
         let mut sql = String::new();
 
-        for logic in &self.get_rbatis().logic_plugin{
-            if logic.table_name().eq(&T::table_name()){
+        for logic in &self.get_rbatis().logic_plugin {
+            if logic.table_name().eq(&T::table_name()) {
                 sql = logic.create_remove_sql(
                     &self.driver_type()?,
                     &table_name,
@@ -560,7 +558,7 @@ pub trait CRUDMut: ExecutorMut {
         driver_type.stmt_convert(0, &mut data);
         T::do_format_column(&driver_type, column, &mut data);
         for plugin in &self.get_rbatis().logic_plugin {
-            if plugin.table_name().eq(&T::table_name()){
+            if plugin.table_name().eq(&T::table_name()) {
                 sql = plugin.create_remove_sql(
                     &driver_type,
                     T::table_name().as_str(),
@@ -615,12 +613,12 @@ pub trait CRUDMut: ExecutorMut {
     /// skips: use &[Skip::Value(&serde_json::Value::Null), Skip::Column("id"), Skip::Column(column)] will skip id column and null value param
     async fn update_by_wrapper<T>(
         &mut self,
-        table: &mut T,
+        table: &T,
         w: &Wrapper,
         skips: &[Skip],
     ) -> Result<u64>
         where
-            T: CRUDTable + DeserializeOwned,
+            T: CRUDTable,
     {
         let table_name = choose_dyn_table_name::<T>(w);
         let mut args = vec![];
@@ -639,7 +637,6 @@ pub trait CRUDMut: ExecutorMut {
         }
         let null = serde_json::Value::Null;
         let mut sets = String::new();
-
         for column in columns_vec {
             //filter
             let mut is_continue = false;
@@ -688,12 +685,6 @@ pub trait CRUDMut: ExecutorMut {
                     data
                 ).as_str(),
             );
-            for version_lock_plugin in &self.get_rbatis().version_lock_plugin {
-                if version_lock_plugin.table_name().eq(&T::table_name()) {
-                    old_version = v.clone();
-                    v = version_lock_plugin.try_add_one(&old_version, column);
-                }
-            }
             args.push(v.clone());
         }
         sets.pop();
@@ -706,26 +697,6 @@ pub trait CRUDMut: ExecutorMut {
             sets
         );
         wrapper.args = args;
-
-
-        //version lock
-        for version_lock_plugin in &self.get_rbatis().version_lock_plugin {
-            if version_lock_plugin.table_name().eq(&T::table_name()){
-                let version_sql = version_lock_plugin
-                    .try_make_where_sql(&old_version);
-                if !version_sql.is_empty() {
-                    if !wrapper
-                        .sql
-                        .contains(crate::sql::TEMPLATE.r#where.left_right_space)
-                    {
-                        wrapper
-                            .sql
-                            .push_str(crate::sql::TEMPLATE.r#where.left_right_space);
-                    }
-                    wrapper.sql.push_str(&version_sql);
-                }
-            }
-        }
         if !w.sql.is_empty() {
             if !wrapper
                 .sql
@@ -738,22 +709,18 @@ pub trait CRUDMut: ExecutorMut {
             wrapper = wrapper.and();
             wrapper = wrapper.push_wrapper(&w);
         }
-
         let rows_affected = self
             .exec(wrapper.sql.as_str(), &wrapper.args)
             .await?
             .rows_affected;
-        if rows_affected > 0 {
-            *table = serde_json::from_value(serde_json::Value::Object(map)).into_result()?;
-        }
         return Ok(rows_affected);
     }
 
     /// update database record by id
     /// update sql will be skip null value and id column
-    async fn update_by_column<T>(&mut self, column: &str, table: &mut T) -> Result<u64>
+    async fn update_by_column<T>(&mut self, column: &str, table: &T) -> Result<u64>
         where
-            T: CRUDTable + DeserializeOwned
+            T: CRUDTable
     {
         let rb = self
             .get_rbatis();
@@ -769,9 +736,9 @@ pub trait CRUDMut: ExecutorMut {
     }
 
     /// remove batch database record by args
-    async fn update_batch_by_column<T>(&mut self, column: &str, args: &mut [T]) -> Result<u64>
+    async fn update_batch_by_column<T>(&mut self, column: &str, args: &[T]) -> Result<u64>
         where
-            T: CRUDTable + DeserializeOwned
+            T: CRUDTable
     {
         let mut updates = 0;
         for x in args {
@@ -972,20 +939,20 @@ impl CRUD for Rbatis {
 
     /// update_by_wrapper
     /// skips: use &[Skip::Value(&serde_json::Value::Null), Skip::Column("id"), Skip::Column(column)] will skip id column and null value param
-    async fn update_by_wrapper<T>(&self, table: &mut T, w: &Wrapper, skips: &[Skip]) -> Result<u64> where
-        T: CRUDTable + DeserializeOwned {
+    async fn update_by_wrapper<T>(&self, table: &T, w: &Wrapper, skips: &[Skip]) -> Result<u64> where
+        T: CRUDTable {
         let mut conn = self.acquire().await?;
         conn.update_by_wrapper(table, w, skips).await
     }
 
-    async fn update_by_column<T>(&self, column: &str, table: &mut T) -> Result<u64> where
-        T: CRUDTable + DeserializeOwned {
+    async fn update_by_column<T>(&self, column: &str, table: &T) -> Result<u64> where
+        T: CRUDTable {
         let mut conn = self.acquire().await?;
         conn.update_by_column(column, table).await
     }
 
-    async fn update_batch_by_column<T>(&self, column: &str, args: &mut [T]) -> Result<u64> where
-        T: CRUDTable + DeserializeOwned {
+    async fn update_batch_by_column<T>(&self, column: &str, args: &[T]) -> Result<u64> where
+        T: CRUDTable {
         let mut conn = self.acquire().await?;
         conn.update_batch_by_column::<T>(column, args).await
     }
@@ -1111,7 +1078,6 @@ impl<T, P> DerefMut for DynTableColumn<T, P> where T: CRUDTable, P: TableColumnP
 }
 
 impl<T, P> CRUDTable for DynTableColumn<T, P> where T: CRUDTable, P: TableColumnProvider {
-
     fn table_name() -> String {
         P::table_name()
     }
