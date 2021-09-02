@@ -190,7 +190,7 @@ mod test {
             };
 
             let w = Wrapper::new(&rb.driver_type().unwrap()).eq("id", "12312");
-            let r = rb.update_by_wrapper(&mut activity, &w, &[]).await;
+            let r = rb.update_by_wrapper(& activity, &w, &[]).await;
             if r.is_err() {
                 println!("{}", r.err().unwrap().to_string());
             }
@@ -223,7 +223,7 @@ mod test {
                 version: Some(1),
                 delete_flag: Some(1),
             };
-            let r = rb.update_by_column("id", &mut activity).await;
+            let r = rb.update_by_column("id", &activity).await;
             if r.is_err() {
                 println!("{}", r.err().unwrap().to_string());
             }
