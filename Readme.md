@@ -167,8 +167,7 @@ async fn main() {
 //Query ==> SELECT create_time,delete_flag,h5_banner_img,h5_link,id,name,pc_banner_img,pc_link,remark,sort,status,version  FROM biz_activity WHERE delete_flag = 1  AND id IN  (?) 
 
   ///query by wrapper
-  let w = rb.new_wrapper().eq("id", "1");
-  let r: Result<Option<BizActivity>, Error> = rb.fetch_by_wrapper( &w).await;
+  let r: Result<Option<BizActivity>, Error> = rb.fetch_by_wrapper( &rb.new_wrapper().eq("id", "1")).await;
 //Query ==> SELECT  create_time,delete_flag,h5_banner_img,h5_link,id,name,pc_banner_img,pc_link,remark,sort,status,version  FROM biz_activity WHERE delete_flag = 1  AND id =  ? 
 
   ///delete
