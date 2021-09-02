@@ -180,7 +180,6 @@ async fn main() {
 //Exec ==> UPDATE biz_activity SET delete_flag = 0 WHERE id IN (  ?  ,  ?  ) 
 
   ///update
-  ///if version_lock plugin actived,update method will modify field 'version'= version + 1
   let mut activity = activity.clone();
   let w = rb.new_wrapper().eq("id", "12312");
   rb.update_by_wrapper( &activity, &w, &[Skip::Value(&serde_json::Value::Null), Skip::Column("id")]).await;
