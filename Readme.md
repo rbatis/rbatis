@@ -181,8 +181,9 @@ async fn main() {
 
   ///update
   let mut activity = activity.clone();
-  let w = rb.new_wrapper().eq("id", "12312");
-  rb.update_by_wrapper( &activity, &w, &[Skip::Value(&serde_json::Value::Null), Skip::Column("id")]).await;
+  let r = rb.update_by_column("id", &activity).await;  
+//Exec   ==> update biz_activity set  status = ?, create_time = ?, version = ?, delete_flag = ?  where id = ?
+  rb.update_by_wrapper( &activity, &rb.new_wrapper().eq("id", "12312"), &[Skip::Value(&serde_json::Value::Null), Skip::Column("id")]).await;
 //Exec ==> UPDATE biz_activity SET  create_time =  ? , delete_flag =  ? , status =  ? , version =  ?  WHERE id =  ? 
 }
 
