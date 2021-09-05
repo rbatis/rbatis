@@ -40,7 +40,7 @@ async-io = ["rbatis-core/async-io"]
 [dependencies]
 rbatis-core = { version = "2.0.12", git = "https://github.com/rbatis/rbatis-core.git", branch = "main", default-features = false, optional = true }
 rbatis-macro-driver = { version = "2.0.24", path = "rbatis-macro-driver", default-features = false, optional = true }
-rbatis_sql = {version="2.0.15", git = "https://github.com/rbatis/rbatis_sql.git", branch = "main", optional = true}
+rbatis_sql = {version="2.0.16", git = "https://github.com/rbatis/rbatis_sql.git", branch = "main", optional = true}
 
 chrono = { version = "0.4", features = ["serde"] }
 lazy_static = "1.4"
