@@ -237,7 +237,7 @@ mod test {
         };
 
         let w = rb.new_wrapper().eq("id", "12312");
-        let r = rb.update_by_wrapper(&mut activity, &w, &[Skip::Value(Value::Null), Skip::Column("id")]).await;
+        let r = rb.update_by_wrapper(&activity, &w, &[Skip::Value(Value::Null), Skip::Column("id")]).await;
         if r.is_err() {
             println!("{}", r.err().unwrap().to_string());
         }
@@ -272,7 +272,7 @@ mod test {
         //     version: Some(BigDecimal::from(1)),
         //     delete_flag: Some(1),
         // };
-        let r = rb.update_by_column("id", &mut activity).await;
+        let r = rb.update_by_column("id", &activity).await;
         if r.is_err() {
             println!("{}", r.err().unwrap().to_string());
         }
