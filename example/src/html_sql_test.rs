@@ -14,7 +14,7 @@ mod test {
     async fn select_by_condition(rb: &mut RbatisExecutor<'_>, page_req: &PageRequest, name: &str) -> Page<BizActivity> { todo!() }
 
     #[tokio::test]
-    pub async fn test_py_select_page() {
+    pub async fn test_select_by_condition() {
         fast_log::init_log("requests.log", 1000, log::Level::Info, None, true);
         //use static ref
         let rb = Rbatis::new();
