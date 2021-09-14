@@ -11,9 +11,11 @@
         </foreach>
     </insert>
     <select id="select_by_condition">
-        select * from biz_activity where
-        <if test="name != ''">
-            name like #{name}
-        </if>
+        select * from biz_activity
+        <where>
+            <if test="name != ''">
+                name like #{name}
+            </if>
+        </where>
     </select>
 </mapper>
