@@ -31,11 +31,8 @@
 * No Runtimes，No Garbage Collection
 * Zero cost Dynamic SQL, implemented using (proc-macro,compile-time,Cow(Reduce unnecessary cloning)) techniques。 don't need ONGL engine(mybatis)
 * Used json with serde_json for send parameters and communication
-* High performance, single threaded benchmark can easily achieve 200,000 QPS - data returned from database directly (
-  zero lookup time) on a Windows 10 6 core i7 with 16 GB memory machine. Performace will be better using multiple
-  threads, and it outperforms Go's GoMyBatis.
+* High performance, Based on Future, with async_std/tokio, single threaded benchmark can easily achieve 200,000 QPS
 * logical deletes, pagination, py-like SQL and basic Mybatis functionalities.
-* Based on Future, with async_std/tokio, it could achieve higher concurrency than Go-lang)
 * Supports logging, customizable logging based on `log` crate
 * 100% Safe Rust with `#![forbid(unsafe_code)]` enabled
 * [rbatis/example (import into Clion!)](https://github.com/rbatis/rbatis/tree/master/example/src)
