@@ -28,17 +28,16 @@
 | Rust-rbatis/tokio  |  1 CPU, 1G memory    | select count(1) from table;    | 965649 ns/op   |  1035 Qps/s  |  2.1MB   |      
 | Go-GoMybatis/http   |  1 CPU, 1G memory   | select count(1) from table;   | 1184503 ns/op  |  844  Qps/s   |  28.4MB  |     
 
-* No Runtimes 
-* Dynamic SQL is Zero cost abstraction and implemented using (compile-time,Cow(Reduce unnecessary cloning)) techniques
-* used json with serde_json for passing parameters and communication
-* high performance, single threaded benchmark can easily achieve 200,000 QPS - data returned from database directly (
+* No Runtimes，No Garbage Collection
+* Zero cost Dynamic SQL, implemented using (proc-macro,compile-time,Cow(Reduce unnecessary cloning)) techniques。 don't need ONGL engine(mybatis)
+* Used json with serde_json for send parameters and communication
+* High performance, single threaded benchmark can easily achieve 200,000 QPS - data returned from database directly (
   zero lookup time) on a Windows 10 6 core i7 with 16 GB memory machine. Performace will be better using multiple
   threads, and it outperforms Go's GoMyBatis.
-* supports logical deletes, pagination, py-like SQL and basic Mybatis functionalities.
-* supports future,(in theory, if all io operations are replaced with async_std/tokio, it could achieve higher
-  concurrency than Go-lang)
-* supports logging, customizable logging based on `log` crate
-* used 100% safe Rust with `#![forbid(unsafe_code)]` enabled
+* logical deletes, pagination, py-like SQL and basic Mybatis functionalities.
+* Based on Future, with async_std/tokio, it could achieve higher concurrency than Go-lang)
+* Supports logging, customizable logging based on `log` crate
+* 100% Safe Rust with `#![forbid(unsafe_code)]` enabled
 * [rbatis/example (import into Clion!)](https://github.com/rbatis/rbatis/tree/master/example/src)
 * [abs_admin project](https://github.com/rbatis/abs_admin)
 
