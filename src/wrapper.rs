@@ -505,7 +505,7 @@ impl Wrapper {
 
         let mut convert_column = String::new();
         self.driver_type
-            .stmt_convert(self.args.len(), &mut convert_column);
+            .stmt_convert(self.args.len() + 1, &mut convert_column);
         self.do_format_column(column, &mut convert_column);
         push_sql!(
             self.sql,
