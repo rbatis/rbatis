@@ -315,7 +315,7 @@ pub trait CRUD {
     async fn update_by_wrapper<T>(
         &self,
         table: &T,
-        w: &Wrapper,
+        w: Wrapper,
         skips: &[Skip],
     ) -> Result<u64>
         where
@@ -386,7 +386,7 @@ pub trait CRUDMut: ExecutorMut {
     async fn save_by_wrapper<T>(
         &mut self,
         table: &T,
-        w: Wrapper,
+        mut w: Wrapper,
         skips: &[Skip],
     ) -> Result<DBExecResult>
         where
@@ -395,7 +395,6 @@ pub trait CRUDMut: ExecutorMut {
         if w.sql.starts_with(crate::sql::TEMPLATE.insert_into.value) {
             return self.exec(&w.sql, w.args).await;
         } else {
-            let mut w = w.clone();
             let mut index = 0;
             let (columns, column_values, args) = table.make_value_sql_arg(&self.driver_type()?, &mut index, skips)?;
             let table_name = choose_dyn_table_name::<T>(&w);
@@ -610,13 +609,13 @@ pub trait CRUDMut: ExecutorMut {
     async fn update_by_wrapper<T>(
         &mut self,
         table: &T,
-        w: &Wrapper,
+        w: Wrapper,
         skips: &[Skip],
     ) -> Result<u64>
         where
             T: CRUDTable,
     {
-        let table_name = choose_dyn_table_name::<T>(w);
+        let table_name = choose_dyn_table_name::<T>(&w);
         let mut args = vec![];
         let mut old_version = serde_json::Value::Null;
         let driver_type = &self.driver_type()?;
@@ -722,8 +721,7 @@ pub trait CRUDMut: ExecutorMut {
             .get_rbatis();
         let value = table.get(column);
         self.update_by_wrapper(
-            table,
-            &rb
+            table, rb
                 .new_wrapper_table::<T>()
                 .eq(column, value),
             &[Skip::Value(Value::Null), Skip::Column("id"), Skip::Column(column)],
@@ -935,7 +933,7 @@ impl CRUD for Rbatis {
 
     /// update_by_wrapper
     /// skips: use &[Skip::Value(&serde_json::Value::Null), Skip::Column("id"), Skip::Column(column)] will skip id column and null value param
-    async fn update_by_wrapper<T>(&self, table: &T, w: &Wrapper, skips: &[Skip]) -> Result<u64> where
+    async fn update_by_wrapper<T>(&self, table: &T, w: Wrapper, skips: &[Skip]) -> Result<u64> where
         T: CRUDTable {
         let mut conn = self.acquire().await?;
         conn.update_by_wrapper(table, w, skips).await

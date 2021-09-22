@@ -101,14 +101,12 @@ impl Wrapper {
     /// println!("sql:{:?}", w2.sql.as_str());  // sql:"b = ? and (a = ?)"
     /// println!("arg:{:?}", w2.args.clone()); // arg:[String("2"), String("1")]
     ///
-    pub fn push_wrapper(self, arg: &Wrapper) -> Self {
-        self.push(&arg.sql, &arg.args)
+    pub fn push_wrapper(self, arg: Wrapper) -> Self {
+        self.push(&arg.sql, arg.args)
     }
 
     /// push sql,args into self
-    pub fn push<T>(mut self, sql: &str, args: &[T]) -> Self
-        where
-            T: Serialize,
+    pub fn push(mut self, sql: &str, args: Vec<serde_json::Value>) -> Self
     {
         let mut new_sql = sql.to_string();
         if self.driver_type.is_number_type() {
@@ -137,14 +135,8 @@ impl Wrapper {
             }
         }
         self.sql.push_str(new_sql.as_str());
-
-        let args = json!(args);
-        if args.is_null() {
-            return self;
-        }
-        let args = args.as_array().unwrap();
         for x in args {
-            self.args.push(x.to_owned());
+            self.args.push(x);
         }
         self
     }
