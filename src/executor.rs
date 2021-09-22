@@ -48,8 +48,8 @@ impl RbatisRef for Rbatis {
 
 #[async_trait]
 pub trait ExecutorMut: RbatisRef {
-    async fn exec(&mut self, sql: &str, args: &Vec<serde_json::Value>) -> Result<DBExecResult, Error>;
-    async fn fetch<T>(&mut self, sql: &str, args: &Vec<serde_json::Value>) -> Result<T, Error> where T: DeserializeOwned;
+    async fn exec(&mut self, sql: &str, args: Vec<serde_json::Value>) -> Result<DBExecResult, Error>;
+    async fn fetch<T>(&mut self, sql: &str, args: Vec<serde_json::Value>) -> Result<T, Error> where T: DeserializeOwned;
 }
 
 #[derive(Debug)]
@@ -68,7 +68,7 @@ macro_rules! impl_executor {
     ($t:ty) => {
 #[async_trait]
 impl<'a> ExecutorMut for $t {
-    async fn exec(&mut self, sql: &str, args: &Vec<serde_json::Value>) -> Result<DBExecResult, Error> {
+    async fn exec(&mut self, sql: &str, args: Vec<serde_json::Value>) -> Result<DBExecResult, Error> {
         let mut sql = sql.to_string();
         let mut args = args.clone();
         let is_prepared = args.len() > 0;
@@ -109,7 +109,7 @@ impl<'a> ExecutorMut for $t {
         return result;
     }
 
-    async fn fetch<T>(&mut self, sql: &str, args: &Vec<serde_json::Value>) -> Result<T, Error> where T: DeserializeOwned {
+    async fn fetch<T>(&mut self, sql: &str, args: Vec<serde_json::Value>) -> Result<T, Error> where T: DeserializeOwned {
         let mut sql = sql.to_string();
         let mut args = args.clone();
         let is_prepared = args.len() > 0;
@@ -298,7 +298,7 @@ impl<'a> RBatisTxExecutor<'a> {
     pub async fn fetch_page<T>(
         &self,
         sql: &str,
-        args: &Vec<serde_json::Value>,
+        args: Vec<serde_json::Value>,
         page_request: &dyn IPageRequest,
     ) -> crate::Result<Page<T>>
         where
@@ -337,17 +337,17 @@ impl Drop for RBatisTxExecutorGuard<'_> {
 
 #[async_trait]
 pub trait Executor: RbatisRef {
-    async fn exec(&self, sql: &str, args: &Vec<serde_json::Value>) -> Result<DBExecResult, Error>;
-    async fn fetch<T>(&self, sql: &str, args: &Vec<serde_json::Value>) -> Result<T, Error> where T: DeserializeOwned;
+    async fn exec(&self, sql: &str, args: Vec<serde_json::Value>) -> Result<DBExecResult, Error>;
+    async fn fetch<T>(&self, sql: &str, args: Vec<serde_json::Value>) -> Result<T, Error> where T: DeserializeOwned;
 }
 
 #[async_trait]
 impl Executor for Rbatis {
-    async fn exec(&self, sql: &str, args: &Vec<Value>) -> Result<DBExecResult, Error> {
+    async fn exec(&self, sql: &str, args: Vec<Value>) -> Result<DBExecResult, Error> {
         self.acquire().await?.exec(sql, args).await
     }
 
-    async fn fetch<T>(&self, sql: &str, args: &Vec<Value>) -> Result<T, Error> where T: DeserializeOwned {
+    async fn fetch<T>(&self, sql: &str, args: Vec<Value>) -> Result<T, Error> where T: DeserializeOwned {
         self.acquire().await?.fetch(sql, args).await
     }
 }
@@ -365,7 +365,7 @@ pub struct RbatisExecutor<'a> {
 }
 
 impl RbatisExecutor<'_> {
-    pub async fn fetch_page<T>(&mut self, sql: &str, args: &Vec<Value>, page_request: &dyn IPageRequest) -> crate::Result<Page<T>>
+    pub async fn fetch_page<T>(&mut self, sql: &str, args: Vec<Value>, page_request: &dyn IPageRequest) -> crate::Result<Page<T>>
         where
             T: DeserializeOwned + Serialize + Send + Sync {
         if self.rb.is_some() {
@@ -380,7 +380,7 @@ impl RbatisExecutor<'_> {
         return Err(Error::from("[rbatis] executor must have an value!"));
     }
 
-    pub async fn exec(&mut self, sql: &str, args: &Vec<Value>) -> Result<DBExecResult, Error> {
+    pub async fn exec(&mut self, sql: &str, args: Vec<Value>) -> Result<DBExecResult, Error> {
         if self.rb.is_some() {
             return self.rb.as_ref().unwrap().exec(sql, args).await;
         } else if self.conn.is_some() {
@@ -393,7 +393,7 @@ impl RbatisExecutor<'_> {
         return Err(Error::from("[rbatis] executor must have an value!"));
     }
 
-    pub async fn fetch<T>(&mut self, sql: &str, args: &Vec<Value>) -> Result<T, Error> where T: DeserializeOwned {
+    pub async fn fetch<T>(&mut self, sql: &str, args: Vec<Value>) -> Result<T, Error> where T: DeserializeOwned {
         if self.rb.is_some() {
             return self.rb.as_ref().unwrap().fetch(sql, args).await;
         } else if self.conn.is_some() {

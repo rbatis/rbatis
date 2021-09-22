@@ -243,7 +243,7 @@ mod test {
                 .unwrap();
 
             let w = Wrapper::new(&rb.driver_type().unwrap()).eq("id", "12312");
-            let r: Result<Option<BizActivity>, Error> = rb.fetch_by_wrapper(&w).await;
+            let r: Result<Option<BizActivity>, Error> = rb.fetch_by_wrapper(w).await;
             if r.is_err() {
                 println!("{}", r.err().unwrap().to_string());
             }
@@ -265,7 +265,7 @@ mod test {
 
             let w = rb.new_wrapper().order_by(true, &["id"]);
             let r: Page<BizActivity> = rb
-                .fetch_page_by_wrapper(&w, &PageRequest::new(1, 20))
+                .fetch_page_by_wrapper(w, &PageRequest::new(1, 20))
                 .await
                 .unwrap();
             println!("{}", serde_json::to_string(&r).unwrap());
@@ -284,6 +284,6 @@ mod test {
         w = w.order_by(true, &["id"]);
         w = w.limit(50);
         println!("{}", w.sql);
-        let b: Vec<BizActivity> = rb.fetch_list_by_wrapper(&w).await.unwrap();
+        let b: Vec<BizActivity> = rb.fetch_list_by_wrapper(w).await.unwrap();
     }
 }

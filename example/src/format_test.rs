@@ -33,8 +33,8 @@ mod test {
 
         let uuid = Uuid::from_str("df07fea2-b819-4e05-b86d-dfc15a5f52a9").unwrap();
         //create table
-        rb.exec("DROP TABLE biz_uuid;", &vec![]).await;
-        rb.exec("CREATE TABLE biz_uuid( id uuid, name VARCHAR, PRIMARY KEY(id));", &vec![])
+        rb.exec("DROP TABLE biz_uuid;", vec![]).await;
+        rb.exec("CREATE TABLE biz_uuid( id uuid, name VARCHAR, PRIMARY KEY(id));", vec![])
             .await;
         //insert table
         rb.save(

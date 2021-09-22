@@ -18,7 +18,7 @@ mod test {
         let mut tx = rb.acquire_begin().await.unwrap();
 
         let v = tx
-            .exec("update biz_activity set name = '6' where id = 1;", &vec![])
+            .exec("update biz_activity set name = '6' where id = 1;", vec![])
             .await
             .unwrap();
 
@@ -26,7 +26,7 @@ mod test {
         tx.commit().await.unwrap();
 
         let v: serde_json::Value = rb
-            .fetch("select * from biz_activity where id = 1;", &vec![])
+            .fetch("select * from biz_activity where id = 1;", vec![])
             .await
             .unwrap();
         println!("result:{}", v.to_string());
@@ -72,7 +72,7 @@ mod test {
             }
         });
         let v = tx
-            .exec("update biz_activity set name = '6' where id = 1;", &vec![])
+            .exec("update biz_activity set name = '6' where id = 1;", vec![])
             .await;
         //tx.commit().await;  //if commit, print 'don't need rollback!' ,if not,print 'tx rollback success!'
         return Ok(());

@@ -97,7 +97,7 @@ impl Wrapper {
     /// let w = Wrapper::new(&DriverType::Postgres).push_sql("(").eq("a", "1").push_sql(")");
     /// let w2 = Wrapper::new(&DriverType::Postgres).eq("b", "2")
     /// .and()
-    /// .push_wrapper(&w);
+    /// .push_wrapper(w);
     /// println!("sql:{:?}", w2.sql.as_str());  // sql:"b = ? and (a = ?)"
     /// println!("arg:{:?}", w2.args.clone()); // arg:[String("2"), String("1")]
     ///
