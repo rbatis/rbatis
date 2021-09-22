@@ -12,6 +12,8 @@ mod test {
     use rbatis::rbatis::Rbatis;
     use serde_json::Value;
     use rbatis::crud::CRUDTable;
+    // use rbatis::core::types::byte::RbBytes;
+    // use rbatis::core::types::json::RbJson;
 
     ///Or another way to write it
     // #[crud_table(table_name:biz_activity)]
@@ -31,6 +33,10 @@ mod test {
         pub create_time: Option<NaiveDateTime>,
         pub version: Option<i64>,
         pub delete_flag: Option<i32>,
+
+        // json and bytes type support
+        // pub bytes: Option<RbBytes>,
+        // pub json: Option<RbJson>,
     }
 
     impl Default for BizActivity {
