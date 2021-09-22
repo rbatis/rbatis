@@ -210,7 +210,7 @@ mod test {
         //set logic plugin
         rb.set_logic_plugin(RbatisLogicDeletePlugin::new("delete_flag"));;
         let r = rb
-            .fetch_count_by_wrapper::<BizActivity>(&rb.new_wrapper())
+            .fetch_count_by_wrapper::<BizActivity>(rb.new_wrapper())
             .await
             .unwrap();
         println!("count(1): {}", r);
@@ -284,7 +284,7 @@ mod test {
         //set logic plugin
         rb.set_logic_plugin(RbatisLogicDeletePlugin::new("delete_flag"));;
         let w = rb.new_wrapper().eq("id", "1");
-        let r: Result<Option<BizActivity>, Error> = rb.fetch_by_wrapper(&w).await;
+        let r: Result<Option<BizActivity>, Error> = rb.fetch_by_wrapper(w).await;
         println!("is_some:{:?}", r);
         if r.is_err() {
             println!("{}", r.err().unwrap().to_string());
@@ -295,7 +295,7 @@ mod test {
     pub async fn test_list_by_wrapper() {
         let rb = init_rbatis().await;
         let w = rb.new_wrapper().order_by(true, &["id"]);
-        let r: Vec<BizActivity> = rb.fetch_list_by_wrapper(&w).await.unwrap();
+        let r: Vec<BizActivity> = rb.fetch_list_by_wrapper(w).await.unwrap();
         println!("is_some:{:?}", r);
     }
 
@@ -311,7 +311,7 @@ mod test {
             //.order_by(false, &["create_time"])
             ;
         let r: Page<BizActivity> = rb
-            .fetch_page_by_wrapper(&w, &PageRequest::new(1, 20))
+            .fetch_page_by_wrapper(w, &PageRequest::new(1, 20))
             .await
             .unwrap();
         println!("{}", serde_json::to_string(&r).unwrap());

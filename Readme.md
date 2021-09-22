@@ -163,7 +163,7 @@ async fn main() {
 //Query ==> SELECT create_time,delete_flag,h5_banner_img,h5_link,id,name,pc_banner_img,pc_link,remark,sort,status,version  FROM biz_activity WHERE delete_flag = 1  AND id IN  (?) 
 
   ///query by wrapper
-  let r: Result<Option<BizActivity>, Error> = rb.fetch_by_wrapper( &rb.new_wrapper().eq("id", "1")).await;
+  let r: Result<Option<BizActivity>, Error> = rb.fetch_by_wrapper( rb.new_wrapper().eq("id", "1")).await;
 //Query ==> SELECT  create_time,delete_flag,h5_banner_img,h5_link,id,name,pc_banner_img,pc_link,remark,sort,status,version  FROM biz_activity WHERE delete_flag = 1  AND id =  ? 
 
   ///delete
@@ -178,7 +178,7 @@ async fn main() {
   let mut activity = activity.clone();
   let r = rb.update_by_column("id", &activity).await;  
 //Exec   ==> update biz_activity set  status = ?, create_time = ?, version = ?, delete_flag = ?  where id = ?
-  rb.update_by_wrapper( &activity, &rb.new_wrapper().eq("id", "12312"), &[Skip::Value(&serde_json::Value::Null), Skip::Column("id")]).await;
+  rb.update_by_wrapper( &activity, rb.new_wrapper().eq("id", "12312"), &[Skip::Value(&serde_json::Value::Null), Skip::Column("id")]).await;
 //Exec ==> UPDATE biz_activity SET  create_time =  ? , delete_flag =  ? , status =  ? , version =  ?  WHERE id =  ? 
 }
 

@@ -35,12 +35,12 @@ pub(crate) fn impl_macro_py_sql(target_fn: &ItemFn, args: &AttributeArgs) -> Tok
     if is_fetch {
         call_method = quote! {
              use rbatis::executor::{Executor,ExecutorMut};
-             #rbatis_ident.fetch(&sql,&rb_args).await
+             #rbatis_ident.fetch(&sql,rb_args).await
         };
     } else {
         call_method = quote! {
              use rbatis::executor::{Executor,ExecutorMut};
-             #rbatis_ident.exec(&sql,&rb_args).await
+             #rbatis_ident.exec(&sql,rb_args).await
         };
     }
     if return_ty.to_string().contains("Page <")
@@ -49,7 +49,7 @@ pub(crate) fn impl_macro_py_sql(target_fn: &ItemFn, args: &AttributeArgs) -> Tok
         let page_ident = get_page_req_ident(target_fn, &func_name_ident.to_string());
         call_method = quote! {
             use rbatis::crud::{CRUD,CRUDMut};
-            #rbatis_ident.fetch_page(&sql,&rb_args,#page_ident).await
+            #rbatis_ident.fetch_page(&sql,rb_args,#page_ident).await
         };
         println!("gen return");
     }
@@ -147,12 +147,12 @@ pub(crate) fn impl_macro_html_sql(target_fn: &ItemFn, args: &AttributeArgs) -> T
     if is_fetch {
         call_method = quote! {
              use rbatis::executor::{Executor,ExecutorMut};
-             #rbatis_ident.fetch(&sql,&rb_args).await
+             #rbatis_ident.fetch(&sql,rb_args).await
         };
     } else {
         call_method = quote! {
              use rbatis::executor::{Executor,ExecutorMut};
-             #rbatis_ident.exec(&sql,&rb_args).await
+             #rbatis_ident.exec(&sql,rb_args).await
         };
     }
     if return_ty.to_string().contains("Page <")
@@ -161,7 +161,7 @@ pub(crate) fn impl_macro_html_sql(target_fn: &ItemFn, args: &AttributeArgs) -> T
         let page_ident = get_page_req_ident(target_fn, &func_name_ident.to_string());
         call_method = quote! {
             use rbatis::crud::{CRUD,CRUDMut};
-            #rbatis_ident.fetch_page(&sql,&rb_args,#page_ident).await
+            #rbatis_ident.fetch_page(&sql,rb_args,#page_ident).await
         };
         println!("gen return");
     }

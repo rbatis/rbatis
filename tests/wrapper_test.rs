@@ -76,7 +76,7 @@ mod test {
         let w2 = Wrapper::new(&DriverType::Postgres)
             .eq("b", "2")
             .and()
-            .push_wrapper(&w);
+            .push_wrapper(w);
 
         println!("sql:{:?}", w2.sql.as_str());
         println!("arg:{:?}", w2.args.clone());
@@ -140,7 +140,7 @@ mod test {
             .eq("b1", "b1")
             .eq("b2", "b2")
             .and()
-            .push_wrapper(&w2.push_sql("(").eq("a", "a").push_sql(")"));
+            .push_wrapper(w2.push_sql("(").eq("a", "a").push_sql(")"));
         println!("sql:{:?}", w2.sql.as_str());
         println!("arg:{:?}", w2.args.clone());
         assert_eq!(w2.sql.contains("b = $1"), true);

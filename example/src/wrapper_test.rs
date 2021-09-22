@@ -19,7 +19,7 @@ mod test {
             .and()
             .ne("delete_flag", -1)
             .do_if(!name.is_empty(), |w| w.and().like("name", name));
-        let r: Vec<BizActivity> = rb.fetch_list_by_wrapper(&w).await.unwrap();
+        let r: Vec<BizActivity> = rb.fetch_list_by_wrapper(w).await.unwrap();
         println!("done:{:?}", r);
     }
 }

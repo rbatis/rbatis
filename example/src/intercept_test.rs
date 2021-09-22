@@ -19,7 +19,7 @@ mod test {
         rb.link("mysql://root:123456@localhost:3306/test")
             .await
             .unwrap();
-        let r = rb.exec("delete from biz_activitys", &vec![]).await;
+        let r = rb.exec("delete from biz_activitys", vec![]).await;
         if r.is_err() {
             println!("block success:{}", r.err().unwrap());
         }
@@ -52,6 +52,6 @@ mod test {
             .await
             .unwrap();
         let w = rb.new_wrapper().eq("id", "1");
-        let r: Result<Option<BizActivity>, Error> = rb.fetch_by_wrapper(&w).await;
+        let r: Result<Option<BizActivity>, Error> = rb.fetch_by_wrapper(w).await;
     }
 }
