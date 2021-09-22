@@ -30,7 +30,7 @@ pub trait RbatisRef {
         &self,
         driver_type: &DriverType,
         sql: &'arg str,
-        arg: &Vec<serde_json::Value>,
+        arg: Vec<serde_json::Value>,
     ) -> Result<DBQuery<'arg>, Error> {
         let mut q: DBQuery = DBPool::make_db_query(driver_type, sql)?;
         for x in arg {
@@ -88,7 +88,7 @@ impl<'a> ExecutorMut for $t {
         }
         let result;
         if is_prepared {
-            let q: DBQuery = self.bind_arg(&self.conn.driver_type, &sql, &args)?;
+            let q: DBQuery = self.bind_arg(&self.conn.driver_type, &sql, args)?;
             result = self.conn.exec_prepare(q).await;
         } else {
             result = self.conn.exec(&sql).await;
@@ -128,7 +128,7 @@ impl<'a> ExecutorMut for $t {
             );
         }
         if is_prepared {
-            let q: DBQuery = self.bind_arg(&self.conn.driver_type, &sql, &args)?;
+            let q: DBQuery = self.bind_arg(&self.conn.driver_type, &sql, args)?;
             let result = self.conn.fetch_parperd(q).await;
             if self.get_rbatis().log_plugin.is_enable() {
                 match &result {
