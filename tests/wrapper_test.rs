@@ -76,7 +76,7 @@ mod test {
         let w2 = Wrapper::new(&DriverType::Postgres)
             .eq("b", "2")
             .and()
-            .push_wrapper(w);
+            .push_wrapper(w.clone());
 
         println!("sql:{:?}", w2.sql.as_str());
         println!("arg:{:?}", w2.args.clone());
