@@ -211,6 +211,16 @@ mod test {
     }
 
     #[tokio::test]
+    pub async fn test_count() {
+        let mut rb = init_rbatis().await;
+        let r = rb
+            .fetch_count::<BizActivity>()
+            .await
+            .unwrap();
+        println!("count(1): {}", r);
+    }
+
+    #[tokio::test]
     pub async fn test_count_by_wrapper() {
         let mut rb = init_rbatis().await;
         //set logic plugin
