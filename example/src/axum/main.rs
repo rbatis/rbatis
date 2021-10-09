@@ -1,16 +1,26 @@
-use axum::prelude::*;
 use std::net::SocketAddr;
-use axum::AddExtensionLayer;
 use rbatis::rbatis::Rbatis;
 use rbatis::core::runtime::sync::Arc;
 use axum::extract::Extension;
 use example::BizActivity;
 use rbatis::crud::CRUD;
 use serde_json::Value;
-use axum::prelude::response::Json;
+use axum::AddExtensionLayer;
+use axum::{
+    handler::{get, post},
+    http::StatusCode,
+    response::IntoResponse,
+    Json, Router,
+};
 
 //mysql driver url
 pub const MYSQL_URL: &'static str = "mysql://root:123456@localhost:3306/test";
+
+//handler
+pub async fn handler(rb: Extension<Arc<Rbatis>>) -> Json<Value> {
+    let v = rb.fetch_list::<BizActivity>().await.unwrap();
+    Json(serde_json::json!(v))
+}
 
 #[tokio::main]
 async fn main() {
@@ -24,7 +34,7 @@ async fn main() {
     log::info!("linking database successful!");
 
     // build our application with a route
-    let app = route("/", get(handler))
+    let app = Router::new().route("/", get(handler))
         .layer(AddExtensionLayer::new(rb));
     // run it
     let addr = SocketAddr::from(([127, 0, 0, 1], 8000));
@@ -33,9 +43,4 @@ async fn main() {
         .serve(app.into_make_service())
         .await
         .unwrap();
-}
-
-async fn handler(Extension(rb): Extension<Arc<Rbatis>>) -> Json<Value> {
-    let v = rb.fetch_list::<BizActivity>().await.unwrap();
-    response::Json(serde_json::json!(v))
 }
