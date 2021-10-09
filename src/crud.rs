@@ -340,10 +340,15 @@ pub trait CRUD {
         where
             T: CRUDTable + DeserializeOwned;
 
+    /// count database record
+    async fn fetch_count<T>(&self) -> Result<u64>
+        where
+            T: CRUDTable;
+
     /// count database record by a wrapper
     async fn fetch_count_by_wrapper<T>(&self, w: Wrapper) -> Result<u64>
         where
-            T: CRUDTable + DeserializeOwned;
+            T: CRUDTable;
 
     /// fetch page database record list by a wrapper
     async fn fetch_page_by_wrapper<T>(
@@ -750,6 +755,15 @@ pub trait CRUDMut: ExecutorMut {
         return self.fetch(sql.as_str(), w.args).await;
     }
 
+    /// count database record
+    async fn fetch_count<T>(&mut self) -> Result<u64>
+        where
+            T: CRUDTable,
+    {
+        let sql = make_select_sql::<T>(self.get_rbatis(), "count(1)", &Wrapper::new(&self.driver_type()?))?;
+        return self.fetch(sql.as_str(),vec![]).await;
+    }
+
     /// count database record by a wrapper
     async fn fetch_count_by_wrapper<T>(&mut self, w: Wrapper) -> Result<u64>
         where
@@ -860,13 +874,8 @@ fn choose_dyn_table_name<T>(w: &Wrapper) -> String
 {
     let mut table_name = T::table_name();
     let table_name_format = w.formats.get("table_name");
-    if table_name_format.is_some() {
-        match table_name_format {
-            Some(table_name_format) => {
-                table_name = table_name_format(&table_name);
-            }
-            _ => {}
-        }
+    if let Some(table_name_format) = table_name_format {
+        table_name = table_name_format(&table_name);
     }
     return table_name;
 }
@@ -963,8 +972,14 @@ impl CRUD for Rbatis {
         conn.fetch_by_wrapper(w).await
     }
 
+    async fn fetch_count<T>(&self) -> Result<u64> where
+        T: CRUDTable{
+        let mut conn = self.acquire().await?;
+        conn.fetch_count::<T>().await
+    }
+
     async fn fetch_count_by_wrapper<T>(&self, w: Wrapper) -> Result<u64> where
-        T: CRUDTable + DeserializeOwned {
+        T: CRUDTable{
         let mut conn = self.acquire().await?;
         conn.fetch_count_by_wrapper::<T>(w).await
     }
