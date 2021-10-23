@@ -58,8 +58,8 @@ pub struct RBatisConnExecutor<'a> {
     pub rb: &'a Rbatis,
 }
 
-impl <'b>RBatisConnExecutor<'b> {
-    pub fn as_executor<'a>(&'a mut self) -> RbatisExecutor<'a,'b> {
+impl<'b> RBatisConnExecutor<'b> {
+    pub fn as_executor<'a>(&'a mut self) -> RbatisExecutor<'a, 'b> {
         RbatisExecutor {
             rb: None,
             guard: None,
@@ -194,8 +194,8 @@ pub struct RBatisTxExecutor<'a> {
     pub rb: &'a Rbatis,
 }
 
-impl<'a,'b> RBatisTxExecutor<'b> {
-    pub fn as_executor(&'a mut self) -> RbatisExecutor<'a,'b> {
+impl<'a, 'b> RBatisTxExecutor<'b> {
+    pub fn as_executor(&'a mut self) -> RbatisExecutor<'a, 'b> {
         self.into()
     }
 }
@@ -238,8 +238,8 @@ pub struct RBatisTxExecutorGuard<'a> {
     pub callback: Box<dyn FnMut(RBatisTxExecutor<'a>) + Send + 'a>,
 }
 
-impl<'a,'b> RBatisTxExecutorGuard<'b> {
-    pub fn as_executor(&'a mut self) -> RbatisExecutor<'a,'b> {
+impl<'a, 'b> RBatisTxExecutorGuard<'b> {
+    pub fn as_executor(&'a mut self) -> RbatisExecutor<'a, 'b> {
         self.into()
     }
 
@@ -363,14 +363,14 @@ impl Executor for Rbatis {
 /// (&mut tx).into()
 /// (&mut conn).into()
 /// (&mut guard).into()
-pub struct RbatisExecutor<'a,'b> {
-    pub rb: Option<&'a Rbatis>,
-    pub conn: Option<&'a mut RBatisConnExecutor<'b>>,
-    pub tx: Option<&'a mut RBatisTxExecutor<'b>>,
-    pub guard: Option<&'a mut RBatisTxExecutorGuard<'b>>,
+pub struct RbatisExecutor<'r, 'inner> {
+    pub rb: Option<&'r Rbatis>,
+    pub conn: Option<&'r mut RBatisConnExecutor<'inner>>,
+    pub tx: Option<&'r mut RBatisTxExecutor<'inner>>,
+    pub guard: Option<&'r mut RBatisTxExecutorGuard<'inner>>,
 }
 
-impl RbatisExecutor<'_,'_> {
+impl RbatisExecutor<'_, '_> {
     pub async fn fetch_page<T>(&mut self, sql: &str, args: Vec<Value>, page_request: &dyn IPageRequest) -> crate::Result<Page<T>>
         where
             T: DeserializeOwned + Serialize + Send + Sync {
@@ -413,7 +413,7 @@ impl RbatisExecutor<'_,'_> {
     }
 }
 
-impl<'a,'b> RbatisRef for RbatisExecutor<'a,'b> {
+impl<'r, 'inner> RbatisRef for RbatisExecutor<'r, 'inner> {
     fn get_rbatis(&self) -> &Rbatis {
         if self.rb.is_some() {
             return self.rb.as_ref().unwrap();
@@ -429,8 +429,8 @@ impl<'a,'b> RbatisRef for RbatisExecutor<'a,'b> {
     }
 }
 
-impl<'a,'b> From<&'a Rbatis> for RbatisExecutor<'a,'b> {
-    fn from(arg: &'a Rbatis) -> Self {
+impl<'r, 'inner> From<&'r Rbatis> for RbatisExecutor<'r, 'inner> {
+    fn from(arg: &'r Rbatis) -> Self {
         Self {
             rb: Some(arg),
             conn: None,
@@ -440,8 +440,8 @@ impl<'a,'b> From<&'a Rbatis> for RbatisExecutor<'a,'b> {
     }
 }
 
-impl<'a,'b> From<&'a mut RBatisConnExecutor<'b>> for RbatisExecutor<'a,'b> {
-    fn from(arg: &'a mut RBatisConnExecutor<'b>) -> Self {
+impl<'r, 'inner> From<&'r mut RBatisConnExecutor<'inner>> for RbatisExecutor<'r, 'inner> {
+    fn from(arg: &'r mut RBatisConnExecutor<'inner>) -> Self {
         Self {
             rb: None,
             conn: Some(arg),
@@ -451,8 +451,8 @@ impl<'a,'b> From<&'a mut RBatisConnExecutor<'b>> for RbatisExecutor<'a,'b> {
     }
 }
 
-impl<'a,'b> From<&'a mut RBatisTxExecutor<'b>> for RbatisExecutor<'a,'b> {
-    fn from(arg: &'a mut RBatisTxExecutor<'b>) -> Self {
+impl<'r, 'inner> From<&'r mut RBatisTxExecutor<'inner>> for RbatisExecutor<'r, 'inner> {
+    fn from(arg: &'r mut RBatisTxExecutor<'inner>) -> Self {
         Self {
             rb: None,
             conn: None,
@@ -462,8 +462,8 @@ impl<'a,'b> From<&'a mut RBatisTxExecutor<'b>> for RbatisExecutor<'a,'b> {
     }
 }
 
-impl<'a,'b> From<&'a mut RBatisTxExecutorGuard<'b>> for RbatisExecutor<'a,'b> {
-    fn from(arg: &'a mut RBatisTxExecutorGuard<'b>) -> Self {
+impl<'r, 'inner> From<&'r mut RBatisTxExecutorGuard<'inner>> for RbatisExecutor<'r, 'inner> {
+    fn from(arg: &'r mut RBatisTxExecutorGuard<'inner>) -> Self {
         Self {
             rb: None,
             conn: None,
