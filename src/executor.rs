@@ -360,6 +360,9 @@ impl Executor for Rbatis {
 
 /// must be only one have Some(Value)
 /// (&rb).into()
+/// &mut tx.as_executor()
+/// &mut conn.as_executor()
+/// &mut guard.as_executor()
 /// (&mut tx).into()
 /// (&mut conn).into()
 /// (&mut guard).into()
