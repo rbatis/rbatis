@@ -2,7 +2,7 @@
 mod test {
     use crate::BizActivity;
     use rbatis::rbatis::Rbatis;
-    use rbatis::executor::{Executor, RbatisRef, RBatisTxExecutor, ExecutorMut};
+    use rbatis::executor::{Executor, RbatisRef, RBatisTxExecutor, ExecutorMut, RbatisExecutor};
     use rbatis::core::db::DBExecResult;
     use std::cell::Cell;
     use async_std::sync::Mutex;
@@ -33,7 +33,7 @@ mod test {
     }
 
     #[py_sql(rb, "select * from biz_activity")]
-    async fn py_select_data(rb: &mut RBatisTxExecutor<'_>) -> Result<Vec<BizActivity>, rbatis::core::Error> { todo!() }
+    async fn py_select_data(rb: &mut RbatisExecutor<'_,'_>) -> Result<Vec<BizActivity>, rbatis::core::Error> { todo!() }
 
     //示例-Rbatis使用宏事务
     #[tokio::test]
@@ -45,8 +45,8 @@ mod test {
             .unwrap();
 
         let mut tx = rb.acquire_begin().await.unwrap();
-        let v = py_select_data(&mut tx).await.unwrap();
-        println!("{:?}", v);
+        let v = py_select_data(&mut tx.as_executor()).await.unwrap();
+        println!("{:?}",v);
         tx.commit().await.unwrap();
     }
 
