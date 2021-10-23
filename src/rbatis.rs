@@ -227,7 +227,7 @@ impl Rbatis {
     }
 
     /// change ref to executor
-    pub fn as_executor(&self) -> RbatisExecutor<'_> {
+    pub fn as_executor(&self) -> RbatisExecutor {
         self.into()
     }
 }

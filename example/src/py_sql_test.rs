@@ -31,7 +31,7 @@ mod test {
                   if name != '':
                     and name=#{name}"
     )]
-    async fn py_select_page(rb: &mut RbatisExecutor<'_>, page_req: &PageRequest, name: &str) -> Page<BizActivity> { todo!() }
+    async fn py_select_page(rb: &mut RbatisExecutor<'_,'_>, page_req: &PageRequest, name: &str) -> Page<BizActivity> { todo!() }
 
     #[tokio::test]
     pub async fn test_py_select_page() {
