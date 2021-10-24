@@ -184,7 +184,7 @@ mod test {
             .await
             .unwrap();
         let r = rb
-            .remove_batch_by_column::<BizActivity, _>("id", &["1".to_string(), "2".to_string()])
+            .remove_batch_by_column::<BizActivity, _>("id", &["1", "2"])
             .await;
         if r.is_err() {
             println!("{}", r.err().unwrap().to_string());
