@@ -29,7 +29,7 @@
 | Go-GoMybatis/http   |  1 CPU, 1G memory   | select count(1) from table;   | 1184503 ns/op  |  844  Qps/s   |  28.4MB  |     
 
 * No Runtimes，No Garbage Collection
-* Zero cost Dynamic SQL, implemented using (proc-macro,compile-time,Cow(Reduce unnecessary cloning)) techniques。 don't need ONGL engine(mybatis)
+* Zero cost [Dynamic SQL](dyn_sql.md), implemented using (proc-macro,compile-time,Cow(Reduce unnecessary cloning)) techniques。 don't need ONGL engine(mybatis)
 * Used json with serde_json for send parameters and communication
 * High performance, Based on Future, with async_std/tokio, single threaded benchmark can easily achieve 200,000 QPS
 * logical deletes, pagination, py-like SQL and basic Mybatis functionalities.
