@@ -167,7 +167,7 @@ async fn main() {
 //Query ==> SELECT  create_time,delete_flag,h5_banner_img,h5_link,id,name,pc_banner_img,pc_link,remark,sort,status,version  FROM biz_activity WHERE delete_flag = 1  AND id =  ? 
 
   ///delete
-  rb.remove_by_column::<BizActivity,_>("id", &"1".to_string()).await;
+  rb.remove_by_column::<BizActivity,_>("id", &"1").await;
 //Exec ==> UPDATE biz_activity SET delete_flag = 0 WHERE id = 1
 
   ///delete batch
@@ -257,7 +257,7 @@ let mut rb:Rbatis=Rbatis::new();
 //rb.logic_plugin = Some(Box::new(RbatisLogicDeletePlugin::new_opt("delete_flag",1,0)));//Customize deleted/undeleted writing
 rb.set_logic_plugin(RbatisLogicDeletePlugin::<BizActivity>::new("delete_flag"));;
 rb.link("mysql://root:123456@localhost:3306/test").await.unwrap();
-let r = rb.remove_batch_by_id::<BizActivity>( & ["1".to_string(), "2".to_string()]).await;
+let r = rb.remove_batch_by_id::<BizActivity>( & ["1", "2"]).await;
 if r.is_err() {
   println ! ("{}", r.err().unwrap().to_string());
 }
