@@ -30,5 +30,7 @@
 <li>Extensible - the library will render statements for Rbatis, rbaits_sql or plain sql. It can be extended to  generate clauses for other frameworks as well.  Custom where conditions can be added easily if none of the built in conditions are sufficient for your needs.</li>
 <li>Small - the library is a small dependency to add.  It has no transitive dependencies.</li>
 </ol>
-<p>This library is design for Zero cost Dynamic SQL, implemented using (proc-macro,compile-time,Cow(Reduce unnecessary cloning)) techniques。 don't need ONGL engine(mybatis)</p>
+<p>This library is design for Zero cost Dynamic SQL, implemented using (proc-macro,compile-time,Cow(Reduce unnecessary cloning)) techniques。 
+the rust compiler eventually becomes machine code 
+don't need ONGL engine(mybatis)</p>
  </main>
