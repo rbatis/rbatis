@@ -130,7 +130,7 @@ mod test {
         };
         let mut activity2 = activity.clone();
         activity2.id = Some("12313".to_string());
-        rb.remove_batch_by_column::<BizActivity, _>("id", &["12312".to_string(), "12313".to_string()])
+        rb.remove_batch_by_column::<BizActivity, _>("id", &["12312", "12313"])
             .await;
         let args = vec![&activity, &activity2];
         let r = rb.save_batch(&args, &[]).await;
