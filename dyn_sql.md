@@ -1,7 +1,7 @@
 <main id="bodyColumn" class="span10">
 <h1>Rbatis Dynamic SQL</h1>
 <p>This library is a framework for generating dynamic SQL statements.  Think of it as a typesafe SQL templating library, with additional support for Rbatis and rbaits_sql.</p>
-<p>The library will generate full DELETE, INSERT, SELECT, and UPDATE statements formatted for use by Rbatis or Spring. The most common use case is to generate statements, and a matching set of parameters, that can be directly used by Rbatis.  The library will also generate statements and parameter objects that are compatible with rbaits_sql.</p>
+<p>The library will generate full DELETE, INSERT, SELECT, and UPDATE statements formatted for use by Rbatis or any http library. The most common use case is to generate statements, and a matching set of parameters, that can be directly used by Rbatis.  The library will also generate statements and parameter objects that are compatible with rbaits_sql.</p>
 <p>The library works by implementing an SQL-like DSL that creates an object containing a full SQL statement and any parameters required for that statement.  The SQL statement object can be used directly by Rbatis as a parameter to a mapper method.</p>
 <p>The library will generate these types of SQL statements:</p>
 <ul>
