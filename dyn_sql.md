@@ -6,7 +6,7 @@
 <p>The library will generate these types of SQL statements:</p>
 <ul>
 
-<li>COUNT statements - specialized SELECT statements that return a Long value</li>
+<li>COUNT statements - specialized SELECT statements that return a i64/u64 value</li>
 <li>DELETE statements with flexible WHERE clauses</li>
 <li>INSERT statements of several types:
 <ul>
