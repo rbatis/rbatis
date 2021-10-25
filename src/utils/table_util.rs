@@ -116,3 +116,34 @@ macro_rules! make_table_field_map_btree {
         ids
     }};
 }
+
+
+/**
+   this macro allow gen column fn
+    #[crud_table]
+    #[derive(Clone, Debug)]
+    make_column_fn!(
+      pub struct BizActivity {
+         pub id: Option<String>
+     }
+   );
+  println!("{}",BizActivity::id());
+**/
+
+#[allow(unused_macros)]
+#[macro_export]
+macro_rules! make_column_fn {
+    (pub struct $t:ty{ $(pub $key:ident:$value:expr$(,)?)+ }) => {
+           pub struct $t{
+                   $(pub $key:$value,)+
+           }
+           impl $t{
+                       $(
+                         #[inline]
+                         pub fn $key()->&'static str{
+                             stringify!($key)
+                         }
+                       )+
+               }
+        }
+}
