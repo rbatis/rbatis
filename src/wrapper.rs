@@ -109,31 +109,38 @@ impl Wrapper {
     pub fn push(mut self, sql: &str, args: Vec<serde_json::Value>) -> Self
     {
         let mut new_sql = sql.to_string();
-        if self.driver_type.is_number_type() {
-            let self_arg_len = self.args.len();
-            for index in 0..args.len() {
-                let mut convert_column = String::new();
-                self.driver_type.stmt_convert(index, &mut convert_column);
+         match self.driver_type{
+             DriverType::None => {}
+             DriverType::Mysql => {}
+             DriverType::Postgres |DriverType::Mssql  => {
+                 let self_arg_len = self.args.len();
+                 for index in 0..args.len() {
+                     let mut convert_column = String::new();
+                     self.driver_type.stmt_convert(index, &mut convert_column);
 
-                let mut convert_column_new = String::new();
-                self.driver_type.stmt_convert(index + args.len(), &mut convert_column_new);
-                new_sql = new_sql.replace(
-                    convert_column.as_str(),
-                    convert_column_new.as_str(),
-                );
-            }
-            for index in args.len()..self_arg_len {
-                let mut convert_column = String::new();
-                self.driver_type.stmt_convert(index, &mut convert_column);
+                     let mut convert_column_new = String::new();
+                     self.driver_type.stmt_convert(index + args.len(), &mut convert_column_new);
+                     new_sql = new_sql.replace(
+                         convert_column.as_str(),
+                         convert_column_new.as_str(),
+                     );
+                 }
+                 for index in args.len()..self_arg_len {
+                     let mut convert_column = String::new();
+                     self.driver_type.stmt_convert(index, &mut convert_column);
 
-                let mut convert_column_new = String::new();
-                self.driver_type.stmt_convert(index + args.len(), &mut convert_column_new);
-                new_sql = new_sql.replace(
-                    convert_column.as_str(),
-                    convert_column_new.as_str(),
-                );
-            }
-        }
+                     let mut convert_column_new = String::new();
+                     self.driver_type.stmt_convert(index + args.len(), &mut convert_column_new);
+
+                     println!("{},{}",convert_column,convert_column_new);
+                     new_sql = new_sql.replace(
+                         convert_column.as_str(),
+                         convert_column_new.as_str(),
+                     );
+                 }
+             }
+             DriverType::Sqlite => {}
+         }
         self.sql.push_str(new_sql.as_str());
         for x in args {
             self.args.push(x);
