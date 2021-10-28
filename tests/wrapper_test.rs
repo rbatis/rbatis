@@ -146,4 +146,21 @@ mod test {
         assert_eq!(w2.sql.contains("b = $1"), true);
         assert_eq!(w2.sql.contains("a = $4"), true);
     }
+
+    #[test]
+    fn test_push_wrapper_mssql() {
+        let w1 = Wrapper::new(&DriverType::Mssql);
+        let w2 = w1.clone();
+
+        let w2 = w1
+            .eq("b", "b")
+            .eq("b1", "b1")
+            .eq("b2", "b2")
+            .and()
+            .push_wrapper(w2.push_sql("(").eq("a", "a").push_sql(")"));
+        println!("sql:{:?}", w2.sql.as_str());
+        println!("arg:{:?}", w2.args.clone());
+        assert_eq!(w2.sql.contains("b = @p1"), true);
+        assert_eq!(w2.sql.contains("a = @p4"), true);
+    }
 }
