@@ -1,166 +1,90 @@
 #[cfg(test)]
 mod test {
+    use std::collections::HashMap;
     use rbatis::core::db::DriverType;
     use rbatis::wrapper::Wrapper;
     use serde_json::json;
     use serde_json::Map;
 
     #[test]
-    fn test_trim() {
-        let mut w = Wrapper::new(&DriverType::Mysql);
-        w = w.push_sql(" where ").order_by(true, &["id"]);
-        println!("sql:{:?}", w.sql.as_str());
-        println!("arg:{:?}", w.args.clone());
-        assert_eq!("order by id asc", w.sql.as_str().trim());
-        println!("{:?}", w);
+    fn test_item() {
+        let w = Wrapper::new(&DriverType::Postgres).having("id");
+        assert_eq!(w.sql, "having id");
+        let mut m =HashMap::new();
+        m.insert("name",1);
+        m.insert("id",2);
+        let w = Wrapper::new(&DriverType::Postgres).all_eq(m);
+        assert_eq!(w.sql, "(id = $1 and name = $2)");
+        let w = Wrapper::new(&DriverType::Postgres).eq("id",1);
+        assert_eq!(w.sql, "id = $1");
+        let w = Wrapper::new(&DriverType::Postgres).ne("id",1);
+        assert_eq!(w.sql, "id <> $1");
+        let w = Wrapper::new(&DriverType::Postgres).order_by(true,&["id"]);
+        assert_eq!(w.sql, "order by id asc");
+        let w = Wrapper::new(&DriverType::Postgres).group_by(&["id"]);
+        assert_eq!(w.sql, "group by id");
+        let w = Wrapper::new(&DriverType::Postgres).gt("id",1);
+        assert_eq!(w.sql, "id > $1");
+        let w = Wrapper::new(&DriverType::Postgres).ge("id",1);
+        assert_eq!(w.sql, "id >= $1");
+        let w = Wrapper::new(&DriverType::Postgres).lt("id",1);
+        assert_eq!(w.sql, "id < $1");
+        let w = Wrapper::new(&DriverType::Postgres).le("id",1);
+        assert_eq!(w.sql, "id <= $1");
+        let w = Wrapper::new(&DriverType::Postgres).between("id", 1, 2);
+        assert_eq!(w.sql, "id between $1 and $2");
+        let w = Wrapper::new(&DriverType::Postgres).not_between("id", 1, 2);
+        assert_eq!(w.sql, "id not between $1 and $2");
+        let w = Wrapper::new(&DriverType::Postgres).like("id", 1);
+        assert_eq!(w.sql, "id like $1");
+        let w = Wrapper::new(&DriverType::Postgres).like_left("id", 1);
+        assert_eq!(w.sql, "id like $1");
+        let w = Wrapper::new(&DriverType::Postgres).like_right("id", 1);
+        assert_eq!(w.sql, "id like $1");
+        let w = Wrapper::new(&DriverType::Postgres).not_like("id", 1);
+        assert_eq!(w.sql, "id not like $1");
+        let w = Wrapper::new(&DriverType::Postgres).is_null("id");
+        assert_eq!(w.sql, "id is NULL");
+        let w = Wrapper::new(&DriverType::Postgres).is_not_null("id");
+        assert_eq!(w.sql, "id is not NULL");
+        let w = Wrapper::new(&DriverType::Postgres).in_array("id",&[1]);
+        assert_eq!(w.sql, "id in ( $1 )");
+        let w = Wrapper::new(&DriverType::Postgres).not_in("id",&[1]);
+        assert_eq!(w.sql, "id not in ( $1 )");
+        let w = Wrapper::new(&DriverType::Postgres).insert_into("table","c","v");
+        assert_eq!(w.sql, "insert into table (c) values v");
+        let w = Wrapper::new(&DriverType::Postgres).limit(1);
+        assert_eq!(w.sql, " limit 1 ");
     }
 
     #[test]
-    fn test_select() {
-        let mut m = Map::new();
-        m.insert("a".to_string(), json!("1"));
-        let w = Wrapper::new(&DriverType::Postgres)
-            .eq("id", 1)
-            .ne("id", 1)
-            .in_array("id", &[1, 2, 3])
-            .not_in("id", &[1, 2, 3])
-            .all_eq(&m)
-            .like("name", 1)
-            .or()
-            .not_like("name", "asdf")
-            .between("create_time", "2020-01-01 00:00:00", "2020-12-12 00:00:00")
-            .group_by(&["id"])
-            .order_by(true, &["id", "name"]);
-        println!("sql_len:{}", w.sql.len());
-        println!("sql:{:?}", w.sql.as_str());
-        println!("arg:{:?}", w.args.clone());
+    fn test_all() {
+        let mut m =HashMap::new();
+        m.insert("name",1);
+        m.insert("id",2);
 
-        let ms: Vec<&str> = w.sql.matches("$").collect();
-        assert_eq!(ms.len(), w.args.len());
-    }
-
-
-    ///cargo test --release --package rbatis --test wrapper_test test::bench_select --no-fail-fast -- --exact -Z unstable-options --show-output
-    ///run with windows10:
-    ///(Windows)use Time: 0.51 s,each:5100 nano/op  use QPS: 196078.431372549 QPS/s
-    ///(MacOs) use Time: 1.718391272s ,each:17183 ns/op use QPS: 58193 QPS/s
-    ///
-    /// (windows) after
-    /// use Time: 312.6553ms ,each:3126 ns/op
-    /// use QPS: 319814 QPS/s
-    #[test]
-    fn bench_select() {
-        let mut map = Map::new();
-        map.insert("a".to_string(), json!("1"));
-        rbatis::bench!(100000, {
-            Wrapper::new(&DriverType::Mysql)
-                .eq("id", 1)
-                .ne("id", 1)
-                .in_array("id", &[1, 2, 3])
-                .r#in("id", &[1, 2, 3])
-                .in_("id", &[1, 2, 3])
-                .not_in("id", &[1, 2, 3])
-                .all_eq(&map)
-                .like("name", 1)
-                .or()
-                .not_like("name", "asdf")
-                .between("create_time", "2020-01-01 00:00:00", "2020-12-12 00:00:00")
-                .group_by(&["id"])
-                .order_by(true, &["id", "name"]);
-        });
-    }
-
-    #[test]
-    fn test_link() {
-        let w = Wrapper::new(&DriverType::Postgres).eq("a", "1");
-        let w2 = Wrapper::new(&DriverType::Postgres)
-            .eq("b", "2")
-            .and()
-            .push_wrapper(w.clone());
-
-        println!("sql:{:?}", w2.sql.as_str());
-        println!("arg:{:?}", w2.args.clone());
-
-        let ms: Vec<&str> = w.sql.matches("$").collect();
-        assert_eq!(ms.len(), w.args.len());
-    }
-
-    #[test]
-    fn test_do_if() {
-        let p = Option::<i32>::Some(1);
-        let w = Wrapper::new(&DriverType::Postgres).do_if(p.is_some(), |w| w.eq("a", p.clone()));
-        println!("sql:{:?}", w.sql.as_str());
-        println!("arg:{:?}", w.args.clone());
-        assert_eq!(&w.sql, "a = $1");
-        assert_eq!(&w.args[0], &json!(p));
-    }
-
-    #[test]
-    fn test_do_match() {
-        let p = 1;
-        let w = Wrapper::new(&DriverType::Postgres).do_match(
-            &[
-                (p == 0, |w| w.eq("0", "some")),
-                (p == 1, |w| w.eq("1", "some")),
-            ],
-            |w| w.eq("default", "default"),
-        );
-        assert_eq!(&w.sql, "1 = $1");
-    }
-
-    #[test]
-    fn test_wp() {
-        let w = Wrapper::new(&DriverType::Postgres)
-            .eq("1", "1")
-            .or()
-            .like("TITLE", "title")
-            .or()
-            .like("ORIGINAL_NAME", "saf");
-        println!("sql:{:?}", w.sql.as_str());
-        println!("arg:{:?}", w.args.clone());
-    }
-
-    #[test]
-    fn test_push_arg() {
-        let w = Wrapper::new(&DriverType::Mysql)
-            .push_sql("?,?")
-            .push_arg(1)
-            .push_arg("asdfasdfa");
-        println!("sql:{:?}", w.sql.as_str());
-        println!("arg:{:?}", w.args.clone());
-    }
-
-    #[test]
-    fn test_push_wrapper() {
-        let w1 = Wrapper::new(&DriverType::Postgres);
-        let w2 = w1.clone();
-
-        let w2 = w1
-            .eq("b", "b")
-            .eq("b1", "b1")
-            .eq("b2", "b2")
-            .and()
-            .push_wrapper(w2.push_sql("(").eq("a", "a").push_sql(")"));
-        println!("sql:{:?}", w2.sql.as_str());
-        println!("arg:{:?}", w2.args.clone());
-        assert_eq!(w2.sql.contains("b = $1"), true);
-        assert_eq!(w2.sql.contains("a = $4"), true);
-    }
-
-    #[test]
-    fn test_push_wrapper_mssql() {
-        let w1 = Wrapper::new(&DriverType::Mssql);
-        let w2 = w1.clone();
-
-        let w2 = w1
-            .eq("b", "b")
-            .eq("b1", "b1")
-            .eq("b2", "b2")
-            .and()
-            .push_wrapper(w2.push_sql("(").eq("a", "a").push_sql(")"));
-        println!("sql:{:?}", w2.sql.as_str());
-        println!("arg:{:?}", w2.args.clone());
-        assert_eq!(w2.sql.contains("b = @p1"), true);
-        assert_eq!(w2.sql.contains("a = @p4"), true);
+        let mut w =Wrapper::new(&DriverType::Postgres);
+        w = w.having("id");
+        w = w.all_eq(m);
+        w = w.eq("id",1);
+        w = w.ne("id",1);
+        w = w.gt("id",1);
+        w = w.ge("id",1);
+        w = w.lt("id",1);
+        w = w.le("id",1);
+        w = w.between("id", 1, 2);
+        w = w.not_between("id", 1, 2);
+        w = w.like("id", 1);
+        w = w.like_left("id", 1);
+        w = w.like_right("id", 1);
+        w = w.not_like("id", 1);
+        w = w.is_null("id");
+        w = w.is_not_null("id");
+        w = w.in_array("id",&[1]);
+        w = w.not_in("id",&[1]);
+        w = w.order_by(true,&["id"]);
+        w = w.group_by(&["id"]);
+        w = w.limit(1);
+        assert_eq!(w.sql,"having id and (id = $1 and name = $2) and id = $3 and id <> $4 and id > $5 and id >= $6 and id < $7 and id <= $8 and id between $9 and $10 and id not between $11 and $12 and id like $13 and id like $14 and id like $15 and id not like $16 and id is NULL and id is not NULL and id in ( $17 ) and id not in ( $18 )order by id ascgroup by id limit 1 ");
     }
 }
