@@ -494,12 +494,13 @@ impl Wrapper {
         self.do_format_column(column, &mut convert_column);
         push_sql!(self.sql,column," ",crate::sql::TEMPLATE.not.value,crate::sql::TEMPLATE.between.value," ", &convert_column.as_str(),);
 
+        self.args.push(json!(min));
+
         let mut convert_column = String::new();
         self.driver_type.stmt_convert(self.args.len(), &mut convert_column);
         self.do_format_column(column, &mut convert_column);
         push_sql!(self.sql," ",crate::sql::TEMPLATE.and.value," ", &convert_column.as_str(),);
 
-        self.args.push(json!(min));
         self.args.push(json!(max));
         self
     }
