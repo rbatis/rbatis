@@ -44,7 +44,7 @@ pub struct Wrapper {
 }
 
 macro_rules! push_sql {
-    ($i:expr,$($v:expr,)*) => {
+    ($i:expr,$($v:expr$(,)?)*) => {
         $($i.push_str($v);)*
     };
 }
@@ -66,7 +66,6 @@ impl Debug for Wrapper {
 }
 
 impl Wrapper {
-
     pub fn new(driver_type: &DriverType) -> Self {
         Self {
             driver_type: driver_type.clone(),
@@ -87,7 +86,7 @@ impl Wrapper {
         self
     }
 
-    pub fn set_dml(mut self, dml:&str) ->Self{
+    pub fn set_dml(mut self, dml: &str) -> Self {
         self.dml = dml.to_string();
         self
     }
@@ -109,38 +108,38 @@ impl Wrapper {
     pub fn push(mut self, sql: &str, args: Vec<serde_json::Value>) -> Self
     {
         let mut new_sql = sql.to_string();
-         match self.driver_type{
-             DriverType::None => {}
-             DriverType::Mysql => {}
-             DriverType::Postgres |DriverType::Mssql  => {
-                 let self_arg_len = self.args.len();
-                 for index in 0..args.len() {
-                     let mut convert_column = String::new();
-                     self.driver_type.stmt_convert(index, &mut convert_column);
+        match self.driver_type {
+            DriverType::None => {}
+            DriverType::Mysql => {}
+            DriverType::Postgres | DriverType::Mssql => {
+                let self_arg_len = self.args.len();
+                for index in 0..args.len() {
+                    let mut convert_column = String::new();
+                    self.driver_type.stmt_convert(index, &mut convert_column);
 
-                     let mut convert_column_new = String::new();
-                     self.driver_type.stmt_convert(index + args.len(), &mut convert_column_new);
-                     new_sql = new_sql.replace(
-                         convert_column.as_str(),
-                         convert_column_new.as_str(),
-                     );
-                 }
-                 for index in args.len()..self_arg_len {
-                     let mut convert_column = String::new();
-                     self.driver_type.stmt_convert(index, &mut convert_column);
+                    let mut convert_column_new = String::new();
+                    self.driver_type.stmt_convert(index + args.len(), &mut convert_column_new);
+                    new_sql = new_sql.replace(
+                        convert_column.as_str(),
+                        convert_column_new.as_str(),
+                    );
+                }
+                for index in args.len()..self_arg_len {
+                    let mut convert_column = String::new();
+                    self.driver_type.stmt_convert(index, &mut convert_column);
 
-                     let mut convert_column_new = String::new();
-                     self.driver_type.stmt_convert(index + args.len(), &mut convert_column_new);
+                    let mut convert_column_new = String::new();
+                    self.driver_type.stmt_convert(index + args.len(), &mut convert_column_new);
 
-                     println!("{},{}",convert_column,convert_column_new);
-                     new_sql = new_sql.replace(
-                         convert_column.as_str(),
-                         convert_column_new.as_str(),
-                     );
-                 }
-             }
-             DriverType::Sqlite => {}
-         }
+                    println!("{},{}", convert_column, convert_column_new);
+                    new_sql = new_sql.replace(
+                        convert_column.as_str(),
+                        convert_column_new.as_str(),
+                    );
+                }
+            }
+            DriverType::Sqlite => {}
+        }
         self.sql.push_str(new_sql.as_str());
         for x in args {
             self.args.push(x);
@@ -278,7 +277,7 @@ impl Wrapper {
 
     pub fn having(mut self, sql_having: &str) -> Self {
         self = self.and();
-        push_sql!(self.sql," ",crate::sql::TEMPLATE.having.value," ",sql_having," ",);
+        push_sql!(self.sql,crate::sql::TEMPLATE.having.value," ",sql_having);
         self
     }
 
@@ -299,15 +298,17 @@ impl Wrapper {
         if map.len() == 0 {
             return self;
         }
+        self.sql.push_str("(");
         let len = map.len();
         let mut index = 0;
         for (k, v) in map {
             self = self.eq(k.as_str(), v);
             if (index + 1) != len {
-                self.sql.push_str(" , ");
+                self.sql.push_str(" and ");
                 index += 1;
             }
         }
+        self.sql.push_str(")");
         self
     }
 
@@ -365,8 +366,7 @@ impl Wrapper {
             .trim_end_matches(crate::sql::TEMPLATE.and.left_space)
             .trim_end_matches(crate::sql::TEMPLATE.or.left_space)
             .to_string();
-        self.sql
-            .push_str(&crate::sql::TEMPLATE.order_by.left_right_space);
+        self.sql.push_str(&crate::sql::TEMPLATE.order_by.right_space);
         for x in columns {
             if is_asc {
                 push_sql!(self.sql,x," ",crate::sql::TEMPLATE.asc.value,);
@@ -395,7 +395,7 @@ impl Wrapper {
             .trim_end_matches(crate::sql::TEMPLATE.or.left_space)
             .to_string();
         self.sql
-            .push_str(&crate::sql::TEMPLATE.group_by.left_right_space);
+            .push_str(&crate::sql::TEMPLATE.group_by.right_space);
         for x in columns {
             self.sql.push_str(x);
             if (index + 1) != len {
@@ -492,7 +492,7 @@ impl Wrapper {
         let mut convert_column = String::new();
         self.driver_type.stmt_convert(self.args.len(), &mut convert_column);
         self.do_format_column(column, &mut convert_column);
-        push_sql!(self.sql,column," ",crate::sql::TEMPLATE.not.value,crate::sql::TEMPLATE.between.value," ", &convert_column.as_str(),);
+        push_sql!(self.sql,column," ",crate::sql::TEMPLATE.not.value," ",crate::sql::TEMPLATE.between.value," ", &convert_column.as_str(),);
 
         self.args.push(json!(min));
 
@@ -594,17 +594,17 @@ impl Wrapper {
     pub fn is_null(mut self, column: &str) -> Self {
         self = self.and();
         self.sql.push_str(column);
-        self.sql.push_str(crate::sql::TEMPLATE.is.left_right_space);
-        self.sql.push_str(crate::sql::TEMPLATE.null.right_space);
+        self.sql.push_str(crate::sql::TEMPLATE.is.left_space);
+        self.sql.push_str(crate::sql::TEMPLATE.null.left_space);
         self
     }
 
     pub fn is_not_null(mut self, column: &str) -> Self {
         self = self.and();
         self.sql.push_str(column);
-        self.sql.push_str(crate::sql::TEMPLATE.is.left_right_space);
-        self.sql.push_str(crate::sql::TEMPLATE.not.right_space);
-        self.sql.push_str(crate::sql::TEMPLATE.null.right_space);
+        self.sql.push_str(crate::sql::TEMPLATE.is.left_space);
+        self.sql.push_str(crate::sql::TEMPLATE.not.left_space);
+        self.sql.push_str(crate::sql::TEMPLATE.null.left_space);
         self
     }
 
