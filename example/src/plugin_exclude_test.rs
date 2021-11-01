@@ -2,7 +2,7 @@
 mod test {
     use crate::BizActivity;
     use chrono::NaiveDateTime;
-    use rbatis::core::types::DateTimeNative;
+    use rbatis::DateTimeNative;
     use rbatis::core::value::DateTimeNow;
     use rbatis::crud::{CRUDMut, CRUD};
     use rbatis::plugin::logic_delete::RbatisLogicDeletePlugin;

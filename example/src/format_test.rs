@@ -7,7 +7,7 @@ mod test {
     use rbatis::rbatis::Rbatis;
     use std::str::FromStr;
     use uuid::Uuid;
-    use rbatis::core::types::DateTimeNative;
+    use rbatis::DateTimeNative;
     use rbatis::executor::Executor;
 
     //'formats_pg' use postgres format

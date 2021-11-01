@@ -2,8 +2,6 @@
 mod test {
     use bigdecimal::BigDecimal;
     use bson::Bson;
-    use chrono::NaiveDateTime;
-
     use rbatis::core::value::DateTimeNow;
     use rbatis::core::Error;
     use rbatis::crud::{CRUDMut, CRUD, Skip};
@@ -12,7 +10,7 @@ mod test {
     use rbatis::plugin::snowflake::new_snowflake_id;
     use rbatis::rbatis::Rbatis;
     use serde_json::Value;
-    use rbatis::core::types::DateTimeNative;
+    use rbatis::DateTimeNative;
     use rbatis::crud::CRUDTable;
     // use rbatis::core::types::byte::RbBytes;
     // use rbatis::core::types::json::RbJson;

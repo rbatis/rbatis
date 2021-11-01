@@ -23,7 +23,7 @@ pub struct BizActivity {
     pub sort: Option<String>,
     pub status: Option<i32>,
     pub remark: Option<String>,
-    pub create_time: Option<rbatis::core::types::DateTimeNative>,
+    pub create_time: Option<rbatis::DateTimeNative>,
     pub version: Option<i32>,
     pub delete_flag: Option<i32>,
 }
