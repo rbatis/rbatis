@@ -421,6 +421,7 @@ async fn main() -> std::io::Result<()> {
 | rbatis_core::Timestamp               | √     |  
 | rbatis_core::TimestampZ              | √     |  
 | rbatis_core::Uuid                    | √     |  
+| rbatis::plugin::page::{Page<T>, PageRequest} | √     |
 | bson::Bson*                      | √     |
 | serde_json::*        | √     |
 | any serde type         | √     |
