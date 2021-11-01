@@ -35,8 +35,8 @@ mssql = ["default_mode", "rbatis-core/mssql"]
 runtime-tokio-rustls = ["rbatis-core/runtime-tokio-rustls"]
 
 [dependencies]
-rbatis-core = { git = "https://github.com/rbatis/rbatis-core.git", branch = "main", default-features = false, optional = true }
-rbatis_sql = {  git = "https://github.com/rbatis/rbatis_sql.git", branch = "main", optional = true }
+rbatis-core = { version="3.0.0", git = "https://github.com/rbatis/rbatis-core.git", branch = "main", default-features = false, optional = true }
+rbatis_sql = { version="3.0.0", git = "https://github.com/rbatis/rbatis_sql.git", branch = "main", optional = true }
 rbatis-macro-driver = { version = "2.1.0", path = "rbatis-macro-driver", default-features = false, optional = true }
 
 bson="2.0.1"
