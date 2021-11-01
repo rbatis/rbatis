@@ -409,18 +409,18 @@ async fn main() -> std::io::Result<()> {
 | Vec                      | √     |  
 | HashMap                      | √     |
 | i32,i64,f32,f64,bool,String...more rust type   | √     |  
-| rbatis_core::Bytes                   | √     |  
-| rbatis_core::DateNative              | √     |  
-| rbatis_core::DateUtc                  | √     |  
-| rbatis_core::DateTimeNative          | √     |  
-| rbatis_core::DateTimeUtc             | √     |  
-| rbatis_core::Decimal                 | √     |  
-| rbatis_core::Json<T>                 | √     |  
-| rbatis_core::TimeNative              | √     |  
-| rbatis_core::TimeUtc                 | √     |  
-| rbatis_core::Timestamp               | √     |  
-| rbatis_core::TimestampZ              | √     |  
-| rbatis_core::Uuid                    | √     |  
+| rbatis::Bytes                   | √     |  
+| rbatis::DateNative              | √     |  
+| rbatis::DateUtc                  | √     |  
+| rbatis::DateTimeNative          | √     |  
+| rbatis::DateTimeUtc             | √     |  
+| rbatis::Decimal                 | √     |  
+| rbatis::Json<T>                 | √     |  
+| rbatis::TimeNative              | √     |  
+| rbatis::TimeUtc                 | √     |  
+| rbatis::Timestamp               | √     |  
+| rbatis::TimestampZ              | √     |  
+| rbatis::Uuid                    | √     |  
 | rbatis::plugin::page::{Page<T>, PageRequest} | √     |
 | bson::Bson*                      | √     |
 | serde_json::*        | √     |
