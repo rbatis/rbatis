@@ -2,7 +2,7 @@ use std::collections::{BTreeMap, HashSet, LinkedList};
 use std::io::Read;
 
 use serde_json::map::Map;
-use serde_json::Value;
+use bson::Bson;
 
 //2020-11-15 00:31:25.803227700 +08:00 INFO rbatis::plugin::log
 pub const LOG_SPACE: &'static str =

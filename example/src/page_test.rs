@@ -1,5 +1,6 @@
 #[cfg(test)]
 mod test {
+    use bson::Bson;
     use crate::BizActivity;
     use rbatis::crud::{CRUDMut, CRUD};
     use rbatis::plugin::page::{Page, PageRequest};

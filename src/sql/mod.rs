@@ -1,4 +1,4 @@
-use serde_json::Value;
+use bson::Bson;
 
 pub mod limit;
 pub mod rule;

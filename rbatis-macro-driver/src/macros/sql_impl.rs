@@ -81,7 +81,7 @@ fn filter_args_context_id(
         }
         sql_args_gen = quote! {
              #sql_args_gen
-             rb_args.push(serde_json::json!(#item_ident));
+             rb_args.push(bson::to_bson(#item_ident).unwrap_or_default());
         };
     }
     sql_args_gen

@@ -1,5 +1,6 @@
 #[cfg(test)]
 mod test {
+    use bson::Bson;
     use crate::BizActivity;
     use rbatis::core::Error;
     use rbatis::crud::{CRUDMut, CRUD};
@@ -33,7 +34,7 @@ mod test {
             &self,
             rb: &Rbatis,
             sql: &mut String,
-            args: &mut Vec<Value>,
+            args: &mut Vec<Bson>,
             is_prepared_sql: bool,
         ) -> Result<(), rbatis::core::Error> {
             println!(">>>>>> hello this is my inercept!>>>>>>");

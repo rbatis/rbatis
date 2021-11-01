@@ -1,6 +1,6 @@
 use std::fmt::{Debug, Display, Formatter};
 
-use serde_json::Value;
+use bson::Bson;
 
 use crate::core::db::DriverType;
 use crate::core::Error;

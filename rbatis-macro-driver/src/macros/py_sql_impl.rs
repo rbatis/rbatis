@@ -58,7 +58,7 @@ pub(crate) fn impl_macro_py_sql(target_fn: &ItemFn, args: &AttributeArgs) -> Tok
     return quote! {
        pub async fn #func_name_ident(#func_args_stream) -> #return_ty {
          let mut sql = #sql_ident.to_string();
-         let mut rb_arg_map = serde_json::Map::new();
+         let mut rb_arg_map = bson::Document::new();
          #sql_args_gen
          #fn_body
          use rbatis::executor::{RbatisRef};
@@ -67,21 +67,21 @@ pub(crate) fn impl_macro_py_sql(target_fn: &ItemFn, args: &AttributeArgs) -> Tok
          match driver_type{
             rbatis::DriverType::Postgres => {
                 #[rb_py(#sql_ident,'$')]
-                pub fn #func_name_ident(arg: &serde_json::Value) {}
-                let (mut sql,rb_args) = #func_name_ident(&serde_json::Value::Object(rb_arg_map));
+                pub fn #func_name_ident(arg: &bson::Bson) {}
+                let (mut sql,rb_args) = #func_name_ident(&bson::Bson::Document(rb_arg_map));
                 #call_method
             }
             rbatis::DriverType::Mssql => {
                 #[rb_py(#sql_ident,'$')]
-                pub fn #func_name_ident(arg: &serde_json::Value) {}
-                let (mut sql,rb_args) = #func_name_ident(&serde_json::Value::Object(rb_arg_map));
+                pub fn #func_name_ident(arg: &bson::Bson) {}
+                let (mut sql,rb_args) = #func_name_ident(&bson::Bson::Document(rb_arg_map));
                 sql = sql.replace("$","@p");
                 #call_method
             }
             _=> {
                 #[rb_py(#sql_ident,'?')]
-                pub fn #func_name_ident(arg: &serde_json::Value) {}
-                let (mut sql,rb_args) = #func_name_ident(&serde_json::Value::Object(rb_arg_map));
+                pub fn #func_name_ident(arg: &bson::Bson) {}
+                let (mut sql,rb_args) = #func_name_ident(&bson::Bson::Document(rb_arg_map));
                 #call_method
             }
          }
@@ -169,7 +169,7 @@ pub(crate) fn impl_macro_html_sql(target_fn: &ItemFn, args: &AttributeArgs) -> T
     //gen rust code templete
     return quote! {
        pub async fn #func_name_ident(#func_args_stream) -> #return_ty {
-         let mut rb_arg_map = serde_json::Map::new();
+         let mut rb_arg_map = bson::Document::new();
          #sql_args_gen
          #fn_body
 
@@ -179,21 +179,21 @@ pub(crate) fn impl_macro_html_sql(target_fn: &ItemFn, args: &AttributeArgs) -> T
          match driver_type{
             rbatis::DriverType::Postgres => {
                 #[rb_html(#sql_ident,'$')]
-                pub fn #func_name_ident(arg: &serde_json::Value) {}
-                let (mut sql,rb_args) = #func_name_ident(&serde_json::Value::Object(rb_arg_map));
+                pub fn #func_name_ident(arg: &bson::Bson) {}
+                let (mut sql,rb_args) = #func_name_ident(&bson::Bson::Document(rb_arg_map));
                 #call_method
             }
             rbatis::DriverType::Mssql => {
                 #[rb_html(#sql_ident,'$')]
-                pub fn #func_name_ident(arg: &serde_json::Value) {}
-                let (mut sql,rb_args) = #func_name_ident(&serde_json::Value::Object(rb_arg_map));
+                pub fn #func_name_ident(arg: &bson::Bson) {}
+                let (mut sql,rb_args) = #func_name_ident(&bson::Bson::Document(rb_arg_map));
                 sql = sql.replace("$","@p");
                 #call_method
             }
             _=> {
                 #[rb_html(#sql_ident,'?')]
-                pub fn #func_name_ident(arg: &serde_json::Value) {}
-                let (mut sql,rb_args) = #func_name_ident(&serde_json::Value::Object(rb_arg_map));
+                pub fn #func_name_ident(arg: &bson::Bson) {}
+                let (mut sql,rb_args) = #func_name_ident(&bson::Bson::Document(rb_arg_map));
                 #call_method
             }
          }
@@ -215,7 +215,7 @@ fn filter_args_context_id(
         }
         sql_args_gen = quote! {
              #sql_args_gen
-             rb_arg_map.insert(#item_ident_name.to_string(),serde_json::json!(#item_ident));
+             rb_arg_map.insert(#item_ident_name.to_string(),bson::to_bson(#item_ident).unwrap_or_default());
         };
     }
     sql_args_gen
