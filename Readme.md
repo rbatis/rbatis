@@ -45,22 +45,16 @@
 ``` rust
 # add this library,and cargo install
 
-# json (required)
+# bson (required)
 serde = { version = "1", features = ["derive"] }
-serde_json = "1"
-
-# Date time (required)
-chrono = { version = "0.4", features = ["serde"] }
+bson = "2.0.1"
 
 # logging lib(required)
 log = "0.4"
 fast_log="1.3"
 
-# BigDecimal lib(optional)
-bigdecimal = "0.2"
-
 # rbatis lib(required)
-rbatis =  { version = "2.0" } 
+rbatis =  { version = "3.0" } 
 ```
 
 ##### Quick example: QueryWrapper and common usages (see example/crud_test.rs for details)
