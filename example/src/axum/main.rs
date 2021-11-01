@@ -1,6 +1,6 @@
 use std::net::SocketAddr;
+use std::sync::Arc;
 use rbatis::rbatis::Rbatis;
-use rbatis::core::runtime::sync::Arc;
 use axum::extract::Extension;
 use example::BizActivity;
 use rbatis::crud::CRUD;
