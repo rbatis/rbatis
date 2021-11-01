@@ -53,8 +53,10 @@ bson = "2.0.1"
 log = "0.4"
 fast_log="1.3"
 
-# rbatis lib(required)
+# rbatis (required) default is all-database+runtime-async-std-rustls
 rbatis =  { version = "3.0" } 
+# also if you use actix-web+mysql
+# rbatis = { version = "3.0", default-features = false, features = ["mysql","runtime-async-std-rustls"] }
 ```
 
 ##### Quick example: QueryWrapper and common usages (see example/crud_test.rs for details)
