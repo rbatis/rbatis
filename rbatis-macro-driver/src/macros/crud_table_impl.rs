@@ -50,13 +50,13 @@ pub(crate) fn impl_crud_driver(
             let ident_name_no = ident_name.trim_start_matches("r#").to_string();
             item = quote! {
                 #ident_name | #ident_name_no => {
-                return serde_json::json!(&self.#ident);
+                return bson::to_bson(&self.#ident).unwrap_or_default();
                 }
              };
         } else {
             item = quote! {
             #ident_name => {
-                return serde_json::json!(&self.#ident);
+                return bson::to_bson(&self.#ident).unwrap_or_default();
             }
           };
         }
@@ -69,7 +69,7 @@ pub(crate) fn impl_crud_driver(
     let get_matchs = quote! {
         return match column {
             #items
-            _ => { serde_json::Value::Null }
+            _ => { bson::Bson::Null }
         }
     };
 
@@ -102,7 +102,7 @@ pub(crate) fn impl_crud_driver(
     let gen = quote! {
         impl rbatis::crud::CRUDTable for #name {
 
-            fn get(&self, column: &str) -> serde_json::Value {
+            fn get(&self, column: &str) -> bson::Bson {
                 #get_matchs
             }
 

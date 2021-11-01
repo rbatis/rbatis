@@ -20,8 +20,10 @@ use crate::utils::string_util::to_snake_name;
 use crate::wrapper::Wrapper;
 use std::marker::PhantomData;
 use std::ops::{Deref, DerefMut};
-use serde_json::value::Value::Null;
+use bson::Bson::Null;
 use std::option::Option::Some;
+use bson::Bson;
+use rbatis_sql::ops::AsProxy;
 
 
 /// DataBase Table Model trait
@@ -81,14 +83,14 @@ pub trait CRUDTable: Send + Sync + Serialize {
         db_type: &DriverType,
         index: &mut usize,
         skips: &[Skip],
-    ) -> Result<(String, String, Vec<serde_json::Value>)> {
+    ) -> Result<(String, String, Vec<bson::Bson>)> {
         let mut value_sql = String::new();
         let mut arr = vec![];
         let cols = Self::table_columns();
         let columns: Vec<&str> = cols.split(",").collect();
         let map;
-        match serde_json::json!(self) {
-            serde_json::Value::Object(m) => {
+        match crate::as_bson!(self) {
+            bson::Bson::Document(m) => {
                 map = m;
             }
             _ => {
@@ -113,7 +115,7 @@ pub trait CRUDTable: Send + Sync + Serialize {
             if do_continue {
                 continue;
             }
-            let v = map.get(column).unwrap_or(&serde_json::Value::Null);
+            let v = map.get(column).unwrap_or(&bson::Bson::Null);
             for x in skips {
                 match x {
                     Skip::Value(skip_value) => {
@@ -156,13 +158,14 @@ pub trait CRUDTable: Send + Sync + Serialize {
 
     /// return table column value
     /// If a macro is used, the method is overridden by the macro
-    fn get(&self, column: &str) -> serde_json::Value {
-        let s = serde_json::json!(self);
-        let value = s.get(column);
-        match value {
-            None => { return serde_json::Value::Null; }
-            Some(v) => {
-                return v.clone();
+    fn get(&self, column: &str) -> bson::Bson {
+        let s = bson::to_bson(self).unwrap_or_default();
+        match s {
+            bson::Bson::Document(d)=>{
+                d.get(column).unwrap_or(&Bson::Null).clone()
+            }
+            _ => {
+                Bson::Null
             }
         }
     }
@@ -175,12 +178,12 @@ pub fn decode_table_columns<T>() -> String where T: DeserializeOwned + Serialize
         //if json decode fail,return '*'
         return " * ".to_string();
     }
-    let v = json!(&bean.unwrap());
+    let v = crate::as_bson!(&bean.unwrap());
     if !v.is_object() {
         //if json decode fail,return '*'
         return " * ".to_string();
     }
-    let m = v.as_object().unwrap();
+    let m = v.as_document().unwrap();
     let mut fields = String::new();
     for (k, _) in m {
         fields.push_str(k);
@@ -232,7 +235,7 @@ impl<T> CRUDTable for Option<T>
         db_type: &DriverType,
         index: &mut usize,
         skips: &[Skip],
-    ) -> Result<(String, String, Vec<serde_json::Value>)> {
+    ) -> Result<(String, String, Vec<bson::Bson>)> {
         if self.is_none() {
             return Err(crate::core::Error::from(
                 "[rbatis] can not make_sql_arg() for None value!",
@@ -254,7 +257,7 @@ impl<Table> Fields for Vec<Table> where Table: CRUDTable {
             let v = x.get(column);
             results.push(v);
         }
-        let d = serde_json::from_value(serde_json::Value::Array(results));
+        let d = bson::from_bson(bson::Bson::Array(results));
         match d {
             Ok(v) => {
                 return v;
@@ -378,7 +381,7 @@ pub trait CRUD {
     async fn fetch_page<T>(
         &self,
         sql: &str,
-        args: Vec<serde_json::Value>,
+        args: Vec<bson::Bson>,
         page_request: &dyn IPageRequest,
     ) -> Result<Page<T>>
         where
@@ -584,7 +587,7 @@ pub trait CRUDMut: ExecutorMut {
             );
         }
         return Ok(self
-            .exec(&sql, vec![json!(value)])
+            .exec(&sql, vec![crate::as_bson!(value)])
             .await?
             .rows_affected);
     }
@@ -610,7 +613,7 @@ pub trait CRUDMut: ExecutorMut {
     }
 
     /// update_by_wrapper
-    /// skips: use &[Skip::Value(&serde_json::Value::Null), Skip::Column("id"), Skip::Column(column)] will skip id column and null value param
+    /// skips: use &[Skip::Value(&bson::Bson::Null), Skip::Column("id"), Skip::Column(column)] will skip id column and null value param
     async fn update_by_wrapper<T>(
         &mut self,
         table: &T,
@@ -622,20 +625,20 @@ pub trait CRUDMut: ExecutorMut {
     {
         let table_name = choose_dyn_table_name::<T>(&w);
         let mut args = vec![];
-        let mut old_version = serde_json::Value::Null;
+        let mut old_version = bson::Bson::Null;
         let driver_type = &self.driver_type()?;
         let columns = T::table_columns();
         let columns_vec: Vec<&str> = columns.split(",").collect();
         let map;
-        match serde_json::json!(table) {
-            serde_json::Value::Object(m) => {
+        match crate::as_bson!(table) {
+            bson::Bson::Document(m) => {
                 map = m;
             }
             _ => {
                 return Err(Error::from("[rbatis] arg not an json object!"));
             }
         }
-        let null = serde_json::Value::Null;
+        let null = bson::Bson::Null;
         let mut sets = String::new();
         for column in columns_vec {
             //filter
@@ -729,7 +732,7 @@ pub trait CRUDMut: ExecutorMut {
             table, rb
                 .new_wrapper_table::<T>()
                 .eq(column, value),
-            &[Skip::Value(Value::Null), Skip::Column("id"), Skip::Column(column)],
+            &[Skip::Value(Bson::Null), Skip::Column("id"), Skip::Column(column)],
         )
             .await
     }
@@ -830,7 +833,7 @@ pub trait CRUDMut: ExecutorMut {
     async fn fetch_page<T>(
         &mut self,
         sql: &str,
-        args: Vec<serde_json::Value>,
+        args: Vec<bson::Bson>,
         page_request: &dyn IPageRequest,
     ) -> Result<Page<T>>
         where
@@ -941,7 +944,7 @@ impl CRUD for Rbatis {
     }
 
     /// update_by_wrapper
-    /// skips: use &[Skip::Value(&serde_json::Value::Null), Skip::Column("id"), Skip::Column(column)] will skip id column and null value param
+    /// skips: use &[Skip::Value(&bson::Bson::Null), Skip::Column("id"), Skip::Column(column)] will skip id column and null value param
     async fn update_by_wrapper<T>(&self, table: &T, w: Wrapper, skips: &[Skip]) -> Result<u64> where
         T: CRUDTable {
         let mut conn = self.acquire().await?;
@@ -1015,7 +1018,7 @@ impl CRUD for Rbatis {
     async fn fetch_page<T>(
         &self,
         sql: &str,
-        args: Vec<serde_json::Value>,
+        args: Vec<bson::Bson>,
         page_request: &dyn IPageRequest,
     ) -> Result<Page<T>>
         where
@@ -1032,13 +1035,13 @@ pub enum Skip<'a> {
     ///skip column
     Column(&'a str),
     ///skip serde json value ref
-    Value(serde_json::Value),
+    Value(bson::Bson),
 }
 
 impl<'a> Skip<'a> {
     /// from serialize value
     pub fn value<T>(arg: T) -> Self where T: Serialize {
-        Self::Value(serde_json::json!(arg))
+        Self::Value(crate::as_bson!(&arg))
     }
 }
 
@@ -1106,7 +1109,7 @@ impl<T, P> CRUDTable for DynTableColumn<T, P> where T: CRUDTable, P: TableColumn
         db_type: &DriverType,
         index: &mut usize,
         skips: &[Skip],
-    ) -> Result<(String, String, Vec<serde_json::Value>)> {
+    ) -> Result<(String, String, Vec<bson::Bson>)> {
         T::make_value_sql_arg(self, db_type, index, skips)
     }
 
@@ -1122,7 +1125,7 @@ impl<T, P> CRUDTable for DynTableColumn<T, P> where T: CRUDTable, P: TableColumn
 
     /// return table column value
     /// If a macro is used, the method is overridden by the macro
-    fn get(&self, column: &str) -> serde_json::Value {
+    fn get(&self, column: &str) -> bson::Bson {
         T::get(self, column)
     }
 }

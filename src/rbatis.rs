@@ -38,7 +38,7 @@ pub struct Rbatis {
     // logic delete plugin
     pub logic_plugin: Option<Box<dyn LogicDelete>>,
     // sql param binder
-    pub encoder: fn(q: &mut DBQuery, arg: serde_json::Value) -> crate::Result<()>,
+    pub encoder: fn(q: &mut DBQuery, arg: bson::Bson) -> crate::Result<()>,
 }
 
 impl Debug for Rbatis {
@@ -128,18 +128,18 @@ impl Rbatis {
 
     /// link pool
     pub async fn link(&self, driver_url: &str) -> Result<(), Error> {
-        return Ok(self.link_opt(driver_url, &DBPoolOptions::default()).await?);
+        return Ok(self.link_opt(driver_url, DBPoolOptions::default()).await?);
     }
 
     /// link pool by DBPoolOptions
     /// for example:
     ///          let mut opt = PoolOptions::new();
     ///          opt.max_size = 20;
-    ///          rb.link_opt("mysql://root:123456@localhost:3306/test", &opt).await.unwrap();
+    ///          rb.link_opt("mysql://root:123456@localhost:3306/test", opt).await.unwrap();
     pub async fn link_opt(
         &self,
         driver_url: &str,
-        pool_options: &DBPoolOptions,
+        pool_options: DBPoolOptions,
     ) -> Result<(), Error> {
         if driver_url.is_empty() {
             return Err(Error::from("[rbatis] link url is empty!"));
@@ -156,7 +156,7 @@ impl Rbatis {
     pub async fn link_cfg(
         &self,
         connect_option: &DBConnectOption,
-        pool_options: &DBPoolOptions,
+        pool_options: DBPoolOptions,
     ) -> Result<(), Error> {
         let pool = DBPool::new_opt(connect_option, pool_options).await?;
         self.pool.set(pool);
@@ -195,7 +195,7 @@ impl Rbatis {
     /// get driver type
     pub fn driver_type(&self) -> Result<DriverType, Error> {
         let pool = self.get_pool()?;
-        Ok(pool.driver_type)
+        Ok(pool.driver_type())
     }
 
     /// get an DataBase Connection used for the next step

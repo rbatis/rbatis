@@ -147,3 +147,11 @@ macro_rules! make_column_fn {
                }
         }
 }
+
+#[allow(unused_macros)]
+#[macro_export]
+macro_rules! as_bson {
+    ($key:expr) => {
+        bson::to_bson($key).unwrap_or_default()
+    }
+}
