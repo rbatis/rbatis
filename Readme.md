@@ -421,7 +421,8 @@ async fn main() -> std::io::Result<()> {
 | rbatis_core::Timestamp               | √     |  
 | rbatis_core::TimestampZ              | √     |  
 | rbatis_core::Uuid                    | √     |  
-| serde_json::Value        | √     |
+| bson::Bson*                      | √     |
+| serde_json::*        | √     |
 | any serde type         | √     |
 
 ### Supported database √supported .WIP
