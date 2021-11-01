@@ -2,6 +2,7 @@
 mod test {
     use crate::BizActivity;
     use chrono::NaiveDateTime;
+    use rbatis::core::types::DateTimeNative;
     use rbatis::core::value::DateTimeNow;
     use rbatis::crud::{CRUDMut, CRUD};
     use rbatis::plugin::logic_delete::RbatisLogicDeletePlugin;
@@ -35,7 +36,7 @@ mod test {
                 sort: Some("1".to_string()),
                 status: Some(1),
                 remark: None,
-                create_time: Some(NaiveDateTime::now()),
+                create_time: Some(DateTimeNative::now()),
                 version: Some(0),
                 delete_flag: Some(1),
             },

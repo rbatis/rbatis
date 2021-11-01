@@ -7,6 +7,7 @@ mod test {
     use rbatis::rbatis::Rbatis;
     use std::str::FromStr;
     use uuid::Uuid;
+    use rbatis::core::types::DateTimeNative;
     use rbatis::executor::Executor;
 
     //'formats_pg' use postgres format
@@ -93,7 +94,7 @@ mod test {
             sort: Some("1".to_string()),
             status: Some(1),
             remark: None,
-            create_time: Some(NaiveDateTime::now()),
+            create_time: Some(DateTimeNative::now()),
             version: Some(1),
             delete_flag: Some(1),
         };

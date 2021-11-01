@@ -12,6 +12,7 @@ mod test {
     use rbatis::plugin::snowflake::new_snowflake_id;
     use rbatis::rbatis::Rbatis;
     use serde_json::Value;
+    use rbatis::core::types::DateTimeNative;
     use rbatis::crud::CRUDTable;
     // use rbatis::core::types::byte::RbBytes;
     // use rbatis::core::types::json::RbJson;
@@ -31,7 +32,7 @@ mod test {
         pub sort: Option<String>,
         pub status: Option<i32>,
         pub remark: Option<String>,
-        pub create_time: Option<NaiveDateTime>,
+        pub create_time: Option<DateTimeNative>,
         pub version: Option<i64>,
         pub delete_flag: Option<i32>,
 
@@ -100,7 +101,7 @@ mod test {
             sort: Some("1".to_string()),
             status: Some(1),
             remark: None,
-            create_time: Some(NaiveDateTime::now()),
+            create_time: Some(DateTimeNative::now()),
             version: Some(1),
             delete_flag: Some(1),
         };
@@ -125,7 +126,7 @@ mod test {
             sort: Some("1".to_string()),
             status: Some(1),
             remark: None,
-            create_time: Some(NaiveDateTime::now()),
+            create_time: Some(DateTimeNative::now()),
             version: Some(1),
             delete_flag: Some(1),
         };
@@ -153,7 +154,7 @@ mod test {
             sort: Some("1".to_string()),
             status: Some(1),
             remark: None,
-            create_time: Some(NaiveDateTime::now()),
+            create_time: Some(DateTimeNative::now()),
             version: Some(1),
             delete_flag: Some(1),
         };
@@ -248,7 +249,7 @@ mod test {
             sort: None,
             status: Some(1),
             remark: None,
-            create_time: Some(NaiveDateTime::now()),
+            create_time: Some(DateTimeNative::now()),
             version: Some(1),
             delete_flag: Some(1),
         };
@@ -270,7 +271,7 @@ mod test {
         let mut activity = rbatis::make_table!(BizActivity {
             id: "12312".to_string(),
             status: 1,
-            create_time: NaiveDateTime::now(),
+            create_time: DateTimeNative::now(),
             version: 1,
             delete_flag: 1,
         });
@@ -285,7 +286,7 @@ mod test {
         //     sort: None,
         //     status: Some(1),
         //     remark: None,
-        //     create_time: Some(NaiveDateTime::now()),
+        //     create_time: Some(DateTimeNative::now()),
         //     version: Some(BigDecimal::from(1)),
         //     delete_flag: Some(1),
         // };
