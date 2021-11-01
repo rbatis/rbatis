@@ -138,7 +138,7 @@ async fn main() {
     id: Some("12312".to_string()),
     name: None,
     remark: None,
-    create_time: Some(NaiveDateTime::now()),
+    create_time: Some(DateTimeNative::now()),
     version: Some(1),
     delete_flag: Some(1),
   };
@@ -407,12 +407,22 @@ async fn main() -> std::io::Result<()> {
 | ------ | ------ |
 | Option                   | √     | 
 | Vec                      | √     |  
-| HashMap                      | √     |  
-| Slice                    | √     |   
+| HashMap                      | √     |
 | i32,i64,f32,f64,bool,String...more rust type   | √     |  
-| NativeDateTime           | √     |  
-| BigDecimal               | √     |
-| serde_json::Value...more serde type         | √     |
+| rbatis_core::Bytes                   | √     |  
+| rbatis_core::DateNative              | √     |  
+| rbatis_core::DateUtc                  | √     |  
+| rbatis_core::DateTimeNative          | √     |  
+| rbatis_core::DateTimeUtc             | √     |  
+| rbatis_core::Decimal                 | √     |  
+| rbatis_core::Json<T>                 | √     |  
+| rbatis_core::TimeNative              | √     |  
+| rbatis_core::TimeUtc                 | √     |  
+| rbatis_core::Timestamp               | √     |  
+| rbatis_core::TimestampZ              | √     |  
+| rbatis_core::Uuid                    | √     |  
+| serde_json::Value        | √     |
+| any serde type         | √     |
 
 ### Supported database √supported .WIP
 
