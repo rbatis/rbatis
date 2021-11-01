@@ -2,11 +2,11 @@
 #[macro_use]
 extern crate rbatis;
 
+use std::sync::Arc;
 use actix_web::{web, App, HttpResponse, HttpServer, Responder};
 use chrono::NaiveDateTime;
 use rbatis::crud::{CRUD};
 use rbatis::rbatis::Rbatis;
-use rbatis::core::runtime::sync::Arc;
 
 #[crud_table]
 #[derive(Clone, Debug)]

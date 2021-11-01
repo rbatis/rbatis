@@ -18,7 +18,7 @@ repository = "https://github.com/rbatis/rbatis"
 homepage = "https://rbatis.github.io/rbatis.io/#/en/"
 
 [features]
-default = ["default_mode", "all-database","runtime-tokio-rustls"]
+default = ["default_mode", "all-database","runtime-async-std-rustls"]
 #debug_mode feature will show decode json data
 debug_mode = ["rbatis-core/debug_mode", "rbatis-macro-driver/debug_mode", "rbatis_sql/debug_mode"]
 default_mode = ["rbatis-core", "rbatis-macro-driver", "rbatis_sql"]
@@ -33,6 +33,11 @@ mssql = ["default_mode", "rbatis-core/mssql"]
 
 #choose runtime
 runtime-tokio-rustls = ["rbatis-core/runtime-tokio-rustls"]
+runtime-actix-rustls = ["rbatis-core/runtime-actix-rustls"]
+runtime-async-std-rustls = ["rbatis-core/runtime-async-std-rustls"]
+runtime-tokio-native-tls = ["rbatis-core/runtime-tokio-native-tls"]
+runtime-actix-native-tls = ["rbatis-core/runtime-actix-native-tls"]
+runtime-async-std-native-tls = ["rbatis-core/runtime-async-std-native-tls"]
 
 [dependencies]
 rbatis-core = { version="3.0.0", git = "https://github.com/rbatis/rbatis-core.git", branch = "main", default-features = false, optional = true }
