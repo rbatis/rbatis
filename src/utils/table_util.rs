@@ -155,7 +155,8 @@ macro_rules! as_bson {
     }
 }
 
-/// Used to simulate enumerations to improve code maintainability
+/// Used to simulate enumerations to improve code maintainability.
+/// this is return &str data
 /// for example:
 /// rb.new_wrapper().eq(column_name!(BizActivity::id),"1")
 ///
