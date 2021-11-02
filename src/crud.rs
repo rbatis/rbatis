@@ -94,7 +94,7 @@ pub trait CRUDTable: Send + Sync + Serialize {
                 map = m;
             }
             _ => {
-                return Err(Error::from("[rbatis] arg not an json object!"));
+                return Err(Error::from("[rbatis] arg not an struct or map!"));
             }
         }
         let mut column_sql = String::new();
@@ -635,7 +635,7 @@ pub trait CRUDMut: ExecutorMut {
                 map = m;
             }
             _ => {
-                return Err(Error::from("[rbatis] arg not an json object!"));
+                return Err(Error::from("[rbatis] arg not an struct or map!"));
             }
         }
         let null = bson::Bson::Null;
