@@ -54,23 +54,4 @@ mod test {
                   if name != '':
                     and name=#{name}")]
     async fn py_sql_tx(rb: &Rbatis, tx_id: &String, name: &str) -> Vec<BizActivity> { todo!() }
-
-
-    ///load from file
-    fn load_file_str(file_name: &str, method: &str) -> String {
-        //load all string
-        let mut f = File::open(file_name).unwrap();
-        let mut s = String::new();
-        f.read_to_string(&mut s);
-
-        //find method
-        let methods: Vec<&str> = s.split("--fn:").collect();
-        for x in methods {
-            if x.starts_with(method) {
-                let data = x.trim_start_matches(method).to_string();
-                return data;
-            }
-        }
-        panic!("not find method:'{}' in file:'{}'", method, file_name)
-    }
 }
