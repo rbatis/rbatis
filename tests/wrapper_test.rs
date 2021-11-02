@@ -1,6 +1,6 @@
 #[cfg(test)]
 mod test {
-    use std::collections::HashMap;
+    use std::collections::{BTreeMap, HashMap};
     use rbatis::core::db::DriverType;
     use rbatis::wrapper::Wrapper;
     use serde_json::json;
@@ -10,9 +10,9 @@ mod test {
     fn test_item() {
         let w = Wrapper::new(&DriverType::Postgres).having("id");
         assert_eq!(w.sql, "having id");
-        let mut m =HashMap::new();
-        m.insert("name",1);
+        let mut m = BTreeMap::new();
         m.insert("id",2);
+        m.insert("name",1);
         let w = Wrapper::new(&DriverType::Postgres).all_eq(m);
         assert_eq!(w.sql, "(id = $1 and name = $2)");
         let w = Wrapper::new(&DriverType::Postgres).eq("id",1);
@@ -20,9 +20,9 @@ mod test {
         let w = Wrapper::new(&DriverType::Postgres).ne("id",1);
         assert_eq!(w.sql, "id <> $1");
         let w = Wrapper::new(&DriverType::Postgres).order_by(true,&["id"]);
-        assert_eq!(w.sql, "order by id asc");
+        assert_eq!(w.sql, " order by id asc ");
         let w = Wrapper::new(&DriverType::Postgres).group_by(&["id"]);
-        assert_eq!(w.sql, "group by id");
+        assert_eq!(w.sql, " group by id ");
         let w = Wrapper::new(&DriverType::Postgres).gt("id",1);
         assert_eq!(w.sql, "id > $1");
         let w = Wrapper::new(&DriverType::Postgres).ge("id",1);
@@ -59,9 +59,9 @@ mod test {
 
     #[test]
     fn test_all() {
-        let mut m =HashMap::new();
-        m.insert("name",1);
+        let mut m = BTreeMap::new();
         m.insert("id",2);
+        m.insert("name",1);
 
         let mut w =Wrapper::new(&DriverType::Postgres);
         w = w.having("id");
@@ -85,6 +85,6 @@ mod test {
         w = w.order_by(true,&["id"]);
         w = w.group_by(&["id"]);
         w = w.limit(1);
-        assert_eq!(w.sql,"having id and (id = $1 and name = $2) and id = $3 and id <> $4 and id > $5 and id >= $6 and id < $7 and id <= $8 and id between $9 and $10 and id not between $11 and $12 and id like $13 and id like $14 and id like $15 and id not like $16 and id is NULL and id is not NULL and id in ( $17 ) and id not in ( $18 )order by id ascgroup by id limit 1 ");
+        assert_eq!(w.sql,"having id and (id = $1 and name = $2) and id = $3 and id <> $4 and id > $5 and id >= $6 and id < $7 and id <= $8 and id between $9 and $10 and id not between $11 and $12 and id like $13 and id like $14 and id like $15 and id not like $16 and id is NULL and id is not NULL and id in ( $17 ) and id not in ( $18 ) order by id asc group by id  limit 1 ");
     }
 }

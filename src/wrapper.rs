@@ -371,7 +371,7 @@ impl Wrapper {
             .trim_end_matches(crate::sql::TEMPLATE.and.left_space)
             .trim_end_matches(crate::sql::TEMPLATE.or.left_space)
             .to_string();
-        self.sql.push_str(&crate::sql::TEMPLATE.order_by.right_space);
+        self.sql.push_str(&crate::sql::TEMPLATE.order_by.left_right_space);
         for x in columns {
             if is_asc {
                 push_sql!(self.sql,x," ",crate::sql::TEMPLATE.asc.value,);
@@ -383,6 +383,7 @@ impl Wrapper {
                 index += 1;
             }
         }
+        self.sql.push_str(" ");
         self
     }
 
@@ -400,7 +401,7 @@ impl Wrapper {
             .trim_end_matches(crate::sql::TEMPLATE.or.left_space)
             .to_string();
         self.sql
-            .push_str(&crate::sql::TEMPLATE.group_by.right_space);
+            .push_str(&crate::sql::TEMPLATE.group_by.left_right_space);
         for x in columns {
             self.sql.push_str(x);
             if (index + 1) != len {
@@ -408,6 +409,7 @@ impl Wrapper {
                 index += 1;
             }
         }
+        self.sql.push_str(" ");
         self
     }
 
