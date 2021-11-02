@@ -1,3 +1,4 @@
+use std::fmt::{Debug, Formatter};
 use std::ops::{Deref, DerefMut};
 
 use async_trait::async_trait;
@@ -5,7 +6,7 @@ use bson::Bson;
 use futures::Future;
 use rbatis_core::db::DBExecResult;
 use serde::de::DeserializeOwned;
-use serde::Serialize;
+use serde::{Serialize, Serializer};
 
 use crate::core::db::{DBPool, DBPoolConn, DBQuery, DBTx};
 use crate::core::Error;
@@ -16,6 +17,121 @@ use crate::rbatis::Rbatis;
 use crate::utils::string_util;
 use futures::executor::block_on;
 
+
+/// must be only one have Some(Value)
+/// (&rb).into()
+/// &mut tx.as_executor()
+/// &mut conn.as_executor()
+/// &mut guard.as_executor()
+/// (&mut tx).into()
+/// (&mut conn).into()
+/// (&mut guard).into()
+#[derive(Debug)]
+pub enum RbatisExecutor<'r, 'inner> where 'inner: 'r {
+    RB(&'r Rbatis),
+    Conn(&'r mut RBatisConnExecutor<'inner>),
+    TX(&'r mut RBatisTxExecutor<'inner>),
+    TxGuard(&'r mut RBatisTxExecutorGuard<'inner>),
+}
+
+
+impl RbatisExecutor<'_, '_> {
+    pub async fn fetch_page<T>(&mut self, sql: &str, args: Vec<Bson>, page_request: &dyn IPageRequest) -> crate::Result<Page<T>>
+        where
+            T: DeserializeOwned + Serialize + Send + Sync {
+        match self {
+            RbatisExecutor::RB(rb) => {
+                return rb.fetch_page(sql, args, page_request).await;
+            }
+            RbatisExecutor::Conn(rb) => {
+                return rb.fetch_page(sql, args, page_request).await;
+            }
+            RbatisExecutor::TX(rb) => {
+                return rb.fetch_page(sql, args, page_request).await;
+            }
+            RbatisExecutor::TxGuard(rb) => {
+                return rb.fetch_page(sql, args, page_request).await;
+            }
+        }
+    }
+
+    pub async fn exec(&mut self, sql: &str, args: Vec<Bson>) -> Result<DBExecResult, Error> {
+        match self {
+            RbatisExecutor::RB(rb) => {
+                return rb.exec(sql, args).await;
+            }
+            RbatisExecutor::Conn(rb) => {
+                return rb.exec(sql, args).await;
+            }
+            RbatisExecutor::TX(rb) => {
+                return rb.exec(sql, args).await;
+            }
+            RbatisExecutor::TxGuard(rb) => {
+                return rb.exec(sql, args).await;
+            }
+        }
+    }
+
+    pub async fn fetch<T>(&mut self, sql: &str, args: Vec<Bson>) -> Result<T, Error> where T: DeserializeOwned {
+        match self {
+            RbatisExecutor::RB(rb) => {
+                return rb.fetch(sql, args).await;
+            }
+            RbatisExecutor::Conn(rb) => {
+                return rb.fetch(sql, args).await;
+            }
+            RbatisExecutor::TX(rb) => {
+                return rb.fetch(sql, args).await;
+            }
+            RbatisExecutor::TxGuard(rb) => {
+                return rb.fetch(sql, args).await;
+            }
+        }
+    }
+}
+
+impl<'r, 'inner> RbatisRef for RbatisExecutor<'r, 'inner> {
+    fn get_rbatis(&self) -> &Rbatis {
+        match self {
+            RbatisExecutor::RB(rb) => {
+                rb
+            }
+            RbatisExecutor::Conn(rb) => {
+                rb.get_rbatis()
+            }
+            RbatisExecutor::TX(rb) => {
+                rb.get_rbatis()
+            }
+            RbatisExecutor::TxGuard(rb) => {
+                rb.get_rbatis()
+            }
+        }
+    }
+}
+
+impl<'r, 'inner> From<&'r Rbatis> for RbatisExecutor<'r, 'inner> {
+    fn from(arg: &'r Rbatis) -> Self {
+        Self::RB(arg)
+    }
+}
+
+impl<'r, 'inner> From<&'r mut RBatisConnExecutor<'inner>> for RbatisExecutor<'r, 'inner> {
+    fn from(arg: &'r mut RBatisConnExecutor<'inner>) -> Self {
+        Self::Conn(arg)
+    }
+}
+
+impl<'r, 'inner> From<&'r mut RBatisTxExecutor<'inner>> for RbatisExecutor<'r, 'inner> {
+    fn from(arg: &'r mut RBatisTxExecutor<'inner>) -> Self {
+        Self::TX(arg)
+    }
+}
+
+impl<'r, 'inner> From<&'r mut RBatisTxExecutorGuard<'inner>> for RbatisExecutor<'r, 'inner> {
+    fn from(arg: &'r mut RBatisTxExecutorGuard<'inner>) -> Self {
+        Self::TxGuard(arg)
+    }
+}
 
 #[async_trait]
 pub trait RbatisRef {
@@ -60,12 +176,7 @@ pub struct RBatisConnExecutor<'a> {
 
 impl<'b> RBatisConnExecutor<'b> {
     pub fn as_executor<'a>(&'a mut self) -> RbatisExecutor<'a, 'b> {
-        RbatisExecutor {
-            rb: None,
-            guard: None,
-            conn: Some(self),
-            tx: None,
-        }
+        RbatisExecutor::Conn(self)
     }
 }
 
@@ -326,10 +437,17 @@ impl<'a> DerefMut for RBatisTxExecutor<'a> {
     }
 }
 
-
 pub struct RBatisTxExecutorGuard<'a> {
     pub tx: Option<RBatisTxExecutor<'a>>,
     pub callback: Box<dyn FnMut(RBatisTxExecutor<'a>) + Send + 'a>,
+}
+
+impl Debug for RBatisTxExecutorGuard<'_> {
+    fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
+        f.debug_struct("RBatisTxExecutorGuard")
+            .field("tx", &self.tx)
+            .finish()
+    }
 }
 
 impl<'a, 'b> RBatisTxExecutorGuard<'b> {
@@ -448,124 +566,5 @@ impl Executor for Rbatis {
 
     async fn fetch<T>(&self, sql: &str, args: Vec<Bson>) -> Result<T, Error> where T: DeserializeOwned {
         self.acquire().await?.fetch(sql, args).await
-    }
-}
-
-
-/// must be only one have Some(Value)
-/// (&rb).into()
-/// &mut tx.as_executor()
-/// &mut conn.as_executor()
-/// &mut guard.as_executor()
-/// (&mut tx).into()
-/// (&mut conn).into()
-/// (&mut guard).into()
-pub struct RbatisExecutor<'r, 'inner> {
-    pub rb: Option<&'r Rbatis>,
-    pub conn: Option<&'r mut RBatisConnExecutor<'inner>>,
-    pub tx: Option<&'r mut RBatisTxExecutor<'inner>>,
-    pub guard: Option<&'r mut RBatisTxExecutorGuard<'inner>>,
-}
-
-impl RbatisExecutor<'_, '_> {
-    pub async fn fetch_page<T>(&mut self, sql: &str, args: Vec<Bson>, page_request: &dyn IPageRequest) -> crate::Result<Page<T>>
-        where
-            T: DeserializeOwned + Serialize + Send + Sync {
-        if self.rb.is_some() {
-            return self.rb.as_ref().unwrap().fetch_page(sql, args, page_request).await;
-        } else if self.conn.is_some() {
-            return self.conn.as_deref_mut().unwrap().fetch_page(sql, args, page_request).await;
-        } else if self.tx.is_some() {
-            return self.tx.as_deref_mut().unwrap().fetch_page(sql, args, page_request).await;
-        } else if self.guard.is_some() {
-            return self.guard.as_ref().unwrap().fetch_page(sql, args, page_request).await;
-        }
-        return Err(Error::from("[rbatis] executor must have an value!"));
-    }
-
-    pub async fn exec(&mut self, sql: &str, args: Vec<Bson>) -> Result<DBExecResult, Error> {
-        if self.rb.is_some() {
-            return self.rb.as_ref().unwrap().exec(sql, args).await;
-        } else if self.conn.is_some() {
-            return self.conn.as_deref_mut().unwrap().exec(sql, args).await;
-        } else if self.tx.is_some() {
-            return self.tx.as_deref_mut().unwrap().exec(sql, args).await;
-        } else if self.guard.is_some() {
-            return self.guard.as_deref_mut().unwrap().exec(sql, args).await;
-        }
-        return Err(Error::from("[rbatis] executor must have an value!"));
-    }
-
-    pub async fn fetch<T>(&mut self, sql: &str, args: Vec<Bson>) -> Result<T, Error> where T: DeserializeOwned {
-        if self.rb.is_some() {
-            return self.rb.as_ref().unwrap().fetch(sql, args).await;
-        } else if self.conn.is_some() {
-            return self.conn.as_deref_mut().unwrap().fetch(sql, args).await;
-        } else if self.tx.is_some() {
-            return self.tx.as_deref_mut().unwrap().fetch(sql, args).await;
-        } else if self.guard.is_some() {
-            return self.guard.as_deref_mut().unwrap().fetch(sql, args).await;
-        }
-        return Err(Error::from("[rbatis] executor must have an value!"));
-    }
-}
-
-impl<'r, 'inner> RbatisRef for RbatisExecutor<'r, 'inner> {
-    fn get_rbatis(&self) -> &Rbatis {
-        if self.rb.is_some() {
-            return self.rb.as_ref().unwrap();
-        } else if self.tx.is_some() {
-            return self.tx.as_ref().unwrap().get_rbatis();
-        } else if self.conn.is_some() {
-            return self.conn.as_ref().unwrap().get_rbatis();
-        } else if self.guard.is_some() {
-            return self.guard.as_ref().unwrap().get_rbatis();
-        } else {
-            panic!("[rbatis] executor must have one Some value!");
-        }
-    }
-}
-
-impl<'r, 'inner> From<&'r Rbatis> for RbatisExecutor<'r, 'inner> {
-    fn from(arg: &'r Rbatis) -> Self {
-        Self {
-            rb: Some(arg),
-            conn: None,
-            tx: None,
-            guard: None,
-        }
-    }
-}
-
-impl<'r, 'inner> From<&'r mut RBatisConnExecutor<'inner>> for RbatisExecutor<'r, 'inner> {
-    fn from(arg: &'r mut RBatisConnExecutor<'inner>) -> Self {
-        Self {
-            rb: None,
-            conn: Some(arg),
-            tx: None,
-            guard: None,
-        }
-    }
-}
-
-impl<'r, 'inner> From<&'r mut RBatisTxExecutor<'inner>> for RbatisExecutor<'r, 'inner> {
-    fn from(arg: &'r mut RBatisTxExecutor<'inner>) -> Self {
-        Self {
-            rb: None,
-            conn: None,
-            tx: Some(arg),
-            guard: None,
-        }
-    }
-}
-
-impl<'r, 'inner> From<&'r mut RBatisTxExecutorGuard<'inner>> for RbatisExecutor<'r, 'inner> {
-    fn from(arg: &'r mut RBatisTxExecutorGuard<'inner>) -> Self {
-        Self {
-            rb: None,
-            conn: None,
-            tx: None,
-            guard: Some(arg),
-        }
     }
 }
