@@ -3,13 +3,14 @@ use std::sync::Arc;
 
 use chrono::Utc;
 
-#[derive(Debug)]
+///Snowflakes algorithm
+#[derive(Debug, serde::Serialize, serde::Deserialize)]
 pub struct Snowflake {
-    epoch: i64,
-    worker_id: i64,
-    datacenter_id: i64,
-    sequence: AtomicI64,
-    time: AtomicI64,
+    pub epoch: i64,
+    pub worker_id: i64,
+    pub datacenter_id: i64,
+    pub sequence: AtomicI64,
+    pub time: AtomicI64,
 }
 
 
@@ -48,17 +49,17 @@ impl Snowflake {
         }
     }
 
-    pub fn epoch(&mut self, epoch: i64) -> &mut Self {
+    pub fn set_epoch(&mut self, epoch: i64) -> &mut Self {
         self.epoch = epoch;
         self
     }
 
-    pub fn worker_id(&mut self, worker_id: i64) -> &mut Self {
+    pub fn set_worker_id(&mut self, worker_id: i64) -> &mut Self {
         self.worker_id = worker_id;
         self
     }
 
-    pub fn datacenter_id(&mut self, datacenter_id: i64) -> &mut Self {
+    pub fn set_datacenter_id(&mut self, datacenter_id: i64) -> &mut Self {
         self.datacenter_id = datacenter_id;
         self
     }
@@ -92,7 +93,17 @@ lazy_static! {
     pub static ref SNOWFLAKE: Snowflake = Snowflake::default();
 }
 
-///if lock fail,will return 0
+///gen new snowflake_id
 pub fn new_snowflake_id() -> i64 {
     SNOWFLAKE.generate()
+}
+
+#[cfg(test)]
+mod test {
+    use crate::snowflake::new_snowflake_id;
+
+    #[test]
+    fn test_gen() {
+        println!("{}", new_snowflake_id());
+    }
 }
