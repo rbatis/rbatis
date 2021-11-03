@@ -70,4 +70,10 @@ mod test {
         println!("{:#?}", names);
         assert_eq!(names.len(), table_vec.len());
     }
+
+    #[test]
+    fn test_field_name() {
+        let column = field_name!(BizActivity.name);
+        assert_eq!(column, "name");
+    }
 }
