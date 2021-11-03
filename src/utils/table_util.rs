@@ -117,36 +117,6 @@ macro_rules! make_table_field_map_btree {
     }};
 }
 
-
-/**
- this macro allow gen column fn
-  #[crud_table]
-  #[derive(Clone, Debug)]
-  make_column_fn!(
-    pub struct BizActivity {
-       pub id: Option<String>
-   }
- );
-println!("{}",BizActivity::id());
- **/
-#[allow(unused_macros)]
-#[macro_export]
-macro_rules! make_column_fn {
-    (pub struct $t:ty{ $(pub $key:ident:$value:expr$(,)?)+ }) => {
-           pub struct $t{
-                   $(pub $key:$value,)+
-           }
-           impl $t{
-                       $(
-                         #[inline]
-                         pub fn $key()->&'static str{
-                             stringify!($key)
-                         }
-                       )+
-               }
-        }
-}
-
 #[allow(unused_macros)]
 #[macro_export]
 macro_rules! as_bson {
@@ -158,6 +128,7 @@ macro_rules! as_bson {
 /// Used to simulate enumerations to improve code maintainability.
 /// this is return &str data
 /// for example:
+/// let name=column_name!(BizActivity::id);
 /// rb.new_wrapper().eq(column_name!(BizActivity::id),"1")
 ///
 #[allow(unused_macros)]
@@ -168,8 +139,7 @@ macro_rules! column_name {
            stringify!($field).trim_start_matches("r#")
        }else{
            {
-               //此处代码伪造引用，误导idea 关联类型$t和 $field,实现智能提示
-               let f=|a:$t|{let c=a.$field;};
+               |a:$t|{a.$field};
                ""
            }
        }
