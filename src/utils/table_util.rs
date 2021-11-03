@@ -128,8 +128,8 @@ macro_rules! as_bson {
 /// Used to simulate enumerations to improve code maintainability.
 /// this is return &str data
 /// for example:
-/// let name=field_name!(BizActivity::id);
-/// rb.new_wrapper().eq(field_name!(BizActivity::id),"1")
+/// let name=field_name!(BizActivity.id);
+/// rb.new_wrapper().eq(field_name!(BizActivity.id),"1")
 ///
 #[allow(unused_macros)]
 #[macro_export]
