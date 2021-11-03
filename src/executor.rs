@@ -16,6 +16,7 @@ use crate::plugin::page::{IPageRequest, Page};
 use crate::rbatis::Rbatis;
 use crate::utils::string_util;
 use futures::executor::block_on;
+use rbatis_core::Format;
 
 
 /// must be only one have Some(Value)
@@ -196,7 +197,7 @@ impl<'a> ExecutorMut for RBatisConnExecutor<'_> {
                     &sql,
                     string_util::LOG_SPACE,
                     "",
-                    bson::Bson::Array(args.clone()).to_string()
+                    bson::Bson::Array(args.clone()).do_format()
                 ),
             );
         }
@@ -237,7 +238,7 @@ impl<'a> ExecutorMut for RBatisConnExecutor<'_> {
                     &sql,
                     string_util::LOG_SPACE,
                     "",
-                    bson::Bson::Array(args.clone()).to_string()
+                    bson::Bson::Array(args.clone()).do_format()
                 ),
             );
         }
@@ -321,7 +322,7 @@ impl<'a> ExecutorMut for RBatisTxExecutor<'_> {
                     &sql,
                     string_util::LOG_SPACE,
                     "",
-                    bson::Bson::Array(args.clone()).to_string()
+                    bson::Bson::Array(args.clone()).do_format()
                 ),
             );
         }
@@ -362,7 +363,7 @@ impl<'a> ExecutorMut for RBatisTxExecutor<'_> {
                     &sql,
                     string_util::LOG_SPACE,
                     "",
-                    bson::Bson::Array(args.clone()).to_string()
+                    bson::Bson::Array(args.clone()).do_format()
                 ),
             );
         }
