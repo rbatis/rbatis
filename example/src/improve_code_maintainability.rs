@@ -11,7 +11,7 @@ mod test {
         pub name: Option<String>,
         pub delete_flag: Option<i32>,
     }
-
+    impl_field_name_method!(BizActivity{id,name,delete_flag});
     #[test]
     fn test_improve_maintainability() {
         // When name is changed to user_name, the code becomes unmaintainable,
@@ -22,5 +22,8 @@ mod test {
         // when field name change to user_name ,it will be Compilation fails
         let w = Wrapper::new(&DriverType::Mysql)
             .eq(field_name!(BizActivity.name), "xiao ming");
+
+        let w = Wrapper::new(&DriverType::Mysql)
+            .eq(BizActivity::name(), "xiao ming");
     }
 }

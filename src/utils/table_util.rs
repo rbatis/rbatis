@@ -135,13 +135,40 @@ macro_rules! as_bson {
 #[macro_export]
 macro_rules! field_name {
     ($t:ident.$field:ident) => {
-       if true{
+        {
+           if false{|a:$t|{a.$field};}
            stringify!($field).trim_start_matches("r#")
-       }else{
-           {
-               |a:$t|{a.$field};
-               ""
-           }
-       }
+        }
+    };
+}
+
+
+///     will crate pub fn field_name()->&str method
+/// for example:
+///     #[crud_table]
+///     #[derive(Clone, Debug)]
+///     pub struct BizActivity {
+///         pub id: Option<String>,
+///         pub name: Option<String>,
+///         pub delete_flag: Option<i32>,
+///     }
+///     impl_field_name_method!(BizActivity{id,name,delete_flag});
+///
+///    println!("{}",BizActivity::delete_flag());
+#[allow(unused_macros)]
+#[macro_export]
+macro_rules! impl_field_name_method {
+   ($target:ty{$($field_name:ident$(,)?)+}) => {
+         impl $target{
+               $(
+                         #[inline]
+                         pub fn $field_name()->&'static str{
+                               if false{
+                                  |a:$target|{a.$field_name};
+                               }
+                             stringify!($field_name)
+                         }
+               )+
+         }
     };
 }
