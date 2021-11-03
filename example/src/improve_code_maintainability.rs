@@ -11,6 +11,7 @@ mod test {
         pub name: Option<String>,
         pub delete_flag: Option<i32>,
     }
+    // this macro will create impl BizActivity{ pub fn id()->&str ..... }
     impl_field_name_method!(BizActivity{id,name,delete_flag});
     #[test]
     fn test_improve_maintainability() {
