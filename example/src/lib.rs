@@ -25,7 +25,7 @@ mod table_macro_test;
 mod transaction_test;
 mod un_support_type_test;
 mod wrapper_test;
-mod improve_code_maintainability;
+mod wrapper_test_scalability;
 
 use chrono::NaiveDateTime;
 
