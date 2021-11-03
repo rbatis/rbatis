@@ -183,9 +183,8 @@ impl<'b> RBatisConnExecutor<'b> {
 
 #[async_trait]
 impl<'a> ExecutorMut for RBatisConnExecutor<'_> {
-    async fn exec(&mut self, sql: &str, args: Vec<bson::Bson>) -> Result<DBExecResult, Error> {
+    async fn exec(&mut self, sql: &str, mut args: Vec<bson::Bson>) -> Result<DBExecResult, Error> {
         let mut sql = sql.to_string();
-        let mut args = args.clone();
         let is_prepared = args.len() > 0;
         for item in &self.get_rbatis().sql_intercepts {
             item.do_intercept(self.get_rbatis(), &mut sql, &mut args, is_prepared)?;
@@ -224,10 +223,8 @@ impl<'a> ExecutorMut for RBatisConnExecutor<'_> {
         return result;
     }
 
-    async fn fetch<T>(&mut self, sql: &str, args: Vec<bson::Bson>) -> Result<T, Error> where T: DeserializeOwned {
-        let mut sql = sql.to_string();
-        let mut args = args.clone();
-        let is_prepared = args.len() > 0;
+    async fn fetch<T>(&mut self, sql: &str, mut args: Vec<bson::Bson>) -> Result<T, Error> where T: DeserializeOwned {
+        let mut sql = sql.to_string();        let is_prepared = args.len() > 0;
         for item in &self.get_rbatis().sql_intercepts {
             item.do_intercept(self.get_rbatis(), &mut sql, &mut args, is_prepared)?;
         }
@@ -308,9 +305,8 @@ impl<'a, 'b> RBatisTxExecutor<'b> {
 
 #[async_trait]
 impl<'a> ExecutorMut for RBatisTxExecutor<'_> {
-    async fn exec(&mut self, sql: &str, args: Vec<bson::Bson>) -> Result<DBExecResult, Error> {
+    async fn exec(&mut self, sql: &str, mut args: Vec<bson::Bson>) -> Result<DBExecResult, Error> {
         let mut sql = sql.to_string();
-        let mut args = args.clone();
         let is_prepared = args.len() > 0;
         for item in &self.get_rbatis().sql_intercepts {
             item.do_intercept(self.get_rbatis(), &mut sql, &mut args, is_prepared)?;
@@ -349,9 +345,8 @@ impl<'a> ExecutorMut for RBatisTxExecutor<'_> {
         return result;
     }
 
-    async fn fetch<T>(&mut self, sql: &str, args: Vec<bson::Bson>) -> Result<T, Error> where T: DeserializeOwned {
+    async fn fetch<T>(&mut self, sql: &str, mut args: Vec<bson::Bson>) -> Result<T, Error> where T: DeserializeOwned {
         let mut sql = sql.to_string();
-        let mut args = args.clone();
         let is_prepared = args.len() > 0;
         for item in &self.get_rbatis().sql_intercepts {
             item.do_intercept(self.get_rbatis(), &mut sql, &mut args, is_prepared)?;
