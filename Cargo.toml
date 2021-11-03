@@ -43,7 +43,7 @@ runtime-async-std-native-tls = ["rbatis-core/runtime-async-std-native-tls"]
 format_bson = []
 
 [dependencies]
-rbatis-core = { version="3.0.0", git = "https://github.com/rbatis/rbatis-core.git", branch = "main", default-features = false, optional = true }
+rbatis-core = { version="3.0.1", git = "https://github.com/rbatis/rbatis-core.git", branch = "main", default-features = false, optional = true }
 rbatis_sql = { version="3.0.1", git = "https://github.com/rbatis/rbatis_sql.git", branch = "main", optional = true }
 rbatis-macro-driver = { version = "3.0.0", path = "rbatis-macro-driver", default-features = false, optional = true }
 

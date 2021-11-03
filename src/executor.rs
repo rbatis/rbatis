@@ -181,6 +181,22 @@ impl<'b> RBatisConnExecutor<'b> {
     }
 }
 
+// bson vec to string
+fn bson_arr_to_string(arg: Vec<Bson>) -> (Vec<Bson>, String) {
+    let b = Bson::Array(arg);
+    #[cfg(feature = "format_bson")]
+    let s = b.do_format();
+    #[cfg(not(feature = "format_bson"))]
+    let s = b.to_string();
+    match b {
+        Bson::Array(arr) => {
+            return (arr, s);
+        }
+        _ => {}
+    }
+    return (vec![], s);
+}
+
 #[async_trait]
 impl<'a> ExecutorMut for RBatisConnExecutor<'_> {
     async fn exec(&mut self, sql: &str, mut args: Vec<bson::Bson>) -> Result<DBExecResult, Error> {
@@ -190,13 +206,15 @@ impl<'a> ExecutorMut for RBatisConnExecutor<'_> {
             item.do_intercept(self.get_rbatis(), &mut sql, &mut args, is_prepared)?;
         }
         if self.get_rbatis().log_plugin.is_enable() {
+            let (_args, args_string) = bson_arr_to_string(args);
+            args = _args;
             self.get_rbatis().log_plugin.info(
                 &format!(
                     "Exec   ==> {}\n{}[rbatis] [{}] Args   ==> {}",
                     &sql,
                     string_util::LOG_SPACE,
                     "",
-                    bson::Bson::Array(args.clone()).do_format()
+                    args_string
                 ),
             );
         }
@@ -224,18 +242,21 @@ impl<'a> ExecutorMut for RBatisConnExecutor<'_> {
     }
 
     async fn fetch<T>(&mut self, sql: &str, mut args: Vec<bson::Bson>) -> Result<T, Error> where T: DeserializeOwned {
-        let mut sql = sql.to_string();        let is_prepared = args.len() > 0;
+        let mut sql = sql.to_string();
+        let is_prepared = args.len() > 0;
         for item in &self.get_rbatis().sql_intercepts {
             item.do_intercept(self.get_rbatis(), &mut sql, &mut args, is_prepared)?;
         }
         if self.get_rbatis().log_plugin.is_enable() {
+            let (_args, args_string) = bson_arr_to_string(args);
+            args = _args;
             self.get_rbatis().log_plugin.info(
                 &format!(
                     "Fetch  ==> {}\n{}[rbatis] [{}] Args   ==> {}",
                     &sql,
                     string_util::LOG_SPACE,
                     "",
-                    bson::Bson::Array(args.clone()).do_format()
+                    args_string
                 ),
             );
         }
@@ -312,13 +333,15 @@ impl<'a> ExecutorMut for RBatisTxExecutor<'_> {
             item.do_intercept(self.get_rbatis(), &mut sql, &mut args, is_prepared)?;
         }
         if self.get_rbatis().log_plugin.is_enable() {
+            let (_args, args_string) = bson_arr_to_string(args);
+            args = _args;
             self.get_rbatis().log_plugin.info(
                 &format!(
                     "Exec   ==> {}\n{}[rbatis] [{}] Args   ==> {}",
                     &sql,
                     string_util::LOG_SPACE,
                     "",
-                    bson::Bson::Array(args.clone()).do_format()
+                    args_string
                 ),
             );
         }
@@ -352,13 +375,15 @@ impl<'a> ExecutorMut for RBatisTxExecutor<'_> {
             item.do_intercept(self.get_rbatis(), &mut sql, &mut args, is_prepared)?;
         }
         if self.get_rbatis().log_plugin.is_enable() {
+            let (_args, args_string) = bson_arr_to_string(args);
+            args = _args;
             self.get_rbatis().log_plugin.info(
                 &format!(
                     "Fetch  ==> {}\n{}[rbatis] [{}] Args   ==> {}",
                     &sql,
                     string_util::LOG_SPACE,
                     "",
-                    bson::Bson::Array(args.clone()).do_format()
+                    args_string
                 ),
             );
         }
