@@ -90,6 +90,9 @@ pub struct BizActivity {
   pub delete_flag: Option<i32>,
 }
 
+// this macro will create impl BizActivity{ pub fn id()->&str ..... }
+impl_field_name_method!(BizActivity{id,name});
+
 /// (optional) manually implement instead of using `derive(CRUDTable)`. This allows manually rewriting `table_name()` function and supports  code completion in IDE.
 /// (option) but this struct require  #[derive(Serialize,Deserialize)]
 // use rbatis::crud::CRUDTable;
@@ -101,8 +104,6 @@ pub struct BizActivity {
 //        "id,name,delete_flag".to_string()
 //    }
 //}
-
-
 #[tokio::main]
 async fn main() {
   /// enable log crate to show sql logs
@@ -119,12 +120,12 @@ async fn main() {
   let wrapper = rb.new_wrapper()
           .eq("id", 1)                    //sql:  id = 1
           .and()                          //sql:  and 
-          .ne("id", 1)                    //sql:  id <> 1
+          .ne(BizActivity::id(), 1)       //sql:  id <> 1
           .in_array("id", &[1, 2, 3])     //sql:  id in (1,2,3)
           .not_in("id", &[1, 2, 3])       //sql:  id not in (1,2,3)
           .like("name", 1)                //sql:  name like 1
           .or()                           //sql:  or
-          .not_like("name", "asdf")       //sql:  name not like 'asdf'
+          .not_like(BizActivity::name(), "asdf")       //sql:  name not like 'asdf'
           .between("create_time", "2020-01-01 00:00:00", "2020-12-12 00:00:00")//sql:  create_time between '2020-01-01 00:00:00' and '2020-01-01 00:00:00'
           .group_by(&["id"])              //sql:  group by id
           .order_by(true, &["id", "name"])//sql:  group by id,name
@@ -133,17 +134,23 @@ async fn main() {
   let activity = BizActivity {
     id: Some("12312".to_string()),
     name: None,
+    pc_link: None,
+    h5_link: None,
+    pc_banner_img: None,
+    h5_banner_img: None,
+    sort: None,
+    status: None,
     remark: None,
     create_time: Some(DateTimeNative::now()),
     version: Some(1),
     delete_flag: Some(1),
   };
   /// saving
-  rb.save(&activity,&[]).await;
+  rb.save(&activity, &[]).await;
 //Exec ==> INSERT INTO biz_activity (create_time,delete_flag,h5_banner_img,h5_link,id,name,pc_banner_img,pc_link,remark,sort,status,version) VALUES ( ? , ? , ? , ? , ? , ? , ? , ? , ? , ? , ? , ? )
 
   /// batch saving
-  rb.save_batch(&vec![activity],&[]).await;
+  rb.save_batch(&vec![activity], &[]).await;
 //Exec ==> INSERT INTO biz_activity (create_time,delete_flag,h5_banner_img,h5_link,id,name,pc_banner_img,pc_link,remark,sort,status,version) VALUES ( ? , ? , ? , ? , ? , ? , ? , ? , ? , ? , ? , ? ),( ? , ? , ? , ? , ? , ? , ? , ? , ? , ? , ? , ? )
 
   /// The query, Option wrapper, is None if the data is not found
@@ -155,26 +162,26 @@ async fn main() {
 //Query ==> SELECT create_time,delete_flag,h5_banner_img,h5_link,id,name,pc_banner_img,pc_link,remark,sort,status,version  FROM biz_activity WHERE delete_flag = 1
 
   ///query by id vec
-  let result: Vec<BizActivity> = rb.list_by_column("id",&["1"]).await.unwrap();
+  let result: Vec<BizActivity> = rb.list_by_column("id", &["1"]).await.unwrap();
 //Query ==> SELECT create_time,delete_flag,h5_banner_img,h5_link,id,name,pc_banner_img,pc_link,remark,sort,status,version  FROM biz_activity WHERE delete_flag = 1  AND id IN  (?) 
 
   ///query by wrapper
-  let r: Result<Option<BizActivity>, Error> = rb.fetch_by_wrapper( rb.new_wrapper().eq("id", "1")).await;
+  let r: Result<Option<BizActivity>, Error> = rb.fetch_by_wrapper(rb.new_wrapper().eq("id", "1")).await;
 //Query ==> SELECT  create_time,delete_flag,h5_banner_img,h5_link,id,name,pc_banner_img,pc_link,remark,sort,status,version  FROM biz_activity WHERE delete_flag = 1  AND id =  ? 
 
   ///delete
-  rb.remove_by_column::<BizActivity,_>("id", &"1").await;
+  rb.remove_by_column::<BizActivity, _>("id", &"1").await;
 //Exec ==> UPDATE biz_activity SET delete_flag = 0 WHERE id = 1
 
   ///delete batch
-  rb.remove_batch_by_column::<BizActivity,_>("id", &["1", "2"]).await;
+  rb.remove_batch_by_column::<BizActivity, _>("id", &["1", "2"]).await;
 //Exec ==> UPDATE biz_activity SET delete_flag = 0 WHERE id IN (  ?  ,  ?  ) 
 
   ///update
   let mut activity = activity.clone();
-  let r = rb.update_by_column("id", &activity).await;  
+  let r = rb.update_by_column("id", &activity).await;
 //Exec   ==> update biz_activity set  status = ?, create_time = ?, version = ?, delete_flag = ?  where id = ?
-  rb.update_by_wrapper( &activity, rb.new_wrapper().eq("id", "12312"), &[Skip::Value(&serde_json::Value::Null), Skip::Column("id")]).await;
+  rb.update_by_wrapper(&activity, rb.new_wrapper().eq("id", "12312"), &[Skip::Value(&serde_json::Value::Null), Skip::Column("id")]).await;
 //Exec ==> UPDATE biz_activity SET  create_time =  ? , delete_flag =  ? , status =  ? , version =  ?  WHERE id =  ? 
 }
 
