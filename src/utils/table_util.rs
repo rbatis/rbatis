@@ -166,7 +166,7 @@ macro_rules! impl_field_name_method {
                                if false{
                                   |a:$target|{a.$field_name};
                                }
-                             stringify!($field_name)
+                             stringify!($field_name).trim_start_matches("r#")
                          }
                )+
          }
