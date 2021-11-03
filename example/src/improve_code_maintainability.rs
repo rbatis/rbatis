@@ -17,13 +17,20 @@ mod test {
         // When name is changed to user_name, the code becomes unmaintainable,
         // compiling well but with logic errors
         let w = Wrapper::new(&DriverType::Mysql)
-            .eq("name", "xiao ming");
+            .eq("id","1")
+            .eq("name", "xiao ming")
+            .eq("delete_flag",1);
+
         // so we change "name" to column_name!(BizActivity::name),
         // when field name change to user_name ,it will be Compilation fails
         let w = Wrapper::new(&DriverType::Mysql)
-            .eq(field_name!(BizActivity.name), "xiao ming");
+            .eq(field_name!(BizActivity.id),"1")
+            .eq(field_name!(BizActivity.name), "xiao ming")
+            .eq(field_name!(BizActivity.delete_flag),1);
 
         let w = Wrapper::new(&DriverType::Mysql)
-            .eq(BizActivity::name(), "xiao ming");
+            .eq(BizActivity::id(),"1")
+            .eq(BizActivity::name(), "xiao ming")
+            .eq(BizActivity::delete_flag(),1);
     }
 }
