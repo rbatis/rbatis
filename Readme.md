@@ -153,8 +153,8 @@ async fn main() {
   rb.save_batch(&vec![activity], &[]).await;
 //Exec ==> INSERT INTO biz_activity (create_time,delete_flag,h5_banner_img,h5_link,id,name,pc_banner_img,pc_link,remark,sort,status,version) VALUES ( ? , ? , ? , ? , ? , ? , ? , ? , ? , ? , ? , ? ),( ? , ? , ? , ? , ? , ? , ? , ? , ? , ? , ? , ? )
 
-  /// The query, Option wrapper, is None if the data is not found
-  let result: Option<BizActivity> = rb.fetch_by_column("id", "1").await.unwrap();
+  /// fetch allow None or one result. column you can use BizActivity::id() or "id"
+  let result: Option<BizActivity> = rb.fetch_by_column(BizActivity::id(), "1").await.unwrap();
 //Query ==> SELECT create_time,delete_flag,h5_banner_img,h5_link,id,name,pc_banner_img,pc_link,remark,sort,status,version  FROM biz_activity WHERE delete_flag = 1  AND id =  ? 
 
   /// query all
