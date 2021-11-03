@@ -128,13 +128,13 @@ macro_rules! as_bson {
 /// Used to simulate enumerations to improve code maintainability.
 /// this is return &str data
 /// for example:
-/// let name=column_name!(BizActivity::id);
-/// rb.new_wrapper().eq(column_name!(BizActivity::id),"1")
+/// let name=field_name!(BizActivity::id);
+/// rb.new_wrapper().eq(field_name!(BizActivity::id),"1")
 ///
 #[allow(unused_macros)]
 #[macro_export]
-macro_rules! column_name {
-    ($t:ident::$field:ident) => {
+macro_rules! field_name {
+    ($t:ident.$field:ident) => {
        if true{
            stringify!($field).trim_start_matches("r#")
        }else{

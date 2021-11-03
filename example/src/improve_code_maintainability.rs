@@ -21,6 +21,6 @@ mod test {
         // so we change "name" to column_name!(BizActivity::name),
         // when field name change to user_name ,it will be Compilation fails
         let w = Wrapper::new(&DriverType::Mysql)
-            .eq(column_name!(BizActivity::name), "xiao ming");
+            .eq(field_name!(BizActivity.name), "xiao ming");
     }
 }
