@@ -7,11 +7,11 @@ use rbatis::crud::CRUD;
 use serde_json::Value;
 use axum::AddExtensionLayer;
 use axum::{
-    handler::{get, post},
     http::StatusCode,
     response::IntoResponse,
     Json, Router,
 };
+use axum::routing::get;
 
 //mysql driver url
 pub const MYSQL_URL: &'static str = "mysql://root:123456@localhost:3306/test";
