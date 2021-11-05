@@ -134,7 +134,7 @@ macro_rules! as_bson {
 #[allow(unused_macros)]
 #[macro_export]
 macro_rules! field_name {
-    ($t:ty.$field:ident) => {
+    ($t:ident.$field:ident) => {
         {
            if false{|a:$t|{a.$field};}
            stringify!($field).trim_start_matches("r#")
