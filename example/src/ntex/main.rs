@@ -2,7 +2,7 @@
 #[macro_use]
 extern crate rbatis;
 
-use chrono::NaiveDateTime;
+
 use rbatis::crud::{CRUD};
 use rbatis::rbatis::Rbatis;
 use ntex::web::{middleware, App, Error, HttpResponse};

@@ -27,7 +27,7 @@ mod un_support_type_test;
 mod wrapper_test;
 mod wrapper_test_scalability;
 
-use chrono::NaiveDateTime;
+
 
 /// this is table model(see ../database.sql)
 #[crud_table]

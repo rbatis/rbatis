@@ -81,7 +81,7 @@ mod test {
         rb.link("mysql://root:123456@localhost:3306/test")
             .await
             .unwrap();
-        use chrono::NaiveDateTime;
+
         use rbatis::core::value::DateTimeNow;
 
         let activity = BizActivity {

@@ -1,7 +1,7 @@
 #[cfg(test)]
 mod test {
     use bigdecimal::BigDecimal;
-    use chrono::NaiveDateTime;
+
 
     #[crud_table]
     #[derive(Clone, Debug)]

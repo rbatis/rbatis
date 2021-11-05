@@ -1,7 +1,7 @@
 #[cfg(test)]
 mod test {
     use crate::BizActivity;
-    use chrono::NaiveDateTime;
+
     use rbatis::DateTimeNative;
     use rbatis::core::value::DateTimeNow;
     use rbatis::crud::{CRUDMut, CRUD};
