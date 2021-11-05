@@ -85,7 +85,7 @@ pub struct BizActivity {
   pub sort: Option<String>,
   pub status: Option<i32>,
   pub remark: Option<String>,
-  pub create_time: Option<NaiveDateTime>,
+  pub create_time: Option<rbatis::DateTimeNative>,
   pub version: Option<i32>,
   pub delete_flag: Option<i32>,
 }
@@ -473,7 +473,7 @@ async fn main() -> std::io::Result<()> {
 
 >  [English Doc](https://rbatis.github.io/rbatis.io/#/en/?id=database-column-formatting-macro)
 * Support for DateTime and BigDecimal? <br/>
-  Currently supports chrono::NaiveDateTime和bigdecimal::BigDecimal
+  Currently supports chrono::rbatis::DateTimeNative和bigdecimal::BigDecimal
 * Supports for `async/.await` <br/>
   Currently supports both `async_std` and `tokio`
 * Stmt in postgres uses $1, $2 instead of ? in Mysql, does this require some special treatment? No, because rbatis uses
