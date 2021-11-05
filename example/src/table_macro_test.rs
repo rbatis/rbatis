@@ -1,7 +1,5 @@
 #[cfg(test)]
 mod test {
-    use bigdecimal::BigDecimal;
-
 
     #[crud_table]
     #[derive(Clone, Debug)]
@@ -16,7 +14,7 @@ mod test {
         pub status: Option<i32>,
         pub remark: Option<String>,
         pub create_time: Option<rbatis::DateTimeNative>,
-        pub version: Option<BigDecimal>,
+        pub version: Option<rbatis::Decimal>,
         pub delete_flag: Option<i32>,
     }
 

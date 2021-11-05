@@ -1,6 +1,5 @@
 #[cfg(test)]
 mod test {
-    use bigdecimal::BigDecimal;
     use bson::Bson;
     use rbatis::core::value::DateTimeNow;
     use rbatis::core::Error;
@@ -285,7 +284,7 @@ mod test {
         //     status: Some(1),
         //     remark: None,
         //     create_time: Some(DateTimeNative::now()),
-        //     version: Some(BigDecimal::from(1)),
+        //     version: Some(rbatis::Decimal::from(1)),
         //     delete_flag: Some(1),
         // };
         let r = rb.update_by_column("id", &activity).await;
