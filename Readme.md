@@ -40,6 +40,51 @@
 
 ##### Example Rust backend service https://github.com/rbatis/abs_admin
 
+### Supported data structures
+
+| data structure    | is supported |
+| ------ | ------ |
+| Option                   | √     | 
+| Vec                      | √     |  
+| HashMap                      | √     |
+| i32,i64,f32,f64,bool,String...more rust type   | √     |  
+| rbatis::Bytes                   | √     |  
+| rbatis::DateNative              | √     |  
+| rbatis::DateUtc                  | √     |  
+| rbatis::DateTimeNative          | √     |  
+| rbatis::DateTimeUtc             | √     |  
+| rbatis::Decimal                 | √     |  
+| rbatis::Json<T>                 | √     |  
+| rbatis::TimeNative              | √     |  
+| rbatis::TimeUtc                 | √     |  
+| rbatis::Timestamp               | √     |  
+| rbatis::TimestampZ              | √     |  
+| rbatis::Uuid                    | √     |  
+| rbatis::plugin::page::{Page<T>, PageRequest} | √     |
+| bson::Bson*                      | √     |
+| serde_json::*        | √     |
+| any serde type         | √     |
+
+### Supported database √supported .WIP
+
+| database    | is supported |
+| ------ | ------ |
+| Mysql            | √     |   
+| Postgres         | √     |  
+| Sqlite           | √     |  
+| Mssql/Sqlserver            | √(50%)     |  
+| MariaDB(Mysql)             | √     |
+| TiDB(Mysql)             | √     |
+| CockroachDB(Postgres)      | √     |
+
+### Supported OS/Platforms
+
+| platform   | is supported |
+| ------ | ------ |
+| Linux                   | √     | 
+| Apple/MacOS             | √     |  
+| Windows               | √     |
+
 ##### Example Cargo.toml
 
 ``` rust
@@ -403,51 +448,6 @@ async fn main() -> std::io::Result<()> {
         .await
 }
 ```
-
-### Supported data structures
-
-| data structure    | is supported |
-| ------ | ------ |
-| Option                   | √     | 
-| Vec                      | √     |  
-| HashMap                      | √     |
-| i32,i64,f32,f64,bool,String...more rust type   | √     |  
-| rbatis::Bytes                   | √     |  
-| rbatis::DateNative              | √     |  
-| rbatis::DateUtc                  | √     |  
-| rbatis::DateTimeNative          | √     |  
-| rbatis::DateTimeUtc             | √     |  
-| rbatis::Decimal                 | √     |  
-| rbatis::Json<T>                 | √     |  
-| rbatis::TimeNative              | √     |  
-| rbatis::TimeUtc                 | √     |  
-| rbatis::Timestamp               | √     |  
-| rbatis::TimestampZ              | √     |  
-| rbatis::Uuid                    | √     |  
-| rbatis::plugin::page::{Page<T>, PageRequest} | √     |
-| bson::Bson*                      | √     |
-| serde_json::*        | √     |
-| any serde type         | √     |
-
-### Supported database √supported .WIP
-
-| database    | is supported |
-| ------ | ------ |
-| Mysql            | √     |   
-| Postgres         | √     |  
-| Sqlite           | √     |  
-| Mssql/Sqlserver            | √(50%)     |  
-| MariaDB(Mysql)             | √     |
-| TiDB(Mysql)             | √     |
-| CockroachDB(Postgres)      | √     |
-
-### Supported OS/Platforms
-
-| platform   | is supported |
-| ------ | ------ |
-| Linux                   | √     | 
-| Apple/MacOS             | √     |  
-| Windows               | √     |
 
 ### Progress - in sequential order
 
