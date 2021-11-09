@@ -34,8 +34,8 @@ mod test {
         pub delete_flag: Option<i32>,
 
         // json and bytes type support
-        // pub bytes: Option<RbBytes>,
-        // pub json: Option<RbJson>,
+        // pub bytes: Option<rbatis::Bytes>,
+        // pub json: Option<rbatis::Json<serde_json::Value>>,
     }
 
     impl Default for BizActivity {
