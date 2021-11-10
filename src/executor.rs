@@ -192,7 +192,14 @@ fn bson_arr_to_string(arg: Vec<Bson>) -> (Vec<Bson>, String) {
         }
 
     let s = b.to_string();
-    return (vec![], s);
+    return match b {
+        Bson::Array(arr) => {
+            (arr, s)
+        }
+        _ => {
+            (vec![], s)
+        }
+    }
 }
 
 #[async_trait]
