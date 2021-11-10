@@ -7,7 +7,7 @@ members = [
 
 [package]
 name = "rbatis"
-version = "3.0.7"
+version = "3.0.8"
 description = "Rust ORM Framework High Performance(Bson based)"
 readme = "Readme.md"
 authors = ["ce <zhuxiujia@qq.com>"]
@@ -40,7 +40,7 @@ runtime-actix-native-tls = ["rbatis-core/runtime-actix-native-tls"]
 runtime-async-std-native-tls = ["rbatis-core/runtime-async-std-native-tls"]
 
 #enable_format bson
-format_bson = []
+format_bson = ["rbatis-core/format_bson"]
 
 [dependencies]
 rbatis-core = { version = "3.0.5", git = "https://github.com/rbatis/rbatis-core.git", branch = "main", default-features = false, optional = true }
