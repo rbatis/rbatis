@@ -185,8 +185,10 @@ impl<'b> RBatisConnExecutor<'b> {
 fn bson_arr_to_string(arg: Vec<Bson>) -> (Vec<Bson>, String) {
     let b = Bson::Array(arg);
     #[cfg(feature = "format_bson")]
-    let s = b.do_format();
-    #[cfg(not(feature = "format_bson"))]
+        {
+            let s = b.do_format();
+            log::info!("[rbatis] [format_bson] => {}", s);
+        }
     let s = b.to_string();
     match b {
         Bson::Array(arr) => {
