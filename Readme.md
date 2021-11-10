@@ -38,7 +38,6 @@
 * [rbatis/example (import into Clion!)](https://github.com/rbatis/rbatis/tree/master/example/src)
 * [abs_admin project](https://github.com/rbatis/abs_admin)  an complete background user management system(Vue.js+rbatis+actix-web)
 
-##### Example Rust backend service https://github.com/rbatis/abs_admin
 
 ### Supported data structures
 
