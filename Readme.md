@@ -36,7 +36,7 @@
 * Supports logging, customizable logging based on `log` crate
 * 100% Safe Rust with `#![forbid(unsafe_code)]` enabled
 * [rbatis/example (import into Clion!)](https://github.com/rbatis/rbatis/tree/master/example/src)
-* [abs_admin project](https://github.com/rbatis/abs_admin)  Web front end(Vue.js) + Rust back end(rbatis+actix-web)
+* [abs_admin project](https://github.com/rbatis/abs_admin)  an complete background user management system(Vue.js+rbatis+actix-web)
 
 ##### Example Rust backend service https://github.com/rbatis/abs_admin
 
