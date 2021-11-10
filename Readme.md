@@ -85,6 +85,17 @@
 | Apple/MacOS             | √     |  
 | Windows               | √     |
 
+### Web Frameworks
+
+* [actix-web](example/src/actix_web/main.rs)
+* [axum](example/src/axum/main.rs)
+* [hyper](example/src/hyper/main.rs)
+* [ntex](example/src/ntex/main.rs)
+* [rocket](example/src/rocket/main.rs)
+* [tide](example/src/tide/main.rs)
+* [warp](example/src/warp/main.rs)
+
+
 ##### Example Cargo.toml
 
 ``` rust
