@@ -102,7 +102,7 @@ mod test {
             version: Some(1),
             delete_flag: Some(1),
         };
-        rb.remove_by_column::<BizActivity, _>("id", activity.id.as_ref().unwrap())
+        rb.remove_by_column::<BizActivity, _>("id", &activity.id)
             .await;
         let r = rb.save(&activity, &[]).await;
         if r.is_err() {
