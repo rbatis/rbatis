@@ -3,6 +3,7 @@ use std::ops::{Deref, DerefMut};
 
 use async_trait::async_trait;
 use bson::Bson;
+use bson::spec::BinarySubtype;
 use futures::Future;
 use rbatis_core::db::DBExecResult;
 use serde::de::DeserializeOwned;
@@ -16,7 +17,7 @@ use crate::plugin::page::{IPageRequest, Page};
 use crate::rbatis::Rbatis;
 use crate::utils::string_util;
 use futures::executor::block_on;
-use rbatis_core::Format;
+use rbatis_core::{DateTimeNative, Format};
 
 
 /// must be only one have Some(Value)
@@ -189,9 +190,83 @@ fn bson_arr_to_string(arg: Vec<Bson>) -> (Vec<Bson>, String) {
             let s = b.do_format();
             log::info!("[rbatis] [format_bson] => {}", s);
         }
-    let s = b.to_string();
+
+
+    let mut s = String::new();
     match b {
         Bson::Array(arr) => {
+            s.push_str("[");
+            for x in &arr {
+                match x {
+                    Bson::Binary(b) => {
+                        match b.subtype {
+                            BinarySubtype::Generic => {
+                                s.push_str("Binary{Generic}");
+                            }
+                            BinarySubtype::Uuid => {
+                                s.push_str("Binary{Uuid:");
+                                s.push_str(&String::from_utf8(b.bytes.to_owned()).unwrap_or_default());
+                                s.push_str("}");
+                            }
+                            BinarySubtype::UserDefined(type_id) => {
+                                s.push_str("Binary{");
+                                match type_id {
+                                    crate::types::BINARY_SUBTYPE_JSON => {
+                                        s.push_str("json:");
+                                        s.push_str(&String::from_utf8(b.bytes.to_owned()).unwrap_or_default());
+                                    }
+                                    crate::types::BINARY_SUBTYPE_TIMESTAMP_Z => {
+                                        s.push_str("timestampz:");
+                                        s.push_str(&String::from_utf8(b.bytes.to_owned()).unwrap_or_default());
+                                    }
+                                    crate::types::BINARY_SUBTYPE_DECIMAL => {
+                                        s.push_str("deciaml:");
+                                        s.push_str(&String::from_utf8(b.bytes.to_owned()).unwrap_or_default());
+                                    }
+                                    crate::types::BINARY_SUBTYPE_DATETIME_UTC => {
+                                        s.push_str("datetime_utc:");
+                                        s.push_str(&String::from_utf8(b.bytes.to_owned()).unwrap_or_default());
+                                    }
+                                    crate::types::BINARY_SUBTYPE_DATE_LOCAL => {
+                                        s.push_str("date_local:");
+                                        s.push_str(&String::from_utf8(b.bytes.to_owned()).unwrap_or_default());
+                                    }
+                                    crate::types::BINARY_SUBTYPE_DATE_UTC => {
+                                        s.push_str("date_utc:");
+                                        s.push_str(&String::from_utf8(b.bytes.to_owned()).unwrap_or_default());
+                                    }
+                                    crate::types::BINARY_SUBTYPE_TIME_UTC => {
+                                        s.push_str("time_utc:");
+                                        s.push_str(&String::from_utf8(b.bytes.to_owned()).unwrap_or_default());
+                                    }
+                                    crate::types::BINARY_SUBTYPE_TIME_LOCAL => {
+                                        s.push_str("time_local:");
+                                        s.push_str(&String::from_utf8(b.bytes.to_owned()).unwrap_or_default());
+                                    }
+                                    _ => {
+                                        s.push_str(&"un supported");
+                                    }
+                                }
+                                s.push_str("}");
+                            }
+                            _ => {}
+                        }
+                    }
+                    Bson::DateTime(dt) => {
+                        s.push_str("DateTime(");
+                        s.push_str(&DateTimeNative::from(dt.to_owned()).inner.to_string());
+                        s.push_str(")");
+                    }
+                    b => {
+                        s.push_str(&format!("{}", b));
+                    }
+                }
+                s.push_str(",");
+            }
+            if arr.len() > 0 {
+                s.pop();
+            }
+            s.push_str("]");
             return (arr, s);
         }
         _ => {}
