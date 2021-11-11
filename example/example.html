@@ -16,6 +16,9 @@
             <if test="name != ''">
                 name like #{name}
             </if>
+            <if test="dt.bracket() >= '2009-12-12T00:00:00'">
+                and create_time < #{dt.bracket()}
+            </if>
         </where>
     </select>
 </mapper>
