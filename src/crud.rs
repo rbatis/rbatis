@@ -88,7 +88,7 @@ pub trait CRUDTable: Send + Sync + Serialize {
         let mut arr = vec![];
         let cols = Self::table_columns();
         let columns: Vec<&str> = cols.split(",").collect();
-        let map;
+        let mut map;
         match crate::as_bson!(self) {
             bson::Bson::Document(m) => {
                 map = m;
@@ -100,11 +100,11 @@ pub trait CRUDTable: Send + Sync + Serialize {
         let mut column_sql = String::new();
         for column in columns {
             let mut do_continue = false;
-            let column = crate::utils::string_util::un_packing_string(column);
+            let column_unpacking = crate::utils::string_util::un_packing_string(column);
             for x in skips {
                 match x {
                     Skip::Column(skip_column) => {
-                        if column.eq(*skip_column) {
+                        if column_unpacking.eq(*skip_column) || column.eq(*skip_column) {
                             do_continue = true;
                             break;
                         }
@@ -115,7 +115,7 @@ pub trait CRUDTable: Send + Sync + Serialize {
             if do_continue {
                 continue;
             }
-            let v = map.get(column).unwrap_or(&bson::Bson::Null);
+            let v = map.remove(column_unpacking).unwrap_or(bson::Bson::Null);
             for x in skips {
                 match x {
                     Skip::Value(skip_value) => {
@@ -134,11 +134,11 @@ pub trait CRUDTable: Send + Sync + Serialize {
             column_sql = column_sql + column + ",";
             let mut data = String::new();
             db_type.stmt_convert(*index, &mut data);
-            Self::do_format_column(db_type, &column, &mut data);
+            Self::do_format_column(db_type, &column_unpacking, &mut data);
             value_sql = value_sql
                 + data.as_str()
                 + ",";
-            arr.push(v.to_owned());
+            arr.push(v);
             *index += 1;
         }
         column_sql.pop(); //remove ','
@@ -161,7 +161,7 @@ pub trait CRUDTable: Send + Sync + Serialize {
     fn get(&self, column: &str) -> bson::Bson {
         let s = bson::to_bson(self).unwrap_or_default();
         match s {
-            bson::Bson::Document(d)=>{
+            bson::Bson::Document(d) => {
                 d.get(column).unwrap_or(&Bson::Null).clone()
             }
             _ => {
@@ -764,7 +764,7 @@ pub trait CRUDMut: ExecutorMut {
             T: CRUDTable,
     {
         let sql = make_select_sql::<T>(self.get_rbatis(), "count(1)", &Wrapper::new(&self.driver_type()?))?;
-        return self.fetch(sql.as_str(),vec![]).await;
+        return self.fetch(sql.as_str(), vec![]).await;
     }
 
     /// count database record by a wrapper
@@ -976,13 +976,13 @@ impl CRUD for Rbatis {
     }
 
     async fn fetch_count<T>(&self) -> Result<u64> where
-        T: CRUDTable{
+        T: CRUDTable {
         let mut conn = self.acquire().await?;
         conn.fetch_count::<T>().await
     }
 
     async fn fetch_count_by_wrapper<T>(&self, w: Wrapper) -> Result<u64> where
-        T: CRUDTable{
+        T: CRUDTable {
         let mut conn = self.acquire().await?;
         conn.fetch_count_by_wrapper::<T>(w).await
     }
