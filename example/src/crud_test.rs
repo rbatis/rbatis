@@ -16,7 +16,7 @@ mod test {
 
     ///Or another way to write it
     // #[crud_table(table_name:biz_activity)]
-    //#[crud_table(table_columns:"id,'name',version,delete_flag"|formats_mysql:"name:'{}'")]
+    // #[crud_table(table_columns:"id,'name',version,delete_flag"|formats_mysql:"name:'{}'")]
     // #[crud_table(table_name:"biz_activity"|table_columns:"id,name,version,delete_flag"|formats_pg:"id:{}::uuid")]
     //#[crud_table]
     #[derive(Clone, Debug)]
