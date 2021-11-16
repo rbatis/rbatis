@@ -1,4 +1,4 @@
-use bson::Bson;
+use bson2::Bson;
 
 pub mod limit;
 pub mod rule;

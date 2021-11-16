@@ -60,7 +60,7 @@
 | rbatis::TimestampZ              | √     |  
 | rbatis::Uuid                    | √     |  
 | rbatis::plugin::page::{Page<T>, PageRequest} | √     |
-| bson::Bson*                      | √     |
+| bson2::Bson*                      | √     |
 | serde_json::*        | √     |
 | any serde type         | √     |
 
