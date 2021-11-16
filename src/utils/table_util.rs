@@ -117,13 +117,7 @@ macro_rules! make_table_field_map_btree {
     }};
 }
 
-#[allow(unused_macros)]
-#[macro_export]
-macro_rules! as_bson {
-    ($key:expr) => {
-        bson::to_bson($key).unwrap_or_default()
-    }
-}
+
 
 /// Used to simulate enumerations to improve code maintainability.
 /// this is return &str data
