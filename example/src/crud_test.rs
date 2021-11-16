@@ -1,6 +1,6 @@
 #[cfg(test)]
 mod test {
-    use bson::Bson;
+    use bson2::Bson;
     use rbatis::core::value::DateTimeNow;
     use rbatis::core::Error;
     use rbatis::crud::{CRUDMut, CRUD, Skip};

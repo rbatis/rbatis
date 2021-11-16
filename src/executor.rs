@@ -2,8 +2,8 @@ use std::fmt::{Debug, Formatter};
 use std::ops::{Deref, DerefMut};
 
 use async_trait::async_trait;
-use bson::Bson;
-use bson::spec::BinarySubtype;
+use bson2::Bson;
+use bson2::spec::BinarySubtype;
 use futures::Future;
 use rbatis_core::db::DBExecResult;
 use serde::de::DeserializeOwned;
@@ -166,8 +166,8 @@ impl RbatisRef for Rbatis {
 
 #[async_trait]
 pub trait ExecutorMut: RbatisRef {
-    async fn exec(&mut self, sql: &str, args: Vec<bson::Bson>) -> Result<DBExecResult, Error>;
-    async fn fetch<T>(&mut self, sql: &str, args: Vec<bson::Bson>) -> Result<T, Error> where T: DeserializeOwned;
+    async fn exec(&mut self, sql: &str, args: Vec<bson2::Bson>) -> Result<DBExecResult, Error>;
+    async fn fetch<T>(&mut self, sql: &str, args: Vec<bson2::Bson>) -> Result<T, Error> where T: DeserializeOwned;
 }
 
 #[derive(Debug)]
@@ -204,7 +204,7 @@ fn bson_arr_to_string(arg: Vec<Bson>) -> (Vec<Bson>, String) {
 
 #[async_trait]
 impl<'a> ExecutorMut for RBatisConnExecutor<'_> {
-    async fn exec(&mut self, sql: &str, mut args: Vec<bson::Bson>) -> Result<DBExecResult, Error> {
+    async fn exec(&mut self, sql: &str, mut args: Vec<bson2::Bson>) -> Result<DBExecResult, Error> {
         let mut sql = sql.to_string();
         let is_prepared = args.len() > 0;
         for item in &self.get_rbatis().sql_intercepts {
@@ -246,7 +246,7 @@ impl<'a> ExecutorMut for RBatisConnExecutor<'_> {
         return result;
     }
 
-    async fn fetch<T>(&mut self, sql: &str, mut args: Vec<bson::Bson>) -> Result<T, Error> where T: DeserializeOwned {
+    async fn fetch<T>(&mut self, sql: &str, mut args: Vec<bson2::Bson>) -> Result<T, Error> where T: DeserializeOwned {
         let mut sql = sql.to_string();
         let is_prepared = args.len() > 0;
         for item in &self.get_rbatis().sql_intercepts {
@@ -331,7 +331,7 @@ impl<'a, 'b> RBatisTxExecutor<'b> {
 
 #[async_trait]
 impl<'a> ExecutorMut for RBatisTxExecutor<'_> {
-    async fn exec(&mut self, sql: &str, mut args: Vec<bson::Bson>) -> Result<DBExecResult, Error> {
+    async fn exec(&mut self, sql: &str, mut args: Vec<bson2::Bson>) -> Result<DBExecResult, Error> {
         let mut sql = sql.to_string();
         let is_prepared = args.len() > 0;
         for item in &self.get_rbatis().sql_intercepts {
@@ -373,7 +373,7 @@ impl<'a> ExecutorMut for RBatisTxExecutor<'_> {
         return result;
     }
 
-    async fn fetch<T>(&mut self, sql: &str, mut args: Vec<bson::Bson>) -> Result<T, Error> where T: DeserializeOwned {
+    async fn fetch<T>(&mut self, sql: &str, mut args: Vec<bson2::Bson>) -> Result<T, Error> where T: DeserializeOwned {
         let mut sql = sql.to_string();
         let is_prepared = args.len() > 0;
         for item in &self.get_rbatis().sql_intercepts {
@@ -541,7 +541,7 @@ impl<'a> RBatisTxExecutor<'a> {
     pub async fn fetch_page<T>(
         &self,
         sql: &str,
-        args: Vec<bson::Bson>,
+        args: Vec<bson2::Bson>,
         page_request: &dyn IPageRequest,
     ) -> crate::Result<Page<T>>
         where
@@ -580,8 +580,8 @@ impl Drop for RBatisTxExecutorGuard<'_> {
 
 #[async_trait]
 pub trait Executor: RbatisRef {
-    async fn exec(&self, sql: &str, args: Vec<bson::Bson>) -> Result<DBExecResult, Error>;
-    async fn fetch<T>(&self, sql: &str, args: Vec<bson::Bson>) -> Result<T, Error> where T: DeserializeOwned;
+    async fn exec(&self, sql: &str, args: Vec<bson2::Bson>) -> Result<DBExecResult, Error>;
+    async fn fetch<T>(&self, sql: &str, args: Vec<bson2::Bson>) -> Result<T, Error> where T: DeserializeOwned;
 }
 
 #[async_trait]

@@ -38,7 +38,7 @@ mod test {
         //insert point
         rb.exec(
             "insert into p (id,po) values (1,Point($1,$2))",
-            vec![bson::Bson::Int32(1), bson::Bson::Int32(2)],
+            vec![bson2::Bson::Int32(1), bson2::Bson::Int32(2)],
         )
             .await
             .unwrap();

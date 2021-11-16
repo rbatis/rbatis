@@ -121,7 +121,7 @@ macro_rules! make_table_field_map_btree {
 #[macro_export]
 macro_rules! as_bson {
     ($key:expr) => {
-        bson::to_bson($key).unwrap_or_default()
+        bson2::to_bson($key).unwrap_or_default()
     }
 }
 
