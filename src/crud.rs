@@ -89,7 +89,7 @@ pub trait CRUDTable: Send + Sync + Serialize {
         let cols = Self::table_columns();
         let columns: Vec<&str> = cols.split(",").collect();
         let mut map;
-        match bson::to_bson(self)? {
+        match crate::as_bson!(self) {
             bson::Bson::Document(m) => {
                 map = m;
             }
