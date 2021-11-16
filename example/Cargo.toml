@@ -49,7 +49,7 @@ fast_log = "1.3"
 tokio = { version = "1.12", features = ["full"] }
 async-std = { version = "1.9", features = ["attributes", "tokio1"] }
 #rbatis lib(debug_mode will print json data)
-bson2 = { version = "2.0.2", features = ["uuid-0_8", "chrono-0_4"] }
+bson2 = { version = "2.0.3", features = ["uuid-0_8", "chrono-0_4"] }
 rbatis = { path = "../", features = ["debug_mode"] }
 #(not necessary)only use custom py_sql
 rexpr = { version = "1.0" }
