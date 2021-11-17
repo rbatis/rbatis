@@ -7,7 +7,7 @@ members = [
 
 [package]
 name = "rbatis"
-version = "3.0.17"
+version = "3.0.18"
 description = "Rust ORM Framework High Performance(Bson based)"
 readme = "Readme.md"
 authors = ["ce <zhuxiujia@qq.com>"]
@@ -44,7 +44,7 @@ format_bson = ["rbatis-core/format_bson"]
 
 [dependencies]
 rbatis-core = { version = "3.0.13", git = "https://github.com/rbatis/rbatis-core.git", branch = "main", default-features = false, optional = true }
-rbatis_sql = { version = "3.0.8", git = "https://github.com/rbatis/rbatis_sql.git", branch = "main", optional = true }
+rbatis_sql = { version = "3.0.9", git = "https://github.com/rbatis/rbatis_sql.git", branch = "main", optional = true }
 rbatis-macro-driver = { version = "3.0.1", path = "rbatis-macro-driver", default-features = false, optional = true }
 
 bson2 = { version = "2.0.3", features = ["uuid-0_8", "chrono-0_4"] }
