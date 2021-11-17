@@ -34,6 +34,10 @@ path = "src/ntex/main.rs"
 name = "axum"
 path = "src/axum/main.rs"
 
+[[bin]]
+name = "salvo"
+path = "src/salvo/main.rs"
+
 [dependencies]
 #serde and base types
 serde = { version = "1", features = ["derive"] }
@@ -64,4 +68,5 @@ warp = "0.3"
 rocket = "0.5.0-rc.1"
 ntex = "0.4"
 axum = "0.3"
+salvo = "0.16"
 tracing = "0.1" #axum need this
