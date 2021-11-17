@@ -93,6 +93,7 @@
 * [rocket](example/src/rocket/main.rs)
 * [tide](example/src/tide/main.rs)
 * [warp](example/src/warp/main.rs)
+* [salvo](example/src/salvo/main.rs)
 
 
 ##### Example Cargo.toml
