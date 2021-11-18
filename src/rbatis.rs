@@ -44,10 +44,10 @@ pub struct Rbatis {
 impl Debug for Rbatis {
     fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
         f.debug_struct("Rbatis")
-            .field("pool",&self.pool)
-            .field("page_plugin",&self.page_plugin)
-            .field("sql_intercepts",&self.sql_intercepts)
-            .field("logic_plugin",&self.logic_plugin)
+            .field("pool", &self.pool)
+            .field("page_plugin", &self.page_plugin)
+            .field("sql_intercepts", &self.sql_intercepts)
+            .field("logic_plugin", &self.logic_plugin)
             .finish()
     }
 }
@@ -97,7 +97,7 @@ impl Rbatis {
             sql_intercepts: option.sql_intercepts,
             logic_plugin: option.logic_plugin,
             log_plugin: option.log_plugin,
-            encoder: |q,arg|{
+            encoder: |q, arg| {
                 q.bind_value(arg)?;
                 Ok(())
             },
@@ -231,3 +231,32 @@ impl Rbatis {
         self.into()
     }
 }
+
+
+pub trait AsSqlTag {
+    fn sql_tag(&self) -> char;
+    fn do_replace_tag(&self, sql: &mut String);
+}
+
+impl AsSqlTag for DriverType {
+    #[inline]
+    fn sql_tag(&self) -> char {
+        match self {
+            DriverType::None => { '?' }
+            DriverType::Mysql => { '?' }
+            DriverType::Sqlite => { '?' }
+            DriverType::Postgres => { '$' }
+            //@p
+            DriverType::Mssql => { '@' }
+        }
+    }
+    #[inline]
+    fn do_replace_tag(&self, sql: &mut String) {
+        let tag = self.sql_tag();
+        if self.eq(&DriverType::Mssql) {
+            *sql = sql.replace("@", "@p");
+        }
+    }
+}
+
+
