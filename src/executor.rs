@@ -18,6 +18,7 @@ use crate::rbatis::Rbatis;
 use crate::utils::string_util;
 use futures::executor::block_on;
 use rbatis_core::{DateTimeNative, Format};
+use crate::snowflake::new_snowflake_id;
 
 
 /// must be only one have Some(Value)
@@ -205,6 +206,7 @@ fn bson_arr_to_string(arg: Vec<Bson>) -> (Vec<Bson>, String) {
 #[async_trait]
 impl<'a> ExecutorMut for RBatisConnExecutor<'_> {
     async fn exec(&mut self, sql: &str, mut args: Vec<bson2::Bson>) -> Result<DBExecResult, Error> {
+        let rb_task_id = new_snowflake_id();
         let mut sql = sql.to_string();
         let is_prepared = args.len() > 0;
         for item in &self.get_rbatis().sql_intercepts {
@@ -213,12 +215,11 @@ impl<'a> ExecutorMut for RBatisConnExecutor<'_> {
         if self.get_rbatis().log_plugin.is_enable() {
             let (_args, args_string) = bson_arr_to_string(args);
             args = _args;
-            self.get_rbatis().log_plugin.info(
+            self.get_rbatis().log_plugin.info(rb_task_id,
                 &format!(
-                    "Exec   ==> {}\n{}[rbatis] [{}] Args   ==> {}",
+                    "Exec   ==> {}\n{}[rbatis]                      Args   ==> {}",
                     &sql,
                     string_util::LOG_SPACE,
-                    "",
                     args_string
                 ),
             );
@@ -233,13 +234,13 @@ impl<'a> ExecutorMut for RBatisConnExecutor<'_> {
         if self.get_rbatis().log_plugin.is_enable() {
             match &result {
                 Ok(result) => {
-                    self.get_rbatis().log_plugin.info(
+                    self.get_rbatis().log_plugin.info(rb_task_id,
                         &format!("RowsAffected <== {}", result.rows_affected),
                     );
                 }
                 Err(e) => {
                     self.get_rbatis().log_plugin
-                        .error(&format!("ReturnErr  <== {}", e));
+                        .error(rb_task_id,&format!("ReturnErr  <== {}", e));
                 }
             }
         }
@@ -247,6 +248,7 @@ impl<'a> ExecutorMut for RBatisConnExecutor<'_> {
     }
 
     async fn fetch<T>(&mut self, sql: &str, mut args: Vec<bson2::Bson>) -> Result<T, Error> where T: DeserializeOwned {
+        let rb_task_id = new_snowflake_id();
         let mut sql = sql.to_string();
         let is_prepared = args.len() > 0;
         for item in &self.get_rbatis().sql_intercepts {
@@ -255,12 +257,11 @@ impl<'a> ExecutorMut for RBatisConnExecutor<'_> {
         if self.get_rbatis().log_plugin.is_enable() {
             let (_args, args_string) = bson_arr_to_string(args);
             args = _args;
-            self.get_rbatis().log_plugin.info(
+            self.get_rbatis().log_plugin.info(rb_task_id,
                 &format!(
-                    "Fetch  ==> {}\n{}[rbatis] [{}] Args   ==> {}",
+                    "Fetch  ==> {}\n{}[rbatis]                      Args   ==> {}",
                     &sql,
                     string_util::LOG_SPACE,
-                    "",
                     args_string
                 ),
             );
@@ -272,11 +273,11 @@ impl<'a> ExecutorMut for RBatisConnExecutor<'_> {
                 match &result {
                     Ok(result) => {
                         self.get_rbatis().log_plugin
-                            .info(&format!("ReturnRows <== {}", result.1));
+                            .info(rb_task_id,&format!("ReturnRows <== {}", result.1));
                     }
                     Err(e) => {
                         self.get_rbatis().log_plugin
-                            .error(&format!("ReturnErr  <== {}", e));
+                            .error(rb_task_id,&format!("ReturnErr  <== {}", e));
                     }
                 }
             }
@@ -287,11 +288,11 @@ impl<'a> ExecutorMut for RBatisConnExecutor<'_> {
                 match &result {
                     Ok(result) => {
                         self.get_rbatis().log_plugin
-                            .info(&format!("ReturnRows <== {}", result.1));
+                            .info(rb_task_id,&format!("ReturnRows <== {}", result.1));
                     }
                     Err(e) => {
                         self.get_rbatis().log_plugin
-                            .error(&format!("ReturnErr  <== {}", e));
+                            .error(rb_task_id,&format!("ReturnErr  <== {}", e));
                     }
                 }
             }
@@ -332,6 +333,7 @@ impl<'a, 'b> RBatisTxExecutor<'b> {
 #[async_trait]
 impl<'a> ExecutorMut for RBatisTxExecutor<'_> {
     async fn exec(&mut self, sql: &str, mut args: Vec<bson2::Bson>) -> Result<DBExecResult, Error> {
+        let rb_task_id = new_snowflake_id();
         let mut sql = sql.to_string();
         let is_prepared = args.len() > 0;
         for item in &self.get_rbatis().sql_intercepts {
@@ -340,12 +342,11 @@ impl<'a> ExecutorMut for RBatisTxExecutor<'_> {
         if self.get_rbatis().log_plugin.is_enable() {
             let (_args, args_string) = bson_arr_to_string(args);
             args = _args;
-            self.get_rbatis().log_plugin.info(
+            self.get_rbatis().log_plugin.info(rb_task_id,
                 &format!(
-                    "Exec   ==> {}\n{}[rbatis] [{}] Args   ==> {}",
+                    "Exec   ==> {}\n{}[rbatis]                      Args   ==> {}",
                     &sql,
                     string_util::LOG_SPACE,
-                    "",
                     args_string
                 ),
             );
@@ -360,13 +361,13 @@ impl<'a> ExecutorMut for RBatisTxExecutor<'_> {
         if self.get_rbatis().log_plugin.is_enable() {
             match &result {
                 Ok(result) => {
-                    self.get_rbatis().log_plugin.info(
+                    self.get_rbatis().log_plugin.info(rb_task_id,
                         &format!("RowsAffected <== {}", result.rows_affected),
                     );
                 }
                 Err(e) => {
                     self.get_rbatis().log_plugin
-                        .error(&format!("ReturnErr  <== {}", e));
+                        .error(rb_task_id,&format!("ReturnErr  <== {}", e));
                 }
             }
         }
@@ -374,6 +375,7 @@ impl<'a> ExecutorMut for RBatisTxExecutor<'_> {
     }
 
     async fn fetch<T>(&mut self, sql: &str, mut args: Vec<bson2::Bson>) -> Result<T, Error> where T: DeserializeOwned {
+        let rb_task_id = new_snowflake_id();
         let mut sql = sql.to_string();
         let is_prepared = args.len() > 0;
         for item in &self.get_rbatis().sql_intercepts {
@@ -382,12 +384,11 @@ impl<'a> ExecutorMut for RBatisTxExecutor<'_> {
         if self.get_rbatis().log_plugin.is_enable() {
             let (_args, args_string) = bson_arr_to_string(args);
             args = _args;
-            self.get_rbatis().log_plugin.info(
+            self.get_rbatis().log_plugin.info(rb_task_id,
                 &format!(
-                    "Fetch  ==> {}\n{}[rbatis] [{}] Args   ==> {}",
+                    "Fetch  ==> {}\n{}[rbatis]                      Args   ==> {}",
                     &sql,
                     string_util::LOG_SPACE,
-                    "",
                     args_string
                 ),
             );
@@ -399,11 +400,11 @@ impl<'a> ExecutorMut for RBatisTxExecutor<'_> {
                 match &result {
                     Ok(result) => {
                         self.get_rbatis().log_plugin
-                            .info(&format!("ReturnRows <== {}", result.1));
+                            .info(rb_task_id,&format!("ReturnRows <== {}", result.1));
                     }
                     Err(e) => {
                         self.get_rbatis().log_plugin
-                            .error(&format!("ReturnErr  <== {}", e));
+                            .error(rb_task_id,&format!("ReturnErr  <== {}", e));
                     }
                 }
             }
@@ -414,11 +415,11 @@ impl<'a> ExecutorMut for RBatisTxExecutor<'_> {
                 match &result {
                     Ok(result) => {
                         self.get_rbatis().log_plugin
-                            .info(&format!("ReturnRows <== {}", result.1));
+                            .info(rb_task_id,&format!("ReturnRows <== {}", result.1));
                     }
                     Err(e) => {
                         self.get_rbatis().log_plugin
-                            .error(&format!("ReturnErr  <== {}", e));
+                            .error(rb_task_id,&format!("ReturnErr  <== {}", e));
                     }
                 }
             }
