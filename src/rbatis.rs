@@ -23,6 +23,7 @@ use crate::utils::error_util::ToResult;
 use crate::utils::string_util;
 use crate::wrapper::Wrapper;
 use std::fmt::{Debug, Formatter};
+use crate::snowflake::new_snowflake_id;
 
 /// rbatis engine
 // #[derive(Debug)]
@@ -213,6 +214,7 @@ impl Rbatis {
         let pool = self.get_pool()?;
         let conn = pool.begin().await?;
         return Ok(RBatisTxExecutor {
+            task_id: new_snowflake_id(),
             conn: conn,
             rb: &self,
         });
