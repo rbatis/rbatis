@@ -1,7 +1,21 @@
 language: rust
+#cache: cargo
+
+os:
+ - linux
+ - windows
+ - osx
+
+arch:
+- amd64
+- arm64
+
 rust:
+  - stable
   - nightly
-matrix:
-  allow_failures:
-    - rust: nightly
-  fast_finish: true
+
+env:
+  - RUST_BACKTRACE=1
+
+script:
+  - cargo test --verbose --all
