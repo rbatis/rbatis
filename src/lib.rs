@@ -24,6 +24,7 @@ pub use rbatis_macro_driver::{crud_table, CRUDTable, html_sql, py_sql, sql};
 
 pub use crate::core::{convert::StmtConvert, db::DriverType, error::Error, error::Result};
 
+pub use crate::rbatis::AsSqlTag;
 
 pub mod crud;
 pub mod plugin;

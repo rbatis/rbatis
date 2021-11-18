@@ -63,28 +63,13 @@ pub(crate) fn impl_macro_py_sql(target_fn: &ItemFn, args: &AttributeArgs) -> Tok
          #fn_body
          use rbatis::executor::{RbatisRef};
          let driver_type = #rbatis_ident.get_rbatis().driver_type()?;
-         use rbatis::rbatis_sql;
-         match driver_type{
-            rbatis::DriverType::Postgres => {
-                #[rb_py(#sql_ident,'$')]
-                pub fn #func_name_ident(arg: &bson2::Bson) {}
-                let (mut sql,rb_args) = #func_name_ident(&bson2::Bson::Document(rb_arg_map));
-                #call_method
-            }
-            rbatis::DriverType::Mssql => {
-                #[rb_py(#sql_ident,'$')]
-                pub fn #func_name_ident(arg: &bson2::Bson) {}
-                let (mut sql,rb_args) = #func_name_ident(&bson2::Bson::Document(rb_arg_map));
-                sql = sql.replace("$","@p");
-                #call_method
-            }
-            _=> {
-                #[rb_py(#sql_ident,'?')]
-                pub fn #func_name_ident(arg: &bson2::Bson) {}
-                let (mut sql,rb_args) = #func_name_ident(&bson2::Bson::Document(rb_arg_map));
-                #call_method
-            }
-         }
+         use rbatis::{rbatis_sql,AsSqlTag};
+         let sql_tag = driver_type.sql_tag();
+         #[rb_py(#sql_ident)]
+         pub fn #func_name_ident(arg: &bson2::Bson, _tag: char) {}
+         let (mut sql,rb_args) = #func_name_ident(&bson2::Bson::Document(rb_arg_map), sql_tag);
+         driver_type.do_replace_tag(&mut sql);
+         #call_method
        }
     }
         .into();
@@ -172,31 +157,15 @@ pub(crate) fn impl_macro_html_sql(target_fn: &ItemFn, args: &AttributeArgs) -> T
          let mut rb_arg_map = bson2::Document::new();
          #sql_args_gen
          #fn_body
-
          use rbatis::executor::{RbatisRef};
          let driver_type = #rbatis_ident.get_rbatis().driver_type()?;
-         use rbatis::rbatis_sql;
-         match driver_type{
-            rbatis::DriverType::Postgres => {
-                #[rb_html(#sql_ident,'$')]
-                pub fn #func_name_ident(arg: &bson2::Bson) {}
-                let (mut sql,rb_args) = #func_name_ident(&bson2::Bson::Document(rb_arg_map));
-                #call_method
-            }
-            rbatis::DriverType::Mssql => {
-                #[rb_html(#sql_ident,'$')]
-                pub fn #func_name_ident(arg: &bson2::Bson) {}
-                let (mut sql,rb_args) = #func_name_ident(&bson2::Bson::Document(rb_arg_map));
-                sql = sql.replace("$","@p");
-                #call_method
-            }
-            _=> {
-                #[rb_html(#sql_ident,'?')]
-                pub fn #func_name_ident(arg: &bson2::Bson) {}
-                let (mut sql,rb_args) = #func_name_ident(&bson2::Bson::Document(rb_arg_map));
-                #call_method
-            }
-         }
+         use rbatis::{rbatis_sql,AsSqlTag};
+         let sql_tag = driver_type.sql_tag();
+         #[rb_html(#sql_ident)]
+         pub fn #func_name_ident(arg: &bson2::Bson, _tag: char) {}
+         let (mut sql,rb_args) = #func_name_ident(&bson2::Bson::Document(rb_arg_map),sql_tag);
+         driver_type.do_replace_tag(&mut sql);
+         #call_method
        }
     }
         .into();
