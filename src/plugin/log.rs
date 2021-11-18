@@ -13,74 +13,74 @@ pub trait LogPlugin: Send + Sync + Debug {
     fn is_enable(&self) -> bool {
         return !self.get_level_filter().eq(&log::LevelFilter::Off);
     }
-    fn do_log(&self, data: &str) {
+    fn do_log(&self, id: i64, data: &str) {
         match self.get_level_filter() {
             log::LevelFilter::Error => {
-                self.error(data);
+                self.error(id, data);
             }
             log::LevelFilter::Warn => {
-                self.warn(data);
+                self.warn(id, data);
             }
             log::LevelFilter::Info => {
-                self.info(data);
+                self.info(id, data);
             }
             log::LevelFilter::Debug => {
-                self.debug(data);
+                self.debug(id, data);
             }
             log::LevelFilter::Trace => {
-                self.trace(data);
+                self.trace(id, data);
             }
             log::LevelFilter::Off => {}
         }
     }
 
-    fn error(&self, data: &str) {
+    fn error(&self, id: i64, data: &str) {
         let filter = self.get_level_filter();
         if filter.eq(&LevelFilter::Off) {
             return;
         }
         if filter.ge(&LevelFilter::Error) {
-            error!("[rbatis] [] {}", data);
+            error!("[rbatis] [{}] {}", id ,data);
         }
     }
 
-    fn warn(&self, data: &str) {
+    fn warn(&self, id: i64, data: &str) {
         let filter = self.get_level_filter();
         if filter.eq(&LevelFilter::Off) {
             return;
         }
         if filter.ge(&LevelFilter::Warn) {
-            warn!("[rbatis] [] {}", data);
+            warn!("[rbatis] [{}] {}", id,data);
         }
     }
 
-    fn info(&self, data: &str) {
+    fn info(&self, id: i64, data: &str) {
         let filter = self.get_level_filter();
         if filter.eq(&LevelFilter::Off) {
             return;
         }
         if filter.ge(&LevelFilter::Info) {
-            info!("[rbatis] [] {}", data);
+            info!("[rbatis] [{}] {}", id,data);
         }
     }
 
-    fn debug(&self, data: &str) {
+    fn debug(&self, id: i64, data: &str) {
         let filter = self.get_level_filter();
         if filter.eq(&LevelFilter::Off) {
             return;
         }
         if filter.ge(&LevelFilter::Debug) {
-            debug!("[rbatis] [] {}", data);
+            debug!("[rbatis] [{}] {}", id,data);
         }
     }
 
-    fn trace(&self, data: &str) {
+    fn trace(&self, id: i64, data: &str) {
         let filter = self.get_level_filter();
         if filter.eq(&LevelFilter::Off) {
             return;
         }
         if filter.ge(&LevelFilter::Trace) {
-            trace!("[rbatis] [] {}", data);
+            trace!("[rbatis] [{}] {}", id,data);
         }
     }
 }
