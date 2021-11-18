@@ -246,15 +246,14 @@ impl AsSqlTag for DriverType {
             DriverType::Mysql => { '?' }
             DriverType::Sqlite => { '?' }
             DriverType::Postgres => { '$' }
-            //@p
-            DriverType::Mssql => { '@' }
+            //mssql is '@p',so use '$' to '@p'
+            DriverType::Mssql => { '$' }
         }
     }
     #[inline]
     fn do_replace_tag(&self, sql: &mut String) {
-        let tag = self.sql_tag();
         if self.eq(&DriverType::Mssql) {
-            *sql = sql.replace("@", "@p");
+            *sql = sql.replace("$", "@p");
         }
     }
 }
