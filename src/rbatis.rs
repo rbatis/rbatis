@@ -214,7 +214,7 @@ impl Rbatis {
         let pool = self.get_pool()?;
         let conn = pool.begin().await?;
         return Ok(RBatisTxExecutor {
-            task_id: new_snowflake_id(),
+            tx_id: new_snowflake_id(),
             conn: conn,
             rb: &self,
         });
