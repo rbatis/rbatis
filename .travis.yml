@@ -17,5 +17,7 @@ rust:
 env:
   - RUST_BACKTRACE=1
 
-script:
-  - cargo test --verbose --all
+matrix:
+  allow_failures:
+    - rust: nightly
+  fast_finish: true
