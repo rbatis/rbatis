@@ -1,19 +1,14 @@
 language: rust
-#cache: cargo
-
 os:
- - linux
- - windows
- - osx
-
+  - linux
+  - windows
+  - osx
 arch:
-- amd64
-- arm64
-
+  - amd64
+  - arm64
 rust:
-  - stable
   - nightly
-
-env:
-  - RUST_BACKTRACE=1
-
+matrix:
+  allow_failures:
+    - rust: nightly
+  fast_finish: true
