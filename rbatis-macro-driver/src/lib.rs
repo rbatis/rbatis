@@ -47,10 +47,6 @@ pub fn sql(args: TokenStream, func: TokenStream) -> TokenStream {
 /// py sql create macro,this macro use RB.py_fetch and RB.py_exec
 /// for example:
 ///
-///
-/// also,you can use arg  context_id:&str,RB:&Rbatis
-///
-///
 ///#[rb_py("
 ///     SELECT * FROM biz_activity
 ///     if  name != null:
