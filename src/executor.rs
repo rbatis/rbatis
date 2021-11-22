@@ -229,7 +229,7 @@ impl<'a> ExecutorMut for RBatisConnExecutor<'_> {
             let q: DBQuery = self.bind_arg(&self.conn.driver_type(), &sql, args)?;
             result = self.conn.exec_prepare(q).await;
         } else {
-            result = self.conn.exec(&sql).await;
+            result = self.conn.exec_sql(&sql).await;
         }
         if self.get_rbatis().log_plugin.is_enable() {
             match &result {
@@ -357,7 +357,7 @@ impl<'a> ExecutorMut for RBatisTxExecutor<'_> {
             let q: DBQuery = self.bind_arg(&self.conn.driver_type, &sql, args)?;
             result = self.conn.exec_prepare(q).await;
         } else {
-            result = self.conn.exec(&sql).await;
+            result = self.conn.exec_sql(&sql).await;
         }
         if self.get_rbatis().log_plugin.is_enable() {
             match &result {
