@@ -47,11 +47,32 @@ pub fn sql(args: TokenStream, func: TokenStream) -> TokenStream {
 /// py sql create macro,this macro use RB.py_fetch and RB.py_exec
 /// for example:
 ///
-///
-///  also,you can use arg  context_id:&str,RB:&Rbatis
-///     #[py_sql(RB, "select * from biz_activity where id = #{name}
-///                   if name != '':
-///                     and name=#{name}")]
+///#[rb_py("
+///     SELECT * FROM biz_activity
+///     if  name != null:
+///       AND delete_flag = #{del}
+///       AND version = 1
+///       if  age!=1:
+///         AND version = 1
+///       AND version = 1
+///     AND a = 0
+///       AND version = 1
+///     and id in (
+///     trim ',': for item in ids:
+///       #{item},
+///     )
+///     and id in (
+///     trim ',': for index,item in ids:
+///       #{item},
+///     )
+///     trim 'AND':
+///       AND delete_flag = #{del2}
+///     choose:
+///         when age==27:
+///           AND age = 27
+///         otherwise:
+///           AND age = 0
+///     WHERE id  = '2'")]
 /// pub async fn py_select_rb(rbatis: &Rbatis, name: &str) -> Option<BizActivity> {}
 #[proc_macro_attribute]
 pub fn py_sql(args: TokenStream, func: TokenStream) -> TokenStream {
