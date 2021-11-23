@@ -9,21 +9,18 @@ mod test {
 
     use crate::BizActivity;
 
-    ///select page must have  '?:&PageRequest' arg and return 'Page<?>'
-    #[html_sql(rb, "example/example.html")]
-    async fn select_by_condition(rb: &mut RbatisExecutor<'_,'_>, page_req: &PageRequest, name: &str, dt: &rbatis::DateTimeNative) -> Page<BizActivity> { todo!() }
+    #[sql("select * from biz_activity where delete_flag = ?")]
+    async fn sql_fn(rb: &Rbatis, delete_flag: &i32) -> Vec<BizActivity> { todo!() }
 
     #[tokio::test]
-    pub async fn test_select_by_condition() {
+    pub async fn test_sql_fn() {
         fast_log::init_log("requests.log", 1000, log::Level::Info, None, true);
         //use static ref
         let rb = Rbatis::new();
         rb.link("mysql://root:123456@localhost:3306/test")
             .await
             .unwrap();
-        let a = select_by_condition(&mut rb.as_executor(), &PageRequest::new(1, 10), "test",&rbatis::DateTimeNative::now())
-            .await
-            .unwrap();
+        let a = sql_fn(&rb, &1).await.unwrap();
         println!("{:?}", a);
     }
 }

@@ -112,3 +112,15 @@ pub(crate) fn is_fetch(return_source: &str) -> bool {
     let is_select = !return_source.contains("DBExecResult");
     return is_select;
 }
+
+
+pub(crate) fn is_rbatis_ref(ty_stream:&str) -> bool{
+    if ty_stream.contains("RbatisExecutor")
+        || ty_stream.contains("Rbatis")
+        || ty_stream.contains("RBatisConnExecutor")
+        || ty_stream.contains("RBatisTxExecutor")
+        || ty_stream.contains("RBatisTxExecutorGuard"){
+        return true
+    }
+    false
+}

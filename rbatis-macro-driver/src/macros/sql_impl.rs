@@ -2,19 +2,48 @@ use proc_macro2::{Ident, Span};
 use quote::quote;
 use quote::ToTokens;
 use syn;
-use syn::{AttributeArgs, ItemFn};
+use syn::{AttributeArgs, FnArg, ItemFn};
 
 use crate::proc_macro::TokenStream;
-use crate::util::{find_fn_body, find_return_type, get_fn_args, get_page_req_ident, is_fetch};
+use crate::util::{find_fn_body, find_return_type, get_fn_args, get_page_req_ident, is_fetch, is_rbatis_ref};
 
 //impl sql macro
 pub(crate) fn impl_macro_sql(target_fn: &ItemFn, args: &AttributeArgs) -> TokenStream {
     let return_ty = find_return_type(target_fn);
     let func_name_ident = target_fn.sig.ident.to_token_stream();
-    let rbatis_ident = args.get(0).unwrap().to_token_stream();
-    let rbatis_name = format!("{}", rbatis_ident);
-    let sql_ident = args.get(1).unwrap().to_token_stream();
-    let sql = format!("{}", sql_ident).trim().to_string();
+
+    let mut rbatis_ident = "".to_token_stream();
+    let mut rbatis_name = String::new();
+    for x in &target_fn.sig.inputs {
+        match x {
+            FnArg::Receiver(_) => {}
+            FnArg::Typed(t) => {
+                let ty_stream = t.ty.to_token_stream().to_string();
+                if is_rbatis_ref(&ty_stream) {
+                    rbatis_ident = t.pat.to_token_stream();
+                    rbatis_name = rbatis_ident.to_string();
+                    break;
+                }
+            }
+        }
+    }
+
+    let sql_ident;
+    let sql;
+    if args.len() == 1 {
+        if rbatis_name.is_empty() {
+            panic!("[rbatis] you should add rbatis ref param  rb:&Rbatis  or rb: &mut RbatisExecutor<'_,'_>  on '{}()'!", target_fn.sig.ident);
+        }
+        sql_ident = args.get(0).expect("[rbatis] miss sql macaro param!").to_token_stream();
+        sql = format!("{}", sql_ident).trim().to_string();
+    } else if args.len() == 2 {
+        rbatis_ident = args.get(0).expect("[rbatis] miss rbatis ident param!").to_token_stream();
+        rbatis_name = format!("{}", rbatis_ident);
+        sql_ident = args.get(1).expect("[rbatis] miss sql macro sql param!").to_token_stream();
+    } else {
+        panic!("[rbatis] Incorrect macro parameter length!");
+    }
+
     let func_args_stream = target_fn.sig.inputs.to_token_stream();
     let fn_body = find_fn_body(target_fn);
     let is_async = target_fn.sig.asyncness.is_some();
