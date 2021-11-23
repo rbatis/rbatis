@@ -245,30 +245,6 @@ impl<T> CRUDTable for Option<T>
     }
 }
 
-
-pub trait Fields {
-    fn to_fields<T>(&self, column: &str) -> Vec<T> where T: DeserializeOwned;
-}
-
-impl<Table> Fields for Vec<Table> where Table: CRUDTable {
-    fn to_fields<T>(&self, column: &str) -> Vec<T> where T: DeserializeOwned {
-        let mut results = vec![];
-        for x in self {
-            let v = x.get(column);
-            results.push(v);
-        }
-        let d = bson2::from_bson(bson2::Bson::Array(results));
-        match d {
-            Ok(v) => {
-                return v;
-            }
-            _ => {}
-        }
-        return vec![];
-    }
-}
-
-
 #[async_trait]
 pub trait CRUD {
     async fn save_by_wrapper<T>(

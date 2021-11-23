@@ -9,24 +9,24 @@ extern crate lazy_static;
 #[macro_use]
 extern crate rbatis;
 
-mod crud_test;
-mod dyn_table_test;
-mod format_test;
-mod ids_test;
-mod intercept_test;
-mod page_test;
-mod plugin_exclude_test;
-mod proc_py_sql_test;
-mod proc_htmlsql_test;
-mod proc_sql_test;
-mod raw_driver_test;
-mod raw_identifiers_test;
-mod raw_sql_macro_test;
-mod table_macro_test;
-mod transaction_test;
-mod un_support_type_test;
-mod wrapper_test;
-mod wrapper_test_scalability;
+mod crud;
+mod dyn_table_name;
+mod format;
+mod get_fields;
+mod plugin_intercept;
+mod plugin_page;
+mod plugin_logic_del;
+mod macro_proc_pysql;
+mod macro_proc_htmlsql;
+mod macro_proc_rawsql;
+mod raw_driver;
+mod column_keyword;
+mod macro_tool;
+mod transaction;
+mod plugin_snowflake;
+mod plugin_object_id;
+mod wrapper;
+mod wrapper_macro;
 
 
 
