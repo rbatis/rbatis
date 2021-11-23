@@ -25,9 +25,7 @@ mod test {
         println!("{:?}", a);
     }
 
-    #[py_sql(
-    rbatis,
-    "select a1.name as name,a2.create_time as create_time
+    #[py_sql("select a1.name as name,a2.create_time as create_time
                       from test.biz_activity a1,biz_activity a2
                       where a1.id=a2.id
                       and a1.name=#{name}")]
