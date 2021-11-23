@@ -21,11 +21,13 @@ use rbatis_core::{DateTimeNative, Format};
 use crate::snowflake::new_snowflake_id;
 
 
-/// must be only one have Some(Value)
-/// (&rb).into()
+/// the rbatis Containers for transactions, connections, and ontologies
+/// for example:
+///
 /// &mut tx.as_executor()
 /// &mut conn.as_executor()
 /// &mut guard.as_executor()
+/// (&rb).into()
 /// (&mut tx).into()
 /// (&mut conn).into()
 /// (&mut guard).into()
