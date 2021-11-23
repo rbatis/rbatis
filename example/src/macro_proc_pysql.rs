@@ -43,10 +43,4 @@ mod test {
             .unwrap();
         println!("{:?}", a);
     }
-
-    ///Commit the transaction
-    #[py_sql("select * from biz_activity where delete_flag = 0
-                  if name != '':
-                    and name=#{name}")]
-    async fn py_sql_tx(rb: &Rbatis, tx_id: &String, name: &str) -> Vec<BizActivity> { todo!() }
 }
