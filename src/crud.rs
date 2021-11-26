@@ -281,7 +281,7 @@ pub trait CRUD {
 
     /// remove_by_column
     /// column_value,column's value
-    async fn remove_by_column<T, P>(&self, column: &str, column_value: &P) -> Result<u64> where T: CRUDTable, P: Serialize + Send + Sync;
+    async fn remove_by_column<T, P>(&self, column: &str, column_value: P) -> Result<u64> where T: CRUDTable, P: Serialize + Send + Sync;
 
     /// remove_batch_by_column
     /// column_values,column's value
@@ -310,7 +310,7 @@ pub trait CRUD {
             T: CRUDTable;
 
     /// fetch database record by id
-    async fn fetch_by_column<T, P>(&self, column: &str, value: &P) -> Result<T>
+    async fn fetch_by_column<T, P>(&self, column: &str, value: P) -> Result<T>
         where
             T: CRUDTable + DeserializeOwned, P: Serialize + Send + Sync;
 
@@ -530,7 +530,7 @@ pub trait CRUDMut: ExecutorMut {
     }
 
     /// remove database record by id
-    async fn remove_by_column<T, P>(&mut self, column: &str, value: &P) -> Result<u64>
+    async fn remove_by_column<T, P>(&mut self, column: &str, value: P) -> Result<u64>
         where
             T: CRUDTable, P: Serialize + Send + Sync,
     {
@@ -563,7 +563,7 @@ pub trait CRUDMut: ExecutorMut {
             );
         }
         return Ok(self
-            .exec(&sql, vec![crate::as_bson!(value)])
+            .exec(&sql, vec![crate::as_bson!(&value)])
             .await?
             .rows_affected);
     }
@@ -753,7 +753,7 @@ pub trait CRUDMut: ExecutorMut {
     }
 
     /// fetch database record by value
-    async fn fetch_by_column<T, P>(&mut self, column: &str, value: &P) -> Result<T>
+    async fn fetch_by_column<T, P>(&mut self, column: &str, value: P) -> Result<T>
         where
             T: CRUDTable + DeserializeOwned, P: Serialize + Send + Sync,
     {
@@ -907,7 +907,7 @@ impl CRUD for Rbatis {
         conn.remove_by_wrapper::<T>(w).await
     }
 
-    async fn remove_by_column<T, P>(&self, column: &str, value: &P) -> Result<u64> where
+    async fn remove_by_column<T, P>(&self, column: &str, value: P) -> Result<u64> where
         T: CRUDTable, P: Serialize + Send + Sync {
         let mut conn = self.acquire().await?;
         conn.remove_by_column::<T, P>(column, value).await
@@ -939,7 +939,7 @@ impl CRUD for Rbatis {
         conn.update_batch_by_column::<T>(column, args).await
     }
 
-    async fn fetch_by_column<T, P>(&self, column: &str, value: &P) -> Result<T> where
+    async fn fetch_by_column<T, P>(&self, column: &str, value: P) -> Result<T> where
         T: CRUDTable + DeserializeOwned, P: Serialize + Send + Sync {
         let mut conn = self.acquire().await?;
         conn.fetch_by_column::<T, P>(column, value).await
