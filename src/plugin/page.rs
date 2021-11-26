@@ -464,7 +464,7 @@ impl PagePlugin for RbatisPagePlugin {
         args: &Vec<Bson>,
         page: &dyn IPageRequest,
     ) -> Result<(String, String), Error> {
-        if sql.contains(crate::sql::TEMPLATE.group_by.left_right_space) {
+        if sql.contains(crate::sql::TEMPLATE.group_by.value) {
             return self
                 .pack
                 .make_page_sql(driver_type, sql, args, page);
