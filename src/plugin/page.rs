@@ -300,23 +300,23 @@ impl RbatisReplacePagePlugin {
         //     .replace(" from ", " from ")
         //     .replace(" order by ", " order by ")
         //     .replace(" limit ", " limit ");
-        let mut from_index = sql.find(crate::sql::TEMPLATE.from.left_right_space);
+        let mut from_index = sql.find(crate::sql::TEMPLATE.from.left_space);
         if from_index.is_some() {
             from_index = Option::Some(
-                from_index.unwrap() + crate::sql::TEMPLATE.from.left_right_space.len(),
+                from_index.unwrap() + crate::sql::TEMPLATE.from.left_space.len(),
             );
         }
         let mut where_sql = sql[from_index.unwrap_or(0)..sql.len()].to_string();
         //remove order by
-        if where_sql.contains(crate::sql::TEMPLATE.order_by.left_right_space) {
+        if where_sql.contains(crate::sql::TEMPLATE.order_by.left_space) {
             where_sql = where_sql[0..where_sql
-                .rfind(crate::sql::TEMPLATE.order_by.left_right_space)
+                .rfind(crate::sql::TEMPLATE.order_by.left_space)
                 .unwrap_or(where_sql.len())]
                 .to_string();
         }
-        if where_sql.contains(crate::sql::TEMPLATE.limit.left_right_space) {
+        if where_sql.contains(crate::sql::TEMPLATE.limit.left_space) {
             where_sql = where_sql[0..where_sql
-                .rfind(crate::sql::TEMPLATE.limit.left_right_space)
+                .rfind(crate::sql::TEMPLATE.limit.left_space)
                 .unwrap_or(where_sql.len())]
                 .to_string();
         }
@@ -340,7 +340,7 @@ impl PagePlugin for RbatisReplacePagePlugin {
         //default sql
         let mut sql = sql.trim().to_owned();
         if !sql.starts_with(crate::sql::TEMPLATE.select.right_space)
-            && !sql.contains(crate::sql::TEMPLATE.from.left_right_space)
+            && !sql.contains(crate::sql::TEMPLATE.from.left_space)
         {
             return Err(crate::core::Error::from(
                 "[rbatis] make_page_sql() sql must contains 'select ' And ' from '",
@@ -400,7 +400,7 @@ impl PagePlugin for RbatisPackPagePlugin {
         //default sql
         let mut sql = sql.trim().to_owned();
         if !sql.starts_with(crate::sql::TEMPLATE.select.right_space)
-            && !sql.contains(crate::sql::TEMPLATE.from.left_right_space)
+            && !sql.contains(crate::sql::TEMPLATE.from.left_space)
         {
             return Err(crate::core::Error::from(
                 "[rbatis] make_page_sql() sql must contains 'select ' And ' from '",
