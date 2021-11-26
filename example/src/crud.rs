@@ -193,9 +193,11 @@ mod test {
 
     #[tokio::test]
     pub async fn test_remove_by_id() {
-        let a = 1;
-        let b = a;
-        println!("{}", a);
+        let mut rb = init_rbatis().await;
+        //set logic plugin(run with update sql),if not will run delete sql
+        rb.set_logic_plugin(RbatisLogicDeletePlugin::new("delete_flag"));
+        let num = rb.remove_by_column::<BizActivity,_>("id","1").await.unwrap();
+        println!("{}", num);
     }
 
     #[tokio::test]
