@@ -17,9 +17,8 @@ mod test {
         rb.link("mysql://root:123456@localhost:3306/test")
             .await
             .unwrap();
-        let wraper = rb.new_wrapper().eq("delete_flag", 0);
         let data: Page<BizActivity> = rb
-            .fetch_page_by_wrapper(wraper, &PageRequest::new(1, 20))
+            .fetch_page_by_wrapper(rb.new_wrapper().eq("delete_flag", 0), &PageRequest::new(1, 20))
             .await
             .unwrap();
         println!("{}", serde_json::to_string(&data).unwrap());
