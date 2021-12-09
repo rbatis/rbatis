@@ -52,7 +52,7 @@ chrono = { version = "0.4", features = ["serde"] }
 lazy_static = "1.4"
 #serde
 serde = { version = "1", features = ["derive"] }
-serde_json = { version = "1" }
+serde_json = { version = "1", features = ["preserve_order"] }
 #uuid
 uuid = { version = "0.8", features = ["serde", "v4"] }
 #log
