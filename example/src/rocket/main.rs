@@ -22,7 +22,7 @@ async fn hello(rb: &State<Arc<Rbatis>>) -> String {
 #[rocket::main]
 async fn main() {
     //log
-    fast_log::init_log("requests.log", 1000, log::Level::Info, None, true);
+    fast_log::init_log("requests.log", log::Level::Info, None, true);
     //link database,also you can use  lazy_static! { static ref RB: Rbatis = Rbatis::new(); } replace this
     log::info!("linking database...");
     let rb = Rbatis::new();

@@ -26,7 +26,7 @@ mod test {
     ///
     #[tokio::test]
     pub async fn test_postgres_uuid() {
-        fast_log::init_log("requests.log", 1000, log::Level::Info, None, true);
+        fast_log::init_log("requests.log", log::Level::Info, None, true);
         let rb = Rbatis::new();
         rb.link("postgres://postgres:123456@localhost:5432/postgres")
             .await
@@ -74,7 +74,7 @@ mod test {
     ///
     #[tokio::test]
     pub async fn test_show_format_sql() {
-        fast_log::init_log("requests.log", 1000, log::Level::Info, None, true);
+        fast_log::init_log("requests.log", log::Level::Info, None, true);
         let mut rb = Rbatis::new();
         //RbatisLogFormatSqlIntercept will show Formatted SQL(no precompiled symbols)
         rb.add_sql_intercept(RbatisLogFormatSqlIntercept {});

@@ -110,7 +110,7 @@ fn filter_args_context_id(
         }
         sql_args_gen = quote! {
              #sql_args_gen
-             rb_args.push(bson2::to_bson(#item_ident).unwrap_or_default());
+             rb_args.push(rbson::to_bson(#item_ident).unwrap_or_default());
         };
     }
     sql_args_gen

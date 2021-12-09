@@ -1,11 +1,10 @@
 use std::collections::{BTreeMap, HashSet, LinkedList};
 use std::io::Read;
 
-use bson2::Bson;
+use rbson::Bson;
 
 //2020-11-15 00:31:25.803227700 +08:00 INFO rbatis::plugin::log
-pub const LOG_SPACE: &'static str =
-    "                                                                ";
+pub const LOG_SPACE: &'static str = "                                                      ";
 
 //find like #{*,*},${*,*} value *
 pub fn find_convert_string(arg: &str) -> LinkedList<(String, String)> {

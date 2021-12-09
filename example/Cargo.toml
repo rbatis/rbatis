@@ -48,12 +48,12 @@ lazy_static = "1.4.0"
 bigdecimal = { version = "0.2.0", features = ["serde"] }
 #log lib
 log = "0.4"
-fast_log = "1.3"
+fast_log = "1.4"
 #async runtime lib
 tokio = { version = "1.12", features = ["full"] }
 async-std = { version = "1.9", features = ["attributes", "tokio1"] }
 #rbatis lib(debug_mode will print json data)
-bson2 = { version = "2.0.3", features = ["uuid-0_8", "chrono-0_4"] }
+rbson = { version = "2.0.3", features = ["uuid-0_8", "chrono-0_4"] }
 rbatis = { path = "../", features = ["debug_mode"] }
 
 #web lib

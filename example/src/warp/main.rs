@@ -39,7 +39,7 @@ lazy_static! {
 #[tokio::main]
 async fn main() {
     //LOG
-    fast_log::init_log("requests.log", 1000, log::Level::Info, None, true);
+    fast_log::init_log("requests.log", log::Level::Info, None, true);
 
     log::info!("linking database...");
     //ORM

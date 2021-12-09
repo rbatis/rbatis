@@ -5,7 +5,7 @@ use futures_core::future::BoxFuture;
 use rbatis_core::Error;
 use serde::de::DeserializeOwned;
 use serde::{Deserialize, Serialize};
-use bson2::Bson;
+use rbson::Bson;
 
 use crate::core::db::DriverType;
 use crate::sql::PageLimit;
@@ -24,7 +24,7 @@ pub trait PagePlugin: Send + Sync + Debug {
         &self,
         driver_type: &DriverType,
         sql: &str,
-        args: &Vec<bson2::Bson>,
+        args: &Vec<rbson::Bson>,
         page: &dyn IPageRequest,
     ) -> Result<(String, String), crate::core::Error>;
 }

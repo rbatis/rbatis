@@ -35,7 +35,7 @@ lazy_static! {
 
 #[async_std::main]
 async fn main() {
-    fast_log::init_log("requests.log", 1000, log::Level::Info, None, true);
+    fast_log::init_log("requests.log", log::Level::Info, None, true);
     log::info!("linking database...");
     RB.link(MYSQL_URL).await.expect("rbatis link database fail");
     log::info!("linking database successful!");

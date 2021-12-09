@@ -1,6 +1,6 @@
 #[cfg(test)]
 mod test {
-    use bson2::Bson;
+    use rbson::Bson;
     use crate::BizActivity;
     use rbatis::core::Error;
     use rbatis::crud::{CRUDMut, CRUD};
@@ -13,7 +13,7 @@ mod test {
 
     #[tokio::test]
     pub async fn test_block_attack() {
-        fast_log::init_log("requests.log", 1000, log::Level::Info, None, true);
+        fast_log::init_log("requests.log", log::Level::Info, None, true);
         let mut rb = Rbatis::new();
         rb.add_sql_intercept(BlockAttackDeleteInterceptor {});
         rb.add_sql_intercept(BlockAttackUpdateInterceptor {});
@@ -46,7 +46,7 @@ mod test {
 
     #[tokio::test]
     pub async fn test_intercept() {
-        fast_log::init_log("requests.log", 1000, log::Level::Info, None, true);
+        fast_log::init_log("requests.log", log::Level::Info, None, true);
         let mut rb = Rbatis::new();
         rb.add_sql_intercept(MyIntercept {});
         rb.link("mysql://root:123456@localhost:3306/test")

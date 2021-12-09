@@ -1,6 +1,6 @@
 #[cfg(test)]
 mod test {
-    use bson2::Bson;
+    use rbson::Bson;
     use crate::BizActivity;
     use rbatis::crud::{CRUDMut, CRUD};
     use rbatis::plugin::page::{Page, PageRequest};
@@ -12,7 +12,7 @@ mod test {
 
     #[tokio::test]
     pub async fn test_sql_page() {
-        fast_log::init_log("requests.log", 1000, log::Level::Info, None, true);
+        fast_log::init_log("requests.log", log::Level::Info, None, true);
         let rb = Rbatis::new();
         rb.link("mysql://root:123456@localhost:3306/test")
             .await
@@ -34,7 +34,7 @@ mod test {
 
     #[tokio::test]
     pub async fn test_macro_py_select_page() {
-        fast_log::init_log("requests.log", 1000, log::Level::Info, None, true);
+        fast_log::init_log("requests.log", log::Level::Info, None, true);
         //use static ref
         RB.link("mysql://root:123456@localhost:3306/test")
             .await
@@ -50,7 +50,7 @@ mod test {
 
     #[tokio::test]
     pub async fn test_group_by_page() {
-        fast_log::init_log("requests.log", 1000, log::Level::Info, None, true);
+        fast_log::init_log("requests.log", log::Level::Info, None, true);
         //use static ref
         RB.link("mysql://root:123456@localhost:3306/test")
             .await

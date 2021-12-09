@@ -87,7 +87,7 @@ pub(crate) fn impl_macro_py_sql(target_fn: &ItemFn, args: &AttributeArgs) -> Tok
     return quote! {
        pub async fn #func_name_ident(#func_args_stream) -> #return_ty {
          let mut sql = #sql_ident.to_string();
-         let mut rb_arg_map = bson2::Document::new();
+         let mut rb_arg_map = rbson::Document::new();
          #sql_args_gen
          #fn_body
          use rbatis::executor::{RbatisRef};
@@ -95,8 +95,8 @@ pub(crate) fn impl_macro_py_sql(target_fn: &ItemFn, args: &AttributeArgs) -> Tok
          use rbatis::{rbatis_sql,AsSqlTag};
          let sql_tag = driver_type.sql_tag();
          #[rb_py(#sql_ident)]
-         pub fn #func_name_ident(arg: &bson2::Bson, _tag: char) {}
-         let (mut sql,rb_args) = #func_name_ident(&bson2::Bson::Document(rb_arg_map), sql_tag);
+         pub fn #func_name_ident(arg: &rbson::Bson, _tag: char) {}
+         let (mut sql,rb_args) = #func_name_ident(&rbson::Bson::Document(rb_arg_map), sql_tag);
          driver_type.do_replace_tag(&mut sql);
          #call_method
        }
@@ -210,7 +210,7 @@ pub(crate) fn impl_macro_html_sql(target_fn: &ItemFn, args: &AttributeArgs) -> T
     //gen rust code templete
     return quote! {
        pub async fn #func_name_ident(#func_args_stream) -> #return_ty {
-         let mut rb_arg_map = bson2::Document::new();
+         let mut rb_arg_map = rbson::Document::new();
          #sql_args_gen
          #fn_body
          use rbatis::executor::{RbatisRef};
@@ -218,8 +218,8 @@ pub(crate) fn impl_macro_html_sql(target_fn: &ItemFn, args: &AttributeArgs) -> T
          use rbatis::{rbatis_sql,AsSqlTag};
          let sql_tag = driver_type.sql_tag();
          #[rb_html(#sql_ident)]
-         pub fn #func_name_ident(arg: &bson2::Bson, _tag: char) {}
-         let (mut sql,rb_args) = #func_name_ident(&bson2::Bson::Document(rb_arg_map),sql_tag);
+         pub fn #func_name_ident(arg: &rbson::Bson, _tag: char) {}
+         let (mut sql,rb_args) = #func_name_ident(&rbson::Bson::Document(rb_arg_map),sql_tag);
          driver_type.do_replace_tag(&mut sql);
          #call_method
        }
@@ -240,7 +240,7 @@ fn filter_args_context_id(
         }
         sql_args_gen = quote! {
              #sql_args_gen
-             rb_arg_map.insert(#item_ident_name.to_string(),bson2::to_bson(#item_ident).unwrap_or_default());
+             rb_arg_map.insert(#item_ident_name.to_string(),rbson::to_bson(#item_ident).unwrap_or_default());
         };
     }
     sql_args_gen
