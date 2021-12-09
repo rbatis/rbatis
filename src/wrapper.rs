@@ -5,7 +5,6 @@ use bson2::Bson;
 use rbatis_sql::ops::AsProxy;
 
 use serde::{Deserialize, Serialize};
-use serde_json::{json, Map, Value};
 
 use crate::core::convert::StmtConvert;
 use crate::core::db::DriverType;

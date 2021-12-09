@@ -7,7 +7,6 @@ use once_cell::sync::OnceCell;
 use rbatis_core::db::DBConnectOption;
 use serde::de::DeserializeOwned;
 use serde::ser::Serialize;
-use serde_json::Number;
 use uuid::Uuid;
 
 use crate::core::db::{DBExecResult, DBPool, DBPoolConn, DBPoolOptions, DBQuery, DBTx, DriverType};
