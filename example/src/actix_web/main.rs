@@ -55,7 +55,7 @@ async fn index(rb: web::Data<Arc<Rbatis>>) -> impl Responder {
 #[actix_web::main]
 async fn main() -> std::io::Result<()> {
     //log
-    fast_log::init_log("requests.log", 1000, log::Level::Info, None, true);
+    fast_log::init_log("requests.log", log::Level::Info, None, true);
     //init rbatis . also you can use  lazy_static! { static ref RB: Rbatis = Rbatis::new(); } replace this
     log::info!("linking database...");
     let rb = Rbatis::new();

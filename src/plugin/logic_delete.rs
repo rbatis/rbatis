@@ -1,6 +1,6 @@
 use std::fmt::{Debug, Display, Formatter};
 
-use bson2::Bson;
+use rbson::Bson;
 
 use crate::core::db::DriverType;
 use crate::core::Error;

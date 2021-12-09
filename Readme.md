@@ -60,7 +60,7 @@
 | rbatis::TimestampZ              | √     |  
 | rbatis::Uuid                    | √     |  
 | rbatis::plugin::page::{Page<T>, PageRequest} | √     |
-| bson2::Bson*                      | √     |
+| rbson::Bson*                      | √     |
 | serde_json::*        | √     |
 | any serde type         | √     |
 
@@ -103,7 +103,7 @@
 
 # bson (required)
 serde = { version = "1", features = ["derive"] }
-bson2 = "2.0"
+rbson = "2.0"
 
 # logging lib(required)
 log = "0.4"
@@ -163,7 +163,7 @@ impl_field_name_method!(BizActivity{id,name});
 #[tokio::main]
 async fn main() {
   /// enable log crate to show sql logs
-  fast_log::init_log("requests.log", 1000, log::Level::Info, None, true);
+  fast_log::init_log("requests.log", log::Level::Info, None, true);
   /// initialize rbatis. May use `lazy_static` crate to define rbatis as a global variable because rbatis is thread safe
   let rb = Rbatis::new();
   /// connect to database  
@@ -302,7 +302,7 @@ pub async fn select(name: &str) -> BizActivity {}
 
 #[tokio::test]
 pub async fn test_macro() {
-    fast_log::init_log("requests.log", 1000, log::Level::Info, None, true);
+    fast_log::init_log("requests.log", log::Level::Info, None, true);
     RB.link("mysql://root:123456@localhost:3306/test").await.unwrap();
     let a = select("1").await.unwrap();
     println!("{:?}", a);
@@ -374,7 +374,7 @@ println!("{}", serde_json::to_string(&data).unwrap());
 ``` rust
  use log::{error, info, warn};
  fn  main(){
-      fast_log::init_log("requests.log", 1000, log::Level::Info, None, true);
+      fast_log::init_log("requests.log", log::Level::Info, None, true);
       info!("print data");
  }
 ```
@@ -446,7 +446,7 @@ async fn index() -> impl Responder {
 #[actix_rt::main]
 async fn main() -> std::io::Result<()> {
     //log
-    fast_log::init_log("requests.log", 1000, log::Level::Info, None, true);
+    fast_log::init_log("requests.log", log::Level::Info, None, true);
     //link database
     RB.link("mysql://root:123456@localhost:3306/test").await.unwrap();
     //http server

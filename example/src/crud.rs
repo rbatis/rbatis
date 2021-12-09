@@ -1,6 +1,6 @@
 #[cfg(test)]
 mod test {
-    use bson2::Bson;
+    use rbson::Bson;
     use rbatis::core::value::DateTimeNow;
     use rbatis::core::Error;
     use rbatis::crud::{CRUDMut, CRUD, Skip};
@@ -63,7 +63,7 @@ mod test {
     // }
 
     pub async fn init_rbatis() -> Rbatis {
-        fast_log::init_log("requests.log", 1000, log::Level::Info, None, true);
+        fast_log::init_log("requests.log", log::Level::Info, None, true);
         let rb = Rbatis::new();
         rb.link("mysql://root:123456@localhost:3306/test")
             .await

@@ -15,7 +15,7 @@ mod test {
 
     #[tokio::test]
     pub async fn test_select_by_condition() {
-        fast_log::init_log("requests.log", 1000, log::Level::Info, None, true);
+        fast_log::init_log("requests.log", log::Level::Info, None, true);
         //use static ref
         let rb = Rbatis::new();
         rb.link("mysql://root:123456@localhost:3306/test")

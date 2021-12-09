@@ -1,7 +1,7 @@
 use std::collections::HashMap;
 use std::fmt::{Debug, Formatter};
 use std::ops::Add;
-use bson2::Bson;
+use rbson::Bson;
 use rbatis_sql::ops::AsProxy;
 
 use serde::{Deserialize, Serialize};
@@ -106,7 +106,7 @@ impl Wrapper {
     }
 
     /// push sql,args into self
-    pub fn push(mut self, sql: &str, args: Vec<bson2::Bson>) -> Self
+    pub fn push(mut self, sql: &str, args: Vec<rbson::Bson>) -> Self
     {
         let mut new_sql = sql.to_string();
         match self.driver_type {

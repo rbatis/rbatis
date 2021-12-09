@@ -3,7 +3,7 @@ use crate::crud::CRUDTable;
 use crate::rbatis::Rbatis;
 use crate::DriverType;
 use rbatis_core::Error;
-use bson2::Bson;
+use rbson::Bson;
 use std::fmt::{Debug, Display};
 
 /// sql intercept
@@ -18,7 +18,7 @@ pub trait SqlIntercept: Send + Sync + Debug {
         &self,
         rb: &Rbatis,
         sql: &mut String,
-        args: &mut Vec<bson2::Bson>,
+        args: &mut Vec<rbson::Bson>,
         is_prepared_sql: bool,
     ) -> Result<(), crate::core::Error>;
 }

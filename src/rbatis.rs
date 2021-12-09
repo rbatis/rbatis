@@ -38,7 +38,7 @@ pub struct Rbatis {
     // logic delete plugin
     pub logic_plugin: Option<Box<dyn LogicDelete>>,
     // sql param binder
-    pub encoder: fn(q: &mut DBQuery, arg: bson2::Bson) -> crate::Result<()>,
+    pub encoder: fn(q: &mut DBQuery, arg: rbson::Bson) -> crate::Result<()>,
 }
 
 impl Debug for Rbatis {
