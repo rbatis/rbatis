@@ -5,7 +5,6 @@ use std::hash::Hash;
 use async_trait::async_trait;
 use serde::de::DeserializeOwned;
 use serde::{Serialize, Serializer, Deserialize, Deserializer};
-use serde_json::{Map, Value};
 
 use crate::core::convert::{ResultCodec, StmtConvert};
 use crate::core::db::DBExecResult;
@@ -169,28 +168,6 @@ pub trait CRUDTable: Send + Sync + Serialize {
             }
         }
     }
-}
-
-/// decode columns from json and type
-pub fn decode_table_columns<T>() -> String where T: DeserializeOwned + Serialize {
-    let bean: serde_json::Result<T> = serde_json::from_str("{}");
-    if bean.is_err() {
-        //if json decode fail,return '*'
-        return " * ".to_string();
-    }
-    let v = crate::as_bson!(&bean.unwrap());
-    if !v.is_object() {
-        //if json decode fail,return '*'
-        return " * ".to_string();
-    }
-    let m = v.as_document().unwrap();
-    let mut fields = String::new();
-    for (k, _) in m {
-        fields.push_str(k);
-        fields.push_str(",");
-    }
-    fields.pop();
-    return format!("{}", fields);
 }
 
 

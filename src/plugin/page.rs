@@ -168,17 +168,6 @@ impl IPageRequest for PageRequest {
     }
 }
 
-impl ToString for PageRequest {
-    fn to_string(&self) -> String {
-        let result = serde_json::to_string(self);
-        if result.is_err() {
-            return String::new();
-        } else {
-            return result.unwrap();
-        }
-    }
-}
-
 impl<T> Page<T> {
     pub fn new(current: u64, page_size: u64) -> Self {
         return Page::new_total(current, page_size, 0);
@@ -276,19 +265,6 @@ impl<T> IPage<T> for Page<T>
     }
 }
 
-impl<T> ToString for Page<T>
-    where
-        T: Send + Sync + Serialize,
-{
-    fn to_string(&self) -> String {
-        let result = serde_json::to_string(self);
-        if result.is_err() {
-            return String::new();
-        } else {
-            return result.unwrap();
-        }
-    }
-}
 
 ///use Replace page plugin
 #[derive(Copy, Clone, Debug)]
