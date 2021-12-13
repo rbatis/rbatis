@@ -165,6 +165,17 @@ impl Wrapper {
     /// do method,if test is true
     /// for example:
     ///  let arg = 1;
+    ///  wrapper.r#if(true, |w| w.eq("id"))
+    pub fn r#if<'s, F>(self, test: bool, method: F) -> Self
+        where
+            F: FnOnce(Self) -> Self,
+    {
+        self.do_if(test,method)
+    }
+
+    /// do method,if test is true
+    /// for example:
+    ///  let arg = 1;
     ///  wrapper.do_if(true, |w| w.eq("id"),|w|w)
     pub fn do_if_else<'s, F>(self, test: bool, method_if: F, method_else: fn(Self) -> Self) -> Self
         where
@@ -175,6 +186,17 @@ impl Wrapper {
         } else {
             return method_else(self);
         }
+    }
+
+    /// do method,if test is true
+    /// for example:
+    ///  let arg = 1;
+    ///  wrapper.do_if(true, |w| w.eq("id"),|w|w)
+    pub fn r#if_else<'s, F>(self, test: bool, method_if: F, method_else: fn(Self) -> Self) -> Self
+        where
+            F: FnOnce(Self) -> Self,
+    {
+        self.do_if_else(test,method_if,method_else)
     }
 
     ///match cases
