@@ -65,6 +65,6 @@ tide = "0.16"
 warp = "0.3"
 rocket = "0.5.0-rc.1"
 ntex = "0.4"
-axum = "0.3"
+axum = "0.4"
 salvo = "0.16"
 tracing = "0.1" #axum need this
