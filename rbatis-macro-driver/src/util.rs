@@ -3,7 +3,6 @@ use std::collections::HashMap;
 use proc_macro2::{Ident, Span};
 use quote::quote;
 use quote::ToTokens;
-use syn;
 use syn::{FnArg, ItemFn, ReturnType};
 
 //find and check method return type

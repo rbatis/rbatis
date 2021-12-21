@@ -1,12 +1,10 @@
 use proc_macro2::{Ident, Span};
 use quote::quote;
 use quote::ToTokens;
-use syn;
 use syn::{AttributeArgs, FnArg, ItemFn};
 
 use crate::proc_macro::TokenStream;
 use crate::util::{find_fn_body, find_return_type, get_fn_args, get_page_req_ident, is_fetch, is_rbatis_ref};
-use crate::macros::html_loader::Element;
 use std::io::Read;
 
 ///py_sql macro
@@ -31,18 +29,15 @@ pub(crate) fn impl_macro_py_sql(target_fn: &ItemFn, args: &AttributeArgs) -> Tok
     }
 
     let sql_ident;
-    let sql;
     if args.len() == 1 {
         if rbatis_name.is_empty() {
             panic!("[rbatis] you should add rbatis ref param  rb:&Rbatis  or rb: &mut RbatisExecutor<'_,'_>  on '{}()'!", target_fn.sig.ident);
         }
         sql_ident = args.get(0).expect("[rbatis] miss pysql sql param!").to_token_stream();
-        sql = format!("{}", sql_ident).trim().to_string();
     } else if args.len() == 2 {
         rbatis_ident = args.get(0).expect("[rbatis] miss rbatis ident param!").to_token_stream();
         rbatis_name = format!("{}", rbatis_ident);
         sql_ident = args.get(1).expect("[rbatis] miss pysql sql param!").to_token_stream();
-        sql = format!("{}", sql_ident).trim().to_string();
     } else {
         panic!("[rbatis] Incorrect macro parameter length!");
     }
@@ -104,29 +99,6 @@ pub(crate) fn impl_macro_py_sql(target_fn: &ItemFn, args: &AttributeArgs) -> Tok
         .into();
 }
 
-
-fn find_node(arg: &Vec<Element>, name: &str) -> Option<Element> {
-    for x in arg {
-        match x.tag.as_str() {
-            "mapper" => {
-                return find_node(&x.childs, name);
-            }
-            "insert" | "select" | "update" | "delete" => {
-                match x.attributes.get("id") {
-                    Some(v) => {
-                        if v.eq(name) {
-                            return Some(x.clone());
-                        }
-                    }
-                    _ => {}
-                }
-            }
-            _ => {}
-        }
-    }
-    return None;
-}
-
 pub(crate) fn impl_macro_html_sql(target_fn: &ItemFn, args: &AttributeArgs) -> TokenStream {
     let return_ty = find_return_type(target_fn);
     let func_name_ident = target_fn.sig.ident.to_token_stream();
@@ -147,13 +119,11 @@ pub(crate) fn impl_macro_html_sql(target_fn: &ItemFn, args: &AttributeArgs) -> T
         }
     }
     let sql_ident;
-    let sql;
     if args.len() == 1 {
         if rbatis_name.is_empty() {
             panic!("[rbatis] you should add rbatis ref param  rb:&Rbatis  or rb: &mut RbatisExecutor<'_,'_>  on '{}()'!", target_fn.sig.ident);
         }
         sql_ident = args.get(0).expect("[rbatis] miss htmlsql sql param!").to_token_stream();
-        sql = format!("{}", sql_ident).trim().to_string();
     } else if args.len() == 2 {
          rbatis_ident = args.get(0).expect("[rbatis] miss rbatis ident param!").to_token_stream();
          rbatis_name = format!("{}", rbatis_ident);
@@ -168,9 +138,6 @@ pub(crate) fn impl_macro_html_sql(target_fn: &ItemFn, args: &AttributeArgs) -> T
     }
     let mut f = std::fs::File::open(&file_name).expect(&format!("File:\"{}\" does not exist", file_name));
     f.read_to_string(&mut html).expect(&format!("File:\"{}\" read fail!", file_name));
-    let nodes = crate::macros::html_loader::load_html(&html).expect(&format!("[rbatis] load html file:{} fail!", sql_ident));
-    let sql = find_node(&nodes, func_name_ident.to_string().as_str()).expect(&format!("[rbatis] load html file:{},method:{} fail!", sql_ident, sql_ident));
-
 
     let func_args_stream = target_fn.sig.inputs.to_token_stream();
     let fn_body = find_fn_body(target_fn);
