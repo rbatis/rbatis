@@ -194,7 +194,7 @@ pub(crate) fn impl_macro_html_sql(target_fn: &ItemFn, args: &AttributeArgs) -> T
         .into();
 }
 
-fn filter_args_context_id(
+pub(crate) fn filter_args_context_id(
     rbatis_name: &str,
     fn_arg_name_vec: &Vec<String>,
 ) -> proc_macro2::TokenStream {

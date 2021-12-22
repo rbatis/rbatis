@@ -7,8 +7,9 @@ use syn::{parse_macro_input, AttributeArgs, ItemFn};
 
 use crate::proc_macro::TokenStream;
 use crate::macros::crud_table_impl::{impl_crud_driver, impl_crud};
+use crate::macros::html_sql_impl::impl_macro_html_sql;
 use crate::macros::sql_impl::impl_macro_sql;
-use crate::macros::py_sql_impl::{impl_macro_py_sql, impl_macro_html_sql};
+use crate::macros::py_sql_impl::{impl_macro_py_sql};
 
 mod macros;
 mod util;
