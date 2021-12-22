@@ -143,7 +143,7 @@ macro_rules! field_name {
 }
 
 
-///     will crate pub fn field_name()->&str method
+/// will create pub fn field_name()->&str method
 /// for example:
 ///     #[crud_table]
 ///     #[derive(Clone, Debug)]
