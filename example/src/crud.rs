@@ -30,13 +30,15 @@ mod test {
         pub sort: Option<String>,
         pub status: Option<i32>,
         pub remark: Option<String>,
-        pub create_time: Option<DateTimeNative>,
+        pub create_time: Option<rbatis::DateTimeNative>,
         pub version: Option<i64>,
         pub delete_flag: Option<i32>,
 
-        // json and bytes type support
+        // other types
         // pub bytes: Option<rbatis::Bytes>,
         // pub json: Option<rbatis::Json<serde_json::Value>>,
+        // pub uuid:Option<rbatis::Uuid>
+        // pub decimal:Option<rbatis::Decimal>
     }
 
     impl Default for BizActivity {

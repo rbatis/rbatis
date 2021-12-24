@@ -197,7 +197,7 @@ async fn main() {
     sort: None,
     status: None,
     remark: None,
-    create_time: Some(DateTimeNative::now()),
+    create_time: Some(rbatis::DateTimeNative::now()),
     version: Some(1),
     delete_flag: Some(1),
   };
