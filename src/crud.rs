@@ -215,7 +215,7 @@ impl<T> CRUDTable for Option<T>
     ) -> Result<(String, String, Vec<rbson::Bson>)> {
         if self.is_none() {
             return Err(crate::core::Error::from(
-                "[rbatis] can not make_sql_arg() for None value!",
+                "[rbatis] can not call make_sql_arg() for an None table!",
             ));
         }
         T::make_value_sql_arg(self.as_ref().unwrap(), db_type, index, skips)
