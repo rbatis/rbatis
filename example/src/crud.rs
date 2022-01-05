@@ -114,6 +114,37 @@ mod test {
     }
 
     #[tokio::test]
+    pub async fn test_save_by_wrapper() {
+        fast_log::init_log("requests.log", log::Level::Info, None, true);
+        let rb = Rbatis::new();
+        rb.link("postgres://postgres:123456@localhost:5432/postgres")
+            .await
+            .unwrap();
+        let activity = BizActivity {
+            id: Some("12312".to_string()),
+            name: Some("12312".to_string()),
+            pc_link: None,
+            h5_link: None,
+            pc_banner_img: None,
+            h5_banner_img: None,
+            sort: Some("1".to_string()),
+            status: Some(1),
+            remark: None,
+            create_time: Some(DateTimeNative::now()),
+            version: Some(1),
+            delete_flag: Some(1),
+        };
+        rb.remove_by_column::<BizActivity, _>("id", &activity.id)
+            .await;
+        #[derive(serde::Deserialize,Debug)]
+        pub struct R{
+            pub last_insert_id:String
+        }
+        let r:R = rb.save_by_wrapper(&activity, rb.new_wrapper().push_sql(" RETURNING id as last_insert_id"),&[]).await.unwrap();
+        println!("{:?}",r);
+    }
+
+    #[tokio::test]
     pub async fn test_save_batch() {
         let rb = init_rbatis().await;
         let activity = BizActivity {
