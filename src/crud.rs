@@ -356,14 +356,17 @@ pub trait CRUDMut: ExecutorMut {
         if w.sql.starts_with(crate::sql::TEMPLATE.insert_into.value) {
             return self.exec(&w.sql, w.args).await;
         } else {
+            let driver_type = self.driver_type()?;
+            let mut new_w = Wrapper::new(&driver_type);
             let mut index = 0;
             let (columns, column_values, args) = table.make_value_sql_arg(&self.driver_type()?, &mut index, skips)?;
-            let table_name = choose_dyn_table_name::<T>(&w);
-            w = w.insert_into(&table_name, &columns, &column_values);
+            let table_name = choose_dyn_table_name::<T>(&new_w);
+            new_w = new_w.insert_into(&table_name, &columns, &column_values);
             for x in args {
-                w.args.push(x);
+                new_w.args.push(x);
             }
-            return self.exec(&w.sql, w.args).await;
+            new_w = new_w.push_wrapper(w);
+            return self.fetch(&new_w.sql, new_w.args).await;
         }
     }
 
