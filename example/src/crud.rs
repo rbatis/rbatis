@@ -142,6 +142,9 @@ mod test {
         }
         let r:R = rb.save_by_wrapper(&activity, rb.new_wrapper().push_sql(" RETURNING id as last_insert_id"),&[]).await.unwrap();
         println!("{:?}",r);
+        //or you can return all record
+        // let r:Vec<BizActivity> = rb.save_by_wrapper(&activity, rb.new_wrapper().push_sql(" RETURNING *"),&[]).await.unwrap();
+        // println!("{:?}",r);
     }
 
     #[tokio::test]
