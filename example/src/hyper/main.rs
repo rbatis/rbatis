@@ -1,7 +1,5 @@
 #![allow(unused_must_use)]
 #[macro_use]
-extern crate lazy_static;
-#[macro_use]
 extern crate rbatis;
 
 
@@ -10,6 +8,7 @@ use hyper::{Body, Request, Response, Server};
 use rbatis::crud::{CRUDMut, CRUD};
 use rbatis::rbatis::Rbatis;
 use std::convert::Infallible;
+use once_cell::sync::Lazy;
 
 #[crud_table]
 #[derive(Clone, Debug)]
@@ -30,9 +29,7 @@ pub struct BizActivity {
 
 pub const MYSQL_URL: &'static str = "mysql://root:123456@localhost:3306/test";
 
-lazy_static! {
-    static ref RB: Rbatis = Rbatis::new();
-}
+pub static RB:Lazy<Rbatis> = Lazy::new(||Rbatis::new());
 
 async fn hello(_: Request<Body>) -> Result<Response<Body>, Infallible> {
     let v = RB.fetch_list::<BizActivity>().await.unwrap();

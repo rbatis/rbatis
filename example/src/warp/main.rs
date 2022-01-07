@@ -1,7 +1,5 @@
 #![allow(unused_must_use)]
 #[macro_use]
-extern crate lazy_static;
-#[macro_use]
 extern crate rbatis;
 
 
@@ -11,6 +9,7 @@ use std::collections::HashMap;
 use std::convert::Infallible;
 use std::str::FromStr;
 use std::time::Duration;
+use once_cell::sync::Lazy;
 use warp::Filter;
 
 #[crud_table]
@@ -32,9 +31,7 @@ pub struct BizActivity {
 
 pub const MYSQL_URL: &'static str = "mysql://root:123456@localhost:3306/test";
 
-lazy_static! {
-    static ref RB: Rbatis = Rbatis::new();
-}
+pub static RB:Lazy<Rbatis> = Lazy::new(||Rbatis::new());
 
 #[tokio::main]
 async fn main() {

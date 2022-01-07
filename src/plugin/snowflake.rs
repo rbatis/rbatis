@@ -2,6 +2,7 @@ use std::sync::atomic::{AtomicI64, Ordering};
 use std::sync::Arc;
 
 use chrono::Utc;
+use once_cell::sync::Lazy;
 
 ///Snowflakes algorithm
 #[derive(Debug, serde::Serialize, serde::Deserialize)]
@@ -89,9 +90,7 @@ impl Snowflake {
     }
 }
 
-lazy_static! {
-    pub static ref SNOWFLAKE: Snowflake = Snowflake::default();
-}
+pub static SNOWFLAKE:Lazy<Snowflake> = Lazy::new(||Snowflake::default());
 
 ///gen new snowflake_id
 pub fn new_snowflake_id() -> i64 {

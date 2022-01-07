@@ -1,14 +1,13 @@
 #[cfg(test)]
 mod test {
+    use once_cell::sync::Lazy;
     use rbson::Bson;
     use crate::BizActivity;
     use rbatis::crud::{CRUDMut, CRUD};
     use rbatis::plugin::page::{Page, PageRequest};
     use rbatis::rbatis::Rbatis;
 
-    lazy_static! {
-       pub static ref RB: Rbatis = Rbatis::new();
-    }
+    pub static RB:Lazy<Rbatis> = Lazy::new(||Rbatis::new());
 
     #[tokio::test]
     pub async fn test_sql_page() {
