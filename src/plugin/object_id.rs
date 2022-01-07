@@ -9,7 +9,7 @@ use std::{
 
 use chrono::Utc;
 use hex::{self, FromHexError};
-use lazy_static::lazy_static;
+use once_cell::sync::Lazy;
 use rand::{thread_rng, Rng};
 
 const TIMESTAMP_SIZE: usize = 4;
@@ -22,9 +22,8 @@ const COUNTER_OFFSET: usize = PROCESS_ID_OFFSET + PROCESS_ID_SIZE;
 
 const MAX_U24: usize = 0xFF_FFFF;
 
-lazy_static! {
-    static ref OID_COUNTER: AtomicUsize = AtomicUsize::new(thread_rng().gen_range(0..MAX_U24 + 1));
-}
+
+pub static OID_COUNTER: Lazy<AtomicUsize> = Lazy::new(|| { AtomicUsize::new(thread_rng().gen_range(0..MAX_U24 + 1)) });
 
 /// Errors that can occur during OID construction and generation.
 #[derive(Debug)]
@@ -158,15 +157,12 @@ impl ObjectId {
 
     // Generate a random 5-byte array.
     fn gen_process_id() -> [u8; 5] {
-        lazy_static! {
-            static ref BUF: [u8; 5] = {
-                let rng = thread_rng().gen_range(0..MAX_U24) as u32;
-                let mut buf: [u8; 5] = [0; 5];
-                buf[0..4].copy_from_slice(&rng.to_be_bytes());
-                buf
-            };
-        }
-
+        pub static BUF:Lazy<[u8; 5]> = Lazy::new(||{
+            let rng = thread_rng().gen_range(0..MAX_U24) as u32;
+            let mut buf: [u8; 5] = [0; 5];
+            buf[0..4].copy_from_slice(&rng.to_be_bytes());
+            buf
+        });
         *BUF
     }
 

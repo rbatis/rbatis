@@ -49,7 +49,6 @@ rbatis-macro-driver = { version = "3.0.5", path = "rbatis-macro-driver", default
 
 rbson = { version = "2.0.3", features = ["uuid-0_8", "chrono-0_4"] }
 chrono = { version = "0.4", features = ["serde"] }
-lazy_static = "1.4"
 #serde
 serde = { version = "1", features = ["derive"] }
 #uuid

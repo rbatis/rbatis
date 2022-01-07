@@ -1,9 +1,8 @@
 #![allow(unused_must_use)]
 #[macro_use]
-extern crate lazy_static;
-#[macro_use]
 extern crate rbatis;
 
+use once_cell::sync::Lazy;
 use salvo::prelude::*;
 use rbatis::crud::CRUD;
 use rbatis::rbatis::Rbatis;
@@ -27,9 +26,7 @@ pub struct BizActivity {
 
 pub const MYSQL_URL: &'static str = "mysql://root:123456@localhost:3306/test";
 
-lazy_static! {
-    static ref RB: Rbatis = Rbatis::new();
-}
+pub static RB:Lazy<Rbatis> = Lazy::new(||Rbatis::new());
 
 #[fn_handler]
 async fn hello(res: &mut Response) {
