@@ -408,6 +408,35 @@ impl Wrapper {
         self
     }
 
+    pub fn order_bys(mut self,column_asc: &[(&str,bool)]) -> Self {
+        let len = column_asc.len();
+        if len == 0 {
+            return self;
+        }
+        let mut index = 0;
+        self.sql = self
+            .sql
+            .trim_end()
+            .trim_end_matches(crate::sql::TEMPLATE.r#where.left_space)
+            .trim_end_matches(crate::sql::TEMPLATE.and.left_space)
+            .trim_end_matches(crate::sql::TEMPLATE.or.left_space)
+            .to_string();
+        self.sql.push_str(&crate::sql::TEMPLATE.order_by.left_right_space);
+        for (x,is_asc) in column_asc {
+            if *is_asc {
+                push_sql!(self.sql,x," ",crate::sql::TEMPLATE.asc.value,);
+            } else {
+                push_sql!(self.sql,x," ",crate::sql::TEMPLATE.desc.value,);
+            }
+            if (index + 1) != len {
+                self.sql.push_str(",");
+                index += 1;
+            }
+        }
+        self.sql.push_str(" ");
+        self
+    }
+
     pub fn group_by(mut self, columns: &[&str]) -> Self {
         let len = columns.len();
         if len == 0 {
