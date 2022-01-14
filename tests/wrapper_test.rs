@@ -3,8 +3,6 @@ mod test {
     use std::collections::{BTreeMap, HashMap};
     use rbatis::core::db::DriverType;
     use rbatis::wrapper::Wrapper;
-    use serde_json::json;
-    use serde_json::Map;
 
     #[test]
     fn test_item() {
@@ -55,6 +53,8 @@ mod test {
         assert_eq!(w.sql, "insert into table (c) values v");
         let w = Wrapper::new(&DriverType::Postgres).limit(1);
         assert_eq!(w.sql, " limit 1 ");
+        let w = Wrapper::new(&DriverType::Postgres).order_bys(&[("id",true),("name",false)]);
+        assert_eq!(w.sql, " order by id asc,name desc ");
     }
 
     #[test]
@@ -85,6 +85,7 @@ mod test {
         w = w.order_by(true,&["id"]);
         w = w.group_by(&["id"]);
         w = w.limit(1);
-        assert_eq!(w.sql,"having id and (id = $1 and name = $2) and id = $3 and id <> $4 and id > $5 and id >= $6 and id < $7 and id <= $8 and id between $9 and $10 and id not between $11 and $12 and id like $13 and id like $14 and id like $15 and id not like $16 and id is NULL and id is not NULL and id in ( $17 ) and id not in ( $18 ) order by id asc group by id  limit 1 ");
+        w = w.order_bys(&[("id",true),("name",false)]);
+        assert_eq!(w.sql,"having id and (id = $1 and name = $2) and id = $3 and id <> $4 and id > $5 and id >= $6 and id < $7 and id <= $8 and id between $9 and $10 and id not between $11 and $12 and id like $13 and id like $14 and id like $15 and id not like $16 and id is NULL and id is not NULL and id in ( $17 ) and id not in ( $18 ) order by id asc group by id  limit 1 order by id asc,name desc ");
     }
 }
