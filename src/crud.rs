@@ -215,7 +215,7 @@ impl<T> CRUDTable for Option<T>
     ) -> Result<(String, String, Vec<rbson::Bson>)> {
         if self.is_none() {
             return Err(crate::core::Error::from(
-                "[rbatis] can not make_sql_arg() for None value!",
+                "[rbatis] can not call make_sql_arg() for an None table!",
             ));
         }
         T::make_value_sql_arg(self.as_ref().unwrap(), db_type, index, skips)
@@ -224,14 +224,15 @@ impl<T> CRUDTable for Option<T>
 
 #[async_trait]
 pub trait CRUD {
-    async fn save_by_wrapper<T>(
+    /// Return can be DBExecResult or any type
+    async fn save_by_wrapper<T,R>(
         &self,
         table: &T,
         w: Wrapper,
         skips: &[Skip],
-    ) -> Result<DBExecResult>
+    ) -> Result<R>
         where
-            T: CRUDTable;
+            T: CRUDTable,R:DeserializeOwned;
 
     async fn save<T>(&self, table: &T, skips: &[Skip]) -> Result<DBExecResult>
         where
@@ -344,26 +345,30 @@ pub trait CRUD {
 #[async_trait]
 pub trait CRUDMut: ExecutorMut {
     /// save by wrapper
-    async fn save_by_wrapper<T>(
+    async fn save_by_wrapper<T,R>(
         &mut self,
         table: &T,
         mut w: Wrapper,
         skips: &[Skip],
-    ) -> Result<DBExecResult>
+    ) -> Result<R>
         where
-            T: CRUDTable,
+            T: CRUDTable, R:DeserializeOwned
     {
         if w.sql.starts_with(crate::sql::TEMPLATE.insert_into.value) {
-            return self.exec(&w.sql, w.args).await;
+            let res= self.exec(&w.sql, w.args).await?;
+            return Ok(rbson::from_bson(rbson::to_bson(&res)?)?);
         } else {
+            let driver_type = self.driver_type()?;
+            let mut new_w = Wrapper::new(&driver_type);
             let mut index = 0;
             let (columns, column_values, args) = table.make_value_sql_arg(&self.driver_type()?, &mut index, skips)?;
-            let table_name = choose_dyn_table_name::<T>(&w);
-            w = w.insert_into(&table_name, &columns, &column_values);
+            let table_name = choose_dyn_table_name::<T>(&new_w);
+            new_w = new_w.insert_into(&table_name, &columns, &column_values);
             for x in args {
-                w.args.push(x);
+                new_w.args.push(x);
             }
-            return self.exec(&w.sql, w.args).await;
+            new_w = new_w.push_wrapper(w);
+            return self.fetch(&new_w.sql, new_w.args).await;
         }
     }
 
@@ -854,8 +859,8 @@ fn make_select_sql<T>(rb: &Rbatis, column: &str, w: &Wrapper) -> Result<String>
 
 #[async_trait]
 impl CRUD for Rbatis {
-    async fn save_by_wrapper<T>(&self, table: &T, w: Wrapper, skips: &[Skip]) -> Result<DBExecResult> where
-        T: CRUDTable {
+    async fn save_by_wrapper<T,R>(&self, table: &T, w: Wrapper, skips: &[Skip]) -> Result<R> where
+        T: CRUDTable,R:DeserializeOwned {
         let mut conn = self.acquire().await?;
         conn.save_by_wrapper(table, w, skips).await
     }

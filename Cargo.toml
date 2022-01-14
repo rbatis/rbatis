@@ -7,7 +7,7 @@ members = [
 
 [package]
 name = "rbatis"
-version = "3.0.27"
+version = "3.0.29"
 description = "Rust ORM Framework High Performance(Bson based)"
 readme = "Readme.md"
 authors = ["ce <zhuxiujia@qq.com>"]
@@ -43,13 +43,12 @@ runtime-async-std-native-tls = ["rbatis-core/runtime-async-std-native-tls"]
 format_bson = ["rbatis-core/format_bson"]
 
 [dependencies]
-rbatis-core = { version = "3.0.18", git = "https://github.com/rbatis/rbatis-core.git", branch = "main", default-features = false, optional = true }
+rbatis-core = { version = "3.0.19", git = "https://github.com/rbatis/rbatis-core.git", branch = "main", default-features = false, optional = true }
 rbatis_sql = { version = "3.0.13", git = "https://github.com/rbatis/rbatis_sql.git", branch = "main", optional = true }
 rbatis-macro-driver = { version = "3.0.5", path = "rbatis-macro-driver", default-features = false, optional = true }
 
 rbson = { version = "2.0.3", features = ["uuid-0_8", "chrono-0_4"] }
 chrono = { version = "0.4", features = ["serde"] }
-lazy_static = "1.4"
 #serde
 serde = { version = "1", features = ["derive"] }
 #uuid
@@ -64,3 +63,6 @@ once_cell = "1.8"
 #object_id
 hex = "0.4"
 rand = "0.8"
+
+[dev-dependencies]
+serde_json = "1"

@@ -1,7 +1,8 @@
 use std::convert::identity;
-lazy_static! {
-    pub static ref TEMPLATE: SqlTemplates = SqlTemplates::default();
-}
+use once_cell::sync::Lazy;
+
+pub static TEMPLATE:Lazy<SqlTemplates> = Lazy::new(||SqlTemplates::default());
+
 
 #[inline]
 fn string_to_static_str(s: String) -> &'static str {
