@@ -6,9 +6,6 @@
 #![forbid(unsafe_code)]
 
 #[macro_use]
-extern crate lazy_static;
-extern crate once_cell;
-#[macro_use]
 extern crate rbatis_macro_driver;
 #[macro_use]
 pub extern crate rbatis_sql;

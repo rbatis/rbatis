@@ -775,7 +775,7 @@ impl Wrapper {
             );
         } else {
             self.sql = format!(
-                "{} {} ({}) {} {}",
+                "{} {} ({}) {} ({})",
                 crate::sql::TEMPLATE.insert_into.value,
                 table_name,
                 columns,

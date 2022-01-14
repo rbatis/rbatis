@@ -197,7 +197,7 @@ async fn main() {
     sort: None,
     status: None,
     remark: None,
-    create_time: Some(DateTimeNative::now()),
+    create_time: Some(rbatis::DateTimeNative::now()),
     version: Some(1),
     delete_flag: Some(1),
   };
@@ -284,12 +284,8 @@ async fn main() {
 
 
 ```rust
-#[macro_use]
-extern crate lazy_static;
-
-lazy_static! {
-   static ref RB:Rbatis=Rbatis::new();
-}
+use once_cell::sync::Lazy;
+pub static RB:Lazy<Rbatis> = Lazy::new(||Rbatis::new());
 
 /// Macro generates execution logic based on method definition, similar to @select dynamic SQL of Java/Mybatis
 /// RB is the name referenced locally by Rbatis, for example DAO ::RB, com:: XXX ::RB... Can be
@@ -433,10 +429,8 @@ pub async fn init_rbatis() -> Rbatis {
 
 ``` rust
 #[macro_use]
-extern crate lazy_static;
-lazy_static! {
-   static ref RB:Rbatis=Rbatis::new();
-}
+use once_cell::sync::Lazy;
+pub static RB:Lazy<Rbatis> = Lazy::new(||Rbatis::new());
 
 async fn index() -> impl Responder {
     let v:Result<i32,rbatis::core::Error> = RB.fetch( "SELECT count(1) FROM biz_activity;",&vec![]).await;

@@ -29,13 +29,11 @@ pub(crate) fn impl_macro_sql(target_fn: &ItemFn, args: &AttributeArgs) -> TokenS
     }
 
     let sql_ident;
-    let sql;
     if args.len() == 1 {
         if rbatis_name.is_empty() {
             panic!("[rbatis] you should add rbatis ref param  rb:&Rbatis  or rb: &mut RbatisExecutor<'_,'_>  on '{}()'!", target_fn.sig.ident);
         }
         sql_ident = args.get(0).expect("[rbatis] miss sql macaro param!").to_token_stream();
-        sql = format!("{}", sql_ident).trim().to_string();
     } else if args.len() == 2 {
         rbatis_ident = args.get(0).expect("[rbatis] miss rbatis ident param!").to_token_stream();
         rbatis_name = format!("{}", rbatis_ident);

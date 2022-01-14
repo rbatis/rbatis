@@ -7,8 +7,9 @@ use syn::{parse_macro_input, AttributeArgs, ItemFn};
 
 use crate::proc_macro::TokenStream;
 use crate::macros::crud_table_impl::{impl_crud_driver, impl_crud};
+use crate::macros::html_sql_impl::impl_macro_html_sql;
 use crate::macros::sql_impl::impl_macro_sql;
-use crate::macros::py_sql_impl::{impl_macro_py_sql, impl_macro_html_sql};
+use crate::macros::py_sql_impl::{impl_macro_py_sql};
 
 mod macros;
 mod util;
@@ -28,7 +29,7 @@ pub fn hello_macro_derive(input: TokenStream) -> TokenStream {
 
 /// auto create sql macro,this macro use RB.fetch_prepare and RB.exec_prepare
 /// for example:
-///     lazy_static! { pub static ref RB: Rbatis = Rbatis::new(); }
+///     pub static RB:Lazy<Rbatis> = Lazy::new(||Rbatis::new());
 ///     #[sql(RB, "select * from biz_activity where id = ?")]
 ///     async fn select(name: &str) -> BizActivity {}
 ///
@@ -52,7 +53,7 @@ pub fn sql(args: TokenStream, func: TokenStream) -> TokenStream {
 
 /// py sql create macro,this macro use RB.py_fetch and RB.py_exec
 ///
-///  lazy_static! { pub static ref RB: Rbatis = Rbatis::new(); }
+///  pub static RB:Lazy<Rbatis> = Lazy::new(||Rbatis::new());
 ///  #[py_sql(RB,"select * from biz_activity where delete_flag = 0")]
 ///  async fn py_select_page(page_req: &PageRequest, name: &str) -> Page<BizActivity> { todo!() }
 ///  or:
@@ -103,7 +104,7 @@ pub fn py_sql(args: TokenStream, func: TokenStream) -> TokenStream {
 /// html sql create macro,this macro use RB.py_fetch and RB.py_exec
 /// for example:
 ///
-/// lazy_static! { pub static ref RB: Rbatis = Rbatis::new(); }
+/// pub static RB:Lazy<Rbatis> = Lazy::new(||Rbatis::new());
 /// #[py_sql(RB,"example/example.html")]
 /// pub async fn py_select_rb(name: &str) -> Option<BizActivity> {}
 ///
