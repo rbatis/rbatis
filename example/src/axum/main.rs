@@ -18,7 +18,7 @@ pub const MYSQL_URL: &'static str = "mysql://root:123456@localhost:3306/test";
 
 //handler
 pub async fn handler(rb: Extension<Arc<Rbatis>>) -> Json<Value> {
-    let v = rb.fetch_list::<BizActivity>().await.unwrap();
+    let v = rb.fetch_list::<BizActivity>().await.unwrap_or_default();
     Json(serde_json::json!(v))
 }
 

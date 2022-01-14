@@ -38,7 +38,7 @@ async fn main() {
     log::info!("linking database successful!");
     let mut app = tide::new();
     app.at("/").get(|_: Request<()>| async move {
-        let v = RB.fetch_list::<BizActivity>().await;
+        let v = RB.fetch_list::<BizActivity>().await.unwrap_or_default();
         Ok(serde_json::json!(v).to_string())
     });
     let addr = "127.0.0.1:8000";

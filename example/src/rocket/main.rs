@@ -15,7 +15,7 @@ pub const MYSQL_URL: &'static str = "mysql://root:123456@localhost:3306/test";
 
 #[get("/")]
 async fn hello(rb: &State<Arc<Rbatis>>) -> String {
-    let v = rb.fetch_list::<BizActivity>().await.unwrap();
+    let v = rb.fetch_list::<BizActivity>().await.unwrap_or_default();
     serde_json::json!(v).to_string()
 }
 
