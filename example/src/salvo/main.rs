@@ -30,7 +30,7 @@ pub static RB:Lazy<Rbatis> = Lazy::new(||Rbatis::new());
 
 #[fn_handler]
 async fn hello(res: &mut Response) {
-    let v = RB.fetch_list::<BizActivity>().await.unwrap();
+    let v = RB.fetch_list::<BizActivity>().await.unwrap_or_default();
     res.render_json(&v)
 }
 

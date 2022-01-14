@@ -48,7 +48,7 @@ impl Default for BizActivity {
 pub const MYSQL_URL: &'static str = "mysql://root:123456@localhost:3306/test";
 
 async fn index(rb: web::Data<Arc<Rbatis>>) -> impl Responder {
-    let v = rb.fetch_list::<BizActivity>().await.unwrap();
+    let v = rb.fetch_list::<BizActivity>().await.unwrap_or_default();
     HttpResponse::Ok().set_header("Content-Type","text/json;charset=UTF-8").body(serde_json::json!(v).to_string())
 }
 
