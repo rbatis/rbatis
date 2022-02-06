@@ -48,7 +48,7 @@ impl SqlIntercept for RbatisLogFormatSqlIntercept {
                         1,
                     );
                 }
-                rb.log_plugin.info(0,&formated);
+                rb.log_plugin.info(0, &formated);
             }
         }
         return Ok(());

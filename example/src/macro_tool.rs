@@ -1,6 +1,5 @@
 #[cfg(test)]
 mod test {
-
     #[crud_table]
     #[derive(Clone, Debug)]
     pub struct BizActivity {

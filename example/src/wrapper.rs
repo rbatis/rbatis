@@ -18,7 +18,7 @@ mod test {
             .r#in("delete_flag", &[0, 1])
             .and()
             .ne("delete_flag", -1)
-            .between("status",-8,100)
+            .between("status", -8, 100)
             .r#if(!name.is_empty(), |w| w.and().like("name", name));
         let r: Vec<BizActivity> = rb.fetch_list_by_wrapper(w).await.unwrap();
         println!("done:{:?}", r);

@@ -94,12 +94,12 @@ pub(crate) fn get_page_req_ident(target_fn: &ItemFn, func_name: &str) -> Ident {
 pub(crate) fn find_fn_body(target_fn: &ItemFn) -> proc_macro2::TokenStream {
     //del todos
     let mut target_fn = target_fn.clone();
-    let mut new_stmts =vec![];
+    let mut new_stmts = vec![];
     for x in &target_fn.block.stmts {
-        let token=x.to_token_stream().to_string().replace("\n","").replace(" ","");
+        let token = x.to_token_stream().to_string().replace("\n", "").replace(" ", "");
         if token.eq("todo!()") || token.eq("unimplemented!()") {
             //nothing to do
-        }else{
+        } else {
             new_stmts.push(x.to_owned());
         }
     }
@@ -113,13 +113,13 @@ pub(crate) fn is_fetch(return_source: &str) -> bool {
 }
 
 
-pub(crate) fn is_rbatis_ref(ty_stream:&str) -> bool{
+pub(crate) fn is_rbatis_ref(ty_stream: &str) -> bool {
     if ty_stream.contains("RbatisExecutor")
         || ty_stream.contains("Rbatis")
         || ty_stream.contains("RBatisConnExecutor")
         || ty_stream.contains("RBatisTxExecutor")
-        || ty_stream.contains("RBatisTxExecutorGuard"){
-        return true
+        || ty_stream.contains("RBatisTxExecutorGuard") {
+        return true;
     }
     false
 }

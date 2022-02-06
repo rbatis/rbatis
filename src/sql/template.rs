@@ -1,7 +1,7 @@
 use std::convert::identity;
 use once_cell::sync::Lazy;
 
-pub static TEMPLATE:Lazy<SqlTemplates> = Lazy::new(||SqlTemplates::default());
+pub static TEMPLATE: Lazy<SqlTemplates> = Lazy::new(|| SqlTemplates::default());
 
 
 #[inline]

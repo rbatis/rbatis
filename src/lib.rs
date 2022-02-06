@@ -23,7 +23,9 @@ pub use crate::rbatis::AsSqlTag;
 
 pub mod crud;
 pub mod plugin;
+
 pub use plugin::*;
+
 pub mod rbatis;
 pub mod sql;
 #[macro_use]

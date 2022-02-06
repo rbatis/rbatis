@@ -5,7 +5,7 @@ mod test {
 
     #[test]
     fn test_page() {
-        let pack_page = RbatisReplacePagePlugin{};
+        let pack_page = RbatisReplacePagePlugin {};
         let sql = "select
         b.name,
         count (*) as total
