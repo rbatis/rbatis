@@ -29,7 +29,7 @@ pub struct BizActivity {
 
 pub const MYSQL_URL: &'static str = "mysql://root:123456@localhost:3306/test";
 
-pub static RB:Lazy<Rbatis> = Lazy::new(||Rbatis::new());
+pub static RB: Lazy<Rbatis> = Lazy::new(|| Rbatis::new());
 
 async fn hello(_: Request<Body>) -> Result<Response<Body>, Infallible> {
     let v = RB.fetch_list::<BizActivity>().await.unwrap_or_default();

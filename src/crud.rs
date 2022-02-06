@@ -225,14 +225,14 @@ impl<T> CRUDTable for Option<T>
 #[async_trait]
 pub trait CRUD {
     /// Return can be DBExecResult or any type
-    async fn save_by_wrapper<T,R>(
+    async fn save_by_wrapper<T, R>(
         &self,
         table: &T,
         w: Wrapper,
         skips: &[Skip],
     ) -> Result<R>
         where
-            T: CRUDTable,R:DeserializeOwned;
+            T: CRUDTable, R: DeserializeOwned;
 
     async fn save<T>(&self, table: &T, skips: &[Skip]) -> Result<DBExecResult>
         where
@@ -345,17 +345,17 @@ pub trait CRUD {
 #[async_trait]
 pub trait CRUDMut: ExecutorMut {
     /// save by wrapper
-    async fn save_by_wrapper<T,R>(
+    async fn save_by_wrapper<T, R>(
         &mut self,
         table: &T,
         mut w: Wrapper,
         skips: &[Skip],
     ) -> Result<R>
         where
-            T: CRUDTable, R:DeserializeOwned
+            T: CRUDTable, R: DeserializeOwned
     {
         if w.sql.starts_with(crate::sql::TEMPLATE.insert_into.value) {
-            let res= self.exec(&w.sql, w.args).await?;
+            let res = self.exec(&w.sql, w.args).await?;
             return Ok(rbson::from_bson(rbson::to_bson(&res)?)?);
         } else {
             let driver_type = self.driver_type()?;
@@ -859,8 +859,8 @@ fn make_select_sql<T>(rb: &Rbatis, column: &str, w: &Wrapper) -> Result<String>
 
 #[async_trait]
 impl CRUD for Rbatis {
-    async fn save_by_wrapper<T,R>(&self, table: &T, w: Wrapper, skips: &[Skip]) -> Result<R> where
-        T: CRUDTable,R:DeserializeOwned {
+    async fn save_by_wrapper<T, R>(&self, table: &T, w: Wrapper, skips: &[Skip]) -> Result<R> where
+        T: CRUDTable, R: DeserializeOwned {
         let mut conn = self.acquire().await?;
         conn.save_by_wrapper(table, w, skips).await
     }

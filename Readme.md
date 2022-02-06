@@ -8,7 +8,6 @@
 [![GitHub release](https://img.shields.io/github/v/release/rbatis/rbatis)](https://github.com/rbatis/rbatis/releases)
 [![Gitter](https://badges.gitter.im/rbatis_orm/community.svg)](https://gitter.im/rbatis_orm/community?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge)
 
-
 #### A highly Performant,Safe,Dynamic SQL(Compile time) ORM framework written in Rust, inspired by Mybatis and MybatisPlus.
 
 <img style="width: 200px;height: 140px;" width="200" height="140" src="logo.png" />
@@ -29,15 +28,16 @@
 | Go-GoMybatis/http   |  1 CPU, 1G memory   | select count(1) from table;   | 1184503 ns/op  |  844  Qps/s   |  28.4MB  |     
 
 * No Runtimes，No Garbage Collection
-* Zero cost [Dynamic SQL](dyn_sql.md), implemented using (proc-macro,compile-time,Cow(Reduce unnecessary cloning)) techniques。 don't need ONGL engine(mybatis)
+* Zero cost [Dynamic SQL](dyn_sql.md), implemented using (proc-macro,compile-time,Cow(Reduce unnecessary cloning))
+  techniques。 don't need ONGL engine(mybatis)
 * Free deserialization, Auto Deserialize to any struct(Option,Map,Vec...)
 * High performance, Based on Future, with async_std/tokio, single threaded benchmark can easily achieve 200,000 QPS
 * logical deletes, pagination, py-like SQL and basic Mybatis functionalities.
 * Supports logging, customizable logging based on `log` crate
 * 100% Safe Rust with `#![forbid(unsafe_code)]` enabled
 * [rbatis/example (import into Clion!)](example/src)
-* [abs_admin project](https://github.com/rbatis/abs_admin)  an complete background user management system(Vue.js+rbatis+actix-web)
-
+* [abs_admin project](https://github.com/rbatis/abs_admin)  an complete background user management system(
+  Vue.js+rbatis+actix-web)
 
 ### Supported data structures
 
@@ -94,7 +94,6 @@
 * [tide](example/src/tide/main.rs)
 * [warp](example/src/warp/main.rs)
 * [salvo](example/src/salvo/main.rs)
-
 
 ##### Example Cargo.toml
 
@@ -246,9 +245,10 @@ async fn main() {
 
 #### macros (new addition)
 
-* Important update (pysql removes runtime, directly compiles to static rust code)    This means that the performance of SQL generated using py_sql,html_sql is roughly similar to that of handwritten code.
+* Important update (pysql removes runtime, directly compiles to static rust code)    This means that the performance of
+  SQL generated using py_sql,html_sql is roughly similar to that of handwritten code.
 
->  Because of the compile time, the annotations need to declare the database type to be used
+> Because of the compile time, the annotations need to declare the database type to be used
 
 ```rust
     #[py_sql(
@@ -258,9 +258,11 @@ async fn main() {
                     and name=#{name}")]
     async fn py_sql_tx(rb: &Rbatis, tx_id: &String, name: &str) -> Vec<BizActivity> { todo!() }
 ```
-* Added html_sql support, a form of organization similar to MyBatis, to facilitate migration of Java systems to Rust(Note that it is also compiled as Rust code at build time and performs close to handwritten code)  this is very faster
 
->  Because of the compile time, the annotations need to declare the database type to be used
+* Added html_sql support, a form of organization similar to MyBatis, to facilitate migration of Java systems to Rust(
+  Note that it is also compiled as Rust code at build time and performs close to handwritten code)  this is very faster
+
+> Because of the compile time, the annotations need to declare the database type to be used
 
 ```html
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.1//EN" "https://github.com/rbatis/rbatis_sql/raw/main/mybatis-3-mapper.dtd">
@@ -279,9 +281,6 @@ async fn main() {
     #[html_sql(rb, "example/example.html")]
     async fn select_by_condition(rb: &mut RbatisExecutor<'_,'_>, page_req: &PageRequest, name: &str) -> Page<BizActivity> { todo!() }
 ```
-
-
-
 
 ```rust
 use once_cell::sync::Lazy;
@@ -405,6 +404,7 @@ pub async fn init_rbatis() -> Rbatis {
 ```
 
 # Transaction defer
+
 ``` rust
     pub async fn forget_commit(rb: &Rbatis) -> rbatis::core::Result<()> {
         // tx will be commit.when func end
@@ -423,7 +423,6 @@ pub async fn init_rbatis() -> Rbatis {
         return Ok(());
     }
 ```
-
 
 ### How to use rbatis with Rust web frameworks (actix-web is used here as an example, but all web frameworks based on tokio or async_std are supported)
 
@@ -474,15 +473,17 @@ async fn main() -> std::io::Result<()> {
 ### FAQ
 
 * Postgres Types Define Please see Doc<br/>
->  [中文](https://rbatis.github.io/rbatis.io/#/?id=%e6%95%b0%e6%8d%ae%e5%ba%93%e5%88%97%e6%a0%bc%e5%bc%8f%e5%8c%96%e5%ae%8f)
 
->  [English Doc](https://rbatis.github.io/rbatis.io/#/en/?id=database-column-formatting-macro)
+> [中文](https://rbatis.github.io/rbatis.io/#/?id=%e6%95%b0%e6%8d%ae%e5%ba%93%e5%88%97%e6%a0%bc%e5%bc%8f%e5%8c%96%e5%ae%8f)
+
+> [English Doc](https://rbatis.github.io/rbatis.io/#/en/?id=database-column-formatting-macro)
+
 * Support for DateTime and BigDecimal? <br/>
   Currently supports chrono::rbatis::DateTimeNative和bigdecimal::BigDecimal
 * Supports for `async/.await` <br/>
   Currently supports both `async_std` and `tokio`
 * Stmt in postgres uses $1, $2 instead of ? in Mysql, does this require some special treatment? No, because rbatis uses
-  #{} to describe parametric variabls, you only need to write the correct parameter names and do not need to match it
+  # {} to describe parametric variabls, you only need to write the correct parameter names and do not need to match it
   with the symbols used by the database.
 * Supports for Oracle database driver? <br/>
   No, moving away from IOE is recommended.
@@ -499,7 +500,6 @@ async fn main() -> std::io::Result<()> {
 
 [changelog](https://github.com/rbatis/rbatis/releases/)
 
-
 # roadmap
 
 [roadmap](roadmap.md)
@@ -507,7 +507,6 @@ async fn main() -> std::io::Result<()> {
 ### Related Projects
 
 * Logging: https://github.com/rbatis/fast_log
-
 
 # Contact/donation, or click on star [rbatis](https://github.com/rbatis/rbatis)
 

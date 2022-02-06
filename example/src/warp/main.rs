@@ -31,7 +31,7 @@ pub struct BizActivity {
 
 pub const MYSQL_URL: &'static str = "mysql://root:123456@localhost:3306/test";
 
-pub static RB:Lazy<Rbatis> = Lazy::new(||Rbatis::new());
+pub static RB: Lazy<Rbatis> = Lazy::new(|| Rbatis::new());
 
 #[tokio::main]
 async fn main() {

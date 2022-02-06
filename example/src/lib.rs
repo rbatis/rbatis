@@ -27,7 +27,6 @@ mod wrapper;
 mod wrapper_macro;
 
 
-
 /// this is table model(see ../database.sql)
 #[crud_table]
 #[derive(Clone, Debug)]

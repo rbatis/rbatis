@@ -125,9 +125,9 @@ pub(crate) fn impl_macro_html_sql(target_fn: &ItemFn, args: &AttributeArgs) -> T
         }
         sql_ident = args.get(0).expect("[rbatis] miss htmlsql sql param!").to_token_stream();
     } else if args.len() == 2 {
-         rbatis_ident = args.get(0).expect("[rbatis] miss rbatis ident param!").to_token_stream();
-         rbatis_name = format!("{}", rbatis_ident);
-         sql_ident = args.get(1).expect("[rbatis] miss html file name param!").to_token_stream();
+        rbatis_ident = args.get(0).expect("[rbatis] miss rbatis ident param!").to_token_stream();
+        rbatis_name = format!("{}", rbatis_ident);
+        sql_ident = args.get(1).expect("[rbatis] miss html file name param!").to_token_stream();
     } else {
         panic!("[rbatis] Incorrect macro parameter length!");
     }

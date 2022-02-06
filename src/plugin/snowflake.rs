@@ -90,7 +90,7 @@ impl Snowflake {
     }
 }
 
-pub static SNOWFLAKE:Lazy<Snowflake> = Lazy::new(||Snowflake::default());
+pub static SNOWFLAKE: Lazy<Snowflake> = Lazy::new(|| Snowflake::default());
 
 ///gen new snowflake_id
 pub fn new_snowflake_id() -> i64 {

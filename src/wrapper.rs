@@ -170,7 +170,7 @@ impl Wrapper {
         where
             F: FnOnce(Self) -> Self,
     {
-        self.do_if(test,method)
+        self.do_if(test, method)
     }
 
     /// do method,if test is true
@@ -196,7 +196,7 @@ impl Wrapper {
         where
             F: FnOnce(Self) -> Self,
     {
-        self.do_if_else(test,method_if,method_else)
+        self.do_if_else(test, method_if, method_else)
     }
 
     ///match cases
@@ -236,10 +236,10 @@ impl Wrapper {
     {
         let v = crate::as_bson!(args);
         match v {
-            Bson::Null=>{
+            Bson::Null => {
                 return self;
             }
-            Bson::Array(ref arr)=>{
+            Bson::Array(ref arr) => {
                 self.args = v.as_array().unwrap_or(&vec![]).to_owned();
             }
             _ => {}
@@ -408,7 +408,7 @@ impl Wrapper {
         self
     }
 
-    pub fn order_bys(mut self,column_asc: &[(&str,bool)]) -> Self {
+    pub fn order_bys(mut self, column_asc: &[(&str, bool)]) -> Self {
         let len = column_asc.len();
         if len == 0 {
             return self;
@@ -422,7 +422,7 @@ impl Wrapper {
             .trim_end_matches(crate::sql::TEMPLATE.or.left_space)
             .to_string();
         self.sql.push_str(&crate::sql::TEMPLATE.order_by.left_right_space);
-        for (x,is_asc) in column_asc {
+        for (x, is_asc) in column_asc {
             if *is_asc {
                 push_sql!(self.sql,x," ",crate::sql::TEMPLATE.asc.value,);
             } else {

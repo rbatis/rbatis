@@ -5,6 +5,6 @@ mod test {
     #[tokio::test]
     pub async fn test_snowflake() {
         let id = new_snowflake_id();
-        println!("snowflakeid: {}",id);
+        println!("snowflakeid: {}", id);
     }
 }

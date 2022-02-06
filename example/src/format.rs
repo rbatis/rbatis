@@ -43,7 +43,7 @@ mod test {
                 id: Some(uuid),
                 name: Some("test".to_string()),
             },
-            &[]
+            &[],
         )
             .await;
         //update table
@@ -100,7 +100,7 @@ mod test {
         };
         rb.remove_by_column::<BizActivity, _>("id", activity.id.as_ref().unwrap())
             .await;
-        let r = rb.save(&activity,&[]).await;
+        let r = rb.save(&activity, &[]).await;
         if r.is_err() {
             println!("{}", r.err().unwrap().to_string());
         }

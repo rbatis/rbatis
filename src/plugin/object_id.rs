@@ -157,7 +157,7 @@ impl ObjectId {
 
     // Generate a random 5-byte array.
     fn gen_process_id() -> [u8; 5] {
-        pub static BUF:Lazy<[u8; 5]> = Lazy::new(||{
+        pub static BUF: Lazy<[u8; 5]> = Lazy::new(|| {
             let rng = thread_rng().gen_range(0..MAX_U24) as u32;
             let mut buf: [u8; 5] = [0; 5];
             buf[0..4].copy_from_slice(&rng.to_be_bytes());

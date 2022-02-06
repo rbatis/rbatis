@@ -33,7 +33,7 @@ mod test {
     }
 
     #[py_sql(rb, "select * from biz_activity")]
-    async fn py_select_data(rb: &mut RbatisExecutor<'_,'_>) -> Result<Vec<BizActivity>, rbatis::core::Error> { todo!() }
+    async fn py_select_data(rb: &mut RbatisExecutor<'_, '_>) -> Result<Vec<BizActivity>, rbatis::core::Error> { todo!() }
 
     //示例-Rbatis使用宏事务
     #[tokio::test]
@@ -46,7 +46,7 @@ mod test {
 
         let mut tx = rb.acquire_begin().await.unwrap();
         let v = py_select_data(&mut tx.as_executor()).await.unwrap();
-        println!("{:?}",v);
+        println!("{:?}", v);
         tx.commit().await.unwrap();
     }
 

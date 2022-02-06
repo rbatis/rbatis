@@ -14,11 +14,11 @@ homepage = "https://rbatis.github.io/rbatis.io/#/"
 
 [features]
 default = []
-debug_mode=[]
+debug_mode = []
 [lib]
 proc-macro = true
 [dependencies]
 proc-macro2 = "1.0"
 quote = "1.0"
-syn = {version="1.0",features=["full"]}
+syn = { version = "1.0", features = ["full"] }
 html_parser = "0.6.2"

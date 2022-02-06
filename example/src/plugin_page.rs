@@ -7,7 +7,7 @@ mod test {
     use rbatis::plugin::page::{Page, PageRequest};
     use rbatis::rbatis::Rbatis;
 
-    pub static RB:Lazy<Rbatis> = Lazy::new(||Rbatis::new());
+    pub static RB: Lazy<Rbatis> = Lazy::new(|| Rbatis::new());
 
     #[tokio::test]
     pub async fn test_sql_page() {
