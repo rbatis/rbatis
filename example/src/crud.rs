@@ -65,7 +65,7 @@ mod test {
     // }
 
     pub async fn init_rbatis() -> Rbatis {
-        fast_log::init_log("requests.log", log::Level::Info, None, true);
+        fast_log::init(fast_log::config::Config::new().console());
         let rb = Rbatis::new();
         rb.link("mysql://root:123456@localhost:3306/test")
             .await
@@ -115,7 +115,7 @@ mod test {
 
     #[tokio::test]
     pub async fn test_save_by_wrapper() {
-        fast_log::init_log("requests.log", log::Level::Info, None, true);
+        fast_log::init(fast_log::config::Config::new().console());
         let rb = Rbatis::new();
         rb.link("postgres://postgres:123456@localhost:5432/postgres")
             .await

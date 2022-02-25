@@ -39,7 +39,7 @@ pub struct BizActivity {
 }
 #[tokio::main]
 async fn main() {
-        fast_log::init_log("requests.log", log::Level::Info, None, true);
+        fast_log::init(fast_log::config::Config::new().console());
         let rb = Rbatis::new();
         rb.link("mysql://root:123456@localhost:3306/test").await.unwrap();
         let r = rb.fetch_by_id::<Option<BizActivity>>("", &"1".to_string()).await.unwrap();

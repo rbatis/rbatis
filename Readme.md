@@ -162,7 +162,7 @@ impl_field_name_method!(BizActivity{id,name});
 #[tokio::main]
 async fn main() {
   /// enable log crate to show sql logs
-  fast_log::init_log("requests.log", log::Level::Info, None, true);
+  fast_log::init(fast_log::config::Config::new().console());
   /// initialize rbatis. May use `lazy_static` crate to define rbatis as a global variable because rbatis is thread safe
   let rb = Rbatis::new();
   /// connect to database  
@@ -297,7 +297,7 @@ pub async fn select(name: &str) -> BizActivity {}
 
 #[tokio::test]
 pub async fn test_macro() {
-    fast_log::init_log("requests.log", log::Level::Info, None, true);
+    fast_log::init(fast_log::config::Config::new().console());
     RB.link("mysql://root:123456@localhost:3306/test").await.unwrap();
     let a = select("1").await.unwrap();
     println!("{:?}", a);
@@ -369,7 +369,7 @@ println!("{}", serde_json::to_string(&data).unwrap());
 ``` rust
  use log::{error, info, warn};
  fn  main(){
-      fast_log::init_log("requests.log", log::Level::Info, None, true);
+      fast_log::init(fast_log::config::Config::new().console());
       info!("print data");
  }
 ```
@@ -439,7 +439,7 @@ async fn index() -> impl Responder {
 #[actix_rt::main]
 async fn main() -> std::io::Result<()> {
     //log
-    fast_log::init_log("requests.log", log::Level::Info, None, true);
+    fast_log::init(fast_log::config::Config::new().console());
     //link database
     RB.link("mysql://root:123456@localhost:3306/test").await.unwrap();
     //http server

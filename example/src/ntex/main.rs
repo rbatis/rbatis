@@ -62,7 +62,7 @@ async fn index(pool: web::types::Data<DBPool>) -> Result<HttpResponse, Error> {
 #[ntex::main]
 async fn main() -> std::io::Result<()> {
     //log
-    fast_log::init_log("requests.log", log::Level::Info, None, true);
+    fast_log::init(fast_log::config::Config::new().console());
 
     log::info!("linking database...");
     let rbatis = Rbatis::new();
