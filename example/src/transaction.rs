@@ -10,7 +10,7 @@ mod test {
     //示例-Rbatis使用事务
     #[tokio::test]
     pub async fn test_tx_commit() {
-        fast_log::init_log("requests.log", log::Level::Info, None, true);
+        fast_log::init(fast_log::config::Config::new().console());
         let rb: Rbatis = Rbatis::new();
         rb.link("mysql://root:123456@localhost:3306/test")
             .await
@@ -38,7 +38,7 @@ mod test {
     //示例-Rbatis使用宏事务
     #[tokio::test]
     pub async fn test_tx_py() {
-        fast_log::init_log("requests.log", log::Level::Info, None, true);
+        fast_log::init(fast_log::config::Config::new().console());
         let rb: Rbatis = Rbatis::new();
         rb.link("mysql://root:123456@localhost:3306/test")
             .await
@@ -53,7 +53,7 @@ mod test {
     //示例-Rbatis使用事务,类似golang defer，守卫如果被回收则 释放事务
     #[tokio::test]
     pub async fn test_tx_commit_defer() {
-        fast_log::init_log("requests.log", log::Level::Info, None, true);
+        fast_log::init(fast_log::config::Config::new().console());
         let rb: Rbatis = Rbatis::new();
         rb.link("mysql://root:123456@localhost:3306/test")
             .await

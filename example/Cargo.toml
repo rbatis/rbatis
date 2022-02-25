@@ -48,7 +48,7 @@ once_cell = "1.9.0"
 bigdecimal = { version = "0.2.0", features = ["serde"] }
 #log lib
 log = "0.4"
-fast_log = "1.4"
+fast_log = "1.5"
 #async runtime lib
 tokio = { version = "1.12", features = ["full"] }
 async-std = { version = "1.9", features = ["attributes", "tokio1"] }

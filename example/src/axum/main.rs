@@ -25,7 +25,7 @@ pub async fn handler(rb: Extension<Arc<Rbatis>>) -> Json<Value> {
 #[tokio::main]
 async fn main() {
     //log
-    fast_log::init_log("requests.log", log::Level::Info, None, true);
+    fast_log::init(fast_log::config::Config::new().console());
 
     log::info!("linking database...");
     let rb = Rbatis::new();

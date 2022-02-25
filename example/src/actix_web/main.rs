@@ -4,6 +4,7 @@ extern crate rbatis;
 
 use std::sync::Arc;
 use actix_web::{web, App, HttpResponse, HttpServer, Responder};
+use fast_log::config::Config;
 
 use rbatis::crud::{CRUD};
 use rbatis::rbatis::Rbatis;
@@ -55,7 +56,7 @@ async fn index(rb: web::Data<Arc<Rbatis>>) -> impl Responder {
 #[actix_web::main]
 async fn main() -> std::io::Result<()> {
     //log
-    fast_log::init_log("requests.log", log::Level::Info, None, true);
+    fast_log::init(fast_log::config::Config::new().console());
     //init rbatis . also you can use  pub static RB:Lazy<Rbatis> = Lazy::new(||Rbatis::new()); replace this
     log::info!("linking database...");
     let rb = Rbatis::new();
