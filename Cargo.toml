@@ -66,3 +66,8 @@ rand = "0.8"
 
 [dev-dependencies]
 serde_json = "1"
+
+[profile.release]
+lto = true
+opt-level = 3
+codegen-units = 1
