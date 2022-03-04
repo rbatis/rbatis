@@ -19,7 +19,7 @@ use crate::crud::CRUDTable;
 ///             });
 #[macro_export]
 macro_rules! make_table {
-        ($t:ty{ $($key:ident:$value:expr$(,)?)+ }) => {
+        ($t:path{ $($key:ident:$value:expr$(,)?)+ }) => {
            {
             let mut temp_table_data = <$t>::default();
             $(temp_table_data.$key = $value.into();)+
@@ -158,7 +158,7 @@ macro_rules! field_name {
 #[allow(unused_macros)]
 #[macro_export]
 macro_rules! impl_field_name_method {
-   ($target:ty{$($field_name:ident$(,)?)+}) => {
+   ($target:path{$($field_name:ident$(,)?)+}) => {
          impl $target{
                $(
                          #[inline]
