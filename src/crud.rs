@@ -348,7 +348,7 @@ pub trait CRUDMut: ExecutorMut {
     async fn save_by_wrapper<T, R>(
         &mut self,
         table: &T,
-        mut w: Wrapper,
+        w: Wrapper,
         skips: &[Skip],
     ) -> Result<R>
         where
@@ -583,7 +583,7 @@ pub trait CRUDMut: ExecutorMut {
     {
         let table_name = choose_dyn_table_name::<T>(&w);
         let mut args = vec![];
-        let mut old_version = rbson::Bson::Null;
+        let old_version = rbson::Bson::Null;
         let driver_type = &self.driver_type()?;
         let columns = T::table_columns();
         let columns_vec: Vec<&str> = columns.split(",").collect();
@@ -615,7 +615,7 @@ pub trait CRUDMut: ExecutorMut {
             if is_continue {
                 continue;
             }
-            let mut v = map.get(column).unwrap_or_else(|| &null).clone();
+            let v = map.get(column).unwrap_or_else(|| &null).clone();
             //filter null
             let is_null = v.is_null();
             for x in skips {
