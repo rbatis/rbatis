@@ -57,9 +57,8 @@ rbson = { version = "2.0.3", features = ["uuid-0_8", "chrono-0_4"] }
 rbatis = { path = "../", features = ["debug_mode"] }
 
 #web lib
-actix-web = "3"
-actix-http = "2.0"
-actix-rt = "1.0"
+actix-web = "4.0"
+actix-http = "3"
 hyper = "0.14"
 tide = "0.16"
 warp = "0.3"

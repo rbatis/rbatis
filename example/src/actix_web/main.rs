@@ -53,7 +53,7 @@ async fn index(rb: web::Data<Arc<Rbatis>>) -> impl Responder {
     HttpResponse::Ok().set_header("Content-Type", "text/json;charset=UTF-8").body(serde_json::json!(v).to_string())
 }
 
-#[actix_web::main]
+#[tokio::main]
 async fn main() -> std::io::Result<()> {
     //log
     fast_log::init(fast_log::config::Config::new().console());
@@ -67,7 +67,7 @@ async fn main() -> std::io::Result<()> {
     HttpServer::new(move || {
         App::new()
             //add into actix-web data
-            .data(rb.to_owned())
+            .app_data(rb.to_owned())
             .route("/", web::get().to(index))
     })
         .bind("0.0.0.0:8000")?
