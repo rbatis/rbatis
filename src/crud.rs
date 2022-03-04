@@ -344,7 +344,7 @@ pub trait CRUD {
 
 #[async_trait]
 pub trait CRUDMut: ExecutorMut {
-    /// save by wrapper
+    /// save by wrapper, use fetch.
     async fn save_by_wrapper<T, R>(
         &mut self,
         table: &T,
