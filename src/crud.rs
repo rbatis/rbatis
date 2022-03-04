@@ -21,6 +21,7 @@ use std::marker::PhantomData;
 use std::ops::{Deref, DerefMut};
 use rbson::Bson::Null;
 use std::option::Option::Some;
+use std::sync::Arc;
 use rbson::Bson;
 use rbatis_sql::ops::AsProxy;
 
@@ -219,6 +220,58 @@ impl<T> CRUDTable for Option<T>
             ));
         }
         T::make_value_sql_arg(self.as_ref().unwrap(), db_type, index, skips)
+    }
+}
+
+impl<T> CRUDTable for Arc<T>
+    where
+        T: CRUDTable,
+{
+    fn table_name() -> String {
+        T::table_name()
+    }
+
+    fn table_columns() -> String {
+        T::table_columns()
+    }
+
+    fn formats(driver_type: &DriverType) -> HashMap<String, fn(arg: &str) -> String> {
+        T::formats(driver_type)
+    }
+
+    fn make_value_sql_arg(
+        &self,
+        db_type: &DriverType,
+        index: &mut usize,
+        skips: &[Skip],
+    ) -> Result<(String, String, Vec<rbson::Bson>)> {
+        T::make_value_sql_arg(self, db_type, index, skips)
+    }
+}
+
+impl<T> CRUDTable for Box<T>
+    where
+        T: CRUDTable,
+{
+    fn table_name() -> String {
+        T::table_name()
+    }
+
+    fn table_columns() -> String {
+        T::table_columns()
+    }
+
+    fn formats(driver_type: &DriverType) -> HashMap<String, fn(arg: &str) -> String> {
+        T::formats(driver_type)
+    }
+
+    fn make_value_sql_arg(
+        &self,
+        db_type: &DriverType,
+        index: &mut usize,
+        skips: &[Skip],
+    ) -> Result<(String, String, Vec<rbson::Bson>)> {
+        T::make_value_sql_arg(self, db_type, index, skips)
     }
 }
 
