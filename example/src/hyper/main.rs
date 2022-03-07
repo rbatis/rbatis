@@ -38,7 +38,7 @@ async fn hello(_: Request<Body>) -> Result<Response<Body>, Infallible> {
 
 #[tokio::main]
 pub async fn main() -> Result<(), Box<dyn std::error::Error + Send + Sync>> {
-    fast_log::init_log("requests.log", log::Level::Info, None, true);
+    fast_log::init(fast_log::config::Config::new().console());
     log::info!("linking database...");
     RB.link(MYSQL_URL).await.expect("rbatis link database fail");
     log::info!("linking database successful!");

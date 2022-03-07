@@ -485,17 +485,17 @@ impl<'a, 'b> RBatisTxExecutorGuard<'b> {
     }
 
     pub async fn begin(&mut self) -> crate::Result<()> {
-        let mut tx = self.tx.as_mut().ok_or_else(|| Error::from("[rbatis] tx is committed"))?;
+        let tx = self.tx.as_mut().ok_or_else(|| Error::from("[rbatis] tx is committed"))?;
         return Ok(tx.begin().await?);
     }
 
     pub async fn commit(&mut self) -> crate::Result<()> {
-        let mut tx = self.tx.as_mut().ok_or_else(|| Error::from("[rbatis] tx is committed"))?;
+        let tx = self.tx.as_mut().ok_or_else(|| Error::from("[rbatis] tx is committed"))?;
         return Ok(tx.commit().await?);
     }
 
     pub async fn rollback(&mut self) -> crate::Result<()> {
-        let mut tx = self.tx.as_mut().ok_or_else(|| Error::from("[rbatis] tx is committed"))?;
+        let tx = self.tx.as_mut().ok_or_else(|| Error::from("[rbatis] tx is committed"))?;
         return Ok(tx.rollback().await?);
     }
 

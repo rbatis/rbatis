@@ -10,7 +10,7 @@ mod test {
 
     #[tokio::test]
     async fn plugin_exclude_delete() {
-        fast_log::init_log("requests.log", log::Level::Info, None, true);
+        fast_log::init(fast_log::config::Config::new().console());
         let mut rb = Rbatis::new();
         let mut plugin = RbatisLogicDeletePlugin::new("delete_flag");
         rb.set_logic_plugin(plugin);

@@ -14,7 +14,7 @@ mod test {
 
     #[tokio::test]
     pub async fn test_py_ctx_id() {
-        fast_log::init_log("requests.log", log::Level::Info, None, true);
+        fast_log::init(fast_log::config::Config::new().console());
         //use static ref
         let rb = Rbatis::new();
         rb.link("mysql://root:123456@localhost:3306/test")
@@ -32,7 +32,7 @@ mod test {
 
     #[tokio::test]
     pub async fn test_py_select_page() {
-        fast_log::init_log("requests.log", log::Level::Info, None, true);
+        fast_log::init(fast_log::config::Config::new().console());
         //use static ref
         let rb = Rbatis::new();
         rb.link("mysql://root:123456@localhost:3306/test")

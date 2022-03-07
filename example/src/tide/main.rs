@@ -32,7 +32,7 @@ pub static RB: Lazy<Rbatis> = Lazy::new(|| Rbatis::new());
 
 #[async_std::main]
 async fn main() {
-    fast_log::init_log("requests.log", log::Level::Info, None, true);
+    fast_log::init(fast_log::config::Config::new().console());
     log::info!("linking database...");
     RB.link(MYSQL_URL).await.expect("rbatis link database fail");
     log::info!("linking database successful!");

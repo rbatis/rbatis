@@ -36,7 +36,7 @@ pub static RB: Lazy<Rbatis> = Lazy::new(|| Rbatis::new());
 #[tokio::main]
 async fn main() {
     //LOG
-    fast_log::init_log("requests.log", log::Level::Info, None, true);
+    fast_log::init(fast_log::config::Config::new().console());
 
     log::info!("linking database...");
     //ORM

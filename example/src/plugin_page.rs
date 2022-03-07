@@ -11,7 +11,7 @@ mod test {
 
     #[tokio::test]
     pub async fn test_sql_page() {
-        fast_log::init_log("requests.log", log::Level::Info, None, true);
+        fast_log::init(fast_log::config::Config::new().console());
         let rb = Rbatis::new();
         rb.link("mysql://root:123456@localhost:3306/test")
             .await
@@ -33,7 +33,7 @@ mod test {
 
     #[tokio::test]
     pub async fn test_macro_py_select_page() {
-        fast_log::init_log("requests.log", log::Level::Info, None, true);
+        fast_log::init(fast_log::config::Config::new().console());
         //use static ref
         RB.link("mysql://root:123456@localhost:3306/test")
             .await
@@ -49,7 +49,7 @@ mod test {
 
     #[tokio::test]
     pub async fn test_group_by_page() {
-        fast_log::init_log("requests.log", log::Level::Info, None, true);
+        fast_log::init(fast_log::config::Config::new().console());
         //use static ref
         RB.link("mysql://root:123456@localhost:3306/test")
             .await
