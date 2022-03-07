@@ -5,7 +5,6 @@ mod test {
     use rbatis::executor::{Executor, RbatisRef, RBatisTxExecutor, ExecutorMut, RbatisExecutor};
     use rbatis::core::db::DBExecResult;
     use std::cell::Cell;
-    use async_std::sync::Mutex;
 
     //示例-Rbatis使用事务
     #[tokio::test]
