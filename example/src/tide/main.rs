@@ -30,7 +30,7 @@ pub const MYSQL_URL: &'static str = "mysql://root:123456@localhost:3306/test";
 
 pub static RB: Lazy<Rbatis> = Lazy::new(|| Rbatis::new());
 
-#[async_std::main]
+#[tokio::main]
 async fn main() {
     fast_log::init(fast_log::config::Config::new().console());
     log::info!("linking database...");
