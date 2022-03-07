@@ -41,7 +41,8 @@ pub struct Wrapper {
     pub dml: String,
     pub sql: String,
     pub args: Vec<Bson>,
-    pub formats: HashMap<String, fn(arg: &str) -> String>,
+    //formats map[String]String. for example: map["x"] "{}::uuid"
+    pub formats: HashMap<String, String>,
 }
 
 macro_rules! push_sql {
@@ -82,7 +83,7 @@ impl Wrapper {
         self
     }
 
-    pub fn set_formats(mut self, formats: HashMap<String, fn(arg: &str) -> String>) -> Self {
+    pub fn set_formats(mut self, formats: HashMap<String, String>) -> Self {
         self.formats = formats;
         self
     }
@@ -342,8 +343,8 @@ impl Wrapper {
     pub fn do_format_column(&self, column: &str, data: &mut String) {
         let source = self.formats.get(column);
         match source {
-            Some(f) => {
-                *data = f(&data);
+            Some(source) => {
+                *data = source.replace("{}",data);
             }
             _ => {}
         }
