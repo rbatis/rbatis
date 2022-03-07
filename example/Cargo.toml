@@ -48,7 +48,7 @@ once_cell = "1.9.0"
 bigdecimal = { version = "0.2.0", features = ["serde"] }
 #log lib
 log = "0.4"
-fast_log = "1.4"
+fast_log = "1.5"
 #async runtime lib
 tokio = { version = "1.12", features = ["full"] }
 async-std = { version = "1.9", features = ["attributes", "tokio1"] }
@@ -57,9 +57,8 @@ rbson = { version = "2.0.3", features = ["uuid-0_8", "chrono-0_4"] }
 rbatis = { path = "../", features = ["debug_mode"] }
 
 #web lib
-actix-web = "3"
-actix-http = "2.0"
-actix-rt = "1.0"
+actix-web = "4.0"
+actix-http = "3"
 hyper = "0.14"
 tide = "0.16"
 warp = "0.3"

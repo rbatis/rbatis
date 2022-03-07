@@ -13,7 +13,7 @@ mod test {
 
     #[tokio::test]
     pub async fn test_block_attack() {
-        fast_log::init_log("requests.log", log::Level::Info, None, true);
+        fast_log::init(fast_log::config::Config::new().console());
         let mut rb = Rbatis::new();
         rb.add_sql_intercept(BlockAttackDeleteInterceptor {});
         rb.add_sql_intercept(BlockAttackUpdateInterceptor {});
@@ -46,7 +46,7 @@ mod test {
 
     #[tokio::test]
     pub async fn test_intercept() {
-        fast_log::init_log("requests.log", log::Level::Info, None, true);
+        fast_log::init(fast_log::config::Config::new().console());
         let mut rb = Rbatis::new();
         rb.add_sql_intercept(MyIntercept {});
         rb.link("mysql://root:123456@localhost:3306/test")

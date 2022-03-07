@@ -21,6 +21,7 @@ use std::marker::PhantomData;
 use std::ops::{Deref, DerefMut};
 use rbson::Bson::Null;
 use std::option::Option::Some;
+use std::sync::Arc;
 use rbson::Bson;
 use rbatis_sql::ops::AsProxy;
 
@@ -222,6 +223,58 @@ impl<T> CRUDTable for Option<T>
     }
 }
 
+impl<T> CRUDTable for Arc<T>
+    where
+        T: CRUDTable,
+{
+    fn table_name() -> String {
+        T::table_name()
+    }
+
+    fn table_columns() -> String {
+        T::table_columns()
+    }
+
+    fn formats(driver_type: &DriverType) -> HashMap<String, fn(arg: &str) -> String> {
+        T::formats(driver_type)
+    }
+
+    fn make_value_sql_arg(
+        &self,
+        db_type: &DriverType,
+        index: &mut usize,
+        skips: &[Skip],
+    ) -> Result<(String, String, Vec<rbson::Bson>)> {
+        T::make_value_sql_arg(self, db_type, index, skips)
+    }
+}
+
+impl<T> CRUDTable for Box<T>
+    where
+        T: CRUDTable,
+{
+    fn table_name() -> String {
+        T::table_name()
+    }
+
+    fn table_columns() -> String {
+        T::table_columns()
+    }
+
+    fn formats(driver_type: &DriverType) -> HashMap<String, fn(arg: &str) -> String> {
+        T::formats(driver_type)
+    }
+
+    fn make_value_sql_arg(
+        &self,
+        db_type: &DriverType,
+        index: &mut usize,
+        skips: &[Skip],
+    ) -> Result<(String, String, Vec<rbson::Bson>)> {
+        T::make_value_sql_arg(self, db_type, index, skips)
+    }
+}
+
 #[async_trait]
 pub trait CRUD {
     /// Return can be DBExecResult or any type
@@ -344,11 +397,11 @@ pub trait CRUD {
 
 #[async_trait]
 pub trait CRUDMut: ExecutorMut {
-    /// save by wrapper
+    /// save by wrapper, use fetch.
     async fn save_by_wrapper<T, R>(
         &mut self,
         table: &T,
-        mut w: Wrapper,
+        w: Wrapper,
         skips: &[Skip],
     ) -> Result<R>
         where
@@ -583,7 +636,7 @@ pub trait CRUDMut: ExecutorMut {
     {
         let table_name = choose_dyn_table_name::<T>(&w);
         let mut args = vec![];
-        let mut old_version = rbson::Bson::Null;
+        let old_version = rbson::Bson::Null;
         let driver_type = &self.driver_type()?;
         let columns = T::table_columns();
         let columns_vec: Vec<&str> = columns.split(",").collect();
@@ -615,7 +668,7 @@ pub trait CRUDMut: ExecutorMut {
             if is_continue {
                 continue;
             }
-            let mut v = map.get(column).unwrap_or_else(|| &null).clone();
+            let v = map.get(column).unwrap_or_else(|| &null).clone();
             //filter null
             let is_null = v.is_null();
             for x in skips {

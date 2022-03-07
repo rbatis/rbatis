@@ -65,7 +65,7 @@ mod test {
     // }
 
     pub async fn init_rbatis() -> Rbatis {
-        fast_log::init_log("requests.log", log::Level::Info, None, true);
+        fast_log::init(fast_log::config::Config::new().console());
         let rb = Rbatis::new();
         rb.link("mysql://root:123456@localhost:3306/test")
             .await
@@ -115,7 +115,7 @@ mod test {
 
     #[tokio::test]
     pub async fn test_save_by_wrapper() {
-        fast_log::init_log("requests.log", log::Level::Info, None, true);
+        fast_log::init(fast_log::config::Config::new().console());
         let rb = Rbatis::new();
         rb.link("postgres://postgres:123456@localhost:5432/postgres")
             .await
@@ -216,7 +216,6 @@ mod test {
     pub async fn test_remove_batch_by_id() {
         let mut rb = init_rbatis().await;
         rb.set_logic_plugin(RbatisLogicDeletePlugin::new("delete_flag"));
-        ;
         rb.link("mysql://root:123456@localhost:3306/test")
             .await
             .unwrap();
@@ -242,7 +241,6 @@ mod test {
         let mut rb = init_rbatis().await;
         //set logic plugin
         rb.set_logic_plugin(RbatisLogicDeletePlugin::new("delete_flag"));
-        ;
         let r = rb
             .fetch_by_column::<Option<BizActivity>, _>("id", &"1")
             .await
@@ -265,7 +263,6 @@ mod test {
         let mut rb = init_rbatis().await;
         //set logic plugin
         rb.set_logic_plugin(RbatisLogicDeletePlugin::new("delete_flag"));
-        ;
         let r = rb
             .fetch_count_by_wrapper::<BizActivity>(rb.new_wrapper())
             .await
@@ -306,7 +303,6 @@ mod test {
         let mut rb = init_rbatis().await;
         //set logic plugin
         rb.set_logic_plugin(RbatisLogicDeletePlugin::new("delete_flag"));
-        ;
         //macro make object
         let mut activity = rbatis::make_table!(BizActivity {
             id: "12312".to_string(),
@@ -341,7 +337,6 @@ mod test {
         let mut rb = init_rbatis().await;
         //set logic plugin
         rb.set_logic_plugin(RbatisLogicDeletePlugin::new("delete_flag"));
-        ;
         let w = rb.new_wrapper().eq("id", "1");
         let r: Result<Option<BizActivity>, Error> = rb.fetch_by_wrapper(w).await;
         println!("is_some:{:?}", r);
@@ -363,8 +358,6 @@ mod test {
         let mut rb = init_rbatis().await;
         //set logic plugin
         rb.set_logic_plugin(RbatisLogicDeletePlugin::new("delete_flag"));
-        ;
-
         let w = rb
             .new_wrapper()
             .like("name", "test")
@@ -382,7 +375,6 @@ mod test {
         let mut rb = init_rbatis().await;
         //set logic plugin
         rb.set_logic_plugin(RbatisLogicDeletePlugin::new("delete_flag"));
-        ;
         let r: Vec<BizActivity> = rb.fetch_list().await.unwrap();
         println!("{}", serde_json::to_string(&r).unwrap());
     }
