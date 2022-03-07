@@ -70,8 +70,8 @@ pub trait CRUDTable: Send + Sync + Serialize {
         let m = Self::formats(driver_type);
         let source = m.get(column);
         match source {
-            Some(s) => {
-                *data = s(&data);
+            Some(source) => {
+                *data = source.replace("{}",source);
             }
             _ => {}
         }
@@ -151,7 +151,7 @@ pub trait CRUDTable: Send + Sync + Serialize {
     /// for example: HashMap<"id",|arg|“{}::uuid”.to_string()>
     fn formats(
         driver_type: &crate::core::db::DriverType,
-    ) -> HashMap<String, fn(arg: &str) -> String> {
+    ) -> HashMap<String, String> {
         return HashMap::new();
     }
 
@@ -204,7 +204,7 @@ impl<T> CRUDTable for Option<T>
         T::table_columns()
     }
 
-    fn formats(driver_type: &DriverType) -> HashMap<String, fn(arg: &str) -> String> {
+    fn formats(driver_type: &DriverType) -> HashMap<String, String> {
         T::formats(driver_type)
     }
 
@@ -235,7 +235,7 @@ impl<T> CRUDTable for Arc<T>
         T::table_columns()
     }
 
-    fn formats(driver_type: &DriverType) -> HashMap<String, fn(arg: &str) -> String> {
+    fn formats(driver_type: &DriverType) -> HashMap<String,  String> {
         T::formats(driver_type)
     }
 
@@ -261,7 +261,7 @@ impl<T> CRUDTable for Box<T>
         T::table_columns()
     }
 
-    fn formats(driver_type: &DriverType) -> HashMap<String, fn(arg: &str) -> String> {
+    fn formats(driver_type: &DriverType) -> HashMap<String,  String> {
         T::formats(driver_type)
     }
 
@@ -889,7 +889,7 @@ fn choose_dyn_table_name<T>(w: &Wrapper) -> String
     let mut table_name = T::table_name();
     let table_name_format = w.formats.get("table_name");
     if let Some(table_name_format) = table_name_format {
-        table_name = table_name_format(&table_name);
+        table_name = table_name_format.replace("{}",&table_name);
     }
     return table_name;
 }
@@ -1126,10 +1126,10 @@ impl<T, P> CRUDTable for DynTableColumn<T, P> where T: CRUDTable, P: TableColumn
 
     /// return cast chain
     /// column:format_str
-    /// for example: HashMap<"id",|arg|“{}::uuid”.to_string()>
+    /// for example: HashMap<"id",“{}::uuid”.to_string()>
     fn formats(
         driver_type: &crate::core::db::DriverType,
-    ) -> HashMap<String, fn(arg: &str) -> String> {
+    ) -> HashMap<String,  String> {
         T::formats(driver_type)
     }
 

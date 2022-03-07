@@ -114,8 +114,8 @@ pub(crate) fn impl_crud_driver(
                  #fields
             }
 
-            fn formats(driver_type: &rbatis::core::db::DriverType) -> std::collections::HashMap<String, fn(arg:&str)->String> {
-                  let mut m: std::collections::HashMap<String, fn(arg:&str)->String> = std::collections::HashMap::new();
+            fn formats(driver_type: &rbatis::core::db::DriverType) -> std::collections::HashMap<String, String> {
+                  let mut m: std::collections::HashMap<String, String> = std::collections::HashMap::new();
                   match driver_type{
                     rbatis::core::db::DriverType::Mysql=>{
                          #formats_mysql
@@ -185,15 +185,9 @@ fn gen_format(v: &str) -> proc_macro2::TokenStream {
                 index += 1;
             }
         }
-        //"id:{}::uuid"  ,  "id:{}"
-        let format_func = quote! {
-              |arg:&str| -> String {
-                  format!(#format_str,#args_quote)
-              }
-        };
         formats = quote! {
            #formats
-           m.insert(#column.to_string(),#format_func);
+           m.insert(#column.to_string(),#format_str.to_string());
         };
     }
     return formats;
