@@ -482,8 +482,8 @@ async fn main() -> std::io::Result<()> {
   Currently supports chrono::rbatis::DateTimeNative和bigdecimal::BigDecimal
 * Supports for `async/.await` <br/>
   Currently supports both `async_std` and `tokio`
-* Stmt in postgres uses $1, $2 instead of ? in Mysql, does this require some special treatment? No, because rbatis uses
-  # {} to describe parametric variabls, you only need to write the correct parameter names and do not need to match it
+* Stmt in postgres uses ```$1, $2``` instead of ```?``` in Mysql, does this require some special treatment? No, because rbatis uses
+  ```#{}``` to describe parametric variabls, you only need to write the correct parameter names and do not need to match it
   with the symbols used by the database.
 * Supports for Oracle database driver? <br/>
   No, moving away from IOE is recommended.
