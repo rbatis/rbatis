@@ -97,7 +97,7 @@ pub(crate) fn find_fn_body(target_fn: &ItemFn) -> proc_macro2::TokenStream {
     let mut new_stmts = vec![];
     for x in &target_fn.block.stmts {
         let token = x.to_token_stream().to_string().replace("\n", "").replace(" ", "");
-        if token.eq("todo!()") || token.eq("unimplemented!()") {
+        if token.eq("todo!()") || token.eq("unimplemented!()") || token.eq("impled!()") {
             //nothing to do
         } else {
             new_stmts.push(x.to_owned());

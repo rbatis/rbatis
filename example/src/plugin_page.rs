@@ -29,7 +29,7 @@ mod test {
     #[py_sql(RB, "select * from biz_activity where delete_flag = 0
                   if name != '':
                     and name=#{name}")]
-    async fn py_select_page(page_req: &PageRequest, name: &str) -> Page<BizActivity> { todo!() }
+    async fn py_select_page(page_req: &PageRequest, name: &str) -> Page<BizActivity> { impled!() }
 
     #[tokio::test]
     pub async fn test_macro_py_select_page() {
@@ -45,7 +45,7 @@ mod test {
     }
 
     #[py_sql(RB, "select * from biz_activity group by id")]
-    async fn group_by(page_req: &PageRequest) -> Page<BizActivity> { todo!() }
+    async fn group_by(page_req: &PageRequest) -> Page<BizActivity> { impled!() }
 
     #[tokio::test]
     pub async fn test_group_by_page() {

@@ -11,7 +11,7 @@ mod test {
 
     /// doc you can see https://rbatis.github.io/rbatis.io/#/en/
     #[sql("select * from biz_activity where delete_flag = ?")]
-    async fn sql_fn(rb: &Rbatis, delete_flag: &i32) -> Vec<BizActivity> { todo!() }
+    async fn sql_fn(rb: &Rbatis, delete_flag: &i32) -> Vec<BizActivity> { impled!() }
 
     #[tokio::test]
     pub async fn test_sql_fn() {
@@ -29,7 +29,7 @@ mod test {
                       from test.biz_activity a1,biz_activity a2
                       where a1.id=a2.id
                       and a1.name=#{name}")]
-    async fn join_select(rbatis: &Rbatis, name: &str) -> Option<Vec<BizActivity>> { todo!() }
+    async fn join_select(rbatis: &Rbatis, name: &str) -> Option<Vec<BizActivity>> { impled!() }
 
     #[tokio::test]
     pub async fn test_join() {
