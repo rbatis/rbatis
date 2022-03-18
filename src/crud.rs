@@ -71,7 +71,7 @@ pub trait CRUDTable: Send + Sync + Serialize {
         let source = m.get(column);
         match source {
             Some(source) => {
-                *data = source.replace("{}",source);
+                *data = source.replace("{}",data);
             }
             _ => {}
         }
