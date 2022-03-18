@@ -137,7 +137,7 @@ impl<'c> JsonCodec for PgValueRef<'c> {
             "UUID" => {
                 let r: Option<Uuid> = Decode::<'_, Postgres>::decode(self)?;
                 if let Some(r) = r {
-                    return Ok(to_bson(&crate::types::Uuid::from(r)).unwrap_or_default());
+                    return Ok(to_bson(&r).unwrap_or_default());
                 }
                 return Ok(Bson::Null);
             }
@@ -146,7 +146,7 @@ impl<'c> JsonCodec for PgValueRef<'c> {
                 if let Some(r) = r {
                     let mut arr = vec![];
                     for x in r {
-                        arr.push(to_bson(&crate::types::Uuid::from(x)).unwrap_or_default());
+                        arr.push(to_bson(&x).unwrap_or_default());
                     }
                     return Ok(Bson::from(arr));
                 }
