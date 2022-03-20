@@ -161,17 +161,18 @@ pub trait RbatisRef {
     }
 }
 
+#[async_trait]
+pub trait ExecutorMut: RbatisRef {
+    async fn exec(&mut self, sql: &str, args: Vec<rbson::Bson>) -> Result<DBExecResult, Error>;
+    async fn fetch<T>(&mut self, sql: &str, args: Vec<rbson::Bson>) -> Result<T, Error> where T: DeserializeOwned;
+}
+
 impl RbatisRef for Rbatis {
     fn get_rbatis(&self) -> &Rbatis {
         &self
     }
 }
 
-#[async_trait]
-pub trait ExecutorMut: RbatisRef {
-    async fn exec(&mut self, sql: &str, args: Vec<rbson::Bson>) -> Result<DBExecResult, Error>;
-    async fn fetch<T>(&mut self, sql: &str, args: Vec<rbson::Bson>) -> Result<T, Error> where T: DeserializeOwned;
-}
 
 #[derive(Debug)]
 pub struct RBatisConnExecutor<'a> {
