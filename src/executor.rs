@@ -167,6 +167,9 @@ pub trait ExecutorMut: RbatisRef {
     async fn fetch<T>(&mut self, sql: &str, args: Vec<rbson::Bson>) -> Result<T, Error> where T: DeserializeOwned;
 }
 
+#[async_trait]
+pub trait Executor: ExecutorMut {}
+
 impl RbatisRef for Rbatis {
     fn get_rbatis(&self) -> &Rbatis {
         &self

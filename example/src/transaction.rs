@@ -2,7 +2,7 @@
 mod test {
     use crate::BizActivity;
     use rbatis::rbatis::Rbatis;
-    use rbatis::executor::{Executor, RbatisRef, RBatisTxExecutor, ExecutorMut, RbatisExecutor};
+    use rbatis::executor::{RbatisRef, RBatisTxExecutor, ExecutorMut, RbatisExecutor};
     use rbatis::core::db::DBExecResult;
     use std::cell::Cell;
 
