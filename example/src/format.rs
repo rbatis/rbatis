@@ -8,7 +8,6 @@ mod test {
     use std::str::FromStr;
     use uuid::Uuid;
     use rbatis::DateTimeNative;
-    use rbatis::executor::Executor;
 
     //'formats_pg' use postgres format
     //'id' ->  table column 'id'

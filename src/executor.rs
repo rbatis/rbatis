@@ -189,10 +189,10 @@ impl<'b> RBatisConnExecutor<'b> {
 fn bson_arr_to_string(arg: Vec<Bson>) -> (Vec<Bson>, String) {
     let b = Bson::Array(arg);
     #[cfg(feature = "format_bson")]
-        {
-            let s = b.do_format();
-            log::info!("[rbatis] [format_bson] => {}", s);
-        }
+    {
+        let s = b.do_format();
+        log::info!("[rbatis] [format_bson] => {}", s);
+    }
 
     let s = b.to_string();
     return match b {
@@ -580,20 +580,27 @@ impl Drop for RBatisTxExecutorGuard<'_> {
     }
 }
 
+impl Rbatis {
+    pub async fn exec(&self, sql: &str, args: Vec<Bson>) -> Result<DBExecResult, Error> {
+        let mut conn = self.acquire().await?;
+        conn.exec(sql, args).await
+    }
 
-#[async_trait]
-pub trait Executor: RbatisRef {
-    async fn exec(&self, sql: &str, args: Vec<rbson::Bson>) -> Result<DBExecResult, Error>;
-    async fn fetch<T>(&self, sql: &str, args: Vec<rbson::Bson>) -> Result<T, Error> where T: DeserializeOwned;
+    pub async fn fetch<T>(&self, sql: &str, args: Vec<Bson>) -> Result<T, Error> where T: DeserializeOwned {
+        let mut conn = self.acquire().await?;
+        conn.fetch(sql, args).await
+    }
 }
 
 #[async_trait]
-impl Executor for Rbatis {
-    async fn exec(&self, sql: &str, args: Vec<Bson>) -> Result<DBExecResult, Error> {
-        self.acquire().await?.exec(sql, args).await
+impl ExecutorMut for Rbatis {
+    async fn exec(&mut self, sql: &str, args: Vec<Bson>) -> Result<DBExecResult, Error> {
+        let mut conn = self.acquire().await?;
+        conn.exec(sql, args).await
     }
 
-    async fn fetch<T>(&self, sql: &str, args: Vec<Bson>) -> Result<T, Error> where T: DeserializeOwned {
-        self.acquire().await?.fetch(sql, args).await
+    async fn fetch<T>(&mut self, sql: &str, args: Vec<Bson>) -> Result<T, Error> where T: DeserializeOwned {
+        let mut conn = self.acquire().await?;
+        conn.fetch(sql, args).await
     }
 }

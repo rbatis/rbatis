@@ -9,7 +9,6 @@ mod test {
     };
     use rbatis::rbatis::Rbatis;
     use serde_json::Value;
-    use rbatis::executor::Executor;
 
     #[tokio::test]
     pub async fn test_block_attack() {
