@@ -4,7 +4,6 @@ extern crate rbatis;
 
 use std::sync::Arc;
 use actix_web::{web, App, HttpResponse, HttpServer, Responder};
-use fast_log::config::Config;
 
 use rbatis::crud::{CRUD};
 use rbatis::rbatis::Rbatis;
@@ -50,7 +49,7 @@ pub const MYSQL_URL: &'static str = "mysql://root:123456@localhost:3306/test";
 
 async fn index(rb: web::Data<Arc<Rbatis>>) -> impl Responder {
     let v = rb.fetch_list::<BizActivity>().await.unwrap_or_default();
-    HttpResponse::Ok().set_header("Content-Type", "text/json;charset=UTF-8").body(serde_json::json!(v).to_string())
+    HttpResponse::Ok().insert_header(("Content-Type", "text/json;charset=UTF-8")).json(v)
 }
 
 #[tokio::main]
@@ -67,10 +66,10 @@ async fn main() -> std::io::Result<()> {
     HttpServer::new(move || {
         App::new()
             //add into actix-web data
-            .app_data(rb.to_owned())
+            .app_data(web::Data::new(rb.to_owned()))
             .route("/", web::get().to(index))
     })
-        .bind("0.0.0.0:8000")?
+        .bind(("127.0.0.1", 8080))?
         .run()
         .await
 }
