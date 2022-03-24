@@ -9,7 +9,7 @@ use rbatis::crud::{CRUD};
 use rbatis::rbatis::Rbatis;
 
 #[crud_table]
-#[derive(Clone, Debug)]
+#[derive(Default, Clone, Debug)]
 pub struct BizActivity {
     pub id: Option<String>,
     pub name: Option<String>,
