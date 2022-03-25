@@ -15,7 +15,7 @@ use rbatis::rbatis::Rbatis;
 
 mod crud;
 mod dyn_table_name;
-mod format;
+mod postgres_format;
 mod get_fields;
 mod plugin_intercept;
 mod plugin_page;
