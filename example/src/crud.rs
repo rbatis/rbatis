@@ -73,31 +73,6 @@ mod test {
         println!("id:{}", sn_id);
     }
 
-    #[tokio::test]
-    pub async fn test_save() {
-        let rb = init_sqlite().await;
-        let activity = BizActivity {
-            id: Some("12312".to_string()),
-            name: Some("12312".to_string()),
-            pc_link: None,
-            h5_link: None,
-            pc_banner_img: None,
-            h5_banner_img: None,
-            sort: Some("1".to_string()),
-            status: Some(1),
-            remark: None,
-            create_time: Some(DateTimeNative::now()),
-            version: Some(1),
-            delete_flag: Some(1),
-        };
-        rb.remove_by_column::<BizActivity, _>("id", &activity.id)
-            .await;
-        let r = rb.save(&activity, &[]).await;
-        if r.is_err() {
-            println!("{}", r.err().unwrap().to_string());
-        }
-    }
-
     // /// this is postgres example
     // #[tokio::test]
     // pub async fn test_save_by_wrapper() {
@@ -132,6 +107,31 @@ mod test {
     //     // let r:Vec<BizActivity> = rb.save_by_wrapper(&activity, rb.new_wrapper().push_sql(" RETURNING *"),&[]).await.unwrap();
     //     // println!("{:?}",r);
     // }
+
+    #[tokio::test]
+    pub async fn test_save() {
+        let rb = init_sqlite().await;
+        let activity = BizActivity {
+            id: Some("12312".to_string()),
+            name: Some("12312".to_string()),
+            pc_link: None,
+            h5_link: None,
+            pc_banner_img: None,
+            h5_banner_img: None,
+            sort: Some("1".to_string()),
+            status: Some(1),
+            remark: None,
+            create_time: Some(DateTimeNative::now()),
+            version: Some(1),
+            delete_flag: Some(1),
+        };
+        rb.remove_by_column::<BizActivity, _>("id", &activity.id)
+            .await;
+        let r = rb.save(&activity, &[]).await;
+        if r.is_err() {
+            println!("{}", r.err().unwrap().to_string());
+        }
+    }
 
     #[tokio::test]
     pub async fn test_save_batch() {
