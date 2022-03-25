@@ -9,7 +9,7 @@
 #[macro_use]
 extern crate rbatis;
 
-use std::fs::File;
+use std::fs::{create_dir_all, File};
 use std::io::Read;
 use rbatis::rbatis::Rbatis;
 
@@ -54,6 +54,7 @@ pub struct BizActivity {
 /// make a sqlite-rbatis
 pub async fn init_sqlite() -> Rbatis {
     if File::open("../target/sqlite.db").is_err() {
+        create_dir_all("../target/");
         let f = File::create("../target/sqlite.db").unwrap();
         drop(f);
     }
