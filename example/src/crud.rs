@@ -1,5 +1,7 @@
 #[cfg(test)]
 mod test {
+    use std::fs::{File, OpenOptions};
+    use std::io::Read;
     use rbson::Bson;
     use rbatis::core::value::DateTimeNow;
     use rbatis::core::Error;
@@ -65,11 +67,19 @@ mod test {
     // }
 
     pub async fn init_rbatis() -> Rbatis {
+        if File::open("../target/sqlite.db").is_err() {
+            let f = File::create("../target/sqlite.db").unwrap();
+            drop(f);
+        }
         fast_log::init(fast_log::config::Config::new().console());
         let rb = Rbatis::new();
-        rb.link("mysql://root:123456@localhost:3306/test")
+        rb.link("sqlite://../target/sqlite.db")
             .await
             .unwrap();
+        let mut f = File::open("table_sqlite.sql").unwrap();
+        let mut sql = String::new();
+        f.read_to_string(&mut sql).unwrap();
+        rb.exec(&sql, vec![]).await;
 
         // custom connection option(自定义连接参数)
         // let db_cfg=DBConnectOption::from("mysql://root:123456@localhost:3306/test")?;
@@ -113,39 +123,40 @@ mod test {
         }
     }
 
-    #[tokio::test]
-    pub async fn test_save_by_wrapper() {
-        fast_log::init(fast_log::config::Config::new().console());
-        let rb = Rbatis::new();
-        rb.link("postgres://postgres:123456@localhost:5432/postgres")
-            .await
-            .unwrap();
-        let activity = BizActivity {
-            id: Some("12312".to_string()),
-            name: Some("12312".to_string()),
-            pc_link: None,
-            h5_link: None,
-            pc_banner_img: None,
-            h5_banner_img: None,
-            sort: Some("1".to_string()),
-            status: Some(1),
-            remark: None,
-            create_time: Some(DateTimeNative::now()),
-            version: Some(1),
-            delete_flag: Some(1),
-        };
-        rb.remove_by_column::<BizActivity, _>("id", &activity.id)
-            .await;
-        #[derive(serde::Deserialize, Debug)]
-        pub struct R {
-            pub last_insert_id: String,
-        }
-        let r: R = rb.save_by_wrapper(&activity, rb.new_wrapper().push_sql(" RETURNING id as last_insert_id"), &[]).await.unwrap();
-        println!("{:?}", r);
-        //or you can return all record
-        // let r:Vec<BizActivity> = rb.save_by_wrapper(&activity, rb.new_wrapper().push_sql(" RETURNING *"),&[]).await.unwrap();
-        // println!("{:?}",r);
-    }
+    // /// this is postgres example
+    // #[tokio::test]
+    // pub async fn test_save_by_wrapper() {
+    //     fast_log::init(fast_log::config::Config::new().console());
+    //     let rb = Rbatis::new();
+    //     rb.link("postgres://postgres:123456@localhost:5432/postgres")
+    //         .await
+    //         .unwrap();
+    //     let activity = BizActivity {
+    //         id: Some("12312".to_string()),
+    //         name: Some("12312".to_string()),
+    //         pc_link: None,
+    //         h5_link: None,
+    //         pc_banner_img: None,
+    //         h5_banner_img: None,
+    //         sort: Some("1".to_string()),
+    //         status: Some(1),
+    //         remark: None,
+    //         create_time: Some(DateTimeNative::now()),
+    //         version: Some(1),
+    //         delete_flag: Some(1),
+    //     };
+    //     rb.remove_by_column::<BizActivity, _>("id", &activity.id)
+    //         .await;
+    //     #[derive(serde::Deserialize, Debug)]
+    //     pub struct R {
+    //         pub last_insert_id: String,
+    //     }
+    //     let r: R = rb.save_by_wrapper(&activity, rb.new_wrapper().push_sql(" RETURNING id as last_insert_id"), &[]).await.unwrap();
+    //     println!("{:?}", r);
+    //     //or you can return all record
+    //     // let r:Vec<BizActivity> = rb.save_by_wrapper(&activity, rb.new_wrapper().push_sql(" RETURNING *"),&[]).await.unwrap();
+    //     // println!("{:?}",r);
+    // }
 
     #[tokio::test]
     pub async fn test_save_batch() {
@@ -216,11 +227,29 @@ mod test {
     pub async fn test_remove_batch_by_id() {
         let mut rb = init_rbatis().await;
         rb.set_logic_plugin(RbatisLogicDeletePlugin::new("delete_flag"));
-        rb.link("mysql://root:123456@localhost:3306/test")
-            .await
-            .unwrap();
+        let activity = BizActivity {
+            id: Some("12312".to_string()),
+            name: Some("test_1".to_string()),
+            pc_link: None,
+            h5_link: None,
+            pc_banner_img: None,
+            h5_banner_img: None,
+            sort: Some("1".to_string()),
+            status: Some(1),
+            remark: None,
+            create_time: Some(DateTimeNative::now()),
+            version: Some(1),
+            delete_flag: Some(1),
+        };
+        let mut activity2 = activity.clone();
+        activity2.id = Some("12313".to_string());
+        let mut activity3 = activity.clone();
+        activity3.id = Some("12314".to_string());
+        rb.save_batch(&[activity,activity2,activity3],&[]).await;
+
+
         let r = rb
-            .remove_batch_by_column::<BizActivity, _>("id", &["1", "2"])
+            .remove_batch_by_column::<BizActivity, _>("id", &["12312", "12313"])
             .await;
         if r.is_err() {
             println!("{}", r.err().unwrap().to_string());
@@ -230,22 +259,34 @@ mod test {
     #[tokio::test]
     pub async fn test_remove_by_id() {
         let mut rb = init_rbatis().await;
+        let activity = BizActivity {
+            id: Some("12312".to_string()),
+            name: Some("test_1".to_string()),
+            pc_link: None,
+            h5_link: None,
+            pc_banner_img: None,
+            h5_banner_img: None,
+            sort: Some("1".to_string()),
+            status: Some(1),
+            remark: None,
+            create_time: Some(DateTimeNative::now()),
+            version: Some(1),
+            delete_flag: Some(1),
+        };
+        rb.save(&activity,&[]).await;
         //set logic plugin(run with update sql),if not will run delete sql
         rb.set_logic_plugin(RbatisLogicDeletePlugin::new("delete_flag"));
-        let num = rb.remove_by_column::<BizActivity, _>("id", "1").await.unwrap();
+        let num = rb.remove_by_column::<BizActivity, _>("id", "12312").await.unwrap();
         println!("{}", num);
     }
 
     #[tokio::test]
     pub async fn test_fetch_by_id() {
         let mut rb = init_rbatis().await;
-        //set logic plugin
-        rb.set_logic_plugin(RbatisLogicDeletePlugin::new("delete_flag"));
         let r = rb
             .fetch_by_column::<Option<BizActivity>, _>("id", &"1")
-            .await
-            .unwrap();
-        println!("{}", serde_json::to_string(&r).unwrap());
+            .await;
+        println!("{}", serde_json::json!(r));
     }
 
     #[tokio::test]
