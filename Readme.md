@@ -251,9 +251,7 @@ async fn main() {
 > Because of the compile time, the annotations need to declare the database type to be used
 
 ```rust
-    #[py_sql(
-    rb,
-    "select * from biz_activity where delete_flag = 0
+    #[py_sql("select * from biz_activity where delete_flag = 0
                   if name != '':
                     and name=#{name}")]
     async fn py_sql_tx(rb: &Rbatis, tx_id: &String, name: &str) -> Vec<BizActivity> { impled!() }
@@ -278,7 +276,7 @@ async fn main() {
 
 ```rust
     ///select page must have  '?:&PageRequest' arg and return 'Page<?>'
-    #[html_sql(rb, "example/example.html")]
+    #[html_sql("example/example.html")]
     async fn select_by_condition(rb: &mut RbatisExecutor<'_,'_>, page_req: &PageRequest, name: &str) -> Page<BizActivity> { impled!() }
 ```
 
@@ -291,7 +289,7 @@ pub static RB:Lazy<Rbatis> = Lazy::new(||Rbatis::new());
 /// The second parameter is the standard driver SQL. Note that the corresponding database parameter mysql is? , pg is $1...
 /// macro auto edit method to  'pub async fn select(name: &str) -> rbatis::core::Result<BizActivity> {}'
 ///
-#[sql(RB, "select * from biz_activity where id = ?")]
+#[sql("select * from biz_activity where id = ?")]
 pub async fn select(name: &str) -> BizActivity {}
 //or： pub async fn select(name: &str) -> rbatis::core::Result<BizActivity> {}
 
