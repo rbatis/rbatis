@@ -1,7 +1,7 @@
 #[cfg(test)]
 mod test {
     use rbson::Bson;
-    use crate::BizActivity;
+    use crate::{BizActivity, init_sqlite};
     use rbatis::core::Error;
     use rbatis::crud::{CRUDMut, CRUD};
     use rbatis::plugin::intercept::{
@@ -13,12 +13,9 @@ mod test {
     #[tokio::test]
     pub async fn test_block_attack() {
         fast_log::init(fast_log::config::Config::new().console());
-        let mut rb = Rbatis::new();
+        let mut rb = init_sqlite().await;
         rb.add_sql_intercept(BlockAttackDeleteInterceptor {});
         rb.add_sql_intercept(BlockAttackUpdateInterceptor {});
-        rb.link("mysql://root:123456@localhost:3306/test")
-            .await
-            .unwrap();
         let r = rb.exec("delete from biz_activitys", vec![]).await;
         if r.is_err() {
             println!("block success:{}", r.err().unwrap());
@@ -46,11 +43,8 @@ mod test {
     #[tokio::test]
     pub async fn test_intercept() {
         fast_log::init(fast_log::config::Config::new().console());
-        let mut rb = Rbatis::new();
+        let mut rb = init_sqlite().await;
         rb.add_sql_intercept(MyIntercept {});
-        rb.link("mysql://root:123456@localhost:3306/test")
-            .await
-            .unwrap();
         let w = rb.new_wrapper().eq("id", "1");
         let r: Result<Option<BizActivity>, Error> = rb.fetch_by_wrapper(w).await;
     }

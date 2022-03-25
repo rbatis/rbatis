@@ -1,16 +1,13 @@
 #[cfg(test)]
 mod test {
-    use crate::BizActivity;
+    use crate::{BizActivity, init_sqlite};
     use rbatis::crud::{CRUDMut, CRUD};
     use rbatis::rbatis::Rbatis;
 
     #[tokio::test]
     pub async fn test_dyn_table_name() {
         fast_log::init(fast_log::config::Config::new().console());
-        let rb = Rbatis::new();
-        rb.link("mysql://root:123456@localhost:3306/test")
-            .await
-            .unwrap();
+        let rb = init_sqlite().await;
 
         let mut w = rb.new_wrapper();
         //replace your dyn table name

@@ -7,7 +7,7 @@ mod test {
     use rbatis::plugin::page::{Page, PageRequest};
     use rbatis::rbatis::Rbatis;
 
-    use crate::BizActivity;
+    use crate::{BizActivity, init_sqlite};
 
     ///select page must have  '?:&PageRequest' arg and return 'Page<?>'
     #[html_sql("example/example.html")]
@@ -17,10 +17,7 @@ mod test {
     pub async fn test_select_by_condition() {
         fast_log::init(fast_log::config::Config::new().console());
         //use static ref
-        let rb = Rbatis::new();
-        rb.link("mysql://root:123456@localhost:3306/test")
-            .await
-            .unwrap();
+        let rb = init_sqlite().await;
         let a = select_by_condition(&mut rb.as_executor(), &PageRequest::new(1, 10), "test", &rbatis::DateTimeNative::now())
             .await
             .unwrap();

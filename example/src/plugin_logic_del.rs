@@ -1,6 +1,6 @@
 #[cfg(test)]
 mod test {
-    use crate::BizActivity;
+    use crate::{BizActivity, init_sqlite};
 
     use rbatis::DateTimeNative;
     use rbatis::core::value::DateTimeNow;
@@ -11,12 +11,9 @@ mod test {
     #[tokio::test]
     async fn plugin_exclude_delete() {
         fast_log::init(fast_log::config::Config::new().console());
-        let mut rb = Rbatis::new();
+        let mut rb = init_sqlite().await;
         let mut plugin = RbatisLogicDeletePlugin::new("delete_flag");
         rb.set_logic_plugin(plugin);
-        rb.link("mysql://root:123456@localhost:3306/test")
-            .await
-            .unwrap();
 
         let id = "12312".to_string();
         //logic delete sql:   "update biz_activity set delete_flag = 1 where id = ?"
