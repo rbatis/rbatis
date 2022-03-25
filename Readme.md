@@ -290,14 +290,14 @@ pub static RB:Lazy<Rbatis> = Lazy::new(||Rbatis::new());
 /// macro auto edit method to  'pub async fn select(name: &str) -> rbatis::core::Result<BizActivity> {}'
 ///
 #[sql("select * from biz_activity where id = ?")]
-pub async fn select(name: &str) -> BizActivity {}
+pub async fn select(rb: &Rbatis,name: &str) -> BizActivity {}
 //or： pub async fn select(name: &str) -> rbatis::core::Result<BizActivity> {}
 
 #[tokio::test]
 pub async fn test_macro() {
     fast_log::init(fast_log::config::Config::new().console());
     RB.link("mysql://root:123456@localhost:3306/test").await.unwrap();
-    let a = select("1").await.unwrap();
+    let a = select(&RB,"1").await.unwrap();
     println!("{:?}", a);
 }
 ```
