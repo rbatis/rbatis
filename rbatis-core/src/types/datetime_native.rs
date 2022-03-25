@@ -182,11 +182,6 @@ mod test {
         let dt_new: DateTimeNative = rbson::from_bson(s).unwrap();
         println!("{},{}", 1442620564000i64, dt_new.timestamp_millis());
         assert_eq!(1442620564000i64, dt_new.timestamp_millis());
-
-        let s = rbson::Bson::String("2015-09-18 23:56:04".to_string());
-        let dt_new: DateTimeNative = rbson::from_bson(s).unwrap();
-        println!("{},{}", 1442620564000i64, dt_new.timestamp_millis());
-        assert_eq!(1442620564000i64, dt_new.timestamp_millis());
     }
 
     #[test]
