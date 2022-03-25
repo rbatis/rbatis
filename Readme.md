@@ -494,14 +494,9 @@ async fn main() -> std::io::Result<()> {
 * How to use '::uuid','::timestamp' on PostgreSQL? <br/>
   see https://rbatis.github.io/rbatis.io/#/en/?id=database-column-formatting-macro
 
-# changelog
+# [Changelog](https://github.com/rbatis/rbatis/releases/)
 
-[changelog](https://github.com/rbatis/rbatis/releases/)
-
-# roadmap
-
-[roadmap](roadmap.md)
-
+# [Roadmap](roadmap.md)
 
 
 ## Who Is Using Rbatis(Welcome to contribute this)?
