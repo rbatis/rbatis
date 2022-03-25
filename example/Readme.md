@@ -1,6 +1,6 @@
 # 1 It is recommended to clone this project using Intellij Clion
 
-# 2 Use docker to quickly start mysql database
+# 2 Use docker to quickly start mysql database(if use mysql.default is sqlite)
 
 ```cmd
 Docker run -p 3306:3306 --name mysql -e MYSQL_ROOT_PASSWORD=123456 -d mysql:5.7

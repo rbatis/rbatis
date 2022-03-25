@@ -2,7 +2,7 @@
 mod test {
     use once_cell::sync::Lazy;
     use rbson::Bson;
-    use crate::BizActivity;
+    use crate::{BizActivity, init_sqlite};
     use rbatis::crud::{CRUDMut, CRUD};
     use rbatis::plugin::page::{Page, PageRequest};
     use rbatis::rbatis::Rbatis;
@@ -11,9 +11,10 @@ mod test {
 
     #[tokio::test]
     pub async fn test_sql_page() {
+        init_sqlite().await;
         fast_log::init(fast_log::config::Config::new().console());
         let rb = Rbatis::new();
-        rb.link("mysql://root:123456@localhost:3306/test")
+        rb.link("sqlite://../target/sqlite.db")
             .await
             .unwrap();
         let data: Page<BizActivity> = rb
@@ -33,9 +34,10 @@ mod test {
 
     #[tokio::test]
     pub async fn test_macro_py_select_page() {
+        init_sqlite().await;
         fast_log::init(fast_log::config::Config::new().console());
         //use static ref
-        RB.link("mysql://root:123456@localhost:3306/test")
+        RB.link("sqlite://../target/sqlite.db")
             .await
             .unwrap();
         let a = py_select_page(&PageRequest::new(1, 10), "test")
@@ -49,9 +51,10 @@ mod test {
 
     #[tokio::test]
     pub async fn test_group_by_page() {
+        init_sqlite().await;
         fast_log::init(fast_log::config::Config::new().console());
         //use static ref
-        RB.link("mysql://root:123456@localhost:3306/test")
+        RB.link("sqlite://../target/sqlite.db")
             .await
             .unwrap();
         let a = group_by(&PageRequest::new(1, 10)).await.unwrap();

@@ -9,6 +9,10 @@
 #[macro_use]
 extern crate rbatis;
 
+use std::fs::File;
+use std::io::Read;
+use rbatis::rbatis::Rbatis;
+
 mod crud;
 mod dyn_table_name;
 mod format;
@@ -43,6 +47,39 @@ pub struct BizActivity {
     pub status: Option<i32>,
     pub remark: Option<String>,
     pub create_time: Option<rbatis::DateTimeNative>,
-    pub version: Option<i32>,
+    pub version: Option<i64>,
     pub delete_flag: Option<i32>,
+}
+
+/// make a sqlite-rbatis
+pub async fn init_sqlite() -> Rbatis {
+    if File::open("../target/sqlite.db").is_err() {
+        let f = File::create("../target/sqlite.db").unwrap();
+        drop(f);
+    }
+    fast_log::init(fast_log::config::Config::new().console());
+
+    // init rbatis
+    let rb = Rbatis::new();
+    rb.link("sqlite://../target/sqlite.db")
+        .await
+        .unwrap();
+
+    // run sql create table
+    let mut f = File::open("table_sqlite.sql").unwrap();
+    let mut sql = String::new();
+    f.read_to_string(&mut sql).unwrap();
+    rb.exec(&sql, vec![]).await;
+
+    // custom connection option
+    // //mysql
+    // // let db_cfg=DBConnectOption::from("mysql://root:123456@localhost:3306/test")?;
+    // let db_cfg=DBConnectOption::from("sqlite://../target/sqlite.db")?;
+    // rb.link_cfg(&db_cfg,PoolOptions::new());
+
+    // custom pool
+    // let mut opt = PoolOptions::new();
+    // opt.max_size = 20;
+    // rb.link_opt("sqlite://../target/sqlite.db", &opt).await.unwrap();
+    return rb;
 }

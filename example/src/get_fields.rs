@@ -1,6 +1,6 @@
 #[cfg(test)]
 mod test {
-    use crate::BizActivity;
+    use crate::{BizActivity, init_sqlite};
     use rbatis::crud::{CRUDMut, CRUD};
     use rbatis::rbatis::Rbatis;
 
@@ -8,10 +8,7 @@ mod test {
     #[tokio::test]
     pub async fn test_fetch_by_ids() {
         fast_log::init(fast_log::config::Config::new().console());
-        let rb = Rbatis::new();
-        rb.link("mysql://root:123456@localhost:3306/test")
-            .await
-            .unwrap();
+        let rb = init_sqlite().await;
         let biz_activitys = rb.fetch_list::<BizActivity>().await.unwrap();
         let ids = rbatis::make_table_field_vec!(&biz_activitys,id);
         let names = rbatis::make_table_field_vec!(&biz_activitys,name);

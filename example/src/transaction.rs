@@ -1,6 +1,6 @@
 #[cfg(test)]
 mod test {
-    use crate::BizActivity;
+    use crate::{BizActivity, init_sqlite};
     use rbatis::rbatis::Rbatis;
     use rbatis::executor::{RbatisRef, RBatisTxExecutor, ExecutorMut, RbatisExecutor};
     use rbatis::core::db::DBExecResult;
@@ -10,10 +10,7 @@ mod test {
     #[tokio::test]
     pub async fn test_tx_commit() {
         fast_log::init(fast_log::config::Config::new().console());
-        let rb: Rbatis = Rbatis::new();
-        rb.link("mysql://root:123456@localhost:3306/test")
-            .await
-            .unwrap();
+        let rb: Rbatis = init_sqlite().await;
         let mut tx = rb.acquire_begin().await.unwrap();
 
         let v = tx
@@ -38,11 +35,7 @@ mod test {
     #[tokio::test]
     pub async fn test_tx_py() {
         fast_log::init(fast_log::config::Config::new().console());
-        let rb: Rbatis = Rbatis::new();
-        rb.link("mysql://root:123456@localhost:3306/test")
-            .await
-            .unwrap();
-
+        let rb: Rbatis = init_sqlite().await;
         let mut tx = rb.acquire_begin().await.unwrap();
         let v = py_select_data(&mut tx.as_executor()).await.unwrap();
         println!("{:?}", v);
@@ -53,10 +46,7 @@ mod test {
     #[tokio::test]
     pub async fn test_tx_commit_defer() {
         fast_log::init(fast_log::config::Config::new().console());
-        let rb: Rbatis = Rbatis::new();
-        rb.link("mysql://root:123456@localhost:3306/test")
-            .await
-            .unwrap();
+        let rb: Rbatis = init_sqlite().await;
         forget_commit(&rb).await.unwrap();
     }
 

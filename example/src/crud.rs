@@ -13,6 +13,7 @@ mod test {
     use serde_json::Value;
     use rbatis::DateTimeNative;
     use rbatis::crud::CRUDTable;
+    use crate::init_sqlite;
     // use rbatis::core::types::byte::RbBytes;
     // use rbatis::core::types::json::RbJson;
 
@@ -66,32 +67,6 @@ mod test {
     // impl CRUDTable for BizActivity {
     // }
 
-    pub async fn init_rbatis() -> Rbatis {
-        if File::open("../target/sqlite.db").is_err() {
-            let f = File::create("../target/sqlite.db").unwrap();
-            drop(f);
-        }
-        fast_log::init(fast_log::config::Config::new().console());
-        let rb = Rbatis::new();
-        rb.link("sqlite://../target/sqlite.db")
-            .await
-            .unwrap();
-        let mut f = File::open("table_sqlite.sql").unwrap();
-        let mut sql = String::new();
-        f.read_to_string(&mut sql).unwrap();
-        rb.exec(&sql, vec![]).await;
-
-        // custom connection option(自定义连接参数)
-        // let db_cfg=DBConnectOption::from("mysql://root:123456@localhost:3306/test")?;
-        // rb.link_cfg(&db_cfg,PoolOptions::new());
-
-        // custom pool(自定义连接池)
-        // let mut opt = PoolOptions::new();
-        // opt.max_size = 20;
-        // rb.link_opt("mysql://root:123456@localhost:3306/test", &opt).await.unwrap();
-        return rb;
-    }
-
     #[tokio::test]
     pub async fn test_snow_flake() {
         let sn_id = new_snowflake_id();
@@ -100,7 +75,7 @@ mod test {
 
     #[tokio::test]
     pub async fn test_save() {
-        let rb = init_rbatis().await;
+        let rb = init_sqlite().await;
         let activity = BizActivity {
             id: Some("12312".to_string()),
             name: Some("12312".to_string()),
@@ -160,7 +135,7 @@ mod test {
 
     #[tokio::test]
     pub async fn test_save_batch() {
-        let rb = init_rbatis().await;
+        let rb = init_sqlite().await;
         let activity = BizActivity {
             id: Some("12312".to_string()),
             name: Some("test_1".to_string()),
@@ -188,7 +163,7 @@ mod test {
 
     #[tokio::test]
     pub async fn test_save_batch_slice() {
-        let rb = init_rbatis().await;
+        let rb = init_sqlite().await;
         let activity = BizActivity {
             id: Some("12312".to_string()),
             name: Some("test_1".to_string()),
@@ -225,7 +200,7 @@ mod test {
     /// use TableNoLogic to Temporary Disabling of Plugin
     #[tokio::test]
     pub async fn test_remove_batch_by_id() {
-        let mut rb = init_rbatis().await;
+        let mut rb = init_sqlite().await;
         rb.set_logic_plugin(RbatisLogicDeletePlugin::new("delete_flag"));
         let activity = BizActivity {
             id: Some("12312".to_string()),
@@ -258,7 +233,7 @@ mod test {
 
     #[tokio::test]
     pub async fn test_remove_by_id() {
-        let mut rb = init_rbatis().await;
+        let mut rb = init_sqlite().await;
         let activity = BizActivity {
             id: Some("12312".to_string()),
             name: Some("test_1".to_string()),
@@ -282,7 +257,7 @@ mod test {
 
     #[tokio::test]
     pub async fn test_fetch_by_id() {
-        let mut rb = init_rbatis().await;
+        let mut rb = init_sqlite().await;
         let r = rb
             .fetch_by_column::<Option<BizActivity>, _>("id", &"1")
             .await;
@@ -291,7 +266,7 @@ mod test {
 
     #[tokio::test]
     pub async fn test_count() {
-        let mut rb = init_rbatis().await;
+        let mut rb = init_sqlite().await;
         let r = rb
             .fetch_count::<BizActivity>()
             .await
@@ -301,7 +276,7 @@ mod test {
 
     #[tokio::test]
     pub async fn test_count_by_wrapper() {
-        let mut rb = init_rbatis().await;
+        let mut rb = init_sqlite().await;
         //set logic plugin
         rb.set_logic_plugin(RbatisLogicDeletePlugin::new("delete_flag"));
         let r = rb
@@ -313,7 +288,7 @@ mod test {
 
     #[tokio::test]
     pub async fn test_update_by_wrapper() {
-        let mut rb = init_rbatis().await;
+        let mut rb = init_sqlite().await;
         //set logic plugin
         rb.set_logic_plugin(RbatisLogicDeletePlugin::new("delete_flag"));
         let mut activity = BizActivity {
@@ -341,7 +316,7 @@ mod test {
 
     #[tokio::test]
     pub async fn test_update_by_id() {
-        let mut rb = init_rbatis().await;
+        let mut rb = init_sqlite().await;
         //set logic plugin
         rb.set_logic_plugin(RbatisLogicDeletePlugin::new("delete_flag"));
         //macro make object
@@ -375,7 +350,7 @@ mod test {
 
     #[tokio::test]
     pub async fn test_fetch_by_wrapper() {
-        let mut rb = init_rbatis().await;
+        let mut rb = init_sqlite().await;
         //set logic plugin
         rb.set_logic_plugin(RbatisLogicDeletePlugin::new("delete_flag"));
         let w = rb.new_wrapper().eq("id", "1");
@@ -388,7 +363,7 @@ mod test {
 
     #[tokio::test]
     pub async fn test_list_by_wrapper() {
-        let rb = init_rbatis().await;
+        let rb = init_sqlite().await;
         let w = rb.new_wrapper().order_by(true, &["id"]);
         let r: Vec<BizActivity> = rb.fetch_list_by_wrapper(w).await.unwrap();
         println!("is_some:{:?}", r);
@@ -396,7 +371,7 @@ mod test {
 
     #[tokio::test]
     pub async fn test_fetch_page_by_wrapper() {
-        let mut rb = init_rbatis().await;
+        let mut rb = init_sqlite().await;
         //set logic plugin
         rb.set_logic_plugin(RbatisLogicDeletePlugin::new("delete_flag"));
         let w = rb
@@ -413,7 +388,7 @@ mod test {
 
     #[tokio::test]
     pub async fn test_list() {
-        let mut rb = init_rbatis().await;
+        let mut rb = init_sqlite().await;
         //set logic plugin
         rb.set_logic_plugin(RbatisLogicDeletePlugin::new("delete_flag"));
         let r: Vec<BizActivity> = rb.fetch_list().await.unwrap();

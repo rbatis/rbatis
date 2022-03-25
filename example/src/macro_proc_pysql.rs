@@ -7,7 +7,7 @@ mod test {
     use rbatis::plugin::page::{Page, PageRequest};
     use rbatis::rbatis::Rbatis;
 
-    use crate::BizActivity;
+    use crate::{BizActivity, init_sqlite};
 
     #[py_sql("select * from biz_activity where delete_flag = 0")]
     async fn py_ctx_id(rb: &Rbatis) -> Vec<BizActivity> { impled!() }
@@ -16,10 +16,7 @@ mod test {
     pub async fn test_py_ctx_id() {
         fast_log::init(fast_log::config::Config::new().console());
         //use static ref
-        let rb = Rbatis::new();
-        rb.link("mysql://root:123456@localhost:3306/test")
-            .await
-            .unwrap();
+        let rb = init_sqlite().await;
         let a = py_ctx_id(&rb).await.unwrap();
         println!("{:?}", a);
     }
@@ -34,10 +31,7 @@ mod test {
     pub async fn test_py_select_page() {
         fast_log::init(fast_log::config::Config::new().console());
         //use static ref
-        let rb = Rbatis::new();
-        rb.link("mysql://root:123456@localhost:3306/test")
-            .await
-            .unwrap();
+        let rb = init_sqlite().await;
         let a = py_select_page(&mut rb.as_executor(), &PageRequest::new(1, 10), "test")
             .await
             .unwrap();
