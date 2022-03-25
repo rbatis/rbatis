@@ -84,7 +84,7 @@
 | Apple/MacOS             | √     |  
 | Windows               | √     |
 
-### Web Frameworks
+### Supported Web Frameworks
 
 * [actix-web](example/src/actix_web/main.rs)
 * [axum](example/src/axum/main.rs)
@@ -95,8 +95,10 @@
 * [warp](example/src/warp/main.rs)
 * [salvo](example/src/salvo/main.rs)
 
-##### Example Cargo.toml
 
+##### Quick example: QueryWrapper and common usages (see example/crud_test.rs for details)
+
+* Cargo.toml
 ``` rust
 # add this library,and cargo install
 
@@ -113,8 +115,6 @@ rbatis =  { version = "3.0" }
 # also if you use actix-web+mysql
 # rbatis = { version = "3.0", default-features = false, features = ["mysql","runtime-async-std-rustls"] }
 ```
-
-##### Quick example: QueryWrapper and common usages (see example/crud_test.rs for details)
 
 ```rust
 //#[macro_use] define in 'root crate' or 'mod.rs' or 'main.rs'
@@ -302,154 +302,18 @@ pub async fn test_macro() {
 }
 ```
 
-##### How to use logical deletes plugin (works for fetching or removing functions provided by rbatis，e.g. list**(),remove**()，fetch**())
+### Who Using Rbatis(Welcome to contribute this)?
 
-```rust
-let mut rb:Rbatis=Rbatis::new();
-//rb.logic_plugin = Some(Box::new(RbatisLogicDeletePlugin::new_opt("delete_flag",1,0)));//Customize deleted/undeleted writing
-rb.set_logic_plugin(RbatisLogicDeletePlugin::<BizActivity>::new("delete_flag"));;
-rb.link("mysql://root:123456@localhost:3306/test").await.unwrap();
-let r = rb.remove_batch_by_id::<BizActivity>( & ["1", "2"]).await;
-if r.is_err() {
-  println ! ("{}", r.err().unwrap().to_string());
-}
-```
 
-##### How to use pagination plugin
+* [abs_admin](https://github.com/rbatis/abs_admin), [abs_admin_vue](https://github.com/rbatis/abs_admin_vue)  an complete background user management system(
+  Vue.js+rbatis+actix-web)
 
-```rust
-let mut rb = Rbatis::new();
-rb.link("mysql://root:123456@localhost:3306/test").await.unwrap();
-//replace page plugin
-//rb.page_plugin = Box::new(RbatisPagePlugin::new());
+<img style="width: 200px;height: 200px;" width="200" height="200" src="logo.png" />
 
-let req = PageRequest::new(1, 20);
-let wraper= rb.new_wrapper()
-.eq("delete_flag", 1);
-let data: Page<BizActivity> = rb.fetch_page_by_wrapper( & wraper, & req).await.unwrap();
-println!("{}", serde_json::to_string(&data).unwrap());
+* [NFido](https://github.com/nfido/nfido.git) A community forum system developed by Rust
 
-//2020-07-10T21:28:40.036506700+08:00 INFO rbatis::rbatis - [rbatis] Query ==> SELECT count(1) FROM biz_activity  WHERE delete_flag =  ? LIMIT 0,20
-//2020-07-10T21:28:40.040505200+08:00 INFO rbatis::rbatis - [rbatis] Args  ==> [1]
-//2020-07-10T21:28:40.073506+08:00 INFO rbatis::rbatis - [rbatis] Total <== 1
-//2020-07-10T21:28:40.073506+08:00 INFO rbatis::rbatis - [rbatis] Query ==> SELECT  create_time,delete_flag,h5_banner_img,h5_link,id,name,pc_banner_img,pc_link,remark,sort,status,version  FROM biz_activity  WHERE delete_flag =  ? LIMIT 0,20
-//2020-07-10T21:28:40.073506+08:00 INFO rbatis::rbatis - [rbatis] Args  ==> [1]
-//2020-07-10T21:28:40.076506500+08:00 INFO rbatis::rbatis - [rbatis] Total <== 5
-```
+<img style="width: 200px;height: 150px;" width="200" height="150" src="https://user-images.githubusercontent.com/278153/160108965-bdc2e6fd-ce7d-4a80-887f-a4c094e13f6c.png" />
 
-```json
-{
-  "records": [
-    {
-      "id": "12312",
-      "name": "null",
-      "pc_link": "null",
-      "h5_link": "null",
-      "pc_banner_img": "null",
-      "h5_banner_img": "null",
-      "sort": "null",
-      "status": 1,
-      "remark": "null",
-      "create_time": "2020-02-09T00:00:00+00:00",
-      "version": 1,
-      "delete_flag": 1
-    }
-  ],
-  "total": 5,
-  "size": 20,
-  "current": 1,
-  "serch_count": true
-}
-```
-
-#### logging system with fast_log here as an example
-
-``` rust
- use log::{error, info, warn};
- fn  main(){
-      fast_log::init(fast_log::config::Config::new().console());
-      info!("print data");
- }
-```
-
-#### Customize connection pool's size, timeout, active number of connections, and etc.
-
-```rust
-use rbatis::core::db::PoolOptions;
-
-pub async fn init_rbatis() -> Rbatis {
-    let rb = Rbatis::new();
-    let mut opt = PoolOptions::new();
-    opt.max_size = 20;
-    rb.link_opt("mysql://root:123456@localhost:3306/test", &opt).await.unwrap();
-}
-```
-
-#### Transaction
-
-``` rust
-        let rb = Rbatis::new();
-        rb.link("mysql://root:123456@localhost:3306/test").await.unwrap();
-        let mut tx = rb.acquire_begin().await.unwrap();
-        let v: serde_json::Value = tx
-            .fetch("select count(1) from biz_activity;",&vec![])
-            .await
-            .unwrap();
-        println!("{}", v.clone());
-        //rb.fetch**** and more method
-        tx.commit().await.unwrap();
-        //tx.begin().await
-```
-
-# Transaction defer
-
-``` rust
-    pub async fn forget_commit(rb: &Rbatis) -> rbatis::core::Result<()> {
-        // tx will be commit.when func end
-        let mut tx = rb.acquire_begin().await?.defer_async(|mut tx1| async move {
-            if !tx1.is_done() {
-                tx1.rollback().await;
-                println!("tx rollback success!");
-            } else {
-                println!("don't need rollback!");
-            }
-        });
-        let v = tx
-            .exec("update biz_activity set name = '6' where id = 1;", &vec![])
-            .await;
-        //tx.commit().await;  //if commit, print 'don't need rollback!' ,if not,print 'tx rollback success!'
-        return Ok(());
-    }
-```
-
-### How to use rbatis with Rust web frameworks (actix-web is used here as an example, but all web frameworks based on tokio or async_std are supported)
-
-``` rust
-#[macro_use]
-use once_cell::sync::Lazy;
-pub static RB:Lazy<Rbatis> = Lazy::new(||Rbatis::new());
-
-async fn index() -> impl Responder {
-    let v:Result<i32,rbatis::core::Error> = RB.fetch( "SELECT count(1) FROM biz_activity;",&vec![]).await;
-    HttpResponse::Ok().body(format!("count(1)={}",v.unwrap_or(0)))
-}
-
-#[actix_rt::main]
-async fn main() -> std::io::Result<()> {
-    //log
-    fast_log::init(fast_log::config::Config::new().console());
-    //link database
-    RB.link("mysql://root:123456@localhost:3306/test").await.unwrap();
-    //http server
-    HttpServer::new(|| {
-        App::new()
-            .route("/", web::get().to(index))
-    })
-        .bind("127.0.0.1:8000")?
-        .run()
-        .await
-}
-```
 
 ### Progress - in sequential order
 
@@ -497,27 +361,6 @@ async fn main() -> std::io::Result<()> {
 # [Changelog](https://github.com/rbatis/rbatis/releases/)
 
 # [Roadmap](roadmap.md)
-
-
-## Who Is Using Rbatis(Welcome to contribute this)?
-
-
-* [abs_admin](https://github.com/rbatis/abs_admin), [abs_admin_vue](https://github.com/rbatis/abs_admin_vue)  an complete background user management system(
-  Vue.js+rbatis+actix-web)
-<img style="width: 200px;height: 200px;" width="200" height="200" src="logo.png" />
-
-* [NFido](https://github.com/nfido/nfido.git) A community forum system developed by Rust
-
-<img style="width: 200px;height: 150px;" width="200" height="150" src="https://user-images.githubusercontent.com/278153/160108965-bdc2e6fd-ce7d-4a80-887f-a4c094e13f6c.png" />
-
-
-
-
-
-
-
-
-
 
 # Contact/donation, or click on star [rbatis](https://github.com/rbatis/rbatis)
 
