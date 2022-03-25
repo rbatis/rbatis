@@ -502,9 +502,25 @@ async fn main() -> std::io::Result<()> {
 
 [roadmap](roadmap.md)
 
-### Related Projects
 
-* Logging: https://github.com/rbatis/fast_log
+
+## Who Is Using Rbatis?
+
+
+* [abs_admin](https://github.com/rbatis/abs_admin), [abs_admin_vue](https://github.com/rbatis/abs_admin_vue)  an complete background user management system(
+  Vue.js+rbatis+actix-web)
+   <img style="width: 200px;height: 200px;" width="200" height="200" src="logo.png" />
+* [NFido](https://github.com/nfido/nfido.git) A community forum system developed by Rust
+  <img style="width: 200px;height: 150px;" width="200" height="150" src="https://user-images.githubusercontent.com/278153/160108965-bdc2e6fd-ce7d-4a80-887f-a4c094e13f6c.png" />
+
+
+
+
+
+
+
+
+
 
 # Contact/donation, or click on star [rbatis](https://github.com/rbatis/rbatis)
 
