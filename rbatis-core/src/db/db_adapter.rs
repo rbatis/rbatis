@@ -729,7 +729,7 @@ impl<'a> DBPoolConn<'a> {
         }
     }
 
-    pub async fn begin(mut self) -> crate::Result<DBTx<'a>> {
+    pub async fn begin(self) -> crate::Result<DBTx<'a>> {
         self.check_alive()?;
         let mut tx = DBTx {
             driver_type: self.driver_type(),
@@ -765,7 +765,7 @@ impl<'a> DBPoolConn<'a> {
         }
     }
 
-    pub async fn close(mut self) -> crate::Result<()> {
+    pub async fn close(self) -> crate::Result<()> {
         return Ok(());
     }
 }
