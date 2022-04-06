@@ -55,10 +55,10 @@ pub fn sql(args: TokenStream, func: TokenStream) -> TokenStream {
 ///
 ///  pub static RB:Lazy<Rbatis> = Lazy::new(||Rbatis::new());
 ///  #[py_sql(RB,"select * from biz_activity where delete_flag = 0")]
-///  async fn py_select_page(page_req: &PageRequest, name: &str) -> Page<BizActivity> { todo!() }
+///  async fn py_select_page(page_req: &PageRequest, name: &str) -> Page<BizActivity> { }
 ///  or:
 ///  #[py_sql("select * from biz_activity where delete_flag = 0")]
-///  async fn py_select_page(rb: &mut RbatisExecutor<'_,'_>, page_req: &PageRequest, name: &str) -> Page<BizActivity> { todo!() }
+///  async fn py_select_page(rb: &mut RbatisExecutor<'_,'_>, page_req: &PageRequest, name: &str) -> Page<BizActivity> { }
 ///
 ///  or more example:
 ///  #[py_sql("

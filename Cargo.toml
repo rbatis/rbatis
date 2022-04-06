@@ -45,7 +45,7 @@ format_bson = ["rbatis-core/format_bson"]
 
 [dependencies]
 rbatis-core = { version = "3.1.6", path = "rbatis-core", default-features = false, optional = true }
-rbatis_sql = { version = "3.0.15", git = "https://github.com/rbatis/rbatis_sql.git", branch = "main", optional = true }
+rbatis_sql = { version = "3.0", git = "https://github.com/rbatis/rbatis_sql.git", branch = "main", optional = true }
 rbatis-macro-driver = { version = "3.1", path = "rbatis-macro-driver", default-features = false, optional = true }
 
 rbson = { version = "2.0.3", features = ["uuid-0_8", "chrono-0_4"] }
