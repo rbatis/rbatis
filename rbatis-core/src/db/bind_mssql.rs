@@ -75,10 +75,6 @@ pub fn bind(t: Bson, mut q: Query<Mssql, MssqlArguments>) -> crate::Result<Query
         }
         Bson::Binary(d) => {
             match d.subtype {
-                // todo unsupported
-                // BinarySubtype::Generic => {
-                //     q = q.bind(d.bytes);
-                // }
                 BinarySubtype::Uuid => {
                     q = q.bind(crate::types::Uuid::from(d).to_string());
                 }

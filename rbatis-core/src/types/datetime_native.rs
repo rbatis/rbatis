@@ -69,7 +69,7 @@ impl<'de> serde::Deserialize<'de> for DateTimeNative {
                     inner: date.to_chrono().with_timezone(&chrono::Local).naive_local(),
                 });
             }
-            Bson::String(mut s) => {
+            Bson::String(s) => {
                 let mut b = s.into_bytes();
                 if b.len() >= 10 && b[10] == ' ' as u8 {
                     b[10] = 'T' as u8;

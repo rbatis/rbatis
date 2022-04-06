@@ -68,11 +68,10 @@ impl DBPoolOptions {
 pub struct DefaultDecoder {}
 
 impl DataDecoder for DefaultDecoder {
-    fn decode(&self, key: &str, data: &mut Bson) -> crate::Result<()> {
+    fn decode(&self, _key: &str, _data: &mut Bson) -> crate::Result<()> {
         return Ok(());
     }
 }
-
 
 #[derive(Serialize, Deserialize, Debug, Clone, Copy, Eq, PartialEq)]
 pub enum DriverType {
