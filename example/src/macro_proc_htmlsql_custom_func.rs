@@ -5,7 +5,6 @@ mod test {
     use rbson::Bson;
 
     use rbatis::executor::RbatisExecutor;
-    use rbatis::plugin::page::{Page, PageRequest};
     use rbatis::rbatis::Rbatis;
 
     use crate::{BizActivity, init_sqlite};
@@ -29,14 +28,14 @@ mod test {
 
     ///select page must have  '?:&PageRequest' arg and return 'Page<?>'
     #[html_sql("example/example.html")]
-    async fn custom_func(rb: &mut RbatisExecutor<'_, '_>, page_req: &PageRequest, name: &str, dt: &rbatis::DateTimeNative) -> Page<BizActivity> { impled!() }
+    async fn custom_func(rb: &mut RbatisExecutor<'_, '_>, name: &str) -> Vec<BizActivity> { impled!() }
 
     #[tokio::test]
     pub async fn test_custom_func() {
         fast_log::init(fast_log::config::Config::new().console());
         //use static ref
         let rb = init_sqlite().await;
-        let a = custom_func(&mut rb.as_executor(), &PageRequest::new(1, 10), "test", &rbatis::DateTimeNative::now())
+        let a = custom_func(&mut rb.as_executor(), "test")
             .await
             .unwrap();
         println!("{:?}", a);
