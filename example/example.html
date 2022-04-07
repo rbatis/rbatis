@@ -16,8 +16,8 @@
             <if test="name != ''">
                 and name like #{name}
             </if>
-            <if test="dt.bracket() >= '2009-12-12T00:00:00'">
-                and create_time < #{dt.bracket()}
+            <if test="dt.inner() >= '2009-12-12T00:00:00'">
+                and create_time < #{dt.inner()}
             </if>
             <choose>
                 <when test="true">
