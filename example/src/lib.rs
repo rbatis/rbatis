@@ -22,7 +22,7 @@ mod plugin_page;
 mod plugin_logic_del;
 mod macro_proc_pysql;
 mod macro_proc_htmlsql;
-mod macro_proc_htmlsql_func;
+mod macro_proc_htmlsql_custom_func;
 mod macro_proc_rawsql;
 mod raw_driver;
 mod column_keyword;
