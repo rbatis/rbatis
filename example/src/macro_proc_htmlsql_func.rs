@@ -10,10 +10,10 @@ mod test {
 
     use crate::{BizActivity, init_sqlite};
 
-    pub trait IsFine{
+    pub trait IsTest {
         fn is_test(&self)->bool;
     }
-    impl IsFine for rbson::Bson{
+    impl IsTest for rbson::Bson{
         fn is_test(&self) -> bool {
             match self{
                 Bson::String(v) => {
