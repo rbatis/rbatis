@@ -10,3 +10,4 @@
 
 * [cassie_axum](https://gitee.com/stringlxd/cassie_axum)  A high-performance, easy-to-use Web framework based on Rust Axum can be used to build any Web backend project for rust hobbyist learning to use, basic cache definition, Redis, ORM framework selected Ribatis, Casbin-RS integration, adapter written, user rights JWT Fusion casbin - rs
 
+<img style="width: 200px;height: 200px;" width="200" height="200" src="https://user-images.githubusercontent.com/3481148/162619158-bef0caaa-501b-4680-87e0-34157620b84c.png" />
