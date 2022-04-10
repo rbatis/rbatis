@@ -1,4 +1,4 @@
-[WebSite](https://rbatis.github.io/rbatis.io/#/en/) | [简体中文](https://rbatis.github.io/rbatis.io/)
+[WebSite](https://rbatis.github.io/rbatis.io/#/en/) | [简体中文](https://rbatis.github.io/rbatis.io/) [Showcase/案例](WhoUse.md)
 
 [![Build Status](https://travis-ci.org/zhuxiujia/rbatis.svg?branch=master)](https://travis-ci.org/zhuxiujia/rbatis)
 [![doc.rs](https://docs.rs/rbatis/badge.svg)](https://docs.rs/rbatis/)
@@ -11,8 +11,6 @@
 <img style="width: 200px;height: 200px;" width="200" height="200" src="logo.png" />
 
 #### A highly Performant,Safe,Dynamic SQL(Compile time) ORM framework written in Rust, inspired by Mybatis and MybatisPlus.
-
-### [Who Is Using Rbatis?](WhoUse.md)
 
 ##### Why not diesel or not sqlx ?
 
