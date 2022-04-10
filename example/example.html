@@ -31,4 +31,13 @@
             </trim>
         </where>
     </select>
+
+    <select id="custom_func">
+        select * from biz_activity
+        <where>
+            <if test="name.is_test()">
+                and name like #{name}
+            </if>
+        </where>
+    </select>
 </mapper>
