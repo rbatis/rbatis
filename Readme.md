@@ -12,6 +12,8 @@
 
 #### A highly Performant,Safe,Dynamic SQL(Compile time) ORM framework written in Rust, inspired by Mybatis and MybatisPlus.
 
+### [Who Is Using Rbatis](WhoUse.md)
+
 ##### Why not diesel or not sqlx ?
 
 | Framework    | Async/.await | Learning curve | Dynamic SQL/py/Wrapper/built-in CRUD | Logical delete plugin| Pagination plugin
@@ -19,6 +21,7 @@
 | rbatis | √     | easy   |   √     |    √     |   √     |  
 | sqlx   | √     | hard (depends on macros and env. variables) |   x     |   x     |   x     |  
 | diesel | x     | hard (use FFI, unsafe) |   x     |  x     |  x     |  
+
 
 ##### Performance comparison with Golang (in a docker environment)
 
@@ -301,19 +304,6 @@ pub async fn test_macro() {
     println!("{:?}", a);
 }
 ```
-
-### Who Using Rbatis(Welcome to contribute this)?
-
-
-* [abs_admin](https://github.com/rbatis/abs_admin), [abs_admin_vue](https://github.com/rbatis/abs_admin_vue)  an complete background user management system(
-  Vue.js+rbatis+actix-web)
-
-<img style="width: 200px;height: 200px;" width="200" height="200" src="logo.png" />
-
-* [NFido](https://github.com/nfido/nfido.git) A community forum system developed by Rust
-
-<img style="width: 200px;height: 150px;" width="200" height="150" src="https://user-images.githubusercontent.com/278153/160108965-bdc2e6fd-ce7d-4a80-887f-a4c094e13f6c.png" />
-
 
 ### Progress - in sequential order
 
