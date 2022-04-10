@@ -12,7 +12,7 @@
 
 #### A highly Performant,Safe,Dynamic SQL(Compile time) ORM framework written in Rust, inspired by Mybatis and MybatisPlus.
 
-### [Who Is Using Rbatis](WhoUse.md)
+### [Who Is Using Rbatis?](WhoUse.md)
 
 ##### Why not diesel or not sqlx ?
 
