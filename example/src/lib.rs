@@ -66,6 +66,18 @@ pub async fn init_sqlite_path(root_path:&str) -> Rbatis {
     }
     fast_log::init(fast_log::config::Config::new().console());
 
+
+    // custom connection option
+    // //mysql
+    // // let db_cfg=DBConnectOption::from("mysql://root:123456@localhost:3306/test")?;
+    // let db_cfg=DBConnectOption::from("sqlite://../target/sqlite.db")?;
+    // rb.link_cfg(&db_cfg,PoolOptions::new());
+
+    // custom pool
+    // let mut opt = PoolOptions::new();
+    // opt.max_size = 20;
+    // rb.link_opt("sqlite://../target/sqlite.db", &opt).await.unwrap();
+
     // init rbatis
     let rb = Rbatis::new();
     rb.link(&format!("sqlite://{}target/sqlite.db",root_path))
@@ -78,15 +90,5 @@ pub async fn init_sqlite_path(root_path:&str) -> Rbatis {
     f.read_to_string(&mut sql).unwrap();
     rb.exec(&sql, vec![]).await;
 
-    // custom connection option
-    // //mysql
-    // // let db_cfg=DBConnectOption::from("mysql://root:123456@localhost:3306/test")?;
-    // let db_cfg=DBConnectOption::from("sqlite://../target/sqlite.db")?;
-    // rb.link_cfg(&db_cfg,PoolOptions::new());
-
-    // custom pool
-    // let mut opt = PoolOptions::new();
-    // opt.max_size = 20;
-    // rb.link_opt("sqlite://../target/sqlite.db", &opt).await.unwrap();
     return rb;
 }
