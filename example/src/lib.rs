@@ -67,14 +67,13 @@ pub async fn init_sqlite_path(root_path:&str) -> Rbatis {
     fast_log::init(fast_log::config::Config::new().console());
 
 
-    // custom connection option
-    // //mysql
+    // // mysql custom connection option
     // // let db_cfg=DBConnectOption::from("mysql://root:123456@localhost:3306/test")?;
-    // let db_cfg=DBConnectOption::from("sqlite://../target/sqlite.db")?;
-    // rb.link_cfg(&db_cfg,PoolOptions::new());
-
-    // custom pool
-    // let mut opt = PoolOptions::new();
+    // let db_cfg= DBConnectOption::from("sqlite://../target/sqlite.db")?;
+    // rb.link_cfg(&db_cfg,DBPoolOptions::new());
+    //
+    // // custom pool
+    // let mut opt = DBPoolOptions::new();
     // opt.max_size = 20;
     // rb.link_opt("sqlite://../target/sqlite.db", &opt).await.unwrap();
 
