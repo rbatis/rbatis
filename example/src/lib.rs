@@ -54,21 +54,26 @@ pub struct BizActivity {
 
 /// make a sqlite-rbatis
 pub async fn init_sqlite() -> Rbatis {
-    if File::open("../target/sqlite.db").is_err() {
-        create_dir_all("../target/");
-        let f = File::create("../target/sqlite.db").unwrap();
+    init_sqlite_path("../").await
+}
+
+/// make a sqlite-rbatis
+pub async fn init_sqlite_path(root_path:&str) -> Rbatis {
+    if File::open(format!("{}target/sqlite.db",root_path)).is_err() {
+        create_dir_all(format!("{}target/",root_path));
+        let f = File::create(format!("{}target/sqlite.db",root_path)).unwrap();
         drop(f);
     }
     fast_log::init(fast_log::config::Config::new().console());
 
     // init rbatis
     let rb = Rbatis::new();
-    rb.link("sqlite://../target/sqlite.db")
+    rb.link(&format!("sqlite://{}target/sqlite.db",root_path))
         .await
         .unwrap();
 
     // run sql create table
-    let mut f = File::open("table_sqlite.sql").unwrap();
+    let mut f = File::open(format!("{}example/table_sqlite.sql",root_path)).unwrap();
     let mut sql = String::new();
     f.read_to_string(&mut sql).unwrap();
     rb.exec(&sql, vec![]).await;

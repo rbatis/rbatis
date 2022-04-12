@@ -27,8 +27,6 @@ pub struct BizActivity {
     pub delete_flag: Option<i32>,
 }
 
-pub const MYSQL_URL: &'static str = "mysql://root:123456@localhost:3306/test";
-
 pub static RB: Lazy<Rbatis> = Lazy::new(|| Rbatis::new());
 
 async fn hello(_: Request<Body>) -> Result<Response<Body>, Infallible> {
@@ -40,7 +38,9 @@ async fn hello(_: Request<Body>) -> Result<Response<Body>, Infallible> {
 pub async fn main() -> Result<(), Box<dyn std::error::Error + Send + Sync>> {
     fast_log::init(fast_log::config::Config::new().console());
     log::info!("linking database...");
-    RB.link(MYSQL_URL).await.expect("rbatis link database fail");
+    let rb=example::init_sqlite_path("").await;
+    drop(rb);
+    RB.link("sqlite://target/sqlite.db").await.expect("rbatis link database fail");
     log::info!("linking database successful!");
     let make_svc = make_service_fn(|_conn| async { Ok::<_, Infallible>(service_fn(hello)) });
     let addr = ([127, 0, 0, 1], 8000).into();

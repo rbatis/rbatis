@@ -25,8 +25,7 @@ async fn main() {
     fast_log::init(fast_log::config::Config::new().console());
     //link database,also you can use  pub static RB:Lazy<Rbatis> = Lazy::new(||Rbatis::new()); replace this
     log::info!("linking database...");
-    let rb = Rbatis::new();
-    rb.link(MYSQL_URL).await.expect("rbatis link database fail");
+    let rb = example::init_sqlite_path("").await;
     let rb = Arc::new(rb);
     log::info!("linking database successful!");
     rocket::build()
