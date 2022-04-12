@@ -12,8 +12,8 @@ use axum::{
     routing::get,
 };
 
-//mysql driver url
-pub const MYSQL_URL: &'static str = "mysql://root:123456@localhost:3306/test";
+// //mysql driver url
+// pub const MYSQL_URL: &'static str = "mysql://root:123456@localhost:3306/test";
 
 //handler
 pub async fn handler(rb: Extension<Arc<Rbatis>>) -> Json<Value> {
@@ -27,8 +27,7 @@ async fn main() {
     fast_log::init(fast_log::config::Config::new().console());
 
     log::info!("linking database...");
-    let rb = Rbatis::new();
-    rb.link(MYSQL_URL).await.expect("rbatis link database fail");
+    let rb = example::init_sqlite_path("").await;
     let rb = Arc::new(rb);
     log::info!("linking database successful!");
 

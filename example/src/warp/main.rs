@@ -29,8 +29,6 @@ pub struct BizActivity {
     pub delete_flag: Option<i32>,
 }
 
-pub const MYSQL_URL: &'static str = "mysql://root:123456@localhost:3306/test";
-
 pub static RB: Lazy<Rbatis> = Lazy::new(|| Rbatis::new());
 
 #[tokio::main]
@@ -40,7 +38,9 @@ async fn main() {
 
     log::info!("linking database...");
     //ORM
-    RB.link(MYSQL_URL).await.expect("rbatis link database fail");
+    let rb=example::init_sqlite_path("").await;
+    drop(rb);
+    RB.link("sqlite://target/sqlite.db").await.expect("rbatis link database fail");
     log::info!("linking database successful!");
     let routes = warp::get()
         .and(warp::query::query())

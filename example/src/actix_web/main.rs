@@ -44,9 +44,6 @@ impl Default for BizActivity {
     }
 }
 
-//mysql driver url
-pub const MYSQL_URL: &'static str = "mysql://root:123456@localhost:3306/test";
-
 async fn index(rb: web::Data<Arc<Rbatis>>) -> impl Responder {
     let v = rb.fetch_list::<BizActivity>().await.unwrap_or_default();
     HttpResponse::Ok().insert_header(("Content-Type", "text/json;charset=UTF-8")).json(v)
@@ -58,10 +55,11 @@ async fn main() -> std::io::Result<()> {
     fast_log::init(fast_log::config::Config::new().console());
     //init rbatis . also you can use  pub static RB:Lazy<Rbatis> = Lazy::new(||Rbatis::new()); replace this
     log::info!("linking database...");
-    let rb = Rbatis::new();
-    rb.link(MYSQL_URL).await.expect("rbatis link database fail");
+    let rb = example::init_sqlite_path("").await;
     let rb = Arc::new(rb);
     log::info!("linking database successful!");
+
+    log::info!("start on http://127.0.0.1:8080");
     //router
     HttpServer::new(move || {
         App::new()
