@@ -26,9 +26,9 @@ path = "src/warp/main.rs"
 name = "rocket"
 path = "src/rocket/main.rs"
 
-#[[bin]]
-#name = "ntex"
-#path = "src/ntex/main.rs"
+[[bin]]
+name = "ntex"
+path = "src/ntex/main.rs"
 
 [[bin]]
 name = "axum"
@@ -66,3 +66,4 @@ rocket = "0.5.0-rc.1"
 axum = "0.5"
 salvo = "0.16"
 tracing = "0.1" #axum need this
+ntex = {version="0.5", features = ["tokio"]}

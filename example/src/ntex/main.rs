@@ -9,6 +9,7 @@ use ntex::web::{middleware, App, Error, HttpResponse};
 use ntex::web;
 use std::sync::Arc;
 use std::cell::Cell;
+use example::init_sqlite_path;
 
 #[crud_table]
 #[derive(Clone, Debug)]
@@ -46,15 +47,11 @@ impl Default for BizActivity {
     }
 }
 
-
-//mysql driver url
-pub const MYSQL_URL: &'static str = "mysql://root:123456@localhost:3306/test";
-
 type DBPool = Arc<Rbatis>;
 
 
 #[web::get("/")]
-async fn index(pool: web::types::Data<DBPool>) -> Result<HttpResponse, Error> {
+async fn index(pool: web::types::State<DBPool>) -> Result<HttpResponse, Error> {
     let v = pool.fetch_list::<BizActivity>().await.unwrap_or_default();
     Ok(HttpResponse::Ok().set_header("Content-Type", "text/json;charset=UTF-8").json(&v))
 }
@@ -65,9 +62,7 @@ async fn main() -> std::io::Result<()> {
     fast_log::init(fast_log::config::Config::new().console());
 
     log::info!("linking database...");
-    let rbatis = Rbatis::new();
-    //link database,also you can use  pub static RB:Lazy<Rbatis> = Lazy::new(||Rbatis::new()); replace this
-    rbatis.link(MYSQL_URL).await.expect("rbatis link database fail");
+    let rbatis = init_sqlite_path("").await;
     log::info!("linking database successful!");
     println!("Starting server at: http://127.0.0.1:8000");
     let rb_clone = DBPool::new(rbatis);
@@ -75,7 +70,7 @@ async fn main() -> std::io::Result<()> {
     web::server(move || {
         App::new()
             // set up DB pool to be used with web::Data<Pool> extractor
-            .data(rb_clone.clone())
+            .state(rb_clone.clone())
             .wrap(middleware::Logger::default())
             .service((index))
     })
