@@ -1,11 +1,10 @@
 use std::net::SocketAddr;
 use std::sync::Arc;
 use rbatis::rbatis::Rbatis;
-use axum::extract::Extension;
 use example::BizActivity;
 use rbatis::crud::CRUD;
 use serde_json::Value;
-use axum::AddExtensionLayer;
+use axum::extract::Extension;
 use axum::{
     http::StatusCode,
     response::IntoResponse,
@@ -35,7 +34,7 @@ async fn main() {
 
     // build our application with a route
     let app = Router::new().route("/", get(handler))
-        .layer(AddExtensionLayer::new(rb));
+        .layer(Extension(rb));
     // run it
     let addr = SocketAddr::from(([127, 0, 0, 1], 8000));
     tracing::debug!("listening on {}", addr);
