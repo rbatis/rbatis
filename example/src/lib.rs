@@ -58,10 +58,10 @@ pub async fn init_sqlite() -> Rbatis {
 }
 
 /// make a sqlite-rbatis
-pub async fn init_sqlite_path(root_path:&str) -> Rbatis {
-    if File::open(format!("{}target/sqlite.db",root_path)).is_err() {
-        create_dir_all(format!("{}target/",root_path));
-        let f = File::create(format!("{}target/sqlite.db",root_path)).unwrap();
+pub async fn init_sqlite_path(path:&str) -> Rbatis {
+    if File::open(format!("{}target/sqlite.db", path)).is_err() {
+        create_dir_all(format!("{}target/", path));
+        let f = File::create(format!("{}target/sqlite.db", path)).unwrap();
         drop(f);
     }
     fast_log::init(fast_log::config::Config::new().console());
@@ -79,12 +79,12 @@ pub async fn init_sqlite_path(root_path:&str) -> Rbatis {
 
     // init rbatis
     let rb = Rbatis::new();
-    rb.link(&format!("sqlite://{}target/sqlite.db",root_path))
+    rb.link(&format!("sqlite://{}target/sqlite.db", path))
         .await
         .unwrap();
 
     // run sql create table
-    let mut f = File::open(format!("{}example/table_sqlite.sql",root_path)).unwrap();
+    let mut f = File::open(format!("{}example/table_sqlite.sql", path)).unwrap();
     let mut sql = String::new();
     f.read_to_string(&mut sql).unwrap();
     rb.exec(&sql, vec![]).await;
