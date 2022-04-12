@@ -4,13 +4,13 @@ use rbatis::rbatis::Rbatis;
 use example::BizActivity;
 use rbatis::crud::CRUD;
 use serde_json::Value;
-use axum::extract::Extension;
 use axum::{
+    extract::Extension,
     http::StatusCode,
     response::IntoResponse,
     Json, Router,
+    routing::get,
 };
-use axum::routing::get;
 
 //mysql driver url
 pub const MYSQL_URL: &'static str = "mysql://root:123456@localhost:3306/test";
