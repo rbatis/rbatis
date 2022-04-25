@@ -35,8 +35,6 @@ serde_json = { version = "1", features = ["raw_value","preserve_order"] }
 rbson = { version = "2.0.3", features = ["uuid-0_8", "chrono-0_4"] }
 chrono = { version = "0.4", default-features = false, features = ["clock", "serde"] }
 log = { version = "0.4", default-features = false }
-rexpr = { version = "1.0" }
-py_sql = "1.0"
 lazy_static = "1.4"
 ipnetwork = { version = "0.17", features = ["serde"] }
 sqlx-core = { version = "0.5", features = ["offline","chrono", "time", "bigdecimal", "decimal","json", "uuid", "bit-vec"], optional = true }
