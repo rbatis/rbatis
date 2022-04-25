@@ -63,11 +63,6 @@ impl From<&dyn std::error::Error> for Error {
     }
 }
 
-impl From<rexpr::error::Error> for crate::Error {
-    fn from(e: rexpr::error::Error) -> Self {
-        crate::Error::E(format!("[rbatis]{}", e.to_string()))
-    }
-}
 
 impl From<sqlx_core::error::BoxDynError> for crate::Error {
     fn from(arg: BoxDynError) -> Self {
@@ -179,17 +174,6 @@ impl<T> OptionToResult<T> for Option<T> {
     }
 }
 
-impl From<py_sql::error::Error> for crate::Error {
-    fn from(arg: py_sql::error::Error) -> Error {
-        Error::E(arg.to_string())
-    }
-}
-
-impl Into<py_sql::error::Error> for crate::Error {
-    fn into(self) -> py_sql::error::Error {
-        py_sql::error::Error::E(self.to_string())
-    }
-}
 
 impl From<Error> for std::io::Error {
     fn from(arg: Error) -> Self {
