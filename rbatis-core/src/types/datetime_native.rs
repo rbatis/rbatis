@@ -86,8 +86,14 @@ impl<'de> serde::Deserialize<'de> for DateTimeNative {
                     });
                 }
             }
-            _ => {
-                Err(D::Error::custom("deserialize un supported bson type!"))
+            //timestamp(ms)
+            Bson::Int64(timestamp) => {
+                return Ok(DateTimeNative {
+                    inner: chrono::NaiveDateTime::from_timestamp(timestamp/1000, (timestamp % 1000 * 1000000) as u32)
+                });
+            }
+            v => {
+                Err(D::Error::custom(format!("deserialize un supported bson value={:?},type= DateTimeNative", v)))
             }
         }
     }
