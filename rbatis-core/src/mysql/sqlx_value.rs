@@ -9,7 +9,7 @@ use sqlx_core::types::{BigDecimal, Json};
 use sqlx_core::value::ValueRef;
 
 use crate::convert::{JsonCodec, RefJsonCodec, ResultCodec};
-use chrono::{DateTime, Utc, NaiveDate, Local};
+use chrono::{DateTime, Utc, NaiveDate};
 
 use crate::{to_bson_macro};
 use rbson::bson;
@@ -134,7 +134,7 @@ impl<'r> JsonCodec for sqlx_core::mysql::MySqlValueRef<'r> {
                 return Ok(Bson::Null);
             }
             "TIMESTAMP" => {
-                let r: Option<DateTime<Local>> = Decode::<'_, MySql>::decode(self)?;
+                let r: Option<chrono::NaiveDateTime> = Decode::<'_, MySql>::decode(self)?;
                 if let Some(dt) = r {
                     return Ok(Bson::String(dt.format("%Y-%m-%dT%H:%M:%S").to_string()));
                 }
