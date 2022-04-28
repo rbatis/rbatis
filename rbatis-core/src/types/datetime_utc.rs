@@ -4,7 +4,7 @@ use std::str::FromStr;
 use rbson::Bson;
 use rbson::spec::BinarySubtype;
 use serde::{Deserializer, Serializer};
-use chrono::Utc;
+use chrono::{DateTime, Utc};
 use serde::de::Error;
 
 /// Rbatis DateTime Utc
@@ -66,6 +66,13 @@ impl<'de> serde::Deserialize<'de> for DateTimeUtc {
                         inner: chrono::DateTime::<chrono::Utc>::from_str(&s).or_else(|e| Err(D::Error::custom(e.to_string())))?,
                     });
                 }
+            }
+            //timestamp(ms)
+            Bson::Int64(timestamp) => {
+                let native=chrono::NaiveDateTime::from_timestamp(timestamp/1000, (timestamp % 1000 * 1000000) as u32);
+                return Ok(DateTimeUtc {
+                    inner: DateTime::<Utc>::from_utc(native,Utc)
+                });
             }
             _ => {
                 Err(D::Error::custom("deserialize un supported bson type!"))
