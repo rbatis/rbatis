@@ -50,7 +50,7 @@ mod test {
         let w = Wrapper::new(&DriverType::Postgres).not_in("id", &[1]);
         assert_eq!(w.sql, "id not in ( $1 )");
         let w = Wrapper::new(&DriverType::Postgres).insert_into("table", "c", "v");
-        assert_eq!(w.sql, "insert into table (c) values v");
+        assert_eq!(w.sql, "insert into table (c) values (v)");
         let w = Wrapper::new(&DriverType::Postgres).limit(1);
         assert_eq!(w.sql, " limit 1 ");
         let w = Wrapper::new(&DriverType::Postgres).order_bys(&[("id", true), ("name", false)]);
