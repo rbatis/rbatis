@@ -116,8 +116,10 @@ impl DerefMut for Timestamp {
 
 impl Timestamp {
     pub fn now() -> Self {
+        let offset_date_time = time::OffsetDateTime::try_now_local().unwrap();
+
         Self {
-            inner: time::OffsetDateTime::from_unix_timestamp(time::OffsetDateTime::now_local().unix_timestamp())
+            inner: time::OffsetDateTime::from_unix_timestamp(offset_date_time.unix_timestamp())
         }
     }
 
