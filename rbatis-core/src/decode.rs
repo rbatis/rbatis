@@ -11,11 +11,11 @@ use crate::types::Format;
 /// support decode types:
 /// Bson,BigDecimal, i8..i64,u8..u64,rbson::Int64(),bool,String
 /// or object used bson macro object
-pub fn decode<T: ?Sized>(mut datas: rbson::Array) -> Result<T, crate::Error>
+pub fn decode<T: ?Sized>(datas: rbson::Array) -> Result<T, crate::Error>
     where
         T: DeserializeOwned,
 {
-    let mut type_name = std::any::type_name::<T>();
+    let type_name = std::any::type_name::<T>();
     //debug_mode feature print json_decode json data
     let bs = Bson::Array(datas);
     #[cfg(feature = "debug_mode")]
@@ -84,7 +84,7 @@ pub fn try_decode_doc<T>(type_name: &str, datas: &mut Vec<Bson>) -> Result<T, cr
         Bson::Document(doc) => {
             doc_len = doc.len();
             if doc_len == 1 {
-                for (k, _v) in doc {
+                for (_k, _v) in doc {
                     v = _v.clone();
                     break;
                 }
