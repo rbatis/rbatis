@@ -736,6 +736,7 @@ impl<'a> DBPoolConn<'a> {
             conn: Some(self),
             done: true,
         };
+
         tx.begin().await;
         return Ok(tx);
     }
@@ -787,7 +788,7 @@ impl<'a> DBTx<'a> {
         self.done
     }
 
-    pub fn take_conn(mut self) -> Option<DBPoolConn<'a>> {
+    pub fn take_conn(self) -> Option<DBPoolConn<'a>> {
         self.conn
     }
 
