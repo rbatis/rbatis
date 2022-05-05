@@ -50,7 +50,7 @@ mod test {
         let w = Wrapper::new(&DriverType::Postgres).not_in("id", &[1]);
         assert_eq!(w.sql, "id not in ( $1 )");
         let w = Wrapper::new(&DriverType::Postgres).insert_into("table", "c", "v");
-        assert_eq!(w.sql, "insert into table (c) values v");
+        assert_eq!(w.sql, "insert into table (c) values (v)");
         let w = Wrapper::new(&DriverType::Postgres).limit(1);
         assert_eq!(w.sql, " limit 1 ");
         let w = Wrapper::new(&DriverType::Postgres).order_bys(&[("id", true), ("name", false)]);
@@ -62,7 +62,6 @@ mod test {
         let mut m = BTreeMap::new();
         m.insert("id", 2);
         m.insert("name", 1);
-
         let mut w = Wrapper::new(&DriverType::Postgres);
         w = w.having("id");
         w = w.all_eq(m);
@@ -87,5 +86,15 @@ mod test {
         w = w.limit(1);
         w = w.order_bys(&[("id", true), ("name", false)]);
         assert_eq!(w.sql, "having id and (id = $1 and name = $2) and id = $3 and id <> $4 and id > $5 and id >= $6 and id < $7 and id <= $8 and id between $9 and $10 and id not between $11 and $12 and id like $13 and id like $14 and id like $15 and id not like $16 and id is NULL and id is not NULL and id in ( $17 ) and id not in ( $18 ) order by id asc group by id  limit 1 order by id asc,name desc ");
+    }
+
+    #[test]
+    fn test_hash_map() {
+        let mut n = HashMap::new();
+        n.insert("id", 3);
+        n.insert("name", 8);
+
+        let mut w = Wrapper::new(&DriverType::Postgres);
+        w = w.all_eq(n);
     }
 }

@@ -51,7 +51,7 @@ impl<T: Serialize> serde::Serialize for Json<T> {
 impl<'de, T> serde::Deserialize<'de> for Json<T> where T: Serialize + DeserializeOwned {
     #[inline]
     fn deserialize<D>(deserializer: D) -> Result<Self, D::Error> where D: Deserializer<'de> {
-        let mut b = Bson::deserialize(deserializer)?;
+        let b = Bson::deserialize(deserializer)?;
         match b {
             Bson::String(s) => {
                 return Ok(Self {

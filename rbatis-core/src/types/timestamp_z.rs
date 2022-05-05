@@ -60,6 +60,7 @@ impl<'de> serde::Deserialize<'de> for TimestampZ {
                                     Ok(v)
                                 }
                                 Err(e)=>{
+                                    log::error!("{}", e);
                                     Err(D::Error::custom("parse TimestampZ fail"))
                                 }
                             }
@@ -73,6 +74,7 @@ impl<'de> serde::Deserialize<'de> for TimestampZ {
                                     Ok(v)
                                 }
                                 Err(e)=>{
+                                    log::error!("{}", e);
                                     Err(D::Error::custom("parse TimestampZ fail"))
                                 }
                             }
