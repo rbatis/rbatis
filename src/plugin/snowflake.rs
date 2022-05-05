@@ -3,15 +3,52 @@ use std::sync::Arc;
 
 use chrono::Utc;
 use once_cell::sync::Lazy;
+use serde::{Deserializer, Serializer};
+use serde::ser::SerializeStruct;
 
 ///Snowflakes algorithm
-#[derive(Debug, serde::Serialize, serde::Deserialize)]
+#[derive(Debug)]
 pub struct Snowflake {
     pub epoch: i64,
     pub worker_id: i64,
     pub datacenter_id: i64,
     pub sequence: AtomicI64,
     pub time: AtomicI64,
+}
+
+
+impl serde::Serialize for Snowflake {
+    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error> where S: Serializer {
+        let mut s = serializer.serialize_struct("Snowflake", 5)?;
+        s.serialize_field("epoch", &self.epoch)?;
+        s.serialize_field("worker_id", &self.worker_id)?;
+        s.serialize_field("datacenter_id", &self.datacenter_id)?;
+        s.serialize_field("sequence", &self.sequence.load(Ordering::Relaxed))?;
+        s.serialize_field("time", &self.time.load(Ordering::Relaxed))?;
+        s.end()
+    }
+}
+
+
+impl<'de> serde::Deserialize<'de> for Snowflake {
+    fn deserialize<D>(mut deserializer: D) -> Result<Self, D::Error> where D: Deserializer<'de> {
+        #[derive(Debug, serde::Serialize, serde::Deserialize)]
+        struct Snowflake {
+            pub epoch: i64,
+            pub worker_id: i64,
+            pub datacenter_id: i64,
+            pub sequence: i64,
+            pub time: i64,
+        }
+        let proxy = Snowflake::deserialize(deserializer)?;
+        Ok(self::Snowflake {
+            epoch: proxy.epoch,
+            worker_id: proxy.worker_id,
+            datacenter_id: proxy.datacenter_id,
+            sequence: AtomicI64::from(proxy.sequence),
+            time: AtomicI64::from(proxy.time),
+        })
+    }
 }
 
 
@@ -99,10 +136,20 @@ pub fn new_snowflake_id() -> i64 {
 
 #[cfg(test)]
 mod test {
-    use crate::snowflake::new_snowflake_id;
+    use crate::snowflake::{new_snowflake_id, SNOWFLAKE, Snowflake};
 
     #[test]
     fn test_gen() {
         println!("{}", new_snowflake_id());
+    }
+
+    #[test]
+    fn test_ser_de() {
+        let s = Snowflake::default();
+        s.generate();
+        let data = serde_json::to_string(&s).unwrap();
+        println!("source:{}", serde_json::to_string(&s).unwrap());
+        let r: Snowflake = serde_json::from_str(&data).unwrap();
+        println!("new:{}", serde_json::to_string(&r).unwrap());
     }
 }
