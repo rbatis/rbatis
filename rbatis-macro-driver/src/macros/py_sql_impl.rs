@@ -74,7 +74,6 @@ pub(crate) fn impl_macro_py_sql(target_fn: &ItemFn, args: &AttributeArgs) -> Tok
             use rbatis::crud::{CRUD,CRUDMut};
             #rbatis_ident.fetch_page(&sql,rb_args,#page_ident).await
         };
-        println!("gen return");
     }
 
     //gen rust code templete
