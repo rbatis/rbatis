@@ -96,6 +96,12 @@ impl DerefMut for Timestamp {
     }
 }
 
+impl From<Timestamp> for chrono::NaiveDateTime{
+    fn from(arg: Timestamp) -> Self {
+        arg.to_native_datetime()
+    }
+}
+
 impl Timestamp {
     pub fn now() -> Self {
         let offset_date_time = NaiveDateTime::now().timestamp_millis();
