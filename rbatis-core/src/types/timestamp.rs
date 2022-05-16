@@ -1,4 +1,5 @@
 use std::alloc::Layout;
+use std::any::type_name;
 use std::ops::{Deref, DerefMut};
 use chrono::{DateTime, Local, NaiveDateTime, TimeZone};
 use rbson::Bson;
@@ -36,7 +37,11 @@ impl serde::Serialize for Timestamp {
             time: ((self.inner as u64) >> 32) as u32,
             increment: (self.inner & 0xFFFF_FFFF) as u32,
         };
-        return bs.serialize(serializer);
+        if type_name::<S::Error>().eq("rbson::ser::error::Error") {
+            return bs.serialize(serializer);
+        }else{
+            return self.to_native_datetime().format("%Y-%m-%dT%H:%M:%S").to_string().serialize(serializer);
+        }
     }
 }
 
@@ -44,6 +49,12 @@ impl<'de> serde::Deserialize<'de> for Timestamp {
     #[inline]
     fn deserialize<D>(deserializer: D) -> Result<Self, D::Error> where D: Deserializer<'de> {
         match Bson::deserialize(deserializer)? {
+            Bson::String(s) => {
+                let s = NaiveDateTime::parse_from_str(s.as_str(), "%Y-%m-%dT%H:%M:%S").or_else(|e| Err(D::Error::custom(e.to_string())))?;
+                return Ok(Timestamp {
+                    inner: s.timestamp_millis()
+                });
+            }
             Bson::Int64(data) => {
                 return Ok(Timestamp::from_unix_timestamp(data));
             }
@@ -96,7 +107,7 @@ impl DerefMut for Timestamp {
     }
 }
 
-impl From<Timestamp> for chrono::NaiveDateTime{
+impl From<Timestamp> for chrono::NaiveDateTime {
     fn from(arg: Timestamp) -> Self {
         arg.to_native_datetime()
     }
@@ -120,10 +131,9 @@ impl Timestamp {
         }
     }
 
-    pub fn to_native_datetime(&self) -> NaiveDateTime{
-        NaiveDateTime::from_timestamp(self.inner/1000, (self.inner % 1000 * 1000000) as u32)
+    pub fn to_native_datetime(&self) -> NaiveDateTime {
+        NaiveDateTime::from_timestamp(self.inner / 1000, (self.inner % 1000 * 1000000) as u32)
     }
-
 }
 
 
