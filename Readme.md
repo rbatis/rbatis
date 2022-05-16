@@ -73,7 +73,7 @@
 | Mysql            | √     |   
 | Postgres         | √     |  
 | Sqlite           | √     |  
-| Mssql/Sqlserver            | √[50%](https://github.com/launchbadge/sqlx/issues/414)  |  
+| Mssql/Sqlserver            | √[(50%)](https://github.com/launchbadge/sqlx/issues/414)  |  
 | MariaDB(Mysql)             | √     |
 | TiDB(Mysql)             | √     |
 | CockroachDB(Postgres)      | √     |
