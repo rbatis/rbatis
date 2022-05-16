@@ -3,32 +3,27 @@ use std::ops::{Deref, DerefMut};
 use rbson::Bson;
 use serde::{Deserializer, Serializer};
 use serde::de::Error;
-use sqlx_core::types::time;
+use crate::value::DateTimeNow;
 
 /// Rbatis Timestamp
 /// Rust type                Postgres type(s)
-/// time::PrimitiveDateTime   TIMESTAMP
-/// time::OffsetDateTime      TIMESTAMPTZ
-///
-/// Rust type                 MySQL type(s)
-/// time::OffsetDateTime      TIMESTAMP
 #[derive(Clone, Copy, Eq, Hash, Ord, PartialEq, PartialOrd)]
 pub struct Timestamp {
-    pub inner: time::OffsetDateTime,
+    pub inner: i64,
 }
 
-impl From<time::OffsetDateTime> for Timestamp {
-    fn from(arg: time::OffsetDateTime) -> Self {
+impl From<chrono::NaiveDateTime> for Timestamp {
+    fn from(arg: chrono::NaiveDateTime) -> Self {
         Self {
-            inner: arg
+            inner: arg.timestamp_millis()
         }
     }
 }
 
-impl From<&time::OffsetDateTime> for Timestamp {
-    fn from(arg: &time::OffsetDateTime) -> Self {
+impl From<&chrono::NaiveDateTime> for Timestamp {
+    fn from(arg: &chrono::NaiveDateTime) -> Self {
         Self {
-            inner: arg.clone()
+            inner: arg.timestamp_millis()
         }
     }
 }
@@ -36,7 +31,10 @@ impl From<&time::OffsetDateTime> for Timestamp {
 impl serde::Serialize for Timestamp {
     #[inline]
     fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error> where S: Serializer {
-        let bs = Timestamp::from_le_i64(self.inner.unix_timestamp());
+        let bs = rbson::Timestamp {
+            time: ((self.inner as u64) >> 32) as u32,
+            increment: (self.inner & 0xFFFF_FFFF) as u32,
+        };
         return bs.serialize(serializer);
     }
 }
@@ -45,11 +43,6 @@ impl<'de> serde::Deserialize<'de> for Timestamp {
     #[inline]
     fn deserialize<D>(deserializer: D) -> Result<Self, D::Error> where D: Deserializer<'de> {
         match Bson::deserialize(deserializer)? {
-            Bson::String(s) => {
-                return Ok(Self {
-                    inner: time::OffsetDateTime::parse(&s, "%F %T %z").or_else(|e| Err(D::Error::custom(e.to_string())))?,
-                });
-            }
             Bson::Int64(data) => {
                 return Ok(Timestamp::from_unix_timestamp(data));
             }
@@ -63,27 +56,15 @@ impl<'de> serde::Deserialize<'de> for Timestamp {
     }
 }
 
-impl Timestamp {
-    pub fn as_timestamp(arg: &rbson::Timestamp) -> i64 {
-        let upper = (arg.time.to_le() as u64) << 32;
-        let lower = arg.increment.to_le() as u64;
-        (upper | lower) as i64
-    }
-
-    pub fn from_le_i64(val: i64) -> rbson::Timestamp {
-        let ts = val.to_le();
-        rbson::Timestamp {
-            time: ((ts as u64) >> 32) as u32,
-            increment: (ts & 0xFFFF_FFFF) as u32,
-        }
-    }
-}
 
 impl From<rbson::Timestamp> for Timestamp {
     fn from(data: rbson::Timestamp) -> Self {
-        let offset = time::OffsetDateTime::from_unix_timestamp(Timestamp::as_timestamp(&data));
         Self {
-            inner: offset
+            inner: {
+                let upper = (data.time.to_le() as u64) << 32;
+                let lower = data.increment.to_le() as u64;
+                (upper | lower) as i64
+            }
         }
     }
 }
@@ -101,7 +82,7 @@ impl std::fmt::Debug for Timestamp {
 }
 
 impl Deref for Timestamp {
-    type Target = time::OffsetDateTime;
+    type Target = i64;
 
     fn deref(&self) -> &Self::Target {
         &self.inner
@@ -116,28 +97,19 @@ impl DerefMut for Timestamp {
 
 impl Timestamp {
     pub fn now() -> Self {
-        let offset_date_time = time::OffsetDateTime::try_now_local().unwrap();
-
+        let offset_date_time = chrono::NaiveDateTime::now().timestamp_millis();
         Self {
-            inner: time::OffsetDateTime::from_unix_timestamp(offset_date_time.unix_timestamp())
+            inner: offset_date_time
         }
     }
 
-    /// create from str
-    pub fn from_str(arg: &str) -> Result<Self, crate::error::Error> {
-        let inner = time::OffsetDateTime::parse(arg, "%F %T %z")?;
-        Ok(Self {
-            inner: inner
-        })
-    }
-
     pub fn timestamp_millis(&self) -> i64 {
-        self.inner.unix_timestamp()
+        self.inner
     }
 
     pub fn from_unix_timestamp(arg: i64) -> Self {
         Self {
-            inner: time::OffsetDateTime::from_unix_timestamp(arg)
+            inner: arg
         }
     }
 }

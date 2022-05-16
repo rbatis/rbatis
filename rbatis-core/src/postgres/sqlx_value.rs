@@ -8,7 +8,6 @@ use sqlx_core::postgres::{PgValue, PgValueRef, Postgres};
 use sqlx_core::row::Row;
 use sqlx_core::type_info::TypeInfo;
 use sqlx_core::types::chrono::{FixedOffset, NaiveTime};
-use sqlx_core::types::time::Time;
 use sqlx_core::types::{BigDecimal, Json, Uuid};
 use sqlx_core::value::ValueRef;
 
