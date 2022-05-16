@@ -1,5 +1,6 @@
 use std::alloc::Layout;
 use std::ops::{Deref, DerefMut};
+use chrono::{DateTime, Local, NaiveDateTime, TimeZone};
 use rbson::Bson;
 use serde::{Deserializer, Serializer};
 use serde::de::Error;
@@ -97,7 +98,7 @@ impl DerefMut for Timestamp {
 
 impl Timestamp {
     pub fn now() -> Self {
-        let offset_date_time = chrono::NaiveDateTime::now().timestamp_millis();
+        let offset_date_time = NaiveDateTime::now().timestamp_millis();
         Self {
             inner: offset_date_time
         }
@@ -112,6 +113,11 @@ impl Timestamp {
             inner: arg
         }
     }
+
+    pub fn to_native_datetime(&self) -> NaiveDateTime{
+        NaiveDateTime::from_timestamp(self.inner/1000, (self.inner % 1000 * 1000000) as u32)
+    }
+
 }
 
 
