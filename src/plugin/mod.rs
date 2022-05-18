@@ -7,3 +7,6 @@ pub mod page;
 pub use page::*;
 
 pub mod snowflake;
+
+pub mod table_sync;
+
