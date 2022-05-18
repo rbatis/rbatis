@@ -58,6 +58,9 @@ impl<'de> serde::Deserialize<'de> for Timestamp {
             Bson::Int64(data) => {
                 return Ok(Timestamp::from_unix_timestamp(data));
             }
+            Bson::UInt64(data) => {
+                return Ok(Timestamp::from_unix_timestamp(data as i64));
+            }
             Bson::Timestamp(data) => {
                 return Ok(Timestamp::from(data));
             }
