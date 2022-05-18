@@ -74,6 +74,13 @@ impl<'de> serde::Deserialize<'de> for DateTimeUtc {
                     inner: DateTime::<Utc>::from_utc(native,Utc)
                 });
             }
+            Bson::UInt64(timestamp) => {
+                let timestamp = timestamp as i64;
+                let native=chrono::NaiveDateTime::from_timestamp(timestamp/1000, (timestamp % 1000 * 1000000) as u32);
+                return Ok(DateTimeUtc {
+                    inner: DateTime::<Utc>::from_utc(native,Utc)
+                });
+            }
             _ => {
                 Err(D::Error::custom("deserialize un supported bson type!"))
             }

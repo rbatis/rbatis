@@ -70,6 +70,11 @@ impl<'de> serde::Deserialize<'de> for Decimal {
                     inner: BigDecimal::from(s),
                 })
             }
+            Bson::UInt64(s) => {
+                Ok(Self {
+                    inner: BigDecimal::from(s),
+                })
+            }
             Bson::Decimal128(s) => {
                 Ok(Self {
                     inner: BigDecimal::from_str(&s.to_string()).unwrap_or_default(),
