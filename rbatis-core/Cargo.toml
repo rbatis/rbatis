@@ -3,7 +3,7 @@ name = "rbatis-core"
 version = "3.1.9"
 description = "Core of rbatis, the rust SQL toolkit. Not intended to be used directly."
 license = "Apache-2.0"
-edition = "2018"
+edition = "2021"
 authors = [
     "zxj <zhuxiujia@qq.com>"
 ]
