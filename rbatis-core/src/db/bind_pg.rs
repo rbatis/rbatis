@@ -24,7 +24,7 @@ pub fn bind(t: Bson, mut q: Query<Postgres, PgArguments>) -> crate::Result<Query
                 q = q.bind(data.inner);
                 return Ok(q);
             }
-            if s.starts_with("DateTimeNative(")  {
+            if s.starts_with("DateTimeNative(") {
                 let data: DateTimeNative = rbson::from_bson(Bson::String(s))?;
                 q = q.bind(data.inner);
                 return Ok(q);
@@ -112,8 +112,14 @@ pub fn bind(t: Bson, mut q: Query<Postgres, PgArguments>) -> crate::Result<Query
             q = q.bind(DateTimeNative::from(d).inner);
         }
         Bson::Timestamp(d) => {
-            let systime = SystemTime::from(crate::types::Timestamp::from(d).inner);
-            let primitive_date_time = time::PrimitiveDateTime::from(systime);
+            let timestamp = {
+                let upper = (d.time.to_le() as u64) << 32;
+                let lower = d.increment.to_le() as u64;
+                (upper | lower) as i64
+            };
+            let sec = timestamp / 1000;
+            let ns = (timestamp % 1000 * 1000000) as u32;
+            let primitive_date_time = chrono::NaiveDateTime::from_timestamp(sec, ns);
             q = q.bind(primitive_date_time);
         }
         Bson::ObjectId(d) => {
@@ -149,7 +155,7 @@ pub fn bind(t: Bson, mut q: Query<Postgres, PgArguments>) -> crate::Result<Query
                             arr_datetime_utc.push(data.inner);
                             continue;
                         }
-                        if s.starts_with("DateTimeNative(")  {
+                        if s.starts_with("DateTimeNative(") {
                             let data: DateTimeNative = rbson::from_bson(Bson::String(s))?;
                             arr_datetime_native.push(data.inner);
                             continue;
@@ -176,7 +182,7 @@ pub fn bind(t: Bson, mut q: Query<Postgres, PgArguments>) -> crate::Result<Query
                         }
                         if s.starts_with("Decimal(") {
                             let data: Decimal = rbson::from_bson(Bson::String(s))?;
-                           arr_decimal.push(data.inner);
+                            arr_decimal.push(data.inner);
                             continue;
                         }
                         if s.starts_with("Uuid(") {
@@ -231,8 +237,14 @@ pub fn bind(t: Bson, mut q: Query<Postgres, PgArguments>) -> crate::Result<Query
                         q = q.bind(DateTimeNative::from(d).inner);
                     }
                     Bson::Timestamp(d) => {
-                        let systime = SystemTime::from(crate::types::Timestamp::from(d).inner);
-                        let primitive_date_time = time::PrimitiveDateTime::from(systime);
+                        let timestamp = {
+                            let upper = (d.time.to_le() as u64) << 32;
+                            let lower = d.increment.to_le() as u64;
+                            (upper | lower) as i64
+                        };
+                        let sec = timestamp / 1000;
+                        let ns = (timestamp % 1000 * 1000000) as u32;
+                        let primitive_date_time = chrono::NaiveDateTime::from_timestamp(sec, ns);
                         q = q.bind(primitive_date_time);
                     }
                     Bson::ObjectId(d) => {

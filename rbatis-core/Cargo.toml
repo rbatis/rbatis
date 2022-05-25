@@ -1,6 +1,6 @@
 [package]
 name = "rbatis-core"
-version = "3.1.8"
+version = "3.1.9"
 description = "Core of rbatis, the rust SQL toolkit. Not intended to be used directly."
 license = "Apache-2.0"
 edition = "2018"
@@ -37,7 +37,7 @@ chrono = { version = "0.4", default-features = false, features = ["clock", "serd
 log = { version = "0.4", default-features = false }
 lazy_static = "1.4"
 ipnetwork = { version = "0.17", features = ["serde"] }
-sqlx-core = { version = "0.5", features = ["offline","chrono", "time", "bigdecimal", "decimal","json", "uuid", "bit-vec"], optional = true }
+sqlx-core = { version = "0.5", features = ["offline","chrono", "bigdecimal", "decimal","json", "uuid", "bit-vec"], optional = true }
 uuid = { version = "0.8", features = ["serde", "v4"] }
 time = { version = "0.2.16", features = ["serde"] }
 #only pg
