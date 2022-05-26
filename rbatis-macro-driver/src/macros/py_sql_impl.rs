@@ -1,7 +1,8 @@
+use std::str::FromStr;
 use proc_macro2::{Ident, Span};
 use quote::quote;
 use quote::ToTokens;
-use syn::{AttributeArgs, FnArg, ItemFn};
+use syn::{AttributeArgs, FnArg, ItemFn, Pat};
 
 use crate::proc_macro::TokenStream;
 use crate::util::{find_fn_body, find_return_type, get_fn_args, get_page_req_ident, is_fetch, is_rbatis_ref};
@@ -100,18 +101,37 @@ pub(crate) fn impl_macro_py_sql(target_fn: &ItemFn, args: &AttributeArgs) -> Tok
 
 pub(crate) fn filter_args_context_id(
     rbatis_name: &str,
-    fn_arg_name_vec: &Vec<String>,
+    fn_arg_name_vec: &Vec<Box<Pat>>,
 ) -> proc_macro2::TokenStream {
     let mut sql_args_gen = quote! {};
     for item in fn_arg_name_vec {
-        let item_ident = Ident::new(&item, Span::call_site());
-        let item_ident_name = item_ident.to_string();
-        if item.eq(&rbatis_name) {
+        // match **item{
+        //     Pat::Box(_) => {println!("box");}
+        //     Pat::Ident(_) => {println!("Ident");}
+        //     Pat::Lit(_) => {println!("Lit");}
+        //     Pat::Macro(_) => {println!("Macro");}
+        //     Pat::Or(_) => {println!("Or");}
+        //     Pat::Path(_) => {println!("Path");}
+        //     Pat::Range(_) => {println!("Range");}
+        //     Pat::Reference(_) => {println!("Reference");}
+        //     Pat::Rest(_) => {println!("Rest");}
+        //     Pat::Slice(_) => {println!("Slice");}
+        //     Pat::Struct(_) => {println!("Struct");}
+        //     Pat::Tuple(_) => {println!("Tuple");}
+        //     Pat::TupleStruct(_) => {println!("TupleStruct");}
+        //     Pat::Type(_) => {}
+        //     Pat::Verbatim(_) => {}
+        //     Pat::Wild(_) => {}
+        //     _ => {}
+        // }
+        let item_name= item.to_token_stream().to_string().trim().trim_start_matches("mut ").to_string();
+        println!("item_name:{}",item_name);
+        if item_name.eq(rbatis_name) {
             continue;
         }
         sql_args_gen = quote! {
              #sql_args_gen
-             rb_arg_map.insert(#item_ident_name.to_string(),rbson::to_bson(#item_ident).unwrap_or_default());
+             rb_arg_map.insert(#item_name.to_string(),rbson::to_bson(#item).unwrap_or_default());
         };
     }
     sql_args_gen

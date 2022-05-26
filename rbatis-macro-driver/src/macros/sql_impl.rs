@@ -2,7 +2,7 @@ use proc_macro2::{Ident, Span};
 use quote::quote;
 use quote::ToTokens;
 use syn;
-use syn::{AttributeArgs, FnArg, ItemFn};
+use syn::{AttributeArgs, FnArg, ItemFn, Pat};
 
 use crate::proc_macro::TokenStream;
 use crate::util::{find_fn_body, find_return_type, get_fn_args, get_page_req_ident, is_fetch, is_rbatis_ref};
@@ -86,14 +86,14 @@ pub(crate) fn impl_macro_sql(target_fn: &ItemFn, args: &AttributeArgs) -> TokenS
 
 fn filter_args_context_id(
     rbatis_name: &str,
-    fn_arg_name_vec: &Vec<String>,
+    fn_arg_name_vec: &Vec<Box<Pat>>,
     skip_names: &[String],
 ) -> proc_macro2::TokenStream {
     let mut sql_args_gen = quote! {};
     for item in fn_arg_name_vec {
-        let item_ident = Ident::new(&item, Span::call_site());
-        let item_ident_name = item_ident.to_string();
-        if item.eq(&rbatis_name) {
+        let mut item_ident_name = item.to_token_stream().to_string();
+        item_ident_name = item_ident_name.trim().trim_start_matches("mut ").to_string();
+        if item_ident_name.eq(rbatis_name) {
             continue;
         }
         let mut do_continue = false;
@@ -108,7 +108,7 @@ fn filter_args_context_id(
         }
         sql_args_gen = quote! {
              #sql_args_gen
-             rb_args.push(rbson::to_bson(#item_ident).unwrap_or_default());
+             rb_args.push(rbson::to_bson(#item_ident_name).unwrap_or_default());
         };
     }
     sql_args_gen

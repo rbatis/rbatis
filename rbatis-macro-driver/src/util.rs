@@ -3,7 +3,7 @@ use std::collections::HashMap;
 use proc_macro2::{Ident, Span};
 use quote::quote;
 use quote::ToTokens;
-use syn::{FnArg, ItemFn, ReturnType};
+use syn::{FnArg, ItemFn, Pat, ReturnType};
 
 //find and check method return type
 pub(crate) fn find_return_type(target_fn: &ItemFn) -> proc_macro2::TokenStream {
@@ -23,13 +23,12 @@ pub(crate) fn find_return_type(target_fn: &ItemFn) -> proc_macro2::TokenStream {
     return_ty
 }
 
-pub(crate) fn get_fn_args(target_fn: &ItemFn) -> Vec<String> {
+pub(crate) fn get_fn_args(target_fn: &ItemFn) -> Vec<Box<Pat>> {
     let mut fn_arg_name_vec = vec![];
     for arg in &target_fn.sig.inputs {
         match arg {
             FnArg::Typed(t) => {
-                let arg_name = format!("{}", t.pat.to_token_stream());
-                fn_arg_name_vec.push(arg_name);
+                fn_arg_name_vec.push(t.pat.clone());
                 //println!("arg_name {}", arg_name);
             }
             _ => {}

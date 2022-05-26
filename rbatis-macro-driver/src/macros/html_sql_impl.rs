@@ -71,7 +71,6 @@ pub(crate) fn impl_macro_html_sql(target_fn: &ItemFn, args: &AttributeArgs) -> T
             #rbatis_ident.fetch_page(&sql,rb_args,#page_ident).await
         };
     }
-
     //gen rust code templete
     return quote! {
        pub async fn #func_name_ident(#func_args_stream) -> #return_ty {
