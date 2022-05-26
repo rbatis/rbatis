@@ -18,7 +18,7 @@ mod test {
         fast_log::init(fast_log::config::Config::new().console());
         //use static ref
         let rb = init_sqlite().await;
-        let a = select_by_condition(&mut rb.as_executor(), &PageRequest::new(1, 10), "test", &rbatis::DateTimeNative::now())
+        let a = select_by_condition( &mut rb.as_executor(), &PageRequest::new(1, 10), "test", &rbatis::DateTimeNative::now())
             .await
             .unwrap();
         println!("{:?}", a);
