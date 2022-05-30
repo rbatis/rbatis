@@ -1,3 +1,4 @@
+use proc_macro2::{Ident, Span};
 use quote::quote;
 use quote::ToTokens;
 use syn::{AttributeArgs, FnArg, ItemFn};
@@ -19,7 +20,7 @@ pub(crate) fn impl_macro_html_sql(target_fn: &ItemFn, args: &AttributeArgs) -> T
                 let ty_stream = t.ty.to_token_stream().to_string();
                 if is_rbatis_ref(&ty_stream) {
                     rbatis_ident = t.pat.to_token_stream();
-                    rbatis_name = rbatis_ident.to_string();
+                    rbatis_name = rbatis_ident.to_string().trim_start_matches("mut ").to_string();
                     break;
                 }
             }
@@ -47,6 +48,10 @@ pub(crate) fn impl_macro_html_sql(target_fn: &ItemFn, args: &AttributeArgs) -> T
             func_name_ident, func_args_stream
         );
     }
+    if rbatis_ident.to_string().starts_with("mut "){
+        rbatis_ident=Ident::new(&rbatis_ident.to_string().trim_start_matches("mut "),Span::call_site()).to_token_stream();
+    }
+
     //append all args
     let sql_args_gen = py_sql_impl::filter_args_context_id(&rbatis_name, &get_fn_args(target_fn));
     let is_fetch = is_fetch(&return_ty.to_string());
