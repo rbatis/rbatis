@@ -81,7 +81,7 @@ pub(crate) fn impl_macro_html_sql(target_fn: &ItemFn, args: &AttributeArgs) -> T
          let driver_type = #rbatis_ident.get_rbatis().driver_type()?;
          use rbatis::{rbatis_sql,AsSqlTag};
          let sql_tag = driver_type.sql_tag();
-         #[rb_html(#sql_ident)]
+         #[rbatis_sql::rb_html(#sql_ident)]
          pub fn #func_name_ident(arg: &rbson::Bson, _tag: char) {}
          let (mut sql,rb_args) = #func_name_ident(&rbson::Bson::Document(rb_arg_map),sql_tag);
          driver_type.do_replace_tag(&mut sql);
