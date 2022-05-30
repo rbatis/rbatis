@@ -21,7 +21,7 @@ pub(crate) fn impl_macro_sql(target_fn: &ItemFn, args: &AttributeArgs) -> TokenS
                 let ty_stream = t.ty.to_token_stream().to_string();
                 if is_rbatis_ref(&ty_stream) {
                     rbatis_ident = t.pat.to_token_stream();
-                    rbatis_name = rbatis_ident.to_string();
+                    rbatis_name = rbatis_ident.to_string().trim_start_matches("mut ").to_string();
                     break;
                 }
             }
@@ -50,6 +50,9 @@ pub(crate) fn impl_macro_sql(target_fn: &ItemFn, args: &AttributeArgs) -> TokenS
             "[rbaits] #[crud_table] 'fn {}({})' must be  async fn! ",
             func_name_ident, func_args_stream
         );
+    }
+    if rbatis_ident.to_string().starts_with("mut ") {
+        rbatis_ident = Ident::new(&rbatis_ident.to_string().trim_start_matches("mut "), Span::call_site()).to_token_stream();
     }
     let mut call_method = quote! {};
     let is_fetch = is_fetch(&return_ty.to_string());
