@@ -96,15 +96,10 @@ impl From<&RbatisLogPlugin> for LevelFilter {
     fn from(arg: &RbatisLogPlugin) -> Self {
         match arg.level_filter.load(Ordering::SeqCst) {
             0 => LevelFilter::Off,
-            /// Corresponds to the `Error` log level.
             1 => LevelFilter::Error,
-            /// Corresponds to the `Warn` log level.
             2 => LevelFilter::Warn,
-            /// Corresponds to the `Info` log level.
             3 => LevelFilter::Info,
-            /// Corresponds to the `Debug` log level.
             4 => LevelFilter::Debug,
-            /// Corresponds to the `Trace` log level.
             5 => LevelFilter::Trace,
             _ => { LevelFilter::Trace }
         }
