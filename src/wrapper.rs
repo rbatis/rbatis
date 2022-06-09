@@ -270,19 +270,6 @@ impl Wrapper {
         sql.ends_with(crate::sql::TEMPLATE.r#where.left_space)
             || sql.ends_with(crate::sql::TEMPLATE.and.left_space)
             || sql.ends_with(crate::sql::TEMPLATE.or.left_space)
-            || sql.ends_with("(")
-            || sql.ends_with(",")
-            || sql.ends_with("=")
-            || sql.ends_with("+")
-            || sql.ends_with("-")
-            || sql.ends_with("*")
-            || sql.ends_with("/")
-            || sql.ends_with("%")
-            || sql.ends_with("^")
-            || sql.ends_with(">")
-            || sql.ends_with("<")
-            || sql.ends_with("&")
-            || sql.ends_with("|")
     }
 
     /// link wrapper sql, if end with where , do nothing
@@ -303,7 +290,6 @@ impl Wrapper {
     }
 
     pub fn having(mut self, sql_having: &str) -> Self {
-        self = self.and();
         push_sql!(self.sql,crate::sql::TEMPLATE.having.value," ",sql_having);
         self
     }
@@ -313,7 +299,6 @@ impl Wrapper {
         where
             T: Serialize,
     {
-        self = self.and();
         let v = crate::as_bson!(&arg);
         if v.is_null() {
             return self;
@@ -357,7 +342,6 @@ impl Wrapper {
         where
             T: Serialize,
     {
-        self = self.and();
         let mut convert_column = String::new();
         self.driver_type.stmt_convert(self.args.len(), &mut convert_column);
         self.do_format_column(column, &mut convert_column);
@@ -371,7 +355,6 @@ impl Wrapper {
         where
             T: Serialize,
     {
-        self = self.and();
         let mut convert_column = String::new();
         self.driver_type.stmt_convert(self.args.len(), &mut convert_column);
         self.do_format_column(column, &mut convert_column);
@@ -469,7 +452,6 @@ impl Wrapper {
         where
             T: Serialize,
     {
-        self = self.and();
         let mut convert_column = String::new();
         self.driver_type.stmt_convert(self.args.len(), &mut convert_column);
         self.do_format_column(column, &mut convert_column);
@@ -482,7 +464,6 @@ impl Wrapper {
         where
             T: Serialize,
     {
-        self = self.and();
         let mut convert_column = String::new();
         self.driver_type.stmt_convert(self.args.len(), &mut convert_column);
         self.do_format_column(column, &mut convert_column);
@@ -496,7 +477,6 @@ impl Wrapper {
         where
             T: Serialize,
     {
-        self = self.and();
         let mut convert_column = String::new();
         self.driver_type.stmt_convert(self.args.len(), &mut convert_column);
         self.do_format_column(column, &mut convert_column);
@@ -510,7 +490,6 @@ impl Wrapper {
         where
             T: Serialize,
     {
-        self = self.and();
         let mut convert_column = String::new();
         self.driver_type.stmt_convert(self.args.len(), &mut convert_column);
         self.do_format_column(column, &mut convert_column);
@@ -523,8 +502,6 @@ impl Wrapper {
         where
             T: Serialize,
     {
-        self = self.and();
-
         let mut convert_column = String::new();
         self.driver_type.stmt_convert(self.args.len(), &mut convert_column);
         self.do_format_column(column, &mut convert_column);
@@ -545,8 +522,6 @@ impl Wrapper {
         where
             T: Serialize,
     {
-        self = self.and();
-
         let mut convert_column = String::new();
         self.driver_type.stmt_convert(self.args.len(), &mut convert_column);
         self.do_format_column(column, &mut convert_column);
@@ -567,7 +542,6 @@ impl Wrapper {
         where
             T: Serialize,
     {
-        self = self.and();
         let v = crate::as_bson!(&obj);
         let mut v_str = String::new();
         if v.as_str().is_some() {
@@ -589,7 +563,6 @@ impl Wrapper {
         where
             T: Serialize,
     {
-        self = self.and();
         let v = crate::as_bson!(&obj);
         let mut v_str = String::new();
         if v.as_str().is_some() {
@@ -611,7 +584,6 @@ impl Wrapper {
         where
             T: Serialize,
     {
-        self = self.and();
         let v = crate::as_bson!(&obj);
         let mut v_str = String::new();
         if v.as_str().is_some() {
@@ -633,7 +605,6 @@ impl Wrapper {
         where
             T: Serialize,
     {
-        self = self.and();
         let v = crate::as_bson!(&obj);
         let mut v_str = String::new();
         if v.as_str().is_some() {
@@ -650,7 +621,6 @@ impl Wrapper {
     }
 
     pub fn is_null(mut self, column: &str) -> Self {
-        self = self.and();
         self.sql.push_str(column);
         self.sql.push_str(crate::sql::TEMPLATE.is.left_space);
         self.sql.push_str(crate::sql::TEMPLATE.null.left_space);
@@ -658,7 +628,6 @@ impl Wrapper {
     }
 
     pub fn is_not_null(mut self, column: &str) -> Self {
-        self = self.and();
         self.sql.push_str(column);
         self.sql.push_str(crate::sql::TEMPLATE.is.left_space);
         self.sql.push_str(crate::sql::TEMPLATE.not.left_space);
@@ -674,7 +643,6 @@ impl Wrapper {
         if obj.len() == 0 {
             return self;
         }
-        self = self.and();
         push_sql!(self.sql,column," ",crate::sql::TEMPLATE.r#in.value," (",);
         for x in obj {
             let mut convert_column = String::new();
@@ -712,7 +680,6 @@ impl Wrapper {
         if obj.len() == 0 {
             return self;
         }
-        self = self.and();
         push_sql!(self.sql,column," ",crate::sql::TEMPLATE.not.value," ",crate::sql::TEMPLATE.r#in.value," (",);
         for x in obj {
             let mut convert_column = String::new();
