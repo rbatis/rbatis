@@ -345,7 +345,7 @@ impl Wrapper {
         let mut convert_column = String::new();
         self.driver_type.stmt_convert(self.args.len(), &mut convert_column);
         self.do_format_column(column, &mut convert_column);
-        push_sql!(self.sql,column," = ",convert_column.as_str(),);
+        push_sql!(self.sql,column," = ",convert_column.as_str());
         self.args.push(crate::as_bson!(&obj));
         self
     }
@@ -358,7 +358,7 @@ impl Wrapper {
         let mut convert_column = String::new();
         self.driver_type.stmt_convert(self.args.len(), &mut convert_column);
         self.do_format_column(column, &mut convert_column);
-        push_sql!(self.sql,column," <> ",convert_column.as_str(),);
+        push_sql!(self.sql,column," <> ",convert_column.as_str());
         self.args.push(crate::as_bson!(&obj));
         self
     }
@@ -379,9 +379,9 @@ impl Wrapper {
         self.sql.push_str(&crate::sql::TEMPLATE.order_by.left_right_space);
         for x in columns {
             if is_asc {
-                push_sql!(self.sql,x," ",crate::sql::TEMPLATE.asc.value,);
+                push_sql!(self.sql,x," ",crate::sql::TEMPLATE.asc.value);
             } else {
-                push_sql!(self.sql,x," ",crate::sql::TEMPLATE.desc.value,);
+                push_sql!(self.sql,x," ",crate::sql::TEMPLATE.desc.value);
             }
             if (index + 1) != len {
                 self.sql.push_str(",");
@@ -408,9 +408,9 @@ impl Wrapper {
         self.sql.push_str(&crate::sql::TEMPLATE.order_by.left_right_space);
         for (x, is_asc) in column_asc {
             if *is_asc {
-                push_sql!(self.sql,x," ",crate::sql::TEMPLATE.asc.value,);
+                push_sql!(self.sql,x," ",crate::sql::TEMPLATE.asc.value);
             } else {
-                push_sql!(self.sql,x," ",crate::sql::TEMPLATE.desc.value,);
+                push_sql!(self.sql,x," ",crate::sql::TEMPLATE.desc.value);
             }
             if (index + 1) != len {
                 self.sql.push_str(",");
@@ -455,7 +455,7 @@ impl Wrapper {
         let mut convert_column = String::new();
         self.driver_type.stmt_convert(self.args.len(), &mut convert_column);
         self.do_format_column(column, &mut convert_column);
-        push_sql!(self.sql,column," > ", &convert_column.as_str(),);
+        push_sql!(self.sql,column," > ", &convert_column.as_str());
         self.args.push(crate::as_bson!(&obj));
         self
     }
@@ -467,7 +467,7 @@ impl Wrapper {
         let mut convert_column = String::new();
         self.driver_type.stmt_convert(self.args.len(), &mut convert_column);
         self.do_format_column(column, &mut convert_column);
-        push_sql!(self.sql,column," >= ", &convert_column.as_str(),);
+        push_sql!(self.sql,column," >= ", &convert_column.as_str());
         self.args.push(crate::as_bson!(&obj));
         self
     }
@@ -480,7 +480,7 @@ impl Wrapper {
         let mut convert_column = String::new();
         self.driver_type.stmt_convert(self.args.len(), &mut convert_column);
         self.do_format_column(column, &mut convert_column);
-        push_sql!(self.sql,column," < ", &convert_column.as_str(),);
+        push_sql!(self.sql,column," < ", &convert_column.as_str());
         self.args.push(crate::as_bson!(&obj));
         self
     }
@@ -493,7 +493,7 @@ impl Wrapper {
         let mut convert_column = String::new();
         self.driver_type.stmt_convert(self.args.len(), &mut convert_column);
         self.do_format_column(column, &mut convert_column);
-        push_sql!(self.sql,column," <= ", &convert_column.as_str(),);
+        push_sql!(self.sql,column," <= ", &convert_column.as_str());
         self.args.push(crate::as_bson!(&obj));
         self
     }
@@ -505,14 +505,14 @@ impl Wrapper {
         let mut convert_column = String::new();
         self.driver_type.stmt_convert(self.args.len(), &mut convert_column);
         self.do_format_column(column, &mut convert_column);
-        push_sql!(self.sql,column," ",crate::sql::TEMPLATE.between.value," ", &convert_column.as_str(),);
+        push_sql!(self.sql,column," ",crate::sql::TEMPLATE.between.value," ", &convert_column.as_str());
 
         self.args.push(crate::as_bson!(&min));
 
         let mut convert_column = String::new();
         self.driver_type.stmt_convert(self.args.len(), &mut convert_column);
         self.do_format_column(column, &mut convert_column);
-        push_sql!(self.sql," ",crate::sql::TEMPLATE.and.value," ", &convert_column.as_str(),);
+        push_sql!(self.sql," ",crate::sql::TEMPLATE.and.value," ", &convert_column.as_str());
 
         self.args.push(crate::as_bson!(&max));
         self
@@ -525,14 +525,14 @@ impl Wrapper {
         let mut convert_column = String::new();
         self.driver_type.stmt_convert(self.args.len(), &mut convert_column);
         self.do_format_column(column, &mut convert_column);
-        push_sql!(self.sql,column," ",crate::sql::TEMPLATE.not.value," ",crate::sql::TEMPLATE.between.value," ", &convert_column.as_str(),);
+        push_sql!(self.sql,column," ",crate::sql::TEMPLATE.not.value," ",crate::sql::TEMPLATE.between.value," ", &convert_column.as_str());
 
         self.args.push(crate::as_bson!(&min));
 
         let mut convert_column = String::new();
         self.driver_type.stmt_convert(self.args.len(), &mut convert_column);
         self.do_format_column(column, &mut convert_column);
-        push_sql!(self.sql," ",crate::sql::TEMPLATE.and.value," ", &convert_column.as_str(),);
+        push_sql!(self.sql," ",crate::sql::TEMPLATE.and.value," ", &convert_column.as_str());
 
         self.args.push(crate::as_bson!(&max));
         self
@@ -553,7 +553,7 @@ impl Wrapper {
         let mut convert_column = String::new();
         self.driver_type.stmt_convert(self.args.len(), &mut convert_column);
         self.do_format_column(column, &mut convert_column);
-        push_sql!(self.sql,column," ",crate::sql::TEMPLATE.like.value," ", &convert_column.as_str(),);
+        push_sql!(self.sql,column," ",crate::sql::TEMPLATE.like.value," ", &convert_column.as_str());
 
         self.args.push(crate::as_bson!(&v_str));
         self
@@ -574,7 +574,7 @@ impl Wrapper {
         let mut convert_column = String::new();
         self.driver_type.stmt_convert(self.args.len(), &mut convert_column);
         self.do_format_column(column, &mut convert_column);
-        push_sql!(self.sql,column," ",crate::sql::TEMPLATE.like.value," ", &convert_column.as_str(),);
+        push_sql!(self.sql,column," ",crate::sql::TEMPLATE.like.value," ", &convert_column.as_str());
 
         self.args.push(crate::as_bson!(&v_str));
         self
@@ -595,7 +595,7 @@ impl Wrapper {
         let mut convert_column = String::new();
         self.driver_type.stmt_convert(self.args.len(), &mut convert_column);
         self.do_format_column(column, &mut convert_column);
-        push_sql!(self.sql,column," ",crate::sql::TEMPLATE.like.value," ", &convert_column.as_str(),);
+        push_sql!(self.sql,column," ",crate::sql::TEMPLATE.like.value," ", &convert_column.as_str());
 
         self.args.push(crate::as_bson!(&v_str));
         self
@@ -615,7 +615,7 @@ impl Wrapper {
         let mut convert_column = String::new();
         self.driver_type.stmt_convert(self.args.len(), &mut convert_column);
         self.do_format_column(column, &mut convert_column);
-        push_sql!(self.sql,column," ",crate::sql::TEMPLATE.not.value," ",crate::sql::TEMPLATE.like.value," ", &convert_column.as_str(),);
+        push_sql!(self.sql,column," ",crate::sql::TEMPLATE.not.value," ",crate::sql::TEMPLATE.like.value," ", &convert_column.as_str());
         self.args.push(crate::as_bson!(&v_str));
         self
     }
@@ -643,17 +643,17 @@ impl Wrapper {
         if obj.len() == 0 {
             return self;
         }
-        push_sql!(self.sql,column," ",crate::sql::TEMPLATE.r#in.value," (",);
+        push_sql!(self.sql,column," ",crate::sql::TEMPLATE.r#in.value," (");
         for x in obj {
             let mut convert_column = String::new();
             self.driver_type.stmt_convert(self.args.len(), &mut convert_column);
             self.do_format_column(column, &mut convert_column);
-            push_sql!(self.sql," ",&convert_column.as_str()," ",);
+            push_sql!(self.sql," ",&convert_column.as_str()," ");
             self.sql.push_str(",");
             self.args.push(crate::as_bson!(x));
         }
         self.sql.pop();
-        push_sql!(self.sql,")",);
+        push_sql!(self.sql,")");
         self
     }
 
@@ -680,17 +680,17 @@ impl Wrapper {
         if obj.len() == 0 {
             return self;
         }
-        push_sql!(self.sql,column," ",crate::sql::TEMPLATE.not.value," ",crate::sql::TEMPLATE.r#in.value," (",);
+        push_sql!(self.sql,column," ",crate::sql::TEMPLATE.not.value," ",crate::sql::TEMPLATE.r#in.value," (");
         for x in obj {
             let mut convert_column = String::new();
             self.driver_type.stmt_convert(self.args.len(), &mut convert_column);
             self.do_format_column(column, &mut convert_column);
-            push_sql!(self.sql," ",&convert_column.as_str()," ",);
+            push_sql!(self.sql," ",&convert_column.as_str()," ");
             self.sql.push_str(",");
             self.args.push(crate::as_bson!(x));
         }
         self.sql.pop();
-        push_sql!(self.sql,")",);
+        push_sql!(self.sql,")");
         self
     }
 
@@ -759,7 +759,7 @@ impl Wrapper {
     ///  limit(1) " limit 1 "
     pub fn limit(mut self, limit: u64) -> Self {
         use std::fmt::Write;
-        push_sql!(self.sql," ",crate::sql::TEMPLATE.limit.value," ",);
+        push_sql!(self.sql," ",crate::sql::TEMPLATE.limit.value," ");
         self.sql.write_fmt(format_args!("{}", limit));
         self.sql.push_str(" ");
         self
