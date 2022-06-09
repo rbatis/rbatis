@@ -295,7 +295,7 @@ impl Wrapper {
     }
 
     /// arg: JsonObject or struct{} or map[String,**]
-    pub fn all_eq<T>(mut self, arg: T) -> Self
+    pub fn eq_all<T>(mut self, arg: T) -> Self
         where
             T: Serialize,
     {

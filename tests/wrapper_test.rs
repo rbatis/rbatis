@@ -11,7 +11,7 @@ mod test {
         let mut m = BTreeMap::new();
         m.insert("id", 2);
         m.insert("name", 1);
-        let w = Wrapper::new(&DriverType::Postgres).all_eq(m);
+        let w = Wrapper::new(&DriverType::Postgres).eq_all(m);
         assert_eq!(w.sql, "(id = $1 and name = $2)");
         let w = Wrapper::new(&DriverType::Postgres).eq("id", 1);
         assert_eq!(w.sql, "id = $1");
@@ -64,7 +64,7 @@ mod test {
         m.insert("name", 1);
         let mut w = Wrapper::new(&DriverType::Postgres)
             .having("id").and()
-            .all_eq(m).and()
+            .eq_all(m).and()
             .eq("id", 1).and()
             .ne("id", 1).and()
             .gt("id", 1).and()
