@@ -775,16 +775,6 @@ impl Add<&str> for Wrapper {
     }
 }
 
-impl Add<(&str, Bson)> for Wrapper {
-    type Output = Self;
-
-    fn add(mut self, rhs: (&str, Bson)) -> Self::Output {
-        self.sql.push_str(rhs.0);
-        self.args.push(rhs.1);
-        self
-    }
-}
-
 impl Add<(&str, Vec<Bson>)> for Wrapper {
     type Output = Self;
 
