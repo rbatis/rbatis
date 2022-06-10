@@ -92,11 +92,12 @@ mod test {
     #[test]
     fn test_wrapper_add() {
         let w = Wrapper::new(&DriverType::Postgres)
-            + "and id = 1 " + (" and id = ? ",Bson::Int32(2))
-            + (" and id = ? or name = ? ",vec![Bson::Int32(3),Bson::String("joe".to_string())]);
-        println!("{}",w.sql);
-        println!("{:?}",w.args);
-        assert_eq!(w.sql,"and id = 1  and id = ?  and id = ? or name = ? ");
-        assert_eq!(w.args,vec![Bson::Int32(2),Bson::Int32(3),Bson::String("joe".to_string())])
+            + "and id = 1 "
+            + (" and id = ? ", Bson::Int32(2))
+            + (" and id = ? or name = ? ", vec![Bson::Int32(3), Bson::String("joe".to_string())]);
+        println!("{}", w.sql);
+        println!("{:?}", w.args);
+        assert_eq!(w.sql, "and id = 1  and id = ?  and id = ? or name = ? ");
+        assert_eq!(w.args, vec![Bson::Int32(2), Bson::Int32(3), Bson::String("joe".to_string())])
     }
 }
