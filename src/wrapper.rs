@@ -758,9 +758,8 @@ impl Wrapper {
     /// for example:
     ///  limit(1) " limit 1 "
     pub fn limit(mut self, limit: u64) -> Self {
-        use std::fmt::Write;
         push_sql!(self.sql," ",crate::sql::TEMPLATE.limit.value," ");
-        self.sql.write_fmt(format_args!("{}", limit));
+        std::fmt::Write::write_fmt(&mut self.sql,format_args!("{}", limit));
         self.sql.push_str(" ");
         self
     }
