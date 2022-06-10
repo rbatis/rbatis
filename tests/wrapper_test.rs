@@ -1,6 +1,7 @@
 #[cfg(test)]
 mod test {
-    use std::collections::{BTreeMap, HashMap};
+    use std::collections::{BTreeMap};
+    use rbson::Bson;
     use rbatis::core::db::DriverType;
     use rbatis::wrapper::Wrapper;
 
@@ -62,7 +63,7 @@ mod test {
         let mut m = BTreeMap::new();
         m.insert("id", 2);
         m.insert("name", 1);
-        let mut w = Wrapper::new(&DriverType::Postgres)
+        let w = Wrapper::new(&DriverType::Postgres)
             .having("id").and()
             .eq_all(m).and()
             .eq("id", 1).and()
@@ -86,5 +87,16 @@ mod test {
             .limit(1)
             .order_bys(&[("id", true), ("name", false)]);
         assert_eq!(w.sql, "having id and (id = $1 and name = $2) and id = $3 and id <> $4 and id > $5 and id >= $6 and id < $7 and id <= $8 and id between $9 and $10 and id not between $11 and $12 and id like $13 and id like $14 and id like $15 and id not like $16 and id is NULL and id is not NULL and id in ( $17 ) and id not in ( $18 ) order by id asc group by id  limit 1 order by id asc,name desc ");
+    }
+
+    #[test]
+    fn test_wrapper_add() {
+        let w = Wrapper::new(&DriverType::Postgres)
+            + "and id = 1 " + (" and id = ? ",Bson::Int32(2))
+            + (" and id = ? or name = ? ",vec![Bson::Int32(3),Bson::String("joe".to_string())]);
+        println!("{}",w.sql);
+        println!("{:?}",w.args);
+        assert_eq!(w.sql,"and id = 1  and id = ?  and id = ? or name = ? ");
+        assert_eq!(w.args,vec![Bson::Int32(2),Bson::Int32(3),Bson::String("joe".to_string())])
     }
 }

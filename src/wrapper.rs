@@ -329,7 +329,7 @@ impl Wrapper {
         let source = self.formats.get(column);
         match source {
             Some(source) => {
-                *data = source.replace("{}",data);
+                *data = source.replace("{}", data);
             }
             _ => {}
         }
@@ -759,8 +759,40 @@ impl Wrapper {
     ///  limit(1) " limit 1 "
     pub fn limit(mut self, limit: u64) -> Self {
         push_sql!(self.sql," ",crate::sql::TEMPLATE.limit.value," ");
-        std::fmt::Write::write_fmt(&mut self.sql,format_args!("{}", limit));
+        std::fmt::Write::write_fmt(&mut self.sql, format_args!("{}", limit));
         self.sql.push_str(" ");
+        self
+    }
+}
+
+
+impl Add<&str> for Wrapper {
+    type Output = Self;
+
+    fn add(mut self, rhs: &str) -> Self::Output {
+        self.sql.push_str(rhs);
+        self
+    }
+}
+
+impl Add<(&str, Bson)> for Wrapper {
+    type Output = Self;
+
+    fn add(mut self, rhs: (&str, Bson)) -> Self::Output {
+        self.sql.push_str(rhs.0);
+        self.args.push(rhs.1);
+        self
+    }
+}
+
+impl Add<(&str, Vec<Bson>)> for Wrapper {
+    type Output = Self;
+
+    fn add(mut self, rhs: (&str, Vec<Bson>)) -> Self::Output {
+        self.sql.push_str(rhs.0);
+        for x in rhs.1 {
+            self.args.push(x);
+        }
         self
     }
 }
