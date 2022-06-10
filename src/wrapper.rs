@@ -786,3 +786,14 @@ impl Add<(&str, Vec<Bson>)> for Wrapper {
         self
     }
 }
+
+impl Add<Vec<Bson>> for Wrapper {
+    type Output = Self;
+
+    fn add(mut self, rhs: Vec<Bson>) -> Self::Output {
+        for x in rhs {
+            self.args.push(x);
+        }
+        self
+    }
+}
