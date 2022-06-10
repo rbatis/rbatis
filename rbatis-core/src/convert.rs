@@ -18,7 +18,7 @@ macro_rules! push_index {
                   }
               };
     ($index:ident,$new_sql:ident) => {
-                if  $index>=0 && $index<10{
+                if $index<10{
                     $new_sql.push(($index+48)as u8 as char);
                 }else if $index>=10 && $index<100 {
                     let $index = push_index!(10,$new_sql,$index);
@@ -45,8 +45,8 @@ impl StmtConvert for DriverType {
         match &self {
             DriverType::Postgres => {
                 item.push('$');
-                let index = index + 1;
-                push_index!(index,item);
+                let _index = index + 1;
+                push_index!(_index,item);
             }
             DriverType::Mysql => {
                 item.push('?');
@@ -57,8 +57,8 @@ impl StmtConvert for DriverType {
             DriverType::Mssql => {
                 item.push('@');
                 item.push('p');
-                let index = index + 1;
-                push_index!(index,item);
+                let _index = index + 1;
+                push_index!(_index,item);
             }
             DriverType::None => {
                 panic!("[rbatis] un support none for driver type!")
