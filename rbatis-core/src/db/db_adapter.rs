@@ -736,8 +736,7 @@ impl<'a> DBPoolConn<'a> {
             conn: Some(self),
             done: true,
         };
-
-        tx.begin().await;
+        tx.begin().await?;
         return Ok(tx);
     }
 
