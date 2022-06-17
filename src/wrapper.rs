@@ -133,7 +133,6 @@ impl Wrapper {
                     let mut convert_column_new = String::new();
                     self.driver_type.stmt_convert(index + args.len(), &mut convert_column_new);
 
-                    println!("{},{}", convert_column, convert_column_new);
                     new_sql = new_sql.replace(
                         convert_column.as_str(),
                         convert_column_new.as_str(),
