@@ -94,8 +94,7 @@ fn filter_args_context_id(
 ) -> proc_macro2::TokenStream {
     let mut sql_args_gen = quote! {};
     for item in fn_arg_name_vec {
-        let mut item_ident_name = item.to_token_stream().to_string();
-        item_ident_name = item_ident_name.trim().trim_start_matches("mut ").to_string();
+        let item_ident_name= item.to_token_stream().to_string().trim().trim_start_matches("mut ").to_string();
         if item_ident_name.eq(rbatis_name) {
             continue;
         }
@@ -111,7 +110,7 @@ fn filter_args_context_id(
         }
         sql_args_gen = quote! {
              #sql_args_gen
-             rb_args.push(rbson::to_bson(#item_ident_name).unwrap_or_default());
+             rb_args.push(rbson::to_bson(#item).unwrap_or_default());
         };
     }
     sql_args_gen
