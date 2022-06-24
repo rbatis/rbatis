@@ -62,6 +62,9 @@ pub async fn init_sqlite_path(path:&str) -> Rbatis {
     //first init log carte
     fast_log::init(fast_log::config::Config::new().console());
 
+    // new rbatis
+    let rb = Rbatis::new();
+
     // // mysql custom connection option
     // // let db_cfg=DBConnectOption::from("mysql://root:123456@localhost:3306/test")?;
     // let db_cfg= DBConnectOption::from("sqlite://../target/sqlite.db")?;
@@ -72,9 +75,6 @@ pub async fn init_sqlite_path(path:&str) -> Rbatis {
     // opt.max_size = 20;
     // rb.link_opt("sqlite://../target/sqlite.db", &opt).await.unwrap();
 
-
-    // init rbatis
-    let rb = Rbatis::new();
     //create sqlite file
     if File::open(format!("{}target/sqlite.db", path)).is_err() {
         create_dir_all(format!("{}target/", path));
