@@ -114,25 +114,11 @@ impl Wrapper {
             DriverType::None => {}
             DriverType::Mysql => {}
             DriverType::Postgres | DriverType::Mssql => {
-                let self_arg_len = self.args.len();
-                for index in 0..args.len() {
+                for index_target in 0..args.len() {
                     let mut convert_column = String::new();
-                    self.driver_type.stmt_convert(index, &mut convert_column);
-
+                    self.driver_type.stmt_convert(index_target, &mut convert_column);
                     let mut convert_column_new = String::new();
-                    self.driver_type.stmt_convert(index + args.len(), &mut convert_column_new);
-                    new_sql = new_sql.replace(
-                        convert_column.as_str(),
-                        convert_column_new.as_str(),
-                    );
-                }
-                for index in args.len()..self_arg_len {
-                    let mut convert_column = String::new();
-                    self.driver_type.stmt_convert(index, &mut convert_column);
-
-                    let mut convert_column_new = String::new();
-                    self.driver_type.stmt_convert(index + args.len(), &mut convert_column_new);
-
+                    self.driver_type.stmt_convert(index_target + self.args.len(), &mut convert_column_new);
                     new_sql = new_sql.replace(
                         convert_column.as_str(),
                         convert_column_new.as_str(),
@@ -343,7 +329,7 @@ impl Wrapper {
         let source = self.formats.get(column);
         match source {
             Some(source) => {
-                *data = source.replace("{}",data);
+                *data = source.replace("{}", data);
             }
             _ => {}
         }
