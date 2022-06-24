@@ -8,7 +8,7 @@ members = [
 
 [package]
 name = "rbatis"
-version = "3.1.12"
+version = "3.1.13"
 description = "Rust ORM Framework High Performance(Bson based)"
 readme = "Readme.md"
 authors = ["ce <zhuxiujia@qq.com>"]
