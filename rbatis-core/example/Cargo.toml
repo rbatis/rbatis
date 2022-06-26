@@ -26,4 +26,4 @@ rbatis-core = { path = "../",features = ["debug_mode"]}
 
 serde = { version = "1", features = ["derive"] }
 serde_json = { version = "1", features = ["raw_value"] }
-rbson = { version = "2.0.3", features = ["uuid-0_8", "chrono-0_4"] }
+rbson = { version = "2.0", features = ["uuid-0_8", "chrono-0_4"] }
