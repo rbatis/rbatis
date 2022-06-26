@@ -122,9 +122,6 @@ pub fn bind(t: Bson, mut q: Query<Postgres, PgArguments>) -> crate::Result<Query
             let primitive_date_time = chrono::NaiveDateTime::from_timestamp(sec, ns);
             q = q.bind(primitive_date_time);
         }
-        Bson::ObjectId(d) => {
-            q = q.bind(d.to_string());
-        }
         Bson::Array(arr) => {
             let mut arr_str = vec![];
             let mut arr_i32 = vec![];
@@ -246,9 +243,6 @@ pub fn bind(t: Bson, mut q: Query<Postgres, PgArguments>) -> crate::Result<Query
                         let ns = (timestamp % 1000 * 1000000) as u32;
                         let primitive_date_time = chrono::NaiveDateTime::from_timestamp(sec, ns);
                         q = q.bind(primitive_date_time);
-                    }
-                    Bson::ObjectId(d) => {
-                        q = q.bind(d.to_string());
                     }
                     _ => {
                         return crate::Result::Err(crate::Error::from("unsupported type!"));
