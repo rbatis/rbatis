@@ -1,6 +1,6 @@
 [package]
 name = "rbatis-core"
-version = "3.1.9"
+version = "3.1.10"
 description = "Core of rbatis, the rust SQL toolkit. Not intended to be used directly."
 license = "Apache-2.0"
 edition = "2021"
@@ -32,7 +32,7 @@ format_bson = []
 [dependencies]
 serde = { version = "1", features = ["derive"] }
 serde_json = { version = "1", features = ["raw_value","preserve_order"] }
-rbson = { version = "2.0.3", features = ["uuid-0_8", "chrono-0_4"] }
+rbson = { version = "2.0", features = ["uuid-0_8", "chrono-0_4"] }
 chrono = { version = "0.4", default-features = false, features = ["clock", "serde"] }
 log = { version = "0.4", default-features = false }
 lazy_static = "1.4"
