@@ -105,9 +105,6 @@ pub fn bind<'a>(t: Bson, mut q: Query<'a, Sqlite, SqliteArguments<'a>>) -> crate
         Bson::Timestamp(d) => {
             q = q.bind(crate::types::Timestamp::from(d).inner.to_string());
         }
-        Bson::ObjectId(d) => {
-            q = q.bind(d.to_string());
-        }
         _ => {
             return crate::Result::Err(crate::Error::from("unsupported type!"));
         }
