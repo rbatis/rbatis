@@ -1,3 +1,7 @@
+pub mod encode;
+pub mod decode;
+pub mod db;
+
 pub fn add(left: usize, right: usize) -> usize {
     left + right
 }
