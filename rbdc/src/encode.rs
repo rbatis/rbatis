@@ -10,11 +10,7 @@ pub trait Encode{
     #[must_use]
     fn encode(&self, buf: &mut rbson::Bson);
 
-    fn produces(&self) -> Option<DB::TypeInfo> {
-        // `produces` is inherently a hook to allow database drivers to produce value-dependent
-        // type information; if the driver doesn't need this, it can leave this as `None`
-        None
-    }
+
 
     #[inline]
     fn size_hint(&self) -> usize {

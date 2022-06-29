@@ -8,3 +8,4 @@ edition = "2021"
 [dependencies]
 tokio = "1"
 rbson = { version = "2.0.3", features = ["uuid-0_8", "chrono-0_4"] }
+serde = "1"
