@@ -4,21 +4,22 @@ pub mod encode;
 pub mod decode;
 pub mod db;
 
-pub enum RBson {
+///Rbatis Object Notation
+pub enum RBON {
     String(String),
     I32(i32),
     I64(i64),
     U32(u32),
     U64(u64),
     Bytes(Vec<u8>),
-    Map(Vec<(String, RBson)>),
-    Array(Vec<RBson>),
-    Type((String, Box<RBson>)),
+    Map(Vec<(String, RBON)>),
+    Array(Vec<RBON>),
+    Type((String, Box<RBON>)),
 }
 
 #[cfg(test)]
 mod test {
-    use crate::RBson;
+    use crate::RBON;
 
     #[derive(serde::Serialize, serde::Deserialize)]
     pub struct A {
@@ -74,13 +75,13 @@ mod test {
             name: "1".to_string(),
             age: 2,
         };
-        let b = RBson::Map(vec![("name".to_string(), RBson::String("1".to_string())), ("age".to_string(), RBson::I32(2))]);
+        let b = RBON::Map(vec![("name".to_string(), RBON::String("1".to_string())), ("age".to_string(), RBON::I32(2))]);
         mbench!(100000, {
         let a = A{
             name: "1".to_string(),
             age: 2
         };
-            let b=RBson::Map(vec![("name".to_string(),RBson::String("1".to_string())),("age".to_string(),RBson::I32(2))]);
+            let b=RBON::Map(vec![("name".to_string(),RBON::String("1".to_string())),("age".to_string(),RBON::I32(2))]);
         });
     }
 }
