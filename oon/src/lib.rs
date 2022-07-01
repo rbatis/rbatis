@@ -15,7 +15,6 @@ pub enum OON {
     Vec(Vec<OON>),
     Map(IndexMap<String, OON>),
     Struct(String, Vec<(String, OON)>),
-    Type((String, Box<OON>)),
 }
 
 pub trait Encode {
