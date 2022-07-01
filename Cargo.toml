@@ -1,6 +1,7 @@
 [workspace]
 members = [
     ".",
+    "oon",
     "rbdc",
     "rbatis-core",
     "rbatis-macro-driver",
