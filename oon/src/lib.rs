@@ -1,6 +1,7 @@
 mod ser;
 mod de;
 pub mod error;
+
 use std::marker::PhantomData;
 use indexmap::IndexMap;
 use serde::{Deserializer, Serialize, Serializer};
@@ -22,15 +23,15 @@ pub enum OON {
     Struct(Struct),
 }
 
-pub struct Struct{
-   pub name:String,
-   pub fields:Vec<(String,OON)>
+pub struct Struct {
+    pub name: String,
+    pub fields: Vec<(String, OON)>,
 }
 
 impl Struct {
-    pub fn get(&self,key:&str)->Option<&OON>{
-        for (k,v) in &self.fields {
-            if k.eq(key){
+    pub fn get(&self, key: &str) -> Option<&OON> {
+        for (k, v) in &self.fields {
+            if k.eq(key) {
                 return Some(v);
             }
         }
@@ -39,21 +40,19 @@ impl Struct {
 }
 
 
-
 #[cfg(test)]
 mod test {
-
-    #[derive(serde::Serialize,serde::Deserialize)]
+    #[derive(serde::Serialize, serde::Deserialize)]
     pub struct A {
         name: String,
         age: i32,
     }
 
     #[test]
-    fn test_ser_a(){
-        let a=A{
+    fn test_ser_a() {
+        let a = A {
             name: "".to_string(),
-            age: 0
+            age: 0,
         };
     }
 }

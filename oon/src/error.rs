@@ -10,11 +10,11 @@ pub enum Error {
 
 impl Display for Error {
     fn fmt(&self, f: &mut Formatter<'_>) -> fmt::Result {
-       match self{
-           Error::E(e) => {
-               f.write_str(e)
-           }
-       }
+        match self {
+            Error::E(e) => {
+                f.write_str(e)
+            }
+        }
     }
 }
 
