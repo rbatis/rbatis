@@ -18,6 +18,15 @@ pub enum OON {
     Type((String, Box<OON>)),
 }
 
+pub trait Encode {
+    fn encode(self) -> OON;
+}
+
+pub trait Decode {
+    fn decode(&mut self, arg: OON) -> Result<(), String>;
+}
+
+
 #[cfg(test)]
 mod test {
     // use serde::{Serialize,Deserialize};
