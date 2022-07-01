@@ -7,6 +7,7 @@ pub mod db;
 
 ///Rbatis Object Notation
 pub enum RBON {
+    Null,
     String(String),
     I32(i32),
     I64(i64),
