@@ -17,7 +17,7 @@ pub enum RBON {
     Map(IndexMap<String, RBON>),
     Struct(String, Vec<(String, RBON)>),
     Array(Vec<RBON>),
-    Enum((String, Box<RBON>)),
+    Type((String, Box<RBON>)),
 }
 
 #[cfg(test)]
