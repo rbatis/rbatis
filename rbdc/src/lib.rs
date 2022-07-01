@@ -14,7 +14,7 @@ pub enum OON{
     U32(u32),
     U64(u64),
     Bytes(Vec<u8>),
-    Map(IndexMap<String,OON >),
+    Map(IndexMap<String,OON>),
     Struct(String, Vec<(String, OON)>),
     Array(Vec<OON>),
     Type((String, Box<OON>)),
