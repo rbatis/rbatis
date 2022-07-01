@@ -1,4 +1,5 @@
 use std::collections::HashMap;
+use indexmap::IndexMap;
 
 pub mod encode;
 pub mod decode;
@@ -12,9 +13,10 @@ pub enum RBON {
     U32(u32),
     U64(u64),
     Bytes(Vec<u8>),
-    Map(Vec<(String, RBON)>),
+    Map(IndexMap<String, RBON>),
+    Struct(String, Vec<(String, RBON)>),
     Array(Vec<RBON>),
-    Type((String, Box<RBON>)),
+    Enum((String, Box<RBON>)),
 }
 
 #[cfg(test)]
@@ -75,13 +77,12 @@ mod test {
             name: "1".to_string(),
             age: 2,
         };
-        let b = RBON::Map(vec![("name".to_string(), RBON::String("1".to_string())), ("age".to_string(), RBON::I32(2))]);
         mbench!(100000, {
         let a = A{
             name: "1".to_string(),
             age: 2
         };
-            let b=RBON::Map(vec![("name".to_string(),RBON::String("1".to_string())),("age".to_string(),RBON::I32(2))]);
+            let b=RBON::Struct("A".to_string(),vec![("name".to_string(),RBON::String("1".to_string())),("age".to_string(),RBON::I32(2))]);
         });
     }
 }
