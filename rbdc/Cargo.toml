@@ -11,4 +11,5 @@ rbson = { version = "2.0.3", features = ["uuid-0_8", "chrono-0_4"] }
 serde = "1"
 indexmap = "1"
 
-rmpv = "1.0.0"
+rmpv = "1"
+rmp-serde = "1"
