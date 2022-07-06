@@ -10,6 +10,6 @@ pub trait Encode {
     fn encode_u64(&self,v: Option<u64>) -> Vec<u8>;
     fn encode_str(&self,v: Option<&str>) -> Vec<u8>;
     fn encode_bool(&self,v: Option<bool>) -> Vec<u8>;
-    fn encode_bin(&self,v: Option<&[u8]>) -> Vec<u8>;
+    fn encode_bytes(&self,v: Option<&[u8]>) -> Vec<u8>;
     fn encode_null(&self) -> Vec<u8>;
 }
