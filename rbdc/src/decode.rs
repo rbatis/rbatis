@@ -7,6 +7,6 @@ pub trait Decode {
     fn decode_u64(&mut self, v: Option<u64>);
     fn decode_str(&mut self, v: Option<&str>);
     fn decode_bool(&mut self, v: Option<bool>);
-    fn decode_bin(&mut self, v: Option<&[u8]>);
+    fn decode_bytes(&mut self, v: Option<&[u8]>);
     fn decode_null(&mut self);
 }
