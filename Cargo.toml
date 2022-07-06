@@ -2,6 +2,7 @@
 members = [
     ".",
     "rbdc",
+    "rbdc-mysql",
     "rbatis-core",
     "rbatis-macro-driver",
     "example",
