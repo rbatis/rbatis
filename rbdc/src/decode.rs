@@ -1,3 +1,4 @@
+/// Decode a single value to be from the database.
 pub trait Decode {
     fn decode_i32(&mut self, v: Option<i32>);
     fn decode_i64(&mut self, v: Option<i64>);
