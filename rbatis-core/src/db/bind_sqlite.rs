@@ -1,10 +1,26 @@
 use rbson::Bson;
 use rbson::spec::BinarySubtype;
-use sqlx_core::sqlite::{Sqlite, SqliteArguments};
+use sqlx_core::encode::{Encode, IsNull};
+use sqlx_core::sqlite::{Sqlite, SqliteArguments, SqliteArgumentValue, SqliteTypeInfo};
 use sqlx_core::query::Query;
+use sqlx_core::types::Type;
 use crate::error::Error;
 use crate::types::{DateNative, DateTimeNative, DateTimeUtc, DateUtc, Decimal, TimeNative, TimeUtc};
 use crate::Uuid;
+
+pub struct SqliteNull {}
+
+impl Type<Sqlite> for SqliteNull {
+    fn type_info() -> SqliteTypeInfo {
+        serde_json::from_str("NULL").unwrap()
+    }
+}
+
+impl Encode<'_, Sqlite> for SqliteNull {
+    fn encode_by_ref(&self, args: &mut Vec<SqliteArgumentValue>) -> IsNull {
+        IsNull::Yes
+    }
+}
 
 #[inline]
 pub fn bind<'a>(t: Bson, mut q: Query<'a, Sqlite, SqliteArguments<'a>>) -> crate::Result<Query<'a, Sqlite, SqliteArguments<'a>>> {
@@ -53,7 +69,7 @@ pub fn bind<'a>(t: Bson, mut q: Query<'a, Sqlite, SqliteArguments<'a>>) -> crate
             q = q.bind(Some(s));
         }
         Bson::Null => {
-            q = q.bind(Option::<String>::None);
+            q = q.bind(SqliteNull{});
         }
         Bson::Int32(n) => {
             q = q.bind(n);

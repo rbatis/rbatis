@@ -123,7 +123,7 @@ mod test {
             remark: None,
             create_time: Some(DateTimeNative::now()),
             version: Some(1),
-            delete_flag: Some(1),
+            delete_flag: None,
         };
         rb.remove_by_column::<BizActivity, _>("id", &activity.id)
             .await;
