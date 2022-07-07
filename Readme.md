@@ -7,7 +7,7 @@
 [![unsafe forbidden](https://img.shields.io/badge/unsafe-forbidden-success.svg)](https://github.com/rust-secure-code/safety-dance/) </br>
 [![dependency status](https://deps.rs/crate/rbatis/1.8.71/status.svg)](https://deps.rs/crate/rbatis/1.8.71)
 [![GitHub release](https://img.shields.io/github/v/release/rbatis/rbatis)](https://github.com/rbatis/rbatis/releases)
-[![Gitter](https://badges.gitter.im/rbatis_orm/community.svg)](https://gitter.im/rbatis_orm/community?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge)
+[![discussions](https://badges.gitter.im/rbatis_orm/community.svg)](https://github.com/rbatis/rbatis/discussions)
 
 <img style="width: 200px;height: 200px;" width="200" height="200" src="logo.png" />
 
