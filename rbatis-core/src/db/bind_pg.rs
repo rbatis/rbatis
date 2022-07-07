@@ -6,9 +6,32 @@ use crate::error::Error;
 use crate::types::{DateNative, DateTimeUtc, DateUtc, Decimal, TimeNative, TimestampZ, TimeUtc};
 use std::time::SystemTime;
 use bigdecimal_::BigDecimal;
-use sqlx_core::postgres::{Postgres, PgArguments};
+use sqlx_core::encode::{Encode, IsNull};
+use sqlx_core::postgres::{Postgres, PgArguments, PgArgumentBuffer, PgHasArrayType, PgTypeInfo};
+use sqlx_core::types::Type;
 use crate::types::DateTimeNative;
 use crate::Uuid;
+
+pub struct PgNull {}
+
+impl Type<Postgres> for PgNull {
+    fn type_info() -> PgTypeInfo {
+        PgTypeInfo::with_name("UNKNOWN")
+    }
+}
+
+impl PgHasArrayType for PgNull {
+    fn array_type_info() -> PgTypeInfo {
+        PgTypeInfo::with_name("UNKNOWN")
+    }
+}
+
+
+impl Encode<'_, Postgres> for PgNull {
+    fn encode_by_ref(&self, buf: &mut PgArgumentBuffer) -> IsNull {
+        IsNull::Yes
+    }
+}
 
 #[inline]
 pub fn bind(t: Bson, mut q: Query<Postgres, PgArguments>) -> crate::Result<Query<Postgres, PgArguments>> {
@@ -62,7 +85,7 @@ pub fn bind(t: Bson, mut q: Query<Postgres, PgArguments>) -> crate::Result<Query
             q = q.bind(Some(s));
         }
         Bson::Null => {
-            q = q.bind(Option::<String>::None);
+            q = q.bind(PgNull {});
         }
         Bson::Int32(n) => {
             q = q.bind(n);
@@ -123,6 +146,7 @@ pub fn bind(t: Bson, mut q: Query<Postgres, PgArguments>) -> crate::Result<Query
             q = q.bind(primitive_date_time);
         }
         Bson::Array(arr) => {
+            let mut arr_null = vec![];
             let mut arr_str = vec![];
             let mut arr_i32 = vec![];
             let mut arr_i64 = vec![];
@@ -190,7 +214,7 @@ pub fn bind(t: Bson, mut q: Query<Postgres, PgArguments>) -> crate::Result<Query
                         arr_str.push(s);
                     }
                     Bson::Null => {
-                        return crate::Result::Err(crate::Error::from("unsupported type!"));
+                        arr_null.push(PgNull {});
                     }
                     Bson::Int32(n) => {
                         arr_i32.push(n);
@@ -248,6 +272,9 @@ pub fn bind(t: Bson, mut q: Query<Postgres, PgArguments>) -> crate::Result<Query
                         return crate::Result::Err(crate::Error::from("unsupported type!"));
                     }
                 }
+            }
+            if !arr_null.is_empty() {
+                q = q.bind(arr_null);
             }
             if !arr_str.is_empty() {
                 q = q.bind(arr_str);
