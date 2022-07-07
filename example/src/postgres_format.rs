@@ -13,10 +13,10 @@ mod test {
     //'id' ->  table column 'id'
     //'{}::uuid' -> format data str
     // '\\,'   ->   This is an escape symbol
-    #[crud_table(formats_pg: "id:{}::uuid")]
+    #[crud_table]
     #[derive(Clone, Debug)]
     pub struct BizUuid {
-        pub id: Option<Uuid>,
+        pub id: Option<String>,
         pub name: Option<String>,
     }
 
@@ -30,35 +30,40 @@ mod test {
         rb.link("postgres://postgres:123456@localhost:5432/postgres")
             .await
             .unwrap();
+        
+        rb.save(&BizUuid{
+            id: Some("6".to_string()),
+            name: None
+        },&[]).await.unwrap();
 
-        let uuid = Uuid::from_str("df07fea2-b819-4e05-b86d-dfc15a5f52a9").unwrap();
-        //create table
-        rb.exec("DROP TABLE biz_uuid;", vec![]).await;
-        rb.exec("CREATE TABLE biz_uuid( id uuid, name VARCHAR, PRIMARY KEY(id));", vec![])
-            .await;
-        //insert table
-        rb.save(
-            &BizUuid {
-                id: Some(uuid),
-                name: Some("test".to_string()),
-            },
-            &[],
-        )
-            .await;
-        //update table
-        rb.update_by_column(
-            "id",
-            &mut BizUuid {
-                id: Some(uuid.clone()),
-                name: Some("test_updated".to_string()),
-            },
-        )
-            .await;
-        //query table
-        let data: BizUuid = rb.fetch_by_column("id", &uuid).await.unwrap();
-        println!("{:?}", data);
-        //delete table
-        rb.remove_by_column::<BizUuid, _>("id", &uuid).await;
+        // let uuid = Uuid::from_str("df07fea2-b819-4e05-b86d-dfc15a5f52a9").unwrap();
+        // //create table
+        // rb.exec("DROP TABLE biz_uuid;", vec![]).await;
+        // rb.exec("CREATE TABLE biz_uuid( id uuid, name VARCHAR, PRIMARY KEY(id));", vec![])
+        //     .await;
+        // //insert table
+        // rb.save(
+        //     &BizUuid {
+        //         id: Some(uuid),
+        //         name: Some("test".to_string()),
+        //     },
+        //     &[],
+        // )
+        //     .await;
+        // //update table
+        // rb.update_by_column(
+        //     "id",
+        //     &mut BizUuid {
+        //         id: Some(uuid.clone()),
+        //         name: Some("test_updated".to_string()),
+        //     },
+        // )
+        //     .await;
+        // //query table
+        // let data: BizUuid = rb.fetch_by_column("id", &uuid).await.unwrap();
+        // println!("{:?}", data);
+        // //delete table
+        // rb.remove_by_column::<BizUuid, _>("id", &uuid).await;
     }
 
     /// Formatting precompiled SQL
