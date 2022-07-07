@@ -1,17 +1,17 @@
 CREATE TABLE `biz_activity`
 (
     `id`            TEXT PRIMARY KEY NOT NULL,
-    `name`          TEXT             NOT NULL,
-    `pc_link`       TEXT DEFAULT NULL,
-    `h5_link`       TEXT DEFAULT NULL,
-    `sort`          TEXT             NOT NULL,
-    `status`        INT              NOT NULL,
-    `version`       INT              NOT NULL,
-    `remark`        TEXT DEFAULT NULL,
-    `create_time`   datetime         NOT NULL,
-    `delete_flag`   INT(1)           NOT NULL,
-    `pc_banner_img` TEXT DEFAULT NULL,
-    `h5_banner_img` TEXT DEFAULT NULL
+    `name`          TEXT     DEFAULT NULL,
+    `pc_link`       TEXT     DEFAULT NULL,
+    `h5_link`       TEXT     DEFAULT NULL,
+    `sort`          TEXT     DEFAULT NULL,
+    `status`        INT      DEFAULT NULL,
+    `version`       INT      DEFAULT NULL,
+    `remark`        TEXT     DEFAULT NULL,
+    `create_time`   datetime DEFAULT NULL,
+    `delete_flag`   INT(1)   DEFAULT NULL,
+    `pc_banner_img` TEXT     DEFAULT NULL,
+    `h5_banner_img` TEXT     DEFAULT NULL
 );
 
 INSERT INTO `biz_activity`

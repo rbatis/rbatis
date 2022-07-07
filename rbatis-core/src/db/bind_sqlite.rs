@@ -1,7 +1,8 @@
 use rbson::Bson;
 use rbson::spec::BinarySubtype;
-use sqlx_core::sqlite::{Sqlite, SqliteArguments};
+use sqlx_core::sqlite::{Sqlite, SqliteArguments, SqliteArgumentValue};
 use sqlx_core::query::Query;
+use sqlx_core::types::Type;
 use crate::error::Error;
 use crate::types::{DateNative, DateTimeNative, DateTimeUtc, DateUtc, Decimal, TimeNative, TimeUtc};
 use crate::Uuid;
@@ -10,12 +11,12 @@ use crate::Uuid;
 pub fn bind<'a>(t: Bson, mut q: Query<'a, Sqlite, SqliteArguments<'a>>) -> crate::Result<Query<'a, Sqlite, SqliteArguments<'a>>> {
     match t {
         Bson::String(s) => {
-            if s.starts_with("DateTimeUtc(")  {
+            if s.starts_with("DateTimeUtc(") {
                 let data: DateTimeUtc = rbson::from_bson(Bson::String(s))?;
                 q = q.bind(data.inner);
                 return Ok(q);
             }
-            if s.starts_with("DateTimeNative(")  {
+            if s.starts_with("DateTimeNative(") {
                 let data: DateTimeNative = rbson::from_bson(Bson::String(s))?;
                 q = q.bind(data.inner);
                 return Ok(q);
