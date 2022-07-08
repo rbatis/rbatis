@@ -17,8 +17,8 @@ use crate::{IntPriv, Integer, ValueRef};
 ///
 /// # Examples
 /// ```
-/// use rmpv::ValueRef;
-/// use rmpv::encode::write_value_ref;
+/// use rbmpv::ValueRef;
+/// use rbmpv::encode::write_value_ref;
 ///
 /// let mut buf = Vec::new();
 /// let val = ValueRef::from("le message");
