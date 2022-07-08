@@ -1,6 +1,8 @@
 [workspace]
 members = [
     ".",
+    "rbmpv",
+    "rbmp-serde",
     "rbdc",
     "rbdc-mysql",
     "rbatis-core",
