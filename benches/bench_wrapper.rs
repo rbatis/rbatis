@@ -32,3 +32,16 @@ fn bench_wrapper(b: &mut Bencher){
             .order_bys(&[("id", true), ("name", false)]);
     });
 }
+
+#[bench]
+fn bench_ser(b: &mut Bencher){
+    #[derive(serde::Serialize, serde::Deserialize, Debug)]
+    pub struct A {
+        pub name: String,
+    }
+    b.iter(||{
+        let buf = rbmp_serde::to_vec(&A {
+            name: "s".to_string()
+        }).unwrap();
+    });
+}
