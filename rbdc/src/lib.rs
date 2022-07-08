@@ -32,6 +32,7 @@ impl serde::ser::Error for Error {
 
 #[cfg(test)]
 mod test {
+    use std::collections::HashMap;
     use std::time::Duration;
     use crate::ser::{Ser, serialize};
 
@@ -45,6 +46,11 @@ mod test {
             name: "sss".to_string(),
         };
         let v = serialize(&a).unwrap();
+        println!("{:?}", v);
+
+        let mut m=HashMap::new();
+        m.insert(1,2);
+        let v = serialize(&m).unwrap();
         println!("{:?}", v);
     }
 
