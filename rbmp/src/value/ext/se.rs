@@ -17,7 +17,7 @@ impl Serialize for Value {
     {
         match *self {
             Value::Nil => s.serialize_unit(),
-            Value::Boolean(v) => s.serialize_bool(v),
+            Value::Bool(v) => s.serialize_bool(v),
             Value::I32(v) => s.serialize_i32(v),
             Value::I64(v) => s.serialize_i64(v),
             Value::U32(v) => s.serialize_u32(v),
@@ -89,7 +89,7 @@ impl ser::Serializer for Serializer {
 
     #[inline]
     fn serialize_bool(self, val: bool) -> Result<Self::Ok, Self::Error> {
-        Ok(Value::Boolean(val))
+        Ok(Value::Bool(val))
     }
 
     #[inline]

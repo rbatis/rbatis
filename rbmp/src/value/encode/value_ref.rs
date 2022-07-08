@@ -30,7 +30,7 @@ pub fn write_value_ref<W>(wr: &mut W, val: &ValueRef<'_>) -> Result<(), Error>
         ValueRef::Nil => {
             write_nil(wr).map_err(Error::InvalidMarkerWrite)?;
         }
-        ValueRef::Boolean(val) => {
+        ValueRef::Bool(val) => {
             write_bool(wr, val).map_err(Error::InvalidMarkerWrite)?;
         }
         ValueRef::I32(val) => {

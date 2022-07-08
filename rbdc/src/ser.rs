@@ -9,7 +9,7 @@ pub enum Value<'a> {
     /// Null
     Null,
     /// Boolean represents true or false.
-    Boolean(bool),
+    Bool(bool),
     /// Integer represents an integer.
     I32(i32),
     I64(i64),
@@ -194,7 +194,7 @@ impl Serializer for Ser {
     type SerializeStructVariant = SerializeStructVariantImpl<'static>;
 
     fn serialize_bool(self, v: bool) -> Result<Self::Ok, Self::Error> {
-        Ok(Value::Boolean(v))
+        Ok(Value::Bool(v))
     }
 
     fn serialize_i8(self, v: i8) -> Result<Self::Ok, Self::Error> {
