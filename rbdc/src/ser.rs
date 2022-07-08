@@ -1,3 +1,4 @@
+use std::borrow::Cow;
 use std::marker::PhantomData;
 use serde::{Serialize, Serializer};
 use serde::ser::{SerializeMap, SerializeSeq, SerializeStruct, SerializeStructVariant, SerializeTuple, SerializeTupleStruct, SerializeTupleVariant};
@@ -19,23 +20,26 @@ pub enum ValueRef<'a> {
     /// A 64-bit floating point number.
     F64(f64),
     /// String extending Raw type represents a UTF-8 string.
-    String(&'a str),
+    String(Cow<'a, str>),
     /// Binary extending Raw type represents a byte array.
-    Binary(&'a [u8]),
+    Binary(Cow<'a, [u8]>),
     /// Array represents a sequence of objects.
     Array(Vec<ValueRef<'a>>),
     /// Map represents key-value pairs of objects.
     Map(Vec<(ValueRef<'a>, ValueRef<'a>)>),
     /// Extended implements Extension interface: represents a tuple of type information and a byte
     /// array where type information is an integer whose meaning is defined by applications.
-    Ext(i8, &'a [u8]),
+    Ext(i8, Cow<'a, [u8]>),
+}
+
+#[derive(Clone)]
+pub struct Ser {
+    owner: bool,
 }
 
 
-pub struct Ser {}
-
-
 pub struct SerializeStructImpl<'a> {
+    s: Ser,
     inner: Vec<(ValueRef<'a>, ValueRef<'a>)>,
 }
 
@@ -44,7 +48,7 @@ impl<'a> SerializeStruct for SerializeStructImpl<'a> {
     type Error = Error;
 
     fn serialize_field<T: ?Sized>(&mut self, key: &'static str, value: &T) -> Result<(), Self::Error> where T: Serialize {
-        self.inner.push((ValueRef::String(key), value.serialize(Ser {})?));
+        self.inner.push((ValueRef::String(key.into()), value.serialize(self.s.clone())?));
         Ok(())
     }
 
@@ -54,6 +58,7 @@ impl<'a> SerializeStruct for SerializeStructImpl<'a> {
 }
 
 pub struct SerializeSeqImpl<'a> {
+    s: Ser,
     inner: Vec<ValueRef<'a>>,
 }
 
@@ -62,7 +67,7 @@ impl<'a> SerializeSeq for SerializeSeqImpl<'a> {
     type Error = Error;
 
     fn serialize_element<T: ?Sized>(&mut self, value: &T) -> Result<(), Self::Error> where T: Serialize {
-        self.inner.push(value.serialize(Ser {})?);
+        self.inner.push(value.serialize(self.s.clone())?);
         Ok(())
     }
 
@@ -72,6 +77,7 @@ impl<'a> SerializeSeq for SerializeSeqImpl<'a> {
 }
 
 pub struct SerializeTupleImpl<'a> {
+    s: Ser,
     inner: Vec<ValueRef<'a>>,
 }
 
@@ -80,7 +86,7 @@ impl<'a> SerializeTuple for SerializeTupleImpl<'a> {
     type Error = Error;
 
     fn serialize_element<T: ?Sized>(&mut self, value: &T) -> Result<(), Self::Error> where T: Serialize {
-        self.inner.push(value.serialize(Ser {})?);
+        self.inner.push(value.serialize(self.s.clone())?);
         Ok(())
     }
 
@@ -90,6 +96,7 @@ impl<'a> SerializeTuple for SerializeTupleImpl<'a> {
 }
 
 pub struct SerializeTupleStructImpl<'a> {
+    s: Ser,
     inner: Vec<ValueRef<'a>>,
 }
 
@@ -98,7 +105,7 @@ impl<'a> SerializeTupleStruct for SerializeTupleStructImpl<'a> {
     type Error = Error;
 
     fn serialize_field<T: ?Sized>(&mut self, value: &T) -> Result<(), Self::Error> where T: Serialize {
-        self.inner.push(value.serialize(Ser {})?);
+        self.inner.push(value.serialize(self.s.clone())?);
         Ok(())
     }
 
@@ -108,6 +115,7 @@ impl<'a> SerializeTupleStruct for SerializeTupleStructImpl<'a> {
 }
 
 pub struct SerializeTupleVariantImpl<'a> {
+    s: Ser,
     inner: Vec<ValueRef<'a>>,
 }
 
@@ -116,7 +124,7 @@ impl<'a> SerializeTupleVariant for SerializeTupleVariantImpl<'a> {
     type Error = Error;
 
     fn serialize_field<T: ?Sized>(&mut self, value: &T) -> Result<(), Self::Error> where T: Serialize {
-        self.inner.push(value.serialize(Ser {})?);
+        self.inner.push(value.serialize(self.s.clone())?);
         Ok(())
     }
 
@@ -126,6 +134,7 @@ impl<'a> SerializeTupleVariant for SerializeTupleVariantImpl<'a> {
 }
 
 pub struct SerializeMapImpl<'a> {
+    s: Ser,
     inner: Vec<(ValueRef<'a>, ValueRef<'a>)>,
 }
 
@@ -134,7 +143,7 @@ impl<'a> SerializeMap for SerializeMapImpl<'a> {
     type Error = Error;
 
     fn serialize_key<T: ?Sized>(&mut self, key: &T) -> Result<(), Self::Error> where T: Serialize {
-        self.inner.push((key.serialize(Ser {})?, ValueRef::Null));
+        self.inner.push((key.serialize(self.s.clone())?, ValueRef::Null));
         Ok(())
     }
 
@@ -142,7 +151,7 @@ impl<'a> SerializeMap for SerializeMapImpl<'a> {
         match self.inner.last_mut() {
             None => {}
             Some((_, v)) => {
-                *v = value.serialize(Ser {})?;
+                *v = value.serialize(self.s.clone())?;
             }
         }
         Ok(())
@@ -154,6 +163,7 @@ impl<'a> SerializeMap for SerializeMapImpl<'a> {
 }
 
 pub struct SerializeStructVariantImpl<'a> {
+    s: Ser,
     inner: Vec<ValueRef<'a>>,
 }
 
@@ -162,7 +172,7 @@ impl<'a> SerializeStructVariant for SerializeStructVariantImpl<'a> {
     type Error = Error;
 
     fn serialize_field<T: ?Sized>(&mut self, key: &'static str, value: &T) -> Result<(), Self::Error> where T: Serialize {
-        self.inner.push(value.serialize(Ser {})?);
+        self.inner.push(value.serialize(self.s.clone())?);
         Ok(())
     }
 
@@ -232,11 +242,11 @@ impl Serializer for Ser {
     }
 
     fn serialize_str(self, v: &str) -> Result<Self::Ok, Self::Error> {
-        Ok(ValueRef::String(unsafe { &*(v as *const str) }))
+        Ok(ValueRef::String(unsafe { &*(v as *const str) }.into()))
     }
 
     fn serialize_bytes(self, v: &[u8]) -> Result<Self::Ok, Self::Error> {
-        Ok(ValueRef::Binary(unsafe { &*(v as *const [u8]) }))
+        Ok(ValueRef::Binary(unsafe { &*(v as *const [u8]) }.into()))
     }
 
     fn serialize_none(self) -> Result<Self::Ok, Self::Error> {
@@ -256,7 +266,7 @@ impl Serializer for Ser {
     }
 
     fn serialize_unit_variant(self, name: &'static str, variant_index: u32, variant: &'static str) -> Result<Self::Ok, Self::Error> {
-        Ok(ValueRef::String(variant))
+        Ok(ValueRef::String(variant.into()))
     }
 
     fn serialize_newtype_struct<T: ?Sized>(self, name: &'static str, value: &T) -> Result<Self::Ok, Self::Error> where T: Serialize {
@@ -269,47 +279,58 @@ impl Serializer for Ser {
 
     fn serialize_seq(self, len: Option<usize>) -> Result<Self::SerializeSeq, Self::Error> {
         Ok(Self::SerializeSeq {
-            inner: Vec::with_capacity(len.unwrap_or_default())
+            s: self.clone(),
+            inner: Vec::with_capacity(len.unwrap_or_default()),
         })
     }
 
     fn serialize_tuple(self, len: usize) -> Result<Self::SerializeTuple, Self::Error> {
         Ok(Self::SerializeTuple {
-            inner: Vec::with_capacity(len)
+            s: self.clone(),
+            inner: Vec::with_capacity(len),
         })
     }
 
     fn serialize_tuple_struct(self, name: &'static str, len: usize) -> Result<Self::SerializeTupleStruct, Self::Error> {
         Ok(Self::SerializeTupleStruct {
-            inner: Vec::with_capacity(len)
+            s: self.clone(),
+            inner: Vec::with_capacity(len),
         })
     }
 
     fn serialize_tuple_variant(self, name: &'static str, variant_index: u32, variant: &'static str, len: usize) -> Result<Self::SerializeTupleVariant, Self::Error> {
         Ok(Self::SerializeTupleVariant {
-            inner: Vec::with_capacity(len)
+            s: self.clone(),
+            inner: Vec::with_capacity(len),
         })
     }
 
     fn serialize_map(self, len: Option<usize>) -> Result<Self::SerializeMap, Self::Error> {
         Ok(Self::SerializeMap {
-            inner: Vec::with_capacity(len.unwrap_or_default())
+            s: self.clone(),
+            inner: Vec::with_capacity(len.unwrap_or_default()),
         })
     }
 
     fn serialize_struct(self, name: &'static str, len: usize) -> Result<Self::SerializeStruct, Self::Error> {
         Ok(Self::SerializeStruct {
-            inner: Vec::with_capacity(len)
+            s: self.clone(),
+            inner: Vec::with_capacity(len),
         })
     }
 
     fn serialize_struct_variant(self, name: &'static str, variant_index: u32, variant: &'static str, len: usize) -> Result<Self::SerializeStructVariant, Self::Error> {
         Ok(Self::SerializeStructVariant {
-            inner: Vec::with_capacity(len)
+            s: self.clone(),
+            inner: Vec::with_capacity(len),
         })
     }
 }
 
 pub fn serialize<'a, T>(a: &'a T) -> Result<ValueRef<'a>, Error> where T: serde::Serialize {
-    a.serialize(Ser {})
+    a.serialize(Ser { owner: false })
+}
+
+pub fn serialize_owner<'a, T>(a: &'a T) -> Result<ValueRef<'a>, Error> where T: serde::Serialize {
+    a.serialize(Ser { owner: true })
 }
