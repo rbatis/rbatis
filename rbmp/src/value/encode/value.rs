@@ -44,7 +44,7 @@ pub fn write_value<W>(wr: &mut W, val: &Value) -> Result<(), Error>
             //     Ok(ref val) => write_str(wr, &val)?,
             //     Err(ref err) => write_bin(wr, &err.0)?,
             // }
-            write_bin(wr, s)?;
+            write_bin(wr, s.as_bytes())?;
         }
         Value::Binary(ref val) => {
             write_bin(wr, &val)?;

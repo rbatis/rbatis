@@ -25,7 +25,7 @@ impl Serialize for Value {
             Value::F32(v) => s.serialize_f32(v),
             Value::F64(v) => s.serialize_f64(v),
             Value::String(ref v) => {
-                Bytes::new(&v[..]).serialize(s)
+                Bytes::new(v.as_bytes()).serialize(s)
             }
             Value::Binary(ref v) => Bytes::new(&v[..]).serialize(s),
             Value::Array(ref array) => {

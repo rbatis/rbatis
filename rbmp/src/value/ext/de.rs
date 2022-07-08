@@ -93,7 +93,7 @@ impl<'de> Deserialize<'de> for Value {
 
             #[inline]
             fn visit_string<E>(self, value: String) -> Result<Value, E> {
-                Ok(Value::String(value.into_bytes()))
+                Ok(Value::String(value))
             }
 
             #[inline]
@@ -236,7 +236,7 @@ impl<'de> Deserialize<'de> for ValueRef<'de> {
             fn visit_borrowed_str<E>(self, value: &'de str) -> Result<Self::Value, E>
                 where E: de::Error
             {
-                Ok(ValueRef::String(value.as_bytes()))
+                Ok(ValueRef::String(value))
             }
 
             #[inline]
@@ -321,7 +321,7 @@ impl<'de> Deserializer<'de> for Value {
             Value::F32(v) => visitor.visit_f32(v),
             Value::F64(v) => visitor.visit_f64(v),
             Value::String(v) => {
-                visitor.visit_byte_buf(v)
+                visitor.visit_string(v)
             }
             Value::Binary(v) => visitor.visit_byte_buf(v),
             Value::Array(v) => {
@@ -415,7 +415,7 @@ impl<'de> Deserializer<'de> for ValueRef<'de> {
             ValueRef::F32(v) => visitor.visit_f32(v),
             ValueRef::F64(v) => visitor.visit_f64(v),
             ValueRef::String(v) => {
-               visitor.visit_borrowed_bytes(v)
+               visitor.visit_str(v.as_ref())
             }
             ValueRef::Binary(v) => visitor.visit_borrowed_bytes(v),
             ValueRef::Array(v) => {
@@ -509,7 +509,7 @@ impl<'de> Deserializer<'de> for &'de ValueRef<'de> {
             ValueRef::F32(v) => visitor.visit_f32(v),
             ValueRef::F64(v) => visitor.visit_f64(v),
             ValueRef::String(v) => {
-                     visitor.visit_borrowed_bytes(v)
+                     visitor.visit_str(v.as_ref())
             }
             ValueRef::Binary(v) => visitor.visit_borrowed_bytes(v),
             ValueRef::Array(ref v) => {
