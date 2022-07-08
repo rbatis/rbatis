@@ -6,7 +6,7 @@ use serde::ser::{
 use serde::Serialize;
 use serde_bytes::Bytes;
 
-use crate::value::{IntPriv, Integer, Value};
+use crate::value::{Value};
 
 use super::Error;
 use crate::MSGPACK_EXT_STRUCT_NAME;
