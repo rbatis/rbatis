@@ -320,6 +320,12 @@ impl Value {
         }
     }
 
+    /// same is nil
+    #[inline]
+    pub fn is_null(&self) -> bool {
+        self.is_nil()
+    }
+
     /// Returns true if the `Value` is a Boolean. Returns false otherwise.
     ///
     /// # Examples
@@ -1149,6 +1155,16 @@ impl<'a> ValueRef<'a> {
             Some(String::from_utf8_lossy(val))
         } else {
             None
+        }
+    }
+
+    /// same is nil
+    #[inline]
+    pub fn is_null(&self) -> bool {
+        if self.eq(&ValueRef::Nil){
+             true
+        }else{
+            false
         }
     }
 }
