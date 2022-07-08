@@ -208,8 +208,8 @@ impl From<isize> for Integer {
 pub enum Value {
     /// Nil represents nil.
     Nil,
-    /// Boolean represents true or false.
-    Boolean(bool),
+    /// Bool represents true or false.
+    Bool(bool),
     // /// Integer represents an integer.
     // ///
     // /// A value of an `Integer` object is limited from `-(2^63)` upto `(2^64)-1`.
@@ -283,7 +283,7 @@ impl Value {
     pub fn as_ref(&self) -> ValueRef<'_> {
         match *self {
             Value::Nil => ValueRef::Nil,
-            Value::Boolean(val) => ValueRef::Boolean(val),
+            Value::Bool(val) => ValueRef::Bool(val),
             Value::I32(val) => ValueRef::I32(val),
             Value::I64(val) => ValueRef::I64(val),
             Value::U32(val) => ValueRef::U32(val),
@@ -326,14 +326,14 @@ impl Value {
         self.is_nil()
     }
 
-    /// Returns true if the `Value` is a Boolean. Returns false otherwise.
+    /// Returns true if the `Value` is a Bool. Returns false otherwise.
     ///
     /// # Examples
     ///
     /// ```
     /// use rbmp::Value;
     ///
-    /// assert!(Value::Boolean(true).is_bool());
+    /// assert!(Value::Bool(true).is_bool());
     ///
     /// assert!(!Value::Nil.is_bool());
     /// ```
@@ -485,7 +485,7 @@ impl Value {
         self.as_ext().is_some()
     }
 
-    /// If the `Value` is a Boolean, returns the associated bool.
+    /// If the `Value` is a Bool, returns the associated bool.
     /// Returns None otherwise.
     ///
     /// # Examples
@@ -493,13 +493,13 @@ impl Value {
     /// ```
     /// use rbmp::Value;
     ///
-    /// assert_eq!(Some(true), Value::Boolean(true).as_bool());
+    /// assert_eq!(Some(true), Value::Bool(true).as_bool());
     ///
     /// assert_eq!(None, Value::Nil.as_bool());
     /// ```
     #[inline]
     pub fn as_bool(&self) -> Option<bool> {
-        if let Value::Boolean(val) = *self {
+        if let Value::Bool(val) = *self {
             Some(val)
         } else {
             None
@@ -583,7 +583,7 @@ impl Value {
     ///
     /// assert_eq!(Some("le message"), Value::String("le message".into()).as_str());
     ///
-    /// assert_eq!(None, Value::Boolean(true).as_str());
+    /// assert_eq!(None, Value::Bool(true).as_str());
     /// ```
     #[inline]
     pub fn as_str(&self) -> Option<Cow<'_,str>> {
@@ -604,7 +604,7 @@ impl Value {
     ///
     /// assert_eq!(Some(&[1, 2, 3, 4, 5][..]), Value::Binary(vec![1, 2, 3, 4, 5]).as_slice());
     ///
-    /// assert_eq!(None, Value::Boolean(true).as_slice());
+    /// assert_eq!(None, Value::Bool(true).as_slice());
     /// ```
     pub fn as_slice(&self) -> Option<&[u8]> {
         if let Value::Binary(ref val) = *self {
@@ -624,9 +624,9 @@ impl Value {
     /// ```
     /// use rbmp::Value;
     ///
-    /// let val = Value::Array(vec![Value::Nil, Value::Boolean(true)]);
+    /// let val = Value::Array(vec![Value::Nil, Value::Bool(true)]);
     ///
-    /// assert_eq!(Some(&vec![Value::Nil, Value::Boolean(true)]), val.as_array());
+    /// assert_eq!(Some(&vec![Value::Nil, Value::Bool(true)]), val.as_array());
     ///
     /// assert_eq!(None, Value::Nil.as_array());
     /// ```
@@ -651,9 +651,9 @@ impl Value {
     /// ```
     /// use rbmp::Value;
     ///
-    /// let val = Value::Map(vec![(Value::Nil, Value::Boolean(true))]);
+    /// let val = Value::Map(vec![(Value::Nil, Value::Bool(true))]);
     ///
-    /// assert_eq!(Some(&vec![(Value::Nil, Value::Boolean(true))]), val.as_map());
+    /// assert_eq!(Some(&vec![(Value::Nil, Value::Bool(true))]), val.as_map());
     ///
     /// assert_eq!(None, Value::Nil.as_map());
     /// ```
@@ -676,7 +676,7 @@ impl Value {
     ///
     /// assert_eq!(Some((42, &[1, 2, 3, 4, 5][..])), Value::Ext(42, vec![1, 2, 3, 4, 5]).as_ext());
     ///
-    /// assert_eq!(None, Value::Boolean(true).as_ext());
+    /// assert_eq!(None, Value::Bool(true).as_ext());
     /// ```
     #[inline]
     pub fn as_ext(&self) -> Option<(i8, &[u8])> {
@@ -723,7 +723,7 @@ impl Index<&str> for Value {
 impl From<bool> for Value {
     #[inline]
     fn from(v: bool) -> Self {
-        Value::Boolean(v)
+        Value::Bool(v)
     }
 }
 
@@ -958,7 +958,7 @@ macro_rules! impl_try_from {
   };
 }
 
-impl_try_from!(bool, Boolean);
+impl_try_from!(bool, Bool);
 impl_try_from!(Vec<Value>, Array);
 impl_try_from!(Vec<(Value, Value)>, Map);
 impl_try_from!(Vec<u8>, Binary);
@@ -970,7 +970,7 @@ impl Display for Value {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> Result<(), fmt::Error> {
         match *self {
             Value::Nil => f.write_str("nil"),
-            Value::Boolean(val) => Display::fmt(&val, f),
+            Value::Bool(val) => Display::fmt(&val, f),
             Value::I32(ref val) => Display::fmt(&val, f),
             Value::I64(ref val) => Display::fmt(&val, f),
             Value::U32(ref val) => Display::fmt(&val, f),
@@ -1018,8 +1018,8 @@ impl Display for Value {
 pub enum ValueRef<'a> {
     /// Nil represents nil.
     Nil,
-    /// Boolean represents true or false.
-    Boolean(bool),
+    /// Bool represents true or false.
+    Bool(bool),
     /// Integer represents an integer.
     ///
     /// A value of an `Integer` object is limited from `-(2^63)` upto `(2^64)-1`.
@@ -1079,7 +1079,7 @@ impl<'a> ValueRef<'a> {
     pub fn to_owned(&self) -> Value {
         match *self {
             ValueRef::Nil => Value::Nil,
-            ValueRef::Boolean(val) => Value::Boolean(val),
+            ValueRef::Bool(val) => Value::Bool(val),
             ValueRef::I32(val) => Value::I32(val),
             ValueRef::I64(val) => Value::I64(val),
             ValueRef::U32(val) => Value::U32(val),
@@ -1127,9 +1127,9 @@ impl<'a> ValueRef<'a> {
     /// ```
     /// use rbmp::ValueRef;
     ///
-    /// let val = ValueRef::Array(vec![ValueRef::Nil, ValueRef::Boolean(true)]);
+    /// let val = ValueRef::Array(vec![ValueRef::Nil, ValueRef::Bool(true)]);
     ///
-    /// assert_eq!(Some(&vec![ValueRef::Nil, ValueRef::Boolean(true)]), val.as_array());
+    /// assert_eq!(Some(&vec![ValueRef::Nil, ValueRef::Bool(true)]), val.as_array());
     /// assert_eq!(None, ValueRef::Nil.as_array());
     /// ```
     pub fn as_array(&self) -> Option<&Vec<ValueRef<'_>>> {
@@ -1334,7 +1334,7 @@ macro_rules! impl_try_from_ref {
   };
 }
 
-impl_try_from_ref!(bool, Boolean);
+impl_try_from_ref!(bool, Bool);
 impl_try_from_ref!(Vec<ValueRef<'a>>, Array);
 impl_try_from_ref!(Vec<(ValueRef<'a>, ValueRef<'a>)>, Map);
 impl_try_from_ref!(&'a [u8], Binary);
@@ -1345,7 +1345,7 @@ impl<'a> Display for ValueRef<'a> {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> Result<(), fmt::Error> {
         match *self {
             ValueRef::Nil => write!(f, "nil"),
-            ValueRef::Boolean(val) => Display::fmt(&val, f),
+            ValueRef::Bool(val) => Display::fmt(&val, f),
             ValueRef::I32(ref val) => Display::fmt(&val, f),
             ValueRef::I64(ref val) => Display::fmt(&val, f),
             ValueRef::U32(ref val) => Display::fmt(&val, f),

@@ -139,8 +139,8 @@ fn read_value_ref_inner<'a, R>(rd: &mut R, depth: usize) -> Result<ValueRef<'a>,
     // 1 byte from the `rd`.
     let val = match read_marker(rd)? {
         Marker::Null => ValueRef::Nil,
-        Marker::True => ValueRef::Boolean(true),
-        Marker::False => ValueRef::Boolean(false),
+        Marker::True => ValueRef::Bool(true),
+        Marker::False => ValueRef::Bool(false),
         Marker::FixPos(val) => ValueRef::from(val),
         Marker::FixNeg(val) => ValueRef::from(val),
         Marker::U8 => ValueRef::from(read_data_u8(rd)?),

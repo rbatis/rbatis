@@ -87,8 +87,8 @@ fn read_value_inner<R>(rd: &mut R, depth: usize) -> Result<Value, Error> where R
     let depth = super::decrement_depth(depth)?;
     let val = match read_marker(rd)? {
         Marker::Null => Value::Nil,
-        Marker::True => Value::Boolean(true),
-        Marker::False => Value::Boolean(false),
+        Marker::True => Value::Bool(true),
+        Marker::False => Value::Bool(false),
         Marker::FixPos(val) => Value::from(val),
         Marker::FixNeg(val) => Value::from(val),
         Marker::U8 => Value::from(read_data_u8(rd)?),

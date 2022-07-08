@@ -18,7 +18,7 @@ pub fn write_value<W>(wr: &mut W, val: &Value) -> Result<(), Error>
         Value::Nil => {
             write_nil(wr).map_err(Error::InvalidMarkerWrite)?;
         }
-        Value::Boolean(val) => {
+        Value::Bool(val) => {
             write_bool(wr, val).map_err(Error::InvalidMarkerWrite)?;
         }
         Value::I32(n) =>{

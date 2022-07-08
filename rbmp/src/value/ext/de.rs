@@ -68,7 +68,7 @@ impl<'de> Deserialize<'de> for Value {
 
             #[inline]
             fn visit_bool<E>(self, value: bool) -> Result<Value, E> {
-                Ok(Value::Boolean(value))
+                Ok(Value::Bool(value))
             }
 
             #[inline]
@@ -209,7 +209,7 @@ impl<'de> Deserialize<'de> for ValueRef<'de> {
 
             #[inline]
             fn visit_bool<E>(self, value: bool) -> Result<Self::Value, E> {
-                Ok(ValueRef::Boolean(value))
+                Ok(ValueRef::Bool(value))
             }
 
             #[inline]
@@ -313,7 +313,7 @@ impl<'de> Deserializer<'de> for Value {
     {
         match self {
             Value::Nil => visitor.visit_unit(),
-            Value::Boolean(v) => visitor.visit_bool(v),
+            Value::Bool(v) => visitor.visit_bool(v),
             Value::I32(v) => visitor.visit_i32(v),
             Value::I64(v) => visitor.visit_i64(v),
             Value::U32(v) => visitor.visit_u32(v),
@@ -407,7 +407,7 @@ impl<'de> Deserializer<'de> for ValueRef<'de> {
     {
         match self {
             ValueRef::Nil => visitor.visit_unit(),
-            ValueRef::Boolean(v) => visitor.visit_bool(v),
+            ValueRef::Bool(v) => visitor.visit_bool(v),
             ValueRef::I32(v) => visitor.visit_i32(v),
             ValueRef::I64(v) => visitor.visit_i64(v),
             ValueRef::U32(v) => visitor.visit_u32(v),
@@ -501,7 +501,7 @@ impl<'de> Deserializer<'de> for &'de ValueRef<'de> {
     {
         match *self {
             ValueRef::Nil => visitor.visit_unit(),
-            ValueRef::Boolean(v) => visitor.visit_bool(v),
+            ValueRef::Bool(v) => visitor.visit_bool(v),
             ValueRef::I32(v) => visitor.visit_i32(v),
             ValueRef::I64(v) => visitor.visit_i64(v),
             ValueRef::U32(v) => visitor.visit_u32(v),
