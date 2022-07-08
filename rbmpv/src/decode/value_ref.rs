@@ -9,7 +9,7 @@ use rmp::decode::{
 use rmp::Marker;
 
 use super::Error;
-use crate::{Utf8StringRef, ValueRef};
+use crate::{ValueRef};
 
 fn read_str_data<'a, R>(rd: &mut R, len: usize, depth: usize) -> Result<&'a [u8], Error>
     where R: BorrowRead<'a>
