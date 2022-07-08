@@ -4,8 +4,6 @@ use std::fmt::{Display, Formatter};
 pub mod encode;
 pub mod decode;
 pub mod db;
-pub mod ser;
-pub use ser::serialize;
 
 #[derive(Debug)]
 pub enum Error {
@@ -35,7 +33,6 @@ mod test {
     use std::borrow::Cow;
     use std::collections::HashMap;
     use std::time::Duration;
-    use crate::ser::{Ser, serialize};
 
     #[test]
     fn test_ser_ref() {
@@ -46,12 +43,12 @@ mod test {
         let a = A {
             name: "sss".to_string(),
         };
-        let v = serialize(&a).unwrap();
+        let v = rbmp::serialize_ref(&a).unwrap();
         println!("{:?}", v);
 
         let mut m=HashMap::new();
         m.insert(1,2);
-        let v = serialize(&m).unwrap();
+        let v = rbmp::serialize_ref(&m).unwrap();
         println!("{:?}", v);
     }
 
