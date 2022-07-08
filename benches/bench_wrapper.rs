@@ -39,8 +39,8 @@ fn bench_ser_json(b: &mut Bencher) {
     pub struct A {
         pub name: String,
     }
-    let mut buf =String::with_capacity(1000000);
-    for _ in 0..1000000{
+    let mut buf = String::with_capacity(1000000);
+    for _ in 0..1000000 {
         buf.push_str("a");
     }
     let a = A {
@@ -57,8 +57,8 @@ fn bench_ser(b: &mut Bencher) {
     pub struct A {
         pub name: String,
     }
-    let mut buf =String::with_capacity(1000000);
-    for _ in 0..1000000{
+    let mut buf = String::with_capacity(1000000);
+    for _ in 0..1000000 {
         buf.push_str("a");
     }
     let a = A {
@@ -75,8 +75,8 @@ fn bench_ser_zero(b: &mut Bencher) {
     pub struct A {
         pub name: String,
     }
-    let mut buf =String::with_capacity(1000000);
-    for _ in 0..1000000{
+    let mut buf = String::with_capacity(1000000);
+    for _ in 0..1000000 {
         buf.push_str("a");
     }
     let a = A {

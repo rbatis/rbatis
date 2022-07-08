@@ -32,6 +32,7 @@ impl serde::ser::Error for Error {
 
 #[cfg(test)]
 mod test {
+    use std::borrow::Cow;
     use std::collections::HashMap;
     use std::time::Duration;
     use crate::ser::{Ser, serialize};
