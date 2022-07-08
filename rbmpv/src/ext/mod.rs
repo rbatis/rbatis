@@ -37,19 +37,14 @@ impl ValueExt for Value {
         match *self {
             Value::Nil => Unexpected::Unit,
             Value::Boolean(v) => Unexpected::Bool(v),
-            Value::Integer(Integer { n }) => {
-                match n {
-                    IntPriv::PosInt(v) => Unexpected::Unsigned(v),
-                    IntPriv::NegInt(v) => Unexpected::Signed(v),
-                }
-            }
+            Value::I32(v) => Unexpected::Signed(v as i64),
+            Value::I64(v) => Unexpected::Signed(v),
+            Value::U32(v) => Unexpected::Unsigned(v as u64),
+            Value::U64(v) => Unexpected::Unsigned(v as u64),
             Value::F32(v) => Unexpected::Float(v as f64),
             Value::F64(v) => Unexpected::Float(v),
             Value::String(ref v) => {
-                match v.s {
-                    Ok(ref v) => Unexpected::Str(v),
-                    Err(ref v) => Unexpected::Bytes(&v.0[..]),
-                }
+                Unexpected::Bytes(&v[..])
             }
             Value::Binary(ref v) => Unexpected::Bytes(v),
             Value::Array(..) => Unexpected::Seq,
@@ -65,19 +60,14 @@ impl<'a> ValueExt for ValueRef<'a> {
         match *self {
             ValueRef::Nil => Unexpected::Unit,
             ValueRef::Boolean(v) => Unexpected::Bool(v),
-            ValueRef::Integer(Integer { n }) => {
-                match n {
-                    IntPriv::PosInt(v) => Unexpected::Unsigned(v),
-                    IntPriv::NegInt(v) => Unexpected::Signed(v),
-                }
-            }
+            ValueRef::I32(v) => Unexpected::Signed(v as i64),
+            ValueRef::I64(v) => Unexpected::Signed(v),
+            ValueRef::U32(v) => Unexpected::Unsigned(v as u64),
+            ValueRef::U64(v) => Unexpected::Unsigned(v),
             ValueRef::F32(v) => Unexpected::Float(v as f64),
             ValueRef::F64(v) => Unexpected::Float(v),
             ValueRef::String(ref v) => {
-                match v.s {
-                    Ok(ref v) => Unexpected::Str(v),
-                    Err(ref v) => Unexpected::Bytes(&v.0[..]),
-                }
+                Unexpected::Bytes(&v[..])
             }
             ValueRef::Binary(ref v) => Unexpected::Bytes(v),
             ValueRef::Array(..) => Unexpected::Seq,

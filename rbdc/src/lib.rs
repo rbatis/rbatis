@@ -30,5 +30,8 @@ mod test {
 
         let v: A = rbmp_serde::decode::from_slice(&buf).unwrap();
         println!("{:?}", v);
+
+        let v: rbmpv::Value = rbmp_serde::decode::from_slice(&buf).unwrap();
+        println!("{}", v);
     }
 }

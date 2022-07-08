@@ -7,7 +7,7 @@ use std::vec::IntoIter;
 use serde::de::{self, DeserializeSeed, IntoDeserializer, SeqAccess, Unexpected, Visitor};
 use serde::{self, Deserialize, Deserializer};
 
-use crate::{IntPriv, Integer, Utf8String, Utf8StringRef, Value, ValueRef};
+use crate::{IntPriv, Integer, Value, ValueRef};
 
 use super::{Error, ValueExt};
 use crate::MSGPACK_EXT_STRUCT_NAME;
@@ -93,7 +93,7 @@ impl<'de> Deserialize<'de> for Value {
 
             #[inline]
             fn visit_string<E>(self, value: String) -> Result<Value, E> {
-                Ok(Value::String(Utf8String::from(value)))
+                Ok(Value::String(value.into_bytes()))
             }
 
             #[inline]
@@ -236,7 +236,7 @@ impl<'de> Deserialize<'de> for ValueRef<'de> {
             fn visit_borrowed_str<E>(self, value: &'de str) -> Result<Self::Value, E>
                 where E: de::Error
             {
-                Ok(ValueRef::String(Utf8StringRef::from(value)))
+                Ok(ValueRef::String(value.as_bytes()))
             }
 
             #[inline]
@@ -314,19 +314,14 @@ impl<'de> Deserializer<'de> for Value {
         match self {
             Value::Nil => visitor.visit_unit(),
             Value::Boolean(v) => visitor.visit_bool(v),
-            Value::Integer(Integer { n }) => {
-                match n {
-                    IntPriv::PosInt(v) => visitor.visit_u64(v),
-                    IntPriv::NegInt(v) => visitor.visit_i64(v)
-                }
-            }
+            Value::I32(v) => visitor.visit_i32(v),
+            Value::I64(v) => visitor.visit_i64(v),
+            Value::U32(v) => visitor.visit_u32(v),
+            Value::U64(v) => visitor.visit_u64(v),
             Value::F32(v) => visitor.visit_f32(v),
             Value::F64(v) => visitor.visit_f64(v),
             Value::String(v) => {
-                match v.s {
-                    Ok(v) => visitor.visit_string(v),
-                    Err(v) => visitor.visit_byte_buf(v.0),
-                }
+                visitor.visit_byte_buf(v)
             }
             Value::Binary(v) => visitor.visit_byte_buf(v),
             Value::Array(v) => {
@@ -413,19 +408,14 @@ impl<'de> Deserializer<'de> for ValueRef<'de> {
         match self {
             ValueRef::Nil => visitor.visit_unit(),
             ValueRef::Boolean(v) => visitor.visit_bool(v),
-            ValueRef::Integer(Integer { n }) => {
-                match n {
-                    IntPriv::PosInt(v) => visitor.visit_u64(v),
-                    IntPriv::NegInt(v) => visitor.visit_i64(v)
-                }
-            }
+            ValueRef::I32(v) => visitor.visit_i32(v),
+            ValueRef::I64(v) => visitor.visit_i64(v),
+            ValueRef::U32(v) => visitor.visit_u32(v),
+            ValueRef::U64(v) => visitor.visit_u64(v),
             ValueRef::F32(v) => visitor.visit_f32(v),
             ValueRef::F64(v) => visitor.visit_f64(v),
             ValueRef::String(v) => {
-                match v.s {
-                    Ok(v) => visitor.visit_borrowed_str(v),
-                    Err(v) => visitor.visit_borrowed_bytes(v.0),
-                }
+               visitor.visit_borrowed_bytes(v)
             }
             ValueRef::Binary(v) => visitor.visit_borrowed_bytes(v),
             ValueRef::Array(v) => {
@@ -512,19 +502,14 @@ impl<'de> Deserializer<'de> for &'de ValueRef<'de> {
         match *self {
             ValueRef::Nil => visitor.visit_unit(),
             ValueRef::Boolean(v) => visitor.visit_bool(v),
-            ValueRef::Integer(Integer { n }) => {
-                match n {
-                    IntPriv::PosInt(v) => visitor.visit_u64(v),
-                    IntPriv::NegInt(v) => visitor.visit_i64(v)
-                }
-            }
+            ValueRef::I32(v) => visitor.visit_i32(v),
+            ValueRef::I64(v) => visitor.visit_i64(v),
+            ValueRef::U32(v) => visitor.visit_u32(v),
+            ValueRef::U64(v) => visitor.visit_u64(v),
             ValueRef::F32(v) => visitor.visit_f32(v),
             ValueRef::F64(v) => visitor.visit_f64(v),
             ValueRef::String(v) => {
-                match v.s {
-                    Ok(v) => visitor.visit_borrowed_str(v),
-                    Err(v) => visitor.visit_borrowed_bytes(v.0),
-                }
+                     visitor.visit_borrowed_bytes(v)
             }
             ValueRef::Binary(v) => visitor.visit_borrowed_bytes(v),
             ValueRef::Array(ref v) => {
