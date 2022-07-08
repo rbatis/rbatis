@@ -225,9 +225,10 @@ pub enum Value {
     // ///
     // /// assert_eq!(42, Value::from(42).as_i64().unwrap());
     // /// ```
-    // Integer(Integer),
+    /// Integer(Integer),
+    I32(i32),
     I64(i64),
-    // Integer(Integer),
+    U32(u32),
     U64(u64),
 
     /// A 32-bit floating point number.
@@ -287,7 +288,9 @@ impl Value {
         match *self {
             Value::Nil => ValueRef::Nil,
             Value::Boolean(val) => ValueRef::Boolean(val),
+            Value::I32(val) => ValueRef::I32(val),
             Value::I64(val) => ValueRef::I64(val),
+            Value::U32(val) => ValueRef::U32(val),
             Value::U64(val) => ValueRef::U64(val),
             Value::F32(val) => ValueRef::F32(val),
             Value::F64(val) => ValueRef::F64(val),
@@ -966,7 +969,9 @@ impl Display for Value {
         match *self {
             Value::Nil => f.write_str("nil"),
             Value::Boolean(val) => Display::fmt(&val, f),
+            Value::I32(ref val) => Display::fmt(&val, f),
             Value::I64(ref val) => Display::fmt(&val, f),
+            Value::U32(ref val) => Display::fmt(&val, f),
             Value::U64(ref val) => Display::fmt(&val, f),
             Value::F32(val) => Display::fmt(&val, f),
             Value::F64(val) => Display::fmt(&val, f),
@@ -1017,7 +1022,9 @@ pub enum ValueRef<'a> {
     ///
     /// A value of an `Integer` object is limited from `-(2^63)` upto `(2^64)-1`.
     // Integer(Integer),
+    I32(i32),
     I64(i64),
+    U32(u32),
     U64(u64),
     /// A 32-bit floating point number.
     F32(f32),
@@ -1071,7 +1078,9 @@ impl<'a> ValueRef<'a> {
         match *self {
             ValueRef::Nil => Value::Nil,
             ValueRef::Boolean(val) => Value::Boolean(val),
+            ValueRef::I32(val) => Value::I32(val),
             ValueRef::I64(val) => Value::I64(val),
+            ValueRef::U32(val) => Value::U32(val),
             ValueRef::U64(val) => Value::U64(val),
             ValueRef::F32(val) => Value::F32(val),
             ValueRef::F64(val) => Value::F64(val),
@@ -1325,7 +1334,9 @@ impl<'a> Display for ValueRef<'a> {
         match *self {
             ValueRef::Nil => write!(f, "nil"),
             ValueRef::Boolean(val) => Display::fmt(&val, f),
+            ValueRef::I32(ref val) => Display::fmt(&val, f),
             ValueRef::I64(ref val) => Display::fmt(&val, f),
+            ValueRef::U32(ref val) => Display::fmt(&val, f),
             ValueRef::U64(ref val) => Display::fmt(&val, f),
             ValueRef::F32(ref val) => Display::fmt(&val, f),
             ValueRef::F64(ref val) => Display::fmt(&val, f),
