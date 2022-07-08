@@ -70,6 +70,7 @@ rand = "0.8"
 
 
 rbmp = {path="rbmp"}
+rbdc = {path="rbdc"}
 
 [dev-dependencies]
 serde_json = "1"
