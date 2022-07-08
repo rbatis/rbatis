@@ -58,7 +58,7 @@ pub fn write_value_ref<W>(wr: &mut W, val: &ValueRef<'_>) -> Result<(), Error>
             //     Ok(val) => write_str(wr, &val)?,
             //     Err(err) => write_bin(wr, &err.0)?,
             // }
-            write_bin(wr,s.as_bytes())?;
+            write_bin(wr, s.as_bytes())?;
         }
         ValueRef::Binary(val) => {
             write_bin(wr, val)?;
@@ -84,8 +84,6 @@ pub fn write_value_ref<W>(wr: &mut W, val: &ValueRef<'_>) -> Result<(), Error>
 
     Ok(())
 }
-
-
 
 
 use serde::{Serialize, Serializer};
@@ -412,4 +410,11 @@ impl Serializer for SerRef {
 /// serialize an value ref
 pub fn serialize_ref<T>(a: &T) -> Result<ValueRef, SerError> where T: serde::Serialize {
     a.serialize(SerRef { owner: false })
+}
+
+impl<'a> ValueRef<'a> {
+    pub fn serialize<T: Serialize>(&mut self, arg: &'a T) -> Result<(), SerError> {
+        *self = serialize_ref(arg)?;
+        Ok(())
+    }
 }
