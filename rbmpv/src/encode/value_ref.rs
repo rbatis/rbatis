@@ -36,15 +36,11 @@ pub fn write_value_ref<W>(wr: &mut W, val: &ValueRef<'_>) -> Result<(), Error>
         ValueRef::Boolean(val) => {
             write_bool(wr, val).map_err(Error::InvalidMarkerWrite)?;
         }
-        ValueRef::Integer(Integer { n }) => {
-            match n {
-                IntPriv::PosInt(n) => {
-                    write_uint(wr, n)?;
-                }
-                IntPriv::NegInt(n) => {
-                    write_sint(wr, n)?;
-                }
-            }
+        ValueRef::I64(val) => {
+            write_sint(wr, val)?;
+        }
+        ValueRef::U64(val) => {
+            write_uint(wr, val)?;
         }
         ValueRef::F32(val) => {
             write_f32(wr, val)?;
