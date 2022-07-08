@@ -155,26 +155,26 @@ fn read_value_ref_inner<'a, R>(rd: &mut R, depth: usize) -> Result<ValueRef<'a>,
         Marker::F64 => ValueRef::F64(read_data_f64(rd)?),
         Marker::FixStr(len) => {
             let res = read_str_data(rd, len as usize, depth)?;
-            let s = String::from_utf8_lossy(unsafe{&*(res as *const [u8])});
-            ValueRef::String(unsafe{ (&*(& *s.as_ref() as *const str)) })
+            let s = String::from_utf8_lossy(res);
+            ValueRef::String(unsafe{ &*(& *s.as_ref() as *const str) })
         }
         Marker::Str8 => {
             let len = read_data_u8(rd)?;
             let res = read_str_data(rd, len as usize, depth)?;
-            let s = String::from_utf8_lossy(unsafe{&*(res as *const [u8])});
-            ValueRef::String(unsafe{ (&*(& *s.as_ref() as *const str)) })
+            let s = String::from_utf8_lossy(res);
+            ValueRef::String(unsafe{ &*(& *s.as_ref() as *const str) })
         }
         Marker::Str16 => {
             let len = read_data_u16(rd)?;
             let res = read_str_data(rd, len as usize, depth)?;
-            let s = String::from_utf8_lossy(unsafe{&*(res as *const [u8])});
-            ValueRef::String(unsafe{ (&*(& *s.as_ref() as *const str)) })
+            let s = String::from_utf8_lossy(res);
+            ValueRef::String(unsafe{ &*(& *s.as_ref() as *const str) })
         }
         Marker::Str32 => {
             let len = read_data_u32(rd)?;
             let res = read_str_data(rd, len as usize, depth)?;
-            let s = String::from_utf8_lossy(unsafe{&*(res as *const [u8])});
-            ValueRef::String(unsafe{ (&*(& *s.as_ref() as *const str)) })
+            let s = String::from_utf8_lossy(res);
+            ValueRef::String(unsafe{ &*(& *s.as_ref() as *const str) })
         }
         Marker::Bin8 => {
             let len = read_data_u8(rd)?;
