@@ -43,6 +43,6 @@ fn bench_ser(b: &mut Bencher){
         name: "s".to_string()
     };
     b.iter(||{
-        let buf = rbmp_serde::to_vec(&a).unwrap();
+        let buf = rbmp::to_vec(&a).unwrap();
     });
 }
