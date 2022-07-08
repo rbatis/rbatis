@@ -5,8 +5,8 @@ use crate::Error;
 
 #[derive(Clone, Debug, PartialEq)]
 pub enum ValueRef<'a> {
-    /// Nil represents nil.
-    Nil,
+    /// Null
+    Null,
     /// Boolean represents true or false.
     Boolean(bool),
     /// Integer represents an integer.
@@ -223,7 +223,7 @@ impl Serializer for Ser {
     }
 
     fn serialize_none(self) -> Result<Self::Ok, Self::Error> {
-        Ok(ValueRef::Nil)
+        Ok(ValueRef::Null)
     }
 
     fn serialize_some<T: ?Sized>(self, value: &T) -> Result<Self::Ok, Self::Error> where T: Serialize {
