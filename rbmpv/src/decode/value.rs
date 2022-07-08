@@ -8,7 +8,7 @@ use rmp::decode::{
 use rmp::Marker;
 
 use super::Error;
-use crate::{Utf8String, Value};
+use crate::{Value};
 
 // See https://github.com/3Hren/msgpack-rust/issues/151
 const PREALLOC_MAX: usize = 64 * 1024; // 64 KiB
