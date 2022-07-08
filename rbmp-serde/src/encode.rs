@@ -473,6 +473,46 @@ impl<'a, W: Write + 'a, C: SerializerConfig> SerializeMap for MaybeUnknownLength
     }
 }
 
+impl<'a, W: Write + 'a, C: SerializerConfig> SerializeStruct for MaybeUnknownLengthCompound<'a,W, C> {
+    type Ok = ();
+    type Error = Error;
+
+    fn serialize_field<T: ?Sized>(&mut self, key: &'static str, value: &T) -> Result<(), Self::Error> where T: Serialize {
+        <Self as SerializeSeq>::serialize_element(self, key)?;
+        <Self as SerializeSeq>::serialize_element(self, value)?;
+        Ok(())
+    }
+
+    fn end(self) -> Result<Self::Ok, Self::Error> {
+        if let Some(compound) = self.compound {
+            encode::write_map_len(&mut self.se.wr, compound.elem_count / 2)?;
+            self.se.wr.write_all(&compound.se.into_inner())
+                .map_err(ValueWriteError::InvalidDataWrite)?;
+        }
+        Ok(())
+    }
+}
+
+impl<'a, W: Write + 'a, C: SerializerConfig> SerializeStructVariant for MaybeUnknownLengthCompound<'a,W, C>{
+    type Ok = ();
+    type Error = Error;
+
+    fn serialize_field<T: ?Sized>(&mut self, key: &'static str, value: &T) -> Result<(), Self::Error> where T: Serialize {
+        <Self as SerializeSeq>::serialize_element(self, key)?;
+        <Self as SerializeSeq>::serialize_element(self, value)?;
+        Ok(())
+    }
+
+    fn end(self) -> Result<Self::Ok, Self::Error> {
+        if let Some(compound) = self.compound {
+            encode::write_map_len(&mut self.se.wr, compound.elem_count / 2)?;
+            self.se.wr.write_all(&compound.se.into_inner())
+                .map_err(ValueWriteError::InvalidDataWrite)?;
+        }
+        Ok(())
+    }
+}
+
 impl<'a, W, C> serde::Serializer for &'a mut Serializer<W, C>
 where
     W: Write,
@@ -486,8 +526,10 @@ where
     type SerializeTupleStruct = Compound<'a, W, C>;
     type SerializeTupleVariant = Compound<'a, W, C>;
     type SerializeMap = MaybeUnknownLengthCompound<'a, W, C>;
-    type SerializeStruct = Compound<'a, W, C>;
-    type SerializeStructVariant = Compound<'a, W, C>;
+    // type SerializeStruct = Compound<'a, W, C>;
+    type SerializeStruct = MaybeUnknownLengthCompound<'a, W, C>;
+    // type SerializeStructVariant = Compound<'a, W, C>;
+    type SerializeStructVariant = MaybeUnknownLengthCompound<'a, W, C>;
 
     fn is_human_readable(&self) -> bool {
         C::is_human_readable()
@@ -646,17 +688,20 @@ where
     fn serialize_struct(self, _name: &'static str, len: usize) ->
         Result<Self::SerializeStruct, Self::Error>
     {
-        C::write_struct_len(self, len)?;
-        self.compound()
+        // C::write_struct_len(self, len)?;
+        // self.compound()
+        self.maybe_unknown_len_compound(Some(len), |wr, len| encode::write_map_len(wr, len))
     }
 
     fn serialize_struct_variant(self, name: &'static str, id: u32, variant: &'static str, len: usize) ->
         Result<Self::SerializeStructVariant, Error>
     {
-        // encode as a map from variant idx to a sequence of its attributed data, like: {idx => [v1,...,vN]}
-        encode::write_map_len(&mut self.wr, 1)?;
-        C::write_variant_ident(self, id, variant)?;
-        self.serialize_struct(name, len)
+        // // encode as a map from variant idx to a sequence of its attributed data, like: {idx => [v1,...,vN]}
+        // encode::write_map_len(&mut self.wr, 1)?;
+        // C::write_variant_ident(self, id, variant)?;
+        // self.serialize_struct(name, len)
+
+        self.maybe_unknown_len_compound(Some(len), |wr, len| encode::write_map_len(wr, len))
     }
 }
 
