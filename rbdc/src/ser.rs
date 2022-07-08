@@ -33,6 +33,7 @@ pub enum Value<'a> {
 
 #[derive(Clone)]
 pub struct Ser {
+    //Controls whether Cow owns data
     owner: bool,
 }
 
