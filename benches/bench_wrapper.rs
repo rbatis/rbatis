@@ -6,9 +6,9 @@ use rbatis_core::db::DriverType;
 use test::Bencher;
 
 #[bench]
-fn bench_wrapper(b: &mut Bencher){
-    b.iter(||{
-         Wrapper::new(&DriverType::Postgres)
+fn bench_wrapper(b: &mut Bencher) {
+    b.iter(|| {
+        Wrapper::new(&DriverType::Postgres)
             .having("id").and()
             .eq("id", 1).and()
             .ne("id", 1).and()
@@ -34,15 +34,55 @@ fn bench_wrapper(b: &mut Bencher){
 }
 
 #[bench]
-fn bench_ser(b: &mut Bencher){
+fn bench_ser_json(b: &mut Bencher) {
     #[derive(serde::Serialize, serde::Deserialize, Debug)]
     pub struct A {
         pub name: String,
     }
-    let a=A {
-        name: "s".to_string()
+    let mut buf =String::with_capacity(1000000);
+    for _ in 0..1000000{
+        buf.push_str("a");
+    }
+    let a = A {
+        name: buf
     };
-    b.iter(||{
+    b.iter(|| {
+        let buf = serde_json::to_vec(&a).unwrap();
+    });
+}
+
+#[bench]
+fn bench_ser(b: &mut Bencher) {
+    #[derive(serde::Serialize, serde::Deserialize, Debug)]
+    pub struct A {
+        pub name: String,
+    }
+    let mut buf =String::with_capacity(1000000);
+    for _ in 0..1000000{
+        buf.push_str("a");
+    }
+    let a = A {
+        name: buf
+    };
+    b.iter(|| {
         let buf = rbmp::to_vec(&a).unwrap();
+    });
+}
+
+#[bench]
+fn bench_ser_zero(b: &mut Bencher) {
+    #[derive(serde::Serialize, serde::Deserialize, Debug)]
+    pub struct A {
+        pub name: String,
+    }
+    let mut buf =String::with_capacity(1000000);
+    for _ in 0..1000000{
+        buf.push_str("a");
+    }
+    let a = A {
+        name: buf
+    };
+    b.iter(|| {
+        let buf = rbdc::serialize(&a).unwrap();
     });
 }
