@@ -18,19 +18,14 @@ impl Serialize for Value {
         match *self {
             Value::Nil => s.serialize_unit(),
             Value::Boolean(v) => s.serialize_bool(v),
-            Value::Integer(Integer { n }) => {
-                match n {
-                    IntPriv::PosInt(n) => s.serialize_u64(n),
-                    IntPriv::NegInt(n) => s.serialize_i64(n),
-                }
-            }
+            Value::I32(v) => s.serialize_i32(v),
+            Value::I64(v) => s.serialize_i64(v),
+            Value::U32(v) => s.serialize_u32(v),
+            Value::U64(v) => s.serialize_u64(v),
             Value::F32(v) => s.serialize_f32(v),
             Value::F64(v) => s.serialize_f64(v),
             Value::String(ref v) => {
-                match v.s {
-                    Ok(ref v) => s.serialize_str(v),
-                    Err(ref v) => Bytes::new(&v.0[..]).serialize(s),
-                }
+                Bytes::new(&v[..]).serialize(s)
             }
             Value::Binary(ref v) => Bytes::new(&v[..]).serialize(s),
             Value::Array(ref array) => {
