@@ -64,14 +64,14 @@ impl ser::Error for Error {
 
 struct Serializer;
 
-/// Convert a `T` into `rmpv::Value` which is an enum that can represent any valid MessagePack data.
+/// Convert a `T` into `rbmpv::Value` which is an enum that can represent any valid MessagePack data.
 ///
 /// This conversion can fail if `T`'s implementation of `Serialize` decides to fail.
 ///
 /// ```rust
-/// # use rmpv::Value;
+/// # use rbmpv::Value;
 ///
-/// let val = rmpv::ext::to_value("John Smith").unwrap();
+/// let val = rbmpv::ext::to_value("John Smith").unwrap();
 ///
 /// assert_eq!(Value::String("John Smith".into()), val);
 /// ```

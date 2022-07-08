@@ -221,7 +221,7 @@ pub enum Value {
     // /// # Examples
     // ///
     // /// ```
-    // /// use rmpv::Value;
+    // /// use rbmpv::Value;
     // ///
     // /// assert_eq!(42, Value::from(42).as_i64().unwrap());
     // /// ```
@@ -263,7 +263,7 @@ impl Value {
     ///
     /// # Examples
     /// ```
-    /// use rmpv::{Value, ValueRef};
+    /// use rbmpv::{Value, ValueRef};
     ///
     /// let val = Value::Array(vec![
     ///     Value::Nil,
@@ -308,7 +308,7 @@ impl Value {
     /// # Examples
     ///
     /// ```
-    /// use rmpv::Value;
+    /// use rbmpv::Value;
     ///
     /// assert!(Value::Nil.is_nil());
     /// ```
@@ -326,7 +326,7 @@ impl Value {
     /// # Examples
     ///
     /// ```
-    /// use rmpv::Value;
+    /// use rbmpv::Value;
     ///
     /// assert!(Value::Boolean(true).is_bool());
     ///
@@ -342,7 +342,7 @@ impl Value {
     /// # Examples
     ///
     /// ```
-    /// use rmpv::Value;
+    /// use rbmpv::Value;
     ///
     /// assert!(Value::from(42).is_i64());
     ///
@@ -362,7 +362,7 @@ impl Value {
     /// # Examples
     ///
     /// ```
-    /// use rmpv::Value;
+    /// use rbmpv::Value;
     ///
     /// assert!(Value::from(42).is_u64());
     ///
@@ -383,7 +383,7 @@ impl Value {
     /// # Examples
     ///
     /// ```
-    /// use rmpv::Value;
+    /// use rbmpv::Value;
     ///
     /// assert!(Value::F32(42.0).is_f32());
     ///
@@ -404,7 +404,7 @@ impl Value {
     /// # Examples
     ///
     /// ```
-    /// use rmpv::Value;
+    /// use rbmpv::Value;
     ///
     /// assert!(Value::F64(42.0).is_f64());
     ///
@@ -425,7 +425,7 @@ impl Value {
     /// # Examples
     ///
     /// ```
-    /// use rmpv::Value;
+    /// use rbmpv::Value;
     ///
     /// assert!(Value::from(42).is_number());
     /// assert!(Value::F32(42.0).is_number());
@@ -445,7 +445,7 @@ impl Value {
     /// # Examples
     ///
     /// ```
-    /// use rmpv::Value;
+    /// use rbmpv::Value;
     ///
     /// assert!(Value::String("value".into()).is_str());
     ///
@@ -486,7 +486,7 @@ impl Value {
     /// # Examples
     ///
     /// ```
-    /// use rmpv::Value;
+    /// use rbmpv::Value;
     ///
     /// assert_eq!(Some(true), Value::Boolean(true).as_bool());
     ///
@@ -507,7 +507,7 @@ impl Value {
     /// # Examples
     ///
     /// ```
-    /// use rmpv::Value;
+    /// use rbmpv::Value;
     ///
     /// assert_eq!(Some(42i64), Value::from(42).as_i64());
     ///
@@ -527,7 +527,7 @@ impl Value {
     /// # Examples
     ///
     /// ```
-    /// use rmpv::Value;
+    /// use rbmpv::Value;
     ///
     /// assert_eq!(Some(42u64), Value::from(42).as_u64());
     ///
@@ -548,7 +548,7 @@ impl Value {
     /// # Examples
     ///
     /// ```
-    /// use rmpv::Value;
+    /// use rbmpv::Value;
     ///
     /// assert_eq!(Some(42.0), Value::from(42).as_f64());
     /// assert_eq!(Some(42.0), Value::F32(42.0f32).as_f64());
@@ -574,7 +574,7 @@ impl Value {
     /// # Examples
     ///
     /// ```
-    /// use rmpv::Value;
+    /// use rbmpv::Value;
     ///
     /// assert_eq!(Some("le message"), Value::String("le message".into()).as_str());
     ///
@@ -595,7 +595,7 @@ impl Value {
     /// # Examples
     ///
     /// ```
-    /// use rmpv::Value;
+    /// use rbmpv::Value;
     ///
     /// assert_eq!(Some(&[1, 2, 3, 4, 5][..]), Value::Binary(vec![1, 2, 3, 4, 5]).as_slice());
     ///
@@ -617,7 +617,7 @@ impl Value {
     /// # Examples
     ///
     /// ```
-    /// use rmpv::Value;
+    /// use rbmpv::Value;
     ///
     /// let val = Value::Array(vec![Value::Nil, Value::Boolean(true)]);
     ///
@@ -644,7 +644,7 @@ impl Value {
     /// # Examples
     ///
     /// ```
-    /// use rmpv::Value;
+    /// use rbmpv::Value;
     ///
     /// let val = Value::Map(vec![(Value::Nil, Value::Boolean(true))]);
     ///
@@ -667,7 +667,7 @@ impl Value {
     /// # Examples
     ///
     /// ```
-    /// use rmpv::Value;
+    /// use rbmpv::Value;
     ///
     /// assert_eq!(Some((42, &[1, 2, 3, 4, 5][..])), Value::Ext(42, vec![1, 2, 3, 4, 5]).as_ext());
     ///
@@ -970,8 +970,8 @@ impl Display for Value {
             Value::U64(ref val) => Display::fmt(&val, f),
             Value::F32(val) => Display::fmt(&val, f),
             Value::F64(val) => Display::fmt(&val, f),
-            Value::String(ref val) => Display::fmt(&String::from_utf8(val.to_vec()).unwrap_or_default(), f),
-            Value::Binary(ref val) => Debug::fmt(&String::from_utf8(val.to_vec()).unwrap_or_default(), f),
+            Value::String(ref val) => Display::fmt(&self.as_str().unwrap_or_default(), f),
+            Value::Binary(ref val) => Debug::fmt(val, f),
             Value::Array(ref vec) => {
                 // TODO: This can be slower than naive implementation. Need benchmarks for more
                 // information.
@@ -1047,7 +1047,7 @@ impl<'a> ValueRef<'a> {
     ///
     /// # Examples
     /// ```
-    /// use rmpv::{Value, ValueRef};
+    /// use rbmpv::{Value, ValueRef};
     ///
     /// let val = ValueRef::Array(vec![
     ///    ValueRef::Nil,
@@ -1097,7 +1097,7 @@ impl<'a> ValueRef<'a> {
     /// # Examples
     ///
     /// ```
-    /// use rmpv::ValueRef;
+    /// use rbmpv::ValueRef;
     ///
     /// assert_eq!(Some(42), ValueRef::from(42).as_u64());
     /// ```
@@ -1114,7 +1114,7 @@ impl<'a> ValueRef<'a> {
     /// # Examples
     ///
     /// ```
-    /// use rmpv::ValueRef;
+    /// use rbmpv::ValueRef;
     ///
     /// let val = ValueRef::Array(vec![ValueRef::Nil, ValueRef::Boolean(true)]);
     ///
@@ -1133,6 +1133,15 @@ impl<'a> ValueRef<'a> {
     pub fn into_array(self) -> Option<Vec<ValueRef<'a>>> {
         if let ValueRef::Array(array) = self {
             Some(array)
+        } else {
+            None
+        }
+    }
+
+    #[inline]
+    pub fn as_str(&self) -> Option<Cow<'_,str>> {
+        if let ValueRef::String(val) = *self {
+            Some(String::from_utf8_lossy(val))
         } else {
             None
         }
