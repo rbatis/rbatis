@@ -14,8 +14,8 @@ use crate::value::{IntPriv, Integer, ValueRef};
 ///
 /// # Examples
 /// ```
-/// use rbmp_serde::ValueRef;
-/// use rbmp_serde::encode::write_value_ref;
+/// use rbmp::ValueRef;
+/// use rbmp::encode::write_value_ref;
 ///
 /// let mut buf = Vec::new();
 /// let val = ValueRef::from("le message");
