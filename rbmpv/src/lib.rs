@@ -458,7 +458,7 @@ pub enum Value {
     /// on the actual implementation when it received invalid byte sequence. Deserializers should
     /// provide functionality to get the original byte array so that applications can decide how to
     /// handle the object
-    String(Utf8String),
+    String(Vec<u8>),
     /// Binary extending Raw type represents a byte array.
     Binary(Vec<u8>),
     /// Array represents a sequence of objects.
@@ -797,9 +797,9 @@ impl Value {
     /// assert_eq!(None, Value::Boolean(true).as_str());
     /// ```
     #[inline]
-    pub fn as_str(&self) -> Option<&str> {
+    pub fn as_str(&self) -> Option<Cow<'_,str>> {
         if let Value::String(ref val) = *self {
-            val.as_str()
+            Some(String::from_utf8_lossy(val))
         } else {
             None
         }
@@ -821,7 +821,7 @@ impl Value {
         if let Value::Binary(ref val) = *self {
             Some(val)
         } else if let Value::String(ref val) = *self {
-            Some(val.as_bytes())
+            Some(val)
         } else {
             None
         }
@@ -917,7 +917,7 @@ impl Index<&str> for Value {
             if let Some(found) = map.iter().find(
                 |(key, _val)| {
                     if let Value::String(ref strval) = *key {
-                        if let Some(s) = strval.as_str() {
+                        if let Some(s) = key.as_str() {
                             if s == index { return true; }
                         }
                     }
@@ -1025,21 +1025,21 @@ impl From<f64> for Value {
 impl From<String> for Value {
     #[inline]
     fn from(v: String) -> Self {
-        Value::String(Utf8String::from(v))
+        Value::String(v.into_bytes())
     }
 }
 
 impl<'a> From<&'a str> for Value {
     #[inline]
     fn from(v: &str) -> Self {
-        Value::String(Utf8String::from(v))
+        Value::String(v.as_bytes().to_vec())
     }
 }
 
 impl<'a> From<Cow<'a, str>> for Value {
     #[inline]
     fn from(v: Cow<'a, str>) -> Self {
-        Value::String(Utf8String::from(v))
+        Value::String(v.as_ref().as_bytes().to_vec())
     }
 }
 
@@ -1132,8 +1132,8 @@ impl TryFrom<Value> for String {
 
     fn try_from(val: Value) -> Result<Self, Self::Error> {
         match val {
-            Value::String(Utf8String { s: Ok(u) }) => {
-                Ok(u)
+            Value::String(u) => {
+                Ok(String::from_utf8(u).unwrap_or_default())
             }
             _ => Err(val)
         }
@@ -1174,7 +1174,7 @@ impl_try_from!(Vec<Value>, Array);
 impl_try_from!(Vec<(Value, Value)>, Map);
 impl_try_from!(Vec<u8>, Binary);
 impl_try_from!(f32, F32);
-impl_try_from!(Utf8String, String);
+// impl_try_from!(Utf8String, String);
 
 impl Display for Value {
     #[cold]
@@ -1186,8 +1186,8 @@ impl Display for Value {
             Value::U64(ref val) => Display::fmt(&val, f),
             Value::F32(val) => Display::fmt(&val, f),
             Value::F64(val) => Display::fmt(&val, f),
-            Value::String(ref val) => Display::fmt(&val, f),
-            Value::Binary(ref val) => Debug::fmt(&val, f),
+            Value::String(ref val) => Display::fmt(&String::from_utf8(val.to_vec()).unwrap_or_default(), f),
+            Value::Binary(ref val) => Debug::fmt(&String::from_utf8(val.to_vec()).unwrap_or_default(), f),
             Value::Array(ref vec) => {
                 // TODO: This can be slower than naive implementation. Need benchmarks for more
                 // information.
@@ -1240,7 +1240,7 @@ pub enum ValueRef<'a> {
     /// A 64-bit floating point number.
     F64(f64),
     /// String extending Raw type represents a UTF-8 string.
-    String(Utf8StringRef<'a>),
+    String(&'a [u8]),
     /// Binary extending Raw type represents a byte array.
     Binary(&'a [u8]),
     /// Array represents a sequence of objects.
@@ -1442,7 +1442,7 @@ impl<'a> From<f64> for ValueRef<'a> {
 impl<'a> From<&'a str> for ValueRef<'a> {
     #[inline]
     fn from(v: &'a str) -> Self {
-        ValueRef::String(Utf8StringRef::from(v))
+        ValueRef::String(v.as_bytes())
     }
 }
 
@@ -1525,7 +1525,7 @@ impl_try_from_ref!(Vec<ValueRef<'a>>, Array);
 impl_try_from_ref!(Vec<(ValueRef<'a>, ValueRef<'a>)>, Map);
 impl_try_from_ref!(&'a [u8], Binary);
 impl_try_from_ref!(f32, F32);
-impl_try_from_ref!(Utf8StringRef<'a>, String);
+// impl_try_from_ref!(Utf8StringRef<'a>, String);
 
 impl<'a> Display for ValueRef<'a> {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> Result<(), fmt::Error> {
@@ -1536,8 +1536,8 @@ impl<'a> Display for ValueRef<'a> {
             ValueRef::U64(ref val) => Display::fmt(&val, f),
             ValueRef::F32(ref val) => Display::fmt(&val, f),
             ValueRef::F64(ref val) => Display::fmt(&val, f),
-            ValueRef::String(ref val) => Display::fmt(&val, f),
-            ValueRef::Binary(ref val) => Debug::fmt(&val, f),
+            ValueRef::String(ref val) => Display::fmt(&String::from_utf8(val.to_vec()).unwrap_or_default(), f),
+            ValueRef::Binary(ref val) => Debug::fmt(&String::from_utf8(val.to_vec()).unwrap_or_default(), f),
             ValueRef::Array(ref vec) => {
                 let res = vec.iter()
                     .map(|val| format!("{}", val))

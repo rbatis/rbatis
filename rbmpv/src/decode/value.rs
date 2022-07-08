@@ -43,19 +43,20 @@ fn read_map_data<R: Read>(rd: &mut R, mut len: usize, depth: usize) -> Result<Ve
     Ok(vec)
 }
 
-fn read_str_data<R: Read>(rd: &mut R, len: usize, depth: usize) -> Result<Utf8String, Error> {
+fn read_str_data<R: Read>(rd: &mut R, len: usize, depth: usize) -> Result<Vec<u8>, Error> {
     let depth = super::decrement_depth(depth)?;
 
-    match String::from_utf8(read_bin_data(rd, len, depth)?) {
-        Ok(s) => Ok(Utf8String::from(s)),
-        Err(err) => {
-            let e = err.utf8_error();
-            let s = Utf8String {
-                s: Err((err.into_bytes(), e)),
-            };
-            Ok(s)
-        }
-    }
+    // match String::from_utf8(read_bin_data(rd, len, depth)?) {
+    //     Ok(s) => Ok(Utf8String::from(s)),
+    //     Err(err) => {
+    //         let e = err.utf8_error();
+    //         let s = Utf8String {
+    //             s: Err((err.into_bytes(), e)),
+    //         };
+    //         Ok(s)
+    //     }
+    // }
+    Ok(read_bin_data(rd, len, depth)?)
 }
 
 fn read_bin_data<R: Read>(rd: &mut R, len: usize, depth: usize) -> Result<Vec<u8>, Error> {

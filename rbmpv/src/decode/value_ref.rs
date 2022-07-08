@@ -11,20 +11,21 @@ use rmp::Marker;
 use super::Error;
 use crate::{Utf8StringRef, ValueRef};
 
-fn read_str_data<'a, R>(rd: &mut R, len: usize, depth: usize) -> Result<Utf8StringRef<'a>, Error>
+fn read_str_data<'a, R>(rd: &mut R, len: usize, depth: usize) -> Result<&'a [u8], Error>
     where R: BorrowRead<'a>
 {
     let depth = super::decrement_depth(depth)?;
     let buf = read_bin_data(rd, len, depth)?;
-    match str::from_utf8(buf) {
-        Ok(s) => Ok(Utf8StringRef::from(s)),
-        Err(err) => {
-            let s = Utf8StringRef {
-                s: Err((buf, err)),
-            };
-            Ok(s)
-        }
-    }
+    // match str::from_utf8(buf) {
+    //     Ok(s) => Ok(Utf8StringRef::from(s)),
+    //     Err(err) => {
+    //         let s = Utf8StringRef {
+    //             s: Err((buf, err)),
+    //         };
+    //         Ok(s)
+    //     }
+    // }
+    Ok(buf)
 }
 
 fn read_bin_data<'a, R>(rd: &mut R, len: usize, depth: usize) -> Result<&'a [u8], Error>
