@@ -51,7 +51,6 @@ impl Serialize for Value {
 }
 
 impl ser::Error for Error {
-    #[cold]
     fn custom<T: Display>(msg: T) -> Self {
         Error::Syntax(format!("{}", msg))
     }
@@ -447,6 +446,7 @@ impl SerializeTuple for &mut ExtSerializer {
     }
 }
 
+#[derive(Debug)]
 pub struct ExtFieldSerializer {
     tag: Option<i8>,
     binary: Option<Vec<u8>>,

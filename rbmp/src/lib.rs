@@ -31,11 +31,11 @@
 //! extern crate serde;
 //! #[macro_use]
 //! extern crate serde_derive;
-//! extern crate rmp_serde as rmps;
+//! extern crate rbmp;
 //!
 //! use std::collections::HashMap;
 //! use serde::{Deserialize, Serialize};
-//! use rmps::{Deserializer, Serializer};
+//! use rbmp::{Deserializer, Serializer};
 //!
 //! #[derive(Debug, PartialEq, Deserialize, Serialize)]
 //! struct Human {
@@ -57,6 +57,9 @@
 //! [serde]: https://serde.rs/
 
 #![warn(missing_debug_implementations, missing_docs)]
+#![allow(deprecated)]
+#![allow(unused_variables)]
+
 
 #[macro_use]
 extern crate serde;
