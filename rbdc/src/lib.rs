@@ -29,8 +29,5 @@ mod test {
 
         let v: A = rbmp::decode::from_slice(&buf).unwrap();
         println!("{:?}", v);
-
-        let v: rbmp::Value = rbmp::decode::from_slice(&buf).unwrap();
-        println!("{}", v);
     }
 }
