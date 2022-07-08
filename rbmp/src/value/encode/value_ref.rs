@@ -112,10 +112,7 @@ impl serde::ser::Error for SerError {
 
 
 #[derive(Clone)]
-pub struct SerRef {
-    //Controls whether Cow owns data
-    owner: bool,
-}
+pub struct SerRef {}
 
 pub struct SerializeStructImpl<'a> {
     s: SerRef,
@@ -408,10 +405,11 @@ impl Serializer for SerRef {
 
 /// serialize an value ref
 pub fn serialize_ref<T>(a: &T) -> Result<ValueRef, SerError> where T: serde::Serialize {
-    a.serialize(SerRef { owner: false })
+    a.serialize(SerRef {})
 }
 
 impl<'a> ValueRef<'a> {
+    /// serialize an value ref
     pub fn serialize<T: Serialize>(&mut self, arg: &'a T) -> Result<(), SerError> {
         *self = serialize_ref(arg)?;
         Ok(())
