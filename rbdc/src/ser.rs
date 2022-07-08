@@ -5,7 +5,7 @@ use serde::ser::{SerializeMap, SerializeSeq, SerializeStruct, SerializeStructVar
 use crate::Error;
 
 #[derive(Clone, Debug, PartialEq)]
-pub enum ValueRef<'a> {
+pub enum Value<'a> {
     /// Null
     Null,
     /// Boolean represents true or false.
@@ -24,9 +24,9 @@ pub enum ValueRef<'a> {
     /// Binary extending Raw type represents a byte array.
     Binary(Cow<'a, [u8]>),
     /// Array represents a sequence of objects.
-    Array(Vec<ValueRef<'a>>),
+    Array(Vec<Value<'a>>),
     /// Map represents key-value pairs of objects.
-    Map(Vec<(ValueRef<'a>, ValueRef<'a>)>),
+    Map(Vec<(Value<'a>, Value<'a>)>),
     /// Extended implements Extension interface: represents a tuple of type information and a byte
     /// array where type information is an integer whose meaning is defined by applications.
     Ext(i8, Cow<'a, [u8]>),
@@ -40,30 +40,30 @@ pub struct Ser {
 
 pub struct SerializeStructImpl<'a> {
     s: Ser,
-    inner: Vec<(ValueRef<'a>, ValueRef<'a>)>,
+    inner: Vec<(Value<'a>, Value<'a>)>,
 }
 
 impl<'a> SerializeStruct for SerializeStructImpl<'a> {
-    type Ok = ValueRef<'a>;
+    type Ok = Value<'a>;
     type Error = Error;
 
     fn serialize_field<T: ?Sized>(&mut self, key: &'static str, value: &T) -> Result<(), Self::Error> where T: Serialize {
-        self.inner.push((ValueRef::String(key.into()), value.serialize(self.s.clone())?));
+        self.inner.push((Value::String(key.into()), value.serialize(self.s.clone())?));
         Ok(())
     }
 
     fn end(self) -> Result<Self::Ok, Self::Error> {
-        Ok(ValueRef::Map(self.inner))
+        Ok(Value::Map(self.inner))
     }
 }
 
 pub struct SerializeSeqImpl<'a> {
     s: Ser,
-    inner: Vec<ValueRef<'a>>,
+    inner: Vec<Value<'a>>,
 }
 
 impl<'a> SerializeSeq for SerializeSeqImpl<'a> {
-    type Ok = ValueRef<'a>;
+    type Ok = Value<'a>;
     type Error = Error;
 
     fn serialize_element<T: ?Sized>(&mut self, value: &T) -> Result<(), Self::Error> where T: Serialize {
@@ -72,17 +72,17 @@ impl<'a> SerializeSeq for SerializeSeqImpl<'a> {
     }
 
     fn end(self) -> Result<Self::Ok, Self::Error> {
-        Ok(ValueRef::Array(self.inner))
+        Ok(Value::Array(self.inner))
     }
 }
 
 pub struct SerializeTupleImpl<'a> {
     s: Ser,
-    inner: Vec<ValueRef<'a>>,
+    inner: Vec<Value<'a>>,
 }
 
 impl<'a> SerializeTuple for SerializeTupleImpl<'a> {
-    type Ok = ValueRef<'a>;
+    type Ok = Value<'a>;
     type Error = Error;
 
     fn serialize_element<T: ?Sized>(&mut self, value: &T) -> Result<(), Self::Error> where T: Serialize {
@@ -91,17 +91,17 @@ impl<'a> SerializeTuple for SerializeTupleImpl<'a> {
     }
 
     fn end(self) -> Result<Self::Ok, Self::Error> {
-        Ok(ValueRef::Array(self.inner))
+        Ok(Value::Array(self.inner))
     }
 }
 
 pub struct SerializeTupleStructImpl<'a> {
     s: Ser,
-    inner: Vec<ValueRef<'a>>,
+    inner: Vec<Value<'a>>,
 }
 
 impl<'a> SerializeTupleStruct for SerializeTupleStructImpl<'a> {
-    type Ok = ValueRef<'a>;
+    type Ok = Value<'a>;
     type Error = Error;
 
     fn serialize_field<T: ?Sized>(&mut self, value: &T) -> Result<(), Self::Error> where T: Serialize {
@@ -110,17 +110,17 @@ impl<'a> SerializeTupleStruct for SerializeTupleStructImpl<'a> {
     }
 
     fn end(self) -> Result<Self::Ok, Self::Error> {
-        Ok(ValueRef::Array(self.inner))
+        Ok(Value::Array(self.inner))
     }
 }
 
 pub struct SerializeTupleVariantImpl<'a> {
     s: Ser,
-    inner: Vec<ValueRef<'a>>,
+    inner: Vec<Value<'a>>,
 }
 
 impl<'a> SerializeTupleVariant for SerializeTupleVariantImpl<'a> {
-    type Ok = ValueRef<'a>;
+    type Ok = Value<'a>;
     type Error = Error;
 
     fn serialize_field<T: ?Sized>(&mut self, value: &T) -> Result<(), Self::Error> where T: Serialize {
@@ -129,21 +129,21 @@ impl<'a> SerializeTupleVariant for SerializeTupleVariantImpl<'a> {
     }
 
     fn end(self) -> Result<Self::Ok, Self::Error> {
-        Ok(ValueRef::Array(self.inner))
+        Ok(Value::Array(self.inner))
     }
 }
 
 pub struct SerializeMapImpl<'a> {
     s: Ser,
-    inner: Vec<(ValueRef<'a>, ValueRef<'a>)>,
+    inner: Vec<(Value<'a>, Value<'a>)>,
 }
 
 impl<'a> SerializeMap for SerializeMapImpl<'a> {
-    type Ok = ValueRef<'a>;
+    type Ok = Value<'a>;
     type Error = Error;
 
     fn serialize_key<T: ?Sized>(&mut self, key: &T) -> Result<(), Self::Error> where T: Serialize {
-        self.inner.push((key.serialize(self.s.clone())?, ValueRef::Null));
+        self.inner.push((key.serialize(self.s.clone())?, Value::Null));
         Ok(())
     }
 
@@ -158,17 +158,17 @@ impl<'a> SerializeMap for SerializeMapImpl<'a> {
     }
 
     fn end(self) -> Result<Self::Ok, Self::Error> {
-        Ok(ValueRef::Map(self.inner))
+        Ok(Value::Map(self.inner))
     }
 }
 
 pub struct SerializeStructVariantImpl<'a> {
     s: Ser,
-    inner: Vec<ValueRef<'a>>,
+    inner: Vec<Value<'a>>,
 }
 
 impl<'a> SerializeStructVariant for SerializeStructVariantImpl<'a> {
-    type Ok = ValueRef<'a>;
+    type Ok = Value<'a>;
     type Error = Error;
 
     fn serialize_field<T: ?Sized>(&mut self, key: &'static str, value: &T) -> Result<(), Self::Error> where T: Serialize {
@@ -177,13 +177,13 @@ impl<'a> SerializeStructVariant for SerializeStructVariantImpl<'a> {
     }
 
     fn end(self) -> Result<Self::Ok, Self::Error> {
-        Ok(ValueRef::Array(self.inner))
+        Ok(Value::Array(self.inner))
     }
 }
 
 
 impl Serializer for Ser {
-    type Ok = ValueRef<'static>;
+    type Ok = Value<'static>;
     type Error = Error;
     type SerializeSeq = SerializeSeqImpl<'static>;
     type SerializeTuple = SerializeTupleImpl<'static>;
@@ -194,63 +194,63 @@ impl Serializer for Ser {
     type SerializeStructVariant = SerializeStructVariantImpl<'static>;
 
     fn serialize_bool(self, v: bool) -> Result<Self::Ok, Self::Error> {
-        Ok(ValueRef::Boolean(v))
+        Ok(Value::Boolean(v))
     }
 
     fn serialize_i8(self, v: i8) -> Result<Self::Ok, Self::Error> {
-        Ok(ValueRef::I32(v as i32))
+        Ok(Value::I32(v as i32))
     }
 
     fn serialize_i16(self, v: i16) -> Result<Self::Ok, Self::Error> {
-        Ok(ValueRef::I32(v as i32))
+        Ok(Value::I32(v as i32))
     }
 
     fn serialize_i32(self, v: i32) -> Result<Self::Ok, Self::Error> {
-        Ok(ValueRef::I32(v))
+        Ok(Value::I32(v))
     }
 
     fn serialize_i64(self, v: i64) -> Result<Self::Ok, Self::Error> {
-        Ok(ValueRef::I64(v))
+        Ok(Value::I64(v))
     }
 
     fn serialize_u8(self, v: u8) -> Result<Self::Ok, Self::Error> {
-        Ok(ValueRef::U32(v as u32))
+        Ok(Value::U32(v as u32))
     }
 
     fn serialize_u16(self, v: u16) -> Result<Self::Ok, Self::Error> {
-        Ok(ValueRef::U32(v as u32))
+        Ok(Value::U32(v as u32))
     }
 
     fn serialize_u32(self, v: u32) -> Result<Self::Ok, Self::Error> {
-        Ok(ValueRef::U32(v))
+        Ok(Value::U32(v))
     }
 
     fn serialize_u64(self, v: u64) -> Result<Self::Ok, Self::Error> {
-        Ok(ValueRef::U64(v))
+        Ok(Value::U64(v))
     }
 
     fn serialize_f32(self, v: f32) -> Result<Self::Ok, Self::Error> {
-        Ok(ValueRef::F32(v))
+        Ok(Value::F32(v))
     }
 
     fn serialize_f64(self, v: f64) -> Result<Self::Ok, Self::Error> {
-        Ok(ValueRef::F64(v))
+        Ok(Value::F64(v))
     }
 
     fn serialize_char(self, v: char) -> Result<Self::Ok, Self::Error> {
-        Ok(ValueRef::I64(v as i64))
+        Ok(Value::I64(v as i64))
     }
 
     fn serialize_str(self, v: &str) -> Result<Self::Ok, Self::Error> {
-        Ok(ValueRef::String(unsafe { &*(v as *const str) }.into()))
+        Ok(Value::String(unsafe { &*(v as *const str) }.into()))
     }
 
     fn serialize_bytes(self, v: &[u8]) -> Result<Self::Ok, Self::Error> {
-        Ok(ValueRef::Binary(unsafe { &*(v as *const [u8]) }.into()))
+        Ok(Value::Binary(unsafe { &*(v as *const [u8]) }.into()))
     }
 
     fn serialize_none(self) -> Result<Self::Ok, Self::Error> {
-        Ok(ValueRef::Null)
+        Ok(Value::Null)
     }
 
     fn serialize_some<T: ?Sized>(self, value: &T) -> Result<Self::Ok, Self::Error> where T: Serialize {
@@ -258,15 +258,15 @@ impl Serializer for Ser {
     }
 
     fn serialize_unit(self) -> Result<Self::Ok, Self::Error> {
-        Ok(ValueRef::Null)
+        Ok(Value::Null)
     }
 
     fn serialize_unit_struct(self, name: &'static str) -> Result<Self::Ok, Self::Error> {
-        Ok(ValueRef::Null)
+        Ok(Value::Null)
     }
 
     fn serialize_unit_variant(self, name: &'static str, variant_index: u32, variant: &'static str) -> Result<Self::Ok, Self::Error> {
-        Ok(ValueRef::String(variant.into()))
+        Ok(Value::String(variant.into()))
     }
 
     fn serialize_newtype_struct<T: ?Sized>(self, name: &'static str, value: &T) -> Result<Self::Ok, Self::Error> where T: Serialize {
@@ -327,10 +327,10 @@ impl Serializer for Ser {
     }
 }
 
-pub fn serialize<'a, T>(a: &'a T) -> Result<ValueRef<'a>, Error> where T: serde::Serialize {
+pub fn serialize<'a, T>(a: &'a T) -> Result<Value<'a>, Error> where T: serde::Serialize {
     a.serialize(Ser { owner: false })
 }
 
-pub fn serialize_owner<'a, T>(a: &'a T) -> Result<ValueRef<'a>, Error> where T: serde::Serialize {
+pub fn serialize_owner<'a, T>(a: &'a T) -> Result<Value<'a>, Error> where T: serde::Serialize {
     a.serialize(Ser { owner: true })
 }
