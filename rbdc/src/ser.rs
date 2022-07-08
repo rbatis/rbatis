@@ -27,9 +27,8 @@ pub enum Value<'a> {
     Array(Vec<Value<'a>>),
     /// Map represents key-value pairs of objects.
     Map(Vec<(Value<'a>, Value<'a>)>),
-    /// Extended implements Extension interface: represents a tuple of type information and a byte
-    /// array where type information is an integer whose meaning is defined by applications.
-    Ext(i8, Cow<'a, [u8]>),
+    /// Extended implements
+    Ext(i32, Value<'a>),
 }
 
 #[derive(Clone)]
