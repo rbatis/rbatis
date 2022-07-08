@@ -12,4 +12,3 @@ serde = "1"
 indexmap = "1"
 
 rbmp-serde = {path="../rbmp-serde"}
-rbmpv = {path="../rbmpv",features = ["with-serde"]}

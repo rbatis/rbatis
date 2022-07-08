@@ -3,7 +3,7 @@ use std::io::Write;
 use rmp::encode::{write_array_len, write_bin, write_bool, write_ext_meta, write_f32, write_f64, write_i32, write_i64, write_map_len, write_nil, write_sint, write_str, write_u32, write_u64, write_uint};
 
 use super::Error;
-use crate::{IntPriv, Integer, ValueRef};
+use crate::value::{IntPriv, Integer, ValueRef};
 
 /// Encodes and attempts to write the given non-owning ValueRef into the Write.
 ///
@@ -14,8 +14,8 @@ use crate::{IntPriv, Integer, ValueRef};
 ///
 /// # Examples
 /// ```
-/// use rbmpv::ValueRef;
-/// use rbmpv::encode::write_value_ref;
+/// use rbmp_serde::ValueRef;
+/// use rbmp_serde::encode::write_value_ref;
 ///
 /// let mut buf = Vec::new();
 /// let val = ValueRef::from("le message");

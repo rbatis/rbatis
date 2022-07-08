@@ -1,7 +1,6 @@
 [workspace]
 members = [
     ".",
-    "rbmpv",
     "rbmp-serde",
     "rbdc",
     "rbdc-mysql",
@@ -71,7 +70,6 @@ rand = "0.8"
 
 
 rbmp-serde = {path="rbmp-serde"}
-rbmpv = {path="rbmpv"}
 
 [dev-dependencies]
 serde_json = "1"

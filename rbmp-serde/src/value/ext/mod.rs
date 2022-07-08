@@ -3,7 +3,7 @@ use std::fmt::{self, Display, Formatter};
 
 use serde::de::Unexpected;
 
-use crate::{IntPriv, Integer, Value, ValueRef};
+use crate::value::{IntPriv, Integer, Value, ValueRef};
 
 pub use self::de::{deserialize_from, from_value, EnumRefDeserializer};
 pub use self::se::to_value;

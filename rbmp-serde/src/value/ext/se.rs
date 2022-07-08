@@ -6,7 +6,7 @@ use serde::ser::{
 use serde::Serialize;
 use serde_bytes::Bytes;
 
-use crate::{IntPriv, Integer, Value};
+use crate::value::{IntPriv, Integer, Value};
 
 use super::Error;
 use crate::MSGPACK_EXT_STRUCT_NAME;
@@ -59,14 +59,14 @@ impl ser::Error for Error {
 
 struct Serializer;
 
-/// Convert a `T` into `rbmpv::Value` which is an enum that can represent any valid MessagePack data.
+/// Convert a `T` into `rbmp_serde::Value` which is an enum that can represent any valid MessagePack data.
 ///
 /// This conversion can fail if `T`'s implementation of `Serialize` decides to fail.
 ///
 /// ```rust
-/// # use rbmpv::Value;
+/// # use rbmp_serde::Value;
 ///
-/// let val = rbmpv::ext::to_value("John Smith").unwrap();
+/// let val = rbmp_serde::ext::to_value("John Smith").unwrap();
 ///
 /// assert_eq!(Value::String("John Smith".into()), val);
 /// ```
