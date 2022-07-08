@@ -410,6 +410,6 @@ impl Serializer for SerRef {
 }
 
 /// serialize an value ref
-pub fn serialize_ref<'a, T>(a: &'a T) -> Result<ValueRef<'a>, SerError> where T: serde::Serialize {
+pub fn serialize_ref<T>(a: &T) -> Result<ValueRef, SerError> where T: serde::Serialize {
     a.serialize(SerRef { owner: false })
 }
