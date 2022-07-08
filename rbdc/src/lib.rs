@@ -25,13 +25,13 @@ mod test {
             i64: i64::MAX,
             u64: u64::MAX,
         }).unwrap();
-        let v: rbmpv::Value = rbmpv::decode::read_value(&mut &buf[..]).unwrap();
+        let v: rbmp_serde::Value = rbmp_serde::read_value(&mut &buf[..]).unwrap();
         println!("{}", v);
 
         let v: A = rbmp_serde::decode::from_slice(&buf).unwrap();
         println!("{:?}", v);
 
-        let v: rbmpv::Value = rbmp_serde::decode::from_slice(&buf).unwrap();
+        let v: rbmp_serde::Value = rbmp_serde::decode::from_slice(&buf).unwrap();
         println!("{}", v);
     }
 }

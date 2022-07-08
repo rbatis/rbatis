@@ -7,7 +7,7 @@ use std::vec::IntoIter;
 use serde::de::{self, DeserializeSeed, IntoDeserializer, SeqAccess, Unexpected, Visitor};
 use serde::{self, Deserialize, Deserializer};
 
-use crate::{IntPriv, Integer, Value, ValueRef};
+use crate::value::{IntPriv, Integer, Value, ValueRef};
 
 use super::{Error, ValueExt};
 use crate::MSGPACK_EXT_STRUCT_NAME;

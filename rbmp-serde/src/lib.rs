@@ -78,6 +78,8 @@ pub use crate::decode::from_slice;
 pub mod config;
 pub mod decode;
 pub mod encode;
+pub mod value;
+pub use value::*;
 
 /// Name of Serde newtype struct to Represent Msgpack's Ext
 /// Msgpack Ext: Ext(tag, binary)

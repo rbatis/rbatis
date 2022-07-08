@@ -288,8 +288,8 @@ fn read_value_ref_inner<'a, R>(rd: &mut R, depth: usize) -> Result<ValueRef<'a>,
 ///
 /// # Examples
 /// ```
-/// use rbmpv::ValueRef;
-/// use rbmpv::decode::read_value_ref;
+/// use rbmp_serde::ValueRef;
+/// use rbmp_serde::decode::read_value_ref;
 ///
 /// let buf = [0xaa, 0x6c, 0x65, 0x20, 0x6d, 0x65, 0x73, 0x73, 0x61, 0x67, 0x65];
 /// let mut rd = &buf[..];
