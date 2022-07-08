@@ -1,6 +1,5 @@
 use std;
 use std::io::{self, Cursor, ErrorKind, Read};
-use std::str;
 
 use rmp::decode::{
     read_data_f32, read_data_f64, read_data_i16, read_data_i32, read_data_i64, read_data_i8,

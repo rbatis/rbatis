@@ -1,6 +1,6 @@
 use std::io::Write;
 
-use rmp::encode::{write_array_len, write_bin, write_bool, write_ext_meta, write_f32, write_f64, write_i32, write_i64, write_map_len, write_nil, write_sint, write_str, write_u32, write_u64, write_uint};
+use rmp::encode::{write_array_len, write_bin, write_bool, write_ext_meta, write_f32, write_f64, write_i32, write_map_len, write_nil, write_sint, write_u32, write_uint};
 
 use super::Error;
 use crate::value::{IntPriv, Integer, Value};
