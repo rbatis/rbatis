@@ -28,7 +28,7 @@ pub enum Value<'a> {
     /// Map represents key-value pairs of objects.
     Map(Vec<(Value<'a>, Value<'a>)>),
     /// Extended implements
-    Ext(i32, Value<'a>),
+    Ext(i32, Box<Value<'a>>),
 }
 
 #[derive(Clone)]
@@ -48,7 +48,7 @@ impl<'a> SerializeStruct for SerializeStructImpl<'a> {
     type Error = Error;
 
     fn serialize_field<T: ?Sized>(&mut self, key: &'static str, value: &T) -> Result<(), Self::Error> where T: Serialize {
-        self.inner.push((Value::String(key.into()), value.serialize(self.s.clone())?));
+        self.inner.push((Value::String(Cow::Borrowed(key)), value.serialize(self.s.clone())?));
         Ok(())
     }
 
