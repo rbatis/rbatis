@@ -18,20 +18,20 @@ mod test {
             pub i64:i64,
             pub u64:u64
         }
-        let buf = rbmp_serde::to_vec(&A {
+        let buf = rbmp::to_vec(&A {
             name: "s".to_string(),
             i32: i32::MAX,
             u32: u32::MAX,
             i64: i64::MAX,
             u64: u64::MAX,
         }).unwrap();
-        let v: rbmp_serde::Value = rbmp_serde::read_value(&mut &buf[..]).unwrap();
+        let v: rbmp::Value = rbmp::read_value(&mut &buf[..]).unwrap();
         println!("{}", v);
 
-        let v: A = rbmp_serde::decode::from_slice(&buf).unwrap();
+        let v: A = rbmp::decode::from_slice(&buf).unwrap();
         println!("{:?}", v);
 
-        let v: rbmp_serde::Value = rbmp_serde::decode::from_slice(&buf).unwrap();
+        let v: rbmp::Value = rbmp::decode::from_slice(&buf).unwrap();
         println!("{}", v);
     }
 }

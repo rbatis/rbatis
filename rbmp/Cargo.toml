@@ -1,5 +1,5 @@
 [package]
-name = "rbmp-serde"
+name = "rbmp"
 version = "0.1.0"
 edition = "2021"
 

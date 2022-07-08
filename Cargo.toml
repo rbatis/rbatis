@@ -1,7 +1,7 @@
 [workspace]
 members = [
     ".",
-    "rbmp-serde",
+    "rbmp",
     "rbdc",
     "rbdc-mysql",
     "rbatis-core",
@@ -69,7 +69,7 @@ hex = "0.4"
 rand = "0.8"
 
 
-rbmp-serde = {path="rbmp-serde"}
+rbmp = {path="rbmp"}
 
 [dev-dependencies]
 serde_json = "1"
