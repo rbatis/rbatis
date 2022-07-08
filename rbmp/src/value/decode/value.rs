@@ -103,22 +103,22 @@ fn read_value_inner<R>(rd: &mut R, depth: usize) -> Result<Value, Error> where R
         Marker::F64 => Value::F64(read_data_f64(rd)?),
         Marker::FixStr(len) => {
             let res = read_str_data(rd, len as usize, depth)?;
-            Value::String(res)
+            Value::String(unsafe{String::from_utf8_unchecked(res)})
         }
         Marker::Str8 => {
             let len = read_data_u8(rd)?;
             let res = read_str_data(rd, len as usize, depth)?;
-            Value::String(res)
+            Value::String(unsafe{String::from_utf8_unchecked(res)})
         }
         Marker::Str16 => {
             let len = read_data_u16(rd)?;
             let res = read_str_data(rd, len as usize, depth)?;
-            Value::String(res)
+            Value::String(unsafe{String::from_utf8_unchecked(res)})
         }
         Marker::Str32 => {
             let len = read_data_u32(rd)?;
             let res = read_str_data(rd, len as usize, depth)?;
-            Value::String(res)
+            Value::String(unsafe{String::from_utf8_unchecked(res)})
         }
         Marker::FixArray(len) => {
             let vec = read_array_data(rd, len as usize, depth)?;
