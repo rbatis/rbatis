@@ -39,9 +39,10 @@ fn bench_ser(b: &mut Bencher){
     pub struct A {
         pub name: String,
     }
+    let a=A {
+        name: "s".to_string()
+    };
     b.iter(||{
-        let buf = rbmp_serde::to_vec(&A {
-            name: "s".to_string()
-        }).unwrap();
+        let buf = rbmp_serde::to_vec(&a).unwrap();
     });
 }
