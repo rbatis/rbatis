@@ -259,6 +259,7 @@ impl ser::Serializer for Serializer {
     }
 }
 
+#[derive(Debug)]
 pub struct ExtSerializer {
     fields_se: Option<ExtFieldSerializer>
 }

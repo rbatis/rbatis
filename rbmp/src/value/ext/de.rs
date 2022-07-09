@@ -12,6 +12,7 @@ use crate::value::{Value, ValueRef};
 use super::{Error, ValueExt};
 use crate::MSGPACK_EXT_STRUCT_NAME;
 
+/// from_value
 #[inline]
 pub fn from_value<T>(val: Value) -> Result<T, Error>
     where T: for<'de> Deserialize<'de>
@@ -19,6 +20,7 @@ pub fn from_value<T>(val: Value) -> Result<T, Error>
     deserialize_from(val)
 }
 
+/// deserialize_from
 #[inline]
 pub fn deserialize_from<'de, T, D>(val: D) -> Result<T, Error>
     where T: Deserialize<'de>,
@@ -988,12 +990,15 @@ impl<'de> Deserializer<'de> for MapRefDeserializer<'de> {
     }
 }
 
+/// EnumRefDeserializer
+#[derive(Debug)]
 pub struct EnumRefDeserializer<'de> {
     id: u32,
     value: Option<&'de ValueRef<'de>>,
 }
 
 impl<'de> EnumRefDeserializer<'de> {
+    /// new EnumRefDeserializer
     pub fn new(id: u32, value: Option<&'de ValueRef<'de>>) -> Self {
         Self {
             id,
@@ -1015,6 +1020,7 @@ impl<'de> de::EnumAccess<'de> for EnumRefDeserializer<'de> {
     }
 }
 
+#[derive(Debug)]
 pub struct VariantRefDeserializer<'de> {
     value: Option<&'de ValueRef<'de>>,
 }

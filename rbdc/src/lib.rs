@@ -1,4 +1,3 @@
-use std::collections::HashMap;
 use std::fmt::{Display, Formatter};
 
 pub mod encode;
@@ -30,9 +29,7 @@ impl serde::ser::Error for Error {
 
 #[cfg(test)]
 mod test {
-    use std::borrow::Cow;
     use std::collections::HashMap;
-    use std::time::Duration;
 
     #[test]
     fn test_ser_ref() {

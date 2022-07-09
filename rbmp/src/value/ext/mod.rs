@@ -11,8 +11,10 @@ pub use self::se::to_value;
 mod de;
 mod se;
 
+/// ser ref Error
 #[derive(Debug)]
 pub enum Error {
+    /// Syntax
     Syntax(String),
 }
 
