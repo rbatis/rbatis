@@ -30,6 +30,7 @@ impl serde::ser::Error for Error {
 #[cfg(test)]
 mod test {
     use std::collections::HashMap;
+    use rbmp::Value;
 
     #[test]
     fn test_ser_ref() {
@@ -43,10 +44,15 @@ mod test {
         let v = rbmp::serialize_ref(&a).unwrap();
         println!("{:?}", v);
 
-        let mut m=HashMap::new();
-        m.insert(1,2);
+        let mut m = HashMap::new();
+        m.insert(1, 2);
         let v = rbmp::serialize_ref(&m).unwrap();
         println!("{:?}", v);
+
+        let v = rbmp::ext::to_value(a).unwrap();
+        println!("v: {}",v);
+        let s: A = rbmp::ext::deserialize_from(v).unwrap();
+        println!("s:{:?}", s);
     }
 
     #[test]
