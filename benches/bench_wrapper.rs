@@ -83,6 +83,6 @@ fn bench_ser_zero(b: &mut Bencher) {
         name: buf
     };
     b.iter(|| {
-        let buf = rbdc::serialize(&a).unwrap();
+        let buf = rbmp::to_value_ref(&a).unwrap();
     });
 }
