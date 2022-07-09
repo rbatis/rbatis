@@ -22,7 +22,7 @@ pub trait Row: Send + Sync + 'static {
 
 
     /// Gets the column information at `index` or `None` if out of bounds.
-    fn try_column(&self, index: rbmp::Value) -> Option<&dyn Column>;
+    fn try_column(&self, index: rbs::Value) -> Option<&dyn Column>;
 
     /// Gets the column information at `index`.
     ///
@@ -33,13 +33,13 @@ pub trait Row: Send + Sync + 'static {
     ///
     /// Panics if `index` is out of bounds.
     /// See [`try_column`](Self::try_column) for a non-panicking version.
-    fn column(&self, index: rbmp::Value) -> &dyn Column
+    fn column(&self, index: rbs::Value) -> &dyn Column
     {
         self.try_column(index).unwrap()
     }
 
     #[inline]
-    fn get<'r>(&'r self, index: rbmp::Value) -> rbmp::ValueRef;
+    fn get<'r>(&'r self, index: rbs::Value) -> rbs::ValueRef;
 }
 
 pub trait Column: 'static + Send + Sync {

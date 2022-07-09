@@ -1,6 +1,6 @@
-# rbmp
+# rbs
 
-* rbmp is rbatis impl message pack crates
+* rbs is rbatis impl message pack serde crates
 
 ```rust
 use std::collections::HashMap;
@@ -12,18 +12,18 @@ fn main(){
     let a = A {
         name: "sss".to_string(),
     };
-    let v = rbmp::to_value_ref(&a).unwrap();
+    let v = rbs::to_value_ref(&a).unwrap();
     println!("{:?}", v);
 
     let mut m = HashMap::new();
     m.insert(1, 2);
     
-    let v = rbmp::to_value_ref(&m).unwrap();
+    let v = rbs::to_value_ref(&m).unwrap();
     println!("{:?}", v);
 
-    let v = rbmp::to_value(a).unwrap();
+    let v = rbs::to_value(a).unwrap();
     println!("v: {}",v);
-    let s: A = rbmp::from_value(v).unwrap();
+    let s: A = rbs::from_value(v).unwrap();
     println!("s:{:?}", s);
 }
 ```

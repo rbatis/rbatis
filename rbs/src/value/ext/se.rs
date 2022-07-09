@@ -58,14 +58,14 @@ impl ser::Error for Error {
 
 struct Serializer;
 
-/// Convert a `T` into `rbmp::Value` which is an enum that can represent any valid MessagePack data.
+/// Convert a `T` into `rbs::Value` which is an enum that can represent any valid MessagePack data.
 ///
 /// This conversion can fail if `T`'s implementation of `Serialize` decides to fail.
 ///
 /// ```rust
-/// # use rbmp::Value;
+/// # use rbs::Value;
 ///
-/// let val = rbmp::ext::to_value("John Smith").unwrap();
+/// let val = rbs::ext::to_value("John Smith").unwrap();
 ///
 /// assert_eq!(Value::String("John Smith".into()), val);
 /// ```

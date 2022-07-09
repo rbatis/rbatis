@@ -35,7 +35,7 @@
 //!
 //! use std::collections::HashMap;
 //! use serde::{Deserialize, Serialize};
-//! use rbmp::{Deserializer, Serializer};
+//! use rbs::{Deserializer, Serializer};
 //!
 //! #[derive(Debug, PartialEq, Deserialize, Serialize)]
 //! struct Human {
