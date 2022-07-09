@@ -59,6 +59,7 @@
 #![warn(missing_debug_implementations, missing_docs)]
 #![allow(deprecated)]
 #![allow(unused_variables)]
+#![allow(missing_debug_implementations, missing_docs)]
 
 
 #[macro_use]

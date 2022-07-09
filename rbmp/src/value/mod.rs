@@ -1140,6 +1140,7 @@ impl<'a> ValueRef<'a> {
         }
     }
 
+    /// into_array ref
     #[inline]
     pub fn into_array(self) -> Option<Vec<ValueRef<'a>>> {
         if let ValueRef::Array(array) = self {
@@ -1149,6 +1150,7 @@ impl<'a> ValueRef<'a> {
         }
     }
 
+    /// as_str
     #[inline]
     pub fn as_str(&self) -> Option<Cow<'_,str>> {
         if let ValueRef::String(val) = self {
