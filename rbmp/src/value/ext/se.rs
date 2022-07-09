@@ -84,7 +84,7 @@ impl ser::Serializer for Serializer {
     type SerializeTupleVariant = SerializeTupleVariant;
     type SerializeMap = DefaultSerializeMap;
     type SerializeStruct = DefaultSerializeMap;
-    type SerializeStructVariant = SerializeStructVariant;
+    type SerializeStructVariant = DefaultSerializeMap;
 
     #[inline]
     fn serialize_bool(self, val: bool) -> Result<Self::Ok, Self::Error> {
@@ -246,7 +246,6 @@ impl ser::Serializer for Serializer {
 
     #[inline]
     fn serialize_struct(self, name: &'static str, len: usize) -> Result<Self::SerializeStruct, Error> {
-        // self.serialize_tuple_struct(name, len)
         let se = DefaultSerializeMap {
             map: Vec::with_capacity(len),
             next_key: None,
@@ -256,9 +255,9 @@ impl ser::Serializer for Serializer {
 
     #[inline]
     fn serialize_struct_variant(self, _name: &'static str, idx: u32, _variant: &'static str, len: usize) -> Result<Self::SerializeStructVariant, Error> {
-        let se = SerializeStructVariant {
-            idx,
-            vec: Vec::with_capacity(len),
+        let se = DefaultSerializeMap {
+            map: Vec::with_capacity(len),
+            next_key: None,
         };
         Ok(se)
     }
@@ -789,6 +788,20 @@ impl ser::SerializeMap for DefaultSerializeMap {
 }
 
 impl ser::SerializeStruct for DefaultSerializeMap {
+    type Ok = Value;
+    type Error = Error;
+
+    fn serialize_field<T: ?Sized>(&mut self, key: &'static str, value: &T) -> Result<(), Self::Error> where T: Serialize {
+        self.map.push((Value::String(key.to_string()),to_value(&value)?));
+        Ok(())
+    }
+
+    fn end(self) -> Result<Self::Ok, Self::Error> {
+        Ok(Value::Map(self.map))
+    }
+}
+
+impl ser::SerializeStructVariant for DefaultSerializeMap{
     type Ok = Value;
     type Error = Error;
 
