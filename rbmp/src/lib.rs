@@ -87,7 +87,7 @@ pub mod value;
 pub use value::{Value, ValueRef};
 pub use value::ext::to_value;
 pub use value::encode::to_value_ref;
-pub use value::ext::deserialize_from as from_value;
+pub use value::ext::{from_value,deserialize_from};
 pub use value::decode::{read_value, read_value_ref, read_value_ref_with_max_depth, read_value_with_max_depth};
 
 /// Name of Serde newtype struct to Represent Msgpack's Ext
