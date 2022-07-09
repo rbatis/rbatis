@@ -15,8 +15,8 @@ use crate::value::{ValueRef};
 ///
 /// # Examples
 /// ```
-/// use rbmp::{ValueRef, write_value_ref};
-/// use rbmp::encode::write_value_ref;
+/// use rbs::{ValueRef, write_value_ref};
+/// use rbs::encode::write_value_ref;
 ///
 /// let mut buf = Vec::new();
 /// let val = ValueRef::from("le message");

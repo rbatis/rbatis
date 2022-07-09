@@ -65,7 +65,7 @@ fn bench_ser(b: &mut Bencher) {
         name: buf
     };
     b.iter(|| {
-        let buf = rbmp::to_vec(&a).unwrap();
+        let buf = rbs::to_vec(&a).unwrap();
     });
 }
 
@@ -83,6 +83,6 @@ fn bench_ser_zero(b: &mut Bencher) {
         name: buf
     };
     b.iter(|| {
-        let buf = rbmp::to_value_ref(&a).unwrap();
+        let buf = rbs::to_value_ref(&a).unwrap();
     });
 }

@@ -1,7 +1,7 @@
 [workspace]
 members = [
     ".",
-    "rbmp",
+    "rbs",
     "rbdc",
     "rbdc-mysql",
     "rbatis-core",
@@ -69,7 +69,7 @@ hex = "0.4"
 rand = "0.8"
 
 
-rbmp = {path="rbmp"}
+rbs = {path="rbs"}
 rbdc = {path="rbdc"}
 
 [dev-dependencies]

@@ -11,4 +11,4 @@ rbson = { version = "2.0.3", features = ["uuid-0_8", "chrono-0_4"] }
 serde = "1"
 indexmap = "1"
 
-rbmp = {path="../rbmp"}
+rbs = {path="../rbs"}
