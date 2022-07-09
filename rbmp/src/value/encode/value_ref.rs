@@ -404,14 +404,14 @@ impl Serializer for SerRef {
 }
 
 /// serialize an value ref
-pub fn serialize_ref<T>(a: &T) -> Result<ValueRef, SerError> where T: serde::Serialize {
+pub fn to_value_ref<T>(a: &T) -> Result<ValueRef, SerError> where T: serde::Serialize {
     a.serialize(SerRef {})
 }
 
 impl<'a> ValueRef<'a> {
     /// serialize an value ref
     pub fn serialize<T: Serialize>(&mut self, arg: &'a T) -> Result<(), SerError> {
-        *self = serialize_ref(arg)?;
+        *self = to_value_ref(arg)?;
         Ok(())
     }
 }

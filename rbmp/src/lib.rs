@@ -83,7 +83,12 @@ pub mod config;
 pub mod decode;
 pub mod encode;
 pub mod value;
-pub use value::*;
+
+pub use value::{Value, ValueRef};
+pub use value::ext::to_value;
+pub use value::encode::to_value_ref;
+pub use value::ext::deserialize_from as from_value;
+pub use value::decode::{read_value, read_value_ref, read_value_ref_with_max_depth, read_value_with_max_depth};
 
 /// Name of Serde newtype struct to Represent Msgpack's Ext
 /// Msgpack Ext: Ext(tag, binary)
@@ -188,8 +193,8 @@ impl Raw {
 
 impl Serialize for Raw {
     fn serialize<S>(&self, se: S) -> Result<S::Ok, S::Error>
-    where
-        S: serde::Serializer
+        where
+            S: serde::Serializer
     {
         let s = match self.s {
             Ok(ref s) => s.as_str(),
@@ -333,8 +338,8 @@ impl<'a> RawRef<'a> {
 
 impl<'a> Serialize for RawRef<'a> {
     fn serialize<S>(&self, se: S) -> Result<S::Ok, S::Error>
-    where
-        S: serde::Serializer,
+        where
+            S: serde::Serializer,
     {
         let s = match self.s {
             Ok(ref s) => s,
