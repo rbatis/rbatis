@@ -31,7 +31,7 @@
 //! extern crate serde;
 //! #[macro_use]
 //! extern crate serde_derive;
-//! extern crate rbmp;
+//! extern crate rbs;
 //!
 //! use std::collections::HashMap;
 //! use serde::{Deserialize, Serialize};
