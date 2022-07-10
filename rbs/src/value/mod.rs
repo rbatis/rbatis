@@ -10,7 +10,6 @@ use std::convert::TryFrom;
 use std::fmt::{self, Debug, Display};
 use std::iter::FromIterator;
 use std::ops::Index;
-use num_traits::NumCast;
 
 pub mod decode;
 pub mod encode;
