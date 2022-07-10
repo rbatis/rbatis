@@ -1,7 +1,15 @@
 # rbs
 
-* rbs is rbatis impl message pack serde crates
+* rbs is rbatis impl message pack serde crates.
 
+##  Unlike the Message Pack changes
+* change struct -> Map
+* change Integer ->  i32,i64,u32,u64
+
+
+
+
+## use example
 ```rust
 use std::collections::HashMap;
 fn main(){
