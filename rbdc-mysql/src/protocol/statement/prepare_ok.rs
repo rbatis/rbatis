@@ -1,18 +1,18 @@
 use bytes::{Buf, Bytes};
 
-use crate::error::Error;
-use crate::io::Decode;
-use crate::mysql::protocol::Capabilities;
+use crate::protocol::Capabilities;
+use rbdc::io::Decode;
+use rbdc::{err_protocol, Error};
 
 // https://dev.mysql.com/doc/internals/en/com-stmt-prepare-response.html#packet-COM_STMT_PREPARE_OK
 
 #[derive(Debug)]
-pub(crate) struct PrepareOk {
-    pub(crate) statement_id: u32,
-    pub(crate) columns: u16,
-    pub(crate) params: u16,
+pub struct PrepareOk {
+    pub statement_id: u32,
+    pub columns: u16,
+    pub params: u16,
     #[allow(unused)]
-    pub(crate) warnings: u16,
+    pub warnings: u16,
 }
 
 impl Decode<'_, Capabilities> for PrepareOk {

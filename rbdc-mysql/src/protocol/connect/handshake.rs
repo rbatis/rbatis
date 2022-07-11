@@ -1,29 +1,29 @@
 use bytes::buf::Chain;
 use bytes::{Buf, Bytes};
 
-use crate::error::Error;
-use crate::io::{BufExt, Decode};
-use crate::mysql::protocol::auth::AuthPlugin;
-use crate::mysql::protocol::response::Status;
-use crate::mysql::protocol::Capabilities;
+use crate::protocol::auth::AuthPlugin;
+use crate::protocol::response::Status;
+use crate::protocol::Capabilities;
+use rbdc::io::{BufExt, Decode};
+use rbdc::Error;
 
 // https://dev.mysql.com/doc/internals/en/connection-phase-packets.html#packet-Protocol::Handshake
 // https://mariadb.com/kb/en/connection/#initial-handshake-packet
 
 #[derive(Debug)]
-pub(crate) struct Handshake {
+pub struct Handshake {
     #[allow(unused)]
-    pub(crate) protocol_version: u8,
-    pub(crate) server_version: String,
+    pub protocol_version: u8,
+    pub server_version: String,
     #[allow(unused)]
-    pub(crate) connection_id: u32,
-    pub(crate) server_capabilities: Capabilities,
+    pub connection_id: u32,
+    pub server_capabilities: Capabilities,
     #[allow(unused)]
-    pub(crate) server_default_collation: u8,
+    pub server_default_collation: u8,
     #[allow(unused)]
-    pub(crate) status: Status,
-    pub(crate) auth_plugin: Option<AuthPlugin>,
-    pub(crate) auth_plugin_data: Chain<Bytes, Bytes>,
+    pub status: Status,
+    pub auth_plugin: Option<AuthPlugin>,
+    pub auth_plugin_data: Chain<Bytes, Bytes>,
 }
 
 impl Decode<'_> for Handshake {

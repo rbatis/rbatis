@@ -13,6 +13,8 @@ serde = "1"
 indexmap = "1"
 bytes ="1.1.0"
 memchr = "2.5.0"
-futures-core="0.3.21"
-futures-util = "0.3.21"
+futures-intrusive = "0.4.0"
+futures-core = { version = "0.3.19", default-features = false }
+futures-util = {version="0.3.21",features = ["alloc", "sink"]}
+futures-channel = {version="0.3.21",default-features = false, features = ["sink", "alloc", "std"] }
 rbs = {path="../rbs"}

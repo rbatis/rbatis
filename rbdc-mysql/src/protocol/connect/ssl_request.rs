@@ -1,5 +1,5 @@
-use crate::io::Encode;
-use crate::mysql::protocol::Capabilities;
+use crate::protocol::Capabilities;
+use rbdc::io::Encode;
 
 // https://dev.mysql.com/doc/dev/mysql-server/8.0.12/page_protocol_connection_phase_packets_protocol_handshake_response.html
 // https://dev.mysql.com/doc/internals/en/connection-phase-packets.html#packet-Protocol::SSLRequest

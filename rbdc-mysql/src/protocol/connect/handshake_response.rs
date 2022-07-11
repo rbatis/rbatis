@@ -1,8 +1,8 @@
-use crate::io::{BufMutExt, Encode};
-use crate::mysql::io::MySqlBufMutExt;
-use crate::mysql::protocol::auth::AuthPlugin;
-use crate::mysql::protocol::connect::ssl_request::SslRequest;
-use crate::mysql::protocol::Capabilities;
+use crate::io::MySqlBufMutExt;
+use crate::protocol::auth::AuthPlugin;
+use crate::protocol::connect::ssl_request::SslRequest;
+use crate::protocol::Capabilities;
+use rbdc::io::{BufMutExt, Encode};
 
 // https://dev.mysql.com/doc/internals/en/connection-phase-packets.html#packet-Protocol::HandshakeResponse
 // https://mariadb.com/kb/en/connection/#client-handshake-response

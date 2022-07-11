@@ -4,8 +4,8 @@ mod prepare_ok;
 mod row;
 mod stmt_close;
 
-pub(crate) use execute::Execute;
-pub(crate) use prepare::Prepare;
-pub(crate) use prepare_ok::PrepareOk;
-pub(crate) use row::BinaryRow;
-pub(crate) use stmt_close::StmtClose;
+pub use execute::Execute;
+pub use prepare::Prepare;
+pub use prepare_ok::PrepareOk;
+pub use row::BinaryRow;
+pub use stmt_close::StmtClose;

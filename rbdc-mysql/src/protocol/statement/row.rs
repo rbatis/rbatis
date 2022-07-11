@@ -1,17 +1,17 @@
 use bytes::{Buf, Bytes};
 
-use crate::error::Error;
-use crate::io::{BufExt, Decode};
-use crate::mysql::io::MySqlBufExt;
-use crate::mysql::protocol::text::ColumnType;
-use crate::mysql::protocol::Row;
-use crate::mysql::MySqlColumn;
+use crate::io::MySqlBufExt;
+use crate::protocol::text::ColumnType;
+use crate::protocol::Row;
+use crate::result_set::MySqlColumn;
+use rbdc::io::{BufExt, Decode};
+use rbdc::{err_protocol, Error};
 
 // https://dev.mysql.com/doc/internals/en/binary-protocol-resultset-row.html#packet-ProtocolBinary::ResultsetRow
 // https://dev.mysql.com/doc/internals/en/binary-protocol-value.html
 
 #[derive(Debug)]
-pub(crate) struct BinaryRow(pub(crate) Row);
+pub struct BinaryRow(pub Row);
 
 impl<'de> Decode<'de, &'de [MySqlColumn]> for BinaryRow {
     fn decode_with(mut buf: Bytes, columns: &'de [MySqlColumn]) -> Result<Self, Error> {

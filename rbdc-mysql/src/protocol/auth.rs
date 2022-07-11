@@ -1,6 +1,6 @@
 use std::str::FromStr;
 
-use rbdc::Error;
+use rbdc::{err_protocol, Error};
 
 #[derive(Debug, Copy, Clone)]
 pub enum AuthPlugin {
@@ -10,7 +10,7 @@ pub enum AuthPlugin {
 }
 
 impl AuthPlugin {
-    pub(crate) fn name(self) -> &'static str {
+    pub fn name(self) -> &'static str {
         match self {
             AuthPlugin::MySqlNativePassword => "mysql_native_password",
             AuthPlugin::CachingSha2Password => "caching_sha2_password",

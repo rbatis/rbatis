@@ -1,12 +1,12 @@
-pub(crate) mod auth;
+pub mod auth;
 mod capabilities;
-pub(crate) mod connect;
+pub mod connect;
 mod packet;
-pub(crate) mod response;
+pub mod response;
 mod row;
-pub(crate) mod statement;
-pub(crate) mod text;
+pub mod statement;
+pub mod text;
 
-pub(crate) use capabilities::Capabilities;
-pub(crate) use packet::Packet;
-pub(crate) use row::Row;
+pub use capabilities::Capabilities;
+pub use packet::Packet;
+pub use row::Row;

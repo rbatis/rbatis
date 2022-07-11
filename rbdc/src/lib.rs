@@ -3,6 +3,7 @@ use std::fmt::{Debug, Display, Formatter};
 pub mod db;
 pub mod decode;
 pub mod encode;
+pub mod ext;
 pub mod io;
 pub mod rt;
 
@@ -35,6 +36,14 @@ impl serde::ser::Error for Error {
 impl From<std::io::Error> for Error {
     fn from(arg: std::io::Error) -> Self {
         Error::E(arg.to_string())
+    }
+}
+
+impl Error {
+    #[allow(dead_code)]
+    #[inline]
+    pub fn protocol(err: impl Display) -> Self {
+        Error::E(err.to_string())
     }
 }
 

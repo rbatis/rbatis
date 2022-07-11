@@ -1,5 +1,5 @@
-use crate::io::Encode;
-use crate::mysql::protocol::Capabilities;
+use crate::protocol::Capabilities;
+use rbdc::io::Encode;
 
 // https://dev.mysql.com/doc/internals/en/com-stmt-prepare.html#packet-COM_STMT_PREPARE
 
