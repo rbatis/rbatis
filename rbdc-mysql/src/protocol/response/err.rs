@@ -1,8 +1,8 @@
 use bytes::{Buf, Bytes};
 
-use crate::error::Error;
-use crate::io::{BufExt, Decode};
-use crate::mysql::protocol::Capabilities;
+use crate::protocol::Capabilities;
+use rbdc::io::{BufExt, Decode};
+use rbdc::{err_protocol, Error};
 
 // https://dev.mysql.com/doc/dev/mysql-server/8.0.12/page_protocol_basic_err_packet.html
 // https://mariadb.com/kb/en/err_packet/

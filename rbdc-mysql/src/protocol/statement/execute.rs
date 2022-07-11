@@ -1,7 +1,7 @@
-use crate::io::Encode;
-use crate::mysql::protocol::text::ColumnFlags;
-use crate::mysql::protocol::Capabilities;
-use crate::mysql::MySqlArguments;
+use crate::protocol::text::ColumnFlags;
+use crate::protocol::Capabilities;
+use crate::stmt::MySqlArguments;
+use rbdc::io::Encode;
 
 // https://dev.mysql.com/doc/dev/mysql-server/8.0.12/page_protocol_com_stmt_execute.html
 

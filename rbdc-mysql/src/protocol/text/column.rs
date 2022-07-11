@@ -3,16 +3,16 @@ use std::str::from_utf8;
 use bitflags::bitflags;
 use bytes::{Buf, Bytes};
 
-use crate::error::Error;
-use crate::io::Decode;
-use crate::mysql::io::MySqlBufExt;
-use crate::mysql::protocol::Capabilities;
+use crate::io::MySqlBufExt;
+use crate::protocol::Capabilities;
+use rbdc::io::Decode;
+use rbdc::{err_protocol, Error};
 
 // https://dev.mysql.com/doc/dev/mysql-server/8.0.12/group__group__cs__column__definition__flags.html
 
 bitflags! {
-    #[cfg_attr(feature = "offline", derive(serde::Serialize, serde::Deserialize))]
-    pub(crate) struct ColumnFlags: u16 {
+    #[derive(serde::Serialize, serde::Deserialize)]
+    pub struct ColumnFlags: u16 {
         /// Field can't be `NULL`.
         const NOT_NULL = 1;
 
@@ -62,8 +62,7 @@ bitflags! {
 
 // https://dev.mysql.com/doc/internals/en/com-query-response.html#column-type
 
-#[derive(Debug, Copy, Clone, PartialEq)]
-#[cfg_attr(feature = "offline", derive(serde::Serialize, serde::Deserialize))]
+#[derive(Debug, Copy, Clone, PartialEq, serde::Serialize, serde::Deserialize)]
 #[repr(u8)]
 pub enum ColumnType {
     Decimal = 0x00,
@@ -100,7 +99,7 @@ pub enum ColumnType {
 // https://dev.mysql.com/doc/internals/en/com-query-response.html#packet-Protocol::ColumnDefinition41
 
 #[derive(Debug)]
-pub(crate) struct ColumnDefinition {
+pub struct ColumnDefinition {
     #[allow(unused)]
     catalog: Bytes,
     #[allow(unused)]
@@ -111,10 +110,10 @@ pub(crate) struct ColumnDefinition {
     table: Bytes,
     alias: Bytes,
     name: Bytes,
-    pub(crate) char_set: u16,
-    pub(crate) max_size: u32,
-    pub(crate) r#type: ColumnType,
-    pub(crate) flags: ColumnFlags,
+    pub char_set: u16,
+    pub max_size: u32,
+    pub r#type: ColumnType,
+    pub flags: ColumnFlags,
     #[allow(unused)]
     decimals: u8,
 }
@@ -123,11 +122,11 @@ impl ColumnDefinition {
     // NOTE: strings in-protocol are transmitted according to the client character set
     //       as this is UTF-8, all these strings should be UTF-8
 
-    pub(crate) fn name(&self) -> Result<&str, Error> {
+    pub fn name(&self) -> Result<&str, Error> {
         from_utf8(&self.name).map_err(Error::protocol)
     }
 
-    pub(crate) fn alias(&self) -> Result<&str, Error> {
+    pub fn alias(&self) -> Result<&str, Error> {
         from_utf8(&self.alias).map_err(Error::protocol)
     }
 }
@@ -164,12 +163,7 @@ impl Decode<'_, Capabilities> for ColumnDefinition {
 }
 
 impl ColumnType {
-    pub(crate) fn name(
-        self,
-        char_set: u16,
-        flags: ColumnFlags,
-        max_size: Option<u32>,
-    ) -> &'static str {
+    pub fn name(self, char_set: u16, flags: ColumnFlags, max_size: Option<u32>) -> &'static str {
         let is_binary = char_set == 63;
         let is_unsigned = flags.contains(ColumnFlags::UNSIGNED);
         let is_enum = flags.contains(ColumnFlags::ENUM);
@@ -222,7 +216,7 @@ impl ColumnType {
         }
     }
 
-    pub(crate) fn try_from_u16(id: u8) -> Result<Self, Error> {
+    pub fn try_from_u16(id: u8) -> Result<Self, Error> {
         Ok(match id {
             0x00 => ColumnType::Decimal,
             0x01 => ColumnType::Tiny,

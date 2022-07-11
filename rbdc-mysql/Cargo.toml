@@ -9,3 +9,5 @@ edition = "2021"
 rbs={version="0.1",path="../rbs"}
 bytes ="1.1.0"
 rbdc = { path = "../rbdc" }
+serde = "1"
+bitflags="1.3.2"

@@ -2,13 +2,13 @@ use std::ops::{Deref, DerefMut};
 
 use bytes::Bytes;
 
-use crate::error::Error;
-use crate::io::{Decode, Encode};
-use crate::mysql::protocol::response::{EofPacket, OkPacket};
-use crate::mysql::protocol::Capabilities;
+use crate::protocol::response::{EofPacket, OkPacket};
+use crate::protocol::Capabilities;
+use rbdc::io::{Decode, Encode};
+use rbdc::Error;
 
 #[derive(Debug)]
-pub struct Packet<T>(pub(crate) T);
+pub struct Packet<T>(pub T);
 
 impl<'en, 'stream, T> Encode<'stream, (Capabilities, &'stream mut u8)> for Packet<T>
 where
@@ -42,25 +42,25 @@ where
 }
 
 impl Packet<Bytes> {
-    pub(crate) fn decode<'de, T>(self) -> Result<T, Error>
+    pub fn decode<'de, T>(self) -> Result<T, Error>
     where
         T: Decode<'de, ()>,
     {
         self.decode_with(())
     }
 
-    pub(crate) fn decode_with<'de, T, C>(self, context: C) -> Result<T, Error>
+    pub fn decode_with<'de, T, C>(self, context: C) -> Result<T, Error>
     where
         T: Decode<'de, C>,
     {
         T::decode_with(self.0, context)
     }
 
-    pub(crate) fn ok(self) -> Result<OkPacket, Error> {
+    pub fn ok(self) -> Result<OkPacket, Error> {
         self.decode()
     }
 
-    pub(crate) fn eof(self, capabilities: Capabilities) -> Result<EofPacket, Error> {
+    pub fn eof(self, capabilities: Capabilities) -> Result<EofPacket, Error> {
         if capabilities.contains(Capabilities::DEPRECATE_EOF) {
             let ok = self.ok()?;
 

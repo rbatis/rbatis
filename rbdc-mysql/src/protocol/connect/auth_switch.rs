@@ -1,10 +1,10 @@
 use bytes::{Buf, Bytes};
 
-use crate::io::Encode;
-use crate::io::{BufExt, Decode};
 use crate::protocol::auth::AuthPlugin;
 use crate::protocol::Capabilities;
-use rbdc::Error;
+use rbdc::io::Encode;
+use rbdc::io::{BufExt, Decode};
+use rbdc::{err_protocol, Error};
 
 // https://dev.mysql.com/doc/dev/mysql-server/8.0.12/page_protocol_connection_phase_packets_protocol_auth_switch_request.html
 
