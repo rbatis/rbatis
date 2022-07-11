@@ -1,5 +1,5 @@
-use rbs::Value;
 use crate::Error;
+use rbs::Value;
 
 /// Represents database driver that can be shared between threads, and can therefore implement
 /// a connection pool
@@ -44,7 +44,6 @@ pub trait ResultSetMetaData {
     fn column_name(&self, i: usize) -> String;
     fn column_type(&self, i: usize) -> String;
 }
-
 
 #[cfg(test)]
 mod test {
