@@ -40,7 +40,7 @@ pub trait ResultSet {
 
 /// Meta data for result set
 pub trait ResultSetMetaData {
-    fn num_columns(&self) -> u64;
+    fn column_len(&self) -> u64;
     fn column_name(&self, i: usize) -> String;
     fn column_type(&self, i: usize) -> String;
 }
