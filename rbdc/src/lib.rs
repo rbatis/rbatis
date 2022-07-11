@@ -1,18 +1,22 @@
-use std::fmt::{Display, Formatter};
+use std::fmt::{Debug, Display, Formatter};
 
 pub mod db;
 pub mod decode;
 pub mod encode;
+pub mod io;
+pub mod rt;
 
 #[derive(Debug)]
 pub enum Error {
     E(String),
+    Io(std::io::Error),
 }
 
 impl Display for Error {
     fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
         match self {
-            Error::E(e) => e.fmt(f),
+            Error::E(e) => std::fmt::Display::fmt(&e, f),
+            Error::Io(e) => f.write_str(&e.to_string()),
         }
     }
 }
@@ -26,6 +30,24 @@ impl serde::ser::Error for Error {
     {
         Self::E(msg.to_string())
     }
+}
+
+impl From<std::io::Error> for Error {
+    fn from(arg: std::io::Error) -> Self {
+        Error::E(arg.to_string())
+    }
+}
+
+// Format an error message as a `Protocol` error
+#[macro_export]
+macro_rules! err_protocol {
+    ($expr:expr) => {
+        $crate::Error::E($expr.into())
+    };
+
+    ($fmt:expr, $($arg:tt)*) => {
+        $crate::Error::E(format!($fmt, $($arg)*))
+    };
 }
 
 #[cfg(test)]
