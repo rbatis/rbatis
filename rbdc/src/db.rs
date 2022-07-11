@@ -30,36 +30,18 @@ pub trait Statement {
 /// Result set from executing a query against a statement
 pub trait ResultSet {
     /// get meta data about this result set
-    fn meta_data(&self) -> Result<Box<dyn ResultSetMetaData>, Error>;
+    fn meta_data(&self) -> Result<Box<dyn MetaData>, Error>;
 
     /// Move the cursor to the next available row if one exists and return true if it does
     fn next(&mut self) -> bool;
 
-    fn get_v(&self, i: u64) -> Result<Value, Error>;
+    /// get Value from index
+    fn get(&self, i: u64) -> Result<Value, Error>;
 }
 
 /// Meta data for result set
-pub trait ResultSetMetaData {
+pub trait MetaData {
     fn column_len(&self) -> u64;
     fn column_name(&self, i: usize) -> String;
     fn column_type(&self, i: usize) -> String;
-}
-
-#[cfg(test)]
-mod test {
-    use crate::db::{Connection, Driver};
-    use crate::Error;
-
-    pub struct M {}
-
-    impl Driver for M {
-        fn connect(&self, url: &str) -> Result<Box<dyn Connection>, Error> {
-            todo!()
-        }
-    }
-
-    #[test]
-    fn test_db() {
-        let b: Box<dyn Driver> = Box::new(M {});
-    }
 }
