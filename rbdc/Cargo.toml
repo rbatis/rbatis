@@ -6,9 +6,13 @@ edition = "2021"
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
-tokio = "1"
+tokio = {version="1",features=["fs", "net", "rt", "rt-multi-thread", "time", "io-util"]}
 rbson = { version = "2.0.3", features = ["uuid-0_8", "chrono-0_4"] }
+once_cell = "1.13"
 serde = "1"
 indexmap = "1"
-
+bytes ="1.1.0"
+memchr = "2.5.0"
+futures-core="0.3.21"
+futures-util = "0.3.21"
 rbs = {path="../rbs"}
