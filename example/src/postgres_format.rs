@@ -5,9 +5,9 @@ mod test {
     use rbatis::crud::{CRUDMut, CRUD};
     use rbatis::plugin::intercept::RbatisLogFormatSqlIntercept;
     use rbatis::rbatis::Rbatis;
+    use rbatis::DateTimeNative;
     use std::str::FromStr;
     use uuid::Uuid;
-    use rbatis::DateTimeNative;
 
     //'formats_pg' use postgres format
     //'id' ->  table column 'id'
@@ -30,11 +30,16 @@ mod test {
         rb.link("postgres://postgres:123456@localhost:5432/postgres")
             .await
             .unwrap();
-        
-        rb.save(&BizUuid{
-            id: Some("6".to_string()),
-            name: None
-        },&[]).await.unwrap();
+
+        rb.save(
+            &BizUuid {
+                id: Some("6".to_string()),
+                name: None,
+            },
+            &[],
+        )
+        .await
+        .unwrap();
 
         // let uuid = Uuid::from_str("df07fea2-b819-4e05-b86d-dfc15a5f52a9").unwrap();
         // //create table

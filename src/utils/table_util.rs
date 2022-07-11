@@ -2,7 +2,6 @@ use std::collections::{BTreeMap, HashMap};
 
 use crate::crud::CRUDTable;
 
-
 /// Simplifies table construction by relying on the Default trait
 ///
 /// step1:  impl Default
@@ -122,7 +121,7 @@ macro_rules! make_table_field_map_btree {
 macro_rules! as_bson {
     ($key:expr) => {
         rbson::to_bson($key).unwrap_or_default()
-    }
+    };
 }
 
 /// Used to simulate enumerations to improve code maintainability.
@@ -134,14 +133,13 @@ macro_rules! as_bson {
 #[allow(unused_macros)]
 #[macro_export]
 macro_rules! field_name {
-    ($t:ident.$field:ident) => {
-        {
-           if false{|a:$t|{a.$field};}
-           stringify!($field).trim_start_matches("r#")
+    ($t:ident.$field:ident) => {{
+        if false {
+            |a: $t| a.$field;
         }
-    };
+        stringify!($field).trim_start_matches("r#")
+    }};
 }
-
 
 /// will create pub fn field_name()->&str method
 /// for example:

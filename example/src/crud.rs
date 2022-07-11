@@ -1,19 +1,19 @@
 #[cfg(test)]
 mod test {
-    use std::fs::{File, OpenOptions};
-    use std::io::Read;
-    use rbson::Bson;
+    use crate::init_sqlite;
     use rbatis::core::value::DateTimeNow;
     use rbatis::core::Error;
-    use rbatis::crud::{CRUDMut, CRUD, Skip};
-    use rbatis::plugin::logic_delete::{RbatisLogicDeletePlugin};
+    use rbatis::crud::CRUDTable;
+    use rbatis::crud::{CRUDMut, Skip, CRUD};
+    use rbatis::plugin::logic_delete::RbatisLogicDeletePlugin;
     use rbatis::plugin::page::{Page, PageRequest};
     use rbatis::plugin::snowflake::new_snowflake_id;
     use rbatis::rbatis::Rbatis;
-    use serde_json::Value;
     use rbatis::DateTimeNative;
-    use rbatis::crud::CRUDTable;
-    use crate::init_sqlite;
+    use rbson::Bson;
+    use serde_json::Value;
+    use std::fs::{File, OpenOptions};
+    use std::io::Read;
     // use rbatis::core::types::byte::RbBytes;
     // use rbatis::core::types::json::RbJson;
 
@@ -36,7 +36,6 @@ mod test {
         pub create_time: Option<rbatis::DateTimeNative>,
         pub version: Option<i64>,
         pub delete_flag: Option<i32>,
-
         // other types
         // pub bytes: Option<rbatis::Bytes>,
         // pub json: Option<rbatis::Json<serde_json::Value>>,
@@ -182,14 +181,15 @@ mod test {
         activity2.id = Some("12313".to_string());
         let mut activity3 = activity.clone();
         activity3.id = Some("12314".to_string());
-        rb.remove_batch_by_column::<BizActivity, _>("id",
-                                                    &[
-                                                        "12312".to_string(),
-                                                        "12313".to_string(),
-                                                        "12314".to_string(),
-                                                    ],
+        rb.remove_batch_by_column::<BizActivity, _>(
+            "id",
+            &[
+                "12312".to_string(),
+                "12313".to_string(),
+                "12314".to_string(),
+            ],
         )
-            .await;
+        .await;
         let args = vec![activity, activity2, activity3];
         let r = rb.save_batch_slice(&args, 2, &[]).await;
         if r.is_err() {
@@ -220,8 +220,7 @@ mod test {
         activity2.id = Some("12313".to_string());
         let mut activity3 = activity.clone();
         activity3.id = Some("12314".to_string());
-        rb.save_batch(&[activity,activity2,activity3],&[]).await;
-
+        rb.save_batch(&[activity, activity2, activity3], &[]).await;
 
         let r = rb
             .remove_batch_by_column::<BizActivity, _>("id", &["12312", "12313"])
@@ -248,10 +247,13 @@ mod test {
             version: Some(1),
             delete_flag: Some(1),
         };
-        rb.save(&activity,&[]).await;
+        rb.save(&activity, &[]).await;
         //set logic plugin(run with update sql),if not will run delete sql
         rb.set_logic_plugin(RbatisLogicDeletePlugin::new("delete_flag"));
-        let num = rb.remove_by_column::<BizActivity, _>("id", "12312").await.unwrap();
+        let num = rb
+            .remove_by_column::<BizActivity, _>("id", "12312")
+            .await
+            .unwrap();
         println!("{}", num);
     }
 
@@ -267,10 +269,7 @@ mod test {
     #[tokio::test]
     pub async fn test_count() {
         let mut rb = init_sqlite().await;
-        let r = rb
-            .fetch_count::<BizActivity>()
-            .await
-            .unwrap();
+        let r = rb.fetch_count::<BizActivity>().await.unwrap();
         println!("count(1): {}", r);
     }
 
@@ -307,7 +306,9 @@ mod test {
         };
 
         let w = rb.new_wrapper().eq("id", "12312");
-        let r = rb.update_by_wrapper(&activity, w, &[Skip::Value(Bson::Null), Skip::Column("id")]).await;
+        let r = rb
+            .update_by_wrapper(&activity, w, &[Skip::Value(Bson::Null), Skip::Column("id")])
+            .await;
         if r.is_err() {
             println!("{}", r.err().unwrap().to_string());
         }

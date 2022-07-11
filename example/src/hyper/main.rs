@@ -2,13 +2,12 @@
 #[macro_use]
 extern crate rbatis;
 
-
 use hyper::service::{make_service_fn, service_fn};
 use hyper::{Body, Request, Response, Server};
+use once_cell::sync::Lazy;
 use rbatis::crud::{CRUDMut, CRUD};
 use rbatis::rbatis::Rbatis;
 use std::convert::Infallible;
-use once_cell::sync::Lazy;
 
 #[crud_table]
 #[derive(Clone, Debug)]
@@ -38,9 +37,11 @@ async fn hello(_: Request<Body>) -> Result<Response<Body>, Infallible> {
 pub async fn main() -> Result<(), Box<dyn std::error::Error + Send + Sync>> {
     fast_log::init(fast_log::config::Config::new().console());
     log::info!("linking database...");
-    let rb=example::init_sqlite_path("").await;
+    let rb = example::init_sqlite_path("").await;
     drop(rb);
-    RB.link("sqlite://target/sqlite.db").await.expect("rbatis link database fail");
+    RB.link("sqlite://target/sqlite.db")
+        .await
+        .expect("rbatis link database fail");
     log::info!("linking database successful!");
     let make_svc = make_service_fn(|_conn| async { Ok::<_, Infallible>(service_fn(hello)) });
     let addr = ([127, 0, 0, 1], 8000).into();

@@ -1,6 +1,6 @@
-use rbson::{bson, Bson, to_bson};
+use chrono::Utc;
 use rbson::spec::BinarySubtype;
-use chrono::{Utc};
+use rbson::{bson, to_bson, Bson};
 use sqlx_core::column::Column;
 use sqlx_core::decode::Decode;
 use sqlx_core::error::BoxDynError;
@@ -11,8 +11,8 @@ use sqlx_core::type_info::TypeInfo;
 use sqlx_core::value::ValueRef;
 
 use crate::convert::{JsonCodec, RefJsonCodec, ResultCodec};
-use crate::{to_bson_macro};
 use crate::db::db_adapter::DataDecoder;
+use crate::to_bson_macro;
 
 impl<'c> JsonCodec for SqliteValueRef<'c> {
     fn try_to_bson(self) -> crate::Result<Bson> {

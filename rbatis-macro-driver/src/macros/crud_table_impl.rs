@@ -1,11 +1,10 @@
 use std::collections::HashMap;
 
 use crate::proc_macro::TokenStream;
-use proc_macro2::{Ident};
+use proc_macro2::Ident;
 use quote::quote;
 use quote::ToTokens;
 use syn;
-
 
 ///impl CRUDTable
 pub(crate) fn impl_crud_driver(
@@ -49,16 +48,16 @@ pub(crate) fn impl_crud_driver(
         if ident_name.starts_with("r#") {
             let ident_name_no = ident_name.trim_start_matches("r#").to_string();
             item = quote! {
-                #ident_name | #ident_name_no => {
-                return rbson::to_bson(&self.#ident).unwrap_or_default();
-                }
-             };
+               #ident_name | #ident_name_no => {
+               return rbson::to_bson(&self.#ident).unwrap_or_default();
+               }
+            };
         } else {
             item = quote! {
-            #ident_name => {
-                return rbson::to_bson(&self.#ident).unwrap_or_default();
-            }
-          };
+              #ident_name => {
+                  return rbson::to_bson(&self.#ident).unwrap_or_default();
+              }
+            };
         }
         items = quote! {
             #items
@@ -72,7 +71,6 @@ pub(crate) fn impl_crud_driver(
             _ => { rbson::Bson::Null }
         }
     };
-
 
     let mut formats_mysql = proc_macro2::TokenStream::new();
     let mut formats_pg = proc_macro2::TokenStream::new();
@@ -97,7 +95,6 @@ pub(crate) fn impl_crud_driver(
             }
         }
     }
-
 
     let gen = quote! {
         impl rbatis::crud::CRUDTable for #name {
@@ -224,7 +221,6 @@ fn gen_table_name(data: &syn::Ident) -> String {
     table_name = to_snake_name(&table_name);
     table_name
 }
-
 
 fn gen_fields(data: &syn::Data) -> Vec<Ident> {
     let mut fields = vec![];

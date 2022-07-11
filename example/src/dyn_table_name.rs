@@ -1,6 +1,6 @@
 #[cfg(test)]
 mod test {
-    use crate::{BizActivity, init_sqlite};
+    use crate::{init_sqlite, BizActivity};
     use rbatis::crud::{CRUDMut, CRUD};
     use rbatis::rbatis::Rbatis;
 
@@ -12,7 +12,8 @@ mod test {
         let mut w = rb.new_wrapper();
         //replace your dyn table name
         //w.formats.insert("table_name".to_string(),  "biz_{}".to_string());//also support {} is replace value!
-        w.formats.insert("table_name".to_string(),  "biz_activity".to_string());
+        w.formats
+            .insert("table_name".to_string(), "biz_activity".to_string());
         //support all of RB.*_wrapper() method
         let r = rb.fetch_list_by_wrapper::<BizActivity>(w).await;
         if r.is_err() {

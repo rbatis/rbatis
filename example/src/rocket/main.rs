@@ -4,11 +4,11 @@ extern crate rocket;
 extern crate rbatis;
 
 use example::BizActivity;
-use rbatis::crud::{CRUD};
+use rbatis::crud::CRUD;
 use rbatis::rbatis::Rbatis;
-use std::sync::Arc;
 use rocket::fairing::AdHoc;
-use rocket::{Rocket, State, Build, futures};
+use rocket::{futures, Build, Rocket, State};
+use std::sync::Arc;
 
 //mysql driver url
 pub const MYSQL_URL: &'static str = "mysql://root:123456@localhost:3306/test";
