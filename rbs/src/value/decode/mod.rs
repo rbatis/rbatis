@@ -95,8 +95,7 @@ impl Into<io::Error> for Error {
     #[cold]
     fn into(self) -> io::Error {
         match self {
-            Error::InvalidMarkerRead(err) |
-            Error::InvalidDataRead(err) => err,
+            Error::InvalidMarkerRead(err) | Error::InvalidDataRead(err) => err,
             Error::DepthLimitExceeded => io::Error::new(self.kind(), self),
         }
     }

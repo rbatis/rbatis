@@ -2,10 +2,10 @@
 #[macro_use]
 extern crate rbatis;
 
-use std::sync::Arc;
 use actix_web::{web, App, HttpResponse, HttpServer, Responder};
+use std::sync::Arc;
 
-use rbatis::crud::{CRUD};
+use rbatis::crud::CRUD;
 use rbatis::rbatis::Rbatis;
 
 #[crud_table]
@@ -46,7 +46,9 @@ impl Default for BizActivity {
 
 async fn index(rb: web::Data<Arc<Rbatis>>) -> impl Responder {
     let v = rb.fetch_list::<BizActivity>().await.unwrap_or_default();
-    HttpResponse::Ok().insert_header(("Content-Type", "text/json;charset=UTF-8")).json(v)
+    HttpResponse::Ok()
+        .insert_header(("Content-Type", "text/json;charset=UTF-8"))
+        .json(v)
 }
 
 #[tokio::main]
@@ -67,7 +69,7 @@ async fn main() -> std::io::Result<()> {
             .app_data(web::Data::new(rb.to_owned()))
             .route("/", web::get().to(index))
     })
-        .bind(("127.0.0.1", 8080))?
-        .run()
-        .await
+    .bind(("127.0.0.1", 8080))?
+    .run()
+    .await
 }

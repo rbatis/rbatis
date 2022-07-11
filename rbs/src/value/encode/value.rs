@@ -1,9 +1,12 @@
 use std::io::Write;
 
-use rmp::encode::{write_array_len, write_bin, write_bool, write_ext_meta, write_f32, write_f64, write_i32, write_map_len, write_nil, write_sint, write_u32, write_uint};
+use rmp::encode::{
+    write_array_len, write_bin, write_bool, write_ext_meta, write_f32, write_f64, write_i32,
+    write_map_len, write_nil, write_sint, write_u32, write_uint,
+};
 
 use super::Error;
-use crate::value::{Value};
+use crate::value::Value;
 
 /// Encodes and attempts to write the most efficient representation of the given Value.
 ///
@@ -12,7 +15,8 @@ use crate::value::{Value};
 /// All instances of `ErrorKind::Interrupted` are handled by this function and the underlying
 /// operation is retried.
 pub fn write_value<W>(wr: &mut W, val: &Value) -> Result<(), Error>
-    where W: Write
+where
+    W: Write,
 {
     match *val {
         Value::Nil => {
@@ -21,16 +25,16 @@ pub fn write_value<W>(wr: &mut W, val: &Value) -> Result<(), Error>
         Value::Bool(val) => {
             write_bool(wr, val).map_err(Error::InvalidMarkerWrite)?;
         }
-        Value::I32(n) =>{
+        Value::I32(n) => {
             write_i32(wr, n)?;
         }
-        Value::I64(n) =>{
+        Value::I64(n) => {
             write_sint(wr, n)?;
         }
-        Value::U32(n) =>{
+        Value::U32(n) => {
             write_u32(wr, n)?;
         }
-        Value::U64(n) =>{
+        Value::U64(n) => {
             write_uint(wr, n)?;
         }
         Value::F32(val) => {

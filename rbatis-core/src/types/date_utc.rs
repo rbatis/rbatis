@@ -1,12 +1,11 @@
+use chrono::Utc;
+use rbson::spec::BinarySubtype;
+use rbson::Bson;
+use serde::de::Error;
+use serde::{Deserializer, Serializer};
 use std::any::type_name;
 use std::ops::{Deref, DerefMut};
 use std::str::FromStr;
-use rbson::Bson;
-use rbson::spec::BinarySubtype;
-use chrono::Utc;
-use serde::{Deserializer, Serializer};
-use serde::de::Error;
-
 
 #[derive(Clone, Copy, Eq, Hash, Ord, PartialEq, PartialOrd)]
 pub struct DateUtc {
@@ -15,27 +14,26 @@ pub struct DateUtc {
 
 impl From<chrono::NaiveDate> for DateUtc {
     fn from(arg: chrono::NaiveDate) -> Self {
-        DateUtc {
-            inner: arg
-        }
+        DateUtc { inner: arg }
     }
 }
 
 impl From<&chrono::NaiveDate> for DateUtc {
     fn from(arg: &chrono::NaiveDate) -> Self {
-        DateUtc {
-            inner: arg.clone()
-        }
+        DateUtc { inner: arg.clone() }
     }
 }
 
 impl serde::Serialize for DateUtc {
     #[inline]
-    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error> where S: Serializer {
+    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
+    where
+        S: Serializer,
+    {
         use serde::ser::Error;
         if type_name::<S::Error>().eq("rbson::ser::error::Error") {
             return serializer.serialize_str(&format!("DateUtc({})", self.inner));
-        }else{
+        } else {
             return self.inner.serialize(serializer);
         }
     }
@@ -43,23 +41,26 @@ impl serde::Serialize for DateUtc {
 
 impl<'de> serde::Deserialize<'de> for DateUtc {
     #[inline]
-    fn deserialize<D>(deserializer: D) -> Result<Self, D::Error> where D: Deserializer<'de> {
+    fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
+    where
+        D: Deserializer<'de>,
+    {
         match Bson::deserialize(deserializer)? {
             Bson::String(s) => {
                 if s.starts_with("DateUtc(") && s.ends_with(")") {
                     let inner_data = &s["DateUtc(".len()..(s.len() - 1)];
                     return Ok(Self {
-                        inner: chrono::NaiveDate::from_str(inner_data).or_else(|e| Err(D::Error::custom(e.to_string())))?,
+                        inner: chrono::NaiveDate::from_str(inner_data)
+                            .or_else(|e| Err(D::Error::custom(e.to_string())))?,
                     });
                 } else {
                     return Ok(Self {
-                        inner: chrono::NaiveDate::from_str(&s).or_else(|e| Err(D::Error::custom(e.to_string())))?,
+                        inner: chrono::NaiveDate::from_str(&s)
+                            .or_else(|e| Err(D::Error::custom(e.to_string())))?,
                     });
                 }
             }
-            _ => {
-                Err(D::Error::custom("deserialize un supported bson type!"))
-            }
+            _ => Err(D::Error::custom("deserialize un supported bson type!")),
         }
     }
 }
@@ -90,7 +91,6 @@ impl DerefMut for DateUtc {
     }
 }
 
-
 impl DateUtc {
     /// Returns a [`DateTime`] which corresponds to the current date and time.
     pub fn now() -> DateUtc {
@@ -103,9 +103,7 @@ impl DateUtc {
     /// create from str
     pub fn from_str(arg: &str) -> Result<Self, crate::error::Error> {
         let inner = chrono::NaiveDate::from_str(arg)?;
-        Ok(Self {
-            inner: inner
-        })
+        Ok(Self { inner: inner })
     }
 }
 

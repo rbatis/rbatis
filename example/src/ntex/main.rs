@@ -2,14 +2,13 @@
 #[macro_use]
 extern crate rbatis;
 
-
-use rbatis::crud::{CRUD};
-use rbatis::rbatis::Rbatis;
-use ntex::web::{middleware, App, Error, HttpResponse};
-use ntex::web;
-use std::sync::Arc;
-use std::cell::Cell;
 use example::init_sqlite_path;
+use ntex::web;
+use ntex::web::{middleware, App, Error, HttpResponse};
+use rbatis::crud::CRUD;
+use rbatis::rbatis::Rbatis;
+use std::cell::Cell;
+use std::sync::Arc;
 
 #[crud_table]
 #[derive(Clone, Debug)]
@@ -49,11 +48,12 @@ impl Default for BizActivity {
 
 type DBPool = Arc<Rbatis>;
 
-
 #[web::get("/")]
 async fn index(pool: web::types::State<DBPool>) -> Result<HttpResponse, Error> {
     let v = pool.fetch_list::<BizActivity>().await.unwrap_or_default();
-    Ok(HttpResponse::Ok().set_header("Content-Type", "text/json;charset=UTF-8").json(&v))
+    Ok(HttpResponse::Ok()
+        .set_header("Content-Type", "text/json;charset=UTF-8")
+        .json(&v))
 }
 
 #[ntex::main]
@@ -74,7 +74,7 @@ async fn main() -> std::io::Result<()> {
             .wrap(middleware::Logger::default())
             .service((index))
     })
-        .bind("127.0.0.1:8000")?
-        .run()
-        .await
+    .bind("127.0.0.1:8000")?
+    .run()
+    .await
 }

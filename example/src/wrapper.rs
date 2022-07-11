@@ -1,6 +1,6 @@
 #[cfg(test)]
 mod test {
-    use crate::{BizActivity, init_sqlite};
+    use crate::{init_sqlite, BizActivity};
     use rbatis::crud::{CRUDMut, CRUD};
     use rbatis::rbatis::Rbatis;
 

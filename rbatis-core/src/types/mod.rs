@@ -1,15 +1,11 @@
 pub const BINARY_SUBTYPE_JSON: u8 = 0x90;
 
-
-
-
-
 pub mod json;
 
-use std::fmt::Formatter;
-use rbson::Bson;
-use rbson::spec::BinarySubtype;
 pub use json::*;
+use rbson::spec::BinarySubtype;
+use rbson::Bson;
+use std::fmt::Formatter;
 
 pub mod uuids;
 
@@ -63,15 +59,16 @@ pub trait Format {
     fn do_format(&self) -> String;
 }
 
-
 impl Format for Bson {
     fn do_format(&self) -> String {
         match self {
-            Bson::Double(d) => { format!("{}", d) }
-            Bson::String(s) => { format!("\"{}\"", s) }
-            Bson::Array(arr) => {
-                arr.do_format()
+            Bson::Double(d) => {
+                format!("{}", d)
             }
+            Bson::String(s) => {
+                format!("\"{}\"", s)
+            }
+            Bson::Array(arr) => arr.do_format(),
             Bson::Document(d) => {
                 let mut buf = String::new();
                 buf.push_str("{");
@@ -87,12 +84,24 @@ impl Format for Bson {
                 buf.push_str("}");
                 buf
             }
-            Bson::Boolean(b) => { format!("{}", b) }
-            Bson::Null => { format!("null") }
-            Bson::Int32(i) => { format!("{}", i) }
-            Bson::Int64(i) => { format!("{}", i) }
-            Bson::UInt32(i) => { format!("{}", i) }
-            Bson::UInt64(i) => { format!("{}", i) }
+            Bson::Boolean(b) => {
+                format!("{}", b)
+            }
+            Bson::Null => {
+                format!("null")
+            }
+            Bson::Int32(i) => {
+                format!("{}", i)
+            }
+            Bson::Int64(i) => {
+                format!("{}", i)
+            }
+            Bson::UInt32(i) => {
+                format!("{}", i)
+            }
+            Bson::UInt64(i) => {
+                format!("{}", i)
+            }
             Bson::Timestamp(s) => {
                 format!("\"{}\"", Timestamp::from(s.clone()))
             }
@@ -110,16 +119,17 @@ impl Format for Bson {
                     BinarySubtype::Uuid => {
                         format!("\"{}\"", crate::types::Uuid::from(d))
                     }
-                    BinarySubtype::UserDefined(type_id) => {
-                        match type_id {
-                            crate::types::BINARY_SUBTYPE_JSON => {
-                                format!("{}", String::from_utf8(d.bytes.to_owned()).unwrap_or_default())
-                            }
-                            _ => {
-                                format!("un supported!")
-                            }
+                    BinarySubtype::UserDefined(type_id) => match type_id {
+                        crate::types::BINARY_SUBTYPE_JSON => {
+                            format!(
+                                "{}",
+                                String::from_utf8(d.bytes.to_owned()).unwrap_or_default()
+                            )
                         }
-                    }
+                        _ => {
+                            format!("un supported!")
+                        }
+                    },
                     _ => {
                         format!("un supported!")
                     }

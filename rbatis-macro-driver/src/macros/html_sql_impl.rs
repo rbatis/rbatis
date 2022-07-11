@@ -3,9 +3,11 @@ use quote::quote;
 use quote::ToTokens;
 use syn::{AttributeArgs, FnArg, ItemFn};
 
-use crate::proc_macro::TokenStream;
-use crate::util::{find_fn_body, find_return_type, get_fn_args, get_page_req_ident, is_fetch, is_rbatis_ref};
 use crate::macros::py_sql_impl;
+use crate::proc_macro::TokenStream;
+use crate::util::{
+    find_fn_body, find_return_type, get_fn_args, get_page_req_ident, is_fetch, is_rbatis_ref,
+};
 
 pub(crate) fn impl_macro_html_sql(target_fn: &ItemFn, args: &AttributeArgs) -> TokenStream {
     let return_ty = find_return_type(target_fn);
@@ -20,7 +22,10 @@ pub(crate) fn impl_macro_html_sql(target_fn: &ItemFn, args: &AttributeArgs) -> T
                 let ty_stream = t.ty.to_token_stream().to_string();
                 if is_rbatis_ref(&ty_stream) {
                     rbatis_ident = t.pat.to_token_stream();
-                    rbatis_name = rbatis_ident.to_string().trim_start_matches("mut ").to_string();
+                    rbatis_name = rbatis_ident
+                        .to_string()
+                        .trim_start_matches("mut ")
+                        .to_string();
                     break;
                 }
             }
@@ -31,11 +36,20 @@ pub(crate) fn impl_macro_html_sql(target_fn: &ItemFn, args: &AttributeArgs) -> T
         if rbatis_name.is_empty() {
             panic!("[rbatis] you should add rbatis ref param  rb:&Rbatis  or rb: &mut RbatisExecutor<'_,'_>  on '{}()'!", target_fn.sig.ident);
         }
-        sql_ident = args.get(0).expect("[rbatis] miss htmlsql sql param!").to_token_stream();
+        sql_ident = args
+            .get(0)
+            .expect("[rbatis] miss htmlsql sql param!")
+            .to_token_stream();
     } else if args.len() == 2 {
-        rbatis_ident = args.get(0).expect("[rbatis] miss rbatis ident param!").to_token_stream();
+        rbatis_ident = args
+            .get(0)
+            .expect("[rbatis] miss rbatis ident param!")
+            .to_token_stream();
         rbatis_name = format!("{}", rbatis_ident);
-        sql_ident = args.get(1).expect("[rbatis] miss html file name param!").to_token_stream();
+        sql_ident = args
+            .get(1)
+            .expect("[rbatis] miss html file name param!")
+            .to_token_stream();
     } else {
         panic!("[rbatis] Incorrect macro parameter length!");
     }
@@ -48,8 +62,12 @@ pub(crate) fn impl_macro_html_sql(target_fn: &ItemFn, args: &AttributeArgs) -> T
             func_name_ident, func_args_stream
         );
     }
-    if rbatis_ident.to_string().starts_with("mut "){
-        rbatis_ident=Ident::new(&rbatis_ident.to_string().trim_start_matches("mut "),Span::call_site()).to_token_stream();
+    if rbatis_ident.to_string().starts_with("mut ") {
+        rbatis_ident = Ident::new(
+            &rbatis_ident.to_string().trim_start_matches("mut "),
+            Span::call_site(),
+        )
+        .to_token_stream();
     }
 
     //append all args
@@ -93,5 +111,5 @@ pub(crate) fn impl_macro_html_sql(target_fn: &ItemFn, args: &AttributeArgs) -> T
          #call_method
        }
     }
-        .into();
+    .into();
 }

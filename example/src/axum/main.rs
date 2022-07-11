@@ -1,16 +1,12 @@
-use std::net::SocketAddr;
-use std::sync::Arc;
-use rbatis::rbatis::Rbatis;
+use axum::{
+    extract::Extension, http::StatusCode, response::IntoResponse, routing::get, Json, Router,
+};
 use example::BizActivity;
 use rbatis::crud::CRUD;
+use rbatis::rbatis::Rbatis;
 use serde_json::Value;
-use axum::{
-    extract::Extension,
-    http::StatusCode,
-    response::IntoResponse,
-    Json, Router,
-    routing::get,
-};
+use std::net::SocketAddr;
+use std::sync::Arc;
 
 // //mysql driver url
 // pub const MYSQL_URL: &'static str = "mysql://root:123456@localhost:3306/test";
@@ -32,8 +28,7 @@ async fn main() {
     log::info!("linking database successful!");
 
     // build our application with a route
-    let app = Router::new().route("/", get(handler))
-        .layer(Extension(rb));
+    let app = Router::new().route("/", get(handler)).layer(Extension(rb));
     // run it
     let addr = SocketAddr::from(([127, 0, 0, 1], 8000));
     tracing::debug!("listening on {}", addr);

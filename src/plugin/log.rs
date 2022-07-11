@@ -42,7 +42,7 @@ pub trait LogPlugin: Send + Sync + Debug {
             return;
         }
         if filter.ge(&LevelFilter::Error) {
-            error!("[rbatis] [{}] {}", id ,data);
+            error!("[rbatis] [{}] {}", id, data);
         }
     }
 
@@ -52,7 +52,7 @@ pub trait LogPlugin: Send + Sync + Debug {
             return;
         }
         if filter.ge(&LevelFilter::Warn) {
-            warn!("[rbatis] [{}] {}", id,data);
+            warn!("[rbatis] [{}] {}", id, data);
         }
     }
 
@@ -62,7 +62,7 @@ pub trait LogPlugin: Send + Sync + Debug {
             return;
         }
         if filter.ge(&LevelFilter::Info) {
-            info!("[rbatis] [{}] {}", id,data);
+            info!("[rbatis] [{}] {}", id, data);
         }
     }
 
@@ -72,7 +72,7 @@ pub trait LogPlugin: Send + Sync + Debug {
             return;
         }
         if filter.ge(&LevelFilter::Debug) {
-            debug!("[rbatis] [{}] {}", id,data);
+            debug!("[rbatis] [{}] {}", id, data);
         }
     }
 
@@ -82,7 +82,7 @@ pub trait LogPlugin: Send + Sync + Debug {
             return;
         }
         if filter.ge(&LevelFilter::Trace) {
-            trace!("[rbatis] [{}] {}", id,data);
+            trace!("[rbatis] [{}] {}", id, data);
         }
     }
 }
@@ -101,17 +101,16 @@ impl From<&RbatisLogPlugin> for LevelFilter {
             3 => LevelFilter::Info,
             4 => LevelFilter::Debug,
             5 => LevelFilter::Trace,
-            _ => { LevelFilter::Trace }
+            _ => LevelFilter::Trace,
         }
     }
 }
-
 
 impl Default for RbatisLogPlugin {
     //default leve info
     fn default() -> Self {
         RbatisLogPlugin {
-            level_filter: AtomicI8::new(3)
+            level_filter: AtomicI8::new(3),
         }
     }
 }

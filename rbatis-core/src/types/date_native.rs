@@ -1,12 +1,11 @@
+use chrono::{Local, NaiveDate};
+use rbson::spec::BinarySubtype;
+use rbson::Bson;
+use serde::de::Error;
+use serde::{Deserializer, Serializer};
 use std::any::type_name;
 use std::ops::{Deref, DerefMut};
 use std::str::FromStr;
-use rbson::Bson;
-use rbson::spec::BinarySubtype;
-use chrono::{Local, NaiveDate};
-use serde::{Deserializer, Serializer};
-use serde::de::Error;
-
 
 /// Rust type              Postgres type(s)
 /// chrono::NaiveDate      DATE
@@ -17,52 +16,53 @@ pub struct DateNative {
 
 impl From<chrono::NaiveDate> for DateNative {
     fn from(arg: chrono::NaiveDate) -> Self {
-        DateNative {
-            inner: arg
-        }
+        DateNative { inner: arg }
     }
 }
 
 impl From<&chrono::NaiveDate> for DateNative {
     fn from(arg: &chrono::NaiveDate) -> Self {
-        DateNative {
-            inner: arg.clone()
-        }
+        DateNative { inner: arg.clone() }
     }
 }
 
 impl serde::Serialize for DateNative {
     #[inline]
-    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error> where S: Serializer {
+    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
+    where
+        S: Serializer,
+    {
         use serde::ser::Error;
         if type_name::<S::Error>().eq("rbson::ser::error::Error") {
             return serializer.serialize_str(&format!("DateNative({})", self.inner));
-        }else{
+        } else {
             return self.inner.serialize(serializer);
         }
     }
 }
 
-
 impl<'de> serde::Deserialize<'de> for DateNative {
     #[inline]
-    fn deserialize<D>(deserializer: D) -> Result<Self, D::Error> where D: Deserializer<'de> {
+    fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
+    where
+        D: Deserializer<'de>,
+    {
         match Bson::deserialize(deserializer)? {
             Bson::String(s) => {
                 if s.starts_with("DateNative(") && s.ends_with(")") {
                     let inner_data = &s["DateNative(".len()..(s.len() - 1)];
                     return Ok(Self {
-                        inner: chrono::NaiveDate::from_str(inner_data).or_else(|e| Err(D::Error::custom(e.to_string())))?,
+                        inner: chrono::NaiveDate::from_str(inner_data)
+                            .or_else(|e| Err(D::Error::custom(e.to_string())))?,
                     });
                 } else {
                     return Ok(Self {
-                        inner: chrono::NaiveDate::from_str(&s).or_else(|e| Err(D::Error::custom(e.to_string())))?,
+                        inner: chrono::NaiveDate::from_str(&s)
+                            .or_else(|e| Err(D::Error::custom(e.to_string())))?,
                     });
                 }
             }
-            _ => {
-                Err(D::Error::custom("deserialize un supported bson type!"))
-            }
+            _ => Err(D::Error::custom("deserialize un supported bson type!")),
         }
     }
 }
@@ -93,7 +93,6 @@ impl DerefMut for DateNative {
     }
 }
 
-
 impl DateNative {
     /// Returns a [`DateTime`] which corresponds to the current date and time.
     pub fn now() -> DateNative {
@@ -106,12 +105,9 @@ impl DateNative {
     /// create from str
     pub fn from_str(arg: &str) -> Result<Self, crate::error::Error> {
         let inner = chrono::NaiveDate::from_str(arg)?;
-        Ok(Self {
-            inner: inner
-        })
+        Ok(Self { inner: inner })
     }
 }
-
 
 #[cfg(test)]
 mod test {

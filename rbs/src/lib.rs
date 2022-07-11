@@ -61,7 +61,6 @@
 #![allow(unused_variables)]
 #![allow(missing_debug_implementations, missing_docs)]
 
-
 #[macro_use]
 extern crate serde;
 
@@ -72,9 +71,9 @@ use std::str::{self, Utf8Error};
 use serde::de;
 use serde::{Deserialize, Serialize};
 
-pub use crate::decode::{from_read, Deserializer};
 #[allow(deprecated)]
 pub use crate::decode::from_read_ref;
+pub use crate::decode::{from_read, Deserializer};
 pub use crate::encode::{to_vec, to_vec_named, Serializer};
 
 pub use crate::decode::from_slice;
@@ -84,11 +83,13 @@ pub mod decode;
 pub mod encode;
 pub mod value;
 
-pub use value::{Value, ValueRef};
-pub use value::ext::to_value;
+pub use value::decode::{
+    read_value, read_value_ref, read_value_ref_with_max_depth, read_value_with_max_depth,
+};
 pub use value::encode::to_value_ref;
-pub use value::ext::{from_value,deserialize_from};
-pub use value::decode::{read_value, read_value_ref, read_value_ref_with_max_depth, read_value_with_max_depth};
+pub use value::ext::to_value;
+pub use value::ext::{deserialize_from, from_value};
+pub use value::{Value, ValueRef};
 
 /// Name of Serde newtype struct to Represent Msgpack's Ext
 /// Msgpack Ext: Ext(tag, binary)
@@ -122,7 +123,9 @@ impl Raw {
     }
 
     /// DO NOT USE. See <https://github.com/3Hren/msgpack-rust/issues/305>
-    #[deprecated(note = "This implementation is unsound and dangerous. See https://github.com/3Hren/msgpack-rust/issues/305")]
+    #[deprecated(
+        note = "This implementation is unsound and dangerous. See https://github.com/3Hren/msgpack-rust/issues/305"
+    )]
     pub fn from_utf8(v: Vec<u8>) -> Self {
         match String::from_utf8(v) {
             Ok(v) => Raw::new(v),
@@ -193,8 +196,8 @@ impl Raw {
 
 impl Serialize for Raw {
     fn serialize<S>(&self, se: S) -> Result<S::Ok, S::Error>
-        where
-            S: serde::Serializer
+    where
+        S: serde::Serializer,
     {
         let s = match self.s {
             Ok(ref s) => s.as_str(),
@@ -224,14 +227,16 @@ impl<'de> de::Visitor<'de> for RawVisitor {
 
     #[inline]
     fn visit_str<E>(self, v: &str) -> Result<Self::Value, E>
-        where E: de::Error
+    where
+        E: de::Error,
     {
         Ok(Raw { s: Ok(v.into()) })
     }
 
     #[inline]
     fn visit_bytes<E>(self, v: &[u8]) -> Result<Self::Value, E>
-        where E: de::Error
+    where
+        E: de::Error,
     {
         let s = match str::from_utf8(v) {
             Ok(s) => Ok(s.into()),
@@ -243,7 +248,8 @@ impl<'de> de::Visitor<'de> for RawVisitor {
 
     #[inline]
     fn visit_byte_buf<E>(self, v: Vec<u8>) -> Result<Self::Value, E>
-        where E: de::Error
+    where
+        E: de::Error,
     {
         let s = match String::from_utf8(v) {
             Ok(s) => Ok(s),
@@ -260,7 +266,8 @@ impl<'de> de::Visitor<'de> for RawVisitor {
 impl<'de> Deserialize<'de> for Raw {
     #[inline]
     fn deserialize<D>(de: D) -> Result<Self, D::Error>
-        where D: de::Deserializer<'de>
+    where
+        D: de::Deserializer<'de>,
     {
         de.deserialize_any(RawVisitor)
     }
@@ -283,15 +290,13 @@ impl<'a> RawRef<'a> {
     }
 
     /// DO NOT USE. See <https://github.com/3Hren/msgpack-rust/issues/305>
-    #[deprecated(note = "This implementation is unsound and dangerous. See https://github.com/3Hren/msgpack-rust/issues/305")]
+    #[deprecated(
+        note = "This implementation is unsound and dangerous. See https://github.com/3Hren/msgpack-rust/issues/305"
+    )]
     pub fn from_utf8(v: &'a [u8]) -> Self {
         match str::from_utf8(v) {
             Ok(v) => RawRef::new(v),
-            Err(err) => {
-                Self {
-                    s: Err((v, err))
-                }
-            }
+            Err(err) => Self { s: Err((v, err)) },
         }
     }
 
@@ -338,8 +343,8 @@ impl<'a> RawRef<'a> {
 
 impl<'a> Serialize for RawRef<'a> {
     fn serialize<S>(&self, se: S) -> Result<S::Ok, S::Error>
-        where
-            S: serde::Serializer,
+    where
+        S: serde::Serializer,
     {
         let s = match self.s {
             Ok(ref s) => s,
@@ -364,14 +369,16 @@ impl<'de> de::Visitor<'de> for RawRefVisitor {
 
     #[inline]
     fn visit_borrowed_str<E>(self, v: &'de str) -> Result<Self::Value, E>
-        where E: de::Error
+    where
+        E: de::Error,
     {
         Ok(RawRef { s: Ok(v) })
     }
 
     #[inline]
     fn visit_borrowed_bytes<E>(self, v: &'de [u8]) -> Result<Self::Value, E>
-        where E: de::Error
+    where
+        E: de::Error,
     {
         let s = match str::from_utf8(v) {
             Ok(s) => Ok(s),
@@ -385,7 +392,8 @@ impl<'de> de::Visitor<'de> for RawRefVisitor {
 impl<'de> Deserialize<'de> for RawRef<'de> {
     #[inline]
     fn deserialize<D>(de: D) -> Result<Self, D::Error>
-        where D: de::Deserializer<'de>
+    where
+        D: de::Deserializer<'de>,
     {
         de.deserialize_any(RawRefVisitor)
     }

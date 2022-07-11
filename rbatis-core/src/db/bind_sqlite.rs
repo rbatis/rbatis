@@ -1,14 +1,19 @@
-use rbson::Bson;
-use rbson::spec::BinarySubtype;
-use sqlx_core::sqlite::{Sqlite, SqliteArguments, SqliteArgumentValue};
-use sqlx_core::query::Query;
-use sqlx_core::types::Type;
 use crate::error::Error;
-use crate::types::{DateNative, DateTimeNative, DateTimeUtc, DateUtc, Decimal, TimeNative, TimeUtc};
+use crate::types::{
+    DateNative, DateTimeNative, DateTimeUtc, DateUtc, Decimal, TimeNative, TimeUtc,
+};
 use crate::Uuid;
+use rbson::spec::BinarySubtype;
+use rbson::Bson;
+use sqlx_core::query::Query;
+use sqlx_core::sqlite::{Sqlite, SqliteArgumentValue, SqliteArguments};
+use sqlx_core::types::Type;
 
 #[inline]
-pub fn bind<'a>(t: Bson, mut q: Query<'a, Sqlite, SqliteArguments<'a>>) -> crate::Result<Query<'a, Sqlite, SqliteArguments<'a>>> {
+pub fn bind<'a>(
+    t: Bson,
+    mut q: Query<'a, Sqlite, SqliteArguments<'a>>,
+) -> crate::Result<Query<'a, Sqlite, SqliteArguments<'a>>> {
     match t {
         Bson::String(s) => {
             if s.starts_with("DateTimeUtc(") {
@@ -77,29 +82,25 @@ pub fn bind<'a>(t: Bson, mut q: Query<'a, Sqlite, SqliteArguments<'a>>) -> crate
         Bson::Decimal128(d) => {
             q = q.bind(d.to_string());
         }
-        Bson::Binary(d) => {
-            match d.subtype {
-                BinarySubtype::Generic => {
+        Bson::Binary(d) => match d.subtype {
+            BinarySubtype::Generic => {
+                q = q.bind(d.bytes);
+            }
+            BinarySubtype::Uuid => {
+                q = q.bind(crate::types::Uuid::from(d).to_string());
+            }
+            BinarySubtype::UserDefined(type_id) => match type_id {
+                crate::types::BINARY_SUBTYPE_JSON => {
                     q = q.bind(d.bytes);
-                }
-                BinarySubtype::Uuid => {
-                    q = q.bind(crate::types::Uuid::from(d).to_string());
-                }
-                BinarySubtype::UserDefined(type_id) => {
-                    match type_id {
-                        crate::types::BINARY_SUBTYPE_JSON => {
-                            q = q.bind(d.bytes);
-                        }
-                        _ => {
-                            return Err(Error::from("un supported bind type!"));
-                        }
-                    }
                 }
                 _ => {
                     return Err(Error::from("un supported bind type!"));
                 }
+            },
+            _ => {
+                return Err(Error::from("un supported bind type!"));
             }
-        }
+        },
         Bson::DateTime(d) => {
             q = q.bind(DateTimeNative::from(d).inner);
         }

@@ -1,5 +1,7 @@
 pub trait Database: 'static + Send {
-    fn name() -> &'static str where Self: Sized;
+    fn name() -> &'static str
+    where
+        Self: Sized;
 }
 
 pub trait Connection: Send {}
@@ -20,7 +22,6 @@ pub trait Row: Send + Sync + 'static {
     /// Gets all columns in this statement.
     fn columns(&self) -> &[Box<dyn Column>];
 
-
     /// Gets the column information at `index` or `None` if out of bounds.
     fn try_column(&self, index: rbs::Value) -> Option<&dyn Column>;
 
@@ -33,8 +34,7 @@ pub trait Row: Send + Sync + 'static {
     ///
     /// Panics if `index` is out of bounds.
     /// See [`try_column`](Self::try_column) for a non-panicking version.
-    fn column(&self, index: rbs::Value) -> &dyn Column
-    {
+    fn column(&self, index: rbs::Value) -> &dyn Column {
         self.try_column(index).unwrap()
     }
 
@@ -61,7 +61,6 @@ pub trait Column: 'static + Send + Sync {
 
 pub trait TypeInfo {}
 
-
 #[cfg(test)]
 mod test {
     use crate::db::Database;
@@ -73,7 +72,6 @@ mod test {
             "test"
         }
     }
-
 
     #[test]
     fn test_db() {

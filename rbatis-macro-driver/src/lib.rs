@@ -5,11 +5,11 @@ use std::collections::HashMap;
 
 use syn::{parse_macro_input, AttributeArgs, ItemFn};
 
-use crate::proc_macro::TokenStream;
-use crate::macros::crud_table_impl::{impl_crud_driver, impl_crud};
+use crate::macros::crud_table_impl::{impl_crud, impl_crud_driver};
 use crate::macros::html_sql_impl::impl_macro_html_sql;
+use crate::macros::py_sql_impl::impl_macro_py_sql;
 use crate::macros::sql_impl::impl_macro_sql;
-use crate::macros::py_sql_impl::{impl_macro_py_sql};
+use crate::proc_macro::TokenStream;
 
 mod macros;
 mod util;
@@ -19,10 +19,10 @@ pub fn hello_macro_derive(input: TokenStream) -> TokenStream {
     let ast = syn::parse(input).unwrap();
     let stream = impl_crud_driver(&ast, "", "", &HashMap::new());
     #[cfg(feature = "debug_mode")]
-        {
-            println!("............gen impl CRUDTable:\n {}", stream);
-            println!("............gen impl CRUDTable end............");
-        }
+    {
+        println!("............gen impl CRUDTable:\n {}", stream);
+        println!("............gen impl CRUDTable end............");
+    }
 
     stream
 }
@@ -43,10 +43,10 @@ pub fn sql(args: TokenStream, func: TokenStream) -> TokenStream {
     let target_fn: ItemFn = syn::parse(func).unwrap();
     let stream = impl_macro_sql(&target_fn, &args);
     #[cfg(feature = "debug_mode")]
-        {
-            println!("............gen macro sql:\n {}", stream);
-            println!("............gen macro sql end............");
-        }
+    {
+        println!("............gen macro sql:\n {}", stream);
+        println!("............gen macro sql end............");
+    }
 
     stream
 }
@@ -94,10 +94,10 @@ pub fn py_sql(args: TokenStream, func: TokenStream) -> TokenStream {
     let target_fn: ItemFn = syn::parse(func).unwrap();
     let stream = impl_macro_py_sql(&target_fn, &args);
     #[cfg(feature = "debug_mode")]
-        {
-            println!("............gen macro py_sql :\n {}", stream);
-            println!("............gen macro py_sql end............");
-        }
+    {
+        println!("............gen macro py_sql :\n {}", stream);
+        println!("............gen macro py_sql end............");
+    }
     stream
 }
 
@@ -119,13 +119,12 @@ pub fn html_sql(args: TokenStream, func: TokenStream) -> TokenStream {
     let target_fn: ItemFn = syn::parse(func).unwrap();
     let stream = impl_macro_html_sql(&target_fn, &args);
     #[cfg(feature = "debug_mode")]
-        {
-            println!("............gen macro html_sql :\n {}", stream);
-            println!("............gen macro html_sql end............");
-        }
+    {
+        println!("............gen macro html_sql :\n {}", stream);
+        println!("............gen macro html_sql end............");
+    }
     stream
 }
-
 
 /// CRUD table,You can define functionality using the following properties
 /// #[crud_table]
@@ -141,10 +140,10 @@ pub fn html_sql(args: TokenStream, func: TokenStream) -> TokenStream {
 pub fn crud_table(args: TokenStream, input: TokenStream) -> TokenStream {
     let stream = impl_crud(args, input);
     #[cfg(feature = "debug_mode")]
-        {
-            println!("............gen impl CRUDTable:\n {}", stream);
-            println!("............gen impl CRUDTable end............");
-        }
+    {
+        println!("............gen impl CRUDTable:\n {}", stream);
+        println!("............gen impl CRUDTable end............");
+    }
 
     return stream;
 }

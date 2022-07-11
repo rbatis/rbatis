@@ -1,9 +1,9 @@
 #[cfg(test)]
 mod test {
-    use std::collections::{BTreeMap};
-    use rbson::Bson;
     use rbatis::core::db::DriverType;
     use rbatis::wrapper::Wrapper;
+    use rbson::Bson;
+    use std::collections::BTreeMap;
 
     #[test]
     fn test_item() {
@@ -64,24 +64,42 @@ mod test {
         m.insert("id", 2);
         m.insert("name", 1);
         let w = Wrapper::new(&DriverType::Postgres)
-            .having("id").and()
-            .eq_all(m).and()
-            .eq("id", 1).and()
-            .ne("id", 1).and()
-            .gt("id", 1).and()
-            .ge("id", 1).and()
-            .lt("id", 1).and()
-            .le("id", 1).and()
-            .between("id", 1, 2).and()
-            .not_between("id", 1, 2).and()
-            .like("id", 1).and()
-            .like_left("id", 1).and()
-            .like_right("id", 1).and()
-            .not_like("id", 1).and()
-            .is_null("id").and()
-            .is_not_null("id").and()
-            .in_array("id", &[1]).and()
-            .not_in("id", &[1]).and()
+            .having("id")
+            .and()
+            .eq_all(m)
+            .and()
+            .eq("id", 1)
+            .and()
+            .ne("id", 1)
+            .and()
+            .gt("id", 1)
+            .and()
+            .ge("id", 1)
+            .and()
+            .lt("id", 1)
+            .and()
+            .le("id", 1)
+            .and()
+            .between("id", 1, 2)
+            .and()
+            .not_between("id", 1, 2)
+            .and()
+            .like("id", 1)
+            .and()
+            .like_left("id", 1)
+            .and()
+            .like_right("id", 1)
+            .and()
+            .not_like("id", 1)
+            .and()
+            .is_null("id")
+            .and()
+            .is_not_null("id")
+            .and()
+            .in_array("id", &[1])
+            .and()
+            .not_in("id", &[1])
+            .and()
             .order_by(true, &["id"])
             .group_by(&["id"])
             .limit(1)
@@ -93,10 +111,16 @@ mod test {
     fn test_wrapper_add() {
         let w = Wrapper::new(&DriverType::Postgres)
             + "and id = 1 "
-            + (" and id = ? or name = ?", vec![Bson::Int32(2), Bson::String("joe".to_string())]);
+            + (
+                " and id = ? or name = ?",
+                vec![Bson::Int32(2), Bson::String("joe".to_string())],
+            );
         println!("{}", w.sql);
         println!("{:?}", w.args);
         assert_eq!(w.sql, "and id = 1  and id = ? or name = ?");
-        assert_eq!(w.args, vec![Bson::Int32(2), Bson::String("joe".to_string())])
+        assert_eq!(
+            w.args,
+            vec![Bson::Int32(2), Bson::String("joe".to_string())]
+        )
     }
 }

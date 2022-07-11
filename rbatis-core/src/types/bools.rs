@@ -1,7 +1,7 @@
-use std::ops::{Deref, DerefMut};
 use rbson::Bson;
-use serde::{Deserializer, Serializer};
 use serde::de::Error;
+use serde::{Deserializer, Serializer};
+use std::ops::{Deref, DerefMut};
 
 /// Rbatis Bool
 /// for example:
@@ -19,9 +19,7 @@ pub struct Bool {
 
 impl From<bool> for Bool {
     fn from(arg: bool) -> Self {
-        Bool {
-            inner: arg
-        }
+        Bool { inner: arg }
     }
 }
 
@@ -34,7 +32,7 @@ impl From<i32> for Bool {
                 } else {
                     false
                 }
-            }
+            },
         }
     }
 }
@@ -48,7 +46,7 @@ impl From<i64> for Bool {
                 } else {
                     false
                 }
-            }
+            },
         }
     }
 }
@@ -62,7 +60,7 @@ impl From<u32> for Bool {
                 } else {
                     false
                 }
-            }
+            },
         }
     }
 }
@@ -76,7 +74,7 @@ impl From<u64> for Bool {
                 } else {
                     false
                 }
-            }
+            },
         }
     }
 }
@@ -90,11 +88,10 @@ impl From<f64> for Bool {
                 } else {
                     false
                 }
-            }
+            },
         }
     }
 }
-
 
 impl From<&str> for Bool {
     fn from(arg: &str) -> Self {
@@ -105,28 +102,31 @@ impl From<&str> for Bool {
                 } else {
                     false
                 }
-            }
+            },
         }
     }
 }
 
-
 impl serde::Serialize for Bool {
     #[inline]
-    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error> where S: Serializer {
+    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
+    where
+        S: Serializer,
+    {
         serializer.serialize_bool(self.inner)
     }
 }
 
 impl<'de> serde::Deserialize<'de> for Bool {
     #[inline]
-    fn deserialize<D>(deserializer: D) -> Result<Self, D::Error> where D: Deserializer<'de> {
+    fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
+    where
+        D: Deserializer<'de>,
+    {
         let bson = Bson::deserialize(deserializer)?;
         match bson {
             Bson::Boolean(data) => {
-                return Ok(Bool {
-                    inner: data,
-                });
+                return Ok(Bool { inner: data });
             }
             Bson::Int32(data) => {
                 return Ok(Bool::from(data));
@@ -146,9 +146,7 @@ impl<'de> serde::Deserialize<'de> for Bool {
             Bson::String(data) => {
                 return Ok(Bool::from(data.as_str()));
             }
-            _ => {
-                Err(D::Error::custom("deserialize unsupported bson type!"))
-            }
+            _ => Err(D::Error::custom("deserialize unsupported bson type!")),
         }
     }
 }
@@ -166,8 +164,6 @@ impl DerefMut for Bool {
         &mut self.inner
     }
 }
-
-
 
 #[cfg(test)]
 mod test {

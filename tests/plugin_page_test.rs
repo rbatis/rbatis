@@ -1,7 +1,9 @@
 #[cfg(test)]
 mod test {
+    use rbatis::{
+        PagePlugin, PageRequest, RbatisPackPagePlugin, RbatisPagePlugin, RbatisReplacePagePlugin,
+    };
     use rbatis_core::db::DriverType;
-    use rbatis::{PagePlugin, PageRequest, RbatisPackPagePlugin, RbatisPagePlugin, RbatisReplacePagePlugin};
 
     #[test]
     fn test_page() {
@@ -19,7 +21,14 @@ mod test {
         b.name
     order by
         total desc";
-        let (count, select) = pack_page.make_page_sql(&DriverType::Postgres, &sql, &vec![], &PageRequest::new(1, 10)).unwrap();
+        let (count, select) = pack_page
+            .make_page_sql(
+                &DriverType::Postgres,
+                &sql,
+                &vec![],
+                &PageRequest::new(1, 10),
+            )
+            .unwrap();
         println!("{}", count);
         println!("/////////////////");
         println!("{}", select);

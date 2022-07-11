@@ -1,16 +1,16 @@
-use std::str::FromStr;
-use rbson::Bson;
-use rbson::spec::BinarySubtype;
-use sqlx_core::query::Query;
 use crate::error::Error;
-use crate::types::{DateNative, DateTimeUtc, DateUtc, Decimal, TimeNative, TimestampZ, TimeUtc};
-use std::time::SystemTime;
-use bigdecimal_::BigDecimal;
-use sqlx_core::encode::{Encode, IsNull};
-use sqlx_core::postgres::{Postgres, PgArguments, PgArgumentBuffer, PgHasArrayType, PgTypeInfo};
-use sqlx_core::types::Type;
 use crate::types::DateTimeNative;
+use crate::types::{DateNative, DateTimeUtc, DateUtc, Decimal, TimeNative, TimeUtc, TimestampZ};
 use crate::Uuid;
+use bigdecimal_::BigDecimal;
+use rbson::spec::BinarySubtype;
+use rbson::Bson;
+use sqlx_core::encode::{Encode, IsNull};
+use sqlx_core::postgres::{PgArgumentBuffer, PgArguments, PgHasArrayType, PgTypeInfo, Postgres};
+use sqlx_core::query::Query;
+use sqlx_core::types::Type;
+use std::str::FromStr;
+use std::time::SystemTime;
 
 pub struct PgNull {}
 
@@ -26,7 +26,6 @@ impl PgHasArrayType for PgNull {
     }
 }
 
-
 impl Encode<'_, Postgres> for PgNull {
     fn encode_by_ref(&self, buf: &mut PgArgumentBuffer) -> IsNull {
         IsNull::Yes
@@ -34,7 +33,10 @@ impl Encode<'_, Postgres> for PgNull {
 }
 
 #[inline]
-pub fn bind(t: Bson, mut q: Query<Postgres, PgArguments>) -> crate::Result<Query<Postgres, PgArguments>> {
+pub fn bind(
+    t: Bson,
+    mut q: Query<Postgres, PgArguments>,
+) -> crate::Result<Query<Postgres, PgArguments>> {
     match t {
         Bson::String(s) => {
             if s.starts_with("TimestampZ(") {
@@ -108,29 +110,27 @@ pub fn bind(t: Bson, mut q: Query<Postgres, PgArguments>) -> crate::Result<Query
         Bson::Decimal128(d) => {
             q = q.bind(BigDecimal::from_str(&d.to_string()).unwrap_or_default());
         }
-        Bson::Binary(d) => {
-            match d.subtype {
-                BinarySubtype::Generic => {
-                    q = q.bind(d.bytes);
-                }
-                BinarySubtype::Uuid => {
-                    q = q.bind(crate::types::Uuid::from(d).inner);
-                }
-                BinarySubtype::UserDefined(type_id) => {
-                    match type_id {
-                        crate::types::BINARY_SUBTYPE_JSON => {
-                            q = q.bind(serde_json::from_slice::<serde_json::Value>(&d.bytes).unwrap_or_default());
-                        }
-                        _ => {
-                            return Err(Error::from("un supported bind type!"));
-                        }
-                    }
+        Bson::Binary(d) => match d.subtype {
+            BinarySubtype::Generic => {
+                q = q.bind(d.bytes);
+            }
+            BinarySubtype::Uuid => {
+                q = q.bind(crate::types::Uuid::from(d).inner);
+            }
+            BinarySubtype::UserDefined(type_id) => match type_id {
+                crate::types::BINARY_SUBTYPE_JSON => {
+                    q = q.bind(
+                        serde_json::from_slice::<serde_json::Value>(&d.bytes).unwrap_or_default(),
+                    );
                 }
                 _ => {
                     return Err(Error::from("un supported bind type!"));
                 }
+            },
+            _ => {
+                return Err(Error::from("un supported bind type!"));
             }
-        }
+        },
         Bson::DateTime(d) => {
             q = q.bind(DateTimeNative::from(d).inner);
         }
@@ -231,29 +231,28 @@ pub fn bind(t: Bson, mut q: Query<Postgres, PgArguments>) -> crate::Result<Query
                     Bson::Decimal128(d) => {
                         arr_decimal.push(BigDecimal::from_str(&d.to_string()).unwrap_or_default());
                     }
-                    Bson::Binary(d) => {
-                        match d.subtype {
-                            BinarySubtype::Generic => {
-                                arr_bytes.push(d.bytes);
-                            }
-                            BinarySubtype::Uuid => {
-                                arr_uuid.push(crate::types::Uuid::from(d).inner);
-                            }
-                            BinarySubtype::UserDefined(type_id) => {
-                                match type_id {
-                                    crate::types::BINARY_SUBTYPE_JSON => {
-                                        arr_json.push(serde_json::from_slice::<serde_json::Value>(&d.bytes).unwrap_or_default());
-                                    }
-                                    _ => {
-                                        return Err(Error::from("un supported bind type!"));
-                                    }
-                                }
+                    Bson::Binary(d) => match d.subtype {
+                        BinarySubtype::Generic => {
+                            arr_bytes.push(d.bytes);
+                        }
+                        BinarySubtype::Uuid => {
+                            arr_uuid.push(crate::types::Uuid::from(d).inner);
+                        }
+                        BinarySubtype::UserDefined(type_id) => match type_id {
+                            crate::types::BINARY_SUBTYPE_JSON => {
+                                arr_json.push(
+                                    serde_json::from_slice::<serde_json::Value>(&d.bytes)
+                                        .unwrap_or_default(),
+                                );
                             }
                             _ => {
                                 return Err(Error::from("un supported bind type!"));
                             }
+                        },
+                        _ => {
+                            return Err(Error::from("un supported bind type!"));
                         }
-                    }
+                    },
                     Bson::DateTime(d) => {
                         q = q.bind(DateTimeNative::from(d).inner);
                     }
