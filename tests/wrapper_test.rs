@@ -2,8 +2,7 @@
 mod test {
     use rbatis::core::db::DriverType;
     use rbatis::wrapper::Wrapper;
-    use rbson::Bson;
-    use std::collections::BTreeMap;
+    use std::collections::{BTreeMap, HashMap};
 
     #[test]
     fn test_item() {
@@ -12,7 +11,7 @@ mod test {
         let mut m = BTreeMap::new();
         m.insert("id", 2);
         m.insert("name", 1);
-        let w = Wrapper::new(&DriverType::Postgres).eq_all(m);
+        let w = Wrapper::new(&DriverType::Postgres).all_eq(m);
         assert_eq!(w.sql, "(id = $1 and name = $2)");
         let w = Wrapper::new(&DriverType::Postgres).eq("id", 1);
         assert_eq!(w.sql, "id = $1");
@@ -63,64 +62,39 @@ mod test {
         let mut m = BTreeMap::new();
         m.insert("id", 2);
         m.insert("name", 1);
-        let w = Wrapper::new(&DriverType::Postgres)
-            .having("id")
-            .and()
-            .eq_all(m)
-            .and()
-            .eq("id", 1)
-            .and()
-            .ne("id", 1)
-            .and()
-            .gt("id", 1)
-            .and()
-            .ge("id", 1)
-            .and()
-            .lt("id", 1)
-            .and()
-            .le("id", 1)
-            .and()
-            .between("id", 1, 2)
-            .and()
-            .not_between("id", 1, 2)
-            .and()
-            .like("id", 1)
-            .and()
-            .like_left("id", 1)
-            .and()
-            .like_right("id", 1)
-            .and()
-            .not_like("id", 1)
-            .and()
-            .is_null("id")
-            .and()
-            .is_not_null("id")
-            .and()
-            .in_array("id", &[1])
-            .and()
-            .not_in("id", &[1])
-            .and()
-            .order_by(true, &["id"])
-            .group_by(&["id"])
-            .limit(1)
-            .order_bys(&[("id", true), ("name", false)]);
+        let mut w = Wrapper::new(&DriverType::Postgres);
+        w = w.having("id");
+        w = w.all_eq(m);
+        w = w.eq("id", 1);
+        w = w.ne("id", 1);
+        w = w.gt("id", 1);
+        w = w.ge("id", 1);
+        w = w.lt("id", 1);
+        w = w.le("id", 1);
+        w = w.between("id", 1, 2);
+        w = w.not_between("id", 1, 2);
+        w = w.like("id", 1);
+        w = w.like_left("id", 1);
+        w = w.like_right("id", 1);
+        w = w.not_like("id", 1);
+        w = w.is_null("id");
+        w = w.is_not_null("id");
+        w = w.in_array("id", &[1]);
+        w = w.not_in("id", &[1]);
+        w = w.order_by(true, &["id"]);
+        w = w.group_by(&["id"]);
+        w = w.limit(1);
+        w = w.order_bys(&[("id", true), ("name", false)]);
         assert_eq!(w.sql, "having id and (id = $1 and name = $2) and id = $3 and id <> $4 and id > $5 and id >= $6 and id < $7 and id <= $8 and id between $9 and $10 and id not between $11 and $12 and id like $13 and id like $14 and id like $15 and id not like $16 and id is NULL and id is not NULL and id in ( $17 ) and id not in ( $18 ) order by id asc group by id  limit 1 order by id asc,name desc ");
     }
 
     #[test]
-    fn test_wrapper_add() {
-        let w = Wrapper::new(&DriverType::Postgres)
-            + "and id = 1 "
-            + (
-                " and id = ? or name = ?",
-                vec![Bson::Int32(2), Bson::String("joe".to_string())],
-            );
-        println!("{}", w.sql);
-        println!("{:?}", w.args);
-        assert_eq!(w.sql, "and id = 1  and id = ? or name = ?");
-        assert_eq!(
-            w.args,
-            vec![Bson::Int32(2), Bson::String("joe".to_string())]
-        )
+    fn test_hash_map() {
+        let mut n = HashMap::new();
+        n.insert("id", 3);
+        n.insert("name", 8);
+
+        let mut w = Wrapper::new(&DriverType::Postgres);
+        w = w.all_eq(n);
     }
 }

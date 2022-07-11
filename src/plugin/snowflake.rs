@@ -32,7 +32,7 @@ impl serde::Serialize for Snowflake {
 }
 
 impl<'de> serde::Deserialize<'de> for Snowflake {
-    fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
+    fn deserialize<D>(mut deserializer: D) -> Result<Self, D::Error>
     where
         D: Deserializer<'de>,
     {
