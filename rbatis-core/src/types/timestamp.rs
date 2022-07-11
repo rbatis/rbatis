@@ -1,11 +1,11 @@
+use crate::value::DateTimeNow;
+use chrono::{DateTime, Local, NaiveDateTime, TimeZone};
+use rbson::Bson;
+use serde::de::Error;
+use serde::{Deserializer, Serializer};
 use std::alloc::Layout;
 use std::any::type_name;
 use std::ops::{Deref, DerefMut};
-use chrono::{DateTime, Local, NaiveDateTime, TimeZone};
-use rbson::Bson;
-use serde::{Deserializer, Serializer};
-use serde::de::Error;
-use crate::value::DateTimeNow;
 
 /// Rbatis Timestamp
 /// Rust type                Postgres type(s)
@@ -17,7 +17,7 @@ pub struct Timestamp {
 impl From<chrono::NaiveDateTime> for Timestamp {
     fn from(arg: chrono::NaiveDateTime) -> Self {
         Self {
-            inner: arg.timestamp_millis()
+            inner: arg.timestamp_millis(),
         }
     }
 }
@@ -25,34 +25,45 @@ impl From<chrono::NaiveDateTime> for Timestamp {
 impl From<&chrono::NaiveDateTime> for Timestamp {
     fn from(arg: &chrono::NaiveDateTime) -> Self {
         Self {
-            inner: arg.timestamp_millis()
+            inner: arg.timestamp_millis(),
         }
     }
 }
 
 impl serde::Serialize for Timestamp {
     #[inline]
-    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error> where S: Serializer {
+    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
+    where
+        S: Serializer,
+    {
         let bs = rbson::Timestamp {
             time: ((self.inner as u64) >> 32) as u32,
             increment: (self.inner & 0xFFFF_FFFF) as u32,
         };
         if type_name::<S::Error>().eq("rbson::ser::error::Error") {
             return bs.serialize(serializer);
-        }else{
-            return self.to_native_datetime().format("%Y-%m-%dT%H:%M:%S").to_string().serialize(serializer);
+        } else {
+            return self
+                .to_native_datetime()
+                .format("%Y-%m-%dT%H:%M:%S")
+                .to_string()
+                .serialize(serializer);
         }
     }
 }
 
 impl<'de> serde::Deserialize<'de> for Timestamp {
     #[inline]
-    fn deserialize<D>(deserializer: D) -> Result<Self, D::Error> where D: Deserializer<'de> {
+    fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
+    where
+        D: Deserializer<'de>,
+    {
         match Bson::deserialize(deserializer)? {
             Bson::String(s) => {
-                let s = NaiveDateTime::parse_from_str(s.as_str(), "%Y-%m-%dT%H:%M:%S").or_else(|e| Err(D::Error::custom(e.to_string())))?;
+                let s = NaiveDateTime::parse_from_str(s.as_str(), "%Y-%m-%dT%H:%M:%S")
+                    .or_else(|e| Err(D::Error::custom(e.to_string())))?;
                 return Ok(Timestamp {
-                    inner: s.timestamp_millis()
+                    inner: s.timestamp_millis(),
                 });
             }
             Bson::Int64(data) => {
@@ -64,13 +75,10 @@ impl<'de> serde::Deserialize<'de> for Timestamp {
             Bson::Timestamp(data) => {
                 return Ok(Timestamp::from(data));
             }
-            _ => {
-                Err(D::Error::custom("deserialize un supported bson type!"))
-            }
+            _ => Err(D::Error::custom("deserialize un supported bson type!")),
         }
     }
 }
-
 
 impl From<rbson::Timestamp> for Timestamp {
     fn from(data: rbson::Timestamp) -> Self {
@@ -79,7 +87,7 @@ impl From<rbson::Timestamp> for Timestamp {
                 let upper = (data.time.to_le() as u64) << 32;
                 let lower = data.increment.to_le() as u64;
                 (upper | lower) as i64
-            }
+            },
         }
     }
 }
@@ -120,7 +128,7 @@ impl Timestamp {
     pub fn now() -> Self {
         let offset_date_time = NaiveDateTime::now().timestamp_millis();
         Self {
-            inner: offset_date_time
+            inner: offset_date_time,
         }
     }
 
@@ -129,16 +137,13 @@ impl Timestamp {
     }
 
     pub fn from_unix_timestamp(arg: i64) -> Self {
-        Self {
-            inner: arg
-        }
+        Self { inner: arg }
     }
 
     pub fn to_native_datetime(&self) -> NaiveDateTime {
         NaiveDateTime::from_timestamp(self.inner / 1000, (self.inner % 1000 * 1000000) as u32)
     }
 }
-
 
 #[cfg(test)]
 mod test {

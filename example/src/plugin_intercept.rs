@@ -1,13 +1,13 @@
 #[cfg(test)]
 mod test {
-    use rbson::Bson;
-    use crate::{BizActivity, init_sqlite};
+    use crate::{init_sqlite, BizActivity};
     use rbatis::core::Error;
     use rbatis::crud::{CRUDMut, CRUD};
     use rbatis::plugin::intercept::{
         BlockAttackDeleteInterceptor, BlockAttackUpdateInterceptor, SqlIntercept,
     };
     use rbatis::rbatis::Rbatis;
+    use rbson::Bson;
     use serde_json::Value;
 
     #[tokio::test]

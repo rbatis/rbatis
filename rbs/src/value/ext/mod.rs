@@ -45,9 +45,7 @@ impl ValueExt for Value {
             Value::U64(v) => Unexpected::Unsigned(v),
             Value::F32(v) => Unexpected::Float(v as f64),
             Value::F64(v) => Unexpected::Float(v),
-            Value::String(ref v) => {
-                Unexpected::Bytes(v.as_bytes())
-            }
+            Value::String(ref v) => Unexpected::Bytes(v.as_bytes()),
             Value::Binary(ref v) => Unexpected::Bytes(v),
             Value::Array(..) => Unexpected::Seq,
             Value::Map(..) => Unexpected::Map,
@@ -68,9 +66,7 @@ impl<'a> ValueExt for ValueRef<'a> {
             ValueRef::U64(v) => Unexpected::Unsigned(v),
             ValueRef::F32(v) => Unexpected::Float(v as f64),
             ValueRef::F64(v) => Unexpected::Float(v),
-            ValueRef::String(ref v) => {
-                Unexpected::Bytes(&v.as_bytes()[..])
-            }
+            ValueRef::String(ref v) => Unexpected::Bytes(&v.as_bytes()[..]),
             ValueRef::Binary(ref v) => Unexpected::Bytes(v),
             ValueRef::Array(..) => Unexpected::Seq,
             ValueRef::Map(..) => Unexpected::Map,

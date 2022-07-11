@@ -10,8 +10,8 @@ use sqlx_core::value::ValueRef;
 
 use crate::convert::{JsonCodec, RefJsonCodec, ResultCodec};
 
-use crate::{to_bson_macro};
 use crate::db::db_adapter::DataDecoder;
+use crate::to_bson_macro;
 use crate::types::Decimal;
 
 impl<'r> JsonCodec for sqlx_core::mssql::MssqlValueRef<'r> {
@@ -23,14 +23,14 @@ impl<'r> JsonCodec for sqlx_core::mssql::MssqlValueRef<'r> {
             }
             "TINYINT" => {
                 let r: Option<i8> = Decode::<'_, Mssql>::decode(self)?;
-                if let Some(r)=r{
+                if let Some(r) = r {
                     return Ok(bson!(r as i32));
                 }
                 return Ok(Bson::Null);
             }
             "SMALLINT" => {
                 let r: Option<i16> = Decode::<'_, Mssql>::decode(self)?;
-                if let Some(r)=r{
+                if let Some(r) = r {
                     return Ok(bson!(r as i32));
                 }
                 return Ok(Bson::Null);
@@ -75,7 +75,7 @@ impl<'r> JsonCodec for sqlx_core::mssql::MssqlValueRef<'r> {
 }
 
 impl RefJsonCodec for Vec<MssqlRow> {
-    fn try_to_bson(&self,decoder: &dyn DataDecoder) -> crate::Result<Bson> {
+    fn try_to_bson(&self, decoder: &dyn DataDecoder) -> crate::Result<Bson> {
         let mut arr = Vec::with_capacity(self.len());
         for row in self {
             let mut m = rbson::Document::new();
@@ -83,8 +83,8 @@ impl RefJsonCodec for Vec<MssqlRow> {
             for x in columns {
                 let key = x.name();
                 let v: MssqlValueRef = row.try_get_raw(key)?;
-                let mut bson=v.try_to_bson()?;
-                decoder.decode(key,&mut bson)?;
+                let mut bson = v.try_to_bson()?;
+                decoder.decode(key, &mut bson)?;
                 m.insert(key.to_owned(), bson);
             }
             arr.push(Bson::Document(m));

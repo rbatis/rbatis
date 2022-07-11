@@ -1,10 +1,16 @@
 use std::fmt::{Display, Formatter};
 use std::io::Write;
 
-use rmp::encode::{write_array_len, write_bin, write_bool, write_ext_meta, write_f32, write_f64, write_i32, write_i64, write_map_len, write_nil, write_u32, write_u64};
-use serde::ser::{SerializeMap, SerializeSeq, SerializeStruct, SerializeStructVariant, SerializeTuple, SerializeTupleStruct, SerializeTupleVariant};
 use super::Error;
-use crate::value::{ValueRef};
+use crate::value::ValueRef;
+use rmp::encode::{
+    write_array_len, write_bin, write_bool, write_ext_meta, write_f32, write_f64, write_i32,
+    write_i64, write_map_len, write_nil, write_u32, write_u64,
+};
+use serde::ser::{
+    SerializeMap, SerializeSeq, SerializeStruct, SerializeStructVariant, SerializeTuple,
+    SerializeTupleStruct, SerializeTupleVariant,
+};
 
 /// Encodes and attempts to write the given non-owning ValueRef into the Write.
 ///
@@ -25,7 +31,8 @@ use crate::value::{ValueRef};
 /// assert_eq!(vec![0xaa, 0x6c, 0x65, 0x20, 0x6d, 0x65, 0x73, 0x73, 0x61, 0x67, 0x65], buf);
 /// ```
 pub fn write_value_ref<W>(wr: &mut W, val: &ValueRef<'_>) -> Result<(), Error>
-    where W: Write
+where
+    W: Write,
 {
     match *val {
         ValueRef::Nil => {
@@ -84,20 +91,17 @@ pub fn write_value_ref<W>(wr: &mut W, val: &ValueRef<'_>) -> Result<(), Error>
     Ok(())
 }
 
-
 use serde::{Serialize, Serializer};
 
 #[derive(Debug)]
 pub enum SerError {
-    E(String)
+    E(String),
 }
 
 impl Display for SerError {
     fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
         match self {
-            SerError::E(e) => {
-                e.fmt(f)
-            }
+            SerError::E(e) => e.fmt(f),
         }
     }
 }
@@ -105,11 +109,13 @@ impl Display for SerError {
 impl std::error::Error for SerError {}
 
 impl serde::ser::Error for SerError {
-    fn custom<T>(msg: T) -> Self where T: Display {
+    fn custom<T>(msg: T) -> Self
+    where
+        T: Display,
+    {
         Self::E(msg.to_string())
     }
 }
-
 
 #[derive(Clone)]
 pub struct SerRef {}
@@ -123,8 +129,16 @@ impl<'a> SerializeStruct for SerializeStructImpl<'a> {
     type Ok = ValueRef<'a>;
     type Error = SerError;
 
-    fn serialize_field<T: ?Sized>(&mut self, key: &'static str, value: &T) -> Result<(), Self::Error> where T: Serialize {
-        self.inner.push((ValueRef::String(key), value.serialize(self.s.clone())?));
+    fn serialize_field<T: ?Sized>(
+        &mut self,
+        key: &'static str,
+        value: &T,
+    ) -> Result<(), Self::Error>
+    where
+        T: Serialize,
+    {
+        self.inner
+            .push((ValueRef::String(key), value.serialize(self.s.clone())?));
         Ok(())
     }
 
@@ -142,7 +156,10 @@ impl<'a> SerializeSeq for SerializeSeqImpl<'a> {
     type Ok = ValueRef<'a>;
     type Error = SerError;
 
-    fn serialize_element<T: ?Sized>(&mut self, value: &T) -> Result<(), Self::Error> where T: Serialize {
+    fn serialize_element<T: ?Sized>(&mut self, value: &T) -> Result<(), Self::Error>
+    where
+        T: Serialize,
+    {
         self.inner.push(value.serialize(self.s.clone())?);
         Ok(())
     }
@@ -161,7 +178,10 @@ impl<'a> SerializeTuple for SerializeTupleImpl<'a> {
     type Ok = ValueRef<'a>;
     type Error = SerError;
 
-    fn serialize_element<T: ?Sized>(&mut self, value: &T) -> Result<(), Self::Error> where T: Serialize {
+    fn serialize_element<T: ?Sized>(&mut self, value: &T) -> Result<(), Self::Error>
+    where
+        T: Serialize,
+    {
         self.inner.push(value.serialize(self.s.clone())?);
         Ok(())
     }
@@ -180,7 +200,10 @@ impl<'a> SerializeTupleStruct for SerializeTupleStructImpl<'a> {
     type Ok = ValueRef<'a>;
     type Error = SerError;
 
-    fn serialize_field<T: ?Sized>(&mut self, value: &T) -> Result<(), Self::Error> where T: Serialize {
+    fn serialize_field<T: ?Sized>(&mut self, value: &T) -> Result<(), Self::Error>
+    where
+        T: Serialize,
+    {
         self.inner.push(value.serialize(self.s.clone())?);
         Ok(())
     }
@@ -199,7 +222,10 @@ impl<'a> SerializeTupleVariant for SerializeTupleVariantImpl<'a> {
     type Ok = ValueRef<'a>;
     type Error = SerError;
 
-    fn serialize_field<T: ?Sized>(&mut self, value: &T) -> Result<(), Self::Error> where T: Serialize {
+    fn serialize_field<T: ?Sized>(&mut self, value: &T) -> Result<(), Self::Error>
+    where
+        T: Serialize,
+    {
         self.inner.push(value.serialize(self.s.clone())?);
         Ok(())
     }
@@ -218,12 +244,19 @@ impl<'a> SerializeMap for SerializeMapImpl<'a> {
     type Ok = ValueRef<'a>;
     type Error = SerError;
 
-    fn serialize_key<T: ?Sized>(&mut self, key: &T) -> Result<(), Self::Error> where T: Serialize {
-        self.inner.push((key.serialize(self.s.clone())?, ValueRef::Nil));
+    fn serialize_key<T: ?Sized>(&mut self, key: &T) -> Result<(), Self::Error>
+    where
+        T: Serialize,
+    {
+        self.inner
+            .push((key.serialize(self.s.clone())?, ValueRef::Nil));
         Ok(())
     }
 
-    fn serialize_value<T: ?Sized>(&mut self, value: &T) -> Result<(), Self::Error> where T: Serialize {
+    fn serialize_value<T: ?Sized>(&mut self, value: &T) -> Result<(), Self::Error>
+    where
+        T: Serialize,
+    {
         match self.inner.last_mut() {
             None => {}
             Some((_, v)) => {
@@ -247,7 +280,14 @@ impl<'a> SerializeStructVariant for SerializeStructVariantImpl<'a> {
     type Ok = ValueRef<'a>;
     type Error = SerError;
 
-    fn serialize_field<T: ?Sized>(&mut self, key: &'static str, value: &T) -> Result<(), Self::Error> where T: Serialize {
+    fn serialize_field<T: ?Sized>(
+        &mut self,
+        key: &'static str,
+        value: &T,
+    ) -> Result<(), Self::Error>
+    where
+        T: Serialize,
+    {
         self.inner.push(value.serialize(self.s.clone())?);
         Ok(())
     }
@@ -256,7 +296,6 @@ impl<'a> SerializeStructVariant for SerializeStructVariantImpl<'a> {
         Ok(ValueRef::Array(self.inner))
     }
 }
-
 
 impl Serializer for SerRef {
     type Ok = ValueRef<'static>;
@@ -329,7 +368,10 @@ impl Serializer for SerRef {
         Ok(ValueRef::Nil)
     }
 
-    fn serialize_some<T: ?Sized>(self, value: &T) -> Result<Self::Ok, Self::Error> where T: Serialize {
+    fn serialize_some<T: ?Sized>(self, value: &T) -> Result<Self::Ok, Self::Error>
+    where
+        T: Serialize,
+    {
         value.serialize(self)
     }
 
@@ -341,15 +383,36 @@ impl Serializer for SerRef {
         Ok(ValueRef::Nil)
     }
 
-    fn serialize_unit_variant(self, name: &'static str, variant_index: u32, variant: &'static str) -> Result<Self::Ok, Self::Error> {
+    fn serialize_unit_variant(
+        self,
+        name: &'static str,
+        variant_index: u32,
+        variant: &'static str,
+    ) -> Result<Self::Ok, Self::Error> {
         Ok(ValueRef::String(variant.into()))
     }
 
-    fn serialize_newtype_struct<T: ?Sized>(self, name: &'static str, value: &T) -> Result<Self::Ok, Self::Error> where T: Serialize {
+    fn serialize_newtype_struct<T: ?Sized>(
+        self,
+        name: &'static str,
+        value: &T,
+    ) -> Result<Self::Ok, Self::Error>
+    where
+        T: Serialize,
+    {
         value.serialize(self)
     }
 
-    fn serialize_newtype_variant<T: ?Sized>(self, name: &'static str, variant_index: u32, variant: &'static str, value: &T) -> Result<Self::Ok, Self::Error> where T: Serialize {
+    fn serialize_newtype_variant<T: ?Sized>(
+        self,
+        name: &'static str,
+        variant_index: u32,
+        variant: &'static str,
+        value: &T,
+    ) -> Result<Self::Ok, Self::Error>
+    where
+        T: Serialize,
+    {
         value.serialize(self)
     }
 
@@ -367,14 +430,24 @@ impl Serializer for SerRef {
         })
     }
 
-    fn serialize_tuple_struct(self, name: &'static str, len: usize) -> Result<Self::SerializeTupleStruct, Self::Error> {
+    fn serialize_tuple_struct(
+        self,
+        name: &'static str,
+        len: usize,
+    ) -> Result<Self::SerializeTupleStruct, Self::Error> {
         Ok(Self::SerializeTupleStruct {
             s: self.clone(),
             inner: Vec::with_capacity(len),
         })
     }
 
-    fn serialize_tuple_variant(self, name: &'static str, variant_index: u32, variant: &'static str, len: usize) -> Result<Self::SerializeTupleVariant, Self::Error> {
+    fn serialize_tuple_variant(
+        self,
+        name: &'static str,
+        variant_index: u32,
+        variant: &'static str,
+        len: usize,
+    ) -> Result<Self::SerializeTupleVariant, Self::Error> {
         Ok(Self::SerializeTupleVariant {
             s: self.clone(),
             inner: Vec::with_capacity(len),
@@ -388,14 +461,24 @@ impl Serializer for SerRef {
         })
     }
 
-    fn serialize_struct(self, name: &'static str, len: usize) -> Result<Self::SerializeStruct, Self::Error> {
+    fn serialize_struct(
+        self,
+        name: &'static str,
+        len: usize,
+    ) -> Result<Self::SerializeStruct, Self::Error> {
         Ok(Self::SerializeStruct {
             s: self.clone(),
             inner: Vec::with_capacity(len),
         })
     }
 
-    fn serialize_struct_variant(self, name: &'static str, variant_index: u32, variant: &'static str, len: usize) -> Result<Self::SerializeStructVariant, Self::Error> {
+    fn serialize_struct_variant(
+        self,
+        name: &'static str,
+        variant_index: u32,
+        variant: &'static str,
+        len: usize,
+    ) -> Result<Self::SerializeStructVariant, Self::Error> {
         Ok(Self::SerializeStructVariant {
             s: self.clone(),
             inner: Vec::with_capacity(len),
@@ -404,7 +487,10 @@ impl Serializer for SerRef {
 }
 
 /// serialize an value ref
-pub fn to_value_ref<T>(a: &T) -> Result<ValueRef, SerError> where T: serde::Serialize {
+pub fn to_value_ref<T>(a: &T) -> Result<ValueRef, SerError>
+where
+    T: serde::Serialize,
+{
     a.serialize(SerRef {})
 }
 

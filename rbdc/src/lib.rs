@@ -1,20 +1,18 @@
 use std::fmt::{Display, Formatter};
 
-pub mod encode;
-pub mod decode;
 pub mod db;
+pub mod decode;
+pub mod encode;
 
 #[derive(Debug)]
 pub enum Error {
-    E(String)
+    E(String),
 }
 
 impl Display for Error {
     fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
         match self {
-            Error::E(e) => {
-                e.fmt(f)
-            }
+            Error::E(e) => e.fmt(f),
         }
     }
 }
@@ -22,7 +20,10 @@ impl Display for Error {
 impl std::error::Error for Error {}
 
 impl serde::ser::Error for Error {
-    fn custom<T>(msg: T) -> Self where T: Display {
+    fn custom<T>(msg: T) -> Self
+    where
+        T: Display,
+    {
         Self::E(msg.to_string())
     }
 }
@@ -49,7 +50,7 @@ mod test {
         println!("{:?}", v);
 
         let v = rbs::to_value(a).unwrap();
-        println!("v: {}",v);
+        println!("v: {}", v);
         let s: A = rbs::from_value(v).unwrap();
         println!("s:{:?}", s);
     }
@@ -70,7 +71,8 @@ mod test {
             u32: u32::MAX,
             i64: i64::MAX,
             u64: u64::MAX,
-        }).unwrap();
+        })
+        .unwrap();
         let v: rbs::Value = rbs::read_value(&mut &buf[..]).unwrap();
         println!("{}", v);
 

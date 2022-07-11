@@ -4,13 +4,13 @@ use rbson::Bson;
 
 use crate::core::db::DriverType;
 use crate::core::Error;
-use crate::sql::rule::SqlRule;
 use crate::crud::{CRUDTable, Skip};
-use std::ops::{Deref, DerefMut};
-use std::collections::HashMap;
-use serde::{Serialize, Deserialize, Serializer, Deserializer};
+use crate::sql::rule::SqlRule;
 use serde::de::DeserializeOwned;
+use serde::{Deserialize, Deserializer, Serialize, Serializer};
+use std::collections::HashMap;
 use std::marker::PhantomData;
+use std::ops::{Deref, DerefMut};
 
 /// Logic Delete Plugin trait
 pub trait LogicDelete: Send + Sync + Debug {
@@ -59,8 +59,7 @@ impl RbatisLogicDeletePlugin {
 
 impl Debug for RbatisLogicDeletePlugin {
     fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
-        f.debug_struct("RbatisLogicDeletePlugin")
-            .finish()
+        f.debug_struct("RbatisLogicDeletePlugin").finish()
     }
 }
 

@@ -2,14 +2,13 @@
 #[macro_use]
 extern crate rbatis;
 
-
+use once_cell::sync::Lazy;
 use rbatis::crud::{CRUDMut, CRUD};
 use rbatis::rbatis::Rbatis;
 use std::collections::HashMap;
 use std::convert::Infallible;
 use std::str::FromStr;
 use std::time::Duration;
-use once_cell::sync::Lazy;
 use warp::Filter;
 
 #[crud_table]
@@ -38,9 +37,11 @@ async fn main() {
 
     log::info!("linking database...");
     //ORM
-    let rb=example::init_sqlite_path("").await;
+    let rb = example::init_sqlite_path("").await;
     drop(rb);
-    RB.link("sqlite://target/sqlite.db").await.expect("rbatis link database fail");
+    RB.link("sqlite://target/sqlite.db")
+        .await
+        .expect("rbatis link database fail");
     log::info!("linking database successful!");
     let routes = warp::get()
         .and(warp::query::query())

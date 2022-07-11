@@ -8,7 +8,7 @@ use rmp::decode::{
 use rmp::Marker;
 
 use super::Error;
-use crate::{Value};
+use crate::Value;
 
 // See https://github.com/3Hren/msgpack-rust/issues/151
 const PREALLOC_MAX: usize = 64 * 1024; // 64 KiB
@@ -28,7 +28,11 @@ fn read_array_data<R: Read>(rd: &mut R, mut len: usize, depth: usize) -> Result<
     Ok(vec)
 }
 
-fn read_map_data<R: Read>(rd: &mut R, mut len: usize, depth: usize) -> Result<Vec<(Value, Value)>, Error> {
+fn read_map_data<R: Read>(
+    rd: &mut R,
+    mut len: usize,
+    depth: usize,
+) -> Result<Vec<(Value, Value)>, Error> {
     let depth = super::decrement_depth(depth)?;
 
     // Note: Do not preallocate a Vec of size `len`.
@@ -63,7 +67,10 @@ fn read_bin_data<R: Read>(rd: &mut R, len: usize, depth: usize) -> Result<Vec<u8
     let _depth = super::decrement_depth(depth)?;
 
     let mut buf = Vec::with_capacity(min(len, PREALLOC_MAX));
-    let bytes_read = rd.take(len as u64).read_to_end(&mut buf).map_err(Error::InvalidDataRead)?;
+    let bytes_read = rd
+        .take(len as u64)
+        .read_to_end(&mut buf)
+        .map_err(Error::InvalidDataRead)?;
     if bytes_read != len {
         return Err(Error::InvalidDataRead(io::Error::new(
             io::ErrorKind::UnexpectedEof,
@@ -83,7 +90,10 @@ fn read_ext_body<R: Read>(rd: &mut R, len: usize, depth: usize) -> Result<(i8, V
     Ok((ty, vec))
 }
 
-fn read_value_inner<R>(rd: &mut R, depth: usize) -> Result<Value, Error> where R: Read {
+fn read_value_inner<R>(rd: &mut R, depth: usize) -> Result<Value, Error>
+where
+    R: Read,
+{
     let depth = super::decrement_depth(depth)?;
     let val = match read_marker(rd)? {
         Marker::Null => Value::Nil,
@@ -103,22 +113,22 @@ fn read_value_inner<R>(rd: &mut R, depth: usize) -> Result<Value, Error> where R
         Marker::F64 => Value::F64(read_data_f64(rd)?),
         Marker::FixStr(len) => {
             let res = read_str_data(rd, len as usize, depth)?;
-            Value::String(unsafe{String::from_utf8_unchecked(res)})
+            Value::String(unsafe { String::from_utf8_unchecked(res) })
         }
         Marker::Str8 => {
             let len = read_data_u8(rd)?;
             let res = read_str_data(rd, len as usize, depth)?;
-            Value::String(unsafe{String::from_utf8_unchecked(res)})
+            Value::String(unsafe { String::from_utf8_unchecked(res) })
         }
         Marker::Str16 => {
             let len = read_data_u16(rd)?;
             let res = read_str_data(rd, len as usize, depth)?;
-            Value::String(unsafe{String::from_utf8_unchecked(res)})
+            Value::String(unsafe { String::from_utf8_unchecked(res) })
         }
         Marker::Str32 => {
             let len = read_data_u32(rd)?;
             let res = read_str_data(rd, len as usize, depth)?;
-            Value::String(unsafe{String::from_utf8_unchecked(res)})
+            Value::String(unsafe { String::from_utf8_unchecked(res) })
         }
         Marker::FixArray(len) => {
             let vec = read_array_data(rd, len as usize, depth)?;
@@ -222,7 +232,8 @@ fn read_value_inner<R>(rd: &mut R, depth: usize) -> Result<Value, Error> where R
 /// [`read_value_with_max_depth`] instead.
 #[inline(never)]
 pub fn read_value<R>(rd: &mut R) -> Result<Value, Error>
-    where R: Read
+where
+    R: Read,
 {
     read_value_inner(rd, super::MAX_DEPTH)
 }
@@ -240,7 +251,8 @@ pub fn read_value<R>(rd: &mut R) -> Result<Value, Error>
 /// need recursion depth checking for your data, consider using [`read_value`] instead.
 #[inline(never)]
 pub fn read_value_with_max_depth<R>(rd: &mut R, max_depth: usize) -> Result<Value, Error>
-    where R: Read
+where
+    R: Read,
 {
     read_value_inner(rd, max_depth)
 }

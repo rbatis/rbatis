@@ -1,8 +1,8 @@
 ///We can use rbatis built-in macros to improve maintainability
 #[cfg(test)]
 mod test {
-    use rbatis::DriverType;
     use rbatis::wrapper::Wrapper;
+    use rbatis::DriverType;
 
     #[crud_table]
     #[derive(Clone, Debug)]
@@ -12,7 +12,11 @@ mod test {
         pub delete_flag: Option<i32>,
     }
     // this macro will create impl BizActivity{ pub fn id()->&str ..... }
-    impl_field_name_method!(BizActivity{id,name,delete_flag});
+    impl_field_name_method!(BizActivity {
+        id,
+        name,
+        delete_flag
+    });
     #[test]
     fn test_improve_maintainability() {
         // When name is changed to user_name, the code becomes unmaintainable,

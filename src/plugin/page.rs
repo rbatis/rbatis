@@ -3,9 +3,9 @@ use std::future::Future;
 
 use futures_core::future::BoxFuture;
 use rbatis_core::Error;
+use rbson::Bson;
 use serde::de::DeserializeOwned;
 use serde::{Deserialize, Serialize};
-use rbson::Bson;
 
 use crate::core::db::DriverType;
 use crate::sql::PageLimit;
@@ -213,8 +213,8 @@ impl<T> Default for Page<T> {
 }
 
 impl<T> IPageRequest for Page<T>
-    where
-        T: Send + Sync,
+where
+    T: Send + Sync,
 {
     fn get_page_size(&self) -> u64 {
         self.page_size
@@ -249,8 +249,8 @@ impl<T> IPageRequest for Page<T>
 }
 
 impl<T> IPage<T> for Page<T>
-    where
-        T: Send + Sync,
+where
+    T: Send + Sync,
 {
     fn get_records(&self) -> &Vec<T> {
         self.records.as_ref()
@@ -265,7 +265,6 @@ impl<T> IPage<T> for Page<T>
     }
 }
 
-
 ///use Replace page plugin
 #[derive(Copy, Clone, Debug)]
 pub struct RbatisReplacePagePlugin {}
@@ -278,9 +277,8 @@ impl RbatisReplacePagePlugin {
         //     .replace(" limit ", " limit ");
         let mut from_index = sql.find(crate::sql::TEMPLATE.from.left_space);
         if from_index.is_some() {
-            from_index = Option::Some(
-                from_index.unwrap() + crate::sql::TEMPLATE.from.left_space.len(),
-            );
+            from_index =
+                Option::Some(from_index.unwrap() + crate::sql::TEMPLATE.from.left_space.len());
         }
         let mut where_sql = sql[from_index.unwrap_or(0)..sql.len()].to_string();
         //remove order by
@@ -441,13 +439,9 @@ impl PagePlugin for RbatisPagePlugin {
         page: &dyn IPageRequest,
     ) -> Result<(String, String), Error> {
         if sql.contains(crate::sql::TEMPLATE.group_by.value) {
-            return self
-                .pack
-                .make_page_sql(driver_type, sql, args, page);
+            return self.pack.make_page_sql(driver_type, sql, args, page);
         } else {
-            return self
-                .replace
-                .make_page_sql(driver_type, sql, args, page);
+            return self.replace.make_page_sql(driver_type, sql, args, page);
         }
     }
 }

@@ -1,21 +1,26 @@
-use rbson::Bson;
+use crate::error::Error;
+use crate::types::{
+    DateNative, DateTimeNative, DateTimeUtc, DateUtc, Decimal, TimeNative, TimeUtc,
+};
+use crate::Uuid;
 use rbson::spec::BinarySubtype;
+use rbson::Bson;
 use sqlx_core::mysql::{MySql, MySqlArguments};
 use sqlx_core::query::Query;
-use crate::error::Error;
-use crate::types::{DateNative, DateTimeNative, DateTimeUtc, DateUtc, Decimal, TimeNative, TimeUtc};
-use crate::Uuid;
 
 #[inline]
-pub fn bind(t: Bson, mut q: Query<MySql, MySqlArguments>) -> crate::Result<Query<MySql, MySqlArguments>> {
+pub fn bind(
+    t: Bson,
+    mut q: Query<MySql, MySqlArguments>,
+) -> crate::Result<Query<MySql, MySqlArguments>> {
     match t {
         Bson::String(s) => {
-            if s.starts_with("DateTimeUtc(")  {
+            if s.starts_with("DateTimeUtc(") {
                 let data: DateTimeUtc = rbson::from_bson(Bson::String(s))?;
                 q = q.bind(data.inner);
                 return Ok(q);
             }
-            if s.starts_with("DateTimeNative(")  {
+            if s.starts_with("DateTimeNative(") {
                 let data: DateTimeNative = rbson::from_bson(Bson::String(s))?;
                 q = q.bind(data.inner);
                 return Ok(q);
@@ -76,29 +81,27 @@ pub fn bind(t: Bson, mut q: Query<MySql, MySqlArguments>) -> crate::Result<Query
         Bson::Decimal128(d) => {
             q = q.bind(d.to_string());
         }
-        Bson::Binary(d) => {
-            match d.subtype {
-                BinarySubtype::Generic => {
-                    q = q.bind(d.bytes);
-                }
-                BinarySubtype::Uuid => {
-                    q = q.bind(crate::types::Uuid::from(d).inner);
-                }
-                BinarySubtype::UserDefined(type_id) => {
-                    match type_id {
-                        crate::types::BINARY_SUBTYPE_JSON => {
-                            q = q.bind(serde_json::from_slice::<serde_json::Value>(&d.bytes).unwrap_or_default());
-                        }
-                        _ => {
-                            return Err(Error::from("un supported bind type!"));
-                        }
-                    }
+        Bson::Binary(d) => match d.subtype {
+            BinarySubtype::Generic => {
+                q = q.bind(d.bytes);
+            }
+            BinarySubtype::Uuid => {
+                q = q.bind(crate::types::Uuid::from(d).inner);
+            }
+            BinarySubtype::UserDefined(type_id) => match type_id {
+                crate::types::BINARY_SUBTYPE_JSON => {
+                    q = q.bind(
+                        serde_json::from_slice::<serde_json::Value>(&d.bytes).unwrap_or_default(),
+                    );
                 }
                 _ => {
                     return Err(Error::from("un supported bind type!"));
                 }
+            },
+            _ => {
+                return Err(Error::from("un supported bind type!"));
             }
-        }
+        },
         Bson::DateTime(d) => {
             q = q.bind(DateTimeNative::from(d).inner);
         }

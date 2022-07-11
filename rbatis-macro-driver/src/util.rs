@@ -95,7 +95,11 @@ pub(crate) fn find_fn_body(target_fn: &ItemFn) -> proc_macro2::TokenStream {
     let mut target_fn = target_fn.clone();
     let mut new_stmts = vec![];
     for x in &target_fn.block.stmts {
-        let token = x.to_token_stream().to_string().replace("\n", "").replace(" ", "");
+        let token = x
+            .to_token_stream()
+            .to_string()
+            .replace("\n", "")
+            .replace(" ", "");
         if token.eq("todo!()") || token.eq("unimplemented!()") || token.eq("impled!()") {
             //nothing to do
         } else {
@@ -111,13 +115,13 @@ pub(crate) fn is_fetch(return_source: &str) -> bool {
     return is_select;
 }
 
-
 pub(crate) fn is_rbatis_ref(ty_stream: &str) -> bool {
     if ty_stream.contains("RbatisExecutor")
         || ty_stream.contains("Rbatis")
         || ty_stream.contains("RBatisConnExecutor")
         || ty_stream.contains("RBatisTxExecutor")
-        || ty_stream.contains("RBatisTxExecutorGuard") {
+        || ty_stream.contains("RBatisTxExecutorGuard")
+    {
         return true;
     }
     false
