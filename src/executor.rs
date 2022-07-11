@@ -2,24 +2,23 @@ use std::fmt::{Debug, Formatter};
 use std::ops::{Deref, DerefMut};
 
 use async_trait::async_trait;
-use rbson::Bson;
-use rbson::spec::BinarySubtype;
 use futures::Future;
 use rbatis_core::db::DBExecResult;
+use rbson::spec::BinarySubtype;
+use rbson::Bson;
 use serde::de::DeserializeOwned;
 use serde::{Serialize, Serializer};
 
 use crate::core::db::{DBPool, DBPoolConn, DBQuery, DBTx};
 use crate::core::Error;
-use crate::crud::{CRUD, CRUDMut};
-use crate::DriverType;
+use crate::crud::{CRUDMut, CRUD};
 use crate::plugin::page::{IPageRequest, Page};
 use crate::rbatis::Rbatis;
+use crate::snowflake::new_snowflake_id;
 use crate::utils::string_util;
+use crate::DriverType;
 use futures::executor::block_on;
 use rbatis_core::{DateTimeNative, Format};
-use crate::snowflake::new_snowflake_id;
-
 
 /// the rbatis Containers for transactions, connections, and ontologies
 /// for example:
@@ -32,18 +31,26 @@ use crate::snowflake::new_snowflake_id;
 /// (&mut conn).into()
 /// (&mut guard).into()
 #[derive(Debug)]
-pub enum RbatisExecutor<'r, 'inner> where 'inner: 'r {
+pub enum RbatisExecutor<'r, 'inner>
+where
+    'inner: 'r,
+{
     RB(&'r Rbatis),
     Conn(&'r mut RBatisConnExecutor<'inner>),
     TX(&'r mut RBatisTxExecutor<'inner>),
     TxGuard(&'r mut RBatisTxExecutorGuard<'inner>),
 }
 
-
 impl RbatisExecutor<'_, '_> {
-    pub async fn fetch_page<T>(&mut self, sql: &str, args: Vec<Bson>, page_request: &dyn IPageRequest) -> crate::Result<Page<T>>
-        where
-            T: DeserializeOwned + Serialize + Send + Sync {
+    pub async fn fetch_page<T>(
+        &mut self,
+        sql: &str,
+        args: Vec<Bson>,
+        page_request: &dyn IPageRequest,
+    ) -> crate::Result<Page<T>>
+    where
+        T: DeserializeOwned + Serialize + Send + Sync,
+    {
         match self {
             RbatisExecutor::RB(rb) => {
                 return rb.fetch_page(sql, args, page_request).await;
@@ -77,7 +84,10 @@ impl RbatisExecutor<'_, '_> {
         }
     }
 
-    pub async fn fetch<T>(&mut self, sql: &str, args: Vec<Bson>) -> Result<T, Error> where T: DeserializeOwned {
+    pub async fn fetch<T>(&mut self, sql: &str, args: Vec<Bson>) -> Result<T, Error>
+    where
+        T: DeserializeOwned,
+    {
         match self {
             RbatisExecutor::RB(rb) => {
                 return rb.fetch(sql, args).await;
@@ -98,18 +108,10 @@ impl RbatisExecutor<'_, '_> {
 impl<'r, 'inner> RbatisRef for RbatisExecutor<'r, 'inner> {
     fn get_rbatis(&self) -> &Rbatis {
         match self {
-            RbatisExecutor::RB(rb) => {
-                rb
-            }
-            RbatisExecutor::Conn(rb) => {
-                rb.get_rbatis()
-            }
-            RbatisExecutor::TX(rb) => {
-                rb.get_rbatis()
-            }
-            RbatisExecutor::TxGuard(rb) => {
-                rb.get_rbatis()
-            }
+            RbatisExecutor::RB(rb) => rb,
+            RbatisExecutor::Conn(rb) => rb.get_rbatis(),
+            RbatisExecutor::TX(rb) => rb.get_rbatis(),
+            RbatisExecutor::TxGuard(rb) => rb.get_rbatis(),
         }
     }
 }
@@ -164,7 +166,9 @@ pub trait RbatisRef {
 #[async_trait]
 pub trait ExecutorMut: RbatisRef {
     async fn exec(&mut self, sql: &str, args: Vec<rbson::Bson>) -> Result<DBExecResult, Error>;
-    async fn fetch<T>(&mut self, sql: &str, args: Vec<rbson::Bson>) -> Result<T, Error> where T: DeserializeOwned;
+    async fn fetch<T>(&mut self, sql: &str, args: Vec<rbson::Bson>) -> Result<T, Error>
+    where
+        T: DeserializeOwned;
 }
 
 #[async_trait]
@@ -175,7 +179,6 @@ impl RbatisRef for Rbatis {
         &self
     }
 }
-
 
 #[derive(Debug)]
 pub struct RBatisConnExecutor<'a> {
@@ -200,12 +203,8 @@ fn bson_arr_to_string(arg: Vec<Bson>) -> (Vec<Bson>, String) {
 
     let s = b.to_string();
     return match b {
-        Bson::Array(arr) => {
-            (arr, s)
-        }
-        _ => {
-            (vec![], s)
-        }
+        Bson::Array(arr) => (arr, s),
+        _ => (vec![], s),
     };
 }
 
@@ -221,13 +220,14 @@ impl<'a> ExecutorMut for RBatisConnExecutor<'_> {
         if self.get_rbatis().log_plugin.is_enable() {
             let (_args, args_string) = bson_arr_to_string(args);
             args = _args;
-            self.get_rbatis().log_plugin.info(rb_task_id,
-                                              &format!(
-                                                  "Exec   ==> {}\n{}[rbatis]                      Args   ==> {}",
-                                                  &sql,
-                                                  string_util::LOG_SPACE,
-                                                  args_string
-                                              ),
+            self.get_rbatis().log_plugin.info(
+                rb_task_id,
+                &format!(
+                    "Exec   ==> {}\n{}[rbatis]                      Args   ==> {}",
+                    &sql,
+                    string_util::LOG_SPACE,
+                    args_string
+                ),
             );
         }
         let result;
@@ -240,12 +240,14 @@ impl<'a> ExecutorMut for RBatisConnExecutor<'_> {
         if self.get_rbatis().log_plugin.is_enable() {
             match &result {
                 Ok(result) => {
-                    self.get_rbatis().log_plugin.info(rb_task_id,
-                                                      &format!("RowsAffected <== {}", result.rows_affected),
+                    self.get_rbatis().log_plugin.info(
+                        rb_task_id,
+                        &format!("RowsAffected <== {}", result.rows_affected),
                     );
                 }
                 Err(e) => {
-                    self.get_rbatis().log_plugin
+                    self.get_rbatis()
+                        .log_plugin
                         .error(rb_task_id, &format!("ReturnErr  <== {}", e));
                 }
             }
@@ -253,7 +255,10 @@ impl<'a> ExecutorMut for RBatisConnExecutor<'_> {
         return result;
     }
 
-    async fn fetch<T>(&mut self, sql: &str, mut args: Vec<rbson::Bson>) -> Result<T, Error> where T: DeserializeOwned {
+    async fn fetch<T>(&mut self, sql: &str, mut args: Vec<rbson::Bson>) -> Result<T, Error>
+    where
+        T: DeserializeOwned,
+    {
         let rb_task_id = new_snowflake_id();
         let mut sql = sql.to_string();
         let is_prepared = args.len() > 0;
@@ -263,13 +268,14 @@ impl<'a> ExecutorMut for RBatisConnExecutor<'_> {
         if self.get_rbatis().log_plugin.is_enable() {
             let (_args, args_string) = bson_arr_to_string(args);
             args = _args;
-            self.get_rbatis().log_plugin.info(rb_task_id,
-                                              &format!(
-                                                  "Fetch  ==> {}\n{}[rbatis]                      Args   ==> {}",
-                                                  &sql,
-                                                  string_util::LOG_SPACE,
-                                                  args_string
-                                              ),
+            self.get_rbatis().log_plugin.info(
+                rb_task_id,
+                &format!(
+                    "Fetch  ==> {}\n{}[rbatis]                      Args   ==> {}",
+                    &sql,
+                    string_util::LOG_SPACE,
+                    args_string
+                ),
             );
         }
         if is_prepared {
@@ -278,11 +284,13 @@ impl<'a> ExecutorMut for RBatisConnExecutor<'_> {
             if self.get_rbatis().log_plugin.is_enable() {
                 match &result {
                     Ok(result) => {
-                        self.get_rbatis().log_plugin
+                        self.get_rbatis()
+                            .log_plugin
                             .info(rb_task_id, &format!("ReturnRows <== {}", result.1));
                     }
                     Err(e) => {
-                        self.get_rbatis().log_plugin
+                        self.get_rbatis()
+                            .log_plugin
                             .error(rb_task_id, &format!("ReturnErr  <== {}", e));
                     }
                 }
@@ -293,11 +301,13 @@ impl<'a> ExecutorMut for RBatisConnExecutor<'_> {
             if self.get_rbatis().log_plugin.is_enable() {
                 match &result {
                     Ok(result) => {
-                        self.get_rbatis().log_plugin
+                        self.get_rbatis()
+                            .log_plugin
                             .info(rb_task_id, &format!("ReturnRows <== {}", result.1));
                     }
                     Err(e) => {
-                        self.get_rbatis().log_plugin
+                        self.get_rbatis()
+                            .log_plugin
                             .error(rb_task_id, &format!("ReturnErr  <== {}", e));
                     }
                 }
@@ -337,7 +347,6 @@ impl<'a, 'b> RBatisTxExecutor<'b> {
     }
 }
 
-
 #[async_trait]
 impl<'a> ExecutorMut for RBatisTxExecutor<'_> {
     async fn exec(&mut self, sql: &str, mut args: Vec<rbson::Bson>) -> Result<DBExecResult, Error> {
@@ -349,13 +358,14 @@ impl<'a> ExecutorMut for RBatisTxExecutor<'_> {
         if self.get_rbatis().log_plugin.is_enable() {
             let (_args, args_string) = bson_arr_to_string(args);
             args = _args;
-            self.get_rbatis().log_plugin.info(self.tx_id,
-                                              &format!(
-                                                  "Exec   ==> {}\n{}[rbatis]                      Args   ==> {}",
-                                                  &sql,
-                                                  string_util::LOG_SPACE,
-                                                  args_string
-                                              ),
+            self.get_rbatis().log_plugin.info(
+                self.tx_id,
+                &format!(
+                    "Exec   ==> {}\n{}[rbatis]                      Args   ==> {}",
+                    &sql,
+                    string_util::LOG_SPACE,
+                    args_string
+                ),
             );
         }
         let result;
@@ -368,12 +378,14 @@ impl<'a> ExecutorMut for RBatisTxExecutor<'_> {
         if self.get_rbatis().log_plugin.is_enable() {
             match &result {
                 Ok(result) => {
-                    self.get_rbatis().log_plugin.info(self.tx_id,
-                                                      &format!("RowsAffected <== {}", result.rows_affected),
+                    self.get_rbatis().log_plugin.info(
+                        self.tx_id,
+                        &format!("RowsAffected <== {}", result.rows_affected),
                     );
                 }
                 Err(e) => {
-                    self.get_rbatis().log_plugin
+                    self.get_rbatis()
+                        .log_plugin
                         .error(self.tx_id, &format!("ReturnErr  <== {}", e));
                 }
             }
@@ -381,7 +393,10 @@ impl<'a> ExecutorMut for RBatisTxExecutor<'_> {
         return result;
     }
 
-    async fn fetch<T>(&mut self, sql: &str, mut args: Vec<rbson::Bson>) -> Result<T, Error> where T: DeserializeOwned {
+    async fn fetch<T>(&mut self, sql: &str, mut args: Vec<rbson::Bson>) -> Result<T, Error>
+    where
+        T: DeserializeOwned,
+    {
         let mut sql = sql.to_string();
         let is_prepared = args.len() > 0;
         for item in &self.get_rbatis().sql_intercepts {
@@ -390,13 +405,14 @@ impl<'a> ExecutorMut for RBatisTxExecutor<'_> {
         if self.get_rbatis().log_plugin.is_enable() {
             let (_args, args_string) = bson_arr_to_string(args);
             args = _args;
-            self.get_rbatis().log_plugin.info(self.tx_id,
-                                              &format!(
-                                                  "Fetch  ==> {}\n{}[rbatis]                      Args   ==> {}",
-                                                  &sql,
-                                                  string_util::LOG_SPACE,
-                                                  args_string
-                                              ),
+            self.get_rbatis().log_plugin.info(
+                self.tx_id,
+                &format!(
+                    "Fetch  ==> {}\n{}[rbatis]                      Args   ==> {}",
+                    &sql,
+                    string_util::LOG_SPACE,
+                    args_string
+                ),
             );
         }
         if is_prepared {
@@ -405,11 +421,13 @@ impl<'a> ExecutorMut for RBatisTxExecutor<'_> {
             if self.get_rbatis().log_plugin.is_enable() {
                 match &result {
                     Ok(result) => {
-                        self.get_rbatis().log_plugin
+                        self.get_rbatis()
+                            .log_plugin
                             .info(self.tx_id, &format!("ReturnRows <== {}", result.1));
                     }
                     Err(e) => {
-                        self.get_rbatis().log_plugin
+                        self.get_rbatis()
+                            .log_plugin
                             .error(self.tx_id, &format!("ReturnErr  <== {}", e));
                     }
                 }
@@ -420,11 +438,13 @@ impl<'a> ExecutorMut for RBatisTxExecutor<'_> {
             if self.get_rbatis().log_plugin.is_enable() {
                 match &result {
                     Ok(result) => {
-                        self.get_rbatis().log_plugin
+                        self.get_rbatis()
+                            .log_plugin
                             .info(self.tx_id, &format!("ReturnRows <== {}", result.1));
                     }
                     Err(e) => {
-                        self.get_rbatis().log_plugin
+                        self.get_rbatis()
+                            .log_plugin
                             .error(self.tx_id, &format!("ReturnErr  <== {}", e));
                     }
                 }
@@ -489,28 +509,33 @@ impl<'a, 'b> RBatisTxExecutorGuard<'b> {
     }
 
     pub async fn begin(&mut self) -> crate::Result<()> {
-        let tx = self.tx.as_mut().ok_or_else(|| Error::from("[rbatis] tx is committed"))?;
+        let tx = self
+            .tx
+            .as_mut()
+            .ok_or_else(|| Error::from("[rbatis] tx is committed"))?;
         return Ok(tx.begin().await?);
     }
 
     pub async fn commit(&mut self) -> crate::Result<()> {
-        let tx = self.tx.as_mut().ok_or_else(|| Error::from("[rbatis] tx is committed"))?;
+        let tx = self
+            .tx
+            .as_mut()
+            .ok_or_else(|| Error::from("[rbatis] tx is committed"))?;
         return Ok(tx.commit().await?);
     }
 
     pub async fn rollback(&mut self) -> crate::Result<()> {
-        let tx = self.tx.as_mut().ok_or_else(|| Error::from("[rbatis] tx is committed"))?;
+        let tx = self
+            .tx
+            .as_mut()
+            .ok_or_else(|| Error::from("[rbatis] tx is committed"))?;
         return Ok(tx.rollback().await?);
     }
 
     pub fn take_conn(mut self) -> Option<DBPoolConn<'b>> {
         match self.tx.take() {
-            None => {
-                None
-            }
-            Some(s) => {
-                s.take_conn()
-            }
+            None => None,
+            Some(s) => s.take_conn(),
         }
     }
 }
@@ -521,7 +546,9 @@ impl<'a> RBatisTxExecutor<'a> {
     ///     tx.defer(|tx| {});
     ///
     pub fn defer<Call>(self, callback: Call) -> RBatisTxExecutorGuard<'a>
-        where Call: 'a + FnMut(Self) + Send {
+    where
+        Call: 'a + FnMut(Self) + Send,
+    {
         RBatisTxExecutorGuard {
             tx: Some(self),
             callback: Box::new(callback),
@@ -535,8 +562,10 @@ impl<'a> RBatisTxExecutor<'a> {
     ///         });
     ///
     pub fn defer_async<R, F>(self, mut callback: F) -> RBatisTxExecutorGuard<'a>
-        where R: 'a + Future<Output=()>,
-              F: 'a + Send + FnMut(RBatisTxExecutor<'a>) -> R {
+    where
+        R: 'a + Future<Output = ()>,
+        F: 'a + Send + FnMut(RBatisTxExecutor<'a>) -> R,
+    {
         RBatisTxExecutorGuard {
             tx: Some(self),
             callback: Box::new(move |arg| {
@@ -551,8 +580,8 @@ impl<'a> RBatisTxExecutor<'a> {
         args: Vec<rbson::Bson>,
         page_request: &dyn IPageRequest,
     ) -> crate::Result<Page<T>>
-        where
-            T: DeserializeOwned + Serialize + Send + Sync,
+    where
+        T: DeserializeOwned + Serialize + Send + Sync,
     {
         self.get_rbatis().fetch_page(sql, args, page_request).await
     }
@@ -572,7 +601,6 @@ impl<'a> DerefMut for RBatisTxExecutorGuard<'a> {
     }
 }
 
-
 impl Drop for RBatisTxExecutorGuard<'_> {
     fn drop(&mut self) {
         match self.tx.take() {
@@ -590,7 +618,10 @@ impl Rbatis {
         conn.exec(sql, args).await
     }
 
-    pub async fn fetch<T>(&self, sql: &str, args: Vec<Bson>) -> Result<T, Error> where T: DeserializeOwned {
+    pub async fn fetch<T>(&self, sql: &str, args: Vec<Bson>) -> Result<T, Error>
+    where
+        T: DeserializeOwned,
+    {
         let mut conn = self.acquire().await?;
         conn.fetch(sql, args).await
     }
@@ -603,7 +634,10 @@ impl ExecutorMut for Rbatis {
         conn.exec(sql, args).await
     }
 
-    async fn fetch<T>(&mut self, sql: &str, args: Vec<Bson>) -> Result<T, Error> where T: DeserializeOwned {
+    async fn fetch<T>(&mut self, sql: &str, args: Vec<Bson>) -> Result<T, Error>
+    where
+        T: DeserializeOwned,
+    {
         let mut conn = self.acquire().await?;
         conn.fetch(sql, args).await
     }

@@ -1,12 +1,12 @@
+use chrono::{Local, Utc};
+use rbson::spec::BinarySubtype;
+use rbson::Bson;
+use serde::de::Error;
+use serde::{Deserializer, Serializer};
 use std::any::type_name;
 use std::ops::{Add, Deref, DerefMut};
 use std::str::FromStr;
 use std::time::SystemTime;
-use rbson::Bson;
-use rbson::spec::BinarySubtype;
-use chrono::{Local, Utc};
-use serde::{Deserializer, Serializer};
-use serde::de::Error;
 
 /// TimeLocal
 /// Rust type              Postgres type(s)
@@ -18,27 +18,26 @@ pub struct TimeNative {
 
 impl From<chrono::NaiveTime> for TimeNative {
     fn from(arg: chrono::NaiveTime) -> Self {
-        Self {
-            inner: arg
-        }
+        Self { inner: arg }
     }
 }
 
 impl From<&chrono::NaiveTime> for TimeNative {
     fn from(arg: &chrono::NaiveTime) -> Self {
-        Self {
-            inner: arg.clone()
-        }
+        Self { inner: arg.clone() }
     }
 }
 
 impl serde::Serialize for TimeNative {
     #[inline]
-    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error> where S: Serializer {
+    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
+    where
+        S: Serializer,
+    {
         use serde::ser::Error;
         if type_name::<S::Error>().eq("rbson::ser::error::Error") {
             return serializer.serialize_str(&format!("TimeNative({})", self.inner));
-        }else{
+        } else {
             return self.inner.serialize(serializer);
         }
     }
@@ -46,23 +45,26 @@ impl serde::Serialize for TimeNative {
 
 impl<'de> serde::Deserialize<'de> for TimeNative {
     #[inline]
-    fn deserialize<D>(deserializer: D) -> Result<Self, D::Error> where D: Deserializer<'de> {
+    fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
+    where
+        D: Deserializer<'de>,
+    {
         match Bson::deserialize(deserializer)? {
             Bson::String(s) => {
                 if s.starts_with("TimeNative(") && s.ends_with(")") {
                     let inner_data = &s["TimeNative(".len()..(s.len() - 1)];
                     return Ok(Self {
-                        inner: chrono::NaiveTime::from_str(inner_data).or_else(|e| Err(D::Error::custom(e.to_string())))?,
+                        inner: chrono::NaiveTime::from_str(inner_data)
+                            .or_else(|e| Err(D::Error::custom(e.to_string())))?,
                     });
                 } else {
                     return Ok(Self {
-                        inner: chrono::NaiveTime::from_str(&s).or_else(|e| Err(D::Error::custom(e.to_string())))?,
+                        inner: chrono::NaiveTime::from_str(&s)
+                            .or_else(|e| Err(D::Error::custom(e.to_string())))?,
                     });
                 }
             }
-            _ => {
-                Err(D::Error::custom("deserialize un supported bson type!"))
-            }
+            _ => Err(D::Error::custom("deserialize un supported bson type!")),
         }
     }
 }
@@ -99,16 +101,14 @@ impl TimeNative {
         let utc = Local::now();
         let dt = rbson::DateTime::from_millis(utc.timestamp_millis());
         Self {
-            inner: dt.to_chrono().with_timezone(&Local).time()
+            inner: dt.to_chrono().with_timezone(&Local).time(),
         }
     }
 
     /// create from str
     pub fn from_str(arg: &str) -> Result<Self, crate::error::Error> {
         let inner = chrono::NaiveTime::from_str(arg)?;
-        Ok(Self {
-            inner: inner
-        })
+        Ok(Self { inner: inner })
     }
 }
 

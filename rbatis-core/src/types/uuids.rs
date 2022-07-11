@@ -1,10 +1,10 @@
+use rbson::spec::BinarySubtype;
+use rbson::{Binary, Bson};
+use serde::de::Error;
+use serde::{Deserializer, Serialize, Serializer};
 use std::any::type_name;
 use std::ops::{Deref, DerefMut};
 use std::str::FromStr;
-use rbson::{Binary, Bson};
-use rbson::spec::BinarySubtype;
-use serde::{Deserializer, Serialize, Serializer};
-use serde::de::Error;
 
 /// Uuid
 #[derive(Clone, Copy, Eq, Hash, Ord, PartialEq, PartialOrd)]
@@ -16,25 +16,20 @@ impl From<&rbson::Binary> for Uuid {
     fn from(arg: &rbson::Binary) -> Self {
         let id = &String::from_utf8(arg.bytes.clone()).unwrap_or_default();
         Uuid {
-            inner: uuid::Uuid::from_str(&id).unwrap_or_default()
+            inner: uuid::Uuid::from_str(&id).unwrap_or_default(),
         }
     }
 }
 
-
 impl From<uuid::Uuid> for Uuid {
     fn from(arg: uuid::Uuid) -> Self {
-        Self {
-            inner: arg
-        }
+        Self { inner: arg }
     }
 }
 
 impl From<&uuid::Uuid> for Uuid {
     fn from(arg: &uuid::Uuid) -> Self {
-        Self {
-            inner: arg.clone()
-        }
+        Self { inner: arg.clone() }
     }
 }
 
@@ -42,18 +37,21 @@ impl From<rbson::Binary> for Uuid {
     fn from(arg: rbson::Binary) -> Self {
         let id = &String::from_utf8(arg.bytes).unwrap_or_default();
         Uuid {
-            inner: uuid::Uuid::from_str(&id).unwrap_or_default()
+            inner: uuid::Uuid::from_str(&id).unwrap_or_default(),
         }
     }
 }
 
 impl serde::Serialize for Uuid {
     #[inline]
-    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error> where S: Serializer {
+    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
+    where
+        S: Serializer,
+    {
         use serde::ser::Error;
         if type_name::<S::Error>().eq("rbson::ser::error::Error") {
             return serializer.serialize_str(&format!("Uuid({})", self.inner));
-        }else {
+        } else {
             return self.inner.serialize(serializer);
         }
     }
@@ -61,27 +59,29 @@ impl serde::Serialize for Uuid {
 
 impl<'de> serde::Deserialize<'de> for Uuid {
     #[inline]
-    fn deserialize<D>(deserializer: D) -> Result<Self, D::Error> where D: Deserializer<'de> {
+    fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
+    where
+        D: Deserializer<'de>,
+    {
         match Bson::deserialize(deserializer)? {
             Bson::String(s) => {
                 if s.starts_with("Uuid(") && s.ends_with(")") {
                     let inner_data = &s["Uuid(".len()..(s.len() - 1)];
                     return Ok(Self {
-                        inner: uuid::Uuid::parse_str(inner_data).or_else(|e| Err(D::Error::custom(e.to_string())))?,
+                        inner: uuid::Uuid::parse_str(inner_data)
+                            .or_else(|e| Err(D::Error::custom(e.to_string())))?,
                     });
                 } else {
                     return Ok(Self {
-                        inner: uuid::Uuid::parse_str(&s).or_else(|e| Err(D::Error::custom(e.to_string())))?,
+                        inner: uuid::Uuid::parse_str(&s)
+                            .or_else(|e| Err(D::Error::custom(e.to_string())))?,
                     });
                 }
             }
-            _ => {
-                Err(D::Error::custom("deserialize un supported bson type!"))
-            }
+            _ => Err(D::Error::custom("deserialize un supported bson type!")),
         }
     }
 }
-
 
 impl Deref for Uuid {
     type Target = uuid::Uuid;
@@ -96,7 +96,6 @@ impl DerefMut for Uuid {
         &mut self.inner
     }
 }
-
 
 impl std::fmt::Display for Uuid {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
@@ -113,14 +112,12 @@ impl std::fmt::Debug for Uuid {
 impl Uuid {
     pub fn new() -> Uuid {
         let uuid = uuid::Uuid::new_v4();
-        Uuid {
-            inner: uuid
-        }
+        Uuid { inner: uuid }
     }
 
     pub fn parse_str(arg: &str) -> crate::error::Result<Self> {
         Ok(Uuid {
-            inner: uuid::Uuid::parse_str(arg)?
+            inner: uuid::Uuid::parse_str(arg)?,
         })
     }
 }

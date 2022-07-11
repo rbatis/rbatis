@@ -1,28 +1,24 @@
-#[cfg(feature = "postgres")]
-pub mod bind_pg;
-#[cfg(feature = "mysql")]
-pub mod bind_mysql;
-#[cfg(feature = "sqlite")]
-pub mod bind_sqlite;
 #[cfg(feature = "mssql")]
 pub mod bind_mssql;
+#[cfg(feature = "mysql")]
+pub mod bind_mysql;
+#[cfg(feature = "postgres")]
+pub mod bind_pg;
+#[cfg(feature = "sqlite")]
+pub mod bind_sqlite;
 
-
-use std::time::Duration;
 use rbson::Bson;
+use std::time::Duration;
 
 use chrono::NaiveDateTime;
 use serde::de::DeserializeOwned;
 use serde::{Deserialize, Serialize};
 
-pub use db_adapter::{
-    DBConnectOption, DBExecResult, DBPool, DBPoolConn, DBQuery, DBTx,
-};
 use crate::convert::StmtConvert;
 use crate::db::db_adapter::DataDecoder;
+pub use db_adapter::{DBConnectOption, DBExecResult, DBPool, DBPoolConn, DBQuery, DBTx};
 
 pub mod db_adapter;
-
 
 #[derive(Debug)]
 pub struct DBPoolOptions {
@@ -84,7 +80,7 @@ pub enum DriverType {
 impl DriverType {
     pub fn is_number_type(&self) -> bool {
         match self {
-            DriverType::Postgres|DriverType::Mssql => {
+            DriverType::Postgres | DriverType::Mssql => {
                 return true;
             }
             _ => {
@@ -93,4 +89,3 @@ impl DriverType {
         }
     }
 }
-

@@ -1,7 +1,7 @@
-use rbson::Bson;
 use crate::db::db_adapter::DataDecoder;
 use crate::db::DriverType;
 use crate::Result;
+use rbson::Bson;
 
 ///the stmt replace str convert
 pub trait StmtConvert {
@@ -10,33 +10,32 @@ pub trait StmtConvert {
 
 #[macro_export]
 macro_rules! push_index {
-     ($n:expr,$new_sql:ident,$index:expr) => {
-                  {
-                     let num=$index/$n;
-                     $new_sql.push((num+48) as u8 as char);
-                     $index % $n
-                  }
-              };
+    ($n:expr,$new_sql:ident,$index:expr) => {{
+        let num = $index / $n;
+        $new_sql.push((num + 48) as u8 as char);
+        $index % $n
+    }};
     ($index:ident,$new_sql:ident) => {
-                if  $index>=0 && $index<10{
-                    $new_sql.push(($index+48)as u8 as char);
-                }else if $index>=10 && $index<100 {
-                    let $index = push_index!(10,$new_sql,$index);
-                    let $index = push_index!(1,$new_sql,$index);
-                }else if $index>=100 && $index<1000{
-                    let $index = push_index!(100,$new_sql,$index);
-                    let $index = push_index!(10,$new_sql,$index);
-                    let $index = push_index!(1,$new_sql,$index);
-                }else if $index>=1000 && $index<10000{
-                    let $index = push_index!(1000,$new_sql,$index);
-                    let $index = push_index!(100,$new_sql,$index);
-                    let $index = push_index!(10,$new_sql,$index);
-                    let $index = push_index!(1,$new_sql,$index);
-                }else{
-                     use std::fmt::Write;
-                     $new_sql.write_fmt(format_args!("{}", $index))
-                    .expect("a Display implementation returned an error unexpectedly");
-               }
+        if $index >= 0 && $index < 10 {
+            $new_sql.push(($index + 48) as u8 as char);
+        } else if $index >= 10 && $index < 100 {
+            let $index = push_index!(10, $new_sql, $index);
+            let $index = push_index!(1, $new_sql, $index);
+        } else if $index >= 100 && $index < 1000 {
+            let $index = push_index!(100, $new_sql, $index);
+            let $index = push_index!(10, $new_sql, $index);
+            let $index = push_index!(1, $new_sql, $index);
+        } else if $index >= 1000 && $index < 10000 {
+            let $index = push_index!(1000, $new_sql, $index);
+            let $index = push_index!(100, $new_sql, $index);
+            let $index = push_index!(10, $new_sql, $index);
+            let $index = push_index!(1, $new_sql, $index);
+        } else {
+            use std::fmt::Write;
+            $new_sql
+                .write_fmt(format_args!("{}", $index))
+                .expect("a Display implementation returned an error unexpectedly");
+        }
     };
 }
 
@@ -46,7 +45,7 @@ impl StmtConvert for DriverType {
             DriverType::Postgres => {
                 item.push('$');
                 let index = index + 1;
-                push_index!(index,item);
+                push_index!(index, item);
             }
             DriverType::Mysql => {
                 item.push('?');
@@ -58,7 +57,7 @@ impl StmtConvert for DriverType {
                 item.push('@');
                 item.push('p');
                 let index = index + 1;
-                push_index!(index,item);
+                push_index!(index, item);
             }
             DriverType::None => {
                 panic!("[rbatis] un support none for driver type!")
@@ -76,7 +75,7 @@ pub trait JsonCodec {
 ///json convert
 pub trait RefJsonCodec {
     /// to an json value
-    fn try_to_bson(&self,decoder: &dyn DataDecoder) -> Result<Bson>;
+    fn try_to_bson(&self, decoder: &dyn DataDecoder) -> Result<Bson>;
 }
 
 ///result convert
@@ -86,14 +85,11 @@ pub trait ResultCodec<T> {
 
 #[macro_export]
 macro_rules! to_bson_macro {
-    ($r:ident) => {
-               {
-                    if $r.is_some() {
-                         rbson::bson!($r.unwrap())
-                    } else {
-                         rbson::Bson::Null
-                    }
-                }
-    };
+    ($r:ident) => {{
+        if $r.is_some() {
+            rbson::bson!($r.unwrap())
+        } else {
+            rbson::Bson::Null
+        }
+    }};
 }
-

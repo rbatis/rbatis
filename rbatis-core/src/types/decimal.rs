@@ -1,12 +1,12 @@
+use bigdecimal_::{BigDecimal, ParseBigDecimalError};
+use rbson::spec::BinarySubtype;
+use rbson::Bson;
+use serde::de::{Error, Visitor};
+use serde::{Deserializer, Serialize, Serializer};
 use std::any::type_name;
 use std::fmt::Formatter;
 use std::ops::{Deref, DerefMut};
 use std::str::FromStr;
-use bigdecimal_::{BigDecimal, ParseBigDecimalError};
-use rbson::Bson;
-use rbson::spec::BinarySubtype;
-use serde::{Deserializer, Serialize, Serializer};
-use serde::de::{Error, Visitor};
 
 /// Rbatis Decimal
 #[derive(Clone, Eq, Hash, Ord, PartialEq, PartialOrd)]
@@ -16,27 +16,26 @@ pub struct Decimal {
 
 impl From<BigDecimal> for Decimal {
     fn from(arg: BigDecimal) -> Self {
-        Self {
-            inner: arg
-        }
+        Self { inner: arg }
     }
 }
 
 impl From<&BigDecimal> for Decimal {
     fn from(arg: &BigDecimal) -> Self {
-        Self {
-            inner: arg.clone()
-        }
+        Self { inner: arg.clone() }
     }
 }
 
 impl serde::Serialize for Decimal {
     #[inline]
-    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error> where S: Serializer {
+    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
+    where
+        S: Serializer,
+    {
         use serde::ser::Error;
         if type_name::<S::Error>().eq("rbson::ser::error::Error") {
             return serializer.serialize_str(&format!("Decimal({})", self.inner));
-        }else{
+        } else {
             return self.inner.serialize(serializer);
         }
     }
@@ -45,14 +44,18 @@ impl serde::Serialize for Decimal {
 /// Decimal allow deserialize by an String or Binary
 impl<'de> serde::Deserialize<'de> for Decimal {
     #[inline]
-    fn deserialize<D>(deserializer: D) -> Result<Self, D::Error> where D: Deserializer<'de> {
+    fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
+    where
+        D: Deserializer<'de>,
+    {
         let bson = rbson::Bson::deserialize(deserializer)?;
         return match bson {
             Bson::String(s) => {
                 if s.starts_with("Decimal(") && s.ends_with(")") {
                     let inner_data = &s["Decimal(".len()..(s.len() - 1)];
                     return Ok(Self {
-                        inner: BigDecimal::from_str(inner_data).or_else(|e| Err(D::Error::custom(e.to_string())))?,
+                        inner: BigDecimal::from_str(inner_data)
+                            .or_else(|e| Err(D::Error::custom(e.to_string())))?,
                     });
                 } else {
                     Ok(Self {
@@ -60,29 +63,19 @@ impl<'de> serde::Deserialize<'de> for Decimal {
                     })
                 }
             }
-            Bson::Int32(s) => {
-                Ok(Self {
-                    inner: BigDecimal::from(s),
-                })
-            }
-            Bson::Int64(s) => {
-                Ok(Self {
-                    inner: BigDecimal::from(s),
-                })
-            }
-            Bson::UInt64(s) => {
-                Ok(Self {
-                    inner: BigDecimal::from(s),
-                })
-            }
-            Bson::Decimal128(s) => {
-                Ok(Self {
-                    inner: BigDecimal::from_str(&s.to_string()).unwrap_or_default(),
-                })
-            }
-            _ => {
-                Err(D::Error::custom("deserialize unsupported bson type!"))
-            }
+            Bson::Int32(s) => Ok(Self {
+                inner: BigDecimal::from(s),
+            }),
+            Bson::Int64(s) => Ok(Self {
+                inner: BigDecimal::from(s),
+            }),
+            Bson::UInt64(s) => Ok(Self {
+                inner: BigDecimal::from(s),
+            }),
+            Bson::Decimal128(s) => Ok(Self {
+                inner: BigDecimal::from_str(&s.to_string()).unwrap_or_default(),
+            }),
+            _ => Err(D::Error::custom("deserialize unsupported bson type!")),
         };
     }
 }
@@ -113,36 +106,31 @@ impl DerefMut for Decimal {
     }
 }
 
-
 impl Decimal {
     pub fn from(s: &str) -> Self {
         let b = BigDecimal::from_str(s).unwrap_or_default();
-        Self {
-            inner: b
-        }
+        Self { inner: b }
     }
 
     /// create from str
     pub fn from_str(arg: &str) -> Result<Self, crate::error::Error> {
         let b = BigDecimal::from_str(arg)?;
-        Ok(Self {
-            inner: b
-        })
+        Ok(Self { inner: b })
     }
 }
 
 #[cfg(test)]
 mod test {
-    use rbson::Bson;
     use crate::types::Decimal;
+    use rbson::Bson;
 
     #[test]
     fn test_ser_de() {
         let b = Decimal::from("1");
         let bsons = rbson::to_bson(&b).unwrap();
-        match &bsons{
-            rbson::Bson::String(s)=>{
-                assert_eq!(s,"Decimal(1)");
+        match &bsons {
+            rbson::Bson::String(s) => {
+                assert_eq!(s, "Decimal(1)");
             }
             _ => {
                 panic!("not str");

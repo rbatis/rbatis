@@ -7,11 +7,13 @@ mod test {
     use rbatis::plugin::page::{Page, PageRequest};
     use rbatis::rbatis::Rbatis;
 
-    use crate::{BizActivity, init_sqlite};
+    use crate::{init_sqlite, BizActivity};
 
     /// doc you can see https://rbatis.github.io/rbatis.io/#/en/
     #[sql("select * from biz_activity where delete_flag = ?")]
-    async fn sql_fn(rb: &Rbatis, delete_flag: &i32) -> Vec<BizActivity> { impled!() }
+    async fn sql_fn(rb: &Rbatis, delete_flag: &i32) -> Vec<BizActivity> {
+        impled!()
+    }
 
     #[tokio::test]
     pub async fn test_sql_fn() {

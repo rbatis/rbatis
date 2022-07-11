@@ -1,4 +1,4 @@
-use rbson::{Binary, Bson, to_bson};
+use rbson::{to_bson, Binary, Bson};
 use sqlx_core::column::Column;
 use sqlx_core::decode::Decode;
 use sqlx_core::error::BoxDynError;
@@ -9,13 +9,12 @@ use sqlx_core::types::{BigDecimal, Json};
 use sqlx_core::value::ValueRef;
 
 use crate::convert::{JsonCodec, RefJsonCodec, ResultCodec};
-use chrono::{DateTime, Utc, NaiveDate};
+use chrono::{DateTime, NaiveDate, Utc};
 
-use crate::{to_bson_macro};
+use crate::db::db_adapter::DataDecoder;
+use crate::to_bson_macro;
 use rbson::bson;
 use rbson::spec::BinarySubtype;
-use crate::db::db_adapter::DataDecoder;
-
 
 impl<'r> JsonCodec for sqlx_core::mysql::MySqlValueRef<'r> {
     fn try_to_bson(self) -> crate::Result<Bson> {

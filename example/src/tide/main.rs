@@ -2,7 +2,6 @@
 #[macro_use]
 extern crate rbatis;
 
-
 use once_cell::sync::Lazy;
 use rbatis::crud::{CRUDMut, CRUD};
 use rbatis::rbatis::Rbatis;
@@ -32,9 +31,11 @@ pub static RB: Lazy<Rbatis> = Lazy::new(|| Rbatis::new());
 async fn main() {
     fast_log::init(fast_log::config::Config::new().console());
     log::info!("linking database...");
-    let rb=example::init_sqlite_path("").await;
+    let rb = example::init_sqlite_path("").await;
     drop(rb);
-    RB.link("sqlite://target/sqlite.db").await.expect("rbatis link database fail");
+    RB.link("sqlite://target/sqlite.db")
+        .await
+        .expect("rbatis link database fail");
     log::info!("linking database successful!");
     let mut app = tide::new();
     app.at("/").get(|_: Request<()>| async move {

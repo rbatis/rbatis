@@ -3,9 +3,9 @@
 extern crate rbatis;
 
 use once_cell::sync::Lazy;
-use salvo::prelude::*;
 use rbatis::crud::CRUD;
 use rbatis::rbatis::Rbatis;
+use salvo::prelude::*;
 
 #[crud_table]
 #[derive(Clone, Debug)]
@@ -36,9 +36,11 @@ async fn hello(res: &mut Response) {
 pub async fn main() -> Result<(), Box<dyn std::error::Error + Send + Sync>> {
     fast_log::init(fast_log::config::Config::new().console());
     log::info!("linking database...");
-    let rb=example::init_sqlite_path("").await;
+    let rb = example::init_sqlite_path("").await;
     drop(rb);
-    RB.link("sqlite://target/sqlite.db").await.expect("rbatis link database fail");
+    RB.link("sqlite://target/sqlite.db")
+        .await
+        .expect("rbatis link database fail");
     log::info!("linking database successful!");
     let addr = "127.0.0.1:8000";
     let server = Server::new(TcpListener::bind(addr)).serve(Router::new().handle(hello));

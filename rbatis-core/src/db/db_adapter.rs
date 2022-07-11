@@ -5,33 +5,34 @@ use std::fmt::{Debug, Formatter};
 use std::str::FromStr;
 use std::time::{Duration, SystemTime};
 
-use serde::{Deserialize, Serialize};
 use serde::de::DeserializeOwned;
+use serde::{Deserialize, Serialize};
 use sqlx_core::acquire::Acquire;
 use sqlx_core::arguments::{Arguments, IntoArguments};
-use sqlx_core::connection::{Connection, ConnectOptions};
+use sqlx_core::connection::{ConnectOptions, Connection};
 use sqlx_core::database::Database;
 use sqlx_core::encode::Encode;
 use sqlx_core::executor::Executor;
 #[cfg(feature = "mssql")]
 use sqlx_core::mssql::{
-    Mssql, MssqlArguments, MssqlConnection, MssqlConnectOptions, MssqlPool, MssqlQueryResult, MssqlRow,
+    Mssql, MssqlArguments, MssqlConnectOptions, MssqlConnection, MssqlPool, MssqlQueryResult,
+    MssqlRow,
 };
 #[cfg(feature = "mysql")]
 use sqlx_core::mysql::{
-    MySql, MySqlArguments, MySqlConnection, MySqlConnectOptions, MySqlPool, MySqlQueryResult, MySqlRow,
-    MySqlSslMode,
+    MySql, MySqlArguments, MySqlConnectOptions, MySqlConnection, MySqlPool, MySqlQueryResult,
+    MySqlRow, MySqlSslMode,
 };
-use sqlx_core::pool::{PoolConnection, Pool};
+use sqlx_core::pool::{Pool, PoolConnection};
 #[cfg(feature = "postgres")]
 use sqlx_core::postgres::{
-    PgArguments, PgConnection, PgConnectOptions, PgPool, PgPoolOptions, PgQueryResult, PgRow, PgSslMode,
-    Postgres,
+    PgArguments, PgConnectOptions, PgConnection, PgPool, PgPoolOptions, PgQueryResult, PgRow,
+    PgSslMode, Postgres,
 };
 use sqlx_core::query::{query, Query};
 #[cfg(feature = "sqlite")]
 use sqlx_core::sqlite::{
-    Sqlite, SqliteArguments, SqliteConnection, SqliteConnectOptions, SqlitePool, SqliteQueryResult,
+    Sqlite, SqliteArguments, SqliteConnectOptions, SqliteConnection, SqlitePool, SqliteQueryResult,
     SqliteRow,
 };
 use sqlx_core::transaction::Transaction;
@@ -40,22 +41,21 @@ use sqlx_core::types::Type;
 use crate::convert::{RefJsonCodec, ResultCodec};
 use crate::db::{DBPoolOptions, DriverType};
 use crate::decode::decode;
+use crate::types::TimestampZ;
 use crate::Error;
 use crate::Result;
+use bigdecimal_::BigDecimal;
+use chrono::{Local, Utc};
+use rbson::spec::BinarySubtype;
+use rbson::Bson;
 use std::ops::DerefMut;
 use std::sync::Arc;
 use uuid::Uuid;
-use chrono::{Local, Utc};
-use bigdecimal_::BigDecimal;
-use rbson::Bson;
-use rbson::spec::BinarySubtype;
-use crate::types::TimestampZ;
 
 /// DataDecoder Process some bson data not yet supported by the framework, which returns TypeInfo and bytes
-pub trait DataDecoder: Debug+Sync+Send {
+pub trait DataDecoder: Debug + Sync + Send {
     fn decode(&self, key: &str, data: &mut Bson) -> crate::Result<()>;
 }
-
 
 #[derive(Debug, Clone)]
 pub enum DBPool {
@@ -73,15 +73,15 @@ pub enum DBPool {
 impl DBPool {
     pub fn driver_type(&self) -> DriverType {
         match self {
-            DBPool::None => { DriverType::None }
+            DBPool::None => DriverType::None,
             #[cfg(feature = "mysql")]
-            DBPool::Mysql(_, _) => { DriverType::Mysql }
+            DBPool::Mysql(_, _) => DriverType::Mysql,
             #[cfg(feature = "postgres")]
-            DBPool::Postgres(_, _) => { DriverType::Postgres }
+            DBPool::Postgres(_, _) => DriverType::Postgres,
             #[cfg(feature = "sqlite")]
-            DBPool::Sqlite(_, _) => { DriverType::Sqlite }
+            DBPool::Sqlite(_, _) => DriverType::Sqlite,
             #[cfg(feature = "mssql")]
-            DBPool::Mssql(_, _) => { DriverType::Mssql }
+            DBPool::Mssql(_, _) => DriverType::Mssql,
         }
     }
 
@@ -109,7 +109,14 @@ impl DBPool {
                     .min_connections(opt.min_connections)
                     .idle_timeout(opt.idle_timeout)
                     .test_before_acquire(opt.test_before_acquire);
-                let p = build.connect_with(driver.mysql.clone().ok_or_else(|| Error::from("[rbatis-core] conn is none!"))?).await?;
+                let p = build
+                    .connect_with(
+                        driver
+                            .mysql
+                            .clone()
+                            .ok_or_else(|| Error::from("[rbatis-core] conn is none!"))?,
+                    )
+                    .await?;
                 pool = DBPool::Mysql(p, Arc::new(opt.decoder));
                 return Ok(pool);
             }
@@ -122,7 +129,14 @@ impl DBPool {
                     .min_connections(opt.min_connections)
                     .idle_timeout(opt.idle_timeout)
                     .test_before_acquire(opt.test_before_acquire);
-                let p = build.connect_with(driver.postgres.clone().ok_or_else(|| Error::from("[rbatis-core] conn is none!"))?).await?;
+                let p = build
+                    .connect_with(
+                        driver
+                            .postgres
+                            .clone()
+                            .ok_or_else(|| Error::from("[rbatis-core] conn is none!"))?,
+                    )
+                    .await?;
                 pool = DBPool::Postgres(p, Arc::new(opt.decoder));
                 return Ok(pool);
             }
@@ -135,7 +149,14 @@ impl DBPool {
                     .min_connections(opt.min_connections)
                     .idle_timeout(opt.idle_timeout)
                     .test_before_acquire(opt.test_before_acquire);
-                let p = build.connect_with(driver.sqlite.clone().ok_or_else(|| Error::from("[rbatis-core] conn is none!"))?).await?;
+                let p = build
+                    .connect_with(
+                        driver
+                            .sqlite
+                            .clone()
+                            .ok_or_else(|| Error::from("[rbatis-core] conn is none!"))?,
+                    )
+                    .await?;
                 pool = DBPool::Sqlite(p, Arc::new(opt.decoder));
                 return Ok(pool);
             }
@@ -148,7 +169,14 @@ impl DBPool {
                     .min_connections(opt.min_connections)
                     .idle_timeout(opt.idle_timeout)
                     .test_before_acquire(opt.test_before_acquire);
-                let p = build.connect_with(driver.mssql.clone().ok_or_else(|| Error::from("[rbatis-core] conn is none!"))?).await?;
+                let p = build
+                    .connect_with(
+                        driver
+                            .mssql
+                            .clone()
+                            .ok_or_else(|| Error::from("[rbatis-core] conn is none!"))?,
+                    )
+                    .await?;
                 pool = DBPool::Mssql(p, Arc::new(opt.decoder));
                 return Ok(pool);
             }
@@ -159,7 +187,6 @@ impl DBPool {
             }
         }
     }
-
 
     pub fn make_query<'f, 's>(&'f self, sql: &'s str) -> crate::Result<DBQuery<'s>> {
         return self.driver_type().make_db_query(sql);
@@ -278,7 +305,7 @@ impl DBPool {
     }
 }
 
-impl DriverType{
+impl DriverType {
     pub fn make_db_query<'f, 's>(&self, sql: &'s str) -> crate::Result<DBQuery<'s>> {
         match self {
             &DriverType::None => {
@@ -338,7 +365,6 @@ impl DriverType{
             }
         }
     }
-
 }
 
 /// DBConnectOption all of support Database Options abstract struct.
@@ -431,56 +457,55 @@ impl DBConnectOption {
     pub fn from(driver: &str) -> Result<Self> {
         if driver.starts_with("mysql") {
             #[cfg(feature = "mysql")]
-                {
-                    let mut conn_opt = MySqlConnectOptions::from_str(driver)?;
-                    if !driver.contains("ssl-mode") {
-                        conn_opt = conn_opt.ssl_mode(MySqlSslMode::Disabled);
-                    }
-                    return Self::from_mysql(&conn_opt);
+            {
+                let mut conn_opt = MySqlConnectOptions::from_str(driver)?;
+                if !driver.contains("ssl-mode") {
+                    conn_opt = conn_opt.ssl_mode(MySqlSslMode::Disabled);
                 }
+                return Self::from_mysql(&conn_opt);
+            }
             #[cfg(not(feature = "mysql"))]
-                {
-                    return Err(Error::from("[rbatis] not enable feature!"));
-                }
+            {
+                return Err(Error::from("[rbatis] not enable feature!"));
+            }
         } else if driver.starts_with("postgres") {
             #[cfg(feature = "postgres")]
-                {
-                    let mut conn_opt = PgConnectOptions::from_str(driver)?;
-                    if !driver.contains("ssl-mode") && !driver.contains("sslmode") {
-                        conn_opt = conn_opt.ssl_mode(PgSslMode::Disable);
-                    }
-                    return Self::from_pg(&conn_opt);
+            {
+                let mut conn_opt = PgConnectOptions::from_str(driver)?;
+                if !driver.contains("ssl-mode") && !driver.contains("sslmode") {
+                    conn_opt = conn_opt.ssl_mode(PgSslMode::Disable);
                 }
+                return Self::from_pg(&conn_opt);
+            }
             #[cfg(not(feature = "postgres"))]
-                {
-                    return Err(Error::from("[rbatis] not enable feature!"));
-                }
+            {
+                return Err(Error::from("[rbatis] not enable feature!"));
+            }
         } else if driver.starts_with("sqlite") {
             #[cfg(feature = "sqlite")]
-                {
-                    let conn_opt = SqliteConnectOptions::from_str(driver)?;
-                    return Self::from_sqlite(&conn_opt);
-                }
+            {
+                let conn_opt = SqliteConnectOptions::from_str(driver)?;
+                return Self::from_sqlite(&conn_opt);
+            }
             #[cfg(not(feature = "sqlite"))]
-                {
-                    return Err(Error::from("[rbatis] not enable feature!"));
-                }
+            {
+                return Err(Error::from("[rbatis] not enable feature!"));
+            }
         } else if driver.starts_with("mssql") || driver.starts_with("sqlserver") {
             #[cfg(feature = "mssql")]
-                {
-                    let conn_opt = MssqlConnectOptions::from_str(driver)?;
-                    return Self::from_mssql(&conn_opt);
-                }
+            {
+                let conn_opt = MssqlConnectOptions::from_str(driver)?;
+                return Self::from_mssql(&conn_opt);
+            }
             #[cfg(not(feature = "mssql"))]
-                {
-                    return Err(Error::from("[rbatis] not enable feature!"));
-                }
+            {
+                return Err(Error::from("[rbatis] not enable feature!"));
+            }
         } else {
             return Err(Error::from("unsupport driver type!"));
         }
     }
 }
-
 
 pub struct DBQuery<'q> {
     pub driver_type: DriverType,
@@ -494,7 +519,6 @@ pub struct DBQuery<'q> {
     pub mssql: Option<Query<'q, Mssql, MssqlArguments>>,
 }
 
-
 impl<'q> DBQuery<'q> {
     pub fn bind_value(&mut self, t: Bson) -> crate::Result<()> {
         match &self.driver_type {
@@ -503,25 +527,37 @@ impl<'q> DBQuery<'q> {
             }
             #[cfg(feature = "mysql")]
             &DriverType::Mysql => {
-                let mut q = self.mysql.take().ok_or_else(|| Error::from("[rbatis-core] conn is none!"))?;
+                let mut q = self
+                    .mysql
+                    .take()
+                    .ok_or_else(|| Error::from("[rbatis-core] conn is none!"))?;
                 q = crate::db::bind_mysql::bind(t, q)?;
                 self.mysql = Some(q);
             }
             #[cfg(feature = "postgres")]
             &DriverType::Postgres => {
-                let mut q = self.postgres.take().ok_or_else(|| Error::from("[rbatis-core] conn is none!"))?;
+                let mut q = self
+                    .postgres
+                    .take()
+                    .ok_or_else(|| Error::from("[rbatis-core] conn is none!"))?;
                 q = crate::db::bind_pg::bind(t, q)?;
                 self.postgres = Some(q);
             }
             #[cfg(feature = "sqlite")]
             &DriverType::Sqlite => {
-                let mut q = self.sqlite.take().ok_or_else(|| Error::from("[rbatis-core] conn is none!"))?;
+                let mut q = self
+                    .sqlite
+                    .take()
+                    .ok_or_else(|| Error::from("[rbatis-core] conn is none!"))?;
                 q = crate::db::bind_sqlite::bind(t, q)?;
                 self.sqlite = Some(q);
             }
             #[cfg(feature = "mssql")]
             &DriverType::Mssql => {
-                let mut q = self.mssql.take().ok_or_else(|| Error::from("[rbatis-core] conn is none!"))?;
+                let mut q = self
+                    .mssql
+                    .take()
+                    .ok_or_else(|| Error::from("[rbatis-core] conn is none!"))?;
                 q = crate::db::bind_mssql::bind(t, q)?;
                 self.mssql = Some(q);
             }
@@ -549,18 +585,18 @@ impl<'a> DBPoolConn<'a> {
     pub fn driver_type(&self) -> DriverType {
         match self {
             #[cfg(feature = "mysql")]
-            DBPoolConn::Mysql(_, _) => { DriverType::Mysql }
+            DBPoolConn::Mysql(_, _) => DriverType::Mysql,
             #[cfg(feature = "postgres")]
-            DBPoolConn::Postgres(_, _) => { DriverType::Postgres }
+            DBPoolConn::Postgres(_, _) => DriverType::Postgres,
             #[cfg(feature = "sqlite")]
-            DBPoolConn::Sqlite(_, _) => { DriverType::Sqlite }
+            DBPoolConn::Sqlite(_, _) => DriverType::Sqlite,
             #[cfg(feature = "mssql")]
-            DBPoolConn::Mssql(_, _) => { DriverType::Mssql }
+            DBPoolConn::Mssql(_, _) => DriverType::Mssql,
         }
     }
 
     pub fn make_query<'f, 's>(&'f self, sql: &'s str) -> crate::Result<DBQuery<'s>> {
-        return self.driver_type().make_db_query( sql);
+        return self.driver_type().make_db_query(sql);
     }
 
     pub fn check_alive(&self) -> crate::Result<()> {
@@ -568,15 +604,19 @@ impl<'a> DBPoolConn<'a> {
     }
 
     pub async fn fetch<'q, T>(&mut self, sql: &'q str) -> crate::Result<(T, usize)>
-        where
-            T: DeserializeOwned,
+    where
+        T: DeserializeOwned,
     {
         self.check_alive()?;
         match self {
             #[cfg(feature = "mysql")]
             DBPoolConn::Mysql(conn, decoder) => {
                 let async_stream: Vec<MySqlRow> = conn.fetch_all(sql).await?;
-                let data = async_stream.try_to_bson(decoder.as_ref())?.as_array().ok_or_else(|| Error::from("[rbatis-core] try_to_json is not array!"))?.to_owned();
+                let data = async_stream
+                    .try_to_bson(decoder.as_ref())?
+                    .as_array()
+                    .ok_or_else(|| Error::from("[rbatis-core] try_to_json is not array!"))?
+                    .to_owned();
                 let return_len = data.len();
                 let result = decode::<T>(data)?;
                 Ok((result, return_len))
@@ -584,7 +624,11 @@ impl<'a> DBPoolConn<'a> {
             #[cfg(feature = "postgres")]
             DBPoolConn::Postgres(conn, decoder) => {
                 let async_stream: Vec<PgRow> = conn.fetch_all(sql).await?;
-                let data = async_stream.try_to_bson(decoder.as_ref())?.as_array().ok_or_else(|| Error::from("[rbatis-core] try_to_json is not array!"))?.to_owned();
+                let data = async_stream
+                    .try_to_bson(decoder.as_ref())?
+                    .as_array()
+                    .ok_or_else(|| Error::from("[rbatis-core] try_to_json is not array!"))?
+                    .to_owned();
                 let return_len = data.len();
                 let result = decode::<T>(data)?;
                 Ok((result, return_len))
@@ -592,7 +636,11 @@ impl<'a> DBPoolConn<'a> {
             #[cfg(feature = "sqlite")]
             DBPoolConn::Sqlite(conn, decoder) => {
                 let data: Vec<SqliteRow> = conn.fetch_all(sql).await?;
-                let data = data.try_to_bson(decoder.as_ref())?.as_array().ok_or_else(|| Error::from("[rbatis-core] try_to_json is not array!"))?.to_owned();
+                let data = data
+                    .try_to_bson(decoder.as_ref())?
+                    .as_array()
+                    .ok_or_else(|| Error::from("[rbatis-core] try_to_json is not array!"))?
+                    .to_owned();
                 let return_len = data.len();
                 let result = decode::<T>(data)?;
                 Ok((result, return_len))
@@ -600,7 +648,11 @@ impl<'a> DBPoolConn<'a> {
             #[cfg(feature = "mssql")]
             DBPoolConn::Mssql(conn, decoder) => {
                 let async_stream: Vec<MssqlRow> = conn.fetch_all(sql).await?;
-                let data = async_stream.try_to_bson(decoder.as_ref())?.as_array().ok_or_else(|| Error::from("[rbatis-core] try_to_json is not array!"))?.to_owned();
+                let data = async_stream
+                    .try_to_bson(decoder.as_ref())?
+                    .as_array()
+                    .ok_or_else(|| Error::from("[rbatis-core] try_to_json is not array!"))?
+                    .to_owned();
                 let return_len = data.len();
                 let result = decode::<T>(data)?;
                 Ok((result, return_len))
@@ -641,17 +693,24 @@ impl<'a> DBPoolConn<'a> {
     }
 
     pub async fn fetch_parperd<T>(&mut self, sql: DBQuery<'_>) -> crate::Result<(T, usize)>
-        where
-            T: DeserializeOwned,
+    where
+        T: DeserializeOwned,
     {
         self.check_alive()?;
         match self {
             #[cfg(feature = "mysql")]
             DBPoolConn::Mysql(conn, decoder) => {
                 let data: Vec<MySqlRow> = conn
-                    .fetch_all(sql.mysql.ok_or_else(|| Error::from("[rbatis-core] conn is none!"))?)
+                    .fetch_all(
+                        sql.mysql
+                            .ok_or_else(|| Error::from("[rbatis-core] conn is none!"))?,
+                    )
                     .await?;
-                let data = data.try_to_bson(decoder.as_ref())?.as_array().ok_or_else(|| Error::from("[rbatis-core] try_to_json is not array!"))?.to_owned();
+                let data = data
+                    .try_to_bson(decoder.as_ref())?
+                    .as_array()
+                    .ok_or_else(|| Error::from("[rbatis-core] try_to_json is not array!"))?
+                    .to_owned();
                 let return_len = data.len();
                 let result = decode::<T>(data)?;
                 Ok((result, return_len))
@@ -659,9 +718,16 @@ impl<'a> DBPoolConn<'a> {
             #[cfg(feature = "postgres")]
             DBPoolConn::Postgres(conn, decoder) => {
                 let data: Vec<PgRow> = conn
-                    .fetch_all(sql.postgres.ok_or_else(|| Error::from("[rbatis-core] conn is none!"))?)
+                    .fetch_all(
+                        sql.postgres
+                            .ok_or_else(|| Error::from("[rbatis-core] conn is none!"))?,
+                    )
                     .await?;
-                let data = data.try_to_bson(decoder.as_ref())?.as_array().ok_or_else(|| Error::from("[rbatis-core] try_to_json is not array!"))?.to_owned();
+                let data = data
+                    .try_to_bson(decoder.as_ref())?
+                    .as_array()
+                    .ok_or_else(|| Error::from("[rbatis-core] try_to_json is not array!"))?
+                    .to_owned();
                 let return_len = data.len();
                 let result = decode::<T>(data)?;
                 Ok((result, return_len))
@@ -669,9 +735,16 @@ impl<'a> DBPoolConn<'a> {
             #[cfg(feature = "sqlite")]
             DBPoolConn::Sqlite(conn, decoder) => {
                 let data: Vec<SqliteRow> = conn
-                    .fetch_all(sql.sqlite.ok_or_else(|| Error::from("[rbatis-core] conn is none!"))?)
+                    .fetch_all(
+                        sql.sqlite
+                            .ok_or_else(|| Error::from("[rbatis-core] conn is none!"))?,
+                    )
                     .await?;
-                let data = data.try_to_bson(decoder.as_ref())?.as_array().ok_or_else(|| Error::from("[rbatis-core] try_to_json is not array!"))?.to_owned();
+                let data = data
+                    .try_to_bson(decoder.as_ref())?
+                    .as_array()
+                    .ok_or_else(|| Error::from("[rbatis-core] try_to_json is not array!"))?
+                    .to_owned();
                 let return_len = data.len();
                 let result = decode::<T>(data)?;
                 Ok((result, return_len))
@@ -679,9 +752,16 @@ impl<'a> DBPoolConn<'a> {
             #[cfg(feature = "mssql")]
             DBPoolConn::Mssql(conn, decoder) => {
                 let data: Vec<MssqlRow> = conn
-                    .fetch_all(sql.mssql.ok_or_else(|| Error::from("[rbatis-core] conn is none!"))?)
+                    .fetch_all(
+                        sql.mssql
+                            .ok_or_else(|| Error::from("[rbatis-core] conn is none!"))?,
+                    )
                     .await?;
-                let data = data.try_to_bson(decoder.as_ref())?.as_array().ok_or_else(|| Error::from("[rbatis-core] try_to_json is not array!"))?.to_owned();
+                let data = data
+                    .try_to_bson(decoder.as_ref())?
+                    .as_array()
+                    .ok_or_else(|| Error::from("[rbatis-core] try_to_json is not array!"))?
+                    .to_owned();
                 let return_len = data.len();
                 let result = decode::<T>(data)?;
                 Ok((result, return_len))
@@ -698,28 +778,40 @@ impl<'a> DBPoolConn<'a> {
             #[cfg(feature = "mysql")]
             DBPoolConn::Mysql(conn, _) => {
                 let result: MySqlQueryResult = conn
-                    .execute(sql.mysql.ok_or_else(|| Error::from("[rbatis-core] conn is none!"))?)
+                    .execute(
+                        sql.mysql
+                            .ok_or_else(|| Error::from("[rbatis-core] conn is none!"))?,
+                    )
                     .await?;
                 return Ok(DBExecResult::from(result));
             }
             #[cfg(feature = "postgres")]
             DBPoolConn::Postgres(conn, _) => {
                 let data: PgQueryResult = conn
-                    .execute(sql.postgres.ok_or_else(|| Error::from("[rbatis-core] conn is none!"))?)
+                    .execute(
+                        sql.postgres
+                            .ok_or_else(|| Error::from("[rbatis-core] conn is none!"))?,
+                    )
                     .await?;
                 return Ok(DBExecResult::from(data));
             }
             #[cfg(feature = "sqlite")]
             DBPoolConn::Sqlite(conn, _) => {
                 let data: SqliteQueryResult = conn
-                    .execute(sql.sqlite.ok_or_else(|| Error::from("[rbatis-core] conn is none!"))?)
+                    .execute(
+                        sql.sqlite
+                            .ok_or_else(|| Error::from("[rbatis-core] conn is none!"))?,
+                    )
                     .await?;
                 return Ok(DBExecResult::from(data));
             }
             #[cfg(feature = "mssql")]
             DBPoolConn::Mssql(conn, _) => {
                 let data: MssqlQueryResult = conn
-                    .execute(sql.mssql.ok_or_else(|| Error::from("[rbatis-core] conn is none!"))?)
+                    .execute(
+                        sql.mssql
+                            .ok_or_else(|| Error::from("[rbatis-core] conn is none!"))?,
+                    )
                     .await?;
                 return Ok(DBExecResult::from(data));
             }
@@ -793,7 +885,9 @@ impl<'a> DBTx<'a> {
     }
 
     pub fn get_conn_mut(&mut self) -> crate::Result<&mut DBPoolConn<'a>> {
-        self.conn.as_mut().ok_or_else(|| Error::from("[rbatis-core] DBTx conn is none!"))
+        self.conn
+            .as_mut()
+            .ok_or_else(|| Error::from("[rbatis-core] DBTx conn is none!"))
     }
 
     pub async fn begin(&mut self) -> crate::Result<()> {
@@ -821,16 +915,16 @@ impl<'a> DBTx<'a> {
     }
 
     pub async fn fetch<'q, T>(&mut self, sql: &'q str) -> crate::Result<(T, usize)>
-        where
-            T: DeserializeOwned,
+    where
+        T: DeserializeOwned,
     {
         let conn = self.get_conn_mut()?;
         return conn.fetch(sql).await;
     }
 
     pub async fn fetch_parperd<'q, T>(&mut self, sql: DBQuery<'q>) -> crate::Result<(T, usize)>
-        where
-            T: DeserializeOwned,
+    where
+        T: DeserializeOwned,
     {
         let conn = self.get_conn_mut()?;
         return conn.fetch_parperd(sql).await;

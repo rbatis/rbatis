@@ -3,8 +3,8 @@ use std::sync::Arc;
 
 use chrono::Utc;
 use once_cell::sync::Lazy;
-use serde::{Deserializer, Serializer};
 use serde::ser::SerializeStruct;
+use serde::{Deserializer, Serializer};
 
 ///Snowflakes algorithm
 #[derive(Debug)]
@@ -16,9 +16,11 @@ pub struct Snowflake {
     pub time: AtomicI64,
 }
 
-
 impl serde::Serialize for Snowflake {
-    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error> where S: Serializer {
+    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
+    where
+        S: Serializer,
+    {
         let mut s = serializer.serialize_struct("Snowflake", 5)?;
         s.serialize_field("epoch", &self.epoch)?;
         s.serialize_field("worker_id", &self.worker_id)?;
@@ -29,9 +31,11 @@ impl serde::Serialize for Snowflake {
     }
 }
 
-
 impl<'de> serde::Deserialize<'de> for Snowflake {
-    fn deserialize<D>(mut deserializer: D) -> Result<Self, D::Error> where D: Deserializer<'de> {
+    fn deserialize<D>(mut deserializer: D) -> Result<Self, D::Error>
+    where
+        D: Deserializer<'de>,
+    {
         #[derive(Debug, serde::Serialize, serde::Deserialize)]
         struct Snowflake {
             pub epoch: i64,
@@ -50,7 +54,6 @@ impl<'de> serde::Deserialize<'de> for Snowflake {
         })
     }
 }
-
 
 impl Clone for Snowflake {
     fn clone(&self) -> Self {
@@ -136,7 +139,7 @@ pub fn new_snowflake_id() -> i64 {
 
 #[cfg(test)]
 mod test {
-    use crate::snowflake::{new_snowflake_id, SNOWFLAKE, Snowflake};
+    use crate::snowflake::{new_snowflake_id, Snowflake, SNOWFLAKE};
 
     #[test]
     fn test_gen() {

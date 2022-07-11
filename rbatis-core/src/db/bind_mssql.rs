@@ -1,21 +1,24 @@
-use rbson::Bson;
-use rbson::spec::BinarySubtype;
-use sqlx_core::mssql::{Mssql, MssqlArguments};
-use sqlx_core::query::Query;
-use crate::{DateTimeNative, Uuid};
 use crate::error::Error;
 use crate::types::{DateNative, DateTimeUtc, DateUtc, Decimal, TimeNative, TimeUtc};
+use crate::{DateTimeNative, Uuid};
+use rbson::spec::BinarySubtype;
+use rbson::Bson;
+use sqlx_core::mssql::{Mssql, MssqlArguments};
+use sqlx_core::query::Query;
 
 #[inline]
-pub fn bind(t: Bson, mut q: Query<Mssql, MssqlArguments>) -> crate::Result<Query<Mssql, MssqlArguments>> {
+pub fn bind(
+    t: Bson,
+    mut q: Query<Mssql, MssqlArguments>,
+) -> crate::Result<Query<Mssql, MssqlArguments>> {
     match t {
         Bson::String(s) => {
-            if s.starts_with("DateTimeUtc(")  {
+            if s.starts_with("DateTimeUtc(") {
                 let data: DateTimeUtc = rbson::from_bson(Bson::String(s))?;
                 q = q.bind(data.inner.to_string());
                 return Ok(q);
             }
-            if s.starts_with("DateTimeNative(")  {
+            if s.starts_with("DateTimeNative(") {
                 let data: DateTimeNative = rbson::from_bson(Bson::String(s))?;
                 q = q.bind(data.inner.to_string());
                 return Ok(q);
@@ -73,26 +76,22 @@ pub fn bind(t: Bson, mut q: Query<Mssql, MssqlArguments>) -> crate::Result<Query
         Bson::Boolean(b) => {
             q = q.bind(b);
         }
-        Bson::Binary(d) => {
-            match d.subtype {
-                BinarySubtype::Uuid => {
-                    q = q.bind(crate::types::Uuid::from(d).to_string());
-                }
-                BinarySubtype::UserDefined(type_id) => {
-                    match type_id {
-                        crate::types::BINARY_SUBTYPE_JSON => {
-                            q = q.bind(String::from_utf8(d.bytes).unwrap_or_default());
-                        }
-                        _ => {
-                            return Err(Error::from("un supported bind type!"));
-                        }
-                    }
+        Bson::Binary(d) => match d.subtype {
+            BinarySubtype::Uuid => {
+                q = q.bind(crate::types::Uuid::from(d).to_string());
+            }
+            BinarySubtype::UserDefined(type_id) => match type_id {
+                crate::types::BINARY_SUBTYPE_JSON => {
+                    q = q.bind(String::from_utf8(d.bytes).unwrap_or_default());
                 }
                 _ => {
                     return Err(Error::from("un supported bind type!"));
                 }
+            },
+            _ => {
+                return Err(Error::from("un supported bind type!"));
             }
-        }
+        },
         Bson::Decimal128(d) => {
             q = q.bind(d.to_string());
         }

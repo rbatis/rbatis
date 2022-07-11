@@ -42,11 +42,8 @@ impl SqlIntercept for RbatisLogFormatSqlIntercept {
                 for index in 0..args.len() {
                     let mut data = String::new();
                     driver_type.stmt_convert(index, &mut data);
-                    formated = formated.replacen(
-                        &data,
-                        &format!("{}", args.get(index).unwrap()),
-                        1,
-                    );
+                    formated =
+                        formated.replacen(&data, &format!("{}", args.get(index).unwrap()), 1);
                 }
                 rb.log_plugin.info(0, &formated);
             }

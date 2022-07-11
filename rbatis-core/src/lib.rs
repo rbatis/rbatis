@@ -26,6 +26,6 @@ pub mod convert;
 pub mod db;
 pub mod decode;
 pub mod results;
-pub mod value;
 pub mod types;
+pub mod value;
 pub use types::*;

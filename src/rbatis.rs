@@ -1,12 +1,12 @@
+use once_cell::sync::OnceCell;
+use rbatis_core::db::DBConnectOption;
+use serde::de::DeserializeOwned;
+use serde::ser::Serialize;
 use std::borrow::BorrowMut;
 use std::cell::Cell;
 use std::collections::HashMap;
 use std::sync::Arc;
 use std::time::Duration;
-use once_cell::sync::OnceCell;
-use rbatis_core::db::DBConnectOption;
-use serde::de::DeserializeOwned;
-use serde::ser::Serialize;
 use uuid::Uuid;
 
 use crate::core::db::{DBExecResult, DBPool, DBPoolConn, DBPoolOptions, DBQuery, DBTx, DriverType};
@@ -17,12 +17,12 @@ use crate::plugin::intercept::SqlIntercept;
 use crate::plugin::log::{LogPlugin, RbatisLogPlugin};
 use crate::plugin::logic_delete::{LogicDelete, RbatisLogicDeletePlugin};
 use crate::plugin::page::{IPage, IPageRequest, Page, PagePlugin, RbatisPagePlugin};
+use crate::snowflake::new_snowflake_id;
 use crate::sql::PageLimit;
 use crate::utils::error_util::ToResult;
 use crate::utils::string_util;
 use crate::wrapper::Wrapper;
 use std::fmt::{Debug, Formatter};
-use crate::snowflake::new_snowflake_id;
 
 /// rbatis engine
 // #[derive(Debug)]
@@ -51,7 +51,6 @@ impl Debug for Rbatis {
             .finish()
     }
 }
-
 
 impl Default for Rbatis {
     fn default() -> Rbatis {
@@ -117,8 +116,8 @@ impl Rbatis {
 
     /// try return an new wrapper and set table formats,if not call the link() method,it will be panic!
     pub fn new_wrapper_table<T>(&self) -> Wrapper
-        where
-            T: CRUDTable,
+    where
+        T: CRUDTable,
     {
         let mut w = self.new_wrapper();
         let formats = T::formats(&self.driver_type().unwrap());
@@ -233,7 +232,6 @@ impl Rbatis {
     }
 }
 
-
 pub trait AsSqlTag {
     fn sql_tag(&self) -> char;
     fn do_replace_tag(&self, sql: &mut String);
@@ -243,12 +241,12 @@ impl AsSqlTag for DriverType {
     #[inline]
     fn sql_tag(&self) -> char {
         match self {
-            DriverType::None => { '?' }
-            DriverType::Mysql => { '?' }
-            DriverType::Sqlite => { '?' }
-            DriverType::Postgres => { '$' }
+            DriverType::None => '?',
+            DriverType::Mysql => '?',
+            DriverType::Sqlite => '?',
+            DriverType::Postgres => '$',
             //mssql is '@p',so use '$' to '@p'
-            DriverType::Mssql => { '$' }
+            DriverType::Mssql => '$',
         }
     }
     #[inline]
@@ -258,5 +256,3 @@ impl AsSqlTag for DriverType {
         }
     }
 }
-
-

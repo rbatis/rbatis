@@ -5,7 +5,9 @@ use syn;
 use syn::{AttributeArgs, FnArg, ItemFn, Pat};
 
 use crate::proc_macro::TokenStream;
-use crate::util::{find_fn_body, find_return_type, get_fn_args, get_page_req_ident, is_fetch, is_rbatis_ref};
+use crate::util::{
+    find_fn_body, find_return_type, get_fn_args, get_page_req_ident, is_fetch, is_rbatis_ref,
+};
 
 //impl sql macro
 pub(crate) fn impl_macro_sql(target_fn: &ItemFn, args: &AttributeArgs) -> TokenStream {
@@ -21,7 +23,10 @@ pub(crate) fn impl_macro_sql(target_fn: &ItemFn, args: &AttributeArgs) -> TokenS
                 let ty_stream = t.ty.to_token_stream().to_string();
                 if is_rbatis_ref(&ty_stream) {
                     rbatis_ident = t.pat.to_token_stream();
-                    rbatis_name = rbatis_ident.to_string().trim_start_matches("mut ").to_string();
+                    rbatis_name = rbatis_ident
+                        .to_string()
+                        .trim_start_matches("mut ")
+                        .to_string();
                     break;
                 }
             }
@@ -33,11 +38,20 @@ pub(crate) fn impl_macro_sql(target_fn: &ItemFn, args: &AttributeArgs) -> TokenS
         if rbatis_name.is_empty() {
             panic!("[rbatis] you should add rbatis ref param  rb:&Rbatis  or rb: &mut RbatisExecutor<'_,'_>  on '{}()'!", target_fn.sig.ident);
         }
-        sql_ident = args.get(0).expect("[rbatis] miss sql macaro param!").to_token_stream();
+        sql_ident = args
+            .get(0)
+            .expect("[rbatis] miss sql macaro param!")
+            .to_token_stream();
     } else if args.len() == 2 {
-        rbatis_ident = args.get(0).expect("[rbatis] miss rbatis ident param!").to_token_stream();
+        rbatis_ident = args
+            .get(0)
+            .expect("[rbatis] miss rbatis ident param!")
+            .to_token_stream();
         rbatis_name = format!("{}", rbatis_ident);
-        sql_ident = args.get(1).expect("[rbatis] miss sql macro sql param!").to_token_stream();
+        sql_ident = args
+            .get(1)
+            .expect("[rbatis] miss sql macro sql param!")
+            .to_token_stream();
     } else {
         panic!("[rbatis] Incorrect macro parameter length!");
     }
@@ -52,7 +66,11 @@ pub(crate) fn impl_macro_sql(target_fn: &ItemFn, args: &AttributeArgs) -> TokenS
         );
     }
     if rbatis_ident.to_string().starts_with("mut ") {
-        rbatis_ident = Ident::new(&rbatis_ident.to_string().trim_start_matches("mut "), Span::call_site()).to_token_stream();
+        rbatis_ident = Ident::new(
+            &rbatis_ident.to_string().trim_start_matches("mut "),
+            Span::call_site(),
+        )
+        .to_token_stream();
     }
     let mut call_method = quote! {};
     let is_fetch = is_fetch(&return_ty.to_string());
@@ -73,7 +91,8 @@ pub(crate) fn impl_macro_sql(target_fn: &ItemFn, args: &AttributeArgs) -> TokenS
         call_method = quote! {fetch_page};
     }
     //append all args
-    let sql_args_gen = filter_args_context_id(&rbatis_name, &get_fn_args(target_fn), &[page_req_str]);
+    let sql_args_gen =
+        filter_args_context_id(&rbatis_name, &get_fn_args(target_fn), &[page_req_str]);
     //gen rust code templete
     let gen_token_temple = quote! {
        pub async fn #func_name_ident(#func_args_stream) -> #return_ty{
@@ -94,7 +113,12 @@ fn filter_args_context_id(
 ) -> proc_macro2::TokenStream {
     let mut sql_args_gen = quote! {};
     for item in fn_arg_name_vec {
-        let item_ident_name= item.to_token_stream().to_string().trim().trim_start_matches("mut ").to_string();
+        let item_ident_name = item
+            .to_token_stream()
+            .to_string()
+            .trim()
+            .trim_start_matches("mut ")
+            .to_string();
         if item_ident_name.eq(rbatis_name) {
             continue;
         }

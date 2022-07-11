@@ -1,12 +1,12 @@
 #[cfg(test)]
 mod test {
-    use crate::{BizActivity, init_sqlite};
+    use crate::{init_sqlite, BizActivity};
 
-    use rbatis::DateTimeNative;
     use rbatis::core::value::DateTimeNow;
     use rbatis::crud::{CRUDMut, CRUD};
     use rbatis::plugin::logic_delete::RbatisLogicDeletePlugin;
     use rbatis::rbatis::Rbatis;
+    use rbatis::DateTimeNative;
 
     #[tokio::test]
     async fn plugin_exclude_delete() {
@@ -19,22 +19,27 @@ mod test {
         //logic delete sql:   "update biz_activity set delete_flag = 1 where id = ?"
         rb.remove_by_column::<BizActivity, _>("id", &id).await;
         //delete sql          "delete from biz_activity where id = ?"
-        rb.remove_by_wrapper::<BizActivity>(rb.new_wrapper().set_dml("delete").eq("id", &id)).await;
+        rb.remove_by_wrapper::<BizActivity>(rb.new_wrapper().set_dml("delete").eq("id", &id))
+            .await;
 
         //fix data
-        rb.save(&BizActivity {
-            id: Some("12312".to_string()),
-            name: Some("12312".to_string()),
-            pc_link: None,
-            h5_link: None,
-            pc_banner_img: None,
-            h5_banner_img: None,
-            sort: Some("1".to_string()),
-            status: Some(1),
-            remark: None,
-            create_time: Some(DateTimeNative::now()),
-            version: Some(0),
-            delete_flag: Some(1),
-        }, &[]).await;
+        rb.save(
+            &BizActivity {
+                id: Some("12312".to_string()),
+                name: Some("12312".to_string()),
+                pc_link: None,
+                h5_link: None,
+                pc_banner_img: None,
+                h5_banner_img: None,
+                sort: Some("1".to_string()),
+                status: Some(1),
+                remark: None,
+                create_time: Some(DateTimeNative::now()),
+                version: Some(0),
+                delete_flag: Some(1),
+            },
+            &[],
+        )
+        .await;
     }
 }

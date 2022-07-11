@@ -1,4 +1,4 @@
-use rbson::{bson, Bson, to_bson};
+use rbson::{bson, to_bson, Bson};
 use sqlx_core::column::Column;
 use sqlx_core::decode::Decode;
 use sqlx_core::error::BoxDynError;
@@ -13,12 +13,12 @@ use sqlx_core::value::ValueRef;
 
 use crate::convert::{JsonCodec, RefJsonCodec, ResultCodec};
 use crate::postgres::PgInterval;
-use chrono::{Utc};
+use chrono::Utc;
 
-use crate::{to_bson_macro};
-use std::option::Option::Some;
-use rbson::spec::BinarySubtype;
 use crate::db::db_adapter::DataDecoder;
+use crate::to_bson_macro;
+use rbson::spec::BinarySubtype;
+use std::option::Option::Some;
 
 impl<'c> JsonCodec for PgValueRef<'c> {
     fn try_to_bson(self) -> crate::Result<Bson> {
@@ -284,8 +284,8 @@ impl RefJsonCodec for Vec<PgRow> {
             for x in columns {
                 let key = x.name();
                 let v: PgValueRef = row.try_get_raw(key)?;
-                let mut bson=v.try_to_bson()?;
-                decoder.decode(key,&mut bson)?;
+                let mut bson = v.try_to_bson()?;
+                decoder.decode(key, &mut bson)?;
                 m.insert(key.to_owned(), bson);
             }
             arr.push(Bson::Document(m));
