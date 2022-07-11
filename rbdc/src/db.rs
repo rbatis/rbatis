@@ -1,80 +1,66 @@
-pub trait Database: 'static + Send {
-    fn name() -> &'static str
-    where
-        Self: Sized;
+use rbs::Value;
+use crate::Error;
+
+/// Represents database driver that can be shared between threads, and can therefore implement
+/// a connection pool
+pub trait Driver: Sync + Send {
+    /// Create a connection to the database. Note that connections are intended to be used
+    /// in a single thread since most database connections are not thread-safe
+    fn connect(&self, url: &str) -> Result<Box<dyn Connection>, Error>;
 }
 
-pub trait Connection: Send {}
+/// Represents a connection to a database
+pub trait Connection {
+    /// Create a statement for execution
+    fn create(&mut self, sql: &str) -> Result<Box<dyn Statement + '_>, Error>;
 
-pub trait Row: Send + Sync + 'static {
-    /// Returns `true` if this row has no columns.
-    #[inline]
-    fn is_empty(&self) -> bool {
-        self.len() == 0
-    }
-
-    /// Returns the number of columns in this row.
-    #[inline]
-    fn len(&self) -> usize {
-        self.columns().len()
-    }
-
-    /// Gets all columns in this statement.
-    fn columns(&self) -> &[Box<dyn Column>];
-
-    /// Gets the column information at `index` or `None` if out of bounds.
-    fn try_column(&self, index: rbs::Value) -> Option<&dyn Column>;
-
-    /// Gets the column information at `index`.
-    ///
-    /// A string index can be used to access a column by name and a `usize` index
-    /// can be used to access a column by position.
-    ///
-    /// # Panics
-    ///
-    /// Panics if `index` is out of bounds.
-    /// See [`try_column`](Self::try_column) for a non-panicking version.
-    fn column(&self, index: rbs::Value) -> &dyn Column {
-        self.try_column(index).unwrap()
-    }
-
-    #[inline]
-    fn get<'r>(&'r self, index: rbs::Value) -> rbs::ValueRef;
+    /// Create a prepared statement for execution
+    fn prepare(&mut self, sql: &str) -> Result<Box<dyn Statement + '_>, Error>;
 }
 
-pub trait Column: 'static + Send + Sync {
-    /// Gets the column ordinal.
-    ///
-    /// This can be used to unambiguously refer to this column within a row in case more than
-    /// one column have the same name
-    fn ordinal(&self) -> usize;
+/// Represents an executable statement
+pub trait Statement {
+    /// Execute a query that is expected to return a result set, such as a `SELECT` statement
+    fn execute_query(&mut self, params: &[Value]) -> Result<Box<dyn ResultSet + '_>, Error>;
 
-    /// Gets the column name or alias.
-    ///
-    /// The column name is unreliable (and can change between database minor versions) if this
-    /// column is an expression that has not been aliased.
-    fn name(&self) -> &str;
-
-    /// Gets the type information for the column.
-    fn type_info(&self) -> &dyn TypeInfo;
+    /// Execute a query that is expected to update some rows.
+    fn execute_update(&mut self, params: &[Value]) -> Result<u64, Error>;
 }
 
-pub trait TypeInfo {}
+/// Result set from executing a query against a statement
+pub trait ResultSet {
+    /// get meta data about this result set
+    fn meta_data(&self) -> Result<Box<dyn ResultSetMetaData>, Error>;
+
+    /// Move the cursor to the next available row if one exists and return true if it does
+    fn next(&mut self) -> bool;
+
+    fn get_v(&self, i: u64) -> Result<Value, Error>;
+}
+
+/// Meta data for result set
+pub trait ResultSetMetaData {
+    fn num_columns(&self) -> u64;
+    fn column_name(&self, i: usize) -> String;
+    fn column_type(&self, i: usize) -> String;
+}
+
 
 #[cfg(test)]
 mod test {
-    use crate::db::Database;
+    use crate::db::{Connection, Driver};
+    use crate::Error;
 
     pub struct M {}
 
-    impl Database for M {
-        fn name() -> &'static str {
-            "test"
+    impl Driver for M {
+        fn connect(&self, url: &str) -> Result<Box<dyn Connection>, Error> {
+            todo!()
         }
     }
 
     #[test]
     fn test_db() {
-        let b: Box<dyn Database> = Box::new(M {});
+        let b: Box<dyn Driver> = Box::new(M {});
     }
 }
