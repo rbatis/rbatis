@@ -2,25 +2,21 @@ use super::MySqlStream;
 use crate::connection::stream::Waiting;
 use crate::connection::MySqlConnection;
 use crate::describe::Describe;
-use crate::executor::{Execute, Executor};
 use crate::io::MySqlBufExt;
-use crate::logger::QueryLogger;
 use crate::protocol::response::Status;
 use crate::protocol::statement::{
     BinaryRow, Execute as StatementExecute, Prepare, PrepareOk, StmtClose,
 };
 use crate::protocol::text::{ColumnDefinition, ColumnFlags, Query, TextRow};
 use crate::result_set::{MySqlColumn, MySqlTypeInfo};
-use crate::statement::{MySqlStatement, MySqlStatementMetadata};
-use crate::stmt::{MySqlArguments, MySqlStatementMetadata};
-use crate::HashMap;
+use crate::stmt::{MySqlArguments, MySqlStatement, MySqlStatementMetadata};
 use either::Either;
 use futures_core::future::BoxFuture;
 use futures_core::stream::BoxStream;
 use futures_core::Stream;
 use futures_util::{pin_mut, TryStreamExt};
 use rbdc::ext::ustr::UStr;
-use rbdc::Error;
+use rbdc::{try_stream, Error};
 use std::collections::HashMap;
 use std::{borrow::Cow, sync::Arc};
 
@@ -90,8 +86,6 @@ impl MySqlConnection {
         persistent: bool,
     ) -> Result<impl Stream<Item = Result<Either<MySqlQueryResult, MySqlRow>, Error>> + 'e, Error>
     {
-        let mut logger = QueryLogger::new(sql, self.log_settings.clone());
-
         self.stream.wait_until_ready().await?;
         self.stream.waiting.push_back(Waiting::Result);
 
@@ -135,7 +129,6 @@ impl MySqlConnection {
                     let ok = packet.ok()?;
 
                     let rows_affected = ok.affected_rows;
-                    logger.increase_rows_affected(rows_affected);
                     let done = MySqlQueryResult {
                         rows_affected,
                         last_insert_id: ok.last_insert_id,
@@ -200,8 +193,6 @@ impl MySqlConnection {
                         columns: Arc::clone(&columns),
                         column_names: Arc::clone(&column_names),
                     });
-
-                    logger.increment_rows_returned();
 
                     r#yield!(v);
                 }

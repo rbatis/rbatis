@@ -6,12 +6,12 @@ use std::borrow::Cow;
 use std::collections::HashMap;
 use std::sync::Arc;
 
-pub struct MysqlStatement<'q> {
+pub struct MySqlStatement<'q> {
     pub(crate) sql: Cow<'q, str>,
     pub(crate) metadata: MySqlStatementMetadata,
 }
 
-impl<'q> Statement for MysqlStatement<'q> {
+impl<'q> Statement for MySqlStatement<'q> {
     fn fetch(&mut self, params: &[rbs::value::Value]) -> Result<Box<dyn ResultSet + '_>, Error> {
         todo!()
     }
