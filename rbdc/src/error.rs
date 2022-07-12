@@ -6,6 +6,14 @@ pub enum Error {
     Io(std::io::Error),
 }
 
+impl Error {
+    #[allow(dead_code)]
+    #[inline]
+    pub fn protocol(err: impl Display) -> Self {
+        Error::E(err.to_string())
+    }
+}
+
 impl Display for Error {
     fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
         match self {
@@ -32,14 +40,12 @@ impl From<std::io::Error> for Error {
     }
 }
 
-impl Error {
-    #[allow(dead_code)]
-    #[inline]
-    pub fn protocol(err: impl Display) -> Self {
-        Error::E(err.to_string())
+#[cfg(all(feature = "_tls-native-tls"))]
+impl From<native_tls::Error> for Error {
+    fn from(e: native_tls::Error) -> Self {
+        Error::E(e.to_string())
     }
 }
-
 // Format an error message as a `Protocol` error
 #[macro_export]
 macro_rules! err_protocol {

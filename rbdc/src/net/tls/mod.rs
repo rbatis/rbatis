@@ -117,8 +117,8 @@ async fn configure_tls_connector(
     accept_invalid_certs: bool,
     accept_invalid_hostnames: bool,
     root_cert_path: Option<&CertificateInput>,
-) -> Result<sqlx_rt::TlsConnector, Error> {
-    use sqlx_rt::native_tls::{Certificate, TlsConnector};
+) -> Result<crate::rt::TlsConnector, Error> {
+    use crate::rt::native_tls::{Certificate, TlsConnector};
 
     let mut builder = TlsConnector::builder();
     builder
