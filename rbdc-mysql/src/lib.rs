@@ -6,3 +6,8 @@ pub mod stmt;
 
 mod io;
 mod protocol;
+mod connection;
+mod options;
+mod error;
+mod collation;
+mod describe;

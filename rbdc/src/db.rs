@@ -1,3 +1,7 @@
+use std::fmt::Debug;
+use std::str::FromStr;
+use std::time::Duration;
+use futures_core::future::BoxFuture;
 use crate::Error;
 use rbs::Value;
 
@@ -44,4 +48,10 @@ pub trait MetaData {
     fn column_len(&self) -> u64;
     fn column_name(&self, i: usize) -> String;
     fn column_type(&self, i: usize) -> String;
+}
+
+/// connect option
+pub trait ConnectOptions: 'static + Send + Sync + FromStr<Err = Error> + Debug + Clone {
+    /// Establish a new database connection with the options specified by `self`.
+    fn connect(&self) -> BoxFuture<'_, Result<Box<dyn Connection>, Error>>;
 }
