@@ -14,14 +14,14 @@ pub struct BufStream<S>
 where
     S: AsyncRead + AsyncWrite + Unpin,
 {
-    pub(crate) stream: S,
+    pub stream: S,
 
     // writes with `write` to the underlying stream are buffered
     // this can be flushed with `flush`
-    pub(crate) wbuf: Vec<u8>,
+    pub wbuf: Vec<u8>,
 
     // we read into the read buffer using 100% safe code
-    rbuf: BytesMut,
+    pub rbuf: BytesMut,
 }
 
 impl<S> BufStream<S>

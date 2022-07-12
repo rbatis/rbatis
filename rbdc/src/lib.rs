@@ -7,6 +7,7 @@ pub mod ext;
 pub mod io;
 pub mod rt;
 pub mod common;
+pub mod net;
 
 #[derive(Debug)]
 pub enum Error {
