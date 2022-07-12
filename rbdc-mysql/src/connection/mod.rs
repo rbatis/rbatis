@@ -1,10 +1,10 @@
-use rbdc::common::StatementCache;
-use rbdc::Error;
 use crate::protocol::statement::StmtClose;
 use crate::protocol::text::{Ping, Quit};
 use crate::stmt::MySqlStatementMetadata;
 use futures_core::future::BoxFuture;
 use futures_util::FutureExt;
+use rbdc::common::StatementCache;
+use rbdc::Error;
 use std::fmt::{self, Debug, Formatter};
 
 mod auth;
@@ -13,7 +13,7 @@ mod executor;
 mod stream;
 mod tls;
 
-pub(crate) use stream::{MySqlStream};
+pub(crate) use stream::MySqlStream;
 
 const MAX_PACKET_SIZE: u32 = 1024;
 
@@ -34,7 +34,6 @@ impl Debug for MySqlConnection {
 }
 
 impl MySqlConnection {
-
     fn close(mut self) -> BoxFuture<'static, Result<(), Error>> {
         Box::pin(async move {
             self.stream.send_packet(Quit).await?;

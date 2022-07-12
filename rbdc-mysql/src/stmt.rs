@@ -1,17 +1,17 @@
+use crate::result_set::{MySqlColumn, MySqlTypeInfo};
+use rbdc::db::{ResultSet, Statement};
+use rbdc::ext::ustr::UStr;
+use rbdc::Error;
 use std::borrow::Cow;
 use std::collections::HashMap;
 use std::sync::Arc;
-use crate::result_set::{MySqlColumn, MySqlTypeInfo};
-use rbdc::db::{ResultSet, Statement};
-use rbdc::Error;
-use rbdc::ext::ustr::UStr;
 
 pub struct MysqlStatement<'q> {
     pub(crate) sql: Cow<'q, str>,
     pub(crate) metadata: MySqlStatementMetadata,
 }
 
-impl <'q>Statement for MysqlStatement<'q> {
+impl<'q> Statement for MysqlStatement<'q> {
     fn fetch(&mut self, params: &[rbs::value::Value]) -> Result<Box<dyn ResultSet + '_>, Error> {
         todo!()
     }
@@ -21,14 +21,12 @@ impl <'q>Statement for MysqlStatement<'q> {
     }
 }
 
-
 #[derive(Debug, Default, Clone)]
 pub(crate) struct MySqlStatementMetadata {
     pub(crate) columns: Arc<Vec<MySqlColumn>>,
     pub(crate) column_names: Arc<HashMap<UStr, usize>>,
     pub(crate) parameters: usize,
 }
-
 
 /// Implementation of [`Arguments`] for MySQL.
 #[derive(Debug, Default, Clone)]
