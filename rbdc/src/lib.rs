@@ -1,14 +1,14 @@
 use std::fmt::{Debug, Display, Formatter};
 
+pub mod common;
 pub mod db;
 pub mod decode;
 pub mod encode;
+pub mod error;
 pub mod ext;
 pub mod io;
-pub mod rt;
-pub mod common;
 pub mod net;
-pub mod error;
+pub mod rt;
 pub use error::*;
 
 #[cfg(test)]

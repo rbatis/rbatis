@@ -1,6 +1,6 @@
-use rbdc::Error;
 use crate::options::MySqlConnectOptions;
 use percent_encoding::percent_decode_str;
+use rbdc::Error;
 use std::str::FromStr;
 use url::Url;
 

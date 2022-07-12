@@ -1,8 +1,8 @@
-use rbdc::db::{Connection, ConnectOptions};
-use rbdc::Error;
-use crate::options::{MySqlConnectOptions};
 use crate::connection::MySqlConnection;
+use crate::options::MySqlConnectOptions;
 use futures_core::future::BoxFuture;
+use rbdc::db::{ConnectOptions, Connection};
+use rbdc::Error;
 
 impl ConnectOptions for MySqlConnectOptions {
     fn connect(&self) -> BoxFuture<'_, Result<Box<dyn Connection>, Error>>

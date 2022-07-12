@@ -3,15 +3,15 @@ use std::ops::{Deref, DerefMut};
 
 use bytes::{Buf, Bytes};
 
-use rbdc::{err_protocol, Error};
-use rbdc::io::{BufStream, Decode, Encode};
 use crate::collation::{CharSet, Collation};
+use crate::error::MySqlDatabaseError;
 use crate::io::MySqlBufExt;
+use crate::options::MySqlConnectOptions;
 use crate::protocol::response::{EofPacket, ErrPacket, OkPacket, Status};
 use crate::protocol::{Capabilities, Packet};
-use crate::options::{MySqlConnectOptions};
-use crate::error::MySqlDatabaseError;
+use rbdc::io::{BufStream, Decode, Encode};
 use rbdc::net::{MaybeTlsStream, Socket};
+use rbdc::{err_protocol, Error};
 
 pub struct MySqlStream {
     stream: BufStream<MaybeTlsStream<Socket>>,

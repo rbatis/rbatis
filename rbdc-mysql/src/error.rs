@@ -1,7 +1,7 @@
-use std::error::Error;
-use std::fmt::{self, Debug, Display, Formatter};
 use crate::protocol::response::ErrPacket;
 use smallvec::alloc::borrow::Cow;
+use std::error::Error;
+use std::fmt::{self, Debug, Display, Formatter};
 
 /// An error returned from the MySQL database.
 pub struct MySqlDatabaseError(pub(super) ErrPacket);
@@ -49,7 +49,7 @@ impl Display for MySqlDatabaseError {
 
 impl Error for MySqlDatabaseError {}
 
-impl  MySqlDatabaseError {
+impl MySqlDatabaseError {
     #[inline]
     fn message(&self) -> &str {
         self.message()

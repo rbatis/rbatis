@@ -1,12 +1,12 @@
-use bytes::buf::Buf;
-use bytes::Bytes;
-use rbdc::{err_protocol, Error};
-use crate::connection::{tls, MySqlStream, MAX_PACKET_SIZE, MySqlConnection};
+use crate::connection::{tls, MySqlConnection, MySqlStream, MAX_PACKET_SIZE};
+use crate::options::{MySqlConnectOptions, MySqlSslMode};
 use crate::protocol::connect::{
     AuthSwitchRequest, AuthSwitchResponse, Handshake, HandshakeResponse,
 };
 use crate::protocol::Capabilities;
-use crate::options::{MySqlConnectOptions, MySqlSslMode};
+use bytes::buf::Buf;
+use bytes::Bytes;
+use rbdc::{err_protocol, Error};
 
 impl MySqlConnection {
     pub(crate) async fn establish(options: &MySqlConnectOptions) -> Result<Self, Error> {

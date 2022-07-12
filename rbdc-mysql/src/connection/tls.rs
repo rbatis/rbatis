@@ -1,8 +1,8 @@
-use rbdc::Error;
 use crate::connection::MySqlStream;
+use crate::options::{MySqlConnectOptions, MySqlSslMode};
 use crate::protocol::connect::SslRequest;
 use crate::protocol::Capabilities;
-use crate::options::{MySqlConnectOptions, MySqlSslMode};
+use rbdc::Error;
 
 pub(super) async fn maybe_upgrade(
     stream: &mut MySqlStream,

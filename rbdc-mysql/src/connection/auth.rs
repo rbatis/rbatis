@@ -7,10 +7,10 @@ use rsa::{pkcs8::DecodePublicKey, PaddingScheme, PublicKey, RsaPublicKey};
 use sha1::Sha1;
 use sha2::Sha256;
 
-use rbdc::{err_protocol, Error};
 use crate::connection::stream::MySqlStream;
 use crate::protocol::auth::AuthPlugin;
 use crate::protocol::Packet;
+use rbdc::{err_protocol, Error};
 
 impl AuthPlugin {
     pub(super) async fn scramble(

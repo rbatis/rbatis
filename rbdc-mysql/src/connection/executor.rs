@@ -1,28 +1,28 @@
 use super::MySqlStream;
-use crate::describe::Describe;
-use rbdc::Error;
-use crate::executor::{Execute, Executor};
-use rbdc::ext::ustr::UStr;
-use crate::logger::QueryLogger;
 use crate::connection::stream::Waiting;
+use crate::connection::MySqlConnection;
+use crate::describe::Describe;
+use crate::executor::{Execute, Executor};
 use crate::io::MySqlBufExt;
+use crate::logger::QueryLogger;
 use crate::protocol::response::Status;
 use crate::protocol::statement::{
     BinaryRow, Execute as StatementExecute, Prepare, PrepareOk, StmtClose,
 };
 use crate::protocol::text::{ColumnDefinition, ColumnFlags, Query, TextRow};
+use crate::result_set::{MySqlColumn, MySqlTypeInfo};
 use crate::statement::{MySqlStatement, MySqlStatementMetadata};
+use crate::stmt::{MySqlArguments, MySqlStatementMetadata};
 use crate::HashMap;
 use either::Either;
 use futures_core::future::BoxFuture;
 use futures_core::stream::BoxStream;
 use futures_core::Stream;
 use futures_util::{pin_mut, TryStreamExt};
-use std::{borrow::Cow, sync::Arc};
+use rbdc::ext::ustr::UStr;
+use rbdc::Error;
 use std::collections::HashMap;
-use crate::connection::MySqlConnection;
-use crate::result_set::{MySqlColumn, MySqlTypeInfo};
-use crate::stmt::{MySqlArguments, MySqlStatementMetadata};
+use std::{borrow::Cow, sync::Arc};
 
 impl MySqlConnection {
     async fn get_or_prepare<'c>(
