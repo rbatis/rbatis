@@ -8,7 +8,7 @@ use std::convert::identity;
 ///
 /// The query macros (e.g., `query!`, `query_as!`, etc.) use the information here to validate
 /// output and parameter types; and, generate an anonymous record.
-#[derive(Debug, serde::Serialize, serde::Deserialize)]
+#[derive(Debug)]
 #[doc(hidden)]
 pub struct Describe {
     pub(crate) columns: Vec<MySqlColumn>,

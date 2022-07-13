@@ -11,3 +11,7 @@ mod error;
 mod io;
 mod options;
 mod protocol;
+mod query;
+pub mod query_result;
+mod row;
+mod value;

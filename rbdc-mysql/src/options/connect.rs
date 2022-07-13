@@ -5,10 +5,7 @@ use rbdc::db::{ConnectOptions, Connection};
 use rbdc::Error;
 
 impl ConnectOptions for MySqlConnectOptions {
-    fn connect(&self) -> BoxFuture<'_, Result<Box<dyn Connection>, Error>>
-    where
-        Self::Connection: Sized,
-    {
+    fn connect(&self) -> BoxFuture<'_, Result<Box<dyn Connection>, Error>> {
         Box::pin(async move {
             let mut conn = MySqlConnection::establish(self).await?;
 
@@ -38,8 +35,8 @@ impl ConnectOptions for MySqlConnectOptions {
             // https://mathiasbynens.be/notes/mysql-utf8mb4
 
             let mut options = String::new();
-            options.push_str(r#"SET sql_mode=(SELECT CONCAT(@@sql_mode, ',PIPES_AS_CONCAT,NO_ENGINE_SUBSTITUTION')),"#);
-            options.push_str(r#"time_zone='+00:00',"#);
+            // options.push_str(r#"SET sql_mode=(SELECT CONCAT(@@sql_mode, ',PIPES_AS_CONCAT,NO_ENGINE_SUBSTITUTION')),"#);
+            // options.push_str(r#"time_zone='+00:00',"#);
             options.push_str(&format!(
                 r#"NAMES {} COLLATE {};"#,
                 conn.stream.charset.as_str(),
@@ -48,7 +45,8 @@ impl ConnectOptions for MySqlConnectOptions {
 
             conn.execute(&*options).await?;
 
-            Ok(Box::new(conn))
+            let r: Box<dyn Connection> = Box::new(conn);
+            Ok(r)
         })
     }
 }
