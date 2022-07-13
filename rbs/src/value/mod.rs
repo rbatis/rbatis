@@ -803,15 +803,12 @@ impl Display for Value {
             Value::String(ref val) => Display::fmt(&self.as_str().unwrap_or_default(), f),
             Value::Binary(ref val) => Debug::fmt(val, f),
             Value::Array(ref vec) => {
-                // TODO: This can be slower than naive implementation. Need benchmarks for more
-                // information.
-                let res = vec
-                    .iter()
-                    .map(|val| format!("{}", val))
-                    .collect::<Vec<String>>()
-                    .join(", ");
-
-                write!(f, "[{}]", res)
+                f.write_str("[")?;
+                for x in vec {
+                    Display::fmt(&x, f)?;
+                }
+                f.write_str("]")?;
+                Ok(())
             }
             Value::Map(ref vec) => {
                 write!(f, "{{")?;

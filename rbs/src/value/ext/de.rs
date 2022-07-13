@@ -1210,7 +1210,6 @@ impl<'de> de::VariantAccess<'de> for VariantRefDeserializer<'de> {
     }
 }
 
-// TODO: Ugly hack. Needed for avoiding copy-pasting similar code, but I don't like it.
 trait ValueBase<'de>: Deserializer<'de, Error = Error> + ValueExt {
     type Item: ValueBase<'de>;
     type Iter: ExactSizeIterator<Item = Self::Item>;
