@@ -15,6 +15,11 @@ impl Connection for MysqlConn {
 
 #[cfg(test)]
 mod test {
+    use rbs::Value;
+
     #[test]
-    fn test_mysql() {}
+    fn test_mysql() {
+        let v = Value::Array(vec![Value::F32(1f32)]);
+        println!("{}", v);
+    }
 }
