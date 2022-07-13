@@ -3,7 +3,6 @@ use futures_core::future::BoxFuture;
 use rbs::Value;
 use std::fmt::Debug;
 use std::str::FromStr;
-use std::time::Duration;
 
 /// Represents database driver that can be shared between threads, and can therefore implement
 /// a connection pool

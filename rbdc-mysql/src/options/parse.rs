@@ -1,14 +1,15 @@
 use crate::options::MySqlConnectOptions;
 use percent_encoding::percent_decode_str;
 use rbdc::Error;
+use std::num::ParseIntError;
 use std::str::FromStr;
-use url::Url;
+use url::{ParseError, Url};
 
 impl FromStr for MySqlConnectOptions {
     type Err = Error;
 
     fn from_str(s: &str) -> Result<Self, Error> {
-        let url: Url = s.parse().map_err(Error::config)?;
+        let url: Url = s.parse().map_err(|e: ParseError| Error::E(e.to_string()))?;
         let mut options = Self::new();
 
         if let Some(host) = url.host_str() {
@@ -21,19 +22,11 @@ impl FromStr for MySqlConnectOptions {
 
         let username = url.username();
         if !username.is_empty() {
-            options = options.username(
-                &*percent_decode_str(username)
-                    .decode_utf8()
-                    .map_err(Error::config)?,
-            );
+            options = options.username(&*percent_decode_str(username).decode_utf8()?);
         }
 
         if let Some(password) = url.password() {
-            options = options.password(
-                &*percent_decode_str(password)
-                    .decode_utf8()
-                    .map_err(Error::config)?,
-            );
+            options = options.password(&*percent_decode_str(password).decode_utf8()?);
         }
 
         let path = url.path().trim_start_matches('/');
@@ -44,7 +37,7 @@ impl FromStr for MySqlConnectOptions {
         for (key, value) in url.query_pairs().into_iter() {
             match &*key {
                 "ssl-mode" => {
-                    options = options.ssl_mode(value.parse().map_err(Error::config)?);
+                    options = options.ssl_mode(value.parse()?);
                 }
 
                 "ssl-ca" => {
@@ -60,8 +53,11 @@ impl FromStr for MySqlConnectOptions {
                 }
 
                 "statement-cache-capacity" => {
-                    options =
-                        options.statement_cache_capacity(value.parse().map_err(Error::config)?);
+                    options = options.statement_cache_capacity(
+                        value
+                            .parse()
+                            .map_err(|e: ParseIntError| Error::E(e.to_string()))?,
+                    );
                 }
 
                 "socket" => {

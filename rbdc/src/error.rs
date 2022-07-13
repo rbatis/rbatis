@@ -1,4 +1,5 @@
 use std::fmt::{Display, Formatter};
+use std::str::Utf8Error;
 
 #[derive(Debug)]
 pub enum Error {
@@ -43,6 +44,12 @@ impl From<std::io::Error> for Error {
 #[cfg(all(feature = "_tls-native-tls"))]
 impl From<native_tls::Error> for Error {
     fn from(e: native_tls::Error) -> Self {
+        Error::E(e.to_string())
+    }
+}
+
+impl From<std::str::Utf8Error> for Error {
+    fn from(e: Utf8Error) -> Self {
         Error::E(e.to_string())
     }
 }

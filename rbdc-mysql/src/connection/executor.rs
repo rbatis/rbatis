@@ -8,8 +8,12 @@ use crate::protocol::statement::{
     BinaryRow, Execute as StatementExecute, Prepare, PrepareOk, StmtClose,
 };
 use crate::protocol::text::{ColumnDefinition, ColumnFlags, Query, TextRow};
+use crate::query::MysqlQuery;
+use crate::query_result::MySqlQueryResult;
 use crate::result_set::{MySqlColumn, MySqlTypeInfo};
+use crate::row::MySqlRow;
 use crate::stmt::{MySqlArguments, MySqlStatement, MySqlStatementMetadata};
+use crate::value::MySqlValueFormat;
 use either::Either;
 use futures_core::future::BoxFuture;
 use futures_core::stream::BoxStream;
@@ -18,7 +22,7 @@ use futures_util::{pin_mut, TryStreamExt};
 use rbdc::ext::ustr::UStr;
 use rbdc::{try_stream, Error};
 use std::collections::HashMap;
-use std::{borrow::Cow, sync::Arc};
+use std::sync::Arc;
 
 impl MySqlConnection {
     async fn get_or_prepare<'c>(
@@ -201,23 +205,25 @@ impl MySqlConnection {
     }
 }
 
-impl<'c> Executor<'c> for &'c mut MySqlConnection {
-    type Database = MySql;
+impl MySqlConnection {
+    pub async fn execute(&mut self, sql: &str) -> Result<Option<MySqlRow>, Error> {
+        self.fetch_optional(MysqlQuery {
+            statement: Either::Left(sql.to_string()),
+            arguments: vec![],
+            persistent: true,
+        })
+        .await
+    }
 
-    fn fetch_many<'e, 'q: 'e, E: 'q>(
-        self,
-        mut query: E,
-    ) -> BoxStream<'e, Result<Either<MySqlQueryResult, MySqlRow>, Error>>
-    where
-        'c: 'e,
-        E: Execute<'q, Self::Database>,
-    {
-        let sql = query.sql();
+    fn fetch_many(
+        &mut self,
+        mut query: MysqlQuery,
+    ) -> BoxStream<'_, Result<Either<MySqlQueryResult, MySqlRow>, Error>> {
+        let sql = query.sql().to_owned();
         let arguments = query.take_arguments();
         let persistent = query.persistent();
-
         Box::pin(try_stream! {
-            let s = self.run(sql, arguments, persistent).await?;
+            let s = self.run(&sql, arguments, persistent).await?;
             pin_mut!(s);
 
             while let Some(v) = s.try_next().await? {
@@ -228,16 +234,11 @@ impl<'c> Executor<'c> for &'c mut MySqlConnection {
         })
     }
 
-    fn fetch_optional<'e, 'q: 'e, E: 'q>(
-        self,
-        query: E,
-    ) -> BoxFuture<'e, Result<Option<MySqlRow>, Error>>
-    where
-        'c: 'e,
-        E: Execute<'q, Self::Database>,
-    {
+    fn fetch_optional(
+        &mut self,
+        query: MysqlQuery,
+    ) -> BoxFuture<'_, Result<Option<MySqlRow>, Error>> {
         let mut s = self.fetch_many(query);
-
         Box::pin(async move {
             while let Some(v) = s.try_next().await? {
                 if let Either::Right(r) = v {
@@ -249,21 +250,19 @@ impl<'c> Executor<'c> for &'c mut MySqlConnection {
         })
     }
 
-    fn prepare_with<'e, 'q: 'e>(
-        self,
-        sql: &'q str,
+    fn prepare_with<'e>(
+        mut self,
+        sql: &str,
         _parameters: &'e [MySqlTypeInfo],
-    ) -> BoxFuture<'e, Result<MySqlStatement<'q>, Error>>
-    where
-        'c: 'e,
-    {
+    ) -> BoxFuture<'e, Result<MySqlStatement, Error>> {
+        let sql = sql.to_string();
         Box::pin(async move {
             self.stream.wait_until_ready().await?;
 
-            let (_, metadata) = self.get_or_prepare(sql, true).await?;
+            let (_, metadata) = self.get_or_prepare(&sql, true).await?;
 
             Ok(MySqlStatement {
-                sql: Cow::Borrowed(sql),
+                sql: sql,
                 // metadata has internal Arcs for expensive data structures
                 metadata: metadata.clone(),
             })
@@ -271,10 +270,7 @@ impl<'c> Executor<'c> for &'c mut MySqlConnection {
     }
 
     #[doc(hidden)]
-    fn describe<'e, 'q: 'e>(self, sql: &'q str) -> BoxFuture<'e, Result<Describe<MySql>, Error>>
-    where
-        'c: 'e,
-    {
+    fn describe<'e, 'q: 'e>(mut self, sql: &'q str) -> BoxFuture<'e, Result<Describe, Error>> {
         Box::pin(async move {
             self.stream.wait_until_ready().await?;
 

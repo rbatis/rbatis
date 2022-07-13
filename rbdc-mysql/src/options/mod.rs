@@ -87,7 +87,6 @@ impl MySqlConnectOptions {
             ssl_mode: MySqlSslMode::Preferred,
             ssl_ca: None,
             statement_cache_capacity: 100,
-            log_settings: Default::default(),
         }
     }
 

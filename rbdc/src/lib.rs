@@ -1,10 +1,9 @@
-use std::fmt::{Debug, Display, Formatter};
-
 pub mod common;
 pub mod db;
 pub mod decode;
 pub mod encode;
 pub mod error;
+#[macro_use]
 pub mod ext;
 pub mod io;
 pub mod net;

@@ -1,5 +1,4 @@
 use crate::protocol::response::ErrPacket;
-use smallvec::alloc::borrow::Cow;
 use std::error::Error;
 use std::fmt::{self, Debug, Display, Formatter};
 
@@ -50,16 +49,6 @@ impl Display for MySqlDatabaseError {
 impl Error for MySqlDatabaseError {}
 
 impl MySqlDatabaseError {
-    #[inline]
-    fn message(&self) -> &str {
-        self.message()
-    }
-
-    #[inline]
-    fn code(&self) -> Option<Cow<'_, str>> {
-        self.code().map(Cow::Borrowed)
-    }
-
     #[doc(hidden)]
     fn as_error(&self) -> &(dyn Error + Send + Sync + 'static) {
         self
@@ -73,5 +62,11 @@ impl MySqlDatabaseError {
     #[doc(hidden)]
     fn into_error(self: Box<Self>) -> Box<dyn Error + Send + Sync + 'static> {
         self
+    }
+}
+
+impl From<MySqlDatabaseError> for rbdc::Error {
+    fn from(arg: MySqlDatabaseError) -> Self {
+        rbdc::Error::E(arg.to_string())
     }
 }

@@ -4,6 +4,7 @@ use crate::stmt::MySqlStatementMetadata;
 use futures_core::future::BoxFuture;
 use futures_util::FutureExt;
 use rbdc::common::StatementCache;
+use rbdc::db::{Connection, Statement};
 use rbdc::Error;
 use std::fmt::{self, Debug, Formatter};
 
@@ -22,9 +23,9 @@ pub struct MySqlConnection {
     // underlying TCP stream,
     // wrapped in a potentially TLS stream,
     // wrapped in a buffered stream
-    pub(crate) stream: MySqlStream,
+    pub stream: MySqlStream,
     // cache by query string to the statement id and metadata
-    cache_statement: StatementCache<(u32, MySqlStatementMetadata)>,
+    pub cache_statement: StatementCache<(u32, MySqlStatementMetadata)>,
 }
 
 impl Debug for MySqlConnection {
@@ -79,5 +80,15 @@ impl MySqlConnection {
     #[doc(hidden)]
     fn should_flush(&self) -> bool {
         !self.stream.wbuf.is_empty()
+    }
+}
+
+impl Connection for MySqlConnection {
+    fn create(&mut self, sql: &str) -> Result<Box<dyn Statement + '_>, Error> {
+        todo!()
+    }
+
+    fn prepare(&mut self, sql: &str) -> Result<Box<dyn Statement + '_>, Error> {
+        todo!()
     }
 }
