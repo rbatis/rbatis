@@ -28,7 +28,26 @@ pub struct MySqlArguments {
 }
 
 impl From<Vec<rbs::Value>> for MySqlArguments {
-    fn from(_: Vec<rbs::Value>) -> Self {
+    fn from(arg: Vec<rbs::Value>) -> Self {
+        for x in arg {
+            match x {
+                Value::Nil => {}
+                Value::Bool(_) => {}
+                Value::I32(_) => {}
+                Value::I64(_) => {}
+                Value::U32(_) => {}
+                Value::U64(_) => {}
+                Value::F32(_) => {}
+                Value::F64(_) => {}
+                Value::String(_) => {}
+                Value::Binary(_) => {}
+                Value::Array(_) => {}
+                Value::Map(ref m) => {
+                    let v = &x["type"];
+                }
+                Value::Ext(_, _) => {}
+            }
+        }
         todo!()
     }
 }
