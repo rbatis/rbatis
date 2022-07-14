@@ -5,7 +5,7 @@ use rbdc::db::{ConnectOptions, Connection};
 use rbdc::Error;
 
 impl ConnectOptions for MySqlConnectOptions {
-    fn connect(&self) -> BoxFuture<'_, Result<Box<dyn Connection>, Error>> {
+    fn connect(&self) -> BoxFuture<Result<Box<dyn Connection>, Error>> {
         Box::pin(async move {
             let mut conn = MySqlConnection::establish(self).await?;
 

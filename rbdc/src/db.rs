@@ -24,10 +24,10 @@ pub trait Connection {
 /// Represents an executable statement
 pub trait Statement {
     /// Execute a query that is expected to return a result set, such as a `SELECT` statement
-    fn fetch(&mut self, params: &[Value]) -> BoxFuture<Result<Box<dyn ResultSet>, Error>>;
+    fn fetch(&mut self, params: Vec<Value>) -> BoxFuture<Result<Box<dyn ResultSet>, Error>>;
 
     /// Execute a query that is expected to update some rows.
-    fn exec(&mut self, params: &[Value]) -> BoxFuture<Result<u64, Error>>;
+    fn exec(&mut self, params: Vec<Value>) -> BoxFuture<Result<u64, Error>>;
 }
 
 /// Result set from executing a query against a statement
@@ -52,5 +52,5 @@ pub trait MetaData {
 /// connect option
 pub trait ConnectOptions: 'static + Send + Sync + FromStr<Err = Error> + Debug + Clone {
     /// Establish a new database connection with the options specified by `self`.
-    fn connect(&self) -> BoxFuture<'_, Result<Box<dyn Connection>, Error>>;
+    fn connect(&self) -> BoxFuture<Result<Box<dyn Connection>, Error>>;
 }
