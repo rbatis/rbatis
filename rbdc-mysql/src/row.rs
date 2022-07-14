@@ -1,4 +1,5 @@
 use crate::protocol;
+use crate::protocol::text::ColumnType;
 use crate::result_set::MySqlColumn;
 use crate::value::{MySqlValueFormat, MySqlValueRef};
 use rbdc::db::{MetaData, Row};
@@ -79,6 +80,35 @@ impl Row for MySqlRow {
 
 impl From<&MySqlColumn> for Value {
     fn from(v: &MySqlColumn) -> Self {
+        match v.type_info.r#type {
+            ColumnType::Decimal => {}
+            ColumnType::Tiny => {}
+            ColumnType::Short => {}
+            ColumnType::Long => {}
+            ColumnType::Float => {}
+            ColumnType::Double => {}
+            ColumnType::Null => {}
+            ColumnType::Timestamp => {}
+            ColumnType::LongLong => {}
+            ColumnType::Int24 => {}
+            ColumnType::Date => {}
+            ColumnType::Time => {}
+            ColumnType::Datetime => {}
+            ColumnType::Year => {}
+            ColumnType::VarChar => {}
+            ColumnType::Bit => {}
+            ColumnType::Json => {}
+            ColumnType::NewDecimal => {}
+            ColumnType::Enum => {}
+            ColumnType::Set => {}
+            ColumnType::TinyBlob => {}
+            ColumnType::MediumBlob => {}
+            ColumnType::LongBlob => {}
+            ColumnType::Blob => {}
+            ColumnType::VarString => {}
+            ColumnType::String => {}
+            ColumnType::Geometry => {}
+        }
         todo!()
     }
 }
