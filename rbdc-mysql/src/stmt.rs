@@ -1,7 +1,9 @@
 use crate::result_set::{MySqlColumn, MySqlTypeInfo};
+use futures_core::future::BoxFuture;
 use rbdc::db::{ResultSet, Statement};
 use rbdc::ext::ustr::UStr;
 use rbdc::Error;
+use rbs::Value;
 use std::collections::HashMap;
 use std::sync::Arc;
 
@@ -11,12 +13,12 @@ pub struct MySqlStatement {
 }
 
 impl Statement for MySqlStatement {
-    fn fetch(&mut self, params: &[rbs::value::Value]) -> Result<Box<dyn ResultSet + '_>, Error> {
-        todo!()
+    fn fetch(&mut self, params: &[Value]) -> BoxFuture<Result<Box<dyn ResultSet>, Error>> {
+        Box::pin(async move { todo!() })
     }
 
-    fn exec(&mut self, params: &[rbs::value::Value]) -> Result<u64, Error> {
-        todo!()
+    fn exec(&mut self, params: &[Value]) -> BoxFuture<Result<u64, Error>> {
+        Box::pin(async move { todo!() })
     }
 }
 

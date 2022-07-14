@@ -9,25 +9,25 @@ use std::str::FromStr;
 pub trait Driver: Sync + Send {
     /// Create a connection to the database. Note that connections are intended to be used
     /// in a single thread since most database connections are not thread-safe
-    fn connect(&self, url: &str) -> Result<Box<dyn Connection>, Error>;
+    fn connect(&self, url: &str) -> BoxFuture<Result<Box<dyn Connection>, Error>>;
 }
 
 /// Represents a connection to a database
 pub trait Connection {
     /// Create a statement for execution
-    fn create(&mut self, sql: &str) -> Result<Box<dyn Statement + '_>, Error>;
+    fn create(&mut self, sql: &str) -> BoxFuture<Result<Box<dyn Statement>, Error>>;
 
     /// Create a prepared statement for execution
-    fn prepare(&mut self, sql: &str) -> Result<Box<dyn Statement + '_>, Error>;
+    fn prepare(&mut self, sql: &str) -> BoxFuture<Result<Box<dyn Statement>, Error>>;
 }
 
 /// Represents an executable statement
 pub trait Statement {
     /// Execute a query that is expected to return a result set, such as a `SELECT` statement
-    fn fetch(&mut self, params: &[Value]) -> Result<Box<dyn ResultSet + '_>, Error>;
+    fn fetch(&mut self, params: &[Value]) -> BoxFuture<Result<Box<dyn ResultSet>, Error>>;
 
     /// Execute a query that is expected to update some rows.
-    fn exec(&mut self, params: &[Value]) -> Result<u64, Error>;
+    fn exec(&mut self, params: &[Value]) -> BoxFuture<Result<u64, Error>>;
 }
 
 /// Result set from executing a query against a statement

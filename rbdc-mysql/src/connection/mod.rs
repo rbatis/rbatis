@@ -84,11 +84,27 @@ impl MySqlConnection {
 }
 
 impl Connection for MySqlConnection {
-    fn create(&mut self, sql: &str) -> Result<Box<dyn Statement + '_>, Error> {
-        todo!()
+    fn create(&mut self, sql: &str) -> BoxFuture<Result<Box<dyn Statement>, Error>> {
+        let sql = sql.to_owned();
+        Box::pin(async move {
+            let stmt = self.prepare_with(&sql, &[]).await?;
+            Ok(Box::new(stmt) as Box<dyn Statement>)
+        })
     }
 
-    fn prepare(&mut self, sql: &str) -> Result<Box<dyn Statement + '_>, Error> {
-        todo!()
+    fn prepare(&mut self, sql: &str) -> BoxFuture<Result<Box<dyn Statement>, Error>> {
+        let sql = sql.to_owned();
+        Box::pin(async move {
+            let stmt = self.prepare_with(&sql, &[]).await?;
+            Ok(Box::new(stmt) as Box<dyn Statement>)
+        })
     }
+}
+
+#[cfg(test)]
+mod test {
+    use rbs::Value;
+
+    #[test]
+    fn test_mysql() {}
 }
