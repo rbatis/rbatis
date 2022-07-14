@@ -13,11 +13,11 @@ pub struct MySqlStatement {
 }
 
 impl Statement for MySqlStatement {
-    fn fetch(&mut self, params: &[Value]) -> BoxFuture<Result<Box<dyn ResultSet>, Error>> {
+    fn fetch(&mut self, params: Vec<Value>) -> BoxFuture<Result<Box<dyn ResultSet>, Error>> {
         Box::pin(async move { todo!() })
     }
 
-    fn exec(&mut self, params: &[Value]) -> BoxFuture<Result<u64, Error>> {
+    fn exec(&mut self, params: Vec<Value>) -> BoxFuture<Result<u64, Error>> {
         Box::pin(async move { todo!() })
     }
 }
