@@ -24,16 +24,12 @@ impl MysqlQuery {
     }
 
     #[inline]
-    pub fn take_arguments(&mut self) -> Option<MySqlArguments> {
-        if !self.arguments.is_empty() {
-            //TODO Value to MysqlArguments
-            return Some(MySqlArguments {
-                values: vec![],
-                types: vec![],
-                null_bitmap: vec![],
-            });
+    pub fn take_arguments(mut self) -> Option<MySqlArguments> {
+        if self.arguments.is_empty() {
+            return None;
         }
-        None
+        //Value to MysqlArguments
+        return Some({ MySqlArguments::from(self.arguments) });
     }
 
     #[inline]

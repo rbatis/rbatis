@@ -1,6 +1,6 @@
 use crate::result_set::{MySqlColumn, MySqlTypeInfo};
 use futures_core::future::BoxFuture;
-use rbdc::db::{ResultSet, Statement};
+use rbdc::db::Row;
 use rbdc::ext::ustr::UStr;
 use rbdc::Error;
 use rbs::Value;
@@ -10,16 +10,6 @@ use std::sync::Arc;
 pub struct MySqlStatement {
     pub sql: String,
     pub metadata: MySqlStatementMetadata,
-}
-
-impl Statement for MySqlStatement {
-    fn fetch(&mut self, params: Vec<Value>) -> BoxFuture<Result<Box<dyn ResultSet>, Error>> {
-        Box::pin(async move { todo!() })
-    }
-
-    fn exec(&mut self, params: Vec<Value>) -> BoxFuture<Result<u64, Error>> {
-        Box::pin(async move { todo!() })
-    }
 }
 
 #[derive(Debug, Default, Clone)]
@@ -35,4 +25,10 @@ pub struct MySqlArguments {
     pub values: Vec<u8>,
     pub types: Vec<MySqlTypeInfo>,
     pub null_bitmap: Vec<u8>,
+}
+
+impl From<Vec<rbs::Value>> for MySqlArguments {
+    fn from(_: Vec<rbs::Value>) -> Self {
+        todo!()
+    }
 }
