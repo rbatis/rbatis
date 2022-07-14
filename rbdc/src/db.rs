@@ -1,8 +1,13 @@
 use crate::Error;
-use futures_core::future::BoxFuture;
+use std::alloc;
+
 use rbs::Value;
 use std::fmt::Debug;
+use std::future::Future;
+use std::pin::Pin;
 use std::str::FromStr;
+
+pub type BoxFuture<'a, T> = Pin<Box<dyn Future<Output = T> + Send + 'a>>;
 
 /// Represents database driver that can be shared between threads, and can therefore implement
 /// a connection pool
