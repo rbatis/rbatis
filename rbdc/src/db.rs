@@ -14,6 +14,12 @@ pub trait Driver: Sync + Send {
     /// Create a connection to the database. Note that connections are intended to be used
     /// in a single thread since most database connections are not thread-safe
     fn connect(&self, url: &str) -> BoxFuture<Result<Box<dyn Connection>, Error>>;
+
+    //
+    // fn connect_opt(
+    //     &self,
+    //     opt: &dyn ConnectOptions,
+    // ) -> BoxFuture<Result<Box<dyn Connection>, Error>>;
 }
 
 /// Represents a connection to a database
@@ -46,7 +52,7 @@ pub trait MetaData {
 }
 
 /// connect option
-pub trait ConnectOptions: 'static + Send + Sync + FromStr<Err = Error> + Debug + Clone {
+pub trait ConnectOptions: 'static + Send + Sync + Debug {
     /// Establish a new database connection with the options specified by `self`.
     fn connect(&self) -> BoxFuture<Result<Box<dyn Connection>, Error>>;
 }
