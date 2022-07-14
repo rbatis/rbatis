@@ -215,7 +215,7 @@ impl MySqlConnection {
         .await
     }
 
-    fn fetch_many(
+    pub fn fetch_many(
         &mut self,
         mut query: MysqlQuery,
     ) -> BoxStream<'_, Result<Either<MySqlQueryResult, MySqlRow>, Error>> {
@@ -234,7 +234,7 @@ impl MySqlConnection {
         })
     }
 
-    fn fetch_optional(
+    pub fn fetch_optional(
         &mut self,
         query: MysqlQuery,
     ) -> BoxFuture<'_, Result<Option<MySqlRow>, Error>> {
@@ -250,8 +250,8 @@ impl MySqlConnection {
         })
     }
 
-    fn prepare_with<'e>(
-        mut self,
+    pub fn prepare_with<'e>(
+        &'e mut self,
         sql: &str,
         _parameters: &'e [MySqlTypeInfo],
     ) -> BoxFuture<'e, Result<MySqlStatement, Error>> {
@@ -270,7 +270,7 @@ impl MySqlConnection {
     }
 
     #[doc(hidden)]
-    fn describe<'e, 'q: 'e>(mut self, sql: &'q str) -> BoxFuture<'e, Result<Describe, Error>> {
+    pub fn describe<'e, 'q: 'e>(mut self, sql: &'q str) -> BoxFuture<'e, Result<Describe, Error>> {
         Box::pin(async move {
             self.stream.wait_until_ready().await?;
 
