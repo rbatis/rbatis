@@ -89,7 +89,7 @@ impl MySqlConnection {
 }
 
 impl Connection for MySqlConnection {
-    fn fetch(
+    fn exec_rows(
         &mut self,
         sql: &str,
         params: Vec<Value>,

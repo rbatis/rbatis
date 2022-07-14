@@ -15,7 +15,6 @@ pub trait Driver: Sync + Send {
     /// in a single thread since most database connections are not thread-safe
     fn connect(&self, url: &str) -> BoxFuture<Result<Box<dyn Connection>, Error>>;
 
-    //
     // fn connect_opt(
     //     &self,
     //     opt: &dyn ConnectOptions,
@@ -25,7 +24,7 @@ pub trait Driver: Sync + Send {
 /// Represents a connection to a database
 pub trait Connection {
     /// Execute a query that is expected to return a result set, such as a `SELECT` statement
-    fn fetch(
+    fn exec_rows(
         &mut self,
         sql: &str,
         params: Vec<Value>,
