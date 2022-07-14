@@ -1,23 +1,7 @@
 use crate::protocol::text::{ColumnDefinition, ColumnFlags, ColumnType};
-use rbdc::db::{MetaData, ResultSet};
+use rbdc::db::{MetaData, Row};
 use rbdc::ext::ustr::UStr;
 use rbdc::Error;
-
-pub struct MysqlResultSet {}
-
-impl ResultSet for MysqlResultSet {
-    fn meta_data(&self) -> Result<Box<dyn MetaData>, Error> {
-        todo!()
-    }
-
-    fn next(&mut self) -> bool {
-        todo!()
-    }
-
-    fn get(&self, i: u64) -> Result<rbs::value::Value, Error> {
-        todo!()
-    }
-}
 
 #[derive(Debug, Clone, serde::Serialize, serde::Deserialize)]
 pub struct MySqlColumn {
@@ -65,10 +49,8 @@ impl MySqlTypeInfo {
             ColumnType::Date | ColumnType::Time | ColumnType::Timestamp | ColumnType::Datetime => {
                 Some("time")
             }
-
             ColumnType::Json => Some("json"),
             ColumnType::NewDecimal => Some("bigdecimal"),
-
             _ => None,
         }
     }

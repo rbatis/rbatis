@@ -1,11 +1,13 @@
 use crate::protocol::statement::StmtClose;
 use crate::protocol::text::{Ping, Quit};
 use crate::stmt::MySqlStatementMetadata;
+use either::Either;
 use futures_core::future::BoxFuture;
-use futures_util::FutureExt;
+use futures_util::{FutureExt, StreamExt};
 use rbdc::common::StatementCache;
-use rbdc::db::{Connection, Statement};
+use rbdc::db::{Connection, Row};
 use rbdc::Error;
+use rbs::Value;
 use std::fmt::{self, Debug, Formatter};
 
 mod auth;
@@ -14,6 +16,9 @@ mod executor;
 mod stream;
 mod tls;
 
+use crate::query::MysqlQuery;
+use crate::query_result::MySqlQueryResult;
+use crate::row::MySqlRow;
 pub(crate) use stream::MySqlStream;
 
 const MAX_PACKET_SIZE: u32 = 1024;
@@ -84,20 +89,56 @@ impl MySqlConnection {
 }
 
 impl Connection for MySqlConnection {
-    fn create(&mut self, sql: &str) -> BoxFuture<Result<Box<dyn Statement>, Error>> {
+    fn fetch(
+        &mut self,
+        sql: &str,
+        params: Vec<Value>,
+    ) -> BoxFuture<Result<Vec<Box<dyn Row>>, Error>> {
         let sql = sql.to_owned();
         Box::pin(async move {
-            let stmt = self.prepare_with(&sql, &[]).await?;
-            Ok(Box::new(stmt) as Box<dyn Statement>)
+            if params.len() == 0 {
+                let mut many = self.fetch_many(MysqlQuery {
+                    statement: Either::Left(sql),
+                    arguments: params,
+                    persistent: false,
+                });
+                let mut data: Vec<Box<dyn Row>> = Vec::new();
+                while let Some(item) = many.next().await {
+                    match item? {
+                        Either::Left(l) => {
+                            return Err(Error::E("not a ResultSet".to_string()));
+                        }
+                        Either::Right(r) => {
+                            data.push(Box::new(r));
+                        }
+                    }
+                }
+                return Ok(data);
+            } else {
+                let stmt = self.prepare_with(&sql, &[]).await?;
+                let mut many = self.fetch_many(MysqlQuery {
+                    statement: Either::Right(stmt),
+                    arguments: params,
+                    persistent: true,
+                });
+                let mut data: Vec<Box<dyn Row>> = Vec::new();
+                while let Some(item) = many.next().await {
+                    match item? {
+                        Either::Left(l) => {
+                            return Err(Error::E("not a ResultSet".to_string()));
+                        }
+                        Either::Right(r) => {
+                            data.push(Box::new(r));
+                        }
+                    }
+                }
+                return Ok(data);
+            }
         })
     }
 
-    fn prepare(&mut self, sql: &str) -> BoxFuture<Result<Box<dyn Statement>, Error>> {
-        let sql = sql.to_owned();
-        Box::pin(async move {
-            let stmt = self.prepare_with(&sql, &[]).await?;
-            Ok(Box::new(stmt) as Box<dyn Statement>)
-        })
+    fn exec(&mut self, sql: &str, params: Vec<Value>) -> BoxFuture<Result<u64, Error>> {
+        todo!()
     }
 }
 

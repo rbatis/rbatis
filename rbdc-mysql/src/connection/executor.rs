@@ -210,7 +210,7 @@ impl MySqlConnection {
         self.fetch_optional(MysqlQuery {
             statement: Either::Left(sql.to_string()),
             arguments: vec![],
-            persistent: true,
+            persistent: false,
         })
         .await
     }
@@ -220,8 +220,8 @@ impl MySqlConnection {
         mut query: MysqlQuery,
     ) -> BoxStream<'_, Result<Either<MySqlQueryResult, MySqlRow>, Error>> {
         let sql = query.sql().to_owned();
-        let arguments = query.take_arguments();
         let persistent = query.persistent();
+        let arguments = query.take_arguments();
         Box::pin(try_stream! {
             let s = self.run(&sql, arguments, persistent).await?;
             pin_mut!(s);
@@ -252,8 +252,8 @@ impl MySqlConnection {
 
     pub fn prepare_with<'e>(
         &'e mut self,
-        sql: &str,
-        _parameters: &'e [MySqlTypeInfo],
+        sql: &'e str,
+        parameters: &'e [MySqlTypeInfo],
     ) -> BoxFuture<'e, Result<MySqlStatement, Error>> {
         let sql = sql.to_string();
         Box::pin(async move {
