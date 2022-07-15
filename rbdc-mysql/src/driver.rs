@@ -42,7 +42,10 @@ mod test {
             .connect("mysql://root:123456@localhost:3306/test")
             .await
             .unwrap();
-        let data = c.fetch("select * from biz_activity", vec![]).await.unwrap();
+        let data = c
+            .get_values("select * from biz_activity", vec![])
+            .await
+            .unwrap();
         for mut x in data {
             println!("row: {}", x);
         }
