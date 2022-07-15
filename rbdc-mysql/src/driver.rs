@@ -27,3 +27,35 @@ impl Driver for MysqlDriver {
     //     })
     // }
 }
+
+#[cfg(test)]
+mod test {
+    use crate::driver::MysqlDriver;
+    use rbdc::db::Driver;
+    use rbs::Value;
+    use std::collections::BTreeMap;
+
+    #[tokio::test]
+    async fn test_mysql() {
+        let mut d = MysqlDriver {};
+        let mut c = d
+            .connect("mysql://root:123456@localhost:3306/test")
+            .await
+            .unwrap();
+        let data = c
+            .exec_rows("select * from biz_activity", vec![])
+            .await
+            .unwrap();
+        for x in data {
+            let md = x.meta_data();
+            let mut m = BTreeMap::new();
+            for i in 0..md.column_len() {
+                let n = md.column_name(i);
+                // println!("column:{}", n);
+                // println!("column value:{}", x.get(i).unwrap_or(Value::Nil));
+                m.insert(n, x.get(i).unwrap_or(Value::Nil));
+            }
+            println!("row: {:?}", m);
+        }
+    }
+}

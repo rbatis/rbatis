@@ -24,7 +24,14 @@ pub struct MySqlTypeInfo {
     pub max_size: Option<u32>,
 }
 impl MySqlTypeInfo {
-    pub(crate) const fn binary(ty: ColumnType) -> Self {
+    fn is_null(&self) -> bool {
+        matches!(self.r#type, ColumnType::Null)
+    }
+
+    fn name(&self) -> &str {
+        self.r#type.name(self.char_set, self.flags, self.max_size)
+    }
+    pub const fn binary(ty: ColumnType) -> Self {
         Self {
             r#type: ty,
             flags: ColumnFlags::BINARY,
