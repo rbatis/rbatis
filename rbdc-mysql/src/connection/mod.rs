@@ -106,7 +106,7 @@ impl Connection for MySqlConnection {
                 while let Some(item) = many.next().await {
                     match item? {
                         Either::Left(l) => {
-                            return Err(Error::E("not a ResultSet".to_string()));
+                            return Ok(data);
                         }
                         Either::Right(r) => {
                             data.push(Box::new(r));
@@ -125,7 +125,7 @@ impl Connection for MySqlConnection {
                 while let Some(item) = many.next().await {
                     match item? {
                         Either::Left(l) => {
-                            return Err(Error::E("not a ResultSet".to_string()));
+                            return Ok(data);
                         }
                         Either::Right(r) => {
                             data.push(Box::new(r));
@@ -140,12 +140,4 @@ impl Connection for MySqlConnection {
     fn exec(&mut self, sql: &str, params: Vec<Value>) -> BoxFuture<Result<u64, Error>> {
         todo!()
     }
-}
-
-#[cfg(test)]
-mod test {
-    use rbs::Value;
-
-    #[test]
-    fn test_mysql() {}
 }

@@ -35,7 +35,7 @@ pub trait Connection {
 }
 
 /// Result set from executing a query against a statement
-pub trait Row: 'static + Send {
+pub trait Row: 'static + Send + Debug {
     /// get meta data about this result set
     fn meta_data(&self) -> &dyn MetaData;
 
@@ -44,7 +44,7 @@ pub trait Row: 'static + Send {
 }
 
 /// Meta data for result set
-pub trait MetaData {
+pub trait MetaData: Debug {
     fn column_len(&self) -> usize;
     fn column_name(&self, i: usize) -> String;
     fn column_type(&self, i: usize) -> String;

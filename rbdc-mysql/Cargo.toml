@@ -24,3 +24,7 @@ url = { version = "2.2.2"}
 log = "0.4"
 smallvec = "1.7.0"
 either = "1.7.0"
+byteorder = { version = "1.4.3", default-features = false, features = ["std"] }
+
+[dev-dependencies]
+tokio = {version="1",features = ["full"]}
