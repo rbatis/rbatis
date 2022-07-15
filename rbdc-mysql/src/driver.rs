@@ -48,14 +48,14 @@ mod test {
             .unwrap();
         for x in data {
             let md = x.meta_data();
-            let mut m = BTreeMap::new();
+            let mut m = vec![];
             for i in 0..md.column_len() {
                 let n = md.column_name(i);
                 // println!("column:{}", n);
                 // println!("column value:{}", x.get(i).unwrap_or(Value::Nil));
-                m.insert(n, x.get(i).unwrap_or(Value::Nil));
+                m.push((Value::String(n), x.get(i).unwrap_or(Value::Nil)));
             }
-            println!("row: {:?}", m);
+            println!("row: {}", Value::Map(m));
         }
     }
 }
