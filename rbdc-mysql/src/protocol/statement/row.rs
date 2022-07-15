@@ -86,7 +86,6 @@ impl<'de> Decode<'de, &'de [MySqlColumn]> for BinaryRow {
 
             buf.advance(size);
         }
-
-        Ok(BinaryRow(Row { values, storage }))
+        Ok(BinaryRow(Row::from((values, storage.to_vec()))))
     }
 }

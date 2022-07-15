@@ -46,13 +46,11 @@ mod test {
             .exec_rows("select * from biz_activity", vec![])
             .await
             .unwrap();
-        for x in data {
+        for mut x in data {
             let md = x.meta_data();
             let mut m = vec![];
             for i in 0..md.column_len() {
                 let n = md.column_name(i);
-                // println!("column:{}", n);
-                // println!("column value:{}", x.get(i).unwrap_or(Value::Nil));
                 m.push((Value::String(n), x.get(i).unwrap_or(Value::Nil)));
             }
             println!("row: {}", Value::Map(m));

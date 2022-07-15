@@ -1,6 +1,6 @@
 use crate::protocol;
 use crate::protocol::text::ColumnType;
-use crate::result_set::MySqlColumn;
+use crate::result_set::{MySqlColumn, MySqlTypeInfo};
 use crate::value::{MySqlValue, MySqlValueFormat, MySqlValueRef};
 use byteorder::{ByteOrder, LittleEndian};
 use bytes::Buf;
@@ -9,6 +9,7 @@ use rbdc::error::Error;
 use rbdc::ext::ustr::UStr;
 use rbs::Value;
 use std::collections::HashMap;
+use std::fmt::{Debug, Formatter};
 use std::ops::Deref;
 use std::sync::Arc;
 
@@ -18,7 +19,7 @@ pub struct MySqlRow {
     pub row: protocol::Row,
     pub format: MySqlValueFormat,
     pub columns: Arc<Vec<MySqlColumn>>,
-    pub column_names: Arc<HashMap<UStr, usize>>,
+    pub column_names: Arc<HashMap<UStr, (usize, MySqlTypeInfo)>>,
 }
 
 impl MySqlRow {
@@ -26,25 +27,43 @@ impl MySqlRow {
         &self.columns
     }
 
-    pub fn try_get_raw(&self, index: usize) -> Result<MySqlValueRef<'_>, Error> {
+    pub fn try_get(&self, index: usize) -> Result<MySqlValueRef<'_>, Error> {
         let column: &MySqlColumn = &self.columns[index];
         let value = self.row.get(index as usize);
         Ok(MySqlValueRef {
             format: self.format,
-            row: Some(&self.row.storage),
             type_info: column.type_info.clone(),
             value,
         })
     }
+
+    pub fn try_take(&mut self, index: usize) -> Option<MySqlValue> {
+        let column: &MySqlColumn = &self.columns[index];
+        let value = self.row.take(index)?;
+        Some(MySqlValue {
+            value: Some(value),
+            type_info: column.type_info.clone(),
+            format: self.format,
+        })
+    }
 }
 
-impl MetaData for MySqlRow {
+pub struct MysqlMetaData {
+    inner: Arc<HashMap<UStr, (usize, MySqlTypeInfo)>>,
+}
+impl Debug for MysqlMetaData {
+    fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
+        self.inner.fmt(f)
+    }
+}
+
+impl MetaData for MysqlMetaData {
     fn column_len(&self) -> usize {
-        self.column_names.len()
+        self.inner.len()
     }
 
     fn column_name(&self, i: usize) -> String {
-        for (s, idx) in self.column_names.deref() {
+        for (s, (idx, type_info)) in self.inner.deref() {
             if idx.eq(&i) {
                 return s.to_string();
             }
@@ -53,28 +72,32 @@ impl MetaData for MySqlRow {
     }
 
     fn column_type(&self, i: usize) -> String {
-        match self.columns.get(i) {
-            None => String::new(),
-            Some(v) => format!("{:?}", v.type_info.r#type),
+        for (s, (idx, type_info)) in self.inner.deref() {
+            if idx.eq(&i) {
+                return format!("{:?}", type_info.r#type);
+            }
         }
+        return String::new();
     }
 }
 
 impl Row for MySqlRow {
-    fn meta_data(&self) -> &dyn MetaData {
-        self
+    fn meta_data(&self) -> Box<dyn MetaData> {
+        Box::new(MysqlMetaData {
+            inner: self.column_names.clone(),
+        })
     }
 
-    fn get(&self, i: usize) -> Option<Value> {
-        match self.try_get_raw(i) {
-            Err(_) => None,
-            Ok(v) => Some(Value::from(v)),
+    fn get(&mut self, i: usize) -> Option<Value> {
+        match self.try_take(i) {
+            None => None,
+            Some(v) => Some(Value::from(v)),
         }
     }
 }
 
-impl From<MySqlValueRef<'_>> for Value {
-    fn from(v: MySqlValueRef<'_>) -> Self {
+impl From<MySqlValue> for Value {
+    fn from(v: MySqlValue) -> Self {
         match v.type_info.r#type {
             ColumnType::Decimal => Value::Map(vec![(
                 Value::String("t_decimal".to_string()),
@@ -139,7 +162,7 @@ impl From<MySqlValueRef<'_>> for Value {
     }
 }
 
-fn uint_decode(value: MySqlValueRef<'_>) -> Result<u64, Error> {
+fn uint_decode(value: MySqlValue) -> Result<u64, Error> {
     if value.type_info.r#type == ColumnType::Bit {
         // NOTE: Regardless of the value format, there is raw binary data here
         let buf = value.as_bytes()?;
@@ -160,7 +183,7 @@ fn uint_decode(value: MySqlValueRef<'_>) -> Result<u64, Error> {
     })
 }
 
-fn int_decode(value: MySqlValueRef<'_>) -> Result<i64, Error> {
+fn int_decode(value: MySqlValue) -> Result<i64, Error> {
     Ok(match value.format() {
         MySqlValueFormat::Text => value.as_str()?.parse().unwrap_or_default(),
         MySqlValueFormat::Binary => {
@@ -170,7 +193,7 @@ fn int_decode(value: MySqlValueRef<'_>) -> Result<i64, Error> {
     })
 }
 
-fn f32_decode(value: MySqlValueRef<'_>) -> Result<f32, Error> {
+fn f32_decode(value: MySqlValue) -> Result<f32, Error> {
     Ok(match value.format() {
         MySqlValueFormat::Binary => {
             let buf = value.as_bytes()?;
@@ -188,14 +211,14 @@ fn f32_decode(value: MySqlValueRef<'_>) -> Result<f32, Error> {
     })
 }
 
-fn f64_decode(value: MySqlValueRef<'_>) -> Result<f64, Error> {
+fn f64_decode(value: MySqlValue) -> Result<f64, Error> {
     Ok(match value.format() {
         MySqlValueFormat::Binary => LittleEndian::read_f64(value.as_bytes()?),
         MySqlValueFormat::Text => value.as_str()?.parse().unwrap_or_default(),
     })
 }
 
-fn decode_timestamp(value: MySqlValueRef<'_>) -> Result<String, Error> {
+fn decode_timestamp(value: MySqlValue) -> Result<String, Error> {
     Ok(match value.format() {
         MySqlValueFormat::Text => value.as_str()?.to_string(),
         MySqlValueFormat::Binary => {
@@ -212,7 +235,7 @@ fn decode_timestamp(value: MySqlValueRef<'_>) -> Result<String, Error> {
     })
 }
 
-fn decode_year(value: MySqlValueRef<'_>) -> Result<String, Error> {
+fn decode_year(value: MySqlValue) -> Result<String, Error> {
     Ok(match value.format() {
         MySqlValueFormat::Text => value.as_str()?.to_string(),
         MySqlValueFormat::Binary => {
@@ -224,7 +247,7 @@ fn decode_year(value: MySqlValueRef<'_>) -> Result<String, Error> {
     })
 }
 
-fn decode_date(value: MySqlValueRef<'_>) -> Result<String, Error> {
+fn decode_date(value: MySqlValue) -> Result<String, Error> {
     Ok(match value.format() {
         MySqlValueFormat::Text => value.as_str()?.to_string(),
         MySqlValueFormat::Binary => {
@@ -236,7 +259,7 @@ fn decode_date(value: MySqlValueRef<'_>) -> Result<String, Error> {
     })
 }
 
-fn decode_time(value: MySqlValueRef<'_>) -> Result<String, Error> {
+fn decode_time(value: MySqlValue) -> Result<String, Error> {
     Ok(match value.format() {
         MySqlValueFormat::Text => value.as_str()?.to_string(),
         MySqlValueFormat::Binary => {
@@ -280,6 +303,6 @@ fn decode_time_buf(len: u8, mut buf: &[u8]) -> Result<String, Error> {
     Ok(format!("{:2}:{:2}:{:2}", hour, minute, seconds))
 }
 
-fn decode_bool(value: MySqlValueRef<'_>) -> Result<bool, Error> {
+fn decode_bool(value: MySqlValue) -> Result<bool, Error> {
     Ok(int_decode(value)? != 0)
 }

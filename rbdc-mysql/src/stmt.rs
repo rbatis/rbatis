@@ -15,7 +15,7 @@ pub struct MySqlStatement {
 #[derive(Debug, Default, Clone)]
 pub struct MySqlStatementMetadata {
     pub(crate) columns: Arc<Vec<MySqlColumn>>,
-    pub(crate) column_names: Arc<HashMap<UStr, usize>>,
+    pub(crate) column_names: Arc<HashMap<UStr, (usize, MySqlTypeInfo)>>,
     pub(crate) parameters: usize,
 }
 
