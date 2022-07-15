@@ -7,7 +7,7 @@ use std::ops::Deref;
 use std::sync::Arc;
 
 pub struct MysqlMetaData {
-    pub(crate) inner: Arc<HashMap<UStr, (usize, MySqlTypeInfo)>>,
+    pub inner: Arc<HashMap<UStr, (usize, MySqlTypeInfo)>>,
 }
 impl Debug for MysqlMetaData {
     fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
