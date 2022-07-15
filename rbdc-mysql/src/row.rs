@@ -21,21 +21,14 @@ pub struct MySqlRow {
     pub column_names: Arc<HashMap<UStr, usize>>,
 }
 
-pub trait Index {
-    fn columns(&self) -> &[MySqlColumn];
-
-    fn try_get_raw(&self, index: usize) -> Result<MySqlValueRef<'_>, Error>;
-}
-
-impl Index for MySqlRow {
-    fn columns(&self) -> &[MySqlColumn] {
+impl MySqlRow {
+    pub fn columns(&self) -> &[MySqlColumn] {
         &self.columns
     }
 
-    fn try_get_raw(&self, index: usize) -> Result<MySqlValueRef<'_>, Error> {
+    pub fn try_get_raw(&self, index: usize) -> Result<MySqlValueRef<'_>, Error> {
         let column: &MySqlColumn = &self.columns[index];
         let value = self.row.get(index as usize);
-
         Ok(MySqlValueRef {
             format: self.format,
             row: Some(&self.row.storage),
