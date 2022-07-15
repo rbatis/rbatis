@@ -994,6 +994,18 @@ impl<'a> ValueRef<'a> {
     }
 }
 
+impl Default for Value {
+    fn default() -> Self {
+        Value::Nil
+    }
+}
+
+impl<'a> Default for ValueRef<'a> {
+    fn default() -> Self {
+        ValueRef::Nil
+    }
+}
+
 impl<'a> From<u8> for ValueRef<'a> {
     #[inline]
     fn from(v: u8) -> Self {
