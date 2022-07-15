@@ -36,7 +36,7 @@ mod test {
     use std::collections::BTreeMap;
 
     #[tokio::test]
-    async fn test_mysql() {
+    async fn test_mysql_rows() {
         let mut d = MysqlDriver {};
         let mut c = d
             .connect("mysql://root:123456@localhost:3306/test")
@@ -57,5 +57,22 @@ mod test {
             }
             println!("row: {}", Value::Map(m));
         }
+    }
+
+    #[tokio::test]
+    async fn test_mysql_count() {
+        let mut d = MysqlDriver {};
+        let mut c = d
+            .connect("mysql://root:123456@localhost:3306/test")
+            .await
+            .unwrap();
+        let data = c
+            .exec(
+                "update biz_activity set pc_link = '111' where id  = '1'",
+                vec![],
+            )
+            .await
+            .unwrap();
+        println!("{}", data);
     }
 }

@@ -105,9 +105,7 @@ impl Connection for MySqlConnection {
                 let mut data: Vec<Box<dyn Row>> = Vec::new();
                 while let Some(item) = many.next().await {
                     match item? {
-                        Either::Left(l) => {
-                            return Ok(data);
-                        }
+                        Either::Left(l) => {}
                         Either::Right(r) => {
                             data.push(Box::new(r));
                         }
@@ -124,9 +122,7 @@ impl Connection for MySqlConnection {
                 let mut data: Vec<Box<dyn Row>> = Vec::new();
                 while let Some(item) = many.next().await {
                     match item? {
-                        Either::Left(l) => {
-                            return Ok(data);
-                        }
+                        Either::Left(l) => {}
                         Either::Right(r) => {
                             data.push(Box::new(r));
                         }
@@ -138,6 +134,40 @@ impl Connection for MySqlConnection {
     }
 
     fn exec(&mut self, sql: &str, params: Vec<Value>) -> BoxFuture<Result<u64, Error>> {
-        todo!()
+        let sql = sql.to_owned();
+        Box::pin(async move {
+            if params.len() == 0 {
+                let mut many = self.fetch_many(MysqlQuery {
+                    statement: Either::Left(sql),
+                    arguments: params,
+                    persistent: false,
+                });
+                while let Some(item) = many.next().await {
+                    match item? {
+                        Either::Left(l) => {
+                            return Ok(l.rows_affected);
+                        }
+                        Either::Right(r) => {}
+                    }
+                }
+                return Ok(0);
+            } else {
+                let stmt = self.prepare_with(&sql, &[]).await?;
+                let mut many = self.fetch_many(MysqlQuery {
+                    statement: Either::Right(stmt),
+                    arguments: params,
+                    persistent: true,
+                });
+                while let Some(item) = many.next().await {
+                    match item? {
+                        Either::Left(l) => {
+                            return Ok(l.rows_affected);
+                        }
+                        Either::Right(r) => {}
+                    }
+                }
+                return Ok(0);
+            }
+        })
     }
 }
