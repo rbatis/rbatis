@@ -64,12 +64,12 @@ impl<'de> Deserialize<'de> for Value {
 
             #[inline]
             fn visit_none<E>(self) -> Result<Value, E> {
-                Ok(Value::Nil)
+                Ok(Value::Null)
             }
 
             #[inline]
             fn visit_unit<E>(self) -> Result<Value, E> {
-                Ok(Value::Nil)
+                Ok(Value::Null)
             }
 
             #[inline]
@@ -216,12 +216,12 @@ impl<'de> Deserialize<'de> for ValueRef<'de> {
 
             #[inline]
             fn visit_none<E>(self) -> Result<Self::Value, E> {
-                Ok(ValueRef::Nil)
+                Ok(ValueRef::Null)
             }
 
             #[inline]
             fn visit_unit<E>(self) -> Result<Self::Value, E> {
-                Ok(ValueRef::Nil)
+                Ok(ValueRef::Null)
             }
 
             #[inline]
@@ -338,7 +338,7 @@ impl<'de> Deserializer<'de> for Value {
         V: Visitor<'de>,
     {
         match self {
-            Value::Nil => visitor.visit_unit(),
+            Value::Null => visitor.visit_unit(),
             Value::Bool(v) => visitor.visit_bool(v),
             Value::I32(v) => visitor.visit_i32(v),
             Value::I64(v) => visitor.visit_i64(v),
@@ -446,7 +446,7 @@ impl<'de> Deserializer<'de> for ValueRef<'de> {
         V: Visitor<'de>,
     {
         match self {
-            ValueRef::Nil => visitor.visit_unit(),
+            ValueRef::Null => visitor.visit_unit(),
             ValueRef::Bool(v) => visitor.visit_bool(v),
             ValueRef::I32(v) => visitor.visit_i32(v),
             ValueRef::I64(v) => visitor.visit_i64(v),
@@ -554,7 +554,7 @@ impl<'de> Deserializer<'de> for &'de ValueRef<'de> {
         V: Visitor<'de>,
     {
         match *self {
-            ValueRef::Nil => visitor.visit_unit(),
+            ValueRef::Null => visitor.visit_unit(),
             ValueRef::Bool(v) => visitor.visit_bool(v),
             ValueRef::I32(v) => visitor.visit_i32(v),
             ValueRef::I64(v) => visitor.visit_i64(v),
@@ -596,7 +596,7 @@ impl<'de> Deserializer<'de> for &'de ValueRef<'de> {
     where
         V: Visitor<'de>,
     {
-        if let ValueRef::Nil = *self {
+        if let ValueRef::Null = *self {
             visitor.visit_none()
         } else {
             visitor.visit_some(self)
@@ -1216,7 +1216,7 @@ trait ValueBase<'de>: Deserializer<'de, Error = Error> + ValueExt {
     type MapIter: Iterator<Item = (Self::Item, Self::Item)>;
     type MapDeserializer: Deserializer<'de>;
 
-    fn is_nil(&self) -> bool;
+    fn is_null(&self) -> bool;
 
     fn into_iter(self) -> Result<Self::Iter, Self::Item>;
     fn into_map_iter(self) -> Result<Self::MapIter, Self::Item>;
@@ -1226,7 +1226,7 @@ trait ValueBase<'de>: Deserializer<'de, Error = Error> + ValueExt {
     where
         V: Visitor<'de>,
     {
-        if self.is_nil() {
+        if self.is_null() {
             visitor.visit_none()
         } else {
             visitor.visit_some(self)
@@ -1299,8 +1299,8 @@ impl<'de> ValueBase<'de> for Value {
     type MapDeserializer = MapDeserializer<Self::MapIter, Self::Item>;
 
     #[inline]
-    fn is_nil(&self) -> bool {
-        if let Value::Nil = *self {
+    fn is_null(&self) -> bool {
+        if let Value::Null = *self {
             true
         } else {
             false
@@ -1331,8 +1331,8 @@ impl<'de> ValueBase<'de> for ValueRef<'de> {
     type MapDeserializer = MapDeserializer<Self::MapIter, Self::Item>;
 
     #[inline]
-    fn is_nil(&self) -> bool {
-        if let ValueRef::Nil = *self {
+    fn is_null(&self) -> bool {
+        if let ValueRef::Null = *self {
             true
         } else {
             false

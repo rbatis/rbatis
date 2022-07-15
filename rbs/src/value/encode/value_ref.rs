@@ -35,7 +35,7 @@ where
     W: Write,
 {
     match *val {
-        ValueRef::Nil => {
+        ValueRef::Null => {
             write_nil(wr).map_err(Error::InvalidMarkerWrite)?;
         }
         ValueRef::Bool(val) => {
@@ -249,7 +249,7 @@ impl<'a> SerializeMap for SerializeMapImpl<'a> {
         T: Serialize,
     {
         self.inner
-            .push((key.serialize(self.s.clone())?, ValueRef::Nil));
+            .push((key.serialize(self.s.clone())?, ValueRef::Null));
         Ok(())
     }
 
@@ -365,7 +365,7 @@ impl Serializer for SerRef {
     }
 
     fn serialize_none(self) -> Result<Self::Ok, Self::Error> {
-        Ok(ValueRef::Nil)
+        Ok(ValueRef::Null)
     }
 
     fn serialize_some<T: ?Sized>(self, value: &T) -> Result<Self::Ok, Self::Error>
@@ -376,11 +376,11 @@ impl Serializer for SerRef {
     }
 
     fn serialize_unit(self) -> Result<Self::Ok, Self::Error> {
-        Ok(ValueRef::Nil)
+        Ok(ValueRef::Null)
     }
 
     fn serialize_unit_struct(self, name: &'static str) -> Result<Self::Ok, Self::Error> {
-        Ok(ValueRef::Nil)
+        Ok(ValueRef::Null)
     }
 
     fn serialize_unit_variant(
