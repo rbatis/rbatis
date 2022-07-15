@@ -94,7 +94,7 @@ impl From<MySqlValue> for Value {
                 Value::String(decode_timestamp(v).unwrap_or_default()),
             )]),
             ColumnType::Year => Value::Map(vec![(
-                Value::String("t_year".to_string()),
+                Value::String("year".to_string()),
                 Value::String(decode_year(v).unwrap_or_default()),
             )]),
             ColumnType::VarChar => Value::String(v.as_str().unwrap_or_default().to_string()),
