@@ -800,7 +800,13 @@ impl Display for Value {
             Value::U64(ref val) => Display::fmt(&val, f),
             Value::F32(val) => Display::fmt(&val, f),
             Value::F64(val) => Display::fmt(&val, f),
-            Value::String(ref val) => Display::fmt(&self.as_str().unwrap_or_default(), f),
+            Value::String(ref val) => {
+                if self.as_str().is_none() || self.as_str().unwrap().is_empty() {
+                    Display::fmt("''", f)
+                } else {
+                    Display::fmt(&self.as_str().unwrap_or_default(), f)
+                }
+            }
             Value::Binary(ref val) => Debug::fmt(val, f),
             Value::Array(ref vec) => {
                 f.write_str("[")?;
