@@ -30,6 +30,25 @@ pub trait Connection {
         params: Vec<Value>,
     ) -> BoxFuture<Result<Vec<Box<dyn Row>>, Error>>;
 
+    /// Execute a query that is expected to return a result set, such as a `SELECT` statement
+    fn fetch(&mut self, sql: &str, params: Vec<Value>) -> BoxFuture<Result<Vec<Value>, Error>> {
+        let v = self.exec_rows(sql, params);
+        Box::pin(async move {
+            let v = v.await?;
+            let mut rows = Vec::with_capacity(v.len());
+            for mut x in v {
+                let md = x.meta_data();
+                let mut m = Vec::with_capacity(md.column_len());
+                for i in 0..md.column_len() {
+                    let n = md.column_name(i);
+                    m.push((Value::String(n), x.get(i).unwrap_or(Value::Nil)));
+                }
+                rows.push(Value::Map(m));
+            }
+            Ok(rows)
+        })
+    }
+
     /// Execute a query that is expected to update some rows.
     fn exec(&mut self, sql: &str, params: Vec<Value>) -> BoxFuture<Result<u64, Error>>;
 }

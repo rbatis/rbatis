@@ -42,18 +42,9 @@ mod test {
             .connect("mysql://root:123456@localhost:3306/test")
             .await
             .unwrap();
-        let data = c
-            .exec_rows("select * from biz_activity", vec![])
-            .await
-            .unwrap();
+        let data = c.fetch("select * from biz_activity", vec![]).await.unwrap();
         for mut x in data {
-            let md = x.meta_data();
-            let mut m = vec![];
-            for i in 0..md.column_len() {
-                let n = md.column_name(i);
-                m.push((Value::String(n), x.get(i).unwrap_or(Value::Nil)));
-            }
-            println!("row: {}", Value::Map(m));
+            println!("row: {}", x);
         }
     }
 
