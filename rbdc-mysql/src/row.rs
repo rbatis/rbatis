@@ -66,7 +66,7 @@ impl From<MySqlValue> for Value {
     fn from(v: MySqlValue) -> Self {
         match v.type_info.r#type {
             ColumnType::Decimal => Value::Map(vec![(
-                Value::String("t_decimal".to_string()),
+                Value::String("decimal".to_string()),
                 Value::String(v.as_str().unwrap_or("0").to_string()),
             )]),
             ColumnType::Tiny => Value::U64(uint_decode(v).unwrap_or_default()),
@@ -76,21 +76,21 @@ impl From<MySqlValue> for Value {
             ColumnType::Double => Value::F64(f64_decode(v).unwrap_or_default()),
             ColumnType::Null => Value::Nil,
             ColumnType::Timestamp => Value::Map(vec![(
-                Value::String("t_timestamp".to_string()),
+                Value::String("timestamp".to_string()),
                 Value::String(decode_timestamp(v).unwrap_or_default()),
             )]),
             ColumnType::LongLong => Value::Bool(decode_bool(v).unwrap_or_default()),
             ColumnType::Int24 => Value::I32(int_decode(v).unwrap_or_default() as i32),
             ColumnType::Date => Value::Map(vec![(
-                Value::String("t_date".to_string()),
+                Value::String("date".to_string()),
                 Value::String(decode_date(v).unwrap_or_default()),
             )]),
             ColumnType::Time => Value::Map(vec![(
-                Value::String("t_time".to_string()),
+                Value::String("time".to_string()),
                 Value::String(decode_time(v).unwrap_or_default()),
             )]),
             ColumnType::Datetime => Value::Map(vec![(
-                Value::String("t_datetime".to_string()),
+                Value::String("datetime".to_string()),
                 Value::String(decode_timestamp(v).unwrap_or_default()),
             )]),
             ColumnType::Year => Value::Map(vec![(
@@ -100,19 +100,19 @@ impl From<MySqlValue> for Value {
             ColumnType::VarChar => Value::String(v.as_str().unwrap_or_default().to_string()),
             ColumnType::Bit => Value::U64(uint_decode(v).unwrap_or_default()),
             ColumnType::Json => Value::Map(vec![(
-                Value::String("t_json".to_string()),
+                Value::String("json".to_string()),
                 Value::String(v.as_str().unwrap_or_default().to_string()),
             )]),
             ColumnType::NewDecimal => Value::Map(vec![(
-                Value::String("t_decimal".to_string()),
+                Value::String("decimal".to_string()),
                 Value::String(v.as_str().unwrap_or("0").to_string()),
             )]),
             ColumnType::Enum => Value::Map(vec![(
-                Value::String("t_enum".to_string()),
+                Value::String("enum".to_string()),
                 Value::String(v.as_str().unwrap_or("").to_string()),
             )]),
             ColumnType::Set => Value::Map(vec![(
-                Value::String("t_set".to_string()),
+                Value::String("set".to_string()),
                 Value::String(v.as_str().unwrap_or("").to_string()),
             )]),
             ColumnType::TinyBlob => Value::Binary(v.as_bytes().unwrap_or_default().to_vec()),
@@ -121,9 +121,11 @@ impl From<MySqlValue> for Value {
             ColumnType::Blob => Value::Binary(v.as_bytes().unwrap_or_default().to_vec()),
             ColumnType::VarString => Value::String(v.as_str().unwrap_or_default().to_string()),
             ColumnType::String => Value::String(v.as_str().unwrap_or_default().to_string()),
-            ColumnType::Geometry => {
-                todo!()
-            }
+            //bytes ,see https://dev.mysql.com/doc/internals/en/x-protocol-messages-messages.html
+            ColumnType::Geometry => Value::Map(vec![(
+                Value::String("geometry".to_string()),
+                Value::Binary(v.as_bytes().unwrap_or_default().to_vec()),
+            )]),
         }
     }
 }
