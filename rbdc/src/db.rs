@@ -24,15 +24,19 @@ pub trait Driver: Sync + Send {
 /// Represents a connection to a database
 pub trait Connection {
     /// Execute a query that is expected to return a result set, such as a `SELECT` statement
-    fn exec_rows(
+    fn get_rows(
         &mut self,
         sql: &str,
         params: Vec<Value>,
     ) -> BoxFuture<Result<Vec<Box<dyn Row>>, Error>>;
 
     /// Execute a query that is expected to return a result set, such as a `SELECT` statement
-    fn fetch(&mut self, sql: &str, params: Vec<Value>) -> BoxFuture<Result<Vec<Value>, Error>> {
-        let v = self.exec_rows(sql, params);
+    fn get_values(
+        &mut self,
+        sql: &str,
+        params: Vec<Value>,
+    ) -> BoxFuture<Result<Vec<Value>, Error>> {
+        let v = self.get_rows(sql, params);
         Box::pin(async move {
             let v = v.await?;
             let mut rows = Vec::with_capacity(v.len());
