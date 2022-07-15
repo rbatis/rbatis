@@ -96,7 +96,7 @@ where
 {
     let depth = super::decrement_depth(depth)?;
     let val = match read_marker(rd)? {
-        Marker::Null => Value::Nil,
+        Marker::Null => Value::Null,
         Marker::True => Value::Bool(true),
         Marker::False => Value::Bool(false),
         Marker::FixPos(val) => Value::from(val),
@@ -213,7 +213,7 @@ where
             let (ty, vec) = read_ext_body(rd, len, depth)?;
             Value::Ext(ty, vec)
         }
-        Marker::Reserved => Value::Nil,
+        Marker::Reserved => Value::Null,
     };
 
     Ok(val)

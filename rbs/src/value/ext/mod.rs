@@ -37,7 +37,7 @@ impl ValueExt for Value {
     #[cold]
     fn unexpected(&self) -> Unexpected<'_> {
         match *self {
-            Value::Nil => Unexpected::Unit,
+            Value::Null => Unexpected::Unit,
             Value::Bool(v) => Unexpected::Bool(v),
             Value::I32(v) => Unexpected::Signed(v as i64),
             Value::I64(v) => Unexpected::Signed(v),
@@ -58,7 +58,7 @@ impl<'a> ValueExt for ValueRef<'a> {
     #[cold]
     fn unexpected(&self) -> Unexpected<'_> {
         match *self {
-            ValueRef::Nil => Unexpected::Unit,
+            ValueRef::Null => Unexpected::Unit,
             ValueRef::Bool(v) => Unexpected::Bool(v),
             ValueRef::I32(v) => Unexpected::Signed(v as i64),
             ValueRef::I64(v) => Unexpected::Signed(v),

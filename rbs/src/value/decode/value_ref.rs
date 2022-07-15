@@ -158,7 +158,7 @@ where
     // Reading the marker involves either 1 byte read or nothing. On success consumes strictly
     // 1 byte from the `rd`.
     let val = match read_marker(rd)? {
-        Marker::Null => ValueRef::Nil,
+        Marker::Null => ValueRef::Null,
         Marker::True => ValueRef::Bool(true),
         Marker::False => ValueRef::Bool(false),
         Marker::FixPos(val) => ValueRef::from(val),
@@ -279,7 +279,7 @@ where
             let (ty, vec) = read_ext_body(rd, len as usize, depth)?;
             ValueRef::Ext(ty, vec)
         }
-        Marker::Reserved => ValueRef::Nil,
+        Marker::Reserved => ValueRef::Null,
     };
 
     Ok(val)

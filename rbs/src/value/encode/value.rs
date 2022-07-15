@@ -19,7 +19,7 @@ where
     W: Write,
 {
     match *val {
-        Value::Nil => {
+        Value::Null => {
             write_nil(wr).map_err(Error::InvalidMarkerWrite)?;
         }
         Value::Bool(val) => {

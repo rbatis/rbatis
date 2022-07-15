@@ -32,7 +32,7 @@ impl From<Vec<rbs::Value>> for MySqlArguments {
     fn from(arg: Vec<rbs::Value>) -> Self {
         for x in arg {
             match x {
-                Value::Nil => {}
+                Value::Null => {}
                 Value::Bool(_) => {}
                 Value::I32(_) => {}
                 Value::I64(_) => {}

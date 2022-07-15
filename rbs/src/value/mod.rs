@@ -34,7 +34,7 @@ pub const MSGPACK_EXT_STRUCT_NAME: &str = "_ExtStruct";
 #[derive(Clone, Debug, PartialEq)]
 pub enum Value {
     /// Nil represents nil.
-    Nil,
+    Null,
     /// Bool represents true or false.
     Bool(bool),
     // /// Integer represents an integer.
@@ -90,7 +90,7 @@ impl Value {
     /// use rbs::{Value, ValueRef};
     ///
     /// let val = Value::Array(vec![
-    ///     Value::Nil,
+    ///     Value::Null,
     ///     Value::from(42),
     ///     Value::Array(vec![
     ///         Value::String("le message".into())
@@ -98,7 +98,7 @@ impl Value {
     /// ]);
     ///
     /// let expected = ValueRef::Array(vec![
-    ///    ValueRef::Nil,
+    ///    ValueRef::Null,
     ///    ValueRef::from(42),
     ///    ValueRef::Array(vec![
     ///        ValueRef::from("le message"),
@@ -109,7 +109,7 @@ impl Value {
     /// ```
     pub fn as_ref(&self) -> ValueRef<'_> {
         match *self {
-            Value::Nil => ValueRef::Nil,
+            Value::Null => ValueRef::Null,
             Value::Bool(val) => ValueRef::Bool(val),
             Value::I32(val) => ValueRef::I32(val),
             Value::I64(val) => ValueRef::I64(val),
@@ -136,21 +136,15 @@ impl Value {
     /// ```
     /// use rbs::Value;
     ///
-    /// assert!(Value::Nil.is_nil());
+    /// assert!(Value::Null.is_null());
     /// ```
     #[inline]
-    pub fn is_nil(&self) -> bool {
-        if let Value::Nil = *self {
+    pub fn is_null(&self) -> bool {
+        if let Value::Null = *self {
             true
         } else {
             false
         }
-    }
-
-    /// same is nil
-    #[inline]
-    pub fn is_null(&self) -> bool {
-        self.is_nil()
     }
 
     /// Returns true if the `Value` is a Bool. Returns false otherwise.
@@ -162,7 +156,7 @@ impl Value {
     ///
     /// assert!(Value::Bool(true).is_bool());
     ///
-    /// assert!(!Value::Nil.is_bool());
+    /// assert!(!Value::Null.is_bool());
     /// ```
     #[inline]
     pub fn is_bool(&self) -> bool {
@@ -263,7 +257,7 @@ impl Value {
     /// assert!(Value::F32(42.0).is_number());
     /// assert!(Value::F64(42.0).is_number());
     ///
-    /// assert!(!Value::Nil.is_number());
+    /// assert!(!Value::Null.is_number());
     /// ```
     pub fn is_number(&self) -> bool {
         match *self {
@@ -281,7 +275,7 @@ impl Value {
     ///
     /// assert!(Value::String("value".into()).is_str());
     ///
-    /// assert!(!Value::Nil.is_str());
+    /// assert!(!Value::Null.is_str());
     /// ```
     #[inline]
     pub fn is_str(&self) -> bool {
@@ -322,7 +316,7 @@ impl Value {
     ///
     /// assert_eq!(Some(true), Value::Bool(true).as_bool());
     ///
-    /// assert_eq!(None, Value::Nil.as_bool());
+    /// assert_eq!(None, Value::Null.as_bool());
     /// ```
     #[inline]
     pub fn as_bool(&self) -> Option<bool> {
@@ -388,7 +382,7 @@ impl Value {
     ///
     /// assert_eq!(Some(2147483647.0), Value::from(i32::max_value() as i64).as_f64());
     ///
-    /// assert_eq!(None, Value::Nil.as_f64());
+    /// assert_eq!(None, Value::Null.as_f64());
     /// ```
     pub fn as_f64(&self) -> Option<f64> {
         match *self {
@@ -451,11 +445,11 @@ impl Value {
     /// ```
     /// use rbs::Value;
     ///
-    /// let val = Value::Array(vec![Value::Nil, Value::Bool(true)]);
+    /// let val = Value::Array(vec![Value::Null, Value::Bool(true)]);
     ///
-    /// assert_eq!(Some(&vec![Value::Nil, Value::Bool(true)]), val.as_array());
+    /// assert_eq!(Some(&vec![Value::Null, Value::Bool(true)]), val.as_array());
     ///
-    /// assert_eq!(None, Value::Nil.as_array());
+    /// assert_eq!(None, Value::Null.as_array());
     /// ```
     #[inline]
     pub fn as_array(&self) -> Option<&Vec<Value>> {
@@ -478,11 +472,11 @@ impl Value {
     /// ```
     /// use rbs::Value;
     ///
-    /// let val = Value::Map(vec![(Value::Nil, Value::Bool(true))]);
+    /// let val = Value::Map(vec![(Value::Null, Value::Bool(true))]);
     ///
-    /// assert_eq!(Some(&vec![(Value::Nil, Value::Bool(true))]), val.as_map());
+    /// assert_eq!(Some(&vec![(Value::Null, Value::Bool(true))]), val.as_map());
     ///
-    /// assert_eq!(None, Value::Nil.as_map());
+    /// assert_eq!(None, Value::Null.as_map());
     /// ```
     #[inline]
     pub fn as_map(&self) -> Option<&Vec<(Value, Value)>> {
@@ -515,8 +509,8 @@ impl Value {
     }
 }
 
-static NIL: Value = Value::Nil;
-static NIL_REF: ValueRef<'static> = ValueRef::Nil;
+static NIL: Value = Value::Null;
+static NIL_REF: ValueRef<'static> = ValueRef::Null;
 
 impl Index<usize> for Value {
     type Output = Value;
@@ -792,7 +786,7 @@ impl Display for Value {
     #[cold]
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> Result<(), fmt::Error> {
         match *self {
-            Value::Nil => f.write_str("nil"),
+            Value::Null => f.write_str("null"),
             Value::Bool(val) => Display::fmt(&val, f),
             Value::I32(ref val) => Display::fmt(&val, f),
             Value::I64(ref val) => Display::fmt(&val, f),
@@ -801,9 +795,9 @@ impl Display for Value {
             Value::F32(val) => Display::fmt(&val, f),
             Value::F64(val) => Display::fmt(&val, f),
             Value::String(ref val) => {
-                f.write_str("'")?;
+                f.write_str("\"")?;
                 Display::fmt(&self.as_str().unwrap_or_default(), f)?;
-                f.write_str("'")
+                f.write_str("\"")
             }
             Value::Binary(ref val) => Debug::fmt(val, f),
             Value::Array(ref vec) => {
@@ -842,7 +836,7 @@ impl Display for Value {
 #[derive(Clone, Debug, PartialEq)]
 pub enum ValueRef<'a> {
     /// Nil represents nil.
-    Nil,
+    Null,
     /// Bool represents true or false.
     Bool(bool),
     /// Integer represents an integer.
@@ -884,7 +878,7 @@ impl<'a> ValueRef<'a> {
     /// use rbs::{Value, ValueRef};
     ///
     /// let val = ValueRef::Array(vec![
-    ///    ValueRef::Nil,
+    ///    ValueRef::Null,
     ///    ValueRef::from(42),
     ///    ValueRef::Array(vec![
     ///        ValueRef::from("le message"),
@@ -892,7 +886,7 @@ impl<'a> ValueRef<'a> {
     /// ]);
     ///
     /// let expected = Value::Array(vec![
-    ///     Value::Nil,
+    ///     Value::Null,
     ///     Value::from(42),
     ///     Value::Array(vec![
     ///         Value::String("le message".into())
@@ -903,7 +897,7 @@ impl<'a> ValueRef<'a> {
     /// ```
     pub fn to_owned(&self) -> Value {
         match *self {
-            ValueRef::Nil => Value::Nil,
+            ValueRef::Null => Value::Null,
             ValueRef::Bool(val) => Value::Bool(val),
             ValueRef::I32(val) => Value::I32(val),
             ValueRef::I64(val) => Value::I64(val),
@@ -954,10 +948,10 @@ impl<'a> ValueRef<'a> {
     /// ```
     /// use rbs::ValueRef;
     ///
-    /// let val = ValueRef::Array(vec![ValueRef::Nil, ValueRef::Bool(true)]);
+    /// let val = ValueRef::Array(vec![ValueRef::Null, ValueRef::Bool(true)]);
     ///
-    /// assert_eq!(Some(&vec![ValueRef::Nil, ValueRef::Bool(true)]), val.as_array());
-    /// assert_eq!(None, ValueRef::Nil.as_array());
+    /// assert_eq!(Some(&vec![ValueRef::Null, ValueRef::Bool(true)]), val.as_array());
+    /// assert_eq!(None, ValueRef::Null.as_array());
     /// ```
     pub fn as_array(&self) -> Option<&Vec<ValueRef<'_>>> {
         if let ValueRef::Array(ref array) = *self {
@@ -990,7 +984,7 @@ impl<'a> ValueRef<'a> {
     /// same is nil
     #[inline]
     pub fn is_null(&self) -> bool {
-        if self.eq(&ValueRef::Nil) {
+        if self.eq(&ValueRef::Null) {
             true
         } else {
             false
@@ -1000,13 +994,13 @@ impl<'a> ValueRef<'a> {
 
 impl Default for Value {
     fn default() -> Self {
-        Value::Nil
+        Value::Null
     }
 }
 
 impl<'a> Default for ValueRef<'a> {
     fn default() -> Self {
-        ValueRef::Nil
+        ValueRef::Null
     }
 }
 
@@ -1185,7 +1179,7 @@ impl_try_from_ref!(f32, F32);
 impl<'a> Display for ValueRef<'a> {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> Result<(), fmt::Error> {
         match *self {
-            ValueRef::Nil => write!(f, "nil"),
+            ValueRef::Null => write!(f, "nil"),
             ValueRef::Bool(val) => Display::fmt(&val, f),
             ValueRef::I32(ref val) => Display::fmt(&val, f),
             ValueRef::I64(ref val) => Display::fmt(&val, f),

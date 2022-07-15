@@ -74,7 +74,7 @@ impl From<MySqlValue> for Value {
             ColumnType::Long => Value::I64(int_decode(v).unwrap_or_default()),
             ColumnType::Float => Value::F32(f32_decode(v).unwrap_or_default()),
             ColumnType::Double => Value::F64(f64_decode(v).unwrap_or_default()),
-            ColumnType::Null => Value::Nil,
+            ColumnType::Null => Value::Null,
             ColumnType::Timestamp => Value::Map(vec![(
                 Value::String("timestamp".to_string()),
                 Value::String(decode_timestamp(v).unwrap_or_default()),
