@@ -109,33 +109,27 @@ impl From<MySqlValueRef<'_>> for Value {
                 Value::String(decode_year(v).unwrap_or_default()),
             )]),
             ColumnType::VarChar => Value::String(v.as_str().unwrap_or_default().to_string()),
-            ColumnType::Bit => {
-                todo!()
-            }
-            ColumnType::Json => {
-                todo!()
-            }
-            ColumnType::NewDecimal => {
-                todo!()
-            }
-            ColumnType::Enum => {
-                todo!()
-            }
-            ColumnType::Set => {
-                todo!()
-            }
-            ColumnType::TinyBlob => {
-                todo!()
-            }
-            ColumnType::MediumBlob => {
-                todo!()
-            }
-            ColumnType::LongBlob => {
-                todo!()
-            }
-            ColumnType::Blob => {
-                todo!()
-            }
+            ColumnType::Bit => Value::U64(uint_decode(v).unwrap_or_default()),
+            ColumnType::Json => Value::Map(vec![(
+                Value::String("t_json".to_string()),
+                Value::String(v.as_str().unwrap_or_default().to_string()),
+            )]),
+            ColumnType::NewDecimal => Value::Map(vec![(
+                Value::String("t_decimal".to_string()),
+                Value::String(v.as_str().unwrap_or("0").to_string()),
+            )]),
+            ColumnType::Enum => Value::Map(vec![(
+                Value::String("t_enum".to_string()),
+                Value::String(v.as_str().unwrap_or("").to_string()),
+            )]),
+            ColumnType::Set => Value::Map(vec![(
+                Value::String("t_set".to_string()),
+                Value::String(v.as_str().unwrap_or("").to_string()),
+            )]),
+            ColumnType::TinyBlob => Value::Binary(v.as_bytes().unwrap_or_default().to_vec()),
+            ColumnType::MediumBlob => Value::Binary(v.as_bytes().unwrap_or_default().to_vec()),
+            ColumnType::LongBlob => Value::Binary(v.as_bytes().unwrap_or_default().to_vec()),
+            ColumnType::Blob => Value::Binary(v.as_bytes().unwrap_or_default().to_vec()),
             ColumnType::VarString => Value::String(v.as_str().unwrap_or_default().to_string()),
             ColumnType::String => Value::String(v.as_str().unwrap_or_default().to_string()),
             ColumnType::Geometry => {
@@ -148,14 +142,11 @@ impl From<MySqlValueRef<'_>> for Value {
 fn uint_decode(value: MySqlValueRef<'_>) -> Result<u64, Error> {
     if value.type_info.r#type == ColumnType::Bit {
         // NOTE: Regardless of the value format, there is raw binary data here
-
         let buf = value.as_bytes()?;
         let mut value: u64 = 0;
-
         for b in buf {
             value = (*b as u64) | (value << 8);
         }
-
         return Ok(value);
     }
 
@@ -240,11 +231,6 @@ fn decode_date(value: MySqlValueRef<'_>) -> Result<String, Error> {
             let buf = value.as_bytes()?;
             let len = buf[0];
             let date = decode_date_buf(&buf[1..])?;
-            // let dt = if len > 4 {
-            //     decode_time_buf(len - 4, &buf[5..])?
-            // } else {
-            //     "00:00:00".to_string()
-            // };
             date
         }
     })
