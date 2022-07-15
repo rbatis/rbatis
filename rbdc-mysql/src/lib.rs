@@ -13,4 +13,5 @@ mod protocol;
 mod query;
 pub mod query_result;
 mod row;
+mod types;
 mod value;
