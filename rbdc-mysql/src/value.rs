@@ -15,18 +15,34 @@ pub enum MySqlValueFormat {
 /// Implementation of [`Value`] for MySQL.
 #[derive(Clone)]
 pub struct MySqlValue {
-    value: Option<Bytes>,
-    type_info: MySqlTypeInfo,
-    format: MySqlValueFormat,
+    pub(crate) value: Option<Vec<u8>>,
+    pub(crate) type_info: MySqlTypeInfo,
+    pub(crate) format: MySqlValueFormat,
 }
 
 /// Implementation of [`ValueRef`] for MySQL.
 #[derive(Clone)]
 pub struct MySqlValueRef<'r> {
     pub(crate) value: Option<&'r [u8]>,
-    pub(crate) row: Option<&'r Bytes>,
     pub(crate) type_info: MySqlTypeInfo,
     pub(crate) format: MySqlValueFormat,
+}
+
+impl MySqlValue {
+    pub(crate) fn format(&self) -> MySqlValueFormat {
+        self.format
+    }
+
+    pub(crate) fn as_bytes(&self) -> Result<&[u8], Error> {
+        match &self.value {
+            Some(v) => Ok(v),
+            None => Err(Error::protocol("UnexpectedNull")),
+        }
+    }
+
+    pub(crate) fn as_str(&self) -> Result<&str, Error> {
+        Ok(from_utf8(self.as_bytes()?)?)
+    }
 }
 
 impl<'r> MySqlValueRef<'r> {
@@ -50,7 +66,6 @@ impl MySqlValue {
     fn as_ref(&self) -> MySqlValueRef<'_> {
         MySqlValueRef {
             value: self.value.as_deref(),
-            row: None,
             type_info: self.type_info.clone(),
             format: self.format,
         }
@@ -60,33 +75,6 @@ impl MySqlValue {
         Cow::Borrowed(&self.type_info)
     }
 
-    fn is_null(&self) -> bool {
-        is_null(self.value.as_deref(), &self.type_info)
-    }
-}
-
-impl<'r> MySqlValueRef<'r> {
-    fn to_owned(&self) -> MySqlValue {
-        let value = match (self.row, self.value) {
-            (Some(row), Some(value)) => Some(row.slice_ref(value)),
-
-            (None, Some(value)) => Some(Bytes::copy_from_slice(value)),
-
-            _ => None,
-        };
-
-        MySqlValue {
-            value,
-            format: self.format,
-            type_info: self.type_info.clone(),
-        }
-    }
-
-    fn type_info(&self) -> Cow<'_, MySqlTypeInfo> {
-        Cow::Borrowed(&self.type_info)
-    }
-
-    #[inline]
     fn is_null(&self) -> bool {
         is_null(self.value.as_deref(), &self.type_info)
     }

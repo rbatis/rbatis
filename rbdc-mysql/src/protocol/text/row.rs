@@ -30,7 +30,6 @@ impl<'de> Decode<'de, &'de [MySqlColumn]> for TextRow {
                 buf.advance(size);
             }
         }
-
-        Ok(TextRow(Row { values, storage }))
+        Ok(TextRow(Row::from((values, storage.to_vec()))))
     }
 }

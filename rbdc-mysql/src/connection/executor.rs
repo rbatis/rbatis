@@ -336,7 +336,7 @@ async fn recv_result_metadata(
     stream: &mut MySqlStream,
     num_columns: usize,
     columns: &mut Vec<MySqlColumn>,
-) -> Result<HashMap<UStr, usize>, Error> {
+) -> Result<HashMap<UStr, (usize, MySqlTypeInfo)>, Error> {
     // the result-set metadata is primarily a listing of each output
     // column in the result-set
 
@@ -350,7 +350,7 @@ async fn recv_result_metadata(
 
         let column = recv_next_result_column(&def, ordinal)?;
 
-        column_names.insert(column.name.clone(), ordinal);
+        column_names.insert(column.name.clone(), (ordinal, column.type_info.clone()));
         columns.push(column);
     }
 

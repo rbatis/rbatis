@@ -37,10 +37,10 @@ pub trait Connection {
 /// Result set from executing a query against a statement
 pub trait Row: 'static + Send + Debug {
     /// get meta data about this result set
-    fn meta_data(&self) -> &dyn MetaData;
+    fn meta_data(&self) -> Box<dyn MetaData>;
 
     /// get Value from index
-    fn get(&self, i: usize) -> Option<Value>;
+    fn get(&mut self, i: usize) -> Option<Value>;
 }
 
 /// Meta data for result set
