@@ -4,6 +4,7 @@ use rbdc::db::Row;
 use rbdc::ext::ustr::UStr;
 use rbdc::Error;
 use rbs::Value;
+use std::borrow::Cow;
 use std::collections::HashMap;
 use std::sync::Arc;
 
@@ -43,7 +44,26 @@ impl From<Vec<rbs::Value>> for MySqlArguments {
                 Value::Binary(_) => {}
                 Value::Array(_) => {}
                 Value::Map(ref m) => {
-                    let v = &x["type"];
+                    if m.len() == 1 {
+                        match m[0].0.as_str() {
+                            None => {}
+                            Some(s) => match s.as_ref() {
+                                "decimal" => {}
+                                "timestamp" => {}
+                                "date" => {}
+                                "time" => {}
+                                "datetime" => {}
+                                "year" => {}
+                                "json" => {}
+                                "new_decimal" => {}
+                                "enum" => {}
+                                "set" => {}
+                                "geometry" => {}
+                                _ => {}
+                            },
+                        }
+                    } else {
+                    }
                 }
                 Value::Ext(_, _) => {}
             }
