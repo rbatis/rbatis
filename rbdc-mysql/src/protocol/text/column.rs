@@ -163,58 +163,58 @@ impl Decode<'_, Capabilities> for ColumnDefinition {
 }
 
 impl ColumnType {
-    pub fn name(self, char_set: u16, flags: ColumnFlags, max_size: Option<u32>) -> &'static str {
-        let is_binary = char_set == 63;
-        let is_unsigned = flags.contains(ColumnFlags::UNSIGNED);
-        let is_enum = flags.contains(ColumnFlags::ENUM);
-
-        match self {
-            ColumnType::Tiny if max_size == Some(1) => "BOOLEAN",
-            ColumnType::Tiny if is_unsigned => "TINYINT UNSIGNED",
-            ColumnType::Short if is_unsigned => "SMALLINT UNSIGNED",
-            ColumnType::Long if is_unsigned => "INT UNSIGNED",
-            ColumnType::Int24 if is_unsigned => "MEDIUMINT UNSIGNED",
-            ColumnType::LongLong if is_unsigned => "BIGINT UNSIGNED",
-            ColumnType::Tiny => "TINYINT",
-            ColumnType::Short => "SMALLINT",
-            ColumnType::Long => "INT",
-            ColumnType::Int24 => "MEDIUMINT",
-            ColumnType::LongLong => "BIGINT",
-            ColumnType::Float => "FLOAT",
-            ColumnType::Double => "DOUBLE",
-            ColumnType::Null => "NULL",
-            ColumnType::Timestamp => "TIMESTAMP",
-            ColumnType::Date => "DATE",
-            ColumnType::Time => "TIME",
-            ColumnType::Datetime => "DATETIME",
-            ColumnType::Year => "YEAR",
-            ColumnType::Bit => "BIT",
-            ColumnType::Enum => "ENUM",
-            ColumnType::Set => "SET",
-            ColumnType::Decimal | ColumnType::NewDecimal => "DECIMAL",
-            ColumnType::Geometry => "GEOMETRY",
-            ColumnType::Json => "JSON",
-
-            ColumnType::String if is_binary => "BINARY",
-            ColumnType::String if is_enum => "ENUM",
-            ColumnType::VarChar | ColumnType::VarString if is_binary => "VARBINARY",
-
-            ColumnType::String => "CHAR",
-            ColumnType::VarChar | ColumnType::VarString => "VARCHAR",
-
-            ColumnType::TinyBlob if is_binary => "TINYBLOB",
-            ColumnType::TinyBlob => "TINYTEXT",
-
-            ColumnType::Blob if is_binary => "BLOB",
-            ColumnType::Blob => "TEXT",
-
-            ColumnType::MediumBlob if is_binary => "MEDIUMBLOB",
-            ColumnType::MediumBlob => "MEDIUMTEXT",
-
-            ColumnType::LongBlob if is_binary => "LONGBLOB",
-            ColumnType::LongBlob => "LONGTEXT",
-        }
-    }
+    // pub fn name(self, char_set: u16,  max_size: Option<u32>) -> &'static str {
+    //     let is_binary = char_set == 63;
+    //     let is_unsigned = flags.contains(ColumnFlags::UNSIGNED);
+    //     let is_enum = flags.contains(ColumnFlags::ENUM);
+    //
+    //     match self {
+    //         ColumnType::Tiny if max_size == Some(1) => "BOOLEAN",
+    //         ColumnType::Tiny if is_unsigned => "TINYINT UNSIGNED",
+    //         ColumnType::Short if is_unsigned => "SMALLINT UNSIGNED",
+    //         ColumnType::Long if is_unsigned => "INT UNSIGNED",
+    //         ColumnType::Int24 if is_unsigned => "MEDIUMINT UNSIGNED",
+    //         ColumnType::LongLong if is_unsigned => "BIGINT UNSIGNED",
+    //         ColumnType::Tiny => "TINYINT",
+    //         ColumnType::Short => "SMALLINT",
+    //         ColumnType::Long => "INT",
+    //         ColumnType::Int24 => "MEDIUMINT",
+    //         ColumnType::LongLong => "BIGINT",
+    //         ColumnType::Float => "FLOAT",
+    //         ColumnType::Double => "DOUBLE",
+    //         ColumnType::Null => "NULL",
+    //         ColumnType::Timestamp => "TIMESTAMP",
+    //         ColumnType::Date => "DATE",
+    //         ColumnType::Time => "TIME",
+    //         ColumnType::Datetime => "DATETIME",
+    //         ColumnType::Year => "YEAR",
+    //         ColumnType::Bit => "BIT",
+    //         ColumnType::Enum => "ENUM",
+    //         ColumnType::Set => "SET",
+    //         ColumnType::Decimal | ColumnType::NewDecimal => "DECIMAL",
+    //         ColumnType::Geometry => "GEOMETRY",
+    //         ColumnType::Json => "JSON",
+    //
+    //         ColumnType::String if is_binary => "BINARY",
+    //         ColumnType::String if is_enum => "ENUM",
+    //         ColumnType::VarChar | ColumnType::VarString if is_binary => "VARBINARY",
+    //
+    //         ColumnType::String => "CHAR",
+    //         ColumnType::VarChar | ColumnType::VarString => "VARCHAR",
+    //
+    //         ColumnType::TinyBlob if is_binary => "TINYBLOB",
+    //         ColumnType::TinyBlob => "TINYTEXT",
+    //
+    //         ColumnType::Blob if is_binary => "BLOB",
+    //         ColumnType::Blob => "TEXT",
+    //
+    //         ColumnType::MediumBlob if is_binary => "MEDIUMBLOB",
+    //         ColumnType::MediumBlob => "MEDIUMTEXT",
+    //
+    //         ColumnType::LongBlob if is_binary => "LONGBLOB",
+    //         ColumnType::LongBlob => "LONGTEXT",
+    //     }
+    // }
 
     pub fn try_from_u16(id: u8) -> Result<Self, Error> {
         Ok(match id {

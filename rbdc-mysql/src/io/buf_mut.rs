@@ -5,7 +5,7 @@ pub trait MySqlBufMutExt: BufMut {
 
     fn put_str_lenenc(&mut self, v: &str);
 
-    fn put_bytes_lenenc(&mut self, v: &[u8]);
+    fn put_bytes_lenenc(&mut self, v: Vec<u8>);
 }
 
 impl MySqlBufMutExt for Vec<u8> {
@@ -28,10 +28,10 @@ impl MySqlBufMutExt for Vec<u8> {
     }
 
     fn put_str_lenenc(&mut self, v: &str) {
-        self.put_bytes_lenenc(v.as_bytes());
+        self.put_bytes_lenenc(v.as_bytes().to_owned());
     }
 
-    fn put_bytes_lenenc(&mut self, v: &[u8]) {
+    fn put_bytes_lenenc(&mut self, v: Vec<u8>) {
         self.put_uint_lenenc(v.len() as u64);
         self.extend(v);
     }
@@ -120,7 +120,7 @@ fn test_encodes_string_lenenc() {
 #[test]
 fn test_encodes_byte_lenenc() {
     let mut buf = Vec::with_capacity(1024);
-    buf.put_bytes_lenenc(b"random_string");
+    buf.put_bytes_lenenc("random_string".to_string().into_bytes());
 
     assert_eq!(&buf[..], b"\x0Drandom_string");
 }

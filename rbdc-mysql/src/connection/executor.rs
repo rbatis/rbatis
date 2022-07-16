@@ -269,30 +269,30 @@ impl MySqlConnection {
         })
     }
 
-    #[doc(hidden)]
-    pub fn describe<'e, 'q: 'e>(mut self, sql: &'q str) -> BoxFuture<'e, Result<Describe, Error>> {
-        Box::pin(async move {
-            self.stream.wait_until_ready().await?;
-
-            let (_, metadata) = self.get_or_prepare(sql, false).await?;
-
-            let columns = (&*metadata.columns).clone();
-
-            let nullable = columns
-                .iter()
-                .map(|col| {
-                    col.flags
-                        .map(|flags| !flags.contains(ColumnFlags::NOT_NULL))
-                })
-                .collect();
-
-            Ok(Describe {
-                parameters: Some(Either::Right(metadata.parameters)),
-                columns,
-                nullable,
-            })
-        })
-    }
+    // #[doc(hidden)]
+    // pub fn describe<'e, 'q: 'e>(mut self, sql: &'q str) -> BoxFuture<'e, Result<Describe, Error>> {
+    //     Box::pin(async move {
+    //         self.stream.wait_until_ready().await?;
+    //
+    //         let (_, metadata) = self.get_or_prepare(sql, false).await?;
+    //
+    //         let columns = (&*metadata.columns).clone();
+    //
+    //         let nullable = columns
+    //             .iter()
+    //             // .map(|col| {
+    //             //     col.flags
+    //             //         .map(|flags| !flags.contains(ColumnFlags::NOT_NULL))
+    //             // })
+    //             .collect();
+    //
+    //         Ok(Describe {
+    //             parameters: Some(Either::Right(metadata.parameters)),
+    //             columns,
+    //             nullable,
+    //         })
+    //     })
+    // }
 }
 
 async fn recv_result_columns(
@@ -328,7 +328,7 @@ fn recv_next_result_column(def: &ColumnDefinition, ordinal: usize) -> Result<MyS
         name,
         type_info,
         ordinal,
-        flags: Some(def.flags),
+        // flags: Some(def.flags),
     })
 }
 

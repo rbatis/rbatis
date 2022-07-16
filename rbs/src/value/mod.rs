@@ -1222,3 +1222,23 @@ impl<'a> Display for ValueRef<'a> {
         }
     }
 }
+
+impl Value {
+    pub fn into_string(self) -> String {
+        return match self {
+            Value::Null => "null".to_string(),
+            Value::Bool(v) => v.to_string(),
+            Value::I32(v) => v.to_string(),
+            Value::I64(v) => v.to_string(),
+            Value::U32(v) => v.to_string(),
+            Value::U64(v) => v.to_string(),
+            Value::F32(v) => v.to_string(),
+            Value::F64(v) => v.to_string(),
+            Value::String(v) => return v,
+            Value::Binary(v) => String::from_utf8_lossy(&v).to_string(),
+            Value::Array(_) => format!("{}", self),
+            Value::Map(_) => format!("{}", self),
+            Value::Ext(_, _) => format!("{}", self),
+        };
+    }
+}
