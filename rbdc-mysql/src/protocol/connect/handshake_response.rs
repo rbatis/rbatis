@@ -44,7 +44,7 @@ impl Encode<'_, Capabilities> for HandshakeResponse<'_> {
         buf.put_str_nul(self.username);
 
         if capabilities.contains(Capabilities::PLUGIN_AUTH_LENENC_DATA) {
-            buf.put_bytes_lenenc(self.auth_response.unwrap_or_default());
+            buf.put_bytes_lenenc(self.auth_response.unwrap_or_default().to_owned());
         } else if capabilities.contains(Capabilities::SECURE_CONNECTION) {
             let response = self.auth_response.unwrap_or_default();
 

@@ -1,6 +1,7 @@
-use crate::protocol::text::ColumnFlags;
+use crate::protocol::text::{ColumnFlags, ColumnType};
 use crate::protocol::Capabilities;
 use crate::stmt::MySqlArguments;
+use bytes::BufMut;
 use rbdc::io::Encode;
 
 // https://dev.mysql.com/doc/dev/mysql-server/8.0.12/page_protocol_com_stmt_execute.html
@@ -25,11 +26,19 @@ impl<'q> Encode<'_, Capabilities> for Execute<'q> {
             for ty in &self.arguments.types {
                 buf.push(ty.r#type as u8);
 
-                buf.push(if ty.flags.contains(ColumnFlags::UNSIGNED) {
-                    0x80
-                } else {
-                    0
-                });
+                // buf.push(if ty.flags.contains(ColumnFlags::UNSIGNED) {
+                //     0x80
+                // } else {
+                //     0
+                // });
+
+                //ColumnType::Tiny if is_unsigned => "TINYINT UNSIGNED",
+                //         ColumnType::Short if is_unsigned => "SMALLINT UNSIGNED",
+                //         ColumnType::Long if is_unsigned => "INT UNSIGNED",
+                //         ColumnType::Int24 if is_unsigned => "MEDIUMINT UNSIGNED",
+                //         ColumnType::LongLong if is_unsigned => "BIGINT UNSIGNED",
+
+                buf.push(if false { 0x80 } else { 0 });
             }
 
             buf.extend(&*self.arguments.values);

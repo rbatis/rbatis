@@ -1,3 +1,5 @@
+use crate::io::MySqlBufMutExt;
+use crate::protocol::text::ColumnType;
 use crate::result_set::{MySqlColumn, MySqlTypeInfo};
 use futures_core::future::BoxFuture;
 use rbdc::db::Row;
@@ -28,46 +30,31 @@ pub struct MySqlArguments {
     pub null_bitmap: Vec<u8>,
 }
 
-impl From<Vec<rbs::Value>> for MySqlArguments {
-    fn from(arg: Vec<rbs::Value>) -> Self {
-        for x in arg {
-            match x {
-                Value::Null => {}
-                Value::Bool(_) => {}
-                Value::I32(_) => {}
-                Value::I64(_) => {}
-                Value::U32(_) => {}
-                Value::U64(_) => {}
-                Value::F32(_) => {}
-                Value::F64(_) => {}
-                Value::String(_) => {}
-                Value::Binary(_) => {}
-                Value::Array(_) => {}
-                Value::Map(ref m) => {
-                    if m.len() == 1 {
-                        match m[0].0.as_str() {
-                            None => {}
-                            Some(s) => match s.as_ref() {
-                                "decimal" => {}
-                                "timestamp" => {}
-                                "date" => {}
-                                "time" => {}
-                                "datetime" => {}
-                                "year" => {}
-                                "json" => {}
-                                "new_decimal" => {}
-                                "enum" => {}
-                                "set" => {}
-                                "geometry" => {}
-                                _ => {}
-                            },
-                        }
-                    } else {
-                    }
-                }
-                Value::Ext(_, _) => {}
-            }
+impl MySqlArguments {
+    pub fn add(&mut self, arg: Value) {
+        let index = self.types.len();
+        // let ty = arg.encode(&mut self.values);
+        let ty: MySqlTypeInfo = ((arg, &mut self.values)).into();
+        let is_null = ty.r#type.eq(&ColumnType::Null);
+        self.types.push(ty);
+        self.null_bitmap.resize((index / 8) + 1, 0);
+        if is_null {
+            self.null_bitmap[index / 8] |= (1 << (index % 8)) as u8;
         }
-        todo!()
+    }
+
+    #[doc(hidden)]
+    pub fn len(&self) -> usize {
+        self.types.len()
+    }
+}
+
+impl From<Vec<rbs::Value>> for MySqlArguments {
+    fn from(args: Vec<rbs::Value>) -> Self {
+        let mut arg = MySqlArguments::default();
+        for x in args {
+            arg.add(x);
+        }
+        arg
     }
 }

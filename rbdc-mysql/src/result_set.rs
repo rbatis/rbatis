@@ -8,35 +8,39 @@ pub struct MySqlColumn {
     pub ordinal: usize,
     pub name: UStr,
     pub type_info: MySqlTypeInfo,
-    #[serde(skip)]
-    pub flags: Option<ColumnFlags>,
+    // #[serde(skip)]
+    // pub flags: Option<ColumnFlags>,
 }
 
 /// Type information for a MySql type.
 #[derive(Debug, Clone, serde::Serialize, serde::Deserialize)]
 pub struct MySqlTypeInfo {
     pub r#type: ColumnType,
-    pub flags: ColumnFlags,
+    // pub flags: ColumnFlags,
     pub char_set: u16,
-
     // [max_size] for integer types, this is (M) in BIT(M) or TINYINT(M)
-    #[serde(default)]
-    pub max_size: Option<u32>,
+    // #[serde(default)]
+    // pub max_size: Option<u32>,
 }
 impl MySqlTypeInfo {
     fn is_null(&self) -> bool {
         matches!(self.r#type, ColumnType::Null)
     }
 
-    fn name(&self) -> &str {
-        self.r#type.name(self.char_set, self.flags, self.max_size)
-    }
     pub const fn binary(ty: ColumnType) -> Self {
         Self {
             r#type: ty,
-            flags: ColumnFlags::BINARY,
+            // flags: ColumnFlags::BINARY,
             char_set: 63,
-            max_size: None,
+        }
+    }
+
+    #[doc(hidden)]
+    pub const fn null() -> Self {
+        Self {
+            r#type: ColumnType::Null,
+            // flags: ColumnFlags::BINARY,
+            char_set: 63,
         }
     }
 
@@ -44,9 +48,8 @@ impl MySqlTypeInfo {
     pub const fn __enum() -> Self {
         Self {
             r#type: ColumnType::Enum,
-            flags: ColumnFlags::BINARY,
+            // flags: ColumnFlags::BINARY,
             char_set: 63,
-            max_size: None,
         }
     }
 
@@ -65,9 +68,16 @@ impl MySqlTypeInfo {
     pub(crate) fn from_column(column: &ColumnDefinition) -> Self {
         Self {
             r#type: column.r#type,
-            flags: column.flags,
+            // flags: column.flags,
             char_set: column.char_set,
-            max_size: Some(column.max_size),
+        }
+    }
+
+    pub(crate) fn from_type(ty: ColumnType) -> Self {
+        Self {
+            r#type: ty,
+            // flags: column.flags,
+            char_set: 63,
         }
     }
 }
