@@ -7,7 +7,7 @@
 
 use std::borrow::Cow;
 use std::convert::TryFrom;
-use std::fmt::{self, Debug, Display};
+use std::fmt::{self, Debug, Display, Write};
 use std::iter::FromIterator;
 use std::ops::Index;
 
@@ -802,8 +802,13 @@ impl Display for Value {
             Value::Binary(ref val) => Debug::fmt(val, f),
             Value::Array(ref vec) => {
                 f.write_str("[")?;
+                let mut i = 0;
                 for x in vec {
                     Display::fmt(&x, f)?;
+                    i += 1;
+                    if i != vec.len() {
+                        f.write_str(",");
+                    }
                 }
                 f.write_str("]")?;
                 Ok(())

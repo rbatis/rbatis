@@ -6,6 +6,7 @@ pub mod ext;
 pub mod io;
 pub mod net;
 pub mod rt;
+pub mod time;
 pub use error::*;
 
 #[cfg(test)]

@@ -1,4 +1,5 @@
 #![feature(test)]
+#![feature(bench_black_box)]
 extern crate test;
 
 use rbatis::wrapper::Wrapper;
@@ -95,5 +96,19 @@ fn bench_ser_zero(b: &mut Bencher) {
     let a = A { name: buf };
     b.iter(|| {
         let buf = rbs::to_value_ref(&a).unwrap();
+    });
+}
+
+#[bench]
+fn bench_parse_year(b: &mut Bencher) {
+    b.iter(|| {
+        std::hint::black_box(rbdc::time::parse_year("1234"));
+    });
+}
+
+#[bench]
+fn bench_parse_date(b: &mut Bencher) {
+    b.iter(|| {
+        std::hint::black_box(rbdc::time::parse_date("1993-02-06"));
     });
 }
