@@ -16,6 +16,19 @@ pub struct PoolConnection {
     pub pool: Arc<SharedPool>,
 }
 
+impl Deref for PoolConnection {
+    type Target = Live;
+
+    fn deref(&self) -> &Self::Target {
+        self.live.as_ref().unwrap()
+    }
+}
+impl DerefMut for PoolConnection {
+    fn deref_mut(&mut self) -> &mut Self::Target {
+        self.live.as_mut().unwrap()
+    }
+}
+
 pub struct Live {
     pub raw: Box<dyn Connection>,
     pub created: Instant,
@@ -43,6 +56,20 @@ impl Debug for Live {
         f.debug_struct("Live")
             .field("created", &self.created)
             .finish()
+    }
+}
+
+impl Deref for Live {
+    type Target = Box<dyn Connection>;
+
+    fn deref(&self) -> &Self::Target {
+        &self.raw
+    }
+}
+
+impl DerefMut for Live {
+    fn deref_mut(&mut self) -> &mut Self::Target {
+        &mut self.raw
     }
 }
 
