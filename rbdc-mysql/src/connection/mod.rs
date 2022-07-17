@@ -172,8 +172,9 @@ impl Connection for MySqlConnection {
         })
     }
 
-    fn close(mut self) -> BoxFuture<Result<(), Error>> {
-        self.close()
+    fn close(&mut self) -> BoxFuture<'static, Result<(), Error>> {
+        let c = self.close();
+        Box::pin(async move { c.await })
     }
 
     fn ping(&mut self) -> BoxFuture<'_, Result<(), Error>> {
