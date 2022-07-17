@@ -17,23 +17,23 @@ use std::future::Future;
 /// Will be returned to the pool on-drop.
 pub struct PoolConnection<DB: Database> {
     live: Option<Live<DB>>,
-    pub(crate) pool: Arc<SharedPool<DB>>,
+    pub pool: Arc<SharedPool<DB>>,
 }
 
-pub(super) struct Live<DB: Database> {
-    pub(super) raw: DB::Connection,
-    pub(super) created: Instant,
+pub struct Live<DB: Database> {
+    pub raw: DB::Connection,
+    pub created: Instant,
 }
 
-pub(super) struct Idle<DB: Database> {
-    pub(super) live: Live<DB>,
-    pub(super) since: Instant,
+pub struct Idle<DB: Database> {
+    pub live: Live<DB>,
+    pub since: Instant,
 }
 
 /// RAII wrapper for connections being handled by functions that may drop them
-pub(super) struct Floating<DB: Database, C> {
-    pub(super) inner: C,
-    pub(super) guard: DecrementSizeGuard<DB>,
+pub struct Floating<DB: Database, C> {
+    pub inner: C,
+    pub guard: DecrementSizeGuard<DB>,
 }
 
 const DEREF_ERR: &str = "(bug) connection already released to pool";
@@ -105,7 +105,7 @@ impl<DB: Database> PoolConnection<DB> {
     /// Test the connection to make sure it is still live before returning it to the pool.
     ///
     /// This effectively runs the drop handler eagerly instead of spawning a task to do it.
-    pub(crate) fn return_to_pool(&mut self) -> impl Future<Output = ()> + Send + 'static {
+    pub fn return_to_pool(&mut self) -> impl Future<Output = ()> + Send + 'static {
         // float the connection in the pool before we move into the task
         // in case the returned `Future` isn't executed, like if it's spawned into a dying runtime
         // https://github.com/launchbadge/sqlx/issues/1396

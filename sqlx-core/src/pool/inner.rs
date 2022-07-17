@@ -19,18 +19,18 @@ use std::time::{Duration, Instant};
 /// potentially overflowing the permits count in the semaphore itself.
 const WAKE_ALL_PERMITS: usize = usize::MAX / 2;
 
-pub(crate) struct SharedPool<DB: Database> {
-    pub(super) connect_options: <DB::Connection as Connection>::Options,
-    pub(super) idle_conns: ArrayQueue<Idle<DB>>,
-    pub(super) semaphore: Semaphore,
-    pub(super) size: AtomicU32,
+pub struct SharedPool<DB: Database> {
+    pub connect_options: <DB::Connection as Connection>::Options,
+    pub idle_conns: ArrayQueue<Idle<DB>>,
+    pub semaphore: Semaphore,
+    pub size: AtomicU32,
     is_closed: AtomicBool,
-    pub(super) on_closed: event_listener::Event,
-    pub(super) options: PoolOptions<DB>,
+    pub on_closed: event_listener::Event,
+    pub options: PoolOptions<DB>,
 }
 
 impl<DB: Database> SharedPool<DB> {
-    pub(super) fn new_arc(
+    pub fn new_arc(
         options: PoolOptions<DB>,
         connect_options: <DB::Connection as Connection>::Options,
     ) -> Arc<Self> {
@@ -59,20 +59,20 @@ impl<DB: Database> SharedPool<DB> {
         pool
     }
 
-    pub(super) fn size(&self) -> u32 {
+    pub fn size(&self) -> u32 {
         self.size.load(Ordering::Acquire)
     }
 
-    pub(super) fn num_idle(&self) -> usize {
+    pub fn num_idle(&self) -> usize {
         // NOTE: This is very expensive
         self.idle_conns.len()
     }
 
-    pub(super) fn is_closed(&self) -> bool {
+    pub fn is_closed(&self) -> bool {
         self.is_closed.load(Ordering::Acquire)
     }
 
-    pub(super) async fn close(self: &Arc<Self>) {
+    pub async fn close(self: &Arc<Self>) {
         let already_closed = self.is_closed.swap(true, Ordering::AcqRel);
 
         if !already_closed {
@@ -95,7 +95,7 @@ impl<DB: Database> SharedPool<DB> {
     }
 
     #[inline]
-    pub(super) fn try_acquire(self: &Arc<Self>) -> Option<Floating<DB, Idle<DB>>> {
+    pub fn try_acquire(self: &Arc<Self>) -> Option<Floating<DB, Idle<DB>>> {
         if self.is_closed() {
             return None;
         }
@@ -115,7 +115,7 @@ impl<DB: Database> SharedPool<DB> {
         }
     }
 
-    pub(super) fn release(&self, mut floating: Floating<DB, Live<DB>>) {
+    pub fn release(&self, mut floating: Floating<DB, Live<DB>>) {
         if let Some(test) = &self.options.after_release {
             if !test(&mut floating.raw) {
                 // drop the connection and do not return it to the pool
@@ -137,7 +137,7 @@ impl<DB: Database> SharedPool<DB> {
     /// Try to atomically increment the pool size for a new connection.
     ///
     /// Returns `None` if we are at max_connections or if the pool is closed.
-    pub(super) fn try_increment_size<'a>(
+    pub fn try_increment_size<'a>(
         self: &'a Arc<Self>,
         permit: SemaphoreReleaser<'a>,
     ) -> Result<DecrementSizeGuard<DB>, SemaphoreReleaser<'a>> {
@@ -155,7 +155,7 @@ impl<DB: Database> SharedPool<DB> {
     }
 
     #[allow(clippy::needless_lifetimes)]
-    pub(super) async fn acquire(self: &Arc<Self>) -> Result<Floating<DB, Live<DB>>, Error> {
+    pub async fn acquire(self: &Arc<Self>) -> Result<Floating<DB, Live<DB>>, Error> {
         if self.is_closed() {
             return Err(Error::PoolClosed);
         }
@@ -203,7 +203,7 @@ impl<DB: Database> SharedPool<DB> {
             .map_err(|_| Error::PoolTimedOut)?
     }
 
-    pub(super) async fn connection(
+    pub async fn connection(
         self: &Arc<Self>,
         deadline: Instant,
         guard: DecrementSizeGuard<DB>,
@@ -361,7 +361,7 @@ async fn do_reap<DB: Database>(pool: &Arc<SharedPool<DB>>) {
 /// Will decrement the pool size if dropped, to avoid semantically "leaking" connections
 /// (where the pool thinks it has more connections than it does).
 pub(in crate::pool) struct DecrementSizeGuard<DB: Database> {
-    pub(crate) pool: Arc<SharedPool<DB>>,
+    pub pool: Arc<SharedPool<DB>>,
     dropped: bool,
 }
 
