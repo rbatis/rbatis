@@ -1,3 +1,6 @@
+pub mod options;
+pub use options::*;
+
 use crate::db::{ConnectOptions, Connection};
 use crate::Error;
 use crossbeam_queue::ArrayQueue;
@@ -15,6 +18,21 @@ use std::{cmp, mem, ptr};
 /// potentially overflowing the permits count in the semaphore itself.
 const WAKE_ALL_PERMITS: usize = usize::MAX / 2;
 
+pub struct Pool {
+    inner: Arc<SharedPool>,
+}
+
+impl From<SharedPool> for Pool {
+    fn from(p: SharedPool) -> Self {
+        Self { inner: Arc::new(p) }
+    }
+}
+impl From<Arc<SharedPool>> for Pool {
+    fn from(p: Arc<SharedPool>) -> Self {
+        Self { inner: p }
+    }
+}
+
 pub struct SharedPool {
     pub connect_options: Box<dyn ConnectOptions>,
     pub idle_conns: ArrayQueue<Idle>,
@@ -23,34 +41,6 @@ pub struct SharedPool {
     is_closed: AtomicBool,
     pub on_closed: event_listener::Event,
     pub options: PoolOptions,
-}
-
-pub struct PoolOptions {
-    pub test_before_acquire: bool,
-    pub after_connect: Option<
-        Box<
-            dyn Fn(&mut Box<dyn Connection>) -> BoxFuture<'_, Result<(), Error>>
-                + 'static
-                + Send
-                + Sync,
-        >,
-    >,
-    pub before_acquire: Option<
-        Box<
-            dyn Fn(&mut Box<dyn Connection>) -> BoxFuture<'_, Result<bool, Error>>
-                + 'static
-                + Send
-                + Sync,
-        >,
-    >,
-    pub after_release:
-        Option<Box<dyn Fn(&mut Box<dyn Connection>) -> bool + 'static + Send + Sync>>,
-    pub max_connections: u32,
-    pub connect_timeout: Duration,
-    pub min_connections: u32,
-    pub max_lifetime: Option<Duration>,
-    pub idle_timeout: Option<Duration>,
-    pub fair: bool,
 }
 
 /// A connection managed by a [`Pool`][crate::pool::Pool].
@@ -589,6 +579,7 @@ impl Drop for DecrementSizeGuard {
 
 #[cfg(test)]
 mod test {
+    use crate::pool::Pool;
 
     #[test]
     fn test_pool() {}

@@ -12,20 +12,14 @@ impl Driver for MysqlDriver {
     fn connect(&self, url: &str) -> BoxFuture<Result<Box<dyn Connection>, Error>> {
         let url = url.to_owned();
         Box::pin(async move {
-            let conn = MySqlConnection::establish(&MySqlConnectOptions::from_str(&url)?).await?;
+            let conn = MySqlConnection::establish(&self.make_option(&url)?).await?;
             Ok(Box::new(conn) as Box<dyn Connection>)
         })
     }
 
-    // fn connect_opt(
-    //     &self,
-    //     opt: &dyn ConnectOptions,
-    // ) -> BoxFuture<Result<Box<dyn Connection>, Error>> {
-    //     Box::pin(async move {
-    //         let conn = MySqlConnection::establish(opt).await?;
-    //         Ok(Box::new(conn) as Box<dyn Connection>)
-    //     })
-    // }
+    fn make_option(&self, url: &str) -> Result<Box<dyn ConnectOptions>, Error> {
+        Ok(Box::new(MySqlConnectOptions::from_str(&url)?))
+    }
 }
 
 #[cfg(test)]
