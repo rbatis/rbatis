@@ -40,6 +40,8 @@ mod test {
             )
             .await
             .unwrap();
+        std::thread::sleep(std::time::Duration::from_secs(2));
+        println!("{:?}", pool)
     }
 
     #[tokio::test]
