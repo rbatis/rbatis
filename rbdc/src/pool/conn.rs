@@ -3,6 +3,7 @@ use crate::pool::{DecrementSizeGuard, SharedPool};
 use crate::Error;
 use futures_core::future::BoxFuture;
 use futures_intrusive::sync::SemaphoreReleaser;
+use std::fmt::{Debug, Formatter};
 use std::ops::{Deref, DerefMut};
 use std::sync::Arc;
 use std::time::Instant;
@@ -37,6 +38,15 @@ impl Live {
     }
 }
 
+impl Debug for Live {
+    fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
+        f.debug_struct("Live")
+            .field("created", &self.created)
+            .finish()
+    }
+}
+
+#[derive(Debug)]
 pub struct Idle {
     pub live: Live,
     pub since: Instant,

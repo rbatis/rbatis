@@ -7,6 +7,7 @@ use crate::db::ConnectOptions;
 use crate::Error;
 use crossbeam_queue::ArrayQueue;
 use futures_intrusive::sync::{Semaphore, SemaphoreReleaser};
+use std::fmt::{Debug, Formatter};
 use std::sync::atomic::{AtomicBool, AtomicU32, Ordering};
 use std::sync::Arc;
 use std::time::{Duration, Instant};
@@ -18,6 +19,7 @@ use std::{cmp, mem, ptr};
 /// potentially overflowing the permits count in the semaphore itself.
 const WAKE_ALL_PERMITS: usize = usize::MAX / 2;
 
+#[derive(Clone, Debug)]
 pub struct Pool {
     inner: Arc<SharedPool>,
 }
@@ -363,6 +365,18 @@ async fn do_reap(pool: &Arc<SharedPool>) {
 
     for mut conn in reap {
         let _ = conn.close().await;
+    }
+}
+
+impl Debug for SharedPool {
+    fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
+        f.debug_struct("SharedPool")
+            .field("connect_options", &self.connect_options)
+            .field("idle_conns", &self.idle_conns.len())
+            .field("size", &self.size())
+            .field("is_closed", &self.is_closed())
+            .field("options", &self.options)
+            .finish()
     }
 }
 
