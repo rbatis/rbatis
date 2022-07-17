@@ -94,7 +94,7 @@ impl Floating<Live> {
         }
     }
 
-    pub fn close(&mut self) -> BoxFuture<'static, Result<(), Error>> {
+    pub fn close(&mut self) -> BoxFuture<Result<(), Error>> {
         // `guard` is dropped as intended
         let raw = self.inner.raw.close();
         Box::pin(async move { raw.await })
@@ -131,7 +131,7 @@ impl Floating<Idle> {
         }
     }
 
-    pub fn close<'a>(&mut self) -> BoxFuture<'static, DecrementSizeGuard> {
+    pub fn close(&mut self) -> BoxFuture<DecrementSizeGuard> {
         let c = self.inner.live.raw.close();
         let g = self.guard.take().expect("when close() on guard is none");
         Box::pin(async move {

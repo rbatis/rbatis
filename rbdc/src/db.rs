@@ -55,10 +55,10 @@ pub trait Connection: Send {
     fn exec(&mut self, sql: &str, params: Vec<Value>) -> BoxFuture<Result<u64, Error>>;
 
     /// close connection
-    fn close(&mut self) -> BoxFuture<'static, Result<(), Error>>;
+    fn close(&mut self) -> BoxFuture<Result<(), Error>>;
 
     /// ping
-    fn ping(&mut self) -> BoxFuture<'_, Result<(), Error>>;
+    fn ping(&mut self) -> BoxFuture<Result<(), Error>>;
 }
 
 /// Result set from executing a query against a statement
