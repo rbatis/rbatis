@@ -5,15 +5,12 @@ use crate::database::Database;
 use crate::error::Error;
 use crate::pool::{deadline_as_timeout, PoolOptions};
 use crossbeam_queue::ArrayQueue;
-
 use futures_intrusive::sync::{Semaphore, SemaphoreReleaser};
-
 use std::cmp;
 use std::mem;
 use std::ptr;
 use std::sync::atomic::{AtomicBool, AtomicU32, Ordering};
 use std::sync::Arc;
-
 use std::time::{Duration, Instant};
 
 /// Ihe number of permits to release to wake all waiters, such as on `SharedPool::close()`.

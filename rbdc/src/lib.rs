@@ -5,6 +5,7 @@ pub mod error;
 pub mod ext;
 pub mod io;
 pub mod net;
+pub mod pool;
 pub mod rt;
 pub mod time;
 pub use error::*;
