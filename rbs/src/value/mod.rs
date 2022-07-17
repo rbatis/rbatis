@@ -7,7 +7,7 @@
 
 use std::borrow::Cow;
 use std::convert::TryFrom;
-use std::fmt::{self, Debug, Display, Write};
+use std::fmt::{self, Debug, Display};
 use std::iter::FromIterator;
 use std::ops::Index;
 
@@ -807,7 +807,7 @@ impl Display for Value {
                     Display::fmt(&x, f)?;
                     i += 1;
                     if i != vec.len() {
-                        f.write_str(",");
+                        f.write_str(",")?;
                     }
                 }
                 f.write_str("]")?;

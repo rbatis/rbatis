@@ -1,12 +1,7 @@
 use crate::Error;
-use std::alloc;
-
 use futures_core::future::BoxFuture;
 use rbs::Value;
 use std::fmt::Debug;
-use std::future::Future;
-use std::pin::Pin;
-use std::str::FromStr;
 
 /// Represents database driver that can be shared between threads, and can therefore implement
 /// a connection pool

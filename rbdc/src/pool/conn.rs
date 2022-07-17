@@ -11,7 +11,7 @@ use std::time::Instant;
 ///
 /// Will be returned to the pool on-drop.
 pub struct PoolConnection {
-    pub(crate) live: Option<Live>,
+    pub live: Option<Live>,
     pub pool: Arc<SharedPool>,
 }
 
@@ -76,7 +76,7 @@ impl Floating<Live> {
     pub fn attach(self, pool: &Arc<SharedPool>) -> PoolConnection {
         let Floating { inner, mut guard } = self;
 
-        let mut guard = guard.take().expect("guard is none");
+        let guard = guard.take().expect("guard is none");
         debug_assert!(
             guard.same_pool(pool),
             "BUG: attaching connection to different pool"
