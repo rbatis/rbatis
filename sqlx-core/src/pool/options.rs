@@ -11,13 +11,13 @@ use std::sync::Arc;
 use std::time::{Duration, Instant};
 
 pub struct PoolOptions<DB: Database> {
-    pub(crate) test_before_acquire: bool,
-    pub(crate) after_connect: Option<
+    pub test_before_acquire: bool,
+    pub after_connect: Option<
         Box<
             dyn Fn(&mut DB::Connection) -> BoxFuture<'_, Result<(), Error>> + 'static + Send + Sync,
         >,
     >,
-    pub(crate) before_acquire: Option<
+    pub before_acquire: Option<
         Box<
             dyn Fn(&mut DB::Connection) -> BoxFuture<'_, Result<bool, Error>>
                 + 'static
@@ -25,14 +25,13 @@ pub struct PoolOptions<DB: Database> {
                 + Sync,
         >,
     >,
-    pub(crate) after_release:
-        Option<Box<dyn Fn(&mut DB::Connection) -> bool + 'static + Send + Sync>>,
-    pub(crate) max_connections: u32,
-    pub(crate) connect_timeout: Duration,
-    pub(crate) min_connections: u32,
-    pub(crate) max_lifetime: Option<Duration>,
-    pub(crate) idle_timeout: Option<Duration>,
-    pub(crate) fair: bool,
+    pub after_release: Option<Box<dyn Fn(&mut DB::Connection) -> bool + 'static + Send + Sync>>,
+    pub max_connections: u32,
+    pub connect_timeout: Duration,
+    pub min_connections: u32,
+    pub max_lifetime: Option<Duration>,
+    pub idle_timeout: Option<Duration>,
+    pub fair: bool,
 }
 
 impl<DB: Database> Default for PoolOptions<DB> {

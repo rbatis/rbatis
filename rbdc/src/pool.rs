@@ -15,19 +15,19 @@ use std::{cmp, mem, ptr};
 /// potentially overflowing the permits count in the semaphore itself.
 const WAKE_ALL_PERMITS: usize = usize::MAX / 2;
 
-pub(crate) struct SharedPool {
-    pub(super) connect_options: Box<dyn ConnectOptions>,
-    pub(super) idle_conns: ArrayQueue<Idle>,
-    pub(super) semaphore: Semaphore,
-    pub(super) size: AtomicU32,
+pub struct SharedPool {
+    pub connect_options: Box<dyn ConnectOptions>,
+    pub idle_conns: ArrayQueue<Idle>,
+    pub semaphore: Semaphore,
+    pub size: AtomicU32,
     is_closed: AtomicBool,
-    pub(super) on_closed: event_listener::Event,
-    pub(super) options: PoolOptions,
+    pub on_closed: event_listener::Event,
+    pub options: PoolOptions,
 }
 
 pub struct PoolOptions {
-    pub(crate) test_before_acquire: bool,
-    pub(crate) after_connect: Option<
+    pub test_before_acquire: bool,
+    pub after_connect: Option<
         Box<
             dyn Fn(&mut Box<dyn Connection>) -> BoxFuture<'_, Result<(), Error>>
                 + 'static
@@ -35,7 +35,7 @@ pub struct PoolOptions {
                 + Sync,
         >,
     >,
-    pub(crate) before_acquire: Option<
+    pub before_acquire: Option<
         Box<
             dyn Fn(&mut Box<dyn Connection>) -> BoxFuture<'_, Result<bool, Error>>
                 + 'static
@@ -43,14 +43,14 @@ pub struct PoolOptions {
                 + Sync,
         >,
     >,
-    pub(crate) after_release:
+    pub after_release:
         Option<Box<dyn Fn(&mut Box<dyn Connection>) -> bool + 'static + Send + Sync>>,
-    pub(crate) max_connections: u32,
-    pub(crate) connect_timeout: Duration,
-    pub(crate) min_connections: u32,
-    pub(crate) max_lifetime: Option<Duration>,
-    pub(crate) idle_timeout: Option<Duration>,
-    pub(crate) fair: bool,
+    pub max_connections: u32,
+    pub connect_timeout: Duration,
+    pub min_connections: u32,
+    pub max_lifetime: Option<Duration>,
+    pub idle_timeout: Option<Duration>,
+    pub fair: bool,
 }
 
 /// A connection managed by a [`Pool`][crate::pool::Pool].
@@ -58,12 +58,12 @@ pub struct PoolOptions {
 /// Will be returned to the pool on-drop.
 pub struct PoolConnection {
     live: Option<Live>,
-    pub(crate) pool: Arc<SharedPool>,
+    pub pool: Arc<SharedPool>,
 }
 
-pub(super) struct Live {
-    pub(super) raw: Box<dyn Connection>,
-    pub(super) created: Instant,
+pub struct Live {
+    pub raw: Box<dyn Connection>,
+    pub created: Instant,
 }
 
 impl Live {
@@ -71,7 +71,7 @@ impl Live {
         Floating {
             inner: self,
             // create a new guard from a previously leaked permit
-            guard: DecrementSizeGuard::new_permit(pool),
+            guard: Some(DecrementSizeGuard::new_permit(pool)),
         }
     }
 
@@ -83,9 +83,9 @@ impl Live {
     }
 }
 
-pub(super) struct Idle {
-    pub(super) live: Live,
-    pub(super) since: Instant,
+pub struct Idle {
+    pub live: Live,
+    pub since: Instant,
 }
 
 impl Deref for Idle {
@@ -103,9 +103,9 @@ impl DerefMut for Idle {
 }
 
 /// RAII wrapper for connections being handled by functions that may drop them
-pub(super) struct Floating<C> {
-    pub(super) inner: C,
-    pub(super) guard: DecrementSizeGuard,
+pub struct Floating<C> {
+    pub inner: C,
+    pub guard: Option<DecrementSizeGuard>,
 }
 
 impl Floating<Live> {
@@ -115,18 +115,18 @@ impl Floating<Live> {
                 raw: conn,
                 created: Instant::now(),
             },
-            guard,
+            guard: Some(guard),
         }
     }
 
     pub fn attach(self, pool: &Arc<SharedPool>) -> PoolConnection {
-        let Floating { inner, guard } = self;
+        let Floating { inner, mut guard } = self;
 
+        let mut guard = guard.take().expect("guard is none");
         debug_assert!(
             guard.same_pool(pool),
             "BUG: attaching connection to different pool"
         );
-
         guard.cancel();
         PoolConnection {
             live: Some(inner),
@@ -135,7 +135,9 @@ impl Floating<Live> {
     }
 
     pub fn release(self) {
-        self.guard.pool.clone().release(self);
+        if let Some(g) = &self.guard {
+            g.pool.clone().release(self);
+        }
     }
 
     pub fn close(&mut self) -> BoxFuture<'static, Result<(), Error>> {
@@ -160,7 +162,7 @@ impl Floating<Idle> {
     pub fn from_idle(idle: Idle, pool: Arc<SharedPool>, permit: SemaphoreReleaser<'_>) -> Self {
         Self {
             inner: idle,
-            guard: DecrementSizeGuard::from_permit(pool, permit),
+            guard: Some(DecrementSizeGuard::from_permit(pool, permit)),
         }
     }
 
@@ -175,14 +177,15 @@ impl Floating<Idle> {
         }
     }
 
-    pub fn close(&mut self) -> BoxFuture<'static, DecrementSizeGuard> {
+    pub fn close<'a>(&mut self) -> BoxFuture<'static, DecrementSizeGuard> {
         let c = self.inner.live.raw.close();
+        let g = self.guard.take().expect("when close() on guard is none");
         Box::pin(async move {
             // `guard` is dropped as intended
             if let Err(e) = c.await {
                 log::debug!("error occurred while closing the pool connection: {}", e);
             }
-            self.guard
+            g
         })
     }
 }
@@ -202,10 +205,7 @@ impl<C> DerefMut for Floating<C> {
 }
 
 impl SharedPool {
-    pub(super) fn new_arc(
-        options: PoolOptions,
-        connect_options: Box<dyn ConnectOptions>,
-    ) -> Arc<Self> {
+    pub fn new_arc(options: PoolOptions, connect_options: Box<dyn ConnectOptions>) -> Arc<Self> {
         let capacity = options.max_connections as usize;
 
         // ensure the permit count won't overflow if we release `WAKE_ALL_PERMITS`
@@ -230,20 +230,20 @@ impl SharedPool {
 
         pool
     }
-    pub(super) fn size(&self) -> u32 {
+    pub fn size(&self) -> u32 {
         self.size.load(Ordering::Acquire)
     }
 
-    pub(super) fn num_idle(&self) -> usize {
+    pub fn num_idle(&self) -> usize {
         // NOTE: This is very expensive
         self.idle_conns.len()
     }
 
-    pub(super) fn is_closed(&self) -> bool {
+    pub fn is_closed(&self) -> bool {
         self.is_closed.load(Ordering::Acquire)
     }
 
-    pub(super) async fn close(self: &Arc<Self>) {
+    pub async fn close(self: &Arc<Self>) {
         let already_closed = self.is_closed.swap(true, Ordering::AcqRel);
 
         if !already_closed {
@@ -266,7 +266,7 @@ impl SharedPool {
     }
 
     #[inline]
-    pub(super) fn try_acquire(self: &Arc<Self>) -> Option<Floating<Idle>> {
+    pub fn try_acquire(self: &Arc<Self>) -> Option<Floating<Idle>> {
         if self.is_closed() {
             return None;
         }
@@ -286,7 +286,7 @@ impl SharedPool {
         }
     }
 
-    pub(super) fn release(&self, mut floating: Floating<Live>) {
+    pub fn release(&self, mut floating: Floating<Live>) {
         if let Some(test) = &self.options.after_release {
             if !test(&mut floating.raw) {
                 // drop the connection and do not return it to the pool
@@ -302,13 +302,13 @@ impl SharedPool {
 
         // NOTE: we need to make sure we drop the permit *after* we push to the idle queue
         // don't decrease the size
-        guard.release_permit();
+        guard.expect("REASON").release_permit();
     }
 
     /// Try to atomically increment the pool size for a new connection.
     ///
     /// Returns `None` if we are at max_connections or if the pool is closed.
-    pub(super) fn try_increment_size<'a>(
+    pub fn try_increment_size<'a>(
         self: &'a Arc<Self>,
         permit: SemaphoreReleaser<'a>,
     ) -> Result<DecrementSizeGuard, SemaphoreReleaser<'a>> {
@@ -326,7 +326,7 @@ impl SharedPool {
     }
 
     #[allow(clippy::needless_lifetimes)]
-    pub(super) async fn acquire(self: &Arc<Self>) -> Result<Floating<Live>, Error> {
+    pub async fn acquire(self: &Arc<Self>) -> Result<Floating<Live>, Error> {
         if self.is_closed() {
             return Err(Error::from("PoolClosed"));
         }
@@ -374,7 +374,7 @@ impl SharedPool {
             .map_err(|_| Error::from("PoolTimedOut"))?
     }
 
-    pub(super) async fn connection(
+    pub async fn connection(
         self: &Arc<Self>,
         deadline: Instant,
         guard: DecrementSizeGuard,
@@ -531,8 +531,8 @@ async fn do_reap(pool: &Arc<SharedPool>) {
 ///
 /// Will decrement the pool size if dropped, to avoid semantically "leaking" connections
 /// (where the pool thinks it has more connections than it does).
-pub(in crate::pool) struct DecrementSizeGuard {
-    pub(crate) pool: Arc<SharedPool>,
+pub struct DecrementSizeGuard {
+    pub pool: Arc<SharedPool>,
     dropped: bool,
 }
 

@@ -90,7 +90,7 @@ mod inner;
 mod options;
 
 pub use self::connection::PoolConnection;
-pub(crate) use self::maybe::MaybePoolConnection;
+pub use self::maybe::MaybePoolConnection;
 pub use self::options::PoolOptions;
 
 /// An asynchronous pool of SQLx database connections.
@@ -240,7 +240,7 @@ pub use self::options::PoolOptions;
 ///
 /// Depending on the database server, a connection will have caches for all kinds of other data as
 /// well and queries will generally benefit from these caches being "warm" (populated with data).
-pub struct Pool<DB: Database>(pub(crate) Arc<SharedPool<DB>>);
+pub struct Pool<DB: Database>(pub Arc<SharedPool<DB>>);
 
 /// A future that resolves when the pool is closed.
 ///
