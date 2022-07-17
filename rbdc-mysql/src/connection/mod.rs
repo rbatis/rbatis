@@ -173,7 +173,7 @@ impl Connection for MySqlConnection {
     }
 
     fn close(mut self) -> BoxFuture<Result<(), Error>> {
-        self.close().await
+        self.close()
     }
 
     fn ping(&mut self) -> BoxFuture<'_, Result<(), Error>> {

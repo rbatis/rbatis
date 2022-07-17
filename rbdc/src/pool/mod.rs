@@ -3,12 +3,10 @@ pub use options::*;
 pub mod conn;
 pub use conn::*;
 
-use crate::db::{ConnectOptions, Connection};
+use crate::db::ConnectOptions;
 use crate::Error;
 use crossbeam_queue::ArrayQueue;
-use futures_core::future::BoxFuture;
 use futures_intrusive::sync::{Semaphore, SemaphoreReleaser};
-use std::ops::{Deref, DerefMut};
 use std::sync::atomic::{AtomicBool, AtomicU32, Ordering};
 use std::sync::Arc;
 use std::time::{Duration, Instant};

@@ -41,15 +41,14 @@ pub fn parse_time(arg: &str) -> Time {
     }
     let hour: u8 = arg[0..2].parse().unwrap_or_default();
     let min: u8 = arg[4..5].parse().unwrap_or_default();
-    let mut sec: u8 = 0;
-    let mut ms: u32 = 0;
-    if arg.len() > 9 {
-        sec = arg[6..8].parse().unwrap_or_default();
-        ms = arg[9..arg.len()].parse().unwrap_or_default();
-    } else {
-        sec = arg[6..8].parse().unwrap_or_default();
-        ms = 0;
-    }
+    let sec: u8 = arg[6..8].parse().unwrap_or_default();
+    let ms: u32 = {
+        if arg.len() > 9 {
+            arg[9..arg.len()].parse().unwrap_or_default()
+        } else {
+            0
+        }
+    };
     return Time { hour, min, sec, ms };
 }
 

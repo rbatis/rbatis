@@ -63,14 +63,6 @@
 
 #[macro_use]
 extern crate serde;
-
-use std::fmt::{self, Display, Formatter};
-use std::mem;
-use std::str::{self, Utf8Error};
-
-use serde::de;
-use serde::{Deserialize, Serialize};
-
 #[allow(deprecated)]
 pub use crate::decode::from_read_ref;
 pub use crate::decode::{from_read, Deserializer};
