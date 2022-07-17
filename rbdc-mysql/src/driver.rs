@@ -41,7 +41,15 @@ mod test {
             .await
             .unwrap();
         std::thread::sleep(std::time::Duration::from_secs(2));
-        println!("{:?}", pool)
+        println!("{:?}", pool);
+        let mut conn = pool.acquire().await.unwrap();
+        let data = conn
+            .get_values("select * from biz_activity", vec![])
+            .await
+            .unwrap();
+        for mut x in data {
+            println!("row: {}", x);
+        }
     }
 
     #[tokio::test]
