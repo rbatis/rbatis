@@ -302,7 +302,7 @@ impl SharedPool {
 
         // NOTE: we need to make sure we drop the permit *after* we push to the idle queue
         // don't decrease the size
-        guard.expect("REASON").release_permit();
+        guard.expect("release() guard is none!").release_permit();
     }
 
     /// Try to atomically increment the pool size for a new connection.
