@@ -39,7 +39,7 @@ lazy_static = "1.4"
 ipnetwork = { version = "0.17", features = ["serde"] }
 sqlx-core = { version = "0.5", features = ["offline","chrono", "bigdecimal", "decimal","json", "uuid", "bit-vec"], optional = true }
 uuid = { version = "0.8", features = ["serde", "v4"] }
-time = { version = "0.2.16", features = ["serde"] }
+time = { version = "0.3.11", features = ["serde"] }
 #only pg
 bit-vec = { version = "0.6", features = ["serde"], optional = true }
 bigdecimal_ = { version = "0.2.0", package = "bigdecimal", features = ["serde"] }
