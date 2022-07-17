@@ -29,6 +29,8 @@ futures-core = { version = "0.3.19", default-features = false }
 futures-util = {version="0.3.21",features = ["alloc", "sink"]}
 futures-channel = {version="0.3.21",default-features = false, features = ["sink", "alloc", "std"] }
 hashlink = "0.8.0"
+event-listener = "2.5.2"
+crossbeam-queue = "0.3.2"
 tokio-native-tls={version = "0.3.0",optional = true}
 native-tls={version = "0.2.10",optional = true}
 rbs = {path="../rbs"}
