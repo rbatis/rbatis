@@ -22,7 +22,7 @@ pub trait Driver: Sync + Send {
 }
 
 /// Represents a connection to a database
-pub trait Connection {
+pub trait Connection: Send {
     /// Execute a query that is expected to return a result set, such as a `SELECT` statement
     fn get_rows(
         &mut self,
@@ -55,6 +55,12 @@ pub trait Connection {
 
     /// Execute a query that is expected to update some rows.
     fn exec(&mut self, sql: &str, params: Vec<Value>) -> BoxFuture<Result<u64, Error>>;
+
+    /// close connection
+    fn close(&mut self) -> BoxFuture<'static, Result<(), Error>>;
+
+    /// ping
+    fn ping(&mut self) -> BoxFuture<'_, Result<(), Error>>;
 }
 
 /// Result set from executing a query against a statement
