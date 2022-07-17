@@ -12,7 +12,7 @@ impl Driver for MysqlDriver {
     fn connect(&self, url: &str) -> BoxFuture<Result<Box<dyn Connection>, Error>> {
         let url = url.to_owned();
         Box::pin(async move {
-            let conn = MySqlConnection::establish(&self.make_option(&url)?).await?;
+            let conn = MySqlConnection::establish(&url.parse()?).await?;
             Ok(Box::new(conn) as Box<dyn Connection>)
         })
     }
@@ -24,26 +24,39 @@ impl Driver for MysqlDriver {
 
 #[cfg(test)]
 mod test {
-    // use crate::driver::MysqlDriver;
-    // use rbdc::db::Driver;
-    // use rbs::Value;
-    // use std::collections::BTreeMap;
-    //
-    // #[tokio::test]
-    // async fn test_mysql_rows() {
-    //     let mut d = MysqlDriver {};
-    //     let mut c = d
-    //         .connect("mysql://root:123456@localhost:3306/test")
-    //         .await
-    //         .unwrap();
-    //     let data = c
-    //         .get_values("select * from biz_activity", vec![])
-    //         .await
-    //         .unwrap();
-    //     for mut x in data {
-    //         println!("row: {}", x);
-    //     }
-    // }
+    use crate::driver::MysqlDriver;
+    use rbdc::db::Driver;
+    use rbdc::pool::PoolOptions;
+    use rbs::Value;
+    use std::collections::BTreeMap;
+
+    #[tokio::test]
+    async fn test_mysql_pool() {
+        let opt = PoolOptions::new();
+        let pool = opt
+            .connect(
+                Box::new(MysqlDriver {}),
+                "mysql://root:123456@localhost:3306/test",
+            )
+            .await
+            .unwrap();
+    }
+
+    #[tokio::test]
+    async fn test_mysql_rows() {
+        let mut d = MysqlDriver {};
+        let mut c = d
+            .connect("mysql://root:123456@localhost:3306/test")
+            .await
+            .unwrap();
+        let data = c
+            .get_values("select * from biz_activity", vec![])
+            .await
+            .unwrap();
+        for mut x in data {
+            println!("row: {}", x);
+        }
+    }
     //
     // #[tokio::test]
     // async fn test_mysql_count() {
