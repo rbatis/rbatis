@@ -53,6 +53,12 @@ impl From<std::str::Utf8Error> for Error {
         Error::E(e.to_string())
     }
 }
+
+impl From<&str> for Error {
+    fn from(arg: &str) -> Self {
+        Error::E(arg.to_string())
+    }
+}
 // Format an error message as a `Protocol` error
 #[macro_export]
 macro_rules! err_protocol {

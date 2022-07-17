@@ -40,6 +40,7 @@ impl Debug for MySqlConnection {
 }
 
 impl MySqlConnection {
+    #[inline]
     fn close(mut self) -> BoxFuture<'static, Result<(), Error>> {
         Box::pin(async move {
             self.stream.send_packet(Quit).await?;
@@ -169,5 +170,14 @@ impl Connection for MySqlConnection {
                 return Ok(0);
             }
         })
+    }
+
+    fn close(mut self) -> BoxFuture<Result<(), Error>> {
+        self.close().await
+    }
+
+    fn ping(&mut self) -> BoxFuture<'_, Result<(), Error>> {
+        let c = self.ping();
+        Box::pin(async move { c.await })
     }
 }
