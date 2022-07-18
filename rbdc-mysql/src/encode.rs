@@ -53,7 +53,7 @@ impl From<(Value, &mut Vec<u8>)> for MySqlTypeInfo {
                         Some(s) => match s.as_ref() {
                             "decimal" => {
                                 buf.put_bytes_lenenc(v.into_string().into_bytes());
-                                MySqlTypeInfo::from_type(ColumnType::Decimal)
+                                MySqlTypeInfo::from_type(ColumnType::NewDecimal)
                             }
                             //year = "1993"
                             "year" => {
@@ -116,10 +116,6 @@ impl From<(Value, &mut Vec<u8>)> for MySqlTypeInfo {
                             "json" => {
                                 buf.put_bytes_lenenc(v.into_string().into_bytes());
                                 MySqlTypeInfo::from_type(ColumnType::Json)
-                            }
-                            "new_decimal" => {
-                                buf.put_bytes_lenenc(v.into_string().into_bytes());
-                                MySqlTypeInfo::from_type(ColumnType::NewDecimal)
                             }
                             "enum" => {
                                 buf.put_bytes_lenenc(v.into_string().into_bytes());
