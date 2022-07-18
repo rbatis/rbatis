@@ -5,7 +5,7 @@ use std::any::type_name;
 use std::fmt::{Display, Formatter};
 use std::time::SystemTime;
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct Date {
     /// Year: four digits
     pub year: u16,
