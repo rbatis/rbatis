@@ -87,7 +87,7 @@ impl From<(Value, &mut Vec<u8>)> for MySqlTypeInfo {
                                     return MySqlTypeInfo::null();
                                 }
                             }
-                            //RFC3339Nano = "2006-01-02 15:04:05.999999999"
+                            //RFC3339 = "2006-01-02 15:04:05.999999"
                             "timestamp" => {
                                 //datetime=5byte
                                 let c = v.as_str().unwrap_or_default();
