@@ -47,7 +47,7 @@ impl From<MySqlValue> for Value {
                 Value::String(v.as_str().unwrap_or_default().to_string()),
             )]),
             ColumnType::NewDecimal => Value::Map(vec![(
-                Value::String("new_decimal".to_string()),
+                Value::String("decimal".to_string()),
                 Value::String(v.as_str().unwrap_or("0").to_string()),
             )]),
             ColumnType::Enum => Value::Map(vec![(
