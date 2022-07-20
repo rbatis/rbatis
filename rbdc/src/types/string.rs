@@ -1,6 +1,7 @@
 use crate::Type;
 
 /// string subtype date,time,datetime,timestamp,decimal,uuid,json
+/// you can see test mod
 impl Type for &str {
     fn type_name(&self) -> &'static str {
         let bytes = self.as_bytes();
@@ -21,7 +22,7 @@ impl Type for &str {
             return "datetime";
         }
         //TimeStamp = 9999999999999Z
-        if self.ends_with("Z") {
+        if self.ends_with("Z") && self.trim_end_matches("Z").parse::<f64>().is_ok() {
             return "timestamp";
         }
         //Decimal   = 12345678D
