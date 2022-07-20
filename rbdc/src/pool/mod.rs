@@ -680,8 +680,6 @@ impl Drop for DecrementSizeGuard {
 
 #[cfg(test)]
 mod test {
-    use crate::pool::Pool;
-
     #[test]
     fn test_pool() {}
 }
