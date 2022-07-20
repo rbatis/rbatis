@@ -38,13 +38,10 @@ impl CommonType for Value {
             Value::Binary(_) => {
                 return "binary";
             }
-            Value::Array(arr) => {
+            Value::Array(_) => {
                 return "array";
             }
-            Value::Map(m) => {
-                if m.len() == 1 && m[0].0.eq(JSONValue.deref()) {
-                    return "json";
-                }
+            Value::Map(_) => {
                 return "map";
             }
             Value::Ext(_, _) => {
