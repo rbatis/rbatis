@@ -1,6 +1,6 @@
 mod statement_cache;
-pub mod types;
-pub use types::*;
+
+pub use crate::types::*;
 
 pub use statement_cache::StatementCache;
 use std::fmt::{Debug, Formatter};

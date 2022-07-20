@@ -1,10 +1,8 @@
-use crate::CommonType;
-use once_cell::sync::Lazy;
+use crate::TypeName;
 use rbs::Value;
-use std::ops::Deref;
 
-impl CommonType for Value {
-    fn common_type(&self) -> &'static str {
+impl TypeName for Value {
+    fn type_name(&self) -> &'static str {
         match self {
             Value::Null => {
                 return "null";
@@ -31,7 +29,7 @@ impl CommonType for Value {
                 return "f64";
             }
             Value::String(s) => {
-                return s.common_type();
+                return s.type_name();
             }
             Value::Binary(_) => {
                 return "binary";

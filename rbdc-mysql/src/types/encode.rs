@@ -2,7 +2,8 @@ use crate::io::MySqlBufMutExt;
 use crate::protocol::text::ColumnType;
 use crate::result_set::MySqlTypeInfo;
 use bytes::BufMut;
-use rbdc::CommonType;
+use fastdate::DateTime;
+use rbdc::TypeName;
 use rbs::Value;
 
 impl From<(Value, &mut Vec<u8>)> for MySqlTypeInfo {
@@ -38,12 +39,13 @@ impl From<(Value, &mut Vec<u8>)> for MySqlTypeInfo {
                 MySqlTypeInfo::from_type(ColumnType::Double)
             }
             Value::String(v) => {
-                match v.common_type() {
+                match v.type_name() {
                     "uuid" => {
                         //uuid -> string
                         buf.put_str_lenenc(&v);
                         MySqlTypeInfo::from_type(ColumnType::VarChar)
                     }
+                    //decimal = 12345678D
                     "decimal" => {
                         let mut bytes = v.into_bytes();
                         if bytes.len() > 0 && bytes[bytes.len() - 1] == 'D' as u8 {
@@ -88,24 +90,47 @@ impl From<(Value, &mut Vec<u8>)> for MySqlTypeInfo {
                     "timestamp" => {
                         //datetime=5byte
                         let c = v.as_str().trim_end_matches("Z").to_string();
-                        //TODO timestamp parse
-                        let (date, time) = rbdc::time::parse_date_time(&c);
-                        let size = date_time_size_hint(time.hour, time.min, time.sec, time.ms);
+                        let datetime =
+                            DateTime::from_timestamp_millis(c.parse().unwrap_or_default());
+                        let size = date_time_size_hint(
+                            datetime.hour,
+                            datetime.min,
+                            datetime.sec,
+                            datetime.micro,
+                        );
                         buf.push(size as u8);
-                        encode_date(buf, date.year, date.mon, date.day);
+                        encode_date(buf, datetime.year, datetime.mon, datetime.day);
                         if size > 4 {
-                            encode_time(buf, time.hour, time.min, time.sec, time.ms);
+                            encode_time(
+                                buf,
+                                datetime.hour,
+                                datetime.min,
+                                datetime.sec,
+                                datetime.micro,
+                            );
                         }
                         MySqlTypeInfo::from_type(ColumnType::Timestamp)
                     }
                     "datetime" => {
                         let c = v;
-                        let (date, time) = rbdc::time::parse_date_time(&c);
-                        let size = date_time_size_hint(time.hour, time.min, time.sec, time.ms);
+                        let datetime =
+                            DateTime::from_timestamp_millis(c.parse().unwrap_or_default());
+                        let size = date_time_size_hint(
+                            datetime.hour,
+                            datetime.min,
+                            datetime.sec,
+                            datetime.micro,
+                        );
                         buf.push(size as u8);
-                        encode_date(buf, date.year, date.mon, date.day);
+                        encode_date(buf, datetime.year, datetime.mon, datetime.day);
                         if size > 4 {
-                            encode_time(buf, time.hour, time.min, time.sec, time.ms);
+                            encode_time(
+                                buf,
+                                datetime.hour,
+                                datetime.min,
+                                datetime.sec,
+                                datetime.micro,
+                            );
                         }
                         MySqlTypeInfo::from_type(ColumnType::Datetime)
                     }
@@ -129,33 +154,12 @@ impl From<(Value, &mut Vec<u8>)> for MySqlTypeInfo {
                 }
             }
             Value::Binary(v) => {
+                // "geometry" is bytes
                 buf.put_bytes_lenenc(v);
                 MySqlTypeInfo::from_type(ColumnType::Blob)
             }
             Value::Array(v) => MySqlTypeInfo::null(),
-            Value::Map(mut m) => {
-                if m.len() == 1 {
-                    let (k, v) = m.pop().unwrap_or_default();
-                    match k.as_str() {
-                        None => MySqlTypeInfo::null(),
-                        Some(s) => match s.as_ref() {
-                            //TODO should move to bytes?
-                            "geometry" => {
-                                buf.put_bytes_lenenc(match v {
-                                    Value::Binary(b) => b,
-                                    _ => {
-                                        vec![]
-                                    }
-                                });
-                                MySqlTypeInfo::from_type(ColumnType::Geometry)
-                            }
-                            _ => MySqlTypeInfo::null(),
-                        },
-                    }
-                } else {
-                    MySqlTypeInfo::null()
-                }
-            }
+            Value::Map(m) => MySqlTypeInfo::null(),
             Value::Ext(_, _) => MySqlTypeInfo::null(),
         };
     }

@@ -4,7 +4,7 @@ extern crate test;
 
 use rbatis::wrapper::Wrapper;
 use rbatis_core::db::DriverType;
-use rbdc::CommonType;
+use rbdc::TypeName;
 use rbs::Value;
 use test::Bencher;
 
@@ -117,10 +117,10 @@ fn bench_parse_date(b: &mut Bencher) {
 
 #[bench]
 fn bench_type(b: &mut Bencher) {
-    let s = "{}";
+    let s = "asdfsdafasdfasdffsd";
     b.iter(|| {
         std::hint::black_box({
-            s.common_type();
+            s.type_name();
         });
     });
 }
