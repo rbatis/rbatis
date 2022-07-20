@@ -5,9 +5,7 @@ pub mod stmt;
 
 mod collation;
 mod connection;
-mod decode;
 mod describe;
-mod encode;
 mod error;
 mod io;
 mod options;
