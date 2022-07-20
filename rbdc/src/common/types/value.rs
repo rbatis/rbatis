@@ -1,30 +1,55 @@
 use crate::CommonType;
 use once_cell::sync::Lazy;
 use rbs::Value;
+use std::ops::Deref;
 
 pub static JSONValue: Lazy<Value> = Lazy::new(|| Value::String("json".to_string()));
 
 impl CommonType for Value {
     fn common_type(&self) -> &'static str {
         match self {
-            Value::Null => {}
-            Value::Bool(_) => {}
-            Value::I32(_) => {}
-            Value::I64(_) => {}
-            Value::U32(_) => {}
-            Value::U64(_) => {}
-            Value::F32(_) => {}
-            Value::F64(_) => {}
-            Value::String(_) => {}
-            Value::Binary(_) => {}
+            Value::Null => {
+                return "null";
+            }
+            Value::Bool(_) => {
+                return "bool";
+            }
+            Value::I32(_) => {
+                return "i32";
+            }
+            Value::I64(_) => {
+                return "i64";
+            }
+            Value::U32(_) => {
+                return "u32";
+            }
+            Value::U64(_) => {
+                return "u64";
+            }
+            Value::F32(_) => {
+                return "f32";
+            }
+            Value::F64(_) => {
+                return "f64";
+            }
+            Value::String(s) => {
+                return s.common_type();
+            }
+            Value::Binary(_) => {
+                return "binary";
+            }
             Value::Array(arr) => {
-                if arr.len() == 1 && arr[0].eq(&JSONValue) {
+                return "array";
+            }
+            Value::Map(m) => {
+                if m.len() == 1 && m[0].0.eq(JSONValue.deref()) {
                     return "json";
                 }
+                return "map";
             }
-            Value::Map(_) => {}
-            Value::Ext(_, _) => {}
+            Value::Ext(_, _) => {
+                return "ext";
+            }
         }
-        todo!()
     }
 }
