@@ -8,56 +8,26 @@ use rbs::Value;
 impl From<MySqlValue> for Value {
     fn from(v: MySqlValue) -> Self {
         match v.type_info.r#type {
-            ColumnType::Decimal => Value::Map(vec![(
-                Value::String("decimal".to_string()),
-                Value::String(v.as_str().unwrap_or("0").to_string()),
-            )]),
+            ColumnType::Decimal => Value::String(v.as_str().unwrap_or("0").to_string() + "D"),
             ColumnType::Tiny => Value::U64(uint_decode(v).unwrap_or_default()),
             ColumnType::Short => Value::I32(int_decode(v).unwrap_or_default() as i32),
             ColumnType::Long => Value::I64(int_decode(v).unwrap_or_default()),
             ColumnType::Float => Value::F32(f32_decode(v).unwrap_or_default()),
             ColumnType::Double => Value::F64(f64_decode(v).unwrap_or_default()),
             ColumnType::Null => Value::Null,
-            ColumnType::Timestamp => Value::Map(vec![(
-                Value::String("timestamp".to_string()),
-                Value::String(decode_timestamp(v).unwrap_or_default()),
-            )]),
+            ColumnType::Timestamp => Value::String(decode_timestamp(v).unwrap_or_default()),
             ColumnType::LongLong => Value::Bool(decode_bool(v).unwrap_or_default()),
             ColumnType::Int24 => Value::I32(int_decode(v).unwrap_or_default() as i32),
-            ColumnType::Date => Value::Map(vec![(
-                Value::String("date".to_string()),
-                Value::String(decode_date(v).unwrap_or_default()),
-            )]),
-            ColumnType::Time => Value::Map(vec![(
-                Value::String("time".to_string()),
-                Value::String(decode_time(v).unwrap_or_default()),
-            )]),
-            ColumnType::Datetime => Value::Map(vec![(
-                Value::String("datetime".to_string()),
-                Value::String(decode_timestamp(v).unwrap_or_default()),
-            )]),
-            ColumnType::Year => Value::Map(vec![(
-                Value::String("year".to_string()),
-                Value::String(decode_year(v).unwrap_or_default()),
-            )]),
+            ColumnType::Date => Value::String(decode_date(v).unwrap_or_default()),
+            ColumnType::Time => Value::String(decode_time(v).unwrap_or_default()),
+            ColumnType::Datetime => Value::String(decode_timestamp(v).unwrap_or_default()),
+            ColumnType::Year => Value::String(decode_year(v).unwrap_or_default()),
             ColumnType::VarChar => Value::String(v.as_str().unwrap_or_default().to_string()),
             ColumnType::Bit => Value::U64(uint_decode(v).unwrap_or_default()),
-            ColumnType::Json => Value::Map(vec![(
-                Value::String("json".to_string()),
-                Value::String(v.as_str().unwrap_or_default().to_string()),
-            )]),
-            ColumnType::NewDecimal => Value::Map(vec![(
-                Value::String("decimal".to_string()),
-                Value::String(v.as_str().unwrap_or("0").to_string()),
-            )]),
-            ColumnType::Enum => Value::Map(vec![(
-                Value::String("enum".to_string()),
-                Value::String(v.as_str().unwrap_or("").to_string()),
-            )]),
-            ColumnType::Set => Value::Map(vec![(
-                Value::String("set".to_string()),
-                Value::String(v.as_str().unwrap_or("").to_string()),
-            )]),
+            ColumnType::Json => Value::String(v.as_str().unwrap_or_default().to_string()),
+            ColumnType::NewDecimal => Value::String(v.as_str().unwrap_or("0").to_string() + "D"),
+            ColumnType::Enum => Value::String(v.as_str().unwrap_or("").to_string()),
+            ColumnType::Set => Value::String(v.as_str().unwrap_or("").to_string()),
             ColumnType::TinyBlob => Value::Binary(v.as_bytes().unwrap_or_default().to_vec()),
             ColumnType::MediumBlob => Value::Binary(v.as_bytes().unwrap_or_default().to_vec()),
             ColumnType::LongBlob => Value::Binary(v.as_bytes().unwrap_or_default().to_vec()),
