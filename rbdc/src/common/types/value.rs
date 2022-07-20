@@ -3,8 +3,6 @@ use once_cell::sync::Lazy;
 use rbs::Value;
 use std::ops::Deref;
 
-pub static JSONValue: Lazy<Value> = Lazy::new(|| Value::String("json".to_string()));
-
 impl CommonType for Value {
     fn common_type(&self) -> &'static str {
         match self {
