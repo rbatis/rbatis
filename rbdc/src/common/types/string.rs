@@ -28,6 +28,9 @@ impl CommonType for &str {
         if self.ends_with("D") {
             return "decimal";
         }
+        if bytes[0] == '{' as u8 && bytes[bytes.len() - 1] == '}' as u8 {
+            return "json";
+        }
         return "string";
     }
 }

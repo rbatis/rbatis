@@ -4,6 +4,8 @@ extern crate test;
 
 use rbatis::wrapper::Wrapper;
 use rbatis_core::db::DriverType;
+use rbdc::CommonType;
+use rbs::Value;
 use test::Bencher;
 
 #[bench]
@@ -110,5 +112,15 @@ fn bench_parse_year(b: &mut Bencher) {
 fn bench_parse_date(b: &mut Bencher) {
     b.iter(|| {
         std::hint::black_box(rbdc::time::parse_date("1993-02-06"));
+    });
+}
+
+#[bench]
+fn bench_type(b: &mut Bencher) {
+    let s = "{}";
+    b.iter(|| {
+        std::hint::black_box({
+            s.common_type();
+        });
     });
 }
