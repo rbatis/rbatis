@@ -1,7 +1,8 @@
-use crate::CommonType;
+use crate::TypeName;
 
-impl CommonType for &str {
-    fn common_type(&self) -> &'static str {
+/// string subtype date,time,datetime,timestamp,decimal,uuid,json
+impl TypeName for &str {
+    fn type_name(&self) -> &'static str {
         let bytes = self.as_bytes();
         //Date RFC3339 = "2006-01-02"
         if self.len() == 10 && (bytes[4] == '-' as u8 && bytes[7] == '-' as u8) {
@@ -37,11 +38,11 @@ impl CommonType for &str {
         {
             return "uuid";
         };
-        // json
+        // json = {"abc":"efg"}
         if bytes[0] == '{' as u8 && bytes[bytes.len() - 1] == '}' as u8 {
             return "json";
         }
-        // json array
+        // json array json = [{"abc":"efg"}]
         if bytes.len() >= 4 && bytes[0] == '[' as u8 && bytes[bytes.len() - 1] == ']' as u8 {
             if bytes[1] == '{' as u8 && bytes[bytes.len() - 2] == '}' as u8 {
                 return "json";
@@ -51,8 +52,8 @@ impl CommonType for &str {
     }
 }
 
-impl CommonType for String {
-    fn common_type(&self) -> &'static str {
-        self.as_str().common_type()
+impl TypeName for String {
+    fn type_name(&self) -> &'static str {
+        self.as_str().type_name()
     }
 }

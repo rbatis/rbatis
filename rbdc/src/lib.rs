@@ -9,6 +9,8 @@ pub mod net;
 pub mod pool;
 pub mod rt;
 pub mod time;
+pub mod types;
+
 pub use error::*;
 
 #[cfg(test)]

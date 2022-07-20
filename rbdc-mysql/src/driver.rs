@@ -3,7 +3,6 @@ use crate::options::MySqlConnectOptions;
 use futures_core::future::BoxFuture;
 use rbdc::db::{ConnectOptions, Connection, Driver};
 use rbdc::Error;
-use std::pin::Pin;
 use std::str::FromStr;
 
 pub struct MysqlDriver {}
@@ -85,29 +84,26 @@ mod test {
     //     println!("{}", data);
     // }
     //
-    // #[tokio::test]
-    // async fn test_mysql_param() {
-    //     let mut d = MysqlDriver {};
-    //     let mut c = d
-    //         .connect("mysql://root:123456@localhost:3306/test")
-    //         .await
-    //         .unwrap();
-    //     let param = vec![
-    //         Value::String("http://www.test.com".to_string()),
-    //         Value::Map(vec![(
-    //             Value::String("datetime".to_string()),
-    //             Value::String("2022-08-08T22:39:11.666667".to_string()),
-    //         )]),
-    //         Value::String("12312".to_string()),
-    //     ];
-    //     println!("param => {}", Value::Array(param.clone()));
-    //     let data = c
-    //         .exec(
-    //             "update biz_activity set pc_link = ?,create_time = ? where id  = ?",
-    //             param,
-    //         )
-    //         .await
-    //         .unwrap();
-    //     println!("{}", data);
-    // }
+    #[tokio::test]
+    async fn test_mysql_param() {
+        let mut d = MysqlDriver {};
+        let mut c = d
+            .connect("mysql://root:123456@localhost:3306/test")
+            .await
+            .unwrap();
+        let param = vec![
+            Value::String("http://www.test.com".to_string()),
+            Value::String("1659996552000Z".to_string()),
+            Value::String("12312".to_string()),
+        ];
+        println!("param => {}", Value::Array(param.clone()));
+        let data = c
+            .exec(
+                "update biz_activity set pc_link = ?,create_time = ? where id  = ?",
+                param,
+            )
+            .await
+            .unwrap();
+        println!("{}", data);
+    }
 }

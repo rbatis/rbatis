@@ -2,8 +2,10 @@ use crate::protocol::text::ColumnType;
 use crate::value::{MySqlValue, MySqlValueFormat};
 use byteorder::{ByteOrder, LittleEndian};
 use bytes::Buf;
+use fastdate::DateTime;
 use rbdc::Error;
 use rbs::Value;
+use std::str::FromStr;
 
 impl From<MySqlValue> for Value {
     fn from(v: MySqlValue) -> Self {
@@ -15,7 +17,11 @@ impl From<MySqlValue> for Value {
             ColumnType::Float => Value::F32(f32_decode(v).unwrap_or_default()),
             ColumnType::Double => Value::F64(f64_decode(v).unwrap_or_default()),
             ColumnType::Null => Value::Null,
-            ColumnType::Timestamp => Value::String(decode_timestamp(v).unwrap_or_default()),
+            ColumnType::Timestamp => Value::String({
+                let mut s = decode_timestamp(v).unwrap_or_default();
+                let date = DateTime::from_str(&s).unwrap();
+                date.unix_timestamp_millis().to_string() + "Z"
+            }),
             ColumnType::LongLong => Value::Bool(decode_bool(v).unwrap_or_default()),
             ColumnType::Int24 => Value::I32(int_decode(v).unwrap_or_default() as i32),
             ColumnType::Date => Value::String(decode_date(v).unwrap_or_default()),
