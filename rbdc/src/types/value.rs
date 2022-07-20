@@ -1,7 +1,7 @@
-use crate::TypeName;
+use crate::Type;
 use rbs::Value;
 
-impl TypeName for Value {
+impl Type for Value {
     fn type_name(&self) -> &'static str {
         match self {
             Value::Null => {

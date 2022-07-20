@@ -3,7 +3,7 @@ use crate::protocol::text::ColumnType;
 use crate::result_set::MySqlTypeInfo;
 use bytes::BufMut;
 use fastdate::DateTime;
-use rbdc::TypeName;
+use rbdc::Type;
 use rbs::Value;
 
 impl From<(Value, &mut Vec<u8>)> for MySqlTypeInfo {
