@@ -1,15 +1,15 @@
 RBDC
 
-* an database driver abstract
+* 数据库驱动层抽象
 
-* support zero copy serde-ser/de
+* 支持0拷贝序列化
 
 Database -> bytes ->rbs::Value-> Struct(User Define)
 Struct(User Define) -> rbs::ValueRef -> ref clone() -> Database
 
 
 
-### how to define my driver?
+### 如何自定义驱动?
 should impl trait and load driver
 * impl trait Driver
 * impl trait Connection
