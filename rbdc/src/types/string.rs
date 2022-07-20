@@ -1,7 +1,7 @@
-use crate::TypeName;
+use crate::Type;
 
 /// string subtype date,time,datetime,timestamp,decimal,uuid,json
-impl TypeName for &str {
+impl Type for &str {
     fn type_name(&self) -> &'static str {
         let bytes = self.as_bytes();
         //Date RFC3339 = "2006-01-02"
@@ -52,7 +52,7 @@ impl TypeName for &str {
     }
 }
 
-impl TypeName for String {
+impl Type for String {
     fn type_name(&self) -> &'static str {
         self.as_str().type_name()
     }

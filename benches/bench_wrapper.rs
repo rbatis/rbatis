@@ -4,7 +4,7 @@ extern crate test;
 
 use rbatis::wrapper::Wrapper;
 use rbatis_core::db::DriverType;
-use rbdc::TypeName;
+use rbdc::Type;
 use rbs::Value;
 use test::Bencher;
 
