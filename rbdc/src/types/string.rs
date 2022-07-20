@@ -13,11 +13,10 @@ impl Type for &str {
             return "time";
         }
         //DateTime RFC3339 = "2006-01-02 15:04:05.999999"
-        if self.len() == 19
-            && (bytes[4] == '-' as u8
-                && bytes[7] == '-' as u8
-                && bytes[13] == ':' as u8
-                && bytes[16] == ':' as u8)
+        if bytes[4] == '-' as u8
+            && bytes[7] == '-' as u8
+            && bytes[13] == ':' as u8
+            && bytes[16] == ':' as u8
         {
             return "datetime";
         }
@@ -26,7 +25,7 @@ impl Type for &str {
             return "timestamp";
         }
         //Decimal   = 12345678D
-        if self.ends_with("D") {
+        if self.ends_with("D") && self.trim_end_matches("D").parse::<f64>().is_ok() {
             return "decimal";
         }
         //UUID-V4 = 4b3f82bc-fa70-48e5-914c-17f0c8d246e2
@@ -55,5 +54,40 @@ impl Type for &str {
 impl Type for String {
     fn type_name(&self) -> &'static str {
         self.as_str().type_name()
+    }
+}
+
+#[cfg(test)]
+mod test {
+    use crate::Type;
+
+    #[test]
+    fn test_date() {
+        assert_eq!("2006-01-02".type_name(), "date")
+    }
+    #[test]
+    fn test_time() {
+        assert_eq!("15:04:05.999999".type_name(), "time")
+    }
+    #[test]
+    fn test_datetime() {
+        assert_eq!("2006-01-02T15:04:05.999999".type_name(), "datetime")
+    }
+    #[test]
+    fn test_timestamp() {
+        assert_eq!("9999999999999Z".type_name(), "timestamp")
+    }
+    #[test]
+    fn test_deciaml() {
+        assert_eq!("9999999999999.99999999D".type_name(), "decimal")
+    }
+    #[test]
+    fn test_uuid() {
+        assert_eq!("4b3f82bc-fa70-48e5-914c-17f0c8d246e2".type_name(), "uuid")
+    }
+    #[test]
+    fn test_json() {
+        assert_eq!(r#"{"abc":null}"#.type_name(), "json");
+        assert_eq!(r#"[{"abc":null}]"#.type_name(), "json");
     }
 }
