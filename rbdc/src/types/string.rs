@@ -22,11 +22,17 @@ impl Type for &str {
             return "datetime";
         }
         //TimeStamp = 9999999999999Z
-        if self.ends_with("Z") && self.trim_end_matches("Z").parse::<f64>().is_ok() {
+        if bytes.len() == 14
+            && bytes[bytes.len() - 1].eq(&('Z' as u8))
+            && is_uint(&bytes[..(bytes.len() - 2)])
+        {
             return "timestamp";
         }
         //Decimal   = 12345678D
-        if self.ends_with("D") && self.trim_end_matches("D").parse::<f64>().is_ok() {
+        if bytes.len() >= 2
+            && bytes[bytes.len() - 1].eq(&('D' as u8))
+            && is_decimal(&bytes[..(bytes.len() - 2)])
+        {
             return "decimal";
         }
         //UUID-V4 = 4b3f82bc-fa70-48e5-914c-17f0c8d246e2
@@ -56,6 +62,45 @@ impl Type for String {
     fn type_name(&self) -> &'static str {
         self.as_str().type_name()
     }
+}
+
+fn is_uint(arg: &[u8]) -> bool {
+    for x in arg {
+        if !(('0' as u8).eq(x)
+            || ('1' as u8).eq(x)
+            || ('2' as u8).eq(x)
+            || ('3' as u8).eq(x)
+            || ('4' as u8).eq(x)
+            || ('5' as u8).eq(x)
+            || ('6' as u8).eq(x)
+            || ('7' as u8).eq(x)
+            || ('8' as u8).eq(x)
+            || ('9' as u8).eq(x))
+        {
+            return false;
+        }
+    }
+    return true;
+}
+
+fn is_decimal(arg: &[u8]) -> bool {
+    for x in arg {
+        if !(('0' as u8).eq(x)
+            || ('1' as u8).eq(x)
+            || ('2' as u8).eq(x)
+            || ('3' as u8).eq(x)
+            || ('4' as u8).eq(x)
+            || ('5' as u8).eq(x)
+            || ('6' as u8).eq(x)
+            || ('7' as u8).eq(x)
+            || ('8' as u8).eq(x)
+            || ('9' as u8).eq(x)
+            || ('.' as u8).eq(x))
+        {
+            return false;
+        }
+    }
+    return true;
 }
 
 #[cfg(test)]
