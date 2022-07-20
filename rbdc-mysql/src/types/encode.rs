@@ -39,6 +39,11 @@ impl From<(Value, &mut Vec<u8>)> for MySqlTypeInfo {
             }
             Value::String(v) => {
                 match v.common_type() {
+                    "uuid" => {
+                        //uuid -> string
+                        buf.put_str_lenenc(&v);
+                        MySqlTypeInfo::from_type(ColumnType::VarChar)
+                    }
                     "decimal" => {
                         let mut bytes = v.into_bytes();
                         if bytes.len() > 0 && bytes[bytes.len() - 1] == 'D' as u8 {
@@ -117,6 +122,7 @@ impl From<(Value, &mut Vec<u8>)> for MySqlTypeInfo {
                         MySqlTypeInfo::from_type(ColumnType::Set)
                     }
                     _ => {
+                        //default -> string
                         buf.put_str_lenenc(&v);
                         MySqlTypeInfo::from_type(ColumnType::VarChar)
                     }
@@ -133,6 +139,7 @@ impl From<(Value, &mut Vec<u8>)> for MySqlTypeInfo {
                     match k.as_str() {
                         None => MySqlTypeInfo::null(),
                         Some(s) => match s.as_ref() {
+                            //TODO should move to bytes?
                             "geometry" => {
                                 buf.put_bytes_lenenc(match v {
                                     Value::Binary(b) => b,
