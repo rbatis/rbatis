@@ -1,9 +1,7 @@
-pub mod byte;
-pub mod date;
-pub mod datetime;
-pub mod deciaml;
-pub mod json;
-pub mod time;
-pub mod timestamp;
+pub mod string;
+pub mod value;
 /// this mod All common types
-pub use {byte::*, date::*, datetime::*, deciaml::*, json::*, time::*, timestamp::*};
+
+pub trait CommonType {
+    fn common_type(&self) -> &'static str;
+}
