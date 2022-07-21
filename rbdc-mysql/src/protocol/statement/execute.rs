@@ -4,7 +4,7 @@ use crate::stmt::MySqlArguments;
 use bytes::BufMut;
 use rbdc::io::Encode;
 
-// https://dev.mysql.com/doc/dev/mysql-server/8.0.12/page_protocol_com_stmt_execute.html
+// https://dev.mysql.com/doc/internals/en/com-stmt-execute.html
 
 #[derive(Debug)]
 pub struct Execute<'q> {
