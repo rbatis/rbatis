@@ -13,6 +13,8 @@
 
 #### A highly Performant,Safe,Dynamic SQL(Compile time) ORM framework written in Rust, inspired by Mybatis and MybatisPlus.
 
+#### rbatis-v4.0 is coming way 
+
 ##### Why not diesel or not sqlx ?
 
 | Framework    | Async/.await | Learning curve | Dynamic SQL/py/Wrapper/built-in CRUD | Logical delete plugin| Pagination plugin
