@@ -109,7 +109,7 @@ impl MySqlConnection {
                 // https://dev.mysql.com/doc/internals/en/com-stmt-execute.html
                 self.stream
                     .send_packet(StatementExecute {
-                        statement: id,
+                        statement_id: id,
                         arguments: &arguments,
                     })
                     .await?;
