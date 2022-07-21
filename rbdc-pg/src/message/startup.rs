@@ -1,5 +1,5 @@
-use crate::io::{BufMutExt, Encode};
-use crate::postgres::io::PgBufMutExt;
+use crate::io::PgBufMutExt;
+use rbdc::io::{BufMutExt, Encode};
 
 // To begin a session, a frontend opens a connection to the server and sends a startup message.
 // This message includes the names of the user and of the database the user wants to connect to;

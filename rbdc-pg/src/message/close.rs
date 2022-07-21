@@ -1,6 +1,6 @@
-use crate::io::Encode;
-use crate::postgres::io::PgBufMutExt;
-use crate::postgres::types::Oid;
+use crate::io::PgBufMutExt;
+use crate::types::Oid;
+use rbdc::io::Encode;
 
 const CLOSE_PORTAL: u8 = b'P';
 const CLOSE_STATEMENT: u8 = b'S';

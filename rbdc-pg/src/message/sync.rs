@@ -1,4 +1,4 @@
-use crate::io::Encode;
+use rbdc::io::Encode;
 
 #[derive(Debug)]
 pub struct Sync;

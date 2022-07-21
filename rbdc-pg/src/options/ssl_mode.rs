@@ -1,4 +1,4 @@
-use crate::error::Error;
+use rbdc::Error;
 use std::str::FromStr;
 
 /// Options for controlling the level of protection provided for PostgreSQL SSL connections.
@@ -47,9 +47,7 @@ impl FromStr for PgSslMode {
             "verify-full" => PgSslMode::VerifyFull,
 
             _ => {
-                return Err(Error::Configuration(
-                    format!("unknown value {:?} for `ssl_mode`", s).into(),
-                ));
+                return Err(Error::E(format!("unknown value {:?} for `ssl_mode`", s)));
             }
         })
     }

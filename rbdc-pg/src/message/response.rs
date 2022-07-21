@@ -2,9 +2,10 @@ use std::str::from_utf8;
 
 use bytes::Bytes;
 use memchr::memchr;
+use rbdc::err_protocol;
 
-use crate::error::Error;
-use crate::io::Decode;
+use rbdc::error::Error;
+use rbdc::io::Decode;
 
 #[derive(Debug, Copy, Clone, Eq, PartialEq)]
 #[repr(u8)]

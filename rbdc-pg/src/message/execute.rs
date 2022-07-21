@@ -1,6 +1,6 @@
-use crate::io::Encode;
-use crate::postgres::io::PgBufMutExt;
-use crate::postgres::types::Oid;
+use crate::io::PgBufMutExt;
+use crate::types::Oid;
+use rbdc::io::Encode;
 
 pub struct Execute {
     /// The id of the portal to execute (`None` selects the unnamed portal).

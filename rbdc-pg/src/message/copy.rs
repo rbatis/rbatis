@@ -1,6 +1,6 @@
-use crate::error::Result;
-use crate::io::{BufExt, BufMutExt, Decode, Encode};
 use bytes::{Buf, BufMut, Bytes};
+use rbdc::io::{BufExt, BufMutExt, Decode, Encode};
+use rbdc::{err_protocol, Error};
 use std::ops::Deref;
 
 /// The same structure is sent for both `CopyInResponse` and `CopyOutResponse`
@@ -19,7 +19,7 @@ pub struct CopyFail {
 pub struct CopyDone;
 
 impl Decode<'_> for CopyResponse {
-    fn decode_with(mut buf: Bytes, _: ()) -> Result<Self> {
+    fn decode_with(mut buf: Bytes, _: ()) -> Result<Self, Error> {
         let format = buf.get_i8();
         let num_columns = buf.get_i16();
 
@@ -34,7 +34,7 @@ impl Decode<'_> for CopyResponse {
 }
 
 impl Decode<'_> for CopyData<Bytes> {
-    fn decode_with(buf: Bytes, _: ()) -> Result<Self> {
+    fn decode_with(buf: Bytes, _: ()) -> Result<Self, Error> {
         // well.. that was easy
         Ok(CopyData(buf))
     }
@@ -49,7 +49,7 @@ impl<B: Deref<Target = [u8]>> Encode<'_> for CopyData<B> {
 }
 
 impl Decode<'_> for CopyFail {
-    fn decode_with(mut buf: Bytes, _: ()) -> Result<Self> {
+    fn decode_with(mut buf: Bytes, _: ()) -> Result<Self, Error> {
         Ok(CopyFail {
             message: buf.get_str_nul()?,
         })
@@ -75,7 +75,7 @@ impl CopyFail {
 }
 
 impl Decode<'_> for CopyDone {
-    fn decode_with(buf: Bytes, _: ()) -> Result<Self> {
+    fn decode_with(buf: Bytes, _: ()) -> Result<Self, Error> {
         if buf.is_empty() {
             Ok(CopyDone)
         } else {

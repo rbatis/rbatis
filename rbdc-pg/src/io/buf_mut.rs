@@ -1,4 +1,4 @@
-use crate::postgres::types::Oid;
+use crate::types::Oid;
 
 pub trait PgBufMutExt {
     fn put_length_prefixed<F>(&mut self, f: F)

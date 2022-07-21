@@ -1,20 +1,19 @@
-use crate::HashMap;
-
-use crate::common::StatementCache;
-use crate::error::Error;
-use crate::io::Decode;
-use crate::postgres::connection::{sasl, stream::PgStream, tls};
-use crate::postgres::message::{
+use crate::connection::{sasl, stream::PgStream, tls, PgConnection};
+use crate::message::{
     Authentication, BackendKeyData, MessageFormat, Password, ReadyForQuery, Startup,
 };
-use crate::postgres::types::Oid;
-use crate::postgres::{PgConnectOptions, PgConnection};
+use crate::options::PgConnectOptions;
+use crate::types::Oid;
+use rbdc::common::StatementCache;
+use rbdc::io::Decode;
+use rbdc::{err_protocol, Error};
+use std::collections::HashMap;
 
 // https://www.postgresql.org/docs/current/protocol-flow.html#id-1.10.5.7.3
 // https://www.postgresql.org/docs/current/protocol-flow.html#id-1.10.5.7.11
 
 impl PgConnection {
-    pub(crate) async fn establish(options: &PgConnectOptions) -> Result<Self, Error> {
+    pub async fn establish(options: &PgConnectOptions) -> Result<Self, Error> {
         let mut stream = PgStream::connect(options).await?;
 
         // Upgrade to TLS if we were asked to and the server supports it
@@ -124,7 +123,6 @@ impl PgConnection {
                     // start-up is completed. The frontend can now issue commands
                     transaction_status =
                         ReadyForQuery::decode(message.contents)?.transaction_status;
-
                     break;
                 }
 
@@ -148,7 +146,6 @@ impl PgConnection {
             cache_statement: StatementCache::new(options.statement_cache_capacity),
             cache_type_oid: HashMap::new(),
             cache_type_info: HashMap::new(),
-            log_settings: options.log_settings.clone(),
         })
     }
 }

@@ -59,6 +59,11 @@ impl From<&str> for Error {
         Error::E(arg.to_string())
     }
 }
+impl From<String> for Error {
+    fn from(arg: String) -> Self {
+        Error::E(arg)
+    }
+}
 // Format an error message as a `Protocol` error
 #[macro_export]
 macro_rules! err_protocol {

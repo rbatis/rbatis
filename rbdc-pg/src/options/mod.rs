@@ -1,3 +1,4 @@
+use rbdc::net::CertificateInput;
 use std::borrow::Cow;
 use std::env::var;
 use std::fmt::{Display, Write};
@@ -7,7 +8,6 @@ mod connect;
 mod parse;
 mod pgpass;
 mod ssl_mode;
-use crate::{connection::LogSettings, net::CertificateInput};
 pub use ssl_mode::PgSslMode;
 
 /// Options and flags which can be used to configure a PostgreSQL connection.
@@ -87,7 +87,6 @@ pub struct PgConnectOptions {
     pub(crate) ssl_root_cert: Option<CertificateInput>,
     pub(crate) statement_cache_capacity: usize,
     pub(crate) application_name: Option<String>,
-    pub(crate) log_settings: LogSettings,
     pub(crate) extra_float_digits: Option<Cow<'static, str>>,
     pub(crate) options: Option<String>,
 }
@@ -150,7 +149,6 @@ impl PgConnectOptions {
             statement_cache_capacity: 100,
             application_name: var("PGAPPNAME").ok(),
             extra_float_digits: Some("3".into()),
-            log_settings: Default::default(),
             options: var("PGOPTIONS").ok(),
         }
     }

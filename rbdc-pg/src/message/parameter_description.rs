@@ -1,9 +1,9 @@
 use bytes::{Buf, Bytes};
 use smallvec::SmallVec;
 
-use crate::error::Error;
-use crate::io::Decode;
-use crate::postgres::types::Oid;
+use crate::types::Oid;
+use rbdc::error::Error;
+use rbdc::io::Decode;
 
 #[derive(Debug)]
 pub struct ParameterDescription {

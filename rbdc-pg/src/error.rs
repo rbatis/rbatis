@@ -4,8 +4,7 @@ use std::fmt::{self, Debug, Display, Formatter};
 use atoi::atoi;
 use smallvec::alloc::borrow::Cow;
 
-use crate::error::DatabaseError;
-use crate::postgres::message::{Notice, PgSeverity};
+use crate::message::{Notice, PgSeverity};
 
 /// An error returned from the PostgreSQL database.
 pub struct PgDatabaseError(pub(crate) Notice);
@@ -160,32 +159,3 @@ impl Display for PgDatabaseError {
 }
 
 impl Error for PgDatabaseError {}
-
-impl DatabaseError for PgDatabaseError {
-    fn message(&self) -> &str {
-        self.message()
-    }
-
-    fn code(&self) -> Option<Cow<'_, str>> {
-        Some(Cow::Borrowed(self.code()))
-    }
-
-    #[doc(hidden)]
-    fn as_error(&self) -> &(dyn Error + Send + Sync + 'static) {
-        self
-    }
-
-    #[doc(hidden)]
-    fn as_error_mut(&mut self) -> &mut (dyn Error + Send + Sync + 'static) {
-        self
-    }
-
-    #[doc(hidden)]
-    fn into_error(self: Box<Self>) -> Box<dyn Error + Send + Sync + 'static> {
-        self
-    }
-
-    fn constraint(&self) -> Option<&str> {
-        self.constraint()
-    }
-}

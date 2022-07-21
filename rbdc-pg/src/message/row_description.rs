@@ -1,8 +1,8 @@
 use bytes::{Buf, Bytes};
 
-use crate::error::Error;
-use crate::io::{BufExt, Decode};
-use crate::postgres::types::Oid;
+use crate::types::Oid;
+use rbdc::error::Error;
+use rbdc::io::{BufExt, Decode};
 
 #[derive(Debug)]
 pub struct RowDescription {

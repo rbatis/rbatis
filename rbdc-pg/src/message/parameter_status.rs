@@ -1,7 +1,7 @@
 use bytes::Bytes;
 
-use crate::error::Error;
-use crate::io::{BufExt, Decode};
+use rbdc::error::Error;
+use rbdc::io::{BufExt, Decode};
 
 #[derive(Debug)]
 pub struct ParameterStatus {

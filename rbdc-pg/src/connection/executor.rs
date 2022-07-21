@@ -1,23 +1,22 @@
-use crate::describe::Describe;
-use crate::error::Error;
-use crate::executor::{Execute, Executor};
-use crate::logger::QueryLogger;
-use crate::postgres::message::{
-    self, Bind, Close, CommandComplete, DataRow, MessageFormat, ParameterDescription, Parse, Query,
-    RowDescription,
+use crate::connection::PgConnection;
+use crate::message::{
+    self, Bind, Close, CommandComplete, DataRow, Describe, MessageFormat, ParameterDescription,
+    Parse, Query, RowDescription,
 };
-use crate::postgres::statement::PgStatementMetadata;
-use crate::postgres::type_info::PgType;
-use crate::postgres::types::Oid;
-use crate::postgres::{
-    statement::PgStatement, PgArguments, PgConnection, PgQueryResult, PgRow, PgTypeInfo,
-    PgValueFormat, Postgres,
+use crate::query::PgQuery;
+use crate::statement::PgStatementMetadata;
+use crate::type_info::PgType;
+use crate::types::Oid;
+use crate::{
+    arguments::PgArguments, query_result::PgQueryResult, row::PgRow, statement::PgStatement,
+    type_info::PgTypeInfo, value::PgValueFormat,
 };
 use either::Either;
 use futures_core::future::BoxFuture;
 use futures_core::stream::BoxStream;
 use futures_core::Stream;
 use futures_util::{pin_mut, TryStreamExt};
+use rbdc::{err_protocol, try_stream, Error};
 use std::{borrow::Cow, sync::Arc};
 
 async fn prepare(
@@ -200,8 +199,6 @@ impl PgConnection {
         persistent: bool,
         metadata_opt: Option<Arc<PgStatementMetadata>>,
     ) -> Result<impl Stream<Item = Result<Either<PgQueryResult, PgRow>, Error>> + 'e, Error> {
-        let mut logger = QueryLogger::new(query, self.log_settings.clone());
-
         // before we continue, wait until we are "ready" to accept more queries
         self.wait_until_ready().await?;
 
@@ -280,7 +277,6 @@ impl PgConnection {
                         let cc: CommandComplete = message.decode()?;
 
                         let rows_affected = cc.rows_affected();
-                        logger.increase_rows_affected(rows_affected);
                         r#yield!(Either::Left(PgQueryResult {
                             rows_affected,
                         }));
@@ -304,8 +300,6 @@ impl PgConnection {
                     }
 
                     MessageFormat::DataRow => {
-                        logger.increment_rows_returned();
-
                         // one of the set of rows returned by a SELECT, FETCH, etc query
                         let data: DataRow = message.decode()?;
                         let row = PgRow {
@@ -337,24 +331,17 @@ impl PgConnection {
     }
 }
 
-impl<'c> Executor<'c> for &'c mut PgConnection {
-    type Database = Postgres;
-
-    fn fetch_many<'e, 'q: 'e, E: 'q>(
-        self,
-        mut query: E,
-    ) -> BoxStream<'e, Result<Either<PgQueryResult, PgRow>, Error>>
-    where
-        'c: 'e,
-        E: Execute<'q, Self::Database>,
-    {
-        let sql = query.sql();
+impl PgConnection {
+    fn fetch_many(
+        &mut self,
+        mut query: PgQuery,
+    ) -> BoxStream<'_, Result<Either<PgQueryResult, PgRow>, Error>> {
+        let sql = query.sql().to_string();
         let metadata = query.statement().map(|s| Arc::clone(&s.metadata));
-        let arguments = query.take_arguments();
         let persistent = query.persistent();
-
+        let arguments = query.take_arguments();
         Box::pin(try_stream! {
-            let s = self.run(sql, arguments, 0, persistent, metadata).await?;
+            let s = self.run(&sql, arguments, 0, persistent, metadata).await?;
             pin_mut!(s);
 
             while let Some(v) = s.try_next().await? {
@@ -365,21 +352,16 @@ impl<'c> Executor<'c> for &'c mut PgConnection {
         })
     }
 
-    fn fetch_optional<'e, 'q: 'e, E: 'q>(
-        self,
-        mut query: E,
-    ) -> BoxFuture<'e, Result<Option<PgRow>, Error>>
-    where
-        'c: 'e,
-        E: Execute<'q, Self::Database>,
-    {
-        let sql = query.sql();
+    fn fetch_optional(
+        &mut self,
+        mut query: PgQuery,
+    ) -> BoxFuture<'_, Result<Option<PgRow>, Error>> {
+        let sql = query.sql().to_string();
         let metadata = query.statement().map(|s| Arc::clone(&s.metadata));
-        let arguments = query.take_arguments();
         let persistent = query.persistent();
-
+        let arguments = query.take_arguments();
         Box::pin(async move {
-            let s = self.run(sql, arguments, 1, persistent, metadata).await?;
+            let s = self.run(&sql, arguments, 1, persistent, metadata).await?;
             pin_mut!(s);
 
             while let Some(s) = s.try_next().await? {
@@ -393,43 +375,18 @@ impl<'c> Executor<'c> for &'c mut PgConnection {
     }
 
     fn prepare_with<'e, 'q: 'e>(
-        self,
+        mut self,
         sql: &'q str,
         parameters: &'e [PgTypeInfo],
-    ) -> BoxFuture<'e, Result<PgStatement<'q>, Error>>
-    where
-        'c: 'e,
-    {
+    ) -> BoxFuture<'e, Result<PgStatement, Error>> {
         Box::pin(async move {
             self.wait_until_ready().await?;
 
             let (_, metadata) = self.get_or_prepare(sql, parameters, true, None).await?;
 
             Ok(PgStatement {
-                sql: Cow::Borrowed(sql),
+                sql: sql.to_owned(),
                 metadata,
-            })
-        })
-    }
-
-    fn describe<'e, 'q: 'e>(
-        self,
-        sql: &'q str,
-    ) -> BoxFuture<'e, Result<Describe<Self::Database>, Error>>
-    where
-        'c: 'e,
-    {
-        Box::pin(async move {
-            self.wait_until_ready().await?;
-
-            let (stmt_id, metadata) = self.get_or_prepare(sql, &[], true, None).await?;
-
-            let nullable = self.get_nullable_for_columns(stmt_id, &metadata).await?;
-
-            Ok(Describe {
-                columns: metadata.columns.clone(),
-                nullable,
-                parameters: Some(Either::Left(metadata.parameters.clone())),
             })
         })
     }

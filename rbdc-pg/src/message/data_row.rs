@@ -2,9 +2,8 @@ use std::ops::Range;
 
 use byteorder::{BigEndian, ByteOrder};
 use bytes::Bytes;
-
-use crate::error::Error;
-use crate::io::Decode;
+use rbdc::io::Decode;
+use rbdc::Error;
 
 /// A row of data from the database.
 #[derive(Debug)]

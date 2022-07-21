@@ -1,7 +1,6 @@
-use crate::error::{BoxDynError, UnexpectedNullError};
-use crate::postgres::{PgTypeInfo, Postgres};
-use crate::value::{Value, ValueRef};
+use crate::type_info::PgTypeInfo;
 use bytes::{Buf, Bytes};
+use rbdc::Error;
 use std::borrow::Cow;
 use std::str::from_utf8;
 
@@ -54,23 +53,21 @@ impl<'r> PgValueRef<'r> {
         self.format
     }
 
-    pub fn as_bytes(&self) -> Result<&'r [u8], BoxDynError> {
+    pub fn as_bytes(&self) -> Result<&'r [u8], Error> {
         match &self.value {
             Some(v) => Ok(v),
-            None => Err(UnexpectedNullError.into()),
+            None => Err(Error::from("UnexpectedNullError")),
         }
     }
 
-    pub fn as_str(&self) -> Result<&'r str, BoxDynError> {
+    pub fn as_str(&self) -> Result<&'r str, Error> {
         Ok(from_utf8(self.as_bytes()?)?)
     }
 }
 
-impl Value for PgValue {
-    type Database = Postgres;
-
+impl PgValue {
     #[inline]
-    fn as_ref(&self) -> PgValueRef<'_> {
+    pub fn as_ref(&self) -> PgValueRef<'_> {
         PgValueRef {
             value: self.value.as_deref(),
             row: None,
@@ -79,19 +76,17 @@ impl Value for PgValue {
         }
     }
 
-    fn type_info(&self) -> Cow<'_, PgTypeInfo> {
+    pub fn type_info(&self) -> Cow<'_, PgTypeInfo> {
         Cow::Borrowed(&self.type_info)
     }
 
-    fn is_null(&self) -> bool {
+    pub fn is_null(&self) -> bool {
         self.value.is_none()
     }
 }
 
-impl<'r> ValueRef<'r> for PgValueRef<'r> {
-    type Database = Postgres;
-
-    fn to_owned(&self) -> PgValue {
+impl<'r> PgValueRef<'r> {
+    pub fn to_owned(&self) -> PgValue {
         let value = match (self.row, self.value) {
             (Some(row), Some(value)) => Some(row.slice_ref(value)),
 
@@ -107,33 +102,11 @@ impl<'r> ValueRef<'r> for PgValueRef<'r> {
         }
     }
 
-    fn type_info(&self) -> Cow<'_, PgTypeInfo> {
+    pub fn type_info(&self) -> Cow<'_, PgTypeInfo> {
         Cow::Borrowed(&self.type_info)
     }
 
-    fn is_null(&self) -> bool {
+    pub fn is_null(&self) -> bool {
         self.value.is_none()
-    }
-}
-
-#[cfg(feature = "any")]
-impl<'r> From<PgValueRef<'r>> for crate::any::AnyValueRef<'r> {
-    #[inline]
-    fn from(value: PgValueRef<'r>) -> Self {
-        crate::any::AnyValueRef {
-            type_info: value.type_info.clone().into(),
-            kind: crate::any::value::AnyValueRefKind::Postgres(value),
-        }
-    }
-}
-
-#[cfg(feature = "any")]
-impl From<PgValue> for crate::any::AnyValue {
-    #[inline]
-    fn from(value: PgValue) -> Self {
-        crate::any::AnyValue {
-            type_info: value.type_info.clone().into(),
-            kind: crate::any::value::AnyValueKind::Postgres(value),
-        }
     }
 }

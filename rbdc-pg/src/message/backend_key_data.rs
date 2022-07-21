@@ -1,8 +1,7 @@
 use byteorder::{BigEndian, ByteOrder};
 use bytes::Bytes;
-
-use crate::error::Error;
-use crate::io::Decode;
+use rbdc::io::Decode;
+use rbdc::Error;
 
 /// Contains cancellation key data. The frontend must save these values if it
 /// wishes to be able to issue `CancelRequest` messages later.

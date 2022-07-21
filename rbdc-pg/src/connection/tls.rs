@@ -1,9 +1,9 @@
 use bytes::Bytes;
+use rbdc::{err_protocol, Error};
 
-use crate::error::Error;
-use crate::postgres::connection::stream::PgStream;
-use crate::postgres::message::SslRequest;
-use crate::postgres::{PgConnectOptions, PgSslMode};
+use crate::connection::stream::PgStream;
+use crate::message::SslRequest;
+use crate::options::{PgConnectOptions, PgSslMode};
 
 pub(super) async fn maybe_upgrade(
     stream: &mut PgStream,
@@ -22,7 +22,7 @@ pub(super) async fn maybe_upgrade(
         PgSslMode::Require | PgSslMode::VerifyFull | PgSslMode::VerifyCa => {
             if !upgrade(stream, options).await? {
                 // upgrade failed, die
-                return Err(Error::Tls("server does not support TLS".into()));
+                return Err(Error::from("server does not support TLS"));
             }
         }
     }
