@@ -59,7 +59,6 @@ pub struct PgArguments {
 impl PgArguments {
     pub fn add(&mut self, value: Value) {
         // remember the type information for this value
-        //TODO types::encode
         todo!()
         // let ty: PgTypeInfo = ((arg, &mut self.values)).into();
         // self.types.push(ty);

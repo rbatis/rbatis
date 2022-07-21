@@ -242,7 +242,7 @@ impl PgConnection {
             return Ok(*oid);
         }
 
-        //TODO language=SQL
+        //TODO- language=SQL
         //         let (oid,): (Oid,) = query_as(
         //             "
         // SELECT oid FROM pg_catalog.pg_type WHERE typname ILIKE $1
