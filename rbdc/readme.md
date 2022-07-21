@@ -7,7 +7,10 @@ RBDC
 Database -> bytes ->rbs::Value-> Struct(User Define)
 Struct(User Define) -> rbs::ValueRef -> ref clone() -> Database
 
-
+* supported driver
+* rbdc-mysql(100%)
+* rbbc-pg(0%)
+* rbbc-sqlite(0%)
 
 ### how to define my driver?
 should impl trait and load driver
