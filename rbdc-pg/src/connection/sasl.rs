@@ -54,8 +54,8 @@ pub(crate) async fn authenticate(
     let username = format!("{}={}", USERNAME_ATTR, options.username);
     let username = match saslprep(&username) {
         Ok(v) => v,
-        // TODO(danielakhterov): Remove panic when we have proper support for configuration errors
-        Err(_) => panic!("Failed to saslprep username"),
+        //Remove panic when we have proper support for configuration errors
+        Err(e) => return Err(Error::from(format!("Failed to saslprep username:{}", e))),
     };
 
     // nonce = "r=" c-nonce [s-nonce] ;; Second part provided by server.

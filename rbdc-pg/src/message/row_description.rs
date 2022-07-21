@@ -73,6 +73,3 @@ impl Decode<'_> for RowDescription {
         Ok(Self { fields })
     }
 }
-
-// TODO: Unit Test RowDescription
-// TODO: Benchmark RowDescription

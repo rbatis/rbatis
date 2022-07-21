@@ -60,6 +60,3 @@ impl Encode<'_> for Bind<'_> {
         });
     }
 }
-
-// TODO: Unit Test Bind
-// TODO: Benchmark Bind

@@ -1,4 +1,6 @@
+use crate::connection::PgConnection;
 use bytes::Bytes;
+use futures_core::future::BoxFuture;
 use rbdc::{err_protocol, Error};
 
 use crate::connection::stream::PgStream;
@@ -11,7 +13,6 @@ pub(super) async fn maybe_upgrade(
 ) -> Result<(), Error> {
     // https://www.postgresql.org/docs/12/libpq-ssl.html#LIBPQ-SSL-SSLMODE-STATEMENTS
     match options.ssl_mode {
-        // FIXME: Implement ALLOW
         PgSslMode::Allow | PgSslMode::Disable => {}
 
         PgSslMode::Prefer => {

@@ -117,7 +117,7 @@ impl PgStream {
                     // setting of backend parameters
 
                     let ParameterStatus { name, value } = message.decode()?;
-                    // TODO: handle `client_encoding`, `DateStyle` change
+                    // TODO: support handle `client_encoding`, `DateStyle` change
 
                     match name.as_str() {
                         "server_version" => {
