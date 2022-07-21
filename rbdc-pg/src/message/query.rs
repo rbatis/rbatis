@@ -1,4 +1,4 @@
-use crate::io::{BufMutExt, Encode};
+use rbdc::io::{BufMutExt, Encode};
 
 #[derive(Debug)]
 pub struct Query<'a>(pub &'a str);

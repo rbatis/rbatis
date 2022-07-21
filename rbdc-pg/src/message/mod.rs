@@ -1,8 +1,5 @@
 use bytes::Bytes;
 
-use crate::error::Error;
-use crate::io::Decode;
-
 mod authentication;
 mod backend_key_data;
 mod bind;
@@ -44,6 +41,8 @@ pub use parameter_status::ParameterStatus;
 pub use parse::Parse;
 pub use password::Password;
 pub use query::Query;
+use rbdc::io::Decode;
+use rbdc::{err_protocol, Error};
 pub use ready_for_query::{ReadyForQuery, TransactionStatus};
 pub use response::{Notice, PgSeverity};
 pub use row_description::RowDescription;

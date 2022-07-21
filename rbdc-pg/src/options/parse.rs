@@ -1,22 +1,29 @@
-use crate::error::Error;
-use crate::postgres::PgConnectOptions;
+use crate::options::PgConnectOptions;
 use percent_encoding::percent_decode_str;
+use rbdc::error::Error;
 use std::net::IpAddr;
+use std::num::ParseIntError;
 use std::str::FromStr;
-use url::Url;
+use url::{ParseError, Url};
 
 impl FromStr for PgConnectOptions {
     type Err = Error;
 
     fn from_str(s: &str) -> Result<Self, Error> {
-        let url: Url = s.parse().map_err(Error::config)?;
+        let url: Url = s
+            .parse()
+            .map_err(|e: url::ParseError| Error::from(e.to_string()))?;
 
         let mut options = Self::new_without_pgpass();
 
         if let Some(host) = url.host_str() {
             let host_decoded = percent_decode_str(host);
             options = match host_decoded.clone().next() {
-                Some(b'/') => options.socket(&*host_decoded.decode_utf8().map_err(Error::config)?),
+                Some(b'/') => options.socket(
+                    &*host_decoded
+                        .decode_utf8()
+                        .map_err(|e| Error::from(e.to_string()))?,
+                ),
                 _ => options.host(host),
             }
         }
@@ -30,7 +37,7 @@ impl FromStr for PgConnectOptions {
             options = options.username(
                 &*percent_decode_str(username)
                     .decode_utf8()
-                    .map_err(Error::config)?,
+                    .map_err(|e| Error::from(e.to_string()))?,
             );
         }
 
@@ -38,7 +45,7 @@ impl FromStr for PgConnectOptions {
             options = options.password(
                 &*percent_decode_str(password)
                     .decode_utf8()
-                    .map_err(Error::config)?,
+                    .map_err(|e| Error::from(e.to_string()))?,
             );
         }
 
@@ -50,7 +57,7 @@ impl FromStr for PgConnectOptions {
         for (key, value) in url.query_pairs().into_iter() {
             match &*key {
                 "sslmode" | "ssl-mode" => {
-                    options = options.ssl_mode(value.parse().map_err(Error::config)?);
+                    options = options.ssl_mode(value.parse()?);
                 }
 
                 "sslrootcert" | "ssl-root-cert" | "ssl-ca" => {
@@ -58,8 +65,11 @@ impl FromStr for PgConnectOptions {
                 }
 
                 "statement-cache-capacity" => {
-                    options =
-                        options.statement_cache_capacity(value.parse().map_err(Error::config)?);
+                    options = options.statement_cache_capacity(
+                        value
+                            .parse()
+                            .map_err(|e: ParseIntError| Error::E(e.to_string()))?,
+                    );
                 }
 
                 "host" => {
@@ -71,11 +81,19 @@ impl FromStr for PgConnectOptions {
                 }
 
                 "hostaddr" => {
-                    value.parse::<IpAddr>().map_err(Error::config)?;
+                    value
+                        .parse::<IpAddr>()
+                        .map_err(|e| Error::from(e.to_string()))?;
                     options = options.host(&*value)
                 }
 
-                "port" => options = options.port(value.parse().map_err(Error::config)?),
+                "port" => {
+                    options = options.port(
+                        value
+                            .parse()
+                            .map_err(|e: ParseIntError| Error::from(e.to_string()))?,
+                    )
+                }
 
                 "dbname" => options = options.database(&*value),
 

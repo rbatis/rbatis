@@ -1,15 +1,14 @@
-use crate::error::Error;
-use crate::ext::ustr::UStr;
-use crate::postgres::message::{ParameterDescription, RowDescription};
-use crate::postgres::statement::PgStatementMetadata;
-use crate::postgres::type_info::{PgCustomType, PgType, PgTypeKind};
-use crate::postgres::types::Oid;
-use crate::postgres::{PgArguments, PgColumn, PgConnection, PgTypeInfo};
-use crate::query_as::query_as;
-use crate::query_scalar::{query_scalar, query_scalar_with};
-use crate::types::Json;
-use crate::HashMap;
+use crate::arguments::PgArguments;
+use crate::column::PgColumn;
+use crate::connection::PgConnection;
+use crate::message::{ParameterDescription, RowDescription};
+use crate::statement::PgStatementMetadata;
+use crate::type_info::{PgCustomType, PgType, PgTypeInfo, PgTypeKind};
+use crate::types::Oid;
 use futures_core::future::BoxFuture;
+use rbdc::ext::ustr::UStr;
+use rbdc::Error;
+use std::collections::HashMap;
 use std::fmt::Write;
 use std::sync::Arc;
 
@@ -185,156 +184,56 @@ impl PgConnection {
 
     fn fetch_type_by_oid(&mut self, oid: Oid) -> BoxFuture<'_, Result<PgTypeInfo, Error>> {
         Box::pin(async move {
-            let (name, typ_type, category, relation_id, element, base_type): (String, i8, i8, Oid, Oid, Oid) = query_as(
-                "SELECT typname, typtype, typcategory, typrelid, typelem, typbasetype FROM pg_catalog.pg_type WHERE oid = $1",
-            )
-            .bind(oid)
-            .fetch_one(&mut *self)
-            .await?;
-
-            let typ_type = TypType::try_from(typ_type as u8);
-            let category = TypCategory::try_from(category as u8);
-
-            match (typ_type, category) {
-                (Ok(TypType::Domain), _) => self.fetch_domain_by_oid(oid, base_type, name).await,
-
-                (Ok(TypType::Base), Ok(TypCategory::Array)) => {
-                    Ok(PgTypeInfo(PgType::Custom(Arc::new(PgCustomType {
-                        kind: PgTypeKind::Array(
-                            self.maybe_fetch_type_info_by_oid(element, true).await?,
-                        ),
-                        name: name.into(),
-                        oid,
-                    }))))
-                }
-
-                (Ok(TypType::Pseudo), Ok(TypCategory::Pseudo)) => {
-                    Ok(PgTypeInfo(PgType::Custom(Arc::new(PgCustomType {
-                        kind: PgTypeKind::Pseudo,
-                        name: name.into(),
-                        oid,
-                    }))))
-                }
-
-                (Ok(TypType::Range), Ok(TypCategory::Range)) => {
-                    self.fetch_range_by_oid(oid, name).await
-                }
-
-                (Ok(TypType::Enum), Ok(TypCategory::Enum)) => {
-                    self.fetch_enum_by_oid(oid, name).await
-                }
-
-                (Ok(TypType::Composite), Ok(TypCategory::Composite)) => {
-                    self.fetch_composite_by_oid(oid, relation_id, name).await
-                }
-
-                _ => Ok(PgTypeInfo(PgType::Custom(Arc::new(PgCustomType {
-                    kind: PgTypeKind::Simple,
-                    name: name.into(),
-                    oid,
-                })))),
-            }
-        })
-    }
-
-    async fn fetch_enum_by_oid(&mut self, oid: Oid, name: String) -> Result<PgTypeInfo, Error> {
-        let variants: Vec<String> = query_scalar(
-            r#"
-SELECT enumlabel
-FROM pg_catalog.pg_enum
-WHERE enumtypid = $1
-ORDER BY enumsortorder
-            "#,
-        )
-        .bind(oid)
-        .fetch_all(self)
-        .await?;
-
-        Ok(PgTypeInfo(PgType::Custom(Arc::new(PgCustomType {
-            oid,
-            name: name.into(),
-            kind: PgTypeKind::Enum(Arc::from(variants)),
-        }))))
-    }
-
-    fn fetch_composite_by_oid(
-        &mut self,
-        oid: Oid,
-        relation_id: Oid,
-        name: String,
-    ) -> BoxFuture<'_, Result<PgTypeInfo, Error>> {
-        Box::pin(async move {
-            let raw_fields: Vec<(String, Oid)> = query_as(
-                r#"
-SELECT attname, atttypid
-FROM pg_catalog.pg_attribute
-WHERE attrelid = $1
-AND NOT attisdropped
-AND attnum > 0
-ORDER BY attnum
-                "#,
-            )
-            .bind(relation_id)
-            .fetch_all(&mut *self)
-            .await?;
-
-            let mut fields = Vec::new();
-
-            for (field_name, field_oid) in raw_fields.into_iter() {
-                let field_type = self.maybe_fetch_type_info_by_oid(field_oid, true).await?;
-
-                fields.push((field_name, field_type));
-            }
-
-            Ok(PgTypeInfo(PgType::Custom(Arc::new(PgCustomType {
-                oid,
-                name: name.into(),
-                kind: PgTypeKind::Composite(Arc::from(fields)),
-            }))))
-        })
-    }
-
-    fn fetch_domain_by_oid(
-        &mut self,
-        oid: Oid,
-        base_type: Oid,
-        name: String,
-    ) -> BoxFuture<'_, Result<PgTypeInfo, Error>> {
-        Box::pin(async move {
-            let base_type = self.maybe_fetch_type_info_by_oid(base_type, true).await?;
-
-            Ok(PgTypeInfo(PgType::Custom(Arc::new(PgCustomType {
-                oid,
-                name: name.into(),
-                kind: PgTypeKind::Domain(base_type),
-            }))))
-        })
-    }
-
-    fn fetch_range_by_oid(
-        &mut self,
-        oid: Oid,
-        name: String,
-    ) -> BoxFuture<'_, Result<PgTypeInfo, Error>> {
-        Box::pin(async move {
-            let element_oid: Oid = query_scalar(
-                r#"
-SELECT rngsubtype
-FROM pg_catalog.pg_range
-WHERE rngtypid = $1
-                "#,
-            )
-            .bind(oid)
-            .fetch_one(&mut *self)
-            .await?;
-
-            let element = self.maybe_fetch_type_info_by_oid(element_oid, true).await?;
-
-            Ok(PgTypeInfo(PgType::Custom(Arc::new(PgCustomType {
-                kind: PgTypeKind::Range(element),
-                name: name.into(),
-                oid,
-            }))))
+            return todo!();
+            // let (name, typ_type, category, relation_id, element, base_type): (String, i8, i8, Oid, Oid, Oid) = query_as(
+            //     "SELECT typname, typtype, typcategory, typrelid, typelem, typbasetype FROM pg_catalog.pg_type WHERE oid = $1",
+            // )
+            //     .bind(oid)
+            //     .fetch_one(&mut *self)
+            //     .await?;
+            //
+            // let typ_type = TypType::try_from(typ_type as u8);
+            // let category = TypCategory::try_from(category as u8);
+            //
+            // match (typ_type, category) {
+            //     (Ok(TypType::Domain), _) => self.fetch_domain_by_oid(oid, base_type, name).await,
+            //
+            //     (Ok(TypType::Base), Ok(TypCategory::Array)) => {
+            //         Ok(PgTypeInfo(PgType::Custom(Arc::new(PgCustomType {
+            //             kind: PgTypeKind::Array(
+            //                 self.maybe_fetch_type_info_by_oid(element, true).await?,
+            //             ),
+            //             name: name.into(),
+            //             oid,
+            //         }))))
+            //     }
+            //
+            //     (Ok(TypType::Pseudo), Ok(TypCategory::Pseudo)) => {
+            //         Ok(PgTypeInfo(PgType::Custom(Arc::new(PgCustomType {
+            //             kind: PgTypeKind::Pseudo,
+            //             name: name.into(),
+            //             oid,
+            //         }))))
+            //     }
+            //
+            //     (Ok(TypType::Range), Ok(TypCategory::Range)) => {
+            //         self.fetch_range_by_oid(oid, name).await
+            //     }
+            //
+            //     (Ok(TypType::Enum), Ok(TypCategory::Enum)) => {
+            //         self.fetch_enum_by_oid(oid, name).await
+            //     }
+            //
+            //     (Ok(TypType::Composite), Ok(TypCategory::Composite)) => {
+            //         self.fetch_composite_by_oid(oid, relation_id, name).await
+            //     }
+            //
+            //     _ => Ok(PgTypeInfo(PgType::Custom(Arc::new(PgCustomType {
+            //         kind: PgTypeKind::Simple,
+            //         name: name.into(),
+            //         oid,
+            //     })))),
+            // }
         })
     }
 
@@ -343,122 +242,22 @@ WHERE rngtypid = $1
             return Ok(*oid);
         }
 
+        return todo!();
         // language=SQL
-        let (oid,): (Oid,) = query_as(
-            "
-SELECT oid FROM pg_catalog.pg_type WHERE typname ILIKE $1
-                ",
-        )
-        .bind(name)
-        .fetch_optional(&mut *self)
-        .await?
-        .ok_or_else(|| Error::TypeNotFound {
-            type_name: String::from(name),
-        })?;
+        //         let (oid,): (Oid,) = query_as(
+        //             "
+        // SELECT oid FROM pg_catalog.pg_type WHERE typname ILIKE $1
+        //                 ",
+        //         )
+        //         .bind(name)
+        //         .fetch_optional(&mut *self)
+        //         .await?
+        //         .ok_or_else(|| Error::TypeNotFound {
+        //             type_name: String::from(name),
+        //         })?;
 
-        self.cache_type_oid.insert(name.to_string().into(), oid);
-        Ok(oid)
-    }
-
-    pub(crate) async fn get_nullable_for_columns(
-        &mut self,
-        stmt_id: Oid,
-        meta: &PgStatementMetadata,
-    ) -> Result<Vec<Option<bool>>, Error> {
-        if meta.columns.is_empty() {
-            return Ok(vec![]);
-        }
-
-        let mut nullable_query = String::from("SELECT NOT pg_attribute.attnotnull FROM (VALUES ");
-        let mut args = PgArguments::default();
-
-        for (i, (column, bind)) in meta.columns.iter().zip((1..).step_by(3)).enumerate() {
-            if !args.buffer.is_empty() {
-                nullable_query += ", ";
-            }
-
-            let _ = write!(
-                nullable_query,
-                "(${}::int4, ${}::int4, ${}::int2)",
-                bind,
-                bind + 1,
-                bind + 2
-            );
-
-            args.add(i as i32);
-            args.add(column.relation_id);
-            args.add(column.relation_attribute_no);
-        }
-
-        nullable_query.push_str(
-            ") as col(idx, table_id, col_idx) \
-            LEFT JOIN pg_catalog.pg_attribute \
-                ON table_id IS NOT NULL \
-               AND attrelid = table_id \
-               AND attnum = col_idx \
-            ORDER BY col.idx",
-        );
-
-        let mut nullables = query_scalar_with::<_, Option<bool>, _>(&nullable_query, args)
-            .fetch_all(&mut *self)
-            .await?;
-
-        // if it's cockroachdb skip this step #1248
-        if !self.stream.parameter_statuses.contains_key("crdb_version") {
-            // patch up our null inference with data from EXPLAIN
-            let nullable_patch = self
-                .nullables_from_explain(stmt_id, meta.parameters.len())
-                .await?;
-
-            for (nullable, patch) in nullables.iter_mut().zip(nullable_patch) {
-                *nullable = patch.or(*nullable);
-            }
-        }
-
-        Ok(nullables)
-    }
-
-    /// Infer nullability for columns of this statement using EXPLAIN VERBOSE.
-    ///
-    /// This currently only marks columns that are on the inner half of an outer join
-    /// and returns `None` for all others.
-    async fn nullables_from_explain(
-        &mut self,
-        stmt_id: Oid,
-        params_len: usize,
-    ) -> Result<Vec<Option<bool>>, Error> {
-        let mut explain = format!(
-            "EXPLAIN (VERBOSE, FORMAT JSON) EXECUTE sqlx_s_{}",
-            stmt_id.0
-        );
-        let mut comma = false;
-
-        if params_len > 0 {
-            explain += "(";
-
-            // fill the arguments list with NULL, which should theoretically be valid
-            for _ in 0..params_len {
-                if comma {
-                    explain += ", ";
-                }
-
-                explain += "NULL";
-                comma = true;
-            }
-
-            explain += ")";
-        }
-
-        let (Json([explain]),): (Json<[Explain; 1]>,) = query_as(&explain).fetch_one(self).await?;
-
-        let mut nullables = Vec::new();
-
-        if let Some(outputs) = &explain.plan.output {
-            nullables.resize(outputs.len(), None);
-            visit_plan(&explain.plan, outputs, &mut nullables);
-        }
-
-        Ok(nullables)
+        //self.cache_type_oid.insert(name.to_string().into(), oid);
+        //Ok(oid)
     }
 }
 

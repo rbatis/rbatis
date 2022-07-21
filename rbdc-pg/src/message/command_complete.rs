@@ -1,9 +1,8 @@
 use atoi::atoi;
 use bytes::Bytes;
 use memchr::memrchr;
-
-use crate::error::Error;
-use crate::io::Decode;
+use rbdc::io::Decode;
+use rbdc::Error;
 
 #[derive(Debug)]
 pub struct CommandComplete {

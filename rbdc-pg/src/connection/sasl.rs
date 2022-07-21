@@ -1,11 +1,11 @@
-use crate::error::Error;
-use crate::postgres::connection::stream::PgStream;
-use crate::postgres::message::{
+use crate::connection::stream::PgStream;
+use crate::message::{
     Authentication, AuthenticationSasl, MessageFormat, SaslInitialResponse, SaslResponse,
 };
-use crate::postgres::PgConnectOptions;
+use crate::options::PgConnectOptions;
 use hmac::{Hmac, Mac};
 use rand::Rng;
+use rbdc::{err_protocol, Error};
 use sha2::{Digest, Sha256};
 use stringprep::saslprep;
 
@@ -97,7 +97,8 @@ pub(crate) async fn authenticate(
     )?;
 
     // ClientKey := HMAC(SaltedPassword, "Client Key")
-    let mut mac = Hmac::<Sha256>::new_from_slice(&salted_password).map_err(Error::protocol)?;
+    let mut mac =
+        Hmac::<Sha256>::new_from_slice(&salted_password).map_err(|e| Error::from(e.to_string()))?;
     mac.update(b"Client Key");
 
     let client_key = mac.finalize().into_bytes();

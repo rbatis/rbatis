@@ -1,23 +1,21 @@
-use std::fmt::{self, Debug, Formatter};
-use std::sync::Arc;
-
-use crate::HashMap;
-use futures_core::future::BoxFuture;
-use futures_util::{FutureExt, TryFutureExt};
-
-use crate::common::StatementCache;
-use crate::connection::{Connection, LogSettings};
-use crate::error::Error;
-use crate::executor::Executor;
-use crate::ext::ustr::UStr;
-use crate::io::Decode;
-use crate::postgres::message::{
+use crate::message::{
     Close, Message, MessageFormat, Query, ReadyForQuery, Terminate, TransactionStatus,
 };
-use crate::postgres::statement::PgStatementMetadata;
-use crate::postgres::types::Oid;
-use crate::postgres::{PgConnectOptions, PgTypeInfo, Postgres};
-use crate::transaction::Transaction;
+use crate::options::PgConnectOptions;
+use crate::statement::PgStatementMetadata;
+use crate::type_info::PgTypeInfo;
+use crate::types::Oid;
+use futures_core::future::BoxFuture;
+use futures_util::{FutureExt, TryFutureExt};
+use rbdc::common::StatementCache;
+use rbdc::db::{Connection, Row};
+use rbdc::ext::ustr::UStr;
+use rbdc::io::Decode;
+use rbdc::Error;
+use rbs::Value;
+use std::collections::HashMap;
+use std::fmt::{self, Debug, Formatter};
+use std::sync::Arc;
 
 pub use self::stream::PgStream;
 
@@ -62,8 +60,6 @@ pub struct PgConnection {
     // current transaction status
     transaction_status: TransactionStatus,
     pub(crate) transaction_depth: usize,
-
-    log_settings: LogSettings,
 }
 
 impl PgConnection {
@@ -73,7 +69,7 @@ impl PgConnection {
     }
 
     // will return when the connection is ready for another query
-    pub(in crate::postgres) async fn wait_until_ready(&mut self) -> Result<(), Error> {
+    pub async fn wait_until_ready(&mut self) -> Result<(), Error> {
         if !self.stream.wbuf.is_empty() {
             self.stream.flush().await?;
         }
@@ -122,39 +118,7 @@ impl Debug for PgConnection {
         f.debug_struct("PgConnection").finish()
     }
 }
-
-impl Connection for PgConnection {
-    type Database = Postgres;
-
-    type Options = PgConnectOptions;
-
-    fn close(mut self) -> BoxFuture<'static, Result<(), Error>> {
-        // The normal, graceful termination procedure is that the frontend sends a Terminate
-        // message and immediately closes the connection.
-
-        // On receipt of this message, the backend closes the
-        // connection and terminates.
-
-        Box::pin(async move {
-            self.stream.send(Terminate).await?;
-            self.stream.shutdown().await?;
-
-            Ok(())
-        })
-    }
-
-    fn ping(&mut self) -> BoxFuture<'_, Result<(), Error>> {
-        // By sending a comment we avoid an error if the connection was in the middle of a rowset
-        self.execute("/* SQLx ping */").map_ok(|_| ()).boxed()
-    }
-
-    fn begin(&mut self) -> BoxFuture<'_, Result<Transaction<'_, Self::Database>, Error>>
-    where
-        Self: Sized,
-    {
-        Transaction::begin(self)
-    }
-
+impl PgConnection {
     fn cached_statements_size(&self) -> usize {
         self.cache_statement.len()
     }
@@ -181,14 +145,52 @@ impl Connection for PgConnection {
             Ok(())
         })
     }
-
+    #[doc(hidden)]
+    fn should_flush(&self) -> bool {
+        !self.stream.wbuf.is_empty()
+    }
     #[doc(hidden)]
     fn flush(&mut self) -> BoxFuture<'_, Result<(), Error>> {
         self.wait_until_ready().boxed()
     }
+}
+impl PgConnection {
+    fn close(mut self) -> BoxFuture<'static, Result<(), Error>> {
+        // The normal, graceful termination procedure is that the frontend sends a Terminate
+        // message and immediately closes the connection.
 
-    #[doc(hidden)]
-    fn should_flush(&self) -> bool {
-        !self.stream.wbuf.is_empty()
+        // On receipt of this message, the backend closes the
+        // connection and terminates.
+        Box::pin(async move {
+            self.stream.send(Terminate).await?;
+            self.stream.shutdown().await?;
+
+            Ok(())
+        })
+    }
+}
+
+impl Connection for PgConnection {
+    fn close(&mut self) -> BoxFuture<'static, Result<(), Error>> {
+        let c = self.close();
+        Box::pin(async move { c.await })
+    }
+
+    fn ping(&mut self) -> BoxFuture<'_, Result<(), Error>> {
+        // By sending a comment we avoid an error if the connection was in the middle of a rowset
+        // self.execute("/* SQLx ping */").map_ok(|_| ()).boxed()
+        todo!()
+    }
+
+    fn get_rows(
+        &mut self,
+        sql: &str,
+        params: Vec<Value>,
+    ) -> BoxFuture<Result<Vec<Box<dyn Row>>, Error>> {
+        todo!()
+    }
+
+    fn exec(&mut self, sql: &str, params: Vec<Value>) -> BoxFuture<Result<u64, Error>> {
+        todo!()
     }
 }

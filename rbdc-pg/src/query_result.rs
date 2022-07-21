@@ -18,13 +18,3 @@ impl Extend<PgQueryResult> for PgQueryResult {
         }
     }
 }
-
-#[cfg(feature = "any")]
-impl From<PgQueryResult> for crate::any::AnyQueryResult {
-    fn from(done: PgQueryResult) -> Self {
-        crate::any::AnyQueryResult {
-            rows_affected: done.rows_affected,
-            last_insert_id: None,
-        }
-    }
-}

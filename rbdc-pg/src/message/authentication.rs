@@ -2,9 +2,8 @@ use std::str::from_utf8;
 
 use bytes::{Buf, Bytes};
 use memchr::memchr;
-
-use crate::error::Error;
-use crate::io::Decode;
+use rbdc::io::Decode;
+use rbdc::{err_protocol, Error};
 
 // On startup, the server sends an appropriate authentication request message,
 // to which the frontend must reply with an appropriate authentication
@@ -150,7 +149,7 @@ impl Decode<'_> for AuthenticationSaslContinue {
                 }
 
                 b's' => {
-                    salt = base64::decode(value).map_err(Error::protocol)?;
+                    salt = base64::decode(value).map_err(|e| Error::from(e.to_string()))?;
                 }
 
                 _ => {}

@@ -1,8 +1,8 @@
 use std::i16;
 
-use crate::io::{BufMutExt, Encode};
-use crate::postgres::io::PgBufMutExt;
-use crate::postgres::types::Oid;
+use crate::io::PgBufMutExt;
+use crate::types::Oid;
+use rbdc::io::{BufMutExt, Encode};
 
 #[derive(Debug)]
 pub struct Parse<'a> {

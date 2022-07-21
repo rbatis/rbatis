@@ -6,13 +6,13 @@ use bytes::{Buf, Bytes};
 use futures_channel::mpsc::UnboundedSender;
 use futures_util::SinkExt;
 use log::Level;
+use rbdc::err_protocol;
 
-use crate::error::Error;
-use crate::io::{BufStream, Decode, Encode};
-use crate::net::{MaybeTlsStream, Socket};
-use crate::postgres::message::{Message, MessageFormat, Notice, Notification, ParameterStatus};
-use crate::postgres::{PgConnectOptions, PgDatabaseError, PgSeverity};
-
+use crate::message::*;
+use crate::options::PgConnectOptions;
+use rbdc::error::Error;
+use rbdc::io::{BufStream, Decode, Encode};
+use rbdc::net::{MaybeTlsStream, Socket};
 // the stream is a separate type from the connection to uphold the invariant where an instantiated
 // [PgConnection] is a **valid** connection to postgres
 
@@ -36,7 +36,7 @@ pub struct PgStream {
 }
 
 impl PgStream {
-    pub(super) async fn connect(options: &PgConnectOptions) -> Result<Self, Error> {
+    pub async fn connect(options: &PgConnectOptions) -> Result<Self, Error> {
         let socket = match options.fetch_socket() {
             Some(ref path) => Socket::connect_uds(path).await?,
             None => Socket::connect_tcp(&options.host, options.port).await?,
@@ -100,7 +100,7 @@ impl PgStream {
             match message.format {
                 MessageFormat::ErrorResponse => {
                     // An error returned from the database server.
-                    return Err(PgDatabaseError(message.decode()?).into());
+                    return Err(Error::E(format!("db:{:?}", message.decode::<Notice>()?)));
                 }
 
                 MessageFormat::NotificationResponse => {

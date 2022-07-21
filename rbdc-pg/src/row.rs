@@ -1,10 +1,8 @@
-use crate::column::ColumnIndex;
-use crate::error::Error;
-use crate::postgres::message::DataRow;
-use crate::postgres::statement::PgStatementMetadata;
-use crate::postgres::value::PgValueFormat;
-use crate::postgres::{PgColumn, PgValueRef, Postgres};
-use crate::row::Row;
+use crate::column::PgColumn;
+use crate::message::DataRow;
+use crate::statement::PgStatementMetadata;
+use crate::value::{PgValueFormat, PgValueRef};
+use rbdc::Error;
 use std::sync::Arc;
 
 /// Implementation of [`Row`] for PostgreSQL.
@@ -14,20 +12,13 @@ pub struct PgRow {
     pub(crate) metadata: Arc<PgStatementMetadata>,
 }
 
-impl crate::row::private_row::Sealed for PgRow {}
-
-impl Row for PgRow {
-    type Database = Postgres;
-
-    fn columns(&self) -> &[PgColumn] {
+impl PgRow {
+    pub fn columns(&self) -> &[PgColumn] {
         &self.metadata.columns
     }
 
-    fn try_get_raw<I>(&self, index: I) -> Result<PgValueRef<'_>, Error>
-    where
-        I: ColumnIndex<Self>,
-    {
-        let index = index.index(self)?;
+    pub fn try_get_raw(&self, index: &str) -> Result<PgValueRef<'_>, Error> {
+        let index = self.index(index)?;
         let column = &self.metadata.columns[index];
         let value = self.data.get(index);
 
@@ -40,29 +31,12 @@ impl Row for PgRow {
     }
 }
 
-impl ColumnIndex<PgRow> for &'_ str {
-    fn index(&self, row: &PgRow) -> Result<usize, Error> {
-        row.metadata
+impl PgRow {
+    pub fn index(&self, idx: &str) -> Result<usize, Error> {
+        self.metadata
             .column_names
-            .get(*self)
-            .ok_or_else(|| Error::ColumnNotFound((*self).into()))
+            .get(idx)
+            .ok_or_else(|| Error::E("ColumnNotFound=".to_string() + idx))
             .map(|v| *v)
-    }
-}
-
-#[cfg(feature = "any")]
-impl From<PgRow> for crate::any::AnyRow {
-    #[inline]
-    fn from(row: PgRow) -> Self {
-        crate::any::AnyRow {
-            columns: row
-                .metadata
-                .columns
-                .iter()
-                .map(|col| col.clone().into())
-                .collect(),
-
-            kind: crate::any::row::AnyRowKind::Postgres(row),
-        }
     }
 }

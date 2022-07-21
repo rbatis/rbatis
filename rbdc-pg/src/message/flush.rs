@@ -1,4 +1,4 @@
-use crate::io::Encode;
+use rbdc::io::Encode;
 
 // The Flush message does not cause any specific output to be generated,
 // but forces the backend to deliver any data pending in its output buffers.
