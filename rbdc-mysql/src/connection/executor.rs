@@ -83,8 +83,8 @@ impl MySqlConnection {
     }
 
     #[allow(clippy::needless_lifetimes)]
-    async fn run<'e, 'c: 'e, 'q: 'e>(
-        &'c mut self,
+    async fn run<'e, 'q: 'e>(
+        &'e mut self,
         sql: &'q str,
         arguments: Option<MySqlArguments>,
         persistent: bool,

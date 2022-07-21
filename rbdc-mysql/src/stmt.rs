@@ -33,7 +33,7 @@ pub struct MySqlArguments {
 impl MySqlArguments {
     pub fn add(&mut self, arg: Value) {
         let index = self.types.len();
-        // let ty = arg.encode(&mut self.values);
+        //types::encode
         let ty: MySqlTypeInfo = ((arg, &mut self.values)).into();
         let is_null = ty.r#type.eq(&ColumnType::Null);
         self.types.push(ty);
