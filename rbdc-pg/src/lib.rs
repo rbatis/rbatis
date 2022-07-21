@@ -5,6 +5,7 @@ pub mod driver;
 pub mod error;
 pub mod io;
 pub mod message;
+pub mod meta_data;
 pub mod options;
 pub mod query;
 pub mod query_result;

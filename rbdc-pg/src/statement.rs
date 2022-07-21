@@ -14,7 +14,7 @@ pub struct PgStatement {
 }
 
 #[derive(Debug, Default)]
-pub(crate) struct PgStatementMetadata {
+pub struct PgStatementMetadata {
     pub(crate) columns: Vec<PgColumn>,
     pub(crate) column_names: HashMap<UStr, usize>,
     pub(crate) parameters: Vec<PgTypeInfo>,

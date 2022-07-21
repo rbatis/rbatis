@@ -2,10 +2,13 @@ use crate::column::PgColumn;
 use crate::message::DataRow;
 use crate::statement::PgStatementMetadata;
 use crate::value::{PgValueFormat, PgValueRef};
+use rbdc::db::MetaData;
 use rbdc::Error;
+use rbs::Value;
 use std::sync::Arc;
 
 /// Implementation of [`Row`] for PostgreSQL.
+#[derive(Debug)]
 pub struct PgRow {
     pub(crate) data: DataRow,
     pub(crate) format: PgValueFormat,
@@ -38,5 +41,15 @@ impl PgRow {
             .get(idx)
             .ok_or_else(|| Error::E("ColumnNotFound=".to_string() + idx))
             .map(|v| *v)
+    }
+}
+
+impl rbdc::db::Row for PgRow {
+    fn meta_data(&self) -> Box<dyn MetaData> {
+        todo!()
+    }
+
+    fn get(&mut self, i: usize) -> Option<Value> {
+        todo!()
     }
 }
