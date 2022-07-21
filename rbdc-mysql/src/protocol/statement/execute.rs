@@ -41,20 +41,16 @@ impl<'q> Encode<'_, Capabilities> for Execute<'q> {
 
             for ty in &self.arguments.types {
                 buf.push(ty.r#type as u8);
-
-                // buf.push(if ty.flags.contains(ColumnFlags::UNSIGNED) {
-                //     0x80
-                // } else {
-                //     0
-                // });
-
+                buf.push(if ty.flags.contains(ColumnFlags::UNSIGNED) {
+                    0x80
+                } else {
+                    0
+                });
                 //ColumnType::Tiny if is_unsigned => "TINYINT UNSIGNED",
                 //         ColumnType::Short if is_unsigned => "SMALLINT UNSIGNED",
                 //         ColumnType::Long if is_unsigned => "INT UNSIGNED",
                 //         ColumnType::Int24 if is_unsigned => "MEDIUMINT UNSIGNED",
                 //         ColumnType::LongLong if is_unsigned => "BIGINT UNSIGNED",
-
-                buf.push(if false { 0x80 } else { 0 });
             }
 
             buf.extend(&*self.arguments.values);
