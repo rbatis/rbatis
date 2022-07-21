@@ -184,8 +184,7 @@ impl PgConnection {
 
     fn fetch_type_by_oid(&mut self, oid: Oid) -> BoxFuture<'_, Result<PgTypeInfo, Error>> {
         Box::pin(async move {
-            return todo!();
-            // let (name, typ_type, category, relation_id, element, base_type): (String, i8, i8, Oid, Oid, Oid) = query_as(
+            //TODO let (name, typ_type, category, relation_id, element, base_type): (String, i8, i8, Oid, Oid, Oid) = query_as(
             //     "SELECT typname, typtype, typcategory, typrelid, typelem, typbasetype FROM pg_catalog.pg_type WHERE oid = $1",
             // )
             //     .bind(oid)
@@ -234,6 +233,7 @@ impl PgConnection {
             //         oid,
             //     })))),
             // }
+            todo!()
         })
     }
 
@@ -242,8 +242,7 @@ impl PgConnection {
             return Ok(*oid);
         }
 
-        return todo!();
-        // language=SQL
+        //TODO language=SQL
         //         let (oid,): (Oid,) = query_as(
         //             "
         // SELECT oid FROM pg_catalog.pg_type WHERE typname ILIKE $1
@@ -255,9 +254,9 @@ impl PgConnection {
         //         .ok_or_else(|| Error::TypeNotFound {
         //             type_name: String::from(name),
         //         })?;
-
         //self.cache_type_oid.insert(name.to_string().into(), oid);
         //Ok(oid)
+        todo!()
     }
 }
 
