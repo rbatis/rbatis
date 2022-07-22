@@ -1,3 +1,4 @@
+use crate::type_info::PgTypeInfo;
 use rbs::Value;
 
 pub enum IsNull {
@@ -5,11 +6,11 @@ pub enum IsNull {
     Yes,
 }
 pub trait Encode {
-    fn encode(self) -> IsNull;
+    fn encode(self) -> (IsNull, PgTypeInfo);
 }
 
 impl Encode for Value {
-    fn encode(self) -> IsNull {
+    fn encode(self) -> (IsNull, PgTypeInfo) {
         todo!()
     }
 }
