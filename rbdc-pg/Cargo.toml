@@ -30,5 +30,6 @@ url="2.2.2"
 base64="0.13.0"
 dirs = { version = "4.0.0" }
 whoami = { version = "1.2.1" }
+fastdate = "0.1"
 [dev-dependencies]
 tokio = {version="1",features = ["full"]}

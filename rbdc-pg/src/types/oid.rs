@@ -42,6 +42,12 @@ impl Oid {
     }
 }
 
+impl From<u32> for Oid {
+    fn from(arg: u32) -> Self {
+        Oid(arg)
+    }
+}
+
 impl Oid {
     pub fn decode(value: PgValueRef<'_>) -> Result<Self, Error> {
         Ok(Self(match value.format() {
