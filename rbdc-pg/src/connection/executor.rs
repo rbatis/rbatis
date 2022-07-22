@@ -332,7 +332,7 @@ impl PgConnection {
 }
 
 impl PgConnection {
-    fn fetch_many(
+    pub fn fetch_many(
         &mut self,
         mut query: PgQuery,
     ) -> BoxStream<'_, Result<Either<PgQueryResult, PgRow>, Error>> {
@@ -352,7 +352,7 @@ impl PgConnection {
         })
     }
 
-    fn fetch_optional(
+    pub fn fetch_optional(
         &mut self,
         mut query: PgQuery,
     ) -> BoxFuture<'_, Result<Option<PgRow>, Error>> {
@@ -374,15 +374,15 @@ impl PgConnection {
         })
     }
 
-    fn prepare_with<'e, 'q: 'e>(
-        mut self,
-        sql: &'q str,
-        parameters: &'e [PgTypeInfo],
-    ) -> BoxFuture<'e, Result<PgStatement, Error>> {
+    pub fn prepare_with<'a>(
+        &'a mut self,
+        sql: String,
+        parameters: &'a [PgTypeInfo],
+    ) -> BoxFuture<'_, Result<PgStatement, Error>> {
         Box::pin(async move {
             self.wait_until_ready().await?;
 
-            let (_, metadata) = self.get_or_prepare(sql, parameters, true, None).await?;
+            let (_, metadata) = self.get_or_prepare(&sql, parameters, true, None).await?;
 
             Ok(PgStatement {
                 sql: sql.to_owned(),

@@ -18,7 +18,7 @@ impl PgColumn {
     }
 
     pub fn name(&self) -> &str {
-        &*self.name
+        &self.name
     }
 
     pub fn type_info(&self) -> &PgTypeInfo {

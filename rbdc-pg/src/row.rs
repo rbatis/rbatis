@@ -1,7 +1,8 @@
 use crate::column::PgColumn;
 use crate::message::DataRow;
+use crate::meta_data::PgMetaData;
 use crate::statement::PgStatementMetadata;
-use crate::value::{PgValueFormat, PgValueRef};
+use crate::value::{PgValue, PgValueFormat, PgValueRef};
 use rbdc::db::MetaData;
 use rbdc::Error;
 use rbs::Value;
@@ -27,9 +28,21 @@ impl PgRow {
 
         Ok(PgValueRef {
             format: self.format,
-            row: Some(&self.data.storage),
             type_info: column.type_info.clone(),
             value,
+        })
+    }
+
+    pub fn try_take(&mut self, index: usize) -> Result<PgValue, Error> {
+        if (index + 1) > self.metadata.column_names.len() {
+            return Err(Error::from(format!("ColumnNotFound={}", index)));
+        }
+        let column = &self.metadata.columns[index];
+        let value = self.data.take(index);
+        Ok(PgValue {
+            value: value,
+            type_info: column.type_info.clone(),
+            format: self.format,
         })
     }
 }
@@ -46,10 +59,15 @@ impl PgRow {
 
 impl rbdc::db::Row for PgRow {
     fn meta_data(&self) -> Box<dyn MetaData> {
-        todo!()
+        Box::new(PgMetaData {
+            metadata: self.metadata.clone(),
+        })
     }
 
     fn get(&mut self, i: usize) -> Option<Value> {
-        todo!()
+        match self.try_take(i) {
+            Err(_) => None,
+            Ok(v) => Some(Value::from(v)),
+        }
     }
 }

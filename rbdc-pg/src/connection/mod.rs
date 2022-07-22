@@ -2,11 +2,13 @@ use crate::message::{
     Close, Message, MessageFormat, Query, ReadyForQuery, Terminate, TransactionStatus,
 };
 use crate::options::PgConnectOptions;
+use crate::query::PgQuery;
 use crate::statement::PgStatementMetadata;
 use crate::type_info::PgTypeInfo;
 use crate::types::Oid;
+use either::Either;
 use futures_core::future::BoxFuture;
-use futures_util::{FutureExt, TryFutureExt};
+use futures_util::{FutureExt, StreamExt, TryFutureExt};
 use rbdc::common::StatementCache;
 use rbdc::db::{Connection, Row};
 use rbdc::ext::ustr::UStr;
@@ -178,8 +180,7 @@ impl Connection for PgConnection {
 
     fn ping(&mut self) -> BoxFuture<'_, Result<(), Error>> {
         // By sending a comment we avoid an error if the connection was in the middle of a rowset
-        // self.execute("/* SQLx ping */").map_ok(|_| ()).boxed()
-        todo!()
+        self.exec("/* RBDC ping */", vec![]).map_ok(|_| ()).boxed()
     }
 
     fn get_rows(
@@ -187,10 +188,80 @@ impl Connection for PgConnection {
         sql: &str,
         params: Vec<Value>,
     ) -> BoxFuture<Result<Vec<Box<dyn Row>>, Error>> {
-        todo!()
+        let sql = sql.to_owned();
+        Box::pin(async move {
+            if params.len() == 0 {
+                let mut many = self.fetch_many(PgQuery {
+                    statement: Either::Left(sql),
+                    arguments: params,
+                    persistent: false,
+                });
+                let mut data: Vec<Box<dyn Row>> = Vec::new();
+                while let Some(item) = many.next().await {
+                    match item? {
+                        Either::Left(l) => {}
+                        Either::Right(r) => {
+                            data.push(Box::new(r));
+                        }
+                    }
+                }
+                return Ok(data);
+            } else {
+                let stmt = self.prepare_with(sql, &[]).await?;
+                let mut many = self.fetch_many(PgQuery {
+                    statement: Either::Right(stmt),
+                    arguments: params,
+                    persistent: true,
+                });
+                let mut data: Vec<Box<dyn Row>> = Vec::new();
+                while let Some(item) = many.next().await {
+                    match item? {
+                        Either::Left(l) => {}
+                        Either::Right(r) => {
+                            data.push(Box::new(r));
+                        }
+                    }
+                }
+                return Ok(data);
+            }
+        })
     }
 
     fn exec(&mut self, sql: &str, params: Vec<Value>) -> BoxFuture<Result<u64, Error>> {
-        todo!()
+        let sql = sql.to_owned();
+        Box::pin(async move {
+            if params.len() == 0 {
+                let mut many = self.fetch_many(PgQuery {
+                    statement: Either::Left(sql),
+                    arguments: params,
+                    persistent: false,
+                });
+                while let Some(item) = many.next().await {
+                    match item? {
+                        Either::Left(l) => {
+                            return Ok(l.rows_affected);
+                        }
+                        Either::Right(r) => {}
+                    }
+                }
+                return Ok(0);
+            } else {
+                let stmt = self.prepare_with(sql, &[]).await?;
+                let mut many = self.fetch_many(PgQuery {
+                    statement: Either::Right(stmt),
+                    arguments: params,
+                    persistent: true,
+                });
+                while let Some(item) = many.next().await {
+                    match item? {
+                        Either::Left(l) => {
+                            return Ok(l.rows_affected);
+                        }
+                        Either::Right(r) => {}
+                    }
+                }
+                return Ok(0);
+            }
+        })
     }
 }
