@@ -151,13 +151,10 @@ impl From<PgValue> for Value {
             PgType::Time => {
                 todo!()
             }
-            PgType::Timestamp => Value::String(
-                {
-                    let fast_date: DateTime = Decode::decode(arg).unwrap();
-                    fast_date
-                }
-                .to_string(),
-            ),
+            PgType::Timestamp => Value::String({
+                let fast_date: DateTime = Decode::decode(arg).unwrap();
+                fast_date.to_string()
+            }),
             PgType::TimestampArray => {
                 todo!()
             }
@@ -167,9 +164,10 @@ impl From<PgValue> for Value {
             PgType::TimeArray => {
                 todo!()
             }
-            PgType::Timestamptz => {
-                todo!()
-            }
+            PgType::Timestamptz => Value::String({
+                let fast_date: DateTime = Decode::decode(arg).unwrap();
+                fast_date.to_string()
+            }),
             PgType::TimestamptzArray => {
                 todo!()
             }
@@ -380,19 +378,19 @@ impl Decode for DateTime {
                 epoch + Duration::from_micros(us as u64)
             }
             PgValueFormat::Text => {
+                //2022-07-22 05:22:22.123456+00
                 let s = value.as_str()?;
-                DateTime::from_str(
-                    s,
-                    //TODO if s.contains('+') {
-                    //     // Contains a time-zone specifier
-                    //     // This is given for timestamptz for some reason
-                    //     // Postgres already guarantees this to always be UTC
-                    //     "%Y-%m-%d %H:%M:%S%.f%#z"
-                    // } else {
-                    //     "%Y-%m-%d %H:%M:%S%.f"
-                    // },
-                )
-                .map_err(|e| Error::from(e.to_string()))?
+                let bytes = s.as_bytes();
+                if bytes[bytes.len() - 3] == '+' as u8 {
+                    //have zone
+                    let mut dt = DateTime::from_str(&s[0..s.len() - 3])
+                        .map_err(|e| Error::from(e.to_string()))?;
+                    let hour: i32 = s[s.len() - 2..s.len()].parse().unwrap_or_default();
+                    dt = dt + Duration::from_secs((hour * 3600) as u64);
+                    dt
+                } else {
+                    DateTime::from_str(s).map_err(|e| Error::from(e.to_string()))?
+                }
             }
         })
     }
