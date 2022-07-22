@@ -8,20 +8,54 @@ use rbdc::Error;
 /// A row of data from the database.
 #[derive(Debug)]
 pub struct DataRow {
-    pub(crate) storage: Bytes,
-
+    pub storage: Vec<Option<Vec<u8>>>,
     /// Ranges into the stored row data.
     /// This uses `u32` instead of usize to reduce the size of this type. Values cannot be larger
     /// than `i32` in postgres.
-    pub(crate) values: Vec<Option<Range<u32>>>,
+    pub values: Vec<Option<Range<usize>>>,
 }
 
 impl DataRow {
     #[inline]
     pub(crate) fn get(&self, index: usize) -> Option<&'_ [u8]> {
-        self.values[index]
-            .as_ref()
-            .map(|col| &self.storage[(col.start as usize)..(col.end as usize)])
+        let mut idx = 0;
+        for x in &self.values {
+            if index == idx {
+                match x {
+                    None => return None,
+                    Some(v) => match &self.storage[idx] {
+                        None => {
+                            return None;
+                        }
+                        Some(v) => {
+                            return Some(v);
+                        }
+                    },
+                }
+            }
+            idx += 1;
+        }
+        None
+    }
+
+    #[inline]
+    pub(crate) fn take(&mut self, index: usize) -> Option<Vec<u8>> {
+        let mut idx = 0;
+        for x in &self.values {
+            if index == idx {
+                match x {
+                    None => return None,
+                    Some(_) => {
+                        return match self.storage[idx].take() {
+                            None => None,
+                            Some(v) => Some(v),
+                        }
+                    }
+                }
+            }
+            idx += 1;
+        }
+        None
     }
 }
 
@@ -42,14 +76,22 @@ impl Decode<'_> for DataRow {
             if length < 0 {
                 values.push(None);
             } else {
-                values.push(Some(offset..(offset + length as u32)));
+                values.push(Some(offset as usize..(offset + length as u32) as usize));
                 offset += length as u32;
             }
         }
-
+        let mut storage = Vec::with_capacity(values.len());
+        for x in &values {
+            match x {
+                None => {
+                    storage.push(None);
+                }
+                Some(v) => storage.push(Some(buf[v.start..v.end].to_vec())),
+            }
+        }
         Ok(Self {
-            storage: buf,
-            values,
+            storage: storage,
+            values: values,
         })
     }
 }

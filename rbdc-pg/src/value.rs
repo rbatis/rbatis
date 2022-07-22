@@ -1,6 +1,7 @@
 use crate::type_info::PgTypeInfo;
 use bytes::{Buf, Bytes};
 use rbdc::Error;
+use rbs::Value;
 use std::borrow::Cow;
 use std::str::from_utf8;
 
@@ -15,7 +16,6 @@ pub enum PgValueFormat {
 #[derive(Clone)]
 pub struct PgValueRef<'r> {
     pub(crate) value: Option<&'r [u8]>,
-    pub(crate) row: Option<&'r Bytes>,
     pub(crate) type_info: PgTypeInfo,
     pub(crate) format: PgValueFormat,
 }
@@ -23,7 +23,7 @@ pub struct PgValueRef<'r> {
 /// Implementation of [`Value`] for PostgreSQL.
 #[derive(Clone)]
 pub struct PgValue {
-    pub(crate) value: Option<Bytes>,
+    pub(crate) value: Option<Vec<u8>>,
     pub(crate) type_info: PgTypeInfo,
     pub(crate) format: PgValueFormat,
 }
@@ -43,7 +43,6 @@ impl<'r> PgValueRef<'r> {
 
         PgValueRef {
             value: element_val,
-            row: None,
             type_info: ty,
             format,
         }
@@ -70,7 +69,6 @@ impl PgValue {
     pub fn as_ref(&self) -> PgValueRef<'_> {
         PgValueRef {
             value: self.value.as_deref(),
-            row: None,
             type_info: self.type_info.clone(),
             format: self.format,
         }
@@ -87,16 +85,12 @@ impl PgValue {
 
 impl<'r> PgValueRef<'r> {
     pub fn to_owned(&self) -> PgValue {
-        let value = match (self.row, self.value) {
-            (Some(row), Some(value)) => Some(row.slice_ref(value)),
-
-            (None, Some(value)) => Some(Bytes::copy_from_slice(value)),
-
+        let value = match self.value {
+            Some(value) => Some(value.to_vec()),
             _ => None,
         };
-
         PgValue {
-            value,
+            value: value,
             format: self.format,
             type_info: self.type_info.clone(),
         }
@@ -108,5 +102,11 @@ impl<'r> PgValueRef<'r> {
 
     pub fn is_null(&self) -> bool {
         self.value.is_none()
+    }
+}
+
+impl From<PgValue> for Value {
+    fn from(_: PgValue) -> Self {
+        todo!()
     }
 }

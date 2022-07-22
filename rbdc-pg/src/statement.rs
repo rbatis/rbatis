@@ -3,7 +3,6 @@ use crate::type_info::PgTypeInfo;
 use either::Either;
 use rbdc::ext::ustr::UStr;
 use rbdc::Error;
-use std::borrow::Cow;
 use std::collections::HashMap;
 use std::sync::Arc;
 
