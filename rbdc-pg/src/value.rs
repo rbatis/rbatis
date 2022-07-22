@@ -1,4 +1,4 @@
-use crate::type_info::PgTypeInfo;
+use crate::type_info::{PgType, PgTypeInfo};
 use bytes::{Buf, Bytes};
 use rbdc::Error;
 use rbs::Value;
@@ -81,6 +81,20 @@ impl PgValue {
     pub fn is_null(&self) -> bool {
         self.value.is_none()
     }
+
+    pub fn format(&self) -> PgValueFormat {
+        self.format
+    }
+    pub fn as_str(&self) -> Result<&str, Error> {
+        Ok(from_utf8(self.as_bytes()?)?)
+    }
+
+    pub fn as_bytes(&self) -> Result<&[u8], Error> {
+        match &self.value {
+            Some(v) => Ok(v),
+            None => Err(Error::from("UnexpectedNullError")),
+        }
+    }
 }
 
 impl<'r> PgValueRef<'r> {
@@ -102,11 +116,5 @@ impl<'r> PgValueRef<'r> {
 
     pub fn is_null(&self) -> bool {
         self.value.is_none()
-    }
-}
-
-impl From<PgValue> for Value {
-    fn from(_: PgValue) -> Self {
-        todo!()
     }
 }

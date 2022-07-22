@@ -1,4 +1,5 @@
 use std::fmt::{Display, Formatter};
+use std::num::{ParseFloatError, ParseIntError};
 use std::str::Utf8Error;
 
 #[derive(Debug)]
@@ -62,6 +63,18 @@ impl From<&str> for Error {
 impl From<String> for Error {
     fn from(arg: String) -> Self {
         Error::E(arg)
+    }
+}
+
+impl From<ParseIntError> for Error {
+    fn from(arg: ParseIntError) -> Self {
+        Error::E(arg.to_string())
+    }
+}
+
+impl From<ParseFloatError> for Error {
+    fn from(arg: ParseFloatError) -> Self {
+        Error::E(arg.to_string())
     }
 }
 // Format an error message as a `Protocol` error
