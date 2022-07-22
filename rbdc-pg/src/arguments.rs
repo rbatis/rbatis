@@ -1,6 +1,6 @@
 use crate::connection::PgConnection;
 use crate::type_info::PgTypeInfo;
-use crate::types::value::{Encode, IsNull};
+use crate::types::encode::{Encode, IsNull};
 use rbdc::error::Error;
 use rbdc::ext::ustr::UStr;
 use rbs::Value;
