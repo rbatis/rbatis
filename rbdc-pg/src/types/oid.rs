@@ -1,6 +1,6 @@
 use crate::arguments::PgArgumentBuffer;
 use crate::type_info::PgTypeInfo;
-use crate::types::value::IsNull;
+use crate::types::encode::IsNull;
 use crate::value::{PgValueFormat, PgValueRef};
 use byteorder::{BigEndian, ByteOrder};
 use rbdc::Error;
