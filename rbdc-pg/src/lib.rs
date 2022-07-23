@@ -1,3 +1,5 @@
+#![feature(write_all_vectored)]
+
 pub mod arguments;
 pub mod column;
 pub mod connection;
