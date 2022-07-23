@@ -4,11 +4,39 @@ use crate::types::decode::Decode;
 use crate::types::encode::{Encode, IsNull};
 use crate::value::{PgValue, PgValueFormat};
 use rbdc::Error;
+use serde::{Deserialize, Deserializer, Serialize, Serializer};
 use std::io::Write;
 
+#[derive(Clone, Debug, Eq, PartialEq)]
 pub struct Json {
     pub json: String,
 }
+impl Default for Json {
+    fn default() -> Self {
+        Self {
+            json: "null".to_string(),
+        }
+    }
+}
+impl Serialize for Json {
+    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
+    where
+        S: Serializer,
+    {
+        self.json.serialize(serializer)
+    }
+}
+impl<'de> Deserialize<'de> for Json {
+    fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
+    where
+        D: Deserializer<'de>,
+    {
+        Ok(Json {
+            json: String::deserialize(deserializer)?,
+        })
+    }
+}
+
 impl Encode for Json {
     fn type_info(&self) -> PgTypeInfo {
         PgTypeInfo::JSONB

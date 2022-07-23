@@ -27,9 +27,11 @@ impl From<PgValue> for Value {
             PgType::Int4 => Value::I32(Decode::decode(arg).unwrap()),
             PgType::Text => Value::String(Decode::decode(arg).unwrap()),
             PgType::Oid => Value::U32(Decode::decode(arg).unwrap()),
-            PgType::Json => {
-                todo!()
-            }
+            PgType::Json => Value::String(
+                crate::types::json::Json::decode(arg)
+                    .unwrap_or_default()
+                    .json,
+            ),
             PgType::JsonArray => {
                 todo!()
             }

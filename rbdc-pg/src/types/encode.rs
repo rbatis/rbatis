@@ -1,5 +1,7 @@
 use crate::arguments::{PgArgumentBuffer, PgArguments};
+use crate::type_info::PgType::Json;
 use crate::type_info::PgTypeInfo;
+use rbdc::Type;
 use rbs::Value;
 use std::mem;
 
@@ -88,7 +90,47 @@ impl Encode for Value {
             Value::F64(v) => {
                 todo!()
             }
-            Value::String(v) => v.encode(arg),
+            Value::String(v) => {
+                match v.type_name() {
+                    "uuid" => {
+                        todo!()
+                    }
+                    //decimal = 12345678D
+                    "decimal" => {
+                        todo!()
+                    }
+                    //year = "1993"
+                    "year" => {
+                        todo!()
+                    }
+                    //Date = "1993-02-06"
+                    "date" => {
+                        todo!()
+                    }
+                    //RFC3339NanoTime = "15:04:05.999999999"
+                    "time" => {
+                        todo!()
+                    }
+                    //RFC3339 = "2006-01-02 15:04:05.999999"
+                    "timestamp" => {
+                        todo!()
+                    }
+                    "datetime" => {
+                        todo!()
+                    }
+                    "json" => crate::types::json::Json::from(v).encode(arg),
+                    "enum" => {
+                        todo!()
+                    }
+                    "set" => {
+                        todo!()
+                    }
+                    _ => {
+                        //default -> string
+                        v.encode(arg)
+                    }
+                }
+            }
             Value::Binary(v) => {
                 todo!()
             }
