@@ -8,7 +8,8 @@ pub enum IsNull {
     Yes,
 }
 pub trait Encode {
-    fn encode(self, arg: &mut PgArgumentBuffer) -> (IsNull, PgTypeInfo);
+    fn type_info(&self) -> PgTypeInfo;
+    fn encode(self, arg: &mut PgArgumentBuffer) -> IsNull;
 }
 
 impl From<Vec<rbs::Value>> for PgArguments {
@@ -25,10 +26,50 @@ impl From<Vec<rbs::Value>> for PgArguments {
 }
 
 impl Encode for Value {
-    fn encode(self, arg: &mut PgArgumentBuffer) -> (IsNull, PgTypeInfo) {
+    fn type_info(&self) -> PgTypeInfo {
         match self {
-            Value::Null => (IsNull::Yes, PgTypeInfo::with_name("unknown")),
-            Value::Bool(v) => (IsNull::No, PgTypeInfo::with_name("bool")),
+            Value::Null => PgTypeInfo::with_name("NULL"),
+            Value::Bool(_) => {
+                todo!()
+            }
+            Value::I32(_) => {
+                todo!()
+            }
+            Value::I64(_) => {
+                todo!()
+            }
+            Value::U32(_) => {
+                todo!()
+            }
+            Value::U64(_) => {
+                todo!()
+            }
+            Value::F32(_) => {
+                todo!()
+            }
+            Value::F64(_) => {
+                todo!()
+            }
+            Value::String(_) => PgTypeInfo::VARCHAR,
+            Value::Binary(_) => {
+                todo!()
+            }
+            Value::Array(_) => {
+                todo!()
+            }
+            Value::Map(_) => {
+                todo!()
+            }
+            Value::Ext(_, _) => {
+                todo!()
+            }
+        }
+    }
+
+    fn encode(self, arg: &mut PgArgumentBuffer) -> IsNull {
+        match self {
+            Value::Null => IsNull::Yes,
+            Value::Bool(v) => todo!(),
             Value::I32(v) => {
                 todo!()
             }
@@ -47,9 +88,7 @@ impl Encode for Value {
             Value::F64(v) => {
                 todo!()
             }
-            Value::String(v) => {
-                todo!()
-            }
+            Value::String(v) => v.encode(arg),
             Value::Binary(v) => {
                 todo!()
             }
@@ -63,5 +102,16 @@ impl Encode for Value {
                 todo!()
             }
         }
+    }
+}
+
+impl Encode for String {
+    fn type_info(&self) -> PgTypeInfo {
+        PgTypeInfo::VARCHAR
+    }
+
+    fn encode(self, buf: &mut PgArgumentBuffer) -> IsNull {
+        buf.extend(self.as_bytes());
+        IsNull::No
     }
 }
