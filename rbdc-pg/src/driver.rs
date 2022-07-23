@@ -26,6 +26,7 @@ mod test {
     use crate::driver::PgDriver;
     use rbdc::db::Driver;
     use rbdc::pool::PoolOptions;
+    use rbs::Value;
 
     #[tokio::test]
     async fn test_pg_pool() {
@@ -47,5 +48,29 @@ mod test {
         for mut x in data {
             println!("row: {}", x);
         }
+    }
+
+    #[tokio::test]
+    async fn test_pg_param() {
+        let mut d = PgDriver {};
+        let mut c = d
+            .connect("postgres://postgres:123456@localhost:5432/postgres")
+            .await
+            .unwrap();
+        let param = vec![
+            Value::String("http://www.test.com".to_string()),
+            // Value::String("1659996552000Z".to_string()),
+            Value::String("1".to_string()),
+        ];
+        println!("param => {}", Value::Array(param.clone()));
+        let data = c
+            .exec(
+                // "update biz_activity set pc_link = $1,create_time = $2 where id  = $3",
+                "update biz_activity set pc_link = $1 where id  = $2",
+                param,
+            )
+            .await
+            .unwrap();
+        println!("{}", data);
     }
 }

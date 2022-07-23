@@ -111,8 +111,9 @@ impl PgArgumentBuffer {
         let offset = self.len();
         self.extend(&[0; 4]);
 
+        let info = value.type_info();
         // encode the value into our buffer
-        let (is_null, info) = value.encode(self);
+        let is_null = value.encode(self);
         let len = if let IsNull::No = is_null {
             (self.len() - offset - 4) as i32
         } else {

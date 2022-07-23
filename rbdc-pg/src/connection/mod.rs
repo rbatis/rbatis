@@ -5,6 +5,7 @@ use crate::options::PgConnectOptions;
 use crate::query::PgQuery;
 use crate::statement::PgStatementMetadata;
 use crate::type_info::PgTypeInfo;
+use crate::types::encode::Encode;
 use crate::types::Oid;
 use either::Either;
 use futures_core::future::BoxFuture;
@@ -13,7 +14,7 @@ use rbdc::common::StatementCache;
 use rbdc::db::{Connection, Row};
 use rbdc::ext::ustr::UStr;
 use rbdc::io::Decode;
-use rbdc::Error;
+use rbdc::{Error, Type};
 use rbs::Value;
 use std::collections::HashMap;
 use std::fmt::{self, Debug, Formatter};
@@ -246,7 +247,11 @@ impl Connection for PgConnection {
                 }
                 return Ok(0);
             } else {
-                let stmt = self.prepare_with(sql, &[]).await?;
+                let mut type_info = Vec::with_capacity(params.len());
+                for x in &params {
+                    type_info.push(x.type_info());
+                }
+                let stmt = self.prepare_with(sql, &type_info).await?;
                 let mut many = self.fetch_many(PgQuery {
                     statement: Either::Right(stmt),
                     arguments: params,
