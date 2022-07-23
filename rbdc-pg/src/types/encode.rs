@@ -119,12 +119,6 @@ impl Encode for Value {
                         todo!()
                     }
                     "json" => crate::types::json::Json::from(v).encode(arg),
-                    "enum" => {
-                        todo!()
-                    }
-                    "set" => {
-                        todo!()
-                    }
                     _ => {
                         //default -> string
                         v.encode(arg)
