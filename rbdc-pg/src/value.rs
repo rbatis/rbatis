@@ -95,6 +95,13 @@ impl PgValue {
             None => Err(Error::from("UnexpectedNullError")),
         }
     }
+
+    pub fn into_bytes(self) -> Result<Vec<u8>, Error> {
+        match self.value {
+            Some(v) => Ok(v),
+            None => Err(Error::from("UnexpectedNullError")),
+        }
+    }
 }
 
 impl<'r> PgValueRef<'r> {

@@ -12,7 +12,7 @@ pub trait Encode {
     fn encode(self, arg: &mut PgArgumentBuffer) -> IsNull;
 }
 
-impl From<Vec<rbs::Value>> for PgArguments {
+impl From<Vec<Value>> for PgArguments {
     fn from(args: Vec<Value>) -> Self {
         let mut arg = PgArguments {
             types: Vec::with_capacity(args.len()),
@@ -111,7 +111,7 @@ impl Encode for String {
     }
 
     fn encode(self, buf: &mut PgArgumentBuffer) -> IsNull {
-        buf.extend(self.as_bytes());
+        buf.extend(self.into_bytes());
         IsNull::No
     }
 }
