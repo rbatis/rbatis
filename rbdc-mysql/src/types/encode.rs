@@ -96,9 +96,9 @@ impl From<(Value, &mut Vec<u8>)> for MySqlTypeInfo {
                     //RFC3339 = "2006-01-02 15:04:05.999999"
                     "timestamp" => {
                         //datetime=5byte
-                        let c = v.as_str().unwrap_or_default().to_string();
+                        let c = v.as_u64().unwrap_or_default();
                         let datetime =
-                            DateTime::from_timestamp_millis(c.parse().unwrap_or_default());
+                            DateTime::from_timestamp_millis(c as i64);
                         let size = date_time_size_hint(
                             datetime.hour,
                             datetime.min,
