@@ -72,7 +72,7 @@ pub enum Value {
     Map(Vec<(Value, Value)>),
     /// Extended implements Extension interface: represents a tuple of type information and a byte
     /// array where type information is an integer whose meaning is defined by applications.
-    Ext(i8, Vec<u8>),
+    Ext(String, Box<Value>),
 }
 
 impl Value {
@@ -122,7 +122,7 @@ impl Value {
                     .map(|&(ref k, ref v)| (k.as_ref(), v.as_ref()))
                     .collect(),
             ),
-            Value::Ext(ty, ref buf) => ValueRef::Ext(ty, buf.as_slice()),
+            Value::Ext(ref ty, ref buf) => ValueRef::Ext(ty, buf),
         }
     }
 
@@ -497,8 +497,8 @@ impl Value {
     /// assert_eq!(None, Value::Bool(true).as_ext());
     /// ```
     #[inline]
-    pub fn as_ext(&self) -> Option<(i8, &[u8])> {
-        if let Value::Ext(ty, ref buf) = *self {
+    pub fn as_ext(&self) -> Option<(&str, &Box<Value>)> {
+        if let Value::Ext(ref ty, ref buf) = *self {
             Some((ty, buf))
         } else {
             None
@@ -828,7 +828,7 @@ impl Display for Value {
 
                 write!(f, "}}")
             }
-            Value::Ext(ty, ref data) => {
+            Value::Ext(ref ty, ref data) => {
                 write!(f, "[{}, {:?}]", ty, data)
             }
         }
@@ -863,7 +863,7 @@ pub enum ValueRef<'a> {
     Map(Vec<(ValueRef<'a>, ValueRef<'a>)>),
     /// Extended implements Extension interface: represents a tuple of type information and a byte
     /// array where type information is an integer whose meaning is defined by applications.
-    Ext(i8, &'a [u8]),
+    Ext(&'a str, &'a Box<Value>),
 }
 
 impl<'a> ValueRef<'a> {
@@ -915,7 +915,7 @@ impl<'a> ValueRef<'a> {
                     .map(|&(ref k, ref v)| (k.to_owned(), v.to_owned()))
                     .collect(),
             ),
-            ValueRef::Ext(ty, buf) => Value::Ext(ty, buf.to_vec()),
+            ValueRef::Ext(ty, buf) => Value::Ext(ty.to_string(), buf.to_owned()),
         }
     }
 

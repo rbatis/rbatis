@@ -37,3 +37,5 @@ tokio-native-tls={version = "0.3.0",optional = true}
 native-tls={version = "0.2.10",optional = true}
 rbs = {path="../rbs"}
 fastdate = "0.1"
+
+serde_bytes="0.11.6"

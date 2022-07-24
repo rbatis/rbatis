@@ -27,14 +27,8 @@ mod test {
         let a = A {
             name: "sss".to_string(),
         };
-        let v = rbs::to_value_ref(&a).unwrap();
-        println!("{:?}", v);
-
         let mut m = HashMap::new();
         m.insert(1, 2);
-        let v = rbs::to_value_ref(&m).unwrap();
-        println!("{:?}", v);
-
         let v = rbs::to_value(a).unwrap();
         println!("v: {}", v);
         let s: A = rbs::from_value(v).unwrap();
@@ -42,39 +36,12 @@ mod test {
     }
 
     #[test]
-    fn test_ser() {
-        #[derive(serde::Serialize, serde::Deserialize, Debug)]
-        pub struct A {
-            pub name: String,
-            pub i32: i32,
-            pub u32: u32,
-            pub i64: i64,
-            pub u64: u64,
-        }
-        let buf = rbs::to_vec(&A {
-            name: "s".to_string(),
-            i32: i32::MAX,
-            u32: u32::MAX,
-            i64: i64::MAX,
-            u64: u64::MAX,
-        })
-        .unwrap();
-        let v: rbs::Value = rbs::read_value(&mut &buf[..]).unwrap();
-        println!("{}", v);
-
-        let v: A = rbs::decode::from_slice(&buf).unwrap();
-        println!("{:?}", v);
-    }
-
-    #[test]
     fn test_ext() {
-        use serde::{Serialize, Deserialize};
-
-        #[derive(Debug, PartialEq, Serialize, Deserialize)]
-        #[serde(rename = "_ExtStruct")]
-        pub struct E((String,Value));
-
-        let v=rbs::to_value(E((1,"1".as_bytes().to_vec()))).unwrap();
+        #[derive(Debug, PartialEq, serde::Serialize, serde::Deserialize)]
+        struct ExtStruct(String);
+        let v= rbs::to_value(&ExtStruct{
+            0: "saasdfas".to_string()
+        }).unwrap();
         println!("{:?}",v);
     }
 
