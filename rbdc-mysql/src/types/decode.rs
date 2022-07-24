@@ -18,10 +18,10 @@ impl From<MySqlValue> for Value {
             ColumnType::Double => Value::F64(f64_decode(v).unwrap_or_default()),
             ColumnType::Null => Value::Null,
             ColumnType::Timestamp => {
-                Value::Ext("timestamp", Box::new(Value::String({
+                Value::Ext("timestamp", Box::new(Value::U64({
                     let mut s = decode_timestamp(v).unwrap_or_default();
                     let date = DateTime::from_str(&s).unwrap();
-                    date.unix_timestamp_millis().to_string()
+                    date.unix_timestamp_millis() as u64
                 })))
             }
             ColumnType::LongLong => Value::Bool(decode_bool(v).unwrap_or_default()),
