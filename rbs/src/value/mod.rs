@@ -110,7 +110,7 @@ impl Value {
                     .map(|&(ref k, ref v)| (k.as_ref(), v.as_ref()))
                     .collect(),
             ),
-            Value::Ext(ref ty, ref buf) => ValueRef::Ext(ty, buf),
+            Value::Ext(ref ty,  ref buf) => ValueRef::Ext(ty, Box::new((**buf).as_ref())),
         }
     }
 
@@ -871,7 +871,7 @@ pub enum ValueRef<'a> {
     Map(Vec<(ValueRef<'a>, ValueRef<'a>)>),
     /// Extended implements Extension interface: represents a tuple of type information and a byte
     /// array where type information is an integer whose meaning is defined by applications.
-    Ext(&'a str, &'a Box<Value>),
+    Ext(&'a str, Box<ValueRef<'a>>),
 }
 
 impl<'a> ValueRef<'a> {
@@ -923,7 +923,7 @@ impl<'a> ValueRef<'a> {
                     .map(|&(ref k, ref v)| (k.to_owned(), v.to_owned()))
                     .collect(),
             ),
-            ValueRef::Ext(ty, buf) => Value::Ext(unsafe{change_lifetime_const(ty)}, buf.to_owned()),
+            ValueRef::Ext(ty, ref buf) => Value::Ext(unsafe{change_lifetime_const(ty)}, Box::new((**buf).to_owned())),
         }
     }
 

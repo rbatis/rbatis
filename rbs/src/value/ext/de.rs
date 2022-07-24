@@ -415,7 +415,7 @@ impl<'de> Deserializer<'de> for ValueRef<'de> {
                     Err(de::Error::invalid_length(len, &"fewer elements in map"))
                 }
             }
-            ValueRef::Ext(tag, data) => {
+            ValueRef::Ext(tag, ref data) => {
                 visitor.visit_newtype_struct(self)
             }
         }
@@ -512,7 +512,7 @@ impl<'de> Deserializer<'de> for &'de ValueRef<'de> {
                     Err(de::Error::invalid_length(len, &"fewer elements in map"))
                 }
             }
-            ValueRef::Ext(tag, data) => {
+            ValueRef::Ext(tag, ref data) => {
                 visitor.visit_newtype_struct(self)
             }
         }

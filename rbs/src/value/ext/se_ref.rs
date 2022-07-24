@@ -286,7 +286,7 @@ impl Serializer for SerRef {
         where
             T: Serialize,
     {
-        value.serialize(self)
+        Ok(ValueRef::Ext(name, Box::new(value.serialize(self)?)))
     }
 
     fn serialize_newtype_variant<T: ?Sized>(
