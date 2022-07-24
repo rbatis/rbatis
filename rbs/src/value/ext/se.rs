@@ -6,7 +6,7 @@ use serde::ser::{
 use serde::Serialize;
 use serde_bytes::Bytes;
 
-use crate::value::Value;
+use crate::value::{change_lifetime_const, Value};
 
 use super::Error;
 
@@ -47,10 +47,6 @@ impl Serialize for Value {
     }
 }
 
-///this is safe
-unsafe fn change_lifetime_const<'a, 'b, T: ?Sized>(x: &'a T) -> &'b T {
-    &*(x as *const T)
-}
 
 impl ser::Error for Error {
     fn custom<T: Display>(msg: T) -> Self {
@@ -190,7 +186,7 @@ impl ser::Serializer for Serializer {
         where
             T: Serialize,
     {
-        return Ok(Value::Ext(name.to_string(), Box::new(value.serialize(self)?)));
+        return Ok(Value::Ext(name, Box::new(value.serialize(self)?)));
     }
 
     fn serialize_newtype_variant<T: ?Sized>(

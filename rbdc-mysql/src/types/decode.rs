@@ -10,30 +10,32 @@ use std::str::FromStr;
 impl From<MySqlValue> for Value {
     fn from(v: MySqlValue) -> Self {
         match v.type_info.r#type {
-            ColumnType::Decimal => Value::String(v.as_str().unwrap_or("0").to_string() + "D"),
+            ColumnType::Decimal => Value::Ext("decimal", Box::new(Value::String(v.as_str().unwrap_or("0").to_string()))),
             ColumnType::Tiny => Value::U64(uint_decode(v).unwrap_or_default()),
             ColumnType::Short => Value::I32(int_decode(v).unwrap_or_default() as i32),
             ColumnType::Long => Value::I64(int_decode(v).unwrap_or_default()),
             ColumnType::Float => Value::F32(f32_decode(v).unwrap_or_default()),
             ColumnType::Double => Value::F64(f64_decode(v).unwrap_or_default()),
             ColumnType::Null => Value::Null,
-            ColumnType::Timestamp => Value::String({
-                let mut s = decode_timestamp(v).unwrap_or_default();
-                let date = DateTime::from_str(&s).unwrap();
-                date.unix_timestamp_millis().to_string() + "Z"
-            }),
+            ColumnType::Timestamp => {
+                Value::Ext("timestamp", Box::new(Value::String({
+                    let mut s = decode_timestamp(v).unwrap_or_default();
+                    let date = DateTime::from_str(&s).unwrap();
+                    date.unix_timestamp_millis().to_string()
+                })))
+            }
             ColumnType::LongLong => Value::Bool(decode_bool(v).unwrap_or_default()),
             ColumnType::Int24 => Value::I32(int_decode(v).unwrap_or_default() as i32),
             ColumnType::Date => Value::String(decode_date(v).unwrap_or_default()),
-            ColumnType::Time => Value::String(decode_time(v).unwrap_or_default()),
-            ColumnType::Datetime => Value::String(decode_timestamp(v).unwrap_or_default()),
-            ColumnType::Year => Value::String(decode_year(v).unwrap_or_default()),
+            ColumnType::Time => Value::Ext("time", Box::new(Value::String(decode_time(v).unwrap_or_default()))),
+            ColumnType::Datetime => Value::Ext("datetime", Box::new(Value::String(decode_timestamp(v).unwrap_or_default()))),
+            ColumnType::Year => Value::Ext("year", Box::new(Value::String(decode_year(v).unwrap_or_default()))),
             ColumnType::VarChar => Value::String(v.as_str().unwrap_or_default().to_string()),
             ColumnType::Bit => Value::U64(uint_decode(v).unwrap_or_default()),
-            ColumnType::Json => Value::String(v.as_str().unwrap_or_default().to_string()),
-            ColumnType::NewDecimal => Value::String(v.as_str().unwrap_or("0").to_string() + "D"),
-            ColumnType::Enum => Value::String(v.as_str().unwrap_or("").to_string()),
-            ColumnType::Set => Value::String(v.as_str().unwrap_or("").to_string()),
+            ColumnType::Json => Value::Ext("json", Box::new(Value::String(v.as_str().unwrap_or_default().to_string()))),
+            ColumnType::NewDecimal => Value::Ext("decimal", Box::new(Value::String(v.as_str().unwrap_or("0").to_string()))),
+            ColumnType::Enum => Value::Ext("enum", Box::new(Value::String(v.as_str().unwrap_or("").to_string()))),
+            ColumnType::Set => Value::Ext("set", Box::new(Value::String(v.as_str().unwrap_or("").to_string()))),
             ColumnType::TinyBlob => Value::Binary(v.as_bytes().unwrap_or_default().to_vec()),
             ColumnType::MediumBlob => Value::Binary(v.as_bytes().unwrap_or_default().to_vec()),
             ColumnType::LongBlob => Value::Binary(v.as_bytes().unwrap_or_default().to_vec()),
@@ -41,10 +43,7 @@ impl From<MySqlValue> for Value {
             ColumnType::VarString => Value::String(v.as_str().unwrap_or_default().to_string()),
             ColumnType::String => Value::String(v.as_str().unwrap_or_default().to_string()),
             //bytes ,see https://dev.mysql.com/doc/internals/en/x-protocol-messages-messages.html
-            ColumnType::Geometry => Value::Map(vec![(
-                Value::String("geometry".to_string()),
-                Value::Binary(v.as_bytes().unwrap_or_default().to_vec()),
-            )]),
+            ColumnType::Geometry => Value::Ext("geometry",Box::new(Value::Binary(v.as_bytes().unwrap_or_default().to_vec()))),
         }
     }
 }
@@ -180,7 +179,7 @@ fn decode_year_buf(buf: &[u8]) -> Result<String, Error> {
         // zero buffer means a zero date (null)
         return Ok("".to_string());
     }
-    Ok(format!("{:4}", LittleEndian::read_u16(buf) as i32,))
+    Ok(format!("{:4}", LittleEndian::read_u16(buf) as i32, ))
 }
 
 fn decode_time_buf(len: u8, mut buf: &[u8]) -> Result<String, Error> {
