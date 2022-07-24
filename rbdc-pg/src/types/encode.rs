@@ -1,7 +1,6 @@
 use crate::arguments::{PgArgumentBuffer, PgArguments};
 use crate::type_info::PgType::Json;
 use crate::type_info::PgTypeInfo;
-use rbdc::Type;
 use rbs::Value;
 use std::mem;
 
@@ -91,11 +90,24 @@ impl Encode for Value {
                 todo!()
             }
             Value::String(v) => {
-                match v.type_name() {
+                //default -> string
+                v.encode(arg)
+            }
+            Value::Binary(v) => {
+                todo!()
+            }
+            Value::Array(v) => {
+                todo!()
+            }
+            Value::Map(v) => {
+                todo!()
+            }
+            Value::Ext(type_name, v) => {
+                match type_name {
                     "uuid" => {
                         todo!()
                     }
-                    //decimal = 12345678D
+                    //decimal = 12345678
                     "decimal" => {
                         todo!()
                     }
@@ -118,24 +130,11 @@ impl Encode for Value {
                     "datetime" => {
                         todo!()
                     }
-                    "json" => crate::types::json::Json::from(v).encode(arg),
+                    "json" => crate::types::json::Json::from(v.into_string().unwrap_or_default()).encode(arg),
                     _ => {
-                        //default -> string
-                        v.encode(arg)
+                        IsNull::Yes
                     }
                 }
-            }
-            Value::Binary(v) => {
-                todo!()
-            }
-            Value::Array(v) => {
-                todo!()
-            }
-            Value::Map(v) => {
-                todo!()
-            }
-            Value::Ext(_, _) => {
-                todo!()
             }
         }
     }

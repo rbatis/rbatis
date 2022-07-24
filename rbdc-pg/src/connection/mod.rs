@@ -14,7 +14,7 @@ use rbdc::common::StatementCache;
 use rbdc::db::{Connection, Row};
 use rbdc::ext::ustr::UStr;
 use rbdc::io::Decode;
-use rbdc::{Error, Type};
+use rbdc::Error;
 use rbs::Value;
 use std::collections::HashMap;
 use std::fmt::{self, Debug, Formatter};
