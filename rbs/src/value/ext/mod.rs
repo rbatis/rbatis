@@ -10,6 +10,8 @@ pub use self::se::to_value;
 
 mod de;
 mod se;
+mod se_ref;
+pub use se_ref::to_value_ref;
 
 /// ser ref Error
 #[derive(Debug)]
