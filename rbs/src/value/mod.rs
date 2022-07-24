@@ -848,7 +848,8 @@ impl Display for Value {
                 write!(f, "}}")
             }
             Value::Ext(ref ty, ref data) => {
-                write!(f, "[{}, {:?}]", ty, data)
+                write!(f, "{}({}", ty, data);
+                write!(f, "{}", ')')
             }
         }
     }
