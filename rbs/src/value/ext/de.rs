@@ -1,4 +1,3 @@
-use std::borrow::Cow;
 use std::fmt::{self, Display, Formatter};
 use std::iter::ExactSizeIterator;
 use std::slice::Iter;
@@ -114,7 +113,14 @@ impl<'de> Deserialize<'de> for Value {
             where
                 V: SeqAccess<'de>,
             {
-                let mut vec = Vec::new();
+                let mut vec = {
+                    match visitor.size_hint() {
+                        None => {
+                            vec![]
+                        }
+                        Some(l) => Vec::with_capacity(l),
+                    }
+                };
                 while let Some(elem) = visitor.next_element()? {
                     vec.push(elem);
                 }
@@ -156,7 +162,7 @@ impl<'de> Deserialize<'de> for Value {
             where
                 D: Deserializer<'de>,
             {
-                deserializer.deserialize_newtype_struct("",self)
+                deserializer.deserialize_newtype_struct("", self)
             }
         }
 
@@ -236,7 +242,14 @@ impl<'de> Deserialize<'de> for ValueRef<'de> {
             where
                 V: SeqAccess<'de>,
             {
-                let mut vec = Vec::new();
+                let mut vec = {
+                    match visitor.size_hint() {
+                        None => {
+                            vec![]
+                        }
+                        Some(l) => Vec::with_capacity(l),
+                    }
+                };
 
                 while let Some(elem) = visitor.next_element()? {
                     vec.push(elem);
@@ -258,7 +271,14 @@ impl<'de> Deserialize<'de> for ValueRef<'de> {
             where
                 V: de::MapAccess<'de>,
             {
-                let mut vec = Vec::new();
+                let mut vec = {
+                    match visitor.size_hint() {
+                        None => {
+                            vec![]
+                        }
+                        Some(l) => Vec::with_capacity(l),
+                    }
+                };
 
                 while let Some(key) = visitor.next_key()? {
                     let val = visitor.next_value()?;
@@ -318,9 +338,7 @@ impl<'de> Deserializer<'de> for Value {
                     Err(de::Error::invalid_length(len, &"fewer elements in map"))
                 }
             }
-            Value::Ext(tag, data) => {
-                visitor.visit_newtype_struct(*data)
-            }
+            Value::Ext(tag, data) => visitor.visit_newtype_struct(*data),
         }
     }
 
@@ -415,9 +433,7 @@ impl<'de> Deserializer<'de> for ValueRef<'de> {
                     Err(de::Error::invalid_length(len, &"fewer elements in map"))
                 }
             }
-            ValueRef::Ext(tag, ref data) => {
-                visitor.visit_newtype_struct(self)
-            }
+            ValueRef::Ext(tag, ref data) => visitor.visit_newtype_struct(self),
         }
     }
 
@@ -512,9 +528,7 @@ impl<'de> Deserializer<'de> for &'de ValueRef<'de> {
                     Err(de::Error::invalid_length(len, &"fewer elements in map"))
                 }
             }
-            ValueRef::Ext(tag, ref data) => {
-                visitor.visit_newtype_struct(self)
-            }
+            ValueRef::Ext(tag, ref data) => visitor.visit_newtype_struct(self),
         }
     }
 
@@ -609,8 +623,6 @@ impl<'de> Deserializer<'de> for &'de ValueRef<'de> {
         identifier tuple ignored_any
     }
 }
-
-
 
 struct SeqDeserializer<I> {
     iter: I,
