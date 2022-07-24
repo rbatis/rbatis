@@ -6,11 +6,25 @@ use serde::de::Error;
 
 #[derive(serde::Serialize, serde::Deserialize, Debug, Clone, Eq, PartialEq)]
 #[serde(rename = "datetime")]
-pub struct DateTimeBase(String);
+pub struct DateTime(String);
 
-impl Display for DateTimeBase {
+impl Display for DateTime {
     fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
         write!(f, "datetime({})", self.0)
+    }
+}
+
+impl Deref for DateTime{
+    type Target = String;
+
+    fn deref(&self) -> &Self::Target {
+        &self.0
+    }
+}
+
+impl DerefMut for DateTime{
+    fn deref_mut(&mut self) -> &mut Self::Target {
+        &mut self.0
     }
 }
 
@@ -32,7 +46,7 @@ impl Serialize for DateTimeFastDate {
 
 impl<'de> Deserialize<'de> for DateTimeFastDate {
     fn deserialize<D>(deserializer: D) -> Result<Self, D::Error> where D: Deserializer<'de> {
-        let v = DateTimeBase::deserialize(deserializer)?;
+        let v = DateTime::deserialize(deserializer)?;
         Ok(Self(fastdate::DateTime::from_str(&v.0).map_err(|e| D::Error::custom(e.to_string()))?))
     }
 }
@@ -53,7 +67,7 @@ impl DerefMut for DateTimeFastDate{
 
 #[test]
 fn test() {
-    let date = DateTimeBase("2017-02-06T00-00-00".to_string());
+    let date = DateTime("2017-02-06T00-00-00".to_string());
     let v = rbs::to_value_ref(&date).unwrap();
     println!("{}", v);
     let date = DateTimeFastDate(fastdate::DateTime::now());
