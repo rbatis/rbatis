@@ -70,8 +70,7 @@ pub enum Value {
     Array(Vec<Value>),
     /// Map represents key-value pairs of objects.
     Map(Vec<(Value, Value)>),
-    /// Extended implements Extension interface: represents a tuple of type information and a byte
-    /// array where type information is an integer whose meaning is defined by applications.
+    /// Extended implements Extension interface
     Ext(&'static str, Box<Value>),
 }
 
