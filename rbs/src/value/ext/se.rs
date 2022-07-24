@@ -12,8 +12,8 @@ use super::Error;
 
 impl Serialize for Value {
     fn serialize<S>(&self, s: S) -> Result<S::Ok, S::Error>
-    where
-        S: ser::Serializer,
+        where
+            S: ser::Serializer,
     {
         match *self {
             Value::Null => s.serialize_unit(),
@@ -41,13 +41,15 @@ impl Serialize for Value {
                 state.end()
             }
             Value::Ext(ref ty, ref value) => {
-                s.serialize_newtype_struct(string_to_static_str(ty), value)
+                s.serialize_newtype_struct(unsafe { change_lifetime_const(ty) }, value)
             }
         }
     }
 }
-fn string_to_static_str(s: &str) -> &'static str {
-    Box::leak(s.to_string().into_boxed_str())
+
+///this is safe
+unsafe fn change_lifetime_const<'a, 'b, T: ?Sized>(x: &'a T) -> &'b T {
+    &*(x as *const T)
 }
 
 impl ser::Error for Error {
@@ -185,10 +187,10 @@ impl ser::Serializer for Serializer {
         name: &'static str,
         value: &T,
     ) -> Result<Self::Ok, Self::Error>
-    where
-        T: Serialize,
+        where
+            T: Serialize,
     {
-        return Ok(Value::Ext(name.to_string(),Box::new(value.serialize(self)?)));
+        return Ok(Value::Ext(name.to_string(), Box::new(value.serialize(self)?)));
     }
 
     fn serialize_newtype_variant<T: ?Sized>(
@@ -198,8 +200,8 @@ impl ser::Serializer for Serializer {
         _variant: &'static str,
         value: &T,
     ) -> Result<Self::Ok, Self::Error>
-    where
-        T: Serialize,
+        where
+            T: Serialize,
     {
         let vec = vec![Value::from(idx), Value::Array(vec![to_value(value)?])];
         Ok(Value::Array(vec))
@@ -212,8 +214,8 @@ impl ser::Serializer for Serializer {
 
     #[inline]
     fn serialize_some<T: ?Sized>(self, value: &T) -> Result<Self::Ok, Self::Error>
-    where
-        T: Serialize,
+        where
+            T: Serialize,
     {
         value.serialize(self)
     }
@@ -319,8 +321,8 @@ impl SerializeSeq for SerializeVec {
 
     #[inline]
     fn serialize_element<T: ?Sized>(&mut self, value: &T) -> Result<(), Error>
-    where
-        T: Serialize,
+        where
+            T: Serialize,
     {
         self.vec.push(to_value(&value)?);
         Ok(())
@@ -338,8 +340,8 @@ impl SerializeTuple for SerializeVec {
 
     #[inline]
     fn serialize_element<T: ?Sized>(&mut self, value: &T) -> Result<(), Error>
-    where
-        T: Serialize,
+        where
+            T: Serialize,
     {
         ser::SerializeSeq::serialize_element(self, value)
     }
@@ -356,8 +358,8 @@ impl SerializeTupleStruct for SerializeVec {
 
     #[inline]
     fn serialize_field<T: ?Sized>(&mut self, value: &T) -> Result<(), Error>
-    where
-        T: Serialize,
+        where
+            T: Serialize,
     {
         ser::SerializeSeq::serialize_element(self, value)
     }
@@ -374,8 +376,8 @@ impl ser::SerializeTupleVariant for SerializeTupleVariant {
 
     #[inline]
     fn serialize_field<T: ?Sized>(&mut self, value: &T) -> Result<(), Error>
-    where
-        T: Serialize,
+        where
+            T: Serialize,
     {
         self.vec.push(to_value(&value)?);
         Ok(())
@@ -396,16 +398,16 @@ impl ser::SerializeMap for DefaultSerializeMap {
 
     #[inline]
     fn serialize_key<T: ?Sized>(&mut self, key: &T) -> Result<(), Error>
-    where
-        T: Serialize,
+        where
+            T: Serialize,
     {
         self.next_key = Some(to_value(key)?);
         Ok(())
     }
 
     fn serialize_value<T: ?Sized>(&mut self, value: &T) -> Result<(), Error>
-    where
-        T: ser::Serialize,
+        where
+            T: ser::Serialize,
     {
         // Panic because this indicates a bug in the program rather than an
         // expected failure.
@@ -432,8 +434,8 @@ impl ser::SerializeStruct for DefaultSerializeMap {
         key: &'static str,
         value: &T,
     ) -> Result<(), Self::Error>
-    where
-        T: Serialize,
+        where
+            T: Serialize,
     {
         self.map
             .push((Value::String(key.to_string()), to_value(&value)?));
@@ -454,8 +456,8 @@ impl ser::SerializeStructVariant for DefaultSerializeMap {
         key: &'static str,
         value: &T,
     ) -> Result<(), Self::Error>
-    where
-        T: Serialize,
+        where
+            T: Serialize,
     {
         self.map
             .push((Value::String(key.to_string()), to_value(&value)?));
@@ -473,8 +475,8 @@ impl SerializeStruct for SerializeVec {
 
     #[inline]
     fn serialize_field<T: ?Sized>(&mut self, _key: &'static str, value: &T) -> Result<(), Error>
-    where
-        T: Serialize,
+        where
+            T: Serialize,
     {
         ser::SerializeSeq::serialize_element(self, value)
     }
@@ -491,8 +493,8 @@ impl ser::SerializeStructVariant for SerializeStructVariant {
 
     #[inline]
     fn serialize_field<T: ?Sized>(&mut self, _key: &'static str, value: &T) -> Result<(), Error>
-    where
-        T: Serialize,
+        where
+            T: Serialize,
     {
         self.vec.push(to_value(&value)?);
         Ok(())

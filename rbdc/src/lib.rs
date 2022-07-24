@@ -43,6 +43,11 @@ mod test {
             0: "saasdfas".to_string()
         }).unwrap();
         println!("{:?}",v);
+        loop{
+            let v= rbs::to_value(&ExtStruct{
+                0: "saasdfas".to_string()
+            }).unwrap();
+        }
     }
 
 }
