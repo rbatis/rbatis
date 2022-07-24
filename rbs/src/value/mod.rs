@@ -72,7 +72,7 @@ pub enum Value {
     Map(Vec<(Value, Value)>),
     /// Extended implements Extension interface: represents a tuple of type information and a byte
     /// array where type information is an integer whose meaning is defined by applications.
-    Ext(String, Box<Value>),
+    Ext(&'static str, Box<Value>),
 }
 
 impl Value {
@@ -404,9 +404,28 @@ impl Value {
     /// assert_eq!(None, Value::Bool(true).as_str());
     /// ```
     #[inline]
-    pub fn as_str(&self) -> Option<Cow<'_, str>> {
+    pub fn as_str(&self) -> Option<&str> {
         if let Value::String(ref val) = *self {
-            Some(Cow::Borrowed(val))
+            Some(val)
+        } else {
+            None
+        }
+    }
+
+    #[inline]
+    pub fn into_string(self) -> Option<String> {
+        if let Value::String( val) = self {
+            Some(val)
+        } else {
+            None
+        }
+    }
+
+    /// self to Binary
+    #[inline]
+    pub fn into_bytes(self) -> Option<Vec<u8>>{
+        if let Value::Binary( val) = self {
+            Some(val)
         } else {
             None
         }
@@ -915,7 +934,7 @@ impl<'a> ValueRef<'a> {
                     .map(|&(ref k, ref v)| (k.to_owned(), v.to_owned()))
                     .collect(),
             ),
-            ValueRef::Ext(ty, buf) => Value::Ext(ty.to_string(), buf.to_owned()),
+            ValueRef::Ext(ty, buf) => Value::Ext(unsafe{change_lifetime_const(ty)}, buf.to_owned()),
         }
     }
 
@@ -1226,7 +1245,7 @@ impl<'a> Display for ValueRef<'a> {
 }
 
 impl Value {
-    pub fn into_string(self) -> String {
+    pub fn into_string_all(self) -> String {
         return match self {
             Value::Null => "null".to_string(),
             Value::Bool(v) => v.to_string(),
@@ -1243,4 +1262,9 @@ impl Value {
             Value::Ext(_, _) => format!("{}", self),
         };
     }
+}
+
+///this is safe
+unsafe fn change_lifetime_const<'a, 'b, T: ?Sized>(x: &'a T) -> &'b T {
+    &*(x as *const T)
 }
