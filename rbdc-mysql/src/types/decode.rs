@@ -10,13 +10,23 @@ use std::str::FromStr;
 impl From<MySqlValue> for Value {
     fn from(v: MySqlValue) -> Self {
         match v.type_info.r#type {
-            ColumnType::Decimal => Value::Ext("decimal", Box::new(Value::String(v.as_str().unwrap_or("0").to_string()))),
             ColumnType::Tiny => Value::U64(uint_decode(v).unwrap_or_default()),
             ColumnType::Short => Value::I32(int_decode(v).unwrap_or_default() as i32),
             ColumnType::Long => Value::I64(int_decode(v).unwrap_or_default()),
             ColumnType::Float => Value::F32(f32_decode(v).unwrap_or_default()),
             ColumnType::Double => Value::F64(f64_decode(v).unwrap_or_default()),
             ColumnType::Null => Value::Null,
+            ColumnType::LongLong => Value::Bool(decode_bool(v).unwrap_or_default()),
+            ColumnType::Int24 => Value::I32(int_decode(v).unwrap_or_default() as i32),
+            ColumnType::VarChar => Value::String(v.as_str().unwrap_or_default().to_string()),
+            ColumnType::Bit => Value::U64(uint_decode(v).unwrap_or_default()),
+            ColumnType::TinyBlob => Value::Binary(v.as_bytes().unwrap_or_default().to_vec()),
+            ColumnType::MediumBlob => Value::Binary(v.as_bytes().unwrap_or_default().to_vec()),
+            ColumnType::LongBlob => Value::Binary(v.as_bytes().unwrap_or_default().to_vec()),
+            ColumnType::Blob => Value::Binary(v.as_bytes().unwrap_or_default().to_vec()),
+            ColumnType::VarString => Value::String(v.as_str().unwrap_or_default().to_string()),
+            ColumnType::String => Value::String(v.as_str().unwrap_or_default().to_string()),
+
             ColumnType::Timestamp => {
                 Value::Ext("timestamp", Box::new(Value::U64({
                     let mut s = decode_timestamp(v).unwrap_or_default();
@@ -24,24 +34,15 @@ impl From<MySqlValue> for Value {
                     date.unix_timestamp_millis() as u64
                 })))
             }
-            ColumnType::LongLong => Value::Bool(decode_bool(v).unwrap_or_default()),
-            ColumnType::Int24 => Value::I32(int_decode(v).unwrap_or_default() as i32),
-            ColumnType::Date => Value::String(decode_date(v).unwrap_or_default()),
+            ColumnType::Decimal => Value::Ext("decimal", Box::new(Value::String(v.as_str().unwrap_or("0").to_string()))),
+            ColumnType::Date => Value::Ext("date",Box::new(Value::String(decode_date(v).unwrap_or_default()))),
             ColumnType::Time => Value::Ext("time", Box::new(Value::String(decode_time(v).unwrap_or_default()))),
             ColumnType::Datetime => Value::Ext("datetime", Box::new(Value::String(decode_timestamp(v).unwrap_or_default()))),
             ColumnType::Year => Value::Ext("year", Box::new(Value::String(decode_year(v).unwrap_or_default()))),
-            ColumnType::VarChar => Value::String(v.as_str().unwrap_or_default().to_string()),
-            ColumnType::Bit => Value::U64(uint_decode(v).unwrap_or_default()),
             ColumnType::Json => Value::Ext("json", Box::new(Value::String(v.as_str().unwrap_or_default().to_string()))),
             ColumnType::NewDecimal => Value::Ext("decimal", Box::new(Value::String(v.as_str().unwrap_or("0").to_string()))),
             ColumnType::Enum => Value::Ext("enum", Box::new(Value::String(v.as_str().unwrap_or("").to_string()))),
             ColumnType::Set => Value::Ext("set", Box::new(Value::String(v.as_str().unwrap_or("").to_string()))),
-            ColumnType::TinyBlob => Value::Binary(v.as_bytes().unwrap_or_default().to_vec()),
-            ColumnType::MediumBlob => Value::Binary(v.as_bytes().unwrap_or_default().to_vec()),
-            ColumnType::LongBlob => Value::Binary(v.as_bytes().unwrap_or_default().to_vec()),
-            ColumnType::Blob => Value::Binary(v.as_bytes().unwrap_or_default().to_vec()),
-            ColumnType::VarString => Value::String(v.as_str().unwrap_or_default().to_string()),
-            ColumnType::String => Value::String(v.as_str().unwrap_or_default().to_string()),
             //bytes ,see https://dev.mysql.com/doc/internals/en/x-protocol-messages-messages.html
             ColumnType::Geometry => Value::Ext("geometry",Box::new(Value::Binary(v.as_bytes().unwrap_or_default().to_vec()))),
         }
