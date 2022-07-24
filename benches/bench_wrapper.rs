@@ -4,7 +4,6 @@ extern crate test;
 
 use rbatis::wrapper::Wrapper;
 use rbatis_core::db::DriverType;
-use rbdc::Type;
 use rbs::Value;
 use test::Bencher;
 
@@ -81,7 +80,7 @@ fn bench_ser(b: &mut Bencher) {
     }
     let a = A { name: buf };
     b.iter(|| {
-        let buf = rbs::to_vec(&a).unwrap();
+        let buf = rbs::to_value(&a).unwrap();
     });
 }
 
@@ -112,15 +111,5 @@ fn bench_parse_year(b: &mut Bencher) {
 fn bench_parse_date(b: &mut Bencher) {
     b.iter(|| {
         std::hint::black_box(rbdc::time::parse_date("1993-02-06"));
-    });
-}
-
-#[bench]
-fn bench_type(b: &mut Bencher) {
-    let s = "asdfsdafasdfasdffsd";
-    b.iter(|| {
-        std::hint::black_box({
-            s.type_name();
-        });
     });
 }

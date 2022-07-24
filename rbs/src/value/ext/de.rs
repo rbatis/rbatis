@@ -338,7 +338,7 @@ impl<'de> Deserializer<'de> for Value {
                     Err(de::Error::invalid_length(len, &"fewer elements in map"))
                 }
             }
-            Value::Ext(tag, data) => visitor.visit_newtype_struct(*data),
+            Value::Ext(tag, data) => Deserializer::deserialize_any(*data, visitor),
         }
     }
 
@@ -433,7 +433,7 @@ impl<'de> Deserializer<'de> for ValueRef<'de> {
                     Err(de::Error::invalid_length(len, &"fewer elements in map"))
                 }
             }
-            ValueRef::Ext(tag, ref data) => visitor.visit_newtype_struct(self),
+            ValueRef::Ext(tag, data) => Deserializer::deserialize_any(*data, visitor),
         }
     }
 
@@ -528,7 +528,7 @@ impl<'de> Deserializer<'de> for &'de ValueRef<'de> {
                     Err(de::Error::invalid_length(len, &"fewer elements in map"))
                 }
             }
-            ValueRef::Ext(tag, ref data) => visitor.visit_newtype_struct(self),
+            ValueRef::Ext(tag, ref data) => Deserializer::deserialize_any(&**data, visitor),
         }
     }
 
