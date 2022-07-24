@@ -61,8 +61,35 @@ impl Encode for Value {
             Value::Map(_) => {
                 todo!()
             }
-            Value::Ext(_, _) => {
-                todo!()
+            Value::Ext(type_name, _) => {
+                match *type_name {
+                    "uuid" => {
+                        PgTypeInfo::UUID
+                    }
+                    //decimal = 12345678
+                    "decimal" => {
+                        PgTypeInfo::NUMERIC
+                    }
+                    //Date = "1993-02-06"
+                    "date" => {
+                        PgTypeInfo::DATE
+                    }
+                    //RFC3339NanoTime = "15:04:05.999999999"
+                    "time" => {
+                        PgTypeInfo::TIME
+                    }
+                    //RFC3339 = "2006-01-02 15:04:05.999999"
+                    "timestamp" => {
+                        PgTypeInfo::TIMESTAMP
+                    }
+                    "datetime" => {
+                        PgTypeInfo::TIMESTAMP
+                    }
+                    "json" => PgTypeInfo::JSON,
+                    _ => {
+                        PgTypeInfo::UNKNOWN
+                    }
+                }
             }
         }
     }
@@ -109,10 +136,6 @@ impl Encode for Value {
                     }
                     //decimal = 12345678
                     "decimal" => {
-                        todo!()
-                    }
-                    //year = "1993"
-                    "year" => {
                         todo!()
                     }
                     //Date = "1993-02-06"
