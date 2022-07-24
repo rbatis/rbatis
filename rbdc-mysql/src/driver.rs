@@ -26,7 +26,7 @@ mod test {
     use crate::driver::MysqlDriver;
     use rbdc::db::Driver;
     use rbdc::pool::PoolOptions;
-    use rbs::Value;
+    use rbs::{to_value, Value};
     use std::collections::BTreeMap;
 
     #[tokio::test]
@@ -66,6 +66,7 @@ mod test {
             println!("row: {}", x);
         }
     }
+
     //
     // #[tokio::test]
     // async fn test_mysql_count() {
@@ -93,7 +94,7 @@ mod test {
             .unwrap();
         let param = vec![
             Value::String("http://www.test.com".to_string()),
-            Value::String("1659996552000Z".to_string()),
+            Value::Ext("timestamp", Box::new(to_value(1659996552000u64).unwrap())),
             Value::String("12312".to_string()),
         ];
         println!("param => {}", Value::Array(param.clone()));
