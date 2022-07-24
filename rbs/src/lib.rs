@@ -69,18 +69,3 @@ pub mod value;
 pub use value::ext::to_value;
 pub use value::ext::{deserialize_from, from_value};
 pub use value::{Value, ValueRef};
-
-/// Name of Serde newtype struct to Represent Msgpack's Ext
-/// Msgpack Ext: Ext(tag, binary)
-/// Serde data model: _ExtStruct((tag, binary))
-/// Example Serde impl for custom type:
-///
-/// ```ignore
-/// #[derive(Debug, PartialEq, Serialize, Deserialize)]
-/// #[serde(rename = "_ExtStruct")]
-/// struct ExtStruct((i8, serde_bytes::ByteBuf));
-///
-/// test_round(ExtStruct((2, serde_bytes::ByteBuf::from(vec![5]))),
-///            Value::Ext(2, vec![5]));
-/// ```
-pub const MSGPACK_EXT_STRUCT_NAME: &str = "_ExtStruct";
