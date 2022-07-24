@@ -34,17 +34,6 @@ pub enum Value {
     Null,
     /// Bool represents true or false.
     Bool(bool),
-    // /// Integer represents an integer.
-    // ///
-    // /// A value of an `Integer` object is limited from `-(2^63)` upto `(2^64)-1`.
-    // ///
-    // /// # Examples
-    // ///
-    // /// ```
-    // /// use rbs::Value;
-    // ///
-    // /// assert_eq!(42, Value::from(42).as_i64().unwrap());
-    // /// ```
     /// Integer(Integer),
     I32(i32),
     I64(i64),
