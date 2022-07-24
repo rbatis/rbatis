@@ -16,6 +16,7 @@ pub use error::*;
 #[cfg(test)]
 mod test {
     use std::collections::HashMap;
+    use rbs::Value;
 
     #[test]
     fn test_ser_ref() {
@@ -64,4 +65,17 @@ mod test {
         let v: A = rbs::decode::from_slice(&buf).unwrap();
         println!("{:?}", v);
     }
+
+    #[test]
+    fn test_ext() {
+        use serde::{Serialize, Deserialize};
+
+        #[derive(Debug, PartialEq, Serialize, Deserialize)]
+        #[serde(rename = "_ExtStruct")]
+        pub struct E((String,Value));
+
+        let v=rbs::to_value(E((1,"1".as_bytes().to_vec()))).unwrap();
+        println!("{:?}",v);
+    }
+
 }

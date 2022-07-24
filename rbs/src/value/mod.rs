@@ -10,9 +10,6 @@ use std::convert::TryFrom;
 use std::fmt::{self, Debug, Display};
 use std::iter::FromIterator;
 use std::ops::Index;
-
-pub mod decode;
-pub mod encode;
 pub mod ext;
 
 /// Name of Serde newtype struct to Represent Msgpack's Ext

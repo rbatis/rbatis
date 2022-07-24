@@ -64,21 +64,8 @@
 #[macro_use]
 extern crate serde;
 #[allow(deprecated)]
-pub use crate::decode::from_read_ref;
-pub use crate::decode::{from_read, Deserializer};
-pub use crate::encode::{to_vec, to_vec_named, Serializer};
 
-pub use crate::decode::from_slice;
-
-pub mod config;
-pub mod decode;
-pub mod encode;
 pub mod value;
-
-pub use value::decode::{
-    read_value, read_value_ref, read_value_ref_with_max_depth, read_value_with_max_depth,
-};
-pub use value::encode::to_value_ref;
 pub use value::ext::to_value;
 pub use value::ext::{deserialize_from, from_value};
 pub use value::{Value, ValueRef};
