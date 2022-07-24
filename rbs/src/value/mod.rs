@@ -836,8 +836,7 @@ impl Display for Value {
                 write!(f, "}}")
             }
             Value::Ext(ref ty, ref data) => {
-                write!(f, "{}({}", ty, data);
-                write!(f, "{}", ')')
+                write!(f, "{}({})", ty, data)
             }
         }
     }
@@ -1227,7 +1226,7 @@ impl<'a> Display for ValueRef<'a> {
                 write!(f, "}}")
             }
             ValueRef::Ext(ty, ref data) => {
-                write!(f, "[{}, {:?}]", ty, data)
+                write!(f, "{}({})", ty, data)
             }
         }
     }
