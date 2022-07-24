@@ -14,8 +14,6 @@ impl From<serde_json::Value> for Json {
 
 impl Display for Json {
     fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
-        write!(f, "json")?;
-        write!(f, "{}", self.0)?;
-        write!(f, ")")
+        write!(f, "json({})", self.0)
     }
 }

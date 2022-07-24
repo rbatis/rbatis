@@ -6,8 +6,6 @@ pub struct Timestamp(u64);
 
 impl Display for Timestamp {
     fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
-        write!(f, "timestamp")?;
-        write!(f, "{}", self.0)?;
-        write!(f, ")")
+        write!(f, "timestamp({})", self.0)
     }
 }
