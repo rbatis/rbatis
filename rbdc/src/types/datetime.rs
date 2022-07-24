@@ -6,9 +6,7 @@ pub struct DateTime(String);
 
 impl Display for DateTime {
     fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
-        write!(f, "datetime")?;
-        write!(f, "{}", self.0)?;
-        write!(f, ")")
+        write!(f, "datetime({})", self.0)
     }
 }
 

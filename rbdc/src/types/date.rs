@@ -6,8 +6,6 @@ pub struct Date(String);
 
 impl Display for Date {
     fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
-        write!(f, "date")?;
-        write!(f, "{}", self.0)?;
-        write!(f, ")")
+        write!(f, "date({})", self.0)
     }
 }
