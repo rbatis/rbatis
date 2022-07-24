@@ -38,10 +38,13 @@ mod test {
     fn test_ext() {
         #[derive(Debug, PartialEq, serde::Serialize, serde::Deserialize)]
         struct ExtStruct(String);
-        let v = rbs::to_value(&ExtStruct {
+        let arg = ExtStruct {
             0: "saasdfas".to_string(),
-        })
-        .unwrap();
+        };
+        let v = rbs::to_value(&arg).unwrap();
         println!("{:?}", v);
+
+        let ext: ExtStruct = rbs::from_value(v).unwrap();
+        assert_eq!(arg, ext);
     }
 }
