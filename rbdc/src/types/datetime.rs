@@ -14,7 +14,7 @@ impl Display for DateTime {
     }
 }
 
-impl Deref for DateTime{
+impl Deref for DateTime {
     type Target = String;
 
     fn deref(&self) -> &Self::Target {
@@ -22,7 +22,7 @@ impl Deref for DateTime{
     }
 }
 
-impl DerefMut for DateTime{
+impl DerefMut for DateTime {
     fn deref_mut(&mut self) -> &mut Self::Target {
         &mut self.0
     }
@@ -51,7 +51,7 @@ impl<'de> Deserialize<'de> for DateTimeFastDate {
     }
 }
 
-impl Deref for DateTimeFastDate{
+impl Deref for DateTimeFastDate {
     type Target = fastdate::DateTime;
 
     fn deref(&self) -> &Self::Target {
@@ -59,9 +59,18 @@ impl Deref for DateTimeFastDate{
     }
 }
 
-impl DerefMut for DateTimeFastDate{
+impl DerefMut for DateTimeFastDate {
     fn deref_mut(&mut self) -> &mut Self::Target {
         &mut self.0
+    }
+}
+
+impl DateTimeFastDate {
+    pub fn now() -> Self {
+        Self(fastdate::DateTime::now())
+    }
+    pub fn utc() -> Self {
+        Self(fastdate::DateTime::utc())
     }
 }
 
