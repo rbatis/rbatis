@@ -3,7 +3,7 @@ use std::fmt::{self, Display, Formatter};
 
 use serde::de::Unexpected;
 
-use crate::value::{Value, ValueRef};
+use crate::{Value, ValueRef};
 
 pub use self::de::{deserialize_from, from_value, EnumRefDeserializer};
 pub use self::se::to_value;
