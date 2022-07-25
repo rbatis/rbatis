@@ -142,8 +142,10 @@ impl Encode for Value {
                     "datetime" => {
                         todo!()
                     }
-                    "json" => crate::types::json::Json::from(v.into_string().unwrap_or_default())
-                        .encode(arg),
+                    "json" => crate::types::json::Json::from(
+                        v.take().unwrap().into_string().unwrap_or_default(),
+                    )
+                    .encode(arg),
 
                     "oid" => Oid::from(v.as_u64().unwrap_or_default() as u32).encode_by_ref(arg),
 
