@@ -7,9 +7,9 @@
 extern crate serde;
 #[allow(deprecated)]
 pub mod rbox;
+pub use rbox::RBox;
 pub mod value;
+pub use crate::value::ext::to_value_ref;
 pub use value::ext::to_value;
 pub use value::ext::{deserialize_from, from_value};
 pub use value::{Value, ValueRef};
-
-pub use crate::value::ext::to_value_ref;
