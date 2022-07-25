@@ -27,21 +27,21 @@ impl From<PgValue> for Value {
             PgType::Int2 => Value::I32(Decode::decode(arg).unwrap()),
             PgType::Int4 => Value::I32(Decode::decode(arg).unwrap()),
             PgType::Text => Value::String(Decode::decode(arg).unwrap()),
-            PgType::Oid => Value::Ext("oid", Box::new(Value::U32(Decode::decode(arg).unwrap()))),
-            PgType::Json => Value::String(
+            PgType::Oid => Value::Ext("Oid", Box::new(Value::U32(Decode::decode(arg).unwrap()))),
+            PgType::Json => Value::Ext("Json",Box::new(Value::String(
                 crate::types::json::Json::decode(arg)
                     .unwrap_or_default()
                     .json,
-            ),
+            ))),
             PgType::JsonArray => {
-                Value::Ext("json_array", Box::new(Value::String(
+                Value::Ext("JsonArray", Box::new(Value::String(
                     crate::types::json::Json::decode(arg)
                         .unwrap_or_default()
                         .json,
                 )))
             }
             PgType::Point => {
-                Value::Ext("point", Box::new(Value::Binary({
+                Value::Ext("Point", Box::new(Value::Binary({
                     match arg.format() {
                         PgValueFormat::Binary => arg.as_bytes().unwrap_or_default().to_owned(),
                         PgValueFormat::Text => {
@@ -51,7 +51,7 @@ impl From<PgValue> for Value {
                 })))
             }
             PgType::Lseg => {
-                Value::Ext("lseg", Box::new(Value::Binary({
+                Value::Ext("Lseg", Box::new(Value::Binary({
                     match arg.format() {
                         PgValueFormat::Binary => arg.as_bytes().unwrap_or_default().to_owned(),
                         PgValueFormat::Text => {
@@ -61,7 +61,7 @@ impl From<PgValue> for Value {
                 })))
             }
             PgType::Path => {
-                Value::Ext("path", Box::new(Value::Binary({
+                Value::Ext("Path", Box::new(Value::Binary({
                     match arg.format() {
                         PgValueFormat::Binary => arg.as_bytes().unwrap_or_default().to_owned(),
                         PgValueFormat::Text => {
@@ -71,7 +71,7 @@ impl From<PgValue> for Value {
                 })))
             }
             PgType::Box => {
-                Value::Ext("box", Box::new(Value::Binary({
+                Value::Ext("Box", Box::new(Value::Binary({
                     match arg.format() {
                         PgValueFormat::Binary => arg.as_bytes().unwrap_or_default().to_owned(),
                         PgValueFormat::Text => {
@@ -81,7 +81,7 @@ impl From<PgValue> for Value {
                 })))
             }
             PgType::Polygon => {
-                Value::Ext("polygon", Box::new(Value::Binary({
+                Value::Ext("Polygon", Box::new(Value::Binary({
                     match arg.format() {
                         PgValueFormat::Binary => arg.as_bytes().unwrap_or_default().to_owned(),
                         PgValueFormat::Text => {
@@ -91,7 +91,7 @@ impl From<PgValue> for Value {
                 })))
             }
             PgType::Line => {
-                Value::Ext("line", Box::new(Value::Binary({
+                Value::Ext("Line", Box::new(Value::Binary({
                     match arg.format() {
                         PgValueFormat::Binary => arg.as_bytes().unwrap_or_default().to_owned(),
                         PgValueFormat::Text => {
@@ -101,7 +101,7 @@ impl From<PgValue> for Value {
                 })))
             }
             PgType::LineArray => {
-                Value::Ext("line_array", Box::new(Value::Binary({
+                Value::Ext("LineArray", Box::new(Value::Binary({
                     match arg.format() {
                         PgValueFormat::Binary => arg.as_bytes().unwrap_or_default().to_owned(),
                         PgValueFormat::Text => {
@@ -111,7 +111,7 @@ impl From<PgValue> for Value {
                 })))
             }
             PgType::Cidr => {
-                Value::Ext("cidr", Box::new(Value::Binary({
+                Value::Ext("Cidr", Box::new(Value::Binary({
                     match arg.format() {
                         PgValueFormat::Binary => arg.as_bytes().unwrap_or_default().to_owned(),
                         PgValueFormat::Text => {
@@ -121,7 +121,7 @@ impl From<PgValue> for Value {
                 })))
             }
             PgType::CidrArray => {
-                Value::Ext("cidr_array", Box::new(Value::Binary({
+                Value::Ext("CidrArray", Box::new(Value::Binary({
                     match arg.format() {
                         PgValueFormat::Binary => arg.as_bytes().unwrap_or_default().to_owned(),
                         PgValueFormat::Text => {
@@ -134,7 +134,7 @@ impl From<PgValue> for Value {
             PgType::Float8 => Value::F32(Decode::decode(arg).unwrap()),
             PgType::Unknown => Value::Null,
             PgType::Circle => {
-                Value::Ext("circle", Box::new(Value::Binary({
+                Value::Ext("Circle", Box::new(Value::Binary({
                     match arg.format() {
                         PgValueFormat::Binary => arg.as_bytes().unwrap_or_default().to_owned(),
                         PgValueFormat::Text => {
@@ -144,7 +144,7 @@ impl From<PgValue> for Value {
                 })))
             }
             PgType::CircleArray => {
-                Value::Ext("circle_array", Box::new(Value::Binary({
+                Value::Ext("CircleArray", Box::new(Value::Binary({
                     match arg.format() {
                         PgValueFormat::Binary => arg.as_bytes().unwrap_or_default().to_owned(),
                         PgValueFormat::Text => {
@@ -154,7 +154,7 @@ impl From<PgValue> for Value {
                 })))
             }
             PgType::Macaddr8 => {
-                Value::Ext("macaddr8", Box::new(Value::Binary({
+                Value::Ext("Macaddr8", Box::new(Value::Binary({
                     match arg.format() {
                         PgValueFormat::Binary => arg.as_bytes().unwrap_or_default().to_owned(),
                         PgValueFormat::Text => {
@@ -164,7 +164,7 @@ impl From<PgValue> for Value {
                 })))
             }
             PgType::Macaddr8Array => {
-                Value::Ext("macaddr8array", Box::new(Value::Binary({
+                Value::Ext("Macaddr8Array", Box::new(Value::Binary({
                     match arg.format() {
                         PgValueFormat::Binary => arg.as_bytes().unwrap_or_default().to_owned(),
                         PgValueFormat::Text => {
@@ -174,7 +174,7 @@ impl From<PgValue> for Value {
                 })))
             }
             PgType::Macaddr => {
-                Value::Ext("macaddr", Box::new(Value::Binary({
+                Value::Ext("Macaddr", Box::new(Value::Binary({
                     match arg.format() {
                         PgValueFormat::Binary => arg.as_bytes().unwrap_or_default().to_owned(),
                         PgValueFormat::Text => {
@@ -184,7 +184,7 @@ impl From<PgValue> for Value {
                 })))
             }
             PgType::Inet => {
-                Value::Ext("inet", Box::new(Value::Binary({
+                Value::Ext("Inet", Box::new(Value::Binary({
                     match arg.format() {
                         PgValueFormat::Binary => arg.as_bytes().unwrap_or_default().to_owned(),
                         PgValueFormat::Text => {
@@ -203,7 +203,7 @@ impl From<PgValue> for Value {
                 todo!()
             }
             PgType::NameArray => {
-                Value::Ext("name_array", Box::new(Value::Binary({
+                Value::Ext("NameArray", Box::new(Value::Binary({
                     match arg.format() {
                         PgValueFormat::Binary => arg.as_bytes().unwrap_or_default().to_owned(),
                         PgValueFormat::Text => {
@@ -222,7 +222,7 @@ impl From<PgValue> for Value {
                 todo!()
             }
             PgType::BpcharArray => {
-                Value::Ext("bpchar_array", Box::new(Value::Binary({
+                Value::Ext("BpcharArray", Box::new(Value::Binary({
                     match arg.format() {
                         PgValueFormat::Binary => arg.as_bytes().unwrap_or_default().to_owned(),
                         PgValueFormat::Text => {
@@ -238,7 +238,7 @@ impl From<PgValue> for Value {
                 todo!()
             }
             PgType::PointArray => {
-                Value::Ext("point_array", Box::new(Value::Binary({
+                Value::Ext("PointArray", Box::new(Value::Binary({
                     match arg.format() {
                         PgValueFormat::Binary => arg.as_bytes().unwrap_or_default().to_owned(),
                         PgValueFormat::Text => {
