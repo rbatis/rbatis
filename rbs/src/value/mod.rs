@@ -43,11 +43,11 @@ pub enum Value {
     /// Binary extending Raw type represents a byte array.
     Binary(Vec<u8>),
     /// Array represents a sequence of objects.
-    Array(Vec<Value>),
+    Array(Vec<Self>),
     /// Map represents key-value pairs of objects.
-    Map(Vec<(Value, Value)>),
+    Map(Vec<(Self, Self)>),
     /// Extended implements Extension interface
-    Ext(&'static str, VBox<Value>),
+    Ext(&'static str, VBox<Self>),
 }
 
 impl Value {
@@ -861,12 +861,12 @@ pub enum ValueRef<'a> {
     /// Binary extending Raw type represents a byte array.
     Binary(&'a [u8]),
     /// Array represents a sequence of objects.
-    Array(Vec<ValueRef<'a>>),
+    Array(Vec<Self>),
     /// Map represents key-value pairs of objects.
-    Map(Vec<(ValueRef<'a>, ValueRef<'a>)>),
+    Map(Vec<(Self, Self)>),
     /// Extended implements Extension interface: represents a tuple of type information and a byte
     /// array where type information is an integer whose meaning is defined by applications.
-    Ext(&'a str, VBox<ValueRef<'a>>),
+    Ext(&'a str, VBox<Self>),
 }
 
 impl<'a> ValueRef<'a> {
