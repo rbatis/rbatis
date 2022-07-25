@@ -6,14 +6,11 @@
 //! ```
 
 use crate::rbox::RBox;
-use serde::{Deserialize, Deserializer, Serialize, Serializer};
 use std::borrow::Cow;
 use std::convert::TryFrom;
-use std::fmt::{self, Debug, Display, Formatter, Pointer};
+use std::fmt::{self, Debug, Display};
 use std::iter::FromIterator;
-use std::marker::PhantomData;
-use std::ops::{Deref, DerefMut, Index};
-use std::ptr::NonNull;
+use std::ops::{Deref, Index};
 
 pub mod ext;
 
