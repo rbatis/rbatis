@@ -110,7 +110,7 @@ impl Value {
                     .map(|&(ref k, ref v)| (k.as_ref(), v.as_ref()))
                     .collect(),
             ),
-            Value::Ext(ref ty,  ref buf) => ValueRef::Ext(ty, Box::new((**buf).as_ref())),
+            Value::Ext(ref ty, ref buf) => ValueRef::Ext(ty, Box::new((**buf).as_ref())),
         }
     }
 
@@ -328,6 +328,7 @@ impl Value {
     pub fn as_i64(&self) -> Option<i64> {
         match *self {
             Value::I64(ref n) => Some(n.to_owned()),
+            Value::I32(ref n) => Some(n.to_owned() as i64),
             _ => None,
         }
     }
@@ -349,6 +350,7 @@ impl Value {
     pub fn as_u64(&self) -> Option<u64> {
         match *self {
             Value::U64(ref n) => Some(n.to_owned()),
+            Value::U32(ref n) => Some(n.to_owned() as u64),
             _ => None,
         }
     }
@@ -402,7 +404,7 @@ impl Value {
 
     #[inline]
     pub fn into_string(self) -> Option<String> {
-        if let Value::String( val) = self {
+        if let Value::String(val) = self {
             Some(val)
         } else {
             None
@@ -411,8 +413,8 @@ impl Value {
 
     /// self to Binary
     #[inline]
-    pub fn into_bytes(self) -> Option<Vec<u8>>{
-        if let Value::Binary( val) = self {
+    pub fn into_bytes(self) -> Option<Vec<u8>> {
+        if let Value::Binary(val) = self {
             Some(val)
         } else {
             None
@@ -922,7 +924,10 @@ impl<'a> ValueRef<'a> {
                     .map(|&(ref k, ref v)| (k.to_owned(), v.to_owned()))
                     .collect(),
             ),
-            ValueRef::Ext(ty, ref buf) => Value::Ext(unsafe{change_lifetime_const(ty)}, Box::new((**buf).to_owned())),
+            ValueRef::Ext(ty, ref buf) => Value::Ext(
+                unsafe { change_lifetime_const(ty) },
+                Box::new((**buf).to_owned()),
+            ),
         }
     }
 
