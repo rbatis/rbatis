@@ -94,7 +94,7 @@ mod test {
             .unwrap();
         let param = vec![
             Value::String("http://www.test.com".to_string()),
-            Value::Ext("timestamp", Box::new(to_value(1659996552000u64).unwrap_or_default())),
+            rbs::to_value_def(1659996552000u64).into_ext("timestamp"),
             Value::String("12312".to_string()),
         ];
         println!("param => {:?}", Value::Array(param.clone()));

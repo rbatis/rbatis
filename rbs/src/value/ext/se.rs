@@ -71,6 +71,11 @@ pub fn to_value<T: Serialize>(value: T) -> Result<Value, Error> {
     value.serialize(Serializer)
 }
 
+#[inline]
+pub fn to_value_def<T: Serialize>(value: T) -> Value{
+    to_value(value).unwrap_or_default()
+}
+
 impl ser::Serializer for Serializer {
     type Ok = Value;
     type Error = Error;
