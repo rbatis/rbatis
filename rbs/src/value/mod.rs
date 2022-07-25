@@ -5,27 +5,98 @@
 //! ```
 //! ```
 
+use serde::{Deserialize, Deserializer, Serialize, Serializer};
 use std::borrow::Cow;
 use std::convert::TryFrom;
-use std::fmt::{self, Debug, Display};
+use std::fmt::{self, Debug, Display, Formatter, Pointer};
 use std::iter::FromIterator;
-use std::ops::Index;
+use std::marker::PhantomData;
+use std::ops::{Deref, DerefMut, Index};
+use std::ptr::NonNull;
+
 pub mod ext;
 
-/// Name of Serde newtype struct to Represent Msgpack's Ext
-/// Msgpack Ext: Ext(tag, binary)
-/// Serde data model: _ExtStruct((tag, binary))
-/// Example Serde impl for custom type:
-///
-/// ```ignore
-/// #[derive(Debug, PartialEq, Serialize, Deserialize)]
-/// #[serde(rename = "_ExtStruct")]
-/// struct ExtStruct((i8, serde_bytes::ByteBuf));
-///
-/// test_round(ExtStruct((2, serde_bytes::ByteBuf::from(vec![5]))),
-///            Value::Ext(2, vec![5]));
-/// ```
-pub const MSGPACK_EXT_STRUCT_NAME: &str = "_ExtStruct";
+pub struct RBox<T> {
+    inner: Option<NonNull<T>>,
+    _p: PhantomData<T>,
+}
+
+impl<T> RBox<T> {
+    pub fn new(mut arg: T) -> Self {
+        Self {
+            inner: Some(NonNull::new(&mut arg).unwrap()),
+            _p: PhantomData::default(),
+        }
+    }
+    pub fn take(mut self) -> Option<T>
+    where
+        T: Default,
+    {
+        match self.inner {
+            None => None,
+            Some(v) => Some({
+                let m = unsafe { self.inner.take().unwrap().as_mut() };
+                std::mem::take(m)
+            }),
+        }
+    }
+}
+unsafe impl<T: Sync> Sync for RBox<T> {}
+unsafe impl<T: Send> Send for RBox<T> {}
+
+impl<T> Deref for RBox<T> {
+    type Target = T;
+
+    fn deref(&self) -> &Self::Target {
+        unsafe { self.inner.as_ref().unwrap().as_ref() }
+    }
+}
+
+impl<T> DerefMut for RBox<T> {
+    fn deref_mut(&mut self) -> &mut Self::Target {
+        unsafe { self.inner.as_mut().unwrap().as_mut() }
+    }
+}
+
+impl<T: Serialize> Serialize for RBox<T> {
+    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
+    where
+        S: Serializer,
+    {
+        self.deref().serialize(serializer)
+    }
+}
+
+impl<'de, T: Deserialize<'de>> Deserialize<'de> for RBox<T> {
+    fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
+    where
+        D: Deserializer<'de>,
+    {
+        let t = T::deserialize(deserializer)?;
+        Ok(RBox::new(t))
+    }
+}
+
+impl<T: Clone> Clone for RBox<T> {
+    fn clone(&self) -> Self {
+        RBox::new(self.deref().clone())
+    }
+}
+impl<T: Debug> Debug for RBox<T> {
+    fn fmt(&self, f: &mut Formatter<'_>) -> fmt::Result {
+        self.deref().fmt(f)
+    }
+}
+impl<T: Display> Display for RBox<T> {
+    fn fmt(&self, f: &mut Formatter<'_>) -> fmt::Result {
+        self.deref().fmt(f)
+    }
+}
+impl<T: PartialEq> PartialEq for RBox<T> {
+    fn eq(&self, other: &Self) -> bool {
+        self.deref().eq(other.deref())
+    }
+}
 
 /// Represents any valid MessagePack value.
 #[derive(Clone, Debug, PartialEq)]
@@ -60,7 +131,7 @@ pub enum Value {
     /// Map represents key-value pairs of objects.
     Map(Vec<(Value, Value)>),
     /// Extended implements Extension interface
-    Ext(&'static str, Box<Value>),
+    Ext(&'static str, RBox<Value>),
 }
 
 impl Value {
@@ -110,7 +181,7 @@ impl Value {
                     .map(|&(ref k, ref v)| (k.as_ref(), v.as_ref()))
                     .collect(),
             ),
-            Value::Ext(ref ty, ref buf) => ValueRef::Ext(ty, Box::new((**buf).as_ref())),
+            Value::Ext(ref ty, ref buf) => ValueRef::Ext(ty, RBox::new((**buf).as_ref())),
         }
     }
 
@@ -506,7 +577,7 @@ impl Value {
     /// assert_eq!(None, Value::Bool(true).as_ext());
     /// ```
     #[inline]
-    pub fn as_ext(&self) -> Option<(&str, &Box<Value>)> {
+    pub fn as_ext(&self) -> Option<(&str, &RBox<Value>)> {
         if let Value::Ext(ref ty, ref buf) = *self {
             Some((ty, buf))
         } else {
@@ -838,7 +909,7 @@ impl Display for Value {
                 write!(f, "}}")
             }
             Value::Ext(ref ty, ref data) => {
-                write!(f, "{}({})", ty, data)
+                write!(f, "{}({})", ty, data.deref())
             }
         }
     }
@@ -872,7 +943,7 @@ pub enum ValueRef<'a> {
     Map(Vec<(ValueRef<'a>, ValueRef<'a>)>),
     /// Extended implements Extension interface: represents a tuple of type information and a byte
     /// array where type information is an integer whose meaning is defined by applications.
-    Ext(&'a str, Box<ValueRef<'a>>),
+    Ext(&'a str, RBox<ValueRef<'a>>),
 }
 
 impl<'a> ValueRef<'a> {
@@ -926,7 +997,7 @@ impl<'a> ValueRef<'a> {
             ),
             ValueRef::Ext(ty, ref buf) => Value::Ext(
                 unsafe { change_lifetime_const(ty) },
-                Box::new((**buf).to_owned()),
+                RBox::new((**buf).to_owned()),
             ),
         }
     }
@@ -1231,7 +1302,7 @@ impl<'a> Display for ValueRef<'a> {
                 write!(f, "}}")
             }
             ValueRef::Ext(ty, ref data) => {
-                write!(f, "{}({})", ty, data)
+                write!(f, "{}({})", ty, data.deref())
             }
         }
     }

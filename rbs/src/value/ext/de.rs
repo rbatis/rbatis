@@ -338,7 +338,7 @@ impl<'de> Deserializer<'de> for Value {
                     Err(de::Error::invalid_length(len, &"fewer elements in map"))
                 }
             }
-            Value::Ext(tag, data) => Deserializer::deserialize_any(*data, visitor),
+            Value::Ext(tag, data) => Deserializer::deserialize_any(data.take().unwrap(), visitor),
         }
     }
 
@@ -433,7 +433,9 @@ impl<'de> Deserializer<'de> for ValueRef<'de> {
                     Err(de::Error::invalid_length(len, &"fewer elements in map"))
                 }
             }
-            ValueRef::Ext(tag, data) => Deserializer::deserialize_any(*data, visitor),
+            ValueRef::Ext(tag, data) => {
+                Deserializer::deserialize_any(data.take().unwrap(), visitor)
+            }
         }
     }
 

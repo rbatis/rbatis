@@ -1,7 +1,11 @@
-use serde::ser::{SerializeMap, SerializeSeq, SerializeStruct, SerializeStructVariant, SerializeTuple, SerializeTupleStruct, SerializeTupleVariant};
-use serde::{Serialize, Serializer};
 use crate::value::ext::Error;
+use crate::value::RBox;
 use crate::ValueRef;
+use serde::ser::{
+    SerializeMap, SerializeSeq, SerializeStruct, SerializeStructVariant, SerializeTuple,
+    SerializeTupleStruct, SerializeTupleVariant,
+};
+use serde::{Serialize, Serializer};
 
 #[derive(Clone)]
 pub struct SerRef {}
@@ -20,8 +24,8 @@ impl<'a> SerializeStruct for SerializeStructImpl<'a> {
         key: &'static str,
         value: &T,
     ) -> Result<(), Self::Error>
-        where
-            T: Serialize,
+    where
+        T: Serialize,
     {
         self.inner
             .push((ValueRef::String(key), value.serialize(self.s.clone())?));
@@ -43,8 +47,8 @@ impl<'a> SerializeSeq for SerializeSeqImpl<'a> {
     type Error = Error;
 
     fn serialize_element<T: ?Sized>(&mut self, value: &T) -> Result<(), Self::Error>
-        where
-            T: Serialize,
+    where
+        T: Serialize,
     {
         self.inner.push(value.serialize(self.s.clone())?);
         Ok(())
@@ -65,8 +69,8 @@ impl<'a> SerializeTuple for SerializeTupleImpl<'a> {
     type Error = Error;
 
     fn serialize_element<T: ?Sized>(&mut self, value: &T) -> Result<(), Self::Error>
-        where
-            T: Serialize,
+    where
+        T: Serialize,
     {
         self.inner.push(value.serialize(self.s.clone())?);
         Ok(())
@@ -87,8 +91,8 @@ impl<'a> SerializeTupleStruct for SerializeTupleStructImpl<'a> {
     type Error = Error;
 
     fn serialize_field<T: ?Sized>(&mut self, value: &T) -> Result<(), Self::Error>
-        where
-            T: Serialize,
+    where
+        T: Serialize,
     {
         self.inner.push(value.serialize(self.s.clone())?);
         Ok(())
@@ -109,8 +113,8 @@ impl<'a> SerializeTupleVariant for SerializeTupleVariantImpl<'a> {
     type Error = Error;
 
     fn serialize_field<T: ?Sized>(&mut self, value: &T) -> Result<(), Self::Error>
-        where
-            T: Serialize,
+    where
+        T: Serialize,
     {
         self.inner.push(value.serialize(self.s.clone())?);
         Ok(())
@@ -131,8 +135,8 @@ impl<'a> SerializeMap for SerializeMapImpl<'a> {
     type Error = Error;
 
     fn serialize_key<T: ?Sized>(&mut self, key: &T) -> Result<(), Self::Error>
-        where
-            T: Serialize,
+    where
+        T: Serialize,
     {
         self.inner
             .push((key.serialize(self.s.clone())?, ValueRef::Null));
@@ -140,8 +144,8 @@ impl<'a> SerializeMap for SerializeMapImpl<'a> {
     }
 
     fn serialize_value<T: ?Sized>(&mut self, value: &T) -> Result<(), Self::Error>
-        where
-            T: Serialize,
+    where
+        T: Serialize,
     {
         match self.inner.last_mut() {
             None => {}
@@ -171,8 +175,8 @@ impl<'a> SerializeStructVariant for SerializeStructVariantImpl<'a> {
         key: &'static str,
         value: &T,
     ) -> Result<(), Self::Error>
-        where
-            T: Serialize,
+    where
+        T: Serialize,
     {
         self.inner.push(value.serialize(self.s.clone())?);
         Ok(())
@@ -255,8 +259,8 @@ impl Serializer for SerRef {
     }
 
     fn serialize_some<T: ?Sized>(self, value: &T) -> Result<Self::Ok, Self::Error>
-        where
-            T: Serialize,
+    where
+        T: Serialize,
     {
         value.serialize(self)
     }
@@ -283,10 +287,10 @@ impl Serializer for SerRef {
         name: &'static str,
         value: &T,
     ) -> Result<Self::Ok, Self::Error>
-        where
-            T: Serialize,
+    where
+        T: Serialize,
     {
-        Ok(ValueRef::Ext(name, Box::new(value.serialize(self)?)))
+        Ok(ValueRef::Ext(name, RBox::new(value.serialize(self)?)))
     }
 
     fn serialize_newtype_variant<T: ?Sized>(
@@ -296,8 +300,8 @@ impl Serializer for SerRef {
         variant: &'static str,
         value: &T,
     ) -> Result<Self::Ok, Self::Error>
-        where
-            T: Serialize,
+    where
+        T: Serialize,
     {
         value.serialize(self)
     }
@@ -374,8 +378,8 @@ impl Serializer for SerRef {
 
 /// serialize an value ref
 pub fn to_value_ref<T>(a: &T) -> Result<ValueRef, Error>
-    where
-        T: serde::Serialize,
+where
+    T: serde::Serialize,
 {
     a.serialize(SerRef {})
 }
