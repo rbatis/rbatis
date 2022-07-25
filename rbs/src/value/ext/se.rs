@@ -1,6 +1,5 @@
 use std::fmt::Display;
 
-use crate::vbox::VBox;
 use serde::ser::{
     self, SerializeMap, SerializeSeq, SerializeStruct, SerializeTuple, SerializeTupleStruct,
 };
@@ -186,7 +185,7 @@ impl ser::Serializer for Serializer {
     where
         T: Serialize,
     {
-        return Ok(Value::Ext(name, VBox::new(value.serialize(self)?)));
+        return Ok(Value::Ext(name, Box::new(value.serialize(self)?)));
     }
 
     fn serialize_newtype_variant<T: ?Sized>(

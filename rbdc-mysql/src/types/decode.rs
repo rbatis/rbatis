@@ -6,7 +6,7 @@ use fastdate::DateTime;
 use rbdc::Error;
 use rbs::Value;
 use std::str::FromStr;
-use rbs::VBox;
+
 
 impl From<MySqlValue> for Value {
     fn from(v: MySqlValue) -> Self {
@@ -29,23 +29,23 @@ impl From<MySqlValue> for Value {
             ColumnType::String => Value::String(v.as_str().unwrap_or_default().to_string()),
 
             ColumnType::Timestamp => {
-                Value::Ext("timestamp", VBox::new(Value::U64({
+                Value::Ext("timestamp", Box::new(Value::U64({
                     let mut s = decode_timestamp(v).unwrap_or_default();
                     let date = DateTime::from_str(&s).unwrap();
                     date.unix_timestamp_millis() as u64
                 })))
             }
-            ColumnType::Decimal => Value::Ext("decimal", VBox::new(Value::String(v.as_str().unwrap_or("0").to_string()))),
-            ColumnType::Date => Value::Ext("date",VBox::new(Value::String(decode_date(v).unwrap_or_default()))),
-            ColumnType::Time => Value::Ext("time", VBox::new(Value::String(decode_time(v).unwrap_or_default()))),
-            ColumnType::Datetime => Value::Ext("datetime", VBox::new(Value::String(decode_timestamp(v).unwrap_or_default()))),
-            ColumnType::Year => Value::Ext("year", VBox::new(Value::String(decode_year(v).unwrap_or_default()))),
-            ColumnType::Json => Value::Ext("json", VBox::new(Value::String(v.as_str().unwrap_or_default().to_string()))),
-            ColumnType::NewDecimal => Value::Ext("decimal", VBox::new(Value::String(v.as_str().unwrap_or("0").to_string()))),
-            ColumnType::Enum => Value::Ext("enum", VBox::new(Value::String(v.as_str().unwrap_or("").to_string()))),
-            ColumnType::Set => Value::Ext("set", VBox::new(Value::String(v.as_str().unwrap_or("").to_string()))),
+            ColumnType::Decimal => Value::Ext("decimal", Box::new(Value::String(v.as_str().unwrap_or("0").to_string()))),
+            ColumnType::Date => Value::Ext("date",Box::new(Value::String(decode_date(v).unwrap_or_default()))),
+            ColumnType::Time => Value::Ext("time", Box::new(Value::String(decode_time(v).unwrap_or_default()))),
+            ColumnType::Datetime => Value::Ext("datetime", Box::new(Value::String(decode_timestamp(v).unwrap_or_default()))),
+            ColumnType::Year => Value::Ext("year", Box::new(Value::String(decode_year(v).unwrap_or_default()))),
+            ColumnType::Json => Value::Ext("json", Box::new(Value::String(v.as_str().unwrap_or_default().to_string()))),
+            ColumnType::NewDecimal => Value::Ext("decimal", Box::new(Value::String(v.as_str().unwrap_or("0").to_string()))),
+            ColumnType::Enum => Value::Ext("enum", Box::new(Value::String(v.as_str().unwrap_or("").to_string()))),
+            ColumnType::Set => Value::Ext("set", Box::new(Value::String(v.as_str().unwrap_or("").to_string()))),
             //bytes ,see https://dev.mysql.com/doc/internals/en/x-protocol-messages-messages.html
-            ColumnType::Geometry => Value::Ext("geometry",VBox::new(Value::Binary(v.as_bytes().unwrap_or_default().to_vec()))),
+            ColumnType::Geometry => Value::Ext("geometry",Box::new(Value::Binary(v.as_bytes().unwrap_or_default().to_vec()))),
         }
     }
 }

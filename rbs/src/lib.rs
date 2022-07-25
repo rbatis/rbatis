@@ -7,8 +7,6 @@
 #[macro_use]
 extern crate serde;
 #[allow(deprecated)]
-pub mod vbox;
-pub use vbox::VBox;
 pub mod value;
 pub use crate::value::ext::to_value_ref;
 pub use value::ext::to_value;
