@@ -32,7 +32,7 @@ impl PgQuery {
             return None;
         }
         //Value to MysqlArguments
-        return Some({ PgArguments::from(self.arguments) });
+        return Some(PgArguments::from(self.arguments));
     }
 
     #[inline]
