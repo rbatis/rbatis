@@ -85,3 +85,5 @@ impl<T: PartialEq> PartialEq for VBox<T> {
         self.deref().eq(other.deref())
     }
 }
+
+impl<T: Copy> Copy for VBox<T> {}
