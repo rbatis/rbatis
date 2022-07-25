@@ -1,12 +1,13 @@
 use std::fmt::Display;
 
+use crate::rbox::RBox;
 use serde::ser::{
     self, SerializeMap, SerializeSeq, SerializeStruct, SerializeTuple, SerializeTupleStruct,
 };
 use serde::Serialize;
 use serde_bytes::Bytes;
 
-use crate::value::{change_lifetime_const, RBox, Value};
+use crate::value::{change_lifetime_const, Value};
 
 use super::Error;
 

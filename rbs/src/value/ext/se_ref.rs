@@ -1,5 +1,5 @@
+use crate::rbox::RBox;
 use crate::value::ext::Error;
-use crate::value::RBox;
 use crate::ValueRef;
 use serde::ser::{
     SerializeMap, SerializeSeq, SerializeStruct, SerializeStructVariant, SerializeTuple,

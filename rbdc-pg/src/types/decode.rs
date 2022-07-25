@@ -4,7 +4,7 @@ use crate::value::{PgValue, PgValueFormat};
 use byteorder::{BigEndian, ByteOrder};
 use fastdate::{Date, DateTime};
 use rbdc::Error;
-use rbs::value::RBox;
+use rbs::rbox::RBox;
 use rbs::Value;
 use std::str::FromStr;
 use std::time::Duration;
