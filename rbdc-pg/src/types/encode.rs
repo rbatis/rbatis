@@ -1,6 +1,7 @@
 use crate::arguments::{PgArgumentBuffer, PgArguments};
 use crate::type_info::PgType::Json;
 use crate::type_info::PgTypeInfo;
+use crate::types::Oid;
 use rbs::Value;
 use std::mem;
 
@@ -63,32 +64,20 @@ impl Encode for Value {
             }
             Value::Ext(type_name, _) => {
                 match *type_name {
-                    "uuid" => {
-                        PgTypeInfo::UUID
-                    }
+                    "uuid" => PgTypeInfo::UUID,
                     //decimal = 12345678
-                    "decimal" => {
-                        PgTypeInfo::NUMERIC
-                    }
+                    "decimal" => PgTypeInfo::NUMERIC,
                     //Date = "1993-02-06"
-                    "date" => {
-                        PgTypeInfo::DATE
-                    }
+                    "date" => PgTypeInfo::DATE,
                     //RFC3339NanoTime = "15:04:05.999999999"
-                    "time" => {
-                        PgTypeInfo::TIME
-                    }
+                    "time" => PgTypeInfo::TIME,
                     //RFC3339 = "2006-01-02 15:04:05.999999"
-                    "timestamp" => {
-                        PgTypeInfo::TIMESTAMP
-                    }
-                    "datetime" => {
-                        PgTypeInfo::TIMESTAMP
-                    }
+                    "timestamp" => PgTypeInfo::TIMESTAMP,
+                    "datetime" => PgTypeInfo::TIMESTAMP,
                     "json" => PgTypeInfo::JSON,
-                    _ => {
-                        PgTypeInfo::UNKNOWN
-                    }
+                    "oid" => PgTypeInfo::OID,
+
+                    _ => PgTypeInfo::UNKNOWN,
                 }
             }
         }
@@ -153,10 +142,12 @@ impl Encode for Value {
                     "datetime" => {
                         todo!()
                     }
-                    "json" => crate::types::json::Json::from(v.into_string().unwrap_or_default()).encode(arg),
-                    _ => {
-                        IsNull::Yes
-                    }
+                    "json" => crate::types::json::Json::from(v.into_string().unwrap_or_default())
+                        .encode(arg),
+
+                    "oid" => Oid::from(v.as_u64().unwrap_or_default() as u32).encode_by_ref(arg),
+
+                    _ => IsNull::Yes,
                 }
             }
         }
