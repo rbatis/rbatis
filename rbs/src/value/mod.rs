@@ -681,6 +681,13 @@ impl From<Vec<(Value, Value)>> for Value {
     }
 }
 
+///from tuple for ext
+impl From<(&'static str, Value)> for Value {
+    fn from(arg: (&'static str, Value)) -> Self {
+        Value::Ext(arg.0, RBox::new(arg.1))
+    }
+}
+
 /// Note that an `Iterator<Item = u8>` will be collected into an
 /// [`Array`](crate::Value::Array), rather than a
 /// [`Binary`](crate::Value::Binary)
