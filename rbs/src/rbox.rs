@@ -23,10 +23,7 @@ impl<T> RBox<T> {
     {
         match self.inner {
             None => None,
-            Some(v) => Some({
-                let m = unsafe { self.inner.take().unwrap().as_mut() };
-                std::mem::take(m)
-            }),
+            Some(v) => Some({ std::mem::take(unsafe { self.inner.take().unwrap().as_mut() }) }),
         }
     }
 }
