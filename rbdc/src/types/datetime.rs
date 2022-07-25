@@ -5,12 +5,12 @@ use serde::{Deserialize, Deserializer, Serialize, Serializer};
 use serde::de::Error;
 
 #[derive(serde::Serialize, serde::Deserialize, Debug, Clone, Eq, PartialEq)]
-#[serde(rename = "datetime")]
+#[serde(rename = "DateTime")]
 pub struct DateTimeStr(String);
 
 impl Display for DateTimeStr {
     fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
-        write!(f, "datetime({})", self.0)
+        write!(f, "DateTime({})", self.0)
     }
 }
 
@@ -34,13 +34,13 @@ pub struct DateTime(fastdate::DateTime);
 
 impl Display for DateTime {
     fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
-        write!(f, "datetime({})", self.0)
+        write!(f, "DateTime({})", self.0)
     }
 }
 
 impl Serialize for DateTime {
     fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error> where S: Serializer {
-        serializer.serialize_newtype_struct("datetime", &self.0)
+        serializer.serialize_newtype_struct("DateTime", &self.0)
     }
 }
 

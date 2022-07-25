@@ -4,3 +4,4 @@ pub mod decode;
 pub mod encode;
 pub mod json;
 pub mod value;
+pub mod byte;

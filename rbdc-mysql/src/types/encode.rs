@@ -50,26 +50,26 @@ impl From<(Value, &mut Vec<u8>)> for MySqlTypeInfo {
             Value::Map(m) => MySqlTypeInfo::null(),
             Value::Ext(ext_type, v) => {
                 match ext_type {
-                    "uuid" => {
+                    "Uuid" => {
                         //uuid -> string
                         buf.put_bytes_lenenc(v.into_string().unwrap_or_default().into_bytes());
                         MySqlTypeInfo::from_type(ColumnType::VarChar)
                     }
                     //decimal = 12345678
-                    "decimal" => {
+                    "Decimal" => {
                         let mut bytes = v.into_bytes().unwrap_or_default();
                         buf.put_bytes_lenenc(bytes);
                         MySqlTypeInfo::from_type(ColumnType::NewDecimal)
                     }
                     //year = "1993"
-                    "year" => {
+                    "Year" => {
                         let year = v.into_string().unwrap_or_default();
                         buf.push(2);
                         encode_year(buf, rbdc::time::parse_year(&year));
                         MySqlTypeInfo::from_type(ColumnType::Year)
                     }
                     //Date = "1993-02-06"
-                    "date" => {
+                    "Date" => {
                         let s = v.into_string().unwrap_or_default();
                         if s.len() == 10 {
                             let date = rbdc::time::parse_date(&s);
@@ -81,7 +81,7 @@ impl From<(Value, &mut Vec<u8>)> for MySqlTypeInfo {
                         }
                     }
                     //RFC3339NanoTime = "15:04:05.999999999"
-                    "time" => {
+                    "Time" => {
                         let c = v.into_string().unwrap_or_default();
                         if c.len() >= 8 {
                             let time = rbdc::time::parse_time(&c);
@@ -94,7 +94,7 @@ impl From<(Value, &mut Vec<u8>)> for MySqlTypeInfo {
                         }
                     }
                     //RFC3339 = "2006-01-02 15:04:05.999999"
-                    "timestamp" => {
+                    "Timestamp" => {
                         //datetime=5byte
                         let c = v.as_u64().unwrap_or_default();
                         let datetime =
@@ -118,7 +118,7 @@ impl From<(Value, &mut Vec<u8>)> for MySqlTypeInfo {
                         }
                         MySqlTypeInfo::from_type(ColumnType::Timestamp)
                     }
-                    "datetime" => {
+                    "DateTime" => {
                         let c = v.into_string().unwrap_or_default();
                         let datetime =
                             DateTime::from_timestamp_millis(c.parse().unwrap_or_default());
@@ -141,15 +141,15 @@ impl From<(Value, &mut Vec<u8>)> for MySqlTypeInfo {
                         }
                         MySqlTypeInfo::from_type(ColumnType::Datetime)
                     }
-                    "json" => {
+                    "Json" => {
                         buf.put_bytes_lenenc(v.into_bytes().unwrap_or_default());
                         MySqlTypeInfo::from_type(ColumnType::Json)
                     }
-                    "enum" => {
+                    "Enum" => {
                         buf.put_bytes_lenenc(v.into_bytes().unwrap_or_default());
                         MySqlTypeInfo::from_type(ColumnType::Enum)
                     }
-                    "set" => {
+                    "Set" => {
                         buf.put_bytes_lenenc(v.into_bytes().unwrap_or_default());
                         MySqlTypeInfo::from_type(ColumnType::Set)
                     }
