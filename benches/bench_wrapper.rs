@@ -4,7 +4,6 @@ extern crate test;
 
 use rbatis::wrapper::Wrapper;
 use rbatis_core::db::DriverType;
-use rbs::rbox::RBox;
 use rbs::Value;
 use std::rc::Rc;
 use test::Bencher;
@@ -121,6 +120,6 @@ fn bench_rc(b: &mut Bencher) {
     b.iter(|| {
         //std::hint::black_box(Box::new(1)); //22 ns/iter (+/- 0)
         //std::hint::black_box(Rc::new(1)); //23 ns/iter (+/- 0)
-        std::hint::black_box(RBox::new(1)); //23 ns/iter (+/- 0)
+        std::hint::black_box(rbs::rbox::Box::new(1)); //0 ns/iter (+/- 0)
     });
 }
