@@ -3,7 +3,7 @@ use std::fmt;
 use std::fmt::{Debug, Display, Formatter};
 use std::marker::PhantomData;
 use std::ops::{Deref, DerefMut};
-use std::ptr::NonNull;
+use std::ptr::{NonNull};
 use crate::Value;
 
 pub struct VBox<T> {
@@ -15,7 +15,7 @@ impl<T> VBox<T> {
     pub fn new(mut arg: T) -> Self {
         Self {
             inner: Some(NonNull::new(&mut arg).unwrap()),
-            _p: PhantomData::default(),
+            _p: PhantomData::<T>::default(),
         }
     }
     pub fn take(mut self) -> Option<T>
@@ -24,9 +24,11 @@ impl<T> VBox<T> {
     {
         match self.inner {
             None => None,
-            Some(v) => Some(std::mem::take(unsafe {
-                self.inner.take().unwrap().as_mut()
-            })),
+            Some(mut v) => {
+                Some(unsafe{
+                    std::mem::take(&mut *v.as_ptr())
+                })
+            },
         }
     }
 }
@@ -37,7 +39,7 @@ impl<T> Deref for VBox<T> {
     type Target = T;
 
     fn deref(&self) -> &Self::Target {
-        unsafe { self.inner.as_ref().unwrap().as_ref() }
+        unsafe { self.inner.as_ref().expect("VBox inner is none").as_ref() }
     }
 }
 
@@ -68,7 +70,10 @@ impl<'de, T: Deserialize<'de>> Deserialize<'de> for VBox<T> {
 
 impl<T: Clone> Clone for VBox<T> {
     fn clone(&self) -> Self {
-        VBox::new(self.deref().clone())
+        VBox{
+            inner: self.inner.clone(),
+            _p: Default::default()
+        }
     }
 }
 impl<T: Debug> Debug for VBox<T> {
@@ -86,8 +91,6 @@ impl<T: PartialEq> PartialEq for VBox<T> {
         self.deref().eq(other.deref())
     }
 }
-
-impl<T: Copy> Copy for VBox<T> {}
 
 impl <T>From<T> for VBox<T>{
     fn from(arg: T) -> Self {

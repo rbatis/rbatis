@@ -26,7 +26,7 @@ mod test {
     use crate::driver::MysqlDriver;
     use rbdc::db::Driver;
     use rbdc::pool::PoolOptions;
-    use rbs::{to_value, Value};
+    use rbs::{to_value, Value, VBox};
     use std::collections::BTreeMap;
 
     #[tokio::test]
@@ -94,10 +94,10 @@ mod test {
             .unwrap();
         let param = vec![
             Value::String("http://www.test.com".to_string()),
-            Value::Ext("timestamp", to_value(1659996552000u64).unwrap_or_default().into()),
+            Value::Ext("timestamp", VBox::new(to_value(1659996552000u64).unwrap_or_default())),
             Value::String("12312".to_string()),
         ];
-        println!("param => {}", Value::Array(param.clone()));
+        println!("param => {:?}", Value::Array(param.clone()));
         let data = c
             .exec(
                 "update biz_activity set pc_link = ?,create_time = ? where id  = ?",
