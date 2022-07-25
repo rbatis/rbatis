@@ -5,7 +5,7 @@
 //! ```
 //! ```
 
-use crate::rbox::RBox;
+use crate::rbox::Box;
 use std::borrow::Cow;
 use std::convert::TryFrom;
 use std::fmt::{self, Debug, Display};
@@ -47,7 +47,7 @@ pub enum Value {
     /// Map represents key-value pairs of objects.
     Map(Vec<(Value, Value)>),
     /// Extended implements Extension interface
-    Ext(&'static str, RBox<Value>),
+    Ext(&'static str, Box<Value>),
 }
 
 impl Value {
@@ -97,7 +97,7 @@ impl Value {
                     .map(|&(ref k, ref v)| (k.as_ref(), v.as_ref()))
                     .collect(),
             ),
-            Value::Ext(ref ty, ref buf) => ValueRef::Ext(ty, RBox::new((**buf).as_ref())),
+            Value::Ext(ref ty, ref buf) => ValueRef::Ext(ty, Box::new((**buf).as_ref())),
         }
     }
 
@@ -493,7 +493,7 @@ impl Value {
     /// assert_eq!(None, Value::Bool(true).as_ext());
     /// ```
     #[inline]
-    pub fn as_ext(&self) -> Option<(&str, &RBox<Value>)> {
+    pub fn as_ext(&self) -> Option<(&str, &Box<Value>)> {
         if let Value::Ext(ref ty, ref buf) = *self {
             Some((ty, buf))
         } else {
@@ -859,7 +859,7 @@ pub enum ValueRef<'a> {
     Map(Vec<(ValueRef<'a>, ValueRef<'a>)>),
     /// Extended implements Extension interface: represents a tuple of type information and a byte
     /// array where type information is an integer whose meaning is defined by applications.
-    Ext(&'a str, RBox<ValueRef<'a>>),
+    Ext(&'a str, Box<ValueRef<'a>>),
 }
 
 impl<'a> ValueRef<'a> {
@@ -913,7 +913,7 @@ impl<'a> ValueRef<'a> {
             ),
             ValueRef::Ext(ty, ref buf) => Value::Ext(
                 unsafe { change_lifetime_const(ty) },
-                RBox::new((**buf).to_owned()),
+                Box::new((**buf).to_owned()),
             ),
         }
     }
