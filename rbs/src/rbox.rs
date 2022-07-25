@@ -5,12 +5,12 @@ use std::marker::PhantomData;
 use std::ops::{Deref, DerefMut};
 use std::ptr::NonNull;
 
-pub struct Box<T> {
+pub struct RBox<T> {
     inner: Option<NonNull<T>>,
     _p: PhantomData<T>,
 }
 
-impl<T> Box<T> {
+impl<T> RBox<T> {
     pub fn new(mut arg: T) -> Self {
         Self {
             inner: Some(NonNull::new(&mut arg).unwrap()),
@@ -29,10 +29,10 @@ impl<T> Box<T> {
         }
     }
 }
-unsafe impl<T: Sync> Sync for Box<T> {}
-unsafe impl<T: Send> Send for Box<T> {}
+unsafe impl<T: Sync> Sync for RBox<T> {}
+unsafe impl<T: Send> Send for RBox<T> {}
 
-impl<T> Deref for Box<T> {
+impl<T> Deref for RBox<T> {
     type Target = T;
 
     fn deref(&self) -> &Self::Target {
@@ -40,13 +40,13 @@ impl<T> Deref for Box<T> {
     }
 }
 
-impl<T> DerefMut for Box<T> {
+impl<T> DerefMut for RBox<T> {
     fn deref_mut(&mut self) -> &mut Self::Target {
         unsafe { self.inner.as_mut().unwrap().as_mut() }
     }
 }
 
-impl<T: Serialize> Serialize for Box<T> {
+impl<T: Serialize> Serialize for RBox<T> {
     fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
     where
         S: Serializer,
@@ -55,32 +55,32 @@ impl<T: Serialize> Serialize for Box<T> {
     }
 }
 
-impl<'de, T: Deserialize<'de>> Deserialize<'de> for Box<T> {
+impl<'de, T: Deserialize<'de>> Deserialize<'de> for RBox<T> {
     fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
     where
         D: Deserializer<'de>,
     {
         let t = T::deserialize(deserializer)?;
-        Ok(Box::new(t))
+        Ok(RBox::new(t))
     }
 }
 
-impl<T: Clone> Clone for Box<T> {
+impl<T: Clone> Clone for RBox<T> {
     fn clone(&self) -> Self {
-        Box::new(self.deref().clone())
+        RBox::new(self.deref().clone())
     }
 }
-impl<T: Debug> Debug for Box<T> {
+impl<T: Debug> Debug for RBox<T> {
     fn fmt(&self, f: &mut Formatter<'_>) -> fmt::Result {
         self.deref().fmt(f)
     }
 }
-impl<T: Display> Display for Box<T> {
+impl<T: Display> Display for RBox<T> {
     fn fmt(&self, f: &mut Formatter<'_>) -> fmt::Result {
         self.deref().fmt(f)
     }
 }
-impl<T: PartialEq> PartialEq for Box<T> {
+impl<T: PartialEq> PartialEq for RBox<T> {
     fn eq(&self, other: &Self) -> bool {
         self.deref().eq(other.deref())
     }

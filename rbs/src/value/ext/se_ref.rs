@@ -1,4 +1,4 @@
-use crate::rbox::Box;
+use crate::rbox::RBox;
 use crate::value::ext::Error;
 use crate::ValueRef;
 use serde::ser::{
@@ -290,7 +290,7 @@ impl Serializer for SerRef {
     where
         T: Serialize,
     {
-        Ok(ValueRef::Ext(name, Box::new(value.serialize(self)?)))
+        Ok(ValueRef::Ext(name, RBox::new(value.serialize(self)?)))
     }
 
     fn serialize_newtype_variant<T: ?Sized>(
