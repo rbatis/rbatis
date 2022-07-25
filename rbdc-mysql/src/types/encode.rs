@@ -49,6 +49,7 @@ impl From<(Value, &mut Vec<u8>)> for MySqlTypeInfo {
             Value::Array(v) => MySqlTypeInfo::null(),
             Value::Map(m) => MySqlTypeInfo::null(),
             Value::Ext(ext_type, v) => {
+                let v = v.take().unwrap_or_default();
                 match ext_type {
                     "uuid" => {
                         //uuid -> string

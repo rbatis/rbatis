@@ -4,6 +4,7 @@ use std::fmt::{Debug, Display, Formatter};
 use std::marker::PhantomData;
 use std::ops::{Deref, DerefMut};
 use std::ptr::NonNull;
+use crate::Value;
 
 pub struct VBox<T> {
     inner: Option<NonNull<T>>,
@@ -87,3 +88,9 @@ impl<T: PartialEq> PartialEq for VBox<T> {
 }
 
 impl<T: Copy> Copy for VBox<T> {}
+
+impl <T>From<T> for VBox<T>{
+    fn from(arg: T) -> Self {
+        VBox::new(arg)
+    }
+}
