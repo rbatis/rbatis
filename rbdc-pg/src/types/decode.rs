@@ -1,6 +1,6 @@
 use crate::type_info::PgType;
 use crate::types::Oid;
-use crate::value::{PgValue, PgValueFormat};
+use crate::value::{PgValue, PgValueFormat, PgValueRef};
 use byteorder::{BigEndian, ByteOrder};
 use fastdate::{Date, DateTime};
 use rbdc::Error;
@@ -17,9 +17,10 @@ impl From<PgValue> for Value {
     fn from(arg: PgValue) -> Self {
         match arg.type_info.0 {
             PgType::Bool => Value::Bool(Decode::decode(arg).unwrap()),
-            PgType::Bytea => {
-                todo!()
-            }
+            PgType::Bytea => Value::U32({
+                let i:i8=Decode::decode(arg).unwrap();
+                i
+            } as u32),
             PgType::Char => Value::String(Decode::decode(arg).unwrap()),
             PgType::Name => Value::String(Decode::decode(arg).unwrap()),
             PgType::Int8 => Value::I32(Decode::decode(arg).unwrap()),
@@ -33,55 +34,164 @@ impl From<PgValue> for Value {
                     .json,
             ),
             PgType::JsonArray => {
-                todo!()
+                Value::Ext("json_array", Box::new(Value::String(
+                    crate::types::json::Json::decode(arg)
+                        .unwrap_or_default()
+                        .json,
+                )))
             }
             PgType::Point => {
-                todo!()
+                Value::Ext("point", Box::new(Value::Binary({
+                    match arg.format() {
+                        PgValueFormat::Binary => arg.as_bytes().unwrap_or_default().to_owned(),
+                        PgValueFormat::Text => {
+                            arg.as_str().unwrap_or_default().as_bytes().to_vec()
+                        }
+                    }
+                })))
             }
             PgType::Lseg => {
-                todo!()
+                Value::Ext("lseg", Box::new(Value::Binary({
+                    match arg.format() {
+                        PgValueFormat::Binary => arg.as_bytes().unwrap_or_default().to_owned(),
+                        PgValueFormat::Text => {
+                            arg.as_str().unwrap_or_default().as_bytes().to_vec()
+                        }
+                    }
+                })))
             }
             PgType::Path => {
-                todo!()
+                Value::Ext("path", Box::new(Value::Binary({
+                    match arg.format() {
+                        PgValueFormat::Binary => arg.as_bytes().unwrap_or_default().to_owned(),
+                        PgValueFormat::Text => {
+                            arg.as_str().unwrap_or_default().as_bytes().to_vec()
+                        }
+                    }
+                })))
             }
             PgType::Box => {
-                todo!()
+                Value::Ext("box", Box::new(Value::Binary({
+                    match arg.format() {
+                        PgValueFormat::Binary => arg.as_bytes().unwrap_or_default().to_owned(),
+                        PgValueFormat::Text => {
+                            arg.as_str().unwrap_or_default().as_bytes().to_vec()
+                        }
+                    }
+                })))
             }
             PgType::Polygon => {
-                todo!()
+                Value::Ext("polygon", Box::new(Value::Binary({
+                    match arg.format() {
+                        PgValueFormat::Binary => arg.as_bytes().unwrap_or_default().to_owned(),
+                        PgValueFormat::Text => {
+                            arg.as_str().unwrap_or_default().as_bytes().to_vec()
+                        }
+                    }
+                })))
             }
             PgType::Line => {
-                todo!()
+                Value::Ext("line", Box::new(Value::Binary({
+                    match arg.format() {
+                        PgValueFormat::Binary => arg.as_bytes().unwrap_or_default().to_owned(),
+                        PgValueFormat::Text => {
+                            arg.as_str().unwrap_or_default().as_bytes().to_vec()
+                        }
+                    }
+                })))
             }
             PgType::LineArray => {
-                todo!()
+                Value::Ext("line_array", Box::new(Value::Binary({
+                    match arg.format() {
+                        PgValueFormat::Binary => arg.as_bytes().unwrap_or_default().to_owned(),
+                        PgValueFormat::Text => {
+                            arg.as_str().unwrap_or_default().as_bytes().to_vec()
+                        }
+                    }
+                })))
             }
             PgType::Cidr => {
-                todo!()
+                Value::Ext("cidr", Box::new(Value::Binary({
+                    match arg.format() {
+                        PgValueFormat::Binary => arg.as_bytes().unwrap_or_default().to_owned(),
+                        PgValueFormat::Text => {
+                            arg.as_str().unwrap_or_default().as_bytes().to_vec()
+                        }
+                    }
+                })))
             }
             PgType::CidrArray => {
-                todo!()
+                Value::Ext("cidr_array", Box::new(Value::Binary({
+                    match arg.format() {
+                        PgValueFormat::Binary => arg.as_bytes().unwrap_or_default().to_owned(),
+                        PgValueFormat::Text => {
+                            arg.as_str().unwrap_or_default().as_bytes().to_vec()
+                        }
+                    }
+                })))
             }
             PgType::Float4 => Value::F32(Decode::decode(arg).unwrap()),
             PgType::Float8 => Value::F32(Decode::decode(arg).unwrap()),
             PgType::Unknown => Value::Null,
             PgType::Circle => {
-                todo!()
+                Value::Ext("circle", Box::new(Value::Binary({
+                    match arg.format() {
+                        PgValueFormat::Binary => arg.as_bytes().unwrap_or_default().to_owned(),
+                        PgValueFormat::Text => {
+                            arg.as_str().unwrap_or_default().as_bytes().to_vec()
+                        }
+                    }
+                })))
             }
             PgType::CircleArray => {
-                todo!()
+                Value::Ext("circle_array", Box::new(Value::Binary({
+                    match arg.format() {
+                        PgValueFormat::Binary => arg.as_bytes().unwrap_or_default().to_owned(),
+                        PgValueFormat::Text => {
+                            arg.as_str().unwrap_or_default().as_bytes().to_vec()
+                        }
+                    }
+                })))
             }
             PgType::Macaddr8 => {
-                todo!()
+                Value::Ext("macaddr8", Box::new(Value::Binary({
+                    match arg.format() {
+                        PgValueFormat::Binary => arg.as_bytes().unwrap_or_default().to_owned(),
+                        PgValueFormat::Text => {
+                            arg.as_str().unwrap_or_default().as_bytes().to_vec()
+                        }
+                    }
+                })))
             }
             PgType::Macaddr8Array => {
-                todo!()
+                Value::Ext("macaddr8array", Box::new(Value::Binary({
+                    match arg.format() {
+                        PgValueFormat::Binary => arg.as_bytes().unwrap_or_default().to_owned(),
+                        PgValueFormat::Text => {
+                            arg.as_str().unwrap_or_default().as_bytes().to_vec()
+                        }
+                    }
+                })))
             }
             PgType::Macaddr => {
-                todo!()
+                Value::Ext("macaddr", Box::new(Value::Binary({
+                    match arg.format() {
+                        PgValueFormat::Binary => arg.as_bytes().unwrap_or_default().to_owned(),
+                        PgValueFormat::Text => {
+                            arg.as_str().unwrap_or_default().as_bytes().to_vec()
+                        }
+                    }
+                })))
             }
             PgType::Inet => {
-                todo!()
+                Value::Ext("inet", Box::new(Value::Binary({
+                    match arg.format() {
+                        PgValueFormat::Binary => arg.as_bytes().unwrap_or_default().to_owned(),
+                        PgValueFormat::Text => {
+                            arg.as_str().unwrap_or_default().as_bytes().to_vec()
+                        }
+                    }
+                })))
             }
             PgType::BoolArray => {
                 todo!()
@@ -93,7 +203,14 @@ impl From<PgValue> for Value {
                 todo!()
             }
             PgType::NameArray => {
-                todo!()
+                Value::Ext("name_array", Box::new(Value::Binary({
+                    match arg.format() {
+                        PgValueFormat::Binary => arg.as_bytes().unwrap_or_default().to_owned(),
+                        PgValueFormat::Text => {
+                            arg.as_str().unwrap_or_default().as_bytes().to_vec()
+                        }
+                    }
+                })))
             }
             PgType::Int2Array => {
                 todo!()
@@ -105,7 +222,14 @@ impl From<PgValue> for Value {
                 todo!()
             }
             PgType::BpcharArray => {
-                todo!()
+                Value::Ext("bpchar_array", Box::new(Value::Binary({
+                    match arg.format() {
+                        PgValueFormat::Binary => arg.as_bytes().unwrap_or_default().to_owned(),
+                        PgValueFormat::Text => {
+                            arg.as_str().unwrap_or_default().as_bytes().to_vec()
+                        }
+                    }
+                })))
             }
             PgType::VarcharArray => {
                 todo!()
@@ -114,16 +238,44 @@ impl From<PgValue> for Value {
                 todo!()
             }
             PgType::PointArray => {
-                todo!()
+                Value::Ext("point_array", Box::new(Value::Binary({
+                    match arg.format() {
+                        PgValueFormat::Binary => arg.as_bytes().unwrap_or_default().to_owned(),
+                        PgValueFormat::Text => {
+                            arg.as_str().unwrap_or_default().as_bytes().to_vec()
+                        }
+                    }
+                })))
             }
             PgType::LsegArray => {
-                todo!()
+                Value::Ext("LsegArray", Box::new(Value::Binary({
+                    match arg.format() {
+                        PgValueFormat::Binary => arg.as_bytes().unwrap_or_default().to_owned(),
+                        PgValueFormat::Text => {
+                            arg.as_str().unwrap_or_default().as_bytes().to_vec()
+                        }
+                    }
+                })))
             }
             PgType::PathArray => {
-                todo!()
+                Value::Ext("PathArray", Box::new(Value::Binary({
+                    match arg.format() {
+                        PgValueFormat::Binary => arg.as_bytes().unwrap_or_default().to_owned(),
+                        PgValueFormat::Text => {
+                            arg.as_str().unwrap_or_default().as_bytes().to_vec()
+                        }
+                    }
+                })))
             }
             PgType::BoxArray => {
-                todo!()
+                Value::Ext("BoxArray", Box::new(Value::Binary({
+                    match arg.format() {
+                        PgValueFormat::Binary => arg.as_bytes().unwrap_or_default().to_owned(),
+                        PgValueFormat::Text => {
+                            arg.as_str().unwrap_or_default().as_bytes().to_vec()
+                        }
+                    }
+                })))
             }
             PgType::Float4Array => {
                 todo!()
@@ -132,19 +284,47 @@ impl From<PgValue> for Value {
                 todo!()
             }
             PgType::PolygonArray => {
-                todo!()
+                Value::Ext("PolygonArray", Box::new(Value::Binary({
+                    match arg.format() {
+                        PgValueFormat::Binary => arg.as_bytes().unwrap_or_default().to_owned(),
+                        PgValueFormat::Text => {
+                            arg.as_str().unwrap_or_default().as_bytes().to_vec()
+                        }
+                    }
+                })))
             }
             PgType::OidArray => {
                 todo!()
             }
             PgType::MacaddrArray => {
-                todo!()
+                Value::Ext("MacaddrArray", Box::new(Value::Binary({
+                    match arg.format() {
+                        PgValueFormat::Binary => arg.as_bytes().unwrap_or_default().to_owned(),
+                        PgValueFormat::Text => {
+                            arg.as_str().unwrap_or_default().as_bytes().to_vec()
+                        }
+                    }
+                })))
             }
             PgType::InetArray => {
-                todo!()
+                Value::Ext("InetArray", Box::new(Value::Binary({
+                    match arg.format() {
+                        PgValueFormat::Binary => arg.as_bytes().unwrap_or_default().to_owned(),
+                        PgValueFormat::Text => {
+                            arg.as_str().unwrap_or_default().as_bytes().to_vec()
+                        }
+                    }
+                })))
             }
             PgType::Bpchar => {
-                todo!()
+                Value::Ext("Bpchar", Box::new(Value::Binary({
+                    match arg.format() {
+                        PgValueFormat::Binary => arg.as_bytes().unwrap_or_default().to_owned(),
+                        PgValueFormat::Text => {
+                            arg.as_str().unwrap_or_default().as_bytes().to_vec()
+                        }
+                    }
+                })))
             }
             PgType::Varchar => Value::String(Decode::decode(arg).unwrap()),
             PgType::Date => {
@@ -174,10 +354,24 @@ impl From<PgValue> for Value {
                 todo!()
             }
             PgType::Interval => {
-                todo!()
+                Value::Ext("Interval", Box::new(Value::Binary({
+                    match arg.format() {
+                        PgValueFormat::Binary => arg.as_bytes().unwrap_or_default().to_owned(),
+                        PgValueFormat::Text => {
+                            arg.as_str().unwrap_or_default().as_bytes().to_vec()
+                        }
+                    }
+                })))
             }
             PgType::IntervalArray => {
-                todo!()
+                Value::Ext("IntervalArray", Box::new(Value::Binary({
+                    match arg.format() {
+                        PgValueFormat::Binary => arg.as_bytes().unwrap_or_default().to_owned(),
+                        PgValueFormat::Text => {
+                            arg.as_str().unwrap_or_default().as_bytes().to_vec()
+                        }
+                    }
+                })))
             }
             PgType::NumericArray => {
                 todo!()
@@ -204,10 +398,24 @@ impl From<PgValue> for Value {
                 todo!()
             }
             PgType::Record => {
-                todo!()
+                Value::Ext("Record", Box::new(Value::Binary({
+                    match arg.format() {
+                        PgValueFormat::Binary => arg.as_bytes().unwrap_or_default().to_owned(),
+                        PgValueFormat::Text => {
+                            arg.as_str().unwrap_or_default().as_bytes().to_vec()
+                        }
+                    }
+                })))
             }
             PgType::RecordArray => {
-                todo!()
+                Value::Ext("RecordArray", Box::new(Value::Binary({
+                    match arg.format() {
+                        PgValueFormat::Binary => arg.as_bytes().unwrap_or_default().to_owned(),
+                        PgValueFormat::Text => {
+                            arg.as_str().unwrap_or_default().as_bytes().to_vec()
+                        }
+                    }
+                })))
             }
             PgType::Uuid => {
                 todo!()
@@ -222,46 +430,144 @@ impl From<PgValue> for Value {
                 todo!()
             }
             PgType::Int4Range => {
-                todo!()
+                Value::Ext("Int4Range", Box::new(Value::Binary({
+                    match arg.format() {
+                        PgValueFormat::Binary => arg.as_bytes().unwrap_or_default().to_owned(),
+                        PgValueFormat::Text => {
+                            arg.as_str().unwrap_or_default().as_bytes().to_vec()
+                        }
+                    }
+                })))
             }
             PgType::Int4RangeArray => {
-                todo!()
+                Value::Ext("Int4RangeArray", Box::new(Value::Binary({
+                    match arg.format() {
+                        PgValueFormat::Binary => arg.as_bytes().unwrap_or_default().to_owned(),
+                        PgValueFormat::Text => {
+                            arg.as_str().unwrap_or_default().as_bytes().to_vec()
+                        }
+                    }
+                })))
             }
             PgType::NumRange => {
-                todo!()
+                Value::Ext("NumRange", Box::new(Value::Binary({
+                    match arg.format() {
+                        PgValueFormat::Binary => arg.as_bytes().unwrap_or_default().to_owned(),
+                        PgValueFormat::Text => {
+                            arg.as_str().unwrap_or_default().as_bytes().to_vec()
+                        }
+                    }
+                })))
             }
             PgType::NumRangeArray => {
-                todo!()
+                Value::Ext("NumRangeArray", Box::new(Value::Binary({
+                    match arg.format() {
+                        PgValueFormat::Binary => arg.as_bytes().unwrap_or_default().to_owned(),
+                        PgValueFormat::Text => {
+                            arg.as_str().unwrap_or_default().as_bytes().to_vec()
+                        }
+                    }
+                })))
             }
             PgType::TsRange => {
-                todo!()
+                Value::Ext("TsRange", Box::new(Value::Binary({
+                    match arg.format() {
+                        PgValueFormat::Binary => arg.as_bytes().unwrap_or_default().to_owned(),
+                        PgValueFormat::Text => {
+                            arg.as_str().unwrap_or_default().as_bytes().to_vec()
+                        }
+                    }
+                })))
             }
             PgType::TsRangeArray => {
-                todo!()
+                Value::Ext("TsRangeArray", Box::new(Value::Binary({
+                    match arg.format() {
+                        PgValueFormat::Binary => arg.as_bytes().unwrap_or_default().to_owned(),
+                        PgValueFormat::Text => {
+                            arg.as_str().unwrap_or_default().as_bytes().to_vec()
+                        }
+                    }
+                })))
             }
             PgType::TstzRange => {
-                todo!()
+                Value::Ext("TstzRange", Box::new(Value::Binary({
+                    match arg.format() {
+                        PgValueFormat::Binary => arg.as_bytes().unwrap_or_default().to_owned(),
+                        PgValueFormat::Text => {
+                            arg.as_str().unwrap_or_default().as_bytes().to_vec()
+                        }
+                    }
+                })))
             }
             PgType::TstzRangeArray => {
-                todo!()
+                Value::Ext("TstzRangeArray", Box::new(Value::Binary({
+                    match arg.format() {
+                        PgValueFormat::Binary => arg.as_bytes().unwrap_or_default().to_owned(),
+                        PgValueFormat::Text => {
+                            arg.as_str().unwrap_or_default().as_bytes().to_vec()
+                        }
+                    }
+                })))
             }
             PgType::DateRange => {
-                todo!()
+                Value::Ext("DateRange", Box::new(Value::Binary({
+                    match arg.format() {
+                        PgValueFormat::Binary => arg.as_bytes().unwrap_or_default().to_owned(),
+                        PgValueFormat::Text => {
+                            arg.as_str().unwrap_or_default().as_bytes().to_vec()
+                        }
+                    }
+                })))
             }
             PgType::DateRangeArray => {
-                todo!()
+                Value::Ext("DateRangeArray", Box::new(Value::Binary({
+                    match arg.format() {
+                        PgValueFormat::Binary => arg.as_bytes().unwrap_or_default().to_owned(),
+                        PgValueFormat::Text => {
+                            arg.as_str().unwrap_or_default().as_bytes().to_vec()
+                        }
+                    }
+                })))
             }
             PgType::Int8Range => {
-                todo!()
+                Value::Ext("Int8Range", Box::new(Value::Binary({
+                    match arg.format() {
+                        PgValueFormat::Binary => arg.as_bytes().unwrap_or_default().to_owned(),
+                        PgValueFormat::Text => {
+                            arg.as_str().unwrap_or_default().as_bytes().to_vec()
+                        }
+                    }
+                })))
             }
             PgType::Int8RangeArray => {
-                todo!()
+                Value::Ext("Int8RangeArray", Box::new(Value::Binary({
+                    match arg.format() {
+                        PgValueFormat::Binary => arg.as_bytes().unwrap_or_default().to_owned(),
+                        PgValueFormat::Text => {
+                            arg.as_str().unwrap_or_default().as_bytes().to_vec()
+                        }
+                    }
+                })))
             }
             PgType::Jsonpath => {
-                todo!()
+                Value::Ext("Jsonpath", Box::new(Value::Binary({
+                    match arg.format() {
+                        PgValueFormat::Binary => arg.as_bytes().unwrap_or_default().to_owned(),
+                        PgValueFormat::Text => {
+                            arg.as_str().unwrap_or_default().as_bytes().to_vec()
+                        }
+                    }
+                })))
             }
             PgType::JsonpathArray => {
-                todo!()
+                Value::Ext("JsonpathArray", Box::new(Value::Binary({
+                    match arg.format() {
+                        PgValueFormat::Binary => arg.as_bytes().unwrap_or_default().to_owned(),
+                        PgValueFormat::Text => {
+                            arg.as_str().unwrap_or_default().as_bytes().to_vec()
+                        }
+                    }
+                })))
             }
             PgType::Money => {
                 todo!()
@@ -273,13 +579,34 @@ impl From<PgValue> for Value {
                 todo!()
             }
             PgType::Custom(_) => {
-                todo!()
+                Value::Ext("Custom", Box::new(Value::Binary({
+                    match arg.format() {
+                        PgValueFormat::Binary => arg.as_bytes().unwrap_or_default().to_owned(),
+                        PgValueFormat::Text => {
+                            arg.as_str().unwrap_or_default().as_bytes().to_vec()
+                        }
+                    }
+                })))
             }
             PgType::DeclareWithName(_) => {
-                todo!()
+                Value::Ext("DeclareWithName", Box::new(Value::Binary({
+                    match arg.format() {
+                        PgValueFormat::Binary => arg.as_bytes().unwrap_or_default().to_owned(),
+                        PgValueFormat::Text => {
+                            arg.as_str().unwrap_or_default().as_bytes().to_vec()
+                        }
+                    }
+                })))
             }
             PgType::DeclareWithOid(_) => {
-                todo!()
+                Value::Ext("DeclareWithOid", Box::new(Value::Binary({
+                    match arg.format() {
+                        PgValueFormat::Binary => arg.as_bytes().unwrap_or_default().to_owned(),
+                        PgValueFormat::Text => {
+                            arg.as_str().unwrap_or_default().as_bytes().to_vec()
+                        }
+                    }
+                })))
             }
         }
     }
@@ -359,6 +686,13 @@ impl Decode for f32 {
             PgValueFormat::Binary => BigEndian::read_f32(value.as_bytes()?),
             PgValueFormat::Text => value.as_str()?.parse()?,
         })
+    }
+}
+
+impl Decode for i8 {
+    fn decode(value: PgValue) -> Result<Self, Error> {
+        // note: in the TEXT encoding, a value of "0" here is encoded as an empty string
+        Ok(value.as_bytes()?.get(0).copied().unwrap_or_default() as i8)
     }
 }
 

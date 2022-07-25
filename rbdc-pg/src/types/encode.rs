@@ -120,34 +120,34 @@ impl Encode for Value {
             }
             Value::Ext(type_name, v) => {
                 match type_name {
-                    "uuid" => {
+                    "Uuid" => {
                         todo!()
                     }
                     //decimal = 12345678
-                    "decimal" => {
+                    "Decimal" => {
                         todo!()
                     }
                     //Date = "1993-02-06"
-                    "date" => {
+                    "Date" => {
                         todo!()
                     }
                     //RFC3339NanoTime = "15:04:05.999999999"
-                    "time" => {
+                    "Time" => {
                         todo!()
                     }
                     //RFC3339 = "2006-01-02 15:04:05.999999"
-                    "timestamp" => {
+                    "Timestamp" => {
                         todo!()
                     }
-                    "datetime" => {
+                    "DateTime" => {
                         todo!()
                     }
-                    "json" => crate::types::json::Json::from(
+                    "Json" => crate::types::json::Json::from(
                         v.into_string().unwrap_or_default(),
                     )
                     .encode(arg),
 
-                    "oid" => Oid::from(v.as_u64().unwrap_or_default() as u32).encode_by_ref(arg),
+                    "Oid" => Oid::from(v.as_u64().unwrap_or_default() as u32).encode_by_ref(arg),
 
                     _ => IsNull::Yes,
                 }
@@ -163,6 +163,18 @@ impl Encode for String {
 
     fn encode(self, buf: &mut PgArgumentBuffer) -> IsNull {
         buf.extend(self.into_bytes());
+        IsNull::No
+    }
+}
+
+
+impl Encode for i8 {
+    fn type_info(&self) -> PgTypeInfo {
+        PgTypeInfo::BYTEA
+    }
+
+    fn encode(self, buf: &mut PgArgumentBuffer) -> IsNull {
+        buf.extend(&self.to_be_bytes());
         IsNull::No
     }
 }
