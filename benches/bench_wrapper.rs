@@ -120,6 +120,6 @@ fn bench_rc(b: &mut Bencher) {
     b.iter(|| {
         //std::hint::black_box(Box::new(1)); //22 ns/iter (+/- 0)
         //std::hint::black_box(Rc::new(1)); //23 ns/iter (+/- 0)
-        std::hint::black_box(rbs::rbox::RBox::new(1)); //0 ns/iter (+/- 0)
+        std::hint::black_box(rbs::vbox::VBox::new(1)); //0 ns/iter (+/- 0)
     });
 }
