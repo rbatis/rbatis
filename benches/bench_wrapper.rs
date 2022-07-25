@@ -4,7 +4,7 @@ extern crate test;
 
 use rbatis::wrapper::Wrapper;
 use rbatis_core::db::DriverType;
-use rbs::value::RBox;
+use rbs::rbox::RBox;
 use rbs::Value;
 use std::rc::Rc;
 use test::Bencher;
