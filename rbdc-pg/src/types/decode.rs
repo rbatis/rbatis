@@ -4,7 +4,6 @@ use crate::value::{PgValue, PgValueFormat};
 use byteorder::{BigEndian, ByteOrder};
 use fastdate::{Date, DateTime};
 use rbdc::Error;
-use rbs::vbox::VBox;
 use rbs::Value;
 use std::str::FromStr;
 use std::time::Duration;
@@ -27,7 +26,7 @@ impl From<PgValue> for Value {
             PgType::Int2 => Value::I32(Decode::decode(arg).unwrap()),
             PgType::Int4 => Value::I32(Decode::decode(arg).unwrap()),
             PgType::Text => Value::String(Decode::decode(arg).unwrap()),
-            PgType::Oid => Value::Ext("oid", VBox::new(Value::U32(Decode::decode(arg).unwrap()))),
+            PgType::Oid => Value::Ext("oid", Box::new(Value::U32(Decode::decode(arg).unwrap()))),
             PgType::Json => Value::String(
                 crate::types::json::Json::decode(arg)
                     .unwrap_or_default()

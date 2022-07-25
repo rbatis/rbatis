@@ -143,7 +143,7 @@ impl Encode for Value {
                         todo!()
                     }
                     "json" => crate::types::json::Json::from(
-                        v.take().unwrap().into_string().unwrap_or_default(),
+                        v.into_string().unwrap_or_default(),
                     )
                     .encode(arg),
 
