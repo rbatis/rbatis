@@ -26,5 +26,6 @@ smallvec = "1.7.0"
 either = "1.7.0"
 byteorder = { version = "1.4.3", default-features = false, features = ["std"] }
 fastdate = "0.1"
+hex = "0.4.3"
 [dev-dependencies]
 tokio = {version="1",features = ["full"]}

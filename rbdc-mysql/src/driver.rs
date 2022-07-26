@@ -85,6 +85,7 @@ mod test {
     //     println!("{}", data);
     // }
     //
+
     #[tokio::test]
     async fn test_mysql_param() {
         let mut d = MysqlDriver {};
@@ -94,10 +95,10 @@ mod test {
             .unwrap();
         let param = vec![
             Value::String("http://www.test.com".to_string()),
-            Value::U64(1659996552000).into_ext("timestamp"),
+            Value::U64(1658848837828).into_ext("Timestamp"),
             Value::String("12312".to_string()),
         ];
-        println!("param => {:?}", Value::Array(param.clone()));
+        println!("param => {}", Value::Array(param.clone()));
         let data = c
             .exec(
                 "update biz_activity set pc_link = ?,create_time = ? where id  = ?",
