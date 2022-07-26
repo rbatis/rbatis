@@ -50,8 +50,8 @@ impl MySqlArguments {
     }
 }
 
-impl From<Vec<rbs::Value>> for MySqlArguments {
-    fn from(args: Vec<rbs::Value>) -> Self {
+impl From<Vec<Value>> for MySqlArguments {
+    fn from(args: Vec<Value>) -> Self {
         let mut arg = MySqlArguments::default();
         for x in args {
             arg.add(x);
