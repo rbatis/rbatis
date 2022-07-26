@@ -1,6 +1,6 @@
 use crate::arguments::PgArgumentBuffer;
 use crate::type_info::PgTypeInfo;
-use crate::types::encode::IsNull;
+use crate::types::encode::{IsNull, TypeInfo};
 use crate::value::{PgValueFormat, PgValueRef};
 use byteorder::{BigEndian, ByteOrder};
 use rbdc::Error;
@@ -75,5 +75,11 @@ impl<'de> Deserialize<'de> for Oid {
         D: Deserializer<'de>,
     {
         u32::deserialize(deserializer).map(Self)
+    }
+}
+
+impl TypeInfo for Oid{
+    fn type_info(&self) -> PgTypeInfo {
+        PgTypeInfo::OID
     }
 }

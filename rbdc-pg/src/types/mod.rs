@@ -7,3 +7,6 @@ pub mod value;
 pub mod byte;
 pub mod array;
 pub mod bool;
+pub mod int;
+pub mod float;
+pub mod string;

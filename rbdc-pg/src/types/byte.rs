@@ -1,14 +1,49 @@
 use std::fmt::{Display, Formatter};
 use byteorder::BigEndian;
 use rbdc::Error;
-use crate::value::PgValueRef;
+use crate::arguments::PgArgumentBuffer;
+use crate::types::decode::Decode;
+use crate::types::encode::{Encode, IsNull};
+use crate::value::{PgValue, PgValueFormat, PgValueRef};
 
 #[derive(serde::Serialize, serde::Deserialize, Debug, Clone, Eq, PartialEq)]
 #[serde(rename = "Bytea")]
-pub struct Bytea(u8);
+pub struct Bytea(pub u8);
 
 impl Display for Bytea {
     fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
         write!(f, "bytea({})", self.0)
+    }
+}
+
+impl Encode for Bytea{
+    fn encode(self, buf: &mut PgArgumentBuffer) -> IsNull {
+        buf.push(self.0);
+        IsNull::No
+    }
+}
+
+impl Decode for Bytea{
+    fn decode(value: PgValue) -> Result<Self, Error> {
+        // note: in the TEXT encoding, a value of "0" here is encoded as an empty string
+        Ok(Self(value.as_bytes()?.get(0).copied().unwrap_or_default() as u8))
+    }
+}
+
+impl Encode for Vec<u8>{
+    fn encode(self, buf: &mut PgArgumentBuffer) -> IsNull {
+        buf.extend(self);
+        IsNull::No
+    }
+}
+
+impl Decode for Vec<u8>{
+    fn decode(value: PgValue) -> Result<Self, Error> {
+        match value.format() {
+            PgValueFormat::Binary => value.into_bytes(),
+            PgValueFormat::Text => {
+                Err("unsupported decode to `&[u8]` of BYTEA in a simple query; use a prepared query or decode to `Vec<u8>`".into())
+            }
+        }
     }
 }

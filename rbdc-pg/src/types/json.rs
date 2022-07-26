@@ -37,12 +37,6 @@ impl<'de> Deserialize<'de> for Json {
     }
 }
 
-impl TypeInfo for Json{
-    fn type_info(&self) -> PgTypeInfo {
-        PgTypeInfo::JSONB
-    }
-}
-
 impl Encode for Json {
 
     fn encode(self, buf: &mut PgArgumentBuffer) -> IsNull {
@@ -91,5 +85,11 @@ impl Decode for Json {
 impl From<String> for Json {
     fn from(arg: String) -> Self {
         Json { json: arg }
+    }
+}
+
+impl TypeInfo for Json{
+    fn type_info(&self) -> PgTypeInfo {
+        PgTypeInfo::JSONB
     }
 }
