@@ -4,8 +4,8 @@ use crate::type_info::PgTypeInfo;
 use crate::types::Oid;
 use rbs::Value;
 use std::mem;
+use rbdc::timestamp::Timestamp;
 use crate::types::json::Json;
-use crate::types::time::Timestamp;
 
 pub enum IsNull {
     No,

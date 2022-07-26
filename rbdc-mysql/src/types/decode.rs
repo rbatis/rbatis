@@ -27,7 +27,6 @@ impl From<MySqlValue> for Value {
             ColumnType::Blob => Value::Binary(v.as_bytes().unwrap_or_default().to_vec()),
             ColumnType::VarString => Value::String(v.as_str().unwrap_or_default().to_string()),
             ColumnType::String => Value::String(v.as_str().unwrap_or_default().to_string()),
-
             ColumnType::Timestamp => {
                 Value::Ext("Timestamp", Box::new(Value::U64({
                     let mut s = decode_timestamp(v).unwrap_or_default();
