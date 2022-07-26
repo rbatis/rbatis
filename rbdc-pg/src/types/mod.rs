@@ -10,3 +10,4 @@ pub mod bool;
 pub mod int;
 pub mod float;
 pub mod string;
+pub mod time;

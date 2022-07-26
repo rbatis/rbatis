@@ -6,7 +6,7 @@ use serde::de::Error;
 
 #[derive(serde::Serialize, serde::Deserialize, Debug, Clone, Eq, PartialEq)]
 #[serde(rename = "DateTime")]
-pub struct DateTimeStr(String);
+pub struct DateTimeStr(pub String);
 
 impl Display for DateTimeStr {
     fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
@@ -30,7 +30,7 @@ impl DerefMut for DateTimeStr {
 
 
 #[derive(Debug, Clone, Eq, PartialEq)]
-pub struct DateTime(fastdate::DateTime);
+pub struct DateTime(pub fastdate::DateTime);
 
 impl Display for DateTime {
     fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {

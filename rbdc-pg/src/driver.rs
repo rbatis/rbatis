@@ -59,14 +59,13 @@ mod test {
             .unwrap();
         let param = vec![
             Value::String("http://www.test.com".to_string()),
-            // Value::String("1659996552000Z".to_string()),
+            Value::U64(1659996552000).into_ext("Timestamp"),
             Value::String("1".to_string()),
         ];
         println!("param => {}", Value::Array(param.clone()));
         let data = c
             .exec(
-                // "update biz_activity set pc_link = $1,create_time = $2 where id  = $3",
-                "update biz_activity set pc_link = $1 where id  = $2",
+                 "update biz_activity set pc_link = $1,create_time = $2 where id  = $3",
                 param,
             )
             .await
