@@ -4,31 +4,6 @@ use std::str::FromStr;
 use serde::{Deserialize, Deserializer, Serialize, Serializer};
 use serde::de::Error;
 
-#[derive(serde::Serialize, serde::Deserialize, Debug, Clone, Eq, PartialEq)]
-#[serde(rename = "DateTime")]
-pub struct DateTimeStr(pub String);
-
-impl Display for DateTimeStr {
-    fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
-        write!(f, "DateTime({})", self.0)
-    }
-}
-
-impl Deref for DateTimeStr {
-    type Target = String;
-
-    fn deref(&self) -> &Self::Target {
-        &self.0
-    }
-}
-
-impl DerefMut for DateTimeStr {
-    fn deref_mut(&mut self) -> &mut Self::Target {
-        &mut self.0
-    }
-}
-
-
 #[derive(Debug, Clone, Eq, PartialEq)]
 pub struct DateTime(pub fastdate::DateTime);
 
@@ -71,6 +46,31 @@ impl DateTime {
     }
     pub fn utc() -> Self {
         Self(fastdate::DateTime::utc())
+    }
+}
+
+
+#[derive(serde::Serialize, serde::Deserialize, Debug, Clone, Eq, PartialEq)]
+#[serde(rename = "DateTime")]
+pub struct DateTimeStr(pub String);
+
+impl Display for DateTimeStr {
+    fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
+        write!(f, "DateTime({})", self.0)
+    }
+}
+
+impl Deref for DateTimeStr {
+    type Target = String;
+
+    fn deref(&self) -> &Self::Target {
+        &self.0
+    }
+}
+
+impl DerefMut for DateTimeStr {
+    fn deref_mut(&mut self) -> &mut Self::Target {
+        &mut self.0
     }
 }
 
