@@ -15,7 +15,7 @@ pub trait TypeInfo{
 }
 
 pub trait Encode {
-    fn encode(self, arg: &mut PgArgumentBuffer) -> IsNull;
+    fn encode(self, buf: &mut PgArgumentBuffer) -> IsNull;
 }
 
 impl From<Vec<Value>> for PgArguments {
@@ -235,10 +235,12 @@ impl TypeInfo for Value{
 }
 
 impl Encode for Value {
-    fn encode(self, arg: &mut PgArgumentBuffer) -> IsNull {
+    fn encode(self, buf: &mut PgArgumentBuffer) -> IsNull {
         match self {
             Value::Null => IsNull::Yes,
-            Value::Bool(v) => todo!(),
+            Value::Bool(v) => {
+                v.encode(buf)
+            },
             Value::I32(v) => {
                 todo!()
             }
@@ -259,13 +261,13 @@ impl Encode for Value {
             }
             Value::String(v) => {
                 //default -> string
-                v.encode(arg)
+                v.encode(buf)
             }
             Value::Binary(v) => {
                 todo!()
             }
             Value::Array(v) => {
-                v.encode(arg)
+                v.encode(buf)
             }
             Value::Map(v) => {
                 todo!()
@@ -318,8 +320,8 @@ impl Encode for Value {
                     "Text" => {
                         todo!()
                     }
-                    "Oid" => Oid::from(v.as_u64().unwrap_or_default() as u32).encode_by_ref(arg),
-                    "Json" => Json::from(v.into_string().unwrap_or_default()).encode(arg),
+                    "Oid" => Oid::from(v.as_u64().unwrap_or_default() as u32).encode_by_ref(buf),
+                    "Json" => Json::from(v.into_string().unwrap_or_default()).encode(buf),
                     "Point" => {
                         todo!()
                     }
@@ -459,3 +461,4 @@ impl Encode for i8 {
         IsNull::No
     }
 }
+
