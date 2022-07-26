@@ -3,7 +3,7 @@ use serde_json::Value;
 
 #[derive(serde::Serialize, serde::Deserialize, Debug, Clone, Eq, PartialEq)]
 #[serde(rename = "Json")]
-pub struct Json(String);
+pub struct Json(pub String);
 
 impl From<serde_json::Value> for Json {
     fn from(arg: Value) -> Self {

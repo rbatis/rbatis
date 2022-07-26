@@ -5,13 +5,14 @@ use crate::types::Oid;
 use rbs::Value;
 use std::mem;
 use crate::types::json::Json;
+use crate::types::time::Timestamp;
 
 pub enum IsNull {
     No,
     Yes,
 }
 
-pub trait TypeInfo{
+pub trait TypeInfo {
     fn type_info(&self) -> PgTypeInfo;
 }
 
@@ -32,7 +33,7 @@ impl From<Vec<Value>> for PgArguments {
     }
 }
 
-impl TypeInfo for Value{
+impl TypeInfo for Value {
     fn type_info(&self) -> PgTypeInfo {
         match self {
             Value::Null => PgTypeInfo::UNKNOWN,
@@ -62,7 +63,7 @@ impl TypeInfo for Value{
                 PgTypeInfo::BYTEA_ARRAY
             }
             Value::Array(arr) => {
-                if arr.len()==0{
+                if arr.len() == 0 {
                     return PgTypeInfo::UNKNOWN;
                 }
                 arr[0].type_info().clone().to_array_element().unwrap_or(PgTypeInfo::UNKNOWN)
@@ -241,7 +242,7 @@ impl Encode for Value {
             Value::Null => IsNull::Yes,
             Value::Bool(v) => {
                 v.encode(buf)
-            },
+            }
             Value::I32(v) => {
                 v.encode(buf)
             }
@@ -292,7 +293,7 @@ impl Encode for Value {
                     }
                     //RFC3339 = "2006-01-02 15:04:05.999999"
                     "Timestamp" => {
-                        todo!()
+                        Timestamp(v.as_u64().unwrap_or_default()).encode(buf)
                     }
                     "DateTime" => {
                         todo!()
