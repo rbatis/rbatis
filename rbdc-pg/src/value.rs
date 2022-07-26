@@ -65,6 +65,26 @@ impl<'r> PgValueRef<'r> {
 }
 
 impl PgValue {
+
+    pub fn get(buf: &mut &[u8], format: PgValueFormat, ty: PgTypeInfo) -> Self {
+        let mut element_len = buf.get_i32();
+
+        let element_val = if element_len == -1 {
+            element_len = 0;
+            None
+        } else {
+            Some(buf[..(element_len as usize)].to_vec())
+        };
+
+        buf.advance(element_len as usize);
+
+        PgValue {
+            value: element_val,
+            type_info: ty,
+            format,
+        }
+    }
+
     #[inline]
     pub fn as_ref(&self) -> PgValueRef<'_> {
         PgValueRef {

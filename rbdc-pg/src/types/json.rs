@@ -1,7 +1,7 @@
 use crate::arguments::PgArgumentBuffer;
 use crate::type_info::PgTypeInfo;
 use crate::types::decode::Decode;
-use crate::types::encode::{Encode, IsNull};
+use crate::types::encode::{Encode, IsNull, TypeInfo};
 use crate::value::{PgValue, PgValueFormat};
 use rbdc::Error;
 use serde::{Deserialize, Deserializer, Serialize, Serializer};
@@ -37,10 +37,13 @@ impl<'de> Deserialize<'de> for Json {
     }
 }
 
-impl Encode for Json {
+impl TypeInfo for Json{
     fn type_info(&self) -> PgTypeInfo {
         PgTypeInfo::JSONB
     }
+}
+
+impl Encode for Json {
 
     fn encode(self, buf: &mut PgArgumentBuffer) -> IsNull {
         // we have a tiny amount of dynamic behavior depending if we are resolved to be JSON

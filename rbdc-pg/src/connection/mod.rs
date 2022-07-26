@@ -5,7 +5,7 @@ use crate::options::PgConnectOptions;
 use crate::query::PgQuery;
 use crate::statement::PgStatementMetadata;
 use crate::type_info::PgTypeInfo;
-use crate::types::encode::Encode;
+use crate::types::encode::{Encode, TypeInfo};
 use crate::types::Oid;
 use either::Either;
 use futures_core::future::BoxFuture;
