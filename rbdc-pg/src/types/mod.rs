@@ -6,3 +6,4 @@ pub mod json;
 pub mod value;
 pub mod byte;
 pub mod array;
+pub mod bool;
