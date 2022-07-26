@@ -865,6 +865,118 @@ impl PgType {
             }
         }
     }
+
+
+    /// If `self` is an array type, return the type info for its element.
+    ///
+    /// This method should only be called on resolved types: calling it on
+    /// a type that is merely declared (DeclareWithOid/Name) is a bug.
+    pub(crate) fn to_array_element(&self) -> Option<PgTypeInfo> {
+        // We explicitly match on all the `None` cases to ensure an exhaustive match.
+        match self {
+            PgType::BoolArray => None,
+            PgType::Bool => Some(PgTypeInfo(PgType::Bool)),
+            PgType::ByteaArray => None,
+            PgType::Bytea => Some(PgTypeInfo(PgType::Bytea)),
+            PgType::CharArray => None,
+            PgType::Char => Some(PgTypeInfo(PgType::Char)),
+            PgType::NameArray => None,
+            PgType::Name => Some(PgTypeInfo(PgType::Name)),
+            PgType::Int8Array => None,
+            PgType::Int8 => Some(PgTypeInfo(PgType::Int8)),
+            PgType::Int2Array => None,
+            PgType::Int2 => Some(PgTypeInfo(PgType::Int2)),
+            PgType::Int4Array => None,
+            PgType::Int4 => Some(PgTypeInfo(PgType::Int4)),
+            PgType::TextArray => None,
+            PgType::Text => Some(PgTypeInfo(PgType::Text)),
+            PgType::OidArray => None,
+            PgType::Oid => Some(PgTypeInfo(PgType::Oid)),
+            PgType::JsonArray => None,
+            PgType::Json => Some(PgTypeInfo(PgType::Json)),
+            PgType::PointArray => None,
+            PgType::Point => Some(PgTypeInfo(PgType::Point)),
+            PgType::LsegArray => None,
+            PgType::Lseg => Some(PgTypeInfo(PgType::Lseg)),
+            PgType::PathArray => None,
+            PgType::Path => Some(PgTypeInfo(PgType::Path)),
+            PgType::BoxArray => None,
+            PgType::Box => Some(PgTypeInfo(PgType::Box)),
+            PgType::PolygonArray => None,
+            PgType::Polygon => Some(PgTypeInfo(PgType::Polygon)),
+            PgType::LineArray => None,
+            PgType::Line => Some(PgTypeInfo(PgType::Line)),
+            PgType::CidrArray => None,
+            PgType::Cidr => Some(PgTypeInfo(PgType::Cidr)),
+            PgType::Float4Array => None,
+            PgType::Float4 => Some(PgTypeInfo(PgType::Float4)),
+            PgType::Float8Array => None,
+            PgType::Float8 => Some(PgTypeInfo(PgType::Float8)),
+            PgType::CircleArray => None,
+            PgType::Circle => Some(PgTypeInfo(PgType::Circle)),
+            PgType::Macaddr8Array => None,
+            PgType::Macaddr8 => Some(PgTypeInfo(PgType::Macaddr8)),
+            PgType::MoneyArray => None,
+            PgType::Money => Some(PgTypeInfo(PgType::Money)),
+            PgType::MacaddrArray => None,
+            PgType::Macaddr => Some(PgTypeInfo(PgType::Macaddr)),
+            PgType::InetArray => None,
+            PgType::Inet => Some(PgTypeInfo(PgType::Inet)),
+            PgType::BpcharArray => None,
+            PgType::Bpchar => Some(PgTypeInfo(PgType::Bpchar)),
+            PgType::VarcharArray => None,
+            PgType::Varchar => Some(PgTypeInfo(PgType::Varchar)),
+            PgType::DateArray => None,
+            PgType::Date => Some(PgTypeInfo(PgType::Date)),
+            PgType::TimeArray => None,
+            PgType::Time => Some(PgTypeInfo(PgType::Time)),
+            PgType::TimestampArray => None,
+            PgType::Timestamp => Some(PgTypeInfo(PgType::Timestamp)),
+            PgType::TimestamptzArray => None,
+            PgType::Timestamptz => Some(PgTypeInfo(PgType::Timestamptz)),
+            PgType::IntervalArray => None,
+            PgType::Interval => Some(PgTypeInfo(PgType::Interval)),
+            PgType::TimetzArray => None,
+            PgType::Timetz => Some(PgTypeInfo(PgType::Timetz)),
+            PgType::BitArray => None,
+            PgType::Bit => Some(PgTypeInfo(PgType::Bit)),
+            PgType::VarbitArray => None,
+            PgType::Varbit => Some(PgTypeInfo(PgType::Varbit)),
+            PgType::NumericArray => None,
+            PgType::Numeric => Some(PgTypeInfo(PgType::Numeric)),
+            PgType::RecordArray => None,
+            PgType::Record => Some(PgTypeInfo(PgType::Record)),
+            PgType::UuidArray => None,
+            PgType::Uuid => Some(PgTypeInfo(PgType::Uuid)),
+            PgType::JsonbArray => None,
+            PgType::Jsonb => Some(PgTypeInfo(PgType::Jsonb)),
+            PgType::Int4RangeArray => None,
+            PgType::Int4Range => Some(PgTypeInfo(PgType::Int4Range)),
+            PgType::NumRangeArray => None,
+            PgType::NumRange => Some(PgTypeInfo(PgType::NumRange)),
+            PgType::TsRangeArray => None,
+            PgType::TsRange => Some(PgTypeInfo(PgType::TsRange)),
+            PgType::TstzRangeArray => None,
+            PgType::TstzRange => Some(PgTypeInfo(PgType::TstzRange)),
+            PgType::DateRangeArray => None,
+            PgType::DateRange => Some(PgTypeInfo(PgType::DateRange)),
+            PgType::Int8RangeArray => None,
+            PgType::Int8Range => Some(PgTypeInfo(PgType::Int8Range)),
+            PgType::JsonpathArray => None,
+            PgType::Jsonpath => Some(PgTypeInfo(PgType::Jsonpath)),
+            // There is no `UnknownArray`
+            PgType::Unknown => None,
+            // There is no `VoidArray`
+            PgType::Void => None,
+            PgType::Custom(ty) =>None,
+            PgType::DeclareWithOid(oid) => {
+                None
+            }
+            PgType::DeclareWithName(name) => {
+                None
+            }
+        }
+    }
 }
 
 impl PgTypeInfo {
