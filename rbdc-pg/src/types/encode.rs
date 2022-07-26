@@ -10,6 +10,7 @@ pub enum IsNull {
     No,
     Yes,
 }
+
 pub trait TypeInfo{
     fn type_info(&self) -> PgTypeInfo;
 }
@@ -242,35 +243,35 @@ impl Encode for Value {
                 v.encode(buf)
             },
             Value::I32(v) => {
-                todo!()
+                v.encode(buf)
             }
             Value::I64(v) => {
-                todo!()
+                v.encode(buf)
             }
             Value::U32(v) => {
-                todo!()
+                v.encode(buf)
             }
             Value::U64(v) => {
-                todo!()
+                v.encode(buf)
             }
             Value::F32(v) => {
-                todo!()
+                v.encode(buf)
             }
             Value::F64(v) => {
-                todo!()
+                v.encode(buf)
             }
             Value::String(v) => {
                 //default -> string
                 v.encode(buf)
             }
             Value::Binary(v) => {
-                todo!()
+                v.encode(buf)
             }
             Value::Array(v) => {
                 v.encode(buf)
             }
             Value::Map(v) => {
-                todo!()
+                unimplemented!()
             }
             Value::Ext(type_name, v) => {
                 match type_name {
@@ -437,28 +438,8 @@ impl Encode for Value {
     }
 }
 
-impl TypeInfo for String{
-    fn type_info(&self) -> PgTypeInfo {
-        PgTypeInfo::VARCHAR
-    }
-}
-impl Encode for String {
-    fn encode(self, buf: &mut PgArgumentBuffer) -> IsNull {
-        buf.extend(self.into_bytes());
-        IsNull::No
-    }
-}
 
-impl TypeInfo for i8{
-    fn type_info(&self) -> PgTypeInfo {
-        PgTypeInfo::BYTEA
-    }
-}
-impl Encode for i8 {
 
-    fn encode(self, buf: &mut PgArgumentBuffer) -> IsNull {
-        buf.extend(&self.to_be_bytes());
-        IsNull::No
-    }
-}
+
+
 

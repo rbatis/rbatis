@@ -7,6 +7,7 @@ use rbdc::Error;
 use rbs::Value;
 use std::str::FromStr;
 use std::time::Duration;
+use crate::types::byte::Bytea;
 
 pub trait Decode: Sized {
     /// Decode a new value of this type using a raw value from the database.
@@ -17,7 +18,7 @@ impl Decode for Value {
     fn decode(arg: PgValue) -> Result<Self, Error> {
         Ok(match arg.type_info.0 {
             PgType::Bool => Value::Bool(Decode::decode(arg)?),
-            PgType::Bytea => Value::U32({let i:i8=Decode::decode(arg)?;i} as u32),
+            PgType::Bytea => Value::Ext("Bytea",Box::new(Value::U32(Bytea::decode(arg)?.0 as u32))),
             PgType::Char => Value::String(Decode::decode(arg)?),
             PgType::Name => Value::String(Decode::decode(arg)?),
             PgType::Int8 => Value::I32(Decode::decode(arg)?),
@@ -458,73 +459,6 @@ impl From<PgValue> for Value {
     }
 }
 
-
-impl Decode for String {
-    fn decode(value: PgValue) -> Result<Self, Error> {
-        Ok(value.as_str()?.to_owned())
-    }
-}
-
-impl Decode for i64 {
-    fn decode(value: PgValue) -> Result<Self, Error> {
-        Ok(match value.format() {
-            PgValueFormat::Binary => BigEndian::read_i64(value.as_bytes()?),
-            PgValueFormat::Text => value.as_str()?.parse()?,
-        })
-    }
-}
-
-impl Decode for i32 {
-    fn decode(value: PgValue) -> Result<Self, Error> {
-        Ok(match value.format() {
-            PgValueFormat::Binary => BigEndian::read_i32(value.as_bytes()?),
-            PgValueFormat::Text => value.as_str()?.parse()?,
-        })
-    }
-}
-
-impl Decode for u32 {
-    fn decode(value: PgValue) -> Result<Self, Error> {
-        Ok(match value.format() {
-            PgValueFormat::Binary => BigEndian::read_u32(value.as_bytes()?),
-            PgValueFormat::Text => value.as_str()?.parse()?,
-        })
-    }
-}
-
-impl Decode for i16 {
-    fn decode(value: PgValue) -> Result<Self, Error> {
-        Ok(match value.format() {
-            PgValueFormat::Binary => BigEndian::read_i16(value.as_bytes()?),
-            PgValueFormat::Text => value.as_str()?.parse()?,
-        })
-    }
-}
-
-impl Decode for f64 {
-    fn decode(value: PgValue) -> Result<Self, Error> {
-        Ok(match value.format() {
-            PgValueFormat::Binary => BigEndian::read_f64(value.as_bytes()?),
-            PgValueFormat::Text => value.as_str()?.parse()?,
-        })
-    }
-}
-
-impl Decode for f32 {
-    fn decode(value: PgValue) -> Result<Self, Error> {
-        Ok(match value.format() {
-            PgValueFormat::Binary => BigEndian::read_f32(value.as_bytes()?),
-            PgValueFormat::Text => value.as_str()?.parse()?,
-        })
-    }
-}
-
-impl Decode for i8 {
-    fn decode(value: PgValue) -> Result<Self, Error> {
-        // note: in the TEXT encoding, a value of "0" here is encoded as an empty string
-        Ok(value.as_bytes()?.get(0).copied().unwrap_or_default() as i8)
-    }
-}
 
 impl Decode for DateTime {
     fn decode(value: PgValue) -> Result<Self, Error> {
