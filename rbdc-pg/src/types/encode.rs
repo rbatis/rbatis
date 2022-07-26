@@ -34,7 +34,7 @@ impl From<Vec<Value>> for PgArguments {
 impl TypeInfo for Value{
     fn type_info(&self) -> PgTypeInfo {
         match self {
-            Value::Null => PgTypeInfo::with_name("NULL"),
+            Value::Null => PgTypeInfo::UNKNOWN,
             Value::Bool(_) => {
                 PgTypeInfo::BOOL
             }
