@@ -40,6 +40,11 @@ impl Oid {
         buf.extend(&self.0.to_be_bytes());
         IsNull::No
     }
+
+    pub fn encode(self, buf: &mut PgArgumentBuffer) -> IsNull {
+        buf.extend(self.0.to_be_bytes());
+        IsNull::No
+    }
 }
 
 impl From<u32> for Oid {

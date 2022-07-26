@@ -321,7 +321,7 @@ impl Encode for Value {
                     "Text" => {
                         todo!()
                     }
-                    "Oid" => Oid::from(v.as_u64().unwrap_or_default() as u32).encode_by_ref(buf),
+                    "Oid" => Oid::from(v.as_u64().unwrap_or_default() as u32).encode(buf),
                     "Json" => Json::from(v.into_string().unwrap_or_default()).encode(buf),
                     "Point" => {
                         todo!()
