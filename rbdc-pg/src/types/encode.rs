@@ -9,8 +9,11 @@ pub enum IsNull {
     No,
     Yes,
 }
-pub trait Encode {
+pub trait TypeInfo{
     fn type_info(&self) -> PgTypeInfo;
+}
+
+pub trait Encode {
     fn encode(self, arg: &mut PgArgumentBuffer) -> IsNull;
 }
 
@@ -27,7 +30,7 @@ impl From<Vec<Value>> for PgArguments {
     }
 }
 
-impl Encode for Value {
+impl TypeInfo for Value{
     fn type_info(&self) -> PgTypeInfo {
         match self {
             Value::Null => PgTypeInfo::with_name("NULL"),
@@ -82,7 +85,9 @@ impl Encode for Value {
             }
         }
     }
+}
 
+impl Encode for Value {
     fn encode(self, arg: &mut PgArgumentBuffer) -> IsNull {
         match self {
             Value::Null => IsNull::Yes,
@@ -156,22 +161,24 @@ impl Encode for Value {
     }
 }
 
-impl Encode for String {
+impl TypeInfo for String{
     fn type_info(&self) -> PgTypeInfo {
         PgTypeInfo::VARCHAR
     }
-
+}
+impl Encode for String {
     fn encode(self, buf: &mut PgArgumentBuffer) -> IsNull {
         buf.extend(self.into_bytes());
         IsNull::No
     }
 }
 
-
-impl Encode for i8 {
+impl TypeInfo for i8{
     fn type_info(&self) -> PgTypeInfo {
         PgTypeInfo::BYTEA
     }
+}
+impl Encode for i8 {
 
     fn encode(self, buf: &mut PgArgumentBuffer) -> IsNull {
         buf.extend(&self.to_be_bytes());
