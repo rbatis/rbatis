@@ -169,11 +169,11 @@ impl Decode for Value {
             }
             PgType::Timestamp => {
                 let fast_date: DateTime = Decode::decode(arg)?;
-                Value::Ext("DateTime", Box::new(Value::String(fast_date.to_string())))
+                Value::Ext("DateTime", Box::new(Value::String(fast_date.0.to_string())))
             },
             PgType::Timestamptz => {
                 let fast_date: DateTime = Decode::decode(arg)?;
-                Value::Ext("Timestamptz", Box::new(Value::String(fast_date.to_string())))
+                Value::Ext("Timestamptz", Box::new(Value::String(fast_date.0.to_string())))
             },
             PgType::Interval => {
                 Value::Ext("Interval", Box::new(Value::Binary({

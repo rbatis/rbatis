@@ -40,18 +40,7 @@ impl Decode for fastdate::DateTime {
             }
             PgValueFormat::Text => {
                 //2022-07-22 05:22:22.123456+00
-                let s = value.as_str()?;
-                let bytes = s.as_bytes();
-                if bytes[bytes.len() - 3] == '+' as u8 {
-                    //have zone
-                    let mut dt = fastdate::DateTime::from_str(&s[0..s.len() - 3])
-                        .map_err(|e| Error::from(e.to_string()))?;
-                    let hour: i32 = s[s.len() - 2..s.len()].parse().unwrap_or_default();
-                    dt = dt + Duration::from_secs((hour * 3600) as u64);
-                    dt
-                } else {
-                    fastdate::DateTime::from_str(s).map_err(|e| Error::from(e.to_string()))?
-                }
+                fastdate::DateTime::from_str(value.as_str()?).map_err(|e| Error::from(e.to_string()))?
             }
         })
     }
