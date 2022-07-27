@@ -2,6 +2,7 @@ use std::fmt::{Display, Formatter};
 use std::str::FromStr;
 use bytes::Bytes;
 use rbdc::Error;
+use rbdc::common::time::Time;
 use rbdc::timestamp::Timestamp;
 
 use crate::arguments::PgArgumentBuffer;
@@ -28,4 +29,10 @@ impl Decode for Timestamp {
             }
         })
     }
+}
+
+impl Decode for Time{
+     fn decode(value: PgValue) -> Result<Self, Error> {
+         todo!()
+     }
 }
