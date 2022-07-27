@@ -69,7 +69,7 @@ impl TypeInfo for Value {
                 arr[0].type_info().clone().to_array_element().unwrap_or(PgTypeInfo::UNKNOWN)
             }
             Value::Map(_) => {
-                unimplemented!()
+                PgTypeInfo::UNKNOWN
             }
             Value::Ext(type_name, _) => {
                 match *type_name {
@@ -272,7 +272,7 @@ impl Encode for Value {
                 v.encode(buf)
             }
             Value::Map(v) => {
-                unimplemented!()
+                IsNull::Yes
             }
             Value::Ext(type_name, v) => {
                 match type_name {
