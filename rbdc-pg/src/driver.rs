@@ -31,7 +31,7 @@ mod test {
 
     #[test]
     fn test_pg_pool() {
-        block_on!(async move{
+        let task=async move{
             let opt = PoolOptions::new();
             let pool = opt
                 .connect(
@@ -50,29 +50,33 @@ mod test {
             for mut x in data {
                 println!("row: {}", x);
             }
-        });
+        };
+        block_on!(task);
     }
 
-    #[tokio::test]
-    async fn test_pg_param() {
-        let mut d = PgDriver {};
-        let mut c = d
-            .connect("postgres://postgres:123456@localhost:5432/postgres")
-            .await
-            .unwrap();
-        let param = vec![
-            Value::String("http://www.test.com".to_string()),
-            Value::U64(1659996552000).into_ext("Timestamp"),
-            Value::String("1".to_string()),
-        ];
-        println!("param => {}", Value::Array(param.clone()));
-        let data = c
-            .exec(
-                 "update biz_activity set pc_link = $1,create_time = $2 where id  = $3",
-                param,
-            )
-            .await
-            .unwrap();
-        println!("{}", data);
+    #[test]
+    fn test_pg_param() {
+        let task = async move {
+            let mut d = PgDriver {};
+            let mut c = d
+                .connect("postgres://postgres:123456@localhost:5432/postgres")
+                .await
+                .unwrap();
+            let param = vec![
+                Value::String("http://www.test.com".to_string()),
+                Value::U64(1659996552000).into_ext("Timestamp"),
+                Value::String("1".to_string()),
+            ];
+            println!("param => {}", Value::Array(param.clone()));
+            let data = c
+                .exec(
+                    "update biz_activity set pc_link = $1,create_time = $2 where id  = $3",
+                    param,
+                )
+                .await
+                .unwrap();
+            println!("{}", data);
+        };
+        block_on!(task);
     }
 }
