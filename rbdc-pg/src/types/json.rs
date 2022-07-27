@@ -39,7 +39,7 @@ impl<'de> Deserialize<'de> for Json {
 
 impl Encode for Json {
 
-    fn encode(self, buf: &mut PgArgumentBuffer) -> IsNull {
+    fn encode(self, buf: &mut PgArgumentBuffer) -> Result<IsNull,Error> {
         // we have a tiny amount of dynamic behavior depending if we are resolved to be JSON
         // instead of JSONB
         buf.patch(|buf, ty: &PgTypeInfo| {
@@ -52,9 +52,9 @@ impl Encode for Json {
         buf.push(1);
 
         // the JSON data written to the buffer is the same regardless of parameter type
-        buf.write(&self.json.into_bytes());
+        buf.write(&self.json.into_bytes())?;
 
-        IsNull::No
+        Ok(IsNull::No)
     }
 }
 

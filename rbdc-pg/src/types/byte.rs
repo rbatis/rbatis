@@ -17,9 +17,9 @@ impl Display for Bytea {
 }
 
 impl Encode for Bytea{
-    fn encode(self, buf: &mut PgArgumentBuffer) -> IsNull {
+    fn encode(self, buf: &mut PgArgumentBuffer) -> Result<IsNull,Error> {
         buf.push(self.0);
-        IsNull::No
+        Ok(IsNull::No)
     }
 }
 
@@ -31,9 +31,9 @@ impl Decode for Bytea{
 }
 
 impl Encode for Vec<u8>{
-    fn encode(self, buf: &mut PgArgumentBuffer) -> IsNull {
+    fn encode(self, buf: &mut PgArgumentBuffer) -> Result<IsNull,Error> {
         buf.extend(self);
-        IsNull::No
+        Ok(IsNull::No)
     }
 }
 

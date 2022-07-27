@@ -24,17 +24,17 @@ impl Decode for f32 {
 }
 
 impl Encode for f64 {
-    fn encode(self, buf: &mut PgArgumentBuffer) -> IsNull {
+    fn encode(self, buf: &mut PgArgumentBuffer) -> Result<IsNull,Error> {
         buf.extend(&self.to_be_bytes());
 
-        IsNull::No
+        Ok(IsNull::No)
     }
 }
 
 impl Encode for f32 {
-    fn encode(self, buf: &mut PgArgumentBuffer) -> IsNull {
+    fn encode(self, buf: &mut PgArgumentBuffer) -> Result<IsNull,Error> {
         buf.extend(&self.to_be_bytes());
 
-        IsNull::No
+        Ok(IsNull::No)
     }
 }

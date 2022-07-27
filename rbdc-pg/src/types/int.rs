@@ -77,66 +77,65 @@ impl Decode for i8 {
 ///encode
 
 impl Encode for u64 {
-    fn encode(self, buf: &mut PgArgumentBuffer) -> IsNull {
+    fn encode(self, buf: &mut PgArgumentBuffer) -> Result<IsNull,Error> {
         buf.extend(&self.to_be_bytes());
-
-        IsNull::No
+        Ok(IsNull::No)
     }
 }
 
 impl Encode for u32 {
-    fn encode(self, buf: &mut PgArgumentBuffer) -> IsNull {
+    fn encode(self, buf: &mut PgArgumentBuffer) -> Result<IsNull,Error> {
         buf.extend(&self.to_be_bytes());
 
-        IsNull::No
+        Ok(IsNull::No)
     }
 }
 
 impl Encode for u16 {
-    fn encode(self, buf: &mut PgArgumentBuffer) -> IsNull {
+    fn encode(self, buf: &mut PgArgumentBuffer) -> Result<IsNull,Error> {
         buf.extend(&self.to_be_bytes());
 
-        IsNull::No
+        Ok(IsNull::No)
     }
 }
 
 impl Encode for u8 {
-    fn encode(self, buf: &mut PgArgumentBuffer) -> IsNull {
+    fn encode(self, buf: &mut PgArgumentBuffer) -> Result<IsNull,Error> {
         buf.extend(&self.to_be_bytes());
 
-        IsNull::No
+        Ok(IsNull::No)
     }
 }
 
 impl Encode for i64 {
-    fn encode(self, buf: &mut PgArgumentBuffer) -> IsNull {
+    fn encode(self, buf: &mut PgArgumentBuffer) -> Result<IsNull,Error> {
         buf.extend(&self.to_be_bytes());
 
-        IsNull::No
+        Ok(IsNull::No)
     }
 }
 
 impl Encode for i32 {
-    fn encode(self, buf: &mut PgArgumentBuffer) -> IsNull {
+    fn encode(self, buf: &mut PgArgumentBuffer) -> Result<IsNull,Error> {
         buf.extend(&self.to_be_bytes());
 
-        IsNull::No
+        Ok(IsNull::No)
     }
 }
 
 impl Encode for i16 {
-    fn encode(self, buf: &mut PgArgumentBuffer) -> IsNull {
+    fn encode(self, buf: &mut PgArgumentBuffer) -> Result<IsNull,Error> {
         buf.extend(&self.to_be_bytes());
 
-        IsNull::No
+        Ok(IsNull::No)
     }
 }
 
 impl Encode for i8 {
-    fn encode(self, buf: &mut PgArgumentBuffer) -> IsNull {
+    fn encode(self, buf: &mut PgArgumentBuffer) -> Result<IsNull,Error> {
         buf.extend(&self.to_be_bytes());
 
-        IsNull::No
+        Ok(IsNull::No)
     }
 }
 
