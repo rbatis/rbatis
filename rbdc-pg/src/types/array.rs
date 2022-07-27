@@ -172,7 +172,7 @@ fn element_type_info<T: TypeInfo>(arg: &Vec<T>) -> PgTypeInfo {
 }
 
 impl Encode for Vec<Value> {
-    fn encode(self, buf: &mut PgArgumentBuffer) -> IsNull {
+    fn encode(self, buf: &mut PgArgumentBuffer) -> Result<IsNull,Error> {
         let type_info = element_type_info(&self);
         buf.extend(&1_i32.to_be_bytes()); // number of dimensions
         buf.extend(&0_i32.to_be_bytes()); // flags
@@ -186,8 +186,8 @@ impl Encode for Vec<Value> {
         buf.extend(&(self.len() as i32).to_be_bytes()); // len
         buf.extend(&1_i32.to_be_bytes()); // lower bound
         for element in self {
-            buf.encode(element);
+            buf.encode(element)?;
         }
-        IsNull::No
+        Ok(IsNull::No)
     }
 }

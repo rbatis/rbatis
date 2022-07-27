@@ -57,12 +57,13 @@ pub struct PgArguments {
 }
 
 impl PgArguments {
-    pub fn add(&mut self, value: Value) {
+    pub fn add(&mut self, value: Value) ->Result<(),Error> {
         // encode the value into our buffer
-        let type_info = self.buffer.encode(value);
+        let type_info = self.buffer.encode(value)?;
         self.types.push(type_info);
         // increment the number of arguments we are tracking
         self.buffer.count += 1;
+        Ok(())
     }
 
     //Apply patches
@@ -106,14 +107,14 @@ impl PgArguments {
 }
 
 impl PgArgumentBuffer {
-    pub fn encode(&mut self, value: Value) -> PgTypeInfo {
+    pub fn encode(&mut self, value: Value) -> Result<PgTypeInfo,Error> {
         // reserve space to write the prefixed length of the value
         let offset = self.len();
         self.extend(&[0; 4]);
 
         let info = value.type_info();
         // encode the value into our buffer
-        let is_null = value.encode(self);
+        let is_null = value.encode(self)?;
         let len = if let IsNull::No = is_null {
             (self.len() - offset - 4) as i32
         } else {
@@ -125,7 +126,7 @@ impl PgArgumentBuffer {
 
         // write the len to the beginning of the value
         self[offset..(offset + 4)].copy_from_slice(&len.to_be_bytes());
-        return info;
+        return Ok(info);
     }
 
     // Adds a callback to be invoked later when we know the parameter type

@@ -12,7 +12,7 @@ use crate::value::{PgValue, PgValueFormat};
 
 
 impl Encode for Timestamp {
-    fn encode(self, buf: &mut PgArgumentBuffer) -> IsNull {
+    fn encode(self, buf: &mut PgArgumentBuffer) -> Result<IsNull,Error> {
         self.0.encode(buf)
     }
 }
