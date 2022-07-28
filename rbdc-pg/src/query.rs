@@ -31,7 +31,6 @@ impl PgQuery {
         if self.arguments.is_empty() {
             return None;
         }
-        //Value to MysqlArguments
         return Some(PgArguments::from(self.arguments));
     }
 

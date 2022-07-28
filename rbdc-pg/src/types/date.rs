@@ -2,9 +2,12 @@ use std::str::FromStr;
 use std::time::Duration;
 use rbdc::date::Date;
 use rbdc::Error;
+use crate::arguments::PgArgumentBuffer;
+use crate::types::decode::Decode;
+use crate::types::encode::{Encode, IsNull};
 use crate::value::{PgValue, PgValueFormat};
 
-use super::decode::{Decode, self};
+
 
 
 impl Decode for fastdate::Date{
@@ -33,8 +36,20 @@ impl Decode for fastdate::Date{
     }
 }
 
+impl Encode for fastdate::Date{
+    fn encode(self, buf: &mut PgArgumentBuffer) -> Result<IsNull, Error> {
+        todo!()
+    }
+}
+
 impl Decode for Date{
-    fn decode(value: crate::value::PgValue) -> Result<Self, rbdc::Error> {
+    fn decode(value: PgValue) -> Result<Self, Error> {
+        todo!()
+    }
+}
+
+impl Encode for Date{
+    fn encode(self, buf: &mut PgArgumentBuffer) -> Result<IsNull, Error> {
         todo!()
     }
 }

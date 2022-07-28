@@ -11,6 +11,7 @@ use std::time::Duration;
 use rbdc::datetime::DateTime;
 use rbdc::decimal::Decimal;
 use rbdc::json::Json;
+use rbdc::timestamp::Timestamp;
 use rbdc::types::time::Time;
 use rbdc::uuid::Uuid;
 use crate::types::byte::Bytea;
@@ -160,13 +161,13 @@ impl Decode for Value {
             }
             PgType::Varchar => Value::String(Decode::decode(arg)?),
             PgType::Date => {
-                Decode::decode(arg)?.into()
+                {let v:Date=Decode::decode(arg)?; v}.into()
             }
             PgType::Time => {
-                Decode::decode(arg)?.into()
+                {let v:Time=Decode::decode(arg)?; v}.into()
             }
             PgType::Timestamp => {
-                 Decode::decode(arg)?.into()
+                {let v:Timestamp=Decode::decode(arg)?; v}.into()
             },
             PgType::Timestamptz => {
                 let fast_date: DateTime = Decode::decode(arg)?;
