@@ -27,6 +27,7 @@ mod test {
     use rbdc::block_on;
     use rbdc::db::Driver;
     use rbdc::pool::PoolOptions;
+    use rbdc::timestamp::Timestamp;
     use rbs::Value;
 
     #[test]
@@ -64,7 +65,7 @@ mod test {
                 .unwrap();
             let param = vec![
                 Value::String("http://www.test.com".to_string()),
-                Value::U64(1659996552000).into_ext("Timestamp"),
+                Timestamp(1659996552000).into(),
                 Value::String("1".to_string()),
             ];
             println!("param => {}", Value::Array(param.clone()));
