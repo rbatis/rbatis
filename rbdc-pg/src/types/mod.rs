@@ -11,7 +11,7 @@ pub mod int;
 pub mod float;
 pub mod string;
 pub mod time;
-pub mod timez;
+pub mod timetz;
 pub mod date;
 pub mod datetime;
 pub mod decimal;
