@@ -36,3 +36,9 @@ impl Decode for Time{
          todo!()
      }
 }
+
+impl Encode for Time{
+    fn encode(self, buf: &mut PgArgumentBuffer) -> Result<IsNull, Error> {
+        todo!()
+    }
+}

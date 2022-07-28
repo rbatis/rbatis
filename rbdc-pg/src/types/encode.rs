@@ -9,11 +9,11 @@ use rbdc::date::Date;
 use rbdc::datetime::DateTime;
 use rbdc::decimal::Decimal;
 use rbdc::Error;
+use rbdc::json::Json;
 use rbdc::timestamp::Timestamp;
 use rbdc::types::time::Time;
 use rbdc::uuid::Uuid;
 use crate::types::byte::Bytea;
-use crate::types::json::Json;
 
 pub enum IsNull {
     No,
@@ -310,22 +310,22 @@ impl Encode for Value {
                         Bytea(v.as_u64().unwrap_or_default() as u8).encode(buf)?
                     }
                     "Char" => {
-                        todo!()
+                        v.into_string().unwrap_or_default().encode(buf)?
                     }
                     "Name" => {
-                        todo!()
+                        v.into_string().unwrap_or_default().encode(buf)?
                     }
                     "Int8" => {
-                        todo!()
+                        (v.as_i64().unwrap_or_default() as i32).encode(buf)?
                     }
                     "Int2" => {
-                        todo!()
+                        (v.as_i64().unwrap_or_default() as i8).encode(buf)?
                     }
                     "Int4" => {
-                        todo!()
+                        (v.as_i64().unwrap_or_default() as i16).encode(buf)?
                     }
                     "Text" => {
-                        todo!()
+                        v.into_string().unwrap_or_default().encode(buf)?
                     }
                     "Oid" => Oid::from(v.as_u64().unwrap_or_default() as u32).encode(buf)?,
                     "Json" => Json(v.into_string().unwrap_or_default()).encode(buf)?,
