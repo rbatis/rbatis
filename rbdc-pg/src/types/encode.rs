@@ -7,6 +7,7 @@ use std::mem;
 use std::str::FromStr;
 use rbdc::date::Date;
 use rbdc::datetime::DateTime;
+use rbdc::decimal::Decimal;
 use rbdc::Error;
 use rbdc::timestamp::Timestamp;
 use rbdc::types::time::Time;
@@ -286,7 +287,7 @@ impl Encode for Value {
                     }
                     //decimal = 12345678
                     "Decimal" => {
-                        todo!()
+                       Decimal(v.into_string().unwrap_or_default()).encode(buf)?
                     }
                     //Date = "1993-02-06"
                     "Date" => {

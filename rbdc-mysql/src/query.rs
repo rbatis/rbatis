@@ -29,7 +29,7 @@ impl MysqlQuery {
             return None;
         }
         //Value to MysqlArguments
-        return Some({ MySqlArguments::from(self.arguments) });
+        return Some(MySqlArguments::from(self.arguments));
     }
 
     #[inline]
