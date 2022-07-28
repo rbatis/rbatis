@@ -4,8 +4,12 @@ use crate::type_info::PgTypeInfo;
 use crate::types::Oid;
 use rbs::Value;
 use std::mem;
+use std::str::FromStr;
+use rbdc::date::Date;
+use rbdc::datetime::DateTime;
 use rbdc::Error;
 use rbdc::timestamp::Timestamp;
+use rbdc::types::time::Time;
 use crate::types::json::Json;
 
 pub enum IsNull {
@@ -286,18 +290,18 @@ impl Encode for Value {
                     }
                     //Date = "1993-02-06"
                     "Date" => {
-                        todo!()
+                        Date(fastdate::Date::from_str(&v.into_string().unwrap_or_default()).unwrap()).encode(buf)?
                     }
                     //RFC3339NanoTime = "15:04:05.999999999"
                     "Time" => {
-                        todo!()
+                        Time(fastdate::Time::from_str(&v.into_string().unwrap_or_default()).unwrap()).encode(buf)?
                     }
                     //RFC3339 = "2006-01-02 15:04:05.999999"
                     "Timestamp" => {
                         Timestamp(v.as_u64().unwrap_or_default()).encode(buf)?
                     }
                     "DateTime" => {
-                        todo!()
+                        DateTime(fastdate::DateTime::from_str(&v.into_string().unwrap_or_default()).unwrap()).encode(buf)?
                     }
                     "Bool" => {
                         todo!()
