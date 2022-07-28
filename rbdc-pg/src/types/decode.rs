@@ -10,7 +10,9 @@ use std::str::FromStr;
 use std::time::Duration;
 use rbdc::datetime::DateTime;
 use rbdc::decimal::Decimal;
+use rbdc::json::Json;
 use rbdc::types::time::Time;
+use rbdc::uuid::Uuid;
 use crate::types::byte::Bytea;
 use crate::types::money::Money;
 
@@ -23,7 +25,7 @@ impl Decode for Value {
     fn decode(arg: PgValue) -> Result<Self, Error> {
         Ok(match arg.type_info.0 {
             PgType::Bool => Value::Bool(Decode::decode(arg)?),
-            PgType::Bytea => Value::Ext("Bytea",Box::new(Value::U32(Bytea::decode(arg)?.0 as u32))),
+            PgType::Bytea => Bytea::decode(arg)?.into(),
             PgType::Char => Value::String(Decode::decode(arg)?),
             PgType::Name => Value::String(Decode::decode(arg)?),
             PgType::Int8 => Value::I32(Decode::decode(arg)?),
@@ -31,11 +33,7 @@ impl Decode for Value {
             PgType::Int4 => Value::I32(Decode::decode(arg)?),
             PgType::Text => Value::String(Decode::decode(arg)?),
             PgType::Oid => Value::Ext("Oid", Box::new(Value::U32(Decode::decode(arg)?))),
-            PgType::Json => Value::Ext("Json", Box::new(Value::String(
-                crate::types::json::Json::decode(arg)
-                    .unwrap_or_default()
-                    .json,
-            ))),
+            PgType::Json => Json::decode(arg)?.into(),
             PgType::Point => {
                 Value::Ext("Point", Box::new(Value::Binary({
                     match arg.format() {
@@ -162,16 +160,13 @@ impl Decode for Value {
             }
             PgType::Varchar => Value::String(Decode::decode(arg)?),
             PgType::Date => {
-                let date: Date = Decode::decode(arg)?;
-                Value::Ext("Date", Box::new(Value::String(date.to_string())))
+                Decode::decode(arg)?.into()
             }
             PgType::Time => {
-                let time: Time = Decode::decode(arg)?;
-                Value::Ext("Date", Box::new(Value::String(time.to_string())))
+                Decode::decode(arg)?.into()
             }
             PgType::Timestamp => {
-                let fast_date: DateTime = Decode::decode(arg)?;
-                Value::Ext("DateTime", Box::new(Value::String(fast_date.0.to_string())))
+                 Decode::decode(arg)?.into()
             },
             PgType::Timestamptz => {
                 let fast_date: DateTime = Decode::decode(arg)?;
@@ -210,10 +205,10 @@ impl Decode for Value {
                 })))
             }
             PgType::Uuid => {
-                todo!()
+                Uuid::decode(arg)?.into()
             }
             PgType::Jsonb => {
-                todo!()
+                Json::decode(arg)?.into()
             }
             PgType::Int4Range => {
                 Value::Ext("Int4Range", Box::new(Value::Binary({

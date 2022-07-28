@@ -11,6 +11,8 @@ use rbdc::decimal::Decimal;
 use rbdc::Error;
 use rbdc::timestamp::Timestamp;
 use rbdc::types::time::Time;
+use rbdc::uuid::Uuid;
+use crate::types::byte::Bytea;
 use crate::types::json::Json;
 
 pub enum IsNull {
@@ -283,7 +285,7 @@ impl Encode for Value {
             Value::Ext(type_name, v) => {
                 match type_name {
                     "Uuid" => {
-                        todo!()
+                        Uuid(v.into_string().unwrap_or_default()).encode(buf)?
                     }
                     //decimal = 12345678
                     "Decimal" => {
@@ -304,11 +306,8 @@ impl Encode for Value {
                     "DateTime" => {
                         DateTime(fastdate::DateTime::from_str(&v.into_string().unwrap_or_default()).unwrap()).encode(buf)?
                     }
-                    "Bool" => {
-                        todo!()
-                    }
                     "Bytea" => {
-                        todo!()
+                        Bytea(v.as_u64().unwrap_or_default() as u8).encode(buf)?
                     }
                     "Char" => {
                         todo!()
@@ -329,7 +328,7 @@ impl Encode for Value {
                         todo!()
                     }
                     "Oid" => Oid::from(v.as_u64().unwrap_or_default() as u32).encode(buf)?,
-                    "Json" => Json::from(v.into_string().unwrap_or_default()).encode(buf)?,
+                    "Json" => Json(v.into_string().unwrap_or_default()).encode(buf)?,
                     "Point" => {
                         todo!()
                     }
@@ -394,7 +393,7 @@ impl Encode for Value {
                         todo!()
                     }
                     "Numeric" => {
-                        todo!()
+                        Decimal(v.into_string().unwrap_or_default()).encode(buf)?
                     }
                     "Record" => {
                         todo!()
