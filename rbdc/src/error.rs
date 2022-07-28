@@ -77,6 +77,12 @@ impl From<ParseFloatError> for Error {
         Error::E(arg.to_string())
     }
 }
+
+impl From<fastdate::error::Error> for Error{
+    fn from(arg: fastdate::error::Error) -> Self {
+        Error::E(arg.to_string())
+    }
+}
 // Format an error message as a `Protocol` error
 #[macro_export]
 macro_rules! err_protocol {

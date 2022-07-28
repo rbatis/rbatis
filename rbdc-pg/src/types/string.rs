@@ -12,9 +12,9 @@ impl Decode for String {
 }
 
 impl Encode for String {
-    fn encode(self, buf: &mut PgArgumentBuffer) -> IsNull {
+    fn encode(self, buf: &mut PgArgumentBuffer) -> Result<IsNull,Error> {
         buf.extend(self.into_bytes());
-        IsNull::No
+        Ok(IsNull::No)
     }
 }
 

@@ -1,7 +1,6 @@
 use crate::message::{
     Close, Message, MessageFormat, Query, ReadyForQuery, Terminate, TransactionStatus,
 };
-use crate::options::PgConnectOptions;
 use crate::query::PgQuery;
 use crate::statement::PgStatementMetadata;
 use crate::type_info::PgTypeInfo;
