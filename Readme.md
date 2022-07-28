@@ -39,6 +39,7 @@
 * logical deletes, pagination, py-like SQL and basic Mybatis functionalities.
 * Supports logging, customizable logging based on `log` crate
 * 100% Safe Rust with `#![forbid(unsafe_code)]` enabled
+* Support use Trait System Add ```py_sql/ HTML_SQL``` functions.[see](https://github.com/rbatis/rbatis/blob/master/example/src/macro_proc_htmlsql_custom_func.rs)
 * [rbatis/example (import into Clion!)](example/src)
 * [abs_admin project](https://github.com/rbatis/abs_admin)  an complete background user management system(
   Vue.js+rbatis+actix-web)
