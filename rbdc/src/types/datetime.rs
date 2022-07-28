@@ -3,6 +3,7 @@ use std::ops::{Deref, DerefMut};
 use std::str::FromStr;
 use serde::{Deserialize, Deserializer, Serialize, Serializer};
 use serde::de::Error;
+use rbs::Value;
 
 #[derive(Debug, Clone, Eq, PartialEq)]
 pub struct DateTime(pub fastdate::DateTime);
@@ -49,6 +50,11 @@ impl DateTime {
     }
 }
 
+impl From<DateTime> for Value {
+    fn from(arg: DateTime) -> Self {
+        Value::Ext("DateTime", Box::new(Value::String(arg.0.to_string())))
+    }
+}
 
 #[derive(serde::Serialize, serde::Deserialize, Debug, Clone, Eq, PartialEq)]
 #[serde(rename = "DateTime")]
