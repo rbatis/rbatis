@@ -40,9 +40,9 @@ impl Decode for Value {
             PgType::Point => {
                 Value::Ext("Point", Box::new(Value::Binary({
                     match arg.format() {
-                        PgValueFormat::Binary => arg.as_bytes().unwrap_or_default().to_owned(),
+                        PgValueFormat::Binary => arg.as_bytes()?.to_owned(),
                         PgValueFormat::Text => {
-                            arg.as_str().unwrap_or_default().as_bytes().to_vec()
+                            arg.as_str()?.as_bytes().to_vec()
                         }
                     }
                 })))
@@ -50,9 +50,9 @@ impl Decode for Value {
             PgType::Lseg => {
                 Value::Ext("Lseg", Box::new(Value::Binary({
                     match arg.format() {
-                        PgValueFormat::Binary => arg.as_bytes().unwrap_or_default().to_owned(),
+                        PgValueFormat::Binary => arg.as_bytes()?.to_owned(),
                         PgValueFormat::Text => {
-                            arg.as_str().unwrap_or_default().as_bytes().to_vec()
+                            arg.as_str()?.as_bytes().to_vec()
                         }
                     }
                 })))
@@ -60,9 +60,9 @@ impl Decode for Value {
             PgType::Path => {
                 Value::Ext("Path", Box::new(Value::Binary({
                     match arg.format() {
-                        PgValueFormat::Binary => arg.as_bytes().unwrap_or_default().to_owned(),
+                        PgValueFormat::Binary => arg.as_bytes()?.to_owned(),
                         PgValueFormat::Text => {
-                            arg.as_str().unwrap_or_default().as_bytes().to_vec()
+                            arg.as_str()?.as_bytes().to_vec()
                         }
                     }
                 })))
@@ -70,9 +70,9 @@ impl Decode for Value {
             PgType::Box => {
                 Value::Ext("Box", Box::new(Value::Binary({
                     match arg.format() {
-                        PgValueFormat::Binary => arg.as_bytes().unwrap_or_default().to_owned(),
+                        PgValueFormat::Binary => arg.as_bytes()?.to_owned(),
                         PgValueFormat::Text => {
-                            arg.as_str().unwrap_or_default().as_bytes().to_vec()
+                            arg.as_str()?.as_bytes().to_vec()
                         }
                     }
                 })))
@@ -80,9 +80,9 @@ impl Decode for Value {
             PgType::Polygon => {
                 Value::Ext("Polygon", Box::new(Value::Binary({
                     match arg.format() {
-                        PgValueFormat::Binary => arg.as_bytes().unwrap_or_default().to_owned(),
+                        PgValueFormat::Binary => arg.as_bytes()?.to_owned(),
                         PgValueFormat::Text => {
-                            arg.as_str().unwrap_or_default().as_bytes().to_vec()
+                            arg.as_str()?.as_bytes().to_vec()
                         }
                     }
                 })))
@@ -90,9 +90,9 @@ impl Decode for Value {
             PgType::Line => {
                 Value::Ext("Line", Box::new(Value::Binary({
                     match arg.format() {
-                        PgValueFormat::Binary => arg.as_bytes().unwrap_or_default().to_owned(),
+                        PgValueFormat::Binary => arg.as_bytes()?.to_owned(),
                         PgValueFormat::Text => {
-                            arg.as_str().unwrap_or_default().as_bytes().to_vec()
+                            arg.as_str()?.as_bytes().to_vec()
                         }
                     }
                 })))
@@ -100,9 +100,9 @@ impl Decode for Value {
             PgType::Cidr => {
                 Value::Ext("Cidr", Box::new(Value::Binary({
                     match arg.format() {
-                        PgValueFormat::Binary => arg.as_bytes().unwrap_or_default().to_owned(),
+                        PgValueFormat::Binary => arg.as_bytes()?.to_owned(),
                         PgValueFormat::Text => {
-                            arg.as_str().unwrap_or_default().as_bytes().to_vec()
+                            arg.as_str()?.as_bytes().to_vec()
                         }
                     }
                 })))
@@ -114,9 +114,9 @@ impl Decode for Value {
             PgType::Circle => {
                 Value::Ext("Circle", Box::new(Value::Binary({
                     match arg.format() {
-                        PgValueFormat::Binary => arg.as_bytes().unwrap_or_default().to_owned(),
+                        PgValueFormat::Binary => arg.as_bytes()?.to_owned(),
                         PgValueFormat::Text => {
-                            arg.as_str().unwrap_or_default().as_bytes().to_vec()
+                            arg.as_str()?.as_bytes().to_vec()
                         }
                     }
                 })))
@@ -124,9 +124,9 @@ impl Decode for Value {
             PgType::Macaddr8 => {
                 Value::Ext("Macaddr8", Box::new(Value::Binary({
                     match arg.format() {
-                        PgValueFormat::Binary => arg.as_bytes().unwrap_or_default().to_owned(),
+                        PgValueFormat::Binary => arg.as_bytes()?.to_owned(),
                         PgValueFormat::Text => {
-                            arg.as_str().unwrap_or_default().as_bytes().to_vec()
+                            arg.as_str()?.as_bytes().to_vec()
                         }
                     }
                 })))
@@ -134,9 +134,9 @@ impl Decode for Value {
             PgType::Macaddr => {
                 Value::Ext("Macaddr", Box::new(Value::Binary({
                     match arg.format() {
-                        PgValueFormat::Binary => arg.as_bytes().unwrap_or_default().to_owned(),
+                        PgValueFormat::Binary => arg.as_bytes()?.to_owned(),
                         PgValueFormat::Text => {
-                            arg.as_str().unwrap_or_default().as_bytes().to_vec()
+                            arg.as_str()?.as_bytes().to_vec()
                         }
                     }
                 })))
@@ -144,9 +144,9 @@ impl Decode for Value {
             PgType::Inet => {
                 Value::Ext("Inet", Box::new(Value::Binary({
                     match arg.format() {
-                        PgValueFormat::Binary => arg.as_bytes().unwrap_or_default().to_owned(),
+                        PgValueFormat::Binary => arg.as_bytes()?.to_owned(),
                         PgValueFormat::Text => {
-                            arg.as_str().unwrap_or_default().as_bytes().to_vec()
+                            arg.as_str()?.as_bytes().to_vec()
                         }
                     }
                 })))
@@ -154,9 +154,9 @@ impl Decode for Value {
             PgType::Bpchar => {
                 Value::Ext("Bpchar", Box::new(Value::Binary({
                     match arg.format() {
-                        PgValueFormat::Binary => arg.as_bytes().unwrap_or_default().to_owned(),
+                        PgValueFormat::Binary => arg.as_bytes()?.to_owned(),
                         PgValueFormat::Text => {
-                            arg.as_str().unwrap_or_default().as_bytes().to_vec()
+                            arg.as_str()?.as_bytes().to_vec()
                         }
                     }
                 })))
@@ -177,9 +177,9 @@ impl Decode for Value {
             PgType::Interval => {
                 Value::Ext("Interval", Box::new(Value::Binary({
                     match arg.format() {
-                        PgValueFormat::Binary => arg.as_bytes().unwrap_or_default().to_owned(),
+                        PgValueFormat::Binary => arg.as_bytes()?.to_owned(),
                         PgValueFormat::Text => {
-                            arg.as_str().unwrap_or_default().as_bytes().to_vec()
+                            arg.as_str()?.as_bytes().to_vec()
                         }
                     }
                 })))
@@ -190,9 +190,9 @@ impl Decode for Value {
             PgType::Bit => {
                 Value::Ext("Bit", Box::new(Value::Binary({
                     match arg.format() {
-                        PgValueFormat::Binary => arg.as_bytes().unwrap_or_default().to_owned(),
+                        PgValueFormat::Binary => arg.as_bytes()?.to_owned(),
                         PgValueFormat::Text => {
-                            arg.as_str().unwrap_or_default().as_bytes().to_vec()
+                            arg.as_str()?.as_bytes().to_vec()
                         }
                     }
                 })))
@@ -200,9 +200,9 @@ impl Decode for Value {
             PgType::Varbit => {
                 Value::Ext("Varbit", Box::new(Value::Binary({
                     match arg.format() {
-                        PgValueFormat::Binary => arg.as_bytes().unwrap_or_default().to_owned(),
+                        PgValueFormat::Binary => arg.as_bytes()?.to_owned(),
                         PgValueFormat::Text => {
-                            arg.as_str().unwrap_or_default().as_bytes().to_vec()
+                            arg.as_str()?.as_bytes().to_vec()
                         }
                     }
                 })))
@@ -213,9 +213,9 @@ impl Decode for Value {
             PgType::Record => {
                 Value::Ext("Record", Box::new(Value::Binary({
                     match arg.format() {
-                        PgValueFormat::Binary => arg.as_bytes().unwrap_or_default().to_owned(),
+                        PgValueFormat::Binary => arg.as_bytes()?.to_owned(),
                         PgValueFormat::Text => {
-                            arg.as_str().unwrap_or_default().as_bytes().to_vec()
+                            arg.as_str()?.as_bytes().to_vec()
                         }
                     }
                 })))
@@ -229,9 +229,9 @@ impl Decode for Value {
             PgType::Int4Range => {
                 Value::Ext("Int4Range", Box::new(Value::Binary({
                     match arg.format() {
-                        PgValueFormat::Binary => arg.as_bytes().unwrap_or_default().to_owned(),
+                        PgValueFormat::Binary => arg.as_bytes()?.to_owned(),
                         PgValueFormat::Text => {
-                            arg.as_str().unwrap_or_default().as_bytes().to_vec()
+                            arg.as_str()?.as_bytes().to_vec()
                         }
                     }
                 })))
@@ -239,9 +239,9 @@ impl Decode for Value {
             PgType::NumRange => {
                 Value::Ext("NumRange", Box::new(Value::Binary({
                     match arg.format() {
-                        PgValueFormat::Binary => arg.as_bytes().unwrap_or_default().to_owned(),
+                        PgValueFormat::Binary => arg.as_bytes()?.to_owned(),
                         PgValueFormat::Text => {
-                            arg.as_str().unwrap_or_default().as_bytes().to_vec()
+                            arg.as_str()?.as_bytes().to_vec()
                         }
                     }
                 })))
@@ -249,9 +249,9 @@ impl Decode for Value {
             PgType::TsRange => {
                 Value::Ext("TsRange", Box::new(Value::Binary({
                     match arg.format() {
-                        PgValueFormat::Binary => arg.as_bytes().unwrap_or_default().to_owned(),
+                        PgValueFormat::Binary => arg.as_bytes()?.to_owned(),
                         PgValueFormat::Text => {
-                            arg.as_str().unwrap_or_default().as_bytes().to_vec()
+                            arg.as_str()?.as_bytes().to_vec()
                         }
                     }
                 })))
@@ -259,9 +259,9 @@ impl Decode for Value {
             PgType::TstzRange => {
                 Value::Ext("TstzRange", Box::new(Value::Binary({
                     match arg.format() {
-                        PgValueFormat::Binary => arg.as_bytes().unwrap_or_default().to_owned(),
+                        PgValueFormat::Binary => arg.as_bytes()?.to_owned(),
                         PgValueFormat::Text => {
-                            arg.as_str().unwrap_or_default().as_bytes().to_vec()
+                            arg.as_str()?.as_bytes().to_vec()
                         }
                     }
                 })))
@@ -269,9 +269,9 @@ impl Decode for Value {
             PgType::DateRange => {
                 Value::Ext("DateRange", Box::new(Value::Binary({
                     match arg.format() {
-                        PgValueFormat::Binary => arg.as_bytes().unwrap_or_default().to_owned(),
+                        PgValueFormat::Binary => arg.as_bytes()?.to_owned(),
                         PgValueFormat::Text => {
-                            arg.as_str().unwrap_or_default().as_bytes().to_vec()
+                            arg.as_str()?.as_bytes().to_vec()
                         }
                     }
                 })))
@@ -279,9 +279,9 @@ impl Decode for Value {
             PgType::Int8Range => {
                 Value::Ext("Int8Range", Box::new(Value::Binary({
                     match arg.format() {
-                        PgValueFormat::Binary => arg.as_bytes().unwrap_or_default().to_owned(),
+                        PgValueFormat::Binary => arg.as_bytes()?.to_owned(),
                         PgValueFormat::Text => {
-                            arg.as_str().unwrap_or_default().as_bytes().to_vec()
+                            arg.as_str()?.as_bytes().to_vec()
                         }
                     }
                 })))
@@ -289,9 +289,9 @@ impl Decode for Value {
             PgType::Jsonpath => {
                 Value::Ext("Jsonpath", Box::new(Value::Binary({
                     match arg.format() {
-                        PgValueFormat::Binary => arg.as_bytes().unwrap_or_default().to_owned(),
+                        PgValueFormat::Binary => arg.as_bytes()?.to_owned(),
                         PgValueFormat::Text => {
-                            arg.as_str().unwrap_or_default().as_bytes().to_vec()
+                            arg.as_str()?.as_bytes().to_vec()
                         }
                     }
                 })))
@@ -302,9 +302,9 @@ impl Decode for Value {
             PgType::Void => {
                 Value::Ext("Ext", Box::new(Value::Binary({
                     match arg.format() {
-                        PgValueFormat::Binary => arg.as_bytes().unwrap_or_default().to_owned(),
+                        PgValueFormat::Binary => arg.as_bytes()?.to_owned(),
                         PgValueFormat::Text => {
-                            arg.as_str().unwrap_or_default().as_bytes().to_vec()
+                            arg.as_str()?.as_bytes().to_vec()
                         }
                     }
                 })))
@@ -312,9 +312,9 @@ impl Decode for Value {
             PgType::Custom(_) => {
                 Value::Ext("Custom", Box::new(Value::Binary({
                     match arg.format() {
-                        PgValueFormat::Binary => arg.as_bytes().unwrap_or_default().to_owned(),
+                        PgValueFormat::Binary => arg.as_bytes()?.to_owned(),
                         PgValueFormat::Text => {
-                            arg.as_str().unwrap_or_default().as_bytes().to_vec()
+                            arg.as_str()?.as_bytes().to_vec()
                         }
                     }
                 })))
@@ -322,9 +322,9 @@ impl Decode for Value {
             PgType::DeclareWithName(_) => {
                 Value::Ext("DeclareWithName", Box::new(Value::Binary({
                     match arg.format() {
-                        PgValueFormat::Binary => arg.as_bytes().unwrap_or_default().to_owned(),
+                        PgValueFormat::Binary => arg.as_bytes()?.to_owned(),
                         PgValueFormat::Text => {
-                            arg.as_str().unwrap_or_default().as_bytes().to_vec()
+                            arg.as_str()?.as_bytes().to_vec()
                         }
                     }
                 })))
@@ -332,9 +332,9 @@ impl Decode for Value {
             PgType::DeclareWithOid(_) => {
                 Value::Ext("DeclareWithOid", Box::new(Value::Binary({
                     match arg.format() {
-                        PgValueFormat::Binary => arg.as_bytes().unwrap_or_default().to_owned(),
+                        PgValueFormat::Binary => arg.as_bytes()?.to_owned(),
                         PgValueFormat::Text => {
-                            arg.as_str().unwrap_or_default().as_bytes().to_vec()
+                            arg.as_str()?.as_bytes().to_vec()
                         }
                     }
                 })))
