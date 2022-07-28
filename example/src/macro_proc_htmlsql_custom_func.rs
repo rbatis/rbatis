@@ -42,6 +42,7 @@ mod test {
     }
 
 
+    /// you can see custom fn on py_sql
     #[py_sql("select * from biz_activity where delete_flag = 0
                  if name.is_test():
                     and name != 'test'")]
