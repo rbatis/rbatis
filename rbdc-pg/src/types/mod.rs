@@ -15,3 +15,4 @@ pub mod date;
 pub mod datetime;
 pub mod decimal;
 pub mod money;
+pub mod uuid;

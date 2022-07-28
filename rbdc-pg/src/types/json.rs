@@ -6,39 +6,9 @@ use crate::value::{PgValue, PgValueFormat};
 use rbdc::Error;
 use serde::{Deserialize, Deserializer, Serialize, Serializer};
 use std::io::Write;
-
-#[derive(Clone, Debug, Eq, PartialEq)]
-pub struct Json {
-    pub json: String,
-}
-impl Default for Json {
-    fn default() -> Self {
-        Self {
-            json: "null".to_string(),
-        }
-    }
-}
-impl Serialize for Json {
-    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
-    where
-        S: Serializer,
-    {
-        self.json.serialize(serializer)
-    }
-}
-impl<'de> Deserialize<'de> for Json {
-    fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
-    where
-        D: Deserializer<'de>,
-    {
-        Ok(Json {
-            json: String::deserialize(deserializer)?,
-        })
-    }
-}
+use rbdc::json::Json;
 
 impl Encode for Json {
-
     fn encode(self, buf: &mut PgArgumentBuffer) -> Result<IsNull,Error> {
         // we have a tiny amount of dynamic behavior depending if we are resolved to be JSON
         // instead of JSONB
@@ -52,7 +22,7 @@ impl Encode for Json {
         buf.push(1);
 
         // the JSON data written to the buffer is the same regardless of parameter type
-        buf.write(&self.json.into_bytes())?;
+        buf.write(&self.0.into_bytes())?;
 
         Ok(IsNull::No)
     }
@@ -65,7 +35,7 @@ impl Decode for Json {
         let mut buf = value.value.unwrap_or_default();
         if buf.len() == 0 {
             return Ok(Json {
-                json: "null".to_string(),
+                0: "null".to_string(),
             });
         }
         if fmt == PgValueFormat::Binary && type_info == PgTypeInfo::JSONB {
@@ -77,14 +47,8 @@ impl Decode for Json {
             buf.remove(0);
         }
         Ok(Self {
-            json: unsafe { String::from_utf8_unchecked(buf) },
+            0: unsafe { String::from_utf8_unchecked(buf) },
         })
-    }
-}
-
-impl From<String> for Json {
-    fn from(arg: String) -> Self {
-        Json { json: arg }
     }
 }
 

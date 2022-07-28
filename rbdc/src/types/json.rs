@@ -6,6 +6,13 @@ use rbs::Value;
 #[serde(rename = "Json")]
 pub struct Json(pub String);
 
+impl Default for Json {
+    fn default() -> Self {
+        Self {
+            0: "null".to_string(),
+        }
+    }
+}
 impl From<serde_json::Value> for Json {
     fn from(arg: serde_json::Value) -> Self {
         Json(arg.to_string())

@@ -1,6 +1,7 @@
 use std::fmt::{Display, Formatter};
 use byteorder::BigEndian;
 use rbdc::Error;
+use rbs::Value;
 use crate::arguments::PgArgumentBuffer;
 use crate::types::decode::Decode;
 use crate::types::encode::{Encode, IsNull};
@@ -27,6 +28,12 @@ impl Decode for Bytea{
     fn decode(value: PgValue) -> Result<Self, Error> {
         // note: in the TEXT encoding, a value of "0" here is encoded as an empty string
         Ok(Self(value.as_bytes()?.get(0).copied().unwrap_or_default() as u8))
+    }
+}
+
+impl From<Bytea> for Value{
+    fn from(arg: Bytea) -> Self {
+        Value::Ext("Bytea",Box::new(Value::U32(arg.0 as u32)))
     }
 }
 
