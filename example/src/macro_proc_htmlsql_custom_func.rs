@@ -21,7 +21,12 @@ mod test {
         }
     }
 
-    ///select page must have  '?:&PageRequest' arg and return 'Page<?>'
+    /// you can see custom fn on xml:
+    /// ```xml
+    /// <if test="name.is_test()">
+    ///    ....
+    ///  </if>
+    /// ```
     #[html_sql("example/example.html")]
     async fn custom_func(rb: &mut RbatisExecutor<'_, '_>, name: &str) -> Vec<BizActivity> {
         impled!()
