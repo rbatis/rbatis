@@ -1,11 +1,11 @@
 #[derive(Debug, Eq, PartialEq, serde::Serialize, serde::Deserialize)]
-pub struct Date {
+pub struct ParseDate {
     pub year: u16,
     pub mon: u8,
     pub day: u8,
 }
 #[derive(Debug, Eq, PartialEq, serde::Serialize, serde::Deserialize)]
-pub struct Time {
+pub struct ParseTime {
     pub hour: u8,
     pub min: u8,
     pub sec: u8,
@@ -16,9 +16,9 @@ pub fn parse_year(arg: &str) -> u16 {
     arg.parse().unwrap_or_default()
 }
 /// RFC3339 Date = "1993-02-06"
-pub fn parse_date(arg: &str) -> Date {
+pub fn parse_date(arg: &str) -> ParseDate {
     if arg.len() < 10 {
-        return Date {
+        return ParseDate {
             year: 0,
             mon: 0,
             day: 0,
@@ -27,12 +27,12 @@ pub fn parse_date(arg: &str) -> Date {
     let year: u16 = arg[0..4].parse().unwrap_or_default();
     let mon: u8 = arg[5..7].parse().unwrap_or_default();
     let day: u8 = arg[8..10].parse().unwrap_or_default();
-    return Date { year, mon, day };
+    return ParseDate { year, mon, day };
 }
 /// RFC3339Ms Time = "15:04:05.999999"
-pub fn parse_time(arg: &str) -> Time {
+pub fn parse_time(arg: &str) -> ParseTime {
     if arg.len() < 8 {
-        return Time {
+        return ParseTime {
             hour: 0,
             min: 0,
             sec: 0,
@@ -49,13 +49,13 @@ pub fn parse_time(arg: &str) -> Time {
             0
         }
     };
-    return Time { hour, min, sec, ms };
+    return ParseTime { hour, min, sec, ms };
 }
 
 /// RFC3339Nano = "2006-01-02 15:04:05.999999999"
-pub fn parse_date_time(arg: &str) -> (Date, Time) {
+pub fn parse_date_time(arg: &str) -> (ParseDate, ParseTime) {
     let date = parse_date(&arg[0..10]);
-    let mut time = Time {
+    let mut time = ParseTime {
         hour: 0,
         min: 0,
         sec: 0,
@@ -69,12 +69,12 @@ pub fn parse_date_time(arg: &str) -> (Date, Time) {
 
 #[cfg(test)]
 mod test {
-    use crate::time::{parse_date, parse_date_time, parse_time, Date, Time};
+    use crate::time::{parse_date, parse_date_time, parse_time, ParseDate, ParseTime};
 
     #[test]
     fn test_parse() {
         assert_eq!(
-            Date {
+            ParseDate {
                 year: 2022,
                 mon: 12,
                 day: 12
@@ -82,7 +82,7 @@ mod test {
             parse_date("2022-12-12")
         );
         assert_eq!(
-            Time {
+            ParseTime {
                 hour: 15,
                 min: 04,
                 sec: 05,
@@ -92,12 +92,12 @@ mod test {
         );
         assert_eq!(
             (
-                Date {
+                ParseDate {
                     year: 2022,
                     mon: 11,
                     day: 12
                 },
-                Time {
+                ParseTime {
                     hour: 15,
                     min: 04,
                     sec: 05,

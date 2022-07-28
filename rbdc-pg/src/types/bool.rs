@@ -5,9 +5,9 @@ use crate::types::encode::{Encode, IsNull};
 use crate::value::{PgValue, PgValueFormat};
 
 impl Encode for bool {
-    fn encode(self, buf: &mut PgArgumentBuffer) -> IsNull {
+    fn encode(self, buf: &mut PgArgumentBuffer) -> Result<IsNull,Error> {
         buf.push(self as u8);
-        IsNull::No
+        Ok(IsNull::No)
     }
 }
 

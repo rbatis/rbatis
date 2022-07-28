@@ -36,14 +36,9 @@ impl Oid {
 }
 
 impl Oid {
-    pub fn encode_by_ref(&self, buf: &mut PgArgumentBuffer) -> IsNull {
-        buf.extend(&self.0.to_be_bytes());
-        IsNull::No
-    }
-
-    pub fn encode(self, buf: &mut PgArgumentBuffer) -> IsNull {
+    pub fn encode(self, buf: &mut PgArgumentBuffer) -> Result<IsNull,Error> {
         buf.extend(self.0.to_be_bytes());
-        IsNull::No
+        Ok(IsNull::No)
     }
 }
 

@@ -4,6 +4,7 @@ use crate::type_info::PgTypeInfo;
 use crate::types::Oid;
 use rbs::Value;
 use std::mem;
+use rbdc::Error;
 use rbdc::timestamp::Timestamp;
 use crate::types::json::Json;
 
@@ -17,7 +18,7 @@ pub trait TypeInfo {
 }
 
 pub trait Encode {
-    fn encode(self, buf: &mut PgArgumentBuffer) -> IsNull;
+    fn encode(self, buf: &mut PgArgumentBuffer) -> Result<IsNull,Error>;
 }
 
 impl From<Vec<Value>> for PgArguments {
@@ -27,7 +28,7 @@ impl From<Vec<Value>> for PgArguments {
             buffer: PgArgumentBuffer::default(),
         };
         for x in args {
-            arg.add(x);
+            arg.add(x).unwrap();
         }
         arg
     }
@@ -237,39 +238,39 @@ impl TypeInfo for Value {
 }
 
 impl Encode for Value {
-    fn encode(self, buf: &mut PgArgumentBuffer) -> IsNull {
-        match self {
+    fn encode(self, buf: &mut PgArgumentBuffer) -> Result<IsNull,Error> {
+        Ok(match self {
             Value::Null => IsNull::Yes,
             Value::Bool(v) => {
-                v.encode(buf)
+                v.encode(buf)?
             }
             Value::I32(v) => {
-                v.encode(buf)
+                v.encode(buf)?
             }
             Value::I64(v) => {
-                v.encode(buf)
+                v.encode(buf)?
             }
             Value::U32(v) => {
-                v.encode(buf)
+                v.encode(buf)?
             }
             Value::U64(v) => {
-                v.encode(buf)
+                v.encode(buf)?
             }
             Value::F32(v) => {
-                v.encode(buf)
+                v.encode(buf)?
             }
             Value::F64(v) => {
-                v.encode(buf)
+                v.encode(buf)?
             }
             Value::String(v) => {
                 //default -> string
-                v.encode(buf)
+                v.encode(buf)?
             }
             Value::Binary(v) => {
-                v.encode(buf)
+                v.encode(buf)?
             }
             Value::Array(v) => {
-                v.encode(buf)
+                v.encode(buf)?
             }
             Value::Map(v) => {
                 IsNull::Yes
@@ -293,7 +294,7 @@ impl Encode for Value {
                     }
                     //RFC3339 = "2006-01-02 15:04:05.999999"
                     "Timestamp" => {
-                        Timestamp(v.as_u64().unwrap_or_default()).encode(buf)
+                        Timestamp(v.as_u64().unwrap_or_default()).encode(buf)?
                     }
                     "DateTime" => {
                         todo!()
@@ -322,8 +323,8 @@ impl Encode for Value {
                     "Text" => {
                         todo!()
                     }
-                    "Oid" => Oid::from(v.as_u64().unwrap_or_default() as u32).encode(buf),
-                    "Json" => Json::from(v.into_string().unwrap_or_default()).encode(buf),
+                    "Oid" => Oid::from(v.as_u64().unwrap_or_default() as u32).encode(buf)?,
+                    "Json" => Json::from(v.into_string().unwrap_or_default()).encode(buf)?,
                     "Point" => {
                         todo!()
                     }
@@ -435,7 +436,7 @@ impl Encode for Value {
                     _ => IsNull::Yes,
                 }
             }
-        }
+        })
     }
 }
 

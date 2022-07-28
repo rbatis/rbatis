@@ -2,11 +2,14 @@ use crate::type_info::{PgType, PgTypeKind};
 use crate::types::Oid;
 use crate::value::{PgValue, PgValueFormat, PgValueRef};
 use byteorder::{BigEndian, ByteOrder};
-use fastdate::{Date, DateTime};
 use rbdc::Error;
+use rbdc::date::Date;
+use rbdc::time::ParseTime;
 use rbs::Value;
 use std::str::FromStr;
 use std::time::Duration;
+use rbdc::datetime::DateTime;
+use rbdc::types::time::Time;
 use crate::types::byte::Bytea;
 
 pub trait Decode: Sized {
@@ -157,19 +160,21 @@ impl Decode for Value {
             }
             PgType::Varchar => Value::String(Decode::decode(arg)?),
             PgType::Date => {
-                todo!()
+                let date: Date = Decode::decode(arg)?;
+                Value::Ext("Date", Box::new(Value::String(date.to_string())))
             }
             PgType::Time => {
-                todo!()
+                let time: Time = Decode::decode(arg)?;
+                Value::Ext("Date", Box::new(Value::String(time.to_string())))
             }
-            PgType::Timestamp => Value::String({
+            PgType::Timestamp => {
                 let fast_date: DateTime = Decode::decode(arg)?;
-                fast_date.to_string()
-            }),
-            PgType::Timestamptz => Value::String({
+                Value::Ext("DateTime", Box::new(Value::String(fast_date.0.to_string())))
+            },
+            PgType::Timestamptz => {
                 let fast_date: DateTime = Decode::decode(arg)?;
-                fast_date.to_string()
-            }),
+                Value::Ext("Timestamptz", Box::new(Value::String(fast_date.0.to_string())))
+            },
             PgType::Interval => {
                 Value::Ext("Interval", Box::new(Value::Binary({
                     match arg.format() {
@@ -460,38 +465,5 @@ impl From<PgValue> for Value {
 }
 
 
-impl Decode for DateTime {
-    fn decode(value: PgValue) -> Result<Self, Error> {
-        Ok(match value.format() {
-            PgValueFormat::Binary => {
-                // TIMESTAMP is encoded as the microseconds since the epoch
-                let epoch = DateTime {
-                    micro: 0,
-                    sec: 0,
-                    min: 0,
-                    hour: 0,
-                    day: 1,
-                    mon: 1,
-                    year: 2000,
-                };
-                let us: i64 = Decode::decode(value)?;
-                epoch + Duration::from_micros(us as u64)
-            }
-            PgValueFormat::Text => {
-                //2022-07-22 05:22:22.123456+00
-                let s = value.as_str()?;
-                let bytes = s.as_bytes();
-                if bytes[bytes.len() - 3] == '+' as u8 {
-                    //have zone
-                    let mut dt = DateTime::from_str(&s[0..s.len() - 3])
-                        .map_err(|e| Error::from(e.to_string()))?;
-                    let hour: i32 = s[s.len() - 2..s.len()].parse().unwrap_or_default();
-                    dt = dt + Duration::from_secs((hour * 3600) as u64);
-                    dt
-                } else {
-                    DateTime::from_str(s).map_err(|e| Error::from(e.to_string()))?
-                }
-            }
-        })
-    }
-}
+
+
