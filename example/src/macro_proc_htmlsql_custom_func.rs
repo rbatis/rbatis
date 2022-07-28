@@ -40,4 +40,21 @@ mod test {
         let a = custom_func(&mut rb.as_executor(), "test").await.unwrap();
         println!("{:?}", a);
     }
+
+
+    #[py_sql("select * from biz_activity where delete_flag = 0
+                 if name.is_test():
+                    and name != 'test'")]
+    async fn custom_func_py(rb: &Rbatis) -> Vec<BizActivity> {
+        impled!()
+    }
+
+    #[tokio::test]
+    pub async fn test_custom_func_py() {
+        fast_log::init(fast_log::config::Config::new().console());
+        //use static ref
+        let rb = init_sqlite().await;
+        let a = custom_func_py(&rb).await.unwrap();
+        println!("{:?}", a);
+    }
 }
