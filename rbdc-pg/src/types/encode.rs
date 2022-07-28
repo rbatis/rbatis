@@ -16,7 +16,7 @@ use rbdc::uuid::Uuid;
 use crate::types::byte::Bytea;
 use crate::types::money::Money;
 use crate::types::timestamptz::Timestamptz;
-use crate::types::timez::Timetz;
+use crate::types::timetz::Timetz;
 
 pub enum IsNull {
     No,
@@ -387,7 +387,7 @@ impl Encode for Value {
                         v.into_bytes().unwrap_or_default().encode(buf)?
                     }
                     "Timetz" => {
-                        Timetz(fastdate::Time::from_str(&v.into_string().unwrap_or_default()).unwrap()).encode(buf)?
+                        Timetz(rbs::from_value(*v).map_err(|e|Error::from(e.to_string()))?).encode(buf)?
                     }
                     "Bit" => {
                         v.into_bytes().unwrap_or_default().encode(buf)?

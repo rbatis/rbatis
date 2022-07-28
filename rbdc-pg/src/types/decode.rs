@@ -17,7 +17,7 @@ use rbdc::uuid::Uuid;
 use crate::types::byte::Bytea;
 use crate::types::money::Money;
 use crate::types::timestamptz::Timestamptz;
-use crate::types::timez::Timetz;
+use crate::types::timetz::Timetz;
 
 pub trait Decode: Sized {
     /// Decode a new value of this type using a raw value from the database.
