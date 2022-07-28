@@ -9,8 +9,10 @@ use rbs::Value;
 use std::str::FromStr;
 use std::time::Duration;
 use rbdc::datetime::DateTime;
+use rbdc::decimal::Decimal;
 use rbdc::types::time::Time;
 use crate::types::byte::Bytea;
+use crate::types::money::Money;
 
 pub trait Decode: Sized {
     /// Decode a new value of this type using a raw value from the database.
@@ -195,7 +197,7 @@ impl Decode for Value {
                 todo!()
             }
             PgType::Numeric => {
-                todo!()
+                Decimal::decode(arg)?.into()
             }
             PgType::Record => {
                 Value::Ext("Record", Box::new(Value::Binary({
@@ -284,7 +286,7 @@ impl Decode for Value {
                 })))
             }
             PgType::Money => {
-                todo!()
+                Money::decode(arg)?.into()
             }
             PgType::Void => {
                 todo!()
