@@ -16,6 +16,8 @@ use rbdc::types::time::Time;
 use rbdc::uuid::Uuid;
 use crate::types::byte::Bytea;
 use crate::types::money::Money;
+use crate::types::timestamptz::Timestamptz;
+use crate::types::timez::Timetz;
 
 pub trait Decode: Sized {
     /// Decode a new value of this type using a raw value from the database.
@@ -170,8 +172,7 @@ impl Decode for Value {
                 {let v:Timestamp=Decode::decode(arg)?; v}.into()
             },
             PgType::Timestamptz => {
-                let fast_date: DateTime = Decode::decode(arg)?;
-                Value::Ext("Timestamptz", Box::new(Value::String(fast_date.0.to_string())))
+                Timestamptz::decode(arg)?.into()
             },
             PgType::Interval => {
                 Value::Ext("Interval", Box::new(Value::Binary({
@@ -184,13 +185,27 @@ impl Decode for Value {
                 })))
             }
             PgType::Timetz => {
-                todo!()
+                Timetz::decode(arg)?.into()
             }
             PgType::Bit => {
-                todo!()
+                Value::Ext("Bit", Box::new(Value::Binary({
+                    match arg.format() {
+                        PgValueFormat::Binary => arg.as_bytes().unwrap_or_default().to_owned(),
+                        PgValueFormat::Text => {
+                            arg.as_str().unwrap_or_default().as_bytes().to_vec()
+                        }
+                    }
+                })))
             }
             PgType::Varbit => {
-                todo!()
+                Value::Ext("Varbit", Box::new(Value::Binary({
+                    match arg.format() {
+                        PgValueFormat::Binary => arg.as_bytes().unwrap_or_default().to_owned(),
+                        PgValueFormat::Text => {
+                            arg.as_str().unwrap_or_default().as_bytes().to_vec()
+                        }
+                    }
+                })))
             }
             PgType::Numeric => {
                 Decimal::decode(arg)?.into()
@@ -285,7 +300,14 @@ impl Decode for Value {
                 Money::decode(arg)?.into()
             }
             PgType::Void => {
-                todo!()
+                Value::Ext("Ext", Box::new(Value::Binary({
+                    match arg.format() {
+                        PgValueFormat::Binary => arg.as_bytes().unwrap_or_default().to_owned(),
+                        PgValueFormat::Text => {
+                            arg.as_str().unwrap_or_default().as_bytes().to_vec()
+                        }
+                    }
+                })))
             }
             PgType::Custom(_) => {
                 Value::Ext("Custom", Box::new(Value::Binary({

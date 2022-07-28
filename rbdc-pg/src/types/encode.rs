@@ -14,6 +14,9 @@ use rbdc::timestamp::Timestamp;
 use rbdc::types::time::Time;
 use rbdc::uuid::Uuid;
 use crate::types::byte::Bytea;
+use crate::types::money::Money;
+use crate::types::timestamptz::Timestamptz;
+use crate::types::timez::Timetz;
 
 pub enum IsNull {
     No,
@@ -330,112 +333,112 @@ impl Encode for Value {
                     "Oid" => Oid::from(v.as_u64().unwrap_or_default() as u32).encode(buf)?,
                     "Json" => Json(v.into_string().unwrap_or_default()).encode(buf)?,
                     "Point" => {
-                        todo!()
+                        v.into_bytes().unwrap_or_default().encode(buf)?
                     }
                     "Lseg" => {
-                        todo!()
+                        v.into_bytes().unwrap_or_default().encode(buf)?
                     }
                     "Path" => {
-                        todo!()
+                        v.into_bytes().unwrap_or_default().encode(buf)?
                     }
                     "Box" => {
-                        todo!()
+                        v.into_bytes().unwrap_or_default().encode(buf)?
                     }
                     "Polygon" => {
-                        todo!()
+                        v.into_bytes().unwrap_or_default().encode(buf)?
                     }
                     "Line" => {
-                        todo!()
+                        v.into_bytes().unwrap_or_default().encode(buf)?
                     }
                     "Cidr" => {
-                        todo!()
+                        v.into_bytes().unwrap_or_default().encode(buf)?
                     }
                     "Float4" => {
-                        todo!()
+                        (v.as_f64().unwrap_or_default() as f32).encode(buf)?
                     }
                     "Float8" => {
-                        todo!()
+                        v.as_f64().unwrap_or_default().encode(buf)?
                     }
                     "Unknown" => {
-                        todo!()
+                        v.into_bytes().unwrap_or_default().encode(buf)?
                     }
                     "Circle" => {
-                        todo!()
+                        v.into_bytes().unwrap_or_default().encode(buf)?
                     }
                     "Macaddr8" => {
-                        todo!()
+                        v.into_bytes().unwrap_or_default().encode(buf)?
                     }
                     "Macaddr" => {
-                        todo!()
+                        v.into_bytes().unwrap_or_default().encode(buf)?
                     }
                     "Inet" => {
-                        todo!()
+                        v.into_bytes().unwrap_or_default().encode(buf)?
                     }
                     "Bpchar" => {
-                        todo!()
+                        v.into_bytes().unwrap_or_default().encode(buf)?
                     }
                     "Varchar" => {
-                        todo!()
+                        v.into_bytes().unwrap_or_default().encode(buf)?
                     }
                     "Timestamptz" => {
-                        todo!()
+                       Timestamptz(v.as_u64().unwrap_or_default()).encode(buf)?
                     }
                     "Interval" => {
-                        todo!()
+                        v.into_bytes().unwrap_or_default().encode(buf)?
                     }
                     "Timetz" => {
-                        todo!()
+                        Timetz(fastdate::Time::from_str(&v.into_string().unwrap_or_default()).unwrap()).encode(buf)?
                     }
                     "Bit" => {
-                        todo!()
+                        v.into_bytes().unwrap_or_default().encode(buf)?
                     }
                     "Varbit" => {
-                        todo!()
+                        v.into_bytes().unwrap_or_default().encode(buf)?
                     }
                     "Numeric" => {
                         Decimal(v.into_string().unwrap_or_default()).encode(buf)?
                     }
                     "Record" => {
-                        todo!()
+                        v.into_bytes().unwrap_or_default().encode(buf)?
                     }
                     "Jsonb" => {
-                        todo!()
+                        Json(v.into_string().unwrap_or_default()).encode(buf)?
                     }
                     "Int4Range" => {
-                        todo!()
+                        v.into_bytes().unwrap_or_default().encode(buf)?
                     }
                     "NumRange" => {
-                        todo!()
+                        v.into_bytes().unwrap_or_default().encode(buf)?
                     }
                     "TsRange" => {
-                        todo!()
+                        v.into_bytes().unwrap_or_default().encode(buf)?
                     }
                     "TstzRange" => {
-                        todo!()
+                        v.into_bytes().unwrap_or_default().encode(buf)?
                     }
                     "DateRange" => {
-                        todo!()
+                        v.into_bytes().unwrap_or_default().encode(buf)?
                     }
                     "Int8Range" => {
-                        todo!()
+                        v.into_bytes().unwrap_or_default().encode(buf)?
                     }
                     "Jsonpath" => {
-                        todo!()
+                        v.into_bytes().unwrap_or_default().encode(buf)?
                     }
                     "Money" => {
-                        todo!()
+                        Money(v.as_i64().unwrap_or_default()).encode(buf)?
                     }
                     "Void" => {
-                        todo!()
+                        v.into_bytes().unwrap_or_default().encode(buf)?
                     }
                     "Custom" => {
-                        todo!()
+                        v.into_bytes().unwrap_or_default().encode(buf)?
                     }
                     "DeclareWithName" => {
-                        todo!()
+                        v.into_bytes().unwrap_or_default().encode(buf)?
                     }
                     "DeclareWithOid" => {
-                        todo!()
+                        v.into_bytes().unwrap_or_default().encode(buf)?
                     }
                     _ => IsNull::Yes,
                 }
