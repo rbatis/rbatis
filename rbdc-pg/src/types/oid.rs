@@ -1,11 +1,12 @@
 use crate::arguments::PgArgumentBuffer;
 use crate::type_info::PgTypeInfo;
-use crate::types::encode::{IsNull, TypeInfo};
+use crate::types::encode::{IsNull};
 use crate::value::{PgValueFormat, PgValueRef};
 use byteorder::{BigEndian, ByteOrder};
 use rbdc::Error;
 use serde::{de::Deserializer, ser::Serializer, Deserialize, Serialize};
 use std::num::ParseIntError;
+use crate::types::TypeInfo;
 
 /// The PostgreSQL [`OID`] type stores an object identifier,
 /// used internally by PostgreSQL as primary keys for various system tables.

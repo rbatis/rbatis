@@ -1,11 +1,12 @@
 use crate::connection::PgConnection;
 use crate::type_info::PgTypeInfo;
-use crate::types::encode::{Encode, IsNull, TypeInfo};
+use crate::types::encode::{Encode, IsNull};
 use rbdc::error::Error;
 use rbdc::ext::ustr::UStr;
 use rbs::Value;
 use std::fmt::{self, Write};
 use std::ops::{Deref, DerefMut};
+use crate::types::TypeInfo;
 
 // TODO: buf.patch(|| ...) is a poor name, can we think of a better name? Maybe `buf.lazy(||)` ?
 // TODO: Extend the patch system to support dynamic lengths

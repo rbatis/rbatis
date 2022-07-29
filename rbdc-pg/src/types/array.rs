@@ -5,8 +5,8 @@ use rbs::Value;
 use crate::arguments::PgArgumentBuffer;
 use crate::type_info::{PgType, PgTypeInfo, PgTypeKind};
 use crate::types::decode::Decode;
-use crate::types::encode::{Encode, IsNull, TypeInfo};
-use crate::types::Oid;
+use crate::types::encode::{Encode, IsNull};
+use crate::types::{Oid, TypeInfo};
 use crate::value::{PgValue, PgValueFormat, PgValueRef};
 
 impl<T: Decode + TypeInfo> Decode for Vec<T> {

@@ -1,12 +1,13 @@
 use crate::arguments::PgArgumentBuffer;
 use crate::type_info::PgTypeInfo;
 use crate::types::decode::Decode;
-use crate::types::encode::{Encode, IsNull, TypeInfo};
+use crate::types::encode::{Encode, IsNull};
 use crate::value::{PgValue, PgValueFormat};
 use rbdc::Error;
 use serde::{Deserialize, Deserializer, Serialize, Serializer};
 use std::io::Write;
 use rbdc::json::Json;
+use crate::types::TypeInfo;
 
 impl Encode for Json {
     fn encode(self, buf: &mut PgArgumentBuffer) -> Result<IsNull,Error> {
