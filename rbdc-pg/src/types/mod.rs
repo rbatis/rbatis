@@ -1,3 +1,5 @@
+/// pg types see https://www.postgresql.org/docs/current/datatype.html
+
 pub mod oid;
 pub use oid::Oid;
 pub mod decode;
