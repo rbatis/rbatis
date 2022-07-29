@@ -24,6 +24,8 @@ pub mod money;
 pub mod uuid;
 pub mod timestamp;
 pub mod timestamptz;
+pub mod numeric;
+pub mod bigdecimal;
 
 pub trait TypeInfo {
     fn type_info(&self) -> PgTypeInfo;

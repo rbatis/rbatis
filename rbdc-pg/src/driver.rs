@@ -26,6 +26,7 @@ mod test {
     use crate::driver::PgDriver;
     use rbdc::block_on;
     use rbdc::db::Driver;
+    use rbdc::decimal::Decimal;
     use rbdc::pool::PoolOptions;
     use rbdc::timestamp::Timestamp;
     use rbs::Value;
@@ -66,12 +67,13 @@ mod test {
             let param = vec![
                 Value::String("http://www.test.com".to_string()),
                 Timestamp(1659996552000).into(),
+                Decimal("1".to_string()).into(),
                 Value::String("1".to_string()),
             ];
             println!("param => {}", Value::Array(param.clone()));
             let data = c
                 .exec(
-                    "update biz_activity set pc_link = $1,create_time = $2 where id  = $3",
+                    "update biz_activity set pc_link = $1,create_time = $2,delete_flag=$3 where id  = $4",
                     param,
                 )
                 .await
