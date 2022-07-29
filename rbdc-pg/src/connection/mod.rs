@@ -4,8 +4,8 @@ use crate::message::{
 use crate::query::PgQuery;
 use crate::statement::PgStatementMetadata;
 use crate::type_info::PgTypeInfo;
-use crate::types::encode::{Encode, TypeInfo};
-use crate::types::Oid;
+use crate::types::encode::{Encode};
+use crate::types::{Oid, TypeInfo};
 use either::Either;
 use futures_core::future::BoxFuture;
 use futures_util::{FutureExt, StreamExt, TryFutureExt};

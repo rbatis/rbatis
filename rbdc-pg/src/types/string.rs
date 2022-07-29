@@ -2,7 +2,8 @@ use rbdc::Error;
 use crate::arguments::PgArgumentBuffer;
 use crate::type_info::PgTypeInfo;
 use crate::types::decode::Decode;
-use crate::types::encode::{Encode, IsNull, TypeInfo};
+use crate::types::encode::{Encode, IsNull};
+use crate::types::TypeInfo;
 use crate::value::PgValue;
 
 impl Decode for String {
