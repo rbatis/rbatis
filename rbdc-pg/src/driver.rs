@@ -16,7 +16,7 @@ impl Driver for PgDriver {
         })
     }
 
-    fn new_option(&self) -> Box<dyn ConnectOptions> {
+    fn option_default(&self) -> Box<dyn ConnectOptions> {
         Box::new(PgConnectOptions::default())
     }
 }
