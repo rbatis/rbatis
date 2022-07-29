@@ -5,10 +5,13 @@
 //! ```
 //! ```
 use std::borrow::Cow;
+use std::collections::HashMap;
 use std::convert::TryFrom;
 use std::fmt::{self, Debug, Display};
 use std::iter::FromIterator;
 use std::ops::{Deref, Index};
+use serde::Serialize;
+use crate::to_value;
 
 pub mod ext;
 
@@ -1144,6 +1147,7 @@ impl<'a> TryFrom<ValueRef<'a>> for u64 {
         }
     }
 }
+
 
 // The following impl was left out intentionally, see
 // https://github.com/3Hren/msgpack-rust/pull/228#discussion_r359513925

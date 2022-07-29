@@ -4,7 +4,7 @@ use std::str::FromStr;
 /// Options for controlling the level of protection provided for PostgreSQL SSL connections.
 ///
 /// It is used by the [`ssl_mode`](super::PgConnectOptions::ssl_mode) method.
-#[derive(Debug, Clone, Copy, Eq, PartialEq)]
+#[derive(Debug, Clone, Copy, Eq, PartialEq,serde::Serialize,serde::Deserialize)]
 pub enum PgSslMode {
     /// Only try a non-SSL connection.
     Disable,

@@ -197,7 +197,9 @@ impl PoolOptions {
 
     /// Creates a new pool from this configuration and immediately establishes one connection.
     pub async fn connect(self, driver: Box<dyn Driver>, uri: &str) -> Result<Pool, Error> {
-        self.connect_with(driver.make_option(uri)?).await
+        let mut opt =driver.new_option();
+        opt.set_uri(uri)?;
+        self.connect_with(opt).await
     }
 
     /// Creates a new pool from this configuration and immediately establishes one connection.
@@ -212,7 +214,9 @@ impl PoolOptions {
     /// Creates a new pool from this configuration and will establish a connections as the pool
     /// starts to be used.
     pub fn connect_lazy(self, driver: Box<dyn Driver>, uri: &str) -> Result<Pool, Error> {
-        Ok(self.connect_lazy_with(driver.make_option(uri)?))
+        let mut opt=driver.new_option();
+        opt.set_uri(uri)?;
+        Ok(self.connect_lazy_with(opt))
     }
 
     /// Creates a new pool from this configuration and will establish a connections as the pool

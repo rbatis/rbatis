@@ -16,8 +16,8 @@ impl Driver for MysqlDriver {
         })
     }
 
-    fn make_option(&self, url: &str) -> Result<Box<dyn ConnectOptions>, Error> {
-        Ok(Box::new(MySqlConnectOptions::from_str(&url)?))
+    fn new_option(&self) -> Box<dyn ConnectOptions> {
+        Box::new(MySqlConnectOptions::default())
     }
 }
 
