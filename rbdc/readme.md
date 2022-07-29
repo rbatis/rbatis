@@ -9,7 +9,7 @@ Struct(User Define) -> rbs::ValueRef -> ref clone() -> Database
 
 * supported driver
 * rbdc-mysql(100%)
-* rbbc-pg(80%)
+* rbbc-pg(100%)
 * rbbc-sqlite(0%)
 * rbbc-mssql(0%)
 
