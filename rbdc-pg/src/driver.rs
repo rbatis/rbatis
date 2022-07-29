@@ -16,8 +16,8 @@ impl Driver for PgDriver {
         })
     }
 
-    fn make_option(&self, url: &str) -> Result<Box<dyn ConnectOptions>, Error> {
-        Ok(Box::new(PgConnectOptions::from_str(&url)?))
+    fn new_option(&self) -> Box<dyn ConnectOptions> {
+        Box::new(PgConnectOptions::default())
     }
 }
 

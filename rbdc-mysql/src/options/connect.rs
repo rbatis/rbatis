@@ -1,8 +1,12 @@
+use std::collections::HashMap;
+use std::str::FromStr;
 use crate::connection::MySqlConnection;
-use crate::options::MySqlConnectOptions;
+use crate::options::{MySqlConnectOptions, MySqlSslMode};
 use futures_core::future::BoxFuture;
 use rbdc::db::{ConnectOptions, Connection};
 use rbdc::Error;
+use rbdc::net::CertificateInput;
+use rbs::{from_value, Value};
 
 impl ConnectOptions for MySqlConnectOptions {
     fn connect(&self) -> BoxFuture<Result<Box<dyn Connection>, Error>> {
@@ -48,5 +52,73 @@ impl ConnectOptions for MySqlConnectOptions {
             let r: Box<dyn Connection> = Box::new(conn);
             Ok(r)
         })
+    }
+
+    fn set(&mut self, arg: HashMap<&str, Value>) {
+        for (k, v) in arg {
+            match k {
+                "host" => {
+                    self.host = v.as_str().unwrap_or_default().to_string();
+                }
+                "port" => {
+                    self.port = (v.as_u64().unwrap_or_default() as u16);
+                }
+                "socket" => {
+                    self.socket = Some(v.as_str().unwrap_or_default().parse().unwrap());
+                }
+                "username" => {
+                    self.username = v.as_str().unwrap_or_default().to_string();
+                }
+                "password" => {
+                    self.password = Some(v.as_str().unwrap_or_default().to_string());
+                }
+                "database" => {
+                    self.database = Some(v.as_str().unwrap_or_default().to_string());
+                }
+                "ssl_mode" => {
+                    match from_value::<MySqlSslMode>(v) {
+                        Ok(v) => {
+                            self.ssl_mode = v;
+                        }
+                        Err(_) => {}
+                    }
+                }
+                "ssl_ca" => {
+                    let v = from_value::<Option<CertificateInput>>(v);
+                    match v {
+                        Ok(v) => {
+                            self.ssl_ca = v;
+                        }
+                        Err(_) => {}
+                    }
+                }
+                "statement_cache_capacity" => {
+                    match from_value::<usize>(v) {
+                        Ok(v) => {
+                            self.statement_cache_capacity = v;
+                        }
+                        Err(_) => {}
+                    }
+                }
+                "charset" => match from_value::<String>(v) {
+                    Ok(v) => {
+                        self.charset = v;
+                    }
+                    Err(_) => {}
+                },
+                "collation" => match from_value::<Option<String>>(v) {
+                    Ok(v) => {
+                        self.collation = v;
+                    }
+                    Err(_) => {}
+                },
+                _ => {}
+            }
+        }
+    }
+
+    fn set_uri(&mut self, uri: &str) -> Result<(), Error> {
+        *self=MySqlConnectOptions::from_str(uri).map_err(|e|Error::from(e.to_string()))?;
+        Ok(())
     }
 }

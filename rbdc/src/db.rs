@@ -1,3 +1,4 @@
+use std::collections::HashMap;
 use crate::Error;
 use futures_core::future::BoxFuture;
 use rbs::Value;
@@ -11,7 +12,7 @@ pub trait Driver: Sync + Send {
     fn connect(&self, url: &str) -> BoxFuture<Result<Box<dyn Connection>, Error>>;
 
     /// make option
-    fn make_option(&self, url: &str) -> Result<Box<dyn ConnectOptions>, Error>;
+    fn new_option(&self) -> Box<dyn ConnectOptions>;
 }
 
 /// Represents a connection to a database
@@ -76,4 +77,10 @@ pub trait MetaData: Debug {
 pub trait ConnectOptions: 'static + Send + Sync + Debug {
     /// Establish a new database connection with the options specified by `self`.
     fn connect(&self) -> BoxFuture<Result<Box<dyn Connection>, Error>>;
+
+    ///set option
+    fn set(&mut self, arg: HashMap<&str, Value>);
+
+    ///set option from uri
+    fn set_uri(&mut self, uri: &str) ->Result<(),Error>;
 }
