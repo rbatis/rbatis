@@ -5,7 +5,10 @@ use std::str::FromStr;
 use libsqlite3_sys::{SQLITE_BLOB, SQLITE_FLOAT, SQLITE_INTEGER, SQLITE_NULL, SQLITE_TEXT};
 
 use crate::error::BoxDynError;
-use crate::type_info::TypeInfo;
+pub trait TypeInfo{
+    fn type_info(&self) -> SqliteTypeInfo;
+}
+
 
 #[derive(Debug, Copy, Clone, Eq, PartialEq, Hash)]
 #[cfg_attr(feature = "offline", derive(serde::Serialize, serde::Deserialize))]

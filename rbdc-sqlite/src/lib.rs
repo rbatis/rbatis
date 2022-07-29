@@ -23,6 +23,8 @@ pub use value::{SqliteValue, SqliteValueRef};
 use crate::executor::Executor;
 
 pub mod driver;
+pub mod encode;
+pub mod decode;
 mod arguments;
 mod column;
 mod connection;
@@ -35,6 +37,7 @@ mod statement;
 mod type_info;
 pub mod types;
 mod value;
+
 
 #[cfg(feature = "migrate")]
 mod migrate;
