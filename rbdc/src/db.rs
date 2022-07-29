@@ -11,8 +11,8 @@ pub trait Driver: Sync + Send {
     /// in a single thread since most database connections are not thread-safe
     fn connect(&self, url: &str) -> BoxFuture<Result<Box<dyn Connection>, Error>>;
 
-    /// make option
-    fn new_option(&self) -> Box<dyn ConnectOptions>;
+    /// make an default option
+    fn option_default(&self) -> Box<dyn ConnectOptions>;
 }
 
 /// Represents a connection to a database
