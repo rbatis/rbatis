@@ -5,7 +5,7 @@ use std::sync::Arc;
 use futures_core::future::BoxFuture;
 use futures_util::StreamExt;
 use rbdc::db::{Connection, MetaData, Row};
-use tiberius::{Client, Config, AuthMethod, Column};
+use tiberius::{Client, Config, AuthMethod, Column, QueryStream, Query};
 use rbdc::{block_on, Error};
 use rbs::Value;
 use tokio_util::compat::{Compat, TokioAsyncWriteCompatExt};
@@ -59,15 +59,19 @@ impl Row for MssqlRow {
     }
 }
 
+
+
+
+
 impl Connection for MssqlConnection {
     fn get_rows(&mut self, sql: &str, params: Vec<Value>) -> BoxFuture<Result<Vec<Box<dyn Row>>, rbdc::Error>> {
         let sql = sql.to_string();
         Box::pin(async move {
-            let mut args = Vec::with_capacity(params.len());
-            for x in &params {
-                args.push(x.encode()?);
+            let mut q =Query::new(sql);
+            for x in params {
+                x.encode(&mut q)?;
             }
-            let v = self.inner.query(&sql, &args).await.map_err(|e| Error::from(e.to_string()))?;
+            let v = q.query(&mut self.inner).await.map_err(|e| Error::from(e.to_string()))?;
             let mut results = Vec::with_capacity(0);
             let mut s = v.into_row_stream();
             for item in s.next().await {
@@ -87,11 +91,11 @@ impl Connection for MssqlConnection {
     fn exec(&mut self, sql: &str, params: Vec<Value>) -> BoxFuture<Result<u64, rbdc::Error>> {
         let sql = sql.to_string();
         Box::pin(async move {
-            let mut args = Vec::with_capacity(params.len());
-            for x in &params {
-                args.push(x.encode()?);
+            let mut q = Query::new(sql);
+            for x in params {
+                x.encode(&mut q)?;
             }
-            let v = self.inner.execute(&sql, &args).await.map_err(|e| Error::from(e.to_string()))?;
+            let v = q.execute(&mut self.inner).await.map_err(|e| Error::from(e.to_string()))?;
             Ok(v.rows_affected().len() as u64)
         })
     }

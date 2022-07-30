@@ -1,37 +1,90 @@
-use tiberius::ToSql;
+use std::str::FromStr;
+use chrono::{NaiveDate, Utc};
+use rust_decimal::Decimal;
+use tiberius::{IntoSql, Query, ToSql, Uuid};
+use tiberius::numeric::BigDecimal;
 use rbdc::Error;
 use rbs::Value;
 
 pub trait Encode {
-    fn encode<'a>(&'a self) -> Result<&'a dyn ToSql, Error>;
+    fn encode(self, q: &mut Query) -> Result<(), Error>;
 }
 
 impl Encode for Value {
-    fn encode<'a>(&'a self) -> Result<&'a dyn ToSql, Error> {
+    fn encode(self, q: &mut Query) -> Result<(), Error> {
         match self {
-            Value::Null => { todo!() }
-            Value::Bool(v) => { Ok(v) }
-            Value::I32(v) => { Ok(v) }
-            Value::I64(v) => { Ok(v) }
-            Value::U32(v) => { unimplemented!() }
-            Value::U64(v) => { unimplemented!() }
-            Value::F32(v) => { Ok(v) }
-            Value::F64(v) => { Ok(v) }
-            Value::String(v) => { Ok(v) }
-            Value::Binary(v) => { Ok(v) }
-            Value::Array(_) => { todo!() }
-            Value::Map(_) => { todo!() }
+            Value::Null => {
+                q.bind(Option::<String>::None);
+            Ok(())}
+            Value::Bool(v) => {
+                q.bind(v);
+                Ok(())
+            }
+            Value::I32(v) => {
+                q.bind(v);
+                Ok(())
+            }
+            Value::I64(v) => {
+                q.bind(v);
+                Ok(())
+            }
+            Value::U32(v) => {
+                q.bind(v as i32);
+                Ok(())
+            }
+            Value::U64(v) => {
+                q.bind(v as i64);
+                Ok(())
+            }
+            Value::F32(v) => {
+                q.bind(v);
+                Ok(())
+            }
+            Value::F64(v) => {
+                q.bind(v);
+                Ok(())
+            }
+            Value::String(v) => {
+                q.bind(v);
+                Ok(())
+            }
+            Value::Binary(v) => {
+                q.bind(v);
+                Ok(())
+            }
+            Value::Array(_) => { Err(Error::from("unimpl")) }
+            Value::Map(_) => { Err(Error::from("unimpl")) }
             Value::Ext(t, v) => {
-                match *t {
-                    "Date" => { todo!() }
-                    "DateTime" => { todo!() }
-                    "Time" => { todo!() }
-                    "Decimal" => { todo!() }
-                    "Json" => { todo!() }
-                    "Timestamp" => { todo!() }
-                    "Uuid" => { todo!() }
+                match t {
+                    "Date" => {
+                        q.bind(chrono::NaiveDate::from_str(v.as_str().unwrap_or_default()).unwrap());
+                        Ok(())
+                    }
+                    "DateTime" => {
+                        q.bind(chrono::NaiveDateTime::from_str(v.as_str().unwrap_or_default()).unwrap());
+                        Ok(())
+                    }
+                    "Time" => {
+                        q.bind(chrono::NaiveTime::from_str(v.as_str().unwrap_or_default()).unwrap());
+                        Ok(())
+                    }
+                    "Decimal" => {
+                        q.bind( BigDecimal::from_str(&v.into_string().unwrap_or_default()).unwrap());
+                        Ok(())
+                    }
+                    "Json" => {
+                        Err(Error::from("unimpl"))
+                    }
+                    "Timestamp" => {
+                        q.bind(v.as_u64().unwrap_or_default() as i64);
+                        Ok(())
+                    }
+                    "Uuid" => {
+                        q.bind(Uuid::from_str(&v.into_string().unwrap_or_default()).unwrap_or_default());
+                        Ok(())
+                    }
                     _ => {
-                        unimplemented!()
+                        Err(Error::from("unimpl"))
                     }
                 }
             }

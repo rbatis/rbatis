@@ -8,8 +8,10 @@ pub trait Decode{
 impl Decode for Value{
     fn decode(data: &[u8], t: ColumnType) -> Value {
         match t{
-            ColumnType::Null => {todo!()}
-            ColumnType::Bit => {todo!()}
+            ColumnType::Null => {Value::Null}
+            ColumnType::Bit => {
+                todo!()
+            }
             ColumnType::Int1 => {Value::Bool(data[0] != 0)}
             ColumnType::Int2 => {todo!()}
             ColumnType::Int4 => {todo!()}
