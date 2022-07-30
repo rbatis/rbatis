@@ -1,8 +1,11 @@
+use std::any::Any;
 use std::collections::HashMap;
 use crate::Error;
 use futures_core::future::BoxFuture;
 use rbs::Value;
 use std::fmt::Debug;
+use futures_util::TryFutureExt;
+
 
 /// Represents database driver that can be shared between threads, and can therefore implement
 /// a connection pool
@@ -10,6 +13,8 @@ pub trait Driver: Sync + Send {
     /// Create a connection to the database. Note that connections are intended to be used
     /// in a single thread since most database connections are not thread-safe
     fn connect(&self, url: &str) -> BoxFuture<Result<Box<dyn Connection>, Error>>;
+
+    fn connect_opt<'a>(&'a self, opt: &'a dyn ConnectOptions) -> BoxFuture<Result<Box<dyn Connection>, Error>>;
 
     /// make an default option
     fn option_default(&self) -> Box<dyn ConnectOptions>;
@@ -40,7 +45,7 @@ pub trait Connection: Send {
                 for mut i in 0..md.column_len() {
                     i = md.column_len() - i - 1;
                     let n = md.column_name(i);
-                    m.insert(0,(Value::String(n), x.get(i).unwrap_or(Value::Null)));
+                    m.insert(0, (Value::String(n), x.get(i).unwrap_or(Value::Null)));
                 }
                 rows.push(Value::Map(m));
             }
@@ -75,7 +80,7 @@ pub trait MetaData: Debug {
 }
 
 /// connect option
-pub trait ConnectOptions: 'static + Send + Sync + Debug {
+pub trait ConnectOptions: Any + Send + Sync + Debug + 'static {
     /// Establish a new database connection with the options specified by `self`.
     fn connect(&self) -> BoxFuture<Result<Box<dyn Connection>, Error>>;
 
@@ -83,5 +88,15 @@ pub trait ConnectOptions: 'static + Send + Sync + Debug {
     fn set(&mut self, arg: HashMap<&str, Value>);
 
     ///set option from uri
-    fn set_uri(&mut self, uri: &str) ->Result<(),Error>;
+    fn set_uri(&mut self, uri: &str) -> Result<(), Error>;
+
+    /// uppercase self
+    fn uppercase_self(&self) -> &(dyn Any + Send + Sync);
+}
+
+
+impl dyn ConnectOptions {
+    pub fn downcast_ref<E: ConnectOptions>(&self) -> Option<&E> {
+        self.uppercase_self().downcast_ref()
+    }
 }

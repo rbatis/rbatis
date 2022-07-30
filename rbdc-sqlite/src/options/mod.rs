@@ -13,6 +13,7 @@ pub use locking_mode::SqliteLockingMode;
 use std::cmp::Ordering;
 use std::sync::Arc;
 use std::{borrow::Cow, time::Duration};
+use std::any::Any;
 use std::collections::HashMap;
 use std::str::FromStr;
 use futures_core::future::BoxFuture;
@@ -414,5 +415,9 @@ impl ConnectOptions for SqliteConnectOptions {
     fn set_uri(&mut self, uri: &str) -> Result<(), Error> {
         *self = SqliteConnectOptions::from_str(uri).map_err(|e| Error::from(e.to_string()))?;
         Ok(())
+    }
+
+    fn uppercase_self(&self) -> &(dyn Any + Send + Sync) {
+        self
     }
 }

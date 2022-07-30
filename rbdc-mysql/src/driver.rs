@@ -1,9 +1,12 @@
+use std::any::Any;
+use std::ops::Deref;
 use crate::connection::MySqlConnection;
 use crate::options::MySqlConnectOptions;
 use futures_core::future::BoxFuture;
 use rbdc::db::{ConnectOptions, Connection, Driver};
 use rbdc::Error;
 use std::str::FromStr;
+use std::sync::Arc;
 
 pub struct MysqlDriver {}
 
@@ -12,6 +15,14 @@ impl Driver for MysqlDriver {
         let url = url.to_owned();
         Box::pin(async move {
             let conn = MySqlConnection::establish(&url.parse()?).await?;
+            Ok(Box::new(conn) as Box<dyn Connection>)
+        })
+    }
+
+    fn connect_opt<'a>(&'a self, opt: &'a dyn ConnectOptions) -> BoxFuture<Result<Box<dyn Connection>, Error>> {
+        let opt = opt.downcast_ref().unwrap();
+        Box::pin(async move {
+            let conn = MySqlConnection::establish(opt).await?;
             Ok(Box::new(conn) as Box<dyn Connection>)
         })
     }

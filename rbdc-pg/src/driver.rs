@@ -15,7 +15,13 @@ impl Driver for PgDriver {
             Ok(Box::new(conn) as Box<dyn Connection>)
         })
     }
-
+    fn connect_opt<'a>(&'a self, opt: &'a dyn ConnectOptions) -> BoxFuture<Result<Box<dyn Connection>, Error>> {
+        let opt = opt.downcast_ref().unwrap();
+        Box::pin(async move {
+            let conn = PgConnection::establish(opt).await?;
+            Ok(Box::new(conn) as Box<dyn Connection>)
+        })
+    }
     fn option_default(&self) -> Box<dyn ConnectOptions> {
         Box::new(PgConnectOptions::default())
     }

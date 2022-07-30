@@ -1,3 +1,4 @@
+use std::any::Any;
 use std::collections::HashMap;
 use std::path::PathBuf;
 use std::str::FromStr;
@@ -96,5 +97,9 @@ impl ConnectOptions for PgConnectOptions {
     fn set_uri(&mut self, arg: &str) -> Result<(), Error> {
         PgConnectOptions::from_str(arg).map_err(|e| Error::from(e.to_string()))?;
         Ok(())
+    }
+
+    fn uppercase_self(&self) -> &(dyn Any + Send + Sync) {
+        self
     }
 }
