@@ -85,7 +85,26 @@ pub trait ConnectOptions: Any + Send + Sync + Debug + 'static {
     fn connect(&self) -> BoxFuture<Result<Box<dyn Connection>, Error>>;
 
     ///set option
-    fn set(&mut self, arg: HashMap<&str, Value>);
+    ///
+    /// for exmample:
+    ///
+    /// ```rust
+    /// pub struct SqliteConnectOptions{
+    ///   pub immutable:bool,
+    /// };
+    ///
+    /// let mut d = SqliteConnectOptions{immutable:false};
+    ///         d.set(Box::new({
+    ///             let mut new = SqliteConnectOptions::new();
+    ///             new.immutable=true;
+    ///             new
+    ///         }));
+    /// ```
+    ///
+    #[inline]
+    fn set(&mut self, arg: Box<dyn Any>) where Self: Sized {
+        *self = *arg.downcast().expect("must be self type!");
+    }
 
     ///set option from uri
     fn set_uri(&mut self, uri: &str) -> Result<(), Error>;

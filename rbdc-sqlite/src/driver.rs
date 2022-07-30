@@ -31,11 +31,12 @@ impl Driver for SqliteDriver {
 mod test{
     use std::fs::File;
     use rbdc::block_on;
-    use rbdc::db::Driver;
+    use rbdc::db::{ConnectOptions, Driver};
     use rbdc::decimal::Decimal;
     use rbdc::pool::PoolOptions;
     use rbs::Value;
     use crate::driver::SqliteDriver;
+    use crate::SqliteConnectOptions;
 
     #[test]
     fn test_sqlite_pool(){
