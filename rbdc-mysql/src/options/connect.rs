@@ -1,3 +1,4 @@
+use std::any::Any;
 use std::collections::HashMap;
 use std::str::FromStr;
 use crate::connection::MySqlConnection;
@@ -120,5 +121,9 @@ impl ConnectOptions for MySqlConnectOptions {
     fn set_uri(&mut self, uri: &str) -> Result<(), Error> {
         *self=MySqlConnectOptions::from_str(uri).map_err(|e|Error::from(e.to_string()))?;
         Ok(())
+    }
+
+    fn uppercase_self(&self) -> &(dyn Any + Send + Sync) {
+        self
     }
 }

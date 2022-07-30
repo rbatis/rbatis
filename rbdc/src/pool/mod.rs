@@ -1,6 +1,8 @@
 pub mod options;
 pub use options::*;
 pub mod conn;
+pub mod mobc;
+
 pub use conn::*;
 
 use crate::db::{ConnectOptions, Driver};
