@@ -9,8 +9,8 @@ Struct(User Define) -> rbs::ValueRef -> ref clone() -> Database
 
 * 已支持驱动
 * rbdc-mysql(100%)
-* rbbc-pg(80%)
-* rbbc-sqlite(0%)
+* rbbc-pg(100%)
+* rbbc-sqlite(100%)
 * rbbc-mssql(0%)
 
 
