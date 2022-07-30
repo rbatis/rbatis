@@ -3,6 +3,7 @@ use rbdc::db::{Connection, ConnectOptions, Driver};
 use rbdc::Error;
 use crate::{SqliteConnection, SqliteConnectOptions};
 
+#[derive(Debug)]
 pub struct SqliteDriver {}
 
 impl Driver for SqliteDriver {
@@ -33,7 +34,7 @@ mod test{
     use rbdc::block_on;
     use rbdc::db::{ConnectOptions, Driver};
     use rbdc::decimal::Decimal;
-    use rbdc::pool::PoolOptions;
+    use rbdc::pool::Pool;
     use rbs::Value;
     use crate::driver::SqliteDriver;
     use crate::SqliteConnectOptions;
@@ -47,17 +48,9 @@ mod test{
             drop(f);
         }
         let f=async move{
-            let opt = PoolOptions::new();
-            let pool = opt
-                .connect(
-                    Box::new(SqliteDriver {}),
-                    "sqlite://../target/test.db",
-                )
-                .await
-                .unwrap();
-            std::thread::sleep(std::time::Duration::from_secs(2));
-            println!("{:?}", pool);
-            let mut conn = pool.acquire().await.unwrap();
+            let pool = Pool::new_url( SqliteDriver {},
+                                      "sqlite://../target/test.db").unwrap();
+            let mut conn = pool.get().await.unwrap();
             conn.exec("CREATE TABLE `biz_activity`
 (
     `id`            TEXT PRIMARY KEY NOT NULL,
@@ -93,7 +86,7 @@ VALUES ('1', '活动1', NULL, NULL, '1', 1, 1, 'fff', '2019-12-12 00:00:00', 0, 
     }
 
     #[test]
-    fn test_pg_param() {
+    fn test_sqlite_param() {
         let task = async move {
             let mut d = SqliteDriver {};
             let mut c = d

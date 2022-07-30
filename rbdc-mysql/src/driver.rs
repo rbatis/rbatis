@@ -8,6 +8,7 @@ use rbdc::Error;
 use std::str::FromStr;
 use std::sync::Arc;
 
+#[derive(Debug)]
 pub struct MysqlDriver {}
 
 impl Driver for MysqlDriver {
@@ -36,25 +37,17 @@ impl Driver for MysqlDriver {
 mod test {
     use crate::driver::MysqlDriver;
     use rbdc::db::Driver;
-    use rbdc::pool::PoolOptions;
     use rbs::{to_value, Value};
     use std::collections::BTreeMap;
     use rbdc::block_on;
+    use rbdc::pool::Pool;
 
     #[test]
     fn test_mysql_pool() {
         let task = async move {
-            let opt = PoolOptions::new();
-            let pool = opt
-                .connect(
-                    Box::new(MysqlDriver {}),
-                    "mysql://root:123456@localhost:3306/test",
-                )
-                .await
-                .unwrap();
+            let pool = Pool::new_url(MysqlDriver {},"mysql://root:123456@localhost:3306/test").unwrap();
             std::thread::sleep(std::time::Duration::from_secs(2));
-            println!("{:?}", pool);
-            let mut conn = pool.acquire().await.unwrap();
+            let mut conn = pool.get().await.unwrap();
             let data = conn
                 .get_values("select * from biz_activity", vec![])
                 .await
