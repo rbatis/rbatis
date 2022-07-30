@@ -1258,6 +1258,6 @@ impl Value {
 }
 
 ///this is safe
-unsafe fn change_lifetime_const<'a, 'b, T: ?Sized>(x: &'a T) -> &'b T {
+pub unsafe fn change_lifetime_const<'a, 'b, T: ?Sized>(x: &'a T) -> &'b T {
     &*(x as *const T)
 }
