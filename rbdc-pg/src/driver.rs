@@ -5,6 +5,7 @@ use rbdc::db::{ConnectOptions, Connection, Driver};
 use rbdc::Error;
 use std::str::FromStr;
 
+#[derive(Debug)]
 pub struct PgDriver {}
 
 impl Driver for PgDriver {
@@ -33,24 +34,16 @@ mod test {
     use rbdc::block_on;
     use rbdc::db::Driver;
     use rbdc::decimal::Decimal;
-    use rbdc::pool::PoolOptions;
+    use rbdc::pool::Pool;
     use rbdc::timestamp::Timestamp;
     use rbs::Value;
 
     #[test]
     fn test_pg_pool() {
         let task=async move{
-            let opt = PoolOptions::new();
-            let pool = opt
-                .connect(
-                    Box::new(PgDriver {}),
-                    "postgres://postgres:123456@localhost:5432/postgres",
-                )
-                .await
-                .unwrap();
+            let pool = Pool::new_url( PgDriver {}, "postgres://postgres:123456@localhost:5432/postgres").unwrap();
             std::thread::sleep(std::time::Duration::from_secs(2));
-            println!("{:?}", pool);
-            let mut conn = pool.acquire().await.unwrap();
+            let mut conn = pool.get().await.unwrap();
             let data = conn
                 .get_values("select * from biz_activity", vec![])
                 .await
