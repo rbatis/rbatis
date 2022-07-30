@@ -1,9 +1,12 @@
-use mobc::{async_trait, Manager};
+use std::ops::{Deref, DerefMut};
+use mobc::{async_trait, Builder, Manager};
 use crate::{block_on, Error};
 use crate::db::{ConnectOptions, Driver};
 
 /// RBDC pool
-pub type Pool = mobc::Pool<RBDCManager>;
+pub struct Pool {
+    pub inner: mobc::Pool<RBDCManager>,
+}
 
 pub struct RBDCManager {
     driver: Box<dyn Driver>,
@@ -42,5 +45,40 @@ impl RBDCManager {
     }
 }
 
+impl Deref for Pool {
+    type Target = mobc::Pool<RBDCManager>;
+
+    fn deref(&self) -> &Self::Target {
+        &self.inner
+    }
+}
+
+impl DerefMut for Pool {
+    fn deref_mut(&mut self) -> &mut Self::Target {
+        &mut self.inner
+    }
+}
+
+
+impl Pool {
+    pub fn new<D: Driver + 'static>(d: D, url: &str) -> Result<Self, Error> {
+        let pool = Pool {
+            inner: mobc::Pool::new(RBDCManager::new(d, url)?)
+        };
+        Ok(pool)
+    }
+    pub fn new_conn_opt<D: Driver + 'static, Option: ConnectOptions>(d: D, o: Option) -> Result<Self, Error> {
+        let pool = Pool {
+            inner: mobc::Pool::new(RBDCManager::new_opt(d, url)?)
+        };
+        Ok(pool)
+    }
+    pub fn builder() -> Builder<RBDCManager> {
+        mobc::Pool::builder()
+    }
+}
+
 #[test]
-fn test_pool() {}
+fn test_pool() {
+
+}
