@@ -2,7 +2,7 @@ use crate::decode::Decode;
 use crate::encode::{Encode, IsNull};
 use rbdc::error::Error;
 use crate::type_info::DataType;
-use crate::{Sqlite, SqliteArgumentValue, SqliteTypeInfo, SqliteValueRef};
+use crate::{Sqlite, SqliteArgumentValue, SqliteTypeInfo, SqliteValue};
 use crate::types::Type;
 
 impl Type for bool {
@@ -20,7 +20,7 @@ impl Encode for bool {
 }
 
 impl Decode for bool {
-    fn decode(value: SqliteValueRef) -> Result<bool, Error> {
+    fn decode(value: SqliteValue) -> Result<bool, Error> {
         Ok(value.int() != 0)
     }
 }

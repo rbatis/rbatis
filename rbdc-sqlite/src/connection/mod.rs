@@ -26,6 +26,7 @@ mod executor;
 mod handle;
 
 mod worker;
+pub use worker::Command;
 
 /// A connection to an open [Sqlite] database.
 ///
@@ -46,7 +47,7 @@ pub struct LockedSqliteHandle<'a> {
     pub(crate) guard: MutexGuard<'a, ConnectionState>,
 }
 
-pub(crate) struct ConnectionState {
+pub struct ConnectionState {
     pub(crate) handle: ConnectionHandle,
 
     // transaction status

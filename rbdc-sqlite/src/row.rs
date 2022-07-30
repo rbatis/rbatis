@@ -2,18 +2,20 @@
 
 use std::collections::HashMap;
 use std::fmt::{Debug, Formatter};
+use std::ops::Deref;
 use std::sync::Arc;
 use rbdc::error::Error;
 use rbdc::db::{MetaData, Row};
 use rbdc::ext::ustr::UStr;
 use rbs::Value;
 use crate::statement::StatementHandle;
-use crate::{Sqlite, SqliteColumn, SqliteValue, SqliteValueRef};
+use crate::{Sqlite, SqliteColumn, SqliteTypeInfo, SqliteValue, SqliteValueRef};
+use crate::decode::Decode;
 
 /// Implementation of [`Row`] for SQLite.
 #[derive(Debug)]
 pub struct SqliteRow {
-    pub(crate) values: Box<[SqliteValue]>,
+    pub(crate) values: Vec<SqliteValue>,
     pub(crate) columns: Arc<Vec<SqliteColumn>>,
     pub(crate) column_names: Arc<HashMap<UStr, usize>>,
 }
@@ -45,20 +47,59 @@ impl SqliteRow {
         }
 
         Self {
-            values: values.into_boxed_slice(),
+            values: values,
             columns: Arc::clone(columns),
             column_names: Arc::clone(column_names),
         }
     }
 }
 
+
+
+#[derive(Debug)]
+pub struct SqliteMetaData {
+    pub columns: Arc<Vec<SqliteColumn>>
+}
+
+impl MetaData for SqliteMetaData{
+    fn column_len(&self) -> usize {
+        self.columns.len()
+    }
+
+    fn column_name(&self, i: usize) -> String {
+        self.columns[i].name.to_string()
+    }
+
+    fn column_type(&self, i: usize) -> String {
+        self.columns[i].type_info.to_string()
+    }
+}
+
 impl Row for SqliteRow {
     fn meta_data(&self) -> Box<dyn MetaData> {
-        todo!()
+         Box::new(SqliteMetaData{
+             columns:self.columns.clone()
+         })
     }
 
     fn get(&mut self, i: usize) -> Option<Value> {
-        todo!()
+        match self.try_take(i) {
+            Err(e) => {
+                log::error!("get error:{}",e);
+                None
+            },
+            Ok(v) => {
+                match Value::decode(v) {
+                    Ok(v) => {
+                        Some(v)
+                    }
+                    Err(e) => {
+                        log::error!("get error:{}",e);
+                        None
+                    }
+                }
+            }
+        }
     }
 }
 impl SqliteRow{
@@ -69,5 +110,13 @@ impl SqliteRow{
     fn try_get_raw(&self, index: usize) -> Result<SqliteValueRef<'_>, Error>
     {
         Ok(SqliteValueRef::value(&self.values[index]))
+    }
+
+    fn try_take(&mut self, index: usize) -> Result<SqliteValue, Error>
+    {
+        if (index+1) >= self.values.len(){
+            return Err(Error::from("try_take out of range!"))
+        }
+        Ok(self.values.remove(index))
     }
 }

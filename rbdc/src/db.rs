@@ -37,9 +37,10 @@ pub trait Connection: Send {
             for mut x in v {
                 let md = x.meta_data();
                 let mut m = Vec::with_capacity(md.column_len());
-                for i in 0..md.column_len() {
+                for mut i in 0..md.column_len() {
+                    i = md.column_len() - i - 1;
                     let n = md.column_name(i);
-                    m.push((Value::String(n), x.get(i).unwrap_or(Value::Null)));
+                    m.insert(0,(Value::String(n), x.get(i).unwrap_or(Value::Null)));
                 }
                 rows.push(Value::Map(m));
             }
