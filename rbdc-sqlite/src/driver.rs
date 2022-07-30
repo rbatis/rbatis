@@ -23,7 +23,10 @@ impl Driver for SqliteDriver {
 mod test{
     use std::fs::File;
     use rbdc::block_on;
+    use rbdc::db::Driver;
+    use rbdc::decimal::Decimal;
     use rbdc::pool::PoolOptions;
+    use rbs::Value;
     use crate::driver::SqliteDriver;
 
     #[test]
@@ -78,5 +81,30 @@ VALUES ('1', '活动1', NULL, NULL, '1', 1, 1, 'fff', '2019-12-12 00:00:00', 0, 
             }
         };
         block_on!(f);
+    }
+
+    #[test]
+    fn test_pg_param() {
+        let task = async move {
+            let mut d = SqliteDriver {};
+            let mut c = d
+                .connect("sqlite://../target/test.db")
+                .await
+                .unwrap();
+            let param = vec![
+                Decimal("1".to_string()).into(),
+                Value::String("1".to_string()),
+            ];
+            println!("param => {}", Value::Array(param.clone()));
+            let data = c
+                .exec(
+                    "update biz_activity set version = ? where id  = ?",
+                    param,
+                )
+                .await
+                .unwrap();
+            println!("{}", data);
+        };
+        block_on!(task);
     }
 }
