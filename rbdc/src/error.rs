@@ -1,5 +1,5 @@
 use std::fmt::{Display, Formatter};
-use std::num::{ParseFloatError, ParseIntError};
+use std::num::{ParseFloatError, ParseIntError, TryFromIntError};
 use std::str::Utf8Error;
 
 #[derive(Debug)]
@@ -83,6 +83,13 @@ impl From<fastdate::error::Error> for Error{
         Error::E(arg.to_string())
     }
 }
+
+impl From<TryFromIntError> for Error{
+    fn from(e: TryFromIntError) -> Self {
+        Error::from(e.to_string())
+    }
+}
+
 // Format an error message as a `Protocol` error
 #[macro_export]
 macro_rules! err_protocol {

@@ -1,46 +1,46 @@
 use crate::decode::Decode;
 use crate::encode::{Encode, IsNull};
-use crate::error::BoxDynError;
+use rbdc::error::Error;
 use crate::type_info::DataType;
 use crate::{Sqlite, SqliteArgumentValue, SqliteTypeInfo, SqliteValueRef};
 use crate::types::Type;
 
-impl Type<Sqlite> for f32 {
-    fn type_info() -> SqliteTypeInfo {
+impl Type for f32 {
+    fn type_info(&self) -> SqliteTypeInfo {
         SqliteTypeInfo(DataType::Float)
     }
 }
 
-impl<'q> Encode<'q, Sqlite> for f32 {
-    fn encode_by_ref(&self, args: &mut Vec<SqliteArgumentValue<'q>>) -> IsNull {
-        args.push(SqliteArgumentValue::Double((*self).into()));
+impl Encode for f32 {
+    fn encode(self, args: &mut Vec<SqliteArgumentValue>)->Result<IsNull,Error> {
+        args.push(SqliteArgumentValue::Double(self.into()));
 
-        IsNull::No
+        Ok(IsNull::No)
     }
 }
 
-impl<'r> Decode<'r, Sqlite> for f32 {
-    fn decode(value: SqliteValueRef<'r>) -> Result<f32, BoxDynError> {
+impl Decode for f32 {
+    fn decode(value: SqliteValueRef) -> Result<f32, Error> {
         Ok(value.double() as f32)
     }
 }
 
-impl Type<Sqlite> for f64 {
-    fn type_info() -> SqliteTypeInfo {
+impl Type for f64 {
+    fn type_info(&self) -> SqliteTypeInfo {
         SqliteTypeInfo(DataType::Float)
     }
 }
 
-impl<'q> Encode<'q, Sqlite> for f64 {
-    fn encode_by_ref(&self, args: &mut Vec<SqliteArgumentValue<'q>>) -> IsNull {
-        args.push(SqliteArgumentValue::Double(*self));
+impl Encode for f64 {
+    fn encode(self, args: &mut Vec<SqliteArgumentValue>)->Result<IsNull,Error> {
+        args.push(SqliteArgumentValue::Double(self));
 
-        IsNull::No
+        Ok(IsNull::No)
     }
 }
 
-impl<'r> Decode<'r, Sqlite> for f64 {
-    fn decode(value: SqliteValueRef<'r>) -> Result<f64, BoxDynError> {
+impl Decode for f64 {
+    fn decode(value: SqliteValueRef) -> Result<f64, Error> {
         Ok(value.double())
     }
 }

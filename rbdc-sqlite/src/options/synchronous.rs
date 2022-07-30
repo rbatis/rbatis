@@ -1,4 +1,4 @@
-use crate::error::Error;
+use rbdc::error::Error;
 use std::str::FromStr;
 
 /// Refer to [SQLite documentation] for the meaning of various synchronous settings.
@@ -40,8 +40,8 @@ impl FromStr for SqliteSynchronous {
             "extra" => SqliteSynchronous::Extra,
 
             _ => {
-                return Err(Error::Configuration(
-                    format!("unknown value {:?} for `synchronous`", s).into(),
+                return Err(Error::from(
+                    format!("Configuration:unknown value {:?} for `synchronous`", s)
                 ));
             }
         })

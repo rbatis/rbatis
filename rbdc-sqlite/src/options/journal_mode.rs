@@ -1,4 +1,4 @@
-use crate::error::Error;
+use rbdc::error::Error;
 use std::str::FromStr;
 
 /// Refer to [SQLite documentation] for the meaning of the database journaling mode.
@@ -46,9 +46,7 @@ impl FromStr for SqliteJournalMode {
             "off" => SqliteJournalMode::Off,
 
             _ => {
-                return Err(Error::Configuration(
-                    format!("unknown value {:?} for `journal_mode`", s).into(),
-                ));
+                return Err(Error::from(format!("Configuration:unknown value {:?} for `journal_mode`", s)));
             }
         })
     }

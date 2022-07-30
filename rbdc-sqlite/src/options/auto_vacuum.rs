@@ -1,4 +1,4 @@
-use crate::error::Error;
+use rbdc::error::Error;
 use std::str::FromStr;
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
@@ -34,9 +34,7 @@ impl FromStr for SqliteAutoVacuum {
             "incremental" => SqliteAutoVacuum::Incremental,
 
             _ => {
-                return Err(Error::Configuration(
-                    format!("unknown value {:?} for `auto_vacuum`", s).into(),
-                ));
+                return Err(Error::from(format!("Configure unknown value {:?} for `auto_vacuum`", s)));
             }
         })
     }

@@ -1,6 +1,6 @@
-use crate::describe::Describe;
-use crate::error::Error;
-use crate::executor::{Execute, Executor};
+use std::ops::Deref;
+use std::sync::Arc;
+use rbdc::error::Error;
 use crate::{
     Sqlite, SqliteConnection, SqliteQueryResult, SqliteRow, SqliteStatement, SqliteTypeInfo,
 };
@@ -8,22 +8,16 @@ use either::Either;
 use futures_core::future::BoxFuture;
 use futures_core::stream::BoxStream;
 use futures_util::{TryFutureExt, TryStreamExt};
+use crate::query::SqliteQuery;
 
-impl<'c> Executor<'c> for &'c mut SqliteConnection {
-    type Database = Sqlite;
-
-    fn fetch_many<'e, 'q: 'e, E: 'q>(
-        self,
-        mut query: E,
-    ) -> BoxStream<'e, Result<Either<SqliteQueryResult, SqliteRow>, Error>>
-    where
-        'c: 'e,
-        E: Execute<'q, Self::Database>,
-    {
-        let sql = query.sql();
+impl SqliteConnection {
+    pub fn fetch_many(
+        &mut self,
+        mut query: SqliteQuery,
+    ) -> BoxStream<'_, Result<Either<SqliteQueryResult, SqliteRow>, Error>> {
+        let sql = query.sql().to_string();
+        let persistent = query.persistent() && !query.arguments.is_empty();
         let arguments = query.take_arguments();
-        let persistent = query.persistent() && arguments.is_some();
-
         Box::pin(
             self.worker
                 .execute(sql, arguments, self.row_channel_size, persistent)
@@ -32,18 +26,14 @@ impl<'c> Executor<'c> for &'c mut SqliteConnection {
         )
     }
 
-    fn fetch_optional<'e, 'q: 'e, E: 'q>(
-        self,
-        mut query: E,
-    ) -> BoxFuture<'e, Result<Option<SqliteRow>, Error>>
-    where
-        'c: 'e,
-        E: Execute<'q, Self::Database>,
+    pub fn fetch_optional(
+        &mut self,
+        mut query: SqliteQuery,
+    ) -> BoxFuture<'_, Result<Option<SqliteRow>, Error>>
     {
-        let sql = query.sql();
+        let sql = query.sql().to_owned();
+        let persistent = query.persistent() && !query.arguments.is_empty();
         let arguments = query.take_arguments();
-        let persistent = query.persistent() && arguments.is_some();
-
         Box::pin(async move {
             let stream = self
                 .worker
@@ -63,13 +53,11 @@ impl<'c> Executor<'c> for &'c mut SqliteConnection {
         })
     }
 
-    fn prepare_with<'e, 'q: 'e>(
-        self,
-        sql: &'q str,
+    pub fn prepare_with<'a>(
+        &'a mut self,
+        sql: &'a str,
         _parameters: &[SqliteTypeInfo],
-    ) -> BoxFuture<'e, Result<SqliteStatement<'q>, Error>>
-    where
-        'c: 'e,
+    ) -> BoxFuture<'_, Result<SqliteStatement, Error>>
     {
         Box::pin(async move {
             let statement = self.worker.prepare(sql).await?;
@@ -79,13 +67,5 @@ impl<'c> Executor<'c> for &'c mut SqliteConnection {
                 ..statement
             })
         })
-    }
-
-    #[doc(hidden)]
-    fn describe<'e, 'q: 'e>(self, sql: &'q str) -> BoxFuture<'e, Result<Describe<Sqlite>, Error>>
-    where
-        'c: 'e,
-    {
-        Box::pin(self.worker.describe(sql))
     }
 }

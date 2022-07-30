@@ -1,28 +1,28 @@
 use std::cmp::Ordering;
 use std::fmt::{self, Debug, Formatter};
 use std::ptr::NonNull;
+use either::Either;
 
 use futures_core::future::BoxFuture;
+use futures_core::stream::BoxStream;
 use futures_intrusive::sync::MutexGuard;
-use futures_util::future;
+use futures_util::{future, TryFutureExt, TryStreamExt};
 use libsqlite3_sys::sqlite3;
 
 pub(crate) use handle::{ConnectionHandle, ConnectionHandleRaw};
 
-use crate::common::StatementCache;
-use crate::error::Error;
+use rbdc::error::Error;
+use rbdc::StatementCache;
 use crate::connection::establish::EstablishParams;
 use crate::connection::worker::ConnectionWorker;
 use crate::statement::VirtualStatement;
 use crate::{Sqlite, SqliteConnectOptions};
-use crate::transaction::Transaction;
+use crate::query::SqliteQuery;
 
 pub(crate) mod collation;
-mod describe;
 mod establish;
 mod execute;
 mod executor;
-mod explain;
 mod handle;
 
 mod worker;
@@ -53,8 +53,6 @@ pub(crate) struct ConnectionState {
     pub(crate) transaction_depth: usize,
 
     pub(crate) statements: Statements,
-
-    log_settings: LogSettings,
 }
 
 pub(crate) struct Statements {
@@ -105,7 +103,7 @@ impl SqliteConnection {
     /// Or if necessary, you can call [`.lock_handle()`][Self::lock_handle]
     /// and create the collation directly with [`LockedSqliteHandle::create_collation()`].
     ///
-    /// [`Error::WorkerCrashed`] may still be returned if we could not communicate with the worker.
+    /// [`Error::from("WorkerCrashed")`] may still be returned if we could not communicate with the worker.
     ///
     /// Note that this may also block if the worker command channel is currently applying
     /// backpressure.
@@ -138,12 +136,8 @@ impl Debug for SqliteConnection {
     }
 }
 
-impl Connection for SqliteConnection {
-    type Database = Sqlite;
-
-    type Options = SqliteConnectOptions;
-
-    fn close(mut self) -> BoxFuture<'static, Result<(), Error>> {
+impl  SqliteConnection {
+    pub fn close(mut self) -> BoxFuture<'static, Result<(), Error>> {
         Box::pin(async move {
             let shutdown = self.worker.shutdown();
             // Drop the statement worker, which should
@@ -155,25 +149,18 @@ impl Connection for SqliteConnection {
     }
 
     /// Ensure the background worker thread is alive and accepting commands.
-    fn ping(&mut self) -> BoxFuture<'_, Result<(), Error>> {
+    pub fn ping(&mut self) -> BoxFuture<'_, Result<(), Error>> {
         Box::pin(self.worker.ping())
     }
 
-    fn begin(&mut self) -> BoxFuture<'_, Result<Transaction<'_, Self::Database>, Error>>
-    where
-        Self: Sized,
-    {
-        Transaction::begin(self)
-    }
-
-    fn cached_statements_size(&self) -> usize {
+    pub fn cached_statements_size(&self) -> usize {
         self.worker
             .shared
             .cached_statements_size
             .load(std::sync::atomic::Ordering::Acquire)
     }
 
-    fn clear_cached_statements(&mut self) -> BoxFuture<'_, Result<(), Error>> {
+    pub fn clear_cached_statements(&mut self) -> BoxFuture<'_, Result<(), Error>> {
         Box::pin(async move {
             self.worker.clear_cache().await?;
             Ok(())
@@ -181,7 +168,7 @@ impl Connection for SqliteConnection {
     }
 
     #[doc(hidden)]
-    fn flush(&mut self) -> BoxFuture<'_, Result<(), Error>> {
+    pub fn flush(&mut self) -> BoxFuture<'_, Result<(), Error>> {
         // For SQLite, FLUSH does effectively nothing...
         // Well, we could use this to ensure that the command channel has been cleared,
         // but it would only develop a backlog if a lot of queries are executed and then cancelled
@@ -190,7 +177,7 @@ impl Connection for SqliteConnection {
     }
 
     #[doc(hidden)]
-    fn should_flush(&self) -> bool {
+    pub fn should_flush(&self) -> bool {
         false
     }
 }

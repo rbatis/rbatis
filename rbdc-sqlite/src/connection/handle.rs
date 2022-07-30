@@ -2,8 +2,9 @@ use std::ffi::CString;
 use std::ptr;
 use std::ptr::NonNull;
 
-use crate::error::Error;
+use rbdc::error::Error;
 use libsqlite3_sys::{sqlite3, sqlite3_close, sqlite3_exec, sqlite3_last_insert_rowid, SQLITE_OK};
+use rbdc::err_protocol;
 
 use crate::SqliteError;
 

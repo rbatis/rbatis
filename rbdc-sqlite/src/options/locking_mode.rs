@@ -1,4 +1,4 @@
-use crate::error::Error;
+use rbdc::error::Error;
 use std::str::FromStr;
 
 /// Refer to [SQLite documentation] for the meaning of the connection locking mode.
@@ -34,9 +34,7 @@ impl FromStr for SqliteLockingMode {
             "exclusive" => SqliteLockingMode::Exclusive,
 
             _ => {
-                return Err(Error::Configuration(
-                    format!("unknown value {:?} for `locking_mode`", s).into(),
-                ));
+                return Err(Error::from(format!("Configuration:unknown value {:?} for `locking_mode`", s)));
             }
         })
     }

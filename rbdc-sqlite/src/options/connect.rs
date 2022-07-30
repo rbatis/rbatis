@@ -1,17 +1,18 @@
-use crate::error::Error;
-use crate::executor::Executor;
+use rbdc::error::Error;
 use crate::{SqliteConnectOptions, SqliteConnection};
 use futures_core::future::BoxFuture;
 use log::LevelFilter;
 use std::fmt::Write;
 use std::time::Duration;
+use either::Either;
+use futures_core::stream::BoxStream;
+use futures_util::TryStreamExt;
+use rbdc::db::{Connection, Row};
+use rbs::Value;
+use crate::query::SqliteQuery;
 
-impl ConnectOptions for SqliteConnectOptions {
-    type Connection = SqliteConnection;
-
-    fn connect(&self) -> BoxFuture<'_, Result<Self::Connection, Error>>
-    where
-        Self::Connection: Sized,
+impl SqliteConnectOptions {
+    pub fn connect(&self) -> BoxFuture<'_, Result<SqliteConnection, Error>>
     {
         Box::pin(async move {
             let mut conn = SqliteConnection::establish(self).await?;
@@ -34,7 +35,7 @@ impl ConnectOptions for SqliteConnectOptions {
                 write!(init, "PRAGMA {} = {}; ", key, value).ok();
             }
 
-            conn.execute(&*init).await?;
+            conn.exec(&*init, vec![]).await?;
 
             if !self.collations.is_empty() {
                 let mut locked = conn.lock_handle().await?;
@@ -47,14 +48,22 @@ impl ConnectOptions for SqliteConnectOptions {
             Ok(conn)
         })
     }
+}
 
-    fn log_statements(&mut self, level: LevelFilter) -> &mut Self {
-        self.log_settings.log_statements(level);
-        self
+impl Connection for SqliteConnection {
+    fn get_rows(&mut self, sql: &str, params: Vec<Value>) -> BoxFuture<Result<Vec<Box<dyn Row>>, Error>> {
+        todo!()
     }
 
-    fn log_slow_statements(&mut self, level: LevelFilter, duration: Duration) -> &mut Self {
-        self.log_settings.log_slow_statements(level, duration);
-        self
+    fn exec(&mut self, sql: &str, params: Vec<Value>) -> BoxFuture<Result<u64, Error>> {
+        todo!()
+    }
+
+    fn close(&mut self) -> BoxFuture<'static, Result<(), Error>> {
+        todo!()
+    }
+
+    fn ping(&mut self) -> BoxFuture<Result<(), Error>> {
+        todo!()
     }
 }

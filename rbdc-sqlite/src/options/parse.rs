@@ -1,4 +1,4 @@
-use crate::error::Error;
+use rbdc::error::Error;
 use crate::SqliteConnectOptions;
 use percent_encoding::percent_decode_str;
 use std::borrow::Cow;
@@ -36,7 +36,7 @@ impl FromStr for SqliteConnectOptions {
                 Path::new(
                     &*percent_decode_str(database)
                         .decode_utf8()
-                        .map_err(Error::config)?,
+                        .map_err(|e|Error::from(e.to_string()))?,
                 )
                 .to_path_buf(),
             );
@@ -68,8 +68,8 @@ impl FromStr for SqliteConnectOptions {
                             }
 
                             _ => {
-                                return Err(Error::Configuration(
-                                    format!("unknown value {:?} for `mode`", value).into(),
+                                return Err(Error::from(
+                                    format!("Configuration:unknown value {:?} for `mode`", value)
                                 ));
                             }
                         }
@@ -88,8 +88,8 @@ impl FromStr for SqliteConnectOptions {
                         }
 
                         _ => {
-                            return Err(Error::Configuration(
-                                format!("unknown value {:?} for `cache`", value).into(),
+                            return Err(Error::from(
+                                format!("Configuration:unknown value {:?} for `cache`", value)
                             ));
                         }
                     },
@@ -102,19 +102,18 @@ impl FromStr for SqliteConnectOptions {
                             options.immutable = false;
                         }
                         _ => {
-                            return Err(Error::Configuration(
-                                format!("unknown value {:?} for `immutable`", value).into(),
+                            return Err(Error::from(
+                                format!("Configuration:unknown value {:?} for `immutable`", value)
                             ));
                         }
                     },
 
                     _ => {
-                        return Err(Error::Configuration(
+                        return Err(Error::from(
                             format!(
-                                "unknown query parameter `{}` while parsing connection URI",
+                                "Configuration:unknown query parameter `{}` while parsing connection URI",
                                 key
                             )
-                            .into(),
                         ));
                     }
                 }

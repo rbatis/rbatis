@@ -7,8 +7,9 @@ use std::str::from_utf8_unchecked;
 use std::sync::Arc;
 
 use libsqlite3_sys::{sqlite3_create_collation_v2, SQLITE_OK, SQLITE_UTF8};
+use rbdc::err_protocol;
 
-use crate::error::Error;
+use rbdc::error::Error;
 use crate::connection::handle::ConnectionHandle;
 use crate::SqliteError;
 
@@ -66,7 +67,7 @@ impl Collation {
         } else {
             // The xDestroy callback is not called if the sqlite3_create_collation_v2() function fails.
             drop(unsafe { Arc::from_raw(raw_f) });
-            Err(Error::Database(Box::new(SqliteError::new(handle.as_ptr()))))
+            Err(Error::from(SqliteError::new(handle.as_ptr())))
         }
     }
 }
@@ -111,7 +112,7 @@ where
     } else {
         // The xDestroy callback is not called if the sqlite3_create_collation_v2() function fails.
         drop(unsafe { Box::from_raw(boxed_f) });
-        Err(Error::Database(Box::new(SqliteError::new(handle.as_ptr()))))
+        Err(Error::from(SqliteError::new(handle.as_ptr())))
     }
 }
 
