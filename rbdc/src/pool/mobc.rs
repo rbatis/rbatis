@@ -68,7 +68,7 @@ impl Pool {
         };
         Ok(pool)
     }
-    pub fn new<Driver: crate::pool::Driver + 'static, Option: ConnectOptions>(d: Driver, o: Option) -> Self {
+    pub fn new<Driver: crate::pool::Driver + 'static, ConnectOptions: crate::pool::ConnectOptions>(d: Driver, o: ConnectOptions) -> Self {
         let pool = Pool {
             inner: mobc::Pool::new(RBDCManager::new_opt(d, o))
         };
