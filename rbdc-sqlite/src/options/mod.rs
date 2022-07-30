@@ -21,9 +21,10 @@ pub use synchronous::SqliteSynchronous;
 use rbdc::common::DebugFn;
 use crate::connection::collation::Collation;
 use indexmap::IndexMap;
+use serde::{Deserialize, Deserializer};
 use rbdc::db::{Connection, ConnectOptions};
 use rbdc::Error;
-use rbs::Value;
+use rbs::{from_value, Value};
 
 /// Options and flags which can be used to configure a SQLite connection.
 ///
@@ -81,6 +82,45 @@ pub struct SqliteConnectOptions {
 impl Default for SqliteConnectOptions {
     fn default() -> Self {
         Self::new()
+    }
+}
+
+impl<'de> Deserialize<'de> for SqliteConnectOptions {
+    fn deserialize<D>(deserializer: D) -> Result<Self, D::Error> where D: Deserializer<'de> {
+        #[derive(Deserialize)]
+        pub struct SqliteConnectOptions {
+            pub(crate) filename: Cow<'static, Path>,
+            pub(crate) in_memory: bool,
+            pub(crate) read_only: bool,
+            pub(crate) create_if_missing: bool,
+            pub(crate) shared_cache: bool,
+            pub(crate) statement_cache_capacity: usize,
+            pub(crate) busy_timeout: Duration,
+            pub(crate) immutable: bool,
+            pub(crate) pragmas: IndexMap<String, String>,
+
+            pub(crate) command_channel_size: usize,
+            pub(crate) row_channel_size: usize,
+
+            // pub(crate) collations: Vec<Collation>,
+
+            pub(crate) serialized: bool,
+            // pub(crate) thread_name: Arc<DebugFn<dyn Fn(u64) -> String + Send + Sync + 'static>>,
+        }
+        let op = SqliteConnectOptions::deserialize(deserializer)?;
+        let mut s = Self::default();
+        s.filename = op.filename;
+        s.in_memory = op.in_memory;
+        s.read_only = op.read_only;
+        s.create_if_missing = op.create_if_missing;
+        s.shared_cache = op.shared_cache;
+        s.statement_cache_capacity = op.statement_cache_capacity;
+        s.busy_timeout = op.busy_timeout;
+        s.immutable = op.immutable;
+        s.command_channel_size = op.command_channel_size;
+        s.row_channel_size = op.row_channel_size;
+        s.serialized = op.serialized;
+        Ok(s)
     }
 }
 
@@ -357,7 +397,18 @@ impl ConnectOptions for SqliteConnectOptions {
     }
 
     fn set(&mut self, arg: HashMap<&str, Value>) {
-        todo!()
+        let mut vec = Vec::with_capacity(arg.len());
+        for (k, v) in arg {
+            vec.push((Value::String(k.to_string()), v));
+        }
+        match from_value(Value::Map(vec)) {
+            Ok(v) => {
+                *self = v;
+            }
+            Err(e) => {
+                log::error!("{}",e);
+            }
+        }
     }
 
     fn set_uri(&mut self, uri: &str) -> Result<(), Error> {
