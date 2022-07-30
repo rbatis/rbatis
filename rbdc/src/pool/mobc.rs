@@ -62,13 +62,13 @@ impl DerefMut for Pool {
 
 
 impl Pool {
-    pub fn new_url<D: Driver + 'static>(d: D, url: &str) -> Result<Self, Error> {
+    pub fn new_url<Driver: crate::pool::Driver + 'static>(d: Driver, url: &str) -> Result<Self, Error> {
         let pool = Pool {
             inner: mobc::Pool::new(RBDCManager::new(d, url)?)
         };
         Ok(pool)
     }
-    pub fn new<D: Driver + 'static, Option: ConnectOptions>(d: D, o: Option) -> Self {
+    pub fn new<Driver: crate::pool::Driver + 'static, Option: ConnectOptions>(d: Driver, o: Option) -> Self {
         let pool = Pool {
             inner: mobc::Pool::new(RBDCManager::new_opt(d, o))
         };
