@@ -5,7 +5,7 @@ members = [
     "rbdc",
     "rbdc-mysql",
     "rbdc-pg",
-#    "rbdc-sqlite",
+    "rbdc-sqlite",
     "rbatis-core",
     "rbatis-macro-driver",
     "sqlx-core",

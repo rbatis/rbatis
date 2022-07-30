@@ -14,7 +14,7 @@ use std::sync::Arc;
 use std::{borrow::Cow, time::Duration};
 pub use synchronous::SqliteSynchronous;
 
-use crate::common::DebugFn;
+use rbdc::common::DebugFn;
 use crate::connection::collation::Collation;
 use indexmap::IndexMap;
 
@@ -59,7 +59,6 @@ pub struct SqliteConnectOptions {
     pub(crate) shared_cache: bool,
     pub(crate) statement_cache_capacity: usize,
     pub(crate) busy_timeout: Duration,
-    pub(crate) log_settings: LogSettings,
     pub(crate) immutable: bool,
     pub(crate) pragmas: IndexMap<Cow<'static, str>, Cow<'static, str>>,
 
@@ -118,7 +117,6 @@ impl SqliteConnectOptions {
             shared_cache: false,
             statement_cache_capacity: 100,
             busy_timeout: Duration::from_secs(5),
-            log_settings: Default::default(),
             immutable: false,
             pragmas,
             collations: Default::default(),

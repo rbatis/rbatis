@@ -3,15 +3,28 @@ use std::os::raw::c_int;
 use std::str::FromStr;
 
 use libsqlite3_sys::{SQLITE_BLOB, SQLITE_FLOAT, SQLITE_INTEGER, SQLITE_NULL, SQLITE_TEXT};
+use rbdc::Error;
 
-use crate::error::BoxDynError;
-pub trait TypeInfo{
+
+pub trait Type{
     fn type_info(&self) -> SqliteTypeInfo;
 }
 
+// for optionals, the underlying SQL type is identical
+impl<T: Type> Type for Option<T> {
+    fn type_info(&self) -> SqliteTypeInfo {
+         match self {
+             None => {
+                 SqliteTypeInfo(DataType::Null)
+             }
+             Some(v) => {
+                 v.type_info()
+             }
+         }
+    }
+}
 
-#[derive(Debug, Copy, Clone, Eq, PartialEq, Hash)]
-#[cfg_attr(feature = "offline", derive(serde::Serialize, serde::Deserialize))]
+#[derive(Debug, Copy, Clone, Eq, PartialEq, Hash,serde::Serialize, serde::Deserialize)]
 pub(crate) enum DataType {
     Null,
     Int,
@@ -32,9 +45,14 @@ pub(crate) enum DataType {
 }
 
 /// Type information for a SQLite type.
-#[derive(Debug, Clone, Eq, PartialEq, Hash)]
-#[cfg_attr(feature = "offline", derive(serde::Serialize, serde::Deserialize))]
+#[derive(Debug, Clone, Eq, PartialEq, Hash,serde::Serialize, serde::Deserialize)]
 pub struct SqliteTypeInfo(pub(crate) DataType);
+
+impl SqliteTypeInfo{
+    pub fn null()->Self{
+        SqliteTypeInfo(DataType::Null)
+    }
+}
 
 impl Display for SqliteTypeInfo {
     fn fmt(&self, f: &mut Formatter<'_>) -> fmt::Result {
@@ -42,12 +60,12 @@ impl Display for SqliteTypeInfo {
     }
 }
 
-impl TypeInfo for SqliteTypeInfo {
-    fn is_null(&self) -> bool {
+impl  SqliteTypeInfo {
+    pub fn is_null(&self) -> bool {
         matches!(self.0, DataType::Null)
     }
 
-    fn name(&self) -> &str {
+    pub fn name(&self) -> &str {
         match self.0 {
             DataType::Null => "NULL",
             DataType::Text => "TEXT",
@@ -84,7 +102,7 @@ impl DataType {
 //       what Rust type maps to what *declared* SQL type
 // <https://www.sqlite.org/datatype3.html#affname>
 impl FromStr for DataType {
-    type Err = BoxDynError;
+    type Err = Error;
 
     fn from_str(s: &str) -> Result<Self, Self::Err> {
         let s = s.to_ascii_lowercase();
@@ -112,16 +130,8 @@ impl FromStr for DataType {
     }
 }
 
-#[cfg(feature = "any")]
-impl From<SqliteTypeInfo> for crate::any::AnyTypeInfo {
-    #[inline]
-    fn from(ty: SqliteTypeInfo) -> Self {
-        crate::any::AnyTypeInfo(crate::any::type_info::AnyTypeInfoKind::Sqlite(ty))
-    }
-}
-
 #[test]
-fn test_data_type_from_str() -> Result<(), BoxDynError> {
+fn test_data_type_from_str() -> Result<(), Error> {
     assert_eq!(DataType::Int, "INT4".parse()?);
 
     assert_eq!(DataType::Int64, "INT".parse()?);

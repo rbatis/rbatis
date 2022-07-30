@@ -1,5 +1,4 @@
-use crate::error::Error;
-use crate::logger::QueryLogger;
+use rbdc::error::Error;
 use crate::connection::{ConnectionHandle, ConnectionState};
 use crate::statement::{StatementHandle, VirtualStatement};
 use crate::{SqliteArguments, SqliteQueryResult, SqliteRow};
@@ -8,8 +7,7 @@ use either::Either;
 pub struct ExecuteIter<'a> {
     handle: &'a mut ConnectionHandle,
     statement: &'a mut VirtualStatement,
-    logger: QueryLogger<'a>,
-    args: Option<SqliteArguments<'a>>,
+    args: Option<SqliteArguments>,
 
     /// since a `VirtualStatement` can encompass multiple actual statements,
     /// this keeps track of the number of arguments so far
@@ -21,18 +19,15 @@ pub struct ExecuteIter<'a> {
 pub(crate) fn iter<'a>(
     conn: &'a mut ConnectionState,
     query: &'a str,
-    args: Option<SqliteArguments<'a>>,
+    args: Option<SqliteArguments>,
     persistent: bool,
 ) -> Result<ExecuteIter<'a>, Error> {
     // fetch the cached statement or allocate a new one
     let statement = conn.statements.get(query, persistent)?;
 
-    let logger = QueryLogger::new(query, conn.log_settings.clone());
-
     Ok(ExecuteIter {
         handle: &mut conn.handle,
         statement,
-        logger,
         args,
         args_used: 0,
         goto_next: true,
@@ -41,7 +36,7 @@ pub(crate) fn iter<'a>(
 
 fn bind(
     statement: &mut StatementHandle,
-    arguments: &Option<SqliteArguments<'_>>,
+    arguments: &Option<SqliteArguments>,
     offset: usize,
 ) -> Result<usize, Error> {
     let mut n = 0;
@@ -85,8 +80,6 @@ impl Iterator for ExecuteIter<'_> {
 
         match statement.handle.step() {
             Ok(true) => {
-                self.logger.increment_rows_returned();
-
                 Some(Ok(Either::Right(SqliteRow::current(
                     &statement.handle,
                     &statement.columns,
@@ -97,7 +90,6 @@ impl Iterator for ExecuteIter<'_> {
                 let last_insert_rowid = self.handle.last_insert_rowid();
 
                 let changes = statement.handle.changes();
-                self.logger.increase_rows_affected(changes);
 
                 let done = SqliteQueryResult {
                     changes,

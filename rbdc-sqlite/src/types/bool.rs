@@ -1,30 +1,26 @@
 use crate::decode::Decode;
 use crate::encode::{Encode, IsNull};
-use crate::error::BoxDynError;
+use rbdc::error::Error;
 use crate::type_info::DataType;
 use crate::{Sqlite, SqliteArgumentValue, SqliteTypeInfo, SqliteValueRef};
 use crate::types::Type;
 
-impl Type<Sqlite> for bool {
-    fn type_info() -> SqliteTypeInfo {
+impl Type for bool {
+    fn type_info(&self) -> SqliteTypeInfo {
         SqliteTypeInfo(DataType::Bool)
     }
+}
 
-    fn compatible(ty: &SqliteTypeInfo) -> bool {
-        matches!(ty.0, DataType::Bool | DataType::Int | DataType::Int64)
+impl Encode for bool {
+    fn encode(self, args: &mut Vec<SqliteArgumentValue>) -> Result<IsNull,Error> {
+        args.push(SqliteArgumentValue::Int(i32::from(self)));
+
+        Ok(IsNull::No)
     }
 }
 
-impl<'q> Encode<'q, Sqlite> for bool {
-    fn encode_by_ref(&self, args: &mut Vec<SqliteArgumentValue<'q>>) -> IsNull {
-        args.push(SqliteArgumentValue::Int((*self).into()));
-
-        IsNull::No
-    }
-}
-
-impl<'r> Decode<'r, Sqlite> for bool {
-    fn decode(value: SqliteValueRef<'r>) -> Result<bool, BoxDynError> {
+impl Decode for bool {
+    fn decode(value: SqliteValueRef) -> Result<bool, Error> {
         Ok(value.int() != 0)
     }
 }

@@ -1,4 +1,4 @@
-use crate::error::Error;
+use rbdc::error::Error;
 use crate::connection::handle::ConnectionHandle;
 use crate::connection::{ConnectionState, Statements};
 use crate::{SqliteConnectOptions, SqliteError};
@@ -20,7 +20,6 @@ pub struct EstablishParams {
     open_flags: i32,
     busy_timeout: Duration,
     statement_cache_capacity: usize,
-    log_settings: LogSettings,
     pub(crate) thread_name: String,
     pub(crate) command_channel_size: usize,
 }
@@ -83,7 +82,6 @@ impl EstablishParams {
             open_flags: flags,
             busy_timeout: options.busy_timeout,
             statement_cache_capacity: options.statement_cache_capacity,
-            log_settings: options.log_settings.clone(),
             thread_name: (options.thread_name)(THREAD_ID.fetch_add(1, Ordering::AcqRel)),
             command_channel_size: options.command_channel_size,
         })
@@ -110,7 +108,7 @@ impl EstablishParams {
         let handle = unsafe { ConnectionHandle::new(handle) };
 
         if status != SQLITE_OK {
-            return Err(Error::Database(Box::new(SqliteError::new(handle.as_ptr()))));
+            return Err(Error::from(SqliteError::new(handle.as_ptr())));
         }
 
         // Enable extended result codes
@@ -131,14 +129,13 @@ impl EstablishParams {
         status = unsafe { sqlite3_busy_timeout(handle.as_ptr(), ms) };
 
         if status != SQLITE_OK {
-            return Err(Error::Database(Box::new(SqliteError::new(handle.as_ptr()))));
+            return Err(Error::from(SqliteError::new(handle.as_ptr())));
         }
 
         Ok(ConnectionState {
             handle,
             statements: Statements::new(self.statement_cache_capacity),
-            transaction_depth: 0,
-            log_settings: self.log_settings.clone(),
+            transaction_depth: 0
         })
     }
 }

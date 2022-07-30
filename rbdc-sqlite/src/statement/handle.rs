@@ -20,8 +20,7 @@ use libsqlite3_sys::{
     sqlite3_unlock_notify, sqlite3_value, SQLITE_DONE, SQLITE_LOCKED_SHAREDCACHE, SQLITE_MISUSE,
     SQLITE_OK, SQLITE_ROW, SQLITE_TRANSIENT, SQLITE_UTF8,
 };
-
-use crate::error::{BoxDynError, Error};
+use rbdc::Error;
 use crate::type_info::DataType;
 use crate::{SqliteError, SqliteTypeInfo};
 
@@ -284,7 +283,7 @@ impl StatementHandle {
         unsafe { from_raw_parts(ptr, len) }
     }
 
-    pub(crate) fn column_text(&self, index: usize) -> Result<&str, BoxDynError> {
+    pub(crate) fn column_text(&self, index: usize) -> Result<&str, Error> {
         Ok(from_utf8(self.column_blob(index))?)
     }
 

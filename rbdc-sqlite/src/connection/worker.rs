@@ -7,18 +7,12 @@ use std::thread;
 use either::Either;
 use futures_channel::oneshot;
 use futures_intrusive::sync::{Mutex, MutexGuard};
-
-use crate::describe::Describe;
-use crate::error::Error;
+use rbdc::error::Error;
 use crate::connection::collation::create_collation;
-use crate::connection::describe::describe;
 use crate::connection::establish::EstablishParams;
 use crate::connection::ConnectionState;
 use crate::connection::{execute, ConnectionHandleRaw};
 use crate::{Sqlite, SqliteArguments, SqliteQueryResult, SqliteRow, SqliteStatement};
-use crate::transaction::{
-    begin_ansi_transaction_sql, commit_ansi_transaction_sql, rollback_ansi_transaction_sql,
-};
 
 // Each SQLite connection has a dedicated thread.
 
@@ -42,26 +36,13 @@ pub(crate) struct WorkerSharedState {
 enum Command {
     Prepare {
         query: Box<str>,
-        tx: oneshot::Sender<Result<SqliteStatement<'static>, Error>>,
-    },
-    Describe {
-        query: Box<str>,
-        tx: oneshot::Sender<Result<Describe<Sqlite>, Error>>,
+        tx: oneshot::Sender<Result<SqliteStatement, Error>>,
     },
     Execute {
         query: Box<str>,
-        arguments: Option<SqliteArguments<'static>>,
+        arguments: Option<SqliteArguments>,
         persistent: bool,
         tx: flume::Sender<Result<Either<SqliteQueryResult, SqliteRow>, Error>>,
-    },
-    Begin {
-        tx: oneshot::Sender<Result<(), Error>>,
-    },
-    Commit {
-        tx: oneshot::Sender<Result<(), Error>>,
-    },
-    Rollback {
-        tx: Option<oneshot::Sender<Result<(), Error>>>,
     },
     CreateCollation {
         create_collation:
@@ -128,9 +109,6 @@ impl ConnectionWorker {
                             }))
                             .ok();
                         }
-                        Command::Describe { query, tx } => {
-                            tx.send(describe(&mut conn, &query)).ok();
-                        }
                         Command::Execute {
                             query,
                             arguments,
@@ -153,49 +131,6 @@ impl ConnectionWorker {
                             }
 
                             update_cached_statements_size(&conn, &shared.cached_statements_size);
-                        }
-                        Command::Begin { tx } => {
-                            let depth = conn.transaction_depth;
-                            let res =
-                                conn.handle
-                                    .exec(begin_ansi_transaction_sql(depth))
-                                    .map(|_| {
-                                        conn.transaction_depth += 1;
-                                    });
-
-                            tx.send(res).ok();
-                        }
-                        Command::Commit { tx } => {
-                            let depth = conn.transaction_depth;
-
-                            let res = if depth > 0 {
-                                conn.handle
-                                    .exec(commit_ansi_transaction_sql(depth))
-                                    .map(|_| {
-                                        conn.transaction_depth -= 1;
-                                    })
-                            } else {
-                                Ok(())
-                            };
-
-                            tx.send(res).ok();
-                        }
-                        Command::Rollback { tx } => {
-                            let depth = conn.transaction_depth;
-
-                            let res = if depth > 0 {
-                                conn.handle
-                                    .exec(rollback_ansi_transaction_sql(depth))
-                                    .map(|_| {
-                                        conn.transaction_depth -= 1;
-                                    })
-                            } else {
-                                Ok(())
-                            };
-
-                            if let Some(tx) = tx {
-                                tx.send(res).ok();
-                            }
                         }
                         Command::CreateCollation { create_collation } => {
                             if let Err(e) = (create_collation)(&mut conn) {
@@ -226,19 +161,11 @@ impl ConnectionWorker {
                 }
             })?;
 
-        establish_rx.await.map_err(|_| Error::WorkerCrashed)?
+        establish_rx.await.map_err(|_| Error::from("WorkerCrashed"))?
     }
 
-    pub(crate) async fn prepare(&mut self, query: &str) -> Result<SqliteStatement<'static>, Error> {
+    pub(crate) async fn prepare(&mut self, query: &str) -> Result<SqliteStatement, Error> {
         self.oneshot_cmd(|tx| Command::Prepare {
-            query: query.into(),
-            tx,
-        })
-        .await?
-    }
-
-    pub(crate) async fn describe(&mut self, query: &str) -> Result<Describe<Sqlite>, Error> {
-        self.oneshot_cmd(|tx| Command::Describe {
             query: query.into(),
             tx,
         })
@@ -247,8 +174,8 @@ impl ConnectionWorker {
 
     pub(crate) async fn execute(
         &mut self,
-        query: &str,
-        args: Option<SqliteArguments<'_>>,
+        query: String,
+        args: Option<SqliteArguments>,
         chan_size: usize,
         persistent: bool,
     ) -> Result<flume::Receiver<Result<Either<SqliteQueryResult, SqliteRow>, Error>>, Error> {
@@ -262,28 +189,9 @@ impl ConnectionWorker {
                 tx,
             })
             .await
-            .map_err(|_| Error::WorkerCrashed)?;
+            .map_err(|_| Error::from("WorkerCrashed"))?;
 
         Ok(rx)
-    }
-
-    pub(crate) async fn begin(&mut self) -> Result<(), Error> {
-        self.oneshot_cmd(|tx| Command::Begin { tx }).await?
-    }
-
-    pub(crate) async fn commit(&mut self) -> Result<(), Error> {
-        self.oneshot_cmd(|tx| Command::Commit { tx }).await?
-    }
-
-    pub(crate) async fn rollback(&mut self) -> Result<(), Error> {
-        self.oneshot_cmd(|tx| Command::Rollback { tx: Some(tx) })
-            .await?
-    }
-
-    pub(crate) fn start_rollback(&mut self) -> Result<(), Error> {
-        self.command_tx
-            .send(Command::Rollback { tx: None })
-            .map_err(|_| Error::WorkerCrashed)
     }
 
     pub(crate) async fn ping(&mut self) -> Result<(), Error> {
@@ -299,9 +207,9 @@ impl ConnectionWorker {
         self.command_tx
             .send_async(command(tx))
             .await
-            .map_err(|_| Error::WorkerCrashed)?;
+            .map_err(|_| Error::from("WorkerCrashed"))?;
 
-        rx.await.map_err(|_| Error::WorkerCrashed)
+        rx.await.map_err(|_| Error::from("WorkerCrashed"))
     }
 
     pub fn create_collation(
@@ -317,7 +225,7 @@ impl ConnectionWorker {
                     create_collation(&mut conn.handle, &name, compare)
                 }),
             })
-            .map_err(|_| Error::WorkerCrashed)?;
+            .map_err(|_| Error::from("WorkerCrashed"))?;
         Ok(())
     }
 
@@ -333,7 +241,7 @@ impl ConnectionWorker {
         )
         .await;
 
-        res.map_err(|_| Error::WorkerCrashed)?;
+        res.map_err(|_| Error::from("WorkerCrashed"))?;
 
         Ok(guard)
     }
@@ -347,18 +255,18 @@ impl ConnectionWorker {
         let send_res = self
             .command_tx
             .send(Command::Shutdown { tx })
-            .map_err(|_| Error::WorkerCrashed);
+            .map_err(|_| Error::from("WorkerCrashed"));
 
         async move {
             send_res?;
 
             // wait for the response
-            rx.await.map_err(|_| Error::WorkerCrashed)
+            rx.await.map_err(|_| Error::from("WorkerCrashed"))
         }
     }
 }
 
-fn prepare(conn: &mut ConnectionState, query: &str) -> Result<SqliteStatement<'static>, Error> {
+fn prepare(conn: &mut ConnectionState, query: &str) -> Result<SqliteStatement, Error> {
     // prepare statement object (or checkout from cache)
     let statement = conn.statements.get(query, true)?;
 
@@ -377,7 +285,7 @@ fn prepare(conn: &mut ConnectionState, query: &str) -> Result<SqliteStatement<'s
     }
 
     Ok(SqliteStatement {
-        sql: Cow::Owned(query.to_string()),
+        sql: query.to_string(),
         columns: columns.unwrap_or_default(),
         column_names: column_names.unwrap_or_default(),
         parameters,

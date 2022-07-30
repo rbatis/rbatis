@@ -1,26 +1,22 @@
 #![allow(clippy::rc_buffer)]
 
+use std::collections::HashMap;
+use std::fmt::{Debug, Formatter};
 use std::sync::Arc;
-
-use crate::HashMap;
-
-use crate::column::ColumnIndex;
-use crate::error::Error;
-use crate::ext::ustr::UStr;
+use rbdc::error::Error;
 use rbdc::db::{MetaData, Row};
-use rbdc::Error;
+use rbdc::ext::ustr::UStr;
 use rbs::Value;
 use crate::statement::StatementHandle;
 use crate::{Sqlite, SqliteColumn, SqliteValue, SqliteValueRef};
 
 /// Implementation of [`Row`] for SQLite.
+#[derive(Debug)]
 pub struct SqliteRow {
     pub(crate) values: Box<[SqliteValue]>,
     pub(crate) columns: Arc<Vec<SqliteColumn>>,
     pub(crate) column_names: Arc<HashMap<UStr, usize>>,
 }
-
-impl crate::row::private_row::Sealed for SqliteRow {}
 
 // Accessing values from the statement object is
 // safe across threads as long as we don't call [sqlite3_step]
@@ -70,20 +66,8 @@ impl SqliteRow{
         &self.columns
     }
 
-    fn try_get_raw<I>(&self, index: I) -> Result<SqliteValueRef<'_>, Error>
-    where
-        I: ColumnIndex<Self>,
+    fn try_get_raw(&self, index: usize) -> Result<SqliteValueRef<'_>, Error>
     {
-        let index = index.index(self)?;
         Ok(SqliteValueRef::value(&self.values[index]))
-    }
-}
-
-impl ColumnIndex<SqliteRow> for &'_ str {
-    fn index(&self, row: &SqliteRow) -> Result<usize, Error> {
-        row.column_names
-            .get(*self)
-            .ok_or_else(|| Error::from(format!("ColumnNotFound{}",self)))
-            .map(|v| *v)
     }
 }

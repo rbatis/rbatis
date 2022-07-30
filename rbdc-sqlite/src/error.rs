@@ -6,8 +6,6 @@ use std::{borrow::Cow, str::from_utf8_unchecked};
 
 use libsqlite3_sys::{sqlite3, sqlite3_errmsg, sqlite3_extended_errcode};
 
-use crate::error::DatabaseError;
-
 // Error Codes And Messages
 // https://www.sqlite.org/c3ref/errcode.html
 
@@ -45,30 +43,36 @@ impl Display for SqliteError {
 
 impl StdError for SqliteError {}
 
-impl DatabaseError for SqliteError {
+impl SqliteError {
     /// The extended result code.
     #[inline]
-    fn code(&self) -> Option<Cow<'_, str>> {
+    pub fn code(&self) -> Option<Cow<'_, str>> {
         Some(format!("{}", self.code).into())
     }
 
     #[inline]
-    fn message(&self) -> &str {
+    pub fn message(&self) -> &str {
         &self.message
     }
 
     #[doc(hidden)]
-    fn as_error(&self) -> &(dyn StdError + Send + Sync + 'static) {
+    pub fn as_error(&self) -> &(dyn StdError + Send + Sync + 'static) {
         self
     }
 
     #[doc(hidden)]
-    fn as_error_mut(&mut self) -> &mut (dyn StdError + Send + Sync + 'static) {
+    pub fn as_error_mut(&mut self) -> &mut (dyn StdError + Send + Sync + 'static) {
         self
     }
 
     #[doc(hidden)]
-    fn into_error(self: Box<Self>) -> Box<dyn StdError + Send + Sync + 'static> {
+    pub fn into_error(self: Box<Self>) -> Box<dyn StdError + Send + Sync + 'static> {
         self
+    }
+}
+
+impl From<SqliteError> for rbdc::Error{
+    fn from(e: SqliteError) -> Self {
+       Self::from(e.to_string())
     }
 }
