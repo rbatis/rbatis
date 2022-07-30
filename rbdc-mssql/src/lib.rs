@@ -1,11 +1,12 @@
 pub mod encode;
 pub mod decode;
+pub mod driver;
 
 use std::sync::Arc;
 use futures_core::future::BoxFuture;
 use futures_util::StreamExt;
 use rbdc::db::{Connection, MetaData, Row};
-use tiberius::{Client, Config, AuthMethod, Column, QueryStream, Query};
+use tiberius::{Client, Config, AuthMethod, Column, QueryStream, Query, ColumnData};
 use rbdc::{block_on, Error};
 use rbs::Value;
 use tokio_util::compat::{Compat, TokioAsyncWriteCompatExt};
@@ -54,13 +55,9 @@ impl Row for MssqlRow {
     }
 
     fn get(&mut self, i: usize) -> Option<Value> {
-        let proxy: &[u8] = self.inner.get(i)?;
-        Some(Value::decode(proxy,self.inner.columns()[i].column_type()))
+        Some(Value::decode(&self.inner,i,self.inner.columns()[i].column_type()))
     }
 }
-
-
-
 
 
 impl Connection for MssqlConnection {
