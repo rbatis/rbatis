@@ -2,7 +2,7 @@ use crate::decode::Decode;
 use crate::encode::{Encode, IsNull};
 use rbdc::error::Error;
 use crate::type_info::DataType;
-use crate::{Sqlite, SqliteArgumentValue, SqliteTypeInfo, SqliteValueRef};
+use crate::{Sqlite, SqliteArgumentValue, SqliteTypeInfo, SqliteValue, SqliteValueRef};
 use crate::types::Type;
 
 impl Type for i8 {
@@ -22,7 +22,7 @@ impl Encode for i8 {
 }
 
 impl Decode for i8 {
-    fn decode(value: SqliteValueRef) -> Result<Self, Error> {
+    fn decode(value: SqliteValue) -> Result<Self, Error> {
         Ok(value.int().try_into()?)
     }
 }
@@ -42,7 +42,7 @@ impl Encode for i16 {
 }
 
 impl Decode for i16 {
-    fn decode(value: SqliteValueRef) -> Result<Self, Error> {
+    fn decode(value: SqliteValue) -> Result<Self, Error> {
         Ok(value.int().try_into()?)
     }
 }
@@ -62,7 +62,7 @@ impl Encode for i32 {
 }
 
 impl Decode for i32 {
-    fn decode(value: SqliteValueRef) -> Result<Self, Error> {
+    fn decode(value: SqliteValue) -> Result<Self, Error> {
         Ok(value.int())
     }
 }
@@ -82,7 +82,7 @@ impl Encode for i64 {
 }
 
 impl Decode for i64 {
-    fn decode(value: SqliteValueRef) -> Result<Self, Error> {
+    fn decode(value: SqliteValue) -> Result<Self, Error> {
         Ok(value.int64())
     }
 }

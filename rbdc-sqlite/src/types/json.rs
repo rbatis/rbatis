@@ -34,7 +34,7 @@ impl<'r, T> Decode for Json<T>
 where
     T: 'r + Deserialize<'r>,
 {
-    fn decode(value: SqliteValueRef<'r>) -> Result<Self, Error> {
+    fn decode(value: SqliteValue) -> Result<Self, Error> {
         let string_value = <&str as Decode<Sqlite>>::decode(value)?;
 
         serde_json::from_str(&string_value)

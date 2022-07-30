@@ -6,17 +6,24 @@ mod journal_mode;
 mod locking_mode;
 mod parse;
 mod synchronous;
+
 pub use auto_vacuum::SqliteAutoVacuum;
 pub use journal_mode::SqliteJournalMode;
 pub use locking_mode::SqliteLockingMode;
 use std::cmp::Ordering;
 use std::sync::Arc;
 use std::{borrow::Cow, time::Duration};
+use std::collections::HashMap;
+use std::str::FromStr;
+use futures_core::future::BoxFuture;
 pub use synchronous::SqliteSynchronous;
 
 use rbdc::common::DebugFn;
 use crate::connection::collation::Collation;
 use indexmap::IndexMap;
+use rbdc::db::{Connection, ConnectOptions};
+use rbdc::Error;
+use rbs::Value;
 
 /// Options and flags which can be used to configure a SQLite connection.
 ///
@@ -237,9 +244,9 @@ impl SqliteConnectOptions {
 
     /// Sets custom initial pragma for the database connection.
     pub fn pragma<K, V>(mut self, key: K, value: V) -> Self
-    where
-        K: Into<Cow<'static, str>>,
-        V: Into<Cow<'static, str>>,
+        where
+            K: Into<Cow<'static, str>>,
+            V: Into<Cow<'static, str>>,
     {
         self.pragmas.insert(key.into(), value.into());
         self
@@ -262,9 +269,9 @@ impl SqliteConnectOptions {
     /// > If a collating function fails any of the above constraints and that collating function is
     /// > registered and used, then the behavior of SQLite is undefined.
     pub fn collation<N, F>(mut self, name: N, collate: F) -> Self
-    where
-        N: Into<Arc<str>>,
-        F: Fn(&str, &str) -> Ordering + Send + Sync + 'static,
+        where
+            N: Into<Arc<str>>,
+            F: Fn(&str, &str) -> Ordering + Send + Sync + 'static,
     {
         self.collations.push(Collation::new(name, collate));
         self
@@ -337,5 +344,24 @@ impl SqliteConnectOptions {
     pub fn row_buffer_size(mut self, size: usize) -> Self {
         self.row_channel_size = size;
         self
+    }
+}
+
+
+impl ConnectOptions for SqliteConnectOptions {
+    fn connect(&self) -> BoxFuture<Result<Box<dyn Connection>, Error>> {
+        Box::pin(async move {
+            let c = self.connect().await?;
+            Ok(Box::new(c) as Box<dyn Connection>)
+        })
+    }
+
+    fn set(&mut self, arg: HashMap<&str, Value>) {
+        todo!()
+    }
+
+    fn set_uri(&mut self, uri: &str) -> Result<(), Error> {
+        *self = SqliteConnectOptions::from_str(uri).map_err(|e| Error::from(e.to_string()))?;
+        Ok(())
     }
 }

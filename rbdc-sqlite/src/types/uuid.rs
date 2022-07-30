@@ -28,7 +28,7 @@ impl Encode for Uuid {
 }
 
 impl Decode<'_, Sqlite> for Uuid {
-    fn decode(value: SqliteValueRef<'_>) -> Result<Self, Error> {
+    fn decode(value: SqliteValue<'_>) -> Result<Self, Error> {
         // construct a Uuid from the returned bytes
         Uuid::from_slice(value.blob()).map_err(Into::into)
     }
@@ -49,7 +49,7 @@ impl Encode for Hyphenated {
 }
 
 impl Decode<'_, Sqlite> for Hyphenated {
-    fn decode(value: SqliteValueRef<'_>) -> Result<Self, Error> {
+    fn decode(value: SqliteValue<'_>) -> Result<Self, Error> {
         let uuid: Result<Uuid, Error> =
             Uuid::parse_str(&value.text().map(ToOwned::to_owned)?).map_err(Into::into);
 

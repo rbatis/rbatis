@@ -3,7 +3,7 @@ use crate::value::ValueRef;
 use crate::{
     decode::Decode,
     encode::{Encode, IsNull},
-    sqlite::{type_info::DataType, Sqlite, SqliteArgumentValue, SqliteTypeInfo, SqliteValueRef},
+    {type_info::DataType, Sqlite, SqliteArgumentValue, SqliteTypeInfo, SqliteValue},
     types::Type,
 };
 use bitflags::_core::fmt::Display;
@@ -81,25 +81,25 @@ impl Encode<'_, Sqlite> for NaiveTime {
     }
 }
 
-impl<'r> Decode for DateTime<Utc> {
-    fn decode(value: SqliteValueRef<'r>) -> Result<Self, Error> {
+impl Decode for DateTime<Utc> {
+    fn decode(value: SqliteValue) -> Result<Self, Error> {
         Ok(Utc.from_utc_datetime(&decode_datetime(value)?.naive_utc()))
     }
 }
 
 impl<'r> Decode for DateTime<Local> {
-    fn decode(value: SqliteValueRef<'r>) -> Result<Self, Error> {
+    fn decode(value: SqliteValue) -> Result<Self, Error> {
         Ok(Local.from_utc_datetime(&decode_datetime(value)?.naive_utc()))
     }
 }
 
 impl<'r> Decode for DateTime<FixedOffset> {
-    fn decode(value: SqliteValueRef<'r>) -> Result<Self, Error> {
+    fn decode(value: SqliteValue) -> Result<Self, Error> {
         decode_datetime(value)
     }
 }
 
-fn decode_datetime(value: SqliteValueRef<'_>) -> Result<DateTime<FixedOffset>, Error> {
+fn decode_datetime(value: SqliteValue) -> Result<DateTime<FixedOffset>, Error> {
     let dt = match value.type_info().0 {
         DataType::Text => decode_datetime_from_text(value.text()?),
         DataType::Int | DataType::Int64 => decode_datetime_from_int(value.int64()),
@@ -167,19 +167,19 @@ fn decode_datetime_from_float(value: f64) -> Option<DateTime<FixedOffset>> {
 }
 
 impl<'r> Decode for NaiveDateTime {
-    fn decode(value: SqliteValueRef<'r>) -> Result<Self, Error> {
+    fn decode(value: SqliteValue) -> Result<Self, Error> {
         Ok(decode_datetime(value)?.naive_local())
     }
 }
 
 impl<'r> Decode for NaiveDate {
-    fn decode(value: SqliteValueRef<'r>) -> Result<Self, Error> {
+    fn decode(value: SqliteValue) -> Result<Self, Error> {
         Ok(NaiveDate::parse_from_str(value.text()?, "%F")?)
     }
 }
 
 impl<'r> Decode for NaiveTime {
-    fn decode(value: SqliteValueRef<'r>) -> Result<Self, Error> {
+    fn decode(value: SqliteValue) -> Result<Self, Error> {
         let value = value.text()?;
 
         // Loop over common time patterns, inspired by Diesel

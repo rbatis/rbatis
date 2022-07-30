@@ -6,10 +6,11 @@ use std::fmt::Write;
 use std::time::Duration;
 use either::Either;
 use futures_core::stream::BoxStream;
-use futures_util::TryStreamExt;
+use futures_util::{StreamExt, TryStreamExt};
 use rbdc::db::{Connection, Row};
 use rbs::Value;
 use crate::query::SqliteQuery;
+use crate::type_info::Type;
 
 impl SqliteConnectOptions {
     pub fn connect(&self) -> BoxFuture<'_, Result<SqliteConnection, Error>>
@@ -52,18 +53,96 @@ impl SqliteConnectOptions {
 
 impl Connection for SqliteConnection {
     fn get_rows(&mut self, sql: &str, params: Vec<Value>) -> BoxFuture<Result<Vec<Box<dyn Row>>, Error>> {
-        todo!()
+        let sql = sql.to_owned();
+        Box::pin(async move {
+            if params.len() == 0 {
+                let mut many = self.fetch_many(SqliteQuery {
+                    statement: Either::Left(sql),
+                    arguments: params,
+                    persistent: false,
+                });
+                let mut data: Vec<Box<dyn Row>> = Vec::new();
+                while let Some(item) = many.next().await {
+                    match item? {
+                        Either::Left(l) => {}
+                        Either::Right(r) => {
+                            data.push(Box::new(r));
+                        }
+                    }
+                }
+                return Ok(data);
+            } else {
+                let stmt = self.prepare_with(&sql, &[]).await?;
+                let mut many = self.fetch_many(SqliteQuery {
+                    statement: Either::Right(stmt),
+                    arguments: params,
+                    persistent: true,
+                });
+                let mut data: Vec<Box<dyn Row>> = Vec::new();
+                while let Some(item) = many.next().await {
+                    match item? {
+                        Either::Left(l) => {}
+                        Either::Right(r) => {
+                            data.push(Box::new(r));
+                        }
+                    }
+                }
+                return Ok(data);
+            }
+        })
     }
 
     fn exec(&mut self, sql: &str, params: Vec<Value>) -> BoxFuture<Result<u64, Error>> {
-        todo!()
+        let sql = sql.to_owned();
+        Box::pin(async move {
+            if params.len() == 0 {
+                let mut many = self.fetch_many(SqliteQuery {
+                    statement: Either::Left(sql),
+                    arguments: params,
+                    persistent: false,
+                });
+                while let Some(item) = many.next().await {
+                    match item? {
+                        Either::Left(l) => {
+                            return Ok(l.rows_affected());
+                        }
+                        Either::Right(r) => {}
+                    }
+                }
+                return Ok(0);
+            } else {
+                let mut type_info = Vec::with_capacity(params.len());
+                for x in &params {
+                    type_info.push(x.type_info());
+                }
+                let stmt = self.prepare_with(&sql, &type_info).await?;
+                let mut many = self.fetch_many(SqliteQuery {
+                    statement: Either::Right(stmt),
+                    arguments: params,
+                    persistent: true,
+                });
+                while let Some(item) = many.next().await {
+                    match item? {
+                        Either::Left(l) => {
+                            return Ok(l.rows_affected());
+                        }
+                        Either::Right(r) => {}
+                    }
+                }
+                return Ok(0);
+            }
+        })
     }
 
     fn close(&mut self) -> BoxFuture<'static, Result<(), Error>> {
-        todo!()
+        let c = self.close();
+        Box::pin(async move { c.await })
     }
 
     fn ping(&mut self) -> BoxFuture<Result<(), Error>> {
-        todo!()
+        Box::pin(async move{
+            self.worker.oneshot_cmd(|tx| crate::connection::Command::Ping { tx }).await?;
+            Ok(())
+        })
     }
 }

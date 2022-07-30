@@ -101,7 +101,7 @@ impl SqliteValue {
         }
     }
 
-    fn type_info_opt(&self) -> Option<SqliteTypeInfo> {
+    pub fn type_info_opt(&self) -> Option<SqliteTypeInfo> {
         let dt = DataType::from_code(unsafe { sqlite3_value_type(self.handle.0.as_ptr()) });
 
         if let DataType::Null = dt {
@@ -111,19 +111,19 @@ impl SqliteValue {
         }
     }
 
-    fn int(&self) -> i32 {
+    pub fn int(&self) -> i32 {
         unsafe { sqlite3_value_int(self.handle.0.as_ptr()) }
     }
 
-    fn int64(&self) -> i64 {
+    pub fn int64(&self) -> i64 {
         unsafe { sqlite3_value_int64(self.handle.0.as_ptr()) }
     }
 
-    fn double(&self) -> f64 {
+    pub fn double(&self) -> f64 {
         unsafe { sqlite3_value_double(self.handle.0.as_ptr()) }
     }
 
-    fn blob(&self) -> &[u8] {
+    pub fn blob(&self) -> &[u8] {
         let len = unsafe { sqlite3_value_bytes(self.handle.0.as_ptr()) } as usize;
 
         if len == 0 {
@@ -137,7 +137,7 @@ impl SqliteValue {
         unsafe { from_raw_parts(ptr, len) }
     }
 
-    fn text(&self) -> Result<&str, Error> {
+    pub fn text(&self) -> Result<&str, Error> {
         Ok(from_utf8(self.blob())?)
     }
 }

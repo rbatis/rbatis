@@ -4,6 +4,7 @@ use std::str::FromStr;
 
 use libsqlite3_sys::{SQLITE_BLOB, SQLITE_FLOAT, SQLITE_INTEGER, SQLITE_NULL, SQLITE_TEXT};
 use rbdc::Error;
+use rbs::Value;
 
 
 pub trait Type{
@@ -127,6 +128,52 @@ impl FromStr for DataType {
                 return Err(format!("unknown type: `{}`", s).into());
             }
         })
+    }
+}
+
+
+impl Type for Value{
+    fn type_info(&self) -> SqliteTypeInfo {
+        match self{
+            Value::Null => {SqliteTypeInfo::null()}
+            Value::Bool(_) => {SqliteTypeInfo(DataType::Bool)}
+            Value::I32(_) => {SqliteTypeInfo(DataType::Int)}
+            Value::I64(_) => {SqliteTypeInfo(DataType::Int64)}
+            Value::U32(_) => {SqliteTypeInfo(DataType::Int)}
+            Value::U64(_) => {SqliteTypeInfo(DataType::Int64)}
+            Value::F32(_) => {SqliteTypeInfo(DataType::Float)}
+            Value::F64(_) => {SqliteTypeInfo(DataType::Float)}
+            Value::String(_) => {SqliteTypeInfo(DataType::Text)}
+            Value::Binary(_) => {SqliteTypeInfo(DataType::Blob)}
+            Value::Array(_) => {SqliteTypeInfo(DataType::Null)}
+            Value::Map(_) => {SqliteTypeInfo(DataType::Null)}
+            Value::Ext(t, v) => {
+                match *t{
+                    "Date"=>{
+                        SqliteTypeInfo(DataType::Text)
+                    }
+                    "DateTime"=>{
+                        SqliteTypeInfo(DataType::Text)
+                    }
+                    "Time"=>{
+                        SqliteTypeInfo(DataType::Text)
+                    }
+                    "Timestamp"=>{
+                        SqliteTypeInfo(DataType::Int64)
+                    }
+                    "Decimal"=>{
+                        SqliteTypeInfo(DataType::Numeric)
+                    }
+                    "Json"=>{
+                        SqliteTypeInfo(DataType::Blob)
+                    }
+                    "Uuid"=>{
+                        SqliteTypeInfo(DataType::Text)
+                    }
+                    _ => {SqliteTypeInfo(DataType::Null)}
+                }
+            }
+        }
     }
 }
 

@@ -33,7 +33,7 @@ pub(crate) struct WorkerSharedState {
     pub(crate) conn: Mutex<ConnectionState>,
 }
 
-enum Command {
+pub enum Command {
     Prepare {
         query: Box<str>,
         tx: oneshot::Sender<Result<SqliteStatement, Error>>,
@@ -198,7 +198,7 @@ impl ConnectionWorker {
         self.oneshot_cmd(|tx| Command::Ping { tx }).await
     }
 
-    async fn oneshot_cmd<F, T>(&mut self, command: F) -> Result<T, Error>
+    pub(crate) async fn oneshot_cmd<F, T>(&mut self, command: F) -> Result<T, Error>
     where
         F: FnOnce(oneshot::Sender<T>) -> Command,
     {

@@ -31,3 +31,7 @@ libsqlite3-sys = { version = "0.24.1", default-features = false, features = [
     "bundled",
     "unlock_notify"
 ] }
+
+
+[dev-dependencies]
+tokio = {version="1",features = ["full"]}
