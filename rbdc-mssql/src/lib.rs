@@ -1,15 +1,19 @@
 pub mod encode;
+pub mod decode;
 
+use std::sync::Arc;
 use futures_core::future::BoxFuture;
 use futures_util::StreamExt;
 use rbdc::db::{Connection, MetaData, Row};
-use tiberius::{Client, Config, AuthMethod};
+use tiberius::{Client, Config, AuthMethod, Column};
 use rbdc::{block_on, Error};
 use rbs::Value;
 use tokio_util::compat::{Compat, TokioAsyncWriteCompatExt};
 use tokio::io::AsyncRead;
 use tokio::io::AsyncWrite;
 use tokio::net::TcpStream;
+use rbs::value::change_lifetime_const;
+use crate::decode::Decode;
 use crate::encode::Encode;
 
 
@@ -18,17 +22,40 @@ pub struct MssqlConnection {
 }
 
 #[derive(Debug)]
-pub struct MssqlRow{
-    inner:tiberius::Row
+pub struct MssqlRow {
+    inner: tiberius::Row,
 }
 
-impl Row for MssqlRow{
+#[derive(Debug)]
+pub struct MssqlMetaData {
+    inner: &'static [Column],
+}
+
+impl MetaData for MssqlMetaData {
+    fn column_len(&self) -> usize {
+        self.inner.len()
+    }
+
+    fn column_name(&self, i: usize) -> String {
+        self.inner[i].name().to_string()
+    }
+
+    fn column_type(&self, i: usize) -> String {
+        format!("{:?}", self.inner[i].column_type())
+    }
+}
+
+impl Row for MssqlRow {
     fn meta_data(&self) -> Box<dyn MetaData> {
-       todo!()
+        let columns = self.inner.columns();
+        Box::new(MssqlMetaData {
+            inner: unsafe { change_lifetime_const(columns) }
+        })
     }
 
     fn get(&mut self, i: usize) -> Option<Value> {
-        todo!()
+        let proxy: &[u8] = self.inner.get(i)?;
+        Some(Value::decode(proxy,self.inner.columns()[i].column_type()))
     }
 }
 
@@ -42,15 +69,15 @@ impl Connection for MssqlConnection {
             }
             let v = self.inner.query(&sql, &args).await.map_err(|e| Error::from(e.to_string()))?;
             let mut results = Vec::with_capacity(0);
-            let mut s =v.into_row_stream();
-            for item in s.next().await{
-                match item{
+            let mut s = v.into_row_stream();
+            for item in s.next().await {
+                match item {
                     Ok(v) => {
-                        results.push(Box::new(MssqlRow{
-                            inner:v
+                        results.push(Box::new(MssqlRow {
+                            inner: v
                         }) as Box<dyn Row>);
                     }
-                    Err(_) => {break;}
+                    Err(_) => { break; }
                 }
             }
             Ok(results)
@@ -70,14 +97,14 @@ impl Connection for MssqlConnection {
     }
 
     fn close(&mut self) -> BoxFuture<'static, Result<(), rbdc::Error>> {
-        Box::pin(async move{
+        Box::pin(async move {
             Ok(())
         })
     }
 
     fn ping(&mut self) -> BoxFuture<Result<(), rbdc::Error>> {
-        Box::pin(async move{
-            self.inner.execute("ping",&[]).await.map_err(|e| Error::from(e.to_string()))?;
+        Box::pin(async move {
+            self.inner.execute("ping", &[]).await.map_err(|e| Error::from(e.to_string()))?;
             Ok(())
         })
     }
