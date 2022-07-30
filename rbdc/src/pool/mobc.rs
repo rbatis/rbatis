@@ -8,6 +8,7 @@ pub struct Pool {
     pub inner: mobc::Pool<RBDCManager>,
 }
 
+#[derive(Debug)]
 pub struct RBDCManager {
     driver: Box<dyn Driver>,
     opt: Box<dyn ConnectOptions>,
@@ -37,11 +38,11 @@ impl RBDCManager {
             opt,
         })
     }
-    pub fn new_opt<D: Driver + 'static, Option: ConnectOptions>(d: D, o: Option) -> Result<Self, Error> {
-        Ok(Self {
+    pub fn new_opt<D: Driver + 'static, Option: ConnectOptions>(d: D, o: Option) -> Self {
+        Self {
             driver: Box::new(d),
             opt: Box::new(o),
-        })
+        }
     }
 }
 
@@ -61,17 +62,17 @@ impl DerefMut for Pool {
 
 
 impl Pool {
-    pub fn new<D: Driver + 'static>(d: D, url: &str) -> Result<Self, Error> {
+    pub fn new_url<D: Driver + 'static>(d: D, url: &str) -> Result<Self, Error> {
         let pool = Pool {
             inner: mobc::Pool::new(RBDCManager::new(d, url)?)
         };
         Ok(pool)
     }
-    pub fn new_conn_opt<D: Driver + 'static, Option: ConnectOptions>(d: D, o: Option) -> Result<Self, Error> {
+    pub fn new<D: Driver + 'static, Option: ConnectOptions>(d: D, o: Option) -> Self {
         let pool = Pool {
-            inner: mobc::Pool::new(RBDCManager::new_opt(d, url)?)
+            inner: mobc::Pool::new(RBDCManager::new_opt(d, o))
         };
-        Ok(pool)
+        pool
     }
     pub fn builder() -> Builder<RBDCManager> {
         mobc::Pool::builder()
@@ -79,6 +80,4 @@ impl Pool {
 }
 
 #[test]
-fn test_pool() {
-
-}
+fn test_pool() {}

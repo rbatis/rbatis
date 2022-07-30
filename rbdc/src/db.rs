@@ -9,7 +9,7 @@ use futures_util::TryFutureExt;
 
 /// Represents database driver that can be shared between threads, and can therefore implement
 /// a connection pool
-pub trait Driver: Sync + Send {
+pub trait Driver: Debug + Sync + Send {
     /// Create a connection to the database. Note that connections are intended to be used
     /// in a single thread since most database connections are not thread-safe
     fn connect(&self, url: &str) -> BoxFuture<Result<Box<dyn Connection>, Error>>;
