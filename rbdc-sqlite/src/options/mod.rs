@@ -397,21 +397,6 @@ impl ConnectOptions for SqliteConnectOptions {
         })
     }
 
-    fn set(&mut self, arg: HashMap<&str, Value>) {
-        let mut vec = Vec::with_capacity(arg.len());
-        for (k, v) in arg {
-            vec.push((Value::String(k.to_string()), v));
-        }
-        match from_value(Value::Map(vec)) {
-            Ok(v) => {
-                *self = v;
-            }
-            Err(e) => {
-                log::error!("{}",e);
-            }
-        }
-    }
-
     fn set_uri(&mut self, uri: &str) -> Result<(), Error> {
         *self = SqliteConnectOptions::from_str(uri).map_err(|e| Error::from(e.to_string()))?;
         Ok(())
