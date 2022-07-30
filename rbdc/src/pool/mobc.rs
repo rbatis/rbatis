@@ -1,6 +1,9 @@
-use mobc::{async_trait, Manager, Pool};
+use mobc::{async_trait, Manager};
 use crate::{block_on, Error};
 use crate::db::{ConnectOptions, Driver};
+
+/// RBDC pool
+pub type Pool = mobc::Pool<RBDCManager>;
 
 pub struct RBDCManager {
     driver: Box<dyn Driver>,
@@ -22,18 +25,21 @@ impl Manager for RBDCManager {
     }
 }
 
+impl RBDCManager {
+    pub fn new<D: Driver>(d: D, url: &str) -> Result<Self, Error> {
+        let mut opt = d.option_default();
+        opt.set_uri(url)?;
+        Ok(Self {
+            driver: Box::new(d),
+            opt,
+        })
+    }
+    pub fn p(&self){
+
+    }
+}
+
 #[test]
 fn test_pool() {
-    let f = async move {
-        // let foo=RBDCManager{
-        //     driver: Box::new(),
-        //     opt: Box::new(())
-        // };
-        // let p=Pool::new(foo);
-        // p.set_max_open_conns(10);
-        // for _ in 0..1000{
-        //     p.get().await.unwrap();
-        // }
-    };
-    block_on!(f);
+
 }
