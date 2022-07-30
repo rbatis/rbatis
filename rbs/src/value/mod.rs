@@ -315,6 +315,8 @@ impl Value {
     #[inline]
     pub fn as_i64(&self) -> Option<i64> {
         match *self {
+            Value::U64(ref n) => Some(n.to_owned() as i64),
+            Value::U32(ref n) => Some(n.to_owned() as i64),
             Value::I64(ref n) => Some(n.to_owned()),
             Value::I32(ref n) => Some(n.to_owned() as i64),
             _ => None,
@@ -337,6 +339,8 @@ impl Value {
     #[inline]
     pub fn as_u64(&self) -> Option<u64> {
         match *self {
+            Value::I64(ref n) => Some(n.to_owned() as u64),
+            Value::I32(ref n) => Some(n.to_owned() as u64),
             Value::U64(ref n) => Some(n.to_owned()),
             Value::U32(ref n) => Some(n.to_owned() as u64),
             _ => None,
