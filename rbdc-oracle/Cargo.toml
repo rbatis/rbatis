@@ -1,0 +1,22 @@
+[package]
+name = "rbdc-oracle"
+version = "0.1.0"
+edition = "2021"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
+rbs={version="0.1",path="../rbs"}
+rbdc = { path = "../rbdc" }
+#sibyl = {version="0.6.9",default-features=false,features=["nonblocking","tokio"]}
+oracle = "0.5.5"
+
+tokio = {version="1",features = ["full"]}
+
+
+
+
+
+
+[dev-dependencies]
+tokio = {version="1",features = ["full"]}
