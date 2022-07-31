@@ -130,7 +130,7 @@ impl Decode for Value {
                 Value::String(v.to_string())
             }
             ColumnType::Xml => {
-                let data: XmlData = row.get(i).unwrap();
+                let data: &XmlData = row.get(i).unwrap();
                 Value::String(data.to_string()).into_ext("Xml")
             }
             ColumnType::Udt => {
