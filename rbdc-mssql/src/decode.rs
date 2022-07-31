@@ -115,7 +115,7 @@ impl Decode for Value {
             }
             ColumnType::BigBinary => {
                 let data: &[u8] = row.get(i).unwrap();
-                Value::Binary(data.to_owned()).into_ext("BigBinary")
+                Value::Binary(data.to_owned())
             }
             ColumnType::BigChar => {
                 let v: &str = row.get(i).unwrap();
@@ -143,7 +143,7 @@ impl Decode for Value {
             }
             ColumnType::Image => {
                 let data: &[u8] = row.get(i).unwrap();
-                Value::Binary(data.to_owned()).into_ext("Image")
+                Value::Binary(data.to_owned())
             }
             ColumnType::NText => {
                 let v: &str = row.get(i).unwrap();
