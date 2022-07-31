@@ -1,0 +1,25 @@
+[package]
+name = "rbatis_sql_macro"
+version = "3.0.17"
+authors = ["zxj_pc <zhuxiujia@qq.com>"]
+edition = "2018"
+license = "Apache-2.0"
+description = "rbatis sql macro system"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[features]
+default = []
+debug_mode = []
+[lib]
+proc-macro = true
+[dependencies]
+proc-macro2 = "1.0"
+quote = "1.0"
+syn = { version = "1.0", features = ["full"] }
+
+base64 = "0.13"
+async-trait = "0.1"
+url = "2.2.2"
+
+html_parser = "0.6.3"
