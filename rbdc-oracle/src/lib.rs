@@ -1,3 +1,4 @@
+use rbdc::Error;
 use rbs::Value;
 
 pub mod driver;
@@ -7,6 +8,12 @@ pub mod encode;
 pub struct OracleConnection {
     sender: flume::Sender<Value>,
     receiver: flume::Receiver<Value>,
+}
+
+impl OracleConnection{
+    pub async fn establish()->Result<Self,Error>{
+       todo!()
+    }
 }
 
 
