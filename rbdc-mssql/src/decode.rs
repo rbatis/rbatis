@@ -1,8 +1,10 @@
 use std::str::EncodeUtf16;
 use byteorder::{ByteOrder, LittleEndian};
+use chrono::Utc;
 use rust_decimal::Decimal;
 use tiberius::{ColumnData, ColumnType, FromSql, FromSqlOwned, IntoRow};
 use tiberius::numeric::BigDecimal;
+use tiberius::xml::XmlData;
 use rbs::Value;
 
 pub trait Decode {
@@ -11,59 +13,78 @@ pub trait Decode {
 
 impl Decode for Value {
     fn decode(row: &tiberius::Row, i: usize, t: ColumnType) -> Value {
-        let data: &[u8] = row.get(i).unwrap();
         match t {
             ColumnType::Null => { Value::Null }
             ColumnType::Bit => {
-                Value::Binary(data.to_owned())
+                let data: bool = row.get(i).unwrap();
+                Value::I32(data as i32)
             }
             ColumnType::Int1 => {
                 {
-                    Value::I32({
-                        if data.len() > 0 {
-                            data[0] as i32
-                        } else {
-                            0
-                        }
-                    })
+                    let data: u8 = row.get(i).unwrap();
+                    Value::I32(data as i32)
                 }
             }
             ColumnType::Int2 => {
-                Value::I32(LittleEndian::read_i16(data) as i32)
+                let data: i16 = row.get(i).unwrap();
+                Value::I32(data as i32)
             }
-            ColumnType::Int4 => { Value::I32(LittleEndian::read_i32(data)) }
-            ColumnType::Int8 => { Value::I64(LittleEndian::read_i64(data)) }
+            ColumnType::Int4 => {
+                let data: i32 = row.get(i).unwrap();
+                Value::I32(data)
+            }
+            ColumnType::Int8 => {
+                let data: i64 = row.get(i).unwrap();
+                Value::I64(data)
+            }
             ColumnType::Datetime4 => {
                 let v: chrono::NaiveDateTime = row.get(i).unwrap();
                 Value::String(v.to_string()).into_ext("Datetime")
             }
             ColumnType::Float4 => {
-                Value::F32(LittleEndian::read_f32(data))
+                let data: f32 = row.get(i).unwrap();
+                Value::F32(data)
             }
             ColumnType::Float8 => {
-                Value::F64(LittleEndian::read_f64(data))
+                let data: f64 = row.get(i).unwrap();
+                Value::F64(data)
             }
             ColumnType::Money => {
-                let v: BigDecimal = row.get(i).unwrap();
-                Value::String(v.to_string()).into_ext("Decimal")
+                let v: f64 = row.get(i).unwrap();
+                Value::F64(v)
             }
             ColumnType::Datetime => {
                 let v: chrono::NaiveDateTime = row.get(i).unwrap();
                 Value::String(v.to_string()).into_ext("Datetime")
             }
             ColumnType::Money4 => {
-                let v: Decimal = row.get(i).unwrap();
-                Value::String(v.to_string()).into_ext("Decimal")
+                let v: f32 = row.get(i).unwrap();
+                Value::F32(v)
             }
-            ColumnType::Guid => { Value::Binary(data.to_owned()).into_ext("Guid") }
-            ColumnType::Intn => { Value::Binary(data.to_owned()).into_ext("Intn") }
-            ColumnType::Bitn => { Value::Binary(data.to_owned()).into_ext("Bitn") }
-            ColumnType::Decimaln => { Value::Binary(data.to_owned()) }
+            ColumnType::Guid => {
+                let data: uuid::Uuid = row.get(i).unwrap();
+                Value::String(data.to_string()).into_ext("Guid")
+            }
+            ColumnType::Intn => {
+                let data: i32 = row.get(i).unwrap();
+                Value::I32(data.to_owned())
+            }
+            ColumnType::Bitn => {
+                let data: bool = row.get(i).unwrap();
+                Value::Bool(data)
+            }
+            ColumnType::Decimaln => {
+                let data: BigDecimal = row.get(i).unwrap();
+                Value::String(data.to_string()).into_ext("Decimal")
+            }
             ColumnType::Numericn => {
                 let v: BigDecimal = row.get(i).unwrap();
                 Value::String(v.to_string()).into_ext("Decimal")
             }
-            ColumnType::Floatn => { Value::Binary(data.to_owned()) }
+            ColumnType::Floatn => {
+                let data: f64 = row.get(i).unwrap();
+                Value::F64(data)
+            }
             ColumnType::Datetimen => {
                 let v: chrono::NaiveDateTime = row.get(i).unwrap();
                 Value::String(v.to_string()).into_ext("Datetime")
@@ -81,14 +102,21 @@ impl Decode for Value {
                 Value::String(v.to_string()).into_ext("Datetime")
             }
             ColumnType::DatetimeOffsetn => {
-                Value::Binary(data.to_owned()).into_ext("DatetimeOffsetn")
+                let data: chrono::DateTime<Utc> = row.get(i).unwrap();
+                Value::String(data.to_string()).into_ext("Datetime")
             }
-            ColumnType::BigVarBin => { Value::Binary(data.to_owned()).into_ext("BigVarBin") }
+            ColumnType::BigVarBin => {
+                let data: &[u8] = row.get(i).unwrap();
+                Value::Binary(data.to_owned()).into_ext("BigVarBin")
+            }
             ColumnType::BigVarChar => {
                 let v: &str = row.get(i).unwrap();
                 Value::String(v.to_string())
             }
-            ColumnType::BigBinary => { Value::Binary(data.to_owned()).into_ext("BigBinary") }
+            ColumnType::BigBinary => {
+                let data: &[u8] = row.get(i).unwrap();
+                Value::Binary(data.to_owned()).into_ext("BigBinary")
+            }
             ColumnType::BigChar => {
                 let v: &str = row.get(i).unwrap();
                 Value::String(v.to_string())
@@ -101,18 +129,30 @@ impl Decode for Value {
                 let v: &str = row.get(i).unwrap();
                 Value::String(v.to_string())
             }
-            ColumnType::Xml => { Value::Binary(data.to_owned()).into_ext("Xml") }
-            ColumnType::Udt => { Value::Binary(data.to_owned()).into_ext("Udt") }
+            ColumnType::Xml => {
+                let data: XmlData = row.get(i).unwrap();
+                Value::String(data.to_string()).into_ext("Xml")
+            }
+            ColumnType::Udt => {
+                let data: &[u8] = row.get(i).unwrap();
+                Value::Binary(data.to_owned()).into_ext("Udt")
+            }
             ColumnType::Text => {
                 let v: &str = row.get(i).unwrap();
                 Value::String(v.to_string())
             }
-            ColumnType::Image => { Value::Binary(data.to_owned()).into_ext("Image") }
+            ColumnType::Image => {
+                let data: &[u8] = row.get(i).unwrap();
+                Value::Binary(data.to_owned()).into_ext("Image")
+            }
             ColumnType::NText => {
                 let v: &str = row.get(i).unwrap();
                 Value::String(v.to_string())
             }
-            ColumnType::SSVariant => { Value::Binary(data.to_owned()).into_ext("SSVariant") }
+            ColumnType::SSVariant => {
+                let data: &[u8] = row.get(i).unwrap();
+                Value::Binary(data.to_owned()).into_ext("SSVariant")
+            }
         }
     }
 }
