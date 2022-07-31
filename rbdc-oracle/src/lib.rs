@@ -6,15 +6,15 @@ pub mod decode;
 pub mod encode;
 
 pub struct OracleConnection {
-    sender_arg: flume::Sender<Value>,
-    receiver_arg: flume::Receiver<Value>,
-    sender_result: flume::Sender<Result<Value,Error>>,
-    receiver_result: flume::Receiver<Result<Value,Error>>,
+    sender_arg: flume::Sender<(String, Vec<Value>)>,
+    receiver_arg: flume::Receiver<(String, Vec<Value>)>,
+    sender_result: flume::Sender<Result<Value, Error>>,
+    receiver_result: flume::Receiver<Result<Value, Error>>,
 }
 
-impl OracleConnection{
-    pub async fn establish()->Result<Self,Error>{
-       todo!()
+impl OracleConnection {
+    pub async fn establish() -> Result<Self, Error> {
+        todo!()
     }
 }
 
@@ -40,7 +40,7 @@ mod tests {
                 sender_arg: s,
                 receiver_arg: r,
                 sender_result: s_r,
-                receiver_result: r_r
+                receiver_result: r_r,
             };
             let s = conn.sender_result.clone();
             let r = conn.receiver_arg.clone();
@@ -50,9 +50,7 @@ mod tests {
                         let result = Ok(Value::Null);
 
                         match s.send(result) {
-                            Ok(_) => {
-
-                            }
+                            Ok(_) => {}
                             Err(_) => {
                                 //disconnected
                             }
@@ -60,7 +58,7 @@ mod tests {
                     }
                 }
             });
-            conn.sender_arg.send_async(Value::Null).await;
+            conn.sender_arg.send_async(("select * from table".to_string(), vec![])).await;
         };
         block_on!(f);
     }
