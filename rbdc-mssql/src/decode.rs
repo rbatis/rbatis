@@ -13,7 +13,7 @@ pub trait Decode {
 
 impl Decode for Value {
     fn decode(row: &tiberius::Row, i: usize, t: ColumnType) -> Value {
-        if (i + 1) > row.len() {
+        if (i + 1) >= row.len() {
             return Value::Null;
         }
         match t {
