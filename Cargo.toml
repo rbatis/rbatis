@@ -10,7 +10,6 @@ members = [
     "rbdc-oracle",
     "rbatis-core",
     "rbatis-macro-driver",
-    "sqlx-core",
     "example",
 ]
 
