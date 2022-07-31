@@ -48,13 +48,13 @@ mod tests {
                 loop {
                     if let Ok(v) = r.recv() {
                         let result = Ok(Value::Null);
-
-                        match s.send(result) {
-                            Ok(_) => {}
-                            Err(_) => {
-                                //disconnected
-                            }
+                        if let Err(_) = s.send(result) {
+                            //disconnected exit thread
+                            break;
                         }
+                    } else {
+                        //disconnected exit thread
+                        break;
                     }
                 }
             });
