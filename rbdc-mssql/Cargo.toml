@@ -8,7 +8,7 @@ edition = "2021"
 [dependencies]
 rbs={version="0.1",path="../rbs"}
 rbdc = { path = "../rbdc" }
-tiberius = {version="0.10",features=["all"]}
+tiberius = {version="0.10",default-features=false,features=["tokio-rustls","chrono","bigdecimal","rust_decimal","tds73"]}
 tokio = {version="1",features=["fs", "net", "rt", "rt-multi-thread", "time", "io-util"]}
 tokio-util = {version="0.7.1",features=["compat"]}
 futures-io = {version="0.3.21",features=["std"]}
@@ -17,3 +17,4 @@ futures-util = {version="0.3.21",features = ["alloc", "sink"]}
 chrono = "0.4.19"
 rust_decimal = "1.25.0"
 byteorder = "1.4.3"
+uuid = "1.1.2"
