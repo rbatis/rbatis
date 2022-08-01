@@ -28,7 +28,7 @@ impl Driver for MysqlDriver {
         })
     }
 
-    fn option_default(&self) -> Box<dyn ConnectOptions> {
+    fn default_option(&self) -> Box<dyn ConnectOptions> {
         Box::new(MySqlConnectOptions::default())
     }
 }
