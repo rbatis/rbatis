@@ -31,7 +31,7 @@ impl Manager for RBDCManager {
 
 impl RBDCManager {
     pub fn new<D: Driver + 'static>(d: D, url: &str) -> Result<Self, Error> {
-        let mut opt = d.option_default();
+        let mut opt = d.default_option();
         opt.set_uri(url)?;
         Ok(Self {
             driver: Box::new(d),

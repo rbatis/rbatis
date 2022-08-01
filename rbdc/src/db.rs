@@ -17,7 +17,7 @@ pub trait Driver: Debug + Sync + Send {
     fn connect_opt<'a>(&'a self, opt: &'a dyn ConnectOptions) -> BoxFuture<Result<Box<dyn Connection>, Error>>;
 
     /// make an default option
-    fn option_default(&self) -> Box<dyn ConnectOptions>;
+    fn default_option(&self) -> Box<dyn ConnectOptions>;
 }
 
 /// Represents a connection to a database

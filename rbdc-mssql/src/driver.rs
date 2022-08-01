@@ -27,7 +27,7 @@ impl Driver for MssqlDriver {
         })
     }
 
-    fn option_default(&self) -> Box<dyn ConnectOptions> {
+    fn default_option(&self) -> Box<dyn ConnectOptions> {
         Box::new(MssqlConnectOptions(Config::new()))
     }
 }

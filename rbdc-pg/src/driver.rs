@@ -23,7 +23,7 @@ impl Driver for PgDriver {
             Ok(Box::new(conn) as Box<dyn Connection>)
         })
     }
-    fn option_default(&self) -> Box<dyn ConnectOptions> {
+    fn default_option(&self) -> Box<dyn ConnectOptions> {
         Box::new(PgConnectOptions::default())
     }
 }
