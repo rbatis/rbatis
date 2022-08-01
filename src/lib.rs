@@ -10,6 +10,9 @@ extern crate rbatis_macro_driver;
 #[macro_use]
 pub extern crate rbatis_sql;
 
+#[macro_use]
+pub extern crate rbsql;
+
 pub use rbatis_core as core;
 pub use rbatis_core::*;
 pub use rbatis_sql::ops::*;

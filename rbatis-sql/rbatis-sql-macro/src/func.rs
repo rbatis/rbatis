@@ -44,7 +44,7 @@ fn convert_to_arg_access(context: &str, arg: Expr, as_proxy: bool, ignore: &[Str
         Expr::Path(b) => {
             let token = b.to_token_stream().to_string();
             if token == "null" {
-                return syn::parse_str::<Expr>("rbson::Bson::Null").unwrap();
+                return syn::parse_str::<Expr>("rbs::Value::Null").unwrap();
             }
             if token == "sql" {
                 return Expr::Path(b);
@@ -63,7 +63,7 @@ fn convert_to_arg_access(context: &str, arg: Expr, as_proxy: bool, ignore: &[Str
                 }
             }
             if fetch_from_arg {
-                return syn::parse_str::<Expr>(&format!(" arg.index(\"{}\")", param)).unwrap();
+                return syn::parse_str::<Expr>(&format!(" &arg[\"{}\"]", param)).unwrap();
             } else {
                 return syn::parse_str::<Expr>(&format!("{}", param)).unwrap();
             }
@@ -196,7 +196,7 @@ fn convert_to_arg_access(context: &str, arg: Expr, as_proxy: bool, ignore: &[Str
             b.base = Box::new(convert_to_arg_access(context, *b.base.clone(), as_proxy, ignore));
             match b.member {
                 Member::Named(named) => {
-                    return syn::parse_str::<Expr>(&format!("{}.index(\"{}\")", b.base.to_token_stream(), named.to_token_stream())).unwrap();
+                    return syn::parse_str::<Expr>(&format!("{}[\"{}\"]", b.base.to_token_stream(), named.to_token_stream())).unwrap();
                 }
                 Member::Unnamed(_) => {}
             }
@@ -209,7 +209,7 @@ fn convert_to_arg_access(context: &str, arg: Expr, as_proxy: bool, ignore: &[Str
         }
         Expr::Index(mut b) => {
             b.expr = Box::new(convert_to_arg_access(context, *b.expr, as_proxy, ignore));
-            return syn::parse_str::<Expr>(&format!("{}.index({})", b.expr.to_token_stream(), b.index.to_token_stream())).unwrap();
+            return syn::parse_str::<Expr>(&format!("{}[({}]", b.expr.to_token_stream(), b.index.to_token_stream())).unwrap();
         }
         Expr::Let(mut let_expr) => {
             let_expr.expr = Box::new(convert_to_arg_access(context, *let_expr.expr, as_proxy, ignore));
@@ -272,7 +272,7 @@ pub fn impl_fn(context: &str, func_name_ident: &str, args: &str, serialize_resul
     let t = t.unwrap();
     let mut result_impl = quote! { result };
     if serialize_result {
-        result_impl = quote! {rbson::bson!(result)};
+        result_impl = quote! {rbs::to_value!(result)};
     }
     if func_name_ident.is_empty() || func_name_ident.eq("\"\"") {
         return quote! {
@@ -284,7 +284,8 @@ pub fn impl_fn(context: &str, func_name_ident: &str, args: &str, serialize_resul
     } else {
         let func_name_ident = Ident::new(&func_name_ident.to_string(), Span::call_site());
         return quote! {
-        pub fn #func_name_ident(arg:&rbson::Bson) -> rbson::Bson {
+        pub fn #func_name_ident(arg:&rbs::Value) -> rbs::Value {
+           use rbatis_sql::ops::*;
            let result={#t};
            #result_impl
         }

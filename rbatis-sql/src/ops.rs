@@ -1,11 +1,13 @@
 use std::borrow::{Cow, Borrow};
 use std::cmp::Ordering;
 use std::fmt::{Debug, Formatter};
-use std::ops::{Deref, Index};
+use std::ops::{Deref};
 
 use serde::{Deserializer, Serializer};
 use std::cmp::Ordering::Less;
-use rbson::{Document, Timestamp};
+use std::collections::HashMap;
+pub use std::ops::Index;
+use rbs::Value;
 
 /// convert Value to Value
 pub trait AsProxy {
@@ -17,9 +19,6 @@ pub trait AsProxy {
     fn str(&self) -> &str;
     fn string(&self) -> String;
     fn bool(&self) -> bool;
-    fn array(&self) -> Option<&rbson::Array>;
-    fn object(&self) -> Option<&Document>;
-
     //is
     fn is_empty(&self) -> bool;
     fn is_null(&self) -> bool;
@@ -38,72 +37,70 @@ pub trait AsProxy {
     fn inner(&self) -> &str{
        self.bracket()
     }
-}
 
-/// proxy rbson::Document struct,support Deserializer, Serializer
-/// use Cow Optimize unnecessary clones
-/// This structure has a certain amount of computing power
-pub type Value = rbson::Bson;
+    fn array(&self) -> Option<Vec<Value>>;
 
-
-pub fn as_timestamp(arg: &Timestamp) -> i64 {
-    let upper = (arg.time.to_le() as u64) << 32;
-    let lower = arg.increment.to_le() as u64;
-    (upper | lower) as i64
+    fn object(&self) -> Option<Vec<(Value,Value)>>;
 }
 
 impl AsProxy for Value {
     fn i32(&self) -> i32 {
         return match self {
-            Value::Double(v) => { *v as i32 }
-            Value::UInt32(v) => { *v as i32 }
-            Value::UInt64(v) => { *v as i32 }
-            Value::Int32(v) => { *v }
-            Value::Int64(v) => { *v as i32 }
+            Value::I32(v) => { *v as i32 }
+            Value::I64(v) => { *v as i32 }
+            Value::U32(v) => { *v as i32 }
+            Value::U64(v) => { *v as i32 }
+            Value::F32(v) => { *v as i32 }
+            Value::F64(v) => { *v as i32 }
+            Value::F32(v) => { *v as i32 }
             _ => { 0 }
         };
     }
 
     fn i64(&self) -> i64 {
         return match self {
-            Value::Double(v) => { *v as i64 }
-            Value::UInt32(v) => { *v as i64 }
-            Value::UInt64(v) => { *v as i64 }
-            Value::Int32(v) => { *v as i64 }
-            Value::Int64(v) => { *v }
+            Value::F64(v) => { *v as i64 }
+            Value::F32(v) => { *v as i64 }
+            Value::U32(v) => { *v as i64 }
+            Value::U64(v) => { *v as i64 }
+            Value::I32(v) => { *v as i64 }
+            Value::I64(v) => { *v }
             _ => { 0 }
         };
     }
 
     fn u32(&self) -> u32 {
         return match self {
-            Value::Double(v) => { *v as u32 }
-            Value::Int32(v) => { *v as u32 }
-            Value::Int64(v) => { *v as u32 }
-            Value::UInt32(v) => { *v }
-            Value::UInt64(v) => { *v as u32 }
+            Value::F64(v) => { *v as u32 }
+            Value::F32(v) => { *v as u32}
+            Value::I32(v) => { *v as u32 }
+            Value::I64(v) => { *v as u32 }
+            Value::U32(v) => { *v }
+            Value::U64(v) => { *v as u32 }
             _ => { 0 }
         };
     }
 
     fn u64(&self) -> u64 {
         return match self {
-            Value::Double(v) => { *v as u64 }
-            Value::Int32(v) => { *v as u64 }
-            Value::Int64(v) => { *v as u64 }
-            Value::UInt32(v) => { *v as u64 }
-            Value::UInt64(v) => { *v }
+            Value::F64(v) => { *v as u64 }
+            Value::F32(v) => { *v as u64}
+            Value::I32(v) => { *v as u64 }
+            Value::I64(v) => { *v as u64 }
+            Value::U32(v) => { *v as u64 }
+            Value::U64(v) => { *v }
             _ => { 0 }
         };
     }
 
     fn f64(&self) -> f64 {
         return match self {
-            Value::Double(v) => { *v }
-            Value::Int32(v) => { *v as f64 }
-            Value::Int64(v) => { *v as f64 }
-            Value::UInt32(v) => { *v as f64 }
-            Value::UInt64(v) => { *v as f64 }
+            Value::F64(v) => { *v  as f64}
+            Value::F32(v) => { *v as f64}
+            Value::I32(v) => { *v as f64 }
+            Value::I64(v) => { *v as f64 }
+            Value::U32(v) => { *v as f64 }
+            Value::U64(v) => { *v as f64 }
             _ => { 0.0 }
         };
     }
@@ -118,16 +115,15 @@ impl AsProxy for Value {
 
     fn cast_string(&self) -> String {
         match self {
-            Value::Binary(b) => { String::from_utf8(b.bytes.clone()).unwrap_or_default() }
-            Value::Double(d) => { d.to_string() }
+            Value::Binary(b) => { String::from_utf8(b.clone()).unwrap_or_default() }
+            Value::F64(d) => { d.to_string() }
+            Value::F32(v) => { v.to_string()}
             Value::String(d) => { d.to_string() }
-            Value::Boolean(d) => { d.to_string() }
+            Value::Bool(d) => { d.to_string() }
             Value::Null => { "".to_string() }
-            Value::Int32(i) => { i.to_string() }
-            Value::Int64(d) => { d.to_string() }
-            Value::Timestamp(d) => { as_timestamp(d).to_string() }
-            Value::DateTime(d) => { d.to_string() }
-            Value::Decimal128(d) => { d.to_string() }
+            Value::I32(i) => { i.to_string() }
+            Value::I64(d) => { d.to_string() }
+            Value::Ext(_,d) => { d.cast_string()}
             _ => {
                 String::new()
             }
@@ -137,14 +133,15 @@ impl AsProxy for Value {
     fn cast_i64(&self) -> i64 {
         match self {
             Value::Binary(b) => {
-                String::from_utf8(b.bytes.clone()).unwrap_or_default()
+                String::from_utf8(b.clone()).unwrap_or_default()
                     .parse().unwrap_or_default()
             }
-            Value::Double(d) => {
+            Value::F64(d) => {
                 *d as i64
             }
+            Value::F32(v) => { *v as i64}
             Value::String(d) => { d.to_string().parse().unwrap_or_default() }
-            Value::Boolean(d) => {
+            Value::Bool(d) => {
                 if *d == true {
                     return 1;
                 } else {
@@ -152,19 +149,15 @@ impl AsProxy for Value {
                 }
             }
             Value::Null => { 0 }
-            Value::UInt32(i) => { *i as i64 }
-            Value::UInt64(d) => {
+            Value::U32(i) => { *i as i64 }
+            Value::U64(d) => {
                 *d as i64
             }
-            Value::Int32(i) => { *i as i64 }
-            Value::Int64(d) => { *d }
-            Value::Timestamp(d) => {
-                as_timestamp(d)
+            Value::I32(i) => { *i as i64 }
+            Value::I64(d) => { *d }
+            Value::Ext(_,d) => {
+                d.cast_i64()
             }
-            Value::DateTime(d) => {
-                d.timestamp_millis()
-            }
-            Value::Decimal128(d) => { d.to_string().parse().unwrap_or_default() }
             _ => {
                 0
             }
@@ -174,14 +167,15 @@ impl AsProxy for Value {
     fn cast_u64(&self) -> u64 {
         match self {
             Value::Binary(b) => {
-                String::from_utf8(b.bytes.clone()).unwrap_or_default()
+                String::from_utf8(b.clone()).unwrap_or_default()
                     .parse().unwrap_or_default()
             }
-            Value::Double(d) => {
+            Value::F64(d) => {
                 *d as u64
             }
+            Value::F32(v) => { *v as u64}
             Value::String(d) => { d.to_string().parse().unwrap_or_default() }
-            Value::Boolean(d) => {
+            Value::Bool(d) => {
                 if *d == true {
                     return 1;
                 } else {
@@ -189,17 +183,13 @@ impl AsProxy for Value {
                 }
             }
             Value::Null => { 0 }
-            Value::Int32(i) => { *i as u64 }
-            Value::Int64(d) => { *d as u64 }
-            Value::UInt32(i) => { *i as u64 }
-            Value::UInt64(d) => { *d }
-            Value::Timestamp(d) => {
-                as_timestamp(d) as u64
+            Value::I32(i) => { *i as u64 }
+            Value::I64(d) => { *d as u64 }
+            Value::U32(i) => { *i as u64 }
+            Value::U64(d) => { *d }
+            Value::Ext(_,d) => {
+                self.cast_u64()
             }
-            Value::DateTime(d) => {
-                d.timestamp_millis() as u64
-            }
-            Value::Decimal128(d) => { d.to_string().parse().unwrap_or_default() }
             _ => {
                 0
             }
@@ -209,14 +199,15 @@ impl AsProxy for Value {
     fn cast_f64(&self) -> f64 {
         match self {
             Value::Binary(b) => {
-                String::from_utf8(b.bytes.clone()).unwrap_or_default()
+                String::from_utf8(b.clone()).unwrap_or_default()
                     .parse().unwrap_or_default()
             }
-            Value::Double(d) => {
+            Value::F64(d) => {
                 *d as f64
             }
+            Value::F32(v) => { *v as f64}
             Value::String(d) => { d.to_string().parse().unwrap_or_default() }
-            Value::Boolean(d) => {
+            Value::Bool(d) => {
                 if *d == true {
                     return 1.0;
                 } else {
@@ -224,15 +215,11 @@ impl AsProxy for Value {
                 }
             }
             Value::Null => { 0.0 }
-            Value::Int32(i) => { *i as f64 }
-            Value::Int64(d) => { *d as f64 }
-            Value::Timestamp(d) => {
-                as_timestamp(d) as f64
+            Value::I32(i) => { *i as f64 }
+            Value::I64(d) => { *d as f64 }
+            Value::Ext(_,d) => {
+                d.cast_f64()
             }
-            Value::DateTime(d) => {
-                d.timestamp_millis() as f64
-            }
-            Value::Decimal128(d) => { d.to_string().parse().unwrap_or_default() }
             _ => { 0.0 }
         }
     }
@@ -251,7 +238,7 @@ impl AsProxy for Value {
             Value::Array(arr) => {
                 arr.is_empty()
             }
-            Value::Document(m) => {
+            Value::Map(m) => {
                 m.is_empty()
             }
             _ => {
@@ -274,16 +261,10 @@ impl AsProxy for Value {
         };
     }
 
-    fn array(&self) -> Option<&rbson::Array> {
-        return match self {
-            Value::Array(arr) => { Some(arr) }
-            _ => { None }
-        };
-    }
 
     fn is_document(&self) -> bool {
         return match self {
-            Value::Document(_) => { true }
+            Value::Map(_) => { true }
             _ => { false }
         };
     }
@@ -292,12 +273,6 @@ impl AsProxy for Value {
         return self.is_document();
     }
 
-    fn object(&self) -> Option<&Document> {
-        return match self {
-            Value::Document(d) => { Some(d) }
-            _ => { None }
-        };
-    }
 
     fn bracket(&self) -> &str {
         let bracket = self.as_str().unwrap_or_default();
@@ -311,6 +286,32 @@ impl AsProxy for Value {
             }
         }
         return bracket;
+    }
+
+    fn array(&self) -> Option<Vec<Value>> {
+        match self{
+            Value::Array(arr) => {
+                Some(arr.clone())
+            }
+            Value::Ext(_, ext) => {
+                ext.array()
+            }
+            _ => {None}
+        }
+    }
+
+    fn object(&self) -> Option<Vec<(Value, Value)>> {
+        match self{
+            Value::Map(m) => {
+                Some(m.clone())
+            }
+            Value::Ext(_, m) => {
+                m.object()
+            }
+            _ => {
+                None
+            }
+        }
     }
 }
 
@@ -625,24 +626,20 @@ pub trait AsSql {
 
 #[cfg(test)]
 mod test {
-    use rbson::{Bson, bson};
-    use rbson::spec::BinarySubtype;
+    use rbs::{to_value, Value};
     use crate::ops::AsProxy;
 
     #[test]
     fn test_string() {
-        let b = Bson::Binary(rbson::Binary {
-            subtype: BinarySubtype::Generic,
-            bytes: "s".as_bytes().to_owned(),
-        });
+        let b = Value::Binary("s".as_bytes().to_owned());
         assert_eq!("s", b.string());
     }
 
     #[test]
     fn test_cast() {
-        let b = bson!(u64::MAX);
+        let b = to_value!(u64::MAX);
         assert_eq!(b.cast_i64(), -1);
-        let b = bson!(100u64);
+        let b = to_value!(100u64);
         assert_eq!(b.cast_i64(), 100i64);
     }
 }

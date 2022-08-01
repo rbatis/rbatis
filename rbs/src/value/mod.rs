@@ -315,6 +315,8 @@ impl Value {
     #[inline]
     pub fn as_i64(&self) -> Option<i64> {
         match *self {
+            Value::F32(ref n) => Some(n.to_owned() as i64),
+            Value::F64(ref n) => Some(n.to_owned() as i64),
             Value::U64(ref n) => Some(n.to_owned() as i64),
             Value::U32(ref n) => Some(n.to_owned() as i64),
             Value::I64(ref n) => Some(n.to_owned()),
@@ -339,6 +341,8 @@ impl Value {
     #[inline]
     pub fn as_u64(&self) -> Option<u64> {
         match *self {
+            Value::F32(ref n) => Some(n.to_owned() as u64),
+            Value::F64(ref n) => Some(n.to_owned() as u64),
             Value::I64(ref n) => Some(n.to_owned() as u64),
             Value::I32(ref n) => Some(n.to_owned() as u64),
             Value::U64(ref n) => Some(n.to_owned()),
@@ -365,6 +369,8 @@ impl Value {
     /// ```
     pub fn as_f64(&self) -> Option<f64> {
         match *self {
+            Value::I32(n) => Some(n as f64),
+            Value::U32(n) => Some(n as f64),
             Value::I64(n) => Some(n as f64),
             Value::U64(n) => Some(n as f64),
             Value::F32(n) => Some(From::from(n)),
@@ -509,35 +515,6 @@ impl Value {
 
 static NIL: Value = Value::Null;
 static NIL_REF: ValueRef<'static> = ValueRef::Null;
-
-impl Index<usize> for Value {
-    type Output = Value;
-
-    fn index(&self, index: usize) -> &Value {
-        self.as_array().and_then(|v| v.get(index)).unwrap_or(&NIL)
-    }
-}
-
-impl Index<&str> for Value {
-    type Output = Value;
-    fn index(&self, index: &str) -> &Value {
-        if let Value::Map(ref map) = *self {
-            if let Some(found) = map.iter().find(|(key, _val)| {
-                if let Value::String(ref strval) = *key {
-                    if let Some(s) = key.as_str() {
-                        if s == index {
-                            return true;
-                        }
-                    }
-                }
-                return false;
-            }) {
-                return &found.1;
-            }
-        }
-        &NIL
-    }
-}
 
 impl From<bool> for Value {
     #[inline]
