@@ -1,7 +1,4 @@
-use crate::db::db_adapter::DataDecoder;
-use crate::db::DriverType;
 use crate::Result;
-use rbson::Bson;
 
 ///the stmt replace str convert
 pub trait StmtConvert {
@@ -39,57 +36,29 @@ macro_rules! push_index {
     };
 }
 
-impl StmtConvert for DriverType {
-    fn stmt_convert(&self, index: usize, item: &mut String) {
-        match &self {
-            DriverType::Postgres => {
-                item.push('$');
-                let index = index + 1;
-                push_index!(index, item);
-            }
-            DriverType::Mysql => {
-                item.push('?');
-            }
-            DriverType::Sqlite => {
-                item.push('?');
-            }
-            DriverType::Mssql => {
-                item.push('@');
-                item.push('p');
-                let index = index + 1;
-                push_index!(index, item);
-            }
-            DriverType::None => {
-                panic!("[rbatis] un support none for driver type!")
-            }
-        }
-    }
-}
-
-///json convert
-pub trait JsonCodec {
-    /// to an json value
-    fn try_to_bson(self) -> Result<Bson>;
-}
-
-///json convert
-pub trait RefJsonCodec {
-    /// to an json value
-    fn try_to_bson(&self, decoder: &dyn DataDecoder) -> Result<Bson>;
-}
-
-///result convert
-pub trait ResultCodec<T> {
-    fn into_result(self) -> Result<T>;
-}
-
-#[macro_export]
-macro_rules! to_bson_macro {
-    ($r:ident) => {{
-        if $r.is_some() {
-            rbson::bson!($r.unwrap())
-        } else {
-            rbson::Bson::Null
-        }
-    }};
-}
+// impl StmtConvert for DriverType {
+//     fn stmt_convert(&self, index: usize, item: &mut String) {
+//         match &self {
+//             DriverType::Postgres => {
+//                 item.push('$');
+//                 let index = index + 1;
+//                 push_index!(index, item);
+//             }
+//             DriverType::Mysql => {
+//                 item.push('?');
+//             }
+//             DriverType::Sqlite => {
+//                 item.push('?');
+//             }
+//             DriverType::Mssql => {
+//                 item.push('@');
+//                 item.push('p');
+//                 let index = index + 1;
+//                 push_index!(index, item);
+//             }
+//             DriverType::None => {
+//                 panic!("[rbatis] un support none for driver type!")
+//             }
+//         }
+//     }
+// }

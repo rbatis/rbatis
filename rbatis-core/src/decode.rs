@@ -2,8 +2,8 @@
 use log::info;
 use rbson::Bson;
 use serde::de::DeserializeOwned;
+use rbs::Value;
 
-use crate::types::Format;
 use crate::Error;
 use crate::Error::E;
 
@@ -11,13 +11,12 @@ use crate::Error::E;
 /// support decode types:
 /// Bson,BigDecimal, i8..i64,u8..u64,rbson::Int64(),bool,String
 /// or object used bson macro object
-pub fn decode<T: ?Sized>(datas: rbson::Array) -> Result<T, crate::Error>
-where
-    T: DeserializeOwned,
+pub fn decode<T: ?Sized>(bs: Value) -> Result<T, crate::Error>
+    where
+        T: DeserializeOwned,
 {
     let type_name = std::any::type_name::<T>();
     //debug_mode feature print json_decode json data
-    let bs = Bson::Array(datas);
     #[cfg(feature = "debug_mode")]
     {
         println!("[rbatis] [debug_mode] [bson]   {} => {}", type_name, bs);
@@ -30,7 +29,7 @@ where
     }
     let mut datas = vec![];
     match bs {
-        Bson::Array(arr) => {
+        Value::Array(arr) => {
             datas = arr;
         }
         _ => {}
@@ -63,16 +62,16 @@ where
     let is_array: Result<T, rbson::de::Error> = rbson::from_bson(rbson::Bson::Array(vec![]));
     if is_array.is_ok() {
         //decode array
-        Ok(rbson::from_bson(Bson::Array(datas))?)
+        Ok(rbs::from_value(Value::Array(datas))?)
     } else {
         Ok(try_decode_doc(type_name, &mut datas)?)
     }
 }
 
 //decode doc or one type
-pub fn try_decode_doc<T>(type_name: &str, datas: &mut Vec<Bson>) -> Result<T, crate::Error>
-where
-    T: DeserializeOwned,
+pub fn try_decode_doc<T>(type_name: &str, datas: &mut Vec<Value>) -> Result<T, crate::Error>
+    where
+        T: DeserializeOwned,
 {
     //decode struct
     if datas.len() > 1 {
@@ -83,13 +82,13 @@ where
     }
     //single try decode
     if datas.is_empty() {
-        return Ok(rbson::from_bson::<T>(Bson::Null)?);
+        return Ok(rbs::from_value::<T>(Value::Null)?);
     }
-    let mut v = Bson::Null;
+    let mut v = Value::Null;
     let m = datas.remove(0);
     let mut doc_len = 0;
     match &m {
-        Bson::Document(doc) => {
+        Value::Map(doc) => {
             doc_len = doc.len();
             if doc_len == 1 {
                 for (_k, _v) in doc {
@@ -100,13 +99,13 @@ where
         }
         _ => {}
     }
-    let r = rbson::from_bson::<T>(m);
+    let r = rbs::from_value::<T>(m);
     if r.is_err() {
         if doc_len > 1 {
             return Ok(r?);
         }
         //try one
-        return Ok(rbson::from_bson::<T>(v)?);
+        return Ok(rbs::from_value::<T>(v)?);
     } else {
         return Ok(r.unwrap());
     }
@@ -114,33 +113,19 @@ where
 
 #[cfg(test)]
 mod test {
+    use std::collections::HashMap;
     use crate::decode::decode;
-    use crate::types::Json;
-    use rbson::bson;
-    use rbson::Bson;
-    use std::collections::{BTreeMap, HashMap, HashSet, VecDeque};
+    use rbs::{to_value, Value};
 
     #[test]
     fn test_decode_hashmap() {
-        let m: HashMap<String, Bson> = decode(vec![bson!(
+        let v=to_value!(
         {
         "a":"1",
         "b":2
         }
-        )])
-        .unwrap();
-        println!("{:#?}", m);
-    }
-
-    #[test]
-    fn test_decode_btree_map() {
-        let m: BTreeMap<String, Bson> = decode(vec![bson!(
-        {
-        "a":"1",
-        "b":2
-        }
-        )])
-        .unwrap();
+        );
+        let m: HashMap<String, Value> = decode(ve).unwrap();
         println!("{:#?}", m);
     }
 }

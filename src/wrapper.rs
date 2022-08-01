@@ -218,7 +218,7 @@ impl Wrapper {
     where
         T: Serialize,
     {
-        let v = crate::as_bson!(args);
+        let v = rbs::to_value!(args);
         match v {
             Bson::Null => {
                 return self;
@@ -235,7 +235,7 @@ impl Wrapper {
     where
         T: Serialize,
     {
-        let v = crate::as_bson!(&arg);
+        let v = rbs::to_value!(&arg);
         self.args.push(v);
         self
     }
@@ -297,7 +297,7 @@ impl Wrapper {
         T: Serialize,
     {
         self = self.and();
-        let v = crate::as_bson!(&arg);
+        let v = rbs::to_value!(&arg);
         if v.is_null() {
             return self;
         }
@@ -346,7 +346,7 @@ impl Wrapper {
             .stmt_convert(self.args.len(), &mut convert_column);
         self.do_format_column(column, &mut convert_column);
         push_sql!(self.sql, column, " = ", convert_column.as_str(),);
-        self.args.push(crate::as_bson!(&obj));
+        self.args.push(rbs::to_value!(&obj));
         self
     }
 
@@ -361,7 +361,7 @@ impl Wrapper {
             .stmt_convert(self.args.len(), &mut convert_column);
         self.do_format_column(column, &mut convert_column);
         push_sql!(self.sql, column, " <> ", convert_column.as_str(),);
-        self.args.push(crate::as_bson!(&obj));
+        self.args.push(rbs::to_value!(&obj));
         self
     }
 
@@ -462,7 +462,7 @@ impl Wrapper {
             .stmt_convert(self.args.len(), &mut convert_column);
         self.do_format_column(column, &mut convert_column);
         push_sql!(self.sql, column, " > ", &convert_column.as_str(),);
-        self.args.push(crate::as_bson!(&obj));
+        self.args.push(rbs::to_value!(&obj));
         self
     }
     ///  sql:   column >= obj
@@ -476,7 +476,7 @@ impl Wrapper {
             .stmt_convert(self.args.len(), &mut convert_column);
         self.do_format_column(column, &mut convert_column);
         push_sql!(self.sql, column, " >= ", &convert_column.as_str(),);
-        self.args.push(crate::as_bson!(&obj));
+        self.args.push(rbs::to_value!(&obj));
         self
     }
 
@@ -491,7 +491,7 @@ impl Wrapper {
             .stmt_convert(self.args.len(), &mut convert_column);
         self.do_format_column(column, &mut convert_column);
         push_sql!(self.sql, column, " < ", &convert_column.as_str(),);
-        self.args.push(crate::as_bson!(&obj));
+        self.args.push(rbs::to_value!(&obj));
         self
     }
 
@@ -506,7 +506,7 @@ impl Wrapper {
             .stmt_convert(self.args.len(), &mut convert_column);
         self.do_format_column(column, &mut convert_column);
         push_sql!(self.sql, column, " <= ", &convert_column.as_str(),);
-        self.args.push(crate::as_bson!(&obj));
+        self.args.push(rbs::to_value!(&obj));
         self
     }
 
@@ -529,7 +529,7 @@ impl Wrapper {
             &convert_column.as_str(),
         );
 
-        self.args.push(crate::as_bson!(&min));
+        self.args.push(rbs::to_value!(&min));
 
         let mut convert_column = String::new();
         self.driver_type
@@ -543,7 +543,7 @@ impl Wrapper {
             &convert_column.as_str(),
         );
 
-        self.args.push(crate::as_bson!(&max));
+        self.args.push(rbs::to_value!(&max));
         self
     }
 
@@ -568,7 +568,7 @@ impl Wrapper {
             &convert_column.as_str(),
         );
 
-        self.args.push(crate::as_bson!(&min));
+        self.args.push(rbs::to_value!(&min));
 
         let mut convert_column = String::new();
         self.driver_type
@@ -582,7 +582,7 @@ impl Wrapper {
             &convert_column.as_str(),
         );
 
-        self.args.push(crate::as_bson!(&max));
+        self.args.push(rbs::to_value!(&max));
         self
     }
 
@@ -591,7 +591,7 @@ impl Wrapper {
         T: Serialize,
     {
         self = self.and();
-        let v = crate::as_bson!(&obj);
+        let v = rbs::to_value!(&obj);
         let mut v_str = String::new();
         if v.as_str().is_some() {
             v_str = format!("%{}%", v.as_str().unwrap());
@@ -612,7 +612,7 @@ impl Wrapper {
             &convert_column.as_str(),
         );
 
-        self.args.push(crate::as_bson!(&v_str));
+        self.args.push(rbs::to_value!(&v_str));
         self
     }
 
@@ -621,7 +621,7 @@ impl Wrapper {
         T: Serialize,
     {
         self = self.and();
-        let v = crate::as_bson!(&obj);
+        let v = rbs::to_value!(&obj);
         let mut v_str = String::new();
         if v.as_str().is_some() {
             v_str = format!("%{}", v.as_str().unwrap());
@@ -642,7 +642,7 @@ impl Wrapper {
             &convert_column.as_str(),
         );
 
-        self.args.push(crate::as_bson!(&v_str));
+        self.args.push(rbs::to_value!(&v_str));
         self
     }
 
@@ -651,7 +651,7 @@ impl Wrapper {
         T: Serialize,
     {
         self = self.and();
-        let v = crate::as_bson!(&obj);
+        let v = rbs::to_value!(&obj);
         let mut v_str = String::new();
         if v.as_str().is_some() {
             v_str = format!("{}%", v.as_str().unwrap());
@@ -672,7 +672,7 @@ impl Wrapper {
             &convert_column.as_str(),
         );
 
-        self.args.push(crate::as_bson!(&v_str));
+        self.args.push(rbs::to_value!(&v_str));
         self
     }
 
@@ -681,7 +681,7 @@ impl Wrapper {
         T: Serialize,
     {
         self = self.and();
-        let v = crate::as_bson!(&obj);
+        let v = rbs::to_value!(&obj);
         let mut v_str = String::new();
         if v.as_str().is_some() {
             v_str = format!("%{}%", v.as_str().unwrap());
@@ -702,7 +702,7 @@ impl Wrapper {
             " ",
             &convert_column.as_str(),
         );
-        self.args.push(crate::as_bson!(&v_str));
+        self.args.push(rbs::to_value!(&v_str));
         self
     }
 
@@ -740,7 +740,7 @@ impl Wrapper {
             self.do_format_column(column, &mut convert_column);
             push_sql!(self.sql, " ", &convert_column.as_str(), " ",);
             self.sql.push_str(",");
-            self.args.push(crate::as_bson!(x));
+            self.args.push(rbs::to_value!(x));
         }
         self.sql.pop();
         push_sql!(self.sql, ")",);
@@ -787,7 +787,7 @@ impl Wrapper {
             self.do_format_column(column, &mut convert_column);
             push_sql!(self.sql, " ", &convert_column.as_str(), " ",);
             self.sql.push_str(",");
-            self.args.push(crate::as_bson!(x));
+            self.args.push(rbs::to_value!(x));
         }
         self.sql.pop();
         push_sql!(self.sql, ")",);

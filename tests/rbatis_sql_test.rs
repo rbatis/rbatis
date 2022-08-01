@@ -1,9 +1,9 @@
 #[cfg(test)]
 mod test {
 
-    use rbsql::rb_py;
+    use rbatis_sql::rb_py;
     use rbs::Value;
-    use rbsql::ops::*;
+    use rbatis_sql::ops::*;
 
     #[rb_py("
     SELECT * FROM biz_activity

@@ -87,15 +87,9 @@ impl From<serde_json::Error> for crate::Error {
     }
 }
 
-impl From<rbson::ser::Error> for crate::Error {
-    fn from(arg: rbson::ser::Error) -> Self {
-        return crate::Error::E(arg.to_string());
-    }
-}
-
-impl From<rbson::de::Error> for crate::Error {
-    fn from(arg: rbson::de::Error) -> Self {
-        return crate::Error::E(arg.to_string());
+impl From<rbs::Error> for crate::Error{
+    fn from(arg: rbs::Error) -> Self {
+        Self::E(arg.to_string())
     }
 }
 

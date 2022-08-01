@@ -30,8 +30,8 @@ homepage = "https://rbatis.github.io/rbatis.io/#/en/"
 [features]
 default = ["default_mode", "all-database", "runtime-tokio-rustls"]
 #debug_mode feature will show decode json data
-debug_mode = ["rbatis-core/debug_mode", "rbatis-macro-driver/debug_mode", "rbatis_sql/debug_mode"]
-default_mode = ["rbatis-core", "rbatis-macro-driver", "rbatis_sql"]
+debug_mode = ["rbatis-core/debug_mode", "rbatis-macro-driver/debug_mode", "rbatis-sql/debug_mode"]
+default_mode = ["rbatis-core", "rbatis-macro-driver", "rbatis-sql"]
 #support upper case sql keyword
 upper_case_sql_keyword = []
 #runtime  database
@@ -54,11 +54,8 @@ format_bson = ["rbatis-core/format_bson"]
 
 [dependencies]
 rbatis-core = { version = "3.1.11", path = "rbatis-core", default-features = false, optional = true }
-rbatis_sql = { version = "3.0", git = "https://github.com/rbatis/rbatis_sql.git", branch = "main", optional = true }
+rbatis-sql = { version = "3.0", path="rbatis-sql", optional = true }
 rbatis-macro-driver = { version = "3.1", path = "rbatis-macro-driver", default-features = false, optional = true }
-
-rbsql = { package="rbatis-sql", path="rbatis-sql" }
-
 
 
 rbson = { version = "2.0", features = ["uuid-0_8", "chrono-0_4"] }
