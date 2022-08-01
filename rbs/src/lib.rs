@@ -16,7 +16,7 @@ pub use crate::value::ext::to_value_ref;
 pub use value::ext::{to_value,to_value_def};
 pub use value::ext::{deserialize_from, from_value};
 pub use value::{Value, ValueRef};
-
+pub use crate::value::ext::Error;
 
 impl Value {
     pub fn into_ext(self, name: &'static str) -> Self {

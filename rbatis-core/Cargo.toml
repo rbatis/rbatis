@@ -30,6 +30,7 @@ runtime-async-std-native-tls = ["sqlx-core/runtime-async-std-native-tls"]
 format_bson = []
 
 [dependencies]
+rbs={version="0.1",path="../rbs"}
 serde = { version = "1", features = ["derive"] }
 serde_json = { version = "1", features = ["raw_value","preserve_order"] }
 rbson = { version = "2.0", features = ["uuid-0_8", "chrono-0_4"] }

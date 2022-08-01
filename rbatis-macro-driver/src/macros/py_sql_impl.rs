@@ -100,7 +100,7 @@ pub(crate) fn impl_macro_py_sql(target_fn: &ItemFn, args: &AttributeArgs) -> Tok
     return quote! {
        pub async fn #func_name_ident(#func_args_stream) -> #return_ty {
          let mut sql = #sql_ident.to_string();
-         let mut rb_arg_map = rbson::Document::new();
+         let mut rb_arg_map = rbs::Value::Map(vec![]);
          #sql_args_gen
          #fn_body
          use rbatis::executor::{RbatisRef};
@@ -109,7 +109,7 @@ pub(crate) fn impl_macro_py_sql(target_fn: &ItemFn, args: &AttributeArgs) -> Tok
          let sql_tag = driver_type.sql_tag();
          #[rb_py(#sql_ident)]
          pub fn #func_name_ident(arg: &rbson::Bson, _tag: char) {}
-         let (mut sql,rb_args) = #func_name_ident(&rbson::Bson::Document(rb_arg_map), sql_tag);
+         let (mut sql,rb_args) = #func_name_ident(&rbs::Value::Map(rb_arg_map), sql_tag);
          driver_type.do_replace_tag(&mut sql);
          #call_method
        }

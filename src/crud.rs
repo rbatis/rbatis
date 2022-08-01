@@ -6,7 +6,7 @@ use async_trait::async_trait;
 use serde::de::DeserializeOwned;
 use serde::{Deserialize, Deserializer, Serialize, Serializer};
 
-use crate::core::convert::{ResultCodec, StmtConvert};
+use crate::core::convert::{StmtConvert};
 use crate::core::db::DBExecResult;
 use crate::core::db::DriverType;
 use crate::core::Error;
@@ -88,8 +88,8 @@ pub trait CRUDTable: Send + Sync + Serialize {
         let cols = Self::table_columns();
         let columns: Vec<&str> = cols.split(",").collect();
         let mut map;
-        match crate::as_bson!(self) {
-            rbson::Bson::Document(m) => {
+        match rbs::to_value!(self) {
+            rbs::Value::Map(m) => {
                 map = m;
             }
             _ => {
@@ -155,7 +155,7 @@ pub trait CRUDTable: Send + Sync + Serialize {
     fn get(&self, column: &str) -> rbson::Bson {
         let s = rbson::to_bson(self).unwrap_or_default();
         match s {
-            rbson::Bson::Document(d) => d.get(column).unwrap_or(&Bson::Null).clone(),
+            rbs::Value::Map(d) => d.get(column).unwrap_or(&Bson::Null).clone(),
             _ => Bson::Null,
         }
     }
@@ -586,7 +586,7 @@ pub trait CRUDMut: ExecutorMut {
             );
         }
         return Ok(self
-            .exec(&sql, vec![crate::as_bson!(&value)])
+            .exec(&sql, vec![rbs::to_value!(&value)])
             .await?
             .rows_affected);
     }
@@ -625,8 +625,8 @@ pub trait CRUDMut: ExecutorMut {
         let columns = T::table_columns();
         let columns_vec: Vec<&str> = columns.split(",").collect();
         let map;
-        match crate::as_bson!(table) {
-            rbson::Bson::Document(m) => {
+        match rbs::to_value!(table) {
+            rbs::Value::Map(m) => {
                 map = m;
             }
             _ => {
@@ -1091,7 +1091,7 @@ impl<'a> Skip<'a> {
     where
         T: Serialize,
     {
-        Self::Value(crate::as_bson!(&arg))
+        Self::Value(rbs::to_value!(&arg))
     }
 }
 
