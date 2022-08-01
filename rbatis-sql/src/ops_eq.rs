@@ -1,6 +1,7 @@
-use crate::ops::{AsProxy, Value};
+use crate::ops::{AsProxy};
 use crate::ops::PartialEq;
 use std::cmp::PartialEq as PE;
+use rbs::Value;
 
 
 impl PartialEq<Value> for &'_ Value {
@@ -32,6 +33,7 @@ impl PartialEq<&Value> for Value{
         self.eq(&**other)
     }
 }
+
 impl PartialEq<&&Value> for Value{
     fn op_eq(&self, other: &&&Value) -> bool {
         self.eq(&***other)

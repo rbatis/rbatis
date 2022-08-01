@@ -1,4 +1,4 @@
-use crate::ops::Value;
+use rbs::Value;
 use crate::ops::Rem;
 use crate::ops::AsProxy;
 
@@ -7,25 +7,25 @@ impl Rem<Value> for Value {
     type Output = Value;
     fn op_rem(self, rhs: Value) -> Self::Output {
         return match self {
-            Value::Int32(s) => {
+            Value::I32(s) => {
                 let rhs = rhs.i32();
-                return Value::Int32(s % rhs);
+                return Value::I32(s % rhs);
             }
-            Value::Int64(s) => {
+            Value::I64(s) => {
                 let rhs = rhs.i64();
-                return Value::Int64(s % rhs);
+                return Value::I64(s % rhs);
             }
-            Value::UInt32(s) => {
+            Value::U32(s) => {
                 let rhs = rhs.u32();
-                return Value::UInt32(s % rhs);
+                return Value::U32(s % rhs);
             }
-            Value::UInt64(s) => {
+            Value::U64(s) => {
                 let rhs = rhs.u64();
-                return Value::UInt64(s % rhs);
+                return Value::U64(s % rhs);
             }
-            Value::Double(s) => {
+            Value::F64(s) => {
                 let rhs = rhs.as_f64().unwrap_or_default();
-                return Value::Double(s % rhs);
+                return Value::F64(s % rhs);
             }
             _ => {
                 return Value::Null;
@@ -38,25 +38,25 @@ impl Rem<&Value> for Value {
     type Output = Value;
     fn op_rem(self, rhs: &Value) -> Self::Output {
         return match self {
-            Value::Int32(s) => {
+            Value::I32(s) => {
                 let rhs = rhs.i32();
-                return Value::Int32(s % rhs);
+                return Value::I32(s % rhs);
             }
-            Value::Int64(s) => {
+            Value::I64(s) => {
                 let rhs = rhs.i64();
-                return Value::Int64(s % rhs);
+                return Value::I64(s % rhs);
             }
-            Value::UInt32(s) => {
+            Value::U32(s) => {
                 let rhs = rhs.u32();
-                return Value::UInt32(s % rhs);
+                return Value::U32(s % rhs);
             }
-            Value::UInt64(s) => {
+            Value::U64(s) => {
                 let rhs = rhs.u64();
-                return Value::UInt64(s % rhs);
+                return Value::U64(s % rhs);
             }
-            Value::Double(s) => {
+            Value::F64(s) => {
                 let rhs = rhs.as_f64().unwrap_or_default();
-                return Value::Double(s % rhs);
+                return Value::F64(s % rhs);
             }
             _ => {
                 return Value::Null;
@@ -69,25 +69,25 @@ impl Rem<&&Value> for Value {
     type Output = Value;
     fn op_rem(self, rhs: &&Value) -> Self::Output {
         return match self {
-            Value::Int32(s) => {
+            Value::I32(s) => {
                 let rhs = rhs.i32();
-                return Value::Int32(s % rhs);
+                return Value::I32(s % rhs);
             }
-            Value::Int64(s) => {
+            Value::I64(s) => {
                 let rhs = rhs.i64();
-                return Value::Int64(s % rhs);
+                return Value::I64(s % rhs);
             }
-            Value::UInt32(s) => {
+            Value::U32(s) => {
                 let rhs = rhs.u32();
-                return Value::UInt32(s % rhs);
+                return Value::U32(s % rhs);
             }
-            Value::UInt64(s) => {
+            Value::U64(s) => {
                 let rhs = rhs.u64();
-                return Value::UInt64(s % rhs);
+                return Value::U64(s % rhs);
             }
-            Value::Double(s) => {
+            Value::F64(s) => {
                 let rhs = rhs.as_f64().unwrap_or_default();
-                return Value::Double(s % rhs);
+                return Value::F64(s % rhs);
             }
             _ => {
                 return Value::Null;
@@ -100,25 +100,25 @@ impl Rem<Value> for &Value {
     type Output = Value;
     fn op_rem(self, rhs: Value) -> Self::Output {
         return match self {
-            Value::Int32(s) => {
+            Value::I32(s) => {
                 let rhs = rhs.i32();
-                return Value::Int32(s % rhs);
+                return Value::I32(s % rhs);
             }
-            Value::Int64(s) => {
+            Value::I64(s) => {
                 let rhs = rhs.i64();
-                return Value::Int64(s % rhs);
+                return Value::I64(s % rhs);
             }
-            Value::UInt32(s) => {
+            Value::U32(s) => {
                 let rhs = rhs.u32();
-                return Value::UInt32(s % rhs);
+                return Value::U32(s % rhs);
             }
-            Value::UInt64(s) => {
+            Value::U64(s) => {
                 let rhs = rhs.u64();
-                return Value::UInt64(s % rhs);
+                return Value::U64(s % rhs);
             }
-            Value::Double(s) => {
+            Value::F64(s) => {
                 let rhs = rhs.as_f64().unwrap_or_default();
-                return Value::Double(s % rhs);
+                return Value::F64(s % rhs);
             }
             _ => {
                 return Value::Null;
@@ -131,25 +131,25 @@ impl Rem<&Value> for &Value {
     type Output = Value;
     fn op_rem(self, rhs: &Value) -> Self::Output {
         return match self {
-            Value::Int32(s) => {
+            Value::I32(s) => {
                 let rhs = rhs.i32();
-                return Value::Int32(s % rhs);
+                return Value::I32(s % rhs);
             }
-            Value::Int64(s) => {
+            Value::I64(s) => {
                 let rhs = rhs.i64();
-                return Value::Int64(s % rhs);
+                return Value::I64(s % rhs);
             }
-            Value::UInt32(s) => {
+            Value::U32(s) => {
                 let rhs = rhs.u32();
-                return Value::UInt32(s % rhs);
+                return Value::U32(s % rhs);
             }
-            Value::UInt64(s) => {
+            Value::U64(s) => {
                 let rhs = rhs.u64();
-                return Value::UInt64(s % rhs);
+                return Value::U64(s % rhs);
             }
-            Value::Double(s) => {
+            Value::F64(s) => {
                 let rhs = rhs.as_f64().unwrap_or_default();
-                return Value::Double(s % rhs);
+                return Value::F64(s % rhs);
             }
             _ => {
                 return Value::Null;
@@ -163,25 +163,25 @@ impl Rem<&&Value> for &Value {
     type Output = Value;
     fn op_rem(self, rhs: &&Value) -> Self::Output {
         return match self {
-            Value::Int32(s) => {
+            Value::I32(s) => {
                 let rhs = rhs.i32();
-                return Value::Int32(s % rhs);
+                return Value::I32(s % rhs);
             }
-            Value::Int64(s) => {
+            Value::I64(s) => {
                 let rhs = rhs.i64();
-                return Value::Int64(s % rhs);
+                return Value::I64(s % rhs);
             }
-            Value::UInt32(s) => {
+            Value::U32(s) => {
                 let rhs = rhs.u32();
-                return Value::UInt32(s % rhs);
+                return Value::U32(s % rhs);
             }
-            Value::UInt64(s) => {
+            Value::U64(s) => {
                 let rhs = rhs.u64();
-                return Value::UInt64(s % rhs);
+                return Value::U64(s % rhs);
             }
-            Value::Double(s) => {
+            Value::F64(s) => {
                 let rhs = rhs.as_f64().unwrap_or_default();
-                return Value::Double(s % rhs);
+                return Value::F64(s % rhs);
             }
             _ => {
                 return Value::Null;

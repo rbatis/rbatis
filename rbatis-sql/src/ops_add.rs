@@ -1,6 +1,7 @@
-use crate::ops::{Add, AsProxy, Value};
+use crate::ops::{Add, AsProxy};
 
 use std::borrow::Cow;
+use rbs::Value;
 
 fn op_add_u64(value: &Value, other: u64) -> u64 {
     value.u64() + other
@@ -76,20 +77,23 @@ impl Add<&Value> for Value {
             Value::String(s) => {
                 Value::String(s + rhs.as_str().unwrap_or(""))
             }
-            Value::Int32(s)=> {
-                Value::Int32(s + rhs.i32())
+            Value::I32(s)=> {
+                Value::I32(s + rhs.i32())
             }
-            Value::Int64(s) => {
-                Value::Int64(s + rhs.i64())
+            Value::I64(s) => {
+                Value::I64(s + rhs.i64())
             }
-            Value::UInt32(s)=> {
-                Value::UInt32(s + rhs.u32())
+            Value::U32(s)=> {
+                Value::U32(s + rhs.u32())
             }
-            Value::UInt64(s) => {
-                Value::UInt64(s + rhs.u64())
+            Value::U64(s) => {
+                Value::U64(s + rhs.u64())
             }
-            Value::Double(s)=> {
-                Value::Double(s + rhs.as_f64().unwrap_or_default())
+            Value::F64(s)=> {
+                Value::F64(s + rhs.as_f64().unwrap_or_default())
+            }
+            Value::F32(v) => {
+                Value::F64(v as f64 + rhs.as_f64().unwrap_or_default())
             }
             _ => {
                 return Value::Null;
@@ -105,20 +109,23 @@ impl Add<&&Value> for Value {
             Value::String(s) => {
                 Value::String(s + rhs.as_str().unwrap_or(""))
             }
-            Value::Int32(s)=> {
-                Value::Int32(s + rhs.i32())
+            Value::I32(s)=> {
+                Value::I32(s + rhs.i32())
             }
-            Value::Int64(s) => {
-                Value::Int64(s + rhs.i64())
+            Value::I64(s) => {
+                Value::I64(s + rhs.i64())
             }
-            Value::UInt32(s)=> {
-                Value::UInt32(s + rhs.u32())
+            Value::U32(s)=> {
+                Value::U32(s + rhs.u32())
             }
-            Value::UInt64(s) => {
-                Value::UInt64(s + rhs.u64())
+            Value::U64(s) => {
+                Value::U64(s + rhs.u64())
             }
-            Value::Double(s)=> {
-                Value::Double(s + rhs.as_f64().unwrap_or_default())
+            Value::F64(s)=> {
+                Value::F64(s + rhs.as_f64().unwrap_or_default())
+            }
+            Value::F32(s)=> {
+                Value::F64((s  as f64 + rhs.as_f64().unwrap_or_default()) as f64)
             }
             _ => {
                 return Value::Null;
@@ -134,20 +141,23 @@ impl Add<Value> for Value {
             Value::String(s) => {
                 Value::String(s + rhs.as_str().unwrap_or(""))
             }
-            Value::Int32(s)=> {
-                Value::Int32(s + rhs.i32())
+            Value::I32(s)=> {
+                Value::I32(s + rhs.i32())
             }
-            Value::Int64(s) => {
-                Value::Int64(s + rhs.i64())
+            Value::I64(s) => {
+                Value::I64(s + rhs.i64())
             }
-            Value::UInt32(s)=> {
-                Value::UInt32(s + rhs.u32())
+            Value::U32(s)=> {
+                Value::U32(s + rhs.u32())
             }
-            Value::UInt64(s) => {
-                Value::UInt64(s + rhs.u64())
+            Value::U64(s) => {
+                Value::U64(s + rhs.u64())
             }
-            Value::Double(s)=> {
-                Value::Double(s + rhs.as_f64().unwrap_or_default())
+            Value::F64(s)=> {
+                Value::F64(s + rhs.as_f64().unwrap_or_default())
+            }
+            Value::F32(s)=> {
+                Value::F64((s  as f64  as f64 + rhs.as_f64().unwrap_or_default()) as f64)
             }
             _ => {
                 return Value::Null;
@@ -163,20 +173,23 @@ impl Add<&Value> for &Value {
             Value::String(s) => {
                 Value::String(s.to_owned() + rhs.as_str().unwrap_or(""))
             }
-            Value::Int32(s)=> {
-                Value::Int32(s + rhs.i32())
+            Value::I32(s)=> {
+                Value::I32(s + rhs.i32())
             }
-            Value::Int64(s) => {
-                Value::Int64(s + rhs.i64())
+            Value::I64(s) => {
+                Value::I64(s + rhs.i64())
             }
-            Value::UInt32(s)=> {
-                Value::UInt32(s + rhs.u32())
+            Value::U32(s)=> {
+                Value::U32(s + rhs.u32())
             }
-            Value::UInt64(s) => {
-                Value::UInt64(s + rhs.u64())
+            Value::U64(s) => {
+                Value::U64(s + rhs.u64())
             }
-            Value::Double(s)=> {
-                Value::Double(s + rhs.as_f64().unwrap_or_default())
+            Value::F64(s)=> {
+                Value::F64(s + rhs.as_f64().unwrap_or_default())
+            }
+            Value::F32(s)=> {
+                Value::F64(*s  as f64 + rhs.as_f64().unwrap_or_default())
             }
             _ => {
                 return Value::Null;
@@ -192,20 +205,23 @@ impl Add<&&Value> for &Value {
             Value::String(s) => {
                 Value::String(s.to_owned() + rhs.as_str().unwrap_or(""))
             }
-            Value::Int32(s)=> {
-                Value::Int32(s + rhs.i32())
+            Value::I32(s)=> {
+                Value::I32(s + rhs.i32())
             }
-            Value::Int64(s) => {
-                Value::Int64(s + rhs.i64())
+            Value::I64(s) => {
+                Value::I64(s + rhs.i64())
             }
-            Value::UInt32(s)=> {
-                Value::UInt32(s + rhs.u32())
+            Value::U32(s)=> {
+                Value::U32(s + rhs.u32())
             }
-            Value::UInt64(s) => {
-                Value::UInt64(s + rhs.u64())
+            Value::U64(s) => {
+                Value::U64(s + rhs.u64())
             }
-            Value::Double(s)=> {
-                Value::Double(s + rhs.as_f64().unwrap_or_default())
+            Value::F64(s)=> {
+                Value::F64(s + rhs.as_f64().unwrap_or_default())
+            }
+            Value::F32(s)=> {
+                Value::F64(*s as f64 + rhs.as_f64().unwrap_or_default())
             }
             _ => {
                 return Value::Null;
@@ -221,20 +237,23 @@ impl Add<Value> for &Value {
             Value::String(s) => {
                 Value::String(s.to_owned() + rhs.str())
             }
-            Value::Int32(s)=> {
-                Value::Int32(s + rhs.i32())
+            Value::I32(s)=> {
+                Value::I32(s + rhs.i32())
             }
-            Value::Int64(s) => {
-                Value::Int64(s + rhs.i64())
+            Value::I64(s) => {
+                Value::I64(s + rhs.i64())
             }
-            Value::UInt32(s)=> {
-                Value::UInt32(s + rhs.u32())
+            Value::U32(s)=> {
+                Value::U32(s + rhs.u32())
             }
-            Value::UInt64(s) => {
-                Value::UInt64(s + rhs.u64())
+            Value::U64(s) => {
+                Value::U64(s + rhs.u64())
             }
-            Value::Double(s)=> {
-                Value::Double(s + rhs.as_f64().unwrap_or_default())
+            Value::F64(s)=> {
+                Value::F64(s + rhs.as_f64().unwrap_or_default())
+            }
+            Value::F32(s)=> {
+                Value::F64(*s as f64 + rhs.as_f64().unwrap_or_default())
             }
             _ => {
                 return Value::Null;

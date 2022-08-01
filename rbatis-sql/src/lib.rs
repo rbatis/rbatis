@@ -13,7 +13,6 @@ pub mod error;
 #[macro_use]
 pub mod bencher;
 pub mod ops;
-pub mod ops_index;
 pub mod ops_eq;
 pub mod ops_cmp;
 

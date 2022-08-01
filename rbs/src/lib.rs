@@ -10,6 +10,8 @@ extern crate serde;
 #[allow(deprecated)]
 pub mod value;
 
+pub mod index;
+
 pub use crate::value::ext::to_value_ref;
 pub use value::ext::{to_value,to_value_def};
 pub use value::ext::{deserialize_from, from_value};
@@ -40,4 +42,11 @@ impl ValueRef<'_> {
             }
         }
     }
+}
+
+#[macro_export]
+macro_rules! to_value {
+    ($arg:expr) => {
+        $crate::to_value($arg).unwrap()
+    };
 }

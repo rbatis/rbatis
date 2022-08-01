@@ -1,8 +1,9 @@
 #[cfg(test)]
 mod test {
 
-    use rbatis_sql::rb_py;
-    use rbson::{Bson, Document};
+    use rbsql::rb_py;
+    use rbs::Value;
+    use rbsql::ops::*;
 
     #[rb_py("
     SELECT * FROM biz_activity
@@ -30,13 +31,13 @@ mod test {
         otherwise:
           AND age = 0
     WHERE id  = '2';")]
-    pub fn py_select_by_condition(arg: &mut bson::Bson, _tag: char) {}
+    pub fn py_select_by_condition(arg: &mut rbs::Value, _tag: char) {}
 
     #[test]
     fn test_rbatis_sql(){
-        let mut arg =Document::new();
+        let mut arg = Value::Map(vec![]);
         arg.insert("name","ss");
-        let (sql, args) = py_select_by_condition(&mut Bson::Document(arg), '$');
+        let (sql, args) = py_select_by_condition(&mut arg, '$');
         println!("py->sql: {}", sql);
         println!("py->args: {}", serde_json::to_string(&args).unwrap());
     }
