@@ -13,25 +13,10 @@ use rbatis::rbatis::Rbatis;
 use std::fs::{create_dir_all, File};
 use std::io::Read;
 
-mod column_keyword;
-mod crud;
-mod dyn_table_name;
-mod get_fields;
 mod macro_proc_htmlsql;
 mod macro_proc_htmlsql_custom_func;
 mod macro_proc_pysql;
 mod macro_proc_rawsql;
-mod macro_tool;
-mod plugin_intercept;
-mod plugin_logic_del;
-mod plugin_object_id;
-mod plugin_page;
-mod plugin_snowflake;
-mod postgres_format;
-mod raw_driver;
-mod transaction;
-mod wrapper;
-mod wrapper_macro;
 
 /// this is table model(see ../database.sql)
 #[crud_table]
