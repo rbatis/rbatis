@@ -7,8 +7,7 @@ use serde::de::DeserializeOwned;
 use serde::{Deserialize, Deserializer, Serialize, Serializer};
 
 use crate::core::convert::{StmtConvert};
-use crate::core::db::DBExecResult;
-use crate::core::db::DriverType;
+use rbdc::db::ExecResult;
 use crate::core::Error;
 use crate::core::Result;
 use crate::executor::{ExecutorMut, RBatisConnExecutor, RBatisTxExecutor};
@@ -24,6 +23,7 @@ use std::marker::PhantomData;
 use std::ops::{Deref, DerefMut};
 use std::option::Option::Some;
 use std::sync::Arc;
+use rbs::Value;
 
 /// DataBase Table Model trait
 ///
@@ -272,17 +272,17 @@ where
 
 #[async_trait]
 pub trait CRUD {
-    /// Return can be DBExecResult or any type
+    /// Return can be ExecResult or any type
     async fn save_by_wrapper<T, R>(&self, table: &T, w: Wrapper, skips: &[Skip]) -> Result<R>
     where
         T: CRUDTable,
         R: DeserializeOwned;
 
-    async fn save<T>(&self, table: &T, skips: &[Skip]) -> Result<DBExecResult>
+    async fn save<T>(&self, table: &T, skips: &[Skip]) -> Result<rbdc::db::ExecResult>
     where
         T: CRUDTable;
 
-    async fn save_batch<T>(&self, tables: &[T], skips: &[Skip]) -> Result<DBExecResult>
+    async fn save_batch<T>(&self, tables: &[T], skips: &[Skip]) -> Result<rbdc::db::ExecResult>
     where
         T: CRUDTable;
 
@@ -293,7 +293,7 @@ pub trait CRUD {
         tables: &[T],
         slice_len: usize,
         skips: &[Skip],
-    ) -> Result<DBExecResult>
+    ) -> Result<rbdc::db::ExecResult>
     where
         T: CRUDTable;
 
@@ -415,7 +415,7 @@ pub trait CRUDMut: ExecutorMut {
     }
 
     /// save one entity to database
-    async fn save<T>(&mut self, table: &T, skips: &[Skip]) -> Result<DBExecResult>
+    async fn save<T>(&mut self, table: &T, skips: &[Skip]) -> Result<rbdc::db::ExecResult>
     where
         T: CRUDTable,
     {
@@ -440,14 +440,14 @@ pub trait CRUDMut: ExecutorMut {
     /// [rbatis] Exec ==>   insert into biz_activity (id,name,version) values ( ? , ? , ?),( ? , ? , ?)
     ///
     ///
-    async fn save_batch<T>(&mut self, tables: &[T], skips: &[Skip]) -> Result<DBExecResult>
+    async fn save_batch<T>(&mut self, tables: &[T], skips: &[Skip]) -> Result<rbdc::db::ExecResult>
     where
         T: CRUDTable,
     {
         if tables.is_empty() {
-            return Ok(DBExecResult {
+            return Ok(rbdc::db::ExecResult {
                 rows_affected: 0,
-                last_insert_id: None,
+                last_insert_id: Value::Null,
             });
         }
         let mut value_arr = String::new();
@@ -490,16 +490,16 @@ pub trait CRUDMut: ExecutorMut {
         tables: &[T],
         slice_len: usize,
         skips: &[Skip],
-    ) -> Result<DBExecResult>
+    ) -> Result<rbdc::db::ExecResult>
     where
         T: CRUDTable,
     {
         if slice_len == 0 || tables.len() <= slice_len {
             return self.save_batch(tables, skips).await;
         } else {
-            let mut temp_result = DBExecResult {
+            let mut temp_result = rbdc::db::ExecResult {
                 rows_affected: 0,
-                last_insert_id: None,
+                last_insert_id: Value::Null,
             };
             let total = tables.len();
             let mut pages = tables.len() / slice_len;
@@ -911,7 +911,7 @@ impl CRUD for Rbatis {
         conn.save_by_wrapper(table, w, skips).await
     }
 
-    async fn save<T>(&self, table: &T, skips: &[Skip]) -> Result<DBExecResult>
+    async fn save<T>(&self, table: &T, skips: &[Skip]) -> Result<rbdc::db::ExecResult>
     where
         T: CRUDTable,
     {
@@ -919,7 +919,7 @@ impl CRUD for Rbatis {
         conn.save(table, skips).await
     }
 
-    async fn save_batch<T>(&self, tables: &[T], skips: &[Skip]) -> Result<DBExecResult>
+    async fn save_batch<T>(&self, tables: &[T], skips: &[Skip]) -> Result<rbdc::db::ExecResult>
     where
         T: CRUDTable,
     {
@@ -932,7 +932,7 @@ impl CRUD for Rbatis {
         tables: &[T],
         slice_len: usize,
         skips: &[Skip],
-    ) -> Result<DBExecResult>
+    ) -> Result<rbdc::db::ExecResult>
     where
         T: CRUDTable,
     {

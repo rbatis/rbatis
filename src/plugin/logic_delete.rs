@@ -1,8 +1,5 @@
 use std::fmt::{Debug, Display, Formatter};
-
 use rbson::Bson;
-
-use crate::core::db::DriverType;
 use crate::core::Error;
 use crate::crud::{CRUDTable, Skip};
 use crate::sql::rule::SqlRule;

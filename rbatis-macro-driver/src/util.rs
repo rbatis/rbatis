@@ -111,7 +111,7 @@ pub(crate) fn find_fn_body(target_fn: &ItemFn) -> proc_macro2::TokenStream {
 }
 
 pub(crate) fn is_fetch(return_source: &str) -> bool {
-    let is_select = !return_source.contains("DBExecResult");
+    let is_select = !return_source.contains("ExecResult");
     return is_select;
 }
 

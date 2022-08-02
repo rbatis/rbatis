@@ -15,4 +15,5 @@ pub mod error;
 #[macro_use]
 pub mod convert;
 pub mod decode;
+pub mod db;
 

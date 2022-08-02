@@ -7,7 +7,7 @@ use std::time::Duration;
 use either::Either;
 use futures_core::stream::BoxStream;
 use futures_util::{StreamExt, TryStreamExt};
-use rbdc::db::{Connection, Row};
+use rbdc::db::{Connection, ExecResult, Row};
 use rbs::Value;
 use crate::query::SqliteQuery;
 use crate::type_info::Type;
@@ -92,7 +92,7 @@ impl Connection for SqliteConnection {
         })
     }
 
-    fn exec(&mut self, sql: &str, params: Vec<Value>) -> BoxFuture<Result<u64, Error>> {
+    fn exec(&mut self, sql: &str, params: Vec<Value>) -> BoxFuture<Result<ExecResult, Error>> {
         let sql = sql.to_owned();
         Box::pin(async move {
             if params.len() == 0 {
@@ -104,12 +104,18 @@ impl Connection for SqliteConnection {
                 while let Some(item) = many.next().await {
                     match item? {
                         Either::Left(l) => {
-                            return Ok(l.rows_affected());
+                            return Ok(ExecResult {
+                                rows_affected: l.rows_affected(),
+                                last_insert_id: Value::U64(l.last_insert_rowid as u64)
+                            });
                         }
                         Either::Right(r) => {}
                     }
                 }
-                return Ok(0);
+                return Ok(ExecResult {
+                    rows_affected: 0,
+                    last_insert_id: Value::Null
+                });
             } else {
                 let mut type_info = Vec::with_capacity(params.len());
                 for x in &params {
@@ -124,12 +130,18 @@ impl Connection for SqliteConnection {
                 while let Some(item) = many.next().await {
                     match item? {
                         Either::Left(l) => {
-                            return Ok(l.rows_affected());
+                            return Ok(ExecResult {
+                                rows_affected: l.rows_affected(),
+                                last_insert_id: Value::U64(l.last_insert_rowid as u64)
+                            });
                         }
                         Either::Right(r) => {}
                     }
                 }
-                return Ok(0);
+                return Ok(ExecResult {
+                    rows_affected: 0,
+                    last_insert_id: Value::Null
+                });
             }
         })
     }

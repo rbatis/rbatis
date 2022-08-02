@@ -10,7 +10,7 @@ use either::Either;
 use futures_core::future::BoxFuture;
 use futures_util::{FutureExt, StreamExt, TryFutureExt};
 use rbdc::common::StatementCache;
-use rbdc::db::{Connection, Row};
+use rbdc::db::{Connection, ExecResult, Row};
 use rbdc::ext::ustr::UStr;
 use rbdc::io::Decode;
 use rbdc::Error;
@@ -227,7 +227,7 @@ impl Connection for PgConnection {
         })
     }
 
-    fn exec(&mut self, sql: &str, params: Vec<Value>) -> BoxFuture<Result<u64, Error>> {
+    fn exec(&mut self, sql: &str, params: Vec<Value>) -> BoxFuture<Result<ExecResult, Error>> {
         let sql = sql.to_owned();
         Box::pin(async move {
             if params.len() == 0 {
@@ -239,12 +239,18 @@ impl Connection for PgConnection {
                 while let Some(item) = many.next().await {
                     match item? {
                         Either::Left(l) => {
-                            return Ok(l.rows_affected);
+                            return Ok(ExecResult {
+                                rows_affected: l.rows_affected,
+                                last_insert_id: Value::Null
+                            });
                         }
                         Either::Right(r) => {}
                     }
                 }
-                return Ok(0);
+                return Ok(ExecResult {
+                    rows_affected: 0,
+                    last_insert_id: Value::Null
+                });
             } else {
                 let mut type_info = Vec::with_capacity(params.len());
                 for x in &params {
@@ -259,12 +265,18 @@ impl Connection for PgConnection {
                 while let Some(item) = many.next().await {
                     match item? {
                         Either::Left(l) => {
-                            return Ok(l.rows_affected);
+                            return Ok(ExecResult {
+                                rows_affected: l.rows_affected,
+                                last_insert_id: Value::Null
+                            });
                         }
                         Either::Right(r) => {}
                     }
                 }
-                return Ok(0);
+                return Ok(ExecResult {
+                    rows_affected: 0,
+                    last_insert_id: Value::Null
+                });
             }
         })
     }

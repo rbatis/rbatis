@@ -6,8 +6,6 @@ use rbatis_core::Error;
 use rbson::Bson;
 use serde::de::DeserializeOwned;
 use serde::{Deserialize, Serialize};
-
-use crate::core::db::DriverType;
 use crate::sql::PageLimit;
 
 /// default 10

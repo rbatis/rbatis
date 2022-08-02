@@ -3,7 +3,7 @@ use std::ops::{Deref, DerefMut};
 
 use async_trait::async_trait;
 use futures::Future;
-use rbatis_core::db::DBExecResult;
+use rbdc::db::ExecResult;
 use rbson::spec::BinarySubtype;
 use rbson::Bson;
 use serde::de::DeserializeOwned;
@@ -67,7 +67,7 @@ impl RbatisExecutor<'_, '_> {
         }
     }
 
-    pub async fn exec(&mut self, sql: &str, args: Vec<Bson>) -> Result<DBExecResult, Error> {
+    pub async fn exec(&mut self, sql: &str, args: Vec<Bson>) -> Result<rbdc::db::ExecResult, Error> {
         match self {
             RbatisExecutor::RB(rb) => {
                 return rb.exec(sql, args).await;
@@ -165,7 +165,7 @@ pub trait RbatisRef {
 
 #[async_trait]
 pub trait ExecutorMut: RbatisRef {
-    async fn exec(&mut self, sql: &str, args: Vec<rbson::Bson>) -> Result<DBExecResult, Error>;
+    async fn exec(&mut self, sql: &str, args: Vec<rbson::Bson>) -> Result<rbdc::db::ExecResult, Error>;
     async fn fetch<T>(&mut self, sql: &str, args: Vec<rbson::Bson>) -> Result<T, Error>
     where
         T: DeserializeOwned;
@@ -210,7 +210,7 @@ fn bson_arr_to_string(arg: Vec<Bson>) -> (Vec<Bson>, String) {
 
 #[async_trait]
 impl<'a> ExecutorMut for RBatisConnExecutor<'_> {
-    async fn exec(&mut self, sql: &str, mut args: Vec<rbson::Bson>) -> Result<DBExecResult, Error> {
+    async fn exec(&mut self, sql: &str, mut args: Vec<rbson::Bson>) -> Result<rbdc::db::ExecResult, Error> {
         let rb_task_id = new_snowflake_id();
         let mut sql = sql.to_string();
         let is_prepared = args.len() > 0;
@@ -349,7 +349,7 @@ impl<'a, 'b> RBatisTxExecutor<'b> {
 
 #[async_trait]
 impl<'a> ExecutorMut for RBatisTxExecutor<'_> {
-    async fn exec(&mut self, sql: &str, mut args: Vec<rbson::Bson>) -> Result<DBExecResult, Error> {
+    async fn exec(&mut self, sql: &str, mut args: Vec<rbson::Bson>) -> Result<rbdc::db::ExecResult, Error> {
         let mut sql = sql.to_string();
         let is_prepared = args.len() > 0;
         for item in &self.get_rbatis().sql_intercepts {
@@ -613,7 +613,7 @@ impl Drop for RBatisTxExecutorGuard<'_> {
 }
 
 impl Rbatis {
-    pub async fn exec(&self, sql: &str, args: Vec<Bson>) -> Result<DBExecResult, Error> {
+    pub async fn exec(&self, sql: &str, args: Vec<Bson>) -> Result<rbdc::db::ExecResult, Error> {
         let mut conn = self.acquire().await?;
         conn.exec(sql, args).await
     }
@@ -629,7 +629,7 @@ impl Rbatis {
 
 #[async_trait]
 impl ExecutorMut for Rbatis {
-    async fn exec(&mut self, sql: &str, args: Vec<Bson>) -> Result<DBExecResult, Error> {
+    async fn exec(&mut self, sql: &str, args: Vec<Bson>) -> Result<rbdc::db::ExecResult, Error> {
         let mut conn = self.acquire().await?;
         conn.exec(sql, args).await
     }

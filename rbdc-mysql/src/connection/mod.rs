@@ -5,7 +5,7 @@ use either::Either;
 use futures_core::future::BoxFuture;
 use futures_util::{FutureExt, StreamExt};
 use rbdc::common::StatementCache;
-use rbdc::db::{Connection, Row};
+use rbdc::db::{Connection, ExecResult, Row};
 use rbdc::Error;
 use rbs::Value;
 use std::fmt::{self, Debug, Formatter};
@@ -134,7 +134,7 @@ impl Connection for MySqlConnection {
         })
     }
 
-    fn exec(&mut self, sql: &str, params: Vec<Value>) -> BoxFuture<Result<u64, Error>> {
+    fn exec(&mut self, sql: &str, params: Vec<Value>) -> BoxFuture<Result<ExecResult, Error>> {
         let sql = sql.to_owned();
         Box::pin(async move {
             if params.len() == 0 {
@@ -146,12 +146,18 @@ impl Connection for MySqlConnection {
                 while let Some(item) = many.next().await {
                     match item? {
                         Either::Left(l) => {
-                            return Ok(l.rows_affected);
+                            return Ok(ExecResult {
+                                rows_affected: l.rows_affected,
+                                last_insert_id: Value::U64(l.last_insert_id)
+                            });
                         }
                         Either::Right(r) => {}
                     }
                 }
-                return Ok(0);
+                return Ok(ExecResult {
+                    rows_affected: 0,
+                    last_insert_id: Value::Null
+                });
             } else {
                 let stmt = self.prepare_with(&sql, &[]).await?;
                 let mut many = self.fetch_many(MysqlQuery {
@@ -162,12 +168,18 @@ impl Connection for MySqlConnection {
                 while let Some(item) = many.next().await {
                     match item? {
                         Either::Left(l) => {
-                            return Ok(l.rows_affected);
+                            return Ok(ExecResult {
+                                rows_affected: l.rows_affected,
+                                last_insert_id: Value::U64(l.last_insert_id)
+                            });
                         }
                         Either::Right(r) => {}
                     }
                 }
-                return Ok(0);
+                return Ok(ExecResult {
+                    rows_affected: 0,
+                    last_insert_id: Value::Null
+                });
             }
         })
     }
