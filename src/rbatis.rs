@@ -26,7 +26,7 @@ use rbdc::pool::Pool;
 // #[derive(Debug)]
 pub struct Rbatis {
     // the connection pool,use OnceCell init this
-    pub pool: OnceCell<rbdc::pool::Pool>,
+    pub pool: OnceCell<Pool>,
     // sql intercept vec chain
     pub sql_intercepts: Vec<Box<dyn SqlIntercept>>,
     // log plugin
