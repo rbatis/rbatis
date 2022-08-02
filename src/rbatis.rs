@@ -9,7 +9,6 @@ use std::time::Duration;
 use uuid::Uuid;
 
 use rbdc::db::ExecResult;
-use crate::core::db::{DBPool, DBPoolConn, DBPoolOptions, DBQuery, DBTx, DriverType};
 use crate::core::Error;
 use crate::crud::CRUDTable;
 use crate::executor::{RBatisConnExecutor, RBatisTxExecutor, RbatisExecutor};
@@ -23,12 +22,13 @@ use crate::utils::error_util::ToResult;
 use crate::utils::string_util;
 use crate::wrapper::Wrapper;
 use std::fmt::{Debug, Formatter};
+use rbdc::pool::Pool;
 
 /// rbatis engine
 // #[derive(Debug)]
 pub struct Rbatis {
     // the connection pool,use OnceCell init this
-    pub pool: OnceCell<DBPool>,
+    pub pool: OnceCell<rbdc::pool::Pool>,
     // page plugin
     pub page_plugin: Box<dyn PagePlugin>,
     // sql intercept vec chain
@@ -106,9 +106,6 @@ impl Rbatis {
     /// try return an new wrapper,if not call the link() method,it will be panic!
     pub fn new_wrapper(&self) -> Wrapper {
         let driver = self.driver_type();
-        if driver.as_ref().unwrap().eq(&DriverType::None) {
-            panic!("[rbatis] .new_wrapper() method must be call .link(url) to init first!");
-        }
         Wrapper::new(&driver.unwrap_or_else(|_| {
             panic!("[rbatis] .new_wrapper() method must be call .link(url) to init first!");
         }))
@@ -183,7 +180,7 @@ impl Rbatis {
     }
 
     /// get conn pool
-    pub fn get_pool(&self) -> Result<&DBPool, Error> {
+    pub fn get_pool(&self) -> Result<&Pool, Error> {
         let p = self.pool.get();
         if p.is_none() {
             return Err(Error::from("[rbatis] rbatis pool not inited!"));
@@ -192,9 +189,9 @@ impl Rbatis {
     }
 
     /// get driver type
-    pub fn driver_type(&self) -> Result<DriverType, Error> {
+    pub fn driver_type(&self) -> Result<&str, Error> {
         let pool = self.get_pool()?;
-        Ok(pool.driver_type())
+        Ok(pool.name())
     }
 
     /// get an DataBase Connection used for the next step

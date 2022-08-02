@@ -9,6 +9,10 @@ use std::str::FromStr;
 pub struct PgDriver {}
 
 impl Driver for PgDriver {
+    fn name(&self) -> &str {
+        "postgres"
+    }
+
     fn connect(&self, url: &str) -> BoxFuture<Result<Box<dyn Connection>, Error>> {
         let url = url.to_owned();
         Box::pin(async move {

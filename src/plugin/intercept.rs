@@ -1,7 +1,6 @@
 use crate::core::convert::StmtConvert;
 use crate::crud::CRUDTable;
 use crate::rbatis::Rbatis;
-use crate::DriverType;
 use rbatis_core::Error;
 use rbson::Bson;
 use std::fmt::{Debug, Display};
@@ -35,19 +34,14 @@ impl SqlIntercept for RbatisLogFormatSqlIntercept {
         is_prepared_sql: bool,
     ) -> Result<(), Error> {
         let driver_type = rb.driver_type()?;
-        match driver_type {
-            DriverType::None => {}
-            DriverType::Mysql | DriverType::Postgres | DriverType::Sqlite | DriverType::Mssql => {
-                let mut formated = format!("[format_sql]{}", sql);
-                for index in 0..args.len() {
-                    let mut data = String::new();
-                    driver_type.stmt_convert(index, &mut data);
-                    formated =
-                        formated.replacen(&data, &format!("{}", args.get(index).unwrap()), 1);
-                }
-                rb.log_plugin.info(0, &formated);
-            }
+        let mut formated = format!("[format_sql]{}", sql);
+        for index in 0..args.len() {
+            let mut data = String::new();
+            driver_type.stmt_convert(index, &mut data);
+            formated =
+                formated.replacen(&data, &format!("{}", args.get(index).unwrap()), 1);
         }
+        rb.log_plugin.info(0, &formated);
         return Ok(());
     }
 }

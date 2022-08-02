@@ -7,6 +7,10 @@ use crate::{SqliteConnection, SqliteConnectOptions};
 pub struct SqliteDriver {}
 
 impl Driver for SqliteDriver {
+    fn name(&self) -> &str {
+        "sqlite"
+    }
+
     fn connect(&self, url: &str) -> BoxFuture<Result<Box<dyn Connection>, Error>> {
         let url = url.to_owned();
         Box::pin(async move {
