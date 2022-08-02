@@ -20,6 +20,13 @@ pub trait Driver: Debug + Sync + Send {
     fn default_option(&self) -> Box<dyn ConnectOptions>;
 }
 
+#[derive(Debug, Default, serde::Serialize, serde::Deserialize)]
+pub struct ExecResult {
+    pub rows_affected: u64,
+    /// If some databases do not support last_insert_id, the default value is Null
+    pub last_insert_id: Value,
+}
+
 /// Represents a connection to a database
 pub trait Connection: Send {
     /// Execute a query that is expected to return a result set, such as a `SELECT` statement
@@ -54,7 +61,7 @@ pub trait Connection: Send {
     }
 
     /// Execute a query that is expected to update some rows.
-    fn exec(&mut self, sql: &str, params: Vec<Value>) -> BoxFuture<Result<u64, Error>>;
+    fn exec(&mut self, sql: &str, params: Vec<Value>) -> BoxFuture<Result<ExecResult, Error>>;
 
     /// close connection
     fn close(&mut self) -> BoxFuture<'static, Result<(), Error>>;

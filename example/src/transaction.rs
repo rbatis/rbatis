@@ -1,7 +1,7 @@
 #[cfg(test)]
 mod test {
     use crate::{init_sqlite, BizActivity};
-    use rbatis::core::db::DBExecResult;
+    use rbdc::db::ExecResult;
     use rbatis::executor::{ExecutorMut, RBatisTxExecutor, RbatisExecutor, RbatisRef};
     use rbatis::rbatis::Rbatis;
     use std::cell::Cell;

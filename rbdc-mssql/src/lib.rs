@@ -6,7 +6,7 @@ use std::any::Any;
 use std::sync::Arc;
 use futures_core::future::BoxFuture;
 use futures_util::StreamExt;
-use rbdc::db::{Connection, ConnectOptions, MetaData, Row};
+use rbdc::db::{Connection, ConnectOptions, MetaData, ExecResult, Row};
 use tiberius::{Client, Config, AuthMethod, Column, QueryStream, Query, ColumnData};
 use rbdc::{block_on, Error};
 use rbs::Value;
@@ -124,7 +124,7 @@ impl Connection for MssqlConnection {
         })
     }
 
-    fn exec(&mut self, sql: &str, params: Vec<Value>) -> BoxFuture<Result<u64, rbdc::Error>> {
+    fn exec(&mut self, sql: &str, params: Vec<Value>) -> BoxFuture<Result<ExecResult, rbdc::Error>> {
         let sql = sql.to_string();
         Box::pin(async move {
             let mut q = Query::new(sql);
@@ -132,7 +132,10 @@ impl Connection for MssqlConnection {
                 x.encode(&mut q)?;
             }
             let v = q.execute(&mut self.inner).await.map_err(|e| Error::from(e.to_string()))?;
-            Ok(v.rows_affected().len() as u64)
+            Ok(ExecResult {
+                rows_affected: v.rows_affected().len() as u64,
+                last_insert_id: Value::Null,
+            })
         })
     }
 
