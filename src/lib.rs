@@ -27,7 +27,6 @@ pub mod plugin;
 pub use plugin::*;
 
 pub mod rbatis;
-pub mod sql;
 #[macro_use]
 pub mod utils;
 pub mod executor;

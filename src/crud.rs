@@ -11,7 +11,6 @@ use rbdc::db::ExecResult;
 use crate::core::Error;
 use crate::core::Result;
 use crate::executor::{ExecutorMut, RBatisConnExecutor, RBatisTxExecutor};
-use crate::plugin::page::{IPage, IPageRequest, Page};
 use crate::rbatis::Rbatis;
 use crate::sql::rule::SqlRule;
 use crate::utils::string_util::to_snake_name;

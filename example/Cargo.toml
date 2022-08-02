@@ -6,38 +6,6 @@ edition = "2018"
 publish = false
 
 
-[[bin]]
-name = "actix-web"
-path = "src/actix_web/main.rs"
-
-[[bin]]
-name = "tide"
-path = "src/tide/main.rs"
-
-[[bin]]
-name = "hyper"
-path = "src/hyper/main.rs"
-
-[[bin]]
-name = "warp"
-path = "src/warp/main.rs"
-
-[[bin]]
-name = "rocket"
-path = "src/rocket/main.rs"
-
-[[bin]]
-name = "ntex"
-path = "src/ntex/main.rs"
-
-[[bin]]
-name = "axum"
-path = "src/axum/main.rs"
-
-[[bin]]
-name = "salvo"
-path = "src/salvo/main.rs"
-
 [dependencies]
 #serde and base types
 serde = { version = "1", features = ["derive"] }

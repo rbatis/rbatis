@@ -14,8 +14,6 @@ use crate::crud::CRUDTable;
 use crate::executor::{RBatisConnExecutor, RBatisTxExecutor, RbatisExecutor};
 use crate::plugin::intercept::SqlIntercept;
 use crate::plugin::log::{LogPlugin, RbatisLogPlugin};
-use crate::plugin::logic_delete::{LogicDelete, RbatisLogicDeletePlugin};
-use crate::plugin::page::{IPage, IPageRequest, Page, PagePlugin, RbatisPagePlugin};
 use crate::snowflake::new_snowflake_id;
 use crate::sql::PageLimit;
 use crate::utils::error_util::ToResult;
@@ -29,16 +27,10 @@ use rbdc::pool::Pool;
 pub struct Rbatis {
     // the connection pool,use OnceCell init this
     pub pool: OnceCell<rbdc::pool::Pool>,
-    // page plugin
-    pub page_plugin: Box<dyn PagePlugin>,
     // sql intercept vec chain
     pub sql_intercepts: Vec<Box<dyn SqlIntercept>>,
     // log plugin
     pub log_plugin: Arc<Box<dyn LogPlugin>>,
-    // logic delete plugin
-    pub logic_plugin: Option<Box<dyn LogicDelete>>,
-    // sql param binder
-    pub encoder: fn(q: &mut DBQuery, arg: rbson::Bson) -> crate::Result<()>,
 }
 
 impl Debug for Rbatis {
@@ -61,22 +53,16 @@ impl Default for Rbatis {
 ///Rbatis Options
 #[derive(Debug)]
 pub struct RbatisOption {
-    /// page plugin
-    pub page_plugin: Box<dyn PagePlugin>,
     /// sql intercept vec chain
     pub sql_intercepts: Vec<Box<dyn SqlIntercept>>,
     /// log plugin
     pub log_plugin: Arc<Box<dyn LogPlugin>>,
-    /// logic delete plugin
-    pub logic_plugin: Option<Box<dyn LogicDelete>>,
 }
 
 impl Default for RbatisOption {
     fn default() -> Self {
         Self {
-            page_plugin: Box::new(RbatisPagePlugin::new()),
             sql_intercepts: vec![],
-            logic_plugin: None,
             log_plugin: Arc::new(Box::new(RbatisLogPlugin::default()) as Box<dyn LogPlugin>),
         }
     }
@@ -92,14 +78,8 @@ impl Rbatis {
     pub fn new_with_opt(option: RbatisOption) -> Self {
         return Self {
             pool: OnceCell::new(),
-            page_plugin: option.page_plugin,
             sql_intercepts: option.sql_intercepts,
-            logic_plugin: option.logic_plugin,
             log_plugin: option.log_plugin,
-            encoder: |q, arg| {
-                q.bind_value(arg)?;
-                Ok(())
-            },
         };
     }
 
@@ -226,30 +206,5 @@ impl Rbatis {
     /// change ref to executor
     pub fn as_executor(&self) -> RbatisExecutor {
         self.into()
-    }
-}
-
-pub trait AsSqlTag {
-    fn sql_tag(&self) -> char;
-    fn do_replace_tag(&self, sql: &mut String);
-}
-
-impl AsSqlTag for DriverType {
-    #[inline]
-    fn sql_tag(&self) -> char {
-        match self {
-            DriverType::None => '?',
-            DriverType::Mysql => '?',
-            DriverType::Sqlite => '?',
-            DriverType::Postgres => '$',
-            //mssql is '@p',so use '$' to '@p'
-            DriverType::Mssql => '$',
-        }
-    }
-    #[inline]
-    fn do_replace_tag(&self, sql: &mut String) {
-        if self.eq(&DriverType::Mssql) {
-            *sql = sql.replace("$", "@p");
-        }
     }
 }
