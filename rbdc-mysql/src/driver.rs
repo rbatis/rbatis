@@ -12,6 +12,10 @@ use std::sync::Arc;
 pub struct MysqlDriver {}
 
 impl Driver for MysqlDriver {
+    fn name(&self) -> &str {
+        "mysql"
+    }
+
     fn connect(&self, url: &str) -> BoxFuture<Result<Box<dyn Connection>, Error>> {
         let url = url.to_owned();
         Box::pin(async move {

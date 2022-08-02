@@ -1,5 +1,3 @@
-use crate::DriverType;
-
 pub trait SqlRule {
     fn make_where(&self, where_sql: &str) -> String {
         let sql = where_sql.trim_start();

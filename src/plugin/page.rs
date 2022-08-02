@@ -304,7 +304,7 @@ impl RbatisReplacePagePlugin {
 impl PagePlugin for RbatisReplacePagePlugin {
     fn make_page_sql(
         &self,
-        driver_type: &DriverType,
+        driver_type: &str,
         sql: &str,
         args: &Vec<Bson>,
         page: &dyn IPageRequest,
@@ -326,22 +326,7 @@ impl PagePlugin for RbatisReplacePagePlugin {
         }
         //limit sql
         let limit_sql = driver_type.page_limit_sql(page.offset(), page.get_page_size())?;
-        match driver_type {
-            DriverType::Mssql => {
-                sql = format!(
-                    "{} RB_DATA.*, 0 {} RB_DATA_ORDER {} ({})RB_DATA {} RB_DATA_ORDER {}",
-                    crate::sql::TEMPLATE.select.value,
-                    crate::sql::TEMPLATE.r#as.value,
-                    crate::sql::TEMPLATE.from.value,
-                    sql,
-                    crate::sql::TEMPLATE.order_by.value,
-                    limit_sql
-                );
-            }
-            _ => {
-                sql = sql + limit_sql.as_str();
-            }
-        }
+        sql = sql + limit_sql.as_str();
         return Ok((count_sql, sql));
     }
 }
@@ -364,7 +349,7 @@ impl RbatisPackPagePlugin {
 impl PagePlugin for RbatisPackPagePlugin {
     fn make_page_sql(
         &self,
-        driver_type: &DriverType,
+        driver_type: &str,
         sql: &str,
         args: &Vec<Bson>,
         page: &dyn IPageRequest,
@@ -386,22 +371,7 @@ impl PagePlugin for RbatisPackPagePlugin {
         }
         //limit sql
         let limit_sql = driver_type.page_limit_sql(page.offset(), page.get_page_size())?;
-        match driver_type {
-            DriverType::Mssql => {
-                sql = format!(
-                    "{} RB_DATA.*, 0 {} RB_DATA_ORDER {} ({})RB_DATA {} RB_DATA_ORDER {}",
-                    crate::sql::TEMPLATE.select.value,
-                    crate::sql::TEMPLATE.r#as.value,
-                    crate::sql::TEMPLATE.from.value,
-                    sql,
-                    crate::sql::TEMPLATE.order_by.value,
-                    limit_sql
-                );
-            }
-            _ => {
-                sql = sql + limit_sql.as_str();
-            }
-        }
+        sql = sql + limit_sql.as_str();
         return Ok((count_sql, sql));
     }
 }

@@ -7,7 +7,7 @@ use std::ops::Add;
 use serde::{Deserialize, Serialize};
 
 use crate::core::convert::StmtConvert;
-use crate::core::db::DriverType;
+
 use crate::core::Error;
 
 /// The packing/Wrapper of the SQL

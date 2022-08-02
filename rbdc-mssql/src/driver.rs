@@ -8,6 +8,10 @@ use crate::{MssqlConnection, MssqlConnectOptions};
 pub struct MssqlDriver {}
 
 impl Driver for MssqlDriver {
+    fn name(&self) -> &str {
+        "mssql"
+    }
+
     fn connect(&self, url: &str) -> BoxFuture<Result<Box<dyn Connection>, Error>> {
         let url = url.to_owned();
         Box::pin(async move {

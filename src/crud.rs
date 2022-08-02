@@ -146,7 +146,7 @@ pub trait CRUDTable: Send + Sync + Serialize {
     /// return cast chain
     /// column:format_str
     /// for example: HashMap<"id",|arg|“{}::uuid”.to_string()>
-    fn formats(driver_type: &crate::core::db::DriverType) -> HashMap<String, String> {
+    fn formats(driver_type: &str) -> HashMap<String, String> {
         return HashMap::new();
     }
 
@@ -1192,7 +1192,7 @@ where
     /// return cast chain
     /// column:format_str
     /// for example: HashMap<"id",“{}::uuid”.to_string()>
-    fn formats(driver_type: &crate::core::db::DriverType) -> HashMap<String, String> {
+    fn formats(driver_type: &str) -> HashMap<String, String> {
         T::formats(driver_type)
     }
 
