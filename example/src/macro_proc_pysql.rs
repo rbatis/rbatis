@@ -4,7 +4,7 @@ mod test {
     use std::io::Read;
 
     use rbatis::executor::RbatisExecutor;
-    use rbatis::plugin::page::{Page, PageRequest};
+    use rbatis::sql::page::{Page, PageRequest};
     use rbatis::rbatis::Rbatis;
 
     use crate::{init_sqlite, BizActivity};
@@ -30,7 +30,7 @@ mod test {
                     and name=#{name}"
     )]
     async fn py_select_page(
-        mut rb: RbatisExecutor<'_, '_>,
+        mut rb: RbatisExecutor<'_>,
         page_req: &PageRequest,
         name: &str,
     ) -> Page<BizActivity> {
