@@ -36,31 +36,6 @@ pub enum RbatisExecutor<'r>
 }
 
 impl RbatisExecutor<'_> {
-    // pub async fn fetch_page<T>(
-    //     &mut self,
-    //     sql: &str,
-    //     args: Vec<Value>,
-    //     page_request: &dyn IPageRequest,
-    // ) -> crate::Result<Page<T>>
-    // where
-    //     T: DeserializeOwned + Serialize + Send + Sync,
-    // {
-    //     match self {
-    //         RbatisExecutor::RB(rb) => {
-    //             return rb.fetch_page(sql, args, page_request).await;
-    //         }
-    //         RbatisExecutor::Conn(rb) => {
-    //             return rb.fetch_page(sql, args, page_request).await;
-    //         }
-    //         RbatisExecutor::TX(rb) => {
-    //             return rb.fetch_page(sql, args, page_request).await;
-    //         }
-    //         RbatisExecutor::TxGuard(rb) => {
-    //             return rb.fetch_page(sql, args, page_request).await;
-    //         }
-    //     }
-    // }
-
     pub async fn exec(&mut self, sql: &str, args: Vec<Value>) -> Result<rbdc::db::ExecResult, Error> {
         match self {
             RbatisExecutor::RB(rb) => {
