@@ -25,7 +25,7 @@ async fn select_by_condition(
     page_req: &PageRequest,
     name: &str,
     dt: &rbatis::core::datetime::DateTime,
-) -> Page<BizActivity> {
+) -> Vec<BizActivity> {
     impled!()
 }
 
