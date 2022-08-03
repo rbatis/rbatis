@@ -12,15 +12,18 @@ pub trait Tx{
 
 #[async_trait]
 impl Tx for Box<dyn Connection>{
-    async fn begin(self) -> Result<Self, Error> {
-        todo!()
+    async fn begin(mut self) -> Result<Self, Error> {
+        self.exec("begin",vec![]).await?;
+        Ok(self)
     }
 
     async fn rollback(&mut self) -> Result<(), Error> {
-        todo!()
+        self.exec("rollback",vec![]).await?;
+        Ok(())
     }
 
     async fn commit(&mut self) -> Result<(), Error> {
-        todo!()
+        self.exec("commit",vec![]).await?;
+        Ok(())
     }
 }
