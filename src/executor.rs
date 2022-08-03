@@ -37,18 +37,18 @@ pub enum RbatisExecutor<'r>
 
 impl RbatisExecutor<'_> {
     pub async fn exec(&mut self, sql: &str, args: Vec<Value>) -> Result<rbdc::db::ExecResult, Error> {
-        match self {
+        return match self {
             RbatisExecutor::RB(rb) => {
-                return rb.exec(sql, args).await;
+                rb.exec(sql, args).await
             }
             RbatisExecutor::Conn(rb) => {
-                return rb.exec(sql, args).await;
+                rb.exec(sql, args).await
             }
             RbatisExecutor::TX(rb) => {
-                return rb.exec(sql, args).await;
+                rb.exec(sql, args).await
             }
             RbatisExecutor::TxGuard(rb) => {
-                return rb.exec(sql, args).await;
+                rb.exec(sql, args).await
             }
         }
     }
@@ -57,18 +57,18 @@ impl RbatisExecutor<'_> {
     where
         T: DeserializeOwned,
     {
-        match self {
+        return match self {
             RbatisExecutor::RB(rb) => {
-                return rb.fetch(sql, args).await;
+                rb.fetch(sql, args).await
             }
             RbatisExecutor::Conn(rb) => {
-                return rb.fetch(sql, args).await;
+                rb.fetch(sql, args).await
             }
             RbatisExecutor::TX(rb) => {
-                return rb.fetch(sql, args).await;
+                rb.fetch(sql, args).await
             }
             RbatisExecutor::TxGuard(rb) => {
-                return rb.fetch(sql, args).await;
+                rb.fetch(sql, args).await
             }
         }
     }
@@ -485,18 +485,6 @@ impl RBatisTxExecutor {
             }),
         }
     }
-
-    // pub async fn fetch_page<T>(
-    //     &self,
-    //     sql: &str,
-    //     args: Vec<Value>,
-    //     page_request: &dyn IPageRequest,
-    // ) -> crate::Result<Page<T>>
-    // where
-    //     T: DeserializeOwned + Serialize + Send + Sync,
-    // {
-    //     self.get_rbatis().fetch_page(sql, args, page_request).await
-    // }
 }
 
 impl Deref for RBatisTxExecutorGuard {
