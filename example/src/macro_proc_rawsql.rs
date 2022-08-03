@@ -4,7 +4,7 @@ mod test {
     use std::io::Read;
 
     use rbatis::executor::RbatisExecutor;
-    use rbatis::plugin::page::{Page, PageRequest};
+    use rbatis::sql::page::{Page, PageRequest};
     use rbatis::rbatis::Rbatis;
 
     use crate::{init_sqlite, BizActivity};

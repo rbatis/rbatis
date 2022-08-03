@@ -5,7 +5,6 @@ use std::collections::HashMap;
 
 use syn::{parse_macro_input, AttributeArgs, ItemFn};
 
-use crate::macros::crud_table_impl::{impl_crud, impl_crud_driver};
 use crate::macros::html_sql_impl::impl_macro_html_sql;
 use crate::macros::py_sql_impl::impl_macro_py_sql;
 use crate::macros::sql_impl::impl_macro_sql;
@@ -13,19 +12,6 @@ use crate::proc_macro::TokenStream;
 
 mod macros;
 mod util;
-
-#[proc_macro_derive(CRUDTable)]
-pub fn hello_macro_derive(input: TokenStream) -> TokenStream {
-    let ast = syn::parse(input).unwrap();
-    let stream = impl_crud_driver(&ast, "", "", &HashMap::new());
-    #[cfg(feature = "debug_mode")]
-    {
-        println!("............gen impl CRUDTable:\n {}", stream);
-        println!("............gen impl CRUDTable end............");
-    }
-
-    stream
-}
 
 /// auto create sql macro,this macro use RB.fetch_prepare and RB.exec_prepare
 /// for example:
@@ -124,26 +110,4 @@ pub fn html_sql(args: TokenStream, func: TokenStream) -> TokenStream {
         println!("............gen macro html_sql end............");
     }
     stream
-}
-
-/// CRUD table,You can define functionality using the following properties
-/// #[crud_table]
-/// #[crud_table(table_name:"biz_activity")]
-/// #[crud_table(table_name:"biz_activity" | table_columns:"id,name,version,delete_flag" | formats_pg:"id:{}::uuid,name:{}::string")]
-/// pub struct BizActivity {
-///   pub id: Option<String>,
-///   pub name: Option<String>,
-///   pub version: Option<i32>,
-///   pub delete_flag: Option<i32>,
-/// }
-#[proc_macro_attribute]
-pub fn crud_table(args: TokenStream, input: TokenStream) -> TokenStream {
-    let stream = impl_crud(args, input);
-    #[cfg(feature = "debug_mode")]
-    {
-        println!("............gen impl CRUDTable:\n {}", stream);
-        println!("............gen impl CRUDTable end............");
-    }
-
-    return stream;
 }

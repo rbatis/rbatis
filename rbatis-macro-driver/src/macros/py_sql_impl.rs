@@ -105,7 +105,7 @@ pub(crate) fn impl_macro_py_sql(target_fn: &ItemFn, args: &AttributeArgs) -> Tok
          #fn_body
          use rbatis::executor::{RbatisRef};
          let driver_type = #rbatis_ident.get_rbatis().driver_type()?;
-         use rbatis::{rbatis_sql,AsSqlTag};
+         //use rbatis::{rbatis_sql,AsSqlTag};
          let sql_tag = driver_type.sql_tag();
          #[rb_py(#sql_ident)]
          pub fn #func_name_ident(arg: &rbson::Bson, _tag: char) {}
