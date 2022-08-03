@@ -1,6 +1,5 @@
 #[cfg(test)]
 mod test {
-    use rbson::Bson;
     use std::fs::File;
     use std::io::Read;
 
@@ -12,6 +11,7 @@ mod test {
     pub trait IsTest {
         fn is_test(&self) -> bool;
     }
+
     impl IsTest for rbson::Bson {
         fn is_test(&self) -> bool {
             match self {

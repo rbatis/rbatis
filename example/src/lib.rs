@@ -12,6 +12,7 @@ extern crate rbatis;
 use rbatis::rbatis::Rbatis;
 use std::fs::{create_dir_all, File};
 use std::io::Read;
+use serde::{Serialize,Deserialize};
 
 mod macro_proc_htmlsql;
 mod macro_proc_htmlsql_custom_func;
@@ -19,8 +20,7 @@ mod macro_proc_pysql;
 mod macro_proc_rawsql;
 
 /// this is table model(see ../database.sql)
-#[crud_table]
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug,Serialize,Deserialize)]
 pub struct BizActivity {
     pub id: Option<String>,
     pub name: Option<String>,
@@ -31,7 +31,7 @@ pub struct BizActivity {
     pub sort: Option<String>,
     pub status: Option<i32>,
     pub remark: Option<String>,
-    pub create_time: Option<rbatis::DateTimeNative>,
+    pub create_time: Option<rbatis::core::datetime::DateTime>,
     pub version: Option<i64>,
     pub delete_flag: Option<i32>,
 }
