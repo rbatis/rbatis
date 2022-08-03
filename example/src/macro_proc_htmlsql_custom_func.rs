@@ -28,7 +28,7 @@ mod test {
     ///  </if>
     /// ```
     #[html_sql("example/example.html")]
-    async fn custom_func(rb: &mut RbatisExecutor<'_, '_>, name: &str) -> Vec<BizActivity> {
+    async fn custom_func(rb: &mut RbatisExecutor<'_>, name: &str) -> Vec<BizActivity> {
         impled!()
     }
 
