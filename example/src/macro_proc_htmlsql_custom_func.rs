@@ -3,6 +3,7 @@ use std::io::Read;
 
 use rbatis::executor::RbatisExecutor;
 use rbatis::rbatis::Rbatis;
+use rbs::Value;
 
 use crate::{init_sqlite, BizActivity};
 
@@ -10,10 +11,10 @@ pub trait IsTest {
     fn is_test(&self) -> bool;
 }
 
-impl IsTest for rbson::Bson {
+impl IsTest for rbs::Value {
     fn is_test(&self) -> bool {
         match self {
-            Bson::String(v) => v.eq("test"),
+            Value::String(v) => v.eq("test"),
             _ => false,
         }
     }

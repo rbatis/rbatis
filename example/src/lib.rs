@@ -13,6 +13,7 @@ use rbatis::rbatis::Rbatis;
 use std::fs::{create_dir_all, File};
 use std::io::Read;
 use serde::{Serialize,Deserialize};
+use rbdc_sqlite::driver::SqliteDriver;
 
 mod macro_proc_htmlsql;
 mod macro_proc_htmlsql_custom_func;
@@ -65,7 +66,7 @@ pub async fn init_sqlite_path(path: &str) -> Rbatis {
         let f = File::create(format!("{}target/sqlite.db", path)).unwrap();
         drop(f);
     }
-    rb.link(&format!("sqlite://{}target/sqlite.db", path))
+    rb.link(SqliteDriver{},&format!("sqlite://{}target/sqlite.db", path))
         .await
         .unwrap();
 

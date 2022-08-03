@@ -26,6 +26,7 @@ path = "src/macro_proc_rawsql.rs"
 [dependencies]
 #serde and base types
 serde = { version = "1", features = ["derive"] }
+rbs={version="0.1",path="../rbs"}
 serde_json = "1"
 fastdate = { version = "0.1"}
 uuid = "0.8"
@@ -37,3 +38,5 @@ fast_log = "1.5"
 #async runtime lib
 tokio = { version = "1.12", features = ["full"] }
 rbatis = { path = "../", features = ["debug_mode"] }
+rbdc={path="../rbdc"}
+rbdc-sqlite={path="../rbdc-sqlite"}
