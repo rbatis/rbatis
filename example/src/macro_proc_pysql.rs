@@ -1,4 +1,3 @@
-
 #![allow(unused_mut)]
 #![allow(unused_imports)]
 #![allow(unreachable_patterns)]
@@ -11,13 +10,16 @@
 extern crate rbatis;
 
 pub mod model;
+
 use model::*;
 use std::fs::File;
 use std::io::Read;
+use rbatis::Error;
 
 use rbatis::executor::RbatisExecutor;
 use rbatis::sql::page::{Page, PageRequest};
 use rbatis::rbatis::Rbatis;
+use rbs::{to_value, Value};
 
 use crate::{init_sqlite, BizActivity};
 
@@ -36,9 +38,10 @@ async fn py_select_page(
     mut rb: RbatisExecutor<'_>,
     page_req: &PageRequest,
     name: &str,
-) -> Page<BizActivity> {
+) -> Result<Vec<BizActivity>,Error> {
     impled!()
 }
+
 
 #[tokio::main]
 pub async fn main() {
@@ -48,6 +51,6 @@ pub async fn main() {
     let a = py_select_page(rb.as_executor(), &PageRequest::new(1, 10), "test")
         .await
         .unwrap();
-    println!("{:?}", a);
+    println!(">>>>>>>>>>>> {:?}", a);
 }
 

@@ -25,8 +25,8 @@ impl Serialize for Value {
             Value::U64(v) => s.serialize_u64(v),
             Value::F32(v) => s.serialize_f32(v),
             Value::F64(v) => s.serialize_f64(v),
-            Value::String(ref v) => Bytes::new(v.as_bytes()).serialize(s),
-            Value::Binary(ref v) => Bytes::new(&v[..]).serialize(s),
+            Value::String(ref v) => s.serialize_str(v),
+            Value::Binary(ref v) => s.serialize_bytes(v),
             Value::Array(ref array) => {
                 let mut state = s.serialize_seq(Some(array.len()))?;
                 for item in array {
