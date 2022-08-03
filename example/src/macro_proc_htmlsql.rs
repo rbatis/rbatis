@@ -14,9 +14,10 @@ use model::*;
 
 use std::fs::File;
 use std::io::Read;
-use rbatis::executor::RbatisExecutor;
+use rbatis::executor::{ExecutorMut, RbatisExecutor};
 use rbatis::sql::page::{Page, PageRequest};
 use rbatis::rbatis::Rbatis;
+
 
 ///select page must have  '?:&PageRequest' arg and return 'Page<?>'
 #[html_sql("example/example.html")]
