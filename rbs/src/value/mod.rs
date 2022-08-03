@@ -12,6 +12,7 @@ use std::iter::FromIterator;
 use std::ops::{Deref, Index};
 use serde::Serialize;
 use crate::to_value;
+use crate::value::map::ValueMap;
 
 pub mod ext;
 pub mod map;
@@ -46,7 +47,7 @@ pub enum Value {
     /// Array represents a sequence of objects.
     Array(Vec<Self>),
     /// Map represents key-value pairs of objects.
-    Map(Vec<(Self, Self)>),
+    Map(ValueMap),
     /// Extended implements Extension interface
     Ext(&'static str, Box<Self>),
 }
@@ -659,7 +660,7 @@ impl From<Vec<Value>> for Value {
 impl From<Vec<(Value, Value)>> for Value {
     #[inline]
     fn from(v: Vec<(Value, Value)>) -> Self {
-        Value::Map(v)
+        Value::Map(ValueMap(v))
     }
 }
 
@@ -759,10 +760,9 @@ macro_rules! impl_try_from {
 
 impl_try_from!(bool, Bool);
 impl_try_from!(Vec<Value>, Array);
-impl_try_from!(Vec<(Value, Value)>, Map);
+impl_try_from!(ValueMap, Map);
 impl_try_from!(Vec<u8>, Binary);
 impl_try_from!(f32, F32);
-// impl_try_from!(Utf8String, String);
 
 impl Display for Value {
     #[cold]
@@ -895,10 +895,9 @@ impl<'a> ValueRef<'a> {
             ValueRef::String(val) => Value::String(val.into()),
             ValueRef::Binary(val) => Value::Binary(val.to_vec()),
             ValueRef::Array(ref val) => Value::Array(val.iter().map(|v| v.to_owned()).collect()),
-            ValueRef::Map(ref val) => Value::Map(
-                val.iter()
-                    .map(|&(ref k, ref v)| (k.to_owned(), v.to_owned()))
-                    .collect(),
+            ValueRef::Map(ref val) => Value::Map(ValueMap( val.iter()
+                .map(|&(ref k, ref v)| (k.to_owned(), v.to_owned()))
+                .collect())
             ),
             ValueRef::Ext(ty, ref buf) => Value::Ext(
                 unsafe { change_lifetime_const(ty) },

@@ -5,6 +5,7 @@ use futures_core::future::BoxFuture;
 use rbs::Value;
 use std::fmt::Debug;
 use futures_util::TryFutureExt;
+use rbs::value::map::ValueMap;
 
 
 /// Represents database driver that can be shared between threads, and can therefore implement
@@ -49,11 +50,11 @@ pub trait Connection: Send {
             let mut rows = Vec::with_capacity(v.len());
             for mut x in v {
                 let md = x.meta_data();
-                let mut m = Vec::with_capacity(md.column_len());
+                let mut m = ValueMap::with_capacity(md.column_len());
                 for mut i in 0..md.column_len() {
                     i = md.column_len() - i - 1;
                     let n = md.column_name(i);
-                    m.insert(0, (Value::String(n), x.get(i).unwrap_or(Value::Null)));
+                    m.insert(Value::String(n), x.get(i).unwrap_or(Value::Null));
                 }
                 rows.push(Value::Map(m));
             }

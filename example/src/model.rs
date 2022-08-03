@@ -24,7 +24,7 @@ pub struct BizActivity {
 
 /// make a sqlite-rbatis
 pub async fn init_sqlite() -> Rbatis {
-    init_sqlite_path("../").await
+    init_sqlite_path("").await
 }
 
 /// make a sqlite-rbatis

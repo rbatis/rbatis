@@ -90,7 +90,7 @@ pub(crate) fn impl_macro_py_sql(target_fn: &ItemFn, args: &AttributeArgs) -> Tok
     return quote! {
        pub async fn #func_name_ident(#func_args_stream) -> #return_ty {
          let mut sql = #sql_ident.to_string();
-         let mut rb_arg_map = rbs::Value::Map(vec![]);
+         let mut rb_arg_map = rbs::value::map::ValueMap::new();
          #sql_args_gen
          #fn_body
          use rbatis::executor::{RbatisRef};
@@ -149,7 +149,7 @@ pub(crate) fn filter_args_context_id(
         }
         sql_args_gen = quote! {
              #sql_args_gen
-             rb_arg_map.insert(#item_name.to_string(),rbs::to_value(#item).unwrap_or_default());
+             rb_arg_map.insert(#item_name.to_string().into(),rbs::to_value(#item).unwrap_or_default());
         };
     }
     sql_args_gen

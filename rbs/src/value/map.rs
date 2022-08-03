@@ -1,9 +1,23 @@
+use std::fmt::{Debug, Formatter};
 use std::ops::{Deref, DerefMut, Index, IndexMut};
+use std::vec::IntoIter;
 use crate::Value;
 
 
-#[derive(Serialize, Deserialize)]
-pub struct ValueMap(Vec<(Value, Value)>);
+#[derive(Serialize, Deserialize, PartialEq)]
+pub struct ValueMap(pub Vec<(Value, Value)>);
+
+impl Clone for ValueMap{
+    fn clone(&self) -> Self {
+        Self(self.0.clone())
+    }
+}
+
+impl Debug for ValueMap {
+    fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
+        f.debug_map().entries(self.0.iter().map(|&(ref k, ref v)| (k, v))).finish()
+    }
+}
 
 impl ValueMap {
     pub fn new() -> Self {
@@ -38,21 +52,21 @@ impl ValueMap {
     }
 }
 
-impl Deref for ValueMap{
-    type Target = Vec<(Value,Value)>;
+impl Deref for ValueMap {
+    type Target = Vec<(Value, Value)>;
 
     fn deref(&self) -> &Self::Target {
         &self.0
     }
 }
 
-impl DerefMut for ValueMap{
+impl DerefMut for ValueMap {
     fn deref_mut(&mut self) -> &mut Self::Target {
-       &mut self.0
+        &mut self.0
     }
 }
 
-impl Index<&str> for ValueMap{
+impl Index<&str> for ValueMap {
     type Output = Value;
 
     fn index(&self, index: &str) -> &Self::Output {
@@ -65,7 +79,7 @@ impl Index<&str> for ValueMap{
     }
 }
 
-impl Index<i64> for ValueMap{
+impl Index<i64> for ValueMap {
     type Output = Value;
 
     fn index(&self, index: i64) -> &Self::Output {
@@ -110,12 +124,29 @@ impl IndexMut<i64> for ValueMap {
 // }
 
 
-
-impl <'a>IntoIterator for &'a ValueMap{
+impl<'a> IntoIterator for &'a ValueMap {
     type Item = &'a (Value, Value);
     type IntoIter = std::slice::Iter<'a, (Value, Value)>;
 
     fn into_iter(self) -> Self::IntoIter {
         self.deref().into_iter()
+    }
+}
+
+impl<'a> IntoIterator for &'a mut ValueMap {
+    type Item = &'a mut (Value, Value);
+    type IntoIter = std::slice::IterMut<'a,(Value, Value)>;
+
+    fn into_iter(self) -> Self::IntoIter {
+        self.deref_mut().into_iter()
+    }
+}
+
+impl IntoIterator for ValueMap {
+    type Item = (Value, Value);
+    type IntoIter = IntoIter<(Value, Value)>;
+
+    fn into_iter(self) -> Self::IntoIter {
+        self.0.into_iter()
     }
 }
