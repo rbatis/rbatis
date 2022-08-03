@@ -18,9 +18,6 @@ pub use rbatis_sql::{expr, push_index, rb_html, rb_py, sql_index};
 pub use rbatis_macro_driver::{crud_table, html_sql, py_sql, sql, CRUDTable};
 
 pub use crate::core::{convert::StmtConvert, error::Error, error::Result};
-
-pub use crate::rbatis::AsSqlTag;
-
 pub mod crud;
 pub mod plugin;
 
@@ -31,3 +28,4 @@ pub mod rbatis;
 pub mod utils;
 pub mod executor;
 pub mod wrapper;
+pub mod sql;
