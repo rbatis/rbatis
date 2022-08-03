@@ -1,3 +1,17 @@
+#![allow(unused_mut)]
+#![allow(unused_imports)]
+#![allow(unreachable_patterns)]
+#![allow(unused_variables)]
+#![allow(unused_assignments)]
+#![allow(unused_must_use)]
+#![allow(dead_code)]
+
+#[macro_use]
+extern crate rbatis;
+
+pub mod model;
+use model::*;
+
 use std::fs::File;
 use std::io::Read;
 
@@ -31,8 +45,8 @@ async fn custom_func(rb: &mut RbatisExecutor<'_>, name: &str) -> Vec<BizActivity
     impled!()
 }
 
-#[tokio::test]
-pub async fn test_custom_func() {
+#[tokio::main]
+pub async fn main() {
     fast_log::init(fast_log::config::Config::new().console());
     //use static ref
     let rb = init_sqlite().await;
@@ -41,20 +55,4 @@ pub async fn test_custom_func() {
 }
 
 
-/// you can see custom fn on py_sql
-#[py_sql("select * from biz_activity where delete_flag = 0
-                 if name.is_test():
-                    and name != 'test'")]
-async fn custom_func_py(rb: &Rbatis) -> Vec<BizActivity> {
-    impled!()
-}
-
-#[tokio::main]
-pub async fn main() {
-    fast_log::init(fast_log::config::Config::new().console());
-    //use static ref
-    let rb = init_sqlite().await;
-    let a = custom_func_py(&rb).await.unwrap();
-    println!("{:?}", a);
-}
 

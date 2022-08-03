@@ -1,3 +1,17 @@
+
+#![allow(unused_mut)]
+#![allow(unused_imports)]
+#![allow(unreachable_patterns)]
+#![allow(unused_variables)]
+#![allow(unused_assignments)]
+#![allow(unused_must_use)]
+#![allow(dead_code)]
+
+#[macro_use]
+extern crate rbatis;
+
+pub mod model;
+use model::*;
 use std::fs::File;
 use std::io::Read;
 
@@ -10,15 +24,6 @@ use crate::{init_sqlite, BizActivity};
 #[py_sql("select * from biz_activity where delete_flag = 0")]
 async fn py_ctx_id(rb: &Rbatis) -> Vec<BizActivity> {
     impled!()
-}
-
-#[tokio::test]
-pub async fn test_py_ctx_id() {
-    fast_log::init(fast_log::config::Config::new().console());
-    //use static ref
-    let rb = init_sqlite().await;
-    let a = py_ctx_id(&rb).await.unwrap();
-    println!("{:?}", a);
 }
 
 ///select page must have  '?:&PageRequest' arg and return 'Page<?>'

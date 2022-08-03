@@ -10,17 +10,17 @@ publish = false
 name = "macro_proc_htmlsql"
 path = "src/macro_proc_htmlsql.rs"
 
-[[bin]]
-name = "macro_proc_htmlsql_custom_func"
-path = "src/macro_proc_htmlsql_custom_func.rs"
-
-[[bin]]
-name = "macro_proc_pysql"
-path = "src/macro_proc_pysql.rs"
-
-[[bin]]
-name = "macro_proc_rawsql"
-path = "src/macro_proc_rawsql.rs"
+#[[bin]]
+#name = "macro_proc_htmlsql_custom_func"
+#path = "src/macro_proc_htmlsql_custom_func.rs"
+#
+#[[bin]]
+#name = "macro_proc_pysql"
+#path = "src/macro_proc_pysql.rs"
+#
+#[[bin]]
+#name = "macro_proc_rawsql"
+#path = "src/macro_proc_rawsql.rs"
 
 
 [dependencies]
