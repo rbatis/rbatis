@@ -27,6 +27,7 @@ pub struct SqliteRow {
 // a set interface on [StatementHandle]
 
 unsafe impl Send for SqliteRow {}
+
 unsafe impl Sync for SqliteRow {}
 
 impl SqliteRow {
@@ -55,13 +56,12 @@ impl SqliteRow {
 }
 
 
-
 #[derive(Debug)]
 pub struct SqliteMetaData {
-    pub columns: Arc<Vec<SqliteColumn>>
+    pub columns: Arc<Vec<SqliteColumn>>,
 }
 
-impl MetaData for SqliteMetaData{
+impl MetaData for SqliteMetaData {
     fn column_len(&self) -> usize {
         self.columns.len()
     }
@@ -77,9 +77,9 @@ impl MetaData for SqliteMetaData{
 
 impl Row for SqliteRow {
     fn meta_data(&self) -> Box<dyn MetaData> {
-         Box::new(SqliteMetaData{
-             columns:self.columns.clone()
-         })
+        Box::new(SqliteMetaData {
+            columns: self.columns.clone()
+        })
     }
 
     fn get(&mut self, i: usize) -> Option<Value> {
@@ -87,7 +87,7 @@ impl Row for SqliteRow {
             Err(e) => {
                 log::error!("get error:{}",e);
                 None
-            },
+            }
             Ok(v) => {
                 match Value::decode(v) {
                     Ok(v) => {
@@ -102,7 +102,8 @@ impl Row for SqliteRow {
         }
     }
 }
-impl SqliteRow{
+
+impl SqliteRow {
     fn columns(&self) -> &[SqliteColumn] {
         &self.columns
     }
@@ -114,8 +115,8 @@ impl SqliteRow{
 
     fn try_take(&mut self, index: usize) -> Result<SqliteValue, Error>
     {
-        if (index+1) >= self.values.len(){
-            return Err(Error::from("try_take out of range!"))
+        if (index + 1) > self.values.len() {
+            return Err(Error::from("try_take out of range!"));
         }
         Ok(self.values.remove(index))
     }
