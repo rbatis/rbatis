@@ -274,18 +274,8 @@ impl AsProxy for Value {
         return self.is_document();
     }
 
-
     fn bracket(&self) -> &str {
         let bracket = self.as_str().unwrap_or_default();
-        let start = bracket.find("(");
-        let end = bracket.find(")");
-        if let Some(start) = start {
-            if let Some(end) = end {
-                if end > (start + 1) {
-                    return &bracket[start + 1..end];
-                }
-            }
-        }
         return bracket;
     }
 
