@@ -5,7 +5,6 @@ use serde::de::DeserializeOwned;
 use rbs::Value;
 
 use crate::Error;
-use crate::Error::E;
 
 /// decode json vec to an object
 /// support decode types:

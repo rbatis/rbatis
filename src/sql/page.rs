@@ -3,28 +3,11 @@ use std::future::Future;
 
 use futures_core::future::BoxFuture;
 use rbatis_core::Error;
-use rbson::Bson;
 use serde::de::DeserializeOwned;
 use serde::{Deserialize, Serialize};
 
 /// default 10
 pub const DEFAULT_PAGE_SIZE: u64 = 10;
-
-///default page plugin
-pub trait PagePlugin: Send + Sync + Debug {
-    ///the name
-    fn name(&self) -> &str {
-        std::any::type_name::<Self>()
-    }
-    /// return 2 sql for select ,  (count_sql,select_sql)
-    fn make_page_sql(
-        &self,
-        driver_type: &str,
-        sql: &str,
-        args: &Vec<rbson::Bson>,
-        page: &dyn IPageRequest,
-    ) -> Result<(String, String), rbatis_core::error::Error>;
-}
 
 ///Page interface, support get_pages() and offset()
 pub trait IPageRequest: Send + Sync {

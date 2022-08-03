@@ -1,11 +1,8 @@
-use crate::crud::CRUDTable;
 use std::any::Any;
 
 #[async_trait::async_trait]
 pub trait TableSync {
-    async fn table_sync<T>(&self, t: T)
-    where
-        T: CRUDTable;
+    async fn table_sync<T>(&self, t: T);
 }
 
 pub struct RbatisTableSync {
@@ -23,17 +20,6 @@ mod test {
 
     #[test]
     fn test_sync_table() {
-        let mut s = RbatisTableSync { dbs: vec![] };
 
-        pub struct A {}
-        #[async_trait::async_trait]
-        impl TableSync for A {
-            async fn table_sync<T>(&self, t: T)
-            where
-                T: CRUDTable,
-            {
-            }
-        }
-        s.dbs.push(Box::new(A {}));
     }
 }
