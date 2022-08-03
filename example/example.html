@@ -16,7 +16,7 @@
             <if test="name != ''">
                 and name like #{name}
             </if>
-            <if test="dt.str() >= '2009-12-12 00:00:00'">
+            <if test="dt >= '2009-12-12 00:00:00'">
                 and create_time < #{dt}
             </if>
             <choose>
