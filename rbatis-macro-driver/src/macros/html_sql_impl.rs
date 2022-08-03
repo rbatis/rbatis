@@ -85,15 +85,6 @@ pub(crate) fn impl_macro_html_sql(target_fn: &ItemFn, args: &AttributeArgs) -> T
              #rbatis_ident.exec(&sql,rb_args).await
         };
     }
-    if return_ty.to_string().contains("Page <")
-        && func_args_stream.to_string().contains("& PageRequest")
-    {
-        let page_ident = get_page_req_ident(target_fn, &func_name_ident.to_string());
-        call_method = quote! {
-            use rbatis::crud::{CRUD,CRUDMut};
-            #rbatis_ident.fetch_page(&sql,rb_args,#page_ident).await
-        };
-    }
     //gen rust code templete
     return quote! {
        pub async fn #func_name_ident(#func_args_stream) -> #return_ty {
@@ -102,10 +93,10 @@ pub(crate) fn impl_macro_html_sql(target_fn: &ItemFn, args: &AttributeArgs) -> T
          #fn_body
          use rbatis::executor::{RbatisRef};
          let driver_type = #rbatis_ident.get_rbatis().driver_type()?;
-         //use rbatis::{rbatis_sql,AsSqlTag};
+         use rbatis::rbatis_sql;
          let sql_tag = driver_type.sql_tag();
          #[rbatis_sql::rb_html(#sql_ident)]
-         pub fn #func_name_ident(arg: &rbson::Bson, _tag: char) {}
+         pub fn #func_name_ident(arg: &rbs::Value, _tag: char) {}
          let (mut sql,rb_args) = #func_name_ident(&rbs::Value::Map(rb_arg_map),sql_tag);
          driver_type.do_replace_tag(&mut sql);
          #call_method

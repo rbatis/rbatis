@@ -13,7 +13,7 @@ async fn select_by_condition(
     mut rb: RbatisExecutor<'_>,
     page_req: &PageRequest,
     name: &str,
-    dt: &rbatis::DateTimeNative,
+    dt: &rbatis::core::datetime::DateTime,
 ) -> Page<BizActivity> {
     impled!()
 }
@@ -27,7 +27,7 @@ pub async fn main() {
         rb.as_executor(),
         &PageRequest::new(1, 10),
         "test",
-        &rbatis::DateTimeNative::now(),
+        &rbatis::core::datetime::DateTime::now(),
     )
         .await
         .unwrap();
