@@ -7,6 +7,7 @@ use serde::Serialize;
 use serde_bytes::Bytes;
 
 use crate::value::{change_lifetime_const, Value};
+use crate::value::map::ValueMap;
 
 use super::Error;
 
@@ -421,7 +422,7 @@ impl ser::SerializeMap for DefaultSerializeMap {
 
     #[inline]
     fn end(self) -> Result<Value, Error> {
-        Ok(Value::Map(self.map))
+        Ok(Value::Map(ValueMap(self.map)))
     }
 }
 
@@ -443,7 +444,7 @@ impl ser::SerializeStruct for DefaultSerializeMap {
     }
 
     fn end(self) -> Result<Self::Ok, Self::Error> {
-        Ok(Value::Map(self.map))
+        Ok(Value::Map(ValueMap(self.map)))
     }
 }
 
@@ -465,7 +466,7 @@ impl ser::SerializeStructVariant for DefaultSerializeMap {
     }
 
     fn end(self) -> Result<Self::Ok, Self::Error> {
-        Ok(Value::Map(self.map))
+        Ok(Value::Map(ValueMap(self.map)))
     }
 }
 

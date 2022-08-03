@@ -4,6 +4,7 @@ mod test {
     use rbatis_sql::rb_py;
     use rbs::Value;
     use rbatis_sql::ops::*;
+    use rbs::value::map::ValueMap;
 
     #[rb_py("
     SELECT * FROM biz_activity
@@ -35,9 +36,12 @@ mod test {
 
     #[test]
     fn test_rbatis_sql(){
-        let mut arg = Value::Map(vec![]);
-        arg.insert("name","ss");
-        let (sql, args) = py_select_by_condition(&mut arg, '$');
+        let mut arg = ValueMap::new();
+        arg.insert("name".into(),"ss".into());
+        arg.insert("del".into(),1.into());
+        arg.insert("del2".into(),2.into());
+        arg.insert("ids".into(),vec![Value::I32(1),Value::I32(2),Value::I32(3)].into());
+        let (sql, args) = py_select_by_condition(&mut rbs::Value::Map(arg), '$');
         println!("py->sql: {}", sql);
         println!("py->args: {}", serde_json::to_string(&args).unwrap());
     }

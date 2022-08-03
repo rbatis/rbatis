@@ -8,6 +8,7 @@ use std::cmp::Ordering::Less;
 use std::collections::HashMap;
 pub use std::ops::Index;
 use rbs::Value;
+use rbs::value::map::ValueMap;
 
 /// convert Value to Value
 pub trait AsProxy {
@@ -40,7 +41,7 @@ pub trait AsProxy {
 
     fn array(&self) -> Option<Vec<Value>>;
 
-    fn object(&self) -> Option<Vec<(Value,Value)>>;
+    fn object(&self) -> Option<ValueMap>;
 }
 
 impl AsProxy for Value {
@@ -300,7 +301,7 @@ impl AsProxy for Value {
         }
     }
 
-    fn object(&self) -> Option<Vec<(Value, Value)>> {
+    fn object(&self) -> Option<ValueMap> {
         match self{
             Value::Map(m) => {
                 Some(m.clone())

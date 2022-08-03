@@ -7,6 +7,7 @@ use serde::de::{self, DeserializeSeed, IntoDeserializer, SeqAccess, Unexpected, 
 use serde::{self, Deserialize, Deserializer};
 
 use crate::value::{Value, ValueRef};
+use crate::value::map::ValueMap;
 
 use super::{Error, ValueExt};
 
@@ -155,7 +156,7 @@ impl<'de> Deserialize<'de> for Value {
                     pairs.push((key, val));
                 }
 
-                Ok(Value::Map(pairs))
+                Ok(Value::Map(ValueMap(pairs)))
             }
 
             fn visit_newtype_struct<D>(self, deserializer: D) -> Result<Self::Value, D::Error>
@@ -330,7 +331,7 @@ impl<'de> Deserializer<'de> for Value {
             }
             Value::Map(v) => {
                 let len = v.len();
-                let mut de = MapDeserializer::new(v.into_iter());
+                let mut de = MapDeserializer::new(v.0.into_iter());
                 let map = visitor.visit_map(&mut de)?;
                 if de.iter.len() == 0 {
                     Ok(map)
@@ -1166,7 +1167,7 @@ impl<'de> ValueBase<'de> for Value {
     #[inline]
     fn into_map_iter(self) -> Result<Self::MapIter, Self::Item> {
         match self {
-            Value::Map(v) => Ok(v.into_iter()),
+            Value::Map(v) => Ok(v.0.into_iter()),
             other => Err(other),
         }
     }
