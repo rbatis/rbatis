@@ -1,6 +1,6 @@
 use std::str::FromStr;
 use std::time::Duration;
-use rbdc::datetime::DateTime;
+use rbdc::datetime::FastDateTime;
 use rbdc::Error;
 use rbdc::timestamp::Timestamp;
 use crate::arguments::PgArgumentBuffer;
@@ -8,14 +8,14 @@ use crate::types::decode::Decode;
 use crate::types::encode::{Encode, IsNull};
 use crate::value::{PgValue, PgValueFormat};
 
-impl Encode for DateTime {
+impl Encode for FastDateTime {
     fn encode(self, buf: &mut PgArgumentBuffer) -> Result<IsNull,Error> {
         self.0.encode(buf)?;
         Ok(IsNull::No)
     }
 }
 
-impl Decode for DateTime {
+impl Decode for FastDateTime {
     fn decode(value: PgValue) -> Result<Self, Error> {
         Ok(Self(fastdate::DateTime::decode(value)?))
     }

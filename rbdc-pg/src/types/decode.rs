@@ -8,7 +8,7 @@ use rbdc::time::ParseTime;
 use rbs::Value;
 use std::str::FromStr;
 use std::time::Duration;
-use rbdc::datetime::DateTime;
+use rbdc::datetime::FastDateTime;
 use rbdc::decimal::Decimal;
 use rbdc::json::Json;
 use rbdc::timestamp::Timestamp;

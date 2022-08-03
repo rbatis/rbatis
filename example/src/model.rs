@@ -17,7 +17,7 @@ pub struct BizActivity {
     pub sort: Option<String>,
     pub status: Option<i32>,
     pub remark: Option<String>,
-    pub create_time: Option<rbatis::core::datetime::DateTime>,
+    pub create_time: Option<rbatis::core::datetime::FastDateTime>,
     pub version: Option<i64>,
     pub delete_flag: Option<i32>,
 }
