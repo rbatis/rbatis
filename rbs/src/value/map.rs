@@ -1,7 +1,6 @@
 use std::ops::{Deref, DerefMut, Index, IndexMut};
-use std::vec::IntoIter;
 use crate::Value;
-use serde::{Serialize, Deserialize};
+
 
 #[derive(Serialize, Deserialize)]
 pub struct ValueMap(Vec<(Value, Value)>);
@@ -46,9 +45,10 @@ impl Deref for ValueMap{
         &self.0
     }
 }
+
 impl DerefMut for ValueMap{
     fn deref_mut(&mut self) -> &mut Self::Target {
-        &mut self.0
+       &mut self.0
     }
 }
 
@@ -81,7 +81,7 @@ impl Index<i64> for ValueMap{
 impl IndexMut<&str> for ValueMap {
     fn index_mut(&mut self, index: &str) -> &mut Self::Output {
         for (k, v) in &mut self.0 {
-            if k.as_i64().unwrap_or_default().eq(index) {
+            if k.as_str().unwrap_or_default().eq(index) {
                 return v;
             }
         }
@@ -113,7 +113,7 @@ impl IndexMut<i64> for ValueMap {
 
 impl <'a>IntoIterator for &'a ValueMap{
     type Item = &'a (Value, Value);
-    type IntoIter = std::slice::Iter<'a,(Value,Value)>;
+    type IntoIter = std::slice::Iter<'a, (Value, Value)>;
 
     fn into_iter(self) -> Self::IntoIter {
         self.deref().into_iter()

@@ -131,10 +131,6 @@ fn include_replace(htmls: Vec<Element>, sql_map: &mut HashMap<String, Vec<Elemen
 }
 
 fn parse_html_node(htmls: Vec<Element>, ignore: &mut Vec<String>) -> proc_macro2::TokenStream {
-    #[cfg(feature = "debug_mode")]
-    {
-        println!("load html:{:#?}", htmls);
-    }
     let mut methods = quote!();
     let fn_impl = parse(&htmls, &mut methods, "", ignore);
     let token = quote! {
@@ -601,7 +597,7 @@ pub fn impl_fn_html(m: &ItemFn, args: &AttributeArgs) -> TokenStream {
     let file_name_path_buf = PathBuf::from_str(&file_name).unwrap();
 
     let mut data = String::new();
-    let mut f = File::open(file_name.as_str()).expect(&format!("File:\"{}\" does not exist", file_name));
+    let mut f = File::open(file_name.as_str()).expect(&format!("File Name = '{}' does not exist", file_name));
     f.read_to_string(&mut data);
 
 

@@ -1,24 +1,9 @@
-#![allow(unused_mut)]
-#![allow(unused_imports)]
-#![allow(unreachable_patterns)]
-#![allow(unused_variables)]
-#![allow(unused_assignments)]
-#![allow(unused_must_use)]
-#![allow(dead_code)]
-
-#[macro_use]
-extern crate rbatis;
 
 use rbatis::rbatis::Rbatis;
 use std::fs::{create_dir_all, File};
 use std::io::Read;
 use serde::{Serialize,Deserialize};
 use rbdc_sqlite::driver::SqliteDriver;
-
-mod macro_proc_htmlsql;
-mod macro_proc_htmlsql_custom_func;
-mod macro_proc_pysql;
-mod macro_proc_rawsql;
 
 /// this is table model(see ../database.sql)
 #[derive(Clone, Debug,Serialize,Deserialize)]

@@ -14,7 +14,7 @@ use serde::Serialize;
 use crate::to_value;
 
 pub mod ext;
-
+pub mod map;
 /// Represents any valid MessagePack value.
 #[derive(Clone, Debug, PartialEq)]
 pub enum Value {

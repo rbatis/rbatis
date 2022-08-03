@@ -1,3 +1,16 @@
+#![allow(unused_mut)]
+#![allow(unused_imports)]
+#![allow(unreachable_patterns)]
+#![allow(unused_variables)]
+#![allow(unused_assignments)]
+#![allow(unused_must_use)]
+#![allow(dead_code)]
+
+#[macro_use]
+extern crate rbatis;
+
+pub mod model;
+use model::*;
 use std::fs::File;
 use std::io::Read;
 
