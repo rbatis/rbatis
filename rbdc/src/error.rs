@@ -90,6 +90,18 @@ impl From<TryFromIntError> for Error{
     }
 }
 
+impl From<rbs::Error> for Error{
+    fn from(arg: rbs::Error) -> Self {
+        Error::from(arg.to_string())
+    }
+}
+
+impl From<mobc::Error<Error>> for Error{
+    fn from(arg: mobc::Error<Error>) -> Self {
+        Error::from(arg.to_string())
+    }
+}
+
 // Format an error message as a `Protocol` error
 #[macro_export]
 macro_rules! err_protocol {

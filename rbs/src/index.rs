@@ -82,17 +82,10 @@ impl IndexMut<&str> for Value {
 impl Value {
     pub fn insert<K: Serialize + Eq, V: Serialize>(&mut self, k: K, v: V) {
         match self {
-            Value::Null => {}
-            Value::Bool(_) => {}
-            Value::I32(_) => {}
-            Value::I64(_) => {}
-            Value::U32(_) => {}
-            Value::U64(_) => {}
-            Value::F32(_) => {}
-            Value::F64(_) => {}
-            Value::String(_) => {}
-            Value::Binary(_) => {}
-            Value::Array(_) => {}
+            Value::Array(arr) => {
+                let k = to_value!(k);
+                arr.insert(k.as_u64().unwrap_or_default() as usize,to_value!(v));
+            }
             Value::Map(m) => {
                 let k = to_value!(k);
                 let mut inserted = false;
@@ -100,7 +93,8 @@ impl Value {
                     if k.eq(mk) {
                         *mv = to_value!(v);
                         inserted = true;
-                        return;;
+                        return;
+                        ;
                     }
                 }
                 if !inserted {
@@ -109,6 +103,38 @@ impl Value {
             }
             Value::Ext(_, e) => {
                 e.insert(k, v)
+            }
+            _ => {}
+        }
+    }
+
+    pub fn remove<S: Serialize>(&mut self, key: S) -> Option<Value> {
+        let k = to_value(key).unwrap_or_default();
+        match self {
+            Value::Array(array) => {
+                let k = k.as_u64().unwrap_or_default() as usize;
+                if (k + 1) >= array.len() {
+                    None
+                } else {
+                    Some(array.remove(k))
+                }
+            }
+            Value::Map(map) => {
+                let mut idx = 0;
+                for (mkey, v) in &*map {
+                    if k.eq(mkey) {
+                        let (_, v) = map.remove(idx);
+                        return Some(v);
+                    }
+                    idx += 1
+                }
+                return None;
+            }
+            Value::Ext(_, e) => {
+                e.remove(k)
+            }
+            _ => {
+                None
             }
         }
     }

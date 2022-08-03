@@ -1,8 +1,6 @@
 use crate::core::convert::StmtConvert;
-use crate::crud::CRUDTable;
 use crate::rbatis::Rbatis;
 use rbatis_core::Error;
-use rbson::Bson;
 use std::fmt::{Debug, Display};
 use rbs::Value;
 
@@ -32,7 +30,7 @@ impl SqlIntercept for BlockAttackDeleteInterceptor {
         &self,
         rb: &Rbatis,
         sql: &mut String,
-        args: &mut Vec<Bson>,
+        args: &mut Vec<Value>,
         is_prepared_sql: bool,
     ) -> Result<(), Error> {
         let sql = sql.trim();
@@ -57,7 +55,7 @@ impl SqlIntercept for BlockAttackUpdateInterceptor {
         &self,
         rb: &Rbatis,
         sql: &mut String,
-        args: &mut Vec<Bson>,
+        args: &mut Vec<Value>,
         is_prepared_sql: bool,
     ) -> Result<(), Error> {
         let sql = sql.trim();
