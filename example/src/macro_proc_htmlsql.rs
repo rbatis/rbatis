@@ -24,7 +24,7 @@ async fn select_by_condition(
     mut rb: RbatisExecutor<'_>,
     page_req: &PageRequest,
     name: &str,
-    dt: &rbatis::core::datetime::DateTime,
+    dt: &rbatis::core::datetime::FastDateTime,
 ) -> Vec<BizActivity> {
     impled!()
 }
@@ -38,7 +38,7 @@ pub async fn main() {
         rb.as_executor(),
         &PageRequest::new(1, 10),
         "test",
-        &rbatis::core::datetime::DateTime::now(),
+        &rbatis::core::datetime::FastDateTime::now(),
     )
         .await
         .unwrap();

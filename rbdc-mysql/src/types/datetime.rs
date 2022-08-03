@@ -1,14 +1,14 @@
 use std::str::FromStr;
 use byteorder::{ByteOrder, LittleEndian};
 use bytes::Buf;
-use rbdc::datetime::DateTime;
+use rbdc::datetime::FastDateTime;
 use rbdc::Error;
 use crate::types::{Decode, Encode};
 use crate::types::date::decode_date_buf;
 use crate::types::time::decode_time;
 use crate::value::{MySqlValue, MySqlValueFormat};
 
-impl Encode for DateTime {
+impl Encode for FastDateTime {
     fn encode(self, buf: &mut Vec<u8>) -> Result<usize, Error> {
         let datetime = self.0;
         let size = date_time_size_hint(
@@ -38,7 +38,7 @@ impl Encode for DateTime {
     }
 }
 
-impl Decode for DateTime {
+impl Decode for FastDateTime {
     fn decode(value: MySqlValue) -> Result<Self, Error> {
         Ok(match value.format() {
             MySqlValueFormat::Text => Self(fastdate::DateTime::from_str(value.as_str()?).unwrap()),

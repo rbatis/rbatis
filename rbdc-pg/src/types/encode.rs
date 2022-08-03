@@ -6,7 +6,7 @@ use rbs::Value;
 use std::mem;
 use std::str::FromStr;
 use rbdc::date::Date;
-use rbdc::datetime::DateTime;
+use rbdc::datetime::FastDateTime;
 use rbdc::decimal::Decimal;
 use rbdc::Error;
 use rbdc::json::Json;
@@ -101,7 +101,7 @@ impl Encode for Value {
                         Timestamp(v.as_u64().unwrap_or_default()).encode(buf)?
                     }
                     "DateTime" => {
-                        DateTime(fastdate::DateTime::from_str(&v.into_string().unwrap_or_default()).unwrap()).encode(buf)?
+                        FastDateTime(fastdate::DateTime::from_str(&v.into_string().unwrap_or_default()).unwrap()).encode(buf)?
                     }
                     "Bytea" => {
                         Bytea(v.as_u64().unwrap_or_default() as u8).encode(buf)?
