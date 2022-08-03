@@ -5,6 +5,7 @@ use std::fmt::{Debug, Formatter};
 use std::ops::Add;
 
 use serde::{Deserialize, Serialize};
+use rbs::Value;
 
 use crate::core::convert::StmtConvert;
 
@@ -32,15 +33,13 @@ use crate::core::Error;
 ///             .and()
 ///             .between("create_time", "2020-01-01 00:00:00", "2020-12-12 00:00:00")
 ///             .group_by(&["id"])
-///             .order_by(true, &["id", "name"])
-///             ;
-///
+///             .order_by(true, &["id", "name"]);
 #[derive(Clone)]
 pub struct Wrapper {
-    pub driver_type: DriverType,
+    pub driver_type: String,
     pub dml: String,
     pub sql: String,
-    pub args: Vec<Bson>,
+    pub args: Vec<Value>,
     //formats map[String]String. for example: map["x"] "{}::uuid"
     pub formats: HashMap<String, String>,
 }
@@ -68,9 +67,9 @@ impl Debug for Wrapper {
 }
 
 impl Wrapper {
-    pub fn new(driver_type: &DriverType) -> Self {
+    pub fn new(driver_type: &str) -> Self {
         Self {
-            driver_type: driver_type.clone(),
+            driver_type: driver_type.to_string(),
             dml: "where".to_string(),
             sql: String::with_capacity(200),
             args: Vec::with_capacity(5),
@@ -107,12 +106,10 @@ impl Wrapper {
     }
 
     /// push sql,args into self
-    pub fn push(mut self, sql: &str, args: Vec<rbson::Bson>) -> Self {
+    pub fn push(mut self, sql: &str, args: Vec<Value>) -> Self {
         let mut new_sql = sql.to_string();
-        match self.driver_type {
-            DriverType::None => {}
-            DriverType::Mysql => {}
-            DriverType::Postgres | DriverType::Mssql => {
+        match self.driver_type.as_str() {
+            "postgres" | "mssql" => {
                 for index_target in 0..args.len() {
                     let mut convert_column = String::new();
                     self.driver_type
@@ -123,7 +120,7 @@ impl Wrapper {
                     new_sql = new_sql.replace(convert_column.as_str(), convert_column_new.as_str());
                 }
             }
-            DriverType::Sqlite => {}
+            _ => {}
         }
         self.sql.push_str(new_sql.as_str());
         for x in args {
@@ -220,11 +217,11 @@ impl Wrapper {
     {
         let v = rbs::to_value!(args);
         match v {
-            Bson::Null => {
+            Value::Null => {
                 return self;
             }
-            Bson::Array(ref arr) => {
-                self.args = v.as_array().unwrap_or(&vec![]).to_owned();
+            Value::Array(arr) => {
+                self.args = arr;
             }
             _ => {}
         }

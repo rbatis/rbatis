@@ -47,6 +47,6 @@ impl ValueRef<'_> {
 #[macro_export]
 macro_rules! to_value {
     ($arg:expr) => {
-        $crate::to_value($arg).unwrap()
+        $crate::to_value($arg).unwrap_or_default()
     };
 }

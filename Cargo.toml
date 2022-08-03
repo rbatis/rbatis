@@ -49,9 +49,6 @@ runtime-tokio-native-tls = ["rbatis-core/runtime-tokio-native-tls"]
 runtime-actix-native-tls = ["rbatis-core/runtime-actix-native-tls"]
 runtime-async-std-native-tls = ["rbatis-core/runtime-async-std-native-tls"]
 
-#enable_format bson
-format_bson = ["rbatis-core/format_bson"]
-
 [dependencies]
 rbatis-core = { version = "3.1.11", path = "rbatis-core", default-features = false, optional = true }
 rbatis-sql = { version = "3.0", path="rbatis-sql", optional = true }

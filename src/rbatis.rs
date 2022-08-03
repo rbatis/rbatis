@@ -15,12 +15,12 @@ use crate::executor::{RBatisConnExecutor, RBatisTxExecutor, RbatisExecutor};
 use crate::plugin::intercept::SqlIntercept;
 use crate::plugin::log::{LogPlugin, RbatisLogPlugin};
 use crate::snowflake::new_snowflake_id;
-use crate::sql::PageLimit;
 use crate::utils::error_util::ToResult;
 use crate::utils::string_util;
 use crate::wrapper::Wrapper;
 use std::fmt::{Debug, Formatter};
 use rbdc::pool::Pool;
+use crate::sql::page::PagePlugin;
 
 /// rbatis engine
 // #[derive(Debug)]
@@ -31,6 +31,8 @@ pub struct Rbatis {
     pub sql_intercepts: Vec<Box<dyn SqlIntercept>>,
     // log plugin
     pub log_plugin: Arc<Box<dyn LogPlugin>>,
+    // page_plugin
+    pub page_plugin: Arc<Box<dyn PagePlugin>>
 }
 
 impl Debug for Rbatis {
@@ -80,6 +82,7 @@ impl Rbatis {
             pool: OnceCell::new(),
             sql_intercepts: option.sql_intercepts,
             log_plugin: option.log_plugin,
+            page_plugin: option.page_plugin
         };
     }
 
@@ -103,48 +106,30 @@ impl Rbatis {
     }
 
     /// link pool
-    pub async fn link(&self, driver_url: &str) -> Result<(), Error> {
-        return Ok(self.link_opt(driver_url, DBPoolOptions::default()).await?);
+    pub async fn link<Driver: rbdc::db::Driver>(&self, driver:Driver,url: &str) -> Result<(), Error> {
+        if url.is_empty() {
+            return Err(Error::from("[rbatis] link url is empty!"));
+        }
+        let mut option = driver.default_option();
+        option.set_uri(url)?;
+        return Ok(self.link_opt(driver, option).await?);
     }
 
     /// link pool by DBPoolOptions
     /// for example:
-    ///          let mut opt = PoolOptions::new();
-    ///          opt.max_size = 20;
-    ///          rb.link_opt("mysql://root:123456@localhost:3306/test", opt).await.unwrap();
-    pub async fn link_opt(
+    ///
+    pub async fn link_opt<Driver: rbdc::db::Driver + 'static, ConnectOptions: rbdc::db::ConnectOptions>(
         &self,
-        driver_url: &str,
-        pool_options: DBPoolOptions,
+        driver: Driver,
+        options: ConnectOptions,
     ) -> Result<(), Error> {
-        if driver_url.is_empty() {
-            return Err(Error::from("[rbatis] link url is empty!"));
-        }
-        let pool = DBPool::new_opt_str(driver_url, pool_options).await?;
-        self.pool.set(pool);
-        return Ok(());
-    }
-
-    /// link pool by DBConnectOption and DBPoolOptions
-    /// for example:
-    ///         let db_cfg=DBConnectOption::from("mysql://root:123456@localhost:3306/test")?;
-    ///         rb.link_cfg(&db_cfg,PoolOptions::new());
-    pub async fn link_cfg(
-        &self,
-        connect_option: &DBConnectOption,
-        pool_options: DBPoolOptions,
-    ) -> Result<(), Error> {
-        let pool = DBPool::new_opt(connect_option, pool_options).await?;
+        let pool = Pool::new(driver, options).await?;
         self.pool.set(pool);
         return Ok(());
     }
 
     pub fn set_log_plugin(&mut self, arg: impl LogPlugin + 'static) {
         self.log_plugin = Arc::new(Box::new(arg));
-    }
-
-    pub fn set_logic_plugin(&mut self, arg: impl LogicDelete + 'static) {
-        self.logic_plugin = Some(Box::new(arg));
     }
 
     pub fn set_page_plugin(&mut self, arg: impl PagePlugin + 'static) {

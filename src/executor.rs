@@ -3,7 +3,7 @@ use std::ops::{Deref, DerefMut};
 
 use async_trait::async_trait;
 use futures::Future;
-use rbdc::db::ExecResult;
+use rbdc::db::{Connection, ExecResult};
 use rbson::spec::BinarySubtype;
 use rbson::Bson;
 use serde::de::DeserializeOwned;
@@ -14,6 +14,8 @@ use crate::rbatis::Rbatis;
 use crate::snowflake::new_snowflake_id;
 use crate::utils::string_util;
 use futures::executor::block_on;
+use rbs::Value;
+use crate::sql::page::{IPageRequest, Page};
 
 /// the rbatis Containers for transactions, connections, and ontologies
 /// for example:
@@ -40,7 +42,7 @@ impl RbatisExecutor<'_, '_> {
     pub async fn fetch_page<T>(
         &mut self,
         sql: &str,
-        args: Vec<Bson>,
+        args: Vec<Value>,
         page_request: &dyn IPageRequest,
     ) -> crate::Result<Page<T>>
     where
@@ -62,7 +64,7 @@ impl RbatisExecutor<'_, '_> {
         }
     }
 
-    pub async fn exec(&mut self, sql: &str, args: Vec<Bson>) -> Result<rbdc::db::ExecResult, Error> {
+    pub async fn exec(&mut self, sql: &str, args: Vec<Value>) -> Result<rbdc::db::ExecResult, Error> {
         match self {
             RbatisExecutor::RB(rb) => {
                 return rb.exec(sql, args).await;
@@ -79,7 +81,7 @@ impl RbatisExecutor<'_, '_> {
         }
     }
 
-    pub async fn fetch<T>(&mut self, sql: &str, args: Vec<Bson>) -> Result<T, Error>
+    pub async fn fetch<T>(&mut self, sql: &str, args: Vec<Value>) -> Result<T, Error>
     where
         T: DeserializeOwned,
     {
@@ -139,29 +141,15 @@ impl<'r, 'inner> From<&'r mut RBatisTxExecutorGuard<'inner>> for RbatisExecutor<
 pub trait RbatisRef {
     fn get_rbatis(&self) -> &Rbatis;
 
-    fn driver_type(&self) -> crate::Result<DriverType> {
+    fn driver_type(&self) -> crate::Result<&str> {
         self.get_rbatis().driver_type()
-    }
-
-    /// bind arg into DBQuery
-    fn bind_arg<'arg>(
-        &self,
-        driver_type: &DriverType,
-        sql: &'arg str,
-        arg: Vec<Bson>,
-    ) -> Result<DBQuery<'arg>, Error> {
-        let mut q: DBQuery = driver_type.make_db_query(sql)?;
-        for x in arg {
-            (self.get_rbatis().encoder)(&mut q, x)?;
-        }
-        return Ok(q);
     }
 }
 
 #[async_trait]
 pub trait ExecutorMut: RbatisRef {
-    async fn exec(&mut self, sql: &str, args: Vec<rbson::Bson>) -> Result<rbdc::db::ExecResult, Error>;
-    async fn fetch<T>(&mut self, sql: &str, args: Vec<rbson::Bson>) -> Result<T, Error>
+    async fn exec(&mut self, sql: &str, args: Vec<Value>) -> Result<ExecResult, Error>;
+    async fn fetch<T>(&mut self, sql: &str, args: Vec<Value>) -> Result<T, Error>
     where
         T: DeserializeOwned;
 }
@@ -177,7 +165,7 @@ impl RbatisRef for Rbatis {
 
 #[derive(Debug)]
 pub struct RBatisConnExecutor<'a> {
-    pub conn: DBPoolConn<'a>,
+    pub conn: &'a mut dyn Connection,
     pub rb: &'a Rbatis,
 }
 
@@ -187,25 +175,18 @@ impl<'b> RBatisConnExecutor<'b> {
     }
 }
 
-// bson vec to string
-fn bson_arr_to_string(arg: Vec<Bson>) -> (Vec<Bson>, String) {
-    let b = Bson::Array(arg);
-    #[cfg(feature = "format_bson")]
-    {
-        let s = b.do_format();
-        log::info!("[rbatis] [format_bson] => {}", s);
-    }
-
+fn arr_to_string(arg: Vec<Value>) -> (Vec<Value>, String) {
+    let b = Value::Array(arg);
     let s = b.to_string();
     return match b {
-        Bson::Array(arr) => (arr, s),
+        Value::Array(arr) => (arr, s),
         _ => (vec![], s),
     };
 }
 
 #[async_trait]
 impl<'a> ExecutorMut for RBatisConnExecutor<'_> {
-    async fn exec(&mut self, sql: &str, mut args: Vec<rbson::Bson>) -> Result<rbdc::db::ExecResult, Error> {
+    async fn exec(&mut self, sql: &str, mut args: Vec<Value>) -> Result<ExecResult, Error> {
         let rb_task_id = new_snowflake_id();
         let mut sql = sql.to_string();
         let is_prepared = args.len() > 0;
@@ -213,7 +194,7 @@ impl<'a> ExecutorMut for RBatisConnExecutor<'_> {
             item.do_intercept(self.get_rbatis(), &mut sql, &mut args, is_prepared)?;
         }
         if self.get_rbatis().log_plugin.is_enable() {
-            let (_args, args_string) = bson_arr_to_string(args);
+            let (_args, args_string) = arr_to_string(args);
             args = _args;
             self.get_rbatis().log_plugin.info(
                 rb_task_id,
@@ -225,13 +206,7 @@ impl<'a> ExecutorMut for RBatisConnExecutor<'_> {
                 ),
             );
         }
-        let result;
-        if is_prepared {
-            let q: DBQuery = self.bind_arg(&self.conn.driver_type(), &sql, args)?;
-            result = self.conn.exec_prepare(q).await;
-        } else {
-            result = self.conn.exec_sql(&sql).await;
-        }
+        let result = self.conn.exec(&sql,args).await;
         if self.get_rbatis().log_plugin.is_enable() {
             match &result {
                 Ok(result) => {
@@ -250,7 +225,7 @@ impl<'a> ExecutorMut for RBatisConnExecutor<'_> {
         return result;
     }
 
-    async fn fetch<T>(&mut self, sql: &str, mut args: Vec<rbson::Bson>) -> Result<T, Error>
+    async fn fetch<T>(&mut self, sql: &str, mut args: Vec<Value>) -> Result<T, Error>
     where
         T: DeserializeOwned,
     {
@@ -261,7 +236,7 @@ impl<'a> ExecutorMut for RBatisConnExecutor<'_> {
             item.do_intercept(self.get_rbatis(), &mut sql, &mut args, is_prepared)?;
         }
         if self.get_rbatis().log_plugin.is_enable() {
-            let (_args, args_string) = bson_arr_to_string(args);
+            let (_args, args_string) = arr_to_string(args);
             args = _args;
             self.get_rbatis().log_plugin.info(
                 rb_task_id,
@@ -274,8 +249,7 @@ impl<'a> ExecutorMut for RBatisConnExecutor<'_> {
             );
         }
         if is_prepared {
-            let q: DBQuery = self.bind_arg(&self.conn.driver_type(), &sql, args)?;
-            let result = self.conn.fetch_parperd(q).await;
+            let result = self.conn.get_values(&sql, args).await;
             if self.get_rbatis().log_plugin.is_enable() {
                 match &result {
                     Ok(result) => {
@@ -344,14 +318,14 @@ impl<'a, 'b> RBatisTxExecutor<'b> {
 
 #[async_trait]
 impl<'a> ExecutorMut for RBatisTxExecutor<'_> {
-    async fn exec(&mut self, sql: &str, mut args: Vec<rbson::Bson>) -> Result<rbdc::db::ExecResult, Error> {
+    async fn exec(&mut self, sql: &str, mut args: Vec<Value>) -> Result<rbdc::db::ExecResult, Error> {
         let mut sql = sql.to_string();
         let is_prepared = args.len() > 0;
         for item in &self.get_rbatis().sql_intercepts {
             item.do_intercept(self.get_rbatis(), &mut sql, &mut args, is_prepared)?;
         }
         if self.get_rbatis().log_plugin.is_enable() {
-            let (_args, args_string) = bson_arr_to_string(args);
+            let (_args, args_string) = arr_to_string(args);
             args = _args;
             self.get_rbatis().log_plugin.info(
                 self.tx_id,
@@ -388,7 +362,7 @@ impl<'a> ExecutorMut for RBatisTxExecutor<'_> {
         return result;
     }
 
-    async fn fetch<T>(&mut self, sql: &str, mut args: Vec<rbson::Bson>) -> Result<T, Error>
+    async fn fetch<T>(&mut self, sql: &str, mut args: Vec<Value>) -> Result<T, Error>
     where
         T: DeserializeOwned,
     {
@@ -398,7 +372,7 @@ impl<'a> ExecutorMut for RBatisTxExecutor<'_> {
             item.do_intercept(self.get_rbatis(), &mut sql, &mut args, is_prepared)?;
         }
         if self.get_rbatis().log_plugin.is_enable() {
-            let (_args, args_string) = bson_arr_to_string(args);
+            let (_args, args_string) = arr_to_string(args);
             args = _args;
             self.get_rbatis().log_plugin.info(
                 self.tx_id,
@@ -572,7 +546,7 @@ impl<'a> RBatisTxExecutor<'a> {
     pub async fn fetch_page<T>(
         &self,
         sql: &str,
-        args: Vec<rbson::Bson>,
+        args: Vec<Value>,
         page_request: &dyn IPageRequest,
     ) -> crate::Result<Page<T>>
     where
@@ -608,12 +582,12 @@ impl Drop for RBatisTxExecutorGuard<'_> {
 }
 
 impl Rbatis {
-    pub async fn exec(&self, sql: &str, args: Vec<Bson>) -> Result<rbdc::db::ExecResult, Error> {
+    pub async fn exec(&self, sql: &str, args: Vec<Value>) -> Result<rbdc::db::ExecResult, Error> {
         let mut conn = self.acquire().await?;
         conn.exec(sql, args).await
     }
 
-    pub async fn fetch<T>(&self, sql: &str, args: Vec<Bson>) -> Result<T, Error>
+    pub async fn fetch<T>(&self, sql: &str, args: Vec<Value>) -> Result<T, Error>
     where
         T: DeserializeOwned,
     {

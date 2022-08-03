@@ -12,17 +12,16 @@ use crate::core::Error;
 use crate::core::Result;
 use crate::executor::{ExecutorMut, RBatisConnExecutor, RBatisTxExecutor};
 use crate::rbatis::Rbatis;
-use crate::sql::rule::SqlRule;
 use crate::utils::string_util::to_snake_name;
 use crate::wrapper::Wrapper;
 use rbatis_sql::ops::AsProxy;
-use rbson::Bson;
-use rbson::Bson::Null;
+use Value::Null;
 use std::marker::PhantomData;
 use std::ops::{Deref, DerefMut};
 use std::option::Option::Some;
 use std::sync::Arc;
-use rbs::Value;
+use rbs::{to_value, Value};
+use crate::sql::page::{IPage, IPageRequest, Page};
 
 /// DataBase Table Model trait
 ///
@@ -64,7 +63,7 @@ pub trait CRUDTable: Send + Sync + Serialize {
     fn table_columns() -> String;
 
     ///format column
-    fn do_format_column(driver_type: &DriverType, column: &str, data: &mut String) {
+    fn do_format_column(driver_type: &str, column: &str, data: &mut String) {
         let m = Self::formats(driver_type);
         let source = m.get(column);
         match source {
@@ -78,10 +77,10 @@ pub trait CRUDTable: Send + Sync + Serialize {
     ///return (columns_sql,columns_values_sql,args)
     fn make_value_sql_arg(
         &self,
-        db_type: &DriverType,
+        db_type: &str,
         index: &mut usize,
         skips: &[Skip],
-    ) -> Result<(String, String, Vec<rbson::Bson>)> {
+    ) -> Result<(String, String, Vec<Value>)> {
         let mut value_sql = String::new();
         let mut arr = vec![];
         let cols = Self::table_columns();
@@ -89,7 +88,7 @@ pub trait CRUDTable: Send + Sync + Serialize {
         let mut map;
         match rbs::to_value!(self) {
             rbs::Value::Map(m) => {
-                map = m;
+                map = Value::Map(m);
             }
             _ => {
                 return Err(Error::from("[rbatis] arg not an struct or map!"));
@@ -113,7 +112,7 @@ pub trait CRUDTable: Send + Sync + Serialize {
             if do_continue {
                 continue;
             }
-            let v = map.remove(column_unpacking).unwrap_or(rbson::Bson::Null);
+            let v = map.remove(column_unpacking).unwrap_or(Value::Null);
             for x in skips {
                 match x {
                     Skip::Value(skip_value) => {
@@ -151,11 +150,11 @@ pub trait CRUDTable: Send + Sync + Serialize {
 
     /// return table column value
     /// If a macro is used, the method is overridden by the macro
-    fn get(&self, column: &str) -> rbson::Bson {
-        let s = rbson::to_bson(self).unwrap_or_default();
+    fn get(&self, column: &str) -> Value {
+        let s = to_value!(self);
         match s {
-            rbs::Value::Map(d) => d.get(column).unwrap_or(&Bson::Null).clone(),
-            _ => Bson::Null,
+            Value::Map(_) => s.get(column).unwrap_or(&Null),
+            _ => Null,
         }
     }
 }
@@ -198,16 +197,16 @@ where
         T::table_columns()
     }
 
-    fn formats(driver_type: &DriverType) -> HashMap<String, String> {
+    fn formats(driver_type: &str) -> HashMap<String, String> {
         T::formats(driver_type)
     }
 
     fn make_value_sql_arg(
         &self,
-        db_type: &DriverType,
+        db_type: &str,
         index: &mut usize,
         skips: &[Skip],
-    ) -> Result<(String, String, Vec<rbson::Bson>)> {
+    ) -> Result<(String, String, Vec<Value>)> {
         if self.is_none() {
             return Err(crate::core::Error::from(
                 "[rbatis] can not call make_sql_arg() for an None table!",
@@ -229,16 +228,16 @@ where
         T::table_columns()
     }
 
-    fn formats(driver_type: &DriverType) -> HashMap<String, String> {
+    fn formats(driver_type: &str) -> HashMap<String, String> {
         T::formats(driver_type)
     }
 
     fn make_value_sql_arg(
         &self,
-        db_type: &DriverType,
+        db_type: &str,
         index: &mut usize,
         skips: &[Skip],
-    ) -> Result<(String, String, Vec<rbson::Bson>)> {
+    ) -> Result<(String, String, Vec<Value>)> {
         T::make_value_sql_arg(self, db_type, index, skips)
     }
 }
@@ -255,16 +254,16 @@ where
         T::table_columns()
     }
 
-    fn formats(driver_type: &DriverType) -> HashMap<String, String> {
+    fn formats(driver_type: &str) -> HashMap<String, String> {
         T::formats(driver_type)
     }
 
     fn make_value_sql_arg(
         &self,
-        db_type: &DriverType,
+        db_type: &str,
         index: &mut usize,
         skips: &[Skip],
-    ) -> Result<(String, String, Vec<rbson::Bson>)> {
+    ) -> Result<(String, String, Vec<Value>)> {
         T::make_value_sql_arg(self, db_type, index, skips)
     }
 }
@@ -379,7 +378,7 @@ pub trait CRUD {
     async fn fetch_page<T>(
         &self,
         sql: &str,
-        args: Vec<rbson::Bson>,
+        args: Vec<Value>,
         page_request: &dyn IPageRequest,
     ) -> Result<Page<T>>
     where
@@ -612,27 +611,27 @@ pub trait CRUDMut: ExecutorMut {
     }
 
     /// update_by_wrapper
-    /// skips: use &[Skip::Value(&rbson::Bson::Null), Skip::Column("id"), Skip::Column(column)] will skip id column and null value param
+    /// skips: use &[Skip::Value(&Value::Null), Skip::Column("id"), Skip::Column(column)] will skip id column and null value param
     async fn update_by_wrapper<T>(&mut self, table: &T, w: Wrapper, skips: &[Skip]) -> Result<u64>
     where
         T: CRUDTable,
     {
         let table_name = choose_dyn_table_name::<T>(&w);
         let mut args = vec![];
-        let old_version = rbson::Bson::Null;
+        let old_version = Value::Null;
         let driver_type = &self.driver_type()?;
         let columns = T::table_columns();
         let columns_vec: Vec<&str> = columns.split(",").collect();
         let map;
         match rbs::to_value!(table) {
-            rbs::Value::Map(m) => {
-                map = m;
+            Value::Map(m) => {
+                map = Value::Map(m);
             }
             _ => {
                 return Err(Error::from("[rbatis] arg not an struct or map!"));
             }
         }
-        let null = rbson::Bson::Null;
+        let null = Value::Null;
         let mut sets = String::new();
         for column in columns_vec {
             //filter
@@ -715,7 +714,7 @@ pub trait CRUDMut: ExecutorMut {
             table,
             rb.new_wrapper_table::<T>().eq(column, value),
             &[
-                Skip::Value(Bson::Null),
+                Skip::Value(Value::Null),
                 Skip::Column("id"),
                 Skip::Column(column),
             ],
@@ -836,7 +835,7 @@ pub trait CRUDMut: ExecutorMut {
     async fn fetch_page<T>(
         &mut self,
         sql: &str,
-        args: Vec<rbson::Bson>,
+        args: Vec<Value>,
         page_request: &dyn IPageRequest,
     ) -> Result<Page<T>>
     where
@@ -966,7 +965,7 @@ impl CRUD for Rbatis {
     }
 
     /// update_by_wrapper
-    /// skips: use &[Skip::Value(&rbson::Bson::Null), Skip::Column("id"), Skip::Column(column)] will skip id column and null value param
+    /// skips: use &[Skip::Value(&Value::Null), Skip::Column("id"), Skip::Column(column)] will skip id column and null value param
     async fn update_by_wrapper<T>(&self, table: &T, w: Wrapper, skips: &[Skip]) -> Result<u64>
     where
         T: CRUDTable,
@@ -1065,7 +1064,7 @@ impl CRUD for Rbatis {
     async fn fetch_page<T>(
         &self,
         sql: &str,
-        args: Vec<rbson::Bson>,
+        args: Vec<Value>,
         page_request: &dyn IPageRequest,
     ) -> Result<Page<T>>
     where
@@ -1081,7 +1080,7 @@ pub enum Skip<'a> {
     ///skip column
     Column(&'a str),
     ///skip serde json value ref
-    Value(rbson::Bson),
+    Value(Value),
 }
 
 impl<'a> Skip<'a> {
@@ -1174,17 +1173,17 @@ where
     }
 
     ///format column
-    fn do_format_column(driver_type: &DriverType, column: &str, data: &mut String) {
+    fn do_format_column(driver_type: &str, column: &str, data: &mut String) {
         T::do_format_column(driver_type, column, data)
     }
 
     ///return (columns_sql,columns_values_sql,args)
     fn make_value_sql_arg(
         &self,
-        db_type: &DriverType,
+        db_type: &str,
         index: &mut usize,
         skips: &[Skip],
-    ) -> Result<(String, String, Vec<rbson::Bson>)> {
+    ) -> Result<(String, String, Vec<Value>)> {
         T::make_value_sql_arg(self, db_type, index, skips)
     }
 
@@ -1197,7 +1196,7 @@ where
 
     /// return table column value
     /// If a macro is used, the method is overridden by the macro
-    fn get(&self, column: &str) -> rbson::Bson {
+    fn get(&self, column: &str) -> Value {
         T::get(self, column)
     }
 }
