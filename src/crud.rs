@@ -10,7 +10,7 @@
 macro_rules! crud_insert {
     ($table:ty,$table_name:tt) => {
         impl $table{
-            pub async fn save(&self,mut rb: $crate::executor::RbatisExecutor<'_>)->Result<rbdc::db::ExecResult,rbdc::Error>{
+            pub async fn insert(&self,mut rb: $crate::executor::RbatisExecutor<'_>)->Result<rbdc::db::ExecResult,rbdc::Error>{
                 #[py_sql(
 "insert into ${table_name} (
              trim ',':
