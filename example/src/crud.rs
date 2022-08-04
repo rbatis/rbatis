@@ -17,8 +17,8 @@ use rbdc::datetime::FastDateTime;
 use crate::model::{BizActivity, init_sqlite};
 
 impl_insert!(BizActivity);
-impl_select_all!(BizActivity);
-impl_select_all!(BizActivity,select_all_by_id(id:String),"select * from biz_activity where id = #{id}");
+impl_select!(BizActivity);
+impl_select!(BizActivity,select_all_by_id(id:String),"select * from biz_activity where id = #{id}");
 impl_select_one!(BizActivity,find_by_id(id:String),"select * from biz_activity where id = #{id} limit 1");
 
 #[tokio::main]

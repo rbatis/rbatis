@@ -52,7 +52,7 @@ async fn do_insert(mut rb: $crate::executor::RbatisExecutor<'_>,table: &$table,t
 /// BizActivity::select()
 ///
 #[macro_export]
-macro_rules! impl_select_all {
+macro_rules! impl_select {
     ($table:ty) => {
         $crate::impl_select_all!($table,$crate::utils::string_util::to_snake_name(stringify!($table)));
     };
