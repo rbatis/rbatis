@@ -11,17 +11,15 @@ extern crate rbatis;
 pub mod model;
 
 use rbdc::datetime::FastDateTime;
-use crate::model::{biz_activity, init_sqlite};
+use crate::model::{BizActivity, init_sqlite};
 
-
-crud_insert!(biz_activity);
-
+crud_insert!(BizActivity,"biz_activity");
 
 #[tokio::main]
 pub async fn main() {
     fast_log::init(fast_log::config::Config::new().console());
     let rb = init_sqlite().await;
-    let mut t = biz_activity {
+    let mut t = BizActivity {
         id: Some("2".into()),
         name: Some("2".into()),
         pc_link: Some("2".into()),
