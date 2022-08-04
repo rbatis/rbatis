@@ -8,7 +8,7 @@
 ///
 #[macro_export]
 macro_rules! crud_insert {
-    ($table:ty,$table_name:tt) => {
+    ($table:ty,$table_name:expr) => {
         impl $table{
             pub async fn insert(&self,mut rb: $crate::executor::RbatisExecutor<'_>)->Result<rbdc::db::ExecResult,rbdc::Error>{
                 #[py_sql(

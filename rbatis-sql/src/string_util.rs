@@ -49,25 +49,6 @@ pub fn count_string_num(s: &String, c: char) -> usize {
     return num;
 }
 
-pub fn to_snake_name(name: &str) -> String {
-    let chs = name.chars();
-    let mut new_name = String::new();
-    let mut index = 0;
-    let chs_len = name.len();
-    for x in chs {
-        if x.is_uppercase() {
-            if index != 0 && (index + 1) != chs_len {
-                new_name.push_str("_");
-            }
-            new_name.push_str(x.to_lowercase().to_string().as_str());
-        } else {
-            new_name.push(x);
-        }
-        index += 1;
-    }
-    return new_name;
-}
-
 ///input 'strings' => strings
 pub fn un_packing_string(column: &str) -> &str {
     if column.len() >= 2 {
