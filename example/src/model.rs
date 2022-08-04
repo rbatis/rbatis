@@ -2,6 +2,7 @@
 use rbatis::rbatis::Rbatis;
 use std::fs::{create_dir_all, File};
 use std::io::Read;
+use log::LevelFilter;
 use serde::{Serialize,Deserialize};
 use rbdc_sqlite::driver::SqliteDriver;
 
@@ -59,7 +60,9 @@ pub async fn init_sqlite_path(path: &str) -> Rbatis {
     let mut f = File::open(format!("{}example/table_sqlite.sql", path)).unwrap();
     let mut sql = String::new();
     f.read_to_string(&mut sql).unwrap();
-    rb.exec(&sql, vec![]).await;
 
+    fast_log::LOGGER.set_level(LevelFilter::Off);
+    rb.exec(&sql, vec![]).await;
+    fast_log::LOGGER.set_level(LevelFilter::Info);
     return rb;
 }
