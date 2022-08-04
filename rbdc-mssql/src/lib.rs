@@ -6,7 +6,7 @@ use std::any::Any;
 use std::sync::Arc;
 use futures_core::future::BoxFuture;
 use futures_util::StreamExt;
-use rbdc::db::{Connection, ConnectOptions, MetaData, ExecResult, Row};
+use rbdc::db::{Connection, ConnectOptions, MetaData, ExecResult, Row, Placeholder};
 use tiberius::{Client, Config, AuthMethod, Column, QueryStream, Query, ColumnData};
 use rbdc::{block_on, Error};
 use rbs::Value;
@@ -16,6 +16,7 @@ use tokio::io::AsyncWrite;
 use tokio::net::TcpStream;
 use rbs::value::change_lifetime_const;
 use crate::decode::Decode;
+use crate::driver::MssqlDriver;
 use crate::encode::Encode;
 
 
@@ -101,7 +102,7 @@ impl Row for MssqlRow {
 
 impl Connection for MssqlConnection {
     fn get_rows(&mut self, sql: &str, params: Vec<Value>) -> BoxFuture<Result<Vec<Box<dyn Row>>, rbdc::Error>> {
-        let sql = sql.to_string();
+        let sql = MssqlDriver{}.exchange(sql);
         Box::pin(async move {
             let mut q = Query::new(sql);
             for x in params {
@@ -125,7 +126,7 @@ impl Connection for MssqlConnection {
     }
 
     fn exec(&mut self, sql: &str, params: Vec<Value>) -> BoxFuture<Result<ExecResult, rbdc::Error>> {
-        let sql = sql.to_string();
+        let sql = MssqlDriver{}.exchange(sql);
         Box::pin(async move {
             let mut q = Query::new(sql);
             for x in params {
