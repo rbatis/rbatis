@@ -15,9 +15,6 @@ impl RbatisTableSync {
 
 #[cfg(test)]
 mod test {
-    use crate::crud::CRUDTable;
-    use crate::table_sync::{RbatisTableSync, TableSync};
-
     #[test]
     fn test_sync_table() {
 
