@@ -103,3 +103,41 @@ async fn do_select_one(mut rb: $crate::executor::RbatisExecutor<'_>,$param_key:$
         }
     };
 }
+
+
+/// gen sql = UPDATE table_name SET column1=value1,column2=value2,... WHERE some_column=some_value;
+#[macro_export]
+macro_rules! impl_update {
+    ($table:ty) => {
+        $crate::impl_update!($table,$crate::utils::string_util::to_snake_name(stringify!($table)));
+    };
+    ($table:ty,$table_name:expr) => {
+        impl $table{
+            pub async fn update_by_column(mut rb: $crate::executor::RbatisExecutor<'_>,table:&$table,column:&str)->Result<rbdc::db::ExecResult,rbdc::Error>{
+                #[py_sql(
+"update ${table_name} set
+             trim ',':
+               for k,v in table:
+                  if k == column || v== null:
+                    #{continue}
+                 ${k}=#{v},
+             where  ${column} = #{column_value}   ")]
+async fn do_update_by_column(mut rb: $crate::executor::RbatisExecutor<'_>,table_name:String,table: &rbs::Value,column_value: &rbs::Value,column:&str) -> Result<rbdc::db::ExecResult,rbdc::Error> {impled!()}
+            let table_name = $table_name.to_string();
+            let table =  rbs::to_value!(table);
+            let column_value = &table[column];
+            do_update_by_column(rb,table_name,&table,column_value,column).await
+            }
+        }
+    };
+    // ($table:ty,$sql:expr,$fn_name:ident($($param_key:ident:$param_type:ty$(,)?)+)) => {
+    //     impl $table{
+    //         pub async fn $fn_name(mut rb: $crate::executor::RbatisExecutor<'_>,$($param_key:$param_type,)+)->Result<rbdc::db::ExecResult,rbdc::Error>{
+    //         #[py_sql($sql)]
+    //         async fn do_do_update_all(mut rb: $crate::executor::RbatisExecutor<'_>,$($param_key:$param_type,)+) -> Result<rbdc::db::ExecResult,rbdc::Error> {impled!()}
+    //         do_do_update_all(rb,$($param_key ,)+).await
+    //         }
+    //     }
+    // };
+}
+
