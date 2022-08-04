@@ -4,10 +4,13 @@
 /// example:
 /// pub struct BizActivity{}
 ///
-/// crud_insert!(BizActivity,"biz_activity");
+/// impl_insert!(BizActivity,"biz_activity");
+///
+/// let table = BizActivity{}
+/// table.insert()
 ///
 #[macro_export]
-macro_rules! crud_insert {
+macro_rules! impl_insert {
     ($table:ty,$table_name:expr) => {
         impl $table{
             pub async fn insert(&self,mut rb: $crate::executor::RbatisExecutor<'_>)->Result<rbdc::db::ExecResult,rbdc::Error>{
