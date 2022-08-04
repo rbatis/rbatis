@@ -9,10 +9,14 @@ macro_rules! crud_insert {
 "insert into ${table_name} (
              trim ',':
                for k,v in table:
+                  if k == 'id' && v== null:
+                    #{continue}
                  ${k},
              ) VALUES (
              trim ',':
                for k,v in table:
+                  if k == 'id' && v== null:
+                    #{continue}
                  #{v},
              )")]
 async fn do_save(mut rb: $crate::executor::RbatisExecutor<'_>,table: &$table,table_name:String) -> Result<rbdc::db::ExecResult,rbdc::Error> {impled!()}

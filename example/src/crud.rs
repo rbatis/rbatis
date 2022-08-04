@@ -16,6 +16,7 @@ use crate::model::{biz_activity, init_sqlite};
 
 crud_insert!(biz_activity);
 
+
 #[tokio::main]
 pub async fn main() {
     fast_log::init(fast_log::config::Config::new().console());
