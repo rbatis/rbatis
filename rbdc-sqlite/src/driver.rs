@@ -1,5 +1,5 @@
 use futures_core::future::BoxFuture;
-use rbdc::db::{Connection, ConnectOptions, Driver};
+use rbdc::db::{Connection, ConnectOptions, Driver, Placeholder};
 use rbdc::Error;
 use crate::{SqliteConnection, SqliteConnectOptions};
 
@@ -29,6 +29,12 @@ impl Driver for SqliteDriver {
 
     fn default_option(&self) -> Box<dyn ConnectOptions> {
         Box::new(SqliteConnectOptions::default())
+    }
+}
+
+impl Placeholder for SqliteDriver{
+    fn exchange(&self, sql: &str) -> String{
+        sql.to_string()
     }
 }
 

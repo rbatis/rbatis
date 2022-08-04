@@ -10,7 +10,7 @@ use rbs::value::map::ValueMap;
 
 /// Represents database driver that can be shared between threads, and can therefore implement
 /// a connection pool
-pub trait Driver:  Debug + Sync + Send{
+pub trait Driver: Debug + Sync + Send {
     fn name(&self) -> &str;
     /// Create a connection to the database. Note that connections are intended to be used
     /// in a single thread since most database connections are not thread-safe
@@ -29,7 +29,7 @@ pub struct ExecResult {
     pub last_insert_id: Value,
 }
 
-impl Display for ExecResult{
+impl Display for ExecResult {
     fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
         f.debug_map().key(&"rows_affected")
             .value(&self.rows_affected)
@@ -137,4 +137,9 @@ impl dyn ConnectOptions {
     pub fn downcast_ref<E: ConnectOptions>(&self) -> Option<&E> {
         self.uppercase_self().downcast_ref()
     }
+}
+
+
+pub trait Placeholder {
+    fn exchange(&self, sql: &str)-> String;
 }

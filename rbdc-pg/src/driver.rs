@@ -1,7 +1,7 @@
 use crate::connection::PgConnection;
 use crate::options::PgConnectOptions;
 use futures_core::future::BoxFuture;
-use rbdc::db::{ConnectOptions, Connection, Driver};
+use rbdc::db::{ConnectOptions, Connection, Driver, Placeholder};
 use rbdc::Error;
 use std::str::FromStr;
 
@@ -32,6 +32,31 @@ impl Driver for PgDriver {
     }
 }
 
+impl Placeholder for PgDriver {
+    fn exchange(&self, sql: &str) -> String {
+        let mut last = ' ' as u8;
+        let mut sql_bytes = sql.as_bytes().to_vec();
+        let mut placeholder_idx = 1;
+        let mut index = 0;
+        loop {
+            if index == sql_bytes.len() {
+                break;
+            }
+            let x = sql_bytes[index];
+            if x == '?' as u8 && last != '\\' as u8 {
+                sql_bytes[index] = '$' as u8;
+                sql_bytes.insert(index + 1, '0' as u8 + placeholder_idx);
+                last = '0' as u8 + placeholder_idx;
+                placeholder_idx += 1;
+            } else {
+                last = x;
+            }
+            index += 1;
+        }
+        String::from_utf8(sql_bytes).unwrap_or_default()
+    }
+}
+
 #[cfg(test)]
 mod test {
     use crate::driver::PgDriver;
@@ -41,11 +66,12 @@ mod test {
     use rbdc::pool::Pool;
     use rbdc::timestamp::Timestamp;
     use rbs::Value;
+    use rbdc::db::Placeholder;
 
     #[test]
     fn test_pg_pool() {
-        let task=async move{
-            let pool = Pool::new_url( PgDriver {}, "postgres://postgres:123456@localhost:5432/postgres").unwrap();
+        let task = async move {
+            let pool = Pool::new_url(PgDriver {}, "postgres://postgres:123456@localhost:5432/postgres").unwrap();
             std::thread::sleep(std::time::Duration::from_secs(2));
             let mut conn = pool.get().await.unwrap();
             let data = conn
@@ -84,5 +110,13 @@ mod test {
             println!("{}", data);
         };
         block_on!(task);
+    }
+
+    #[test]
+    fn test_exchange() {
+        let d = PgDriver {};
+        let s = d.exchange("select * from table where id = ? age = ?");
+        println!("{}", s);
+        assert_eq!(s,"select * from table where id = $1 age = $2")
     }
 }

@@ -3,7 +3,7 @@ use std::ops::Deref;
 use crate::connection::MySqlConnection;
 use crate::options::MySqlConnectOptions;
 use futures_core::future::BoxFuture;
-use rbdc::db::{ConnectOptions, Connection, Driver};
+use rbdc::db::{ConnectOptions, Connection, Driver, Placeholder};
 use rbdc::Error;
 use std::str::FromStr;
 use std::sync::Arc;
@@ -34,6 +34,12 @@ impl Driver for MysqlDriver {
 
     fn default_option(&self) -> Box<dyn ConnectOptions> {
         Box::new(MySqlConnectOptions::default())
+    }
+}
+
+impl Placeholder for MysqlDriver{
+    fn exchange(&self, sql: &str) -> String{
+        sql.to_string()
     }
 }
 
