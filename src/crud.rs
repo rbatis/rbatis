@@ -46,6 +46,8 @@ async fn do_insert(mut rb: $crate::executor::RbatisExecutor<'_>,table: &$table,t
 ///
 /// impl_insert!(BizActivity,"biz_activity");
 ///
+/// impl_select_all!(BizActivity,select_all_by_id,"select * from biz_activity where id = #{id}",id:String);
+///
 /// let table = BizActivity{}
 /// BizActivity::select()
 ///
@@ -84,7 +86,7 @@ async fn do_select_all(mut rb: $crate::executor::RbatisExecutor<'_>,$param_key:$
 /// example:
 /// pub struct BizActivity{}
 ///
-/// impl_insert!(BizActivity,"biz_activity");
+/// impl_select_one!(BizActivity,find_by_id,"select * from biz_activity where id = #{id} limit 1",id:String);
 ///
 /// let table = BizActivity{}
 /// BizActivity::select()
