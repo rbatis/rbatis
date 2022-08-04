@@ -6,7 +6,7 @@ use syn::{AttributeArgs, FnArg, ItemFn};
 use crate::macros::py_sql_impl;
 use crate::proc_macro::TokenStream;
 use crate::util::{
-    find_fn_body, find_return_type, get_fn_args, get_page_req_ident, is_fetch, is_rbatis_ref,
+    find_fn_body, find_return_type, get_fn_args, is_fetch, is_rbatis_ref,
 };
 
 pub(crate) fn impl_macro_html_sql(target_fn: &ItemFn, args: &AttributeArgs) -> TokenStream {
