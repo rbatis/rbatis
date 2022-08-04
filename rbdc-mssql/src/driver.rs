@@ -1,6 +1,6 @@
 use futures_core::future::BoxFuture;
 use tiberius::Config;
-use rbdc::db::{Connection, ConnectOptions, Driver};
+use rbdc::db::{Connection, ConnectOptions, Driver, Placeholder};
 use rbdc::Error;
 use crate::{MssqlConnection, MssqlConnectOptions};
 
@@ -36,9 +36,36 @@ impl Driver for MssqlDriver {
     }
 }
 
+impl Placeholder for MssqlDriver {
+    fn exchange(&self, sql: &str) -> String {
+        let mut last = ' ' as u8;
+        let mut sql_bytes = sql.as_bytes().to_vec();
+        let mut placeholder_idx = 1;
+        let mut index = 0;
+        loop {
+            if index == sql_bytes.len() {
+                break;
+            }
+            let x = sql_bytes[index];
+            if x == '?' as u8 && last != '\\' as u8 {
+                sql_bytes[index] = '@' as u8;
+                sql_bytes.insert(index + 1, 'P' as u8);//P
+                sql_bytes.insert(index + 2, '0' as u8 + placeholder_idx);
+                last = '0' as u8 + placeholder_idx;
+                placeholder_idx += 1;
+            } else {
+                last = x;
+            }
+            index += 1;
+        }
+        String::from_utf8(sql_bytes).unwrap_or_default()
+    }
+}
+
+
 #[cfg(test)]
 mod test {
-    use rbdc::db::Driver;
+    use rbdc::db::{Driver, Placeholder};
     use rbs::{to_value, Value};
     use std::collections::BTreeMap;
     use rbdc::block_on;
@@ -63,5 +90,13 @@ mod test {
             }
         };
         block_on!(task);
+    }
+
+    #[test]
+    fn test_exchange() {
+        let d = MssqlDriver {};
+        let s = d.exchange("select * from table where id = ? age = ?");
+        println!("{}", s);
+        assert_eq!(s,"select * from table where id = @P1 age = @P2")
     }
 }
