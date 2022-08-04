@@ -22,7 +22,7 @@ use crate::{init_sqlite, BizActivity};
 
 /// doc you can see https://rbatis.github.io/rbatis.io/#/en/
 #[sql("select * from biz_activity where delete_flag = ?")]
-async fn sql_fn(rb: &Rbatis, delete_flag: &i32) -> Vec<BizActivity> {
+async fn raw_sql(rb: &Rbatis, delete_flag: &i32) -> Vec<BizActivity> {
     impled!()
 }
 
@@ -31,7 +31,7 @@ pub async fn main() {
     fast_log::init(fast_log::config::Config::new().console());
     //use static ref
     let rb = init_sqlite().await;
-    let a = sql_fn(&rb, &0).await.unwrap();
+    let a = raw_sql(&rb, &0).await.unwrap();
     println!("{:?}", a);
 }
 
