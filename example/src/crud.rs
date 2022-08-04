@@ -36,7 +36,7 @@ pub async fn main() {
         version: Some(1),
         delete_flag: Some(1)
     };
-    let af= t.insert(rb.as_executor()).await;
+    let af= BizActivity::insert(rb.as_executor(),&t).await;
     println!("{:?}",af);
 
     sleep(Duration::from_secs(2));

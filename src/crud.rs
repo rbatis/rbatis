@@ -16,7 +16,7 @@ macro_rules! impl_insert {
     };
     ($table:ty,$table_name:expr) => {
         impl $table{
-            pub async fn insert(&self,mut rb: $crate::executor::RbatisExecutor<'_>)->Result<rbdc::db::ExecResult,rbdc::Error>{
+            pub async fn insert(mut rb: $crate::executor::RbatisExecutor<'_>,table: &$table)->Result<rbdc::db::ExecResult,rbdc::Error>{
                 #[py_sql(
 "insert into ${table_name} (
              trim ',':
@@ -31,9 +31,9 @@ macro_rules! impl_insert {
                     #{continue}
                  #{v},
              )")]
-async fn do_save(mut rb: $crate::executor::RbatisExecutor<'_>,table: &$table,table_name:String) -> Result<rbdc::db::ExecResult,rbdc::Error> {impled!()}
+async fn do_insert(mut rb: $crate::executor::RbatisExecutor<'_>,table: &$table,table_name:String) -> Result<rbdc::db::ExecResult,rbdc::Error> {impled!()}
             let table_name = $table_name.to_string();
-            do_save(rb.into(),&self,table_name).await
+            do_insert(rb.into(),table,table_name).await
             }
         }
     };
