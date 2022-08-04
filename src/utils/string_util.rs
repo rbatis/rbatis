@@ -47,6 +47,7 @@ pub fn count_string_num(s: &String, c: char) -> usize {
     return num;
 }
 
+/// convert name to snake name
 pub fn to_snake_name(name: &str) -> String {
     let chs = name.chars();
     let mut new_name = String::new();
