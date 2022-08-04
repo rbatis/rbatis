@@ -10,7 +10,7 @@ use either::Either;
 use futures_core::future::BoxFuture;
 use futures_util::{FutureExt, StreamExt, TryFutureExt};
 use rbdc::common::StatementCache;
-use rbdc::db::{Connection, ExecResult, Row};
+use rbdc::db::{Connection, ExecResult, Placeholder, Row};
 use rbdc::ext::ustr::UStr;
 use rbdc::io::Decode;
 use rbdc::Error;
@@ -18,6 +18,7 @@ use rbs::Value;
 use std::collections::HashMap;
 use std::fmt::{self, Debug, Formatter};
 use std::sync::Arc;
+use crate::driver::PgDriver;
 
 pub use self::stream::PgStream;
 
@@ -188,7 +189,7 @@ impl Connection for PgConnection {
         sql: &str,
         params: Vec<Value>,
     ) -> BoxFuture<Result<Vec<Box<dyn Row>>, Error>> {
-        let sql = sql.to_owned();
+        let sql = PgDriver{}.exchange(sql);
         Box::pin(async move {
             if params.len() == 0 {
                 let mut many = self.fetch_many(PgQuery {
@@ -228,7 +229,7 @@ impl Connection for PgConnection {
     }
 
     fn exec(&mut self, sql: &str, params: Vec<Value>) -> BoxFuture<Result<ExecResult, Error>> {
-        let sql = sql.to_owned();
+        let sql = PgDriver{}.exchange(sql);
         Box::pin(async move {
             if params.len() == 0 {
                 let mut many = self.fetch_many(PgQuery {
