@@ -1,4 +1,3 @@
-
 ///gen sql => INSERT INTO table_name (column1,column2,column3,...) VALUES (value1,value2,value3,...);
 ///
 /// example:
@@ -63,6 +62,41 @@ macro_rules! impl_select_all {
 async fn do_select_all(mut rb: $crate::executor::RbatisExecutor<'_>,table_name:String) -> Result<Vec<$table>,rbdc::Error> {impled!()}
             let table_name = $table_name.to_string();
             do_select_all(rb,table_name).await
+            }
+        }
+    };
+    ($table:ty,$fn_name:ident,$sql:expr,$param_key:ident:$param_value:ty) => {
+        impl $table{
+            pub async fn $fn_name(mut rb: $crate::executor::RbatisExecutor<'_>,$param_key:$param_value)->Result<Vec<$table>,rbdc::Error>{
+                #[py_sql($sql)]
+async fn do_select_all(mut rb: $crate::executor::RbatisExecutor<'_>,$param_key:$param_value) -> Result<Vec<$table>,rbdc::Error> {impled!()}
+            do_select_all(rb,$param_key).await
+            }
+        }
+    };
+}
+
+
+
+
+///gen sql => SELECT (column1,column2,column3,...) FROM table_name (column1,column2,column3,...)  *** WHERE ***
+///
+/// example:
+/// pub struct BizActivity{}
+///
+/// impl_insert!(BizActivity,"biz_activity");
+///
+/// let table = BizActivity{}
+/// BizActivity::select()
+///
+#[macro_export]
+macro_rules! impl_select_one {
+    ($table:ty,$fn_name:ident,$sql:expr,$param_key:ident:$param_value:ty) => {
+        impl $table{
+            pub async fn $fn_name(mut rb: $crate::executor::RbatisExecutor<'_>,$param_key:$param_value)->Result<Option<$table>,rbdc::Error>{
+                #[py_sql($sql)]
+async fn do_select_one(mut rb: $crate::executor::RbatisExecutor<'_>,$param_key:$param_value) -> Result<Option<$table>,rbdc::Error> {impled!()}
+            do_select_one(rb,$param_key).await
             }
         }
     };
