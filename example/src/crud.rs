@@ -33,7 +33,7 @@ pub async fn main() {
         version: Some(1),
         delete_flag: Some(1)
     };
-    let af= t.save(rb.as_executor()).await.unwrap();
+    let af= t.insert(rb.as_executor()).await.unwrap();
     println!("{}",af);
 }
 
