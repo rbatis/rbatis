@@ -18,11 +18,11 @@ use rbatis::executor::RbatisExecutor;
 use rbatis::sql::page::{Page, PageRequest};
 use rbatis::rbatis::Rbatis;
 
-use crate::{init_sqlite, BizActivity};
+use crate::{init_sqlite, biz_activity};
 
 /// doc you can see https://rbatis.github.io/rbatis.io/#/en/
 #[sql("select * from biz_activity where delete_flag = ?")]
-async fn raw_sql(rb: &Rbatis, delete_flag: &i32) -> Vec<BizActivity> {
+async fn raw_sql(rb: &Rbatis, delete_flag: &i32) -> Vec<biz_activity> {
     impled!()
 }
 

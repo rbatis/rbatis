@@ -196,7 +196,7 @@ fn convert_to_arg_access(context: &str, arg: Expr, as_proxy: bool, ignore: &[Str
             b.base = Box::new(convert_to_arg_access(context, *b.base.clone(), as_proxy, ignore));
             match b.member {
                 Member::Named(named) => {
-                    return syn::parse_str::<Expr>(&format!("{}[\"{}\"]", b.base.to_token_stream(), named.to_token_stream())).unwrap();
+                    return syn::parse_str::<Expr>(&format!("({}[\"{}\"])", b.base.to_token_stream(), named.to_token_stream())).unwrap();
                 }
                 Member::Unnamed(_) => {}
             }

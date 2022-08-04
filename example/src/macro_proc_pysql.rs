@@ -19,12 +19,13 @@ use rbatis::Error;
 use rbatis::executor::RbatisExecutor;
 use rbatis::sql::page::{Page, PageRequest};
 use rbatis::rbatis::Rbatis;
+use rbdc::datetime::FastDateTime;
 use rbs::{to_value, Value};
 
-use crate::{init_sqlite, BizActivity};
+use crate::{init_sqlite, biz_activity};
 
 #[py_sql("select * from biz_activity where delete_flag = 0")]
-async fn py_ctx_id(rb: &Rbatis) -> Vec<BizActivity> {
+async fn py_ctx_id(rb: &Rbatis) -> Vec<biz_activity> {
     impled!()
 }
 
@@ -38,7 +39,7 @@ async fn py_select_page(
     mut rb: RbatisExecutor<'_>,
     page_req: &PageRequest,
     name: &str,
-) -> Result<Vec<BizActivity>,Error> {
+) -> Result<Vec<biz_activity>,Error> {
     impled!()
 }
 
