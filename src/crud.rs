@@ -67,12 +67,12 @@ async fn do_select_all(mut rb: $crate::executor::RbatisExecutor<'_>,table_name:S
             }
         }
     };
-    ($table:ty,$fn_name:ident($param_key:ident:$param_value:ty),$sql:expr) => {
+    ($table:ty,$sql:expr,$fn_name:ident($($param_key:ident:$param_type:ty$(,)?)+)) => {
         impl $table{
-            pub async fn $fn_name(mut rb: $crate::executor::RbatisExecutor<'_>,$param_key:$param_value)->Result<Vec<$table>,rbdc::Error>{
+            pub async fn $fn_name(mut rb: $crate::executor::RbatisExecutor<'_>,$($param_key:$param_type,)+)->Result<Vec<$table>,rbdc::Error>{
                 #[py_sql($sql)]
-async fn do_select_all(mut rb: $crate::executor::RbatisExecutor<'_>,$param_key:$param_value) -> Result<Vec<$table>,rbdc::Error> {impled!()}
-            do_select_all(rb,$param_key).await
+async fn do_select_all(mut rb: $crate::executor::RbatisExecutor<'_>,$($param_key:$param_type,)+) -> Result<Vec<$table>,rbdc::Error> {impled!()}
+            do_select_all(rb,$($param_key ,)+).await
             }
         }
     };
@@ -93,11 +93,11 @@ async fn do_select_all(mut rb: $crate::executor::RbatisExecutor<'_>,$param_key:$
 ///
 #[macro_export]
 macro_rules! impl_select_one {
-    ($table:ty,$fn_name:ident($param_key:ident:$param_value:ty),$sql:expr) => {
+    ($table:ty,$sql:expr,$fn_name:ident($param_key:ident:$param_type:ty)) => {
         impl $table{
-            pub async fn $fn_name(mut rb: $crate::executor::RbatisExecutor<'_>,$param_key:$param_value)->Result<Option<$table>,rbdc::Error>{
+            pub async fn $fn_name(mut rb: $crate::executor::RbatisExecutor<'_>,$param_key:$param_type)->Result<Option<$table>,rbdc::Error>{
                 #[py_sql($sql)]
-async fn do_select_one(mut rb: $crate::executor::RbatisExecutor<'_>,$param_key:$param_value) -> Result<Option<$table>,rbdc::Error> {impled!()}
+async fn do_select_one(mut rb: $crate::executor::RbatisExecutor<'_>,$param_key:$param_type) -> Result<Option<$table>,rbdc::Error> {impled!()}
             do_select_one(rb,$param_key).await
             }
         }

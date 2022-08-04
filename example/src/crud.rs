@@ -18,8 +18,8 @@ use crate::model::{BizActivity, init_sqlite};
 
 impl_insert!(BizActivity);
 impl_select!(BizActivity);
-impl_select!(BizActivity,select_all_by_id(id:String),"select * from biz_activity where id = #{id}");
-impl_select_one!(BizActivity,find_by_id(id:String),"select * from biz_activity where id = #{id} limit 1");
+impl_select!(BizActivity,"select * from biz_activity where id = #{id} name = #{name}",select_all_by_id(id:&str,name:&str));
+impl_select_one!(BizActivity,"select * from biz_activity where id = #{id} limit 1",find_by_id(id:String));
 
 #[tokio::main]
 pub async fn main() {
@@ -44,7 +44,7 @@ pub async fn main() {
 
     sleep(Duration::from_secs(2));
 
-    let data = BizActivity::select_all_by_id(rb.as_executor(), "1".to_string()).await;
+    let data = BizActivity::select_all_by_id(rb.as_executor(), "1", "1").await;
     println!("{:?}", data);
 
     sleep(Duration::from_secs(2));
