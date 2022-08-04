@@ -28,5 +28,7 @@ pub mod rbatis;
 pub mod utils;
 pub mod executor;
 pub mod sql;
+#[macro_use]
 pub mod crud;
+pub use crud::*;
 

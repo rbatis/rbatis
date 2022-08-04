@@ -10,11 +10,10 @@
 extern crate rbatis;
 pub mod model;
 
-use rbatis::utils::string_util::to_snake_name;
 use rbdc::datetime::FastDateTime;
 use crate::model::{BizActivity, init_sqlite};
 
-impl_insert!(BizActivity,to_snake_name(stringify!(BizActivity)));
+impl_insert!(BizActivity);
 
 #[tokio::main]
 pub async fn main() {
