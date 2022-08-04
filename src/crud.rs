@@ -130,14 +130,23 @@ async fn do_update_by_column(mut rb: $crate::executor::RbatisExecutor<'_>,table_
             }
         }
     };
-    // ($table:ty,$sql:expr,$fn_name:ident($($param_key:ident:$param_type:ty$(,)?)+)) => {
-    //     impl $table{
-    //         pub async fn $fn_name(mut rb: $crate::executor::RbatisExecutor<'_>,$($param_key:$param_type,)+)->Result<rbdc::db::ExecResult,rbdc::Error>{
-    //         #[py_sql($sql)]
-    //         async fn do_do_update_all(mut rb: $crate::executor::RbatisExecutor<'_>,$($param_key:$param_type,)+) -> Result<rbdc::db::ExecResult,rbdc::Error> {impled!()}
-    //         do_do_update_all(rb,$($param_key ,)+).await
-    //         }
-    //     }
-    // };
 }
 
+
+/// gen sql = DELETE FROM table_name WHERE some_column=some_value;
+#[macro_export]
+macro_rules! impl_delete {
+    ($table:ty) => {
+        $crate::impl_delete!($table,$crate::utils::string_util::to_snake_name(stringify!($table)));
+    };
+    ($table:ty,$table_name:expr) => {
+        impl $table{
+            pub async fn delete_by_column(mut rb: $crate::executor::RbatisExecutor<'_>, column:&str,column_value: &rbs::Value)->Result<rbdc::db::ExecResult,rbdc::Error>{
+            #[py_sql("delete from ${table_name} where  ${column} = #{column_value}")]
+            async fn do_delete_by_column(mut rb: $crate::executor::RbatisExecutor<'_>,table_name:String,column_value: &rbs::Value,column:&str) -> Result<rbdc::db::ExecResult,rbdc::Error> {impled!()}
+            let table_name = $table_name.to_string();
+            do_delete_by_column(rb,table_name,column_value,column).await
+            }
+        }
+    };
+}
