@@ -44,5 +44,8 @@ pub async fn main() {
 
     let data=BizActivity::select_all(rb.as_executor(),"1".to_string()).await;
     println!("{:?}",data);
+
+    let data=BizActivity::find_by_id(rb.as_executor(),"1".to_string()).await;
+    println!("{:?}",data);
 }
 
