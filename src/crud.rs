@@ -54,7 +54,7 @@ async fn do_insert(mut rb: $crate::executor::RbatisExecutor<'_>,table: &$table,t
 #[macro_export]
 macro_rules! impl_select {
     ($table:ty) => {
-        $crate::impl_select_all!($table,$crate::utils::string_util::to_snake_name(stringify!($table)));
+        $crate::impl_select!($table,$crate::utils::string_util::to_snake_name(stringify!($table)));
     };
     ($table:ty,$table_name:expr) => {
         impl $table{
