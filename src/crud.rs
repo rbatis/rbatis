@@ -67,7 +67,7 @@ async fn do_select_all(mut rb: $crate::executor::RbatisExecutor<'_>,table_name:S
             }
         }
     };
-    ($table:ty,$fn_name:ident,$sql:expr,$param_key:ident:$param_value:ty) => {
+    ($table:ty,$fn_name:ident($param_key:ident:$param_value:ty),$sql:expr) => {
         impl $table{
             pub async fn $fn_name(mut rb: $crate::executor::RbatisExecutor<'_>,$param_key:$param_value)->Result<Vec<$table>,rbdc::Error>{
                 #[py_sql($sql)]
@@ -93,7 +93,7 @@ async fn do_select_all(mut rb: $crate::executor::RbatisExecutor<'_>,$param_key:$
 ///
 #[macro_export]
 macro_rules! impl_select_one {
-    ($table:ty,$fn_name:ident,$sql:expr,$param_key:ident:$param_value:ty) => {
+    ($table:ty,$fn_name:ident($param_key:ident:$param_value:ty),$sql:expr) => {
         impl $table{
             pub async fn $fn_name(mut rb: $crate::executor::RbatisExecutor<'_>,$param_key:$param_value)->Result<Option<$table>,rbdc::Error>{
                 #[py_sql($sql)]
