@@ -58,7 +58,7 @@ macro_rules! impl_select_all {
     ($table:ty,$table_name:expr) => {
         impl $table{
             pub async fn select_all(mut rb: $crate::executor::RbatisExecutor<'_>)->Result<Vec<$table>,rbdc::Error>{
-                #[sql(
+                #[py_sql(
 "select * from ${table_name}")]
 async fn do_select_all(mut rb: $crate::executor::RbatisExecutor<'_>,table_name:String) -> Result<Vec<$table>,rbdc::Error> {impled!()}
             let table_name = $table_name.to_string();
