@@ -17,11 +17,11 @@
                 and name like #{name}
             </if>
             <if test="dt >= '2009-12-12 00:00:00'">
-                and create_time < #{dt}
+                and create_time > #{dt}
             </if>
             <choose>
                 <when test="true">
-                    and id != -1
+                    and id != '-1'
                 </when>
                 <otherwise>and id != -2</otherwise>
             </choose>

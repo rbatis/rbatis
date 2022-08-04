@@ -3,6 +3,7 @@ use std::time::Duration;
 use rbdc::datetime::FastDateTime;
 use rbdc::Error;
 use rbdc::timestamp::Timestamp;
+use rbs::from_value;
 use crate::arguments::PgArgumentBuffer;
 use crate::types::decode::Decode;
 use crate::types::encode::{Encode, IsNull};

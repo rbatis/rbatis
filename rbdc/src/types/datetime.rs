@@ -22,8 +22,18 @@ impl Serialize for FastDateTime {
 
 impl<'de> Deserialize<'de> for FastDateTime {
     fn deserialize<D>(deserializer: D) -> Result<Self, D::Error> where D: Deserializer<'de> {
-        let v = DateTime::deserialize(deserializer)?;
-        Ok(Self(fastdate::DateTime::from_str(&v.0).map_err(|e| D::Error::custom(e.to_string()))?))
+        let v = DateTimeValue::deserialize(deserializer)?;
+        match v.0{
+            Value::U64(u) => {
+                Ok(Self(fastdate::DateTime::from_timestamp_millis(u as i64)))
+            }
+            Value::String(s) => {
+                Ok(Self(fastdate::DateTime::from_str(&s).map_err(|e| D::Error::custom(e.to_string()))?))
+            }
+            _ => {
+                return Err(D::Error::custom(&format!("unsupported type DateTime({})",v.0)))
+            }
+        }
     }
 }
 
@@ -110,6 +120,11 @@ impl DerefMut for DateTime {
         &mut self.0
     }
 }
+
+
+#[derive(serde::Serialize, serde::Deserialize, Debug, Clone)]
+#[serde(rename = "DateTime")]
+pub struct DateTimeValue(pub Value);
 
 #[test]
 fn test() {
