@@ -25,7 +25,7 @@ impl ConnectOptions for PgConnectOptions {
     }
 
     fn set_uri(&mut self, arg: &str) -> Result<(), Error> {
-        PgConnectOptions::from_str(arg).map_err(|e| Error::from(e.to_string()))?;
+        *self=PgConnectOptions::from_str(arg).map_err(|e| Error::from(e.to_string()))?;
         Ok(())
     }
 
