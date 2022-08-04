@@ -22,10 +22,10 @@ use rbatis::rbatis::Rbatis;
 use rbdc::datetime::FastDateTime;
 use rbs::{to_value, Value};
 
-use crate::{init_sqlite, biz_activity};
+use crate::{init_sqlite, BizActivity};
 
 #[py_sql("select * from biz_activity where delete_flag = 0")]
-async fn py_ctx_id(rb: &Rbatis) -> Vec<biz_activity> {
+async fn py_ctx_id(rb: &Rbatis) -> Vec<BizActivity> {
     impled!()
 }
 
@@ -39,7 +39,7 @@ async fn py_select_page(
     mut rb: RbatisExecutor<'_>,
     page_req: &PageRequest,
     name: &str,
-) -> Result<Vec<biz_activity>,Error> {
+) -> Result<Vec<BizActivity>,Error> {
     impled!()
 }
 

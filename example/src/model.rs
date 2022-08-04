@@ -7,7 +7,7 @@ use rbdc_sqlite::driver::SqliteDriver;
 
 /// this is table model(see ../database.sql)
 #[derive(Clone, Debug, Serialize, Deserialize)]
-pub struct biz_activity {
+pub struct BizActivity {
     pub id: Option<String>,
     pub name: Option<String>,
     pub pc_link: Option<String>,

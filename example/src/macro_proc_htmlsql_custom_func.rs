@@ -19,7 +19,7 @@ use rbatis::executor::RbatisExecutor;
 use rbatis::rbatis::Rbatis;
 use rbs::Value;
 
-use crate::{init_sqlite, biz_activity};
+use crate::{init_sqlite, BizActivity};
 
 pub trait IsTest {
     fn is_test(&self) -> bool;
@@ -41,7 +41,7 @@ impl IsTest for rbs::Value {
 ///  </if>
 /// ```
 #[html_sql("example/example.html")]
-async fn custom_func(rb: &mut RbatisExecutor<'_>, name: &str) -> Vec<biz_activity> {
+async fn custom_func(rb: &mut RbatisExecutor<'_>, name: &str) -> Vec<BizActivity> {
     impled!()
 }
 
