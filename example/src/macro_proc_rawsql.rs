@@ -31,7 +31,7 @@ pub async fn main() {
     fast_log::init(fast_log::config::Config::new().console());
     //use static ref
     let rb = init_sqlite().await;
-    let a = sql_fn(&rb, &1).await.unwrap();
+    let a = sql_fn(&rb, &0).await.unwrap();
     println!("{:?}", a);
 }
 
