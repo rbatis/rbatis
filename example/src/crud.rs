@@ -10,10 +10,13 @@
 extern crate rbatis;
 pub mod model;
 
+use std::time::Duration;
+use fast_log::sleep;
 use rbdc::datetime::FastDateTime;
 use crate::model::{BizActivity, init_sqlite};
 
 impl_insert!(BizActivity);
+impl_select_all!(BizActivity);
 
 #[tokio::main]
 pub async fn main() {
@@ -33,7 +36,12 @@ pub async fn main() {
         version: Some(1),
         delete_flag: Some(1)
     };
-    let af= t.insert(rb.as_executor()).await.unwrap();
-    println!("{}",af);
+    let af= t.insert(rb.as_executor()).await;
+    println!("{:?}",af);
+
+    sleep(Duration::from_secs(2));
+
+    let data=BizActivity::select_all(rb.as_executor()).await;
+    println!("{:?}",data);
 }
 
