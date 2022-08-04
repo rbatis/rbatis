@@ -5,7 +5,7 @@ use rbs::Value;
 
 
 impl PartialEq<Value> for &'_ Value {
-   fn op_eq(&self, other: &Value) -> bool {
+    fn op_eq(&self, other: &Value) -> bool {
         self.eq(&other)
     }
 }
@@ -28,19 +28,19 @@ impl PartialEq<Value> for &&'_ Value {
     }
 }
 
-impl PartialEq<&Value> for Value{
-   fn op_eq(&self, other: &&Value) -> bool {
+impl PartialEq<&Value> for Value {
+    fn op_eq(&self, other: &&Value) -> bool {
         self.eq(&**other)
     }
 }
 
-impl PartialEq<&&Value> for Value{
+impl PartialEq<&&Value> for Value {
     fn op_eq(&self, other: &&&Value) -> bool {
         self.eq(&***other)
     }
 }
 
-impl PartialEq<Value> for Value{
+impl PartialEq<Value> for Value {
     fn op_eq(&self, other: &Value) -> bool {
         self.eq(other)
     }
@@ -48,7 +48,7 @@ impl PartialEq<Value> for Value{
 
 /**
 eq base
-**/
+ **/
 fn eq_u64(value: &Value, other: u64) -> bool {
     value.u64().eq(&other)
 }
@@ -70,25 +70,25 @@ fn eq_str(value: &Value, other: &str) -> bool {
 }
 
 impl PartialEq<str> for Value {
-   fn op_eq(&self, other: &str) -> bool {
+    fn op_eq(&self, other: &str) -> bool {
         eq_str(self, other)
     }
 }
 
 impl<'a> PartialEq<&'a str> for Value {
-   fn op_eq(&self, other: &&str) -> bool {
+    fn op_eq(&self, other: &&str) -> bool {
         eq_str(self, *other)
     }
 }
 
 impl PartialEq<Value> for str {
-   fn op_eq(&self, other: &Value) -> bool {
+    fn op_eq(&self, other: &Value) -> bool {
         eq_str(other, self)
     }
 }
 
 impl<'a> PartialEq<Value> for &'a str {
-   fn op_eq(&self, other: &Value) -> bool {
+    fn op_eq(&self, other: &Value) -> bool {
         eq_str(other, *self)
     }
 }
@@ -100,15 +100,14 @@ impl PartialEq<&str> for str {
 }
 
 
-
 impl PartialEq<String> for Value {
-   fn op_eq(&self, other: &String) -> bool {
+    fn op_eq(&self, other: &String) -> bool {
         eq_str(self, other.as_str())
     }
 }
 
 impl PartialEq<Value> for String {
-   fn op_eq(&self, other: &Value) -> bool {
+    fn op_eq(&self, other: &Value) -> bool {
         eq_str(other, self.as_str())
     }
 }
@@ -188,3 +187,77 @@ eq_self!([u8 u16 u32 u64]);
 eq_self!([i8 i16 i32 i64 isize]);
 eq_self!([f32 f64]);
 eq_self!([String &str]);
+
+
+macro_rules! impl_str_eq {
+    ($($eq:ident [$($ty:ty)*])*) => {
+        $($(
+            impl PartialEq<$ty> for &str {
+               fn op_eq(&self, other: &$ty) -> bool {
+                    $eq(self, *other as _)
+                }
+            }
+
+            impl PartialEq<&str> for $ty {
+               fn op_eq(&self, other: &&str) -> bool {
+                    $eq(other, *self as _)
+                }
+            }
+
+            impl PartialEq<&&str> for $ty {
+               fn op_eq(&self, other: &&&str)  -> bool {
+                    $eq(*other, *self as _)
+                }
+            }
+
+            impl PartialEq<&&&str> for $ty {
+               fn op_eq(&self, other: &&&&str)  -> bool {
+                    $eq(**other, *self as _)
+                }
+            }
+
+            impl<'a> PartialEq<$ty> for &'a &str {
+               fn op_eq(&self, other: &$ty) -> bool {
+                    $eq(*self, *other as _)
+                }
+            }
+        )*)*
+    }
+}
+
+
+fn eq_str_i64(value: &str, other: i64) -> bool {
+    value.eq(&other.to_string())
+}
+
+fn eq_str_f64(value: &str, other: f64) -> bool {
+    value.eq(&other.to_string())
+}
+
+fn eq_str_bool(value: &str, other: bool) -> bool {
+    match value {
+        "true" => {
+            if other {
+                true
+            } else {
+                false
+            }
+        }
+        "false" => {
+            if !other {
+                true
+            } else {
+                false
+            }
+        }
+        _ => {
+            false
+        }
+    }
+}
+impl_str_eq! {
+    eq_str_i64[u8 u16 u32 u64]
+    eq_str_i64[i8 i16 i32 i64 isize]
+    eq_str_f64[f32 f64]
+    eq_str_bool[bool]
+}
