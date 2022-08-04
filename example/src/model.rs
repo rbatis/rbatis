@@ -1,14 +1,13 @@
-
 use rbatis::rbatis::Rbatis;
 use std::fs::{create_dir_all, File};
 use std::io::Read;
 use log::LevelFilter;
-use serde::{Serialize,Deserialize};
+use serde::{Serialize, Deserialize};
 use rbdc_sqlite::driver::SqliteDriver;
 
 /// this is table model(see ../database.sql)
-#[derive(Clone, Debug,Serialize,Deserialize)]
-pub struct BizActivity {
+#[derive(Clone, Debug, Serialize, Deserialize)]
+pub struct biz_activity {
     pub id: Option<String>,
     pub name: Option<String>,
     pub pc_link: Option<String>,
@@ -52,7 +51,7 @@ pub async fn init_sqlite_path(path: &str) -> Rbatis {
         let f = File::create(format!("{}target/sqlite.db", path)).unwrap();
         drop(f);
     }
-    rb.link(SqliteDriver{},&format!("sqlite://{}target/sqlite.db", path))
+    rb.link(SqliteDriver {}, &format!("sqlite://{}target/sqlite.db", path))
         .await
         .unwrap();
 

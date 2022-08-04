@@ -22,6 +22,9 @@ path = "src/macro_proc_pysql.rs"
 name = "macro_proc_rawsql"
 path = "src/macro_proc_rawsql.rs"
 
+[[bin]]
+name = "crud"
+path = "src/crud.rs"
 
 [dependencies]
 #serde and base types

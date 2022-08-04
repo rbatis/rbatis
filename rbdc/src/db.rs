@@ -3,7 +3,7 @@ use std::collections::HashMap;
 use crate::Error;
 use futures_core::future::BoxFuture;
 use rbs::Value;
-use std::fmt::Debug;
+use std::fmt::{Debug, Display, Formatter};
 use futures_util::TryFutureExt;
 use rbs::value::map::ValueMap;
 
@@ -27,6 +27,16 @@ pub struct ExecResult {
     pub rows_affected: u64,
     /// If some databases do not support last_insert_id, the default value is Null
     pub last_insert_id: Value,
+}
+
+impl Display for ExecResult{
+    fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
+        f.debug_map().key(&"rows_affected")
+            .value(&self.rows_affected)
+            .key(&"last_insert_id")
+            .value(&self.last_insert_id)
+            .finish()
+    }
 }
 
 /// Represents a connection to a database

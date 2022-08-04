@@ -361,7 +361,6 @@ fn parse(arg: &Vec<Element>, methods: &mut proc_macro2::TokenStream, block_name:
                         {
                           let foreach_arr = #method_name.array().unwrap();
                           for #item_ident in foreach_arr {
-                            let item=#item_ident;
                             #impl_body
                             #split_code
                             #index_add
@@ -374,7 +373,6 @@ fn parse(arg: &Vec<Element>, methods: &mut proc_macro2::TokenStream, block_name:
                         {
                           let foreach_arr = #method_name.object().unwrap();
                           for (#index_ident,#item_ident) in foreach_arr {
-                              let item=#item_ident;
                               #impl_body
                               #split_code
                           }

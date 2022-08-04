@@ -45,4 +45,31 @@ mod test {
         println!("py->sql: {}", sql);
         println!("py->args: {}", serde_json::to_string(&args).unwrap());
     }
+
+    #[rb_py(
+    "insert into ${table_name} (
+             trim ',':
+               for k,v2 in table:
+                 ${k},
+             ) VALUES (
+             trim ',':
+               for k,v1 in table:
+                 #{v1},
+             )"
+    )]
+    pub fn save(arg: &mut rbs::Value, _tag: char) {}
+
+    #[test]
+    fn test_save(){
+        let mut arg = ValueMap::new();
+        arg.insert("table".into(),{
+            let mut arg = ValueMap::new();
+            arg.insert("table_name".into(),"a".into());
+            arg.insert("table".into(),"a".into());
+            Value::Map(arg)
+        });
+        let (sql, args) = save(&mut rbs::Value::Map(arg), '$');
+        println!("py->sql: {}", sql);
+        println!("py->args: {}", serde_json::to_string(&args).unwrap());
+    }
 }
