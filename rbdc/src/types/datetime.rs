@@ -48,6 +48,37 @@ impl FastDateTime {
     pub fn utc() -> Self {
         Self(fastdate::DateTime::utc())
     }
+
+
+    pub fn set_micro(mut self, micro: u32) -> Self {
+        self.0 = self.0.set_micro(micro);
+        self
+    }
+    pub fn set_sec(mut self, sec: u8) -> Self {
+        self.0 = self.0.set_sec(sec);
+        self
+    }
+    pub fn set_min(mut self, min: u8) -> Self {
+        self.0 = self.0.set_min(min);
+        self
+    }
+    pub fn set_hour(mut self, hour: u8) -> Self {
+        self.0 = self.0.set_hour(hour);
+        self
+    }
+
+    pub fn set_day(mut self, day: u8) -> Self {
+        self.0 = self.0.set_day(day);
+        self
+    }
+    pub fn set_mon(mut self, mon: u8) -> Self {
+        self.0 = self.0.set_mon(mon);
+        self
+    }
+    pub fn set_year(mut self, year: u16) -> Self {
+        self.0 = self.0.set_year(year);
+        self
+    }
 }
 
 impl From<FastDateTime> for Value {

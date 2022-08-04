@@ -39,7 +39,7 @@ pub async fn main() {
         rb.as_executor(),
         &PageRequest::new(1, 10),
         "test",
-        &rbatis::core::datetime::FastDateTime::now(),
+        &rbatis::core::datetime::FastDateTime::now().set_micro(0),
     )
         .await
         .unwrap();
