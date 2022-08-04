@@ -11,6 +11,9 @@
 ///
 #[macro_export]
 macro_rules! impl_insert {
+    ($table:ty) => {
+        $crate::impl_insert!($table,$crate::utils::string_util::to_snake_name(stringify!($table)));
+    };
     ($table:ty,$table_name:expr) => {
         impl $table{
             pub async fn insert(&self,mut rb: $crate::executor::RbatisExecutor<'_>)->Result<rbdc::db::ExecResult,rbdc::Error>{
