@@ -3,6 +3,7 @@ use std::fs::{create_dir_all, File};
 use std::io::Read;
 use log::LevelFilter;
 use serde::{Serialize, Deserialize};
+use rbdc::datetime::FastDateTime;
 use rbdc_sqlite::driver::SqliteDriver;
 
 /// this is table model(see ../database.sql)
@@ -17,7 +18,7 @@ pub struct BizActivity {
     pub sort: Option<String>,
     pub status: Option<i32>,
     pub remark: Option<String>,
-    pub create_time: Option<rbatis::core::datetime::FastDateTime>,
+    pub create_time: Option<FastDateTime>,
     pub version: Option<i64>,
     pub delete_flag: Option<i32>,
 }
