@@ -1,12 +1,11 @@
-use std::str::FromStr;
-use bigdecimal::BigDecimal;
-use rbdc::decimal::Decimal;
-use rbdc::Error;
 use crate::arguments::PgArgumentBuffer;
 use crate::types::decode::Decode;
 use crate::types::encode::{Encode, IsNull};
 use crate::value::{PgValue, PgValueFormat};
-
+use bigdecimal::BigDecimal;
+use rbdc::decimal::Decimal;
+use rbdc::Error;
+use std::str::FromStr;
 
 impl Encode for Decimal {
     fn encode(self, buf: &mut PgArgumentBuffer) -> Result<IsNull, Error> {

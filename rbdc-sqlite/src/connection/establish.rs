@@ -1,4 +1,3 @@
-use rbdc::error::Error;
 use crate::connection::handle::ConnectionHandle;
 use crate::connection::{ConnectionState, Statements};
 use crate::{SqliteConnectOptions, SqliteError};
@@ -7,6 +6,7 @@ use libsqlite3_sys::{
     SQLITE_OPEN_CREATE, SQLITE_OPEN_FULLMUTEX, SQLITE_OPEN_MEMORY, SQLITE_OPEN_NOMUTEX,
     SQLITE_OPEN_PRIVATECACHE, SQLITE_OPEN_READONLY, SQLITE_OPEN_READWRITE, SQLITE_OPEN_SHAREDCACHE,
 };
+use rbdc::error::Error;
 use std::ffi::CString;
 use std::io;
 use std::ptr::{null, null_mut};
@@ -135,7 +135,7 @@ impl EstablishParams {
         Ok(ConnectionState {
             handle,
             statements: Statements::new(self.statement_cache_capacity),
-            transaction_depth: 0
+            transaction_depth: 0,
         })
     }
 }

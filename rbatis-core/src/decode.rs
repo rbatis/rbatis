@@ -1,8 +1,8 @@
 //! Types and traits for decoding values from the database.
 use log::info;
+use rbs::Value;
 use rbson::Bson;
 use serde::de::DeserializeOwned;
-use rbs::Value;
 
 use crate::Error;
 
@@ -11,8 +11,8 @@ use crate::Error;
 /// Bson,BigDecimal, i8..i64,u8..u64,rbson::Int64(),bool,String
 /// or object used bson macro object
 pub fn decode<T: ?Sized>(bs: Value) -> Result<T, crate::Error>
-    where
-        T: DeserializeOwned,
+where
+    T: DeserializeOwned,
 {
     let type_name = std::any::type_name::<T>();
     //debug_mode feature print json_decode json data
@@ -69,8 +69,8 @@ pub fn decode<T: ?Sized>(bs: Value) -> Result<T, crate::Error>
 
 //decode doc or one type
 pub fn try_decode_doc<T>(type_name: &str, datas: &mut Vec<Value>) -> Result<T, crate::Error>
-    where
-        T: DeserializeOwned,
+where
+    T: DeserializeOwned,
 {
     //decode struct
     if datas.len() > 1 {
@@ -112,13 +112,13 @@ pub fn try_decode_doc<T>(type_name: &str, datas: &mut Vec<Value>) -> Result<T, c
 
 #[cfg(test)]
 mod test {
-    use std::collections::HashMap;
     use crate::decode::decode;
     use rbs::{to_value, Value};
+    use std::collections::HashMap;
 
     #[test]
     fn test_decode_hashmap() {
-        let v=to_value!(
+        let v = to_value!(
         {
         "a":"1",
         "b":2

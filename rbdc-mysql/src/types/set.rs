@@ -1,9 +1,9 @@
-use std::fmt::{Display, Formatter};
-use rbdc::Error;
 use crate::io::MySqlBufMutExt;
 use crate::result_set::MySqlTypeInfo;
 use crate::types::{Decode, Encode};
 use crate::value::MySqlValue;
+use rbdc::Error;
+use std::fmt::{Display, Formatter};
 
 #[derive(serde::Serialize, serde::Deserialize, Debug, Clone, Eq, PartialEq)]
 #[serde(rename = "Set")]

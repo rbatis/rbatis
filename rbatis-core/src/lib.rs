@@ -16,5 +16,4 @@ pub mod error;
 pub mod convert;
 pub mod decode;
 
-
 pub use rbdc::types::*;

@@ -3,8 +3,8 @@ use crate::value::ValueRef;
 use crate::{
     decode::Decode,
     encode::{Encode, IsNull},
-    {type_info::DataType, Sqlite, SqliteArgumentValue, SqliteTypeInfo, SqliteValue},
     types::Type,
+    {type_info::DataType, Sqlite, SqliteArgumentValue, SqliteTypeInfo, SqliteValue},
 };
 use bitflags::_core::fmt::Display;
 use chrono::{

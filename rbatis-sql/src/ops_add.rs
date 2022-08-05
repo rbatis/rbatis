@@ -1,7 +1,7 @@
 use crate::ops::{Add, AsProxy};
 
-use std::borrow::Cow;
 use rbs::Value;
+use std::borrow::Cow;
 
 fn op_add_u64(value: &Value, other: u64) -> u64 {
     value.u64() + other
@@ -74,27 +74,13 @@ impl Add<&Value> for Value {
     type Output = Value;
     fn op_add(self, rhs: &Value) -> Self::Output {
         return match self {
-            Value::String(s) => {
-                Value::String(s + rhs.as_str().unwrap_or(""))
-            }
-            Value::I32(s)=> {
-                Value::I32(s + rhs.i32())
-            }
-            Value::I64(s) => {
-                Value::I64(s + rhs.i64())
-            }
-            Value::U32(s)=> {
-                Value::U32(s + rhs.u32())
-            }
-            Value::U64(s) => {
-                Value::U64(s + rhs.u64())
-            }
-            Value::F64(s)=> {
-                Value::F64(s + rhs.as_f64().unwrap_or_default())
-            }
-            Value::F32(v) => {
-                Value::F64(v as f64 + rhs.as_f64().unwrap_or_default())
-            }
+            Value::String(s) => Value::String(s + rhs.as_str().unwrap_or("")),
+            Value::I32(s) => Value::I32(s + rhs.i32()),
+            Value::I64(s) => Value::I64(s + rhs.i64()),
+            Value::U32(s) => Value::U32(s + rhs.u32()),
+            Value::U64(s) => Value::U64(s + rhs.u64()),
+            Value::F64(s) => Value::F64(s + rhs.as_f64().unwrap_or_default()),
+            Value::F32(v) => Value::F64(v as f64 + rhs.as_f64().unwrap_or_default()),
             _ => {
                 return Value::Null;
             }
@@ -106,27 +92,13 @@ impl Add<&&Value> for Value {
     type Output = Value;
     fn op_add(self, rhs: &&Value) -> Self::Output {
         return match self {
-            Value::String(s) => {
-                Value::String(s + rhs.as_str().unwrap_or(""))
-            }
-            Value::I32(s)=> {
-                Value::I32(s + rhs.i32())
-            }
-            Value::I64(s) => {
-                Value::I64(s + rhs.i64())
-            }
-            Value::U32(s)=> {
-                Value::U32(s + rhs.u32())
-            }
-            Value::U64(s) => {
-                Value::U64(s + rhs.u64())
-            }
-            Value::F64(s)=> {
-                Value::F64(s + rhs.as_f64().unwrap_or_default())
-            }
-            Value::F32(s)=> {
-                Value::F64((s  as f64 + rhs.as_f64().unwrap_or_default()) as f64)
-            }
+            Value::String(s) => Value::String(s + rhs.as_str().unwrap_or("")),
+            Value::I32(s) => Value::I32(s + rhs.i32()),
+            Value::I64(s) => Value::I64(s + rhs.i64()),
+            Value::U32(s) => Value::U32(s + rhs.u32()),
+            Value::U64(s) => Value::U64(s + rhs.u64()),
+            Value::F64(s) => Value::F64(s + rhs.as_f64().unwrap_or_default()),
+            Value::F32(s) => Value::F64((s as f64 + rhs.as_f64().unwrap_or_default()) as f64),
             _ => {
                 return Value::Null;
             }
@@ -138,26 +110,14 @@ impl Add<Value> for Value {
     type Output = Value;
     fn op_add(self, rhs: Value) -> Self::Output {
         return match self {
-            Value::String(s) => {
-                Value::String(s + rhs.as_str().unwrap_or(""))
-            }
-            Value::I32(s)=> {
-                Value::I32(s + rhs.i32())
-            }
-            Value::I64(s) => {
-                Value::I64(s + rhs.i64())
-            }
-            Value::U32(s)=> {
-                Value::U32(s + rhs.u32())
-            }
-            Value::U64(s) => {
-                Value::U64(s + rhs.u64())
-            }
-            Value::F64(s)=> {
-                Value::F64(s + rhs.as_f64().unwrap_or_default())
-            }
-            Value::F32(s)=> {
-                Value::F64((s  as f64  as f64 + rhs.as_f64().unwrap_or_default()) as f64)
+            Value::String(s) => Value::String(s + rhs.as_str().unwrap_or("")),
+            Value::I32(s) => Value::I32(s + rhs.i32()),
+            Value::I64(s) => Value::I64(s + rhs.i64()),
+            Value::U32(s) => Value::U32(s + rhs.u32()),
+            Value::U64(s) => Value::U64(s + rhs.u64()),
+            Value::F64(s) => Value::F64(s + rhs.as_f64().unwrap_or_default()),
+            Value::F32(s) => {
+                Value::F64((s as f64 as f64 + rhs.as_f64().unwrap_or_default()) as f64)
             }
             _ => {
                 return Value::Null;
@@ -170,27 +130,13 @@ impl Add<&Value> for &Value {
     type Output = Value;
     fn op_add(self, rhs: &Value) -> Self::Output {
         return match self {
-            Value::String(s) => {
-                Value::String(s.to_owned() + rhs.as_str().unwrap_or(""))
-            }
-            Value::I32(s)=> {
-                Value::I32(s + rhs.i32())
-            }
-            Value::I64(s) => {
-                Value::I64(s + rhs.i64())
-            }
-            Value::U32(s)=> {
-                Value::U32(s + rhs.u32())
-            }
-            Value::U64(s) => {
-                Value::U64(s + rhs.u64())
-            }
-            Value::F64(s)=> {
-                Value::F64(s + rhs.as_f64().unwrap_or_default())
-            }
-            Value::F32(s)=> {
-                Value::F64(*s  as f64 + rhs.as_f64().unwrap_or_default())
-            }
+            Value::String(s) => Value::String(s.to_owned() + rhs.as_str().unwrap_or("")),
+            Value::I32(s) => Value::I32(s + rhs.i32()),
+            Value::I64(s) => Value::I64(s + rhs.i64()),
+            Value::U32(s) => Value::U32(s + rhs.u32()),
+            Value::U64(s) => Value::U64(s + rhs.u64()),
+            Value::F64(s) => Value::F64(s + rhs.as_f64().unwrap_or_default()),
+            Value::F32(s) => Value::F64(*s as f64 + rhs.as_f64().unwrap_or_default()),
             _ => {
                 return Value::Null;
             }
@@ -202,27 +148,13 @@ impl Add<&&Value> for &Value {
     type Output = Value;
     fn op_add(self, rhs: &&Value) -> Self::Output {
         return match self {
-            Value::String(s) => {
-                Value::String(s.to_owned() + rhs.as_str().unwrap_or(""))
-            }
-            Value::I32(s)=> {
-                Value::I32(s + rhs.i32())
-            }
-            Value::I64(s) => {
-                Value::I64(s + rhs.i64())
-            }
-            Value::U32(s)=> {
-                Value::U32(s + rhs.u32())
-            }
-            Value::U64(s) => {
-                Value::U64(s + rhs.u64())
-            }
-            Value::F64(s)=> {
-                Value::F64(s + rhs.as_f64().unwrap_or_default())
-            }
-            Value::F32(s)=> {
-                Value::F64(*s as f64 + rhs.as_f64().unwrap_or_default())
-            }
+            Value::String(s) => Value::String(s.to_owned() + rhs.as_str().unwrap_or("")),
+            Value::I32(s) => Value::I32(s + rhs.i32()),
+            Value::I64(s) => Value::I64(s + rhs.i64()),
+            Value::U32(s) => Value::U32(s + rhs.u32()),
+            Value::U64(s) => Value::U64(s + rhs.u64()),
+            Value::F64(s) => Value::F64(s + rhs.as_f64().unwrap_or_default()),
+            Value::F32(s) => Value::F64(*s as f64 + rhs.as_f64().unwrap_or_default()),
             _ => {
                 return Value::Null;
             }
@@ -234,27 +166,13 @@ impl Add<Value> for &Value {
     type Output = Value;
     fn op_add(self, rhs: Value) -> Self::Output {
         return match self {
-            Value::String(s) => {
-                Value::String(s.to_owned() + rhs.str())
-            }
-            Value::I32(s)=> {
-                Value::I32(s + rhs.i32())
-            }
-            Value::I64(s) => {
-                Value::I64(s + rhs.i64())
-            }
-            Value::U32(s)=> {
-                Value::U32(s + rhs.u32())
-            }
-            Value::U64(s) => {
-                Value::U64(s + rhs.u64())
-            }
-            Value::F64(s)=> {
-                Value::F64(s + rhs.as_f64().unwrap_or_default())
-            }
-            Value::F32(s)=> {
-                Value::F64(*s as f64 + rhs.as_f64().unwrap_or_default())
-            }
+            Value::String(s) => Value::String(s.to_owned() + rhs.str()),
+            Value::I32(s) => Value::I32(s + rhs.i32()),
+            Value::I64(s) => Value::I64(s + rhs.i64()),
+            Value::U32(s) => Value::U32(s + rhs.u32()),
+            Value::U64(s) => Value::U64(s + rhs.u64()),
+            Value::F64(s) => Value::F64(s + rhs.as_f64().unwrap_or_default()),
+            Value::F32(s) => Value::F64(*s as f64 + rhs.as_f64().unwrap_or_default()),
             _ => {
                 return Value::Null;
             }
@@ -267,12 +185,8 @@ impl Add<Value> for &str {
     type Output = String;
     fn op_add(self, rhs: Value) -> Self::Output {
         return match rhs {
-            Value::String(s) => {
-                self.to_string() + s.as_str()
-            }
-            _ => {
-                String::new()
-            }
+            Value::String(s) => self.to_string() + s.as_str(),
+            _ => String::new(),
         };
     }
 }
@@ -281,12 +195,8 @@ impl Add<&Value> for &str {
     type Output = String;
     fn op_add(self, rhs: &Value) -> Self::Output {
         return match rhs {
-            Value::String(s) => {
-                self.to_string() + s.as_str()
-            }
-            _ => {
-                String::new()
-            }
+            Value::String(s) => self.to_string() + s.as_str(),
+            _ => String::new(),
         };
     }
 }
@@ -295,12 +205,8 @@ impl Add<&str> for Value {
     type Output = String;
     fn op_add(self, rhs: &str) -> Self::Output {
         return match self {
-            Value::String(s) => {
-                s + rhs
-            }
-            _ => {
-                String::new()
-            }
+            Value::String(s) => s + rhs,
+            _ => String::new(),
         };
     }
 }
@@ -309,12 +215,8 @@ impl Add<&str> for &Value {
     type Output = String;
     fn op_add(self, rhs: &str) -> Self::Output {
         return match self {
-            Value::String(s) => {
-                s.to_string() + rhs
-            }
-            _ => {
-                String::new()
-            }
+            Value::String(s) => s.to_string() + rhs,
+            _ => String::new(),
         };
     }
 }
@@ -323,12 +225,8 @@ impl Add<&&str> for Value {
     type Output = String;
     fn op_add(self, rhs: &&str) -> Self::Output {
         return match self {
-            Value::String(s) => {
-                s + *rhs
-            }
-            _ => {
-                String::new()
-            }
+            Value::String(s) => s + *rhs,
+            _ => String::new(),
         };
     }
 }
@@ -337,12 +235,8 @@ impl Add<&&str> for &Value {
     type Output = String;
     fn op_add(self, rhs: &&str) -> Self::Output {
         return match self {
-            Value::String(s) => {
-                s.to_string() + *rhs
-            }
-            _ => {
-                String::new()
-            }
+            Value::String(s) => s.to_string() + *rhs,
+            _ => String::new(),
         };
     }
 }
@@ -352,12 +246,8 @@ impl Add<String> for Value {
     #[must_use]
     fn op_add(self, rhs: String) -> Self::Output {
         return match self {
-            Value::String(s) => {
-                s + rhs.as_str()
-            }
-            _ => {
-                String::new()
-            }
+            Value::String(s) => s + rhs.as_str(),
+            _ => String::new(),
         };
     }
 }
@@ -366,12 +256,8 @@ impl Add<String> for &Value {
     type Output = String;
     fn op_add(self, rhs: String) -> Self::Output {
         return match self {
-            Value::String(s) => {
-                s.to_string() + rhs.as_str()
-            }
-            _ => {
-                String::new()
-            }
+            Value::String(s) => s.to_string() + rhs.as_str(),
+            _ => String::new(),
         };
     }
 }
@@ -381,12 +267,8 @@ impl Add<Value> for &String {
     type Output = String;
     fn op_add(self, rhs: Value) -> Self::Output {
         return match rhs {
-            Value::String(s) => {
-                self.to_string() + s.as_str()
-            }
-            _ => {
-                String::new()
-            }
+            Value::String(s) => self.to_string() + s.as_str(),
+            _ => String::new(),
         };
     }
 }
@@ -395,12 +277,8 @@ impl Add<&Value> for &String {
     type Output = String;
     fn op_add(self, rhs: &Value) -> Self::Output {
         return match rhs {
-            Value::String(s) => {
-                self.to_string() + s.as_str()
-            }
-            _ => {
-                String::new()
-            }
+            Value::String(s) => self.to_string() + s.as_str(),
+            _ => String::new(),
         };
     }
 }
@@ -409,12 +287,8 @@ impl Add<&String> for Value {
     type Output = String;
     fn op_add(self, rhs: &String) -> Self::Output {
         return match self {
-            Value::String(s) => {
-                s + rhs.as_str()
-            }
-            _ => {
-                String::new()
-            }
+            Value::String(s) => s + rhs.as_str(),
+            _ => String::new(),
         };
     }
 }
@@ -423,12 +297,8 @@ impl Add<&String> for &Value {
     type Output = String;
     fn op_add(self, rhs: &String) -> Self::Output {
         return match self {
-            Value::String(s) => {
-                s.to_string() + rhs.as_str()
-            }
-            _ => {
-                String::new()
-            }
+            Value::String(s) => s.to_string() + rhs.as_str(),
+            _ => String::new(),
         };
     }
 }
@@ -437,12 +307,8 @@ impl Add<Value> for String {
     type Output = String;
     fn op_add(self, rhs: Value) -> Self::Output {
         return match rhs {
-            Value::String(s) => {
-                self + s.as_str()
-            }
-            _ => {
-                String::new()
-            }
+            Value::String(s) => self + s.as_str(),
+            _ => String::new(),
         };
     }
 }
@@ -451,16 +317,11 @@ impl Add<&Value> for String {
     type Output = String;
     fn op_add(self, rhs: &Value) -> Self::Output {
         return match rhs {
-            Value::String(s) => {
-                self + s.as_str()
-            }
-            _ => {
-                String::new()
-            }
+            Value::String(s) => self + s.as_str(),
+            _ => String::new(),
         };
     }
 }
-
 
 macro_rules! add_self {
     ([$($ty:ty)*]) => {
@@ -496,39 +357,39 @@ add_self!([u8 u16 u32 u64]);
 add_self!([i8 i16 i32 i64 isize]);
 add_self!([f32 f64]);
 
-impl Add<String> for String{
+impl Add<String> for String {
     type Output = String;
 
     fn op_add(self, rhs: String) -> Self::Output {
-        self+&rhs
+        self + &rhs
     }
 }
 
-impl Add<&str> for String{
+impl Add<&str> for String {
     type Output = String;
 
     fn op_add(self, rhs: &str) -> Self::Output {
-        self+rhs
+        self + rhs
     }
 }
 
-impl Add<&&str> for String{
+impl Add<&&str> for String {
     type Output = String;
 
     fn op_add(self, rhs: &&str) -> Self::Output {
-        self+*rhs
+        self + *rhs
     }
 }
 
-impl Add<String> for &str{
+impl Add<String> for &str {
     type Output = String;
 
     fn op_add(self, rhs: String) -> Self::Output {
-        self.to_string()+&rhs
+        self.to_string() + &rhs
     }
 }
 
-impl Add<&String> for &str{
+impl Add<&String> for &str {
     type Output = String;
 
     fn op_add(self, rhs: &String) -> Self::Output {
@@ -536,13 +397,10 @@ impl Add<&String> for &str{
     }
 }
 
-impl Add<&&String> for &str{
+impl Add<&&String> for &str {
     type Output = String;
 
     fn op_add(self, rhs: &&String) -> Self::Output {
         self.to_string() + rhs.as_str()
     }
 }
-
-
-

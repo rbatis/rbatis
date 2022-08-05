@@ -8,7 +8,6 @@ use std::sync::Arc;
 use std::time::Duration;
 use uuid::Uuid;
 
-use rbdc::db::{Connection, ExecResult};
 use crate::core::Error;
 use crate::executor::{RBatisConnExecutor, RBatisTxExecutor};
 use crate::plugin::intercept::SqlIntercept;
@@ -16,10 +15,11 @@ use crate::plugin::log::{LogPlugin, RbatisLogPlugin};
 use crate::snowflake::new_snowflake_id;
 use crate::utils::error_util::ToResult;
 use crate::utils::string_util;
+use crossbeam::queue::SegQueue;
+use rbdc::db::{Connection, ExecResult};
+use rbdc::pool::Pool;
 use std::fmt::{Debug, Formatter};
 use std::ops::DerefMut;
-use crossbeam::queue::SegQueue;
-use rbdc::pool::Pool;
 
 /// rbatis engine
 #[derive(Clone)]
@@ -81,7 +81,11 @@ impl Rbatis {
     }
 
     /// link pool
-    pub async fn link<Driver: rbdc::db::Driver+ 'static>(&self, driver:Driver,url: &str) -> Result<(), Error> {
+    pub async fn link<Driver: rbdc::db::Driver + 'static>(
+        &self,
+        driver: Driver,
+        url: &str,
+    ) -> Result<(), Error> {
         if url.is_empty() {
             return Err(Error::from("[rbatis] link url is empty!"));
         }
@@ -95,7 +99,10 @@ impl Rbatis {
     /// link pool by DBPoolOptions
     /// for example:
     ///
-    pub async fn link_opt<Driver: rbdc::db::Driver + 'static, ConnectOptions: rbdc::db::ConnectOptions>(
+    pub async fn link_opt<
+        Driver: rbdc::db::Driver + 'static,
+        ConnectOptions: rbdc::db::ConnectOptions,
+    >(
         &self,
         driver: Driver,
         options: ConnectOptions,
@@ -110,7 +117,7 @@ impl Rbatis {
     }
 
     pub fn set_sql_intercept(&mut self, args: Vec<Box<dyn SqlIntercept>>) {
-         self.sql_intercepts = Arc::new(args);
+        self.sql_intercepts = Arc::new(args);
     }
 
     pub fn set_sql_intercepts(&mut self, arg: Vec<Box<dyn SqlIntercept>>) {
@@ -146,7 +153,7 @@ impl Rbatis {
     pub async fn acquire_begin(&self) -> Result<RBatisTxExecutor, Error> {
         let pool = self.get_pool()?;
         let mut conn = pool.get().await?;
-        conn.exec("begin",vec![]).await?;
+        conn.exec("begin", vec![]).await?;
         return Ok(RBatisTxExecutor {
             tx_id: new_snowflake_id(),
             conn: Box::new(conn),

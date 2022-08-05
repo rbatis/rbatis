@@ -1,23 +1,18 @@
-use std::str::FromStr;
 use byteorder::{ByteOrder, LittleEndian};
 use bytes::Buf;
+use std::str::FromStr;
 
-use rbdc::Error;
-use rbdc::timestamp::Timestamp;
-use crate::types::{Decode, Encode};
 use crate::types::date::decode_date_buf;
 use crate::types::time::decode_time;
+use crate::types::{Decode, Encode};
 use crate::value::{MySqlValue, MySqlValueFormat};
+use rbdc::timestamp::Timestamp;
+use rbdc::Error;
 
 impl Encode for Timestamp {
     fn encode(self, buf: &mut Vec<u8>) -> Result<usize, Error> {
         let datetime = fastdate::DateTime::from_timestamp_millis(self.0 as i64);
-        let size = date_time_size_hint(
-            datetime.hour,
-            datetime.min,
-            datetime.sec,
-            datetime.micro,
-        );
+        let size = date_time_size_hint(datetime.hour, datetime.min, datetime.sec, datetime.micro);
         buf.push(size as u8);
         let date = fastdate::Date {
             day: datetime.day,
@@ -44,7 +39,11 @@ impl Encode for Timestamp {
 impl Decode for Timestamp {
     fn decode(value: MySqlValue) -> Result<Self, Error> {
         Ok(match value.format() {
-            MySqlValueFormat::Text => Self(fastdate::DateTime::from_str(value.as_str()?).unwrap().unix_timestamp_millis() as u64),
+            MySqlValueFormat::Text => Self(
+                fastdate::DateTime::from_str(value.as_str()?)
+                    .unwrap()
+                    .unix_timestamp_millis() as u64,
+            ),
             MySqlValueFormat::Binary => {
                 let buf = value.as_bytes()?;
                 let len = buf[0];
@@ -59,20 +58,22 @@ impl Decode for Timestamp {
                         hour: 0,
                     }
                 };
-                Self(fastdate::DateTime {
-                    micro: time.micro,
-                    sec: time.sec,
-                    min: time.min,
-                    hour: time.hour,
-                    day: date.day,
-                    mon: date.mon,
-                    year: date.year,
-                }.unix_timestamp_millis() as u64)
+                Self(
+                    fastdate::DateTime {
+                        micro: time.micro,
+                        sec: time.sec,
+                        min: time.min,
+                        hour: time.hour,
+                        day: date.day,
+                        mon: date.mon,
+                        year: date.year,
+                    }
+                    .unix_timestamp_millis() as u64,
+                )
             }
         })
     }
 }
-
 
 fn date_time_size_hint(hour: u8, min: u8, sec: u8, nano: u32) -> usize {
     // to save space the packet can be compressed:
@@ -89,4 +90,3 @@ fn date_time_size_hint(hour: u8, min: u8, sec: u8, nano: u32) -> usize {
         (_, _, _, _) => 11,
     }
 }
-

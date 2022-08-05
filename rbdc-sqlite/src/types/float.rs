@@ -1,9 +1,9 @@
 use crate::decode::Decode;
 use crate::encode::{Encode, IsNull};
-use rbdc::error::Error;
 use crate::type_info::DataType;
-use crate::{Sqlite, SqliteArgumentValue, SqliteTypeInfo, SqliteValue, SqliteValueRef};
 use crate::types::Type;
+use crate::{Sqlite, SqliteArgumentValue, SqliteTypeInfo, SqliteValue, SqliteValueRef};
+use rbdc::error::Error;
 
 impl Type for f32 {
     fn type_info(&self) -> SqliteTypeInfo {
@@ -12,7 +12,7 @@ impl Type for f32 {
 }
 
 impl Encode for f32 {
-    fn encode(self, args: &mut Vec<SqliteArgumentValue>)->Result<IsNull,Error> {
+    fn encode(self, args: &mut Vec<SqliteArgumentValue>) -> Result<IsNull, Error> {
         args.push(SqliteArgumentValue::Double(self.into()));
 
         Ok(IsNull::No)
@@ -32,7 +32,7 @@ impl Type for f64 {
 }
 
 impl Encode for f64 {
-    fn encode(self, args: &mut Vec<SqliteArgumentValue>)->Result<IsNull,Error> {
+    fn encode(self, args: &mut Vec<SqliteArgumentValue>) -> Result<IsNull, Error> {
         args.push(SqliteArgumentValue::Double(self));
 
         Ok(IsNull::No)

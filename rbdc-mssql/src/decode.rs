@@ -1,11 +1,11 @@
-use std::str::EncodeUtf16;
 use byteorder::{ByteOrder, LittleEndian};
 use chrono::Utc;
+use rbs::Value;
 use rust_decimal::Decimal;
-use tiberius::{ColumnData, ColumnType, FromSql, FromSqlOwned, IntoRow};
+use std::str::EncodeUtf16;
 use tiberius::numeric::BigDecimal;
 use tiberius::xml::XmlData;
-use rbs::Value;
+use tiberius::{ColumnData, ColumnType, FromSql, FromSqlOwned, IntoRow};
 
 pub trait Decode {
     fn decode(row: &tiberius::Row, i: usize, t: ColumnType) -> Value;
@@ -17,16 +17,14 @@ impl Decode for Value {
             return Value::Null;
         }
         match t {
-            ColumnType::Null => { Value::Null }
+            ColumnType::Null => Value::Null,
             ColumnType::Bit => {
                 let data: bool = row.get(i).unwrap();
                 Value::I32(data as i32)
             }
             ColumnType::Int1 => {
-                {
-                    let data: u8 = row.get(i).unwrap();
-                    Value::I32(data as i32)
-                }
+                let data: u8 = row.get(i).unwrap();
+                Value::I32(data as i32)
             }
             ColumnType::Int2 => {
                 let data: i16 = row.get(i).unwrap();

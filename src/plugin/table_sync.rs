@@ -16,7 +16,5 @@ impl RbatisTableSync {
 #[cfg(test)]
 mod test {
     #[test]
-    fn test_sync_table() {
-
-    }
+    fn test_sync_table() {}
 }

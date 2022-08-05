@@ -2,7 +2,6 @@ use crate::html_loader::Element;
 use crate::py_sql::NodeType;
 use std::collections::HashMap;
 
-
 pub fn as_elements(arg: Vec<NodeType>) -> Vec<Element> {
     let mut res = vec![];
     for x in arg {
@@ -10,7 +9,6 @@ pub fn as_elements(arg: Vec<NodeType>) -> Vec<Element> {
     }
     res
 }
-
 
 impl From<NodeType> for Element {
     fn from(arg: NodeType) -> Self {

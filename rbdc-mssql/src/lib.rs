@@ -1,24 +1,23 @@
-pub mod encode;
 pub mod decode;
 pub mod driver;
+pub mod encode;
 
-use std::any::Any;
-use std::sync::Arc;
-use futures_core::future::BoxFuture;
-use futures_util::StreamExt;
-use rbdc::db::{Connection, ConnectOptions, MetaData, ExecResult, Row, Placeholder};
-use tiberius::{Client, Config, AuthMethod, Column, QueryStream, Query, ColumnData};
-use rbdc::{block_on, Error};
-use rbs::Value;
-use tokio_util::compat::{Compat, TokioAsyncWriteCompatExt};
-use tokio::io::AsyncRead;
-use tokio::io::AsyncWrite;
-use tokio::net::TcpStream;
-use rbs::value::change_lifetime_const;
 use crate::decode::Decode;
 use crate::driver::MssqlDriver;
 use crate::encode::Encode;
-
+use futures_core::future::BoxFuture;
+use futures_util::StreamExt;
+use rbdc::db::{ConnectOptions, Connection, ExecResult, MetaData, Placeholder, Row};
+use rbdc::{block_on, Error};
+use rbs::value::change_lifetime_const;
+use rbs::Value;
+use std::any::Any;
+use std::sync::Arc;
+use tiberius::{AuthMethod, Client, Column, ColumnData, Config, Query, QueryStream};
+use tokio::io::AsyncRead;
+use tokio::io::AsyncWrite;
+use tokio::net::TcpStream;
+use tokio_util::compat::{Compat, TokioAsyncWriteCompatExt};
 
 pub struct MssqlConnection {
     inner: Client<Compat<TcpStream>>,
@@ -28,19 +27,21 @@ impl MssqlConnection {
     /// let cfg = Config::from_jdbc_string(url).map_err(|e| Error::from(e.to_owned()))?;
     pub async fn establish(cfg: &Config) -> Result<Self, Error> {
         // let cfg = Config::from_jdbc_string(url).map_err(|e| Error::from(e.to_owned()))?;
-        let tcp = TcpStream::connect(cfg.get_addr()).await.map_err(|e| Error::from(e.to_string()))?;
+        let tcp = TcpStream::connect(cfg.get_addr())
+            .await
+            .map_err(|e| Error::from(e.to_string()))?;
         tcp.set_nodelay(true).unwrap();
-        let c = Client::connect(cfg.clone(), tcp.compat_write()).await.map_err(|e| Error::from(e.to_string()))?;
-        Ok(Self {
-            inner: c,
-        })
+        let c = Client::connect(cfg.clone(), tcp.compat_write())
+            .await
+            .map_err(|e| Error::from(e.to_string()))?;
+        Ok(Self { inner: c })
     }
 }
 
 #[derive(Debug)]
 pub struct MssqlConnectOptions(Config);
 
-impl ConnectOptions for MssqlConnectOptions{
+impl ConnectOptions for MssqlConnectOptions {
     fn connect(&self) -> BoxFuture<Result<Box<dyn Connection>, Error>> {
         Box::pin(async move {
             let v = MssqlConnection::establish(&self.0)
@@ -51,7 +52,9 @@ impl ConnectOptions for MssqlConnectOptions{
     }
 
     fn set_uri(&mut self, url: &str) -> Result<(), Error> {
-        *self = MssqlConnectOptions(Config::from_jdbc_string(url).map_err(|e| Error::from(e.to_string()))?);
+        *self = MssqlConnectOptions(
+            Config::from_jdbc_string(url).map_err(|e| Error::from(e.to_string()))?,
+        );
         Ok(())
     }
 
@@ -59,8 +62,6 @@ impl ConnectOptions for MssqlConnectOptions{
         self
     }
 }
-
-
 
 #[derive(Debug)]
 pub struct MssqlRow {
@@ -90,49 +91,66 @@ impl Row for MssqlRow {
     fn meta_data(&self) -> Box<dyn MetaData> {
         let columns = self.inner.columns();
         Box::new(MssqlMetaData {
-            inner: unsafe { change_lifetime_const(columns) }
+            inner: unsafe { change_lifetime_const(columns) },
         })
     }
 
     fn get(&mut self, i: usize) -> Option<Value> {
-        Some(Value::decode(&self.inner, i, self.inner.columns()[i].column_type()))
+        Some(Value::decode(
+            &self.inner,
+            i,
+            self.inner.columns()[i].column_type(),
+        ))
     }
 }
 
-
 impl Connection for MssqlConnection {
-    fn get_rows(&mut self, sql: &str, params: Vec<Value>) -> BoxFuture<Result<Vec<Box<dyn Row>>, rbdc::Error>> {
-        let sql = MssqlDriver{}.exchange(sql);
+    fn get_rows(
+        &mut self,
+        sql: &str,
+        params: Vec<Value>,
+    ) -> BoxFuture<Result<Vec<Box<dyn Row>>, rbdc::Error>> {
+        let sql = MssqlDriver {}.exchange(sql);
         Box::pin(async move {
             let mut q = Query::new(sql);
             for x in params {
                 x.encode(&mut q)?;
             }
-            let v = q.query(&mut self.inner).await.map_err(|e| Error::from(e.to_string()))?;
+            let v = q
+                .query(&mut self.inner)
+                .await
+                .map_err(|e| Error::from(e.to_string()))?;
             let mut results = Vec::with_capacity(0);
             let mut s = v.into_row_stream();
             for item in s.next().await {
                 match item {
                     Ok(v) => {
-                        results.push(Box::new(MssqlRow {
-                            inner: v
-                        }) as Box<dyn Row>);
+                        results.push(Box::new(MssqlRow { inner: v }) as Box<dyn Row>);
                     }
-                    Err(_) => { break; }
+                    Err(_) => {
+                        break;
+                    }
                 }
             }
             Ok(results)
         })
     }
 
-    fn exec(&mut self, sql: &str, params: Vec<Value>) -> BoxFuture<Result<ExecResult, rbdc::Error>> {
-        let sql = MssqlDriver{}.exchange(sql);
+    fn exec(
+        &mut self,
+        sql: &str,
+        params: Vec<Value>,
+    ) -> BoxFuture<Result<ExecResult, rbdc::Error>> {
+        let sql = MssqlDriver {}.exchange(sql);
         Box::pin(async move {
             let mut q = Query::new(sql);
             for x in params {
                 x.encode(&mut q)?;
             }
-            let v = q.execute(&mut self.inner).await.map_err(|e| Error::from(e.to_string()))?;
+            let v = q
+                .execute(&mut self.inner)
+                .await
+                .map_err(|e| Error::from(e.to_string()))?;
             Ok(ExecResult {
                 rows_affected: v.rows_affected().len() as u64,
                 last_insert_id: Value::Null,
@@ -141,14 +159,15 @@ impl Connection for MssqlConnection {
     }
 
     fn close(&mut self) -> BoxFuture<'static, Result<(), rbdc::Error>> {
-        Box::pin(async move {
-            Ok(())
-        })
+        Box::pin(async move { Ok(()) })
     }
 
     fn ping(&mut self) -> BoxFuture<Result<(), rbdc::Error>> {
         Box::pin(async move {
-            self.inner.execute("ping", &[]).await.map_err(|e| Error::from(e.to_string()))?;
+            self.inner
+                .execute("ping", &[])
+                .await
+                .map_err(|e| Error::from(e.to_string()))?;
             Ok(())
         })
     }
@@ -158,7 +177,9 @@ impl Connection for MssqlConnection {
 fn test() {
     let task = async move {
         let cfg = Config::new();
-        let tcp = tokio::net::TcpStream::connect(cfg.get_addr()).await.unwrap();
+        let tcp = tokio::net::TcpStream::connect(cfg.get_addr())
+            .await
+            .unwrap();
         tcp.set_nodelay(true).unwrap();
         let c = Client::connect(cfg, tcp.compat_write()).await.unwrap();
     };

@@ -1,8 +1,8 @@
 use crate::core::convert::StmtConvert;
 use crate::rbatis::Rbatis;
 use rbatis_core::Error;
-use std::fmt::{Debug, Display};
 use rbs::Value;
+use std::fmt::{Debug, Display};
 
 /// sql intercept
 pub trait SqlIntercept: Send + Sync + Debug {

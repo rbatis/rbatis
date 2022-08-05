@@ -34,7 +34,10 @@ impl FromStr for SqliteAutoVacuum {
             "incremental" => SqliteAutoVacuum::Incremental,
 
             _ => {
-                return Err(Error::from(format!("Configure unknown value {:?} for `auto_vacuum`", s)));
+                return Err(Error::from(format!(
+                    "Configure unknown value {:?} for `auto_vacuum`",
+                    s
+                )));
             }
         })
     }

@@ -1,4 +1,4 @@
-use crate::py_sql::{NodeType, Name};
+use crate::py_sql::{Name, NodeType};
 
 #[derive(Clone, Debug)]
 pub struct PrintNode {
@@ -6,7 +6,7 @@ pub struct PrintNode {
     pub format: String,
 }
 
-impl Name for PrintNode{
+impl Name for PrintNode {
     fn name() -> &'static str {
         "println"
     }

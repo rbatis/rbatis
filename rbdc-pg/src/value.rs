@@ -65,7 +65,6 @@ impl<'r> PgValueRef<'r> {
 }
 
 impl PgValue {
-
     pub fn get(buf: &mut &[u8], format: PgValueFormat, ty: PgTypeInfo) -> Self {
         let mut element_len = buf.get_i32();
 

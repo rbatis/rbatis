@@ -1,7 +1,7 @@
 use crate::ops::BitOr;
 use rbs::Value;
 
-impl BitOr for Value{
+impl BitOr for Value {
     type Output = bool;
 
     fn op_bitor(self, rhs: Self) -> Self::Output {
@@ -9,7 +9,7 @@ impl BitOr for Value{
     }
 }
 
-impl BitOr<Value> for bool{
+impl BitOr<Value> for bool {
     type Output = bool;
 
     fn op_bitor(self, rhs: Value) -> Self::Output {
@@ -18,21 +18,21 @@ impl BitOr<Value> for bool{
 }
 
 //ref
-impl BitOr<Value> for &Value{
+impl BitOr<Value> for &Value {
     type Output = bool;
 
     fn op_bitor(self, rhs: Value) -> Self::Output {
         self.as_bool().unwrap_or(false) | rhs.as_bool().unwrap_or(false)
     }
 }
-impl BitOr<&Value> for &Value{
+impl BitOr<&Value> for &Value {
     type Output = bool;
 
     fn op_bitor(self, rhs: &Value) -> Self::Output {
         self.as_bool().unwrap_or(false) | rhs.as_bool().unwrap_or(false)
     }
 }
-impl BitOr<&&Value> for &Value{
+impl BitOr<&&Value> for &Value {
     type Output = bool;
 
     fn op_bitor(self, rhs: &&Value) -> Self::Output {
@@ -40,7 +40,7 @@ impl BitOr<&&Value> for &Value{
     }
 }
 
-impl BitOr<bool> for &Value{
+impl BitOr<bool> for &Value {
     type Output = bool;
 
     fn op_bitor(self, rhs: bool) -> Self::Output {
@@ -49,7 +49,7 @@ impl BitOr<bool> for &Value{
 }
 
 //rhs ref
-impl BitOr<&Value> for Value{
+impl BitOr<&Value> for Value {
     type Output = bool;
 
     fn op_bitor(self, rhs: &Value) -> Self::Output {
@@ -57,7 +57,7 @@ impl BitOr<&Value> for Value{
     }
 }
 
-impl BitOr<&Value> for bool{
+impl BitOr<&Value> for bool {
     type Output = bool;
 
     fn op_bitor(self, rhs: &Value) -> Self::Output {
@@ -65,7 +65,7 @@ impl BitOr<&Value> for bool{
     }
 }
 
-impl BitOr<&&Value> for Value{
+impl BitOr<&&Value> for Value {
     type Output = bool;
 
     fn op_bitor(self, rhs: &&Value) -> Self::Output {
@@ -73,7 +73,7 @@ impl BitOr<&&Value> for Value{
     }
 }
 
-impl BitOr<&&Value> for bool{
+impl BitOr<&&Value> for bool {
     type Output = bool;
 
     fn op_bitor(self, rhs: &&Value) -> Self::Output {

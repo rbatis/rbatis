@@ -1,22 +1,17 @@
-use std::str::FromStr;
+use crate::types::date::decode_date_buf;
+use crate::types::time::decode_time;
+use crate::types::{Decode, Encode};
+use crate::value::{MySqlValue, MySqlValueFormat};
 use byteorder::{ByteOrder, LittleEndian};
 use bytes::Buf;
 use rbdc::datetime::FastDateTime;
 use rbdc::Error;
-use crate::types::{Decode, Encode};
-use crate::types::date::decode_date_buf;
-use crate::types::time::decode_time;
-use crate::value::{MySqlValue, MySqlValueFormat};
+use std::str::FromStr;
 
 impl Encode for FastDateTime {
     fn encode(self, buf: &mut Vec<u8>) -> Result<usize, Error> {
         let datetime = self.0;
-        let size = date_time_size_hint(
-            datetime.hour,
-            datetime.min,
-            datetime.sec,
-            datetime.micro,
-        );
+        let size = date_time_size_hint(datetime.hour, datetime.min, datetime.sec, datetime.micro);
         buf.push(size as u8);
         let date = fastdate::Date {
             day: datetime.day,
@@ -70,7 +65,6 @@ impl Decode for FastDateTime {
     }
 }
 
-
 fn date_time_size_hint(hour: u8, min: u8, sec: u8, nano: u32) -> usize {
     // to save space the packet can be compressed:
     match (hour, min, sec, nano) {
@@ -86,4 +80,3 @@ fn date_time_size_hint(hour: u8, min: u8, sec: u8, nano: u32) -> usize {
         (_, _, _, _) => 11,
     }
 }
-

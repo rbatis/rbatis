@@ -1,4 +1,4 @@
-use crate::py_sql::{NodeType, Name};
+use crate::py_sql::{Name, NodeType};
 
 #[derive(Clone, Debug)]
 pub struct ChooseNode {
@@ -6,7 +6,7 @@ pub struct ChooseNode {
     pub otherwise_node: Option<Box<NodeType>>,
 }
 
-impl Name for ChooseNode{
+impl Name for ChooseNode {
     fn name() -> &'static str {
         "choose"
     }

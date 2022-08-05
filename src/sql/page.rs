@@ -161,7 +161,13 @@ impl<T> Page<T> {
         if page_no < 1 {
             return Self {
                 total,
-                pages: 0,
+                pages: {
+                    let mut pages = (total / page_size);
+                    if total % page_size != 0 {
+                        pages += 1;
+                    }
+                    pages
+                },
                 page_size: page_size,
                 page_no: 1 as u64,
                 records: vec![],
@@ -170,7 +176,13 @@ impl<T> Page<T> {
         }
         return Self {
             total,
-            pages: 0,
+            pages: {
+                let mut pages = (total / page_size);
+                if total % page_size != 0 {
+                    pages += 1;
+                }
+                pages
+            },
             page_size: page_size,
             page_no,
             records: vec![],
@@ -193,8 +205,8 @@ impl<T> Default for Page<T> {
 }
 
 impl<T> IPageRequest for Page<T>
-    where
-        T: Send + Sync,
+where
+    T: Send + Sync,
 {
     fn get_page_size(&self) -> u64 {
         self.page_size
@@ -229,8 +241,8 @@ impl<T> IPageRequest for Page<T>
 }
 
 impl<T> IPage<T> for Page<T>
-    where
-        T: Send + Sync,
+where
+    T: Send + Sync,
 {
     fn get_records(&self) -> &Vec<T> {
         self.records.as_ref()
@@ -242,5 +254,18 @@ impl<T> IPage<T> for Page<T>
 
     fn set_records(&mut self, arg: Vec<T>) {
         self.records = arg;
+    }
+}
+
+#[cfg(test)]
+mod test {
+    use crate::sql::page::Page;
+
+    #[test]
+    fn test_page() {
+        let mut page = Page::<i32>::new_total(1, 10, 1);
+        page.records = vec![];
+        println!("{:?}", page);
+        assert_eq!(page.pages, 1);
     }
 }

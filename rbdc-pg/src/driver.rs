@@ -20,7 +20,10 @@ impl Driver for PgDriver {
             Ok(Box::new(conn) as Box<dyn Connection>)
         })
     }
-    fn connect_opt<'a>(&'a self, opt: &'a dyn ConnectOptions) -> BoxFuture<Result<Box<dyn Connection>, Error>> {
+    fn connect_opt<'a>(
+        &'a self,
+        opt: &'a dyn ConnectOptions,
+    ) -> BoxFuture<Result<Box<dyn Connection>, Error>> {
         let opt = opt.downcast_ref().unwrap();
         Box::pin(async move {
             let conn = PgConnection::establish(opt).await?;
@@ -62,16 +65,20 @@ mod test {
     use crate::driver::PgDriver;
     use rbdc::block_on;
     use rbdc::db::Driver;
+    use rbdc::db::Placeholder;
     use rbdc::decimal::Decimal;
     use rbdc::pool::Pool;
     use rbdc::timestamp::Timestamp;
     use rbs::Value;
-    use rbdc::db::Placeholder;
 
     #[test]
     fn test_pg_pool() {
         let task = async move {
-            let pool = Pool::new_url(PgDriver {}, "postgres://postgres:123456@localhost:5432/postgres").unwrap();
+            let pool = Pool::new_url(
+                PgDriver {},
+                "postgres://postgres:123456@localhost:5432/postgres",
+            )
+            .unwrap();
             std::thread::sleep(std::time::Duration::from_secs(2));
             let mut conn = pool.get().await.unwrap();
             let data = conn
@@ -117,6 +124,6 @@ mod test {
         let d = PgDriver {};
         let s = d.exchange("select * from table where id = ? age = ?");
         println!("{}", s);
-        assert_eq!(s,"select * from table where id = $1 age = $2")
+        assert_eq!(s, "select * from table where id = $1 age = $2")
     }
 }

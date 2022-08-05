@@ -866,7 +866,6 @@ impl PgType {
         }
     }
 
-
     /// If `self` is an array type, return the type info for its element.
     ///
     /// This method should only be called on resolved types: calling it on
@@ -968,13 +967,9 @@ impl PgType {
             PgType::Unknown => None,
             // There is no `VoidArray`
             PgType::Void => None,
-            PgType::Custom(ty) =>None,
-            PgType::DeclareWithOid(oid) => {
-                None
-            }
-            PgType::DeclareWithName(name) => {
-                None
-            }
+            PgType::Custom(ty) => None,
+            PgType::DeclareWithOid(oid) => None,
+            PgType::DeclareWithName(name) => None,
         }
     }
 }

@@ -71,8 +71,8 @@ impl SqliteError {
     }
 }
 
-impl From<SqliteError> for rbdc::Error{
+impl From<SqliteError> for rbdc::Error {
     fn from(e: SqliteError) -> Self {
-       Self::from(e.to_string())
+        Self::from(e.to_string())
     }
 }

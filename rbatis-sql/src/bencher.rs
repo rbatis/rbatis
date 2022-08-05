@@ -30,8 +30,7 @@ impl QPS for std::time::Instant {
 
 #[macro_export]
 macro_rules! bench {
-    ($total:expr,$body:block) => {
-       {
+    ($total:expr,$body:block) => {{
         use rbatis_sql::bencher::QPS;
         let now = std::time::Instant::now();
         for _ in 0..$total {
@@ -39,6 +38,5 @@ macro_rules! bench {
         }
         now.time($total);
         now.qps($total);
-       }
-    };
+    }};
 }

@@ -1,11 +1,11 @@
 use crate::encode::{Encode, IsNull};
-use rbdc::error::Error;
 use crate::statement::StatementHandle;
 use crate::Sqlite;
 use atoi::atoi;
 use libsqlite3_sys::SQLITE_OK;
+use rbdc::err_protocol;
+use rbdc::error::Error;
 use std::borrow::Cow;
-use rbdc::{err_protocol};
 
 #[derive(Debug, Clone)]
 pub enum SqliteArgumentValue {
@@ -23,7 +23,7 @@ pub struct SqliteArguments {
 }
 
 impl SqliteArguments {
-    pub fn add<T>(&mut self, value: T)->Result<(),Error>
+    pub fn add<T>(&mut self, value: T) -> Result<(), Error>
     where
         T: Encode,
     {

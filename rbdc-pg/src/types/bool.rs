@@ -1,11 +1,11 @@
-use rbdc::Error;
 use crate::arguments::PgArgumentBuffer;
 use crate::types::decode::Decode;
 use crate::types::encode::{Encode, IsNull};
 use crate::value::{PgValue, PgValueFormat};
+use rbdc::Error;
 
 impl Encode for bool {
-    fn encode(self, buf: &mut PgArgumentBuffer) -> Result<IsNull,Error> {
+    fn encode(self, buf: &mut PgArgumentBuffer) -> Result<IsNull, Error> {
         buf.push(self as u8);
         Ok(IsNull::No)
     }

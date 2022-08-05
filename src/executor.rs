@@ -1,20 +1,20 @@
 use std::fmt::{Debug, Formatter};
 use std::ops::{Deref, DerefMut};
 
-use async_trait::async_trait;
-use futures::Future;
-use rbdc::db::{Connection, ExecResult};
-use serde::de::DeserializeOwned;
-use serde::{Serialize, Serializer};
 use crate::core::Error;
 use crate::rbatis::Rbatis;
 use crate::snowflake::new_snowflake_id;
-use crate::utils::string_util;
-use futures::executor::block_on;
-use rbatis_core::decode::decode;
-use rbs::{from_value, Value};
 use crate::sql::page::{IPageRequest, Page};
 use crate::sql::tx::Tx;
+use crate::utils::string_util;
+use async_trait::async_trait;
+use futures::executor::block_on;
+use futures::Future;
+use rbatis_core::decode::decode;
+use rbdc::db::{Connection, ExecResult};
+use rbs::{from_value, Value};
+use serde::de::DeserializeOwned;
+use serde::{Serialize, Serializer};
 
 #[async_trait]
 pub trait RbatisRef {
@@ -50,10 +50,10 @@ impl Debug for RBatisConnExecutor {
 
 impl RBatisConnExecutor {
     pub async fn fetch<T>(&mut self, sql: &str, args: Vec<Value>) -> Result<T, Error>
-        where
-            T: DeserializeOwned,
+    where
+        T: DeserializeOwned,
     {
-        let v = Executor::fetch(self,sql, args).await?;
+        let v = Executor::fetch(self, sql, args).await?;
         Ok(from_value(v)?)
     }
 }
@@ -181,17 +181,21 @@ impl Debug for RBatisTxExecutor {
 
 impl<'a> RBatisTxExecutor {
     pub async fn fetch<T>(&mut self, sql: &str, args: Vec<Value>) -> Result<T, Error>
-        where
-            T: DeserializeOwned,
+    where
+        T: DeserializeOwned,
     {
-        let v = Executor::fetch(self,sql, args).await?;
+        let v = Executor::fetch(self, sql, args).await?;
         Ok(from_value(v)?)
     }
 }
 
 #[async_trait]
 impl Executor for RBatisTxExecutor {
-    async fn exec(&mut self, sql: &str, mut args: Vec<Value>) -> Result<rbdc::db::ExecResult, Error> {
+    async fn exec(
+        &mut self,
+        sql: &str,
+        mut args: Vec<Value>,
+    ) -> Result<rbdc::db::ExecResult, Error> {
         let mut sql = sql.to_string();
         let is_prepared = args.len() > 0;
         for item in self.get_rbatis().sql_intercepts.iter() {
@@ -318,13 +322,13 @@ impl Debug for RBatisTxExecutorGuard {
 }
 
 impl RBatisTxExecutorGuard {
-
     pub async fn begin(&mut self) -> crate::Result<()> {
         let v = self
             .tx
             .take()
             .ok_or_else(|| Error::from("[rbatis] tx is committed"))?
-            .begin().await?;
+            .begin()
+            .await?;
         self.tx = Some(v);
         return Ok(());
     }
@@ -359,8 +363,8 @@ impl RBatisTxExecutor {
     ///     tx.defer(|tx| {});
     ///
     pub fn defer<Call>(self, callback: Call) -> RBatisTxExecutorGuard
-        where
-            Call: FnMut(Self) + Send + 'static,
+    where
+        Call: FnMut(Self) + Send + 'static,
     {
         RBatisTxExecutorGuard {
             tx: Some(self),
@@ -375,9 +379,9 @@ impl RBatisTxExecutor {
     ///         });
     ///
     pub fn defer_async<R, F>(self, mut callback: F) -> RBatisTxExecutorGuard
-        where
-            R: Future<Output=()> + 'static,
-            F: Send + FnMut(RBatisTxExecutor) -> R + 'static,
+    where
+        R: Future<Output = ()> + 'static,
+        F: Send + FnMut(RBatisTxExecutor) -> R + 'static,
     {
         RBatisTxExecutorGuard {
             tx: Some(self),
@@ -420,8 +424,8 @@ impl Rbatis {
     }
 
     pub async fn fetch<T>(&self, sql: &str, args: Vec<Value>) -> Result<T, Error>
-        where
-            T: DeserializeOwned,
+    where
+        T: DeserializeOwned,
     {
         let mut conn = self.acquire().await?;
         let v = conn.fetch(sql, args).await?;
@@ -436,8 +440,7 @@ impl Executor for Rbatis {
         conn.exec(sql, args).await
     }
 
-    async fn fetch(&mut self, sql: &str, args: Vec<Value>) -> Result<Value, Error>
-    {
+    async fn fetch(&mut self, sql: &str, args: Vec<Value>) -> Result<Value, Error> {
         let mut conn = self.acquire().await?;
         conn.fetch(sql, args).await
     }
@@ -456,8 +459,7 @@ impl Executor for &Rbatis {
         conn.exec(sql, args).await
     }
 
-    async fn fetch(&mut self, sql: &str, args: Vec<Value>) -> Result<Value, Error>
-    {
+    async fn fetch(&mut self, sql: &str, args: Vec<Value>) -> Result<Value, Error> {
         let mut conn = self.acquire().await?;
         conn.fetch(sql, args).await
     }

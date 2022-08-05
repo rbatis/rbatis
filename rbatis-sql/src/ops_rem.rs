@@ -1,6 +1,6 @@
-use rbs::Value;
-use crate::ops::Rem;
 use crate::ops::AsProxy;
+use crate::ops::Rem;
+use rbs::Value;
 
 //value
 impl Rem<Value> for Value {
@@ -158,7 +158,6 @@ impl Rem<&Value> for &Value {
     }
 }
 
-
 impl Rem<&&Value> for &Value {
     type Output = Value;
     fn op_rem(self, rhs: &&Value) -> Self::Output {
@@ -202,7 +201,6 @@ fn op_rem_f64(value: &Value, other: f64) -> f64 {
     value.f64() % other
 }
 
-
 fn op_rem_u64_value(value: &Value, other: u64) -> u64 {
     other % value.u64()
 }
@@ -214,7 +212,6 @@ fn op_rem_i64_value(value: &Value, other: i64) -> i64 {
 fn op_rem_f64_value(value: &Value, other: f64) -> f64 {
     other % value.f64()
 }
-
 
 macro_rules! impl_numeric_rem {
     ($($rem:ident,$rem_value:ident [$($ty:ty)*]-> $return_ty:ty)*) => {
@@ -257,14 +254,11 @@ macro_rules! impl_numeric_rem {
     }
 }
 
-
 impl_numeric_rem! {
     op_rem_u64,op_rem_u64_value[u8 u16 u32 u64] -> u64
     op_rem_i64,op_rem_i64_value[i8 i16 i32 i64 isize] -> i64
     op_rem_f64,op_rem_f64_value[f32 f64] -> f64
 }
-
-
 
 macro_rules! rem_self {
     ([$($ty:ty)*]) => {

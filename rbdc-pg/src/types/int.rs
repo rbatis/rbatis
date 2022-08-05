@@ -1,11 +1,11 @@
-use byteorder::{BigEndian, ByteOrder};
-use rbdc::Error;
 use crate::arguments::PgArgumentBuffer;
 use crate::type_info::PgTypeInfo;
 use crate::types::decode::Decode;
 use crate::types::encode::{Encode, IsNull};
 use crate::types::TypeInfo;
 use crate::value::{PgValue, PgValueFormat};
+use byteorder::{BigEndian, ByteOrder};
+use rbdc::Error;
 
 impl Decode for u64 {
     fn decode(value: PgValue) -> Result<Self, Error> {
@@ -78,14 +78,14 @@ impl Decode for i8 {
 ///encode
 
 impl Encode for u64 {
-    fn encode(self, buf: &mut PgArgumentBuffer) -> Result<IsNull,Error> {
+    fn encode(self, buf: &mut PgArgumentBuffer) -> Result<IsNull, Error> {
         buf.extend(&self.to_be_bytes());
         Ok(IsNull::No)
     }
 }
 
 impl Encode for u32 {
-    fn encode(self, buf: &mut PgArgumentBuffer) -> Result<IsNull,Error> {
+    fn encode(self, buf: &mut PgArgumentBuffer) -> Result<IsNull, Error> {
         buf.extend(&self.to_be_bytes());
 
         Ok(IsNull::No)
@@ -93,7 +93,7 @@ impl Encode for u32 {
 }
 
 impl Encode for u16 {
-    fn encode(self, buf: &mut PgArgumentBuffer) -> Result<IsNull,Error> {
+    fn encode(self, buf: &mut PgArgumentBuffer) -> Result<IsNull, Error> {
         buf.extend(&self.to_be_bytes());
 
         Ok(IsNull::No)
@@ -101,7 +101,7 @@ impl Encode for u16 {
 }
 
 impl Encode for u8 {
-    fn encode(self, buf: &mut PgArgumentBuffer) -> Result<IsNull,Error> {
+    fn encode(self, buf: &mut PgArgumentBuffer) -> Result<IsNull, Error> {
         buf.extend(&self.to_be_bytes());
 
         Ok(IsNull::No)
@@ -109,7 +109,7 @@ impl Encode for u8 {
 }
 
 impl Encode for i64 {
-    fn encode(self, buf: &mut PgArgumentBuffer) -> Result<IsNull,Error> {
+    fn encode(self, buf: &mut PgArgumentBuffer) -> Result<IsNull, Error> {
         buf.extend(&self.to_be_bytes());
 
         Ok(IsNull::No)
@@ -117,7 +117,7 @@ impl Encode for i64 {
 }
 
 impl Encode for i32 {
-    fn encode(self, buf: &mut PgArgumentBuffer) -> Result<IsNull,Error> {
+    fn encode(self, buf: &mut PgArgumentBuffer) -> Result<IsNull, Error> {
         buf.extend(&self.to_be_bytes());
 
         Ok(IsNull::No)
@@ -125,7 +125,7 @@ impl Encode for i32 {
 }
 
 impl Encode for i16 {
-    fn encode(self, buf: &mut PgArgumentBuffer) -> Result<IsNull,Error> {
+    fn encode(self, buf: &mut PgArgumentBuffer) -> Result<IsNull, Error> {
         buf.extend(&self.to_be_bytes());
 
         Ok(IsNull::No)
@@ -133,7 +133,7 @@ impl Encode for i16 {
 }
 
 impl Encode for i8 {
-    fn encode(self, buf: &mut PgArgumentBuffer) -> Result<IsNull,Error> {
+    fn encode(self, buf: &mut PgArgumentBuffer) -> Result<IsNull, Error> {
         buf.extend(&self.to_be_bytes());
 
         Ok(IsNull::No)
@@ -142,7 +142,7 @@ impl Encode for i8 {
 
 ///TypeInfo
 
-impl TypeInfo for i8{
+impl TypeInfo for i8 {
     fn type_info(&self) -> PgTypeInfo {
         PgTypeInfo::BYTEA
     }

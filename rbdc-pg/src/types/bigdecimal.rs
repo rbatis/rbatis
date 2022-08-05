@@ -1,14 +1,14 @@
-use std::cmp;
-use std::num::TryFromIntError;
-use bigdecimal::BigDecimal;
-use num_bigint::{BigInt, Sign};
-use rbdc::Error;
 use crate::arguments::PgArgumentBuffer;
 use crate::type_info::PgTypeInfo;
 use crate::types::decode::Decode;
 use crate::types::encode::{Encode, IsNull};
 use crate::types::numeric::{PgNumeric, PgNumericSign};
 use crate::value::{PgValue, PgValueFormat};
+use bigdecimal::BigDecimal;
+use num_bigint::{BigInt, Sign};
+use rbdc::Error;
+use std::cmp;
+use std::num::TryFromIntError;
 
 impl TryFrom<PgNumeric> for BigDecimal {
     type Error = Error;
@@ -74,7 +74,9 @@ impl TryFrom<&'_ BigDecimal> for PgNumeric {
         // scale is only nonzero when we have fractional digits
         // since `exp` is the _negative_ decimal exponent, it tells us
         // exactly what our scale should be
-        let scale: i16 = cmp::max(0, exp).try_into().map_err(|e:TryFromIntError|Error::from(e.to_string()))?;
+        let scale: i16 = cmp::max(0, exp)
+            .try_into()
+            .map_err(|e: TryFromIntError| Error::from(e.to_string()))?;
 
         // there's an implicit +1 offset in the interpretation
         let weight: i16 = if weight_10 <= 0 {
@@ -83,7 +85,8 @@ impl TryFrom<&'_ BigDecimal> for PgNumeric {
             // the `-1` is a fix for an off by 1 error (4 digits should still be 0 weight)
             (weight_10 - 1) / 4
         }
-        .try_into().map_err(|e:TryFromIntError|Error::from(e.to_string()))?;
+        .try_into()
+        .map_err(|e: TryFromIntError| Error::from(e.to_string()))?;
 
         let digits_len = if base_10.len() % 4 != 0 {
             base_10.len() / 4 + 1
@@ -130,18 +133,21 @@ impl TryFrom<&'_ BigDecimal> for PgNumeric {
 /// If this `BigDecimal` cannot be represented by `PgNumeric`.
 impl Encode for BigDecimal {
     fn encode(self, buf: &mut PgArgumentBuffer) -> Result<IsNull, Error> {
-            PgNumeric::try_from(&self)
-                .expect("BigDecimal magnitude too great for Postgres NUMERIC type")
-                .encode(buf);
-            Ok(IsNull::No)
+        PgNumeric::try_from(&self)
+            .expect("BigDecimal magnitude too great for Postgres NUMERIC type")
+            .encode(buf);
+        Ok(IsNull::No)
     }
 }
 
 impl Decode for BigDecimal {
     fn decode(value: PgValue) -> Result<Self, Error> {
-       match value.format() {
+        match value.format() {
             PgValueFormat::Binary => PgNumeric::decode(value.as_bytes()?)?.try_into(),
-            PgValueFormat::Text => Ok(value.as_str()?.parse::<BigDecimal>().map_err(|e|Error::from(e.to_string()))?),
+            PgValueFormat::Text => Ok(value
+                .as_str()?
+                .parse::<BigDecimal>()
+                .map_err(|e| Error::from(e.to_string()))?),
         }
     }
 }

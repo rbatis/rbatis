@@ -1,4 +1,4 @@
-use crate::py_sql::{NodeType, Name};
+use crate::py_sql::{Name, NodeType};
 
 #[derive(Clone, Debug)]
 pub struct ForEachNode {
@@ -8,7 +8,7 @@ pub struct ForEachNode {
     pub item: String,
 }
 
-impl Name for ForEachNode{
+impl Name for ForEachNode {
     fn name() -> &'static str {
         "for"
     }

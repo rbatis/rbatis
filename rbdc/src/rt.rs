@@ -67,14 +67,13 @@ macro_rules! blocking {
     };
 }
 
-
 #[macro_export]
 macro_rules! block_on {
     ($ex:expr) => {
-        tokio::runtime::Builder::new_multi_thread().enable_all().build().unwrap()
-        .block_on($ex);
+        tokio::runtime::Builder::new_multi_thread()
+            .enable_all()
+            .build()
+            .unwrap()
+            .block_on($ex);
     };
 }
-
-
-

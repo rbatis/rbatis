@@ -1,9 +1,9 @@
 use crate::decode::Decode;
 use crate::encode::{Encode, IsNull};
-use rbdc::error::Error;
 use crate::type_info::DataType;
-use crate::{Sqlite, SqliteArgumentValue, SqliteTypeInfo, SqliteValue, SqliteValueRef};
 use crate::types::Type;
+use crate::{Sqlite, SqliteArgumentValue, SqliteTypeInfo, SqliteValue, SqliteValueRef};
+use rbdc::error::Error;
 
 impl Type for u8 {
     fn type_info(&self) -> SqliteTypeInfo {
@@ -12,7 +12,7 @@ impl Type for u8 {
 }
 
 impl Encode for u8 {
-    fn encode(self, args: &mut Vec<SqliteArgumentValue>)->Result<IsNull,Error> {
+    fn encode(self, args: &mut Vec<SqliteArgumentValue>) -> Result<IsNull, Error> {
         args.push(SqliteArgumentValue::Int(self as i32));
 
         Ok(IsNull::No)
@@ -32,7 +32,7 @@ impl Type for u16 {
 }
 
 impl Encode for u16 {
-    fn encode(self, args: &mut Vec<SqliteArgumentValue>)->Result<IsNull,Error> {
+    fn encode(self, args: &mut Vec<SqliteArgumentValue>) -> Result<IsNull, Error> {
         args.push(SqliteArgumentValue::Int(self as i32));
 
         Ok(IsNull::No)
@@ -52,7 +52,7 @@ impl Type for u32 {
 }
 
 impl Encode for u32 {
-    fn encode(self, args: &mut Vec<SqliteArgumentValue>)->Result<IsNull,Error> {
+    fn encode(self, args: &mut Vec<SqliteArgumentValue>) -> Result<IsNull, Error> {
         args.push(SqliteArgumentValue::Int64(self as i64));
 
         Ok(IsNull::No)

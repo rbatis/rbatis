@@ -1,8 +1,8 @@
-use rbdc::error::Error;
 use crate::connection::{ConnectionHandle, ConnectionState};
 use crate::statement::{StatementHandle, VirtualStatement};
 use crate::{SqliteArguments, SqliteQueryResult, SqliteRow};
 use either::Either;
+use rbdc::error::Error;
 
 pub struct ExecuteIter<'a> {
     handle: &'a mut ConnectionHandle,
@@ -79,13 +79,11 @@ impl Iterator for ExecuteIter<'_> {
         };
 
         match statement.handle.step() {
-            Ok(true) => {
-                Some(Ok(Either::Right(SqliteRow::current(
-                    &statement.handle,
-                    &statement.columns,
-                    &statement.column_names,
-                ))))
-            }
+            Ok(true) => Some(Ok(Either::Right(SqliteRow::current(
+                &statement.handle,
+                &statement.columns,
+                &statement.column_names,
+            )))),
             Ok(false) => {
                 let last_insert_rowid = self.handle.last_insert_rowid();
 

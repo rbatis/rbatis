@@ -1,9 +1,9 @@
 use crate::decode::Decode;
 use crate::encode::{Encode, IsNull};
-use rbdc::error::Error;
 use crate::type_info::DataType;
-use crate::{Sqlite, SqliteArgumentValue, SqliteTypeInfo, SqliteValueRef};
 use crate::types::Type;
+use crate::{Sqlite, SqliteArgumentValue, SqliteTypeInfo, SqliteValueRef};
+use rbdc::error::Error;
 use std::borrow::Cow;
 use uuid::{fmt::Hyphenated, Uuid};
 
@@ -18,7 +18,7 @@ impl Type for Uuid {
 }
 
 impl Encode for Uuid {
-    fn encode(self, args: &mut Vec<SqliteArgumentValue>)->Result<IsNull,Error> {
+    fn encode(self, args: &mut Vec<SqliteArgumentValue>) -> Result<IsNull, Error> {
         args.push(SqliteArgumentValue::Blob(Cow::Owned(
             self.as_bytes().to_vec(),
         )));
@@ -41,7 +41,7 @@ impl Type for Hyphenated {
 }
 
 impl Encode for Hyphenated {
-    fn encode(self, args: &mut Vec<SqliteArgumentValue>)->Result<IsNull,Error> {
+    fn encode(self, args: &mut Vec<SqliteArgumentValue>) -> Result<IsNull, Error> {
         args.push(SqliteArgumentValue::Text(Cow::Owned(self.to_string())));
 
         Ok(IsNull::No)

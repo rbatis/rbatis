@@ -3,8 +3,6 @@ use std::error::Error as StdError;
 use std::fmt::{self, Debug, Display};
 use std::io;
 
-
-
 pub type Result<T> = std::result::Result<T, Error>;
 
 /// A generic error that represents all the ways a method can fail inside of rexpr::core.
@@ -62,7 +60,6 @@ impl Clone for Error {
     }
 }
 
-
 pub trait OptionToResult<T> {
     fn to_result(self, error_str: &str) -> Result<T>;
 }
@@ -76,4 +73,3 @@ impl<T> OptionToResult<T> for Option<T> {
         }
     }
 }
-

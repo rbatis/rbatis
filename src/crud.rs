@@ -8,13 +8,19 @@
 #[macro_export]
 macro_rules! impl_insert {
     ($table:ty{}) => {
-        $crate::impl_insert!($table,$crate::utils::string_util::to_snake_name(stringify!($table)));
+        $crate::impl_insert!(
+            $table,
+            $crate::utils::string_util::to_snake_name(stringify!($table))
+        );
     };
     ($table:ty,$table_name:expr) => {
-        impl $table{
-            pub async fn insert(rb: &mut dyn $crate::executor::Executor,table: &$table)->Result<rbdc::db::ExecResult,rbdc::Error>{
+        impl $table {
+            pub async fn insert(
+                rb: &mut dyn $crate::executor::Executor,
+                table: &$table,
+            ) -> Result<rbdc::db::ExecResult, rbdc::Error> {
                 #[py_sql(
-"`insert into ${table_name} (`
+                    "`insert into ${table_name} (`
              trim ',':
                for k,v in table:
                   if k == 'id' && v== null:
@@ -26,15 +32,21 @@ macro_rules! impl_insert {
                   if k == 'id' && v== null:
                     #{continue}
                  #{v},
-             )")]
-async fn do_insert(rb: &mut dyn $crate::executor::Executor,table: &$table,table_name:String) -> Result<rbdc::db::ExecResult,rbdc::Error> {impled!()}
-             let table_name = $table_name.to_string();
-             do_insert(rb.into(),table,table_name).await
+             )"
+                )]
+                async fn do_insert(
+                    rb: &mut dyn $crate::executor::Executor,
+                    table: &$table,
+                    table_name: String,
+                ) -> Result<rbdc::db::ExecResult, rbdc::Error> {
+                    impled!()
+                }
+                let table_name = $table_name.to_string();
+                do_insert(rb.into(), table, table_name).await
             }
         }
     };
 }
-
 
 ///gen sql => SELECT (column1,column2,column3,...) FROM table_name (column1,column2,column3,...)  *** WHERE ***
 ///
@@ -90,9 +102,6 @@ async fn do_select_all(rb: &mut dyn $crate::executor::Executor,$($param_key:$par
     };
 }
 
-
-
-
 /// gen sql = UPDATE table_name SET column1=value1,column2=value2,... WHERE some_column=some_value;
 /// ```rust
 /// rbatis::impl_update!(BizActivity{});
@@ -100,29 +109,44 @@ async fn do_select_all(rb: &mut dyn $crate::executor::Executor,$($param_key:$par
 #[macro_export]
 macro_rules! impl_update {
     ($table:ty{}) => {
-        $crate::impl_update!($table,$crate::utils::string_util::to_snake_name(stringify!($table)));
+        $crate::impl_update!(
+            $table,
+            $crate::utils::string_util::to_snake_name(stringify!($table))
+        );
     };
     ($table:ty,$table_name:expr) => {
-        impl $table{
-            pub async fn update_by_column(rb: &mut dyn $crate::executor::Executor,table:&$table,column:&str)->Result<rbdc::db::ExecResult,rbdc::Error>{
+        impl $table {
+            pub async fn update_by_column(
+                rb: &mut dyn $crate::executor::Executor,
+                table: &$table,
+                column: &str,
+            ) -> Result<rbdc::db::ExecResult, rbdc::Error> {
                 #[py_sql(
-"`update ${table_name} set `
+                    "`update ${table_name} set `
              trim ',':
                for k,v in table:
                   if k == column || v== null:
                     #{continue}
                  `${k}=#{v},`
-             ` where  ${column} = #{column_value}`")]
-async fn do_update_by_column(rb: &mut dyn $crate::executor::Executor,table_name:String,table: &rbs::Value,column_value: &rbs::Value,column:&str) -> Result<rbdc::db::ExecResult,rbdc::Error> {impled!()}
-            let table_name = $table_name.to_string();
-            let table =  rbs::to_value!(table);
-            let column_value = &table[column];
-            do_update_by_column(rb,table_name,&table,column_value,column).await
+             ` where  ${column} = #{column_value}`"
+                )]
+                async fn do_update_by_column(
+                    rb: &mut dyn $crate::executor::Executor,
+                    table_name: String,
+                    table: &rbs::Value,
+                    column_value: &rbs::Value,
+                    column: &str,
+                ) -> Result<rbdc::db::ExecResult, rbdc::Error> {
+                    impled!()
+                }
+                let table_name = $table_name.to_string();
+                let table = rbs::to_value!(table);
+                let column_value = &table[column];
+                do_update_by_column(rb, table_name, &table, column_value, column).await
             }
         }
     };
 }
-
 
 /// gen sql = DELETE FROM table_name WHERE some_column=some_value;
 ///
@@ -132,15 +156,29 @@ async fn do_update_by_column(rb: &mut dyn $crate::executor::Executor,table_name:
 #[macro_export]
 macro_rules! impl_delete {
     ($table:ty{}) => {
-        $crate::impl_delete!($table,$crate::utils::string_util::to_snake_name(stringify!($table)));
+        $crate::impl_delete!(
+            $table,
+            $crate::utils::string_util::to_snake_name(stringify!($table))
+        );
     };
     ($table:ty,$table_name:expr) => {
-        impl $table{
-            pub async fn delete_by_column(rb: &mut dyn $crate::executor::Executor, column:&str,column_value: &rbs::Value)->Result<rbdc::db::ExecResult,rbdc::Error>{
-            #[py_sql("delete from ${table_name} where  ${column} = #{column_value}")]
-            async fn do_delete_by_column(rb: &mut dyn $crate::executor::Executor,table_name:String,column_value: &rbs::Value,column:&str) -> Result<rbdc::db::ExecResult,rbdc::Error> {impled!()}
-            let table_name = $table_name.to_string();
-            do_delete_by_column(rb,table_name,column_value,column).await
+        impl $table {
+            pub async fn delete_by_column(
+                rb: &mut dyn $crate::executor::Executor,
+                column: &str,
+                column_value: &rbs::Value,
+            ) -> Result<rbdc::db::ExecResult, rbdc::Error> {
+                #[py_sql("delete from ${table_name} where  ${column} = #{column_value}")]
+                async fn do_delete_by_column(
+                    rb: &mut dyn $crate::executor::Executor,
+                    table_name: String,
+                    column_value: &rbs::Value,
+                    column: &str,
+                ) -> Result<rbdc::db::ExecResult, rbdc::Error> {
+                    impled!()
+                }
+                let table_name = $table_name.to_string();
+                do_delete_by_column(rb, table_name, column_value, column).await
             }
         }
     };

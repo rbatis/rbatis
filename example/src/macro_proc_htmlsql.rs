@@ -12,12 +12,11 @@ extern crate rbatis;
 pub mod model;
 use model::*;
 
+use rbatis::executor::Executor;
+use rbatis::rbatis::Rbatis;
+use rbatis::sql::page::{Page, PageRequest};
 use std::fs::File;
 use std::io::Read;
-use rbatis::executor::Executor;
-use rbatis::sql::page::{Page, PageRequest};
-use rbatis::rbatis::Rbatis;
-
 
 ///select page must have  '?:&PageRequest' arg and return 'Page<?>'
 #[html_sql("example/example.html")]
@@ -41,8 +40,7 @@ pub async fn main() {
         "test",
         &rbatis::core::datetime::FastDateTime::now().set_micro(0),
     )
-        .await
-        .unwrap();
+    .await
+    .unwrap();
     println!("{:?}", a);
 }
-

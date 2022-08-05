@@ -6,26 +6,21 @@ use libsqlite3_sys::{SQLITE_BLOB, SQLITE_FLOAT, SQLITE_INTEGER, SQLITE_NULL, SQL
 use rbdc::Error;
 use rbs::Value;
 
-
-pub trait Type{
+pub trait Type {
     fn type_info(&self) -> SqliteTypeInfo;
 }
 
 // for optionals, the underlying SQL type is identical
 impl<T: Type> Type for Option<T> {
     fn type_info(&self) -> SqliteTypeInfo {
-         match self {
-             None => {
-                 SqliteTypeInfo(DataType::Null)
-             }
-             Some(v) => {
-                 v.type_info()
-             }
-         }
+        match self {
+            None => SqliteTypeInfo(DataType::Null),
+            Some(v) => v.type_info(),
+        }
     }
 }
 
-#[derive(Debug, Copy, Clone, Eq, PartialEq, Hash,serde::Serialize, serde::Deserialize)]
+#[derive(Debug, Copy, Clone, Eq, PartialEq, Hash, serde::Serialize, serde::Deserialize)]
 pub(crate) enum DataType {
     Null,
     Int,
@@ -46,11 +41,11 @@ pub(crate) enum DataType {
 }
 
 /// Type information for a SQLite type.
-#[derive(Debug, Clone, Eq, PartialEq, Hash,serde::Serialize, serde::Deserialize)]
+#[derive(Debug, Clone, Eq, PartialEq, Hash, serde::Serialize, serde::Deserialize)]
 pub struct SqliteTypeInfo(pub(crate) DataType);
 
-impl SqliteTypeInfo{
-    pub fn null()->Self{
+impl SqliteTypeInfo {
+    pub fn null() -> Self {
         SqliteTypeInfo(DataType::Null)
     }
 }
@@ -61,7 +56,7 @@ impl Display for SqliteTypeInfo {
     }
 }
 
-impl  SqliteTypeInfo {
+impl SqliteTypeInfo {
     pub fn is_null(&self) -> bool {
         matches!(self.0, DataType::Null)
     }
@@ -131,48 +126,31 @@ impl FromStr for DataType {
     }
 }
 
-
-impl Type for Value{
+impl Type for Value {
     fn type_info(&self) -> SqliteTypeInfo {
-        match self{
-            Value::Null => {SqliteTypeInfo::null()}
-            Value::Bool(_) => {SqliteTypeInfo(DataType::Bool)}
-            Value::I32(_) => {SqliteTypeInfo(DataType::Int)}
-            Value::I64(_) => {SqliteTypeInfo(DataType::Int64)}
-            Value::U32(_) => {SqliteTypeInfo(DataType::Int)}
-            Value::U64(_) => {SqliteTypeInfo(DataType::Int64)}
-            Value::F32(_) => {SqliteTypeInfo(DataType::Float)}
-            Value::F64(_) => {SqliteTypeInfo(DataType::Float)}
-            Value::String(_) => {SqliteTypeInfo(DataType::Text)}
-            Value::Binary(_) => {SqliteTypeInfo(DataType::Blob)}
-            Value::Array(_) => {SqliteTypeInfo(DataType::Null)}
-            Value::Map(_) => {SqliteTypeInfo(DataType::Null)}
-            Value::Ext(t, v) => {
-                match *t{
-                    "Date"=>{
-                        SqliteTypeInfo(DataType::Text)
-                    }
-                    "DateTime"=>{
-                        SqliteTypeInfo(DataType::Text)
-                    }
-                    "Time"=>{
-                        SqliteTypeInfo(DataType::Text)
-                    }
-                    "Timestamp"=>{
-                        SqliteTypeInfo(DataType::Int64)
-                    }
-                    "Decimal"=>{
-                        SqliteTypeInfo(DataType::Numeric)
-                    }
-                    "Json"=>{
-                        SqliteTypeInfo(DataType::Blob)
-                    }
-                    "Uuid"=>{
-                        SqliteTypeInfo(DataType::Text)
-                    }
-                    _ => {SqliteTypeInfo(DataType::Null)}
-                }
-            }
+        match self {
+            Value::Null => SqliteTypeInfo::null(),
+            Value::Bool(_) => SqliteTypeInfo(DataType::Bool),
+            Value::I32(_) => SqliteTypeInfo(DataType::Int),
+            Value::I64(_) => SqliteTypeInfo(DataType::Int64),
+            Value::U32(_) => SqliteTypeInfo(DataType::Int),
+            Value::U64(_) => SqliteTypeInfo(DataType::Int64),
+            Value::F32(_) => SqliteTypeInfo(DataType::Float),
+            Value::F64(_) => SqliteTypeInfo(DataType::Float),
+            Value::String(_) => SqliteTypeInfo(DataType::Text),
+            Value::Binary(_) => SqliteTypeInfo(DataType::Blob),
+            Value::Array(_) => SqliteTypeInfo(DataType::Null),
+            Value::Map(_) => SqliteTypeInfo(DataType::Null),
+            Value::Ext(t, v) => match *t {
+                "Date" => SqliteTypeInfo(DataType::Text),
+                "DateTime" => SqliteTypeInfo(DataType::Text),
+                "Time" => SqliteTypeInfo(DataType::Text),
+                "Timestamp" => SqliteTypeInfo(DataType::Int64),
+                "Decimal" => SqliteTypeInfo(DataType::Numeric),
+                "Json" => SqliteTypeInfo(DataType::Blob),
+                "Uuid" => SqliteTypeInfo(DataType::Text),
+                _ => SqliteTypeInfo(DataType::Null),
+            },
         }
     }
 }

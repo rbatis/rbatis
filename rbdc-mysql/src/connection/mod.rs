@@ -148,7 +148,7 @@ impl Connection for MySqlConnection {
                         Either::Left(l) => {
                             return Ok(ExecResult {
                                 rows_affected: l.rows_affected,
-                                last_insert_id: Value::U64(l.last_insert_id)
+                                last_insert_id: Value::U64(l.last_insert_id),
                             });
                         }
                         Either::Right(r) => {}
@@ -156,7 +156,7 @@ impl Connection for MySqlConnection {
                 }
                 return Ok(ExecResult {
                     rows_affected: 0,
-                    last_insert_id: Value::Null
+                    last_insert_id: Value::Null,
                 });
             } else {
                 let stmt = self.prepare_with(&sql, &[]).await?;
@@ -170,7 +170,7 @@ impl Connection for MySqlConnection {
                         Either::Left(l) => {
                             return Ok(ExecResult {
                                 rows_affected: l.rows_affected,
-                                last_insert_id: Value::U64(l.last_insert_id)
+                                last_insert_id: Value::U64(l.last_insert_id),
                             });
                         }
                         Either::Right(r) => {}
@@ -178,7 +178,7 @@ impl Connection for MySqlConnection {
                 }
                 return Ok(ExecResult {
                     rows_affected: 0,
-                    last_insert_id: Value::Null
+                    last_insert_id: Value::Null,
                 });
             }
         })

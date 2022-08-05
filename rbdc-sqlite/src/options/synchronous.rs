@@ -40,9 +40,10 @@ impl FromStr for SqliteSynchronous {
             "extra" => SqliteSynchronous::Extra,
 
             _ => {
-                return Err(Error::from(
-                    format!("Configuration:unknown value {:?} for `synchronous`", s)
-                ));
+                return Err(Error::from(format!(
+                    "Configuration:unknown value {:?} for `synchronous`",
+                    s
+                )));
             }
         })
     }

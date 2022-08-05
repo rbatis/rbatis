@@ -2,11 +2,9 @@ use serde::{Deserialize, Serialize};
 
 use crate::decode::Decode;
 use crate::encode::{Encode, IsNull};
-use rbdc::error::Error;
-use crate::{
-    type_info::DataType, Sqlite, SqliteArgumentValue, SqliteTypeInfo, SqliteValueRef,
-};
 use crate::types::{Json, Type};
+use crate::{type_info::DataType, Sqlite, SqliteArgumentValue, SqliteTypeInfo, SqliteValueRef};
+use rbdc::error::Error;
 
 impl<T> Type for Json<T> {
     fn type_info(&self) -> SqliteTypeInfo {

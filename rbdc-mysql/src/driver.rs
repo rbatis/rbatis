@@ -1,10 +1,10 @@
-use std::any::Any;
-use std::ops::Deref;
 use crate::connection::MySqlConnection;
 use crate::options::MySqlConnectOptions;
 use futures_core::future::BoxFuture;
 use rbdc::db::{ConnectOptions, Connection, Driver, Placeholder};
 use rbdc::Error;
+use std::any::Any;
+use std::ops::Deref;
 use std::str::FromStr;
 use std::sync::Arc;
 
@@ -24,7 +24,10 @@ impl Driver for MysqlDriver {
         })
     }
 
-    fn connect_opt<'a>(&'a self, opt: &'a dyn ConnectOptions) -> BoxFuture<Result<Box<dyn Connection>, Error>> {
+    fn connect_opt<'a>(
+        &'a self,
+        opt: &'a dyn ConnectOptions,
+    ) -> BoxFuture<Result<Box<dyn Connection>, Error>> {
         let opt = opt.downcast_ref().unwrap();
         Box::pin(async move {
             let conn = MySqlConnection::establish(opt).await?;
@@ -37,8 +40,8 @@ impl Driver for MysqlDriver {
     }
 }
 
-impl Placeholder for MysqlDriver{
-    fn exchange(&self, sql: &str) -> String{
+impl Placeholder for MysqlDriver {
+    fn exchange(&self, sql: &str) -> String {
         sql.to_string()
     }
 }
@@ -46,16 +49,17 @@ impl Placeholder for MysqlDriver{
 #[cfg(test)]
 mod test {
     use crate::driver::MysqlDriver;
+    use rbdc::block_on;
     use rbdc::db::Driver;
+    use rbdc::pool::Pool;
     use rbs::{to_value, Value};
     use std::collections::BTreeMap;
-    use rbdc::block_on;
-    use rbdc::pool::Pool;
 
     #[test]
     fn test_mysql_pool() {
         let task = async move {
-            let pool = Pool::new_url(MysqlDriver {},"mysql://root:123456@localhost:3306/test").unwrap();
+            let pool =
+                Pool::new_url(MysqlDriver {}, "mysql://root:123456@localhost:3306/test").unwrap();
             std::thread::sleep(std::time::Duration::from_secs(2));
             let mut conn = pool.get().await.unwrap();
             let data = conn

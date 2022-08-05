@@ -1,12 +1,12 @@
 use crate::connection::PgConnection;
 use crate::type_info::PgTypeInfo;
 use crate::types::encode::{Encode, IsNull};
+use crate::types::TypeInfo;
 use rbdc::error::Error;
 use rbdc::ext::ustr::UStr;
 use rbs::Value;
 use std::fmt::{self, Write};
 use std::ops::{Deref, DerefMut};
-use crate::types::TypeInfo;
 
 // TODO: buf.patch(|| ...) is a poor name, can we think of a better name? Maybe `buf.lazy(||)` ?
 // TODO: Extend the patch system to support dynamic lengths
@@ -58,7 +58,7 @@ pub struct PgArguments {
 }
 
 impl PgArguments {
-    pub fn add(&mut self, value: Value) ->Result<(),Error> {
+    pub fn add(&mut self, value: Value) -> Result<(), Error> {
         // encode the value into our buffer
         let type_info = self.buffer.encode(value)?;
         self.types.push(type_info);
@@ -108,7 +108,7 @@ impl PgArguments {
 }
 
 impl PgArgumentBuffer {
-    pub fn encode(&mut self, value: Value) -> Result<PgTypeInfo,Error> {
+    pub fn encode(&mut self, value: Value) -> Result<PgTypeInfo, Error> {
         // reserve space to write the prefixed length of the value
         let offset = self.len();
         self.extend(&[0; 4]);

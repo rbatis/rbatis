@@ -1,6 +1,6 @@
-use rbs::Value;
-use crate::ops::Mul;
 use crate::ops::AsProxy;
+use crate::ops::Mul;
+use rbs::Value;
 
 impl Mul<&Value> for Value {
     type Output = Value;
@@ -188,7 +188,6 @@ impl Mul<Value> for &Value {
     }
 }
 
-
 fn op_mul_u32(value: &Value, other: u32) -> u32 {
     value.u32() * other
 }
@@ -257,15 +256,11 @@ macro_rules! impl_numeric_mul {
     }
 }
 
-
 impl_numeric_mul! {
     op_mul_u64[u8 u16 u32 u64] -> u64
     op_mul_i64[i8 i16 i32 i64 isize] -> i64
     op_mul_f64[f32 f64] -> f64
 }
-
-
-
 
 macro_rules! mul_self {
     ([$($ty:ty)*]) => {

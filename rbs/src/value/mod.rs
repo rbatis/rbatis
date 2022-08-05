@@ -4,15 +4,15 @@
 //!
 //! ```
 //! ```
+use crate::to_value;
+use crate::value::map::ValueMap;
+use serde::Serialize;
 use std::borrow::Cow;
 use std::collections::HashMap;
 use std::convert::TryFrom;
 use std::fmt::{self, Debug, Display};
 use std::iter::FromIterator;
 use std::ops::{Deref, Index};
-use serde::Serialize;
-use crate::to_value;
-use crate::value::map::ValueMap;
 
 pub mod ext;
 pub mod map;
@@ -295,15 +295,9 @@ impl Value {
     #[inline]
     pub fn as_bool(&self) -> Option<bool> {
         match self {
-            Value::Bool(v)=>{
-                Some(*v)
-            }
-            Value::Ext(_,e)=>{
-                e.as_bool()
-            }
-            _=>{
-                None
-            }
+            Value::Bool(v) => Some(*v),
+            Value::Ext(_, e) => e.as_bool(),
+            _ => None,
         }
     }
 
@@ -328,7 +322,7 @@ impl Value {
             Value::U32(ref n) => Some(n.to_owned() as i64),
             Value::I64(ref n) => Some(n.to_owned()),
             Value::I32(ref n) => Some(n.to_owned() as i64),
-            Value::Ext(_,ref e)=>e.as_i64(),
+            Value::Ext(_, ref e) => e.as_i64(),
             _ => None,
         }
     }
@@ -355,7 +349,7 @@ impl Value {
             Value::I32(ref n) => Some(n.to_owned() as u64),
             Value::U64(ref n) => Some(n.to_owned()),
             Value::U32(ref n) => Some(n.to_owned() as u64),
-            Value::Ext(_,ref e)=>e.as_u64(),
+            Value::Ext(_, ref e) => e.as_u64(),
             _ => None,
         }
     }
@@ -384,7 +378,7 @@ impl Value {
             Value::U64(n) => Some(n as f64),
             Value::F32(n) => Some(From::from(n)),
             Value::F64(n) => Some(n),
-            Value::Ext(_,ref e)=>e.as_f64(),
+            Value::Ext(_, ref e) => e.as_f64(),
             _ => None,
         }
     }
@@ -403,39 +397,29 @@ impl Value {
     /// ```
     #[inline]
     pub fn as_str(&self) -> Option<&str> {
-        match self{
-            Value::String(s) => {Some(s)}
-            Value::Ext(_, s) => {
-                s.as_str()
-            }
-            _ => {None}
+        match self {
+            Value::String(s) => Some(s),
+            Value::Ext(_, s) => s.as_str(),
+            _ => None,
         }
     }
 
     #[inline]
     pub fn into_string(self) -> Option<String> {
-        match self{
-            Value::String(v) => {Some(v)}
-            Value::Ext(_, ext) => {
-                ext.into_string()
-            }
-            _=>{
-                None
-            }
+        match self {
+            Value::String(v) => Some(v),
+            Value::Ext(_, ext) => ext.into_string(),
+            _ => None,
         }
     }
 
     /// self to Binary
     #[inline]
     pub fn into_bytes(self) -> Option<Vec<u8>> {
-        match self{
-            Value::Binary(v) => {Some(v)}
-            Value::Ext(_, ext) => {
-                ext.into_bytes()
-            }
-            _=>{
-                None
-            }
+        match self {
+            Value::Binary(v) => Some(v),
+            Value::Ext(_, ext) => ext.into_bytes(),
+            _ => None,
         }
     }
 
@@ -456,9 +440,9 @@ impl Value {
             Some(val)
         } else if let Value::String(ref val) = *self {
             Some(val.as_bytes())
-        } else if let Value::Ext(_,ref val) = *self {
+        } else if let Value::Ext(_, ref val) = *self {
             val.as_slice()
-        }else {
+        } else {
             None
         }
     }
@@ -481,7 +465,7 @@ impl Value {
     pub fn as_array(&self) -> Option<&Vec<Value>> {
         if let Value::Array(ref array) = *self {
             Some(&*array)
-        } else if let Value::Ext(_,ref ext) = *self {
+        } else if let Value::Ext(_, ref ext) = *self {
             ext.as_array()
         } else {
             None
@@ -510,7 +494,7 @@ impl Value {
     pub fn as_map(&self) -> Option<&Vec<(Value, Value)>> {
         if let Value::Map(ref map) = *self {
             Some(map)
-        }else if let Value::Ext(_,ref map) = *self {
+        } else if let Value::Ext(_, ref map) = *self {
             map.as_map()
         } else {
             None
@@ -920,10 +904,11 @@ impl<'a> ValueRef<'a> {
             ValueRef::String(val) => Value::String(val.into()),
             ValueRef::Binary(val) => Value::Binary(val.to_vec()),
             ValueRef::Array(ref val) => Value::Array(val.iter().map(|v| v.to_owned()).collect()),
-            ValueRef::Map(ref val) => Value::Map(ValueMap( val.iter()
-                .map(|&(ref k, ref v)| (k.to_owned(), v.to_owned()))
-                .collect())
-            ),
+            ValueRef::Map(ref val) => Value::Map(ValueMap(
+                val.iter()
+                    .map(|&(ref k, ref v)| (k.to_owned(), v.to_owned()))
+                    .collect(),
+            )),
             ValueRef::Ext(ty, ref buf) => Value::Ext(
                 unsafe { change_lifetime_const(ty) },
                 Box::new((**buf).to_owned()),
@@ -950,7 +935,7 @@ impl<'a> ValueRef<'a> {
     pub fn as_u64(&self) -> Option<u64> {
         match self {
             ValueRef::U64(n) => Some(*n),
-            ValueRef::Ext(_,e) => e.as_u64(),
+            ValueRef::Ext(_, e) => e.as_u64(),
             _ => None,
         }
     }
@@ -971,7 +956,7 @@ impl<'a> ValueRef<'a> {
     pub fn as_array(&self) -> Option<&Vec<ValueRef<'_>>> {
         if let ValueRef::Array(ref array) = *self {
             Some(&*array)
-        }else if let ValueRef::Ext(_,ref array) = *self {
+        } else if let ValueRef::Ext(_, ref array) = *self {
             array.as_array()
         } else {
             None
@@ -983,7 +968,7 @@ impl<'a> ValueRef<'a> {
     pub fn into_array(self) -> Option<Vec<ValueRef<'a>>> {
         if let ValueRef::Array(array) = self {
             Some(array)
-        }else if let ValueRef::Ext(_, ext) = self {
+        } else if let ValueRef::Ext(_, ext) = self {
             ext.into_array()
         } else {
             None
@@ -995,7 +980,7 @@ impl<'a> ValueRef<'a> {
     pub fn as_str(&self) -> Option<Cow<'_, str>> {
         if let ValueRef::String(val) = self {
             Some(Cow::Borrowed(val.as_ref()))
-        }else if let ValueRef::Ext(_,val) = self {
+        } else if let ValueRef::Ext(_, val) = self {
             val.as_str()
         } else {
             None
@@ -1159,7 +1144,6 @@ impl<'a> TryFrom<ValueRef<'a>> for u64 {
         }
     }
 }
-
 
 // The following impl was left out intentionally, see
 // https://github.com/3Hren/msgpack-rust/pull/228#discussion_r359513925

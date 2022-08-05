@@ -1,17 +1,17 @@
-use crate::py_sql::{NodeType, Name, DefName};
+use crate::py_sql::{DefName, Name, NodeType};
 
 #[derive(Clone, Debug)]
 pub struct OtherwiseNode {
     pub childs: Vec<NodeType>,
 }
 
-impl Name for OtherwiseNode{
+impl Name for OtherwiseNode {
     fn name() -> &'static str {
         "otherwise"
     }
 }
 
-impl DefName for OtherwiseNode{
+impl DefName for OtherwiseNode {
     fn def_name() -> &'static str {
         "_"
     }

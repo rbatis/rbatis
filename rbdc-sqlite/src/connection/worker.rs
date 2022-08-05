@@ -4,15 +4,15 @@ use std::sync::atomic::{AtomicUsize, Ordering};
 use std::sync::Arc;
 use std::thread;
 
-use either::Either;
-use futures_channel::oneshot;
-use futures_intrusive::sync::{Mutex, MutexGuard};
-use rbdc::error::Error;
 use crate::connection::collation::create_collation;
 use crate::connection::establish::EstablishParams;
 use crate::connection::ConnectionState;
 use crate::connection::{execute, ConnectionHandleRaw};
 use crate::{Sqlite, SqliteArguments, SqliteQueryResult, SqliteRow, SqliteStatement};
+use either::Either;
+use futures_channel::oneshot;
+use futures_intrusive::sync::{Mutex, MutexGuard};
+use rbdc::error::Error;
 
 // Each SQLite connection has a dedicated thread.
 
@@ -161,7 +161,9 @@ impl ConnectionWorker {
                 }
             })?;
 
-        establish_rx.await.map_err(|_| Error::from("WorkerCrashed"))?
+        establish_rx
+            .await
+            .map_err(|_| Error::from("WorkerCrashed"))?
     }
 
     pub(crate) async fn prepare(&mut self, query: &str) -> Result<SqliteStatement, Error> {

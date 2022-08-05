@@ -8,6 +8,8 @@ use std::slice::from_raw_parts;
 use std::str::{from_utf8, from_utf8_unchecked};
 use std::sync::{Condvar, Mutex};
 
+use crate::type_info::DataType;
+use crate::{SqliteError, SqliteTypeInfo};
 use libsqlite3_sys::{
     sqlite3, sqlite3_bind_blob64, sqlite3_bind_double, sqlite3_bind_int, sqlite3_bind_int64,
     sqlite3_bind_null, sqlite3_bind_parameter_count, sqlite3_bind_parameter_name,
@@ -21,8 +23,6 @@ use libsqlite3_sys::{
     SQLITE_OK, SQLITE_ROW, SQLITE_TRANSIENT, SQLITE_UTF8,
 };
 use rbdc::Error;
-use crate::type_info::DataType;
-use crate::{SqliteError, SqliteTypeInfo};
 
 #[derive(Debug)]
 pub(crate) struct StatementHandle(NonNull<sqlite3_stmt>);

@@ -1,12 +1,11 @@
-use std::str::FromStr;
-use std::time::Duration;
-use rbdc::date::Date;
-use rbdc::Error;
 use crate::arguments::PgArgumentBuffer;
 use crate::types::decode::Decode;
 use crate::types::encode::{Encode, IsNull};
 use crate::value::{PgValue, PgValueFormat};
-
+use rbdc::date::Date;
+use rbdc::Error;
+use std::str::FromStr;
+use std::time::Duration;
 
 impl Decode for fastdate::Date {
     fn decode(value: PgValue) -> Result<Self, Error> {
@@ -45,15 +44,19 @@ impl Encode for fastdate::Date {
             day: self.day,
             mon: self.mon,
             year: self.year,
-        }.unix_timestamp_millis() - fastdate::DateTime {
-            micro: 0,
-            sec: 0,
-            min: 0,
-            hour: 0,
-            year: 2000,
-            day: 1,
-            mon: 1,
-        }.unix_timestamp_millis()) / (86400 * 1000) as i64;
+        }
+        .unix_timestamp_millis()
+            - fastdate::DateTime {
+                micro: 0,
+                sec: 0,
+                min: 0,
+                hour: 0,
+                year: 2000,
+                day: 1,
+                mon: 1,
+            }
+            .unix_timestamp_millis())
+            / (86400 * 1000) as i64;
         (days as i32).encode(buf)
     }
 }
@@ -69,4 +72,3 @@ impl Encode for Date {
         self.0.encode(buf)
     }
 }
-

@@ -1,4 +1,4 @@
-use crate::py_sql::{NodeType, Name};
+use crate::py_sql::{Name, NodeType};
 
 #[derive(Clone, Debug)]
 pub struct TrimNode {
@@ -6,7 +6,7 @@ pub struct TrimNode {
     pub trim: String,
 }
 
-impl Name for  TrimNode{
+impl Name for TrimNode {
     fn name() -> &'static str {
         "trim"
     }

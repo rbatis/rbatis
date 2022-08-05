@@ -1,5 +1,5 @@
-use either::Either;
 use crate::{SqliteArguments, SqliteStatement};
+use either::Either;
 
 pub struct SqliteQuery {
     pub statement: Either<String, SqliteStatement>,

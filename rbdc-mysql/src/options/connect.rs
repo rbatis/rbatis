@@ -1,13 +1,13 @@
-use std::any::Any;
-use std::collections::HashMap;
-use std::str::FromStr;
 use crate::connection::MySqlConnection;
 use crate::options::{MySqlConnectOptions, MySqlSslMode};
 use futures_core::future::BoxFuture;
 use rbdc::db::{ConnectOptions, Connection};
-use rbdc::Error;
 use rbdc::net::CertificateInput;
+use rbdc::Error;
 use rbs::{from_value, Value};
+use std::any::Any;
+use std::collections::HashMap;
+use std::str::FromStr;
 
 impl ConnectOptions for MySqlConnectOptions {
     fn connect(&self) -> BoxFuture<Result<Box<dyn Connection>, Error>> {
@@ -56,7 +56,7 @@ impl ConnectOptions for MySqlConnectOptions {
     }
 
     fn set_uri(&mut self, uri: &str) -> Result<(), Error> {
-        *self=MySqlConnectOptions::from_str(uri).map_err(|e|Error::from(e.to_string()))?;
+        *self = MySqlConnectOptions::from_str(uri).map_err(|e| Error::from(e.to_string()))?;
         Ok(())
     }
 

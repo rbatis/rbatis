@@ -34,7 +34,10 @@ impl FromStr for SqliteLockingMode {
             "exclusive" => SqliteLockingMode::Exclusive,
 
             _ => {
-                return Err(Error::from(format!("Configuration:unknown value {:?} for `locking_mode`", s)));
+                return Err(Error::from(format!(
+                    "Configuration:unknown value {:?} for `locking_mode`",
+                    s
+                )));
             }
         })
     }

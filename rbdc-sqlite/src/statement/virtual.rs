@@ -1,21 +1,21 @@
 #![allow(clippy::rc_buffer)]
 
-use rbdc::error::Error;
-use rbdc::ext::ustr::UStr;
 use crate::connection::ConnectionHandle;
 use crate::statement::StatementHandle;
 use crate::{SqliteColumn, SqliteError};
-use std::collections::HashMap;
 use bytes::{Buf, Bytes};
 use libsqlite3_sys::{
     sqlite3, sqlite3_prepare_v3, sqlite3_stmt, SQLITE_OK, SQLITE_PREPARE_PERSISTENT,
 };
+use rbdc::err_protocol;
+use rbdc::error::Error;
+use rbdc::ext::ustr::UStr;
 use smallvec::SmallVec;
+use std::collections::HashMap;
 use std::os::raw::c_char;
 use std::ptr::{null, null_mut, NonNull};
 use std::sync::Arc;
 use std::{cmp, i32};
-use rbdc::err_protocol;
 
 // A virtual statement consists of *zero* or more raw SQLite3 statements. We chop up a SQL statement
 // on `;` to support multiple statements in one query.

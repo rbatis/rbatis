@@ -1,12 +1,11 @@
-use std::any::Any;
-use std::collections::HashMap;
 use crate::Error;
 use futures_core::future::BoxFuture;
-use rbs::Value;
-use std::fmt::{Debug, Display, Formatter};
 use futures_util::TryFutureExt;
 use rbs::value::map::ValueMap;
-
+use rbs::Value;
+use std::any::Any;
+use std::collections::HashMap;
+use std::fmt::{Debug, Display, Formatter};
 
 /// Represents database driver that can be shared between threads, and can therefore implement
 /// a connection pool
@@ -16,7 +15,10 @@ pub trait Driver: Debug + Sync + Send {
     /// in a single thread since most database connections are not thread-safe
     fn connect(&self, url: &str) -> BoxFuture<Result<Box<dyn Connection>, Error>>;
 
-    fn connect_opt<'a>(&'a self, opt: &'a dyn ConnectOptions) -> BoxFuture<Result<Box<dyn Connection>, Error>>;
+    fn connect_opt<'a>(
+        &'a self,
+        opt: &'a dyn ConnectOptions,
+    ) -> BoxFuture<Result<Box<dyn Connection>, Error>>;
 
     /// make an default option
     fn default_option(&self) -> Box<dyn ConnectOptions>;
@@ -31,7 +33,8 @@ pub struct ExecResult {
 
 impl Display for ExecResult {
     fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
-        f.debug_map().key(&"rows_affected")
+        f.debug_map()
+            .key(&"rows_affected")
             .value(&self.rows_affected)
             .key(&"last_insert_id")
             .value(&self.last_insert_id)
@@ -121,7 +124,10 @@ pub trait ConnectOptions: Any + Send + Sync + Debug + 'static {
     /// ```
     ///
     #[inline]
-    fn set(&mut self, arg: Box<dyn Any>) where Self: Sized {
+    fn set(&mut self, arg: Box<dyn Any>)
+    where
+        Self: Sized,
+    {
         *self = *arg.downcast().expect("must be self type!");
     }
 
@@ -132,14 +138,12 @@ pub trait ConnectOptions: Any + Send + Sync + Debug + 'static {
     fn uppercase_self(&self) -> &(dyn Any + Send + Sync);
 }
 
-
 impl dyn ConnectOptions {
     pub fn downcast_ref<E: ConnectOptions>(&self) -> Option<&E> {
         self.uppercase_self().downcast_ref()
     }
 }
 
-
 pub trait Placeholder {
-    fn exchange(&self, sql: &str)-> String;
+    fn exchange(&self, sql: &str) -> String;
 }

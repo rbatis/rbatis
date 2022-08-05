@@ -1,4 +1,4 @@
-use crate::py_sql::{NodeType, Name};
+use crate::py_sql::{Name, NodeType};
 
 #[derive(Clone, Debug)]
 pub struct IfNode {
@@ -6,7 +6,7 @@ pub struct IfNode {
     pub test: String,
 }
 
-impl Name for IfNode{
+impl Name for IfNode {
     fn name() -> &'static str {
         "if"
     }
