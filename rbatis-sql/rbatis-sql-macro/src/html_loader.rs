@@ -43,10 +43,15 @@ pub fn as_element(args: &Vec<Node>) -> Vec<Element> {
         };
         match x {
             Node::Text(txt) => {
-                if txt.is_empty(){
+                if txt.is_empty() {
                     continue;
                 }
-                el.data = txt.to_string();
+                let t = txt.trim();
+                if t.starts_with("`") && t.ends_with("`") {
+                    el.data = t.trim_start_matches("`").trim_end_matches("`").to_string();
+                } else {
+                    el.data = t.to_string();
+                }
             }
             Node::Element(element) => {
                 el.tag = element.name.to_string();
@@ -82,7 +87,19 @@ mod test {
     use crate::html_loader::load_html;
 
     #[test]
-    fn test_parser(){
-        load_html("").unwrap();
+    fn test_parser() {
+        let nodes = load_html(r#"<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.1//EN" "https://github.com/rbatis/rbatis_sql/raw/main/mybatis-3-mapper.dtd">
+<mapper>
+    <insert id="insert">
+        'insert into biz_activity'
+        <foreach collection="arg" index="key" item="item" open="(" close=")" separator=",">
+            '${key}'
+        </foreach>
+        'values'
+        <foreach collection="arg" index="key" item="item" open="(" close=")" separator=",">
+            '${item}'
+        </foreach>
+    </insert></mapper>"#).unwrap();
+        println!("{:?}", nodes);
     }
 }

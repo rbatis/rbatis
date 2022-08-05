@@ -277,9 +277,7 @@ fn parse(arg: &Vec<Element>, methods: &mut proc_macro2::TokenStream, block_name:
                          #inner_body
                          return sql;
                 };
-                sql.push_str(" ");
                 sql.push_str(&do_choose());
-                sql.push_str(" ");
               }
             }
 
@@ -316,7 +314,6 @@ fn parse(arg: &Vec<Element>, methods: &mut proc_macro2::TokenStream, block_name:
                           };
                 body = quote! {
                     #body
-                    sql.push_str(" ");
                 };
                 let mut open_impl = quote! {};
                 if !open.is_empty() {
@@ -524,7 +521,6 @@ fn impl_if(test_value: &str, if_tag_body: proc_macro2::TokenStream, body: &mut p
     *body = quote! {
                   #body
                   if #method_name {
-                     sql.push_str(" ");
                      #if_tag_body
                      #appends
                   }
@@ -534,9 +530,7 @@ fn impl_if(test_value: &str, if_tag_body: proc_macro2::TokenStream, body: &mut p
 fn impl_otherwise(child_body: proc_macro2::TokenStream, body: &mut proc_macro2::TokenStream, methods: &mut proc_macro2::TokenStream, block_name: &str, ignore: &mut Vec<String>) {
     *body = quote!(
                    #body
-                   sql.push_str(" ");
                    #child_body
-                   sql.push_str(" ");
             );
 }
 

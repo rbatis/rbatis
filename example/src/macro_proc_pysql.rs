@@ -31,9 +31,9 @@ async fn py_ctx_id(rb: &Rbatis) -> Vec<BizActivity> {
 
 ///select page must have  '?:&PageRequest' arg and return 'Page<?>'
 #[py_sql(
-"select * from biz_activity where delete_flag = 0
+"`select * from biz_activity where delete_flag = 0`
                   if name != '':
-                    and name=#{name}"
+                    ` and name=#{name}`"
 )]
 async fn py_select_page(
     rb: &mut dyn Executor,

@@ -17,13 +17,13 @@ macro_rules! impl_insert {
         impl $table{
             pub async fn insert(rb: &mut dyn $crate::executor::Executor,table: &$table)->Result<rbdc::db::ExecResult,rbdc::Error>{
                 #[py_sql(
-"insert into ${table_name} (
+"`insert into ${table_name} (`
              trim ',':
                for k,v in table:
                   if k == 'id' && v== null:
                     #{continue}
                  ${k},
-             ) VALUES (
+             `) VALUES (`
              trim ',':
                for k,v in table:
                   if k == 'id' && v== null:
@@ -105,13 +105,13 @@ macro_rules! impl_update {
         impl $table{
             pub async fn update_by_column(rb: &mut dyn $crate::executor::Executor,table:&$table,column:&str)->Result<rbdc::db::ExecResult,rbdc::Error>{
                 #[py_sql(
-"update ${table_name} set
+"`update ${table_name} set `
              trim ',':
                for k,v in table:
                   if k == column || v== null:
                     #{continue}
-                 ${k}=#{v},
-             where  ${column} = #{column_value}   ")]
+                 `${k}=#{v},`
+             ` where  ${column} = #{column_value}`")]
 async fn do_update_by_column(rb: &mut dyn $crate::executor::Executor,table_name:String,table: &rbs::Value,column_value: &rbs::Value,column:&str) -> Result<rbdc::db::ExecResult,rbdc::Error> {impled!()}
             let table_name = $table_name.to_string();
             let table =  rbs::to_value!(table);
