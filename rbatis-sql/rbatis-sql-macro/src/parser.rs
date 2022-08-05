@@ -806,10 +806,6 @@ pub fn impl_fn_py(m: &ItemFn, args: &AttributeArgs) -> TokenStream {
         data = data[1..data.len() - 1].to_string();
     }
     let t;
-    #[cfg(feature = "debug_mode")]
-    {
-        println!("py_sql:{}", data);
-    }
     let mut format_char = '?';
     if args.len() > 1 {
         for x in args.get(1).to_token_stream().to_string().chars() {
@@ -825,10 +821,6 @@ pub fn impl_fn_py(m: &ItemFn, args: &AttributeArgs) -> TokenStream {
         data.starts_with("select") || data.starts_with(" select"),
         &fn_name,
     );
-    #[cfg(feature = "debug_mode")]
-    {
-        println!("html:{}", htmls);
-    }
     t = parse_html_str(&htmls, &fn_name, &mut vec![]);
     return t.into();
 }

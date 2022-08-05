@@ -30,8 +30,8 @@ macro_rules! impl_insert {
              trim ',':
                for k,v in table:
                   if k == 'id' && v== null:
-                    #{continue}
-                 #{v},
+                     #{continue}
+                  #{v},
              )"
                 )]
                 async fn do_insert(

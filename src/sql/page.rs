@@ -162,7 +162,7 @@ impl<T> Page<T> {
             return Self {
                 total,
                 pages: {
-                    let mut pages = (total / page_size);
+                    let mut pages = total / page_size;
                     if total % page_size != 0 {
                         pages += 1;
                     }
@@ -177,7 +177,7 @@ impl<T> Page<T> {
         return Self {
             total,
             pages: {
-                let mut pages = (total / page_size);
+                let mut pages = total / page_size;
                 if total % page_size != 0 {
                     pages += 1;
                 }
