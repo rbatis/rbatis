@@ -3,7 +3,7 @@ use std::fmt::{Debug, Formatter};
 use std::ops::{Deref, DerefMut, Index, IndexMut};
 use std::vec::IntoIter;
 
-#[derive(Serialize, Deserialize, PartialEq)]
+#[derive(serde::Serialize, serde::Deserialize, PartialEq)]
 pub struct ValueMap(pub Vec<(Value, Value)>);
 
 impl Clone for ValueMap {

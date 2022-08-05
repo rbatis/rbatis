@@ -4,7 +4,7 @@
 //!
 //! ```
 //! ```
-use crate::to_value;
+use crate::{Error, to_value};
 use crate::value::map::ValueMap;
 use serde::Serialize;
 use std::borrow::Cow;
@@ -16,6 +16,7 @@ use std::ops::{Deref, Index};
 
 pub mod ext;
 pub mod map;
+
 /// Represents any valid MessagePack value.
 #[derive(Clone, Debug, PartialEq)]
 pub enum Value {
@@ -684,10 +685,10 @@ impl From<(&'static str, Value)> for Value {
 /// [`Array`](crate::Value::Array), rather than a
 /// [`Binary`](crate::Value::Binary)
 impl<V> FromIterator<V> for Value
-where
-    V: Into<Value>,
+    where
+        V: Into<Value>,
 {
-    fn from_iter<I: IntoIterator<Item = V>>(iter: I) -> Self {
+    fn from_iter<I: IntoIterator<Item=V>>(iter: I) -> Self {
         let v: Vec<Value> = iter.into_iter().map(|v| v.into()).collect();
         Value::Array(v)
     }
@@ -1119,10 +1120,10 @@ impl<'a> From<Vec<ValueRef<'a>>> for ValueRef<'a> {
 /// [`Array`](crate::Value::Array), rather than a
 /// [`Binary`](crate::Value::Binary)
 impl<'a, V> FromIterator<V> for ValueRef<'a>
-where
-    V: Into<ValueRef<'a>>,
+    where
+        V: Into<ValueRef<'a>>,
 {
-    fn from_iter<I: IntoIterator<Item = V>>(iter: I) -> Self {
+    fn from_iter<I: IntoIterator<Item=V>>(iter: I) -> Self {
         let v: Vec<ValueRef<'a>> = iter.into_iter().map(|v| v.into()).collect();
         ValueRef::Array(v)
     }
@@ -1253,3 +1254,33 @@ impl Value {
 pub unsafe fn change_lifetime_const<'a, 'b, T: ?Sized>(x: &'a T) -> &'b T {
     &*(x as *const T)
 }
+
+
+impl IntoIterator for Value {
+    type Item = (Value, Value);
+    type IntoIter = std::vec::IntoIter<(Value, Value)>;
+
+    fn into_iter(self) -> Self::IntoIter {
+        match self {
+            Value::Map(v) => {
+                v.into_iter()
+            }
+            Value::Array(arr) => {
+                let mut v = ValueMap::with_capacity(arr.len());
+                let mut idx = 0;
+                for x in arr {
+                    v.push((Value::I32(idx), x));
+                    idx += 1;
+                }
+                v.into_iter()
+            }
+            Value::Ext(_,e)=>{
+                e.into_iter()
+            }
+            _ => {
+               panic!("not an array or map!")
+            }
+        }
+    }
+}
+
