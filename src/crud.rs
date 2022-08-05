@@ -168,7 +168,7 @@ macro_rules! impl_delete {
                 column: &str,
                 column_value: &rbs::Value,
             ) -> Result<rbdc::db::ExecResult, rbdc::Error> {
-                #[py_sql("delete from ${table_name} where  ${column} = #{column_value}")]
+                #[py_sql("`delete from ${table_name} where  ${column} = #{column_value}`")]
                 async fn do_delete_by_column(
                     rb: &mut dyn $crate::executor::Executor,
                     table_name: String,

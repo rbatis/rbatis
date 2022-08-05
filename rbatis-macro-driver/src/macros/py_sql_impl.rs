@@ -45,7 +45,6 @@ pub(crate) fn impl_macro_py_sql(target_fn: &ItemFn, args: &AttributeArgs) -> Tok
                     match l {
                         Lit::Str(v) => {
                             s = s + v.value().as_str();
-                            break;
                         }
                         Lit::ByteStr(_) => {}
                         Lit::Byte(_) => {}
