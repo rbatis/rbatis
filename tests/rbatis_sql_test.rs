@@ -6,7 +6,7 @@ mod test {
     use rbs::Value;
 
     #[rb_py(
-    "
+        "
     SELECT * FROM biz_activity
     if  name != null:
       AND delete_flag = #{del}
@@ -51,7 +51,7 @@ mod test {
     }
 
     #[rb_py(
-    "insert into ${table_name} (
+        "insert into ${table_name} (
              trim ',':
                for k,v2 in table:
                  ${k},

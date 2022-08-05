@@ -1,11 +1,10 @@
 #[macro_use]
 extern crate rbatis;
 
-
 #[cfg(test)]
 mod test {
-    use rbs::Value;
     use rbs::value::map::ValueMap;
+    use rbs::Value;
 
     #[test]
     fn test_value_iter() {

@@ -1,9 +1,9 @@
-use std::str::FromStr;
 use proc_macro2::{Ident, Literal, Span};
 use quote::quote;
 use quote::ToTokens;
-use syn::{AttributeArgs, FnArg, ItemFn, Lit, LitByteStr, LitStr, NestedMeta, Pat};
+use std::str::FromStr;
 use syn::spanned::Spanned;
+use syn::{AttributeArgs, FnArg, ItemFn, Lit, LitByteStr, LitStr, NestedMeta, Pat};
 
 use crate::proc_macro::TokenStream;
 use crate::util::{find_fn_body, find_return_type, get_fn_args, is_fetch, is_rbatis_ref};
@@ -41,20 +41,18 @@ pub(crate) fn impl_macro_py_sql(target_fn: &ItemFn, args: &AttributeArgs) -> Tok
         for ele in args {
             match ele {
                 NestedMeta::Meta(m) => {}
-                NestedMeta::Lit(l) => {
-                    match l {
-                        Lit::Str(v) => {
-                            s = s + v.value().as_str();
-                        }
-                        Lit::ByteStr(_) => {}
-                        Lit::Byte(_) => {}
-                        Lit::Char(_) => {}
-                        Lit::Int(_) => {}
-                        Lit::Float(_) => {}
-                        Lit::Bool(_) => {}
-                        Lit::Verbatim(_) => {}
+                NestedMeta::Lit(l) => match l {
+                    Lit::Str(v) => {
+                        s = s + v.value().as_str();
                     }
-                }
+                    Lit::ByteStr(_) => {}
+                    Lit::Byte(_) => {}
+                    Lit::Char(_) => {}
+                    Lit::Int(_) => {}
+                    Lit::Float(_) => {}
+                    Lit::Bool(_) => {}
+                    Lit::Verbatim(_) => {}
+                },
             }
         }
         sql_ident = quote!(#s);
@@ -76,7 +74,7 @@ pub(crate) fn impl_macro_py_sql(target_fn: &ItemFn, args: &AttributeArgs) -> Tok
             &rbatis_ident.to_string().trim_start_matches("mut "),
             Span::call_site(),
         )
-            .to_token_stream();
+        .to_token_stream();
     }
     //append all args
     let sql_args_gen = filter_args_context_id(&rbatis_name, &get_fn_args(target_fn));
@@ -110,7 +108,7 @@ pub(crate) fn impl_macro_py_sql(target_fn: &ItemFn, args: &AttributeArgs) -> Tok
          #call_method
        }
     }
-        .into();
+    .into();
 }
 
 pub(crate) fn filter_args_context_id(
@@ -153,7 +151,7 @@ pub(crate) fn filter_args_context_id(
                 item.to_string().trim_start_matches("mut "),
                 Span::call_site(),
             )
-                .to_token_stream();
+            .to_token_stream();
         }
         sql_args_gen = quote! {
              #sql_args_gen
