@@ -1269,7 +1269,7 @@ impl IntoIterator for Value {
                 let mut v = ValueMap::with_capacity(arr.len());
                 let mut idx = 0;
                 for x in arr {
-                    v.push((Value::I32(idx), x));
+                    v.push((Value::U32(idx), x));
                     idx += 1;
                 }
                 v.into_iter()
@@ -1302,7 +1302,7 @@ impl<'a> IntoIterator for &'a Value {
                 let mut v = Vec::with_capacity(arr.len());
                 let mut idx = 0;
                 for x in arr {
-                    let b = Box::new(Value::I32(idx));
+                    let b = Box::new(Value::U32(idx));
                     v.push((unsafe { change_lifetime_const(b.deref()) }, x));
                     idx += 1;
                 }
