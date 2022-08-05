@@ -80,9 +80,15 @@ async fn do_select_all(rb: &mut dyn $crate::executor::Executor,table_name:String
     ($table:ty{$fn_name:ident($($param_key:ident:$param_type:ty$(,)?)+) => $sql:expr}) => {
         impl $table{
             pub async fn $fn_name(rb: &mut dyn  $crate::executor::Executor,$($param_key:$param_type,)+)->Result<Vec<$table>,rbdc::Error>{
-                #[py_sql($sql)]
-async fn do_select_all(rb: &mut dyn $crate::executor::Executor,$($param_key:$param_type,)+) -> Result<Vec<$table>,rbdc::Error> {impled!()}
-            do_select_all(rb,$($param_key ,)+).await
+                 if $sql.starts_with("select"){
+                     #[py_sql($sql)]
+                     async fn do_select_all_raw(rb: &mut dyn $crate::executor::Executor,$($param_key:$param_type,)+) -> Result<Vec<$table>,rbdc::Error> {impled!()}
+                     do_select_all_raw(rb,$($param_key ,)+).await
+                 }else{
+                     #[py_sql("select * from biz_activity where ",$sql)]
+                     async fn do_select_all(rb: &mut dyn $crate::executor::Executor,$($param_key:$param_type,)+) -> Result<Vec<$table>,rbdc::Error> {impled!()}
+                     do_select_all(rb,$($param_key ,)+).await
+                 }
             }
         }
     };
@@ -94,9 +100,15 @@ async fn do_select_all(rb: &mut dyn $crate::executor::Executor,$($param_key:$par
     ($table:ty{$fn_name:ident($($param_key:ident:$param_type:ty$(,)?)+) -> $container:tt => $sql:expr}) => {
         impl $table{
             pub async fn $fn_name(rb: &mut dyn  $crate::executor::Executor,$($param_key:$param_type,)+)->Result<$container<$table>,rbdc::Error>{
-                #[py_sql($sql)]
-async fn do_select_all(rb: &mut dyn $crate::executor::Executor,$($param_key:$param_type,)+) -> Result<$container<$table>,rbdc::Error> {impled!()}
-            do_select_all(rb,$($param_key ,)+).await
+                if $sql.starts_with("select"){
+                    #[py_sql($sql)]
+                    async fn do_select_all_raw(rb: &mut dyn $crate::executor::Executor,$($param_key:$param_type,)+) -> Result<$container<$table>,rbdc::Error> {impled!()}
+                    do_select_all_raw(rb,$($param_key ,)+).await
+                }else{
+                     #[py_sql("select * from biz_activity where ",$sql)]
+                     async fn do_select_all(rb: &mut dyn $crate::executor::Executor,$($param_key:$param_type,)+) -> Result<$container<$table>,rbdc::Error> {impled!()}
+                     do_select_all(rb,$($param_key ,)+).await
+                }
             }
         }
     };
