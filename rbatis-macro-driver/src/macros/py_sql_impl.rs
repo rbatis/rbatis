@@ -81,7 +81,6 @@ pub(crate) fn impl_macro_py_sql(target_fn: &ItemFn, args: &AttributeArgs) -> Tok
     //gen rust code templete
     return quote! {
        pub async fn #func_name_ident(#func_args_stream) -> #return_ty {
-         let mut sql = #sql_ident.to_string();
          let mut rb_arg_map = rbs::value::map::ValueMap::new();
          #sql_args_gen
          #fn_body
