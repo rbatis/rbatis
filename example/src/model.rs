@@ -32,7 +32,7 @@ pub async fn init_sqlite() -> Rbatis {
 pub async fn init_sqlite_path(path: &str) -> Rbatis {
     //first init log carte
     fast_log::init(fast_log::config::Config::new().console());
-    // new rbatis
+
     let rb = Rbatis::new();
     // rb.link("mysql://root:123456@localhost:3306/test").unwrap();
     // rb.link("postgres://postgres:123456@localhost:5432/postgres").unwrap();
@@ -41,13 +41,14 @@ pub async fn init_sqlite_path(path: &str) -> Rbatis {
         .await
         .unwrap();
 
-    // run sql create table
+    // ------------carte table------------
     let mut f = File::open(format!("{}example/table_sqlite.sql", path)).unwrap();
     let mut sql = String::new();
     f.read_to_string(&mut sql).unwrap();
-
     fast_log::LOGGER.set_level(LevelFilter::Off);
     rb.exec(&sql, vec![]).await;
     fast_log::LOGGER.set_level(LevelFilter::Info);
+    // ------------carte table end------------
+
     return rb;
 }
