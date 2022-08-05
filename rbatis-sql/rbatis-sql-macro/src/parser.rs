@@ -620,28 +620,6 @@ fn gen_method_name(test_value: &str) -> (String, Ident) {
     )
 }
 
-// fn impl_method(
-//     test_value: &str,
-//     body: &mut proc_macro2::TokenStream,
-//     ignore: &mut Vec<String>,
-// ) -> Ident {
-//     // let (_, method_name) = gen_method_name(&test_value);
-//     let method_impl = crate::func::impl_fn(
-//         &body.to_string(),
-//         "",
-//         &format!("\"{}\"", collection),
-//         false,
-//         false,
-//         ignore,
-//     );
-//     //check append value
-//     *body = quote! {
-//                  #body
-//                let #method_name = #method_impl;
-//     };
-//     return method_name;
-// }
-
 fn impl_if(
     test_value: &str,
     if_tag_body: proc_macro2::TokenStream,
