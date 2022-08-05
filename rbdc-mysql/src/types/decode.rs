@@ -9,7 +9,7 @@ use std::str::FromStr;
 
 impl From<MySqlValue> for Value {
     fn from(v: MySqlValue) -> Self {
-        match v.type_info.r#type {
+        match v.type_info().r#type {
             ColumnType::Tiny => Value::U64(uint_decode(v).unwrap_or_default()),
             ColumnType::Short => Value::I32(int_decode(v).unwrap_or_default() as i32),
             ColumnType::Long => Value::I64(int_decode(v).unwrap_or_default()),
