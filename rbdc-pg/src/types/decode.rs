@@ -26,7 +26,7 @@ pub trait Decode: Sized {
 
 impl Decode for Value {
     fn decode(arg: PgValue) -> Result<Self, Error> {
-        Ok(match arg.type_info.0 {
+        Ok(match arg.type_info().0 {
             PgType::Bool => Value::Bool(Decode::decode(arg)?),
             PgType::Bytea => Bytea::decode(arg)?.into(),
             PgType::Char => Value::String(Decode::decode(arg)?),

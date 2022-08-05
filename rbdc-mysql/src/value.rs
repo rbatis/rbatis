@@ -29,18 +29,18 @@ pub struct MySqlValueRef<'r> {
 }
 
 impl MySqlValue {
-    pub(crate) fn format(&self) -> MySqlValueFormat {
+    pub fn format(&self) -> MySqlValueFormat {
         self.format
     }
 
-    pub(crate) fn as_bytes(&self) -> Result<&[u8], Error> {
+    pub fn as_bytes(&self) -> Result<&[u8], Error> {
         match &self.value {
             Some(v) => Ok(v),
             None => Err(Error::protocol("UnexpectedNull")),
         }
     }
 
-    pub(crate) fn as_str(&self) -> Result<&str, Error> {
+    pub fn as_str(&self) -> Result<&str, Error> {
         Ok(from_utf8(self.as_bytes()?)?)
     }
 }
@@ -71,11 +71,11 @@ impl MySqlValue {
         }
     }
 
-    fn type_info(&self) -> Cow<'_, MySqlTypeInfo> {
+    pub fn type_info(&self) -> Cow<'_, MySqlTypeInfo> {
         Cow::Borrowed(&self.type_info)
     }
 
-    fn is_null(&self) -> bool {
+    pub fn is_null(&self) -> bool {
         is_null(self.value.as_deref(), &self.type_info)
     }
 }
