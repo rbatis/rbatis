@@ -2,7 +2,7 @@ use proc_macro2::{Ident, Span};
 use quote::quote;
 use quote::ToTokens;
 use syn;
-use syn::{AttributeArgs, FnArg, ItemFn, Pat};
+use syn::{AttributeArgs, FnArg, ItemFn, Lit, NestedMeta, Pat};
 
 use crate::proc_macro::TokenStream;
 use crate::util::{find_fn_body, find_return_type, get_fn_args, is_fetch, is_rbatis_ref};
@@ -31,16 +31,33 @@ pub(crate) fn impl_macro_sql(target_fn: &ItemFn, args: &AttributeArgs) -> TokenS
         }
     }
 
-    let sql_ident;
+    let mut sql_ident = quote!();
     if args.len() >= 1 {
         if rbatis_name.is_empty() {
             panic!("[rbatis] you should add rbatis ref param  rb:&Rbatis  or rb: &mut Executor<'_,'_>  on '{}()'!", target_fn.sig.ident);
         }
-        let mut s=quote!();
+        let mut s = "".to_string();
         for ele in args {
-            s = quote!{#s #ele};
+            match ele {
+                NestedMeta::Meta(m) => {}
+                NestedMeta::Lit(l) => {
+                    match l {
+                        Lit::Str(v) => {
+                            s = s + v.value().as_str();
+                            break;
+                        }
+                        Lit::ByteStr(_) => {}
+                        Lit::Byte(_) => {}
+                        Lit::Char(_) => {}
+                        Lit::Int(_) => {}
+                        Lit::Float(_) => {}
+                        Lit::Bool(_) => {}
+                        Lit::Verbatim(_) => {}
+                    }
+                }
+            }
         }
-        sql_ident = s;
+        sql_ident = quote!(#s);
     } else {
         panic!("[rbatis] Incorrect macro parameter length!");
     }
