@@ -154,7 +154,6 @@ fn parse_html_node(htmls: Vec<Element>, ignore: &mut Vec<String>) -> proc_macro2
     let mut methods = quote!();
     let fn_impl = parse(&htmls, &mut methods, "", ignore);
     let token = quote! {
-        use rbatis_sql::ops::*;
         #methods
         #fn_impl
     };
