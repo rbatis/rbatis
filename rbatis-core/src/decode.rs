@@ -1,7 +1,6 @@
 //! Types and traits for decoding values from the database.
 use log::info;
 use rbs::Value;
-use rbson::Bson;
 use serde::de::DeserializeOwned;
 
 use crate::Error;
@@ -34,7 +33,7 @@ where
         "core::option::Option<u8>" | "core::option::Option<u16>" | "core::option::Option<u32>" | "core::option::Option<u64>" |
         "core::option::Option<f32>" | "core::option::Option<f64>" |
         "core::option::Option<serde_json::number::Number>" |
-        "core::option::Option<rbson::Bson::Int64>" | "core::option::Option<rbson::Bson::Int32>" | "core::option::Option<rbson::Bson::Double>" |
+        "core::option::Option<rbs::Value::I64>" | "core::option::Option<rbs::Value::I32>" | "core::option::Option<rbs::Value::F64>" | "core::option::Option<rbs::Value::F32>" |
         "core::option::Option<bigdecimal::BigDecimal>" |
         "core::option::Option<bool>" |
         "core::option::Option<alloc::string::String>" |
@@ -43,7 +42,7 @@ where
         "u8" | "u16" | "u32" | "u64" |
         "f32" | "f64" |
         "serde_json::number::Number" |
-        "rbson::Bson::Int64" | "rbson::Bson::Int32" | "rbson::Bson::Double" |
+        "rbs::Value::I64" | "rbs::Value::I32" | "rbs::Value::F64" | "rbs::Value::F32" |
         "bigdecimal::BigDecimal" |
         "bool" |
         "alloc::string::String" => {
@@ -52,7 +51,7 @@ where
         _ => {}
     }
     // try speculate type
-    let is_array: Result<T, rbson::de::Error> = rbson::from_bson(rbson::Bson::Array(vec![]));
+    let is_array: Result<T, rbs::Error> = rbs::from_value(Value::Array(vec![]));
     if is_array.is_ok() {
         //decode array
         Ok(rbs::from_value(Value::Array(datas))?)

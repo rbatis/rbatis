@@ -3,11 +3,6 @@
 // #![warn(missing_docs)]
 #![allow(unused_imports)]
 #![allow(unused_assignments)]
-
-#[macro_use]
-extern crate lazy_static;
-#[macro_use]
-extern crate serde_json;
 pub use error::{Error, Result};
 
 #[macro_use]
