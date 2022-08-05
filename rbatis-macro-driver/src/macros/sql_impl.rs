@@ -72,12 +72,15 @@ pub(crate) fn impl_macro_sql(target_fn: &ItemFn, args: &AttributeArgs) -> TokenS
         )
         .to_token_stream();
     }
+    let mut decode = quote! {};
     let mut call_method = quote! {};
     let is_fetch = is_fetch(&return_ty.to_string());
     if is_fetch {
         call_method = quote! {fetch};
+        decode = quote!{ Ok(rbs::from_value(r)?)}
     } else {
         call_method = quote! {exec};
+        decode = quote!{ Ok(r)}
     }
     //check use page method
     let mut page_req_str = String::new();
@@ -91,8 +94,9 @@ pub(crate) fn impl_macro_sql(target_fn: &ItemFn, args: &AttributeArgs) -> TokenS
            let mut rb_args =vec![];
            #sql_args_gen
            #fn_body
-           use rbatis::executor::{Executor,ExecutorMut};
-           return #rbatis_ident.#call_method(&#sql_ident,rb_args #page_req).await;
+           use rbatis::executor::{Executor};
+           let r= #rbatis_ident.#call_method(&#sql_ident,rb_args #page_req).await?;
+           #decode
        }
     };
     return gen_token_temple.into();

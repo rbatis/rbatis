@@ -76,13 +76,15 @@ pub(crate) fn impl_macro_html_sql(target_fn: &ItemFn, args: &AttributeArgs) -> T
     let mut call_method = quote! {};
     if is_fetch {
         call_method = quote! {
-             use rbatis::executor::{Executor,ExecutorMut};
-             #rbatis_ident.fetch(&sql,rb_args).await
+             use rbatis::executor::{Executor};
+             let r=#rbatis_ident.fetch(&sql,rb_args).await?;
+             Ok(rbs::from_value(r)?)
         };
     } else {
         call_method = quote! {
-             use rbatis::executor::{Executor,ExecutorMut};
-             #rbatis_ident.exec(&sql,rb_args).await
+             use rbatis::executor::{Executor};
+             let r=#rbatis_ident.exec(&sql,rb_args).await?;
+             Ok(r)
         };
     }
     //gen rust code templete
