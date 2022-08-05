@@ -1,12 +1,9 @@
 ///gen sql => INSERT INTO table_name (column1,column2,column3,...) VALUES (value1,value2,value3,...);
 ///
 /// example:
-/// pub struct BizActivity{}
-///
-/// impl_insert!(BizActivity,"biz_activity");
-///
-/// let table = BizActivity{}
-/// table.insert()
+/// ```rust
+/// rbatis::impl_insert!(BizActivity{});
+/// ```
 ///
 #[macro_export]
 macro_rules! impl_insert {
@@ -42,14 +39,15 @@ async fn do_insert(rb: &mut dyn $crate::executor::Executor,table: &$table,table_
 ///gen sql => SELECT (column1,column2,column3,...) FROM table_name (column1,column2,column3,...)  *** WHERE ***
 ///
 /// example:
+///```rust
 /// pub struct BizActivity{}
+///rbatis::impl_select!(BizActivity{});
+///rbatis::impl_select!(BizActivity{select_all_by_id(id:&str,name:&str) => "select * from biz_activity where id = #{id} and name = #{name}"});
+///rbatis::impl_select!(BizActivity{select_by_id(id:String) -> Option => "select * from biz_activity where id = #{id} limit 1"});
 ///
-/// impl_insert!(BizActivity,"biz_activity");
-///
-/// impl_select_all!(BizActivity,select_all_by_id,"select * from biz_activity where id = #{id}",id:String);
-///
-/// let table = BizActivity{}
-/// BizActivity::select()
+/// //use
+/// //BizActivity::select**()
+/// ```
 ///
 #[macro_export]
 macro_rules! impl_select {
@@ -96,6 +94,9 @@ async fn do_select_all(rb: &mut dyn $crate::executor::Executor,$($param_key:$par
 
 
 /// gen sql = UPDATE table_name SET column1=value1,column2=value2,... WHERE some_column=some_value;
+/// ```rust
+/// rbatis::impl_update!(BizActivity{});
+/// ```
 #[macro_export]
 macro_rules! impl_update {
     ($table:ty{}) => {
@@ -124,6 +125,10 @@ async fn do_update_by_column(rb: &mut dyn $crate::executor::Executor,table_name:
 
 
 /// gen sql = DELETE FROM table_name WHERE some_column=some_value;
+///
+/// ```rust
+/// rbatis::impl_delete!(BizActivity{});
+/// ```
 #[macro_export]
 macro_rules! impl_delete {
     ($table:ty{}) => {
