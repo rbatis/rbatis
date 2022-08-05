@@ -756,6 +756,7 @@ pub fn impl_fn_py(m: &ItemFn, args: &AttributeArgs) -> TokenStream {
     if data.ne("\"\"") && data.starts_with("\"") && data.ends_with("\"") {
         data = data[1..data.len() - 1].to_string();
     }
+    data = data.replace("\\n","\n");
     let t;
     let mut format_char = '?';
     if args.len() > 1 {

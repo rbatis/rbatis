@@ -21,12 +21,12 @@ use rbdc::datetime::FastDateTime;
 use std::time::Duration;
 
 impl_insert!(BizActivity {});
-// impl_select!(BizActivity {});
-// impl_select!(BizActivity{select_all_by_id(id:&str,name:&str) => "select * from biz_activity where id = #{id} and name = #{name}"});
-// impl_select!(BizActivity{select_by_id(id:String) -> Option => "select * from biz_activity where id = #{id} limit 1"});
-// impl_update!(BizActivity {});
-// impl_delete!(BizActivity {});
-// impl_select_page!(BizActivity{select_page(name:&str) => "name != #{name}"});
+impl_select!(BizActivity {});
+impl_select!(BizActivity{select_all_by_id(id:&str,name:&str) => "select * from biz_activity where id = #{id} and name = #{name}"});
+impl_select!(BizActivity{select_by_id(id:String) -> Option => "select * from biz_activity where id = #{id} limit 1"});
+impl_update!(BizActivity {});
+impl_delete!(BizActivity {});
+impl_select_page!(BizActivity{select_page(name:&str) => "name != #{name}"});
 
 #[tokio::main]
 pub async fn main() {
@@ -51,23 +51,23 @@ pub async fn main() {
 
     sleep(Duration::from_secs(2));
 
-    // let data = BizActivity::select_all_by_id(&mut rb, "1", "1").await;
-    // println!("{:?}", data);
-    //
-    // sleep(Duration::from_secs(2));
-    //
-    // let data = BizActivity::select_by_id(&mut rb, "1".to_string()).await;
-    // println!("{:?}", data);
-    //
-    // sleep(Duration::from_secs(2));
-    // let data = BizActivity::update_by_column(&mut rb, &t, "id").await;
-    // println!("{:?}", data);
-    //
-    // sleep(Duration::from_secs(2));
-    // let data = BizActivity::delete_by_column(&mut rb, "id", &"2".into()).await;
-    // println!("{:?}", data);
-    //
-    // sleep(Duration::from_secs(2));
-    // let data = BizActivity::select_page(&mut rb, &PageRequest::new(1, 10), "2").await;
-    // println!("{:?}", data);
+    let data = BizActivity::select_all_by_id(&mut rb, "1", "1").await;
+    println!("{:?}", data);
+
+    sleep(Duration::from_secs(2));
+
+    let data = BizActivity::select_by_id(&mut rb, "1".to_string()).await;
+    println!("{:?}", data);
+
+    sleep(Duration::from_secs(2));
+    let data = BizActivity::update_by_column(&mut rb, &t, "id").await;
+    println!("{:?}", data);
+
+    sleep(Duration::from_secs(2));
+    let data = BizActivity::delete_by_column(&mut rb, "id", &"2".into()).await;
+    println!("{:?}", data);
+
+    sleep(Duration::from_secs(2));
+    let data = BizActivity::select_page(&mut rb, &PageRequest::new(1, 10), "2").await;
+    println!("{:?}", data);
 }
