@@ -1,6 +1,6 @@
 [package]
 name = "rbatis-sql"
-version = "3.0.26"
+version = "4.0.0"
 description = "Rust Json Object access macro"
 authors = ["zhuxiujie <zhuxiujia@qq.com>"]
 edition = "2018"
@@ -18,5 +18,5 @@ debug_mode = ["rbatis_sql_macro/debug_mode"]
 #serde
 serde = { version = "1", features = ["derive"] }
 rbs = {path="../rbs"}
-rbatis_sql_macro = { version = "3.0.17", path = "rbatis-sql-macro" }
+rbatis_sql_macro = { version = "4.0.0", path = "rbatis-sql-macro" }
 serde_json = "1"

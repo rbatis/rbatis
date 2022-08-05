@@ -75,3 +75,14 @@ pub fn load_html(html: &str) -> Result<Vec<Element>> {
     let els = as_element(&dom.children);
     return Ok(els);
 }
+
+
+#[cfg(test)]
+mod test {
+    use crate::html_loader::load_html;
+
+    #[test]
+    fn test_parser(){
+        load_html("").unwrap();
+    }
+}

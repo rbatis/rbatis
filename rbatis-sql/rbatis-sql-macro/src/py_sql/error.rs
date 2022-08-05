@@ -77,9 +77,3 @@ impl<T> OptionToResult<T> for Option<T> {
     }
 }
 
-#[test]
-fn test_json_error() {
-    let e = Error::from("fuck");
-    let s = serde_json::to_string(&e).unwrap();
-    println!("{}", s.as_str());
-}
