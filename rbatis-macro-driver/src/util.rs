@@ -121,6 +121,7 @@ pub(crate) fn is_rbatis_ref(ty_stream: &str) -> bool {
         || ty_stream.contains("RBatisConnExecutor")
         || ty_stream.contains("RBatisTxExecutor")
         || ty_stream.contains("RBatisTxExecutorGuard")
+        || ty_stream.contains("Executor")
     {
         return true;
     }

@@ -14,7 +14,7 @@ use model::*;
 
 use std::fs::File;
 use std::io::Read;
-use rbatis::executor::{ExecutorMut, RbatisExecutor};
+use rbatis::executor::{Executor, RbatisExecutor};
 use rbatis::sql::page::{Page, PageRequest};
 use rbatis::rbatis::Rbatis;
 

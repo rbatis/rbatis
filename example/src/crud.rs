@@ -13,6 +13,7 @@ pub mod model;
 
 use std::time::Duration;
 use fast_log::sleep;
+use rbatis::executor::Executor;
 use rbdc::datetime::FastDateTime;
 use crate::model::{BizActivity, init_sqlite};
 
@@ -41,25 +42,25 @@ pub async fn main() {
         version: Some(1),
         delete_flag: Some(1),
     };
-    let af = BizActivity::insert(rb.as_executor(), &t).await;
+    let af = BizActivity::insert(&mut rb.clone(), &t).await;
     println!("{:?}", af);
 
     sleep(Duration::from_secs(2));
 
-    let data = BizActivity::select_all_by_id(rb.as_executor(), "1", "1").await;
+    let data = BizActivity::select_all_by_id(&mut rb.clone(), "1", "1").await;
     println!("{:?}", data);
 
     sleep(Duration::from_secs(2));
 
-    let data = BizActivity::select_by_id(rb.as_executor(), "1".to_string()).await;
+    let data = BizActivity::select_by_id(&mut rb.clone(), "1".to_string()).await;
     println!("{:?}", data);
 
     sleep(Duration::from_secs(2));
-    let data = BizActivity::update_by_column(rb.as_executor(), &t, "id").await;
+    let data = BizActivity::update_by_column(&mut rb.clone(), &t, "id").await;
     println!("{:?}", data);
 
     sleep(Duration::from_secs(2));
-    let data = BizActivity::delete_by_column(rb.as_executor(), "id", &"2".into()).await;
+    let data = BizActivity::delete_by_column(&mut rb.clone(), "id", &"2".into()).await;
     println!("{:?}", data);
 }
 

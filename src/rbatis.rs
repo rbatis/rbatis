@@ -10,7 +10,7 @@ use uuid::Uuid;
 
 use rbdc::db::{Connection, ExecResult};
 use crate::core::Error;
-use crate::executor::{RBatisConnExecutor, RBatisTxExecutor, RbatisExecutor};
+use crate::executor::{RBatisConnExecutor, RBatisTxExecutor};
 use crate::plugin::intercept::SqlIntercept;
 use crate::plugin::log::{LogPlugin, RbatisLogPlugin};
 use crate::snowflake::new_snowflake_id;
@@ -160,10 +160,5 @@ impl Rbatis {
             return true;
         }
         return false;
-    }
-
-    /// change ref to executor
-    pub fn as_executor(&self) -> RbatisExecutor {
-        self.into()
     }
 }
