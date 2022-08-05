@@ -14,7 +14,7 @@ impl Decode for Value {
     where
         Self: Sized,
     {
-        match value.type_info.0 {
+        match value.type_info().0 {
             DataType::Null => Ok(Value::Null),
             DataType::Int => Ok(Value::I32(i32::decode(value)?)),
             DataType::Float => Ok(Value::F64(f64::decode(value)?)),
