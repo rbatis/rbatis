@@ -105,7 +105,7 @@ where
 
 #[cfg(test)]
 mod test {
-    use crate::decode::decode;
+    use rbatis::decode::decode;
     use rbs::{to_value, Value};
     use std::collections::HashMap;
 

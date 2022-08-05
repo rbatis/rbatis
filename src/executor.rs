@@ -1,7 +1,6 @@
 use std::fmt::{Debug, Formatter};
 use std::ops::{Deref, DerefMut};
 
-use crate::core::Error;
 use crate::rbatis::Rbatis;
 use crate::snowflake::new_snowflake_id;
 use crate::sql::page::{IPageRequest, Page};
@@ -10,11 +9,12 @@ use crate::utils::string_util;
 use async_trait::async_trait;
 use futures::executor::block_on;
 use futures::Future;
-use rbatis_core::decode::decode;
+use crate::decode::decode;
 use rbdc::db::{Connection, ExecResult};
 use rbs::{from_value, Value};
 use serde::de::DeserializeOwned;
 use serde::{Serialize, Serializer};
+use crate::Error;
 
 #[async_trait]
 pub trait RbatisRef {
