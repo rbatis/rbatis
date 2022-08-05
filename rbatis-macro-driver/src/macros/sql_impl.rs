@@ -75,7 +75,7 @@ pub(crate) fn impl_macro_sql(target_fn: &ItemFn, args: &AttributeArgs) -> TokenS
     let is_fetch = is_fetch(&return_ty.to_string());
     if is_fetch {
         call_method = quote! {fetch};
-        decode = quote! { Ok(rbs::from_value(r)?)}
+        decode = quote! { Ok(rbatis::decode::decode(r)?)}
     } else {
         call_method = quote! {exec};
         decode = quote! { Ok(r)}

@@ -31,24 +31,16 @@ pub(crate) fn impl_macro_py_sql(target_fn: &ItemFn, args: &AttributeArgs) -> Tok
     }
 
     let sql_ident;
-    if args.len() == 1 {
+    if args.len() >= 1 {
         if rbatis_name.is_empty() {
             panic!("[rbatis] you should add rbatis ref param  rb:&Rbatis  or rb: &mut RbatisExecutor<'_,'_>  on '{}()'!", target_fn.sig.ident);
         }
-        sql_ident = args
-            .get(0)
-            .expect("[rbatis] miss pysql sql param!")
-            .to_token_stream();
-    } else if args.len() == 2 {
-        rbatis_ident = args
-            .get(0)
-            .expect("[rbatis] miss rbatis ident param!")
-            .to_token_stream();
-        rbatis_name = format!("{}", rbatis_ident);
-        sql_ident = args
-            .get(1)
-            .expect("[rbatis] miss pysql sql param!")
-            .to_token_stream();
+        let mut s= String::with_capacity(args.len()*10);
+        for ele in args {
+            let token= ele.to_token_stream();
+            s.push_str(&token.to_string().trim_start_matches("\"").trim_end_matches("\""));
+        }
+        sql_ident = quote!(#s);
     } else {
         panic!("[rbatis] Incorrect macro parameter length!");
     }
@@ -77,7 +69,7 @@ pub(crate) fn impl_macro_py_sql(target_fn: &ItemFn, args: &AttributeArgs) -> Tok
         call_method = quote! {
              use rbatis::executor::{Executor};
              let r=#rbatis_ident.fetch(&sql,rb_args).await?;
-             Ok(rbs::from_value(r)?)
+             Ok(rbatis::decode::decode(r)?)
         };
     } else {
         call_method = quote! {
