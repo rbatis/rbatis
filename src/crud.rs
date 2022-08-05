@@ -76,33 +76,23 @@ async fn do_select_all(mut rb: $crate::executor::RbatisExecutor<'_>,$($param_key
             }
         }
     };
-}
-
-
-
-
-///gen sql => SELECT (column1,column2,column3,...) FROM table_name (column1,column2,column3,...)  *** WHERE ***
-///
-/// example:
-/// pub struct BizActivity{}
-///
-/// impl_select_one!(BizActivity,find_by_id,"select * from biz_activity where id = #{id} limit 1",id:String);
-///
-/// let table = BizActivity{}
-/// BizActivity::select()
-///
-#[macro_export]
-macro_rules! impl_select_one {
-    ($table:ty{$fn_name:ident($param_key:ident:$param_type:ty) => $sql:expr}) => {
+    // select to an container
+    // for example:
+    // impl_select!(BizActivity{select_by_id(id:String) -> Option => "select * from biz_activity where id = #{id} limit 1"});
+    // impl_select!(BizActivity{select_by_id(id:String) -> HashMap => "select * from biz_activity where id = #{id} limit 1"});
+    // impl_select!(BizActivity{select_by_id(id:String) -> Vec => "select * from biz_activity where id = #{id} limit 1"});
+    ($table:ty{$fn_name:ident($($param_key:ident:$param_type:ty$(,)?)+) -> $container:tt => $sql:expr}) => {
         impl $table{
-            pub async fn $fn_name(mut rb: $crate::executor::RbatisExecutor<'_>,$param_key:$param_type)->Result<Option<$table>,rbdc::Error>{
+            pub async fn $fn_name(mut rb: $crate::executor::RbatisExecutor<'_>,$($param_key:$param_type,)+)->Result<$container<$table>,rbdc::Error>{
                 #[py_sql($sql)]
-async fn do_select_one(mut rb: $crate::executor::RbatisExecutor<'_>,$param_key:$param_type) -> Result<Option<$table>,rbdc::Error> {impled!()}
-            do_select_one(rb,$param_key).await
+async fn do_select_all(mut rb: $crate::executor::RbatisExecutor<'_>,$($param_key:$param_type,)+) -> Result<$container<$table>,rbdc::Error> {impled!()}
+            do_select_all(rb,$($param_key ,)+).await
             }
         }
     };
 }
+
+
 
 
 /// gen sql = UPDATE table_name SET column1=value1,column2=value2,... WHERE some_column=some_value;
