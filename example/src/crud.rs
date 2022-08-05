@@ -18,8 +18,8 @@ use crate::model::{BizActivity, init_sqlite};
 
 impl_insert!(BizActivity{});
 impl_select!(BizActivity{});
-impl_select!(BizActivity{"select * from biz_activity where id = #{id} and name = #{name}",select_all_by_id(id:&str,name:&str)});
-impl_select_one!(BizActivity{"select * from biz_activity where id = #{id} limit 1",select_by_id(id:String)});
+impl_select!(BizActivity{select_all_by_id(id:&str,name:&str) => "select * from biz_activity where id = #{id} and name = #{name}"});
+impl_select_one!(BizActivity{select_by_id(id:String) => "select * from biz_activity where id = #{id} limit 1"});
 impl_update!(BizActivity{});
 impl_delete!(BizActivity{});
 
