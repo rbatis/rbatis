@@ -10,7 +10,7 @@
 ///
 #[macro_export]
 macro_rules! impl_insert {
-    ($table:ty) => {
+    ($table:ty{}) => {
         $crate::impl_insert!($table,$crate::utils::string_util::to_snake_name(stringify!($table)));
     };
     ($table:ty,$table_name:expr) => {
@@ -53,7 +53,7 @@ async fn do_insert(mut rb: $crate::executor::RbatisExecutor<'_>,table: &$table,t
 ///
 #[macro_export]
 macro_rules! impl_select {
-    ($table:ty) => {
+    ($table:ty{}) => {
         $crate::impl_select!($table,$crate::utils::string_util::to_snake_name(stringify!($table)));
     };
     ($table:ty,$table_name:expr) => {
@@ -67,7 +67,7 @@ async fn do_select_all(mut rb: $crate::executor::RbatisExecutor<'_>,table_name:S
             }
         }
     };
-    ($table:ty,$sql:expr,$fn_name:ident($($param_key:ident:$param_type:ty$(,)?)+)) => {
+    ($table:ty{$sql:expr,$fn_name:ident($($param_key:ident:$param_type:ty$(,)?)+)}) => {
         impl $table{
             pub async fn $fn_name(mut rb: $crate::executor::RbatisExecutor<'_>,$($param_key:$param_type,)+)->Result<Vec<$table>,rbdc::Error>{
                 #[py_sql($sql)]
@@ -93,7 +93,7 @@ async fn do_select_all(mut rb: $crate::executor::RbatisExecutor<'_>,$($param_key
 ///
 #[macro_export]
 macro_rules! impl_select_one {
-    ($table:ty,$sql:expr,$fn_name:ident($param_key:ident:$param_type:ty)) => {
+    ($table:ty{$sql:expr,$fn_name:ident($param_key:ident:$param_type:ty)}) => {
         impl $table{
             pub async fn $fn_name(mut rb: $crate::executor::RbatisExecutor<'_>,$param_key:$param_type)->Result<Option<$table>,rbdc::Error>{
                 #[py_sql($sql)]
@@ -108,7 +108,7 @@ async fn do_select_one(mut rb: $crate::executor::RbatisExecutor<'_>,$param_key:$
 /// gen sql = UPDATE table_name SET column1=value1,column2=value2,... WHERE some_column=some_value;
 #[macro_export]
 macro_rules! impl_update {
-    ($table:ty) => {
+    ($table:ty{}) => {
         $crate::impl_update!($table,$crate::utils::string_util::to_snake_name(stringify!($table)));
     };
     ($table:ty,$table_name:expr) => {
@@ -136,7 +136,7 @@ async fn do_update_by_column(mut rb: $crate::executor::RbatisExecutor<'_>,table_
 /// gen sql = DELETE FROM table_name WHERE some_column=some_value;
 #[macro_export]
 macro_rules! impl_delete {
-    ($table:ty) => {
+    ($table:ty{}) => {
         $crate::impl_delete!($table,$crate::utils::string_util::to_snake_name(stringify!($table)));
     };
     ($table:ty,$table_name:expr) => {

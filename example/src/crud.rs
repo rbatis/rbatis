@@ -16,12 +16,12 @@ use fast_log::sleep;
 use rbdc::datetime::FastDateTime;
 use crate::model::{BizActivity, init_sqlite};
 
-impl_insert!(BizActivity);
-impl_select!(BizActivity);
-impl_select!(BizActivity,"select * from biz_activity where id = #{id} and name = #{name}",select_all_by_id(id:&str,name:&str));
-impl_select_one!(BizActivity,"select * from biz_activity where id = #{id} limit 1",find_by_id(id:String));
-impl_update!(BizActivity);
-impl_delete!(BizActivity);
+impl_insert!(BizActivity{});
+impl_select!(BizActivity{});
+impl_select!(BizActivity{"select * from biz_activity where id = #{id} and name = #{name}",select_all_by_id(id:&str,name:&str)});
+impl_select_one!(BizActivity{"select * from biz_activity where id = #{id} limit 1",find_by_id(id:String)});
+impl_update!(BizActivity{});
+impl_delete!(BizActivity{});
 
 #[tokio::main]
 pub async fn main() {
@@ -55,11 +55,11 @@ pub async fn main() {
     println!("{:?}", data);
 
     sleep(Duration::from_secs(2));
-    let data = BizActivity::update_by_column(rb.as_executor(),&t,"id").await;
+    let data = BizActivity::update_by_column(rb.as_executor(), &t, "id").await;
     println!("{:?}", data);
 
     sleep(Duration::from_secs(2));
-    let data = BizActivity::delete_by_column(rb.as_executor(),"id",&"2".into()).await;
+    let data = BizActivity::delete_by_column(rb.as_executor(), "id", &"2".into()).await;
     println!("{:?}", data);
 }
 
