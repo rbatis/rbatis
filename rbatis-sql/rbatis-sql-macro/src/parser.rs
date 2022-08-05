@@ -580,7 +580,16 @@ fn impl_println(x: &Element, body: &mut proc_macro2::TokenStream, ignore: &mut V
         .attrs
         .get("value")
         .expect(&format!("{} element must be have value field!", x.tag));
-    let method_name = impl_method(value, body, ignore);
+    // let method_name = impl_method(value, body, ignore);
+    let method_impl = crate::func::impl_fn(
+        &body.to_string(),
+        "",
+        &format!("\"{}\"", value),
+        false,
+        false,
+        ignore,
+    );
+
     let mut format = String::new();
     if let Some(s) = x.attrs.get("format") {
         format = s.to_string();
@@ -588,14 +597,14 @@ fn impl_println(x: &Element, body: &mut proc_macro2::TokenStream, ignore: &mut V
     if format.is_empty() {
         *body = quote! {
          #body
-         println!("{}",#method_name);
+         println!("{}",#method_impl);
         };
     } else {
         let format_expr = syn::parse_str::<syn::Lit>(&format!("\"{}\"", format))
             .expect(&format!("[rexpr]syn::parse_str: {}", format));
         *body = quote! {
          #body
-         println!(#format_expr,#method_name);
+         println!(#format_expr,#method_impl);
         };
     }
 }
@@ -611,27 +620,27 @@ fn gen_method_name(test_value: &str) -> (String, Ident) {
     )
 }
 
-fn impl_method(
-    test_value: &str,
-    body: &mut proc_macro2::TokenStream,
-    ignore: &mut Vec<String>,
-) -> Ident {
-    let (_, method_name) = gen_method_name(&test_value);
-    let method_impl = crate::func::impl_fn(
-        &body.to_string(),
-        "",
-        &format!("\"{}\"", test_value),
-        false,
-        true,
-        ignore,
-    );
-    //check append value
-    *body = quote! {
-                 #body
-               let #method_name = #method_impl;
-    };
-    return method_name;
-}
+// fn impl_method(
+//     test_value: &str,
+//     body: &mut proc_macro2::TokenStream,
+//     ignore: &mut Vec<String>,
+// ) -> Ident {
+//     // let (_, method_name) = gen_method_name(&test_value);
+//     let method_impl = crate::func::impl_fn(
+//         &body.to_string(),
+//         "",
+//         &format!("\"{}\"", collection),
+//         false,
+//         false,
+//         ignore,
+//     );
+//     //check append value
+//     *body = quote! {
+//                  #body
+//                let #method_name = #method_impl;
+//     };
+//     return method_name;
+// }
 
 fn impl_if(
     test_value: &str,
@@ -642,10 +651,17 @@ fn impl_if(
     block_name: &str,
     ignore: &mut Vec<String>,
 ) {
-    let method_name = impl_method(test_value, body, ignore);
+    let method_impl = crate::func::impl_fn(
+        &body.to_string(),
+        "",
+        &format!("\"{}\"", test_value),
+        false,
+        true,
+        ignore,
+    );
     *body = quote! {
           #body
-          if #method_name {
+          if #method_impl {
              #if_tag_body
              #appends
           }
