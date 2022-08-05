@@ -76,7 +76,7 @@ pub(crate) fn impl_macro_html_sql(target_fn: &ItemFn, args: &AttributeArgs) -> T
         call_method = quote! {
              use rbatis::executor::{Executor};
              let r=#rbatis_ident.fetch(&sql,rb_args).await?;
-             Ok(rbs::from_value(r)?)
+             Ok(rbatis::decode::decode(r)?)
         };
     } else {
         call_method = quote! {
