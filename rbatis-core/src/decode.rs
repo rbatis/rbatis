@@ -18,13 +18,7 @@ where
     //debug_mode feature print json_decode json data
     #[cfg(feature = "debug_mode")]
     {
-        println!("[rbatis] [debug_mode] [bson]   {} => {}", type_name, bs);
-        #[cfg(feature = "format_bson")]
-        println!(
-            "[rbatis] [debug_mode] [format] {} => {}",
-            type_name,
-            bs.as_array().unwrap().do_format()
-        );
+        println!("[rbatis] [debug_mode] [value]   {} => {}", type_name, bs);
     }
     let mut datas = vec![];
     match bs {
