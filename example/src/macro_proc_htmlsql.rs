@@ -14,7 +14,7 @@ use model::*;
 
 use std::fs::File;
 use std::io::Read;
-use rbatis::executor::{Executor, RbatisExecutor};
+use rbatis::executor::Executor;
 use rbatis::sql::page::{Page, PageRequest};
 use rbatis::rbatis::Rbatis;
 
@@ -22,7 +22,7 @@ use rbatis::rbatis::Rbatis;
 ///select page must have  '?:&PageRequest' arg and return 'Page<?>'
 #[html_sql("example/example.html")]
 async fn select_by_condition(
-    mut rb: RbatisExecutor<'_>,
+    rb: &mut dyn Executor,
     page_req: &PageRequest,
     name: &str,
     dt: &rbatis::core::datetime::FastDateTime,
@@ -36,7 +36,7 @@ pub async fn main() {
     //use static ref
     let rb = init_sqlite().await;
     let a = select_by_condition(
-        rb.as_executor(),
+        &mut rb.clone(),
         &PageRequest::new(1, 10),
         "test",
         &rbatis::core::datetime::FastDateTime::now().set_micro(0),

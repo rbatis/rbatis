@@ -13,8 +13,6 @@ pub mod model;
 use model::*;
 use std::fs::File;
 use std::io::Read;
-
-use rbatis::executor::RbatisExecutor;
 use rbatis::sql::page::{Page, PageRequest};
 use rbatis::rbatis::Rbatis;
 
