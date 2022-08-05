@@ -79,7 +79,7 @@ pub fn py_sql(args: TokenStream, func: TokenStream) -> TokenStream {
     let stream = impl_macro_py_sql(&target_fn, &args);
     #[cfg(feature = "debug_mode")]
     {
-        println!("............gen macro py_sql :\n {}", stream);
+        println!("............gen macro py_sql :\n {}", stream.to_string().replace("\\n","\n"));
         println!("............gen macro py_sql end............");
     }
     stream
