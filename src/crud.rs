@@ -205,7 +205,7 @@ macro_rules! impl_select_page {
                 page_req:&PageRequest,
                 $($param_key:$param_type,)+
             ) -> Result<$crate::sql::Page::<$table>, rbdc::Error> {
-                #[py_sql("select * from ${table_name} where ",$where_sql,"limit ${page_no},${page_size}")]
+                #[py_sql("select * from ${table_name} ",$where_sql,"limit ${page_no},${page_size}")]
                 async fn do_select_page(
                     rb: &mut dyn $crate::executor::Executor,
                     table_name: &str,
@@ -215,7 +215,7 @@ macro_rules! impl_select_page {
                 ) -> Result<Vec<$table>, rbdc::Error> {
                     impled!()
                 }
-                #[py_sql("select count(1) as count from ${table_name} where ",$where_sql)]
+                #[py_sql("select count(1) as count from ${table_name} ",$where_sql)]
                 async fn do_select_page_count(
                     rb: &mut dyn $crate::executor::Executor,
                     table_name: &str,
