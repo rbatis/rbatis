@@ -1278,7 +1278,7 @@ impl IntoIterator for Value {
                 e.into_iter()
             }
             _ => {
-                panic!("not an array or map!")
+                panic!("{} not an array or map!", self)
             }
         }
     }
@@ -1310,7 +1310,7 @@ impl<'a> IntoIterator for &'a Value {
                 e.deref().into_iter()
             }
             _ => {
-                panic!("not an array or map!")
+                panic!("{} not an array or map!", self)
             }
         }
     }
