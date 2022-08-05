@@ -450,18 +450,8 @@ fn parse(
                 }
                 let item_ident = Ident::new(&item, Span::call_site());
                 let index_ident = Ident::new(&findex, Span::call_site());
-
-                let mut index_create = quote! {};
-                let mut index_add = quote! {};
                 let mut split_code = quote! {};
                 let mut split_code_end = quote! {};
-                index_create = quote! {
-                    let mut #index_ident=0;
-                };
-                index_add = quote! {
-                    #index_ident=#index_ident+1;
-                };
-
                 if !separator.is_empty() {
                     split_code = quote! {    sql.push_str(#separator);  };
                     split_code_end = quote! {
@@ -473,31 +463,13 @@ fn parse(
 
                 body = quote! {
                     #body
-                    if #method_name.is_array(){
-                        #open_impl
-                        #index_create
-                        {
-                          let foreach_arr = #method_name.array().unwrap();
-                          for #item_ident in foreach_arr {
+                    #open_impl
+                          for (#index_ident,#item_ident) in #method_name {
                             #impl_body
                             #split_code
-                            #index_add
                           }
                           #split_code_end
-                        }
-                        #close_impl
-                    }else if #method_name.is_object(){
-                        #open_impl
-                        {
-                          let foreach_arr = #method_name.object().unwrap();
-                          for (#index_ident,#item_ident) in foreach_arr {
-                              #impl_body
-                              #split_code
-                          }
-                          #split_code_end
-                        }
-                        #close_impl
-                    }
+                    #close_impl
                 };
                 body = quote! {
                     #body
