@@ -203,8 +203,6 @@ fn parse(
 
                 let mut replaced = HashMap::<String, bool>::new();
                 for (k, v) in convert_list {
-                    let (method_name_string, method_name) =
-                        gen_method_name(&format!("{}:{}", block_name, k));
                     let method_impl = crate::func::impl_fn(
                         &body.to_string(),
                         "",
@@ -213,20 +211,15 @@ fn parse(
                         true,
                         ignore,
                     );
-                    //check append value
-                    body = quote! {
-                        #body
-                        let #method_name = #method_impl;
-                    };
                     if v.starts_with("#") {
                         string_data = string_data.replacen(&v, &"?", 1);
                         body = quote! {
                             #body
-                            args.push(rbs::to_value!(#method_name));
+                            args.push(rbs::to_value!(#method_impl));
                         };
                     } else {
                         if replaced.get(&v).is_none() {
-                            replaces = quote! {#replaces.replacen(#v, &#method_name.as_sql(), 1)};
+                            replaces = quote! {#replaces.replacen(#v, &#method_impl.as_sql(), 1)};
                             replaced.insert(v.to_string(), true);
                         }
                     }
@@ -418,8 +411,6 @@ fn parse(
                 ignores.push(item.to_string());
 
                 let impl_body = parse(&x.childs, methods, "foreach", &mut ignores);
-                let (method_name_string, method_name) =
-                    gen_method_name(&format!("{}:{}", block_name, collection));
                 let method_impl = crate::func::impl_fn(
                     &body.to_string(),
                     "",
@@ -428,11 +419,6 @@ fn parse(
                     false,
                     ignore,
                 );
-                //check append value
-                body = quote! {
-                    #body
-                    let #method_name = #method_impl;
-                };
                 body = quote! {
                     #body
                 };
@@ -464,7 +450,7 @@ fn parse(
                 body = quote! {
                     #body
                     #open_impl
-                          for (#index_ident,#item_ident) in #method_name {
+                          for (#index_ident,#item_ident) in #method_impl {
                             #impl_body
                             #split_code
                           }
