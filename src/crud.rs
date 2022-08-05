@@ -85,7 +85,7 @@ async fn do_select_all(rb: &mut dyn $crate::executor::Executor,table_name:String
                      async fn do_select_all_raw(rb: &mut dyn $crate::executor::Executor,$($param_key:$param_type,)+) -> Result<Vec<$table>,rbdc::Error> {impled!()}
                      do_select_all_raw(rb,$($param_key ,)+).await
                  }else{
-                     #[py_sql("select * from biz_activity where ",$sql)]
+                     #[py_sql("select * from biz_activity ",$sql)]
                      async fn do_select_all(rb: &mut dyn $crate::executor::Executor,$($param_key:$param_type,)+) -> Result<Vec<$table>,rbdc::Error> {impled!()}
                      do_select_all(rb,$($param_key ,)+).await
                  }
@@ -105,7 +105,7 @@ async fn do_select_all(rb: &mut dyn $crate::executor::Executor,table_name:String
                     async fn do_select_all_raw(rb: &mut dyn $crate::executor::Executor,$($param_key:$param_type,)+) -> Result<$container<$table>,rbdc::Error> {impled!()}
                     do_select_all_raw(rb,$($param_key ,)+).await
                 }else{
-                     #[py_sql("select * from biz_activity where ",$sql)]
+                     #[py_sql("select * from biz_activity ",$sql)]
                      async fn do_select_all(rb: &mut dyn $crate::executor::Executor,$($param_key:$param_type,)+) -> Result<$container<$table>,rbdc::Error> {impled!()}
                      do_select_all(rb,$($param_key ,)+).await
                 }
