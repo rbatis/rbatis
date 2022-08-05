@@ -1278,22 +1278,23 @@ impl IntoIterator for Value {
                 e.into_iter()
             }
             _ => {
-                panic!("{} not an array or map!", self)
+                let mut v = ValueMap::with_capacity(0);
+                v.into_iter()
             }
         }
     }
 }
 
 impl<'a> IntoIterator for &'a Value {
-    type Item = (Value, &'a Value);
-    type IntoIter = std::vec::IntoIter<(Value, &'a Value)>;
+    type Item = (&'a Value, &'a Value);
+    type IntoIter = std::vec::IntoIter<(&'a Value, &'a Value)>;
 
     fn into_iter(self) -> Self::IntoIter {
         match self {
             Value::Map(m) => {
                 let mut arr = Vec::with_capacity(m.len());
                 for (k, v) in m {
-                    arr.push((k.to_owned(), v));
+                    arr.push((k, v));
                 }
                 arr.into_iter()
             }
@@ -1301,7 +1302,8 @@ impl<'a> IntoIterator for &'a Value {
                 let mut v = Vec::with_capacity(arr.len());
                 let mut idx = 0;
                 for x in arr {
-                    v.push((Value::I32(idx), x));
+                    let b = Box::new(Value::I32(idx));
+                    v.push((unsafe { change_lifetime_const(b.deref()) }, x));
                     idx += 1;
                 }
                 v.into_iter()
@@ -1310,7 +1312,8 @@ impl<'a> IntoIterator for &'a Value {
                 e.deref().into_iter()
             }
             _ => {
-                panic!("{} not an array or map!", self)
+                let mut v = Vec::with_capacity(0);
+                v.into_iter()
             }
         }
     }
