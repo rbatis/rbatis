@@ -5,7 +5,7 @@ pub struct StringNode {
     pub value: String,
 }
 
-impl Name for String{
+impl Name for String {
     fn name() -> &'static str {
         "string"
     }

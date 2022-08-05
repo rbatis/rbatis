@@ -1,5 +1,5 @@
-use std::fmt::{Display, Formatter};
 use rbs::Value;
+use std::fmt::{Display, Formatter};
 
 #[derive(serde::Serialize, serde::Deserialize, Debug, Clone, Eq, PartialEq)]
 #[serde(rename = "Date")]

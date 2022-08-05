@@ -1,6 +1,6 @@
-use rbs::Value;
-use crate::ops::Div;
 use crate::ops::AsProxy;
+use crate::ops::Div;
+use rbs::Value;
 
 fn op_div_u64(value: &Value, other: u64) -> u64 {
     if other == 0 {
@@ -16,14 +16,12 @@ fn op_div_i64(value: &Value, other: i64) -> i64 {
     (value.i64() / other)
 }
 
-
 fn op_div_f64(value: &Value, other: f64) -> f64 {
     if other == 0.0 {
         return 0.0;
     }
     value.f64() / other
 }
-
 
 fn op_div_i64_value(value: &Value, other: i64) -> i64 {
     let v = value.i64();
@@ -33,14 +31,13 @@ fn op_div_i64_value(value: &Value, other: i64) -> i64 {
     (other / v)
 }
 
-fn op_div_u64_value(value: &Value, other: u64) ->u64 {
+fn op_div_u64_value(value: &Value, other: u64) -> u64 {
     let v = value.u64();
     if v == 0 {
         return 0;
     }
     (other / v)
 }
-
 
 fn op_div_f64_value(value: &Value, other: f64) -> f64 {
     let v = value.f64();
@@ -117,7 +114,6 @@ macro_rules! impl_numeric_div {
         )*)*
     }
 }
-
 
 impl_numeric_div! {
     op_div_u64,op_div_u64_value[u8 u16 u32 u64] -> u64
@@ -444,7 +440,6 @@ impl Div<&&Value> for &Value {
         };
     }
 }
-
 
 macro_rules! div_self {
     ([$($ty:ty)*]) => {

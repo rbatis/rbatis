@@ -1,15 +1,13 @@
-use std::ops::{Index, IndexMut};
-use serde::Serialize;
 use crate::{to_value, Value};
+use serde::Serialize;
+use std::ops::{Index, IndexMut};
 
 impl Index<usize> for Value {
     type Output = Value;
 
     fn index(&self, index: usize) -> &Value {
         match self {
-            Value::Array(arr) => {
-                &arr[index]
-            }
+            Value::Array(arr) => &arr[index],
             Value::Ext(_, ext) => {
                 return ext.index(index);
             }
@@ -23,9 +21,7 @@ impl Index<usize> for Value {
 impl IndexMut<usize> for Value {
     fn index_mut(&mut self, index: usize) -> &mut Self::Output {
         match self {
-            Value::Array(arr) => {
-                &mut arr[index]
-            }
+            Value::Array(arr) => &mut arr[index],
             Value::Ext(_, ext) => {
                 return ext.index_mut(index);
             }

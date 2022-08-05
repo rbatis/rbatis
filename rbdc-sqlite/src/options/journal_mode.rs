@@ -46,7 +46,10 @@ impl FromStr for SqliteJournalMode {
             "off" => SqliteJournalMode::Off,
 
             _ => {
-                return Err(Error::from(format!("Configuration:unknown value {:?} for `journal_mode`", s)));
+                return Err(Error::from(format!(
+                    "Configuration:unknown value {:?} for `journal_mode`",
+                    s
+                )));
             }
         })
     }

@@ -1,8 +1,6 @@
-use rbs::Value;
-use crate::ops::BitXor;
 use crate::ops::AsProxy;
-
-
+use crate::ops::BitXor;
+use rbs::Value;
 
 //value
 impl BitXor<&Value> for Value {
@@ -191,7 +189,6 @@ impl BitXor<Value> for &Value {
     }
 }
 
-
 fn op_bitxor_u64(value: &Value, other: u64) -> u64 {
     value.u64() ^ other
 }
@@ -204,7 +201,6 @@ fn op_bitxor_f64(value: &Value, other: f64) -> f64 {
     0.0
 }
 
-
 fn op_bitxor_u64_value(value: &Value, other: u64) -> u64 {
     other ^ value.u64()
 }
@@ -216,7 +212,6 @@ fn op_bitxor_i64_value(value: &Value, other: i64) -> i64 {
 fn op_bitxor_f64_value(value: &Value, other: f64) -> f64 {
     0.0
 }
-
 
 macro_rules! impl_numeric_sub {
     ($($sub:ident,$sub_value:ident [$($ty:ty)*]-> $return_ty:ty)*) => {
@@ -258,13 +253,10 @@ macro_rules! impl_numeric_sub {
     }
 }
 
-
 impl_numeric_sub! {
     op_bitxor_i64,op_bitxor_i64_value[i8 i16 i32 i64 isize] -> i64
     op_bitxor_f64,op_bitxor_f64_value[f32 f64] -> f64
 }
-
-
 
 macro_rules! xor_self {
     ([$($ty:ty)*]) => {

@@ -4,9 +4,7 @@ use quote::ToTokens;
 use syn::{AttributeArgs, FnArg, ItemFn, Pat};
 
 use crate::proc_macro::TokenStream;
-use crate::util::{
-    find_fn_body, find_return_type, get_fn_args, is_fetch, is_rbatis_ref,
-};
+use crate::util::{find_fn_body, find_return_type, get_fn_args, is_fetch, is_rbatis_ref};
 
 ///py_sql macro
 ///support args for RB:&Rbatis,page:&PageRequest

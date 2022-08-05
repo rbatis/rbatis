@@ -1,17 +1,17 @@
-use crate::py_sql::{NodeType, Name, DefName, ParsePySql};
-use crate::py_sql::string_node::StringNode;
-use std::collections::HashMap;
-use crate::py_sql::if_node::IfNode;
-use crate::py_sql::foreach_node::ForEachNode;
-use crate::py_sql::trim_node::TrimNode;
-use crate::py_sql::choose_node::ChooseNode;
-use crate::py_sql::otherwise_node::OtherwiseNode;
-use crate::py_sql::when_node::WhenNode;
 use crate::py_sql::bind_node::BindNode;
+use crate::py_sql::choose_node::ChooseNode;
 use crate::py_sql::error::Error;
-use crate::py_sql::set_node::SetNode;
-use crate::py_sql::where_node::WhereNode;
+use crate::py_sql::foreach_node::ForEachNode;
+use crate::py_sql::if_node::IfNode;
+use crate::py_sql::otherwise_node::OtherwiseNode;
 use crate::py_sql::print_node::PrintNode;
+use crate::py_sql::set_node::SetNode;
+use crate::py_sql::string_node::StringNode;
+use crate::py_sql::trim_node::TrimNode;
+use crate::py_sql::when_node::WhenNode;
+use crate::py_sql::where_node::WhereNode;
+use crate::py_sql::{DefName, Name, NodeType, ParsePySql};
+use std::collections::HashMap;
 
 impl NodeType {
     fn parse_node(
@@ -55,7 +55,7 @@ impl NodeType {
                 data = x[(space - 1)..].to_string();
             }
             main_node.push(NodeType::NString(StringNode {
-                value: data.to_string()
+                value: data.to_string(),
             }));
             for x in childs {
                 main_node.push(x);
@@ -120,7 +120,6 @@ impl NodeType {
         return m;
     }
 
-
     fn parse_trim_node(
         trim_express: &str,
         source_str: &str,
@@ -132,13 +131,13 @@ impl NodeType {
                 test: trim_express.trim_start_matches("if ").to_string(),
             }));
         } else if trim_express.starts_with(ForEachNode::name()) {
-            let for_tag="for";
+            let for_tag = "for";
             if !trim_express.starts_with(for_tag) {
                 return Err(Error::from(
                     "[rbatis] parser express fail:".to_string() + source_str,
                 ));
             }
-            let in_tag=" in ";
+            let in_tag = " in ";
             if !trim_express.contains(in_tag) {
                 return Err(Error::from(
                     "[rbatis] parser express fail:".to_string() + source_str,
@@ -148,9 +147,9 @@ impl NodeType {
             let col = trim_express[in_index + in_tag.len()..].trim();
             let mut item = trim_express[for_tag.len()..in_index].trim();
             let mut index = "";
-            if item.contains(","){
-                let splits:Vec<&str> = item.split(",").collect();
-                if splits.len()!=2{
+            if item.contains(",") {
+                let splits: Vec<&str> = item.split(",").collect();
+                if splits.len() != 2 {
                     panic!("[rbatis_sql] for node must be 'for key,item in col:'");
                 }
                 index = splits[0];
@@ -195,9 +194,7 @@ impl NodeType {
         } else if trim_express.starts_with(OtherwiseNode::def_name())
             || trim_express.starts_with(OtherwiseNode::name())
         {
-            return Ok(NodeType::NOtherwise(OtherwiseNode {
-                childs
-            }));
+            return Ok(NodeType::NOtherwise(OtherwiseNode { childs }));
         } else if trim_express.starts_with(WhenNode::name()) {
             let trim_express = trim_express[WhenNode::name().len()..].trim();
             return Ok(NodeType::NWhen(WhenNode {
@@ -224,13 +221,9 @@ impl NodeType {
                 value: name_value[1].to_owned(),
             }));
         } else if trim_express.starts_with(SetNode::name()) {
-            return Ok(NodeType::NSet(SetNode {
-                childs
-            }));
+            return Ok(NodeType::NSet(SetNode { childs }));
         } else if trim_express.starts_with(WhereNode::name()) {
-            return Ok(NodeType::NWhere(WhereNode {
-                childs
-            }));
+            return Ok(NodeType::NWhere(WhereNode { childs }));
         } else if trim_express.starts_with(PrintNode::name()) {
             return Ok(NodeType::NPrint(PrintNode {
                 value: "".to_string(),

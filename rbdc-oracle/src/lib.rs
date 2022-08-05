@@ -1,12 +1,12 @@
-use std::str::FromStr;
-use std::sync::Arc;
 use oracle::Connection;
 use rbdc::Error;
 use rbs::Value;
-use serde::{Serialize, Deserialize};
+use serde::{Deserialize, Serialize};
+use std::str::FromStr;
+use std::sync::Arc;
 
-pub mod driver;
 pub mod decode;
+pub mod driver;
 pub mod encode;
 
 #[derive(Clone)]
@@ -21,9 +21,10 @@ pub struct OracleConnection {
 impl OracleConnection {
     /// connect : thread will be 1:1 Relationship
     pub async fn establish(opt: OracleConnectOptions) -> Result<Self, Error> {
-        let conn = Connection::connect(opt.username, opt.password, opt.connect_string).map_err(|e| Error::from(e.to_string()))?;
-        let (s,r)=flume::unbounded();
-        let (sender_result,recv_result)=flume::unbounded();
+        let conn = Connection::connect(opt.username, opt.password, opt.connect_string)
+            .map_err(|e| Error::from(e.to_string()))?;
+        let (s, r) = flume::unbounded();
+        let (sender_result, recv_result) = flume::unbounded();
         let conn = OracleConnection {
             sender_arg: s,
             receiver_arg: r,
@@ -49,18 +50,24 @@ impl OracleConnection {
         Ok(conn)
     }
 
-    pub fn do_command(&self, sql: String, args: Vec<Value>) -> Result<Value,Error> {
+    pub fn do_command(&self, sql: String, args: Vec<Value>) -> Result<Value, Error> {
         //todo params impl args
-        if sql.starts_with("select"){
-            let q=self.conn.query(&sql, &[]).map_err(|e| Error::from(e.to_string()))?;
+        if sql.starts_with("select") {
+            let q = self
+                .conn
+                .query(&sql, &[])
+                .map_err(|e| Error::from(e.to_string()))?;
             let data = vec![];
             for x in q {
-                let row=x.map_err(|e| Error::from(e.to_string()))?;
+                let row = x.map_err(|e| Error::from(e.to_string()))?;
                 todo!()
             }
             Ok(Value::Array(data))
-        }else{
-            let v=self.conn.execute(&sql, &[]).map_err(|e| Error::from(e.to_string()))?;
+        } else {
+            let v = self
+                .conn
+                .execute(&sql, &[])
+                .map_err(|e| Error::from(e.to_string()))?;
             Ok(Value::U64(v.row_count().unwrap_or(0)))
         }
     }
@@ -90,14 +97,13 @@ impl FromStr for OracleConnectOptions {
     }
 }
 
-
 #[cfg(test)]
 mod tests {
+    use crate::{OracleConnectOptions, OracleConnection};
     use flume::SendError;
     use rbdc::block_on;
     use rbdc::rt::tokio;
     use rbs::Value;
-    use crate::{OracleConnection, OracleConnectOptions};
 
     #[test]
     fn test_oracle_pool() {
@@ -107,7 +113,9 @@ mod tests {
                 username: "".to_string(),
                 password: "".to_string(),
                 connect_string: "//localhost/XE".to_string(),
-            }).await.unwrap();
+            })
+            .await
+            .unwrap();
         };
         block_on!(f);
     }

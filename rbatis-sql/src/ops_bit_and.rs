@@ -1,7 +1,7 @@
 use crate::ops::BitAnd;
 use rbs::Value;
 
-impl BitAnd for Value{
+impl BitAnd for Value {
     type Output = bool;
 
     fn op_bitand(self, rhs: Self) -> Self::Output {
@@ -9,7 +9,7 @@ impl BitAnd for Value{
     }
 }
 
-impl BitAnd<Value> for bool{
+impl BitAnd<Value> for bool {
     type Output = bool;
 
     fn op_bitand(self, rhs: Value) -> Self::Output {
@@ -18,7 +18,7 @@ impl BitAnd<Value> for bool{
 }
 
 //ref value
-impl BitAnd<Value> for &Value{
+impl BitAnd<Value> for &Value {
     type Output = bool;
 
     fn op_bitand(self, rhs: Value) -> Self::Output {
@@ -26,7 +26,7 @@ impl BitAnd<Value> for &Value{
     }
 }
 
-impl BitAnd<&Value> for &Value{
+impl BitAnd<&Value> for &Value {
     type Output = bool;
 
     fn op_bitand(self, rhs: &Value) -> Self::Output {
@@ -34,7 +34,7 @@ impl BitAnd<&Value> for &Value{
     }
 }
 
-impl BitAnd<&&Value> for &Value{
+impl BitAnd<&&Value> for &Value {
     type Output = bool;
 
     fn op_bitand(self, rhs: &&Value) -> Self::Output {
@@ -42,7 +42,7 @@ impl BitAnd<&&Value> for &Value{
     }
 }
 
-impl BitAnd<bool> for &Value{
+impl BitAnd<bool> for &Value {
     type Output = bool;
 
     fn op_bitand(self, rhs: bool) -> Self::Output {
@@ -50,9 +50,8 @@ impl BitAnd<bool> for &Value{
     }
 }
 
-
 //rhs ref
-impl BitAnd<&Value> for Value{
+impl BitAnd<&Value> for Value {
     type Output = bool;
 
     fn op_bitand(self, rhs: &Value) -> Self::Output {
@@ -60,7 +59,7 @@ impl BitAnd<&Value> for Value{
     }
 }
 
-impl BitAnd<&Value> for bool{
+impl BitAnd<&Value> for bool {
     type Output = bool;
 
     fn op_bitand(self, rhs: &Value) -> Self::Output {
@@ -68,7 +67,7 @@ impl BitAnd<&Value> for bool{
     }
 }
 
-impl BitAnd<&&Value> for Value{
+impl BitAnd<&&Value> for Value {
     type Output = bool;
 
     fn op_bitand(self, rhs: &&Value) -> Self::Output {
@@ -76,7 +75,7 @@ impl BitAnd<&&Value> for Value{
     }
 }
 
-impl BitAnd<&&Value> for bool{
+impl BitAnd<&&Value> for bool {
     type Output = bool;
 
     fn op_bitand(self, rhs: &&Value) -> Self::Output {

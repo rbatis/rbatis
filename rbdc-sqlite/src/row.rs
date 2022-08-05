@@ -1,16 +1,16 @@
 #![allow(clippy::rc_buffer)]
 
+use crate::decode::Decode;
+use crate::statement::StatementHandle;
+use crate::{Sqlite, SqliteColumn, SqliteTypeInfo, SqliteValue, SqliteValueRef};
+use rbdc::db::{MetaData, Row};
+use rbdc::error::Error;
+use rbdc::ext::ustr::UStr;
+use rbs::Value;
 use std::collections::HashMap;
 use std::fmt::{Debug, Formatter};
 use std::ops::Deref;
 use std::sync::Arc;
-use rbdc::error::Error;
-use rbdc::db::{MetaData, Row};
-use rbdc::ext::ustr::UStr;
-use rbs::Value;
-use crate::statement::StatementHandle;
-use crate::{Sqlite, SqliteColumn, SqliteTypeInfo, SqliteValue, SqliteValueRef};
-use crate::decode::Decode;
 
 /// Implementation of [`Row`] for SQLite.
 #[derive(Debug)]
@@ -55,7 +55,6 @@ impl SqliteRow {
     }
 }
 
-
 #[derive(Debug)]
 pub struct SqliteMetaData {
     pub columns: Arc<Vec<SqliteColumn>>,
@@ -78,27 +77,23 @@ impl MetaData for SqliteMetaData {
 impl Row for SqliteRow {
     fn meta_data(&self) -> Box<dyn MetaData> {
         Box::new(SqliteMetaData {
-            columns: self.columns.clone()
+            columns: self.columns.clone(),
         })
     }
 
     fn get(&mut self, i: usize) -> Option<Value> {
         match self.try_take(i) {
             Err(e) => {
-                log::error!("get error:{}",e);
+                log::error!("get error:{}", e);
                 None
             }
-            Ok(v) => {
-                match Value::decode(v) {
-                    Ok(v) => {
-                        Some(v)
-                    }
-                    Err(e) => {
-                        log::error!("get error:{}",e);
-                        None
-                    }
+            Ok(v) => match Value::decode(v) {
+                Ok(v) => Some(v),
+                Err(e) => {
+                    log::error!("get error:{}", e);
+                    None
                 }
-            }
+            },
         }
     }
 }
@@ -108,13 +103,11 @@ impl SqliteRow {
         &self.columns
     }
 
-    fn try_get_raw(&self, index: usize) -> Result<SqliteValueRef<'_>, Error>
-    {
+    fn try_get_raw(&self, index: usize) -> Result<SqliteValueRef<'_>, Error> {
         Ok(SqliteValueRef::value(&self.values[index]))
     }
 
-    fn try_take(&mut self, index: usize) -> Result<SqliteValue, Error>
-    {
+    fn try_take(&mut self, index: usize) -> Result<SqliteValue, Error> {
         if (index + 1) > self.values.len() {
             return Err(Error::from("try_take out of range!"));
         }

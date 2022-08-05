@@ -1,13 +1,13 @@
-use std::borrow::Cow;
-use bytes::Buf;
-use rbdc::Error;
-use rbs::Value;
 use crate::arguments::PgArgumentBuffer;
 use crate::type_info::{PgType, PgTypeInfo, PgTypeKind};
 use crate::types::decode::Decode;
 use crate::types::encode::{Encode, IsNull};
 use crate::types::{Oid, TypeInfo};
 use crate::value::{PgValue, PgValueFormat, PgValueRef};
+use bytes::Buf;
+use rbdc::Error;
+use rbs::Value;
+use std::borrow::Cow;
 
 impl<T: Decode + TypeInfo> Decode for Vec<T> {
     fn decode(value: PgValue) -> Result<Self, Error> {
@@ -72,7 +72,7 @@ impl<T: Decode + TypeInfo> Decode for Vec<T> {
             PgValueFormat::Text => {
                 // no type is provided from the database for the element
                 let mut element_type_info = PgTypeInfo::UNKNOWN;
-                match value.type_info.kind(){
+                match value.type_info.kind() {
                     PgTypeKind::Simple => {}
                     PgTypeKind::Pseudo => {}
                     PgTypeKind::Domain(_) => {}
@@ -172,11 +172,11 @@ fn element_type_info<T: TypeInfo>(arg: &Vec<T>) -> PgTypeInfo {
 }
 
 impl Encode for Vec<Value> {
-    fn encode(self, buf: &mut PgArgumentBuffer) -> Result<IsNull,Error> {
+    fn encode(self, buf: &mut PgArgumentBuffer) -> Result<IsNull, Error> {
         let type_info = element_type_info(&self);
         buf.extend(&1_i32.to_be_bytes()); // number of dimensions
         buf.extend(&0_i32.to_be_bytes()); // flags
-        // element type
+                                          // element type
         match type_info.0 {
             PgType::DeclareWithName(name) => buf.patch_type_by_name(&name),
             ty => {

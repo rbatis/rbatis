@@ -2,15 +2,15 @@ use crate::arguments::PgArgumentBuffer;
 use crate::type_info::PgTypeInfo;
 use crate::types::decode::Decode;
 use crate::types::encode::{Encode, IsNull};
+use crate::types::TypeInfo;
 use crate::value::{PgValue, PgValueFormat};
+use rbdc::json::Json;
 use rbdc::Error;
 use serde::{Deserialize, Deserializer, Serialize, Serializer};
 use std::io::Write;
-use rbdc::json::Json;
-use crate::types::TypeInfo;
 
 impl Encode for Json {
-    fn encode(self, buf: &mut PgArgumentBuffer) -> Result<IsNull,Error> {
+    fn encode(self, buf: &mut PgArgumentBuffer) -> Result<IsNull, Error> {
         // we have a tiny amount of dynamic behavior depending if we are resolved to be JSON
         // instead of JSONB
         buf.patch(|buf, ty: &PgTypeInfo| {
@@ -53,7 +53,7 @@ impl Decode for Json {
     }
 }
 
-impl TypeInfo for Json{
+impl TypeInfo for Json {
     fn type_info(&self) -> PgTypeInfo {
         PgTypeInfo::JSONB
     }

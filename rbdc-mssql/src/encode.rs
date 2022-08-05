@@ -1,10 +1,10 @@
-use std::str::FromStr;
 use chrono::{NaiveDate, Utc};
-use rust_decimal::Decimal;
-use tiberius::{IntoSql, Query, ToSql, Uuid};
-use tiberius::numeric::BigDecimal;
 use rbdc::Error;
 use rbs::Value;
+use rust_decimal::Decimal;
+use std::str::FromStr;
+use tiberius::numeric::BigDecimal;
+use tiberius::{IntoSql, Query, ToSql, Uuid};
 
 pub trait Encode {
     fn encode(self, q: &mut Query) -> Result<(), Error>;
@@ -15,7 +15,8 @@ impl Encode for Value {
         match self {
             Value::Null => {
                 q.bind(Option::<String>::None);
-            Ok(())}
+                Ok(())
+            }
             Value::Bool(v) => {
                 q.bind(v);
                 Ok(())
@@ -52,42 +53,40 @@ impl Encode for Value {
                 q.bind(v);
                 Ok(())
             }
-            Value::Array(_) => { Err(Error::from("unimpl")) }
-            Value::Map(_) => { Err(Error::from("unimpl")) }
-            Value::Ext(t, v) => {
-                match t {
-                    "Date" => {
-                        q.bind(chrono::NaiveDate::from_str(v.as_str().unwrap_or_default()).unwrap());
-                        Ok(())
-                    }
-                    "DateTime" => {
-                        q.bind(chrono::NaiveDateTime::from_str(v.as_str().unwrap_or_default()).unwrap());
-                        Ok(())
-                    }
-                    "Time" => {
-                        q.bind(chrono::NaiveTime::from_str(v.as_str().unwrap_or_default()).unwrap());
-                        Ok(())
-                    }
-                    "Decimal" => {
-                        q.bind( BigDecimal::from_str(&v.into_string().unwrap_or_default()).unwrap());
-                        Ok(())
-                    }
-                    "Json" => {
-                        Err(Error::from("unimpl"))
-                    }
-                    "Timestamp" => {
-                        q.bind(v.as_u64().unwrap_or_default() as i64);
-                        Ok(())
-                    }
-                    "Uuid" => {
-                        q.bind(Uuid::from_str(&v.into_string().unwrap_or_default()).unwrap_or_default());
-                        Ok(())
-                    }
-                    _ => {
-                        Err(Error::from("unimpl"))
-                    }
+            Value::Array(_) => Err(Error::from("unimpl")),
+            Value::Map(_) => Err(Error::from("unimpl")),
+            Value::Ext(t, v) => match t {
+                "Date" => {
+                    q.bind(chrono::NaiveDate::from_str(v.as_str().unwrap_or_default()).unwrap());
+                    Ok(())
                 }
-            }
+                "DateTime" => {
+                    q.bind(
+                        chrono::NaiveDateTime::from_str(v.as_str().unwrap_or_default()).unwrap(),
+                    );
+                    Ok(())
+                }
+                "Time" => {
+                    q.bind(chrono::NaiveTime::from_str(v.as_str().unwrap_or_default()).unwrap());
+                    Ok(())
+                }
+                "Decimal" => {
+                    q.bind(BigDecimal::from_str(&v.into_string().unwrap_or_default()).unwrap());
+                    Ok(())
+                }
+                "Json" => Err(Error::from("unimpl")),
+                "Timestamp" => {
+                    q.bind(v.as_u64().unwrap_or_default() as i64);
+                    Ok(())
+                }
+                "Uuid" => {
+                    q.bind(
+                        Uuid::from_str(&v.into_string().unwrap_or_default()).unwrap_or_default(),
+                    );
+                    Ok(())
+                }
+                _ => Err(Error::from("unimpl")),
+            },
         }
     }
 }

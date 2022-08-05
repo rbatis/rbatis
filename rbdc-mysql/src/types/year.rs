@@ -1,9 +1,9 @@
-use std::fmt::{Display, Formatter};
-use byteorder::{ByteOrder, LittleEndian};
-use rbdc::Error;
 use crate::result_set::MySqlTypeInfo;
 use crate::types::{Decode, Encode};
 use crate::value::{MySqlValue, MySqlValueFormat};
+use byteorder::{ByteOrder, LittleEndian};
+use rbdc::Error;
+use std::fmt::{Display, Formatter};
 
 #[derive(serde::Serialize, serde::Deserialize, Debug, Clone, Eq, PartialEq)]
 #[serde(rename = "Year")]
@@ -15,7 +15,7 @@ impl Display for Year {
     }
 }
 
-impl Encode for Year{
+impl Encode for Year {
     fn encode(self, buf: &mut Vec<u8>) -> Result<usize, Error> {
         buf.push(2);
         buf.extend_from_slice(&self.0.to_le_bytes());
@@ -23,7 +23,7 @@ impl Encode for Year{
     }
 }
 
-impl Decode for Year{
+impl Decode for Year {
     fn decode(value: MySqlValue) -> Result<Self, Error> {
         Ok(Self({
             match value.format() {

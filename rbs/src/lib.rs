@@ -13,20 +13,16 @@ pub mod value;
 pub mod index;
 
 pub use crate::value::ext::to_value_ref;
-pub use value::ext::{to_value,to_value_def};
-pub use value::ext::{deserialize_from, from_value};
-pub use value::{Value, ValueRef};
 pub use crate::value::ext::Error;
+pub use value::ext::{deserialize_from, from_value};
+pub use value::ext::{to_value, to_value_def};
+pub use value::{Value, ValueRef};
 
 impl Value {
     pub fn into_ext(self, name: &'static str) -> Self {
         match self {
-            Value::Ext(_, _) => {
-                self
-            }
-            _ => {
-                Value::Ext(name, Box::new(self))
-            }
+            Value::Ext(_, _) => self,
+            _ => Value::Ext(name, Box::new(self)),
         }
     }
 }
@@ -34,12 +30,8 @@ impl Value {
 impl ValueRef<'_> {
     pub fn into_ext(self, name: &'static str) -> Self {
         match self {
-            ValueRef::Ext(_, _) => {
-                self
-            }
-            _ => {
-                ValueRef::Ext(name, Box::new(self))
-            }
+            ValueRef::Ext(_, _) => self,
+            _ => ValueRef::Ext(name, Box::new(self)),
         }
     }
 }

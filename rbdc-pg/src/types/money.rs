@@ -1,11 +1,11 @@
-use std::fmt::{Display, Formatter};
-use byteorder::{BigEndian, ByteOrder};
-use rbdc::Error;
-use rbs::Value;
 use crate::arguments::PgArgumentBuffer;
 use crate::types::decode::Decode;
 use crate::types::encode::{Encode, IsNull};
 use crate::value::{PgValue, PgValueFormat};
+use byteorder::{BigEndian, ByteOrder};
+use rbdc::Error;
+use rbs::Value;
+use std::fmt::{Display, Formatter};
 
 /// The raw integer value sent over the wire; for locales with `frac_digits=2` (i.e. most
 /// of them), this will be the value in whole cents.
@@ -27,20 +27,20 @@ impl Display for Money {
     }
 }
 
-impl From<Money> for Value{
+impl From<Money> for Value {
     fn from(arg: Money) -> Self {
-        Value::Ext("Money",Box::new(Value::I64(arg.0)))
+        Value::Ext("Money", Box::new(Value::I64(arg.0)))
     }
 }
 
-impl Encode for Money{
+impl Encode for Money {
     fn encode(self, buf: &mut PgArgumentBuffer) -> Result<IsNull, Error> {
         buf.extend(&self.0.to_be_bytes());
         Ok(IsNull::No)
     }
 }
 
-impl Decode for Money{
+impl Decode for Money {
     fn decode(value: PgValue) -> Result<Self, Error> {
         Ok(Self({
             match value.format() {
@@ -48,9 +48,9 @@ impl Decode for Money{
                     let cents = BigEndian::read_i64(value.as_bytes()?);
                     Ok(cents)
                 }
-                PgValueFormat::Text => {
-                    Err(Error::from("Reading a `MONEY` value in text format is not supported."))
-                }
+                PgValueFormat::Text => Err(Error::from(
+                    "Reading a `MONEY` value in text format is not supported.",
+                )),
             }
         }?))
     }

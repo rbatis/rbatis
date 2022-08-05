@@ -1,13 +1,12 @@
+use crate::Value;
 use std::fmt::{Debug, Formatter};
 use std::ops::{Deref, DerefMut, Index, IndexMut};
 use std::vec::IntoIter;
-use crate::Value;
-
 
 #[derive(Serialize, Deserialize, PartialEq)]
 pub struct ValueMap(pub Vec<(Value, Value)>);
 
-impl Clone for ValueMap{
+impl Clone for ValueMap {
     fn clone(&self) -> Self {
         Self(self.0.clone())
     }
@@ -15,7 +14,9 @@ impl Clone for ValueMap{
 
 impl Debug for ValueMap {
     fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
-        f.debug_map().entries(self.0.iter().map(|&(ref k, ref v)| (k, v))).finish()
+        f.debug_map()
+            .entries(self.0.iter().map(|&(ref k, ref v)| (k, v)))
+            .finish()
     }
 }
 
@@ -123,7 +124,6 @@ impl IndexMut<i64> for ValueMap {
 //     }
 // }
 
-
 impl<'a> IntoIterator for &'a ValueMap {
     type Item = &'a (Value, Value);
     type IntoIter = std::slice::Iter<'a, (Value, Value)>;
@@ -135,7 +135,7 @@ impl<'a> IntoIterator for &'a ValueMap {
 
 impl<'a> IntoIterator for &'a mut ValueMap {
     type Item = &'a mut (Value, Value);
-    type IntoIter = std::slice::IterMut<'a,(Value, Value)>;
+    type IntoIter = std::slice::IterMut<'a, (Value, Value)>;
 
     fn into_iter(self) -> Self::IntoIter {
         self.deref_mut().into_iter()

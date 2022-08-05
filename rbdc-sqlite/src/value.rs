@@ -9,9 +9,9 @@ use libsqlite3_sys::{
     sqlite3_value_type, SQLITE_NULL,
 };
 
-use rbdc::error::Error;
 use crate::type_info::DataType;
 use crate::{Sqlite, SqliteTypeInfo};
+use rbdc::error::Error;
 use std::borrow::Cow;
 
 enum SqliteValueData<'r> {
@@ -56,7 +56,7 @@ impl<'r> SqliteValueRef<'r> {
     }
 }
 
-impl<'r>  SqliteValueRef<'r> {
+impl<'r> SqliteValueRef<'r> {
     pub fn to_owned(&self) -> SqliteValue {
         match self.0 {
             SqliteValueData::Value(v) => v.clone(),
@@ -76,7 +76,7 @@ impl<'r>  SqliteValueRef<'r> {
     }
 }
 
-#[derive(Clone,Debug)]
+#[derive(Clone, Debug)]
 pub struct SqliteValue {
     pub(crate) handle: Arc<ValueHandle>,
     pub(crate) type_info: SqliteTypeInfo,
@@ -142,7 +142,7 @@ impl SqliteValue {
     }
 }
 
-impl  SqliteValue {
+impl SqliteValue {
     pub fn as_ref(&self) -> SqliteValueRef<'_> {
         SqliteValueRef::value(self)
     }

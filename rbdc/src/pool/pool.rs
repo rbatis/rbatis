@@ -1,11 +1,11 @@
-use std::fmt::{Debug, Formatter};
-use std::ops::{Deref, DerefMut};
-use std::sync::Arc;
+use crate::db::{ConnectOptions, Connection, Driver, ExecResult, Row};
+use crate::{block_on, Error};
 use futures_core::future::BoxFuture;
 use mobc::{async_trait, Builder, Manager};
 use rbs::Value;
-use crate::{block_on, Error};
-use crate::db::{Connection, ConnectOptions, Driver, ExecResult, Row};
+use std::fmt::{Debug, Formatter};
+use std::ops::{Deref, DerefMut};
+use std::sync::Arc;
 
 /// RBDC pool
 pub struct Pool {
@@ -13,10 +13,10 @@ pub struct Pool {
     pub inner: mobc::Pool<ManagerPorxy>,
 }
 
-impl Debug for Pool{
+impl Debug for Pool {
     fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
         f.debug_struct("Pool")
-            .field("manager",&self.manager)
+            .field("manager", &self.manager)
             .finish()
     }
 }
@@ -28,9 +28,7 @@ pub struct ManagerPorxy {
 
 impl From<Arc<RBDCManager>> for ManagerPorxy {
     fn from(arg: Arc<RBDCManager>) -> Self {
-        ManagerPorxy {
-            inner: arg
-        }
+        ManagerPorxy { inner: arg }
     }
 }
 
@@ -111,9 +109,11 @@ impl DerefMut for Pool {
     }
 }
 
-
 impl Pool {
-    pub fn new_url<Driver: crate::db::Driver + 'static>(d: Driver, url: &str) -> Result<Self, Error> {
+    pub fn new_url<Driver: crate::db::Driver + 'static>(
+        d: Driver,
+        url: &str,
+    ) -> Result<Self, Error> {
         let manager = Arc::new(RBDCManager::new(d, url)?);
         let p = mobc::Pool::new(ManagerPorxy::from(manager.clone()));
         let pool = Pool {
@@ -122,7 +122,10 @@ impl Pool {
         };
         Ok(pool)
     }
-    pub fn new<Driver: crate::db::Driver + 'static, ConnectOptions: crate::db::ConnectOptions>(d: Driver, o: ConnectOptions) -> Self {
+    pub fn new<Driver: crate::db::Driver + 'static, ConnectOptions: crate::db::ConnectOptions>(
+        d: Driver,
+        o: ConnectOptions,
+    ) -> Self {
         let manager = Arc::new(RBDCManager::new_opt(d, o));
         let p = mobc::Pool::new(ManagerPorxy::from(manager.clone()));
         let pool = Pool {
@@ -147,13 +150,17 @@ impl Pool {
     }
 }
 
-impl Connection for mobc::Connection<ManagerPorxy>{
-    fn get_rows(&mut self, sql: &str, params: Vec<Value>) -> BoxFuture<Result<Vec<Box<dyn Row>>, Error>> {
-        self.deref_mut().get_rows(sql,params)
+impl Connection for mobc::Connection<ManagerPorxy> {
+    fn get_rows(
+        &mut self,
+        sql: &str,
+        params: Vec<Value>,
+    ) -> BoxFuture<Result<Vec<Box<dyn Row>>, Error>> {
+        self.deref_mut().get_rows(sql, params)
     }
 
     fn exec(&mut self, sql: &str, params: Vec<Value>) -> BoxFuture<Result<ExecResult, Error>> {
-        self.deref_mut().exec(sql,params)
+        self.deref_mut().exec(sql, params)
     }
 
     fn close(&mut self) -> BoxFuture<'static, Result<(), Error>> {

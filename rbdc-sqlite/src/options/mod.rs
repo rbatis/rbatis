@@ -8,24 +8,24 @@ mod parse;
 mod synchronous;
 
 pub use auto_vacuum::SqliteAutoVacuum;
+use futures_core::future::BoxFuture;
 pub use journal_mode::SqliteJournalMode;
 pub use locking_mode::SqliteLockingMode;
-use std::cmp::Ordering;
-use std::sync::Arc;
-use std::{borrow::Cow, time::Duration};
 use std::any::Any;
+use std::cmp::Ordering;
 use std::collections::HashMap;
 use std::str::FromStr;
-use futures_core::future::BoxFuture;
+use std::sync::Arc;
+use std::{borrow::Cow, time::Duration};
 pub use synchronous::SqliteSynchronous;
 
-use rbdc::common::DebugFn;
 use crate::connection::collation::Collation;
 use indexmap::IndexMap;
-use serde::{Deserialize, Deserializer};
-use rbdc::db::{Connection, ConnectOptions};
+use rbdc::common::DebugFn;
+use rbdc::db::{ConnectOptions, Connection};
 use rbdc::Error;
 use rbs::{from_value, Value};
+use serde::{Deserialize, Deserializer};
 
 /// Options and flags which can be used to configure a SQLite connection.
 ///
@@ -87,7 +87,10 @@ impl Default for SqliteConnectOptions {
 }
 
 impl<'de> Deserialize<'de> for SqliteConnectOptions {
-    fn deserialize<D>(deserializer: D) -> Result<Self, D::Error> where D: Deserializer<'de> {
+    fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
+    where
+        D: Deserializer<'de>,
+    {
         #[derive(Deserialize)]
         pub struct SqliteConnectOptions {
             pub(crate) filename: Cow<'static, Path>,
@@ -104,7 +107,6 @@ impl<'de> Deserialize<'de> for SqliteConnectOptions {
             pub(crate) row_channel_size: usize,
 
             // pub(crate) collations: Vec<Collation>,
-
             pub(crate) serialized: bool,
             // pub(crate) thread_name: Arc<DebugFn<dyn Fn(u64) -> String + Send + Sync + 'static>>,
         }
@@ -285,9 +287,9 @@ impl SqliteConnectOptions {
 
     /// Sets custom initial pragma for the database connection.
     pub fn pragma<K, V>(mut self, key: K, value: V) -> Self
-        where
-            K: Into<Cow<'static, str>>,
-            V: Into<Cow<'static, str>>,
+    where
+        K: Into<Cow<'static, str>>,
+        V: Into<Cow<'static, str>>,
     {
         self.pragmas.insert(key.into(), value.into());
         self
@@ -310,9 +312,9 @@ impl SqliteConnectOptions {
     /// > If a collating function fails any of the above constraints and that collating function is
     /// > registered and used, then the behavior of SQLite is undefined.
     pub fn collation<N, F>(mut self, name: N, collate: F) -> Self
-        where
-            N: Into<Arc<str>>,
-            F: Fn(&str, &str) -> Ordering + Send + Sync + 'static,
+    where
+        N: Into<Arc<str>>,
+        F: Fn(&str, &str) -> Ordering + Send + Sync + 'static,
     {
         self.collations.push(Collation::new(name, collate));
         self
@@ -387,7 +389,6 @@ impl SqliteConnectOptions {
         self
     }
 }
-
 
 impl ConnectOptions for SqliteConnectOptions {
     fn connect(&self) -> BoxFuture<Result<Box<dyn Connection>, Error>> {

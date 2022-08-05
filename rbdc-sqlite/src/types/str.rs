@@ -2,10 +2,10 @@ use std::borrow::Cow;
 
 use crate::decode::Decode;
 use crate::encode::{Encode, IsNull};
-use rbdc::error::Error;
 use crate::type_info::DataType;
-use crate::{Sqlite, SqliteArgumentValue, SqliteTypeInfo, SqliteValue, SqliteValueRef};
 use crate::types::Type;
+use crate::{Sqlite, SqliteArgumentValue, SqliteTypeInfo, SqliteValue, SqliteValueRef};
+use rbdc::error::Error;
 
 impl Type for String {
     fn type_info(&self) -> SqliteTypeInfo {
@@ -14,7 +14,7 @@ impl Type for String {
 }
 
 impl Encode for String {
-    fn encode(self, args: &mut Vec<SqliteArgumentValue>) -> Result<IsNull,Error> {
+    fn encode(self, args: &mut Vec<SqliteArgumentValue>) -> Result<IsNull, Error> {
         args.push(SqliteArgumentValue::Text(self));
 
         Ok(IsNull::No)

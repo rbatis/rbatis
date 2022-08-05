@@ -43,7 +43,6 @@
 //! a potentially `NULL` value from SQLite.
 //!
 
-
 mod bool;
 mod bytes;
 #[cfg(feature = "chrono")]
@@ -57,7 +56,5 @@ mod uint;
 #[cfg(feature = "uuid")]
 mod uuid;
 
-
-use crate::SqliteTypeInfo;
 use crate::type_info::Type;
-
+use crate::SqliteTypeInfo;

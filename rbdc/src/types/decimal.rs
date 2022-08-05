@@ -1,5 +1,5 @@
-use std::fmt::{Display, Formatter};
 use rbs::Value;
+use std::fmt::{Display, Formatter};
 
 #[derive(serde::Serialize, serde::Deserialize, Debug, Clone, Eq, PartialEq)]
 #[serde(rename = "Decimal")]
@@ -11,8 +11,8 @@ impl Display for Decimal {
     }
 }
 
-impl From<Decimal> for Value{
+impl From<Decimal> for Value {
     fn from(arg: Decimal) -> Self {
-        Value::Ext("Decimal",Box::new(Value::String(arg.0)))
+        Value::Ext("Decimal", Box::new(Value::String(arg.0)))
     }
 }

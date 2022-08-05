@@ -1,6 +1,6 @@
-use rbdc::error::Error;
 use crate::SqliteConnectOptions;
 use percent_encoding::percent_decode_str;
+use rbdc::error::Error;
 use std::borrow::Cow;
 use std::path::{Path, PathBuf};
 use std::str::FromStr;
@@ -36,7 +36,7 @@ impl FromStr for SqliteConnectOptions {
                 Path::new(
                     &*percent_decode_str(database)
                         .decode_utf8()
-                        .map_err(|e|Error::from(e.to_string()))?,
+                        .map_err(|e| Error::from(e.to_string()))?,
                 )
                 .to_path_buf(),
             );
@@ -68,9 +68,10 @@ impl FromStr for SqliteConnectOptions {
                             }
 
                             _ => {
-                                return Err(Error::from(
-                                    format!("Configuration:unknown value {:?} for `mode`", value)
-                                ));
+                                return Err(Error::from(format!(
+                                    "Configuration:unknown value {:?} for `mode`",
+                                    value
+                                )));
                             }
                         }
                     }
@@ -88,9 +89,10 @@ impl FromStr for SqliteConnectOptions {
                         }
 
                         _ => {
-                            return Err(Error::from(
-                                format!("Configuration:unknown value {:?} for `cache`", value)
-                            ));
+                            return Err(Error::from(format!(
+                                "Configuration:unknown value {:?} for `cache`",
+                                value
+                            )));
                         }
                     },
 
@@ -102,9 +104,10 @@ impl FromStr for SqliteConnectOptions {
                             options.immutable = false;
                         }
                         _ => {
-                            return Err(Error::from(
-                                format!("Configuration:unknown value {:?} for `immutable`", value)
-                            ));
+                            return Err(Error::from(format!(
+                                "Configuration:unknown value {:?} for `immutable`",
+                                value
+                            )));
                         }
                     },
 

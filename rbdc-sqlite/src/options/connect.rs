@@ -1,20 +1,19 @@
-use rbdc::error::Error;
-use crate::{SqliteConnectOptions, SqliteConnection};
-use futures_core::future::BoxFuture;
-use log::LevelFilter;
-use std::fmt::Write;
-use std::time::Duration;
-use either::Either;
-use futures_core::stream::BoxStream;
-use futures_util::{StreamExt, TryStreamExt};
-use rbdc::db::{Connection, ExecResult, Row};
-use rbs::Value;
 use crate::query::SqliteQuery;
 use crate::type_info::Type;
+use crate::{SqliteConnectOptions, SqliteConnection};
+use either::Either;
+use futures_core::future::BoxFuture;
+use futures_core::stream::BoxStream;
+use futures_util::{StreamExt, TryStreamExt};
+use log::LevelFilter;
+use rbdc::db::{Connection, ExecResult, Row};
+use rbdc::error::Error;
+use rbs::Value;
+use std::fmt::Write;
+use std::time::Duration;
 
 impl SqliteConnectOptions {
-    pub fn connect(&self) -> BoxFuture<'_, Result<SqliteConnection, Error>>
-    {
+    pub fn connect(&self) -> BoxFuture<'_, Result<SqliteConnection, Error>> {
         Box::pin(async move {
             let mut conn = SqliteConnection::establish(self).await?;
 
@@ -52,7 +51,11 @@ impl SqliteConnectOptions {
 }
 
 impl Connection for SqliteConnection {
-    fn get_rows(&mut self, sql: &str, params: Vec<Value>) -> BoxFuture<Result<Vec<Box<dyn Row>>, Error>> {
+    fn get_rows(
+        &mut self,
+        sql: &str,
+        params: Vec<Value>,
+    ) -> BoxFuture<Result<Vec<Box<dyn Row>>, Error>> {
         let sql = sql.to_owned();
         Box::pin(async move {
             if params.len() == 0 {
@@ -106,7 +109,7 @@ impl Connection for SqliteConnection {
                         Either::Left(l) => {
                             return Ok(ExecResult {
                                 rows_affected: l.rows_affected(),
-                                last_insert_id: Value::U64(l.last_insert_rowid as u64)
+                                last_insert_id: Value::U64(l.last_insert_rowid as u64),
                             });
                         }
                         Either::Right(r) => {}
@@ -114,7 +117,7 @@ impl Connection for SqliteConnection {
                 }
                 return Ok(ExecResult {
                     rows_affected: 0,
-                    last_insert_id: Value::Null
+                    last_insert_id: Value::Null,
                 });
             } else {
                 let mut type_info = Vec::with_capacity(params.len());
@@ -132,7 +135,7 @@ impl Connection for SqliteConnection {
                         Either::Left(l) => {
                             return Ok(ExecResult {
                                 rows_affected: l.rows_affected(),
-                                last_insert_id: Value::U64(l.last_insert_rowid as u64)
+                                last_insert_id: Value::U64(l.last_insert_rowid as u64),
                             });
                         }
                         Either::Right(r) => {}
@@ -140,7 +143,7 @@ impl Connection for SqliteConnection {
                 }
                 return Ok(ExecResult {
                     rows_affected: 0,
-                    last_insert_id: Value::Null
+                    last_insert_id: Value::Null,
                 });
             }
         })
@@ -152,8 +155,10 @@ impl Connection for SqliteConnection {
     }
 
     fn ping(&mut self) -> BoxFuture<Result<(), Error>> {
-        Box::pin(async move{
-            self.worker.oneshot_cmd(|tx| crate::connection::Command::Ping { tx }).await?;
+        Box::pin(async move {
+            self.worker
+                .oneshot_cmd(|tx| crate::connection::Command::Ping { tx })
+                .await?;
             Ok(())
         })
     }

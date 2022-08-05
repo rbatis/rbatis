@@ -1,16 +1,16 @@
-use std::str::FromStr;
-use std::time::Duration;
-use rbdc::datetime::FastDateTime;
-use rbdc::Error;
-use rbdc::timestamp::Timestamp;
-use rbs::from_value;
 use crate::arguments::PgArgumentBuffer;
 use crate::types::decode::Decode;
 use crate::types::encode::{Encode, IsNull};
 use crate::value::{PgValue, PgValueFormat};
+use rbdc::datetime::FastDateTime;
+use rbdc::timestamp::Timestamp;
+use rbdc::Error;
+use rbs::from_value;
+use std::str::FromStr;
+use std::time::Duration;
 
 impl Encode for FastDateTime {
-    fn encode(self, buf: &mut PgArgumentBuffer) -> Result<IsNull,Error> {
+    fn encode(self, buf: &mut PgArgumentBuffer) -> Result<IsNull, Error> {
         self.0.encode(buf)?;
         Ok(IsNull::No)
     }
@@ -41,14 +41,15 @@ impl Decode for fastdate::DateTime {
             }
             PgValueFormat::Text => {
                 //2022-07-22 05:22:22.123456+00
-                fastdate::DateTime::from_str(value.as_str()?).map_err(|e| Error::from(e.to_string()))?
+                fastdate::DateTime::from_str(value.as_str()?)
+                    .map_err(|e| Error::from(e.to_string()))?
             }
         })
     }
 }
 
 impl Encode for fastdate::DateTime {
-    fn encode(self, buf: &mut PgArgumentBuffer) -> Result<IsNull,Error> {
+    fn encode(self, buf: &mut PgArgumentBuffer) -> Result<IsNull, Error> {
         Timestamp(self.unix_timestamp_millis() as u64).encode(buf)
     }
 }

@@ -1,8 +1,7 @@
-
-use rbdc::error::Error;
-use rbdc::ext::ustr::UStr;
 use crate::{Sqlite, SqliteArguments, SqliteColumn, SqliteTypeInfo};
 use either::Either;
+use rbdc::error::Error;
+use rbdc::ext::ustr::UStr;
 use std::borrow::Cow;
 use std::collections::HashMap;
 use std::sync::Arc;
@@ -22,8 +21,8 @@ pub struct SqliteStatement {
     pub(crate) column_names: Arc<HashMap<UStr, usize>>,
 }
 
-impl  SqliteStatement {
-   pub fn to_owned(&self) -> SqliteStatement {
+impl SqliteStatement {
+    pub fn to_owned(&self) -> SqliteStatement {
         SqliteStatement {
             sql: self.sql.clone(),
             parameters: self.parameters,

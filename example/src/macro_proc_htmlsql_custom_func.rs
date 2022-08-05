@@ -12,11 +12,11 @@ extern crate rbatis;
 pub mod model;
 use model::*;
 
-use std::fs::File;
-use std::io::Read;
 use rbatis::executor::Executor;
 use rbatis::rbatis::Rbatis;
 use rbs::Value;
+use std::fs::File;
+use std::io::Read;
 
 use crate::{init_sqlite, BizActivity};
 
@@ -52,6 +52,3 @@ pub async fn main() {
     let a = custom_func(&mut rb.clone(), "test").await.unwrap();
     println!("{:?}", a);
 }
-
-
-

@@ -1,9 +1,9 @@
+use rbs::Value;
+use serde::de::Error;
+use serde::{Deserialize, Deserializer, Serialize, Serializer};
 use std::fmt::{Display, Formatter};
 use std::ops::{Deref, DerefMut};
 use std::str::FromStr;
-use serde::{Deserialize, Deserializer, Serialize, Serializer};
-use serde::de::Error;
-use rbs::Value;
 
 #[derive(Debug, Clone, Eq, PartialEq)]
 pub struct FastDateTime(pub fastdate::DateTime);
@@ -15,23 +15,30 @@ impl Display for FastDateTime {
 }
 
 impl Serialize for FastDateTime {
-    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error> where S: Serializer {
+    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
+    where
+        S: Serializer,
+    {
         serializer.serialize_newtype_struct("DateTime", &self.0)
     }
 }
 
 impl<'de> Deserialize<'de> for FastDateTime {
-    fn deserialize<D>(deserializer: D) -> Result<Self, D::Error> where D: Deserializer<'de> {
+    fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
+    where
+        D: Deserializer<'de>,
+    {
         let v = DateTimeValue::deserialize(deserializer)?;
-        match v.0{
-            Value::U64(u) => {
-                Ok(Self(fastdate::DateTime::from_timestamp_millis(u as i64)))
-            }
-            Value::String(s) => {
-                Ok(Self(fastdate::DateTime::from_str(&s).map_err(|e| D::Error::custom(e.to_string()))?))
-            }
+        match v.0 {
+            Value::U64(u) => Ok(Self(fastdate::DateTime::from_timestamp_millis(u as i64))),
+            Value::String(s) => Ok(Self(
+                fastdate::DateTime::from_str(&s).map_err(|e| D::Error::custom(e.to_string()))?,
+            )),
             _ => {
-                return Err(D::Error::custom(&format!("unsupported type DateTime({})",v.0)))
+                return Err(D::Error::custom(&format!(
+                    "unsupported type DateTime({})",
+                    v.0
+                )))
             }
         }
     }
@@ -58,7 +65,6 @@ impl FastDateTime {
     pub fn utc() -> Self {
         Self(fastdate::DateTime::utc())
     }
-
 
     pub fn set_micro(mut self, micro: u32) -> Self {
         self.0 = self.0.set_micro(micro);
@@ -120,7 +126,6 @@ impl DerefMut for DateTime {
         &mut self.0
     }
 }
-
 
 #[derive(serde::Serialize, serde::Deserialize, Debug, Clone)]
 #[serde(rename = "DateTime")]

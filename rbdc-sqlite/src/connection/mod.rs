@@ -1,7 +1,7 @@
+use either::Either;
 use std::cmp::Ordering;
 use std::fmt::{self, Debug, Formatter};
 use std::ptr::NonNull;
-use either::Either;
 
 use futures_core::future::BoxFuture;
 use futures_core::stream::BoxStream;
@@ -11,13 +11,13 @@ use libsqlite3_sys::sqlite3;
 
 pub(crate) use handle::{ConnectionHandle, ConnectionHandleRaw};
 
-use rbdc::error::Error;
-use rbdc::StatementCache;
 use crate::connection::establish::EstablishParams;
 use crate::connection::worker::ConnectionWorker;
+use crate::query::SqliteQuery;
 use crate::statement::VirtualStatement;
 use crate::{Sqlite, SqliteConnectOptions};
-use crate::query::SqliteQuery;
+use rbdc::error::Error;
+use rbdc::StatementCache;
 
 pub(crate) mod collation;
 mod establish;
@@ -137,7 +137,7 @@ impl Debug for SqliteConnection {
     }
 }
 
-impl  SqliteConnection {
+impl SqliteConnection {
     pub fn close(mut self) -> BoxFuture<'static, Result<(), Error>> {
         Box::pin(async move {
             let shutdown = self.worker.shutdown();

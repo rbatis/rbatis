@@ -6,8 +6,8 @@ use std::vec::IntoIter;
 use serde::de::{self, DeserializeSeed, IntoDeserializer, SeqAccess, Unexpected, Visitor};
 use serde::{self, Deserialize, Deserializer};
 
-use crate::value::{Value, ValueRef};
 use crate::value::map::ValueMap;
+use crate::value::{Value, ValueRef};
 
 use super::{Error, ValueExt};
 
@@ -434,9 +434,7 @@ impl<'de> Deserializer<'de> for ValueRef<'de> {
                     Err(de::Error::invalid_length(len, &"fewer elements in map"))
                 }
             }
-            ValueRef::Ext(tag, data) => {
-                Deserializer::deserialize_any(*data, visitor)
-            }
+            ValueRef::Ext(tag, data) => Deserializer::deserialize_any(*data, visitor),
         }
     }
 

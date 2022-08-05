@@ -1,14 +1,13 @@
-use std::fmt::{Display, Formatter, Pointer};
-use std::io::Cursor;
-use std::time::Duration;
-use byteorder::{BigEndian, ReadBytesExt};
-use rbdc::Error;
-use rbs::Value;
 use crate::arguments::PgArgumentBuffer;
 use crate::types::decode::Decode;
 use crate::types::encode::{Encode, IsNull};
 use crate::value::{PgValue, PgValueFormat};
-
+use byteorder::{BigEndian, ReadBytesExt};
+use rbdc::Error;
+use rbs::Value;
+use std::fmt::{Display, Formatter, Pointer};
+use std::io::Cursor;
+use std::time::Duration;
 
 #[derive(serde::Serialize, serde::Deserialize, Debug, Clone, Eq, PartialEq)]
 #[serde(rename = "Timez")]
@@ -21,11 +20,11 @@ pub struct OffsetTz {
     pub offset: i32,
 }
 
-impl Display for OffsetTz{
+impl Display for OffsetTz {
     fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
         f.debug_struct("OffsetTz")
-            .field("time",&self.time)
-            .field("offset",&self.offset)
+            .field("time", &self.time)
+            .field("offset", &self.offset)
             .finish()
     }
 }
@@ -54,9 +53,9 @@ impl Decode for Timetz {
                 // OFFSET is encoded as seconds from UTC
                 let seconds = buf.read_i32::<BigEndian>()?;
 
-                Ok(Self(OffsetTz{
+                Ok(Self(OffsetTz {
                     time: fastdate::Time::from(Duration::from_micros(microseconds as u64)),
-                    offset: seconds
+                    offset: seconds,
                 }))
             }
             PgValueFormat::Text => {

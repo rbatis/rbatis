@@ -1,9 +1,9 @@
-use byteorder::{BigEndian, ByteOrder};
-use rbdc::Error;
 use crate::arguments::PgArgumentBuffer;
 use crate::types::decode::Decode;
 use crate::types::encode::{Encode, IsNull};
 use crate::value::{PgValue, PgValueFormat};
+use byteorder::{BigEndian, ByteOrder};
+use rbdc::Error;
 
 impl Decode for f64 {
     fn decode(value: PgValue) -> Result<Self, Error> {
@@ -24,7 +24,7 @@ impl Decode for f32 {
 }
 
 impl Encode for f64 {
-    fn encode(self, buf: &mut PgArgumentBuffer) -> Result<IsNull,Error> {
+    fn encode(self, buf: &mut PgArgumentBuffer) -> Result<IsNull, Error> {
         buf.extend(&self.to_be_bytes());
 
         Ok(IsNull::No)
@@ -32,7 +32,7 @@ impl Encode for f64 {
 }
 
 impl Encode for f32 {
-    fn encode(self, buf: &mut PgArgumentBuffer) -> Result<IsNull,Error> {
+    fn encode(self, buf: &mut PgArgumentBuffer) -> Result<IsNull, Error> {
         buf.extend(&self.to_be_bytes());
 
         Ok(IsNull::No)

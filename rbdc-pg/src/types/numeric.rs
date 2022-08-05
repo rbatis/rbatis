@@ -1,6 +1,6 @@
+use crate::arguments::PgArgumentBuffer;
 use bytes::Buf;
 use rbdc::Error;
-use crate::arguments::PgArgumentBuffer;
 
 /// Represents a `NUMERIC` value in the **Postgres** wire protocol.
 #[derive(Debug, PartialEq, Eq)]

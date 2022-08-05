@@ -6,8 +6,8 @@ use serde::ser::{
 use serde::Serialize;
 use serde_bytes::Bytes;
 
-use crate::value::{change_lifetime_const, Value};
 use crate::value::map::ValueMap;
+use crate::value::{change_lifetime_const, Value};
 
 use super::Error;
 
@@ -73,7 +73,7 @@ pub fn to_value<T: Serialize>(value: T) -> Result<Value, Error> {
 }
 
 #[inline]
-pub fn to_value_def<T: Serialize>(value: T) -> Value{
+pub fn to_value_def<T: Serialize>(value: T) -> Value {
     to_value(value).unwrap_or_default()
 }
 

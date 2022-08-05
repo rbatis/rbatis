@@ -9,9 +9,9 @@ use std::sync::Arc;
 use libsqlite3_sys::{sqlite3_create_collation_v2, SQLITE_OK, SQLITE_UTF8};
 use rbdc::err_protocol;
 
-use rbdc::error::Error;
 use crate::connection::handle::ConnectionHandle;
 use crate::SqliteError;
+use rbdc::error::Error;
 
 #[derive(Clone)]
 pub struct Collation {

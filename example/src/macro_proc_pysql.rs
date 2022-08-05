@@ -12,13 +12,13 @@ extern crate rbatis;
 pub mod model;
 
 use model::*;
+use rbatis::executor::Executor;
+use rbatis::Error;
 use std::fs::File;
 use std::io::Read;
-use rbatis::Error;
-use rbatis::executor::Executor;
 
-use rbatis::sql::page::{Page, PageRequest};
 use rbatis::rbatis::Rbatis;
+use rbatis::sql::page::{Page, PageRequest};
 use rbdc::datetime::FastDateTime;
 use rbs::{to_value, Value};
 
@@ -31,7 +31,7 @@ async fn py_ctx_id(rb: &Rbatis) -> Vec<BizActivity> {
 
 ///select page must have  '?:&PageRequest' arg and return 'Page<?>'
 #[py_sql(
-"`select * from biz_activity where delete_flag = 0`
+    "`select * from biz_activity where delete_flag = 0`
                   if name != '':
                     ` and name=#{name}`"
 )]
@@ -39,10 +39,9 @@ async fn py_select_page(
     rb: &mut dyn Executor,
     page_req: &PageRequest,
     name: &str,
-) -> Result<Vec<BizActivity>,Error> {
+) -> Result<Vec<BizActivity>, Error> {
     impled!()
 }
-
 
 #[tokio::main]
 pub async fn main() {
@@ -54,4 +53,3 @@ pub async fn main() {
         .unwrap();
     println!(">>>>>>>>>>>> {:?}", a);
 }
-

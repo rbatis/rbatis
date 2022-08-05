@@ -1,6 +1,6 @@
+use rbdc::db::ConnectOptions;
 use std::any::Any;
 use std::path::{Path, PathBuf};
-use rbdc::db::ConnectOptions;
 
 mod connect;
 mod parse;

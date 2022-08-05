@@ -1,9 +1,9 @@
-use std::fmt::{Display, Formatter};
-use rbdc::Error;
 use crate::io::MySqlBufMutExt;
 use crate::result_set::MySqlTypeInfo;
 use crate::types::{Decode, Encode};
 use crate::value::MySqlValue;
+use rbdc::Error;
+use std::fmt::{Display, Formatter};
 
 #[derive(serde::Serialize, serde::Deserialize, Debug, Clone, Eq, PartialEq)]
 #[serde(rename = "Enum")]
@@ -15,16 +15,16 @@ impl Display for Enum {
     }
 }
 
-impl Encode for Enum{
+impl Encode for Enum {
     fn encode(self, buf: &mut Vec<u8>) -> Result<usize, Error> {
         let mut bytes = self.0.into_bytes();
-        let len=bytes.len();
+        let len = bytes.len();
         buf.put_bytes_lenenc(bytes);
         Ok(len)
     }
 }
 
-impl Decode for Enum{
+impl Decode for Enum {
     fn decode(value: MySqlValue) -> Result<Self, Error> {
         Ok(Self(value.as_str().unwrap_or_default().to_string()))
     }

@@ -1,11 +1,11 @@
-use std::fmt::{Display, Formatter};
-use std::str::FromStr;
-use rbdc::Error;
-use rbs::Value;
 use crate::arguments::PgArgumentBuffer;
 use crate::types::decode::Decode;
 use crate::types::encode::{Encode, IsNull};
 use crate::value::{PgValue, PgValueFormat};
+use rbdc::Error;
+use rbs::Value;
+use std::fmt::{Display, Formatter};
+use std::str::FromStr;
 
 #[derive(serde::Serialize, serde::Deserialize, Debug, Clone, Eq, PartialEq)]
 #[serde(rename = "Timestamptz")]
@@ -24,7 +24,7 @@ impl From<Timestamptz> for Value {
 }
 
 impl Encode for Timestamptz {
-    fn encode(self, buf: &mut PgArgumentBuffer) -> Result<IsNull,Error> {
+    fn encode(self, buf: &mut PgArgumentBuffer) -> Result<IsNull, Error> {
         self.0.encode(buf)
     }
 }
@@ -44,12 +44,16 @@ impl Decode for Timestamptz {
                     year: 2000,
                 };
                 let us: i64 = Decode::decode(value)?;
-                let v=epoch + std::time::Duration::from_micros(us as u64);
+                let v = epoch + std::time::Duration::from_micros(us as u64);
                 Timestamptz(v.unix_timestamp_millis() as u64)
             }
             PgValueFormat::Text => {
                 let s = value.as_str()?;
-                Timestamptz(fastdate::DateTime::from_str(s).unwrap().unix_timestamp_millis() as u64)
+                Timestamptz(
+                    fastdate::DateTime::from_str(s)
+                        .unwrap()
+                        .unix_timestamp_millis() as u64,
+                )
             }
         })
     }

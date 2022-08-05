@@ -1,7 +1,7 @@
+use crate::{SqliteConnectOptions, SqliteConnection};
 use futures_core::future::BoxFuture;
-use rbdc::db::{Connection, ConnectOptions, Driver, Placeholder};
+use rbdc::db::{ConnectOptions, Connection, Driver, Placeholder};
 use rbdc::Error;
-use crate::{SqliteConnection, SqliteConnectOptions};
 
 #[derive(Debug)]
 pub struct SqliteDriver {}
@@ -19,7 +19,10 @@ impl Driver for SqliteDriver {
         })
     }
 
-    fn connect_opt<'a>(&'a self, opt: &'a dyn ConnectOptions) -> BoxFuture<Result<Box<dyn Connection>, Error>> {
+    fn connect_opt<'a>(
+        &'a self,
+        opt: &'a dyn ConnectOptions,
+    ) -> BoxFuture<Result<Box<dyn Connection>, Error>> {
         let opt = opt.downcast_ref().unwrap();
         Box::pin(async move {
             let conn = SqliteConnection::establish(opt).await?;
@@ -32,36 +35,36 @@ impl Driver for SqliteDriver {
     }
 }
 
-impl Placeholder for SqliteDriver{
-    fn exchange(&self, sql: &str) -> String{
+impl Placeholder for SqliteDriver {
+    fn exchange(&self, sql: &str) -> String {
         sql.to_string()
     }
 }
 
 #[cfg(test)]
-mod test{
-    use std::fs::File;
+mod test {
+    use crate::driver::SqliteDriver;
+    use crate::SqliteConnectOptions;
     use rbdc::block_on;
     use rbdc::db::{ConnectOptions, Driver};
     use rbdc::decimal::Decimal;
     use rbdc::pool::Pool;
     use rbs::Value;
-    use crate::driver::SqliteDriver;
-    use crate::SqliteConnectOptions;
+    use std::fs::File;
 
     #[test]
-    fn test_sqlite_pool(){
-        let f=File::create("../target/test.db");
-        if f.is_err(){
-            println!("{}",f.err().unwrap());
-        }else{
+    fn test_sqlite_pool() {
+        let f = File::create("../target/test.db");
+        if f.is_err() {
+            println!("{}", f.err().unwrap());
+        } else {
             drop(f);
         }
-        let f=async move{
-            let pool = Pool::new_url( SqliteDriver {},
-                                      "sqlite://../target/test.db").unwrap();
+        let f = async move {
+            let pool = Pool::new_url(SqliteDriver {}, "sqlite://../target/test.db").unwrap();
             let mut conn = pool.get().await.unwrap();
-            conn.exec("CREATE TABLE `biz_activity`
+            conn.exec(
+                "CREATE TABLE `biz_activity`
 (
     `id`            TEXT PRIMARY KEY NOT NULL,
     `name`          TEXT     DEFAULT NULL,
@@ -82,7 +85,10 @@ VALUES ('1', '活动1', NULL, NULL, '1', 1, 1, 'fff', '2019-12-12 00:00:00', 0, 
        ('178', 'test_insret', '', '', '1', 1, 0, '', '2020-06-17 20:08:13', 0, NULL, NULL),
        ('221', 'test', '', '', '0', 0, 0, '', '2020-06-17 20:10:23', 0, NULL, NULL),
        ('222', 'test', '', '', '0', 0, 0, '', '2020-06-17 20:10:23', 0, NULL, NULL),
-       ('223', 'test', '', '', '0', 0, 0, '', '2020-06-17 20:10:23', 0, NULL, NULL);",vec![]).await;
+       ('223', 'test', '', '', '0', 0, 0, '', '2020-06-17 20:10:23', 0, NULL, NULL);",
+                vec![],
+            )
+            .await;
 
             let data = conn
                 .get_values("select * from biz_activity", vec![])
@@ -99,20 +105,14 @@ VALUES ('1', '活动1', NULL, NULL, '1', 1, 1, 'fff', '2019-12-12 00:00:00', 0, 
     fn test_sqlite_param() {
         let task = async move {
             let mut d = SqliteDriver {};
-            let mut c = d
-                .connect("sqlite://../target/test.db")
-                .await
-                .unwrap();
+            let mut c = d.connect("sqlite://../target/test.db").await.unwrap();
             let param = vec![
                 Decimal("1".to_string()).into(),
                 Value::String("1".to_string()),
             ];
             println!("param => {}", Value::Array(param.clone()));
             let data = c
-                .exec(
-                    "update biz_activity set version = ? where id  = ?",
-                    param,
-                )
+                .exec("update biz_activity set version = ? where id  = ?", param)
                 .await
                 .unwrap();
             println!("{}", data);

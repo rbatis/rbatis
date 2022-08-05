@@ -78,25 +78,25 @@ impl From<ParseFloatError> for Error {
     }
 }
 
-impl From<fastdate::error::Error> for Error{
+impl From<fastdate::error::Error> for Error {
     fn from(arg: fastdate::error::Error) -> Self {
         Error::E(arg.to_string())
     }
 }
 
-impl From<TryFromIntError> for Error{
+impl From<TryFromIntError> for Error {
     fn from(e: TryFromIntError) -> Self {
         Error::from(e.to_string())
     }
 }
 
-impl From<rbs::Error> for Error{
+impl From<rbs::Error> for Error {
     fn from(arg: rbs::Error) -> Self {
         Error::from(arg.to_string())
     }
 }
 
-impl From<mobc::Error<Error>> for Error{
+impl From<mobc::Error<Error>> for Error {
     fn from(arg: mobc::Error<Error>) -> Self {
         Error::from(arg.to_string())
     }

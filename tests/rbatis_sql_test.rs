@@ -1,12 +1,13 @@
 #[cfg(test)]
 mod test {
 
-    use rbatis_sql::rb_py;
-    use rbs::Value;
     use rbatis_sql::ops::*;
+    use rbatis_sql::rb_py;
     use rbs::value::map::ValueMap;
+    use rbs::Value;
 
-    #[rb_py("
+    #[rb_py(
+        "
     SELECT * FROM biz_activity
     if  name != null:
       AND delete_flag = #{del}
@@ -31,23 +32,27 @@ mod test {
           AND age = 27
         otherwise:
           AND age = 0
-    WHERE id  = '2';")]
+    WHERE id  = '2';"
+    )]
     pub fn py_select_by_condition(arg: &mut rbs::Value, _tag: char) {}
 
     #[test]
-    fn test_rbatis_sql(){
+    fn test_rbatis_sql() {
         let mut arg = ValueMap::new();
-        arg.insert("name".into(),"ss".into());
-        arg.insert("del".into(),1.into());
-        arg.insert("del2".into(),2.into());
-        arg.insert("ids".into(),vec![Value::I32(1),Value::I32(2),Value::I32(3)].into());
+        arg.insert("name".into(), "ss".into());
+        arg.insert("del".into(), 1.into());
+        arg.insert("del2".into(), 2.into());
+        arg.insert(
+            "ids".into(),
+            vec![Value::I32(1), Value::I32(2), Value::I32(3)].into(),
+        );
         let (sql, args) = py_select_by_condition(&mut rbs::Value::Map(arg), '$');
         println!("py->sql: {}", sql);
         println!("py->args: {}", serde_json::to_string(&args).unwrap());
     }
 
     #[rb_py(
-    "insert into ${table_name} (
+        "insert into ${table_name} (
              trim ',':
                for k,v2 in table:
                  ${k},
@@ -60,12 +65,12 @@ mod test {
     pub fn save(arg: &mut rbs::Value, _tag: char) {}
 
     #[test]
-    fn test_save(){
+    fn test_save() {
         let mut arg = ValueMap::new();
-        arg.insert("table".into(),{
+        arg.insert("table".into(), {
             let mut arg = ValueMap::new();
-            arg.insert("table_name".into(),"a".into());
-            arg.insert("table".into(),"a".into());
+            arg.insert("table_name".into(), "a".into());
+            arg.insert("table".into(), "a".into());
             Value::Map(arg)
         });
         let (sql, args) = save(&mut rbs::Value::Map(arg), '$');

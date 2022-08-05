@@ -1,10 +1,11 @@
+use crate::driver::PgDriver;
 use crate::message::{
     Close, Message, MessageFormat, Query, ReadyForQuery, Terminate, TransactionStatus,
 };
 use crate::query::PgQuery;
 use crate::statement::PgStatementMetadata;
 use crate::type_info::PgTypeInfo;
-use crate::types::encode::{Encode};
+use crate::types::encode::Encode;
 use crate::types::{Oid, TypeInfo};
 use either::Either;
 use futures_core::future::BoxFuture;
@@ -18,7 +19,6 @@ use rbs::Value;
 use std::collections::HashMap;
 use std::fmt::{self, Debug, Formatter};
 use std::sync::Arc;
-use crate::driver::PgDriver;
 
 pub use self::stream::PgStream;
 
@@ -189,7 +189,7 @@ impl Connection for PgConnection {
         sql: &str,
         params: Vec<Value>,
     ) -> BoxFuture<Result<Vec<Box<dyn Row>>, Error>> {
-        let sql = PgDriver{}.exchange(sql);
+        let sql = PgDriver {}.exchange(sql);
         Box::pin(async move {
             if params.len() == 0 {
                 let mut many = self.fetch_many(PgQuery {
@@ -229,7 +229,7 @@ impl Connection for PgConnection {
     }
 
     fn exec(&mut self, sql: &str, params: Vec<Value>) -> BoxFuture<Result<ExecResult, Error>> {
-        let sql = PgDriver{}.exchange(sql);
+        let sql = PgDriver {}.exchange(sql);
         Box::pin(async move {
             if params.len() == 0 {
                 let mut many = self.fetch_many(PgQuery {
@@ -242,7 +242,7 @@ impl Connection for PgConnection {
                         Either::Left(l) => {
                             return Ok(ExecResult {
                                 rows_affected: l.rows_affected,
-                                last_insert_id: Value::Null
+                                last_insert_id: Value::Null,
                             });
                         }
                         Either::Right(r) => {}
@@ -250,7 +250,7 @@ impl Connection for PgConnection {
                 }
                 return Ok(ExecResult {
                     rows_affected: 0,
-                    last_insert_id: Value::Null
+                    last_insert_id: Value::Null,
                 });
             } else {
                 let mut type_info = Vec::with_capacity(params.len());
@@ -268,7 +268,7 @@ impl Connection for PgConnection {
                         Either::Left(l) => {
                             return Ok(ExecResult {
                                 rows_affected: l.rows_affected,
-                                last_insert_id: Value::Null
+                                last_insert_id: Value::Null,
                             });
                         }
                         Either::Right(r) => {}
@@ -276,7 +276,7 @@ impl Connection for PgConnection {
                 }
                 return Ok(ExecResult {
                     rows_affected: 0,
-                    last_insert_id: Value::Null
+                    last_insert_id: Value::Null,
                 });
             }
         })

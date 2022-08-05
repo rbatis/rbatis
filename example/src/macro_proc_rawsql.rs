@@ -11,10 +11,10 @@ extern crate rbatis;
 
 pub mod model;
 use model::*;
+use rbatis::rbatis::Rbatis;
+use rbatis::sql::page::{Page, PageRequest};
 use std::fs::File;
 use std::io::Read;
-use rbatis::sql::page::{Page, PageRequest};
-use rbatis::rbatis::Rbatis;
 
 use crate::{init_sqlite, BizActivity};
 
@@ -32,4 +32,3 @@ pub async fn main() {
     let a = raw_sql(&rb, &0).await.unwrap();
     println!("{:?}", a);
 }
-

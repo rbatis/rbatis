@@ -1,6 +1,5 @@
-use std::fmt::{Display, Formatter};
 use rbs::Value;
-
+use std::fmt::{Display, Formatter};
 
 #[derive(serde::Serialize, serde::Deserialize, Debug, Clone, Eq, PartialEq)]
 #[serde(rename = "Json")]
@@ -25,8 +24,8 @@ impl Display for Json {
     }
 }
 
-impl From<Json> for Value{
+impl From<Json> for Value {
     fn from(arg: Json) -> Self {
-        Value::Ext("Json",Box::new(Value::String(arg.0)))
+        Value::Ext("Json", Box::new(Value::String(arg.0)))
     }
 }

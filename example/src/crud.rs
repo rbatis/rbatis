@@ -11,18 +11,18 @@ extern crate rbatis;
 
 pub mod model;
 
-use std::time::Duration;
+use crate::model::{init_sqlite, BizActivity};
 use fast_log::sleep;
-use rbatis::executor::Executor;
+use rbatis::{executor::Executor, sql::page::Page};
 use rbdc::datetime::FastDateTime;
-use crate::model::{BizActivity, init_sqlite};
+use std::time::Duration;
 
-impl_insert!(BizActivity{});
-impl_select!(BizActivity{});
+impl_insert!(BizActivity {});
+impl_select!(BizActivity {});
 impl_select!(BizActivity{select_all_by_id(id:&str,name:&str) => "select * from biz_activity where id = #{id} and name = #{name}"});
 impl_select!(BizActivity{select_by_id(id:String) -> Option => "select * from biz_activity where id = #{id} limit 1"});
-impl_update!(BizActivity{});
-impl_delete!(BizActivity{});
+impl_update!(BizActivity {});
+impl_delete!(BizActivity {});
 
 #[tokio::main]
 pub async fn main() {
@@ -63,4 +63,3 @@ pub async fn main() {
     let data = BizActivity::delete_by_column(&mut rb, "id", &"2".into()).await;
     println!("{:?}", data);
 }
-

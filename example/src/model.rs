@@ -1,10 +1,10 @@
-use rbatis::rbatis::Rbatis;
-use std::fs::{create_dir_all, File};
-use std::io::Read;
 use log::LevelFilter;
-use serde::{Serialize, Deserialize};
+use rbatis::rbatis::Rbatis;
 use rbdc::datetime::FastDateTime;
 use rbdc_sqlite::driver::SqliteDriver;
+use serde::{Deserialize, Serialize};
+use std::fs::{create_dir_all, File};
+use std::io::Read;
 
 /// this is table model(see ../database.sql)
 #[derive(Clone, Debug, Serialize, Deserialize)]
@@ -37,9 +37,12 @@ pub async fn init_sqlite_path(path: &str) -> Rbatis {
     // rb.link("mysql://root:123456@localhost:3306/test").await.unwrap();
     // rb.link("postgres://postgres:123456@localhost:5432/postgres").await.unwrap();
     // rb.link("mssql://SA:TestPass!123456@localhost:1433/test").await.unwrap();
-    rb.link(SqliteDriver {}, &format!("sqlite://{}target/sqlite.db", path))
-        .await
-        .unwrap();
+    rb.link(
+        SqliteDriver {},
+        &format!("sqlite://{}target/sqlite.db", path),
+    )
+    .await
+    .unwrap();
 
     // ------------carte table------------
     let mut f = File::open(format!("{}example/table_sqlite.sql", path)).unwrap();
