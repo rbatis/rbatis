@@ -7,8 +7,6 @@ use std::collections::HashMap;
 use std::sync::Arc;
 use std::time::Duration;
 use uuid::Uuid;
-
-use crate::core::Error;
 use crate::executor::{RBatisConnExecutor, RBatisTxExecutor};
 use crate::plugin::intercept::SqlIntercept;
 use crate::plugin::log::{LogPlugin, RbatisLogPlugin};
@@ -20,6 +18,7 @@ use rbdc::db::{Connection, ExecResult};
 use rbdc::pool::Pool;
 use std::fmt::{Debug, Formatter};
 use std::ops::DerefMut;
+use crate::Error;
 
 /// rbatis engine
 #[derive(Clone)]

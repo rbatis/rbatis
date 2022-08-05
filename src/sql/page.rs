@@ -2,7 +2,6 @@ use std::fmt::{Debug, Display, Formatter};
 use std::future::Future;
 
 use futures_core::future::BoxFuture;
-use rbatis_core::Error;
 use serde::de::DeserializeOwned;
 use serde::{Deserialize, Serialize};
 
