@@ -92,14 +92,14 @@ fn convert_to_arg_access(context: &str, arg: Expr, as_proxy: bool, ignore: &[Str
                             b.left.to_token_stream(),
                             b.right.to_token_stream()
                         ))
-                        .unwrap();
+                            .unwrap();
                     } else {
                         return syn::parse_str::<Expr>(&format!(
                             "({}).op_add(&{})",
                             b.left.to_token_stream(),
                             b.right.to_token_stream()
                         ))
-                        .unwrap();
+                            .unwrap();
                     }
                 }
                 BinOp::And(_) => {
@@ -108,14 +108,14 @@ fn convert_to_arg_access(context: &str, arg: Expr, as_proxy: bool, ignore: &[Str
                             "bool::op_from({})",
                             b.left.to_token_stream().to_string().trim()
                         ))
-                        .unwrap(),
+                            .unwrap(),
                     );
                     b.right = Box::new(
                         syn::parse_str::<Expr>(&format!(
                             "bool::op_from({})",
                             b.right.to_token_stream().to_string().trim()
                         ))
-                        .unwrap(),
+                            .unwrap(),
                     );
                 }
                 BinOp::Or(_) => {
@@ -124,14 +124,14 @@ fn convert_to_arg_access(context: &str, arg: Expr, as_proxy: bool, ignore: &[Str
                             "bool::op_from({})",
                             b.left.to_token_stream().to_string().trim()
                         ))
-                        .unwrap(),
+                            .unwrap(),
                     );
                     b.right = Box::new(
                         syn::parse_str::<Expr>(&format!(
                             "bool::op_from({})",
                             b.right.to_token_stream().to_string().trim()
                         ))
-                        .unwrap(),
+                            .unwrap(),
                     );
                 }
 
@@ -142,7 +142,7 @@ fn convert_to_arg_access(context: &str, arg: Expr, as_proxy: bool, ignore: &[Str
                         b.left.to_token_stream(),
                         b.right.to_token_stream()
                     ))
-                    .unwrap();
+                        .unwrap();
                 }
                 /// The `*` operator (multiplication)
                 BinOp::Mul(_) => {
@@ -151,7 +151,7 @@ fn convert_to_arg_access(context: &str, arg: Expr, as_proxy: bool, ignore: &[Str
                         b.left.to_token_stream(),
                         b.right.to_token_stream()
                     ))
-                    .unwrap();
+                        .unwrap();
                 }
                 /// The `/` operator (division)
                 BinOp::Div(_) => {
@@ -160,7 +160,7 @@ fn convert_to_arg_access(context: &str, arg: Expr, as_proxy: bool, ignore: &[Str
                         b.left.to_token_stream(),
                         b.right.to_token_stream()
                     ))
-                    .unwrap();
+                        .unwrap();
                 }
                 /// The `%` operator (modulus)
                 BinOp::Rem(_) => {
@@ -169,7 +169,7 @@ fn convert_to_arg_access(context: &str, arg: Expr, as_proxy: bool, ignore: &[Str
                         b.left.to_token_stream(),
                         b.right.to_token_stream()
                     ))
-                    .unwrap();
+                        .unwrap();
                 }
                 /// The `&` operator (bitwise and)
                 BinOp::BitAnd(_) => {
@@ -178,7 +178,7 @@ fn convert_to_arg_access(context: &str, arg: Expr, as_proxy: bool, ignore: &[Str
                         b.left.to_token_stream(),
                         b.right.to_token_stream()
                     ))
-                    .unwrap();
+                        .unwrap();
                 }
                 /// The `|` operator (bitwise or)
                 BinOp::BitOr(_) => {
@@ -187,7 +187,7 @@ fn convert_to_arg_access(context: &str, arg: Expr, as_proxy: bool, ignore: &[Str
                         b.left.to_token_stream(),
                         b.right.to_token_stream()
                     ))
-                    .unwrap();
+                        .unwrap();
                 }
                 /// The `==` operator (equality)
                 BinOp::Eq(_) => {
@@ -196,7 +196,7 @@ fn convert_to_arg_access(context: &str, arg: Expr, as_proxy: bool, ignore: &[Str
                         b.left.to_token_stream(),
                         b.right.to_token_stream()
                     ))
-                    .unwrap();
+                        .unwrap();
                 }
                 /// The `<` operator (less than)
                 BinOp::Lt(_) => {
@@ -205,7 +205,7 @@ fn convert_to_arg_access(context: &str, arg: Expr, as_proxy: bool, ignore: &[Str
                         b.left.to_token_stream(),
                         b.right.to_token_stream()
                     ))
-                    .unwrap();
+                        .unwrap();
                 }
                 /// The `<=` operator (less than or equal to)
                 BinOp::Le(_) => {
@@ -214,7 +214,7 @@ fn convert_to_arg_access(context: &str, arg: Expr, as_proxy: bool, ignore: &[Str
                         b.left.to_token_stream(),
                         b.right.to_token_stream()
                     ))
-                    .unwrap();
+                        .unwrap();
                 }
                 /// The `!=` operator (not equal to)
                 BinOp::Ne(_) => {
@@ -223,7 +223,7 @@ fn convert_to_arg_access(context: &str, arg: Expr, as_proxy: bool, ignore: &[Str
                         b.left.to_token_stream(),
                         b.right.to_token_stream()
                     ))
-                    .unwrap();
+                        .unwrap();
                 }
                 /// The `>=` operator (greater than or equal to)
                 BinOp::Ge(_) => {
@@ -232,7 +232,7 @@ fn convert_to_arg_access(context: &str, arg: Expr, as_proxy: bool, ignore: &[Str
                         b.left.to_token_stream(),
                         b.right.to_token_stream()
                     ))
-                    .unwrap();
+                        .unwrap();
                 }
                 /// The `>` operator (greater than)
                 BinOp::Gt(_) => {
@@ -241,7 +241,7 @@ fn convert_to_arg_access(context: &str, arg: Expr, as_proxy: bool, ignore: &[Str
                         b.left.to_token_stream(),
                         b.right.to_token_stream()
                     ))
-                    .unwrap();
+                        .unwrap();
                 }
                 /// The `^` operator (bitwise xor)
                 BinOp::BitXor(_) => {
@@ -250,7 +250,7 @@ fn convert_to_arg_access(context: &str, arg: Expr, as_proxy: bool, ignore: &[Str
                         b.left.to_token_stream(),
                         b.right.to_token_stream()
                     ))
-                    .unwrap();
+                        .unwrap();
                 }
                 /// The `<<` operator (shift left)
                 BinOp::Shl(_) => {
@@ -310,7 +310,7 @@ fn convert_to_arg_access(context: &str, arg: Expr, as_proxy: bool, ignore: &[Str
                     " (0.op_sub(&{}))",
                     b.expr.to_token_stream().to_string().trim()
                 ))
-                .unwrap();
+                    .unwrap();
             }
             return Expr::Unary(b);
         }
@@ -332,7 +332,7 @@ fn convert_to_arg_access(context: &str, arg: Expr, as_proxy: bool, ignore: &[Str
                         b.base.to_token_stream(),
                         named.to_token_stream()
                     ))
-                    .unwrap();
+                        .unwrap();
                 }
                 Member::Unnamed(_) => {}
             }
@@ -350,7 +350,7 @@ fn convert_to_arg_access(context: &str, arg: Expr, as_proxy: bool, ignore: &[Str
                 b.expr.to_token_stream(),
                 b.index.to_token_stream()
             ))
-            .unwrap();
+                .unwrap();
         }
         Expr::Let(mut let_expr) => {
             let_expr.expr = Box::new(convert_to_arg_access(
@@ -431,27 +431,23 @@ pub fn impl_fn(
         )
     }
     let t = t.unwrap();
-    let mut result_impl = quote! { result };
+    let mut result_impl = quote! { {#t} };
     if serialize_result {
-        result_impl = quote! {rbs::to_value!(result)};
+        result_impl = quote! {rbs::to_value!({#t})};
     }
     if func_name_ident.is_empty() || func_name_ident.eq("\"\"") {
         return quote! {
-             {
-               let result={#t};
                #result_impl
-            }
         }
-        .to_token_stream();
+            .to_token_stream();
     } else {
         let func_name_ident = Ident::new(&func_name_ident.to_string(), Span::call_site());
         return quote! {
             pub fn #func_name_ident(arg:&rbs::Value) -> rbs::Value {
                use rbatis_sql::ops::*;
-               let result={#t};
                #result_impl
             }
         }
-        .to_token_stream();
+            .to_token_stream();
     }
 }
