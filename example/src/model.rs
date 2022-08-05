@@ -32,26 +32,11 @@ pub async fn init_sqlite() -> Rbatis {
 pub async fn init_sqlite_path(path: &str) -> Rbatis {
     //first init log carte
     fast_log::init(fast_log::config::Config::new().console());
-
     // new rbatis
     let rb = Rbatis::new();
-
-    // // mysql custom connection option
-    // // let db_cfg=DBConnectOption::from("mysql://root:123456@localhost:3306/test")?;
-    // let db_cfg= DBConnectOption::from("sqlite://../target/sqlite.db")?;
-    // rb.link_cfg(&db_cfg,DBPoolOptions::new());
-    //
-    // // custom pool
-    // let mut opt = DBPoolOptions::new();
-    // opt.max_size = 20;
-    // rb.link_opt("sqlite://../target/sqlite.db", &opt).await.unwrap();
-
-    //create sqlite file
-    if File::open(format!("{}target/sqlite.db", path)).is_err() {
-        create_dir_all(format!("{}target/", path));
-        let f = File::create(format!("{}target/sqlite.db", path)).unwrap();
-        drop(f);
-    }
+    // rb.link("mysql://root:123456@localhost:3306/test").unwrap();
+    // rb.link("postgres://postgres:123456@localhost:5432/postgres").unwrap();
+    // rb.link("mssql://SA:TestPass!123456@localhost:1433/test").unwrap();
     rb.link(SqliteDriver {}, &format!("sqlite://{}target/sqlite.db", path))
         .await
         .unwrap();
