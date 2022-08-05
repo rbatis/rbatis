@@ -15,8 +15,8 @@ use model::*;
 use std::fs::File;
 use std::io::Read;
 use rbatis::Error;
+use rbatis::executor::Executor;
 
-use rbatis::executor::RbatisExecutor;
 use rbatis::sql::page::{Page, PageRequest};
 use rbatis::rbatis::Rbatis;
 use rbdc::datetime::FastDateTime;
@@ -36,7 +36,7 @@ async fn py_ctx_id(rb: &Rbatis) -> Vec<BizActivity> {
                     and name=#{name}"
 )]
 async fn py_select_page(
-    mut rb: RbatisExecutor<'_>,
+    rb: &mut dyn Executor,
     page_req: &PageRequest,
     name: &str,
 ) -> Result<Vec<BizActivity>,Error> {
@@ -49,7 +49,7 @@ pub async fn main() {
     fast_log::init(fast_log::config::Config::new().console());
     //use static ref
     let rb = init_sqlite().await;
-    let a = py_select_page(rb.as_executor(), &PageRequest::new(1, 10), "test")
+    let a = py_select_page(&mut rb.clone(), &PageRequest::new(1, 10), "test")
         .await
         .unwrap();
     println!(">>>>>>>>>>>> {:?}", a);

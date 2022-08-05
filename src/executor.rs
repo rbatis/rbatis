@@ -16,102 +16,6 @@ use rbs::{from_value, Value};
 use crate::sql::page::{IPageRequest, Page};
 use crate::sql::tx::Tx;
 
-// /// the rbatis Containers for transactions, connections, and ontologies
-// /// for example:
-// ///
-// /// &mut tx.as_executor()
-// /// &mut conn.as_executor()
-// /// &mut guard.as_executor()
-// /// (&rb).into()
-// /// (&mut tx).into()
-// /// (&mut conn).into()
-// /// (&mut guard).into()
-// #[derive(Debug)]
-// pub enum RbatisExecutor<'r>
-// {
-//     RB(&'r Rbatis),
-//     Conn(&'r mut RBatisConnExecutor),
-//     TX(&'r mut RBatisTxExecutor),
-//     TxGuard(&'r mut RBatisTxExecutorGuard),
-// }
-
-// impl RbatisExecutor<'_> {
-//     pub async fn exec(&mut self, sql: &str, args: Vec<Value>) -> Result<rbdc::db::ExecResult, Error> {
-//         return match self {
-//             RbatisExecutor::RB(rb) => {
-//                 rb.exec(sql, args).await
-//             }
-//             RbatisExecutor::Conn(rb) => {
-//                 rb.exec(sql, args).await
-//             }
-//             RbatisExecutor::TX(rb) => {
-//                 rb.exec(sql, args).await
-//             }
-//             RbatisExecutor::TxGuard(rb) => {
-//                 rb.exec(sql, args).await
-//             }
-//         }
-//     }
-//
-//     pub async fn fetch<T>(&mut self, sql: &str, args: Vec<Value>) -> Result<T, Error>
-//     where
-//         T: DeserializeOwned,
-//     {
-//         return match self {
-//             RbatisExecutor::RB(rb) => {
-//                 rb.fetch(sql, args).await
-//             }
-//             RbatisExecutor::Conn(rb) => {
-//                 let v=rb.fetch(sql, args).await?;
-//                 Ok(from_value(v)?)
-//             }
-//             RbatisExecutor::TX(rb) => {
-//                 let v=rb.fetch(sql, args).await?;
-//                 Ok(from_value(v)?)
-//             }
-//             RbatisExecutor::TxGuard(rb) => {
-//                 let v=rb.fetch(sql, args).await?;
-//                 Ok(from_value(v)?)
-//             }
-//         }
-//     }
-// }
-
-// impl<'r> RbatisRef for RbatisExecutor<'r> {
-//     fn get_rbatis(&self) -> &Rbatis {
-//         match self {
-//             RbatisExecutor::RB(rb) => rb,
-//             RbatisExecutor::Conn(rb) => rb.get_rbatis(),
-//             RbatisExecutor::TX(rb) => rb.get_rbatis(),
-//             RbatisExecutor::TxGuard(rb) => rb.get_rbatis(),
-//         }
-//     }
-// }
-
-// impl<'r> From<&'r Rbatis> for RbatisExecutor<'r> {
-//     fn from(arg: &'r Rbatis) -> Self {
-//         Self::RB(arg)
-//     }
-// }
-
-// impl<'r> From<&'r mut RBatisConnExecutor> for RbatisExecutor<'r> {
-//     fn from(arg: &'r mut RBatisConnExecutor) -> Self {
-//         Self::Conn(arg)
-//     }
-// }
-//
-// impl<'r> From<&'r mut RBatisTxExecutor> for RbatisExecutor<'r> {
-//     fn from(arg: &'r mut RBatisTxExecutor) -> Self {
-//         Self::TX(arg)
-//     }
-// }
-//
-// impl<'r> From<&'r mut RBatisTxExecutorGuard> for RbatisExecutor<'r> {
-//     fn from(arg: &'r mut RBatisTxExecutorGuard) -> Self {
-//         Self::TxGuard(arg)
-//     }
-// }
-
 #[async_trait]
 pub trait RbatisRef {
     fn get_rbatis(&self) -> &Rbatis;
@@ -414,9 +318,6 @@ impl Debug for RBatisTxExecutorGuard {
 }
 
 impl RBatisTxExecutorGuard {
-    // pub fn as_executor(&mut self) -> RbatisExecutor {
-    //     self.into()
-    // }
 
     pub async fn begin(&mut self) -> crate::Result<()> {
         let v = self

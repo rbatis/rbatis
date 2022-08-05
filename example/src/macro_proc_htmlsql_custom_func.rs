@@ -14,8 +14,7 @@ use model::*;
 
 use std::fs::File;
 use std::io::Read;
-
-use rbatis::executor::RbatisExecutor;
+use rbatis::executor::Executor;
 use rbatis::rbatis::Rbatis;
 use rbs::Value;
 
@@ -41,7 +40,7 @@ impl IsTest for rbs::Value {
 ///  </if>
 /// ```
 #[html_sql("example/example.html")]
-async fn custom_func(rb: &mut RbatisExecutor<'_>, name: &str) -> Vec<BizActivity> {
+async fn custom_func(rb: &mut dyn Executor, name: &str) -> Vec<BizActivity> {
     impled!()
 }
 
@@ -50,7 +49,7 @@ pub async fn main() {
     fast_log::init(fast_log::config::Config::new().console());
     //use static ref
     let rb = init_sqlite().await;
-    let a = custom_func(&mut rb.as_executor(), "test").await.unwrap();
+    let a = custom_func(&mut rb.clone(), "test").await.unwrap();
     println!("{:?}", a);
 }
 
