@@ -50,9 +50,9 @@ runtime-actix-native-tls = ["rbatis-core/runtime-actix-native-tls"]
 runtime-async-std-native-tls = ["rbatis-core/runtime-async-std-native-tls"]
 
 [dependencies]
-rbatis-core = { version = "3.1.11", path = "rbatis-core", default-features = false, optional = true }
-rbatis-sql = { version = "3.0", path="rbatis-sql", optional = true }
-rbatis-macro-driver = { version = "3.1", path = "rbatis-macro-driver", default-features = false, optional = true }
+rbatis-core = { version = "4.0", path = "rbatis-core", default-features = false, optional = true }
+rbatis-sql = { version = "4.0", path="rbatis-sql", optional = true }
+rbatis-macro-driver = { version = "4.0", path = "rbatis-macro-driver", default-features = false, optional = true }
 chrono = { version = "0.4", features = ["serde"] }
 #serde
 serde = { version = "1", features = ["derive"] }
