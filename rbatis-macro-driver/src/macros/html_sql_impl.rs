@@ -38,20 +38,18 @@ pub(crate) fn impl_macro_html_sql(target_fn: &ItemFn, args: &AttributeArgs) -> T
         for ele in args {
             match ele {
                 NestedMeta::Meta(m) => {}
-                NestedMeta::Lit(l) => {
-                    match l {
-                        Lit::Str(v) => {
-                            s = s + v.value().as_str();
-                        }
-                        Lit::ByteStr(_) => {}
-                        Lit::Byte(_) => {}
-                        Lit::Char(_) => {}
-                        Lit::Int(_) => {}
-                        Lit::Float(_) => {}
-                        Lit::Bool(_) => {}
-                        Lit::Verbatim(_) => {}
+                NestedMeta::Lit(l) => match l {
+                    Lit::Str(v) => {
+                        s = s + v.value().as_str();
                     }
-                }
+                    Lit::ByteStr(_) => {}
+                    Lit::Byte(_) => {}
+                    Lit::Char(_) => {}
+                    Lit::Int(_) => {}
+                    Lit::Float(_) => {}
+                    Lit::Bool(_) => {}
+                    Lit::Verbatim(_) => {}
+                },
             }
         }
         sql_ident = quote!(#s);
