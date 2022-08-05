@@ -42,7 +42,6 @@ pub(crate) fn impl_macro_html_sql(target_fn: &ItemFn, args: &AttributeArgs) -> T
                     match l {
                         Lit::Str(v) => {
                             s = s + v.value().as_str();
-                            break;
                         }
                         Lit::ByteStr(_) => {}
                         Lit::Byte(_) => {}

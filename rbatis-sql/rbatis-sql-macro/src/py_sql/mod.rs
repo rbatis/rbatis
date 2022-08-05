@@ -57,7 +57,11 @@ pub trait AsHtml {
 
 impl AsHtml for StringNode {
     fn as_html(&self) -> String {
-        self.value.clone()
+        if self.value.starts_with("`") && self.value.starts_with("`"){
+            self.value.to_string()
+        }else{
+            format!("`{}`",self.value)
+        }
     }
 }
 

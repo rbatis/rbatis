@@ -44,7 +44,6 @@ pub(crate) fn impl_macro_sql(target_fn: &ItemFn, args: &AttributeArgs) -> TokenS
                     match l {
                         Lit::Str(v) => {
                             s = s + v.value().as_str();
-                            break;
                         }
                         Lit::ByteStr(_) => {}
                         Lit::Byte(_) => {}
