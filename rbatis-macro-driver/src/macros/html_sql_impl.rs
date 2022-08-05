@@ -32,14 +32,13 @@ pub(crate) fn impl_macro_html_sql(target_fn: &ItemFn, args: &AttributeArgs) -> T
     let sql_ident;
     if args.len() >= 1 {
         if rbatis_name.is_empty() {
-            panic!("[rbatis] you should add rbatis ref param  rb:&Rbatis  or rb: &mut RbatisExecutor<'_,'_>  on '{}()'!", target_fn.sig.ident);
+            panic!("[rbatis] you should add rbatis ref param  rb:&Rbatis  or rb: &mut Executor<'_,'_>  on '{}()'!", target_fn.sig.ident);
         }
-        let mut s= String::with_capacity(args.len()*10);
+        let mut s=quote!();
         for ele in args {
-            let token= ele.to_token_stream();
-            s.push_str(&token.to_string().trim_start_matches("\"").trim_end_matches("\""));
+            s = quote!{#s #ele};
         }
-        sql_ident = quote!(#s);
+        sql_ident = s;
     } else {
         panic!("[rbatis] Incorrect macro parameter length!");
     }
