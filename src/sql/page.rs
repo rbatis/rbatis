@@ -1,4 +1,4 @@
-use std::fmt::{Debug, Display};
+use std::fmt::{Debug, Display, Formatter};
 use std::future::Future;
 
 use futures_core::future::BoxFuture;
@@ -254,6 +254,19 @@ where
 
     fn set_records(&mut self, arg: Vec<T>) {
         self.records = arg;
+    }
+}
+
+impl <T:Display+Debug>Display for Page<T>{
+    fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
+        f.debug_struct("Page")
+            .field("records",&self.records)
+            .field("total",&self.total)
+            .field("pages",&self.pages)
+            .field("page_no",&self.page_no)
+            .field("page_size",&self.page_size)
+            .field("search_count",&self.search_count)
+            .finish()
     }
 }
 
