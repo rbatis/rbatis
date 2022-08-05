@@ -22,8 +22,8 @@ use std::time::Duration;
 
 impl_insert!(BizActivity {});
 impl_select!(BizActivity {});
-impl_select!(BizActivity{select_all_by_id(id:&str,name:&str) => "select * from biz_activity where id = #{id} and name = #{name}"});
-impl_select!(BizActivity{select_by_id(id:String) -> Option => "select * from biz_activity where id = #{id} limit 1"});
+impl_select!(BizActivity{select_all_by_id(id:&str,name:&str) => "id = #{id} and name = #{name}"});
+impl_select!(BizActivity{select_by_id(id:String) -> Option => "id = #{id} limit 1"});
 impl_update!(BizActivity {});
 impl_delete!(BizActivity {});
 impl_select_page!(BizActivity{select_page(name:&str) => "name != #{name}"});
