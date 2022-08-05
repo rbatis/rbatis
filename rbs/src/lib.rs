@@ -6,6 +6,7 @@
 
 #[macro_use]
 extern crate serde;
+extern crate core;
 
 #[allow(deprecated)]
 pub mod value;
