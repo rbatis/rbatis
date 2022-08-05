@@ -1274,13 +1274,44 @@ impl IntoIterator for Value {
                 }
                 v.into_iter()
             }
-            Value::Ext(_,e)=>{
+            Value::Ext(_, e) => {
                 e.into_iter()
             }
             _ => {
-               panic!("not an array or map!")
+                panic!("not an array or map!")
             }
         }
     }
 }
 
+impl<'a> IntoIterator for &'a Value {
+    type Item = (Value, &'a Value);
+    type IntoIter = std::vec::IntoIter<(Value, &'a Value)>;
+
+    fn into_iter(self) -> Self::IntoIter {
+        match self {
+            Value::Map(m) => {
+                let mut arr = Vec::with_capacity(m.len());
+                for (k, v) in m {
+                    arr.push((k.to_owned(), v));
+                }
+                arr.into_iter()
+            }
+            Value::Array(arr) => {
+                let mut v = Vec::with_capacity(arr.len());
+                let mut idx = 0;
+                for x in arr {
+                    v.push((Value::I32(idx), x));
+                    idx += 1;
+                }
+                v.into_iter()
+            }
+            Value::Ext(_, e) => {
+                e.deref().into_iter()
+            }
+            _ => {
+                panic!("not an array or map!")
+            }
+        }
+    }
+}

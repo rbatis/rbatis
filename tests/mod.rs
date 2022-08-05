@@ -12,5 +12,9 @@ mod test{
         for (k,v) in v {
             println!("{},{}",k,v);
         }
+        let v=Value::Array(vec![Value::I32(1)]);
+        for (k,v) in &v {
+            println!("{},{}",k,v);
+        }
     }
 }
