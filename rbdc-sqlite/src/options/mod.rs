@@ -399,6 +399,7 @@ impl ConnectOptions for SqliteConnectOptions {
 
     fn set_uri(&mut self, uri: &str) -> Result<(), Error> {
         *self = SqliteConnectOptions::from_str(uri).map_err(|e| Error::from(e.to_string()))?;
+        self.create_if_missing = true;
         Ok(())
     }
 
