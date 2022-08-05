@@ -206,13 +206,7 @@ macro_rules! impl_select_page {
                 $($param_key:$param_type,)+
             ) -> Result<$crate::sql::Page::<$table>, rbdc::Error> {
                 #[py_sql("select count(1) as count from ${table_name} ",$where_sql)]
-                async fn do_select_page_count(
-                    rb: &mut dyn $crate::executor::Executor,
-                    table_name: &str,
-                    $($param_key:$param_type,)+
-                ) -> Result<u64, rbdc::Error> {
-                    impled!()
-                }
+                async fn do_select_page_count(rb: &mut dyn $crate::executor::Executor,table_name: &str,$($param_key:$param_type,)+) -> Result<u64, rbdc::Error> {impled!()}
                 let table_name = $crate::utils::string_util::to_snake_name(stringify!($table));
                 let total:u64=do_select_page_count(rb, &table_name, $($param_key,)+).await?;
                 let records:Vec<$table>;
