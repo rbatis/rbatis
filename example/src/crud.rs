@@ -27,7 +27,7 @@ impl_delete!(BizActivity{});
 #[tokio::main]
 pub async fn main() {
     fast_log::init(fast_log::config::Config::new().console());
-    let rb = init_sqlite().await;
+    let mut rb = init_sqlite().await;
     let mut t = BizActivity {
         id: Some("2".into()),
         name: Some("2".into()),
@@ -42,25 +42,25 @@ pub async fn main() {
         version: Some(1),
         delete_flag: Some(1),
     };
-    let af = BizActivity::insert(&mut rb.clone(), &t).await;
+    let af = BizActivity::insert(&mut rb, &t).await;
     println!("{:?}", af);
 
     sleep(Duration::from_secs(2));
 
-    let data = BizActivity::select_all_by_id(&mut rb.clone(), "1", "1").await;
+    let data = BizActivity::select_all_by_id(&mut rb, "1", "1").await;
     println!("{:?}", data);
 
     sleep(Duration::from_secs(2));
 
-    let data = BizActivity::select_by_id(&mut rb.clone(), "1".to_string()).await;
+    let data = BizActivity::select_by_id(&mut rb, "1".to_string()).await;
     println!("{:?}", data);
 
     sleep(Duration::from_secs(2));
-    let data = BizActivity::update_by_column(&mut rb.clone(), &t, "id").await;
+    let data = BizActivity::update_by_column(&mut rb, &t, "id").await;
     println!("{:?}", data);
 
     sleep(Duration::from_secs(2));
-    let data = BizActivity::delete_by_column(&mut rb.clone(), "id", &"2".into()).await;
+    let data = BizActivity::delete_by_column(&mut rb, "id", &"2".into()).await;
     println!("{:?}", data);
 }
 
