@@ -132,6 +132,15 @@ impl Rbatis {
         return Ok(p.unwrap());
     }
 
+    /// get conn pool
+    pub fn get_pool_mut(&mut self) -> Result<&mut Pool, Error> {
+        let p = self.pool.get_mut();
+        if p.is_none() {
+            return Err(Error::from("[rbatis] rbatis pool not inited!"));
+        }
+        return Ok(p.unwrap());
+    }
+
     /// get driver type
     pub fn driver_type(&self) -> Result<&str, Error> {
         let pool = self.get_pool()?;
