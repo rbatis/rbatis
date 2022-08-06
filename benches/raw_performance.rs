@@ -33,23 +33,6 @@ fn bench_raw() {
 }
 
 
-
-#[derive(Clone, Debug, serde::Serialize, serde::Deserialize)]
-struct MockTable {
-    pub id: Option<String>,
-    pub name: Option<String>,
-    pub pc_link: Option<String>,
-    pub h5_link: Option<String>,
-    pub pc_banner_img: Option<String>,
-    pub h5_banner_img: Option<String>,
-    pub sort: Option<String>,
-    pub status: Option<i32>,
-    pub remark: Option<String>,
-    pub create_time: Option<rbdc::datetime::FastDateTime>,
-    pub version: Option<i64>,
-    pub delete_flag: Option<i32>,
-}
-impl_insert!(MockTable {});
 //cargo test --release --package rbatis --bench raw_performance bench_insert  --no-fail-fast -- --exact -Z unstable-options --show-output
 //---- bench_insert stdout ----(win10,cpu-amd5950x)
 // use Time: 130.5443ms ,each:1305 ns/op
@@ -158,3 +141,20 @@ impl ConnectOptions for MockConnectOptions {
         self
     }
 }
+
+#[derive(Clone, Debug, serde::Serialize, serde::Deserialize)]
+struct MockTable {
+    pub id: Option<String>,
+    pub name: Option<String>,
+    pub pc_link: Option<String>,
+    pub h5_link: Option<String>,
+    pub pc_banner_img: Option<String>,
+    pub h5_banner_img: Option<String>,
+    pub sort: Option<String>,
+    pub status: Option<i32>,
+    pub remark: Option<String>,
+    pub create_time: Option<rbdc::datetime::FastDateTime>,
+    pub version: Option<i64>,
+    pub delete_flag: Option<i32>,
+}
+impl_insert!(MockTable {});
