@@ -51,6 +51,7 @@ pub fn as_element(args: &Vec<Node>) -> Vec<Element> {
                 } else {
                     el.data = t.to_string();
                 }
+                el.data = el.data.replace("``","").to_string();
             }
             Node::Element(element) => {
                 el.tag = element.name.to_string();

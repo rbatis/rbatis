@@ -222,6 +222,25 @@ macro_rules! impl_delete {
             }
         }
     };
+    ($table:ty{$fn_name:ident($($param_key:ident:$param_type:ty$(,)?)+)} => $sql_where:expr) => {
+        impl $table {
+            pub async fn $fn_name(
+                rb: &mut dyn $crate::executor::Executor,
+                $($param_key:$param_type,)+
+            ) -> Result<rbdc::db::ExecResult, rbdc::Error> {
+                #[py_sql("`delete from ${table_name} `",$sql_where)]
+                async fn do_delete_by_where(
+                    rb: &mut dyn $crate::executor::Executor,
+                    table_name: String,
+                    $($param_key:$param_type,)+
+                ) -> Result<rbdc::db::ExecResult, rbdc::Error> {
+                    impled!()
+                }
+                let table_name = $crate::utils::string_util::to_snake_name(stringify!($table));
+                do_delete_by_where(rb, table_name, $($param_key,)+).await
+            }
+        }
+    };
 }
 
 #[macro_export]
