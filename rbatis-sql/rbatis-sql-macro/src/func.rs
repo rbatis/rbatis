@@ -47,7 +47,7 @@ fn convert_to_arg_access(context: &str, arg: Expr, as_proxy: bool, ignore: &[Str
                 }
             }
             if fetch_from_arg {
-                return syn::parse_str::<Expr>(&format!("(&arg[\"{}\"])", param)).unwrap();
+                return syn::parse_str::<Expr>(&format!("&arg[\"{}\"]", param)).unwrap();
             } else {
                 return syn::parse_str::<Expr>(&format!("{}", param)).unwrap();
             }

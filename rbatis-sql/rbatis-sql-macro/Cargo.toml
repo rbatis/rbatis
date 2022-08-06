@@ -1,6 +1,6 @@
 [package]
 name = "rbatis_sql_macro"
-version = "4.0.0"
+version = "4.0.1"
 authors = ["zxj_pc <zhuxiujia@qq.com>"]
 edition = "2018"
 license = "Apache-2.0"

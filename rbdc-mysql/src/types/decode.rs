@@ -16,7 +16,7 @@ impl From<MySqlValue> for Value {
             ColumnType::Float => Value::F32(f32_decode(v).unwrap_or_default()),
             ColumnType::Double => Value::F64(f64_decode(v).unwrap_or_default()),
             ColumnType::Null => Value::Null,
-            ColumnType::LongLong => Value::Bool(decode_bool(v).unwrap_or_default()),
+            ColumnType::LongLong => Value::I64(int_decode(v).unwrap_or_default()),
             ColumnType::Int24 => Value::I32(int_decode(v).unwrap_or_default() as i32),
             ColumnType::VarChar => Value::String(v.as_str().unwrap_or_default().to_string()),
             ColumnType::Bit => Value::U64(uint_decode(v).unwrap_or_default()),
