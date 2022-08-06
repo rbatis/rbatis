@@ -35,7 +35,7 @@ fn bench_raw() {
 
 
 #[derive(Clone, Debug, serde::Serialize, serde::Deserialize)]
-pub struct BizActivity {
+struct MockTable {
     pub id: Option<String>,
     pub name: Option<String>,
     pub pc_link: Option<String>,
@@ -49,7 +49,7 @@ pub struct BizActivity {
     pub version: Option<i64>,
     pub delete_flag: Option<i32>,
 }
-impl_insert!(BizActivity {});
+impl_insert!(MockTable {});
 //cargo test --release --package rbatis --bench raw_performance bench_insert  --no-fail-fast -- --exact -Z unstable-options --show-output
 //---- bench_insert stdout ----(win10,cpu-amd5950x)
 // use Time: 130.5443ms ,each:1305 ns/op
@@ -62,7 +62,7 @@ fn bench_insert() {
         rbatis
     });
     block_on!(async{
-        let mut t = BizActivity {
+        let mut t = MockTable {
         id: Some("2".into()),
         name: Some("2".into()),
         pc_link: Some("2".into()),
@@ -77,7 +77,7 @@ fn bench_insert() {
         delete_flag: Some(1),
     };
         rbatis::bench!(100000,{
-            BizActivity::insert(&mut rbatis.clone(),&t).await;
+            MockTable::insert(&mut rbatis.clone(),&t).await;
         });
    });
 }
