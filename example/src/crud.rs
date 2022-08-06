@@ -27,6 +27,7 @@ impl_select!(BizActivity{select_by_id(id:String) -> Option => " where id = #{id}
 impl_update!(BizActivity {});
 impl_update!(BizActivity{update_by_name(name:&str)}=> " where id = 1");
 impl_delete!(BizActivity {});
+impl_delete!(BizActivity {delete_by_name(name:&str)}=> " where name= '2'");
 impl_select_page!(BizActivity{select_page(name:&str) => " where name != #{name}"});
 
 
@@ -71,6 +72,10 @@ pub async fn main() {
 
     sleep(Duration::from_secs(2));
     let data = BizActivity::delete_by_column(&mut rb, "id", &"2".into()).await;
+    println!("delete_by_column = {:?}", data);
+
+    sleep(Duration::from_secs(2));
+    let data = BizActivity::delete_by_name(&mut rb, "2").await;
     println!("delete_by_column = {:?}", data);
 
     sleep(Duration::from_secs(2));
