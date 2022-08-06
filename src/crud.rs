@@ -165,24 +165,42 @@ macro_rules! impl_update {
                 table: &$table,
                 $($param_key:$param_type,)+
             ) -> Result<rbdc::db::ExecResult, rbdc::Error> {
-                #[py_sql("`update ${table_name} set  `
-                               trim ',':
-                                 for k,v in table:
-                                   if k == column || v== null:
-                                      #{continue}
-                                   `${k}=#{v},`
-                          ",$sql_where)]
-                async fn do_update_by_where(
-                    rb: &mut dyn $crate::executor::Executor,
-                    table_name: String,
-                    table: &rbs::Value,
-                    $($param_key:$param_type,)+
-                ) -> Result<rbdc::db::ExecResult, rbdc::Error> {
-                    impled!()
+                if $sql_where.is_empty(){
+                    return Err(rbdc::Error::from("sql_where can't be empty!"));
                 }
-                let table_name = $crate::utils::string_util::to_snake_name(stringify!($table));
-                let table = rbs::to_value!(table);
-                do_update_by_where(rb, table_name, &table, $($param_key,)+).await
+                if $sql_where.starts_with("update"){
+                  #[py_sql($sql_where)]
+                  async fn do_update_by_where(
+                      rb: &mut dyn $crate::executor::Executor,
+                      table_name: String,
+                      table: &rbs::Value,
+                      $($param_key:$param_type,)+
+                  ) -> Result<rbdc::db::ExecResult, rbdc::Error> {
+                      impled!()
+                  }
+                  let table_name = $crate::utils::string_util::to_snake_name(stringify!($table));
+                  let table = rbs::to_value!(table);
+                  do_update_by_where(rb, table_name, &table, $($param_key,)+).await
+                } else {
+                  #[py_sql("`update ${table_name} set  `
+                                 trim ',':
+                                   for k,v in table:
+                                     if k == column || v== null:
+                                        #{continue}
+                                     `${k}=#{v},`
+                            ",$sql_where)]
+                  async fn do_update_by_where(
+                      rb: &mut dyn $crate::executor::Executor,
+                      table_name: String,
+                      table: &rbs::Value,
+                      $($param_key:$param_type,)+
+                  ) -> Result<rbdc::db::ExecResult, rbdc::Error> {
+                      impled!()
+                  }
+                  let table_name = $crate::utils::string_util::to_snake_name(stringify!($table));
+                  let table = rbs::to_value!(table);
+                  do_update_by_where(rb, table_name, &table, $($param_key,)+).await
+                }
             }
         }
     };
