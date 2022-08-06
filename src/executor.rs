@@ -16,6 +16,13 @@ use serde::de::DeserializeOwned;
 use serde::{Serialize, Serializer};
 use crate::Error;
 
+/// the rbatis's Executor. this trait maybe is tx,connection,rbatis object
+#[async_trait]
+pub trait Executor: RbatisRef {
+    async fn exec(&mut self, sql: &str, args: Vec<Value>) -> Result<ExecResult, Error>;
+    async fn fetch(&mut self, sql: &str, args: Vec<Value>) -> Result<Value, Error>;
+}
+
 #[async_trait]
 pub trait RbatisRef {
     fn get_rbatis(&self) -> &Rbatis;
@@ -23,12 +30,6 @@ pub trait RbatisRef {
     fn driver_type(&self) -> crate::Result<&str> {
         self.get_rbatis().driver_type()
     }
-}
-
-#[async_trait]
-pub trait Executor: RbatisRef {
-    async fn exec(&mut self, sql: &str, args: Vec<Value>) -> Result<ExecResult, Error>;
-    async fn fetch(&mut self, sql: &str, args: Vec<Value>) -> Result<Value, Error>;
 }
 
 impl RbatisRef for Rbatis {

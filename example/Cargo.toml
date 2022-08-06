@@ -25,6 +25,9 @@ path = "src/macro_proc_rawsql.rs"
 [[bin]]
 name = "crud"
 path = "src/crud.rs"
+[[bin]]
+name = "plugin_table_sync"
+path = "src/plugin_table_sync.rs"
 
 [dependencies]
 #serde and base types
