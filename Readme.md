@@ -148,7 +148,7 @@ async fn main() {
     version: Some(1),
     delete_flag: Some(1),
   };
-  let data = BizActivity::insert(&mut rb, &t).await;
+  let data = BizActivity::insert(&mut rb, &activity).await;
   println!("insert = {:?}", data);
 
   let data = BizActivity::select_all_by_id(&mut rb, "1", "1").await;
@@ -157,10 +157,10 @@ async fn main() {
   let data = BizActivity::select_by_id(&mut rb, "1".to_string()).await;
   println!("select_by_id = {:?}", data);
 
-  let data = BizActivity::update_by_column(&mut rb, &t, "id").await;
+  let data = BizActivity::update_by_column(&mut rb, &activity, "id").await;
   println!("update_by_column = {:?}", data);
 
-  let data = BizActivity::update_by_name(&mut rb, &t, "test").await;
+  let data = BizActivity::update_by_name(&mut rb, &activity, "test").await;
   println!("update_by_name = {:?}", data);
 
   let data = BizActivity::delete_by_column(&mut rb, "id", &"2".into()).await;
