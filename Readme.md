@@ -76,7 +76,7 @@
 ```toml
 # add this library,and cargo install
 
-# bson (required)
+# serde/rbs (required)
 serde = { version = "1", features = ["derive"] }
 rbs = "0.1"
 # logging lib(required)
