@@ -134,7 +134,12 @@ pub trait ConnectOptions: Any + Send + Sync + Debug + 'static {
     ///set option from uri
     fn set_uri(&mut self, uri: &str) -> Result<(), Error>;
 
-    /// uppercase self
+    /// uppercase self,default is this code
+    ///```rust
+    /// fn uppercase_self(&self) -> &(dyn Any + Send + Sync) {
+    ///         self
+    ///     }
+    /// ```
     fn uppercase_self(&self) -> &(dyn Any + Send + Sync);
 }
 

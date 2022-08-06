@@ -37,9 +37,7 @@ upper_case_sql_keyword = []
 [dependencies]
 rbatis-sql = { version = "4.0", path="rbatis-sql", optional = true }
 rbatis-macro-driver = { version = "4.0", path = "rbatis-macro-driver", default-features = false, optional = true }
-chrono = { version = "0.4", features = ["serde"] }
-#serde
-serde = { version = "1", features = ["derive"] }
+serde = "1"
 #uuid
 uuid = { version = "0.8", features = ["serde", "v4"] }
 #log
@@ -56,8 +54,11 @@ rbs = { path = "rbs" }
 rbdc = { path = "rbdc" }
 decimal = "2"
 crossbeam = "0.8.2"
+
+chrono = { version = "0.4", features = ["serde"] }
 [dev-dependencies]
 serde_json = "1"
+tokio = {version="1",features=["fs", "net", "rt", "rt-multi-thread", "time", "io-util"]}
 
 [profile.release]
 lto = true
