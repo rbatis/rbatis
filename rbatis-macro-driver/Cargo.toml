@@ -1,14 +1,14 @@
 [package]
 name = "rbatis-macro-driver"
 version = "4.0.0"
-description = "rbatis macro driver 高性能Rust orM框架 宏系统支持"
+edition = "2021"
+description = "The Rust SQL Toolkit and ORM Library. An async, pure Rust SQL crate featuring compile-time Dynamic SQL"
 readme = "Readme.md"
 authors = ["ce <zhuxiujia@qq.com>"]
-edition = "2021"
 license = "Apache-2.0"
-documentation = "https://rbatis.github.io/rbatis.io/#/"
+documentation = "https://rbatis.github.io/rbatis.io/#/en/"
 repository = "https://github.com/rbatis/rbatis"
-homepage = "https://rbatis.github.io/rbatis.io/#/"
+homepage = "https://rbatis.github.io/rbatis.io/#/en/"
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
