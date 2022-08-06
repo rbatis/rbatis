@@ -54,6 +54,7 @@ rbs = { path = "rbs" }
 rbdc = { path = "rbdc" }
 decimal = "2"
 crossbeam = "0.8.2"
+mobc = "0.7"
 [dev-dependencies]
 serde_json = "1"
 tokio = {version="1",features=["fs", "net", "rt", "rt-multi-thread", "time", "io-util"]}
