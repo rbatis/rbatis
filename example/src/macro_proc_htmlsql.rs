@@ -1,38 +1,46 @@
-#[cfg(test)]
-mod test {
-    use std::fs::File;
-    use std::io::Read;
+#![allow(unused_mut)]
+#![allow(unused_imports)]
+#![allow(unreachable_patterns)]
+#![allow(unused_variables)]
+#![allow(unused_assignments)]
+#![allow(unused_must_use)]
+#![allow(dead_code)]
 
-    use rbatis::executor::RbatisExecutor;
-    use rbatis::plugin::page::{Page, PageRequest};
-    use rbatis::rbatis::Rbatis;
+#[macro_use]
+extern crate rbatis;
 
-    use crate::{init_sqlite, BizActivity};
+pub mod model;
+use model::*;
 
-    ///select page must have  '?:&PageRequest' arg and return 'Page<?>'
-    #[html_sql("example/example.html")]
-    async fn select_by_condition(
-        mut rb: RbatisExecutor<'_, '_>,
-        page_req: &PageRequest,
-        name: &str,
-        dt: &rbatis::DateTimeNative,
-    ) -> Page<BizActivity> {
-        impled!()
-    }
+use rbatis::executor::Executor;
+use rbatis::rbatis::Rbatis;
+use rbatis::sql::page::{Page, PageRequest};
+use std::fs::File;
+use std::io::Read;
 
-    #[tokio::test]
-    pub async fn test_select_by_condition() {
-        fast_log::init(fast_log::config::Config::new().console());
-        //use static ref
-        let rb = init_sqlite().await;
-        let a = select_by_condition(
-            rb.as_executor(),
-            &PageRequest::new(1, 10),
-            "test",
-            &rbatis::DateTimeNative::now(),
-        )
-        .await
-        .unwrap();
-        println!("{:?}", a);
-    }
+///select page must have  '?:&PageRequest' arg and return 'Page<?>'
+#[html_sql("example/example.html")]
+async fn select_by_condition(
+    rb: &mut dyn Executor,
+    page_req: &PageRequest,
+    name: &str,
+    dt: &rbatis::core::datetime::FastDateTime,
+) -> Vec<BizActivity> {
+    impled!()
+}
+
+#[tokio::main]
+pub async fn main() {
+    fast_log::init(fast_log::config::Config::new().console());
+    //use static ref
+    let rb = init_sqlite().await;
+    let a = select_by_condition(
+        &mut rb.clone(),
+        &PageRequest::new(1, 10),
+        "test",
+        &rbatis::core::datetime::FastDateTime::now().set_micro(0),
+    )
+    .await
+    .unwrap();
+    println!("{:?}", a);
 }

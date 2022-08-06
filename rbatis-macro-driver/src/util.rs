@@ -17,7 +17,7 @@ pub(crate) fn find_return_type(target_fn: &ItemFn) -> proc_macro2::TokenStream {
     let s = format!("{}", return_ty);
     if !s.contains(":: Result") && !s.starts_with("Result") {
         return_ty = quote! {
-             rbatis::core :: Result <#return_ty>
+             rbatis::Result <#return_ty>
         };
     }
     return_ty
@@ -111,7 +111,7 @@ pub(crate) fn find_fn_body(target_fn: &ItemFn) -> proc_macro2::TokenStream {
 }
 
 pub(crate) fn is_fetch(return_source: &str) -> bool {
-    let is_select = !return_source.contains("DBExecResult");
+    let is_select = !return_source.contains("ExecResult");
     return is_select;
 }
 
@@ -121,6 +121,7 @@ pub(crate) fn is_rbatis_ref(ty_stream: &str) -> bool {
         || ty_stream.contains("RBatisConnExecutor")
         || ty_stream.contains("RBatisTxExecutor")
         || ty_stream.contains("RBatisTxExecutorGuard")
+        || ty_stream.contains("Executor")
     {
         return true;
     }

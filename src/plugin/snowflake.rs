@@ -1,10 +1,9 @@
 use std::sync::atomic::{AtomicI64, Ordering};
 use std::sync::Arc;
-
-use chrono::Utc;
 use once_cell::sync::Lazy;
 use serde::ser::SerializeStruct;
 use serde::{Deserializer, Serializer};
+use rbdc::datetime::FastDateTime;
 
 ///Snowflakes algorithm
 #[derive(Debug)]
@@ -32,7 +31,7 @@ impl serde::Serialize for Snowflake {
 }
 
 impl<'de> serde::Deserialize<'de> for Snowflake {
-    fn deserialize<D>(mut deserializer: D) -> Result<Self, D::Error>
+    fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
     where
         D: Deserializer<'de>,
     {
@@ -126,7 +125,7 @@ impl Snowflake {
     }
 
     fn get_time(&self) -> i64 {
-        Utc::now().timestamp_millis() - self.epoch
+        FastDateTime::utc().unix_timestamp_millis() - self.epoch
     }
 }
 

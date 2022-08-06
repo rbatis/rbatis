@@ -1,1204 +1,310 @@
-use std::collections::{BTreeMap, HashMap, HashSet, LinkedList, VecDeque};
-use std::fmt::Display;
-use std::hash::Hash;
+#[macro_export]
+macro_rules! crud {
+    ($table:ty{}) => {
+         $crate::impl_insert!($table {});
+         $crate::impl_select!($table {});
+         $crate::impl_update!($table {});
+         $crate::impl_delete!($table {});
+    }
+}
 
-use async_trait::async_trait;
-use serde::de::DeserializeOwned;
-use serde::{Deserialize, Deserializer, Serialize, Serializer};
 
-use crate::core::convert::{ResultCodec, StmtConvert};
-use crate::core::db::DBExecResult;
-use crate::core::db::DriverType;
-use crate::core::Error;
-use crate::core::Result;
-use crate::executor::{ExecutorMut, RBatisConnExecutor, RBatisTxExecutor};
-use crate::plugin::page::{IPage, IPageRequest, Page};
-use crate::rbatis::Rbatis;
-use crate::sql::rule::SqlRule;
-use crate::utils::string_util::to_snake_name;
-use crate::wrapper::Wrapper;
-use rbatis_sql::ops::AsProxy;
-use rbson::Bson;
-use rbson::Bson::Null;
-use std::marker::PhantomData;
-use std::ops::{Deref, DerefMut};
-use std::option::Option::Some;
-use std::sync::Arc;
 
-/// DataBase Table Model trait
+
+///gen sql => INSERT INTO table_name (column1,column2,column3,...) VALUES (value1,value2,value3,...);
 ///
-/// if use #[crud_table] impl Table struct,
-/// for example:
-///  #[crud_table(table_name:"biz_activity"|table_columns:"id,name,version,delete_flag"|formats_pg:"id:{}::uuid")]
+/// example:
+/// ```rust
+/// rbatis::impl_insert!(BizActivity{});
+/// ```
 ///
+#[macro_export]
+macro_rules! impl_insert {
+    ($table:ty{}) => {
+        $crate::impl_insert!(
+            $table,
+            $crate::utils::string_util::to_snake_name(stringify!($table))
+        );
+    };
+    ($table:ty,$table_name:expr) => {
+        impl $table {
+            pub async fn insert(
+                rb: &mut dyn $crate::executor::Executor,
+                table: &$table,
+            ) -> Result<rbdc::db::ExecResult, rbdc::Error> {
+                #[$crate::py_sql(
+                    "`insert into ${table_name} (`
+             trim ',':
+               for k,v in table:
+                  if k == 'id' && v== null:
+                    #{continue}
+                 ${k},
+             `) VALUES (`
+             trim ',':
+               for k,v in table:
+                  if k == 'id' && v== null:
+                     #{continue}
+                  #{v},
+             )"
+                )]
+                async fn do_insert(
+                    rb: &mut dyn $crate::executor::Executor,
+                    table: &$table,
+                    table_name: String,
+                ) -> Result<rbdc::db::ExecResult, rbdc::Error> {
+                    impled!()
+                }
+                let table_name = $table_name.to_string();
+                do_insert(rb.into(), table, table_name).await
+            }
+        }
+    };
+}
+
+///gen sql => SELECT (column1,column2,column3,...) FROM table_name (column1,column2,column3,...)  *** WHERE ***
 ///
-pub trait CRUDTable: Send + Sync + Serialize {
-    /// get table name,default is type name for snake name
-    ///
-    /// for Example:  struct  BizActivity{} =>  "biz_activity"
-    /// also. you can overwrite this method return ture name
-    ///
-    ///  impl CRUDTable for BizActivity{
-    ///   table_name() -> String{
-    ///     "biz_activity".to_string()
-    ///   }
-    /// }
-    ///
-    ///
-    ///
-    fn table_name() -> String {
-        let type_name = std::any::type_name::<Self>();
-        let mut name = type_name.to_string();
-        let names: Vec<&str> = name.split("::").collect();
-        name = names.get(names.len() - 1).unwrap_or(&"").to_string();
-        return to_snake_name(&name);
-    }
-
-    /// get table fields string
-    ///
-    /// for Example:
-    ///   "create_time,delete_flag,h5_banner_img,h5_link,id,name,pc_banner_img,pc_link,remark,sort,status,version"
-    ///
-    /// you also can impl this method for static string
-    ///
-    /// If a macro is used, the method is overridden by the macro
-    fn table_columns() -> String;
-
-    ///format column
-    fn do_format_column(driver_type: &DriverType, column: &str, data: &mut String) {
-        let m = Self::formats(driver_type);
-        let source = m.get(column);
-        match source {
-            Some(source) => {
-                *data = source.replace("{}", data);
-            }
-            _ => {}
-        }
-    }
-
-    ///return (columns_sql,columns_values_sql,args)
-    fn make_value_sql_arg(
-        &self,
-        db_type: &DriverType,
-        index: &mut usize,
-        skips: &[Skip],
-    ) -> Result<(String, String, Vec<rbson::Bson>)> {
-        let mut value_sql = String::new();
-        let mut arr = vec![];
-        let cols = Self::table_columns();
-        let columns: Vec<&str> = cols.split(",").collect();
-        let mut map;
-        match crate::as_bson!(self) {
-            rbson::Bson::Document(m) => {
-                map = m;
-            }
-            _ => {
-                return Err(Error::from("[rbatis] arg not an struct or map!"));
+/// example:
+///```rust
+/// pub struct BizActivity{}
+///rbatis::impl_select!(BizActivity{});
+///rbatis::impl_select!(BizActivity{select_all_by_id(id:&str,name:&str) => "select * from biz_activity where id = #{id} and name = #{name}"});
+///rbatis::impl_select!(BizActivity{select_by_id(id:String) -> Option => "select * from biz_activity where id = #{id} limit 1"});
+///
+/// //use
+/// //BizActivity::select**()
+/// ```
+///
+#[macro_export]
+macro_rules! impl_select {
+    ($table:ty{}) => {
+        $crate::impl_select!($table,$crate::utils::string_util::to_snake_name(stringify!($table)));
+    };
+    ($table:ty,$table_name:expr) => {
+        impl $table{
+            pub async fn select_all(rb: &mut dyn  $crate::executor::Executor)->Result<Vec<$table>,rbdc::Error>{
+                #[$crate::py_sql(
+"select * from ${table_name}")]
+async fn do_select_all(rb: &mut dyn $crate::executor::Executor,table_name:String) -> Result<Vec<$table>,rbdc::Error> {impled!()}
+            let table_name = $table_name.to_string();
+            do_select_all(rb,table_name).await
             }
         }
-        let mut column_sql = String::new();
-        for column in columns {
-            let mut do_continue = false;
-            let column_unpacking = crate::utils::string_util::un_packing_string(column);
-            for x in skips {
-                match x {
-                    Skip::Column(skip_column) => {
-                        if column_unpacking.eq(*skip_column) || column.eq(*skip_column) {
-                            do_continue = true;
-                            break;
-                        }
-                    }
-                    _ => {}
+    };
+    ($table:ty{$fn_name:ident($($param_key:ident:$param_type:ty$(,)?)+) => $sql:expr}) => {
+        impl $table{
+            pub async fn $fn_name(rb: &mut dyn  $crate::executor::Executor,$($param_key:$param_type,)+)->Result<Vec<$table>,rbdc::Error>{
+                 if $sql.starts_with("select"){
+                     #[$crate::py_sql($sql)]
+                     async fn do_select_all_raw(rb: &mut dyn $crate::executor::Executor,$($param_key:$param_type,)+) -> Result<Vec<$table>,rbdc::Error> {impled!()}
+                     do_select_all_raw(rb,$($param_key ,)+).await
+                 }else{
+                     #[$crate::py_sql("select * from biz_activity ",$sql)]
+                     async fn do_select_all(rb: &mut dyn $crate::executor::Executor,$($param_key:$param_type,)+) -> Result<Vec<$table>,rbdc::Error> {impled!()}
+                     do_select_all(rb,$($param_key ,)+).await
+                 }
+            }
+        }
+    };
+    // select to an container
+    // for example:
+    // impl_select!(BizActivity{select_by_id(id:String) -> Option => "select * from biz_activity where id = #{id} limit 1"});
+    // impl_select!(BizActivity{select_by_id(id:String) -> HashMap => "select * from biz_activity where id = #{id} limit 1"});
+    // impl_select!(BizActivity{select_by_id(id:String) -> Vec => "select * from biz_activity where id = #{id} limit 1"});
+    ($table:ty{$fn_name:ident($($param_key:ident:$param_type:ty$(,)?)+) -> $container:tt => $sql:expr}) => {
+        impl $table{
+            pub async fn $fn_name(rb: &mut dyn  $crate::executor::Executor,$($param_key:$param_type,)+)->Result<$container<$table>,rbdc::Error>{
+                if $sql.starts_with("select"){
+                    #[$crate::py_sql($sql)]
+                    async fn do_select_all_raw(rb: &mut dyn $crate::executor::Executor,$($param_key:$param_type,)+) -> Result<$container<$table>,rbdc::Error> {impled!()}
+                    do_select_all_raw(rb,$($param_key ,)+).await
+                }else{
+                     #[$crate::py_sql("select * from biz_activity ",$sql)]
+                     async fn do_select_all(rb: &mut dyn $crate::executor::Executor,$($param_key:$param_type,)+) -> Result<$container<$table>,rbdc::Error> {impled!()}
+                     do_select_all(rb,$($param_key ,)+).await
                 }
             }
-            if do_continue {
-                continue;
-            }
-            let v = map.remove(column_unpacking).unwrap_or(rbson::Bson::Null);
-            for x in skips {
-                match x {
-                    Skip::Value(skip_value) => {
-                        if v.eq(skip_value) {
-                            do_continue = true;
-                            break;
-                        }
-                    }
-                    _ => {}
-                }
-            }
-            if do_continue {
-                continue;
-            }
-            //cast convert
-            column_sql = column_sql + column + ",";
-            let mut data = String::new();
-            db_type.stmt_convert(*index, &mut data);
-            Self::do_format_column(db_type, &column_unpacking, &mut data);
-            value_sql = value_sql + data.as_str() + ",";
-            arr.push(v);
-            *index += 1;
         }
-        column_sql.pop(); //remove ','
-        value_sql.pop(); //remove ','
-        return Ok((column_sql, value_sql, arr));
-    }
-
-    /// return cast chain
-    /// column:format_str
-    /// for example: HashMap<"id",|arg|“{}::uuid”.to_string()>
-    fn formats(driver_type: &crate::core::db::DriverType) -> HashMap<String, String> {
-        return HashMap::new();
-    }
-
-    /// return table column value
-    /// If a macro is used, the method is overridden by the macro
-    fn get(&self, column: &str) -> rbson::Bson {
-        let s = rbson::to_bson(self).unwrap_or_default();
-        match s {
-            rbson::Bson::Document(d) => d.get(column).unwrap_or(&Bson::Null).clone(),
-            _ => Bson::Null,
-        }
-    }
+    };
 }
 
-impl<T> CRUDTable for &T
-where
-    T: CRUDTable,
-{
-    fn table_name() -> String {
-        T::table_name()
-    }
-
-    fn table_columns() -> String {
-        T::table_columns()
-    }
-}
-
-impl<T> CRUDTable for &mut T
-where
-    T: CRUDTable,
-{
-    fn table_name() -> String {
-        T::table_name()
-    }
-
-    fn table_columns() -> String {
-        T::table_columns()
-    }
-}
-
-impl<T> CRUDTable for Option<T>
-where
-    T: CRUDTable,
-{
-    fn table_name() -> String {
-        T::table_name()
-    }
-
-    fn table_columns() -> String {
-        T::table_columns()
-    }
-
-    fn formats(driver_type: &DriverType) -> HashMap<String, String> {
-        T::formats(driver_type)
-    }
-
-    fn make_value_sql_arg(
-        &self,
-        db_type: &DriverType,
-        index: &mut usize,
-        skips: &[Skip],
-    ) -> Result<(String, String, Vec<rbson::Bson>)> {
-        if self.is_none() {
-            return Err(crate::core::Error::from(
-                "[rbatis] can not call make_sql_arg() for an None table!",
-            ));
-        }
-        T::make_value_sql_arg(self.as_ref().unwrap(), db_type, index, skips)
-    }
-}
-
-impl<T> CRUDTable for Arc<T>
-where
-    T: CRUDTable,
-{
-    fn table_name() -> String {
-        T::table_name()
-    }
-
-    fn table_columns() -> String {
-        T::table_columns()
-    }
-
-    fn formats(driver_type: &DriverType) -> HashMap<String, String> {
-        T::formats(driver_type)
-    }
-
-    fn make_value_sql_arg(
-        &self,
-        db_type: &DriverType,
-        index: &mut usize,
-        skips: &[Skip],
-    ) -> Result<(String, String, Vec<rbson::Bson>)> {
-        T::make_value_sql_arg(self, db_type, index, skips)
-    }
-}
-
-impl<T> CRUDTable for Box<T>
-where
-    T: CRUDTable,
-{
-    fn table_name() -> String {
-        T::table_name()
-    }
-
-    fn table_columns() -> String {
-        T::table_columns()
-    }
-
-    fn formats(driver_type: &DriverType) -> HashMap<String, String> {
-        T::formats(driver_type)
-    }
-
-    fn make_value_sql_arg(
-        &self,
-        db_type: &DriverType,
-        index: &mut usize,
-        skips: &[Skip],
-    ) -> Result<(String, String, Vec<rbson::Bson>)> {
-        T::make_value_sql_arg(self, db_type, index, skips)
-    }
-}
-
-#[async_trait]
-pub trait CRUD {
-    /// Return can be DBExecResult or any type
-    async fn save_by_wrapper<T, R>(&self, table: &T, w: Wrapper, skips: &[Skip]) -> Result<R>
-    where
-        T: CRUDTable,
-        R: DeserializeOwned;
-
-    async fn save<T>(&self, table: &T, skips: &[Skip]) -> Result<DBExecResult>
-    where
-        T: CRUDTable;
-
-    async fn save_batch<T>(&self, tables: &[T], skips: &[Skip]) -> Result<DBExecResult>
-    where
-        T: CRUDTable;
-
-    /// save_batch_slice
-    /// batch save each slice_len every time
-    async fn save_batch_slice<T>(
-        &self,
-        tables: &[T],
-        slice_len: usize,
-        skips: &[Skip],
-    ) -> Result<DBExecResult>
-    where
-        T: CRUDTable;
-
-    async fn remove_by_wrapper<T>(&self, w: Wrapper) -> Result<u64>
-    where
-        T: CRUDTable;
-
-    /// remove_by_column
-    /// column_value,column's value
-    async fn remove_by_column<T, P>(&self, column: &str, column_value: P) -> Result<u64>
-    where
-        T: CRUDTable,
-        P: Serialize + Send + Sync;
-
-    /// remove_batch_by_column
-    /// column_values,column's value
-    async fn remove_batch_by_column<T, P>(&self, column: &str, column_values: &[P]) -> Result<u64>
-    where
-        T: CRUDTable,
-        P: Serialize + Send + Sync;
-
-    /// update_by_wrapper
-    /// skips: use &[Skip::Null] will skip id column and null value param
-    async fn update_by_wrapper<T>(&self, table: &T, w: Wrapper, skips: &[Skip]) -> Result<u64>
-    where
-        T: CRUDTable;
-    /// update database record by id
-    async fn update_by_column<T>(&self, column: &str, table: &T) -> Result<u64>
-    where
-        T: CRUDTable;
-
-    /// remove batch database record by args
-    async fn update_batch_by_column<T>(&self, column: &str, tables: &[T]) -> Result<u64>
-    where
-        T: CRUDTable;
-
-    /// fetch database record by id
-    async fn fetch_by_column<T, P>(&self, column: &str, value: P) -> Result<T>
-    where
-        T: CRUDTable + DeserializeOwned,
-        P: Serialize + Send + Sync;
-
-    /// fetch database record by a wrapper
-    async fn fetch_by_wrapper<T>(&self, w: Wrapper) -> Result<T>
-    where
-        T: CRUDTable + DeserializeOwned;
-
-    /// count database record
-    async fn fetch_count<T>(&self) -> Result<u64>
-    where
-        T: CRUDTable;
-
-    /// count database record by a wrapper
-    async fn fetch_count_by_wrapper<T>(&self, w: Wrapper) -> Result<u64>
-    where
-        T: CRUDTable;
-
-    /// fetch page database record list by a wrapper
-    async fn fetch_page_by_wrapper<T>(
-        &self,
-        w: Wrapper,
-        page: &dyn IPageRequest,
-    ) -> Result<Page<T>>
-    where
-        T: CRUDTable + DeserializeOwned;
-
-    /// fetch database record list for all
-    async fn fetch_list<T>(&self) -> Result<Vec<T>>
-    where
-        T: CRUDTable + DeserializeOwned;
-
-    /// fetch database record list by a id array
-    async fn fetch_list_by_column<T, P>(&self, column: &str, column_values: &[P]) -> Result<Vec<T>>
-    where
-        T: CRUDTable + DeserializeOwned,
-        P: Serialize + Send + Sync;
-
-    /// fetch database record list by a wrapper
-    async fn fetch_list_by_wrapper<T>(&self, w: Wrapper) -> Result<Vec<T>>
-    where
-        T: CRUDTable + DeserializeOwned;
-
-    /// fetch page result(prepare sql)
-    async fn fetch_page<T>(
-        &self,
-        sql: &str,
-        args: Vec<rbson::Bson>,
-        page_request: &dyn IPageRequest,
-    ) -> Result<Page<T>>
-    where
-        T: DeserializeOwned + Serialize + Send + Sync;
-}
-
-#[async_trait]
-pub trait CRUDMut: ExecutorMut {
-    /// save by wrapper, use fetch.
-    async fn save_by_wrapper<T, R>(&mut self, table: &T, w: Wrapper, skips: &[Skip]) -> Result<R>
-    where
-        T: CRUDTable,
-        R: DeserializeOwned,
-    {
-        if w.sql.starts_with(crate::sql::TEMPLATE.insert_into.value) {
-            let res = self.exec(&w.sql, w.args).await?;
-            return Ok(rbson::from_bson(rbson::to_bson(&res)?)?);
-        } else {
-            let driver_type = self.driver_type()?;
-            let mut new_w = Wrapper::new(&driver_type);
-            let mut index = 0;
-            let (columns, column_values, args) =
-                table.make_value_sql_arg(&self.driver_type()?, &mut index, skips)?;
-            let table_name = choose_dyn_table_name::<T>(&new_w);
-            new_w = new_w.insert_into(&table_name, &columns, &column_values);
-            for x in args {
-                new_w.args.push(x);
-            }
-            new_w = new_w.push_wrapper(w);
-            return self.fetch(&new_w.sql, new_w.args).await;
-        }
-    }
-
-    /// save one entity to database
-    async fn save<T>(&mut self, table: &T, skips: &[Skip]) -> Result<DBExecResult>
-    where
-        T: CRUDTable,
-    {
-        let mut index = 0;
-        let (columns, values, args) =
-            table.make_value_sql_arg(&self.driver_type()?, &mut index, skips)?;
-        let sql = format!(
-            "{} {} ({}) {} ({})",
-            crate::sql::TEMPLATE.insert_into.value,
-            T::table_name(),
-            columns,
-            crate::sql::TEMPLATE.values.value,
-            values
+/// gen sql = UPDATE table_name SET column1=value1,column2=value2,... WHERE some_column=some_value;
+/// ```rust
+/// rbatis::impl_update!(BizActivity{});
+/// ```
+#[macro_export]
+macro_rules! impl_update {
+    ($table:ty{}) => {
+        $crate::impl_update!(
+            $table,
+            $crate::utils::string_util::to_snake_name(stringify!($table))
         );
-        return self.exec(sql.as_str(), args).await;
-    }
+    };
+    ($table:ty,$table_name:expr) => {
+        impl $table {
+            pub async fn update_by_column(
+                rb: &mut dyn $crate::executor::Executor,
+                table: &$table,
+                column: &str,
+            ) -> Result<rbdc::db::ExecResult, rbdc::Error> {
+                #[$crate::py_sql(
+                    "`update ${table_name} set `
+             trim ',':
+               for k,v in table:
+                  if k == column || v== null:
+                    #{continue}
+                 `${k}=#{v},`
+             ` where  ${column} = #{column_value}`"
+                )]
+                async fn do_update_by_column(
+                    rb: &mut dyn $crate::executor::Executor,
+                    table_name: String,
+                    table: &rbs::Value,
+                    column_value: &rbs::Value,
+                    column: &str,
+                ) -> Result<rbdc::db::ExecResult, rbdc::Error> {
+                    impled!()
+                }
+                let table_name = $table_name.to_string();
+                let table = rbs::to_value!(table);
+                let column_value = &table[column];
+                do_update_by_column(rb, table_name, &table, column_value, column).await
+            }
+        }
+    };
+    ($table:ty{$fn_name:ident($($param_key:ident:$param_type:ty$(,)?)+)} => $sql_where:expr) => {
+        impl $table {
+            pub async fn $fn_name(
+                rb: &mut dyn $crate::executor::Executor,
+                table: &$table,
+                $($param_key:$param_type,)+
+            ) -> Result<rbdc::db::ExecResult, rbdc::Error> {
+                if $sql_where.is_empty(){
+                    return Err(rbdc::Error::from("sql_where can't be empty!"));
+                }
+                if $sql_where.starts_with("update"){
+                  #[$crate::py_sql($sql_where)]
+                  async fn do_update_by_where(
+                      rb: &mut dyn $crate::executor::Executor,
+                      table_name: String,
+                      table: &rbs::Value,
+                      $($param_key:$param_type,)+
+                  ) -> Result<rbdc::db::ExecResult, rbdc::Error> {
+                      impled!()
+                  }
+                  let table_name = $crate::utils::string_util::to_snake_name(stringify!($table));
+                  let table = rbs::to_value!(table);
+                  do_update_by_where(rb, table_name, &table, $($param_key,)+).await
+                } else {
+                  #[$crate::py_sql("`update ${table_name} set  `
+                                 trim ',':
+                                   for k,v in table:
+                                     if k == column || v== null:
+                                        #{continue}
+                                     `${k}=#{v},`
+                            ",$sql_where)]
+                  async fn do_update_by_where(
+                      rb: &mut dyn $crate::executor::Executor,
+                      table_name: String,
+                      table: &rbs::Value,
+                      $($param_key:$param_type,)+
+                  ) -> Result<rbdc::db::ExecResult, rbdc::Error> {
+                      impled!()
+                  }
+                  let table_name = $crate::utils::string_util::to_snake_name(stringify!($table));
+                  let table = rbs::to_value!(table);
+                  do_update_by_where(rb, table_name, &table, $($param_key,)+).await
+                }
+            }
+        }
+    };
+}
 
-    /// save batch makes many value into  only one sql. make sure your data do not too long!
-    ///
-    /// for Example:
-    /// rb.save_batch("",&Cec![activity]);
-    /// [rbatis] Exec ==>   insert into biz_activity (id,name,version) values ( ? , ? , ?),( ? , ? , ?)
-    ///
-    ///
-    async fn save_batch<T>(&mut self, tables: &[T], skips: &[Skip]) -> Result<DBExecResult>
-    where
-        T: CRUDTable,
-    {
-        if tables.is_empty() {
-            return Ok(DBExecResult {
-                rows_affected: 0,
-                last_insert_id: None,
-            });
-        }
-        let mut value_arr = String::new();
-        let mut arg_arr = vec![];
-        let mut column_sql = String::new();
-        let mut field_index = 0;
-        for x in tables {
-            let (columns, values, args) =
-                x.make_value_sql_arg(&self.driver_type()?, &mut field_index, skips)?;
-            if column_sql.is_empty() {
-                column_sql = columns;
-            }
-            value_arr = value_arr + format!("({}),", values).as_str();
-            for x in args {
-                arg_arr.push(x);
-            }
-        }
-        value_arr.pop(); //pop ','
-        let sql = format!(
-            "{} {} ({}) {} {}",
-            crate::sql::TEMPLATE.insert_into.value,
-            T::table_name(),
-            column_sql,
-            crate::sql::TEMPLATE.values.value,
-            value_arr
+/// gen sql = DELETE FROM table_name WHERE some_column=some_value;
+///
+/// ```rust
+/// rbatis::impl_delete!(BizActivity{});
+/// ```
+#[macro_export]
+macro_rules! impl_delete {
+    ($table:ty{}) => {
+        $crate::impl_delete!(
+            $table,
+            $crate::utils::string_util::to_snake_name(stringify!($table))
         );
-        return self.exec(sql.as_str(), arg_arr).await;
-    }
-
-    /// save batch slice makes many value into  many sql. make sure your slice_len do not too long!
-    /// slice_len = 0 : save all data
-    /// slice_len != 0 : save data with slice_len everytime until save all data
-    ///
-    /// for Example:
-    /// rb.save_batch_slice("",&Cec![activity],0);
-    /// [rbatis] Exec ==>   insert into biz_activity (id,name,version) values ( ? , ? , ?),( ? , ? , ?)
-    ///
-    async fn save_batch_slice<T>(
-        &mut self,
-        tables: &[T],
-        slice_len: usize,
-        skips: &[Skip],
-    ) -> Result<DBExecResult>
-    where
-        T: CRUDTable,
-    {
-        if slice_len == 0 || tables.len() <= slice_len {
-            return self.save_batch(tables, skips).await;
-        } else {
-            let mut temp_result = DBExecResult {
-                rows_affected: 0,
-                last_insert_id: None,
-            };
-            let total = tables.len();
-            let mut pages = tables.len() / slice_len;
-            if total % slice_len != 0 {
-                pages = pages + 1;
-            }
-            for page in 0..pages {
-                let mut temp_len = slice_len * (1 + page);
-                if temp_len > total {
-                    temp_len = total;
+    };
+    ($table:ty,$table_name:expr) => {
+        impl $table {
+            pub async fn delete_by_column(
+                rb: &mut dyn $crate::executor::Executor,
+                column: &str,
+                column_value: &rbs::Value,
+            ) -> Result<rbdc::db::ExecResult, rbdc::Error> {
+                #[$crate::py_sql("`delete from ${table_name} where  ${column} = #{column_value}`")]
+                async fn do_delete_by_column(
+                    rb: &mut dyn $crate::executor::Executor,
+                    table_name: String,
+                    column_value: &rbs::Value,
+                    column: &str,
+                ) -> Result<rbdc::db::ExecResult, rbdc::Error> {
+                    impled!()
                 }
-                let temp = &tables[page * slice_len..temp_len];
-                let result = self.save_batch(temp, skips).await?;
-                temp_result.last_insert_id = result.last_insert_id;
-                temp_result.rows_affected = result.rows_affected + temp_result.rows_affected;
-            }
-            return Ok(temp_result);
-        }
-    }
-
-    /// remove database record by a wrapper
-    async fn remove_by_wrapper<T>(&mut self, w: Wrapper) -> Result<u64>
-    where
-        T: CRUDTable,
-    {
-        let table_name = choose_dyn_table_name::<T>(&w);
-        let where_sql = self.driver_type()?.make_where(&w.sql);
-        let mut sql = String::new();
-
-        if let Some(logic) = &self.get_rbatis().logic_plugin {
-            if w.dml.eq("where") {
-                sql = logic.create_remove_sql(
-                    &self.driver_type()?,
-                    &table_name,
-                    &T::table_columns(),
-                    &where_sql,
-                )?;
+                let table_name = $table_name.to_string();
+                do_delete_by_column(rb, table_name, column_value, column).await
             }
         }
-        if sql.is_empty() {
-            sql = format!(
-                "{} {} {}",
-                crate::sql::TEMPLATE.delete_from.value,
-                table_name,
-                &where_sql
-            );
-        }
-        return Ok(self.exec(sql.as_str(), w.args).await?.rows_affected);
-    }
-
-    /// remove database record by id
-    async fn remove_by_column<T, P>(&mut self, column: &str, value: P) -> Result<u64>
-    where
-        T: CRUDTable,
-        P: Serialize + Send + Sync,
-    {
-        let mut sql = String::new();
-        let driver_type = &self.driver_type()?;
-        let mut data = String::new();
-        driver_type.stmt_convert(0, &mut data);
-        T::do_format_column(&driver_type, column, &mut data);
-        if let Some(logic) = &self.get_rbatis().logic_plugin {
-            sql = logic.create_remove_sql(
-                &driver_type,
-                T::table_name().as_str(),
-                &T::table_columns(),
-                format!(
-                    "{} {} = {}",
-                    crate::sql::TEMPLATE.r#where.value,
-                    column,
-                    data
-                )
-                .as_str(),
-            )?;
-        }
-        if sql.is_empty() {
-            sql = format!(
-                "{} {} {} {} = {}",
-                crate::sql::TEMPLATE.delete_from.value,
-                T::table_name(),
-                crate::sql::TEMPLATE.r#where.value,
-                column,
-                data
-            );
-        }
-        return Ok(self
-            .exec(&sql, vec![crate::as_bson!(&value)])
-            .await?
-            .rows_affected);
-    }
-
-    ///remove batch id
-    /// for Example :
-    /// rb.remove_batch_by_column::<BizActivity>(&["1".to_string(),"2".to_string()]).await;
-    /// [rbatis] Exec ==> delete from biz_activity where id IN ( ? , ? )
-    ///
-    async fn remove_batch_by_column<T, P>(&mut self, column: &str, values: &[P]) -> Result<u64>
-    where
-        T: CRUDTable,
-        P: Serialize + Send + Sync,
-    {
-        if values.is_empty() {
-            return Ok(0);
-        }
-        let w = self
-            .get_rbatis()
-            .new_wrapper_table::<T>()
-            .and()
-            .in_array(column, values);
-        return self.remove_by_wrapper::<T>(w).await;
-    }
-
-    /// update_by_wrapper
-    /// skips: use &[Skip::Value(&rbson::Bson::Null), Skip::Column("id"), Skip::Column(column)] will skip id column and null value param
-    async fn update_by_wrapper<T>(&mut self, table: &T, w: Wrapper, skips: &[Skip]) -> Result<u64>
-    where
-        T: CRUDTable,
-    {
-        let table_name = choose_dyn_table_name::<T>(&w);
-        let mut args = vec![];
-        let old_version = rbson::Bson::Null;
-        let driver_type = &self.driver_type()?;
-        let columns = T::table_columns();
-        let columns_vec: Vec<&str> = columns.split(",").collect();
-        let map;
-        match crate::as_bson!(table) {
-            rbson::Bson::Document(m) => {
-                map = m;
-            }
-            _ => {
-                return Err(Error::from("[rbatis] arg not an struct or map!"));
-            }
-        }
-        let null = rbson::Bson::Null;
-        let mut sets = String::new();
-        for column in columns_vec {
-            //filter
-            let mut is_continue = false;
-            for x in skips {
-                match x {
-                    Skip::Column(skip_column) => {
-                        if skip_column.eq(&column) {
-                            is_continue = true;
-                            break;
-                        }
-                    }
-                    _ => {}
+    };
+    ($table:ty{$fn_name:ident($($param_key:ident:$param_type:ty$(,)?)+)} => $sql_where:expr) => {
+        impl $table {
+            pub async fn $fn_name(
+                rb: &mut dyn $crate::executor::Executor,
+                $($param_key:$param_type,)+
+            ) -> Result<rbdc::db::ExecResult, rbdc::Error> {
+                if $sql_where.is_empty(){
+                    return Err(rbdc::Error::from("sql_where can't be empty!"));
                 }
-            }
-            if is_continue {
-                continue;
-            }
-            let v = map.get(column).unwrap_or_else(|| &null).clone();
-            //filter null
-            let is_null = v.is_null();
-            for x in skips {
-                match x {
-                    Skip::Value(skip_value) => {
-                        if (*skip_value).eq(&v) {
-                            is_continue = true;
-                            break;
-                        }
-                    }
-                    _ => {}
+                #[$crate::py_sql("`delete from ${table_name} `",$sql_where)]
+                async fn do_delete_by_where(
+                    rb: &mut dyn $crate::executor::Executor,
+                    table_name: String,
+                    $($param_key:$param_type,)+
+                ) -> Result<rbdc::db::ExecResult, rbdc::Error> {
+                    impled!()
                 }
-            }
-            if is_continue {
-                continue;
-            }
-            let mut data = String::new();
-            driver_type.stmt_convert(args.len(), &mut data);
-            T::do_format_column(&driver_type, &column, &mut data);
-            sets.push_str(format!(" {} = {},", column, data).as_str());
-            args.push(v.clone());
-        }
-        sets.pop();
-        let mut wrapper = self.get_rbatis().new_wrapper_table::<T>();
-        wrapper.sql = format!(
-            "{} {} {} {} ",
-            crate::sql::TEMPLATE.update.value,
-            table_name,
-            crate::sql::TEMPLATE.set.value,
-            sets
-        );
-        wrapper.args = args;
-        if !w.sql.is_empty() {
-            if !wrapper
-                .sql
-                .contains(crate::sql::TEMPLATE.r#where.left_right_space)
-            {
-                wrapper
-                    .sql
-                    .push_str(crate::sql::TEMPLATE.r#where.left_right_space);
-            }
-            wrapper = wrapper.and();
-            wrapper = wrapper.push_wrapper(w);
-        }
-        let rows_affected = self
-            .exec(wrapper.sql.as_str(), wrapper.args)
-            .await?
-            .rows_affected;
-        return Ok(rows_affected);
-    }
-
-    /// update database record by id
-    /// update sql will be skip null value and id column
-    async fn update_by_column<T>(&mut self, column: &str, table: &T) -> Result<u64>
-    where
-        T: CRUDTable,
-    {
-        let rb = self.get_rbatis();
-        let value = table.get(column);
-        self.update_by_wrapper(
-            table,
-            rb.new_wrapper_table::<T>().eq(column, value),
-            &[
-                Skip::Value(Bson::Null),
-                Skip::Column("id"),
-                Skip::Column(column),
-            ],
-        )
-        .await
-    }
-
-    /// remove batch database record by args
-    async fn update_batch_by_column<T>(&mut self, column: &str, args: &[T]) -> Result<u64>
-    where
-        T: CRUDTable,
-    {
-        let mut updates = 0;
-        for x in args {
-            updates += self.update_by_column(column, x).await?
-        }
-        Ok(updates)
-    }
-
-    /// fetch database record by a wrapper
-    async fn fetch_by_wrapper<T>(&mut self, w: Wrapper) -> Result<T>
-    where
-        T: CRUDTable + DeserializeOwned,
-    {
-        let sql = make_select_sql::<T>(self.get_rbatis(), &T::table_columns(), &w)?;
-        return self.fetch(sql.as_str(), w.args).await;
-    }
-
-    /// count database record
-    async fn fetch_count<T>(&mut self) -> Result<u64>
-    where
-        T: CRUDTable,
-    {
-        let sql = make_select_sql::<T>(
-            self.get_rbatis(),
-            "count(1)",
-            &Wrapper::new(&self.driver_type()?),
-        )?;
-        return self.fetch(sql.as_str(), vec![]).await;
-    }
-
-    /// count database record by a wrapper
-    async fn fetch_count_by_wrapper<T>(&mut self, w: Wrapper) -> Result<u64>
-    where
-        T: CRUDTable,
-    {
-        let sql = make_select_sql::<T>(self.get_rbatis(), "count(1)", &w)?;
-        return self.fetch(sql.as_str(), w.args).await;
-    }
-
-    /// fetch database record by value
-    async fn fetch_by_column<T, P>(&mut self, column: &str, value: P) -> Result<T>
-    where
-        T: CRUDTable + DeserializeOwned,
-        P: Serialize + Send + Sync,
-    {
-        let w = self
-            .get_rbatis()
-            .new_wrapper_table::<T>()
-            .eq(&column, value);
-        return self.fetch_by_wrapper(w).await;
-    }
-
-    /// fetch database record list by a wrapper
-    async fn fetch_list_by_wrapper<T>(&mut self, w: Wrapper) -> Result<Vec<T>>
-    where
-        T: CRUDTable + DeserializeOwned,
-    {
-        let sql = make_select_sql::<T>(self.get_rbatis(), &T::table_columns(), &w)?;
-        return self.fetch(sql.as_str(), w.args).await;
-    }
-
-    /// fetch database record list for all
-    async fn fetch_list<T>(&mut self) -> Result<Vec<T>>
-    where
-        T: CRUDTable + DeserializeOwned,
-    {
-        let rb = self.get_rbatis();
-        return self
-            .fetch_list_by_wrapper(rb.new_wrapper_table::<T>())
-            .await;
-    }
-
-    /// fetch database record list by a id array
-    async fn fetch_list_by_column<T, P>(
-        &mut self,
-        column: &str,
-        column_values: &[P],
-    ) -> Result<Vec<T>>
-    where
-        T: CRUDTable + DeserializeOwned,
-        P: Serialize + Send + Sync,
-    {
-        if column_values.is_empty() {
-            return Ok(vec![]);
-        }
-        let w = self
-            .get_rbatis()
-            .new_wrapper_table::<T>()
-            .in_array(&column, column_values);
-        return self.fetch_list_by_wrapper(w).await;
-    }
-
-    /// fetch page database record list by a wrapper
-    async fn fetch_page_by_wrapper<T>(
-        &mut self,
-        w: Wrapper,
-        page: &dyn IPageRequest,
-    ) -> Result<Page<T>>
-    where
-        T: CRUDTable + DeserializeOwned,
-    {
-        let sql = make_select_sql::<T>(self.get_rbatis(), &T::table_columns(), &w)?;
-        self.fetch_page(sql.as_str(), w.args, page).await
-    }
-
-    /// fetch page result(prepare sql)
-    async fn fetch_page<T>(
-        &mut self,
-        sql: &str,
-        args: Vec<rbson::Bson>,
-        page_request: &dyn IPageRequest,
-    ) -> Result<Page<T>>
-    where
-        T: DeserializeOwned + Serialize + Send + Sync,
-    {
-        let mut page_result = Page::new(page_request.get_page_no(), page_request.get_page_size());
-        page_result.search_count = page_request.is_search_count();
-        let (count_sql, sql) = self.get_rbatis().page_plugin.make_page_sql(
-            &self.driver_type()?,
-            &sql,
-            &args,
-            page_request,
-        )?;
-        if page_request.is_search_count() {
-            //make count sql
-            let total: Option<u64> = self.fetch(&count_sql, args.clone()).await?;
-            page_result.set_total(total.unwrap_or(0));
-            page_result.pages = page_result.get_pages();
-            if page_result.get_total() == 0 {
-                return Ok(page_result);
+                let table_name = $crate::utils::string_util::to_snake_name(stringify!($table));
+                do_delete_by_where(rb, table_name, $($param_key,)+).await
             }
         }
-        let data: Option<Vec<T>> = self.fetch(sql.as_str(), args).await?;
-        page_result.set_records(data.unwrap_or(vec![]));
-        page_result.pages = page_result.get_pages();
-        return Ok(page_result);
-    }
+    };
 }
 
-impl CRUDMut for RBatisConnExecutor<'_> {}
-
-impl CRUDMut for RBatisTxExecutor<'_> {}
-
-/// choose table name
-fn choose_dyn_table_name<T>(w: &Wrapper) -> String
-where
-    T: CRUDTable,
-{
-    let mut table_name = T::table_name();
-    let table_name_format = w.formats.get("table_name");
-    if let Some(table_name_format) = table_name_format {
-        table_name = table_name_format.replace("{}", &table_name);
-    }
-    return table_name;
-}
-
-fn make_select_sql<T>(rb: &Rbatis, column: &str, w: &Wrapper) -> Result<String>
-where
-    T: CRUDTable,
-{
-    let driver_type = rb.driver_type()?;
-    let table_name = choose_dyn_table_name::<T>(w);
-    Ok(format!(
-        "{} {} {} {} {}",
-        crate::sql::TEMPLATE.select.value,
-        column,
-        crate::sql::TEMPLATE.from.value,
-        table_name,
-        driver_type.make_where(&w.sql)
-    ))
-}
-
-#[async_trait]
-impl CRUD for Rbatis {
-    async fn save_by_wrapper<T, R>(&self, table: &T, w: Wrapper, skips: &[Skip]) -> Result<R>
-    where
-        T: CRUDTable,
-        R: DeserializeOwned,
-    {
-        let mut conn = self.acquire().await?;
-        conn.save_by_wrapper(table, w, skips).await
-    }
-
-    async fn save<T>(&self, table: &T, skips: &[Skip]) -> Result<DBExecResult>
-    where
-        T: CRUDTable,
-    {
-        let mut conn = self.acquire().await?;
-        conn.save(table, skips).await
-    }
-
-    async fn save_batch<T>(&self, tables: &[T], skips: &[Skip]) -> Result<DBExecResult>
-    where
-        T: CRUDTable,
-    {
-        let mut conn = self.acquire().await?;
-        conn.save_batch(tables, skips).await
-    }
-
-    async fn save_batch_slice<T>(
-        &self,
-        tables: &[T],
-        slice_len: usize,
-        skips: &[Skip],
-    ) -> Result<DBExecResult>
-    where
-        T: CRUDTable,
-    {
-        let mut conn = self.acquire().await?;
-        conn.save_batch_slice(tables, slice_len, skips).await
-    }
-
-    async fn remove_by_wrapper<T>(&self, w: Wrapper) -> Result<u64>
-    where
-        T: CRUDTable,
-    {
-        let mut conn = self.acquire().await?;
-        conn.remove_by_wrapper::<T>(w).await
-    }
-
-    async fn remove_by_column<T, P>(&self, column: &str, value: P) -> Result<u64>
-    where
-        T: CRUDTable,
-        P: Serialize + Send + Sync,
-    {
-        let mut conn = self.acquire().await?;
-        conn.remove_by_column::<T, P>(column, value).await
-    }
-
-    async fn remove_batch_by_column<T, P>(&self, column: &str, values: &[P]) -> Result<u64>
-    where
-        T: CRUDTable,
-        P: Serialize + Send + Sync,
-    {
-        let mut conn = self.acquire().await?;
-        conn.remove_batch_by_column::<T, P>(column, values).await
-    }
-
-    /// update_by_wrapper
-    /// skips: use &[Skip::Value(&rbson::Bson::Null), Skip::Column("id"), Skip::Column(column)] will skip id column and null value param
-    async fn update_by_wrapper<T>(&self, table: &T, w: Wrapper, skips: &[Skip]) -> Result<u64>
-    where
-        T: CRUDTable,
-    {
-        let mut conn = self.acquire().await?;
-        conn.update_by_wrapper(table, w, skips).await
-    }
-
-    async fn update_by_column<T>(&self, column: &str, table: &T) -> Result<u64>
-    where
-        T: CRUDTable,
-    {
-        let mut conn = self.acquire().await?;
-        conn.update_by_column(column, table).await
-    }
-
-    async fn update_batch_by_column<T>(&self, column: &str, args: &[T]) -> Result<u64>
-    where
-        T: CRUDTable,
-    {
-        let mut conn = self.acquire().await?;
-        conn.update_batch_by_column::<T>(column, args).await
-    }
-
-    async fn fetch_by_column<T, P>(&self, column: &str, value: P) -> Result<T>
-    where
-        T: CRUDTable + DeserializeOwned,
-        P: Serialize + Send + Sync,
-    {
-        let mut conn = self.acquire().await?;
-        conn.fetch_by_column::<T, P>(column, value).await
-    }
-
-    async fn fetch_by_wrapper<T>(&self, w: Wrapper) -> Result<T>
-    where
-        T: CRUDTable + DeserializeOwned,
-    {
-        let mut conn = self.acquire().await?;
-        conn.fetch_by_wrapper(w).await
-    }
-
-    async fn fetch_count<T>(&self) -> Result<u64>
-    where
-        T: CRUDTable,
-    {
-        let mut conn = self.acquire().await?;
-        conn.fetch_count::<T>().await
-    }
-
-    async fn fetch_count_by_wrapper<T>(&self, w: Wrapper) -> Result<u64>
-    where
-        T: CRUDTable,
-    {
-        let mut conn = self.acquire().await?;
-        conn.fetch_count_by_wrapper::<T>(w).await
-    }
-
-    async fn fetch_page_by_wrapper<T>(&self, w: Wrapper, page: &dyn IPageRequest) -> Result<Page<T>>
-    where
-        T: CRUDTable + DeserializeOwned,
-    {
-        let mut conn = self.acquire().await?;
-        conn.fetch_page_by_wrapper::<T>(w, page).await
-    }
-
-    async fn fetch_list<T>(&self) -> Result<Vec<T>>
-    where
-        T: CRUDTable + DeserializeOwned,
-    {
-        let mut conn = self.acquire().await?;
-        conn.fetch_list().await
-    }
-
-    async fn fetch_list_by_column<T, P>(&self, column: &str, column_values: &[P]) -> Result<Vec<T>>
-    where
-        T: CRUDTable + DeserializeOwned,
-        P: Serialize + Send + Sync,
-    {
-        if column_values.is_empty() {
-            return Ok(vec![]);
+#[macro_export]
+macro_rules! impl_select_page {
+    ($table:ty{$fn_name:ident($($param_key:ident:$param_type:ty$(,)?)+) => $where_sql:expr}) => {
+        impl $table {
+            pub async fn $fn_name(
+                rb: &mut dyn $crate::executor::Executor,
+                page_req:&PageRequest,
+                $($param_key:$param_type,)+
+            ) -> Result<$crate::sql::Page::<$table>, rbdc::Error> {
+                #[$crate::py_sql("select count(1) as count from ${table_name} ",$where_sql)]
+                async fn do_select_page_count(rb: &mut dyn $crate::executor::Executor,table_name: &str,$($param_key:$param_type,)+) -> Result<u64, rbdc::Error> {impled!()}
+                let table_name = $crate::utils::string_util::to_snake_name(stringify!($table));
+                let total:u64=do_select_page_count(rb, &table_name, $($param_key,)+).await?;
+                let records:Vec<$table>;
+                if $where_sql.contains("page_no") && $where_sql.contains("page_size"){
+                    #[$crate::py_sql("select * from ${table_name} ",$where_sql)]
+                    async fn do_select_page(rb: &mut dyn $crate::executor::Executor,table_name: &str,page_no:u64,page_size:u64,$($param_key:$param_type,)+) -> Result<Vec<$table>, rbdc::Error> {impled!()}
+                    records = do_select_page(rb,&table_name,page_req.page_no, page_req.page_size,$($param_key,)+).await?;
+                }else{
+                    #[$crate::py_sql("select * from ${table_name} ",$where_sql,"
+                              limit ${page_no},${page_size}")]
+                    async fn do_select_page(rb: &mut dyn $crate::executor::Executor,table_name: &str,page_no:u64,page_size:u64,$($param_key:$param_type,)+) -> Result<Vec<$table>, rbdc::Error> {impled!()}
+                    records = do_select_page(rb,&table_name,page_req.page_no, page_req.page_size,$($param_key,)+).await?;
+                }
+                let mut page = Page::<$table>::new_total(page_req.page_no, page_req.page_size, total);
+                page.records = records;
+                Ok(page)
+            }
         }
-        let mut conn = self.acquire().await?;
-        conn.fetch_list_by_column::<T, P>(column, column_values)
-            .await
-    }
-
-    async fn fetch_list_by_wrapper<T>(&self, w: Wrapper) -> Result<Vec<T>>
-    where
-        T: CRUDTable + DeserializeOwned,
-    {
-        let mut conn = self.acquire().await?;
-        conn.fetch_list_by_wrapper(w).await
-    }
-
-    /// fetch page result(prepare sql)
-    async fn fetch_page<T>(
-        &self,
-        sql: &str,
-        args: Vec<rbson::Bson>,
-        page_request: &dyn IPageRequest,
-    ) -> Result<Page<T>>
-    where
-        T: DeserializeOwned + Serialize + Send + Sync,
-    {
-        let mut conn = self.acquire().await?;
-        conn.fetch_page(sql, args, page_request).await
-    }
-}
-
-/// skip column or param value
-pub enum Skip<'a> {
-    ///skip column
-    Column(&'a str),
-    ///skip serde json value ref
-    Value(rbson::Bson),
-}
-
-impl<'a> Skip<'a> {
-    /// from serialize value
-    pub fn value<T>(arg: T) -> Self
-    where
-        T: Serialize,
-    {
-        Self::Value(crate::as_bson!(&arg))
-    }
-}
-
-pub trait TableColumnProvider: Send + Sync {
-    fn table_name() -> String;
-    fn table_columns() -> String;
-}
-
-/// DynColumn , can custom insert,update column
-pub struct DynTableColumn<T: CRUDTable, P: TableColumnProvider> {
-    pub inner: T,
-    pub p: PhantomData<P>,
-}
-
-impl<T, P> Serialize for DynTableColumn<T, P>
-where
-    T: CRUDTable,
-    P: TableColumnProvider,
-{
-    fn serialize<S>(
-        &self,
-        serializer: S,
-    ) -> std::result::Result<<S as Serializer>::Ok, <S as Serializer>::Error>
-    where
-        S: Serializer,
-    {
-        T::serialize(&self.inner, serializer)
-    }
-}
-
-impl<'de, T, P> Deserialize<'de> for DynTableColumn<T, P>
-where
-    T: CRUDTable + DeserializeOwned,
-    P: TableColumnProvider,
-{
-    fn deserialize<D>(deserializer: D) -> std::result::Result<Self, <D as Deserializer<'de>>::Error>
-    where
-        D: Deserializer<'de>,
-    {
-        let result = T::deserialize(deserializer)?;
-        return Ok(DynTableColumn {
-            inner: result,
-            p: Default::default(),
-        });
-    }
-}
-
-impl<T, P> Deref for DynTableColumn<T, P>
-where
-    T: CRUDTable,
-    P: TableColumnProvider,
-{
-    type Target = T;
-
-    fn deref(&self) -> &Self::Target {
-        &self.inner
-    }
-}
-
-impl<T, P> DerefMut for DynTableColumn<T, P>
-where
-    T: CRUDTable,
-    P: TableColumnProvider,
-{
-    fn deref_mut(&mut self) -> &mut Self::Target {
-        &mut self.inner
-    }
-}
-
-impl<T, P> CRUDTable for DynTableColumn<T, P>
-where
-    T: CRUDTable,
-    P: TableColumnProvider,
-{
-    fn table_name() -> String {
-        P::table_name()
-    }
-
-    fn table_columns() -> String {
-        P::table_columns()
-    }
-
-    ///format column
-    fn do_format_column(driver_type: &DriverType, column: &str, data: &mut String) {
-        T::do_format_column(driver_type, column, data)
-    }
-
-    ///return (columns_sql,columns_values_sql,args)
-    fn make_value_sql_arg(
-        &self,
-        db_type: &DriverType,
-        index: &mut usize,
-        skips: &[Skip],
-    ) -> Result<(String, String, Vec<rbson::Bson>)> {
-        T::make_value_sql_arg(self, db_type, index, skips)
-    }
-
-    /// return cast chain
-    /// column:format_str
-    /// for example: HashMap<"id",“{}::uuid”.to_string()>
-    fn formats(driver_type: &crate::core::db::DriverType) -> HashMap<String, String> {
-        T::formats(driver_type)
-    }
-
-    /// return table column value
-    /// If a macro is used, the method is overridden by the macro
-    fn get(&self, column: &str) -> rbson::Bson {
-        T::get(self, column)
-    }
+    };
 }

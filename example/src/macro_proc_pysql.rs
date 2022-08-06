@@ -1,50 +1,55 @@
-#[cfg(test)]
-mod test {
-    use std::fs::File;
-    use std::io::Read;
+#![allow(unused_mut)]
+#![allow(unused_imports)]
+#![allow(unreachable_patterns)]
+#![allow(unused_variables)]
+#![allow(unused_assignments)]
+#![allow(unused_must_use)]
+#![allow(dead_code)]
 
-    use rbatis::executor::RbatisExecutor;
-    use rbatis::plugin::page::{Page, PageRequest};
-    use rbatis::rbatis::Rbatis;
+#[macro_use]
+extern crate rbatis;
 
-    use crate::{init_sqlite, BizActivity};
+pub mod model;
 
-    #[py_sql("select * from biz_activity where delete_flag = 0")]
-    async fn py_ctx_id(rb: &Rbatis) -> Vec<BizActivity> {
-        impled!()
-    }
+use model::*;
+use rbatis::executor::Executor;
+use rbatis::Error;
+use std::fs::File;
+use std::io::Read;
 
-    #[tokio::test]
-    pub async fn test_py_ctx_id() {
-        fast_log::init(fast_log::config::Config::new().console());
-        //use static ref
-        let rb = init_sqlite().await;
-        let a = py_ctx_id(&rb).await.unwrap();
-        println!("{:?}", a);
-    }
+use rbatis::rbatis::Rbatis;
+use rbatis::sql::page::{Page, PageRequest};
+use rbdc::datetime::FastDateTime;
+use rbs::{to_value, Value};
 
-    ///select page must have  '?:&PageRequest' arg and return 'Page<?>'
-    #[py_sql(
-        "select * from biz_activity where delete_flag = 0
+use crate::{init_sqlite, BizActivity};
+
+#[py_sql("select * from biz_activity where delete_flag = 0")]
+async fn py_ctx_id(rb: &Rbatis) -> Vec<BizActivity> {
+    impled!()
+}
+
+///select page must have  '?:&PageRequest' arg and return 'Page<?>'
+#[py_sql(
+    "`select * from biz_activity where delete_flag = 0`
                   if name != '':
-                    and name=#{name}"
-    )]
-    async fn py_select_page(
-        mut rb: RbatisExecutor<'_, '_>,
-        page_req: &PageRequest,
-        name: &str,
-    ) -> Page<BizActivity> {
-        impled!()
-    }
+                    ` and name=#{name}`"
+)]
+async fn py_select_page(
+    rb: &mut dyn Executor,
+    page_req: &PageRequest,
+    name: &str,
+) -> Result<Vec<BizActivity>, Error> {
+    impled!()
+}
 
-    #[tokio::test]
-    pub async fn test_py_select_page() {
-        fast_log::init(fast_log::config::Config::new().console());
-        //use static ref
-        let rb = init_sqlite().await;
-        let a = py_select_page(rb.as_executor(), &PageRequest::new(1, 10), "test")
-            .await
-            .unwrap();
-        println!("{:?}", a);
-    }
+#[tokio::main]
+pub async fn main() {
+    fast_log::init(fast_log::config::Config::new().console());
+    //use static ref
+    let rb = init_sqlite().await;
+    let a = py_select_page(&mut rb.clone(), &PageRequest::new(1, 10), "test")
+        .await
+        .unwrap();
+    println!(">>>>>>>>>>>> {:?}", a);
 }

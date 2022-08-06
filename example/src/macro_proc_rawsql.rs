@@ -1,26 +1,34 @@
-#[cfg(test)]
-mod test {
-    use std::fs::File;
-    use std::io::Read;
+#![allow(unused_mut)]
+#![allow(unused_imports)]
+#![allow(unreachable_patterns)]
+#![allow(unused_variables)]
+#![allow(unused_assignments)]
+#![allow(unused_must_use)]
+#![allow(dead_code)]
 
-    use rbatis::executor::RbatisExecutor;
-    use rbatis::plugin::page::{Page, PageRequest};
-    use rbatis::rbatis::Rbatis;
+#[macro_use]
+extern crate rbatis;
 
-    use crate::{init_sqlite, BizActivity};
+pub mod model;
+use model::*;
+use rbatis::rbatis::Rbatis;
+use rbatis::sql::page::{Page, PageRequest};
+use std::fs::File;
+use std::io::Read;
 
-    /// doc you can see https://rbatis.github.io/rbatis.io/#/en/
-    #[sql("select * from biz_activity where delete_flag = ?")]
-    async fn sql_fn(rb: &Rbatis, delete_flag: &i32) -> Vec<BizActivity> {
-        impled!()
-    }
+use crate::{init_sqlite, BizActivity};
 
-    #[tokio::test]
-    pub async fn test_sql_fn() {
-        fast_log::init(fast_log::config::Config::new().console());
-        //use static ref
-        let rb = init_sqlite().await;
-        let a = sql_fn(&rb, &1).await.unwrap();
-        println!("{:?}", a);
-    }
+/// doc you can see https://rbatis.github.io/rbatis.io/#/en/
+#[sql("select * from biz_activity where delete_flag = ?")]
+async fn raw_sql(rb: &Rbatis, delete_flag: &i32) -> Vec<BizActivity> {
+    impled!()
+}
+
+#[tokio::main]
+pub async fn main() {
+    fast_log::init(fast_log::config::Config::new().console());
+    //use static ref
+    let rb = init_sqlite().await;
+    let a = raw_sql(&rb, &0).await.unwrap();
+    println!("{:?}", a);
 }

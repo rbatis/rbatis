@@ -1,1 +1,0 @@
-cargo publish --allow-dirty

@@ -1,0 +1,26 @@
+[package]
+name = "rbatis_sql"
+version = "4.0.0"
+edition = "2021"
+description = "The Rust SQL Toolkit and ORM Library. An async, pure Rust SQL crate featuring compile-time Dynamic SQL"
+readme = "Readme.md"
+authors = ["ce <zhuxiujia@qq.com>"]
+license = "Apache-2.0"
+documentation = "https://rbatis.github.io/rbatis.io/#/en/"
+repository = "https://github.com/rbatis/rbatis"
+homepage = "https://rbatis.github.io/rbatis.io/#/en/"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+
+[features]
+#default is fast_mode
+default = []
+debug_mode = ["rbatis_sql_macro/debug_mode"]
+
+[dependencies]
+#serde
+serde = { version = "1", features = ["derive"] }
+rbs = { version = "0.1", path = "../rbs" }
+rbatis_sql_macro = { version = "4.0.0", path = "rbatis-sql-macro" }
+serde_json = "1"

@@ -6,11 +6,10 @@ use std::{
     sync::atomic::{AtomicUsize, Ordering},
     time::SystemTime,
 };
-
-use chrono::Utc;
 use hex::{self, FromHexError};
 use once_cell::sync::Lazy;
 use rand::{thread_rng, Rng};
+use rbdc::datetime::FastDateTime;
 
 const TIMESTAMP_SIZE: usize = 4;
 const PROCESS_ID_SIZE: usize = 5;
@@ -122,17 +121,6 @@ impl ObjectId {
         }
     }
 
-    /// Retrieves the timestamp (chrono::DateTime) from an ObjectId.
-    pub fn timestamp(&self) -> chrono::DateTime<Utc> {
-        let mut buf = [0; 4];
-        buf.copy_from_slice(&self.id[0..4]);
-        let seconds_since_epoch = u32::from_be_bytes(buf);
-
-        let naive_datetime = chrono::NaiveDateTime::from_timestamp(seconds_since_epoch as i64, 0);
-        let timestamp: chrono::DateTime<Utc> = chrono::DateTime::from_utc(naive_datetime, Utc);
-        timestamp
-    }
-
     /// Returns the raw byte representation of an ObjectId.
     pub fn bytes(&self) -> [u8; 12] {
         self.id
@@ -197,8 +185,6 @@ impl fmt::Debug for ObjectId {
 
 #[cfg(test)]
 mod test {
-    use chrono::{offset::TimeZone, Utc};
-
     #[test]
     fn test_new() {
         println!("objectId:{}", super::ObjectId::new().to_string());
@@ -219,24 +205,5 @@ mod test {
         let id = super::ObjectId::with_string("53e37d08776f724e42000000").unwrap();
 
         assert_eq!(format!("{:?}", id), "ObjectId(53e37d08776f724e42000000)")
-    }
-
-    #[test]
-    fn test_timestamp() {
-        let id = super::ObjectId::with_string("000000000000000000000000").unwrap();
-        // "Jan 1st, 1970 00:00:00 UTC"
-        assert_eq!(Utc.ymd(1970, 1, 1).and_hms(0, 0, 0), id.timestamp());
-
-        let id = super::ObjectId::with_string("7FFFFFFF0000000000000000").unwrap();
-        // "Jan 19th, 2038 03:14:07 UTC"
-        assert_eq!(Utc.ymd(2038, 1, 19).and_hms(3, 14, 7), id.timestamp());
-
-        let id = super::ObjectId::with_string("800000000000000000000000").unwrap();
-        // "Jan 19th, 2038 03:14:08 UTC"
-        assert_eq!(Utc.ymd(2038, 1, 19).and_hms(3, 14, 8), id.timestamp());
-
-        let id = super::ObjectId::with_string("FFFFFFFF0000000000000000").unwrap();
-        // "Feb 7th, 2106 06:28:15 UTC"
-        assert_eq!(Utc.ymd(2106, 2, 7).and_hms(6, 28, 15), id.timestamp());
     }
 }

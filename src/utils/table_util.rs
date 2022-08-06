@@ -1,7 +1,5 @@
 use std::collections::{BTreeMap, HashMap};
 
-use crate::crud::CRUDTable;
-
 /// Simplifies table construction by relying on the Default trait
 ///
 /// step1:  impl Default

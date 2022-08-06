@@ -2,12 +2,10 @@ use proc_macro2::{Ident, Span};
 use quote::quote;
 use quote::ToTokens;
 use syn;
-use syn::{AttributeArgs, FnArg, ItemFn, Pat};
+use syn::{AttributeArgs, FnArg, ItemFn, Lit, NestedMeta, Pat};
 
 use crate::proc_macro::TokenStream;
-use crate::util::{
-    find_fn_body, find_return_type, get_fn_args, get_page_req_ident, is_fetch, is_rbatis_ref,
-};
+use crate::util::{find_fn_body, find_return_type, get_fn_args, is_fetch, is_rbatis_ref};
 
 //impl sql macro
 pub(crate) fn impl_macro_sql(target_fn: &ItemFn, args: &AttributeArgs) -> TokenStream {
@@ -33,25 +31,30 @@ pub(crate) fn impl_macro_sql(target_fn: &ItemFn, args: &AttributeArgs) -> TokenS
         }
     }
 
-    let sql_ident;
-    if args.len() == 1 {
+    let mut sql_ident = quote!();
+    if args.len() >= 1 {
         if rbatis_name.is_empty() {
-            panic!("[rbatis] you should add rbatis ref param  rb:&Rbatis  or rb: &mut RbatisExecutor<'_,'_>  on '{}()'!", target_fn.sig.ident);
+            panic!("[rbatis] you should add rbatis ref param  rb:&Rbatis  or rb: &mut Executor<'_,'_>  on '{}()'!", target_fn.sig.ident);
         }
-        sql_ident = args
-            .get(0)
-            .expect("[rbatis] miss sql macaro param!")
-            .to_token_stream();
-    } else if args.len() == 2 {
-        rbatis_ident = args
-            .get(0)
-            .expect("[rbatis] miss rbatis ident param!")
-            .to_token_stream();
-        rbatis_name = format!("{}", rbatis_ident);
-        sql_ident = args
-            .get(1)
-            .expect("[rbatis] miss sql macro sql param!")
-            .to_token_stream();
+        let mut s = "".to_string();
+        for ele in args {
+            match ele {
+                NestedMeta::Meta(m) => {}
+                NestedMeta::Lit(l) => match l {
+                    Lit::Str(v) => {
+                        s = s + v.value().as_str();
+                    }
+                    Lit::ByteStr(_) => {}
+                    Lit::Byte(_) => {}
+                    Lit::Char(_) => {}
+                    Lit::Int(_) => {}
+                    Lit::Float(_) => {}
+                    Lit::Bool(_) => {}
+                    Lit::Verbatim(_) => {}
+                },
+            }
+        }
+        sql_ident = quote!(#s);
     } else {
         panic!("[rbatis] Incorrect macro parameter length!");
     }
@@ -72,24 +75,19 @@ pub(crate) fn impl_macro_sql(target_fn: &ItemFn, args: &AttributeArgs) -> TokenS
         )
         .to_token_stream();
     }
+    let mut decode = quote! {};
     let mut call_method = quote! {};
     let is_fetch = is_fetch(&return_ty.to_string());
     if is_fetch {
         call_method = quote! {fetch};
+        decode = quote! { Ok(rbatis::decode::decode(r)?)}
     } else {
         call_method = quote! {exec};
+        decode = quote! { Ok(r)}
     }
     //check use page method
     let mut page_req_str = String::new();
     let mut page_req = quote! {};
-    if return_ty.to_string().contains("Page <")
-        && func_args_stream.to_string().contains("& PageRequest")
-    {
-        let req = get_page_req_ident(target_fn, &func_name_ident.to_string());
-        page_req_str = req.to_string();
-        page_req = quote! {,#req};
-        call_method = quote! {fetch_page};
-    }
     //append all args
     let sql_args_gen =
         filter_args_context_id(&rbatis_name, &get_fn_args(target_fn), &[page_req_str]);
@@ -99,8 +97,9 @@ pub(crate) fn impl_macro_sql(target_fn: &ItemFn, args: &AttributeArgs) -> TokenS
            let mut rb_args =vec![];
            #sql_args_gen
            #fn_body
-           use rbatis::executor::{Executor,ExecutorMut};
-           return #rbatis_ident.#call_method(&#sql_ident,rb_args #page_req).await;
+           use rbatis::executor::{Executor};
+           let r= #rbatis_ident.#call_method(&#sql_ident,rb_args #page_req).await?;
+           #decode
        }
     };
     return gen_token_temple.into();
@@ -134,7 +133,7 @@ fn filter_args_context_id(
         }
         sql_args_gen = quote! {
              #sql_args_gen
-             rb_args.push(rbson::to_bson(#item).unwrap_or_default());
+             rb_args.push(rbs::to_value(#item).unwrap_or_default());
         };
     }
     sql_args_gen
