@@ -51,7 +51,7 @@ once_cell = "1.10"
 hex = "0.4"
 rand = "0.8"
 rbs = { version = "0.1", path = "rbs" }
-rbdc = { path = "rbdc" }
+rbdc = { version = "0.1", path = "rbdc" }
 decimal = "2"
 crossbeam = "0.8.2"
 mobc = "0.7"

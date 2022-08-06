@@ -13,7 +13,7 @@ homepage = "https://rbatis.github.io/rbatis.io/#/en/"
 
 [dependencies]
 rbs={version="0.1",path="../rbs"}
-rbdc = { path = "../rbdc" }
+rbdc = { version = "0.1", path = "../rbdc" }
 #sibyl = {version="0.6.9",default-features=false,features=["nonblocking","tokio"]}
 oracle = "0.5.5"
 flume = { version = "0.10.9", default-features = false, features = ["async"] }
