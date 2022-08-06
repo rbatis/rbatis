@@ -46,7 +46,7 @@ where
         "bigdecimal::BigDecimal" |
         "bool" |
         "alloc::string::String" => {
-            return Ok(try_decode_doc(type_name, &mut datas)?);
+            return Ok(try_decode_map(type_name, &mut datas)?);
         }
         _ => {}
     }
@@ -56,12 +56,12 @@ where
         //decode array
         Ok(rbs::from_value(Value::Array(datas))?)
     } else {
-        Ok(try_decode_doc(type_name, &mut datas)?)
+        Ok(try_decode_map(type_name, &mut datas)?)
     }
 }
 
 //decode doc or one type
-pub fn try_decode_doc<T>(type_name: &str, datas: &mut Vec<Value>) -> Result<T, crate::Error>
+pub fn try_decode_map<T>(type_name: &str, datas: &mut Vec<Value>) -> Result<T, crate::Error>
 where
     T: DeserializeOwned,
 {
@@ -105,19 +105,17 @@ where
 
 #[cfg(test)]
 mod test {
-    use rbatis::decode::decode;
     use rbs::{to_value, Value};
     use std::collections::HashMap;
+    use rbs::value::map::ValueMap;
+    use crate::decode::decode;
 
     #[test]
     fn test_decode_hashmap() {
-        let v = to_value!(
-        {
-        "a":"1",
-        "b":2
-        }
-        );
-        let m: HashMap<String, Value> = decode(ve).unwrap();
+        let mut v = ValueMap::new();
+        v.insert(1.into(),2.into());
+        let m: HashMap<i32, Value> = decode(Value::Array(vec![Value::Map(v)])).unwrap();
         println!("{:#?}", m);
+        assert_eq!(m.get(&1).unwrap().as_i64(),Value::I32(2).as_i64());
     }
 }
