@@ -1,15 +1,23 @@
 [workspace]
 members = [
     ".",
-    "rbatis-core",
+    "rbs",
+    "rbatis-sql/rbatis-sql-macro",
+    "rbatis-sql",
+    "rbdc",
+    "rbdc-mysql",
+    "rbdc-pg",
+    "rbdc-sqlite",
+    "rbdc-mssql",
+    "rbdc-oracle",
     "rbatis-macro-driver",
     "example",
 ]
 
 [package]
 name = "rbatis"
-version = "3.1.16"
-description = "Rust ORM Framework High Performance(Bson based)"
+version = "4.0.0"
+description = "The Rust SQL Toolkit and ORM Library. An async, pure Rust SQL crate featuring compile-time Dynamic SQL"
 readme = "Readme.md"
 authors = ["ce <zhuxiujia@qq.com>"]
 edition = "2021"
@@ -19,39 +27,17 @@ repository = "https://github.com/rbatis/rbatis"
 homepage = "https://rbatis.github.io/rbatis.io/#/en/"
 
 [features]
-default = ["default_mode", "all-database", "runtime-tokio-rustls"]
+default = ["default_mode","debug_mode"]
 #debug_mode feature will show decode json data
-debug_mode = ["rbatis-core/debug_mode", "rbatis-macro-driver/debug_mode", "rbatis_sql/debug_mode"]
-default_mode = ["rbatis-core", "rbatis-macro-driver", "rbatis_sql"]
+debug_mode = ["rbatis-macro-driver/debug_mode", "rbatis_sql/debug_mode"]
+default_mode = ["rbatis-macro-driver", "rbatis_sql"]
 #support upper case sql keyword
 upper_case_sql_keyword = []
-#runtime  database
-all-database = ["default_mode", "rbatis-core/all-database"]
-mysql = ["default_mode", "rbatis-core/mysql"]
-postgres = ["default_mode", "rbatis-core/postgres"]
-sqlite = ["default_mode", "rbatis-core/sqlite"]
-mssql = ["default_mode", "rbatis-core/mssql"]
-
-#choose runtime
-runtime-tokio-rustls = ["rbatis-core/runtime-tokio-rustls"]
-runtime-actix-rustls = ["rbatis-core/runtime-actix-rustls"]
-runtime-async-std-rustls = ["rbatis-core/runtime-async-std-rustls"]
-runtime-tokio-native-tls = ["rbatis-core/runtime-tokio-native-tls"]
-runtime-actix-native-tls = ["rbatis-core/runtime-actix-native-tls"]
-runtime-async-std-native-tls = ["rbatis-core/runtime-async-std-native-tls"]
-
-#enable_format bson
-format_bson = ["rbatis-core/format_bson"]
 
 [dependencies]
-rbatis-core = { version = "3.1.11", path = "rbatis-core", default-features = false, optional = true }
-rbatis_sql = { version = "3.0", git = "https://github.com/rbatis/rbatis_sql.git", branch = "main", optional = true }
-rbatis-macro-driver = { version = "3.1", path = "rbatis-macro-driver", default-features = false, optional = true }
-
-rbson = { version = "2.0", features = ["uuid-0_8", "chrono-0_4"] }
-chrono = { version = "0.4", features = ["serde"] }
-#serde
-serde = { version = "1", features = ["derive"] }
+rbatis_sql = { version = "4.0", path="rbatis-sql", optional = true }
+rbatis-macro-driver = { version = "4.0", path = "rbatis-macro-driver", default-features = false, optional = true }
+serde = "1"
 #uuid
 uuid = { version = "0.8", features = ["serde", "v4"] }
 #log
@@ -64,9 +50,14 @@ once_cell = "1.10"
 #object_id
 hex = "0.4"
 rand = "0.8"
-
+rbs = { version = "0.1", path = "rbs" }
+rbdc = { version = "0.1", path = "rbdc" }
+decimal = "2"
+crossbeam = "0.8.2"
+mobc = "0.7"
 [dev-dependencies]
 serde_json = "1"
+tokio = {version="1",features=["fs", "net", "rt", "rt-multi-thread", "time", "io-util"]}
 
 [profile.release]
 lto = true

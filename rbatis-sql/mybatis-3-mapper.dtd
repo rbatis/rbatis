@@ -1,0 +1,114 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+        <!--
+
+               Copyright 2009-2017 the original author or authors.
+
+               Licensed under the Apache License, Version 2.0 (the "License");
+               you may not use it file except in compliance with the License.
+               You may obtain a copy of the License at
+
+                  http://www.apache.org/licenses/LICENSE-2.0
+
+               Unless required by applicable law or agreed to in writing, software
+               distributed under the License is distributed on an "AS IS" BASIS,
+               WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+               See the License for the specific language governing permissions and
+               limitations under the License.
+
+        -->
+        <!ELEMENT mapper (sql* | insert* | update* | delete* | select* )+>
+        <!ATTLIST mapper
+                >
+
+        <!ELEMENT arg EMPTY>
+        <!ATTLIST arg
+                type CDATA #IMPLIED
+                column CDATA #IMPLIED
+                select CDATA #IMPLIED
+                name CDATA #IMPLIED
+                >
+
+        <!ELEMENT typeAlias EMPTY>
+        <!ATTLIST typeAlias
+                alias CDATA #REQUIRED
+                type CDATA #REQUIRED
+                >
+
+        <!ELEMENT select (#PCDATA | include | trim | where | set | foreach | choose | if | bind | println)*>
+        <!ATTLIST select
+                id CDATA #REQUIRED
+                >
+
+        <!ELEMENT insert (#PCDATA | include | trim | where | set | foreach | choose | if | bind | println)*>
+        <!ATTLIST insert
+                id CDATA #REQUIRED
+
+<!--                not support for now-->
+<!--                useGeneratedKeys (true|false) #IMPLIED-->
+                >
+
+        <!ELEMENT update (#PCDATA | include | trim | where | set | foreach | choose | if | bind | println)*>
+        <!ATTLIST update
+                id CDATA #REQUIRED
+                >
+        <!ELEMENT delete (#PCDATA | include | trim | where | set | foreach | choose | if | bind | println)*>
+        <!ATTLIST delete
+                id CDATA #REQUIRED
+                >
+        <!-- Dynamic -->
+
+        <!ELEMENT include ()?>
+        <!ATTLIST include
+                refid CDATA #REQUIRED
+                >
+
+        <!ELEMENT bind EMPTY>
+        <!ATTLIST bind
+                name CDATA #REQUIRED
+                value CDATA #REQUIRED
+                >
+
+        <!ELEMENT sql (#PCDATA | include | trim | where | set | foreach | choose | if | bind | println)*>
+        <!ATTLIST sql
+                id CDATA #REQUIRED
+                lang CDATA #IMPLIED
+                
+                >
+
+        <!ELEMENT trim (#PCDATA | include | trim | where | set | foreach | choose | if | bind | println)*>
+        <!ATTLIST trim
+                prefix CDATA #IMPLIED
+                prefixOverrides CDATA #IMPLIED
+                suffix CDATA #IMPLIED
+                suffixOverrides CDATA #IMPLIED
+                >
+        <!ELEMENT where (#PCDATA | include | trim | where | set | foreach | choose | if | bind | println)*>
+        <!ELEMENT set (#PCDATA | include | trim | where | set | foreach | choose | if | bind | println)*>
+
+        <!ELEMENT foreach (#PCDATA | include | trim | where | set | foreach | choose | if | bind | println)*>
+        <!ATTLIST foreach
+                collection CDATA #REQUIRED
+                item CDATA #IMPLIED
+                index CDATA #IMPLIED
+                open CDATA #IMPLIED
+                close CDATA #IMPLIED
+                separator CDATA #IMPLIED
+                >
+
+        <!ELEMENT choose (when* , otherwise?)>
+        <!ELEMENT when (#PCDATA | include | trim | where | set | foreach | choose | if | bind | println)*>
+        <!ATTLIST when
+                test CDATA #REQUIRED
+                >
+        <!ELEMENT otherwise (#PCDATA | include | trim | where | set | foreach | choose | if | bind | println)*>
+
+        <!ELEMENT if (#PCDATA | include | trim | where | set | foreach | choose | if | bind | println)*>
+        <!ATTLIST if
+                test CDATA #REQUIRED
+                >
+
+        <!ELEMENT println (#PCDATA | include | trim | where | set | foreach | choose | if | bind | println)*>
+        <!ATTLIST println
+                format CDATA #IMPLIED
+                value CDATA #REQUIRED
+                >

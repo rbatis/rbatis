@@ -1,0 +1,43 @@
+[package]
+name = "rbdc-sqlite"
+version = "0.1.0"
+edition = "2021"
+description = "The Rust SQL Toolkit and ORM Library. An async, pure Rust SQL crate featuring compile-time Dynamic SQL"
+readme = "Readme.md"
+authors = ["ce <zhuxiujia@qq.com>"]
+license = "Apache-2.0"
+documentation = "https://rbatis.github.io/rbatis.io/#/en/"
+repository = "https://github.com/rbatis/rbatis"
+homepage = "https://rbatis.github.io/rbatis.io/#/en/"
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
+rbs={version="0.1",path="../rbs"}
+rbdc = { version = "0.1", path = "../rbdc" }
+serde = "1.0"
+log = "0.4"
+atoi = "1.0"
+percent-encoding = "2.1.0"
+indexmap = {version="1.6.0",features=["serde"]}
+bytes = "1.1.0"
+smallvec = "1.7.0"
+either = "1.6.1"
+url = { version = "2.2.2", default-features = false }
+# used by the SQLite worker thread to block on the async mutex that locks the database handle
+futures-executor = { version = "0.3.19" }
+futures-channel = { version = "0.3.19", default-features = false, features = ["sink", "alloc", "std"] }
+futures-core = { version = "0.3.19", default-features = false }
+futures-intrusive = "0.4.0"
+futures-util = { version = "0.3.19", default-features = false, features = ["alloc", "sink"] }
+flume = { version = "0.10.9", default-features = false, features = ["async"] }
+libc = "0.2.112"
+libsqlite3-sys = { version = "0.24.1", default-features = false, features = [
+    "pkg-config",
+    "vcpkg",
+    "bundled",
+    "unlock_notify"
+] }
+
+
+[dev-dependencies]
+tokio = {version="1",features = ["full"]}

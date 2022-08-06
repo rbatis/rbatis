@@ -1,12 +1,12 @@
-use proc_macro2::{Ident, Span};
+use proc_macro2::{Ident, Literal, Span};
 use quote::quote;
 use quote::ToTokens;
-use syn::{AttributeArgs, FnArg, ItemFn, Pat, PatIdent};
+use std::str::FromStr;
+use syn::spanned::Spanned;
+use syn::{AttributeArgs, FnArg, ItemFn, Lit, LitByteStr, LitStr, NestedMeta, Pat};
 
 use crate::proc_macro::TokenStream;
-use crate::util::{
-    find_fn_body, find_return_type, get_fn_args, get_page_req_ident, is_fetch, is_rbatis_ref,
-};
+use crate::util::{find_fn_body, find_return_type, get_fn_args, is_fetch, is_rbatis_ref};
 
 ///py_sql macro
 ///support args for RB:&Rbatis,page:&PageRequest
@@ -32,25 +32,30 @@ pub(crate) fn impl_macro_py_sql(target_fn: &ItemFn, args: &AttributeArgs) -> Tok
         }
     }
 
-    let sql_ident;
-    if args.len() == 1 {
+    let mut sql_ident = quote!();
+    if args.len() >= 1 {
         if rbatis_name.is_empty() {
-            panic!("[rbatis] you should add rbatis ref param  rb:&Rbatis  or rb: &mut RbatisExecutor<'_,'_>  on '{}()'!", target_fn.sig.ident);
+            panic!("[rbatis] you should add rbatis ref param  rb:&Rbatis  or rb: &mut Executor<'_,'_>  on '{}()'!", target_fn.sig.ident);
         }
-        sql_ident = args
-            .get(0)
-            .expect("[rbatis] miss pysql sql param!")
-            .to_token_stream();
-    } else if args.len() == 2 {
-        rbatis_ident = args
-            .get(0)
-            .expect("[rbatis] miss rbatis ident param!")
-            .to_token_stream();
-        rbatis_name = format!("{}", rbatis_ident);
-        sql_ident = args
-            .get(1)
-            .expect("[rbatis] miss pysql sql param!")
-            .to_token_stream();
+        let mut s = "".to_string();
+        for ele in args {
+            match ele {
+                NestedMeta::Meta(m) => {}
+                NestedMeta::Lit(l) => match l {
+                    Lit::Str(v) => {
+                        s = s + v.value().as_str();
+                    }
+                    Lit::ByteStr(_) => {}
+                    Lit::Byte(_) => {}
+                    Lit::Char(_) => {}
+                    Lit::Int(_) => {}
+                    Lit::Float(_) => {}
+                    Lit::Bool(_) => {}
+                    Lit::Verbatim(_) => {}
+                },
+            }
+        }
+        sql_ident = quote!(#s);
     } else {
         panic!("[rbatis] Incorrect macro parameter length!");
     }
@@ -77,40 +82,29 @@ pub(crate) fn impl_macro_py_sql(target_fn: &ItemFn, args: &AttributeArgs) -> Tok
     let mut call_method = quote! {};
     if is_fetch {
         call_method = quote! {
-             use rbatis::executor::{Executor,ExecutorMut};
-             #rbatis_ident.fetch(&sql,rb_args).await
+             use rbatis::executor::{Executor};
+             let r=#rbatis_ident.fetch(&sql,rb_args).await?;
+             Ok(rbatis::decode::decode(r)?)
         };
     } else {
         call_method = quote! {
-             use rbatis::executor::{Executor,ExecutorMut};
-             #rbatis_ident.exec(&sql,rb_args).await
+             use rbatis::executor::{Executor};
+             let r=#rbatis_ident.exec(&sql,rb_args).await?;
+             Ok(r)
         };
     }
-    if return_ty.to_string().contains("Page <")
-        && func_args_stream.to_string().contains("& PageRequest")
-    {
-        let page_ident = get_page_req_ident(target_fn, &func_name_ident.to_string());
-        call_method = quote! {
-            use rbatis::crud::{CRUD,CRUDMut};
-            #rbatis_ident.fetch_page(&sql,rb_args,#page_ident).await
-        };
-    }
-
     //gen rust code templete
     return quote! {
        pub async fn #func_name_ident(#func_args_stream) -> #return_ty {
-         let mut sql = #sql_ident.to_string();
-         let mut rb_arg_map = rbson::Document::new();
+         let mut rb_arg_map = rbs::value::map::ValueMap::new();
          #sql_args_gen
          #fn_body
          use rbatis::executor::{RbatisRef};
          let driver_type = #rbatis_ident.get_rbatis().driver_type()?;
-         use rbatis::{rbatis_sql,AsSqlTag};
-         let sql_tag = driver_type.sql_tag();
-         #[rb_py(#sql_ident)]
-         pub fn #func_name_ident(arg: &rbson::Bson, _tag: char) {}
-         let (mut sql,rb_args) = #func_name_ident(&rbson::Bson::Document(rb_arg_map), sql_tag);
-         driver_type.do_replace_tag(&mut sql);
+         use rbatis::rbatis_sql;
+         #[rbatis::rb_py(#sql_ident)]
+         pub fn #func_name_ident(arg: &rbs::Value, _tag: char) {}
+         let (mut sql,rb_args) = #func_name_ident(&rbs::Value::Map(rb_arg_map), '?');
          #call_method
        }
     }
@@ -161,7 +155,7 @@ pub(crate) fn filter_args_context_id(
         }
         sql_args_gen = quote! {
              #sql_args_gen
-             rb_arg_map.insert(#item_name.to_string(),rbson::to_bson(#item).unwrap_or_default());
+             rb_arg_map.insert(#item_name.to_string().into(),rbs::to_value(#item).unwrap_or_default());
         };
     }
     sql_args_gen
