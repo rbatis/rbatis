@@ -158,6 +158,34 @@ macro_rules! impl_update {
             }
         }
     };
+    ($table:ty{$fn_name:ident($($param_key:ident:$param_type:ty$(,)?)+)} => $sql_where:expr) => {
+        impl $table {
+            pub async fn $fn_name(
+                rb: &mut dyn $crate::executor::Executor,
+                table: &$table,
+                $($param_key:$param_type,)+
+            ) -> Result<rbdc::db::ExecResult, rbdc::Error> {
+                #[py_sql("`update ${table_name} set  `
+                               trim ',':
+                                 for k,v in table:
+                                   if k == column || v== null:
+                                      #{continue}
+                                   `${k}=#{v},`
+                          ",$sql_where)]
+                async fn do_update_by_where(
+                    rb: &mut dyn $crate::executor::Executor,
+                    table_name: String,
+                    table: &rbs::Value,
+                    $($param_key:$param_type,)+
+                ) -> Result<rbdc::db::ExecResult, rbdc::Error> {
+                    impled!()
+                }
+                let table_name = $crate::utils::string_util::to_snake_name(stringify!($table));
+                let table = rbs::to_value!(table);
+                do_update_by_where(rb, table_name, &table, $($param_key,)+).await
+            }
+        }
+    };
 }
 
 /// gen sql = DELETE FROM table_name WHERE some_column=some_value;

@@ -25,8 +25,10 @@ impl_select!(BizActivity {});
 impl_select!(BizActivity{select_all_by_id(id:&str,name:&str) => " where id = #{id} and name = #{name}"});
 impl_select!(BizActivity{select_by_id(id:String) -> Option => " where id = #{id} limit 1"});
 impl_update!(BizActivity {});
+impl_update!(BizActivity{update_by_name(name:&str)}=> " where id = 1");
 impl_delete!(BizActivity {});
 impl_select_page!(BizActivity{select_page(name:&str) => " where name != #{name}"});
+
 
 #[tokio::main]
 pub async fn main() {
@@ -47,27 +49,31 @@ pub async fn main() {
         delete_flag: Some(1),
     };
     let af = BizActivity::insert(&mut rb, &t).await;
-    println!("{:?}", af);
+    println!("insert = {:?}", af);
 
     sleep(Duration::from_secs(2));
 
     let data = BizActivity::select_all_by_id(&mut rb, "1", "1").await;
-    println!("{:?}", data);
+    println!("select_all_by_id = {:?}", data);
 
     sleep(Duration::from_secs(2));
 
     let data = BizActivity::select_by_id(&mut rb, "1".to_string()).await;
-    println!("{:?}", data);
+    println!("select_by_id = {:?}", data);
 
     sleep(Duration::from_secs(2));
     let data = BizActivity::update_by_column(&mut rb, &t, "id").await;
-    println!("{:?}", data);
+    println!("update_by_column = {:?}", data);
+
+    sleep(Duration::from_secs(2));
+    let data = BizActivity::update_by_name(&mut rb, &t, "test").await;
+    println!("update_by_name = {:?}", data);
 
     sleep(Duration::from_secs(2));
     let data = BizActivity::delete_by_column(&mut rb, "id", &"2".into()).await;
-    println!("{:?}", data);
+    println!("delete_by_column = {:?}", data);
 
     sleep(Duration::from_secs(2));
     let data = BizActivity::select_page(&mut rb, &PageRequest::new(1, 10), "2").await;
-    println!("{:?}", data);
+    println!("select_page = {:?}", data);
 }
