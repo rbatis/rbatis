@@ -55,7 +55,6 @@ impl TableSync for SqliteTableSync {
                     sql_column = sql_column.trim_end_matches(",").to_string();
                 }
                 sql_create = sql_create + &format!("({});", sql_column);
-                log::info!("exec=> {}", sql_create);
                 let result_create = rb.exec(&sql_create, vec![]).await;
                 match result_create {
                     Ok(_) => {}

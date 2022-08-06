@@ -21,6 +21,7 @@ pub struct BizActivity {
 }
 #[tokio::main]
 pub async fn main(){
+    fast_log::init(fast_log::config::Config::new().console());
     let rb = Rbatis::new();
     rb.link(
         SqliteDriver {},
@@ -44,5 +45,5 @@ pub async fn main(){
         version: Some(1),
         delete_flag: Some(1),
     };
-    s.sync("sqlite", rb.acquire().await.unwrap(), to_value!(&t),"biz_activity").await.unwrap();
+    s.sync("sqlite", rb.acquire().await.unwrap(), t).await.unwrap();
 }
