@@ -133,7 +133,10 @@ async fn main() {
   let rb = Rbatis::new();
   /// connect to database  
   rb.link("mysql://root:123456@localhost:3306/test").await.unwrap();
-
+  // rb.link("mysql://root:123456@localhost:3306/test").await.unwrap();
+  // rb.link("postgres://postgres:123456@localhost:5432/postgres").await.unwrap();
+  // rb.link("jdbc:sqlserver://localhost:1433;User=SA;Password={TestPass!123456};Database=test").await.unwrap();
+  
   let activity =  BizActivity {
     id: Some("2".into()),
     name: Some("2".into()),
