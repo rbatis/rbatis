@@ -204,8 +204,8 @@ impl<T> Default for Page<T> {
 }
 
 impl<T> IPageRequest for Page<T>
-where
-    T: Send + Sync,
+    where
+        T: Send + Sync,
 {
     fn get_page_size(&self) -> u64 {
         self.page_size
@@ -240,8 +240,8 @@ where
 }
 
 impl<T> IPage<T> for Page<T>
-where
-    T: Send + Sync,
+    where
+        T: Send + Sync,
 {
     fn get_records(&self) -> &Vec<T> {
         self.records.as_ref()
@@ -256,16 +256,35 @@ where
     }
 }
 
-impl <T:Display+Debug>Display for Page<T>{
+impl<T: Display + Debug> Display for Page<T> {
     fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
         f.debug_struct("Page")
-            .field("records",&self.records)
-            .field("total",&self.total)
-            .field("pages",&self.pages)
-            .field("page_no",&self.page_no)
-            .field("page_size",&self.page_size)
-            .field("search_count",&self.search_count)
+            .field("records", &self.records)
+            .field("total", &self.total)
+            .field("pages", &self.pages)
+            .field("page_no", &self.page_no)
+            .field("page_size", &self.page_size)
+            .field("search_count", &self.search_count)
             .finish()
+    }
+}
+
+impl<V> Page<V> {
+    pub fn from<T>(arg: Page<T>) -> Self where V: From<T> {
+        let mut p = Page::<V>::new(arg.page_no, arg.page_size);
+        p.pages = arg.pages;
+        p.page_no = arg.page_no;
+        p.page_size = arg.page_size;
+        p.total = arg.total;
+        p.search_count = arg.search_count;
+        p.records = {
+            let mut records = Vec::with_capacity(arg.records.len());
+            for x in arg.records {
+                records.push(V::from(x));
+            }
+            records
+        };
+        p
     }
 }
 
