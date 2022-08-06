@@ -1,7 +1,7 @@
 use rbs::Value;
 use std::fmt::{Display, Formatter};
 
-#[derive(serde::Serialize, serde::Deserialize, Debug, Clone, Eq, PartialEq)]
+#[derive(serde::Serialize, serde::Deserialize, Debug, Clone, Eq, PartialEq,Hash)]
 #[serde(rename = "Time")]
 pub struct Time(pub fastdate::Time);
 
