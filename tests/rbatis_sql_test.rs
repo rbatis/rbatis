@@ -25,7 +25,7 @@ mod test {
       #{item},
     )
     trim 'AND':
-      AND delete_flag = #{del2}
+      AND delete_flag = #{map.k}
     choose:
         when age==27:
           AND age = 27
@@ -45,6 +45,11 @@ mod test {
             "ids".into(),
             vec![Value::I32(1), Value::I32(2), Value::I32(3)].into(),
         );
+        arg.insert("map".into(), {
+            let mut m=ValueMap::new();
+            m.insert("k".into(),1.into());
+            Value::Map(m)
+        });
         let (sql, args) = py_select_by_condition(&mut rbs::Value::Map(arg), '$');
         println!("py->sql: {}", sql);
         println!("py->args: {}", serde_json::to_string(&args).unwrap());

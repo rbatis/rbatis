@@ -136,4 +136,25 @@ mod test {
         };
         block_on!(task);
     }
+    #[test]
+    fn test_count() {
+        let task = async move {
+            let mut d = MysqlDriver {};
+            let mut c = d
+                .connect("mysql://root:123456@localhost:3306/test")
+                .await
+                .unwrap();
+            let param = vec![
+            ];
+            let data = c
+                .get_values(
+                    "select count(1) as count from sys_dict where id!='' order by create_date",
+                    param,
+                )
+                .await
+                .unwrap();
+            println!("{:?}", data);
+        };
+        block_on!(task);
+    }
 }

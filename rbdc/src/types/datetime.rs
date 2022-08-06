@@ -5,7 +5,7 @@ use std::fmt::{Display, Formatter};
 use std::ops::{Deref, DerefMut};
 use std::str::FromStr;
 
-#[derive(Debug, Clone, Eq, PartialEq)]
+#[derive(Debug, Clone, Eq, PartialEq,Hash)]
 pub struct FastDateTime(pub fastdate::DateTime);
 
 impl Display for FastDateTime {

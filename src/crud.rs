@@ -283,7 +283,7 @@ macro_rules! impl_select_page {
         impl $table {
             pub async fn $fn_name(
                 rb: &mut dyn $crate::executor::Executor,
-                page_req:&PageRequest,
+                page_req: &$crate::sql::PageRequest,
                 $($param_key:$param_type,)+
             ) -> Result<$crate::sql::Page::<$table>, rbdc::Error> {
                 #[$crate::py_sql("select count(1) as count from ${table_name} ",$where_sql)]
@@ -297,11 +297,11 @@ macro_rules! impl_select_page {
                     records = do_select_page(rb,&table_name,page_req.page_no, page_req.page_size,$($param_key,)+).await?;
                 }else{
                     #[$crate::py_sql("select * from ${table_name} ",$where_sql,"
-                              limit ${page_no},${page_size}")]
+                              ` limit ${page_no},${page_size}`")]
                     async fn do_select_page(rb: &mut dyn $crate::executor::Executor,table_name: &str,page_no:u64,page_size:u64,$($param_key:$param_type,)+) -> Result<Vec<$table>, rbdc::Error> {impled!()}
                     records = do_select_page(rb,&table_name,page_req.page_no, page_req.page_size,$($param_key,)+).await?;
                 }
-                let mut page = Page::<$table>::new_total(page_req.page_no, page_req.page_size, total);
+                let mut page = $crate::sql::Page::<$table>::new_total(page_req.page_no, page_req.page_size, total);
                 page.records = records;
                 Ok(page)
             }
