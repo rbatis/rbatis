@@ -25,9 +25,9 @@ impl_select!(BizActivity {});
 impl_select!(BizActivity{select_all_by_id(id:&str,name:&str) => "`where id = #{id} and name = #{name}`"});
 impl_select!(BizActivity{select_by_id(id:String) -> Option => "`where id = #{id} limit 1`"});
 impl_update!(BizActivity {});
-impl_update!(BizActivity{update_by_name(name:&str)}=> "`where id = 1`");
+impl_update!(BizActivity{update_by_name(name:&str)} => "`where id = 1`");
 impl_delete!(BizActivity {});
-impl_delete!(BizActivity {delete_by_name(name:&str)}=> "`where name= '2'`");
+impl_delete!(BizActivity {delete_by_name(name:&str)} => "`where name= '2'`");
 impl_select_page!(BizActivity{select_page(name:&str) => "`where name != #{name}`"});
 
 
@@ -49,8 +49,8 @@ pub async fn main() {
         version: Some(1),
         delete_flag: Some(1),
     };
-    let af = BizActivity::insert(&mut rb, &t).await;
-    println!("insert = {:?}", af);
+    let data = BizActivity::insert(&mut rb, &t).await;
+    println!("insert = {:?}", data);
 
     sleep(Duration::from_secs(2));
 
