@@ -15,7 +15,7 @@ use crate::utils::error_util::ToResult;
 use crate::utils::string_util;
 use crossbeam::queue::SegQueue;
 use rbdc::db::{Connection, ExecResult};
-use rbdc::pool::Pool;
+use rbdc::pool::{ManagerPorxy, Pool};
 use std::fmt::{Debug, Formatter};
 use std::ops::DerefMut;
 use crate::Error;
@@ -83,7 +83,7 @@ impl Rbatis {
     pub async fn link<Driver: rbdc::db::Driver + 'static>(
         &self,
         driver: Driver,
-        url: &str,
+        url: &str
     ) -> Result<(), Error> {
         if url.is_empty() {
             return Err(Error::from("[rbatis] link url is empty!"));
@@ -91,6 +91,23 @@ impl Rbatis {
         let mut option = driver.default_option();
         option.set_uri(url)?;
         let pool = Pool::new_box(Box::new(driver), option);
+        self.pool.set(pool);
+        return Ok(());
+    }
+
+    /// link pool
+    pub async fn link_builder<Driver: rbdc::db::Driver + 'static>(
+        &self,
+        builder: mobc::Builder<ManagerPorxy>,
+        driver: Driver,
+        url: &str
+    ) -> Result<(), Error> {
+        if url.is_empty() {
+            return Err(Error::from("[rbatis] link url is empty!"));
+        }
+        let mut option = driver.default_option();
+        option.set_uri(url)?;
+        let pool = Pool::new_builder(builder,Box::new(driver), option);
         self.pool.set(pool);
         return Ok(());
     }
@@ -124,17 +141,15 @@ impl Rbatis {
     }
 
     /// get conn pool
+    ///
+    /// can set option for example:
+    /// ```rust
+    /// let rbatis = Rbatis::new();
+    /// // rbatis.link(**).await;
+    /// // rbatis.get_pool().unwrap().set_max_open_conns()
+    /// ```
     pub fn get_pool(&self) -> Result<&Pool, Error> {
         let p = self.pool.get();
-        if p.is_none() {
-            return Err(Error::from("[rbatis] rbatis pool not inited!"));
-        }
-        return Ok(p.unwrap());
-    }
-
-    /// get conn pool
-    pub fn get_pool_mut(&mut self) -> Result<&mut Pool, Error> {
-        let p = self.pool.get_mut();
         if p.is_none() {
             return Err(Error::from("[rbatis] rbatis pool not inited!"));
         }
