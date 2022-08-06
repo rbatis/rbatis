@@ -232,7 +232,7 @@ pub async fn select(rb: &Rbatis,name: &str) -> BizActivity {}
 
 #[tokio::test]
 pub async fn test_macro() {
-    fast_log::init(fast_log::config::Config::new().console());
+    fast_log::init(fast_log::Config::new().console());
     RB.link("mysql://root:123456@localhost:3306/test").await.unwrap();
     let a = select(&RB,"1").await.unwrap();
     println!("{:?}", a);

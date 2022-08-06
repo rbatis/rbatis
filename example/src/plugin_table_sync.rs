@@ -21,7 +21,7 @@ pub struct BizActivity {
 }
 #[tokio::main]
 pub async fn main(){
-    fast_log::init(fast_log::config::Config::new().console());
+    fast_log::init(fast_log::Config::new().console());
     let rb = Rbatis::new();
     rb.link(
         SqliteDriver {},

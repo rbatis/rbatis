@@ -37,7 +37,7 @@ impl_select_page!(BizActivity{select_page(name:&str) => "`where name != #{name}`
 
 #[tokio::main]
 pub async fn main() {
-    fast_log::init(fast_log::config::Config::new().console());
+    fast_log::init(fast_log::Config::new().console());
     let mut rb = init_sqlite().await;
     let mut t = BizActivity {
         id: Some("2".into()),
