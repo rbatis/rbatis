@@ -249,7 +249,7 @@ pub async fn test_macro() {
 - [x] [Rbatis-V4.0-rbdc-pg](https://github.com/rbatis/rbatis/tree/v4.0.0);
 - [x] [Rbatis-V4.0-rbdc-sqlite](https://github.com/rbatis/rbatis/tree/v4.0.0);
 - [x] [Rbatis-V4.0-rbdc-mssql](https://github.com/rbatis/rbatis/tree/v4.0.0);
-- [ ] [Rbatis-V4.0-gen-plugin](https://github.com/rbatis/rbatis/tree/v4.0.0);
+- [ ] [Rbatis-V4.0-rbdc-oracle](https://github.com/rbatis/rbatis/tree/v4.0.0);
 
 # Contact/donation, or click on star [rbatis](https://github.com/rbatis/rbatis)
 
