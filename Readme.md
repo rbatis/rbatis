@@ -126,18 +126,18 @@ impl_select_page!(BizActivity{select_page(name:&str) => "`where name != #{name}`
 #[tokio::main]
 async fn main() {
   /// enable log crate to show sql logs
-  fast_log::init(fast_log::config::Config::new().console());
+  fast_log::init(fast_log::Config::new().console());
   /// initialize rbatis. also you can call rb.clone(). this is  an Arc point
   let rb = Rbatis::new();
   /// connect to database  
-  // mysql 
-  rb.link("mysql://root:123456@localhost:3306/test").await.unwrap();
   // sqlite 
-  // rb.link("sqlite://target/sqlite.db").await.unwrap();
+  rb.link(SqliteDriver {},"sqlite://target/sqlite.db").await.unwrap();
+  // mysql 
+  // rb.link(MysqlDriver{},"mysql://root:123456@localhost:3306/test").await.unwrap();
   // postgresql 
-  // rb.link("postgres://postgres:123456@localhost:5432/postgres").await.unwrap();
+  // rb.link(PgDriver{},"postgres://postgres:123456@localhost:5432/postgres").await.unwrap();
   // mssql/sqlserver
-  // rb.link("jdbc:sqlserver://localhost:1433;User=SA;Password={TestPass!123456};Database=test").await.unwrap();
+  // rb.link(MssqlDriver{},"jdbc:sqlserver://localhost:1433;User=SA;Password={TestPass!123456};Database=test").await.unwrap();
   
   let activity =  BizActivity {
     id: Some("2".into()),
