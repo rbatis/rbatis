@@ -228,6 +228,9 @@ macro_rules! impl_delete {
                 rb: &mut dyn $crate::executor::Executor,
                 $($param_key:$param_type,)+
             ) -> Result<rbdc::db::ExecResult, rbdc::Error> {
+                if $sql_where.is_empty(){
+                    return Err(rbdc::Error::from("sql_where can't be empty!"));
+                }
                 #[py_sql("`delete from ${table_name} `",$sql_where)]
                 async fn do_delete_by_where(
                     rb: &mut dyn $crate::executor::Executor,
