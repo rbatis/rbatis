@@ -1,5 +1,5 @@
 [package]
-name = "rbatis-sql"
+name = "rbatis_sql"
 version = "4.0.0"
 edition = "2021"
 description = "The Rust SQL Toolkit and ORM Library. An async, pure Rust SQL crate featuring compile-time Dynamic SQL"

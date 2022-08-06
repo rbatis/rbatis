@@ -35,7 +35,7 @@ default_mode = ["rbatis-macro-driver", "rbatis-sql"]
 upper_case_sql_keyword = []
 
 [dependencies]
-rbatis-sql = { version = "4.0", path="rbatis-sql", optional = true }
+rbatis_sql = { version = "4.0", path="rbatis-sql", optional = true }
 rbatis-macro-driver = { version = "4.0", path = "rbatis-macro-driver", default-features = false, optional = true }
 serde = "1"
 #uuid
