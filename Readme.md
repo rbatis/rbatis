@@ -132,9 +132,13 @@ async fn main() {
   /// initialize rbatis. also you can call rb.clone(). this is  an Arc point
   let rb = Rbatis::new();
   /// connect to database  
+  // mysql 
   rb.link("mysql://root:123456@localhost:3306/test").await.unwrap();
-  // rb.link("mysql://root:123456@localhost:3306/test").await.unwrap();
+  // sqlite 
+  // rb.link("sqlite://target/sqlite.db").await.unwrap();
+  // postgresql 
   // rb.link("postgres://postgres:123456@localhost:5432/postgres").await.unwrap();
+  // mssql/sqlserver
   // rb.link("jdbc:sqlserver://localhost:1433;User=SA;Password={TestPass!123456};Database=test").await.unwrap();
   
   let activity =  BizActivity {
