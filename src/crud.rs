@@ -19,7 +19,7 @@ macro_rules! impl_insert {
                 rb: &mut dyn $crate::executor::Executor,
                 table: &$table,
             ) -> Result<rbdc::db::ExecResult, rbdc::Error> {
-                #[py_sql(
+                #[$crate::py_sql(
                     "`insert into ${table_name} (`
              trim ',':
                for k,v in table:
@@ -69,7 +69,7 @@ macro_rules! impl_select {
     ($table:ty,$table_name:expr) => {
         impl $table{
             pub async fn select_all(rb: &mut dyn  $crate::executor::Executor)->Result<Vec<$table>,rbdc::Error>{
-                #[py_sql(
+                #[$crate::py_sql(
 "select * from ${table_name}")]
 async fn do_select_all(rb: &mut dyn $crate::executor::Executor,table_name:String) -> Result<Vec<$table>,rbdc::Error> {impled!()}
             let table_name = $table_name.to_string();
@@ -81,11 +81,11 @@ async fn do_select_all(rb: &mut dyn $crate::executor::Executor,table_name:String
         impl $table{
             pub async fn $fn_name(rb: &mut dyn  $crate::executor::Executor,$($param_key:$param_type,)+)->Result<Vec<$table>,rbdc::Error>{
                  if $sql.starts_with("select"){
-                     #[py_sql($sql)]
+                     #[$crate::py_sql($sql)]
                      async fn do_select_all_raw(rb: &mut dyn $crate::executor::Executor,$($param_key:$param_type,)+) -> Result<Vec<$table>,rbdc::Error> {impled!()}
                      do_select_all_raw(rb,$($param_key ,)+).await
                  }else{
-                     #[py_sql("select * from biz_activity ",$sql)]
+                     #[$crate::py_sql("select * from biz_activity ",$sql)]
                      async fn do_select_all(rb: &mut dyn $crate::executor::Executor,$($param_key:$param_type,)+) -> Result<Vec<$table>,rbdc::Error> {impled!()}
                      do_select_all(rb,$($param_key ,)+).await
                  }
@@ -101,11 +101,11 @@ async fn do_select_all(rb: &mut dyn $crate::executor::Executor,table_name:String
         impl $table{
             pub async fn $fn_name(rb: &mut dyn  $crate::executor::Executor,$($param_key:$param_type,)+)->Result<$container<$table>,rbdc::Error>{
                 if $sql.starts_with("select"){
-                    #[py_sql($sql)]
+                    #[$crate::py_sql($sql)]
                     async fn do_select_all_raw(rb: &mut dyn $crate::executor::Executor,$($param_key:$param_type,)+) -> Result<$container<$table>,rbdc::Error> {impled!()}
                     do_select_all_raw(rb,$($param_key ,)+).await
                 }else{
-                     #[py_sql("select * from biz_activity ",$sql)]
+                     #[$crate::py_sql("select * from biz_activity ",$sql)]
                      async fn do_select_all(rb: &mut dyn $crate::executor::Executor,$($param_key:$param_type,)+) -> Result<$container<$table>,rbdc::Error> {impled!()}
                      do_select_all(rb,$($param_key ,)+).await
                 }
@@ -133,7 +133,7 @@ macro_rules! impl_update {
                 table: &$table,
                 column: &str,
             ) -> Result<rbdc::db::ExecResult, rbdc::Error> {
-                #[py_sql(
+                #[$crate::py_sql(
                     "`update ${table_name} set `
              trim ',':
                for k,v in table:
@@ -169,7 +169,7 @@ macro_rules! impl_update {
                     return Err(rbdc::Error::from("sql_where can't be empty!"));
                 }
                 if $sql_where.starts_with("update"){
-                  #[py_sql($sql_where)]
+                  #[$crate::py_sql($sql_where)]
                   async fn do_update_by_where(
                       rb: &mut dyn $crate::executor::Executor,
                       table_name: String,
@@ -182,7 +182,7 @@ macro_rules! impl_update {
                   let table = rbs::to_value!(table);
                   do_update_by_where(rb, table_name, &table, $($param_key,)+).await
                 } else {
-                  #[py_sql("`update ${table_name} set  `
+                  #[$crate::py_sql("`update ${table_name} set  `
                                  trim ',':
                                    for k,v in table:
                                      if k == column || v== null:
@@ -226,7 +226,7 @@ macro_rules! impl_delete {
                 column: &str,
                 column_value: &rbs::Value,
             ) -> Result<rbdc::db::ExecResult, rbdc::Error> {
-                #[py_sql("`delete from ${table_name} where  ${column} = #{column_value}`")]
+                #[$crate::py_sql("`delete from ${table_name} where  ${column} = #{column_value}`")]
                 async fn do_delete_by_column(
                     rb: &mut dyn $crate::executor::Executor,
                     table_name: String,
@@ -249,7 +249,7 @@ macro_rules! impl_delete {
                 if $sql_where.is_empty(){
                     return Err(rbdc::Error::from("sql_where can't be empty!"));
                 }
-                #[py_sql("`delete from ${table_name} `",$sql_where)]
+                #[$crate::py_sql("`delete from ${table_name} `",$sql_where)]
                 async fn do_delete_by_where(
                     rb: &mut dyn $crate::executor::Executor,
                     table_name: String,
@@ -273,17 +273,17 @@ macro_rules! impl_select_page {
                 page_req:&PageRequest,
                 $($param_key:$param_type,)+
             ) -> Result<$crate::sql::Page::<$table>, rbdc::Error> {
-                #[py_sql("select count(1) as count from ${table_name} ",$where_sql)]
+                #[$crate::py_sql("select count(1) as count from ${table_name} ",$where_sql)]
                 async fn do_select_page_count(rb: &mut dyn $crate::executor::Executor,table_name: &str,$($param_key:$param_type,)+) -> Result<u64, rbdc::Error> {impled!()}
                 let table_name = $crate::utils::string_util::to_snake_name(stringify!($table));
                 let total:u64=do_select_page_count(rb, &table_name, $($param_key,)+).await?;
                 let records:Vec<$table>;
                 if $where_sql.contains("page_no") && $where_sql.contains("page_size"){
-                    #[py_sql("select * from ${table_name} ",$where_sql)]
+                    #[$crate::py_sql("select * from ${table_name} ",$where_sql)]
                     async fn do_select_page(rb: &mut dyn $crate::executor::Executor,table_name: &str,page_no:u64,page_size:u64,$($param_key:$param_type,)+) -> Result<Vec<$table>, rbdc::Error> {impled!()}
                     records = do_select_page(rb,&table_name,page_req.page_no, page_req.page_size,$($param_key,)+).await?;
                 }else{
-                    #[py_sql("select * from ${table_name} ",$where_sql,"
+                    #[$crate::py_sql("select * from ${table_name} ",$where_sql,"
                               limit ${page_no},${page_size}")]
                     async fn do_select_page(rb: &mut dyn $crate::executor::Executor,table_name: &str,page_no:u64,page_size:u64,$($param_key:$param_type,)+) -> Result<Vec<$table>, rbdc::Error> {impled!()}
                     records = do_select_page(rb,&table_name,page_req.page_no, page_req.page_size,$($param_key,)+).await?;
