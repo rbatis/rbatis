@@ -31,7 +31,7 @@ async fn select_by_condition(
 
 #[tokio::main]
 pub async fn main() {
-    fast_log::init(fast_log::config::Config::new().console());
+    fast_log::init(fast_log::Config::new().console());
     //use static ref
     let rb = init_sqlite().await;
     let a = select_by_condition(

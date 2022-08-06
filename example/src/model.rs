@@ -31,7 +31,7 @@ pub async fn init_sqlite() -> Rbatis {
 /// make a sqlite-rbatis
 pub async fn init_sqlite_path(path: &str) -> Rbatis {
     //first init log carte
-    fast_log::init(fast_log::config::Config::new().console());
+    fast_log::init(fast_log::Config::new().console());
 
     let rb = Rbatis::new();
     // rb.link("mysql://root:123456@localhost:3306/test").await.unwrap();
