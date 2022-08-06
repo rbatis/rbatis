@@ -13,7 +13,7 @@ homepage = "https://rbatis.github.io/rbatis.io/#/en/"
 [dependencies]
 num-traits = "0.2"
 rmp = "0.8"
-serde = "1.0"
+serde = {version="1.0",features=["derive"]}
 serde_bytes = "0.11"
 quickcheck = "1.0"
 byteorder = "1.4"
