@@ -2,7 +2,7 @@ use crate::protocol::text::ColumnType;
 use crate::value::{MySqlValue, MySqlValueFormat};
 use byteorder::{ByteOrder, LittleEndian};
 use bytes::Buf;
-use fastdate::DateTime;
+use fastdate::{Date, DateTime};
 use rbdc::Error;
 use rbs::Value;
 use std::str::FromStr;
@@ -141,7 +141,7 @@ fn decode_timestamp(value: MySqlValue) -> Result<String, Error> {
         MySqlValueFormat::Binary => {
             let buf = value.as_bytes()?;
             let len = buf[0];
-            let date = decode_date_buf(&buf[1..])?;
+            let date = decode_date_buf(&buf[1..])?.to_string();
             let dt = if len > 4 {
                 decode_time_buf(len - 4, &buf[5..])?
             } else {
@@ -170,7 +170,7 @@ fn decode_date(value: MySqlValue) -> Result<String, Error> {
         MySqlValueFormat::Binary => {
             let buf = value.as_bytes()?;
             let len = buf[0];
-            let date = decode_date_buf(&buf[1..])?;
+            let date = decode_date_buf(&buf[1..])?.to_string();
             date
         }
     })
@@ -192,17 +192,20 @@ fn decode_time(value: MySqlValue) -> Result<String, Error> {
     })
 }
 
-fn decode_date_buf(buf: &[u8]) -> Result<String, Error> {
+fn decode_date_buf(buf: &[u8]) -> Result<Date, Error> {
     if buf.is_empty() {
         // zero buffer means a zero date (null)
-        return Ok("".to_string());
+        return  Ok(Date{
+            year: 0000,
+            mon: 00,
+            day: 00,
+        });
     }
-    Ok(format!(
-        "{:4}-{:2}-{:2}",
-        LittleEndian::read_u16(buf) as i32,
-        buf[2] as u8,
-        buf[3] as u8,
-    ))
+    Ok(Date{
+        year: LittleEndian::read_u16(buf),
+        mon: buf[2] as u8,
+        day: buf[3] as u8,
+    })
 }
 
 fn decode_year_buf(buf: &[u8]) -> Result<String, Error> {

@@ -63,7 +63,7 @@ impl Placeholder for MysqlDriver {
 //             std::thread::sleep(std::time::Duration::from_secs(2));
 //             let mut conn = pool.get().await.unwrap();
 //             let data = conn
-//                 .get_values("select * from biz_activity", vec![])
+//                 .get_values("select * from sys_dict where code = ?", vec![Value::String("111".to_string())])
 //                 .await
 //                 .unwrap();
 //             for mut x in data {
