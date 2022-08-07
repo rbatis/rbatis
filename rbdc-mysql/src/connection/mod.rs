@@ -10,6 +10,7 @@ use rbdc::Error;
 use rbs::Value;
 use std::fmt::{self, Debug, Formatter};
 use std::future::join;
+use std::ops::{Deref, DerefMut};
 
 mod auth;
 mod establish;
@@ -29,7 +30,7 @@ pub struct MySqlConnection {
     // underlying TCP stream,
     // wrapped in a potentially TLS stream,
     // wrapped in a buffered stream
-    pub stream: MySqlStream,
+    pub stream: DropBox<MySqlStream>,
     // cache by query string to the statement id and metadata
     pub cache_statement: StatementCache<(u32, MySqlStatementMetadata)>,
 }
@@ -39,6 +40,23 @@ impl Debug for MySqlConnection {
         f.debug_struct("MySqlConnection").finish()
     }
 }
+
+pub struct DropBox<T>{
+    pub inner:Option<T>
+}
+impl <T>Deref for DropBox<T>{
+    type Target = T;
+
+    fn deref(&self) -> &Self::Target {
+        self.inner.as_ref().expect("conn closed")
+    }
+}
+impl <T>DerefMut for DropBox<T>{
+    fn deref_mut(&mut self) -> &mut Self::Target {
+        self.inner.as_mut().expect("conn closed")
+    }
+}
+
 
 impl MySqlConnection {
     #[inline]
@@ -190,5 +208,20 @@ impl Connection for MySqlConnection {
     fn ping(&mut self) -> BoxFuture<'_, Result<(), Error>> {
         let c = self.do_ping();
         Box::pin(async move { c.await })
+    }
+}
+
+impl Drop for MySqlConnection{
+    fn drop(&mut self) {
+        let  stream= self.stream.inner.take();
+        rbdc::rt::spawn(async move{
+            match stream {
+                None => {}
+                Some(mut s) => {
+                    s.send_packet(Quit).await;
+                    s.shutdown().await;
+                }
+            }
+        });
     }
 }
