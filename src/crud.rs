@@ -65,6 +65,7 @@ macro_rules! impl_insert {
 ///
 /// example:
 ///```rust
+/// #[derive(Clone, Debug, serde::Serialize, serde::Deserialize)]
 /// pub struct BizActivity{}
 ///rbatis::impl_select!(BizActivity{});
 ///rbatis::impl_select!(BizActivity{select_all_by_id(id:&str,name:&str) => "select * from biz_activity where id = #{id} and name = #{name}"});
@@ -107,6 +108,8 @@ async fn do_select_all(rb: &mut dyn $crate::executor::Executor,table_name:String
     };
     // select to an container
     // for example:
+    // #[derive(Clone, Debug, serde::Serialize, serde::Deserialize)]
+    // pub struct BizActivity{ id:Option<String> }
     // impl_select!(BizActivity{select_by_id(id:String) -> Option => "select * from biz_activity where id = #{id} limit 1"});
     // impl_select!(BizActivity{select_by_id(id:String) -> HashMap => "select * from biz_activity where id = #{id} limit 1"});
     // impl_select!(BizActivity{select_by_id(id:String) -> Vec => "select * from biz_activity where id = #{id} limit 1"});
