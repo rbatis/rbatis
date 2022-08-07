@@ -11,7 +11,7 @@ env:
 
 jobs:
   build:
-
+    name: Run cargo fmt and cargo test
     runs-on: ubuntu-latest
 
     steps:
@@ -20,3 +20,33 @@ jobs:
       run: cargo build --verbose
     - name: Run tests
       run: cargo test --verbose
+  test:
+    name: Test ${{ matrix.rust }} on ${{ matrix.os }}
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        rust:
+          - stable
+          - nightly
+        os:
+          - ubuntu-latest
+          - windows-latest
+          - macOS-latest
+    steps:
+      - name: Checkout sources
+        uses: actions/checkout@v2
+      - name: Install Rust (${{ matrix.rust }})
+        uses: actions-rs/toolchain@v1
+        with:
+          profile: minimal
+          toolchain: ${{ matrix.rust }}
+          override: true
+      - name: Run cargo test
+        uses: actions-rs/cargo@v1
+        with:
+          command: test
+      - name: Run cargo release test
+        uses: actions-rs/cargo@v1
+        with:
+          command: test
+          args: --release
