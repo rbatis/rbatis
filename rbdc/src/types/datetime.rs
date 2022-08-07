@@ -32,7 +32,6 @@ impl<'de> Deserialize<'de> for FastDateTime {
         match v.0 {
             Value::U64(u) => Ok(Self(fastdate::DateTime::from_timestamp_millis(u as i64))),
             Value::String(s) => Ok({
-                println!("date:{}",s);
                 Self(
                     fastdate::DateTime::from_str(&s).map_err(|e| D::Error::custom(e.to_string()))?,
                 )
