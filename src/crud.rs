@@ -210,7 +210,7 @@ macro_rules! impl_update {
                                      if k == column || v== null:
                                         #{continue}
                                      `${k}=#{v},`
-                            ",$sql_where)]
+                                 ` `",$sql_where)]
                   async fn do_update_by_where(
                       rb: &mut dyn $crate::executor::Executor,
                       table_name: String,
