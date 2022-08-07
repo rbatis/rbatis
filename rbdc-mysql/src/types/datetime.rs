@@ -11,15 +11,16 @@ use std::str::FromStr;
 impl Encode for FastDateTime {
     fn encode(self, buf: &mut Vec<u8>) -> Result<usize, Error> {
         let datetime = self.0;
-        let size = date_time_size_hint(datetime.hour, datetime.min, datetime.sec, datetime.micro);
-        buf.push(size as u8);
+        let datetime_size = date_time_size_hint(datetime.hour, datetime.min, datetime.sec, datetime.micro);
+        buf.push(datetime_size as u8);
         let date = fastdate::Date {
             day: datetime.day,
             mon: datetime.mon,
             year: datetime.year,
         };
         let mut size = date.encode(buf)?;
-        if size > 4 {
+        buf.remove(buf.len()-size);
+        if datetime_size > 4 {
             let time = fastdate::Time {
                 micro: datetime.micro,
                 sec: datetime.sec,
@@ -27,6 +28,7 @@ impl Encode for FastDateTime {
                 hour: datetime.hour,
             };
             let size_time = time.encode(buf)?;
+            buf.remove(buf.len()-size_time);
             size += size_time;
         }
         Ok(1 + size)
