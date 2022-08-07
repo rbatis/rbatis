@@ -24,7 +24,7 @@
 * [rbatis/example (import into Clion!)](example/src)
 * [abs_admin project](https://github.com/rbatis/abs_admin)  an complete background user management system(
   Vue.js+rbatis+actix-web)
-* Thanks to ```SQLX, Tiberius, MyBatis``` and so on reference design or code implementation. release of V4.0 is dependent on the support of these frameworks, both directly and indirectly
+* Thanks to ```SQLX, mobc, Tiberius, MyBatis,xorm``` and so on reference design or code implementation. release of V4.0 is dependent on the support of these frameworks, both directly and indirectly and idea
 
 ### Supported data structures
 

@@ -160,16 +160,6 @@ impl Value {
 
     /// Returns true if the `Value` is convertible to an u64. Returns false otherwise.
     ///
-    /// # Examples
-    ///
-    /// ```
-    /// use rbs::Value;
-    ///
-    /// assert!(Value::from(42).is_u64());
-    ///
-    /// assert!(!Value::F32(42.0).is_u64());
-    /// assert!(!Value::F64(42.0).is_u64());
-    /// ```
     #[inline]
     pub fn is_u64(&self) -> bool {
         if let Value::U64(ref v) = *self {
@@ -305,15 +295,6 @@ impl Value {
     /// If the `Value` is an integer, return or cast it to a i64.
     /// Returns None otherwise.
     ///
-    /// # Examples
-    ///
-    /// ```
-    /// use rbs::Value;
-    ///
-    /// assert_eq!(Some(42i64), Value::from(42).as_i64());
-    ///
-    /// assert_eq!(None, Value::F64(42.0).as_i64());
-    /// ```
     #[inline]
     pub fn as_i64(&self) -> Option<i64> {
         match *self {
@@ -331,16 +312,6 @@ impl Value {
     /// If the `Value` is an integer, return or cast it to a u64.
     /// Returns None otherwise.
     ///
-    /// # Examples
-    ///
-    /// ```
-    /// use rbs::Value;
-    ///
-    /// assert_eq!(Some(42u64), Value::from(42).as_u64());
-    ///
-    /// assert_eq!(None, Value::from(-42).as_u64());
-    /// assert_eq!(None, Value::F64(42.0).as_u64());
-    /// ```
     #[inline]
     pub fn as_u64(&self) -> Option<u64> {
         match *self {
@@ -476,23 +447,8 @@ impl Value {
     /// If the `Value` is a Map, returns the associated vector of key-value tuples.
     /// Returns None otherwise.
     ///
-    /// # Note
-    ///
-    /// MessagePack represents map as a vector of key-value tuples.
-    ///
-    /// # Examples
-    ///
-    /// ```
-    /// use rbs::Value;
-    ///
-    /// let val = Value::Map(vec![(Value::Null, Value::Bool(true))]);
-    ///
-    /// assert_eq!(Some(&vec![(Value::Null, Value::Bool(true))]), val.as_map());
-    ///
-    /// assert_eq!(None, Value::Null.as_map());
-    /// ```
     #[inline]
-    pub fn as_map(&self) -> Option<&Vec<(Value, Value)>> {
+    pub fn as_map(&self) -> Option<&ValueMap> {
         if let Value::Map(ref map) = *self {
             Some(map)
         } else if let Value::Ext(_, ref map) = *self {
@@ -505,15 +461,6 @@ impl Value {
     /// If the `Value` is an Ext, returns the associated tuple with a ty and slice.
     /// Returns None otherwise.
     ///
-    /// # Examples
-    ///
-    /// ```
-    /// use rbs::Value;
-    ///
-    /// assert_eq!(Some((42, &[1, 2, 3, 4, 5][..])), Value::Ext(42, vec![1, 2, 3, 4, 5]).as_ext());
-    ///
-    /// assert_eq!(None, Value::Bool(true).as_ext());
-    /// ```
     #[inline]
     pub fn as_ext(&self) -> Option<(&str, &Box<Value>)> {
         if let Value::Ext(ref ty, ref buf) = *self {
@@ -926,13 +873,6 @@ impl<'a> ValueRef<'a> {
     /// If the `ValueRef` is an integer, return or cast it to a u64.
     /// Returns None otherwise.
     ///
-    /// # Examples
-    ///
-    /// ```
-    /// use rbs::ValueRef;
-    ///
-    /// assert_eq!(Some(42), ValueRef::from(42).as_u64());
-    /// ```
     pub fn as_u64(&self) -> Option<u64> {
         match self {
             ValueRef::U64(n) => Some(*n),

@@ -63,7 +63,7 @@ struct Serializer;
 /// ```rust
 /// # use rbs::Value;
 ///
-/// let val = rbs::ext::to_value("John Smith").unwrap();
+/// let val = rbs::to_value("John Smith").unwrap();
 ///
 /// assert_eq!(Value::String("John Smith".into()), val);
 /// ```

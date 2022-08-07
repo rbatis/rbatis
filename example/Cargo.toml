@@ -28,7 +28,9 @@ path = "src/crud.rs"
 [[bin]]
 name = "plugin_table_sync"
 path = "src/plugin_table_sync.rs"
-
+[[bin]]
+name = "transaction"
+path = "src/transaction.rs"
 [dependencies]
 #serde and base types
 serde = { version = "1", features = ["derive"] }
