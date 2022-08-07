@@ -1,4 +1,4 @@
-use crate::connection::{tls, MySqlConnection, MySqlStream, MAX_PACKET_SIZE};
+use crate::connection::{tls, MySqlConnection, MySqlStream, MAX_PACKET_SIZE, DropBox};
 use crate::options::{MySqlConnectOptions, MySqlSslMode};
 use crate::protocol::connect::{
     AuthSwitchRequest, AuthSwitchResponse, Handshake, HandshakeResponse,
@@ -123,7 +123,9 @@ impl MySqlConnection {
             }
         }
         Ok(Self {
-            stream,
+            stream:DropBox{
+                inner:Some(stream)
+            },
             cache_statement: rbdc::common::StatementCache::new(options.statement_cache_capacity),
         })
     }
