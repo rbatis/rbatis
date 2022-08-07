@@ -34,9 +34,9 @@ pub async fn init_sqlite_path(path: &str) -> Rbatis {
     fast_log::init(fast_log::Config::new().console());
 
     let rb = Rbatis::new();
-    // rb.link("mysql://root:123456@localhost:3306/test").await.unwrap();
-    // rb.link("postgres://postgres:123456@localhost:5432/postgres").await.unwrap();
-    // rb.link("mssql://SA:TestPass!123456@localhost:1433/test").await.unwrap();
+    // rb.link(MysqlDriver {},"mysql://root:123456@localhost:3306/test").await.unwrap();
+    // rb.link(PgDriver {},"postgres://postgres:123456@localhost:5432/postgres").await.unwrap();
+    // rb.link(MssqlDriver {},"mssql://SA:TestPass!123456@localhost:1433/test").await.unwrap();
     rb.link(
         SqliteDriver {},
         &format!("sqlite://{}target/sqlite.db", path),
