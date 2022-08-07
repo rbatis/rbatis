@@ -29,11 +29,15 @@ use std::time::Duration;
 crud!(BizActivity{});//crud = insert+select_by_column+update_by_column+delete_by_column
 
 impl_select!(BizActivity{select_all_by_id(id:&str,name:&str) => "`where id = #{id} and name = #{name}`"});
-impl_select!(BizActivity{select_by_id(id:String) -> Option => "`where id = #{id} limit 1`"});
-impl_update!(BizActivity{update_by_name(name:&str)} => "`where id = 1`");
+impl_select!(BizActivity{select_by_id(id:&str) -> Option => "`where id = #{id} limit 1`"});
+impl_update!(BizActivity{update_by_name(name:&str)} => "`where id = '2'`");
 impl_delete!(BizActivity {delete_by_name(name:&str)} => "`where name= '2'`");
-impl_select_page!(BizActivity{select_page(name:&str) => "`where name != #{name}`"});
-
+impl_select_page!(BizActivity{select_page() => "`order by create_time desc`"});
+impl_select_page!(BizActivity{select_page_by_name(name:&str) =>"
+     if name != null && name != '':
+       `where name != #{name}`
+     if name == '':
+       `where name != ''`"});
 
 #[tokio::main]
 pub async fn main() {
@@ -63,7 +67,7 @@ pub async fn main() {
 
     sleep(Duration::from_secs(2));
 
-    let data = BizActivity::select_by_id(&mut rb, "1".to_string()).await;
+    let data = BizActivity::select_by_id(&mut rb, "1").await;
     println!("select_by_id = {:?}", data);
 
     sleep(Duration::from_secs(2));
@@ -83,6 +87,10 @@ pub async fn main() {
     println!("delete_by_column = {:?}", data);
 
     sleep(Duration::from_secs(2));
-    let data = BizActivity::select_page(&mut rb, &PageRequest::new(1, 10), "2").await;
+    let data = BizActivity::select_page(&mut rb, &PageRequest::new(1, 10)).await;
     println!("select_page = {:?}", data);
+
+    sleep(Duration::from_secs(2));
+    let data = BizActivity::select_page_by_name(&mut rb, &PageRequest::new(1, 10),"").await;
+    println!("select_page_by_name = {:?}", data);
 }
