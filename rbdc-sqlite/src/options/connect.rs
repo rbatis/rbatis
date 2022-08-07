@@ -11,6 +11,7 @@ use rbdc::error::Error;
 use rbs::Value;
 use std::fmt::Write;
 use std::time::Duration;
+use futures_util::FutureExt;
 
 impl SqliteConnectOptions {
     pub fn connect(&self) -> BoxFuture<'_, Result<SqliteConnection, Error>> {
@@ -123,7 +124,7 @@ impl Connection for SqliteConnection {
             let v: SqliteQueryResult = v.try_collect().boxed().await?;
             return Ok(ExecResult {
                 rows_affected: v.rows_affected(),
-                last_insert_id: Value::U64(l.last_insert_rowid as u64),
+                last_insert_id: Value::U64(v.last_insert_rowid as u64),
             });
         })
     }
