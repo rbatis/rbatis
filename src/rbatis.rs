@@ -144,7 +144,7 @@ impl Rbatis {
     ///
     /// can set option for example:
     /// ```rust
-    /// let rbatis = Rbatis::new();
+    /// let rbatis = rbatis::Rbatis::new();
     /// // rbatis.link(**).await;
     /// // rbatis.get_pool().unwrap().set_max_open_conns()
     /// ```
