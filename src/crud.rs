@@ -101,9 +101,10 @@ async fn do_select_all(rb: &mut dyn $crate::executor::Executor,table_name:String
                      async fn do_select_all_raw(rb: &mut dyn $crate::executor::Executor,$($param_key:$param_type,)*) -> Result<Vec<$table>,rbdc::Error> {impled!()}
                      do_select_all_raw(rb,$($param_key ,)*).await
                  }else{
-                     #[$crate::py_sql("`select * from biz_activity `",$sql)]
-                     async fn do_select_all(rb: &mut dyn $crate::executor::Executor,$($param_key:$param_type,)*) -> Result<Vec<$table>,rbdc::Error> {impled!()}
-                     do_select_all(rb,$($param_key ,)*).await
+                     #[$crate::py_sql("`select * from ${table_name} `",$sql)]
+                     async fn do_select_all(rb: &mut dyn $crate::executor::Executor,table_name:&str,$($param_key:$param_type,)*) -> Result<Vec<$table>,rbdc::Error> {impled!()}
+                     let table_name = $crate::utils::string_util::to_snake_name(stringify!($table));
+                     do_select_all(rb,&table_name,$($param_key ,)*).await
                  }
             }
         }
@@ -123,9 +124,10 @@ async fn do_select_all(rb: &mut dyn $crate::executor::Executor,table_name:String
                     async fn do_select_all_raw(rb: &mut dyn $crate::executor::Executor,$($param_key:$param_type,)*) -> Result<$container<$table>,rbdc::Error> {impled!()}
                     do_select_all_raw(rb,$($param_key ,)*).await
                 }else{
-                     #[$crate::py_sql("`select * from biz_activity `",$sql)]
-                     async fn do_select_all(rb: &mut dyn $crate::executor::Executor,$($param_key:$param_type,)*) -> Result<$container<$table>,rbdc::Error> {impled!()}
-                     do_select_all(rb,$($param_key ,)*).await
+                     #[$crate::py_sql("`select * from ${table_name} `",$sql)]
+                     async fn do_select_all(rb: &mut dyn $crate::executor::Executor,table_name:&str,$($param_key:$param_type,)*) -> Result<$container<$table>,rbdc::Error> {impled!()}
+                     let table_name = $crate::utils::string_util::to_snake_name(stringify!($table));
+                     do_select_all(rb,&table_name,$($param_key ,)*).await
                 }
             }
         }
