@@ -9,7 +9,7 @@ use crate::types::encode::Encode;
 use crate::types::{Oid, TypeInfo};
 use either::Either;
 use futures_core::future::BoxFuture;
-use futures_util::{FutureExt, StreamExt, TryFutureExt};
+use futures_util::{FutureExt, StreamExt, TryFutureExt, TryStreamExt};
 use rbdc::common::StatementCache;
 use rbdc::db::{Connection, ExecResult, Placeholder, Row};
 use rbdc::ext::ustr::UStr;
@@ -19,6 +19,9 @@ use rbs::Value;
 use std::collections::HashMap;
 use std::fmt::{self, Debug, Formatter};
 use std::sync::Arc;
+use futures_core::stream::BoxStream;
+use crate::query_result::PgQueryResult;
+use crate::row::PgRow;
 
 pub use self::stream::PgStream;
 
@@ -190,94 +193,74 @@ impl Connection for PgConnection {
     ) -> BoxFuture<Result<Vec<Box<dyn Row>>, Error>> {
         let sql = PgDriver {}.exchange(sql);
         Box::pin(async move {
-            if params.len() == 0 {
-                let mut many = self.fetch_many(PgQuery {
-                    statement: Either::Left(sql),
-                    arguments: params,
-                    persistent: false,
-                });
-                let mut data: Vec<Box<dyn Row>> = Vec::new();
-                while let Some(item) = many.next().await {
-                    match item? {
-                        Either::Left(l) => {}
-                        Either::Right(r) => {
-                            data.push(Box::new(r));
-                        }
-                    }
+            let many = {
+                if params.len() == 0 {
+                    self.fetch_many(PgQuery {
+                        statement: Either::Left(sql),
+                        arguments: params,
+                        persistent: false,
+                    })
+                }else{
+                    let stmt = self.prepare_with(sql, &[]).await?;
+                    self.fetch_many(PgQuery {
+                        statement: Either::Right(stmt),
+                        arguments: params,
+                        persistent: true,
+                    })
                 }
-                return Ok(data);
-            } else {
-                let stmt = self.prepare_with(sql, &[]).await?;
-                let mut many = self.fetch_many(PgQuery {
-                    statement: Either::Right(stmt),
-                    arguments: params,
-                    persistent: true,
-                });
-                let mut data: Vec<Box<dyn Row>> = Vec::new();
-                while let Some(item) = many.next().await {
-                    match item? {
-                        Either::Left(l) => {}
-                        Either::Right(r) => {
-                            data.push(Box::new(r));
-                        }
-                    }
-                }
-                return Ok(data);
+            };
+            let f:BoxStream<Result<PgRow,Error>>=many.try_filter_map(|step| async move {
+                Ok(match step {
+                    Either::Left(_) => None,
+                    Either::Right(row) => Some(row),
+                })
+            }).boxed();
+            let c:BoxFuture<Result<Vec<PgRow>,Error>>=f.try_collect().boxed();
+            let v=c.await?;
+            let mut data: Vec<Box<dyn Row>> = Vec::with_capacity(v.len());
+            for x in v {
+                data.push(Box::new(x));
             }
+            Ok(data)
+
         })
     }
 
     fn exec(&mut self, sql: &str, params: Vec<Value>) -> BoxFuture<Result<ExecResult, Error>> {
         let sql = PgDriver {}.exchange(sql);
         Box::pin(async move {
-            if params.len() == 0 {
-                let mut many = self.fetch_many(PgQuery {
-                    statement: Either::Left(sql),
-                    arguments: params,
-                    persistent: false,
-                });
-                while let Some(item) = many.next().await {
-                    match item? {
-                        Either::Left(l) => {
-                            return Ok(ExecResult {
-                                rows_affected: l.rows_affected,
-                                last_insert_id: Value::Null,
-                            });
-                        }
-                        Either::Right(r) => {}
+            let many = {
+                if params.len() == 0 {
+                    self.fetch_many(PgQuery {
+                        statement: Either::Left(sql),
+                        arguments: params,
+                        persistent: false,
+                    })
+                }else{
+                    let mut type_info = Vec::with_capacity(params.len());
+                    for x in &params {
+                        type_info.push(x.type_info());
                     }
+                    let stmt = self.prepare_with(sql, &type_info).await?;
+                    self.fetch_many(PgQuery {
+                        statement: Either::Right(stmt),
+                        arguments: params,
+                        persistent: true,
+                    })
                 }
-                return Ok(ExecResult {
-                    rows_affected: 0,
-                    last_insert_id: Value::Null,
-                });
-            } else {
-                let mut type_info = Vec::with_capacity(params.len());
-                for x in &params {
-                    type_info.push(x.type_info());
-                }
-                let stmt = self.prepare_with(sql, &type_info).await?;
-                let mut many = self.fetch_many(PgQuery {
-                    statement: Either::Right(stmt),
-                    arguments: params,
-                    persistent: true,
-                });
-                while let Some(item) = many.next().await {
-                    match item? {
-                        Either::Left(l) => {
-                            return Ok(ExecResult {
-                                rows_affected: l.rows_affected,
-                                last_insert_id: Value::Null,
-                            });
-                        }
-                        Either::Right(r) => {}
-                    }
-                }
-                return Ok(ExecResult {
-                    rows_affected: 0,
-                    last_insert_id: Value::Null,
-                });
-            }
+            };
+            let v: BoxStream<Result<PgQueryResult, Error>> = many.try_filter_map(|step| async move {
+                Ok(match step {
+                    Either::Left(rows) => Some(rows),
+                    Either::Right(_) => None,
+                })
+            })
+                .boxed();
+            let v: PgQueryResult = v.try_collect().boxed().await?;
+            return Ok(ExecResult {
+                rows_affected: v.rows_affected,
+                last_insert_id: Value::Null,
+            });
         })
     }
 }
