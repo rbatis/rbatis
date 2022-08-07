@@ -1,12 +1,6 @@
 # rbs
 
-* rbs is rbatis impl message pack serde crates.
-
-##  Unlike the Message Pack changes
-* change struct -> Map
-* change Integer ->  i32,i64,u32,u64
-
-
+* rbs is rbatis impl orm serde crates.
 
 
 ## use example
