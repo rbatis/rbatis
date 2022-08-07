@@ -40,25 +40,6 @@ use serde::{Deserialize, Deserializer};
 /// `sqlite:///data.db` | Open the file `data.db` from the root (`/`) directory. |
 /// `sqlite://data.db?mode=ro` | Open the file `data.db` for read-only access. |
 ///
-/// # Example
-///
-/// ```rust,no_run
-/// # use sqlx_core::connection::ConnectOptions;
-/// # use sqlx_core::error::Error;
-/// use sqlx::sqlite::{SqliteConnectOptions, SqliteJournalMode};
-/// use std::str::FromStr;
-///
-/// # fn main() {
-/// # #[cfg(feature = "_rt-async-std")]
-/// # sqlx_rt::async_std::task::block_on::<_, Result<(), Error>>(async move {
-/// let conn = SqliteConnectOptions::from_str("sqlite://data.db")?
-///     .journal_mode(SqliteJournalMode::Wal)
-///     .read_only(true)
-///     .connect().await?;
-/// # Ok(())
-/// # }).unwrap();
-/// # }
-/// ```
 #[derive(Clone, Debug)]
 pub struct SqliteConnectOptions {
     pub(crate) filename: Cow<'static, Path>,

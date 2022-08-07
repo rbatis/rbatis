@@ -29,30 +29,6 @@ pub use ssl_mode::MySqlSslMode;
 /// | `statement-cache-capacity` | `100` | The maximum number of prepared statements stored in the cache. Set to `0` to disable. |
 /// | `socket` | `None` | Path to the unix domain socket, which will be used instead of TCP if set. |
 ///
-/// # Example
-///
-/// ```rust,no_run
-/// # use sqlx_core::error::Error;
-/// # use sqlx_core::connection::{Connection, ConnectOptions};
-/// # use sqlx_core::mysql::{MySqlConnectOptions, MySqlConnection, MySqlSslMode};
-/// #
-/// # fn main() {
-/// # #[cfg(feature = "_rt-async-std")]
-/// # sqlx_rt::async_std::task::block_on::<_, Result<(), Error>>(async move {
-/// // URI connection string
-/// let conn = MySqlConnection::connect("mysql://root:password@localhost/db").await?;
-///
-/// // Manually-constructed options
-/// let conn = MySqlConnectOptions::new()
-///     .host("localhost")
-///     .username("root")
-///     .password("password")
-///     .database("db")
-///     .connect().await?;
-/// # Ok(())
-/// # }).unwrap();
-/// # }
-/// ```
 #[derive(Debug, Clone)]
 pub struct MySqlConnectOptions {
     pub(crate) host: String,
@@ -145,7 +121,7 @@ impl MySqlConnectOptions {
     /// # Example
     ///
     /// ```rust
-    /// # use sqlx_core::mysql::{MySqlSslMode, MySqlConnectOptions};
+    /// # use rbdc_mysql::options::{MySqlSslMode, MySqlConnectOptions};
     /// let options = MySqlConnectOptions::new()
     ///     .ssl_mode(MySqlSslMode::Required);
     /// ```
@@ -159,7 +135,7 @@ impl MySqlConnectOptions {
     /// # Example
     ///
     /// ```rust
-    /// # use sqlx_core::mysql::{MySqlSslMode, MySqlConnectOptions};
+    /// # use rbdc_mysql::options::{MySqlSslMode, MySqlConnectOptions};
     /// let options = MySqlConnectOptions::new()
     ///     .ssl_mode(MySqlSslMode::VerifyCa)
     ///     .ssl_ca("path/to/ca.crt");
@@ -174,7 +150,7 @@ impl MySqlConnectOptions {
     /// # Example
     ///
     /// ```rust
-    /// # use sqlx_core::mysql::{MySqlSslMode, MySqlConnectOptions};
+    /// # use rbdc_mysql::options::{MySqlSslMode, MySqlConnectOptions};
     /// let options = MySqlConnectOptions::new()
     ///     .ssl_mode(MySqlSslMode::VerifyCa)
     ///     .ssl_ca_from_pem(vec![]);

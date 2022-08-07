@@ -63,41 +63,41 @@ impl Placeholder for MssqlDriver {
     }
 }
 
-#[cfg(test)]
-mod test {
-    use crate::driver::MssqlDriver;
-    use rbdc::block_on;
-    use rbdc::db::{Driver, Placeholder};
-    use rbdc::pool::Pool;
-    use rbs::{to_value, Value};
-    use std::collections::BTreeMap;
-
-    #[test]
-    fn test_mssql_pool() {
-        let task = async move {
-            //jdbc:sqlserver://[serverName[\instanceName][:portNumber]][;property=value[;property=value]]
-            let uri =
-                "jdbc:sqlserver://localhost:1433;User=SA;Password={TestPass!123456};Database=test";
-            // let pool = Pool::new_url(MssqlDriver {}, "jdbc:sqlserver://SA:TestPass!123456@localhost:1433;database=test").unwrap();
-            let pool = Pool::new_url(MssqlDriver {}, uri).unwrap();
-            std::thread::sleep(std::time::Duration::from_secs(2));
-            let mut conn = pool.get().await.unwrap();
-            let data = conn
-                .get_values("select * from biz_activity", vec![])
-                .await
-                .unwrap();
-            for mut x in data {
-                println!("row: {}", x);
-            }
-        };
-        block_on!(task);
-    }
-
-    #[test]
-    fn test_exchange() {
-        let d = MssqlDriver {};
-        let s = d.exchange("select * from table where id = ? age = ?");
-        println!("{}", s);
-        assert_eq!(s, "select * from table where id = @P1 age = @P2")
-    }
-}
+// #[cfg(test)]
+// mod test {
+//     use crate::driver::MssqlDriver;
+//     use rbdc::block_on;
+//     use rbdc::db::{Driver, Placeholder};
+//     use rbdc::pool::Pool;
+//     use rbs::{to_value, Value};
+//     use std::collections::BTreeMap;
+//
+//     #[test]
+//     fn test_mssql_pool() {
+//         let task = async move {
+//             //jdbc:sqlserver://[serverName[\instanceName][:portNumber]][;property=value[;property=value]]
+//             let uri =
+//                 "jdbc:sqlserver://localhost:1433;User=SA;Password={TestPass!123456};Database=test";
+//             // let pool = Pool::new_url(MssqlDriver {}, "jdbc:sqlserver://SA:TestPass!123456@localhost:1433;database=test").unwrap();
+//             let pool = Pool::new_url(MssqlDriver {}, uri).unwrap();
+//             std::thread::sleep(std::time::Duration::from_secs(2));
+//             let mut conn = pool.get().await.unwrap();
+//             let data = conn
+//                 .get_values("select * from biz_activity", vec![])
+//                 .await
+//                 .unwrap();
+//             for mut x in data {
+//                 println!("row: {}", x);
+//             }
+//         };
+//         block_on!(task);
+//     }
+//
+//     #[test]
+//     fn test_exchange() {
+//         let d = MssqlDriver {};
+//         let s = d.exchange("select * from table where id = ? age = ?");
+//         println!("{}", s);
+//         assert_eq!(s, "select * from table where id = @P1 age = @P2")
+//     }
+// }
