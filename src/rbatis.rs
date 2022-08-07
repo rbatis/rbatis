@@ -181,6 +181,7 @@ impl Rbatis {
             tx_id: new_snowflake_id(),
             conn: Box::new(conn),
             rb: self.clone(),
+            done: false
         });
     }
 

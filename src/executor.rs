@@ -51,8 +51,8 @@ impl Debug for RBatisConnExecutor {
 
 impl RBatisConnExecutor {
     pub async fn fetch<T>(&mut self, sql: &str, args: Vec<Value>) -> Result<T, Error>
-    where
-        T: DeserializeOwned,
+        where
+            T: DeserializeOwned,
     {
         let v = Executor::fetch(self, sql, args).await?;
         Ok(from_value(v)?)
@@ -161,6 +161,7 @@ impl RBatisConnExecutor {
             tx_id: new_snowflake_id(),
             conn: tx,
             rb: self.rb,
+            done: false,
         });
     }
 }
@@ -169,6 +170,7 @@ pub struct RBatisTxExecutor {
     pub tx_id: i64,
     pub conn: Box<dyn Connection>,
     pub rb: Rbatis,
+    pub done: bool,
 }
 
 impl Debug for RBatisTxExecutor {
@@ -182,8 +184,8 @@ impl Debug for RBatisTxExecutor {
 
 impl<'a> RBatisTxExecutor {
     pub async fn fetch<T>(&mut self, sql: &str, args: Vec<Value>) -> Result<T, Error>
-    where
-        T: DeserializeOwned,
+        where
+            T: DeserializeOwned,
     {
         let v = Executor::fetch(self, sql, args).await?;
         Ok(from_value(v)?)
@@ -283,11 +285,17 @@ impl RBatisTxExecutor {
         self.conn = self.conn.begin().await?;
         return Ok(self);
     }
-    pub async fn commit(&mut self) -> crate::Result<()> {
-        return Ok(self.conn.commit().await?);
+    pub async fn commit(&mut self) -> crate::Result<bool> {
+        if let Ok(()) = self.conn.commit().await {
+            self.done = true;
+        }
+        return Ok(self.done);
     }
-    pub async fn rollback(&mut self) -> crate::Result<()> {
-        return Ok(self.conn.rollback().await?);
+    pub async fn rollback(&mut self) -> crate::Result<bool> {
+        if let Ok(()) = self.conn.rollback().await {
+            self.done = true;
+        }
+        return Ok(self.done);
     }
 
     pub fn take_conn(self) -> Box<dyn Connection> {
@@ -334,7 +342,7 @@ impl RBatisTxExecutorGuard {
         return Ok(());
     }
 
-    pub async fn commit(&mut self) -> crate::Result<()> {
+    pub async fn commit(&mut self) -> crate::Result<bool> {
         let tx = self
             .tx
             .as_mut()
@@ -342,7 +350,7 @@ impl RBatisTxExecutorGuard {
         return Ok(tx.commit().await?);
     }
 
-    pub async fn rollback(&mut self) -> crate::Result<()> {
+    pub async fn rollback(&mut self) -> crate::Result<bool> {
         let tx = self
             .tx
             .as_mut()
@@ -364,8 +372,8 @@ impl RBatisTxExecutor {
     ///     tx.defer(|tx| {});
     ///
     pub fn defer<Call>(self, callback: Call) -> RBatisTxExecutorGuard
-    where
-        Call: FnMut(Self) + Send + 'static,
+        where
+            Call: FnMut(Self) + Send + 'static,
     {
         RBatisTxExecutorGuard {
             tx: Some(self),
@@ -375,14 +383,14 @@ impl RBatisTxExecutor {
 
     /// defer and use future method
     /// for example:
-    ///         tx.defer_async(|tx| async {
+    ///         tx.defer_async(|mut tx| async {
     ///             tx.rollback().await;
     ///         });
     ///
     pub fn defer_async<R, F>(self, mut callback: F) -> RBatisTxExecutorGuard
-    where
-        R: Future<Output = ()> + 'static,
-        F: Send + FnMut(RBatisTxExecutor) -> R + 'static,
+        where
+            R: Future<Output=()> + 'static,
+            F: Send + FnMut(RBatisTxExecutor) -> R + 'static,
     {
         RBatisTxExecutorGuard {
             tx: Some(self),
@@ -425,8 +433,8 @@ impl Rbatis {
     }
 
     pub async fn fetch<T>(&self, sql: &str, args: Vec<Value>) -> Result<T, Error>
-    where
-        T: DeserializeOwned,
+        where
+            T: DeserializeOwned,
     {
         let mut conn = self.acquire().await?;
         let v = conn.fetch(sql, args).await?;
