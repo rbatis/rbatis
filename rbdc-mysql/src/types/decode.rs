@@ -195,13 +195,13 @@ fn decode_time(value: MySqlValue) -> Result<String, Error> {
 fn decode_date_buf(buf: &[u8]) -> Result<Date, Error> {
     if buf.is_empty() {
         // zero buffer means a zero date (null)
-        return  Ok(Date{
+        return Ok(Date {
             year: 0000,
             mon: 00,
             day: 00,
         });
     }
-    Ok(Date{
+    Ok(Date {
         year: LittleEndian::read_u16(buf),
         mon: buf[2] as u8,
         day: buf[3] as u8,
