@@ -110,7 +110,7 @@ impl Connection for MockConnection {
         })
     }
 
-    fn close(&mut self) -> BoxFuture<'static, Result<(), Error>> {
+    fn close(&mut self) -> BoxFuture< Result<(), Error>> {
         Box::pin(async {
             Ok(())
         })

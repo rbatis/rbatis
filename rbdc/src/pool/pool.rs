@@ -173,7 +173,7 @@ impl Connection for mobc::Connection<ManagerPorxy> {
         self.deref_mut().exec(sql, params)
     }
 
-    fn close(&mut self) -> BoxFuture<'static, Result<(), Error>> {
+    fn close(&mut self) -> BoxFuture<Result<(), Error>> {
         self.deref_mut().close()
     }
 

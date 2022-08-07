@@ -149,9 +149,8 @@ impl Connection for SqliteConnection {
         })
     }
 
-    fn close(&mut self) -> BoxFuture<'static, Result<(), Error>> {
-        let c = self.close();
-        Box::pin(async move { c.await })
+    fn close(&mut self) -> BoxFuture<Result<(), Error>> {
+        Box::pin(async  { self.do_close().await })
     }
 
     fn ping(&mut self) -> BoxFuture<Result<(), Error>> {

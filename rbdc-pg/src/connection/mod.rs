@@ -158,7 +158,7 @@ impl PgConnection {
     }
 }
 impl PgConnection {
-    fn close(mut self) -> BoxFuture<'static, Result<(), Error>> {
+    fn do_close(mut self) -> BoxFuture<'static, Result<(), Error>> {
         // The normal, graceful termination procedure is that the frontend sends a Terminate
         // message and immediately closes the connection.
 
@@ -174,9 +174,8 @@ impl PgConnection {
 }
 
 impl Connection for PgConnection {
-    fn close(&mut self) -> BoxFuture<'static, Result<(), Error>> {
-        let c = self.close();
-        Box::pin(async move { c.await })
+    fn close(&mut self) -> BoxFuture<Result<(), Error>> {
+        Box::pin(async  { self.do_close().await })
     }
 
     fn ping(&mut self) -> BoxFuture<'_, Result<(), Error>> {
