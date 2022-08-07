@@ -58,13 +58,14 @@
 | MariaDB(=Mysql)        | √            |
 | TiDB(=Mysql)           | √            |
 | CockroachDB(=Postgres) | √            |
-### Supported OS/Platforms
+
+### Supported OS/Platforms by [Workflows CI](https://github.com/rbatis/rbatis/actions)
 
 | platform   | is supported |
 | ------ | ------ |
-| Linux                   | √     | 
-| Apple/MacOS             | √     |  
-| Windows               | √     |
+| Linux(unbutu laster***)                   | √     | 
+| Apple/MacOS(laster)             | √     |  
+| Windows(latest)               | √     |
 
 ### Supported Web Frameworks
 * any web Frameworks just like actix-web,axum,hyper*,rocket,tide,warp,salvo...... and more
