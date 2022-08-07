@@ -18,11 +18,8 @@ impl Encode for FastDateTime {
             mon: datetime.mon,
             year: datetime.year,
         };
-        println!("buf:{:?}",buf);
         let mut size = date.encode(buf)?;
-        println!("buf:{:?}",buf);
         buf.remove(buf.len()-(size+1));
-        println!("buf:{:?}",buf);
         if datetime_size > 4 {
             let time = fastdate::Time {
                 micro: datetime.micro,
