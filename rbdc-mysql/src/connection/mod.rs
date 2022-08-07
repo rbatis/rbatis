@@ -3,6 +3,7 @@ use crate::protocol::text::{Ping, Quit};
 use crate::stmt::MySqlStatementMetadata;
 use either::Either;
 use futures_core::future::BoxFuture;
+use futures_core::stream::BoxStream;
 use futures_util::{FutureExt, StreamExt, TryStreamExt};
 use rbdc::common::StatementCache;
 use rbdc::db::{Connection, ExecResult, Row};
@@ -11,7 +12,6 @@ use rbs::Value;
 use std::fmt::{self, Debug, Formatter};
 use std::future::join;
 use std::ops::{Deref, DerefMut};
-use futures_core::stream::BoxStream;
 
 mod auth;
 mod establish;
@@ -59,7 +59,6 @@ impl<T> DerefMut for DropBox<T> {
         self.inner.as_mut().expect("conn closed")
     }
 }
-
 
 impl MySqlConnection {
     #[inline]
@@ -123,7 +122,7 @@ impl Connection for MySqlConnection {
                         arguments: params,
                         persistent: false,
                     })
-                }else{
+                } else {
                     let stmt = self.prepare_with(&sql, &[]).await?;
                     self.fetch_many(MysqlQuery {
                         statement: Either::Right(stmt),
@@ -132,14 +131,16 @@ impl Connection for MySqlConnection {
                     })
                 }
             };
-            let f:BoxStream<Result<MySqlRow,Error>>=many.try_filter_map(|step| async move {
-                Ok(match step {
-                    Either::Left(_) => None,
-                    Either::Right(row) => Some(row),
+            let f: BoxStream<Result<MySqlRow, Error>> = many
+                .try_filter_map(|step| async move {
+                    Ok(match step {
+                        Either::Left(_) => None,
+                        Either::Right(row) => Some(row),
+                    })
                 })
-            }).boxed();
-            let c:BoxFuture<Result<Vec<MySqlRow>,Error>>=f.try_collect().boxed();
-            let v=c.await?;
+                .boxed();
+            let c: BoxFuture<Result<Vec<MySqlRow>, Error>> = f.try_collect().boxed();
+            let v = c.await?;
             let mut data: Vec<Box<dyn Row>> = Vec::with_capacity(v.len());
             for x in v {
                 data.push(Box::new(x));
@@ -167,12 +168,13 @@ impl Connection for MySqlConnection {
                     })
                 }
             };
-            let v: BoxStream<Result<MySqlQueryResult, Error>> = many.try_filter_map(|step| async move {
-                Ok(match step {
-                    Either::Left(rows) => Some(rows),
-                    Either::Right(_) => None,
+            let v: BoxStream<Result<MySqlQueryResult, Error>> = many
+                .try_filter_map(|step| async move {
+                    Ok(match step {
+                        Either::Left(rows) => Some(rows),
+                        Either::Right(_) => None,
+                    })
                 })
-            })
                 .boxed();
             let v: MySqlQueryResult = v.try_collect().boxed().await?;
             return Ok(ExecResult {
