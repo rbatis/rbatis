@@ -363,7 +363,7 @@ mod test {
             };
             let r = MockTable::update_by_name(&mut rb, &t, "test").await.unwrap();
             println!("{}", r.last_insert_id.as_str().unwrap());
-            assert_eq!(r.last_insert_id.as_str().unwrap(), "update mock_table set  id=?,name=?,pc_link=?,h5_link=?,status=?,remark=?,create_time=?,version=?,delete_flag=?,sql=?,count=?where id = '2'");
+            assert_eq!(r.last_insert_id.as_str().unwrap(), "update mock_table set  id=?,name=?,pc_link=?,h5_link=?,status=?,remark=?,create_time=?,version=?,delete_flag=?,sql=?,count=? where id = '2'");
         };
         block_on(f);
     }
