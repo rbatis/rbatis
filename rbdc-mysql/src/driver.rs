@@ -82,7 +82,7 @@ impl Placeholder for MysqlDriver {
 //                 .await
 //                 .unwrap();
 //             let data = c
-//                 .get_values("select * from biz_activity", vec![])
+//                 .get_values("select * from sys_dict", vec![])
 //                 .await
 //                 .unwrap();
 //             for mut x in data {
@@ -149,6 +149,33 @@ impl Placeholder for MysqlDriver {
 //             let data = c
 //                 .get_values(
 //                     "select count(1) as count from sys_dict where id!='' order by create_date",
+//                     param,
+//                 )
+//                 .await
+//                 .unwrap();
+//             println!("{:?}", data);
+//         };
+//         block_on!(task);
+//     }
+//
+//     #[test]
+//     fn test_insert() {
+//         let task = async move {
+//             let mut d = MysqlDriver {};
+//             let mut c = d
+//                 .connect("mysql://root:123456@localhost:3306/test")
+//                 .await
+//                 .unwrap();
+//             let param:Vec<Value> = vec![
+//                 "111".into(),
+//                 "111".into(),
+//                 "111".into()
+//                 ,1.into(),
+//                  Value::Ext("DateTime",Box::new("2022-08-07 21:33:59".into()))
+//             ];
+//             let data = c
+//                 .exec(
+//                     "insert into sys_dict (id,name,code,state,create_date) VALUES (?,?,?,?,?)",
 //                     param,
 //                 )
 //                 .await
