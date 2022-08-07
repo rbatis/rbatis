@@ -33,3 +33,5 @@ pub mod decode;
 pub use crud::*;
 pub use error::Error;
 pub use error::Result;
+pub use crate::rbatis::Rbatis;
+pub use crate::rbatis::RbatisOption;

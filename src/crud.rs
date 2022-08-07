@@ -15,6 +15,8 @@ macro_rules! crud {
 ///
 /// example:
 /// ```rust
+/// #[derive(Clone, Debug, serde::Serialize, serde::Deserialize)]
+/// pub struct BizActivity{ pub id: Option<String> }
 /// rbatis::impl_insert!(BizActivity{});
 /// ```
 ///
@@ -66,7 +68,7 @@ macro_rules! impl_insert {
 /// example:
 ///```rust
 /// #[derive(Clone, Debug, serde::Serialize, serde::Deserialize)]
-/// pub struct BizActivity{}
+/// pub struct BizActivity{ pub id: Option<String> }
 ///rbatis::impl_select!(BizActivity{});
 ///rbatis::impl_select!(BizActivity{select_all_by_id(id:&str,name:&str) => "select * from biz_activity where id = #{id} and name = #{name}"});
 ///rbatis::impl_select!(BizActivity{select_by_id(id:String) -> Option => "select * from biz_activity where id = #{id} limit 1"});
@@ -132,6 +134,8 @@ async fn do_select_all(rb: &mut dyn $crate::executor::Executor,table_name:String
 
 /// gen sql = UPDATE table_name SET column1=value1,column2=value2,... WHERE some_column=some_value;
 /// ```rust
+/// #[derive(Clone, Debug, serde::Serialize, serde::Deserialize)]
+/// pub struct BizActivity{ pub id: Option<String> }
 /// rbatis::impl_update!(BizActivity{});
 /// ```
 #[macro_export]
@@ -225,6 +229,8 @@ macro_rules! impl_update {
 /// gen sql = DELETE FROM table_name WHERE some_column=some_value;
 ///
 /// ```rust
+/// #[derive(Clone, Debug, serde::Serialize, serde::Deserialize)]
+/// pub struct BizActivity{}
 /// rbatis::impl_delete!(BizActivity{});
 /// ```
 #[macro_export]
