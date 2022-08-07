@@ -158,7 +158,7 @@ impl Connection for MssqlConnection {
         })
     }
 
-    fn close(&mut self) -> BoxFuture<'static, Result<(), rbdc::Error>> {
+    fn close(&mut self) -> BoxFuture<Result<(), rbdc::Error>> {
         Box::pin(async move { Ok(()) })
     }
 

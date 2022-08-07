@@ -9,6 +9,7 @@ use rbdc::db::{Connection, ExecResult, Row};
 use rbdc::Error;
 use rbs::Value;
 use std::fmt::{self, Debug, Formatter};
+use std::future::join;
 
 mod auth;
 mod establish;
@@ -41,16 +42,13 @@ impl Debug for MySqlConnection {
 
 impl MySqlConnection {
     #[inline]
-    fn close(mut self) -> BoxFuture<'static, Result<(), Error>> {
-        Box::pin(async move {
-            self.stream.send_packet(Quit).await?;
-            self.stream.shutdown().await?;
-
-            Ok(())
-        })
+    async fn do_close(&mut self) ->  Result<(), Error> {
+        self.stream.send_packet(Quit).await?;
+        self.stream.shutdown().await?;
+        Ok(())
     }
 
-    fn ping(&mut self) -> BoxFuture<'_, Result<(), Error>> {
+    fn do_ping(&mut self) -> BoxFuture<'_, Result<(), Error>> {
         Box::pin(async move {
             self.stream.wait_until_ready().await?;
             self.stream.send_packet(Ping).await?;
@@ -184,13 +182,13 @@ impl Connection for MySqlConnection {
         })
     }
 
-    fn close(&mut self) -> BoxFuture<'static, Result<(), Error>> {
-        let c = self.close();
-        Box::pin(async move { c.await })
+    fn close(&mut self) -> BoxFuture<Result<(), Error>> {
+        let c = self.do_close();
+        Box::pin(async  { c.await })
     }
 
     fn ping(&mut self) -> BoxFuture<'_, Result<(), Error>> {
-        let c = self.ping();
+        let c = self.do_ping();
         Box::pin(async move { c.await })
     }
 }

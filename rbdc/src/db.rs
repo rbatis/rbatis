@@ -79,7 +79,7 @@ pub trait Connection: Send {
     fn exec(&mut self, sql: &str, params: Vec<Value>) -> BoxFuture<Result<ExecResult, Error>>;
 
     /// close connection
-    fn close(&mut self) -> BoxFuture<'static, Result<(), Error>>;
+    fn close(&mut self) -> BoxFuture<Result<(), Error>>;
 
     /// ping
     fn ping(&mut self) -> BoxFuture<Result<(), Error>>;

@@ -138,15 +138,11 @@ impl Debug for SqliteConnection {
 }
 
 impl SqliteConnection {
-    pub fn close(mut self) -> BoxFuture<'static, Result<(), Error>> {
-        Box::pin(async move {
-            let shutdown = self.worker.shutdown();
-            // Drop the statement worker, which should
-            // cover all references to the connection handle outside of the worker thread
-            drop(self);
-            // Ensure the worker thread has terminated
-            shutdown.await
-        })
+    pub async fn do_close(&mut self) -> Result<(), Error> {
+        // Drop the statement worker, which should
+        // cover all references to the connection handle outside of the worker thread
+        // Ensure the worker thread has terminated
+        self.worker.shutdown().await
     }
 
     /// Ensure the background worker thread is alive and accepting commands.

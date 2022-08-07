@@ -120,7 +120,7 @@ mod test {
             })
         }
 
-        fn close(&mut self) -> BoxFuture<'static, Result<(), Error>> {
+        fn close(&mut self) -> BoxFuture<Result<(), Error>> {
             Box::pin(async {
                 Ok(())
             })
