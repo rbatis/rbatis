@@ -31,9 +31,12 @@ impl<'de> Deserialize<'de> for FastDateTime {
         let v = DateTimeValue::deserialize(deserializer)?;
         match v.0 {
             Value::U64(u) => Ok(Self(fastdate::DateTime::from_timestamp_millis(u as i64))),
-            Value::String(s) => Ok(Self(
-                fastdate::DateTime::from_str(&s).map_err(|e| D::Error::custom(e.to_string()))?,
-            )),
+            Value::String(s) => Ok({
+                println!("date:{}",s);
+                Self(
+                    fastdate::DateTime::from_str(&s).map_err(|e| D::Error::custom(e.to_string()))?,
+                )
+            }),
             _ => {
                 return Err(D::Error::custom(&format!(
                     "unsupported type DateTime({})",
@@ -133,10 +136,12 @@ pub struct DateTimeValue(pub Value);
 
 #[test]
 fn test() {
-    let date = DateTime("2017-02-06T00-00-00".to_string());
-    let v = rbs::to_value_ref(&date).unwrap();
+    let date = DateTime("2017-02-06 00:00:00".to_string());
+    let v = rbs::to_value(&date).unwrap();
     println!("{}", v);
-    let date = FastDateTime(fastdate::DateTime::now());
-    let v = rbs::to_value_ref(&date).unwrap();
+    assert_eq!("2017-02-06 00:00:00",v.as_str().unwrap_or_default().to_string());
+    let date = FastDateTime(fastdate::DateTime::from_str(&date.0).unwrap());
+    let v = rbs::to_value(&date).unwrap();
     println!("{}", v);
+    assert_eq!("2017-02-06 00:00:00",v.as_str().unwrap_or_default().to_string());
 }
