@@ -142,9 +142,19 @@ mod test {
         pub delete_flag: Option<i32>,
     }
     crud!(MockTable {});
+    impl_select!(MockTable{select_all_by_id(id:&str,name:&str) => "`where id = #{id} and name = #{name}`"});
+    impl_select!(MockTable{select_by_id(id:&str) -> Option => "`where id = #{id} limit 1`"});
+    impl_update!(MockTable{update_by_name(name:&str)} => "`where id = '2'`");
+    impl_delete!(MockTable {delete_by_name(name:&str)} => "`where name= '2'`");
+    impl_select_page!(MockTable{select_page() => "`order by create_time desc`"});
+    impl_select_page!(MockTable{select_page_by_name(name:&str) =>"
+     if name != null && name != '':
+       `where name != #{name}`
+     if name == '':
+       `where name != ''`"});
 
     #[test]
-    fn test_gen_crud() {
+    fn test_insert() {
         let f = async move {
             let mut rb = Rbatis::new();
             rb.link(MockDriver {}, "test").await.unwrap();
@@ -166,15 +176,81 @@ mod test {
             let r = MockTable::insert(&mut rb, &t).await.unwrap();
             println!("{}", r.last_insert_id.as_str().unwrap_or_default());
             assert_eq!(r.last_insert_id.as_str().unwrap_or_default(),"insert into mock_table (id,name,pc_link,h5_link,pc_banner_img,h5_banner_img,sort,status,remark,create_time,version,sql,delete_flag) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?)");
-
+        };
+        block_on(f);
+    }
+    #[test]
+    fn test_update_by_column() {
+        let f = async move {
+            let mut rb = Rbatis::new();
+            rb.link(MockDriver {}, "test").await.unwrap();
+            let mut t = MockTable {
+                id: Some("2".into()),
+                name: Some("2".into()),
+                pc_link: Some("2".into()),
+                h5_link: Some("2".into()),
+                pc_banner_img: None,
+                h5_banner_img: None,
+                sort: None,
+                status: Some(2),
+                remark: Some("2".into()),
+                create_time: Some(FastDateTime::now()),
+                version: Some(1),
+                sql: "".to_string(),
+                delete_flag: Some(1),
+            };
             let r = MockTable::update_by_column(&mut rb, &t, "id").await.unwrap();
             println!("{}", r.last_insert_id.as_str().unwrap_or_default());
             assert_eq!(r.last_insert_id.as_str().unwrap_or_default(),"update mock_table set name=?,pc_link=?,h5_link=?,status=?,remark=?,create_time=?,version=?,sql=?,delete_flag=? where  id = ?");
-
+        };
+        block_on(f);
+    }
+    #[test]
+    fn test_select_all() {
+        let f = async move {
+            let mut rb = Rbatis::new();
+            rb.link(MockDriver {}, "test").await.unwrap();
+            let mut t = MockTable {
+                id: Some("2".into()),
+                name: Some("2".into()),
+                pc_link: Some("2".into()),
+                h5_link: Some("2".into()),
+                pc_banner_img: None,
+                h5_banner_img: None,
+                sort: None,
+                status: Some(2),
+                remark: Some("2".into()),
+                create_time: Some(FastDateTime::now()),
+                version: Some(1),
+                sql: "".to_string(),
+                delete_flag: Some(1),
+            };
             let r = MockTable::select_all(&mut rb).await.unwrap();
             println!("{:?}", r[0].sql);
             assert_eq!(r[0].sql,"select * from mock_table");
-
+        };
+        block_on(f);
+    }
+    #[test]
+    fn test_delete_by_column() {
+        let f = async move {
+            let mut rb = Rbatis::new();
+            rb.link(MockDriver {}, "test").await.unwrap();
+            let mut t = MockTable {
+                id: Some("2".into()),
+                name: Some("2".into()),
+                pc_link: Some("2".into()),
+                h5_link: Some("2".into()),
+                pc_banner_img: None,
+                h5_banner_img: None,
+                sort: None,
+                status: Some(2),
+                remark: Some("2".into()),
+                create_time: Some(FastDateTime::now()),
+                version: Some(1),
+                sql: "".to_string(),
+                delete_flag: Some(1),
+            };
             let r = MockTable::delete_by_column(&mut rb, "1", &Value::String("1".to_string())).await.unwrap();
             println!("{}", r.last_insert_id.as_str().unwrap_or_default());
             assert_eq!(r.last_insert_id.as_str().unwrap_or_default(),"delete from mock_table where  1 = ?");
