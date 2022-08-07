@@ -213,14 +213,14 @@ fn decode_year_buf(buf: &[u8]) -> Result<String, Error> {
         // zero buffer means a zero date (null)
         return Ok("".to_string());
     }
-    Ok(format!("{:4}", LittleEndian::read_u16(buf) as i32,))
+    Ok(format!("{:0>4}", LittleEndian::read_u16(buf) as i32,))
 }
 
 fn decode_time_buf(len: u8, mut buf: &[u8]) -> Result<String, Error> {
     let hour = buf.get_u8();
     let minute = buf.get_u8();
     let seconds = buf.get_u8();
-    Ok(format!("{:2}:{:2}:{:2}", hour, minute, seconds))
+    Ok(format!("{:0>2}:{:0>2}:{:0>2}", hour, minute, seconds))
 }
 
 fn decode_bool(value: MySqlValue) -> Result<bool, Error> {
