@@ -82,32 +82,3 @@ pub fn un_packing_string(column: &str) -> &str {
     }
     return column;
 }
-
-//find like {*},{*} value *
-pub fn find_format_string(arg: &str) -> LinkedList<(String, String)> {
-    let mut list = LinkedList::new();
-    let chars: Vec<u8> = arg.bytes().collect();
-    let mut item = String::with_capacity(arg.len());
-    let mut index: i32 = -1;
-    for v in &chars {
-        index = index + 1;
-        if !item.is_empty() {
-            item.push(*v as char);
-            if *v == '}' as u8 {
-                let key = item[1..item.len() - 1].to_string();
-                list.push_back((key, item.clone()));
-                item.clear();
-            }
-            continue;
-        }
-        if *v == '{' as u8 {
-            item.push(*v as char);
-        }
-    }
-    return list;
-}
-
-#[test]
-fn test_find_formats() {
-    println!("{:?}", find_format_string("1111{}222{1}2"));
-}
