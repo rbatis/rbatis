@@ -1,15 +1,12 @@
 #[macro_export]
 macro_rules! crud {
     ($table:ty{}) => {
-         $crate::impl_insert!($table {});
-         $crate::impl_select!($table {});
-         $crate::impl_update!($table {});
-         $crate::impl_delete!($table {});
-    }
+        $crate::impl_insert!($table {});
+        $crate::impl_select!($table {});
+        $crate::impl_update!($table {});
+        $crate::impl_delete!($table {});
+    };
 }
-
-
-
 
 ///gen sql => INSERT INTO table_name (column1,column2,column3,...) VALUES (value1,value2,value3,...);
 ///
@@ -180,7 +177,7 @@ macro_rules! impl_update {
             }
         }
     };
-    ($table:ty{$fn_name:ident($($param_key:ident:$param_type:ty$(,)?)*)} => $sql_where:expr) => {
+    ($table:ty{$fn_name:ident($($param_key:ident:$param_type:ty$(,)?)*) => $sql_where:expr}) => {
         impl $table {
             pub async fn $fn_name(
                 rb: &mut dyn $crate::executor::Executor,
@@ -265,7 +262,7 @@ macro_rules! impl_delete {
             }
         }
     };
-    ($table:ty{$fn_name:ident($($param_key:ident:$param_type:ty$(,)?)*)} => $sql_where:expr) => {
+    ($table:ty{$fn_name:ident($($param_key:ident:$param_type:ty$(,)?)*) => $sql_where:expr}) => {
         impl $table {
             pub async fn $fn_name(
                 rb: &mut dyn $crate::executor::Executor,

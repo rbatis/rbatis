@@ -339,7 +339,7 @@ mod test {
         };
         block_on(f);
     }
-    impl_update!(MockTable{update_by_name(name:&str)} => "`where id = '2'`");
+    impl_update!(MockTable{update_by_name(name:&str) => "`where id = '2'`"});
     #[test]
     fn test_update_by_name() {
         let f = async move {
@@ -367,7 +367,7 @@ mod test {
         };
         block_on(f);
     }
-    impl_delete!(MockTable {delete_by_name(name:&str)} => "`where name= '2'`");
+    impl_delete!(MockTable {delete_by_name(name:&str) => "`where name= '2'`"});
     #[test]
     fn test_delete_by_name() {
         let f = async move {
