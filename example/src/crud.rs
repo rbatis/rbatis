@@ -79,7 +79,7 @@ pub async fn main() {
     println!("update_by_name = {:?}", data);
 
     sleep(Duration::from_secs(2));
-    let data = BizActivity::delete_by_column(&mut rb, "id", &"2".into()).await;
+    let data = BizActivity::delete_by_column(&mut rb, "id", "2").await;
     println!("delete_by_column = {:?}", data);
 
     sleep(Duration::from_secs(2));
