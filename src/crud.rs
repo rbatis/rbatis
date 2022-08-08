@@ -245,10 +245,10 @@ macro_rules! impl_delete {
     };
     ($table:ty,$table_name:expr) => {
         impl $table {
-            pub async fn delete_by_column(
+            pub async fn delete_by_column<V:serde::Serialize>(
                 rb: &mut dyn $crate::executor::Executor,
                 column: &str,
-                column_value: &rbs::Value,
+                column_value: V,
             ) -> Result<rbdc::db::ExecResult, rbdc::Error> {
                 #[$crate::py_sql("`delete from ${table_name} where  ${column} = #{column_value}`")]
                 async fn do_delete_by_column(
@@ -259,8 +259,9 @@ macro_rules! impl_delete {
                 ) -> Result<rbdc::db::ExecResult, rbdc::Error> {
                     impled!()
                 }
+                let column_value = rbs::to_value!(column_value);
                 let table_name = $table_name.to_string();
-                do_delete_by_column(rb, table_name, column_value, column).await
+                do_delete_by_column(rb, table_name, &column_value, column).await
             }
         }
     };
