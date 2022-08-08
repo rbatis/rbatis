@@ -45,8 +45,8 @@ jobs:
         uses: actions-rs/cargo@v1
         with:
           command: test
-      - name: Run cargo release test
-        uses: actions-rs/cargo@v1
-        with:
-          command: test
-          args: --release
+#      - name: Run cargo release test
+#        uses: actions-rs/cargo@v1
+#        with:
+#          command: test
+#          args: --release
