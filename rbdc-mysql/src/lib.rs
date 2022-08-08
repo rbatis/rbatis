@@ -1,5 +1,3 @@
-#![feature(future_join)]
-
 pub mod driver;
 pub mod meta_data;
 pub mod result_set;

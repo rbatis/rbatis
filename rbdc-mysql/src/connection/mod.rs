@@ -10,7 +10,6 @@ use rbdc::db::{Connection, ExecResult, Row};
 use rbdc::Error;
 use rbs::Value;
 use std::fmt::{self, Debug, Formatter};
-use std::future::join;
 use std::ops::{Deref, DerefMut};
 
 mod auth;
