@@ -24,7 +24,7 @@ pub trait Executor: RbatisRef {
 }
 
 #[async_trait]
-pub trait RbatisRef {
+pub trait RbatisRef: Send {
     fn get_rbatis(&self) -> &Rbatis;
 
     fn driver_type(&self) -> crate::Result<&str> {
