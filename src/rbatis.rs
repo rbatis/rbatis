@@ -128,14 +128,12 @@ impl Rbatis {
         return Ok(());
     }
 
+    /// set_log_plugin
     pub fn set_log_plugin(&mut self, arg: impl LogPlugin + 'static) {
         self.log_plugin = Arc::new(Box::new(arg));
     }
 
-    pub fn set_sql_intercept(&mut self, args: Vec<Box<dyn SqlIntercept>>) {
-        self.sql_intercepts = Arc::new(args);
-    }
-
+    /// set_sql_intercepts for many
     pub fn set_sql_intercepts(&mut self, arg: Vec<Box<dyn SqlIntercept>>) {
         self.sql_intercepts = Arc::new(arg);
     }
