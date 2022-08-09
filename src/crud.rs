@@ -56,6 +56,39 @@ macro_rules! impl_insert {
                 let table_name = $table_name.to_string();
                 do_insert(rb.into(), table, table_name).await
             }
+
+            pub async fn insert_batch(
+                rb: &mut dyn $crate::executor::Executor,
+                tables: &[$table],
+            ) -> Result<rbdc::db::ExecResult, rbdc::Error> {
+                #[$crate::py_sql(
+           "`insert into ${table_name} (`
+             trim ',':
+               for k,v in tables[0]:
+                  if k == 'id' && v== null:
+                    #{continue}
+                 ${k},
+             `) VALUES `
+             for _,table in tables:
+               (
+               trim ',':
+                for k,v in table:
+                  if k == 'id' && v== null:
+                     #{continue}
+                  #{v},
+               )
+             "
+                )]
+                async fn do_insert_batch(
+                    rb: &mut dyn $crate::executor::Executor,
+                    tables: &[$table],
+                    table_name: String,
+                ) -> Result<rbdc::db::ExecResult, rbdc::Error> {
+                    impled!()
+                }
+                let table_name = $table_name.to_string();
+                do_insert_batch(rb.into(), tables, table_name).await
+            }
         }
     };
 }
