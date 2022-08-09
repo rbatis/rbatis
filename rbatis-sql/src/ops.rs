@@ -289,8 +289,10 @@ pub trait PartialOrd<Rhs: ?Sized = Self> {
     /// # Examples
     ///
     /// ```
-    /// use std::cmp::Ordering;
     ///
+    ///
+    /// use std::cmp::Ordering;
+    /// use rbatis_sql::ops::PartialOrd;
     /// let result = 1.0.op_partial_cmp(&2.0);
     /// assert_eq!(result, Some(Ordering::Less));
     ///
@@ -304,6 +306,7 @@ pub trait PartialOrd<Rhs: ?Sized = Self> {
     /// When comparison is impossible:
     ///
     /// ```
+    /// use rbatis_sql::ops::PartialOrd;
     /// let result = f64::NAN.op_partial_cmp(&1.0);
     /// assert_eq!(result, None);
     /// ```
@@ -577,12 +580,6 @@ pub trait AsSql {
 mod test {
     use crate::ops::AsProxy;
     use rbs::{to_value, Value};
-
-    #[test]
-    fn test_string() {
-        let b = Value::Binary("s".as_bytes().to_owned());
-        assert_eq!("s", b.string());
-    }
 
     #[test]
     fn test_cast() {
