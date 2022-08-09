@@ -26,6 +26,20 @@
   Vue.js+rbatis+actix-web)
 * Thanks to ```SQLX, mobc, Tiberius, MyBatis,xorm``` and so on reference design or code implementation. release of V4.0 is dependent on the support of these frameworks, both directly and indirectly and idea
 
+
+### Performance
+* this bench test is MockTable,MockDriver,MockConnection to Assume that the network I/O time is 0
+* run code ```MockTable::insert(&mut rbatis.clone(),&t).await;``` on benches/fn bench_insert()
+* use command ``` cargo test --release --package rbatis --bench raw_performance bench_insert  --no-fail-fast -- --exact -Z unstable-options --show-output ```
+```
+//---- bench_insert stdout ----(win10,cpu-amd5950x)
+// use Time: 130.5443ms ,each:1305 ns/op
+// use QPS: 765860 QPS/s
+//---- bench_insert stdout ----(macos,cpu-M1Max)
+//use Time: 128.635666ms ,each:1286 ns/op
+//use QPS: 777351 QPS/s
+```
+
 ### Supported data structures
 
 | data structure                                                            | is supported |
