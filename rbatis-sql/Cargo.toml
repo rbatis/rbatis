@@ -22,5 +22,5 @@ debug_mode = ["rbatis_sql_macro/debug_mode"]
 #serde
 serde = { version = "1", features = ["derive"] }
 rbs = { version = "0.1", path = "../rbs" }
-rbatis_sql_macro = { version = "4.0.1", path = "rbatis-sql-macro" }
+rbatis_sql_macro = { version = "4.0.2", path = "rbatis-sql-macro" }
 serde_json = "1"
