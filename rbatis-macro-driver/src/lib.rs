@@ -1,6 +1,6 @@
 #![allow(unused_assignments)]
 extern crate proc_macro;
-
+extern crate rbatis_codegen;
 use syn::{parse_macro_input, AttributeArgs, ItemFn};
 
 use crate::macros::html_sql_impl::impl_macro_html_sql;

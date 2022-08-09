@@ -3,6 +3,7 @@ members = [
     ".",
     "rbs",
     "rbdc",
+    "rbatis-codegen",
     "rbdc-mysql",
     "rbdc-pg",
     "rbdc-sqlite",
