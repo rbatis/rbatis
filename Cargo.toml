@@ -2,6 +2,7 @@
 members = [
     ".",
     "rbs",
+    "rbatis-sql/rbatis-sql-util",
     "rbatis-sql/rbatis-sql-macro",
     "rbatis-sql",
     "rbdc",

@@ -17,9 +17,4 @@ proc-macro = true
 proc-macro2 = "1.0"
 quote = "1.0"
 syn = { version = "1.0", features = ["full"] }
-
-base64 = "0.13"
-async-trait = "0.1"
-url = "2.2.2"
-
-html_parser = "0.6.3"
+rbatis-sql-util = { version = "4.0", path = "../rbatis-sql-util" }

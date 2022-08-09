@@ -11,13 +11,20 @@
 extern crate proc_macro;
 
 use syn::{parse_macro_input, AttributeArgs, DataStruct, ItemFn};
+
 use crate::proc_macro::TokenStream;
 
-#[proc_macro_attribute]
+pub mod element_from;
+pub mod func;
+pub mod html_loader;
+pub mod parser;
+pub mod py_sql;
+pub mod string_util;
+
 pub fn expr(args: TokenStream, func: TokenStream) -> TokenStream {
     //let args = parse_macro_input!(args as AttributeArgs);
     let target_fn: ItemFn = syn::parse(func).unwrap();
-    let stream = rbatis_sql_util::func::impl_fn(
+    let stream = func::impl_fn(
         "",
         &target_fn.sig.ident.to_string(),
         &args.to_string(),
@@ -34,11 +41,10 @@ pub fn expr(args: TokenStream, func: TokenStream) -> TokenStream {
     stream
 }
 
-#[proc_macro_attribute]
 pub fn rb_html(args: TokenStream, func: TokenStream) -> TokenStream {
     let args = parse_macro_input!(args as AttributeArgs);
     let target_fn = syn::parse(func).unwrap();
-    let stream = rbatis_sql_util::parser::impl_fn_html(&target_fn, &args);
+    let stream = parser::impl_fn_html(&target_fn, &args);
     #[cfg(feature = "debug_mode")]
     {
         println!("............gen macro xml:\n {}", stream);
@@ -48,11 +54,10 @@ pub fn rb_html(args: TokenStream, func: TokenStream) -> TokenStream {
 }
 
 /// support py_sql fn convert
-#[proc_macro_attribute]
 pub fn rb_py(args: TokenStream, func: TokenStream) -> TokenStream {
     let args = parse_macro_input!(args as AttributeArgs);
     let target_fn = syn::parse(func).unwrap();
-    let stream = rbatis_sql_util::parser::impl_fn_py(&target_fn, &args);
+    let stream = parser::impl_fn_py(&target_fn, &args);
     #[cfg(feature = "debug_mode")]
     {
         println!("............gen rb_pysql_fn:\n {}", stream);

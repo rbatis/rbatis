@@ -1,6 +1,8 @@
 #![allow(unused_assignments)]
 extern crate proc_macro;
 
+
+
 use syn::{parse_macro_input, AttributeArgs, ItemFn};
 
 use crate::macros::html_sql_impl::impl_macro_html_sql;

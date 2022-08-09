@@ -231,7 +231,7 @@ fn parse(
                 if !string_data.is_empty() {
                     body = quote!(
                      #body
-                      sql.push_str(#string_data#replaces);
+                      sql.push_str(#string_data #replaces);
                     );
                 }
             }
