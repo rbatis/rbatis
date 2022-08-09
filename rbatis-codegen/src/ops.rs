@@ -292,7 +292,7 @@ pub trait PartialOrd<Rhs: ?Sized = Self> {
     ///
     ///
     /// use std::cmp::Ordering;
-    /// use rbatis_sql::ops::PartialOrd;
+    /// use rbatis_codegen::ops::PartialOrd;
     /// let result = 1.0.op_partial_cmp(&2.0);
     /// assert_eq!(result, Some(Ordering::Less));
     ///
@@ -306,7 +306,7 @@ pub trait PartialOrd<Rhs: ?Sized = Self> {
     /// When comparison is impossible:
     ///
     /// ```
-    /// use rbatis_sql::ops::PartialOrd;
+    /// use rbatis_codegen::ops::PartialOrd;
     /// let result = f64::NAN.op_partial_cmp(&1.0);
     /// assert_eq!(result, None);
     /// ```

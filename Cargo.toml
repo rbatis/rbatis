@@ -2,9 +2,6 @@
 members = [
     ".",
     "rbs",
-    "rbatis-sql/rbatis-sql-util",
-    "rbatis-sql/rbatis-sql-macro",
-    "rbatis-sql",
     "rbdc",
     "rbdc-mysql",
     "rbdc-pg",
@@ -28,15 +25,15 @@ repository = "https://github.com/rbatis/rbatis"
 homepage = "https://rbatis.github.io/rbatis.io/#/en/"
 
 [features]
-default = ["default_mode","debug_mode"]
+default = ["default_mode", "debug_mode"]
 #debug_mode feature will show decode json data
-debug_mode = ["rbatis-macro-driver/debug_mode", "rbatis_sql/debug_mode"]
-default_mode = ["rbatis-macro-driver", "rbatis_sql"]
+debug_mode = ["rbatis-macro-driver/debug_mode", "rbatis-codegen/debug_mode"]
+default_mode = ["rbatis-macro-driver"]
 #support upper case sql keyword
 upper_case_sql_keyword = []
 
 [dependencies]
-rbatis_sql = { version = "4.0", path="rbatis-sql", optional = true }
+rbatis-codegen = { version = "4", path = "rbatis-codegen", optional = true }
 rbatis-macro-driver = { version = "4.0", path = "rbatis-macro-driver", default-features = false, optional = true }
 serde = "1"
 #uuid
@@ -58,7 +55,7 @@ crossbeam = "0.8.2"
 mobc = "0.7"
 [dev-dependencies]
 serde_json = "1"
-tokio = {version="1",features=["fs", "net", "rt", "rt-multi-thread", "time", "io-util"]}
+tokio = { version = "1", features = ["fs", "net", "rt", "rt-multi-thread", "time", "io-util"] }
 
 [profile.release]
 lto = true

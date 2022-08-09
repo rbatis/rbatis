@@ -201,7 +201,7 @@ async fn main() {
 > Because of the compile time, the annotations need to declare the database type to be used
 
 ```html
-<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.1//EN" "https://github.com/rbatis/rbatis_sql/raw/main/mybatis-3-mapper.dtd">
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.1//EN" "https://github.com/rbatis/rbatis_codegen/raw/main/mybatis-3-mapper.dtd">
 <mapper>
     <select id="select_by_condition">
         `select * from biz_activity where `

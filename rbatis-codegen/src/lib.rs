@@ -27,11 +27,8 @@ pub mod ops_not;
 pub mod ops_rem;
 pub mod ops_sub;
 pub mod ops_xor;
-
 #[macro_use]
 pub mod sql_replace;
+pub mod code_gen;
 
-#[macro_use]
-extern crate rbatis_sql_macro;
-
-pub use rbatis_sql_macro::{expr, rb_html, rb_py};
+pub use code_gen::{rb_html,rb_py};

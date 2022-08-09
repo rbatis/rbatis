@@ -11,10 +11,10 @@ use quote::{quote, ToTokens};
 use syn::{AttributeArgs, Expr, ItemFn, ItemMod, ItemStruct, Path};
 use url::Url;
 
-use crate::html_loader::{load_html, Element};
-use crate::proc_macro::TokenStream;
-use crate::py_sql::{NodeType, ParsePySql};
-use crate::string_util::find_convert_string;
+use crate::code_gen::html_loader::{load_html, Element};
+use crate::code_gen::proc_macro::TokenStream;
+use crate::code_gen::py_sql::{NodeType, ParsePySql};
+use crate::code_gen::string_util::find_convert_string;
 
 fn parse_html_str(html: &str, fn_name: &str, ignore: &mut Vec<String>) -> proc_macro2::TokenStream {
     let datas = load_html(html).expect("load_html() fail!");
@@ -179,7 +179,7 @@ fn parse(
 ) -> proc_macro2::TokenStream {
     let mut body = quote! {};
     let fix_sql = quote! {
-        rbatis_sql::sql_index!(sql,_tag);
+        rbatis_codegen::sql_index!(sql,_tag);
     };
     for x in arg {
         match x.tag.as_str() {
@@ -202,7 +202,7 @@ fn parse(
 
                 let mut replaced = HashMap::<String, bool>::new();
                 for (k, v) in convert_list {
-                    let method_impl = crate::func::impl_fn(
+                    let method_impl = crate::code_gen::func::impl_fn(
                         &body.to_string(),
                         "",
                         &format!("\"{}\"", k),
@@ -294,7 +294,7 @@ fn parse(
                     .to_string();
 
                 let name_expr = parse_expr(&name);
-                let method_impl = crate::func::impl_fn(
+                let method_impl = crate::code_gen::func::impl_fn(
                     &body.to_string(),
                     "",
                     &format!("\"{}\"", value),
@@ -410,7 +410,7 @@ fn parse(
                 ignores.push(item.to_string());
 
                 let impl_body = parse(&x.childs, methods, "foreach", &mut ignores);
-                let method_impl = crate::func::impl_fn(
+                let method_impl = crate::code_gen::func::impl_fn(
                     &body.to_string(),
                     "",
                     &format!("\"{}\"", collection),
@@ -485,7 +485,7 @@ fn parse(
                 let child_body = parse(&x.childs, methods, "select", ignore);
                 let select = quote! {
                     pub fn #method_name (arg:&rbs::Value, _tag: char) -> (String,Vec<rbs::Value>) {
-                       use rbatis_sql::ops::*;
+                       use rbatis_codegen::ops::*;
                        let mut sql = String::with_capacity(1000);
                        let mut args = Vec::with_capacity(20);
                        #child_body
@@ -507,7 +507,7 @@ fn parse(
                 let child_body = parse(&x.childs, methods, "select", ignore);
                 let select = quote! {
                     pub fn #method_name (arg:&rbs::Value, _tag: char) -> (String,Vec<rbs::Value>) {
-                       use rbatis_sql::ops::*;
+                       use rbatis_codegen::ops::*;
 
                        let mut sql = String::with_capacity(1000);
                        let mut args = Vec::with_capacity(20);
@@ -530,7 +530,7 @@ fn parse(
                 let child_body = parse(&x.childs, methods, "select", ignore);
                 let select = quote! {
                     pub fn #method_name (arg:&rbs::Value, _tag: char) -> (String,Vec<rbs::Value>) {
-                       use rbatis_sql::ops::*;
+                       use rbatis_codegen::ops::*;
 
                        let mut sql = String::with_capacity(1000);
                        let mut args = Vec::with_capacity(20);
@@ -553,7 +553,7 @@ fn parse(
                 let child_body = parse(&x.childs, methods, "select", ignore);
                 let select = quote! {
                     pub fn #method_name (arg:&rbs::Value, _tag: char) -> (String,Vec<rbs::Value>) {
-                       use rbatis_sql::ops::*;
+                       use rbatis_codegen::ops::*;
 
                        let mut sql = String::with_capacity(1000);
                        let mut args = Vec::with_capacity(20);
@@ -580,7 +580,7 @@ fn impl_println(x: &Element, body: &mut proc_macro2::TokenStream, ignore: &mut V
         .get("value")
         .expect(&format!("{} element must be have value field!", x.tag));
     // let method_name = impl_method(value, body, ignore);
-    let method_impl = crate::func::impl_fn(
+    let method_impl = crate::code_gen::func::impl_fn(
         &body.to_string(),
         "",
         &format!("\"{}\"", value),
@@ -628,7 +628,7 @@ fn impl_if(
     block_name: &str,
     ignore: &mut Vec<String>,
 ) {
-    let method_impl = crate::func::impl_fn(
+    let method_impl = crate::code_gen::func::impl_fn(
         &body.to_string(),
         "",
         &format!("\"{}\"", test_value),
@@ -768,7 +768,7 @@ pub fn impl_fn_py(m: &ItemFn, args: &AttributeArgs) -> TokenStream {
         }
     }
     let nodes = NodeType::parse(&data).expect("[rbatis] parse py_sql fail!");
-    let htmls = crate::py_sql::to_html(
+    let htmls = crate::code_gen::py_sql::to_html(
         &nodes,
         data.starts_with("select") || data.starts_with(" select"),
         &fn_name,
