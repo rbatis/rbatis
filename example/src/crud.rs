@@ -57,7 +57,13 @@ pub async fn main() {
         version: Some(1),
         delete_flag: Some(1),
     };
+
     let data = BizActivity::insert(&mut rb, &t).await;
+    println!("insert = {:?}", data);
+
+    let data = BizActivity::delete_by_name(&mut rb, "2").await;
+
+    let data = BizActivity::insert_batch(&mut rb, &[t.clone()]).await;
     println!("insert = {:?}", data);
 
     sleep(Duration::from_secs(2));
