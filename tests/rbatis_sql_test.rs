@@ -1,9 +1,8 @@
 #[cfg(test)]
 mod test {
-    use rbatis_codegen::ops::*;
-    use rbatis_codegen::rb_py;
     use rbs::value::map::ValueMap;
     use rbs::Value;
+    use rbatis_macro_driver::rb_py;
 
     #[rb_py(
         "
