@@ -13,7 +13,7 @@ homepage = "https://rbatis.github.io/rbatis.io/#/en/"
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [features]
-default = []
+default = ["rbatis-codegen"]
 debug_mode = ["rbatis-codegen/debug_mode"]
 [lib]
 proc-macro = true
