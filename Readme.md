@@ -12,6 +12,8 @@
 
 #### A highly Performant SQL Toolkit and ORM Library. An async, pure Rust SQL crate featuring compile-time Dynamic SQL
 
+It is an ORM, a small compiler, and two dynamic SQL languages
+
 * No Runtimes，No Garbage Collection,High performance, Based on Future/Tokio
 * Zero cost [Dynamic SQL](dyn_sql.md), implemented using (proc-macro,compile-time,Cow(Reduce unnecessary cloning))
   techniques。 don't need ONGL engine(mybatis)
