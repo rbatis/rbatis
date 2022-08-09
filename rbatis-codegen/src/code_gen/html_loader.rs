@@ -87,8 +87,7 @@ pub fn load_html(html: &str) -> Result<Vec<Element>> {
 
 #[cfg(test)]
 mod test {
-    use crate::html_loader::load_html;
-
+    use crate::code_gen::html_loader::load_html;
     #[test]
     fn test_parser() {
         let nodes = load_html(r#"<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.1//EN" "https://github.com/rbatis/rbatis_codegen/raw/main/mybatis-3-mapper.dtd">
