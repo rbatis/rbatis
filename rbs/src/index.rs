@@ -12,7 +12,7 @@ impl Index<usize> for Value {
                 return ext.index(index);
             }
             _ => {
-                panic!("not an array!")
+                &Value::Null
             }
         }
     }
