@@ -1,5 +1,5 @@
-[WebSite](https://rbatis.github.io/rbatis.io/#/en/) | [简体中文](https://rbatis.github.io/rbatis.io/) |
-[Showcase](WhoUse.md)  | [案例](WhoUse.md)
+[WebSite](https://rbatis.github.io/rbatis.io/#/en/) | [WebSite-Chinese](https://rbatis.github.io/rbatis.io/) |
+[Showcase](WhoUse.md) 
 
 [![Build Status](https://github.com/rbatis/rbatis/workflows/Rust/badge.svg)](https://github.com/zhuxiujia/rbatis/actions)
 [![doc.rs](https://docs.rs/rbatis/badge.svg)](https://docs.rs/rbatis/)
