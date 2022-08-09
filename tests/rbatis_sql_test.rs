@@ -1,7 +1,7 @@
 #[cfg(test)]
 mod test {
-    use rbatis_sql::ops::*;
-    use rbatis_sql::rb_py;
+    use rbatis_codegen::ops::*;
+    use rbatis_codegen::rb_py;
     use rbs::value::map::ValueMap;
     use rbs::Value;
 
@@ -36,7 +36,7 @@ mod test {
     pub fn py_select_by_condition(arg: &mut rbs::Value, _tag: char) {}
 
     #[test]
-    fn test_rbatis_sql() {
+    fn test_rbatis_codegen() {
         let mut arg = ValueMap::new();
         arg.insert("name".into(), "ss".into());
         arg.insert("del".into(), 1.into());

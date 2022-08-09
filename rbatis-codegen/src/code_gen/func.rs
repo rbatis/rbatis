@@ -4,7 +4,7 @@ use quote::ToTokens;
 use syn;
 use syn::{BinOp, Expr, ItemFn, Lit, Member};
 
-use crate::proc_macro::TokenStream;
+use crate::code_gen::proc_macro::TokenStream;
 
 fn is_param_char(arg: char) -> bool {
     match arg {
@@ -444,7 +444,7 @@ pub fn impl_fn(
         let func_name_ident = Ident::new(&func_name_ident.to_string(), Span::call_site());
         return quote! {
             pub fn #func_name_ident(arg:&rbs::Value) -> rbs::Value {
-               use rbatis_sql::ops::*;
+               use rbatis_codegen::ops::*;
                #result_impl
             }
         }

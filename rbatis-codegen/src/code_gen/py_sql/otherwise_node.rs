@@ -1,4 +1,4 @@
-use crate::py_sql::{DefName, Name, NodeType};
+use crate::code_gen::py_sql::{DefName, Name, NodeType};
 
 #[derive(Clone, Debug)]
 pub struct OtherwiseNode {

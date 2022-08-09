@@ -100,7 +100,7 @@ pub(crate) fn impl_macro_py_sql(target_fn: &ItemFn, args: &AttributeArgs) -> Tok
     let gen_target_macro_arg = quote! {
         #sql_ident
     };
-    let gen_func: proc_macro2::TokenStream = rbatis_sql_util::rb_py(gen_target_macro_arg.into(), gen_target_method.into()).into();
+    let gen_func: proc_macro2::TokenStream = rbatis_codegen::rb_py(gen_target_macro_arg.into(), gen_target_method.into()).into();
     //gen rust code templete
     return quote! {
        pub async fn #func_name_ident(#func_args_stream) -> #return_ty {
@@ -109,7 +109,7 @@ pub(crate) fn impl_macro_py_sql(target_fn: &ItemFn, args: &AttributeArgs) -> Tok
          #fn_body
          use rbatis::executor::{RbatisRef};
          let driver_type = #rbatis_ident.get_rbatis().driver_type()?;
-         use rbatis::rbatis_sql;
+         use rbatis::rbatis_codegen;
          #gen_func
          let (mut sql,rb_args) = #func_name_ident(&rbs::Value::Map(rb_arg_map), '?');
          #call_method

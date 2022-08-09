@@ -91,7 +91,7 @@ mod test {
 
     #[test]
     fn test_parser() {
-        let nodes = load_html(r#"<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.1//EN" "https://github.com/rbatis/rbatis_sql/raw/main/mybatis-3-mapper.dtd">
+        let nodes = load_html(r#"<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.1//EN" "https://github.com/rbatis/rbatis_codegen/raw/main/mybatis-3-mapper.dtd">
 <mapper>
     <insert id="insert">
         'insert into biz_activity'

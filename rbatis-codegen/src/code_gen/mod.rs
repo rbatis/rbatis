@@ -12,7 +12,7 @@ extern crate proc_macro;
 
 use syn::{parse_macro_input, AttributeArgs, DataStruct, ItemFn};
 
-use crate::proc_macro::TokenStream;
+use proc_macro::TokenStream;
 
 pub mod element_from;
 pub mod func;

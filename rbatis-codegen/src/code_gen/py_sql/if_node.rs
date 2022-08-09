@@ -1,13 +1,13 @@
-use crate::py_sql::{Name, NodeType};
+use crate::code_gen::py_sql::{Name, NodeType};
 
 #[derive(Clone, Debug)]
-pub struct WhenNode {
+pub struct IfNode {
     pub childs: Vec<NodeType>,
     pub test: String,
 }
 
-impl Name for WhenNode {
+impl Name for IfNode {
     fn name() -> &'static str {
-        "when"
+        "if"
     }
 }

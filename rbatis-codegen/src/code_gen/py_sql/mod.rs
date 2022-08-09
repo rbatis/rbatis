@@ -12,17 +12,17 @@ pub mod trim_node;
 pub mod when_node;
 pub mod where_node;
 
-use crate::py_sql::bind_node::BindNode;
-use crate::py_sql::choose_node::ChooseNode;
-use crate::py_sql::foreach_node::ForEachNode;
-use crate::py_sql::if_node::IfNode;
-use crate::py_sql::otherwise_node::OtherwiseNode;
-use crate::py_sql::print_node::PrintNode;
-use crate::py_sql::set_node::SetNode;
-use crate::py_sql::string_node::StringNode;
-use crate::py_sql::trim_node::TrimNode;
-use crate::py_sql::when_node::WhenNode;
-use crate::py_sql::where_node::WhereNode;
+use crate::code_gen::py_sql::bind_node::BindNode;
+use crate::code_gen::py_sql::choose_node::ChooseNode;
+use crate::code_gen::py_sql::foreach_node::ForEachNode;
+use crate::code_gen::py_sql::if_node::IfNode;
+use crate::code_gen::py_sql::otherwise_node::OtherwiseNode;
+use crate::code_gen::py_sql::print_node::PrintNode;
+use crate::code_gen::py_sql::set_node::SetNode;
+use crate::code_gen::py_sql::string_node::StringNode;
+use crate::code_gen::py_sql::trim_node::TrimNode;
+use crate::code_gen::py_sql::when_node::WhenNode;
+use crate::code_gen::py_sql::where_node::WhereNode;
 
 #[derive(Clone, Debug)]
 pub enum NodeType {
@@ -48,7 +48,7 @@ pub trait DefName {
 }
 
 pub trait ParsePySql {
-    fn parse(arg: &str) -> Result<Vec<NodeType>, crate::py_sql::error::Error>;
+    fn parse(arg: &str) -> Result<Vec<NodeType>, crate::code_gen::py_sql::error::Error>;
 }
 
 pub trait AsHtml {
