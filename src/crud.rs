@@ -56,6 +56,9 @@ macro_rules! impl_insert {
                 ) -> Result<rbdc::db::ExecResult, rbdc::Error> {
                     impled!()
                 }
+                if tables.is_empty() {
+                    return Err(rbdc::Error::from("insert can not insert empty array tables!"));
+                }
                 let table_name = $table_name.to_string();
                 do_insert_batch(rb.into(), tables, table_name).await
             }
