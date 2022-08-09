@@ -346,7 +346,7 @@ fn convert_to_arg_access(context: &str, arg: Expr, as_proxy: bool, ignore: &[Str
         Expr::Index(mut b) => {
             b.expr = Box::new(convert_to_arg_access(context, *b.expr, as_proxy, ignore));
             return syn::parse_str::<Expr>(&format!(
-                "{}[({}]",
+                "{}[{}]",
                 b.expr.to_token_stream(),
                 b.index.to_token_stream()
             ))
