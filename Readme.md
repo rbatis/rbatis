@@ -20,6 +20,7 @@ It is an ORM, a small compiler, and two dynamic SQL languages
 * JDBC-like driver design, driver use cargo.toml dependency and ```Box<dyn Driver>``` separation
 * All database drivers supported ```#{arg}```, ```${arg}```,```?```  placeholder
 * Dynamic SQL(Write code freely in SQL),pagination, py-like SQL and basic Mybatis functionalities.
+* Dynamic configuration connection pool(Based on the mobc)
 * Supports logging, customizable logging based on `log` crate
 * 100% Safe Rust with `#![forbid(unsafe_code)]` enabled
 * Support use Trait System Add ```py_sql/ html_sql``` functions.[see](https://github.com/rbatis/rbatis/blob/master/example/src/macro_proc_htmlsql_custom_func.rs)
