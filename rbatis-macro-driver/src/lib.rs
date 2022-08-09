@@ -112,3 +112,14 @@ pub fn html_sql(args: TokenStream, func: TokenStream) -> TokenStream {
     }
     stream
 }
+
+/// proxy rbatis_codegen rb_py
+#[proc_macro_attribute]
+pub fn rb_py(args: TokenStream, func: TokenStream) -> TokenStream {
+    rbatis_codegen::rb_py(args, func)
+}
+/// proxy rbatis_codegen rb_html
+#[proc_macro_attribute]
+pub fn rb_html(args: TokenStream, func: TokenStream) -> TokenStream {
+    rbatis_codegen::rb_html(args, func)
+}
