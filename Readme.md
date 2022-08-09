@@ -19,7 +19,7 @@ It is an ORM, a small compiler, and two dynamic SQL languages
   techniques。 don't need ONGL engine(mybatis)
 * JDBC-like driver design, driver use cargo.toml dependency and ```Box<dyn Driver>``` separation
 * All database drivers supported ```#{arg}```, ```${arg}```,```?```  placeholder
-* Dynamic SQL(Write code freely in SQL),pagination, py-like SQL and basic Mybatis functionalities.
+* Dynamic SQL(Write code freely in SQL),pagination, ```py_sql``` query lang and ```html_sql```(Inspired Mybatis).
 * Dynamic configuration connection pool(Based on the mobc)
 * Supports logging, customizable logging based on `log` crate
 * 100% Safe Rust with `#![forbid(unsafe_code)]` enabled
