@@ -50,12 +50,18 @@ impl Debug for RBatisConnExecutor {
 }
 
 impl RBatisConnExecutor {
-    pub async fn fetch<T>(&mut self, sql: &str, args: Vec<Value>) -> Result<T, Error>
+    pub async fn fetch(&mut self, sql: &str, args: Vec<Value>) -> Result<Value, Error>
+    {
+        let v = Executor::fetch(self, sql, args).await?;
+        Ok(v)
+    }
+
+    pub async fn fetch_decode<T>(&mut self, sql: &str, args: Vec<Value>) -> Result<T, Error>
         where
             T: DeserializeOwned,
     {
         let v = Executor::fetch(self, sql, args).await?;
-        Ok(from_value(v)?)
+        Ok(decode(v)?)
     }
 }
 
@@ -183,12 +189,18 @@ impl Debug for RBatisTxExecutor {
 }
 
 impl<'a> RBatisTxExecutor {
-    pub async fn fetch<T>(&mut self, sql: &str, args: Vec<Value>) -> Result<T, Error>
+    pub async fn fetch(&mut self, sql: &str, args: Vec<Value>) -> Result<Value, Error>
+    {
+        let v = Executor::fetch(self, sql, args).await?;
+        Ok(v)
+    }
+    /// fetch and decode
+    pub async fn fetch_decode<T>(&mut self, sql: &str, args: Vec<Value>) -> Result<Value, Error>
         where
             T: DeserializeOwned,
     {
         let v = Executor::fetch(self, sql, args).await?;
-        Ok(from_value(v)?)
+        Ok(decode(v)?)
     }
 }
 
@@ -427,18 +439,28 @@ impl Drop for RBatisTxExecutorGuard {
 }
 
 impl Rbatis {
+
+    /// exec sql
     pub async fn exec(&self, sql: &str, args: Vec<Value>) -> Result<rbdc::db::ExecResult, Error> {
         let mut conn = self.acquire().await?;
         conn.exec(sql, args).await
     }
 
-    pub async fn fetch<T>(&self, sql: &str, args: Vec<Value>) -> Result<T, Error>
+    /// fetch raw Value
+    pub async fn fetch(&self, sql: &str, args: Vec<Value>) -> Result<Value, Error> {
+        let mut conn = self.acquire().await?;
+        let v = conn.fetch(sql, args).await?;
+        Ok(v)
+    }
+
+    /// fetch and decode
+    pub async fn fetch_decode<T>(&self, sql: &str, args: Vec<Value>) -> Result<T, Error>
         where
             T: DeserializeOwned,
     {
         let mut conn = self.acquire().await?;
         let v = conn.fetch(sql, args).await?;
-        Ok(from_value(v)?)
+        Ok(decode(v)?)
     }
 }
 
