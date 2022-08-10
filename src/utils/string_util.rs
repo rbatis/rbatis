@@ -58,7 +58,7 @@ pub fn to_snake_name(name: &str) -> String {
             if index != 0 && (index + 1) != chs_len {
                 new_name.push_str("_");
             }
-            new_name.push_str(x.to_lowercase().to_string().as_str());
+            new_name.push(x.to_ascii_lowercase());
         } else {
             new_name.push(x);
         }
