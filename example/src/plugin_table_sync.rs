@@ -1,8 +1,8 @@
+use rbatis::rbatis::Rbatis;
+use rbatis::table_sync::{RbatisTableSync, SqliteTableSync};
 use rbdc::datetime::FastDateTime;
 use rbdc_sqlite::driver::SqliteDriver;
 use rbs::to_value;
-use rbatis::rbatis::Rbatis;
-use rbatis::table_sync::{RbatisTableSync, SqliteTableSync};
 
 #[derive(Clone, Debug, serde::Serialize, serde::Deserialize)]
 pub struct BizActivity {
@@ -20,13 +20,10 @@ pub struct BizActivity {
     pub delete_flag: Option<i32>,
 }
 #[tokio::main]
-pub async fn main(){
+pub async fn main() {
     fast_log::init(fast_log::Config::new().console());
     let rb = Rbatis::new();
-    rb.link(
-        SqliteDriver {},
-        &format!("sqlite://target/sqlite.db"),
-    )
+    rb.link(SqliteDriver {}, &format!("sqlite://target/sqlite.db"))
         .await
         .unwrap();
     let mut s = RbatisTableSync::new();
@@ -45,5 +42,7 @@ pub async fn main(){
         version: Some(1),
         delete_flag: Some(1),
     };
-    s.sync("sqlite", rb.acquire().await.unwrap(), t).await.unwrap();
+    s.sync("sqlite", rb.acquire().await.unwrap(), t)
+        .await
+        .unwrap();
 }
