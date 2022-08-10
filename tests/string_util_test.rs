@@ -1,6 +1,6 @@
 #[cfg(test)]
 mod test {
-    use rbatis::utils::string_util::{find_convert_string, un_packing_string};
+    use rbatis::utils::string_util::{find_convert_string};
 
     #[test]
     fn test_find() {
@@ -35,16 +35,6 @@ mod test {
         let sql = "select #{column   #{  }";
         let finds = find_convert_string(sql);
         println!("{:?}", finds);
-    }
-
-    #[test]
-    fn test_un_pack_string() {
-        assert_eq!(un_packing_string(""), "");
-        assert_eq!(un_packing_string("''"), "");
-        assert_eq!(un_packing_string("``"), "");
-        assert_eq!(un_packing_string("\"\""), "");
-        assert_eq!(un_packing_string("`a`"), "a");
-        assert_eq!(un_packing_string("\""), "\"");
     }
 
     ///cargo test --release --package rbatis --test string_util_test test::bench_find --no-fail-fast -- --exact -Z unstable-options --show-output
