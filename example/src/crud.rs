@@ -20,12 +20,8 @@ use rbatis::{
 use rbdc::datetime::FastDateTime;
 use std::time::Duration;
 
-// impl_insert!(BizActivity {});
-// impl_select!(BizActivity {});
-// impl_update!(BizActivity {});
-// impl_delete!(BizActivity {});
+//crud!(BizActivity {},"biz_activity");
 crud!(BizActivity {}); //crud = insert+select_by_column+update_by_column+delete_by_column
-
 impl_select!(BizActivity{select_all_by_id(id:&str,name:&str) => "`where id = #{id} and name = #{name}`"});
 impl_select!(BizActivity{select_by_id(id:&str) -> Option => "`where id = #{id} limit 1`"});
 impl_update!(BizActivity{update_by_name(name:&str) => "`where id = '2'`"});

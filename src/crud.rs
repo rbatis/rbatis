@@ -6,6 +6,12 @@ macro_rules! crud {
         $crate::impl_update!($table {});
         $crate::impl_delete!($table {});
     };
+    ($table:ty{},$table_name:expr) => {
+        $crate::impl_insert!($table {},$table_name);
+        $crate::impl_select!($table {},$table_name);
+        $crate::impl_update!($table {},$table_name);
+        $crate::impl_delete!($table {},$table_name);
+    };
 }
 
 ///gen sql => INSERT INTO table_name (column1,column2,column3,...) VALUES (value1,value2,value3,...);
@@ -21,11 +27,11 @@ macro_rules! crud {
 macro_rules! impl_insert {
     ($table:ty{}) => {
         $crate::impl_insert!(
-            $table,
+            $table{},
             $crate::utils::string_util::to_snake_name(stringify!($table))
         );
     };
-    ($table:ty,$table_name:expr) => {
+    ($table:ty{},$table_name:expr) => {
         impl $table {
              pub async fn insert_batch(
                 rb: &mut dyn $crate::executor::Executor,
@@ -91,9 +97,9 @@ macro_rules! impl_insert {
 #[macro_export]
 macro_rules! impl_select {
     ($table:ty{}) => {
-        $crate::impl_select!($table,$crate::utils::string_util::to_snake_name(stringify!($table)));
+        $crate::impl_select!($table{},$crate::utils::string_util::to_snake_name(stringify!($table)));
     };
-    ($table:ty,$table_name:expr) => {
+    ($table:ty{},$table_name:expr) => {
         impl $table{
             pub async fn select_all(rb: &mut dyn  $crate::executor::Executor)->Result<Vec<$table>,rbdc::Error>{
                 #[$crate::py_sql(
@@ -155,11 +161,11 @@ async fn do_select_all(rb: &mut dyn $crate::executor::Executor,table_name:String
 macro_rules! impl_update {
     ($table:ty{}) => {
         $crate::impl_update!(
-            $table,
+            $table{},
             $crate::utils::string_util::to_snake_name(stringify!($table))
         );
     };
-    ($table:ty,$table_name:expr) => {
+    ($table:ty{},$table_name:expr) => {
         impl $table {
             pub async fn update_by_column(
                 rb: &mut dyn $crate::executor::Executor,
@@ -264,11 +270,11 @@ macro_rules! impl_update {
 macro_rules! impl_delete {
     ($table:ty{}) => {
         $crate::impl_delete!(
-            $table,
+            $table{},
             $crate::utils::string_util::to_snake_name(stringify!($table))
         );
     };
-    ($table:ty,$table_name:expr) => {
+    ($table:ty{},$table_name:expr) => {
         impl $table {
             pub async fn delete_by_column<V:serde::Serialize>(
                 rb: &mut dyn $crate::executor::Executor,
@@ -339,6 +345,12 @@ macro_rules! impl_delete {
 #[macro_export]
 macro_rules! impl_select_page {
     ($table:ty{$fn_name:ident($($param_key:ident:$param_type:ty$(,)?)*) => $where_sql:expr}) => {
+        $crate::impl_select_page!(
+            $table{$fn_name($($param_key:$param_type)*)=> $where_sql},
+            $crate::utils::string_util::to_snake_name(stringify!($table))
+        );
+    };
+    ($table:ty{$fn_name:ident($($param_key:ident:$param_type:ty$(,)?)*) => $where_sql:expr},$table_name:expr) => {
         impl $table {
             pub async fn $fn_name(
                 rb: &mut dyn $crate::executor::Executor,
@@ -347,7 +359,7 @@ macro_rules! impl_select_page {
             ) -> Result<$crate::sql::Page::<$table>, rbdc::Error> {
                 #[$crate::py_sql("`select count(1) as count from ${table_name} `",$where_sql)]
                 async fn do_select_page_count(rb: &mut dyn $crate::executor::Executor,table_name: &str,$($param_key:$param_type,)*) -> Result<u64, rbdc::Error> {impled!()}
-                let table_name = $crate::utils::string_util::to_snake_name(stringify!($table));
+                let table_name = $table_name.to_string();
                 let total:u64=do_select_page_count(rb, &table_name, $($param_key,)*).await?;
                 let records:Vec<$table>;
                 if $where_sql.contains("page_no") && $where_sql.contains("page_size"){
