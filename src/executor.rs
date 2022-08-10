@@ -50,6 +50,13 @@ impl Debug for RBatisConnExecutor {
 }
 
 impl RBatisConnExecutor {
+
+    pub async fn exec(&mut self, sql: &str, args: Vec<Value>) -> Result<ExecResult, Error>
+    {
+        let v = Executor::exec(self, sql, args).await?;
+        Ok(v)
+    }
+
     pub async fn fetch(&mut self, sql: &str, args: Vec<Value>) -> Result<Value, Error>
     {
         let v = Executor::fetch(self, sql, args).await?;
@@ -189,6 +196,13 @@ impl Debug for RBatisTxExecutor {
 }
 
 impl<'a> RBatisTxExecutor {
+    /// exec
+    pub async fn exec(&mut self, sql: &str, args: Vec<Value>) -> Result<ExecResult, Error>
+    {
+        let v = Executor::exec(self, sql, args).await?;
+        Ok(v)
+    }
+    /// fetch value
     pub async fn fetch(&mut self, sql: &str, args: Vec<Value>) -> Result<Value, Error>
     {
         let v = Executor::fetch(self, sql, args).await?;
