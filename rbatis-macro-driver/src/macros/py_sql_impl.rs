@@ -1,9 +1,7 @@
-use proc_macro2::{Ident, Literal, Span};
+use proc_macro2::{Ident, Span};
 use quote::quote;
 use quote::ToTokens;
-use std::str::FromStr;
-use syn::spanned::Spanned;
-use syn::{AttributeArgs, FnArg, ItemFn, Lit, LitByteStr, LitStr, NestedMeta, Pat};
+use syn::{AttributeArgs, FnArg, ItemFn, Lit,NestedMeta, Pat};
 
 use crate::proc_macro::TokenStream;
 use crate::util::{find_fn_body, find_return_type, get_fn_args, is_fetch, is_rbatis_ref};

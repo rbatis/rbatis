@@ -3,10 +3,6 @@ use crate::options::MySqlConnectOptions;
 use futures_core::future::BoxFuture;
 use rbdc::db::{ConnectOptions, Connection, Driver, Placeholder};
 use rbdc::Error;
-use std::any::Any;
-use std::ops::Deref;
-use std::str::FromStr;
-use std::sync::Arc;
 
 #[derive(Debug)]
 pub struct MysqlDriver {}

@@ -1,4 +1,3 @@
-use crate::result_set::MySqlTypeInfo;
 use crate::types::{Decode, Encode};
 use crate::value::{MySqlValue, MySqlValueFormat};
 use byteorder::{ByteOrder, LittleEndian};

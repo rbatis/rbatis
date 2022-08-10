@@ -1,6 +1,5 @@
 use crate::meta_data::MysqlMetaData;
 use crate::protocol;
-use crate::protocol::text::ColumnType;
 use crate::result_set::{MySqlColumn, MySqlTypeInfo};
 use crate::value::{MySqlValue, MySqlValueFormat, MySqlValueRef};
 use rbdc::db::{MetaData, Row};

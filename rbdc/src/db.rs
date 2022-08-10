@@ -1,10 +1,8 @@
 use crate::Error;
 use futures_core::future::BoxFuture;
-use futures_util::TryFutureExt;
 use rbs::value::map::ValueMap;
 use rbs::Value;
 use std::any::Any;
-use std::collections::HashMap;
 use std::fmt::{Debug, Display, Formatter};
 
 /// Represents database driver that can be shared between threads, and can therefore implement

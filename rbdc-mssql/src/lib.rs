@@ -8,14 +8,11 @@ use crate::encode::Encode;
 use futures_core::future::BoxFuture;
 use futures_util::StreamExt;
 use rbdc::db::{ConnectOptions, Connection, ExecResult, MetaData, Placeholder, Row};
-use rbdc::{block_on, Error};
+use rbdc::Error;
 use rbs::value::change_lifetime_const;
 use rbs::Value;
 use std::any::Any;
-use std::sync::Arc;
-use tiberius::{AuthMethod, Client, Column, ColumnData, Config, Query, QueryStream};
-use tokio::io::AsyncRead;
-use tokio::io::AsyncWrite;
+use tiberius::{ Client, Column,  Config, Query};
 use tokio::net::TcpStream;
 use tokio_util::compat::{Compat, TokioAsyncWriteCompatExt};
 
@@ -171,17 +168,4 @@ impl Connection for MssqlConnection {
             Ok(())
         })
     }
-}
-
-#[test]
-fn test() {
-    let task = async move {
-        let cfg = Config::new();
-        let tcp = tokio::net::TcpStream::connect(cfg.get_addr())
-            .await
-            .unwrap();
-        tcp.set_nodelay(true).unwrap();
-        let c = Client::connect(cfg, tcp.compat_write()).await.unwrap();
-    };
-    block_on!(task);
 }

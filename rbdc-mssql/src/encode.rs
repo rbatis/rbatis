@@ -1,10 +1,8 @@
-use chrono::{NaiveDate, Utc};
 use rbdc::Error;
 use rbs::Value;
-use rust_decimal::Decimal;
 use std::str::FromStr;
 use tiberius::numeric::BigDecimal;
-use tiberius::{IntoSql, Query, ToSql, Uuid};
+use tiberius::{Query,Uuid};
 
 pub trait Encode {
     fn encode(self, q: &mut Query) -> Result<(), Error>;

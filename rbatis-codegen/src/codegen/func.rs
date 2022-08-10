@@ -135,7 +135,7 @@ fn convert_to_arg_access(context: &str, arg: Expr, as_proxy: bool, ignore: &[Str
                     );
                 }
 
-                /// The `-` operator (subtraction)
+                // The `-` operator (subtraction)
                 BinOp::Sub(_) => {
                     return syn::parse_str::<Expr>(&format!(
                         "({}).op_sub(&{})",
@@ -144,7 +144,7 @@ fn convert_to_arg_access(context: &str, arg: Expr, as_proxy: bool, ignore: &[Str
                     ))
                     .expect("codegen_func fail");
                 }
-                /// The `*` operator (multiplication)
+                // The `*` operator (multiplication)
                 BinOp::Mul(_) => {
                     return syn::parse_str::<Expr>(&format!(
                         "({}).op_mul(&{})",
@@ -153,7 +153,7 @@ fn convert_to_arg_access(context: &str, arg: Expr, as_proxy: bool, ignore: &[Str
                     ))
                     .expect("codegen_func fail");
                 }
-                /// The `/` operator (division)
+                // The `/` operator (division)
                 BinOp::Div(_) => {
                     return syn::parse_str::<Expr>(&format!(
                         "({}).op_div(&{})",
@@ -162,7 +162,7 @@ fn convert_to_arg_access(context: &str, arg: Expr, as_proxy: bool, ignore: &[Str
                     ))
                     .expect("codegen_func fail");
                 }
-                /// The `%` operator (modulus)
+                // The `%` operator (modulus)
                 BinOp::Rem(_) => {
                     return syn::parse_str::<Expr>(&format!(
                         "({}).op_rem(&{})",
@@ -171,7 +171,7 @@ fn convert_to_arg_access(context: &str, arg: Expr, as_proxy: bool, ignore: &[Str
                     ))
                     .expect("codegen_func fail");
                 }
-                /// The `&` operator (bitwise and)
+                // The `&` operator (bitwise and)
                 BinOp::BitAnd(_) => {
                     return syn::parse_str::<Expr>(&format!(
                         "({}).op_bitand(&{})",
@@ -180,7 +180,7 @@ fn convert_to_arg_access(context: &str, arg: Expr, as_proxy: bool, ignore: &[Str
                     ))
                     .expect("codegen_func fail");
                 }
-                /// The `|` operator (bitwise or)
+                // The `|` operator (bitwise or)
                 BinOp::BitOr(_) => {
                     return syn::parse_str::<Expr>(&format!(
                         "({}).op_bitor(&{})",
@@ -189,7 +189,7 @@ fn convert_to_arg_access(context: &str, arg: Expr, as_proxy: bool, ignore: &[Str
                     ))
                     .expect("codegen_func fail");
                 }
-                /// The `==` operator (equality)
+                // The `==` operator (equality)
                 BinOp::Eq(_) => {
                     return syn::parse_str::<Expr>(&format!(
                         "({}).op_eq(&{})",
@@ -198,7 +198,7 @@ fn convert_to_arg_access(context: &str, arg: Expr, as_proxy: bool, ignore: &[Str
                     ))
                     .expect("codegen_func fail");
                 }
-                /// The `<` operator (less than)
+                // The `<` operator (less than)
                 BinOp::Lt(_) => {
                     return syn::parse_str::<Expr>(&format!(
                         "({}).op_lt(&{})",
@@ -207,7 +207,7 @@ fn convert_to_arg_access(context: &str, arg: Expr, as_proxy: bool, ignore: &[Str
                     ))
                     .expect("codegen_func fail");
                 }
-                /// The `<=` operator (less than or equal to)
+                // The `<=` operator (less than or equal to)
                 BinOp::Le(_) => {
                     return syn::parse_str::<Expr>(&format!(
                         "({}).op_le(&{})",
@@ -216,7 +216,7 @@ fn convert_to_arg_access(context: &str, arg: Expr, as_proxy: bool, ignore: &[Str
                     ))
                     .expect("codegen_func fail");
                 }
-                /// The `!=` operator (not equal to)
+                // The `!=` operator (not equal to)
                 BinOp::Ne(_) => {
                     return syn::parse_str::<Expr>(&format!(
                         "({}).op_ne(&{})",
@@ -225,7 +225,7 @@ fn convert_to_arg_access(context: &str, arg: Expr, as_proxy: bool, ignore: &[Str
                     ))
                     .expect("codegen_func fail");
                 }
-                /// The `>=` operator (greater than or equal to)
+                // The `>=` operator (greater than or equal to)
                 BinOp::Ge(_) => {
                     return syn::parse_str::<Expr>(&format!(
                         "({}).op_ge(&{})",
@@ -234,7 +234,7 @@ fn convert_to_arg_access(context: &str, arg: Expr, as_proxy: bool, ignore: &[Str
                     ))
                     .expect("codegen_func fail");
                 }
-                /// The `>` operator (greater than)
+                // The `>` operator (greater than)
                 BinOp::Gt(_) => {
                     return syn::parse_str::<Expr>(&format!(
                         "({}).op_gt(&{})",
@@ -243,7 +243,7 @@ fn convert_to_arg_access(context: &str, arg: Expr, as_proxy: bool, ignore: &[Str
                     ))
                     .expect("codegen_func fail");
                 }
-                /// The `^` operator (bitwise xor)
+                // The `^` operator (bitwise xor)
                 BinOp::BitXor(_) => {
                     return syn::parse_str::<Expr>(&format!(
                         "({}).op_bitxor(&{})",
@@ -252,51 +252,51 @@ fn convert_to_arg_access(context: &str, arg: Expr, as_proxy: bool, ignore: &[Str
                     ))
                     .expect("codegen_func fail");
                 }
-                /// The `<<` operator (shift left)
+                // The `<<` operator (shift left)
                 BinOp::Shl(_) => {
                     panic!("unsupported token << ")
                 }
-                /// The `>>` operator (shift right)
+                // The `>>` operator (shift right)
                 BinOp::Shr(_) => {
                     panic!("unsupported token >> ")
                 }
-                /// The `+=` operator
+                // The `+=` operator
                 BinOp::AddEq(_) => {
                     panic!("unsupported token += ")
                 }
-                /// The `-=` operator
+                // The `-=` operator
                 BinOp::SubEq(_) => {
                     panic!("unsupported token -= ")
                 }
-                /// The `*=` operator
+                // The `*=` operator
                 BinOp::MulEq(_) => {
                     panic!("unsupported token *= ")
                 }
-                /// The `/=` operator
+                // The `/=` operator
                 BinOp::DivEq(_) => {
                     panic!("unsupported token /= ")
                 }
-                /// The `%=` operator
+                // The `%=` operator
                 BinOp::RemEq(_) => {
                     panic!("unsupported token %= ")
                 }
-                /// The `^=` operator
+                // The `^=` operator
                 BinOp::BitXorEq(_) => {
                     panic!("unsupported token ^= ")
                 }
-                /// The `&=` operator
+                // The `&=` operator
                 BinOp::BitAndEq(_) => {
                     panic!("unsupported token &= ")
                 }
-                /// The `|=` operator
+                // The `|=` operator
                 BinOp::BitOrEq(_) => {
                     panic!("unsupported token |= ")
                 }
-                /// The `<<=` operator
+                // The `<<=` operator
                 BinOp::ShlEq(_) => {
                     panic!("unsupported token <<= ")
                 }
-                /// The `>>=` operator
+                // The `>>=` operator
                 BinOp::ShrEq(_) => {
                     panic!("unsupported token >>= ")
                 }
