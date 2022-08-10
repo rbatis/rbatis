@@ -638,7 +638,7 @@ fn impl_if(
     );
     *body = quote! {
           #body
-          if #method_impl {
+          if #method_impl.to_owned() {
              #if_tag_body
              #appends
           }
