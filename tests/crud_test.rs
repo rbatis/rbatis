@@ -291,28 +291,25 @@ mod test {
         let f = async move {
             let mut rb = Rbatis::new();
             rb.link(MockDriver {}, "test").await.unwrap();
-            let mut t = MockTable {
-                id: Some("2".into()),
-                name: Some("2".into()),
-                pc_link: Some("2".into()),
-                h5_link: Some("2".into()),
-                pc_banner_img: None,
-                h5_banner_img: None,
-                sort: None,
-                status: Some(2),
-                remark: Some("2".into()),
-                create_time: Some(FastDateTime::now()),
-                version: Some(1),
-                sql: "".to_string(),
-                delete_flag: Some(1),
-                count: 0,
-            };
             let r = MockTable::delete_by_column(&mut rb, "1", &Value::String("1".to_string())).await.unwrap();
             println!("{}", r.last_insert_id.as_str().unwrap_or_default());
             assert_eq!(r.last_insert_id.as_str().unwrap_or_default(), "delete from mock_table where  1 = ?");
         };
         block_on(f);
     }
+
+    #[test]
+    fn test_delete_by_column_batch() {
+        let f = async move {
+            let mut rb = Rbatis::new();
+            rb.link(MockDriver {}, "test").await.unwrap();
+            let r = MockTable::delete_by_column_batch(&mut rb, "1", &["1","2"]).await.unwrap();
+            println!("{}", r.last_insert_id.as_str().unwrap_or_default());
+            assert_eq!(r.last_insert_id.as_str().unwrap_or_default(), "delete from mock_table where  1 in (?,?)");
+        };
+        block_on(f);
+    }
+
     impl_select!(MockTable{select_all_by_id(id:&str,name:&str) => "`where id = #{id} and name = #{name}`"});
     #[test]
     fn test_select_all_by_id() {

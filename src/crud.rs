@@ -189,6 +189,20 @@ macro_rules! impl_update {
                 let column_value = &table[column];
                 do_update_by_column(rb, table_name, &table, column_value, column).await
             }
+            pub async fn update_by_column_batch(
+                rb: &mut dyn $crate::executor::Executor,
+                tables: &[$table],
+                column: &str,
+            ) -> Result<rbdc::db::ExecResult, rbdc::Error> {
+                let mut rows_affected = 0;
+                for item in tables{
+                    rows_affected += <$table>::update_by_column(rb,item,column).await?.rows_affected;
+                }
+                Ok(rbdc::db::ExecResult{
+                    rows_affected:rows_affected,
+                    last_insert_id:rbs::Value::Null
+                })
+            }
         }
     };
     ($table:ty{$fn_name:ident($($param_key:ident:$param_type:ty$(,)?)*) => $sql_where:expr}) => {
@@ -273,6 +287,28 @@ macro_rules! impl_delete {
                 let column_value = rbs::to_value!(column_value);
                 let table_name = $table_name.to_string();
                 do_delete_by_column(rb, table_name, &column_value, column).await
+            }
+            pub async fn delete_by_column_batch<V:serde::Serialize>(
+                rb: &mut dyn $crate::executor::Executor,
+                column: &str,
+                column_values: &[V],
+            ) -> Result<rbdc::db::ExecResult, rbdc::Error> {
+                 #[$crate::py_sql("`delete from ${table_name} where  ${column} in (`
+                                       trim ',':
+                                         for _,v in column_values:
+                                            #{v},
+                                       `)`")]
+                async fn do_delete_by_column_batch(
+                    rb: &mut dyn $crate::executor::Executor,
+                    table_name: String,
+                    column_values: rbs::Value,
+                    column: &str,
+                ) -> Result<rbdc::db::ExecResult, rbdc::Error> {
+                    impled!()
+                }
+                let column_values = rbs::to_value!(column_values);
+                let table_name = $table_name.to_string();
+                do_delete_by_column_batch(rb, table_name, column_values, column).await
             }
         }
     };
