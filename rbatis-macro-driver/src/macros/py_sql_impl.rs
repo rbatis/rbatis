@@ -124,25 +124,6 @@ pub(crate) fn filter_args_context_id(
 ) -> proc_macro2::TokenStream {
     let mut sql_args_gen = quote! {};
     for item in fn_arg_name_vec {
-        // match **item{
-        //     Pat::Box(_) => {println!("box");}
-        //     Pat::Ident(_) => {println!("Ident");}
-        //     Pat::Lit(_) => {println!("Lit");}
-        //     Pat::Macro(_) => {println!("Macro");}
-        //     Pat::Or(_) => {println!("Or");}
-        //     Pat::Path(_) => {println!("Path");}
-        //     Pat::Range(_) => {println!("Range");}
-        //     Pat::Reference(_) => {println!("Reference");}
-        //     Pat::Rest(_) => {println!("Rest");}
-        //     Pat::Slice(_) => {println!("Slice");}
-        //     Pat::Struct(_) => {println!("Struct");}
-        //     Pat::Tuple(_) => {println!("Tuple");}
-        //     Pat::TupleStruct(_) => {println!("TupleStruct");}
-        //     Pat::Type(_) => {}
-        //     Pat::Verbatim(_) => {}
-        //     Pat::Wild(_) => {}
-        //     _ => {}
-        // }
         let item_name = item
             .to_token_stream()
             .to_string()
