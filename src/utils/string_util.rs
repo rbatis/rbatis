@@ -35,18 +35,6 @@ pub fn find_convert_string(arg: &str) -> LinkedList<(String, String)> {
     }
     return list;
 }
-
-pub fn count_string_num(s: &String, c: char) -> usize {
-    let cs = s.chars();
-    let mut num = 0;
-    for x in cs {
-        if x == c {
-            num += 1;
-        }
-    }
-    return num;
-}
-
 /// convert name to snake name
 pub fn to_snake_name(name: &str) -> String {
     let chs = name.chars();
@@ -65,20 +53,4 @@ pub fn to_snake_name(name: &str) -> String {
         index += 1;
     }
     return new_name;
-}
-
-///input 'strings' => strings
-pub fn un_packing_string(column: &str) -> &str {
-    if column.len() >= 2 {
-        if column.starts_with("'") && column.ends_with("'") {
-            return &column[1..column.len() - 1];
-        }
-        if column.starts_with("`") && column.ends_with("`") {
-            return &column[1..column.len() - 1];
-        }
-        if column.starts_with("\"") && column.ends_with("\"") {
-            return &column[1..column.len() - 1];
-        }
-    }
-    return column;
 }
