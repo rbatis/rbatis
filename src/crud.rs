@@ -8,18 +8,6 @@ macro_rules! crud {
     };
 }
 
-#[macro_export]
-macro_rules! table_name {
-     ($table:ty{}) => {
-       impl $table{
-           pub fn table_name()-> String {
-               $crate::utils::string_util::to_snake_name(stringify!($table))
-           }
-       }
-    };
-}
-
-
 ///gen sql => INSERT INTO table_name (column1,column2,column3,...) VALUES (value1,value2,value3,...);
 ///
 /// example:
