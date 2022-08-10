@@ -1,5 +1,5 @@
 use crate::db::{ConnectOptions, Connection, Driver, ExecResult, Row};
-use crate::{block_on, Error};
+use crate::Error;
 use futures_core::future::BoxFuture;
 use mobc::{async_trait, Builder, Manager};
 use rbs::Value;

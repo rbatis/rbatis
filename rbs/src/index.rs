@@ -1,5 +1,4 @@
-use crate::{to_value, Value};
-use serde::Serialize;
+use crate::Value;
 use std::ops::{Index, IndexMut};
 
 impl Index<usize> for Value {

@@ -1,13 +1,8 @@
-use crate::io::MySqlBufMutExt;
 use crate::protocol::text::ColumnType;
 use crate::result_set::{MySqlColumn, MySqlTypeInfo};
 use crate::types::{Encode, TypeInfo};
-use futures_core::future::BoxFuture;
-use rbdc::db::Row;
 use rbdc::ext::ustr::UStr;
-use rbdc::Error;
 use rbs::Value;
-use std::borrow::Cow;
 use std::collections::HashMap;
 use std::sync::Arc;
 

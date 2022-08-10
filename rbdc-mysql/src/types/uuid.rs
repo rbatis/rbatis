@@ -1,5 +1,4 @@
 use crate::io::MySqlBufMutExt;
-use crate::result_set::MySqlTypeInfo;
 use crate::types::{Decode, Encode};
 use crate::value::MySqlValue;
 use rbdc::uuid::Uuid;
@@ -7,7 +6,7 @@ use rbdc::Error;
 
 impl Encode for Uuid {
     fn encode(self, buf: &mut Vec<u8>) -> Result<usize, Error> {
-        let mut bytes = self.0.into_bytes();
+        let bytes = self.0.into_bytes();
         let len = bytes.len();
         buf.put_bytes_lenenc(bytes);
         Ok(len)

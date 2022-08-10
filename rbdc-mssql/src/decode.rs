@@ -1,11 +1,8 @@
-use byteorder::{ByteOrder, LittleEndian};
 use chrono::Utc;
 use rbs::Value;
-use rust_decimal::Decimal;
-use std::str::EncodeUtf16;
 use tiberius::numeric::BigDecimal;
 use tiberius::xml::XmlData;
-use tiberius::{ColumnData, ColumnType, FromSql, FromSqlOwned, IntoRow};
+use tiberius::ColumnType;
 
 pub trait Decode {
     fn decode(row: &tiberius::Row, i: usize, t: ColumnType) -> Value;

@@ -1,7 +1,5 @@
-use crate::protocol::text::{ColumnDefinition, ColumnFlags, ColumnType};
-use rbdc::db::{MetaData, Row};
+use crate::protocol::text::{ColumnDefinition, ColumnType};
 use rbdc::ext::ustr::UStr;
-use rbdc::Error;
 
 #[derive(Debug, Clone, serde::Serialize, serde::Deserialize)]
 pub struct MySqlColumn {

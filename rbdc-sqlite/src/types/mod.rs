@@ -55,6 +55,4 @@ mod str;
 mod uint;
 #[cfg(feature = "uuid")]
 mod uuid;
-
 use crate::type_info::Type;
-use crate::SqliteTypeInfo;

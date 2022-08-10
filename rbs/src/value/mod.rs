@@ -5,14 +5,11 @@
 //! ```
 //! ```
 use crate::value::map::ValueMap;
-use crate::{to_value, Error};
-use serde::Serialize;
 use std::borrow::Cow;
-use std::collections::HashMap;
 use std::convert::TryFrom;
 use std::fmt::{self, Debug, Display};
 use std::iter::FromIterator;
-use std::ops::{Deref, Index};
+use std::ops::{Deref};
 
 pub mod ext;
 pub mod map;
@@ -471,7 +468,6 @@ impl Value {
     }
 }
 
-static NIL: Value = Value::Null;
 static NIL_REF: ValueRef<'static> = ValueRef::Null;
 
 impl From<bool> for Value {
@@ -1213,7 +1209,7 @@ impl IntoIterator for Value {
             }
             Value::Ext(_, e) => e.into_iter(),
             _ => {
-                let mut v = ValueMap::with_capacity(0);
+                let v = ValueMap::with_capacity(0);
                 v.into_iter()
             }
         }
@@ -1245,7 +1241,7 @@ impl<'a> IntoIterator for &'a Value {
             }
             Value::Ext(_, e) => e.deref().into_iter(),
             _ => {
-                let mut v = Vec::with_capacity(0);
+                let v = Vec::with_capacity(0);
                 v.into_iter()
             }
         }

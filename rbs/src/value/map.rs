@@ -28,17 +28,13 @@ impl ValueMap {
         ValueMap(Vec::with_capacity(n))
     }
     pub fn insert(&mut self, k: Value, v: Value) {
-        let mut inserted = false;
         for (mk, mv) in &mut self.0 {
             if k.eq(mk) {
                 *mv = v;
-                inserted = true;
                 return;
             }
         }
-        if !inserted {
-            self.0.push((k, v));
-        }
+        self.0.push((k, v));
     }
     pub fn remove(&mut self, k: &Value) -> Option<Value> {
         let mut idx = 0;

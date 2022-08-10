@@ -1,13 +1,12 @@
 use super::MySqlStream;
 use crate::connection::stream::Waiting;
 use crate::connection::MySqlConnection;
-use crate::describe::Describe;
 use crate::io::MySqlBufExt;
 use crate::protocol::response::Status;
 use crate::protocol::statement::{
     BinaryRow, Execute as StatementExecute, Prepare, PrepareOk, StmtClose,
 };
-use crate::protocol::text::{ColumnDefinition, ColumnFlags, Query, TextRow};
+use crate::protocol::text::{ColumnDefinition, Query, TextRow};
 use crate::query::MysqlQuery;
 use crate::query_result::MySqlQueryResult;
 use crate::result_set::{MySqlColumn, MySqlTypeInfo};

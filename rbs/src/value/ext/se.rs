@@ -4,8 +4,6 @@ use serde::ser::{
     self, SerializeMap, SerializeSeq, SerializeStruct, SerializeTuple, SerializeTupleStruct,
 };
 use serde::Serialize;
-use serde_bytes::Bytes;
-
 use crate::value::map::ValueMap;
 use crate::value::{change_lifetime_const, Value};
 
