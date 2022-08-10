@@ -1,5 +1,5 @@
-use crate::code_gen::html_loader::Element;
-use crate::code_gen::py_sql::NodeType;
+use crate::codegen::html_loader::Element;
+use crate::codegen::py_sql::NodeType;
 use std::collections::HashMap;
 
 pub fn as_elements(arg: Vec<NodeType>) -> Vec<Element> {

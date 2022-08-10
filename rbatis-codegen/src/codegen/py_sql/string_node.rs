@@ -1,4 +1,4 @@
-use crate::code_gen::py_sql::Name;
+use crate::codegen::py_sql::Name;
 
 #[derive(Clone, Debug)]
 pub struct StringNode {

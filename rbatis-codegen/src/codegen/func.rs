@@ -4,7 +4,7 @@ use quote::ToTokens;
 use syn;
 use syn::{BinOp, Expr, ItemFn, Lit, Member};
 
-use crate::code_gen::proc_macro::TokenStream;
+use crate::codegen::proc_macro::TokenStream;
 
 fn is_param_char(arg: char) -> bool {
     match arg {
@@ -28,7 +28,7 @@ fn convert_to_arg_access(context: &str, arg: Expr, as_proxy: bool, ignore: &[Str
         Expr::Path(b) => {
             let token = b.to_token_stream().to_string();
             if token == "null" {
-                return syn::parse_str::<Expr>("rbs::Value::Null").unwrap();
+                return syn::parse_str::<Expr>("rbs::Value::Null").expect("codegen_func fail");
             }
             if token == "sql" {
                 return Expr::Path(b);
@@ -47,9 +47,9 @@ fn convert_to_arg_access(context: &str, arg: Expr, as_proxy: bool, ignore: &[Str
                 }
             }
             if fetch_from_arg {
-                return syn::parse_str::<Expr>(&format!("&arg[\"{}\"]", param)).unwrap();
+                return syn::parse_str::<Expr>(&format!("&arg[\"{}\"]", param)).expect("codegen_func fail");
             } else {
-                return syn::parse_str::<Expr>(&format!("{}", param)).unwrap();
+                return syn::parse_str::<Expr>(&format!("{}", param)).expect("codegen_func fail");
             }
         }
         Expr::MethodCall(mut b) => {
@@ -92,14 +92,14 @@ fn convert_to_arg_access(context: &str, arg: Expr, as_proxy: bool, ignore: &[Str
                             b.left.to_token_stream(),
                             b.right.to_token_stream()
                         ))
-                        .unwrap();
+                        .expect("codegen_func fail");
                     } else {
                         return syn::parse_str::<Expr>(&format!(
                             "({}).op_add(&{})",
                             b.left.to_token_stream(),
                             b.right.to_token_stream()
                         ))
-                        .unwrap();
+                        .expect("codegen_func fail");
                     }
                 }
                 BinOp::And(_) => {
@@ -108,14 +108,14 @@ fn convert_to_arg_access(context: &str, arg: Expr, as_proxy: bool, ignore: &[Str
                             "bool::op_from({})",
                             b.left.to_token_stream().to_string().trim()
                         ))
-                        .unwrap(),
+                        .expect("codegen_func fail"),
                     );
                     b.right = Box::new(
                         syn::parse_str::<Expr>(&format!(
                             "bool::op_from({})",
                             b.right.to_token_stream().to_string().trim()
                         ))
-                        .unwrap(),
+                        .expect("codegen_func fail"),
                     );
                 }
                 BinOp::Or(_) => {
@@ -124,14 +124,14 @@ fn convert_to_arg_access(context: &str, arg: Expr, as_proxy: bool, ignore: &[Str
                             "bool::op_from({})",
                             b.left.to_token_stream().to_string().trim()
                         ))
-                        .unwrap(),
+                        .expect("codegen_func fail"),
                     );
                     b.right = Box::new(
                         syn::parse_str::<Expr>(&format!(
                             "bool::op_from({})",
                             b.right.to_token_stream().to_string().trim()
                         ))
-                        .unwrap(),
+                        .expect("codegen_func fail"),
                     );
                 }
 
@@ -142,7 +142,7 @@ fn convert_to_arg_access(context: &str, arg: Expr, as_proxy: bool, ignore: &[Str
                         b.left.to_token_stream(),
                         b.right.to_token_stream()
                     ))
-                    .unwrap();
+                    .expect("codegen_func fail");
                 }
                 /// The `*` operator (multiplication)
                 BinOp::Mul(_) => {
@@ -151,7 +151,7 @@ fn convert_to_arg_access(context: &str, arg: Expr, as_proxy: bool, ignore: &[Str
                         b.left.to_token_stream(),
                         b.right.to_token_stream()
                     ))
-                    .unwrap();
+                    .expect("codegen_func fail");
                 }
                 /// The `/` operator (division)
                 BinOp::Div(_) => {
@@ -160,7 +160,7 @@ fn convert_to_arg_access(context: &str, arg: Expr, as_proxy: bool, ignore: &[Str
                         b.left.to_token_stream(),
                         b.right.to_token_stream()
                     ))
-                    .unwrap();
+                    .expect("codegen_func fail");
                 }
                 /// The `%` operator (modulus)
                 BinOp::Rem(_) => {
@@ -169,7 +169,7 @@ fn convert_to_arg_access(context: &str, arg: Expr, as_proxy: bool, ignore: &[Str
                         b.left.to_token_stream(),
                         b.right.to_token_stream()
                     ))
-                    .unwrap();
+                    .expect("codegen_func fail");
                 }
                 /// The `&` operator (bitwise and)
                 BinOp::BitAnd(_) => {
@@ -178,7 +178,7 @@ fn convert_to_arg_access(context: &str, arg: Expr, as_proxy: bool, ignore: &[Str
                         b.left.to_token_stream(),
                         b.right.to_token_stream()
                     ))
-                    .unwrap();
+                    .expect("codegen_func fail");
                 }
                 /// The `|` operator (bitwise or)
                 BinOp::BitOr(_) => {
@@ -187,7 +187,7 @@ fn convert_to_arg_access(context: &str, arg: Expr, as_proxy: bool, ignore: &[Str
                         b.left.to_token_stream(),
                         b.right.to_token_stream()
                     ))
-                    .unwrap();
+                    .expect("codegen_func fail");
                 }
                 /// The `==` operator (equality)
                 BinOp::Eq(_) => {
@@ -196,7 +196,7 @@ fn convert_to_arg_access(context: &str, arg: Expr, as_proxy: bool, ignore: &[Str
                         b.left.to_token_stream(),
                         b.right.to_token_stream()
                     ))
-                    .unwrap();
+                    .expect("codegen_func fail");
                 }
                 /// The `<` operator (less than)
                 BinOp::Lt(_) => {
@@ -205,7 +205,7 @@ fn convert_to_arg_access(context: &str, arg: Expr, as_proxy: bool, ignore: &[Str
                         b.left.to_token_stream(),
                         b.right.to_token_stream()
                     ))
-                    .unwrap();
+                    .expect("codegen_func fail");
                 }
                 /// The `<=` operator (less than or equal to)
                 BinOp::Le(_) => {
@@ -214,7 +214,7 @@ fn convert_to_arg_access(context: &str, arg: Expr, as_proxy: bool, ignore: &[Str
                         b.left.to_token_stream(),
                         b.right.to_token_stream()
                     ))
-                    .unwrap();
+                    .expect("codegen_func fail");
                 }
                 /// The `!=` operator (not equal to)
                 BinOp::Ne(_) => {
@@ -223,7 +223,7 @@ fn convert_to_arg_access(context: &str, arg: Expr, as_proxy: bool, ignore: &[Str
                         b.left.to_token_stream(),
                         b.right.to_token_stream()
                     ))
-                    .unwrap();
+                    .expect("codegen_func fail");
                 }
                 /// The `>=` operator (greater than or equal to)
                 BinOp::Ge(_) => {
@@ -232,7 +232,7 @@ fn convert_to_arg_access(context: &str, arg: Expr, as_proxy: bool, ignore: &[Str
                         b.left.to_token_stream(),
                         b.right.to_token_stream()
                     ))
-                    .unwrap();
+                    .expect("codegen_func fail");
                 }
                 /// The `>` operator (greater than)
                 BinOp::Gt(_) => {
@@ -241,7 +241,7 @@ fn convert_to_arg_access(context: &str, arg: Expr, as_proxy: bool, ignore: &[Str
                         b.left.to_token_stream(),
                         b.right.to_token_stream()
                     ))
-                    .unwrap();
+                    .expect("codegen_func fail");
                 }
                 /// The `^` operator (bitwise xor)
                 BinOp::BitXor(_) => {
@@ -250,7 +250,7 @@ fn convert_to_arg_access(context: &str, arg: Expr, as_proxy: bool, ignore: &[Str
                         b.left.to_token_stream(),
                         b.right.to_token_stream()
                     ))
-                    .unwrap();
+                    .expect("codegen_func fail");
                 }
                 /// The `<<` operator (shift left)
                 BinOp::Shl(_) => {
@@ -310,7 +310,7 @@ fn convert_to_arg_access(context: &str, arg: Expr, as_proxy: bool, ignore: &[Str
                     " (0.op_sub(&{}))",
                     b.expr.to_token_stream().to_string().trim()
                 ))
-                .unwrap();
+                .expect("codegen_func fail");
             }
             return Expr::Unary(b);
         }
@@ -332,7 +332,7 @@ fn convert_to_arg_access(context: &str, arg: Expr, as_proxy: bool, ignore: &[Str
                         b.base.to_token_stream(),
                         named.to_token_stream()
                     ))
-                    .unwrap();
+                    .expect("codegen_func fail");
                 }
                 Member::Unnamed(_) => {}
             }
@@ -350,7 +350,7 @@ fn convert_to_arg_access(context: &str, arg: Expr, as_proxy: bool, ignore: &[Str
                 b.expr.to_token_stream(),
                 b.index.to_token_stream()
             ))
-            .unwrap();
+            .expect("codegen_func fail");
         }
         Expr::Let(mut let_expr) => {
             let_expr.expr = Box::new(convert_to_arg_access(
@@ -369,11 +369,11 @@ fn convert_to_arg_access(context: &str, arg: Expr, as_proxy: bool, ignore: &[Str
                 Lit::Char(_) => {}
                 Lit::Int(i) => {
                     //cast int to i64
-                    return syn::parse_str::<Expr>(&format!("{}i64", i)).unwrap();
+                    return syn::parse_str::<Expr>(&format!("{}i64", i)).expect("codegen_func fail");
                 }
                 Lit::Float(f) => {
                     //cast int to f64
-                    return syn::parse_str::<Expr>(&format!("{}f64", f)).unwrap();
+                    return syn::parse_str::<Expr>(&format!("{}f64", f)).expect("codegen_func fail");
                 }
                 Lit::Bool(_) => {}
                 Lit::Verbatim(_) => {}
@@ -415,10 +415,10 @@ pub fn impl_fn(
         panic!(
             "[rexpr]syn::parse_str: {} fail for: {}",
             string_data,
-            t.err().unwrap().to_string()
+            t.err().expect("codegen_func fail").to_string()
         )
     }
-    let mut t = t.unwrap();
+    let mut t = t.expect("codegen_func fail");
     t = convert_to_arg_access(context, t, as_proxy, ignore);
     string_data = t.to_token_stream().to_string();
     string_data = string_data.replace(" . ", ".");
@@ -427,10 +427,10 @@ pub fn impl_fn(
         panic!(
             "[rexpr]syn::parse_str: {} fail for: {}",
             string_data,
-            t.err().unwrap().to_string()
+            t.err().expect("codegen_func fail").to_string()
         )
     }
-    let t = t.unwrap();
+    let t = t.expect("codegen_func fail");
     let mut result_impl = quote! { {#t} };
     if serialize_result {
         result_impl = quote! {rbs::to_value!({#t})};
