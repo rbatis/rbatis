@@ -31,6 +31,9 @@ path = "src/plugin_table_sync.rs"
 [[bin]]
 name = "transaction"
 path = "src/transaction.rs"
+[[bin]]
+name = "raw_sql"
+path = "src/raw_sql.rs"
 [dependencies]
 #serde and base types
 serde = { version = "1", features = ["derive"] }

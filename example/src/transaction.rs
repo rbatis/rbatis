@@ -1,8 +1,7 @@
+pub mod model;
 use rbatis::executor::Executor;
 use rbdc::datetime::FastDateTime;
 use crate::model::{init_sqlite, BizActivity};
-
-pub mod model;
 
 #[tokio::main]
 pub async fn main() {
