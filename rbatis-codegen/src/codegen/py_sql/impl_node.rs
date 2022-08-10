@@ -1,16 +1,16 @@
-use crate::code_gen::py_sql::bind_node::BindNode;
-use crate::code_gen::py_sql::choose_node::ChooseNode;
-use crate::code_gen::py_sql::error::Error;
-use crate::code_gen::py_sql::foreach_node::ForEachNode;
-use crate::code_gen::py_sql::if_node::IfNode;
-use crate::code_gen::py_sql::otherwise_node::OtherwiseNode;
-use crate::code_gen::py_sql::print_node::PrintNode;
-use crate::code_gen::py_sql::set_node::SetNode;
-use crate::code_gen::py_sql::string_node::StringNode;
-use crate::code_gen::py_sql::trim_node::TrimNode;
-use crate::code_gen::py_sql::when_node::WhenNode;
-use crate::code_gen::py_sql::where_node::WhereNode;
-use crate::code_gen::py_sql::{DefName, Name, NodeType, ParsePySql};
+use crate::codegen::py_sql::bind_node::BindNode;
+use crate::codegen::py_sql::choose_node::ChooseNode;
+use crate::codegen::py_sql::error::Error;
+use crate::codegen::py_sql::foreach_node::ForEachNode;
+use crate::codegen::py_sql::if_node::IfNode;
+use crate::codegen::py_sql::otherwise_node::OtherwiseNode;
+use crate::codegen::py_sql::print_node::PrintNode;
+use crate::codegen::py_sql::set_node::SetNode;
+use crate::codegen::py_sql::string_node::StringNode;
+use crate::codegen::py_sql::trim_node::TrimNode;
+use crate::codegen::py_sql::when_node::WhenNode;
+use crate::codegen::py_sql::where_node::WhereNode;
+use crate::codegen::py_sql::{DefName, Name, NodeType, ParsePySql};
 use std::collections::HashMap;
 
 impl NodeType {
