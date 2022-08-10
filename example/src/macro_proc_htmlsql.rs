@@ -15,9 +15,9 @@ use model::*;
 use rbatis::executor::Executor;
 use rbatis::rbatis::Rbatis;
 use rbatis::sql::page::{Page, PageRequest};
+use rbdc::datetime::FastDateTime;
 use std::fs::File;
 use std::io::Read;
-use rbdc::datetime::FastDateTime;
 
 ///select page must have  '?:&PageRequest' arg and return 'Page<?>'
 #[html_sql("example/example.html")]
