@@ -39,14 +39,15 @@ macro_rules! impl_insert {
                     #{continue}
                  ${k},
              `) VALUES `
-             for _,table in tables:
+             trim ',':
+              for _,table in tables:
                (
                trim ',':
                 for k,v in table:
                   if k == 'id' && v== null:
                      #{continue}
                   #{v},
-               )
+               ),
              "
                 )]
                 async fn do_insert_batch(
