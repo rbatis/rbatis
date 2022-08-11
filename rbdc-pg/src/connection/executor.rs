@@ -1,6 +1,6 @@
 use crate::connection::PgConnection;
 use crate::message::{
-    self, Bind, Close, CommandComplete, DataRow, Describe, MessageFormat, ParameterDescription,
+    self, Bind, Close, CommandComplete, DataRow, MessageFormat, ParameterDescription,
     Parse, Query, RowDescription,
 };
 use crate::query::PgQuery;
@@ -17,7 +17,7 @@ use futures_core::stream::BoxStream;
 use futures_core::Stream;
 use futures_util::{pin_mut, TryStreamExt};
 use rbdc::{err_protocol, try_stream, Error};
-use std::{borrow::Cow, sync::Arc};
+use std::sync::Arc;
 
 async fn prepare(
     conn: &mut PgConnection,
@@ -334,7 +334,7 @@ impl PgConnection {
 impl PgConnection {
     pub fn fetch_many(
         &mut self,
-        mut query: PgQuery,
+        query: PgQuery,
     ) -> BoxStream<'_, Result<Either<PgQueryResult, PgRow>, Error>> {
         let sql = query.sql().to_string();
         let metadata = query.statement().map(|s| Arc::clone(&s.metadata));
@@ -354,7 +354,7 @@ impl PgConnection {
 
     pub fn fetch_optional(
         &mut self,
-        mut query: PgQuery,
+        query: PgQuery,
     ) -> BoxFuture<'_, Result<Option<PgRow>, Error>> {
         let sql = query.sql().to_string();
         let metadata = query.statement().map(|s| Arc::clone(&s.metadata));

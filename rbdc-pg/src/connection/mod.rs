@@ -5,7 +5,6 @@ use crate::message::{
 use crate::query::PgQuery;
 use crate::statement::PgStatementMetadata;
 use crate::type_info::PgTypeInfo;
-use crate::types::encode::Encode;
 use crate::types::{Oid, TypeInfo};
 use either::Either;
 use futures_core::future::BoxFuture;
@@ -65,7 +64,6 @@ pub struct PgConnection {
 
     // current transaction status
     transaction_status: TransactionStatus,
-    pub(crate) transaction_depth: usize,
 }
 
 impl PgConnection {

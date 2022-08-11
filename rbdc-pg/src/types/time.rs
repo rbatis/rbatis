@@ -1,6 +1,5 @@
 use rbdc::common::time::Time;
 use rbdc::Error;
-use std::fmt::{Display, Formatter};
 use std::str::FromStr;
 use std::time::Duration;
 

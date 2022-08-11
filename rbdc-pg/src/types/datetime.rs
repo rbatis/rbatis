@@ -5,7 +5,6 @@ use crate::value::{PgValue, PgValueFormat};
 use rbdc::datetime::FastDateTime;
 use rbdc::timestamp::Timestamp;
 use rbdc::Error;
-use rbs::from_value;
 use std::str::FromStr;
 use std::time::Duration;
 

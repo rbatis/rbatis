@@ -1,23 +1,17 @@
-use crate::type_info::{PgType, PgTypeKind};
+use crate::type_info::PgType;
 use crate::types::byte::Bytea;
 use crate::types::money::Money;
 use crate::types::timestamptz::Timestamptz;
 use crate::types::timetz::Timetz;
-use crate::types::Oid;
-use crate::value::{PgValue, PgValueFormat, PgValueRef};
-use byteorder::{BigEndian, ByteOrder};
+use crate::value::{PgValue, PgValueFormat};
 use rbdc::date::Date;
-use rbdc::datetime::FastDateTime;
 use rbdc::decimal::Decimal;
 use rbdc::json::Json;
-use rbdc::time::ParseTime;
 use rbdc::timestamp::Timestamp;
 use rbdc::types::time::Time;
 use rbdc::uuid::Uuid;
 use rbdc::Error;
 use rbs::Value;
-use std::str::FromStr;
-use std::time::Duration;
 
 pub trait Decode: Sized {
     /// Decode a new value of this type using a raw value from the database.

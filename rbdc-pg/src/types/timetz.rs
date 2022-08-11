@@ -5,7 +5,7 @@ use crate::value::{PgValue, PgValueFormat};
 use byteorder::{BigEndian, ReadBytesExt};
 use rbdc::Error;
 use rbs::Value;
-use std::fmt::{Display, Formatter, Pointer};
+use std::fmt::{Display, Formatter};
 use std::io::Cursor;
 use std::time::Duration;
 

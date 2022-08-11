@@ -1,5 +1,4 @@
 use crate::arguments::{PgArgumentBuffer, PgArguments};
-use crate::type_info::PgTypeInfo;
 use crate::types::byte::Bytea;
 use crate::types::money::Money;
 use crate::types::timestamptz::Timestamptz;
@@ -14,8 +13,6 @@ use rbdc::types::time::Time;
 use rbdc::uuid::Uuid;
 use rbdc::Error;
 use rbs::Value;
-use std::borrow::Cow;
-use std::mem;
 use std::str::FromStr;
 
 pub enum IsNull {
@@ -57,7 +54,7 @@ impl Encode for Value {
             }
             Value::Binary(v) => v.encode(buf)?,
             Value::Array(v) => v.encode(buf)?,
-            Value::Map(v) => IsNull::Yes,
+            Value::Map(_) => IsNull::Yes,
             Value::Ext(type_name, v) => {
                 match type_name {
                     "Uuid" => Uuid(v.into_string().unwrap_or_default()).encode(buf)?,

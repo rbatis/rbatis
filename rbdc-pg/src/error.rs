@@ -2,7 +2,6 @@ use std::error::Error;
 use std::fmt::{self, Debug, Display, Formatter};
 
 use atoi::atoi;
-use smallvec::alloc::borrow::Cow;
 
 use crate::message::{Notice, PgSeverity};
 

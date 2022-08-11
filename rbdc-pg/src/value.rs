@@ -1,7 +1,6 @@
-use crate::type_info::{PgType, PgTypeInfo};
-use bytes::{Buf, Bytes};
+use crate::type_info::PgTypeInfo;
+use bytes::Buf;
 use rbdc::Error;
-use rbs::Value;
 use std::borrow::Cow;
 use std::str::from_utf8;
 
