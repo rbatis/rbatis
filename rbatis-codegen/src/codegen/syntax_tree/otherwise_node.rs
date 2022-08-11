@@ -1,4 +1,4 @@
-use crate::codegen::syntax_tree::{DefName, Name, NodeType};
+use crate::codegen::syntax_tree::{DefaultName, Name, NodeType};
 
 #[derive(Clone, Debug)]
 pub struct OtherwiseNode {
@@ -11,8 +11,8 @@ impl Name for OtherwiseNode {
     }
 }
 
-impl DefName for OtherwiseNode {
-    fn def_name() -> &'static str {
+impl DefaultName for OtherwiseNode {
+    fn default_name() -> &'static str {
         "_"
     }
 }

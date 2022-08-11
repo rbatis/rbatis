@@ -1,4 +1,4 @@
-use crate::codegen::syntax_tree::{DefName, Name};
+use crate::codegen::syntax_tree::{DefaultName, Name};
 
 #[derive(Clone, Debug)]
 pub struct BindNode {
@@ -6,8 +6,8 @@ pub struct BindNode {
     pub value: String,
 }
 
-impl DefName for BindNode {
-    fn def_name() -> &'static str {
+impl DefaultName for BindNode {
+    fn default_name() -> &'static str {
         "let"
     }
 }
