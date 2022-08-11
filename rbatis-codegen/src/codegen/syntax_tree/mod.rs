@@ -5,7 +5,6 @@ pub mod foreach_node;
 pub mod if_node;
 pub mod impl_node;
 pub mod otherwise_node;
-pub mod print_node;
 pub mod set_node;
 pub mod string_node;
 pub mod trim_node;
@@ -18,7 +17,6 @@ use crate::codegen::syntax_tree::choose_node::ChooseNode;
 use crate::codegen::syntax_tree::foreach_node::ForEachNode;
 use crate::codegen::syntax_tree::if_node::IfNode;
 use crate::codegen::syntax_tree::otherwise_node::OtherwiseNode;
-use crate::codegen::syntax_tree::print_node::PrintNode;
 use crate::codegen::syntax_tree::set_node::SetNode;
 use crate::codegen::syntax_tree::string_node::StringNode;
 use crate::codegen::syntax_tree::trim_node::TrimNode;
@@ -39,7 +37,6 @@ pub enum NodeType {
     NBind(BindNode),
     NSet(SetNode),
     NWhere(WhereNode),
-    NPrint(PrintNode),
     NContinue(ContinueNode),
 }
 
@@ -168,12 +165,6 @@ impl AsHtml for WhereNode {
     }
 }
 
-impl AsHtml for PrintNode {
-    fn as_html(&self) -> String {
-        format!("<println value=\"{}\" />", self.value)
-    }
-}
-
 impl AsHtml for NodeType {
     fn as_html(&self) -> String {
         match self {
@@ -187,7 +178,6 @@ impl AsHtml for NodeType {
             NodeType::NBind(n) => n.as_html(),
             NodeType::NSet(n) => n.as_html(),
             NodeType::NWhere(n) => n.as_html(),
-            NodeType::NPrint(n) => n.as_html(),
             NodeType::NContinue(n)=> n.as_html()
         }
     }

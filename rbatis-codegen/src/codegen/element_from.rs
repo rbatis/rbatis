@@ -110,14 +110,6 @@ impl From<NodeType> for Element {
                     childs: as_elements(n.childs),
                 };
             }
-            NodeType::NPrint(n) => {
-                return Element {
-                    tag: "println".to_string(),
-                    data: "".to_string(),
-                    attrs: Default::default(),
-                    childs: vec![],
-                };
-            }
             NodeType::NContinue(n) => {
                 return Element {
                     tag: "continue".to_string(),
