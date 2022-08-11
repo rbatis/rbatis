@@ -7,18 +7,18 @@ impl TypeInfo for Value {
     fn type_info(&self) -> MySqlTypeInfo {
         match self {
             Value::Null => MySqlTypeInfo::null(),
-            Value::Bool(v) => MySqlTypeInfo::from_type(ColumnType::Tiny),
-            Value::I32(v) => MySqlTypeInfo::from_type(ColumnType::Long),
-            Value::I64(v) => MySqlTypeInfo::from_type(ColumnType::LongLong),
-            Value::U32(v) => MySqlTypeInfo::from_type(ColumnType::Long),
-            Value::U64(v) => MySqlTypeInfo::from_type(ColumnType::LongLong),
-            Value::F32(v) => MySqlTypeInfo::from_type(ColumnType::Float),
-            Value::F64(v) => MySqlTypeInfo::from_type(ColumnType::Double),
-            Value::String(v) => MySqlTypeInfo::from_type(ColumnType::VarChar),
-            Value::Binary(v) => MySqlTypeInfo::from_type(ColumnType::Blob),
-            Value::Array(v) => MySqlTypeInfo::null(),
-            Value::Map(m) => MySqlTypeInfo::null(),
-            Value::Ext(ext_type, v) => {
+            Value::Bool(_) => MySqlTypeInfo::from_type(ColumnType::Tiny),
+            Value::I32(_) => MySqlTypeInfo::from_type(ColumnType::Long),
+            Value::I64(_) => MySqlTypeInfo::from_type(ColumnType::LongLong),
+            Value::U32(_) => MySqlTypeInfo::from_type(ColumnType::Long),
+            Value::U64(_) => MySqlTypeInfo::from_type(ColumnType::LongLong),
+            Value::F32(_) => MySqlTypeInfo::from_type(ColumnType::Float),
+            Value::F64(_) => MySqlTypeInfo::from_type(ColumnType::Double),
+            Value::String(_) => MySqlTypeInfo::from_type(ColumnType::VarChar),
+            Value::Binary(_) => MySqlTypeInfo::from_type(ColumnType::Blob),
+            Value::Array(_) => MySqlTypeInfo::null(),
+            Value::Map(_) => MySqlTypeInfo::null(),
+            Value::Ext(ext_type, _) => {
                 match *ext_type {
                     "Uuid" => MySqlTypeInfo::from_type(ColumnType::VarChar),
                     //decimal = 12345678

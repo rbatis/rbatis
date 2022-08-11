@@ -1,8 +1,4 @@
-
 use std::ops::Range;
-
-
-use bytes::Bytes;
 
 #[derive(Debug)]
 pub struct Row {
@@ -36,7 +32,7 @@ impl Row {
             if index == idx {
                 match x {
                     None => return None,
-                    Some(v) => match &self.storage[idx] {
+                    Some(_) => match &self.storage[idx] {
                         None => {
                             return None;
                         }

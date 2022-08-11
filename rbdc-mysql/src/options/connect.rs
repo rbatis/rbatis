@@ -1,12 +1,9 @@
 use crate::connection::MySqlConnection;
-use crate::options::{MySqlConnectOptions, MySqlSslMode};
+use crate::options::MySqlConnectOptions;
 use futures_core::future::BoxFuture;
 use rbdc::db::{ConnectOptions, Connection};
-use rbdc::net::CertificateInput;
 use rbdc::Error;
-use rbs::{from_value, Value};
 use std::any::Any;
-use std::collections::HashMap;
 use std::str::FromStr;
 
 impl ConnectOptions for MySqlConnectOptions {

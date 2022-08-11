@@ -86,8 +86,8 @@ pub(crate) fn impl_macro_sql(target_fn: &ItemFn, args: &AttributeArgs) -> TokenS
         decode = quote! { Ok(r)}
     }
     //check use page method
-    let mut page_req_str = String::new();
-    let mut page_req = quote! {};
+    let page_req_str = String::new();
+    let page_req = quote! {};
     //append all args
     let sql_args_gen =
         filter_args_context_id(&rbatis_name, &get_fn_args(target_fn), &[page_req_str]);

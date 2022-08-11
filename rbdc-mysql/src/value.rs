@@ -1,6 +1,5 @@
 use crate::protocol::text::ColumnType;
 use crate::result_set::MySqlTypeInfo;
-use bytes::Bytes;
 use rbdc::Error;
 use std::borrow::Cow;
 use std::str::from_utf8;

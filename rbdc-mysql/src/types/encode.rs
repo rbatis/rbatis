@@ -1,11 +1,8 @@
 use crate::io::MySqlBufMutExt;
-use crate::protocol::text::ColumnType;
-use crate::result_set::MySqlTypeInfo;
 use crate::types::enums::Enum;
 use crate::types::set::Set;
 use crate::types::year::Year;
 use crate::types::Encode;
-use bytes::BufMut;
 use rbdc::date::Date;
 use rbdc::datetime::FastDateTime;
 use rbdc::decimal::Decimal;
@@ -59,8 +56,8 @@ impl Encode for Value {
                 buf.put_bytes_lenenc(v);
                 Ok(0)
             }
-            Value::Array(v) => Ok(0),
-            Value::Map(m) => Ok(0),
+            Value::Array(_) => Ok(0),
+            Value::Map(_) => Ok(0),
             Value::Ext(ext_type, v) => {
                 match ext_type {
                     "Uuid" => {

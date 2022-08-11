@@ -1,7 +1,5 @@
-use crate::protocol::text::{ColumnFlags, ColumnType};
 use crate::protocol::Capabilities;
 use crate::stmt::MySqlArguments;
-use bytes::BufMut;
 use rbdc::io::Encode;
 
 // https://dev.mysql.com/doc/internals/en/com-stmt-execute.html

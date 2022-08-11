@@ -1,6 +1,3 @@
-use std::collections::HashMap;
-
-use proc_macro2::{Ident, Span};
 use quote::quote;
 use quote::ToTokens;
 use syn::{FnArg, ItemFn, Pat, ReturnType};
