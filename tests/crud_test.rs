@@ -446,7 +446,7 @@ mod test {
             };
             let r = MockTable::select_page(&mut rb, &PageRequest::new(1, 10)).await.unwrap();
             println!("{}", r.records[0].sql);
-            assert_eq!(r.records[0].sql, "select * from mock_table order by create_time desc limit 1,10");
+            assert_eq!(r.records[0].sql, "select * from mock_table order by create_time desc limit 0,10");
         };
         block_on(f);
     }
@@ -478,7 +478,7 @@ mod test {
             };
             let r = MockTable::select_page_by_name(&mut rb, &PageRequest::new(1, 10), "").await.unwrap();
             println!("{}", r.records[0].sql);
-            assert_eq!(r.records[0].sql, "select * from mock_table where name != '' limit 1,10");
+            assert_eq!(r.records[0].sql, "select * from mock_table where name != '' limit 0,10");
         };
         block_on(f);
     }
