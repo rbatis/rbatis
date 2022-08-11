@@ -3,7 +3,6 @@ pub mod choose_node;
 pub mod error;
 pub mod foreach_node;
 pub mod if_node;
-pub mod impl_node;
 pub mod otherwise_node;
 pub mod set_node;
 pub mod string_node;
@@ -46,10 +45,6 @@ pub trait Name {
 
 pub trait DefName {
     fn def_name() -> &'static str;
-}
-
-pub trait ParsePySql {
-    fn parse(arg: &str) -> Result<Vec<NodeType>, crate::codegen::syntax_tree::error::Error>;
 }
 
 pub trait AsHtml {

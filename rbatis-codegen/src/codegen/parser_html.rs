@@ -13,10 +13,10 @@ use url::Url;
 
 use crate::codegen::html_loader::{load_html, Element};
 use crate::codegen::proc_macro::TokenStream;
-use crate::codegen::syntax_tree::{NodeType, ParsePySql};
+use crate::codegen::syntax_tree::NodeType;
 use crate::codegen::string_util::find_convert_string;
 
-fn parse_html_str(html: &str, fn_name: &str, ignore: &mut Vec<String>) -> proc_macro2::TokenStream {
+pub fn parse_html_str(html: &str, fn_name: &str, ignore: &mut Vec<String>) -> proc_macro2::TokenStream {
     let datas = load_html(html).expect("load_html() fail!");
     let mut sql_map = HashMap::new();
     let datas = include_replace(datas, &mut sql_map);
@@ -760,32 +760,7 @@ pub fn impl_fn_html(m: &ItemFn, args: &AttributeArgs) -> TokenStream {
     return t.into();
 }
 
-pub fn impl_fn_py(m: &ItemFn, args: &AttributeArgs) -> TokenStream {
-    let fn_name = m.sig.ident.to_string();
-    let mut data = args.get(0).to_token_stream().to_string();
-    if data.ne("\"\"") && data.starts_with("\"") && data.ends_with("\"") {
-        data = data[1..data.len() - 1].to_string();
-    }
-    data = data.replace("\\n", "\n");
-    let t;
-    let mut format_char = '?';
-    if args.len() > 1 {
-        for x in args.get(1).to_token_stream().to_string().chars() {
-            if x != '\'' && x != '"' {
-                format_char = x;
-                break;
-            }
-        }
-    }
-    let nodes = NodeType::parse(&data).expect("[rbatis] parse py_sql fail!");
-    let htmls = crate::codegen::syntax_tree::to_html(
-        &nodes,
-        data.starts_with("select") || data.starts_with(" select"),
-        &fn_name,
-    );
-    t = parse_html_str(&htmls, &fn_name, &mut vec![]);
-    return t.into();
-}
+
 
 /// parse to expr
 fn parse_expr(lit_str: &str) -> Expr {

@@ -17,9 +17,10 @@ use proc_macro::TokenStream;
 pub mod element_from;
 pub mod func;
 pub mod html_loader;
-pub mod parser;
+pub mod parser_html;
 pub mod syntax_tree;
 pub mod string_util;
+pub mod parser_pysql;
 
 pub fn expr(args: TokenStream, func: TokenStream) -> TokenStream {
     //let args = parse_macro_input!(args as AttributeArgs);
@@ -39,7 +40,7 @@ pub fn expr(args: TokenStream, func: TokenStream) -> TokenStream {
 pub fn rb_html(args: TokenStream, func: TokenStream) -> TokenStream {
     let args = parse_macro_input!(args as AttributeArgs);
     let target_fn = syn::parse(func).unwrap();
-    let stream = parser::impl_fn_html(&target_fn, &args);
+    let stream = parser_html::impl_fn_html(&target_fn, &args);
     stream
 }
 
@@ -47,6 +48,6 @@ pub fn rb_html(args: TokenStream, func: TokenStream) -> TokenStream {
 pub fn rb_py(args: TokenStream, func: TokenStream) -> TokenStream {
     let args = parse_macro_input!(args as AttributeArgs);
     let target_fn = syn::parse(func).unwrap();
-    let stream = parser::impl_fn_py(&target_fn, &args);
+    let stream = parser_pysql::impl_fn_py(&target_fn, &args);
     stream
 }
