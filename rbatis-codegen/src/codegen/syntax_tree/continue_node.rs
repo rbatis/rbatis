@@ -1,4 +1,4 @@
-use crate::codegen::py_sql::{AsHtml, Name};
+use crate::codegen::syntax_tree::{AsHtml, Name};
 
 #[derive(Clone,Debug)]
 pub struct ContinueNode{

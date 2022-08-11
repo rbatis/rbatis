@@ -1,4 +1,4 @@
-use crate::codegen::py_sql::{Name, NodeType};
+use crate::codegen::syntax_tree::{Name, NodeType};
 
 #[derive(Clone, Debug)]
 pub struct WhereNode {

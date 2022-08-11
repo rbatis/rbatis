@@ -13,7 +13,7 @@ use url::Url;
 
 use crate::codegen::html_loader::{load_html, Element};
 use crate::codegen::proc_macro::TokenStream;
-use crate::codegen::py_sql::{NodeType, ParsePySql};
+use crate::codegen::syntax_tree::{NodeType, ParsePySql};
 use crate::codegen::string_util::find_convert_string;
 
 fn parse_html_str(html: &str, fn_name: &str, ignore: &mut Vec<String>) -> proc_macro2::TokenStream {
@@ -778,7 +778,7 @@ pub fn impl_fn_py(m: &ItemFn, args: &AttributeArgs) -> TokenStream {
         }
     }
     let nodes = NodeType::parse(&data).expect("[rbatis] parse py_sql fail!");
-    let htmls = crate::codegen::py_sql::to_html(
+    let htmls = crate::codegen::syntax_tree::to_html(
         &nodes,
         data.starts_with("select") || data.starts_with(" select"),
         &fn_name,

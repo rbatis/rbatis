@@ -1,4 +1,4 @@
-use crate::codegen::py_sql::{DefName, Name, NodeType};
+use crate::codegen::syntax_tree::{DefName, Name, NodeType};
 
 #[derive(Clone, Debug)]
 pub struct OtherwiseNode {
