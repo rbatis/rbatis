@@ -10,6 +10,7 @@ pub extern crate rbatis_codegen;
 #[macro_use]
 extern crate rbatis_macro_driver;
 
+extern crate flume;
 
 pub use rbatis_macro_driver::{html_sql, py_sql, sql};
 

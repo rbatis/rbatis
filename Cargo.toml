@@ -54,10 +54,11 @@ rbdc = { version = "0.1", path = "rbdc" }
 decimal = "2"
 crossbeam = "0.8.2"
 mobc = "0.7"
+flume = "0.10.14"
+
 [dev-dependencies]
 serde_json = "1"
 tokio = { version = "1", features = ["fs", "net", "rt", "rt-multi-thread", "time", "io-util"] }
-
 [profile.release]
 lto = true
 opt-level = 3

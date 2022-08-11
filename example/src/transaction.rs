@@ -1,7 +1,14 @@
 pub mod model;
+
+use std::time::Duration;
+use fast_log::sleep;
 use crate::model::{init_sqlite, BizActivity};
 use rbatis::executor::Executor;
+use rbatis::{impl_insert, Rbatis};
 use rbdc::datetime::FastDateTime;
+use rbdc_sqlite::driver::SqliteDriver;
+
+impl_insert!(BizActivity {});
 
 #[tokio::main]
 pub async fn main() {
@@ -28,6 +35,9 @@ pub async fn main() {
             println!("rollback");
         }
     });
-    tx.exec("select 1", vec![]).await.unwrap();
+    //tx.exec("select 1", vec![]).await.unwrap();
+    BizActivity::insert(&mut tx,&t).await;
     println!("yes forget commit");
+    drop(tx);
+    sleep(Duration::from_secs(1));
 }
