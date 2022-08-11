@@ -141,7 +141,7 @@ impl Type for Value {
             Value::Binary(_) => SqliteTypeInfo(DataType::Blob),
             Value::Array(_) => SqliteTypeInfo(DataType::Null),
             Value::Map(_) => SqliteTypeInfo(DataType::Null),
-            Value::Ext(t, v) => match *t {
+            Value::Ext(t, _) => match *t {
                 "Date" => SqliteTypeInfo(DataType::Text),
                 "DateTime" => SqliteTypeInfo(DataType::Text),
                 "Time" => SqliteTypeInfo(DataType::Text),

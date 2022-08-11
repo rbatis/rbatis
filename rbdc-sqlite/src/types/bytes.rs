@@ -1,10 +1,8 @@
-use std::borrow::Cow;
-
 use crate::decode::Decode;
 use crate::encode::{Encode, IsNull};
 use crate::type_info::DataType;
 use crate::types::Type;
-use crate::{Sqlite, SqliteArgumentValue, SqliteTypeInfo, SqliteValue};
+use crate::{SqliteArgumentValue, SqliteTypeInfo, SqliteValue};
 use rbdc::error::Error;
 
 impl Type for Vec<u8> {

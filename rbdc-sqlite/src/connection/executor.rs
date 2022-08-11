@@ -1,19 +1,15 @@
 use crate::query::SqliteQuery;
-use crate::{
-    Sqlite, SqliteConnection, SqliteQueryResult, SqliteRow, SqliteStatement, SqliteTypeInfo,
-};
+use crate::{ SqliteConnection, SqliteQueryResult, SqliteRow, SqliteStatement, SqliteTypeInfo};
 use either::Either;
 use futures_core::future::BoxFuture;
 use futures_core::stream::BoxStream;
 use futures_util::{TryFutureExt, TryStreamExt};
 use rbdc::error::Error;
-use std::ops::Deref;
-use std::sync::Arc;
 
 impl SqliteConnection {
     pub fn fetch_many(
         &mut self,
-        mut query: SqliteQuery,
+        query: SqliteQuery,
     ) -> BoxStream<'_, Result<Either<SqliteQueryResult, SqliteRow>, Error>> {
         let sql = query.sql().to_string();
         let persistent = query.persistent() && !query.arguments.is_empty();
@@ -28,7 +24,7 @@ impl SqliteConnection {
 
     pub fn fetch_optional(
         &mut self,
-        mut query: SqliteQuery,
+        query: SqliteQuery,
     ) -> BoxFuture<'_, Result<Option<SqliteRow>, Error>> {
         let sql = query.sql().to_owned();
         let persistent = query.persistent() && !query.arguments.is_empty();

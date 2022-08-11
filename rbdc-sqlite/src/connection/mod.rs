@@ -1,21 +1,17 @@
-use either::Either;
 use std::cmp::Ordering;
 use std::fmt::{self, Debug, Formatter};
 use std::ptr::NonNull;
-
 use futures_core::future::BoxFuture;
-use futures_core::stream::BoxStream;
 use futures_intrusive::sync::MutexGuard;
-use futures_util::{future, TryFutureExt, TryStreamExt};
+use futures_util::future;
 use libsqlite3_sys::sqlite3;
 
 pub(crate) use handle::{ConnectionHandle, ConnectionHandleRaw};
 
 use crate::connection::establish::EstablishParams;
 use crate::connection::worker::ConnectionWorker;
-use crate::query::SqliteQuery;
 use crate::statement::VirtualStatement;
-use crate::{Sqlite, SqliteConnectOptions};
+use crate::{SqliteConnectOptions};
 use rbdc::error::Error;
 use rbdc::StatementCache;
 
@@ -49,9 +45,6 @@ pub struct LockedSqliteHandle<'a> {
 
 pub struct ConnectionState {
     pub(crate) handle: ConnectionHandle,
-
-    // transaction status
-    pub(crate) transaction_depth: usize,
 
     pub(crate) statements: Statements,
 }

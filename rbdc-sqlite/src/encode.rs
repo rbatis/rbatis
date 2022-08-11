@@ -69,8 +69,8 @@ impl Encode for Value {
                 v.encode(args)?;
                 Ok(IsNull::No)
             }
-            Value::Array(v) => Ok(IsNull::Yes),
-            Value::Map(v) => Ok(IsNull::Yes),
+            Value::Array(_) => Ok(IsNull::Yes),
+            Value::Map(_) => Ok(IsNull::Yes),
             Value::Ext(t, v) => match t {
                 "Date" => {
                     v.into_string().unwrap_or_default().encode(args)?;

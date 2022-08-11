@@ -135,7 +135,6 @@ impl EstablishParams {
         Ok(ConnectionState {
             handle,
             statements: Statements::new(self.statement_cache_capacity),
-            transaction_depth: 0,
         })
     }
 }

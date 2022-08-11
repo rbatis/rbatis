@@ -1,11 +1,9 @@
 use crate::encode::{Encode, IsNull};
 use crate::statement::StatementHandle;
-use crate::Sqlite;
 use atoi::atoi;
 use libsqlite3_sys::SQLITE_OK;
 use rbdc::err_protocol;
 use rbdc::error::Error;
-use std::borrow::Cow;
 
 #[derive(Debug, Clone)]
 pub enum SqliteArgumentValue {

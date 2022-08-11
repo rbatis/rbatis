@@ -1,8 +1,6 @@
-use crate::{Sqlite, SqliteArguments, SqliteColumn, SqliteTypeInfo};
+use crate::{SqliteColumn, SqliteTypeInfo};
 use either::Either;
-use rbdc::error::Error;
 use rbdc::ext::ustr::UStr;
-use std::borrow::Cow;
 use std::collections::HashMap;
 use std::sync::Arc;
 
