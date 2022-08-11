@@ -311,7 +311,6 @@ pub trait PartialOrd<Rhs: ?Sized = Self> {
     /// assert_eq!(result, None);
     /// ```
     #[must_use]
-    // #[stable(feature = "rust1", since = "1.0.0")]
     fn op_partial_cmp(&self, other: &Rhs) -> Option<Ordering>;
 
     /// This method tests less than (for `self` and `other`) and is used by the `<` operator.
@@ -327,7 +326,6 @@ pub trait PartialOrd<Rhs: ?Sized = Self> {
     /// ```
     #[inline]
     #[must_use]
-    // #[stable(feature = "rust1", since = "1.0.0")]
     fn op_lt(&self, other: &Rhs) -> bool {
         self.op_partial_cmp(other).eq(&Some(Less))
     }
@@ -346,12 +344,7 @@ pub trait PartialOrd<Rhs: ?Sized = Self> {
     /// ```
     #[inline]
     #[must_use]
-    // #[stable(feature = "rust1", since = "1.0.0")]
     fn op_le(&self, other: &Rhs) -> bool {
-        // Pattern `Some(Less | Eq)` optimizes worse than negating `None | Some(Greater)`.
-        // FIXME: The root cause was fixed upstream in LLVM with:
-        // https://github.com/llvm/llvm-project/commit/9bad7de9a3fb844f1ca2965f35d0c2a3d1e11775
-        // Revert this workaround once support for LLVM 12 gets dropped.
         let v = self.op_partial_cmp(other);
         !v.eq(&None) | v.eq(&Some(Ordering::Greater))
     }
@@ -368,7 +361,6 @@ pub trait PartialOrd<Rhs: ?Sized = Self> {
     /// assert_eq!(result, false);
     /// ```
     #[inline]
-    // #[stable(feature = "rust1", since = "1.0.0")]
     fn op_gt(&self, other: &Rhs) -> bool {
         self.op_partial_cmp(other).eq(&Some(Ordering::Greater))
     }
@@ -387,7 +379,6 @@ pub trait PartialOrd<Rhs: ?Sized = Self> {
     /// ```
     #[inline]
     #[must_use]
-    // #[stable(feature = "rust1", since = "1.0.0")]
     fn op_ge(&self, other: &Rhs) -> bool {
         let v = self.op_partial_cmp(other);
         v.eq(&Some(Ordering::Greater)) | v.eq(&Some(Ordering::Equal))

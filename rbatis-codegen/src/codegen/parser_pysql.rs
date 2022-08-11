@@ -21,7 +21,6 @@ pub trait ParsePySql {
     fn parse_pysql(arg: &str) -> Result<Vec<NodeType>, crate::codegen::syntax_tree::error::Error>;
 }
 
-
 pub fn impl_fn_py(m: &ItemFn, args: &AttributeArgs) -> TokenStream {
     let fn_name = m.sig.ident.to_string();
     let mut data = args.get(0).to_token_stream().to_string();
@@ -52,6 +51,7 @@ pub fn impl_fn_py(m: &ItemFn, args: &AttributeArgs) -> TokenStream {
 
 
 impl ParsePySql for NodeType {
+    //TODO maybe this use Rust parser crates？
     fn parse_pysql(arg: &str) -> Result<Vec<NodeType>, Error> {
         let line_space_map = Self::create_line_space_map(&arg);
         let mut main_node = vec![];
