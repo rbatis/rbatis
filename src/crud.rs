@@ -42,7 +42,7 @@ macro_rules! impl_insert {
              trim ',':
                for k,v in tables[0]:
                   if k == 'id' && v== null:
-                    #{continue}
+                    continue:
                  ${k},
              `) VALUES `
              trim ',':
@@ -51,7 +51,7 @@ macro_rules! impl_insert {
                trim ',':
                 for k,v in table:
                   if k == 'id' && v== null:
-                     #{continue}
+                     continue:
                   #{v},
                ),
              "
@@ -177,7 +177,7 @@ macro_rules! impl_update {
              trim ',':
                for k,v in table:
                   if k == column || v== null:
-                    #{continue}
+                    continue:
                  `${k}=#{v},`
              ` where  ${column} = #{column_value}`"
                 )]
@@ -239,7 +239,7 @@ macro_rules! impl_update {
                                  trim ',':
                                    for k,v in table:
                                      if k == column || v== null:
-                                        #{continue}
+                                        continue:
                                      `${k}=#{v},`
                                  ` `",$sql_where)]
                   async fn do_update_by_where(

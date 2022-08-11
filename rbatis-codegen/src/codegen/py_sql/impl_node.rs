@@ -12,6 +12,7 @@ use crate::codegen::py_sql::when_node::WhenNode;
 use crate::codegen::py_sql::where_node::WhereNode;
 use crate::codegen::py_sql::{DefName, Name, NodeType, ParsePySql};
 use std::collections::HashMap;
+use crate::codegen::py_sql::continue_node::ContinueNode;
 
 impl NodeType {
     fn parse_node(
@@ -236,6 +237,8 @@ impl NodeType {
                 value: "".to_string(),
                 format: "".to_string(),
             }));
+        } else if trim_express.starts_with(ContinueNode::name()) {
+            return Ok(NodeType::NContinue(ContinueNode {}));
         } else {
             // unkonw tag
             return Err(Error::from(

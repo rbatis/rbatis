@@ -118,6 +118,14 @@ impl From<NodeType> for Element {
                     childs: vec![],
                 };
             }
+            NodeType::NContinue(n) => {
+                return Element {
+                    tag: "continue".to_string(),
+                    data: "".to_string(),
+                    attrs: Default::default(),
+                    childs: vec![],
+                };
+            }
         }
     }
 }

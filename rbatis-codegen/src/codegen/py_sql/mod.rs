@@ -11,6 +11,7 @@ pub mod string_node;
 pub mod trim_node;
 pub mod when_node;
 pub mod where_node;
+pub mod continue_node;
 
 use crate::codegen::py_sql::bind_node::BindNode;
 use crate::codegen::py_sql::choose_node::ChooseNode;
@@ -23,6 +24,8 @@ use crate::codegen::py_sql::string_node::StringNode;
 use crate::codegen::py_sql::trim_node::TrimNode;
 use crate::codegen::py_sql::when_node::WhenNode;
 use crate::codegen::py_sql::where_node::WhereNode;
+use crate::codegen::py_sql::continue_node::ContinueNode;
+
 
 #[derive(Clone, Debug)]
 pub enum NodeType {
@@ -37,6 +40,7 @@ pub enum NodeType {
     NSet(SetNode),
     NWhere(WhereNode),
     NPrint(PrintNode),
+    NContinue(ContinueNode),
 }
 
 pub trait Name {
@@ -184,6 +188,7 @@ impl AsHtml for NodeType {
             NodeType::NSet(n) => n.as_html(),
             NodeType::NWhere(n) => n.as_html(),
             NodeType::NPrint(n) => n.as_html(),
+            NodeType::NContinue(n)=> n.as_html()
         }
     }
 }
