@@ -6,19 +6,6 @@ use syn::{BinOp, Expr, ItemFn, Lit, Member};
 
 use crate::codegen::proc_macro::TokenStream;
 
-fn is_param_char(arg: char) -> bool {
-    match arg {
-        'a' | 'b' | 'c' | 'd' | 'e' | 'f' | 'g' | 'h' | 'i' | 'j' | 'k' | 'l' | 'm' | 'n' | 'o'
-        | 'p' | 'q' | 'r' | 's' | 't' | 'u' | 'v' | 'w' | 'x' | 'y' | 'z' | 'A' | 'B' | 'C'
-        | 'D' | 'E' | 'F' | 'G' | 'H' | 'I' | 'J' | 'K' | 'L' | 'M' | 'N' | 'O' | 'P' | 'Q'
-        | 'R' | 'S' | 'T' | 'U' | 'V' | 'W' | 'X' | 'Y' | 'Z' => {
-            return true;
-        }
-        _ => {}
-    }
-    return false;
-}
-
 fn token_steam_string(arg: proc_macro2::TokenStream) -> String {
     arg.to_token_stream().to_string().trim().to_string()
 }
@@ -53,20 +40,13 @@ fn convert_to_arg_access(context: &str, arg: Expr, as_proxy: bool, ignore: &[Str
             }
         }
         Expr::MethodCall(mut b) => {
-            let ex = *(b.receiver.clone());
-            let s = ex.to_token_stream().to_string();
-            for x in s.chars() {
-                if is_param_char(x) {
-                    b.receiver = Box::new(convert_to_arg_access(
-                        context,
-                        *b.receiver.clone(),
-                        as_proxy,
-                        ignore,
-                    ));
-                    return Expr::MethodCall(b);
-                }
-                break;
-            }
+            //receiver is named need to convert to arg["xxx"]
+            b.receiver = Box::new(convert_to_arg_access(
+                context,
+                *b.receiver.clone(),
+                as_proxy,
+                ignore,
+            ));
             return Expr::MethodCall(b);
         }
         Expr::Binary(mut b) => {
