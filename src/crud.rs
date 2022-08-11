@@ -102,11 +102,18 @@ macro_rules! impl_select {
     ($table:ty{},$table_name:expr) => {
         impl $table{
             pub async fn select_all(rb: &mut dyn  $crate::executor::Executor)->Result<Vec<$table>,rbdc::Error>{
-                #[$crate::py_sql(
-"select * from ${table_name}")]
-async fn do_select_all(rb: &mut dyn $crate::executor::Executor,table_name:String) -> Result<Vec<$table>,rbdc::Error> {impled!()}
-            let table_name = $table_name.to_string();
-            do_select_all(rb,table_name).await
+                #[$crate::py_sql("select * from ${table_name}")]
+                async fn do_select_all(rb: &mut dyn $crate::executor::Executor,table_name:String) -> Result<Vec<$table>,rbdc::Error> {impled!()}
+                let table_name = $table_name.to_string();
+                do_select_all(rb,table_name).await
+            }
+
+            pub async fn select_by_column<V:serde::Serialize>(rb: &mut dyn  $crate::executor::Executor, column: &str,column_value:V)->Result<Vec<$table>,rbdc::Error>{
+                #[$crate::py_sql("select * from ${table_name} where ${column} = #{column_value}")]
+                async fn do_select_by_column(rb: &mut dyn $crate::executor::Executor,table_name:String, column:&str, column_value: &rbs::Value) -> Result<Vec<$table>,rbdc::Error> {impled!()}
+                let table_name = $table_name.to_string();
+                let column_value = rbs::to_value!(column_value);
+                do_select_by_column(rb,table_name,column,&column_value).await
             }
         }
     };
