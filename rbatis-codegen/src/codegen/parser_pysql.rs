@@ -1,20 +1,98 @@
+use std::collections::HashMap;
+use quote::ToTokens;
+use syn::{AttributeArgs, ItemFn};
+use crate::codegen::proc_macro::TokenStream;
+use crate::codegen::parser_html::parse_html_str;
+use crate::codegen::syntax_tree::error::Error;
+use crate::codegen::syntax_tree::if_node::IfNode;
+use crate::codegen::syntax_tree::{DefName, Name, NodeType};
 use crate::codegen::syntax_tree::bind_node::BindNode;
 use crate::codegen::syntax_tree::choose_node::ChooseNode;
-use crate::codegen::syntax_tree::error::Error;
+use crate::codegen::syntax_tree::continue_node::ContinueNode;
 use crate::codegen::syntax_tree::foreach_node::ForEachNode;
-use crate::codegen::syntax_tree::if_node::IfNode;
 use crate::codegen::syntax_tree::otherwise_node::OtherwiseNode;
 use crate::codegen::syntax_tree::set_node::SetNode;
 use crate::codegen::syntax_tree::string_node::StringNode;
 use crate::codegen::syntax_tree::trim_node::TrimNode;
 use crate::codegen::syntax_tree::when_node::WhenNode;
 use crate::codegen::syntax_tree::where_node::WhereNode;
-use crate::codegen::syntax_tree::{DefName, Name, NodeType, ParsePySql};
-use std::collections::HashMap;
-use crate::codegen::syntax_tree::continue_node::ContinueNode;
+
+pub trait ParsePySql {
+    fn parse_pysql(arg: &str) -> Result<Vec<NodeType>, crate::codegen::syntax_tree::error::Error>;
+}
+
+
+pub fn impl_fn_py(m: &ItemFn, args: &AttributeArgs) -> TokenStream {
+    let fn_name = m.sig.ident.to_string();
+    let mut data = args.get(0).to_token_stream().to_string();
+    if data.ne("\"\"") && data.starts_with("\"") && data.ends_with("\"") {
+        data = data[1..data.len() - 1].to_string();
+    }
+    data = data.replace("\\n", "\n");
+    let t;
+    let mut format_char = '?';
+    if args.len() > 1 {
+        for x in args.get(1).to_token_stream().to_string().chars() {
+            if x != '\'' && x != '"' {
+                format_char = x;
+                break;
+            }
+        }
+    }
+    let nodes = NodeType::parse_pysql(&data).expect("[rbatis] parse py_sql fail!");
+    let htmls = crate::codegen::syntax_tree::to_html(
+        &nodes,
+        data.starts_with("select") || data.starts_with(" select"),
+        &fn_name,
+    );
+    t = parse_html_str(&htmls, &fn_name, &mut vec![]);
+    return t.into();
+}
+
+
+
+impl ParsePySql for NodeType {
+    fn parse_pysql(arg: &str) -> Result<Vec<NodeType>, Error> {
+        let line_space_map = Self::create_line_space_map(&arg);
+        let mut main_node = vec![];
+        let ls = arg.lines();
+        let mut space = -1;
+        let mut line = -1;
+        let mut skip = -1;
+        for x in ls {
+            line += 1;
+            if x.is_empty() || (skip != -1 && line <= skip) {
+                continue;
+            }
+            let count_index = *line_space_map.get(&line).unwrap();
+            if space == -1 {
+                space = count_index;
+            }
+            let (child_str, do_skip) =
+                Self::find_child_str(line, count_index, arg, &line_space_map);
+            if do_skip != -1 && do_skip >= skip {
+                skip = do_skip;
+            }
+            let parserd;
+            if !child_str.is_empty() {
+                parserd = Self::parse_pysql(child_str.as_str())?;
+            } else {
+                parserd = vec![];
+            }
+            Self::parse_pysql_node(
+                &mut main_node,
+                x,
+                *line_space_map.get(&line).unwrap() as usize,
+                parserd,
+            )?;
+        }
+        return Ok(main_node);
+    }
+}
+
 
 impl NodeType {
-    fn parse_node(
+    fn parse_pysql_node(
         main_node: &mut Vec<NodeType>,
         x: &str,
         space: usize,
@@ -239,44 +317,5 @@ impl NodeType {
                 "[rbatis] unknow tag: ".to_string() + source_str,
             ));
         }
-    }
-}
-
-impl ParsePySql for NodeType {
-    fn parse(arg: &str) -> Result<Vec<NodeType>, Error> {
-        let line_space_map = Self::create_line_space_map(&arg);
-        let mut main_node = vec![];
-        let ls = arg.lines();
-        let mut space = -1;
-        let mut line = -1;
-        let mut skip = -1;
-        for x in ls {
-            line += 1;
-            if x.is_empty() || (skip != -1 && line <= skip) {
-                continue;
-            }
-            let count_index = *line_space_map.get(&line).unwrap();
-            if space == -1 {
-                space = count_index;
-            }
-            let (child_str, do_skip) =
-                Self::find_child_str(line, count_index, arg, &line_space_map);
-            if do_skip != -1 && do_skip >= skip {
-                skip = do_skip;
-            }
-            let parserd;
-            if !child_str.is_empty() {
-                parserd = Self::parse(child_str.as_str())?;
-            } else {
-                parserd = vec![];
-            }
-            Self::parse_node(
-                &mut main_node,
-                x,
-                *line_space_map.get(&line).unwrap() as usize,
-                parserd,
-            )?;
-        }
-        return Ok(main_node);
     }
 }
