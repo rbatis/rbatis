@@ -15,10 +15,10 @@ pub trait IPageRequest: Send + Sync {
     fn get_total(&self) -> u64;
     fn is_search_count(&self) -> bool;
 
-    fn set_total(&mut self, arg: u64);
-    fn set_page_size(&mut self, arg: u64);
-    fn set_page_no(&mut self, arg: u64);
-    fn set_search_count(&mut self, arg: bool);
+    fn set_total(self, arg: u64) -> Self;
+    fn set_page_size(self, arg: u64) -> Self;
+    fn set_page_no(self, arg: u64) -> Self;
+    fn set_search_count(self, arg: bool) -> Self;
 
     ///sum pages
     fn get_pages(&self) -> u64 {
@@ -45,7 +45,7 @@ pub trait IPageRequest: Send + Sync {
 pub trait IPage<T>: IPageRequest {
     fn get_records(&self) -> &Vec<T>;
     fn get_records_mut(&mut self) -> &mut Vec<T>;
-    fn set_records(&mut self, arg: Vec<T>);
+    fn set_records(self, arg: Vec<T>) -> Self;
 }
 
 #[derive(Serialize, Deserialize, Clone, Debug, Eq, PartialEq)]
@@ -130,20 +130,24 @@ impl IPageRequest for PageRequest {
         self.search_count
     }
 
-    fn set_total(&mut self, total: u64) {
+    fn set_total(mut self, total: u64) -> Self {
         self.total = total;
+        self
     }
 
-    fn set_page_size(&mut self, arg: u64) {
+    fn set_page_size(mut self, arg: u64) -> Self {
         self.page_size = arg;
+        self
     }
 
-    fn set_page_no(&mut self, arg: u64) {
+    fn set_page_no(mut self, arg: u64) -> Self {
         self.page_no = arg;
+        self
     }
 
-    fn set_search_count(&mut self, arg: bool) {
+    fn set_search_count(mut self, arg: bool) -> Self {
         self.search_count = arg;
+        self
     }
 }
 
@@ -222,20 +226,24 @@ impl<T> IPageRequest for Page<T>
         self.search_count
     }
 
-    fn set_total(&mut self, total: u64) {
+    fn set_total(mut self, total: u64) -> Self {
         self.total = total;
+        self
     }
 
-    fn set_page_size(&mut self, arg: u64) {
+    fn set_page_size(mut self, arg: u64) -> Self {
         self.page_size = arg;
+        self
     }
 
-    fn set_page_no(&mut self, arg: u64) {
+    fn set_page_no(mut self, arg: u64) -> Self {
         self.page_no = arg;
+        self
     }
 
-    fn set_search_count(&mut self, arg: bool) {
+    fn set_search_count(mut self, arg: bool) -> Self {
         self.search_count = arg;
+        self
     }
 }
 
@@ -251,8 +259,9 @@ impl<T> IPage<T> for Page<T>
         self.records.as_mut()
     }
 
-    fn set_records(&mut self, arg: Vec<T>) {
+    fn set_records(mut self, arg: Vec<T>) -> Self {
         self.records = arg;
+        self
     }
 }
 
