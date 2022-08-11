@@ -83,9 +83,8 @@ where
         Value::Map(doc) => {
             doc_len = doc.len();
             if doc_len == 1 {
-                for (_k, _v) in doc {
-                    v = _v.clone();
-                    break;
+                if let Some((_, value)) = doc.into_iter().next() {
+                    v = value.clone();
                 }
             }
         }

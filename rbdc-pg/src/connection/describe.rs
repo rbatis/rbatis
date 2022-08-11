@@ -211,9 +211,8 @@ impl PgConnection {
                 .await?;
             let vs: Vec<PGType> =
                 rbs::from_value(Value::Array(rows)).map_err(|e| Error::from(e.to_string()))?;
-            for x in vs {
+            if let Some(x) = vs.into_iter().next() {
                 pg_type = x;
-                break;
             }
             let typ_type = TypType::try_from(pg_type.typtype as u8);
             let category = TypCategory::try_from(pg_type.typcategory as u8);
@@ -285,9 +284,8 @@ impl PgConnection {
             .map_err(|_| Error::from("TypeNotFound:".to_string() + name))?;
         let vs: Vec<V> =
             rbs::from_value(Value::Array(rows)).map_err(|e| Error::from(e.to_string()))?;
-        for x in vs {
+        if let Some(x) = vs.into_iter().next() {
             oid = x.oid;
-            break;
         }
         self.cache_type_oid.insert(name.to_string().into(), oid);
         Ok(oid)
@@ -333,9 +331,8 @@ WHERE rngtypid = $1
             let vs: Vec<V> =
                 rbs::from_value(Value::Array(rows)).map_err(|e| Error::from(e.to_string()))?;
             let mut element_oid = Oid(0);
-            for x in vs {
+            if let Some(x) = vs.into_iter().next() {
                 element_oid = x.rngsubtype;
-                break;
             }
             let element = self.maybe_fetch_type_info_by_oid(element_oid, true).await?;
 
