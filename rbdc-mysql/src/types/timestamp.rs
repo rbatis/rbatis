@@ -17,7 +17,7 @@ impl Encode for Timestamp {
             mon: datetime.mon,
             year: datetime.year,
         };
-        let mut size_date = date.encode(buf)?;
+        let size_date = date.encode(buf)?;
         buf.remove(buf.len() - 1 - size_date);
         let mut size_time = 0;
         if (size + size_date) > 4 {

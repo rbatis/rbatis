@@ -1,5 +1,4 @@
 use crate::io::MySqlBufMutExt;
-use crate::result_set::MySqlTypeInfo;
 use crate::types::{Decode, Encode};
 use crate::value::MySqlValue;
 use rbdc::Error;

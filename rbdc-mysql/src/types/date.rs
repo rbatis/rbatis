@@ -1,4 +1,3 @@
-use crate::result_set::MySqlTypeInfo;
 use crate::types::{Decode, Encode};
 use crate::value::{MySqlValue, MySqlValueFormat};
 use byteorder::{ByteOrder, LittleEndian};
@@ -24,7 +23,7 @@ impl Decode for Date {
             MySqlValueFormat::Text => fastdate::Date::from_str(value.as_str()?).unwrap(),
             MySqlValueFormat::Binary => {
                 let buf = value.as_bytes()?;
-                let len = buf[0];
+                //let len = buf[0];
                 decode_date_buf(&buf[1..])?
             }
         }))

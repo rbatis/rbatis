@@ -38,7 +38,7 @@ pub(crate) fn impl_macro_py_sql(target_fn: &ItemFn, args: &AttributeArgs) -> Tok
         let mut s = "".to_string();
         for ele in args {
             match ele {
-                NestedMeta::Meta(m) => {}
+                NestedMeta::Meta(_) => {}
                 NestedMeta::Lit(l) => match l {
                     Lit::Str(v) => {
                         s = s + v.value().as_str();

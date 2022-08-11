@@ -29,7 +29,6 @@ impl Decode for Year {
                 MySqlValueFormat::Text => value.as_str()?.parse().unwrap_or_default(),
                 MySqlValueFormat::Binary => {
                     let buf = value.as_bytes()?;
-                    let len = buf[0];
                     LittleEndian::read_u16(&buf[1..])
                 }
             }

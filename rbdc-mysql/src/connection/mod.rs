@@ -201,8 +201,8 @@ impl Drop for MySqlConnection {
             match stream {
                 None => {}
                 Some(mut s) => {
-                    s.send_packet(Quit).await;
-                    s.shutdown().await;
+                    let _=s.send_packet(Quit).await;
+                    let _=s.shutdown().await;
                 }
             }
         });

@@ -24,7 +24,7 @@ impl MysqlQuery {
     }
 
     #[inline]
-    pub fn take_arguments(mut self) -> Option<MySqlArguments> {
+    pub fn take_arguments(self) -> Option<MySqlArguments> {
         if self.arguments.is_empty() {
             return None;
         }

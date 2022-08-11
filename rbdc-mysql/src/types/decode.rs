@@ -29,7 +29,7 @@ impl From<MySqlValue> for Value {
             ColumnType::Timestamp => Value::Ext(
                 "Timestamp",
                 Box::new(Value::U64({
-                    let mut s = decode_timestamp(v).unwrap_or_default();
+                    let s = decode_timestamp(v).unwrap_or_default();
                     let date = DateTime::from_str(&s).unwrap();
                     date.unix_timestamp_millis() as u64
                 })),
@@ -157,7 +157,6 @@ fn decode_year(value: MySqlValue) -> Result<String, Error> {
         MySqlValueFormat::Text => value.as_str()?.to_string(),
         MySqlValueFormat::Binary => {
             let buf = value.as_bytes()?;
-            let len = buf[0];
             let date = decode_year_buf(&buf[1..])?;
             date
         }
@@ -169,7 +168,6 @@ fn decode_date(value: MySqlValue) -> Result<String, Error> {
         MySqlValueFormat::Text => value.as_str()?.to_string(),
         MySqlValueFormat::Binary => {
             let buf = value.as_bytes()?;
-            let len = buf[0];
             let date = decode_date_buf(&buf[1..])?.to_string();
             date
         }
@@ -216,7 +214,7 @@ fn decode_year_buf(buf: &[u8]) -> Result<String, Error> {
     Ok(format!("{:0>4}", LittleEndian::read_u16(buf) as i32,))
 }
 
-fn decode_time_buf(len: u8, mut buf: &[u8]) -> Result<String, Error> {
+fn decode_time_buf(_: u8, mut buf: &[u8]) -> Result<String, Error> {
     let hour = buf.get_u8();
     let minute = buf.get_u8();
     let seconds = buf.get_u8();

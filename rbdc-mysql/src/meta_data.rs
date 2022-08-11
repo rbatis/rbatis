@@ -21,7 +21,7 @@ impl MetaData for MysqlMetaData {
     }
 
     fn column_name(&self, i: usize) -> String {
-        for (s, (idx, type_info)) in self.inner.deref() {
+        for (s, (idx, _)) in self.inner.deref() {
             if idx.eq(&i) {
                 return s.to_string();
             }
@@ -30,7 +30,7 @@ impl MetaData for MysqlMetaData {
     }
 
     fn column_type(&self, i: usize) -> String {
-        for (s, (idx, type_info)) in self.inner.deref() {
+        for (_, (idx, type_info)) in self.inner.deref() {
             if idx.eq(&i) {
                 return format!("{:?}", type_info.r#type);
             }

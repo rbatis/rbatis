@@ -216,7 +216,7 @@ impl MySqlConnection {
 
     pub fn fetch_many(
         &mut self,
-        mut query: MysqlQuery,
+        query: MysqlQuery,
     ) -> BoxStream<'_, Result<Either<MySqlQueryResult, MySqlRow>, Error>> {
         let sql = query.sql().to_owned();
         let persistent = query.persistent();
@@ -252,7 +252,7 @@ impl MySqlConnection {
     pub fn prepare_with<'e>(
         &'e mut self,
         sql: &'e str,
-        parameters: &'e [MySqlTypeInfo],
+        _: &'e [MySqlTypeInfo],
     ) -> BoxFuture<'e, Result<MySqlStatement, Error>> {
         let sql = sql.to_string();
         Box::pin(async move {

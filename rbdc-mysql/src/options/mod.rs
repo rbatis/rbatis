@@ -1,5 +1,3 @@
-use rbdc::db::ConnectOptions;
-use std::any::Any;
 use std::path::{Path, PathBuf};
 
 mod connect;
