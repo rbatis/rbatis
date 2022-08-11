@@ -18,7 +18,7 @@ pub mod element_from;
 pub mod func;
 pub mod html_loader;
 pub mod parser;
-pub mod py_sql;
+pub mod syntax_tree;
 pub mod string_util;
 
 pub fn expr(args: TokenStream, func: TokenStream) -> TokenStream {

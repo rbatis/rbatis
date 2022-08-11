@@ -13,18 +13,18 @@ pub mod when_node;
 pub mod where_node;
 pub mod continue_node;
 
-use crate::codegen::py_sql::bind_node::BindNode;
-use crate::codegen::py_sql::choose_node::ChooseNode;
-use crate::codegen::py_sql::foreach_node::ForEachNode;
-use crate::codegen::py_sql::if_node::IfNode;
-use crate::codegen::py_sql::otherwise_node::OtherwiseNode;
-use crate::codegen::py_sql::print_node::PrintNode;
-use crate::codegen::py_sql::set_node::SetNode;
-use crate::codegen::py_sql::string_node::StringNode;
-use crate::codegen::py_sql::trim_node::TrimNode;
-use crate::codegen::py_sql::when_node::WhenNode;
-use crate::codegen::py_sql::where_node::WhereNode;
-use crate::codegen::py_sql::continue_node::ContinueNode;
+use crate::codegen::syntax_tree::bind_node::BindNode;
+use crate::codegen::syntax_tree::choose_node::ChooseNode;
+use crate::codegen::syntax_tree::foreach_node::ForEachNode;
+use crate::codegen::syntax_tree::if_node::IfNode;
+use crate::codegen::syntax_tree::otherwise_node::OtherwiseNode;
+use crate::codegen::syntax_tree::print_node::PrintNode;
+use crate::codegen::syntax_tree::set_node::SetNode;
+use crate::codegen::syntax_tree::string_node::StringNode;
+use crate::codegen::syntax_tree::trim_node::TrimNode;
+use crate::codegen::syntax_tree::when_node::WhenNode;
+use crate::codegen::syntax_tree::where_node::WhereNode;
+use crate::codegen::syntax_tree::continue_node::ContinueNode;
 
 
 #[derive(Clone, Debug)]
@@ -52,7 +52,7 @@ pub trait DefName {
 }
 
 pub trait ParsePySql {
-    fn parse(arg: &str) -> Result<Vec<NodeType>, crate::codegen::py_sql::error::Error>;
+    fn parse(arg: &str) -> Result<Vec<NodeType>, crate::codegen::syntax_tree::error::Error>;
 }
 
 pub trait AsHtml {

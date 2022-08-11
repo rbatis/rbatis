@@ -1,4 +1,4 @@
-use crate::codegen::py_sql::{DefName, Name};
+use crate::codegen::syntax_tree::{DefName, Name};
 
 #[derive(Clone, Debug)]
 pub struct BindNode {
