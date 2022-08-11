@@ -39,5 +39,6 @@ pub async fn main() {
     BizActivity::insert(&mut tx,&t).await;
     println!("yes forget commit");
     drop(tx);
+    //call sleep make sure tokio runtime not exit!
     sleep(Duration::from_secs(1));
 }
