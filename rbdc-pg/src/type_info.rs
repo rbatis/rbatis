@@ -967,9 +967,9 @@ impl PgType {
             PgType::Unknown => None,
             // There is no `VoidArray`
             PgType::Void => None,
-            PgType::Custom(ty) => None,
-            PgType::DeclareWithOid(oid) => None,
-            PgType::DeclareWithName(name) => None,
+            PgType::Custom(_) => None,
+            PgType::DeclareWithOid(_) => None,
+            PgType::DeclareWithName(_) => None,
         }
     }
 }

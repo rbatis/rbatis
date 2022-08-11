@@ -4,7 +4,7 @@ use rbdc::error::Error;
 use std::net::IpAddr;
 use std::num::ParseIntError;
 use std::str::FromStr;
-use url::{ParseError, Url};
+use url::Url;
 
 impl FromStr for PgConnectOptions {
     type Err = Error;

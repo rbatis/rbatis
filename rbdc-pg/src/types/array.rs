@@ -3,7 +3,7 @@ use crate::type_info::{PgType, PgTypeInfo, PgTypeKind};
 use crate::types::decode::Decode;
 use crate::types::encode::{Encode, IsNull};
 use crate::types::{Oid, TypeInfo};
-use crate::value::{PgValue, PgValueFormat, PgValueRef};
+use crate::value::{PgValue, PgValueFormat};
 use bytes::Buf;
 use rbdc::Error;
 use rbs::Value;

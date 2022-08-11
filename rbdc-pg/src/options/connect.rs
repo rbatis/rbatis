@@ -1,18 +1,10 @@
 use crate::connection::PgConnection;
-use crate::options::{PgConnectOptions, PgSslMode};
+use crate::options::PgConnectOptions;
 use futures_core::future::BoxFuture;
-use log::LevelFilter;
 use rbdc::db::{ConnectOptions, Connection};
 use rbdc::error::Error;
-use rbdc::net::CertificateInput;
-use rbs::{from_value, Value};
 use std::any::Any;
-use std::borrow::Cow;
-use std::collections::HashMap;
-use std::path::PathBuf;
 use std::str::FromStr;
-use std::time::Duration;
-use url::quirks::host;
 
 impl ConnectOptions for PgConnectOptions {
     fn connect(&self) -> BoxFuture<Result<Box<dyn Connection>, Error>> {

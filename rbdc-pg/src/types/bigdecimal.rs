@@ -1,5 +1,4 @@
 use crate::arguments::PgArgumentBuffer;
-use crate::type_info::PgTypeInfo;
 use crate::types::decode::Decode;
 use crate::types::encode::{Encode, IsNull};
 use crate::types::numeric::{PgNumeric, PgNumericSign};

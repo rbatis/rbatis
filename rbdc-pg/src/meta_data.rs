@@ -1,5 +1,5 @@
 use crate::statement::PgStatementMetadata;
-use std::fmt::{Debug, Formatter, Write};
+use std::fmt::Debug;
 use std::sync::Arc;
 
 #[derive(Debug)]

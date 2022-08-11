@@ -3,7 +3,6 @@ use crate::options::PgConnectOptions;
 use futures_core::future::BoxFuture;
 use rbdc::db::{ConnectOptions, Connection, Driver, Placeholder};
 use rbdc::Error;
-use std::str::FromStr;
 
 #[derive(Debug)]
 pub struct PgDriver {}

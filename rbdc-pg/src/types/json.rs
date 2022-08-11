@@ -6,7 +6,6 @@ use crate::types::TypeInfo;
 use crate::value::{PgValue, PgValueFormat};
 use rbdc::json::Json;
 use rbdc::Error;
-use serde::{Deserialize, Deserializer, Serialize, Serializer};
 use std::io::Write;
 
 impl Encode for Json {

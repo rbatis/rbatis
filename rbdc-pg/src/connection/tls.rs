@@ -1,6 +1,4 @@
-use crate::connection::PgConnection;
 use bytes::Bytes;
-use futures_core::future::BoxFuture;
 use rbdc::{err_protocol, Error};
 
 use crate::connection::stream::PgStream;

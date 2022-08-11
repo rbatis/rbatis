@@ -1,3 +1,4 @@
+#![allow(dead_code)]
 pub mod arguments;
 pub mod column;
 pub mod connection;

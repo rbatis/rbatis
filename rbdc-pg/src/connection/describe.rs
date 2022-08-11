@@ -1,8 +1,6 @@
-use crate::arguments::PgArguments;
 use crate::column::PgColumn;
 use crate::connection::PgConnection;
 use crate::message::{ParameterDescription, RowDescription};
-use crate::statement::PgStatementMetadata;
 use crate::type_info::{PgCustomType, PgType, PgTypeInfo, PgTypeKind};
 use crate::types::Oid;
 use futures_core::future::BoxFuture;
@@ -11,7 +9,6 @@ use rbdc::ext::ustr::UStr;
 use rbdc::Error;
 use rbs::Value;
 use std::collections::HashMap;
-use std::fmt::Write;
 use std::sync::Arc;
 
 /// Describes the type of the `pg_type.typtype` column
@@ -210,7 +207,7 @@ impl PgConnection {
                 typelem: 0,
                 typbasetype: 0,
             };
-            let mut rows =self.get_values("SELECT typname, typtype, typcategory, typrelid, typelem, typbasetype FROM pg_catalog.pg_type WHERE oid = $1", vec![oid.0.into()])
+            let rows =self.get_values("SELECT typname, typtype, typcategory, typrelid, typelem, typbasetype FROM pg_catalog.pg_type WHERE oid = $1", vec![oid.0.into()])
                 .await?;
             let vs: Vec<PGType> =
                 rbs::from_value(Value::Array(rows)).map_err(|e| Error::from(e.to_string()))?;
@@ -279,7 +276,7 @@ impl PgConnection {
         }
         //language=SQL
         let mut oid = Oid(0);
-        let mut rows = self
+        let rows = self
             .get_values(
                 "SELECT oid FROM pg_catalog.pg_type WHERE typname ILIKE $1",
                 vec![Value::String(name.to_string())],
@@ -425,41 +422,4 @@ ORDER BY attnum
             }))))
         })
     }
-}
-
-fn visit_plan(plan: &Plan, outputs: &[String], nullables: &mut Vec<Option<bool>>) {
-    if let Some(plan_outputs) = &plan.output {
-        // all outputs of a Full Join must be marked nullable
-        // otherwise, all outputs of the inner half of an outer join must be marked nullable
-        if plan.join_type.as_deref() == Some("Full")
-            || plan.parent_relation.as_deref() == Some("Inner")
-        {
-            for output in plan_outputs {
-                if let Some(i) = outputs.iter().position(|o| o == output) {
-                    // N.B. this may produce false positives but those don't cause runtime errors
-                    nullables[i] = Some(true);
-                }
-            }
-        }
-    }
-
-    if let Some(plans) = &plan.plans {
-        if let Some("Left") | Some("Right") = plan.join_type.as_deref() {
-            for plan in plans {
-                visit_plan(plan, outputs, nullables);
-            }
-        }
-    }
-}
-
-#[derive(serde::Deserialize)]
-struct Plan {
-    #[serde(rename = "Join Type")]
-    join_type: Option<String>,
-    #[serde(rename = "Parent Relationship")]
-    parent_relation: Option<String>,
-    #[serde(rename = "Output")]
-    output: Option<Vec<String>>,
-    #[serde(rename = "Plans")]
-    plans: Option<Vec<Plan>>,
 }
