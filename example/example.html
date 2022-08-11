@@ -3,6 +3,9 @@
     <insert id="insert">
         `insert into biz_activity`
         <foreach collection="arg" index="key" item="item" open="(" close=")" separator=",">
+            <if test="key == 'id'">
+                <continue/>
+            </if>
             ${key}
         </foreach>
         ` values `

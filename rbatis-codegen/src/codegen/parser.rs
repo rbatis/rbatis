@@ -195,6 +195,9 @@ fn parse(
             "println" => {
                 impl_println(x, &mut body, ignore);
             }
+            "continue" => {
+                impl_continue(x, &mut body, ignore);
+            }
             "" => {
                 let mut string_data = x.data.to_string();
                 let convert_list = find_convert_string(&string_data);
@@ -606,6 +609,13 @@ fn impl_println(x: &Element, body: &mut proc_macro2::TokenStream, ignore: &mut V
          println!(#format_expr,#method_impl);
         };
     }
+}
+
+fn impl_continue(x: &Element, body: &mut proc_macro2::TokenStream, ignore: &mut Vec<String>){
+    *body = quote! {
+         #body
+         continue
+    };
 }
 
 fn gen_method_name(test_value: &str) -> (String, Ident) {
