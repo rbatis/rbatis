@@ -40,25 +40,25 @@ mod test {
 
     #[derive(Clone, Debug)]
     pub struct MockRowMetaData {
-        sql:String
+        sql: String,
     }
 
     impl MetaData for MockRowMetaData {
         fn column_len(&self) -> usize {
-            if self.sql.contains("select count"){
+            if self.sql.contains("select count") {
                 1
-            }else{
+            } else {
                 2
             }
         }
 
         fn column_name(&self, i: usize) -> String {
-            if self.sql.contains("select count"){
+            if self.sql.contains("select count") {
                 "count".to_string()
-            }else{
-                if i==0{
+            } else {
+                if i == 0 {
                     "sql".to_string()
-                }else{
+                } else {
                     "count".to_string()
                 }
             }
@@ -78,7 +78,7 @@ mod test {
     impl Row for MockRow {
         fn meta_data(&self) -> Box<dyn MetaData> {
             Box::new(MockRowMetaData {
-                sql:self.sql.clone()
+                sql: self.sql.clone()
             }) as Box<dyn MetaData>
         }
 
@@ -86,9 +86,9 @@ mod test {
             if self.sql.contains("select count") {
                 Some(Value::U64(self.count))
             } else {
-                if i==0{
+                if i == 0 {
                     Some(Value::String(self.sql.clone()))
-                }else{
+                } else {
                     Some(Value::U64(self.count.clone()))
                 }
             }
@@ -223,7 +223,7 @@ mod test {
             };
             let mut t2 = t.clone();
             t2.id = "3".to_string().into();
-            let r = MockTable::insert_batch(&mut rb, &[t,t2]).await.unwrap();
+            let r = MockTable::insert_batch(&mut rb, &[t, t2]).await.unwrap();
             println!("{}", r.last_insert_id.as_str().unwrap_or_default());
             assert_eq!(r.last_insert_id.as_str().unwrap_or_default(), "insert into mock_table (id,name,pc_link,h5_link,pc_banner_img,h5_banner_img,sort,status,remark,create_time,version,delete_flag,sql,count) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?),(?,?,?,?,?,?,?,?,?,?,?,?,?,?)");
         };
@@ -303,7 +303,7 @@ mod test {
         let f = async move {
             let mut rb = Rbatis::new();
             rb.link(MockDriver {}, "test").await.unwrap();
-            let r = MockTable::delete_by_column_batch(&mut rb, "1", &["1","2"]).await.unwrap();
+            let r = MockTable::delete_by_column_batch(&mut rb, "1", &["1", "2"]).await.unwrap();
             println!("{}", r.last_insert_id.as_str().unwrap_or_default());
             assert_eq!(r.last_insert_id.as_str().unwrap_or_default(), "delete from mock_table where  1 in (?,?)");
         };
@@ -476,9 +476,39 @@ mod test {
                 delete_flag: Some(1),
                 count: 0,
             };
-            let r = MockTable::select_page_by_name(&mut rb, &PageRequest::new(1, 10),"").await.unwrap();
+            let r = MockTable::select_page_by_name(&mut rb, &PageRequest::new(1, 10), "").await.unwrap();
             println!("{}", r.records[0].sql);
             assert_eq!(r.records[0].sql, "select * from mock_table where name != '' limit 1,10");
+        };
+        block_on(f);
+    }
+
+    #[test]
+    fn test_tx() {
+        let f = async move {
+            let mut rb = Rbatis::new();
+            rb.link(MockDriver {}, "test").await.unwrap();
+            let mut t = MockTable {
+                id: Some("2".into()),
+                name: Some("2".into()),
+                pc_link: Some("2".into()),
+                h5_link: Some("2".into()),
+                pc_banner_img: None,
+                h5_banner_img: None,
+                sort: None,
+                status: Some(2),
+                remark: Some("2".into()),
+                create_time: Some(FastDateTime::now()),
+                version: Some(1),
+                sql: "".to_string(),
+                delete_flag: Some(1),
+                count: 0,
+            };
+            let mut tx = rb.acquire_begin().await.unwrap();
+            let r = MockTable::insert(&mut tx, &t).await.unwrap();
+
+            let mut tx = rb.acquire_begin().await.unwrap().defer_async(|tx| async {});
+            let r = MockTable::insert(&mut tx, &t).await.unwrap();
         };
         block_on(f);
     }
