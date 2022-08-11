@@ -24,7 +24,7 @@ impl SqliteQuery {
     }
 
     #[inline]
-    pub fn take_arguments(mut self) -> Option<SqliteArguments> {
+    pub fn take_arguments(self) -> Option<SqliteArguments> {
         if self.arguments.is_empty() {
             return None;
         }

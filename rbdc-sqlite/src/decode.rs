@@ -1,5 +1,5 @@
 use crate::type_info::DataType;
-use crate::{SqliteTypeInfo, SqliteValue, SqliteValueRef};
+use crate::SqliteValue;
 use rbdc::Error;
 use rbs::Value;
 

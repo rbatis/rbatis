@@ -2,14 +2,13 @@
 
 use crate::decode::Decode;
 use crate::statement::StatementHandle;
-use crate::{Sqlite, SqliteColumn, SqliteTypeInfo, SqliteValue, SqliteValueRef};
+use crate::{ SqliteColumn, SqliteValue, SqliteValueRef};
 use rbdc::db::{MetaData, Row};
 use rbdc::error::Error;
 use rbdc::ext::ustr::UStr;
 use rbs::Value;
 use std::collections::HashMap;
-use std::fmt::{Debug, Formatter};
-use std::ops::Deref;
+use std::fmt::Debug;
 use std::sync::Arc;
 
 /// Implementation of [`Row`] for SQLite.

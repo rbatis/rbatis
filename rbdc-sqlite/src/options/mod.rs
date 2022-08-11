@@ -13,7 +13,6 @@ pub use journal_mode::SqliteJournalMode;
 pub use locking_mode::SqliteLockingMode;
 use std::any::Any;
 use std::cmp::Ordering;
-use std::collections::HashMap;
 use std::str::FromStr;
 use std::sync::Arc;
 use std::{borrow::Cow, time::Duration};
@@ -24,7 +23,6 @@ use indexmap::IndexMap;
 use rbdc::common::DebugFn;
 use rbdc::db::{ConnectOptions, Connection};
 use rbdc::Error;
-use rbs::{from_value, Value};
 use serde::{Deserialize, Deserializer};
 
 /// Options and flags which can be used to configure a SQLite connection.
@@ -82,8 +80,6 @@ impl<'de> Deserialize<'de> for SqliteConnectOptions {
             pub(crate) statement_cache_capacity: usize,
             pub(crate) busy_timeout: Duration,
             pub(crate) immutable: bool,
-            pub(crate) pragmas: IndexMap<String, String>,
-
             pub(crate) command_channel_size: usize,
             pub(crate) row_channel_size: usize,
 

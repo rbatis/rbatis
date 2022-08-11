@@ -4,6 +4,7 @@
 // All unsafe blocks should have comments pointing to SQLite docs and ensuring that we maintain
 // invariants.
 #![allow(unsafe_code)]
+#![allow(dead_code)]
 
 pub use arguments::{SqliteArgumentValue, SqliteArguments};
 pub use column::SqliteColumn;

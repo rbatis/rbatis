@@ -7,6 +7,7 @@
 #![allow(non_snake_case)]
 #![allow(unused_parens)]
 #![allow(unused_mut)]
+#![allow(unreachable_code)]
 
 pub mod error;
 pub mod string_util;

@@ -5,12 +5,10 @@ use either::Either;
 use futures_core::future::BoxFuture;
 use futures_core::stream::BoxStream;
 use futures_util::{StreamExt, TryStreamExt};
-use log::LevelFilter;
 use rbdc::db::{Connection, ExecResult, Row};
 use rbdc::error::Error;
 use rbs::Value;
 use std::fmt::Write;
-use std::time::Duration;
 use futures_util::FutureExt;
 
 impl SqliteConnectOptions {

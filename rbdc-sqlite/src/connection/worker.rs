@@ -1,4 +1,3 @@
-use std::borrow::Cow;
 use std::future::Future;
 use std::sync::atomic::{AtomicUsize, Ordering};
 use std::sync::Arc;
@@ -8,7 +7,7 @@ use crate::connection::collation::create_collation;
 use crate::connection::establish::EstablishParams;
 use crate::connection::ConnectionState;
 use crate::connection::{execute, ConnectionHandleRaw};
-use crate::{Sqlite, SqliteArguments, SqliteQueryResult, SqliteRow, SqliteStatement};
+use crate::{SqliteArguments, SqliteQueryResult, SqliteRow, SqliteStatement};
 use either::Either;
 use futures_channel::oneshot;
 use futures_intrusive::sync::{Mutex, MutexGuard};
