@@ -364,6 +364,7 @@ macro_rules! impl_select_page {
                 page_req: &$crate::sql::PageRequest,
                 $($param_key:$param_type,)*
             ) -> Result<$crate::sql::Page::<$table>, rbdc::Error> {
+                use $crate::sql::IPageRequest;
                 #[$crate::py_sql("`select count(1) as count from ${table_name} `",$where_sql)]
                 async fn do_select_page_count(rb: &mut dyn $crate::executor::Executor,table_name: &str,$($param_key:$param_type,)*) -> Result<u64, rbdc::Error> {impled!()}
                 let table_name = $table_name.to_string();
@@ -372,12 +373,12 @@ macro_rules! impl_select_page {
                 if $where_sql.contains("page_no") && $where_sql.contains("page_size"){
                     #[$crate::py_sql("`select * from ${table_name} `",$where_sql)]
                     async fn do_select_page(rb: &mut dyn $crate::executor::Executor,table_name: &str,page_no:u64,page_size:u64,$($param_key:$param_type,)*) -> Result<Vec<$table>, rbdc::Error> {impled!()}
-                    records = do_select_page(rb,&table_name,page_req.page_no, page_req.page_size,$($param_key,)*).await?;
+                    records = do_select_page(rb,&table_name,page_req.offset(), page_req.page_size,$($param_key,)*).await?;
                 }else{
                     #[$crate::py_sql("`select * from ${table_name} `",$where_sql,"
                               ` limit ${page_no},${page_size}`")]
                     async fn do_select_page(rb: &mut dyn $crate::executor::Executor,table_name: &str,page_no:u64,page_size:u64,$($param_key:$param_type,)*) -> Result<Vec<$table>, rbdc::Error> {impled!()}
-                    records = do_select_page(rb,&table_name,page_req.page_no, page_req.page_size,$($param_key,)*).await?;
+                    records = do_select_page(rb,&table_name,page_req.offset(), page_req.page_size,$($param_key,)*).await?;
                 }
                 let mut page = $crate::sql::Page::<$table>::new_total(page_req.page_no, page_req.page_size, total);
                 page.records = records;
