@@ -5,7 +5,7 @@ use crate::codegen::proc_macro::TokenStream;
 use crate::codegen::parser_html::parse_html_str;
 use crate::codegen::syntax_tree::error::Error;
 use crate::codegen::syntax_tree::if_node::IfNode;
-use crate::codegen::syntax_tree::{DefName, Name, NodeType};
+use crate::codegen::syntax_tree::{DefaultName, Name, NodeType};
 use crate::codegen::syntax_tree::bind_node::BindNode;
 use crate::codegen::syntax_tree::choose_node::ChooseNode;
 use crate::codegen::syntax_tree::continue_node::ContinueNode;
@@ -276,7 +276,7 @@ impl NodeType {
                 }
             }
             return Ok(NodeType::NChoose(node));
-        } else if trim_express.starts_with(OtherwiseNode::def_name())
+        } else if trim_express.starts_with(OtherwiseNode::default_name())
             || trim_express.starts_with(OtherwiseNode::name())
         {
             return Ok(NodeType::NOtherwise(OtherwiseNode { childs }));
@@ -286,12 +286,12 @@ impl NodeType {
                 childs,
                 test: trim_express.to_string(),
             }));
-        } else if trim_express.starts_with(BindNode::def_name())
+        } else if trim_express.starts_with(BindNode::default_name())
             || trim_express.starts_with(BindNode::name())
         {
             let mut express = "";
-            if trim_express.starts_with(BindNode::def_name()) {
-                express = trim_express[BindNode::def_name().len()..].trim();
+            if trim_express.starts_with(BindNode::default_name()) {
+                express = trim_express[BindNode::default_name().len()..].trim();
             } else {
                 express = trim_express[BindNode::name().len()..].trim();
             }

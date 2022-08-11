@@ -29,6 +29,7 @@ use crate::codegen::syntax_tree::where_node::WhereNode;
 use crate::codegen::syntax_tree::continue_node::ContinueNode;
 
 
+/// the syntax tree enum types
 #[derive(Clone, Debug)]
 pub enum NodeType {
     NString(StringNode),
@@ -44,14 +45,17 @@ pub enum NodeType {
     NContinue(ContinueNode),
 }
 
+/// the node name
 pub trait Name {
     fn name() -> &'static str;
 }
 
-pub trait DefName {
-    fn def_name() -> &'static str;
+/// node default name
+pub trait DefaultName {
+    fn default_name() -> &'static str;
 }
 
+/// Convert syntax tree to HTML deconstruction
 pub trait AsHtml {
     fn as_html(&self) -> String;
 }
