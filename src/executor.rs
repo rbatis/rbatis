@@ -7,8 +7,10 @@ use crate::sql::page::{IPageRequest, Page};
 use crate::sql::tx::Tx;
 use crate::utils::string_util;
 use async_trait::async_trait;
+use flume::RecvError;
 use futures::executor::block_on;
 use futures::Future;
+use futures_core::future::BoxFuture;
 use crate::decode::decode;
 use rbdc::db::{Connection, ExecResult};
 use rbs::{from_value, Value};
@@ -50,7 +52,6 @@ impl Debug for RBatisConnExecutor {
 }
 
 impl RBatisConnExecutor {
-
     pub async fn exec(&mut self, sql: &str, args: Vec<Value>) -> Result<ExecResult, Error>
     {
         let v = Executor::exec(self, sql, args).await?;
@@ -345,7 +346,7 @@ impl DerefMut for RBatisTxExecutor {
 
 pub struct RBatisTxExecutorGuard {
     pub tx: Option<RBatisTxExecutor>,
-    pub callback: Box<dyn FnMut(RBatisTxExecutor) + Send>,
+    pub sender: flume::Sender<RBatisTxExecutor>,
 }
 
 impl Debug for RBatisTxExecutorGuard {
@@ -393,20 +394,6 @@ impl RBatisTxExecutorGuard {
 }
 
 impl RBatisTxExecutor {
-    /// defer an func
-    /// for example:
-    ///     tx.defer(|tx| {});
-    ///
-    pub fn defer<Call>(self, callback: Call) -> RBatisTxExecutorGuard
-        where
-            Call: FnMut(Self) + Send + 'static,
-    {
-        RBatisTxExecutorGuard {
-            tx: Some(self),
-            callback: Box::new(callback),
-        }
-    }
-
     /// defer and use future method
     /// for example:
     ///         tx.defer_async(|mut tx| async {
@@ -415,14 +402,23 @@ impl RBatisTxExecutor {
     ///
     pub fn defer_async<R, F>(self, mut callback: F) -> RBatisTxExecutorGuard
         where
-            R: Future<Output=()> + 'static,
+            R: Future<Output=()> + 'static + Send,
             F: Send + FnMut(RBatisTxExecutor) -> R + 'static,
     {
+        let (s, r) = flume::unbounded();
+        rbdc::rt::spawn(async move {
+            match r.recv_async().await {
+                Ok(v) => {
+                    callback(v).await;
+                }
+                Err(e) => {
+                    log::error!("rbatis recv_async tx fail:{}",e);
+                }
+            }
+        });
         RBatisTxExecutorGuard {
             tx: Some(self),
-            callback: Box::new(move |arg| {
-                block_on(callback(arg));
-            }),
+            sender: s,
         }
     }
 }
@@ -446,14 +442,46 @@ impl Drop for RBatisTxExecutorGuard {
         match self.tx.take() {
             None => {}
             Some(tx) => {
-                (self.callback)(tx);
+                if let Err(e) = self.sender.send(tx) {
+                    log::error!("rbatis send tx fail: {}",e);
+                }
+            }
+        }
+    }
+}
+
+impl RbatisRef for RBatisTxExecutorGuard {
+    fn get_rbatis(&self) -> &Rbatis {
+        &self.rb
+    }
+}
+
+#[async_trait]
+impl Executor for RBatisTxExecutorGuard{
+    async fn exec(&mut self, sql: &str, args: Vec<Value>) -> Result<ExecResult, Error> {
+        match self.tx.as_mut(){
+            None => {
+                Err(Error::from("the tx is done!"))
+            }
+            Some(v) => {
+                v.exec(sql,args).await
+            }
+        }
+    }
+
+    async fn fetch(&mut self, sql: &str, args: Vec<Value>) -> Result<Value, Error> {
+        match self.tx.as_mut(){
+            None => {
+                Err(Error::from("the tx is done!"))
+            }
+            Some(v) => {
+                v.fetch(sql,args).await
             }
         }
     }
 }
 
 impl Rbatis {
-
     /// exec sql
     pub async fn exec(&self, sql: &str, args: Vec<Value>) -> Result<rbdc::db::ExecResult, Error> {
         let mut conn = self.acquire().await?;
