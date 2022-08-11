@@ -484,6 +484,34 @@ mod test {
     }
 
     #[test]
+    fn test_select_by_column() {
+        let f = async move {
+            let mut rb = Rbatis::new();
+            rb.link(MockDriver {}, "test").await.unwrap();
+            let mut t = MockTable {
+                id: Some("2".into()),
+                name: Some("2".into()),
+                pc_link: Some("2".into()),
+                h5_link: Some("2".into()),
+                pc_banner_img: None,
+                h5_banner_img: None,
+                sort: None,
+                status: Some(2),
+                remark: Some("2".into()),
+                create_time: Some(FastDateTime::now()),
+                version: Some(1),
+                sql: "".to_string(),
+                delete_flag: Some(1),
+                count: 0,
+            };
+            let r = MockTable::select_by_column(&mut rb, "id","1").await.unwrap();
+            println!("{}", r[0].sql);
+            assert_eq!(r[0].sql, "select * from mock_table where id = ?");
+        };
+        block_on(f);
+    }
+
+    #[test]
     fn test_tx() {
         let f = async move {
             let mut rb = Rbatis::new();
