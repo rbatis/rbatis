@@ -214,7 +214,7 @@ fn parse(
                         string_data = string_data.replacen(&v, &"?", 1);
                         body = quote! {
                             #body
-                            args.push(rbs::to_value!(#method_impl));
+                            args.push(rbs::to_value(#method_impl).unwrap_or_default());
                         };
                     } else {
                         if replaced.get(&v).is_none() {
@@ -305,7 +305,7 @@ fn parse(
                 body = quote! {
                     #body
                     //bind
-                    let #name_expr = rbs::to_value!(#method_impl);
+                    let #name_expr = rbs::to_value(#method_impl).unwrap_or_default();
                 };
                 ignore.push(name);
             }
