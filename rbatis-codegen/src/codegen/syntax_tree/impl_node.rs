@@ -4,7 +4,6 @@ use crate::codegen::syntax_tree::error::Error;
 use crate::codegen::syntax_tree::foreach_node::ForEachNode;
 use crate::codegen::syntax_tree::if_node::IfNode;
 use crate::codegen::syntax_tree::otherwise_node::OtherwiseNode;
-use crate::codegen::syntax_tree::print_node::PrintNode;
 use crate::codegen::syntax_tree::set_node::SetNode;
 use crate::codegen::syntax_tree::string_node::StringNode;
 use crate::codegen::syntax_tree::trim_node::TrimNode;
@@ -232,11 +231,6 @@ impl NodeType {
             return Ok(NodeType::NSet(SetNode { childs }));
         } else if trim_express.starts_with(WhereNode::name()) {
             return Ok(NodeType::NWhere(WhereNode { childs }));
-        } else if trim_express.starts_with(PrintNode::name()) {
-            return Ok(NodeType::NPrint(PrintNode {
-                value: "".to_string(),
-                format: "".to_string(),
-            }));
         } else if trim_express.starts_with(ContinueNode::name()) {
             return Ok(NodeType::NContinue(ContinueNode {}));
         } else {
