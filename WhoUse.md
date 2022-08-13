@@ -14,3 +14,23 @@
 * [Other Projects](https://github.com/rbatis/rbatis/network/dependents?package_id=UGFja2FnZS0zMjIwMTg5MjQ3)
 
 <img style="width: 200px;height: 200px;" width="200" height="200" src="logo.png" />
+
+
+* [mercury](https://github.com/nervosnetwork/mercury)
+
+* [rustus](https://github.com/s3rius/rustus)
+
+* [mercury](https://github.com/nervosnetwork/mercury)
+
+* [cashbox](https://github.com/scryinfo/cashbox)
+
+* [miaosha](https://github.com/leehyong/miaosha)
+
+* [UmDiaProgramando](https://github.com/Gabriel-Paulucci/UmDiaProgramando)
+
+* [clush-server](https://github.com/BruceKangCN/clush-server)
+
+* [fastjob](https://github.com/eliasyaoyc/fastjob)
+
+
+
