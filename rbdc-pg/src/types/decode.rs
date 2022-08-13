@@ -20,6 +20,9 @@ pub trait Decode: Sized {
 
 impl Decode for Value {
     fn decode(arg: PgValue) -> Result<Self, Error> {
+        if arg.type_info().is_null() {
+            return Ok(Value::Null);
+        }
         Ok(match arg.type_info().0 {
             PgType::Bool => Value::Bool(Decode::decode(arg)?),
             PgType::Bytea => Bytea::decode(arg)?.into(),
@@ -148,17 +151,17 @@ impl Decode for Value {
                 let v: Date = Decode::decode(arg)?;
                 v
             }
-            .into(),
+                .into(),
             PgType::Time => {
                 let v: Time = Decode::decode(arg)?;
                 v
             }
-            .into(),
+                .into(),
             PgType::Timestamp => {
                 let v: Timestamp = Decode::decode(arg)?;
                 v
             }
-            .into(),
+                .into(),
             PgType::Timestamptz => Timestamptz::decode(arg)?.into(),
             PgType::Interval => Value::Ext(
                 "Interval",
