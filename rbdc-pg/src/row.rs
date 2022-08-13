@@ -7,6 +7,7 @@ use rbdc::db::MetaData;
 use rbdc::Error;
 use rbs::Value;
 use std::sync::Arc;
+use crate::types::decode::Decode;
 
 /// Implementation of [`Row`] for PostgreSQL.
 #[derive(Debug)]
@@ -67,7 +68,16 @@ impl rbdc::db::Row for PgRow {
     fn get(&mut self, i: usize) -> Option<Value> {
         match self.try_take(i) {
             Err(_) => None,
-            Ok(v) => Some(Value::from(v)),
+            Ok(v) => {
+                match Value::decode(v){
+                    Ok(v) => {
+                        Some(v)
+                    }
+                    Err(e) => {
+                        None
+                    }
+                }
+            },
         }
     }
 }
