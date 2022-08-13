@@ -131,6 +131,46 @@ impl ObjectId {
         hex::encode(self.id)
     }
 
+    /// Returns u64
+    pub fn u128(&self) -> u128 {
+        let mut v = 0u128;
+
+        //4-TIMESTAMP 10
+        let b: [u8; 4] = [self.id[0], self.id[1], self.id[2], self.id[3]];
+        let u4 = u32::from_be_bytes(b.into());
+
+        //5-PROCESS_ID_OFFSET 10
+        let b: [u8; 8] = [0u8, 0u8, 0u8, self.id[4], self.id[5], self.id[6], self.id[7], self.id[8]];
+        let u5 = u64::from_be_bytes(b.into());
+
+        //3-COUNTER_OFFSET  8
+        let b: [u8; 4] = [0u8, self.id[9], self.id[10], self.id[11]];
+        let u3 = u32::from_be_bytes(b.into());
+
+        v =  u5 as u128 * 100000000000000000 + u3 as u128*10000000000 + u4  as u128;
+
+        v
+    }
+
+    pub fn with_u128(arg:u128)->Self{
+        if arg<100000000000000000{
+            return ObjectId{
+                id: [0u8,0u8,0u8,0u8,0u8,0u8,0u8,0u8,0u8,0u8,0u8,0u8]
+            }
+        }
+        let u5=(arg/100000000000000000) as u64;
+        let u3=((arg-u5 as u128*100000000000000000)/10000000000) as u32;
+        let u4=(arg-u5 as u128*100000000000000000-u3 as u128*10000000000) as u32;
+
+        let u5=u5.to_be_bytes();
+        let u3=u3.to_be_bytes();
+        let u4=u4.to_be_bytes();
+        //timestamp(4), PROCESS_ID(5),COUNTER(3)
+        ObjectId{
+            id:[u4[0],u4[1],u4[2],u4[3],u5[3],u5[4],u5[5],u5[6],u5[7],u3[1],u3[2],u3[3]]
+        }
+    }
+
     // Generates a new timestamp representing the current seconds since epoch.
     // Represented in Big Endian.
     fn gen_timestamp() -> [u8; 4] {
@@ -185,6 +225,8 @@ impl fmt::Debug for ObjectId {
 
 #[cfg(test)]
 mod test {
+    use crate::object_id::ObjectId;
+
     #[test]
     fn test_new() {
         println!("objectId:{}", super::ObjectId::new().to_string());
@@ -205,5 +247,14 @@ mod test {
         let id = super::ObjectId::with_string("53e37d08776f724e42000000").unwrap();
 
         assert_eq!(format!("{:?}", id), "ObjectId(53e37d08776f724e42000000)")
+    }
+
+    #[test]
+    fn test_u128(){
+        let oid=ObjectId::new();
+        println!("oid={}", oid);
+        println!("oid-u128={}", oid.u128());
+        println!("oid-from={}", ObjectId::with_u128(oid.u128()));
+        assert_eq!(oid,ObjectId::with_u128(oid.u128()));
     }
 }
