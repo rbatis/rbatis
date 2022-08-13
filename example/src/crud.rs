@@ -26,7 +26,9 @@ impl_select!(BizActivity{select_all_by_id(id:&str,name:&str) => "`where id = #{i
 impl_select!(BizActivity{select_by_id(id:&str) -> Option => "`where id = #{id} limit 1`"});
 impl_update!(BizActivity{update_by_name(name:&str) => "`where id = '2'`"});
 impl_delete!(BizActivity {delete_by_name(name:&str) => "`where name= '2'`"});
-impl_select_page!(BizActivity{select_page() => "`order by create_time desc`"});
+impl_select_page!(BizActivity{select_page() =>"
+     if !sql.contains('count'):
+       `order by create_time desc`"});
 impl_select_page!(BizActivity{select_page_by_name(name:&str) =>"
      if name != null && name != '':
        `where name != #{name}`
