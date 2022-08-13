@@ -46,7 +46,7 @@ pub trait AsProxy {
 
 impl AsProxy for Value {
     fn i32(&self) -> i32 {
-        return match self {
+         match self {
             Value::I32(v) => *v as i32,
             Value::I64(v) => *v as i32,
             Value::U32(v) => *v as i32,
@@ -55,11 +55,11 @@ impl AsProxy for Value {
             Value::F64(v) => *v as i32,
             Value::F32(v) => *v as i32,
             _ => 0,
-        };
+        }
     }
 
     fn i64(&self) -> i64 {
-        return match self {
+         match self {
             Value::F64(v) => *v as i64,
             Value::F32(v) => *v as i64,
             Value::U32(v) => *v as i64,
@@ -67,11 +67,11 @@ impl AsProxy for Value {
             Value::I32(v) => *v as i64,
             Value::I64(v) => *v,
             _ => 0,
-        };
+        }
     }
 
     fn u32(&self) -> u32 {
-        return match self {
+         match self {
             Value::F64(v) => *v as u32,
             Value::F32(v) => *v as u32,
             Value::I32(v) => *v as u32,
@@ -79,11 +79,11 @@ impl AsProxy for Value {
             Value::U32(v) => *v,
             Value::U64(v) => *v as u32,
             _ => 0,
-        };
+        }
     }
 
     fn u64(&self) -> u64 {
-        return match self {
+        match self {
             Value::F64(v) => *v as u64,
             Value::F32(v) => *v as u64,
             Value::I32(v) => *v as u64,
@@ -91,11 +91,11 @@ impl AsProxy for Value {
             Value::U32(v) => *v as u64,
             Value::U64(v) => *v,
             _ => 0,
-        };
+        }
     }
 
     fn f64(&self) -> f64 {
-        return match self {
+        match self {
             Value::F64(v) => *v as f64,
             Value::F32(v) => *v as f64,
             Value::I32(v) => *v as f64,
@@ -103,7 +103,7 @@ impl AsProxy for Value {
             Value::U32(v) => *v as f64,
             Value::U64(v) => *v as f64,
             _ => 0.0,
-        };
+        }
     }
 
     fn str(&self) -> &str {
@@ -139,10 +139,10 @@ impl AsProxy for Value {
             Value::F32(v) => *v as i64,
             Value::String(d) => d.to_string().parse().unwrap_or_default(),
             Value::Bool(d) => {
-                if *d == true {
-                    return 1;
+                if *d  {
+                    1
                 } else {
-                    return 0;
+                    0
                 }
             }
             Value::Null => 0,
@@ -165,10 +165,10 @@ impl AsProxy for Value {
             Value::F32(v) => *v as u64,
             Value::String(d) => d.to_string().parse().unwrap_or_default(),
             Value::Bool(d) => {
-                if *d == true {
-                    return 1;
+                if *d  {
+                    1
                 } else {
-                    return 0;
+                    0
                 }
             }
             Value::Null => 0,
@@ -191,10 +191,10 @@ impl AsProxy for Value {
             Value::F32(v) => *v as f64,
             Value::String(d) => d.to_string().parse().unwrap_or_default(),
             Value::Bool(d) => {
-                if *d == true {
-                    return 1.0;
+                if *d  {
+                    1.0
                 } else {
-                    return 0.0;
+                    0.0
                 }
             }
             Value::Null => 0.0,
@@ -209,36 +209,36 @@ impl AsProxy for Value {
         self.as_bool().unwrap_or_default()
     }
     fn is_empty(&self) -> bool {
-        return match self {
+        match self {
             Value::Null => true,
             Value::String(s) => s.is_empty(),
             Value::Array(arr) => arr.is_empty(),
             Value::Map(m) => m.is_empty(),
             _ => {
-                return false;
+                false
             }
-        };
+        }
     }
 
     fn is_null(&self) -> bool {
-        return match self {
+        match self {
             Value::Null => true,
             _ => false,
-        };
+        }
     }
 
     fn is_array(&self) -> bool {
-        return match self {
+        match self {
             Value::Array(_) => true,
             _ => false,
-        };
+        }
     }
 
     fn is_document(&self) -> bool {
-        return match self {
+        match self {
             Value::Map(_) => true,
             _ => false,
-        };
+        }
     }
 
     fn is_object(&self) -> bool {

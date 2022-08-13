@@ -10,6 +10,7 @@
 #![allow(unreachable_code)]
 #![allow(clippy::len_zero)]
 #![allow(clippy::modulo_one)]
+#![allow(clippy::match_like_matches_macro)]
 
 
 pub mod error;
