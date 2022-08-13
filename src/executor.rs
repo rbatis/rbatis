@@ -36,7 +36,7 @@ pub trait RbatisRef: Send {
 
 impl RbatisRef for Rbatis {
     fn get_rbatis(&self) -> &Rbatis {
-        &self
+        self
     }
 }
 
@@ -69,17 +69,17 @@ impl RBatisConnExecutor {
             T: DeserializeOwned,
     {
         let v = Executor::fetch(self, sql, args).await?;
-        Ok(decode(v)?)
+        decode(v)
     }
 }
 
 fn arr_to_string(arg: Vec<Value>) -> (Vec<Value>, String) {
     let b = Value::Array(arg);
     let s = b.to_string();
-    return match b {
+    match b {
         Value::Array(arr) => (arr, s),
         _ => (vec![], s),
-    };
+    }
 }
 
 #[async_trait]
@@ -87,7 +87,7 @@ impl Executor for RBatisConnExecutor {
     async fn exec(&mut self, sql: &str, mut args: Vec<Value>) -> Result<ExecResult, Error> {
         let rb_task_id = new_snowflake_id();
         let mut sql = sql.to_string();
-        let is_prepared = args.len() > 0;
+        let is_prepared = !args.is_empty();
         for item in self.get_rbatis().sql_intercepts.iter() {
             item.do_intercept(self.get_rbatis(), &mut sql, &mut args, is_prepared)?;
         }
@@ -126,7 +126,7 @@ impl Executor for RBatisConnExecutor {
     async fn fetch(&mut self, sql: &str, mut args: Vec<Value>) -> Result<Value, Error> {
         let rb_task_id = new_snowflake_id();
         let mut sql = sql.to_string();
-        let is_prepared = args.len() > 0;
+        let is_prepared = !args.is_empty();
         for item in self.get_rbatis().sql_intercepts.iter() {
             item.do_intercept(self.get_rbatis(), &mut sql, &mut args, is_prepared)?;
         }
@@ -171,12 +171,12 @@ impl RbatisRef for RBatisConnExecutor {
 impl RBatisConnExecutor {
     pub async fn begin(self) -> crate::Result<RBatisTxExecutor> {
         let tx = self.conn.begin().await?;
-        return Ok(RBatisTxExecutor {
+        Ok(RBatisTxExecutor {
             tx_id: new_snowflake_id(),
             conn: tx,
             rb: self.rb,
             done: false,
-        });
+        })
     }
 }
 
@@ -215,7 +215,7 @@ impl<'a> RBatisTxExecutor {
             T: DeserializeOwned,
     {
         let v = Executor::fetch(self, sql, args).await?;
-        Ok(decode(v)?)
+        decode(v)
     }
 }
 
@@ -227,7 +227,7 @@ impl Executor for RBatisTxExecutor {
         mut args: Vec<Value>,
     ) -> Result<rbdc::db::ExecResult, Error> {
         let mut sql = sql.to_string();
-        let is_prepared = args.len() > 0;
+        let is_prepared = !args.is_empty();
         for item in self.get_rbatis().sql_intercepts.iter() {
             item.do_intercept(self.get_rbatis(), &mut sql, &mut args, is_prepared)?;
         }
@@ -265,7 +265,7 @@ impl Executor for RBatisTxExecutor {
 
     async fn fetch(&mut self, sql: &str, mut args: Vec<Value>) -> Result<Value, Error> {
         let mut sql = sql.to_string();
-        let is_prepared = args.len() > 0;
+        let is_prepared = !args.is_empty();
         for item in self.get_rbatis().sql_intercepts.iter() {
             item.do_intercept(self.get_rbatis(), &mut sql, &mut args, is_prepared)?;
         }
@@ -310,23 +310,23 @@ impl RbatisRef for RBatisTxExecutor {
 impl RBatisTxExecutor {
     pub async fn begin(mut self) -> crate::Result<Self> {
         self.conn = self.conn.begin().await?;
-        return Ok(self);
+        Ok(self)
     }
     pub async fn commit(&mut self) -> crate::Result<bool> {
         if let Ok(()) = self.conn.commit().await {
             self.done = true;
         }
-        return Ok(self.done);
+        Ok(self.done)
     }
     pub async fn rollback(&mut self) -> crate::Result<bool> {
         if let Ok(()) = self.conn.rollback().await {
             self.done = true;
         }
-        return Ok(self.done);
+        Ok(self.done)
     }
 
     pub fn take_conn(self) -> Box<dyn Connection> {
-        return self.conn;
+        self.conn
     }
 }
 
@@ -366,7 +366,7 @@ impl RBatisTxExecutorGuard {
             .begin()
             .await?;
         self.tx = Some(v);
-        return Ok(());
+        Ok(())
     }
 
     pub async fn commit(&mut self) -> crate::Result<bool> {
@@ -374,7 +374,7 @@ impl RBatisTxExecutorGuard {
             .tx
             .as_mut()
             .ok_or_else(|| Error::from("[rbatis] tx is committed"))?;
-        return Ok(tx.commit().await?);
+        tx.commit().await
     }
 
     pub async fn rollback(&mut self) -> crate::Result<bool> {
@@ -382,7 +382,7 @@ impl RBatisTxExecutorGuard {
             .tx
             .as_mut()
             .ok_or_else(|| Error::from("[rbatis] tx is committed"))?;
-        return Ok(tx.rollback().await?);
+        tx.rollback().await
     }
 
     pub fn take_conn(mut self) -> Option<Box<dyn Connection>> {
@@ -427,11 +427,11 @@ impl Deref for RBatisTxExecutorGuard {
     type Target = RBatisTxExecutor;
 
     fn deref(&self) -> &Self::Target {
-        &self.tx.as_ref().unwrap()
+        self.tx.as_ref().unwrap()
     }
 }
 
-impl<'a> DerefMut for RBatisTxExecutorGuard {
+impl DerefMut for RBatisTxExecutorGuard {
     fn deref_mut(&mut self) -> &mut Self::Target {
         self.tx.as_mut().unwrap()
     }
@@ -502,7 +502,7 @@ impl Rbatis {
     {
         let mut conn = self.acquire().await?;
         let v = conn.fetch(sql, args).await?;
-        Ok(decode(v)?)
+        decode(v)
     }
 }
 

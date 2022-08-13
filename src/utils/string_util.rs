@@ -2,7 +2,7 @@ use std::collections::{BTreeMap, HashSet, LinkedList};
 use std::io::Read;
 
 //2020-11-15 00:31:25.803227700 +08:00 INFO rbatis::plugin::log
-pub const LOG_SPACE: &'static str = "                                                         ";
+pub const LOG_SPACE: &str = "                                                         ";
 
 //find like #{*,*},${*,*} value *
 pub fn find_convert_string(arg: &str) -> LinkedList<(String, String)> {
@@ -12,10 +12,10 @@ pub fn find_convert_string(arg: &str) -> LinkedList<(String, String)> {
     let mut item = String::with_capacity(arg.len());
     let mut index: i32 = -1;
     for v in &chars {
-        index = index + 1;
+        index += 1;
         if !item.is_empty() {
             item.push(*v as char);
-            if *v == '}' as u8 {
+            if *v == b'}' {
                 if cache.get(&item).is_some() {
                     item.clear();
                     continue;
@@ -27,30 +27,28 @@ pub fn find_convert_string(arg: &str) -> LinkedList<(String, String)> {
             }
             continue;
         }
-        if (*v == '#' as u8 || *v == '$' as u8)
-            && chars.get(index as usize + 1).eq(&Some(&('{' as u8)))
+        if (*v == b'#' || *v == b'$')
+            && chars.get(index as usize + 1).eq(&Some(&b'{'))
         {
             item.push(*v as char);
         }
     }
-    return list;
+    list
 }
 /// convert name to snake name
 pub fn to_snake_name(name: &str) -> String {
     let chs = name.chars();
     let mut new_name = String::new();
-    let mut index = 0;
     let chs_len = name.len();
-    for x in chs {
+    for (index, x) in chs.enumerate() {
         if x.is_uppercase() {
             if index != 0 && (index + 1) != chs_len {
-                new_name.push_str("_");
+                new_name.push('_');
             }
             new_name.push(x.to_ascii_lowercase());
         } else {
             new_name.push(x);
         }
-        index += 1;
     }
-    return new_name;
+    new_name
 }

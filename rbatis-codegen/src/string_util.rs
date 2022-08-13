@@ -52,13 +52,13 @@ pub fn count_string_num(s: &String, c: char) -> usize {
 ///input 'strings' => strings
 pub fn un_packing_string(column: &str) -> &str {
     if column.len() >= 2 {
-        if column.starts_with("'") && column.ends_with("'") {
+        if column.starts_with('\'') && column.ends_with('\'') {
             return &column[1..column.len() - 1];
         }
-        if column.starts_with("`") && column.ends_with("`") {
+        if column.starts_with('`') && column.ends_with('`') {
             return &column[1..column.len() - 1];
         }
-        if column.starts_with("\"") && column.ends_with("\"") {
+        if column.starts_with('\"') && column.ends_with('\"') {
             return &column[1..column.len() - 1];
         }
     }

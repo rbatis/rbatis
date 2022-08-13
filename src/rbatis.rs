@@ -67,16 +67,16 @@ impl Default for RbatisOption {
 impl Rbatis {
     ///create an Rbatis
     pub fn new() -> Self {
-        return Self::new_with_opt(RbatisOption::default());
+        Self::new_with_opt(RbatisOption::default())
     }
 
     ///new Rbatis from Option
     pub fn new_with_opt(option: RbatisOption) -> Self {
-        return Self {
+        Self {
             pool: Arc::new(OnceCell::new()),
             sql_intercepts: Arc::new(option.sql_intercepts),
             log_plugin: option.log_plugin,
-        };
+        }
     }
 
     /// link pool
@@ -92,7 +92,7 @@ impl Rbatis {
         option.set_uri(url)?;
         let pool = Pool::new_box(Box::new(driver), option);
         self.pool.set(pool);
-        return Ok(());
+        Ok(())
     }
 
     /// link pool
@@ -109,7 +109,7 @@ impl Rbatis {
         option.set_uri(url)?;
         let pool = Pool::new_builder(builder,Box::new(driver), option);
         self.pool.set(pool);
-        return Ok(());
+        Ok(())
     }
 
     /// link pool by DBPoolOptions
@@ -125,7 +125,7 @@ impl Rbatis {
     ) -> Result<(), Error> {
         let pool = Pool::new(driver, options);
         self.pool.set(pool);
-        return Ok(());
+        Ok(())
     }
 
     /// set_log_plugin
@@ -147,11 +147,7 @@ impl Rbatis {
     /// // rbatis.get_pool().unwrap().set_max_open_conns()
     /// ```
     pub fn get_pool(&self) -> Result<&Pool, Error> {
-        let p = self.pool.get();
-        if p.is_none() {
-            return Err(Error::from("[rbatis] rbatis pool not inited!"));
-        }
-        return Ok(p.unwrap());
+        self.pool.get().ok_or_else(||Error::from("[rbatis] rbatis pool not inited!"))
     }
 
     /// get driver type
@@ -164,10 +160,10 @@ impl Rbatis {
     pub async fn acquire(&self) -> Result<RBatisConnExecutor, Error> {
         let pool = self.get_pool()?;
         let conn = pool.get().await?;
-        return Ok(RBatisConnExecutor {
+        Ok(RBatisConnExecutor {
             conn: Box::new(conn),
             rb: self.clone(),
-        });
+        })
     }
 
     /// get an DataBase Connection,and call begin method,used for the next step
@@ -175,19 +171,16 @@ impl Rbatis {
         let pool = self.get_pool()?;
         let mut conn = pool.get().await?;
         conn.exec("begin", vec![]).await?;
-        return Ok(RBatisTxExecutor {
+        Ok(RBatisTxExecutor {
             tx_id: new_snowflake_id(),
             conn: Box::new(conn),
             rb: self.clone(),
             done: false
-        });
+        })
     }
 
     /// is debug mode
     pub fn is_debug_mode(&self) -> bool {
-        if cfg!(feature = "debug_mode") {
-            return true;
-        }
-        return false;
+       cfg!(feature = "debug_mode")
     }
 }

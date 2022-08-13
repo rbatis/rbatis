@@ -20,11 +20,8 @@ where
         println!("[rbatis] [debug_mode] [value]   {} => {}", type_name, bs);
     }
     let mut datas = vec![];
-    match bs {
-        Value::Array(arr) => {
-            datas = arr;
-        }
-        _ => {}
+    if let Value::Array(arr) = bs {
+        datas = arr;
     }
     // Hit a non-array object
     match type_name {
@@ -46,7 +43,7 @@ where
         "bigdecimal::BigDecimal" |
         "bool" |
         "alloc::string::String" => {
-            return Ok(try_decode_map(type_name, &mut datas)?);
+            return try_decode_map(type_name, &mut datas)
         }
         _ => {}
     }
@@ -79,42 +76,39 @@ where
     let mut v = Value::Null;
     let m = datas.remove(0);
     let mut doc_len = 0;
-    match &m {
-        Value::Map(doc) => {
-            doc_len = doc.len();
-            if doc_len == 1 {
-                if let Some((_, value)) = doc.into_iter().next() {
-                    v = value.clone();
-                }
+    if let Value::Map(doc) = &m {
+        doc_len = doc.len();
+        if doc_len == 1 {
+            if let Some((_, value)) = doc.into_iter().next() {
+                v = value.clone();
             }
         }
-        _ => {}
     }
     let r = rbs::from_value::<T>(m);
-    if r.is_err() {
+    if let Ok(r) = r {
+        Ok(r)
+    } else {
         if doc_len > 1 {
             return Ok(r?);
         }
         //try one
-        return Ok(rbs::from_value::<T>(v)?);
-    } else {
-        return Ok(r.unwrap());
+        Ok(rbs::from_value::<T>(v)?)
     }
 }
 
 #[cfg(test)]
 mod test {
+    use crate::decode::decode;
+    use rbs::value::map::ValueMap;
     use rbs::{to_value, Value};
     use std::collections::HashMap;
-    use rbs::value::map::ValueMap;
-    use crate::decode::decode;
 
     #[test]
     fn test_decode_hashmap() {
         let mut v = ValueMap::new();
-        v.insert(1.into(),2.into());
+        v.insert(1.into(), 2.into());
         let m: HashMap<i32, Value> = decode(Value::Array(vec![Value::Map(v)])).unwrap();
         println!("{:#?}", m);
-        assert_eq!(m.get(&1).unwrap().as_i64(),Value::I32(2).as_i64());
+        assert_eq!(m.get(&1).unwrap().as_i64(), Value::I32(2).as_i64());
     }
 }

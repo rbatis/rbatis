@@ -3,19 +3,23 @@ macro_rules! push_index {
     ($n:expr,$new_sql:ident,$index:expr) => {{
         let num = $index / $n;
         $new_sql.push((num + 48) as u8 as char);
-        $index % $n
+        if $n == 1 || $n == -1 {
+            $index
+        } else {
+            $index % $n
+        }
     }};
     ($index:ident,$new_sql:ident) => {
-        if $index >= 0 && $index < 10 {
+        if (0..10).contains(&$index) {
             $new_sql.push(($index + 48) as u8 as char);
-        } else if $index >= 10 && $index < 100 {
+        } else if (10..100).contains(&$index) {
             let $index = $crate::push_index!(10, $new_sql, $index);
             let $index = $crate::push_index!(1, $new_sql, $index);
-        } else if $index >= 100 && $index < 1000 {
+        } else if (100..1000).contains(&$index) {
             let $index = $crate::push_index!(100, $new_sql, $index);
             let $index = $crate::push_index!(10, $new_sql, $index);
             let $index = $crate::push_index!(1, $new_sql, $index);
-        } else if $index >= 1000 && $index < 10000 {
+        } else if (1000..10000).contains(&$index) {
             let $index = $crate::push_index!(1000, $new_sql, $index);
             let $index = $crate::push_index!(100, $new_sql, $index);
             let $index = $crate::push_index!(10, $new_sql, $index);

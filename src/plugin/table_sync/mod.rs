@@ -36,6 +36,11 @@ impl DerefMut for RbatisTableSync {
     }
 }
 
+impl Default for RbatisTableSync {
+    fn default() -> Self {
+        Self::new()
+    }
+}
 impl RbatisTableSync {
     pub fn new() -> Self {
         Self {

@@ -164,7 +164,7 @@ impl<T: Decode + TypeInfo> Decode for Vec<T> {
 }
 
 fn element_type_info<T: TypeInfo>(arg: &Vec<T>) -> PgTypeInfo {
-    if arg.len() == 0 {
+    if arg.is_empty() {
         PgTypeInfo::UNKNOWN
     } else {
         arg[0].type_info()

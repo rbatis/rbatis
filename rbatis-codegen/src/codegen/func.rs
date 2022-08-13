@@ -66,7 +66,7 @@ fn convert_to_arg_access(context: &str, arg: Expr, as_proxy: bool, ignore: &[Str
                 BinOp::Add(_) => {
                     let left_token = b.left.to_token_stream().to_string();
                     let right_token = b.right.to_token_stream().to_string();
-                    if left_token.trim().ends_with("\"") && left_token.trim().starts_with("\"") {
+                    if left_token.trim().ends_with("\"") && left_token.trim().starts_with('\"') {
                         return syn::parse_str::<Expr>(&format!(
                             "(String::from({})).op_add({})",
                             b.left.to_token_stream(),

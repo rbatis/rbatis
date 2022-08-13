@@ -12,10 +12,7 @@ impl<T> ToResult<T> for Option<&T> {
     where
         F: Fn() -> String,
     {
-        if self.is_none() {
-            return Err(Error::from(fail_method()));
-        }
-        return Ok(self.unwrap());
+        self.ok_or_else(||Error::from(fail_method()))
     }
 }
 
@@ -23,5 +20,5 @@ impl<T> ToResult<T> for Option<&T> {
 fn test_to_result() {
     let i = 1;
     let v = Option::Some(&i);
-    let r = v.to_result(|| String::new());
+    let r = v.to_result(String::new);
 }

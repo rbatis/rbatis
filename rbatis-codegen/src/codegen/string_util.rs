@@ -51,7 +51,7 @@ pub fn un_packing_string(column: &str) -> &str {
         if column.starts_with("`") && column.ends_with("`") {
             return &column[1..column.len() - 1];
         }
-        if column.starts_with("\"") && column.ends_with("\"") {
+        if column.starts_with('\"') && column.ends_with('\"') {
             return &column[1..column.len() - 1];
         }
     }

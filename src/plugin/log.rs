@@ -13,7 +13,7 @@ pub trait LogPlugin: Send + Sync + Debug {
     fn get_level_filter(&self) -> LevelFilter;
     fn set_level_filter(&self, level: LevelFilter);
     fn is_enable(&self) -> bool {
-        return !self.get_level_filter().eq(&log::LevelFilter::Off);
+        !self.get_level_filter().eq(&log::LevelFilter::Off)
     }
     fn do_log(&self, id: i64, data: &str) {
         match self.get_level_filter() {

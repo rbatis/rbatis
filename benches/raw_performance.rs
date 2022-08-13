@@ -27,7 +27,7 @@ fn bench_raw() {
     });
     block_on!(async{
         rbatis::bench!(100000,{
-            let v=rbatis.fetch::<Vec<i32>>("",vec![]).await;
+            let v=rbatis.fetch("",vec![]).await;
         });
    });
 }

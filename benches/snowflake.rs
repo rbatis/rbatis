@@ -3,8 +3,6 @@
 extern crate test;
 
 use rbatis::snowflake::new_snowflake_id;
-use rbs::Value;
-use std::rc::Rc;
 use test::Bencher;
 
 #[bench]

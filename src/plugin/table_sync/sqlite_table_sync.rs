@@ -40,19 +40,19 @@ impl TableSync for SqliteTableSync {
         match table {
             Value::Map(m) => {
                 let mut sql_create = format!("CREATE TABLE {} ", name);
-                let mut sql_column = format!("");
+                let mut sql_column = String::new();
                 for (k, v) in &m {
                     let k = k.as_str().unwrap_or_default();
                     sql_column.push_str(k);
-                    sql_column.push_str(" ");
-                    sql_column.push_str(type_str(&v));
+                    sql_column.push(' ');
+                    sql_column.push_str(type_str(v));
                     if k.eq("id") || v.as_str().unwrap_or_default() == "id" {
                         sql_column.push_str(" PRIMARY KEY NOT NULL ");
                     }
-                    sql_column.push_str(",");
+                    sql_column.push(',');
                 }
-                if sql_column.ends_with(",") {
-                    sql_column = sql_column.trim_end_matches(",").to_string();
+                if sql_column.ends_with(',') {
+                    sql_column = sql_column.trim_end_matches(',').to_string();
                 }
                 sql_create = sql_create + &format!("({});", sql_column);
                 let result_create = rb.exec(&sql_create, vec![]).await;
@@ -66,7 +66,7 @@ impl TableSync for SqliteTableSync {
                                 if k.eq("id") || v.as_str().unwrap_or_default() == "id" {
                                     id_key = " PRIMARY KEY NOT NULL";
                                 }
-                                match rb.exec(&format!("alter table {} add {} {} {};", name, k, type_str(&v), id_key), vec![]).await {
+                                match rb.exec(&format!("alter table {} add {} {} {};", name, k, type_str(v), id_key), vec![]).await {
                                     Ok(_) => {}
                                     Err(e) => {
                                         if e.to_string().contains("duplicate column") {

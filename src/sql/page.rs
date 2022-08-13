@@ -27,9 +27,9 @@ pub trait IPageRequest: Send + Sync {
         }
         let mut pages = self.get_total() / self.get_page_size();
         if self.get_total() % self.get_page_size() != 0 {
-            pages = pages + 1;
+            pages += 1;
         }
-        return pages;
+        pages
     }
     ///sum offset
     fn offset(&self) -> u64 {
@@ -77,15 +77,15 @@ pub struct PageRequest {
 
 impl PageRequest {
     pub fn new(page_no: u64, page_size: u64) -> Self {
-        return PageRequest::new_total(page_no, page_size, DEFAULT_PAGE_SIZE);
+        PageRequest::new_total(page_no, page_size, DEFAULT_PAGE_SIZE)
     }
 
     pub fn new_option(page_no: &Option<u64>, page_size: &Option<u64>) -> Self {
-        return PageRequest::new(page_no.unwrap_or(1), page_size.unwrap_or(DEFAULT_PAGE_SIZE));
+        PageRequest::new(page_no.unwrap_or(1), page_size.unwrap_or(DEFAULT_PAGE_SIZE))
     }
 
     pub fn new_total(page_no: u64, page_size: u64, total: u64) -> Self {
-        return PageRequest::new_plugin(String::new(), page_no, page_size, total);
+        PageRequest::new_plugin(String::new(), page_no, page_size, total)
     }
 
     pub fn new_plugin(plugin: String, page_no: u64, page_size: u64, total: u64) -> Self {
@@ -93,23 +93,23 @@ impl PageRequest {
         if page_no < 1 {
             page_no = 1;
         }
-        return Self {
+        Self {
             total,
             page_size,
-            page_no: page_no,
+            page_no,
             search_count: true,
-        };
+        }
     }
 }
 
 impl Default for PageRequest {
     fn default() -> Self {
-        return PageRequest {
+        PageRequest {
             total: 0,
             page_size: DEFAULT_PAGE_SIZE,
             page_no: 1,
             search_count: true,
-        };
+        }
     }
 }
 
@@ -153,16 +153,16 @@ impl IPageRequest for PageRequest {
 
 impl<T> Page<T> {
     pub fn new(current: u64, page_size: u64) -> Self {
-        return Page::new_total(current, page_size, 0);
+        Page::new_total(current, page_size, 0)
     }
 
     pub fn new_option(current: &Option<u64>, page_size: &Option<u64>) -> Self {
-        return Page::new(current.unwrap_or(1), page_size.unwrap_or(DEFAULT_PAGE_SIZE));
+        Page::new(current.unwrap_or(1), page_size.unwrap_or(DEFAULT_PAGE_SIZE))
     }
 
     pub fn new_total(page_no: u64, page_size: u64, total: u64) -> Self {
         if page_no < 1 {
-            return Self {
+            Self {
                 total,
                 pages: {
                     let mut pages = total / page_size;
@@ -171,45 +171,46 @@ impl<T> Page<T> {
                     }
                     pages
                 },
-                page_size: page_size,
-                page_no: 1 as u64,
+                page_size,
+                page_no: 1_u64,
                 records: vec![],
                 search_count: true,
-            };
+            }
+        } else {
+            Self {
+                total,
+                pages: {
+                    let mut pages = total / page_size;
+                    if total % page_size != 0 {
+                        pages += 1;
+                    }
+                    pages
+                },
+                page_size,
+                page_no,
+                records: vec![],
+                search_count: true,
+            }
         }
-        return Self {
-            total,
-            pages: {
-                let mut pages = total / page_size;
-                if total % page_size != 0 {
-                    pages += 1;
-                }
-                pages
-            },
-            page_size: page_size,
-            page_no,
-            records: vec![],
-            search_count: true,
-        };
     }
 }
 
 impl<T> Default for Page<T> {
     fn default() -> Self {
-        return Page {
+        Page {
             records: vec![],
             total: 0,
             pages: 0,
             page_size: DEFAULT_PAGE_SIZE,
             page_no: 1,
             search_count: true,
-        };
+        }
     }
 }
 
 impl<T> IPageRequest for Page<T>
-    where
-        T: Send + Sync,
+where
+    T: Send + Sync,
 {
     fn get_page_size(&self) -> u64 {
         self.page_size
@@ -248,8 +249,8 @@ impl<T> IPageRequest for Page<T>
 }
 
 impl<T> IPage<T> for Page<T>
-    where
-        T: Send + Sync,
+where
+    T: Send + Sync,
 {
     fn get_records(&self) -> &Vec<T> {
         self.records.as_ref()
@@ -279,7 +280,10 @@ impl<T: Display + Debug> Display for Page<T> {
 }
 
 impl<V> Page<V> {
-    pub fn from<T>(arg: Page<T>) -> Self where V: From<T> {
+    pub fn from<T>(arg: Page<T>) -> Self
+    where
+        V: From<T>,
+    {
         let mut p = Page::<V>::new(arg.page_no, arg.page_size);
         p.pages = arg.pages;
         p.page_no = arg.page_no;

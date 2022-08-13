@@ -24,7 +24,7 @@ pub trait ParsePySql {
 pub fn impl_fn_py(m: &ItemFn, args: &AttributeArgs) -> TokenStream {
     let fn_name = m.sig.ident.to_string();
     let mut data = args.get(0).to_token_stream().to_string();
-    if data.ne("\"\"") && data.starts_with("\"") && data.ends_with("\"") {
+    if data.ne("\"\"") && data.starts_with('\"') && data.ends_with('\"') {
         data = data[1..data.len() - 1].to_string();
     }
     data = data.replace("\\n", "\n");
@@ -73,12 +73,11 @@ impl ParsePySql for NodeType {
             if do_skip != -1 && do_skip >= skip {
                 skip = do_skip;
             }
-            let parserd;
-            if !child_str.is_empty() {
-                parserd = Self::parse_pysql(child_str.as_str())?;
+            let parserd = if !child_str.is_empty() {
+                Self::parse_pysql(child_str.as_str())?
             } else {
-                parserd = vec![];
-            }
+                vec![]
+            };
             Self::parse_pysql_node(
                 &mut main_node,
                 x,
@@ -123,7 +122,7 @@ impl NodeType {
             }
             let node = Self::parse_trim_node(trim_x, x, childs)?;
             main_node.push(node);
-            return Ok(());
+            Ok(())
         } else {
             //string,replace space to only one
             let mut data = x.to_owned();
@@ -145,7 +144,7 @@ impl NodeType {
             for x in childs {
                 main_node.push(x);
             }
-            return Ok(());
+            Ok(())
         }
     }
 

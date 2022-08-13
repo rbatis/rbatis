@@ -187,10 +187,10 @@ impl fmt::Debug for ObjectId {
 mod test {
     #[test]
     fn test_new() {
-        println!("objectId:{}", super::ObjectId::new().to_string());
-        println!("objectId:{}", super::ObjectId::new().to_string());
-        println!("objectId:{}", super::ObjectId::new().to_string());
-        println!("objectId:{}", super::ObjectId::new().to_string());
+        println!("objectId:{}", super::ObjectId::new());
+        println!("objectId:{}", super::ObjectId::new());
+        println!("objectId:{}", super::ObjectId::new());
+        println!("objectId:{}", super::ObjectId::new());
     }
 
     #[test]

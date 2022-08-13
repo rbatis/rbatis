@@ -1,7 +1,7 @@
 use crate::rbatis::Rbatis;
+use crate::Error;
 use rbs::Value;
 use std::fmt::{Debug, Display};
-use crate::Error;
 
 /// sql intercept
 pub trait SqlIntercept: Send + Sync + Debug {
@@ -41,7 +41,7 @@ impl SqlIntercept for BlockAttackDeleteInterceptor {
                 sql
             )));
         }
-        return Ok(());
+        Ok(())
     }
 }
 
@@ -66,6 +66,6 @@ impl SqlIntercept for BlockAttackUpdateInterceptor {
                 sql
             )));
         }
-        return Ok(());
+        Ok(())
     }
 }

@@ -59,9 +59,9 @@ impl Clone for Snowflake {
         let sequence = self.sequence.load(Ordering::Relaxed);
         let time = self.time.load(Ordering::Relaxed);
         Self {
-            epoch: self.epoch.clone(),
-            worker_id: self.worker_id.clone(),
-            datacenter_id: self.datacenter_id.clone(),
+            epoch: self.epoch,
+            worker_id: self.worker_id,
+            datacenter_id: self.datacenter_id,
             sequence: AtomicI64::new(sequence),
             time: AtomicI64::new(time),
         }
@@ -129,7 +129,7 @@ impl Snowflake {
     }
 }
 
-pub static SNOWFLAKE: Lazy<Snowflake> = Lazy::new(|| Snowflake::default());
+pub static SNOWFLAKE: Lazy<Snowflake> = Lazy::new(Snowflake::default);
 
 ///gen new snowflake_id
 pub fn new_snowflake_id() -> i64 {

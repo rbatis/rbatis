@@ -8,8 +8,7 @@ mod test {
         let finds = find_convert_string(sql);
         println!("{:?}", finds);
         assert_eq!(finds.len(), 5);
-        let mut index = 0;
-        for (k, _) in &finds {
+        for (index, (k, _)) in finds.iter().enumerate() {
             if index == 0 {
                 assert_eq!(k, "name");
             }
@@ -25,7 +24,6 @@ mod test {
             if index == 4 {
                 assert_eq!(k, "flag");
             }
-            index += 1;
         }
         println!("{:?}", finds);
     }

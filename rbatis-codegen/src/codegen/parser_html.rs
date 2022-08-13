@@ -722,7 +722,7 @@ pub fn impl_fn_html(m: &ItemFn, args: &AttributeArgs) -> TokenStream {
     let current_dir = current_dir().unwrap();
     let fn_name = m.sig.ident.to_string();
     let mut file_name = args.get(0).to_token_stream().to_string();
-    if file_name.ne("\"\"") && file_name.starts_with("\"") && file_name.ends_with("\"") {
+    if file_name.ne("\"\"") && file_name.starts_with('\"') && file_name.ends_with('\"') {
         file_name = file_name[1..file_name.len() - 1].to_string();
     }
     let mut t;
