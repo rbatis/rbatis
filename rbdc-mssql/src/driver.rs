@@ -51,8 +51,13 @@ impl Placeholder for MssqlDriver {
             if x == '?' as u8 && last != '\\' as u8 {
                 sql_bytes[index] = '@' as u8;
                 sql_bytes.insert(index + 1, 'P' as u8); //P
-                sql_bytes.insert(index + 2, '0' as u8 + placeholder_idx);
-                last = '0' as u8 + placeholder_idx;
+                let bytes = placeholder_idx.to_string().into_bytes();
+                let mut idx = 0;
+                for x in bytes {
+                    sql_bytes.insert(index + 2 + idx, x);
+                    last = x;
+                    idx += 1;
+                }
                 placeholder_idx += 1;
             } else {
                 last = x;
@@ -60,6 +65,20 @@ impl Placeholder for MssqlDriver {
             index += 1;
         }
         String::from_utf8(sql_bytes).unwrap_or_default()
+    }
+}
+
+#[cfg(test)]
+mod test {
+    use rbdc::db::Placeholder;
+    use crate::driver::MssqlDriver;
+
+    #[test]
+    fn test_exchange() {
+        let v = "insert into biz_activity (id,name,pc_link,h5_link,pc_banner_img,h5_banner_img,sort,status,remark,create_time,version,delete_flag) VALUES (?,?,?,?,?,?,?,?,?,?,?,?)";
+        let d = MssqlDriver {};
+        let sql = d.exchange(v);
+        assert_eq!("insert into biz_activity (id,name,pc_link,h5_link,pc_banner_img,h5_banner_img,sort,status,remark,create_time,version,delete_flag) VALUES (@P1,@P2,@P3,@P4,@P5,@P6,@P7,@P8,@P9,@P10,@P11,@P12)", sql);
     }
 }
 

@@ -38,7 +38,7 @@ impl Placeholder for PgDriver {
     fn exchange(&self, sql: &str) -> String {
         let mut last = ' ' as u8;
         let mut sql_bytes = sql.as_bytes().to_vec();
-        let mut placeholder_idx = 1;
+        let mut placeholder_idx: i32 = 1;
         let mut index = 0;
         loop {
             if index == sql_bytes.len() {
@@ -47,8 +47,13 @@ impl Placeholder for PgDriver {
             let x = sql_bytes[index];
             if x == '?' as u8 && last != '\\' as u8 {
                 sql_bytes[index] = '$' as u8;
-                sql_bytes.insert(index + 1, '0' as u8 + placeholder_idx);
-                last = '0' as u8 + placeholder_idx;
+                let bytes = placeholder_idx.to_string().into_bytes();
+                let mut idx = 0;
+                for x in bytes {
+                    sql_bytes.insert(index + 1 + idx, x);
+                    last = x;
+                    idx += 1;
+                }
                 placeholder_idx += 1;
             } else {
                 last = x;
@@ -56,6 +61,20 @@ impl Placeholder for PgDriver {
             index += 1;
         }
         String::from_utf8(sql_bytes).unwrap_or_default()
+    }
+}
+
+#[cfg(test)]
+mod test {
+    use rbdc::db::Placeholder;
+    use crate::driver::PgDriver;
+
+    #[test]
+    fn test_exchange() {
+        let v = "insert into biz_activity (id,name,pc_link,h5_link,pc_banner_img,h5_banner_img,sort,status,remark,create_time,version,delete_flag) VALUES (?,?,?,?,?,?,?,?,?,?,?,?)";
+        let d = PgDriver {};
+        let sql = d.exchange(v);
+        assert_eq!("insert into biz_activity (id,name,pc_link,h5_link,pc_banner_img,h5_banner_img,sort,status,remark,create_time,version,delete_flag) VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12)", sql);
     }
 }
 
