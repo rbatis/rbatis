@@ -15,74 +15,74 @@ pub trait LogPlugin: Send + Sync + Debug {
     fn is_enable(&self) -> bool {
         return !self.get_level_filter().eq(&log::LevelFilter::Off);
     }
-    fn do_log(&self, id: i64, data: &str) {
+    fn do_log(&self, data: &str) {
         match self.get_level_filter() {
             log::LevelFilter::Error => {
-                self.error(id, data);
+                self.error(data);
             }
             log::LevelFilter::Warn => {
-                self.warn(id, data);
+                self.warn( data);
             }
             log::LevelFilter::Info => {
-                self.info(id, data);
+                self.info( data);
             }
             log::LevelFilter::Debug => {
-                self.debug(id, data);
+                self.debug( data);
             }
             log::LevelFilter::Trace => {
-                self.trace(id, data);
+                self.trace(data);
             }
             log::LevelFilter::Off => {}
         }
     }
 
-    fn error(&self, id: i64, data: &str) {
+    fn error(&self,  data: &str) {
         let filter = self.get_level_filter();
         if filter.eq(&LevelFilter::Off) {
             return;
         }
         if filter.ge(&LevelFilter::Error) {
-            error!("[rbatis] [{}] {}", id, data);
+            error!("{}" ,data);
         }
     }
 
-    fn warn(&self, id: i64, data: &str) {
+    fn warn(&self, data: &str) {
         let filter = self.get_level_filter();
         if filter.eq(&LevelFilter::Off) {
             return;
         }
         if filter.ge(&LevelFilter::Warn) {
-            warn!("[rbatis] [{}] {}", id, data);
+            warn!(" {}", data);
         }
     }
 
-    fn info(&self, id: i64, data: &str) {
+    fn info(&self, data: &str) {
         let filter = self.get_level_filter();
         if filter.eq(&LevelFilter::Off) {
             return;
         }
         if filter.ge(&LevelFilter::Info) {
-            info!("[rbatis] [{}] {}", id, data);
+            info!("{}", data);
         }
     }
 
-    fn debug(&self, id: i64, data: &str) {
+    fn debug(&self,  data: &str) {
         let filter = self.get_level_filter();
         if filter.eq(&LevelFilter::Off) {
             return;
         }
         if filter.ge(&LevelFilter::Debug) {
-            debug!("[rbatis] [{}] {}", id, data);
+            debug!("{}",data);
         }
     }
 
-    fn trace(&self, id: i64, data: &str) {
+    fn trace(&self, data: &str) {
         let filter = self.get_level_filter();
         if filter.eq(&LevelFilter::Off) {
             return;
         }
         if filter.ge(&LevelFilter::Trace) {
-            trace!("[rbatis] [{}] {}", id, data);
+            trace!("{}", data);
         }
     }
 }
