@@ -11,9 +11,6 @@ pub trait Decode {
 
 impl Decode for Value {
     fn decode(row: &tiberius::Row, i: usize, t: ColumnType) -> Result<Value,Error> {
-        if (i + 1) >= row.len() {
-            return Ok(Value::Null);
-        }
         Ok(match t {
             ColumnType::Null => Value::Null,
             ColumnType::Bit => {
