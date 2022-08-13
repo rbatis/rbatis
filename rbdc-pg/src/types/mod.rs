@@ -50,7 +50,7 @@ impl TypeInfo for Value {
                 arr[0]
                     .type_info()
                     .clone()
-                    .to_array_element()
+                    .to_array_type()
                     .unwrap_or(PgTypeInfo::UNKNOWN)
             }
             Value::Map(_) => PgTypeInfo::UNKNOWN,
