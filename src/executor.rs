@@ -36,7 +36,7 @@ pub trait RbatisRef: Send {
 
 impl RbatisRef for Rbatis {
     fn get_rbatis(&self) -> &Rbatis {
-        &self
+        self
     }
 }
 

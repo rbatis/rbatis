@@ -8,6 +8,9 @@
 #![allow(unused_parens)]
 #![allow(unused_mut)]
 #![allow(unreachable_code)]
+#![allow(clippy::len_zero)]
+#![allow(clippy::modulo_one)]
+
 
 pub mod error;
 pub mod string_util;

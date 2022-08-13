@@ -1,33 +1,4 @@
-#[macro_export]
-macro_rules! push_index {
-    ($n:expr,$new_sql:ident,$index:expr) => {{
-        let num = $index / $n;
-        $new_sql.push((num + 48) as u8 as char);
-        $index % $n
-    }};
-    ($index:ident,$new_sql:ident) => {
-        if $index >= 0 && $index < 10 {
-            $new_sql.push(($index + 48) as u8 as char);
-        } else if $index >= 10 && $index < 100 {
-            let $index = $crate::push_index!(10, $new_sql, $index);
-            let $index = $crate::push_index!(1, $new_sql, $index);
-        } else if $index >= 100 && $index < 1000 {
-            let $index = $crate::push_index!(100, $new_sql, $index);
-            let $index = $crate::push_index!(10, $new_sql, $index);
-            let $index = $crate::push_index!(1, $new_sql, $index);
-        } else if $index >= 1000 && $index < 10000 {
-            let $index = $crate::push_index!(1000, $new_sql, $index);
-            let $index = $crate::push_index!(100, $new_sql, $index);
-            let $index = $crate::push_index!(10, $new_sql, $index);
-            let $index = $crate::push_index!(1, $new_sql, $index);
-        } else {
-            use std::fmt::Write;
-            $new_sql
-                .write_fmt(format_args!("{}", $index))
-                .expect("a Display implementation returned an error unexpectedly");
-        }
-    };
-}
+
 
 #[macro_export]
 macro_rules! sql_index {
@@ -52,7 +23,7 @@ macro_rules! sql_index {
                 if x == '?' && $format_char != '?' {
                     index += 1;
                     new_sql.push($format_char);
-                    $crate::push_index!(index, new_sql);
+                    new_sql.push((index +48 ) as u8 as char);
                 } else {
                     new_sql.push(x);
                 }
@@ -60,4 +31,12 @@ macro_rules! sql_index {
         }
         $sql = new_sql
     };
+}
+
+#[test]
+fn test_id(){
+    let mut sql="select * from table ? ? ?".to_string();
+    sql_index!( sql,'$');
+    println!("{}",sql);
+    assert_eq!(sql,"select * from table $1 $2 $3")
 }
