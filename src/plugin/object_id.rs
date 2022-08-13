@@ -151,7 +151,7 @@ impl ObjectId {
     }
 
     pub fn with_u128(arg:u128)->Self{
-        if arg<1000000000000000000{
+        if arg<1000000000000000000000000000{
             return ObjectId{
                 id: [0u8,0u8,0u8,0u8,0u8,0u8,0u8,0u8,0u8,0u8,0u8,0u8]
             }
