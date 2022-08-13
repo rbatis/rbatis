@@ -146,21 +146,19 @@ impl ObjectId {
         //3-COUNTER_OFFSET  8
         let b: [u8; 4] = [0u8, self.id[9], self.id[10], self.id[11]];
         let u3 = u32::from_be_bytes(b.into());
-
-        v =  u5 as u128 * 100000000000000000 + u3 as u128*10000000000 + u4  as u128;
-
+        v =  u5 as u128 * 1000000000000000000 + u4 as u128*100000000 +u3 as u128;
         v
     }
 
     pub fn with_u128(arg:u128)->Self{
-        if arg<100000000000000000{
+        if arg<1000000000000000000{
             return ObjectId{
                 id: [0u8,0u8,0u8,0u8,0u8,0u8,0u8,0u8,0u8,0u8,0u8,0u8]
             }
         }
-        let u5=(arg/100000000000000000) as u64;
-        let u3=((arg-u5 as u128*100000000000000000)/10000000000) as u32;
-        let u4=(arg-u5 as u128*100000000000000000-u3 as u128*10000000000) as u32;
+        let u5=(arg/1000000000000000000) as u64;
+        let u4=((arg-u5 as u128*1000000000000000000)/100000000) as u32;
+        let u3=(arg-u5 as u128*1000000000000000000-u4 as u128*100000000) as u32;
 
         let u5=u5.to_be_bytes();
         let u3=u3.to_be_bytes();
@@ -229,10 +227,18 @@ mod test {
 
     #[test]
     fn test_new() {
-        println!("objectId:{}", super::ObjectId::new().to_string());
-        println!("objectId:{}", super::ObjectId::new().to_string());
-        println!("objectId:{}", super::ObjectId::new().to_string());
-        println!("objectId:{}", super::ObjectId::new().to_string());
+        println!("objectId:{}", ObjectId::new().to_string());
+        println!("objectId:{}", ObjectId::new().to_string());
+        println!("objectId:{}", ObjectId::new().to_string());
+        println!("objectId:{}", ObjectId::new().to_string());
+    }
+
+    #[test]
+    fn test_new_u128() {
+        println!("objectId:{}", ObjectId::new().u128());
+        println!("objectId:{}", ObjectId::new().u128());
+        println!("objectId:{}", ObjectId::new().u128());
+        println!("objectId:{}", ObjectId::new().u128());
     }
 
     #[test]
