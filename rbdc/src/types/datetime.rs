@@ -2,8 +2,9 @@ use rbs::Value;
 use serde::de::Error;
 use serde::{Deserialize, Deserializer, Serialize, Serializer};
 use std::fmt::{Display, Formatter};
-use std::ops::{Deref, DerefMut};
+use std::ops::{Add, Deref, DerefMut, Sub};
 use std::str::FromStr;
+use std::time::Duration;
 
 #[derive(Debug, Clone, Eq, PartialEq, Hash)]
 pub struct FastDateTime(pub fastdate::DateTime);
@@ -16,8 +17,8 @@ impl Display for FastDateTime {
 
 impl Serialize for FastDateTime {
     fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
-    where
-        S: Serializer,
+        where
+            S: Serializer,
     {
         serializer.serialize_newtype_struct("DateTime", &self.0)
     }
@@ -25,8 +26,8 @@ impl Serialize for FastDateTime {
 
 impl<'de> Deserialize<'de> for FastDateTime {
     fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
-    where
-        D: Deserializer<'de>,
+        where
+            D: Deserializer<'de>,
     {
         let v = DateTimeValue::deserialize(deserializer)?;
         match v.0 {
@@ -117,6 +118,31 @@ impl FastDateTime {
         FastDateTime(fastdate::DateTime::from_timestamp_nano(nano))
     }
 }
+
+impl Sub for FastDateTime {
+    type Output = Duration;
+
+    fn sub(self, rhs: Self) -> Self::Output {
+        self.0 - rhs.0
+    }
+}
+
+impl Add<Duration> for FastDateTime {
+    type Output = FastDateTime;
+
+    fn add(self, rhs: Duration) -> Self::Output {
+        FastDateTime(self.0.add(rhs))
+    }
+}
+
+impl Sub<Duration> for FastDateTime {
+    type Output = FastDateTime;
+
+    fn sub(self, rhs: Duration) -> Self::Output {
+        FastDateTime(self.0.sub(rhs))
+    }
+}
+
 
 impl FromStr for FastDateTime {
     type Err = crate::error::Error;
