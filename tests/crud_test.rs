@@ -81,14 +81,14 @@ mod test {
             }) as Box<dyn MetaData>
         }
 
-        fn get(&mut self, i: usize) -> Option<Value> {
+        fn get(&mut self, i: usize) -> Result<Value,Error> {
             if self.sql.contains("select count") {
-                Some(Value::U64(self.count))
+                Ok(Value::U64(self.count))
             } else {
                 if i == 0 {
-                    Some(Value::String(self.sql.clone()))
+                    Ok(Value::String(self.sql.clone()))
                 } else {
-                    Some(Value::U64(self.count.clone()))
+                    Ok(Value::U64(self.count.clone()))
                 }
             }
         }

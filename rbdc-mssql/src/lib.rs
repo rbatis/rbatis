@@ -92,12 +92,12 @@ impl Row for MssqlRow {
         })
     }
 
-    fn get(&mut self, i: usize) -> Option<Value> {
-        Some(Value::decode(
+    fn get(&mut self, i: usize) -> Result<Value,Error> {
+        Value::decode(
             &self.inner,
             i,
             self.inner.columns()[i].column_type(),
-        ))
+        )
     }
 }
 
