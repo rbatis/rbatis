@@ -98,7 +98,7 @@ serde = { version = "1", features = ["derive"] }
 rbs = "0.1"
 # logging lib(required)
 log = "0.4"
-fast_log="1.3"
+fast_log="1.5"
 # rbatis (required)
 rbatis =  { version = "4.0" }
 # rbdc driver (required)
