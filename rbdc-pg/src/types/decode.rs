@@ -20,7 +20,7 @@ pub trait Decode: Sized {
 
 impl Decode for Value {
     fn decode(arg: PgValue) -> Result<Self, Error> {
-        if arg.type_info().is_null() {
+        if arg.value.is_none() {
             return Ok(Value::Null);
         }
         Ok(match arg.type_info().0 {
