@@ -15,74 +15,27 @@ pub trait LogPlugin: Send + Sync + Debug {
     fn is_enable(&self) -> bool {
         return !self.get_level_filter().eq(&LevelFilter::Off);
     }
-    fn do_log(&self, data: &str) {
-        match self.get_level_filter() {
+    fn do_log(&self, level: LevelFilter, data: &str) {
+        if self.get_level_filter() < level {
+            return;
+        }
+        match level {
             LevelFilter::Error => {
-                self.error(data);
+                error!("{}",data)
             }
             LevelFilter::Warn => {
-                self.warn( data);
+                warn!("{}",data)
             }
             LevelFilter::Info => {
-                self.info( data);
+                info!("{}",data)
             }
             LevelFilter::Debug => {
-                self.debug( data);
+                debug!("{}",data)
             }
             LevelFilter::Trace => {
-                self.trace(data);
+                trace!("{}",data)
             }
             LevelFilter::Off => {}
-        }
-    }
-
-    fn error(&self,  data: &str) {
-        let filter = self.get_level_filter();
-        if filter.eq(&LevelFilter::Off) {
-            return;
-        }
-        if filter.ge(&LevelFilter::Error) {
-            error!("{}" ,data);
-        }
-    }
-
-    fn warn(&self, data: &str) {
-        let filter = self.get_level_filter();
-        if filter.eq(&LevelFilter::Off) {
-            return;
-        }
-        if filter.ge(&LevelFilter::Warn) {
-            warn!(" {}", data);
-        }
-    }
-
-    fn info(&self, data: &str) {
-        let filter = self.get_level_filter();
-        if filter.eq(&LevelFilter::Off) {
-            return;
-        }
-        if filter.ge(&LevelFilter::Info) {
-            info!("{}", data);
-        }
-    }
-
-    fn debug(&self,  data: &str) {
-        let filter = self.get_level_filter();
-        if filter.eq(&LevelFilter::Off) {
-            return;
-        }
-        if filter.ge(&LevelFilter::Debug) {
-            debug!("{}",data);
-        }
-    }
-
-    fn trace(&self, data: &str) {
-        let filter = self.get_level_filter();
-        if filter.eq(&LevelFilter::Off) {
-            return;
-        }
-        if filter.ge(&LevelFilter::Trace) {
-            trace!("{}", data);
         }
     }
 }
