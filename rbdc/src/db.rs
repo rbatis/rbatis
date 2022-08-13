@@ -89,7 +89,7 @@ pub trait Row: 'static + Send + Debug {
     fn meta_data(&self) -> Box<dyn MetaData>;
 
     /// get Value from index
-    fn get(&mut self, i: usize) -> Option<Value>;
+    fn get(&mut self, i: usize) -> Result<Value,Error>;
 }
 
 /// Meta data for result set

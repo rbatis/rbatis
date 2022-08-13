@@ -65,18 +65,11 @@ impl rbdc::db::Row for PgRow {
         })
     }
 
-    fn get(&mut self, i: usize) -> Option<Value> {
+    fn get(&mut self, i: usize) -> Result<Value,Error> {
         match self.try_take(i) {
-            Err(_) => None,
+            Err(e) => Err(Error::from(format!("get error  index:{},error:{}",i,e))),
             Ok(v) => {
-                match Value::decode(v){
-                    Ok(v) => {
-                        Some(v)
-                    }
-                    Err(e) => {
-                        None
-                    }
-                }
+                Value::decode(v)
             },
         }
     }
