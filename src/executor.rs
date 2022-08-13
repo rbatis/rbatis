@@ -11,6 +11,7 @@ use flume::RecvError;
 use futures::executor::block_on;
 use futures::Future;
 use futures_core::future::BoxFuture;
+use log::LevelFilter;
 use crate::decode::decode;
 use rbdc::db::{Connection, ExecResult};
 use rbs::{from_value, Value};
@@ -94,28 +95,26 @@ impl Executor for RBatisConnExecutor {
         if self.get_rbatis().log_plugin.is_enable() {
             let (_args, args_string) = arr_to_string(args);
             args = _args;
-            self.get_rbatis().log_plugin.info(
-                &format!(
-                    "[rbatis] [{}] Exec   ==> {}\n{}[rbatis]                      Args   ==> {}",
-                    rb_task_id,
-                    &sql,
-                    string_util::LOG_SPACE,
-                    args_string
-                ),
-            );
+            self.get_rbatis().log_plugin.do_log(LevelFilter::Info, &format!(
+                "[rbatis] [{}] Exec   ==> {}\n{}[rbatis]                      Args   ==> {}",
+                &rb_task_id,
+                sql,
+                string_util::LOG_SPACE,
+                args_string
+            ));
         }
         let result = self.conn.exec(&sql, args).await;
         if self.get_rbatis().log_plugin.is_enable() {
             match &result {
                 Ok(result) => {
-                    self.get_rbatis().log_plugin.info(
-                        &format!("[rbatis] [{}] RowsAffected <== {}",rb_task_id, result.rows_affected),
+                    self.get_rbatis().log_plugin.do_log(LevelFilter::Info,
+                                                        &format!("[rbatis] [{}] RowsAffected <== {}", rb_task_id, result.rows_affected),
                     );
                 }
                 Err(e) => {
                     self.get_rbatis()
                         .log_plugin
-                        .error( &format!("[rbatis] [{}] ReturnErr  <== {}",rb_task_id, e));
+                        .do_log(LevelFilter::Error, &format!("[rbatis] [{}] ReturnErr  <== {}", rb_task_id, e));
                 }
             }
         }
@@ -132,14 +131,14 @@ impl Executor for RBatisConnExecutor {
         if self.get_rbatis().log_plugin.is_enable() {
             let (_args, args_string) = arr_to_string(args);
             args = _args;
-            self.get_rbatis().log_plugin.info(
-                &format!(
-                    "[rbatis] [{}] Fetch  ==> {}\n{}[rbatis]                      Args   ==> {}",
-                    rb_task_id,
-                    &sql,
-                    string_util::LOG_SPACE,
-                    args_string
-                ),
+            self.get_rbatis().log_plugin.do_log(LevelFilter::Info,
+                                                &format!(
+                                                    "[rbatis] [{}] Fetch  ==> {}\n{}[rbatis]                      Args   ==> {}",
+                                                    rb_task_id,
+                                                    &sql,
+                                                    string_util::LOG_SPACE,
+                                                    args_string
+                                                ),
             );
         }
         let result = self.conn.get_values(&sql, args).await;
@@ -148,12 +147,12 @@ impl Executor for RBatisConnExecutor {
                 Ok(result) => {
                     self.get_rbatis()
                         .log_plugin
-                        .info( &format!("[rbatis] [{}] ReturnRows <== {:?}", rb_task_id,result));
+                        .do_log(LevelFilter::Info, &format!("[rbatis] [{}] ReturnRows <== {:?}", rb_task_id, result));
                 }
                 Err(e) => {
                     self.get_rbatis()
                         .log_plugin
-                        .error( &format!("[rbatis] [{}] ReturnErr  <== {}",rb_task_id, e));
+                        .do_log(LevelFilter::Error, &format!("[rbatis] [{}] ReturnErr  <== {}", rb_task_id, e));
                 }
             }
         }
@@ -233,7 +232,8 @@ impl Executor for RBatisTxExecutor {
         if self.get_rbatis().log_plugin.is_enable() {
             let (_args, args_string) = arr_to_string(args);
             args = _args;
-            self.get_rbatis().log_plugin.info(
+            self.get_rbatis().log_plugin.do_log(
+                LevelFilter::Info,
                 &format!(
                     "[rbatis] [{}] Exec   ==> {}\n{}[rbatis]                      Args   ==> {}",
                     self.tx_id,
@@ -247,14 +247,14 @@ impl Executor for RBatisTxExecutor {
         if self.get_rbatis().log_plugin.is_enable() {
             match &result {
                 Ok(result) => {
-                    self.get_rbatis().log_plugin.info(
-                        &format!("[rbatis] [{}] RowsAffected <== {}", self.tx_id, result.rows_affected),
+                    self.get_rbatis().log_plugin.do_log(LevelFilter::Info,
+                                                        &format!("[rbatis] [{}] RowsAffected <== {}", self.tx_id, result.rows_affected),
                     );
                 }
                 Err(e) => {
                     self.get_rbatis()
                         .log_plugin
-                        .error( &format!("[rbatis] [{}] ReturnErr  <== {}",self.tx_id, e));
+                        .do_log(LevelFilter::Error, &format!("[rbatis] [{}] ReturnErr  <== {}", self.tx_id, e));
                 }
             }
         }
@@ -270,14 +270,14 @@ impl Executor for RBatisTxExecutor {
         if self.get_rbatis().log_plugin.is_enable() {
             let (_args, args_string) = arr_to_string(args);
             args = _args;
-            self.get_rbatis().log_plugin.info(
-                &format!(
-                    "[rbatis] [{}] Fetch  ==> {}\n{}[rbatis]                      Args   ==> {}",
-                    self.tx_id,
-                    &sql,
-                    string_util::LOG_SPACE,
-                    args_string
-                ),
+            self.get_rbatis().log_plugin.do_log(LevelFilter::Info,
+                                                &format!(
+                                                    "[rbatis] [{}] Fetch  ==> {}\n{}[rbatis]                      Args   ==> {}",
+                                                    self.tx_id,
+                                                    &sql,
+                                                    string_util::LOG_SPACE,
+                                                    args_string
+                                                ),
             );
         }
         let result = self.conn.get_values(&sql, args).await;
@@ -286,12 +286,12 @@ impl Executor for RBatisTxExecutor {
                 Ok(result) => {
                     self.get_rbatis()
                         .log_plugin
-                        .info( &format!("[rbatis] [{}] ReturnRows <== {:?}", self.tx_id,result));
+                        .do_log(LevelFilter::Info, &format!("[rbatis] [{}] ReturnRows <== {:?}", self.tx_id, result));
                 }
                 Err(e) => {
                     self.get_rbatis()
                         .log_plugin
-                        .error(&format!("[rbatis] [{}] ReturnErr  <== {}", self.tx_id,e));
+                        .do_log(LevelFilter::Error, &format!("[rbatis] [{}] ReturnErr  <== {}", self.tx_id, e));
                 }
             }
         }
@@ -455,25 +455,25 @@ impl RbatisRef for RBatisTxExecutorGuard {
 }
 
 #[async_trait]
-impl Executor for RBatisTxExecutorGuard{
+impl Executor for RBatisTxExecutorGuard {
     async fn exec(&mut self, sql: &str, args: Vec<Value>) -> Result<ExecResult, Error> {
-        match self.tx.as_mut(){
+        match self.tx.as_mut() {
             None => {
                 Err(Error::from("the tx is done!"))
             }
             Some(v) => {
-                v.exec(sql,args).await
+                v.exec(sql, args).await
             }
         }
     }
 
     async fn fetch(&mut self, sql: &str, args: Vec<Value>) -> Result<Value, Error> {
-        match self.tx.as_mut(){
+        match self.tx.as_mut() {
             None => {
                 Err(Error::from("the tx is done!"))
             }
             Some(v) => {
-                v.fetch(sql,args).await
+                v.fetch(sql, args).await
             }
         }
     }
