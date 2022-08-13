@@ -4,7 +4,7 @@ pub mod bencher;
 pub mod table_util;
 pub mod error_util;
 pub mod impled;
+pub mod into_one;
 pub mod print_util;
 pub mod string_util;
 pub mod time_util;
-pub mod into_one;

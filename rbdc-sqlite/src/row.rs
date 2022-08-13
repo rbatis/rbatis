@@ -2,7 +2,7 @@
 
 use crate::decode::Decode;
 use crate::statement::StatementHandle;
-use crate::{ SqliteColumn, SqliteValue, SqliteValueRef};
+use crate::{SqliteColumn, SqliteValue, SqliteValueRef};
 use rbdc::db::{MetaData, Row};
 use rbdc::error::Error;
 use rbdc::ext::ustr::UStr;

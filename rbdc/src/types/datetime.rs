@@ -5,7 +5,7 @@ use std::fmt::{Display, Formatter};
 use std::ops::{Deref, DerefMut};
 use std::str::FromStr;
 
-#[derive(Debug, Clone, Eq, PartialEq,Hash)]
+#[derive(Debug, Clone, Eq, PartialEq, Hash)]
 pub struct FastDateTime(pub fastdate::DateTime);
 
 impl Display for FastDateTime {
@@ -33,14 +33,15 @@ impl<'de> Deserialize<'de> for FastDateTime {
             Value::U64(u) => Ok(Self(fastdate::DateTime::from_timestamp_millis(u as i64))),
             Value::String(s) => Ok({
                 Self(
-                    fastdate::DateTime::from_str(&s).map_err(|e| D::Error::custom(e.to_string()))?,
+                    fastdate::DateTime::from_str(&s)
+                        .map_err(|e| D::Error::custom(e.to_string()))?,
                 )
             }),
             _ => {
                 return Err(D::Error::custom(&format!(
                     "unsupported type DateTime({})",
                     v.0
-                )))
+                )));
             }
         }
     }
@@ -64,6 +65,7 @@ impl FastDateTime {
     pub fn now() -> Self {
         Self(fastdate::DateTime::now())
     }
+
     pub fn utc() -> Self {
         Self(fastdate::DateTime::utc())
     }
@@ -72,14 +74,17 @@ impl FastDateTime {
         self.0 = self.0.set_micro(micro);
         self
     }
+
     pub fn set_sec(mut self, sec: u8) -> Self {
         self.0 = self.0.set_sec(sec);
         self
     }
+
     pub fn set_min(mut self, min: u8) -> Self {
         self.0 = self.0.set_min(min);
         self
     }
+
     pub fn set_hour(mut self, hour: u8) -> Self {
         self.0 = self.0.set_hour(hour);
         self
@@ -89,13 +94,38 @@ impl FastDateTime {
         self.0 = self.0.set_day(day);
         self
     }
+
     pub fn set_mon(mut self, mon: u8) -> Self {
         self.0 = self.0.set_mon(mon);
         self
     }
+
     pub fn set_year(mut self, year: u16) -> Self {
         self.0 = self.0.set_year(year);
         self
+    }
+
+    pub fn from_timestamp(sec: i64) -> Self {
+        FastDateTime(fastdate::DateTime::from_timestamp(sec))
+    }
+
+    pub fn from_timestamp_millis(ms: i64) -> Self {
+        FastDateTime(fastdate::DateTime::from_timestamp_millis(ms))
+    }
+
+    pub fn from_timestamp_nano(nano: u128) -> Self {
+        FastDateTime(fastdate::DateTime::from_timestamp_nano(nano))
+    }
+}
+
+impl FromStr for FastDateTime {
+    type Err = crate::error::Error;
+
+    fn from_str(s: &str) -> Result<Self, Self::Err> {
+        Ok(FastDateTime(
+            fastdate::DateTime::from_str(s)
+                .map_err(|e| crate::error::Error::from(e.to_string()))?,
+        ))
     }
 }
 
@@ -138,9 +168,15 @@ fn test() {
     let date = DateTime("2017-02-06 00:00:00".to_string());
     let v = rbs::to_value(&date).unwrap();
     println!("{}", v);
-    assert_eq!("2017-02-06 00:00:00",v.as_str().unwrap_or_default().to_string());
+    assert_eq!(
+        "2017-02-06 00:00:00",
+        v.as_str().unwrap_or_default().to_string()
+    );
     let date = FastDateTime(fastdate::DateTime::from_str(&date.0).unwrap());
     let v = rbs::to_value(&date).unwrap();
     println!("{}", v);
-    assert_eq!("2017-02-06 00:00:00",v.as_str().unwrap_or_default().to_string());
+    assert_eq!(
+        "2017-02-06 00:00:00",
+        v.as_str().unwrap_or_default().to_string()
+    );
 }

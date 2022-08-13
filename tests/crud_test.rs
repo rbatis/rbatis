@@ -3,15 +3,15 @@ extern crate rbatis;
 
 #[cfg(test)]
 mod test {
-    use std::any::Any;
     use futures_core::future::BoxFuture;
-    use rbatis::{Error, Rbatis};
     use rbatis::sql::PageRequest;
+    use rbatis::{Error, Rbatis};
     use rbdc::block_on;
     use rbdc::datetime::FastDateTime;
-    use rbdc::db::{Connection, ConnectOptions, Driver, ExecResult, MetaData, Row};
+    use rbdc::db::{ConnectOptions, Connection, Driver, ExecResult, MetaData, Row};
     use rbdc::rt::block_on;
     use rbs::Value;
+    use std::any::Any;
 
     #[derive(Debug, Clone)]
     pub struct MockDriver {}
@@ -22,15 +22,14 @@ mod test {
         }
 
         fn connect(&self, url: &str) -> BoxFuture<Result<Box<dyn Connection>, Error>> {
-            Box::pin(async {
-                Ok(Box::new(MockConnection {}) as Box<dyn Connection>)
-            })
+            Box::pin(async { Ok(Box::new(MockConnection {}) as Box<dyn Connection>) })
         }
 
-        fn connect_opt<'a>(&'a self, opt: &'a dyn ConnectOptions) -> BoxFuture<Result<Box<dyn Connection>, Error>> {
-            Box::pin(async {
-                Ok(Box::new(MockConnection {}) as Box<dyn Connection>)
-            })
+        fn connect_opt<'a>(
+            &'a self,
+            opt: &'a dyn ConnectOptions,
+        ) -> BoxFuture<Result<Box<dyn Connection>, Error>> {
+            Box::pin(async { Ok(Box::new(MockConnection {}) as Box<dyn Connection>) })
         }
 
         fn default_option(&self) -> Box<dyn ConnectOptions> {
@@ -78,7 +77,7 @@ mod test {
     impl Row for MockRow {
         fn meta_data(&self) -> Box<dyn MetaData> {
             Box::new(MockRowMetaData {
-                sql: self.sql.clone()
+                sql: self.sql.clone(),
             }) as Box<dyn MetaData>
         }
 
@@ -99,13 +98,14 @@ mod test {
     pub struct MockConnection {}
 
     impl Connection for MockConnection {
-        fn get_rows(&mut self, sql: &str, params: Vec<Value>) -> BoxFuture<Result<Vec<Box<dyn Row>>, Error>> {
+        fn get_rows(
+            &mut self,
+            sql: &str,
+            params: Vec<Value>,
+        ) -> BoxFuture<Result<Vec<Box<dyn Row>>, Error>> {
             let sql = sql.to_string();
             Box::pin(async move {
-                let data = Box::new(MockRow {
-                    sql: sql,
-                    count: 1,
-                }) as Box<dyn Row>;
+                let data = Box::new(MockRow { sql: sql, count: 1 }) as Box<dyn Row>;
                 Ok(vec![data])
             })
         }
@@ -121,15 +121,11 @@ mod test {
         }
 
         fn close(&mut self) -> BoxFuture<Result<(), Error>> {
-            Box::pin(async {
-                Ok(())
-            })
+            Box::pin(async { Ok(()) })
         }
 
         fn ping(&mut self) -> BoxFuture<Result<(), Error>> {
-            Box::pin(async {
-                Ok(())
-            })
+            Box::pin(async { Ok(()) })
         }
     }
 
@@ -138,9 +134,7 @@ mod test {
 
     impl ConnectOptions for MockConnectOptions {
         fn connect(&self) -> BoxFuture<Result<Box<dyn Connection>, Error>> {
-            Box::pin(async {
-                Ok(Box::new(MockConnection {}) as Box<dyn Connection>)
-            })
+            Box::pin(async { Ok(Box::new(MockConnection {}) as Box<dyn Connection>) })
         }
 
         fn set_uri(&mut self, uri: &str) -> Result<(), Error> {
@@ -169,7 +163,7 @@ mod test {
 
         pub sql: String,
         //exec sql
-        pub count: u64,//page count num
+        pub count: u64, //page count num
     }
     crud!(MockTable {});
     #[test]
@@ -251,7 +245,9 @@ mod test {
                 delete_flag: Some(1),
                 count: 0,
             };
-            let r = MockTable::update_by_column(&mut rb, &t, "id").await.unwrap();
+            let r = MockTable::update_by_column(&mut rb, &t, "id")
+                .await
+                .unwrap();
             println!("{}", r.last_insert_id.as_str().unwrap_or_default());
             assert_eq!(r.last_insert_id.as_str().unwrap_or_default(), "update mock_table set name=?,pc_link=?,h5_link=?,status=?,remark=?,create_time=?,version=?,delete_flag=?,sql=?,count=? where  id = ?");
         };
@@ -291,9 +287,14 @@ mod test {
         let f = async move {
             let mut rb = Rbatis::new();
             rb.link(MockDriver {}, "test").await.unwrap();
-            let r = MockTable::delete_by_column(&mut rb, "1", &Value::String("1".to_string())).await.unwrap();
+            let r = MockTable::delete_by_column(&mut rb, "1", &Value::String("1".to_string()))
+                .await
+                .unwrap();
             println!("{}", r.last_insert_id.as_str().unwrap_or_default());
-            assert_eq!(r.last_insert_id.as_str().unwrap_or_default(), "delete from mock_table where  1 = ?");
+            assert_eq!(
+                r.last_insert_id.as_str().unwrap_or_default(),
+                "delete from mock_table where  1 = ?"
+            );
         };
         block_on(f);
     }
@@ -303,9 +304,14 @@ mod test {
         let f = async move {
             let mut rb = Rbatis::new();
             rb.link(MockDriver {}, "test").await.unwrap();
-            let r = MockTable::delete_by_column_batch(&mut rb, "1", &["1", "2"]).await.unwrap();
+            let r = MockTable::delete_by_column_batch(&mut rb, "1", &["1", "2"])
+                .await
+                .unwrap();
             println!("{}", r.last_insert_id.as_str().unwrap_or_default());
-            assert_eq!(r.last_insert_id.as_str().unwrap_or_default(), "delete from mock_table where  1 in (?,?)");
+            assert_eq!(
+                r.last_insert_id.as_str().unwrap_or_default(),
+                "delete from mock_table where  1 in (?,?)"
+            );
         };
         block_on(f);
     }
@@ -332,9 +338,14 @@ mod test {
                 delete_flag: Some(1),
                 count: 0,
             };
-            let r = MockTable::select_all_by_id(&mut rb, "1", "1").await.unwrap();
+            let r = MockTable::select_all_by_id(&mut rb, "1", "1")
+                .await
+                .unwrap();
             println!("{}", r[0].sql);
-            assert_eq!(r[0].sql, "select * from mock_table where id = ? and name = ?");
+            assert_eq!(
+                r[0].sql,
+                "select * from mock_table where id = ? and name = ?"
+            );
         };
         block_on(f);
     }
@@ -362,7 +373,10 @@ mod test {
             };
             let r = MockTable::select_by_id(&mut rb, "1").await.unwrap();
             println!("{}", r.as_ref().unwrap().sql);
-            assert_eq!(r.unwrap().sql, "select * from mock_table where id = ? limit 1");
+            assert_eq!(
+                r.unwrap().sql,
+                "select * from mock_table where id = ? limit 1"
+            );
         };
         block_on(f);
     }
@@ -388,7 +402,9 @@ mod test {
                 delete_flag: Some(1),
                 count: 0,
             };
-            let r = MockTable::update_by_name(&mut rb, &t, "test").await.unwrap();
+            let r = MockTable::update_by_name(&mut rb, &t, "test")
+                .await
+                .unwrap();
             println!("{}", r.last_insert_id.as_str().unwrap());
             assert_eq!(r.last_insert_id.as_str().unwrap(), "update mock_table set  id=?,name=?,pc_link=?,h5_link=?,status=?,remark=?,create_time=?,version=?,delete_flag=?,sql=?,count=? where id = '2'");
         };
@@ -418,7 +434,10 @@ mod test {
             };
             let r = MockTable::delete_by_name(&mut rb, "2").await.unwrap();
             println!("{}", r.last_insert_id.as_str().unwrap());
-            assert_eq!(r.last_insert_id.as_str().unwrap(), "delete from mock_table where name= '2'");
+            assert_eq!(
+                r.last_insert_id.as_str().unwrap(),
+                "delete from mock_table where name= '2'"
+            );
         };
         block_on(f);
     }
@@ -444,9 +463,14 @@ mod test {
                 delete_flag: Some(1),
                 count: 0,
             };
-            let r = MockTable::select_page(&mut rb, &PageRequest::new(1, 10)).await.unwrap();
+            let r = MockTable::select_page(&mut rb, &PageRequest::new(1, 10))
+                .await
+                .unwrap();
             println!("{}", r.records[0].sql);
-            assert_eq!(r.records[0].sql, "select * from mock_table order by create_time desc limit 0,10");
+            assert_eq!(
+                r.records[0].sql,
+                "select * from mock_table order by create_time desc limit 0,10"
+            );
         };
         block_on(f);
     }
@@ -476,9 +500,14 @@ mod test {
                 delete_flag: Some(1),
                 count: 0,
             };
-            let r = MockTable::select_page_by_name(&mut rb, &PageRequest::new(1, 10), "").await.unwrap();
+            let r = MockTable::select_page_by_name(&mut rb, &PageRequest::new(1, 10), "")
+                .await
+                .unwrap();
             println!("{}", r.records[0].sql);
-            assert_eq!(r.records[0].sql, "select * from mock_table where name != '' limit 0,10");
+            assert_eq!(
+                r.records[0].sql,
+                "select * from mock_table where name != '' limit 0,10"
+            );
         };
         block_on(f);
     }
@@ -504,7 +533,9 @@ mod test {
                 delete_flag: Some(1),
                 count: 0,
             };
-            let r = MockTable::select_by_column(&mut rb, "id","1").await.unwrap();
+            let r = MockTable::select_by_column(&mut rb, "id", "1")
+                .await
+                .unwrap();
             println!("{}", r[0].sql);
             assert_eq!(r[0].sql, "select * from mock_table where id = ?");
         };

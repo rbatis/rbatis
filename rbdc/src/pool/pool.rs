@@ -145,7 +145,11 @@ impl Pool {
         pool
     }
 
-    pub fn new_builder(builder: Builder<ManagerPorxy>, d: Box<dyn Driver>, o: Box<dyn ConnectOptions>) -> Self {
+    pub fn new_builder(
+        builder: Builder<ManagerPorxy>,
+        d: Box<dyn Driver>,
+        o: Box<dyn ConnectOptions>,
+    ) -> Self {
         let manager = Arc::new(RBDCManager::new_opt_box(d, o));
         let p = builder.build(ManagerPorxy::from(manager.clone()));
         let pool = Pool {

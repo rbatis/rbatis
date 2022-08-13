@@ -1,15 +1,15 @@
 use crate::query::SqliteQuery;
 use crate::type_info::Type;
-use crate::{SqliteConnectOptions, SqliteConnection, SqliteRow, SqliteQueryResult};
+use crate::{SqliteConnectOptions, SqliteConnection, SqliteQueryResult, SqliteRow};
 use either::Either;
 use futures_core::future::BoxFuture;
 use futures_core::stream::BoxStream;
+use futures_util::FutureExt;
 use futures_util::{StreamExt, TryStreamExt};
 use rbdc::db::{Connection, ExecResult, Row};
 use rbdc::error::Error;
 use rbs::Value;
 use std::fmt::Write;
-use futures_util::FutureExt;
 
 impl SqliteConnectOptions {
     pub fn connect(&self) -> BoxFuture<'_, Result<SqliteConnection, Error>> {
@@ -64,7 +64,7 @@ impl Connection for SqliteConnection {
                         arguments: params,
                         persistent: false,
                     })
-                }else{
+                } else {
                     let stmt = self.prepare_with(&sql, &[]).await?;
                     self.fetch_many(SqliteQuery {
                         statement: Either::Right(stmt),
@@ -73,14 +73,16 @@ impl Connection for SqliteConnection {
                     })
                 }
             };
-            let f:BoxStream<Result<SqliteRow,Error>>=many.try_filter_map(|step| async move {
-                Ok(match step {
-                    Either::Left(_) => None,
-                    Either::Right(row) => Some(row),
+            let f: BoxStream<Result<SqliteRow, Error>> = many
+                .try_filter_map(|step| async move {
+                    Ok(match step {
+                        Either::Left(_) => None,
+                        Either::Right(row) => Some(row),
+                    })
                 })
-            }).boxed();
-            let c:BoxFuture<Result<Vec<SqliteRow>,Error>>=f.try_collect().boxed();
-            let v=c.await?;
+                .boxed();
+            let c: BoxFuture<Result<Vec<SqliteRow>, Error>> = f.try_collect().boxed();
+            let v = c.await?;
             let mut data: Vec<Box<dyn Row>> = Vec::with_capacity(v.len());
             for x in v {
                 data.push(Box::new(x));
@@ -99,7 +101,7 @@ impl Connection for SqliteConnection {
                         arguments: params,
                         persistent: false,
                     })
-                }else{
+                } else {
                     let mut type_info = Vec::with_capacity(params.len());
                     for x in &params {
                         type_info.push(x.type_info());
@@ -112,12 +114,13 @@ impl Connection for SqliteConnection {
                     })
                 }
             };
-            let v: BoxStream<Result<SqliteQueryResult, Error>> = many.try_filter_map(|step| async move {
-                Ok(match step {
-                    Either::Left(rows) => Some(rows),
-                    Either::Right(_) => None,
+            let v: BoxStream<Result<SqliteQueryResult, Error>> = many
+                .try_filter_map(|step| async move {
+                    Ok(match step {
+                        Either::Left(rows) => Some(rows),
+                        Either::Right(_) => None,
+                    })
                 })
-            })
                 .boxed();
             let v: SqliteQueryResult = v.try_collect().boxed().await?;
             return Ok(ExecResult {
@@ -128,7 +131,7 @@ impl Connection for SqliteConnection {
     }
 
     fn close(&mut self) -> BoxFuture<Result<(), Error>> {
-        Box::pin(async  { self.do_close().await })
+        Box::pin(async { self.do_close().await })
     }
 
     fn ping(&mut self) -> BoxFuture<Result<(), Error>> {

@@ -1,8 +1,8 @@
 #[cfg(test)]
 mod test {
+    use rbatis_macro_driver::rb_py;
     use rbs::value::map::ValueMap;
     use rbs::Value;
-    use rbatis_macro_driver::rb_py;
 
     #[rb_py(
         "
@@ -45,8 +45,8 @@ mod test {
             vec![Value::I32(1), Value::I32(2), Value::I32(3)].into(),
         );
         arg.insert("map".into(), {
-            let mut m=ValueMap::new();
-            m.insert("k".into(),1.into());
+            let mut m = ValueMap::new();
+            m.insert("k".into(), 1.into());
             Value::Map(m)
         });
         let (sql, args) = py_select_by_condition(&mut rbs::Value::Map(arg), '$');

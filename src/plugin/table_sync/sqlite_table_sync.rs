@@ -1,9 +1,9 @@
-use rbs::Value;
+use crate::executor::{Executor, RBatisConnExecutor};
+use crate::table_sync::TableSync;
 use crate::Error;
 use rbdc::db::{Connection, ExecResult};
 use rbs::value::map::ValueMap;
-use crate::executor::{Executor, RBatisConnExecutor};
-use crate::table_sync::TableSync;
+use rbs::Value;
 
 pub struct SqliteTableSync {}
 
@@ -36,7 +36,12 @@ fn type_str(v: &Value) -> &'static str {
 
 #[async_trait::async_trait]
 impl TableSync for SqliteTableSync {
-    async fn sync(&self, mut rb: RBatisConnExecutor, table: Value, name: &str) -> Result<(), Error> {
+    async fn sync(
+        &self,
+        mut rb: RBatisConnExecutor,
+        table: Value,
+        name: &str,
+    ) -> Result<(), Error> {
         match table {
             Value::Map(m) => {
                 let mut sql_create = format!("CREATE TABLE {} ", name);
@@ -66,7 +71,19 @@ impl TableSync for SqliteTableSync {
                                 if k.eq("id") || v.as_str().unwrap_or_default() == "id" {
                                     id_key = " PRIMARY KEY NOT NULL";
                                 }
-                                match rb.exec(&format!("alter table {} add {} {} {};", name, k, type_str(&v), id_key), vec![]).await {
+                                match rb
+                                    .exec(
+                                        &format!(
+                                            "alter table {} add {} {} {};",
+                                            name,
+                                            k,
+                                            type_str(&v),
+                                            id_key
+                                        ),
+                                        vec![],
+                                    )
+                                    .await
+                                {
                                     Ok(_) => {}
                                     Err(e) => {
                                         if e.to_string().contains("duplicate column") {
@@ -83,12 +100,8 @@ impl TableSync for SqliteTableSync {
                 }
                 Ok(())
             }
-            Value::Ext(table_name, m) => {
-                self.sync(rb, *m, name).await
-            }
-            _ => {
-                Err(Error::from("table not is an struct or map!"))
-            }
+            Value::Ext(table_name, m) => self.sync(rb, *m, name).await,
+            _ => Err(Error::from("table not is an struct or map!")),
         }
     }
 }

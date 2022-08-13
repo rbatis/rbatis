@@ -1,7 +1,7 @@
 use proc_macro2::{Ident, Span};
 use quote::quote;
 use quote::ToTokens;
-use syn::{AttributeArgs, FnArg, ItemFn, Lit,NestedMeta, Pat};
+use syn::{AttributeArgs, FnArg, ItemFn, Lit, NestedMeta, Pat};
 
 use crate::proc_macro::TokenStream;
 use crate::util::{find_fn_body, find_return_type, get_fn_args, is_fetch, is_rbatis_ref};
@@ -72,7 +72,7 @@ pub(crate) fn impl_macro_py_sql(target_fn: &ItemFn, args: &AttributeArgs) -> Tok
             &rbatis_ident.to_string().trim_start_matches("mut "),
             Span::call_site(),
         )
-            .to_token_stream();
+        .to_token_stream();
     }
     //append all args
     let sql_args_gen = filter_args_context_id(&rbatis_name, &get_fn_args(target_fn));
@@ -98,7 +98,8 @@ pub(crate) fn impl_macro_py_sql(target_fn: &ItemFn, args: &AttributeArgs) -> Tok
     let gen_target_macro_arg = quote! {
         #sql_ident
     };
-    let gen_func: proc_macro2::TokenStream = rbatis_codegen::rb_py(gen_target_macro_arg.into(), gen_target_method.into()).into();
+    let gen_func: proc_macro2::TokenStream =
+        rbatis_codegen::rb_py(gen_target_macro_arg.into(), gen_target_method.into()).into();
     //gen rust code templete
     return quote! {
        pub async fn #func_name_ident(#func_args_stream) -> #return_ty {
@@ -113,7 +114,7 @@ pub(crate) fn impl_macro_py_sql(target_fn: &ItemFn, args: &AttributeArgs) -> Tok
          #call_method
        }
     }
-        .into();
+    .into();
 }
 
 pub(crate) fn filter_args_context_id(
@@ -137,7 +138,7 @@ pub(crate) fn filter_args_context_id(
                 item.to_string().trim_start_matches("mut "),
                 Span::call_site(),
             )
-                .to_token_stream();
+            .to_token_stream();
         }
         sql_args_gen = quote! {
              #sql_args_gen

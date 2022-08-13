@@ -1,7 +1,7 @@
+use crate::Error;
 use async_trait::async_trait;
 use futures_core::future::BoxFuture;
 use rbdc::db::Connection;
-use crate::Error;
 
 #[async_trait]
 pub trait Tx {

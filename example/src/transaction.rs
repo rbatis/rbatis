@@ -1,16 +1,16 @@
 pub mod model;
 
-use std::time::Duration;
-use fast_log::sleep;
 use crate::model::{init_sqlite, BizActivity};
+use fast_log::sleep;
 use rbatis::impl_insert;
 use rbdc::datetime::FastDateTime;
+use std::time::Duration;
 
 impl_insert!(BizActivity {});
 
 #[tokio::main]
 pub async fn main() {
-    let _=fast_log::init(fast_log::Config::new().console());
+    let _ = fast_log::init(fast_log::Config::new().console());
     let rb = init_sqlite().await;
     let t = BizActivity {
         id: Some("2".into()),
@@ -34,7 +34,7 @@ pub async fn main() {
         }
     });
     //tx.exec("select 1", vec![]).await.unwrap();
-    BizActivity::insert(&mut tx,&t).await.unwrap();
+    BizActivity::insert(&mut tx, &t).await.unwrap();
     println!("yes forget commit");
     drop(tx);
     //call sleep make sure tokio runtime not exit!

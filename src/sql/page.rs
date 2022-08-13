@@ -208,8 +208,8 @@ impl<T> Default for Page<T> {
 }
 
 impl<T> IPageRequest for Page<T>
-    where
-        T: Send + Sync,
+where
+    T: Send + Sync,
 {
     fn get_page_size(&self) -> u64 {
         self.page_size
@@ -248,8 +248,8 @@ impl<T> IPageRequest for Page<T>
 }
 
 impl<T> IPage<T> for Page<T>
-    where
-        T: Send + Sync,
+where
+    T: Send + Sync,
 {
     fn get_records(&self) -> &Vec<T> {
         self.records.as_ref()
@@ -279,7 +279,10 @@ impl<T: Display + Debug> Display for Page<T> {
 }
 
 impl<V> Page<V> {
-    pub fn from<T>(arg: Page<T>) -> Self where V: From<T> {
+    pub fn from<T>(arg: Page<T>) -> Self
+    where
+        V: From<T>,
+    {
         let mut p = Page::<V>::new(arg.page_no, arg.page_size);
         p.pages = arg.pages;
         p.page_no = arg.page_no;

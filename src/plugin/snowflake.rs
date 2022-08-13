@@ -1,9 +1,9 @@
-use std::sync::atomic::{AtomicI64, Ordering};
-use std::sync::Arc;
 use once_cell::sync::Lazy;
+use rbdc::datetime::FastDateTime;
 use serde::ser::SerializeStruct;
 use serde::{Deserializer, Serializer};
-use rbdc::datetime::FastDateTime;
+use std::sync::atomic::{AtomicI64, Ordering};
+use std::sync::Arc;
 
 ///Snowflakes algorithm
 #[derive(Debug)]

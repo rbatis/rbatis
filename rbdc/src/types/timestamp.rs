@@ -1,7 +1,7 @@
 use rbs::Value;
 use std::fmt::{Display, Formatter};
 
-#[derive(serde::Serialize, serde::Deserialize, Debug, Clone, Eq, PartialEq,Hash)]
+#[derive(serde::Serialize, serde::Deserialize, Debug, Clone, Eq, PartialEq, Hash)]
 #[serde(rename = "Timestamp")]
 pub struct Timestamp(pub u64);
 

@@ -1,6 +1,6 @@
 #[cfg(test)]
 mod test {
-    use rbatis::utils::string_util::{find_convert_string};
+    use rbatis::utils::string_util::find_convert_string;
 
     #[test]
     fn test_find() {

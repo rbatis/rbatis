@@ -26,19 +26,19 @@ pub trait LogPlugin: Send + Sync + Debug {
         let level = filter.get(&level).unwrap_or(&LevelFilter::Off).to_owned();
         match level {
             LevelFilter::Error => {
-                error!("{}",data)
+                error!("{}", data)
             }
             LevelFilter::Warn => {
-                warn!("{}",data)
+                warn!("{}", data)
             }
             LevelFilter::Info => {
-                info!("{}",data)
+                info!("{}", data)
             }
             LevelFilter::Debug => {
-                debug!("{}",data)
+                debug!("{}", data)
             }
             LevelFilter::Trace => {
-                trace!("{}",data)
+                trace!("{}", data)
             }
             LevelFilter::Off => {}
         }
