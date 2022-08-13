@@ -348,9 +348,3 @@ impl Decode for Value {
         })
     }
 }
-
-impl From<PgValue> for Value {
-    fn from(arg: PgValue) -> Self {
-        Decode::decode(arg).unwrap()
-    }
-}
