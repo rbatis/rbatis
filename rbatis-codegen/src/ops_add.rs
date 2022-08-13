@@ -81,9 +81,7 @@ impl Add<&Value> for Value {
             Value::U64(s) => Value::U64(s + rhs.u64()),
             Value::F64(s) => Value::F64(s + rhs.as_f64().unwrap_or_default()),
             Value::F32(v) => Value::F64(v as f64 + rhs.as_f64().unwrap_or_default()),
-            _ => {
-                Value::Null
-            }
+            _ => Value::Null,
         }
     }
 }
@@ -99,9 +97,7 @@ impl Add<&&Value> for Value {
             Value::U64(s) => Value::U64(s + rhs.u64()),
             Value::F64(s) => Value::F64(s + rhs.as_f64().unwrap_or_default()),
             Value::F32(s) => Value::F64((s as f64 + rhs.as_f64().unwrap_or_default()) as f64),
-            _ => {
-                Value::Null
-            }
+            _ => Value::Null,
         }
     }
 }
@@ -119,9 +115,7 @@ impl Add<Value> for Value {
             Value::F32(s) => {
                 Value::F64((s as f64 as f64 + rhs.as_f64().unwrap_or_default()) as f64)
             }
-            _ => {
-                Value::Null
-            }
+            _ => Value::Null,
         }
     }
 }
@@ -137,9 +131,7 @@ impl Add<&Value> for &Value {
             Value::U64(s) => Value::U64(s + rhs.u64()),
             Value::F64(s) => Value::F64(s + rhs.as_f64().unwrap_or_default()),
             Value::F32(s) => Value::F64(*s as f64 + rhs.as_f64().unwrap_or_default()),
-            _ => {
-                Value::Null
-            }
+            _ => Value::Null,
         }
     }
 }
@@ -155,9 +147,7 @@ impl Add<&&Value> for &Value {
             Value::U64(s) => Value::U64(s + rhs.u64()),
             Value::F64(s) => Value::F64(s + rhs.as_f64().unwrap_or_default()),
             Value::F32(s) => Value::F64(*s as f64 + rhs.as_f64().unwrap_or_default()),
-            _ => {
-                Value::Null
-            }
+            _ => Value::Null,
         }
     }
 }
@@ -173,9 +163,7 @@ impl Add<Value> for &Value {
             Value::U64(s) => Value::U64(s + rhs.u64()),
             Value::F64(s) => Value::F64(s + rhs.as_f64().unwrap_or_default()),
             Value::F32(s) => Value::F64(*s as f64 + rhs.as_f64().unwrap_or_default()),
-            _ => {
-                Value::Null
-            }
+            _ => Value::Null,
         }
     }
 }

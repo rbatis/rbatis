@@ -19,7 +19,7 @@ fn op_div_i64(value: &Value, other: i64) -> i64 {
 fn op_div_f64(value: &Value, other: f64) -> f64 {
     if other == 0.0 {
         0.0
-    }else{
+    } else {
         value.f64() / other
     }
 }
@@ -44,7 +44,7 @@ fn op_div_f64_value(value: &Value, other: f64) -> f64 {
     let v = value.f64();
     if v == 0.0 {
         0.0
-    }else{
+    } else {
         (other / v)
     }
 }
@@ -171,9 +171,7 @@ impl Div<&Value> for Value {
                 }
                 Value::F64(s as f64 / rhs)
             }
-            _ => {
-                Value::Null
-            }
+            _ => Value::Null,
         }
     }
 }
@@ -224,9 +222,7 @@ impl Div<&&Value> for Value {
                 }
                 Value::F64((s as f64) / rhs)
             }
-            _ => {
-                Value::Null
-            }
+            _ => Value::Null,
         }
     }
 }
@@ -277,9 +273,7 @@ impl Div<Value> for Value {
                 }
                 Value::F64((s as f64) / rhs)
             }
-            _ => {
-                Value::Null
-            }
+            _ => Value::Null,
         }
     }
 }
@@ -330,9 +324,7 @@ impl Div<Value> for &Value {
                 }
                 Value::F64((*s as f64) / rhs)
             }
-            _ => {
-                Value::Null
-            }
+            _ => Value::Null,
         }
     }
 }
@@ -383,9 +375,7 @@ impl Div<&Value> for &Value {
                 }
                 Value::F64((*s as f64) / rhs)
             }
-            _ => {
-                Value::Null
-            }
+            _ => Value::Null,
         }
     }
 }
@@ -436,9 +426,7 @@ impl Div<&&Value> for &Value {
                 }
                 Value::F64(*s as f64 / rhs)
             }
-            _ => {
-                Value::Null
-            }
+            _ => Value::Null,
         }
     }
 }

@@ -1,21 +1,21 @@
-use std::collections::HashMap;
-use quote::ToTokens;
-use syn::{AttributeArgs, ItemFn};
-use crate::codegen::proc_macro::TokenStream;
 use crate::codegen::parser_html::parse_html_str;
-use crate::codegen::syntax_tree::error::Error;
-use crate::codegen::syntax_tree::if_node::IfNode;
-use crate::codegen::syntax_tree::{DefaultName, Name, NodeType};
+use crate::codegen::proc_macro::TokenStream;
 use crate::codegen::syntax_tree::bind_node::BindNode;
 use crate::codegen::syntax_tree::choose_node::ChooseNode;
 use crate::codegen::syntax_tree::continue_node::ContinueNode;
+use crate::codegen::syntax_tree::error::Error;
 use crate::codegen::syntax_tree::foreach_node::ForEachNode;
+use crate::codegen::syntax_tree::if_node::IfNode;
 use crate::codegen::syntax_tree::otherwise_node::OtherwiseNode;
 use crate::codegen::syntax_tree::set_node::SetNode;
 use crate::codegen::syntax_tree::string_node::StringNode;
 use crate::codegen::syntax_tree::trim_node::TrimNode;
 use crate::codegen::syntax_tree::when_node::WhenNode;
 use crate::codegen::syntax_tree::where_node::WhereNode;
+use crate::codegen::syntax_tree::{DefaultName, Name, NodeType};
+use quote::ToTokens;
+use std::collections::HashMap;
+use syn::{AttributeArgs, ItemFn};
 
 pub trait ParsePySql {
     fn parse_pysql(arg: &str) -> Result<Vec<NodeType>, crate::codegen::syntax_tree::error::Error>;
@@ -47,8 +47,6 @@ pub fn impl_fn_py(m: &ItemFn, args: &AttributeArgs) -> TokenStream {
     t = parse_html_str(&htmls, &fn_name, &mut vec![]);
     return t.into();
 }
-
-
 
 impl ParsePySql for NodeType {
     //TODO maybe this use Rust parser crates？
@@ -89,7 +87,6 @@ impl ParsePySql for NodeType {
         return Ok(main_node);
     }
 }
-
 
 impl NodeType {
     fn parse_pysql_node(

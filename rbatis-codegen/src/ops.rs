@@ -46,7 +46,7 @@ pub trait AsProxy {
 
 impl AsProxy for Value {
     fn i32(&self) -> i32 {
-         match self {
+        match self {
             Value::I32(v) => *v as i32,
             Value::I64(v) => *v as i32,
             Value::U32(v) => *v as i32,
@@ -59,7 +59,7 @@ impl AsProxy for Value {
     }
 
     fn i64(&self) -> i64 {
-         match self {
+        match self {
             Value::F64(v) => *v as i64,
             Value::F32(v) => *v as i64,
             Value::U32(v) => *v as i64,
@@ -71,7 +71,7 @@ impl AsProxy for Value {
     }
 
     fn u32(&self) -> u32 {
-         match self {
+        match self {
             Value::F64(v) => *v as u32,
             Value::F32(v) => *v as u32,
             Value::I32(v) => *v as u32,
@@ -139,7 +139,7 @@ impl AsProxy for Value {
             Value::F32(v) => *v as i64,
             Value::String(d) => d.to_string().parse().unwrap_or_default(),
             Value::Bool(d) => {
-                if *d  {
+                if *d {
                     1
                 } else {
                     0
@@ -165,7 +165,7 @@ impl AsProxy for Value {
             Value::F32(v) => *v as u64,
             Value::String(d) => d.to_string().parse().unwrap_or_default(),
             Value::Bool(d) => {
-                if *d  {
+                if *d {
                     1
                 } else {
                     0
@@ -191,7 +191,7 @@ impl AsProxy for Value {
             Value::F32(v) => *v as f64,
             Value::String(d) => d.to_string().parse().unwrap_or_default(),
             Value::Bool(d) => {
-                if *d  {
+                if *d {
                     1.0
                 } else {
                     0.0
@@ -214,9 +214,7 @@ impl AsProxy for Value {
             Value::String(s) => s.is_empty(),
             Value::Array(arr) => arr.is_empty(),
             Value::Map(m) => m.is_empty(),
-            _ => {
-                false
-            }
+            _ => false,
         }
     }
 

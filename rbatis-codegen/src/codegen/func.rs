@@ -34,7 +34,8 @@ fn convert_to_arg_access(context: &str, arg: Expr, as_proxy: bool, ignore: &[Str
                 }
             }
             if fetch_from_arg {
-                return syn::parse_str::<Expr>(&format!("&arg[\"{}\"]", param)).expect("codegen_func fail");
+                return syn::parse_str::<Expr>(&format!("&arg[\"{}\"]", param))
+                    .expect("codegen_func fail");
             } else {
                 return syn::parse_str::<Expr>(&format!("{}", param)).expect("codegen_func fail");
             }
@@ -349,11 +350,13 @@ fn convert_to_arg_access(context: &str, arg: Expr, as_proxy: bool, ignore: &[Str
                 Lit::Char(_) => {}
                 Lit::Int(i) => {
                     //cast int to i64
-                    return syn::parse_str::<Expr>(&format!("{}i64", i)).expect("codegen_func fail");
+                    return syn::parse_str::<Expr>(&format!("{}i64", i))
+                        .expect("codegen_func fail");
                 }
                 Lit::Float(f) => {
                     //cast int to f64
-                    return syn::parse_str::<Expr>(&format!("{}f64", f)).expect("codegen_func fail");
+                    return syn::parse_str::<Expr>(&format!("{}f64", f))
+                        .expect("codegen_func fail");
                 }
                 Lit::Bool(_) => {}
                 Lit::Verbatim(_) => {}

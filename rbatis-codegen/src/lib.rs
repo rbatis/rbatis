@@ -12,7 +12,6 @@
 #![allow(clippy::modulo_one)]
 #![allow(clippy::match_like_matches_macro)]
 
-
 pub mod error;
 pub mod string_util;
 #[macro_use]
@@ -36,4 +35,4 @@ pub mod ops_xor;
 pub mod sql_replace;
 pub mod codegen;
 
-pub use codegen::{rb_html,rb_py};
+pub use codegen::{rb_html, rb_py};
