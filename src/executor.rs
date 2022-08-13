@@ -95,9 +95,9 @@ impl Executor for RBatisConnExecutor {
             let (_args, args_string) = arr_to_string(args);
             args = _args;
             self.get_rbatis().log_plugin.info(
-                rb_task_id,
                 &format!(
-                    "Exec   ==> {}\n{}[rbatis]                      Args   ==> {}",
+                    "[rbatis] [{}] Exec   ==> {}\n{}[rbatis]                      Args   ==> {}",
+                    rb_task_id,
                     &sql,
                     string_util::LOG_SPACE,
                     args_string
@@ -109,14 +109,13 @@ impl Executor for RBatisConnExecutor {
             match &result {
                 Ok(result) => {
                     self.get_rbatis().log_plugin.info(
-                        rb_task_id,
-                        &format!("RowsAffected <== {}", result.rows_affected),
+                        &format!("[rbatis] [{}] RowsAffected <== {}",rb_task_id, result.rows_affected),
                     );
                 }
                 Err(e) => {
                     self.get_rbatis()
                         .log_plugin
-                        .error(rb_task_id, &format!("ReturnErr  <== {}", e));
+                        .error( &format!("[rbatis] [{}] ReturnErr  <== {}",rb_task_id, e));
                 }
             }
         }
@@ -134,9 +133,9 @@ impl Executor for RBatisConnExecutor {
             let (_args, args_string) = arr_to_string(args);
             args = _args;
             self.get_rbatis().log_plugin.info(
-                rb_task_id,
                 &format!(
-                    "Fetch  ==> {}\n{}[rbatis]                      Args   ==> {}",
+                    "[rbatis] [{}] Fetch  ==> {}\n{}[rbatis]                      Args   ==> {}",
+                    rb_task_id,
                     &sql,
                     string_util::LOG_SPACE,
                     args_string
@@ -149,12 +148,12 @@ impl Executor for RBatisConnExecutor {
                 Ok(result) => {
                     self.get_rbatis()
                         .log_plugin
-                        .info(rb_task_id, &format!("ReturnRows <== {:?}", result));
+                        .info( &format!("[rbatis] [{}] ReturnRows <== {:?}", rb_task_id,result));
                 }
                 Err(e) => {
                     self.get_rbatis()
                         .log_plugin
-                        .error(rb_task_id, &format!("ReturnErr  <== {}", e));
+                        .error( &format!("[rbatis] [{}] ReturnErr  <== {}",rb_task_id, e));
                 }
             }
         }
@@ -235,9 +234,9 @@ impl Executor for RBatisTxExecutor {
             let (_args, args_string) = arr_to_string(args);
             args = _args;
             self.get_rbatis().log_plugin.info(
-                self.tx_id,
                 &format!(
-                    "Exec   ==> {}\n{}[rbatis]                      Args   ==> {}",
+                    "[rbatis] [{}] Exec   ==> {}\n{}[rbatis]                      Args   ==> {}",
+                    self.tx_id,
                     &sql,
                     string_util::LOG_SPACE,
                     args_string
@@ -249,14 +248,13 @@ impl Executor for RBatisTxExecutor {
             match &result {
                 Ok(result) => {
                     self.get_rbatis().log_plugin.info(
-                        self.tx_id,
-                        &format!("RowsAffected <== {}", result.rows_affected),
+                        &format!("[rbatis] [{}] RowsAffected <== {}", self.tx_id, result.rows_affected),
                     );
                 }
                 Err(e) => {
                     self.get_rbatis()
                         .log_plugin
-                        .error(self.tx_id, &format!("ReturnErr  <== {}", e));
+                        .error( &format!("[rbatis] [{}] ReturnErr  <== {}",self.tx_id, e));
                 }
             }
         }
@@ -273,9 +271,9 @@ impl Executor for RBatisTxExecutor {
             let (_args, args_string) = arr_to_string(args);
             args = _args;
             self.get_rbatis().log_plugin.info(
-                self.tx_id,
                 &format!(
-                    "Fetch  ==> {}\n{}[rbatis]                      Args   ==> {}",
+                    "[rbatis] [{}] Fetch  ==> {}\n{}[rbatis]                      Args   ==> {}",
+                    self.tx_id,
                     &sql,
                     string_util::LOG_SPACE,
                     args_string
@@ -288,12 +286,12 @@ impl Executor for RBatisTxExecutor {
                 Ok(result) => {
                     self.get_rbatis()
                         .log_plugin
-                        .info(self.tx_id, &format!("ReturnRows <== {:?}", result));
+                        .info( &format!("[rbatis] [{}] ReturnRows <== {:?}", self.tx_id,result));
                 }
                 Err(e) => {
                     self.get_rbatis()
                         .log_plugin
-                        .error(self.tx_id, &format!("ReturnErr  <== {}", e));
+                        .error(&format!("[rbatis] [{}] ReturnErr  <== {}", self.tx_id,e));
                 }
             }
         }
