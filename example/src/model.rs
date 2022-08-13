@@ -3,7 +3,7 @@ use rbatis::rbatis::Rbatis;
 use rbdc::datetime::FastDateTime;
 use rbdc_sqlite::driver::SqliteDriver;
 use serde::{Deserialize, Serialize};
-use std::fs::{create_dir_all, File};
+use std::fs::File;
 use std::io::Read;
 
 /// this is table model(see ../database.sql)
@@ -31,7 +31,7 @@ pub async fn init_sqlite() -> Rbatis {
 /// make a sqlite-rbatis
 pub async fn init_sqlite_path(path: &str) -> Rbatis {
     //first init log carte
-    fast_log::init(fast_log::Config::new().console());
+    let _=fast_log::init(fast_log::Config::new().console());
 
     let rb = Rbatis::new();
     // rb.link(MysqlDriver {},"mysql://root:123456@localhost:3306/test").await.unwrap();
@@ -49,7 +49,7 @@ pub async fn init_sqlite_path(path: &str) -> Rbatis {
     let mut sql = String::new();
     f.read_to_string(&mut sql).unwrap();
     fast_log::LOGGER.set_level(LevelFilter::Off);
-    rb.exec(&sql, vec![]).await;
+    let _=rb.exec(&sql, vec![]).await;
     fast_log::LOGGER.set_level(LevelFilter::Info);
     // ------------carte table end------------
 

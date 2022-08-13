@@ -1,7 +1,8 @@
+use std::collections::HashMap;
 use std::ops::Deref;
 
 use log::{debug, error, info, trace, warn, LevelFilter};
-use std::fmt::{Debug, Display};
+use std::fmt::{Debug, Display, Formatter};
 use std::sync::atomic::{AtomicI8, Ordering};
 
 /// log plugin
@@ -12,6 +13,8 @@ pub trait LogPlugin: Send + Sync + Debug {
     }
     fn get_level_filter(&self) -> LevelFilter;
     fn set_level_filter(&self, level: LevelFilter);
+    fn set_change_level_filter(&mut self, f: HashMap<LevelFilter, LevelFilter>);
+    fn get_change_level_filter(&self) -> &HashMap<LevelFilter, LevelFilter>;
     fn is_enable(&self) -> bool {
         return !self.get_level_filter().eq(&LevelFilter::Off);
     }
@@ -19,6 +22,8 @@ pub trait LogPlugin: Send + Sync + Debug {
         if self.get_level_filter() < level {
             return;
         }
+        let filter = self.get_change_level_filter();
+        let level = filter.get(&level).unwrap_or(&LevelFilter::Off).to_owned();
         match level {
             LevelFilter::Error => {
                 error!("{}",data)
@@ -43,6 +48,7 @@ pub trait LogPlugin: Send + Sync + Debug {
 #[derive(Debug)]
 pub struct RbatisLogPlugin {
     pub level_filter: AtomicI8,
+    pub f: HashMap<LevelFilter, LevelFilter>,
 }
 
 impl From<&RbatisLogPlugin> for LevelFilter {
@@ -64,6 +70,16 @@ impl Default for RbatisLogPlugin {
     fn default() -> Self {
         RbatisLogPlugin {
             level_filter: AtomicI8::new(3),
+            f: {
+                let mut m = HashMap::new();
+                m.insert(LevelFilter::Off, LevelFilter::Off);
+                m.insert(LevelFilter::Error, LevelFilter::Error);
+                m.insert(LevelFilter::Warn, LevelFilter::Warn);
+                m.insert(LevelFilter::Info, LevelFilter::Info);
+                m.insert(LevelFilter::Debug, LevelFilter::Debug);
+                m.insert(LevelFilter::Trace, LevelFilter::Trace);
+                m
+            },
         }
     }
 }
@@ -94,5 +110,13 @@ impl LogPlugin for RbatisLogPlugin {
                 self.level_filter.store(5, Ordering::SeqCst);
             }
         }
+    }
+
+    fn set_change_level_filter(&mut self, f: HashMap<LevelFilter, LevelFilter>) {
+        self.f = f;
+    }
+
+    fn get_change_level_filter(&self) -> &HashMap<LevelFilter, LevelFilter> {
+        &self.f
     }
 }
