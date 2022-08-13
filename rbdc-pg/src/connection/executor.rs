@@ -1,7 +1,7 @@
 use crate::connection::PgConnection;
 use crate::message::{
-    self, Bind, Close, CommandComplete, DataRow, MessageFormat, ParameterDescription,
-    Parse, Query, RowDescription,
+    self, Bind, Close, CommandComplete, DataRow, MessageFormat, ParameterDescription, Parse, Query,
+    RowDescription,
 };
 use crate::query::PgQuery;
 use crate::statement::PgStatementMetadata;

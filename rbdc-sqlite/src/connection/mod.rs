@@ -1,17 +1,17 @@
-use std::cmp::Ordering;
-use std::fmt::{self, Debug, Formatter};
-use std::ptr::NonNull;
 use futures_core::future::BoxFuture;
 use futures_intrusive::sync::MutexGuard;
 use futures_util::future;
 use libsqlite3_sys::sqlite3;
+use std::cmp::Ordering;
+use std::fmt::{self, Debug, Formatter};
+use std::ptr::NonNull;
 
 pub(crate) use handle::{ConnectionHandle, ConnectionHandleRaw};
 
 use crate::connection::establish::EstablishParams;
 use crate::connection::worker::ConnectionWorker;
 use crate::statement::VirtualStatement;
-use crate::{SqliteConnectOptions};
+use crate::SqliteConnectOptions;
 use rbdc::error::Error;
 use rbdc::StatementCache;
 

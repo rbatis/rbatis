@@ -1,5 +1,5 @@
 use crate::query::SqliteQuery;
-use crate::{ SqliteConnection, SqliteQueryResult, SqliteRow, SqliteStatement, SqliteTypeInfo};
+use crate::{SqliteConnection, SqliteQueryResult, SqliteRow, SqliteStatement, SqliteTypeInfo};
 use either::Either;
 use futures_core::future::BoxFuture;
 use futures_core::stream::BoxStream;

@@ -104,17 +104,17 @@ where
 
 #[cfg(test)]
 mod test {
+    use crate::decode::decode;
+    use rbs::value::map::ValueMap;
     use rbs::{to_value, Value};
     use std::collections::HashMap;
-    use rbs::value::map::ValueMap;
-    use crate::decode::decode;
 
     #[test]
     fn test_decode_hashmap() {
         let mut v = ValueMap::new();
-        v.insert(1.into(),2.into());
+        v.insert(1.into(), 2.into());
         let m: HashMap<i32, Value> = decode(Value::Array(vec![Value::Map(v)])).unwrap();
         println!("{:#?}", m);
-        assert_eq!(m.get(&1).unwrap().as_i64(),Value::I32(2).as_i64());
+        assert_eq!(m.get(&1).unwrap().as_i64(), Value::I32(2).as_i64());
     }
 }

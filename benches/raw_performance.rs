@@ -2,16 +2,15 @@
 #![feature(bench_black_box)]
 extern crate test;
 
-use std::any::Any;
-use test::Bencher;
 use futures_core::future::BoxFuture;
 use rbatis::impl_insert;
 use rbatis::rbatis::Rbatis;
-use rbdc::db::{Connection, ConnectOptions, Driver, ExecResult, Row};
-use rbdc::{block_on, Error};
+use rbdc::db::{ConnectOptions, Connection, Driver, ExecResult, Row};
 use rbdc::rt::block_on;
+use rbdc::{block_on, Error};
 use rbs::Value;
-
+use std::any::Any;
+use test::Bencher;
 
 //cargo test --release --package rbatis --bench raw_performance bench_raw  --no-fail-fast -- --exact -Z unstable-options --show-output
 
@@ -30,13 +29,12 @@ fn bench_raw() {
         rbatis.link(MockDriver {}, "").await;
         rbatis
     });
-    block_on!(async{
-        rbatis::bench!(100000,{
-            let v=rbatis.fetch_decode::<Vec<i32>>("",vec![]).await;
+    block_on!(async {
+        rbatis::bench!(100000, {
+            let v = rbatis.fetch_decode::<Vec<i32>>("", vec![]).await;
         });
-   });
+    });
 }
-
 
 //cargo test --release --package rbatis --bench raw_performance bench_insert  --no-fail-fast -- --exact -Z unstable-options --show-output
 //---- bench_insert stdout ----(win10,cpu-amd5950x)
@@ -52,27 +50,26 @@ fn bench_insert() {
         rbatis.link(MockDriver {}, "").await;
         rbatis
     });
-    block_on!(async{
+    block_on!(async {
         let mut t = MockTable {
-        id: Some("2".into()),
-        name: Some("2".into()),
-        pc_link: Some("2".into()),
-        h5_link: Some("2".into()),
-        pc_banner_img: None,
-        h5_banner_img: None,
-        sort: None,
-        status: Some(2),
-        remark: Some("2".into()),
-        create_time: Some(rbdc::datetime::FastDateTime::now()),
-        version: Some(1),
-        delete_flag: Some(1),
-    };
-        rbatis::bench!(100000,{
-            MockTable::insert(&mut rbatis.clone(),&t).await;
+            id: Some("2".into()),
+            name: Some("2".into()),
+            pc_link: Some("2".into()),
+            h5_link: Some("2".into()),
+            pc_banner_img: None,
+            h5_banner_img: None,
+            sort: None,
+            status: Some(2),
+            remark: Some("2".into()),
+            create_time: Some(rbdc::datetime::FastDateTime::now()),
+            version: Some(1),
+            delete_flag: Some(1),
+        };
+        rbatis::bench!(100000, {
+            MockTable::insert(&mut rbatis.clone(), &t).await;
         });
-   });
+    });
 }
-
 
 #[derive(Debug, Clone)]
 pub struct MockDriver {}
@@ -83,15 +80,14 @@ impl Driver for MockDriver {
     }
 
     fn connect(&self, url: &str) -> BoxFuture<Result<Box<dyn Connection>, Error>> {
-        Box::pin(async {
-            Ok(Box::new(MockConnection {}) as Box<dyn Connection>)
-        })
+        Box::pin(async { Ok(Box::new(MockConnection {}) as Box<dyn Connection>) })
     }
 
-    fn connect_opt<'a>(&'a self, opt: &'a dyn ConnectOptions) -> BoxFuture<Result<Box<dyn Connection>, Error>> {
-        Box::pin(async {
-            Ok(Box::new(MockConnection {}) as Box<dyn Connection>)
-        })
+    fn connect_opt<'a>(
+        &'a self,
+        opt: &'a dyn ConnectOptions,
+    ) -> BoxFuture<Result<Box<dyn Connection>, Error>> {
+        Box::pin(async { Ok(Box::new(MockConnection {}) as Box<dyn Connection>) })
     }
 
     fn default_option(&self) -> Box<dyn ConnectOptions> {
@@ -103,10 +99,12 @@ impl Driver for MockDriver {
 pub struct MockConnection {}
 
 impl Connection for MockConnection {
-    fn get_rows(&mut self, sql: &str, params: Vec<Value>) -> BoxFuture<Result<Vec<Box<dyn Row>>, Error>> {
-        Box::pin(async {
-            Ok(vec![])
-        })
+    fn get_rows(
+        &mut self,
+        sql: &str,
+        params: Vec<Value>,
+    ) -> BoxFuture<Result<Vec<Box<dyn Row>>, Error>> {
+        Box::pin(async { Ok(vec![]) })
     }
 
     fn exec(&mut self, sql: &str, params: Vec<Value>) -> BoxFuture<Result<ExecResult, Error>> {
@@ -118,16 +116,12 @@ impl Connection for MockConnection {
         })
     }
 
-    fn close(&mut self) -> BoxFuture< Result<(), Error>> {
-        Box::pin(async {
-            Ok(())
-        })
+    fn close(&mut self) -> BoxFuture<Result<(), Error>> {
+        Box::pin(async { Ok(()) })
     }
 
     fn ping(&mut self) -> BoxFuture<Result<(), Error>> {
-        Box::pin(async {
-            Ok(())
-        })
+        Box::pin(async { Ok(()) })
     }
 }
 
@@ -136,9 +130,7 @@ pub struct MockConnectOptions {}
 
 impl ConnectOptions for MockConnectOptions {
     fn connect(&self) -> BoxFuture<Result<Box<dyn Connection>, Error>> {
-        Box::pin(async {
-            Ok(Box::new(MockConnection {}) as Box<dyn Connection>)
-        })
+        Box::pin(async { Ok(Box::new(MockConnection {}) as Box<dyn Connection>) })
     }
 
     fn set_uri(&mut self, uri: &str) -> Result<(), Error> {

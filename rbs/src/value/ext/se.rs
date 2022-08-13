@@ -1,11 +1,11 @@
 use std::fmt::Display;
 
+use crate::value::map::ValueMap;
+use crate::value::{change_lifetime_const, Value};
 use serde::ser::{
     self, SerializeMap, SerializeSeq, SerializeStruct, SerializeTuple, SerializeTupleStruct,
 };
 use serde::Serialize;
-use crate::value::map::ValueMap;
-use crate::value::{change_lifetime_const, Value};
 
 use super::Error;
 

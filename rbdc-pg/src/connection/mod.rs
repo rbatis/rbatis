@@ -3,11 +3,14 @@ use crate::message::{
     Close, Message, MessageFormat, Query, ReadyForQuery, Terminate, TransactionStatus,
 };
 use crate::query::PgQuery;
+use crate::query_result::PgQueryResult;
+use crate::row::PgRow;
 use crate::statement::PgStatementMetadata;
 use crate::type_info::PgTypeInfo;
 use crate::types::{Oid, TypeInfo};
 use either::Either;
 use futures_core::future::BoxFuture;
+use futures_core::stream::BoxStream;
 use futures_util::{FutureExt, StreamExt, TryFutureExt, TryStreamExt};
 use rbdc::common::StatementCache;
 use rbdc::db::{Connection, ExecResult, Placeholder, Row};
@@ -18,9 +21,6 @@ use rbs::Value;
 use std::collections::HashMap;
 use std::fmt::{self, Debug, Formatter};
 use std::sync::Arc;
-use futures_core::stream::BoxStream;
-use crate::query_result::PgQueryResult;
-use crate::row::PgRow;
 
 pub use self::stream::PgStream;
 
@@ -176,7 +176,7 @@ impl PgConnection {
 
 impl Connection for PgConnection {
     fn close(&mut self) -> BoxFuture<Result<(), Error>> {
-        Box::pin(async  { self.do_close().await })
+        Box::pin(async { self.do_close().await })
     }
 
     fn ping(&mut self) -> BoxFuture<'_, Result<(), Error>> {
@@ -198,7 +198,7 @@ impl Connection for PgConnection {
                         arguments: params,
                         persistent: false,
                     })
-                }else{
+                } else {
                     let stmt = self.prepare_with(sql, &[]).await?;
                     self.fetch_many(PgQuery {
                         statement: Either::Right(stmt),
@@ -207,20 +207,21 @@ impl Connection for PgConnection {
                     })
                 }
             };
-            let f:BoxStream<Result<PgRow,Error>>=many.try_filter_map(|step| async move {
-                Ok(match step {
-                    Either::Left(_) => None,
-                    Either::Right(row) => Some(row),
+            let f: BoxStream<Result<PgRow, Error>> = many
+                .try_filter_map(|step| async move {
+                    Ok(match step {
+                        Either::Left(_) => None,
+                        Either::Right(row) => Some(row),
+                    })
                 })
-            }).boxed();
-            let c:BoxFuture<Result<Vec<PgRow>,Error>>=f.try_collect().boxed();
-            let v=c.await?;
+                .boxed();
+            let c: BoxFuture<Result<Vec<PgRow>, Error>> = f.try_collect().boxed();
+            let v = c.await?;
             let mut data: Vec<Box<dyn Row>> = Vec::with_capacity(v.len());
             for x in v {
                 data.push(Box::new(x));
             }
             Ok(data)
-
         })
     }
 
@@ -234,7 +235,7 @@ impl Connection for PgConnection {
                         arguments: params,
                         persistent: false,
                     })
-                }else{
+                } else {
                     let mut type_info = Vec::with_capacity(params.len());
                     for x in &params {
                         type_info.push(x.type_info());
@@ -247,12 +248,13 @@ impl Connection for PgConnection {
                     })
                 }
             };
-            let v: BoxStream<Result<PgQueryResult, Error>> = many.try_filter_map(|step| async move {
-                Ok(match step {
-                    Either::Left(rows) => Some(rows),
-                    Either::Right(_) => None,
+            let v: BoxStream<Result<PgQueryResult, Error>> = many
+                .try_filter_map(|step| async move {
+                    Ok(match step {
+                        Either::Left(rows) => Some(rows),
+                        Either::Right(_) => None,
+                    })
                 })
-            })
                 .boxed();
             let v: PgQueryResult = v.try_collect().boxed().await?;
             return Ok(ExecResult {

@@ -2,7 +2,7 @@ use rbdc::Error;
 use rbs::Value;
 use std::str::FromStr;
 use tiberius::numeric::BigDecimal;
-use tiberius::{Query,Uuid};
+use tiberius::{Query, Uuid};
 
 pub trait Encode {
     fn encode(self, q: &mut Query) -> Result<(), Error>;

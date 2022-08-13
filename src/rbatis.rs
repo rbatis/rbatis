@@ -1,24 +1,24 @@
-use once_cell::sync::OnceCell;
-use serde::de::DeserializeOwned;
-use serde::ser::Serialize;
-use std::borrow::BorrowMut;
-use std::cell::Cell;
-use std::collections::HashMap;
-use std::sync::Arc;
-use std::time::Duration;
-use uuid::Uuid;
 use crate::executor::{RBatisConnExecutor, RBatisTxExecutor};
 use crate::plugin::intercept::SqlIntercept;
 use crate::plugin::log::{LogPlugin, RbatisLogPlugin};
 use crate::snowflake::new_snowflake_id;
 use crate::utils::error_util::ToResult;
 use crate::utils::string_util;
+use crate::Error;
 use crossbeam::queue::SegQueue;
+use once_cell::sync::OnceCell;
 use rbdc::db::{Connection, ExecResult};
 use rbdc::pool::{ManagerPorxy, Pool};
+use serde::de::DeserializeOwned;
+use serde::ser::Serialize;
+use std::borrow::BorrowMut;
+use std::cell::Cell;
+use std::collections::HashMap;
 use std::fmt::{Debug, Formatter};
 use std::ops::DerefMut;
-use crate::Error;
+use std::sync::Arc;
+use std::time::Duration;
+use uuid::Uuid;
 
 /// rbatis engine
 #[derive(Clone)]
@@ -83,7 +83,7 @@ impl Rbatis {
     pub async fn link<Driver: rbdc::db::Driver + 'static>(
         &self,
         driver: Driver,
-        url: &str
+        url: &str,
     ) -> Result<(), Error> {
         if url.is_empty() {
             return Err(Error::from("[rbatis] link url is empty!"));
@@ -100,14 +100,14 @@ impl Rbatis {
         &self,
         builder: mobc::Builder<ManagerPorxy>,
         driver: Driver,
-        url: &str
+        url: &str,
     ) -> Result<(), Error> {
         if url.is_empty() {
             return Err(Error::from("[rbatis] link url is empty!"));
         }
         let mut option = driver.default_option();
         option.set_uri(url)?;
-        let pool = Pool::new_builder(builder,Box::new(driver), option);
+        let pool = Pool::new_builder(builder, Box::new(driver), option);
         self.pool.set(pool);
         return Ok(());
     }
@@ -179,7 +179,7 @@ impl Rbatis {
             tx_id: new_snowflake_id(),
             conn: Box::new(conn),
             rb: self.clone(),
-            done: false
+            done: false,
         });
     }
 

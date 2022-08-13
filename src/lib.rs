@@ -14,7 +14,6 @@ extern crate flume;
 
 pub use rbatis_macro_driver::{html_sql, py_sql, sql};
 
-
 pub mod plugin;
 
 pub use plugin::*;
@@ -30,9 +29,9 @@ pub mod crud;
 pub mod error;
 pub mod decode;
 
-pub use crud::*;
-pub use error::Error;
-pub use error::Result;
 pub use crate::rbatis::Rbatis;
 pub use crate::rbatis::RbatisOption;
+pub use crud::*;
 pub use decode::decode;
+pub use error::Error;
+pub use error::Result;

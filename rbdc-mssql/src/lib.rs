@@ -12,7 +12,7 @@ use rbdc::Error;
 use rbs::value::change_lifetime_const;
 use rbs::Value;
 use std::any::Any;
-use tiberius::{ Client, Column,  Config, Query};
+use tiberius::{Client, Column, Config, Query};
 use tokio::net::TcpStream;
 use tokio_util::compat::{Compat, TokioAsyncWriteCompatExt};
 

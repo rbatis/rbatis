@@ -7,10 +7,10 @@ macro_rules! crud {
         $crate::impl_delete!($table {});
     };
     ($table:ty{},$table_name:expr) => {
-        $crate::impl_insert!($table {},$table_name);
-        $crate::impl_select!($table {},$table_name);
-        $crate::impl_update!($table {},$table_name);
-        $crate::impl_delete!($table {},$table_name);
+        $crate::impl_insert!($table {}, $table_name);
+        $crate::impl_select!($table {}, $table_name);
+        $crate::impl_update!($table {}, $table_name);
+        $crate::impl_delete!($table {}, $table_name);
     };
 }
 
@@ -27,18 +27,18 @@ macro_rules! crud {
 macro_rules! impl_insert {
     ($table:ty{}) => {
         $crate::impl_insert!(
-            $table{},
+            $table {},
             $crate::utils::string_util::to_snake_name(stringify!($table))
         );
     };
     ($table:ty{},$table_name:expr) => {
         impl $table {
-             pub async fn insert_batch(
+            pub async fn insert_batch(
                 rb: &mut dyn $crate::executor::Executor,
                 tables: &[$table],
             ) -> Result<rbdc::db::ExecResult, rbdc::Error> {
                 #[$crate::py_sql(
-           "`insert into ${table_name} (`
+                    "`insert into ${table_name} (`
              trim ',':
                for k,v in tables[0]:
                   if k == 'id' && v== null:
@@ -64,7 +64,9 @@ macro_rules! impl_insert {
                     impled!()
                 }
                 if tables.is_empty() {
-                    return Err(rbdc::Error::from("insert can not insert empty array tables!"));
+                    return Err(rbdc::Error::from(
+                        "insert can not insert empty array tables!",
+                    ));
                 }
                 let table_name = $table_name.to_string();
                 do_insert_batch(rb.into(), tables, table_name).await
@@ -74,7 +76,7 @@ macro_rules! impl_insert {
                 rb: &mut dyn $crate::executor::Executor,
                 table: &$table,
             ) -> Result<rbdc::db::ExecResult, rbdc::Error> {
-                <$table>::insert_batch(rb,&[table.clone()]).await
+                <$table>::insert_batch(rb, &[table.clone()]).await
             }
         }
     };

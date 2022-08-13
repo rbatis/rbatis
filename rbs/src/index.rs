@@ -10,9 +10,7 @@ impl Index<usize> for Value {
             Value::Ext(_, ext) => {
                 return ext.index(index);
             }
-            _ => {
-                &Value::Null
-            }
+            _ => &Value::Null,
         }
     }
 }

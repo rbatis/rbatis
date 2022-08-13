@@ -10,7 +10,7 @@ use libsqlite3_sys::{
 };
 
 use crate::type_info::DataType;
-use crate::{SqliteTypeInfo};
+use crate::SqliteTypeInfo;
 use rbdc::error::Error;
 use std::borrow::Cow;
 

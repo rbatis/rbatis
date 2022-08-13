@@ -66,14 +66,19 @@ pub async fn main() {
             t3
         }],
     )
-        .await;
+    .await;
     println!("insert_batch = {:?}", data);
 
-    let data = BizActivity::update_by_column_batch(&mut rb, &[t.clone(), {
-        let mut t3 = t.clone();
-        t3.id = "3".to_string().into();
-        t3
-    }], "id").await;
+    let data = BizActivity::update_by_column_batch(
+        &mut rb,
+        &[t.clone(), {
+            let mut t3 = t.clone();
+            t3.id = "3".to_string().into();
+            t3
+        }],
+        "id",
+    )
+    .await;
     println!("update_by_column_batch = {:?}", data);
 
     sleep(Duration::from_secs(2));

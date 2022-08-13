@@ -1,5 +1,5 @@
-use std::collections::HashMap;
 use crate::Error;
+use std::collections::HashMap;
 
 pub trait ToResult<T> {
     fn to_result<F>(&self, fail_method: F) -> Result<&T, Error>

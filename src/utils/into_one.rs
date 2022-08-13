@@ -27,4 +27,3 @@ impl<K, V> IntoOne<(K, V)> for HashMap<K, V> {
         self.into_iter().next()
     }
 }
-
