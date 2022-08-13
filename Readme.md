@@ -18,7 +18,7 @@ It is an ORM, a small compiler, a dynamic SQL languages
 * Zero cost [Dynamic SQL](dyn_sql.md), implemented using (proc-macro,compile-time,Cow(Reduce unnecessary cloning))
   techniques。 don't need ONGL engine(mybatis)
 * JDBC-like driver design, driver use cargo.toml dependency and ```Box<dyn Driver>``` separation
-* All database drivers supported ```#{arg}```, ```${arg}```,```?```  placeholder
+* All database drivers supported ```#{arg}```, ```${arg}```,```?```  placeholder(pg/mssql auto processing '?' to '$1' and '@P1')
 * Dynamic SQL(Write code freely in SQL),pagination, ```py_sql``` query lang and ```html_sql```(Inspired Mybatis).
 * Dynamic configuration connection pool(Based on the mobc)
 * Supports logging, customizable logging based on `log` crate
