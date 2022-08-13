@@ -6,186 +6,186 @@ use rbs::Value;
 impl BitXor<&Value> for Value {
     type Output = Value;
     fn op_bitxor(self, rhs: &Value) -> Self::Output {
-        return match self {
+        match self {
             Value::I32(s) => {
                 let rhs = rhs.i32();
-                return Value::I32(s ^ rhs);
+                Value::I32(s ^ rhs)
             }
             Value::I64(s) => {
                 let rhs = rhs.i64();
-                return Value::I64(s ^ rhs);
+                Value::I64(s ^ rhs)
             }
             Value::U32(s) => {
                 let rhs = rhs.u32();
-                return Value::U32(s ^ rhs);
+                Value::U32(s ^ rhs)
             }
             Value::U64(s) => {
                 let rhs = rhs.u64();
-                return Value::U64(s ^ rhs);
+                Value::U64(s ^ rhs)
             }
             Value::F64(s) => {
                 let rhs = rhs.as_f64().unwrap_or_default();
-                return Value::Null;
+                Value::Null
             }
             _ => {
-                return Value::Null;
+                Value::Null
             }
-        };
+        }
     }
 }
 
 impl BitXor<&&Value> for Value {
     type Output = Value;
     fn op_bitxor(self, rhs: &&Value) -> Self::Output {
-        return match self {
+        match self {
             Value::I32(s) => {
                 let rhs = rhs.i32();
-                return Value::I32(s ^ rhs);
+                Value::I32(s ^ rhs)
             }
             Value::I64(s) => {
                 let rhs = rhs.i64();
-                return Value::I64(s ^ rhs);
+                Value::I64(s ^ rhs)
             }
             Value::U32(s) => {
                 let rhs = rhs.u32();
-                return Value::U32(s ^ rhs);
+                Value::U32(s ^ rhs)
             }
             Value::U64(s) => {
                 let rhs = rhs.u64();
-                return Value::U64(s ^ rhs);
+                Value::U64(s ^ rhs)
             }
             Value::F64(s) => {
                 let rhs = rhs.as_f64().unwrap_or_default();
-                return Value::Null;
+                Value::Null
             }
             _ => {
-                return Value::Null;
+                Value::Null
             }
-        };
+        }
     }
 }
 
 impl BitXor<Value> for Value {
     type Output = Value;
     fn op_bitxor(self, rhs: Value) -> Self::Output {
-        return match self {
+        match self {
             Value::I32(s) => {
                 let rhs = rhs.i32();
-                return Value::I32(s ^ rhs);
+                Value::I32(s ^ rhs)
             }
             Value::I64(s) => {
                 let rhs = rhs.i64();
-                return Value::I64(s ^ rhs);
+                Value::I64(s ^ rhs)
             }
             Value::U32(s) => {
                 let rhs = rhs.u32();
-                return Value::U32(s ^ rhs);
+                Value::U32(s ^ rhs)
             }
             Value::U64(s) => {
                 let rhs = rhs.u64();
-                return Value::U64(s ^ rhs);
+                Value::U64(s ^ rhs)
             }
             Value::F64(s) => {
                 let rhs = rhs.as_f64().unwrap_or_default();
-                return Value::Null;
+                Value::Null
             }
             _ => {
-                return Value::Null;
+                Value::Null
             }
-        };
+        }
     }
 }
 
 impl BitXor<&Value> for &Value {
     type Output = Value;
     fn op_bitxor(self, rhs: &Value) -> Self::Output {
-        return match self {
+        match self {
             Value::I32(s) => {
                 let rhs = rhs.i32();
-                return Value::I32(s ^ rhs);
+                Value::I32(s ^ rhs)
             }
             Value::I64(s) => {
                 let rhs = rhs.i64();
-                return Value::I64(s ^ rhs);
+                Value::I64(s ^ rhs)
             }
             Value::U32(s) => {
                 let rhs = rhs.u32();
-                return Value::U32(s ^ rhs);
+                Value::U32(s ^ rhs)
             }
             Value::U64(s) => {
                 let rhs = rhs.u64();
-                return Value::U64(s ^ rhs);
+                Value::U64(s ^ rhs)
             }
             Value::F64(s) => {
                 let rhs = rhs.as_f64().unwrap_or_default();
-                return Value::Null;
+                Value::Null
             }
             _ => {
-                return Value::Null;
+                Value::Null
             }
-        };
+        }
     }
 }
 
 impl BitXor<&&Value> for &Value {
     type Output = Value;
     fn op_bitxor(self, rhs: &&Value) -> Self::Output {
-        return match self {
+        match self {
             Value::I32(s) => {
                 let rhs = rhs.i32();
-                return Value::I32(s ^ rhs);
+                Value::I32(s ^ rhs)
             }
             Value::I64(s) => {
                 let rhs = rhs.i64();
-                return Value::I64(s ^ rhs);
+                Value::I64(s ^ rhs)
             }
             Value::U32(s) => {
                 let rhs = rhs.u32();
-                return Value::U32(s ^ rhs);
+                Value::U32(s ^ rhs)
             }
             Value::U64(s) => {
                 let rhs = rhs.u64();
-                return Value::U64(s ^ rhs);
+                Value::U64(s ^ rhs)
             }
             Value::F64(s) => {
                 let rhs = rhs.as_f64().unwrap_or_default();
-                return Value::Null;
+                Value::Null
             }
             _ => {
-                return Value::Null;
+                Value::Null
             }
-        };
+        }
     }
 }
 
 impl BitXor<Value> for &Value {
     type Output = Value;
     fn op_bitxor(self, rhs: Value) -> Self::Output {
-        return match self {
+        match self {
             Value::I32(s) => {
                 let rhs = rhs.i32();
-                return Value::I32(s ^ rhs);
+                Value::I32(s ^ rhs)
             }
             Value::I64(s) => {
                 let rhs = rhs.i64();
-                return Value::I64(s ^ rhs);
+                Value::I64(s ^ rhs)
             }
             Value::U32(s) => {
                 let rhs = rhs.u32();
-                return Value::U32(s ^ rhs);
+                Value::U32(s ^ rhs)
             }
             Value::U64(s) => {
                 let rhs = rhs.u64();
-                return Value::U64(s ^ rhs);
+                Value::U64(s ^ rhs)
             }
             Value::F64(s) => {
                 let rhs = rhs.as_f64().unwrap_or_default();
-                return Value::Null;
+                Value::Null
             }
             _ => {
-                return Value::Null;
+                Value::Null
             }
-        };
+        }
     }
 }
 

@@ -6,186 +6,186 @@ use rbs::Value;
 impl Sub<&Value> for Value {
     type Output = Value;
     fn op_sub(self, rhs: &Value) -> Self::Output {
-        return match self {
+        match self {
             Value::I32(s) => {
                 let rhs = rhs.i32();
-                return Value::I64((s - rhs) as i64);
+                Value::I64((s - rhs) as i64)
             }
             Value::I64(s) => {
                 let rhs = rhs.i64();
-                return Value::I64(s - rhs);
+                Value::I64(s - rhs)
             }
             Value::U32(s) => {
                 let rhs = rhs.u32();
-                return Value::U64(((s - rhs) as u64));
+                Value::U64(((s - rhs) as u64))
             }
             Value::U64(s) => {
                 let rhs = rhs.u64();
-                return Value::U64((s - rhs));
+                Value::U64((s - rhs))
             }
             Value::F64(s) => {
                 let rhs = rhs.as_f64().unwrap_or_default();
-                return Value::F64(s - rhs);
+                Value::F64(s - rhs)
             }
             _ => {
-                return Value::Null;
+                Value::Null
             }
-        };
+        }
     }
 }
 
 impl Sub<&&Value> for Value {
     type Output = Value;
     fn op_sub(self, rhs: &&Value) -> Self::Output {
-        return match self {
+        match self {
             Value::I32(s) => {
                 let rhs = rhs.i32();
-                return Value::I64((s - rhs) as i64);
+                Value::I64((s - rhs) as i64)
             }
             Value::I64(s) => {
                 let rhs = rhs.i64();
-                return Value::I64(s - rhs);
+                Value::I64(s - rhs)
             }
             Value::U32(s) => {
                 let rhs = rhs.u32();
-                return Value::U64(((s - rhs) as u64));
+                Value::U64(((s - rhs) as u64))
             }
             Value::U64(s) => {
                 let rhs = rhs.u64();
-                return Value::U64((s - rhs));
+                Value::U64((s - rhs))
             }
             Value::F64(s) => {
                 let rhs = rhs.as_f64().unwrap_or_default();
-                return Value::F64(s - rhs);
+                Value::F64(s - rhs)
             }
             _ => {
-                return Value::Null;
+                Value::Null
             }
-        };
+        }
     }
 }
 
 impl Sub<Value> for Value {
     type Output = Value;
     fn op_sub(self, rhs: Value) -> Self::Output {
-        return match self {
+        match self {
             Value::I32(s) => {
                 let rhs = rhs.i32();
-                return Value::I64((s - rhs) as i64);
+                Value::I64((s - rhs) as i64)
             }
             Value::I64(s) => {
                 let rhs = rhs.i64();
-                return Value::I64(s - rhs);
+                Value::I64(s - rhs)
             }
             Value::U32(s) => {
                 let rhs = rhs.u32();
-                return Value::U64(((s - rhs) as u64));
+                Value::U64(((s - rhs) as u64))
             }
             Value::U64(s) => {
                 let rhs = rhs.u64();
-                return Value::U64((s - rhs));
+                Value::U64((s - rhs))
             }
             Value::F64(s) => {
                 let rhs = rhs.as_f64().unwrap_or_default();
-                return Value::F64(s - rhs);
+                Value::F64(s - rhs)
             }
             _ => {
-                return Value::Null;
+                Value::Null
             }
-        };
+        }
     }
 }
 
 impl Sub<&Value> for &Value {
     type Output = Value;
     fn op_sub(self, rhs: &Value) -> Self::Output {
-        return match self {
+        match self {
             Value::I32(s) => {
                 let rhs = rhs.i32();
-                return Value::I64((s - rhs) as i64);
+                Value::I64((s - rhs) as i64)
             }
             Value::I64(s) => {
                 let rhs = rhs.i64();
-                return Value::I64(s - rhs);
+                Value::I64(s - rhs)
             }
             Value::U32(s) => {
                 let rhs = rhs.u32();
-                return Value::U64(((s - rhs) as u64));
+                Value::U64(((s - rhs) as u64))
             }
             Value::U64(s) => {
                 let rhs = rhs.u64();
-                return Value::U64((s - rhs));
+                Value::U64((s - rhs))
             }
             Value::F64(s) => {
                 let rhs = rhs.as_f64().unwrap_or_default();
-                return Value::F64(s - rhs);
+                Value::F64(s - rhs)
             }
             _ => {
-                return Value::Null;
+                Value::Null
             }
-        };
+        }
     }
 }
 
 impl Sub<&&Value> for &Value {
     type Output = Value;
     fn op_sub(self, rhs: &&Value) -> Self::Output {
-        return match self {
+        match self {
             Value::I32(s) => {
                 let rhs = rhs.i32();
-                return Value::I64((s - rhs) as i64);
+                Value::I64((s - rhs) as i64)
             }
             Value::I64(s) => {
                 let rhs = rhs.i64();
-                return Value::I64(s - rhs);
+                Value::I64(s - rhs)
             }
             Value::U32(s) => {
                 let rhs = rhs.u32();
-                return Value::U64(((s - rhs) as u64));
+                Value::U64(((s - rhs) as u64))
             }
             Value::U64(s) => {
                 let rhs = rhs.u64();
-                return Value::U64((s - rhs));
+                Value::U64((s - rhs))
             }
             Value::F64(s) => {
                 let rhs = rhs.as_f64().unwrap_or_default();
-                return Value::F64(s - rhs);
+                Value::F64(s - rhs)
             }
             _ => {
-                return Value::Null;
+                Value::Null
             }
-        };
+        }
     }
 }
 
 impl Sub<Value> for &Value {
     type Output = Value;
     fn op_sub(self, rhs: Value) -> Self::Output {
-        return match self {
+        match self {
             Value::I32(s) => {
                 let rhs = rhs.i32();
-                return Value::I64((s - rhs) as i64);
+                Value::I64((s - rhs) as i64)
             }
             Value::I64(s) => {
                 let rhs = rhs.i64();
-                return Value::I64(s - rhs);
+                Value::I64(s - rhs)
             }
             Value::U32(s) => {
                 let rhs = rhs.u32();
-                return Value::U64(((s - rhs) as u64));
+                Value::U64(((s - rhs) as u64))
             }
             Value::U64(s) => {
                 let rhs = rhs.u64();
-                return Value::U64((s - rhs));
+                Value::U64((s - rhs))
             }
             Value::F64(s) => {
                 let rhs = rhs.as_f64().unwrap_or_default();
-                return Value::F64(s - rhs);
+                Value::F64(s - rhs)
             }
             _ => {
-                return Value::Null;
+                Value::Null
             }
-        };
+        }
     }
 }
 

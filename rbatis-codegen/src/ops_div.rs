@@ -18,9 +18,10 @@ fn op_div_i64(value: &Value, other: i64) -> i64 {
 
 fn op_div_f64(value: &Value, other: f64) -> f64 {
     if other == 0.0 {
-        return 0.0;
+        0.0
+    }else{
+        value.f64() / other
     }
-    value.f64() / other
 }
 
 fn op_div_i64_value(value: &Value, other: i64) -> i64 {
@@ -42,9 +43,10 @@ fn op_div_u64_value(value: &Value, other: u64) -> u64 {
 fn op_div_f64_value(value: &Value, other: f64) -> f64 {
     let v = value.f64();
     if v == 0.0 {
-        return 0.0;
+        0.0
+    }else{
+        (other / v)
     }
-    (other / v)
 }
 
 macro_rules! impl_numeric_div {
@@ -126,318 +128,318 @@ impl_numeric_div! {
 impl Div<&Value> for Value {
     type Output = Value;
     fn op_div(self, rhs: &Value) -> Self::Output {
-        return match self {
+        match self {
             Value::I32(s) => {
                 let rhs = rhs.as_f64().unwrap_or_default();
                 if rhs == 0.0 {
                     return Value::I32(0);
                 }
-                return Value::F64(s as f64 / rhs);
+                Value::F64(s as f64 / rhs)
             }
             Value::I64(s) => {
                 let rhs = rhs.as_f64().unwrap_or_default();
                 if rhs == 0.0 {
                     return Value::I64(0);
                 }
-                return Value::F64(s as f64 / rhs);
+                Value::F64(s as f64 / rhs)
             }
             Value::U32(s) => {
                 let rhs = rhs.as_u64().unwrap_or_default();
                 if rhs == 0 {
                     return Value::U32(0);
                 }
-                return Value::F64(s as f64 / rhs as f64);
+                Value::F64(s as f64 / rhs as f64)
             }
             Value::U64(s) => {
                 let rhs = rhs.as_u64().unwrap_or_default();
                 if rhs == 0 {
                     return Value::U64(0);
                 }
-                return Value::F64(s as f64 / rhs as f64);
+                Value::F64(s as f64 / rhs as f64)
             }
             Value::F64(s) => {
                 let rhs = rhs.as_f64().unwrap_or_default();
                 if rhs == 0.0 {
                     return Value::F64(0.0);
                 }
-                return Value::F64(s / rhs);
+                Value::F64(s / rhs)
             }
             Value::F32(s) => {
                 let rhs = rhs.as_f64().unwrap_or_default();
                 if rhs == 0.0 {
                     return Value::F64(0.0);
                 }
-                return Value::F64(s as f64 / rhs);
+                Value::F64(s as f64 / rhs)
             }
             _ => {
-                return Value::Null;
+                Value::Null
             }
-        };
+        }
     }
 }
 
 impl Div<&&Value> for Value {
     type Output = Value;
     fn op_div(self, rhs: &&Value) -> Self::Output {
-        return match self {
+        match self {
             Value::I32(s) => {
                 let rhs = rhs.as_f64().unwrap_or_default();
                 if rhs == 0.0 {
                     return Value::I32(0);
                 }
-                return Value::F64(s as f64 / rhs);
+                Value::F64(s as f64 / rhs)
             }
             Value::I64(s) => {
                 let rhs = rhs.as_f64().unwrap_or_default();
                 if rhs == 0.0 {
                     return Value::I64(0);
                 }
-                return Value::F64(s as f64 / rhs);
+                Value::F64(s as f64 / rhs)
             }
             Value::U32(s) => {
                 let rhs = rhs.as_u64().unwrap_or_default();
                 if rhs == 0 {
                     return Value::U32(0);
                 }
-                return Value::F64(s as f64 / rhs as f64);
+                Value::F64(s as f64 / rhs as f64)
             }
             Value::U64(s) => {
                 let rhs = rhs.as_u64().unwrap_or_default();
                 if rhs == 0 {
                     return Value::U64(0);
                 }
-                return Value::F64(s as f64 / rhs as f64);
+                Value::F64(s as f64 / rhs as f64)
             }
             Value::F64(s) => {
                 let rhs = rhs.as_f64().unwrap_or_default();
                 if rhs == 0.0 {
                     return Value::F64(0.0);
                 }
-                return Value::F64(s / rhs);
+                Value::F64(s / rhs)
             }
             Value::F32(s) => {
                 let rhs = rhs.as_f64().unwrap_or_default();
                 if rhs == 0.0 {
                     return Value::F64(0.0);
                 }
-                return Value::F64((s as f64) / rhs);
+                Value::F64((s as f64) / rhs)
             }
             _ => {
-                return Value::Null;
+                Value::Null
             }
-        };
+        }
     }
 }
 
 impl Div<Value> for Value {
     type Output = Value;
     fn op_div(self, rhs: Value) -> Self::Output {
-        return match self {
+        match self {
             Value::I32(s) => {
                 let rhs = rhs.as_f64().unwrap_or_default();
                 if rhs == 0.0 {
                     return Value::I32(0);
                 }
-                return Value::F64(s as f64 / rhs);
+                Value::F64(s as f64 / rhs)
             }
             Value::I64(s) => {
                 let rhs = rhs.as_f64().unwrap_or_default();
                 if rhs == 0.0 {
                     return Value::I64(0);
                 }
-                return Value::F64(s as f64 / rhs);
+                Value::F64(s as f64 / rhs)
             }
             Value::U32(s) => {
                 let rhs = rhs.as_u64().unwrap_or_default();
                 if rhs == 0 {
                     return Value::U32(0);
                 }
-                return Value::F64(s as f64 / rhs as f64);
+                Value::F64(s as f64 / rhs as f64)
             }
             Value::U64(s) => {
                 let rhs = rhs.as_u64().unwrap_or_default();
                 if rhs == 0 {
                     return Value::U64(0);
                 }
-                return Value::F64(s as f64 / rhs as f64);
+                Value::F64(s as f64 / rhs as f64)
             }
             Value::F64(s) => {
                 let rhs = rhs.as_f64().unwrap_or_default();
                 if rhs == 0.0 {
                     return Value::F64(0.0);
                 }
-                return Value::F64(s / rhs);
+                Value::F64(s / rhs)
             }
             Value::F32(s) => {
                 let rhs = rhs.as_f64().unwrap_or_default();
                 if rhs == 0.0 {
                     return Value::F64(0.0);
                 }
-                return Value::F64((s as f64) / rhs);
+                Value::F64((s as f64) / rhs)
             }
             _ => {
-                return Value::Null;
+                Value::Null
             }
-        };
+        }
     }
 }
 
 impl Div<Value> for &Value {
     type Output = Value;
     fn op_div(self, rhs: Value) -> Self::Output {
-        return match self {
+        match self {
             Value::I32(s) => {
                 let rhs = rhs.as_f64().unwrap_or_default();
                 if rhs == 0.0 {
                     return Value::I32(0);
                 }
-                return Value::F64(*s as f64 / rhs);
+                Value::F64(*s as f64 / rhs)
             }
             Value::I64(s) => {
                 let rhs = rhs.as_f64().unwrap_or_default();
                 if rhs == 0.0 {
                     return Value::I64(0);
                 }
-                return Value::F64(*s as f64 / rhs);
+                Value::F64(*s as f64 / rhs)
             }
             Value::U32(s) => {
                 let rhs = rhs.as_u64().unwrap_or_default();
                 if rhs == 0 {
                     return Value::U32(0);
                 }
-                return Value::F64(*s as f64 / rhs as f64);
+                Value::F64(*s as f64 / rhs as f64)
             }
             Value::U64(s) => {
                 let rhs = rhs.as_u64().unwrap_or_default();
                 if rhs == 0 {
                     return Value::U64(0);
                 }
-                return Value::F64(*s as f64 / rhs as f64);
+                Value::F64(*s as f64 / rhs as f64)
             }
             Value::F64(s) => {
                 let rhs = rhs.as_f64().unwrap_or_default();
                 if rhs == 0.0 {
                     return Value::F64(0.0);
                 }
-                return Value::F64(s / rhs);
+                Value::F64(s / rhs)
             }
             Value::F32(s) => {
                 let rhs = rhs.as_f64().unwrap_or_default();
                 if rhs == 0.0 {
                     return Value::F64(0.0);
                 }
-                return Value::F64((*s as f64) / rhs);
+                Value::F64((*s as f64) / rhs)
             }
             _ => {
-                return Value::Null;
+                Value::Null
             }
-        };
+        }
     }
 }
 
 impl Div<&Value> for &Value {
     type Output = Value;
     fn op_div(self, rhs: &Value) -> Self::Output {
-        return match self {
+        match self {
             Value::I32(s) => {
                 let rhs = rhs.as_f64().unwrap_or_default();
                 if rhs == 0.0 {
                     return Value::I32(0);
                 }
-                return Value::F64(*s as f64 / rhs);
+                Value::F64(*s as f64 / rhs)
             }
             Value::I64(s) => {
                 let rhs = rhs.as_f64().unwrap_or_default();
                 if rhs == 0.0 {
                     return Value::I64(0);
                 }
-                return Value::F64(*s as f64 / rhs);
+                Value::F64(*s as f64 / rhs)
             }
             Value::U32(s) => {
                 let rhs = rhs.as_u64().unwrap_or_default();
                 if rhs == 0 {
                     return Value::U32(0);
                 }
-                return Value::F64(*s as f64 / rhs as f64);
+                Value::F64(*s as f64 / rhs as f64)
             }
             Value::U64(s) => {
                 let rhs = rhs.as_u64().unwrap_or_default();
                 if rhs == 0 {
                     return Value::U64(0);
                 }
-                return Value::F64(*s as f64 / rhs as f64);
+                Value::F64(*s as f64 / rhs as f64)
             }
             Value::F64(s) => {
                 let rhs = rhs.as_f64().unwrap_or_default();
                 if rhs == 0.0 {
                     return Value::F64(0.0);
                 }
-                return Value::F64(s / rhs);
+                Value::F64(s / rhs)
             }
             Value::F32(s) => {
                 let rhs = rhs.as_f64().unwrap_or_default();
                 if rhs == 0.0 {
                     return Value::F64(0.0);
                 }
-                return Value::F64((*s as f64) / rhs);
+                Value::F64((*s as f64) / rhs)
             }
             _ => {
-                return Value::Null;
+                Value::Null
             }
-        };
+        }
     }
 }
 
 impl Div<&&Value> for &Value {
     type Output = Value;
     fn op_div(self, rhs: &&Value) -> Self::Output {
-        return match self {
+        match self {
             Value::I32(s) => {
                 let rhs = rhs.as_f64().unwrap_or_default();
                 if rhs == 0.0 {
                     return Value::I32(0);
                 }
-                return Value::F64(*s as f64 / rhs);
+                Value::F64(*s as f64 / rhs)
             }
             Value::I64(s) => {
                 let rhs = rhs.as_f64().unwrap_or_default();
                 if rhs == 0.0 {
                     return Value::I64(0);
                 }
-                return Value::F64(*s as f64 / rhs);
+                Value::F64(*s as f64 / rhs)
             }
             Value::U32(s) => {
                 let rhs = rhs.as_u64().unwrap_or_default();
                 if rhs == 0 {
                     return Value::U32(0);
                 }
-                return Value::F64(*s as f64 / rhs as f64);
+                Value::F64(*s as f64 / rhs as f64)
             }
             Value::U64(s) => {
                 let rhs = rhs.as_u64().unwrap_or_default();
                 if rhs == 0 {
                     return Value::U64(0);
                 }
-                return Value::F64(*s as f64 / rhs as f64);
+                Value::F64(*s as f64 / rhs as f64)
             }
             Value::F64(s) => {
                 let rhs = rhs.as_f64().unwrap_or_default();
                 if rhs == 0.0 {
                     return Value::F64(0.0);
                 }
-                return Value::F64(*s as f64 / rhs);
+                Value::F64(*s as f64 / rhs)
             }
             Value::F32(s) => {
                 let rhs = rhs.as_f64().unwrap_or_default();
                 if rhs == 0.0 {
                     return Value::F64(0.0);
                 }
-                return Value::F64(*s as f64 / rhs);
+                Value::F64(*s as f64 / rhs)
             }
             _ => {
-                return Value::Null;
+                Value::Null
             }
-        };
+        }
     }
 }
 
