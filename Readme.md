@@ -10,7 +10,7 @@
 
 <img style="width: 200px;height: 200px;" width="200" height="200" src="logo.png" />
 
-#### A highly Performant SQL Toolkit and ORM Library. An async, pure Rust SQL crate featuring compile-time Dynamic SQL
+#### A highly Performant SQL Toolkit and Compile time ORM Library. An async, pure Rust SQL crate featuring compile-time Dynamic SQL
 
 It is an ORM, a small compiler, a dynamic SQL languages
 
