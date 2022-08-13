@@ -13,26 +13,26 @@ pub trait LogPlugin: Send + Sync + Debug {
     fn get_level_filter(&self) -> LevelFilter;
     fn set_level_filter(&self, level: LevelFilter);
     fn is_enable(&self) -> bool {
-        return !self.get_level_filter().eq(&log::LevelFilter::Off);
+        return !self.get_level_filter().eq(&LevelFilter::Off);
     }
     fn do_log(&self, data: &str) {
         match self.get_level_filter() {
-            log::LevelFilter::Error => {
+            LevelFilter::Error => {
                 self.error(data);
             }
-            log::LevelFilter::Warn => {
+            LevelFilter::Warn => {
                 self.warn( data);
             }
-            log::LevelFilter::Info => {
+            LevelFilter::Info => {
                 self.info( data);
             }
-            log::LevelFilter::Debug => {
+            LevelFilter::Debug => {
                 self.debug( data);
             }
-            log::LevelFilter::Trace => {
+            LevelFilter::Trace => {
                 self.trace(data);
             }
-            log::LevelFilter::Off => {}
+            LevelFilter::Off => {}
         }
     }
 
