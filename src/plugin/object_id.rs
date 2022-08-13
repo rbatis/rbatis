@@ -151,11 +151,6 @@ impl ObjectId {
     }
 
     pub fn with_u128(arg:u128)->Self{
-        if arg<1000000000000000000000000000{
-            return ObjectId{
-                id: [0u8,0u8,0u8,0u8,0u8,0u8,0u8,0u8,0u8,0u8,0u8,0u8]
-            }
-        }
         let u5=(arg/1000000000000000000) as u64;
         let u4=((arg-u5 as u128*1000000000000000000)/100000000) as u32;
         let u3=(arg-u5 as u128*1000000000000000000-u4 as u128*100000000) as u32;
@@ -223,6 +218,8 @@ impl fmt::Debug for ObjectId {
 
 #[cfg(test)]
 mod test {
+    use std::thread::sleep;
+    use std::time::Duration;
     use crate::object_id::ObjectId;
 
     #[test]
@@ -262,5 +259,14 @@ mod test {
         println!("oid-u128={}", oid.u128());
         println!("oid-from={}", ObjectId::with_u128(oid.u128()));
         assert_eq!(oid,ObjectId::with_u128(oid.u128()));
+    }
+
+    #[test]
+    fn test_u128_parse(){
+        for _ in 0..1000{
+            sleep(Duration::from_millis(1));
+            let oid=ObjectId::new();
+            assert_eq!(oid,ObjectId::with_u128(oid.u128()));
+        }
     }
 }
