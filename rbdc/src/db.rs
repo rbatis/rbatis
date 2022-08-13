@@ -65,7 +65,7 @@ pub trait Connection: Send {
                 for mut i in 0..md.column_len() {
                     i = md.column_len() - i - 1;
                     let n = md.column_name(i);
-                    m.insert(Value::String(n), x.get(i).unwrap_or(Value::Null));
+                    m.insert(Value::String(n), x.get(i)?);
                 }
                 rows.push(Value::Map(m));
             }
