@@ -47,11 +47,11 @@ pub fn as_element(args: &Vec<Node>) -> Vec<Element> {
                 }
                 let t = txt.trim();
                 if t.starts_with("`") || t.ends_with("`") {
-                    el.data = t.replace("`","").to_string();
+                    el.data = t.replace("`", "").to_string();
                 } else {
                     el.data = t.to_string();
                 }
-                el.data = el.data.replace("``","").to_string();
+                el.data = el.data.replace("``", "").to_string();
             }
             Node::Element(element) => {
                 el.tag = element.name.to_string();

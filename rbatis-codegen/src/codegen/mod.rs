@@ -18,9 +18,9 @@ pub mod element_from;
 pub mod func;
 pub mod html_loader;
 pub mod parser_html;
-pub mod syntax_tree;
-pub mod string_util;
 pub mod parser_pysql;
+pub mod string_util;
+pub mod syntax_tree;
 
 pub fn expr(args: TokenStream, func: TokenStream) -> TokenStream {
     //let args = parse_macro_input!(args as AttributeArgs);

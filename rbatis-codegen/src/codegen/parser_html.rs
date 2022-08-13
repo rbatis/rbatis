@@ -13,10 +13,14 @@ use url::Url;
 
 use crate::codegen::html_loader::{load_html, Element};
 use crate::codegen::proc_macro::TokenStream;
-use crate::codegen::syntax_tree::NodeType;
 use crate::codegen::string_util::find_convert_string;
+use crate::codegen::syntax_tree::NodeType;
 
-pub fn parse_html_str(html: &str, fn_name: &str, ignore: &mut Vec<String>) -> proc_macro2::TokenStream {
+pub fn parse_html_str(
+    html: &str,
+    fn_name: &str,
+    ignore: &mut Vec<String>,
+) -> proc_macro2::TokenStream {
     let datas = load_html(html).expect("load_html() fail!");
     let mut sql_map = HashMap::new();
     let datas = include_replace(datas, &mut sql_map);
@@ -611,7 +615,7 @@ fn impl_println(x: &Element, body: &mut proc_macro2::TokenStream, ignore: &mut V
     }
 }
 
-fn impl_continue(x: &Element, body: &mut proc_macro2::TokenStream, ignore: &mut Vec<String>){
+fn impl_continue(x: &Element, body: &mut proc_macro2::TokenStream, ignore: &mut Vec<String>) {
     *body = quote! {
          #body
          continue
@@ -759,8 +763,6 @@ pub fn impl_fn_html(m: &ItemFn, args: &AttributeArgs) -> TokenStream {
     }
     return t.into();
 }
-
-
 
 /// parse to expr
 fn parse_expr(lit_str: &str) -> Expr {
