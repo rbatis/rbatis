@@ -219,6 +219,17 @@ impl<T> Page<T> {
         }
         result
     }
+
+    /// gen Page ranges from data
+    pub fn into_ranges(total: u64, page_size: u64) -> Vec<(u64,u64)> {
+        let mut result = vec![];
+        let page = Page::<T>::new_total(1, page_size, total as u64);
+        for idx in 0..page.pages {
+            let current_page = Page::<T>::new_total(idx + 1, page_size, total as u64);
+            result.push((current_page.offset(),current_page.offset_limit()));
+        }
+        result
+    }
 }
 
 impl<T> Default for Page<T> {
@@ -334,6 +345,19 @@ mod test {
         page.records = vec![];
         println!("{:?}", page);
         assert_eq!(page.pages, 1);
+    }
+
+    #[test]
+    fn test_page_into_range() {
+        let v = vec![1, 2, 3, 4, 5, 6, 7, 8, 9];
+        let ranges = Page::<i32>::into_ranges(v.len() as u64, 3);
+        let mut new_v = vec![];
+        for (offset,limit) in ranges {
+            for i in offset..limit {
+                new_v.push(i+1);
+            }
+        }
+        assert_eq!(v, new_v);
     }
 
     #[test]
