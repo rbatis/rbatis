@@ -334,9 +334,22 @@ mod test {
     }
 
     #[test]
-    fn test_page_count_pages() {
+    fn test_page_into_pages() {
         let v = vec![1, 2, 3, 4, 5, 6, 7, 8, 9];
         let pages = Page::into_pages(v.clone(), 3);
+        let mut new_v= vec![];
+        for x in pages {
+            for i in x.records {
+                new_v.push(i);
+            }
+        }
+        assert_eq!(v,new_v);
+    }
+
+    #[test]
+    fn test_page_into_pages_more_than() {
+        let v = vec![1, 2, 3, 4, 5, 6, 7, 8, 9];
+        let pages = Page::into_pages(v.clone(), 18);
         let mut new_v= vec![];
         for x in pages {
             for i in x.records {
