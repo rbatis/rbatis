@@ -154,7 +154,7 @@ impl Executor for RBatisConnExecutor {
                 Ok(result) => {
                     self.get_rbatis().log_plugin.do_log(
                         LevelFilter::Info,
-                        &format!("[rbatis] [{}] ReturnRows <== {:?}", rb_task_id, result),
+                        &format!("[rbatis] [{}] ReturnRows <== {}", rb_task_id, result.len()),
                     );
                 }
                 Err(e) => {
@@ -299,7 +299,7 @@ impl Executor for RBatisTxExecutor {
                 Ok(result) => {
                     self.get_rbatis().log_plugin.do_log(
                         LevelFilter::Info,
-                        &format!("[rbatis] [{}] ReturnRows <== {:?}", self.tx_id, result),
+                        &format!("[rbatis] [{}] ReturnRows <== {}", self.tx_id, result.len()),
                     );
                 }
                 Err(e) => {
