@@ -67,6 +67,7 @@ pub async fn main() {
             t3.id = "3".to_string().into();
             t3
         }],
+        10
     )
     .await;
     println!("insert_batch = {:?}", data);

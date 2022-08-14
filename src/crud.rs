@@ -36,6 +36,7 @@ macro_rules! impl_insert {
             pub async fn insert_batch(
                 rb: &mut dyn $crate::executor::Executor,
                 tables: &[$table],
+                batch_size: u64,
             ) -> Result<rbdc::db::ExecResult, rbdc::Error> {
                 #[$crate::py_sql(
                     "`insert into ${table_name} (`
@@ -59,7 +60,7 @@ macro_rules! impl_insert {
                 async fn do_insert_batch(
                     rb: &mut dyn $crate::executor::Executor,
                     tables: &[$table],
-                    table_name: String,
+                    table_name: &str,
                 ) -> Result<rbdc::db::ExecResult, rbdc::Error> {
                     impled!()
                 }
@@ -69,14 +70,23 @@ macro_rules! impl_insert {
                     ));
                 }
                 let table_name = $table_name.to_string();
-                do_insert_batch(rb.into(), tables, table_name).await
+                let mut result = rbdc::db::ExecResult{
+                     rows_affected: 0,
+                     last_insert_id: rbs::Value::Null,
+                };
+                let ranges = rbatis::sql::Page::<()>::into_ranges(tables.len() as u64, batch_size);
+                for (offset,limit) in ranges {
+                    let exec_result = do_insert_batch(rb, &tables[offset as usize..limit as usize], table_name.as_str()).await?;
+                    result.rows_affected += exec_result.rows_affected;
+                }
+                Ok(result)
             }
 
             pub async fn insert(
                 rb: &mut dyn $crate::executor::Executor,
                 table: &$table,
             ) -> Result<rbdc::db::ExecResult, rbdc::Error> {
-                <$table>::insert_batch(rb, &[table.clone()]).await
+                <$table>::insert_batch(rb, &[table.clone()], 1).await
             }
         }
     };
