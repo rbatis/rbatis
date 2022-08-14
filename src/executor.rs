@@ -119,7 +119,7 @@ impl Executor for RBatisConnExecutor {
                 Err(e) => {
                     self.get_rbatis().log_plugin.do_log(
                         LevelFilter::Error,
-                        &format!("[rbatis] [{}] ReturnErr  <== {}", rb_task_id, e),
+                        &format!("[rbatis] [{}] ReturnError  <== {}", rb_task_id, e),
                     );
                 }
             }
@@ -160,7 +160,7 @@ impl Executor for RBatisConnExecutor {
                 Err(e) => {
                     self.get_rbatis().log_plugin.do_log(
                         LevelFilter::Error,
-                        &format!("[rbatis] [{}] ReturnErr  <== {}", rb_task_id, e),
+                        &format!("[rbatis] [{}] ReturnError  <== {}", rb_task_id, e),
                     );
                 }
             }
@@ -265,7 +265,7 @@ impl Executor for RBatisTxExecutor {
                 Err(e) => {
                     self.get_rbatis().log_plugin.do_log(
                         LevelFilter::Error,
-                        &format!("[rbatis] [{}] ReturnErr  <== {}", self.tx_id, e),
+                        &format!("[rbatis] [{}] ReturnError  <== {}", self.tx_id, e),
                     );
                 }
             }
@@ -305,7 +305,7 @@ impl Executor for RBatisTxExecutor {
                 Err(e) => {
                     self.get_rbatis().log_plugin.do_log(
                         LevelFilter::Error,
-                        &format!("[rbatis] [{}] ReturnErr  <== {}", self.tx_id, e),
+                        &format!("[rbatis] [{}] ReturnError <== {}", self.tx_id, e),
                     );
                 }
             }
