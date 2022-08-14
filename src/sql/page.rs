@@ -9,7 +9,7 @@ use serde::{Deserialize, Serialize};
 pub const DEFAULT_PAGE_SIZE: u64 = 10;
 
 ///Page interface, support get_pages() and offset()
-pub trait IPageRequest: Send + Sync {
+pub trait IPageRequest {
     fn get_page_size(&self) -> u64;
     fn get_page_no(&self) -> u64;
     fn get_total(&self) -> u64;
@@ -38,6 +38,15 @@ pub trait IPageRequest: Send + Sync {
         } else {
             0
         }
+    }
+
+    ///sum offset_limit
+    fn offset_limit(&self) -> u64 {
+        let v = self.offset() + self.get_page_size();
+        if v > self.get_total() {
+            return self.get_total();
+        }
+        v
     }
 }
 
@@ -192,6 +201,21 @@ impl<T> Page<T> {
             search_count: true,
         };
     }
+
+    /// gen Page vec from data
+    pub fn into_pages(mut data: Vec<T>, page_size: u64) -> Vec<Page<T>> {
+        let total = data.len();
+        let mut result = vec![];
+        let page = Page::<T>::new_total(1, page_size, total as u64);
+        for idx in 0..page.pages {
+            let mut current_page = Page::<T>::new_total(idx + 1, page_size, total as u64);
+            for _ in current_page.offset()..current_page.offset_limit() {
+                current_page.records.push(data.remove(0));
+            }
+            result.push(current_page);
+        }
+        result
+    }
 }
 
 impl<T> Default for Page<T> {
@@ -208,8 +232,6 @@ impl<T> Default for Page<T> {
 }
 
 impl<T> IPageRequest for Page<T>
-where
-    T: Send + Sync,
 {
     fn get_page_size(&self) -> u64 {
         self.page_size
@@ -248,8 +270,6 @@ where
 }
 
 impl<T> IPage<T> for Page<T>
-where
-    T: Send + Sync,
 {
     fn get_records(&self) -> &Vec<T> {
         self.records.as_ref()
@@ -280,8 +300,8 @@ impl<T: Display + Debug> Display for Page<T> {
 
 impl<V> Page<V> {
     pub fn from<T>(arg: Page<T>) -> Self
-    where
-        V: From<T>,
+        where
+            V: From<T>,
     {
         let mut p = Page::<V>::new(arg.page_no, arg.page_size);
         p.pages = arg.pages;
@@ -302,6 +322,7 @@ impl<V> Page<V> {
 
 #[cfg(test)]
 mod test {
+    use crate::sql::IPageRequest;
     use crate::sql::page::Page;
 
     #[test]
@@ -310,5 +331,18 @@ mod test {
         page.records = vec![];
         println!("{:?}", page);
         assert_eq!(page.pages, 1);
+    }
+
+    #[test]
+    fn test_page_count_pages() {
+        let v = vec![1, 2, 3, 4, 5, 6, 7, 8, 9];
+        let pages = Page::into_pages(v.clone(), 3);
+        let mut new_v= vec![];
+        for x in pages {
+            for i in x.records {
+                new_v.push(i);
+            }
+        }
+        assert_eq!(v,new_v);
     }
 }
