@@ -53,7 +53,7 @@ impl Row for MySqlRow {
 
     fn get(&mut self, i: usize) -> Result<Value,Error> {
         match self.try_take(i) {
-            None => Err(Error::from(format!("get none value of index:{}",i))),
+            None => Ok(Value::Null),
             Some(v) => Ok(Value::from(v)),
         }
     }
