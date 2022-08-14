@@ -78,6 +78,7 @@ macro_rules! impl_insert {
                 for (offset,limit) in ranges {
                     let exec_result = do_insert_batch(rb, &tables[offset as usize..limit as usize], table_name.as_str()).await?;
                     result.rows_affected += exec_result.rows_affected;
+                    result.last_insert_id = exec_result.last_insert_id;
                 }
                 Ok(result)
             }

@@ -398,4 +398,17 @@ mod test {
         }
         assert_eq!(v, new_v);
     }
+
+    #[test]
+    fn test_page_into_pages_one() {
+        let v = vec![1];
+        let pages = Page::into_pages(v.clone(), 1);
+        let mut new_v = vec![];
+        for x in pages {
+            for i in x.records {
+                new_v.push(i);
+            }
+        }
+        assert_eq!(v, new_v);
+    }
 }
