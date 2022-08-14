@@ -169,7 +169,10 @@ impl<T> Page<T> {
         return Page::new(current.unwrap_or(1), page_size.unwrap_or(DEFAULT_PAGE_SIZE));
     }
 
-    pub fn new_total(page_no: u64, page_size: u64, total: u64) -> Self {
+    pub fn new_total(page_no: u64, mut page_size: u64, total: u64) -> Self {
+        if page_size == 0 {
+            page_size = DEFAULT_PAGE_SIZE;
+        }
         if page_no < 1 {
             return Self {
                 total,
@@ -337,25 +340,38 @@ mod test {
     fn test_page_into_pages() {
         let v = vec![1, 2, 3, 4, 5, 6, 7, 8, 9];
         let pages = Page::into_pages(v.clone(), 3);
-        let mut new_v= vec![];
+        let mut new_v = vec![];
         for x in pages {
             for i in x.records {
                 new_v.push(i);
             }
         }
-        assert_eq!(v,new_v);
+        assert_eq!(v, new_v);
     }
 
     #[test]
     fn test_page_into_pages_more_than() {
         let v = vec![1, 2, 3, 4, 5, 6, 7, 8, 9];
         let pages = Page::into_pages(v.clone(), 18);
-        let mut new_v= vec![];
+        let mut new_v = vec![];
         for x in pages {
             for i in x.records {
                 new_v.push(i);
             }
         }
-        assert_eq!(v,new_v);
+        assert_eq!(v, new_v);
+    }
+
+    #[test]
+    fn test_page_into_pages_zero() {
+        let v = vec![1, 2, 3, 4, 5, 6, 7, 8, 9];
+        let pages = Page::into_pages(v.clone(), 0);
+        let mut new_v = vec![];
+        for x in pages {
+            for i in x.records {
+                new_v.push(i);
+            }
+        }
+        assert_eq!(v, new_v);
     }
 }
