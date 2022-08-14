@@ -217,7 +217,7 @@ mod test {
             };
             let mut t2 = t.clone();
             t2.id = "3".to_string().into();
-            let r = MockTable::insert_batch(&mut rb, &[t, t2]).await.unwrap();
+            let r = MockTable::insert_batch(&mut rb, &[t, t2],10).await.unwrap();
             println!("{}", r.last_insert_id.as_str().unwrap_or_default());
             assert_eq!(r.last_insert_id.as_str().unwrap_or_default(), "insert into mock_table (id,name,pc_link,h5_link,pc_banner_img,h5_banner_img,sort,status,remark,create_time,version,delete_flag,sql,count) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?),(?,?,?,?,?,?,?,?,?,?,?,?,?,?)");
         };
