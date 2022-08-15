@@ -9,8 +9,6 @@ use crate::sql::tx::Tx;
 use crate::utils::string_util;
 use crate::Error;
 use async_trait::async_trait;
-use flume::RecvError;
-use futures::executor::block_on;
 use futures::Future;
 use futures_core::future::BoxFuture;
 use log::LevelFilter;
@@ -64,8 +62,8 @@ impl RBatisConnExecutor {
     }
 
     pub async fn fetch_decode<T>(&mut self, sql: &str, args: Vec<Value>) -> Result<T, Error>
-    where
-        T: DeserializeOwned,
+        where
+            T: DeserializeOwned,
     {
         let v = Executor::fetch(self, sql, args).await?;
         Ok(decode(v)?)
@@ -216,8 +214,8 @@ impl<'a> RBatisTxExecutor {
     }
     /// fetch and decode
     pub async fn fetch_decode<T>(&mut self, sql: &str, args: Vec<Value>) -> Result<Value, Error>
-    where
-        T: DeserializeOwned,
+        where
+            T: DeserializeOwned,
     {
         let v = Executor::fetch(self, sql, args).await?;
         Ok(decode(v)?)
@@ -359,7 +357,7 @@ impl DerefMut for RBatisTxExecutor {
 
 pub struct RBatisTxExecutorGuard {
     pub tx: Option<RBatisTxExecutor>,
-    pub sender: flume::Sender<RBatisTxExecutor>,
+    pub callback: Box<dyn FnMut(RBatisTxExecutor) + Send>,
 }
 
 impl Debug for RBatisTxExecutorGuard {
@@ -413,25 +411,17 @@ impl RBatisTxExecutor {
     ///             tx.rollback().await;
     ///         });
     ///
-    pub fn defer_async<R, F>(self, mut callback: F) -> RBatisTxExecutorGuard
-    where
-        R: Future<Output = ()> + 'static + Send,
-        F: Send + FnMut(RBatisTxExecutor) -> R + 'static,
-    {
-        let (s, r) = flume::unbounded();
-        rbdc::rt::spawn(async move {
-            match r.recv_async().await {
-                Ok(v) => {
-                    callback(v).await;
-                }
-                Err(e) => {
-                    log::error!("rbatis recv_async tx fail:{}", e);
-                }
-            }
-        });
+    pub fn defer_async<F>(self, callback: fn(s: RBatisTxExecutor) -> F) -> RBatisTxExecutorGuard
+        where F: Future<Output=()> + Send + 'static {
         RBatisTxExecutorGuard {
             tx: Some(self),
-            sender: s,
+            callback: Box::new(move |arg| {
+                let rb = arg.get_rbatis().clone();
+                let future = callback(arg);
+                if let Ok(pool) = rb.get_pool() {
+                    pool.spawn_task(future);
+                }
+            }),
         }
     }
 }
@@ -452,13 +442,8 @@ impl<'a> DerefMut for RBatisTxExecutorGuard {
 
 impl Drop for RBatisTxExecutorGuard {
     fn drop(&mut self) {
-        match self.tx.take() {
-            None => {}
-            Some(tx) => {
-                if let Err(e) = self.sender.send(tx) {
-                    log::error!("rbatis send tx fail: {}", e);
-                }
-            }
+        if let Some(tx) = self.tx.take() {
+            (self.callback)(tx);
         }
     }
 }
@@ -502,8 +487,8 @@ impl Rbatis {
 
     /// fetch and decode
     pub async fn fetch_decode<T>(&self, sql: &str, args: Vec<Value>) -> Result<T, Error>
-    where
-        T: DeserializeOwned,
+        where
+            T: DeserializeOwned,
     {
         let mut conn = self.acquire().await?;
         let v = conn.fetch(sql, args).await?;
