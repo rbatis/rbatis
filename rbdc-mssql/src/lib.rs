@@ -14,6 +14,7 @@ use rbdc::Error;
 use rbs::Value;
 use std::any::Any;
 use std::sync::Arc;
+use futures_core::Stream;
 use tiberius::{Client, Column, ColumnData, Config, Query};
 use tokio::net::TcpStream;
 use tokio_util::compat::{Compat, TokioAsyncWriteCompatExt};
@@ -113,28 +114,23 @@ impl Connection for MssqlConnection {
                 .query(&mut self.inner)
                 .await
                 .map_err(|e| Error::from(e.to_string()))?;
-            let mut results = Vec::with_capacity(0);
-            let mut s = v.into_row_stream();
-            for item in s.next().await {
-                match item {
-                    Ok(v) => {
-                        let mut columns = Vec::with_capacity(v.len());
-                        let mut row = MssqlRow {
-                            columns: Arc::new(vec![]),
-                            datas: Vec::with_capacity(v.len()),
-                        };
-                        for x in v.columns() {
-                            columns.push(x.clone());
-                        }
-                        row.columns = Arc::new(columns);
-                        for x in v {
-                            row.datas.push(x);
-                        }
-                        results.push(Box::new(row) as Box<dyn Row>);
+            let mut results = Vec::with_capacity(v.size_hint().0);
+            let mut s = v.into_results().await.map_err(|e|Error::from(e.to_string()))?;
+            for item in s{
+                for r in item {
+                    let mut columns = Vec::with_capacity(r.columns().len());
+                    let mut row = MssqlRow {
+                        columns: Arc::new(vec![]),
+                        datas: Vec::with_capacity(r.columns().len()),
+                    };
+                    for x in r.columns() {
+                        columns.push(x.clone());
                     }
-                    Err(_) => {
-                        break;
+                    row.columns = Arc::new(columns);
+                    for x in r {
+                        row.datas.push(x);
                     }
+                    results.push(Box::new(row) as Box<dyn Row>);
                 }
             }
             Ok(results)
