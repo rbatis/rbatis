@@ -115,8 +115,8 @@ impl Connection for MssqlConnection {
                 .await
                 .map_err(|e| Error::from(e.to_string()))?;
             let mut results = Vec::with_capacity(v.size_hint().0);
-            let mut s = v.into_results().await.map_err(|e|Error::from(e.to_string()))?;
-            for item in s{
+            let mut s = v.into_results().await.map_err(|e| Error::from(e.to_string()))?;
+            for item in s {
                 for r in item {
                     let mut columns = Vec::with_capacity(r.columns().len());
                     let mut row = MssqlRow {
@@ -153,7 +153,13 @@ impl Connection for MssqlConnection {
                 .await
                 .map_err(|e| Error::from(e.to_string()))?;
             Ok(ExecResult {
-                rows_affected: v.rows_affected().len() as u64,
+                rows_affected: {
+                    let mut rows_affected = 0;
+                    for x in v.rows_affected() {
+                        rows_affected += x.clone();
+                    }
+                    rows_affected
+                },
                 last_insert_id: Value::Null,
             })
         })
