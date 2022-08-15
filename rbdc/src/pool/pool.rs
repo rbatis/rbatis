@@ -9,6 +9,7 @@ use std::ops::{Deref, DerefMut};
 use std::sync::Arc;
 
 /// RBDC pool
+#[derive(Clone)]
 pub struct Pool {
     pub manager: ManagerPorxy,
     pub inner: mobc::Pool<ManagerPorxy>,
