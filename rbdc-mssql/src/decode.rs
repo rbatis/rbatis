@@ -1,7 +1,9 @@
+use std::str::FromStr;
 use chrono::{FixedOffset, NaiveDateTime, Utc};
 use rbs::Value;
 use tiberius::numeric::BigDecimal;
 use tiberius::{ColumnData};
+use rbdc::datetime::FastDateTime;
 use rbdc::Error;
 
 pub trait Decode {
@@ -130,7 +132,7 @@ impl Decode for Value {
                                 match v{
                                     None => {Value::Null}
                                     Some(v) => {
-                                        Value::String(v.to_string()).into_ext("Datetime")
+                                       Value::from(FastDateTime::from_str(&v.to_string())?)
                                     }
                                 }
                             }
@@ -151,7 +153,7 @@ impl Decode for Value {
                                 match v{
                                     None => {Value::Null}
                                     Some(v) => {
-                                        Value::String(v.to_string()).into_ext("Datetime")
+                                        Value::from(FastDateTime::from_str(&v.to_string())?)
                                     }
                                 }
                             }
@@ -214,7 +216,7 @@ impl Decode for Value {
                                 match v{
                                     None => {Value::Null}
                                     Some(v) => {
-                                        Value::String(v.to_string()).into_ext("Datetime")
+                                        Value::from(FastDateTime::from_str(&v.to_string())?)
                                     }
                                 }
                             }
@@ -235,7 +237,7 @@ impl Decode for Value {
                                 match v{
                                     None => {Value::Null}
                                     Some(v) => {
-                                        Value::String(v.to_string()).into_ext("Datetime")
+                                        Value::from(FastDateTime::from_str(&v.to_string())?)
                                     }
                                 }
                             }
