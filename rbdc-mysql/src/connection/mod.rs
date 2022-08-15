@@ -193,18 +193,3 @@ impl Connection for MySqlConnection {
         Box::pin(async move { c.await })
     }
 }
-
-impl Drop for MySqlConnection {
-    fn drop(&mut self) {
-        let stream = self.stream.inner.take();
-        rbdc::rt::spawn(async move {
-            match stream {
-                None => {}
-                Some(mut s) => {
-                    let _ = s.send_packet(Quit).await;
-                    let _ = s.shutdown().await;
-                }
-            }
-        });
-    }
-}
