@@ -1,3 +1,5 @@
+pub extern crate tiberius;
+
 pub mod decode;
 pub mod driver;
 pub mod encode;
@@ -9,10 +11,10 @@ use futures_core::future::BoxFuture;
 use futures_util::StreamExt;
 use rbdc::db::{ConnectOptions, Connection, ExecResult, MetaData, Placeholder, Row};
 use rbdc::Error;
-use rbs::value::change_lifetime_const;
 use rbs::Value;
 use std::any::Any;
-use tiberius::{Client, Column, Config, Query};
+use std::sync::Arc;
+use tiberius::{Client, Column, ColumnData, Config, Query};
 use tokio::net::TcpStream;
 use tokio_util::compat::{Compat, TokioAsyncWriteCompatExt};
 
@@ -61,10 +63,13 @@ impl ConnectOptions for MssqlConnectOptions {
 }
 
 #[derive(Debug)]
-pub struct MssqlRow(pub tiberius::Row);
+pub struct MssqlRow {
+    pub columns: Arc<Vec<Column>>,
+    pub datas: Vec<ColumnData<'static>>,
+}
 
 #[derive(Debug)]
-pub struct MssqlMetaData(pub &'static [Column]);
+pub struct MssqlMetaData(pub Arc<Vec<Column>>);
 
 impl MetaData for MssqlMetaData {
     fn column_len(&self) -> usize {
@@ -82,15 +87,12 @@ impl MetaData for MssqlMetaData {
 
 impl Row for MssqlRow {
     fn meta_data(&self) -> Box<dyn MetaData> {
-        let columns = self.0.columns();
-        Box::new(MssqlMetaData(unsafe { change_lifetime_const(columns) }))
+        Box::new(MssqlMetaData(self.columns.clone()))
     }
 
-    fn get(&mut self, i: usize) -> Result<Value,Error> {
+    fn get(&mut self, i: usize) -> Result<Value, Error> {
         Value::decode(
-            &self.0,
-            i,
-            self.0.columns()[i].column_type(),
+            &self.datas[i],
         )
     }
 }
@@ -116,7 +118,19 @@ impl Connection for MssqlConnection {
             for item in s.next().await {
                 match item {
                     Ok(v) => {
-                        results.push(Box::new(MssqlRow(v)) as Box<dyn Row>);
+                        let mut columns = Vec::with_capacity(v.len());
+                        let mut row = MssqlRow {
+                            columns: Arc::new(vec![]),
+                            datas: Vec::with_capacity(v.len()),
+                        };
+                        for x in v.columns() {
+                            columns.push(x.clone());
+                        }
+                        row.columns = Arc::new(columns);
+                        for x in v {
+                            row.datas.push(x);
+                        }
+                        results.push(Box::new(row) as Box<dyn Row>);
                     }
                     Err(_) => {
                         break;

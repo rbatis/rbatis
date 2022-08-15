@@ -1,252 +1,250 @@
-use chrono::Utc;
+use chrono::{FixedOffset, NaiveDateTime, Utc};
 use rbs::Value;
 use tiberius::numeric::BigDecimal;
-use tiberius::xml::XmlData;
-use tiberius::ColumnType;
+use tiberius::{ColumnData};
 use rbdc::Error;
 
 pub trait Decode {
-    fn decode(row: &tiberius::Row, i: usize, t: ColumnType) -> Result<Value,Error>;
+    fn decode(row: &ColumnData<'static>) -> Result<Value, Error>;
 }
 
 impl Decode for Value {
-    fn decode(row: &tiberius::Row, i: usize, t: ColumnType) -> Result<Value,Error> {
-        Ok(match t {
-            ColumnType::Null => Value::Null,
-            ColumnType::Bit => {
-                let data: bool = row.get(i).unwrap_or_default();
-                Value::I32(data as i32)
+    fn decode(row: &ColumnData<'static>) -> Result<Value, Error> {
+        Ok(match row {
+            ColumnData::U8(v) => {
+                match v {
+                    None => { Value::Null }
+                    Some(v) => {
+                        Value::U32(v.clone() as u32)
+                    }
+                }
             }
-            ColumnType::Int1 => {
-                let data: u8 = row.get(i).unwrap_or_default();
-                Value::I32(data as i32)
+            ColumnData::I16(v) => {
+                match v {
+                    None => { Value::Null }
+                    Some(v) => {
+                        Value::I32(v.clone() as i32)
+                    }
+                }
             }
-            ColumnType::Int2 => {
-                let data: i16 = row.get(i).unwrap_or_default();
-                Value::I32(data as i32)
+            ColumnData::I32(v) => {
+                match v {
+                    None => { Value::Null }
+                    Some(v) => {
+                        Value::I32(v.clone())
+                    }
+                }
             }
-            ColumnType::Int4 => {
-                let data: i32 = row.get(i).unwrap_or_default();
-                Value::I32(data)
+            ColumnData::I64(v) => {
+                match v {
+                    None => { Value::Null }
+                    Some(v) => {
+                        Value::I64(v.clone())
+                    }
+                }
             }
-            ColumnType::Int8 => {
-                let data: i64 = row.get(i).unwrap_or_default();
-                Value::I64(data)
+            ColumnData::F32(v) => {
+                match v {
+                    None => { Value::Null }
+                    Some(v) => {
+                        Value::F32(v.clone())
+                    }
+                }
             }
-            ColumnType::Datetime4 => {
-                let v: chrono::NaiveDateTime = {
-                    match row.get(i){
-                        Some(v)=>{
-                            v
-                        }
-                        None=>{
-                            return Err(Error::from("decode Datetime4 fail or none"));
+            ColumnData::F64(v) => {
+                match v {
+                    None => { Value::Null }
+                    Some(v) => {
+                        Value::F64(v.clone())
+                    }
+                }
+            }
+            ColumnData::Bit(v) => {
+                match v {
+                    None => { Value::Null }
+                    Some(v) => {
+                        Value::Bool(v.clone())
+                    }
+                }
+            }
+            ColumnData::String(v) => {
+                match v {
+                    None => { Value::Null }
+                    Some(v) => {
+                        Value::String(v.to_string())
+                    }
+                }
+            }
+            ColumnData::Guid(v) => {
+                match v {
+                    None => { Value::Null }
+                    Some(v) => {
+                        Value::String(v.to_string()).into_ext("Uuid")
+                    }
+                }
+            }
+            ColumnData::Binary(v) => {
+                match v {
+                    None => { Value::Null }
+                    Some(v) => {
+                        Value::Binary(v.to_vec())
+                    }
+                }
+            }
+            ColumnData::Numeric(v) => {
+                match v {
+                    None => { Value::Null }
+                    Some(_) => {
+                        let v:tiberius::Result<Option<BigDecimal>>=tiberius::FromSql::from_sql(row);
+                        match v{
+                            Ok(v) => {
+                                match v{
+                                    None => {Value::Null}
+                                    Some(v) => {
+                                        Value::String(v.to_string()).into_ext("Decimal")
+                                    }
+                                }
+                            }
+                            Err(e) => {
+                                return Err(Error::from(e.to_string()));
+                            }
                         }
                     }
-                };
-                Value::String(v.to_string()).into_ext("Datetime")
+                }
             }
-            ColumnType::Float4 => {
-                let data: f32 = row.get(i).unwrap_or_default();
-                Value::F32(data)
+            ColumnData::Xml(v) => {
+                match v {
+                    None => { Value::Null }
+                    Some(v) => {
+                        Value::String(v.to_string()).into_ext("Xml")
+                    }
+                }
             }
-            ColumnType::Float8 => {
-                let data: f64 = row.get(i).unwrap_or_default();
-                Value::F64(data)
-            }
-            ColumnType::Money => {
-                let v: f64 = row.get(i).unwrap_or_default();
-                Value::F64(v)
-            }
-            ColumnType::Datetime => {
-                let v: chrono::NaiveDateTime = {
-                    match row.get(i){
-                        Some(v)=>{
-                            v
-                        }
-                        None=>{
-                            return Err(Error::from("decode Datetime fail or none"));
+            ColumnData::DateTime(v) => {
+                match v {
+                    None => { Value::Null }
+                    Some(_) => {
+                        let v:tiberius::Result<Option<NaiveDateTime>> = tiberius::FromSql::from_sql(row);
+                        match v{
+                            Ok(v) => {
+                                match v{
+                                    None => {Value::Null}
+                                    Some(v) => {
+                                        Value::String(v.to_string()).into_ext("Datetime")
+                                    }
+                                }
+                            }
+                            Err(e) => {
+                                return Err(Error::from(e.to_string()));
+                            }
                         }
                     }
-                };
-                Value::String(v.to_string()).into_ext("Datetime")
+                }
             }
-            ColumnType::Money4 => {
-                let v: f32 = row.get(i).unwrap_or_default();
-                Value::F32(v)
-            }
-            ColumnType::Guid => {
-                let data: uuid::Uuid = {
-                    match row.get(i){
-                        Some(v)=>{
-                            v
-                        }
-                        None=>{
-                            return Err(Error::from("decode Guid fail or none"));
-                        }
-                    }
-                };
-                Value::String(data.to_string()).into_ext("Guid")
-            }
-            ColumnType::Intn => {
-                let data: i32 = row.get(i).unwrap_or_default();
-                Value::I32(data.to_owned())
-            }
-            ColumnType::Bitn => {
-                let data: bool = row.get(i).unwrap_or_default();
-                Value::Bool(data)
-            }
-            ColumnType::Decimaln => {
-                let data: BigDecimal = {
-                    match row.get(i){
-                        Some(v)=>{
-                            v
-                        }
-                        None=>{
-                            return Err(Error::from("decode Decimaln fail or none"));
+            ColumnData::SmallDateTime(m) => {
+                match m {
+                    None => { Value::Null }
+                    Some(_) => {
+                        let v:tiberius::Result<Option<chrono::NaiveDateTime>>=tiberius::FromSql::from_sql(row);
+                        match v{
+                            Ok(v) => {
+                                match v{
+                                    None => {Value::Null}
+                                    Some(v) => {
+                                        Value::String(v.to_string()).into_ext("Datetime")
+                                    }
+                                }
+                            }
+                            Err(e) => {
+                                return Err(Error::from(e.to_string()));
+                            }
                         }
                     }
-                };
-                Value::String(data.to_string()).into_ext("Decimal")
+                }
             }
-            ColumnType::Numericn => {
-                let v: BigDecimal = {
-                    match row.get(i){
-                        Some(v)=>{
-                            v
-                        }
-                        None=>{
-                            return Err(Error::from("decode Numericn fail or none"));
-                        }
-                    }
-                };
-                Value::String(v.to_string()).into_ext("Decimal")
-            }
-            ColumnType::Floatn => {
-                let data: f64 = row.get(i).unwrap_or_default();
-                Value::F64(data)
-            }
-            ColumnType::Datetimen => {
-                let v: chrono::NaiveDateTime = {
-                    match row.get(i){
-                        Some(v)=>{
-                            v
-                        }
-                        None=>{
-                            return Err(Error::from("decode Datetimen fail or none"));
+            ColumnData::Time(v) => {
+                match v {
+                    None => { Value::Null }
+                    Some(_) => {
+                        let v:tiberius::Result<Option<chrono::NaiveTime>>=tiberius::FromSql::from_sql(row);
+                        match v{
+                            Ok(v) => {
+                                match v{
+                                    None => {Value::Null}
+                                    Some(v) => {
+                                        Value::String(v.to_string()).into_ext("Time")
+                                    }
+                                }
+                            }
+                            Err(e) => {
+                                return Err(Error::from(e.to_string()));
+                            }
                         }
                     }
-                };
-                Value::String(v.to_string()).into_ext("Datetime")
+                }
             }
-            ColumnType::Daten => {
-                let v: chrono::NaiveDate = {
-                    match row.get(i){
-                        Some(v)=>{
-                            v
-                        }
-                        None=>{
-                            return Err(Error::from("decode Daten fail or none"));
-                        }
-                    }
-                };
-                Value::String(v.to_string()).into_ext("Date")
-            }
-            ColumnType::Timen => {
-                let v: chrono::NaiveTime = {
-                    match row.get(i){
-                        Some(v)=>{
-                            v
-                        }
-                        None=>{
-                            return Err(Error::from("decode Timen fail or none"));
+            ColumnData::Date(v) => {
+                match v {
+                    None => { Value::Null }
+                    Some(_) => {
+                        let v:tiberius::Result<Option<chrono::NaiveDate>>=tiberius::FromSql::from_sql(row);
+                        match v{
+                            Ok(v) => {
+                                match v{
+                                    None => {Value::Null}
+                                    Some(v) => {
+                                        Value::String(v.to_string()).into_ext("Date")
+                                    }
+                                }
+                            }
+                            Err(e) => {
+                                return Err(Error::from(e.to_string()));
+                            }
                         }
                     }
-                };
-                Value::String(v.to_string()).into_ext("Datetime")
+                }
             }
-            ColumnType::Datetime2 => {
-                let v: chrono::NaiveDateTime = {
-                    match row.get(i){
-                        Some(v)=>{
-                            v
-                        }
-                        None=>{
-                            return Err(Error::from("decode Datetime2 fail or none"));
-                        }
-                    }
-                };
-                Value::String(v.to_string()).into_ext("Datetime")
-            }
-            ColumnType::DatetimeOffsetn => {
-                let data: chrono::DateTime<Utc> = {
-                    match row.get(i){
-                        Some(v)=>{
-                            v
-                        }
-                        None=>{
-                            return Err(Error::from("decode DatetimeOffsetn fail or none"));
+            ColumnData::DateTime2(v) => {
+                match v {
+                    None => { Value::Null }
+                    Some(_) => {
+                        let v:tiberius::Result<Option<chrono::DateTime<Utc>>>=tiberius::FromSql::from_sql(row);
+                        match v{
+                            Ok(v) => {
+                                match v{
+                                    None => {Value::Null}
+                                    Some(v) => {
+                                        Value::String(v.to_string()).into_ext("Datetime")
+                                    }
+                                }
+                            }
+                            Err(e) => {
+                                return Err(Error::from(e.to_string()));
+                            }
                         }
                     }
-                };
-                Value::String(data.to_string()).into_ext("Datetime")
+                }
             }
-            ColumnType::BigVarBin => {
-                let data: &[u8] = row.get(i).unwrap_or_default();
-                Value::Binary(data.to_owned()).into_ext("BigVarBin")
-            }
-            ColumnType::BigVarChar => {
-                let v: &str = row.get(i).unwrap_or_default();
-                Value::String(v.to_string())
-            }
-            ColumnType::BigBinary => {
-                let data: &[u8] = row.get(i).unwrap_or_default();
-                Value::Binary(data.to_owned())
-            }
-            ColumnType::BigChar => {
-                let v: &str = row.get(i).unwrap_or_default();
-                Value::String(v.to_string())
-            }
-            ColumnType::NVarchar => {
-                let v: &str = row.get(i).unwrap_or_default();
-                Value::String(v.to_string())
-            }
-            ColumnType::NChar => {
-                let v: &str = row.get(i).unwrap_or_default();
-                Value::String(v.to_string())
-            }
-            ColumnType::Xml => {
-                let data: &XmlData = {
-                    match row.get(i){
-                        Some(v)=>{
-                            v
-                        }
-                        None=>{
-                            return Err(Error::from("decode Xml fail or none"));
+            ColumnData::DateTimeOffset(v) => {
+                match v {
+                    None => { Value::Null }
+                    Some(_) => {
+                        let v:tiberius::Result<Option<chrono::DateTime<FixedOffset>>>=tiberius::FromSql::from_sql(row);
+                        match v{
+                            Ok(v) => {
+                                match v{
+                                    None => {Value::Null}
+                                    Some(v) => {
+                                        Value::String(v.to_string()).into_ext("Datetime")
+                                    }
+                                }
+                            }
+                            Err(e) => {
+                                return Err(Error::from(e.to_string()));
+                            }
                         }
                     }
-                };
-                Value::String(data.to_string()).into_ext("Xml")
-            }
-            ColumnType::Udt => {
-                let data: &[u8] = row.get(i).unwrap_or_default();
-                Value::Binary(data.to_owned()).into_ext("Udt")
-            }
-            ColumnType::Text => {
-                let v: &str = row.get(i).unwrap_or_default();
-                Value::String(v.to_string())
-            }
-            ColumnType::Image => {
-                let data: &[u8] = row.get(i).unwrap_or_default();
-                Value::Binary(data.to_owned())
-            }
-            ColumnType::NText => {
-                let v: &str = row.get(i).unwrap_or_default();
-                Value::String(v.to_string())
-            }
-            ColumnType::SSVariant => {
-                let data: &[u8] = row.get(i).unwrap_or_default();
-                Value::Binary(data.to_owned()).into_ext("SSVariant")
+                }
             }
         })
     }
