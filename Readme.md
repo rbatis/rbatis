@@ -70,8 +70,7 @@ It is an ORM, a small compiler, a dynamic SQL languages
 | Mysql                  | √            |   
 | Postgres               | √            |  
 | Sqlite                 | √            |  
-| Mssql                  | √            |
-| Oracle                 | x(10%)       |  
+| Mssql                  | √            | 
 | MariaDB(=Mysql)        | √            |
 | TiDB(=Mysql)           | √            |
 | CockroachDB(=Postgres) | √            |
