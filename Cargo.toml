@@ -8,7 +8,6 @@ members = [
     "rbdc-pg",
     "rbdc-sqlite",
     "rbdc-mssql",
-    "rbdc-oracle",
     "rbatis-macro-driver",
     "example",
 ]
