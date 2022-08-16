@@ -35,11 +35,7 @@ async fn py_ctx_id(rb: &Rbatis) -> Vec<BizActivity> {
                   if name != '':
                     ` and name=#{name}`"
 )]
-async fn py_select_page(
-    rb: &mut dyn Executor,
-    page_req: &PageRequest,
-    name: &str,
-) -> Result<Vec<BizActivity>, Error> {
+async fn py_select_page(rb: &mut dyn Executor, name: &str) -> Result<Vec<BizActivity>, Error> {
     impled!()
 }
 
@@ -48,7 +44,7 @@ pub async fn main() {
     fast_log::init(fast_log::Config::new().console());
     //use static ref
     let rb = init_sqlite().await;
-    let a = py_select_page(&mut rb.clone(), &PageRequest::new(1, 10), "test")
+    let a = py_select_page(&mut rb.clone(),  "test")
         .await
         .unwrap();
     println!(">>>>>>>>>>>> {:?}", a);
