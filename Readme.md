@@ -108,7 +108,6 @@ rbdc-sqlite={version="0.1"}
 #rbdc-mysql={version="0.1"}
 #rbdc-pg={version="0.1"}
 #rbdc-mssql={version="0.1"}
-#rbdc-oracle={version="0.1"}
 ```
 
 ```rust
@@ -265,7 +264,6 @@ pub async fn test_macro() {
 - [x] [Rbatis-V4.0-rbdc-pg](https://github.com/rbatis/rbatis/tree/master/rbdc-pg);
 - [x] [Rbatis-V4.0-rbdc-sqlite](https://github.com/rbatis/rbatis/tree/master/rbdc-sqlite);
 - [x] [Rbatis-V4.0-rbdc-mssql](https://github.com/rbatis/rbatis/tree/master/rbdc-mssql);
-- [ ] [Rbatis-V4.0-rbdc-oracle](https://github.com/rbatis/rbatis/tree/master/rbdc-oracle);
 
 # Contact/donation, or click on star [rbatis](https://github.com/rbatis/rbatis)
 
