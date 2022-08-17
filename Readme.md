@@ -101,9 +101,7 @@ log = "0.4"
 fast_log="1.5"
 # rbatis (required)
 rbatis =  { version = "4.0" }
-# rbdc driver (required)
-rbdc={version="0.1"}
-# choose any rbdc drivier
+# choose one rbdc drivier
 rbdc-sqlite={version="0.1"}
 #rbdc-mysql={version="0.1"}
 #rbdc-pg={version="0.1"}

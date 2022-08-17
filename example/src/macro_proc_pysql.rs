@@ -19,7 +19,7 @@ use std::io::Read;
 
 use rbatis::rbatis::Rbatis;
 use rbatis::sql::page::{Page, PageRequest};
-use rbdc::datetime::FastDateTime;
+use rbatis::rbdc::datetime::FastDateTime;
 use rbs::{to_value, Value};
 
 use crate::{init_sqlite, BizActivity};
