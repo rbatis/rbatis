@@ -1,5 +1,7 @@
 use rbs::Value;
 use std::fmt::{Display, Formatter};
+use std::str::FromStr;
+use crate::Error;
 
 #[derive(serde::Serialize, serde::Deserialize, Debug, Clone, Eq, PartialEq, Hash)]
 #[serde(rename = "Date")]
@@ -14,5 +16,13 @@ impl Display for Date {
 impl From<Date> for Value {
     fn from(arg: Date) -> Self {
         Value::Ext("Date", Box::new(Value::String(arg.0.to_string())))
+    }
+}
+
+impl FromStr for Date{
+    type Err = Error;
+
+    fn from_str(s: &str) -> Result<Self, Self::Err> {
+        Ok(Date(fastdate::Date::from_str(s)?))
     }
 }
