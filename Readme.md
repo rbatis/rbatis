@@ -95,16 +95,13 @@ It is an ORM, a small compiler, a dynamic SQL languages
 * Cargo.toml
 
 ```toml
-# add this library,and cargo install
-
-# serde/rbs (required)
-serde = { version = "1", features = ["derive"] }
-rbs = "0.1"
-# logging lib(required)
+# logging(option)
 log = "0.4"
 fast_log = "1.5"
-# rbatis (required)
-rbatis = { version = "4.0" }
+# serde/rbs (required)
+serde = { version = "1", features = ["derive"] }
+rbs = { version = "0.1"}
+rbatis = { version = "4.0"}
 # choose one rbdc drivier
 rbdc-sqlite = { version = "0.1" }
 #rbdc-mysql={version="0.1"}
