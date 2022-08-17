@@ -199,7 +199,11 @@ impl Connection for PgConnection {
                         persistent: false,
                     })
                 } else {
-                    let stmt = self.prepare_with(sql, &[]).await?;
+                    let mut types= Vec::with_capacity(params.len());
+                    for x in &params {
+                        types.push(x.type_info());
+                    }
+                    let stmt = self.prepare_with(sql, &types).await?;
                     self.fetch_many(PgQuery {
                         statement: Either::Right(stmt),
                         arguments: params,
