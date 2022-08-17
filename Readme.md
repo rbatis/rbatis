@@ -71,15 +71,15 @@ It is an ORM, a small compiler, a dynamic SQL languages
 
 ### Supported database driver
 
-| database               | crates                                         | is supported |
-|------------------------|------------------------------------------------|--------------|
-| Mysql                  | [rbdc-mysql](https://crates.io/crates/rbdc-mysql)   | √            |
-| Postgres               | [rbdc-pg](https://crates.io/crates/rbdc-pg)   | √            |
-| Sqlite                 | [rbdc-sqlite](https://crates.io/crates/rbdc-sqlite) | √            |
-| Mssql                  | [rbdc-mssql](https://crates.io/crates/rbdc-mssql)   | √            |
-| MariaDB(=Mysql)        | [rbdc-mysql](https://crates.io/crates/rbdc-mysql)   | √            |
-| TiDB(=Mysql)           | [rbdc-mysql](https://crates.io/crates/rbdc-mysql)   | √            |
-| CockroachDB(=Postgres) | [rbdc-pg](https://crates.io/crates/rbdc-pg)   | √            |
+| database     | crates                                              | is supported |
+|--------------|-----------------------------------------------------|--------------|
+| Mysql        | [rbdc-mysql](https://crates.io/crates/rbdc-mysql)   | √            |
+| Postgres     | [rbdc-pg](https://crates.io/crates/rbdc-pg)         | √            |
+| Sqlite       | [rbdc-sqlite](https://crates.io/crates/rbdc-sqlite) | √            |
+| Mssql        | [rbdc-mssql](https://crates.io/crates/rbdc-mssql)   | √            |
+| MariaDB      | [rbdc-mysql](https://crates.io/crates/rbdc-mysql)   | √            |
+| TiDB         | [rbdc-mysql](https://crates.io/crates/rbdc-mysql)   | √            |
+| CockroachDB  | [rbdc-pg](https://crates.io/crates/rbdc-pg)         | √            |
 
 
 
