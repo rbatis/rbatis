@@ -147,6 +147,15 @@ impl dyn ConnectOptions {
     }
 }
 
+/// make all database drivers support dialect '?'
+///
+/// for example: postgres driver
+/// ```log
+///  "select * from  table where name = ？"
+/// ```
+/// to
+/// ```log
+/// "select * from  table where name =  $1"
 pub trait Placeholder {
     fn exchange(&self, sql: &str) -> String;
 }
