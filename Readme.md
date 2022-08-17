@@ -52,22 +52,22 @@ It is an ORM, a small compiler, a dynamic SQL languages
 ### Supported data structures
 
 | data structure                                                            | is supported |
-|---------------------------------------------------------------------------| ------ |
-| Option                                                                    | √     | 
-| Vec                                                                       | √     |  
-| HashMap                                                                   | √     |
-| i32,i64,f32,f64,bool,String...more rust type                              | √     |  
-| rbdc::types::Date                                                         | √     |  
-| rbdc::types::FastDateTime                                                 | √     |  
-| rbdc::types::Time                                                         | √     |  
-| rbdc::types::Timestamp                                                    | √     |
-| rbdc::types::Decimal                                                      | √     |  
-| rbdc::types::Json                                                         | √     |
-| rbatis::plugin::page::{Page<T>, PageRequest}                              | √     |
-| rbs::Value*                                                               | √     |
-| serde_json::*                                                             | √     |
-| any serde type                                                            | √     |
-| driver type on package (rdbc-mysql/types,rbdc-pg/types,rbdc-sqlite/types) | √     |
+|---------------------------------------------------------------------------|--------------|
+| Option                                                                    | √            | 
+| Vec                                                                       | √            |  
+| HashMap                                                                   | √            |
+| i32,i64,f32,f64,bool,String...more rust type                              | √            |  
+| rbdc::types::Date                                                         | √            |  
+| rbdc::types::FastDateTime                                                 | √            |  
+| rbdc::types::Time                                                         | √            |  
+| rbdc::types::Timestamp                                                    | √            |
+| rbdc::types::Decimal                                                      | √            |  
+| rbdc::types::Json                                                         | √            |
+| rbatis::plugin::page::{Page<T>, PageRequest}                              | √            |
+| rbs::Value*                                                               | √            |
+| serde_json::*                                                             | √            |
+| any serde type                                                            | √            |
+| driver type on package (rdbc-mysql/types,rbdc-pg/types,rbdc-sqlite/types) | √            |
 
 ### Supported database driver
 
@@ -85,11 +85,11 @@ It is an ORM, a small compiler, a dynamic SQL languages
 
 ### Supported OS/Platforms by [Workflows CI](https://github.com/rbatis/rbatis/actions)
 
-| platform   | is supported |
-| ------ | ------ |
-| Linux(unbutu laster***)                   | √     | 
-| Apple/MacOS(laster)             | √     |  
-| Windows(latest)               | √     |
+| platform                | is supported |
+|-------------------------|--------------|
+| Linux(unbutu laster***) | √            | 
+| Apple/MacOS(laster)     | √            |  
+| Windows(latest)         | √            |
 
 ### Supported Web Frameworks
 
