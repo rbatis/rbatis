@@ -3,7 +3,7 @@ pub mod model;
 use crate::model::{init_sqlite, BizActivity};
 use fast_log::sleep;
 use rbatis::rbdc::datetime::FastDateTime;
-use rbatis::rbs::to_value;
+use rbs::to_value;
 use std::time::Duration;
 
 #[tokio::main]
