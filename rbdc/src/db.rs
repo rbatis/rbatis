@@ -134,13 +134,33 @@ pub trait ConnectOptions: Any + Send + Sync + Debug + 'static {
 
     /// uppercase self,default is this code
     ///```rust
-    /// fn uppercase_self(&self) -> &(dyn Any + Send + Sync) {
-    ///         self
+    /// use std::any::Any;
+    /// use futures_core::future::BoxFuture;
+    /// use rbdc::db::{Connection, ConnectOptions};
+    /// use rbdc::Error;
+    /// #[derive(Debug)]
+    /// pub struct MyConnectOptions{}
+    ///
+    /// impl ConnectOptions for MyConnectOptions{
+    ///   fn connect(&self) -> BoxFuture<Result<Box<dyn Connection>, Error>> {
+    ///         todo!()
     ///     }
+    ///
+    ///    fn set_uri(&mut self, uri: &str) -> Result<(), Error> {
+    ///         todo!()
+    ///     }
+    ///
+    ///    fn uppercase_self(&self) -> &(dyn Any + Send + Sync) {
+    ///         self
+    ///    }
+    ///
+    /// }
     /// ```
     fn uppercase_self(&self) -> &(dyn Any + Send + Sync);
 }
 
+
+/// database driver ConnectOptions
 impl dyn ConnectOptions {
     pub fn downcast_ref<E: ConnectOptions>(&self) -> Option<&E> {
         self.uppercase_self().downcast_ref()
