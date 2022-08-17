@@ -20,12 +20,6 @@ fn convert_to_arg_access(context: &str, arg: Expr, as_proxy: bool, ignore: &[Str
             if token == "sql" {
                 return Expr::Path(b);
             }
-            if token == "arg" {
-                return Expr::Path(b);
-            }
-            if token == "args" {
-                return Expr::Path(b);
-            }
             let param = token_steam_string(b.to_token_stream());
             let mut fetch_from_arg = true;
             for x in ignore {
