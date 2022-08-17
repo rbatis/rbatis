@@ -21,12 +21,7 @@ use std::io::Read;
 
 ///select page must have  '?:&PageRequest' arg and return 'Page<?>'
 #[html_sql("example/example.html")]
-async fn select_by_condition(
-    rb: &mut dyn Executor,
-    page_req: &PageRequest,
-    name: &str,
-    dt: &FastDateTime,
-) -> Vec<BizActivity> {
+async fn select_by_condition(rb: &mut dyn Executor, name: &str, dt: &FastDateTime) -> Vec<BizActivity> {
     impled!()
 }
 
@@ -35,12 +30,7 @@ pub async fn main() {
     fast_log::init(fast_log::Config::new().console());
     //use static ref
     let rb = init_sqlite().await;
-    let a = select_by_condition(
-        &mut rb.clone(),
-        &PageRequest::new(1, 10),
-        "test",
-        &FastDateTime::now().set_micro(0),
-    )
+    let a = select_by_condition(&mut rb.clone(), "test", &FastDateTime::now().set_micro(0))
     .await
     .unwrap();
     println!("{:?}", a);
