@@ -73,13 +73,13 @@ It is an ORM, a small compiler, a dynamic SQL languages
 
 | database               | crates                                         | is supported |
 |------------------------|------------------------------------------------|--------------|
-| Mysql                  | [Mysql](https://crates.io/crates/rbdc-mysql)   | √            |
-| Postgres               | [Postgres](https://crates.io/crates/rbdc-pg)   | √            |
-| Sqlite                 | [Sqlite](https://crates.io/crates/rbdc-sqlite) | √            |
-| Mssql                  | [Mssql](https://crates.io/crates/rbdc-mssql)   | √            |
-| MariaDB(=Mysql)        | [Mysql](https://crates.io/crates/rbdc-mysql)   | √            |
-| TiDB(=Mysql)           | [Mysql](https://crates.io/crates/rbdc-mysql)   | √            |
-| CockroachDB(=Postgres) | [Postgres](https://crates.io/crates/rbdc-pg)   | √            |
+| Mysql                  | [rbdc-mysql](https://crates.io/crates/rbdc-mysql)   | √            |
+| Postgres               | [rbdc-pg](https://crates.io/crates/rbdc-pg)   | √            |
+| Sqlite                 | [rbdc-sqlite](https://crates.io/crates/rbdc-sqlite) | √            |
+| Mssql                  | [rbdc-mssql](https://crates.io/crates/rbdc-mssql)   | √            |
+| MariaDB(=Mysql)        | [rbdc-mysql](https://crates.io/crates/rbdc-mysql)   | √            |
+| TiDB(=Mysql)           | [rbdc-mysql](https://crates.io/crates/rbdc-mysql)   | √            |
+| CockroachDB(=Postgres) | [rbdc-pg](https://crates.io/crates/rbdc-pg)   | √            |
 
 
 
