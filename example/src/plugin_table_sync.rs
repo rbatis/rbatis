@@ -1,8 +1,8 @@
 use rbatis::rbatis::Rbatis;
 use rbatis::table_sync::{RbatisTableSync, SqliteTableSync};
-use rbdc::datetime::FastDateTime;
+use rbatis::rbdc::datetime::FastDateTime;
 use rbdc_sqlite::driver::SqliteDriver;
-use rbs::to_value;
+use rbatis::rbs::to_value;
 
 #[derive(Clone, Debug, serde::Serialize, serde::Deserialize)]
 pub struct BizActivity {

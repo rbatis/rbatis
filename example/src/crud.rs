@@ -17,7 +17,7 @@ use rbatis::{
     executor::Executor,
     sql::page::{Page, PageRequest},
 };
-use rbdc::datetime::FastDateTime;
+use rbatis::rbdc::datetime::FastDateTime;
 use std::time::Duration;
 
 //crud!(BizActivity {},"biz_activity");

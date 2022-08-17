@@ -3,7 +3,7 @@ pub mod model;
 use crate::model::{init_sqlite, BizActivity};
 use fast_log::sleep;
 use rbatis::impl_insert;
-use rbdc::datetime::FastDateTime;
+use rbatis::rbdc::datetime::FastDateTime;
 use std::time::Duration;
 
 impl_insert!(BizActivity {});

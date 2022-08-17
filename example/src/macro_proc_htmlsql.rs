@@ -15,7 +15,7 @@ use model::*;
 use rbatis::executor::Executor;
 use rbatis::rbatis::Rbatis;
 use rbatis::sql::page::{Page, PageRequest};
-use rbdc::datetime::FastDateTime;
+use rbatis::rbdc::datetime::FastDateTime;
 use std::fs::File;
 use std::io::Read;
 
