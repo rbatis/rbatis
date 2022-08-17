@@ -114,7 +114,7 @@ rbdc-sqlite={version="0.1"}
 extern crate rbatis;
 extern crate rbdc;
 use rbatis::{impl_insert,impl_insert,impl_update,impl_delete,impl_select_page};
-use rbdc::datetime::FastDateTime;
+use rbatis::rbdc::datetime::FastDateTime;
 #[derive(Clone, Debug, Serialize, Deserialize)]
 pub struct BizActivity {
   pub id: Option<String>,
