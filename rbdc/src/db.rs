@@ -143,11 +143,11 @@ pub trait ConnectOptions: Any + Send + Sync + Debug + 'static {
     ///
     /// impl ConnectOptions for MyConnectOptions{
     ///   fn connect(&self) -> BoxFuture<Result<Box<dyn Connection>, Error>> {
-    ///         todo!()
+    ///         unimplemented!()
     ///     }
     ///
     ///    fn set_uri(&mut self, uri: &str) -> Result<(), Error> {
-    ///         todo!()
+    ///         unimplemented!()
     ///     }
     ///
     ///    fn uppercase_self(&self) -> &(dyn Any + Send + Sync) {
