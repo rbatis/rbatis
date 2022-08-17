@@ -21,3 +21,4 @@ should impl trait and load driver
 * impl trait ResultSet
 * impl trait MetaData
 * impl trait ConnectOptions
+* impl trait Placeholder
