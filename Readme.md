@@ -271,10 +271,8 @@ pub async fn test_macro() {
 
 # Roadmap
 
-- [x] [Rbatis-V4.0-rbdc-mysql](https://github.com/rbatis/rbatis/tree/master/rbdc-mysql);
-- [x] [Rbatis-V4.0-rbdc-pg](https://github.com/rbatis/rbatis/tree/master/rbdc-pg);
-- [x] [Rbatis-V4.0-rbdc-sqlite](https://github.com/rbatis/rbatis/tree/master/rbdc-sqlite);
-- [x] [Rbatis-V4.0-rbdc-mssql](https://github.com/rbatis/rbatis/tree/master/rbdc-mssql);
+- [x] sqlite table sync plugin(auto create table/column)
+- [ ] Static analysis and generate executable test functions
 
 # Contact/donation, or click on star [rbatis](https://github.com/rbatis/rbatis)
 
