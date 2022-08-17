@@ -3,21 +3,19 @@
 
 * [cassie_axum](https://gitee.com/stringlxd/cassie_axum)  A high-performance, easy-to-use Web framework based on Rust Axum can be used to build any Web backend project for rust hobbyist learning to use, basic cache definition, Redis, ORM framework selected Ribatis, Casbin-RS integration, adapter written, user rights JWT Fusion casbin - rs
 
-* [mercury](https://github.com/nervosnetwork/mercury)
+* [mercury](https://github.com/nervosnetwork/mercury) Building on top of ckb-indexer, Mercury provides handy integration features for Nervos CKB.
 
-* [rustus](https://github.com/s3rius/rustus)
+* [rustus](https://github.com/s3rius/rustus) TUS protocol implementation in Rust.
 
-* [mercury](https://github.com/nervosnetwork/mercury)
+* [cashbox](https://github.com/scryinfo/cashbox) 某东抢购软件
 
-* [cashbox](https://github.com/scryinfo/cashbox)
+* [miaosha](https://github.com/leehyong/miaosha) 某东抢购软件
 
-* [miaosha](https://github.com/leehyong/miaosha)
+* [UmDiaProgramando](https://github.com/Gabriel-Paulucci/UmDiaProgramando) Um projeto que eu irei escrever todo dia sobre coisas que eu tento fazer codando e também interagir com vocês pela aba de discussão
 
-* [UmDiaProgramando](https://github.com/Gabriel-Paulucci/UmDiaProgramando)
+* [clush-server](https://github.com/BruceKangCN/clush-server)  a rust based server application for an IM software
 
-* [clush-server](https://github.com/BruceKangCN/clush-server)
-
-* [fastjob](https://github.com/eliasyaoyc/fastjob)
+* [fastjob](https://github.com/eliasyaoyc/fastjob)  A distributed, lock-free scheduled platform what provides various ways of scheduling, resource isolation, high performance etc.
 
 * [NFido](https://github.com/nfido/nfido.git) A community forum system developed by Rust
 
