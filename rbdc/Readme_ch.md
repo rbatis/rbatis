@@ -15,10 +15,11 @@ Struct(User Define) -> rbs::ValueRef -> ref clone() -> Database
 
 
 ### 如何自定义驱动?
-should impl trait and load driver
+实现rbdc::db包下的trait
 * impl trait Driver
 * impl trait Connection
 * impl trait Statement
 * impl trait ResultSet
 * impl trait MetaData
 * impl trait ConnectOptions
+* impl trait Placeholder
