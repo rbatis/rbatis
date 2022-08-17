@@ -28,8 +28,7 @@ from html logic just like:
 </mapper>
 ```
 
-
-generated code for example:
+source code for example:
 ```rust
 #[html_sql("example/example.html")]
 async fn select_by_condition(
@@ -41,6 +40,7 @@ async fn select_by_condition(
     impled!()
 }
 ```
+
 ```log
 2022-08-17 17:16:23.624803 INFO rbatis::plugin::log - [rbatis] [402390551883812864] Fetch  ==> select * from biz_activity where name like ? and create_time < ? and id != '-1' and  name != ''
                                                       [rbatis]                      Args   ==> ["test",DateTime("2022-08-17 17:16:23")]
