@@ -7,7 +7,7 @@ use crate::utils::string_util;
 use crate::Error;
 use crossbeam::queue::SegQueue;
 use once_cell::sync::OnceCell;
-use rbdc::db::{Connection, ExecResult};
+use rbdc::db::{Connection, Driver, ExecResult};
 use rbdc::pool::{ManagerPorxy, Pool};
 use serde::de::DeserializeOwned;
 use serde::ser::Serialize;
@@ -189,5 +189,14 @@ impl Rbatis {
             return true;
         }
         return false;
+    }
+
+    /// get driver
+    pub fn driver(&self) -> Option<&dyn Driver> {
+        if let Ok(v) = self.get_pool() {
+            Some(&*v.manager.driver)
+        } else {
+            None
+        }
     }
 }
