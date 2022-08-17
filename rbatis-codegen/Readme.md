@@ -31,16 +31,17 @@ from html logic just like:
 
 generated code for example:
 ```rust
-py->sql: select * from biz_activity where delete_flag = 0 and name=$1 
-py->args: ["asdf"]
-sql: select * from table where id = 1 id != $1
-        id in $2
-        id in $3
-        id in $4
-        id not in $5a = $6name like $7
-        or
-        name not like $8
-        create_time between $9 and $10
-        group by$11$12$13order by$14$15
-args: [1,[1,2,3],[1,2,3],[1,2,3],[1,2,3],1,"asdf","asdf","2020-23-23","2020-23-23",1,2,3,"id","name"]
+#[html_sql("example/example.html")]
+async fn select_by_condition(
+    rb: &mut dyn Executor,
+    page_req: &PageRequest,
+    name: &str,
+    dt: &FastDateTime,
+) -> Vec<BizActivity> {
+    impled!()
+}
+```
+```log
+2022-08-17 17:16:23.624803 INFO rbatis::plugin::log - [rbatis] [402390551883812864] Fetch  ==> select * from biz_activity where name like ? and create_time < ? and id != '-1' and  name != ''
+                                                      [rbatis]                      Args   ==> ["test",DateTime("2022-08-17 17:16:23")]
 ```
