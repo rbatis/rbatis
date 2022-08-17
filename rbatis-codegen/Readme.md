@@ -30,13 +30,26 @@ from html logic just like:
 
 source code for example:
 ```rust
+use rbatis::executor::Executor;
+use rbatis::rbdc::datetime::FastDateTime;
+use rbatis::sql::page::{Page, PageRequest};
+#[derive(Clone, Debug, Serialize, Deserialize)]
+pub struct BizActivity {
+    pub id: Option<String>,
+    pub name: Option<String>,
+    pub pc_link: Option<String>,
+    pub h5_link: Option<String>,
+    pub pc_banner_img: Option<String>,
+    pub h5_banner_img: Option<String>,
+    pub sort: Option<String>,
+    pub status: Option<i32>,
+    pub remark: Option<String>,
+    pub create_time: Option<FastDateTime>,
+    pub version: Option<i64>,
+    pub delete_flag: Option<i32>,
+}
 #[html_sql("example/example.html")]
-async fn select_by_condition(
-    rb: &mut dyn Executor,
-    page_req: &PageRequest,
-    name: &str,
-    dt: &FastDateTime,
-) -> Vec<BizActivity> {
+async fn select_by_condition(rb: &mut dyn Executor, page_req: &PageRequest, name: &str, dt: &FastDateTime) -> Vec<BizActivity> {
     impled!()
 }
 ```
