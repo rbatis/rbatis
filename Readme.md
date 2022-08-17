@@ -57,12 +57,7 @@ It is an ORM, a small compiler, a dynamic SQL languages
 | Vec                                                                       | √            |  
 | HashMap                                                                   | √            |
 | i32,i64,f32,f64,bool,String...more rust type                              | √            |  
-| rbdc::types::Date                                                         | √            |  
-| rbdc::types::FastDateTime                                                 | √            |  
-| rbdc::types::Time                                                         | √            |  
-| rbdc::types::Timestamp                                                    | √            |
-| rbdc::types::Decimal                                                      | √            |  
-| rbdc::types::Json                                                         | √            |
+| rbdc::types::{Date,FastDateTime,Time,Timestamp,Decimal,Json}              | √            |
 | rbatis::plugin::page::{Page<T>, PageRequest}                              | √            |
 | rbs::Value*                                                               | √            |
 | serde_json::*                                                             | √            |
