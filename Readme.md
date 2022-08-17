@@ -66,16 +66,16 @@ It is an ORM, a small compiler, a dynamic SQL languages
 
 ### Supported database driver
 
-| database     | crates                                              | is supported |
-|--------------|-----------------------------------------------------|--------------|
-| Mysql        | [rbdc-mysql](https://crates.io/crates/rbdc-mysql)   | √            |
-| Postgres     | [rbdc-pg](https://crates.io/crates/rbdc-pg)         | √            |
-| Sqlite       | [rbdc-sqlite](https://crates.io/crates/rbdc-sqlite) | √            |
-| Mssql        | [rbdc-mssql](https://crates.io/crates/rbdc-mssql)   | √            |
-| MariaDB      | [rbdc-mysql](https://crates.io/crates/rbdc-mysql)   | √            |
-| TiDB         | [rbdc-mysql](https://crates.io/crates/rbdc-mysql)   | √            |
-| CockroachDB  | [rbdc-pg](https://crates.io/crates/rbdc-pg)         | √            |
-
+| database      | crates                                                | github_link                                                 |
+|---------------|-------------------------------------------------------|-------------------------------------------------------------|
+| Mysql         | [rbdc-mysql](https://crates.io/crates/rbdc-mysql)     | [rbatis](https://github.com/rbatis/rbatis)                  |
+| Postgres      | [rbdc-pg](https://crates.io/crates/rbdc-pg)           | [rbatis](https://github.com/rbatis/rbatis)                  |
+| Sqlite        | [rbdc-sqlite](https://crates.io/crates/rbdc-sqlite)   | [rbatis](https://github.com/rbatis/rbatis)                  |
+| Mssql         | [rbdc-mssql](https://crates.io/crates/rbdc-mssql)     | [rbatis](https://github.com/rbatis/rbatis)                  |
+| MariaDB       | [rbdc-mysql](https://crates.io/crates/rbdc-mysql)     | [rbatis](https://github.com/rbatis/rbatis)                  |
+| TiDB          | [rbdc-mysql](https://crates.io/crates/rbdc-mysql)     | [rbatis](https://github.com/rbatis/rbatis)                  |
+| CockroachDB   | [rbdc-pg](https://crates.io/crates/rbdc-pg)           | [rbatis](https://github.com/rbatis/rbatis)                  |
+| Oracle        | [rbdc-oracle](https://crates.io/crates/rbdc-oracle)   | [chenpengfan](https://github.com/chenpengfan/rbdc-oracle)   |
 
 
 ### Supported OS/Platforms by [Workflows CI](https://github.com/rbatis/rbatis/actions)
