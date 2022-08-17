@@ -29,6 +29,9 @@ impl<'de> Deserialize<'de> for FastDateTime {
         where
             D: Deserializer<'de>,
     {
+        #[derive(serde::Serialize, serde::Deserialize, Debug, Clone)]
+        #[serde(rename = "DateTime")]
+        pub struct DateTimeValue(pub Value);
         let v = DateTimeValue::deserialize(deserializer)?;
         match v.0 {
             Value::U64(u) => Ok(Self(fastdate::DateTime::from_timestamp_millis(u as i64))),
@@ -185,9 +188,13 @@ impl DerefMut for DateTime {
     }
 }
 
-#[derive(serde::Serialize, serde::Deserialize, Debug, Clone)]
-#[serde(rename = "DateTime")]
-pub struct DateTimeValue(pub Value);
+impl FromStr for DateTime{
+    type Err = crate::Error;
+
+    fn from_str(s: &str) -> Result<Self, Self::Err> {
+        Ok(DateTime(s.to_string()))
+    }
+}
 
 #[test]
 fn test() {
