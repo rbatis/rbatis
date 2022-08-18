@@ -442,9 +442,12 @@ fn parse(
                 let index_ident = Ident::new(&findex, Span::call_site());
                 let mut split_code = quote! {};
                 if !separator.is_empty() {
-                    split_code = quote! {sql.push_str(#separator);};
+                    split_code = quote! {
+                        if split_index != target_for_len{
+                            sql.push_str(#separator);
+                        }
+                    };
                 }
-
                 body = quote! {
                     #body
                     #open_impl
@@ -455,7 +458,6 @@ fn parse(
                           for (#index_ident,#item_ident) in target_for {
                             split_index+=1;
                             #impl_body
-                            if split_index == target_for_len{break;}
                             #split_code
                           }
                     }
