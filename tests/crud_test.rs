@@ -3,10 +3,11 @@ extern crate rbatis;
 
 #[cfg(test)]
 mod test {
+    #![allow(private_in_public)]
+
     use futures_core::future::BoxFuture;
     use rbatis::sql::PageRequest;
     use rbatis::{Error, Rbatis};
-    use rbdc::block_on;
     use rbdc::datetime::FastDateTime;
     use rbdc::db::{ConnectOptions, Connection, Driver, ExecResult, MetaData, Row};
     use rbdc::rt::block_on;
@@ -21,13 +22,13 @@ mod test {
             "test"
         }
 
-        fn connect(&self, url: &str) -> BoxFuture<Result<Box<dyn Connection>, Error>> {
+        fn connect(&self, _url: &str) -> BoxFuture<Result<Box<dyn Connection>, Error>> {
             Box::pin(async { Ok(Box::new(MockConnection {}) as Box<dyn Connection>) })
         }
 
         fn connect_opt<'a>(
             &'a self,
-            opt: &'a dyn ConnectOptions,
+            _opt: &'a dyn ConnectOptions,
         ) -> BoxFuture<Result<Box<dyn Connection>, Error>> {
             Box::pin(async { Ok(Box::new(MockConnection {}) as Box<dyn Connection>) })
         }
@@ -63,7 +64,7 @@ mod test {
             }
         }
 
-        fn column_type(&self, i: usize) -> String {
+        fn column_type(&self, _i: usize) -> String {
             "String".to_string()
         }
     }
@@ -101,7 +102,7 @@ mod test {
         fn get_rows(
             &mut self,
             sql: &str,
-            params: Vec<Value>,
+            _params: Vec<Value>,
         ) -> BoxFuture<Result<Vec<Box<dyn Row>>, Error>> {
             let sql = sql.to_string();
             Box::pin(async move {
@@ -110,7 +111,7 @@ mod test {
             })
         }
 
-        fn exec(&mut self, sql: &str, params: Vec<Value>) -> BoxFuture<Result<ExecResult, Error>> {
+        fn exec(&mut self, sql: &str, _params: Vec<Value>) -> BoxFuture<Result<ExecResult, Error>> {
             let sql = sql.to_string();
             Box::pin(async move {
                 Ok(ExecResult {
@@ -137,7 +138,7 @@ mod test {
             Box::pin(async { Ok(Box::new(MockConnection {}) as Box<dyn Connection>) })
         }
 
-        fn set_uri(&mut self, uri: &str) -> Result<(), Error> {
+        fn set_uri(&mut self, _uri: &str) -> Result<(), Error> {
             Ok(())
         }
 
@@ -306,22 +307,6 @@ mod test {
         let f = async move {
             let mut rb = Rbatis::new();
             rb.link(MockDriver {}, "test").await.unwrap();
-            let t = MockTable {
-                id: Some("2".into()),
-                name: Some("2".into()),
-                pc_link: Some("2".into()),
-                h5_link: Some("2".into()),
-                pc_banner_img: None,
-                h5_banner_img: None,
-                sort: None,
-                status: Some(2),
-                remark: Some("2".into()),
-                create_time: Some(FastDateTime::now()),
-                version: Some(1),
-                sql: "".to_string(),
-                delete_flag: Some(1),
-                count: 0,
-            };
             let r = MockTable::select_all_by_id(&mut rb, "1", "1")
                 .await
                 .unwrap();
@@ -339,22 +324,6 @@ mod test {
         let f = async move {
             let mut rb = Rbatis::new();
             rb.link(MockDriver {}, "test").await.unwrap();
-            let t = MockTable {
-                id: Some("2".into()),
-                name: Some("2".into()),
-                pc_link: Some("2".into()),
-                h5_link: Some("2".into()),
-                pc_banner_img: None,
-                h5_banner_img: None,
-                sort: None,
-                status: Some(2),
-                remark: Some("2".into()),
-                create_time: Some(FastDateTime::now()),
-                version: Some(1),
-                sql: "".to_string(),
-                delete_flag: Some(1),
-                count: 0,
-            };
             let r = MockTable::select_by_id(&mut rb, "1").await.unwrap();
             println!("{}", r.as_ref().unwrap().sql);
             assert_eq!(
@@ -400,22 +369,6 @@ mod test {
         let f = async move {
             let mut rb = Rbatis::new();
             rb.link(MockDriver {}, "test").await.unwrap();
-            let t = MockTable {
-                id: Some("2".into()),
-                name: Some("2".into()),
-                pc_link: Some("2".into()),
-                h5_link: Some("2".into()),
-                pc_banner_img: None,
-                h5_banner_img: None,
-                sort: None,
-                status: Some(2),
-                remark: Some("2".into()),
-                create_time: Some(FastDateTime::now()),
-                version: Some(1),
-                sql: "".to_string(),
-                delete_flag: Some(1),
-                count: 0,
-            };
             let r = MockTable::delete_by_name(&mut rb, "2").await.unwrap();
             println!("{}", r.last_insert_id.as_str().unwrap());
             assert_eq!(
@@ -431,22 +384,6 @@ mod test {
         let f = async move {
             let mut rb = Rbatis::new();
             rb.link(MockDriver {}, "test").await.unwrap();
-            let t = MockTable {
-                id: Some("2".into()),
-                name: Some("2".into()),
-                pc_link: Some("2".into()),
-                h5_link: Some("2".into()),
-                pc_banner_img: None,
-                h5_banner_img: None,
-                sort: None,
-                status: Some(2),
-                remark: Some("2".into()),
-                create_time: Some(FastDateTime::now()),
-                version: Some(1),
-                sql: "".to_string(),
-                delete_flag: Some(1),
-                count: 0,
-            };
             let r = MockTable::select_page(&mut rb, &PageRequest::new(1, 10))
                 .await
                 .unwrap();
@@ -468,22 +405,6 @@ mod test {
         let f = async move {
             let mut rb = Rbatis::new();
             rb.link(MockDriver {}, "test").await.unwrap();
-            let t = MockTable {
-                id: Some("2".into()),
-                name: Some("2".into()),
-                pc_link: Some("2".into()),
-                h5_link: Some("2".into()),
-                pc_banner_img: None,
-                h5_banner_img: None,
-                sort: None,
-                status: Some(2),
-                remark: Some("2".into()),
-                create_time: Some(FastDateTime::now()),
-                version: Some(1),
-                sql: "".to_string(),
-                delete_flag: Some(1),
-                count: 0,
-            };
             let r = MockTable::select_page_by_name(&mut rb, &PageRequest::new(1, 10), "")
                 .await
                 .unwrap();
@@ -501,22 +422,6 @@ mod test {
         let f = async move {
             let mut rb = Rbatis::new();
             rb.link(MockDriver {}, "test").await.unwrap();
-            let t = MockTable {
-                id: Some("2".into()),
-                name: Some("2".into()),
-                pc_link: Some("2".into()),
-                h5_link: Some("2".into()),
-                pc_banner_img: None,
-                h5_banner_img: None,
-                sort: None,
-                status: Some(2),
-                remark: Some("2".into()),
-                create_time: Some(FastDateTime::now()),
-                version: Some(1),
-                sql: "".to_string(),
-                delete_flag: Some(1),
-                count: 0,
-            };
             let r = MockTable::select_by_column(&mut rb, "id", "1")
                 .await
                 .unwrap();
@@ -529,7 +434,7 @@ mod test {
     #[test]
     fn test_tx() {
         let f = async move {
-            let mut rb = Rbatis::new();
+            let rb = Rbatis::new();
             rb.link(MockDriver {}, "test").await.unwrap();
             let t = MockTable {
                 id: Some("2".into()),
@@ -548,10 +453,10 @@ mod test {
                 count: 0,
             };
             let mut tx = rb.acquire_begin().await.unwrap();
-            let r = MockTable::insert(&mut tx, &t).await.unwrap();
+            let _r = MockTable::insert(&mut tx, &t).await.unwrap();
 
-            let mut tx = rb.acquire_begin().await.unwrap().defer_async(|tx| async {});
-            let r = MockTable::insert(&mut tx, &t).await.unwrap();
+            let mut tx = rb.acquire_begin().await.unwrap().defer_async(|_tx| async {});
+            let _r = MockTable::insert(&mut tx, &t).await.unwrap();
         };
         block_on(f);
     }

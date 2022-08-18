@@ -1,6 +1,3 @@
-#[macro_use]
-extern crate rbatis;
-
 #[cfg(test)]
 mod test {
     use rbs::value::map::ValueMap;
