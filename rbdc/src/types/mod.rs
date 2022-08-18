@@ -7,3 +7,4 @@ pub mod json;
 pub mod time;
 pub mod timestamp;
 pub mod uuid;
+pub mod bytes;
