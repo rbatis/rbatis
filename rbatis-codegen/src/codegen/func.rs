@@ -10,7 +10,7 @@ fn token_steam_string(arg: proc_macro2::TokenStream) -> String {
     arg.to_token_stream().to_string().trim().to_string()
 }
 
-fn convert_to_arg_access(context: &str, arg: Expr, as_proxy: bool, ignore: &[String]) -> Expr {
+fn convert_to_arg_access(context: &str, arg: Expr,  ignore: &[String]) -> Expr {
     match arg {
         Expr::Path(b) => {
             let token = b.to_token_stream().to_string();
@@ -39,7 +39,6 @@ fn convert_to_arg_access(context: &str, arg: Expr, as_proxy: bool, ignore: &[Str
             b.receiver = Box::new(convert_to_arg_access(
                 context,
                 *b.receiver.clone(),
-                as_proxy,
                 ignore,
             ));
             return Expr::MethodCall(b);
@@ -48,13 +47,11 @@ fn convert_to_arg_access(context: &str, arg: Expr, as_proxy: bool, ignore: &[Str
             b.left = Box::new(convert_to_arg_access(
                 context,
                 *b.left.clone(),
-                as_proxy,
                 ignore,
             ));
             b.right = Box::new(convert_to_arg_access(
                 context,
                 *b.right.clone(),
-                as_proxy,
                 ignore,
             ));
             match b.op {
@@ -279,7 +276,7 @@ fn convert_to_arg_access(context: &str, arg: Expr, as_proxy: bool, ignore: &[Str
             return Expr::Binary(b);
         }
         Expr::Unary(mut b) => {
-            b.expr = Box::new(convert_to_arg_access(context, *b.expr, as_proxy, ignore));
+            b.expr = Box::new(convert_to_arg_access(context, *b.expr, ignore));
             if b.op.to_token_stream().to_string().trim() == "-" {
                 return syn::parse_str::<Expr>(&format!(
                     " (0.op_sub(&{}))",
@@ -290,14 +287,13 @@ fn convert_to_arg_access(context: &str, arg: Expr, as_proxy: bool, ignore: &[Str
             return Expr::Unary(b);
         }
         Expr::Paren(mut b) => {
-            b.expr = Box::new(convert_to_arg_access(context, *b.expr, as_proxy, ignore));
+            b.expr = Box::new(convert_to_arg_access(context, *b.expr, ignore));
             return Expr::Paren(b);
         }
         Expr::Field(mut b) => {
             b.base = Box::new(convert_to_arg_access(
                 context,
                 *b.base.clone(),
-                as_proxy,
                 ignore,
             ));
             match b.member {
@@ -314,12 +310,12 @@ fn convert_to_arg_access(context: &str, arg: Expr, as_proxy: bool, ignore: &[Str
             return Expr::Field(b);
         }
         Expr::Reference(mut b) => {
-            b.expr = Box::new(convert_to_arg_access(context, *b.expr, as_proxy, ignore));
+            b.expr = Box::new(convert_to_arg_access(context, *b.expr, ignore));
             let result = Expr::Reference(b);
             return result;
         }
         Expr::Index(mut b) => {
-            b.expr = Box::new(convert_to_arg_access(context, *b.expr, as_proxy, ignore));
+            b.expr = Box::new(convert_to_arg_access(context, *b.expr, ignore));
             return syn::parse_str::<Expr>(&format!(
                 "{}[{}]",
                 b.expr.to_token_stream(),
@@ -331,7 +327,6 @@ fn convert_to_arg_access(context: &str, arg: Expr, as_proxy: bool, ignore: &[Str
             let_expr.expr = Box::new(convert_to_arg_access(
                 context,
                 *let_expr.expr,
-                as_proxy,
                 ignore,
             ));
             return Expr::Let(let_expr);
@@ -369,7 +364,6 @@ pub fn impl_fn(
     func_name_ident: &str,
     args: &str,
     serialize_result: bool,
-    as_proxy: bool,
     ignore: &[String],
 ) -> proc_macro2::TokenStream {
     let mut string_data = args.to_string();
@@ -396,7 +390,7 @@ pub fn impl_fn(
         )
     }
     let mut t = t.expect("codegen_func fail");
-    t = convert_to_arg_access(context, t, as_proxy, ignore);
+    t = convert_to_arg_access(context, t, ignore);
     string_data = t.to_token_stream().to_string();
     string_data = string_data.replace(" . ", ".");
     let t = syn::parse_str::<Expr>(&string_data);
