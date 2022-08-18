@@ -8,7 +8,6 @@ use crate::decode::Decode;
 use crate::driver::MssqlDriver;
 use crate::encode::Encode;
 use futures_core::future::BoxFuture;
-use futures_util::StreamExt;
 use rbdc::db::{ConnectOptions, Connection, ExecResult, MetaData, Placeholder, Row};
 use rbdc::Error;
 use rbs::Value;
@@ -115,7 +114,7 @@ impl Connection for MssqlConnection {
                 .await
                 .map_err(|e| Error::from(e.to_string()))?;
             let mut results = Vec::with_capacity(v.size_hint().0);
-            let mut s = v.into_results().await.map_err(|e| Error::from(e.to_string()))?;
+            let s = v.into_results().await.map_err(|e| Error::from(e.to_string()))?;
             for item in s {
                 for r in item {
                     let mut columns = Vec::with_capacity(r.columns().len());

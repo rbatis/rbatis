@@ -1,8 +1,15 @@
+#![allow(unused_mut)]
+#![allow(unused_imports)]
+#![allow(unreachable_patterns)]
+#![allow(unused_variables)]
+#![allow(unused_assignments)]
+#![allow(unused_must_use)]
+#![allow(dead_code)]
+
 use rbatis::rbatis::Rbatis;
 use rbatis::table_sync::{RbatisTableSync, SqliteTableSync};
 use rbatis::rbdc::datetime::FastDateTime;
 use rbdc_sqlite::driver::SqliteDriver;
-use rbs::to_value;
 
 #[derive(Clone, Debug, serde::Serialize, serde::Deserialize)]
 pub struct BizActivity {

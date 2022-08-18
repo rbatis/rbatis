@@ -1,3 +1,11 @@
+#![allow(unused_mut)]
+#![allow(unused_imports)]
+#![allow(unreachable_patterns)]
+#![allow(unused_variables)]
+#![allow(unused_assignments)]
+#![allow(unused_must_use)]
+#![allow(dead_code)]
+
 pub mod model;
 
 use crate::model::{init_sqlite, BizActivity};
