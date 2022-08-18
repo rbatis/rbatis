@@ -1,11 +1,3 @@
-#![allow(unused_mut)]
-#![allow(unused_imports)]
-#![allow(unreachable_patterns)]
-#![allow(unused_variables)]
-#![allow(unused_assignments)]
-#![allow(unused_must_use)]
-#![allow(dead_code)]
-
 #[macro_use]
 extern crate rbatis;
 
@@ -13,10 +5,7 @@ pub mod model;
 
 use crate::model::{init_sqlite, BizActivity};
 use fast_log::sleep;
-use rbatis::{
-    executor::Executor,
-    sql::page::{Page, PageRequest},
-};
+use rbatis::sql::page::PageRequest;
 use rbatis::rbdc::datetime::FastDateTime;
 use std::time::Duration;
 
@@ -37,9 +26,9 @@ impl_select_page!(BizActivity{select_page_by_name(name:&str) =>"
 
 #[tokio::main]
 pub async fn main() {
-    fast_log::init(fast_log::Config::new().console());
+    fast_log::init(fast_log::Config::new().console()).expect("rbatis init fail");
     let mut rb = init_sqlite().await;
-    let mut t = BizActivity {
+    let t = BizActivity {
         id: Some("2".into()),
         name: Some("2".into()),
         pc_link: Some("2".into()),
@@ -57,8 +46,8 @@ pub async fn main() {
     let data = BizActivity::insert(&mut rb, &t).await;
     println!("insert = {:?}", data);
 
-    let data = BizActivity::delete_by_name(&mut rb, "2").await;
-    let data = BizActivity::delete_by_name(&mut rb, "3").await;
+    let _data = BizActivity::delete_by_name(&mut rb, "2").await;
+    let _data = BizActivity::delete_by_name(&mut rb, "3").await;
 
     let data = BizActivity::insert_batch(
         &mut rb,

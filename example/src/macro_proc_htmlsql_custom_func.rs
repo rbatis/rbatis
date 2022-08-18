@@ -46,7 +46,7 @@ async fn custom_func(rb: &mut dyn Executor, name: &str) -> Vec<BizActivity> {
 
 #[tokio::main]
 pub async fn main() {
-    fast_log::init(fast_log::Config::new().console());
+    fast_log::init(fast_log::Config::new().console()).expect("rbatis init fail");
     //use static ref
     let rb = init_sqlite().await;
     let a = custom_func(&mut rb.clone(), "test").await.unwrap();

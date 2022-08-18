@@ -30,9 +30,6 @@ pub async fn init_sqlite() -> Rbatis {
 
 /// make a sqlite-rbatis
 pub async fn init_sqlite_path(path: &str) -> Rbatis {
-    //first init log carte
-    let _ = fast_log::init(fast_log::Config::new().console());
-
     let rb = Rbatis::new();
     // rb.link(MysqlDriver {},"mysql://root:123456@localhost:3306/test").await.unwrap();
     // rb.link(PgDriver {},"postgres://postgres:123456@localhost:5432/postgres").await.unwrap();
