@@ -56,3 +56,5 @@ mod uint;
 #[cfg(feature = "uuid")]
 mod uuid;
 use crate::type_info::Type;
+
+mod value;

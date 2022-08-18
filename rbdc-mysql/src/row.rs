@@ -8,6 +8,7 @@ use rbdc::Error;
 use rbs::Value;
 use std::collections::HashMap;
 use std::sync::Arc;
+use crate::types::Decode;
 
 /// Implementation of [`Row`] for MySQL.
 #[derive(Debug)]
@@ -54,7 +55,7 @@ impl Row for MySqlRow {
     fn get(&mut self, i: usize) -> Result<Value,Error> {
         match self.try_take(i) {
             None => Ok(Value::Null),
-            Some(v) => Ok(Value::from(v)),
+            Some(v) => Value::decode(v),
         }
     }
 }
