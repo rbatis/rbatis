@@ -10,7 +10,6 @@ use std::convert::TryFrom;
 use std::fmt::{self, Debug, Display};
 use std::iter::FromIterator;
 use std::ops::Deref;
-
 pub mod ext;
 pub mod map;
 
@@ -1216,16 +1215,17 @@ impl IntoIterator for Value {
     }
 }
 
+
 impl<'a> IntoIterator for &'a Value {
-    type Item = (&'a Value, &'a Value);
-    type IntoIter = std::vec::IntoIter<(&'a Value, &'a Value)>;
+    type Item = (Cow<'a,Value>, &'a Value);
+    type IntoIter = std::vec::IntoIter<(Cow<'a,Value>, &'a Value)>;
 
     fn into_iter(self) -> Self::IntoIter {
         match self {
             Value::Map(m) => {
                 let mut arr = Vec::with_capacity(m.len());
                 for (k, v) in m {
-                    arr.push((k, v));
+                    arr.push((Cow::Borrowed(k), v));
                 }
                 arr.into_iter()
             }
@@ -1234,7 +1234,7 @@ impl<'a> IntoIterator for &'a Value {
                 let mut idx = 0;
                 for x in arr {
                     let b = Box::new(Value::U32(idx));
-                    v.push((unsafe { change_lifetime_const(b.deref()) }, x));
+                    v.push((Cow::Owned(Value::U32(idx)), x));
                     idx += 1;
                 }
                 v.into_iter()
@@ -1243,6 +1243,27 @@ impl<'a> IntoIterator for &'a Value {
             _ => {
                 let v = Vec::with_capacity(0);
                 v.into_iter()
+            }
+        }
+    }
+}
+
+#[cfg(test)]
+mod test {
+    use crate::Value;
+
+    #[test]
+    fn test_iter() {
+        let v = Value::Array(vec![Value::I32(1),Value::I32(2),Value::I32(3)]);
+        for (k, v) in &v {
+            if Value::I32(1).eq(v){
+                assert_eq!(&Value::U32(0),k.as_ref());
+            }
+            if Value::I32(2).eq(v){
+                assert_eq!(&Value::U32(1),k.as_ref());
+            }
+            if Value::I32(3).eq(v){
+                assert_eq!(&Value::U32(2),k.as_ref());
             }
         }
     }
