@@ -441,26 +441,23 @@ fn parse(
                 let item_ident = Ident::new(&item, Span::call_site());
                 let index_ident = Ident::new(&findex, Span::call_site());
                 let mut split_code = quote! {};
+                let mut split_code_trim = quote! {};
                 if !separator.is_empty() {
                     split_code = quote! {
-                        if split_index != target_for_len{
-                            sql.push_str(#separator);
-                        }
+                        sql.push_str(#separator);
+                    };
+                    split_code_trim = quote!{
+                       sql = sql.trim_end_matches(#separator).to_string();
                     };
                 }
                 body = quote! {
                     #body
                     #open_impl
-                    {
-                          let target_for = #method_impl.into_iter();
-                          let target_for_len = target_for.len();
-                          let mut split_index = 0;
-                          for (#index_ident,#item_ident) in target_for {
-                            split_index+=1;
-                            #impl_body
-                            #split_code
-                          }
+                    for (#index_ident,#item_ident) in #method_impl {
+                        #impl_body
+                        #split_code
                     }
+                    #split_code_trim
                     #close_impl
                 };
                 body = quote! {
