@@ -94,42 +94,42 @@ impl ser::Serializer for Serializer {
 
     #[inline]
     fn serialize_i8(self, val: i8) -> Result<Self::Ok, Self::Error> {
-        self.serialize_i64(val as i64)
+        Ok(Value::I32(val as i32))
     }
 
     #[inline]
     fn serialize_i16(self, val: i16) -> Result<Self::Ok, Self::Error> {
-        self.serialize_i64(val as i64)
+        Ok(Value::I32(val as i32))
     }
 
     #[inline]
     fn serialize_i32(self, val: i32) -> Result<Self::Ok, Self::Error> {
-        self.serialize_i64(val as i64)
+        Ok(Value::I32(val))
     }
 
     #[inline]
     fn serialize_i64(self, val: i64) -> Result<Self::Ok, Self::Error> {
-        Ok(Value::from(val))
+        Ok(Value::I64(val))
     }
 
     #[inline]
     fn serialize_u8(self, val: u8) -> Result<Self::Ok, Self::Error> {
-        self.serialize_u64(val as u64)
+        Ok(Value::U32(val as u32))
     }
 
     #[inline]
     fn serialize_u16(self, val: u16) -> Result<Self::Ok, Self::Error> {
-        self.serialize_u64(val as u64)
+        Ok(Value::U32(val as u32))
     }
 
     #[inline]
     fn serialize_u32(self, val: u32) -> Result<Self::Ok, Self::Error> {
-        self.serialize_u64(val as u64)
+        Ok(Value::U32(val))
     }
 
     #[inline]
     fn serialize_u64(self, val: u64) -> Result<Self::Ok, Self::Error> {
-        Ok(Value::from(val))
+        Ok(Value::U64(val))
     }
 
     #[inline]
