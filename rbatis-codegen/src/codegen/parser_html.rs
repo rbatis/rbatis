@@ -453,10 +453,10 @@ fn parse(
                           let target_for_len = target_for.len();
                           let mut split_index = 0;
                           for (#index_ident,#item_ident) in target_for {
-                            #impl_body
-                            if (split_index+1) == target_for_len{break;}
-                            #split_code
                             split_index+=1;
+                            #impl_body
+                            if split_index == target_for_len{break;}
+                            #split_code
                           }
                     }
                     #close_impl
