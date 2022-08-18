@@ -214,7 +214,6 @@ fn parse(
                         "",
                         &format!("\"{}\"", k),
                         false,
-                        true,
                         ignore,
                     );
                     if v.starts_with("#") {
@@ -306,7 +305,6 @@ fn parse(
                     "",
                     &format!("\"{}\"", value),
                     false,
-                    true,
                     ignore,
                 );
                 body = quote! {
@@ -421,7 +419,6 @@ fn parse(
                     &body.to_string(),
                     "",
                     &format!("\"{}\"", collection),
-                    false,
                     false,
                     ignore,
                 );
@@ -589,7 +586,6 @@ fn impl_println(x: &Element, body: &mut proc_macro2::TokenStream, ignore: &mut V
         "",
         &format!("\"{}\"", value),
         false,
-        false,
         ignore,
     );
 
@@ -644,7 +640,6 @@ fn impl_if(
         "",
         &format!("\"{}\"", test_value),
         false,
-        true,
         ignore,
     );
     *body = quote! {

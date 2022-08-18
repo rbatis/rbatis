@@ -30,7 +30,6 @@ pub fn expr(args: TokenStream, func: TokenStream) -> TokenStream {
         &target_fn.sig.ident.to_string(),
         &args.to_string(),
         true,
-        true,
         &[],
     )
     .into();
