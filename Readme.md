@@ -145,7 +145,7 @@ impl_select_page!(BizActivity{select_page(name:&str) => "`where name != #{name}`
 #[tokio::main]
 async fn main() {
     /// enable log crate to show sql logs
-    fast_log::init(fast_log::Config::new().console());
+    fast_log::init(fast_log::Config::new().console()).expect("rbatis init fail");
     /// initialize rbatis. also you can call rb.clone(). this is  an Arc point
     let rb = Rbatis::new();
     /// connect to database  
@@ -253,7 +253,7 @@ pub async fn select(rb: &Rbatis, name: &str) -> BizActivity {}
 
 #[tokio::test]
 pub async fn test_macro() {
-    fast_log::init(fast_log::Config::new().console());
+    fast_log::init(fast_log::Config::new().console()).expect("rbatis init fail");
     RB.link("mysql://root:123456@localhost:3306/test").await.unwrap();
     let a = select(&RB, "1").await.unwrap();
     println!("{:?}", a);

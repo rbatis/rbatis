@@ -1,11 +1,3 @@
-#![allow(unused_mut)]
-#![allow(unused_imports)]
-#![allow(unreachable_patterns)]
-#![allow(unused_variables)]
-#![allow(unused_assignments)]
-#![allow(unused_must_use)]
-#![allow(dead_code)]
-
 use rbatis::rbatis::Rbatis;
 use rbatis::table_sync::{RbatisTableSync, SqliteTableSync};
 use rbatis::rbdc::datetime::FastDateTime;
@@ -28,7 +20,7 @@ pub struct BizActivity {
 }
 #[tokio::main]
 pub async fn main() {
-    fast_log::init(fast_log::Config::new().console());
+    fast_log::init(fast_log::Config::new().console()).expect("rbatis init fail");
     let rb = Rbatis::new();
     rb.link(SqliteDriver {}, &format!("sqlite://target/sqlite.db"))
         .await

@@ -10,7 +10,7 @@ impl_insert!(BizActivity {});
 
 #[tokio::main]
 pub async fn main() {
-    let _ = fast_log::init(fast_log::Config::new().console());
+    let _ = fast_log::init(fast_log::Config::new().console()).expect("rbatis init fail");
     let rb = init_sqlite().await;
     let t = BizActivity {
         id: Some("2".into()),
