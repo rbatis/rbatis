@@ -266,6 +266,7 @@ pub async fn test_macro() {
 
 - [x] sqlite table sync plugin(auto create table/column)
 - [ ] Static analysis and generate executable test functions
+- [ ] Database dialect adaptation plugin,Write once and run everywhere
 
 # Contact/donation, or click on star [rbatis](https://github.com/rbatis/rbatis)
 
