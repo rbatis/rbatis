@@ -1,10 +1,10 @@
 pub mod model;
 
 use crate::model::{init_sqlite, BizActivity};
-use fast_log::sleep;
 use rbatis::impl_insert;
 use rbatis::rbdc::datetime::FastDateTime;
 use std::time::Duration;
+use tokio::time::sleep;
 
 impl_insert!(BizActivity {});
 
@@ -38,5 +38,5 @@ pub async fn main() {
     println!("yes forget commit");
     drop(tx);
     //call sleep make sure tokio runtime not exit!
-    sleep(Duration::from_secs(1));
+    sleep(Duration::from_secs(1)).await;
 }

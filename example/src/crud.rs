@@ -3,8 +3,8 @@ extern crate rbatis;
 
 pub mod model;
 
+use std::thread::sleep;
 use crate::model::{init_sqlite, BizActivity};
-use fast_log::sleep;
 use rbatis::sql::page::PageRequest;
 use rbatis::rbdc::datetime::FastDateTime;
 use std::time::Duration;

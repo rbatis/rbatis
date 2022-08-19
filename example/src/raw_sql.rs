@@ -1,9 +1,10 @@
 pub mod model;
 
+
 use crate::model::{init_sqlite, BizActivity};
-use fast_log::sleep;
 use rbs::to_value;
 use std::time::Duration;
+use tokio::time::sleep;
 
 #[tokio::main]
 pub async fn main() {
@@ -17,7 +18,7 @@ pub async fn main() {
         .fetch_decode("select count(1) as count from biz_activity", vec![])
         .await
         .unwrap();
-    sleep(Duration::from_secs(1));
+    sleep(Duration::from_secs(1)).await;
     println!(">>>>> table={:?}", table);
     println!(">>>>> count={}", count);
 }
