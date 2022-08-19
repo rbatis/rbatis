@@ -6,7 +6,7 @@ use model::*;
 use rbatis::rbatis::Rbatis;
 use crate::{init_sqlite, BizActivity};
 
-/// doc you can see https://rbatis.github.io/rbatis.io/#/en/
+/// doc you can see https://rbatis.github.io/rbatis.io
 #[sql("select * from biz_activity where delete_flag = ?")]
 async fn raw_sql(rb: &Rbatis, delete_flag: &i32) -> Vec<BizActivity> {
     impled!()
