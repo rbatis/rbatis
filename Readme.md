@@ -66,7 +66,7 @@ It is an ORM, a small compiler, a dynamic SQL languages
 
 ### Supported database driver
 
-| database      | crates                                                | github_link                                                 |
+| database      | https://crates.io/                                    | github_link                                                 |
 |---------------|-------------------------------------------------------|-------------------------------------------------------------|
 | Mysql         | [rbdc-mysql](https://crates.io/crates/rbdc-mysql)     | [rbatis](https://github.com/rbatis/rbatis)                  |
 | Postgres      | [rbdc-pg](https://crates.io/crates/rbdc-pg)           | [rbatis](https://github.com/rbatis/rbatis)                  |
