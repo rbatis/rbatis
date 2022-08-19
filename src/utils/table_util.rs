@@ -118,12 +118,27 @@ macro_rules! make_table_field_map_btree {
 /// this is return &str data
 /// for example:
 /// let name=field_name!(BizActivity.id);
-/// rb.new_wrapper().eq(field_name!(BizActivity.id),"1")
 ///
 #[allow(unused_macros)]
 #[macro_export]
 macro_rules! field_name {
     ($t:ident.$field:ident) => {{
+        if false {
+            |a: $t| a.$field;
+        }
+        stringify!($field).trim_start_matches("r#")
+    }};
+}
+
+/// Used to simulate enumerations to improve code maintainability.
+/// this is return &str data
+/// for example:
+/// let name=field_key!(BizActivity::id);
+///
+#[allow(unused_macros)]
+#[macro_export]
+macro_rules! field_key {
+    ($t:ident::$field:ident) => {{
         if false {
             |a: $t| a.$field;
         }
