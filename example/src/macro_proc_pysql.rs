@@ -20,7 +20,7 @@ async fn py_ctx_id(rb: &Rbatis) -> Vec<BizActivity> {
                   if name != '':
                     ` and name=#{name}`"
 )]
-async fn py_select_page(rb: &mut dyn Executor, name: &str) -> Result<Vec<BizActivity>, Error> {
+async fn py_select(rb: &mut dyn Executor, name: &str) -> Result<Vec<BizActivity>, Error> {
     impled!()
 }
 
@@ -29,7 +29,7 @@ pub async fn main() {
     fast_log::init(fast_log::Config::new().console()).expect("rbatis init fail");
     //use static ref
     let rb = init_sqlite().await;
-    let a = py_select_page(&mut rb.clone(),  "test")
+    let a = py_select(&mut rb.clone(), "test")
         .await
         .unwrap();
     println!(">>>>>>>>>>>> {:?}", a);
