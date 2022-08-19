@@ -8,9 +8,9 @@ authors = ["ce <zhuxiujia@qq.com>"]
 license = "Apache-2.0"
 categories = ["database"]
 keywords = ["database", "orm", "mysql", "postgres", "sqlite"]
-documentation = "https://rbatis.github.io/rbatis.io/#/en/"
+documentation = "https://rbatis.github.io/rbatis.io"
 repository = "https://github.com/rbatis/rbatis"
-homepage = "https://rbatis.github.io/rbatis.io/#/en/"
+homepage = "https://rbatis.github.io/rbatis.io"
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 [dependencies]
 num-traits = "0.2"
