@@ -6,6 +6,7 @@ description = "Serialization framework for ORM"
 readme = "Readme.md"
 authors = ["ce <zhuxiujia@qq.com>"]
 license = "Apache-2.0"
+categories = ["database"]
 documentation = "https://rbatis.github.io/rbatis.io/#/en/"
 repository = "https://github.com/rbatis/rbatis"
 homepage = "https://rbatis.github.io/rbatis.io/#/en/"
