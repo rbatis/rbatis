@@ -727,11 +727,6 @@ impl Default for Value {
     }
 }
 
-///this is safe
-pub unsafe fn change_lifetime_const<'a, 'b, T: ?Sized>(x: &'a T) -> &'b T {
-    &*(x as *const T)
-}
-
 impl IntoIterator for Value {
     type Item = (Value, Value);
     type IntoIter = std::vec::IntoIter<(Value, Value)>;

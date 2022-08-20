@@ -1,6 +1,4 @@
 use std::fmt::Display;
-
-use crate::value::change_lifetime_const;
 use crate::value::map::ValueMap;
 use crate::Value;
 use serde::ser::{
@@ -41,7 +39,7 @@ impl Serialize for Value {
                 state.end()
             }
             Value::Ext(ref ty, ref value) => {
-                s.serialize_newtype_struct(unsafe { change_lifetime_const(ty) }, value)
+                s.serialize_newtype_struct(ty, value)
             }
         }
     }
