@@ -1,5 +1,4 @@
-[WebSite](https://rbatis.github.io/rbatis.io) | [WebSite-Chinese](https://rbatis.github.io/rbatis.io/) |
-[Showcase](WhoUse.md)
+[WebSite](https://rbatis.github.io/rbatis.io) | [Showcase](WhoUse.md)
 
 [![Build Status](https://github.com/rbatis/rbatis/workflows/Rust/badge.svg)](https://github.com/zhuxiujia/rbatis/actions)
 [![doc.rs](https://docs.rs/rbatis/badge.svg)](https://docs.rs/rbatis/)
