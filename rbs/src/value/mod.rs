@@ -10,6 +10,7 @@ use std::convert::TryFrom;
 use std::fmt::{self, Debug, Display};
 use std::iter::FromIterator;
 use std::ops::Deref;
+
 pub mod ext;
 pub mod map;
 
@@ -50,56 +51,6 @@ pub enum Value {
 }
 
 impl Value {
-    /// Converts the current owned Value to a ValueRef.
-    ///
-    /// # Panics
-    ///
-    /// Panics in unable to allocate memory to keep all internal structures and buffers.
-    ///
-    /// # Examples
-    /// ```
-    /// use rbs::{Value, ValueRef};
-    ///
-    /// let val = Value::Array(vec![
-    ///     Value::Null,
-    ///     Value::from(42),
-    ///     Value::Array(vec![
-    ///         Value::String("le message".into())
-    ///     ])
-    /// ]);
-    ///
-    /// let expected = ValueRef::Array(vec![
-    ///    ValueRef::Null,
-    ///    ValueRef::from(42),
-    ///    ValueRef::Array(vec![
-    ///        ValueRef::from("le message"),
-    ///    ])
-    /// ]);
-    ///
-    /// assert_eq!(expected, val.as_ref());
-    /// ```
-    pub fn as_ref(&self) -> ValueRef<'_> {
-        match *self {
-            Value::Null => ValueRef::Null,
-            Value::Bool(val) => ValueRef::Bool(val),
-            Value::I32(val) => ValueRef::I32(val),
-            Value::I64(val) => ValueRef::I64(val),
-            Value::U32(val) => ValueRef::U32(val),
-            Value::U64(val) => ValueRef::U64(val),
-            Value::F32(val) => ValueRef::F32(val),
-            Value::F64(val) => ValueRef::F64(val),
-            Value::String(ref val) => ValueRef::String(val),
-            Value::Binary(ref val) => ValueRef::Binary(val.as_slice()),
-            Value::Array(ref val) => ValueRef::Array(val.iter().map(|v| v.as_ref()).collect()),
-            Value::Map(ref val) => ValueRef::Map(
-                val.iter()
-                    .map(|&(ref k, ref v)| (k.as_ref(), v.as_ref()))
-                    .collect(),
-            ),
-            Value::Ext(ref ty, ref buf) => ValueRef::Ext(ty, Box::new((**buf).as_ref())),
-        }
-    }
-
     /// Returns true if the `Value` is a Null. Returns false otherwise.
     ///
     /// # Examples
@@ -467,8 +418,6 @@ impl Value {
     }
 }
 
-static NIL_REF: ValueRef<'static> = ValueRef::Null;
-
 impl From<bool> for Value {
     #[inline]
     fn from(v: bool) -> Self {
@@ -772,381 +721,9 @@ impl Display for Value {
     }
 }
 
-#[derive(Clone, Debug, PartialEq)]
-pub enum ValueRef<'a> {
-    /// Nil represents nil.
-    Null,
-    /// Bool represents true or false.
-    Bool(bool),
-    /// Integer represents an integer.
-    ///
-    /// A value of an `Integer` object is limited from `-(2^63)` upto `(2^64)-1`.
-    // Integer(Integer),
-    I32(i32),
-    I64(i64),
-    U32(u32),
-    U64(u64),
-    /// A 32-bit floating point number.
-    F32(f32),
-    /// A 64-bit floating point number.
-    F64(f64),
-    /// String extending Raw type represents a UTF-8 string.
-    String(&'a str),
-    /// Binary extending Raw type represents a byte array.
-    Binary(&'a [u8]),
-    /// Array represents a sequence of objects.
-    Array(Vec<Self>),
-    /// Map represents key-value pairs of objects.
-    Map(Vec<(Self, Self)>),
-    /// Extended implements Extension interface: represents a tuple of type information and a byte
-    /// array where type information is an integer whose meaning is defined by applications.
-    Ext(&'a str, Box<Self>),
-}
-
-impl<'a> ValueRef<'a> {
-    /// Converts the current non-owning value to an owned Value.
-    ///
-    /// This is achieved by deep copying all underlying structures and borrowed buffers.
-    ///
-    /// # Panics
-    ///
-    /// Panics in unable to allocate memory to keep all internal structures and buffers.
-    ///
-    /// # Examples
-    /// ```
-    /// use rbs::{Value, ValueRef};
-    ///
-    /// let val = ValueRef::Array(vec![
-    ///    ValueRef::Null,
-    ///    ValueRef::from(42),
-    ///    ValueRef::Array(vec![
-    ///        ValueRef::from("le message"),
-    ///    ])
-    /// ]);
-    ///
-    /// let expected = Value::Array(vec![
-    ///     Value::Null,
-    ///     Value::from(42),
-    ///     Value::Array(vec![
-    ///         Value::String("le message".into())
-    ///     ])
-    /// ]);
-    ///
-    /// assert_eq!(expected, val.to_owned());
-    /// ```
-    pub fn to_owned(&self) -> Value {
-        match *self {
-            ValueRef::Null => Value::Null,
-            ValueRef::Bool(val) => Value::Bool(val),
-            ValueRef::I32(val) => Value::I32(val),
-            ValueRef::I64(val) => Value::I64(val),
-            ValueRef::U32(val) => Value::U32(val),
-            ValueRef::U64(val) => Value::U64(val),
-            ValueRef::F32(val) => Value::F32(val),
-            ValueRef::F64(val) => Value::F64(val),
-            ValueRef::String(val) => Value::String(val.into()),
-            ValueRef::Binary(val) => Value::Binary(val.to_vec()),
-            ValueRef::Array(ref val) => Value::Array(val.iter().map(|v| v.to_owned()).collect()),
-            ValueRef::Map(ref val) => Value::Map(ValueMap(
-                val.iter()
-                    .map(|&(ref k, ref v)| (k.to_owned(), v.to_owned()))
-                    .collect(),
-            )),
-            ValueRef::Ext(ty, ref buf) => Value::Ext(
-                unsafe { change_lifetime_const(ty) },
-                Box::new((**buf).to_owned()),
-            ),
-        }
-    }
-
-    pub fn index(&self, index: usize) -> &ValueRef<'_> {
-        self.as_array()
-            .and_then(|v| v.get(index))
-            .unwrap_or(&NIL_REF)
-    }
-
-    /// If the `ValueRef` is an integer, return or cast it to a u64.
-    /// Returns None otherwise.
-    ///
-    pub fn as_u64(&self) -> Option<u64> {
-        match self {
-            ValueRef::U64(n) => Some(*n),
-            ValueRef::Ext(_, e) => e.as_u64(),
-            _ => None,
-        }
-    }
-
-    /// If the `ValueRef` is an Array, returns the associated vector.
-    /// Returns None otherwise.
-    ///
-    /// # Examples
-    ///
-    /// ```
-    /// use rbs::ValueRef;
-    ///
-    /// let val = ValueRef::Array(vec![ValueRef::Null, ValueRef::Bool(true)]);
-    ///
-    /// assert_eq!(Some(&vec![ValueRef::Null, ValueRef::Bool(true)]), val.as_array());
-    /// assert_eq!(None, ValueRef::Null.as_array());
-    /// ```
-    pub fn as_array(&self) -> Option<&Vec<ValueRef<'_>>> {
-        if let ValueRef::Array(ref array) = *self {
-            Some(&*array)
-        } else if let ValueRef::Ext(_, ref array) = *self {
-            array.as_array()
-        } else {
-            None
-        }
-    }
-
-    /// into_array ref
-    #[inline]
-    pub fn into_array(self) -> Option<Vec<ValueRef<'a>>> {
-        if let ValueRef::Array(array) = self {
-            Some(array)
-        } else if let ValueRef::Ext(_, ext) = self {
-            ext.into_array()
-        } else {
-            None
-        }
-    }
-
-    /// as_str
-    #[inline]
-    pub fn as_str(&self) -> Option<Cow<'_, str>> {
-        if let ValueRef::String(val) = self {
-            Some(Cow::Borrowed(val.as_ref()))
-        } else if let ValueRef::Ext(_, val) = self {
-            val.as_str()
-        } else {
-            None
-        }
-    }
-
-    /// same is nil
-    #[inline]
-    pub fn is_null(&self) -> bool {
-        if self.eq(&ValueRef::Null) {
-            true
-        } else {
-            false
-        }
-    }
-}
-
 impl Default for Value {
     fn default() -> Self {
         Value::Null
-    }
-}
-
-impl<'a> Default for ValueRef<'a> {
-    fn default() -> Self {
-        ValueRef::Null
-    }
-}
-
-impl<'a> From<u8> for ValueRef<'a> {
-    #[inline]
-    fn from(v: u8) -> Self {
-        ValueRef::U64(From::from(v))
-    }
-}
-
-impl<'a> From<u16> for ValueRef<'a> {
-    #[inline]
-    fn from(v: u16) -> Self {
-        ValueRef::U64(From::from(v))
-    }
-}
-
-impl<'a> From<u32> for ValueRef<'a> {
-    #[inline]
-    fn from(v: u32) -> Self {
-        ValueRef::U64(From::from(v))
-    }
-}
-
-impl<'a> From<u64> for ValueRef<'a> {
-    #[inline]
-    fn from(v: u64) -> Self {
-        ValueRef::U64(From::from(v))
-    }
-}
-
-impl<'a> From<usize> for ValueRef<'a> {
-    #[inline]
-    fn from(v: usize) -> Self {
-        ValueRef::U64(v as u64)
-    }
-}
-
-impl<'a> From<i8> for ValueRef<'a> {
-    #[inline]
-    fn from(v: i8) -> Self {
-        ValueRef::I64(From::from(v))
-    }
-}
-
-impl<'a> From<i16> for ValueRef<'a> {
-    #[inline]
-    fn from(v: i16) -> Self {
-        ValueRef::I64(From::from(v))
-    }
-}
-
-impl<'a> From<i32> for ValueRef<'a> {
-    #[inline]
-    fn from(v: i32) -> Self {
-        ValueRef::I64(From::from(v))
-    }
-}
-
-impl<'a> From<i64> for ValueRef<'a> {
-    #[inline]
-    fn from(v: i64) -> Self {
-        ValueRef::I64(From::from(v))
-    }
-}
-
-impl<'a> From<isize> for ValueRef<'a> {
-    #[inline]
-    fn from(v: isize) -> Self {
-        ValueRef::I64(v as i64)
-    }
-}
-
-impl<'a> From<f32> for ValueRef<'a> {
-    #[inline]
-    fn from(v: f32) -> Self {
-        ValueRef::F32(v)
-    }
-}
-
-impl<'a> From<f64> for ValueRef<'a> {
-    #[inline]
-    fn from(v: f64) -> Self {
-        ValueRef::F64(v)
-    }
-}
-
-impl<'a> From<&'a str> for ValueRef<'a> {
-    #[inline]
-    fn from(v: &'a str) -> Self {
-        ValueRef::String(v)
-    }
-}
-
-impl<'a> From<&'a [u8]> for ValueRef<'a> {
-    #[inline]
-    fn from(v: &'a [u8]) -> Self {
-        ValueRef::Binary(v)
-    }
-}
-
-impl<'a> From<Vec<ValueRef<'a>>> for ValueRef<'a> {
-    #[inline]
-    fn from(v: Vec<ValueRef<'a>>) -> Self {
-        ValueRef::Array(v)
-    }
-}
-
-/// Note that an `Iterator<Item = u8>` will be collected into an
-/// [`Array`](crate::Value::Array), rather than a
-/// [`Binary`](crate::Value::Binary)
-impl<'a, V> FromIterator<V> for ValueRef<'a>
-where
-    V: Into<ValueRef<'a>>,
-{
-    fn from_iter<I: IntoIterator<Item = V>>(iter: I) -> Self {
-        let v: Vec<ValueRef<'a>> = iter.into_iter().map(|v| v.into()).collect();
-        ValueRef::Array(v)
-    }
-}
-
-impl<'a> From<Vec<(ValueRef<'a>, ValueRef<'a>)>> for ValueRef<'a> {
-    fn from(v: Vec<(ValueRef<'a>, ValueRef<'a>)>) -> Self {
-        ValueRef::Map(v)
-    }
-}
-
-impl<'a> TryFrom<ValueRef<'a>> for u64 {
-    type Error = ValueRef<'a>;
-
-    fn try_from(val: ValueRef<'a>) -> Result<Self, Self::Error> {
-        match val {
-            ValueRef::U64(n) => Ok(n),
-            v => Err(v),
-        }
-    }
-}
-
-macro_rules! impl_try_from_ref {
-    ($t: ty, $p: ident) => {
-        impl<'a> TryFrom<ValueRef<'a>> for $t {
-            type Error = ValueRef<'a>;
-
-            fn try_from(val: ValueRef<'a>) -> Result<$t, Self::Error> {
-                match val {
-                    ValueRef::$p(v) => Ok(v),
-                    v => Err(v),
-                }
-            }
-        }
-    };
-}
-
-impl_try_from_ref!(bool, Bool);
-impl_try_from_ref!(Vec<ValueRef<'a>>, Array);
-impl_try_from_ref!(Vec<(ValueRef<'a>, ValueRef<'a>)>, Map);
-impl_try_from_ref!(&'a [u8], Binary);
-impl_try_from_ref!(f32, F32);
-// impl_try_from_ref!(Utf8StringRef<'a>, String);
-
-impl<'a> Display for ValueRef<'a> {
-    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> Result<(), fmt::Error> {
-        match *self {
-            ValueRef::Null => write!(f, "nil"),
-            ValueRef::Bool(val) => Display::fmt(&val, f),
-            ValueRef::I32(ref val) => Display::fmt(&val, f),
-            ValueRef::I64(ref val) => Display::fmt(&val, f),
-            ValueRef::U32(ref val) => Display::fmt(&val, f),
-            ValueRef::U64(ref val) => Display::fmt(&val, f),
-            ValueRef::F32(ref val) => Display::fmt(&val, f),
-            ValueRef::F64(ref val) => Display::fmt(&val, f),
-            ValueRef::String(ref val) => Display::fmt(&val, f),
-            ValueRef::Binary(ref val) => Debug::fmt(&val, f),
-            ValueRef::Array(ref vec) => {
-                let res = vec
-                    .iter()
-                    .map(|val| format!("{}", val))
-                    .collect::<Vec<String>>()
-                    .join(", ");
-
-                write!(f, "[{}]", res)
-            }
-            ValueRef::Map(ref vec) => {
-                write!(f, "{{")?;
-
-                match vec.iter().take(1).next() {
-                    Some(&(ref k, ref v)) => {
-                        write!(f, "{}: {}", k, v)?;
-                    }
-                    None => {
-                        write!(f, "")?;
-                    }
-                }
-
-                for &(ref k, ref v) in vec.iter().skip(1) {
-                    write!(f, ", {}: {}", k, v)?;
-                }
-
-                write!(f, "}}")
-            }
-            ValueRef::Ext(ty, ref data) => {
-                write!(f, "{}({})", ty, data.deref())
-            }
-        }
     }
 }
 
@@ -1180,10 +757,9 @@ impl IntoIterator for Value {
     }
 }
 
-
 impl<'a> IntoIterator for &'a Value {
-    type Item = (Cow<'a,Value>, &'a Value);
-    type IntoIter = std::vec::IntoIter<(Cow<'a,Value>, &'a Value)>;
+    type Item = (Cow<'a, Value>, &'a Value);
+    type IntoIter = std::vec::IntoIter<(Cow<'a, Value>, &'a Value)>;
 
     fn into_iter(self) -> Self::IntoIter {
         match self {
@@ -1219,16 +795,16 @@ mod test {
 
     #[test]
     fn test_iter() {
-        let v = Value::Array(vec![Value::I32(1),Value::I32(2),Value::I32(3)]);
+        let v = Value::Array(vec![Value::I32(1), Value::I32(2), Value::I32(3)]);
         for (k, v) in &v {
-            if Value::I32(1).eq(v){
-                assert_eq!(&Value::U32(0),k.as_ref());
+            if Value::I32(1).eq(v) {
+                assert_eq!(&Value::U32(0), k.as_ref());
             }
-            if Value::I32(2).eq(v){
-                assert_eq!(&Value::U32(1),k.as_ref());
+            if Value::I32(2).eq(v) {
+                assert_eq!(&Value::U32(1), k.as_ref());
             }
-            if Value::I32(3).eq(v){
-                assert_eq!(&Value::U32(2),k.as_ref());
+            if Value::I32(3).eq(v) {
+                assert_eq!(&Value::U32(2), k.as_ref());
             }
         }
     }
