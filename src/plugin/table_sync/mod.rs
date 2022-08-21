@@ -11,13 +11,13 @@ use serde::Serialize;
 use std::any::Any;
 use std::collections::HashMap;
 use std::ops::{Deref, DerefMut};
+use futures_core::future::BoxFuture;
 
 /// Note that it does not change the table structure.
 /// If the table does not exist, it is created
 /// If the table exists but a column is missing, increment the column of the missing section
-#[async_trait::async_trait]
 pub trait TableSync {
-    async fn sync(&self, rb: RBatisConnExecutor, table: Value, name: &str) -> Result<(), Error>;
+    fn sync(&self, rb: RBatisConnExecutor, table: Value, name: &str) -> BoxFuture<Result<(), Error>>;
 }
 
 pub struct RbatisTableSync {
