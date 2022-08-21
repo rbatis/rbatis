@@ -24,7 +24,6 @@ pub trait Executor: RbatisRef {
     async fn fetch(&mut self, sql: &str, args: Vec<Value>) -> Result<Value, Error>;
 }
 
-#[async_trait]
 pub trait RbatisRef: Send {
     fn get_rbatis(&self) -> &Rbatis;
 
