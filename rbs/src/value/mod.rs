@@ -21,24 +21,19 @@ pub enum Value {
     Null,
     /// Bool represents true or false.
     Bool(bool),
-    /// Integer(Integer),
+    /// Int32
     I32(i32),
+    /// Int64
     I64(i64),
+    /// Uint32
     U32(u32),
+    /// Uint64
     U64(u64),
-
     /// A 32-bit floating point number.
     F32(f32),
     /// A 64-bit floating point number.
     F64(f64),
     /// String extending Raw type represents a UTF-8 string.
-    ///
-    /// # Note
-    ///
-    /// String objects may contain invalid byte sequence and the behavior of a deserializer depends
-    /// on the actual implementation when it received invalid byte sequence. Deserializers should
-    /// provide functionality to get the original byte array so that applications can decide how to
-    /// handle the object
     String(String),
     /// Binary extending Raw type represents a byte array.
     Binary(Vec<u8>),
