@@ -111,15 +111,6 @@ impl IndexMut<i64> for ValueMap {
     }
 }
 
-// impl IntoIterator for ValueMap{
-//     type Item = (Value,Value);
-//     type IntoIter = IntoIter<(Value,Value)>;
-//
-//     fn into_iter(self) -> Self::IntoIter {
-//         self.0.into_iter()
-//     }
-// }
-
 impl<'a> IntoIterator for &'a ValueMap {
     type Item = &'a (Value, Value);
     type IntoIter = std::slice::Iter<'a, (Value, Value)>;
