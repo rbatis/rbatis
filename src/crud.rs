@@ -403,9 +403,14 @@ macro_rules! impl_select_page {
 
 
 /// impl html_sql select page.
+///
+/// you must deal with 3 param:
+/// (do_count:bool,page_no:u64,page_size:u64)
+///
 /// you must deal with sql:
 /// return Vec<Record>（if param do_count = false）
 /// return u64（if param do_count = true）
+///
 /// just like this exmaple:
 /// ```html
 /// <select id="select_page_data">
