@@ -364,6 +364,14 @@ macro_rules! impl_delete {
 }
 
 /// pysql impl_select_page
+///
+/// ```rust
+/// #[derive(Clone, Debug, serde::Serialize, serde::Deserialize)]
+/// pub struct BizActivity{}
+/// rbatis::impl_select_page!(BizActivity{select_page() =>"
+///      if !sql.contains('count'):
+///        `order by create_time desc`"});
+/// ```
 #[macro_export]
 macro_rules! impl_select_page {
     ($table:ty{$fn_name:ident($($param_key:ident:$param_type:ty$(,)?)*) => $where_sql:expr}) => {
