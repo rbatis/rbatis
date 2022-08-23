@@ -2,13 +2,19 @@ use crate::io::MySqlBufMutExt;
 use crate::types::{Decode, Encode};
 use crate::value::MySqlValue;
 use rbdc::Error;
-use std::fmt::{Display, Formatter};
+use std::fmt::{Debug, Display, Formatter};
 
-#[derive(serde::Serialize, serde::Deserialize, Debug, Clone, Eq, PartialEq)]
+#[derive(serde::Serialize, serde::Deserialize, Clone, Eq, PartialEq)]
 #[serde(rename = "Enum")]
 pub struct Enum(pub String);
 
 impl Display for Enum {
+    fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
+        write!(f, "Enum({})", self.0)
+    }
+}
+
+impl Debug for Enum{
     fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
         write!(f, "Enum({})", self.0)
     }
