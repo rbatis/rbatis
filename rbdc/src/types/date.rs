@@ -1,13 +1,19 @@
 use rbs::Value;
-use std::fmt::{Display, Formatter};
+use std::fmt::{Debug, Display, Formatter};
 use std::str::FromStr;
 use crate::Error;
 
-#[derive(serde::Serialize, serde::Deserialize, Debug, Clone, Eq, PartialEq, Hash)]
+#[derive(serde::Serialize, serde::Deserialize, Clone, Eq, PartialEq, Hash)]
 #[serde(rename = "Date")]
 pub struct Date(pub fastdate::Date);
 
 impl Display for Date {
+    fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
+        write!(f, "Date({})", self.0)
+    }
+}
+
+impl Debug for Date{
     fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
         write!(f, "Date({})", self.0)
     }

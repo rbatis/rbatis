@@ -1,12 +1,12 @@
 use rbs::Value;
 use serde::de::Error;
 use serde::{Deserialize, Deserializer, Serialize, Serializer};
-use std::fmt::{Display, Formatter};
+use std::fmt::{Debug, Display, Formatter};
 use std::ops::{Add, Deref, DerefMut, Sub};
 use std::str::FromStr;
 use std::time::Duration;
 
-#[derive(Debug, Clone, Eq, PartialEq, Hash)]
+#[derive(Clone, Eq, PartialEq, Hash)]
 pub struct FastDateTime(pub fastdate::DateTime);
 
 impl Display for FastDateTime {
@@ -21,6 +21,12 @@ impl Serialize for FastDateTime {
             S: Serializer,
     {
         serializer.serialize_newtype_struct("DateTime", &self.0)
+    }
+}
+
+impl Debug for FastDateTime{
+    fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
+        write!(f, "DateTime({})", self.0)
     }
 }
 
