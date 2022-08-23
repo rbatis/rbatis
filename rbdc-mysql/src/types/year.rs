@@ -2,13 +2,19 @@ use crate::types::{Decode, Encode};
 use crate::value::{MySqlValue, MySqlValueFormat};
 use byteorder::{ByteOrder, LittleEndian};
 use rbdc::Error;
-use std::fmt::{Display, Formatter};
+use std::fmt::{Debug, Display, Formatter};
 
-#[derive(serde::Serialize, serde::Deserialize, Debug, Clone, Eq, PartialEq)]
+#[derive(serde::Serialize, serde::Deserialize, Clone, Eq, PartialEq)]
 #[serde(rename = "Year")]
 pub struct Year(pub u16);
 
 impl Display for Year {
+    fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
+        write!(f, "Year({})", self.0)
+    }
+}
+
+impl Debug for Year{
     fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
         write!(f, "Year({})", self.0)
     }

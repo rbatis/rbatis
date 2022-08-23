@@ -2,13 +2,19 @@ use crate::io::MySqlBufMutExt;
 use crate::types::{Decode, Encode};
 use crate::value::MySqlValue;
 use rbdc::Error;
-use std::fmt::{Display, Formatter};
+use std::fmt::{Debug, Display, Formatter};
 
-#[derive(serde::Serialize, serde::Deserialize, Debug, Clone, Eq, PartialEq)]
+#[derive(serde::Serialize, serde::Deserialize, Clone, Eq, PartialEq)]
 #[serde(rename = "Set")]
 pub struct Set(pub String);
 
 impl Display for Set {
+    fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
+        write!(f, "Set({})", self.0)
+    }
+}
+
+impl Debug for Set{
     fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
         write!(f, "Set({})", self.0)
     }

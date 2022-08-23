@@ -2,15 +2,21 @@ use crate::io::MySqlBufMutExt;
 use crate::types::{Decode, Encode};
 use crate::value::MySqlValue;
 use rbdc::Error;
-use std::fmt::{Display, Formatter};
+use std::fmt::{Debug, Display, Formatter};
 
-#[derive(serde::Serialize, serde::Deserialize, Debug, Clone, Eq, PartialEq)]
+#[derive(serde::Serialize, serde::Deserialize, Clone, Eq, PartialEq)]
 #[serde(rename = "Geometry")]
 pub struct Geometry(pub Vec<u8>);
 
 impl Display for Geometry {
     fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
         write!(f, "Geometry({})", hex::encode(&self.0))
+    }
+}
+
+impl Debug for Geometry{
+    fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
+        write!(f, "Geometry({:?})", self.0)
     }
 }
 
