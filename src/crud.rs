@@ -426,10 +426,10 @@ macro_rules! impl_select_page {
 /// <select id="select_page_data">
 ///         `select `
 ///         <if test="do_count == true">
-///             `count(1)`
+///             `count(1) from table`
 ///         </if>
 ///         <if test="do_count == false">
-///             `*`
+///             `* from table limit ${page_no},${page_size}`
 ///         </if>
 ///   </select>
 /// ```
