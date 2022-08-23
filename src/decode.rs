@@ -26,17 +26,11 @@ where
         }
         _ => {}
     }
-    // Hit a non-array object
+    // decode single type option
+    if type_name.starts_with("core::option::Option<"){
+        return Ok(try_decode_map(type_name, &mut datas)?);
+    }
     match type_name {
-        //decode single type option
-        "core::option::Option<i8>" | "core::option::Option<i16>" | "core::option::Option<i32>" | "core::option::Option<i64>" |
-        "core::option::Option<u8>" | "core::option::Option<u16>" | "core::option::Option<u32>" | "core::option::Option<u64>" |
-        "core::option::Option<f32>" | "core::option::Option<f64>" |
-        "core::option::Option<serde_json::number::Number>" |
-        "core::option::Option<rbs::Value::I64>" | "core::option::Option<rbs::Value::I32>" | "core::option::Option<rbs::Value::F64>" | "core::option::Option<rbs::Value::F32>" |
-        "core::option::Option<bigdecimal::BigDecimal>" |
-        "core::option::Option<bool>" |
-        "core::option::Option<alloc::string::String>" |
         //decode single type(from map type get an value)
         "i8" | "i16" | "i32" | "i64" |
         "u8" | "u16" | "u32" | "u64" |
