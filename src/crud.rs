@@ -430,7 +430,7 @@ macro_rules! htmlsql_select_page {
     ($table:ty{$fn_name:ident($($param_key:ident:$param_type:ty$(,)?)*)=> $html_file:expr}) => {
         impl $table{
             pub async fn $fn_name(rb: &mut dyn $crate::executor::Executor, page_req: &$crate::sql::PageRequest, $($param_key:$param_type,)*) -> Result<$crate::sql::Page<$table>, $crate::rbdc::Error> {
-            let mut total:u64 = 0;
+            let mut total = 0;
             {
               #[html_sql($html_file)]
               pub async fn $fn_name(rb: &mut dyn $crate::executor::Executor,do_count:bool,page_no:u64,page_size:u64,$($param_key:$param_type,)*) -> Result<u64, $crate::rbdc::Error>{
