@@ -122,8 +122,11 @@ impl Decode for Value {
             PgType::Bytea => Bytea::decode(arg)?.into(),
             PgType::Char => Value::String(Decode::decode(arg)?),
             PgType::Name => Value::String(Decode::decode(arg)?),
-            PgType::Int8 => Value::I32(Decode::decode(arg)?),
-            PgType::Int2 => Value::I32(Decode::decode(arg)?),
+            PgType::Int8 => Value::I64(Decode::decode(arg)?),
+            PgType::Int2 => Value::I32({
+                let i16:i16 = Decode::decode(arg)?;
+                i16 as i32
+            }),
             PgType::Int4 => Value::I32(Decode::decode(arg)?),
             PgType::Text => Value::String(Decode::decode(arg)?),
             PgType::Oid => Value::Ext("Oid", Box::new(Value::U32(Decode::decode(arg)?))),
