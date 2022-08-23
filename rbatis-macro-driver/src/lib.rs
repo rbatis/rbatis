@@ -2,7 +2,6 @@
 extern crate proc_macro;
 extern crate rbatis_codegen;
 
-use rust_format::{Formatter, RustFmt};
 use syn::{parse_macro_input, AttributeArgs, ItemFn};
 
 use crate::macros::html_sql_impl::impl_macro_html_sql;
@@ -81,6 +80,7 @@ pub fn py_sql(args: TokenStream, func: TokenStream) -> TokenStream {
     let stream = impl_macro_py_sql(&target_fn, &args);
     #[cfg(feature = "debug_mode")]
     {
+        use rust_format::{Formatter, RustFmt};
         let code = RustFmt::default().format_str(stream.to_string().replace("$crate","rbatis")).unwrap();
         println!(
             "............gen macro py_sql :\n {}",
@@ -110,6 +110,7 @@ pub fn html_sql(args: TokenStream, func: TokenStream) -> TokenStream {
     let stream = impl_macro_html_sql(&target_fn, &args);
     #[cfg(feature = "debug_mode")]
     {
+        use rust_format::{Formatter, RustFmt};
         let code = RustFmt::default().format_str(stream.to_string().replace("$crate","rbatis")).unwrap();
         println!("............gen macro html_sql :\n {}", code);
         println!("............gen macro html_sql end............");
