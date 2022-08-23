@@ -8,7 +8,6 @@ use rbatis::executor::Executor;
 use rbatis::Error;
 use crate::{init_sqlite, BizActivity};
 
-///select page must have  '?:&PageRequest' arg and return 'Page<?>'
 #[py_sql(
     "`select * from biz_activity where delete_flag = 0`
                   if name != '':
