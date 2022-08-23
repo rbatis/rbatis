@@ -21,7 +21,7 @@ use std::io::Read;
 
 ///select page must have  '?:&PageRequest' arg and return 'Page<?>'
 #[html_sql("example/example.html")]
-async fn select_by_condition(rb: &mut dyn Executor, name: &str, dt: &FastDateTime) -> Vec<BizActivity> {
+async fn select_by_condition(rb: &mut dyn Executor, name: &str, dt: &FastDateTime) -> rbatis::Result<Vec<BizActivity>> {
     impled!()
 }
 

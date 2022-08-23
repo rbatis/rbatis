@@ -8,7 +8,7 @@ use crate::{init_sqlite, BizActivity};
 
 /// doc you can see https://rbatis.github.io/rbatis.io
 #[sql("select * from biz_activity where delete_flag = ?")]
-async fn raw_sql(rb: &Rbatis, delete_flag: &i32) -> Vec<BizActivity> {
+async fn raw_sql(rb: &Rbatis, delete_flag: &i32) -> rbatis::Result<Vec<BizActivity>> {
     impled!()
 }
 
