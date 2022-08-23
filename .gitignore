@@ -27,4 +27,7 @@ Cargo.lock
 #log
 *.log
 
+#mac
+*.DS_Store
+
 
