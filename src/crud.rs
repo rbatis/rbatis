@@ -425,10 +425,14 @@ macro_rules! impl_select_page {
 ///         </if>
 ///   </select>
 /// ```
+/// ```
+/// #[derive(Clone, Debug, serde::Serialize, serde::Deserialize)]
+/// pub struct BizActivity{}
+/// rbatis::htmlsql_select_page!(select_page_data(name: &str) -> BizActivity => "example/example.html");
+/// ```
 #[macro_export]
 macro_rules! htmlsql_select_page {
-    ($table:ty{$fn_name:ident($($param_key:ident:$param_type:ty$(,)?)*)=> $html_file:expr}) => {
-        impl $table{
+    ($fn_name:ident($($param_key:ident:$param_type:ty$(,)?)*) -> $table:ty => $html_file:expr) => {
             pub async fn $fn_name(rb: &mut dyn $crate::executor::Executor, page_req: &$crate::sql::PageRequest, $($param_key:$param_type,)*) -> Result<$crate::sql::Page<$table>, $crate::rbdc::Error> {
             let mut total = 0;
             {
@@ -448,6 +452,5 @@ macro_rules! htmlsql_select_page {
             page.records = records;
             Ok(page)
          }
-       }
     }
 }
