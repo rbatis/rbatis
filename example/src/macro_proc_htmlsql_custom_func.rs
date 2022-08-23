@@ -40,7 +40,7 @@ impl IsTest for rbs::Value {
 ///  </if>
 /// ```
 #[html_sql("example/example.html")]
-async fn custom_func(rb: &mut dyn Executor, name: &str) -> Vec<BizActivity> {
+async fn custom_func(rb: &mut dyn Executor, name: &str) -> rbatis::Result<Vec<BizActivity>> {
     impled!()
 }
 
