@@ -17,7 +17,7 @@ use rbatis::rbatis::Rbatis;
 use rbatis::rbdc::datetime::FastDateTime;
 use rbatis::sql::PageRequest;
 
-impl_html_sql_select_page!(BizActivity{select_page_data(name: &str, dt: &FastDateTime) => "example/example.html"});
+htmlsql_select_page!(BizActivity{select_page_data(name: &str, dt: &FastDateTime) => "example/example.html"});
 
 #[tokio::main]
 pub async fn main() {

@@ -419,7 +419,7 @@ macro_rules! impl_select_page {
 ///   </select>
 /// ```
 #[macro_export]
-macro_rules! impl_html_sql_select_page {
+macro_rules! htmlsql_select_page {
     ($table:ty{$fn_name:ident($($param_key:ident:$param_type:ty$(,)?)*)=> $html_file:expr}) => {
         impl $table{
             pub async fn $fn_name(rb: &mut dyn $crate::executor::Executor, page_req: &$crate::sql::PageRequest, $($param_key:$param_type,)*) -> rbatis::Result<$crate::sql::Page<$table>> {
