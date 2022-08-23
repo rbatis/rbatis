@@ -5,6 +5,7 @@
 #![allow(unused_assignments)]
 #![allow(unused_must_use)]
 #![allow(dead_code)]
+#![allow(private_in_public)]
 
 #[macro_use]
 extern crate rbatis;
@@ -23,7 +24,7 @@ mod test {
     use std::any::Any;
 
     #[derive(Debug, Clone)]
-    pub struct MockDriver {}
+    struct MockDriver {}
 
     impl Driver for MockDriver {
         fn name(&self) -> &str {
@@ -47,7 +48,7 @@ mod test {
     }
 
     #[derive(Clone, Debug)]
-    pub struct MockRowMetaData {
+    struct MockRowMetaData {
         sql: String,
     }
 
@@ -78,7 +79,7 @@ mod test {
     }
 
     #[derive(Clone, Debug)]
-    pub struct MockRow {
+    struct MockRow {
         pub sql: String,
         pub count: u64,
     }
@@ -104,7 +105,7 @@ mod test {
     }
 
     #[derive(Clone, Debug)]
-    pub struct MockConnection {}
+    struct MockConnection {}
 
     impl Connection for MockConnection {
         fn get_rows(
@@ -139,7 +140,7 @@ mod test {
     }
 
     #[derive(Clone, Debug)]
-    pub struct MockConnectOptions {}
+    struct MockConnectOptions {}
 
     impl ConnectOptions for MockConnectOptions {
         fn connect(&self) -> BoxFuture<Result<Box<dyn Connection>, Error>> {
