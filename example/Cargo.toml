@@ -34,6 +34,9 @@ path = "src/transaction.rs"
 [[bin]]
 name = "raw_sql"
 path = "src/raw_sql.rs"
+[[bin]]
+name = "macro_proc_htmlsql_page"
+path = "src/macro_proc_htmlsql_page.rs"
 [dependencies]
 #serde and base types
 serde = { version = "1", features = ["derive"] }

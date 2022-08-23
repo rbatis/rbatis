@@ -45,7 +45,7 @@ pub(crate) fn find_fn_body(target_fn: &ItemFn) -> proc_macro2::TokenStream {
             .to_string()
             .replace("\n", "")
             .replace(" ", "");
-        if token.eq("todo!()") || token.eq("unimplemented!()") || token.eq("impled!()") {
+        if token.eq("todo!()") || token.eq("unimplemented!()") || token.contains("impled!()") {
             //nothing to do
         } else {
             new_stmts.push(x.to_owned());

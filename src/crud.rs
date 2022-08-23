@@ -400,3 +400,48 @@ macro_rules! impl_select_page {
         }
     };
 }
+
+
+/// impl html_sql select page.
+/// you must deal with sql:
+/// return Vec<Record>（if param do_count = false）
+/// return u64（if param do_count = true）
+/// just like this exmaple:
+/// ```html
+/// <select id="select_page_data">
+///         `select `
+///         <if test="do_count == true">
+///             `count(1)`
+///         </if>
+///         <if test="do_count == false">
+///             `*`
+///         </if>
+///   </select>
+/// ```
+#[macro_export]
+macro_rules! impl_html_sql_select_page {
+    ($table:ty{$fn_name:ident($($param_key:ident:$param_type:ty$(,)?)*)=> $html_file:expr}) => {
+        impl $table{
+            pub async fn $fn_name(rb: &mut dyn $crate::executor::Executor, page_req: &$crate::sql::PageRequest, $($param_key:$param_type,)*) -> rbatis::Result<$crate::sql::Page<$table>> {
+            let mut total:u64 = 0;
+            {
+              #[html_sql($html_file)]
+              pub async fn $fn_name(rb: &mut dyn $crate::executor::Executor,do_count:bool,page_no:u64,page_size:u64,$($param_key:$param_type,)*) -> rbatis::Result<u64>{
+                 println!("do_count:={}",do_count);
+                 $crate::impled!()
+              }
+              total = $fn_name(rb, true, page_req.page_no, page_req.page_size, $($param_key,)*).await?;
+            }
+
+            #[html_sql($html_file)]
+            pub async fn $fn_name(rb: &mut dyn $crate::executor::Executor,do_count:bool,page_no:u64,page_size:u64,$($param_key:$param_type,)*) -> rbatis::Result<Vec<$table>>{
+                $crate::impled!()
+            }
+            let records = $fn_name(rb, false, page_req.page_no, page_req.page_size, $($param_key,)*).await?;
+            let mut page = $crate::sql::Page::<$table>::new_total(page_req.page_no, page_req.page_size, total);
+            page.records = records;
+            Ok(page)
+         }
+       }
+    }
+}
