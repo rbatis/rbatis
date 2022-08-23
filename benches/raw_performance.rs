@@ -5,6 +5,7 @@
 #![allow(unused_assignments)]
 #![allow(unused_must_use)]
 #![allow(dead_code)]
+#![allow(private_in_public)]
 
 #![feature(test)]
 #![feature(bench_black_box)]
@@ -80,7 +81,7 @@ fn bench_insert() {
 }
 
 #[derive(Debug, Clone)]
-pub struct MockDriver {}
+struct MockDriver {}
 
 impl Driver for MockDriver {
     fn name(&self) -> &str {
@@ -104,7 +105,7 @@ impl Driver for MockDriver {
 }
 
 #[derive(Clone, Debug)]
-pub struct MockConnection {}
+struct MockConnection {}
 
 impl Connection for MockConnection {
     fn get_rows(
@@ -134,7 +135,7 @@ impl Connection for MockConnection {
 }
 
 #[derive(Clone, Debug)]
-pub struct MockConnectOptions {}
+struct MockConnectOptions {}
 
 impl ConnectOptions for MockConnectOptions {
     fn connect(&self) -> BoxFuture<Result<Box<dyn Connection>, Error>> {
