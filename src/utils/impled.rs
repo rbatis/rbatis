@@ -1,6 +1,6 @@
 /// html_sql/py_sql impled
 #[macro_export]
-macro_rules! implied {
+macro_rules! impled {
     () => {
         unimplemented!()
     };

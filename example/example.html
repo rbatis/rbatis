@@ -43,4 +43,34 @@
             </if>
         </where>
     </select>
+
+
+    <select id="select_page_data">
+        `select `
+        <if test="do_count == true">
+            `count(1)`
+        </if>
+        <if test="do_count == false">
+            `*`
+        </if>
+        ` from biz_activity`
+        <where>
+            <if test="name != ''">
+                ` and name like #{name}`
+            </if>
+            <if test="dt >= '2009-12-12 00:00:00'">
+                ` and create_time < #{dt}`
+            </if>
+            <choose>
+                <when test="true">
+                    ` and id != '-1'`
+                </when>
+                <otherwise>and id != -2</otherwise>
+            </choose>
+            ` and `
+            <trim prefixOverrides=" and">
+                ` and name != '' `
+            </trim>
+        </where>
+    </select>
 </mapper>
