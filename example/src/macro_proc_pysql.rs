@@ -6,13 +6,7 @@ pub mod model;
 use model::*;
 use rbatis::executor::Executor;
 use rbatis::Error;
-use rbatis::rbatis::Rbatis;
 use crate::{init_sqlite, BizActivity};
-
-#[py_sql("select * from biz_activity where delete_flag = 0")]
-async fn py_ctx_id(rb: &Rbatis) -> Vec<BizActivity> {
-    impled!()
-}
 
 ///select page must have  '?:&PageRequest' arg and return 'Page<?>'
 #[py_sql(
