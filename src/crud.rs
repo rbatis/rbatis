@@ -432,14 +432,14 @@ macro_rules! htmlsql_select_page {
             pub async fn $fn_name(rb: &mut dyn $crate::executor::Executor, page_req: &$crate::sql::PageRequest, $($param_key:$param_type,)*) -> Result<$crate::sql::Page<$table>, $crate::rbdc::Error> {
             let mut total = 0;
             {
-              #[html_sql($html_file)]
+              #[$crate::html_sql($html_file)]
               pub async fn $fn_name(rb: &mut dyn $crate::executor::Executor,do_count:bool,page_no:u64,page_size:u64,$($param_key:$param_type,)*) -> Result<u64, $crate::rbdc::Error>{
                  $crate::impled!()
               }
               total = $fn_name(rb, true, page_req.page_no, page_req.page_size, $($param_key,)*).await?;
             }
 
-            #[html_sql($html_file)]
+            #[$crate::html_sql($html_file)]
             pub async fn $fn_name(rb: &mut dyn $crate::executor::Executor,do_count:bool,page_no:u64,page_size:u64,$($param_key:$param_type,)*) -> Result<Vec<$table>, $crate::rbdc::Error>{
                 $crate::impled!()
             }
