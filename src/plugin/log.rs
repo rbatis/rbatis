@@ -20,6 +20,9 @@ pub trait LogPlugin: Send + Sync + Debug {
         return !self.get_level_filter().eq(&LevelFilter::Off);
     }
     fn do_log(&self, level: LevelFilter, data: &str) {
+        if self.get_level_filter().eq(&LevelFilter::Off){
+            return;
+        }
         let level = self.get_level({
             match level {
                 LevelFilter::Off => {
