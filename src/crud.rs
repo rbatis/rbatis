@@ -376,21 +376,20 @@ macro_rules! impl_select_page {
                 $($param_key:$param_type,)*
             ) -> Result<$crate::sql::Page::<$table>, $crate::rbdc::Error> {
                 use $crate::sql::IPageRequest;
-                #[$crate::py_sql("`select count(1) as count from ${table_name} `",$where_sql)]
-                async fn $fn_name(rb: &mut dyn $crate::executor::Executor,table_name: &str,$($param_key:$param_type,)*) -> Result<u64, $crate::rbdc::Error> {impled!()}
                 let table_name = $table_name.to_string();
-                let total:u64=$fn_name(rb, &table_name, $($param_key,)*).await?;
-                let records:Vec<$table>;
-                if $where_sql.contains("page_no") && $where_sql.contains("page_size"){
-                    #[$crate::py_sql("`select * from ${table_name} `",$where_sql)]
-                    async fn $fn_name(rb: &mut dyn $crate::executor::Executor,table_name: &str,page_no:u64,page_size:u64,$($param_key:$param_type,)*) -> Result<Vec<$table>, $crate::rbdc::Error> {impled!()}
-                    records = $fn_name(rb,&table_name,page_req.offset(), page_req.page_size,$($param_key,)*).await?;
-                }else{
-                    #[$crate::py_sql("`select * from ${table_name} `",$where_sql,"
-                              ` limit ${page_no},${page_size}`")]
-                    async fn $fn_name(rb: &mut dyn $crate::executor::Executor,table_name: &str,page_no:u64,page_size:u64,$($param_key:$param_type,)*) -> Result<Vec<$table>, $crate::rbdc::Error> {impled!()}
-                    records = $fn_name(rb,&table_name,page_req.offset(), page_req.page_size,$($param_key,)*).await?;
+                let mut total = 0;
+                {
+                   #[$crate::py_sql("`select count(1) as count from ${table_name} `",$where_sql)]
+                   async fn $fn_name(rb: &mut dyn $crate::executor::Executor,table_name: &str,$($param_key:$param_type,)*) -> Result<u64, $crate::rbdc::Error> {impled!()}
+                   total = $fn_name(rb, &table_name, $($param_key,)*).await?;
                 }
+                let records:Vec<$table>;
+                #[$crate::py_sql("`select * from ${table_name} `",$where_sql,"
+                              if sql.contains('page_no') && sql.contains('page_size'):
+                                ` limit ${page_no},${page_size}`")]
+                async fn $fn_name(rb: &mut dyn $crate::executor::Executor,table_name: &str,page_no:u64,page_size:u64,$($param_key:$param_type,)*) -> Result<Vec<$table>, $crate::rbdc::Error> {impled!()}
+                records = $fn_name(rb,&table_name,page_req.offset(), page_req.page_size,$($param_key,)*).await?;
+
                 let mut page = $crate::sql::Page::<$table>::new_total(page_req.page_no, page_req.page_size, total);
                 page.records = records;
                 Ok(page)
