@@ -114,8 +114,6 @@ rbdc-sqlite = { version = "0.1" }
 #[macro_use]
 extern crate rbatis;
 extern crate rbdc;
-
-use rbatis::{impl_insert, impl_insert, impl_update, impl_delete, impl_select_page};
 use rbatis::rbdc::datetime::FastDateTime;
 
 #[derive(Clone, Debug, Serialize, Deserialize)]
