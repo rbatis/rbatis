@@ -430,13 +430,14 @@ macro_rules! impl_select_page {
 macro_rules! htmlsql_select_page {
     ($fn_name:ident($($param_key:ident:$param_type:ty$(,)?)*) -> $table:ty => $html_file:expr) => {
             pub async fn $fn_name(rb: &mut dyn $crate::executor::Executor, page_req: &$crate::sql::PageRequest, $($param_key:$param_type,)*) -> Result<$crate::sql::Page<$table>, $crate::rbdc::Error> {
+            use $crate::sql::IPageRequest;
             let mut total = 0;
             {
               #[$crate::html_sql($html_file)]
               pub async fn $fn_name(rb: &mut dyn $crate::executor::Executor,do_count:bool,page_no:u64,page_size:u64,$($param_key:$param_type,)*) -> Result<u64, $crate::rbdc::Error>{
                  $crate::impled!()
               }
-              total = $fn_name(rb, true, page_req.page_no, page_req.page_size, $($param_key,)*).await?;
+              total = $fn_name(rb, true, page_req.offset(), page_req.page_size, $($param_key,)*).await?;
             }
 
             #[$crate::html_sql($html_file)]
@@ -444,7 +445,7 @@ macro_rules! htmlsql_select_page {
                 $crate::impled!()
             }
             let records = $fn_name(rb, false, page_req.page_no, page_req.page_size, $($param_key,)*).await?;
-            let mut page = $crate::sql::Page::<$table>::new_total(page_req.page_no, page_req.page_size, total);
+            let mut page = $crate::sql::Page::<$table>::new_total(page_req.offset(), page_req.page_size, total);
             page.records = records;
             Ok(page)
          }

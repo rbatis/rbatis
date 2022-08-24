@@ -71,6 +71,9 @@
             <trim prefixOverrides=" and">
                 ` and name != '' `
             </trim>
+            <if test="do_count == false">
+                ` limit ${page_no},${page_size}`
+            </if>
         </where>
     </select>
 </mapper>
