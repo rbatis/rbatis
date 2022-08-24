@@ -444,7 +444,7 @@ macro_rules! htmlsql_select_page {
             pub async fn $fn_name(rb: &mut dyn $crate::executor::Executor,do_count:bool,page_no:u64,page_size:u64,$($param_key:$param_type,)*) -> Result<Vec<$table>, $crate::rbdc::Error>{
                 $crate::impled!()
             }
-            let records = $fn_name(rb, false, page_req.page_no, page_req.page_size, $($param_key,)*).await?;
+            let records = $fn_name(rb, false, page_req.offset(), page_req.page_size, $($param_key,)*).await?;
             let mut page = $crate::sql::Page::<$table>::new_total(page_req.offset(), page_req.page_size, total);
             page.records = records;
             Ok(page)
