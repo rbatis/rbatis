@@ -1,6 +1,6 @@
 use std::collections::HashMap;
 use std::ops::Deref;
-use log::{debug, error, info, trace, warn, LevelFilter};
+use log::{debug, error, info, trace, warn, LevelFilter, Level};
 use std::fmt::{Debug, Display, Formatter};
 use std::sync::atomic::{AtomicI8, Ordering};
 
@@ -11,34 +11,53 @@ pub trait LogPlugin: Send + Sync + Debug {
         std::any::type_name::<Self>()
     }
     fn get_level_filter(&self) -> LevelFilter;
+    /// filter rbatis log level
     fn set_level_filter(&self, level: LevelFilter);
-    fn get_level(&self, level: LevelFilter) -> LevelFilter;
-    fn set_level(&self, from: LevelFilter, to: LevelFilter);
+    fn get_level(&self, level: Level) -> Level;
+    /// change rbatis level print
+    fn set_level(&self, from: Level, to: Level);
     fn is_enable(&self) -> bool {
         return !self.get_level_filter().eq(&LevelFilter::Off);
     }
     fn do_log(&self, level: LevelFilter, data: &str) {
-        if self.get_level_filter() < level {
-            return;
-        }
-        let level = self.get_level(level);
+        let level = self.get_level({
+            match level {
+                LevelFilter::Off => {
+                    return;
+                }
+                LevelFilter::Error => {
+                    Level::Error
+                }
+                LevelFilter::Warn => {
+                    Level::Warn
+                }
+                LevelFilter::Info => {
+                    Level::Info
+                }
+                LevelFilter::Debug => {
+                    Level::Debug
+                }
+                LevelFilter::Trace => {
+                    Level::Trace
+                }
+            }
+        });
         match level {
-            LevelFilter::Error => {
+            Level::Error => {
                 error!("{}", data)
             }
-            LevelFilter::Warn => {
+            Level::Warn => {
                 warn!("{}", data)
             }
-            LevelFilter::Info => {
+            Level::Info => {
                 info!("{}", data)
             }
-            LevelFilter::Debug => {
+            Level::Debug => {
                 debug!("{}", data)
             }
-            LevelFilter::Trace => {
+            Level::Trace => {
                 trace!("{}", data)
             }
-            LevelFilter::Off => {}
         }
     }
 }
@@ -68,88 +87,87 @@ impl Default for RbatisLogPlugin {
     }
 }
 
-impl RbatisLogPlugin{
-    fn i8_to_level(level:i8) -> LevelFilter{
-        match level{
-            0=>LevelFilter::Off,
-            1=>LevelFilter::Error,
-            2=>LevelFilter::Warn,
-            3=>LevelFilter::Info,
-            4=>LevelFilter::Debug,
-            5=>LevelFilter::Trace,
+impl RbatisLogPlugin {
+    fn i8_to_level(level: i8) -> Level {
+        match level {
+            1 => Level::Error,
+            2 => Level::Warn,
+            3 => Level::Info,
+            4 => Level::Debug,
+            5 => Level::Trace,
+            _ => {
+                panic!("unknown level:{}", level)
+            }
+        }
+    }
+    fn i8_to_level_filter(level: i8) -> LevelFilter {
+        match level {
+            0 => LevelFilter::Off,
+            1 => LevelFilter::Error,
+            2 => LevelFilter::Warn,
+            3 => LevelFilter::Info,
+            4 => LevelFilter::Debug,
+            5 => LevelFilter::Trace,
             _ => LevelFilter::Off
+        }
+    }
+    fn level_filter_to_i8(to: LevelFilter) -> i8 {
+        match to {
+            LevelFilter::Off => 0,
+            LevelFilter::Error => 1,
+            LevelFilter::Warn => 2,
+            LevelFilter::Info => 3,
+            LevelFilter::Debug => 4,
+            LevelFilter::Trace => 5,
+        }
+    }
+    fn level_to_i8(to: Level) -> i8 {
+        match to {
+            Level::Error => 1,
+            Level::Warn => 2,
+            Level::Info => 3,
+            Level::Debug => 4,
+            Level::Trace => 5,
         }
     }
 }
 
 impl LogPlugin for RbatisLogPlugin {
     fn get_level_filter(&self) -> LevelFilter {
-        RbatisLogPlugin::i8_to_level(self.level_filter.load(Ordering::SeqCst))
+        RbatisLogPlugin::i8_to_level_filter(self.level_filter.load(Ordering::SeqCst))
     }
 
     fn set_level_filter(&self, level: LevelFilter) {
+        self.level_filter.store(RbatisLogPlugin::level_filter_to_i8(level), Ordering::SeqCst);
+    }
+
+    fn get_level(&self, level: Level) -> Level {
         match level {
-            LevelFilter::Off => {
-                self.level_filter.store(0, Ordering::SeqCst);
-            }
-            LevelFilter::Error => {
-                self.level_filter.store(1, Ordering::SeqCst);
-            }
-            LevelFilter::Warn => {
-                self.level_filter.store(2, Ordering::SeqCst);
-            }
-            LevelFilter::Info => {
-                self.level_filter.store(3, Ordering::SeqCst);
-            }
-            LevelFilter::Debug => {
-                self.level_filter.store(4, Ordering::SeqCst);
-            }
-            LevelFilter::Trace => {
-                self.level_filter.store(5, Ordering::SeqCst);
-            }
+            Level::Error => RbatisLogPlugin::i8_to_level(self.error.load(Ordering::SeqCst)),
+            Level::Warn => RbatisLogPlugin::i8_to_level(self.warn.load(Ordering::SeqCst)),
+            Level::Info => RbatisLogPlugin::i8_to_level(self.info.load(Ordering::SeqCst)),
+            Level::Debug => RbatisLogPlugin::i8_to_level(self.debug.load(Ordering::SeqCst)),
+            Level::Trace => RbatisLogPlugin::i8_to_level(self.trace.load(Ordering::SeqCst)),
         }
     }
 
-    fn get_level(&self, level: LevelFilter) -> LevelFilter {
-        match level {
-            LevelFilter::Off => LevelFilter::Off,
-            LevelFilter::Error => RbatisLogPlugin::i8_to_level(self.error.load(Ordering::SeqCst)),
-            LevelFilter::Warn => RbatisLogPlugin::i8_to_level(self.warn.load(Ordering::SeqCst)),
-            LevelFilter::Info => RbatisLogPlugin::i8_to_level(self.info.load(Ordering::SeqCst)),
-            LevelFilter::Debug => RbatisLogPlugin::i8_to_level(self.debug.load(Ordering::SeqCst)),
-            LevelFilter::Trace => RbatisLogPlugin::i8_to_level(self.trace.load(Ordering::SeqCst)),
-        }
-    }
-
-    fn set_level(&self, from: LevelFilter, to: LevelFilter) {
-        let i = match to {
-            LevelFilter::Error => 1,
-            LevelFilter::Warn => 2,
-            LevelFilter::Info => 3,
-            LevelFilter::Debug => 4,
-            LevelFilter::Trace => 5,
-            LevelFilter::Off => {
-                return;
-            }
-        };
+    fn set_level(&self, from: Level, to: Level) {
+        let i = RbatisLogPlugin::level_to_i8(to);
         match from {
-            LevelFilter::Error => {
+            Level::Error => {
                 self.error.store(i, Ordering::SeqCst);
             }
-            LevelFilter::Warn => {
+            Level::Warn => {
                 self.warn.store(i, Ordering::SeqCst);
             }
-            LevelFilter::Info => {
+            Level::Info => {
                 self.info.store(i, Ordering::SeqCst);
             }
-            LevelFilter::Debug => {
+            Level::Debug => {
                 self.debug.store(i, Ordering::SeqCst);
             }
-            LevelFilter::Trace => {
+            Level::Trace => {
                 self.trace.store(i, Ordering::SeqCst);
-            }
-            LevelFilter::Off => {
-                self.set_level_filter(LevelFilter::Off)
             }
         }
     }
