@@ -352,6 +352,7 @@ macro_rules! impl_delete {
 }
 
 /// pysql impl_select_page
+/// If the database does not support the statement `limit ${page_no},${page_size}`,You should include ${page_no} and ${page_size} in SQL
 ///
 /// ```rust
 /// #[derive(Clone, Debug, serde::Serialize, serde::Deserialize)]
