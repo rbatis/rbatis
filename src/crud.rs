@@ -134,16 +134,10 @@ macro_rules! impl_select {
     ($table:ty{$fn_name:ident($($param_key:ident:$param_type:ty$(,)?)*) => $sql:expr}) => {
         impl $table{
             pub async fn $fn_name(rb: &mut dyn  $crate::executor::Executor,$($param_key:$param_type,)*)->Result<Vec<$table>,$crate::rbdc::Error>{
-                 if $sql.starts_with("select"){
-                     #[$crate::py_sql($sql)]
-                     async fn $fn_name(rb: &mut dyn $crate::executor::Executor,$($param_key:$param_type,)*) -> Result<Vec<$table>,$crate::rbdc::Error> {impled!()}
-                     $fn_name(rb,$($param_key ,)*).await
-                 }else{
-                     #[$crate::py_sql("`select * from ${table_name} `",$sql)]
-                     async fn $fn_name(rb: &mut dyn $crate::executor::Executor,table_name:&str,$($param_key:$param_type,)*) -> Result<Vec<$table>,$crate::rbdc::Error> {impled!()}
-                     let table_name = $crate::utils::string_util::to_snake_name(stringify!($table));
-                     $fn_name(rb,&table_name,$($param_key ,)*).await
-                 }
+                   #[$crate::py_sql("`select * from ${table_name} `",$sql)]
+                   async fn $fn_name(rb: &mut dyn $crate::executor::Executor,table_name:&str,$($param_key:$param_type,)*) -> Result<Vec<$table>,$crate::rbdc::Error> {impled!()}
+                   let table_name = $crate::utils::string_util::to_snake_name(stringify!($table));
+                   $fn_name(rb,&table_name,$($param_key ,)*).await
             }
         }
     };
@@ -157,16 +151,10 @@ macro_rules! impl_select {
     ($table:ty{$fn_name:ident($($param_key:ident:$param_type:ty$(,)?)*) -> $container:tt => $sql:expr}) => {
         impl $table{
             pub async fn $fn_name(rb: &mut dyn  $crate::executor::Executor,$($param_key:$param_type,)*)->Result<$container<$table>,$crate::rbdc::Error>{
-                if $sql.starts_with("select"){
-                    #[$crate::py_sql($sql)]
-                    async fn $fn_name(rb: &mut dyn $crate::executor::Executor,$($param_key:$param_type,)*) -> Result<$container<$table>,$crate::rbdc::Error> {impled!()}
-                    $fn_name(rb,$($param_key ,)*).await
-                }else{
                      #[$crate::py_sql("`select * from ${table_name} `",$sql)]
                      async fn $fn_name(rb: &mut dyn $crate::executor::Executor,table_name:&str,$($param_key:$param_type,)*) -> Result<$container<$table>,$crate::rbdc::Error> {impled!()}
                      let table_name = $crate::utils::string_util::to_snake_name(stringify!($table));
                      $fn_name(rb,&table_name,$($param_key ,)*).await
-                }
             }
         }
     };
