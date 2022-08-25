@@ -46,12 +46,10 @@ fn bench_raw() {
 }
 
 //cargo test --release --package rbatis --bench raw_performance bench_insert  --no-fail-fast -- --exact -Z unstable-options --show-output
-//---- bench_insert stdout ----(win10,cpu-amd5950x)
-// use Time: 130.5443ms ,each:1305 ns/op
-// use QPS: 765860 QPS/s
 //---- bench_insert stdout ----(macos,cpu-M1Max)
-//use Time: 128.635666ms ,each:1286 ns/op
-//use QPS: 777351 QPS/s
+//use Time: 102.610583ms ,each:1026 ns/op
+//use QPS: 974529 QPS/s
+
 #[test]
 fn bench_insert() {
     let rbatis = block_on(async {
