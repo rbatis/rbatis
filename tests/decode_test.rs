@@ -43,4 +43,15 @@ mod test {
         })])).unwrap();
         assert_eq!(v, 1i64);
     }
+
+    #[test]
+    fn test_decode_json_array() {
+        let m = value_map! {
+            1.to_string() => 1,
+            2.to_string() => 2,
+        };
+        let m = Value::Map(m);
+        let v: serde_json::Value = rbatis::decode(Value::Array(vec![m.clone(),m.clone()])).unwrap();
+        assert_eq!(v, serde_json::from_str::<serde_json::Value>(r#"[{"1":1,"2":2},{"1":1,"2":2}]"#).unwrap());
+    }
 }

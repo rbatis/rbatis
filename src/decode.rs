@@ -27,7 +27,7 @@ pub fn decode<T: ?Sized>(bs: Value) -> Result<T, crate::Error>
         _ => {}
     }
     // try speculate type
-    let is_array = (type_name.starts_with('[') && type_name.ends_with(']')) || type_name.starts_with("alloc::vec::Vec") || type_name.eq("rbs::value::Value");
+    let is_array = rbs::from_value::<T>(Value::Array(vec![])).is_ok();
     if is_array {
         //decode array
         Ok(rbs::from_value(Value::Array(datas))?)
