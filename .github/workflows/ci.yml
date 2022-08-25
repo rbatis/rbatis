@@ -32,8 +32,6 @@ jobs:
           - ubuntu-latest
           - windows-latest
           - macOS-latest
-          - android-latest
-          - ios-latest
     steps:
       - name: Checkout sources
         uses: actions/checkout@v2
