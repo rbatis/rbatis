@@ -10,8 +10,8 @@ use crate::Error;
 /// Value,BigDecimal, i8..i64,u8..u64,Int64(),bool,String
 /// or object used bson macro object
 pub fn decode<T: ?Sized>(bs: Value) -> Result<T, crate::Error>
-where
-    T: DeserializeOwned,
+    where
+        T: DeserializeOwned,
 {
     let type_name = std::any::type_name::<T>();
     //debug_mode feature print json_decode json data
@@ -26,27 +26,9 @@ where
         }
         _ => {}
     }
-    // decode single type option
-    if type_name.starts_with("core::option::Option<"){
-        return Ok(try_decode_map(type_name, &mut datas)?);
-    }
-    match type_name {
-        //decode single type(from map type get an value)
-        "i8" | "i16" | "i32" | "i64" |
-        "u8" | "u16" | "u32" | "u64" |
-        "f32" | "f64" |
-        "serde_json::number::Number" |
-        "rbs::Value::I64" | "rbs::Value::I32" | "rbs::Value::F64" | "rbs::Value::F32" |
-        "bigdecimal::BigDecimal" |
-        "bool" |
-        "alloc::string::String" => {
-            return Ok(try_decode_map(type_name, &mut datas)?);
-        }
-        _ => {}
-    }
     // try speculate type
-    let is_array: Result<T, rbs::Error> = rbs::from_value(Value::Array(vec![]));
-    if is_array.is_ok() {
+    let is_array = (type_name.starts_with('[') && type_name.ends_with(']')) || type_name.starts_with("alloc::vec::Vec") || type_name.eq("rbs::value::Value");
+    if is_array {
         //decode array
         Ok(rbs::from_value(Value::Array(datas))?)
     } else {
@@ -56,8 +38,8 @@ where
 
 //decode doc or one type
 pub fn try_decode_map<T>(type_name: &str, datas: &mut Vec<Value>) -> Result<T, crate::Error>
-where
-    T: DeserializeOwned,
+    where
+        T: DeserializeOwned,
 {
     //decode struct
     if datas.len() > 1 {
@@ -70,7 +52,6 @@ where
     if datas.is_empty() {
         return Ok(rbs::from_value::<T>(Value::Null)?);
     }
-    let mut v = Value::Null;
     let m = datas.remove(0);
     let mut doc_len = 0;
     match &m {
@@ -78,22 +59,16 @@ where
             doc_len = doc.len();
             if doc_len == 1 {
                 if let Some((_, value)) = doc.into_iter().next() {
-                    v = value.clone();
+                    //try one
+                    if let Ok(v)=rbs::from_value::<T>(value.clone()){
+                        return Ok(v);
+                    }
                 }
             }
         }
         _ => {}
     }
-    let r = rbs::from_value::<T>(m);
-    if r.is_err() {
-        if doc_len > 1 {
-            return Ok(r?);
-        }
-        //try one
-        return Ok(rbs::from_value::<T>(v)?);
-    } else {
-        return Ok(r.unwrap());
-    }
+    Ok(rbs::from_value::<T>(m)?)
 }
 
 #[cfg(test)]
