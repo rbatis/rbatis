@@ -137,3 +137,16 @@ impl IntoIterator for ValueMap {
         self.0.into_iter()
     }
 }
+
+
+
+#[macro_export]
+macro_rules! value_map {
+    {$($k:expr=>$v:expr$(,)*)+} => {
+        {
+        let mut m  = $crate::value::map::ValueMap::new();
+        $(m.insert($crate::to_value!($k),$crate::to_value!($v));)+
+        m
+        }
+    };
+}
