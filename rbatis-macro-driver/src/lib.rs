@@ -81,7 +81,7 @@ pub fn py_sql(args: TokenStream, func: TokenStream) -> TokenStream {
     #[cfg(feature = "debug_mode")]
     {
         use rust_format::{Formatter, RustFmt};
-        let code = RustFmt::default().format_str(stream.to_string().replace("$crate","rbatis")).unwrap();
+        let code = RustFmt::default().format_str(stream.to_string().replace("$crate","rbatis")).unwrap_or_else(|_e|stream.to_string());
         println!(
             "............gen macro py_sql :\n {}",
             code
@@ -111,7 +111,7 @@ pub fn html_sql(args: TokenStream, func: TokenStream) -> TokenStream {
     #[cfg(feature = "debug_mode")]
     {
         use rust_format::{Formatter, RustFmt};
-        let code = RustFmt::default().format_str(stream.to_string().replace("$crate","rbatis")).unwrap();
+        let code = RustFmt::default().format_str(stream.to_string().replace("$crate","rbatis")).unwrap_or_else(|_e|stream.to_string());
         println!("............gen macro html_sql :\n {}", code);
         println!("............gen macro html_sql end............");
     }
