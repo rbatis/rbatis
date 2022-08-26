@@ -1,6 +1,7 @@
 #[cfg(test)]
 mod test {
-    use rbatis::utils::string_util::{find_convert_string, to_snake_name};
+    use rbatis::utils::string_util::to_snake_name;
+    use rbatis_codegen::codegen::string_util::find_convert_string;
 
     #[test]
     fn test_to_snake_name() {
@@ -40,15 +41,5 @@ mod test {
         let sql = "select #{column   #{  }";
         let finds = find_convert_string(sql);
         println!("{:?}", finds);
-    }
-
-    ///cargo test --release --package rbatis --test string_util_test test::bench_find --no-fail-fast -- --exact -Z unstable-options --show-output
-    #[test]
-    fn bench_find() {
-        let sql = "update user set name=#{name}, password=#{password} ,sex=#{sex}, phone=#{phone}, delete_flag=#{flag}, #{name}";
-        find_convert_string(sql);
-        rbatis::bench!(100000, {
-            find_convert_string(sql);
-        });
     }
 }
