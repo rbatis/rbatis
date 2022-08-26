@@ -1,3 +1,5 @@
+pub extern crate deadpool;
+
 pub mod common;
 pub use common::*;
 pub mod db;

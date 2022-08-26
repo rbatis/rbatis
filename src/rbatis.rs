@@ -19,6 +19,7 @@ use std::ops::DerefMut;
 use std::sync::Arc;
 use std::time::Duration;
 use uuid::Uuid;
+use rbdc::deadpool::managed::Timeouts;
 
 /// rbatis engine
 #[derive(Clone)]
@@ -90,7 +91,7 @@ impl Rbatis {
         }
         let mut option = driver.default_option();
         option.set_uri(url)?;
-        let pool = Pool::new_box(Box::new(driver), option);
+        let pool = Pool::new_box(Box::new(driver), option)?;
         self.pool.set(pool);
         return Ok(());
     }
@@ -98,7 +99,7 @@ impl Rbatis {
     /// link pool
     pub async fn link_builder<Driver: rbdc::db::Driver + 'static>(
         &self,
-        builder: mobc::Builder<ManagerPorxy>,
+        builder: rbdc::deadpool::managed::PoolBuilder<ManagerPorxy,rbdc::deadpool::managed::Object<ManagerPorxy>>,
         driver: Driver,
         url: &str,
     ) -> Result<(), Error> {
@@ -107,7 +108,7 @@ impl Rbatis {
         }
         let mut option = driver.default_option();
         option.set_uri(url)?;
-        let pool = Pool::new_builder(builder, Box::new(driver), option);
+        let pool = Pool::new_builder(builder, Box::new(driver), option)?;
         self.pool.set(pool);
         return Ok(());
     }
@@ -123,7 +124,7 @@ impl Rbatis {
         driver: Driver,
         options: ConnectOptions,
     ) -> Result<(), Error> {
-        let pool = Pool::new(driver, options);
+        let pool = Pool::new(driver, options)?;
         self.pool.set(pool);
         return Ok(());
     }
@@ -170,6 +171,18 @@ impl Rbatis {
         });
     }
 
+    /// try get an DataBase Connection used for the next step
+    pub async fn try_acquire(&self) -> Result<RBatisConnExecutor, Error> {
+        let pool = self.get_pool()?;
+        let mut default = pool.inner.timeouts().clone();
+        default.wait = Some(Duration::ZERO);
+        let conn = pool.timeout_get(&default).await?;
+        return Ok(RBatisConnExecutor {
+            conn: Box::new(conn),
+            rb: self.clone(),
+        });
+    }
+
     /// get an DataBase Connection,and call begin method,used for the next step
     pub async fn acquire_begin(&self) -> Result<RBatisTxExecutor, Error> {
         let pool = self.get_pool()?;
@@ -178,6 +191,18 @@ impl Rbatis {
         return Ok(RBatisTxExecutor {
             tx_id: new_snowflake_id(),
             conn: Box::new(conn),
+            rb: self.clone(),
+            done: false,
+        });
+    }
+
+    /// try get an DataBase Connection,and call begin method,used for the next step
+    pub async fn try_acquire_begin(&self) -> Result<RBatisTxExecutor, Error> {
+        let mut conn = self.try_acquire().await?;
+        conn.exec("begin", vec![]).await?;
+        return Ok(RBatisTxExecutor {
+            tx_id: new_snowflake_id(),
+            conn: conn.conn,
             rb: self.clone(),
             done: false,
         });

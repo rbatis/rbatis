@@ -96,9 +96,9 @@ impl From<rbs::Error> for Error {
     }
 }
 
-impl From<mobc::Error<Error>> for Error {
-    fn from(arg: mobc::Error<Error>) -> Self {
-        Error::from(arg.to_string())
+impl <E: std::fmt::Debug>From<deadpool::managed::PoolError<E>> for Error {
+    fn from(arg: deadpool::managed::PoolError<E>) -> Self {
+        Error::from(format!("{:?}",arg))
     }
 }
 

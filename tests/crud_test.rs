@@ -22,6 +22,7 @@ mod test {
     use rbdc::rt::block_on;
     use rbs::Value;
     use std::any::Any;
+    use rbatis::executor::RBatisConnExecutor;
 
     #[derive(Debug, Clone)]
     struct MockDriver {}
@@ -91,7 +92,7 @@ mod test {
             }) as Box<dyn MetaData>
         }
 
-        fn get(&mut self, i: usize) -> Result<Value,Error> {
+        fn get(&mut self, i: usize) -> Result<Value, Error> {
             if self.sql.contains("select count") {
                 Ok(Value::U64(self.count))
             } else {
@@ -227,7 +228,7 @@ mod test {
             };
             let mut t2 = t.clone();
             t2.id = "3".to_string().into();
-            let r = MockTable::insert_batch(&mut rb, &[t, t2],10).await.unwrap();
+            let r = MockTable::insert_batch(&mut rb, &[t, t2], 10).await.unwrap();
             println!("{}", r.last_insert_id.as_str().unwrap_or_default());
             assert_eq!(r.last_insert_id.as_str().unwrap_or_default(), "insert into mock_table (id,name,pc_link,h5_link,pc_banner_img,h5_banner_img,sort,status,remark,create_time,version,delete_flag,sql,count) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?),(?,?,?,?,?,?,?,?,?,?,?,?,?,?)");
         };
@@ -466,6 +467,39 @@ mod test {
 
             let mut tx = rb.acquire_begin().await.unwrap().defer_async(|_tx| async {});
             let _r = MockTable::insert(&mut tx, &t).await.unwrap();
+        };
+        block_on(f);
+    }
+
+    #[test]
+    fn test_pool_get() {
+        let f = async move {
+            let rb = Rbatis::new();
+            rb.link(MockDriver {}, "test").await.unwrap();
+            for _ in 0..100000 {
+                let mut tx = rb.acquire().await.unwrap();
+            }
+            println!("done");
+        };
+        block_on(f);
+    }
+
+    #[test]
+    fn test_pool_try_get() {
+        let f = async move {
+            let rb = Rbatis::new();
+            rb.link(MockDriver {}, "test").await.unwrap();
+            let mut v = vec![];
+            for _ in 0..100000 {
+                match rb.try_acquire().await {
+                    Ok(tx) => {
+                        v.push(tx);
+                    }
+                    Err(e) => {
+                    }
+                }
+            }
+            println!("done={}", v.len());
         };
         block_on(f);
     }
