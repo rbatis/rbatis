@@ -1,12 +1,13 @@
 #![feature(test)]
 #![feature(bench_black_box)]
 extern crate test;
+
 use test::Bencher;
 use rbs::{Value, value_map};
 
 #[bench]
 fn bench_rbs_decode(b: &mut Bencher) {
-    let v:Value = 1.into();
+    let v: Value = 1.into();
     b.iter(|| {
         rbs::from_value::<i32>(v.clone()).unwrap();
     });

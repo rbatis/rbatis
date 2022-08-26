@@ -13,7 +13,6 @@
 #![allow(clippy::match_like_matches_macro)]
 
 pub mod error;
-pub mod string_util;
 #[macro_use]
 pub mod bencher;
 pub mod ops;

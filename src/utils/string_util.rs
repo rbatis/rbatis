@@ -4,38 +4,6 @@ use std::io::Read;
 //2020-11-15 00:31:25.803227700 +08:00 INFO rbatis::plugin::log
 pub const LOG_SPACE: &'static str = "                                                      ";
 
-//find like #{*,*},${*,*} value *
-pub fn find_convert_string(arg: &str) -> LinkedList<(String, String)> {
-    let mut list = LinkedList::new();
-    let mut cache = HashSet::new();
-    let chars: Vec<u8> = arg.bytes().collect();
-    let mut item = String::with_capacity(arg.len());
-    let mut index: i32 = -1;
-    for v in &chars {
-        index = index + 1;
-        if !item.is_empty() {
-            item.push(*v as char);
-            if *v == '}' as u8 {
-                if cache.get(&item).is_some() {
-                    item.clear();
-                    continue;
-                }
-                let key = item[2..item.len() - 1].to_string();
-                cache.insert(item.clone());
-                list.push_back((key, item.clone()));
-                item.clear();
-            }
-            continue;
-        }
-        if (*v == '#' as u8 || *v == '$' as u8)
-            && chars.get(index as usize + 1).eq(&Some(&('{' as u8)))
-        {
-            item.push(*v as char);
-        }
-    }
-    return list;
-}
-
 /// convert name to snake name
 pub fn to_snake_name(name: &str) -> String {
     let len = name.len();

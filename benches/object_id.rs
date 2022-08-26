@@ -1,6 +1,7 @@
 #![feature(test)]
 #![feature(bench_black_box)]
 extern crate test;
+
 use rbatis::object_id::ObjectId;
 use test::Bencher;
 
