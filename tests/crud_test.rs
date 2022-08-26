@@ -343,23 +343,24 @@ mod test {
         };
         block_on(f);
     }
-    #[derive(serde::Serialize,serde::Deserialize)]
-    pub struct DTO{
-        id:String
+
+    #[derive(serde::Serialize, serde::Deserialize)]
+    pub struct DTO {
+        id: String,
     }
-    impl_select!(MockTable{select_by_dto(dto:DTO) -> Option => "`where id = #{id} limit 1`"});
+    impl_select!(MockTable{select_by_dto(dto:DTO) -> Option => "`where id = '${dto.id}' limit 1`"});
     #[test]
     fn test_select_by_dto() {
         let f = async move {
             let mut rb = Rbatis::new();
             rb.link(MockDriver {}, "test").await.unwrap();
-            let r = MockTable::select_by_dto(&mut rb, DTO{
+            let r = MockTable::select_by_dto(&mut rb, DTO {
                 id: "1".to_string()
             }).await.unwrap();
             println!("{}", r.as_ref().unwrap().sql);
             assert_eq!(
                 r.unwrap().sql,
-                "select * from mock_table where id = ? limit 1"
+                "select * from mock_table where id = '1' limit 1"
             );
         };
         block_on(f);
@@ -394,6 +395,40 @@ mod test {
         };
         block_on(f);
     }
+
+    impl_update!(MockTable{update_by_dto(dto:DTO) => "`where id = '${dto.id}'`"});
+    #[test]
+    fn test_update_by_dto() {
+        let f = async move {
+            let mut rb = Rbatis::new();
+            rb.link(MockDriver {}, "test").await.unwrap();
+            let t = MockTable {
+                id: Some("2".into()),
+                name: Some("2".into()),
+                pc_link: Some("2".into()),
+                h5_link: Some("2".into()),
+                pc_banner_img: None,
+                h5_banner_img: None,
+                sort: None,
+                status: Some(2),
+                remark: Some("2".into()),
+                create_time: Some(FastDateTime::now()),
+                version: Some(1),
+                sql: "".to_string(),
+                delete_flag: Some(1),
+                count: 0,
+            };
+            let r = MockTable::update_by_dto(&mut rb, &t, DTO {
+                id: "2".to_string(),
+            })
+                .await
+                .unwrap();
+            println!("{}", r.last_insert_id.as_str().unwrap());
+            assert_eq!(r.last_insert_id.as_str().unwrap(), "update mock_table set  id=?,name=?,pc_link=?,h5_link=?,status=?,remark=?,create_time=?,version=?,delete_flag=?,sql=?,count=? where id = '2'");
+        };
+        block_on(f);
+    }
+
     impl_delete!(MockTable {delete_by_name(name:&str) => "`where name= '2'`"});
     #[test]
     fn test_delete_by_name() {
@@ -548,8 +583,7 @@ mod test {
                     Ok(tx) => {
                         v.push(tx);
                     }
-                    Err(e) => {
-                    }
+                    Err(e) => {}
                 }
             }
             println!("done={}", v.len());
