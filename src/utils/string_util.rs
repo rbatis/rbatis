@@ -38,14 +38,15 @@ pub fn find_convert_string(arg: &str) -> LinkedList<(String, String)> {
 
 /// convert name to snake name
 pub fn to_snake_name(name: &str) -> String {
-    let chs = name.as_bytes();
+    let len = name.len();
+    let bytes = name.as_bytes();
     let mut new_name = String::with_capacity(name.len());
     let mut index = 0;
-    let chs_len = name.len();
-    for x in chs {
-        let c = *x as char;
+    let mut c = ' ';
+    for x in bytes {
+        c = *x as char;
         if c.is_ascii_uppercase() {
-            if index != 0 && (index + 1) != chs_len {
+            if index != 0 && (index + 1) != len {
                 new_name.push('_');
             }
             new_name.push(c.to_ascii_lowercase() as char);
