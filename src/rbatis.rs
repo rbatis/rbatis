@@ -158,7 +158,7 @@ impl Rbatis {
     /// get driver type
     pub fn driver_type(&self) -> Result<&str, Error> {
         let pool = self.get_pool()?;
-        Ok(pool.name())
+        Ok(pool.driver_type())
     }
 
     /// get an DataBase Connection used for the next step

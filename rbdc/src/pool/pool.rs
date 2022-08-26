@@ -9,7 +9,8 @@ use deadpool::managed::{Manager, Object, PoolBuilder, RecycleError, RecycleResul
 use futures_core::future::BoxFuture;
 use rbs::Value;
 
-/// RBDC pool
+/// RBDC pool.
+/// you can use just like any deadpool methods  pool.deref().close() and more...
 #[derive(Clone)]
 pub struct Pool {
     pub manager: ManagerPorxy,
@@ -17,13 +18,37 @@ pub struct Pool {
 }
 
 impl Pool {
-    pub fn name(&self) -> &str {
-        self.manager.name()
+    /// return driver name
+    pub fn driver_type(&self) -> &str {
+        self.manager.driver_type()
     }
 
     /// spawn task on runtime
     pub fn spawn_task<T>(&self, task: T) where T: Future + Send + 'static, T::Output: Send + 'static {
         self.manager.spawn_task(task)
+    }
+
+    /**
+     * Resize the pool. This change the `max_size` of the pool dropping
+     * excess objects and/or making space for new ones.
+     *
+     * If the pool is closed this method does nothing. The [`Pool::status`] method
+     * always reports a `max_size` of 0 for closed pools.
+     */
+    pub fn resize(&self, max_size: usize) {
+        self.deref().resize(max_size);
+    }
+
+    /// Indicates whether this [`Pool`] has been closed.
+    pub fn is_closed(&self) -> bool {
+        self.deref().is_closed()
+    }
+
+    /// Closes this Pool.
+    /// All current and future tasks waiting for Objects will return PoolError::Closed immediately.
+    /// This operation resizes the pool to 0.
+    pub fn close(&self) {
+        self.deref().close();
     }
 }
 
@@ -147,7 +172,7 @@ impl RBDCManager {
         }
     }
 
-    pub fn name(&self) -> &str {
+    pub fn driver_type(&self) -> &str {
         self.driver.name()
     }
 }
