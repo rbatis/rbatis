@@ -35,20 +35,22 @@ pub fn find_convert_string(arg: &str) -> LinkedList<(String, String)> {
     }
     return list;
 }
+
 /// convert name to snake name
 pub fn to_snake_name(name: &str) -> String {
-    let chs = name.chars();
+    let chs = name.as_bytes();
     let mut new_name = String::with_capacity(name.len());
     let mut index = 0;
     let chs_len = name.len();
     for x in chs {
-        if x.is_uppercase() {
+        let c = *x as char;
+        if c.is_ascii_uppercase() {
             if index != 0 && (index + 1) != chs_len {
-                new_name.push_str("_");
+                new_name.push('_');
             }
-            new_name.push(x.to_ascii_lowercase());
+            new_name.push(c.to_ascii_lowercase() as char);
         } else {
-            new_name.push(x);
+            new_name.push(c);
         }
         index += 1;
     }

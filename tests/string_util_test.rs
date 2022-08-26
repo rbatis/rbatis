@@ -1,6 +1,11 @@
 #[cfg(test)]
 mod test {
-    use rbatis::utils::string_util::find_convert_string;
+    use rbatis::utils::string_util::{find_convert_string, to_snake_name};
+
+    #[test]
+    fn test_to_snake_name() {
+        assert_eq!("abc_def",to_snake_name("AbcDeF"));
+    }
 
     #[test]
     fn test_find() {
