@@ -53,14 +53,12 @@ pub fn try_decode_map<T>(type_name: &str, datas: &mut Vec<Value>) -> Result<T, c
         return Ok(rbs::from_value::<T>(Value::Null)?);
     }
     let m = datas.remove(0);
-    let mut doc_len = 0;
     match &m {
-        Value::Map(doc) => {
-            doc_len = doc.len();
-            if doc_len == 1 {
-                if let Some((_, value)) = doc.into_iter().next() {
+        Value::Map(map) => {
+            if map.len() == 1 {
+                if let Some((_, value)) = map.into_iter().next() {
                     //try one
-                    if let Ok(v)=rbs::from_value::<T>(value.clone()){
+                    if let Ok(v) = rbs::from_value::<T>(value.clone()) {
                         return Ok(v);
                     }
                 }
