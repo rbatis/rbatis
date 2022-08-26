@@ -5,7 +5,9 @@ use std::fmt::{Debug, Formatter};
 use std::future::Future;
 use std::ops::{Deref, DerefMut};
 use std::sync::Arc;
-use deadpool::managed::{Manager, Object, PoolBuilder, RecycleError, RecycleResult};
+use std::time::Duration;
+use deadpool::managed::{Manager, Object, PoolBuilder, PoolError, RecycleError, RecycleResult, Timeouts};
+use deadpool::Status;
 use futures_core::future::BoxFuture;
 use rbs::Value;
 
@@ -49,6 +51,28 @@ impl Pool {
     /// This operation resizes the pool to 0.
     pub fn close(&self) {
         self.deref().close();
+    }
+
+    /// Retrieves Status of this Pool.
+    pub fn status(&self) -> Status {
+        self.deref().status()
+    }
+
+    ///Get current timeout configuration
+    pub fn timeouts(&self) -> Timeouts {
+        self.deref().timeouts()
+    }
+
+    /// get connection
+    pub async fn get(&self) -> Result<Object<ManagerPorxy>, PoolError<Error>> {
+        self.deref().get().await
+    }
+
+    /// try get connection
+    pub async fn try_get(&self) -> Result<Object<ManagerPorxy>, PoolError<Error>> {
+        let mut t = self.deref().timeouts();
+        t.wait = Some(Duration::ZERO);
+        self.deref().timeout_get(&t).await
     }
 }
 
