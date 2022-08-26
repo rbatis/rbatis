@@ -9,12 +9,11 @@ use crate::Error;
 /// support decode types:
 /// Value,BigDecimal, i8..i64,u8..u64,Int64(),bool,String
 /// or object used bson macro object
-pub fn decode<T: ?Sized>(bs: Value) -> Result<T, crate::Error>
+pub fn decode<T: ?Sized>(bs: Value) -> Result<T, Error>
     where
         T: DeserializeOwned,
 {
     let type_name = std::any::type_name::<T>();
-    //debug_mode feature print json_decode json data
     #[cfg(feature = "debug_mode")]
     {
         println!("[rbatis] [debug_mode] [value]   {} => {}", type_name, bs);
@@ -37,7 +36,7 @@ pub fn decode<T: ?Sized>(bs: Value) -> Result<T, crate::Error>
 }
 
 //decode doc or one type
-pub fn try_decode_map<T>(type_name: &str, datas: &mut Vec<Value>) -> Result<T, crate::Error>
+pub fn try_decode_map<T>(type_name: &str, datas: &mut Vec<Value>) -> Result<T, Error>
     where
         T: DeserializeOwned,
 {
