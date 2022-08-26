@@ -233,26 +233,7 @@ macro_rules! impl_update {
                 if $sql_where.is_empty(){
                     return Err($crate::rbdc::Error::from("sql_where can't be empty!"));
                 }
-                if $sql_where.starts_with("update"){
-                  #[$crate::py_sql($sql_where)]
-                  async fn $fn_name(
-                      rb: &mut dyn $crate::executor::Executor,
-                      table_name: String,
-                      table: &rbs::Value,
-                      $($param_key:$param_type,)*
-                  ) -> Result<$crate::rbdc::db::ExecResult, $crate::rbdc::Error> {
-                      impled!()
-                  }
-                  let mut table_name = $crate::utils::string_util::to_snake_name(stringify!($table));
-                     $(
-                     if stringify!($param_key) == "table_name"{
-                         table_name = $param_key.to_string();
-                     }
-                     )*
-                  let table = rbs::to_value!(table);
-                  $fn_name(rb, table_name, &table, $($param_key,)*).await
-                } else {
-                  #[$crate::py_sql("`update ${table_name} set  `
+                #[$crate::py_sql("`update ${table_name} set  `
                                  trim ',':
                                    for k,v in table:
                                      if k == column || v== null:
@@ -275,7 +256,6 @@ macro_rules! impl_update {
                      )*
                   let table = rbs::to_value!(table);
                   $fn_name(rb, table_name, &table, $($param_key,)*).await
-                }
             }
         }
     };
