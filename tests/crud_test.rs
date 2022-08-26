@@ -457,14 +457,14 @@ mod test {
         block_on(f);
     }
 
-    impl_select!(MockTable{select_column_name_from_table_name_by_id(id:&str,column_name:&str) => "`where id = #{id}`"});
+    impl_select!(MockTable{select_table_column_from_table_name_by_id(id:&str,table_column:&str) => "`where id = #{id}`"});
 
     #[test]
-    fn test_select_column_name_from_table_name_by_id() {
+    fn test_select_table_column_from_table_name_by_id() {
         let f = async move {
             let mut rb = Rbatis::new();
             rb.link(MockDriver {}, "test").await.unwrap();
-            let r = MockTable::select_column_name_from_table_name_by_id(&mut rb, "id", "id,name")
+            let r = MockTable::select_table_column_from_table_name_by_id(&mut rb, "id", "id,name")
                 .await
                 .unwrap();
             println!("{}", r[0].sql);
