@@ -1,18 +1,19 @@
-use crate::db::{ConnectOptions, Connection, Driver, ExecResult, Row};
+use crate::db::{ConnectOptions, Connection, Driver, Row, ExecResult};
 use crate::Error;
-use futures_core::future::BoxFuture;
-use mobc::{async_trait, Builder, Manager};
-use rbs::Value;
+use async_trait::async_trait;
 use std::fmt::{Debug, Formatter};
 use std::future::Future;
 use std::ops::{Deref, DerefMut};
 use std::sync::Arc;
+use deadpool::managed::{Manager, Object, PoolBuilder, RecycleError, RecycleResult};
+use futures_core::future::BoxFuture;
+use rbs::Value;
 
 /// RBDC pool
 #[derive(Clone)]
 pub struct Pool {
     pub manager: ManagerPorxy,
-    pub inner: mobc::Pool<ManagerPorxy>,
+    pub inner: deadpool::managed::Pool<ManagerPorxy>,
 }
 
 impl Pool {
@@ -22,7 +23,7 @@ impl Pool {
 
     /// spawn task on runtime
     pub fn spawn_task<T>(&self, task: T) where T: Future + Send + 'static, T::Output: Send + 'static {
-        self.manager.spawn_task(task);
+        self.manager.spawn_task(task)
     }
 }
 
@@ -37,6 +38,13 @@ impl Debug for Pool {
 #[derive(Clone, Debug)]
 pub struct ManagerPorxy {
     pub inner: Arc<RBDCManager>,
+}
+
+impl ManagerPorxy {
+    /// spawn task on runtime
+    pub fn spawn_task<T>(&self, task: T) where T: Future + Send + 'static, T::Output: Send + 'static {
+        tokio::spawn(task);
+    }
 }
 
 impl From<Arc<RBDCManager>> for ManagerPorxy {
@@ -60,28 +68,28 @@ pub struct RBDCManager {
 }
 
 pub struct DropBox {
-    pub proxy: ManagerPorxy,
-    pub inner: Option<Box<dyn Connection>>,
+    pub manager_proxy: ManagerPorxy,
+    pub conn: Option<Box<dyn Connection>>,
 }
 
 impl Deref for DropBox {
     type Target = Box<dyn Connection>;
 
     fn deref(&self) -> &Self::Target {
-        self.inner.as_ref().unwrap()
+        self.conn.as_ref().unwrap()
     }
 }
 
 impl DerefMut for DropBox {
     fn deref_mut(&mut self) -> &mut Self::Target {
-        self.inner.as_mut().unwrap()
+        self.conn.as_mut().unwrap()
     }
 }
 
 impl Drop for DropBox {
     fn drop(&mut self) {
-        if let Some(mut conn) = self.inner.take() {
-            self.proxy.spawn_task(async move {
+        if let Some(mut conn) = self.conn.take() {
+            self.manager_proxy.spawn_task(async move {
                 let _ = conn.close().await;
             });
         }
@@ -90,19 +98,29 @@ impl Drop for DropBox {
 
 #[async_trait]
 impl Manager for ManagerPorxy {
-    type Connection = DropBox;
+    type Type = DropBox;
     type Error = Error;
 
-    async fn connect(&self) -> Result<Self::Connection, Self::Error> {
+    async fn create(&self) -> Result<Self::Type, Self::Error> {
         Ok(DropBox {
-            proxy: self.clone(),
-            inner: Some(self.driver.connect_opt(self.option.as_ref()).await?),
+            manager_proxy: self.clone(),
+            conn: Some(self.driver.connect_opt(self.option.as_ref()).await?),
         })
     }
 
-    async fn check(&self, mut conn: Self::Connection) -> Result<Self::Connection, Self::Error> {
-        conn.ping().await?;
-        Ok(conn)
+    async fn recycle(&self, conn: &mut Self::Type) -> RecycleResult<Self::Error> {
+        match conn.ping().await {
+            Ok(_) => {
+                Ok(())
+            }
+            Err(e) => {
+                //shutdown connection
+                if let Some(mut conn) = conn.conn.take() {
+                    let _ = conn.close().await;
+                }
+                return Err(RecycleError::Message(format!("Connection is ping fail={}", e)));
+            }
+        }
     }
 }
 
@@ -135,7 +153,7 @@ impl RBDCManager {
 }
 
 impl Deref for Pool {
-    type Target = mobc::Pool<ManagerPorxy>;
+    type Target = deadpool::managed::Pool<ManagerPorxy>;
 
     fn deref(&self) -> &Self::Target {
         &self.inner
@@ -154,7 +172,7 @@ impl Pool {
         url: &str,
     ) -> Result<Self, Error> {
         let manager = ManagerPorxy::from(Arc::new(RBDCManager::new(d, url)?));
-        let p = mobc::Pool::new(manager.clone());
+        let p = Pool::builder(manager.clone()).build().map_err(|e| Error::from(e.to_string()))?;
         let pool = Pool {
             manager: manager,
             inner: p,
@@ -164,51 +182,43 @@ impl Pool {
     pub fn new<Driver: crate::db::Driver + 'static, ConnectOptions: crate::db::ConnectOptions>(
         d: Driver,
         o: ConnectOptions,
-    ) -> Self {
+    ) -> Result<Self, Error> {
         let manager = ManagerPorxy::from(Arc::new(RBDCManager::new_opt(d, o)));
-        let p = mobc::Pool::new(manager.clone());
-        let pool = Pool {
+        let inner = Pool::builder(manager.clone()).build().map_err(|e| Error::from(e.to_string()))?;
+        Ok(Pool {
             manager: manager,
-            inner: p,
-        };
-        pool
+            inner: inner,
+        })
     }
 
-    pub fn new_box(d: Box<dyn Driver>, o: Box<dyn ConnectOptions>) -> Self {
+    pub fn new_box(d: Box<dyn Driver>, o: Box<dyn ConnectOptions>) -> Result<Self, Error> {
         let manager = ManagerPorxy::from(Arc::new(RBDCManager::new_opt_box(d, o)));
-        let p = mobc::Pool::new(manager.clone());
-        let pool = Pool {
+        let inner = Pool::builder(manager.clone()).build().map_err(|e| Error::from(e.to_string()))?;
+        Ok(Pool {
             manager: manager,
-            inner: p,
-        };
-        pool
+            inner: inner,
+        })
     }
 
     pub fn new_builder(
-        builder: Builder<ManagerPorxy>,
+        builder: PoolBuilder<ManagerPorxy, Object<ManagerPorxy>>,
         d: Box<dyn Driver>,
         o: Box<dyn ConnectOptions>,
-    ) -> Self {
+    ) -> Result<Self, Error> {
         let manager = ManagerPorxy::from(Arc::new(RBDCManager::new_opt_box(d, o)));
-        let p = builder.build(manager.clone());
-        let pool = Pool {
+        Ok(Pool {
             manager: manager,
-            inner: p,
-        };
-        pool
+            inner: builder.build().map_err(|e| Error::from(e.to_string()))?,
+        })
     }
 
-    pub fn builder() -> Builder<ManagerPorxy> {
-        mobc::Pool::builder()
+    pub fn builder(m: ManagerPorxy) -> PoolBuilder<ManagerPorxy, Object<ManagerPorxy>> {
+        deadpool::managed::Pool::builder(m)
     }
 }
 
-impl Connection for mobc::Connection<ManagerPorxy> {
-    fn get_rows(
-        &mut self,
-        sql: &str,
-        params: Vec<Value>,
-    ) -> BoxFuture<Result<Vec<Box<dyn Row>>, Error>> {
+impl Connection for Object<ManagerPorxy> {
+    fn get_rows(&mut self, sql: &str, params: Vec<Value>) -> BoxFuture<Result<Vec<Box<dyn Row>>, Error>> {
         self.deref_mut().get_rows(sql, params)
     }
 
