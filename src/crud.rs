@@ -137,17 +137,7 @@ macro_rules! impl_select {
                    #[$crate::py_sql("`select ${table_column} from ${table_name} `",$sql)]
                    async fn $fn_name(rb: &mut dyn $crate::executor::Executor,table_column:&str,table_name:&str,$($param_key:$param_type,)*) -> Result<Vec<$table>,$crate::rbdc::Error> {impled!()}
                    let mut table_column = "*".to_string();
-                     $(
-                     if stringify!($param_key) == "table_column"{
-                         table_column = $param_key.to_string();
-                     }
-                     )*
                    let mut table_name = $crate::utils::string_util::to_snake_name(stringify!($table));
-                     $(
-                     if stringify!($param_key) == "table_name"{
-                         table_name = $param_key.to_string();
-                     }
-                     )*
                    $fn_name(rb,&table_column,&table_name,$($param_key ,)*).await
             }
         }
@@ -158,17 +148,7 @@ macro_rules! impl_select {
                      #[$crate::py_sql("`select ${table_column} from ${table_name} `",$sql)]
                      async fn $fn_name(rb: &mut dyn $crate::executor::Executor,table_column:&str,table_name:&str,$($param_key:$param_type,)*) -> Result<$container<$table>,$crate::rbdc::Error> {impled!()}
                      let mut table_column = "*".to_string();
-                     $(
-                     if stringify!($param_key) == "table_column"{
-                         table_column = $param_key.to_string();
-                     }
-                     )*
                      let mut table_name = $crate::utils::string_util::to_snake_name(stringify!($table));
-                     $(
-                     if stringify!($param_key) == "table_name"{
-                         table_name = $param_key.to_string();
-                     }
-                     )*
                      $fn_name(rb,&table_column,&table_name,$($param_key ,)*).await
             }
         }
@@ -261,11 +241,6 @@ macro_rules! impl_update {
                       impled!()
                   }
                   let mut table_name = $crate::utils::string_util::to_snake_name(stringify!($table));
-                     $(
-                     if stringify!($param_key) == "table_name"{
-                         table_name = $param_key.to_string();
-                     }
-                     )*
                   let table = rbs::to_value!(table);
                   $fn_name(rb, table_name, &table, $($param_key,)*).await
             }
@@ -350,11 +325,6 @@ macro_rules! impl_delete {
                     impled!()
                 }
                 let mut table_name = $crate::utils::string_util::to_snake_name(stringify!($table));
-                     $(
-                     if stringify!($param_key) == "table_name"{
-                         table_name = $param_key.to_string();
-                     }
-                     )*
                 $fn_name(rb, table_name, $($param_key,)*).await
             }
         }
@@ -388,17 +358,7 @@ macro_rules! impl_select_page {
             ) -> Result<$crate::sql::Page::<$table>, $crate::rbdc::Error> {
                 use $crate::sql::IPageRequest;
                 let mut table_column = "*".to_string();
-                $(
-                     if stringify!($param_key) == "table_column"{
-                         table_column = $param_key.to_string();
-                     }
-                )*
                 let mut table_name = $table_name.to_string();
-                $(
-                     if stringify!($param_key) == "table_name"{
-                         table_name = $param_key.to_string();
-                     }
-                )*
                 let mut total = 0;
                 {
                    #[$crate::py_sql("`select count(1) as count from ${table_name} `",$where_sql)]
