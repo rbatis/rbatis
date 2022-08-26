@@ -441,6 +441,38 @@ mod test {
         block_on(f);
     }
 
+    impl_select!(MockTable{select_from_table_name_by_id(id:&str,table_name:&str) => "`where id = #{id}`"});
+
+    #[test]
+    fn test_select_from_table_name_by_id() {
+        let f = async move {
+            let mut rb = Rbatis::new();
+            rb.link(MockDriver {}, "test").await.unwrap();
+            let r = MockTable::select_from_table_name_by_id(&mut rb, "id", "mock_table2")
+                .await
+                .unwrap();
+            println!("{}", r[0].sql);
+            assert_eq!(r[0].sql, "select * from mock_table2 where id = ?");
+        };
+        block_on(f);
+    }
+
+    impl_select!(MockTable{select_column_name_from_table_name_by_id(id:&str,column_name:&str) => "`where id = #{id}`"});
+
+    #[test]
+    fn test_select_column_name_from_table_name_by_id() {
+        let f = async move {
+            let mut rb = Rbatis::new();
+            rb.link(MockDriver {}, "test").await.unwrap();
+            let r = MockTable::select_column_name_from_table_name_by_id(&mut rb, "id", "id,name")
+                .await
+                .unwrap();
+            println!("{}", r[0].sql);
+            assert_eq!(r[0].sql, "select id,name from mock_table where id = ?");
+        };
+        block_on(f);
+    }
+
     #[test]
     fn test_tx() {
         let f = async move {
