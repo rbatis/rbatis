@@ -134,30 +134,42 @@ macro_rules! impl_select {
     ($table:ty{$fn_name:ident($($param_key:ident:$param_type:ty$(,)?)*) => $sql:expr}) => {
         impl $table{
             pub async fn $fn_name(rb: &mut dyn  $crate::executor::Executor,$($param_key:$param_type,)*)->Result<Vec<$table>,$crate::rbdc::Error>{
-                   #[$crate::py_sql("`select * from ${table_name} `",$sql)]
-                   async fn $fn_name(rb: &mut dyn $crate::executor::Executor,table_name:&str,$($param_key:$param_type,)*) -> Result<Vec<$table>,$crate::rbdc::Error> {impled!()}
+                   #[$crate::py_sql("`select ${column_name} from ${table_name} `",$sql)]
+                   async fn $fn_name(rb: &mut dyn $crate::executor::Executor,column_name:&str,table_name:&str,$($param_key:$param_type,)*) -> Result<Vec<$table>,$crate::rbdc::Error> {impled!()}
+                   let mut column_name = "*".to_string();
+                     $(
+                     if stringify!($param_key) == "column_name"{
+                         column_name = $param_key.to_string();
+                     }
+                     )*
                    let mut table_name = $crate::utils::string_util::to_snake_name(stringify!($table));
                      $(
                      if stringify!($param_key) == "table_name"{
                          table_name = $param_key.to_string();
                      }
                      )*
-                   $fn_name(rb,&table_name,$($param_key ,)*).await
+                   $fn_name(rb,&column_name,&table_name,$($param_key ,)*).await
             }
         }
     };
     ($table:ty{$fn_name:ident($($param_key:ident:$param_type:ty$(,)?)*) -> $container:tt => $sql:expr}) => {
         impl $table{
             pub async fn $fn_name(rb: &mut dyn  $crate::executor::Executor,$($param_key:$param_type,)*)->Result<$container<$table>,$crate::rbdc::Error>{
-                     #[$crate::py_sql("`select * from ${table_name} `",$sql)]
-                     async fn $fn_name(rb: &mut dyn $crate::executor::Executor,table_name:&str,$($param_key:$param_type,)*) -> Result<$container<$table>,$crate::rbdc::Error> {impled!()}
+                     #[$crate::py_sql("`select ${column_name} from ${table_name} `",$sql)]
+                     async fn $fn_name(rb: &mut dyn $crate::executor::Executor,column_name:&str,table_name:&str,$($param_key:$param_type,)*) -> Result<$container<$table>,$crate::rbdc::Error> {impled!()}
+                     let mut column_name = "*".to_string();
+                     $(
+                     if stringify!($param_key) == "column_name"{
+                         column_name = $param_key.to_string();
+                     }
+                     )*
                      let mut table_name = $crate::utils::string_util::to_snake_name(stringify!($table));
                      $(
                      if stringify!($param_key) == "table_name"{
                          table_name = $param_key.to_string();
                      }
                      )*
-                     $fn_name(rb,&table_name,$($param_key ,)*).await
+                     $fn_name(rb,&column_name,&table_name,$($param_key ,)*).await
             }
         }
     };
@@ -375,19 +387,30 @@ macro_rules! impl_select_page {
                 $($param_key:$param_type,)*
             ) -> Result<$crate::sql::Page::<$table>, $crate::rbdc::Error> {
                 use $crate::sql::IPageRequest;
-                let table_name = $table_name.to_string();
+                let mut column_name = "*".to_string();
+                $(
+                     if stringify!($param_key) == "column_name"{
+                         column_name = $param_key.to_string();
+                     }
+                )*
+                let mut table_name = $table_name.to_string();
+                $(
+                     if stringify!($param_key) == "table_name"{
+                         table_name = $param_key.to_string();
+                     }
+                )*
                 let mut total = 0;
                 {
                    #[$crate::py_sql("`select count(1) as count from ${table_name} `",$where_sql)]
-                   async fn $fn_name(rb: &mut dyn $crate::executor::Executor,table_name: &str,$($param_key:$param_type,)*) -> Result<u64, $crate::rbdc::Error> {impled!()}
-                   total = $fn_name(rb, &table_name, $($param_key,)*).await?;
+                   async fn $fn_name(rb: &mut dyn $crate::executor::Executor,column_name:&str,table_name: &str,$($param_key:$param_type,)*) -> Result<u64, $crate::rbdc::Error> {impled!()}
+                   total = $fn_name(rb, &column_name,&table_name, $($param_key,)*).await?;
                 }
                 let records:Vec<$table>;
-                #[$crate::py_sql("`select * from ${table_name} `",$where_sql,"
+                #[$crate::py_sql("`select ${column_name} from ${table_name} `",$where_sql,"
                               if !sql.contains('page_no') && !sql.contains('page_size'):
                                 ` limit ${page_no},${page_size}`")]
-                async fn $fn_name(rb: &mut dyn $crate::executor::Executor,table_name: &str,page_no:u64,page_size:u64,$($param_key:$param_type,)*) -> Result<Vec<$table>, $crate::rbdc::Error> {impled!()}
-                records = $fn_name(rb,&table_name,page_req.offset(), page_req.page_size,$($param_key,)*).await?;
+                async fn $fn_name(rb: &mut dyn $crate::executor::Executor,column_name:&str,table_name: &str,page_no:u64,page_size:u64,$($param_key:$param_type,)*) -> Result<Vec<$table>, $crate::rbdc::Error> {impled!()}
+                records = $fn_name(rb,&column_name,&table_name,page_req.offset(), page_req.page_size,$($param_key,)*).await?;
 
                 let mut page = $crate::sql::Page::<$table>::new_total(page_req.page_no, page_req.page_size, total);
                 page.records = records;
