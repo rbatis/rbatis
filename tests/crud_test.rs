@@ -343,6 +343,27 @@ mod test {
         };
         block_on(f);
     }
+    #[derive(serde::Serialize,serde::Deserialize)]
+    pub struct DTO{
+        id:String
+    }
+    impl_select!(MockTable{select_by_dto(dto:DTO) -> Option => "`where id = #{id} limit 1`"});
+    #[test]
+    fn test_select_by_dto() {
+        let f = async move {
+            let mut rb = Rbatis::new();
+            rb.link(MockDriver {}, "test").await.unwrap();
+            let r = MockTable::select_by_dto(&mut rb, DTO{
+                id: "1".to_string()
+            }).await.unwrap();
+            println!("{}", r.as_ref().unwrap().sql);
+            assert_eq!(
+                r.unwrap().sql,
+                "select * from mock_table where id = ? limit 1"
+            );
+        };
+        block_on(f);
+    }
     impl_update!(MockTable{update_by_name(name:&str) => "`where id = '2'`"});
     #[test]
     fn test_update_by_name() {
