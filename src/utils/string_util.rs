@@ -38,7 +38,7 @@ pub fn find_convert_string(arg: &str) -> LinkedList<(String, String)> {
 /// convert name to snake name
 pub fn to_snake_name(name: &str) -> String {
     let chs = name.chars();
-    let mut new_name = String::new();
+    let mut new_name = String::with_capacity(name.len());
     let mut index = 0;
     let chs_len = name.len();
     for x in chs {
