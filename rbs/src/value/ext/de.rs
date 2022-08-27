@@ -156,8 +156,14 @@ impl<'de> Deserialize<'de> for Value {
                 where
                     V: de::MapAccess<'de>,
             {
-                let mut pairs = vec![];
-
+                let mut pairs = {
+                    match visitor.size_hint() {
+                        None => {
+                            vec![]
+                        }
+                        Some(l) => Vec::with_capacity(l),
+                    }
+                };
                 while let Some(key) = visitor.next_key()? {
                     let val = visitor.next_value()?;
                     pairs.push((key, val));
