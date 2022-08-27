@@ -571,10 +571,10 @@ impl From<(&'static str, Value)> for Value {
 /// [`Array`](crate::Value::Array), rather than a
 /// [`Binary`](crate::Value::Binary)
 impl<V> FromIterator<V> for Value
-where
-    V: Into<Value>,
+    where
+        V: Into<Value>,
 {
-    fn from_iter<I: IntoIterator<Item = V>>(iter: I) -> Self {
+    fn from_iter<I: IntoIterator<Item=V>>(iter: I) -> Self {
         let v: Vec<Value> = iter.into_iter().map(|v| v.into()).collect();
         Value::Array(v)
     }
@@ -692,22 +692,7 @@ impl Display for Value {
                 Ok(())
             }
             Value::Map(ref vec) => {
-                write!(f, "{{")?;
-
-                match vec.iter().take(1).next() {
-                    Some(&(ref k, ref v)) => {
-                        write!(f, "{}: {}", k, v)?;
-                    }
-                    None => {
-                        write!(f, "")?;
-                    }
-                }
-
-                for &(ref k, ref v) in vec.iter().skip(1) {
-                    write!(f, ", {}: {}", k, v)?;
-                }
-
-                write!(f, "}}")
+                Display::fmt(vec, f)
             }
             Value::Ext(ref ty, ref data) => {
                 write!(f, "{}({})", ty, data.deref())
