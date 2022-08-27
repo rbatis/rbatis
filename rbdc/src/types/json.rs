@@ -58,7 +58,10 @@ impl From<Value> for Json {
                 Json(v.to_string())
             }
             Value::String(mut v) => {
-                if v.starts_with("{") || v.starts_with("[") {
+                if (v.starts_with("{") && v.ends_with("}"))
+                    || (v.starts_with("[") && v.ends_with("]"))
+                    || (v.starts_with("\"") && v.ends_with("\"")) {
+                    //is json-string
                     Json(v)
                 } else {
                     v.insert(0, '"');
@@ -115,11 +118,18 @@ mod test {
     use crate::json::Json;
 
     #[test]
+    fn test_decode_js_string() {
+        let m = rbs::Value::String(r#""aa""#.to_string());
+        println!("{}", m);
+        assert_eq!(r#""aa""#, Json::from(m).0);
+    }
+
+    #[test]
     fn test_decode_js_string_map() {
         let mut m = ValueMap::new();
         m.insert("a".into(), "1".into());
-        let m=rbs::Value::Map(m);
-        println!("{}",m.to_string());
+        let m = rbs::Value::Map(m);
+        println!("{}", m.to_string());
         assert_eq!(r#"{"a":"1"}"#, Json::from(m).0);
     }
 
@@ -127,22 +137,22 @@ mod test {
     fn test_decode_js_int_map() {
         let mut m = ValueMap::new();
         m.insert("a".into(), 1.into());
-        let m=rbs::Value::Map(m);
-        println!("{}",m.to_string());
+        let m = rbs::Value::Map(m);
+        println!("{}", m.to_string());
         assert_eq!(r#"{"a":1}"#, Json::from(m).0);
     }
 
     #[test]
     fn test_decode_js_int_arr() {
-        let arr = rbs::Value::Array(vec![rbs::Value::I64(1),rbs::Value::I64(2)]);
-        println!("{}",arr.to_string());
+        let arr = rbs::Value::Array(vec![rbs::Value::I64(1), rbs::Value::I64(2)]);
+        println!("{}", arr.to_string());
         assert_eq!(r#"[1,2]"#, Json::from(arr).0);
     }
 
     #[test]
     fn test_decode_js_string_arr() {
-        let arr = rbs::Value::Array(vec![rbs::Value::String(1.to_string()),rbs::Value::String(2.to_string())]);
-        println!("{}",arr.to_string());
+        let arr = rbs::Value::Array(vec![rbs::Value::String(1.to_string()), rbs::Value::String(2.to_string())]);
+        println!("{}", arr.to_string());
         assert_eq!(r#"["1","2"]"#, Json::from(arr).0);
     }
 }
