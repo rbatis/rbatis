@@ -23,10 +23,15 @@ impl Debug for ValueMap {
 impl Display for ValueMap {
     fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
         f.write_str("{")?;
+        let mut idx = 0;
         for (k, v) in &self.0 {
             Display::fmt(k, f)?;
             f.write_str(":")?;
             Display::fmt(v, f)?;
+            if idx + 1 != self.len() {
+                Display::fmt(",", f)?;
+            }
+            idx += 1;
         }
         f.write_str("}")
     }
@@ -161,4 +166,17 @@ macro_rules! value_map {
         m
         }
     };
+}
+
+#[cfg(test)]
+mod test {
+    use crate::value::map::ValueMap;
+
+    #[test]
+    fn test_fmt() {
+        let mut m = ValueMap::new();
+        m.insert("1".into(), 1.into());
+        m.insert("2".into(), 2.into());
+        assert_eq!(m.to_string(), r#"{"1":1,"2":2}"#);
+    }
 }
