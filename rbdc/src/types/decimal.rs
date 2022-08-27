@@ -1,11 +1,24 @@
 use rbs::Value;
 use std::fmt::{Debug, Display, Formatter};
 use std::str::FromStr;
+use serde::Deserializer;
 use crate::Error;
 
-#[derive(serde::Serialize, serde::Deserialize, Clone, Eq, PartialEq, Hash)]
+#[derive(serde::Serialize, Clone, Eq, PartialEq, Hash)]
 #[serde(rename = "Decimal")]
 pub struct Decimal(pub String);
+
+impl<'de> serde::Deserialize<'de> for Decimal {
+    fn deserialize<D>(deserializer: D) -> Result<Self, D::Error> where D: Deserializer<'de> {
+        use serde::de::Error;
+        match Value::deserialize(deserializer)?.into_string() {
+            None => { Err(D::Error::custom("warn type decode Decimal")) }
+            Some(v) => {
+                Ok(Self(v))
+            }
+        }
+    }
+}
 
 impl Display for Decimal {
     fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
@@ -13,7 +26,7 @@ impl Display for Decimal {
     }
 }
 
-impl Debug for Decimal{
+impl Debug for Decimal {
     fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
         write!(f, "Decimal({})", self.0)
     }
@@ -25,7 +38,7 @@ impl From<Decimal> for Value {
     }
 }
 
-impl FromStr for Decimal{
+impl FromStr for Decimal {
     type Err = Error;
 
     fn from_str(s: &str) -> Result<Self, Self::Err> {

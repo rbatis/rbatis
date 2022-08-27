@@ -38,8 +38,6 @@ upper_case_sql_keyword = []
 rbatis-codegen = { version = "4.0", path = "rbatis-codegen", optional = true }
 rbatis-macro-driver = { version = "4.0", path = "rbatis-macro-driver", default-features = false, optional = true }
 serde = "1"
-#uuid
-uuid = { version = "0.8", features = ["serde", "v4"] }
 #log
 log = "0.4"
 futures-core = { version = "0.3" }

@@ -17,26 +17,6 @@
 //! | `f64`                                 | REAL                                                 |
 //! | `&str`, [`String`]                    | TEXT                                                 |
 //! | `&[u8]`, `Vec<u8>`                    | BLOB                                                 |
-//!
-//! ### [`chrono`](https://crates.io/crates/chrono)
-//!
-//! Requires the `chrono` Cargo feature flag.
-//!
-//! | Rust type                             | Sqlite type(s)                                        |
-//! |---------------------------------------|------------------------------------------------------|
-//! | `chrono::NaiveDateTime`               | DATETIME                                             |
-//! | `chrono::DateTime<Utc>`               | DATETIME                                             |
-//! | `chrono::DateTime<Local>`             | DATETIME                                             |
-//!
-//! ### [`uuid`](https://crates.io/crates/uuid)
-//!
-//! Requires the `uuid` Cargo feature flag.
-//!
-//! | Rust type                             | Sqlite type(s)                                       |
-//! |---------------------------------------|------------------------------------------------------|
-//! | `uuid::Uuid`                          | BLOB, TEXT                                           |
-//! | `uuid::fmt::Hyphenated`               | TEXT                                                 |
-//!
 //! # Nullable
 //!
 //! In addition, `Option<T>` is supported where `T` implements `Type`. An `Option<T>` represents
@@ -45,16 +25,9 @@
 
 mod bool;
 mod bytes;
-#[cfg(feature = "chrono")]
-mod chrono;
 mod float;
 mod int;
-#[cfg(feature = "json")]
-mod json;
 mod str;
 mod uint;
-#[cfg(feature = "uuid")]
-mod uuid;
 use crate::type_info::Type;
-
 mod value;
