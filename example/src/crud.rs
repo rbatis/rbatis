@@ -3,11 +3,9 @@ extern crate rbatis;
 
 pub mod model;
 
-use std::thread::sleep;
 use crate::model::{init_sqlite, BizActivity};
 use rbatis::sql::page::PageRequest;
 use rbatis::rbdc::datetime::FastDateTime;
-use std::time::Duration;
 
 //crud!(BizActivity {},"biz_activity");
 crud!(BizActivity {}); //crud = insert+select_by_column+update_by_column+delete_by_column
@@ -73,37 +71,27 @@ pub async fn main() {
     .await;
     println!("update_by_column_batch = {:?}", data);
 
-    sleep(Duration::from_secs(2));
-
     let data = BizActivity::select_all_by_id(&mut rb, "1", "1").await;
     println!("select_all_by_id = {:?}", data);
-
-    sleep(Duration::from_secs(2));
 
     let data = BizActivity::select_by_id(&mut rb, "1").await;
     println!("select_by_id = {:?}", data);
 
-    sleep(Duration::from_secs(2));
     let data = BizActivity::update_by_column(&mut rb, &t, "id").await;
     println!("update_by_column = {:?}", data);
 
-    sleep(Duration::from_secs(2));
     let data = BizActivity::update_by_name(&mut rb, &t, "test").await;
     println!("update_by_name = {:?}", data);
 
-    sleep(Duration::from_secs(2));
     let data = BizActivity::delete_by_column(&mut rb, "id", "2").await;
     println!("delete_by_column = {:?}", data);
 
-    sleep(Duration::from_secs(2));
     let data = BizActivity::delete_by_name(&mut rb, "2").await;
     println!("delete_by_column = {:?}", data);
 
-    sleep(Duration::from_secs(2));
     let data = BizActivity::select_page(&mut rb, &PageRequest::new(1, 10)).await;
     println!("select_page = {:?}", data);
 
-    sleep(Duration::from_secs(2));
     let data = BizActivity::select_page_by_name(&mut rb, &PageRequest::new(1, 10), "").await;
     println!("select_page_by_name = {:?}", data);
 }
