@@ -18,7 +18,6 @@ use std::fmt::{Debug, Formatter};
 use std::ops::DerefMut;
 use std::sync::Arc;
 use std::time::Duration;
-use uuid::Uuid;
 use rbdc::deadpool::managed::Timeouts;
 
 /// rbatis engine
