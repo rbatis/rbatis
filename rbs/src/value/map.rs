@@ -1,5 +1,5 @@
 use crate::Value;
-use std::fmt::{Debug, Formatter};
+use std::fmt::{Debug, Display, Formatter};
 use std::ops::{Deref, DerefMut, Index, IndexMut};
 use std::vec::IntoIter;
 
@@ -17,6 +17,18 @@ impl Debug for ValueMap {
         f.debug_map()
             .entries(self.0.iter().map(|&(ref k, ref v)| (k, v)))
             .finish()
+    }
+}
+
+impl Display for ValueMap {
+    fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
+        f.write_str("{")?;
+        for (k, v) in &self.0 {
+            Display::fmt(k, f)?;
+            f.write_str(":")?;
+            Display::fmt(v, f)?;
+        }
+        f.write_str("}")
     }
 }
 

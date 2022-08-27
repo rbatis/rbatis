@@ -142,25 +142,31 @@ mod test {
     fn test_decode_js_string_map() {
         let mut m = ValueMap::new();
         m.insert("a".into(), "1".into());
-        assert_eq!(r#"{"a":"1"}"#, Json::from(rbs::Value::Map(m)).0);
+        let m=rbs::Value::Map(m);
+        println!("{}",m.to_string());
+        assert_eq!(r#"{"a":"1"}"#, Json::from(m).0);
     }
 
     #[test]
     fn test_decode_js_int_map() {
         let mut m = ValueMap::new();
         m.insert("a".into(), 1.into());
-        assert_eq!(r#"{"a":1}"#, Json::from(rbs::Value::Map(m)).0);
+        let m=rbs::Value::Map(m);
+        println!("{}",m.to_string());
+        assert_eq!(r#"{"a":1}"#, Json::from(m).0);
     }
 
     #[test]
     fn test_decode_js_int_arr() {
         let arr = rbs::Value::Array(vec![rbs::Value::I64(1)]);
+        println!("{}",arr.to_string());
         assert_eq!(r#"[1]"#, Json::from(arr).0);
     }
 
     #[test]
     fn test_decode_js_string_arr() {
         let arr = rbs::Value::Array(vec![rbs::Value::String(1.to_string())]);
+        println!("{}",arr.to_string());
         assert_eq!(r#"["1"]"#, Json::from(arr).0);
     }
 }
