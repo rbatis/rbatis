@@ -14,6 +14,14 @@ fn bench_rbs_decode(b: &mut Bencher) {
 }
 
 #[bench]
+fn bench_rbs_decode_value(b: &mut Bencher) {
+    let v: Value = 1.into();
+    b.iter(|| {
+        rbs::from_value::<Value>(v.clone()).unwrap();
+    });
+}
+
+#[bench]
 fn bench_rbatis_decode(b: &mut Bencher) {
     let array = Value::Array(vec![Value::Map(value_map! {
             1 => 1,
