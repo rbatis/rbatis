@@ -61,8 +61,14 @@ impl From<Value> for Json {
             Value::F64(v) => {
                 Json(v.to_string())
             }
-            Value::String(v) => {
-                Json(v)
+            Value::String(mut v) => {
+                if v.starts_with("{") || v.starts_with("[") {
+                    Json(v)
+                } else {
+                    v.insert(0, '"');
+                    v.push('"');
+                    Json(v)
+                }
             }
             Value::Binary(v) => {
                 Json(unsafe { String::from_utf8_unchecked(v) })
@@ -86,9 +92,8 @@ impl From<Value> for Json {
                 let mut s = String::with_capacity(v.len());
                 s.push_str("{");
                 for (k, v) in v {
-                    s.push_str("\"");
                     s.push_str(&k.to_string());
-                    s.push_str("\":");
+                    s.push_str(":");
                     s.push_str(&Json::from(v).0);
                 }
                 s.push_str("}");
@@ -130,31 +135,32 @@ impl FromStr for Json {
 
 #[cfg(test)]
 mod test {
-    use std::collections::HashMap;
+    use rbs::value::map::ValueMap;
     use crate::json::Json;
 
     #[test]
-    fn test_decode_js_int() {
-        let v = serde_json::to_value(1).unwrap();
-        assert_eq!(v.to_string(), Json::from(v).0);
+    fn test_decode_js_string_map() {
+        let mut m = ValueMap::new();
+        m.insert("a".into(), "1".into());
+        assert_eq!(r#"{"a":"1"}"#, Json::from(rbs::Value::Map(m)).0);
     }
 
     #[test]
-    fn test_decode_js_string() {
-        let v = serde_json::to_value("1").unwrap();
-        assert_eq!(v.to_string(), Json::from(v).0);
+    fn test_decode_js_int_map() {
+        let mut m = ValueMap::new();
+        m.insert("a".into(), 1.into());
+        assert_eq!(r#"{"a":1}"#, Json::from(rbs::Value::Map(m)).0);
+    }
+
+    #[test]
+    fn test_decode_js_int_arr() {
+        let arr = rbs::Value::Array(vec![rbs::Value::I64(1)]);
+        assert_eq!(r#"[1]"#, Json::from(arr).0);
     }
 
     #[test]
     fn test_decode_js_string_arr() {
-        let v = serde_json::to_value(&["1"]).unwrap();
-        assert_eq!(v.to_string(), Json::from(v).0);
-    }
-    #[test]
-    fn test_decode_js_string_map() {
-        let mut m = HashMap::new();
-        m.insert("a","1");
-        let v = serde_json::to_value(&m).unwrap();
-        assert_eq!(v.to_string(), Json::from(v).0);
+        let arr = rbs::Value::Array(vec![rbs::Value::String(1.to_string())]);
+        assert_eq!(r#"["1"]"#, Json::from(arr).0);
     }
 }
