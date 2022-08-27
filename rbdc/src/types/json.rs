@@ -34,14 +34,10 @@ impl From<Value> for Json {
     fn from(v: Value) -> Self {
         match v {
             Value::Null => {
-                Json("null".to_string())
+                Json(v.to_string())
             }
-            Value::Bool(b) => {
-                if b {
-                    Json("true".to_string())
-                } else {
-                    Json("false".to_string())
-                }
+            Value::Bool(v) => {
+                Json(v.to_string())
             }
             Value::I32(v) => {
                 Json(v.to_string())
@@ -73,31 +69,11 @@ impl From<Value> for Json {
             Value::Binary(v) => {
                 Json(unsafe { String::from_utf8_unchecked(v) })
             }
-            Value::Array(v) => {
-                if v.len() == 0 {
-                    return Json("null".to_string());
-                }
-                let mut s = String::with_capacity(v.len());
-                s.push_str("[");
-                for x in v {
-                    s.push_str(&Json::from(x).0);
-                }
-                s.push_str("]");
-                Json(s)
+            Value::Array(_) => {
+                Json(v.to_string())
             }
             Value::Map(v) => {
-                if v.len() == 0 {
-                    return Json("null".to_string());
-                }
-                let mut s = String::with_capacity(v.len());
-                s.push_str("{");
-                for (k, v) in v {
-                    s.push_str(&k.to_string());
-                    s.push_str(":");
-                    s.push_str(&Json::from(v).0);
-                }
-                s.push_str("}");
-                Json(s)
+                Json(v.to_string())
             }
             Value::Ext(_name, v) => {
                 Json::from(*v)
@@ -158,15 +134,15 @@ mod test {
 
     #[test]
     fn test_decode_js_int_arr() {
-        let arr = rbs::Value::Array(vec![rbs::Value::I64(1)]);
+        let arr = rbs::Value::Array(vec![rbs::Value::I64(1),rbs::Value::I64(2)]);
         println!("{}",arr.to_string());
-        assert_eq!(r#"[1]"#, Json::from(arr).0);
+        assert_eq!(r#"[1,2]"#, Json::from(arr).0);
     }
 
     #[test]
     fn test_decode_js_string_arr() {
-        let arr = rbs::Value::Array(vec![rbs::Value::String(1.to_string())]);
+        let arr = rbs::Value::Array(vec![rbs::Value::String(1.to_string()),rbs::Value::String(2.to_string())]);
         println!("{}",arr.to_string());
-        assert_eq!(r#"["1"]"#, Json::from(arr).0);
+        assert_eq!(r#"["1","2"]"#, Json::from(arr).0);
     }
 }
