@@ -10,6 +10,7 @@
 extern crate rbatis;
 
 pub mod model;
+
 use model::*;
 
 use rbatis::executor::Executor;
@@ -19,7 +20,10 @@ use rbatis::rbdc::datetime::FastDateTime;
 use std::fs::File;
 use std::io::Read;
 
-#[html_sql(r#"<select id="select_by_condition">
+
+// Clion Smart tips: click code, choose 'Inject Language or Reference', and then choose html
+#[html_sql(r#"<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.1//EN" "https://raw.githubusercontent.com/rbatis/rbatis/master/rbatis-codegen/mybatis-3-mapper.dtd">
+  <select id="select_by_condition">
         `select * from biz_activity`
         <where>
             <if test="name != ''">
@@ -39,7 +43,7 @@ use std::io::Read;
                 ` and name != '' `
             </trim>
         </where>
-    </select>"#)]
+  </select>"#)]
 async fn select_by_condition(rb: &mut dyn Executor, name: &str, dt: &FastDateTime) -> rbatis::Result<Vec<BizActivity>> {
     impled!()
 }
@@ -50,7 +54,7 @@ pub async fn main() {
     //use static ref
     let rb = init_sqlite().await;
     let a = select_by_condition(&mut rb.clone(), "test", &FastDateTime::now().set_micro(0))
-    .await
-    .unwrap();
+        .await
+        .unwrap();
     println!("{:?}", a);
 }
