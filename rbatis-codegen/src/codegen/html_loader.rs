@@ -1,8 +1,8 @@
 use html_parser::{Dom, Node, Result};
 use std::collections::HashMap;
-use std::fmt::{Debug, Formatter};
+use std::fmt::{Debug, Display, Formatter, Write};
 
-#[derive(Clone, Eq, PartialEq)]
+#[derive(Clone, Eq, PartialEq, Debug)]
 pub struct Element {
     pub tag: String,
     pub data: String,
@@ -10,24 +10,35 @@ pub struct Element {
     pub childs: Vec<Element>,
 }
 
-impl Debug for Element {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        let mut s = f.debug_struct("");
+impl Display for Element {
+    fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
         match self.tag.as_str() {
             "" => {
-                s.field("data", &self.data);
+                f.write_str("`")?;
+                f.write_str(&self.data)?;
+                f.write_str("`")?;
             }
             _ => {
-                s.field("tag", &self.tag);
-                if !self.attrs.is_empty() {
-                    s.field("attributes", &self.attrs);
+                f.write_str("<")?;
+                f.write_str(&self.tag)?;
+                for (k, v) in &self.attrs {
+                    f.write_str(" ")?;
+                    f.write_str(k)?;
+                    f.write_str("=\"")?;
+                    f.write_str(v)?;
+                    f.write_str("\"")?;
                 }
-                if !self.childs.is_empty() {
-                    s.field("childs", &self.childs);
+                f.write_str(">")?;
+                for x in &self.childs {
+                    std::fmt::Display::fmt(x, f)?;
                 }
+                //</if>
+                f.write_str("</")?;
+                f.write_str(&self.tag)?;
+                f.write_str(">")?;
             }
         }
-        return s.finish();
+        return Ok(());
     }
 }
 
@@ -88,6 +99,7 @@ pub fn load_html(html: &str) -> Result<Vec<Element>> {
 #[cfg(test)]
 mod test {
     use crate::codegen::html_loader::load_html;
+
     #[test]
     fn test_parser() {
         let nodes = load_html(r#"<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.1//EN" "https://raw.githubusercontent.com/rbatis/rbatis/master/rbatis-codegen/mybatis-3-mapper.dtd">
@@ -102,6 +114,22 @@ mod test {
             '${item}'
         </foreach>
     </insert></mapper>"#).unwrap();
+        println!("{:?}", nodes);
+    }
+
+    #[test]
+    fn test_item() {
+        let nodes = load_html(r#"
+    <insert id="insert">
+        'insert into biz_activity'
+        <foreach collection="arg" index="key" item="item" open="(" close=")" separator=",">
+            '${key}'
+        </foreach>
+        'values'
+        <foreach collection="arg" index="key" item="item" open="(" close=")" separator=",">
+            '${item}'
+        </foreach>
+    </insert>"#).unwrap();
         println!("{:?}", nodes);
     }
 }

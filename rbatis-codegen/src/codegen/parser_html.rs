@@ -15,34 +15,37 @@ use crate::codegen::html_loader::{load_html, Element};
 use crate::codegen::proc_macro::TokenStream;
 use crate::codegen::string_util::find_convert_string;
 use crate::codegen::syntax_tree::NodeType;
+use crate::error::Error;
+
+/// return Map<id,Element>
+pub fn load_html_include_replace(html: &str) -> Result<HashMap<String, Element>, Error> {
+    let mut datas = load_html(html).map_err(|e| Error::from(e.to_string()))?;
+    if let Some(x) = datas.iter().next() {
+        if x.tag.eq("mapper") {
+            datas = x.childs.clone();
+        }
+    }
+    let mut sql_map = HashMap::new();
+    let mut datas = include_replace(datas, &mut sql_map);
+    Ok(sql_map)
+}
 
 pub fn parse_html_str(
     html: &str,
     fn_name: &str,
     ignore: &mut Vec<String>,
 ) -> proc_macro2::TokenStream {
-    let datas = load_html(html).expect("load_html() fail!");
-    let mut sql_map = HashMap::new();
-    let datas = include_replace(datas, &mut sql_map);
-    drop(sql_map);
-    for x in datas {
-        if x.tag.eq("mapper") {
-            for x in x.childs {
-                match x.attrs.get("id") {
-                    Some(id) => {
-                        if id.eq(fn_name) {
-                            let node = parse_html_node(vec![x], ignore);
-                            return node;
-                        }
-                    }
-                    _ => {}
-                }
-            }
-
-            break;
+    let html = html.replace("\\\"", "\"").trim_start_matches("\"").trim_end_matches("\"").to_string();
+    let mut datas = load_html_include_replace(&html).expect(&format!("laod html={} fail", html));
+    match datas.into_iter().next() {
+        None => {
+            panic!("html not find fn:{}", fn_name);
+        }
+        Some((k, v)) => {
+            let node = parse_html_node(vec![v], ignore, fn_name);
+            return node;
         }
     }
-    panic!("html not find fn:{}", fn_name);
 }
 
 fn find_element(id: &str, htmls: &Vec<Element>) -> Option<Element> {
@@ -67,7 +70,7 @@ fn find_element(id: &str, htmls: &Vec<Element>) -> Option<Element> {
 
 fn include_replace(
     htmls: Vec<Element>,
-    sql_map: &mut HashMap<String, Vec<Element>>,
+    sql_map: &mut HashMap<String, Element>,
 ) -> Vec<Element> {
     let mut results = vec![];
     for mut x in htmls {
@@ -78,7 +81,7 @@ fn include_replace(
                         .get("id")
                         .expect("[rbatis] <sql> element must have id!")
                         .clone(),
-                    x.childs.clone(),
+                    x.clone(),
                 );
             }
             "include" => {
@@ -122,7 +125,7 @@ fn include_replace(
                             refid, refid_path
                         ))
                         .clone();
-                    for el in element {
+                    for el in element.childs {
                         x.childs.push(el.clone());
                     }
                 }
@@ -131,7 +134,7 @@ fn include_replace(
                 None => {}
                 Some(id) => {
                     if !id.is_empty() {
-                        sql_map.insert(id.clone(), x.childs.clone());
+                        sql_map.insert(id.clone(), x.clone());
                     }
                 }
             },
@@ -139,7 +142,6 @@ fn include_replace(
         if x.childs.len() != 0 {
             x.childs = include_replace(x.childs.clone(), sql_map);
         }
-
         match x.tag.as_str() {
             "include" | "sql" => {
                 for c in x.childs {
@@ -154,9 +156,9 @@ fn include_replace(
     return results;
 }
 
-fn parse_html_node(htmls: Vec<Element>, ignore: &mut Vec<String>) -> proc_macro2::TokenStream {
+fn parse_html_node(htmls: Vec<Element>, ignore: &mut Vec<String>, fn_name: &str) -> proc_macro2::TokenStream {
     let mut methods = quote!();
-    let fn_impl = parse(&htmls, &mut methods, ignore);
+    let fn_impl = parse(&htmls, &mut methods, ignore, fn_name);
     let token = quote! {
         #methods
         #fn_impl
@@ -179,6 +181,7 @@ fn parse(
     arg: &Vec<Element>,
     methods: &mut proc_macro2::TokenStream,
     ignore: &mut Vec<String>,
+    fn_name: &str,
 ) -> proc_macro2::TokenStream {
     let mut body = quote! {};
     let fix_sql = quote! {
@@ -187,13 +190,13 @@ fn parse(
     for x in arg {
         match x.tag.as_str() {
             "mapper" => {
-                return parse(&x.childs, methods, ignore);
+                return parse(&x.childs, methods, ignore, fn_name);
             }
             "sql" => {
-                return parse(&x.childs, methods, ignore);
+                return parse(&x.childs, methods, ignore, fn_name);
             }
             "include" => {
-                return parse(&x.childs, methods, ignore);
+                return parse(&x.childs, methods, ignore, fn_name);
             }
             "println" => {
                 impl_println(x, &mut body, ignore);
@@ -247,7 +250,7 @@ fn parse(
                     .expect(&format!("{} element must be have test field!", x.tag));
                 let mut if_tag_body = quote! {};
                 if x.childs.len() != 0 {
-                    if_tag_body = parse(&x.childs, methods, ignore);
+                    if_tag_body = parse(&x.childs, methods, ignore, fn_name);
                 }
                 impl_if(
                     test_value,
@@ -282,6 +285,7 @@ fn parse(
                     arg,
                     methods,
                     ignore,
+                    fn_name,
                 );
             }
             "bind" => {
@@ -323,6 +327,7 @@ fn parse(
                     arg,
                     methods,
                     ignore,
+                    fn_name,
                 );
                 body = quote! {
                     #body
@@ -345,7 +350,7 @@ fn parse(
                             .expect(&format!("{} element must be have test field!", x.tag));
                         let mut if_tag_body = quote! {};
                         if x.childs.len() != 0 {
-                            if_tag_body = parse(&x.childs, methods, ignore);
+                            if_tag_body = parse(&x.childs, methods, ignore, fn_name);
                         }
                         impl_if(
                             test_value,
@@ -357,7 +362,7 @@ fn parse(
                         );
                     }
                     if x.tag.eq("otherwise") {
-                        let child_body = parse(&x.childs, methods, ignore);
+                        let child_body = parse(&x.childs, methods, ignore, fn_name);
                         impl_otherwise(
                             child_body,
                             &mut inner_body,
@@ -408,7 +413,7 @@ fn parse(
                 ignores.push(findex.to_string());
                 ignores.push(item.to_string());
 
-                let impl_body = parse(&x.childs, methods, &mut ignores);
+                let impl_body = parse(&x.childs, methods, &mut ignores, fn_name);
                 let method_impl = crate::codegen::func::impl_fn(
                     &body.to_string(),
                     "",
@@ -458,7 +463,7 @@ fn parse(
 
             "set" => {
                 impl_trim(
-                    " set ", " ", " |,", " |,", x, &mut body, arg, methods, ignore,
+                    " set ", " ", " |,", " |,", x, &mut body, arg, methods, ignore, fn_name,
                 );
             }
 
@@ -467,8 +472,8 @@ fn parse(
                     .attrs
                     .get("id")
                     .expect("<select> element must be have id!");
-                let method_name = Ident::new(id, Span::call_site());
-                let child_body = parse(&x.childs, methods, ignore);
+                let method_name = Ident::new(fn_name, Span::call_site());
+                let child_body = parse(&x.childs, methods, ignore, fn_name);
                 let select = quote! {
                     pub fn #method_name (arg:&rbs::Value, _tag: char) -> (String,Vec<rbs::Value>) {
                        use rbatis_codegen::ops::*;
@@ -489,8 +494,8 @@ fn parse(
                     .attrs
                     .get("id")
                     .expect("<update> element must be have id!");
-                let method_name = Ident::new(id, Span::call_site());
-                let child_body = parse(&x.childs, methods, ignore);
+                let method_name = Ident::new(fn_name, Span::call_site());
+                let child_body = parse(&x.childs, methods, ignore, fn_name);
                 let select = quote! {
                     pub fn #method_name (arg:&rbs::Value, _tag: char) -> (String,Vec<rbs::Value>) {
                        use rbatis_codegen::ops::*;
@@ -512,8 +517,8 @@ fn parse(
                     .attrs
                     .get("id")
                     .expect("<insert> element must be have id!");
-                let method_name = Ident::new(id, Span::call_site());
-                let child_body = parse(&x.childs, methods, ignore);
+                let method_name = Ident::new(fn_name, Span::call_site());
+                let child_body = parse(&x.childs, methods, ignore, fn_name);
                 let select = quote! {
                     pub fn #method_name (arg:&rbs::Value, _tag: char) -> (String,Vec<rbs::Value>) {
                        use rbatis_codegen::ops::*;
@@ -535,8 +540,8 @@ fn parse(
                     .attrs
                     .get("id")
                     .expect("<delete> element must be have id!");
-                let method_name = Ident::new(id, Span::call_site());
-                let child_body = parse(&x.childs, methods, ignore);
+                let method_name = Ident::new(fn_name, Span::call_site());
+                let child_body = parse(&x.childs, methods, ignore, fn_name);
                 let select = quote! {
                     pub fn #method_name (arg:&rbs::Value, _tag: char) -> (String,Vec<rbs::Value>) {
                        use rbatis_codegen::ops::*;
@@ -657,8 +662,9 @@ fn impl_trim(
     arg: &Vec<Element>,
     methods: &mut proc_macro2::TokenStream,
     ignore: &mut Vec<String>,
+    fn_name: &str,
 ) {
-    let trim_body = parse(&x.childs, methods, ignore);
+    let trim_body = parse(&x.childs, methods, ignore, fn_name);
     let prefixs: Vec<&str> = prefixOverrides.split("|").collect();
     let suffixs: Vec<&str> = suffixOverrides.split("|").collect();
     let have_trim = prefixs.len() != 0 && suffixs.len() != 0;
@@ -699,22 +705,8 @@ fn impl_trim(
 pub fn impl_fn_html(m: &ItemFn, args: &AttributeArgs) -> TokenStream {
     let current_dir = current_dir().unwrap();
     let fn_name = m.sig.ident.to_string();
-    let mut file_name = args.get(0).to_token_stream().to_string();
-    if file_name.ne("\"\"") && file_name.starts_with("\"") && file_name.ends_with("\"") {
-        file_name = file_name[1..file_name.len() - 1].to_string();
-    }
+    let mut html_data = args.get(0).to_token_stream().to_string();
     let mut t;
-    #[cfg(feature = "debug_mode")]
-    {
-        println!("try open file:{}", file_name);
-    }
-    let file_name_path_buf = PathBuf::from_str(&file_name).unwrap();
-
-    let mut data = String::new();
-    let mut f = File::open(file_name.as_str())
-        .expect(&format!("File Name = '{}' does not exist", file_name));
-    f.read_to_string(&mut data);
-
     let mut format_char = '?';
     if args.len() > 1 {
         for x in args.get(1).to_token_stream().to_string().chars() {
@@ -724,17 +716,7 @@ pub fn impl_fn_html(m: &ItemFn, args: &AttributeArgs) -> TokenStream {
             }
         }
     }
-    t = parse_html_str(&data, &fn_name, &mut vec![]);
-
-    #[cfg(feature = "debug_mode")]
-    {
-        let id = Ident::new(&format!("_include_{}", fn_name), Span::call_site());
-        let mut html_file_name = file_name.clone();
-        if !file_name_path_buf.is_absolute() {
-            html_file_name = format!("{}/{}", current_dir.to_str().unwrap_or_default(), file_name);
-        }
-        t = quote! {#t let _ = include_str!(#html_file_name);};
-    }
+    t = parse_html_str(&html_data, &fn_name, &mut vec![]);
     return t.into();
 }
 
@@ -752,4 +734,24 @@ fn parse_path(lit_str: &str) -> Path {
         .expect(&format!("parse::<syn::LitStr> fail: {}", lit_str));
     return syn::parse_str::<Path>(&s.value())
         .expect(&format!("parse_str::<Path> fail: {}", lit_str));
+}
+
+
+#[cfg(test)]
+mod test {
+    use crate::codegen::parser_html::load_html_include_replace;
+
+    #[test]
+    fn test_load_html_include_replace() {
+        let datas = load_html_include_replace(r#"<select id="custom_func">
+        `select * from biz_activity`
+        <where>
+            <if test="name.is_test()">
+                `and name like #{name}`
+            </if>
+        </where>
+    </select>"#).unwrap();
+        println!("{:?}", datas);
+        assert_eq!(datas.get("custom_func").is_some(), true);
+    }
 }
