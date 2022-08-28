@@ -733,7 +733,7 @@ pub fn impl_fn_html(m: &ItemFn, args: &AttributeArgs) -> TokenStream {
         if !file_name_path_buf.is_absolute() {
             html_file_name = format!("{}/{}", current_dir.to_str().unwrap_or_default(), file_name);
         }
-        t = quote! {#t fn #id() {let _ = include_str!(#html_file_name);}};
+        t = quote! {#t let _ = include_str!(#html_file_name);};
     }
     return t.into();
 }
