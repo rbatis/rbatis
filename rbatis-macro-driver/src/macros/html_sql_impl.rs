@@ -1,3 +1,5 @@
+use std::fs::File;
+use std::io::Read;
 use proc_macro2::{Ident, Span};
 use quote::quote;
 use quote::ToTokens;
@@ -56,6 +58,20 @@ pub(crate) fn impl_macro_html_sql(target_fn: &ItemFn, args: &AttributeArgs) -> T
     } else {
         panic!("[rbatis] Incorrect macro parameter length!");
     }
+    // sql_ident is html or file?
+    let mut file_name = sql_ident.to_string().trim().to_string();
+    if file_name.ends_with(".html\"") {
+        file_name = file_name.trim_start_matches("\"").trim_end_matches("\"").to_string();
+    }
+    if file_name.ends_with(".html") {
+        let mut html_data = String::new();
+        let mut f = File::open(file_name.as_str()).expect(&format!("File Name = '{}' does not exist", file_name));
+        f.read_to_string(&mut html_data).expect(&format!("{} read_to_string fail", file_name));
+        let mut htmls = rbatis_codegen::codegen::parser_html::load_html_include_replace(&html_data).expect("load html content fail");
+        let token = htmls.remove(&func_name_ident.to_string()).expect("");
+        let token = format!("{}", token);
+        sql_ident = token.to_token_stream();
+    }
     let func_args_stream = target_fn.sig.inputs.to_token_stream();
     let fn_body = find_fn_body(target_fn);
     let is_async = target_fn.sig.asyncness.is_some();
@@ -70,7 +86,7 @@ pub(crate) fn impl_macro_html_sql(target_fn: &ItemFn, args: &AttributeArgs) -> T
             &rbatis_ident.to_string().trim_start_matches("mut "),
             Span::call_site(),
         )
-        .to_token_stream();
+            .to_token_stream();
     }
 
     //append all args
@@ -91,14 +107,14 @@ pub(crate) fn impl_macro_html_sql(target_fn: &ItemFn, args: &AttributeArgs) -> T
     }
     let gen_target_method = quote! {
         #[rbatis::rb_html(#sql_ident)]
-        pub fn #func_name_ident(arg: &rbs::Value, _tag: char) {}
+        pub fn impl_html_sql(arg: &rbs::Value, _tag: char) {}
     };
     let gen_target_macro_arg = quote! {
         #sql_ident
     };
     let gen_func: proc_macro2::TokenStream =
         rbatis_codegen::rb_html(gen_target_macro_arg.into(), gen_target_method.into()).into();
-    //gen rust code templete
+    //gen rust code
     return quote! {
        pub async fn #func_name_ident(#func_args_stream) -> #return_ty {
          let mut rb_arg_map = rbs::value::map::ValueMap::new();
@@ -108,9 +124,9 @@ pub(crate) fn impl_macro_html_sql(target_fn: &ItemFn, args: &AttributeArgs) -> T
          let driver_type = #rbatis_ident.get_rbatis().driver_type()?;
          use rbatis::rbatis_codegen;
          #gen_func
-         let (mut sql,rb_args) = #func_name_ident(&rbs::Value::Map(rb_arg_map),'?');
+         let (mut sql,rb_args) = impl_html_sql(&rbs::Value::Map(rb_arg_map),'?');
          #call_method
        }
     }
-    .into();
+        .into();
 }

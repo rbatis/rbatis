@@ -72,7 +72,7 @@ pub(crate) fn impl_macro_py_sql(target_fn: &ItemFn, args: &AttributeArgs) -> Tok
             &rbatis_ident.to_string().trim_start_matches("mut "),
             Span::call_site(),
         )
-        .to_token_stream();
+            .to_token_stream();
     }
     //append all args
     let sql_args_gen = filter_args_context_id(&rbatis_name, &get_fn_args(target_fn));
@@ -92,7 +92,7 @@ pub(crate) fn impl_macro_py_sql(target_fn: &ItemFn, args: &AttributeArgs) -> Tok
     }
     let gen_target_method = quote! {
         #[rbatis::rb_py(#sql_ident)]
-        pub fn #func_name_ident(arg: &rbs::Value, _tag: char) {}
+        pub fn do_py_sql(arg: &rbs::Value, _tag: char) {}
     };
     let gen_target_macro_arg = quote! {
         #sql_ident
@@ -109,11 +109,11 @@ pub(crate) fn impl_macro_py_sql(target_fn: &ItemFn, args: &AttributeArgs) -> Tok
          let driver_type = #rbatis_ident.get_rbatis().driver_type()?;
          use rbatis::rbatis_codegen;
          #gen_func
-         let (mut sql,rb_args) = #func_name_ident(&rbs::Value::Map(rb_arg_map), '?');
+         let (mut sql,rb_args) = do_py_sql(&rbs::Value::Map(rb_arg_map), '?');
          #call_method
        }
     }
-    .into();
+        .into();
 }
 
 pub(crate) fn filter_args_context_id(
@@ -137,7 +137,7 @@ pub(crate) fn filter_args_context_id(
                 item.to_string().trim_start_matches("mut "),
                 Span::call_site(),
             )
-            .to_token_stream();
+                .to_token_stream();
         }
         sql_args_gen = quote! {
              #sql_args_gen
