@@ -26,6 +26,9 @@ use std::io::Read;
   <select id="select_by_condition">
         `select * from biz_activity`
         <where>
+         <if test="a">
+                ` and name like #{name}`
+            </if>
             <if test="name != ''">
                 ` and name like #{name}`
             </if>
@@ -44,7 +47,7 @@ use std::io::Read;
             </trim>
         </where>
   </select>"#)]
-async fn select_by_condition(rb: &mut dyn Executor, name: &str, dt: &FastDateTime) -> rbatis::Result<Vec<BizActivity>> {
+async fn select_by_condition(rb: &mut dyn Executor, name: &str, dt: &FastDateTime,a:bool) -> rbatis::Result<Vec<BizActivity>> {
     impled!()
 }
 
@@ -53,7 +56,7 @@ pub async fn main() {
     fast_log::init(fast_log::Config::new().console()).expect("rbatis init fail");
     //use static ref
     let rb = init_sqlite().await;
-    let a = select_by_condition(&mut rb.clone(), "test", &FastDateTime::now().set_micro(0))
+    let a = select_by_condition(&mut rb.clone(), "test", &FastDateTime::now().set_micro(0),false)
         .await
         .unwrap();
     println!("{:?}", a);
