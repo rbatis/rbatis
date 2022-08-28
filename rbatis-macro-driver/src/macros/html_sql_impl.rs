@@ -121,14 +121,16 @@ pub(crate) fn impl_macro_html_sql(target_fn: &ItemFn, args: &AttributeArgs) -> T
     };
     #[cfg(feature = "debug_mode")]
     {
-        use std::env::current_dir;
-        use std::path::PathBuf;
-        let current_dir = current_dir().unwrap();
-        let mut html_file_name = file_name.clone();
-        if !PathBuf::from(&file_name).is_absolute() {
-            html_file_name = format!("{}/{}", current_dir.to_str().unwrap_or_default(), file_name);
+        if file_name.ends_with(".html") {
+            use std::env::current_dir;
+            use std::path::PathBuf;
+            let current_dir = current_dir().unwrap();
+            let mut html_file_name = file_name.clone();
+            if !PathBuf::from(&file_name).is_absolute() {
+                html_file_name = format!("{}/{}", current_dir.to_str().unwrap_or_default(), file_name);
+            }
+            include_data = quote! {#include_data  let _ = include_bytes!(#html_file_name);};
         }
-        include_data = quote! {#include_data  let _ = include_bytes!(#html_file_name);};
     }
     //gen rust code
     return quote! {
