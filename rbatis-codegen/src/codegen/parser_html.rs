@@ -35,7 +35,11 @@ pub fn parse_html_str(
     fn_name: &str,
     ignore: &mut Vec<String>,
 ) -> proc_macro2::TokenStream {
-    let html = html.replace("\\\"", "\"").trim_start_matches("\"").trim_end_matches("\"").to_string();
+    let html = html
+        .replace("\\\"", "\"")
+        .replace("\\n","\n")
+        .trim_start_matches("\"")
+        .trim_end_matches("\"").to_string();
     let mut datas = load_html_include_replace(&html).expect(&format!("laod html={} fail", html));
     match datas.into_iter().next() {
         None => {
