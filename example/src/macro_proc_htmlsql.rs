@@ -19,7 +19,27 @@ use rbatis::rbdc::datetime::FastDateTime;
 use std::fs::File;
 use std::io::Read;
 
-#[html_sql("example/example.html")]
+#[html_sql(r#"<select id="select_by_condition">
+        `select * from biz_activity`
+        <where>
+            <if test="name != ''">
+                ` and name like #{name}`
+            </if>
+            <if test="dt >= '2009-12-12 00:00:00'">
+                ` and create_time < #{dt}`
+            </if>
+            <choose>
+                <when test="true">
+                    ` and id != '-1'`
+                </when>
+                <otherwise>and id != -2</otherwise>
+            </choose>
+            ` and `
+            <trim prefixOverrides=" and">
+                ` and name != '' `
+            </trim>
+        </where>
+    </select>"#)]
 async fn select_by_condition(rb: &mut dyn Executor, name: &str, dt: &FastDateTime) -> rbatis::Result<Vec<BizActivity>> {
     impled!()
 }
