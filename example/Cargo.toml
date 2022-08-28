@@ -38,8 +38,8 @@ path = "src/raw_sql.rs"
 name = "macro_proc_htmlsql_page"
 path = "src/macro_proc_htmlsql_page.rs"
 [[bin]]
-name = "macro_proc_htmlsql_raw"
-path = "src/macro_proc_htmlsql_raw.rs"
+name = "macro_proc_htmlsql_an_file"
+path = "src/macro_proc_htmlsql_an_file.rs"
 [dependencies]
 #serde and base types
 serde = { version = "1", features = ["derive"] }
