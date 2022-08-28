@@ -6,7 +6,6 @@
 //! ```
 use crate::value::map::ValueMap;
 use std::borrow::Cow;
-use std::convert::TryFrom;
 use std::fmt::{self, Debug, Display};
 use std::iter::FromIterator;
 use std::ops::Deref;
@@ -580,86 +579,6 @@ impl<V> FromIterator<V> for Value
     }
 }
 
-impl TryFrom<Value> for u64 {
-    type Error = Value;
-
-    fn try_from(val: Value) -> Result<Self, Self::Error> {
-        match val {
-            Value::U64(n) => Ok(n),
-            v => Err(v),
-        }
-    }
-}
-
-impl TryFrom<Value> for i64 {
-    type Error = Value;
-
-    fn try_from(val: Value) -> Result<Self, Self::Error> {
-        match val {
-            Value::I64(n) => Ok(n),
-            v => Err(v),
-        }
-    }
-}
-
-impl TryFrom<Value> for f64 {
-    type Error = Value;
-
-    fn try_from(val: Value) -> Result<Self, Self::Error> {
-        match val {
-            Value::F32(n) => Ok(From::from(n)),
-            Value::F64(n) => Ok(n),
-            v => Err(v),
-        }
-    }
-}
-
-impl TryFrom<Value> for String {
-    type Error = Value;
-
-    fn try_from(val: Value) -> Result<Self, Self::Error> {
-        match val {
-            Value::String(u) => Ok(u),
-            _ => Err(val),
-        }
-    }
-}
-// The following impl was left out intentionally, see
-// https://github.com/3Hren/msgpack-rust/pull/228#discussion_r359513925
-/*
-impl TryFrom<Value> for (i8, Vec<u8>) {
-  type Error = Value;
-
-  fn try_from(val: Value) -> Result<Self, Self::Error> {
-      match val {
-        Value::Ext(i, v) => Ok((i, v)),
-        v => Err(v),
-      }
-  }
-}
-*/
-
-macro_rules! impl_try_from {
-    ($t: ty, $p: ident) => {
-        impl TryFrom<Value> for $t {
-            type Error = Value;
-
-            fn try_from(val: Value) -> Result<$t, Self::Error> {
-                match val {
-                    Value::$p(v) => Ok(v),
-                    v => Err(v),
-                }
-            }
-        }
-    };
-}
-
-impl_try_from!(bool, Bool);
-impl_try_from!(Vec<Value>, Array);
-impl_try_from!(ValueMap, Map);
-impl_try_from!(Vec<u8>, Binary);
-impl_try_from!(f32, F32);
-
 impl Display for Value {
     #[cold]
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> Result<(), fmt::Error> {
@@ -761,6 +680,66 @@ impl<'a> IntoIterator for &'a Value {
                 v.into_iter()
             }
         }
+    }
+}
+
+impl From<Value> for bool {
+    fn from(arg: Value) -> Self {
+        arg.as_bool().unwrap_or_default()
+    }
+}
+
+impl From<&Value> for bool {
+    fn from(arg: &Value) -> Self {
+        arg.as_bool().unwrap_or_default()
+    }
+}
+
+impl From<Value> for f64 {
+    fn from(arg: Value) -> Self {
+        arg.as_f64().unwrap_or_default()
+    }
+}
+
+impl From<&Value> for f64 {
+    fn from(arg: &Value) -> Self {
+        arg.as_f64().unwrap_or_default()
+    }
+}
+
+impl From<Value> for i64 {
+    fn from(arg: Value) -> Self {
+        arg.as_i64().unwrap_or_default()
+    }
+}
+
+impl From<&Value> for i64 {
+    fn from(arg: &Value) -> Self {
+        arg.as_i64().unwrap_or_default()
+    }
+}
+
+impl From<Value> for u64 {
+    fn from(arg: Value) -> Self {
+        arg.as_u64().unwrap_or_default()
+    }
+}
+
+impl From<&Value> for u64 {
+    fn from(arg: &Value) -> Self {
+        arg.as_u64().unwrap_or_default()
+    }
+}
+
+impl From<Value> for String {
+    fn from(arg: Value) -> Self {
+        arg.as_str().unwrap_or_default().to_string()
+    }
+}
+
+impl From<&Value> for String {
+    fn from(arg: &Value) -> Self {
+        arg.as_str().unwrap_or_default().to_string()
     }
 }
 
