@@ -6,7 +6,7 @@ use serde::{Deserialize, Serialize};
 use std::fs::File;
 use std::io::Read;
 
-/// this is table model(see ../database.sql)
+/// example table
 #[derive(Clone, Debug, Serialize, Deserialize)]
 pub struct BizActivity {
     pub id: Option<String>,
