@@ -51,8 +51,8 @@ impl Encode for Value {
                 q.bind(v);
                 Ok(())
             }
-            Value::Array(_) => Err(Error::from("unimpl")),
-            Value::Map(_) => Err(Error::from("unimpl")),
+            Value::Array(_) => Err(Error::from("unimplemented")),
+            Value::Map(_) => Err(Error::from("unimplemented")),
             Value::Ext(t, v) => match t {
                 "Date" => {
                     q.bind(chrono::NaiveDate::from_str(v.as_str().unwrap_or_default()).map_err(|e| Error::from(e.to_string()))?);
@@ -76,7 +76,7 @@ impl Encode for Value {
                     q.bind(BigDecimal::from_str(&v.into_string().unwrap_or_default()).map_err(|e| Error::from(e.to_string()))?);
                     Ok(())
                 }
-                "Json" => Err(Error::from("unimpl")),
+                "Json" => Err(Error::from("unimplemented")),
                 "Timestamp" => {
                     q.bind(v.as_u64().unwrap_or_default() as i64);
                     Ok(())
@@ -87,7 +87,7 @@ impl Encode for Value {
                     );
                     Ok(())
                 }
-                _ => Err(Error::from("unimpl")),
+                _ => Err(Error::from("unimplemented")),
             },
         }
     }
