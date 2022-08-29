@@ -37,7 +37,7 @@ pub fn parse_html_str(
 ) -> proc_macro2::TokenStream {
     let html = html
         .replace("\\\"", "\"")
-        .replace("\\n","\n")
+        .replace("\\n", "\n")
         .trim_start_matches("\"")
         .trim_end_matches("\"").to_string();
     let mut datas = load_html_include_replace(&html).expect(&format!("laod html={} fail", html));
@@ -375,14 +375,14 @@ fn parse(
                         );
                     }
                 }
+                let cup = x.childs.len() * 10;
                 body = quote! {
                   #body
-                  let mut do_choose = || -> String {
-                           let mut sql = String::new();
+                  sql.push_str(&|| -> String {
+                           let mut sql = String::with_capacity(#cup);
                            #inner_body
                            return sql;
-                  };
-                  sql.push_str(&do_choose());
+                  }());
                 }
             }
 
@@ -672,8 +672,9 @@ fn impl_trim(
     let prefixs: Vec<&str> = prefixOverrides.split("|").collect();
     let suffixs: Vec<&str> = suffixOverrides.split("|").collect();
     let have_trim = prefixs.len() != 0 && suffixs.len() != 0;
+    let cup = x.childs.len() * 10;
     let mut trims = quote! {
-         let mut sql=String::new();
+         let mut sql= String::with_capacity(#cup);
          #trim_body
          sql=sql
     };
