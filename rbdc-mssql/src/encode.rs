@@ -55,21 +55,25 @@ impl Encode for Value {
             Value::Map(_) => Err(Error::from("unimpl")),
             Value::Ext(t, v) => match t {
                 "Date" => {
-                    q.bind(chrono::NaiveDate::from_str(v.as_str().unwrap_or_default()).unwrap());
+                    q.bind(chrono::NaiveDate::from_str(v.as_str().unwrap_or_default()).map_err(|e| Error::from(e.to_string()))?);
                     Ok(())
                 }
                 "DateTime" => {
+                    let mut s = v.as_str().unwrap_or_default().to_string();
+                    if s.len() > 10 {
+                        s.replace_range(10..11, "T");
+                    }
                     q.bind(
-                        chrono::NaiveDateTime::from_str(v.as_str().unwrap_or_default()).unwrap(),
+                        chrono::NaiveDateTime::from_str(&s).map_err(|e| Error::from(e.to_string()))?,
                     );
                     Ok(())
                 }
                 "Time" => {
-                    q.bind(chrono::NaiveTime::from_str(v.as_str().unwrap_or_default()).unwrap());
+                    q.bind(chrono::NaiveTime::from_str(v.as_str().unwrap_or_default()).map_err(|e| Error::from(e.to_string()))?);
                     Ok(())
                 }
                 "Decimal" => {
-                    q.bind(BigDecimal::from_str(&v.into_string().unwrap_or_default()).unwrap());
+                    q.bind(BigDecimal::from_str(&v.into_string().unwrap_or_default()).map_err(|e| Error::from(e.to_string()))?);
                     Ok(())
                 }
                 "Json" => Err(Error::from("unimpl")),
@@ -86,5 +90,19 @@ impl Encode for Value {
                 _ => Err(Error::from("unimpl")),
             },
         }
+    }
+}
+
+#[cfg(test)]
+mod test {
+    use std::str::FromStr;
+
+    #[test]
+    fn test_from() {
+        let mut v = fastdate::DateTime::now().to_string();
+        v.replace_range(10..11, "T");
+        println!("{}", v.to_string());
+        let n = chrono::NaiveDateTime::from_str(&v).unwrap();
+        assert_eq!(n.to_string().replace(" ", "T"), v.to_string());
     }
 }
