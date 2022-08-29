@@ -375,7 +375,7 @@ fn parse(
                         );
                     }
                 }
-                let cup = x.childs.len() * 10;
+                let cup = x.child_string_cup();
                 body = quote! {
                   #body
                   sql.push_str(&|| -> String {
@@ -478,10 +478,11 @@ fn parse(
                     .expect("<select> element must be have id!");
                 let method_name = Ident::new(fn_name, Span::call_site());
                 let child_body = parse(&x.childs, methods, ignore, fn_name);
+                let cup = x.child_string_cup();
                 let select = quote! {
                     pub fn #method_name (arg:&rbs::Value, _tag: char) -> (String,Vec<rbs::Value>) {
                        use rbatis_codegen::ops::*;
-                       let mut sql = String::with_capacity(1000);
+                       let mut sql = String::with_capacity(#cup);
                        let mut args = Vec::with_capacity(20);
                        #child_body
                        #fix_sql
@@ -500,11 +501,11 @@ fn parse(
                     .expect("<update> element must be have id!");
                 let method_name = Ident::new(fn_name, Span::call_site());
                 let child_body = parse(&x.childs, methods, ignore, fn_name);
+                let cup = x.child_string_cup();
                 let select = quote! {
                     pub fn #method_name (arg:&rbs::Value, _tag: char) -> (String,Vec<rbs::Value>) {
                        use rbatis_codegen::ops::*;
-
-                       let mut sql = String::with_capacity(1000);
+                       let mut sql = String::with_capacity(#cup);
                        let mut args = Vec::with_capacity(20);
                        #child_body
                        #fix_sql
@@ -523,11 +524,11 @@ fn parse(
                     .expect("<insert> element must be have id!");
                 let method_name = Ident::new(fn_name, Span::call_site());
                 let child_body = parse(&x.childs, methods, ignore, fn_name);
+                let cup = x.child_string_cup();
                 let select = quote! {
                     pub fn #method_name (arg:&rbs::Value, _tag: char) -> (String,Vec<rbs::Value>) {
                        use rbatis_codegen::ops::*;
-
-                       let mut sql = String::with_capacity(1000);
+                       let mut sql = String::with_capacity(#cup);
                        let mut args = Vec::with_capacity(20);
                        #child_body
                        #fix_sql
@@ -546,11 +547,11 @@ fn parse(
                     .expect("<delete> element must be have id!");
                 let method_name = Ident::new(fn_name, Span::call_site());
                 let child_body = parse(&x.childs, methods, ignore, fn_name);
+                let cup = x.child_string_cup();
                 let select = quote! {
                     pub fn #method_name (arg:&rbs::Value, _tag: char) -> (String,Vec<rbs::Value>) {
                        use rbatis_codegen::ops::*;
-
-                       let mut sql = String::with_capacity(1000);
+                       let mut sql = String::with_capacity(#cup);
                        let mut args = Vec::with_capacity(20);
                        #child_body
                        #fix_sql
@@ -672,7 +673,7 @@ fn impl_trim(
     let prefixs: Vec<&str> = prefixOverrides.split("|").collect();
     let suffixs: Vec<&str> = suffixOverrides.split("|").collect();
     let have_trim = prefixs.len() != 0 && suffixs.len() != 0;
-    let cup = x.childs.len() * 10;
+    let cup = x.child_string_cup();
     let mut trims = quote! {
          let mut sql= String::with_capacity(#cup);
          #trim_body

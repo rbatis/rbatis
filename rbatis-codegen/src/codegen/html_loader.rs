@@ -96,6 +96,31 @@ pub fn load_html(html: &str) -> Result<Vec<Element>> {
     return Ok(els);
 }
 
+impl Element {
+    /// get all strings
+    pub fn child_strings(&self) -> Vec<&str> {
+        let mut elements = vec![];
+        for x in &self.childs {
+            if x.tag.eq("") {
+                elements.push(x.data.as_str());
+            }
+            let v = x.child_strings();
+            for x in v {
+                elements.push(x);
+            }
+        }
+        elements
+    }
+    /// get all strings
+    pub fn child_string_cup(&self) -> usize {
+        let mut u = 0;
+        for x in self.child_strings() {
+            u += x.len();
+        }
+        u
+    }
+}
+
 #[cfg(test)]
 mod test {
     use crate::codegen::html_loader::load_html;
