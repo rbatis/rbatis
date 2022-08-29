@@ -1,4 +1,3 @@
-use std::str::FromStr;
 use chrono::{FixedOffset, NaiveDateTime, Utc};
 use rbs::Value;
 use tiberius::numeric::BigDecimal;
@@ -132,7 +131,7 @@ impl Decode for Value {
                                 match v{
                                     None => {Value::Null}
                                     Some(v) => {
-                                       Value::from(FastDateTime::from_str(&v.to_string())?)
+                                       Value::from(FastDateTime::from_timestamp_nano(v.timestamp_nanos() as u128))
                                     }
                                 }
                             }
@@ -153,7 +152,7 @@ impl Decode for Value {
                                 match v{
                                     None => {Value::Null}
                                     Some(v) => {
-                                        Value::from(FastDateTime::from_str(&v.to_string())?)
+                                        Value::from(FastDateTime::from_timestamp_nano(v.timestamp_nanos() as u128))
                                     }
                                 }
                             }
@@ -216,7 +215,7 @@ impl Decode for Value {
                                 match v{
                                     None => {Value::Null}
                                     Some(v) => {
-                                        Value::from(FastDateTime::from_str(&v.to_string())?)
+                                        Value::from(FastDateTime::from_timestamp_nano(v.timestamp_nanos() as u128))
                                     }
                                 }
                             }
@@ -237,7 +236,7 @@ impl Decode for Value {
                                 match v{
                                     None => {Value::Null}
                                     Some(v) => {
-                                        Value::from(FastDateTime::from_str(&v.to_string())?)
+                                        Value::from(FastDateTime::from_timestamp_nano(v.timestamp_nanos() as u128))
                                     }
                                 }
                             }
