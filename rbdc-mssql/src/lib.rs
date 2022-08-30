@@ -8,12 +8,12 @@ use crate::decode::Decode;
 use crate::driver::MssqlDriver;
 use crate::encode::Encode;
 use futures_core::future::BoxFuture;
+use futures_core::Stream;
 use rbdc::db::{ConnectOptions, Connection, ExecResult, MetaData, Placeholder, Row};
 use rbdc::Error;
 use rbs::Value;
 use std::any::Any;
 use std::sync::Arc;
-use futures_core::Stream;
 use tiberius::{Client, Column, ColumnData, Config, Query};
 use tokio::net::TcpStream;
 use tokio_util::compat::{Compat, TokioAsyncWriteCompatExt};
@@ -91,9 +91,7 @@ impl Row for MssqlRow {
     }
 
     fn get(&mut self, i: usize) -> Result<Value, Error> {
-        Value::decode(
-            &self.datas[i],
-        )
+        Value::decode(&self.datas[i])
     }
 }
 
@@ -114,7 +112,10 @@ impl Connection for MssqlConnection {
                 .await
                 .map_err(|e| Error::from(e.to_string()))?;
             let mut results = Vec::with_capacity(v.size_hint().0);
-            let s = v.into_results().await.map_err(|e| Error::from(e.to_string()))?;
+            let s = v
+                .into_results()
+                .await
+                .map_err(|e| Error::from(e.to_string()))?;
             for item in s {
                 for r in item {
                     let mut columns = Vec::with_capacity(r.columns().len());

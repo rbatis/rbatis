@@ -70,8 +70,8 @@ impl Placeholder for MssqlDriver {
 
 #[cfg(test)]
 mod test {
-    use rbdc::db::Placeholder;
     use crate::driver::MssqlDriver;
+    use rbdc::db::Placeholder;
 
     #[test]
     fn test_exchange() {

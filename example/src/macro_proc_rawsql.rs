@@ -2,9 +2,9 @@
 extern crate rbatis;
 
 pub mod model;
+use crate::{init_sqlite, BizActivity};
 use model::*;
 use rbatis::rbatis::Rbatis;
-use crate::{init_sqlite, BizActivity};
 
 /// doc you can see https://rbatis.github.io/rbatis.io
 #[sql("select * from biz_activity where delete_flag = ?")]

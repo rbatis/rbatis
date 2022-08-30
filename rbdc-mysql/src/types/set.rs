@@ -14,7 +14,7 @@ impl Display for Set {
     }
 }
 
-impl Debug for Set{
+impl Debug for Set {
     fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
         write!(f, "Set({})", self.0)
     }

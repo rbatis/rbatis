@@ -15,6 +15,7 @@ mod test {
     #![allow(private_in_public)]
 
     use futures_core::future::BoxFuture;
+    use rbatis::executor::RBatisConnExecutor;
     use rbatis::sql::PageRequest;
     use rbatis::{Error, Rbatis};
     use rbdc::datetime::FastDateTime;
@@ -22,7 +23,6 @@ mod test {
     use rbdc::rt::block_on;
     use rbs::Value;
     use std::any::Any;
-    use rbatis::executor::RBatisConnExecutor;
 
     #[derive(Debug, Clone)]
     struct MockDriver {}
@@ -228,7 +228,9 @@ mod test {
             };
             let mut t2 = t.clone();
             t2.id = "3".to_string().into();
-            let r = MockTable::insert_batch(&mut rb, &[t, t2], 10).await.unwrap();
+            let r = MockTable::insert_batch(&mut rb, &[t, t2], 10)
+                .await
+                .unwrap();
             println!("{}", r.last_insert_id.as_str().unwrap_or_default());
             assert_eq!(r.last_insert_id.as_str().unwrap_or_default(), "insert into mock_table (id,name,pc_link,h5_link,pc_banner_img,h5_banner_img,sort,status,remark,create_time,version,delete_flag,sql,count) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?),(?,?,?,?,?,?,?,?,?,?,?,?,?,?)");
         };
@@ -354,9 +356,14 @@ mod test {
         let f = async move {
             let mut rb = Rbatis::new();
             rb.init(MockDriver {}, "test").unwrap();
-            let r = MockTable::select_by_dto(&mut rb, DTO {
-                id: "1".to_string()
-            }).await.unwrap();
+            let r = MockTable::select_by_dto(
+                &mut rb,
+                DTO {
+                    id: "1".to_string(),
+                },
+            )
+            .await
+            .unwrap();
             println!("{}", r.as_ref().unwrap().sql);
             assert_eq!(
                 r.unwrap().sql,
@@ -418,11 +425,15 @@ mod test {
                 delete_flag: Some(1),
                 count: 0,
             };
-            let r = MockTable::update_by_dto(&mut rb, &t, DTO {
-                id: "2".to_string(),
-            })
-                .await
-                .unwrap();
+            let r = MockTable::update_by_dto(
+                &mut rb,
+                &t,
+                DTO {
+                    id: "2".to_string(),
+                },
+            )
+            .await
+            .unwrap();
             println!("{}", r.last_insert_id.as_str().unwrap());
             assert_eq!(r.last_insert_id.as_str().unwrap(), "update mock_table set  id=?,name=?,pc_link=?,h5_link=?,status=?,remark=?,create_time=?,version=?,delete_flag=?,sql=?,count=? where id = '2'");
         };
@@ -553,7 +564,11 @@ mod test {
             let mut tx = rb.acquire_begin().await.unwrap();
             let _r = MockTable::insert(&mut tx, &t).await.unwrap();
 
-            let mut tx = rb.acquire_begin().await.unwrap().defer_async(|_tx| async {});
+            let mut tx = rb
+                .acquire_begin()
+                .await
+                .unwrap()
+                .defer_async(|_tx| async {});
             let _r = MockTable::insert(&mut tx, &t).await.unwrap();
         };
         block_on(f);

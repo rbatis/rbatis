@@ -1,8 +1,8 @@
-use std::fs::File;
-use std::io::Read;
 use proc_macro2::{Ident, Span};
 use quote::quote;
 use quote::ToTokens;
+use std::fs::File;
+use std::io::Read;
 use syn::{AttributeArgs, FnArg, ItemFn, Lit, NestedMeta};
 
 use crate::macros::py_sql_impl;
@@ -61,13 +61,19 @@ pub(crate) fn impl_macro_html_sql(target_fn: &ItemFn, args: &AttributeArgs) -> T
     // sql_ident is html or file?
     let mut file_name = sql_ident.to_string().trim().to_string();
     if file_name.ends_with(".html\"") {
-        file_name = file_name.trim_start_matches("\"").trim_end_matches("\"").to_string();
+        file_name = file_name
+            .trim_start_matches("\"")
+            .trim_end_matches("\"")
+            .to_string();
     }
     if file_name.ends_with(".html") {
         let mut html_data = String::new();
-        let mut f = File::open(file_name.as_str()).expect(&format!("File Name = '{}' does not exist", file_name));
-        f.read_to_string(&mut html_data).expect(&format!("{} read_to_string fail", file_name));
-        let mut htmls = rbatis_codegen::codegen::parser_html::load_html_include_replace(&html_data).expect("load html content fail");
+        let mut f = File::open(file_name.as_str())
+            .expect(&format!("File Name = '{}' does not exist", file_name));
+        f.read_to_string(&mut html_data)
+            .expect(&format!("{} read_to_string fail", file_name));
+        let mut htmls = rbatis_codegen::codegen::parser_html::load_html_include_replace(&html_data)
+            .expect("load html content fail");
         let token = htmls.remove(&func_name_ident.to_string()).expect("");
         let token = format!("{}", token);
         sql_ident = token.to_token_stream();
@@ -86,7 +92,7 @@ pub(crate) fn impl_macro_html_sql(target_fn: &ItemFn, args: &AttributeArgs) -> T
             &rbatis_ident.to_string().trim_start_matches("mut "),
             Span::call_site(),
         )
-            .to_token_stream();
+        .to_token_stream();
     }
 
     //append all args
@@ -116,7 +122,7 @@ pub(crate) fn impl_macro_html_sql(target_fn: &ItemFn, args: &AttributeArgs) -> T
         rbatis_codegen::rb_html(gen_target_macro_arg.into(), gen_target_method.into()).into();
 
     let mut include_data = quote!();
-    include_data = quote!{
+    include_data = quote! {
         //no-debug_mode
     };
     #[cfg(feature = "debug_mode")]
@@ -127,7 +133,8 @@ pub(crate) fn impl_macro_html_sql(target_fn: &ItemFn, args: &AttributeArgs) -> T
             let current_dir = current_dir().unwrap();
             let mut html_file_name = file_name.clone();
             if !PathBuf::from(&file_name).is_absolute() {
-                html_file_name = format!("{}/{}", current_dir.to_str().unwrap_or_default(), file_name);
+                html_file_name =
+                    format!("{}/{}", current_dir.to_str().unwrap_or_default(), file_name);
             }
             include_data = quote! {#include_data  let _ = include_bytes!(#html_file_name);};
         }
@@ -147,5 +154,5 @@ pub(crate) fn impl_macro_html_sql(target_fn: &ItemFn, args: &AttributeArgs) -> T
          #call_method
        }
     }
-        .into();
+    .into();
 }

@@ -1,7 +1,7 @@
+use log::{debug, error, info, trace, warn, Level, LevelFilter};
 use std::collections::HashMap;
-use std::ops::Deref;
-use log::{debug, error, info, trace, warn, LevelFilter, Level};
 use std::fmt::{Debug, Display, Formatter};
+use std::ops::Deref;
 use std::sync::atomic::{AtomicI8, Ordering};
 
 /// log plugin
@@ -20,7 +20,7 @@ pub trait LogPlugin: Send + Sync + Debug {
         return !self.get_level_filter().eq(&LevelFilter::Off);
     }
     fn do_log(&self, level: LevelFilter, data: &str) {
-        if self.get_level_filter().eq(&LevelFilter::Off){
+        if self.get_level_filter().eq(&LevelFilter::Off) {
             return;
         }
         let level = self.get_level({
@@ -28,21 +28,11 @@ pub trait LogPlugin: Send + Sync + Debug {
                 LevelFilter::Off => {
                     return;
                 }
-                LevelFilter::Error => {
-                    Level::Error
-                }
-                LevelFilter::Warn => {
-                    Level::Warn
-                }
-                LevelFilter::Info => {
-                    Level::Info
-                }
-                LevelFilter::Debug => {
-                    Level::Debug
-                }
-                LevelFilter::Trace => {
-                    Level::Trace
-                }
+                LevelFilter::Error => Level::Error,
+                LevelFilter::Warn => Level::Warn,
+                LevelFilter::Info => Level::Info,
+                LevelFilter::Debug => Level::Debug,
+                LevelFilter::Trace => Level::Trace,
             }
         });
         match level {
@@ -75,12 +65,11 @@ pub struct RbatisLogPlugin {
     pub trace: AtomicI8,
 }
 
-
 impl Default for RbatisLogPlugin {
     //default leve info
     fn default() -> Self {
         RbatisLogPlugin {
-            level_filter: AtomicI8::new(3),//info
+            level_filter: AtomicI8::new(3), //info
             error: AtomicI8::new(1),
             warn: AtomicI8::new(2),
             info: AtomicI8::new(3),
@@ -111,7 +100,7 @@ impl RbatisLogPlugin {
             3 => LevelFilter::Info,
             4 => LevelFilter::Debug,
             5 => LevelFilter::Trace,
-            _ => LevelFilter::Off
+            _ => LevelFilter::Off,
         }
     }
     fn level_filter_to_i8(to: LevelFilter) -> i8 {
@@ -141,7 +130,8 @@ impl LogPlugin for RbatisLogPlugin {
     }
 
     fn set_level_filter(&self, level: LevelFilter) {
-        self.level_filter.store(RbatisLogPlugin::level_filter_to_i8(level), Ordering::SeqCst);
+        self.level_filter
+            .store(RbatisLogPlugin::level_filter_to_i8(level), Ordering::SeqCst);
     }
 
     fn get_level(&self, level: Level) -> Level {

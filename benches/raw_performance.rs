@@ -6,7 +6,6 @@
 #![allow(unused_must_use)]
 #![allow(dead_code)]
 #![allow(private_in_public)]
-
 #![feature(test)]
 #![feature(bench_black_box)]
 extern crate test;

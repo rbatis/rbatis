@@ -14,7 +14,7 @@ impl Display for Enum {
     }
 }
 
-impl Debug for Enum{
+impl Debug for Enum {
     fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
         write!(f, "Enum({})", self.0)
     }

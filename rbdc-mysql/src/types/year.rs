@@ -14,7 +14,7 @@ impl Display for Year {
     }
 }
 
-impl Debug for Year{
+impl Debug for Year {
     fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
         write!(f, "Year({})", self.0)
     }

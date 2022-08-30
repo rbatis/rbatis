@@ -1,10 +1,10 @@
-use std::fmt::Display;
 use crate::value::map::ValueMap;
 use crate::Value;
 use serde::ser::{
     self, SerializeMap, SerializeSeq, SerializeStruct, SerializeTuple, SerializeTupleStruct,
 };
 use serde::Serialize;
+use std::fmt::Display;
 
 use super::Error;
 
@@ -38,9 +38,7 @@ impl Serialize for Value {
                 }
                 state.end()
             }
-            Value::Ext(ref ty, ref value) => {
-                s.serialize_newtype_struct(ty, value)
-            }
+            Value::Ext(ref ty, ref value) => s.serialize_newtype_struct(ty, value),
         }
     }
 }

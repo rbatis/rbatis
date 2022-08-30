@@ -8,6 +8,7 @@ use crate::Error;
 use crossbeam::queue::SegQueue;
 use once_cell::sync::OnceCell;
 use rbdc::db::{Connection, Driver, ExecResult};
+use rbdc::deadpool::managed::Timeouts;
 use rbdc::pool::{ManagerPorxy, Pool};
 use serde::de::DeserializeOwned;
 use serde::ser::Serialize;
@@ -18,7 +19,6 @@ use std::fmt::{Debug, Formatter};
 use std::ops::DerefMut;
 use std::sync::Arc;
 use std::time::Duration;
-use rbdc::deadpool::managed::Timeouts;
 
 /// rbatis engine
 #[derive(Clone)]
@@ -109,7 +109,10 @@ impl Rbatis {
     /// init pool
     pub async fn init_builder<Driver: rbdc::db::Driver + 'static>(
         &self,
-        builder: rbdc::deadpool::managed::PoolBuilder<ManagerPorxy, rbdc::deadpool::managed::Object<ManagerPorxy>>,
+        builder: rbdc::deadpool::managed::PoolBuilder<
+            ManagerPorxy,
+            rbdc::deadpool::managed::Object<ManagerPorxy>,
+        >,
         driver: Driver,
         url: &str,
     ) -> Result<(), Error> {

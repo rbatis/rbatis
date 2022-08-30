@@ -1,7 +1,7 @@
 #[cfg(test)]
 mod test {
-    use rbs::{Value, value_map};
     use rbs::value::map::ValueMap;
+    use rbs::{value_map, Value};
 
     #[test]
     fn test_decode_value() {
@@ -20,7 +20,8 @@ mod test {
         let m = value_map! {
             1.to_string() => date.clone(),
         };
-        let v: rbdc::types::datetime::FastDateTime = rbatis::decode(Value::Array(vec![Value::Map(m)])).unwrap();
+        let v: rbdc::types::datetime::FastDateTime =
+            rbatis::decode(Value::Array(vec![Value::Map(m)])).unwrap();
         assert_eq!(v, date);
     }
 
@@ -30,7 +31,8 @@ mod test {
             let mut m = ValueMap::new();
             m.insert(Value::String("a".to_string()), Value::I64(1));
             m
-        })])).unwrap();
+        })]))
+        .unwrap();
         assert_eq!(v, 1);
     }
 
@@ -40,7 +42,8 @@ mod test {
             let mut m = ValueMap::new();
             m.insert(Value::String("a".to_string()), Value::I64(1));
             m
-        })])).unwrap();
+        })]))
+        .unwrap();
         assert_eq!(v, 1i64);
     }
 
@@ -51,7 +54,11 @@ mod test {
             2.to_string() => 2,
         };
         let m = Value::Map(m);
-        let v: serde_json::Value = rbatis::decode(Value::Array(vec![m.clone(),m.clone()])).unwrap();
-        assert_eq!(v, serde_json::from_str::<serde_json::Value>(r#"[{"1":1,"2":2},{"1":1,"2":2}]"#).unwrap());
+        let v: serde_json::Value =
+            rbatis::decode(Value::Array(vec![m.clone(), m.clone()])).unwrap();
+        assert_eq!(
+            v,
+            serde_json::from_str::<serde_json::Value>(r#"[{"1":1,"2":2},{"1":1,"2":2}]"#).unwrap()
+        );
     }
 }

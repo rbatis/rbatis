@@ -1,15 +1,17 @@
-use crate::db::{ConnectOptions, Connection, Driver, Row, ExecResult};
+use crate::db::{ConnectOptions, Connection, Driver, ExecResult, Row};
 use crate::Error;
 use async_trait::async_trait;
+use deadpool::managed::{
+    Manager, Object, PoolBuilder, PoolError, RecycleError, RecycleResult, Timeouts,
+};
+use deadpool::Status;
+use futures_core::future::BoxFuture;
+use rbs::Value;
 use std::fmt::{Debug, Formatter};
 use std::future::Future;
 use std::ops::{Deref, DerefMut};
 use std::sync::Arc;
 use std::time::Duration;
-use deadpool::managed::{Manager, Object, PoolBuilder, PoolError, RecycleError, RecycleResult, Timeouts};
-use deadpool::Status;
-use futures_core::future::BoxFuture;
-use rbs::Value;
 
 /// RBDC pool.
 /// you can use just like any deadpool methods  pool.deref().close() and more...
@@ -26,7 +28,11 @@ impl Pool {
     }
 
     /// spawn task on runtime
-    pub fn spawn_task<T>(&self, task: T) where T: Future + Send + 'static, T::Output: Send + 'static {
+    pub fn spawn_task<T>(&self, task: T)
+    where
+        T: Future + Send + 'static,
+        T::Output: Send + 'static,
+    {
         self.manager.spawn_task(task)
     }
 
@@ -91,7 +97,11 @@ pub struct ManagerPorxy {
 
 impl ManagerPorxy {
     /// spawn task on runtime
-    pub fn spawn_task<T>(&self, task: T) where T: Future + Send + 'static, T::Output: Send + 'static {
+    pub fn spawn_task<T>(&self, task: T)
+    where
+        T: Future + Send + 'static,
+        T::Output: Send + 'static,
+    {
         tokio::spawn(task);
     }
 }
@@ -159,15 +169,16 @@ impl Manager for ManagerPorxy {
 
     async fn recycle(&self, conn: &mut Self::Type) -> RecycleResult<Self::Error> {
         match conn.ping().await {
-            Ok(_) => {
-                Ok(())
-            }
+            Ok(_) => Ok(()),
             Err(e) => {
                 //shutdown connection
                 if let Some(mut conn) = conn.conn.take() {
                     let _ = conn.close().await;
                 }
-                return Err(RecycleError::Message(format!("Connection is ping fail={}", e)));
+                return Err(RecycleError::Message(format!(
+                    "Connection is ping fail={}",
+                    e
+                )));
             }
         }
     }
@@ -221,7 +232,9 @@ impl Pool {
         url: &str,
     ) -> Result<Self, Error> {
         let manager = ManagerPorxy::from(Arc::new(RBDCManager::new(d, url)?));
-        let p = Pool::builder(manager.clone()).build().map_err(|e| Error::from(e.to_string()))?;
+        let p = Pool::builder(manager.clone())
+            .build()
+            .map_err(|e| Error::from(e.to_string()))?;
         let pool = Pool {
             manager: manager,
             inner: p,
@@ -233,7 +246,9 @@ impl Pool {
         o: ConnectOptions,
     ) -> Result<Self, Error> {
         let manager = ManagerPorxy::from(Arc::new(RBDCManager::new_opt(d, o)));
-        let inner = Pool::builder(manager.clone()).build().map_err(|e| Error::from(e.to_string()))?;
+        let inner = Pool::builder(manager.clone())
+            .build()
+            .map_err(|e| Error::from(e.to_string()))?;
         Ok(Pool {
             manager: manager,
             inner: inner,
@@ -242,7 +257,9 @@ impl Pool {
 
     pub fn new_box(d: Box<dyn Driver>, o: Box<dyn ConnectOptions>) -> Result<Self, Error> {
         let manager = ManagerPorxy::from(Arc::new(RBDCManager::new_opt_box(d, o)));
-        let inner = Pool::builder(manager.clone()).build().map_err(|e| Error::from(e.to_string()))?;
+        let inner = Pool::builder(manager.clone())
+            .build()
+            .map_err(|e| Error::from(e.to_string()))?;
         Ok(Pool {
             manager: manager,
             inner: inner,
@@ -267,7 +284,11 @@ impl Pool {
 }
 
 impl Connection for Object<ManagerPorxy> {
-    fn get_rows(&mut self, sql: &str, params: Vec<Value>) -> BoxFuture<Result<Vec<Box<dyn Row>>, Error>> {
+    fn get_rows(
+        &mut self,
+        sql: &str,
+        params: Vec<Value>,
+    ) -> BoxFuture<Result<Vec<Box<dyn Row>>, Error>> {
         self.deref_mut().get_rows(sql, params)
     }
 

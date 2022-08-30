@@ -3,10 +3,10 @@ extern crate rbatis;
 
 pub mod model;
 
+use crate::{init_sqlite, BizActivity};
 use model::*;
 use rbatis::executor::Executor;
 use rbatis::Error;
-use crate::{init_sqlite, BizActivity};
 
 #[py_sql(
     "`select * from biz_activity where delete_flag = 0`
@@ -22,8 +22,6 @@ pub async fn main() {
     fast_log::init(fast_log::Config::new().console()).expect("rbatis init fail");
     //use static ref
     let rb = init_sqlite().await;
-    let a = py_select(&mut rb.clone(), "test")
-        .await
-        .unwrap();
+    let a = py_select(&mut rb.clone(), "test").await.unwrap();
     println!(">>>>>>>>>>>> {:?}", a);
 }

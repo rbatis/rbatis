@@ -71,13 +71,18 @@ macro_rules! impl_insert {
                     ));
                 }
                 let table_name = $table_name.to_string();
-                let mut result = $crate::rbdc::db::ExecResult{
-                     rows_affected: 0,
-                     last_insert_id: rbs::Value::Null,
+                let mut result = $crate::rbdc::db::ExecResult {
+                    rows_affected: 0,
+                    last_insert_id: rbs::Value::Null,
                 };
                 let ranges = $crate::sql::Page::<()>::into_ranges(tables.len() as u64, batch_size);
-                for (offset,limit) in ranges {
-                    let exec_result = insert_batch(rb, &tables[offset as usize..limit as usize], table_name.as_str()).await?;
+                for (offset, limit) in ranges {
+                    let exec_result = insert_batch(
+                        rb,
+                        &tables[offset as usize..limit as usize],
+                        table_name.as_str(),
+                    )
+                    .await?;
                     result.rows_affected += exec_result.rows_affected;
                     result.last_insert_id = exec_result.last_insert_id;
                 }
@@ -379,7 +384,6 @@ macro_rules! impl_select_page {
         }
     };
 }
-
 
 /// impl html_sql select page.
 ///

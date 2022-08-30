@@ -1,7 +1,7 @@
+use crate::Error;
 use rbs::Value;
 use std::fmt::{Debug, Display, Formatter};
 use std::str::FromStr;
-use crate::Error;
 
 #[derive(serde::Serialize, serde::Deserialize, Clone, Eq, PartialEq, Hash)]
 #[serde(rename = "Time")]
@@ -13,7 +13,7 @@ impl Display for Time {
     }
 }
 
-impl Debug for Time{
+impl Debug for Time {
     fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
         write!(f, "Time({})", self.0)
     }
@@ -25,7 +25,7 @@ impl From<Time> for Value {
     }
 }
 
-impl FromStr for Time{
+impl FromStr for Time {
     type Err = Error;
 
     fn from_str(s: &str) -> Result<Self, Self::Err> {

@@ -1,4 +1,3 @@
-
 #[macro_use]
 extern crate rbatis;
 pub mod model;
@@ -6,7 +5,6 @@ pub mod model;
 use model::*;
 use rbatis::executor::Executor;
 use rbatis::rbdc::datetime::FastDateTime;
-
 
 // Clion Smart tips: click code, choose 'Inject Language or Reference', and then choose html
 #[html_sql(r#"<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.1//EN" "https://raw.githubusercontent.com/rbatis/rbatis/master/rbatis-codegen/mybatis-3-mapper.dtd">
@@ -34,7 +32,12 @@ use rbatis::rbdc::datetime::FastDateTime;
             </trim>
         </where>
   </select>"#)]
-async fn select_by_condition(rb: &mut dyn Executor, name: &str, dt: &FastDateTime,a:bool) -> rbatis::Result<Vec<BizActivity>> {
+async fn select_by_condition(
+    rb: &mut dyn Executor,
+    name: &str,
+    dt: &FastDateTime,
+    a: bool,
+) -> rbatis::Result<Vec<BizActivity>> {
     impled!()
 }
 
@@ -43,8 +46,13 @@ pub async fn main() {
     fast_log::init(fast_log::Config::new().console()).expect("rbatis init fail");
     //use static ref
     let rb = init_sqlite().await;
-    let a = select_by_condition(&mut rb.clone(), "test", &FastDateTime::now().set_micro(0),false)
-        .await
-        .unwrap();
+    let a = select_by_condition(
+        &mut rb.clone(),
+        "test",
+        &FastDateTime::now().set_micro(0),
+        false,
+    )
+    .await
+    .unwrap();
     println!("{:?}", a);
 }

@@ -1,8 +1,15 @@
 use crate::io::MySqlBufMutExt;
+use crate::protocol::text::ColumnType;
+use crate::result_set::MySqlTypeInfo;
+use crate::types::decode::{
+    decode_date, decode_time, decode_timestamp, decode_year, f32_decode, f64_decode, int_decode,
+    uint_decode,
+};
 use crate::types::enums::Enum;
 use crate::types::set::Set;
 use crate::types::year::Year;
 use crate::types::{Decode, Encode, TypeInfo};
+use crate::value::MySqlValue;
 use rbdc::date::Date;
 use rbdc::datetime::FastDateTime;
 use rbdc::decimal::Decimal;
@@ -13,10 +20,6 @@ use rbdc::uuid::Uuid;
 use rbdc::Error;
 use rbs::Value;
 use std::str::FromStr;
-use crate::protocol::text::ColumnType;
-use crate::result_set::MySqlTypeInfo;
-use crate::types::decode::{decode_date, decode_time, decode_timestamp, decode_year, f32_decode, f64_decode, int_decode, uint_decode};
-use crate::value::MySqlValue;
 
 impl TypeInfo for Value {
     fn type_info(&self) -> MySqlTypeInfo {
@@ -144,7 +147,10 @@ impl Encode for Value {
 }
 
 impl Decode for Value {
-    fn decode(v: MySqlValue) -> Result<Self, Error> where Self: Sized {
+    fn decode(v: MySqlValue) -> Result<Self, Error>
+    where
+        Self: Sized,
+    {
         Ok(match v.type_info().r#type {
             ColumnType::Tiny => Value::U64(uint_decode(v).unwrap_or_default()),
             ColumnType::Short => Value::I32(int_decode(v).unwrap_or_default() as i32),

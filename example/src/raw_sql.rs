@@ -1,6 +1,5 @@
 pub mod model;
 
-
 use crate::model::{init_sqlite, BizActivity};
 use rbs::to_value;
 use std::time::Duration;

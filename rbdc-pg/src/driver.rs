@@ -66,8 +66,8 @@ impl Placeholder for PgDriver {
 
 #[cfg(test)]
 mod test {
-    use rbdc::db::Placeholder;
     use crate::driver::PgDriver;
+    use rbdc::db::Placeholder;
 
     #[test]
     fn test_exchange() {

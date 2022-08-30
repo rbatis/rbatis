@@ -80,11 +80,9 @@ impl Row for SqliteRow {
         })
     }
 
-    fn get(&mut self, i: usize) -> Result<Value,Error> {
+    fn get(&mut self, i: usize) -> Result<Value, Error> {
         match self.try_take(i) {
-            Err(e) => {
-                Err(Error::from(format!("get error index:{},error:{}",i, e)))
-            }
+            Err(e) => Err(Error::from(format!("get error index:{},error:{}", i, e))),
             Ok(v) => Value::decode(v),
         }
     }

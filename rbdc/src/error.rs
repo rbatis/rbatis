@@ -96,9 +96,9 @@ impl From<rbs::Error> for Error {
     }
 }
 
-impl <E: std::fmt::Debug>From<deadpool::managed::PoolError<E>> for Error {
+impl<E: std::fmt::Debug> From<deadpool::managed::PoolError<E>> for Error {
     fn from(arg: deadpool::managed::PoolError<E>) -> Self {
-        Error::from(format!("{:?}",arg))
+        Error::from(format!("{:?}", arg))
     }
 }
 

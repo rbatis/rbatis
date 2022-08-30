@@ -1,6 +1,6 @@
 use rbatis::rbatis::Rbatis;
-use rbatis::table_sync::{RbatisTableSync, SqliteTableSync};
 use rbatis::rbdc::datetime::FastDateTime;
+use rbatis::table_sync::{RbatisTableSync, SqliteTableSync};
 use rbdc_sqlite::driver::SqliteDriver;
 
 #[derive(Clone, Debug, serde::Serialize, serde::Deserialize)]
@@ -22,7 +22,8 @@ pub struct BizActivity {
 pub async fn main() {
     fast_log::init(fast_log::Config::new().console()).expect("rbatis init fail");
     let rb = Rbatis::new();
-    rb.init(SqliteDriver {}, &format!("sqlite://target/sqlite.db")).unwrap();
+    rb.init(SqliteDriver {}, &format!("sqlite://target/sqlite.db"))
+        .unwrap();
     let mut s = RbatisTableSync::new();
     s.insert("sqlite".to_string(), Box::new(SqliteTableSync {}));
     let t = BizActivity {

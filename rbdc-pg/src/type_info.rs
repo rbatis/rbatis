@@ -973,7 +973,6 @@ impl PgType {
         }
     }
 
-
     /// return self's array type
     pub(crate) fn to_array_type(&self) -> Option<PgTypeInfo> {
         // We explicitly match on all the `None` cases to ensure an exhaustive match.
