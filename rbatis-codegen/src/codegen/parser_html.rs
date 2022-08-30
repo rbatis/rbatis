@@ -223,7 +223,7 @@ fn parse(
                         ignore,
                     );
                     if v.starts_with("#") {
-                        string_data = string_data.replace(&v, &"?");
+                        string_data = string_data.replacen(&v, &"?",1);
                         body = quote! {
                             #body
                             args.push(rbs::to_value(#method_impl).unwrap_or_default());
