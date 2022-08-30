@@ -155,8 +155,6 @@ impl IntoIterator for ValueMap {
     }
 }
 
-
-
 #[macro_export]
 macro_rules! value_map {
     {$($k:expr=>$v:expr$(,)*)+} => {

@@ -144,7 +144,8 @@ mod test {
 
     #[test]
     fn test_item() {
-        let nodes = load_html(r#"
+        let nodes = load_html(
+            r#"
     <insert id="insert">
         'insert into biz_activity'
         <foreach collection="arg" index="key" item="item" open="(" close=")" separator=",">
@@ -154,7 +155,9 @@ mod test {
         <foreach collection="arg" index="key" item="item" open="(" close=")" separator=",">
             '${item}'
         </foreach>
-    </insert>"#).unwrap();
+    </insert>"#,
+        )
+        .unwrap();
         println!("{:?}", nodes);
     }
 }

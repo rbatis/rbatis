@@ -89,7 +89,7 @@ pub trait Row: 'static + Send + Debug {
     fn meta_data(&self) -> Box<dyn MetaData>;
 
     /// get Value from index
-    fn get(&mut self, i: usize) -> Result<Value,Error>;
+    fn get(&mut self, i: usize) -> Result<Value, Error>;
 }
 
 /// Meta data for result set
@@ -158,7 +158,6 @@ pub trait ConnectOptions: Any + Send + Sync + Debug + 'static {
     /// ```
     fn uppercase_self(&self) -> &(dyn Any + Send + Sync);
 }
-
 
 /// database driver ConnectOptions
 impl dyn ConnectOptions {

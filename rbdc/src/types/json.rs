@@ -2,16 +2,18 @@ use rbs::Value;
 use std::fmt::{Debug, Display, Formatter};
 use std::str::FromStr;
 
-use serde::Deserializer;
 use crate::Error;
+use serde::Deserializer;
 
 #[derive(serde::Serialize, Clone, Eq, PartialEq, Hash)]
 #[serde(rename = "Json")]
 pub struct Json(pub String);
 
-
 impl<'de> serde::Deserialize<'de> for Json {
-    fn deserialize<D>(deserializer: D) -> Result<Self, D::Error> where D: Deserializer<'de> {
+    fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
+    where
+        D: Deserializer<'de>,
+    {
         Ok(Json::from(Value::deserialize(deserializer)?))
     }
 }
@@ -33,34 +35,19 @@ impl From<serde_json::Value> for Json {
 impl From<Value> for Json {
     fn from(v: Value) -> Self {
         match v {
-            Value::Null => {
-                Json(v.to_string())
-            }
-            Value::Bool(v) => {
-                Json(v.to_string())
-            }
-            Value::I32(v) => {
-                Json(v.to_string())
-            }
-            Value::I64(v) => {
-                Json(v.to_string())
-            }
-            Value::U32(v) => {
-                Json(v.to_string())
-            }
-            Value::U64(v) => {
-                Json(v.to_string())
-            }
-            Value::F32(v) => {
-                Json(v.to_string())
-            }
-            Value::F64(v) => {
-                Json(v.to_string())
-            }
+            Value::Null => Json(v.to_string()),
+            Value::Bool(v) => Json(v.to_string()),
+            Value::I32(v) => Json(v.to_string()),
+            Value::I64(v) => Json(v.to_string()),
+            Value::U32(v) => Json(v.to_string()),
+            Value::U64(v) => Json(v.to_string()),
+            Value::F32(v) => Json(v.to_string()),
+            Value::F64(v) => Json(v.to_string()),
             Value::String(mut v) => {
                 if (v.starts_with("{") && v.ends_with("}"))
                     || (v.starts_with("[") && v.ends_with("]"))
-                    || (v.starts_with("\"") && v.ends_with("\"")) {
+                    || (v.starts_with("\"") && v.ends_with("\""))
+                {
                     //is json-string
                     Json(v)
                 } else {
@@ -69,18 +56,10 @@ impl From<Value> for Json {
                     Json(v)
                 }
             }
-            Value::Binary(v) => {
-                Json(unsafe { String::from_utf8_unchecked(v) })
-            }
-            Value::Array(_) => {
-                Json(v.to_string())
-            }
-            Value::Map(v) => {
-                Json(v.to_string())
-            }
-            Value::Ext(_name, v) => {
-                Json::from(*v)
-            }
+            Value::Binary(v) => Json(unsafe { String::from_utf8_unchecked(v) }),
+            Value::Array(_) => Json(v.to_string()),
+            Value::Map(v) => Json(v.to_string()),
+            Value::Ext(_name, v) => Json::from(*v),
         }
     }
 }
@@ -111,11 +90,10 @@ impl FromStr for Json {
     }
 }
 
-
 #[cfg(test)]
 mod test {
-    use rbs::value::map::ValueMap;
     use crate::json::Json;
+    use rbs::value::map::ValueMap;
 
     #[test]
     fn test_decode_js_string() {
@@ -151,7 +129,10 @@ mod test {
 
     #[test]
     fn test_decode_js_string_arr() {
-        let arr = rbs::Value::Array(vec![rbs::Value::String(1.to_string()), rbs::Value::String(2.to_string())]);
+        let arr = rbs::Value::Array(vec![
+            rbs::Value::String(1.to_string()),
+            rbs::Value::String(2.to_string()),
+        ]);
         println!("{}", arr.to_string());
         assert_eq!(r#"["1","2"]"#, Json::from(arr).0);
     }

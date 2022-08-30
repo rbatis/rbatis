@@ -27,5 +27,3 @@ use crate::type_info::PgTypeInfo;
 pub trait TypeInfo {
     fn type_info(&self) -> PgTypeInfo;
 }
-
-

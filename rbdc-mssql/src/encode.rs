@@ -55,7 +55,10 @@ impl Encode for Value {
             Value::Map(_) => Err(Error::from("unimplemented")),
             Value::Ext(t, v) => match t {
                 "Date" => {
-                    q.bind(chrono::NaiveDate::from_str(v.as_str().unwrap_or_default()).map_err(|e| Error::from(e.to_string()))?);
+                    q.bind(
+                        chrono::NaiveDate::from_str(v.as_str().unwrap_or_default())
+                            .map_err(|e| Error::from(e.to_string()))?,
+                    );
                     Ok(())
                 }
                 "DateTime" => {
@@ -64,16 +67,23 @@ impl Encode for Value {
                         s.replace_range(10..11, "T");
                     }
                     q.bind(
-                        chrono::NaiveDateTime::from_str(&s).map_err(|e| Error::from(e.to_string()))?,
+                        chrono::NaiveDateTime::from_str(&s)
+                            .map_err(|e| Error::from(e.to_string()))?,
                     );
                     Ok(())
                 }
                 "Time" => {
-                    q.bind(chrono::NaiveTime::from_str(v.as_str().unwrap_or_default()).map_err(|e| Error::from(e.to_string()))?);
+                    q.bind(
+                        chrono::NaiveTime::from_str(v.as_str().unwrap_or_default())
+                            .map_err(|e| Error::from(e.to_string()))?,
+                    );
                     Ok(())
                 }
                 "Decimal" => {
-                    q.bind(BigDecimal::from_str(&v.into_string().unwrap_or_default()).map_err(|e| Error::from(e.to_string()))?);
+                    q.bind(
+                        BigDecimal::from_str(&v.into_string().unwrap_or_default())
+                            .map_err(|e| Error::from(e.to_string()))?,
+                    );
                     Ok(())
                 }
                 "Json" => Err(Error::from("unimplemented")),

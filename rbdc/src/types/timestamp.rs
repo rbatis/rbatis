@@ -1,8 +1,8 @@
+use crate::Error;
 use rbs::Value;
+use serde::Deserializer;
 use std::fmt::{Debug, Display, Formatter};
 use std::str::FromStr;
-use serde::Deserializer;
-use crate::Error;
 
 /// Timestamp(timestamp_millis:u64)
 #[derive(serde::Serialize, Clone, Eq, PartialEq, Hash)]
@@ -10,13 +10,14 @@ use crate::Error;
 pub struct Timestamp(pub u64);
 
 impl<'de> serde::Deserialize<'de> for Timestamp {
-    fn deserialize<D>(deserializer: D) -> Result<Self, D::Error> where D: Deserializer<'de> {
+    fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
+    where
+        D: Deserializer<'de>,
+    {
         use serde::de::Error;
         match Value::deserialize(deserializer)?.as_u64() {
-            None => { Err(D::Error::custom("warn type decode Json")) }
-            Some(v) => {
-                Ok(Self(v))
-            }
+            None => Err(D::Error::custom("warn type decode Json")),
+            Some(v) => Ok(Self(v)),
         }
     }
 }
@@ -47,11 +48,10 @@ impl FromStr for Timestamp {
     }
 }
 
-
 #[cfg(test)]
 mod test {
-    use rbs::Value;
     use crate::timestamp::Timestamp;
+    use rbs::Value;
 
     #[test]
     fn test_decode_timestamp_u64() {
@@ -60,6 +60,9 @@ mod test {
 
     #[test]
     fn test_decode_timestamp_ext() {
-        assert_eq!(Timestamp(1), rbs::from_value(Value::Ext("Timestamp", Box::new(Value::U64(1)))).unwrap());
+        assert_eq!(
+            Timestamp(1),
+            rbs::from_value(Value::Ext("Timestamp", Box::new(Value::U64(1)))).unwrap()
+        );
     }
 }

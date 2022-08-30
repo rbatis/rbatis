@@ -14,7 +14,7 @@ impl Display for Geometry {
     }
 }
 
-impl Debug for Geometry{
+impl Debug for Geometry {
     fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
         write!(f, "Geometry({:?})", self.0)
     }

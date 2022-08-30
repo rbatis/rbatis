@@ -1,26 +1,25 @@
-use rbs::Value;
-use crate::types::TypeInfo;
-use crate::type_info::PgTypeInfo;
+use crate::arguments::PgArgumentBuffer;
 use crate::type_info::PgType;
+use crate::type_info::PgTypeInfo;
 use crate::types::byte::Bytea;
+use crate::types::decode::Decode;
+use crate::types::encode::{Encode, IsNull};
 use crate::types::money::Money;
 use crate::types::timestamptz::Timestamptz;
 use crate::types::timetz::Timetz;
+use crate::types::Oid;
+use crate::types::TypeInfo;
 use crate::value::{PgValue, PgValueFormat};
 use rbdc::date::Date;
+use rbdc::datetime::FastDateTime;
 use rbdc::decimal::Decimal;
 use rbdc::json::Json;
 use rbdc::timestamp::Timestamp;
 use rbdc::types::time::Time;
 use rbdc::uuid::Uuid;
 use rbdc::Error;
-use crate::arguments::PgArgumentBuffer;
-use crate::types::Oid;
-use rbdc::datetime::FastDateTime;
+use rbs::Value;
 use std::str::FromStr;
-use crate::types::decode::Decode;
-use crate::types::encode::{Encode, IsNull};
-
 
 impl TypeInfo for Value {
     fn type_info(&self) -> PgTypeInfo {
@@ -111,7 +110,6 @@ impl TypeInfo for Value {
     }
 }
 
-
 impl Decode for Value {
     fn decode(arg: PgValue) -> Result<Self, Error> {
         if arg.value.is_none() {
@@ -124,7 +122,7 @@ impl Decode for Value {
             PgType::Name => Value::String(Decode::decode(arg)?),
             PgType::Int8 => Value::I64(Decode::decode(arg)?),
             PgType::Int2 => Value::I32({
-                let i16:i16 = Decode::decode(arg)?;
+                let i16: i16 = Decode::decode(arg)?;
                 i16 as i32
             }),
             PgType::Int4 => Value::I32(Decode::decode(arg)?),
@@ -248,17 +246,17 @@ impl Decode for Value {
                 let v: Date = Decode::decode(arg)?;
                 v
             }
-                .into(),
+            .into(),
             PgType::Time => {
                 let v: Time = Decode::decode(arg)?;
                 v
             }
-                .into(),
+            .into(),
             PgType::Timestamp => {
                 let v: Timestamp = Decode::decode(arg)?;
                 v
             }
-                .into(),
+            .into(),
             PgType::Timestamptz => Timestamptz::decode(arg)?.into(),
             PgType::Interval => Value::Ext(
                 "Interval",
@@ -476,18 +474,18 @@ impl Encode for Value {
                     "Date" => Date(
                         fastdate::Date::from_str(&v.into_string().unwrap_or_default()).unwrap(),
                     )
-                        .encode(buf)?,
+                    .encode(buf)?,
                     //RFC3339NanoTime = "15:04:05.999999999"
                     "Time" => Time(
                         fastdate::Time::from_str(&v.into_string().unwrap_or_default()).unwrap(),
                     )
-                        .encode(buf)?,
+                    .encode(buf)?,
                     //RFC3339 = "2006-01-02 15:04:05.999999"
                     "Timestamp" => Timestamp(v.as_u64().unwrap_or_default()).encode(buf)?,
                     "DateTime" => FastDateTime(
                         fastdate::DateTime::from_str(&v.into_string().unwrap_or_default()).unwrap(),
                     )
-                        .encode(buf)?,
+                    .encode(buf)?,
                     "Bytea" => Bytea(v.as_u64().unwrap_or_default() as u8).encode(buf)?,
                     "Char" => v.into_string().unwrap_or_default().encode(buf)?,
                     "Name" => v.into_string().unwrap_or_default().encode(buf)?,

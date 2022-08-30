@@ -59,8 +59,8 @@ impl RBatisConnExecutor {
     }
 
     pub async fn fetch_decode<T>(&mut self, sql: &str, args: Vec<Value>) -> Result<T, Error>
-        where
-            T: DeserializeOwned,
+    where
+        T: DeserializeOwned,
     {
         let v = Executor::fetch(self, sql, args).await?;
         Ok(decode(v)?)
@@ -77,7 +77,11 @@ fn arr_to_string(arg: Vec<Value>) -> (Vec<Value>, String) {
 }
 
 impl Executor for RBatisConnExecutor {
-    fn exec(&mut self, sql: &str, mut args: Vec<Value>) -> BoxFuture<'_, Result<ExecResult, Error>> {
+    fn exec(
+        &mut self,
+        sql: &str,
+        mut args: Vec<Value>,
+    ) -> BoxFuture<'_, Result<ExecResult, Error>> {
         let mut sql = sql.to_string();
         Box::pin(async move {
             let rb_task_id = new_snowflake_id();
@@ -214,8 +218,8 @@ impl<'a> RBatisTxExecutor {
     }
     /// fetch and decode
     pub async fn fetch_decode<T>(&mut self, sql: &str, args: Vec<Value>) -> Result<Value, Error>
-        where
-            T: DeserializeOwned,
+    where
+        T: DeserializeOwned,
     {
         let v = Executor::fetch(self, sql, args).await?;
         Ok(decode(v)?)
@@ -415,7 +419,9 @@ impl RBatisTxExecutor {
     ///         });
     ///
     pub fn defer_async<F>(self, callback: fn(s: RBatisTxExecutor) -> F) -> RBatisTxExecutorGuard
-        where F: Future<Output=()> + Send + 'static {
+    where
+        F: Future<Output = ()> + Send + 'static,
+    {
         RBatisTxExecutorGuard {
             tx: Some(self),
             callback: Box::new(move |arg| {
@@ -495,8 +501,8 @@ impl Rbatis {
 
     /// fetch and decode
     pub async fn fetch_decode<T>(&self, sql: &str, args: Vec<Value>) -> Result<T, Error>
-        where
-            T: DeserializeOwned,
+    where
+        T: DeserializeOwned,
     {
         let mut conn = self.acquire().await?;
         let v = conn.fetch(sql, args).await?;

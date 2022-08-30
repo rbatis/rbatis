@@ -5,7 +5,7 @@ mod test {
     use rbs::Value;
 
     #[rb_py(
-    "
+        "
     SELECT * FROM biz_activity
     if  name != null:
       AND delete_flag = #{del}
@@ -55,7 +55,7 @@ mod test {
     }
 
     #[rb_py(
-    "insert into ${table_name} (
+        "insert into ${table_name} (
              trim ',':
                for k,v2 in table:
                  ${k},
@@ -86,11 +86,14 @@ mod test {
         #[rb_py("select * from test where  coalesce(user_id,#{data.user_id})=#{data.user_id}")]
         pub fn test_py_sql(arg: &mut rbs::Value, _tag: char) {}
         let mut data = ValueMap::new();
-        data.insert("data".into(), rbs::Value::Map({
-            let mut m = ValueMap::new();
-            m.insert("user_id".to_string().into(), 1.into());
-            m
-        }));
+        data.insert(
+            "data".into(),
+            rbs::Value::Map({
+                let mut m = ValueMap::new();
+                m.insert("user_id".to_string().into(), 1.into());
+                m
+            }),
+        );
         let res = test_py_sql(&mut rbs::Value::Map(data), '?');
         println!("res={:?}", res.0);
         assert_eq!("select * from test where  coalesce(user_id,?)=?", res.0);

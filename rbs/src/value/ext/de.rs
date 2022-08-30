@@ -13,8 +13,8 @@ use super::{Error, ValueExt};
 /// from_value
 #[inline]
 pub fn from_value<T>(val: Value) -> Result<T, Error>
-    where
-        T: for<'de> Deserialize<'de>,
+where
+    T: for<'de> Deserialize<'de>,
 {
     deserialize_from(val)
 }
@@ -22,9 +22,9 @@ pub fn from_value<T>(val: Value) -> Result<T, Error>
 /// deserialize_from
 #[inline]
 pub fn deserialize_from<'de, T, D>(val: D) -> Result<T, Error>
-    where
-        T: Deserialize<'de>,
-        D: Deserializer<'de, Error=Error>,
+where
+    T: Deserialize<'de>,
+    D: Deserializer<'de, Error = Error>,
 {
     Deserialize::deserialize(val)
 }
@@ -39,8 +39,8 @@ impl de::Error for Error {
 impl<'de> Deserialize<'de> for Value {
     #[inline]
     fn deserialize<D>(de: D) -> Result<Self, D::Error>
-        where
-            D: de::Deserializer<'de>,
+    where
+        D: de::Deserializer<'de>,
     {
         struct ValueVisitor;
 
@@ -54,8 +54,8 @@ impl<'de> Deserialize<'de> for Value {
 
             #[inline]
             fn visit_some<D>(self, de: D) -> Result<Value, D::Error>
-                where
-                    D: de::Deserializer<'de>,
+            where
+                D: de::Deserializer<'de>,
             {
                 Deserialize::deserialize(de)
             }
@@ -75,7 +75,10 @@ impl<'de> Deserialize<'de> for Value {
                 Ok(Value::Bool(value))
             }
 
-            fn visit_u32<E>(self, v: u32) -> Result<Self::Value, E> where E: de::Error {
+            fn visit_u32<E>(self, v: u32) -> Result<Self::Value, E>
+            where
+                E: de::Error,
+            {
                 Ok(Value::U32(v))
             }
 
@@ -84,7 +87,10 @@ impl<'de> Deserialize<'de> for Value {
                 Ok(Value::U64(value))
             }
 
-            fn visit_i32<E>(self, v: i32) -> Result<Self::Value, E> where E: de::Error {
+            fn visit_i32<E>(self, v: i32) -> Result<Self::Value, E>
+            where
+                E: de::Error,
+            {
                 Ok(Value::I32(v))
             }
 
@@ -110,16 +116,16 @@ impl<'de> Deserialize<'de> for Value {
 
             #[inline]
             fn visit_str<E>(self, value: &str) -> Result<Value, E>
-                where
-                    E: de::Error,
+            where
+                E: de::Error,
             {
                 self.visit_string(String::from(value))
             }
 
             #[inline]
             fn visit_seq<V>(self, mut visitor: V) -> Result<Value, V::Error>
-                where
-                    V: SeqAccess<'de>,
+            where
+                V: SeqAccess<'de>,
             {
                 let mut vec = {
                     match visitor.size_hint() {
@@ -137,24 +143,24 @@ impl<'de> Deserialize<'de> for Value {
 
             #[inline]
             fn visit_bytes<E>(self, v: &[u8]) -> Result<Self::Value, E>
-                where
-                    E: de::Error,
+            where
+                E: de::Error,
             {
                 Ok(Value::Binary(v.to_owned()))
             }
 
             #[inline]
             fn visit_byte_buf<E>(self, v: Vec<u8>) -> Result<Self::Value, E>
-                where
-                    E: de::Error,
+            where
+                E: de::Error,
             {
                 Ok(Value::Binary(v))
             }
 
             #[inline]
             fn visit_map<V>(self, mut visitor: V) -> Result<Value, V::Error>
-                where
-                    V: de::MapAccess<'de>,
+            where
+                V: de::MapAccess<'de>,
             {
                 let mut pairs = {
                     match visitor.size_hint() {
@@ -173,8 +179,8 @@ impl<'de> Deserialize<'de> for Value {
             }
 
             fn visit_newtype_struct<D>(self, deserializer: D) -> Result<Self::Value, D::Error>
-                where
-                    D: Deserializer<'de>,
+            where
+                D: Deserializer<'de>,
             {
                 deserializer.deserialize_newtype_struct("", self)
             }
@@ -188,8 +194,8 @@ impl<'de> Deserializer<'de> for Value {
     type Error = Error;
 
     fn deserialize_any<V>(self, visitor: V) -> Result<V::Value, Self::Error>
-        where
-            V: Visitor<'de>,
+    where
+        V: Visitor<'de>,
     {
         match self {
             Value::Null => visitor.visit_unit(),
@@ -228,8 +234,8 @@ impl<'de> Deserializer<'de> for Value {
 
     #[inline]
     fn deserialize_option<V>(self, visitor: V) -> Result<V::Value, Self::Error>
-        where
-            V: Visitor<'de>,
+    where
+        V: Visitor<'de>,
     {
         ValueBase::deserialize_option(self, visitor)
     }
@@ -241,8 +247,8 @@ impl<'de> Deserializer<'de> for Value {
         _variants: &'static [&'static str],
         visitor: V,
     ) -> Result<V::Value, Self::Error>
-        where
-            V: Visitor<'de>,
+    where
+        V: Visitor<'de>,
     {
         ValueBase::deserialize_enum(self, visitor)
     }
@@ -253,8 +259,8 @@ impl<'de> Deserializer<'de> for Value {
         name: &'static str,
         visitor: V,
     ) -> Result<V::Value, Self::Error>
-        where
-            V: Visitor<'de>,
+    where
+        V: Visitor<'de>,
     {
         visitor.visit_newtype_struct(self)
     }
@@ -265,8 +271,8 @@ impl<'de> Deserializer<'de> for Value {
         _name: &'static str,
         visitor: V,
     ) -> Result<V::Value, Self::Error>
-        where
-            V: Visitor<'de>,
+    where
+        V: Visitor<'de>,
     {
         ValueBase::deserialize_unit_struct(self, visitor)
     }
@@ -289,15 +295,15 @@ impl<I> SeqDeserializer<I> {
 }
 
 impl<'de, I, U> SeqAccess<'de> for SeqDeserializer<I>
-    where
-        I: Iterator<Item=U>,
-        U: Deserializer<'de, Error=Error>,
+where
+    I: Iterator<Item = U>,
+    U: Deserializer<'de, Error = Error>,
 {
     type Error = Error;
 
     fn next_element_seed<T>(&mut self, seed: T) -> Result<Option<T::Value>, Self::Error>
-        where
-            T: de::DeserializeSeed<'de>,
+    where
+        T: de::DeserializeSeed<'de>,
     {
         match self.iter.next() {
             Some(val) => seed.deserialize(val).map(Some),
@@ -307,16 +313,16 @@ impl<'de, I, U> SeqAccess<'de> for SeqDeserializer<I>
 }
 
 impl<'de, I, U> Deserializer<'de> for SeqDeserializer<I>
-    where
-        I: ExactSizeIterator<Item=U>,
-        U: Deserializer<'de, Error=Error>,
+where
+    I: ExactSizeIterator<Item = U>,
+    U: Deserializer<'de, Error = Error>,
 {
     type Error = Error;
 
     #[inline]
     fn deserialize_any<V>(mut self, visitor: V) -> Result<V::Value, Self::Error>
-        where
-            V: Visitor<'de>,
+    where
+        V: Visitor<'de>,
     {
         let len = self.iter.len();
         if len == 0 {
@@ -351,15 +357,15 @@ impl<I, U> MapDeserializer<I, U> {
 }
 
 impl<'de, I, U> de::MapAccess<'de> for MapDeserializer<I, U>
-    where
-        I: Iterator<Item=(U, U)>,
-        U: ValueBase<'de>,
+where
+    I: Iterator<Item = (U, U)>,
+    U: ValueBase<'de>,
 {
     type Error = Error;
 
     fn next_key_seed<T>(&mut self, seed: T) -> Result<Option<T::Value>, Self::Error>
-        where
-            T: DeserializeSeed<'de>,
+    where
+        T: DeserializeSeed<'de>,
     {
         match self.iter.next() {
             Some((key, val)) => {
@@ -371,8 +377,8 @@ impl<'de, I, U> de::MapAccess<'de> for MapDeserializer<I, U>
     }
 
     fn next_value_seed<T>(&mut self, seed: T) -> Result<T::Value, Self::Error>
-        where
-            T: DeserializeSeed<'de>,
+    where
+        T: DeserializeSeed<'de>,
     {
         match self.val.take() {
             Some(val) => seed.deserialize(val),
@@ -382,16 +388,16 @@ impl<'de, I, U> de::MapAccess<'de> for MapDeserializer<I, U>
 }
 
 impl<'de, I, U> Deserializer<'de> for MapDeserializer<I, U>
-    where
-        I: Iterator<Item=(U, U)>,
-        U: ValueBase<'de>,
+where
+    I: Iterator<Item = (U, U)>,
+    U: ValueBase<'de>,
 {
     type Error = Error;
 
     #[inline]
     fn deserialize_any<V>(self, visitor: V) -> Result<V::Value, Self::Error>
-        where
-            V: Visitor<'de>,
+    where
+        V: Visitor<'de>,
     {
         visitor.visit_map(self)
     }
@@ -419,8 +425,8 @@ impl<'de, U: ValueBase<'de> + ValueExt> de::EnumAccess<'de> for EnumDeserializer
     type Variant = VariantDeserializer<U>;
 
     fn variant_seed<V>(self, seed: V) -> Result<(V::Value, Self::Variant), Self::Error>
-        where
-            V: de::DeserializeSeed<'de>,
+    where
+        V: de::DeserializeSeed<'de>,
     {
         let variant = self.id.into_deserializer();
         let visitor = VariantDeserializer { value: self.value };
@@ -448,8 +454,8 @@ impl<'de, U: ValueBase<'de> + ValueExt> de::VariantAccess<'de> for VariantDeseri
     }
 
     fn newtype_variant_seed<T>(self, seed: T) -> Result<T::Value, Error>
-        where
-            T: de::DeserializeSeed<'de>,
+    where
+        T: de::DeserializeSeed<'de>,
     {
         // Can accept both [u32, T...] and [u32, [T]] cases.
         match self.value {
@@ -488,8 +494,8 @@ impl<'de, U: ValueBase<'de> + ValueExt> de::VariantAccess<'de> for VariantDeseri
     }
 
     fn tuple_variant<V>(self, _len: usize, visitor: V) -> Result<V::Value, Error>
-        where
-            V: Visitor<'de>,
+    where
+        V: Visitor<'de>,
     {
         // Can accept [u32, [T...]].
         match self.value {
@@ -509,8 +515,8 @@ impl<'de, U: ValueBase<'de> + ValueExt> de::VariantAccess<'de> for VariantDeseri
         _fields: &'static [&'static str],
         visitor: V,
     ) -> Result<V::Value, Error>
-        where
-            V: Visitor<'de>,
+    where
+        V: Visitor<'de>,
     {
         match self.value {
             Some(v) => match v.into_iter() {
@@ -528,10 +534,10 @@ impl<'de, U: ValueBase<'de> + ValueExt> de::VariantAccess<'de> for VariantDeseri
     }
 }
 
-trait ValueBase<'de>: Deserializer<'de, Error=Error> + ValueExt {
+trait ValueBase<'de>: Deserializer<'de, Error = Error> + ValueExt {
     type Item: ValueBase<'de>;
-    type Iter: ExactSizeIterator<Item=Self::Item>;
-    type MapIter: Iterator<Item=(Self::Item, Self::Item)>;
+    type Iter: ExactSizeIterator<Item = Self::Item>;
+    type MapIter: Iterator<Item = (Self::Item, Self::Item)>;
     type MapDeserializer: Deserializer<'de>;
 
     fn is_null(&self) -> bool;
@@ -541,8 +547,8 @@ trait ValueBase<'de>: Deserializer<'de, Error=Error> + ValueExt {
 
     #[inline]
     fn deserialize_option<V>(self, visitor: V) -> Result<V::Value, Self::Error>
-        where
-            V: Visitor<'de>,
+    where
+        V: Visitor<'de>,
     {
         if self.is_null() {
             visitor.visit_none()
@@ -553,8 +559,8 @@ trait ValueBase<'de>: Deserializer<'de, Error=Error> + ValueExt {
 
     #[inline]
     fn deserialize_enum<V>(self, visitor: V) -> Result<V::Value, Self::Error>
-        where
-            V: Visitor<'de>,
+    where
+        V: Visitor<'de>,
     {
         match self.into_iter() {
             Ok(mut iter) => {
@@ -586,16 +592,16 @@ trait ValueBase<'de>: Deserializer<'de, Error=Error> + ValueExt {
 
     #[inline]
     fn deserialize_newtype_struct<V>(self, visitor: V) -> Result<V::Value, Self::Error>
-        where
-            V: Visitor<'de>,
+    where
+        V: Visitor<'de>,
     {
         visitor.visit_newtype_struct(self)
     }
 
     #[inline]
     fn deserialize_unit_struct<V>(self, visitor: V) -> Result<V::Value, Self::Error>
-        where
-            V: Visitor<'de>,
+    where
+        V: Visitor<'de>,
     {
         match self.into_iter() {
             Ok(iter) => {

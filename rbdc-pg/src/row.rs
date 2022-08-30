@@ -2,12 +2,12 @@ use crate::column::PgColumn;
 use crate::message::DataRow;
 use crate::meta_data::PgMetaData;
 use crate::statement::PgStatementMetadata;
+use crate::types::decode::Decode;
 use crate::value::{PgValue, PgValueFormat, PgValueRef};
 use rbdc::db::MetaData;
 use rbdc::Error;
 use rbs::Value;
 use std::sync::Arc;
-use crate::types::decode::Decode;
 
 /// Implementation of [`Row`] for PostgreSQL.
 #[derive(Debug)]
@@ -65,12 +65,10 @@ impl rbdc::db::Row for PgRow {
         })
     }
 
-    fn get(&mut self, i: usize) -> Result<Value,Error> {
+    fn get(&mut self, i: usize) -> Result<Value, Error> {
         match self.try_take(i) {
-            Err(e) => Err(Error::from(format!("get error  index:{},error:{}",i,e))),
-            Ok(v) => {
-                Value::decode(v)
-            },
+            Err(e) => Err(Error::from(format!("get error  index:{},error:{}", i, e))),
+            Ok(v) => Value::decode(v),
         }
     }
 }

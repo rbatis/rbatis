@@ -17,14 +17,14 @@ impl Display for FastDateTime {
 
 impl Serialize for FastDateTime {
     fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
-        where
-            S: Serializer,
+    where
+        S: Serializer,
     {
         serializer.serialize_newtype_struct("DateTime", &self.0)
     }
 }
 
-impl Debug for FastDateTime{
+impl Debug for FastDateTime {
     fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
         write!(f, "DateTime({})", self.0)
     }
@@ -32,8 +32,8 @@ impl Debug for FastDateTime{
 
 impl<'de> Deserialize<'de> for FastDateTime {
     fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
-        where
-            D: Deserializer<'de>,
+    where
+        D: Deserializer<'de>,
     {
         #[derive(serde::Serialize, serde::Deserialize, Debug, Clone)]
         #[serde(rename = "DateTime")]
@@ -152,7 +152,6 @@ impl Sub<Duration> for FastDateTime {
     }
 }
 
-
 impl FromStr for FastDateTime {
     type Err = crate::error::Error;
 
@@ -194,7 +193,7 @@ impl DerefMut for DateTime {
     }
 }
 
-impl FromStr for DateTime{
+impl FromStr for DateTime {
     type Err = crate::Error;
 
     fn from_str(s: &str) -> Result<Self, Self::Err> {

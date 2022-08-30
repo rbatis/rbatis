@@ -1,14 +1,14 @@
-use rbdc::Error;
-use rbs::Value;
 use crate::decode::Decode;
 use crate::encode::{Encode, IsNull};
-use crate::{SqliteArgumentValue, SqliteValue};
 use crate::type_info::DataType;
+use crate::{SqliteArgumentValue, SqliteValue};
+use rbdc::Error;
+use rbs::Value;
 
 impl Decode for Value {
     fn decode(value: SqliteValue) -> Result<Self, Error>
-        where
-            Self: Sized,
+    where
+        Self: Sized,
     {
         match value.type_info().0 {
             DataType::Null => Ok(Value::Null),
@@ -34,7 +34,6 @@ impl Decode for Value {
         }
     }
 }
-
 
 impl Encode for Value {
     fn encode(self, args: &mut Vec<SqliteArgumentValue>) -> Result<IsNull, Error> {

@@ -10,8 +10,8 @@ use crate::Error;
 /// Value,BigDecimal, i8..i64,u8..u64,Int64(),bool,String
 /// or object used bson macro object
 pub fn decode<T: ?Sized>(bs: Value) -> Result<T, Error>
-    where
-        T: DeserializeOwned,
+where
+    T: DeserializeOwned,
 {
     let type_name = std::any::type_name::<T>();
     #[cfg(feature = "debug_mode")]
@@ -37,8 +37,8 @@ pub fn decode<T: ?Sized>(bs: Value) -> Result<T, Error>
 
 //decode doc or one type
 pub fn try_decode_map<T>(type_name: &str, datas: &mut Vec<Value>) -> Result<T, Error>
-    where
-        T: DeserializeOwned,
+where
+    T: DeserializeOwned,
 {
     //decode struct
     if datas.len() > 1 {

@@ -6,7 +6,6 @@ pub mod date;
 pub mod datetime;
 pub mod decimal;
 pub mod decode;
-pub mod value;
 pub mod enums;
 pub mod geometry;
 pub mod json;
@@ -14,6 +13,7 @@ pub mod set;
 pub mod time;
 pub mod timestamp;
 pub mod uuid;
+pub mod value;
 pub mod year;
 
 pub trait TypeInfo {

@@ -221,12 +221,12 @@ impl<T> Page<T> {
     }
 
     /// gen Page ranges from data
-    pub fn into_ranges(total: u64, page_size: u64) -> Vec<(u64,u64)> {
+    pub fn into_ranges(total: u64, page_size: u64) -> Vec<(u64, u64)> {
         let mut result = vec![];
         let page = Page::<T>::new_total(1, page_size, total as u64);
         for idx in 0..page.pages {
             let current_page = Page::<T>::new_total(idx + 1, page_size, total as u64);
-            result.push((current_page.offset(),current_page.offset_limit()));
+            result.push((current_page.offset(), current_page.offset_limit()));
         }
         result
     }
@@ -245,8 +245,7 @@ impl<T> Default for Page<T> {
     }
 }
 
-impl<T> IPageRequest for Page<T>
-{
+impl<T> IPageRequest for Page<T> {
     fn get_page_size(&self) -> u64 {
         self.page_size
     }
@@ -283,8 +282,7 @@ impl<T> IPageRequest for Page<T>
     }
 }
 
-impl<T> IPage<T> for Page<T>
-{
+impl<T> IPage<T> for Page<T> {
     fn get_records(&self) -> &Vec<T> {
         self.records.as_ref()
     }
@@ -314,8 +312,8 @@ impl<T: Display + Debug> Display for Page<T> {
 
 impl<V> Page<V> {
     pub fn from<T>(arg: Page<T>) -> Self
-        where
-            V: From<T>,
+    where
+        V: From<T>,
     {
         let mut p = Page::<V>::new(arg.page_no, arg.page_size);
         p.pages = arg.pages;
@@ -336,8 +334,8 @@ impl<V> Page<V> {
 
 #[cfg(test)]
 mod test {
-    use crate::sql::IPageRequest;
     use crate::sql::page::Page;
+    use crate::sql::IPageRequest;
 
     #[test]
     fn test_page() {
@@ -352,9 +350,9 @@ mod test {
         let v = vec![1, 2, 3, 4, 5, 6, 7, 8, 9];
         let ranges = Page::<i32>::into_ranges(v.len() as u64, 3);
         let mut new_v = vec![];
-        for (offset,limit) in ranges {
+        for (offset, limit) in ranges {
             for i in offset..limit {
-                new_v.push(i+1);
+                new_v.push(i + 1);
             }
         }
         assert_eq!(v, new_v);

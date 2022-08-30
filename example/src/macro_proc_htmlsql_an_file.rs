@@ -8,7 +8,11 @@ use rbatis::executor::Executor;
 use rbatis::rbdc::datetime::FastDateTime;
 
 #[html_sql("example/example.html")]
-async fn select_by_condition(rb: &mut dyn Executor, name: &str, dt: &FastDateTime) -> rbatis::Result<Vec<BizActivity>> {
+async fn select_by_condition(
+    rb: &mut dyn Executor,
+    name: &str,
+    dt: &FastDateTime,
+) -> rbatis::Result<Vec<BizActivity>> {
     impled!()
 }
 
@@ -18,7 +22,7 @@ pub async fn main() {
     //use static ref
     let rb = init_sqlite().await;
     let a = select_by_condition(&mut rb.clone(), "test", &FastDateTime::now().set_micro(0))
-    .await
-    .unwrap();
+        .await
+        .unwrap();
     println!("{:?}", a);
 }

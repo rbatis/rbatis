@@ -8,11 +8,14 @@ use std::str::FromStr;
 
 impl Encode for Timestamp {
     fn encode(self, buf: &mut PgArgumentBuffer) -> Result<IsNull, Error> {
-        let v = 1000*(self.0 as i64 - fastdate::DateTime::from(fastdate::Date{
-            day: 1,
-            mon: 1,
-            year: 2000
-        }).unix_timestamp_millis());
+        let v = 1000
+            * (self.0 as i64
+                - fastdate::DateTime::from(fastdate::Date {
+                    day: 1,
+                    mon: 1,
+                    year: 2000,
+                })
+                .unix_timestamp_millis());
         v.encode(buf)
     }
 }
@@ -22,10 +25,10 @@ impl Decode for Timestamp {
         Ok(match value.format() {
             PgValueFormat::Binary => {
                 // TIMESTAMP is encoded as the microseconds since the epoch
-                let epoch = fastdate::DateTime::from(fastdate::Date{
+                let epoch = fastdate::DateTime::from(fastdate::Date {
                     day: 1,
                     mon: 1,
-                    year: 2000
+                    year: 2000,
                 });
                 let us: i64 = Decode::decode(value)?;
                 let v = epoch + std::time::Duration::from_micros(us as u64);

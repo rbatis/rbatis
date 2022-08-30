@@ -199,7 +199,7 @@ impl Connection for PgConnection {
                         persistent: false,
                     })
                 } else {
-                    let mut types= Vec::with_capacity(params.len());
+                    let mut types = Vec::with_capacity(params.len());
                     for x in &params {
                         types.push(x.type_info());
                     }

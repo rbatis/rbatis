@@ -1,7 +1,6 @@
+use crate::arguments::{PgArgumentBuffer, PgArguments};
 use rbdc::Error;
 use rbs::Value;
-use crate::arguments::{PgArgumentBuffer, PgArguments};
-
 
 pub enum IsNull {
     No,
@@ -24,4 +23,3 @@ impl From<Vec<Value>> for PgArguments {
         arg
     }
 }
-

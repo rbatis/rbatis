@@ -14,11 +14,13 @@ pub async fn main() {
     fast_log::init(fast_log::Config::new().console()).expect("rbatis init fail");
     //use static ref
     let rb = init_sqlite().await;
-    let a = select_page_data(&mut rb.clone(),
-                                          &PageRequest::new(1, 10),
-                                          "test",
-                                          &FastDateTime::now().set_micro(0))
-        .await
-        .unwrap();
+    let a = select_page_data(
+        &mut rb.clone(),
+        &PageRequest::new(1, 10),
+        "test",
+        &FastDateTime::now().set_micro(0),
+    )
+    .await
+    .unwrap();
     println!("{:?}", a);
 }

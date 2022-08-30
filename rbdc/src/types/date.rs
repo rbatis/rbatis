@@ -1,7 +1,7 @@
+use crate::Error;
 use rbs::Value;
 use std::fmt::{Debug, Display, Formatter};
 use std::str::FromStr;
-use crate::Error;
 
 #[derive(serde::Serialize, serde::Deserialize, Clone, Eq, PartialEq, Hash)]
 #[serde(rename = "Date")]
@@ -13,7 +13,7 @@ impl Display for Date {
     }
 }
 
-impl Debug for Date{
+impl Debug for Date {
     fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
         write!(f, "Date({})", self.0)
     }
@@ -25,7 +25,7 @@ impl From<Date> for Value {
     }
 }
 
-impl FromStr for Date{
+impl FromStr for Date {
     type Err = Error;
 
     fn from_str(s: &str) -> Result<Self, Self::Err> {

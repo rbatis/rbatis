@@ -1,21 +1,22 @@
+use crate::Error;
 use rbs::Value;
+use serde::Deserializer;
 use std::fmt::{Debug, Display, Formatter};
 use std::str::FromStr;
-use serde::Deserializer;
-use crate::Error;
 
 #[derive(serde::Serialize, Clone, Eq, PartialEq, Hash)]
 #[serde(rename = "Uuid")]
 pub struct Uuid(pub String);
 
 impl<'de> serde::Deserialize<'de> for Uuid {
-    fn deserialize<D>(deserializer: D) -> Result<Self, D::Error> where D: Deserializer<'de> {
+    fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
+    where
+        D: Deserializer<'de>,
+    {
         use serde::de::Error;
         match Value::deserialize(deserializer)?.into_string() {
-            None => { Err(D::Error::custom("warn type decode Uuid")) }
-            Some(v) => {
-                Ok(Self(v))
-            }
+            None => Err(D::Error::custom("warn type decode Uuid")),
+            Some(v) => Ok(Self(v)),
         }
     }
 }

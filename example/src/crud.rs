@@ -4,8 +4,8 @@ extern crate rbatis;
 pub mod model;
 
 use crate::model::{init_sqlite, BizActivity};
-use rbatis::sql::page::PageRequest;
 use rbatis::rbdc::datetime::FastDateTime;
+use rbatis::sql::page::PageRequest;
 
 //crud!(BizActivity {},"biz_activity");
 crud!(BizActivity {}); //crud = insert+select_by_column+update_by_column+delete_by_column
@@ -54,7 +54,7 @@ pub async fn main() {
             t3.id = "3".to_string().into();
             t3
         }],
-        10
+        10,
     )
     .await;
     println!("insert_batch = {:?}", data);

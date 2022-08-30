@@ -1,7 +1,7 @@
-use futures_core::future::BoxFuture;
 use crate::executor::{Executor, RBatisConnExecutor};
 use crate::table_sync::TableSync;
 use crate::Error;
+use futures_core::future::BoxFuture;
 use rbdc::db::{Connection, ExecResult};
 use rbs::value::map::ValueMap;
 use rbs::Value;
@@ -43,7 +43,7 @@ impl TableSync for SqliteTableSync {
         name: &str,
     ) -> BoxFuture<Result<(), Error>> {
         let name = name.to_owned();
-        Box::pin(async move{
+        Box::pin(async move {
             match table {
                 Value::Map(m) => {
                     let mut sql_create = format!("CREATE TABLE {} ", name);

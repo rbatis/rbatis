@@ -39,7 +39,8 @@ pub fn parse_html_str(
         .replace("\\\"", "\"")
         .replace("\\n", "\n")
         .trim_start_matches("\"")
-        .trim_end_matches("\"").to_string();
+        .trim_end_matches("\"")
+        .to_string();
     let mut datas = load_html_include_replace(&html).expect(&format!("laod html={} fail", html));
     match datas.into_iter().next() {
         None => {
@@ -72,10 +73,7 @@ fn find_element(id: &str, htmls: &Vec<Element>) -> Option<Element> {
     return None;
 }
 
-fn include_replace(
-    htmls: Vec<Element>,
-    sql_map: &mut HashMap<String, Element>,
-) -> Vec<Element> {
+fn include_replace(htmls: Vec<Element>, sql_map: &mut HashMap<String, Element>) -> Vec<Element> {
     let mut results = vec![];
     for mut x in htmls {
         match x.tag.as_str() {
@@ -160,7 +158,11 @@ fn include_replace(
     return results;
 }
 
-fn parse_html_node(htmls: Vec<Element>, ignore: &mut Vec<String>, fn_name: &str) -> proc_macro2::TokenStream {
+fn parse_html_node(
+    htmls: Vec<Element>,
+    ignore: &mut Vec<String>,
+    fn_name: &str,
+) -> proc_macro2::TokenStream {
     let mut methods = quote!();
     let fn_impl = parse(&htmls, &mut methods, ignore, fn_name);
     let token = quote! {
@@ -223,7 +225,7 @@ fn parse(
                         ignore,
                     );
                     if v.starts_with("#") {
-                        string_data = string_data.replacen(&v, &"?",1);
+                        string_data = string_data.replacen(&v, &"?", 1);
                         body = quote! {
                             #body
                             args.push(rbs::to_value(#method_impl).unwrap_or_default());
@@ -367,12 +369,7 @@ fn parse(
                     }
                     if x.tag.eq("otherwise") {
                         let child_body = parse(&x.childs, methods, ignore, fn_name);
-                        impl_otherwise(
-                            child_body,
-                            &mut inner_body,
-                            methods,
-                            ignore,
-                        );
+                        impl_otherwise(child_body, &mut inner_body, methods, ignore);
                     }
                 }
                 let cup = x.child_string_cup();
@@ -742,21 +739,23 @@ fn parse_path(lit_str: &str) -> Path {
         .expect(&format!("parse_str::<Path> fail: {}", lit_str));
 }
 
-
 #[cfg(test)]
 mod test {
     use crate::codegen::parser_html::load_html_include_replace;
 
     #[test]
     fn test_load_html_include_replace() {
-        let datas = load_html_include_replace(r#"<select id="custom_func">
+        let datas = load_html_include_replace(
+            r#"<select id="custom_func">
         `select * from biz_activity`
         <where>
             <if test="name.is_test()">
                 `and name like #{name}`
             </if>
         </where>
-    </select>"#).unwrap();
+    </select>"#,
+        )
+        .unwrap();
         println!("{:?}", datas);
         assert_eq!(datas.get("custom_func").is_some(), true);
     }
