@@ -1,24 +1,11 @@
-#![allow(unused_mut)]
-#![allow(unused_imports)]
-#![allow(unreachable_patterns)]
-#![allow(unused_variables)]
-#![allow(unused_assignments)]
-#![allow(unused_must_use)]
-#![allow(dead_code)]
 
 #[macro_use]
 extern crate rbatis;
-
 pub mod model;
 
 use model::*;
-
 use rbatis::executor::Executor;
-use rbatis::rbatis::Rbatis;
-use rbatis::sql::page::{Page, PageRequest};
 use rbatis::rbdc::datetime::FastDateTime;
-use std::fs::File;
-use std::io::Read;
 
 
 // Clion Smart tips: click code, choose 'Inject Language or Reference', and then choose html
