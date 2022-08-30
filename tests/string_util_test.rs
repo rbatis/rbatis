@@ -41,5 +41,14 @@ mod test {
         let sql = "select #{column   #{  }";
         let finds = find_convert_string(sql);
         println!("{:?}", finds);
+        assert_eq!("column   #{  ",finds.iter().next().unwrap().0);
+    }
+
+    #[test]
+    fn test_have_two() {
+        let sql = "select #{data.user_id})=#{data.user_id}";
+        let finds = find_convert_string(sql);
+        println!("{:?}", finds);
+        assert_eq!("data.user_id",finds.iter().next().unwrap().0);
     }
 }
