@@ -79,7 +79,9 @@ impl Rbatis {
         };
     }
 
-    /// init() and try_acquire a connection
+    /// init() and try_acquire a connection.
+    /// use init() replace this method
+    #[deprecated]
     pub async fn link<Driver: rbdc::db::Driver + 'static>(
         &self,
         driver: Driver,
