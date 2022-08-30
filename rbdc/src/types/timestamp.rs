@@ -4,6 +4,7 @@ use std::str::FromStr;
 use serde::Deserializer;
 use crate::Error;
 
+/// Timestamp(timestamp_millis:u64)
 #[derive(serde::Serialize, Clone, Eq, PartialEq, Hash)]
 #[serde(rename = "Timestamp")]
 pub struct Timestamp(pub u64);
