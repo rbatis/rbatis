@@ -79,7 +79,7 @@ impl Rbatis {
         };
     }
 
-    /// init() and try link
+    /// init() and try_acquire a connection
     pub async fn link<Driver: rbdc::db::Driver + 'static>(
         &self,
         driver: Driver,
