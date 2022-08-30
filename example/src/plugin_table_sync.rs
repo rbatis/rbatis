@@ -22,9 +22,7 @@ pub struct BizActivity {
 pub async fn main() {
     fast_log::init(fast_log::Config::new().console()).expect("rbatis init fail");
     let rb = Rbatis::new();
-    rb.link(SqliteDriver {}, &format!("sqlite://target/sqlite.db"))
-        .await
-        .unwrap();
+    rb.init(SqliteDriver {}, &format!("sqlite://target/sqlite.db")).unwrap();
     let mut s = RbatisTableSync::new();
     s.insert("sqlite".to_string(), Box::new(SqliteTableSync {}));
     let t = BizActivity {

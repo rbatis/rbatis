@@ -181,7 +181,7 @@ mod test {
     fn test_insert() {
         let f = async move {
             let mut rb = Rbatis::new();
-            rb.link(MockDriver {}, "test").await.unwrap();
+            rb.init(MockDriver {}, "test").unwrap();
             let t = MockTable {
                 id: Some("2".into()),
                 name: Some("2".into()),
@@ -209,7 +209,7 @@ mod test {
     fn test_insert_batch() {
         let f = async move {
             let mut rb = Rbatis::new();
-            rb.link(MockDriver {}, "test").await.unwrap();
+            rb.init(MockDriver {}, "test").unwrap();
             let t = MockTable {
                 id: Some("2".into()),
                 name: Some("2".into()),
@@ -239,7 +239,7 @@ mod test {
     fn test_update_by_column() {
         let f = async move {
             let mut rb = Rbatis::new();
-            rb.link(MockDriver {}, "test").await.unwrap();
+            rb.init(MockDriver {}, "test").unwrap();
             let t = MockTable {
                 id: Some("2".into()),
                 name: Some("2".into()),
@@ -269,7 +269,7 @@ mod test {
     fn test_select_all() {
         let f = async move {
             let mut rb = Rbatis::new();
-            rb.link(MockDriver {}, "test").await.unwrap();
+            rb.init(MockDriver {}, "test").unwrap();
             let r = MockTable::select_all(&mut rb).await.unwrap();
             println!("{:?}", r[0].sql);
             assert_eq!(r[0].sql, "select * from mock_table");
@@ -281,7 +281,7 @@ mod test {
     fn test_delete_by_column() {
         let f = async move {
             let mut rb = Rbatis::new();
-            rb.link(MockDriver {}, "test").await.unwrap();
+            rb.init(MockDriver {}, "test").unwrap();
             let r = MockTable::delete_by_column(&mut rb, "1", &Value::String("1".to_string()))
                 .await
                 .unwrap();
@@ -298,7 +298,7 @@ mod test {
     fn test_delete_by_column_batch() {
         let f = async move {
             let mut rb = Rbatis::new();
-            rb.link(MockDriver {}, "test").await.unwrap();
+            rb.init(MockDriver {}, "test").unwrap();
             let r = MockTable::delete_by_column_batch(&mut rb, "1", &["1", "2"])
                 .await
                 .unwrap();
@@ -316,7 +316,7 @@ mod test {
     fn test_select_all_by_id() {
         let f = async move {
             let mut rb = Rbatis::new();
-            rb.link(MockDriver {}, "test").await.unwrap();
+            rb.init(MockDriver {}, "test").unwrap();
             let r = MockTable::select_all_by_id(&mut rb, "1", "1")
                 .await
                 .unwrap();
@@ -333,7 +333,7 @@ mod test {
     fn test_select_by_id() {
         let f = async move {
             let mut rb = Rbatis::new();
-            rb.link(MockDriver {}, "test").await.unwrap();
+            rb.init(MockDriver {}, "test").unwrap();
             let r = MockTable::select_by_id(&mut rb, "1").await.unwrap();
             println!("{}", r.as_ref().unwrap().sql);
             assert_eq!(
@@ -353,7 +353,7 @@ mod test {
     fn test_select_by_dto() {
         let f = async move {
             let mut rb = Rbatis::new();
-            rb.link(MockDriver {}, "test").await.unwrap();
+            rb.init(MockDriver {}, "test").unwrap();
             let r = MockTable::select_by_dto(&mut rb, DTO {
                 id: "1".to_string()
             }).await.unwrap();
@@ -370,7 +370,7 @@ mod test {
     fn test_update_by_name() {
         let f = async move {
             let mut rb = Rbatis::new();
-            rb.link(MockDriver {}, "test").await.unwrap();
+            rb.init(MockDriver {}, "test").unwrap();
             let t = MockTable {
                 id: Some("2".into()),
                 name: Some("2".into()),
@@ -401,7 +401,7 @@ mod test {
     fn test_update_by_dto() {
         let f = async move {
             let mut rb = Rbatis::new();
-            rb.link(MockDriver {}, "test").await.unwrap();
+            rb.init(MockDriver {}, "test").unwrap();
             let t = MockTable {
                 id: Some("2".into()),
                 name: Some("2".into()),
@@ -434,7 +434,7 @@ mod test {
     fn test_delete_by_name() {
         let f = async move {
             let mut rb = Rbatis::new();
-            rb.link(MockDriver {}, "test").await.unwrap();
+            rb.init(MockDriver {}, "test").unwrap();
             let r = MockTable::delete_by_name(&mut rb, "2").await.unwrap();
             println!("{}", r.last_insert_id.as_str().unwrap());
             assert_eq!(
@@ -449,7 +449,7 @@ mod test {
     fn test_select_page() {
         let f = async move {
             let mut rb = Rbatis::new();
-            rb.link(MockDriver {}, "test").await.unwrap();
+            rb.init(MockDriver {}, "test").unwrap();
             let r = MockTable::select_page(&mut rb, &PageRequest::new(1, 10))
                 .await
                 .unwrap();
@@ -470,7 +470,7 @@ mod test {
     fn test_select_page_by_name() {
         let f = async move {
             let mut rb = Rbatis::new();
-            rb.link(MockDriver {}, "test").await.unwrap();
+            rb.init(MockDriver {}, "test").unwrap();
             let r = MockTable::select_page_by_name(&mut rb, &PageRequest::new(1, 10), "")
                 .await
                 .unwrap();
@@ -487,7 +487,7 @@ mod test {
     fn test_select_by_column() {
         let f = async move {
             let mut rb = Rbatis::new();
-            rb.link(MockDriver {}, "test").await.unwrap();
+            rb.init(MockDriver {}, "test").unwrap();
             let r = MockTable::select_by_column(&mut rb, "id", "1")
                 .await
                 .unwrap();
@@ -503,7 +503,7 @@ mod test {
     fn test_select_from_table_name_by_id() {
         let f = async move {
             let mut rb = Rbatis::new();
-            rb.link(MockDriver {}, "test").await.unwrap();
+            rb.init(MockDriver {}, "test").unwrap();
             let r = MockTable::select_from_table_name_by_id(&mut rb, "id", "mock_table2")
                 .await
                 .unwrap();
@@ -519,7 +519,7 @@ mod test {
     fn test_select_table_column_from_table_name_by_id() {
         let f = async move {
             let mut rb = Rbatis::new();
-            rb.link(MockDriver {}, "test").await.unwrap();
+            rb.init(MockDriver {}, "test").unwrap();
             let r = MockTable::select_table_column_from_table_name_by_id(&mut rb, "id", "id,name")
                 .await
                 .unwrap();
@@ -533,7 +533,7 @@ mod test {
     fn test_tx() {
         let f = async move {
             let rb = Rbatis::new();
-            rb.link(MockDriver {}, "test").await.unwrap();
+            rb.init(MockDriver {}, "test").unwrap();
             let t = MockTable {
                 id: Some("2".into()),
                 name: Some("2".into()),
@@ -563,7 +563,7 @@ mod test {
     fn test_pool_get() {
         let f = async move {
             let rb = Rbatis::new();
-            rb.link(MockDriver {}, "test").await.unwrap();
+            rb.init(MockDriver {}, "test").unwrap();
             for _ in 0..100000 {
                 let mut tx = rb.acquire().await.unwrap();
             }
@@ -576,7 +576,7 @@ mod test {
     fn test_pool_try_get() {
         let f = async move {
             let rb = Rbatis::new();
-            rb.link(MockDriver {}, "test").await.unwrap();
+            rb.init(MockDriver {}, "test").unwrap();
             let mut v = vec![];
             for _ in 0..100000 {
                 match rb.try_acquire().await {

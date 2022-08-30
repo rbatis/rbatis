@@ -35,7 +35,7 @@ use test::Bencher;
 fn bench_raw() {
     let rbatis = block_on(async {
         let rbatis = Rbatis::new();
-        rbatis.link(MockDriver {}, "").await;
+        rbatis.init(MockDriver {}, "");
         rbatis
     });
     block_on!(async {
@@ -54,7 +54,7 @@ fn bench_raw() {
 fn bench_insert() {
     let rbatis = block_on(async {
         let rbatis = Rbatis::new();
-        rbatis.link(MockDriver {}, "").await;
+        rbatis.init(MockDriver {}, "");
         rbatis
     });
     block_on!(async {

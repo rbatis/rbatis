@@ -79,8 +79,19 @@ impl Rbatis {
         };
     }
 
-    /// link pool
+    /// init() and try link
     pub async fn link<Driver: rbdc::db::Driver + 'static>(
+        &self,
+        driver: Driver,
+        url: &str,
+    ) -> Result<(), Error> {
+        self.init(driver, url)?;
+        self.try_acquire().await?;
+        Ok(())
+    }
+
+    /// init pool
+    pub fn init<Driver: rbdc::db::Driver + 'static>(
         &self,
         driver: Driver,
         url: &str,
@@ -95,10 +106,10 @@ impl Rbatis {
         return Ok(());
     }
 
-    /// link pool
-    pub async fn link_builder<Driver: rbdc::db::Driver + 'static>(
+    /// init pool
+    pub async fn init_builder<Driver: rbdc::db::Driver + 'static>(
         &self,
-        builder: rbdc::deadpool::managed::PoolBuilder<ManagerPorxy,rbdc::deadpool::managed::Object<ManagerPorxy>>,
+        builder: rbdc::deadpool::managed::PoolBuilder<ManagerPorxy, rbdc::deadpool::managed::Object<ManagerPorxy>>,
         driver: Driver,
         url: &str,
     ) -> Result<(), Error> {
@@ -112,10 +123,10 @@ impl Rbatis {
         return Ok(());
     }
 
-    /// link pool by DBPoolOptions
+    /// init pool by DBPoolOptions
     /// for example:
     ///
-    pub async fn link_opt<
+    pub fn init_opt<
         Driver: rbdc::db::Driver + 'static,
         ConnectOptions: rbdc::db::ConnectOptions,
     >(

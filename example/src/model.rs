@@ -34,12 +34,7 @@ pub async fn init_sqlite_path(path: &str) -> Rbatis {
     // rb.link(MysqlDriver {},"mysql://root:123456@localhost:3306/test").await.unwrap();
     // rb.link(PgDriver {},"postgres://postgres:123456@localhost:5432/postgres").await.unwrap();
     // rb.link(MssqlDriver {},"mssql://SA:TestPass!123456@localhost:1433/test").await.unwrap();
-    rb.link(
-        SqliteDriver {},
-        &format!("sqlite://{}target/sqlite.db", path),
-    )
-    .await
-    .unwrap();
+    rb.init(SqliteDriver {}, &format!("sqlite://{}target/sqlite.db", path)).unwrap();
 
     // ------------carte table------------
     let mut f = File::open(format!("{}example/table_sqlite.sql", path)).unwrap();
