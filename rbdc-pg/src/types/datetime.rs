@@ -26,15 +26,11 @@ impl Decode for fastdate::DateTime {
         Ok(match value.format() {
             PgValueFormat::Binary => {
                 // TIMESTAMP is encoded as the microseconds since the epoch
-                let epoch = fastdate::DateTime {
-                    micro: 0,
-                    sec: 0,
-                    min: 0,
-                    hour: 0,
+                let epoch = fastdate::DateTime::from(fastdate::Date {
                     day: 1,
                     mon: 1,
                     year: 2000,
-                };
+                });
                 let us: i64 = Decode::decode(value)?;
                 epoch + Duration::from_micros(us as u64)
             }
@@ -49,6 +45,11 @@ impl Decode for fastdate::DateTime {
 
 impl Encode for fastdate::DateTime {
     fn encode(self, buf: &mut PgArgumentBuffer) -> Result<IsNull, Error> {
-        Timestamp(self.unix_timestamp_millis() as u64).encode(buf)
+        let v = self - fastdate::DateTime::from(fastdate::Date {
+            day: 1,
+            mon: 1,
+            year: 2000,
+        });
+        Timestamp(v.as_millis() as u64).encode(buf)
     }
 }

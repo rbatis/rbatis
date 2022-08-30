@@ -34,15 +34,11 @@ impl Decode for Timestamptz {
         Ok(match value.format() {
             PgValueFormat::Binary => {
                 // TIMESTAMP is encoded as the microseconds since the epoch
-                let epoch = fastdate::DateTime {
-                    micro: 0,
-                    sec: 0,
-                    min: 0,
-                    hour: 0,
+                let epoch = fastdate::DateTime::from(fastdate::Date{
                     day: 1,
                     mon: 1,
-                    year: 2000,
-                };
+                    year: 2000
+                });
                 let us: i64 = Decode::decode(value)?;
                 let v = epoch + std::time::Duration::from_micros(us as u64);
                 Timestamptz(v.unix_timestamp_millis() as u64)
