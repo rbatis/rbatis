@@ -13,7 +13,7 @@ mod test {
         let sql = "update user set name=#{name}, password=#{password} ,sex=#{sex}, phone=#{phone}, delete_flag=#{flag}, #{name} #{ 1 + ";
         let finds = find_convert_string(sql);
         println!("{:?}", finds);
-        assert_eq!(finds.len(), 5);
+        assert_eq!(finds.len(), 6);
         let mut index = 0;
         for (k, _) in &finds {
             if index == 0 {
@@ -30,6 +30,9 @@ mod test {
             }
             if index == 4 {
                 assert_eq!(k, "flag");
+            }
+            if index == 5 {
+                assert_eq!(k, "name");
             }
             index += 1;
         }
