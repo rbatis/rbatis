@@ -144,13 +144,13 @@ async fn main() {
     let rb = Rbatis::new();
     /// connect to database  
     // sqlite 
-    rb.link(SqliteDriver {}, "sqlite://target/sqlite.db").await.unwrap();
+    rb.init(SqliteDriver {}, "sqlite://target/sqlite.db").unwrap();
     // mysql 
-    // rb.link(MysqlDriver{},"mysql://root:123456@localhost:3306/test").await.unwrap();
+    // rb.init(MysqlDriver{},"mysql://root:123456@localhost:3306/test").unwrap();
     // postgresql 
-    // rb.link(PgDriver{},"postgres://postgres:123456@localhost:5432/postgres").await.unwrap();
+    // rb.init(PgDriver{},"postgres://postgres:123456@localhost:5432/postgres").unwrap();
     // mssql/sqlserver
-    // rb.link(MssqlDriver{},"jdbc:sqlserver://localhost:1433;User=SA;Password={TestPass!123456};Database=test").await.unwrap();
+    // rb.init(MssqlDriver{},"jdbc:sqlserver://localhost:1433;User=SA;Password={TestPass!123456};Database=test").unwrap();
 
     let activity = BizActivity {
         id: Some("2".into()),
