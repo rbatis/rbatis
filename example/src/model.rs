@@ -31,14 +31,14 @@ pub async fn init_sqlite() -> Rbatis {
 /// make a sqlite-rbatis
 pub async fn init_sqlite_path(path: &str) -> Rbatis {
     let rb = Rbatis::new();
-    // rb.link(MysqlDriver {},"mysql://root:123456@localhost:3306/test").await.unwrap();
-    // rb.link(PgDriver {},"postgres://postgres:123456@localhost:5432/postgres").await.unwrap();
-    // rb.link(MssqlDriver {},"mssql://SA:TestPass!123456@localhost:1433/test").await.unwrap();
+    // rb.init(rbdc_mysql::driver::MysqlDriver {}, "mysql://root:123456@localhost:3306/test").unwrap();
+    // rb.init(rbdc_pg::driver::PgDriver {}, "postgres://postgres:123456@localhost:5432/postgres").unwrap();
+    // rb.init(rbdc_mssql::driver::MssqlDriver {}, "mssql://SA:TestPass!123456@localhost:1433/test").unwrap();
     rb.init(
         SqliteDriver {},
         &format!("sqlite://{}target/sqlite.db", path),
     )
-    .unwrap();
+        .unwrap();
 
     // ------------carte table------------
     let mut f = File::open(format!("{}example/table_sqlite.sql", path)).unwrap();
