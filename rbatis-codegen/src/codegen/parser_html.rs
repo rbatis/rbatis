@@ -63,7 +63,6 @@ pub fn parse_html_str(
             panic!("html not find fn:{}", fn_name);
         }
         Some((_, v)) => {
-            println!("v={:?}", v);
             let node = parse_html_node(vec![v], ignore, fn_name);
             return node;
         }
