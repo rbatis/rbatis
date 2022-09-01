@@ -20,14 +20,26 @@ use crate::error::Error;
 /// return Map<id,Element>
 pub fn load_html_include_replace(html: &str) -> Result<BTreeMap<String, Element>, Error> {
     let mut datas = load_html(html).map_err(|e| Error::from(e.to_string()))?;
-    if let Some(x) = datas.iter().next() {
+    let mut mappers = vec![];
+    for x in &datas {
         if x.tag.eq("mapper") {
-            datas = x.childs.clone();
+            mappers.push(x.clone());
+        }
+    }
+    for mapper in mappers {
+        for x in mapper.childs {
+            datas.push(x);
         }
     }
     let mut sql_map = BTreeMap::new();
     let mut datas = include_replace(datas, &mut sql_map);
-    Ok(sql_map)
+    let mut m = BTreeMap::new();
+    for x in datas {
+        if let Some(v) = x.attrs.get("id") {
+            m.insert(v.to_string(), x);
+        }
+    }
+    Ok(m)
 }
 
 pub fn parse_html_str(
@@ -46,7 +58,7 @@ pub fn parse_html_str(
         None => {
             panic!("html not find fn:{}", fn_name);
         }
-        Some((k, v)) => {
+        Some((_, v)) => {
             let node = parse_html_node(vec![v], ignore, fn_name);
             return node;
         }
@@ -73,6 +85,7 @@ fn find_element(id: &str, htmls: &Vec<Element>) -> Option<Element> {
     return None;
 }
 
+
 fn include_replace(htmls: Vec<Element>, sql_map: &mut BTreeMap<String, Element>) -> Vec<Element> {
     let mut results = vec![];
     for mut x in htmls {
@@ -92,45 +105,14 @@ fn include_replace(htmls: Vec<Element>, sql_map: &mut BTreeMap<String, Element>)
                     .get("refid")
                     .expect("[rbatis] <include> element must have refid!")
                     .clone();
-                let data_url = Url::parse(format!("url://{}", refid).as_str())
-                    .expect("[rbatis] parse include url fail!");
-                let mut find_file = false;
-                for (k, v) in data_url.query_pairs() {
-                    let v = v.to_string();
-                    match k.to_string().as_str() {
-                        "file" => {
-                            if v.is_empty() {
-                                panic!("[rbatis] <include> element file must be have an value!");
-                            }
-                            let mut html_string = String::new();
-                            let mut f = File::open(v.as_str())
-                                .expect(&format!("File:\"{}\" does not exist", v));
-                            f.read_to_string(&mut html_string);
-                            let datas = load_html(html_string.as_str()).expect("load_html() fail!");
-                            let find = find_element(refid.as_str(), &datas).expect(&format!(
-                                "[rbatis] not find html:{} , element id={}",
-                                v, refid
-                            ));
-                            x.childs.push(find);
-                            find_file = true;
-                            break;
-                        }
-                        &_ => {}
-                    }
-                }
-                if !find_file {
-                    let refid_path = data_url.host().unwrap().to_string();
-                    let element = sql_map
-                        .get(refid_path.as_str())
-                        .expect(&format!(
-                            "[rbatis] can not find element {} <include refid='{}'> !",
-                            refid, refid_path
-                        ))
-                        .clone();
-                    for el in element.childs {
-                        x.childs.push(el.clone());
-                    }
-                }
+                let element = sql_map
+                    .get(refid.as_str())
+                    .expect(&format!(
+                        "[rbatis] can not find element {} <include refid='{}'> !",
+                        refid, refid
+                    ))
+                    .clone();
+                x = element;
             }
             _ => match x.attrs.get("id") {
                 None => {}
@@ -144,16 +126,7 @@ fn include_replace(htmls: Vec<Element>, sql_map: &mut BTreeMap<String, Element>)
         if x.childs.len() != 0 {
             x.childs = include_replace(x.childs.clone(), sql_map);
         }
-        match x.tag.as_str() {
-            "include" | "sql" => {
-                for c in x.childs {
-                    results.push(c);
-                }
-            }
-            _ => {
-                results.push(x);
-            }
-        }
+        results.push(x);
     }
     return results;
 }
@@ -203,9 +176,6 @@ fn parse(
             }
             "include" => {
                 return parse(&x.childs, methods, ignore, fn_name);
-            }
-            "println" => {
-                impl_println(x, &mut body, ignore);
             }
             "continue" => {
                 impl_continue(x, &mut body, ignore);
@@ -567,39 +537,6 @@ fn parse(
     return body.into();
 }
 
-fn impl_println(x: &Element, body: &mut proc_macro2::TokenStream, ignore: &mut Vec<String>) {
-    let value = x
-        .attrs
-        .get("value")
-        .expect(&format!("{} element must be have value field!", x.tag));
-    // let method_name = impl_method(value, body, ignore);
-    let method_impl = crate::codegen::func::impl_fn(
-        &body.to_string(),
-        "",
-        &format!("\"{}\"", value),
-        false,
-        ignore,
-    );
-
-    let mut format = String::new();
-    if let Some(s) = x.attrs.get("format") {
-        format = s.to_string();
-    }
-    if format.is_empty() {
-        *body = quote! {
-         #body
-         println!("{}",#method_impl);
-        };
-    } else {
-        let format_expr = syn::parse_str::<syn::Lit>(&format!("\"{}\"", format))
-            .expect(&format!("[rexpr]syn::parse_str: {}", format));
-        *body = quote! {
-         #body
-         println!(#format_expr,#method_impl);
-        };
-    }
-}
-
 fn impl_continue(x: &Element, body: &mut proc_macro2::TokenStream, ignore: &mut Vec<String>) {
     *body = quote! {
          #body
@@ -746,17 +683,14 @@ mod test {
     #[test]
     fn test_load_html_include_replace() {
         let datas = load_html_include_replace(
-            r#"<select id="custom_func">
+            r#"
+            <sql id="aaa">`and name != ''`</sql>
+            <select id="custom_func">
         `select * from biz_activity`
-        <where>
-            <if test="name.is_test()">
-                `and name like #{name}`
-            </if>
-        </where>
+        <include refid="aaa"></include>
     </select>"#,
         )
-        .unwrap();
-        println!("{:?}", datas);
-        assert_eq!(datas.get("custom_func").is_some(), true);
+            .unwrap();
+        assert_eq!(datas.get("custom_func").unwrap().childs[1].childs[0].data, "and name != ''");
     }
 }
