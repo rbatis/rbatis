@@ -681,7 +681,7 @@ mod test {
     use crate::codegen::parser_html::load_html_include_replace;
 
     #[test]
-    fn test_load_html_include_replace() {
+    fn test_sql_replace() {
         let datas = load_html_include_replace(
             r#"
             <sql id="aaa">`and name != ''`</sql>
