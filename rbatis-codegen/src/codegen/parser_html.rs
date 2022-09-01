@@ -1,4 +1,4 @@
-use std::collections::HashMap;
+use std::collections::BTreeMap;
 use std::env::current_dir;
 use std::fs::File;
 use std::io::{Read, Write};
@@ -18,14 +18,14 @@ use crate::codegen::syntax_tree::NodeType;
 use crate::error::Error;
 
 /// return Map<id,Element>
-pub fn load_html_include_replace(html: &str) -> Result<HashMap<String, Element>, Error> {
+pub fn load_html_include_replace(html: &str) -> Result<BTreeMap<String, Element>, Error> {
     let mut datas = load_html(html).map_err(|e| Error::from(e.to_string()))?;
     if let Some(x) = datas.iter().next() {
         if x.tag.eq("mapper") {
             datas = x.childs.clone();
         }
     }
-    let mut sql_map = HashMap::new();
+    let mut sql_map = BTreeMap::new();
     let mut datas = include_replace(datas, &mut sql_map);
     Ok(sql_map)
 }
@@ -73,7 +73,7 @@ fn find_element(id: &str, htmls: &Vec<Element>) -> Option<Element> {
     return None;
 }
 
-fn include_replace(htmls: Vec<Element>, sql_map: &mut HashMap<String, Element>) -> Vec<Element> {
+fn include_replace(htmls: Vec<Element>, sql_map: &mut BTreeMap<String, Element>) -> Vec<Element> {
     let mut results = vec![];
     for mut x in htmls {
         match x.tag.as_str() {
@@ -215,7 +215,7 @@ fn parse(
                 let convert_list = find_convert_string(&string_data);
                 let mut replaces = quote! {};
 
-                let mut replaced = HashMap::<String, bool>::new();
+                let mut replaced = BTreeMap::<String, bool>::new();
                 for (k, v) in convert_list {
                     let method_impl = crate::codegen::func::impl_fn(
                         &body.to_string(),
