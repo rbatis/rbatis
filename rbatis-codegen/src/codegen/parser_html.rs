@@ -99,14 +99,11 @@ fn include_replace(htmls: Vec<Element>, sql_map: &mut BTreeMap<String, Element>)
                 );
             }
             "include" => {
-                let mut ref_id = x
+                let ref_id = x
                     .attrs
                     .get("refid")
                     .expect("[rbatis] <include> element must have attr <include refid=\"\">!")
                     .clone();
-                if !ref_id.contains("://") {
-                    ref_id = format!("current://current?refid={}", ref_id);
-                }
                 let url = Url::parse(&ref_id).expect(&format!(
                     "[rbatis] parse <include refid=\"{}\"> fail!",
                     ref_id
@@ -115,20 +112,35 @@ fn include_replace(htmls: Vec<Element>, sql_map: &mut BTreeMap<String, Element>)
                     + url.path().trim_end_matches("/").trim_end_matches("\\");
                 match url.scheme() {
                     "file" => {
-                        let mut f = File::open(path).expect(&format!(
+                        let mut ref_id = ref_id.clone();
+                        let mut have_ref_id = false;
+                        for (k, v) in url.query_pairs() {
+                            if k.eq("refid") {
+                                ref_id = v.to_string();
+                                have_ref_id = true;
+                            }
+                        }
+                        if !have_ref_id {
+                            panic!("not find ref_id on url {}", ref_id);
+                        }
+                        let mut f = File::open(&path).expect(&format!(
                             "[rbatis] can't find file={}",
                             url.host_str().unwrap_or_default()
                         ));
                         let mut html = String::new();
                         f.read_to_string(&mut html).expect("read fail");
-                        let datas = load_html(&html).expect("read fail");
-                        for item in datas {
-                            if x.tag.eq("sql") && x.attrs.get("id").eq(&Some(&ref_id)) {
-                                x = item;
-                            }
+                        let datas = load_html_include_replace(&html).expect("read fail");
+                        if let Some(element) = datas.get(&ref_id) {
+                            x = element.clone();
+                        } else {
+                            panic!("not find ref_id={} on file={}", ref_id, path);
                         }
                     }
                     "current" => {
+                        let mut ref_id = ref_id.clone();
+                        if !ref_id.contains("://") {
+                            ref_id = format!("current://current?refid={}", ref_id);
+                        }
                         let mut have_pairs = false;
                         for (k, v) in url.query_pairs() {
                             have_pairs = true;
@@ -136,7 +148,7 @@ fn include_replace(htmls: Vec<Element>, sql_map: &mut BTreeMap<String, Element>)
                                 ref_id = v.to_string();
                             }
                         }
-                        let element = sql_map
+                        let mut element = sql_map
                             .get(ref_id.as_str())
                             .expect(&format!(
                                 "[rbatis] can not find element <include refid=\"{}\"> !",
@@ -728,7 +740,7 @@ mod test {
         <include refid="aaa"></include>
     </select>"#,
         )
-        .unwrap();
+            .unwrap();
         assert_eq!(
             datas.get("custom_func").unwrap().childs[1].childs[0].data,
             "and name != ''"
