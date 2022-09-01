@@ -85,7 +85,6 @@ fn find_element(id: &str, htmls: &Vec<Element>) -> Option<Element> {
     return None;
 }
 
-
 fn include_replace(htmls: Vec<Element>, sql_map: &mut BTreeMap<String, Element>) -> Vec<Element> {
     let mut results = vec![];
     for mut x in htmls {
@@ -100,16 +99,16 @@ fn include_replace(htmls: Vec<Element>, sql_map: &mut BTreeMap<String, Element>)
                 );
             }
             "include" => {
-                let refid = x
+                let ref_id = x
                     .attrs
                     .get("refid")
-                    .expect("[rbatis] <include> element must have refid!")
+                    .expect("[rbatis] <include> element must have attr <include refid=\"\">!")
                     .clone();
                 let element = sql_map
-                    .get(refid.as_str())
+                    .get(ref_id.as_str())
                     .expect(&format!(
-                        "[rbatis] can not find element {} <include refid='{}'> !",
-                        refid, refid
+                        "[rbatis] can not find element <include refid=\"{}\"> !",
+                        ref_id
                     ))
                     .clone();
                 x = element;
@@ -690,7 +689,10 @@ mod test {
         <include refid="aaa"></include>
     </select>"#,
         )
-            .unwrap();
-        assert_eq!(datas.get("custom_func").unwrap().childs[1].childs[0].data, "and name != ''");
+        .unwrap();
+        assert_eq!(
+            datas.get("custom_func").unwrap().childs[1].childs[0].data,
+            "and name != ''"
+        );
     }
 }
