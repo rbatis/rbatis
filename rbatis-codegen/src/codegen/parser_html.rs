@@ -88,10 +88,18 @@ fn include_replace(htmls: Vec<Element>, sql_map: &mut BTreeMap<String, Element>)
                     .get("refid")
                     .expect("[rbatis] <include> element must have attr <include refid=\"\">!")
                     .clone();
-                let url = Url::parse(&ref_id).expect(&format!(
-                    "[rbatis] parse <include refid=\"{}\"> fail!",
-                    ref_id
-                ));
+                let mut url ;
+                if ref_id.contains("://"){
+                    url = Url::parse(&ref_id).expect(&format!(
+                        "[rbatis] parse <include refid=\"{}\"> fail!",
+                        ref_id
+                    ));
+                }else{
+                    url = Url::parse(&format!("current://current?refid={}", ref_id)).expect(&format!(
+                        "[rbatis] parse <include refid=\"{}\"> fail!",
+                        ref_id
+                    ));
+                }
                 let path = url.host_str().unwrap_or_default().to_string()
                     + url.path().trim_end_matches("/").trim_end_matches("\\");
                 match url.scheme() {
@@ -126,19 +134,14 @@ fn include_replace(htmls: Vec<Element>, sql_map: &mut BTreeMap<String, Element>)
                         }
                     }
                     "current" => {
-                        let mut ref_id = ref_id.clone();
-                        if !ref_id.contains("://") {
-                            ref_id = format!("current://current?refid={}", ref_id);
-                        }
-                        let mut have_pairs = false;
+                        let mut ref_id_pair = ref_id.to_string();
                         for (k, v) in url.query_pairs() {
-                            have_pairs = true;
                             if k.eq("refid") {
-                                ref_id = v.to_string();
+                                ref_id_pair = v.to_string();
                             }
                         }
                         let mut element = sql_map
-                            .get(ref_id.as_str())
+                            .get(ref_id_pair.as_str())
                             .expect(&format!(
                                 "[rbatis] can not find element <include refid=\"{}\"> !",
                                 ref_id
