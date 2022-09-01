@@ -103,7 +103,6 @@ fn include_replace(htmls: Vec<Element>, sql_map: &mut BTreeMap<String, Element>)
                 }
                 let path = url.host_str().unwrap_or_default().to_string()
                     + url.path().trim_end_matches("/").trim_end_matches("\\");
-                //todo include fix bugs.
                 match url.scheme() {
                     "file" => {
                         let mut ref_id = ref_id.clone();
