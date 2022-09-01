@@ -55,4 +55,11 @@ mod test {
         let v = rbs::to_value!("1");
         assert_eq!(v, Value::String("1".to_string()));
     }
+
+    #[test]
+    fn test_add() {
+        let a = rbs::to_value!(1);
+        let b = rbs::to_value!(1);
+        assert_eq!(a + b, Value::I32(2));
+    }
 }

@@ -12,6 +12,7 @@ use std::ops::Deref;
 
 pub mod ext;
 pub mod map;
+pub mod ops;
 
 /// Represents any valid MessagePack value.
 #[derive(Clone, Debug, PartialEq)]
