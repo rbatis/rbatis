@@ -55,7 +55,10 @@
         <!ATTLIST delete
                 id CDATA #REQUIRED
                 >
-        <!-- Dynamic -->
+        <!-- include file or sql element,for example:
+        <include refid="{refid}"></include>
+        <include refid="file://{xml_file_path}?refid={refid}"></include>
+         -->
 
         <!ELEMENT include ()?>
         <!ATTLIST include

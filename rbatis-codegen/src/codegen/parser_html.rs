@@ -99,19 +99,56 @@ fn include_replace(htmls: Vec<Element>, sql_map: &mut BTreeMap<String, Element>)
                 );
             }
             "include" => {
-                let ref_id = x
+                let mut ref_id = x
                     .attrs
                     .get("refid")
                     .expect("[rbatis] <include> element must have attr <include refid=\"\">!")
                     .clone();
-                let element = sql_map
-                    .get(ref_id.as_str())
-                    .expect(&format!(
-                        "[rbatis] can not find element <include refid=\"{}\"> !",
-                        ref_id
-                    ))
-                    .clone();
-                x = element;
+                if !ref_id.contains("://") {
+                    ref_id = format!("current://current?refid={}", ref_id);
+                }
+                let url = Url::parse(&ref_id).expect(&format!(
+                    "[rbatis] parse <include refid=\"{}\"> fail!",
+                    ref_id
+                ));
+                let path = url.host_str().unwrap_or_default().to_string()
+                    + url.path().trim_end_matches("/").trim_end_matches("\\");
+                match url.scheme() {
+                    "file" => {
+                        let mut f = File::open(path).expect(&format!(
+                            "[rbatis] can't find file={}",
+                            url.host_str().unwrap_or_default()
+                        ));
+                        let mut html = String::new();
+                        f.read_to_string(&mut html).expect("read fail");
+                        let datas = load_html(&html).expect("read fail");
+                        for item in datas {
+                            if x.tag.eq("sql") && x.attrs.get("id").eq(&Some(&ref_id)) {
+                                x = item;
+                            }
+                        }
+                    }
+                    "current" => {
+                        let mut have_pairs = false;
+                        for (k, v) in url.query_pairs() {
+                            have_pairs = true;
+                            if k.eq("refid") {
+                                ref_id = v.to_string();
+                            }
+                        }
+                        let element = sql_map
+                            .get(ref_id.as_str())
+                            .expect(&format!(
+                                "[rbatis] can not find element <include refid=\"{}\"> !",
+                                ref_id
+                            ))
+                            .clone();
+                        x = element;
+                    }
+                    scheme => {
+                        panic!("unimplemented scheme <include refid=\"{}\">", ref_id)
+                    }
+                }
             }
             _ => match x.attrs.get("id") {
                 None => {}
@@ -678,6 +715,8 @@ fn parse_path(lit_str: &str) -> Path {
 #[cfg(test)]
 mod test {
     use crate::codegen::parser_html::load_html_include_replace;
+    use std::fs::File;
+    use std::io::Write;
 
     #[test]
     fn test_include_sql() {
