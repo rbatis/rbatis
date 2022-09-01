@@ -19,18 +19,7 @@ use crate::error::Error;
 
 /// return Map<id,Element>
 pub fn load_html_include_replace(html: &str) -> Result<BTreeMap<String, Element>, Error> {
-    let mut datas = load_html(html).map_err(|e| Error::from(e.to_string()))?;
-    let mut mappers = vec![];
-    for x in &datas {
-        if x.tag.eq("mapper") {
-            mappers.push(x.clone());
-        }
-    }
-    for mapper in mappers {
-        for x in mapper.childs {
-            datas.push(x);
-        }
-    }
+    let mut datas = load_mappers(html)?;
     let mut sql_map = BTreeMap::new();
     let mut datas = include_replace(datas, &mut sql_map);
     let mut m = BTreeMap::new();
@@ -40,6 +29,21 @@ pub fn load_html_include_replace(html: &str) -> Result<BTreeMap<String, Element>
         }
     }
     Ok(m)
+}
+
+fn load_mappers(html:&str)->Result<Vec<Element>,Error>{
+    let mut datas = load_html(html).map_err(|e| Error::from(e.to_string()))?;
+    let mut mappers = vec![];
+    for x in datas {
+        if x.tag.eq("mapper") {
+            for x in x.childs {
+                mappers.push(x);
+            }
+        }else{
+            mappers.push(x);
+        }
+    }
+    Ok(mappers)
 }
 
 pub fn parse_html_str(
@@ -129,10 +133,15 @@ fn include_replace(htmls: Vec<Element>, sql_map: &mut BTreeMap<String, Element>)
                         ));
                         let mut html = String::new();
                         f.read_to_string(&mut html).expect("read fail");
-                        let datas = load_html_include_replace(&html).expect("read fail");
-                        if let Some(element) = datas.get(&ref_id) {
-                            x = element.clone();
-                        } else {
+                        let datas = load_mappers(&html).expect("read fail");
+                        let mut not_find = true;
+                        for element in datas {
+                            if element.tag.eq("sql") && element.attrs.get("id").eq(&Some(&ref_id)){
+                                x = element.clone();
+                                not_find = false;
+                            }
+                        }
+                        if not_find {
                             panic!("not find ref_id={} on file={}", ref_id, path);
                         }
                     }
