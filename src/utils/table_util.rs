@@ -3,8 +3,7 @@ use std::collections::{BTreeMap, HashMap};
 /// Simplifies table construction by relying on the Default trait
 ///
 /// step1:  impl Default
-/// #[crud_table]
-/// #[derive(Clone, Debug, Default)]
+/// #[derive(Clone, Debug, Default, serde::Serialize, serde::Deserialize)]
 /// BizActivity{
 /// }
 ///
@@ -148,8 +147,7 @@ macro_rules! field_key {
 
 /// will create pub fn field_name()->&str method
 /// for example:
-///     #[crud_table]
-///     #[derive(Clone, Debug)]
+///     #[derive(Clone, Debug,serde::Serialize, serde::Deserialize)]
 ///     pub struct BizActivity {
 ///         pub id: Option<String>,
 ///         pub name: Option<String>,

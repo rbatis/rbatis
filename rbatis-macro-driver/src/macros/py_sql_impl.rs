@@ -63,7 +63,7 @@ pub(crate) fn impl_macro_py_sql(target_fn: &ItemFn, args: &AttributeArgs) -> Tok
     let func_name_ident = target_fn.sig.ident.to_token_stream();
     if !is_async {
         panic!(
-            "[rbaits] #[crud_table] 'fn {}({})' must be  async fn! ",
+            "[rbaits] fn {}({}) must be  async fn! ",
             func_name_ident, func_args_stream
         );
     }
