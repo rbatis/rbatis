@@ -69,26 +69,6 @@ pub fn parse_html_str(
     }
 }
 
-fn find_element(id: &str, htmls: &Vec<Element>) -> Option<Element> {
-    for x in htmls {
-        if x.childs.len() != 0 {
-            let find = find_element(id, &x.childs);
-            if find.is_some() {
-                return find;
-            }
-        }
-        match x.attrs.get("id") {
-            None => {}
-            Some(id) => {
-                if id.eq(id) {
-                    return Some(x.clone());
-                }
-            }
-        }
-    }
-    return None;
-}
-
 fn include_replace(htmls: Vec<Element>, sql_map: &mut BTreeMap<String, Element>) -> Vec<Element> {
     let mut results = vec![];
     for mut x in htmls {
@@ -200,16 +180,6 @@ fn parse_html_node(
         #fn_impl
     };
     token
-}
-
-fn to_mod(m: &ItemMod, t: &proc_macro2::TokenStream) -> TokenStream {
-    let ident = &m.ident;
-    let mod_token = quote! {
-        pub mod #ident{
-            #t
-        }
-    };
-    mod_token.into()
 }
 
 /// gen rust code
