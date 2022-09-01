@@ -1,6 +1,6 @@
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.1//EN" "https://raw.githubusercontent.com/rbatis/rbatis/master/rbatis-codegen/mybatis-3-mapper.dtd">
 <mapper>
-    <sql id="a">and id != ''</sql>
+    <sql id="a">` and id != '' `</sql>
     <insert id="insert">
         `insert into biz_activity`
         <foreach collection="arg" index="key" item="item" open="(" close=")" separator=",">
@@ -17,7 +17,8 @@
     <select id="select_by_condition">
         `select * from biz_activity`
         <where>
-<!--            <include refid="file://../rbatis/example/example.html/?refid=a"></include>-->
+            <include refid="a"></include>
+            <include refid="file://../rbatis/example/example.html/?refid=a"></include>
             <if test="name != ''">
                 ` and name like #{name}`
             </if>

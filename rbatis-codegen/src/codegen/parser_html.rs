@@ -31,7 +31,7 @@ pub fn load_html_include_replace(html: &str) -> Result<BTreeMap<String, Element>
     Ok(m)
 }
 
-fn load_mappers(html:&str)->Result<Vec<Element>,Error>{
+fn load_mappers(html: &str) -> Result<Vec<Element>, Error> {
     let mut datas = load_html(html).map_err(|e| Error::from(e.to_string()))?;
     let mut mappers = vec![];
     for x in datas {
@@ -39,7 +39,7 @@ fn load_mappers(html:&str)->Result<Vec<Element>,Error>{
             for x in x.childs {
                 mappers.push(x);
             }
-        }else{
+        } else {
             mappers.push(x);
         }
     }
@@ -63,6 +63,7 @@ pub fn parse_html_str(
             panic!("html not find fn:{}", fn_name);
         }
         Some((_, v)) => {
+            println!("v={:?}", v);
             let node = parse_html_node(vec![v], ignore, fn_name);
             return node;
         }
@@ -88,13 +89,13 @@ fn include_replace(htmls: Vec<Element>, sql_map: &mut BTreeMap<String, Element>)
                     .get("refid")
                     .expect("[rbatis] <include> element must have attr <include refid=\"\">!")
                     .clone();
-                let mut url ;
-                if ref_id.contains("://"){
+                let mut url;
+                if ref_id.contains("://") {
                     url = Url::parse(&ref_id).expect(&format!(
                         "[rbatis] parse <include refid=\"{}\"> fail!",
                         ref_id
                     ));
-                }else{
+                } else {
                     url = Url::parse(&format!("current://current?refid={}", ref_id)).expect(&format!(
                         "[rbatis] parse <include refid=\"{}\"> fail!",
                         ref_id
@@ -125,7 +126,7 @@ fn include_replace(htmls: Vec<Element>, sql_map: &mut BTreeMap<String, Element>)
                         let datas = load_mappers(&html).expect("read fail");
                         let mut not_find = true;
                         for element in datas {
-                            if element.tag.eq("sql") && element.attrs.get("id").eq(&Some(&ref_id)){
+                            if element.tag.eq("sql") && element.attrs.get("id").eq(&Some(&ref_id)) {
                                 x = element.clone();
                                 not_find = false;
                             }
@@ -203,7 +204,11 @@ fn parse(
                 return parse(&x.childs, methods, ignore, fn_name);
             }
             "sql" => {
-                return parse(&x.childs, methods, ignore, fn_name);
+                let code_sql = parse(&x.childs, methods, ignore, fn_name);
+                body = quote! {
+                            #body
+                            #code_sql
+                };
             }
             "include" => {
                 return parse(&x.childs, methods, ignore, fn_name);
