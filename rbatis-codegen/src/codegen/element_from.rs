@@ -21,6 +21,14 @@ impl From<NodeType> for Element {
                     childs: vec![],
                 };
             }
+            NodeType::NSql(n) => {
+                return Element {
+                    tag: "sql".to_string(),
+                    data: String::new(),
+                    attrs: Default::default(),
+                    childs: as_elements(n.childs),
+                };
+            }
             NodeType::NIf(n) => {
                 let mut m = HashMap::new();
                 m.insert("test".to_string(), n.test);
