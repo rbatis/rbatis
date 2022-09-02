@@ -88,6 +88,8 @@ It is an ORM, a small compiler, a dynamic SQL languages
 
 ##### Quick example: QueryWrapper and common usages (see example/crud_test.rs for details)
 
+* Rust v1.63+ later
+
 * Cargo.toml
 
 ```toml
