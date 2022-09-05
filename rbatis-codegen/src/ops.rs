@@ -18,7 +18,7 @@ pub trait AsProxy {
     fn u64(&self) -> u64;
     fn f64(&self) -> f64;
     fn str(&self) -> &str;
-    fn string(&self) -> String;
+    fn string(self) -> String;
     fn bool(&self) -> bool;
 }
 
@@ -47,8 +47,8 @@ impl AsProxy for Value {
         self.as_str().unwrap_or_default()
     }
 
-    fn string(&self) -> String {
-        self.as_str().unwrap_or_default().to_string()
+    fn string(self) -> String {
+        self.into_string().unwrap_or_default()
     }
 
     fn bool(&self) -> bool {
@@ -349,11 +349,6 @@ pub trait OpsIndexMut<Idx: ?Sized>: OpsIndex<Idx> {
 pub trait From<T>: Sized {
     /// Performs the conversion.
     fn op_from(_: T) -> Self;
-}
-
-pub trait AsSql {
-    /// Performs the conversion.
-    fn as_sql(&self) -> String;
 }
 
 #[cfg(test)]

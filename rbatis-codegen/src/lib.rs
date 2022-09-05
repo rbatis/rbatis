@@ -20,7 +20,6 @@ pub mod ops_cmp;
 pub mod ops_eq;
 
 pub mod from_bool;
-pub mod from_sql;
 pub mod ops_add;
 pub mod ops_bit_and;
 pub mod ops_bit_or;
