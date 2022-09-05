@@ -24,7 +24,7 @@ impl Rem<Value> for Value {
                 Value::U64(s % rhs)
             }
             Value::F64(s) => {
-                let rhs = rhs.as_f64().unwrap_or_default();
+                let rhs = rhs.f64();
                 Value::F64(s % rhs)
             }
             _ => Value::Null,
@@ -53,7 +53,7 @@ impl Rem<&Value> for Value {
                 Value::U64(s % rhs)
             }
             Value::F64(s) => {
-                let rhs = rhs.as_f64().unwrap_or_default();
+                let rhs = rhs.f64();
                 Value::F64(s % rhs)
             }
             _ => Value::Null,
@@ -82,7 +82,7 @@ impl Rem<&&Value> for Value {
                 Value::U64(s % rhs)
             }
             Value::F64(s) => {
-                let rhs = rhs.as_f64().unwrap_or_default();
+                let rhs = rhs.f64();
                 Value::F64(s % rhs)
             }
             _ => Value::Null,
@@ -111,7 +111,7 @@ impl Rem<Value> for &Value {
                 Value::U64(s % rhs)
             }
             Value::F64(s) => {
-                let rhs = rhs.as_f64().unwrap_or_default();
+                let rhs = rhs.f64();
                 Value::F64(s % rhs)
             }
             _ => Value::Null,
@@ -140,7 +140,7 @@ impl Rem<&Value> for &Value {
                 Value::U64(s % rhs)
             }
             Value::F64(s) => {
-                let rhs = rhs.as_f64().unwrap_or_default();
+                let rhs = rhs.f64();
                 Value::F64(s % rhs)
             }
             _ => Value::Null,
@@ -169,7 +169,7 @@ impl Rem<&&Value> for &Value {
                 Value::U64(s % rhs)
             }
             Value::F64(s) => {
-                let rhs = rhs.as_f64().unwrap_or_default();
+                let rhs = rhs.f64();
                 Value::F64(s % rhs)
             }
             _ => Value::Null,
