@@ -236,7 +236,7 @@ fn parse(
                         };
                     } else {
                         if replaced.get(&v).is_none() {
-                            replaces = quote! {#replaces.replacen(#v, &#method_impl.as_str().unwrap_or_default(), 1)};
+                            replaces = quote! {#replaces.replacen(#v, &#method_impl.as_sql(), 1)};
                             replaced.insert(v.to_string(), true);
                         }
                     }

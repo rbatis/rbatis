@@ -20,6 +20,7 @@ pub trait AsProxy {
     fn str(&self) -> &str;
     fn string(self) -> String;
     fn bool(&self) -> bool;
+    fn as_sql(&self) -> String;
 }
 
 impl AsProxy for Value {
@@ -53,6 +54,15 @@ impl AsProxy for Value {
 
     fn bool(&self) -> bool {
         self.as_bool().unwrap_or_default()
+    }
+
+    fn as_sql(&self) -> String {
+        match self {
+            Value::String(s) => { s.to_string() }
+            _ => {
+                self.to_string()
+            }
+        }
     }
 }
 
