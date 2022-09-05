@@ -20,90 +20,27 @@ pub trait AsProxy {
     fn str(&self) -> &str;
     fn string(&self) -> String;
     fn bool(&self) -> bool;
-    //is
-    fn is_empty(&self) -> bool;
-    fn is_null(&self) -> bool;
-    fn is_array(&self) -> bool;
-    fn is_document(&self) -> bool;
-    fn is_object(&self) -> bool; // is_document = is_object
-
-    //try to any string
-    fn cast_string(&self) -> String;
-    fn cast_i64(&self) -> i64;
-    fn cast_f64(&self) -> f64;
-    fn cast_u64(&self) -> u64;
-    /// bracket(xxxx) inner data
-    fn bracket(&self) -> &str;
-    /// bracket(xxxx) inner data
-    fn inner(&self) -> &str {
-        self.bracket()
-    }
-
-    fn array(&self) -> Option<Vec<Value>>;
-
-    fn object(&self) -> Option<ValueMap>;
 }
 
 impl AsProxy for Value {
     fn i32(&self) -> i32 {
-        match self {
-            Value::I32(v) => *v as i32,
-            Value::I64(v) => *v as i32,
-            Value::U32(v) => *v as i32,
-            Value::U64(v) => *v as i32,
-            Value::F32(v) => *v as i32,
-            Value::F64(v) => *v as i32,
-            Value::F32(v) => *v as i32,
-            _ => 0,
-        }
+        self.as_i64().unwrap_or_default() as i32
     }
 
     fn i64(&self) -> i64 {
-        match self {
-            Value::F64(v) => *v as i64,
-            Value::F32(v) => *v as i64,
-            Value::U32(v) => *v as i64,
-            Value::U64(v) => *v as i64,
-            Value::I32(v) => *v as i64,
-            Value::I64(v) => *v,
-            _ => 0,
-        }
+        self.as_i64().unwrap_or_default()
     }
 
     fn u32(&self) -> u32 {
-        match self {
-            Value::F64(v) => *v as u32,
-            Value::F32(v) => *v as u32,
-            Value::I32(v) => *v as u32,
-            Value::I64(v) => *v as u32,
-            Value::U32(v) => *v,
-            Value::U64(v) => *v as u32,
-            _ => 0,
-        }
+        self.as_u64().unwrap_or_default() as u32
     }
 
     fn u64(&self) -> u64 {
-        match self {
-            Value::F64(v) => *v as u64,
-            Value::F32(v) => *v as u64,
-            Value::I32(v) => *v as u64,
-            Value::I64(v) => *v as u64,
-            Value::U32(v) => *v as u64,
-            Value::U64(v) => *v,
-            _ => 0,
-        }
+        self.as_u64().unwrap_or_default()
     }
 
     fn f64(&self) -> f64 {
-        match self {
-            Value::F64(v) => *v as f64,
-            Value::F32(v) => *v as f64,
-            Value::I32(v) => *v as f64,
-            Value::I64(v) => *v as f64,
-            Value::U32(v) => *v as f64,
-            Value::U64(v) => *v as f64,
-            _ => 0.0,
-        }
+        self.as_f64().unwrap_or_default()
     }
 
     fn str(&self) -> &str {
@@ -111,157 +48,11 @@ impl AsProxy for Value {
     }
 
     fn string(&self) -> String {
-        self.str().to_string()
-    }
-
-    fn cast_string(&self) -> String {
-        match self {
-            Value::Binary(b) => String::from_utf8(b.clone()).unwrap_or_default(),
-            Value::F64(d) => d.to_string(),
-            Value::F32(v) => v.to_string(),
-            Value::String(d) => d.to_string(),
-            Value::Bool(d) => d.to_string(),
-            Value::Null => "".to_string(),
-            Value::I32(i) => i.to_string(),
-            Value::I64(d) => d.to_string(),
-            Value::Ext(_, d) => d.cast_string(),
-            _ => String::new(),
-        }
-    }
-
-    fn cast_i64(&self) -> i64 {
-        match self {
-            Value::Binary(b) => String::from_utf8(b.clone())
-                .unwrap_or_default()
-                .parse()
-                .unwrap_or_default(),
-            Value::F64(d) => *d as i64,
-            Value::F32(v) => *v as i64,
-            Value::String(d) => d.to_string().parse().unwrap_or_default(),
-            Value::Bool(d) => {
-                if *d {
-                    1
-                } else {
-                    0
-                }
-            }
-            Value::Null => 0,
-            Value::U32(i) => *i as i64,
-            Value::U64(d) => *d as i64,
-            Value::I32(i) => *i as i64,
-            Value::I64(d) => *d,
-            Value::Ext(_, d) => d.cast_i64(),
-            _ => 0,
-        }
-    }
-
-    fn cast_u64(&self) -> u64 {
-        match self {
-            Value::Binary(b) => String::from_utf8(b.clone())
-                .unwrap_or_default()
-                .parse()
-                .unwrap_or_default(),
-            Value::F64(d) => *d as u64,
-            Value::F32(v) => *v as u64,
-            Value::String(d) => d.to_string().parse().unwrap_or_default(),
-            Value::Bool(d) => {
-                if *d {
-                    1
-                } else {
-                    0
-                }
-            }
-            Value::Null => 0,
-            Value::I32(i) => *i as u64,
-            Value::I64(d) => *d as u64,
-            Value::U32(i) => *i as u64,
-            Value::U64(d) => *d,
-            Value::Ext(_, d) => self.cast_u64(),
-            _ => 0,
-        }
-    }
-
-    fn cast_f64(&self) -> f64 {
-        match self {
-            Value::Binary(b) => String::from_utf8(b.clone())
-                .unwrap_or_default()
-                .parse()
-                .unwrap_or_default(),
-            Value::F64(d) => *d as f64,
-            Value::F32(v) => *v as f64,
-            Value::String(d) => d.to_string().parse().unwrap_or_default(),
-            Value::Bool(d) => {
-                if *d {
-                    1.0
-                } else {
-                    0.0
-                }
-            }
-            Value::Null => 0.0,
-            Value::I32(i) => *i as f64,
-            Value::I64(d) => *d as f64,
-            Value::Ext(_, d) => d.cast_f64(),
-            _ => 0.0,
-        }
+        self.as_str().unwrap_or_default().to_string()
     }
 
     fn bool(&self) -> bool {
         self.as_bool().unwrap_or_default()
-    }
-    fn is_empty(&self) -> bool {
-        match self {
-            Value::Null => true,
-            Value::String(s) => s.is_empty(),
-            Value::Array(arr) => arr.is_empty(),
-            Value::Map(m) => m.is_empty(),
-            _ => false,
-        }
-    }
-
-    fn is_null(&self) -> bool {
-        match self {
-            Value::Null => true,
-            _ => false,
-        }
-    }
-
-    fn is_array(&self) -> bool {
-        match self {
-            Value::Array(_) => true,
-            _ => false,
-        }
-    }
-
-    fn is_document(&self) -> bool {
-        match self {
-            Value::Map(_) => true,
-            _ => false,
-        }
-    }
-
-    fn is_object(&self) -> bool {
-        return self.is_document();
-    }
-
-    fn bracket(&self) -> &str {
-        let bracket = self.as_str().unwrap_or_default();
-        return bracket;
-    }
-
-    fn array(&self) -> Option<Vec<Value>> {
-        match self {
-            Value::Array(arr) => Some(arr.clone()),
-            Value::Ext(_, ext) => ext.array(),
-            _ => None,
-        }
-    }
-
-    fn object(&self) -> Option<ValueMap> {
-        match self {
-            Value::Map(m) => Some(m.clone()),
-            Value::Ext(_, m) => m.object(),
-            _ => None,
-        }
     }
 }
 
