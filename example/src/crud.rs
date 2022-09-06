@@ -7,8 +7,9 @@ use crate::model::{init_sqlite, BizActivity};
 use rbatis::rbdc::datetime::FastDateTime;
 use rbatis::sql::page::PageRequest;
 
-//crud!(BizActivity {},"biz_activity");
-crud!(BizActivity {}); //crud = insert+select_by_column+update_by_column+delete_by_column
+//crud!(BizActivity {},"biz_activity");//custom table name
+//impl_select!(BizActivity{select_all_by_id(table_name:&str,id:&str) => "`where id = #{id}`"}); //custom table name
+crud!(BizActivity {});
 impl_select!(BizActivity{select_all_by_id(id:&str,name:&str) => "`where id = #{id} and name = #{name}`"});
 impl_select!(BizActivity{select_by_id(id:&str) -> Option => "`where id = #{id} limit 1`"});
 impl_update!(BizActivity{update_by_name(name:&str) => "`where id = '2'`"});
