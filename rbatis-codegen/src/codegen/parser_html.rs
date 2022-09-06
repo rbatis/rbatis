@@ -95,10 +95,9 @@ fn include_replace(htmls: Vec<Element>, sql_map: &mut BTreeMap<String, Element>)
                         ref_id
                     ));
                 } else {
-                    url = Url::parse(&format!("current://current?refid={}", ref_id)).expect(&format!(
-                        "[rbatis] parse <include refid=\"{}\"> fail!",
-                        ref_id
-                    ));
+                    url = Url::parse(&format!("current://current?refid={}", ref_id)).expect(
+                        &format!("[rbatis] parse <include refid=\"{}\"> fail!", ref_id),
+                    );
                 }
                 let path = url.host_str().unwrap_or_default().to_string()
                     + url.path().trim_end_matches("/").trim_end_matches("\\");
@@ -726,7 +725,7 @@ mod test {
         <include refid="aaa"></include>
     </select>"#,
         )
-            .unwrap();
+        .unwrap();
         assert_eq!(
             datas.get("custom_func").unwrap().childs[1].childs[0].data,
             "and name != ''"
