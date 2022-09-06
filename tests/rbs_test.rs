@@ -1,5 +1,6 @@
 #[cfg(test)]
 mod test {
+    use rbatis_codegen::ops::{Add, Sub};
     use rbs::Value;
 
     #[test]
@@ -60,6 +61,13 @@ mod test {
     fn test_add() {
         let a = rbs::to_value!(1);
         let b = rbs::to_value!(1);
-        assert_eq!(a + b, Value::I32(2));
+        assert_eq!(a.op_add(b), Value::I32(2));
+    }
+
+    #[test]
+    fn test_sub() {
+        let a = rbs::to_value!(1);
+        let b = rbs::to_value!(1);
+        assert_eq!(a.op_sub(b), Value::I32(0));
     }
 }

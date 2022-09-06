@@ -2,177 +2,76 @@ use crate::ops::AsProxy;
 use crate::ops::Mul;
 use rbs::Value;
 
-impl Mul<&Value> for Value {
-    type Output = Value;
-    fn op_mul(self, rhs: &Value) -> Self::Output {
-        match self {
-            Value::I32(s) => {
-                let rhs = rhs.i32();
-                Value::I32(s * rhs)
-            }
-            Value::I64(s) => {
-                let rhs = rhs.i64();
-                Value::I64(s * rhs)
-            }
-            Value::U32(s) => {
-                let rhs = rhs.u32();
-                Value::U32(s * rhs)
-            }
-            Value::U64(s) => {
-                let rhs = rhs.u64();
-                Value::U64(s * rhs)
-            }
-            Value::F64(s) => {
-                let rhs = rhs.f64();
-                Value::F64(s * rhs)
-            }
-            _ => Value::Null,
+fn op_mul_value(left: Value, rhs: Value) -> Value {
+    match left {
+        Value::I32(s) => {
+            let rhs = rhs.i32();
+            Value::I32(s * rhs)
         }
-    }
-}
-
-impl Mul<&&Value> for Value {
-    type Output = Value;
-    fn op_mul(self, rhs: &&Value) -> Self::Output {
-        match self {
-            Value::I32(s) => {
-                let rhs = rhs.i32();
-                Value::I32(s * rhs)
-            }
-            Value::I64(s) => {
-                let rhs = rhs.i64();
-                Value::I64(s * rhs)
-            }
-            Value::U32(s) => {
-                let rhs = rhs.u32();
-                Value::U32(s * rhs)
-            }
-            Value::U64(s) => {
-                let rhs = rhs.u64();
-                Value::U64(s * rhs)
-            }
-            Value::F64(s) => {
-                let rhs = rhs.f64();
-                Value::F64(s * rhs)
-            }
-            _ => Value::Null,
+        Value::I64(s) => {
+            let rhs = rhs.i64();
+            Value::I64(s * rhs)
         }
+        Value::U32(s) => {
+            let rhs = rhs.u32();
+            Value::U32(s * rhs)
+        }
+        Value::U64(s) => {
+            let rhs = rhs.u64();
+            Value::U64(s * rhs)
+        }
+        Value::F32(s) => {
+            let rhs = rhs.f64();
+            Value::F32(s * rhs as f32)
+        }
+        Value::F64(s) => {
+            let rhs = rhs.f64();
+            Value::F64(s * rhs)
+        }
+        Value::Ext(_, e) => op_mul_value(*e, rhs),
+        _ => Value::Null,
     }
 }
 
 impl Mul<Value> for Value {
     type Output = Value;
     fn op_mul(self, rhs: Value) -> Self::Output {
-        match self {
-            Value::I32(s) => {
-                let rhs = rhs.i32();
-                Value::I32(s * rhs)
-            }
-            Value::I64(s) => {
-                let rhs = rhs.i64();
-                Value::I64(s * rhs)
-            }
-            Value::U32(s) => {
-                let rhs = rhs.u32();
-                Value::U32(s * rhs)
-            }
-            Value::U64(s) => {
-                let rhs = rhs.u64();
-                Value::U64(s * rhs)
-            }
-            Value::F64(s) => {
-                let rhs = rhs.f64();
-                Value::F64(s * rhs)
-            }
-            _ => Value::Null,
-        }
+        op_mul_value(self, rhs)
+    }
+}
+
+impl Mul<&Value> for Value {
+    type Output = Value;
+    fn op_mul(self, rhs: &Value) -> Self::Output {
+        op_mul_value(self, rhs.to_owned())
+    }
+}
+
+impl Mul<&&Value> for Value {
+    type Output = Value;
+    fn op_mul(self, rhs: &&Value) -> Self::Output {
+        op_mul_value(self, (*rhs).to_owned())
     }
 }
 
 impl Mul<&Value> for &Value {
     type Output = Value;
     fn op_mul(self, rhs: &Value) -> Self::Output {
-        match self {
-            Value::I32(s) => {
-                let rhs = rhs.i32();
-                Value::I32(s * rhs)
-            }
-            Value::I64(s) => {
-                let rhs = rhs.i64();
-                Value::I64(s * rhs)
-            }
-            Value::U32(s) => {
-                let rhs = rhs.u32();
-                Value::U32(s * rhs)
-            }
-            Value::U64(s) => {
-                let rhs = rhs.u64();
-                Value::U64(s * rhs)
-            }
-            Value::F64(s) => {
-                let rhs = rhs.f64();
-                Value::F64(s * rhs)
-            }
-            _ => Value::Null,
-        }
+        op_mul_value(self.to_owned(), rhs.to_owned())
     }
 }
 
 impl Mul<&&Value> for &Value {
     type Output = Value;
     fn op_mul(self, rhs: &&Value) -> Self::Output {
-        match self {
-            Value::I32(s) => {
-                let rhs = rhs.i32();
-                Value::I32(s * rhs)
-            }
-            Value::I64(s) => {
-                let rhs = rhs.i64();
-                Value::I64(s * rhs)
-            }
-            Value::U32(s) => {
-                let rhs = rhs.u32();
-                Value::U32(s * rhs)
-            }
-            Value::U64(s) => {
-                let rhs = rhs.u64();
-                Value::U64(s * rhs)
-            }
-            Value::F64(s) => {
-                let rhs = rhs.f64();
-                Value::F64(s * rhs)
-            }
-            _ => Value::Null,
-        }
+        op_mul_value(self.to_owned(), (*rhs).to_owned())
     }
 }
 
 impl Mul<Value> for &Value {
     type Output = Value;
     fn op_mul(self, rhs: Value) -> Self::Output {
-        match self {
-            Value::I32(s) => {
-                let rhs = rhs.i32();
-                Value::I32(s * rhs)
-            }
-            Value::I64(s) => {
-                let rhs = rhs.i64();
-                Value::I64(s * rhs)
-            }
-            Value::U32(s) => {
-                let rhs = rhs.u32();
-                Value::U32(s * rhs)
-            }
-            Value::U64(s) => {
-                let rhs = rhs.u64();
-                Value::U64(s * rhs)
-            }
-            Value::F64(s) => {
-                let rhs = rhs.f64();
-                Value::F64(s * rhs)
-            }
-            _ => Value::Null,
-        }
+        op_mul_value(self.to_owned(), rhs)
     }
 }
 

@@ -58,10 +58,8 @@ impl AsProxy for Value {
 
     fn as_sql(&self) -> String {
         match self {
-            Value::String(s) => { s.to_string() }
-            _ => {
-                self.to_string()
-            }
+            Value::String(s) => s.to_string(),
+            _ => self.to_string(),
         }
     }
 }

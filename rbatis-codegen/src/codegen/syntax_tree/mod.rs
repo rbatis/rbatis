@@ -9,11 +9,11 @@ pub mod foreach_node;
 pub mod if_node;
 pub mod otherwise_node;
 pub mod set_node;
+pub mod sql_node;
 pub mod string_node;
 pub mod trim_node;
 pub mod when_node;
 pub mod where_node;
-pub mod sql_node;
 
 use crate::codegen::syntax_tree::bind_node::BindNode;
 use crate::codegen::syntax_tree::choose_node::ChooseNode;
@@ -22,11 +22,11 @@ use crate::codegen::syntax_tree::foreach_node::ForEachNode;
 use crate::codegen::syntax_tree::if_node::IfNode;
 use crate::codegen::syntax_tree::otherwise_node::OtherwiseNode;
 use crate::codegen::syntax_tree::set_node::SetNode;
+use crate::codegen::syntax_tree::sql_node::SqlNode;
 use crate::codegen::syntax_tree::string_node::StringNode;
 use crate::codegen::syntax_tree::trim_node::TrimNode;
 use crate::codegen::syntax_tree::when_node::WhenNode;
 use crate::codegen::syntax_tree::where_node::WhereNode;
-use crate::codegen::syntax_tree::sql_node::SqlNode;
 
 /// the syntax tree enum types
 #[derive(Clone, Debug)]
