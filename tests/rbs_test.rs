@@ -1,6 +1,7 @@
 #[cfg(test)]
 mod test {
-    use rbatis_codegen::ops::{Add, Sub};
+    use std::cmp::Ordering;
+    use rbatis_codegen::ops::{Add, BitAnd, BitOr, Div, Mul, Not, PartialEq, PartialOrd, Rem, Sub};
     use rbs::Value;
 
     #[test]
@@ -65,9 +66,71 @@ mod test {
     }
 
     #[test]
+    fn test_bit_and() {
+        let a = rbs::to_value!(true);
+        let b = rbs::to_value!(true);
+        assert_eq!(a.op_bitand(b), true);
+    }
+
+    #[test]
+    fn test_bit_or() {
+        let a = rbs::to_value!(true);
+        let b = rbs::to_value!(true);
+        assert_eq!(a.op_bitor(b), true);
+    }
+
+    #[test]
+    fn test_cmp() {
+        let a = rbs::to_value!(true);
+        let b = rbs::to_value!(true);
+        assert_eq!(a.op_partial_cmp(&b), Some(Ordering::Equal));
+    }
+
+    #[test]
+    fn test_div() {
+        let a = rbs::to_value!(1);
+        let b = rbs::to_value!(1);
+        assert_eq!(a.op_div(b), Value::I32(1));
+    }
+
+    #[test]
+    fn test_eq() {
+        let a = rbs::to_value!(1);
+        let b = rbs::to_value!(1);
+        assert_eq!(a.op_eq(&b), true);
+    }
+
+    #[test]
+    fn test_mul() {
+        let a = rbs::to_value!(1);
+        let b = rbs::to_value!(1);
+        assert_eq!(a.op_mul(b), Value::I32(1));
+    }
+
+    #[test]
+    fn test_not() {
+        let a = rbs::to_value!(false);
+        assert_eq!(a.op_not(), Value::Bool(true));
+    }
+
+    #[test]
+    fn test_rem() {
+        let a = rbs::to_value!(1);
+        let b = rbs::to_value!(1);
+        assert_eq!(a.op_rem(b), Value::I32(0));
+    }
+
+    #[test]
     fn test_sub() {
         let a = rbs::to_value!(1);
         let b = rbs::to_value!(1);
         assert_eq!(a.op_sub(b), Value::I32(0));
+    }
+
+    #[test]
+    fn test_xor() {
+        let a = rbs::to_value!(true);
+        let b = rbs::to_value!(false);
+        assert_eq!(a.op_bitor(b), true);
     }
 }
