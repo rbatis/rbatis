@@ -30,7 +30,7 @@ pub enum PgSslMode {
 
 impl Default for PgSslMode {
     fn default() -> Self {
-        PgSslMode::Prefer
+        PgSslMode::Disable
     }
 }
 
