@@ -32,7 +32,7 @@ pub enum MySqlSslMode {
 
 impl Default for MySqlSslMode {
     fn default() -> Self {
-        MySqlSslMode::Preferred
+        MySqlSslMode::Disabled
     }
 }
 
