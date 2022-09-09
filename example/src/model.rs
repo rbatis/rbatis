@@ -1,10 +1,10 @@
-
+use log::LevelFilter;
 use rbatis::rbatis::Rbatis;
 use rbatis::rbdc::datetime::FastDateTime;
+use rbatis::rbdc::db::Driver;
+use rbatis::table_sync::{RbatisTableSync, SqliteTableSync};
 use rbdc_sqlite::driver::SqliteDriver;
 use serde::{Deserialize, Serialize};
-use log::LevelFilter;
-use rbatis::table_sync::{RbatisTableSync, SqliteTableSync};
 
 /// example table
 #[derive(Clone, Debug, Serialize, Deserialize)]
@@ -30,27 +30,34 @@ pub async fn init_db() -> Rbatis {
     // rb.init(rbdc_mysql::driver::MysqlDriver {}, "mysql://root:123456@localhost:3306/test").unwrap();
     // rb.init(rbdc_pg::driver::PgDriver {}, "postgres://postgres:123456@localhost:5432/postgres").unwrap();
     // rb.init(rbdc_mssql::driver::MssqlDriver {}, "mssql://SA:TestPass!123456@localhost:1433/test").unwrap();
-    rb.init(SqliteDriver {}, "sqlite://target/sqlite.db").unwrap();
-
+    rb.init(SqliteDriver {}, "sqlite://target/sqlite.db")
+        .unwrap();
 
     // ------------sync tables------------
     let mut s = RbatisTableSync::new();
-    s.insert("sqlite".to_string(), Box::new(SqliteTableSync {}));
+    let driver = SqliteDriver {};
+    s.insert(driver.name().to_string(), Box::new(SqliteTableSync {}));
     fast_log::LOGGER.set_level(LevelFilter::Off);
-    s.sync("sqlite", rb.acquire().await.unwrap(), &BizActivity{
-        id: None,
-        name: None,
-        pc_link: None,
-        h5_link: None,
-        pc_banner_img: None,
-        h5_banner_img: None,
-        sort: None,
-        status: None,
-        remark: None,
-        create_time: None,
-        version: None,
-        delete_flag: None
-    }).await.unwrap();
+    s.sync(
+        driver.name(),
+        rb.acquire().await.unwrap(),
+        &BizActivity {
+            id: None,
+            name: None,
+            pc_link: None,
+            h5_link: None,
+            pc_banner_img: None,
+            h5_banner_img: None,
+            sort: None,
+            status: None,
+            remark: None,
+            create_time: None,
+            version: None,
+            delete_flag: None,
+        },
+    )
+    .await
+    .unwrap();
     fast_log::LOGGER.set_level(LevelFilter::Info);
     // ------------sync tables end------------
 
