@@ -84,15 +84,15 @@ pub async fn main() {
     let data = BizActivity::update_by_name(&mut rb, &t, "test").await;
     println!("update_by_name = {:?}", data);
 
-    let data = BizActivity::delete_by_column(&mut rb, "id", "2").await;
-    println!("delete_by_column = {:?}", data);
-
-    let data = BizActivity::delete_by_name(&mut rb, "2").await;
-    println!("delete_by_column = {:?}", data);
-
     let data = BizActivity::select_page(&mut rb, &PageRequest::new(1, 10)).await;
     println!("select_page = {:?}", data);
 
     let data = BizActivity::select_page_by_name(&mut rb, &PageRequest::new(1, 10), "").await;
     println!("select_page_by_name = {:?}", data);
+
+    let data = BizActivity::delete_by_column(&mut rb, "id", "2").await;
+    println!("delete_by_column = {:?}", data);
+
+    let data = BizActivity::delete_by_name(&mut rb, "2").await;
+    println!("delete_by_column = {:?}", data);
 }
