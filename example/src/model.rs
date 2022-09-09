@@ -1,10 +1,10 @@
-use log::LevelFilter;
+
 use rbatis::rbatis::Rbatis;
 use rbatis::rbdc::datetime::FastDateTime;
 use rbdc_sqlite::driver::SqliteDriver;
 use serde::{Deserialize, Serialize};
-use std::fs::File;
-use std::io::Read;
+use log::LevelFilter;
+use rbatis::table_sync::{RbatisTableSync, SqliteTableSync};
 
 /// example table
 #[derive(Clone, Debug, Serialize, Deserialize)]
@@ -32,14 +32,36 @@ pub async fn init_db() -> Rbatis {
     // rb.init(rbdc_mssql::driver::MssqlDriver {}, "mssql://SA:TestPass!123456@localhost:1433/test").unwrap();
     rb.init(SqliteDriver {}, "sqlite://target/sqlite.db", ).unwrap();
 
-    // ------------create tables------------
-    let mut f = File::open("example/table_sqlite.sql").unwrap();
-    let mut sql = String::new();
-    f.read_to_string(&mut sql).unwrap();
+
+    // ------------sync tables------------
+    let mut s = RbatisTableSync::new();
+    s.insert("sqlite".to_string(), Box::new(SqliteTableSync {}));
     fast_log::LOGGER.set_level(LevelFilter::Off);
-    let _ = rb.exec(&sql, vec![]).await;
+    s.sync("sqlite", rb.acquire().await.unwrap(), &BizActivity{
+        id: None,
+        name: None,
+        pc_link: None,
+        h5_link: None,
+        pc_banner_img: None,
+        h5_banner_img: None,
+        sort: None,
+        status: None,
+        remark: None,
+        create_time: None,
+        version: None,
+        delete_flag: None
+    }).await.unwrap();
     fast_log::LOGGER.set_level(LevelFilter::Info);
-    // ------------create tables end------------
+    // ------------sync tables end------------
+
+    // ------------create tables way 2------------
+    // let mut f = File::open("example/table_sqlite.sql").unwrap();
+    // let mut sql = String::new();
+    // f.read_to_string(&mut sql).unwrap();
+    // fast_log::LOGGER.set_level(LevelFilter::Off);
+    // let _ = rb.exec(&sql, vec![]).await;
+    // fast_log::LOGGER.set_level(LevelFilter::Info);
+    // ------------create tables way 2 end------------
 
     return rb;
 }
