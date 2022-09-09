@@ -1,6 +1,6 @@
 pub mod model;
 
-use crate::model::{init_sqlite, BizActivity};
+use crate::model::{init_db, BizActivity};
 use rbatis::impl_insert;
 use rbatis::rbdc::datetime::FastDateTime;
 use std::time::Duration;
@@ -11,7 +11,7 @@ impl_insert!(BizActivity {});
 #[tokio::main]
 pub async fn main() {
     let _ = fast_log::init(fast_log::Config::new().console()).expect("rbatis init fail");
-    let rb = init_sqlite().await;
+    let rb = init_db().await;
     let t = BizActivity {
         id: Some("2".into()),
         name: Some("2".into()),

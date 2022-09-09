@@ -7,7 +7,7 @@ use model::*;
 use rbatis::executor::Executor;
 use rbs::Value;
 
-use crate::{init_sqlite, BizActivity};
+use crate::{init_db, BizActivity};
 
 pub trait IsTest {
     fn is_test(&self) -> bool;
@@ -37,7 +37,7 @@ async fn custom_func(rb: &mut dyn Executor, name: &str) -> rbatis::Result<Vec<Bi
 pub async fn main() {
     fast_log::init(fast_log::Config::new().console()).expect("rbatis init fail");
     //use static ref
-    let rb = init_sqlite().await;
+    let rb = init_db().await;
     let a = custom_func(&mut rb.clone(), "test").await.unwrap();
     println!("{:?}", a);
 }
