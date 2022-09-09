@@ -192,9 +192,7 @@ fn parse(
     fn_name: &str,
 ) -> proc_macro2::TokenStream {
     let mut body = quote! {};
-    let fix_sql = quote! {
-        rbatis_codegen::sql_index!(sql,_tag);
-    };
+    let fix_sql = quote! {};
     for x in arg {
         match x.tag.as_str() {
             "mapper" => {

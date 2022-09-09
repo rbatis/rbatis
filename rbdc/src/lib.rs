@@ -12,7 +12,8 @@ pub mod pool;
 pub mod rt;
 pub mod time;
 pub mod types;
-
+pub mod util;
+pub use util::*;
 pub use error::*;
 
 #[cfg(test)]
