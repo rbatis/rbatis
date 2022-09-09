@@ -3,7 +3,7 @@ extern crate rbatis;
 
 pub mod model;
 
-use crate::model::{init_sqlite, BizActivity};
+use crate::model::{init_db, BizActivity};
 use rbatis::rbdc::datetime::FastDateTime;
 use rbatis::sql::page::PageRequest;
 
@@ -26,7 +26,7 @@ impl_select_page!(BizActivity{select_page_by_name(name:&str) =>"
 #[tokio::main]
 pub async fn main() {
     fast_log::init(fast_log::Config::new().console()).expect("rbatis init fail");
-    let mut rb = init_sqlite().await;
+    let mut rb = init_db().await;
     let t = BizActivity {
         id: Some("2".into()),
         name: Some("2".into()),

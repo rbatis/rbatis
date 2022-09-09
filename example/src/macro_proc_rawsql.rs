@@ -2,7 +2,7 @@
 extern crate rbatis;
 
 pub mod model;
-use crate::{init_sqlite, BizActivity};
+use crate::{init_db, BizActivity};
 use model::*;
 use rbatis::rbatis::Rbatis;
 
@@ -16,7 +16,7 @@ async fn raw_sql(rb: &Rbatis, delete_flag: &i32) -> rbatis::Result<Vec<BizActivi
 pub async fn main() {
     fast_log::init(fast_log::Config::new().console()).expect("rbatis init fail");
     //use static ref
-    let rb = init_sqlite().await;
+    let rb = init_db().await;
     let a = raw_sql(&rb, &0).await.unwrap();
     println!("{:?}", a);
 }
