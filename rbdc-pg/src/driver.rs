@@ -2,7 +2,7 @@ use crate::connection::PgConnection;
 use crate::options::PgConnectOptions;
 use futures_core::future::BoxFuture;
 use rbdc::db::{ConnectOptions, Connection, Driver, Placeholder};
-use rbdc::Error;
+use rbdc::{Error, impl_exchange};
 
 #[derive(Debug)]
 pub struct PgDriver {}
@@ -36,31 +36,7 @@ impl Driver for PgDriver {
 
 impl Placeholder for PgDriver {
     fn exchange(&self, sql: &str) -> String {
-        let mut last = ' ' as u8;
-        let mut sql_bytes = sql.as_bytes().to_vec();
-        let mut placeholder_idx: i32 = 1;
-        let mut index = 0;
-        loop {
-            if index == sql_bytes.len() {
-                break;
-            }
-            let x = sql_bytes[index];
-            if x == '?' as u8 && last != '\\' as u8 {
-                sql_bytes[index] = '$' as u8;
-                let bytes = placeholder_idx.to_string().into_bytes();
-                let mut idx = 0;
-                for x in bytes {
-                    sql_bytes.insert(index + 1 + idx, x);
-                    last = x;
-                    idx += 1;
-                }
-                placeholder_idx += 1;
-            } else {
-                last = x;
-            }
-            index += 1;
-        }
-        String::from_utf8(sql_bytes).unwrap_or_default()
+        impl_exchange("$", 1, sql)
     }
 }
 

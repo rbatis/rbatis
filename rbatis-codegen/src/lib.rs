@@ -29,8 +29,6 @@ pub mod ops_not;
 pub mod ops_rem;
 pub mod ops_sub;
 pub mod ops_xor;
-#[macro_use]
-pub mod sql_replace;
 pub mod codegen;
 
 pub use codegen::{rb_html, rb_py};

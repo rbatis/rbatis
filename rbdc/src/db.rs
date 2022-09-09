@@ -123,8 +123,8 @@ pub trait ConnectOptions: Any + Send + Sync + Debug + 'static {
     ///
     #[inline]
     fn set(&mut self, arg: Box<dyn Any>)
-    where
-        Self: Sized,
+        where
+            Self: Sized,
     {
         *self = *arg.downcast().expect("must be self type!");
     }
@@ -167,6 +167,17 @@ impl dyn ConnectOptions {
 }
 
 /// make all database drivers support dialect '?'
+/// you can use util package to impl this
+/// for example:
+/// ```rust
+/// use rbdc::db::Placeholder;
+/// pub struct MyPgDriver{}
+/// impl Placeholder for MyPgDriver{
+///     fn exchange(&self, sql: &str) -> String {
+///         rbdc::impl_exchange("$",1,sql)
+///     }
+/// }
+/// ```
 ///
 /// for example: postgres driver
 /// ```log
