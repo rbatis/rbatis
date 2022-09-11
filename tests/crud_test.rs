@@ -176,6 +176,43 @@ mod test {
         //exec sql
         pub count: u64, //page count num
     }
+
+    #[test]
+    fn test_fetch_decode() {
+        let f = async move {
+            let rb = Rbatis::new();
+            rb.init(MockDriver {}, "test").unwrap();
+            let r: Vec<MockTable> = rb.fetch_decode("select * from mock_table", vec![]).await.unwrap();
+            let mut conn = rb.acquire().await.unwrap();
+            let r: Vec<MockTable> = conn.fetch_decode("select * from mock_table", vec![]).await.unwrap();
+        };
+        block_on(f);
+    }
+
+    #[test]
+    fn test_fetch_decode_tx() {
+        let f = async move {
+            let rb = Rbatis::new();
+            rb.init(MockDriver {}, "test").unwrap();
+            let mut tx = rb.acquire_begin().await.unwrap();
+            let r: Vec<MockTable> = tx.fetch_decode("select * from mock_table", vec![]).await.unwrap();
+        };
+        block_on(f);
+    }
+
+    #[test]
+    fn test_fetch_decode_tx_guard() {
+        let f = async move {
+            let rb = Rbatis::new();
+            rb.init(MockDriver {}, "test").unwrap();
+            let mut tx = rb.acquire_begin().await.unwrap().defer_async(|tx|async{
+
+            });
+            let r: Vec<MockTable> = tx.fetch_decode("select * from mock_table", vec![]).await.unwrap();
+        };
+        block_on(f);
+    }
+
     crud!(MockTable {});
     #[test]
     fn test_insert() {
@@ -362,8 +399,8 @@ mod test {
                     id: "1".to_string(),
                 },
             )
-            .await
-            .unwrap();
+                .await
+                .unwrap();
             println!("{}", r.as_ref().unwrap().sql);
             assert_eq!(
                 r.unwrap().sql,
@@ -432,8 +469,8 @@ mod test {
                     id: "2".to_string(),
                 },
             )
-            .await
-            .unwrap();
+                .await
+                .unwrap();
             println!("{}", r.last_insert_id.as_str().unwrap());
             assert_eq!(r.last_insert_id.as_str().unwrap(), "update mock_table set  id=?,name=?,pc_link=?,h5_link=?,status=?,remark=?,create_time=?,version=?,delete_flag=?,sql=?,count=? where id = '2'");
         };
