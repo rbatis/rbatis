@@ -217,7 +217,7 @@ impl<'a> RBatisTxExecutor {
         Ok(v)
     }
     /// fetch and decode
-    pub async fn fetch_decode<T>(&mut self, sql: &str, args: Vec<Value>) -> Result<Value, Error>
+    pub async fn fetch_decode<T>(&mut self, sql: &str, args: Vec<Value>) -> Result<T, Error>
     where
         T: DeserializeOwned,
     {
