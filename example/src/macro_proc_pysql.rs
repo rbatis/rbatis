@@ -22,6 +22,6 @@ pub async fn main() {
     fast_log::init(fast_log::Config::new().console()).expect("rbatis init fail");
     //use static ref
     let rb = init_db().await;
-    let a = py_select(&mut rb.clone(), "test").await.unwrap();
+    let a = py_select(&mut rb.clone(), "").await.unwrap();
     println!(">>>>>>>>>>>> {:?}", a);
 }
