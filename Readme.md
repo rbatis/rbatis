@@ -13,6 +13,7 @@
 
 It is an ORM, a small compiler, a dynamic SQL languages
 
+* Non-invasive API design
 * Compatible with most mybatis3 syntax
 * No Runtimes，No Garbage Collection,High performance, Based on Future/Tokio
 * Zero cost [Dynamic SQL](dyn_sql.md), implemented using (proc-macro,compile-time,Cow(Reduce unnecessary cloning))
