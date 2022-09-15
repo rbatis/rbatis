@@ -40,6 +40,9 @@ impl<'de> Deserialize<'de> for FastDateTime {
         pub struct DateTimeValue(pub Value);
         let v = DateTimeValue::deserialize(deserializer)?;
         match v.0 {
+            Value::I32(u) => Ok(Self(fastdate::DateTime::from_timestamp_millis(u as i64))),
+            Value::U32(u) => Ok(Self(fastdate::DateTime::from_timestamp_millis(u as i64))),
+            Value::I64(u) => Ok(Self(fastdate::DateTime::from_timestamp_millis(u))),
             Value::U64(u) => Ok(Self(fastdate::DateTime::from_timestamp_millis(u as i64))),
             Value::String(s) => Ok({
                 Self(
