@@ -34,7 +34,7 @@ pub async fn main() {
         h5_link: Some("2".into()),
         pc_banner_img: None,
         h5_banner_img: None,
-        sort: None,
+        sort: Some("2".to_string()),
         status: Some(2),
         remark: Some("2".into()),
         create_time: Some(FastDateTime::now()),
