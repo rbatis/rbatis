@@ -196,14 +196,12 @@ async fn main() {
 ///...more usage,see crud.rs
 ```
 
-* run Raw Sql
+* raw-sql
 ```rust
 #[tokio::main]
 pub async fn main() {
     use rbatis::Rbatis;
     use rbdc_sqlite::driver::SqliteDriver;
-    use std::time::Duration;
-    use tokio::time::sleep;
     #[derive(Clone, Debug, serde::Serialize, serde::Deserialize)]
     pub struct BizActivity {
         pub id: Option<String>,
@@ -211,8 +209,7 @@ pub async fn main() {
     }
     fast_log::init(fast_log::Config::new().console()).expect("rbatis init fail");
     let rb = Rbatis::new();
-    rb.init(SqliteDriver {}, "sqlite://target/sqlite.db")
-        .unwrap();
+    rb.init(SqliteDriver {}, "sqlite://target/sqlite.db").unwrap();
     let table: Option<BizActivity> = rb
         .fetch_decode("select * from biz_activity limit ?", vec![rbs::to_value!(1)])
         .await
@@ -221,7 +218,6 @@ pub async fn main() {
         .fetch_decode("select count(1) as count from biz_activity", vec![])
         .await
         .unwrap();
-    sleep(Duration::from_secs(1)).await;
     println!(">>>>> table={:?}", table);
     println!(">>>>> count={}", count);
 }
