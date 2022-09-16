@@ -17,9 +17,9 @@ use crate::codegen::string_util::find_convert_string;
 use crate::codegen::syntax_tree::NodeType;
 use crate::error::Error;
 
-/// return Map<id,Element>
-pub fn load_html_include_replace(html: &str) -> Result<BTreeMap<String, Element>, Error> {
-    let mut datas = load_mappers(html)?;
+/// load a Map<id,Element>
+pub fn load_mapper_map(html: &str) -> Result<BTreeMap<String, Element>, Error> {
+    let mut datas = load_mapper_vec(html)?;
     let mut sql_map = BTreeMap::new();
     let mut datas = include_replace(datas, &mut sql_map);
     let mut m = BTreeMap::new();
@@ -31,7 +31,8 @@ pub fn load_html_include_replace(html: &str) -> Result<BTreeMap<String, Element>
     Ok(m)
 }
 
-fn load_mappers(html: &str) -> Result<Vec<Element>, Error> {
+/// load a Vec<Element>
+pub fn load_mapper_vec(html: &str) -> Result<Vec<Element>, Error> {
     let mut datas = load_html(html).map_err(|e| Error::from(e.to_string()))?;
     let mut mappers = vec![];
     for x in datas {
@@ -46,7 +47,8 @@ fn load_mappers(html: &str) -> Result<Vec<Element>, Error> {
     Ok(mappers)
 }
 
-pub fn parse_html_str(
+/// parse html to function TokenStream
+pub fn parse_html(
     html: &str,
     fn_name: &str,
     ignore: &mut Vec<String>,
@@ -57,7 +59,7 @@ pub fn parse_html_str(
         .trim_start_matches("\"")
         .trim_end_matches("\"")
         .to_string();
-    let mut datas = load_html_include_replace(&html).expect(&format!("laod html={} fail", html));
+    let mut datas = load_mapper_map(&html).expect(&format!("laod html={} fail", html));
     match datas.into_iter().next() {
         None => {
             panic!("html not find fn:{}", fn_name);
@@ -120,7 +122,7 @@ fn include_replace(htmls: Vec<Element>, sql_map: &mut BTreeMap<String, Element>)
                         ));
                         let mut html = String::new();
                         f.read_to_string(&mut html).expect("read fail");
-                        let datas = load_mappers(&html).expect("read fail");
+                        let datas = load_mapper_vec(&html).expect("read fail");
                         let mut not_find = true;
                         for element in datas {
                             if element.tag.eq("sql") && element.attrs.get("id").eq(&Some(&ref_id)) {
@@ -687,7 +689,7 @@ pub fn impl_fn_html(m: &ItemFn, args: &AttributeArgs) -> TokenStream {
             }
         }
     }
-    t = parse_html_str(&html_data, &fn_name, &mut vec![]);
+    t = parse_html(&html_data, &fn_name, &mut vec![]);
     return t.into();
 }
 
