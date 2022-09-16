@@ -35,6 +35,7 @@ pub async fn init_db() -> Rbatis {
     // let mut s = RbatisTableSync::new();
     // let driver = SqliteDriver {};
     // s.insert(driver.name().to_string(), Box::new(SqliteTableSync {}));
+    // let raw = fast_log::LOGGER.get_level().clone();
     // fast_log::LOGGER.set_level(LevelFilter::Off);
     // s.sync(
     //     driver.name(),
@@ -56,14 +57,15 @@ pub async fn init_db() -> Rbatis {
     // )
     // .await
     // .unwrap();
-    // fast_log::LOGGER.set_level(LevelFilter::Info);
+    // fast_log::LOGGER.set_level(raw);
     // // ------------sync tables end------------
 
     // ------------create tables way 2------------
     let sql = std::fs::read_to_string("example/table_sqlite.sql").unwrap();
+    let raw = fast_log::LOGGER.get_level().clone();
     fast_log::LOGGER.set_level(LevelFilter::Off);
     let _ = rb.exec(&sql, vec![]).await;
-    fast_log::LOGGER.set_level(LevelFilter::Info);
+    fast_log::LOGGER.set_level(raw);
     // ------------create tables way 2 end------------
 
     return rb;
