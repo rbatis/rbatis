@@ -2,7 +2,6 @@
 pub mod bencher;
 #[macro_use]
 pub mod table_util;
-pub mod error_util;
 pub mod impled;
 pub mod into_one;
 pub mod string_util;

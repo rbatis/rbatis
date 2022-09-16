@@ -2,7 +2,6 @@ use crate::executor::{RBatisConnExecutor, RBatisTxExecutor};
 use crate::plugin::intercept::SqlIntercept;
 use crate::plugin::log::{LogPlugin, RbatisLogPlugin};
 use crate::snowflake::new_snowflake_id;
-use crate::utils::error_util::ToResult;
 use crate::utils::string_util;
 use crate::Error;
 use crossbeam::queue::SegQueue;

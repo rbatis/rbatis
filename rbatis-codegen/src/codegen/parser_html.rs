@@ -707,26 +707,3 @@ fn parse_path(lit_str: &str) -> Path {
         .expect(&format!("parse_str::<Path> fail: {}", lit_str));
 }
 
-#[cfg(test)]
-mod test {
-    use crate::codegen::parser_html::load_html_include_replace;
-    use std::fs::File;
-    use std::io::Write;
-
-    #[test]
-    fn test_include_sql() {
-        let datas = load_html_include_replace(
-            r#"
-            <sql id="aaa">`and name != ''`</sql>
-            <select id="custom_func">
-        `select * from biz_activity`
-        <include refid="aaa"></include>
-    </select>"#,
-        )
-        .unwrap();
-        assert_eq!(
-            datas.get("custom_func").unwrap().childs[1].childs[0].data,
-            "and name != ''"
-        );
-    }
-}

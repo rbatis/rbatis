@@ -107,17 +107,3 @@ impl<'de> Deserialize<'de> for Error {
         return Ok(Error::from(r));
     }
 }
-
-pub trait OptionToResult<T> {
-    fn to_result(self, error_str: &str) -> Result<T>;
-}
-
-impl<T> OptionToResult<T> for Option<T> {
-    fn to_result(self, error_str: &str) -> Result<T> {
-        if self.is_some() {
-            Ok(self.unwrap())
-        } else {
-            Err(Error::from(error_str))
-        }
-    }
-}
