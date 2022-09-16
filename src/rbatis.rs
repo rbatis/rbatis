@@ -224,10 +224,7 @@ impl Rbatis {
 
     /// is debug mode
     pub fn is_debug_mode(&self) -> bool {
-        if cfg!(feature = "debug_mode") {
-            return true;
-        }
-        return false;
+        crate::decode::is_debug_mode()
     }
 
     /// get driver

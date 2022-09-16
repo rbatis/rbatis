@@ -7,7 +7,7 @@ use syn::{AttributeArgs, FnArg, ItemFn, Lit, NestedMeta};
 
 use crate::macros::py_sql_impl;
 use crate::proc_macro::TokenStream;
-use crate::util::{find_fn_body, find_return_type, get_fn_args, is_fetch, is_rbatis_ref};
+use crate::util::{find_fn_body, find_return_type, get_fn_args, is_debug_mode, is_fetch, is_rbatis_ref};
 
 pub(crate) fn impl_macro_html_sql(target_fn: &ItemFn, args: &AttributeArgs) -> TokenStream {
     let return_ty = find_return_type(target_fn);
@@ -125,8 +125,7 @@ pub(crate) fn impl_macro_html_sql(target_fn: &ItemFn, args: &AttributeArgs) -> T
     include_data = quote! {
         //no-debug_mode
     };
-    #[cfg(feature = "debug_mode")]
-    {
+    if is_debug_mode(){
         if file_name.ends_with(".html") {
             use std::env::current_dir;
             use std::path::PathBuf;
