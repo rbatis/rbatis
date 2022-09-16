@@ -1,6 +1,6 @@
 use crate::codegen::syntax_tree::{DefaultName, Name, NodeType};
 
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, Eq, PartialEq)]
 pub struct OtherwiseNode {
     pub childs: Vec<NodeType>,
 }

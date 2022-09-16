@@ -1,6 +1,6 @@
 use crate::codegen::syntax_tree::{Name, NodeType};
 
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, Eq, PartialEq)]
 pub struct WhenNode {
     pub childs: Vec<NodeType>,
     pub test: String,

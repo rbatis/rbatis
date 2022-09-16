@@ -1,7 +1,7 @@
 use crate::codegen::syntax_tree::{AsHtml, Name, NodeType};
 
 /// the SqlNode
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, Eq, PartialEq)]
 pub struct SqlNode {
     pub childs: Vec<NodeType>,
 }

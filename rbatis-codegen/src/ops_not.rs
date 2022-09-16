@@ -4,18 +4,10 @@ use rbs::Value;
 
 fn op_not(left: Value) -> Value {
     match left {
-        Value::I32(b) => {
-            Value::I32(!b)
-        }
-        Value::Bool(b) => {
-            Value::Bool(!b)
-        }
-        Value::Ext(_, e) => {
-            op_not(*e)
-        }
-        _ => {
-            Value::Null
-        }
+        Value::I32(b) => Value::I32(!b),
+        Value::Bool(b) => Value::Bool(!b),
+        Value::Ext(_, e) => op_not(*e),
+        _ => Value::Null,
     }
 }
 

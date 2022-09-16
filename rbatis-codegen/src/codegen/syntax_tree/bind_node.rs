@@ -1,6 +1,6 @@
 use crate::codegen::syntax_tree::{DefaultName, Name};
 
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, Eq, PartialEq)]
 pub struct BindNode {
     pub name: String,
     pub value: String,

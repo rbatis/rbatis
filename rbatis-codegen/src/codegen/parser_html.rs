@@ -706,4 +706,3 @@ fn parse_path(lit_str: &str) -> Path {
     return syn::parse_str::<Path>(&s.value())
         .expect(&format!("parse_str::<Path> fail: {}", lit_str));
 }
-

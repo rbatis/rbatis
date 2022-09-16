@@ -1,8 +1,8 @@
 #[cfg(test)]
 mod test {
-    use std::cmp::Ordering;
     use rbatis_codegen::ops::{Add, BitAnd, BitOr, Div, Mul, Not, PartialEq, PartialOrd, Rem, Sub};
     use rbs::Value;
+    use std::cmp::Ordering;
 
     #[test]
     fn test_ser_i32() {

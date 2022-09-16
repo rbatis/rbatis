@@ -13,8 +13,8 @@ pub mod rt;
 pub mod time;
 pub mod types;
 pub mod util;
-pub use util::*;
 pub use error::*;
+pub use util::*;
 
 #[cfg(test)]
 mod test {

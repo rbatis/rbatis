@@ -2,8 +2,8 @@
 #![feature(bench_black_box)]
 extern crate test;
 
-use test::Bencher;
 use rbdc::impl_exchange;
+use test::Bencher;
 
 #[bench]
 fn bench_rbs_decode(b: &mut Bencher) {

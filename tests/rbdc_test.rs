@@ -5,10 +5,10 @@ mod test {
 
     #[test]
     fn test_exchange() {
-        pub struct MyDriver{}
+        pub struct MyDriver {}
         impl rbdc::db::Placeholder for MyDriver {
             fn exchange(&self, sql: &str) -> String {
-                impl_exchange("@P",1,sql)
+                impl_exchange("@P", 1, sql)
             }
         }
         let v = "insert into biz_activity (id,name,pc_link,h5_link,pc_banner_img,h5_banner_img,sort,status,remark,create_time,version,delete_flag) VALUES (?,?,?,?,?,?,?,?,?,?,?,?)";

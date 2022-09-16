@@ -1,6 +1,6 @@
 use crate::codegen::syntax_tree::{Name, NodeType};
 
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, Eq, PartialEq)]
 pub struct ChooseNode {
     pub when_nodes: Vec<NodeType>,
     pub otherwise_node: Option<Box<NodeType>>,
