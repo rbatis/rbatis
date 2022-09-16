@@ -15,7 +15,7 @@ pub fn decode<T: ?Sized>(bs: Value) -> Result<T, Error>
 {
     let type_name = std::any::type_name::<T>();
     if is_debug_mode() {
-        println!("[rbatis] [debug_mode] [value]   {} => {}", type_name, bs);
+        log::debug!("[rbatis] [debug_mode] [value]   {} => {}", type_name, bs);
     }
     let mut datas = vec![];
     match bs {
