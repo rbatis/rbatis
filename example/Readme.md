@@ -5,4 +5,3 @@
 # Pressure test recommendations
 
 * Modify Cargo. Toml to remove rbatis ["debug_mode"]
-* main.rs fast_log::init_log debug_mode Set false to make sure Console does not print logs

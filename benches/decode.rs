@@ -41,3 +41,11 @@ fn bench_rbatis_decode_map(b: &mut Bencher) {
         rbatis::decode::<rbdc::types::datetime::FastDateTime>(array.clone()).unwrap();
     });
 }
+
+#[bench]
+fn bench_is_debug_mode(b: &mut Bencher) {
+    let rb = rbatis::Rbatis::new();
+    b.iter(|| {
+        rb.is_debug_mode();
+    });
+}

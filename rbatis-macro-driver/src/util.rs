@@ -72,3 +72,11 @@ pub(crate) fn is_rbatis_ref(ty_stream: &str) -> bool {
     }
     false
 }
+
+pub(crate) fn is_debug_mode() -> bool {
+    if cfg!(debug_assertions){
+        true
+    }else{
+        false
+    }
+}
