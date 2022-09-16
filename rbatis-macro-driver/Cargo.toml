@@ -16,6 +16,7 @@ homepage = "https://rbatis.github.io/rbatis.io"
 
 [features]
 default = ["rbatis-codegen"]
+debug_mode = ["rust-format"]
 [lib]
 proc-macro = true
 [dependencies]
@@ -24,4 +25,4 @@ quote = "1.0"
 syn = { version = "1.0", features = ["full"] }
 html_parser = "0.6.2"
 rbatis-codegen = { version = "4.0", path = "../rbatis-codegen", optional = true }
-rust-format = { version = "0.3.4"}
+rust-format = { version = "0.3.4", optional = true}

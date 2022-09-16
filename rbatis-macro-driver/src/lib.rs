@@ -8,7 +8,6 @@ use crate::macros::html_sql_impl::impl_macro_html_sql;
 use crate::macros::py_sql_impl::impl_macro_py_sql;
 use crate::macros::sql_impl::impl_macro_sql;
 use crate::proc_macro::TokenStream;
-use crate::util::is_debug_mode;
 
 mod macros;
 mod util;
@@ -28,7 +27,8 @@ pub fn sql(args: TokenStream, func: TokenStream) -> TokenStream {
     let args = parse_macro_input!(args as AttributeArgs);
     let target_fn: ItemFn = syn::parse(func).unwrap();
     let stream = impl_macro_sql(&target_fn, &args);
-    if is_debug_mode(){
+    #[cfg(feature = "debug_mode")]
+    if cfg!(debug_assertions){
         println!("............gen macro sql:\n {}", stream);
         println!("............gen macro sql end............");
     }
@@ -78,7 +78,8 @@ pub fn py_sql(args: TokenStream, func: TokenStream) -> TokenStream {
     let args = parse_macro_input!(args as AttributeArgs);
     let target_fn: ItemFn = syn::parse(func).unwrap();
     let stream = impl_macro_py_sql(&target_fn, &args);
-    if is_debug_mode(){
+    #[cfg(feature = "debug_mode")]
+    if cfg!(debug_assertions){
         use rust_format::{Formatter, RustFmt};
         let stream_str = stream.to_string().replace("$crate", "rbatis");
         let code = RustFmt::default()
@@ -107,7 +108,8 @@ pub fn html_sql(args: TokenStream, func: TokenStream) -> TokenStream {
     let args = parse_macro_input!(args as AttributeArgs);
     let target_fn: ItemFn = syn::parse(func).unwrap();
     let stream = impl_macro_html_sql(&target_fn, &args);
-    if is_debug_mode(){
+    #[cfg(feature = "debug_mode")]
+    if cfg!(debug_assertions){
         use rust_format::{Formatter, RustFmt};
         let stream_str = stream.to_string().replace("$crate", "rbatis");
         let code = RustFmt::default()
