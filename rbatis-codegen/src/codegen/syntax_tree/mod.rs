@@ -29,7 +29,7 @@ use crate::codegen::syntax_tree::when_node::WhenNode;
 use crate::codegen::syntax_tree::where_node::WhereNode;
 
 /// the syntax tree enum types
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, Eq, PartialEq)]
 pub enum NodeType {
     NString(StringNode),
     NIf(IfNode),

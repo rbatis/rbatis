@@ -1,6 +1,6 @@
 use crate::codegen::syntax_tree::{AsHtml, Name};
 
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, Eq, PartialEq)]
 pub struct ContinueNode {}
 
 impl AsHtml for ContinueNode {

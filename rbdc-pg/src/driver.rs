@@ -2,7 +2,7 @@ use crate::connection::PgConnection;
 use crate::options::PgConnectOptions;
 use futures_core::future::BoxFuture;
 use rbdc::db::{ConnectOptions, Connection, Driver, Placeholder};
-use rbdc::{Error, impl_exchange};
+use rbdc::{impl_exchange, Error};
 
 #[derive(Debug)]
 pub struct PgDriver {}

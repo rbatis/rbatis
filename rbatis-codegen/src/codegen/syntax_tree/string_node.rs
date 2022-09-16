@@ -3,7 +3,7 @@ use crate::codegen::syntax_tree::Name;
 /// the string node
 /// for example:
 /// "xxxxxxx" or  `xxxxxxx`
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, Eq, PartialEq)]
 pub struct StringNode {
     pub value: String,
 }

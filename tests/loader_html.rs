@@ -34,7 +34,7 @@ mod test {
         </foreach>
     </insert>"#,
         )
-            .unwrap();
+        .unwrap();
         println!("{:?}", nodes);
     }
 }

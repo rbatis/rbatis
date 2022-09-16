@@ -123,8 +123,8 @@ pub trait ConnectOptions: Any + Send + Sync + Debug + 'static {
     ///
     #[inline]
     fn set(&mut self, arg: Box<dyn Any>)
-        where
-            Self: Sized,
+    where
+        Self: Sized,
     {
         *self = *arg.downcast().expect("must be self type!");
     }

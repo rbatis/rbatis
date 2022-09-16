@@ -17,7 +17,10 @@ pub fn impl_exchange(start_str: &str, start_num: usize, sql: &str) -> String {
                 sql.insert(index + i, x);
                 i += 1;
             }
-            sql.insert_str(index + start_str.len(), itoa::Buffer::new().format(placeholder_idx));
+            sql.insert_str(
+                index + start_str.len(),
+                itoa::Buffer::new().format(placeholder_idx),
+            );
             placeholder_idx += 1;
             sql_bytes = sql.as_bytes();
         } else {
