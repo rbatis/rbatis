@@ -1,10 +1,10 @@
 #[cfg(test)]
 mod test {
-    use rbatis_codegen::codegen::parser_html::load_html_include_replace;
+    use rbatis_codegen::codegen::parser_html::load_mapper_map;
 
     #[test]
     fn test_load_html_include_replace() {
-        let datas = load_html_include_replace(
+        let datas = load_mapper_map(
             r#"
             <sql id="aaa">`and name != ''`</sql>
             <select id="custom_func">

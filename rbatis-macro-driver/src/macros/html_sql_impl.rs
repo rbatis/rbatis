@@ -72,7 +72,7 @@ pub(crate) fn impl_macro_html_sql(target_fn: &ItemFn, args: &AttributeArgs) -> T
             .expect(&format!("File Name = '{}' does not exist", file_name));
         f.read_to_string(&mut html_data)
             .expect(&format!("{} read_to_string fail", file_name));
-        let mut htmls = rbatis_codegen::codegen::parser_html::load_html_include_replace(&html_data)
+        let mut htmls = rbatis_codegen::codegen::parser_html::load_mapper_map(&html_data)
             .expect("load html content fail");
         let token = htmls.remove(&func_name_ident.to_string()).expect("");
         let token = format!("{}", token);

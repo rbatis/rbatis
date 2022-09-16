@@ -1,4 +1,4 @@
-use crate::codegen::parser_html::parse_html_str;
+use crate::codegen::parser_html::parse_html;
 use crate::codegen::proc_macro::TokenStream;
 use crate::codegen::syntax_tree::bind_node::BindNode;
 use crate::codegen::syntax_tree::choose_node::ChooseNode;
@@ -44,7 +44,7 @@ pub fn impl_fn_py(m: &ItemFn, args: &AttributeArgs) -> TokenStream {
         data.starts_with("select") || data.starts_with(" select"),
         &fn_name,
     );
-    t = parse_html_str(&htmls, &fn_name, &mut vec![]);
+    t = parse_html(&htmls, &fn_name, &mut vec![]);
     return t.into();
 }
 
