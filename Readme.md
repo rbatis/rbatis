@@ -95,19 +95,16 @@ It is an ORM, a small compiler, a dynamic SQL languages
 
 ```toml
 tokio = { version = "1", features = ["full"] }
-# logging(option)
 log = "0.4"
 fast_log = "1.5"
-# serde/rbs (required)
 serde = { version = "1", features = ["derive"] }
 rbs = { version = "0.1"}
 rbatis = { version = "4.0"}
-#rbdc drivier
 rbdc-sqlite = { version = "0.1" }
 #rbdc-mysql={version="0.1"}
 #rbdc-pg={version="0.1"}
 #rbdc-mssql={version="0.1"}
-#...other database driver...
+#...and more driver
 ```
 
 ```rust
