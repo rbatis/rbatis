@@ -7,8 +7,8 @@ use crate::Error;
 
 /// decode json vec to an object
 /// support decode types:
-/// Value,BigDecimal, i8..i64,u8..u64,Int64(),bool,String
-/// or object used bson macro object
+/// Value,BigDecimal, i8..i64,u8..u64,i64,bool,String
+/// or object used rbs::Value macro object
 pub fn decode<T: ?Sized>(bs: Value) -> Result<T, Error>
     where
         T: DeserializeOwned,
