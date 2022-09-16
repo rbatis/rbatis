@@ -102,7 +102,7 @@ fast_log = "1.5"
 serde = { version = "1", features = ["derive"] }
 rbs = { version = "0.1"}
 rbatis = { version = "4.0"}
-# choose one rbdc drivier
+#rbdc drivier
 rbdc-sqlite = { version = "0.1" }
 #rbdc-mysql={version="0.1"}
 #rbdc-pg={version="0.1"}
