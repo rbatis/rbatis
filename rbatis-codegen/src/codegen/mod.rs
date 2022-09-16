@@ -16,7 +16,7 @@ use proc_macro::TokenStream;
 
 pub mod element_from;
 pub mod func;
-pub mod html_loader;
+pub mod loader_html;
 pub mod parser_html;
 pub mod parser_pysql;
 pub mod string_util;
