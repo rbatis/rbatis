@@ -94,6 +94,7 @@ It is an ORM, a small compiler, a dynamic SQL languages
 * Cargo.toml
 
 ```toml
+tokio = { version = "1.12", features = ["full"] }
 # logging(option)
 log = "0.4"
 fast_log = "1.5"
