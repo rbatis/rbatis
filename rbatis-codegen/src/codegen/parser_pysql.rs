@@ -62,7 +62,7 @@ impl ParsePySql for NodeType {
             if x.is_empty() || (skip != -1 && line <= skip) {
                 continue;
             }
-            let count_index = *line_space_map.get(&line).unwrap();
+            let count_index = *line_space_map.get(&line).ok_or_else(||Error::from(format!("line_space_map not heve line:{}",line)))?;
             if space == -1 {
                 space = count_index;
             }
@@ -80,7 +80,7 @@ impl ParsePySql for NodeType {
             Self::parse_pysql_node(
                 &mut main_node,
                 x,
-                *line_space_map.get(&line).unwrap() as usize,
+                *line_space_map.get(&line).ok_or_else(||Error::from(format!("line:{} not exist！",line)))? as usize,
                 parserd,
             )?;
         }
@@ -176,7 +176,7 @@ impl NodeType {
         for x in lines {
             line += 1;
             if line > line_index {
-                let cached_space = *m.get(&line).unwrap();
+                let cached_space = *m.get(&line).expect("line not exists");
                 if cached_space > space_index {
                     result = result + x + "\n";
                     skip_line = line;
@@ -225,7 +225,7 @@ impl NodeType {
                     "[rbatis] parser express fail:".to_string() + source_str,
                 ));
             }
-            let in_index = trim_express.find(in_tag).unwrap();
+            let in_index = trim_express.find(in_tag).ok_or_else(||Error::from(format!("{} not have {}",trim_express,in_tag)))?;
             let col = trim_express[in_index + in_tag.len()..].trim();
             let mut item = trim_express[for_tag.len()..in_index].trim();
             let mut index = "";
