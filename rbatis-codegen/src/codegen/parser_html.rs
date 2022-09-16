@@ -11,7 +11,7 @@ use quote::{quote, ToTokens};
 use syn::{AttributeArgs, Expr, ItemFn, ItemMod, ItemStruct, Path};
 use url::Url;
 
-use crate::codegen::html_loader::{load_html, Element};
+use crate::codegen::loader_html::{load_html, Element};
 use crate::codegen::proc_macro::TokenStream;
 use crate::codegen::string_util::find_convert_string;
 use crate::codegen::syntax_tree::NodeType;

@@ -1,6 +1,6 @@
 #[cfg(test)]
 mod test {
-    use rbatis_codegen::codegen::html_loader::load_html;
+    use rbatis_codegen::codegen::loader_html::load_html;
 
     #[test]
     fn test_parser() {
