@@ -7,7 +7,7 @@ use crate::proc_macro::TokenStream;
 use crate::util::{find_fn_body, find_return_type, get_fn_args, is_fetch, is_rbatis_ref};
 
 ///py_sql macro
-///support args for RB:&Rbatis,page:&PageRequest
+///support args for rb:&Rbatis
 pub(crate) fn impl_macro_py_sql(target_fn: &ItemFn, args: &AttributeArgs) -> TokenStream {
     let return_ty = find_return_type(target_fn);
     let mut rbatis_ident = "".to_token_stream();
