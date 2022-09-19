@@ -12,7 +12,7 @@ impl Decode for Value {
     {
         match value.type_info().0 {
             DataType::Null => Ok(Value::Null),
-            DataType::Int => Ok(Value::I32(i32::decode(value)?)),
+            DataType::Int => Ok(Value::I64(i64::decode(value)?)),
             DataType::Float => Ok(Value::F64(f64::decode(value)?)),
             DataType::Text => Ok(Value::String(String::decode(value)?)),
             DataType::Blob => Ok(Value::Binary(Vec::<u8>::decode(value)?)),
