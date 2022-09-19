@@ -12,7 +12,7 @@ impl MySqlConnection {
     pub(crate) async fn establish(options: &MySqlConnectOptions) -> Result<Self, Error> {
         let mut stream: MySqlStream = MySqlStream::connect(options).await?;
 
-        // https://dev.mysql.com/doc/dev/mysql-server/8.0.12/page_protocol_connection_phase.html
+        // https://dev.mysql.com/doc/dev/mysql-server/8.0.30/page_protocol_connection_phase.html
         // https://mariadb.com/kb/en/connection/
 
         let handshake: Handshake = stream.recv_packet().await?.decode()?;
