@@ -10,7 +10,7 @@ use rbdc::Error;
 impl Encode for Timestamp {
     fn encode(self, buf: &mut Vec<u8>) -> Result<usize, Error> {
         let datetime = fastdate::DateTime::from_timestamp_millis(self.0 as i64);
-        let size = date_time_size_hint(datetime.hour, datetime.min, datetime.sec, datetime.micro);
+        let size = date_time_size_hint(datetime.hour, datetime.min, datetime.sec, datetime.nano);
         buf.push(size as u8);
         let date = fastdate::Date {
             day: datetime.day,
@@ -22,7 +22,7 @@ impl Encode for Timestamp {
         let mut size_time = 0;
         if (size + size_date) > 4 {
             let time = fastdate::Time {
-                micro: datetime.micro,
+                nano: datetime.nano,
                 sec: datetime.sec,
                 min: datetime.min,
                 hour: datetime.hour,
@@ -50,7 +50,7 @@ impl Decode for Timestamp {
                     decode_time(len - 4, &buf[5..])
                 } else {
                     fastdate::Time {
-                        micro: 0,
+                        nano: 0,
                         sec: 0,
                         min: 0,
                         hour: 0,
@@ -58,7 +58,7 @@ impl Decode for Timestamp {
                 };
                 Self(
                     fastdate::DateTime {
-                        micro: time.micro,
+                        nano: time.nano,
                         sec: time.sec,
                         min: time.min,
                         hour: time.hour,

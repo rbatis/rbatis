@@ -10,7 +10,7 @@ impl Encode for FastDateTime {
     fn encode(self, buf: &mut Vec<u8>) -> Result<usize, Error> {
         let datetime = self.0;
         let datetime_size =
-            date_time_size_hint(datetime.hour, datetime.min, datetime.sec, datetime.micro);
+            date_time_size_hint(datetime.hour, datetime.min, datetime.sec, datetime.nano);
         buf.push(datetime_size as u8);
         let date = fastdate::Date {
             day: datetime.day,
@@ -21,7 +21,7 @@ impl Encode for FastDateTime {
         buf.remove(buf.len() - (size + 1));
         if datetime_size > 4 {
             let time = fastdate::Time {
-                micro: datetime.micro,
+                nano: datetime.nano,
                 sec: datetime.sec,
                 min: datetime.min,
                 hour: datetime.hour,
@@ -46,14 +46,14 @@ impl Decode for FastDateTime {
                     decode_time(len - 4, &buf[5..])
                 } else {
                     fastdate::Time {
-                        micro: 0,
+                        nano: 0,
                         sec: 0,
                         min: 0,
                         hour: 0,
                     }
                 };
                 Self(fastdate::DateTime {
-                    micro: time.micro,
+                    nano: time.nano,
                     sec: time.sec,
                     min: time.min,
                     hour: time.hour,
