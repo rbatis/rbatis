@@ -21,7 +21,7 @@ impl Decode for Time {
 impl Encode for fastdate::Time {
     fn encode(self, buf: &mut Vec<u8>) -> Result<usize, Error> {
         let size = {
-            if self.micro == 0 {
+            if self.nano == 0 {
                 3
             } else {
                 7
@@ -32,8 +32,8 @@ impl Encode for fastdate::Time {
         buf.push(self.hour as u8); //1
         buf.push(self.min as u8); //1
         buf.push(self.sec as u8); //1
-        if self.micro != 0 {
-            buf.extend(self.micro.to_le_bytes()); //4
+        if self.nano != 0 {
+            buf.extend(self.get_micro().to_le_bytes()); //4
         }
         Ok(size)
     }
@@ -50,7 +50,7 @@ impl Decode for fastdate::Time {
                     decode_time(len - 4, &buf[5..])
                 } else {
                     fastdate::Time {
-                        micro: 0,
+                        nano: 0,
                         sec: 0,
                         min: 0,
                         hour: 0,
@@ -73,7 +73,7 @@ pub fn decode_time(len: u8, mut buf: &[u8]) -> fastdate::Time {
     };
     // NaiveTime::from_hms_micro(hour as u32, minute as u32, seconds as u32, micros as u32)
     fastdate::Time {
-        micro: micros as u32,
+        nano: micros as u32 * 1000,
         sec: seconds,
         min: minute,
         hour,

@@ -16,7 +16,7 @@ impl Decode for Time {
                 let us = i64::decode(value)?;
                 //+microseconds
                 let t = fastdate::DateTime {
-                    micro: 0,
+                    nano: 0,
                     sec: 0,
                     min: 0,
                     hour: 0,
@@ -25,7 +25,7 @@ impl Decode for Time {
                     year: 0,
                 } + Duration::from_micros(us as u64);
                 Ok(Time(fastdate::Time {
-                    micro: t.micro,
+                    nano: t.nano,
                     sec: t.sec,
                     min: t.min,
                     hour: t.hour,
@@ -40,7 +40,7 @@ impl Encode for Time {
     fn encode(self, buf: &mut PgArgumentBuffer) -> Result<IsNull, Error> {
         // TIME is encoded as the microseconds since midnight
         // microseconds
-        let us = self.0.micro
+        let us = self.0.get_micro()
             + self.0.hour as u32 * 60 * 60 * 1000000
             + self.0.min as u32 * 60 * 1000000
             + self.0.sec as u32 * 1000000;

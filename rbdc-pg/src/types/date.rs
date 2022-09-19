@@ -14,7 +14,7 @@ impl Decode for fastdate::Date {
                 // DATE is encoded as the days since epoch
                 let days: i32 = Decode::decode(value)?;
                 let dt = fastdate::DateTime {
-                    micro: 0,
+                    nano: 0,
                     sec: 0,
                     min: 0,
                     hour: 0,
@@ -37,7 +37,7 @@ impl Encode for fastdate::Date {
     fn encode(self, buf: &mut PgArgumentBuffer) -> Result<IsNull, Error> {
         // DATE is encoded as the days since epoch
         let days = (fastdate::DateTime {
-            micro: 0,
+            nano: 0,
             sec: 0,
             min: 0,
             hour: 0,
@@ -47,7 +47,7 @@ impl Encode for fastdate::Date {
         }
         .unix_timestamp_millis()
             - fastdate::DateTime {
-                micro: 0,
+                nano: 0,
                 sec: 0,
                 min: 0,
                 hour: 0,
