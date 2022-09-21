@@ -25,7 +25,12 @@ impl_select_page!(BizActivity{select_page_by_name(name:&str) =>"
 
 #[tokio::main]
 pub async fn main() {
-    fast_log::init(fast_log::Config::new().console().level(log::LevelFilter::Debug)).expect("rbatis init fail");
+    fast_log::init(
+        fast_log::Config::new()
+            .console()
+            .level(log::LevelFilter::Debug),
+    )
+    .expect("rbatis init fail");
     let mut rb = init_db().await;
     let t = BizActivity {
         id: Some("2".into()),

@@ -17,7 +17,12 @@ pub async fn main() {
         .fetch_decode("select count(1) as count from biz_activity", vec![])
         .await
         .unwrap();
+    let result = rb
+        .exec("update biz_activity set status = 0 where id > 0", vec![])
+        .await
+        .unwrap();
     sleep(Duration::from_secs(1)).await;
     println!(">>>>> table={:?}", table);
     println!(">>>>> count={}", count);
+    println!(">>>>> exec={}", result);
 }
