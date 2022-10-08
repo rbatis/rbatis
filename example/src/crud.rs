@@ -25,7 +25,12 @@ impl_select_page!(BizActivity{select_page_by_name(name:&str) =>"
 
 #[tokio::main]
 pub async fn main() {
-    fast_log::init(fast_log::Config::new().console().level(log::LevelFilter::Debug)).expect("rbatis init fail");
+    fast_log::init(
+        fast_log::Config::new()
+            .console()
+            .level(log::LevelFilter::Debug),
+    )
+    .expect("rbatis init fail");
     let mut rb = init_db().await;
     let t = BizActivity {
         id: Some("2".into()),
@@ -41,6 +46,11 @@ pub async fn main() {
         version: Some(1),
         delete_flag: Some(1),
     };
+    let tables = [t.clone(), {
+        let mut t3 = t.clone();
+        t3.id = "3".to_string().into();
+        t3
+    }];
 
     let data = BizActivity::insert(&mut rb, &t).await;
     println!("insert = {:?}", data);
@@ -48,28 +58,10 @@ pub async fn main() {
     let _data = BizActivity::delete_by_name(&mut rb, "2").await;
     let _data = BizActivity::delete_by_name(&mut rb, "3").await;
 
-    let data = BizActivity::insert_batch(
-        &mut rb,
-        &[t.clone(), {
-            let mut t3 = t.clone();
-            t3.id = "3".to_string().into();
-            t3
-        }],
-        10,
-    )
-    .await;
+    let data = BizActivity::insert_batch(&mut rb, &tables, 10).await;
     println!("insert_batch = {:?}", data);
 
-    let data = BizActivity::update_by_column_batch(
-        &mut rb,
-        &[t.clone(), {
-            let mut t3 = t.clone();
-            t3.id = "3".to_string().into();
-            t3
-        }],
-        "id",
-    )
-    .await;
+    let data = BizActivity::update_by_column_batch(&mut rb, &tables, "id").await;
     println!("update_by_column_batch = {:?}", data);
 
     let data = BizActivity::select_all_by_id(&mut rb, "1", "1").await;
