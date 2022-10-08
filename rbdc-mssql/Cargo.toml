@@ -1,6 +1,6 @@
 [package]
 name = "rbdc-mssql"
-version = "0.1.16"
+version = "0.1.17"
 edition = "2021"
 description = "The Rust SQL Toolkit and ORM Library. An async, pure Rust SQL crate featuring compile-time Dynamic SQL"
 readme = "Readme.md"
@@ -16,7 +16,7 @@ homepage = "https://rbatis.github.io/rbatis.io"
 [dependencies]
 rbs={version="0.1",path="../rbs"}
 rbdc = { version = "0.1", path = "../rbdc" }
-tiberius = {version="0.10",default-features=false,features=["tokio-rustls","chrono","bigdecimal","rust_decimal","tds73"]}
+tiberius = {version="0.11",default-features=false,features=["tokio-rustls","chrono","bigdecimal","rust_decimal","tds73"]}
 tokio = {version="1",features=["fs", "net", "rt", "rt-multi-thread", "time", "io-util"]}
 tokio-util = {version="0.7.1",features=["compat"]}
 futures-io = {version="0.3.21",features=["std"]}
