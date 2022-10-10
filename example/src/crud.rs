@@ -46,6 +46,11 @@ pub async fn main() {
         version: Some(1),
         delete_flag: Some(1),
     };
+    let tables = [t.clone(), {
+        let mut t3 = t.clone();
+        t3.id = "3".to_string().into();
+        t3
+    }];
 
     let data = BizActivity::insert(&mut rb, &t).await;
     println!("insert = {:?}", data);
@@ -53,28 +58,10 @@ pub async fn main() {
     let _data = BizActivity::delete_by_name(&mut rb, "2").await;
     let _data = BizActivity::delete_by_name(&mut rb, "3").await;
 
-    let data = BizActivity::insert_batch(
-        &mut rb,
-        &[t.clone(), {
-            let mut t3 = t.clone();
-            t3.id = "3".to_string().into();
-            t3
-        }],
-        10,
-    )
-    .await;
+    let data = BizActivity::insert_batch(&mut rb, &tables, 10).await;
     println!("insert_batch = {:?}", data);
 
-    let data = BizActivity::update_by_column_batch(
-        &mut rb,
-        &[t.clone(), {
-            let mut t3 = t.clone();
-            t3.id = "3".to_string().into();
-            t3
-        }],
-        "id",
-    )
-    .await;
+    let data = BizActivity::update_by_column_batch(&mut rb, &tables, "id").await;
     println!("update_by_column_batch = {:?}", data);
 
     let data = BizActivity::select_all_by_id(&mut rb, "1", "1").await;
