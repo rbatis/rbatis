@@ -5,10 +5,6 @@ use std::fmt::Display;
 
 /// sql intercept
 pub trait SqlIntercept: Send + Sync {
-    ///the name
-    fn name(&self) -> &str {
-        std::any::type_name::<Self>()
-    }
     /// do intercept sql/args
     /// is_prepared_sql: if is run in prepared_sql=ture
     fn do_intercept(
