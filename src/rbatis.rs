@@ -156,9 +156,10 @@ impl Rbatis {
     ///
     /// can set option for example:
     /// ```rust
-    /// let rbatis = rbatis::Rbatis::new();
-    /// // rbatis.link(**).await;
-    /// // rbatis.get_pool().unwrap().set_max_open_conns()
+    /// use rbatis::Rbatis;
+    /// let rb = Rbatis::new();
+    /// //rb.init(rbdc_sqlite::driver::SqliteDriver {},"sqlite://target/sqlite.db");
+    /// //rb.get_pool().unwrap().resize(10);
     /// ```
     pub fn get_pool(&self) -> Result<&Pool, Error> {
         let p = self.pool.get();
