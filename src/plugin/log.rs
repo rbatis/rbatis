@@ -6,10 +6,6 @@ use std::sync::atomic::{AtomicI8, Ordering};
 
 /// log plugin
 pub trait LogPlugin: Send + Sync {
-    ///the name
-    fn name(&self) -> &str {
-        std::any::type_name::<Self>()
-    }
     fn get_level_filter(&self) -> LevelFilter;
     /// filter rbatis log level
     fn set_level_filter(&self, level: LevelFilter);
