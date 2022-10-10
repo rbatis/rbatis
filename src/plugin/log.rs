@@ -5,7 +5,7 @@ use std::ops::Deref;
 use std::sync::atomic::{AtomicI8, Ordering};
 
 /// log plugin
-pub trait LogPlugin: Send + Sync + Debug {
+pub trait LogPlugin: Send + Sync {
     ///the name
     fn name(&self) -> &str {
         std::any::type_name::<Self>()
