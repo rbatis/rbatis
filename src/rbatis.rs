@@ -34,7 +34,7 @@ impl Debug for Rbatis {
     fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
         f.debug_struct("Rbatis")
             .field("pool", &self.pool)
-            .field("sql_intercepts", &self.sql_intercepts)
+            .field("sql_intercepts", &self.sql_intercepts.len())
             .finish()
     }
 }
@@ -46,7 +46,6 @@ impl Default for Rbatis {
 }
 
 ///Rbatis Options
-#[derive(Debug)]
 pub struct RbatisOption {
     /// sql intercept vec chain
     pub sql_intercepts: Vec<Box<dyn SqlIntercept>>,

@@ -1,10 +1,10 @@
 use crate::rbatis::Rbatis;
 use crate::Error;
 use rbs::Value;
-use std::fmt::{Debug, Display};
+use std::fmt::Display;
 
 /// sql intercept
-pub trait SqlIntercept: Send + Sync + Debug {
+pub trait SqlIntercept: Send + Sync {
     ///the name
     fn name(&self) -> &str {
         std::any::type_name::<Self>()
