@@ -162,11 +162,8 @@ impl Rbatis {
     /// //rb.get_pool().unwrap().resize(10);
     /// ```
     pub fn get_pool(&self) -> Result<&Pool, Error> {
-        let p = self.pool.get();
-        if p.is_none() {
-            return Err(Error::from("[rbatis] rbatis pool not inited!"));
-        }
-        return Ok(p.unwrap());
+        let p = self.pool.get().ok_or_else(||Error::from("[rbatis] rbatis pool not inited!"))?;
+        return Ok(p);
     }
 
     /// get driver type
