@@ -14,7 +14,7 @@ pub struct Base{
 #[derive(Clone, Debug, Serialize, Deserialize)]
 pub struct BizActivity {
     #[serde(flatten)]
-    inner:Base,
+    pub base:Base,
     pub id: Option<String>,
     pub name: Option<String>,
     pub pc_link: Option<String>,
