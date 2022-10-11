@@ -40,23 +40,23 @@ macro_rules! impl_insert {
                 batch_size: u64,
             ) -> std::result::Result<$crate::rbdc::db::ExecResult, $crate::rbdc::Error> {
                 #[$crate::py_sql(
-                    "`insert into ${table_name} (`
-             trim ',':
-               for k,v in tables[0]:
-                  if k == 'id' && v== null:
-                    continue:
-                 ${k},
-             `) VALUES `
-             trim ',':
-              for _,table in tables:
-               (
-               trim ',':
-                for k,v in table:
-                  if k == 'id' && v== null:
-                     continue:
-                  #{v},
-               ),
-             "
+                   "`insert into ${table_name} (`
+                    trim ',':
+                      for k,v in tables[0]:
+                         if k == 'id' && v== null:
+                           continue:
+                        ${k},
+                    `) VALUES `
+                    trim ',':
+                     for _,table in tables:
+                      (
+                      trim ',':
+                       for k,v in table:
+                         if k == 'id' && v== null:
+                            continue:
+                         #{v},
+                      ),
+                    "
                 )]
                 async fn insert_batch(
                     rb: &mut dyn $crate::executor::Executor,
