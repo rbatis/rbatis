@@ -26,7 +26,7 @@ memchr = { version = "2.4.1", default-features = false }
 smallvec = "1.7.0"
 either = "1.7.0"
 stringprep = "0.1.2"
-atoi = "1.0.0"
+atoi = "2.0.0"
 itoa = "1.0.2"
 byteorder = { version = "1.4.3", features = ["std"] }
 hmac = { version = "0.12.0", default-features = false}
