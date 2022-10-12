@@ -18,7 +18,7 @@ rbs={version="0.1",path="../rbs"}
 rbdc = { version = "0.1", path = "../rbdc" }
 serde = "1.0"
 log = "0.4"
-atoi = "1.0"
+atoi = "2.0"
 percent-encoding = "2.1.0"
 indexmap = {version="1.6.0",features=["serde"]}
 bytes = "1.1.0"
