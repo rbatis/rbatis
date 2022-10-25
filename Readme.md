@@ -222,7 +222,7 @@ pub async fn main() {
 }
 ```
 
-#### macros (new addition)
+#### macros
 
 * Important update (pysql removes runtime, directly compiles to static rust code)    This means that the performance of
   SQL generated using py_sql,html_sql is roughly similar to that of handwritten code.
