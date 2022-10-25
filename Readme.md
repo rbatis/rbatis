@@ -9,7 +9,7 @@
 
 <img style="width: 200px;height: 200px;" width="200" height="200" src="logo.png" />
 
-#### A async, pure Rust,compile-time Dynamic SQL,Compile Time ORM. 
+#### A async, pure Rust SQL Toolkit,compile-time Dynamic SQL,Compile Time ORM. 
 
 It is an ORM, a small compiler, a dynamic SQL languages
 
