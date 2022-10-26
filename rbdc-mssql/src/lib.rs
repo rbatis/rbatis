@@ -172,7 +172,7 @@ impl Connection for MssqlConnection {
     fn ping(&mut self) -> BoxFuture<Result<(), rbdc::Error>> {
         Box::pin(async move {
             self.inner
-                .execute("ping", &[])
+                .query("select 1", &[])
                 .await
                 .map_err(|e| Error::from(e.to_string()))?;
             Ok(())
