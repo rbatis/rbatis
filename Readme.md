@@ -9,7 +9,7 @@
 
 <img style="width: 200px;height: 200px;" width="200" height="200" src="logo.png" />
 
-#### A highly Performant SQL Toolkit and Compile time ORM Library. An async, pure Rust SQL crate featuring compile-time Dynamic SQL
+#### A async, pure Rust SQL Toolkit,compile-time Dynamic SQL,Compile Time ORM. 
 
 It is an ORM, a small compiler, a dynamic SQL languages
 
@@ -222,7 +222,7 @@ pub async fn main() {
 }
 ```
 
-#### macros (new addition)
+#### macros
 
 * Important update (pysql removes runtime, directly compiles to static rust code)    This means that the performance of
   SQL generated using py_sql,html_sql is roughly similar to that of handwritten code.
