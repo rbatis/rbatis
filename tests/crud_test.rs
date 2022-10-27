@@ -321,7 +321,7 @@ mod test {
             rb.init(MockDriver {}, "test").unwrap();
             let r = MockTable::select_all(&mut rb).await.unwrap();
             println!("{:?}", r[0].sql);
-            assert_eq!(r[0].sql, "select * from mock_table");
+            assert_eq!(r[0].sql.trim(), "select * from mock_table");
         };
         block_on(f);
     }
