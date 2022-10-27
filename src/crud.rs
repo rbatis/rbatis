@@ -119,14 +119,8 @@ macro_rules! impl_select {
         $crate::impl_select!($table{},$crate::utils::string_util::to_snake_name(stringify!($table)));
     };
     ($table:ty{},$table_name:expr) => {
+        $crate::impl_select!($table{select_all() => ""});
         impl $table{
-            pub async fn select_all(rb: &mut dyn  $crate::executor::Executor) -> std::result::Result<Vec<$table>,$crate::rbdc::Error>{
-                #[$crate::py_sql("select * from ${table_name}")]
-                async fn select_all(rb: &mut dyn $crate::executor::Executor,table_name:String) -> std::result::Result<Vec<$table>,$crate::rbdc::Error> {impled!()}
-                let table_name = $table_name.to_string();
-                select_all(rb,table_name).await
-            }
-
             pub async fn select_by_column<V:serde::Serialize>(rb: &mut dyn  $crate::executor::Executor, column: &str,column_value:V) -> std::result::Result<Vec<$table>,$crate::rbdc::Error>{
                 #[$crate::py_sql("select * from ${table_name} where ${column} = #{column_value}")]
                 async fn select_by_column(rb: &mut dyn $crate::executor::Executor,table_name:String, column:&str, column_value: &rbs::Value) -> std::result::Result<Vec<$table>,$crate::rbdc::Error> {impled!()}
@@ -135,21 +129,15 @@ macro_rules! impl_select {
                 select_by_column(rb,table_name,column,&column_value).await
             }
         }
+        // $crate::impl_select!($table{select_by_column(column: &str,column_value: rbs::Value) -> Vec => "` where ${column} = #{column_value}`"});
     };
     ($table:ty{$fn_name:ident($($param_key:ident:$param_type:ty$(,)?)*) => $sql:expr}) => {
-        impl $table{
-            pub async fn $fn_name(rb: &mut dyn  $crate::executor::Executor,$($param_key:$param_type,)*) -> std::result::Result<Vec<$table>,$crate::rbdc::Error>{
-                   #[$crate::py_sql("`select ${table_column} from ${table_name} `",$sql)]
-                   async fn $fn_name(rb: &mut dyn $crate::executor::Executor,table_column:&str,table_name:&str,$($param_key:$param_type,)*) -> std::result::Result<Vec<$table>,$crate::rbdc::Error> {impled!()}
-                   let mut table_column = "*".to_string();
-                   let mut table_name = $crate::utils::string_util::to_snake_name(stringify!($table));
-                   $fn_name(rb,&table_column,&table_name,$($param_key ,)*).await
-            }
-        }
+        $crate::impl_select!($table{$fn_name($($param_key:$param_type,)*) ->Vec => $sql});
     };
-    ($table:ty{$fn_name:ident($($param_key:ident:$param_type:ty$(,)?)*) -> $container:tt => $sql:expr}) => {
+    ($table:ty{$fn_name:ident($($param_key:ident:$param_type:ty $(,)?)*) -> $container:tt => $sql:expr}) => {
         impl $table{
-            pub async fn $fn_name(rb: &mut dyn  $crate::executor::Executor,$($param_key:$param_type,)*) -> std::result::Result<$container<$table>,$crate::rbdc::Error>{
+            pub async fn $fn_name(rb: &mut dyn  $crate::executor::Executor,$($param_key:$param_type,)*) -> std::result::Result<$container<$table>,$crate::rbdc::Error>
+            {
                      #[$crate::py_sql("`select ${table_column} from ${table_name} `",$sql)]
                      async fn $fn_name(rb: &mut dyn $crate::executor::Executor,table_column:&str,table_name:&str,$($param_key:$param_type,)*) -> std::result::Result<$container<$table>,$crate::rbdc::Error> {impled!()}
                      let mut table_column = "*".to_string();
