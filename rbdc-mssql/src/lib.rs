@@ -170,6 +170,7 @@ impl Connection for MssqlConnection {
     }
 
     fn ping(&mut self) -> BoxFuture<Result<(), rbdc::Error>> {
+        //TODO While 'select 1' can temporarily solve the problem of checking that the connection is valid, it looks ugly.Better replace it with something better way
         Box::pin(async move {
             self.inner
                 .query("select 1", &[])
