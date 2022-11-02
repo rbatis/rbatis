@@ -424,3 +424,6 @@ macro_rules! htmlsql_select_page {
          }
     }
 }
+
+
+//TODO support more ($table:ty{},$table_name)
