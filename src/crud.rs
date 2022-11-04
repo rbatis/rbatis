@@ -158,35 +158,8 @@ macro_rules! impl_update {
         );
     };
     ($table:ty{},$table_name:expr) => {
+        $crate::impl_update!($table{update_by_column(column: &str) => "`where ${column} = #{column_value}`"},$table_name);
         impl $table {
-            pub async fn update_by_column(
-                rb: &mut dyn $crate::executor::Executor,
-                table: &$table,
-                column: &str,
-            ) -> std::result::Result<$crate::rbdc::db::ExecResult, $crate::rbdc::Error> {
-                #[$crate::py_sql(
-                    "`update ${table_name} set `
-             trim ',':
-               for k,v in table:
-                  if k == column || v== null:
-                    continue:
-                 `${k}=#{v},`
-             ` where  ${column} = #{column_value}`"
-                )]
-                async fn update_by_column(
-                    rb: &mut dyn $crate::executor::Executor,
-                    table_name: String,
-                    table: &rbs::Value,
-                    column_value: &rbs::Value,
-                    column: &str,
-                ) -> std::result::Result<$crate::rbdc::db::ExecResult, $crate::rbdc::Error> {
-                    impled!()
-                }
-                let table_name = $table_name.to_string();
-                let table = rbs::to_value!(table);
-                let column_value = &table[column];
-                update_by_column(rb, table_name, &table, column_value, column).await
-            }
             pub async fn update_by_column_batch(
                 rb: &mut dyn $crate::executor::Executor,
                 tables: &[$table],
@@ -213,7 +186,7 @@ macro_rules! impl_update {
                 if $sql_where.is_empty(){
                     return Err($crate::rbdc::Error::from("sql_where can't be empty!"));
                 }
-                #[$crate::py_sql("`update ${table_name} set  `
+                #[$crate::py_sql("`update ${table_name} set `
                                  trim ',':
                                    for k,v in table:
                                      if k == column || v== null:
