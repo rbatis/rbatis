@@ -119,7 +119,7 @@ macro_rules! impl_select {
         $crate::impl_select!($table{},$crate::utils::string_util::to_snake_name(stringify!($table)));
     };
     ($table:ty{},$table_name:expr) => {
-        $crate::impl_select!($table{select_all() => ""});
+        $crate::impl_select!($table{select_all() => ""},$table_name);
         impl $table{
             pub async fn select_by_column<V:serde::Serialize>(rb: &mut dyn  $crate::executor::Executor, column: &str,column_value:V) -> std::result::Result<Vec<$table>,$crate::rbdc::Error>{
                 #[$crate::py_sql("select * from ${table_name} where ${column} = #{column_value}")]
@@ -131,17 +131,21 @@ macro_rules! impl_select {
         }
         // $crate::impl_select!($table{select_by_column(column: &str,column_value: rbs::Value) -> Vec => "` where ${column} = #{column_value}`"});
     };
-    ($table:ty{$fn_name:ident($($param_key:ident:$param_type:ty$(,)?)*) => $sql:expr}) => {
-        $crate::impl_select!($table{$fn_name($($param_key:$param_type,)*) ->Vec => $sql});
+    ($table:ty{$fn_name:ident($($param_key:ident:$param_type:ty$(,)?)*) => $sql:expr}$(,$table_name:expr)?) => {
+        $crate::impl_select!($table{$fn_name($($param_key:$param_type,)*) ->Vec => $sql}$(,$table_name)?);
     };
-    ($table:ty{$fn_name:ident($($param_key:ident:$param_type:ty $(,)?)*) -> $container:tt => $sql:expr}) => {
+    ($table:ty{$fn_name:ident($($param_key:ident:$param_type:ty $(,)?)*) -> $container:tt => $sql:expr}$(,$table_name:expr)?) => {
         impl $table{
             pub async fn $fn_name(rb: &mut dyn  $crate::executor::Executor,$($param_key:$param_type,)*) -> std::result::Result<$container<$table>,$crate::rbdc::Error>
             {
                      #[$crate::py_sql("`select ${table_column} from ${table_name} `",$sql)]
                      async fn $fn_name(rb: &mut dyn $crate::executor::Executor,table_column:&str,table_name:&str,$($param_key:$param_type,)*) -> std::result::Result<$container<$table>,$crate::rbdc::Error> {impled!()}
                      let mut table_column = "*".to_string();
-                     let mut table_name = $crate::utils::string_util::to_snake_name(stringify!($table));
+                     let mut table_name = String::new();
+                     $(table_name = $table_name.to_string();)?
+                     if table_name.is_empty(){
+                         table_name = $crate::utils::string_util::to_snake_name(stringify!($table));
+                     }
                      $fn_name(rb,&table_column,&table_name,$($param_key ,)*).await
             }
         }
