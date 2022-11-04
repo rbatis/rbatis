@@ -550,7 +550,7 @@ mod test {
                 .await
                 .unwrap();
             println!("{}", r[0].sql);
-            assert_eq!(r[0].sql, "select * from mock_table where id = ?");
+            assert_eq!(r[0].sql.trim(), "select * from mock_table  where id = ?");
         };
         block_on(f);
     }
