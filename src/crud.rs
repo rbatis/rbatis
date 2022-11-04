@@ -203,7 +203,7 @@ macro_rules! impl_update {
             }
         }
     };
-    ($table:ty{$fn_name:ident($($param_key:ident:$param_type:ty$(,)?)*) => $sql_where:expr}) => {
+    ($table:ty{$fn_name:ident($($param_key:ident:$param_type:ty$(,)?)*) => $sql_where:expr}$(,$table_name:expr)?) => {
         impl $table {
             pub async fn $fn_name(
                 rb: &mut dyn $crate::executor::Executor,
@@ -228,7 +228,11 @@ macro_rules! impl_update {
                   ) -> std::result::Result<$crate::rbdc::db::ExecResult, $crate::rbdc::Error> {
                       impled!()
                   }
-                  let mut table_name = $crate::utils::string_util::to_snake_name(stringify!($table));
+                  let mut table_name = String::new();
+                  $(table_name = $table_name.to_string();)?
+                  if table_name.is_empty(){
+                      table_name = $crate::utils::string_util::to_snake_name(stringify!($table));
+                  }
                   let table = rbs::to_value!(table);
                   $fn_name(rb, table_name, &table, $($param_key,)*).await
             }
@@ -295,7 +299,7 @@ macro_rules! impl_delete {
             }
         }
     };
-    ($table:ty{$fn_name:ident($($param_key:ident:$param_type:ty$(,)?)*) => $sql_where:expr}) => {
+    ($table:ty{$fn_name:ident($($param_key:ident:$param_type:ty$(,)?)*) => $sql_where:expr}$(,$table_name:expr)?) => {
         impl $table {
             pub async fn $fn_name(
                 rb: &mut dyn $crate::executor::Executor,
@@ -312,7 +316,11 @@ macro_rules! impl_delete {
                 ) -> std::result::Result<$crate::rbdc::db::ExecResult, $crate::rbdc::Error> {
                     impled!()
                 }
-                let mut table_name = $crate::utils::string_util::to_snake_name(stringify!($table));
+                let mut table_name = String::new();
+                $(table_name = $table_name.to_string();)?
+                if table_name.is_empty(){
+                  table_name = $crate::utils::string_util::to_snake_name(stringify!($table));
+                }
                 $fn_name(rb, table_name, $($param_key,)*).await
             }
         }
@@ -419,6 +427,3 @@ macro_rules! htmlsql_select_page {
          }
     }
 }
-
-
-//TODO support more ($table:ty{},$table_name)
