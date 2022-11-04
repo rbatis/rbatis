@@ -139,9 +139,10 @@ pub(crate) fn impl_macro_html_sql(target_fn: &ItemFn, args: &AttributeArgs) -> T
             include_data = quote! {#include_data  let _ = include_bytes!(#html_file_name);};
         }
     }
+    let generic=target_fn.sig.generics.clone();
     //gen rust code
     return quote! {
-       pub async fn #func_name_ident(#func_args_stream) -> #return_ty {
+       pub async fn #func_name_ident #generic(#func_args_stream) -> #return_ty {
          #include_data
          let mut rb_arg_map = rbs::value::map::ValueMap::new();
          #sql_args_gen
