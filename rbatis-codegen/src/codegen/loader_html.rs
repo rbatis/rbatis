@@ -58,7 +58,7 @@ pub fn as_element(args: &Vec<Node>) -> Vec<Element> {
                 }
                 let t = txt.trim();
                 if t.starts_with("`") || t.ends_with("`") {
-                    el.data = t.replace("`", "").to_string();
+                    el.data = t.trim_start_matches("`").trim_end_matches("`").to_string();
                 } else {
                     el.data = t.to_string();
                 }
