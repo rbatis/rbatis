@@ -337,7 +337,7 @@ mod test {
             println!("{}", r.last_insert_id.as_str().unwrap_or_default());
             assert_eq!(
                 r.last_insert_id.as_str().unwrap_or_default(),
-                "delete from mock_table where  1 = ?"
+                "delete from mock_table where 1 = ?"
             );
         };
         block_on(f);
@@ -354,7 +354,7 @@ mod test {
             println!("{}", r.last_insert_id.as_str().unwrap_or_default());
             assert_eq!(
                 r.last_insert_id.as_str().unwrap_or_default(),
-                "delete from mock_table where  1 in (?,?)"
+                "delete from mock_table where 1 in (?,?)"
             );
         };
         block_on(f);

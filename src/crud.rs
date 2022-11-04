@@ -229,53 +229,16 @@ macro_rules! impl_delete {
         );
     };
     ($table:ty{},$table_name:expr) => {
-        impl $table {
-            pub async fn delete_by_column<V:serde::Serialize>(
-                rb: &mut dyn $crate::executor::Executor,
-                column: &str,
-                column_value: V,
-            ) -> std::result::Result<$crate::rbdc::db::ExecResult, $crate::rbdc::Error> {
-                #[$crate::py_sql("`delete from ${table_name} where  ${column} = #{column_value}`")]
-                async fn delete_by_column(
-                    rb: &mut dyn $crate::executor::Executor,
-                    table_name: String,
-                    column_value: &rbs::Value,
-                    column: &str,
-                ) -> std::result::Result<$crate::rbdc::db::ExecResult, $crate::rbdc::Error> {
-                    impled!()
-                }
-                let column_value = rbs::to_value!(column_value);
-                let table_name = $table_name.to_string();
-                delete_by_column(rb, table_name, &column_value, column).await
-            }
-            pub async fn delete_by_column_batch<V:serde::Serialize>(
-                rb: &mut dyn $crate::executor::Executor,
-                column: &str,
-                column_values: &[V],
-            ) -> std::result::Result<$crate::rbdc::db::ExecResult, $crate::rbdc::Error> {
-                 #[$crate::py_sql("`delete from ${table_name} where  ${column} in (`
+        $crate::impl_delete!($table {delete_by_column<V:serde::Serialize>(column:&str,column_value: V) => "`where ${column} = #{column_value}`"},$table_name);
+        $crate::impl_delete!($table {delete_by_column_batch<V:serde::Serialize>(column:&str,column_values: &[V]) => "`where ${column} in (`
                                        trim ',':
                                          for _,v in column_values:
                                             #{v},
-                                       `)`")]
-                async fn delete_by_column_batch(
-                    rb: &mut dyn $crate::executor::Executor,
-                    table_name: String,
-                    column_values: rbs::Value,
-                    column: &str,
-                ) -> std::result::Result<$crate::rbdc::db::ExecResult, $crate::rbdc::Error> {
-                    impled!()
-                }
-                let column_values = rbs::to_value!(column_values);
-                let table_name = $table_name.to_string();
-                delete_by_column_batch(rb, table_name, column_values, column).await
-            }
-        }
+                                       `)`"},$table_name);
     };
-    //TODO support generic parameter
-    ($table:ty{$fn_name:ident($($param_key:ident:$param_type:ty$(,)?)*) => $sql_where:expr}$(,$table_name:expr)?) => {
+    ($table:ty{$fn_name:ident $(< $($gkey:ident:$gtype:path $(,)?)* >)? ($($param_key:ident:$param_type:ty$(,)?)*) => $sql_where:expr}$(,$table_name:expr)?) => {
         impl $table {
-            pub async fn $fn_name(
+            pub async fn $fn_name$(<$($gkey:$gtype,)*>)?(
                 rb: &mut dyn $crate::executor::Executor,
                 $($param_key:$param_type,)*
             ) -> std::result::Result<$crate::rbdc::db::ExecResult, $crate::rbdc::Error> {
@@ -283,7 +246,7 @@ macro_rules! impl_delete {
                     return Err($crate::rbdc::Error::from("sql_where can't be empty!"));
                 }
                 #[$crate::py_sql("`delete from ${table_name} `",$sql_where)]
-                async fn $fn_name(
+                async fn $fn_name$(<$($gkey: $gtype,)*>)?(
                     rb: &mut dyn $crate::executor::Executor,
                     table_name: String,
                     $($param_key:$param_type,)*
