@@ -272,6 +272,7 @@ macro_rules! impl_delete {
             }
         }
     };
+    //TODO support generic parameter
     ($table:ty{$fn_name:ident($($param_key:ident:$param_type:ty$(,)?)*) => $sql_where:expr}$(,$table_name:expr)?) => {
         impl $table {
             pub async fn $fn_name(
