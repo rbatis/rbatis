@@ -158,8 +158,17 @@ macro_rules! impl_update {
         );
     };
     ($table:ty{},$table_name:expr) => {
-        $crate::impl_update!($table{update_by_column(column: &str) => "`where ${column} = #{column_value}`"},$table_name);
+        $crate::impl_update!($table{update_by_column_value(column: &str,column_value: &rbs::Value) => "`where ${column} = #{column_value}`"},$table_name);
         impl $table {
+            pub async fn update_by_column(
+                rb: &mut dyn $crate::executor::Executor,
+                table: &$table,
+                column: &str) -> std::result::Result<$crate::rbdc::db::ExecResult, $crate::rbdc::Error>{
+                let columns = rbs::to_value!(table);
+                let column_value = &columns[column];
+                <$table>::update_by_column_value(rb,table,column,column_value).await
+            }
+
             pub async fn update_by_column_batch(
                 rb: &mut dyn $crate::executor::Executor,
                 tables: &[$table],
