@@ -29,7 +29,7 @@ url = { version = "2.2.2", default-features = false }
 futures-executor = { version = "0.3.19" }
 futures-channel = { version = "0.3.19", default-features = false, features = ["sink", "alloc", "std"] }
 futures-core = { version = "0.3.19", default-features = false }
-futures-intrusive = "0.4.0"
+futures-intrusive = "0.5.0"
 futures-util = { version = "0.3.19", default-features = false, features = ["alloc", "sink"] }
 flume = { version = "0.10.9", default-features = false, features = ["async"] }
 libc = "0.2.112"
