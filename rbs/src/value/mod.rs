@@ -741,6 +741,10 @@ impl From<&Value> for String {
     }
 }
 
+impl Eq for Value{
+
+}
+
 #[cfg(test)]
 mod test {
     use crate::Value;

@@ -21,8 +21,32 @@ mod test {
     use rbdc::datetime::FastDateTime;
     use rbdc::db::{ConnectOptions, Connection, Driver, ExecResult, MetaData, Row};
     use rbdc::rt::block_on;
-    use rbs::Value;
+    use rbs::{from_value, to_value, Value};
     use std::any::Any;
+    use std::collections::HashMap;
+    use std::sync::Arc;
+    use crossbeam::queue::SegQueue;
+    use rbatis::intercept::SqlIntercept;
+
+
+    pub struct MockIntercept {
+        pub sql_args: Arc<SegQueue<(String, Vec<Value>)>>,
+    }
+
+    impl MockIntercept {
+        fn new(inner: Arc<SegQueue<(String, Vec<Value>)>>) -> Self {
+            Self {
+                sql_args: inner
+            }
+        }
+    }
+
+    impl SqlIntercept for MockIntercept {
+        fn do_intercept(&self, rb: &Rbatis, sql: &mut String, args: &mut Vec<Value>, is_prepared_sql: bool) -> Result<(), Error> {
+            self.sql_args.push((sql.to_string(), args.clone()));
+            Ok(())
+        }
+    }
 
     #[derive(Debug, Clone)]
     struct MockDriver {}
@@ -112,7 +136,7 @@ mod test {
         fn get_rows(
             &mut self,
             sql: &str,
-            _params: Vec<Value>,
+            params: Vec<Value>,
         ) -> BoxFuture<Result<Vec<Box<dyn Row>>, Error>> {
             let sql = sql.to_string();
             Box::pin(async move {
@@ -121,7 +145,7 @@ mod test {
             })
         }
 
-        fn exec(&mut self, sql: &str, _params: Vec<Value>) -> BoxFuture<Result<ExecResult, Error>> {
+        fn exec(&mut self, sql: &str, params: Vec<Value>) -> BoxFuture<Result<ExecResult, Error>> {
             let sql = sql.to_string();
             Box::pin(async move {
                 Ok(ExecResult {
@@ -171,8 +195,7 @@ mod test {
         pub create_time: Option<rbdc::datetime::FastDateTime>,
         pub version: Option<i64>,
         pub delete_flag: Option<i32>,
-
-        pub sql: String,
+        pub sql:String,
         //exec sql
         pub count: u64, //page count num
     }
@@ -180,7 +203,7 @@ mod test {
     #[test]
     fn test_fetch_decode() {
         let f = async move {
-            let rb = Rbatis::new();
+            let mut rb = Rbatis::new();
             rb.init(MockDriver {}, "test").unwrap();
             let r: Vec<MockTable> = rb
                 .fetch_decode("select * from mock_table", vec![])
@@ -228,6 +251,8 @@ mod test {
     fn test_insert() {
         let f = async move {
             let mut rb = Rbatis::new();
+            let queue= Arc::new(SegQueue::new());
+            rb.set_sql_intercepts(vec![Box::new(MockIntercept::new(queue.clone()))]);
             rb.init(MockDriver {}, "test").unwrap();
             let t = MockTable {
                 id: Some("2".into()),
@@ -246,8 +271,10 @@ mod test {
                 count: 0,
             };
             let r = MockTable::insert(&mut rb, &t).await.unwrap();
-            println!("{}", r.last_insert_id.as_str().unwrap_or_default());
-            assert_eq!(r.last_insert_id.as_str().unwrap_or_default(), "insert into mock_table (id,name,pc_link,h5_link,pc_banner_img,h5_banner_img,sort,status,remark,create_time,version,delete_flag,sql,count) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?)");
+            let (sql, args) = queue.pop().unwrap();
+            println!("{}", sql);
+            assert_eq!(sql, "insert into mock_table (id,name,pc_link,h5_link,pc_banner_img,h5_banner_img,sort,status,remark,create_time,version,delete_flag,sql,count) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?)");
+            assert_eq!(args, vec![to_value!(t.id), to_value!(t.name), to_value!(t.pc_link), to_value!(t.h5_link), to_value!(t.pc_banner_img), to_value!(t.h5_banner_img), to_value!(t.sort), to_value!(t.status), to_value!(t.remark), to_value!(t.create_time), to_value!(t.version), to_value!(t.delete_flag), to_value!(t.sql), to_value!(t.count)]);
         };
         block_on(f);
     }
@@ -256,6 +283,8 @@ mod test {
     fn test_insert_batch() {
         let f = async move {
             let mut rb = Rbatis::new();
+            let queue= Arc::new(SegQueue::new());
+            rb.set_sql_intercepts(vec![Box::new(MockIntercept::new(queue.clone()))]);
             rb.init(MockDriver {}, "test").unwrap();
             let t = MockTable {
                 id: Some("2".into()),
@@ -275,11 +304,41 @@ mod test {
             };
             let mut t2 = t.clone();
             t2.id = "3".to_string().into();
-            let r = MockTable::insert_batch(&mut rb, &[t, t2], 10)
+            let ts = vec![t, t2];
+            let r = MockTable::insert_batch(&mut rb, &ts, 10)
                 .await
                 .unwrap();
+            let (sql,args) = queue.pop().unwrap();
             println!("{}", r.last_insert_id.as_str().unwrap_or_default());
             assert_eq!(r.last_insert_id.as_str().unwrap_or_default(), "insert into mock_table (id,name,pc_link,h5_link,pc_banner_img,h5_banner_img,sort,status,remark,create_time,version,delete_flag,sql,count) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?),(?,?,?,?,?,?,?,?,?,?,?,?,?,?)");
+            assert_eq!(args, vec![to_value!(&ts[0].id),
+                                   to_value!(&ts[0].name),
+                                   to_value!(&ts[0].pc_link),
+                                   to_value!(&ts[0].h5_link),
+                                   to_value!(&ts[0].pc_banner_img),
+                                   to_value!(&ts[0].h5_banner_img),
+                                   to_value!(&ts[0].sort),
+                                   to_value!(&ts[0].status),
+                                   to_value!(&ts[0].remark),
+                                   to_value!(&ts[0].create_time),
+                                   to_value!(&ts[0].version),
+                                   to_value!(&ts[0].delete_flag),
+                                   to_value!(&ts[0].sql),
+                                   to_value!(&ts[0].count),
+                                   to_value!(&ts[1].id),
+                                   to_value!(&ts[1].name),
+                                   to_value!(&ts[1].pc_link),
+                                   to_value!(&ts[1].h5_link),
+                                   to_value!(&ts[1].pc_banner_img),
+                                   to_value!(&ts[1].h5_banner_img),
+                                   to_value!(&ts[1].sort),
+                                   to_value!(&ts[1].status),
+                                   to_value!(&ts[1].remark),
+                                   to_value!(&ts[1].create_time),
+                                   to_value!(&ts[1].version),
+                                   to_value!(&ts[1].delete_flag),
+                                   to_value!(&ts[1].sql),
+                                   to_value!(&ts[1].count), ]);
         };
         block_on(f);
     }
@@ -288,6 +347,8 @@ mod test {
     fn test_update_by_column() {
         let f = async move {
             let mut rb = Rbatis::new();
+            let queue= Arc::new(SegQueue::new());
+            rb.set_sql_intercepts(vec![Box::new(MockIntercept::new(queue.clone()))]);
             rb.init(MockDriver {}, "test").unwrap();
             let t = MockTable {
                 id: Some("2".into()),
@@ -308,8 +369,12 @@ mod test {
             let r = MockTable::update_by_column(&mut rb, &t, "id")
                 .await
                 .unwrap();
+
             println!("{}", r.last_insert_id.as_str().unwrap_or_default());
             assert_eq!(r.last_insert_id.as_str().unwrap_or_default(), "update mock_table set name=?,pc_link=?,h5_link=?,status=?,remark=?,create_time=?,version=?,delete_flag=?,sql=?,count=? where id = ?");
+            let (sql, args) = queue.pop().unwrap();
+            assert_eq!(args.len(), 11);
+            assert_eq!(args, vec![to_value!(t.name), to_value!(t.pc_link), to_value!(t.h5_link), to_value!(t.status), to_value!(t.remark), to_value!(t.create_time), to_value!(t.version), to_value!(t.delete_flag), to_value!(t.sql), to_value!(t.count), to_value!(t.id)]);
         };
         block_on(f);
     }
@@ -330,6 +395,8 @@ mod test {
     fn test_delete_by_column() {
         let f = async move {
             let mut rb = Rbatis::new();
+            let queue= Arc::new(SegQueue::new());
+            rb.set_sql_intercepts(vec![Box::new(MockIntercept::new(queue.clone()))]);
             rb.init(MockDriver {}, "test").unwrap();
             let r = MockTable::delete_by_column(&mut rb, "1", &Value::String("1".to_string()))
                 .await
@@ -339,6 +406,8 @@ mod test {
                 r.last_insert_id.as_str().unwrap_or_default(),
                 "delete from mock_table where 1 = ?"
             );
+            let (sql, args) = queue.pop().unwrap();
+            assert_eq!(args, vec![to_value!("1")]);
         };
         block_on(f);
     }
@@ -347,6 +416,8 @@ mod test {
     fn test_delete_by_column_batch() {
         let f = async move {
             let mut rb = Rbatis::new();
+            let queue= Arc::new(SegQueue::new());
+            rb.set_sql_intercepts(vec![Box::new(MockIntercept::new(queue.clone()))]);
             rb.init(MockDriver {}, "test").unwrap();
             let r = MockTable::delete_by_column_batch(&mut rb, "1", &["1", "2"])
                 .await
@@ -356,6 +427,8 @@ mod test {
                 r.last_insert_id.as_str().unwrap_or_default(),
                 "delete from mock_table where 1 in (?,?)"
             );
+            let (sql, args) = queue.pop().unwrap();
+            assert_eq!(args, vec![to_value!("1"), to_value!("2")]);
         };
         block_on(f);
     }
@@ -365,6 +438,8 @@ mod test {
     fn test_select_all_by_id() {
         let f = async move {
             let mut rb = Rbatis::new();
+            let queue= Arc::new(SegQueue::new());
+            rb.set_sql_intercepts(vec![Box::new(MockIntercept::new(queue.clone()))]);
             rb.init(MockDriver {}, "test").unwrap();
             let r = MockTable::select_all_by_id(&mut rb, "1", "1")
                 .await
@@ -374,6 +449,8 @@ mod test {
                 r[0].sql,
                 "select * from mock_table where id = ? and name = ?"
             );
+            let (sql, args) = queue.pop().unwrap();
+            assert_eq!(args, vec![to_value!("1"), to_value!("1")]);
         };
         block_on(f);
     }
@@ -382,6 +459,8 @@ mod test {
     fn test_select_by_id() {
         let f = async move {
             let mut rb = Rbatis::new();
+            let queue= Arc::new(SegQueue::new());
+            rb.set_sql_intercepts(vec![Box::new(MockIntercept::new(queue.clone()))]);
             rb.init(MockDriver {}, "test").unwrap();
             let r = MockTable::select_by_id(&mut rb, "1").await.unwrap();
             println!("{}", r.as_ref().unwrap().sql);
@@ -389,6 +468,8 @@ mod test {
                 r.unwrap().sql,
                 "select * from mock_table where id = ? limit 1"
             );
+            let (sql, args) = queue.pop().unwrap();
+            assert_eq!(args, vec![to_value!("1")]);
         };
         block_on(f);
     }
@@ -409,8 +490,8 @@ mod test {
                     id: "1".to_string(),
                 },
             )
-            .await
-            .unwrap();
+                .await
+                .unwrap();
             println!("{}", r.as_ref().unwrap().sql);
             assert_eq!(
                 r.unwrap().sql,
@@ -424,6 +505,8 @@ mod test {
     fn test_update_by_name() {
         let f = async move {
             let mut rb = Rbatis::new();
+            let queue= Arc::new(SegQueue::new());
+            rb.set_sql_intercepts(vec![Box::new(MockIntercept::new(queue.clone()))]);
             rb.init(MockDriver {}, "test").unwrap();
             let t = MockTable {
                 id: Some("2".into()),
@@ -446,6 +529,8 @@ mod test {
                 .unwrap();
             println!("{}", r.last_insert_id.as_str().unwrap());
             assert_eq!(r.last_insert_id.as_str().unwrap(), "update mock_table set id=?,name=?,pc_link=?,h5_link=?,status=?,remark=?,create_time=?,version=?,delete_flag=?,sql=?,count=? where id = '2'");
+            let (sql, args) = queue.pop().unwrap();
+            assert_eq!(args, vec![to_value!(t.id), to_value!(t.name), to_value!(t.pc_link), to_value!(t.h5_link), to_value!(t.status), to_value!(t.remark), to_value!(t.create_time), to_value!(t.version), to_value!(t.delete_flag), to_value!(t.sql), to_value!(t.count)]);
         };
         block_on(f);
     }
@@ -455,6 +540,8 @@ mod test {
     fn test_update_by_dto() {
         let f = async move {
             let mut rb = Rbatis::new();
+            let queue= Arc::new(SegQueue::new());
+            rb.set_sql_intercepts(vec![Box::new(MockIntercept::new(queue.clone()))]);
             rb.init(MockDriver {}, "test").unwrap();
             let t = MockTable {
                 id: Some("2".into()),
@@ -479,10 +566,12 @@ mod test {
                     id: "2".to_string(),
                 },
             )
-            .await
-            .unwrap();
+                .await
+                .unwrap();
             println!("{}", r.last_insert_id.as_str().unwrap());
             assert_eq!(r.last_insert_id.as_str().unwrap(), "update mock_table set id=?,name=?,pc_link=?,h5_link=?,status=?,remark=?,create_time=?,version=?,delete_flag=?,sql=?,count=? where id = '2'");
+            let (sql, args) = queue.pop().unwrap();
+            assert_eq!(args, vec![to_value!(t.id), to_value!(t.name), to_value!(t.pc_link), to_value!(t.h5_link), to_value!(t.status), to_value!(t.remark), to_value!(t.create_time), to_value!(t.version), to_value!(t.delete_flag), to_value!(t.sql), to_value!(t.count)]);
         };
         block_on(f);
     }
@@ -545,12 +634,16 @@ mod test {
     fn test_select_by_column() {
         let f = async move {
             let mut rb = Rbatis::new();
+            let queue= Arc::new(SegQueue::new());
+            rb.set_sql_intercepts(vec![Box::new(MockIntercept::new(queue.clone()))]);
             rb.init(MockDriver {}, "test").unwrap();
             let r = MockTable::select_by_column(&mut rb, "id", "1")
                 .await
                 .unwrap();
             println!("{}", r[0].sql);
             assert_eq!(r[0].sql.trim(), "select * from mock_table  where id = ?");
+            let (sql, args) = queue.pop().unwrap();
+            assert_eq!(args, vec![to_value!("1")]);
         };
         block_on(f);
     }
@@ -561,12 +654,16 @@ mod test {
     fn test_select_from_table_name_by_id() {
         let f = async move {
             let mut rb = Rbatis::new();
+            let queue= Arc::new(SegQueue::new());
+            rb.set_sql_intercepts(vec![Box::new(MockIntercept::new(queue.clone()))]);
             rb.init(MockDriver {}, "test").unwrap();
-            let r = MockTable::select_from_table_name_by_id(&mut rb, "id", "mock_table2")
+            let r = MockTable::select_from_table_name_by_id(&mut rb, "1", "mock_table2")
                 .await
                 .unwrap();
             println!("{}", r[0].sql);
             assert_eq!(r[0].sql, "select * from mock_table2 where id = ?");
+            let (sql, args) = queue.pop().unwrap();
+            assert_eq!(args, vec![to_value!("1")]);
         };
         block_on(f);
     }
@@ -577,12 +674,16 @@ mod test {
     fn test_select_table_column_from_table_name_by_id() {
         let f = async move {
             let mut rb = Rbatis::new();
+            let queue= Arc::new(SegQueue::new());
+            rb.set_sql_intercepts(vec![Box::new(MockIntercept::new(queue.clone()))]);
             rb.init(MockDriver {}, "test").unwrap();
-            let r = MockTable::select_table_column_from_table_name_by_id(&mut rb, "id", "id,name")
+            let r = MockTable::select_table_column_from_table_name_by_id(&mut rb, "1", "id,name")
                 .await
                 .unwrap();
             println!("{}", r[0].sql);
             assert_eq!(r[0].sql, "select id,name from mock_table where id = ?");
+            let (sql, args) = queue.pop().unwrap();
+            assert_eq!(args, vec![to_value!("1")]);
         };
         block_on(f);
     }
