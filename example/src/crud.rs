@@ -87,4 +87,10 @@ pub async fn main() {
 
     let data = BizActivity::delete_by_name(&mut rb, "2").await;
     println!("delete_by_column = {:?}", data);
+
+    let data = BizActivity::select_in_column(&mut rb,"id",&["1","2","3"]).await;
+    println!("select_in_column = {:?}", data);
+
+    let data = BizActivity::delete_in_column(&mut rb, "id",&["1","2","3"]).await;
+    println!("delete_in_column = {:?}", data);
 }

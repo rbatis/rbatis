@@ -121,6 +121,11 @@ macro_rules! impl_select {
     ($table:ty{},$table_name:expr) => {
         $crate::impl_select!($table{select_all() => ""},$table_name);
         $crate::impl_select!($table{select_by_column<V:serde::Serialize>(column: &str,column_value: V) -> Vec => "` where ${column} = #{column_value}`"},$table_name);
+        $crate::impl_select!($table{select_in_column<V:serde::Serialize>(column: &str,column_values: &[V]) -> Vec =>
+         "` where ${column} in (`
+          trim ',': for _,item in column_values:
+             #{item},
+          `)`"},$table_name);
     };
     ($table:ty{$fn_name:ident $(< $($gkey:ident:$gtype:path $(,)?)* >)? ($($param_key:ident:$param_type:ty $(,)?)*) => $sql:expr}$(,$table_name:expr)?) => {
         $crate::impl_select!($table{$fn_name$(<$($gkey:$gtype,)*>)?($($param_key:$param_type,)*) ->Vec => $sql}$(,$table_name)?);
@@ -239,6 +244,11 @@ macro_rules! impl_delete {
     };
     ($table:ty{},$table_name:expr) => {
         $crate::impl_delete!($table {delete_by_column<V:serde::Serialize>(column:&str,column_value: V) => "`where ${column} = #{column_value}`"},$table_name);
+        $crate::impl_delete!($table {delete_in_column<V:serde::Serialize>(column:&str,column_values: &[V]) =>
+        "`where ${column} in (`
+          trim ',': for _,item in column_values:
+             #{item},
+          `)`"},$table_name);
         $crate::impl_delete!($table {delete_by_column_batch<V:serde::Serialize>(column:&str,column_values: &[V]) => "`where ${column} in (`
                                        trim ',':
                                          for _,v in column_values:
