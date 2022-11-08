@@ -702,6 +702,42 @@ mod test {
     }
 
     #[test]
+    fn test_select_in_column() {
+        let f = async move {
+            let mut rb = Rbatis::new();
+            let queue = Arc::new(SegQueue::new());
+            rb.set_sql_intercepts(vec![Box::new(MockIntercept::new(queue.clone()))]);
+            rb.init(MockDriver {}, "test").unwrap();
+            let r = MockTable::select_in_column(&mut rb, "1", &["1","2"])
+                .await
+                .unwrap();
+            let (sql, args) = queue.pop().unwrap();
+            println!("{}", sql);
+            assert_eq!(sql, "select * from mock_table  where 1 in (?,?)");
+            assert_eq!(args, vec![to_value!("1"),to_value!("2")]);
+        };
+        block_on(f);
+    }
+
+    #[test]
+    fn test_delete_in_column() {
+        let f = async move {
+            let mut rb = Rbatis::new();
+            let queue = Arc::new(SegQueue::new());
+            rb.set_sql_intercepts(vec![Box::new(MockIntercept::new(queue.clone()))]);
+            rb.init(MockDriver {}, "test").unwrap();
+            let r = MockTable::delete_in_column(&mut rb, "1", &["1","2"])
+                .await
+                .unwrap();
+            let (sql, args) = queue.pop().unwrap();
+            println!("{}", sql);
+            assert_eq!(sql, "delete from mock_table where 1 in (?,?)");
+            assert_eq!(args, vec![to_value!("1"),to_value!("2")]);
+        };
+        block_on(f);
+    }
+
+    #[test]
     fn test_tx() {
         let f = async move {
             let rb = Rbatis::new();
