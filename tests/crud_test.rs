@@ -146,11 +146,10 @@ mod test {
         }
 
         fn exec(&mut self, sql: &str, params: Vec<Value>) -> BoxFuture<Result<ExecResult, Error>> {
-            let sql = sql.to_string();
             Box::pin(async move {
                 Ok(ExecResult {
                     rows_affected: 0,
-                    last_insert_id: Value::String(sql.to_string()),
+                    last_insert_id: Value::Null,
                 })
             })
         }
@@ -309,8 +308,8 @@ mod test {
                 .await
                 .unwrap();
             let (sql,args) = queue.pop().unwrap();
-            println!("{}", r.last_insert_id.as_str().unwrap_or_default());
-            assert_eq!(r.last_insert_id.as_str().unwrap_or_default(), "insert into mock_table (id,name,pc_link,h5_link,pc_banner_img,h5_banner_img,sort,status,remark,create_time,version,delete_flag,sql,count) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?),(?,?,?,?,?,?,?,?,?,?,?,?,?,?)");
+            println!("{}", sql);
+            assert_eq!(sql, "insert into mock_table (id,name,pc_link,h5_link,pc_banner_img,h5_banner_img,sort,status,remark,create_time,version,delete_flag,sql,count) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?),(?,?,?,?,?,?,?,?,?,?,?,?,?,?)");
             assert_eq!(args, vec![to_value!(&ts[0].id),
                                    to_value!(&ts[0].name),
                                    to_value!(&ts[0].pc_link),
@@ -370,9 +369,9 @@ mod test {
                 .await
                 .unwrap();
 
-            println!("{}", r.last_insert_id.as_str().unwrap_or_default());
-            assert_eq!(r.last_insert_id.as_str().unwrap_or_default(), "update mock_table set name=?,pc_link=?,h5_link=?,status=?,remark=?,create_time=?,version=?,delete_flag=?,sql=?,count=? where id = ?");
-            let (sql, args) = queue.pop().unwrap();
+             let (sql, args) = queue.pop().unwrap();
+            println!("{}", sql);
+            assert_eq!(sql, "update mock_table set name=?,pc_link=?,h5_link=?,status=?,remark=?,create_time=?,version=?,delete_flag=?,sql=?,count=? where id = ?");
             assert_eq!(args.len(), 11);
             assert_eq!(args, vec![to_value!(t.name), to_value!(t.pc_link), to_value!(t.h5_link), to_value!(t.status), to_value!(t.remark), to_value!(t.create_time), to_value!(t.version), to_value!(t.delete_flag), to_value!(t.sql), to_value!(t.count), to_value!(t.id)]);
         };
@@ -401,12 +400,12 @@ mod test {
             let r = MockTable::delete_by_column(&mut rb, "1", &Value::String("1".to_string()))
                 .await
                 .unwrap();
-            println!("{}", r.last_insert_id.as_str().unwrap_or_default());
+            let (sql, args) = queue.pop().unwrap();
+            println!("{}", sql);
             assert_eq!(
-                r.last_insert_id.as_str().unwrap_or_default(),
+                sql,
                 "delete from mock_table where 1 = ?"
             );
-            let (sql, args) = queue.pop().unwrap();
             assert_eq!(args, vec![to_value!("1")]);
         };
         block_on(f);
@@ -422,12 +421,12 @@ mod test {
             let r = MockTable::delete_by_column_batch(&mut rb, "1", &["1", "2"])
                 .await
                 .unwrap();
-            println!("{}", r.last_insert_id.as_str().unwrap_or_default());
+            let (sql, args) = queue.pop().unwrap();
+            println!("{}", sql);
             assert_eq!(
-                r.last_insert_id.as_str().unwrap_or_default(),
+                sql,
                 "delete from mock_table where 1 in (?,?)"
             );
-            let (sql, args) = queue.pop().unwrap();
             assert_eq!(args, vec![to_value!("1"), to_value!("2")]);
         };
         block_on(f);
@@ -527,9 +526,9 @@ mod test {
             let r = MockTable::update_by_name(&mut rb, &t, "test")
                 .await
                 .unwrap();
-            println!("{}", r.last_insert_id.as_str().unwrap());
-            assert_eq!(r.last_insert_id.as_str().unwrap(), "update mock_table set id=?,name=?,pc_link=?,h5_link=?,status=?,remark=?,create_time=?,version=?,delete_flag=?,sql=?,count=? where id = '2'");
             let (sql, args) = queue.pop().unwrap();
+            println!("{}", sql);
+            assert_eq!(sql, "update mock_table set id=?,name=?,pc_link=?,h5_link=?,status=?,remark=?,create_time=?,version=?,delete_flag=?,sql=?,count=? where id = '2'");
             assert_eq!(args, vec![to_value!(t.id), to_value!(t.name), to_value!(t.pc_link), to_value!(t.h5_link), to_value!(t.status), to_value!(t.remark), to_value!(t.create_time), to_value!(t.version), to_value!(t.delete_flag), to_value!(t.sql), to_value!(t.count)]);
         };
         block_on(f);
@@ -568,9 +567,9 @@ mod test {
             )
                 .await
                 .unwrap();
-            println!("{}", r.last_insert_id.as_str().unwrap());
-            assert_eq!(r.last_insert_id.as_str().unwrap(), "update mock_table set id=?,name=?,pc_link=?,h5_link=?,status=?,remark=?,create_time=?,version=?,delete_flag=?,sql=?,count=? where id = '2'");
             let (sql, args) = queue.pop().unwrap();
+            println!("{}", sql);
+            assert_eq!(sql, "update mock_table set id=?,name=?,pc_link=?,h5_link=?,status=?,remark=?,create_time=?,version=?,delete_flag=?,sql=?,count=? where id = '2'");
             assert_eq!(args, vec![to_value!(t.id), to_value!(t.name), to_value!(t.pc_link), to_value!(t.h5_link), to_value!(t.status), to_value!(t.remark), to_value!(t.create_time), to_value!(t.version), to_value!(t.delete_flag), to_value!(t.sql), to_value!(t.count)]);
         };
         block_on(f);
@@ -581,11 +580,14 @@ mod test {
     fn test_delete_by_name() {
         let f = async move {
             let mut rb = Rbatis::new();
+            let queue= Arc::new(SegQueue::new());
+            rb.set_sql_intercepts(vec![Box::new(MockIntercept::new(queue.clone()))]);
             rb.init(MockDriver {}, "test").unwrap();
             let r = MockTable::delete_by_name(&mut rb, "2").await.unwrap();
-            println!("{}", r.last_insert_id.as_str().unwrap());
+            let (sql, args) = queue.pop().unwrap();
+            println!("{}", sql);
             assert_eq!(
-                r.last_insert_id.as_str().unwrap(),
+                sql,
                 "delete from mock_table where name= '2'"
             );
         };
