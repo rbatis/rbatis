@@ -205,8 +205,8 @@ impl<T> Page<T> {
         };
     }
 
-    /// gen Vec<Page> from data
-    pub fn into_pages(mut data: Vec<T>, page_size: u64) -> Vec<Page<T>> {
+    /// create Vec<Page> from data
+    pub fn make_pages(mut data: Vec<T>, page_size: u64) -> Vec<Page<T>> {
         let total = data.len();
         let mut result = vec![];
         let page = Page::<T>::new_total(1, page_size, total as u64);
@@ -220,8 +220,8 @@ impl<T> Page<T> {
         result
     }
 
-    /// gen (Vec<offset,limit>) from total,page_size
-    pub fn into_ranges(total: u64, page_size: u64) -> Vec<(u64, u64)> {
+    /// create (Vec<offset,limit>) from total,page_size
+    pub fn make_ranges(total: u64, page_size: u64) -> Vec<(u64, u64)> {
         let mut result = vec![];
         let page = Page::<T>::new_total(1, page_size, total as u64);
         for idx in 0..page.pages {
@@ -348,7 +348,7 @@ mod test {
     #[test]
     fn test_page_into_range() {
         let v = vec![1, 2, 3, 4, 5, 6, 7, 8, 9];
-        let ranges = Page::<i32>::into_ranges(v.len() as u64, 3);
+        let ranges = Page::<i32>::make_ranges(v.len() as u64, 3);
         let mut new_v = vec![];
         for (offset, limit) in ranges {
             for i in offset..limit {
@@ -361,7 +361,7 @@ mod test {
     #[test]
     fn test_page_into_pages() {
         let v = vec![1, 2, 3, 4, 5, 6, 7, 8, 9];
-        let pages = Page::into_pages(v.clone(), 3);
+        let pages = Page::make_pages(v.clone(), 3);
         let mut new_v = vec![];
         for x in pages {
             for i in x.records {
@@ -374,7 +374,7 @@ mod test {
     #[test]
     fn test_page_into_pages_more_than() {
         let v = vec![1, 2, 3, 4, 5, 6, 7, 8, 9];
-        let pages = Page::into_pages(v.clone(), 18);
+        let pages = Page::make_pages(v.clone(), 18);
         let mut new_v = vec![];
         for x in pages {
             for i in x.records {
@@ -387,7 +387,7 @@ mod test {
     #[test]
     fn test_page_into_pages_zero() {
         let v = vec![1, 2, 3, 4, 5, 6, 7, 8, 9];
-        let pages = Page::into_pages(v.clone(), 0);
+        let pages = Page::make_pages(v.clone(), 0);
         let mut new_v = vec![];
         for x in pages {
             for i in x.records {
@@ -400,7 +400,7 @@ mod test {
     #[test]
     fn test_page_into_pages_one() {
         let v = vec![1];
-        let pages = Page::into_pages(v.clone(), 1);
+        let pages = Page::make_pages(v.clone(), 1);
         let mut new_v = vec![];
         for x in pages {
             for i in x.records {
