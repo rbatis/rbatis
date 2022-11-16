@@ -205,7 +205,7 @@ impl<T> Page<T> {
         };
     }
 
-    /// gen Page vec from data
+    /// gen Vec<Page> from data
     pub fn into_pages(mut data: Vec<T>, page_size: u64) -> Vec<Page<T>> {
         let total = data.len();
         let mut result = vec![];
@@ -220,7 +220,7 @@ impl<T> Page<T> {
         result
     }
 
-    /// gen Page ranges from data
+    /// gen (Vec<offset,limit>) from total,page_size
     pub fn into_ranges(total: u64, page_size: u64) -> Vec<(u64, u64)> {
         let mut result = vec![];
         let page = Page::<T>::new_total(1, page_size, total as u64);
