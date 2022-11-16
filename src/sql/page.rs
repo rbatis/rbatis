@@ -105,7 +105,7 @@ impl PageRequest {
         return Self {
             total,
             page_size,
-            page_no: page_no,
+            page_no,
             search_count: true,
         };
     }
@@ -198,7 +198,7 @@ impl<T> Page<T> {
                 }
                 pages
             },
-            page_size: page_size,
+            page_size,
             page_no,
             records: vec![],
             search_count: true,
