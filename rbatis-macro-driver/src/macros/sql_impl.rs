@@ -91,7 +91,7 @@ pub(crate) fn impl_macro_sql(target_fn: &ItemFn, args: &AttributeArgs) -> TokenS
     //append all args
     let sql_args_gen =
         filter_args_context_id(&rbatis_name, &get_fn_args(target_fn), &[page_req_str]);
-    let generic=target_fn.sig.generics.clone();
+    let generic = target_fn.sig.generics.clone();
     //gen rust code templete
     let gen_token_temple = quote! {
        pub async fn #func_name_ident #generic(#func_args_stream) -> #return_ty{

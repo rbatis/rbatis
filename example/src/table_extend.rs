@@ -1,12 +1,12 @@
 pub mod model;
 
-use crate::model::{init_db};
-use serde::{Deserialize, Serialize};
+use crate::model::init_db;
 use rbatis::crud;
 use rbatis::rbdc::datetime::FastDateTime;
+use serde::{Deserialize, Serialize};
 
 #[derive(Clone, Debug, Serialize, Deserialize)]
-pub struct Base{
+pub struct Base {
     pub pc_banner_img: Option<String>,
     pub h5_banner_img: Option<String>,
 }
@@ -14,7 +14,7 @@ pub struct Base{
 #[derive(Clone, Debug, Serialize, Deserialize)]
 pub struct BizActivity {
     #[serde(flatten)]
-    pub base:Base,
+    pub base: Base,
     pub id: Option<String>,
     pub name: Option<String>,
     pub pc_link: Option<String>,
@@ -32,6 +32,6 @@ crud!(BizActivity {});
 pub async fn main() {
     fast_log::init(fast_log::Config::new().console()).expect("rbatis init fail");
     let rb = init_db().await;
-    let datas=BizActivity::select_all(&mut rb.clone()).await.unwrap();
-    println!("{:?}",datas);
+    let datas = BizActivity::select_all(&mut rb.clone()).await.unwrap();
+    println!("{:?}", datas);
 }

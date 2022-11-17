@@ -48,11 +48,7 @@ pub fn load_mapper_vec(html: &str) -> Result<Vec<Element>, Error> {
 }
 
 /// parse html to function TokenStream
-pub fn parse_html(
-    html: &str,
-    fn_name: &str,
-    ignore: &mut Vec<String>,
-) -> proc_macro2::TokenStream {
+pub fn parse_html(html: &str, fn_name: &str, ignore: &mut Vec<String>) -> proc_macro2::TokenStream {
     let html = html
         .replace("\\\"", "\"")
         .replace("\\n", "\n")

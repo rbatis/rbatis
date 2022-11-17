@@ -5,6 +5,7 @@ use crate::snowflake::new_snowflake_id;
 use crate::utils::string_util;
 use crate::Error;
 use crossbeam::queue::SegQueue;
+use dark_std::sync::SyncVec;
 use once_cell::sync::OnceCell;
 use rbdc::db::{Connection, Driver, ExecResult};
 use rbdc::deadpool::managed::Timeouts;
@@ -18,7 +19,6 @@ use std::fmt::{Debug, Formatter};
 use std::ops::DerefMut;
 use std::sync::Arc;
 use std::time::Duration;
-use dark_std::sync::SyncVec;
 
 /// rbatis engine
 #[derive(Clone)]
@@ -163,7 +163,10 @@ impl Rbatis {
     /// //rb.get_pool().unwrap().resize(10);
     /// ```
     pub fn get_pool(&self) -> Result<&Pool, Error> {
-        let p = self.pool.get().ok_or_else(||Error::from("[rbatis] rbatis pool not inited!"))?;
+        let p = self
+            .pool
+            .get()
+            .ok_or_else(|| Error::from("[rbatis] rbatis pool not inited!"))?;
         return Ok(p);
     }
 

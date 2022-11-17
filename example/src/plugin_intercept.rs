@@ -1,21 +1,31 @@
 pub mod model;
 
-use std::thread::sleep;
-use std::time::Duration;
+use crate::model::{init_db, BizActivity};
 use rbatis::intercept::SqlIntercept;
 use rbatis::{crud, Error, Rbatis};
 use rbs::Value;
-use crate::model::{BizActivity, init_db};
+use std::thread::sleep;
+use std::time::Duration;
 
 /// Logic delete： The deletion statement changes to the modification of flag, and the query statement filters flag with additional conditions
 pub struct LogicDeletePlugin {}
 
 impl SqlIntercept for LogicDeletePlugin {
-    fn do_intercept(&self, _rb: &Rbatis, sql: &mut String, _args: &mut Vec<Value>, _is_prepared_sql: bool) -> Result<(), Error> {
+    fn do_intercept(
+        &self,
+        _rb: &Rbatis,
+        sql: &mut String,
+        _args: &mut Vec<Value>,
+        _is_prepared_sql: bool,
+    ) -> Result<(), Error> {
         if sql.contains("delete from ") {
-            let table_name = sql[sql.find("from").unwrap_or(0) + 4..sql.find("where").unwrap_or(0)].trim();
+            let table_name =
+                sql[sql.find("from").unwrap_or(0) + 4..sql.find("where").unwrap_or(0)].trim();
             println!("[LogicDeletePlugin] before=> {}", sql);
-            *sql = sql.replace(&format!("delete from {}", table_name), &format!("update {} set delete_flag = 1 ", table_name));
+            *sql = sql.replace(
+                &format!("delete from {}", table_name),
+                &format!("update {} set delete_flag = 1 ", table_name),
+            );
             println!("[LogicDeletePlugin] after=> {}", sql);
         } else if sql.contains("select ") && sql.contains(" where ") {
             println!("[LogicDeletePlugin] before=> {}", sql);

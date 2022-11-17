@@ -1,7 +1,7 @@
 //! Types and traits for decoding values from the database.
-use std::ops::Deref;
 use rbs::Value;
 use serde::de::DeserializeOwned;
+use std::ops::Deref;
 
 use crate::Error;
 
@@ -10,8 +10,8 @@ use crate::Error;
 /// Value,BigDecimal, i8..i64,u8..u64,i64,bool,String
 /// or object used rbs::Value macro object
 pub fn decode<T: ?Sized>(bs: Value) -> Result<T, Error>
-    where
-        T: DeserializeOwned,
+where
+    T: DeserializeOwned,
 {
     let type_name = std::any::type_name::<T>();
     if is_debug_mode() {
@@ -36,8 +36,8 @@ pub fn decode<T: ?Sized>(bs: Value) -> Result<T, Error>
 
 //decode doc or one type
 pub fn try_decode_map<T>(type_name: &str, datas: &mut Vec<Value>) -> Result<T, Error>
-    where
-        T: DeserializeOwned,
+where
+    T: DeserializeOwned,
 {
     //decode struct
     if datas.len() > 1 {
@@ -68,9 +68,9 @@ pub fn try_decode_map<T>(type_name: &str, datas: &mut Vec<Value>) -> Result<T, E
 }
 
 pub fn is_debug_mode() -> bool {
-    if cfg!(debug_assertions){
+    if cfg!(debug_assertions) {
         true
-    }else{
+    } else {
         false
     }
 }

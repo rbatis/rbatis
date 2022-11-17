@@ -99,7 +99,7 @@ pub(crate) fn impl_macro_py_sql(target_fn: &ItemFn, args: &AttributeArgs) -> Tok
     let gen_func: proc_macro2::TokenStream =
         rbatis_codegen::rb_py(gen_target_macro_arg.into(), gen_target_method.into()).into();
 
-    let generic=target_fn.sig.generics.clone();
+    let generic = target_fn.sig.generics.clone();
     //gen rust code templete
     return quote! {
        pub async fn #func_name_ident #generic(#func_args_stream) -> #return_ty {
