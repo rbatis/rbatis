@@ -18,6 +18,7 @@ use std::fmt::{Debug, Formatter};
 use std::ops::DerefMut;
 use std::sync::Arc;
 use std::time::Duration;
+use dark_std::sync::SyncVec;
 
 /// rbatis engine
 #[derive(Clone)]
@@ -25,7 +26,7 @@ pub struct Rbatis {
     // the connection pool,use OnceCell init this
     pub pool: Arc<OnceCell<Pool>>,
     // sql intercept vec chain
-    pub sql_intercepts: Arc<Vec<Box<dyn SqlIntercept>>>,
+    pub sql_intercepts: Arc<SyncVec<Box<dyn SqlIntercept>>>,
     // log plugin
     pub log_plugin: Arc<Box<dyn LogPlugin>>,
 }
@@ -48,16 +49,16 @@ impl Default for Rbatis {
 ///Rbatis Options
 pub struct RbatisOption {
     /// sql intercept vec chain
-    pub sql_intercepts: Vec<Box<dyn SqlIntercept>>,
+    pub sql_intercepts: SyncVec<Box<dyn SqlIntercept>>,
     /// log plugin
-    pub log_plugin: Arc<Box<dyn LogPlugin>>,
+    pub log_plugin: Box<dyn LogPlugin>,
 }
 
 impl Default for RbatisOption {
     fn default() -> Self {
         Self {
-            sql_intercepts: Vec::new(),
-            log_plugin: Arc::new(Box::new(RbatisLogPlugin::default()) as Box<dyn LogPlugin>),
+            sql_intercepts: SyncVec::new(),
+            log_plugin: Box::new(RbatisLogPlugin::default()) as Box<dyn LogPlugin>,
         }
     }
 }
@@ -73,7 +74,7 @@ impl Rbatis {
         return Self {
             pool: Arc::new(OnceCell::new()),
             sql_intercepts: Arc::new(option.sql_intercepts),
-            log_plugin: option.log_plugin,
+            log_plugin: Arc::new(option.log_plugin),
         };
     }
 
@@ -149,7 +150,7 @@ impl Rbatis {
 
     /// set_sql_intercepts for many
     pub fn set_sql_intercepts(&mut self, arg: Vec<Box<dyn SqlIntercept>>) {
-        self.sql_intercepts = Arc::new(arg);
+        self.sql_intercepts = Arc::new(SyncVec::from(arg));
     }
 
     /// get conn pool

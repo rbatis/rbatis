@@ -31,8 +31,8 @@ crud!(BizActivity {});
 #[tokio::main]
 pub async fn main() {
     fast_log::init(fast_log::Config::new().console()).expect("rbatis init fail");
-    let mut rb = init_db().await;
-    rb.set_sql_intercepts(vec![Box::new(LogicDeletePlugin {})]);
+    let rb = init_db().await;
+    rb.sql_intercepts.push(Box::new(LogicDeletePlugin {}));
     let r = BizActivity::delete_by_column(&mut rb.clone(), "id", "1").await;
     println!("{:?}", r);
     let record = BizActivity::select_by_column(&mut rb.clone(), "id", "1").await;
