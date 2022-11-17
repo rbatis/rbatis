@@ -11,6 +11,8 @@ pub extern crate rbatis_codegen;
 extern crate rbatis_macro_driver;
 #[macro_use]
 pub extern crate rbdc;
+#[macro_use]
+pub extern crate dark_std;
 
 pub use rbatis_macro_driver::{html_sql, py_sql, sql};
 
