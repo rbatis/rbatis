@@ -82,8 +82,6 @@ impl Executor for RBatisConnExecutor {
             }
             if self.get_rbatis().log_plugin.is_enable() {
                 let b = Value::Array(args);
-                let args_string = b.to_string();
-                args = b.into();
                 self.get_rbatis().log_plugin.do_log(
                     LevelFilter::Info,
                     &format!(
@@ -91,9 +89,10 @@ impl Executor for RBatisConnExecutor {
                         &rb_task_id,
                         sql,
                         string_util::LOG_SPACE,
-                        args_string
+                        &b
                     ),
                 );
+                args = b.into();
             }
             let result = self.conn.exec(&sql, args).await;
             if self.get_rbatis().log_plugin.is_enable() {
@@ -129,8 +128,6 @@ impl Executor for RBatisConnExecutor {
             }
             if self.get_rbatis().log_plugin.is_enable() {
                 let b = Value::Array(args);
-                let args_string = b.to_string();
-                args = b.into();
                 self.get_rbatis().log_plugin.do_log(
                     LevelFilter::Info,
                     &format!(
@@ -138,9 +135,10 @@ impl Executor for RBatisConnExecutor {
                         rb_task_id,
                         &sql,
                         string_util::LOG_SPACE,
-                        args_string
+                        &b
                     ),
                 );
+                args = b.into();
             }
             let result = self.conn.get_values(&sql, args).await;
             if self.get_rbatis().log_plugin.is_enable() {
@@ -233,8 +231,6 @@ impl Executor for RBatisTxExecutor {
             }
             if self.get_rbatis().log_plugin.is_enable() {
                 let b = Value::Array(args);
-                let args_string = b.to_string();
-                args = b.into();
                 self.get_rbatis().log_plugin.do_log(
                     LevelFilter::Info,
                     &format!(
@@ -242,9 +238,10 @@ impl Executor for RBatisTxExecutor {
                         self.tx_id,
                         &sql,
                         string_util::LOG_SPACE,
-                        args_string
+                        &b
                     ),
                 );
+                args = b.into();
             }
             let result = self.conn.exec(&sql, args).await;
             if self.get_rbatis().log_plugin.is_enable() {
@@ -279,8 +276,6 @@ impl Executor for RBatisTxExecutor {
             }
             if self.get_rbatis().log_plugin.is_enable() {
                 let b = Value::Array(args);
-                let args_string = b.to_string();
-                args = b.into();
                 self.get_rbatis().log_plugin.do_log(
                     LevelFilter::Info,
                     &format!(
@@ -288,9 +283,10 @@ impl Executor for RBatisTxExecutor {
                         self.tx_id,
                         &sql,
                         string_util::LOG_SPACE,
-                        args_string
+                        &b
                     ),
                 );
+                args = b.into();
             }
             let result = self.conn.get_values(&sql, args).await;
             if self.get_rbatis().log_plugin.is_enable() {

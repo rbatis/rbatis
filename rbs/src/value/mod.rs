@@ -570,10 +570,8 @@ impl From<(&'static str, Value)> for Value {
 impl Into<Vec<Value>> for Value {
     fn into(self) -> Vec<Value> {
         match self {
-            Value::Array(arr) => {
-                arr
-            }
-            _ => vec![]
+            Value::Array(arr) => arr,
+            _ => vec![],
         }
     }
 }
@@ -581,10 +579,8 @@ impl Into<Vec<Value>> for Value {
 impl Into<ValueMap> for Value {
     fn into(self) -> ValueMap {
         match self {
-            Value::Map(arr) => {
-                arr
-            }
-            _ => ValueMap::new()
+            Value::Map(arr) => arr,
+            _ => ValueMap::new(),
         }
     }
 }
@@ -593,10 +589,10 @@ impl Into<ValueMap> for Value {
 /// [`Array`](crate::Value::Array), rather than a
 /// [`Binary`](crate::Value::Binary)
 impl<V> FromIterator<V> for Value
-    where
-        V: Into<Value>,
+where
+    V: Into<Value>,
 {
-    fn from_iter<I: IntoIterator<Item=V>>(iter: I) -> Self {
+    fn from_iter<I: IntoIterator<Item = V>>(iter: I) -> Self {
         let v: Vec<Value> = iter.into_iter().map(|v| v.into()).collect();
         Value::Array(v)
     }

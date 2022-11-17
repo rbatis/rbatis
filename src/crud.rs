@@ -40,7 +40,7 @@ macro_rules! impl_insert {
                 batch_size: u64,
             ) -> std::result::Result<$crate::rbdc::db::ExecResult, $crate::rbdc::Error> {
                 #[$crate::py_sql(
-                   "`insert into ${table_name} (`
+                    "`insert into ${table_name} (`
                     trim ',':
                       for k,v in tables[0]:
                          if k == 'id' && v== null:
@@ -62,7 +62,8 @@ macro_rules! impl_insert {
                     rb: &mut dyn $crate::executor::Executor,
                     tables: &[$table],
                     table_name: &str,
-                ) -> std::result::Result<$crate::rbdc::db::ExecResult, $crate::rbdc::Error> {
+                ) -> std::result::Result<$crate::rbdc::db::ExecResult, $crate::rbdc::Error>
+                {
                     impled!()
                 }
                 if tables.is_empty() {

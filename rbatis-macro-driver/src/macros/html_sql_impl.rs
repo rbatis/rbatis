@@ -126,7 +126,7 @@ pub(crate) fn impl_macro_html_sql(target_fn: &ItemFn, args: &AttributeArgs) -> T
         //no-debug_mode
     };
     #[cfg(feature = "debug_mode")]
-    if cfg!(debug_assertions){
+    if cfg!(debug_assertions) {
         if file_name.ends_with(".html") {
             use std::env::current_dir;
             use std::path::PathBuf;
@@ -139,7 +139,7 @@ pub(crate) fn impl_macro_html_sql(target_fn: &ItemFn, args: &AttributeArgs) -> T
             include_data = quote! {#include_data  let _ = include_bytes!(#html_file_name);};
         }
     }
-    let generic=target_fn.sig.generics.clone();
+    let generic = target_fn.sig.generics.clone();
     //gen rust code
     return quote! {
        pub async fn #func_name_ident #generic(#func_args_stream) -> #return_ty {
