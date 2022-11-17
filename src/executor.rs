@@ -67,15 +67,6 @@ impl RBatisConnExecutor {
     }
 }
 
-fn arr_to_string(arg: Vec<Value>) -> (Vec<Value>, String) {
-    let b = Value::Array(arg);
-    let s = b.to_string();
-    return match b {
-        Value::Array(arr) => (arr, s),
-        _ => (vec![], s),
-    };
-}
-
 impl Executor for RBatisConnExecutor {
     fn exec(
         &mut self,
@@ -90,8 +81,9 @@ impl Executor for RBatisConnExecutor {
                 item.do_intercept(self.get_rbatis(), &mut sql, &mut args, is_prepared)?;
             }
             if self.get_rbatis().log_plugin.is_enable() {
-                let (_args, args_string) = arr_to_string(args);
-                args = _args;
+                let b = Value::Array(args);
+                let args_string = b.to_string();
+                args = b.into();
                 self.get_rbatis().log_plugin.do_log(
                     LevelFilter::Info,
                     &format!(
@@ -136,8 +128,9 @@ impl Executor for RBatisConnExecutor {
                 item.do_intercept(self.get_rbatis(), &mut sql, &mut args, is_prepared)?;
             }
             if self.get_rbatis().log_plugin.is_enable() {
-                let (_args, args_string) = arr_to_string(args);
-                args = _args;
+                let b = Value::Array(args);
+                let args_string = b.to_string();
+                args = b.into();
                 self.get_rbatis().log_plugin.do_log(
                     LevelFilter::Info,
                     &format!(
@@ -239,8 +232,9 @@ impl Executor for RBatisTxExecutor {
                 item.do_intercept(self.get_rbatis(), &mut sql, &mut args, is_prepared)?;
             }
             if self.get_rbatis().log_plugin.is_enable() {
-                let (_args, args_string) = arr_to_string(args);
-                args = _args;
+                let b = Value::Array(args);
+                let args_string = b.to_string();
+                args = b.into();
                 self.get_rbatis().log_plugin.do_log(
                     LevelFilter::Info,
                     &format!(
@@ -284,8 +278,9 @@ impl Executor for RBatisTxExecutor {
                 item.do_intercept(self.get_rbatis(), &mut sql, &mut args, is_prepared)?;
             }
             if self.get_rbatis().log_plugin.is_enable() {
-                let (_args, args_string) = arr_to_string(args);
-                args = _args;
+                let b = Value::Array(args);
+                let args_string = b.to_string();
+                args = b.into();
                 self.get_rbatis().log_plugin.do_log(
                     LevelFilter::Info,
                     &format!(

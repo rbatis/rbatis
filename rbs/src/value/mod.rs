@@ -566,14 +566,37 @@ impl From<(&'static str, Value)> for Value {
     }
 }
 
+/// into vec value
+impl Into<Vec<Value>> for Value {
+    fn into(self) -> Vec<Value> {
+        match self {
+            Value::Array(arr) => {
+                arr
+            }
+            _ => vec![]
+        }
+    }
+}
+
+impl Into<ValueMap> for Value {
+    fn into(self) -> ValueMap {
+        match self {
+            Value::Map(arr) => {
+                arr
+            }
+            _ => ValueMap::new()
+        }
+    }
+}
+
 /// Note that an `Iterator<Item = u8>` will be collected into an
 /// [`Array`](crate::Value::Array), rather than a
 /// [`Binary`](crate::Value::Binary)
 impl<V> FromIterator<V> for Value
-where
-    V: Into<Value>,
+    where
+        V: Into<Value>,
 {
-    fn from_iter<I: IntoIterator<Item = V>>(iter: I) -> Self {
+    fn from_iter<I: IntoIterator<Item=V>>(iter: I) -> Self {
         let v: Vec<Value> = iter.into_iter().map(|v| v.into()).collect();
         Value::Array(v)
     }
@@ -741,9 +764,7 @@ impl From<&Value> for String {
     }
 }
 
-impl Eq for Value{
-
-}
+impl Eq for Value {}
 
 #[cfg(test)]
 mod test {
