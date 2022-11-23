@@ -1,4 +1,4 @@
-use crate::options::{PgConnectOptions, PgSslMode};
+use crate::options::PgConnectOptions;
 use percent_encoding::percent_decode_str;
 use rbdc::error::Error;
 use std::net::IpAddr;
