@@ -23,7 +23,14 @@ impl Decode for Time {
                     day: 0,
                     mon: 0,
                     year: 0,
-                } + Duration::from_micros(us as u64);
+                };
+                let t = {
+                    if us < 0 {
+                        t - Duration::from_micros(-us as u64)
+                    } else {
+                        t + Duration::from_micros(us as u64)
+                    }
+                };
                 Ok(Time(fastdate::Time {
                     nano: t.nano,
                     sec: t.sec,
