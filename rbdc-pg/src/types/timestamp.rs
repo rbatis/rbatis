@@ -10,12 +10,12 @@ impl Encode for Timestamp {
     fn encode(self, buf: &mut PgArgumentBuffer) -> Result<IsNull, Error> {
         let v = 1000
             * (self.0 as i64
-                - fastdate::DateTime::from(fastdate::Date {
-                    day: 1,
-                    mon: 1,
-                    year: 2000,
-                })
-                .unix_timestamp_millis());
+            - fastdate::DateTime::from(fastdate::Date {
+            day: 1,
+            mon: 1,
+            year: 2000,
+        })
+            .unix_timestamp_millis());
         v.encode(buf)
     }
 }
@@ -31,7 +31,13 @@ impl Decode for Timestamp {
                     year: 2000,
                 });
                 let us: i64 = Decode::decode(value)?;
-                let v = epoch + std::time::Duration::from_micros(us as u64);
+                let v = {
+                    if us < 0 {
+                        epoch - std::time::Duration::from_micros(-us as u64)
+                    } else {
+                        epoch + std::time::Duration::from_micros(us as u64)
+                    }
+                };
                 Timestamp(v.unix_timestamp_millis() as u64)
             }
             PgValueFormat::Text => {

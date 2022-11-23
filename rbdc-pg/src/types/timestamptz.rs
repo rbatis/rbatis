@@ -40,7 +40,13 @@ impl Decode for Timestamptz {
                     year: 2000,
                 });
                 let us: i64 = Decode::decode(value)?;
-                let v = epoch + std::time::Duration::from_micros(us as u64);
+                let v = {
+                    if us < 0 {
+                        epoch - std::time::Duration::from_micros(-us as u64)
+                    } else {
+                        epoch + std::time::Duration::from_micros(us as u64)
+                    }
+                };
                 Timestamptz(v.unix_timestamp_millis() as u64)
             }
             PgValueFormat::Text => {

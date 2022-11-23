@@ -32,7 +32,11 @@ impl Decode for fastdate::DateTime {
                     year: 2000,
                 });
                 let us: i64 = Decode::decode(value)?;
-                epoch + Duration::from_micros(us as u64)
+                if us < 0{
+                    epoch - Duration::from_micros(-us as u64)
+                }else{
+                    epoch + Duration::from_micros(us as u64)
+                }
             }
             PgValueFormat::Text => {
                 //2022-07-22 05:22:22.123456+00
