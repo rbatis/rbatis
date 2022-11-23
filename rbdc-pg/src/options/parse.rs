@@ -1,4 +1,4 @@
-use crate::options::PgConnectOptions;
+use crate::options::{PgConnectOptions, PgSslMode};
 use percent_encoding::percent_decode_str;
 use rbdc::error::Error;
 use std::net::IpAddr;
@@ -249,4 +249,11 @@ fn it_parses_sqlx_options_correctly() {
         Some("-c synchronous_commit=off -c search_path=postgres".into()),
         opts.options
     );
+}
+
+#[test]
+fn it_parses_ssl_mode() {
+    let uri = "postgres:///?port=1234";
+    let opts = PgConnectOptions::from_str(uri).unwrap();
+    assert_eq!(PgSslMode::Disable, opts.ssl_mode);
 }

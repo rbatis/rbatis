@@ -8,12 +8,12 @@ use std::str::FromStr;
 #[derive(Debug, Clone, Copy, serde::Serialize, serde::Deserialize)]
 pub enum MySqlSslMode {
     /// Establish an unencrypted connection.
+    /// This is the default if `ssl-mode` is not specified.
     Disabled,
 
     /// Establish an encrypted connection if the server supports encrypted connections, falling
     /// back to an unencrypted connection if an encrypted connection cannot be established.
     ///
-    /// This is the default if `ssl-mode` is not specified.
     Preferred,
 
     /// Establish an encrypted connection if the server supports encrypted connections.

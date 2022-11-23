@@ -60,7 +60,7 @@ impl MySqlConnectOptions {
             database: None,
             charset: String::from("utf8mb4"),
             collation: None,
-            ssl_mode: MySqlSslMode::Preferred,
+            ssl_mode: MySqlSslMode::Disabled,
             ssl_ca: None,
             statement_cache_capacity: 100,
         }
