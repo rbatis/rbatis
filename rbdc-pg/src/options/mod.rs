@@ -229,7 +229,7 @@ impl PgConnectOptions {
     /// Sets whether or with what priority a secure SSL TCP/IP connection will be negotiated
     /// with the server.
     ///
-    /// By default, the SSL mode is [`Prefer`](PgSslMode::Prefer), and the client will
+    /// By default, the SSL mode is disable, and the client will
     /// first attempt an SSL connection but fallback to a non-SSL connection on failure.
     ///
     /// Ignored for Unix domain socket communication.
