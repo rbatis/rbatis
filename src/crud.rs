@@ -40,15 +40,17 @@ macro_rules! impl_insert {
                 batch_size: u64,
             ) -> std::result::Result<$crate::rbdc::db::ExecResult, $crate::rbdc::Error> {
                 #[$crate::py_sql(
-                    "`insert into ${table_name} (`
+                    "`insert into ${table_name} `
                     trim ',':
-                      for k,v in tables[0]:
-                         if k == 'id' && v== null:
-                           continue:
-                        ${k},
-                    `) VALUES `
-                    trim ',':
-                     for _,table in tables:
+                     for idx,table in tables:
+                      if idx == 0:
+                         `(`
+                         trim ',':
+                           for k,v in table:
+                              if k == 'id' && v== null:
+                                 continue:
+                              ${k},
+                         `) VALUES `
                       (
                       trim ',':
                        for k,v in table:
