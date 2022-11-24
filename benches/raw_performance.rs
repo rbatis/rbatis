@@ -29,7 +29,7 @@ fn bench_raw() {
     let f = async {
         let rbatis = Rbatis::new();
         rbatis.init(MockDriver {}, "mock://");
-        rbatis.acquire().await;
+        rbatis.acquire().await.unwrap();
         rbatis::bench!(100000, {
             let v = rbatis.fetch_decode::<Vec<i32>>("", vec![]).await;
     });
@@ -77,6 +77,7 @@ fn bench_select() {
     let f = async {
         let rbatis = Rbatis::new();
         rbatis.init(MockDriver {}, "mock://").unwrap();
+        rbatis.acquire().await.unwrap();
         rbatis::bench!(100000, {
             MockTable::select_all(&mut rbatis.clone()).await.unwrap();
         });
