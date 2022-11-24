@@ -38,13 +38,18 @@ Thanks to ```SQLX, deadpool, Tiberius, MyBatis,xorm``` and so on reference desig
 
 * this bench test is MockTable,MockDriver,MockConnection to Assume that the network I/O time is 0
 * run code ```MockTable::insert(&mut rbatis.clone(),&t).await;``` on benches/fn bench_insert()
+* * run code ```MockTable::select_all(&mut rbatis.clone()).await.unwrap();``` on benches/fn bench_insert()
 * use
   command ``` cargo test --release --package rbatis --bench raw_performance bench_insert --no-fail-fast -- --exact -Z unstable-options --show-output ```
 
 ```
 //---- bench_insert stdout ----(macos,cpu-M1Max)
-// use Time: 76.497791ms ,each:764 ns/op
-// use QPS: 1307139 QPS/s
+//Time: 378.186333ms ,each:3781 ns/op
+//QPS: 264418 QPS/s
+
+// ---- bench_select stdout ----(macos,cpu-M1Max)
+// Time: 112.927916ms ,each:1129 ns/op
+// QPS: 885486 QPS/s
 ```
 
 ### Supported data structures
