@@ -21,18 +21,15 @@ use test::Bencher;
 
 //cargo test --release --package rbatis --bench raw_performance bench_raw  --no-fail-fast -- --exact -Z unstable-options --show-output
 
-//---- bench_raw stdout----(win10,cpu-amd5950x)
-// use Time: 464.2µs ,each:46 ns/op
-// use QPS: 20533880 QPS/s
-
 // ---- bench_raw stdout ----(macos,cpu-M1Max)
-// use Time: 2.734375ms ,each:27 ns/op
-// use QPS: 36514127 QPS/s
+// Time: 70.59475ms ,each:705 ns/op
+// QPS: 1416454 QPS/s
 #[test]
 fn bench_raw() {
     let f = async {
         let rbatis = Rbatis::new();
         rbatis.init(MockDriver {}, "mock://");
+        rbatis.acquire().await;
         rbatis::bench!(100000, {
             let v = rbatis.fetch_decode::<Vec<i32>>("", vec![]).await;
     });
@@ -75,7 +72,6 @@ fn bench_insert() {
 // ---- bench_select stdout ----
 // Time: 112.927916ms ,each:1129 ns/op
 // QPS: 885486 QPS/s
-
 #[test]
 fn bench_select() {
     let f = async {
