@@ -43,8 +43,8 @@ Thanks to ```SQLX, deadpool, Tiberius, MyBatis,xorm``` and so on reference desig
 
 ```
 //---- bench_insert stdout ----(macos,cpu-M1Max)
-//use Time: 102.610583ms ,each:1026 ns/op
-//use QPS: 974529 QPS/s
+// use Time: 76.497791ms ,each:764 ns/op
+// use QPS: 1307139 QPS/s
 ```
 
 ### Supported data structures
