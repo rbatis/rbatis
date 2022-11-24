@@ -11,10 +11,9 @@
 extern crate test;
 
 use futures_core::future::BoxFuture;
-use rbatis::impl_insert;
+use rbatis::{impl_insert, impl_select};
 use rbatis::rbatis::Rbatis;
 use rbdc::db::{ConnectOptions, Connection, Driver, ExecResult, Row};
-use rbdc::rt::block_on;
 use rbdc::{block_on, Error};
 use rbs::Value;
 use std::any::Any;
@@ -29,34 +28,28 @@ use test::Bencher;
 // ---- bench_raw stdout ----(macos,cpu-M1Max)
 // use Time: 2.734375ms ,each:27 ns/op
 // use QPS: 36514127 QPS/s
-
 #[test]
 fn bench_raw() {
-    let rbatis = block_on(async {
+    let f = async {
         let rbatis = Rbatis::new();
-        rbatis.init(MockDriver {}, "");
-        rbatis
-    });
-    block_on!(async {
+        rbatis.init(MockDriver {}, "mock://");
         rbatis::bench!(100000, {
             let v = rbatis.fetch_decode::<Vec<i32>>("", vec![]).await;
-        });
     });
+    };
+    block_on!(f);
 }
 
 //cargo test --release --package rbatis --bench raw_performance bench_insert  --no-fail-fast -- --exact -Z unstable-options --show-output
 //---- bench_insert stdout ----(macos,cpu-M1Max)
-// use Time: 76.497791ms ,each:764 ns/op
-// use QPS: 1307139 QPS/s
-
+// use Time: 380.693416ms ,each:3806 ns/op
+// use QPS: 262676 QPS/s
 #[test]
 fn bench_insert() {
-    let rbatis = block_on(async {
+    let f = async {
         let rbatis = Rbatis::new();
-        rbatis.init(MockDriver {}, "");
-        rbatis
-    });
-    block_on!(async {
+        rbatis.init(MockDriver {}, "mock://").unwrap();
+        rbatis.acquire().await.unwrap();
         let mut t = MockTable {
             id: Some("2".into()),
             name: Some("2".into()),
@@ -72,9 +65,27 @@ fn bench_insert() {
             delete_flag: Some(1),
         };
         rbatis::bench!(100000, {
-            MockTable::insert(&mut rbatis.clone(), &t).await;
+            MockTable::insert(&mut rbatis.clone(), &t).await.unwrap();
         });
-    });
+    };
+    block_on!(f);
+}
+
+//cargo test --release --color=always --package rbatis --bench raw_performance bench_select --no-fail-fast --  --exact -Z unstable-options --show-output
+// ---- bench_select stdout ----
+// Time: 112.927916ms ,each:1129 ns/op
+// QPS: 885486 QPS/s
+
+#[test]
+fn bench_select() {
+    let f = async {
+        let rbatis = Rbatis::new();
+        rbatis.init(MockDriver {}, "mock://").unwrap();
+        rbatis::bench!(100000, {
+            MockTable::select_all(&mut rbatis.clone()).await.unwrap();
+        });
+    };
+    block_on!(f);
 }
 
 #[derive(Debug, Clone)]
@@ -164,3 +175,4 @@ struct MockTable {
     pub delete_flag: Option<i32>,
 }
 impl_insert!(MockTable {});
+impl_select!(MockTable {});
