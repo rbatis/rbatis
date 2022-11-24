@@ -46,8 +46,8 @@ fn bench_raw() {
 
 //cargo test --release --package rbatis --bench raw_performance bench_insert  --no-fail-fast -- --exact -Z unstable-options --show-output
 //---- bench_insert stdout ----(macos,cpu-M1Max)
-//use Time: 102.610583ms ,each:1026 ns/op
-//use QPS: 974529 QPS/s
+// use Time: 76.497791ms ,each:764 ns/op
+// use QPS: 1307139 QPS/s
 
 #[test]
 fn bench_insert() {
