@@ -46,6 +46,9 @@ path = "src/table_extend.rs"
 [[bin]]
 name = "plugin_intercept"
 path = "src/plugin_intercept.rs"
+[[bin]]
+name = "pool_custom"
+path = "src/pool_custom.rs"
 [dependencies]
 #serde and base types
 serde = { version = "1", features = ["derive"] }
