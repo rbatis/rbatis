@@ -31,6 +31,9 @@ pub trait LogPlugin: Send + Sync {
                 LevelFilter::Trace => Level::Trace,
             }
         });
+        if self.get_level_filter() < level {
+            return;
+        }
         match level {
             Level::Error => {
                 error!("{}", data)
