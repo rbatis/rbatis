@@ -213,8 +213,6 @@ fn parse(
                 let mut string_data = x.data.to_string();
                 let convert_list = find_convert_string(&string_data);
                 let mut replaces = quote! {};
-
-                let mut replaced = BTreeMap::<String, bool>::new();
                 for (k, v) in convert_list {
                     let method_impl = crate::codegen::func::impl_fn(
                         &body.to_string(),
@@ -230,10 +228,7 @@ fn parse(
                             args.push(rbs::to_value(#method_impl).unwrap_or_default());
                         };
                     } else {
-                        if replaced.get(&v).is_none() {
-                            replaces = quote! {#replaces.replacen(#v, &#method_impl.as_sql(), 1)};
-                            replaced.insert(v.to_string(), true);
-                        }
+                        replaces = quote! {#replaces.replacen(#v, &#method_impl.as_sql(), 1)};
                     }
                 }
                 if !replaces.is_empty() {
