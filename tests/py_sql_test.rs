@@ -211,7 +211,7 @@ mod test {
             rb.set_sql_intercepts(vec![Box::new(MockIntercept::new(queue.clone()))]);
             #[py_sql("select ${id},${id},#{id},#{id} ")]
             pub async fn test_same_id(rb: &mut Rbatis, id: &u64) -> Result<Value,Error> {
-                todo!()
+                impled!()
             }
             let r= test_same_id(&mut rb,&1).await.unwrap();
             let (sql, args) = queue.pop().unwrap();
