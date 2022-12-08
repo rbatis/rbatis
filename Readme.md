@@ -311,7 +311,8 @@ So I think rbatis is truly compile-time ORM.
 # Roadmap
 
 - [x] sqlite table sync plugin(auto create table/column)
-- [ ] Static analysis and generate executable test functions
+- [ ] More versatile connection pooling
+- [ ] More simplified syntax
 
 # Contact/donation, or click on star [rbatis](https://github.com/rbatis/rbatis)
 
