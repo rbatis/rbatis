@@ -291,6 +291,16 @@ pub async fn test_macro() {
 }
 ```
 
+# How it works
+
+Rely on rbatis-codegen to create the source code of the corresponding structure from the html file at compile time (with debug_mode enabled, you can observe the code-generated function), and call the generated method directly at run time.
+We know that compilation is generally divided into three steps, lexes, syntactic analysis, semantic analysis, and intermediate code generation. In rbatis,
+Lexical analysis is handled by the dependent func.rs in rbatis-codegen, which relies on syn and quote.
+Parsing is done by parser_html and parser_pysql in rbatis-codegen
+The generated syntax tree is a structure defined in the syntax_tree package in rbatis-codegen
+Intermediate code generation has func.rs generation function, all supported functions are defined in rbatis-codegen
+
+
 # [Changelog](https://github.com/rbatis/rbatis/releases/)
 
 # Roadmap
