@@ -305,6 +305,10 @@ What is described above occurs during the cargo build phase, which is the compil
 
 So I think rbatis is Truly zero overhead dynamic SQL compile-time ORM.
 
+# Submit merge
+
+You are welcome to submit the merge, and make sure that any functionality you add has the appropriate mock unit test function added under the test package.
+
 
 # [Changelog](https://github.com/rbatis/rbatis/releases/)
 
