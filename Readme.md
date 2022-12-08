@@ -311,7 +311,7 @@ So I think rbatis is Truly zero overhead dynamic SQL compile-time ORM.
 # Roadmap
 
 - [x] sqlite table sync plugin(auto create table/column)
-- [ ] More versatile connection pooling
+- [ ] connection pool add more dynamically configured parameters
 - [ ] More simplified syntax
 
 # Contact/donation, or click on star [rbatis](https://github.com/rbatis/rbatis)
