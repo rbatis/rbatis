@@ -300,6 +300,8 @@ Parsing is done by parser_html and parser_pysql in rbatis-codegen
 The generated syntax tree is a structure defined in the syntax_tree package in rbatis-codegen
 Intermediate code generation has func.rs generation function, all supported functions are defined in rbatis-codegen
 
+So I think rbatis is truly compile-time ORM
+
 
 # [Changelog](https://github.com/rbatis/rbatis/releases/)
 
