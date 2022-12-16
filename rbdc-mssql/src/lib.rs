@@ -51,9 +51,24 @@ impl ConnectOptions for MssqlConnectOptions {
     }
 
     fn set_uri(&mut self, url: &str) -> Result<(), Error> {
-        *self = MssqlConnectOptions(
-            Config::from_jdbc_string(url).map_err(|e| Error::from(e.to_string()))?,
-        );
+       if(url.starts_with("mssql://")){
+            let _index = url.rfind("@").unwrap();
+            let _index_1 = url.rfind("/").unwrap();
+            let  _userpwd = &url[8.._index].split(":").collect::<Vec<&str>>();
+            let  _hostport = &url[_index+1.._index_1].split(":").collect::<Vec<&str>>();
+            let _database_name = &url[_index_1+1..];
+            let _url = format!("jdbc:sqlserver://{}:{};user={};password={};database={};trustServerCertificate=true;encrypt=true",
+                               _hostport[0], _hostport[1], _userpwd[0],_userpwd[1], _database_name );
+            *self = MssqlConnectOptions(
+                Config::from_jdbc_string(&*_url).map_err(|e| Error::from(e.to_string()))?
+            );
+        }
+        else {
+            *self = MssqlConnectOptions(
+                Config::from_jdbc_string(url).map_err(|e| Error::from(e.to_string()))?
+            );
+        }
+
         Ok(())
     }
 
