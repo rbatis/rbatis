@@ -11,18 +11,20 @@ impl IntoSql for Value {
             Value::Map(m) => {
                 let mut sql = "".to_string();
                 let mut index = 0;
+                let mut last_key = "";
                 for (k, v) in m {
-                    sql.push_str(k.str());
+                    let k_str = k.str();
+                    sql.push_str(k_str);
                     if v.is_str() {
                         sql.push_str("'");
                         sql.push_str(&v.as_sql());
                         sql.push_str("'");
-                        if index < m.len() {
-                            sql.push_str(" and ");
-                        }
+                        sql.push_str(" ");
                     } else {
                         sql.push_str(&v.as_sql());
+                        sql.push_str(" ");
                     }
+                    last_key = k_str;
                     index += 1;
                 }
                 Value::String(sql)

@@ -27,7 +27,7 @@ impl_select_page!(BizActivity{select_page_by_name(name:&str) =>"
 
 // sql() method write in rbatis::sql::methods.rs
 use rbatis::sql::IntoSql;
-impl_select!(BizActivity{select_by_method(ids:&[&str],logic:HashMap<&str,Value>) -> Option => "`where ${logic.sql()} and id in ${ids.sql()} limit 1`"});
+impl_select!(BizActivity{select_by_method(ids:&[&str],logic:HashMap<&str,Value>) -> Option => "`where id in ${ids.sql()} ${logic.sql()}  limit 1`"});
 
 #[tokio::main]
 pub async fn main() {
@@ -98,7 +98,8 @@ pub async fn main() {
     println!("select_in_column = {:?}", data);
 
     let mut logic = HashMap::new();
-    logic.insert("id = ", Value::I32(1));
+    logic.insert("and id = ", Value::I32(1));
+    logic.insert("and id != ", Value::I32(2));
     let data = BizActivity::select_by_method(&mut rb, &["1", "2"], logic).await;
     println!("select_by_method = {:?}", data);
 
