@@ -1,10 +1,55 @@
+use std::fmt;
 use crate::Value;
 use std::fmt::{Debug, Display, Formatter};
 use std::ops::{Deref, DerefMut, Index, IndexMut};
 use std::vec::IntoIter;
+use serde::{Deserializer, Serializer};
+use serde::de::{MapAccess, Visitor};
+use serde::ser::SerializeMap;
 
-#[derive(serde::Serialize, serde::Deserialize, PartialEq)]
+#[derive(PartialEq)]
 pub struct ValueMap(pub Vec<(Value, Value)>);
+
+
+impl serde::Serialize for ValueMap {
+    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error> where S: Serializer {
+        let mut m = serializer.serialize_map(Some(self.len()))?;
+        for (k, v) in &self.0 {
+            m.serialize_key(&k)?;
+            m.serialize_value(&v)?;
+        }
+        m.end()
+    }
+}
+
+struct IndexMapVisitor;
+
+impl<'de> Visitor<'de> for IndexMapVisitor
+{
+    type Value = ValueMap;
+
+    fn expecting(&self, formatter: &mut Formatter<'_>) -> fmt::Result {
+        write!(formatter, "a map")
+    }
+
+    fn visit_map<A>(self, mut map: A) -> Result<Self::Value, A::Error>
+        where
+            A: MapAccess<'de>,
+    {
+        let mut values = ValueMap::with_capacity(map.size_hint().unwrap_or(0));
+        while let Some((key, value)) = map.next_entry()? {
+            values.insert(key, value);
+        }
+        Ok(values)
+    }
+}
+
+impl<'de> serde::Deserialize<'de> for ValueMap {
+    fn deserialize<D>(deserializer: D) -> Result<Self, D::Error> where D: Deserializer<'de> {
+        let m = deserializer.deserialize_map(IndexMapVisitor {})?;
+        Ok(m)
+    }
+}
 
 impl Clone for ValueMap {
     fn clone(&self) -> Self {

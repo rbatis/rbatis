@@ -2,8 +2,6 @@
 extern crate rbatis;
 
 pub mod model;
-
-use std::collections::HashMap;
 use crate::model::{init_db, BizActivity};
 use rbatis::rbdc::datetime::FastDateTime;
 use rbatis::sql::page::PageRequest;
@@ -27,7 +25,8 @@ impl_select_page!(BizActivity{select_page_by_name(name:&str) =>"
 
 // sql() method write in rbatis::sql::methods.rs
 use rbatis::sql::IntoSql;
-impl_select!(BizActivity{select_by_method(ids:&[&str],logic:HashMap<&str,Value>) -> Option => "`where id in ${ids.sql()} ${logic.sql()}  limit 1`"});
+use rbs::value::map::ValueMap;
+impl_select!(BizActivity{select_by_method(ids:&[&str],logic:ValueMap) -> Option => "`where ${logic.sql()} and id in ${ids.sql()}   limit 1`"});
 
 #[tokio::main]
 pub async fn main() {
@@ -97,9 +96,9 @@ pub async fn main() {
     let data = BizActivity::select_in_column(&mut rb, "id", &["1", "2", "3"]).await;
     println!("select_in_column = {:?}", data);
 
-    let mut logic = HashMap::new();
-    logic.insert("and id = ", Value::I32(1));
-    logic.insert("and id != ", Value::I32(2));
+    let mut logic = ValueMap::new();
+    logic.insert("id = ".into(), Value::I32(1));
+    logic.insert("and id != ".into(), Value::I32(2));
     let data = BizActivity::select_by_method(&mut rb, &["1", "2"], logic).await;
     println!("select_by_method = {:?}", data);
 
