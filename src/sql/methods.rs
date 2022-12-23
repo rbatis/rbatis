@@ -1,0 +1,61 @@
+use rbatis_codegen::ops::AsProxy;
+use rbs::Value;
+
+pub trait IntoSql {
+    fn sql(&self) -> Value;
+}
+
+impl IntoSql for Value {
+    fn sql(&self) -> Value {
+        match self {
+            Value::Map(m) => {
+                let mut sql = "".to_string();
+                let mut index = 0;
+                for (k, v) in m {
+                    sql.push_str(k.str());
+                    if v.is_str() {
+                        sql.push_str("'");
+                        sql.push_str(&v.as_sql());
+                        sql.push_str("'");
+                        if index < m.len() {
+                            sql.push_str(" and ");
+                        }
+                    } else {
+                        sql.push_str(&v.as_sql());
+                    }
+                    index += 1;
+                }
+                Value::String(sql)
+            }
+            Value::Array(arr) => {
+                let mut sql = "(".to_string();
+                for x in arr {
+                    if x.is_str() {
+                        sql.push_str("'");
+                        sql.push_str(&x.as_sql());
+                        sql.push_str("'");
+                        sql.push_str(",");
+                    } else {
+                        sql.push_str(&x.as_sql());
+                    }
+                }
+                if arr.len() != 0 {
+                    sql.pop();
+                    sql.push_str(")");
+                }
+                Value::String(sql)
+            }
+            x => {
+                if x.is_str() {
+                    let mut sql = String::new();
+                    sql.push_str("'");
+                    sql.push_str(x.str());
+                    sql.push_str("'");
+                    Value::String(sql)
+                } else {
+                    Value::String(x.as_sql())
+                }
+            }
+        }
+    }
+}

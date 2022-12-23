@@ -3,9 +3,11 @@ extern crate rbatis;
 
 pub mod model;
 
+use std::collections::HashMap;
 use crate::model::{init_db, BizActivity};
 use rbatis::rbdc::datetime::FastDateTime;
 use rbatis::sql::page::PageRequest;
+use rbs::Value;
 
 //crud!(BizActivity {},"biz_activity");//custom table name
 //impl_select!(BizActivity{select_all_by_id(table_name:&str,id:&str) => "`where id = #{id}`"}); //custom table name
@@ -23,6 +25,10 @@ impl_select_page!(BizActivity{select_page_by_name(name:&str) =>"
      if name == '':
        `where name != ''`"});
 
+// sql() method write in rbatis::sql::methods.rs
+use rbatis::sql::IntoSql;
+impl_select!(BizActivity{select_by_method(ids:&[&str],logic:HashMap<&str,Value>) -> Option => "`where ${logic.sql()} and id in ${ids.sql()} limit 1`"});
+
 #[tokio::main]
 pub async fn main() {
     fast_log::init(
@@ -30,7 +36,7 @@ pub async fn main() {
             .console()
             .level(log::LevelFilter::Debug),
     )
-    .expect("rbatis init fail");
+        .expect("rbatis init fail");
     let mut rb = init_db().await;
     let t = BizActivity {
         id: Some("2".into()),
@@ -90,6 +96,11 @@ pub async fn main() {
 
     let data = BizActivity::select_in_column(&mut rb, "id", &["1", "2", "3"]).await;
     println!("select_in_column = {:?}", data);
+
+    let mut logic = HashMap::new();
+    logic.insert("id = ", Value::I32(1));
+    let data = BizActivity::select_by_method(&mut rb, &["1", "2"], logic).await;
+    println!("select_by_method = {:?}", data);
 
     let data = BizActivity::delete_in_column(&mut rb, "id", &["1", "2", "3"]).await;
     println!("delete_in_column = {:?}", data);
