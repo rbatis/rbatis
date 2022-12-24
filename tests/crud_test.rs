@@ -657,7 +657,7 @@ mod test {
             let (sql, args) = queue.pop().unwrap();
             assert_eq!(
                 sql,
-                "select * from mock_table order by create_time desc limit 0,10"
+                "select * from mock_table order by create_time desc limit 10 offset 0"
             );
         };
         block_on(f);
@@ -685,7 +685,7 @@ mod test {
             );
             let (sql, args) = queue.pop().unwrap();
             println!("{}", sql);
-            assert_eq!(sql, "select * from mock_table where name != '' limit 0,10");
+            assert_eq!(sql, "select * from mock_table where name != '' limit 10 offset 0");
         };
         block_on(f);
     }

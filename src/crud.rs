@@ -323,7 +323,7 @@ macro_rules! impl_select_page {
                 let records:Vec<$table>;
                 #[$crate::py_sql("`select ${table_column} from ${table_name} `",$where_sql,"
                               if !sql.contains('page_no') && !sql.contains('page_size'):
-                                ` limit ${page_no},${page_size}`")]
+                                ` limit ${page_size} offset ${page_no}`")]
                 async fn $fn_name(rb: &mut dyn $crate::executor::Executor,table_column:&str,table_name: &str,page_no:u64,page_size:u64,$($param_key:$param_type,)*) -> std::result::Result<Vec<$table>, $crate::rbdc::Error> {impled!()}
                 records = $fn_name(rb,&table_column,&table_name,page_req.offset(), page_req.page_size,$($param_key,)*).await?;
 
@@ -352,7 +352,7 @@ macro_rules! impl_select_page {
 ///             `count(1) from table`
 ///         </if>
 ///         <if test="do_count == false">
-///             `* from table limit ${page_no},${page_size}`
+///             `* from table limit ${page_size} offset ${page_no}`
 ///         </if>
 ///   </select>
 /// ```
