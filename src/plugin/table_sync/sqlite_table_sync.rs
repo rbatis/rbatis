@@ -6,7 +6,17 @@ use rbdc::db::{Connection, ExecResult};
 use rbs::value::map::ValueMap;
 use rbs::Value;
 
-pub struct SqliteTableSync {}
+pub struct SqliteTableSync {
+    pub sql_id: String,
+}
+
+impl Default for SqliteTableSync {
+    fn default() -> Self {
+        Self {
+            sql_id: " PRIMARY KEY NOT NULL ".to_string(),
+        }
+    }
+}
 
 fn type_str(v: &Value) -> &'static str {
     match v {
@@ -54,7 +64,7 @@ impl TableSync for SqliteTableSync {
                         sql_column.push_str(" ");
                         sql_column.push_str(type_str(&v));
                         if k.eq("id") || v.as_str().unwrap_or_default() == "id" {
-                            sql_column.push_str(" PRIMARY KEY NOT NULL ");
+                            sql_column.push_str(&self.sql_id);
                         }
                         sql_column.push_str(",");
                     }
@@ -71,7 +81,7 @@ impl TableSync for SqliteTableSync {
                                     let k = k.as_str().unwrap_or_default();
                                     let mut id_key = "";
                                     if k.eq("id") || v.as_str().unwrap_or_default() == "id" {
-                                        id_key = " PRIMARY KEY NOT NULL";
+                                        id_key = &self.sql_id;
                                     }
                                     match rb
                                         .exec(
