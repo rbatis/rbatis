@@ -36,16 +36,16 @@ impl ConnectOptions for MySqlConnectOptions {
 
             // https://mathiasbynens.be/notes/mysql-utf8mb4
 
-            let mut options = String::new();
-            // options.push_str(r#"SET sql_mode=(SELECT CONCAT(@@sql_mode, ',PIPES_AS_CONCAT,NO_ENGINE_SUBSTITUTION')),"#);
-            // options.push_str(r#"time_zone='+00:00',"#);
-            options.push_str(&format!(
-                r#"SET NAMES {} COLLATE {};"#,
-                conn.stream.charset.as_str(),
-                conn.stream.collation.as_str()
-            ));
-
-            conn.execute(&*options).await?;
+            // let mut options = String::new();
+            // // options.push_str(r#"SET sql_mode=(SELECT CONCAT(@@sql_mode, ',PIPES_AS_CONCAT,NO_ENGINE_SUBSTITUTION')),"#);
+            // // options.push_str(r#"time_zone='+00:00',"#);
+            // options.push_str(&format!(
+            //     r#"SET NAMES {} COLLATE {};"#,
+            //     conn.stream.charset.as_str(),
+            //     conn.stream.collation.as_str()
+            // ));
+            //
+            // conn.execute(&*options).await?;
 
             let r: Box<dyn Connection> = Box::new(conn);
             Ok(r)
