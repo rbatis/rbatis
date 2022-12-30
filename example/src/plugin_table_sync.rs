@@ -25,7 +25,7 @@ pub async fn main() {
     rb.init(SqliteDriver {}, &format!("sqlite://target/sqlite.db"))
         .unwrap();
     let mut s = RbatisTableSync::new();
-    s.insert("sqlite".to_string(), Box::new(SqliteTableSync {}));
+    s.insert("sqlite".to_string(), Box::new(SqliteTableSync::default()));
     let t = BizActivity {
         id: Some("".to_string()),
         name: Some("".to_string()),
