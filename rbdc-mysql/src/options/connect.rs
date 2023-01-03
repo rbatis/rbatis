@@ -9,7 +9,7 @@ use std::str::FromStr;
 impl ConnectOptions for MySqlConnectOptions {
     fn connect(&self) -> BoxFuture<Result<Box<dyn Connection>, Error>> {
         Box::pin(async move {
-            let mut conn = MySqlConnection::establish(self).await?;
+            let conn = MySqlConnection::establish(self).await?;
 
             // After the connection is established, we initialize by configuring a few
             // connection parameters
