@@ -17,8 +17,9 @@ impl Encode for Uuid {
 impl Decode for Uuid {
     fn decode(value: PgValue) -> Result<Self, Error> {
         Ok(Self(match value.format() {
-            PgValueFormat::Binary => String::from_utf8(value.as_bytes()?.to_vec())
-                .map_err(|e| Error::from(format!("Decode Uuid:{}", e)))?,
+            PgValueFormat::Binary =>
+                uuid::Uuid::from_slice(value.as_bytes()?)
+                    .map_err(|e| Error::from(format!("Decode Uuid:{}", e)))?.to_string(),
             PgValueFormat::Text => value
                 .as_str()?
                 .parse()
