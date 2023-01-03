@@ -321,7 +321,7 @@ macro_rules! impl_select_page {
                    total = $fn_name(rb, &table_column,&table_name, $($param_key,)*).await?;
                 }
                 //pg,mssql can override this parameter to implement its own limit statement
-                let mut limit_sql = " limit ${page_no},${page_size} ".to_string();
+                let mut limit_sql = " limit ${page_no},${page_size}".to_string();
                 limit_sql=limit_sql.replace("${page_no}",&page_req.offset().to_string());
                 limit_sql=limit_sql.replace("${page_size}",&page_req.page_size.to_string());
                 let records:Vec<$table>;
