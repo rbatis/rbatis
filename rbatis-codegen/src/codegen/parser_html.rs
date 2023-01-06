@@ -210,7 +210,7 @@ fn parse(
                 impl_continue(x, &mut body, ignore);
             }
             "" => {
-                let mut string_data = x.data.to_string();
+                let mut string_data = remove_extra(&x.data);
                 let convert_list = find_convert_string(&string_data);
                 let mut replaces = quote! {};
                 for (k, v) in convert_list {
@@ -560,6 +560,30 @@ fn parse(
 
     return body.into();
 }
+
+fn remove_extra(txt: &str) -> String {
+    let txt = txt.trim().replace("\\r\n", "\n");
+    let lines: Vec<&str> = txt.split("\n").collect();
+    let mut data = String::with_capacity(txt.len());
+    let mut index = 0;
+    for line in &lines {
+        let mut line = line.trim_start().trim_end();
+        if line.starts_with("`") && line.ends_with("`") {
+            line = line.trim_start_matches("`").trim_end_matches("`");
+        }
+        data.push_str(line);
+        if index + 1 < lines.len() {
+            data.push_str("\n");
+        }
+        index += 1;
+    }
+    if data.starts_with("`") && data.ends_with("`") {
+        data.trim_start_matches("`").trim_end_matches("`").to_string();
+    }
+    data = data.replace("``","").to_string();
+    data
+}
+
 
 fn impl_continue(x: &Element, body: &mut proc_macro2::TokenStream, ignore: &mut Vec<String>) {
     *body = quote! {

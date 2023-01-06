@@ -134,15 +134,9 @@ impl NodeType {
             } else {
                 data = x[(space - 1)..].to_string();
             }
+            data = data.trim().to_string();
             main_node.push(NodeType::NString(StringNode {
-                value: {
-                    let t = data.trim();
-                    if t.starts_with("`") && t.ends_with("`") {
-                        t.trim_start_matches("`").trim_end_matches("`").to_string()
-                    } else {
-                        t.to_string()
-                    }
-                },
+                value: data,
             }));
             for x in childs {
                 main_node.push(x);
