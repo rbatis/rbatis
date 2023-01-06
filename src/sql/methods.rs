@@ -39,6 +39,7 @@ impl IntoSql for Value {
                         sql.push_str(",");
                     } else {
                         sql.push_str(&x.as_sql());
+                        sql.push_str(",");
                     }
                 }
                 if arr.len() != 0 {

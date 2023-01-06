@@ -320,12 +320,16 @@ macro_rules! impl_select_page {
                    async fn $fn_name(rb: &mut dyn $crate::executor::Executor,table_column:&str,table_name: &str,$($param_key:$param_type,)*) -> std::result::Result<u64, $crate::rbdc::Error> {impled!()}
                    total = $fn_name(rb, &table_column,&table_name, $($param_key,)*).await?;
                 }
+                //pg,mssql can override this parameter to implement its own limit statement
+                let mut limit_sql = " limit ${page_no},${page_size}".to_string();
+                limit_sql=limit_sql.replace("${page_no}",&page_req.offset().to_string());
+                limit_sql=limit_sql.replace("${page_size}",&page_req.page_size.to_string());
                 let records:Vec<$table>;
                 #[$crate::py_sql("`select ${table_column} from ${table_name} `",$where_sql,"
                               if !sql.contains('page_no') && !sql.contains('page_size'):
-                                ` limit ${page_no},${page_size}`")]
-                async fn $fn_name(rb: &mut dyn $crate::executor::Executor,table_column:&str,table_name: &str,page_no:u64,page_size:u64,$($param_key:$param_type,)*) -> std::result::Result<Vec<$table>, $crate::rbdc::Error> {impled!()}
-                records = $fn_name(rb,&table_column,&table_name,page_req.offset(), page_req.page_size,$($param_key,)*).await?;
+                                `${limit_sql}`")]
+                async fn $fn_name(rb: &mut dyn $crate::executor::Executor,table_column:&str,table_name: &str,page_no:u64,page_size:u64,page_offset:u64,limit_sql:&str,$($param_key:$param_type,)*) -> std::result::Result<Vec<$table>, $crate::rbdc::Error> {impled!()}
+                records = $fn_name(rb,&table_column,&table_name,page_req.page_no, page_req.page_size,page_req.offset(),&limit_sql,$($param_key,)*).await?;
 
                 let mut page = $crate::sql::Page::<$table>::new_total(page_req.page_no, page_req.page_size, total);
                 page.records = records;

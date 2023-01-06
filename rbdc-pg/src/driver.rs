@@ -1,4 +1,3 @@
-use crate::connection::PgConnection;
 use crate::options::PgConnectOptions;
 use futures_core::future::BoxFuture;
 use rbdc::db::{ConnectOptions, Connection, Driver, Placeholder};
@@ -15,18 +14,19 @@ impl Driver for PgDriver {
     fn connect(&self, url: &str) -> BoxFuture<Result<Box<dyn Connection>, Error>> {
         let url = url.to_owned();
         Box::pin(async move {
-            let conn = PgConnection::establish(&url.parse()?).await?;
-            Ok(Box::new(conn) as Box<dyn Connection>)
+            let opt:PgConnectOptions = url.parse()?;
+            let conn = opt.connect().await?;
+            Ok(conn)
         })
     }
     fn connect_opt<'a>(
         &'a self,
         opt: &'a dyn ConnectOptions,
     ) -> BoxFuture<Result<Box<dyn Connection>, Error>> {
-        let opt = opt.downcast_ref().unwrap();
+        let opt:&PgConnectOptions = opt.downcast_ref().unwrap();
         Box::pin(async move {
-            let conn = PgConnection::establish(opt).await?;
-            Ok(Box::new(conn) as Box<dyn Connection>)
+            let conn = opt.connect().await?;
+            Ok(conn)
         })
     }
     fn default_option(&self) -> Box<dyn ConnectOptions> {

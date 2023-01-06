@@ -9,7 +9,7 @@ use std::str::FromStr;
 impl ConnectOptions for MySqlConnectOptions {
     fn connect(&self) -> BoxFuture<Result<Box<dyn Connection>, Error>> {
         Box::pin(async move {
-            let mut conn = MySqlConnection::establish(self).await?;
+            let conn = MySqlConnection::establish(self).await?;
 
             // After the connection is established, we initialize by configuring a few
             // connection parameters
@@ -36,16 +36,16 @@ impl ConnectOptions for MySqlConnectOptions {
 
             // https://mathiasbynens.be/notes/mysql-utf8mb4
 
-            let mut options = String::new();
-            // options.push_str(r#"SET sql_mode=(SELECT CONCAT(@@sql_mode, ',PIPES_AS_CONCAT,NO_ENGINE_SUBSTITUTION')),"#);
-            // options.push_str(r#"time_zone='+00:00',"#);
-            options.push_str(&format!(
-                r#"SET NAMES {} COLLATE {};"#,
-                conn.stream.charset.as_str(),
-                conn.stream.collation.as_str()
-            ));
-
-            conn.execute(&*options).await?;
+            // let mut options = String::new();
+            // // options.push_str(r#"SET sql_mode=(SELECT CONCAT(@@sql_mode, ',PIPES_AS_CONCAT,NO_ENGINE_SUBSTITUTION')),"#);
+            // // options.push_str(r#"time_zone='+00:00',"#);
+            // options.push_str(&format!(
+            //     r#"SET NAMES {} COLLATE {};"#,
+            //     conn.stream.charset.as_str(),
+            //     conn.stream.collation.as_str()
+            // ));
+            //
+            // conn.execute(&*options).await?;
 
             let r: Box<dyn Connection> = Box::new(conn);
             Ok(r)

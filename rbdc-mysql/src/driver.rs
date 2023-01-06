@@ -1,4 +1,3 @@
-use crate::connection::MySqlConnection;
 use crate::options::MySqlConnectOptions;
 use futures_core::future::BoxFuture;
 use rbdc::db::{ConnectOptions, Connection, Driver, Placeholder};
@@ -15,8 +14,9 @@ impl Driver for MysqlDriver {
     fn connect(&self, url: &str) -> BoxFuture<Result<Box<dyn Connection>, Error>> {
         let url = url.to_owned();
         Box::pin(async move {
-            let conn = MySqlConnection::establish(&url.parse()?).await?;
-            Ok(Box::new(conn) as Box<dyn Connection>)
+            let opt:MySqlConnectOptions = url.parse()?;
+            let conn = opt.connect().await?;
+            Ok(conn)
         })
     }
 
@@ -24,10 +24,10 @@ impl Driver for MysqlDriver {
         &'a self,
         opt: &'a dyn ConnectOptions,
     ) -> BoxFuture<Result<Box<dyn Connection>, Error>> {
-        let opt = opt.downcast_ref().unwrap();
+        let opt:&MySqlConnectOptions = opt.downcast_ref().unwrap();
         Box::pin(async move {
-            let conn = MySqlConnection::establish(opt).await?;
-            Ok(Box::new(conn) as Box<dyn Connection>)
+            let conn = opt.connect().await?;
+            Ok(conn)
         })
     }
 
