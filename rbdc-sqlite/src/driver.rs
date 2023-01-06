@@ -1,4 +1,4 @@
-use crate::{SqliteConnectOptions, SqliteConnection};
+use crate::SqliteConnectOptions;
 use futures_core::future::BoxFuture;
 use rbdc::db::{ConnectOptions, Connection, Driver, Placeholder};
 use rbdc::Error;
@@ -14,7 +14,8 @@ impl Driver for SqliteDriver {
     fn connect(&self, url: &str) -> BoxFuture<Result<Box<dyn Connection>, Error>> {
         let url = url.to_owned();
         Box::pin(async move {
-            let conn = SqliteConnection::establish(&url.parse()?).await?;
+            let opt: SqliteConnectOptions = url.parse()?;
+            let conn = opt.connect().await?;
             Ok(Box::new(conn) as Box<dyn Connection>)
         })
     }
@@ -23,9 +24,9 @@ impl Driver for SqliteDriver {
         &'a self,
         opt: &'a dyn ConnectOptions,
     ) -> BoxFuture<Result<Box<dyn Connection>, Error>> {
-        let opt = opt.downcast_ref().unwrap();
+        let opt: &SqliteConnectOptions = opt.downcast_ref().unwrap();
         Box::pin(async move {
-            let conn = SqliteConnection::establish(opt).await?;
+            let conn = opt.connect().await?;
             Ok(Box::new(conn) as Box<dyn Connection>)
         })
     }
