@@ -15,7 +15,7 @@ mod test {
         .unwrap();
         assert_eq!(
             datas.get("custom_func").unwrap().childs[1].childs[0].data,
-            "and name != ''"
+            "`and name != ''`"
         );
     }
 }

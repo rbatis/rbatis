@@ -14,9 +14,7 @@ impl Display for Element {
     fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
         match self.tag.as_str() {
             "" => {
-                f.write_str("`")?;
                 f.write_str(&self.data)?;
-                f.write_str("`")?;
             }
             _ => {
                 f.write_str("<")?;
@@ -56,13 +54,7 @@ pub fn as_element(args: &Vec<Node>) -> Vec<Element> {
                 if txt.is_empty() {
                     continue;
                 }
-                let t = txt.trim();
-                if t.starts_with("`") && t.ends_with("`") {
-                    el.data = t.trim_start_matches("`").trim_end_matches("`").to_string();
-                } else {
-                    el.data = t.to_string();
-                }
-                el.data = el.data.replace("``", "").to_string();
+                el.data = txt.to_string();
             }
             Node::Element(element) => {
                 el.tag = element.name.to_string();
