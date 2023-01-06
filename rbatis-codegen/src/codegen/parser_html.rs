@@ -578,12 +578,13 @@ fn remove_extra(txt: &str) -> String {
         index += 1;
     }
     if data.starts_with("`") && data.ends_with("`") {
-        data.trim_start_matches("`").trim_end_matches("`").to_string();
+        data.trim_start_matches("`")
+            .trim_end_matches("`")
+            .to_string();
     }
-    data = data.replace("``","").to_string();
+    data = data.replace("``", "").to_string();
     data
 }
-
 
 fn impl_continue(x: &Element, body: &mut proc_macro2::TokenStream, ignore: &mut Vec<String>) {
     *body = quote! {
@@ -673,21 +674,24 @@ fn impl_trim(
             .trim_end_matches(#x)
         }
     }
-
-    *body = quote! {
-       #body
-        sql.push_str(#prefix);
-    };
+    if !prefix.is_empty() {
+        *body = quote! {
+           #body
+           sql.push_str(#prefix);
+        };
+    }
     if have_trim {
         *body = quote! {
            #body
            sql.push_str(&{#trims.to_string(); sql });
         };
     }
-    *body = quote! {
-       #body
-       sql.push_str(#suffix);
-    };
+    if !suffix.is_empty() {
+        *body = quote! {
+           #body
+           sql.push_str(#suffix);
+        };
+    }
 }
 
 pub fn impl_fn_html(m: &ItemFn, args: &AttributeArgs) -> TokenStream {

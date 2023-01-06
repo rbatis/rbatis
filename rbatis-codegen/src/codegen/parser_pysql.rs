@@ -135,9 +135,7 @@ impl NodeType {
                 data = x[(space - 1)..].to_string();
             }
             data = data.trim().to_string();
-            main_node.push(NodeType::NString(StringNode {
-                value: data,
-            }));
+            main_node.push(NodeType::NString(StringNode { value: data }));
             for x in childs {
                 main_node.push(x);
             }
