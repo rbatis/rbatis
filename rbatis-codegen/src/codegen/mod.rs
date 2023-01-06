@@ -14,7 +14,6 @@ use syn::{parse_macro_input, AttributeArgs, DataStruct, ItemFn};
 
 use proc_macro::TokenStream;
 
-pub mod element_from;
 pub mod func;
 pub mod loader_html;
 pub mod parser_html;
