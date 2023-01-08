@@ -210,9 +210,7 @@ fn parse(
                 impl_continue(x, &mut body, ignore);
             }
             "" => {
-                println!("sql raw=>{:?}",x.data);
                 let mut string_data = remove_extra(&x.data);
-                println!("sql=>{:?}",string_data);
                 let convert_list = find_convert_string(&string_data);
                 let mut replaces = quote! {};
                 for (k, v) in convert_list {
