@@ -4,8 +4,8 @@ use crate::model::{init_db, BizActivity};
 use rbatis::intercept::SqlIntercept;
 use rbatis::{crud, Error, Rbatis};
 use rbs::Value;
-use std::thread::sleep;
 use std::time::Duration;
+use log::Log;
 
 /// Logic delete： The deletion statement changes to the modification of flag, and the query statement filters flag with additional conditions
 pub struct LogicDeletePlugin {}
@@ -47,5 +47,5 @@ pub async fn main() {
     println!("{:?}", r);
     let record = BizActivity::select_by_column(&mut rb.clone(), "id", "1").await;
     println!("{:?}", record);
-    sleep(Duration::from_secs(1));
+    log::logger().flush();
 }

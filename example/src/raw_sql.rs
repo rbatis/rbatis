@@ -2,8 +2,6 @@ pub mod model;
 
 use crate::model::{init_db, BizActivity};
 use rbs::to_value;
-use std::time::Duration;
-use tokio::time::sleep;
 
 #[tokio::main]
 pub async fn main() {
@@ -19,7 +17,7 @@ pub async fn main() {
         .exec("update biz_activity set status = 0 where id > 0", vec![])
         .await
         .unwrap();
-    sleep(Duration::from_secs(1)).await;
     println!(">>>>> table={:?}", table);
     println!(">>>>> exec={}", result);
+    log::logger().flush();
 }
