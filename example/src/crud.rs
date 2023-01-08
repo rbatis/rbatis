@@ -35,7 +35,7 @@ pub async fn main() {
             .console()
             .level(log::LevelFilter::Debug),
     )
-        .expect("rbatis init fail");
+    .expect("rbatis init fail");
     let mut rb = init_db().await;
     let t = BizActivity {
         id: Some("2".into()),

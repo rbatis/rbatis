@@ -52,16 +52,16 @@ impl Encode for fastdate::Date {
             mon: self.mon,
             year: self.year,
         }
-            .unix_timestamp_millis()
+        .unix_timestamp_millis()
             - fastdate::DateTime {
-            nano: 0,
-            sec: 0,
-            min: 0,
-            hour: 0,
-            year: 2000,
-            day: 1,
-            mon: 1,
-        }
+                nano: 0,
+                sec: 0,
+                min: 0,
+                hour: 0,
+                year: 2000,
+                day: 1,
+                mon: 1,
+            }
             .unix_timestamp_millis())
             / (86400 * 1000) as i64;
         (days as i32).encode(buf)

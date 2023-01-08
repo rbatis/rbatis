@@ -32,9 +32,9 @@ impl Decode for fastdate::DateTime {
                     year: 2000,
                 });
                 let us: i64 = Decode::decode(value)?;
-                if us < 0{
+                if us < 0 {
                     epoch - Duration::from_micros(-us as u64)
-                }else{
+                } else {
                     epoch + Duration::from_micros(us as u64)
                 }
             }

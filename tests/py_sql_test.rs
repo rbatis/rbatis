@@ -201,7 +201,6 @@ mod test {
         pub count: u64, //page count num
     }
 
-
     #[test]
     fn test_fetch_decode() {
         let f = async move {
@@ -210,13 +209,13 @@ mod test {
             let queue = Arc::new(SegQueue::new());
             rb.set_sql_intercepts(vec![Box::new(MockIntercept::new(queue.clone()))]);
             #[py_sql("select ${id},${id},#{id},#{id} ")]
-            pub async fn test_same_id(rb: &mut Rbatis, id: &u64) -> Result<Value,Error> {
+            pub async fn test_same_id(rb: &mut Rbatis, id: &u64) -> Result<Value, Error> {
                 impled!()
             }
-            let r= test_same_id(&mut rb,&1).await.unwrap();
+            let r = test_same_id(&mut rb, &1).await.unwrap();
             let (sql, args) = queue.pop().unwrap();
-            assert_eq!(sql,"select 1,1,?,?");
-            assert_eq!(args,vec![Value::U64(1), Value::U64(1)]);
+            assert_eq!(sql, "select 1,1,?,?");
+            assert_eq!(args, vec![Value::U64(1), Value::U64(1)]);
         };
         block_on(f);
     }

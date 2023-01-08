@@ -22,14 +22,18 @@ pub async fn main() {
         .unwrap();
     let mut s = SqliteTableSync::default();
     s.sql_id = " PRIMARY KEY AUTOINCREMENT NOT NULL ".to_string();
-    s.sync(rb.acquire().await.unwrap(), to_value!(RBUser {
-        id: 0,
-        name: Some("".to_string()),
-        remark: Some("".to_string()),
-        create_time: Some(FastDateTime::utc()),
-        version: Some(1),
-        delete_flag: Some(1),
-    }), "rb_user")
-        .await
-        .unwrap();
+    s.sync(
+        rb.acquire().await.unwrap(),
+        to_value!(RBUser {
+            id: 0,
+            name: Some("".to_string()),
+            remark: Some("".to_string()),
+            create_time: Some(FastDateTime::utc()),
+            version: Some(1),
+            delete_flag: Some(1),
+        }),
+        "rb_user",
+    )
+    .await
+    .unwrap();
 }

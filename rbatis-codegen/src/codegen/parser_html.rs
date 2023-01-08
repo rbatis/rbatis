@@ -581,7 +581,8 @@ fn remove_extra(txt: &str) -> String {
         index += 1;
     }
     if data.starts_with("`") && data.ends_with("`") {
-        data = data.trim_start_matches("`")
+        data = data
+            .trim_start_matches("`")
             .trim_end_matches("`")
             .to_string();
     }
