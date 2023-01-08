@@ -17,7 +17,7 @@ pub async fn main() {
         .exec("update biz_activity set status = 0 where id > 0", vec![])
         .await
         .unwrap();
+    log::logger().flush();
     println!(">>>>> table={:?}", table);
     println!(">>>>> exec={}", result);
-    log::logger().flush();
 }
