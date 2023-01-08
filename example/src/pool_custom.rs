@@ -6,6 +6,6 @@ pub async fn main() {
     let rb = init_db().await;
     //set pool max size
     rb.get_pool().unwrap().resize(100);
-    //get pool state
     println!(">>>>> state={:?}",  rb.get_pool().unwrap().status());
+    rb.get_pool().unwrap().close();
 }
