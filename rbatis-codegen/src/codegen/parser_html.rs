@@ -568,8 +568,11 @@ fn remove_extra(txt: &str) -> String {
     let mut index = 0;
     for line in &lines {
         let mut line = line.trim_start().trim_end();
-        if line.starts_with("`") && line.ends_with("`") {
-            line = line.trim_start_matches("`").trim_end_matches("`");
+        if line.starts_with("`") {
+            line = line.trim_start_matches("`");
+        }
+        if line.ends_with("`") {
+            line = line.trim_end_matches("`");
         }
         data.push_str(line);
         if index + 1 < lines.len() {
