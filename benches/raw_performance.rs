@@ -11,8 +11,8 @@
 extern crate test;
 
 use futures_core::future::BoxFuture;
-use rbatis::{impl_insert, impl_select};
 use rbatis::rbatis::Rbatis;
+use rbatis::{impl_insert, impl_select};
 use rbdc::db::{ConnectOptions, Connection, Driver, ExecResult, Row};
 use rbdc::{block_on, Error};
 use rbs::Value;
@@ -32,7 +32,7 @@ fn bench_raw() {
         rbatis.acquire().await.unwrap();
         rbatis::bench!(100000, {
             let v = rbatis.fetch_decode::<Vec<i32>>("", vec![]).await;
-    });
+        });
     };
     block_on!(f);
 }

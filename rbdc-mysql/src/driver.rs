@@ -14,7 +14,7 @@ impl Driver for MysqlDriver {
     fn connect(&self, url: &str) -> BoxFuture<Result<Box<dyn Connection>, Error>> {
         let url = url.to_owned();
         Box::pin(async move {
-            let opt:MySqlConnectOptions = url.parse()?;
+            let opt: MySqlConnectOptions = url.parse()?;
             let conn = opt.connect().await?;
             Ok(conn)
         })
@@ -24,7 +24,7 @@ impl Driver for MysqlDriver {
         &'a self,
         opt: &'a dyn ConnectOptions,
     ) -> BoxFuture<Result<Box<dyn Connection>, Error>> {
-        let opt:&MySqlConnectOptions = opt.downcast_ref().unwrap();
+        let opt: &MySqlConnectOptions = opt.downcast_ref().unwrap();
         Box::pin(async move {
             let conn = opt.connect().await?;
             Ok(conn)
