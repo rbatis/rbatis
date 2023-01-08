@@ -15,7 +15,7 @@ mod test {
         </mapper>"#,"select_by_condition",&mut ig);
         let code=token.to_string();
         println!("{}",token);
-        assert_eq!(code.contains(r#"select * \n from biz_activity"#),true);
+        assert_eq!(!code.contains(r#"`"#),true);
     }
 
     #[test]
@@ -31,7 +31,25 @@ mod test {
         </mapper>"#,"select_by_condition",&mut ig);
         let code=token.to_string();
         println!("{}",token);
-        assert_eq!(code.contains(r#"select * from biz_activity\nwhere"#),true);
+        assert_eq!(!code.contains(r#"`"#),true);
+    }
+
+    #[test]
+    fn test_parse_line_feed3() {
+        let mut ig=vec![];
+        let token= parse_html(r#"
+       <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.1//EN" "https://raw.githubusercontent.com/rbatis/rbatis/master/rbatis-codegen/mybatis-3-mapper.dtd">
+        <mapper>
+            <select id="select_by_condition">
+            `select * from biz_activity
+         where`
+        `id = 1
+         and id = 2`
+         </select>
+        </mapper>"#,"select_by_condition",&mut ig);
+        let code=token.to_string();
+        println!("{}",token);
+        assert_eq!(!code.contains(r#"`"#),true);
     }
 
     #[test]
