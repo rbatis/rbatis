@@ -210,7 +210,9 @@ fn parse(
                 impl_continue(x, &mut body, ignore);
             }
             "" => {
+                println!("sql raw=>{:?}",x.data);
                 let mut string_data = remove_extra(&x.data);
+                println!("sql=>{:?}",string_data);
                 let convert_list = find_convert_string(&string_data);
                 let mut replaces = quote! {};
                 for (k, v) in convert_list {
@@ -562,7 +564,7 @@ fn parse(
 }
 
 fn remove_extra(txt: &str) -> String {
-    let txt = txt.trim().replace("\\r\n", "\n");
+    let txt = txt.trim().replace("\\r", "");
     let lines: Vec<&str> = txt.split("\n").collect();
     let mut data = String::with_capacity(txt.len());
     let mut index = 0;
