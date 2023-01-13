@@ -92,7 +92,7 @@ impl Value {
     /// ```
     #[inline]
     pub fn is_i64(&self) -> bool {
-        if let Value::I64(ref v) = *self {
+        if let Value::I64(_) = *self {
             true
         } else {
             false
@@ -103,7 +103,7 @@ impl Value {
     ///
     #[inline]
     pub fn is_u64(&self) -> bool {
-        if let Value::U64(ref v) = *self {
+        if let Value::U64(_) = *self {
             true
         } else {
             false
@@ -610,7 +610,7 @@ impl Display for Value {
             Value::U64(ref val) => Display::fmt(&val, f),
             Value::F32(val) => Display::fmt(&val, f),
             Value::F64(val) => Display::fmt(&val, f),
-            Value::String(ref val) => {
+            Value::String(_) => {
                 f.write_str("\"")?;
                 Display::fmt(&self.as_str().unwrap_or_default(), f)?;
                 f.write_str("\"")
@@ -685,7 +685,6 @@ impl<'a> IntoIterator for &'a Value {
                 let mut v = Vec::with_capacity(arr.len());
                 let mut idx = 0;
                 for x in arr {
-                    let b = Box::new(Value::U32(idx));
                     v.push((Cow::Owned(Value::U32(idx)), x));
                     idx += 1;
                 }

@@ -10,8 +10,6 @@ impl IntoSql for Value {
         match self {
             Value::Map(m) => {
                 let mut sql = "".to_string();
-                let mut index = 0;
-                let mut last_key = "";
                 for (k, v) in m {
                     let k_str = k.str();
                     sql.push_str(k_str);
@@ -24,8 +22,6 @@ impl IntoSql for Value {
                         sql.push_str(&v.as_sql());
                         sql.push_str(" ");
                     }
-                    last_key = k_str;
-                    index += 1;
                 }
                 Value::String(sql)
             }

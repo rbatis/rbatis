@@ -2,7 +2,6 @@
 use hex::{self, FromHexError};
 use once_cell::sync::Lazy;
 use rand::{thread_rng, Rng};
-use rbdc::datetime::FastDateTime;
 use std::{
     convert::TryInto,
     error, fmt, result,
@@ -133,8 +132,6 @@ impl ObjectId {
 
     /// Returns u64
     pub fn u128(&self) -> u128 {
-        let mut v = 0u128;
-
         //4-TIMESTAMP 10
         let b: [u8; 4] = [self.id[0], self.id[1], self.id[2], self.id[3]];
         let u4 = u32::from_be_bytes(b.into());
@@ -148,7 +145,7 @@ impl ObjectId {
         //3-COUNTER_OFFSET  8
         let b: [u8; 4] = [0u8, self.id[9], self.id[10], self.id[11]];
         let u3 = u32::from_be_bytes(b.into());
-        v = u5 as u128 * 1000000000000000000 + u4 as u128 * 100000000 + u3 as u128;
+        let v = u5 as u128 * 1000000000000000000 + u4 as u128 * 100000000 + u3 as u128;
         v
     }
 

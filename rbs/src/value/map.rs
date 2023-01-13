@@ -104,7 +104,7 @@ impl ValueMap {
     }
     pub fn remove(&mut self, k: &Value) -> Option<Value> {
         let mut idx = 0;
-        for (mkey, v) in &self.0 {
+        for (mkey, _v) in &self.0 {
             if k.eq(mkey) {
                 let (_, v) = self.0.remove(idx);
                 return Some(v);

@@ -1,9 +1,7 @@
-use crate::executor::{Executor, RBatisConnExecutor};
+use crate::executor::RBatisConnExecutor;
 use crate::table_sync::TableSync;
 use crate::Error;
 use futures_core::future::BoxFuture;
-use rbdc::db::{Connection, ExecResult};
-use rbs::value::map::ValueMap;
 use rbs::Value;
 
 pub struct SqliteTableSync {
@@ -32,7 +30,7 @@ fn type_str(v: &Value) -> &'static str {
         Value::Binary(_) => "BLOB",
         Value::Array(_) => "NULL",
         Value::Map(_) => "NULL",
-        Value::Ext(t, v) => match *t {
+        Value::Ext(t, _v) => match *t {
             "Date" => "TEXT",
             "DateTime" => "TEXT",
             "Time" => "TEXT",
@@ -112,7 +110,7 @@ impl TableSync for SqliteTableSync {
                     }
                     Ok(())
                 }
-                Value::Ext(table_name, m) => self.sync(rb, *m, &name).await,
+                Value::Ext(_table_name, m) => self.sync(rb, *m, &name).await,
                 _ => Err(Error::from("table not is an struct or map!")),
             }
         })

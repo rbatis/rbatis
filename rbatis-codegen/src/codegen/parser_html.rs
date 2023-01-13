@@ -1,25 +1,23 @@
 use std::collections::BTreeMap;
-use std::env::current_dir;
 use std::fs::File;
-use std::io::{Read, Write};
-use std::path::PathBuf;
-use std::str::FromStr;
+use std::io::Read;
+
 use proc_macro2::{Ident, Span};
 use quote::{quote, ToTokens};
-use syn::{AttributeArgs, Expr, ItemFn, ItemMod, ItemStruct, Path};
+use syn::{AttributeArgs, Expr, ItemFn};
 use url::Url;
 
 use crate::codegen::loader_html::{load_html, Element};
 use crate::codegen::proc_macro::TokenStream;
 use crate::codegen::string_util::find_convert_string;
-use crate::codegen::syntax_tree::NodeType;
+
 use crate::error::Error;
 
 /// load a Map<id,Element>
 pub fn load_mapper_map(html: &str) -> Result<BTreeMap<String, Element>, Error> {
-    let mut datas = load_mapper_vec(html)?;
+    let datas = load_mapper_vec(html)?;
     let mut sql_map = BTreeMap::new();
-    let mut datas = include_replace(datas, &mut sql_map);
+    let datas = include_replace(datas, &mut sql_map);
     let mut m = BTreeMap::new();
     for x in datas {
         if let Some(v) = x.attrs.get("id") {
@@ -31,7 +29,7 @@ pub fn load_mapper_map(html: &str) -> Result<BTreeMap<String, Element>, Error> {
 
 /// load a Vec<Element>
 pub fn load_mapper_vec(html: &str) -> Result<Vec<Element>, Error> {
-    let mut datas = load_html(html).map_err(|e| Error::from(e.to_string()))?;
+    let datas = load_html(html).map_err(|e| Error::from(e.to_string()))?;
     let mut mappers = vec![];
     for x in datas {
         if x.tag.eq("mapper") {
@@ -53,7 +51,7 @@ pub fn parse_html(html: &str, fn_name: &str, ignore: &mut Vec<String>) -> proc_m
         .trim_start_matches("\"")
         .trim_end_matches("\"")
         .to_string();
-    let mut datas = load_mapper_map(&html).expect(&format!("laod html={} fail", html));
+    let datas = load_mapper_map(&html).expect(&format!("laod html={} fail", html));
     match datas.into_iter().next() {
         None => {
             panic!("html not find fn:{}", fn_name);
@@ -84,7 +82,7 @@ fn include_replace(htmls: Vec<Element>, sql_map: &mut BTreeMap<String, Element>)
                     .get("refid")
                     .expect("[rbatis] <include> element must have attr <include refid=\"\">!")
                     .clone();
-                let mut url;
+                let url;
                 if ref_id.contains("://") {
                     url = Url::parse(&ref_id).expect(&format!(
                         "[rbatis] parse <include refid=\"{}\"> fail!",
@@ -135,7 +133,7 @@ fn include_replace(htmls: Vec<Element>, sql_map: &mut BTreeMap<String, Element>)
                                 ref_id_pair = v.to_string();
                             }
                         }
-                        let mut element = sql_map
+                        let element = sql_map
                             .get(ref_id_pair.as_str())
                             .expect(&format!(
                                 "[rbatis] can not find element <include refid=\"{}\"> !",
@@ -144,7 +142,7 @@ fn include_replace(htmls: Vec<Element>, sql_map: &mut BTreeMap<String, Element>)
                             .clone();
                         x = element;
                     }
-                    scheme => {
+                    _scheme => {
                         panic!("unimplemented scheme <include refid=\"{}\">", ref_id)
                     }
                 }
@@ -263,12 +261,12 @@ fn parse(
                 let empty_string = String::new();
                 let prefix = x.attrs.get("prefix").unwrap_or(&empty_string).to_string();
                 let suffix = x.attrs.get("suffix").unwrap_or(&empty_string).to_string();
-                let prefixOverrides = x
+                let prefix_overrides = x
                     .attrs
                     .get("prefixOverrides")
                     .unwrap_or(&empty_string)
                     .to_string();
-                let suffixOverrides = x
+                let suffix_overrides = x
                     .attrs
                     .get("suffixOverrides")
                     .unwrap_or(&empty_string)
@@ -276,8 +274,8 @@ fn parse(
                 impl_trim(
                     &prefix,
                     &suffix,
-                    &prefixOverrides,
-                    &suffixOverrides,
+                    &prefix_overrides,
+                    &suffix_overrides,
                     x,
                     &mut body,
                     arg,
@@ -461,10 +459,6 @@ fn parse(
             }
 
             "select" => {
-                let id = x
-                    .attrs
-                    .get("id")
-                    .expect("<select> element must be have id!");
                 let method_name = Ident::new(fn_name, Span::call_site());
                 let child_body = parse(&x.childs, methods, ignore, fn_name);
                 let cup = x.child_string_cup();
@@ -484,10 +478,6 @@ fn parse(
                 };
             }
             "update" => {
-                let id = x
-                    .attrs
-                    .get("id")
-                    .expect("<update> element must be have id!");
                 let method_name = Ident::new(fn_name, Span::call_site());
                 let child_body = parse(&x.childs, methods, ignore, fn_name);
                 let cup = x.child_string_cup();
@@ -507,10 +497,6 @@ fn parse(
                 };
             }
             "insert" => {
-                let id = x
-                    .attrs
-                    .get("id")
-                    .expect("<insert> element must be have id!");
                 let method_name = Ident::new(fn_name, Span::call_site());
                 let child_body = parse(&x.childs, methods, ignore, fn_name);
                 let cup = x.child_string_cup();
@@ -530,10 +516,6 @@ fn parse(
                 };
             }
             "delete" => {
-                let id = x
-                    .attrs
-                    .get("id")
-                    .expect("<delete> element must be have id!");
                 let method_name = Ident::new(fn_name, Span::call_site());
                 let child_body = parse(&x.childs, methods, ignore, fn_name);
                 let cup = x.child_string_cup();
@@ -588,7 +570,7 @@ fn remove_extra(txt: &str) -> String {
     data
 }
 
-fn impl_continue(x: &Element, body: &mut proc_macro2::TokenStream, ignore: &mut Vec<String>) {
+fn impl_continue(_x: &Element, body: &mut proc_macro2::TokenStream, _ignore: &mut Vec<String>) {
     *body = quote! {
          #body
          continue
@@ -599,7 +581,7 @@ fn impl_if(
     test_value: &str,
     if_tag_body: proc_macro2::TokenStream,
     body: &mut proc_macro2::TokenStream,
-    methods: &mut proc_macro2::TokenStream,
+    _methods: &mut proc_macro2::TokenStream,
     appends: proc_macro2::TokenStream,
     ignore: &mut Vec<String>,
 ) {
@@ -622,8 +604,8 @@ fn impl_if(
 fn impl_otherwise(
     child_body: proc_macro2::TokenStream,
     body: &mut proc_macro2::TokenStream,
-    methods: &mut proc_macro2::TokenStream,
-    ignore: &mut Vec<String>,
+    _methods: &mut proc_macro2::TokenStream,
+    _ignore: &mut Vec<String>,
 ) {
     *body = quote!(
            #body
@@ -634,18 +616,18 @@ fn impl_otherwise(
 fn impl_trim(
     prefix: &str,
     suffix: &str,
-    prefixOverrides: &str,
-    suffixOverrides: &str,
+    prefix_overrides: &str,
+    suffix_overrides: &str,
     x: &Element,
     body: &mut proc_macro2::TokenStream,
-    arg: &Vec<Element>,
+    _arg: &Vec<Element>,
     methods: &mut proc_macro2::TokenStream,
     ignore: &mut Vec<String>,
     fn_name: &str,
 ) {
     let trim_body = parse(&x.childs, methods, ignore, fn_name);
-    let prefixs: Vec<&str> = prefixOverrides.split("|").collect();
-    let suffixs: Vec<&str> = suffixOverrides.split("|").collect();
+    let prefixs: Vec<&str> = prefix_overrides.split("|").collect();
+    let suffixs: Vec<&str> = suffix_overrides.split("|").collect();
     let have_trim = prefixs.len() != 0 && suffixs.len() != 0;
     let cup = x.child_string_cup();
     let mut trims = quote! {
@@ -686,20 +668,9 @@ fn impl_trim(
 }
 
 pub fn impl_fn_html(m: &ItemFn, args: &AttributeArgs) -> TokenStream {
-    let current_dir = current_dir().unwrap();
     let fn_name = m.sig.ident.to_string();
-    let mut html_data = args.get(0).to_token_stream().to_string();
-    let mut t;
-    let mut format_char = '?';
-    if args.len() > 1 {
-        for x in args.get(1).to_token_stream().to_string().chars() {
-            if x != '\'' && x != '"' {
-                format_char = x;
-                break;
-            }
-        }
-    }
-    t = parse_html(&html_data, &fn_name, &mut vec![]);
+    let html_data = args.get(0).to_token_stream().to_string();
+    let t = parse_html(&html_data, &fn_name, &mut vec![]);
     return t.into();
 }
 
@@ -709,12 +680,4 @@ fn parse_expr(lit_str: &str) -> Expr {
         .expect(&format!("parse::<syn::LitStr> fail: {}", lit_str));
     return syn::parse_str::<Expr>(&s.value())
         .expect(&format!("parse_str::<Expr> fail: {}", lit_str));
-}
-
-/// parse to expr
-fn parse_path(lit_str: &str) -> Path {
-    let s = syn::parse::<syn::LitStr>(lit_str.to_token_stream().into())
-        .expect(&format!("parse::<syn::LitStr> fail: {}", lit_str));
-    return syn::parse_str::<Path>(&s.value())
-        .expect(&format!("parse_str::<Path> fail: {}", lit_str));
 }

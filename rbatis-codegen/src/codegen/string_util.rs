@@ -1,4 +1,4 @@
-use std::collections::{HashSet, LinkedList};
+use std::collections::LinkedList;
 
 //find like #{*,*},${*,*} value *
 pub fn find_convert_string(arg: &str) -> LinkedList<(String, String)> {

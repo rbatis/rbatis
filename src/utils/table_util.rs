@@ -1,5 +1,3 @@
-use std::collections::{BTreeMap, HashMap};
-
 /// Simplifies table construction by relying on the Default trait
 ///
 /// step1:  impl Default

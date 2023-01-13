@@ -326,7 +326,7 @@ impl From<NodeType> for Element {
                     childs: as_elements(n.childs),
                 };
             }
-            NodeType::NContinue(n) => {
+            NodeType::NContinue(_n) => {
                 return Element {
                     tag: "continue".to_string(),
                     data: "".to_string(),
