@@ -2,9 +2,7 @@ use proc_macro2::{Ident, Span};
 use quote::quote;
 use quote::ToTokens;
 use syn;
-use syn::{BinOp, Expr, ItemFn, Lit, Member};
-
-use crate::codegen::proc_macro::TokenStream;
+use syn::{BinOp, Expr, Lit, Member};
 
 fn token_steam_string(arg: proc_macro2::TokenStream) -> String {
     arg.to_token_stream().to_string().trim().to_string()
@@ -45,7 +43,6 @@ fn convert_to_arg_access(context: &str, arg: Expr, ignore: &[String]) -> Expr {
             match b.op {
                 BinOp::Add(_) => {
                     let left_token = b.left.to_token_stream().to_string();
-                    let right_token = b.right.to_token_stream().to_string();
                     if left_token.trim().ends_with("\"") && left_token.trim().starts_with("\"") {
                         return syn::parse_str::<Expr>(&format!(
                             "(String::from({})).op_add({})",

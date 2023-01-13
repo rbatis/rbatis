@@ -3,7 +3,6 @@ use rbdc::datetime::FastDateTime;
 use serde::ser::SerializeStruct;
 use serde::{Deserializer, Serializer};
 use std::sync::atomic::{AtomicI64, Ordering};
-use std::sync::Arc;
 
 ///Snowflakes algorithm
 #[derive(Debug)]
@@ -138,7 +137,7 @@ pub fn new_snowflake_id() -> i64 {
 
 #[cfg(test)]
 mod test {
-    use crate::snowflake::{new_snowflake_id, Snowflake, SNOWFLAKE};
+    use crate::snowflake::{new_snowflake_id, Snowflake};
 
     #[test]
     fn test_gen() {

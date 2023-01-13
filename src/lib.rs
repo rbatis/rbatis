@@ -1,18 +1,7 @@
-#![allow(unused_imports)]
-#![allow(unreachable_patterns)]
-#![allow(unused_variables)]
-#![allow(unused_assignments)]
-#![allow(unused_must_use)]
-#![forbid(unsafe_code)]
-
-#[macro_use]
-pub extern crate rbatis_codegen;
-#[macro_use]
-extern crate rbatis_macro_driver;
-#[macro_use]
-pub extern crate rbdc;
-#[macro_use]
 pub extern crate dark_std;
+pub extern crate rbatis_codegen;
+extern crate rbatis_macro_driver;
+pub extern crate rbdc;
 
 pub use rbatis_macro_driver::{html_sql, py_sql, sql};
 

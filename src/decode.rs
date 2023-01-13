@@ -1,7 +1,6 @@
 //! Types and traits for decoding values from the database.
 use rbs::Value;
 use serde::de::DeserializeOwned;
-use std::ops::Deref;
 
 use crate::Error;
 
@@ -79,7 +78,7 @@ pub fn is_debug_mode() -> bool {
 mod test {
     use crate::decode::decode;
     use rbs::value::map::ValueMap;
-    use rbs::{to_value, Value};
+    use rbs::{Value};
     use std::collections::HashMap;
 
     #[test]

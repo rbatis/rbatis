@@ -1,7 +1,4 @@
 use log::{debug, error, info, trace, warn, Level, LevelFilter};
-use std::collections::HashMap;
-use std::fmt::{Debug, Display, Formatter};
-use std::ops::Deref;
 use std::sync::atomic::{AtomicI8, Ordering};
 
 /// log plugin

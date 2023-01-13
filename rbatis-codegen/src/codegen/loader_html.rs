@@ -1,6 +1,6 @@
 use html_parser::{Dom, Node, Result};
 use std::collections::HashMap;
-use std::fmt::{Debug, Display, Formatter, Write};
+use std::fmt::{Debug, Display, Formatter};
 
 #[derive(Clone, Eq, PartialEq, Debug)]
 pub struct Element {
@@ -73,7 +73,7 @@ pub fn as_element(args: &Vec<Node>) -> Vec<Element> {
                     el.childs = childs;
                 }
             }
-            Node::Comment(comment) => {
+            Node::Comment(_comment) => {
                 // println!("comment:{}", comment);
             }
         }

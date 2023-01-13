@@ -2,21 +2,12 @@ use crate::executor::{RBatisConnExecutor, RBatisTxExecutor};
 use crate::plugin::intercept::SqlIntercept;
 use crate::plugin::log::{LogPlugin, RbatisLogPlugin};
 use crate::snowflake::new_snowflake_id;
-use crate::utils::string_util;
 use crate::Error;
-use crossbeam::queue::SegQueue;
 use dark_std::sync::SyncVec;
 use once_cell::sync::OnceCell;
-use rbdc::db::{Connection, Driver, ExecResult};
-use rbdc::deadpool::managed::Timeouts;
+use rbdc::db::{Connection, Driver};
 use rbdc::pool::{ManagerPorxy, Pool};
-use serde::de::DeserializeOwned;
-use serde::ser::Serialize;
-use std::borrow::BorrowMut;
-use std::cell::Cell;
-use std::collections::HashMap;
 use std::fmt::{Debug, Formatter};
-use std::ops::DerefMut;
 use std::sync::Arc;
 use std::time::Duration;
 
@@ -103,7 +94,9 @@ impl Rbatis {
         let mut option = driver.default_option();
         option.set_uri(url)?;
         let pool = Pool::new_box(Box::new(driver), option)?;
-        self.pool.set(pool);
+        self.pool
+            .set(pool)
+            .map_err(|_e| Error::from("pool set fail!"))?;
         return Ok(());
     }
 
@@ -123,7 +116,9 @@ impl Rbatis {
         let mut option = driver.default_option();
         option.set_uri(url)?;
         let pool = Pool::new_builder(builder, Box::new(driver), option)?;
-        self.pool.set(pool);
+        self.pool
+            .set(pool)
+            .map_err(|_e| Error::from("pool set fail!"))?;
         return Ok(());
     }
 
@@ -139,7 +134,9 @@ impl Rbatis {
         options: ConnectOptions,
     ) -> Result<(), Error> {
         let pool = Pool::new(driver, options)?;
-        self.pool.set(pool);
+        self.pool
+            .set(pool)
+            .map_err(|_e| Error::from("pool set fail!"))?;
         return Ok(());
     }
 

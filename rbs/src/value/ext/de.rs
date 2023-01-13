@@ -228,7 +228,7 @@ impl<'de> Deserializer<'de> for Value {
                     Err(de::Error::invalid_length(len, &"fewer elements in map"))
                 }
             }
-            Value::Ext(tag, data) => Deserializer::deserialize_any(*data, visitor),
+            Value::Ext(_tag, data) => Deserializer::deserialize_any(*data, visitor),
         }
     }
 
@@ -256,7 +256,7 @@ impl<'de> Deserializer<'de> for Value {
     #[inline]
     fn deserialize_newtype_struct<V>(
         self,
-        name: &'static str,
+        _name: &'static str,
         visitor: V,
     ) -> Result<V::Value, Self::Error>
     where

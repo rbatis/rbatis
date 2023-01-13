@@ -1,5 +1,5 @@
-use std::cmp::Ordering;
 use rbs::Value;
+use std::cmp::Ordering;
 use std::cmp::Ordering::Less;
 pub use std::ops::Index;
 

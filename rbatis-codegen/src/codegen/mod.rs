@@ -1,16 +1,6 @@
-#![allow(unused_imports)]
-#![allow(unreachable_patterns)]
-#![allow(unused_variables)]
-#![allow(unused_assignments)]
-#![allow(unused_must_use)]
-#![allow(dead_code)]
-#![allow(non_snake_case)]
-#![allow(unused_parens)]
-#![allow(unused_mut)]
-
 extern crate proc_macro;
 
-use syn::{parse_macro_input, AttributeArgs, DataStruct, ItemFn};
+use syn::{parse_macro_input, AttributeArgs, ItemFn};
 
 use proc_macro::TokenStream;
 

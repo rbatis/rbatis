@@ -1,7 +1,6 @@
 use crate::rbatis::Rbatis;
 use crate::Error;
 use rbs::Value;
-use std::fmt::Display;
 
 /// sql intercept
 pub trait SqlIntercept: Send + Sync {
@@ -23,10 +22,10 @@ pub struct BlockAttackDeleteInterceptor {}
 impl SqlIntercept for BlockAttackDeleteInterceptor {
     fn do_intercept(
         &self,
-        rb: &Rbatis,
+        _rb: &Rbatis,
         sql: &mut String,
-        args: &mut Vec<Value>,
-        is_prepared_sql: bool,
+        _args: &mut Vec<Value>,
+        _is_prepared_sql: bool,
     ) -> Result<(), Error> {
         let sql = sql.trim();
         if sql.starts_with(crate::sql::TEMPLATE.delete_from.value)
@@ -48,10 +47,10 @@ pub struct BlockAttackUpdateInterceptor {}
 impl SqlIntercept for BlockAttackUpdateInterceptor {
     fn do_intercept(
         &self,
-        rb: &Rbatis,
+        _rb: &Rbatis,
         sql: &mut String,
-        args: &mut Vec<Value>,
-        is_prepared_sql: bool,
+        _args: &mut Vec<Value>,
+        _is_prepared_sql: bool,
     ) -> Result<(), Error> {
         let sql = sql.trim();
         if sql.starts_with(crate::sql::TEMPLATE.update.value)

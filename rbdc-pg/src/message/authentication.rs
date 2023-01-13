@@ -1,6 +1,6 @@
-use std::str::from_utf8;
-use base64::Engine;
 use base64::engine::general_purpose::STANDARD;
+use base64::Engine;
+use std::str::from_utf8;
 
 use bytes::{Buf, Bytes};
 use memchr::memchr;
@@ -151,7 +151,9 @@ impl Decode<'_> for AuthenticationSaslContinue {
                 }
 
                 b's' => {
-                    salt = STANDARD.decode(value).map_err(|e| Error::from(e.to_string()))?;
+                    salt = STANDARD
+                        .decode(value)
+                        .map_err(|e| Error::from(e.to_string()))?;
                 }
 
                 _ => {}

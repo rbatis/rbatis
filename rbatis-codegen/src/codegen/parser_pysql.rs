@@ -28,24 +28,13 @@ pub fn impl_fn_py(m: &ItemFn, args: &AttributeArgs) -> TokenStream {
         data = data[1..data.len() - 1].to_string();
     }
     data = data.replace("\\n", "\n");
-    let t;
-    let mut format_char = '?';
-    if args.len() > 1 {
-        for x in args.get(1).to_token_stream().to_string().chars() {
-            if x != '\'' && x != '"' {
-                format_char = x;
-                break;
-            }
-        }
-    }
     let nodes = NodeType::parse_pysql(&data).expect("[rbatis] parse py_sql fail!");
     let htmls = crate::codegen::syntax_tree::to_html(
         &nodes,
         data.starts_with("select") || data.starts_with(" select"),
         &fn_name,
     );
-    t = parse_html(&htmls, &fn_name, &mut vec![]);
-    return t.into();
+    return parse_html(&htmls, &fn_name, &mut vec![]).into();
 }
 
 impl ParsePySql for NodeType {
@@ -128,7 +117,7 @@ impl NodeType {
             return Ok(());
         } else {
             //string,replace space to only one
-            let mut data = x.to_owned();
+            let mut data;
             if space <= 1 {
                 data = x.to_string();
             } else {
@@ -285,7 +274,7 @@ impl NodeType {
         } else if trim_express.starts_with(BindNode::default_name())
             || trim_express.starts_with(BindNode::name())
         {
-            let mut express = "";
+            let express;
             if trim_express.starts_with(BindNode::default_name()) {
                 express = trim_express[BindNode::default_name().len()..].trim();
             } else {

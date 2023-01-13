@@ -1,9 +1,5 @@
-use std::fmt::{Debug, Display, Formatter};
-use std::future::Future;
-
-use futures_core::future::BoxFuture;
-use serde::de::DeserializeOwned;
 use serde::{Deserialize, Serialize};
+use std::fmt::{Debug, Display, Formatter};
 
 /// default 10
 pub const DEFAULT_PAGE_SIZE: u64 = 10;
@@ -97,7 +93,7 @@ impl PageRequest {
         return PageRequest::new_plugin(String::new(), page_no, page_size, total);
     }
 
-    pub fn new_plugin(plugin: String, page_no: u64, page_size: u64, total: u64) -> Self {
+    pub fn new_plugin(_plugin: String, page_no: u64, page_size: u64, total: u64) -> Self {
         let mut page_no = page_no;
         if page_no < 1 {
             page_no = 1;
@@ -335,7 +331,6 @@ impl<V> Page<V> {
 #[cfg(test)]
 mod test {
     use crate::sql::page::Page;
-    use crate::sql::IPageRequest;
 
     #[test]
     fn test_page() {

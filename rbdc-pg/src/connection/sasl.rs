@@ -1,10 +1,10 @@
-use base64::Engine;
-use base64::engine::general_purpose::STANDARD;
 use crate::connection::stream::PgStream;
 use crate::message::{
     Authentication, AuthenticationSasl, MessageFormat, SaslInitialResponse, SaslResponse,
 };
 use crate::options::PgConnectOptions;
+use base64::engine::general_purpose::STANDARD;
+use base64::Engine;
 use hmac::{Hmac, Mac};
 use rand::Rng;
 use rbdc::{err_protocol, Error};

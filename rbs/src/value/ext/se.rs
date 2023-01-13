@@ -260,7 +260,7 @@ impl ser::Serializer for Serializer {
     #[inline]
     fn serialize_struct(
         self,
-        name: &'static str,
+        _name: &'static str,
         len: usize,
     ) -> Result<Self::SerializeStruct, Error> {
         let se = DefaultSerializeMap {
@@ -274,7 +274,7 @@ impl ser::Serializer for Serializer {
     fn serialize_struct_variant(
         self,
         _name: &'static str,
-        idx: u32,
+        _idx: u32,
         _variant: &'static str,
         len: usize,
     ) -> Result<Self::SerializeStructVariant, Error> {

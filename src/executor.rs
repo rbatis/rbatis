@@ -4,7 +4,6 @@ use std::ops::{Deref, DerefMut};
 use crate::decode::decode;
 use crate::rbatis::Rbatis;
 use crate::snowflake::new_snowflake_id;
-use crate::sql::page::{IPageRequest, Page};
 use crate::sql::tx::Tx;
 use crate::utils::string_util;
 use crate::Error;
@@ -12,9 +11,8 @@ use futures::Future;
 use futures_core::future::BoxFuture;
 use log::LevelFilter;
 use rbdc::db::{Connection, ExecResult};
-use rbs::{from_value, Value};
+use rbs::Value;
 use serde::de::DeserializeOwned;
-use serde::{Serialize, Serializer};
 
 /// the rbatis's Executor. this trait maybe is tx,connection,rbatis object
 pub trait Executor: RbatisRef {

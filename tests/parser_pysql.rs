@@ -11,16 +11,14 @@ mod test {
             "if 1==1:
                     `1=1 and 2=2`",
         )
-            .unwrap();
+        .unwrap();
         println!("{:?}", nodes);
         assert_eq!(
             nodes,
             vec![NodeType::NIf(IfNode {
-                childs: vec![
-                    NodeType::NString(StringNode {
-                        value: "`1=1 and 2=2`".to_string()
-                    })
-                ],
+                childs: vec![NodeType::NString(StringNode {
+                    value: "`1=1 and 2=2`".to_string()
+                })],
                 test: "1==1".to_string()
             })]
         );
