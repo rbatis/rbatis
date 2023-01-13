@@ -4,10 +4,10 @@ use rbs::Value;
 
 fn op_sub_value(left: Value, rhs: Value) -> Value {
     match left {
-        Value::I32(s) => Value::I32((s - rhs.i32())),
+        Value::I32(s) => Value::I32(s - rhs.i32()),
         Value::I64(s) => Value::I64(s - rhs.i64()),
-        Value::U32(s) => Value::U32((s - rhs.u32())),
-        Value::U64(s) => Value::U64((s - rhs.u64())),
+        Value::U32(s) => Value::U32(s - rhs.u32()),
+        Value::U64(s) => Value::U64(s - rhs.u64()),
         Value::F32(s) => Value::F32(s - rhs.f64() as f32),
         Value::F64(s) => Value::F64(s - rhs.f64()),
         Value::Ext(_, e) => op_sub_value(*e, rhs),

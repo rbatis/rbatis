@@ -2,7 +2,6 @@ use crate::ops::AsProxy;
 use crate::ops::PartialOrd;
 use rbs::Value;
 use std::cmp::{Ordering, PartialOrd as P};
-use std::ops::Deref;
 
 #[inline]
 fn cmp_u64(value: u64, rhs: u64) -> Option<Ordering> {
@@ -24,10 +23,6 @@ fn cmp_bool(value: bool, rhs: bool) -> Option<Ordering> {
     Some(value.cmp(&rhs))
 }
 
-#[inline]
-fn cmp_str(value: &str, rhs: &str) -> Option<Ordering> {
-    value.partial_cmp(&rhs)
-}
 /**
 PartialOrd
  **/

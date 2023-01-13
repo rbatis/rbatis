@@ -1,17 +1,3 @@
-#![allow(unused_imports)]
-#![allow(unreachable_patterns)]
-#![allow(unused_variables)]
-#![allow(unused_assignments)]
-#![allow(unused_must_use)]
-#![allow(dead_code)]
-#![allow(non_snake_case)]
-#![allow(unused_parens)]
-#![allow(unused_mut)]
-#![allow(unreachable_code)]
-#![allow(clippy::len_zero)]
-#![allow(clippy::modulo_one)]
-#![allow(clippy::match_like_matches_macro)]
-
 pub mod error;
 #[macro_use]
 pub mod bencher;

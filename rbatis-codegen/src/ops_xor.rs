@@ -68,27 +68,19 @@ impl BitXor<Value> for &Value {
     }
 }
 
-fn op_bitxor_u64(value: &Value, other: u64) -> u64 {
-    value.u64() ^ other
-}
-
 fn op_bitxor_i64(value: &Value, other: i64) -> i64 {
     value.i64() ^ other
 }
 
-fn op_bitxor_f64(value: &Value, other: f64) -> f64 {
+fn op_bitxor_f64(_: &Value, _: f64) -> f64 {
     0.0
-}
-
-fn op_bitxor_u64_value(value: &Value, other: u64) -> u64 {
-    other ^ value.u64()
 }
 
 fn op_bitxor_i64_value(value: &Value, other: i64) -> i64 {
     other ^ value.i64()
 }
 
-fn op_bitxor_f64_value(value: &Value, other: f64) -> f64 {
+fn op_bitxor_f64_value(_: &Value, _: f64) -> f64 {
     0.0
 }
 

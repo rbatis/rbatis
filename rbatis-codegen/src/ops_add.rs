@@ -1,7 +1,5 @@
 use crate::ops::{Add, AsProxy};
-
 use rbs::Value;
-use std::borrow::Cow;
 
 fn op_add_u64(value: &Value, other: u64) -> u64 {
     value.u64() + other
