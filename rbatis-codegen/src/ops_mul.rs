@@ -75,16 +75,8 @@ impl Mul<Value> for &Value {
     }
 }
 
-fn op_mul_u32(value: &Value, other: u32) -> u32 {
-    value.u32() * other
-}
-
 fn op_mul_u64(value: &Value, other: u64) -> u64 {
     value.u64() * other
-}
-
-fn op_mul_i32(value: &Value, other: i32) -> i32 {
-    value.i32() * other
 }
 
 fn op_mul_i64(value: &Value, other: i64) -> i64 {

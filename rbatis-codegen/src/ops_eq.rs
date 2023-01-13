@@ -45,13 +45,6 @@ impl PartialEq<Value> for Value {
     }
 }
 
-/**
-eq base
- **/
-fn eq_u64(value: &Value, other: u64) -> bool {
-    value.u64().eq(&other)
-}
-
 fn eq_i64(value: &Value, other: i64) -> bool {
     value.i64().eq(&other)
 }

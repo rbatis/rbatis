@@ -595,17 +595,6 @@ fn impl_continue(x: &Element, body: &mut proc_macro2::TokenStream, ignore: &mut 
     };
 }
 
-fn gen_method_name(test_value: &str) -> (String, Ident) {
-    let method_name_string = test_value
-        .replace("_", "__")
-        .replace("=", "_")
-        .replace("+", "add");
-    (
-        method_name_string.clone(),
-        Ident::new(&method_name_string, Span::call_site()),
-    )
-}
-
 fn impl_if(
     test_value: &str,
     if_tag_body: proc_macro2::TokenStream,
