@@ -4,8 +4,6 @@ use std::fs::File;
 use std::io::{Read, Write};
 use std::path::PathBuf;
 use std::str::FromStr;
-
-use base64::{decode, encode};
 use proc_macro2::{Ident, Span};
 use quote::{quote, ToTokens};
 use syn::{AttributeArgs, Expr, ItemFn, ItemMod, ItemStruct, Path};
@@ -598,7 +596,7 @@ fn impl_continue(x: &Element, body: &mut proc_macro2::TokenStream, ignore: &mut 
 }
 
 fn gen_method_name(test_value: &str) -> (String, Ident) {
-    let method_name_string = encode(&test_value)
+    let method_name_string = test_value
         .replace("_", "__")
         .replace("=", "_")
         .replace("+", "add");
