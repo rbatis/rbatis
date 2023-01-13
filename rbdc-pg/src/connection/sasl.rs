@@ -1,3 +1,5 @@
+use base64::Engine;
+use base64::engine::general_purpose::STANDARD;
 use crate::connection::stream::PgStream;
 use crate::message::{
     Authentication, AuthenticationSasl, MessageFormat, SaslInitialResponse, SaslResponse,
@@ -48,7 +50,7 @@ pub(crate) async fn authenticate(
     }
 
     // channel-binding = "c=" base64
-    let channel_binding = format!("{}={}", CHANNEL_ATTR, base64::encode(GS2_HEADER));
+    let channel_binding = format!("{}={}", CHANNEL_ATTR, STANDARD.encode(GS2_HEADER));
 
     // "n=" saslname ;; Usernames are prepared using SASLprep.
     let username = format!("{}={}", USERNAME_ATTR, options.username);
@@ -149,7 +151,7 @@ pub(crate) async fn authenticate(
         "{client_final_message_wo_proof},{client_proof_attr}={client_proof}",
         client_final_message_wo_proof = client_final_message_wo_proof,
         client_proof_attr = CLIENT_PROOF_ATTR,
-        client_proof = base64::encode(&client_proof)
+        client_proof = STANDARD.encode(&client_proof)
     );
 
     stream.send(SaslResponse(&client_final_message)).await?;

@@ -1,4 +1,6 @@
 use std::str::from_utf8;
+use base64::Engine;
+use base64::engine::general_purpose::STANDARD;
 
 use bytes::{Buf, Bytes};
 use memchr::memchr;
@@ -149,7 +151,7 @@ impl Decode<'_> for AuthenticationSaslContinue {
                 }
 
                 b's' => {
-                    salt = base64::decode(value).map_err(|e| Error::from(e.to_string()))?;
+                    salt = STANDARD.decode(value).map_err(|e| Error::from(e.to_string()))?;
                 }
 
                 _ => {}
@@ -179,7 +181,7 @@ impl Decode<'_> for AuthenticationSaslFinal {
             let value = &item[2..];
 
             if let b'v' = key {
-                verifier = base64::decode(value).map_err(Error::protocol)?;
+                verifier = STANDARD.decode(value).map_err(Error::protocol)?;
             }
         }
 
