@@ -61,7 +61,7 @@ async fn select_by_condition(rb: &mut dyn Executor, page_req: &PageRequest, name
 
 
 # How it works
-* 1 first define html_sql
+* 1 first define `html_sql`(Of course, `py_sql` The implementation is also based on the `py_sql`  syntax tree  escaped to `html_sql`)
 ```rust
 #[html_sql(r#"<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.1//EN" "https://raw.githubusercontent.com/rbatis/rbatis/master/rbatis-codegen/mybatis-3-mapper.dtd">
   <select id="select_by_condition">
