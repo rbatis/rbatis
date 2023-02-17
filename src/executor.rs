@@ -14,7 +14,7 @@ use rbdc::db::{Connection, ExecResult};
 use rbs::Value;
 use serde::de::DeserializeOwned;
 
-/// the rbatis's Executor. this trait maybe is tx,connection,rbatis object
+/// the rbatis's Executor. this trait impl with structs = Rbatis,RBatisConnExecutor,RBatisTxExecutor,RBatisTxExecutorGuard
 pub trait Executor: RbatisRef {
     fn exec(&mut self, sql: &str, args: Vec<Value>) -> BoxFuture<'_, Result<ExecResult, Error>>;
     fn fetch(&mut self, sql: &str, args: Vec<Value>) -> BoxFuture<'_, Result<Value, Error>>;
