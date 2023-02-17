@@ -28,7 +28,15 @@ impl IsTest for rbs::Value {
 ///    ....
 ///  </if>
 /// ```
-#[html_sql("example/example.html")]
+#[html_sql(r#"
+    <select id="custom_func">
+        `select * from biz_activity`
+        <where>
+            <if test="name.is_test()">
+                `and name like #{name}`
+            </if>
+        </where>
+    </select>"#)]
 async fn custom_func(rb: &mut dyn Executor, name: &str) -> rbatis::Result<Vec<BizActivity>> {
     impled!()
 }

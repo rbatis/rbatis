@@ -39,16 +39,6 @@
         </where>
     </select>
 
-    <select id="custom_func">
-        `select * from biz_activity`
-        <where>
-            <if test="name.is_test()">
-                `and name like #{name}`
-            </if>
-        </where>
-    </select>
-
-
     <select id="select_page_data">
         `select `
         <if test="do_count == true">
