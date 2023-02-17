@@ -5,7 +5,7 @@ use crate::snowflake::new_snowflake_id;
 use crate::Error;
 use dark_std::sync::SyncVec;
 use once_cell::sync::OnceCell;
-use rbdc::db::{Connection, Driver};
+use rbdc::db::Connection;
 use rbdc::pool::{ManagerPorxy, Pool};
 use std::fmt::{Debug, Formatter};
 use std::sync::Arc;
@@ -223,14 +223,5 @@ impl Rbatis {
     /// is debug mode
     pub fn is_debug_mode(&self) -> bool {
         crate::decode::is_debug_mode()
-    }
-
-    /// get driver
-    pub fn driver(&self) -> Option<&dyn Driver> {
-        if let Ok(v) = self.get_pool() {
-            Some(&*v.manager.driver)
-        } else {
-            None
-        }
     }
 }
