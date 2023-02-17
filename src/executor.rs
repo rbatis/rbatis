@@ -21,15 +21,15 @@ pub trait Executor: RbatisRef {
 }
 
 pub trait RbatisRef: Send {
-    fn get_rbatis(&self) -> &Rbatis;
+    fn rbatis_ref(&self) -> &Rbatis;
 
     fn driver_type(&self) -> crate::Result<&str> {
-        self.get_rbatis().driver_type()
+        self.rbatis_ref().driver_type()
     }
 }
 
 impl RbatisRef for Rbatis {
-    fn get_rbatis(&self) -> &Rbatis {
+    fn rbatis_ref(&self) -> &Rbatis {
         self
     }
 }
@@ -75,12 +75,12 @@ impl Executor for RBatisConnExecutor {
         Box::pin(async move {
             let rb_task_id = new_snowflake_id();
             let is_prepared = args.len() > 0;
-            for item in self.get_rbatis().sql_intercepts.iter() {
-                item.do_intercept(self.get_rbatis(), &mut sql, &mut args, is_prepared)?;
+            for item in self.rbatis_ref().sql_intercepts.iter() {
+                item.do_intercept(self.rbatis_ref(), &mut sql, &mut args, is_prepared)?;
             }
-            if self.get_rbatis().log_plugin.is_enable() {
+            if self.rbatis_ref().log_plugin.is_enable() {
                 let b = Value::Array(args);
-                self.get_rbatis().log_plugin.do_log(
+                self.rbatis_ref().log_plugin.do_log(
                     LevelFilter::Info,
                     &format!(
                         "[rbatis] [{}] Exec   ==> {}\n{}[rbatis]                      Args   ==> {}",
@@ -93,10 +93,10 @@ impl Executor for RBatisConnExecutor {
                 args = b.into();
             }
             let result = self.conn.exec(&sql, args).await;
-            if self.get_rbatis().log_plugin.is_enable() {
+            if self.rbatis_ref().log_plugin.is_enable() {
                 match &result {
                     Ok(result) => {
-                        self.get_rbatis().log_plugin.do_log(
+                        self.rbatis_ref().log_plugin.do_log(
                             LevelFilter::Info,
                             &format!(
                                 "[rbatis] [{}] RowsAffected <== {}",
@@ -105,7 +105,7 @@ impl Executor for RBatisConnExecutor {
                         );
                     }
                     Err(e) => {
-                        self.get_rbatis().log_plugin.do_log(
+                        self.rbatis_ref().log_plugin.do_log(
                             LevelFilter::Error,
                             &format!("[rbatis] [{}] ReturnError  <== {}", rb_task_id, e),
                         );
@@ -121,12 +121,12 @@ impl Executor for RBatisConnExecutor {
         Box::pin(async move {
             let rb_task_id = new_snowflake_id();
             let is_prepared = args.len() > 0;
-            for item in self.get_rbatis().sql_intercepts.iter() {
-                item.do_intercept(self.get_rbatis(), &mut sql, &mut args, is_prepared)?;
+            for item in self.rbatis_ref().sql_intercepts.iter() {
+                item.do_intercept(self.rbatis_ref(), &mut sql, &mut args, is_prepared)?;
             }
-            if self.get_rbatis().log_plugin.is_enable() {
+            if self.rbatis_ref().log_plugin.is_enable() {
                 let b = Value::Array(args);
-                self.get_rbatis().log_plugin.do_log(
+                self.rbatis_ref().log_plugin.do_log(
                     LevelFilter::Info,
                     &format!(
                         "[rbatis] [{}] Fetch  ==> {}\n{}[rbatis]                      Args   ==> {}",
@@ -139,16 +139,16 @@ impl Executor for RBatisConnExecutor {
                 args = b.into();
             }
             let result = self.conn.get_values(&sql, args).await;
-            if self.get_rbatis().log_plugin.is_enable() {
+            if self.rbatis_ref().log_plugin.is_enable() {
                 match &result {
                     Ok(result) => {
-                        self.get_rbatis().log_plugin.do_log(
+                        self.rbatis_ref().log_plugin.do_log(
                             LevelFilter::Info,
                             &format!("[rbatis] [{}] ReturnRows <== {}", rb_task_id, result.len()),
                         );
                     }
                     Err(e) => {
-                        self.get_rbatis().log_plugin.do_log(
+                        self.rbatis_ref().log_plugin.do_log(
                             LevelFilter::Error,
                             &format!("[rbatis] [{}] ReturnError  <== {}", rb_task_id, e),
                         );
@@ -161,7 +161,7 @@ impl Executor for RBatisConnExecutor {
 }
 
 impl RbatisRef for RBatisConnExecutor {
-    fn get_rbatis(&self) -> &Rbatis {
+    fn rbatis_ref(&self) -> &Rbatis {
         &self.rb
     }
 }
@@ -224,12 +224,12 @@ impl Executor for RBatisTxExecutor {
         let mut sql = sql.to_string();
         Box::pin(async move {
             let is_prepared = args.len() > 0;
-            for item in self.get_rbatis().sql_intercepts.iter() {
-                item.do_intercept(self.get_rbatis(), &mut sql, &mut args, is_prepared)?;
+            for item in self.rbatis_ref().sql_intercepts.iter() {
+                item.do_intercept(self.rbatis_ref(), &mut sql, &mut args, is_prepared)?;
             }
-            if self.get_rbatis().log_plugin.is_enable() {
+            if self.rbatis_ref().log_plugin.is_enable() {
                 let b = Value::Array(args);
-                self.get_rbatis().log_plugin.do_log(
+                self.rbatis_ref().log_plugin.do_log(
                     LevelFilter::Info,
                     &format!(
                         "[rbatis] [{}] Exec   ==> {}\n{}[rbatis]                      Args   ==> {}",
@@ -242,10 +242,10 @@ impl Executor for RBatisTxExecutor {
                 args = b.into();
             }
             let result = self.conn.exec(&sql, args).await;
-            if self.get_rbatis().log_plugin.is_enable() {
+            if self.rbatis_ref().log_plugin.is_enable() {
                 match &result {
                     Ok(result) => {
-                        self.get_rbatis().log_plugin.do_log(
+                        self.rbatis_ref().log_plugin.do_log(
                             LevelFilter::Info,
                             &format!(
                                 "[rbatis] [{}] RowsAffected <== {}",
@@ -254,7 +254,7 @@ impl Executor for RBatisTxExecutor {
                         );
                     }
                     Err(e) => {
-                        self.get_rbatis().log_plugin.do_log(
+                        self.rbatis_ref().log_plugin.do_log(
                             LevelFilter::Error,
                             &format!("[rbatis] [{}] ReturnError  <== {}", self.tx_id, e),
                         );
@@ -269,12 +269,12 @@ impl Executor for RBatisTxExecutor {
         let mut sql = sql.to_string();
         Box::pin(async move {
             let is_prepared = args.len() > 0;
-            for item in self.get_rbatis().sql_intercepts.iter() {
-                item.do_intercept(self.get_rbatis(), &mut sql, &mut args, is_prepared)?;
+            for item in self.rbatis_ref().sql_intercepts.iter() {
+                item.do_intercept(self.rbatis_ref(), &mut sql, &mut args, is_prepared)?;
             }
-            if self.get_rbatis().log_plugin.is_enable() {
+            if self.rbatis_ref().log_plugin.is_enable() {
                 let b = Value::Array(args);
-                self.get_rbatis().log_plugin.do_log(
+                self.rbatis_ref().log_plugin.do_log(
                     LevelFilter::Info,
                     &format!(
                         "[rbatis] [{}] Fetch  ==> {}\n{}[rbatis]                      Args   ==> {}",
@@ -287,16 +287,16 @@ impl Executor for RBatisTxExecutor {
                 args = b.into();
             }
             let result = self.conn.get_values(&sql, args).await;
-            if self.get_rbatis().log_plugin.is_enable() {
+            if self.rbatis_ref().log_plugin.is_enable() {
                 match &result {
                     Ok(result) => {
-                        self.get_rbatis().log_plugin.do_log(
+                        self.rbatis_ref().log_plugin.do_log(
                             LevelFilter::Info,
                             &format!("[rbatis] [{}] ReturnRows <== {}", self.tx_id, result.len()),
                         );
                     }
                     Err(e) => {
-                        self.get_rbatis().log_plugin.do_log(
+                        self.rbatis_ref().log_plugin.do_log(
                             LevelFilter::Error,
                             &format!("[rbatis] [{}] ReturnError <== {}", self.tx_id, e),
                         );
@@ -309,7 +309,7 @@ impl Executor for RBatisTxExecutor {
 }
 
 impl RbatisRef for RBatisTxExecutor {
-    fn get_rbatis(&self) -> &Rbatis {
+    fn rbatis_ref(&self) -> &Rbatis {
         &self.rb
     }
 }
@@ -414,7 +414,7 @@ impl RBatisTxExecutor {
         RBatisTxExecutorGuard {
             tx: Some(self),
             callback: Box::new(move |arg| {
-                let rb = arg.get_rbatis().clone();
+                let rb = arg.rbatis_ref().clone();
                 let future = callback(arg);
                 if let Ok(pool) = rb.get_pool() {
                     pool.spawn_task(future);
@@ -447,7 +447,7 @@ impl Drop for RBatisTxExecutorGuard {
 }
 
 impl RbatisRef for RBatisTxExecutorGuard {
-    fn get_rbatis(&self) -> &Rbatis {
+    fn rbatis_ref(&self) -> &Rbatis {
         &self.rb
     }
 }
@@ -518,7 +518,7 @@ impl Executor for Rbatis {
 }
 
 impl RbatisRef for &Rbatis {
-    fn get_rbatis(&self) -> &Rbatis {
+    fn rbatis_ref(&self) -> &Rbatis {
         self
     }
 }
