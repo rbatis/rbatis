@@ -1,4 +1,4 @@
-use crate::codegen::syntax_tree::{Name, NodeType};
+use crate::codegen::syntax_tree_pysql::{Name, NodeType};
 
 #[derive(Clone, Debug, Eq, PartialEq)]
 pub struct WhereNode {

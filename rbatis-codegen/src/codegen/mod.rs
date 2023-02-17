@@ -1,3 +1,6 @@
+/// The core logic of code generation is written in func.rs
+/// The syntax tree we use is the html tag structure loader_html.rs Element struct
+
 extern crate proc_macro;
 
 use syn::{parse_macro_input, AttributeArgs, ItemFn};
@@ -9,7 +12,7 @@ pub mod loader_html;
 pub mod parser_html;
 pub mod parser_pysql;
 pub mod string_util;
-pub mod syntax_tree;
+pub mod syntax_tree_pysql;
 
 pub fn expr(args: TokenStream, func: TokenStream) -> TokenStream {
     //let args = parse_macro_input!(args as AttributeArgs);
