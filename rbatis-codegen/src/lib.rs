@@ -1,10 +1,7 @@
 pub mod error;
-#[macro_use]
-pub mod bencher;
 pub mod ops;
 pub mod ops_cmp;
 pub mod ops_eq;
-
 pub mod codegen;
 pub mod from_bool;
 pub mod ops_add;

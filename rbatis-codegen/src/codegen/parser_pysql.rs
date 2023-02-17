@@ -1,24 +1,24 @@
 use crate::codegen::parser_html::parse_html;
 use crate::codegen::proc_macro::TokenStream;
-use crate::codegen::syntax_tree::bind_node::BindNode;
-use crate::codegen::syntax_tree::choose_node::ChooseNode;
-use crate::codegen::syntax_tree::continue_node::ContinueNode;
-use crate::codegen::syntax_tree::error::Error;
-use crate::codegen::syntax_tree::foreach_node::ForEachNode;
-use crate::codegen::syntax_tree::if_node::IfNode;
-use crate::codegen::syntax_tree::otherwise_node::OtherwiseNode;
-use crate::codegen::syntax_tree::set_node::SetNode;
-use crate::codegen::syntax_tree::string_node::StringNode;
-use crate::codegen::syntax_tree::trim_node::TrimNode;
-use crate::codegen::syntax_tree::when_node::WhenNode;
-use crate::codegen::syntax_tree::where_node::WhereNode;
-use crate::codegen::syntax_tree::{DefaultName, Name, NodeType};
+use crate::codegen::syntax_tree_pysql::bind_node::BindNode;
+use crate::codegen::syntax_tree_pysql::choose_node::ChooseNode;
+use crate::codegen::syntax_tree_pysql::continue_node::ContinueNode;
+use crate::codegen::syntax_tree_pysql::error::Error;
+use crate::codegen::syntax_tree_pysql::foreach_node::ForEachNode;
+use crate::codegen::syntax_tree_pysql::if_node::IfNode;
+use crate::codegen::syntax_tree_pysql::otherwise_node::OtherwiseNode;
+use crate::codegen::syntax_tree_pysql::set_node::SetNode;
+use crate::codegen::syntax_tree_pysql::string_node::StringNode;
+use crate::codegen::syntax_tree_pysql::trim_node::TrimNode;
+use crate::codegen::syntax_tree_pysql::when_node::WhenNode;
+use crate::codegen::syntax_tree_pysql::where_node::WhereNode;
+use crate::codegen::syntax_tree_pysql::{DefaultName, Name, NodeType};
 use quote::ToTokens;
 use std::collections::HashMap;
 use syn::{AttributeArgs, ItemFn};
 
 pub trait ParsePySql {
-    fn parse_pysql(arg: &str) -> Result<Vec<NodeType>, crate::codegen::syntax_tree::error::Error>;
+    fn parse_pysql(arg: &str) -> Result<Vec<NodeType>, crate::codegen::syntax_tree_pysql::error::Error>;
 }
 
 pub fn impl_fn_py(m: &ItemFn, args: &AttributeArgs) -> TokenStream {
@@ -29,7 +29,7 @@ pub fn impl_fn_py(m: &ItemFn, args: &AttributeArgs) -> TokenStream {
     }
     data = data.replace("\\n", "\n");
     let nodes = NodeType::parse_pysql(&data).expect("[rbatis] parse py_sql fail!");
-    let htmls = crate::codegen::syntax_tree::to_html(
+    let htmls = crate::codegen::syntax_tree_pysql::to_html(
         &nodes,
         data.starts_with("select") || data.starts_with(" select"),
         &fn_name,

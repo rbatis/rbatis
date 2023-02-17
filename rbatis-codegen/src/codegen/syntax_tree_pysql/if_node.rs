@@ -1,13 +1,13 @@
-use crate::codegen::syntax_tree::{Name, NodeType};
+use crate::codegen::syntax_tree_pysql::{Name, NodeType};
 
 #[derive(Clone, Debug, Eq, PartialEq)]
-pub struct WhenNode {
+pub struct IfNode {
     pub childs: Vec<NodeType>,
     pub test: String,
 }
 
-impl Name for WhenNode {
+impl Name for IfNode {
     fn name() -> &'static str {
-        "when"
+        "if"
     }
 }

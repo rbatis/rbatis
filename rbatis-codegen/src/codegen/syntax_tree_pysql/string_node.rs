@@ -1,4 +1,4 @@
-use crate::codegen::syntax_tree::Name;
+use crate::codegen::syntax_tree_pysql::Name;
 
 /// the string node
 /// for example:

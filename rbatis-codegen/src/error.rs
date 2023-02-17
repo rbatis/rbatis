@@ -1,4 +1,3 @@
-//! Errorand Result types.
 use std::error::Error as StdError;
 use std::fmt::{self, Debug, Display};
 use std::io;
@@ -9,7 +8,7 @@ use serde::{Deserialize, Deserializer};
 
 pub type Result<T> = std::result::Result<T, Error>;
 
-/// A generic error that represents all the ways a method can fail inside of rexpr::core.
+/// Error
 #[derive(Debug)]
 #[non_exhaustive]
 pub enum Error {
@@ -18,8 +17,6 @@ pub enum Error {
 }
 
 impl Display for Error {
-    // IntellijRust does not understand that [non_exhaustive] applies only for downstream crates
-    // noinspection RsMatchCheck
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         match self {
             Error::E(error) => write!(f, "{}", error),

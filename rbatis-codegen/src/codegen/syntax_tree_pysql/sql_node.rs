@@ -1,4 +1,4 @@
-use crate::codegen::syntax_tree::{AsHtml, Name, NodeType};
+use crate::codegen::syntax_tree_pysql::{AsHtml, Name, NodeType};
 
 /// the SqlNode
 #[derive(Clone, Debug, Eq, PartialEq)]
