@@ -1,15 +1,9 @@
-RBDC
+RBDC driver abstract
 
-* an database driver abstract
-
-* support zero copy serde-ser/de
-
-Database -> bytes ->rbs::Value-> Struct(User Define)
-Struct(User Define) -> rbs::ValueRef -> ref clone() -> Database
-
+* an database driver abstract for rbatis
 * supported database drivers see [rbatis](https://github.com/rbatis/rbatis)
 
-### how to define my driver?
+### how to define my driver to support rbdc driver?
 should impl trait and load driver
 * impl trait Driver
 * impl trait Connection
