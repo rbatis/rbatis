@@ -1,6 +1,5 @@
 use rbs::Value;
 use std::cmp::Ordering;
-use std::cmp::Ordering::Less;
 pub use std::ops::Index;
 
 /// convert Value to Value
@@ -14,6 +13,7 @@ pub trait AsProxy {
     fn string(self) -> String;
     fn bool(&self) -> bool;
     fn as_sql(&self) -> String;
+    fn as_binary(&self) -> Vec<u8>;
 }
 
 impl AsProxy for Value {
@@ -53,6 +53,13 @@ impl AsProxy for Value {
         match self {
             Value::String(s) => s.to_string(),
             _ => self.to_string(),
+        }
+    }
+
+    fn as_binary(&self) -> Vec<u8> {
+        match self {
+            Value::Binary(s) => s.to_owned(),
+            _ => vec![]
         }
     }
 }
@@ -117,7 +124,7 @@ pub trait PartialOrd<Rhs: ?Sized = Self> {
     #[inline]
     #[must_use]
     fn op_lt(&self, other: &Rhs) -> bool {
-        self.op_partial_cmp(other).eq(&Some(Less))
+        self.op_partial_cmp(other).eq(&Some(Ordering::Less))
     }
 
     /// This method tests less than or equal to (for `self` and `other`) and is used by the `<=`
