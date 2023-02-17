@@ -107,7 +107,7 @@ pub(crate) fn impl_macro_py_sql(target_fn: &ItemFn, args: &AttributeArgs) -> Tok
          #sql_args_gen
          #fn_body
          use rbatis::executor::{RbatisRef};
-         let driver_type = #rbatis_ident.get_rbatis().driver_type()?;
+         let driver_type = #rbatis_ident.rbatis_ref().driver_type()?;
          use rbatis::rbatis_codegen;
          #gen_func
          let (mut sql,rb_args) = do_py_sql(&rbs::Value::Map(rb_arg_map), '?');

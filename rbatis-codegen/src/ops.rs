@@ -360,8 +360,8 @@ mod test {
     #[test]
     fn test_cast() {
         let b = to_value!(u64::MAX);
-        assert_eq!(b.cast_i64(), -1);
+        assert_eq!(b.i64(), -1);
         let b = to_value!(100u64);
-        assert_eq!(b.cast_i64(), 100i64);
+        assert_eq!(b.i64(), 100i64);
     }
 }
