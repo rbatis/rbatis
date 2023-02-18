@@ -82,7 +82,7 @@ impl Executor for RBatisConnExecutor {
                 self.rbatis_ref().log_plugin.do_log(
                     LevelFilter::Info,
                     &format!(
-                        "[rbatis] [{}] Exec   ==> `{}` Args  ==> {}",
+                        "[rbatis] [{}] Exec   ==> `{}` {}",
                         &rb_task_id,
                         sql,
                         &b
@@ -127,7 +127,7 @@ impl Executor for RBatisConnExecutor {
                 self.rbatis_ref().log_plugin.do_log(
                     LevelFilter::Info,
                     &format!(
-                        "[rbatis] [{}] Fetch  ==> `{}` Args ==> {}",
+                        "[rbatis] [{}] Fetch  ==> `{}` {}",
                         rb_task_id,
                         &sql,
                         &b
@@ -229,7 +229,7 @@ impl Executor for RBatisTxExecutor {
                 self.rbatis_ref().log_plugin.do_log(
                     LevelFilter::Info,
                     &format!(
-                        "[rbatis] [{}] Exec   ==> `{}` Args ==> {}",
+                        "[rbatis] [{}] Exec   ==> `{}` {}",
                         self.tx_id,
                         &sql,
                         &b
@@ -273,7 +273,7 @@ impl Executor for RBatisTxExecutor {
                 self.rbatis_ref().log_plugin.do_log(
                     LevelFilter::Info,
                     &format!(
-                        "[rbatis] [{}] Fetch  ==> `{}` Args ==> {}",
+                        "[rbatis] [{}] Fetch  ==> `{}` {}",
                         self.tx_id,
                         &sql,
                         &b
