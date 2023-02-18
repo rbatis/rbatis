@@ -1,6 +1,3 @@
-//2020-11-15 00:31:25.803227700 +08:00 INFO rbatis::plugin::log
-pub const LOG_SPACE: &'static str = "                                                      ";
-
 /// convert name to snake name
 pub fn to_snake_name(name: &str) -> String {
     let len = name.len();
