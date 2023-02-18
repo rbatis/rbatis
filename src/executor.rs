@@ -5,7 +5,6 @@ use crate::decode::decode;
 use crate::rbatis::Rbatis;
 use crate::snowflake::new_snowflake_id;
 use crate::sql::tx::Tx;
-use crate::utils::string_util;
 use crate::Error;
 use futures::Future;
 use futures_core::future::BoxFuture;
@@ -83,10 +82,9 @@ impl Executor for RBatisConnExecutor {
                 self.rbatis_ref().log_plugin.do_log(
                     LevelFilter::Info,
                     &format!(
-                        "[rbatis] [{}] Exec   ==> {}\n{}[rbatis]                      Args   ==> {}",
+                        "[rbatis] [{}] Exec   ==> `{}` Args  ==> {}",
                         &rb_task_id,
                         sql,
-                        string_util::LOG_SPACE,
                         &b
                     ),
                 );
@@ -129,10 +127,9 @@ impl Executor for RBatisConnExecutor {
                 self.rbatis_ref().log_plugin.do_log(
                     LevelFilter::Info,
                     &format!(
-                        "[rbatis] [{}] Fetch  ==> {}\n{}[rbatis]                      Args   ==> {}",
+                        "[rbatis] [{}] Fetch  ==> `{}` Args ==> {}",
                         rb_task_id,
                         &sql,
-                        string_util::LOG_SPACE,
                         &b
                     ),
                 );
@@ -232,10 +229,9 @@ impl Executor for RBatisTxExecutor {
                 self.rbatis_ref().log_plugin.do_log(
                     LevelFilter::Info,
                     &format!(
-                        "[rbatis] [{}] Exec   ==> {}\n{}[rbatis]                      Args   ==> {}",
+                        "[rbatis] [{}] Exec   ==> `{}` Args ==> {}",
                         self.tx_id,
                         &sql,
-                        string_util::LOG_SPACE,
                         &b
                     ),
                 );
@@ -277,10 +273,9 @@ impl Executor for RBatisTxExecutor {
                 self.rbatis_ref().log_plugin.do_log(
                     LevelFilter::Info,
                     &format!(
-                        "[rbatis] [{}] Fetch  ==> {}\n{}[rbatis]                      Args   ==> {}",
+                        "[rbatis] [{}] Fetch  ==> `{}` Args ==> {}",
                         self.tx_id,
                         &sql,
-                        string_util::LOG_SPACE,
                         &b
                     ),
                 );
