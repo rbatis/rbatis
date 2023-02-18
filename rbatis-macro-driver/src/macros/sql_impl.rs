@@ -5,7 +5,7 @@ use syn;
 use syn::{AttributeArgs, FnArg, ItemFn, Lit, NestedMeta, Pat};
 
 use crate::proc_macro::TokenStream;
-use crate::util::{find_fn_body, find_return_type, get_fn_args, is_fetch, is_rbatis_ref};
+use crate::util::{find_fn_body, find_return_type, get_fn_args, is_query, is_rbatis_ref};
 
 //impl sql macro
 pub(crate) fn impl_macro_sql(target_fn: &ItemFn, args: &AttributeArgs) -> TokenStream {
@@ -77,9 +77,9 @@ pub(crate) fn impl_macro_sql(target_fn: &ItemFn, args: &AttributeArgs) -> TokenS
     }
     let mut decode = quote! {};
     let mut call_method = quote! {};
-    let is_fetch = is_fetch(&return_ty.to_string());
-    if is_fetch {
-        call_method = quote! {fetch};
+    let is_query = is_query(&return_ty.to_string());
+    if is_query {
+        call_method = quote! {query};
         decode = quote! { Ok(rbatis::decode::decode(r)?)}
     } else {
         call_method = quote! {exec};

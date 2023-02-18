@@ -12,7 +12,7 @@ use crate::proc_macro::TokenStream;
 mod macros;
 mod util;
 
-/// auto create sql macro,this macro use RB.fetch_prepare and RB.exec_prepare
+/// auto create sql macro,this macro use RB.query_prepare and RB.exec_prepare
 /// for example:
 ///     pub static RB:Lazy<Rbatis> = Lazy::new(||Rbatis::new());
 ///     #[sql(RB, "select * from biz_activity where id = ?")]
@@ -36,7 +36,7 @@ pub fn sql(args: TokenStream, func: TokenStream) -> TokenStream {
     stream
 }
 
-/// py sql create macro,this macro use RB.py_fetch and RB.py_exec
+/// py sql create macro,this macro use RB.py_query and RB.py_exec
 ///
 ///  pub static RB:Lazy<Rbatis> = Lazy::new(||Rbatis::new());
 ///  #[py_sql(RB,"select * from biz_activity where delete_flag = 0")]
@@ -91,7 +91,7 @@ pub fn py_sql(args: TokenStream, func: TokenStream) -> TokenStream {
     stream
 }
 
-/// html sql create macro,this macro use RB.py_fetch and RB.py_exec
+/// html sql create macro,this macro use RB.py_query and RB.py_exec
 /// for example:
 ///
 /// pub static RB:Lazy<Rbatis> = Lazy::new(||Rbatis::new());

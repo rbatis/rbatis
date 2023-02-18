@@ -202,7 +202,7 @@ mod test {
     }
 
     #[test]
-    fn test_fetch_decode() {
+    fn test_query_decode() {
         let f = async move {
             let mut rb = Rbatis::new();
             rb.init(MockDriver {}, "test").unwrap();
