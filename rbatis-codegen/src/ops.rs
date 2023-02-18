@@ -362,7 +362,7 @@ pub trait From<T>: Sized {
 #[cfg(test)]
 mod test {
     use crate::ops::AsProxy;
-    use rbs::{to_value, Value};
+    use rbs::to_value;
 
     #[test]
     fn test_cast() {
