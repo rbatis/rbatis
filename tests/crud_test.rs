@@ -202,17 +202,17 @@ mod test {
     }
 
     #[test]
-    fn test_fetch_decode() {
+    fn test_query_decode() {
         let f = async move {
             let mut rb = Rbatis::new();
             rb.init(MockDriver {}, "test").unwrap();
             let r: Vec<MockTable> = rb
-                .fetch_decode("select * from mock_table", vec![])
+                .query_decode("select * from mock_table", vec![])
                 .await
                 .unwrap();
             let mut conn = rb.acquire().await.unwrap();
             let r: Vec<MockTable> = conn
-                .fetch_decode("select * from mock_table", vec![])
+                .query_decode("select * from mock_table", vec![])
                 .await
                 .unwrap();
         };
@@ -220,13 +220,13 @@ mod test {
     }
 
     #[test]
-    fn test_fetch_decode_tx() {
+    fn test_query_decode_tx() {
         let f = async move {
             let rb = Rbatis::new();
             rb.init(MockDriver {}, "test").unwrap();
             let mut tx = rb.acquire_begin().await.unwrap();
             let r: Vec<MockTable> = tx
-                .fetch_decode("select * from mock_table", vec![])
+                .query_decode("select * from mock_table", vec![])
                 .await
                 .unwrap();
         };
@@ -234,13 +234,13 @@ mod test {
     }
 
     #[test]
-    fn test_fetch_decode_tx_guard() {
+    fn test_query_decode_tx_guard() {
         let f = async move {
             let rb = Rbatis::new();
             rb.init(MockDriver {}, "test").unwrap();
             let mut tx = rb.acquire_begin().await.unwrap().defer_async(|tx| async {});
             let r: Vec<MockTable> = tx
-                .fetch_decode("select * from mock_table", vec![])
+                .query_decode("select * from mock_table", vec![])
                 .await
                 .unwrap();
         };

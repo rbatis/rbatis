@@ -7,9 +7,9 @@ use rbs::to_value;
 pub async fn main() {
     fast_log::init(fast_log::Config::new().console()).expect("rbatis init fail");
     let rb = init_db().await;
-    //fetch
+    //query
     let table: Option<BizActivity> = rb
-        .fetch_decode("select * from biz_activity limit ?", vec![to_value!(1)])
+        .query_decode("select * from biz_activity limit ?", vec![to_value!(1)])
         .await
         .unwrap();
     //exec

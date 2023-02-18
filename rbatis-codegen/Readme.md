@@ -55,7 +55,7 @@ async fn select_by_condition(rb: &mut dyn Executor, page_req: &PageRequest, name
 ```
 
 ```log
-2022-08-17 17:16:23.624803 INFO rbatis::plugin::log - [rbatis] [402390551883812864] Fetch  ==> select * from biz_activity where name like ? and create_time < ? and id != '-1' and  name != ''
+2022-08-17 17:16:23.624803 INFO rbatis::plugin::log - [rbatis] [402390551883812864] query  ==> select * from biz_activity where name like ? and create_time < ? and id != '-1' and  name != ''
                                                       [rbatis]                      Args   ==> ["test",DateTime("2022-08-17 17:16:23")]
 ```
 
@@ -82,7 +82,7 @@ async fn select_by_condition(
 ```rust
 // pub trait Executor{ //this is rbatis's Executor
 // fn exec(&mut self, sql: &str, args: Vec<Value>) -> BoxFuture<'_, Result<ExecResult, Error>>;
-//  fn fetch(&mut self, sql: &str, args: Vec<Value>) -> BoxFuture<'_, Result<Value, Error>>;
+//  fn query(&mut self, sql: &str, args: Vec<Value>) -> BoxFuture<'_, Result<Value, Error>>;
 // }
 pub async fn select_by_condition(
     rb: &mut dyn Executor,
@@ -114,7 +114,7 @@ pub async fn select_by_condition(
     }
     let (mut sql, rb_args) = impl_html_sql(&rbs::Value::Map(rb_arg_map), '?');
     use rbatis::executor::Executor;
-    let r = rb.fetch(&sql, rb_args).await?;
+    let r = rb.query(&sql, rb_args).await?;
     rbatis::decode::decode(r)
 }
 ```

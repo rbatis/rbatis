@@ -80,7 +80,7 @@ gen_template!({
             from: "from",
             r#as: "as",
             offset: "offset",
-            rows_fetch_next: "rows fetch next",
+            rows_query_next: "rows query next",
             rows_only: "rows only",
 });
 

@@ -31,7 +31,7 @@ Thanks to ```SQLX, deadpool, Tiberius, MyBatis, xorm``` and so on reference desi
 ### Performance
 
 * this bench test is MockTable,MockDriver,MockConnection to Assume that the network I/O time is 0
-* run code ```rbatis.fetch_decode::<Vec<i32>>("", vec![]).await;``` on benches bench_raw()
+* run code ```rbatis.query_decode::<Vec<i32>>("", vec![]).await;``` on benches bench_raw()
 * run code ```MockTable::insert(&mut rbatis.clone(),&t).await;``` on benches bench_insert()
 * run code ```MockTable::select_all(&mut rbatis.clone()).await.unwrap();``` on benches bench_select()
 
@@ -212,11 +212,11 @@ pub async fn main() {
     let rb = Rbatis::new();
     rb.init(SqliteDriver {}, "sqlite://target/sqlite.db").unwrap();
     let table: Option<BizActivity> = rb
-        .fetch_decode("select * from biz_activity limit ?", vec![rbs::to_value!(1)])
+        .query_decode("select * from biz_activity limit ?", vec![rbs::to_value!(1)])
         .await
         .unwrap();
     let count: u64 = rb
-        .fetch_decode("select count(1) as count from biz_activity", vec![])
+        .query_decode("select count(1) as count from biz_activity", vec![])
         .await
         .unwrap();
     println!(">>>>> table={:?}", table);

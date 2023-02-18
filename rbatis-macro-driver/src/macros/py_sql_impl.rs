@@ -4,7 +4,7 @@ use quote::ToTokens;
 use syn::{AttributeArgs, FnArg, ItemFn, Lit, NestedMeta, Pat};
 
 use crate::proc_macro::TokenStream;
-use crate::util::{find_fn_body, find_return_type, get_fn_args, is_fetch, is_rbatis_ref};
+use crate::util::{find_fn_body, find_return_type, get_fn_args, is_query, is_rbatis_ref};
 
 ///py_sql macro
 ///support args for rb:&Rbatis
@@ -75,12 +75,12 @@ pub(crate) fn impl_macro_py_sql(target_fn: &ItemFn, args: &AttributeArgs) -> Tok
     }
     //append all args
     let sql_args_gen = filter_args_context_id(&rbatis_name, &get_fn_args(target_fn));
-    let is_fetch = is_fetch(&return_ty.to_string());
+    let is_query = is_query(&return_ty.to_string());
     let mut call_method = quote! {};
-    if is_fetch {
+    if is_query {
         call_method = quote! {
              use rbatis::executor::{Executor};
-             let r=#rbatis_ident.fetch(&sql,rb_args).await?;
+             let r=#rbatis_ident.query(&sql,rb_args).await?;
              rbatis::decode::decode(r)
         };
     } else {

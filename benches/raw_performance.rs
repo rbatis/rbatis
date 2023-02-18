@@ -31,7 +31,7 @@ fn bench_raw() {
         rbatis.init(MockDriver {}, "mock://");
         rbatis.acquire().await.unwrap();
         rbatis::bench!(100000, {
-            let v = rbatis.fetch_decode::<Vec<i32>>("", vec![]).await;
+            let v = rbatis.query_decode::<Vec<i32>>("", vec![]).await;
         });
     };
     block_on!(f);

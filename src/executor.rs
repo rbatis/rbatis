@@ -16,7 +16,7 @@ use serde::de::DeserializeOwned;
 /// the rbatis's Executor. this trait impl with structs = Rbatis,RBatisConnExecutor,RBatisTxExecutor,RBatisTxExecutorGuard
 pub trait Executor: RbatisRef {
     fn exec(&mut self, sql: &str, args: Vec<Value>) -> BoxFuture<'_, Result<ExecResult, Error>>;
-    fn fetch(&mut self, sql: &str, args: Vec<Value>) -> BoxFuture<'_, Result<Value, Error>>;
+    fn query(&mut self, sql: &str, args: Vec<Value>) -> BoxFuture<'_, Result<Value, Error>>;
 }
 
 pub trait RbatisRef: Send {
@@ -50,16 +50,16 @@ impl RBatisConnExecutor {
         Ok(v)
     }
 
-    pub async fn fetch(&mut self, sql: &str, args: Vec<Value>) -> Result<Value, Error> {
-        let v = Executor::fetch(self, sql, args).await?;
+    pub async fn query(&mut self, sql: &str, args: Vec<Value>) -> Result<Value, Error> {
+        let v = Executor::query(self, sql, args).await?;
         Ok(v)
     }
 
-    pub async fn fetch_decode<T>(&mut self, sql: &str, args: Vec<Value>) -> Result<T, Error>
+    pub async fn query_decode<T>(&mut self, sql: &str, args: Vec<Value>) -> Result<T, Error>
     where
         T: DeserializeOwned,
     {
-        let v = Executor::fetch(self, sql, args).await?;
+        let v = Executor::query(self, sql, args).await?;
         Ok(decode(v)?)
     }
 }
@@ -114,7 +114,7 @@ impl Executor for RBatisConnExecutor {
         })
     }
 
-    fn fetch(&mut self, sql: &str, mut args: Vec<Value>) -> BoxFuture<'_, Result<Value, Error>> {
+    fn query(&mut self, sql: &str, mut args: Vec<Value>) -> BoxFuture<'_, Result<Value, Error>> {
         let mut sql = sql.to_string();
         Box::pin(async move {
             let rb_task_id = new_snowflake_id();
@@ -127,7 +127,7 @@ impl Executor for RBatisConnExecutor {
                 self.rbatis_ref().log_plugin.do_log(
                     LevelFilter::Info,
                     &format!(
-                        "[rbatis] [{}] Fetch  ==> `{}` {}",
+                        "[rbatis] [{}] Query  ==> `{}` {}",
                         rb_task_id,
                         &sql,
                         &b
@@ -197,17 +197,17 @@ impl<'a> RBatisTxExecutor {
         let v = Executor::exec(self, sql, args).await?;
         Ok(v)
     }
-    /// fetch value
-    pub async fn fetch(&mut self, sql: &str, args: Vec<Value>) -> Result<Value, Error> {
-        let v = Executor::fetch(self, sql, args).await?;
+    /// query value
+    pub async fn query(&mut self, sql: &str, args: Vec<Value>) -> Result<Value, Error> {
+        let v = Executor::query(self, sql, args).await?;
         Ok(v)
     }
-    /// fetch and decode
-    pub async fn fetch_decode<T>(&mut self, sql: &str, args: Vec<Value>) -> Result<T, Error>
+    /// query and decode
+    pub async fn query_decode<T>(&mut self, sql: &str, args: Vec<Value>) -> Result<T, Error>
     where
         T: DeserializeOwned,
     {
-        let v = Executor::fetch(self, sql, args).await?;
+        let v = Executor::query(self, sql, args).await?;
         Ok(decode(v)?)
     }
 }
@@ -261,7 +261,7 @@ impl Executor for RBatisTxExecutor {
         })
     }
 
-    fn fetch(&mut self, sql: &str, mut args: Vec<Value>) -> BoxFuture<'_, Result<Value, Error>> {
+    fn query(&mut self, sql: &str, mut args: Vec<Value>) -> BoxFuture<'_, Result<Value, Error>> {
         let mut sql = sql.to_string();
         Box::pin(async move {
             let is_prepared = args.len() > 0;
@@ -273,7 +273,7 @@ impl Executor for RBatisTxExecutor {
                 self.rbatis_ref().log_plugin.do_log(
                     LevelFilter::Info,
                     &format!(
-                        "[rbatis] [{}] Fetch  ==> `{}` {}",
+                        "[rbatis] [{}] Query  ==> `{}` {}",
                         self.tx_id,
                         &sql,
                         &b
@@ -458,12 +458,12 @@ impl Executor for RBatisTxExecutorGuard {
         })
     }
 
-    fn fetch(&mut self, sql: &str, args: Vec<Value>) -> BoxFuture<'_, Result<Value, Error>> {
+    fn query(&mut self, sql: &str, args: Vec<Value>) -> BoxFuture<'_, Result<Value, Error>> {
         let sql = sql.to_string();
         Box::pin(async move {
             match self.tx.as_mut() {
                 None => Err(Error::from("the tx is done!")),
-                Some(v) => v.fetch(&sql, args).await,
+                Some(v) => v.query(&sql, args).await,
             }
         })
     }
@@ -476,20 +476,20 @@ impl Rbatis {
         conn.exec(sql, args).await
     }
 
-    /// fetch raw Value
-    pub async fn fetch(&self, sql: &str, args: Vec<Value>) -> Result<Value, Error> {
+    /// query raw Value
+    pub async fn query(&self, sql: &str, args: Vec<Value>) -> Result<Value, Error> {
         let mut conn = self.acquire().await?;
-        let v = conn.fetch(sql, args).await?;
+        let v = conn.query(sql, args).await?;
         Ok(v)
     }
 
-    /// fetch and decode
-    pub async fn fetch_decode<T>(&self, sql: &str, args: Vec<Value>) -> Result<T, Error>
+    /// query and decode
+    pub async fn query_decode<T>(&self, sql: &str, args: Vec<Value>) -> Result<T, Error>
     where
         T: DeserializeOwned,
     {
         let mut conn = self.acquire().await?;
-        let v = conn.fetch(sql, args).await?;
+        let v = conn.query(sql, args).await?;
         Ok(decode(v)?)
     }
 }
@@ -503,11 +503,11 @@ impl Executor for Rbatis {
         })
     }
 
-    fn fetch(&mut self, sql: &str, args: Vec<Value>) -> BoxFuture<'_, Result<Value, Error>> {
+    fn query(&mut self, sql: &str, args: Vec<Value>) -> BoxFuture<'_, Result<Value, Error>> {
         let sql = sql.to_string();
         Box::pin(async move {
             let mut conn = self.acquire().await?;
-            conn.fetch(&sql, args).await
+            conn.query(&sql, args).await
         })
     }
 }
@@ -527,11 +527,11 @@ impl Executor for &Rbatis {
         })
     }
 
-    fn fetch(&mut self, sql: &str, args: Vec<Value>) -> BoxFuture<'_, Result<Value, Error>> {
+    fn query(&mut self, sql: &str, args: Vec<Value>) -> BoxFuture<'_, Result<Value, Error>> {
         let sql = sql.to_string();
         Box::pin(async move {
             let mut conn = self.acquire().await?;
-            conn.fetch(&sql, args).await
+            conn.query(&sql, args).await
         })
     }
 }
