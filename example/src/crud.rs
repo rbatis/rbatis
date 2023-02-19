@@ -58,50 +58,50 @@ pub async fn main() {
     }];
 
     let data = BizActivity::insert(&mut rb, &t).await;
-    println!("insert = {:?}", data);
+    println!("insert = {}", serde_json::to_value(data).unwrap_or_default());
 
     let _data = BizActivity::delete_by_name(&mut rb, "2").await;
     let _data = BizActivity::delete_by_name(&mut rb, "3").await;
 
     let data = BizActivity::insert_batch(&mut rb, &tables, 10).await;
-    println!("insert_batch = {:?}", data);
+    println!("insert_batch = {}", serde_json::to_value(&data).unwrap_or_default());
 
     let data = BizActivity::update_by_column_batch(&mut rb, &tables, "id").await;
-    println!("update_by_column_batch = {:?}", data);
+    println!("update_by_column_batch = {}", serde_json::to_value(data).unwrap_or_default());
 
     let data = BizActivity::select_all_by_id(&mut rb, "1", "1").await;
-    println!("select_all_by_id = {:?}", data);
+    println!("select_all_by_id = {}", serde_json::to_value(data).unwrap_or_default());
 
     let data = BizActivity::select_by_id(&mut rb, "1").await;
-    println!("select_by_id = {:?}", data);
+    println!("select_by_id = {}", serde_json::to_value(data).unwrap_or_default());
 
     let data = BizActivity::update_by_column(&mut rb, &t, "id").await;
-    println!("update_by_column = {:?}", data);
+    println!("update_by_column = {}", serde_json::to_value(data).unwrap_or_default());
 
     let data = BizActivity::update_by_name(&mut rb, &t, "test").await;
-    println!("update_by_name = {:?}", data);
+    println!("update_by_name = {}", serde_json::to_value(data).unwrap_or_default());
 
     let data = BizActivity::select_page(&mut rb, &PageRequest::new(1, 10)).await;
-    println!("select_page = {:?}", data);
+    println!("select_page = {}", serde_json::to_value(data).unwrap_or_default());
 
     let data = BizActivity::select_page_by_name(&mut rb, &PageRequest::new(1, 10), "").await;
-    println!("select_page_by_name = {:?}", data);
+    println!("select_page_by_name = {}", serde_json::to_value(data).unwrap_or_default());
 
     let data = BizActivity::delete_by_column(&mut rb, "id", "2").await;
-    println!("delete_by_column = {:?}", data);
+    println!("delete_by_column = {}", serde_json::to_value(data).unwrap_or_default());
 
     let data = BizActivity::delete_by_name(&mut rb, "2").await;
-    println!("delete_by_column = {:?}", data);
+    println!("delete_by_column = {}", serde_json::to_value(data).unwrap_or_default());
 
     let data = BizActivity::select_in_column(&mut rb, "id", &["1", "2", "3"]).await;
-    println!("select_in_column = {:?}", data);
+    println!("select_in_column = {}", serde_json::to_value(data).unwrap_or_default());
 
     let mut logic = ValueMap::new();
     logic.insert("id = ".into(), Value::I32(1));
     logic.insert("and id != ".into(), Value::I32(2));
     let data = BizActivity::select_by_method(&mut rb, &["1", "2"], logic).await;
-    println!("select_by_method = {:?}", data);
+    println!("select_by_method = {}", serde_json::to_value(data).unwrap_or_default());
 
     let data = BizActivity::delete_in_column(&mut rb, "id", &["1", "2", "3"]).await;
-    println!("delete_in_column = {:?}", data);
+    println!("delete_in_column = {}", serde_json::to_value(data).unwrap_or_default());
 }

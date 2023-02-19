@@ -97,7 +97,7 @@ impl EstablishParams {
 
         if handle.is_null() {
             // Failed to allocate memory
-            return Err(Error::Io(io::Error::new(
+            return Err(Error::from(io::Error::new(
                 io::ErrorKind::OutOfMemory,
                 "SQLite is unable to allocate memory to hold the sqlite3 object",
             )));

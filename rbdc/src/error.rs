@@ -1,11 +1,11 @@
 use std::fmt::{Display, Formatter};
 use std::num::{ParseFloatError, ParseIntError, TryFromIntError};
 use std::str::Utf8Error;
+use serde::{Serialize,Deserialize};
 
-#[derive(Debug)]
+#[derive(Debug,Serialize,Deserialize)]
 pub enum Error {
-    E(String),
-    Io(std::io::Error),
+    E(String)
 }
 
 impl Error {
@@ -20,7 +20,6 @@ impl Display for Error {
     fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
         match self {
             Error::E(e) => std::fmt::Display::fmt(&e, f),
-            Error::Io(e) => f.write_str(&e.to_string()),
         }
     }
 }
