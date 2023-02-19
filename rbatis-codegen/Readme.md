@@ -118,3 +118,9 @@ pub async fn select_by_condition(
     rbatis::decode::decode(r)
 }
 ```
+
+### Rbatis expression
+
+* Rbatis expression is ```#{name}```,```#{age + 1}```,```${age + 1}``` and  code test:``` <if test="dt >= '2009-12-12 00:00:00'"></if> ```
+* Rbatis expression will be Convert to original rust code,if Rbatis expression = ```#{age + 1}```,the code = ``` map["age"].op_add(1) ```
+* Rbatis expression directly use strings to compare and process date types,just like ``` <if test="dt >= '2009-12-12 00:00:00'"></if> ```,``` #{dt >= '2009-12-12 00:00:00'}```
