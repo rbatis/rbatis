@@ -99,7 +99,7 @@ where
             MaybeTlsStream::Upgrading => {
                 // we previously failed to upgrade and now hold no connection
                 // this should only happen from an internal misuse of this method
-                return Err(Error::Io(io::ErrorKind::ConnectionAborted.into()));
+                return Err(Error::E(io::ErrorKind::ConnectionAborted.to_string()));
             }
         };
 

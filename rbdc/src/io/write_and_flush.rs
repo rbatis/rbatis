@@ -33,7 +33,7 @@ impl<S: AsyncWrite + Unpin> Future for WriteAndFlush<'_, S> {
             }
         }
 
-        Pin::new(stream).poll_flush(cx).map_err(Error::Io)
+        Pin::new(stream).poll_flush(cx).map_err(|e|{Error::E(e.to_string())})
     }
 }
 
