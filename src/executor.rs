@@ -56,8 +56,8 @@ impl RBatisConnExecutor {
     }
 
     pub async fn query_decode<T>(&mut self, sql: &str, args: Vec<Value>) -> Result<T, Error>
-    where
-        T: DeserializeOwned,
+        where
+            T: DeserializeOwned,
     {
         let v = Executor::query(self, sql, args).await?;
         Ok(decode(v)?)
@@ -135,27 +135,31 @@ impl Executor for RBatisConnExecutor {
                 );
                 args = b.into();
             }
-            let result = self.conn.get_values(&sql, args).await;
+            let mut result = self.conn.get_values(&sql, args).await;
             if self.rbatis_ref().log_plugin.is_enable() {
-                match &result {
+                result = match result {
                     Ok(result) => {
+                        let result_len = result.len();
+                        let data = Value::Array(result);
                         if is_debug_mode() {
                             self.rbatis_ref().log_plugin.do_log(
                                 LevelFilter::Info,
-                                &format!("[rbatis] [{}] ReturnRows <== {},data={:?}", rb_task_id, result.len(),result),
+                                &format!("[rbatis] [{}] ReturnRows <== {} ,rows = {}", rb_task_id, result_len, &data),
                             );
-                        }else{
+                        } else {
                             self.rbatis_ref().log_plugin.do_log(
                                 LevelFilter::Info,
-                                &format!("[rbatis] [{}] ReturnRows <== {}", rb_task_id, result.len()),
+                                &format!("[rbatis] [{}] ReturnRows <== {}", rb_task_id, result_len),
                             );
                         }
+                        Ok(data.into())
                     }
                     Err(e) => {
                         self.rbatis_ref().log_plugin.do_log(
                             LevelFilter::Error,
                             &format!("[rbatis] [{}] ReturnError  <== {}", rb_task_id, e),
                         );
+                        Err(e)
                     }
                 }
             }
@@ -211,8 +215,8 @@ impl<'a> RBatisTxExecutor {
     }
     /// query and decode
     pub async fn query_decode<T>(&mut self, sql: &str, args: Vec<Value>) -> Result<T, Error>
-    where
-        T: DeserializeOwned,
+        where
+            T: DeserializeOwned,
     {
         let v = Executor::query(self, sql, args).await?;
         Ok(decode(v)?)
@@ -288,27 +292,31 @@ impl Executor for RBatisTxExecutor {
                 );
                 args = b.into();
             }
-            let result = self.conn.get_values(&sql, args).await;
+            let mut result = self.conn.get_values(&sql, args).await;
             if self.rbatis_ref().log_plugin.is_enable() {
-                match &result {
+                result = match result {
                     Ok(result) => {
+                        let result_len = result.len();
+                        let data = Value::Array(result);
                         if is_debug_mode() {
                             self.rbatis_ref().log_plugin.do_log(
                                 LevelFilter::Info,
-                                &format!("[rbatis] [{}] ReturnRows <== {},data={:?}", self.tx_id, result.len(), result),
+                                &format!("[rbatis] [{}] ReturnRows <== {} ,rows = {}", self.tx_id, result_len, &data),
                             );
-                        }else{
+                        } else {
                             self.rbatis_ref().log_plugin.do_log(
                                 LevelFilter::Info,
-                                &format!("[rbatis] [{}] ReturnRows <== {}", self.tx_id, result.len()),
+                                &format!("[rbatis] [{}] ReturnRows <== {}", self.tx_id, result_len),
                             );
                         }
+                        Ok(data.into())
                     }
                     Err(e) => {
                         self.rbatis_ref().log_plugin.do_log(
                             LevelFilter::Error,
                             &format!("[rbatis] [{}] ReturnError <== {}", self.tx_id, e),
                         );
+                        Err(e)
                     }
                 }
             }
@@ -417,8 +425,8 @@ impl RBatisTxExecutor {
     ///         });
     ///
     pub fn defer_async<F>(self, callback: fn(s: RBatisTxExecutor) -> F) -> RBatisTxExecutorGuard
-    where
-        F: Future<Output = ()> + Send + 'static,
+        where
+            F: Future<Output=()> + Send + 'static,
     {
         RBatisTxExecutorGuard {
             tx: Some(self),
@@ -499,8 +507,8 @@ impl Rbatis {
 
     /// query and decode
     pub async fn query_decode<T>(&self, sql: &str, args: Vec<Value>) -> Result<T, Error>
-    where
-        T: DeserializeOwned,
+        where
+            T: DeserializeOwned,
     {
         let mut conn = self.acquire().await?;
         let v = conn.query(sql, args).await?;
