@@ -4,6 +4,7 @@ use crate::model::init_db;
 use rbatis::crud;
 use rbatis::rbdc::datetime::FastDateTime;
 use serde::{Deserialize, Serialize};
+use serde_json::json;
 
 #[derive(Clone, Debug, Serialize, Deserialize)]
 pub struct Base {
@@ -33,5 +34,5 @@ pub async fn main() {
     fast_log::init(fast_log::Config::new().console()).expect("rbatis init fail");
     let rb = init_db().await;
     let datas = BizActivity::select_all(&mut rb.clone()).await.unwrap();
-    println!("{:?}", datas);
+    println!("{}", json!(datas));
 }

@@ -3,6 +3,7 @@ extern crate rbatis;
 
 pub mod model;
 
+use serde_json::json;
 use model::*;
 use rbatis::rbdc::datetime::FastDateTime;
 use rbatis::sql::PageRequest;
@@ -22,5 +23,5 @@ pub async fn main() {
     )
     .await
     .unwrap();
-    println!("{:?}", a);
+    println!("{}", json!(a));
 }

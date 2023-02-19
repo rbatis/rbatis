@@ -3,6 +3,7 @@ extern crate rbatis;
 
 pub mod model;
 
+use serde_json::json;
 use crate::rbatis::sql::IntoSql;
 use crate::{init_db, BizActivity};
 use model::*;
@@ -30,6 +31,6 @@ pub async fn main() {
     //use static ref
     let rb = init_db().await;
     let a = py_select(&mut rb.clone(), "", &[1, 2, 3]).await.unwrap();
-    println!(">>>>>>>>>>>> {:?}", a);
+    println!(">>>>>>>>>>>> {}", json!(a));
     l.wait();
 }

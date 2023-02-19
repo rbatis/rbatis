@@ -2,6 +2,8 @@
 extern crate rbatis;
 
 pub mod model;
+
+use serde_json::json;
 use model::*;
 
 use rbatis::executor::Executor;
@@ -47,5 +49,5 @@ pub async fn main() {
     //use static ref
     let rb = init_db().await;
     let a = custom_func(&mut rb.clone(), "test").await.unwrap();
-    println!("{:?}", a);
+    println!("{}", json!(a));
 }
