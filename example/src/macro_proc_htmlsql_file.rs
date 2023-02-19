@@ -2,6 +2,8 @@
 extern crate rbatis;
 
 pub mod model;
+
+use serde_json::json;
 use model::*;
 
 use rbatis::executor::Executor;
@@ -24,5 +26,5 @@ pub async fn main() {
     let a = select_by_condition(&mut rb.clone(), "test", &FastDateTime::now().set_micro(0))
         .await
         .unwrap();
-    println!("{:?}", a);
+    println!("{}", json!(a));
 }

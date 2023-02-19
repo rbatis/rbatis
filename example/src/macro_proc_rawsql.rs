@@ -2,6 +2,8 @@
 extern crate rbatis;
 
 pub mod model;
+
+use serde_json::json;
 use crate::{init_db, BizActivity};
 use model::*;
 use rbatis::rbatis::Rbatis;
@@ -18,5 +20,5 @@ pub async fn main() {
     //use static ref
     let rb = init_db().await;
     let a = raw_sql(&rb, &0).await.unwrap();
-    println!("{:?}", a);
+    println!("{}", json!(a));
 }

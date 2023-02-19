@@ -1,5 +1,6 @@
 pub mod model;
 
+use serde_json::json;
 use crate::model::{init_db, BizActivity};
 use rbs::to_value;
 
@@ -18,6 +19,6 @@ pub async fn main() {
         .await
         .unwrap();
     log::logger().flush();
-    println!(">>>>> table={:?}", table);
+    println!(">>>>> table={}", json!(table));
     println!(">>>>> exec={}", result);
 }

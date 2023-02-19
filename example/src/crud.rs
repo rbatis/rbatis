@@ -2,6 +2,8 @@
 extern crate rbatis;
 
 pub mod model;
+
+use serde_json::json;
 use crate::model::{init_db, BizActivity};
 use rbatis::rbdc::datetime::FastDateTime;
 use rbatis::sql::page::PageRequest;
@@ -58,50 +60,50 @@ pub async fn main() {
     }];
 
     let data = BizActivity::insert(&mut rb, &t).await;
-    println!("insert = {}", serde_json::to_value(data).unwrap_or_default());
+    println!("insert = {}", json!(data));
 
     let _data = BizActivity::delete_by_name(&mut rb, "2").await;
     let _data = BizActivity::delete_by_name(&mut rb, "3").await;
 
     let data = BizActivity::insert_batch(&mut rb, &tables, 10).await;
-    println!("insert_batch = {}", serde_json::to_value(&data).unwrap_or_default());
+    println!("insert_batch = {}", json!(data));
 
     let data = BizActivity::update_by_column_batch(&mut rb, &tables, "id").await;
-    println!("update_by_column_batch = {}", serde_json::to_value(data).unwrap_or_default());
+    println!("update_by_column_batch = {}", json!(data));
 
     let data = BizActivity::select_all_by_id(&mut rb, "1", "1").await;
-    println!("select_all_by_id = {}", serde_json::to_value(data).unwrap_or_default());
+    println!("select_all_by_id = {}", json!(data));
 
     let data = BizActivity::select_by_id(&mut rb, "1").await;
-    println!("select_by_id = {}", serde_json::to_value(data).unwrap_or_default());
+    println!("select_by_id = {}", json!(data));
 
     let data = BizActivity::update_by_column(&mut rb, &t, "id").await;
-    println!("update_by_column = {}", serde_json::to_value(data).unwrap_or_default());
+    println!("update_by_column = {}", json!(data));
 
     let data = BizActivity::update_by_name(&mut rb, &t, "test").await;
-    println!("update_by_name = {}", serde_json::to_value(data).unwrap_or_default());
+    println!("update_by_name = {}", json!(data));
 
     let data = BizActivity::select_page(&mut rb, &PageRequest::new(1, 10)).await;
-    println!("select_page = {}", serde_json::to_value(data).unwrap_or_default());
+    println!("select_page = {}", json!(data));
 
     let data = BizActivity::select_page_by_name(&mut rb, &PageRequest::new(1, 10), "").await;
-    println!("select_page_by_name = {}", serde_json::to_value(data).unwrap_or_default());
+    println!("select_page_by_name = {}", json!(data));
 
     let data = BizActivity::delete_by_column(&mut rb, "id", "2").await;
-    println!("delete_by_column = {}", serde_json::to_value(data).unwrap_or_default());
+    println!("delete_by_column = {}", json!(data));
 
     let data = BizActivity::delete_by_name(&mut rb, "2").await;
-    println!("delete_by_column = {}", serde_json::to_value(data).unwrap_or_default());
+    println!("delete_by_column = {}", json!(data));
 
     let data = BizActivity::select_in_column(&mut rb, "id", &["1", "2", "3"]).await;
-    println!("select_in_column = {}", serde_json::to_value(data).unwrap_or_default());
+    println!("select_in_column = {}", json!(data));
 
     let mut logic = ValueMap::new();
     logic.insert("id = ".into(), Value::I32(1));
     logic.insert("and id != ".into(), Value::I32(2));
     let data = BizActivity::select_by_method(&mut rb, &["1", "2"], logic).await;
-    println!("select_by_method = {}", serde_json::to_value(data).unwrap_or_default());
+    println!("select_by_method = {}", json!(data));
 
     let data = BizActivity::delete_in_column(&mut rb, "id", &["1", "2", "3"]).await;
-    println!("delete_in_column = {}", serde_json::to_value(data).unwrap_or_default());
+    println!("delete_in_column = {}", json!(data));
 }

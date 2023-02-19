@@ -1,11 +1,9 @@
 pub mod model;
-
 use crate::model::{init_db, BizActivity};
-use log::Log;
 use rbatis::intercept::SqlIntercept;
 use rbatis::{crud, Error, Rbatis};
 use rbs::Value;
-use std::time::Duration;
+use serde_json::json;
 
 /// Logic delete： The deletion statement changes to the modification of flag, and the query statement filters flag with additional conditions
 pub struct LogicDeletePlugin {}
@@ -44,8 +42,8 @@ pub async fn main() {
     let rb = init_db().await;
     rb.sql_intercepts.push(Box::new(LogicDeletePlugin {}));
     let r = BizActivity::delete_by_column(&mut rb.clone(), "id", "1").await;
-    println!("{:?}", r);
+    println!("{}", json!(r));
     let record = BizActivity::select_by_column(&mut rb.clone(), "id", "1").await;
-    println!("{:?}", record);
+    println!("{}", json!(record));
     log::logger().flush();
 }
