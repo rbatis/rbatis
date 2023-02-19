@@ -1,7 +1,7 @@
 use std::fmt::{Debug, Formatter};
 use std::ops::{Deref, DerefMut};
 
-use crate::decode::decode;
+use crate::decode::{decode, is_debug_mode};
 use crate::rbatis::Rbatis;
 use crate::snowflake::new_snowflake_id;
 use crate::sql::tx::Tx;
@@ -139,10 +139,17 @@ impl Executor for RBatisConnExecutor {
             if self.rbatis_ref().log_plugin.is_enable() {
                 match &result {
                     Ok(result) => {
-                        self.rbatis_ref().log_plugin.do_log(
-                            LevelFilter::Info,
-                            &format!("[rbatis] [{}] ReturnRows <== {}", rb_task_id, result.len()),
-                        );
+                        if is_debug_mode() {
+                            self.rbatis_ref().log_plugin.do_log(
+                                LevelFilter::Info,
+                                &format!("[rbatis] [{}] ReturnRows <== {},data={:?}", rb_task_id, result.len(),result),
+                            );
+                        }else{
+                            self.rbatis_ref().log_plugin.do_log(
+                                LevelFilter::Info,
+                                &format!("[rbatis] [{}] ReturnRows <== {}", rb_task_id, result.len()),
+                            );
+                        }
                     }
                     Err(e) => {
                         self.rbatis_ref().log_plugin.do_log(
@@ -285,10 +292,17 @@ impl Executor for RBatisTxExecutor {
             if self.rbatis_ref().log_plugin.is_enable() {
                 match &result {
                     Ok(result) => {
-                        self.rbatis_ref().log_plugin.do_log(
-                            LevelFilter::Info,
-                            &format!("[rbatis] [{}] ReturnRows <== {}", self.tx_id, result.len()),
-                        );
+                        if is_debug_mode() {
+                            self.rbatis_ref().log_plugin.do_log(
+                                LevelFilter::Info,
+                                &format!("[rbatis] [{}] ReturnRows <== {},data={:?}", self.tx_id, result.len(), result),
+                            );
+                        }else{
+                            self.rbatis_ref().log_plugin.do_log(
+                                LevelFilter::Info,
+                                &format!("[rbatis] [{}] ReturnRows <== {}", self.tx_id, result.len()),
+                            );
+                        }
                     }
                     Err(e) => {
                         self.rbatis_ref().log_plugin.do_log(
