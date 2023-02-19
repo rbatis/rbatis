@@ -61,7 +61,9 @@ async fn select_by_condition(rb: &mut dyn Executor, page_req: &PageRequest, name
 
 
 # How it works
-* 1 Whenever user define `html_sql` method(Of course, `py_sql` The implementation is also based on the `py_sql`  syntax tree  escaped to `html_sql`)
+
+### 1. Whenever user define `html_sql` method(Of course, `py_sql` The implementation is also based on the `py_sql`  syntax tree  escaped to `html_sql`)
+
 ```rust
 #[html_sql(r#"<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.1//EN" "https://raw.githubusercontent.com/rbatis/rbatis/master/rbatis-codegen/mybatis-3-mapper.dtd">
   <select id="select_by_condition">
@@ -78,7 +80,15 @@ async fn select_by_condition(
     impled!()
 }
 ```
-* 2 The function body is generated through the process macro via rbatis-codegen
+
+### 2. Rbatis expr
+
+* Rbatis expr is ```#{name}```,```#{age + 1}```,```${age + 1}``` and  code test:``` <if test="dt >= '2009-12-12 00:00:00'"></if> ```
+* Rbatis expr will be Convert to original rust code,if Rbatis expression = ```#{age + 1}```,the code = ``` rb_arg_map["age"].op_add(1) ```
+* Rbatis expr directly use strings to compare and process date types,just like ``` <if test="dt >= '2009-12-12 00:00:00'"></if> ```,``` #{dt >= '2009-12-12 00:00:00'}```
+
+### 3. The function body is generated through the process macro via rbatis-codegen
+
 ```rust
 // pub trait Executor{ //this is rbatis's Executor
 // fn exec(&mut self, sql: &str, args: Vec<Value>) -> BoxFuture<'_, Result<ExecResult, Error>>;
@@ -118,9 +128,3 @@ pub async fn select_by_condition(
     rbatis::decode::decode(r)
 }
 ```
-
-### Rbatis expr
-
-* Rbatis expr is ```#{name}```,```#{age + 1}```,```${age + 1}``` and  code test:``` <if test="dt >= '2009-12-12 00:00:00'"></if> ```
-* Rbatis expr will be Convert to original rust code,if Rbatis expression = ```#{age + 1}```,the code = ``` map["age"].op_add(1) ```
-* Rbatis expr directly use strings to compare and process date types,just like ``` <if test="dt >= '2009-12-12 00:00:00'"></if> ```,``` #{dt >= '2009-12-12 00:00:00'}```
