@@ -13,9 +13,6 @@ where
     T: DeserializeOwned,
 {
     let type_name = std::any::type_name::<T>();
-    if is_debug_mode() {
-        log::debug!("    [rbatis] [debug_mode] {} => {}", type_name, bs);
-    }
     let mut datas = vec![];
     match bs {
         Value::Array(arr) => {
