@@ -10,6 +10,9 @@ impl Decode for Value {
     where
         Self: Sized,
     {
+        if value.type_info_opt().is_none(){
+            return Ok(Value::Null);
+        }
         match value.type_info().0 {
             DataType::Null => Ok(Value::Null),
             DataType::Int => Ok(Value::I64(i64::decode(value)?)),
