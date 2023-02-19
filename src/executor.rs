@@ -82,7 +82,7 @@ impl Executor for RBatisConnExecutor {
                 self.rbatis_ref().log_plugin.do_log(
                     LevelFilter::Info,
                     &format!(
-                        "[rbatis] [{}] Exec   ==> `{}` {}",
+                        "[rbatis] [{}] exec  => `{}` {}",
                         &rb_task_id,
                         sql,
                         &b
@@ -97,7 +97,7 @@ impl Executor for RBatisConnExecutor {
                         self.rbatis_ref().log_plugin.do_log(
                             LevelFilter::Info,
                             &format!(
-                                "[rbatis] [{}] RowsAffected <== {}",
+                                "[rbatis] [{}] exec  <= rows_affected={}",
                                 rb_task_id, result.rows_affected
                             ),
                         );
@@ -105,7 +105,7 @@ impl Executor for RBatisConnExecutor {
                     Err(e) => {
                         self.rbatis_ref().log_plugin.do_log(
                             LevelFilter::Error,
-                            &format!("[rbatis] [{}] ReturnError  <== {}", rb_task_id, e),
+                            &format!("[rbatis] [{}] exec  <= {}", rb_task_id, e),
                         );
                     }
                 }
@@ -127,7 +127,7 @@ impl Executor for RBatisConnExecutor {
                 self.rbatis_ref().log_plugin.do_log(
                     LevelFilter::Info,
                     &format!(
-                        "[rbatis] [{}] Query  ==> `{}` {}",
+                        "[rbatis] [{}] query => `{}` {}",
                         rb_task_id,
                         &sql,
                         &b
@@ -144,12 +144,12 @@ impl Executor for RBatisConnExecutor {
                         if is_debug_mode() {
                             self.rbatis_ref().log_plugin.do_log(
                                 LevelFilter::Info,
-                                &format!("[rbatis] [{}] ReturnRows <== {} ,rows = {}", rb_task_id, result_len, &data),
+                                &format!("[rbatis] [{}] query <= len={},rows={}", rb_task_id, result_len, &data),
                             );
                         } else {
                             self.rbatis_ref().log_plugin.do_log(
                                 LevelFilter::Info,
-                                &format!("[rbatis] [{}] ReturnRows <== {}", rb_task_id, result_len),
+                                &format!("[rbatis] [{}] query <= len={}", rb_task_id, result_len),
                             );
                         }
                         Ok(data.into())
@@ -157,7 +157,7 @@ impl Executor for RBatisConnExecutor {
                     Err(e) => {
                         self.rbatis_ref().log_plugin.do_log(
                             LevelFilter::Error,
-                            &format!("[rbatis] [{}] ReturnError  <== {}", rb_task_id, e),
+                            &format!("[rbatis] [{}] query <= {}", rb_task_id, e),
                         );
                         Err(e)
                     }
@@ -240,7 +240,7 @@ impl Executor for RBatisTxExecutor {
                 self.rbatis_ref().log_plugin.do_log(
                     LevelFilter::Info,
                     &format!(
-                        "[rbatis] [{}] Exec   ==> `{}` {}",
+                        "[rbatis] [{}] exec  => `{}` {}",
                         self.tx_id,
                         &sql,
                         &b
@@ -255,7 +255,7 @@ impl Executor for RBatisTxExecutor {
                         self.rbatis_ref().log_plugin.do_log(
                             LevelFilter::Info,
                             &format!(
-                                "[rbatis] [{}] RowsAffected <== {}",
+                                "[rbatis] [{}] exec  <= rows_affected={}",
                                 self.tx_id, result.rows_affected
                             ),
                         );
@@ -263,7 +263,7 @@ impl Executor for RBatisTxExecutor {
                     Err(e) => {
                         self.rbatis_ref().log_plugin.do_log(
                             LevelFilter::Error,
-                            &format!("[rbatis] [{}] ReturnError  <== {}", self.tx_id, e),
+                            &format!("[rbatis] [{}] exec  <= {}", self.tx_id, e),
                         );
                     }
                 }
@@ -284,7 +284,7 @@ impl Executor for RBatisTxExecutor {
                 self.rbatis_ref().log_plugin.do_log(
                     LevelFilter::Info,
                     &format!(
-                        "[rbatis] [{}] Query  ==> `{}` {}",
+                        "[rbatis] [{}] query => `{}` {}",
                         self.tx_id,
                         &sql,
                         &b
@@ -301,12 +301,12 @@ impl Executor for RBatisTxExecutor {
                         if is_debug_mode() {
                             self.rbatis_ref().log_plugin.do_log(
                                 LevelFilter::Info,
-                                &format!("[rbatis] [{}] ReturnRows <== {} ,rows = {}", self.tx_id, result_len, &data),
+                                &format!("[rbatis] [{}] query <= len={},rows = {}", self.tx_id, result_len, &data),
                             );
                         } else {
                             self.rbatis_ref().log_plugin.do_log(
                                 LevelFilter::Info,
-                                &format!("[rbatis] [{}] ReturnRows <== {}", self.tx_id, result_len),
+                                &format!("[rbatis] [{}] query <= len={}", self.tx_id, result_len),
                             );
                         }
                         Ok(data.into())
@@ -314,7 +314,7 @@ impl Executor for RBatisTxExecutor {
                     Err(e) => {
                         self.rbatis_ref().log_plugin.do_log(
                             LevelFilter::Error,
-                            &format!("[rbatis] [{}] ReturnError <== {}", self.tx_id, e),
+                            &format!("[rbatis] [{}] query <= {}", self.tx_id, e),
                         );
                         Err(e)
                     }
