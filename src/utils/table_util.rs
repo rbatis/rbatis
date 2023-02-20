@@ -37,10 +37,10 @@ macro_rules! make_table {
 #[allow(unused_macros)]
 #[macro_export]
 macro_rules! make_table_field_vec {
-    ($vec_ref:expr,$field_name:ident) => {{
+    ($vec_ref:expr,$($field_name:ident$(.)?)+) => {{
         let mut ids = vec![];
         for item in $vec_ref {
-            match item.$field_name.as_ref() {
+            match item.$($field_name.)+as_ref() {
                 std::option::Option::Some(v) => {
                     ids.push(v.clone());
                 }
@@ -67,10 +67,10 @@ macro_rules! make_table_field_vec {
 #[allow(unused_macros)]
 #[macro_export]
 macro_rules! make_table_field_map {
-    ($vec_ref:expr,$field_name:ident) => {{
+    ($vec_ref:expr,$($field_name:ident$(.)?)+) => {{
         let mut ids = std::collections::HashMap::new();
         for item in $vec_ref {
-            match item.$field_name.as_ref() {
+            match item.$($field_name.)+as_ref() {
                 std::option::Option::Some(v) => {
                     ids.insert(v.clone(), item.clone());
                 }
@@ -97,10 +97,10 @@ macro_rules! make_table_field_map {
 #[allow(unused_macros)]
 #[macro_export]
 macro_rules! make_table_field_map_btree {
-    ($vec_ref:expr,$field_name:ident) => {{
+    ($vec_ref:expr,$($field_name:ident$(.)?)+) => {{
         let mut ids = std::collections::BTreeMap::new();
         for item in $vec_ref {
-            match item.$field_name.as_ref() {
+            match item.$($field_name.)+as_ref() {
                 std::option::Option::Some(v) => {
                     ids.insert(v.clone(), item.clone());
                 }
@@ -121,9 +121,21 @@ macro_rules! make_table_field_map_btree {
 macro_rules! field_name {
     ($t:ident.$field:ident) => {{
         if false {
-            |a: $t| a.$field;
+            let _ = |a: $t| a.$field;
         }
         stringify!($field).trim_start_matches("r#")
+    }};
+   ($t:ident.$field1:ident.$field2:ident) => {{
+        if false {
+            let _ = |a: $t| a.$field1.$field2;
+        }
+        stringify!($field2).trim_start_matches("r#")
+    }};
+    ($t:ident.$field1:ident.$field2:ident.$field3:ident) => {{
+        if false {
+            let _ = |a: $t| a.$field1.$field2.$field3;
+        }
+        stringify!($field3).trim_start_matches("r#")
     }};
 }
 
@@ -137,37 +149,20 @@ macro_rules! field_name {
 macro_rules! field_key {
     ($t:ident::$field:ident) => {{
         if false {
-            |a: $t| a.$field;
+            let _ = |a: $t| a.$field;
         }
         stringify!($field).trim_start_matches("r#")
     }};
-}
-
-/// will create pub fn field_name()->&str method
-/// for example:
-///     #[derive(Clone, Debug,serde::Serialize, serde::Deserialize)]
-///     pub struct BizActivity {
-///         pub id: Option<String>,
-///         pub name: Option<String>,
-///         pub delete_flag: Option<i32>,
-///     }
-///     impl_field_name_method!(BizActivity{id,name,delete_flag});
-///
-///    println!("{}",BizActivity::delete_flag());
-#[allow(unused_macros)]
-#[macro_export]
-macro_rules! impl_field_name_method {
-   ($target:path{$($field_name:ident$(,)?)+}) => {
-         impl $target{
-               $(
-                         #[inline]
-                         pub fn $field_name()->&'static str{
-                               if false{
-                                  |a:$target|{a.$field_name};
-                               }
-                             stringify!($field_name).trim_start_matches("r#")
-                         }
-               )+
-         }
-    };
+    ($t:ident::$field1:ident::$field2:ident) => {{
+        if false {
+            let _ = |a: $t| a.$field1.$field2;
+        }
+        stringify!($field2).trim_start_matches("r#")
+    }};
+    ($t:ident::$field1:ident::$field2:ident::$field3:ident) => {{
+        if false {
+            let _ = |a: $t| a.$field1.$field2.$field3;
+        }
+        stringify!($field3).trim_start_matches("r#")
+    }};
 }
