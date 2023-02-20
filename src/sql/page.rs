@@ -85,7 +85,7 @@ impl PageRequest {
         return PageRequest::new_total(page_no, page_size, DEFAULT_PAGE_SIZE);
     }
 
-    pub fn new_option(page_no: &Option<u64>, page_size: &Option<u64>) -> Self {
+    pub fn new_option(page_no: Option<u64>, page_size: Option<u64>) -> Self {
         return PageRequest::new(page_no.unwrap_or(1), page_size.unwrap_or(DEFAULT_PAGE_SIZE));
     }
 
