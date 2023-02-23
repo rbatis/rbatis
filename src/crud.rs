@@ -370,12 +370,15 @@ macro_rules! htmlsql_select_page {
     ($fn_name:ident($($param_key:ident:$param_type:ty$(,)?)*) -> $table:ty => $html_file:expr) => {
             pub async fn $fn_name(rb: &mut dyn $crate::executor::Executor, page_req: &$crate::sql::PageRequest, $($param_key:$param_type,)*) -> std::result::Result<$crate::sql::Page<$table>, $crate::rbdc::Error> {
             use $crate::sql::IPageRequest;
-            #[$crate::html_sql($html_file)]
-            pub async fn $fn_name(rb: &mut dyn $crate::executor::Executor,do_count:bool,page_no:u64,page_size:u64,$($param_key:$param_type,)*) -> std::result::Result<rbs::Value, $crate::rbdc::Error>{
+            struct Inner{}
+            impl Inner{
+              #[$crate::html_sql($html_file)]
+              pub async fn $fn_name(rb: &mut dyn $crate::executor::Executor,do_count:bool,page_no:u64,page_size:u64,$($param_key:$param_type,)*) -> std::result::Result<rbs::Value, $crate::rbdc::Error>{
                  $crate::impled!()
+              }
             }
-            let totalValue = $fn_name(rb, true, page_req.offset(), page_req.page_size, $($param_key,)*).await?;
-            let recordsValue = $fn_name(rb, false, page_req.offset(), page_req.page_size, $($param_key,)*).await?;
+            let totalValue = Inner::$fn_name(rb, true, page_req.offset(), page_req.page_size, $($param_key,)*).await?;
+            let recordsValue = Inner::$fn_name(rb, false, page_req.offset(), page_req.page_size, $($param_key,)*).await?;
             let total =  $crate::decode(totalValue)?;
             let records = rbs::from_value(recordsValue)?;
             let mut page = $crate::sql::Page::<$table>::new_total(page_req.offset(), page_req.page_size, total);
