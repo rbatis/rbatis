@@ -128,132 +128,141 @@ impl FromStr for PgConnectOptions {
     }
 }
 
-#[test]
-fn it_parses_socket_correctly_from_parameter() {
-    let uri = "postgres:///?host=/var/run/postgres/";
-    let opts = PgConnectOptions::from_str(uri).unwrap();
+#[cfg(test)]
+mod test{
+    use std::str::FromStr;
 
-    assert_eq!(Some("/var/run/postgres/".into()), opts.socket);
-}
+    use crate::options::{PgConnectOptions, PgSslMode};
 
-#[test]
-fn it_parses_host_correctly_from_parameter() {
-    let uri = "postgres:///?host=google.database.com";
-    let opts = PgConnectOptions::from_str(uri).unwrap();
 
-    assert_eq!(None, opts.socket);
-    assert_eq!("google.database.com", &opts.host);
-}
-
-#[test]
-fn it_parses_hostaddr_correctly_from_parameter() {
-    let uri = "postgres:///?hostaddr=8.8.8.8";
-    let opts = PgConnectOptions::from_str(uri).unwrap();
-
-    assert_eq!(None, opts.socket);
-    assert_eq!("8.8.8.8", &opts.host);
-}
-
-#[test]
-fn it_parses_port_correctly_from_parameter() {
-    let uri = "postgres:///?port=1234";
-    let opts = PgConnectOptions::from_str(uri).unwrap();
-
-    assert_eq!(None, opts.socket);
-    assert_eq!(1234, opts.port);
-}
-
-#[test]
-fn it_parses_dbname_correctly_from_parameter() {
-    let uri = "postgres:///?dbname=some_db";
-    let opts = PgConnectOptions::from_str(uri).unwrap();
-
-    assert_eq!(None, opts.socket);
-    assert_eq!(Some("some_db"), opts.database.as_deref());
-}
-
-#[test]
-fn it_parses_user_correctly_from_parameter() {
-    let uri = "postgres:///?user=some_user";
-    let opts = PgConnectOptions::from_str(uri).unwrap();
-
-    assert_eq!(None, opts.socket);
-    assert_eq!("some_user", opts.username);
-}
-
-#[test]
-fn it_parses_password_correctly_from_parameter() {
-    let uri = "postgres:///?password=some_pass";
-    let opts = PgConnectOptions::from_str(uri).unwrap();
-
-    assert_eq!(None, opts.socket);
-    assert_eq!(Some("some_pass"), opts.password.as_deref());
-}
-
-#[test]
-fn it_parses_application_name_correctly_from_parameter() {
-    let uri = "postgres:///?application_name=some_name";
-    let opts = PgConnectOptions::from_str(uri).unwrap();
-
-    assert_eq!(Some("some_name"), opts.application_name.as_deref());
-}
-
-#[test]
-fn it_parses_username_with_at_sign_correctly() {
-    let uri = "postgres://user@hostname:password@hostname:5432/database";
-    let opts = PgConnectOptions::from_str(uri).unwrap();
-
-    assert_eq!("user@hostname", &opts.username);
-}
-
-#[test]
-fn it_parses_password_with_non_ascii_chars_correctly() {
-    let uri = "postgres://username:p@ssw0rd@hostname:5432/database";
-    let opts = PgConnectOptions::from_str(uri).unwrap();
-
-    assert_eq!(Some("p@ssw0rd".into()), opts.password);
-}
-
-#[test]
-fn it_parses_socket_correctly_percent_encoded() {
-    let uri = "postgres://%2Fvar%2Flib%2Fpostgres/database";
-    let opts = PgConnectOptions::from_str(uri).unwrap();
-
-    assert_eq!(Some("/var/lib/postgres/".into()), opts.socket);
-}
-#[test]
-fn it_parses_socket_correctly_with_username_percent_encoded() {
-    let uri = "postgres://some_user@%2Fvar%2Flib%2Fpostgres/database";
-    let opts = PgConnectOptions::from_str(uri).unwrap();
-
-    assert_eq!("some_user", opts.username);
-    assert_eq!(Some("/var/lib/postgres/".into()), opts.socket);
-    assert_eq!(Some("database"), opts.database.as_deref());
-}
-#[test]
-fn it_parses_libpq_options_correctly() {
-    let uri = "postgres:///?options=-c%20synchronous_commit%3Doff%20--search_path%3Dpostgres";
-    let opts = PgConnectOptions::from_str(uri).unwrap();
-
-    assert_eq!(
-        Some("-c synchronous_commit=off --search_path=postgres".into()),
-        opts.options
-    );
-}
-#[test]
-fn it_parses_sqlx_options_correctly() {
-    let uri = "postgres:///?options[synchronous_commit]=off&options[search_path]=postgres";
-    let opts = PgConnectOptions::from_str(uri).unwrap();
-
-    assert_eq!(
-        Some("-c synchronous_commit=off -c search_path=postgres".into()),
-        opts.options
-    );
-}
-
-#[test]
-fn it_parses_ssl_mode() {
-    let uri = "postgres:///?port=1234";
-    let opts = PgConnectOptions::from_str(uri).unwrap();
-    assert_eq!(PgSslMode::Disable, opts.ssl_mode);
+    #[test]
+    fn it_parses_socket_correctly_from_parameter() {
+        let uri = "postgres:///?host=/var/run/postgres/";
+        let opts = PgConnectOptions::from_str(uri).unwrap();
+    
+        assert_eq!(Some("/var/run/postgres/".into()), opts.socket);
+    }
+    
+    #[test]
+    fn it_parses_host_correctly_from_parameter() {
+        let uri = "postgres:///?host=google.database.com";
+        let opts = PgConnectOptions::from_str(uri).unwrap();
+    
+        assert_eq!(None, opts.socket);
+        assert_eq!("google.database.com", &opts.host);
+    }
+    
+    #[test]
+    fn it_parses_hostaddr_correctly_from_parameter() {
+        let uri = "postgres:///?hostaddr=8.8.8.8";
+        let opts = PgConnectOptions::from_str(uri).unwrap();
+    
+        assert_eq!(None, opts.socket);
+        assert_eq!("8.8.8.8", &opts.host);
+    }
+    
+    #[test]
+    fn it_parses_port_correctly_from_parameter() {
+        let uri = "postgres:///?port=1234";
+        let opts = PgConnectOptions::from_str(uri).unwrap();
+    
+        assert_eq!(None, opts.socket);
+        assert_eq!(1234, opts.port);
+    }
+    
+    #[test]
+    fn it_parses_dbname_correctly_from_parameter() {
+        let uri = "postgres:///?dbname=some_db";
+        let opts = PgConnectOptions::from_str(uri).unwrap();
+    
+        assert_eq!(None, opts.socket);
+        assert_eq!(Some("some_db"), opts.database.as_deref());
+    }
+    
+    #[test]
+    fn it_parses_user_correctly_from_parameter() {
+        let uri = "postgres:///?user=some_user";
+        let opts = PgConnectOptions::from_str(uri).unwrap();
+    
+        assert_eq!(None, opts.socket);
+        assert_eq!("some_user", opts.username);
+    }
+    
+    #[test]
+    fn it_parses_password_correctly_from_parameter() {
+        let uri = "postgres:///?password=some_pass";
+        let opts = PgConnectOptions::from_str(uri).unwrap();
+    
+        assert_eq!(None, opts.socket);
+        assert_eq!(Some("some_pass"), opts.password.as_deref());
+    }
+    
+    #[test]
+    fn it_parses_application_name_correctly_from_parameter() {
+        let uri = "postgres:///?application_name=some_name";
+        let opts = PgConnectOptions::from_str(uri).unwrap();
+    
+        assert_eq!(Some("some_name"), opts.application_name.as_deref());
+    }
+    
+    #[test]
+    fn it_parses_username_with_at_sign_correctly() {
+        let uri = "postgres://user@hostname:password@hostname:5432/database";
+        let opts = PgConnectOptions::from_str(uri).unwrap();
+    
+        assert_eq!("user@hostname", &opts.username);
+    }
+    
+    #[test]
+    fn it_parses_password_with_non_ascii_chars_correctly() {
+        let uri = "postgres://username:p@ssw0rd@hostname:5432/database";
+        let opts = PgConnectOptions::from_str(uri).unwrap();
+    
+        assert_eq!(Some("p@ssw0rd".into()), opts.password);
+    }
+    
+    #[test]
+    fn it_parses_socket_correctly_percent_encoded() {
+        let uri = "postgres://%2Fvar%2Flib%2Fpostgres/database";
+        let opts = PgConnectOptions::from_str(uri).unwrap();
+    
+        assert_eq!(Some("/var/lib/postgres/".into()), opts.socket);
+    }
+    #[test]
+    fn it_parses_socket_correctly_with_username_percent_encoded() {
+        let uri = "postgres://some_user@%2Fvar%2Flib%2Fpostgres/database";
+        let opts = PgConnectOptions::from_str(uri).unwrap();
+    
+        assert_eq!("some_user", opts.username);
+        assert_eq!(Some("/var/lib/postgres/".into()), opts.socket);
+        assert_eq!(Some("database"), opts.database.as_deref());
+    }
+    #[test]
+    fn it_parses_libpq_options_correctly() {
+        let uri = "postgres:///?options=-c%20synchronous_commit%3Doff%20--search_path%3Dpostgres";
+        let opts = PgConnectOptions::from_str(uri).unwrap();
+    
+        assert_eq!(
+            Some("-c synchronous_commit=off --search_path=postgres".into()),
+            opts.options
+        );
+    }
+    #[test]
+    fn it_parses_sqlx_options_correctly() {
+        let uri = "postgres:///?options[synchronous_commit]=off&options[search_path]=postgres";
+        let opts = PgConnectOptions::from_str(uri).unwrap();
+    
+        assert_eq!(
+            Some("-c synchronous_commit=off -c search_path=postgres".into()),
+            opts.options
+        );
+    }
+    
+    #[test]
+    fn it_parses_ssl_mode() {
+        let uri = "postgres:///?port=1234";
+        let opts = PgConnectOptions::from_str(uri).unwrap();
+        assert_eq!(PgSslMode::Disable, opts.ssl_mode);
+    }
+    
 }
