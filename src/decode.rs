@@ -12,7 +12,6 @@ pub fn decode<T: ?Sized>(bs: Value) -> Result<T, Error>
 where
     T: DeserializeOwned,
 {
-    let type_name = std::any::type_name::<T>();
     let mut datas = vec![];
     match bs {
         Value::Array(arr) => {
@@ -26,20 +25,20 @@ where
         //decode array
         Ok(rbs::from_value(Value::Array(datas))?)
     } else {
-        Ok(try_decode_map(type_name, &mut datas)?)
+        Ok(try_decode_map( &mut datas)?)
     }
 }
 
 //decode doc or one type
-pub fn try_decode_map<T>(type_name: &str, datas: &mut Vec<Value>) -> Result<T, Error>
+pub fn try_decode_map<T>( datas: &mut Vec<Value>) -> Result<T, Error>
 where
     T: DeserializeOwned,
 {
     //decode struct
     if datas.len() > 1 {
-        return Result::Err(Error::from(format!(
+        return Err(Error::from(format!(
             "[rbatis] rows.rows_affected > 1,but decode one type ({})!",
-            type_name
+            std::any::type_name::<T>()
         )));
     }
     //single try decode
