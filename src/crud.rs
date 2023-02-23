@@ -317,8 +317,8 @@ macro_rules! impl_select_page {
                 let mut total = 0;
                 {
                    #[$crate::py_sql("`select count(1) as count from ${table_name} `",$where_sql)]
-                   async fn $fn_name(rb: &mut dyn $crate::executor::Executor,table_column:&str,table_name: &str,$($param_key:$param_type,)*) -> std::result::Result<u64, $crate::rbdc::Error> {impled!()}
-                   total = $fn_name(rb, &table_column,&table_name, $($param_key,)*).await?;
+                   async fn rb_impl_count(rb: &mut dyn $crate::executor::Executor,table_column:&str,table_name: &str,$($param_key:$param_type,)*) -> std::result::Result<u64, $crate::rbdc::Error> {impled!()}
+                   total = rb_impl_count(rb, &table_column,&table_name, $($param_key,)*).await?;
                 }
                 //pg,mssql can override this parameter to implement its own limit statement
                 let mut limit_sql = " limit ${page_no},${page_size}".to_string();
@@ -328,8 +328,8 @@ macro_rules! impl_select_page {
                 #[$crate::py_sql("`select ${table_column} from ${table_name} `",$where_sql,"
                               if !sql.contains('page_no') && !sql.contains('page_size'):
                                 `${limit_sql}`")]
-                async fn $fn_name(rb: &mut dyn $crate::executor::Executor,table_column:&str,table_name: &str,page_no:u64,page_size:u64,page_offset:u64,limit_sql:&str,$($param_key:$param_type,)*) -> std::result::Result<Vec<$table>, $crate::rbdc::Error> {impled!()}
-                records = $fn_name(rb,&table_column,&table_name,page_req.page_no, page_req.page_size,page_req.offset(),&limit_sql,$($param_key,)*).await?;
+                async fn rb_impl_select(rb: &mut dyn $crate::executor::Executor,table_column:&str,table_name: &str,page_no:u64,page_size:u64,page_offset:u64,limit_sql:&str,$($param_key:$param_type,)*) -> std::result::Result<Vec<$table>, $crate::rbdc::Error> {impled!()}
+                records = rb_impl_select(rb,&table_column,&table_name,page_req.page_no, page_req.page_size,page_req.offset(),&limit_sql,$($param_key,)*).await?;
 
                 let mut page = $crate::sql::Page::<$table>::new_total(page_req.page_no, page_req.page_size, total);
                 page.records = records;
