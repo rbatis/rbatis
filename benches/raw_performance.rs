@@ -7,7 +7,6 @@
 #![allow(dead_code)]
 #![allow(private_in_public)]
 #![feature(test)]
-#![feature(bench_black_box)]
 extern crate test;
 
 use futures_core::future::BoxFuture;
