@@ -1,5 +1,4 @@
 #![feature(test)]
-#![feature(bench_black_box)]
 extern crate test;
 
 use rbatis::utils::string_util::to_snake_name;
