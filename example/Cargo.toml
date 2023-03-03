@@ -38,6 +38,9 @@ path = "src/raw_sql.rs"
 name = "macro_proc_htmlsql_page"
 path = "src/macro_proc_htmlsql_page.rs"
 [[bin]]
+name = "macro_proc_htmlsql_page2"
+path = "src/macro_proc_htmlsql_page2.rs"
+[[bin]]
 name = "macro_proc_htmlsql_an_file"
 path = "src/macro_proc_htmlsql_file.rs"
 [[bin]]
