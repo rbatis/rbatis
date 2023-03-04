@@ -1,13 +1,21 @@
-- name: Issues Translator
-  # You may pin to the exact commit or the version.
-  # uses: usthe/issues-translate-action@b41f55ddc81d7d54bd542a4f289fe28ec081898e
-  uses: usthe/issues-translate-action@v2.7
-  with:
-    # The issue comment bot GITHUB_TOKEN.
-    BOT_GITHUB_TOKEN: # optional
-    # The issue comment bot github login name.
-    BOT_LOGIN_NAME: # optional
-    # Is need modify issue title, true or false, default false.
-    IS_MODIFY_TITLE: # optional
-    # Custom bot note message.
-    CUSTOM_BOT_NOTE: # optional
+name: 'issue-translator'
+on: 
+  issue_comment:
+    types: [created]
+  issues:
+    types: [opened]
+    
+jobs:
+   build:
+     runs-on: unbutu-latest
+     steps:
+        - uses: usthe/issues-translate-action@v2.7
+          with:
+            # The issue comment bot GITHUB_TOKEN.
+            BOT_GITHUB_TOKEN: ${{ secrets.BOT_GITHUB_TOKEN }}
+            # The issue comment bot github login name.
+            BOT_LOGIN_NAME: Issues-translate-bot
+            # Is need modify issue title, true or false, default false.
+            IS_MODIFY_TITLE: true
+            # Custom bot note message.
+            CUSTOM_BOT_NOTE: Issues-translate
