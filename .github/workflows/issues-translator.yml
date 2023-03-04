@@ -1,17 +1,15 @@
-name: 'issue-translator'
-on: 
+name: 'issues-translator'
+on:
   issue_comment:
     types: [created]
   issues:
     types: [opened]
-    
+
 jobs:
-   build:
-     runs-on: unbutu-latest
-     steps:
-        - uses: tomsun28/issues-translate-action@v2.6
-          with:
-            # Is need modify issue title, true or false, default false.
-            IS_MODIFY_TITLE: true
-            # Custom bot note message.
-            CUSTOM_BOT_NOTE: The issue body's language is not English, translate it automatically, please use English next time. 👯👭🏻🧑‍🤝‍🧑👫🧑🏿‍🤝‍🧑🏻👩🏾‍🤝‍👨🏿👬🏿
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: usthe/issues-translate-action@v2.7
+        with:
+          IS_MODIFY_TITLE: true
+          BOT_GITHUB_TOKEN: ${{ secrets.BOT_GITHUB_TOKEN }}
