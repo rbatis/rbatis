@@ -9,13 +9,9 @@ jobs:
    build:
      runs-on: unbutu-latest
      steps:
-        - uses: usthe/issues-translate-action@v2.7
+        - uses: tomsun28/issues-translate-action@v2.6
           with:
-            # The issue comment bot GITHUB_TOKEN.
-            BOT_GITHUB_TOKEN: ${{ secrets.BOT_GITHUB_TOKEN }} 
-            # The issue comment bot github login name.
-            BOT_LOGIN_NAME: Issues-translate-bot
             # Is need modify issue title, true or false, default false.
             IS_MODIFY_TITLE: true
             # Custom bot note message.
-            CUSTOM_BOT_NOTE: Issues-translate
+            CUSTOM_BOT_NOTE: The issue body's language is not English, translate it automatically, please use English next time. 👯👭🏻🧑‍🤝‍🧑👫🧑🏿‍🤝‍🧑🏻👩🏾‍🤝‍👨🏿👬🏿
