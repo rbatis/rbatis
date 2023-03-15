@@ -1,3 +1,4 @@
+use std::ops::Index;
 use crate::io::MySqlBufMutExt;
 use crate::protocol::text::ColumnType;
 use crate::result_set::MySqlTypeInfo;
@@ -35,30 +36,34 @@ impl TypeInfo for Value {
             Value::String(_) => MySqlTypeInfo::from_type(ColumnType::VarChar),
             Value::Binary(_) => MySqlTypeInfo::from_type(ColumnType::Blob),
             Value::Array(_) => MySqlTypeInfo::null(),
-            Value::Map(_) => MySqlTypeInfo::null(),
-            Value::Ext(ext_type, _) => {
-                match *ext_type {
-                    "Uuid" => MySqlTypeInfo::from_type(ColumnType::VarChar),
-                    //decimal = 12345678
-                    "Decimal" => MySqlTypeInfo::from_type(ColumnType::NewDecimal),
-                    //year = "1993"
-                    "Year" => MySqlTypeInfo::from_type(ColumnType::Year),
-                    //Date = "1993-02-06"
-                    "Date" => MySqlTypeInfo::from_type(ColumnType::Date),
-                    //RFC3339NanoTime = "15:04:05.999999999"
-                    "Time" => MySqlTypeInfo::from_type(ColumnType::Time),
-                    //RFC3339 = "2006-01-02 15:04:05.999999"
-                    "Timestamp" => {
-                        //datetime=5byte
-                        MySqlTypeInfo::from_type(ColumnType::Timestamp)
+            Value::Map(m) => {
+                let t = m.index("type").as_str().unwrap_or_default();
+                if t != "" {
+                    match t {
+                        "Uuid" => MySqlTypeInfo::from_type(ColumnType::VarChar),
+                        //decimal = 12345678
+                        "Decimal" => MySqlTypeInfo::from_type(ColumnType::NewDecimal),
+                        //year = "1993"
+                        "Year" => MySqlTypeInfo::from_type(ColumnType::Year),
+                        //Date = "1993-02-06"
+                        "Date" => MySqlTypeInfo::from_type(ColumnType::Date),
+                        //RFC3339NanoTime = "15:04:05.999999999"
+                        "Time" => MySqlTypeInfo::from_type(ColumnType::Time),
+                        //RFC3339 = "2006-01-02 15:04:05.999999"
+                        "Timestamp" => {
+                            //datetime=5byte
+                            MySqlTypeInfo::from_type(ColumnType::Timestamp)
+                        }
+                        "DateTime" => MySqlTypeInfo::from_type(ColumnType::Datetime),
+                        "Json" => MySqlTypeInfo::from_type(ColumnType::Json),
+                        "Enum" => MySqlTypeInfo::from_type(ColumnType::Enum),
+                        "Set" => MySqlTypeInfo::from_type(ColumnType::Set),
+                        _=> MySqlTypeInfo::binary(ColumnType::Blob)
                     }
-                    "DateTime" => MySqlTypeInfo::from_type(ColumnType::Datetime),
-                    "Json" => MySqlTypeInfo::from_type(ColumnType::Json),
-                    "Enum" => MySqlTypeInfo::from_type(ColumnType::Enum),
-                    "Set" => MySqlTypeInfo::from_type(ColumnType::Set),
-                    _ => MySqlTypeInfo::null(),
+                }else{
+                    MySqlTypeInfo::binary(ColumnType::Blob)
                 }
-            }
+            },
         }
     }
 }
@@ -105,41 +110,46 @@ impl Encode for Value {
                 buf.put_bytes_lenenc(v);
                 Ok(0)
             }
-            Value::Array(_) => Ok(0),
-            Value::Map(_) => Ok(0),
-            Value::Ext(ext_type, v) => {
-                match ext_type {
-                    "Uuid" => {
-                        //uuid -> string
-                        Uuid(v.into_string().unwrap_or_default()).encode(buf)
+            Value::Array(v) => Ok(0),
+            Value::Map(mut m) => {
+                let v = m.rm("value");
+                let t = m.index("type").as_str().unwrap_or_default();
+                if t != "" {
+                    match t {
+                        "Uuid" => {
+                            //uuid -> string
+                            Uuid(v.into_string().unwrap_or_default()).encode(buf)
+                        }
+                        //decimal = 12345678
+                        "Decimal" => Decimal(v.into_string().unwrap_or_default()).encode(buf),
+                        //year = "1993"
+                        "Year" => Year(v.as_u64().unwrap_or_default() as u16).encode(buf),
+                        //Date = "1993-02-06"
+                        "Date" => Date(
+                            fastdate::Date::from_str(&v.into_string().unwrap_or_default()).unwrap(),
+                        )
+                            .encode(buf),
+                        //RFC3339NanoTime = "15:04:05.999999999"
+                        "Time" => Time(
+                            fastdate::Time::from_str(&v.into_string().unwrap_or_default()).unwrap(),
+                        )
+                            .encode(buf),
+                        //RFC3339 = "2006-01-02 15:04:05.999999"
+                        "Timestamp" => Timestamp(v.as_u64().unwrap_or_default()).encode(buf),
+                        "DateTime" => FastDateTime(
+                            fastdate::DateTime::from_str(&v.into_string().unwrap_or_default()).unwrap(),
+                        )
+                            .encode(buf),
+                        "Json" => Json::from(v).encode(buf),
+                        "Enum" => Enum(v.into_string().unwrap_or_default()).encode(buf),
+                        "Set" => Set(v.into_string().unwrap_or_default()).encode(buf),
+                        _ => {
+                            buf.put_bytes_lenenc(v.into_bytes().unwrap_or_default());
+                            Ok(0)
+                        }
                     }
-                    //decimal = 12345678
-                    "Decimal" => Decimal(v.into_string().unwrap_or_default()).encode(buf),
-                    //year = "1993"
-                    "Year" => Year(v.as_u64().unwrap_or_default() as u16).encode(buf),
-                    //Date = "1993-02-06"
-                    "Date" => Date(
-                        fastdate::Date::from_str(&v.into_string().unwrap_or_default()).unwrap(),
-                    )
-                    .encode(buf),
-                    //RFC3339NanoTime = "15:04:05.999999999"
-                    "Time" => Time(
-                        fastdate::Time::from_str(&v.into_string().unwrap_or_default()).unwrap(),
-                    )
-                    .encode(buf),
-                    //RFC3339 = "2006-01-02 15:04:05.999999"
-                    "Timestamp" => Timestamp(v.as_u64().unwrap_or_default()).encode(buf),
-                    "DateTime" => FastDateTime(
-                        fastdate::DateTime::from_str(&v.into_string().unwrap_or_default()).unwrap(),
-                    )
-                    .encode(buf),
-                    "Json" => Json(v.into_string().unwrap_or_default()).encode(buf),
-                    "Enum" => Enum(v.into_string().unwrap_or_default()).encode(buf),
-                    "Set" => Set(v.into_string().unwrap_or_default()).encode(buf),
-                    _ => {
-                        buf.put_bytes_lenenc(v.into_bytes().unwrap_or_default());
-                        Ok(0)
-                    }
+                }else{
+                    Ok(0)
                 }
             }
         }
@@ -168,54 +178,55 @@ impl Decode for Value {
             ColumnType::Blob => Value::Binary(v.as_bytes().unwrap_or_default().to_vec()),
             ColumnType::VarString => Value::String(v.as_str().unwrap_or_default().to_string()),
             ColumnType::String => Value::String(v.as_str().unwrap_or_default().to_string()),
-            ColumnType::Timestamp => Value::Ext(
+            ColumnType::Timestamp => Value::from((
                 "Timestamp",
-                Box::new(Value::U64({
+               Value::U64({
                     let s = decode_timestamp(v).unwrap_or_default();
                     let date = fastdate::DateTime::from_str(&s).unwrap();
                     date.unix_timestamp_millis() as u64
-                })),
+                }),
+            )
             ),
-            ColumnType::Decimal => Value::Ext(
+            ColumnType::Decimal => Value::from((
                 "Decimal",
-                Box::new(Value::String(v.as_str().unwrap_or("0").to_string())),
+                Value::String(v.as_str().unwrap_or("0").to_string()))
             ),
-            ColumnType::Date => Value::Ext(
+            ColumnType::Date => Value::from((
                 "Date",
-                Box::new(Value::String(decode_date(v).unwrap_or_default())),
+               Value::String(decode_date(v).unwrap_or_default()))
             ),
-            ColumnType::Time => Value::Ext(
+            ColumnType::Time => Value::from((
                 "Time",
-                Box::new(Value::String(decode_time(v).unwrap_or_default())),
+               Value::String(decode_time(v).unwrap_or_default()))
             ),
-            ColumnType::Datetime => Value::Ext(
+            ColumnType::Datetime => Value::from((
                 "DateTime",
-                Box::new(Value::String(decode_timestamp(v).unwrap_or_default())),
+                Value::String(decode_timestamp(v).unwrap_or_default()))
             ),
-            ColumnType::Year => Value::Ext(
+            ColumnType::Year => Value::from((
                 "Year",
-                Box::new(Value::String(decode_year(v).unwrap_or_default())),
+               Value::String(decode_year(v).unwrap_or_default()))
             ),
-            ColumnType::Json => Value::Ext(
+            ColumnType::Json => Value::from((
                 "Json",
-                Box::new(Value::String(v.as_str().unwrap_or_default().to_string())),
+               Value::String(v.as_str().unwrap_or_default().to_string()))
             ),
-            ColumnType::NewDecimal => Value::Ext(
+            ColumnType::NewDecimal => Value::from((
                 "Decimal",
-                Box::new(Value::String(v.as_str().unwrap_or("0").to_string())),
+               Value::String(v.as_str().unwrap_or("0").to_string()))
             ),
-            ColumnType::Enum => Value::Ext(
+            ColumnType::Enum => Value::from((
                 "Enum",
-                Box::new(Value::String(v.as_str().unwrap_or("").to_string())),
+               Value::String(v.as_str().unwrap_or("").to_string()))
             ),
-            ColumnType::Set => Value::Ext(
+            ColumnType::Set => Value::from((
                 "Set",
-                Box::new(Value::String(v.as_str().unwrap_or("").to_string())),
+                Value::String(v.as_str().unwrap_or("").to_string()))
             ),
             //bytes ,see https://dev.mysql.com/doc/internals/en/x-protocol-messages-messages.html
-            ColumnType::Geometry => Value::Ext(
+            ColumnType::Geometry => Value::from((
                 "Geometry",
-                Box::new(Value::Binary(v.as_bytes().unwrap_or_default().to_vec())),
+               Value::Binary(v.as_bytes().unwrap_or_default().to_vec()))
             ),
         })
     }

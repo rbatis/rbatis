@@ -67,5 +67,5 @@ fast_log = "1.5"
 tokio = { version = "1", features = ["full"] }
 rbatis = { path = "../", features = ["debug_mode"]}
 rbdc-sqlite={path="../rbdc-sqlite"}
-#rbdc-mysql={path="../rbdc-mysql"}
+rbdc-mysql={path="../rbdc-mysql"}
 #rbdc-pg={path="../rbdc-pg"}
