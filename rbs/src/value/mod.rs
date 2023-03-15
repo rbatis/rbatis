@@ -725,6 +725,27 @@ impl From<&Value> for String {
 
 impl Eq for Value {}
 
+impl PartialEq<str> for Value{
+    fn eq(&self, other: &str) -> bool {
+        match self{
+            Value::String(v) => {
+                v.eq(other)
+            }
+            _=> false
+        }
+    }
+}
+impl PartialEq<str> for &Value{
+    fn eq(&self, other: &str) -> bool {
+        match self{
+            Value::String(v) => {
+                v.eq(other)
+            }
+            _=> false
+        }
+    }
+}
+
 #[cfg(test)]
 mod test {
     use crate::Value;

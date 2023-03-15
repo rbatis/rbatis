@@ -1,4 +1,4 @@
-use crate::Error;
+use crate::{Error, IntoValue};
 use rbs::Value;
 use serde::Deserializer;
 use std::fmt::{Debug, Display, Formatter};
@@ -14,7 +14,7 @@ impl<'de> serde::Deserialize<'de> for Decimal {
         D: Deserializer<'de>,
     {
         use serde::de::Error;
-        match Value::deserialize(deserializer)?.into_string() {
+        match Value::deserialize(deserializer)?.into_value().into_string() {
             None => Err(D::Error::custom("warn type decode Decimal")),
             Some(v) => Ok(Self(v)),
         }
