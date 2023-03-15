@@ -28,13 +28,19 @@ impl From<Date> for Value {
     }
 }
 
+impl From<fastdate::Date> for Date {
+    fn from(arg: fastdate::Date) -> Self {
+        Date {
+            r#type: "Date".to_string(),
+            value: arg,
+        }
+    }
+}
+
 impl FromStr for Date {
     type Err = Error;
 
     fn from_str(s: &str) -> Result<Self, Self::Err> {
-        Ok(Date {
-            r#type: "Date".to_string(),
-            value: fastdate::Date::from_str(s)?,
-        })
+        Ok(Date::from(fastdate::Date::from_str(s)?))
     }
 }

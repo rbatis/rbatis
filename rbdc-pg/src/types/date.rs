@@ -70,12 +70,12 @@ impl Encode for fastdate::Date {
 
 impl Decode for Date {
     fn decode(value: PgValue) -> Result<Self, Error> {
-        Ok(Self(fastdate::Date::decode(value)?))
+        Ok(Self::from(fastdate::Date::decode(value)?))
     }
 }
 
 impl Encode for Date {
     fn encode(self, buf: &mut PgArgumentBuffer) -> Result<IsNull, Error> {
-        self.0.encode(buf)
+        self.value.encode(buf)
     }
 }

@@ -8,16 +8,16 @@ use rbdc::Error;
 use std::str::FromStr;
 use std::time::Duration;
 
-impl Encode for FastDateTime {
+impl Encode for DateTime {
     fn encode(self, buf: &mut PgArgumentBuffer) -> Result<IsNull, Error> {
-        self.0.encode(buf)?;
+        self.value.encode(buf)?;
         Ok(IsNull::No)
     }
 }
 
-impl Decode for FastDateTime {
+impl Decode for DateTime {
     fn decode(value: PgValue) -> Result<Self, Error> {
-        Ok(Self(fastdate::DateTime::decode(value)?))
+        Ok(Self::from(fastdate::DateTime::decode(value)?))
     }
 }
 
@@ -49,6 +49,6 @@ impl Decode for fastdate::DateTime {
 
 impl Encode for fastdate::DateTime {
     fn encode(self, buf: &mut PgArgumentBuffer) -> Result<IsNull, Error> {
-        Timestamp(self.unix_timestamp_millis() as u64).encode(buf)
+        Timestamp::from(self.unix_timestamp_millis() as u64).encode(buf)
     }
 }

@@ -98,7 +98,7 @@ impl Encode for Value {
                         Ok(IsNull::No)
                     }
                     "Json" => {
-                        Json::from(v).0.to_string().into_bytes().encode(args)?;
+                        Json::from(v).value.to_string().into_bytes().encode(args)?;
                         Ok(IsNull::No)
                     }
                     "Uuid" => {
@@ -107,7 +107,7 @@ impl Encode for Value {
                     }
                     _ =>  {
                         //json
-                        Json::from(Value::Map(m)).0.to_string().into_bytes().encode(args)?;
+                        Json::from(Value::Map(m)).value.to_string().into_bytes().encode(args)?;
                         Ok(IsNull::No)
                     }
                 }

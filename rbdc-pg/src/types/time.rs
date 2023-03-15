@@ -31,14 +31,14 @@ impl Decode for Time {
                         t + Duration::from_micros(us as u64)
                     }
                 };
-                Ok(Time(fastdate::Time {
+                Ok(Time::from(fastdate::Time {
                     nano: t.nano,
                     sec: t.sec,
                     min: t.min,
                     hour: t.hour,
                 }))
             }
-            PgValueFormat::Text => Ok(Time(fastdate::Time::from_str(value.as_str()?)?)),
+            PgValueFormat::Text => Ok(Time::from(fastdate::Time::from_str(value.as_str()?)?)),
         }
     }
 }
@@ -47,10 +47,10 @@ impl Encode for Time {
     fn encode(self, buf: &mut PgArgumentBuffer) -> Result<IsNull, Error> {
         // TIME is encoded as the microseconds since midnight
         // microseconds
-        let us = self.0.get_micro()
-            + self.0.hour as u32 * 60 * 60 * 1000000
-            + self.0.min as u32 * 60 * 1000000
-            + self.0.sec as u32 * 1000000;
+        let us = self.value.get_micro()
+            + self.value.hour as u32 * 60 * 60 * 1000000
+            + self.value.min as u32 * 60 * 1000000
+            + self.value.sec as u32 * 1000000;
         us.encode(buf)
     }
 }

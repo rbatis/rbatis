@@ -230,6 +230,15 @@ impl From<DateTime> for Value {
     }
 }
 
+impl From<fastdate::DateTime> for DateTime {
+    fn from(arg: fastdate::DateTime) -> Self {
+        Self{
+            r#type: "DateTime".to_string(),
+            value: arg
+        }
+    }
+}
+
 #[test]
 fn test() {
     let date = DateTime("2017-02-06 00:00:00".to_string());

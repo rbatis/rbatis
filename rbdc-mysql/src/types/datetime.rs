@@ -6,9 +6,9 @@ use rbdc::datetime::DateTime;
 use rbdc::Error;
 use std::str::FromStr;
 
-impl Encode for FastDateTime {
+impl Encode for DateTime {
     fn encode(self, buf: &mut Vec<u8>) -> Result<usize, Error> {
-        let datetime = self.0;
+        let datetime = self.value;
         let datetime_size =
             date_time_size_hint(datetime.hour, datetime.min, datetime.sec, datetime.nano);
         buf.push(datetime_size as u8);
@@ -34,10 +34,10 @@ impl Encode for FastDateTime {
     }
 }
 
-impl Decode for FastDateTime {
+impl Decode for DateTime {
     fn decode(value: MySqlValue) -> Result<Self, Error> {
         Ok(match value.format() {
-            MySqlValueFormat::Text => Self(fastdate::DateTime::from_str(value.as_str()?).unwrap()),
+            MySqlValueFormat::Text => Self::from(fastdate::DateTime::from_str(value.as_str()?).unwrap()),
             MySqlValueFormat::Binary => {
                 let buf = value.as_bytes()?;
                 let len = buf[0];
@@ -52,7 +52,7 @@ impl Decode for FastDateTime {
                         hour: 0,
                     }
                 };
-                Self(fastdate::DateTime {
+                Self::from(fastdate::DateTime {
                     nano: time.nano,
                     sec: time.sec,
                     min: time.min,

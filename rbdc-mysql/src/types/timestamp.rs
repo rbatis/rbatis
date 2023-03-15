@@ -9,7 +9,7 @@ use rbdc::Error;
 
 impl Encode for Timestamp {
     fn encode(self, buf: &mut Vec<u8>) -> Result<usize, Error> {
-        let datetime = fastdate::DateTime::from_timestamp_millis(self.0 as i64);
+        let datetime = fastdate::DateTime::from_timestamp_millis(self.value as i64);
         let size = date_time_size_hint(datetime.hour, datetime.min, datetime.sec, datetime.nano);
         buf.push(size as u8);
         let date = fastdate::Date {
@@ -37,7 +37,7 @@ impl Encode for Timestamp {
 impl Decode for Timestamp {
     fn decode(value: MySqlValue) -> Result<Self, Error> {
         Ok(match value.format() {
-            MySqlValueFormat::Text => Self(
+            MySqlValueFormat::Text => Self::from(
                 fastdate::DateTime::from_str(value.as_str()?)
                     .unwrap()
                     .unix_timestamp_millis() as u64,
@@ -56,7 +56,7 @@ impl Decode for Timestamp {
                         hour: 0,
                     }
                 };
-                Self(
+                Self::from(
                     fastdate::DateTime {
                         nano: time.nano,
                         sec: time.sec,

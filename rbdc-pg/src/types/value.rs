@@ -468,22 +468,22 @@ impl Encode for Value {
                 let v = m.rm("value");
                 let t = m.index("type").as_str().unwrap_or_default();
                 match t {
-                    "Uuid" => Uuid(v.into_string().unwrap_or_default()).encode(buf)?,
+                    "Uuid" => Uuid::from(v.into_string().unwrap_or_default()).encode(buf)?,
                     //decimal = 12345678
-                    "Decimal" => Decimal(v.into_string().unwrap_or_default()).encode(buf)?,
+                    "Decimal" => Decimal::from(v.into_string().unwrap_or_default()).encode(buf)?,
                     //Date = "1993-02-06"
-                    "Date" => Date(
+                    "Date" => Date::from(
                         fastdate::Date::from_str(&v.into_string().unwrap_or_default()).unwrap(),
                     )
                         .encode(buf)?,
                     //RFC3339NanoTime = "15:04:05.999999999"
-                    "Time" => Time(
+                    "Time" => Time::from(
                         fastdate::Time::from_str(&v.into_string().unwrap_or_default()).unwrap(),
                     )
                         .encode(buf)?,
                     //RFC3339 = "2006-01-02 15:04:05.999999"
-                    "Timestamp" => Timestamp(v.as_u64().unwrap_or_default()).encode(buf)?,
-                    "DateTime" => FastDateTime(
+                    "Timestamp" => Timestamp::from(v.as_u64().unwrap_or_default()).encode(buf)?,
+                    "DateTime" => DateTime::from(
                         fastdate::DateTime::from_str(&v.into_string().unwrap_or_default()).unwrap(),
                     )
                         .encode(buf)?,
@@ -520,7 +520,7 @@ impl Encode for Value {
                     }
                     "Bit" => v.into_bytes().unwrap_or_default().encode(buf)?,
                     "Varbit" => v.into_bytes().unwrap_or_default().encode(buf)?,
-                    "Numeric" => Decimal(v.into_string().unwrap_or_default()).encode(buf)?,
+                    "Numeric" => Decimal::from(v.into_string().unwrap_or_default()).encode(buf)?,
                     "Record" => v.into_bytes().unwrap_or_default().encode(buf)?,
                     "Jsonb" => Json::from(v).encode(buf)?,
                     "Int4Range" => v.into_bytes().unwrap_or_default().encode(buf)?,
