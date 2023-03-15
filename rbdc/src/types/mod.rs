@@ -53,3 +53,24 @@ fn is_type_value(m: &ValueMap) -> bool {
     }
     have_type && have_value
 }
+
+#[cfg(test)]
+mod tests {
+    use rbs::Value;
+    use super::*;
+
+    #[test]
+    fn test_into_value_with_type_value() {
+        let mut m = ValueMap::new();
+        m.insert("type".into(), Value::String("test".to_string()));
+        m.insert("value".into(), Value::I32(42));
+        let v = Value::I32(42);
+        assert_eq!(v.clone().into_value(), v);
+    }
+
+    #[test]
+    fn test_into_value_without_type_value() {
+        let v = Value::Null;
+        assert_eq!(v.clone().into_value(), v);
+    }
+}
