@@ -62,7 +62,7 @@ mod test {
     fn test_decode_timestamp_ext() {
         assert_eq!(
             Timestamp(1),
-            rbs::from_value(Value::Ext("Timestamp", Box::new(Value::U64(1)))).unwrap()
+            rbs::from_value(Value::from(("Timestamp",Value::U64(1)))).unwrap()
         );
     }
 }
