@@ -68,13 +68,13 @@ impl From<Value> for Json {
 
 impl Display for Json {
     fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
-        write!(f, "Json({})", self.0)
+        write!(f, "{}", self.0)
     }
 }
 
 impl Debug for Json {
     fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
-        write!(f, "Json({})", self.0)
+        write!(f, "{}", self.0)
     }
 }
 

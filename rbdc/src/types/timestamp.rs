@@ -24,13 +24,13 @@ impl<'de> serde::Deserialize<'de> for Timestamp {
 
 impl Display for Timestamp {
     fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
-        write!(f, "Timestamp({})", self.0)
+        write!(f, "{}", self.0)
     }
 }
 
 impl Debug for Timestamp {
     fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
-        write!(f, "Timestamp({})", self.0)
+        write!(f, "{}", self.0)
     }
 }
 
