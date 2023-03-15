@@ -110,7 +110,7 @@ impl Encode for Value {
                 buf.put_bytes_lenenc(v);
                 Ok(0)
             }
-            Value::Array(v) => Ok(0),
+            Value::Array(_) => Err(Error::from("unimplemented")),
             Value::Map(mut m) => {
                 let v = m.rm("value");
                 let t = m.index("type").as_str().unwrap_or_default();
@@ -149,7 +149,7 @@ impl Encode for Value {
                         }
                     }
                 }else{
-                    Ok(0)
+                    Err(Error::from("unimplemented"))
                 }
             }
         }
