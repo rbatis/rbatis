@@ -4,6 +4,7 @@ use crate::encode::{Encode, IsNull};
 use crate::type_info::DataType;
 use crate::{SqliteArgumentValue, SqliteValue};
 use rbdc::Error;
+use rbdc::json::Json;
 use rbs::Value;
 
 impl Decode for Value {
@@ -73,46 +74,42 @@ impl Encode for Value {
             }
             Value::Array(_) => Ok(IsNull::Yes),
             Value::Map(mut m) => {
-                //Ok(IsNull::Yes)
+                let v = m.rm("value");
                 let t = m.index("type").as_str().unwrap_or_default();
-                if t != "" {
-                    match t {
-                        "Date" => {
-                            m.rm("value").encode(args)?;
-                            Ok(IsNull::No)
-                        }
-                        "DateTime" => {
-                            m.rm("value").encode(args)?;
-                            Ok(IsNull::No)
-                        }
-                        "Time" => {
-                            m.rm("value").encode(args)?;
-                            Ok(IsNull::No)
-                        }
-                        "Timestamp" => {
-                            (m.index("value").as_i64().unwrap_or_default()).encode(args)?;
-                            Ok(IsNull::No)
-                        }
-                        "Decimal" => {
-                            m.rm("value").encode(args)?;
-                            Ok(IsNull::No)
-                        }
-                        "Json" => {
-                            m.rm("value").encode(args)?;
-                            Ok(IsNull::No)
-                        }
-                        "Uuid" => {
-                            m.rm("value").encode(args)?;
-                            Ok(IsNull::No)
-                        }
-                        _ =>  {
-                            m.rm("value").encode(args)?;
-                            Ok(IsNull::No)
-                        }
+                match t {
+                    "Date" => {
+                        v.as_str().unwrap_or_default().to_string().encode(args)?;
+                        Ok(IsNull::No)
                     }
-                } else {
-                    m.index("value").clone().into_bytes().unwrap_or_default().encode(args)?;
-                    Ok(IsNull::No)
+                    "DateTime" => {
+                        v.as_str().unwrap_or_default().to_string().encode(args)?;
+                        Ok(IsNull::No)
+                    }
+                    "Time" => {
+                        v.as_str().unwrap_or_default().to_string().encode(args)?;
+                        Ok(IsNull::No)
+                    }
+                    "Timestamp" => {
+                        (v.as_i64().unwrap_or_default()).encode(args)?;
+                        Ok(IsNull::No)
+                    }
+                    "Decimal" => {
+                        v.as_str().unwrap_or_default().to_string().encode(args)?;
+                        Ok(IsNull::No)
+                    }
+                    "Json" => {
+                        Json::from(v).0.to_string().into_bytes().encode(args)?;
+                        Ok(IsNull::No)
+                    }
+                    "Uuid" => {
+                        v.as_str().unwrap_or_default().to_string().encode(args)?;
+                        Ok(IsNull::No)
+                    }
+                    _ =>  {
+                        //json
+                        Json::from(Value::Map(m)).0.to_string().into_bytes().encode(args)?;
+                        Ok(IsNull::No)
+                    }
                 }
             },
         }
