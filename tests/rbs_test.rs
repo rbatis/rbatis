@@ -3,6 +3,7 @@ mod test {
     use rbatis_codegen::ops::{Add, BitAnd, BitOr, Div, Mul, Not, PartialEq, PartialOrd, Rem, Sub};
     use rbs::Value;
     use std::cmp::Ordering;
+    use rbs::value::map::ValueMap;
 
     #[test]
     fn test_ser_i32() {
@@ -132,5 +133,18 @@ mod test {
         let a = rbs::to_value!(true);
         let b = rbs::to_value!(false);
         assert_eq!(a.op_bitor(b), true);
+    }
+
+    #[test]
+    fn test_into_iter(){
+        let mut  v= ValueMap::new();
+        v.insert(1.into(),2.into());
+        let m=Value::Map(v.clone());
+        let r=&m;
+        let mut items = vec![];
+        for (k,v) in r.into_iter() {
+            items.push((k.as_ref().clone(),v.clone()));
+        }
+        assert_eq!(ValueMap(items),v);
     }
 }
