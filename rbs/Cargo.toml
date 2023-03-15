@@ -1,6 +1,6 @@
 [package]
 name = "rbs"
-version = "0.1.15"
+version = "4.1.0"
 edition = "2021"
 description = "Serialization framework for ORM"
 readme = "Readme.md"

@@ -102,12 +102,12 @@ tokio = { version = "1", features = ["full"] }
 log = "0.4"
 fast_log = "1.5"
 serde = { version = "1", features = ["derive"] }
-rbs = { version = "0.1"}
-rbatis = { version = "4.0"}
-rbdc-sqlite = { version = "0.1" }
-#rbdc-mysql={version="0.1"}
-#rbdc-pg={version="0.1"}
-#rbdc-mssql={version="0.1"}
+rbs = { version = "4.1"}
+rbatis = { version = "4.1"}
+rbdc-sqlite = { version = "4.1" }
+#rbdc-mysql={version="4.1"}
+#rbdc-pg={version="4.1"}
+#rbdc-mssql={version="4.1"}
 #...and more driver
 ```
 
