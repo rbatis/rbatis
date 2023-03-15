@@ -41,7 +41,7 @@ impl Debug for Decimal {
 
 impl From<Decimal> for Value {
     fn from(arg: Decimal) -> Self {
-        Value::from(("Decimal", Value::String(arg.value)))
+        Value::from(vec![("Decimal".into(), Value::String(arg.value))])
     }
 }
 

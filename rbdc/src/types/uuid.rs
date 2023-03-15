@@ -38,7 +38,7 @@ impl Debug for Uuid {
 
 impl From<Uuid> for Value {
     fn from(arg: Uuid) -> Self {
-        Value::from(("Uuid", Value::String(arg.value)))
+        Value::from(vec![("Uuid".into(), Value::String(arg.value))])
     }
 }
 
