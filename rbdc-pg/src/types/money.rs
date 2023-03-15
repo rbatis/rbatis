@@ -29,7 +29,7 @@ impl Display for Money {
 
 impl From<Money> for Value {
     fn from(arg: Money) -> Self {
-        Value::Ext("Money", Box::new(Value::I64(arg.0)))
+        Value::from(("Money",Value::I64(arg.0)))
     }
 }
 

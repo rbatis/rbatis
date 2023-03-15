@@ -19,7 +19,7 @@ impl Display for Timestamptz {
 
 impl From<Timestamptz> for Value {
     fn from(arg: Timestamptz) -> Self {
-        Value::Ext("Timestamptz", Box::new(Value::U64(arg.0)))
+        Value::from(("Timestamptz", Value::U64(arg.0)))
     }
 }
 

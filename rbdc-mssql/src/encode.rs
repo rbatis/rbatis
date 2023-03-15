@@ -1,3 +1,4 @@
+use std::ops::Index;
 use rbdc::Error;
 use rbs::Value;
 use std::str::FromStr;
@@ -52,53 +53,62 @@ impl Encode for Value {
                 Ok(())
             }
             Value::Array(_) => Err(Error::from("unimplemented")),
-            Value::Map(_) => Err(Error::from("unimplemented")),
-            Value::Ext(t, v) => match t {
-                "Date" => {
-                    q.bind(
-                        chrono::NaiveDate::from_str(v.as_str().unwrap_or_default())
-                            .map_err(|e| Error::from(e.to_string()))?,
-                    );
-                    Ok(())
-                }
-                "DateTime" => {
-                    let mut s = v.as_str().unwrap_or_default().to_string();
-                    if s.len() > 10 {
-                        s.replace_range(10..11, "T");
+            Value::Map(m) => {
+                let v = m.index("value");
+                let t = m.index("type").as_str().unwrap_or_default();
+                if t != "" {
+                    match t {
+                        "Date" => {
+                            q.bind(
+                                chrono::NaiveDate::from_str(v.as_str().unwrap_or_default())
+                                    .map_err(|e| Error::from(e.to_string()))?,
+                            );
+                            Ok(())
+                        }
+                        "DateTime" => {
+                            let mut s = v.as_str().unwrap_or_default().to_string();
+                            if s.len() > 10 {
+                                s.replace_range(10..11, "T");
+                            }
+                            q.bind(
+                                chrono::NaiveDateTime::from_str(&s)
+                                    .map_err(|e| Error::from(e.to_string()))?,
+                            );
+                            Ok(())
+                        }
+                        "Time" => {
+                            q.bind(
+                                chrono::NaiveTime::from_str(v.as_str().unwrap_or_default())
+                                    .map_err(|e| Error::from(e.to_string()))?,
+                            );
+                            Ok(())
+                        }
+                        "Decimal" => {
+                            q.bind(
+                                BigDecimal::from_str(&v.clone().into_string().unwrap_or_default())
+                                    .map_err(|e| Error::from(e.to_string()))?,
+                            );
+                            Ok(())
+                        }
+                        "Json" => Err(Error::from("unimplemented")),
+                        "Timestamp" => {
+                            q.bind(v.as_u64().unwrap_or_default() as i64);
+                            Ok(())
+                        }
+                        "Uuid" => {
+                            q.bind(
+                                Uuid::from_str(&v.clone().into_string().unwrap_or_default()).unwrap_or_default(),
+                            );
+                            Ok(())
+                        }
+                        _ => {
+                            Err(Error::from("unimplemented"))
+                        }
                     }
-                    q.bind(
-                        chrono::NaiveDateTime::from_str(&s)
-                            .map_err(|e| Error::from(e.to_string()))?,
-                    );
-                    Ok(())
+                }else{
+                    Err(Error::from("unimplemented"))
                 }
-                "Time" => {
-                    q.bind(
-                        chrono::NaiveTime::from_str(v.as_str().unwrap_or_default())
-                            .map_err(|e| Error::from(e.to_string()))?,
-                    );
-                    Ok(())
-                }
-                "Decimal" => {
-                    q.bind(
-                        BigDecimal::from_str(&v.into_string().unwrap_or_default())
-                            .map_err(|e| Error::from(e.to_string()))?,
-                    );
-                    Ok(())
-                }
-                "Json" => Err(Error::from("unimplemented")),
-                "Timestamp" => {
-                    q.bind(v.as_u64().unwrap_or_default() as i64);
-                    Ok(())
-                }
-                "Uuid" => {
-                    q.bind(
-                        Uuid::from_str(&v.into_string().unwrap_or_default()).unwrap_or_default(),
-                    );
-                    Ok(())
-                }
-                _ => Err(Error::from("unimplemented")),
-            },
+            }
         }
     }
 }
