@@ -4,10 +4,10 @@ members = [
     "rbs",
     "rbdc",
     "rbatis-codegen",
-    "rbdc-mysql",
-    "rbdc-pg",
+#    "rbdc-mysql",
+#    "rbdc-pg",
     "rbdc-sqlite",
-    "rbdc-mssql",
+#    "rbdc-mssql",
     "rbatis-macro-driver",
     "example",
 ]

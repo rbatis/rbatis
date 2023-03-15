@@ -21,7 +21,7 @@ impl Debug for Date {
 
 impl From<Date> for Value {
     fn from(arg: Date) -> Self {
-        Value::Ext("Date", Box::new(Value::String(arg.0.to_string())))
+        Value::from(("Date",Value::String(arg.0.to_string())))
     }
 }
 

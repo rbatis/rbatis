@@ -35,7 +35,7 @@ impl Debug for Uuid {
 
 impl From<Uuid> for Value {
     fn from(arg: Uuid) -> Self {
-        Value::Ext("Uuid", Box::new(Value::String(arg.0)))
+        Value::from(("Uuid",Value::String(arg.0)))
     }
 }
 

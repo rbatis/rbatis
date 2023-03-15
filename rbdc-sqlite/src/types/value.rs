@@ -1,3 +1,4 @@
+use std::ops::Index;
 use crate::decode::Decode;
 use crate::encode::{Encode, IsNull};
 use crate::type_info::DataType;
@@ -22,18 +23,10 @@ impl Decode for Value {
             DataType::Numeric => Ok(Value::String(String::decode(value)?)),
             DataType::Bool => Ok(Value::Bool(bool::decode(value)?)),
             DataType::Int64 => Ok(Value::I64(i64::decode(value)?)),
-            DataType::Date => Ok(Value::Ext(
-                "Date",
-                Box::new(Value::String(String::decode(value)?)),
-            )),
-            DataType::Time => Ok(Value::Ext(
-                "Time",
-                Box::new(Value::String(String::decode(value)?)),
-            )),
-            DataType::Datetime => Ok(Value::Ext(
-                "Datetime",
-                Box::new(Value::String(String::decode(value)?)),
-            )),
+            DataType::Date => Ok(Value::from(("Date",
+                                              Value::String(String::decode(value)?),))),
+            DataType::Time => Ok(Value::from(( "Time", Value::String(String::decode(value)?)))),
+            DataType::Datetime => Ok(Value::from(( "Datetime", Value::String(String::decode(value)?)))),
         }
     }
 }
@@ -79,37 +72,48 @@ impl Encode for Value {
                 Ok(IsNull::No)
             }
             Value::Array(_) => Ok(IsNull::Yes),
-            Value::Map(_) => Ok(IsNull::Yes),
-            Value::Ext(t, v) => match t {
-                "Date" => {
-                    v.into_string().unwrap_or_default().encode(args)?;
+            Value::Map(mut m) => {
+                //Ok(IsNull::Yes)
+                let t = m.index("type").as_str().unwrap_or_default();
+                if t != "" {
+                    match t {
+                        "Date" => {
+                            m.rm("value").encode(args)?;
+                            Ok(IsNull::No)
+                        }
+                        "DateTime" => {
+                            m.rm("value").encode(args)?;
+                            Ok(IsNull::No)
+                        }
+                        "Time" => {
+                            m.rm("value").encode(args)?;
+                            Ok(IsNull::No)
+                        }
+                        "Timestamp" => {
+                            (m.index("value").as_i64().unwrap_or_default()).encode(args)?;
+                            Ok(IsNull::No)
+                        }
+                        "Decimal" => {
+                            m.rm("value").encode(args)?;
+                            Ok(IsNull::No)
+                        }
+                        "Json" => {
+                            m.rm("value").encode(args)?;
+                            Ok(IsNull::No)
+                        }
+                        "Uuid" => {
+                            m.rm("value").encode(args)?;
+                            Ok(IsNull::No)
+                        }
+                        _ =>  {
+                            m.rm("value").encode(args)?;
+                            Ok(IsNull::No)
+                        }
+                    }
+                } else {
+                    m.index("value").clone().into_bytes().unwrap_or_default().encode(args)?;
                     Ok(IsNull::No)
                 }
-                "DateTime" => {
-                    v.into_string().unwrap_or_default().encode(args)?;
-                    Ok(IsNull::No)
-                }
-                "Time" => {
-                    v.into_string().unwrap_or_default().encode(args)?;
-                    Ok(IsNull::No)
-                }
-                "Timestamp" => {
-                    (v.as_u64().unwrap_or_default() as i64).encode(args)?;
-                    Ok(IsNull::No)
-                }
-                "Decimal" => {
-                    v.into_string().unwrap_or_default().encode(args)?;
-                    Ok(IsNull::No)
-                }
-                "Json" => {
-                    v.into_bytes().unwrap_or_default().encode(args)?;
-                    Ok(IsNull::No)
-                }
-                "Uuid" => {
-                    v.into_string().unwrap_or_default().encode(args)?;
-                    Ok(IsNull::No)
-                }
-                _ => Ok(IsNull::Yes),
             },
         }
     }

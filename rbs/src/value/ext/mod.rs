@@ -48,7 +48,6 @@ impl ValueExt for Value {
             Value::Binary(ref v) => Unexpected::Bytes(v),
             Value::Array(..) => Unexpected::Seq,
             Value::Map(..) => Unexpected::Map,
-            Value::Ext(..) => Unexpected::Seq,
         }
     }
 }

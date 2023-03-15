@@ -4,10 +4,11 @@ use std::str::FromStr;
 
 use crate::Error;
 use serde::Deserializer;
+use rbs::value::map::ValueMap;
 
-#[derive(serde::Serialize, Clone, Eq, PartialEq, Hash)]
+#[derive(serde::Serialize, Clone, Eq, PartialEq)]
 #[serde(rename = "Json")]
-pub struct Json(pub String);
+pub struct Json(pub serde_json::Value);
 
 impl<'de> serde::Deserialize<'de> for Json {
     fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
@@ -21,45 +22,34 @@ impl<'de> serde::Deserialize<'de> for Json {
 impl Default for Json {
     fn default() -> Self {
         Self {
-            0: "null".to_string(),
+            0: serde_json::Value::Null,
         }
     }
 }
 
 impl From<serde_json::Value> for Json {
     fn from(arg: serde_json::Value) -> Self {
-        Json(arg.to_string())
+        Json(arg)
     }
 }
 
 impl From<Value> for Json {
     fn from(v: Value) -> Self {
         match v {
-            Value::Null => Json(v.to_string()),
-            Value::Bool(v) => Json(v.to_string()),
-            Value::I32(v) => Json(v.to_string()),
-            Value::I64(v) => Json(v.to_string()),
-            Value::U32(v) => Json(v.to_string()),
-            Value::U64(v) => Json(v.to_string()),
-            Value::F32(v) => Json(v.to_string()),
-            Value::F64(v) => Json(v.to_string()),
-            Value::String(mut v) => {
-                if (v.starts_with("{") && v.ends_with("}"))
-                    || (v.starts_with("[") && v.ends_with("]"))
-                    || (v.starts_with("\"") && v.ends_with("\""))
-                {
-                    //is json-string
-                    Json(v)
-                } else {
-                    v.insert(0, '"');
-                    v.push('"');
-                    Json(v)
-                }
+            Value::Null => Json(serde_json::Value::Null),
+            Value::Bool(v) => Json(serde_json::Value::Bool(v)),
+            Value::I32(v) => Json(serde_json::json!(v)),
+            Value::I64(v) => Json(serde_json::json!(v)),
+            Value::U32(v) => Json(serde_json::json!(v)),
+            Value::U64(v) => Json(serde_json::json!(v)),
+            Value::F32(v) => Json(serde_json::json!(v)),
+            Value::F64(v) => Json(serde_json::json!(v)),
+            Value::String( v) => {
+                Json(serde_json::json!(v))
             }
-            Value::Binary(v) => Json(unsafe { String::from_utf8_unchecked(v) }),
-            Value::Array(_) => Json(v.to_string()),
-            Value::Map(v) => Json(v.to_string()),
-            Value::Ext(_name, v) => Json::from(*v),
+            Value::Binary(v) => Json(serde_json::json!(v)),
+            Value::Array(v) => Json(serde_json::json!(v)),
+            Value::Map(v) => Json(serde_json::json!(v)),
         }
     }
 }
@@ -78,7 +68,40 @@ impl Debug for Json {
 
 impl From<Json> for Value {
     fn from(arg: Json) -> Self {
-        Value::Ext("Json", Box::new(Value::String(arg.0)))
+        match arg.0{
+            serde_json::Value::Null => {
+                Value::Null
+            }
+            serde_json::Value::Bool(v) => {
+                Value::Bool(v)
+            }
+            serde_json::Value::Number(v) => {
+                if v.is_f64(){
+                    Value::F64(v.as_f64().unwrap_or_default())
+                }else  if v.is_i64(){
+                    Value::I64(v.as_i64().unwrap_or_default())
+                }else{
+                    Value::U64(v.as_u64().unwrap_or_default())
+                }
+            }
+            serde_json::Value::String(v) => {
+                Value::String(v)
+            }
+            serde_json::Value::Array(v) => {
+                let mut arr = Vec::with_capacity(v.capacity());
+                for x in v {
+                    arr.push(Value::from(Json(x)));
+                }
+                Value::Array(arr)
+            }
+            serde_json:: Value::Object(v) => {
+                let mut arr = ValueMap::with_capacity(v.len());
+                for (k,v) in v {
+                    arr.push((Value::String(k),Value::from(Json(v))));
+                }
+                Value::Map(arr)
+            }
+        }
     }
 }
 
@@ -86,7 +109,7 @@ impl FromStr for Json {
     type Err = Error;
 
     fn from_str(s: &str) -> Result<Self, Self::Err> {
-        Ok(Self(s.to_string()))
+        Ok(Self(serde_json::Value::String(s.to_string())))
     }
 }
 

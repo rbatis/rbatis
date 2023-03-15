@@ -35,7 +35,7 @@ impl Debug for Decimal {
 
 impl From<Decimal> for Value {
     fn from(arg: Decimal) -> Self {
-        Value::Ext("Decimal", Box::new(Value::String(arg.0)))
+        Value::from(("Decimal",Value::String(arg.0)))
     }
 }
 

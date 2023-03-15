@@ -36,7 +36,7 @@ impl Debug for Timestamp {
 
 impl From<Timestamp> for Value {
     fn from(arg: Timestamp) -> Self {
-        Value::Ext("Timestamp", Box::new(Value::U64(arg.0)))
+        Value::from(("Timestamp",Value::U64(arg.0)))
     }
 }
 

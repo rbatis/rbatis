@@ -8,7 +8,6 @@ use crate::value::map::ValueMap;
 use std::borrow::Cow;
 use std::fmt::{self, Debug, Display};
 use std::iter::FromIterator;
-use std::ops::Deref;
 
 pub mod ext;
 pub mod map;
@@ -40,8 +39,6 @@ pub enum Value {
     Array(Vec<Self>),
     /// Map represents key-value pairs of objects.
     Map(ValueMap),
-    /// Extended implements Extension interface
-    Ext(&'static str, Box<Self>),
 }
 
 impl Value {
@@ -206,12 +203,6 @@ impl Value {
         self.as_map().is_some()
     }
 
-    /// Returns true if the `Value` is an Ext. Returns false otherwise.
-    #[inline]
-    pub fn is_ext(&self) -> bool {
-        self.as_ext().is_some()
-    }
-
     /// If the `Value` is a Bool, returns the associated bool.
     /// Returns None otherwise.
     ///
@@ -228,7 +219,6 @@ impl Value {
     pub fn as_bool(&self) -> Option<bool> {
         match self {
             Value::Bool(v) => Some(*v),
-            Value::Ext(_, e) => e.as_bool(),
             _ => None,
         }
     }
@@ -245,7 +235,6 @@ impl Value {
             Value::U32(ref n) => Some(n.to_owned() as i64),
             Value::I64(ref n) => Some(n.to_owned()),
             Value::I32(ref n) => Some(n.to_owned() as i64),
-            Value::Ext(_, ref e) => e.as_i64(),
             _ => None,
         }
     }
@@ -262,7 +251,6 @@ impl Value {
             Value::I32(ref n) => Some(n.to_owned() as u64),
             Value::U64(ref n) => Some(n.to_owned()),
             Value::U32(ref n) => Some(n.to_owned() as u64),
-            Value::Ext(_, ref e) => e.as_u64(),
             _ => None,
         }
     }
@@ -291,7 +279,6 @@ impl Value {
             Value::U64(n) => Some(n as f64),
             Value::F32(n) => Some(From::from(n)),
             Value::F64(n) => Some(n),
-            Value::Ext(_, ref e) => e.as_f64(),
             _ => None,
         }
     }
@@ -312,7 +299,6 @@ impl Value {
     pub fn as_str(&self) -> Option<&str> {
         match self {
             Value::String(s) => Some(s),
-            Value::Ext(_, s) => s.as_str(),
             _ => None,
         }
     }
@@ -321,7 +307,6 @@ impl Value {
     pub fn into_string(self) -> Option<String> {
         match self {
             Value::String(v) => Some(v),
-            Value::Ext(_, ext) => ext.into_string(),
             _ => None,
         }
     }
@@ -331,7 +316,6 @@ impl Value {
     pub fn into_bytes(self) -> Option<Vec<u8>> {
         match self {
             Value::Binary(v) => Some(v),
-            Value::Ext(_, ext) => ext.into_bytes(),
             _ => None,
         }
     }
@@ -353,9 +337,7 @@ impl Value {
             Some(val)
         } else if let Value::String(ref val) = *self {
             Some(val.as_bytes())
-        } else if let Value::Ext(_, ref val) = *self {
-            val.as_slice()
-        } else {
+        }  else {
             None
         }
     }
@@ -378,8 +360,6 @@ impl Value {
     pub fn as_array(&self) -> Option<&Vec<Value>> {
         if let Value::Array(ref array) = *self {
             Some(&*array)
-        } else if let Value::Ext(_, ref ext) = *self {
-            ext.as_array()
         } else {
             None
         }
@@ -392,20 +372,6 @@ impl Value {
     pub fn as_map(&self) -> Option<&ValueMap> {
         if let Value::Map(ref map) = *self {
             Some(map)
-        } else if let Value::Ext(_, ref map) = *self {
-            map.as_map()
-        } else {
-            None
-        }
-    }
-
-    /// If the `Value` is an Ext, returns the associated tuple with a ty and slice.
-    /// Returns None otherwise.
-    ///
-    #[inline]
-    pub fn as_ext(&self) -> Option<(&str, &Box<Value>)> {
-        if let Value::Ext(ref ty, ref buf) = *self {
-            Some((ty, buf))
         } else {
             None
         }
@@ -562,7 +528,10 @@ impl From<Vec<(Value, Value)>> for Value {
 ///from tuple for ext
 impl From<(&'static str, Value)> for Value {
     fn from(arg: (&'static str, Value)) -> Self {
-        Value::Ext(arg.0, Box::new(arg.1))
+        let  m = ValueMap{
+            0: vec![(Value::from("type"),Value::from(arg.0)),(Value::from("value"),arg.1)],
+        };
+        Value::Map(m)
     }
 }
 
@@ -630,9 +599,6 @@ impl Display for Value {
                 Ok(())
             }
             Value::Map(ref vec) => Display::fmt(vec, f),
-            Value::Ext(ref ty, ref data) => {
-                write!(f, "{}({})", ty, data.deref())
-            }
         }
     }
 }
@@ -659,7 +625,6 @@ impl IntoIterator for Value {
                 }
                 v.into_iter()
             }
-            Value::Ext(_, e) => e.into_iter(),
             _ => {
                 let v = ValueMap::with_capacity(0);
                 v.into_iter()
@@ -690,7 +655,6 @@ impl<'a> IntoIterator for &'a Value {
                 }
                 v.into_iter()
             }
-            Value::Ext(_, e) => e.deref().into_iter(),
             _ => {
                 let v = Vec::with_capacity(0);
                 v.into_iter()
