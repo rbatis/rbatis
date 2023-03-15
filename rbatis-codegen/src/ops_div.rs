@@ -167,7 +167,6 @@ fn op_div_value(left: Value, rhs: Value) -> Value {
             }
             Value::F64(s / rhs)
         }
-        Value::Ext(_, e) => op_div_value(*e, rhs),
         _ => Value::Null,
     }
 }

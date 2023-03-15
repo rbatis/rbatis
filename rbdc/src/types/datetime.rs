@@ -168,7 +168,7 @@ impl FromStr for FastDateTime {
 
 impl From<FastDateTime> for Value {
     fn from(arg: FastDateTime) -> Self {
-        Value::Ext("DateTime", Box::new(Value::String(arg.0.to_string())))
+        Value::from(("DateTime",Value::String(arg.0.to_string())))
     }
 }
 

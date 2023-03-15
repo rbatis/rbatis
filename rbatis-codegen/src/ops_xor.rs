@@ -20,7 +20,6 @@ fn op_bitxor_value(left: Value, rhs: Value) -> Value {
             let rhs = rhs.u64();
             Value::U64(s ^ rhs)
         }
-        Value::Ext(_, e) => op_bitxor_value(*e, rhs),
         _ => Value::Null,
     }
 }

@@ -93,7 +93,6 @@ fn op_partial_cmp_value(left: &Value, rhs: &Value) -> Option<Ordering> {
         Value::F32(n) => cmp_f64(*n as f64, rhs.f64()),
         Value::F64(n) => cmp_f64(*n, rhs.f64()),
         Value::String(s) => Some(s.as_str().cmp(rhs.str())),
-        Value::Ext(_, e) => op_partial_cmp_value(e.as_ref(), rhs),
         _ => None,
     }
 }

@@ -228,7 +228,6 @@ impl<'de> Deserializer<'de> for Value {
                     Err(de::Error::invalid_length(len, &"fewer elements in map"))
                 }
             }
-            Value::Ext(_tag, data) => Deserializer::deserialize_any(*data, visitor),
         }
     }
 

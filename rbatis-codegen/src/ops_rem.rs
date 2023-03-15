@@ -28,7 +28,6 @@ fn op_rem_value(left: Value, rhs: Value) -> Value {
             let rhs = rhs.f64();
             Value::F64(s % rhs)
         }
-        Value::Ext(_, e) => op_rem_value(*e, rhs),
         _ => Value::Null,
     }
 }

@@ -1,3 +1,4 @@
+use std::ops::Index;
 use crate::executor::RBatisConnExecutor;
 use crate::table_sync::TableSync;
 use crate::Error;
@@ -29,16 +30,23 @@ fn type_str(v: &Value) -> &'static str {
         Value::String(_) => "TEXT",
         Value::Binary(_) => "BLOB",
         Value::Array(_) => "NULL",
-        Value::Map(_) => "NULL",
-        Value::Ext(t, _v) => match *t {
-            "Date" => "TEXT",
-            "DateTime" => "TEXT",
-            "Time" => "TEXT",
-            "Timestamp" => "INT8",
-            "Decimal" => "NUMERIC",
-            "Json" => "BLOB",
-            "Uuid" => "TEXT",
-            _ => "NULL",
+        Value::Map(m) => {
+            //"NULL"
+            let t = m.index("type").as_str().unwrap_or_default();
+            if t != "" {
+                match t {
+                    "Date" => "TEXT",
+                    "DateTime" => "TEXT",
+                    "Time" => "TEXT",
+                    "Timestamp" => "INT8",
+                    "Decimal" => "NUMERIC",
+                    "Json" => "BLOB",
+                    "Uuid" => "TEXT",
+                    _ => "NULL",
+                }
+            } else {
+                "BLOB"
+            }
         },
     }
 }
@@ -110,7 +118,6 @@ impl TableSync for SqliteTableSync {
                     }
                     Ok(())
                 }
-                Value::Ext(_table_name, m) => self.sync(rb, *m, &name).await,
                 _ => Err(Error::from("table not is an struct or map!")),
             }
         })

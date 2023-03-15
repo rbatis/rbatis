@@ -12,13 +12,6 @@ pub use value::ext::{to_value, to_value_def};
 pub use value::Value;
 
 impl Value {
-    pub fn into_ext(self, name: &'static str) -> Self {
-        match self {
-            Value::Ext(_, _) => self,
-            _ => Value::Ext(name, Box::new(self)),
-        }
-    }
-
     pub fn is_empty(&self) -> bool {
         match self {
             Value::Null => true,
@@ -33,7 +26,6 @@ impl Value {
             Value::Binary(v) => v.is_empty(),
             Value::Array(v) => v.is_empty(),
             Value::Map(v) => v.is_empty(),
-            Value::Ext(_, v) => v.is_empty(),
         }
     }
 }

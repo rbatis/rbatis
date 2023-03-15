@@ -38,7 +38,6 @@ impl Serialize for Value {
                 }
                 state.end()
             }
-            Value::Ext(ref ty, ref value) => s.serialize_newtype_struct(ty, value),
         }
     }
 }
@@ -186,7 +185,10 @@ impl ser::Serializer for Serializer {
     where
         T: Serialize,
     {
-        return Ok(Value::Ext(name, Box::new(value.serialize(self)?)));
+        let  m = ValueMap{
+            0: vec![(Value::from("type"),Value::from(name)),(Value::from("value"),value.serialize(self)?)],
+        };
+        return Ok(Value::Map(m));
     }
 
     fn serialize_newtype_variant<T: ?Sized>(
