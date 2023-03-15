@@ -37,7 +37,7 @@ impl From<Value> for Json {
     fn from(v: Value) -> Self {
         match v {
             Value::Null => Json(serde_json::Value::Null),
-            Value::Bool(v) => Json(serde_json::Value::Bool(v)),
+            Value::Bool(v) => Json(serde_json::json!(v)),
             Value::I32(v) => Json(serde_json::json!(v)),
             Value::I64(v) => Json(serde_json::json!(v)),
             Value::U32(v) => Json(serde_json::json!(v)),
@@ -48,8 +48,20 @@ impl From<Value> for Json {
                 Json(serde_json::json!(v))
             }
             Value::Binary(v) => Json(serde_json::json!(v)),
-            Value::Array(v) => Json(serde_json::json!(v)),
-            Value::Map(v) => Json(serde_json::json!(v)),
+            Value::Array(v) => Json({
+                let mut datas= Vec::<serde_json::Value>::with_capacity(v.len());
+                for x in v {
+                    datas.push(Json::from(x).0);
+                }
+                serde_json::Value::Array(datas)
+            }),
+            Value::Map(m) => Json({
+                let mut datas= serde_json::Map::with_capacity(m.len());
+                for (k,v) in m {
+                    datas.insert(k.as_str().unwrap_or_default().to_string(),Json::from(v).0);
+                }
+                serde_json::Value::Object(datas)
+            }),
         }
     }
 }
