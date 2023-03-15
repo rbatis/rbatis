@@ -6,7 +6,10 @@ use std::str::FromStr;
 
 #[derive(serde::Serialize, Clone, Eq, PartialEq, Hash)]
 #[serde(rename = "Decimal")]
-pub struct Decimal(pub String);
+pub struct Decimal {
+    pub r#type: String,
+    pub value: String,
+}
 
 impl<'de> serde::Deserialize<'de> for Decimal {
     fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
@@ -16,26 +19,29 @@ impl<'de> serde::Deserialize<'de> for Decimal {
         use serde::de::Error;
         match Value::deserialize(deserializer)?.into_value().into_string() {
             None => Err(D::Error::custom("warn type decode Decimal")),
-            Some(v) => Ok(Self(v)),
+            Some(v) => Ok(Self {
+                r#type: "Decimal".to_string(),
+                value: v,
+            }),
         }
     }
 }
 
 impl Display for Decimal {
     fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
-        write!(f, "{}", self.0)
+        write!(f, "{}", self.value)
     }
 }
 
 impl Debug for Decimal {
     fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
-        write!(f, "{}", self.0)
+        write!(f, "{}", self.value)
     }
 }
 
 impl From<Decimal> for Value {
     fn from(arg: Decimal) -> Self {
-        Value::from(("Decimal",Value::String(arg.0)))
+        Value::from(("Decimal", Value::String(arg.value)))
     }
 }
 
@@ -43,6 +49,9 @@ impl FromStr for Decimal {
     type Err = Error;
 
     fn from_str(s: &str) -> Result<Self, Self::Err> {
-        Ok(Decimal(s.to_string()))
+        Ok(Decimal {
+            r#type: "Decimal".to_string(),
+            value: s.to_string(),
+        })
     }
 }

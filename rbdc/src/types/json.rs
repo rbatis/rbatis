@@ -2,63 +2,71 @@ use rbs::Value;
 use std::fmt::{Debug, Display, Formatter};
 use std::str::FromStr;
 
-use crate::Error;
-use serde::Deserializer;
+use crate::{Error, IntoValue};
 use rbs::value::map::ValueMap;
+use serde::Deserializer;
 
 #[derive(serde::Serialize, Clone, Eq, PartialEq)]
 #[serde(rename = "Json")]
-pub struct Json(pub serde_json::Value);
+pub struct Json {
+    pub r#type: String,
+    pub value: serde_json::Value,
+}
 
 impl<'de> serde::Deserialize<'de> for Json {
     fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
     where
         D: Deserializer<'de>,
     {
-        Ok(Json::from(Value::deserialize(deserializer)?))
+        Ok(Json::from(Value::deserialize(deserializer)?.into_value()))
     }
 }
 
 impl Default for Json {
     fn default() -> Self {
         Self {
-            0: serde_json::Value::Null,
+            r#type: "Json".to_string(),
+            value: serde_json::Value::Null,
         }
     }
 }
 
 impl From<serde_json::Value> for Json {
     fn from(arg: serde_json::Value) -> Self {
-        Json(arg)
+        Json {
+            r#type: "Json".to_string(),
+            value: arg,
+        }
     }
 }
 
 impl From<Value> for Json {
     fn from(v: Value) -> Self {
         match v {
-            Value::Null => Json(serde_json::Value::Null),
-            Value::Bool(v) => Json(serde_json::json!(v)),
-            Value::I32(v) => Json(serde_json::json!(v)),
-            Value::I64(v) => Json(serde_json::json!(v)),
-            Value::U32(v) => Json(serde_json::json!(v)),
-            Value::U64(v) => Json(serde_json::json!(v)),
-            Value::F32(v) => Json(serde_json::json!(v)),
-            Value::F64(v) => Json(serde_json::json!(v)),
-            Value::String( v) => {
-                Json(serde_json::json!(v))
-            }
-            Value::Binary(v) => Json(serde_json::json!(v)),
-            Value::Array(v) => Json({
-                let mut datas= Vec::<serde_json::Value>::with_capacity(v.len());
+            Value::Null => Json::from(serde_json::Value::Null),
+            Value::Bool(v) => Json::from(serde_json::json!(v)),
+            Value::I32(v) => Json::from(serde_json::json!(v)),
+            Value::I64(v) => Json::from(serde_json::json!(v)),
+            Value::U32(v) => Json::from(serde_json::json!(v)),
+            Value::U64(v) => Json::from(serde_json::json!(v)),
+            Value::F32(v) => Json::from(serde_json::json!(v)),
+            Value::F64(v) => Json::from(serde_json::json!(v)),
+            Value::String(v) => Json::from(serde_json::json!(v)),
+            Value::Binary(v) => Json::from(serde_json::json!(v)),
+            Value::Array(v) => Json::from({
+                let mut datas = Vec::<serde_json::Value>::with_capacity(v.len());
                 for x in v {
-                    datas.push(Json::from(x).0);
+                    datas.push(Json::from(x).value);
                 }
                 serde_json::Value::Array(datas)
             }),
-            Value::Map(m) => Json({
-                let mut datas= serde_json::Map::with_capacity(m.len());
-                for (k,v) in m {
-                    datas.insert(k.as_str().unwrap_or_default().to_string(),Json::from(v).0);
+            Value::Map(m) => Json::from({
+                let mut datas = serde_json::Map::with_capacity(m.len());
+                for (k, v) in m {
+                    datas.insert(
+                        k.as_str().unwrap_or_default().to_string(),
+                        Json::from(v).value,
+                    );
                 }
                 serde_json::Value::Object(datas)
             }),
@@ -68,48 +76,42 @@ impl From<Value> for Json {
 
 impl Display for Json {
     fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
-        write!(f, "{}", self.0)
+        write!(f, "{}", self.value)
     }
 }
 
 impl Debug for Json {
     fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
-        write!(f, "{}", self.0)
+        write!(f, "{}", self.value)
     }
 }
 
 impl From<Json> for Value {
     fn from(arg: Json) -> Self {
-        match arg.0{
-            serde_json::Value::Null => {
-                Value::Null
-            }
-            serde_json::Value::Bool(v) => {
-                Value::Bool(v)
-            }
+        match arg.value {
+            serde_json::Value::Null => Value::Null,
+            serde_json::Value::Bool(v) => Value::Bool(v),
             serde_json::Value::Number(v) => {
-                if v.is_f64(){
+                if v.is_f64() {
                     Value::F64(v.as_f64().unwrap_or_default())
-                }else  if v.is_i64(){
+                } else if v.is_i64() {
                     Value::I64(v.as_i64().unwrap_or_default())
-                }else{
+                } else {
                     Value::U64(v.as_u64().unwrap_or_default())
                 }
             }
-            serde_json::Value::String(v) => {
-                Value::String(v)
-            }
+            serde_json::Value::String(v) => Value::String(v),
             serde_json::Value::Array(v) => {
                 let mut arr = Vec::with_capacity(v.capacity());
                 for x in v {
-                    arr.push(Value::from(Json(x)));
+                    arr.push(Value::from(Json::from(x)));
                 }
                 Value::Array(arr)
             }
-            serde_json:: Value::Object(v) => {
+            serde_json::Value::Object(v) => {
                 let mut arr = ValueMap::with_capacity(v.len());
-                for (k,v) in v {
-                    arr.push((Value::String(k),Value::from(Json(v))));
+                for (k, v) in v {
+                    arr.push((Value::String(k), Value::from(Json::from(v))));
                 }
                 Value::Map(arr)
             }
@@ -121,7 +123,9 @@ impl FromStr for Json {
     type Err = Error;
 
     fn from_str(s: &str) -> Result<Self, Self::Err> {
-        Ok(Self(serde_json::Value::String(s.to_string())))
+        Ok(Json::from(
+            serde_json::Value::from_str(s).map_err(|e| Self::Err::from(e.to_string()))?,
+        ))
     }
 }
 

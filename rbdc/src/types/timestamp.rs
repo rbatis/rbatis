@@ -7,7 +7,10 @@ use std::str::FromStr;
 /// Timestamp(timestamp_millis:u64)
 #[derive(serde::Serialize, Clone, Eq, PartialEq, Hash)]
 #[serde(rename = "Timestamp")]
-pub struct Timestamp(pub u64);
+pub struct Timestamp {
+    pub r#type: String,
+    pub value: u64,
+}
 
 impl<'de> serde::Deserialize<'de> for Timestamp {
     fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
@@ -17,26 +20,35 @@ impl<'de> serde::Deserialize<'de> for Timestamp {
         use serde::de::Error;
         match Value::deserialize(deserializer)?.into_value().as_u64() {
             None => Err(D::Error::custom("warn type decode Timestamp")),
-            Some(v) => Ok(Self(v)),
+            Some(v) => Ok(Self::from(v)),
         }
     }
 }
 
 impl Display for Timestamp {
     fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
-        write!(f, "{}", self.0)
+        write!(f, "{}", self.value)
     }
 }
 
 impl Debug for Timestamp {
     fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
-        write!(f, "{}", self.0)
+        write!(f, "{}", self.value)
     }
 }
 
 impl From<Timestamp> for Value {
     fn from(arg: Timestamp) -> Self {
-        Value::from(("Timestamp",Value::U64(arg.0)))
+        Value::from(("Timestamp", Value::U64(arg.value)))
+    }
+}
+
+impl From<u64> for Timestamp {
+    fn from(value: u64) -> Self {
+        Timestamp {
+            r#type: "Timestamp".to_string(),
+            value,
+        }
     }
 }
 
@@ -44,7 +56,7 @@ impl FromStr for Timestamp {
     type Err = Error;
 
     fn from_str(s: &str) -> Result<Self, Self::Err> {
-        Ok(Timestamp(u64::from_str(s)?))
+        Ok(Timestamp::from(u64::from_str(s)?))
     }
 }
 
@@ -62,7 +74,7 @@ mod test {
     fn test_decode_timestamp_ext() {
         assert_eq!(
             Timestamp(1),
-            rbs::from_value(Value::from(("Timestamp",Value::U64(1)))).unwrap()
+            rbs::from_value(Value::from(("Timestamp", Value::U64(1)))).unwrap()
         );
     }
 }
