@@ -1,6 +1,6 @@
 use log::LevelFilter;
 use rbatis::rbatis::Rbatis;
-use rbatis::rbdc::datetime::FastDateTime;
+use rbatis::rbdc::datetime::DateTime;
 use serde::{Deserialize, Serialize};
 use rbatis::dark_std::defer;
 
@@ -16,7 +16,7 @@ pub struct BizActivity {
     pub sort: Option<String>,
     pub status: Option<i32>,
     pub remark: Option<String>,
-    pub create_time: Option<FastDateTime>,
+    pub create_time: Option<DateTime>,
     pub version: Option<i64>,
     pub delete_flag: Option<i32>,
 }

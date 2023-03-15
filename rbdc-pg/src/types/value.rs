@@ -18,7 +18,7 @@ use rbdc::json::Json;
 use rbdc::timestamp::Timestamp;
 use rbdc::types::time::Time;
 use rbdc::uuid::Uuid;
-use rbdc::Error;
+use rbdc::{Error, TV};
 use rbs::Value;
 use std::str::FromStr;
 
@@ -128,9 +128,9 @@ impl Decode for Value {
             }),
             PgType::Int4 => Value::I32(Decode::decode(arg)?),
             PgType::Text => Value::String(Decode::decode(arg)?),
-            PgType::Oid => Value::from(("Oid", Value::U32(Decode::decode(arg)?))),
+            PgType::Oid => Value::from(TV::new("Oid", Value::U32(Decode::decode(arg)?))),
             PgType::Json => Json::decode(arg)?.into(),
-            PgType::Point => Value::from((
+            PgType::Point => Value::from(TV::new(
                 "Point",
               Value::Binary({
                     match arg.format() {
@@ -139,7 +139,7 @@ impl Decode for Value {
                     }
                 })),
             ),
-            PgType::Lseg => Value::from((
+            PgType::Lseg => Value::from(TV::new(
                 "Lseg",
                 Value::Binary({
                     match arg.format() {
@@ -148,7 +148,7 @@ impl Decode for Value {
                     }
                 })),
             ),
-            PgType::Path => Value::from((
+            PgType::Path => Value::from(TV::new(
                 "Path",
                 Value::Binary({
                     match arg.format() {
@@ -157,7 +157,7 @@ impl Decode for Value {
                     }
                 })),
             ),
-            PgType::Box => Value::from((
+            PgType::Box => Value::from(TV::new(
                 "Box",
               Value::Binary({
                     match arg.format() {
@@ -166,7 +166,7 @@ impl Decode for Value {
                     }
                 })),
             ),
-            PgType::Polygon => Value::from((
+            PgType::Polygon => Value::from(TV::new(
                 "Polygon",
                Value::Binary({
                     match arg.format() {
@@ -175,7 +175,7 @@ impl Decode for Value {
                     }
                 })),
             ),
-            PgType::Line => Value::from((
+            PgType::Line => Value::from(TV::new(
                 "Line",
                 Value::Binary({
                     match arg.format() {
@@ -184,7 +184,7 @@ impl Decode for Value {
                     }
                 })),
             ),
-            PgType::Cidr => Value::from((
+            PgType::Cidr => Value::from(TV::new(
                 "Cidr",
                Value::Binary({
                     match arg.format() {
@@ -197,7 +197,7 @@ impl Decode for Value {
             PgType::Float4 => Value::F32(Decode::decode(arg)?),
             PgType::Float8 => Value::F32(Decode::decode(arg)?),
             PgType::Unknown => Value::Null,
-            PgType::Circle => Value::from((
+            PgType::Circle => Value::from(TV::new(
                 "Circle",
                 Value::Binary({
                     match arg.format() {
@@ -206,7 +206,7 @@ impl Decode for Value {
                     }
                 })),
             ),
-            PgType::Macaddr8 => Value::from((
+            PgType::Macaddr8 => Value::from(TV::new(
                 "Macaddr8",
                 Value::Binary({
                     match arg.format() {
@@ -215,7 +215,7 @@ impl Decode for Value {
                     }
                 })),
             ),
-            PgType::Macaddr => Value::from((
+            PgType::Macaddr => Value::from(TV::new(
                 "Macaddr",
                 Value::Binary({
                     match arg.format() {
@@ -224,7 +224,7 @@ impl Decode for Value {
                     }
                 })),
             ),
-            PgType::Inet => Value::from((
+            PgType::Inet => Value::from(TV::new(
                 "Inet", Value::Binary({
                     match arg.format() {
                         PgValueFormat::Binary => arg.as_bytes()?.to_owned(),
@@ -232,7 +232,7 @@ impl Decode for Value {
                     }
                 })),
             ),
-            PgType::Bpchar => Value::from((
+            PgType::Bpchar => Value::from(TV::new(
                 "Bpchar",
                Value::Binary({
                     match arg.format() {
@@ -258,7 +258,7 @@ impl Decode for Value {
             }
             .into(),
             PgType::Timestamptz => Timestamptz::decode(arg)?.into(),
-            PgType::Interval => Value::from((
+            PgType::Interval => Value::from(TV::new(
                 "Interval",
                 Value::Binary({
                     match arg.format() {
@@ -268,7 +268,7 @@ impl Decode for Value {
                 })),
             ),
             PgType::Timetz => Timetz::decode(arg)?.into(),
-            PgType::Bit => Value::from((
+            PgType::Bit => Value::from(TV::new(
                 "Bit",
                 Value::Binary({
                     match arg.format() {
@@ -277,7 +277,7 @@ impl Decode for Value {
                     }
                 })),
             ),
-            PgType::Varbit => Value::from((
+            PgType::Varbit => Value::from(TV::new(
                 "Varbit",
                 Value::Binary({
                     match arg.format() {
@@ -287,7 +287,7 @@ impl Decode for Value {
                 })),
             ),
             PgType::Numeric => Decimal::decode(arg)?.into(),
-            PgType::Record => Value::from((
+            PgType::Record => Value::from(TV::new(
                 "Record",
                Value::Binary({
                     match arg.format() {
@@ -298,7 +298,7 @@ impl Decode for Value {
             ),
             PgType::Uuid => Uuid::decode(arg)?.into(),
             PgType::Jsonb => Json::decode(arg)?.into(),
-            PgType::Int4Range => Value::from((
+            PgType::Int4Range => Value::from(TV::new(
                 "Int4Range",
                Value::Binary({
                     match arg.format() {
@@ -307,7 +307,7 @@ impl Decode for Value {
                     }
                 })),
             ),
-            PgType::NumRange => Value::from((
+            PgType::NumRange => Value::from(TV::new(
                 "NumRange",
                Value::Binary({
                     match arg.format() {
@@ -316,7 +316,7 @@ impl Decode for Value {
                     }
                 })),
             ),
-            PgType::TsRange => Value::from((
+            PgType::TsRange => Value::from(TV::new(
                 "TsRange",
                Value::Binary({
                     match arg.format() {
@@ -325,7 +325,7 @@ impl Decode for Value {
                     }
                 })),
             ),
-            PgType::TstzRange => Value::from((
+            PgType::TstzRange => Value::from(TV::new(
                 "TstzRange",
                 Value::Binary({
                     match arg.format() {
@@ -334,7 +334,7 @@ impl Decode for Value {
                     }
                 })),
             ),
-            PgType::DateRange => Value::from((
+            PgType::DateRange => Value::from(TV::new(
                 "DateRange",
                 Value::Binary({
                     match arg.format() {
@@ -343,7 +343,7 @@ impl Decode for Value {
                     }
                 })),
             ),
-            PgType::Int8Range => Value::from((
+            PgType::Int8Range => Value::from(TV::new(
                 "Int8Range",
                 Value::Binary({
                     match arg.format() {
@@ -352,7 +352,7 @@ impl Decode for Value {
                     }
                 })),
             ),
-            PgType::Jsonpath => Value::from((
+            PgType::Jsonpath => Value::from(TV::new(
                 "Jsonpath",
                 Value::Binary({
                     match arg.format() {
@@ -362,7 +362,7 @@ impl Decode for Value {
                 })),
             ),
             PgType::Money => Money::decode(arg)?.into(),
-            PgType::Void => Value::from((
+            PgType::Void => Value::from(TV::new(
                 "Ext",
                 Value::Binary({
                     match arg.format() {
@@ -371,7 +371,7 @@ impl Decode for Value {
                     }
                 })),
             ),
-            PgType::Custom(_) => Value::from((
+            PgType::Custom(_) => Value::from(TV::new(
                 "Custom",
                 Value::Binary({
                     match arg.format() {
@@ -380,7 +380,7 @@ impl Decode for Value {
                     }
                 })),
             ),
-            PgType::DeclareWithName(_) => Value::from((
+            PgType::DeclareWithName(_) => Value::from(TV::new(
                 "DeclareWithName",
                 Value::Binary({
                     match arg.format() {
@@ -389,7 +389,7 @@ impl Decode for Value {
                     }
                 })),
             ),
-            PgType::DeclareWithOid(_) => Value::from((
+            PgType::DeclareWithOid(_) => Value::from(TV::new(
                 "DeclareWithOid",
                 Value::Binary({
                     match arg.format() {

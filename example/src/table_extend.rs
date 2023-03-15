@@ -2,7 +2,7 @@ pub mod model;
 
 use crate::model::init_db;
 use rbatis::crud;
-use rbatis::rbdc::datetime::FastDateTime;
+use rbatis::rbdc::datetime::DateTime;
 use serde::{Deserialize, Serialize};
 use serde_json::json;
 
@@ -23,7 +23,7 @@ pub struct BizActivity {
     pub sort: Option<String>,
     pub status: Option<i32>,
     pub remark: Option<String>,
-    pub create_time: Option<FastDateTime>,
+    pub create_time: Option<DateTime>,
     pub version: Option<i64>,
     pub delete_flag: Option<i32>,
 }

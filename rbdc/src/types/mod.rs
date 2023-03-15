@@ -1,3 +1,4 @@
+use rbs::Value;
 use rbs::value::map::ValueMap;
 
 pub mod bytes;
@@ -52,6 +53,27 @@ fn is_type_value(m: &ValueMap) -> bool {
         }
     }
     have_type && have_value
+}
+
+pub struct TV {
+    pub r#type: &'static str,
+    pub value: Value,
+}
+
+impl TV {
+    pub fn new(t: &'static str, v: Value) -> Self {
+        Self {
+            r#type: t,
+            value: v,
+        }
+    }
+}
+
+impl From<TV> for Value {
+    fn from(value: TV) -> Self {
+        let m = ValueMap(vec![("type".into(), value.r#type.into()), ("value".into(), value.value.into())]);
+        Value::Map(m)
+    }
 }
 
 #[cfg(test)]

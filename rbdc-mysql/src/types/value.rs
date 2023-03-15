@@ -12,13 +12,13 @@ use crate::types::year::Year;
 use crate::types::{Decode, Encode, TypeInfo};
 use crate::value::MySqlValue;
 use rbdc::date::Date;
-use rbdc::datetime::{DateTime, FastDateTime};
+use rbdc::datetime::{DateTime};
 use rbdc::decimal::Decimal;
 use rbdc::json::Json;
 use rbdc::timestamp::Timestamp;
 use rbdc::types::time::Time;
 use rbdc::uuid::Uuid;
-use rbdc::Error;
+use rbdc::{Error, TV};
 use rbs::Value;
 use std::str::FromStr;
 
@@ -174,7 +174,7 @@ impl Decode for Value {
             ColumnType::Blob => Value::Binary(v.as_bytes().unwrap_or_default().to_vec()),
             ColumnType::VarString => Value::String(v.as_str().unwrap_or_default().to_string()),
             ColumnType::String => Value::String(v.as_str().unwrap_or_default().to_string()),
-            ColumnType::Timestamp => Value::from((
+            ColumnType::Timestamp => Value::from(TV::new(
                 "Timestamp",
                 Value::U64({
                     let s = decode_timestamp(v).unwrap_or_default();
@@ -183,44 +183,44 @@ impl Decode for Value {
                 }),
             )
             ),
-            ColumnType::Decimal => Value::from((
+            ColumnType::Decimal => Value::from(TV::new(
                 "Decimal",
                 Value::String(v.as_str().unwrap_or("0").to_string()))
             ),
-            ColumnType::Date => Value::from((
+            ColumnType::Date => Value::from(TV::new(
                 "Date",
                 Value::String(decode_date(v).unwrap_or_default()))
             ),
-            ColumnType::Time => Value::from((
+            ColumnType::Time => Value::from(TV::new(
                 "Time",
                 Value::String(decode_time(v).unwrap_or_default()))
             ),
-            ColumnType::Datetime => Value::from((
+            ColumnType::Datetime => Value::from(TV::new(
                 "DateTime",
                 Value::String(decode_timestamp(v).unwrap_or_default()))
             ),
-            ColumnType::Year => Value::from((
+            ColumnType::Year => Value::from(TV::new(
                 "Year",
                 Value::String(decode_year(v).unwrap_or_default()))
             ),
-            ColumnType::Json => Value::from((
+            ColumnType::Json => Value::from(TV::new(
                 "Json",
                 Value::String(v.as_str().unwrap_or_default().to_string()))
             ),
-            ColumnType::NewDecimal => Value::from((
+            ColumnType::NewDecimal => Value::from(TV::new(
                 "Decimal",
                 Value::String(v.as_str().unwrap_or("0").to_string()))
             ),
-            ColumnType::Enum => Value::from((
+            ColumnType::Enum => Value::from(TV::new(
                 "Enum",
                 Value::String(v.as_str().unwrap_or("").to_string()))
             ),
-            ColumnType::Set => Value::from((
+            ColumnType::Set => Value::from(TV::new(
                 "Set",
                 Value::String(v.as_str().unwrap_or("").to_string()))
             ),
             //bytes ,see https://dev.mysql.com/doc/internals/en/x-protocol-messages-messages.html
-            ColumnType::Geometry => Value::from((
+            ColumnType::Geometry => Value::from(TV::new(
                 "Geometry",
                 Value::Binary(v.as_bytes().unwrap_or_default().to_vec()))
             ),
