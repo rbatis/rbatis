@@ -14,7 +14,7 @@ members = [
 
 [package]
 name = "rbatis"
-version = "4.0.59"
+version = "4.1.0"
 description = "The Rust SQL Toolkit and ORM Library. An async, pure Rust SQL crate featuring compile-time Dynamic SQL"
 readme = "Readme.md"
 authors = ["ce <zhuxiujia@qq.com>"]
@@ -46,8 +46,8 @@ once_cell = "1.10"
 #object_id
 hex = "0.4"
 rand = "0.8"
-rbs = { version = "0.1", path = "rbs" }
-rbdc = { version = "0.1", path = "rbdc" }
+rbs = { version = "4.1", path = "rbs" }
+rbdc = { version = "4.1", path = "rbdc" }
 crossbeam = "0.8.2"
 dark-std = "0.2"
 [dev-dependencies]
