@@ -97,7 +97,7 @@ mod test {
 //                 .unwrap();
 //             let param = vec![
 //                 Value::String("http://www.test.com".to_string()),
-//                 FastDateTime::now().into(),
+//                 DateTime::now().into(),
 //                 Decimal("1".to_string()).into(),
 //                 Value::String("1".to_string()),
 //             ];
