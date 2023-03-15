@@ -1,11 +1,22 @@
-use crate::Error;
+use crate::{Error, IntoValue};
 use rbs::Value;
 use std::fmt::{Debug, Display, Formatter};
 use std::str::FromStr;
 
-#[derive(serde::Serialize, serde::Deserialize, Clone, Eq, PartialEq, Hash)]
+#[derive(serde::Serialize, Clone, Eq, PartialEq, Hash)]
 #[serde(rename = "Date")]
 pub struct Date(pub fastdate::Date);
+
+impl<'de> serde::Deserialize<'de> for Date {
+    fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
+        where
+            D: serde::Deserializer<'de>,
+    {
+        use serde::de::Error;
+        let date:fastdate::Date=rbs::from_value(Value::deserialize(deserializer)?.into_value()).map_err(|_|D::Error::custom("warn type decode Date"))?;
+        Ok(Date(date))
+    }
+}
 
 impl Display for Date {
     fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {

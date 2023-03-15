@@ -1,4 +1,4 @@
-use crate::Error;
+use crate::{Error, IntoValue};
 use rbs::Value;
 use serde::Deserializer;
 use std::fmt::{Debug, Display, Formatter};
@@ -15,7 +15,7 @@ impl<'de> serde::Deserialize<'de> for Timestamp {
         D: Deserializer<'de>,
     {
         use serde::de::Error;
-        match Value::deserialize(deserializer)?.as_u64() {
+        match Value::deserialize(deserializer)?.into_value().as_u64() {
             None => Err(D::Error::custom("warn type decode Timestamp")),
             Some(v) => Ok(Self(v)),
         }
