@@ -45,13 +45,24 @@ impl From<Decimal> for Value {
     }
 }
 
+impl From<&str> for Decimal {
+    fn from(arg: &str) -> Self {
+        Decimal::from(arg.to_string())
+    }
+}
+impl From<String> for Decimal {
+    fn from(arg: String) -> Self {
+        Decimal {
+            r#type: "Decimal".to_string(),
+            value: arg,
+        }
+    }
+}
+
 impl FromStr for Decimal {
     type Err = Error;
 
     fn from_str(s: &str) -> Result<Self, Self::Err> {
-        Ok(Decimal {
-            r#type: "Decimal".to_string(),
-            value: s.to_string(),
-        })
+        Ok(Decimal::from(s))
     }
 }

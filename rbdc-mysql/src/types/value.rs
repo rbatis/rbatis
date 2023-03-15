@@ -12,7 +12,7 @@ use crate::types::year::Year;
 use crate::types::{Decode, Encode, TypeInfo};
 use crate::value::MySqlValue;
 use rbdc::date::Date;
-use rbdc::datetime::DateTime;
+use rbdc::datetime::{DateTime, FastDateTime};
 use rbdc::decimal::Decimal;
 use rbdc::json::Json;
 use rbdc::timestamp::Timestamp;
@@ -117,25 +117,25 @@ impl Encode for Value {
                 match t {
                     "Uuid" => {
                         //uuid -> string
-                        Uuid(v.into_string().unwrap_or_default()).encode(buf)
+                        Uuid::from(v.into_string().unwrap_or_default()).encode(buf)
                     }
                     //decimal = 12345678
-                    "Decimal" => Decimal(v.into_string().unwrap_or_default()).encode(buf),
+                    "Decimal" => Decimal::from(v.into_string().unwrap_or_default()).encode(buf),
                     //year = "1993"
                     "Year" => Year(v.as_u64().unwrap_or_default() as u16).encode(buf),
                     //Date = "1993-02-06"
-                    "Date" => Date(
+                    "Date" => Date::from(
                         fastdate::Date::from_str(&v.into_string().unwrap_or_default()).unwrap(),
                     )
                         .encode(buf),
                     //RFC3339NanoTime = "15:04:05.999999999"
-                    "Time" => Time(
+                    "Time" => Time::from(
                         fastdate::Time::from_str(&v.into_string().unwrap_or_default()).unwrap(),
                     )
                         .encode(buf),
                     //RFC3339 = "2006-01-02 15:04:05.999999"
-                    "Timestamp" => Timestamp(v.as_u64().unwrap_or_default()).encode(buf),
-                    "DateTime" => FastDateTime(
+                    "Timestamp" => Timestamp::from(v.as_u64().unwrap_or_default()).encode(buf),
+                    "DateTime" => DateTime::from(
                         fastdate::DateTime::from_str(&v.into_string().unwrap_or_default()).unwrap(),
                     )
                         .encode(buf),
