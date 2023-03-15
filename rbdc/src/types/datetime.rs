@@ -2,7 +2,7 @@ use rbs::Value;
 use serde::de::Error;
 use serde::{Deserialize, Deserializer, Serialize, Serializer};
 use std::fmt::{Debug, Display, Formatter};
-use std::ops::{Add, Deref, DerefMut, Sub};
+use std::ops::{Add, Deref, DerefMut, Index, Sub};
 use std::str::FromStr;
 use std::time::Duration;
 
@@ -50,6 +50,20 @@ impl<'de> Deserialize<'de> for FastDateTime {
                         .map_err(|e| D::Error::custom(e.to_string()))?,
                 )
             }),
+            Value::Map(mut v)=>{
+                let t=v.index("type").as_str().unwrap_or_default();
+                if t=="DateTime"{
+                    Ok(Self(
+                        fastdate::DateTime::from_str(v.rm("value").as_str().unwrap_or_default())
+                            .map_err(|e| D::Error::custom(e.to_string()))?,
+                    ))
+                }else{
+                    Err(D::Error::custom(&format!(
+                        "unsupported type DateTime({})",
+                        v
+                    )))
+                }
+            }
             _ => {
                 return Err(D::Error::custom(&format!(
                     "unsupported type DateTime({})",
