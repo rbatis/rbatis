@@ -24,7 +24,7 @@ impl Debug for Date {
 
 impl From<Date> for Value {
     fn from(arg: Date) -> Self {
-        Value::from(("Date", Value::String(arg.value.to_string())))
+        Value::from(vec![("Date".into(),arg.value.to_string().into())])
     }
 }
 

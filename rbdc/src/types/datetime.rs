@@ -226,7 +226,7 @@ impl FromStr for DateTime {
 
 impl From<DateTime> for Value {
     fn from(arg: DateTime) -> Self {
-        Value::from(("DateTime", Value::String(arg.value.to_string())))
+        Value::from(vec![("DateTime".into(), Value::String(arg.value.to_string()))])
     }
 }
 

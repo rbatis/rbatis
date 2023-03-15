@@ -39,7 +39,7 @@ impl Debug for Timestamp {
 
 impl From<Timestamp> for Value {
     fn from(arg: Timestamp) -> Self {
-        Value::from(("Timestamp", Value::U64(arg.value)))
+        Value::from(vec![(("Timestamp".into(), Value::U64(arg.value)))])
     }
 }
 

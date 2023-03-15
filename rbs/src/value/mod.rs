@@ -525,16 +525,6 @@ impl From<Vec<(Value, Value)>> for Value {
     }
 }
 
-///from tuple for ext
-impl From<(&'static str, Value)> for Value {
-    fn from(arg: (&'static str, Value)) -> Self {
-        let  m = ValueMap{
-            0: vec![(Value::from("type"),Value::from(arg.0)),(Value::from("value"),arg.1)],
-        };
-        Value::Map(m)
-    }
-}
-
 /// into vec value
 impl Into<Vec<Value>> for Value {
     fn into(self) -> Vec<Value> {

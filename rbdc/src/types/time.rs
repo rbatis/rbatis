@@ -36,7 +36,7 @@ impl Debug for Time {
 
 impl From<Time> for Value {
     fn from(arg: Time) -> Self {
-        Value::from(("Time", Value::String(arg.value.to_string())))
+        Value::from(vec![("Time".into(), Value::String(arg.value.to_string()))])
     }
 }
 
