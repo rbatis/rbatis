@@ -46,7 +46,7 @@ impl Decode for Value {
             },
             ColumnData::Guid(v) => match v {
                 None => Value::Null,
-                Some(v) => Value::String(v.to_string()).into_ext("Uuid"),
+                Some(v) => Value::from(("Uuid",Value::from(v.to_string()))),
             },
             ColumnData::Binary(v) => match v {
                 None => Value::Null,
@@ -59,7 +59,7 @@ impl Decode for Value {
                     match v {
                         Ok(v) => match v {
                             None => Value::Null,
-                            Some(v) => Value::String(v.to_string()).into_ext("Decimal"),
+                            Some(v) => Value::from(("Decimal",Value::String(v.to_string()))),
                         },
                         Err(e) => {
                             return Err(Error::from(e.to_string()));
@@ -69,7 +69,7 @@ impl Decode for Value {
             },
             ColumnData::Xml(v) => match v {
                 None => Value::Null,
-                Some(v) => Value::String(v.to_string()).into_ext("Xml"),
+                Some(v) => Value::from(("Xml",Value::String(v.to_string()))),
             },
             ColumnData::DateTime(v) => match v {
                 None => Value::Null,
@@ -115,7 +115,7 @@ impl Decode for Value {
                     match v {
                         Ok(v) => match v {
                             None => Value::Null,
-                            Some(v) => Value::String(v.to_string()).into_ext("Time"),
+                            Some(v) => Value::from(("Time",Value::String(v.to_string()))),
                         },
                         Err(e) => {
                             return Err(Error::from(e.to_string()));
@@ -131,7 +131,7 @@ impl Decode for Value {
                     match v {
                         Ok(v) => match v {
                             None => Value::Null,
-                            Some(v) => Value::String(v.to_string()).into_ext("Date"),
+                            Some(v) => Value::from(("Date",Value::String(v.to_string()))),
                         },
                         Err(e) => {
                             return Err(Error::from(e.to_string()));

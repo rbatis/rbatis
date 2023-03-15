@@ -34,7 +34,7 @@ impl Decode for Bytea {
 
 impl From<Bytea> for Value {
     fn from(arg: Bytea) -> Self {
-        Value::Ext("Bytea", Box::new(Value::U32(arg.0 as u32)))
+        Value::from(("Bytea", Value::U32(arg.0 as u32)))
     }
 }
 

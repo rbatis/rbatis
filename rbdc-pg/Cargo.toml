@@ -42,5 +42,6 @@ fastdate = { version = "0.1"}
 bigdecimal = "0.3.0"
 num-bigint="0.4.3"
 uuid = {version="1.1",features = ["v4"]}
+serde_json = "1"
 [dev-dependencies]
 tokio = {version="1",features = ["full"]}

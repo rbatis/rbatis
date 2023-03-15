@@ -1,3 +1,4 @@
+use std::ops::Index;
 use crate::arguments::PgArgumentBuffer;
 use crate::type_info::PgType;
 use crate::type_info::PgTypeInfo;
@@ -44,9 +45,9 @@ impl TypeInfo for Value {
                     .to_array_type()
                     .unwrap_or(PgTypeInfo::UNKNOWN)
             }
-            Value::Map(_) => PgTypeInfo::UNKNOWN,
-            Value::Ext(type_name, _) => {
-                match *type_name {
+            Value::Map(m) => {
+                let t=m.index("type").as_str().unwrap_or_default();
+                match t{
                     "Uuid" => PgTypeInfo::UUID,
                     //decimal = 12345678
                     "Decimal" => PgTypeInfo::NUMERIC,
@@ -127,65 +128,65 @@ impl Decode for Value {
             }),
             PgType::Int4 => Value::I32(Decode::decode(arg)?),
             PgType::Text => Value::String(Decode::decode(arg)?),
-            PgType::Oid => Value::Ext("Oid", Box::new(Value::U32(Decode::decode(arg)?))),
+            PgType::Oid => Value::from(("Oid", Value::U32(Decode::decode(arg)?))),
             PgType::Json => Json::decode(arg)?.into(),
-            PgType::Point => Value::Ext(
+            PgType::Point => Value::from((
                 "Point",
-                Box::new(Value::Binary({
+              Value::Binary({
                     match arg.format() {
                         PgValueFormat::Binary => arg.as_bytes()?.to_owned(),
                         PgValueFormat::Text => arg.as_str()?.as_bytes().to_vec(),
                     }
                 })),
             ),
-            PgType::Lseg => Value::Ext(
+            PgType::Lseg => Value::from((
                 "Lseg",
-                Box::new(Value::Binary({
+                Value::Binary({
                     match arg.format() {
                         PgValueFormat::Binary => arg.as_bytes()?.to_owned(),
                         PgValueFormat::Text => arg.as_str()?.as_bytes().to_vec(),
                     }
                 })),
             ),
-            PgType::Path => Value::Ext(
+            PgType::Path => Value::from((
                 "Path",
-                Box::new(Value::Binary({
+                Value::Binary({
                     match arg.format() {
                         PgValueFormat::Binary => arg.as_bytes()?.to_owned(),
                         PgValueFormat::Text => arg.as_str()?.as_bytes().to_vec(),
                     }
                 })),
             ),
-            PgType::Box => Value::Ext(
+            PgType::Box => Value::from((
                 "Box",
-                Box::new(Value::Binary({
+              Value::Binary({
                     match arg.format() {
                         PgValueFormat::Binary => arg.as_bytes()?.to_owned(),
                         PgValueFormat::Text => arg.as_str()?.as_bytes().to_vec(),
                     }
                 })),
             ),
-            PgType::Polygon => Value::Ext(
+            PgType::Polygon => Value::from((
                 "Polygon",
-                Box::new(Value::Binary({
+               Value::Binary({
                     match arg.format() {
                         PgValueFormat::Binary => arg.as_bytes()?.to_owned(),
                         PgValueFormat::Text => arg.as_str()?.as_bytes().to_vec(),
                     }
                 })),
             ),
-            PgType::Line => Value::Ext(
+            PgType::Line => Value::from((
                 "Line",
-                Box::new(Value::Binary({
+                Value::Binary({
                     match arg.format() {
                         PgValueFormat::Binary => arg.as_bytes()?.to_owned(),
                         PgValueFormat::Text => arg.as_str()?.as_bytes().to_vec(),
                     }
                 })),
             ),
-            PgType::Cidr => Value::Ext(
+            PgType::Cidr => Value::from((
                 "Cidr",
-                Box::new(Value::Binary({
+               Value::Binary({
                     match arg.format() {
                         PgValueFormat::Binary => arg.as_bytes()?.to_owned(),
                         PgValueFormat::Text => arg.as_str()?.as_bytes().to_vec(),
@@ -196,45 +197,44 @@ impl Decode for Value {
             PgType::Float4 => Value::F32(Decode::decode(arg)?),
             PgType::Float8 => Value::F32(Decode::decode(arg)?),
             PgType::Unknown => Value::Null,
-            PgType::Circle => Value::Ext(
+            PgType::Circle => Value::from((
                 "Circle",
-                Box::new(Value::Binary({
+                Value::Binary({
                     match arg.format() {
                         PgValueFormat::Binary => arg.as_bytes()?.to_owned(),
                         PgValueFormat::Text => arg.as_str()?.as_bytes().to_vec(),
                     }
                 })),
             ),
-            PgType::Macaddr8 => Value::Ext(
+            PgType::Macaddr8 => Value::from((
                 "Macaddr8",
-                Box::new(Value::Binary({
+                Value::Binary({
                     match arg.format() {
                         PgValueFormat::Binary => arg.as_bytes()?.to_owned(),
                         PgValueFormat::Text => arg.as_str()?.as_bytes().to_vec(),
                     }
                 })),
             ),
-            PgType::Macaddr => Value::Ext(
+            PgType::Macaddr => Value::from((
                 "Macaddr",
-                Box::new(Value::Binary({
+                Value::Binary({
                     match arg.format() {
                         PgValueFormat::Binary => arg.as_bytes()?.to_owned(),
                         PgValueFormat::Text => arg.as_str()?.as_bytes().to_vec(),
                     }
                 })),
             ),
-            PgType::Inet => Value::Ext(
-                "Inet",
-                Box::new(Value::Binary({
+            PgType::Inet => Value::from((
+                "Inet", Value::Binary({
                     match arg.format() {
                         PgValueFormat::Binary => arg.as_bytes()?.to_owned(),
                         PgValueFormat::Text => arg.as_str()?.as_bytes().to_vec(),
                     }
                 })),
             ),
-            PgType::Bpchar => Value::Ext(
+            PgType::Bpchar => Value::from((
                 "Bpchar",
-                Box::new(Value::Binary({
+               Value::Binary({
                     match arg.format() {
                         PgValueFormat::Binary => arg.as_bytes()?.to_owned(),
                         PgValueFormat::Text => arg.as_str()?.as_bytes().to_vec(),
@@ -258,9 +258,9 @@ impl Decode for Value {
             }
             .into(),
             PgType::Timestamptz => Timestamptz::decode(arg)?.into(),
-            PgType::Interval => Value::Ext(
+            PgType::Interval => Value::from((
                 "Interval",
-                Box::new(Value::Binary({
+                Value::Binary({
                     match arg.format() {
                         PgValueFormat::Binary => arg.as_bytes()?.to_owned(),
                         PgValueFormat::Text => arg.as_str()?.as_bytes().to_vec(),
@@ -268,18 +268,18 @@ impl Decode for Value {
                 })),
             ),
             PgType::Timetz => Timetz::decode(arg)?.into(),
-            PgType::Bit => Value::Ext(
+            PgType::Bit => Value::from((
                 "Bit",
-                Box::new(Value::Binary({
+                Value::Binary({
                     match arg.format() {
                         PgValueFormat::Binary => arg.as_bytes()?.to_owned(),
                         PgValueFormat::Text => arg.as_str()?.as_bytes().to_vec(),
                     }
                 })),
             ),
-            PgType::Varbit => Value::Ext(
+            PgType::Varbit => Value::from((
                 "Varbit",
-                Box::new(Value::Binary({
+                Value::Binary({
                     match arg.format() {
                         PgValueFormat::Binary => arg.as_bytes()?.to_owned(),
                         PgValueFormat::Text => arg.as_str()?.as_bytes().to_vec(),
@@ -287,9 +287,9 @@ impl Decode for Value {
                 })),
             ),
             PgType::Numeric => Decimal::decode(arg)?.into(),
-            PgType::Record => Value::Ext(
+            PgType::Record => Value::from((
                 "Record",
-                Box::new(Value::Binary({
+               Value::Binary({
                     match arg.format() {
                         PgValueFormat::Binary => arg.as_bytes()?.to_owned(),
                         PgValueFormat::Text => arg.as_str()?.as_bytes().to_vec(),
@@ -298,63 +298,63 @@ impl Decode for Value {
             ),
             PgType::Uuid => Uuid::decode(arg)?.into(),
             PgType::Jsonb => Json::decode(arg)?.into(),
-            PgType::Int4Range => Value::Ext(
+            PgType::Int4Range => Value::from((
                 "Int4Range",
-                Box::new(Value::Binary({
+               Value::Binary({
                     match arg.format() {
                         PgValueFormat::Binary => arg.as_bytes()?.to_owned(),
                         PgValueFormat::Text => arg.as_str()?.as_bytes().to_vec(),
                     }
                 })),
             ),
-            PgType::NumRange => Value::Ext(
+            PgType::NumRange => Value::from((
                 "NumRange",
-                Box::new(Value::Binary({
+               Value::Binary({
                     match arg.format() {
                         PgValueFormat::Binary => arg.as_bytes()?.to_owned(),
                         PgValueFormat::Text => arg.as_str()?.as_bytes().to_vec(),
                     }
                 })),
             ),
-            PgType::TsRange => Value::Ext(
+            PgType::TsRange => Value::from((
                 "TsRange",
-                Box::new(Value::Binary({
+               Value::Binary({
                     match arg.format() {
                         PgValueFormat::Binary => arg.as_bytes()?.to_owned(),
                         PgValueFormat::Text => arg.as_str()?.as_bytes().to_vec(),
                     }
                 })),
             ),
-            PgType::TstzRange => Value::Ext(
+            PgType::TstzRange => Value::from((
                 "TstzRange",
-                Box::new(Value::Binary({
+                Value::Binary({
                     match arg.format() {
                         PgValueFormat::Binary => arg.as_bytes()?.to_owned(),
                         PgValueFormat::Text => arg.as_str()?.as_bytes().to_vec(),
                     }
                 })),
             ),
-            PgType::DateRange => Value::Ext(
+            PgType::DateRange => Value::from((
                 "DateRange",
-                Box::new(Value::Binary({
+                Value::Binary({
                     match arg.format() {
                         PgValueFormat::Binary => arg.as_bytes()?.to_owned(),
                         PgValueFormat::Text => arg.as_str()?.as_bytes().to_vec(),
                     }
                 })),
             ),
-            PgType::Int8Range => Value::Ext(
+            PgType::Int8Range => Value::from((
                 "Int8Range",
-                Box::new(Value::Binary({
+                Value::Binary({
                     match arg.format() {
                         PgValueFormat::Binary => arg.as_bytes()?.to_owned(),
                         PgValueFormat::Text => arg.as_str()?.as_bytes().to_vec(),
                     }
                 })),
             ),
-            PgType::Jsonpath => Value::Ext(
+            PgType::Jsonpath => Value::from((
                 "Jsonpath",
-                Box::new(Value::Binary({
+                Value::Binary({
                     match arg.format() {
                         PgValueFormat::Binary => arg.as_bytes()?.to_owned(),
                         PgValueFormat::Text => arg.as_str()?.as_bytes().to_vec(),
@@ -362,36 +362,36 @@ impl Decode for Value {
                 })),
             ),
             PgType::Money => Money::decode(arg)?.into(),
-            PgType::Void => Value::Ext(
+            PgType::Void => Value::from((
                 "Ext",
-                Box::new(Value::Binary({
+                Value::Binary({
                     match arg.format() {
                         PgValueFormat::Binary => arg.as_bytes()?.to_owned(),
                         PgValueFormat::Text => arg.as_str()?.as_bytes().to_vec(),
                     }
                 })),
             ),
-            PgType::Custom(_) => Value::Ext(
+            PgType::Custom(_) => Value::from((
                 "Custom",
-                Box::new(Value::Binary({
+                Value::Binary({
                     match arg.format() {
                         PgValueFormat::Binary => arg.as_bytes()?.to_owned(),
                         PgValueFormat::Text => arg.as_str()?.as_bytes().to_vec(),
                     }
                 })),
             ),
-            PgType::DeclareWithName(_) => Value::Ext(
+            PgType::DeclareWithName(_) => Value::from((
                 "DeclareWithName",
-                Box::new(Value::Binary({
+                Value::Binary({
                     match arg.format() {
                         PgValueFormat::Binary => arg.as_bytes()?.to_owned(),
                         PgValueFormat::Text => arg.as_str()?.as_bytes().to_vec(),
                     }
                 })),
             ),
-            PgType::DeclareWithOid(_) => Value::Ext(
+            PgType::DeclareWithOid(_) => Value::from((
                 "DeclareWithOid",
-                Box::new(Value::Binary({
+                Value::Binary({
                     match arg.format() {
                         PgValueFormat::Binary => arg.as_bytes()?.to_owned(),
                         PgValueFormat::Text => arg.as_str()?.as_bytes().to_vec(),
@@ -464,9 +464,10 @@ impl Encode for Value {
             }
             Value::Binary(v) => v.encode(buf)?,
             Value::Array(v) => v.encode(buf)?,
-            Value::Map(_) => IsNull::Yes,
-            Value::Ext(type_name, v) => {
-                match type_name {
+            Value::Map(mut m) => {
+                let v = m.rm("value");
+                let t = m.index("type").as_str().unwrap_or_default();
+                match t {
                     "Uuid" => Uuid(v.into_string().unwrap_or_default()).encode(buf)?,
                     //decimal = 12345678
                     "Decimal" => Decimal(v.into_string().unwrap_or_default()).encode(buf)?,
@@ -474,18 +475,18 @@ impl Encode for Value {
                     "Date" => Date(
                         fastdate::Date::from_str(&v.into_string().unwrap_or_default()).unwrap(),
                     )
-                    .encode(buf)?,
+                        .encode(buf)?,
                     //RFC3339NanoTime = "15:04:05.999999999"
                     "Time" => Time(
                         fastdate::Time::from_str(&v.into_string().unwrap_or_default()).unwrap(),
                     )
-                    .encode(buf)?,
+                        .encode(buf)?,
                     //RFC3339 = "2006-01-02 15:04:05.999999"
                     "Timestamp" => Timestamp(v.as_u64().unwrap_or_default()).encode(buf)?,
                     "DateTime" => FastDateTime(
                         fastdate::DateTime::from_str(&v.into_string().unwrap_or_default()).unwrap(),
                     )
-                    .encode(buf)?,
+                        .encode(buf)?,
                     "Bytea" => Bytea(v.as_u64().unwrap_or_default() as u8).encode(buf)?,
                     "Char" => v.into_string().unwrap_or_default().encode(buf)?,
                     "Name" => v.into_string().unwrap_or_default().encode(buf)?,
@@ -494,7 +495,7 @@ impl Encode for Value {
                     "Int4" => (v.as_i64().unwrap_or_default() as i16).encode(buf)?,
                     "Text" => v.into_string().unwrap_or_default().encode(buf)?,
                     "Oid" => Oid::from(v.as_u64().unwrap_or_default() as u32).encode(buf)?,
-                    "Json" => Json(v.into_string().unwrap_or_default()).encode(buf)?,
+                    "Json" => Json::from(v).encode(buf)?,
                     "Point" => v.into_bytes().unwrap_or_default().encode(buf)?,
                     "Lseg" => v.into_bytes().unwrap_or_default().encode(buf)?,
                     "Path" => v.into_bytes().unwrap_or_default().encode(buf)?,
@@ -514,14 +515,14 @@ impl Encode for Value {
                     "Timestamptz" => Timestamptz(v.as_u64().unwrap_or_default()).encode(buf)?,
                     "Interval" => v.into_bytes().unwrap_or_default().encode(buf)?,
                     "Timetz" => {
-                        Timetz(rbs::from_value(*v).map_err(|e| Error::from(e.to_string()))?)
+                        Timetz(rbs::from_value(v).map_err(|e| Error::from(e.to_string()))?)
                             .encode(buf)?
                     }
                     "Bit" => v.into_bytes().unwrap_or_default().encode(buf)?,
                     "Varbit" => v.into_bytes().unwrap_or_default().encode(buf)?,
                     "Numeric" => Decimal(v.into_string().unwrap_or_default()).encode(buf)?,
                     "Record" => v.into_bytes().unwrap_or_default().encode(buf)?,
-                    "Jsonb" => Json(v.into_string().unwrap_or_default()).encode(buf)?,
+                    "Jsonb" => Json::from(v).encode(buf)?,
                     "Int4Range" => v.into_bytes().unwrap_or_default().encode(buf)?,
                     "NumRange" => v.into_bytes().unwrap_or_default().encode(buf)?,
                     "TsRange" => v.into_bytes().unwrap_or_default().encode(buf)?,

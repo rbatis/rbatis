@@ -37,7 +37,7 @@ impl Display for Timetz {
 
 impl From<Timetz> for Value {
     fn from(arg: Timetz) -> Self {
-        Value::Ext("Timetz", Box::new(Value::String(arg.0.to_string())))
+        Value::from(("Timetz", Value::String(arg.0.to_string())))
     }
 }
 
