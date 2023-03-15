@@ -18,17 +18,17 @@ pub trait IntoValue {
 impl IntoValue for rbs::Value {
     fn into_value(self) -> rbs::Value {
         match self {
-            rbs::Value::Null => { self }
-            rbs::Value::Bool(_) => { self }
-            rbs::Value::I32(_) => { self }
-            rbs::Value::I64(_) => { self }
-            rbs::Value::U32(_) => { self }
-            rbs::Value::U64(_) => { self }
-            rbs::Value::F32(_) => { self }
-            rbs::Value::F64(_) => { self }
-            rbs::Value::String(_) => { self }
-            rbs::Value::Binary(_) => { self }
-            rbs::Value::Array(_) => { self }
+            rbs::Value::Null => self,
+            rbs::Value::Bool(_) => self,
+            rbs::Value::I32(_) => self,
+            rbs::Value::I64(_) => self,
+            rbs::Value::U32(_) => self,
+            rbs::Value::U64(_) => self,
+            rbs::Value::F32(_) => self,
+            rbs::Value::F64(_) => self,
+            rbs::Value::String(_) => self,
+            rbs::Value::Binary(_) => self,
+            rbs::Value::Array(_) => self,
             rbs::Value::Map(mut m) => {
                 if m.len() == 2 && is_type_value(&m) {
                     m.rm("value")
@@ -56,8 +56,8 @@ fn is_type_value(m: &ValueMap) -> bool {
 
 #[cfg(test)]
 mod tests {
-    use rbs::Value;
     use super::*;
+    use rbs::Value;
 
     #[test]
     fn test_into_value_with_type_value() {

@@ -1,5 +1,5 @@
 use once_cell::sync::Lazy;
-use rbdc::datetime::FastDateTime;
+use rbdc::datetime::{DateTime};
 use serde::ser::SerializeStruct;
 use serde::{Deserializer, Serializer};
 use std::sync::atomic::{AtomicI64, Ordering};
@@ -124,7 +124,7 @@ impl Snowflake {
     }
 
     fn get_time(&self) -> i64 {
-        FastDateTime::utc().unix_timestamp_millis() - self.epoch
+        DateTime::utc().unix_timestamp_millis() - self.epoch
     }
 }
 

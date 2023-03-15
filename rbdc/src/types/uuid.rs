@@ -6,7 +6,10 @@ use std::str::FromStr;
 
 #[derive(serde::Serialize, Clone, Eq, PartialEq, Hash)]
 #[serde(rename = "Uuid")]
-pub struct Uuid(pub String);
+pub struct Uuid {
+    pub r#type: String,
+    pub value: String,
+}
 
 impl<'de> serde::Deserialize<'de> for Uuid {
     fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
@@ -16,26 +19,44 @@ impl<'de> serde::Deserialize<'de> for Uuid {
         use serde::de::Error;
         match Value::deserialize(deserializer)?.into_value().into_string() {
             None => Err(D::Error::custom("warn type decode Uuid")),
-            Some(v) => Ok(Self(v)),
+            Some(v) => Ok(Self::from(v)),
         }
     }
 }
 
 impl Display for Uuid {
     fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
-        write!(f, "{}", self.0)
+        write!(f, "{}", self.value)
     }
 }
 
 impl Debug for Uuid {
     fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
-        write!(f, "{}", self.0)
+        write!(f, "{}", self.value)
     }
 }
 
 impl From<Uuid> for Value {
     fn from(arg: Uuid) -> Self {
-        Value::from(("Uuid",Value::String(arg.0)))
+        Value::from(("Uuid", Value::String(arg.value)))
+    }
+}
+
+impl From<&str> for Uuid {
+    fn from(arg: &str) -> Self {
+        Uuid {
+            r#type: "Uuid".to_string(),
+            value: arg.to_string(),
+        }
+    }
+}
+
+impl From<String> for Uuid {
+    fn from(arg: String) -> Self {
+        Uuid {
+            r#type: "Uuid".to_string(),
+            value: arg,
+        }
     }
 }
 
@@ -43,13 +64,13 @@ impl FromStr for Uuid {
     type Err = Error;
 
     fn from_str(s: &str) -> Result<Self, Self::Err> {
-        Ok(Uuid(s.to_string()))
+        Ok(Uuid::from(s))
     }
 }
 
 impl Uuid {
     ///new for uuid v4
     pub fn new() -> Self {
-        Self(uuid::Uuid::new_v4().to_string())
+        Self::from(uuid::Uuid::new_v4().to_string())
     }
 }

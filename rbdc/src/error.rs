@@ -1,11 +1,11 @@
+use serde::{Deserialize, Serialize};
 use std::fmt::{Display, Formatter};
 use std::num::{ParseFloatError, ParseIntError, TryFromIntError};
 use std::str::Utf8Error;
-use serde::{Serialize,Deserialize};
 
-#[derive(Debug,Serialize,Deserialize)]
+#[derive(Debug, Serialize, Deserialize)]
 pub enum Error {
-    E(String)
+    E(String),
 }
 
 impl Error {
