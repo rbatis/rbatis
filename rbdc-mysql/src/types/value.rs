@@ -12,7 +12,7 @@ use crate::types::year::Year;
 use crate::types::{Decode, Encode, TypeInfo};
 use crate::value::MySqlValue;
 use rbdc::date::Date;
-use rbdc::datetime::FastDateTime;
+use rbdc::datetime::DateTime;
 use rbdc::decimal::Decimal;
 use rbdc::json::Json;
 use rbdc::timestamp::Timestamp;

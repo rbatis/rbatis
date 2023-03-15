@@ -12,7 +12,7 @@ use crate::types::Oid;
 use crate::types::TypeInfo;
 use crate::value::{PgValue, PgValueFormat};
 use rbdc::date::Date;
-use rbdc::datetime::FastDateTime;
+use rbdc::datetime::DateTime;
 use rbdc::decimal::Decimal;
 use rbdc::json::Json;
 use rbdc::timestamp::Timestamp;
