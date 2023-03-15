@@ -58,7 +58,7 @@ mod test {
 // mod test2 {
 //     use crate::driver::PgDriver;
 //     use rbdc::block_on;
-//     use rbdc::datetime::FastDateTime;
+//     use rbdc::datetime::DateTime;
 //     use rbdc::db::Driver;
 //     use rbdc::db::Placeholder;
 //     use rbdc::decimal::Decimal;

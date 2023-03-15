@@ -20,7 +20,7 @@ mod test {
     use rbatis::intercept::SqlIntercept;
     use rbatis::sql::PageRequest;
     use rbatis::{Error, Rbatis};
-    use rbdc::datetime::FastDateTime;
+    use rbdc::datetime::DateTime;
     use rbdc::db::{ConnectOptions, Connection, Driver, ExecResult, MetaData, Row};
     use rbdc::rt::block_on;
     use rbs::{from_value, to_value, Value};

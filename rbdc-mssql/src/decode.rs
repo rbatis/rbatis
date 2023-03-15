@@ -1,5 +1,5 @@
 use chrono::{FixedOffset, NaiveDateTime, Utc};
-use rbdc::datetime::FastDateTime;
+use rbdc::datetime::DateTime;
 use rbdc::Error;
 use rbs::Value;
 use tiberius::numeric::BigDecimal;

@@ -2,7 +2,7 @@ use crate::types::date::decode_date_buf;
 use crate::types::time::decode_time;
 use crate::types::{Decode, Encode};
 use crate::value::{MySqlValue, MySqlValueFormat};
-use rbdc::datetime::FastDateTime;
+use rbdc::datetime::DateTime;
 use rbdc::Error;
 use std::str::FromStr;
 
