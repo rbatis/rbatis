@@ -16,7 +16,7 @@ impl<'de> serde::Deserialize<'de> for Timestamp {
     {
         use serde::de::Error;
         match Value::deserialize(deserializer)?.as_u64() {
-            None => Err(D::Error::custom("warn type decode Json")),
+            None => Err(D::Error::custom("warn type decode Timestamp")),
             Some(v) => Ok(Self(v)),
         }
     }
