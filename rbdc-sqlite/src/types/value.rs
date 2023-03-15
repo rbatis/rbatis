@@ -3,7 +3,7 @@ use crate::decode::Decode;
 use crate::encode::{Encode, IsNull};
 use crate::type_info::DataType;
 use crate::{SqliteArgumentValue, SqliteValue};
-use rbdc::Error;
+use rbdc::{Error, TV};
 use rbdc::json::Json;
 use rbs::Value;
 
@@ -24,10 +24,9 @@ impl Decode for Value {
             DataType::Numeric => Ok(Value::String(String::decode(value)?)),
             DataType::Bool => Ok(Value::Bool(bool::decode(value)?)),
             DataType::Int64 => Ok(Value::I64(i64::decode(value)?)),
-            DataType::Date => Ok(Value::from(("Date",
-                                              Value::String(String::decode(value)?),))),
-            DataType::Time => Ok(Value::from(( "Time", Value::String(String::decode(value)?)))),
-            DataType::Datetime => Ok(Value::from(( "Datetime", Value::String(String::decode(value)?)))),
+            DataType::Date => Ok(Value::from(TV::new("Date", Value::String(String::decode(value)?)))),
+            DataType::Time => Ok(Value::from(TV::new( "Time", Value::String(String::decode(value)?)))),
+            DataType::Datetime => Ok(Value::from(TV::new( "Datetime", Value::String(String::decode(value)?)))),
         }
     }
 }

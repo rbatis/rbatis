@@ -3,7 +3,7 @@ use crate::types::decode::Decode;
 use crate::types::encode::{Encode, IsNull};
 use crate::value::{PgValue, PgValueFormat};
 use byteorder::{BigEndian, ReadBytesExt};
-use rbdc::Error;
+use rbdc::{Error, TV};
 use rbs::Value;
 use std::fmt::{Display, Formatter};
 use std::io::Cursor;
@@ -37,7 +37,7 @@ impl Display for Timetz {
 
 impl From<Timetz> for Value {
     fn from(arg: Timetz) -> Self {
-        Value::from(("Timetz", Value::String(arg.0.to_string())))
+        Value::from(TV::new("Timetz", Value::String(arg.0.to_string())))
     }
 }
 

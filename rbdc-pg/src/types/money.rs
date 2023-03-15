@@ -3,7 +3,7 @@ use crate::types::decode::Decode;
 use crate::types::encode::{Encode, IsNull};
 use crate::value::{PgValue, PgValueFormat};
 use byteorder::{BigEndian, ByteOrder};
-use rbdc::Error;
+use rbdc::{Error, TV};
 use rbs::Value;
 use std::fmt::{Display, Formatter};
 
@@ -29,7 +29,7 @@ impl Display for Money {
 
 impl From<Money> for Value {
     fn from(arg: Money) -> Self {
-        Value::from(("Money",Value::I64(arg.0)))
+        Value::from(TV::new("Money",Value::I64(arg.0)))
     }
 }
 

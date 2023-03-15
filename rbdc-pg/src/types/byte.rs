@@ -2,7 +2,7 @@ use crate::arguments::PgArgumentBuffer;
 use crate::types::decode::Decode;
 use crate::types::encode::{Encode, IsNull};
 use crate::value::{PgValue, PgValueFormat};
-use rbdc::Error;
+use rbdc::{Error, TV};
 use rbs::Value;
 use std::fmt::{Display, Formatter};
 
@@ -34,7 +34,7 @@ impl Decode for Bytea {
 
 impl From<Bytea> for Value {
     fn from(arg: Bytea) -> Self {
-        Value::from(("Bytea", Value::U32(arg.0 as u32)))
+        Value::from(TV::new("Bytea", Value::U32(arg.0 as u32)))
     }
 }
 
