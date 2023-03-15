@@ -23,13 +23,13 @@ impl<'de> serde::Deserialize<'de> for Uuid {
 
 impl Display for Uuid {
     fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
-        write!(f, "Uuid({})", self.0)
+        write!(f, "{}", self.0)
     }
 }
 
 impl Debug for Uuid {
     fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
-        write!(f, "Uuid({})", self.0)
+        write!(f, "{}", self.0)
     }
 }
 
