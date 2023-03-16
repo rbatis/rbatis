@@ -1,4 +1,5 @@
 use rbatis_codegen::ops::AsProxy;
+use rbdc::IntoValue;
 use rbs::Value;
 
 pub trait IntoSql {
@@ -7,7 +8,7 @@ pub trait IntoSql {
 
 impl IntoSql for Value {
     fn sql(&self) -> Value {
-        match self {
+        match self.value() {
             Value::Map(m) => {
                 let mut sql = "".to_string();
                 for (k, v) in m {
