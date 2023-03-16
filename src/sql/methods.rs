@@ -16,11 +16,11 @@ impl IntoSql for Value {
                     sql.push_str(k_str);
                     if v.is_str() {
                         sql.push_str("'");
-                        sql.push_str(&v.as_sql());
+                        sql.push_str(&v.string_sql());
                         sql.push_str("'");
                         sql.push_str(" ");
                     } else {
-                        sql.push_str(&v.as_sql());
+                        sql.push_str(&v.string_sql());
                         sql.push_str(" ");
                     }
                 }
@@ -31,11 +31,11 @@ impl IntoSql for Value {
                 for x in arr {
                     if x.is_str() {
                         sql.push_str("'");
-                        sql.push_str(&x.as_sql());
+                        sql.push_str(&x.string_sql());
                         sql.push_str("'");
                         sql.push_str(",");
                     } else {
-                        sql.push_str(&x.as_sql());
+                        sql.push_str(&x.string_sql());
                         sql.push_str(",");
                     }
                 }
@@ -53,7 +53,7 @@ impl IntoSql for Value {
                     sql.push_str("'");
                     Value::String(sql)
                 } else {
-                    Value::String(x.as_sql())
+                    Value::String(x.string_sql())
                 }
             }
         }
