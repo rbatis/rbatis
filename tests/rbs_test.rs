@@ -147,4 +147,21 @@ mod test {
         }
         assert_eq!(ValueMap(items),v);
     }
+
+    #[test]
+    fn test_readme_code(){
+        #[derive(serde::Serialize, serde::Deserialize, Debug)]
+        pub struct A {
+            pub name: String,
+        }
+        let a = A {
+            name: "sss".to_string(),
+        };
+        let v = rbs::to_value(a).unwrap();
+        println!("v: {}",v);
+        let s: A = rbs::from_value(v.clone()).unwrap();
+        println!("s:{:?}", s);
+        let json = v.to_string();
+        assert_eq!(r#"{"name":"sss"}"#,json);
+    }
 }
