@@ -20,5 +20,6 @@ fn main(){
     println!("s:{:?}", s);
     let json = v.to_string();
     println!("json:{}",json);
+    assert_eq!(r#"{"name":"sss"}"#,json);
 }
 ```
