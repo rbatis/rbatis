@@ -1,3 +1,4 @@
+use std::ops::Index;
 use rbs::Value;
 use rbs::value::map::ValueMap;
 
@@ -13,10 +14,34 @@ pub mod timestamp;
 pub mod uuid;
 
 pub trait IntoValue {
+    fn value(&self) -> &rbs::Value;
     fn into_value(self) -> rbs::Value;
 }
 
 impl IntoValue for rbs::Value {
+    fn value(&self) -> &Value {
+        match self {
+            rbs::Value::Null => self,
+            rbs::Value::Bool(_) => self,
+            rbs::Value::I32(_) => self,
+            rbs::Value::I64(_) => self,
+            rbs::Value::U32(_) => self,
+            rbs::Value::U64(_) => self,
+            rbs::Value::F32(_) => self,
+            rbs::Value::F64(_) => self,
+            rbs::Value::String(_) => self,
+            rbs::Value::Binary(_) => self,
+            rbs::Value::Array(_) => self,
+            rbs::Value::Map(m) => {
+                if m.len() == 2 && is_type_value(&m) {
+                    m.index("value")
+                } else {
+                   self
+                }
+            }
+        }
+    }
+
     fn into_value(self) -> rbs::Value {
         match self {
             rbs::Value::Null => self,
