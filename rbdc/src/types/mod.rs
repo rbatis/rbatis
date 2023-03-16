@@ -96,7 +96,7 @@ impl TV {
 
 impl From<TV> for Value {
     fn from(value: TV) -> Self {
-        let m = ValueMap(vec![("type".into(), value.r#type.into()), ("value".into(), value.value.into())]);
+        let m = ValueMap::from(vec![("type".into(), value.r#type.into()), ("value".into(), value.value.into())]);
         Value::Map(m)
     }
 }

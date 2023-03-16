@@ -179,16 +179,13 @@ impl ser::Serializer for Serializer {
     #[inline]
     fn serialize_newtype_struct<T: ?Sized>(
         self,
-        name: &'static str,
+        _name: &'static str,
         value: &T,
     ) -> Result<Self::Ok, Self::Error>
     where
         T: Serialize,
     {
-        let  m = ValueMap{
-            0: vec![(Value::from("type"),Value::from(name)),(Value::from("value"),value.serialize(self)?)],
-        };
-        return Ok(Value::Map(m));
+        value.serialize(self)
     }
 
     fn serialize_newtype_variant<T: ?Sized>(
@@ -419,7 +416,7 @@ impl ser::SerializeMap for DefaultSerializeMap {
 
     #[inline]
     fn end(self) -> Result<Value, Error> {
-        Ok(Value::Map(ValueMap(self.map)))
+        Ok(Value::Map(ValueMap::from(self.map)))
     }
 }
 
@@ -441,7 +438,7 @@ impl ser::SerializeStruct for DefaultSerializeMap {
     }
 
     fn end(self) -> Result<Self::Ok, Self::Error> {
-        Ok(Value::Map(ValueMap(self.map)))
+        Ok(Value::Map(ValueMap::from(self.map)))
     }
 }
 
@@ -463,7 +460,7 @@ impl ser::SerializeStructVariant for DefaultSerializeMap {
     }
 
     fn end(self) -> Result<Self::Ok, Self::Error> {
-        Ok(Value::Map(ValueMap(self.map)))
+        Ok(Value::Map(ValueMap::from(self.map)))
     }
 }
 
