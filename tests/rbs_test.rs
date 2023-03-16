@@ -145,7 +145,7 @@ mod test {
         for (k,v) in r.into_iter() {
             items.push((k.as_ref().clone(),v.clone()));
         }
-        assert_eq!(ValueMap(items),v);
+        assert_eq!(ValueMap::from(items),v);
     }
 
     #[test]

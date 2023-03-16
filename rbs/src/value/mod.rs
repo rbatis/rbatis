@@ -521,7 +521,7 @@ impl From<Vec<Value>> for Value {
 impl From<Vec<(Value, Value)>> for Value {
     #[inline]
     fn from(v: Vec<(Value, Value)>) -> Self {
-        Value::Map(ValueMap(v))
+        Value::Map(ValueMap::from(v))
     }
 }
 
