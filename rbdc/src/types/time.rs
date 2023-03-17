@@ -18,7 +18,7 @@ impl<'de> serde::Deserialize<'de> for Time {
     {
         use serde::de::Error;
         let time: fastdate::Time = rbs::from_value(Value::deserialize(deserializer)?.into_value())
-            .map_err(|_| D::Error::custom("warn type decode Date"))?;
+            .map_err(|e| D::Error::custom(&format!("warn type decode Time:{}",e)))?;
         Ok(Time::from(time))
     }
 }
