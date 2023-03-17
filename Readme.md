@@ -98,17 +98,18 @@ QPS: 885486 QPS/s
 * Cargo.toml
 
 ```toml
-tokio = { version = "1", features = ["full"] }
-log = "0.4"
-fast_log = "1.5"
-serde = { version = "1", features = ["derive"] }
+#rbatis deps
 rbs = { version = "4.1"}
 rbatis = { version = "4.1"}
 rbdc-sqlite = { version = "4.1" }
 #rbdc-mysql={version="4.1"}
 #rbdc-pg={version="4.1"}
 #rbdc-mssql={version="4.1"}
-#...and more driver
+
+#other deps
+tokio = { version = "1", features = ["full"] }
+log = "0.4"
+fast_log = "1.5"
 ```
 
 ```rust

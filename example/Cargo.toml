@@ -54,7 +54,6 @@ name = "pool_custom"
 path = "src/pool_custom.rs"
 [dependencies]
 #serde and base types
-serde = { version = "1", features = ["derive"] }
 rbs={version="4.1",path="../rbs"}
 serde_json = "1"
 fastdate = { version = "0.1"}
