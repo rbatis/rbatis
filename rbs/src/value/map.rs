@@ -208,6 +208,54 @@ impl IndexMut<i64> for ValueMap {
     }
 }
 
+impl Index<Value> for ValueMap {
+    type Output = Value;
+
+    fn index(&self, index: Value) -> &Self::Output {
+        for (k, v) in &self.inner {
+            if k.eq(&index) {
+                return v;
+            }
+        }
+        return &Value::Null;
+    }
+}
+
+impl Index<&Value> for ValueMap {
+    type Output = Value;
+
+    fn index(&self, index: &Value) -> &Self::Output {
+        for (k, v) in &self.inner {
+            if k.eq(index) {
+                return v;
+            }
+        }
+        return &Value::Null;
+    }
+}
+
+impl IndexMut<Value> for ValueMap {
+    fn index_mut(&mut self, index: Value) -> &mut Self::Output {
+        for (k, v) in &mut self.inner {
+            if k.deref().eq(&index) {
+                return v;
+            }
+        }
+        panic!("not have index={}", index)
+    }
+}
+
+impl IndexMut<&Value> for ValueMap {
+    fn index_mut(&mut self, index: &Value) -> &mut Self::Output {
+        for (k, v) in &mut self.inner {
+            if k.deref().eq(index) {
+                return v;
+            }
+        }
+        panic!("not have index={}", index)
+    }
+}
+
 impl<'a> IntoIterator for &'a ValueMap {
     type Item = &'a (Value, Value);
     type IntoIter = std::slice::Iter<'a, (Value, Value)>;
@@ -245,10 +293,10 @@ impl From<Vec<(Value,Value)>> for ValueMap{
 
 #[macro_export]
 macro_rules! value_map {
-    {$($k:expr=>$v:expr$(,)*)+} => {
+    {$($k:tt:$v:expr $(,)+ )*} => {
         {
         let mut m  = $crate::value::map::ValueMap::new();
-        $(m.insert($crate::to_value!($k),$crate::to_value!($v));)+
+        $(m.insert($crate::to_value!($k),$crate::to_value!($v));)*
         m
         }
     };
