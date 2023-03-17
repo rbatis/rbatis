@@ -1,7 +1,6 @@
-use std::borrow::Cow;
 use rbs::Value;
 use serde::de::Error;
-use serde::{Deserialize, Deserializer, Serialize, Serializer};
+use serde::{Deserialize, Deserializer};
 use std::fmt::{Debug, Display, Formatter};
 use std::ops::{Add, Deref, DerefMut, Index, Sub};
 use std::str::FromStr;
@@ -13,24 +12,16 @@ use std::time::Duration;
 )]
 pub type FastDateTime = DateTime;
 
-#[derive(Clone, Eq, PartialEq, Hash)]
+#[derive(serde::Serialize, Clone, Eq, PartialEq, Hash)]
+#[serde(rename = "DateTime")]
 pub struct DateTime {
-    pub r#type: Cow<'static,str>,
+    pub r#type: &'static str,
     pub value: fastdate::DateTime,
 }
 
 impl Display for DateTime {
     fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
         write!(f, "{}", self.value)
-    }
-}
-
-impl Serialize for DateTime {
-    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
-    where
-        S: Serializer,
-    {
-        serializer.serialize_newtype_struct("DateTime", &self.value)
     }
 }
 
@@ -47,21 +38,29 @@ impl<'de> Deserialize<'de> for DateTime {
     {
         let v = Value::deserialize(deserializer)?;
         match v {
-            Value::I32(u) => Ok(DateTime::from(fastdate::DateTime::from_timestamp_millis(u as i64))),
-            Value::U32(u) => Ok(DateTime::from(fastdate::DateTime::from_timestamp_millis(u as i64))),
+            Value::I32(u) => Ok(DateTime::from(fastdate::DateTime::from_timestamp_millis(
+                u as i64,
+            ))),
+            Value::U32(u) => Ok(DateTime::from(fastdate::DateTime::from_timestamp_millis(
+                u as i64,
+            ))),
             Value::I64(u) => Ok(DateTime::from(fastdate::DateTime::from_timestamp_millis(u))),
-            Value::U64(u) => Ok(DateTime::from(fastdate::DateTime::from_timestamp_millis(u as i64))),
+            Value::U64(u) => Ok(DateTime::from(fastdate::DateTime::from_timestamp_millis(
+                u as i64,
+            ))),
             Value::String(s) => Ok({
-                DateTime::from(fastdate::DateTime::from_str(&s)
-                    .map_err(|e| D::Error::custom(e.to_string()))?)
+                DateTime::from(
+                    fastdate::DateTime::from_str(&s)
+                        .map_err(|e| D::Error::custom(e.to_string()))?,
+                )
             }),
             Value::Map(mut v) => {
                 let t = v.index("type").as_str().unwrap_or_default();
                 if t == "DateTime" {
-                    Ok(DateTime::from(fastdate::DateTime::from_str(
-                        v.rm("value").as_str().unwrap_or_default(),
-                    )
-                        .map_err(|e| D::Error::custom(e.to_string()))?))
+                    Ok(DateTime::from(
+                        fastdate::DateTime::from_str(v.rm("value").as_str().unwrap_or_default())
+                            .map_err(|e| D::Error::custom(e.to_string()))?,
+                    ))
                 } else {
                     Err(D::Error::custom(&format!(
                         "unsupported type DateTime({})",
@@ -178,26 +177,30 @@ impl FromStr for DateTime {
     type Err = crate::error::Error;
 
     fn from_str(s: &str) -> Result<Self, Self::Err> {
-        Ok(DateTime::from(fastdate::DateTime::from_str(s)
-            .map_err(|e| crate::error::Error::from(e.to_string()))?))
+        Ok(DateTime::from(
+            fastdate::DateTime::from_str(s)
+                .map_err(|e| crate::error::Error::from(e.to_string()))?,
+        ))
     }
 }
 
 impl From<DateTime> for Value {
     fn from(arg: DateTime) -> Self {
-        Value::from(vec![("DateTime".into(), Value::String(arg.value.to_string()))])
+        Value::from(vec![(
+            "DateTime".into(),
+            Value::String(arg.value.to_string()),
+        )])
     }
 }
 
 impl From<fastdate::DateTime> for DateTime {
     fn from(arg: fastdate::DateTime) -> Self {
-        Self{
-            r#type: Cow::Borrowed("DateTime"),
-            value: arg
+        Self {
+            r#type: "DateTime",
+            value: arg,
         }
     }
 }
-
 
 #[test]
 fn test() {
@@ -205,14 +208,14 @@ fn test() {
     let v = rbs::to_value(&date).unwrap();
     println!("{}", v);
     assert_eq!(
-        "2017-02-06 00:00:00",
-        v.as_str().unwrap_or_default().to_string()
+        r#"{"type":"DateTime","value":"2017-02-06 00:00:00"}"#,
+        v.to_string()
     );
     let date = DateTime::from(date.value);
     let v = rbs::to_value(&date).unwrap();
     println!("{}", v);
     assert_eq!(
-        "2017-02-06 00:00:00",
-        v.as_str().unwrap_or_default().to_string()
+        r#"{"type":"DateTime","value":"2017-02-06 00:00:00"}"#,
+        v.to_string()
     );
 }
