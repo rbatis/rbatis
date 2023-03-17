@@ -319,12 +319,12 @@ You are welcome to submit the merge, and make sure that any functionality you ad
 
 # 联系方式/捐赠,或 [rbatis](https://github.com/rbatis/rbatis) 点star
 
-> 捐赠
+> 捐赠/联系方式(添加好友请备注'rbatis') 微信群：先加微信，然后拉进群
 
-<img style="width: 200px;height: 300px;" width="200" height="300" src="https://raw.githubusercontent.com/rbatis/rbatis.io/master/docs/_media/wx_account.png" alt="zxj347284221" />
+| 捐赠                                                                                                                                                                                 | 联系方式                                                                                                                                                                           |
+|------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| <img style="width: 200px;height: 250px;" width="200" height="300" src="https://raw.githubusercontent.com/rbatis/rbatis.io/master/docs/_media/wx_account.png" alt="zxj347284221" /> | <img style="width: 200px;height: 250px;" width="200" height="250" src="https://raw.githubusercontent.com/rbatis/rbatis.io/master/docs/_media/wechat.jpg" alt="zxj347284221" /> |
 
-> 联系方式(添加好友请备注'rbatis') 微信群：先加微信，然后拉进群
 
-<img style="width: 200px;height: 250px;" width="200" height="250" src="https://raw.githubusercontent.com/rbatis/rbatis.io/master/docs/_media/wechat.jpg" alt="zxj347284221" />
 
 
