@@ -201,14 +201,14 @@ impl From<fastdate::DateTime> for DateTime {
 
 #[test]
 fn test() {
-    let date = DateTime("2017-02-06 00:00:00".to_string());
+    let date = DateTime::from_str("2017-02-06 00:00:00").unwrap();
     let v = rbs::to_value(&date).unwrap();
     println!("{}", v);
     assert_eq!(
         "2017-02-06 00:00:00",
         v.as_str().unwrap_or_default().to_string()
     );
-    let date = DateTime(fastdate::DateTime::from_str(&date.0).unwrap());
+    let date = DateTime::from(date.value);
     let v = rbs::to_value(&date).unwrap();
     println!("{}", v);
     assert_eq!(

@@ -1,14 +1,24 @@
 use std::borrow::Cow;
-use crate::Error;
+use crate::{Error, IntoValue};
 use rbs::Value;
 use std::fmt::{Debug, Display, Formatter};
 use std::str::FromStr;
+use serde::Deserializer;
 
-#[derive(serde::Serialize, serde::Deserialize, Clone, Eq, PartialEq, Hash)]
+#[derive(serde::Serialize, Clone, Eq, PartialEq, Hash)]
 #[serde(rename = "Date")]
 pub struct Date {
-    pub r#type: Cow<'static,str>,
+    pub r#type: Cow<'static, str>,
     pub value: fastdate::Date,
+}
+
+impl<'de> serde::Deserialize<'de> for Date {
+    fn deserialize<D>(deserializer: D) -> Result<Self, D::Error> where D: Deserializer<'de> {
+        use serde::de::Error;
+        let time: fastdate::Date = rbs::from_value(Value::deserialize(deserializer)?.into_value())
+            .map_err(|e| D::Error::custom(&format!("warn type decode Date:{}",e)))?;
+        Ok(Date::from(time))
+    }
 }
 
 impl Display for Date {
@@ -25,7 +35,7 @@ impl Debug for Date {
 
 impl From<Date> for Value {
     fn from(arg: Date) -> Self {
-        Value::from(vec![("Date".into(),arg.value.to_string().into())])
+        Value::from(vec![("Date".into(), arg.value.to_string().into())])
     }
 }
 

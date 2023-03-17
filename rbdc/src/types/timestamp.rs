@@ -69,13 +69,13 @@ mod test {
 
     #[test]
     fn test_decode_timestamp_u64() {
-        assert_eq!(Timestamp(1), rbs::from_value(Value::U64(1)).unwrap());
+        assert_eq!(Timestamp::from(1), rbs::from_value(Value::U64(1)).unwrap());
     }
 
     #[test]
     fn test_decode_timestamp_ext() {
         assert_eq!(
-            Timestamp(1),
+            Timestamp::from(1),
             rbs::from_value(Value::from(TV::new("Timestamp", Value::U64(1)))).unwrap()
         );
     }

@@ -108,10 +108,20 @@ pub trait ConnectOptions: Any + Send + Sync + Debug + 'static {
     ///
     /// for exmample:
     ///
-    /// ```rust
+    ///```rust
+    /// use std::any::Any;
     /// pub struct SqliteConnectOptions{
     ///   pub immutable:bool,
     /// };
+    ///  impl SqliteConnectOptions{
+    ///             pub fn new()->Self{
+    ///                 Self{
+    ///                     immutable: false,
+    ///                 }
+    ///             }
+    ///             fn set(&mut self, arg: Box<dyn Any>){
+    ///             }
+    ///         }
     ///
     /// let mut d = SqliteConnectOptions{immutable:false};
     ///         d.set(Box::new({
