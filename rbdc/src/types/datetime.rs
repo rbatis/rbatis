@@ -1,3 +1,4 @@
+use std::borrow::Cow;
 use rbs::Value;
 use serde::de::Error;
 use serde::{Deserialize, Deserializer, Serialize, Serializer};
@@ -14,7 +15,7 @@ pub type FastDateTime = DateTime;
 
 #[derive(Clone, Eq, PartialEq, Hash)]
 pub struct DateTime {
-    pub r#type: String,
+    pub r#type: Cow<'static,str>,
     pub value: fastdate::DateTime,
 }
 
@@ -46,39 +47,21 @@ impl<'de> Deserialize<'de> for DateTime {
     {
         let v = Value::deserialize(deserializer)?;
         match v {
-            Value::I32(u) => Ok(DateTime {
-                r#type: "DateTime".to_string(),
-                value: fastdate::DateTime::from_timestamp_millis(u as i64),
-            }),
-            Value::U32(u) => Ok(DateTime {
-                r#type: "DateTime".to_string(),
-                value: fastdate::DateTime::from_timestamp_millis(u as i64),
-            }),
-            Value::I64(u) => Ok(DateTime {
-                r#type: "DateTime".to_string(),
-                value: fastdate::DateTime::from_timestamp_millis(u),
-            }),
-            Value::U64(u) => Ok(DateTime {
-                r#type: "DateTime".to_string(),
-                value: fastdate::DateTime::from_timestamp_millis(u as i64),
-            }),
+            Value::I32(u) => Ok(DateTime::from(fastdate::DateTime::from_timestamp_millis(u as i64))),
+            Value::U32(u) => Ok(DateTime::from(fastdate::DateTime::from_timestamp_millis(u as i64))),
+            Value::I64(u) => Ok(DateTime::from(fastdate::DateTime::from_timestamp_millis(u))),
+            Value::U64(u) => Ok(DateTime::from(fastdate::DateTime::from_timestamp_millis(u as i64))),
             Value::String(s) => Ok({
-                DateTime {
-                    r#type: "DateTime".to_string(),
-                    value: fastdate::DateTime::from_str(&s)
-                        .map_err(|e| D::Error::custom(e.to_string()))?,
-                }
+                DateTime::from(fastdate::DateTime::from_str(&s)
+                    .map_err(|e| D::Error::custom(e.to_string()))?)
             }),
             Value::Map(mut v) => {
                 let t = v.index("type").as_str().unwrap_or_default();
                 if t == "DateTime" {
-                    Ok(DateTime {
-                        r#type: t.to_string(),
-                        value: fastdate::DateTime::from_str(
-                            v.rm("value").as_str().unwrap_or_default(),
-                        )
-                        .map_err(|e| D::Error::custom(e.to_string()))?,
-                    })
+                    Ok(DateTime::from(fastdate::DateTime::from_str(
+                        v.rm("value").as_str().unwrap_or_default(),
+                    )
+                        .map_err(|e| D::Error::custom(e.to_string()))?))
                 } else {
                     Err(D::Error::custom(&format!(
                         "unsupported type DateTime({})",
@@ -112,17 +95,11 @@ impl DerefMut for DateTime {
 
 impl DateTime {
     pub fn now() -> Self {
-        Self {
-            r#type: "DateTime".to_string(),
-            value: fastdate::DateTime::now(),
-        }
+        Self::from(fastdate::DateTime::now())
     }
 
     pub fn utc() -> Self {
-        Self {
-            r#type: "DateTime".to_string(),
-            value: fastdate::DateTime::utc(),
-        }
+        Self::from(fastdate::DateTime::utc())
     }
 
     pub fn set_micro(mut self, micro: u32) -> Self {
@@ -161,24 +138,15 @@ impl DateTime {
     }
 
     pub fn from_timestamp(sec: i64) -> Self {
-        Self {
-            r#type: "DateTime".to_string(),
-            value: fastdate::DateTime::from_timestamp(sec),
-        }
+        Self::from(fastdate::DateTime::from_timestamp(sec))
     }
 
     pub fn from_timestamp_millis(ms: i64) -> Self {
-        Self {
-            r#type: "DateTime".to_string(),
-            value: fastdate::DateTime::from_timestamp_millis(ms),
-        }
+        Self::from(fastdate::DateTime::from_timestamp_millis(ms))
     }
 
     pub fn from_timestamp_nano(nano: u128) -> Self {
-        Self {
-            r#type: "DateTime".to_string(),
-            value: fastdate::DateTime::from_timestamp_nano(nano),
-        }
+        Self::from(fastdate::DateTime::from_timestamp_nano(nano))
     }
 }
 
@@ -194,10 +162,7 @@ impl Add<Duration> for DateTime {
     type Output = DateTime;
 
     fn add(self, rhs: Duration) -> Self::Output {
-        DateTime {
-            r#type: "DateTime".to_string(),
-            value: self.value.add(rhs),
-        }
+        DateTime::from(self.value.add(rhs))
     }
 }
 
@@ -205,10 +170,7 @@ impl Sub<Duration> for DateTime {
     type Output = DateTime;
 
     fn sub(self, rhs: Duration) -> Self::Output {
-        DateTime {
-            r#type: "DateTime".to_string(),
-            value: self.value.sub(rhs),
-        }
+        DateTime::from(self.value.sub(rhs))
     }
 }
 
@@ -216,11 +178,8 @@ impl FromStr for DateTime {
     type Err = crate::error::Error;
 
     fn from_str(s: &str) -> Result<Self, Self::Err> {
-        Ok(DateTime {
-            r#type: "DateTime".to_string(),
-            value: fastdate::DateTime::from_str(s)
-                .map_err(|e| crate::error::Error::from(e.to_string()))?,
-        })
+        Ok(DateTime::from(fastdate::DateTime::from_str(s)
+            .map_err(|e| crate::error::Error::from(e.to_string()))?))
     }
 }
 
@@ -233,11 +192,12 @@ impl From<DateTime> for Value {
 impl From<fastdate::DateTime> for DateTime {
     fn from(arg: fastdate::DateTime) -> Self {
         Self{
-            r#type: "DateTime".to_string(),
+            r#type: Cow::Borrowed("DateTime"),
             value: arg
         }
     }
 }
+
 
 #[test]
 fn test() {

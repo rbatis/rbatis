@@ -1,3 +1,4 @@
+use std::borrow::Cow;
 use crate::Error;
 use rbs::Value;
 use std::fmt::{Debug, Display, Formatter};
@@ -6,7 +7,7 @@ use std::str::FromStr;
 #[derive(serde::Serialize, serde::Deserialize, Clone, Eq, PartialEq, Hash)]
 #[serde(rename = "Date")]
 pub struct Date {
-    pub r#type: String,
+    pub r#type: Cow<'static,str>,
     pub value: fastdate::Date,
 }
 
@@ -31,7 +32,7 @@ impl From<Date> for Value {
 impl From<fastdate::Date> for Date {
     fn from(arg: fastdate::Date) -> Self {
         Date {
-            r#type: "Date".to_string(),
+            r#type: Cow::Borrowed("Date"),
             value: arg,
         }
     }

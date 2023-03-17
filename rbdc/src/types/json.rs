@@ -1,3 +1,4 @@
+use std::borrow::Cow;
 use rbs::Value;
 use std::fmt::{Debug, Display, Formatter};
 use std::str::FromStr;
@@ -9,7 +10,7 @@ use serde::Deserializer;
 #[derive(serde::Serialize, Clone, Eq, PartialEq)]
 #[serde(rename = "Json")]
 pub struct Json {
-    pub r#type: String,
+    pub r#type: Cow<'static,str>,
     pub value: serde_json::Value,
 }
 
@@ -24,17 +25,14 @@ impl<'de> serde::Deserialize<'de> for Json {
 
 impl Default for Json {
     fn default() -> Self {
-        Self {
-            r#type: "Json".to_string(),
-            value: serde_json::Value::Null,
-        }
+        Self::from(serde_json::Value::Null)
     }
 }
 
 impl From<serde_json::Value> for Json {
     fn from(arg: serde_json::Value) -> Self {
-        Json {
-            r#type: "Json".to_string(),
+        Json{
+            r#type: Cow::Borrowed("Json"),
             value: arg,
         }
     }
