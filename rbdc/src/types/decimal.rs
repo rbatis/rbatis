@@ -1,3 +1,4 @@
+use std::borrow::Cow;
 use crate::{Error, IntoValue};
 use rbs::Value;
 use serde::Deserializer;
@@ -7,7 +8,7 @@ use std::str::FromStr;
 #[derive(serde::Serialize, Clone, Eq, PartialEq, Hash)]
 #[serde(rename = "Decimal")]
 pub struct Decimal {
-    pub r#type: String,
+    pub r#type: Cow<'static,str>,
     pub value: String,
 }
 
@@ -19,10 +20,7 @@ impl<'de> serde::Deserialize<'de> for Decimal {
         use serde::de::Error;
         match Value::deserialize(deserializer)?.into_value().into_string() {
             None => Err(D::Error::custom("warn type decode Decimal")),
-            Some(v) => Ok(Self {
-                r#type: "Decimal".to_string(),
-                value: v,
-            }),
+            Some(v) => Ok(Self::from(v)),
         }
     }
 }
@@ -53,7 +51,7 @@ impl From<&str> for Decimal {
 impl From<String> for Decimal {
     fn from(arg: String) -> Self {
         Decimal {
-            r#type: "Decimal".to_string(),
+            r#type: Cow::Borrowed("Decimal"),
             value: arg,
         }
     }

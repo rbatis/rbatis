@@ -1,3 +1,4 @@
+use std::borrow::Cow;
 use crate::{Error, IntoValue};
 use rbs::Value;
 use serde::Deserializer;
@@ -8,7 +9,7 @@ use std::str::FromStr;
 #[derive(serde::Serialize, Clone, Eq, PartialEq, Hash)]
 #[serde(rename = "Timestamp")]
 pub struct Timestamp {
-    pub r#type: String,
+    pub r#type: Cow<'static,str>,
     pub value: u64,
 }
 
@@ -46,7 +47,7 @@ impl From<Timestamp> for Value {
 impl From<u64> for Timestamp {
     fn from(value: u64) -> Self {
         Timestamp {
-            r#type: "Timestamp".to_string(),
+            r#type: Cow::Borrowed("Timestamp"),
             value,
         }
     }

@@ -1,3 +1,4 @@
+use std::borrow::Cow;
 use crate::{Error, IntoValue};
 use rbs::Value;
 use std::fmt::{Debug, Display, Formatter};
@@ -6,7 +7,7 @@ use std::str::FromStr;
 #[derive(serde::Serialize, Clone, Eq, PartialEq, Hash)]
 #[serde(rename = "Time")]
 pub struct Time {
-    pub r#type: String,
+    pub r#type: Cow<'static,str>,
     pub value: fastdate::Time,
 }
 
@@ -43,7 +44,7 @@ impl From<Time> for Value {
 impl From<fastdate::Time> for Time {
     fn from(value: fastdate::Time) -> Self {
         Self {
-            r#type: "Time".to_string(),
+            r#type: Cow::Borrowed("Time"),
             value,
         }
     }
