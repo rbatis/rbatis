@@ -1,10 +1,8 @@
-use rbs::Value;
+use crate::{Error, IntoValue};
+use rbs::{to_value, Value};
+use serde::Deserializer;
 use std::fmt::{Debug, Display, Formatter};
 use std::str::FromStr;
-
-use crate::{Error, IntoValue};
-use rbs::value::map::ValueMap;
-use serde::Deserializer;
 
 #[derive(serde::Serialize, Clone, Eq, PartialEq)]
 #[serde(rename = "Json")]
@@ -85,34 +83,9 @@ impl Debug for Json {
 
 impl From<Json> for Value {
     fn from(arg: Json) -> Self {
-        match arg.value {
-            serde_json::Value::Null => Value::Null,
-            serde_json::Value::Bool(v) => Value::Bool(v),
-            serde_json::Value::Number(v) => {
-                if v.is_f64() {
-                    Value::F64(v.as_f64().unwrap_or_default())
-                } else if v.is_i64() {
-                    Value::I64(v.as_i64().unwrap_or_default())
-                } else {
-                    Value::U64(v.as_u64().unwrap_or_default())
-                }
-            }
-            serde_json::Value::String(v) => Value::String(v),
-            serde_json::Value::Array(v) => {
-                let mut arr = Vec::with_capacity(v.capacity());
-                for x in v {
-                    arr.push(Value::from(Json::from(x)));
-                }
-                Value::Array(arr)
-            }
-            serde_json::Value::Object(v) => {
-                let mut arr = ValueMap::with_capacity(v.len());
-                for (k, v) in v {
-                    arr.push((Value::String(k), Value::from(Json::from(v))));
-                }
-                Value::Map(arr)
-            }
-        }
+        Value::Map(rbs::value::map::ValueMap{
+            inner: vec![("type".into(),"Json".into()),("value".into(),to_value!(arg.value))],
+        })
     }
 }
 

@@ -1,5 +1,5 @@
 use crate::{Error, IntoValue};
-use rbs::Value;
+use rbs::{to_value, Value};
 use std::fmt::{Debug, Display, Formatter};
 use std::str::FromStr;
 
@@ -36,7 +36,9 @@ impl Debug for Time {
 
 impl From<Time> for Value {
     fn from(arg: Time) -> Self {
-        Value::from(vec![("Time".into(), Value::String(arg.value.to_string()))])
+        Value::Map(rbs::value::map::ValueMap{
+            inner: vec![("type".into(),"Time".into()),("value".into(),to_value!(arg.value))],
+        })
     }
 }
 
