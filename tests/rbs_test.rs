@@ -179,6 +179,7 @@ mod test {
             1: 1,
             "2": 2,
         };
+        println!("{}", m.to_string());
         assert_eq!(r#"{1:1,"2":2}"#, m.to_string());
     }
 
