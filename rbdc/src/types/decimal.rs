@@ -1,4 +1,3 @@
-use std::borrow::Cow;
 use crate::{Error, IntoValue};
 use rbs::Value;
 use serde::Deserializer;
@@ -8,7 +7,7 @@ use std::str::FromStr;
 #[derive(serde::Serialize, Clone, Eq, PartialEq, Hash)]
 #[serde(rename = "Decimal")]
 pub struct Decimal {
-    pub r#type: Cow<'static,str>,
+    pub r#type: &'static str,
     pub value: String,
 }
 
@@ -51,7 +50,7 @@ impl From<&str> for Decimal {
 impl From<String> for Decimal {
     fn from(arg: String) -> Self {
         Decimal {
-            r#type: Cow::Borrowed("Decimal"),
+            r#type: "Decimal",
             value: arg,
         }
     }

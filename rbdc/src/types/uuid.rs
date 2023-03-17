@@ -1,4 +1,3 @@
-use std::borrow::Cow;
 use crate::{Error, IntoValue};
 use rbs::Value;
 use serde::Deserializer;
@@ -8,7 +7,7 @@ use std::str::FromStr;
 #[derive(serde::Serialize, Clone, Eq, PartialEq, Hash)]
 #[serde(rename = "Uuid")]
 pub struct Uuid {
-    pub r#type: Cow<'static,str>,
+    pub r#type: &'static str,
     pub value: String,
 }
 
@@ -52,7 +51,7 @@ impl From<&str> for Uuid {
 impl From<String> for Uuid {
     fn from(arg: String) -> Self {
         Uuid {
-            r#type: Cow::Borrowed("Uuid"),
+            r#type: "Uuid",
             value: arg,
         }
     }

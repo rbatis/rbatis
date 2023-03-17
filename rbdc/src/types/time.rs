@@ -1,4 +1,3 @@
-use std::borrow::Cow;
 use crate::{Error, IntoValue};
 use rbs::Value;
 use std::fmt::{Debug, Display, Formatter};
@@ -7,7 +6,7 @@ use std::str::FromStr;
 #[derive(serde::Serialize, Clone, Eq, PartialEq, Hash)]
 #[serde(rename = "Time")]
 pub struct Time {
-    pub r#type: Cow<'static,str>,
+    pub r#type: &'static str,
     pub value: fastdate::Time,
 }
 
@@ -18,7 +17,7 @@ impl<'de> serde::Deserialize<'de> for Time {
     {
         use serde::de::Error;
         let time: fastdate::Time = rbs::from_value(Value::deserialize(deserializer)?.into_value())
-            .map_err(|e| D::Error::custom(&format!("warn type decode Time:{}",e)))?;
+            .map_err(|e| D::Error::custom(&format!("warn type decode Time:{}", e)))?;
         Ok(Time::from(time))
     }
 }
@@ -44,7 +43,7 @@ impl From<Time> for Value {
 impl From<fastdate::Time> for Time {
     fn from(value: fastdate::Time) -> Self {
         Self {
-            r#type: Cow::Borrowed("Time"),
+            r#type: "Time",
             value,
         }
     }

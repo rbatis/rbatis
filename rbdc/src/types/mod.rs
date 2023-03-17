@@ -1,6 +1,6 @@
-use std::ops::Index;
-use rbs::Value;
 use rbs::value::map::ValueMap;
+use rbs::Value;
+use std::ops::Index;
 
 pub mod bytes;
 ///this mod support Some common types, the actual type may need to use the type provided by the driver
@@ -36,7 +36,7 @@ impl IntoValue for rbs::Value {
                 if m.len() == 2 && is_type_value(&m) {
                     m.index("value")
                 } else {
-                   self
+                    self
                 }
             }
         }
@@ -96,7 +96,10 @@ impl TV {
 
 impl From<TV> for Value {
     fn from(value: TV) -> Self {
-        let m = ValueMap::from(vec![("type".into(), value.r#type.into()), ("value".into(), value.value.into())]);
+        let m = ValueMap::from(vec![
+            ("type".into(), value.r#type.into()),
+            ("value".into(), value.value.into()),
+        ]);
         Value::Map(m)
     }
 }
