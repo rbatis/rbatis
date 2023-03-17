@@ -107,6 +107,7 @@ rbdc-sqlite = { version = "4.1" }
 #rbdc-mssql={version="4.1"}
 
 #other deps
+serde = { version = "1", features = ["derive"] }
 tokio = { version = "1", features = ["full"] }
 log = "0.4"
 fast_log = "1.5"
