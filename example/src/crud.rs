@@ -25,7 +25,9 @@ impl_select_page!(BizActivity{select_page_by_name(name:&str) =>"
      if name == '':
        `where name != ''`"});
 
-// sql() method write in rbatis::sql::methods.rs
+// sql() method, or you can write an new one pub trait IntoSql {
+//     fn sql(&self) -> Value;
+// }
 use rbatis::sql::IntoSql;
 impl_select!(BizActivity{select_by_method(ids:&[&str],logic:Value) -> Option => "`where ${logic.sql()} and id in ${ids.sql()}   limit 1`"});
 
