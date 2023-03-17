@@ -1,8 +1,9 @@
 #[cfg(test)]
 mod test {
     use rbatis_codegen::ops::{Add, BitAnd, BitOr, Div, Mul, Not, PartialEq, PartialOrd, Rem, Sub};
-    use rbs::Value;
+    use rbs::{Value};
     use std::cmp::Ordering;
+    use std::ops::Index;
     use rbs::value::map::ValueMap;
 
     #[test]
@@ -136,20 +137,20 @@ mod test {
     }
 
     #[test]
-    fn test_into_iter(){
-        let mut  v= ValueMap::new();
-        v.insert(1.into(),2.into());
-        let m=Value::Map(v.clone());
-        let r=&m;
+    fn test_into_iter() {
+        let mut v = ValueMap::new();
+        v.insert(1.into(), 2.into());
+        let m = Value::Map(v.clone());
+        let r = &m;
         let mut items = vec![];
-        for (k,v) in r.into_iter() {
-            items.push((k.as_ref().clone(),v.clone()));
+        for (k, v) in r.into_iter() {
+            items.push((k.as_ref().clone(), v.clone()));
         }
-        assert_eq!(ValueMap::from(items),v);
+        assert_eq!(ValueMap::from(items), v);
     }
 
     #[test]
-    fn test_readme_code(){
+    fn test_readme_code() {
         #[derive(serde::Serialize, serde::Deserialize, Debug)]
         pub struct A {
             pub name: String,
@@ -158,10 +159,38 @@ mod test {
             name: "sss".to_string(),
         };
         let v = rbs::to_value(a).unwrap();
-        println!("v: {}",v);
+        println!("v: {}", v);
         let s: A = rbs::from_value(v.clone()).unwrap();
         println!("s:{:?}", s);
         let json = v.to_string();
-        assert_eq!(r#"{"name":"sss"}"#,json);
+        assert_eq!(r#"{"name":"sss"}"#, json);
+    }
+
+    #[test]
+    fn test_macro_to_value_empty() {
+        let v = rbs::to_value! {};
+        println!("{}", v.to_string());
+        assert_eq!(r#"{}"#, v.to_string());
+    }
+
+    #[test]
+    fn test_macro_to_value() {
+        let m = rbs::to_value! {
+            1: 1,
+            "2": 2,
+        };
+        assert_eq!(r#"{1:1,"2":2}"#, m.to_string());
+    }
+
+    #[test]
+    fn test_macro_to_value_index() {
+        let m = rbs::to_value! {
+            1: 1,
+            "2": 2,
+        };
+        let v = m.index("2");
+        assert_eq!(v.as_i64().unwrap_or_default(), 2);
+        let v2 = &m["2"];
+        assert_eq!(v2.as_i64().unwrap_or_default(), 2);
     }
 }

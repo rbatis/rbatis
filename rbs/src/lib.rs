@@ -32,6 +32,9 @@ impl Value {
 
 #[macro_export]
 macro_rules! to_value {
+    {$($k:tt:$v:expr $(,)+ )*} => {
+       $crate::Value::Map($crate::value_map!($($k:$v ,)*))
+    };
     ($arg:expr) => {
         $crate::to_value($arg).unwrap_or_default()
     };
