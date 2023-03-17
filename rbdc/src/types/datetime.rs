@@ -1,4 +1,4 @@
-use rbs::Value;
+use rbs::{to_value, Value};
 use serde::de::Error;
 use serde::{Deserialize, Deserializer};
 use std::fmt::{Debug, Display, Formatter};
@@ -186,10 +186,9 @@ impl FromStr for DateTime {
 
 impl From<DateTime> for Value {
     fn from(arg: DateTime) -> Self {
-        Value::from(vec![(
-            "DateTime".into(),
-            Value::String(arg.value.to_string()),
-        )])
+        Value::Map(rbs::value::map::ValueMap{
+            inner: vec![("type".into(),"DateTime".into()),("value".into(),to_value!(arg.value))],
+        })
     }
 }
 

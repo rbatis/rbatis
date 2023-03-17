@@ -38,7 +38,9 @@ impl Debug for Decimal {
 
 impl From<Decimal> for Value {
     fn from(arg: Decimal) -> Self {
-        Value::from(vec![("Decimal".into(), Value::String(arg.value))])
+        Value::Map(rbs::value::map::ValueMap{
+            inner: vec![("type".into(),"Decimal".into()),("value".into(),arg.value.into())],
+        })
     }
 }
 

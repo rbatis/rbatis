@@ -39,7 +39,9 @@ impl Debug for Timestamp {
 
 impl From<Timestamp> for Value {
     fn from(arg: Timestamp) -> Self {
-        Value::from(vec![(("Timestamp".into(), Value::U64(arg.value)))])
+        Value::Map(rbs::value::map::ValueMap{
+            inner: vec![("type".into(),"Timestamp".into()),("value".into(),arg.value.into())],
+        })
     }
 }
 

@@ -1,5 +1,5 @@
 use crate::{Error, IntoValue};
-use rbs::Value;
+use rbs::{to_value, Value};
 use serde::Deserializer;
 use std::fmt::{Debug, Display, Formatter};
 use std::str::FromStr;
@@ -37,7 +37,9 @@ impl Debug for Date {
 
 impl From<Date> for Value {
     fn from(arg: Date) -> Self {
-        Value::from(vec![("Date".into(), arg.value.to_string().into())])
+        Value::Map(rbs::value::map::ValueMap{
+            inner: vec![("type".into(),"Date".into()),("value".into(), to_value!(arg.value))],
+        })
     }
 }
 
