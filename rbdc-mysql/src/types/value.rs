@@ -37,6 +37,7 @@ impl TypeInfo for Value {
             Value::Binary(_) => MySqlTypeInfo::from_type(ColumnType::Blob),
             Value::Array(_) => MySqlTypeInfo::null(),
             Value::Map(m) => {
+                //TODO change to String
                 let t = m.index("type").as_str().unwrap_or_default();
                 if t != "" {
                     match t {
@@ -112,6 +113,7 @@ impl Encode for Value {
             }
             Value::Array(_) => Err(Error::from("unimplemented")),
             Value::Map(mut m) => {
+                //TODO change to String
                 let v = m.rm("value");
                 let t = m.index("type").as_str().unwrap_or_default();
                 match t {

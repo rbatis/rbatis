@@ -54,6 +54,7 @@ impl Encode for Value {
             }
             Value::Array(_) => Err(Error::from("unimplemented")),
             Value::Map(m) => {
+                //TODO change to String
                 let v = m.index("value");
                 let t = m.index("type").as_str().unwrap_or_default();
                 if t != "" {
