@@ -238,14 +238,14 @@ impl Decode for Value {
             }),
             PgType::Int4 => Value::I32(Decode::decode(arg)?),
             PgType::Text => Value::String(Decode::decode(arg)?),
-            PgType::Oid => Value::from( Value::U32(Decode::decode(arg)?)),
+            PgType::Oid => Value::from(Value::U32(Decode::decode(arg)?)),
             PgType::Json => Json::decode(arg)?.into(),
             PgType::Point => Value::from(Value::Binary({
-                    match arg.format() {
-                        PgValueFormat::Binary => arg.as_bytes()?.to_owned(),
-                        PgValueFormat::Text => arg.as_str()?.as_bytes().to_vec(),
-                    }
-                }),
+                match arg.format() {
+                    PgValueFormat::Binary => arg.as_bytes()?.to_owned(),
+                    PgValueFormat::Text => arg.as_str()?.as_bytes().to_vec(),
+                }
+            }),
             ),
             PgType::Lseg => Value::from(
                 Value::Binary({
@@ -264,7 +264,7 @@ impl Decode for Value {
                 }),
             ),
             PgType::Box => Value::from(
-              Value::Binary({
+                Value::Binary({
                     match arg.format() {
                         PgValueFormat::Binary => arg.as_bytes()?.to_owned(),
                         PgValueFormat::Text => arg.as_str()?.as_bytes().to_vec(),
@@ -272,7 +272,7 @@ impl Decode for Value {
                 }),
             ),
             PgType::Polygon => Value::from(
-               Value::Binary({
+                Value::Binary({
                     match arg.format() {
                         PgValueFormat::Binary => arg.as_bytes()?.to_owned(),
                         PgValueFormat::Text => arg.as_str()?.as_bytes().to_vec(),
@@ -288,7 +288,7 @@ impl Decode for Value {
                 }),
             ),
             PgType::Cidr => Value::from(
-               Value::Binary({
+                Value::Binary({
                     match arg.format() {
                         PgValueFormat::Binary => arg.as_bytes()?.to_owned(),
                         PgValueFormat::Text => arg.as_str()?.as_bytes().to_vec(),
@@ -332,7 +332,7 @@ impl Decode for Value {
                 }),
             ),
             PgType::Bpchar => Value::from(
-               Value::Binary({
+                Value::Binary({
                     match arg.format() {
                         PgValueFormat::Binary => arg.as_bytes()?.to_owned(),
                         PgValueFormat::Text => arg.as_str()?.as_bytes().to_vec(),
@@ -344,17 +344,17 @@ impl Decode for Value {
                 let v: Date = Decode::decode(arg)?;
                 v
             }
-            .into(),
+                .into(),
             PgType::Time => {
                 let v: Time = Decode::decode(arg)?;
                 v
             }
-            .into(),
+                .into(),
             PgType::Timestamp => {
                 let v: Timestamp = Decode::decode(arg)?;
                 v
             }
-            .into(),
+                .into(),
             PgType::Timestamptz => Timestamptz::decode(arg)?.into(),
             PgType::Interval => Value::from(
                 Value::Binary({
@@ -374,15 +374,15 @@ impl Decode for Value {
                 }),
             ),
             PgType::Varbit => Value::from(Value::Binary({
-                    match arg.format() {
-                        PgValueFormat::Binary => arg.as_bytes()?.to_owned(),
-                        PgValueFormat::Text => arg.as_str()?.as_bytes().to_vec(),
-                    }
-                }),
+                match arg.format() {
+                    PgValueFormat::Binary => arg.as_bytes()?.to_owned(),
+                    PgValueFormat::Text => arg.as_str()?.as_bytes().to_vec(),
+                }
+            }),
             ),
             PgType::Numeric => Decimal::decode(arg)?.into(),
             PgType::Record => Value::from(
-               Value::Binary({
+                Value::Binary({
                     match arg.format() {
                         PgValueFormat::Binary => arg.as_bytes()?.to_owned(),
                         PgValueFormat::Text => arg.as_str()?.as_bytes().to_vec(),
@@ -392,7 +392,7 @@ impl Decode for Value {
             PgType::Uuid => Uuid::decode(arg)?.into(),
             PgType::Jsonb => Json::decode(arg)?.into(),
             PgType::Int4Range => Value::from(
-               Value::Binary({
+                Value::Binary({
                     match arg.format() {
                         PgValueFormat::Binary => arg.as_bytes()?.to_owned(),
                         PgValueFormat::Text => arg.as_str()?.as_bytes().to_vec(),
@@ -400,7 +400,7 @@ impl Decode for Value {
                 }),
             ),
             PgType::NumRange => Value::from(
-               Value::Binary({
+                Value::Binary({
                     match arg.format() {
                         PgValueFormat::Binary => arg.as_bytes()?.to_owned(),
                         PgValueFormat::Text => arg.as_str()?.as_bytes().to_vec(),
@@ -408,7 +408,7 @@ impl Decode for Value {
                 }),
             ),
             PgType::TsRange => Value::from(
-               Value::Binary({
+                Value::Binary({
                     match arg.format() {
                         PgValueFormat::Binary => arg.as_bytes()?.to_owned(),
                         PgValueFormat::Text => arg.as_str()?.as_bytes().to_vec(),
@@ -541,85 +541,176 @@ impl Encode for Value {
             Value::F32(v) => v.encode(buf)?,
             Value::F64(v) => v.encode(buf)?,
             Value::String(v) => {
-                //default -> string
-                v.encode(buf)?
-            }
-            Value::Binary(v) => v.encode(buf)?,
-            Value::Array(v) => v.encode(buf)?,
-            Value::Map(mut m) => {
-                //TODO edit to String
-                let v = m.rm("value");
-                let t = m.index("type").as_str().unwrap_or_default();
-                match t {
-                    "Uuid" => Uuid::from(v.into_string().unwrap_or_default()).encode(buf)?,
+                let mut r = "";
+                if v.ends_with("Uuid") {
+                    r = "Uuid";
+                } else if v.ends_with("Decimal") {
+                    r = "Decimal";
+                } else if v.ends_with("Date") {
+                    r = "Date";
+                } else if v.ends_with("Time") {
+                    r = "Time";
+                } else if v.ends_with("Timestamp") {
+                    r = "Timestamp";
+                } else if v.ends_with("DateTime") {
+                    r = "DateTime";
+                } else if v.ends_with("Bytea") {
+                    r = "Bytea";
+                } else if v.ends_with("Char") {
+                    r = "Char";
+                } else if v.ends_with("Name") {
+                    r = "Name";
+                } else if v.ends_with("Int8") {
+                    r = "Int8";
+                } else if v.ends_with("Int2") {
+                    r = "Int2";
+                } else if v.ends_with("Int4") {
+                    r = "Int4";
+                } else if v.ends_with("Text") {
+                    r = "Text";
+                } else if v.ends_with("Oid") {
+                    r = "Oid";
+                } else if v.ends_with("Json") {
+                    r = "Json";
+                } else if v.ends_with("Point") {
+                    r = "Point";
+                } else if v.ends_with("Lseg") {
+                    r = "Lseg";
+                } else if v.ends_with("Path") {
+                    r = "Path";
+                } else if v.ends_with("Box") {
+                    r = "Box";
+                } else if v.ends_with("Polygon") {
+                    r = "Polygon";
+                } else if v.ends_with("Line") {
+                    r = "Line";
+                } else if v.ends_with("Cidr") {
+                    r = "Cidr";
+                } else if v.ends_with("Float4") {
+                    r = "Float4";
+                } else if v.ends_with("Float8") {
+                    r = "Float8";
+                } else if v.ends_with("Unknown") {
+                    r = "Unknown";
+                } else if v.ends_with("Circle") {
+                    r = "Circle";
+                } else if v.ends_with("Macaddr8") {
+                    r = "Macaddr8";
+                } else if v.ends_with("Macaddr") {
+                    r = "Macaddr";
+                } else if v.ends_with("Inet") {
+                    r = "Inet";
+                } else if v.ends_with("Bpchar") {
+                    r = "Bpchar";
+                } else if v.ends_with("Varchar") {
+                    r = "Varchar";
+                } else if v.ends_with("Timestamptz") {
+                    r = "Timestamptz";
+                } else if v.ends_with("Interval") {
+                    r = "Interval";
+                } else if v.ends_with("Timetz") {
+                    r = "Timetz";
+                } else if v.ends_with("Bit") {
+                    r = "Bit";
+                } else if v.ends_with("Varbit") {
+                    r = "Varbit";
+                } else if v.ends_with("Numeric") {
+                    r = "Numeric";
+                } else if v.ends_with("Record") {
+                    r = "Record";
+                } else if v.ends_with("Jsonb") {
+                    r = "Jsonb";
+                } else if v.ends_with("Int4Range") {
+                    r = "Int4Range";
+                } else if v.ends_with("NumRange") {
+                    r = "NumRange";
+                } else if v.ends_with("TsRange") {
+                    r = "TsRange";
+                } else if v.ends_with("TstzRange") {
+                    r = "TstzRange";
+                } else if v.ends_with("DateRange") {
+                    r = "DateRange";
+                } else if v.ends_with("Int8Range") {
+                    r = "Int8Range";
+                } else if v.ends_with("Jsonpath") {
+                    r = "Jsonpath";
+                } else if v.ends_with("Money") {
+                    r = "Money";
+                } else {
+                    r = ""
+                }
+                match r {
+                    "Uuid" => Uuid::from(v).encode(buf)?,
                     //decimal = 12345678
-                    "Decimal" => Decimal::from(v.into_string().unwrap_or_default()).encode(buf)?,
+                    "Decimal" => Decimal::from(v).encode(buf)?,
                     //Date = "1993-02-06"
                     "Date" => Date::from(
-                        fastdate::Date::from_str(&v.into_string().unwrap_or_default()).unwrap(),
+                        fastdate::Date::from_str(&v).unwrap(),
                     )
                         .encode(buf)?,
                     //RFC3339NanoTime = "15:04:05.999999999"
                     "Time" => Time::from(
-                        fastdate::Time::from_str(&v.into_string().unwrap_or_default()).unwrap(),
+                        fastdate::Time::from_str(&v).unwrap(),
                     )
                         .encode(buf)?,
                     //RFC3339 = "2006-01-02 15:04:05.999999"
-                    "Timestamp" => Timestamp::from(v.as_u64().unwrap_or_default()).encode(buf)?,
+                    "Timestamp" => Timestamp::from(v.parse::<u64>().unwrap_or_default()).encode(buf)?,
                     "DateTime" => DateTime::from(
-                        fastdate::DateTime::from_str(&v.into_string().unwrap_or_default()).unwrap(),
+                        fastdate::DateTime::from_str(&v).unwrap(),
                     )
                         .encode(buf)?,
-                    "Bytea" => Bytea(v.as_u64().unwrap_or_default() as u8).encode(buf)?,
-                    "Char" => v.into_string().unwrap_or_default().encode(buf)?,
-                    "Name" => v.into_string().unwrap_or_default().encode(buf)?,
-                    "Int8" => (v.as_i64().unwrap_or_default() as i32).encode(buf)?,
-                    "Int2" => (v.as_i64().unwrap_or_default() as i8).encode(buf)?,
-                    "Int4" => (v.as_i64().unwrap_or_default() as i16).encode(buf)?,
-                    "Text" => v.into_string().unwrap_or_default().encode(buf)?,
-                    "Oid" => Oid::from(v.as_u64().unwrap_or_default() as u32).encode(buf)?,
-                    "Json" => Json::from(v).encode(buf)?,
-                    "Point" => v.into_bytes().unwrap_or_default().encode(buf)?,
-                    "Lseg" => v.into_bytes().unwrap_or_default().encode(buf)?,
-                    "Path" => v.into_bytes().unwrap_or_default().encode(buf)?,
-                    "Box" => v.into_bytes().unwrap_or_default().encode(buf)?,
-                    "Polygon" => v.into_bytes().unwrap_or_default().encode(buf)?,
-                    "Line" => v.into_bytes().unwrap_or_default().encode(buf)?,
-                    "Cidr" => v.into_bytes().unwrap_or_default().encode(buf)?,
-                    "Float4" => (v.as_f64().unwrap_or_default() as f32).encode(buf)?,
-                    "Float8" => v.as_f64().unwrap_or_default().encode(buf)?,
-                    "Unknown" => v.into_bytes().unwrap_or_default().encode(buf)?,
-                    "Circle" => v.into_bytes().unwrap_or_default().encode(buf)?,
-                    "Macaddr8" => v.into_bytes().unwrap_or_default().encode(buf)?,
-                    "Macaddr" => v.into_bytes().unwrap_or_default().encode(buf)?,
-                    "Inet" => v.into_bytes().unwrap_or_default().encode(buf)?,
-                    "Bpchar" => v.into_bytes().unwrap_or_default().encode(buf)?,
-                    "Varchar" => v.into_bytes().unwrap_or_default().encode(buf)?,
-                    "Timestamptz" => Timestamptz(v.as_u64().unwrap_or_default()).encode(buf)?,
-                    "Interval" => v.into_bytes().unwrap_or_default().encode(buf)?,
+                    "Bytea" => Bytea(v.parse::<u8>().unwrap_or_default()).encode(buf)?,
+                    "Char" => v.encode(buf)?,
+                    "Name" => v.encode(buf)?,
+                    "Int8" => (v.parse::<i32>().unwrap_or_default()).encode(buf)?,
+                    "Int2" => (v.parse::<i8>().unwrap_or_default()).encode(buf)?,
+                    "Int4" => (v.parse::<i16>().unwrap_or_default()).encode(buf)?,
+                    "Text" => v.encode(buf)?,
+                    "Oid" => Oid::from(v.parse::<u32>().unwrap_or_default()).encode(buf)?,
+                    "Point" => v.into_bytes().encode(buf)?,
+                    "Lseg" => v.into_bytes().encode(buf)?,
+                    "Path" => v.into_bytes().encode(buf)?,
+                    "Box" => v.into_bytes().encode(buf)?,
+                    "Polygon" => v.into_bytes().encode(buf)?,
+                    "Line" => v.into_bytes().encode(buf)?,
+                    "Cidr" => v.into_bytes().encode(buf)?,
+                    "Float4" => (v.parse::<f32>().unwrap_or_default()).encode(buf)?,
+                    "Float8" => v.parse::<f64>().unwrap_or_default().encode(buf)?,
+                    "Unknown" => v.into_bytes().encode(buf)?,
+                    "Circle" => v.into_bytes().encode(buf)?,
+                    "Macaddr8" => v.into_bytes().encode(buf)?,
+                    "Macaddr" => v.into_bytes().encode(buf)?,
+                    "Inet" => v.into_bytes().encode(buf)?,
+                    "Bpchar" => v.into_bytes().encode(buf)?,
+                    "Varchar" => v.into_bytes().encode(buf)?,
+                    "Timestamptz" => Timestamptz(v.parse::<u64>().unwrap_or_default()).encode(buf)?,
+                    "Interval" => v.into_bytes().encode(buf)?,
                     "Timetz" => {
-                        Timetz(rbs::from_value(v).map_err(|e| Error::from(e.to_string()))?)
-                            .encode(buf)?
+                        v.into_bytes().encode(buf)?
                     }
-                    "Bit" => v.into_bytes().unwrap_or_default().encode(buf)?,
-                    "Varbit" => v.into_bytes().unwrap_or_default().encode(buf)?,
-                    "Numeric" => Decimal::from(v.into_string().unwrap_or_default()).encode(buf)?,
-                    "Record" => v.into_bytes().unwrap_or_default().encode(buf)?,
-                    "Jsonb" => Json::from(v).encode(buf)?,
-                    "Int4Range" => v.into_bytes().unwrap_or_default().encode(buf)?,
-                    "NumRange" => v.into_bytes().unwrap_or_default().encode(buf)?,
-                    "TsRange" => v.into_bytes().unwrap_or_default().encode(buf)?,
-                    "TstzRange" => v.into_bytes().unwrap_or_default().encode(buf)?,
-                    "DateRange" => v.into_bytes().unwrap_or_default().encode(buf)?,
-                    "Int8Range" => v.into_bytes().unwrap_or_default().encode(buf)?,
-                    "Jsonpath" => v.into_bytes().unwrap_or_default().encode(buf)?,
-                    "Money" => Money(v.as_i64().unwrap_or_default()).encode(buf)?,
-                    "Void" => v.into_bytes().unwrap_or_default().encode(buf)?,
-                    "Custom" => v.into_bytes().unwrap_or_default().encode(buf)?,
-                    "DeclareWithName" => v.into_bytes().unwrap_or_default().encode(buf)?,
-                    "DeclareWithOid" => v.into_bytes().unwrap_or_default().encode(buf)?,
-                    _ => IsNull::Yes,
+                    "Bit" => v.into_bytes().encode(buf)?,
+                    "Varbit" => v.into_bytes().encode(buf)?,
+                    "Numeric" => Decimal::from(v).encode(buf)?,
+                    "Record" => v.into_bytes().encode(buf)?,
+                    "Int4Range" => v.into_bytes().encode(buf)?,
+                    "NumRange" => v.into_bytes().encode(buf)?,
+                    "TsRange" => v.into_bytes().encode(buf)?,
+                    "TstzRange" => v.into_bytes().encode(buf)?,
+                    "DateRange" => v.into_bytes().encode(buf)?,
+                    "Int8Range" => v.into_bytes().encode(buf)?,
+                    "Jsonpath" => v.into_bytes().encode(buf)?,
+                    "Money" => Money(v.parse::<i64>().unwrap_or_default()).encode(buf)?,
+                    "Void" => v.into_bytes().encode(buf)?,
+                    "Custom" => v.into_bytes().encode(buf)?,
+                    "DeclareWithName" => v.into_bytes().encode(buf)?,
+                    "DeclareWithOid" => v.into_bytes().encode(buf)?,
+                    _ => v.encode(buf)?,
                 }
+            }
+            Value::Binary(v) => v.encode(buf)?,
+            Value::Array(v) => v.encode(buf)?,
+            Value::Map(mut m) => {
+                rbdc::types::json::Json::from(Value::Map(m)).encode(buf)?
             }
         })
     }
