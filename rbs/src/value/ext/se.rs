@@ -48,7 +48,7 @@ impl ser::Error for Error {
     }
 }
 
-struct Serializer;
+pub struct Serializer;
 
 /// Convert a `T` into `rbs::Value` which is an enum that can represent any valid MessagePack data.
 ///

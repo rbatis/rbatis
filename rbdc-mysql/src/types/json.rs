@@ -6,7 +6,7 @@ use rbdc::Error;
 
 impl Encode for Json {
     fn encode(self, buf: &mut Vec<u8>) -> Result<usize, Error> {
-        let bytes = self.value.to_string().into_bytes();
+        let bytes = self.0.to_string().into_bytes();
         let len = bytes.len();
         buf.put_bytes_lenenc(bytes);
         Ok(len)

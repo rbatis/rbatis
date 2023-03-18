@@ -8,7 +8,7 @@ use crate::value::{MySqlValue, MySqlValueFormat};
 
 impl Encode for Time {
     fn encode(self, buf: &mut Vec<u8>) -> Result<usize, Error> {
-        self.value.encode(buf)
+        self.0.encode(buf)
     }
 }
 

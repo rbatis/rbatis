@@ -1,14 +1,16 @@
 use crate::{Error, IntoValue};
 use rbs::{to_value, Value};
-use serde::Deserializer;
+use serde::{Deserializer, Serializer};
 use std::fmt::{Debug, Display, Formatter};
 use std::str::FromStr;
 
-#[derive(serde::Serialize, Clone, Eq, PartialEq)]
-#[serde(rename = "Json")]
-pub struct Json {
-    pub r#type: &'static str,
-    pub value: serde_json::Value,
+#[derive(Clone, Eq, PartialEq)]
+pub struct Json(pub serde_json::Value);
+
+impl serde::Serialize for Json{
+    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error> where S: Serializer {
+        self.0.serialize(serializer)
+    }
 }
 
 impl<'de> serde::Deserialize<'de> for Json {
@@ -16,7 +18,7 @@ impl<'de> serde::Deserialize<'de> for Json {
     where
         D: Deserializer<'de>,
     {
-        Ok(Json::from(Value::deserialize(deserializer)?.into_value()))
+        Ok(Json::from(serde_json::Value::deserialize(deserializer)?))
     }
 }
 
@@ -28,10 +30,7 @@ impl Default for Json {
 
 impl From<serde_json::Value> for Json {
     fn from(arg: serde_json::Value) -> Self {
-        Json {
-            r#type: "Json",
-            value: arg,
-        }
+        Json(arg)
     }
 }
 
@@ -51,7 +50,7 @@ impl From<Value> for Json {
             Value::Array(v) => Json::from({
                 let mut datas = Vec::<serde_json::Value>::with_capacity(v.len());
                 for x in v {
-                    datas.push(Json::from(x).value);
+                    datas.push(Json::from(x).0);
                 }
                 serde_json::Value::Array(datas)
             }),
@@ -60,7 +59,7 @@ impl From<Value> for Json {
                 for (k, v) in m {
                     datas.insert(
                         k.as_str().unwrap_or_default().to_string(),
-                        Json::from(v).value,
+                        Json::from(v).0,
                     );
                 }
                 serde_json::Value::Object(datas)
@@ -71,21 +70,19 @@ impl From<Value> for Json {
 
 impl Display for Json {
     fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
-        write!(f, "{}", self.value)
+        write!(f, "{}", self.0)
     }
 }
 
 impl Debug for Json {
     fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
-        write!(f, "{}", self.value)
+        write!(f, "{}", self.0)
     }
 }
 
 impl From<Json> for Value {
     fn from(arg: Json) -> Self {
-        Value::Map(rbs::value::map::ValueMap{
-            inner: vec![("type".into(),"Json".into()),("value".into(),to_value!(arg.value))],
-        })
+        to_value!(arg.0)
     }
 }
 

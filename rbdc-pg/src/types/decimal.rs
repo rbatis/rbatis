@@ -9,7 +9,7 @@ use std::str::FromStr;
 
 impl Encode for Decimal {
     fn encode(self, buf: &mut PgArgumentBuffer) -> Result<IsNull, Error> {
-        let b = BigDecimal::from_str(&self.value).map_err(|e| Error::from(e.to_string()))?;
+        let b = BigDecimal::from_str(&self.0).map_err(|e| Error::from(e.to_string()))?;
         b.encode(buf)?;
         Ok(IsNull::No)
     }

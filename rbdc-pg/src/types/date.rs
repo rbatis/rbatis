@@ -76,6 +76,6 @@ impl Decode for Date {
 
 impl Encode for Date {
     fn encode(self, buf: &mut PgArgumentBuffer) -> Result<IsNull, Error> {
-        self.value.encode(buf)
+        self.0.encode(buf)
     }
 }

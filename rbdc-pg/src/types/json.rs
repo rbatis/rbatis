@@ -22,7 +22,7 @@ impl Encode for Json {
         buf.push(1);
 
         // the JSON data written to the buffer is the same regardless of parameter type
-        buf.write_all(&self.value.to_string().into_bytes())?;
+        buf.write_all(&self.0.to_string().into_bytes())?;
 
         Ok(IsNull::No)
     }
