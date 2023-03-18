@@ -1,4 +1,4 @@
-use crate::{Error, IntoValue};
+use crate::{Error, RBDCString};
 use rbs::{to_value, Value};
 use serde::{Deserializer, Serializer};
 use std::fmt::{Debug, Display, Formatter};
@@ -8,11 +8,25 @@ use std::str::FromStr;
 #[derive(Clone, Eq, PartialEq, Hash)]
 pub struct Timestamp(pub u64);
 
+impl RBDCString for Timestamp {
+    fn ends_name() -> &'static str {
+        "TS"
+    }
+
+    fn decode( arg: &str) -> Result<Self, crate::Error> {
+        let is = Self::is(arg);
+        if is != "" {
+            return Ok(Self::from_str(arg.trim_end_matches(Self::ends_name()))?);
+        }
+        Err(crate::Error::E(format!("warn type decode :{}",Self::ends_name())))
+    }
+}
+
 impl serde::Serialize for Timestamp {
     fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error> where S: Serializer {
         if std::any::type_name::<S>() == std::any::type_name::<rbs::Serializer>() {
             let mut s = self.0.to_string();
-            s.push_str("TS");
+            s.push_str(Self::ends_name());
             serializer.serialize_str(&s)
         } else {
             self.0.serialize(serializer)
@@ -30,10 +44,7 @@ impl<'de> serde::Deserialize<'de> for Timestamp {
         match &mut value {
             Value::String(v) => {
                 if std::any::type_name::<D>() == std::any::type_name::<rbs::Serializer>() {
-                    if v.ends_with("TS") {
-                        v.pop();
-                        v.pop();
-                    }
+                    Timestamp::trim_ends_match(v);
                     let time: u64 = v.parse().map_err(|e| D::Error::custom(&format!("warn type decode Timestamp:{}", e)))?;
                     Ok(Self::from(time))
                 } else {
@@ -84,7 +95,6 @@ impl FromStr for Timestamp {
 #[cfg(test)]
 mod test {
     use crate::timestamp::Timestamp;
-    use crate::TV;
     use rbs::Value;
 
     #[test]
@@ -96,7 +106,7 @@ mod test {
     fn test_decode_timestamp_ext() {
         assert_eq!(
             Timestamp::from(1),
-            rbs::from_value(Value::from(TV::new("Timestamp", Value::U64(1)))).unwrap()
+            rbs::from_value(Value::String("1".to_string())).unwrap()
         );
     }
 }

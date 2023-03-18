@@ -5,6 +5,7 @@ use std::fmt::{Debug, Display, Formatter};
 use std::ops::{Add, Deref, DerefMut, Sub};
 use std::str::FromStr;
 use std::time::Duration;
+use crate::RBDCString;
 
 #[deprecated(
 since = "4.1.0",
@@ -15,11 +16,25 @@ pub type FastDateTime = DateTime;
 #[derive(Clone, Eq, PartialEq, Hash)]
 pub struct DateTime(pub fastdate::DateTime);
 
+impl RBDCString for DateTime {
+    fn ends_name() -> &'static str {
+        "DT"
+    }
+
+    fn decode(arg: &str) -> Result<Self, crate::Error> {
+        let is = Self::is(arg);
+        if is != "" {
+            return Ok(Self::from_str(arg.trim_end_matches(Self::ends_name()))?);
+        }
+        Err(crate::Error::E(format!("warn type decode :{}",Self::ends_name())))
+    }
+}
+
 impl serde::Serialize for DateTime {
     fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error> where S: Serializer {
         if std::any::type_name::<S>() == std::any::type_name::<rbs::Serializer>() {
             let mut s = self.0.to_string();
-            s.push_str("DT");
+            s.push_str(Self::ends_name());
             serializer.serialize_str(&s)
         } else {
             self.0.serialize(serializer)
@@ -58,10 +73,7 @@ impl<'de> Deserialize<'de> for DateTime {
             ))),
             Value::String(mut v) => Ok({
                 if std::any::type_name::<D>() == std::any::type_name::<rbs::Serializer>() {
-                    if v.ends_with("DT") {
-                        v.pop();
-                        v.pop();
-                    }
+                    DateTime::trim_ends_match(&mut v);
                     DateTime::from(
                         fastdate::DateTime::from_str(&v)
                             .map_err(|e| D::Error::custom(e.to_string()))?,

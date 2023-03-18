@@ -2,8 +2,8 @@ use crate::arguments::PgArgumentBuffer;
 use crate::types::decode::Decode;
 use crate::types::encode::{Encode, IsNull};
 use crate::value::{PgValue, PgValueFormat};
-use rbdc::{Error, TV};
-use rbs::Value;
+use rbdc::{Error};
+use rbs::{to_value, Value};
 use std::fmt::{Display, Formatter};
 use std::str::FromStr;
 
@@ -19,7 +19,7 @@ impl Display for Timestamptz {
 
 impl From<Timestamptz> for Value {
     fn from(arg: Timestamptz) -> Self {
-        Value::from(TV::new("Timestamptz", Value::U64(arg.0)))
+        to_value!(arg)
     }
 }
 

@@ -2,8 +2,8 @@ use crate::arguments::PgArgumentBuffer;
 use crate::types::decode::Decode;
 use crate::types::encode::{Encode, IsNull};
 use crate::value::{PgValue, PgValueFormat};
-use rbdc::{Error, TV};
-use rbs::Value;
+use rbdc::{Error};
+use rbs::{to_value, Value};
 use std::fmt::{Display, Formatter};
 
 #[derive(serde::Serialize, serde::Deserialize, Debug, Clone, Eq, PartialEq)]
@@ -34,7 +34,7 @@ impl Decode for Bytea {
 
 impl From<Bytea> for Value {
     fn from(arg: Bytea) -> Self {
-        Value::from(TV::new("Bytea", Value::U32(arg.0 as u32)))
+        to_value!(arg)
     }
 }
 

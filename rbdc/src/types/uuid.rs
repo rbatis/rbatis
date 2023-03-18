@@ -1,4 +1,4 @@
-use crate::{Error, IntoValue};
+use crate::{Error, RBDCString};
 use rbs::{to_value, Value};
 use serde::{Deserializer, Serializer};
 use std::fmt::{Debug, Display, Formatter};
@@ -7,6 +7,20 @@ use std::str::FromStr;
 
 #[derive( Clone, Eq, PartialEq, Hash)]
 pub struct Uuid(pub String);
+
+impl RBDCString for Uuid {
+    fn ends_name() -> &'static str {
+        "TS"
+    }
+
+    fn decode( arg: &str) -> Result<Self, crate::Error> {
+        let is = Self::is(arg);
+        if is != "" {
+            return Ok(Self::from_str(arg.trim_end_matches(Self::ends_name()))?);
+        }
+        Err(Error::E(format!("warn type decode :{}",Self::ends_name())))
+    }
+}
 
 impl Deref for Uuid{
     type Target = String;
@@ -26,7 +40,7 @@ impl serde::Serialize for Uuid {
     fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error> where S: Serializer {
         if std::any::type_name::<S>() == std::any::type_name::<rbs::Serializer>() {
             let mut s = self.to_string();
-            s.push_str("UUID");
+            s.push_str(Self::ends_name());
             serializer.serialize_str(&s)
         } else {
             self.to_string().serialize(serializer)
@@ -41,12 +55,7 @@ impl<'de> serde::Deserialize<'de> for Uuid {
         use serde::de::Error;
         match Value::deserialize(deserializer)? {
             Value::String(mut v) => {
-                if v.ends_with("UUID") {
-                    v.pop();
-                    v.pop();
-                    v.pop();
-                    v.pop();
-                }
+                Uuid::trim_ends_match(&mut v);
                 Ok(Uuid::from(v))
             }
             Value::Binary(v) => {
