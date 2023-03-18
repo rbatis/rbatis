@@ -1,5 +1,3 @@
-use rbs::Value;
-
 use crate::Error;
 
 pub mod bytes;

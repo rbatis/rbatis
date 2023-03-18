@@ -1,7 +1,7 @@
 #[cfg(test)]
 mod test {
     use rbatis_codegen::ops::{Add, BitAnd, BitOr, Div, Mul, Not, PartialEq, PartialOrd, Rem, Sub};
-    use rbs::{Value};
+    use rbs::{to_value, Value};
     use std::cmp::Ordering;
     use std::ops::Index;
     use rbs::value::map::ValueMap;
@@ -193,5 +193,22 @@ mod test {
         assert_eq!(v.as_i64().unwrap_or_default(), 2);
         let v2 = &m["2"];
         assert_eq!(v2.as_i64().unwrap_or_default(), 2);
+    }
+
+    #[test]
+    fn test_rbatis_codegen_op_add() {
+        let v = to_value!("10");
+        let v2 = to_value!("2");
+        let r = v.op_add(v2);
+        assert_eq!(r.as_str().unwrap_or_default(), "102");
+    }
+
+    #[test]
+    fn test_rbatis_codegen_op_div() {
+        let v = to_value!("10DEC");
+        let v2 = to_value!("2DEC");
+        let r = v.op_div(v2);
+        assert_eq!(r.as_i64().unwrap_or_default(), 5);
+        assert_eq!("10".op_div(to_value!(2)), 5.0);
     }
 }
