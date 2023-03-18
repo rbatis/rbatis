@@ -84,7 +84,7 @@ impl Encode for Value {
                     Ok(IsNull::No)
                 } else if Timestamp::is(&v) != "" {
                     Timestamp::trim_ends_match(&mut v);
-                    let ts = Timestamp::decode(v.as_str())?;
+                    let ts = Timestamp::decode_str(v.as_str())?;
                     (ts.0 as i64).encode(args)?;
                     Ok(IsNull::No)
                 } else if Decimal::is(&v) != "" {

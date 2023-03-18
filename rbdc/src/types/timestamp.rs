@@ -13,7 +13,7 @@ impl RBDCString for Timestamp {
         "TS"
     }
 
-    fn decode( arg: &str) -> Result<Self, crate::Error> {
+    fn decode_str(arg: &str) -> Result<Self, crate::Error> {
         let is = Self::is(arg);
         if is != "" {
             return Ok(Self::from_str(arg.trim_end_matches(Self::ends_name()))?);
