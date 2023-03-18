@@ -70,59 +70,34 @@ impl Encode for Value {
                 Ok(IsNull::No)
             }
             Value::String(mut v) => {
-                let t = {
-                    if Date::is(&v) {
-                        Date::ends_name()
-                    } else if DateTime::is(&v) {
-                        DateTime::ends_name()
-                    } else if Time::is(&v) {
-                        Time::ends_name()
-                    } else if Timestamp::is(&v) {
-                        Timestamp::ends_name()
-                    } else if Decimal::is(&v) {
-                        Decimal::ends_name()
-                    } else if Uuid::is(&v) {
-                        Uuid::ends_name()
-                    } else {
-                        ""
-                    }
-                };
-                match t {
-                    Date::ends_name() => {
-                        Date::trim_ends_match(&mut v);
-                        v.encode(args)?;
-                        Ok(IsNull::No)
-                    }
-                    DateTime::ends_name() => {
-                        DateTime::trim_ends_match(&mut v);
-                        v.encode(args)?;
-                        Ok(IsNull::No)
-                    }
-                    Time::ends_name() => {
-                        Time::trim_ends_match(&mut v);
-                        v.encode(args)?;
-                        Ok(IsNull::No)
-                    }
-                    Timestamp::ends_name() => {
-                        Timestamp::trim_ends_match(&mut v);
-                        let ts = Timestamp::decode(v.as_str())?;
-                        ts.0 as i64.encode(args)?;
-                        Ok(IsNull::No)
-                    }
-                    Decimal::ends_name() => {
-                        Decimal::trim_ends_match(&mut v);
-                        v.encode(args)?;
-                        Ok(IsNull::No)
-                    }
-                    Uuid::ends_name() => {
-                        Uuid::trim_ends_match(&mut v);
-                        v.encode(args)?;
-                        Ok(IsNull::No)
-                    }
-                    _ => {
-                        v.encode(args)?;
-                        Ok(IsNull::No)
-                    }
+                if Date::is(&v) != "" {
+                    Date::trim_ends_match(&mut v);
+                    v.encode(args)?;
+                    Ok(IsNull::No)
+                } else if DateTime::is(&v) != "" {
+                    DateTime::trim_ends_match(&mut v);
+                    v.encode(args)?;
+                    Ok(IsNull::No)
+                } else if Time::is(&v) != "" {
+                    Time::trim_ends_match(&mut v);
+                    v.encode(args)?;
+                    Ok(IsNull::No)
+                } else if Timestamp::is(&v) != "" {
+                    Timestamp::trim_ends_match(&mut v);
+                    let ts = Timestamp::decode(v.as_str())?;
+                    (ts.0 as i64).encode(args)?;
+                    Ok(IsNull::No)
+                } else if Decimal::is(&v) != "" {
+                    Decimal::trim_ends_match(&mut v);
+                    v.encode(args)?;
+                    Ok(IsNull::No)
+                } else if Uuid::is(&v) != "" {
+                    Uuid::trim_ends_match(&mut v);
+                    v.encode(args)?;
+                    Ok(IsNull::No)
+                } else {
+                    v.encode(args)?;
+                    Ok(IsNull::No)
                 }
             }
             Value::Binary(v) => {
