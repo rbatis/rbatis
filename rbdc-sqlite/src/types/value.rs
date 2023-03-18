@@ -73,6 +73,16 @@ impl Encode for Value {
                 let t = {
                     if Date::is(&v) {
                         Date::ends_name()
+                    } else if DateTime::is(&v) {
+                        DateTime::ends_name()
+                    } else if Time::is(&v) {
+                        Time::ends_name()
+                    } else if Timestamp::is(&v) {
+                        Timestamp::ends_name()
+                    } else if Decimal::is(&v) {
+                        Decimal::ends_name()
+                    } else if Uuid::is(&v) {
+                        Uuid::ends_name()
                     } else {
                         ""
                     }
