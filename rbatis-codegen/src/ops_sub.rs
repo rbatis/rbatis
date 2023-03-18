@@ -1,6 +1,7 @@
 use crate::ops::AsProxy;
 use crate::ops::Sub;
 use rbs::Value;
+use rbs::value::util::extract_number;
 
 fn op_sub_value(left: Value, rhs: Value) -> Value {
     match left {
@@ -10,6 +11,7 @@ fn op_sub_value(left: Value, rhs: Value) -> Value {
         Value::U64(s) => Value::U64(s - rhs.u64()),
         Value::F32(s) => Value::F32(s - rhs.f64() as f32),
         Value::F64(s) => Value::F64(s - rhs.f64()),
+        Value::String(ref s) => Value::F64(extract_number(s) - rhs.f64()),
         _ => Value::Null,
     }
 }
@@ -160,3 +162,21 @@ impl Sub<&$ty> for &$ty{
 
 sub_self!([i8 i16 i32 i64 isize]);
 sub_self!([f32 f64]);
+
+
+impl Sub<&str> for Value{
+    type Output = f64;
+
+    fn op_sub(self, rhs: &str) -> Self::Output {
+        self.f64() - extract_number(rhs)
+    }
+}
+
+impl Sub<Value> for &str{
+    type Output = f64;
+
+    fn op_sub(self, rhs: Value) -> Self::Output {
+        extract_number(self) - rhs.f64()
+    }
+}
+
