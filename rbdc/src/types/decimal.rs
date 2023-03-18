@@ -1,4 +1,4 @@
-use crate::{Error};
+use crate::{Error, RBDCString};
 use rbs::Value;
 use serde::{Deserializer, Serializer};
 use std::fmt::{Debug, Display, Formatter};
@@ -7,6 +7,20 @@ use std::str::FromStr;
 
 #[derive(Clone, Eq, PartialEq, Hash)]
 pub struct Decimal(pub String);
+
+impl RBDCString for Decimal {
+    fn ends_name() -> &'static str {
+        "DEC"
+    }
+
+    fn decode( arg: &str) -> Result<Self, crate::Error> {
+        let is = Self::is(arg);
+        if is != "" {
+            return Ok(Self::from_str(arg.trim_end_matches(Self::ends_name()))?);
+        }
+        Err(crate::Error::E(format!("warn type decode :{}",Self::ends_name())))
+    }
+}
 
 impl Deref for Decimal{
     type Target = String;
@@ -26,7 +40,7 @@ impl serde::Serialize for Decimal {
     fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error> where S: Serializer {
         if std::any::type_name::<S>() == std::any::type_name::<rbs::Serializer>() {
             let mut s = self.to_string();
-            s.push_str("DEC");
+            s.push_str(Self::ends_name());
             serializer.serialize_str(&s)
         } else {
             self.to_string().serialize(serializer)
@@ -48,11 +62,7 @@ impl<'de> serde::Deserialize<'de> for Decimal {
             Value::F32(v) => { Ok(Decimal::from(v)) }
             Value::F64(v) => { Ok(Decimal::from(v)) }
             Value::String(mut v) => {
-                if v.ends_with("DEC") {
-                    v.pop();
-                    v.pop();
-                    v.pop();
-                }
+                Decimal::trim_ends_match(&mut v);
                 Ok(Decimal::from(v))
             }
             Value::Binary(v) => {

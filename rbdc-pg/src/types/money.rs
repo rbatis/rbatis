@@ -3,8 +3,8 @@ use crate::types::decode::Decode;
 use crate::types::encode::{Encode, IsNull};
 use crate::value::{PgValue, PgValueFormat};
 use byteorder::{BigEndian, ByteOrder};
-use rbdc::{Error, TV};
-use rbs::Value;
+use rbdc::{Error};
+use rbs::{to_value, Value};
 use std::fmt::{Display, Formatter};
 
 /// The raw integer value sent over the wire; for locales with `frac_digits=2` (i.e. most
@@ -29,7 +29,7 @@ impl Display for Money {
 
 impl From<Money> for Value {
     fn from(arg: Money) -> Self {
-        Value::from(TV::new("Money",Value::I64(arg.0)))
+        to_value!(arg)
     }
 }
 

@@ -1,4 +1,4 @@
-use crate::{Error};
+use crate::{Error, RBDCString};
 use rbs::{to_value, Value};
 use std::fmt::{Debug, Display, Formatter};
 use std::str::FromStr;
@@ -7,11 +7,25 @@ use serde::Serializer;
 #[derive(Clone, Eq, PartialEq, Hash)]
 pub struct Time(pub fastdate::Time);
 
+impl RBDCString for Time {
+    fn ends_name() -> &'static str {
+        "T"
+    }
+
+    fn decode(arg: &str) -> Result<Self, crate::Error> {
+        let is = Self::is(arg);
+        if is != "" {
+            return Ok(Self::from_str(arg.trim_end_matches(Self::ends_name()))?);
+        }
+        Err(crate::Error::E(format!("warn type decode :{}",Self::ends_name())))
+    }
+}
+
 impl serde::Serialize for Time{
     fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error> where S: Serializer {
         if std::any::type_name::<S>() == std::any::type_name::<rbs::Serializer>() {
             let mut s = self.0.to_string();
-            s.push_str("T");
+            s.push_str(Self::ends_name());
             serializer.serialize_str(&s)
         } else {
             self.0.serialize(serializer)
@@ -29,9 +43,7 @@ impl<'de> serde::Deserialize<'de> for Time {
             let mut value = Value::deserialize(deserializer)?;
             match &mut value {
                 Value::String(v) => {
-                    if v.ends_with("T"){
-                        v.pop();
-                    }
+                    Time::trim_ends_match( v);
                 }
                 _ => {}
             }

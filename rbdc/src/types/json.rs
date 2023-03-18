@@ -1,4 +1,4 @@
-use crate::{Error, IntoValue};
+use crate::{Error};
 use rbs::{to_value, Value};
 use serde::{Deserializer, Serializer};
 use std::fmt::{Debug, Display, Formatter};
@@ -105,7 +105,7 @@ mod test {
     fn test_decode_js_string() {
         let m = rbs::Value::String(r#""aa""#.to_string());
         println!("{}", m);
-        assert_eq!(r#""aa""#, Json::from(m).value);
+        assert_eq!(r#""aa""#, Json::from(m).0);
     }
 
     #[test]
@@ -114,7 +114,7 @@ mod test {
         m.insert("a".into(), "1".into());
         let m = rbs::Value::Map(m);
         println!("{}", m.to_string());
-        assert_eq!(r#"{"a":"1"}"#, Json::from(m).value.to_string());
+        assert_eq!(r#"{"a":"1"}"#, Json::from(m).0.to_string());
     }
 
     #[test]
@@ -123,14 +123,14 @@ mod test {
         m.insert("a".into(), 1.into());
         let m = rbs::Value::Map(m);
         println!("{}", m.to_string());
-        assert_eq!(r#"{"a":1}"#, Json::from(m).value.to_string());
+        assert_eq!(r#"{"a":1}"#, Json::from(m).0.to_string());
     }
 
     #[test]
     fn test_decode_js_int_arr() {
         let arr = rbs::Value::Array(vec![rbs::Value::I64(1), rbs::Value::I64(2)]);
         println!("{}", arr.to_string());
-        assert_eq!(r#"[1,2]"#, Json::from(arr).value.to_string());
+        assert_eq!(r#"[1,2]"#, Json::from(arr).0.to_string());
     }
 
     #[test]
@@ -140,6 +140,6 @@ mod test {
             rbs::Value::String(2.to_string()),
         ]);
         println!("{}", arr.to_string());
-        assert_eq!(r#"["1","2"]"#, Json::from(arr).value.to_string());
+        assert_eq!(r#"["1","2"]"#, Json::from(arr).0.to_string());
     }
 }

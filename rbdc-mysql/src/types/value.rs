@@ -18,7 +18,7 @@ use rbdc::json::Json;
 use rbdc::timestamp::Timestamp;
 use rbdc::types::time::Time;
 use rbdc::uuid::Uuid;
-use rbdc::{Error, TV};
+use rbdc::{Error};
 use rbs::Value;
 use std::str::FromStr;
 
@@ -157,73 +157,66 @@ impl Decode for Value {
         where
             Self: Sized,
     {
-        Ok(match v.type_info().r#type {
-            ColumnType::Tiny => Value::U64(uint_decode(v).unwrap_or_default()),
-            ColumnType::Short => Value::I32(int_decode(v).unwrap_or_default() as i32),
-            ColumnType::Long => Value::I64(int_decode(v).unwrap_or_default()),
-            ColumnType::Float => Value::F32(f32_decode(v).unwrap_or_default()),
-            ColumnType::Double => Value::F64(f64_decode(v).unwrap_or_default()),
-            ColumnType::Null => Value::Null,
-            ColumnType::LongLong => Value::I64(int_decode(v).unwrap_or_default()),
-            ColumnType::Int24 => Value::I32(int_decode(v).unwrap_or_default() as i32),
-            ColumnType::VarChar => Value::String(v.as_str().unwrap_or_default().to_string()),
-            ColumnType::Bit => Value::U64(uint_decode(v).unwrap_or_default()),
-            ColumnType::TinyBlob => Value::Binary(v.as_bytes().unwrap_or_default().to_vec()),
-            ColumnType::MediumBlob => Value::Binary(v.as_bytes().unwrap_or_default().to_vec()),
-            ColumnType::LongBlob => Value::Binary(v.as_bytes().unwrap_or_default().to_vec()),
-            ColumnType::Blob => Value::Binary(v.as_bytes().unwrap_or_default().to_vec()),
-            ColumnType::VarString => Value::String(v.as_str().unwrap_or_default().to_string()),
-            ColumnType::String => Value::String(v.as_str().unwrap_or_default().to_string()),
-            ColumnType::Timestamp => Value::from(TV::new(
-                "Timestamp",
-                Value::U64({
-                    let s = decode_timestamp(v).unwrap_or_default();
-                    let date = fastdate::DateTime::from_str(&s).unwrap();
-                    date.unix_timestamp_millis() as u64
-                }),
-            )
-            ),
-            ColumnType::Decimal => Value::from(TV::new(
-                "Decimal",
-                Value::String(v.as_str().unwrap_or("0").to_string()))
-            ),
-            ColumnType::Date => Value::from(TV::new(
-                "Date",
-                Value::String(decode_date(v).unwrap_or_default()))
-            ),
-            ColumnType::Time => Value::from(TV::new(
-                "Time",
-                Value::String(decode_time(v).unwrap_or_default()))
-            ),
-            ColumnType::Datetime => Value::from(TV::new(
-                "DateTime",
-                Value::String(decode_timestamp(v).unwrap_or_default()))
-            ),
-            ColumnType::Year => Value::from(TV::new(
-                "Year",
-                Value::String(decode_year(v).unwrap_or_default()))
-            ),
-            ColumnType::Json => Value::from(TV::new(
-                "Json",
-                Value::String(v.as_str().unwrap_or_default().to_string()))
-            ),
-            ColumnType::NewDecimal => Value::from(TV::new(
-                "Decimal",
-                Value::String(v.as_str().unwrap_or("0").to_string()))
-            ),
-            ColumnType::Enum => Value::from(TV::new(
-                "Enum",
-                Value::String(v.as_str().unwrap_or("").to_string()))
-            ),
-            ColumnType::Set => Value::from(TV::new(
-                "Set",
-                Value::String(v.as_str().unwrap_or("").to_string()))
-            ),
-            //bytes ,see https://dev.mysql.com/doc/internals/en/x-protocol-messages-messages.html
-            ColumnType::Geometry => Value::from(TV::new(
-                "Geometry",
-                Value::Binary(v.as_bytes().unwrap_or_default().to_vec()))
-            ),
-        })
+        todo!()
+        // Ok(match v.type_info().r#type {
+        //     ColumnType::Tiny => Value::U64(uint_decode(v).unwrap_or_default()),
+        //     ColumnType::Short => Value::I32(int_decode(v).unwrap_or_default() as i32),
+        //     ColumnType::Long => Value::I64(int_decode(v).unwrap_or_default()),
+        //     ColumnType::Float => Value::F32(f32_decode(v).unwrap_or_default()),
+        //     ColumnType::Double => Value::F64(f64_decode(v).unwrap_or_default()),
+        //     ColumnType::Null => Value::Null,
+        //     ColumnType::LongLong => Value::I64(int_decode(v).unwrap_or_default()),
+        //     ColumnType::Int24 => Value::I32(int_decode(v).unwrap_or_default() as i32),
+        //     ColumnType::VarChar => Value::String(v.as_str().unwrap_or_default().to_string()),
+        //     ColumnType::Bit => Value::U64(uint_decode(v).unwrap_or_default()),
+        //     ColumnType::TinyBlob => Value::Binary(v.as_bytes().unwrap_or_default().to_vec()),
+        //     ColumnType::MediumBlob => Value::Binary(v.as_bytes().unwrap_or_default().to_vec()),
+        //     ColumnType::LongBlob => Value::Binary(v.as_bytes().unwrap_or_default().to_vec()),
+        //     ColumnType::Blob => Value::Binary(v.as_bytes().unwrap_or_default().to_vec()),
+        //     ColumnType::VarString => Value::String(v.as_str().unwrap_or_default().to_string()),
+        //     ColumnType::String => Value::String(v.as_str().unwrap_or_default().to_string()),
+            // ColumnType::Timestamp => Value::from(TV::new("Timestamp", Value::U64({ let s = decode_timestamp(v).unwrap_or_default();let date = fastdate::DateTime::from_str(&s).unwrap();date.unix_timestamp_millis() as u64 }), )),
+            // ColumnType::Decimal => Value::from(TV::new(
+            //     "Decimal",
+            //     Value::String(v.as_str().unwrap_or("0").to_string()))
+            // ),
+            // ColumnType::Date => Value::from(TV::new(
+            //     "Date",
+            //     Value::String(decode_date(v).unwrap_or_default()))
+            // ),
+            // ColumnType::Time => Value::from(TV::new(
+            //     "Time",
+            //     Value::String(decode_time(v).unwrap_or_default()))
+            // ),
+            // ColumnType::Datetime => Value::from(TV::new(
+            //     "DateTime",
+            //     Value::String(decode_timestamp(v).unwrap_or_default()))
+            // ),
+            // ColumnType::Year => Value::from(TV::new(
+            //     "Year",
+            //     Value::String(decode_year(v).unwrap_or_default()))
+            // ),
+            // ColumnType::Json => Value::from(TV::new(
+            //     "Json",
+            //     Value::String(v.as_str().unwrap_or_default().to_string()))
+            // ),
+            // ColumnType::NewDecimal => Value::from(TV::new(
+            //     "Decimal",
+            //     Value::String(v.as_str().unwrap_or("0").to_string()))
+            // ),
+            // ColumnType::Enum => Value::from(TV::new(
+            //     "Enum",
+            //     Value::String(v.as_str().unwrap_or("").to_string()))
+            // ),
+            // ColumnType::Set => Value::from(TV::new(
+            //     "Set",
+            //     Value::String(v.as_str().unwrap_or("").to_string()))
+            // ),
+            // //bytes ,see https://dev.mysql.com/doc/internals/en/x-protocol-messages-messages.html
+            // ColumnType::Geometry => Value::from(TV::new(
+            //     "Geometry",
+            //     Value::Binary(v.as_bytes().unwrap_or_default().to_vec()))
+            // ),
+      //  });
     }
 }
