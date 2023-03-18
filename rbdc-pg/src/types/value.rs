@@ -18,7 +18,7 @@ use rbdc::json::Json;
 use rbdc::timestamp::Timestamp;
 use rbdc::types::time::Time;
 use rbdc::uuid::Uuid;
-use rbdc::{Error};
+use rbdc::{Error, RBDCString};
 use rbs::Value;
 use std::str::FromStr;
 
@@ -33,21 +33,117 @@ impl TypeInfo for Value {
             Value::U64(_) => PgTypeInfo::INT8,
             Value::F32(_) => PgTypeInfo::FLOAT4,
             Value::F64(_) => PgTypeInfo::FLOAT8,
-            Value::String(_) => PgTypeInfo::VARCHAR,
-            Value::Binary(_) => PgTypeInfo::BYTEA_ARRAY,
-            Value::Array(arr) => {
-                if arr.len() == 0 {
-                    return PgTypeInfo::UNKNOWN;
-                }
-                arr[0]
-                    .type_info()
-                    .clone()
-                    .to_array_type()
-                    .unwrap_or(PgTypeInfo::UNKNOWN)
-            }
-            Value::Map(m) => {
-                let t=m.index("type").as_str().unwrap_or_default();
-                match t{
+            Value::String(v) => {
+                let t = {
+                    if Date::is(&v) != "" {
+                        "Date"
+                    } else if DateTime::is(&v) != "" {
+                        "DateTime"
+                    } else if Time::is(&v) != "" {
+                        "Time"
+                    } else if Timestamp::is(&v) != "" {
+                        "Timestamp"
+                    } else if Decimal::is(&v) != "" {
+                        "Decimal"
+                    } else if Uuid::is(&v) != "" {
+                        "Uuid"
+                    } else if v.ends_with("Bytea") {
+                        "Bytea"
+                    } else if v.ends_with("Char") {
+                        "Char"
+                    } else if v.ends_with("Name") {
+                        "Name"
+                    } else if v.ends_with("Int2") {
+                        "Int2"
+                    } else if v.ends_with("Text") {
+                        "Text"
+                    } else if v.ends_with("Oid") {
+                        "Oid"
+                    } else if v.ends_with("Json") {
+                        "Json"
+                    } else if v.ends_with("Point") {
+                        "Point"
+                    } else if v.ends_with("Lseg") {
+                        "Lseg"
+                    } else if v.ends_with("Path") {
+                        "Path"
+                    } else if v.ends_with("Box") {
+                        "Box"
+                    } else if v.ends_with("Polygon") {
+                        "Polygon"
+                    } else if v.ends_with("Line") {
+                        "Line"
+                    } else if v.ends_with("Cidr") {
+                        "Cidr"
+                    } else if v.ends_with("Unknown") {
+                        "Unknown"
+                    } else if v.ends_with("Circle") {
+                        "Circle"
+                    } else if v.ends_with("Macaddr8") {
+                        "Macaddr8"
+                    } else if v.ends_with("Macaddr") {
+                        "Macaddr"
+                    } else if v.ends_with("Inet") {
+                        "Inet"
+                    } else if v.ends_with("Bpchar") {
+                        "Bpchar"
+                    } else if v.ends_with("Varchar") {
+                        "Varchar"
+                    } else if v.ends_with("Timestamptz") {
+                        "Timestamptz"
+                    } else if v.ends_with("Interval") {
+                        "Interval"
+                    } else if v.ends_with("Timetz") {
+                        "Timetz"
+                    } else if v.ends_with("Bit") {
+                        "Bit"
+                    } else if v.ends_with("Varbit") {
+                        "Varbit"
+                    } else if v.ends_with("Numeric") {
+                        "Numeric"
+                    } else if v.ends_with("Record") {
+                        "Record"
+                    } else if v.ends_with("Jsonb") {
+                        "Jsonb"
+                    } else if v.ends_with("Int4Range") {
+                        "Int4Range"
+                    } else if v.ends_with("NumRange") {
+                        "NumRange"
+                    } else if v.ends_with("TsRange") {
+                        "TsRange"
+                    } else if v.ends_with("TstzRange") {
+                        "TstzRange"
+                    } else if v.ends_with("Record") {
+                        "Record"
+                    } else if v.ends_with("Jsonb") {
+                        "Jsonb"
+                    } else if v.ends_with("Int4Range") {
+                        "Int4Range"
+                    } else if v.ends_with("NumRange") {
+                        "NumRange"
+                    } else if v.ends_with("TsRange") {
+                        "TsRange"
+                    } else if v.ends_with("TstzRange") {
+                        "TstzRange"
+                    } else if v.ends_with("DateRange") {
+                        "DateRange"
+                    } else if v.ends_with("Int8Range") {
+                        "Int8Range"
+                    } else if v.ends_with("Jsonpath") {
+                        "Jsonpath"
+                    } else if v.ends_with("Money") {
+                        "Money"
+                    } else if v.ends_with("Void") {
+                        "Void"
+                    } else if v.ends_with("Custom") {
+                        "Custom"
+                    } else if v.ends_with("DeclareWithName") {
+                        "DeclareWithName"
+                    } else if v.ends_with("DeclareWithOid") {
+                        "DeclareWithOid"
+                    } else { "" }
+                };
+                match t {
                     "Uuid" => PgTypeInfo::UUID,
                     //decimal = 12345678
                     "Decimal" => PgTypeInfo::NUMERIC,
@@ -106,6 +202,20 @@ impl TypeInfo for Value {
                     "DeclareWithOid" => PgTypeInfo::UNKNOWN,
                     _ => PgTypeInfo::UNKNOWN,
                 }
+            }
+            Value::Binary(_) => PgTypeInfo::BYTEA_ARRAY,
+            Value::Array(arr) => {
+                if arr.len() == 0 {
+                    return PgTypeInfo::UNKNOWN;
+                }
+                arr[0]
+                    .type_info()
+                    .clone()
+                    .to_array_type()
+                    .unwrap_or(PgTypeInfo::UNKNOWN)
+            }
+            Value::Map(_) => {
+                PgTypeInfo::JSON
             }
         }
     }
