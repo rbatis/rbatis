@@ -33,11 +33,11 @@ pub trait RBDCString {
         }
     }
 
-    fn encode(&self, arg: &str, result: &mut String) where Self: Sized {
+    fn encode_str(&self, arg: &str, result: &mut String) where Self: Sized {
         if !arg.ends_with(Self::ends_name()) {
             result.push_str(Self::ends_name());
         }
     }
 
-    fn decode(arg: &str) -> Result<Self, Error> where Self: Sized;
+    fn decode_str(arg: &str) -> Result<Self, Error> where Self: Sized;
 }
