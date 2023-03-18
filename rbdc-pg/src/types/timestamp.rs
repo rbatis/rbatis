@@ -9,7 +9,7 @@ use std::str::FromStr;
 impl Encode for Timestamp {
     fn encode(self, buf: &mut PgArgumentBuffer) -> Result<IsNull, Error> {
         let v = 1000
-            * (self.value as i64
+            * (self.0 as i64
                 - fastdate::DateTime::from(fastdate::Date {
                     day: 1,
                     mon: 1,

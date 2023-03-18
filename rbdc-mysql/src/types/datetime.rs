@@ -8,7 +8,7 @@ use std::str::FromStr;
 
 impl Encode for DateTime {
     fn encode(self, buf: &mut Vec<u8>) -> Result<usize, Error> {
-        let datetime = self.value;
+        let datetime = self.0;
         let datetime_size =
             date_time_size_hint(datetime.hour, datetime.min, datetime.sec, datetime.nano);
         buf.push(datetime_size as u8);

@@ -9,10 +9,10 @@ impl Encode for Date {
     fn encode(self, buf: &mut Vec<u8>) -> Result<usize, Error> {
         buf.push(4);
         // MySQL supports years from 1000 - 9999
-        let year = &self.value.year.to_le_bytes();
+        let year = &self.0.year.to_le_bytes();
         buf.extend_from_slice(year);
-        buf.push(self.value.mon as u8);
-        buf.push(self.value.day as u8);
+        buf.push(self.0.mon as u8);
+        buf.push(self.0.day as u8);
         Ok(4)
     }
 }

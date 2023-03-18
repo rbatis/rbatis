@@ -1,46 +1,78 @@
 use crate::{Error, IntoValue};
-use rbs::Value;
-use serde::Deserializer;
+use rbs::{to_value, Value};
+use serde::{Deserializer, Serializer};
 use std::fmt::{Debug, Display, Formatter};
+use std::ops::{Deref, DerefMut};
 use std::str::FromStr;
 
-#[derive(serde::Serialize, Clone, Eq, PartialEq, Hash)]
-#[serde(rename = "Uuid")]
-pub struct Uuid {
-    pub r#type: &'static str,
-    pub value: String,
+#[derive( Clone, Eq, PartialEq, Hash)]
+pub struct Uuid(pub String);
+
+impl Deref for Uuid{
+    type Target = String;
+
+    fn deref(&self) -> &Self::Target {
+        &self.0
+    }
 }
 
+impl DerefMut for Uuid{
+    fn deref_mut(&mut self) -> &mut Self::Target {
+        &mut self.0
+    }
+}
+
+impl serde::Serialize for Uuid {
+    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error> where S: Serializer {
+        if std::any::type_name::<S>() == std::any::type_name::<rbs::Serializer>() {
+            let mut s = self.to_string();
+            s.push_str("UUID");
+            serializer.serialize_str(&s)
+        } else {
+            self.to_string().serialize(serializer)
+        }
+    }
+}
 impl<'de> serde::Deserialize<'de> for Uuid {
     fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
     where
         D: Deserializer<'de>,
     {
         use serde::de::Error;
-        match Value::deserialize(deserializer)?.into_value().into_string() {
-            None => Err(D::Error::custom("warn type decode Uuid")),
-            Some(v) => Ok(Self::from(v)),
+        match Value::deserialize(deserializer)? {
+            Value::String(mut v) => {
+                if v.ends_with("UUID") {
+                    v.pop();
+                    v.pop();
+                    v.pop();
+                    v.pop();
+                }
+                Ok(Uuid::from(v))
+            }
+            Value::Binary(v) => {
+                let s = unsafe { String::from_utf8_unchecked(v) };
+                Ok(Uuid::from(s))
+            }
+            _ => { Err(D::Error::custom("warn type decode Decimal")) }
         }
     }
 }
 
 impl Display for Uuid {
     fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
-        write!(f, "{}", self.value)
+        write!(f, "{}", self.0)
     }
 }
 
 impl Debug for Uuid {
     fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
-        write!(f, "{}", self.value)
+        write!(f, "{}", self.0)
     }
 }
 
 impl From<Uuid> for Value {
     fn from(arg: Uuid) -> Self {
-        Value::Map(rbs::value::map::ValueMap{
-            inner: vec![("type".into(),"Uuid".into()),("value".into(),arg.value.into())],
-        })
+        to_value!(arg)
     }
 }
 
@@ -52,10 +84,7 @@ impl From<&str> for Uuid {
 
 impl From<String> for Uuid {
     fn from(arg: String) -> Self {
-        Uuid {
-            r#type: "Uuid",
-            value: arg,
-        }
+        Uuid(arg)
     }
 }
 

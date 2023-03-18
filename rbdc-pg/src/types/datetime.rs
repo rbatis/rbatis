@@ -10,7 +10,7 @@ use std::time::Duration;
 
 impl Encode for DateTime {
     fn encode(self, buf: &mut PgArgumentBuffer) -> Result<IsNull, Error> {
-        self.value.encode(buf)?;
+        self.0.encode(buf)?;
         Ok(IsNull::No)
     }
 }

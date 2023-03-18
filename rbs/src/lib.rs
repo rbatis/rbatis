@@ -10,6 +10,7 @@ pub use crate::value::ext::Error;
 pub use value::ext::{deserialize_from, from_value};
 pub use value::ext::{to_value, to_value_def};
 pub use value::Value;
+pub use crate::value::ext::{Serializer,Deserializer};
 
 impl Value {
     pub fn is_empty(&self) -> bool {
