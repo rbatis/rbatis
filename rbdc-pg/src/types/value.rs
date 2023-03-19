@@ -35,17 +35,17 @@ impl TypeInfo for Value {
             Value::F64(_) => PgTypeInfo::FLOAT8,
             Value::String(v) => {
                 let t = {
-                    if Date::is(&v) != "" || v.ends_with("Date") {
+                    if Date::is(&v) != "" {
                         "Date"
-                    } else if DateTime::is(&v) != "" || v.ends_with("DateTime") {
+                    } else if DateTime::is(&v) != "" {
                         "DateTime"
-                    } else if Time::is(&v) != "" || v.ends_with("Time") {
+                    } else if Time::is(&v) != "" {
                         "Time"
-                    } else if Timestamp::is(&v) != "" || v.ends_with("Timestamp") {
+                    } else if Timestamp::is(&v) != "" {
                         "Timestamp"
-                    } else if Decimal::is(&v) != "" || v.ends_with("Decimal") {
+                    } else if Decimal::is(&v) != "" {
                         "Decimal"
-                    } else if Uuid::is(&v) != "" || v.ends_with("Uuid") {
+                    } else if Uuid::is(&v) != "" {
                         "Uuid"
                     } else if v.ends_with("Bytea") {
                         "Bytea"
@@ -542,17 +542,17 @@ impl Encode for Value {
             Value::F64(v) => v.encode(buf)?,
             Value::String(v) => {
                 let mut r = "";
-                if v.ends_with(Uuid::ends_name()) || v.ends_with("Uuid") {
+                if v.ends_with(Uuid::ends_name()) {
                     r = "Uuid";
-                } else if v.ends_with(Decimal::ends_name()) || v.ends_with("Decimal") {
+                } else if v.ends_with(Decimal::ends_name()) {
                     r = "Decimal";
-                } else if v.ends_with(Date::ends_name()) || v.ends_with("Date") {
+                } else if v.ends_with(Date::ends_name()) {
                     r = "Date";
-                } else if v.ends_with(Time::ends_name()) || v.ends_with("Time") {
+                } else if v.ends_with(Time::ends_name()) {
                     r = "Time";
-                } else if v.ends_with(Timestamp::ends_name()) || v.ends_with("Timestamp") {
+                } else if v.ends_with(Timestamp::ends_name()) {
                     r = "Timestamp";
-                } else if v.ends_with(DateTime::ends_name()) || v.ends_with("DateTime") {
+                } else if v.ends_with(DateTime::ends_name()) {
                     r = "DateTime";
                 } else if v.ends_with("Bytea") {
                     r = "Bytea";
