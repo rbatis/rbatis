@@ -1,6 +1,6 @@
 [package]
 name = "rbdc-mssql"
-version = "4.1.0"
+version = "4.2.0"
 edition = "2021"
 description = "The Rust SQL Toolkit and ORM Library. An async, pure Rust SQL crate featuring compile-time Dynamic SQL"
 readme = "Readme.md"
@@ -14,18 +14,18 @@ homepage = "https://rbatis.github.io/rbatis.io"
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
-rbs={version="4.1",path="../rbs"}
-rbdc = { version = "4.1", path = "../rbdc" }
-tiberius = {version="0.12",default-features=false,features=["tokio-rustls","chrono","bigdecimal","rust_decimal","tds73"]}
-tokio = {version="1",features=["fs", "net", "rt", "rt-multi-thread", "time", "io-util"]}
-tokio-util = {version="0.7.1",features=["compat"]}
-futures-io = {version="0.3.21",features=["std"]}
+rbs = { version = "4.2", path = "../rbs" }
+rbdc = { version = "4.2", path = "../rbdc" }
+tiberius = { version = "0.12", default-features = false, features = ["tokio-rustls", "chrono", "bigdecimal", "rust_decimal", "tds73"] }
+tokio = { version = "1", features = ["fs", "net", "rt", "rt-multi-thread", "time", "io-util"] }
+tokio-util = { version = "0.7.1", features = ["compat"] }
+futures-io = { version = "0.3.21", features = ["std"] }
 futures-core = { version = "0.3.19", default-features = false }
-futures-util = {version="0.3.21",features = ["alloc", "sink"]}
+futures-util = { version = "0.3.21", features = ["alloc", "sink"] }
 chrono = "0.4.19"
 rust_decimal = "1.25.0"
 byteorder = "1.4.3"
 uuid = "1.1.2"
-log="0.4"
-fastdate = { version = "0.1"}
+log = "0.4"
+fastdate = { version = "0.1" }
 serde_json = "1.0"

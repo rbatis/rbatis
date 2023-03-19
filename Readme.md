@@ -99,12 +99,12 @@ QPS: 885486 QPS/s
 
 ```toml
 #rbatis deps
-rbs = { version = "4.1"}
-rbatis = { version = "4.1"}
-rbdc-sqlite = { version = "4.1" }
-#rbdc-mysql={version="4.1"}
-#rbdc-pg={version="4.1"}
-#rbdc-mssql={version="4.1"}
+rbs = { version = "4.2"}
+rbatis = { version = "4.2"}
+rbdc-sqlite = { version = "4.2" }
+#rbdc-mysql={version="4.2"}
+#rbdc-pg={version="4.2"}
+#rbdc-mssql={version="4.2"}
 
 #other deps
 serde = { version = "1", features = ["derive"] }
