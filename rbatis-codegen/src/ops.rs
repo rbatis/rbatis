@@ -59,7 +59,7 @@ impl AsProxy for Value {
     fn as_binary(&self) -> Vec<u8> {
         match self {
             Value::Binary(s) => s.to_owned(),
-            _ => vec![]
+            _ => vec![],
         }
     }
 }

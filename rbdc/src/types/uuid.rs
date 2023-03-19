@@ -5,7 +5,7 @@ use std::fmt::{Debug, Display, Formatter};
 use std::ops::{Deref, DerefMut};
 use std::str::FromStr;
 
-#[derive( Clone, Eq, PartialEq, Hash)]
+#[derive(Clone, Eq, PartialEq, Hash)]
 pub struct Uuid(pub String);
 
 impl RBDCString for Uuid {
@@ -18,11 +18,11 @@ impl RBDCString for Uuid {
         if is != "" {
             return Ok(Self::from_str(arg.trim_end_matches(Self::ends_name()))?);
         }
-        Err(Error::E(format!("warn type decode :{}",Self::ends_name())))
+        Err(Error::E(format!("warn type decode :{}", Self::ends_name())))
     }
 }
 
-impl Deref for Uuid{
+impl Deref for Uuid {
     type Target = String;
 
     fn deref(&self) -> &Self::Target {
@@ -30,14 +30,17 @@ impl Deref for Uuid{
     }
 }
 
-impl DerefMut for Uuid{
+impl DerefMut for Uuid {
     fn deref_mut(&mut self) -> &mut Self::Target {
         &mut self.0
     }
 }
 
 impl serde::Serialize for Uuid {
-    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error> where S: Serializer {
+    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
+    where
+        S: Serializer,
+    {
         if std::any::type_name::<S>() == std::any::type_name::<rbs::Serializer>() {
             let mut s = self.to_string();
             s.push_str(Self::ends_name());
@@ -62,7 +65,7 @@ impl<'de> serde::Deserialize<'de> for Uuid {
                 let s = unsafe { String::from_utf8_unchecked(v) };
                 Ok(Uuid::from(s))
             }
-            _ => { Err(D::Error::custom("warn type decode Decimal")) }
+            _ => Err(D::Error::custom("warn type decode Decimal")),
         }
     }
 }

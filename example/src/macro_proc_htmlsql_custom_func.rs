@@ -3,8 +3,8 @@ extern crate rbatis;
 
 pub mod model;
 
-use serde_json::json;
 use model::*;
+use serde_json::json;
 
 use rbatis::executor::Executor;
 use rbs::Value;
@@ -30,7 +30,8 @@ impl IsTest for rbs::Value {
 ///    ....
 ///  </if>
 /// ```
-#[html_sql(r#"
+#[html_sql(
+    r#"
     <select id="custom_func">
         `select * from biz_activity`
         <where>
@@ -38,7 +39,8 @@ impl IsTest for rbs::Value {
                 `and name like #{name}`
             </if>
         </where>
-    </select>"#)]
+    </select>"#
+)]
 async fn custom_func(rb: &mut dyn Executor, name: &str) -> rbatis::Result<Vec<BizActivity>> {
     impled!()
 }

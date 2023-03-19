@@ -1,10 +1,10 @@
 #[cfg(test)]
 mod test {
     use rbatis_codegen::ops::{Add, BitAnd, BitOr, Div, Mul, Not, PartialEq, PartialOrd, Rem, Sub};
+    use rbs::value::map::ValueMap;
     use rbs::{to_value, Value};
     use std::cmp::Ordering;
     use std::ops::Index;
-    use rbs::value::map::ValueMap;
 
     #[test]
     fn test_ser_i32() {

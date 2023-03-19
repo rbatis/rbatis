@@ -26,7 +26,6 @@ pub fn to_number(s: &str) -> f64 {
     }
 }
 
-
 #[cfg(test)]
 mod test {
     use crate::value::util::to_number;
@@ -36,6 +35,9 @@ mod test {
         assert_eq!(to_number("ESF1.2332"), 1.2332);
         assert_eq!(to_number("1.2332ESF"), 1.2332);
         assert_eq!(to_number("3.324324D"), 3.324324);
-        assert_eq!(to_number("123456789012345678901234567890"), 123456789012345678901234567890.0);
+        assert_eq!(
+            to_number("123456789012345678901234567890"),
+            123456789012345678901234567890.0
+        );
     }
 }

@@ -1,3 +1,4 @@
+use crate::RBDCString;
 use rbs::{to_value, Value};
 use serde::de::Error;
 use serde::{Deserialize, Deserializer, Serializer};
@@ -5,11 +6,10 @@ use std::fmt::{Debug, Display, Formatter};
 use std::ops::{Add, Deref, DerefMut, Sub};
 use std::str::FromStr;
 use std::time::Duration;
-use crate::RBDCString;
 
 #[deprecated(
-since = "4.1.0",
-note = "Please use `rbdc::datetime::DateTime` instead"
+    since = "4.1.0",
+    note = "Please use `rbdc::datetime::DateTime` instead"
 )]
 pub type FastDateTime = DateTime;
 
@@ -26,12 +26,18 @@ impl RBDCString for DateTime {
         if is != "" {
             return Ok(Self::from_str(arg.trim_end_matches(Self::ends_name()))?);
         }
-        Err(crate::Error::E(format!("warn type decode :{}",Self::ends_name())))
+        Err(crate::Error::E(format!(
+            "warn type decode :{}",
+            Self::ends_name()
+        )))
     }
 }
 
 impl serde::Serialize for DateTime {
-    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error> where S: Serializer {
+    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
+    where
+        S: Serializer,
+    {
         if std::any::type_name::<S>() == std::any::type_name::<rbs::Serializer>() {
             let mut s = self.0.to_string();
             s.push_str(Self::ends_name());
@@ -56,8 +62,8 @@ impl Debug for DateTime {
 
 impl<'de> Deserialize<'de> for DateTime {
     fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
-        where
-            D: Deserializer<'de>,
+    where
+        D: Deserializer<'de>,
     {
         let v = Value::deserialize(deserializer)?;
         match v {
@@ -204,7 +210,10 @@ impl FromStr for DateTime {
 impl From<DateTime> for Value {
     fn from(arg: DateTime) -> Self {
         Value::Map(rbs::value::map::ValueMap {
-            inner: vec![("type".into(), "DateTime".into()), ("value".into(), to_value!(arg.0))],
+            inner: vec![
+                ("type".into(), "DateTime".into()),
+                ("value".into(), to_value!(arg.0)),
+            ],
         })
     }
 }
@@ -220,15 +229,9 @@ fn test() {
     let date = DateTime::from_str("2017-02-06 00:00:00").unwrap();
     let v = rbs::to_value(&date).unwrap();
     println!("v={}", v);
-    assert_eq!(
-        "\"2017-02-06 00:00:00DT\"",
-        v.to_string()
-    );
+    assert_eq!("\"2017-02-06 00:00:00DT\"", v.to_string());
     let date = DateTime::from(date.0);
     let v = rbs::to_value(&date).unwrap();
     println!("v={}", v);
-    assert_eq!(
-        "\"2017-02-06 00:00:00DT\"",
-        v.to_string()
-    );
+    assert_eq!("\"2017-02-06 00:00:00DT\"", v.to_string());
 }

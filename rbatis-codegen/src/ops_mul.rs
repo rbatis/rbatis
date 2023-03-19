@@ -1,7 +1,7 @@
 use crate::ops::AsProxy;
 use crate::ops::Mul;
-use rbs::Value;
 use rbs::value::util::to_number;
+use rbs::Value;
 
 fn op_mul_value(left: Value, rhs: Value) -> Value {
     match left {
@@ -29,7 +29,7 @@ fn op_mul_value(left: Value, rhs: Value) -> Value {
             let rhs = rhs.f64();
             Value::F64(s * rhs)
         }
-        Value::String(ref s)=>{
+        Value::String(ref s) => {
             let rhs = rhs.f64();
             Value::F64(to_number(s) * rhs)
         }
@@ -179,8 +179,7 @@ mul_self!([u8 u16 u32 u64]);
 mul_self!([i8 i16 i32 i64 isize]);
 mul_self!([f32 f64]);
 
-
-impl Mul<&str> for Value{
+impl Mul<&str> for Value {
     type Output = f64;
 
     fn op_mul(self, rhs: &str) -> Self::Output {
@@ -188,7 +187,7 @@ impl Mul<&str> for Value{
     }
 }
 
-impl Mul<Value> for &str{
+impl Mul<Value> for &str {
     type Output = f64;
 
     fn op_mul(self, rhs: Value) -> Self::Output {

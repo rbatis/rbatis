@@ -18,11 +18,14 @@ impl RBDCString for Decimal {
         if is != "" {
             return Ok(Self::from_str(arg.trim_end_matches(Self::ends_name()))?);
         }
-        Err(crate::Error::E(format!("warn type decode :{}",Self::ends_name())))
+        Err(crate::Error::E(format!(
+            "warn type decode :{}",
+            Self::ends_name()
+        )))
     }
 }
 
-impl Deref for Decimal{
+impl Deref for Decimal {
     type Target = String;
 
     fn deref(&self) -> &Self::Target {
@@ -30,14 +33,17 @@ impl Deref for Decimal{
     }
 }
 
-impl DerefMut for Decimal{
+impl DerefMut for Decimal {
     fn deref_mut(&mut self) -> &mut Self::Target {
         &mut self.0
     }
 }
 
 impl serde::Serialize for Decimal {
-    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error> where S: Serializer {
+    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
+    where
+        S: Serializer,
+    {
         if std::any::type_name::<S>() == std::any::type_name::<rbs::Serializer>() {
             let mut s = self.to_string();
             s.push_str(Self::ends_name());
@@ -50,17 +56,17 @@ impl serde::Serialize for Decimal {
 
 impl<'de> serde::Deserialize<'de> for Decimal {
     fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
-        where
-            D: Deserializer<'de>,
+    where
+        D: Deserializer<'de>,
     {
         use serde::de::Error;
         match Value::deserialize(deserializer)? {
-            Value::I32(v) => { Ok(Decimal::from(v)) }
-            Value::I64(v) => { Ok(Decimal::from(v)) }
-            Value::U32(v) => { Ok(Decimal::from(v)) }
-            Value::U64(v) => { Ok(Decimal::from(v)) }
-            Value::F32(v) => { Ok(Decimal::from(v)) }
-            Value::F64(v) => { Ok(Decimal::from(v)) }
+            Value::I32(v) => Ok(Decimal::from(v)),
+            Value::I64(v) => Ok(Decimal::from(v)),
+            Value::U32(v) => Ok(Decimal::from(v)),
+            Value::U64(v) => Ok(Decimal::from(v)),
+            Value::F32(v) => Ok(Decimal::from(v)),
+            Value::F64(v) => Ok(Decimal::from(v)),
             Value::String(mut v) => {
                 Decimal::trim_ends_match(&mut v);
                 Ok(Decimal::from(v))
@@ -69,7 +75,7 @@ impl<'de> serde::Deserialize<'de> for Decimal {
                 let s = unsafe { String::from_utf8_unchecked(v) };
                 Ok(Decimal::from(s))
             }
-            _ => { Err(D::Error::custom("warn type decode Decimal")) }
+            _ => Err(D::Error::custom("warn type decode Decimal")),
         }
     }
 }

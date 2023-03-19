@@ -3,7 +3,7 @@ use crate::types::decode::Decode;
 use crate::types::encode::{Encode, IsNull};
 use crate::value::{PgValue, PgValueFormat};
 use byteorder::{BigEndian, ByteOrder};
-use rbdc::{Error};
+use rbdc::Error;
 use rbs::{to_value, Value};
 use std::fmt::{Display, Formatter};
 

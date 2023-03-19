@@ -5,10 +5,10 @@
 //! ```
 //! ```
 use crate::value::map::ValueMap;
+use crate::value::util::to_number;
 use std::borrow::Cow;
 use std::fmt::{self, Debug, Display};
 use std::iter::FromIterator;
-use crate::value::util::to_number;
 
 pub mod ext;
 pub mod map;
@@ -342,7 +342,7 @@ impl Value {
             Some(val)
         } else if let Value::String(ref val) = *self {
             Some(val.as_bytes())
-        }  else {
+        } else {
             None
         }
     }
@@ -720,23 +720,19 @@ impl From<&Value> for String {
 
 impl Eq for Value {}
 
-impl PartialEq<str> for Value{
+impl PartialEq<str> for Value {
     fn eq(&self, other: &str) -> bool {
-        match self{
-            Value::String(v) => {
-                v.eq(other)
-            }
-            _=> false
+        match self {
+            Value::String(v) => v.eq(other),
+            _ => false,
         }
     }
 }
-impl PartialEq<str> for &Value{
+impl PartialEq<str> for &Value {
     fn eq(&self, other: &str) -> bool {
-        match self{
-            Value::String(v) => {
-                v.eq(other)
-            }
-            _=> false
+        match self {
+            Value::String(v) => v.eq(other),
+            _ => false,
         }
     }
 }

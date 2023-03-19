@@ -1,9 +1,9 @@
-use std::ops::Index;
 use crate::executor::RBatisConnExecutor;
 use crate::table_sync::TableSync;
 use crate::Error;
 use futures_core::future::BoxFuture;
 use rbs::Value;
+use std::ops::Index;
 
 pub struct SqliteTableSync {
     pub sql_id: String,
@@ -47,7 +47,7 @@ fn type_str(v: &Value) -> &'static str {
             } else {
                 "BLOB"
             }
-        },
+        }
     }
 }
 
