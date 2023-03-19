@@ -1,7 +1,7 @@
 use crate::ops::AsProxy;
 use crate::ops::BitXor;
 use rbs::Value;
-use rbs::value::util::extract_number;
+use rbs::value::util::to_number;
 
 fn op_bitxor_value(left: Value, rhs: Value) -> Value {
     match left {
@@ -23,7 +23,7 @@ fn op_bitxor_value(left: Value, rhs: Value) -> Value {
         }
         Value::String(ref s)=>{
             let rhs = rhs.u64();
-            Value::U64(extract_number(s) as u64 ^ rhs)
+            Value::U64(to_number(s) as u64 ^ rhs)
         }
         _ => Value::Null,
     }
@@ -171,7 +171,7 @@ impl BitXor<&str> for Value{
     type Output = i64;
 
     fn op_bitxor(self, rhs: &str) -> Self::Output {
-        self.i64() ^ extract_number(rhs) as i64
+        self.i64() ^ to_number(rhs) as i64
     }
 }
 
@@ -179,6 +179,6 @@ impl BitXor<Value> for &str{
     type Output = i64;
 
     fn op_bitxor(self, rhs: Value) -> Self::Output {
-        extract_number(self) as i64 ^ rhs.i64()
+        to_number(self) as i64 ^ rhs.i64()
     }
 }

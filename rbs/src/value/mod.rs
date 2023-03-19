@@ -8,7 +8,7 @@ use crate::value::map::ValueMap;
 use std::borrow::Cow;
 use std::fmt::{self, Debug, Display};
 use std::iter::FromIterator;
-use crate::value::util::extract_number;
+use crate::value::util::to_number;
 
 pub mod ext;
 pub mod map;
@@ -237,7 +237,7 @@ impl Value {
             Value::U32(ref n) => Some(n.to_owned() as i64),
             Value::I64(ref n) => Some(n.to_owned()),
             Value::I32(ref n) => Some(n.to_owned() as i64),
-            Value::String(ref n) => Some(extract_number(n) as i64),
+            Value::String(ref n) => Some(to_number(n) as i64),
             _ => None,
         }
     }
@@ -254,7 +254,7 @@ impl Value {
             Value::I32(ref n) => Some(n.to_owned() as u64),
             Value::U64(ref n) => Some(n.to_owned()),
             Value::U32(ref n) => Some(n.to_owned() as u64),
-            Value::String(ref n) => Some(extract_number(n) as u64),
+            Value::String(ref n) => Some(to_number(n) as u64),
             _ => None,
         }
     }
@@ -283,7 +283,7 @@ impl Value {
             Value::U64(n) => Some(n as f64),
             Value::F32(n) => Some(From::from(n)),
             Value::F64(n) => Some(n),
-            Value::String(ref n) => Some(extract_number(n) as f64),
+            Value::String(ref n) => Some(to_number(n) as f64),
             _ => None,
         }
     }

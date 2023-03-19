@@ -1,7 +1,7 @@
 use crate::ops::AsProxy;
 use crate::ops::Rem;
 use rbs::Value;
-use rbs::value::util::extract_number;
+use rbs::value::util::to_number;
 
 fn op_rem_value(left: Value, rhs: Value) -> Value {
     match left {
@@ -31,7 +31,7 @@ fn op_rem_value(left: Value, rhs: Value) -> Value {
         }
         Value::String(ref s)=>{
             let rhs = rhs.f64();
-            Value::F64(extract_number(s) % rhs)
+            Value::F64(to_number(s) % rhs)
         }
         _ => Value::Null,
     }
@@ -189,7 +189,7 @@ impl Rem<&str> for Value{
     type Output = f64;
 
     fn op_rem(self, rhs: &str) -> Self::Output {
-        self.f64() % extract_number(rhs)
+        self.f64() % to_number(rhs)
     }
 }
 
@@ -197,6 +197,6 @@ impl Rem<Value> for &str{
     type Output = f64;
 
     fn op_rem(self, rhs: Value) -> Self::Output {
-        extract_number(self) % rhs.f64()
+        to_number(self) % rhs.f64()
     }
 }
