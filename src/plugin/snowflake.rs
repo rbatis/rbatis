@@ -1,5 +1,5 @@
 use once_cell::sync::Lazy;
-use rbdc::datetime::{DateTime};
+use rbdc::datetime::DateTime;
 use serde::ser::SerializeStruct;
 use serde::{Deserializer, Serializer};
 use std::sync::atomic::{AtomicI64, Ordering};

@@ -1,6 +1,6 @@
 use chrono::{FixedOffset, NaiveDateTime, Utc};
 use rbdc::datetime::DateTime;
-use rbdc::{Error};
+use rbdc::Error;
 use rbs::Value;
 use tiberius::numeric::BigDecimal;
 use tiberius::ColumnData;
@@ -46,7 +46,7 @@ impl Decode for Value {
             },
             ColumnData::Guid(v) => match v {
                 None => Value::Null,
-                Some(v) => todo!()//Value::from(TV::new("Uuid",Value::from(v.to_string()))),
+                Some(v) => Value::from(Value::from(v.to_string())),
             },
             ColumnData::Binary(v) => match v {
                 None => Value::Null,
@@ -59,7 +59,7 @@ impl Decode for Value {
                     match v {
                         Ok(v) => match v {
                             None => Value::Null,
-                            Some(v) => todo!()//Value::from(TV::new("Decimal",Value::String(v.to_string()))),
+                            Some(v) => Value::from(Value::String(v.to_string())),
                         },
                         Err(e) => {
                             return Err(Error::from(e.to_string()));
@@ -69,7 +69,7 @@ impl Decode for Value {
             },
             ColumnData::Xml(v) => match v {
                 None => Value::Null,
-                Some(v) => todo!()//Value::from(TV::new("Xml",Value::String(v.to_string()))),
+                Some(v) => Value::from(Value::String(v.to_string())),
             },
             ColumnData::DateTime(v) => match v {
                 None => Value::Null,
@@ -115,7 +115,7 @@ impl Decode for Value {
                     match v {
                         Ok(v) => match v {
                             None => Value::Null,
-                            Some(v) => todo!()//Value::from(TV::new("Time",Value::String(v.to_string()))),
+                            Some(v) => Value::from(Value::String(v.to_string())),
                         },
                         Err(e) => {
                             return Err(Error::from(e.to_string()));
@@ -131,7 +131,7 @@ impl Decode for Value {
                     match v {
                         Ok(v) => match v {
                             None => Value::Null,
-                            Some(v) => todo!()//Value::from(TV::new("Date",Value::String(v.to_string()))),
+                            Some(v) => Value::from(Value::String(v.to_string())),
                         },
                         Err(e) => {
                             return Err(Error::from(e.to_string()));

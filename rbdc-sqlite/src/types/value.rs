@@ -1,22 +1,20 @@
-use std::ops::Index;
 use crate::decode::Decode;
 use crate::encode::{Encode, IsNull};
 use crate::type_info::DataType;
 use crate::{SqliteArgumentValue, SqliteValue};
-use rbdc::{Error, RBDCString};
 use rbdc::date::Date;
 use rbdc::datetime::DateTime;
 use rbdc::decimal::Decimal;
-use rbdc::json::Json;
 use rbdc::timestamp::Timestamp;
 use rbdc::types::time::Time;
 use rbdc::uuid::Uuid;
+use rbdc::{Error, RBDCString};
 use rbs::Value;
 
 impl Decode for Value {
     fn decode(value: SqliteValue) -> Result<Self, Error>
-        where
-            Self: Sized,
+    where
+        Self: Sized,
     {
         if value.type_info_opt().is_none() {
             return Ok(Value::Null);

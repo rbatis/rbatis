@@ -8,8 +8,8 @@ use std::ops::{Deref, DerefMut, Index, IndexMut};
 use std::vec::IntoIter;
 
 #[derive(PartialEq)]
-pub struct ValueMap{
-    pub inner:Vec<(Value, Value)>
+pub struct ValueMap {
+    pub inner: Vec<(Value, Value)>,
 }
 
 impl serde::Serialize for ValueMap {
@@ -59,7 +59,7 @@ impl<'de> serde::Deserialize<'de> for ValueMap {
 
 impl Clone for ValueMap {
     fn clone(&self) -> Self {
-        Self{
+        Self {
             inner: self.inner.clone(),
         }
     }
@@ -92,13 +92,11 @@ impl Display for ValueMap {
 
 impl ValueMap {
     pub fn new() -> Self {
-        ValueMap{
-            inner:vec![]
-        }
+        ValueMap { inner: vec![] }
     }
     pub fn with_capacity(n: usize) -> Self {
-        ValueMap{
-            inner:Vec::with_capacity(n)
+        ValueMap {
+            inner: Vec::with_capacity(n),
         }
     }
     pub fn insert(&mut self, k: Value, v: Value) {
@@ -283,11 +281,9 @@ impl IntoIterator for ValueMap {
     }
 }
 
-impl From<Vec<(Value,Value)>> for ValueMap{
+impl From<Vec<(Value, Value)>> for ValueMap {
     fn from(value: Vec<(Value, Value)>) -> Self {
-        Self{
-            inner: value,
-        }
+        Self { inner: value }
     }
 }
 

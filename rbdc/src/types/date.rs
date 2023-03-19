@@ -18,7 +18,10 @@ impl RBDCString for Date {
         if is != "" {
             return Ok(Self::from_str(arg.trim_end_matches(Self::ends_name()))?);
         }
-        Err(crate::Error::E(format!("warn type decode :{}",Self::ends_name())))
+        Err(crate::Error::E(format!(
+            "warn type decode :{}",
+            Self::ends_name()
+        )))
     }
 }
 
@@ -31,7 +34,10 @@ impl Deref for Date {
 }
 
 impl serde::Serialize for Date {
-    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error> where S: Serializer {
+    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
+    where
+        S: Serializer,
+    {
         if std::any::type_name::<S>() == std::any::type_name::<rbs::Serializer>() {
             let mut s = self.0.to_string();
             s.push_str(Date::ends_name());
@@ -44,8 +50,8 @@ impl serde::Serialize for Date {
 
 impl<'de> serde::Deserialize<'de> for Date {
     fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
-        where
-            D: Deserializer<'de>,
+    where
+        D: Deserializer<'de>,
     {
         if std::any::type_name::<D>() == std::any::type_name::<rbs::Serializer>() {
             use serde::de::Error;
@@ -83,7 +89,10 @@ impl Debug for Date {
 impl From<Date> for Value {
     fn from(arg: Date) -> Self {
         Value::Map(rbs::value::map::ValueMap {
-            inner: vec![("type".into(), "Date".into()), ("value".into(), to_value!(arg.0))],
+            inner: vec![
+                ("type".into(), "Date".into()),
+                ("value".into(), to_value!(arg.0)),
+            ],
         })
     }
 }
@@ -104,9 +113,9 @@ impl FromStr for Date {
 
 #[cfg(test)]
 mod test {
-    use rbs::{from_value, to_value};
     use crate::date::Date;
     use crate::RBDCString;
+    use rbs::{from_value, to_value};
 
     #[test]
     fn test_date() {

@@ -3,8 +3,8 @@ extern crate rbatis;
 
 pub mod model;
 
-use serde_json::json;
 use model::*;
+use serde_json::json;
 
 use rbatis::executor::Executor;
 use rbatis::rbdc::datetime::DateTime;

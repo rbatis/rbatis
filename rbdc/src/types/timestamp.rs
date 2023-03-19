@@ -18,12 +18,18 @@ impl RBDCString for Timestamp {
         if is != "" {
             return Ok(Self::from_str(arg.trim_end_matches(Self::ends_name()))?);
         }
-        Err(crate::Error::E(format!("warn type decode :{}",Self::ends_name())))
+        Err(crate::Error::E(format!(
+            "warn type decode :{}",
+            Self::ends_name()
+        )))
     }
 }
 
 impl serde::Serialize for Timestamp {
-    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error> where S: Serializer {
+    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
+    where
+        S: Serializer,
+    {
         if std::any::type_name::<S>() == std::any::type_name::<rbs::Serializer>() {
             let mut s = self.0.to_string();
             s.push_str(Self::ends_name());
@@ -36,8 +42,8 @@ impl serde::Serialize for Timestamp {
 
 impl<'de> serde::Deserialize<'de> for Timestamp {
     fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
-        where
-            D: Deserializer<'de>,
+    where
+        D: Deserializer<'de>,
     {
         use serde::de::Error;
         let mut value = Value::deserialize(deserializer)?;
@@ -45,17 +51,19 @@ impl<'de> serde::Deserialize<'de> for Timestamp {
             Value::String(v) => {
                 if std::any::type_name::<D>() == std::any::type_name::<rbs::Serializer>() {
                     Timestamp::trim_ends_match(v);
-                    let time: u64 = v.parse().map_err(|e| D::Error::custom(&format!("warn type decode Timestamp:{}", e)))?;
+                    let time: u64 = v.parse().map_err(|e| {
+                        D::Error::custom(&format!("warn type decode Timestamp:{}", e))
+                    })?;
                     Ok(Self::from(time))
                 } else {
-                    let time: u64 = v.parse().map_err(|e| D::Error::custom(&format!("warn type decode Timestamp:{}", e)))?;
+                    let time: u64 = v.parse().map_err(|e| {
+                        D::Error::custom(&format!("warn type decode Timestamp:{}", e))
+                    })?;
                     Ok(Self::from(time))
                 }
             }
-            Value::U64(v) => {
-                Ok(Self::from(*v))
-            }
-            _ => {Err(D::Error::custom(&format!("warn type decode Timestamp")))}
+            Value::U64(v) => Ok(Self::from(*v)),
+            _ => Err(D::Error::custom(&format!("warn type decode Timestamp"))),
         }
     }
 }

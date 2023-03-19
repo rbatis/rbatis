@@ -3,10 +3,10 @@ extern crate rbatis;
 
 pub mod model;
 
-use serde_json::json;
 use model::*;
 use rbatis::rbdc::datetime::DateTime;
 use rbatis::sql::PageRequest;
+use serde_json::json;
 
 htmlsql_select_page!(select_page_data2(name: &str, dt: &DateTime) -> BizActivity => r#"<select id="select_page_data">
         `select `

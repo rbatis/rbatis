@@ -14,7 +14,8 @@ impl Encode for Json {
 }
 impl Decode for Json {
     fn decode(value: MySqlValue) -> Result<Self, Error> {
-        let js=serde_json::from_str(value.as_str().unwrap_or("null")).unwrap_or(serde_json::Value::Null);
+        let js = serde_json::from_str(value.as_str().unwrap_or("null"))
+            .unwrap_or(serde_json::Value::Null);
         Ok(Self::from(js))
     }
 }

@@ -1,8 +1,8 @@
 #[cfg(test)]
 mod test {
-    use std::str::FromStr;
     use rbs::value::map::ValueMap;
     use rbs::{value_map, Value};
+    use std::str::FromStr;
 
     #[test]
     fn test_decode_value() {
@@ -33,7 +33,7 @@ mod test {
             m.insert(Value::String("a".to_string()), Value::I64(1));
             m
         })]))
-            .unwrap();
+        .unwrap();
         assert_eq!(v, 1);
     }
 
@@ -44,7 +44,7 @@ mod test {
             m.insert(Value::String("a".to_string()), Value::I64(1));
             m
         })]))
-            .unwrap();
+        .unwrap();
         assert_eq!(v, 1i64);
     }
 
@@ -71,7 +71,8 @@ mod test {
         assert_eq!(date, date_new);
 
         let datetime = datetime::DateTime::from_str("2023-12-12 12-12-12").unwrap();
-        let datetime_new: datetime::DateTime = rbs::from_value(rbs::to_value!(datetime.clone())).unwrap();
+        let datetime_new: datetime::DateTime =
+            rbs::from_value(rbs::to_value!(datetime.clone())).unwrap();
         assert_eq!(datetime, datetime_new);
     }
 }

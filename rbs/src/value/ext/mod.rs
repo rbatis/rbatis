@@ -13,13 +13,13 @@ mod se;
 pub use se::Serializer;
 pub type Deserializer = Value;
 /// ser ref Error
-#[derive(Debug,Eq, PartialEq)]
+#[derive(Debug, Eq, PartialEq)]
 pub enum Error {
     /// Syntax
     Syntax(String),
 }
 
-impl From<&str> for Error{
+impl From<&str> for Error {
     fn from(value: &str) -> Self {
         Error::Syntax(value.to_string())
     }

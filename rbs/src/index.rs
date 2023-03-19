@@ -55,7 +55,6 @@ impl IndexMut<&str> for Value {
     }
 }
 
-
 impl Index<Value> for Value {
     type Output = Value;
 
@@ -69,9 +68,7 @@ impl Index<Value> for Value {
                 let index = index.unwrap_or_default() as usize;
                 &v[index]
             }
-            Value::Map(v) => {
-                &v[index]
-            }
+            Value::Map(v) => &v[index],
             _ => {
                 panic!("not have index={}", index)
             }
@@ -90,9 +87,7 @@ impl IndexMut<Value> for Value {
                 let index = index.unwrap_or_default() as usize;
                 &mut v[index]
             }
-            Value::Map(v) => {
-                &mut v[index]
-            }
+            Value::Map(v) => &mut v[index],
             _ => {
                 panic!("not have index={}", index)
             }
@@ -113,9 +108,7 @@ impl Index<&Value> for Value {
                 let index = index.unwrap_or_default() as usize;
                 &v[index]
             }
-            Value::Map(v) => {
-                &v[index]
-            }
+            Value::Map(v) => &v[index],
             _ => {
                 panic!("not have index={}", index)
             }
@@ -134,9 +127,7 @@ impl IndexMut<&Value> for Value {
                 let index = index.unwrap_or_default() as usize;
                 &mut v[index]
             }
-            Value::Map(v) => {
-                &mut v[index]
-            }
+            Value::Map(v) => &mut v[index],
             _ => {
                 panic!("not have index={}", index)
             }

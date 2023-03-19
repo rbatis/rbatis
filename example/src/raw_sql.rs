@@ -1,8 +1,8 @@
 pub mod model;
 
-use serde_json::json;
 use crate::model::{init_db, BizActivity};
 use rbs::to_value;
+use serde_json::json;
 
 #[tokio::main]
 pub async fn main() {

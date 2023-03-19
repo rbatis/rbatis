@@ -1,7 +1,7 @@
 use crate::ops::AsProxy;
 use crate::ops::Div;
-use rbs::Value;
 use rbs::value::util::to_number;
+use rbs::Value;
 
 fn op_div_u64(value: &Value, other: u64) -> u64 {
     if other == 0 {
@@ -256,8 +256,7 @@ div_self!([u8 u16 u32 u64]);
 div_self!([i8 i16 i32 i64 isize]);
 div_self!([f32 f64]);
 
-
-impl Div<&str> for Value{
+impl Div<&str> for Value {
     type Output = f64;
 
     fn op_div(self, rhs: &str) -> Self::Output {
@@ -265,7 +264,7 @@ impl Div<&str> for Value{
     }
 }
 
-impl Div<Value> for &str{
+impl Div<Value> for &str {
     type Output = f64;
 
     fn op_div(self, rhs: Value) -> Self::Output {

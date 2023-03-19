@@ -1,5 +1,10 @@
-use std::ops::Index;
-use rbdc::Error;
+use rbdc::date::Date;
+use rbdc::datetime::DateTime;
+use rbdc::decimal::Decimal;
+use rbdc::json::Json;
+use rbdc::timestamp::Timestamp;
+use rbdc::types::time::Time;
+use rbdc::{Error, RBDCString};
 use rbs::Value;
 use std::str::FromStr;
 use tiberius::numeric::BigDecimal;
@@ -44,71 +49,58 @@ impl Encode for Value {
                 q.bind(v);
                 Ok(())
             }
-            Value::String(v) => {
-                q.bind(v);
-                Ok(())
+            Value::String(mut v) => {
+                if Date::is(&v) != "" {
+                    Date::trim_ends_match(&mut v);
+                    q.bind(
+                        chrono::NaiveDate::from_str(&v).map_err(|e| Error::from(e.to_string()))?,
+                    );
+                    Ok(())
+                } else if DateTime::is(&v) != "" {
+                    DateTime::trim_ends_match(&mut v);
+                    if v.len() > 10 {
+                        v.replace_range(10..11, "T");
+                    }
+                    q.bind(
+                        chrono::NaiveDateTime::from_str(&v)
+                            .map_err(|e| Error::from(e.to_string()))?,
+                    );
+                    Ok(())
+                } else if Time::is(&v) != "" {
+                    Time::trim_ends_match(&mut v);
+                    q.bind(
+                        chrono::NaiveTime::from_str(&v).map_err(|e| Error::from(e.to_string()))?,
+                    );
+                    Ok(())
+                } else if Timestamp::is(&v) != "" {
+                    Timestamp::trim_ends_match(&mut v);
+                    let ts = Timestamp::decode_str(v.as_str())?;
+                    q.bind(ts.0 as i64);
+                    Ok(())
+                } else if Decimal::is(&v) != "" {
+                    Decimal::trim_ends_match(&mut v);
+                    q.bind(BigDecimal::from_str(&v).map_err(|e| Error::from(e.to_string()))?);
+                    Ok(())
+                } else if rbdc::types::uuid::Uuid::is(&v) != "" {
+                    rbdc::types::uuid::Uuid::trim_ends_match(&mut v);
+                    q.bind(Uuid::from_str(&v).unwrap_or_default());
+                    Ok(())
+                } else {
+                    q.bind(v);
+                    Ok(())
+                }
             }
             Value::Binary(v) => {
                 q.bind(v);
                 Ok(())
             }
-            Value::Array(_) => Err(Error::from("unimplemented")),
+            Value::Array(arr) => {
+                q.bind(Json::from(Value::Array(arr)).0.to_string());
+                Ok(())
+            }
             Value::Map(m) => {
-                //TODO change to String
-                let v = m.index("value");
-                let t = m.index("type").as_str().unwrap_or_default();
-                if t != "" {
-                    match t {
-                        "Date" => {
-                            q.bind(
-                                chrono::NaiveDate::from_str(v.as_str().unwrap_or_default())
-                                    .map_err(|e| Error::from(e.to_string()))?,
-                            );
-                            Ok(())
-                        }
-                        "DateTime" => {
-                            let mut s = v.as_str().unwrap_or_default().to_string();
-                            if s.len() > 10 {
-                                s.replace_range(10..11, "T");
-                            }
-                            q.bind(
-                                chrono::NaiveDateTime::from_str(&s)
-                                    .map_err(|e| Error::from(e.to_string()))?,
-                            );
-                            Ok(())
-                        }
-                        "Time" => {
-                            q.bind(
-                                chrono::NaiveTime::from_str(v.as_str().unwrap_or_default())
-                                    .map_err(|e| Error::from(e.to_string()))?,
-                            );
-                            Ok(())
-                        }
-                        "Decimal" => {
-                            q.bind(
-                                BigDecimal::from_str(&v.clone().into_string().unwrap_or_default())
-                                    .map_err(|e| Error::from(e.to_string()))?,
-                            );
-                            Ok(())
-                        }
-                        "Json" => Err(Error::from("unimplemented")),
-                        "Timestamp" => {
-                            q.bind(v.as_u64().unwrap_or_default() as i64);
-                            Ok(())
-                        }
-                        "Uuid" => {
-                            q.bind(
-                                Uuid::from_str(&v.clone().into_string().unwrap_or_default()).unwrap_or_default(),
-                            );
-                            Ok(())
-                        }
-                        _ => {
-                            Err(Error::from("unimplemented"))
-                        }
-                    }
-                }else{
-                    Err(Error::from("unimplemented"))
-                }
+                q.bind(Json::from(Value::Map(m)).0.to_string());
+                Ok(())
             }
         }
     }

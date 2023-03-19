@@ -1,4 +1,4 @@
-use crate::{Error};
+use crate::Error;
 use rbs::{to_value, Value};
 use serde::{Deserializer, Serializer};
 use std::fmt::{Debug, Display, Formatter};
@@ -7,8 +7,11 @@ use std::str::FromStr;
 #[derive(Clone, Eq, PartialEq)]
 pub struct Json(pub serde_json::Value);
 
-impl serde::Serialize for Json{
-    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error> where S: Serializer {
+impl serde::Serialize for Json {
+    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
+    where
+        S: Serializer,
+    {
         self.0.serialize(serializer)
     }
 }
@@ -57,10 +60,7 @@ impl From<Value> for Json {
             Value::Map(m) => Json::from({
                 let mut datas = serde_json::Map::with_capacity(m.len());
                 for (k, v) in m {
-                    datas.insert(
-                        k.as_str().unwrap_or_default().to_string(),
-                        Json::from(v).0,
-                    );
+                    datas.insert(k.as_str().unwrap_or_default().to_string(), Json::from(v).0);
                 }
                 serde_json::Value::Object(datas)
             }),

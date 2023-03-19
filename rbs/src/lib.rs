@@ -7,10 +7,10 @@ pub mod index;
 pub mod value;
 
 pub use crate::value::ext::Error;
+pub use crate::value::ext::{Deserializer, Serializer};
 pub use value::ext::{deserialize_from, from_value};
 pub use value::ext::{to_value, to_value_def};
 pub use value::Value;
-pub use crate::value::ext::{Serializer,Deserializer};
 
 impl Value {
     pub fn is_empty(&self) -> bool {

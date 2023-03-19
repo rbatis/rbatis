@@ -3,11 +3,11 @@ extern crate rbatis;
 
 pub mod model;
 
-use serde_json::json;
-use rbatis::rbdc::datetime::DateTime;
 use crate::model::{init_db, BizActivity};
+use rbatis::rbdc::datetime::DateTime;
 use rbatis::sql::page::PageRequest;
 use rbs::{to_value, Value};
+use serde_json::json;
 
 //crud!(BizActivity {},"biz_activity");//custom table name
 //impl_select!(BizActivity{select_all_by_id(table_name:&str,id:&str) => "`where id = #{id}`"}); //custom table name
@@ -99,10 +99,15 @@ pub async fn main() {
     let data = BizActivity::select_in_column(&mut rb, "id", &["1", "2", "3"]).await;
     println!("select_in_column = {}", json!(data));
 
-    let data = BizActivity::select_by_method(&mut rb, &["1", "2"], to_value!{
-        "id = ": 1,
-        "and id != ":2,
-    }).await;
+    let data = BizActivity::select_by_method(
+        &mut rb,
+        &["1", "2"],
+        to_value! {
+            "id = ": 1,
+            "and id != ":2,
+        },
+    )
+    .await;
     println!("select_by_method = {}", json!(data));
 
     let data = BizActivity::delete_in_column(&mut rb, "id", &["1", "2", "3"]).await;
