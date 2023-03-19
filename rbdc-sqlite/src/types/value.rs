@@ -70,28 +70,28 @@ impl Encode for Value {
                 Ok(IsNull::No)
             }
             Value::String(mut v) => {
-                if Date::is(&v) != "" {
+                if Date::is(&v) != "" || v.ends_with("Date"){
                     Date::trim_ends_match(&mut v);
                     v.encode(args)?;
                     Ok(IsNull::No)
-                } else if DateTime::is(&v) != "" {
+                } else if DateTime::is(&v) != "" || v.ends_with("DateTime") {
                     DateTime::trim_ends_match(&mut v);
                     v.encode(args)?;
                     Ok(IsNull::No)
-                } else if Time::is(&v) != "" {
+                } else if Time::is(&v) != "" || v.ends_with("Time"){
                     Time::trim_ends_match(&mut v);
                     v.encode(args)?;
                     Ok(IsNull::No)
-                } else if Timestamp::is(&v) != "" {
+                } else if Timestamp::is(&v) != "" || v.ends_with("Timestamp") {
                     Timestamp::trim_ends_match(&mut v);
                     let ts = Timestamp::decode_str(v.as_str())?;
                     (ts.0 as i64).encode(args)?;
                     Ok(IsNull::No)
-                } else if Decimal::is(&v) != "" {
+                } else if Decimal::is(&v) != "" || v.ends_with("Decimal") {
                     Decimal::trim_ends_match(&mut v);
                     v.encode(args)?;
                     Ok(IsNull::No)
-                } else if Uuid::is(&v) != "" {
+                } else if Uuid::is(&v) != "" || v.ends_with("Uuid") {
                     Uuid::trim_ends_match(&mut v);
                     v.encode(args)?;
                     Ok(IsNull::No)

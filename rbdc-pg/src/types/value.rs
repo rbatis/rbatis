@@ -35,17 +35,17 @@ impl TypeInfo for Value {
             Value::F64(_) => PgTypeInfo::FLOAT8,
             Value::String(v) => {
                 let t = {
-                    if Date::is(&v) != "" {
+                    if Date::is(&v) != "" || v.ends_with("Date") {
                         "Date"
-                    } else if DateTime::is(&v) != "" {
+                    } else if DateTime::is(&v) != "" || v.ends_with("DateTime") {
                         "DateTime"
-                    } else if Time::is(&v) != "" {
+                    } else if Time::is(&v) != "" || v.ends_with("Time") {
                         "Time"
-                    } else if Timestamp::is(&v) != "" {
+                    } else if Timestamp::is(&v) != "" || v.ends_with("Timestamp") {
                         "Timestamp"
-                    } else if Decimal::is(&v) != "" {
+                    } else if Decimal::is(&v) != "" || v.ends_with("Decimal") {
                         "Decimal"
-                    } else if Uuid::is(&v) != "" {
+                    } else if Uuid::is(&v) != "" || v.ends_with("Uuid") {
                         "Uuid"
                     } else if v.ends_with("Bytea") {
                         "Bytea"
@@ -542,17 +542,17 @@ impl Encode for Value {
             Value::F64(v) => v.encode(buf)?,
             Value::String(v) => {
                 let mut r = "";
-                if v.ends_with("Uuid") {
+                if v.ends_with(Uuid::ends_name()) || v.ends_with("Uuid") {
                     r = "Uuid";
-                } else if v.ends_with("Decimal") {
+                } else if v.ends_with(Decimal::ends_name()) || v.ends_with("Decimal") {
                     r = "Decimal";
-                } else if v.ends_with("Date") {
+                } else if v.ends_with(Date::ends_name()) || v.ends_with("Date") {
                     r = "Date";
-                } else if v.ends_with("Time") {
+                } else if v.ends_with(Time::ends_name()) || v.ends_with("Time") {
                     r = "Time";
-                } else if v.ends_with("Timestamp") {
+                } else if v.ends_with(Timestamp::ends_name()) || v.ends_with("Timestamp") {
                     r = "Timestamp";
-                } else if v.ends_with("DateTime") {
+                } else if v.ends_with(DateTime::ends_name()) || v.ends_with("DateTime") {
                     r = "DateTime";
                 } else if v.ends_with("Bytea") {
                     r = "Bytea";
