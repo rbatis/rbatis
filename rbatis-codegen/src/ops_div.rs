@@ -1,7 +1,7 @@
 use crate::ops::AsProxy;
 use crate::ops::Div;
 use rbs::Value;
-use rbs::value::util::extract_number;
+use rbs::value::util::to_number;
 
 fn op_div_u64(value: &Value, other: u64) -> u64 {
     if other == 0 {
@@ -173,7 +173,7 @@ fn op_div_value(left: Value, rhs: Value) -> Value {
             if rhs == 0.0 {
                 return Value::F64(0.0);
             }
-            Value::F64(extract_number(l) / rhs)
+            Value::F64(to_number(l) / rhs)
         }
         _ => Value::Null,
     }
@@ -261,7 +261,7 @@ impl Div<&str> for Value{
     type Output = f64;
 
     fn op_div(self, rhs: &str) -> Self::Output {
-        self.f64() / extract_number(rhs)
+        self.f64() / to_number(rhs)
     }
 }
 
@@ -269,6 +269,6 @@ impl Div<Value> for &str{
     type Output = f64;
 
     fn op_div(self, rhs: Value) -> Self::Output {
-        extract_number(self) / rhs.f64()
+        to_number(self) / rhs.f64()
     }
 }
