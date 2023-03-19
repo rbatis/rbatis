@@ -7,6 +7,7 @@ use crate::protocol::Capabilities;
 use bytes::buf::Buf;
 use bytes::Bytes;
 use rbdc::{err_protocol, Error};
+use crate::protocol::auth::AuthPlugin;
 
 impl MySqlConnection {
     pub(crate) async fn establish(options: &MySqlConnectOptions) -> Result<Self, Error> {
@@ -63,7 +64,16 @@ impl MySqlConnection {
         let auth_response = if let (Some(plugin), Some(password)) = (plugin, &options.password) {
             Some(plugin.scramble(&mut stream, password, &nonce).await?)
         } else {
-            None
+            //mysql < 5.5.0 version only use MySqlNativePassword
+            if server_version_major < 5 || (server_version_major == 5 && server_version_minor < 5) {
+                if let Some(password) = &options.password {
+                    Some(AuthPlugin::MySqlNativePassword.scramble(&mut stream, password, &nonce).await?)
+                } else {
+                    None
+                }
+            } else {
+                None
+            }
         };
 
         stream.write_packet(HandshakeResponse {
@@ -112,7 +122,7 @@ impl MySqlConnection {
                             break;
                         }
 
-                    // plugin signaled to continue authentication
+                        // plugin signaled to continue authentication
                     } else {
                         return Err(err_protocol!(
                             "unexpected packet 0x{:02x} during authentication",
