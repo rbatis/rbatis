@@ -15,7 +15,7 @@ should impl trait and load driver
 
 
 
-### rbs Serialize rbc::types value
+### rbs Serialize `rbdc::types` 
 
 | type       | value                          |
 |------------|--------------------------------|
@@ -28,7 +28,7 @@ should impl trait and load driver
 | Timestamp  | "202203020302TS"               |
 | Uuid       | "1234-1234-1234-1234-1222UUID" |
 
-### other crates Serialize rbc::types value
+### other crates Serialize `rbdc::types`
 
 | type       | value                      |
 |------------|----------------------------|
