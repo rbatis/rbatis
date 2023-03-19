@@ -10,7 +10,7 @@ pub struct Uuid(pub String);
 
 impl RBDCString for Uuid {
     fn ends_name() -> &'static str {
-        "TS"
+        "UUID"
     }
 
     fn decode_str(arg: &str) -> Result<Self, crate::Error> {
