@@ -651,7 +651,7 @@ impl Encode for Value {
                 }
             }
             Value::Binary(v) => v.encode(buf)?,
-            Value::Array(v) => v.encode(buf)?,
+            Value::Array(v) =>  rbdc::types::json::Json::from(Value::Array(v)).encode(buf)?,
             Value::Map(m) => rbdc::types::json::Json::from(Value::Map(m)).encode(buf)?,
         })
     }
