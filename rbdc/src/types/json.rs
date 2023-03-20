@@ -4,6 +4,7 @@ use serde::{Deserializer, Serializer};
 use std::fmt::{Debug, Display, Formatter};
 use std::str::FromStr;
 
+/// Json(Value) Value must be Map/Array json object
 #[derive(Clone, Eq, PartialEq)]
 pub struct Json(pub serde_json::Value);
 
