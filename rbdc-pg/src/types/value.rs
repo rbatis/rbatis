@@ -206,14 +206,15 @@ impl TypeInfo for Value {
             }
             Value::Binary(_) => PgTypeInfo::BYTEA_ARRAY,
             Value::Array(arr) => {
-                if arr.len() == 0 {
-                    return PgTypeInfo::UNKNOWN;
-                }
-                arr[0]
-                    .type_info()
-                    .clone()
-                    .to_array_type()
-                    .unwrap_or(PgTypeInfo::UNKNOWN)
+                // if arr.len() == 0 {
+                //     return PgTypeInfo::UNKNOWN;
+                // }
+                // arr[0]
+                //     .type_info()
+                //     .clone()
+                //     .to_array_type()
+                //     .unwrap_or(PgTypeInfo::UNKNOWN)
+                PgTypeInfo::JSON
             }
             Value::Map(_) => PgTypeInfo::JSON,
         }
