@@ -88,12 +88,7 @@ impl Debug for Date {
 
 impl From<Date> for Value {
     fn from(arg: Date) -> Self {
-        Value::Map(rbs::value::map::ValueMap {
-            inner: vec![
-                ("type".into(), "Date".into()),
-                ("value".into(), to_value!(arg.0)),
-            ],
-        })
+        to_value!(arg)
     }
 }
 
