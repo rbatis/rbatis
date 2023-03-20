@@ -78,7 +78,7 @@ impl<'de> Deserialize<'de> for DateTime {
                 u as i64,
             ))),
             Value::String(mut v) => Ok({
-                if std::any::type_name::<D>() == std::any::type_name::<rbs::Serializer>() {
+                if std::any::type_name::<D>() == std::any::type_name::<rbs::Deserializer>() {
                     DateTime::trim_ends_match(&mut v);
                     DateTime::from(
                         fastdate::DateTime::from_str(&v)

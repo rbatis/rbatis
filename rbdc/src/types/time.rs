@@ -44,7 +44,7 @@ impl<'de> serde::Deserialize<'de> for Time {
     where
         D: serde::Deserializer<'de>,
     {
-        if std::any::type_name::<D>() == std::any::type_name::<rbs::Serializer>() {
+        if std::any::type_name::<D>() == std::any::type_name::<rbs::Deserializer>() {
             use serde::de::Error;
             let mut value = Value::deserialize(deserializer)?;
             match &mut value {
