@@ -209,12 +209,7 @@ impl FromStr for DateTime {
 
 impl From<DateTime> for Value {
     fn from(arg: DateTime) -> Self {
-        Value::Map(rbs::value::map::ValueMap {
-            inner: vec![
-                ("type".into(), "DateTime".into()),
-                ("value".into(), to_value!(arg.0)),
-            ],
-        })
+        to_value!(arg)
     }
 }
 
