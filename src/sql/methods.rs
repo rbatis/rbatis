@@ -1,4 +1,11 @@
 use rbatis_codegen::ops::AsProxy;
+use rbdc::common::time::Time;
+use rbdc::date::Date;
+use rbdc::datetime::DateTime;
+use rbdc::decimal::Decimal;
+use rbdc::RBDCString;
+use rbdc::timestamp::Timestamp;
+use rbdc::uuid::Uuid;
 use rbs::Value;
 
 pub trait IntoSql {
@@ -47,9 +54,34 @@ impl IntoSql for Value {
             x => {
                 if x.is_str() {
                     let mut sql = String::new();
-                    sql.push_str("'");
-                    sql.push_str(x.str());
-                    sql.push_str("'");
+                    if Date::is(&v) != "" {
+                        sql.push_str("'");
+                        sql.push_str(x.str().trim_end_matches(Date::ends_name()));
+                        sql.push_str("'");
+                    } else if DateTime::is(&v) != "" {
+                        sql.push_str("'");
+                        sql.push_str(x.str().trim_end_matches(DateTime::ends_name()));
+                        sql.push_str("'");
+                    } else if Time::is(&v) != "" {
+                        sql.push_str("'");
+                        sql.push_str(x.str().trim_end_matches(Time::ends_name()));
+                        sql.push_str("'");
+                    } else if Timestamp::is(&v) != "" {
+                        //timestamp is u64 type,do not add ''
+                        sql.push_str(x.str().trim_end_matches(Timestamp::ends_name()));
+                    } else if Decimal::is(&v) != "" {
+                        sql.push_str("'");
+                        sql.push_str(x.str().trim_end_matches(Decimal::ends_name()));
+                        sql.push_str("'");
+                    } else if Uuid::is(&v) != "" {
+                        sql.push_str("'");
+                        sql.push_str(x.str().trim_end_matches(Uuid::ends_name()));
+                        sql.push_str("'");
+                    } else {
+                        sql.push_str("'");
+                        sql.push_str(x.str());
+                        sql.push_str("'");
+                    }
                     Value::String(sql)
                 } else {
                     Value::String(x.string_sql())
