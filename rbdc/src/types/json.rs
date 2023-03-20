@@ -70,14 +70,14 @@ impl From<Value> for Json {
     fn from(v: Value) -> Self {
         match v {
             Value::Null => Json::from(serde_json::Value::Null),
-            Value::Bool(v) => Json::from(serde_json::json!(v)),
-            Value::I32(v) => Json::from(serde_json::json!(v)),
-            Value::I64(v) => Json::from(serde_json::json!(v)),
-            Value::U32(v) => Json::from(serde_json::json!(v)),
-            Value::U64(v) => Json::from(serde_json::json!(v)),
-            Value::F32(v) => Json::from(serde_json::json!(v)),
-            Value::F64(v) => Json::from(serde_json::json!(v)),
-            Value::String(v) => Json::from(serde_json::json!(v)),
+            Value::Bool(v) => Json::from(serde_json::Value::Bool(v)),
+            Value::I32(v) => Json::from(serde_json::Value::Number(serde_json::Number::from(v))),
+            Value::I64(v) => Json::from(serde_json::Value::Number(serde_json::Number::from(v))),
+            Value::U32(v) => Json::from(serde_json::Value::Number(serde_json::Number::from(v))),
+            Value::U64(v) => Json::from(serde_json::Value::Number(serde_json::Number::from(v))),
+            Value::F32(v) => Json::from(serde_json::Value::Number(serde_json::Number::from_f64(v as f64).unwrap())),
+            Value::F64(v) => Json::from(serde_json::Value::Number(serde_json::Number::from_f64(v).unwrap())),
+            Value::String(v) => Json::from(serde_json::Value::String(v)),
             Value::Binary(v) => Json::from(serde_json::json!(v)),
             Value::Array(v) => Json::from({
                 let mut datas = Vec::<serde_json::Value>::with_capacity(v.len());
@@ -94,7 +94,7 @@ impl From<Value> for Json {
                         datas.insert(k.into_string().unwrap_or_default(), Json::from(v).0);
                     }
                     Json::from(serde_json::Value::Object(datas))
-                }else{
+                } else {
                     Json::from(v)
                 }
             }),
