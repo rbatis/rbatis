@@ -3,26 +3,54 @@ use rbs::{to_value, Value};
 use serde::{Deserializer, Serializer};
 use std::fmt::{Debug, Display, Formatter};
 use std::str::FromStr;
+use serde::ser::SerializeMap;
 
 /// Json(Value) Value must be Map/Array json object
 #[derive(Clone, Eq, PartialEq)]
 pub struct Json(pub serde_json::Value);
 
+
 impl serde::Serialize for Json {
     fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
-    where
-        S: Serializer,
+        where
+            S: Serializer,
     {
-        self.0.serialize(serializer)
+        if std::any::type_name::<S>() == std::any::type_name::<rbs::Serializer>() {
+            let mut m = serializer.serialize_map(Some(1))?;
+            m.serialize_key("inner")?;
+            m.serialize_value(&self.0)?;
+            m.end()
+        } else {
+            self.0.serialize(serializer)
+        }
     }
 }
 
 impl<'de> serde::Deserialize<'de> for Json {
     fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
-    where
-        D: Deserializer<'de>,
+        where
+            D: Deserializer<'de>,
     {
-        Ok(Json::from(serde_json::Value::deserialize(deserializer)?))
+        if std::any::type_name::<D>() == std::any::type_name::<rbs::Deserializer>() {
+            let v = serde_json::Value::deserialize(deserializer)?;
+            match v {
+                serde_json::Value::Object(mut m) => {
+                    match m.remove("inner") {
+                        None => {
+                            Ok(Json::from(serde_json::Value::Object(m)))
+                        }
+                        Some(v) => {
+                            Ok(Json::from(v))
+                        }
+                    }
+                }
+                _ => {
+                    Ok(Json::from(v))
+                }
+            }
+        } else {
+            Ok(Json::from(serde_json::Value::deserialize(deserializer)?))
+        }
     }
 }
 
