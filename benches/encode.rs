@@ -11,3 +11,14 @@ fn bench_rbs_encode(b: &mut Bencher) {
         rbs::to_value!(&v);
     });
 }
+
+#[bench]
+fn bench_rbs_from(b: &mut Bencher) {
+    let v = rbs::to_value!{
+        "a":1,
+        "b":2,
+    };
+    b.iter(|| {
+        let _ = rbdc::types::json::Json::from(v.clone());
+    });
+}
