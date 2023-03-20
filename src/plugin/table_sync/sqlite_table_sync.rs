@@ -1,5 +1,4 @@
 use crate::table_sync::TableSync;
-use crate::Error;
 use futures_core::future::BoxFuture;
 use rbs::Value;
 use std::ops::Index;
@@ -10,6 +9,7 @@ use rbdc::{Error, RBDCString};
 use rbdc::timestamp::Timestamp;
 use rbdc::types::time::Time;
 use rbdc::uuid::Uuid;
+use crate::executor::RBatisConnExecutor;
 
 pub struct SqliteTableSync {
     pub sql_id: String,
