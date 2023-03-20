@@ -1,7 +1,6 @@
 use crate::table_sync::TableSync;
 use futures_core::future::BoxFuture;
 use rbs::Value;
-use std::ops::Index;
 use rbdc::date::Date;
 use rbdc::datetime::DateTime;
 use rbdc::decimal::Decimal;
