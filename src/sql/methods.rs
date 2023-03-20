@@ -51,40 +51,41 @@ impl IntoSql for Value {
                 }
                 Value::String(sql)
             }
-            x => {
-                if x.is_str() {
+            v => {
+                if v.is_str() {
+                    let v = v.str();
                     let mut sql = String::new();
                     if Date::is(&v) != "" {
                         sql.push_str("'");
-                        sql.push_str(x.str().trim_end_matches(Date::ends_name()));
+                        sql.push_str(v.trim_end_matches(Date::ends_name()));
                         sql.push_str("'");
                     } else if DateTime::is(&v) != "" {
                         sql.push_str("'");
-                        sql.push_str(x.str().trim_end_matches(DateTime::ends_name()));
+                        sql.push_str(v.trim_end_matches(DateTime::ends_name()));
                         sql.push_str("'");
                     } else if Time::is(&v) != "" {
                         sql.push_str("'");
-                        sql.push_str(x.str().trim_end_matches(Time::ends_name()));
+                        sql.push_str(v.trim_end_matches(Time::ends_name()));
                         sql.push_str("'");
                     } else if Timestamp::is(&v) != "" {
                         //timestamp is u64 type,do not add ''
-                        sql.push_str(x.str().trim_end_matches(Timestamp::ends_name()));
+                        sql.push_str(v.trim_end_matches(Timestamp::ends_name()));
                     } else if Decimal::is(&v) != "" {
                         sql.push_str("'");
-                        sql.push_str(x.str().trim_end_matches(Decimal::ends_name()));
+                        sql.push_str(v.trim_end_matches(Decimal::ends_name()));
                         sql.push_str("'");
                     } else if Uuid::is(&v) != "" {
                         sql.push_str("'");
-                        sql.push_str(x.str().trim_end_matches(Uuid::ends_name()));
+                        sql.push_str(v.trim_end_matches(Uuid::ends_name()));
                         sql.push_str("'");
                     } else {
                         sql.push_str("'");
-                        sql.push_str(x.str());
+                        sql.push_str(v);
                         sql.push_str("'");
                     }
                     Value::String(sql)
                 } else {
-                    Value::String(x.string_sql())
+                    Value::String(v.string_sql())
                 }
             }
         }
