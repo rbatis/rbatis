@@ -95,7 +95,7 @@ impl Debug for Decimal {
 impl From<Decimal> for Value {
     fn from(arg: Decimal) -> Self {
         let mut v = arg.0.to_string();
-        v.push_str("DEC");
+        v.push_str(Decimal::ends_name());
         Value::String(v)
     }
 }
