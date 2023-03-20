@@ -91,7 +91,7 @@ impl From<Value> for Json {
                 if v == Value::Null {
                     let mut datas = serde_json::Map::with_capacity(m.len());
                     for (k, v) in m {
-                        datas.insert(k.as_str().unwrap_or_default().to_string(), Json::from(v).0);
+                        datas.insert(k.into_string().unwrap_or_default(), Json::from(v).0);
                     }
                     Json::from(serde_json::Value::Object(datas))
                 }else{
