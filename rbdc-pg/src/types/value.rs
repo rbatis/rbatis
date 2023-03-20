@@ -205,7 +205,7 @@ impl TypeInfo for Value {
                 }
             }
             Value::Binary(_) => PgTypeInfo::BYTEA_ARRAY,
-            Value::Array(arr) => {
+            Value::Array(_) => {
                 // if arr.len() == 0 {
                 //     return PgTypeInfo::UNKNOWN;
                 // }
