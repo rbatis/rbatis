@@ -49,7 +49,7 @@ impl<'de> serde::Deserialize<'de> for Timestamp {
         let mut value = Value::deserialize(deserializer)?;
         match &mut value {
             Value::String(v) => {
-                if std::any::type_name::<D>() == std::any::type_name::<rbs::Serializer>() {
+                if std::any::type_name::<D>() == std::any::type_name::<rbs::Deserializer>() {
                     Timestamp::trim_ends_match(v);
                     let time: u64 = v.parse().map_err(|e| {
                         D::Error::custom(&format!("warn type decode Timestamp:{}", e))
