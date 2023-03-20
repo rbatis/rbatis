@@ -86,12 +86,17 @@ impl From<Value> for Json {
                 }
                 serde_json::Value::Array(datas)
             }),
-            Value::Map(m) => Json::from({
-                let mut datas = serde_json::Map::with_capacity(m.len());
-                for (k, v) in m {
-                    datas.insert(k.as_str().unwrap_or_default().to_string(), Json::from(v).0);
+            Value::Map(mut m) => Json::from({
+                let v = m.rm("inner");
+                if v == Value::Null {
+                    let mut datas = serde_json::Map::with_capacity(m.len());
+                    for (k, v) in m {
+                        datas.insert(k.as_str().unwrap_or_default().to_string(), Json::from(v).0);
+                    }
+                    Json::from(serde_json::Value::Object(datas))
+                }else{
+                    Json::from(v)
                 }
-                serde_json::Value::Object(datas)
             }),
         }
     }
