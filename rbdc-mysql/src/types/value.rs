@@ -105,8 +105,12 @@ impl Encode for Value {
                 buf.put_bytes_lenenc(v);
                 Ok(0)
             }
-            Value::Array(_) => Ok(0),
-            Value::Map(_) => Ok(0),
+            Value::Array(v) => {
+                Json(Value::Array(v).to_string()).encode(buf)
+            },
+            Value::Map(v) => {
+                Json(Value::Map(v).to_string()).encode(buf)
+            },
             Value::Ext(ext_type, v) => {
                 match ext_type {
                     "Uuid" => {

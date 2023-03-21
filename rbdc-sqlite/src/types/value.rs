@@ -78,8 +78,16 @@ impl Encode for Value {
                 v.encode(args)?;
                 Ok(IsNull::No)
             }
-            Value::Array(_) => Ok(IsNull::Yes),
-            Value::Map(_) => Ok(IsNull::Yes),
+            Value::Array(v) => {
+                //json
+                Value::Array(v).to_string().encode(args)?;
+                Ok(IsNull::No)
+            },
+            Value::Map(v) => {
+                //json
+                Value::Map(v).to_string().encode(args)?;
+                Ok(IsNull::No)
+            },
             Value::Ext(t, v) => match t {
                 "Date" => {
                     v.into_string().unwrap_or_default().encode(args)?;
