@@ -102,16 +102,39 @@ impl ValueMap {
         }
         self.0.push((k, v));
     }
-    pub fn remove(&mut self, k: &Value) -> Option<Value> {
+    pub fn remove(&mut self, k: &Value) -> Value {
         let mut idx = 0;
         for (mkey, _v) in &self.0 {
             if k.eq(mkey) {
                 let (_, v) = self.0.remove(idx);
-                return Some(v);
+                return v;
             }
             idx += 1
         }
-        return None;
+        return Value::Null;
+    }
+
+    pub fn is(&mut self, k: &str, v: Value) {
+        let k = Value::String(k.to_string());
+        for (mk, mv) in &mut self.0 {
+            if k.eq(mk) {
+                *mv = v;
+                return;
+            }
+        }
+        self.0.push((k, v));
+    }
+
+    pub fn rm(&mut self, k: &str) -> Value {
+        let mut idx = 0;
+        for (key, _v) in &self.0 {
+            if k.eq(key.as_str().unwrap_or_default()) {
+                let (_, v) = self.0.remove(idx);
+                return v;
+            }
+            idx += 1
+        }
+        return Value::Null;
     }
 }
 
@@ -206,10 +229,10 @@ impl IntoIterator for ValueMap {
 
 #[macro_export]
 macro_rules! value_map {
-    {$($k:expr=>$v:expr$(,)*)+} => {
+      {$($k:tt:$v:expr $(,)+ )*} => {
         {
         let mut m  = $crate::value::map::ValueMap::new();
-        $(m.insert($crate::to_value!($k),$crate::to_value!($v));)+
+        $(m.insert($crate::to_value!($k),$crate::to_value!($v));)*
         m
         }
     };
