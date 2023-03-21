@@ -1,5 +1,5 @@
 use chrono::{FixedOffset, NaiveDateTime, Utc};
-use rbdc::datetime::FastDateTime;
+use rbdc::datetime::DateTime;
 use rbdc::Error;
 use rbs::Value;
 use tiberius::numeric::BigDecimal;
@@ -79,7 +79,7 @@ impl Decode for Value {
                     match v {
                         Ok(v) => match v {
                             None => Value::Null,
-                            Some(v) => Value::from(FastDateTime::from_timestamp_nano(
+                            Some(v) => Value::from(DateTime::from_timestamp_nano(
                                 v.timestamp_nanos() as u128,
                             )),
                         },
@@ -97,7 +97,7 @@ impl Decode for Value {
                     match v {
                         Ok(v) => match v {
                             None => Value::Null,
-                            Some(v) => Value::from(FastDateTime::from_timestamp_nano(
+                            Some(v) => Value::from(DateTime::from_timestamp_nano(
                                 v.timestamp_nanos() as u128,
                             )),
                         },
@@ -147,7 +147,7 @@ impl Decode for Value {
                     match v {
                         Ok(v) => match v {
                             None => Value::Null,
-                            Some(v) => Value::from(FastDateTime::from_timestamp_nano(
+                            Some(v) => Value::from(DateTime::from_timestamp_nano(
                                 v.timestamp_nanos() as u128,
                             )),
                         },
@@ -165,7 +165,7 @@ impl Decode for Value {
                     match v {
                         Ok(v) => match v {
                             None => Value::Null,
-                            Some(v) => Value::from(FastDateTime::from_timestamp_nano(
+                            Some(v) => Value::from(DateTime::from_timestamp_nano(
                                 v.timestamp_nanos() as u128,
                             )),
                         },

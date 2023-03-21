@@ -51,17 +51,17 @@ QPS: 885486 QPS/s
 
 ### Supported data structures
 
-| data structure                                                            | is supported |
-|---------------------------------------------------------------------------|--------------|
-| Option                                                                    | √            | 
-| Vec                                                                       | √            |  
-| HashMap                                                                   | √            |
-| i32,i64,f32,f64,bool,String...more rust type                              | √            |  
-| rbatis::rbdc::types::{Date,FastDateTime,Time,Timestamp,Decimal,Json}      | √            |
-| rbatis::plugin::page::{Page<T>, PageRequest}                              | √            |
-| rbs::Value*                                                               | √            |
-| serde_json::*                                                             | √            |
-| any serde type                                                            | √            |
+| data structure                                                        | is supported |
+|-----------------------------------------------------------------------|--------------|
+| Option                                                                | √            | 
+| Vec                                                                   | √            |  
+| HashMap                                                               | √            |
+| i32,i64,f32,f64,bool,String...more rust type                          | √            |  
+| rbatis::rbdc::types::{Date,DateTime,Time,Timestamp,Decimal,Json}      | √            |
+| rbatis::plugin::page::{Page<T>, PageRequest}                          | √            |
+| rbs::Value*                                                           | √            |
+| serde_json::*                                                         | √            |
+| any serde type                                                        | √            |
 | driver type on package (rdbc-mysql/types,rbdc-pg/types,rbdc-sqlite/types) | √            |
 
 ### Supported database driver
@@ -116,7 +116,7 @@ rbdc-sqlite = { version = "4.3" }
 #[macro_use]
 extern crate rbatis;
 extern crate rbdc;
-use rbatis::rbdc::datetime::FastDateTime;
+use rbatis::rbdc::datetime::DateTime;
 
 #[derive(Clone, Debug, Serialize, Deserialize)]
 pub struct BizActivity {
@@ -129,7 +129,7 @@ pub struct BizActivity {
     pub sort: Option<String>,
     pub status: Option<i32>,
     pub remark: Option<String>,
-    pub create_time: Option<FastDateTime>,
+    pub create_time: Option<DateTime>,
     pub version: Option<i64>,
     pub delete_flag: Option<i32>,
 }
@@ -167,7 +167,7 @@ async fn main() {
         sort: None,
         status: Some(2),
         remark: Some("2".into()),
-        create_time: Some(FastDateTime::now()),
+        create_time: Some(DateTime::now()),
         version: Some(1),
         delete_flag: Some(1),
     };

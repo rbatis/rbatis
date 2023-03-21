@@ -32,12 +32,12 @@ fn bench_rbatis_decode(b: &mut Bencher) {
 
 #[bench]
 fn bench_rbatis_decode_map(b: &mut Bencher) {
-    let date = rbdc::types::datetime::FastDateTime::now();
+    let date = rbdc::types::datetime::DateTime::now();
     let array = Value::Array(vec![Value::Map(value_map! {
         1 => date,
     })]);
     b.iter(|| {
-        rbatis::decode::<rbdc::types::datetime::FastDateTime>(array.clone()).unwrap();
+        rbatis::decode::<rbdc::types::datetime::DateTime>(array.clone()).unwrap();
     });
 }
 

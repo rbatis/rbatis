@@ -5,7 +5,7 @@ pub mod model;
 
 use serde_json::json;
 use crate::model::{init_db, BizActivity};
-use rbatis::rbdc::datetime::FastDateTime;
+use rbatis::rbdc::datetime::DateTime;
 use rbatis::sql::page::PageRequest;
 use rbs::Value;
 
@@ -49,7 +49,7 @@ pub async fn main() {
         sort: Some("2".to_string()),
         status: Some(2),
         remark: Some("2".into()),
-        create_time: Some(FastDateTime::now()),
+        create_time: Some(DateTime::now()),
         version: Some(1),
         delete_flag: Some(1),
     };
