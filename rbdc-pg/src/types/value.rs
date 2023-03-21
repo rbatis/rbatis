@@ -38,10 +38,10 @@ impl TypeInfo for Value {
                         "Date"
                     } else if DateTime::is(&v) != "" {
                         "DateTime"
-                    } else if Time::is(&v) != "" {
-                        "Time"
                     } else if Timestamp::is(&v) != "" {
                         "Timestamp"
+                    } else if Time::is(&v) != "" {
+                        "Time"
                     } else if Decimal::is(&v) != "" {
                         "Decimal"
                     } else if Uuid::is(&v) != "" {
@@ -321,17 +321,17 @@ impl Decode for Value {
                 let v: Date = Decode::decode(arg)?;
                 v
             }
-            .into(),
+                .into(),
             PgType::Time => {
                 let v: Time = Decode::decode(arg)?;
                 v
             }
-            .into(),
+                .into(),
             PgType::Timestamp => {
                 let v: Timestamp = Decode::decode(arg)?;
                 v
             }
-            .into(),
+                .into(),
             PgType::Timestamptz => Timestamptz::decode(arg)?.into(),
             PgType::Interval => Value::from(Value::Binary({
                 match arg.format() {
@@ -488,102 +488,149 @@ impl Encode for Value {
             Value::U64(v) => v.encode(buf)?,
             Value::F32(v) => v.encode(buf)?,
             Value::F64(v) => v.encode(buf)?,
-            Value::String(v) => {
+            Value::String(mut v) => {
                 let r;
                 if v.ends_with(Uuid::ends_name()) {
                     r = "Uuid";
+                    Uuid::trim_ends_match(&mut v);
                 } else if v.ends_with(Decimal::ends_name()) {
                     r = "Decimal";
+                    Decimal::trim_ends_match(&mut v);
                 } else if v.ends_with(Date::ends_name()) {
                     r = "Date";
-                } else if v.ends_with(Time::ends_name()) {
-                    r = "Time";
+                    Date::trim_ends_match(&mut v);
                 } else if v.ends_with(Timestamp::ends_name()) {
                     r = "Timestamp";
+                    Timestamp::trim_ends_match(&mut v);
                 } else if v.ends_with(DateTime::ends_name()) {
                     r = "DateTime";
+                    DateTime::trim_ends_match(&mut v);
+                } else if v.ends_with(Time::ends_name()) {
+                    r = "Time";
+                    Time::trim_ends_match(&mut v);
                 } else if v.ends_with("Bytea") {
                     r = "Bytea";
+                    v = v.trim_end_matches("Bytea").to_string();
                 } else if v.ends_with("Char") {
                     r = "Char";
-                } else if v.ends_with("Name") {
-                    r = "Name";
+                    v = v.trim_end_matches("Char").to_string();
+                } else if v.ends_with(":Name") {
+                    r = ":Name";
+                    v = v.trim_end_matches(":Name").to_string();
                 } else if v.ends_with("Int8") {
                     r = "Int8";
+                    v = v.trim_end_matches("Int8").to_string();
                 } else if v.ends_with("Int2") {
                     r = "Int2";
+                    v = v.trim_end_matches("Int2").to_string();
                 } else if v.ends_with("Int4") {
                     r = "Int4";
+                    v = v.trim_end_matches("Int4").to_string();
                 } else if v.ends_with("Text") {
-                    r = "Text";
+                    r = ":Text";
+                    v = v.trim_end_matches("Text").to_string();
                 } else if v.ends_with("Oid") {
                     r = "Oid";
+                    v = v.trim_end_matches("Oid").to_string();
                 } else if v.ends_with("Json") {
                     r = "Json";
+                    v = v.trim_end_matches("Json").to_string();
                 } else if v.ends_with("Point") {
                     r = "Point";
+                    v = v.trim_end_matches("Point").to_string();
                 } else if v.ends_with("Lseg") {
                     r = "Lseg";
+                    v = v.trim_end_matches("Lseg").to_string();
                 } else if v.ends_with("Path") {
                     r = "Path";
+                    v = v.trim_end_matches("Path").to_string();
                 } else if v.ends_with("Box") {
                     r = "Box";
+                    v = v.trim_end_matches("Box").to_string();
                 } else if v.ends_with("Polygon") {
                     r = "Polygon";
+                    v = v.trim_end_matches("Polygon").to_string();
                 } else if v.ends_with("Line") {
                     r = "Line";
+                    v = v.trim_end_matches("Line").to_string();
                 } else if v.ends_with("Cidr") {
                     r = "Cidr";
+                    v = v.trim_end_matches("Cidr").to_string();
                 } else if v.ends_with("Float4") {
                     r = "Float4";
+                    v = v.trim_end_matches("Float4").to_string();
                 } else if v.ends_with("Float8") {
                     r = "Float8";
+                    v = v.trim_end_matches("Float8").to_string();
                 } else if v.ends_with("Unknown") {
                     r = "Unknown";
+                    v = v.trim_end_matches("Unknown").to_string();
                 } else if v.ends_with("Circle") {
                     r = "Circle";
+                    v = v.trim_end_matches("Circle").to_string();
                 } else if v.ends_with("Macaddr8") {
                     r = "Macaddr8";
+                    v = v.trim_end_matches("Macaddr8").to_string();
                 } else if v.ends_with("Macaddr") {
                     r = "Macaddr";
+                    v = v.trim_end_matches("Macaddr").to_string();
                 } else if v.ends_with("Inet") {
                     r = "Inet";
+                    v = v.trim_end_matches("Inet").to_string();
                 } else if v.ends_with("Bpchar") {
                     r = "Bpchar";
+                    v = v.trim_end_matches("Bpchar").to_string();
                 } else if v.ends_with("Varchar") {
                     r = "Varchar";
+                    v = v.trim_end_matches("Varchar").to_string();
                 } else if v.ends_with("Timestamptz") {
                     r = "Timestamptz";
+                    v = v.trim_end_matches("Timestamptz").to_string();
                 } else if v.ends_with("Interval") {
                     r = "Interval";
+                    v = v.trim_end_matches("Interval").to_string();
                 } else if v.ends_with("Timetz") {
                     r = "Timetz";
+                    v = v.trim_end_matches("Timetz").to_string();
                 } else if v.ends_with("Bit") {
                     r = "Bit";
+                    v = v.trim_end_matches("Bit").to_string();
                 } else if v.ends_with("Varbit") {
                     r = "Varbit";
+                    v = v.trim_end_matches("Varbit").to_string();
                 } else if v.ends_with("Numeric") {
                     r = "Numeric";
+                    v = v.trim_end_matches("Numeric").to_string();
                 } else if v.ends_with("Record") {
                     r = "Record";
+                    v = v.trim_end_matches("Record").to_string();
                 } else if v.ends_with("Jsonb") {
                     r = "Jsonb";
+                    v = v.trim_end_matches("Jsonb").to_string();
                 } else if v.ends_with("Int4Range") {
                     r = "Int4Range";
+                    v = v.trim_end_matches("Int4Range").to_string();
                 } else if v.ends_with("NumRange") {
                     r = "NumRange";
+                    v = v.trim_end_matches("NumRange").to_string();
                 } else if v.ends_with("TsRange") {
                     r = "TsRange";
+                    v = v.trim_end_matches("TsRange").to_string();
                 } else if v.ends_with("TstzRange") {
                     r = "TstzRange";
+                    v = v.trim_end_matches("TstzRange").to_string();
                 } else if v.ends_with("DateRange") {
                     r = "DateRange";
+                    v = v.trim_end_matches("DateRange").to_string();
                 } else if v.ends_with("Int8Range") {
                     r = "Int8Range";
+                    v = v.trim_end_matches("Int8Range").to_string();
                 } else if v.ends_with("Jsonpath") {
                     r = "Jsonpath";
+                    v = v.trim_end_matches("Jsonpath").to_string();
                 } else if v.ends_with("Money") {
                     r = "Money";
+                    v = v.trim_end_matches("Money").to_string();
                 } else {
                     r = ""
                 }
@@ -651,7 +698,7 @@ impl Encode for Value {
                 }
             }
             Value::Binary(v) => v.encode(buf)?,
-            Value::Array(v) =>  rbdc::types::json::Json::from(Value::Array(v)).encode(buf)?,
+            Value::Array(v) => rbdc::types::json::Json::from(Value::Array(v)).encode(buf)?,
             Value::Map(m) => rbdc::types::json::Json::from(Value::Map(m)).encode(buf)?,
         })
     }
