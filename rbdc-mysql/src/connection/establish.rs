@@ -1,5 +1,6 @@
 use crate::connection::{tls, DropBox, MySqlConnection, MySqlStream, MAX_PACKET_SIZE};
 use crate::options::{MySqlConnectOptions, MySqlSslMode};
+use crate::protocol::auth::AuthPlugin;
 use crate::protocol::connect::{
     AuthSwitchRequest, AuthSwitchResponse, Handshake, HandshakeResponse,
 };
@@ -63,7 +64,16 @@ impl MySqlConnection {
         let auth_response = if let (Some(plugin), Some(password)) = (plugin, &options.password) {
             Some(plugin.scramble(&mut stream, password, &nonce).await?)
         } else {
-            None
+            //mysql < 5.5.0 version only use MySqlNativePassword
+            if server_version_major < 5 || (server_version_major == 5 && server_version_minor < 5) {
+                if let Some(password) = &options.password {
+                    Some(AuthPlugin::MySqlNativePassword.scramble(&mut stream, password, &nonce).await?)
+                } else {
+                    None
+                }
+            } else {
+                None
+            }
         };
 
         stream.write_packet(HandshakeResponse {
