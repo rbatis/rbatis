@@ -464,7 +464,9 @@ impl Encode for Value {
             }
             Value::Binary(v) => v.encode(buf)?,
             Value::Array(v) => v.encode(buf)?,
-            Value::Map(_) => IsNull::Yes,
+            Value::Map(m) => {
+                Json(Value::Map(m).to_string()).encode(buf)?
+            },
             Value::Ext(type_name, v) => {
                 match type_name {
                     "Uuid" => Uuid(v.into_string().unwrap_or_default()).encode(buf)?,
