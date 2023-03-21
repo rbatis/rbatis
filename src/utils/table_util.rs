@@ -125,7 +125,7 @@ macro_rules! field_name {
         }
         stringify!($field).trim_start_matches("r#")
     }};
-    ($t:ident.$field1:ident.$field2:ident) => {{
+   ($t:ident.$field1:ident.$field2:ident) => {{
         if false {
             let _ = |a: $t| a.$field1.$field2;
         }

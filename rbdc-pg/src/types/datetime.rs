@@ -2,22 +2,22 @@ use crate::arguments::PgArgumentBuffer;
 use crate::types::decode::Decode;
 use crate::types::encode::{Encode, IsNull};
 use crate::value::{PgValue, PgValueFormat};
-use rbdc::datetime::DateTime;
+use rbdc::datetime::FastDateTime;
 use rbdc::timestamp::Timestamp;
 use rbdc::Error;
 use std::str::FromStr;
 use std::time::Duration;
 
-impl Encode for DateTime {
+impl Encode for FastDateTime {
     fn encode(self, buf: &mut PgArgumentBuffer) -> Result<IsNull, Error> {
         self.0.encode(buf)?;
         Ok(IsNull::No)
     }
 }
 
-impl Decode for DateTime {
+impl Decode for FastDateTime {
     fn decode(value: PgValue) -> Result<Self, Error> {
-        Ok(Self::from(fastdate::DateTime::decode(value)?))
+        Ok(Self(fastdate::DateTime::decode(value)?))
     }
 }
 
@@ -49,6 +49,6 @@ impl Decode for fastdate::DateTime {
 
 impl Encode for fastdate::DateTime {
     fn encode(self, buf: &mut PgArgumentBuffer) -> Result<IsNull, Error> {
-        Timestamp::from(self.unix_timestamp_millis() as u64).encode(buf)
+        Timestamp(self.unix_timestamp_millis() as u64).encode(buf)
     }
 }

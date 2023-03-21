@@ -14,7 +14,7 @@ impl Encode for Time {
 
 impl Decode for Time {
     fn decode(value: MySqlValue) -> Result<Self, Error> {
-        Ok(Time::from(fastdate::Time::decode(value)?))
+        Ok(Time(fastdate::Time::decode(value)?))
     }
 }
 

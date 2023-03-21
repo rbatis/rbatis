@@ -1,6 +1,5 @@
 use crate::ops::AsProxy;
 use crate::ops::Rem;
-use rbs::value::util::to_number;
 use rbs::Value;
 
 fn op_rem_value(left: Value, rhs: Value) -> Value {
@@ -29,10 +28,7 @@ fn op_rem_value(left: Value, rhs: Value) -> Value {
             let rhs = rhs.f64();
             Value::F64(s % rhs)
         }
-        Value::String(ref s) => {
-            let rhs = rhs.f64();
-            Value::F64(to_number(s) % rhs)
-        }
+        Value::Ext(_, e) => op_rem_value(*e, rhs),
         _ => Value::Null,
     }
 }
@@ -183,19 +179,3 @@ impl Rem<&$ty> for &$ty{
 rem_self!([u8 u16 u32 u64]);
 rem_self!([i8 i16 i32 i64 isize]);
 rem_self!([f32 f64]);
-
-impl Rem<&str> for Value {
-    type Output = f64;
-
-    fn op_rem(self, rhs: &str) -> Self::Output {
-        self.f64() % to_number(rhs)
-    }
-}
-
-impl Rem<Value> for &str {
-    type Output = f64;
-
-    fn op_rem(self, rhs: Value) -> Self::Output {
-        to_number(self) % rhs.f64()
-    }
-}

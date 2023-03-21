@@ -3,7 +3,7 @@ use crate::types::decode::Decode;
 use crate::types::encode::{Encode, IsNull};
 use crate::value::{PgValue, PgValueFormat};
 use rbdc::Error;
-use rbs::{to_value, Value};
+use rbs::Value;
 use std::fmt::{Display, Formatter};
 
 #[derive(serde::Serialize, serde::Deserialize, Debug, Clone, Eq, PartialEq)]
@@ -34,7 +34,7 @@ impl Decode for Bytea {
 
 impl From<Bytea> for Value {
     fn from(arg: Bytea) -> Self {
-        to_value!(arg)
+        Value::Ext("Bytea", Box::new(Value::U32(arg.0 as u32)))
     }
 }
 

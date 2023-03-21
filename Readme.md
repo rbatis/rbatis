@@ -57,7 +57,7 @@ QPS: 885486 QPS/s
 | Vec                                                                       | √            |  
 | HashMap                                                                   | √            |
 | i32,i64,f32,f64,bool,String...more rust type                              | √            |  
-| rbatis::rbdc::types::{Date,DateTime,Time,Timestamp,Decimal,Json}      | √            |
+| rbatis::rbdc::types::{Date,FastDateTime,Time,Timestamp,Decimal,Json}      | √            |
 | rbatis::plugin::page::{Page<T>, PageRequest}                              | √            |
 | rbs::Value*                                                               | √            |
 | serde_json::*                                                             | √            |
@@ -98,19 +98,17 @@ QPS: 885486 QPS/s
 * Cargo.toml
 
 ```toml
-#rbatis deps
-rbs = { version = "4.2"}
-rbatis = { version = "4.2"}
-rbdc-sqlite = { version = "4.2" }
-#rbdc-mysql={version="4.2"}
-#rbdc-pg={version="4.2"}
-#rbdc-mssql={version="4.2"}
-
-#other deps
-serde = { version = "1", features = ["derive"] }
 tokio = { version = "1", features = ["full"] }
 log = "0.4"
 fast_log = "1.5"
+serde = { version = "1", features = ["derive"] }
+rbs = { version = "4.3"}
+rbatis = { version = "4.3"}
+rbdc-sqlite = { version = "4.3" }
+#rbdc-mysql={version="4.3"}
+#rbdc-pg={version="4.3"}
+#rbdc-mssql={version="4.3"}
+#...and more driver
 ```
 
 ```rust
@@ -118,7 +116,7 @@ fast_log = "1.5"
 #[macro_use]
 extern crate rbatis;
 extern crate rbdc;
-use rbatis::rbdc::datetime::DateTime;
+use rbatis::rbdc::datetime::FastDateTime;
 
 #[derive(Clone, Debug, Serialize, Deserialize)]
 pub struct BizActivity {
@@ -131,7 +129,7 @@ pub struct BizActivity {
     pub sort: Option<String>,
     pub status: Option<i32>,
     pub remark: Option<String>,
-    pub create_time: Option<DateTime>,
+    pub create_time: Option<FastDateTime>,
     pub version: Option<i64>,
     pub delete_flag: Option<i32>,
 }
@@ -169,7 +167,7 @@ async fn main() {
         sort: None,
         status: Some(2),
         remark: Some("2".into()),
-        create_time: Some(DateTime::now()),
+        create_time: Some(FastDateTime::now()),
         version: Some(1),
         delete_flag: Some(1),
     };
@@ -321,12 +319,12 @@ You are welcome to submit the merge, and make sure that any functionality you ad
 
 # 联系方式/捐赠,或 [rbatis](https://github.com/rbatis/rbatis) 点star
 
-> 捐赠/联系方式(添加好友请备注'rbatis') 微信群：先加微信，然后拉进群
+> 捐赠
 
-| 捐赠                                                                                                                                                                                 | 联系方式                                                                                                                                                                           |
-|------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| <img style="width: 200px;height: 250px;" width="200" height="300" src="https://raw.githubusercontent.com/rbatis/rbatis.io/master/docs/_media/wx_account.png" alt="zxj347284221" /> | <img style="width: 200px;height: 250px;" width="200" height="250" src="https://raw.githubusercontent.com/rbatis/rbatis.io/master/docs/_media/wechat.jpg" alt="zxj347284221" /> |
+<img style="width: 200px;height: 300px;" width="200" height="300" src="https://raw.githubusercontent.com/rbatis/rbatis.io/master/docs/_media/wx_account.png" alt="zxj347284221" />
 
+> 联系方式(添加好友请备注'rbatis') 微信群：先加微信，然后拉进群
 
+<img style="width: 200px;height: 250px;" width="200" height="250" src="https://raw.githubusercontent.com/rbatis/rbatis.io/master/docs/_media/wechat.jpg" alt="zxj347284221" />
 
 

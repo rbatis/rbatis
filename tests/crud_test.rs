@@ -20,7 +20,7 @@ mod test {
     use rbatis::intercept::SqlIntercept;
     use rbatis::sql::PageRequest;
     use rbatis::{Error, Rbatis};
-    use rbdc::datetime::DateTime;
+    use rbdc::datetime::FastDateTime;
     use rbdc::db::{ConnectOptions, Connection, Driver, ExecResult, MetaData, Row};
     use rbdc::rt::block_on;
     use rbs::{from_value, to_value, Value};
@@ -194,7 +194,7 @@ mod test {
         pub sort: Option<String>,
         pub status: Option<i32>,
         pub remark: Option<String>,
-        pub create_time: Option<rbdc::datetime::DateTime>,
+        pub create_time: Option<rbdc::datetime::FastDateTime>,
         pub version: Option<i64>,
         pub delete_flag: Option<i32>,
         //exec sql
@@ -265,7 +265,7 @@ mod test {
                 sort: None,
                 status: Some(2),
                 remark: Some("2".into()),
-                create_time: Some(DateTime::now()),
+                create_time: Some(FastDateTime::now()),
                 version: Some(1),
                 delete_flag: Some(1),
                 count: 0,
@@ -313,7 +313,7 @@ mod test {
                 sort: None,
                 status: Some(2),
                 remark: Some("2".into()),
-                create_time: Some(DateTime::now()),
+                create_time: Some(FastDateTime::now()),
                 version: Some(1),
                 delete_flag: Some(1),
                 count: 0,
@@ -377,7 +377,7 @@ mod test {
                 sort: None,
                 status: Some(2),
                 remark: Some("2".into()),
-                create_time: Some(DateTime::now()),
+                create_time: Some(FastDateTime::now()),
                 version: Some(1),
                 delete_flag: Some(1),
                 count: 0,
@@ -539,7 +539,7 @@ mod test {
                 sort: None,
                 status: Some(2),
                 remark: Some("2".into()),
-                create_time: Some(DateTime::now()),
+                create_time: Some(FastDateTime::now()),
                 version: Some(1),
                 delete_flag: Some(1),
                 count: 0,
@@ -587,7 +587,7 @@ mod test {
                 sort: None,
                 status: Some(2),
                 remark: Some("2".into()),
-                create_time: Some(DateTime::now()),
+                create_time: Some(FastDateTime::now()),
                 version: Some(1),
                 delete_flag: Some(1),
                 count: 0,
@@ -799,7 +799,7 @@ mod test {
                 sort: None,
                 status: Some(2),
                 remark: Some("2".into()),
-                create_time: Some(DateTime::now()),
+                create_time: Some(FastDateTime::now()),
                 version: Some(1),
                 delete_flag: Some(1),
                 count: 0,

@@ -18,8 +18,8 @@ impl Encode for Decimal {
 impl Decode for Decimal {
     fn decode(value: PgValue) -> Result<Self, Error> {
         match value.format() {
-            PgValueFormat::Binary => Ok(Self::from(BigDecimal::decode(value)?.to_string())),
-            PgValueFormat::Text => Ok(Self::from(value.as_str()?.to_string())),
+            PgValueFormat::Binary => Ok(Self(BigDecimal::decode(value)?.to_string())),
+            PgValueFormat::Text => Ok(Self(value.as_str()?.to_string())),
         }
     }
 }

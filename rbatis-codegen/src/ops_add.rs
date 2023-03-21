@@ -76,6 +76,7 @@ fn op_add_value(left: Value, rhs: &Value) -> Value {
         Value::U64(s) => Value::U64(s + rhs.u64()),
         Value::F64(s) => Value::F64(s + rhs.f64()),
         Value::F32(v) => Value::F64(v as f64 + rhs.f64()),
+        Value::Ext(_, e) => op_add_value(*e, rhs),
         _ => Value::Null,
     }
 }

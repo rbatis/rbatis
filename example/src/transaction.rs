@@ -2,7 +2,7 @@ pub mod model;
 
 use crate::model::{init_db, BizActivity};
 use rbatis::executor::{RBatisConnExecutor, RBatisTxExecutor};
-use rbatis::rbdc::datetime::DateTime;
+use rbatis::rbdc::datetime::FastDateTime;
 
 rbatis::impl_insert!(BizActivity {});
 rbatis::impl_delete!(BizActivity {});
@@ -36,7 +36,7 @@ async fn tx_run(tx: RBatisTxExecutor, id: &str, forget_commit: bool) {
         sort: None,
         status: Some(2),
         remark: Some("2".into()),
-        create_time: Some(DateTime::now()),
+        create_time: Some(FastDateTime::now()),
         version: Some(1),
         delete_flag: Some(1),
     };

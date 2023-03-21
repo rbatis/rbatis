@@ -175,7 +175,7 @@ impl<'de> Deserialize<'de> for Value {
                     pairs.push((key, val));
                 }
 
-                Ok(Value::Map(ValueMap::from(pairs)))
+                Ok(Value::Map(ValueMap(pairs)))
             }
 
             fn visit_newtype_struct<D>(self, deserializer: D) -> Result<Self::Value, D::Error>
@@ -220,7 +220,7 @@ impl<'de> Deserializer<'de> for Value {
             }
             Value::Map(v) => {
                 let len = v.len();
-                let mut de = MapDeserializer::new(v.inner.into_iter());
+                let mut de = MapDeserializer::new(v.0.into_iter());
                 let map = visitor.visit_map(&mut de)?;
                 if de.iter.len() == 0 {
                     Ok(map)
@@ -228,6 +228,7 @@ impl<'de> Deserializer<'de> for Value {
                     Err(de::Error::invalid_length(len, &"fewer elements in map"))
                 }
             }
+            Value::Ext(_tag, data) => Deserializer::deserialize_any(*data, visitor),
         }
     }
 
@@ -641,7 +642,7 @@ impl<'de> ValueBase<'de> for Value {
     #[inline]
     fn into_map_iter(self) -> Result<Self::MapIter, Self::Item> {
         match self {
-            Value::Map(v) => Ok(v.inner.into_iter()),
+            Value::Map(v) => Ok(v.0.into_iter()),
             other => Err(other),
         }
     }

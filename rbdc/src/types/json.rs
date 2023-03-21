@@ -1,122 +1,84 @@
-use crate::Error;
-use rbs::{to_value, Value};
-use serde::{Deserializer, Serializer};
+use rbs::Value;
 use std::fmt::{Debug, Display, Formatter};
 use std::str::FromStr;
-use serde::ser::SerializeMap;
 
-/// Json(Value) Value must be Map/Array json object
-#[derive(Clone, Eq, PartialEq)]
-pub struct Json(pub serde_json::Value);
+use crate::Error;
+use serde::Deserializer;
 
-
-impl serde::Serialize for Json {
-    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
-        where
-            S: Serializer,
-    {
-        if std::any::type_name::<S>() == std::any::type_name::<rbs::Serializer>() {
-            let mut m = serializer.serialize_map(Some(1))?;
-            m.serialize_key("inner")?;
-            m.serialize_value(&self.0)?;
-            m.end()
-        } else {
-            self.0.serialize(serializer)
-        }
-    }
-}
+#[derive(serde::Serialize, Clone, Eq, PartialEq, Hash)]
+#[serde(rename = "Json")]
+pub struct Json(pub String);
 
 impl<'de> serde::Deserialize<'de> for Json {
     fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
-        where
-            D: Deserializer<'de>,
+    where
+        D: Deserializer<'de>,
     {
-        if std::any::type_name::<D>() == std::any::type_name::<rbs::Deserializer>() {
-            let v = serde_json::Value::deserialize(deserializer)?;
-            match v {
-                serde_json::Value::Object(mut m) => {
-                    match m.remove("inner") {
-                        None => {
-                            Ok(Json::from(serde_json::Value::Object(m)))
-                        }
-                        Some(v) => {
-                            Ok(Json::from(v))
-                        }
-                    }
-                }
-                _ => {
-                    Ok(Json::from(v))
-                }
-            }
-        } else {
-            Ok(Json::from(serde_json::Value::deserialize(deserializer)?))
-        }
+        Ok(Json::from(Value::deserialize(deserializer)?))
     }
 }
 
 impl Default for Json {
     fn default() -> Self {
-        Self::from(serde_json::Value::Null)
+        Self {
+            0: "null".to_string(),
+        }
     }
 }
 
 impl From<serde_json::Value> for Json {
     fn from(arg: serde_json::Value) -> Self {
-        Json(arg)
+        Json(arg.to_string())
     }
 }
 
 impl From<Value> for Json {
     fn from(v: Value) -> Self {
         match v {
-            Value::Null => Json::from(serde_json::Value::Null),
-            Value::Bool(v) => Json::from(serde_json::Value::Bool(v)),
-            Value::I32(v) => Json::from(serde_json::Value::Number(serde_json::Number::from(v))),
-            Value::I64(v) => Json::from(serde_json::Value::Number(serde_json::Number::from(v))),
-            Value::U32(v) => Json::from(serde_json::Value::Number(serde_json::Number::from(v))),
-            Value::U64(v) => Json::from(serde_json::Value::Number(serde_json::Number::from(v))),
-            Value::F32(v) => Json::from(serde_json::Value::Number(serde_json::Number::from_f64(v as f64).unwrap())),
-            Value::F64(v) => Json::from(serde_json::Value::Number(serde_json::Number::from_f64(v).unwrap())),
-            Value::String(v) => Json::from(serde_json::Value::String(v)),
-            Value::Binary(v) => Json::from(serde_json::json!(v)),
-            Value::Array(v) => Json::from({
-                let mut datas = Vec::<serde_json::Value>::with_capacity(v.len());
-                for x in v {
-                    datas.push(Json::from(x).0);
-                }
-                serde_json::Value::Array(datas)
-            }),
-            Value::Map(mut m) => Json::from({
-                let v = m.rm("inner");
-                if v == Value::Null {
-                    let mut datas = serde_json::Map::with_capacity(m.len());
-                    for (k, v) in m {
-                        datas.insert(k.into_string().unwrap_or_default(), Json::from(v).0);
-                    }
-                    Json::from(serde_json::Value::Object(datas))
+            Value::Null => Json(v.to_string()),
+            Value::Bool(v) => Json(v.to_string()),
+            Value::I32(v) => Json(v.to_string()),
+            Value::I64(v) => Json(v.to_string()),
+            Value::U32(v) => Json(v.to_string()),
+            Value::U64(v) => Json(v.to_string()),
+            Value::F32(v) => Json(v.to_string()),
+            Value::F64(v) => Json(v.to_string()),
+            Value::String(mut v) => {
+                if (v.starts_with("{") && v.ends_with("}"))
+                    || (v.starts_with("[") && v.ends_with("]"))
+                    || (v.starts_with("\"") && v.ends_with("\""))
+                {
+                    //is json-string
+                    Json(v)
                 } else {
-                    Json::from(v)
+                    v.insert(0, '"');
+                    v.push('"');
+                    Json(v)
                 }
-            }),
+            }
+            Value::Binary(v) => Json(unsafe { String::from_utf8_unchecked(v) }),
+            Value::Array(_) => Json(v.to_string()),
+            Value::Map(v) => Json(v.to_string()),
+            Value::Ext(_name, v) => Json::from(*v),
         }
     }
 }
 
 impl Display for Json {
     fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
-        write!(f, "{}", self.0)
+        write!(f, "Json({})", self.0)
     }
 }
 
 impl Debug for Json {
     fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
-        write!(f, "{}", self.0)
+        write!(f, "Json({})", self.0)
     }
 }
 
 impl From<Json> for Value {
     fn from(arg: Json) -> Self {
-        to_value!(arg.0)
+        Value::Ext("Json", Box::new(Value::String(arg.0)))
     }
 }
 
@@ -124,9 +86,7 @@ impl FromStr for Json {
     type Err = Error;
 
     fn from_str(s: &str) -> Result<Self, Self::Err> {
-        Ok(Json::from(
-            serde_json::Value::from_str(s).map_err(|e| Self::Err::from(e.to_string()))?,
-        ))
+        Ok(Self(s.to_string()))
     }
 }
 
@@ -148,7 +108,7 @@ mod test {
         m.insert("a".into(), "1".into());
         let m = rbs::Value::Map(m);
         println!("{}", m.to_string());
-        assert_eq!(r#"{"a":"1"}"#, Json::from(m).0.to_string());
+        assert_eq!(r#"{"a":"1"}"#, Json::from(m).0);
     }
 
     #[test]
@@ -157,14 +117,14 @@ mod test {
         m.insert("a".into(), 1.into());
         let m = rbs::Value::Map(m);
         println!("{}", m.to_string());
-        assert_eq!(r#"{"a":1}"#, Json::from(m).0.to_string());
+        assert_eq!(r#"{"a":1}"#, Json::from(m).0);
     }
 
     #[test]
     fn test_decode_js_int_arr() {
         let arr = rbs::Value::Array(vec![rbs::Value::I64(1), rbs::Value::I64(2)]);
         println!("{}", arr.to_string());
-        assert_eq!(r#"[1,2]"#, Json::from(arr).0.to_string());
+        assert_eq!(r#"[1,2]"#, Json::from(arr).0);
     }
 
     #[test]
@@ -174,6 +134,6 @@ mod test {
             rbs::Value::String(2.to_string()),
         ]);
         println!("{}", arr.to_string());
-        assert_eq!(r#"["1","2"]"#, Json::from(arr).0.to_string());
+        assert_eq!(r#"["1","2"]"#, Json::from(arr).0);
     }
 }
