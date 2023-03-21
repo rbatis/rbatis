@@ -137,15 +137,18 @@ mod test {
 
     #[test]
     fn test_fmt() {
+        use std::str::FromStr;
         let a = rbs::to_value!(true);
         let b = rbs::to_value!("11");
-        let c = rbs::to_value!(DateTime::now());
-        let d = rbs::to_value!{
+        let c = rbs::to_value!(DateTime::from_str("2023-03-22 00:39:04.0278992").unwrap());
+        let d = rbs::to_value! {
             "1":1,
         };
-        println!("{}",a);
-        println!("{}",b);
-        println!("{},{:?}",c,c);
-        println!("{}",d);
+        assert_eq!(a.to_string(), "true");
+        assert_eq!(b.to_string(), r#""11""#);
+        println!("{},{:?}", c, c);
+        assert_eq!(c.to_string(), r#""2023-03-22 00:39:04.0278992""#);
+        assert_eq!(format!("{:?}", c), r#"Ext("DateTime", String("2023-03-22 00:39:04.0278992"))"#);
+        assert_eq!(d.to_string(), r#"{"1":1}"#);
     }
 }
