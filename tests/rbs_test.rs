@@ -3,6 +3,7 @@ mod test {
     use rbatis_codegen::ops::{Add, BitAnd, BitOr, Div, Mul, Not, PartialEq, PartialOrd, Rem, Sub};
     use rbs::Value;
     use std::cmp::Ordering;
+    use rbdc::datetime::DateTime;
 
     #[test]
     fn test_ser_i32() {
@@ -132,5 +133,19 @@ mod test {
         let a = rbs::to_value!(true);
         let b = rbs::to_value!(false);
         assert_eq!(a.op_bitor(b), true);
+    }
+
+    #[test]
+    fn test_fmt() {
+        let a = rbs::to_value!(true);
+        let b = rbs::to_value!("11");
+        let c = rbs::to_value!(DateTime::now());
+        let d = rbs::to_value!{
+            "1":1,
+        };
+        println!("{}",a);
+        println!("{}",b);
+        println!("{},{:?}",c,c);
+        println!("{}",d);
     }
 }

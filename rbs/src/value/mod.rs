@@ -630,8 +630,8 @@ impl Display for Value {
                 Ok(())
             }
             Value::Map(ref vec) => Display::fmt(vec, f),
-            Value::Ext(ref ty, ref data) => {
-                write!(f, "{}({})", ty, data.deref())
+            Value::Ext(_, ref data) => {
+                write!(f, "{}", data.deref())
             }
         }
     }
