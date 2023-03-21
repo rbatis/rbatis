@@ -11,8 +11,8 @@ pub struct Json(pub String);
 
 impl<'de> serde::Deserialize<'de> for Json {
     fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
-    where
-        D: Deserializer<'de>,
+        where
+            D: Deserializer<'de>,
     {
         Ok(Json::from(Value::deserialize(deserializer)?))
     }
@@ -82,6 +82,13 @@ impl From<Json> for Value {
     }
 }
 
+impl From<Json> for serde_json::Value {
+    fn from(arg: Json) -> Self {
+        let v: serde_json::Value = serde_json::from_str(&arg.0).unwrap_or_default();
+        v
+    }
+}
+
 impl FromStr for Json {
     type Err = Error;
 
@@ -89,6 +96,7 @@ impl FromStr for Json {
         Ok(Self(s.to_string()))
     }
 }
+
 
 #[cfg(test)]
 mod test {
