@@ -601,7 +601,7 @@ where
 impl Display for Value {
     #[cold]
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> Result<(), fmt::Error> {
-        match *self {
+        match self {
             Value::Null => f.write_str("null"),
             Value::Bool(val) => Display::fmt(&val, f),
             Value::I32(ref val) => Display::fmt(&val, f),
@@ -610,9 +610,9 @@ impl Display for Value {
             Value::U64(ref val) => Display::fmt(&val, f),
             Value::F32(val) => Display::fmt(&val, f),
             Value::F64(val) => Display::fmt(&val, f),
-            Value::String(_) => {
+            Value::String(val) => {
                 f.write_str("\"")?;
-                Display::fmt(&self.as_str().unwrap_or_default(), f)?;
+                Display::fmt(val, f)?;
                 f.write_str("\"")
             }
             Value::Binary(ref val) => Debug::fmt(val, f),
