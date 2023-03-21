@@ -1,8 +1,8 @@
 use log::LevelFilter;
-use rbatis::dark_std::defer;
 use rbatis::rbatis::Rbatis;
-use rbatis::rbdc::datetime::DateTime;
+use rbatis::rbdc::datetime::FastDateTime;
 use serde::{Deserialize, Serialize};
+use rbatis::dark_std::defer;
 
 /// example table
 #[derive(Clone, Debug, Serialize, Deserialize)]
@@ -16,7 +16,7 @@ pub struct BizActivity {
     pub sort: Option<String>,
     pub status: Option<i32>,
     pub remark: Option<String>,
-    pub create_time: Option<DateTime>,
+    pub create_time: Option<FastDateTime>,
     pub version: Option<i64>,
     pub delete_flag: Option<i32>,
 }
@@ -38,8 +38,8 @@ pub async fn init_db() -> Rbatis {
     let sql = std::fs::read_to_string("example/table_sqlite.sql").unwrap();
     let raw = fast_log::LOGGER.get_level().clone();
     fast_log::LOGGER.set_level(LevelFilter::Off);
-    defer!(|| {
-        fast_log::LOGGER.set_level(raw);
+    defer!(||{
+         fast_log::LOGGER.set_level(raw);
     });
     let _ = rb.exec(&sql, vec![]).await;
     // ------------create tables way 2 end------------

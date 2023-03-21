@@ -2,10 +2,10 @@
 extern crate rbatis;
 pub mod model;
 
+use serde_json::json;
 use model::*;
 use rbatis::executor::Executor;
-use rbatis::rbdc::datetime::DateTime;
-use serde_json::json;
+use rbatis::rbdc::datetime::FastDateTime;
 
 // Clion Smart tips: click code, choose 'Inject Language or Reference', and then choose html
 #[html_sql(r#"<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.1//EN" "https://raw.githubusercontent.com/rbatis/rbatis/master/rbatis-codegen/mybatis-3-mapper.dtd">
@@ -36,7 +36,7 @@ use serde_json::json;
 async fn select_by_condition(
     rb: &mut dyn Executor,
     name: &str,
-    dt: &DateTime,
+    dt: &FastDateTime,
     a: bool,
 ) -> rbatis::Result<Vec<BizActivity>> {
     impled!()
@@ -50,7 +50,7 @@ pub async fn main() {
     let a = select_by_condition(
         &mut rb.clone(),
         "test",
-        &DateTime::now().set_micro(0),
+        &FastDateTime::now().set_micro(0),
         false,
     )
     .await

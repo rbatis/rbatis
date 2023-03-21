@@ -12,7 +12,7 @@ pub trait AsProxy {
     fn str(&self) -> &str;
     fn string(self) -> String;
     fn bool(&self) -> bool;
-    fn string_sql(&self) -> String;
+    fn as_sql(&self) -> String;
     fn as_binary(&self) -> Vec<u8>;
 }
 
@@ -49,7 +49,7 @@ impl AsProxy for Value {
         self.as_bool().unwrap_or_default()
     }
 
-    fn string_sql(&self) -> String {
+    fn as_sql(&self) -> String {
         match self {
             Value::String(s) => s.to_string(),
             _ => self.to_string(),
@@ -59,7 +59,7 @@ impl AsProxy for Value {
     fn as_binary(&self) -> Vec<u8> {
         match self {
             Value::Binary(s) => s.to_owned(),
-            _ => vec![],
+            _ => vec![]
         }
     }
 }

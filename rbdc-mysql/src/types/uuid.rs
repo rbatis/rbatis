@@ -15,6 +15,6 @@ impl Encode for Uuid {
 
 impl Decode for Uuid {
     fn decode(value: MySqlValue) -> Result<Self, Error> {
-        Ok(Self::from(value.as_str().unwrap_or_default().to_string()))
+        Ok(Self(value.as_str().unwrap_or_default().to_string()))
     }
 }

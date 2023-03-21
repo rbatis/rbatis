@@ -1,5 +1,5 @@
 use rbatis::rbatis::Rbatis;
-use rbatis::rbdc::datetime::DateTime;
+use rbatis::rbdc::datetime::FastDateTime;
 use rbatis::table_sync::{SqliteTableSync, TableSync};
 use rbdc_sqlite::driver::SqliteDriver;
 use rbs::to_value;
@@ -9,7 +9,7 @@ pub struct RBUser {
     pub id: i32,
     pub name: Option<String>,
     pub remark: Option<String>,
-    pub create_time: Option<DateTime>,
+    pub create_time: Option<FastDateTime>,
     pub version: Option<i64>,
     pub delete_flag: Option<i32>,
 }
@@ -28,7 +28,7 @@ pub async fn main() {
             id: 0,
             name: Some("".to_string()),
             remark: Some("".to_string()),
-            create_time: Some(DateTime::utc()),
+            create_time: Some(FastDateTime::utc()),
             version: Some(1),
             delete_flag: Some(1),
         }),

@@ -3,12 +3,12 @@ extern crate rbatis;
 
 pub mod model;
 
-use model::*;
-use rbatis::rbdc::datetime::DateTime;
-use rbatis::sql::PageRequest;
 use serde_json::json;
+use model::*;
+use rbatis::rbdc::datetime::FastDateTime;
+use rbatis::sql::PageRequest;
 
-htmlsql_select_page!(select_page_data2(name: &str, dt: &DateTime) -> BizActivity => r#"<select id="select_page_data">
+htmlsql_select_page!(select_page_data2(name: &str, dt: &FastDateTime) -> BizActivity => r#"<select id="select_page_data">
         `select `
         <if test="do_count == true">
             `count(1)`
@@ -49,7 +49,7 @@ pub async fn main() {
         &mut rb.clone(),
         &PageRequest::new(1, 10),
         "test",
-        &DateTime::now().set_micro(0),
+        &FastDateTime::now().set_micro(0),
     )
     .await
     .unwrap();

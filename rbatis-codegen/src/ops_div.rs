@@ -1,6 +1,5 @@
 use crate::ops::AsProxy;
 use crate::ops::Div;
-use rbs::value::util::to_number;
 use rbs::Value;
 
 fn op_div_u64(value: &Value, other: u64) -> u64 {
@@ -168,13 +167,7 @@ fn op_div_value(left: Value, rhs: Value) -> Value {
             }
             Value::F64(s / rhs)
         }
-        Value::String(ref l) => {
-            let rhs = rhs.f64();
-            if rhs == 0.0 {
-                return Value::F64(0.0);
-            }
-            Value::F64(to_number(l) / rhs)
-        }
+        Value::Ext(_, e) => op_div_value(*e, rhs),
         _ => Value::Null,
     }
 }
@@ -255,19 +248,3 @@ impl Div<&$ty> for &$ty{
 div_self!([u8 u16 u32 u64]);
 div_self!([i8 i16 i32 i64 isize]);
 div_self!([f32 f64]);
-
-impl Div<&str> for Value {
-    type Output = f64;
-
-    fn op_div(self, rhs: &str) -> Self::Output {
-        self.f64() / to_number(rhs)
-    }
-}
-
-impl Div<Value> for &str {
-    type Output = f64;
-
-    fn op_div(self, rhs: Value) -> Self::Output {
-        to_number(self) / rhs.f64()
-    }
-}

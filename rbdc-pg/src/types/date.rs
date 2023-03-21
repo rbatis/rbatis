@@ -70,7 +70,7 @@ impl Encode for fastdate::Date {
 
 impl Decode for Date {
     fn decode(value: PgValue) -> Result<Self, Error> {
-        Ok(Self::from(fastdate::Date::decode(value)?))
+        Ok(Self(fastdate::Date::decode(value)?))
     }
 }
 

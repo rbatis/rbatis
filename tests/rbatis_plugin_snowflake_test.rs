@@ -1,7 +1,7 @@
 #[cfg(test)]
 mod tests {
-    use rbatis::snowflake::{new_snowflake_id, Snowflake};
     use std::sync::atomic::Ordering;
+    use rbatis::snowflake::{new_snowflake_id, Snowflake};
 
     #[test]
     fn test_snowflake_serialization() {
@@ -11,14 +11,8 @@ mod tests {
         assert_eq!(sf1.epoch, sf2.epoch);
         assert_eq!(sf1.worker_id, sf2.worker_id);
         assert_eq!(sf1.datacenter_id, sf2.datacenter_id);
-        assert_eq!(
-            sf1.sequence.load(Ordering::Relaxed),
-            sf2.sequence.load(Ordering::Relaxed)
-        );
-        assert_eq!(
-            sf1.time.load(Ordering::Relaxed),
-            sf2.time.load(Ordering::Relaxed)
-        );
+        assert_eq!(sf1.sequence.load(Ordering::Relaxed), sf2.sequence.load(Ordering::Relaxed));
+        assert_eq!(sf1.time.load(Ordering::Relaxed), sf2.time.load(Ordering::Relaxed));
     }
 
     #[test]
@@ -28,14 +22,8 @@ mod tests {
         assert_eq!(sf1.epoch, sf2.epoch);
         assert_eq!(sf1.worker_id, sf2.worker_id);
         assert_eq!(sf1.datacenter_id, sf2.datacenter_id);
-        assert_eq!(
-            sf1.sequence.load(Ordering::Relaxed),
-            sf2.sequence.load(Ordering::Relaxed)
-        );
-        assert_eq!(
-            sf1.time.load(Ordering::Relaxed),
-            sf2.time.load(Ordering::Relaxed)
-        );
+        assert_eq!(sf1.sequence.load(Ordering::Relaxed), sf2.sequence.load(Ordering::Relaxed));
+        assert_eq!(sf1.time.load(Ordering::Relaxed), sf2.time.load(Ordering::Relaxed));
     }
 
     #[test]

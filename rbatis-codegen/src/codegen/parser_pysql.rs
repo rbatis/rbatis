@@ -18,9 +18,7 @@ use std::collections::HashMap;
 use syn::{AttributeArgs, ItemFn};
 
 pub trait ParsePySql {
-    fn parse_pysql(
-        arg: &str,
-    ) -> Result<Vec<NodeType>, crate::codegen::syntax_tree_pysql::error::Error>;
+    fn parse_pysql(arg: &str) -> Result<Vec<NodeType>, crate::codegen::syntax_tree_pysql::error::Error>;
 }
 
 pub fn impl_fn_py(m: &ItemFn, args: &AttributeArgs) -> TokenStream {

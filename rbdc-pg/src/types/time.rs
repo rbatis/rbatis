@@ -31,14 +31,14 @@ impl Decode for Time {
                         t + Duration::from_micros(us as u64)
                     }
                 };
-                Ok(Time::from(fastdate::Time {
+                Ok(Time(fastdate::Time {
                     nano: t.nano,
                     sec: t.sec,
                     min: t.min,
                     hour: t.hour,
                 }))
             }
-            PgValueFormat::Text => Ok(Time::from(fastdate::Time::from_str(value.as_str()?)?)),
+            PgValueFormat::Text => Ok(Time(fastdate::Time::from_str(value.as_str()?)?)),
         }
     }
 }

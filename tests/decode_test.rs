@@ -2,13 +2,12 @@
 mod test {
     use rbs::value::map::ValueMap;
     use rbs::{value_map, Value};
-    use std::str::FromStr;
 
     #[test]
     fn test_decode_value() {
         let m = value_map! {
-            1: 1,
-            "2": 2,
+            1.to_string() => 1,
+            2.to_string() => 2,
         };
         let m = Value::Map(m);
         let v: Value = rbatis::decode(Value::Array(vec![m.clone()])).unwrap();
@@ -17,11 +16,11 @@ mod test {
 
     #[test]
     fn test_decode_one() {
-        let date = rbdc::types::datetime::DateTime::now();
+        let date = rbdc::types::datetime::FastDateTime::now();
         let m = value_map! {
-            "1" : date.clone(),
+            1.to_string() => date.clone(),
         };
-        let v: rbdc::types::datetime::DateTime =
+        let v: rbdc::types::datetime::FastDateTime =
             rbatis::decode(Value::Array(vec![Value::Map(m)])).unwrap();
         assert_eq!(v, date);
     }
@@ -51,8 +50,8 @@ mod test {
     #[test]
     fn test_decode_json_array() {
         let m = value_map! {
-            "1" : 1,
-            "2" : 2,
+            1.to_string() => 1,
+            2.to_string() => 2,
         };
         let m = Value::Map(m);
         let v: serde_json::Value =
@@ -61,18 +60,5 @@ mod test {
             v,
             serde_json::from_str::<serde_json::Value>(r#"[{"1":1,"2":2},{"1":1,"2":2}]"#).unwrap()
         );
-    }
-
-    #[test]
-    fn test_decode_rbdc_types() {
-        use rbdc::types::*;
-        let date = date::Date::from_str("2023-12-12").unwrap();
-        let date_new: date::Date = rbs::from_value(rbs::to_value!(date.clone())).unwrap();
-        assert_eq!(date, date_new);
-
-        let datetime = datetime::DateTime::from_str("2023-12-12 12-12-12").unwrap();
-        let datetime_new: datetime::DateTime =
-            rbs::from_value(rbs::to_value!(datetime.clone())).unwrap();
-        assert_eq!(datetime, datetime_new);
     }
 }

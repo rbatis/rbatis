@@ -38,11 +38,11 @@ impl Decode for Timestamp {
                         epoch + std::time::Duration::from_micros(us as u64)
                     }
                 };
-                Timestamp::from(v.unix_timestamp_millis() as u64)
+                Timestamp(v.unix_timestamp_millis() as u64)
             }
             PgValueFormat::Text => {
                 let s = value.as_str()?;
-                Timestamp::from(
+                Timestamp(
                     fastdate::DateTime::from_str(s)
                         .unwrap()
                         .unix_timestamp_millis() as u64,
