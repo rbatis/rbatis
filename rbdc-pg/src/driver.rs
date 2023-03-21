@@ -58,7 +58,7 @@ mod test {
 // mod test2 {
 //     use crate::driver::PgDriver;
 //     use rbdc::block_on;
-//     use rbdc::datetime::FastDateTime;
+//     use rbdc::datetime::DateTime;
 //     use rbdc::db::Driver;
 //     use rbdc::db::Placeholder;
 //     use rbdc::decimal::Decimal;
@@ -97,7 +97,7 @@ mod test {
 //                 .unwrap();
 //             let param = vec![
 //                 Value::String("http://www.test.com".to_string()),
-//                 FastDateTime::now().into(),
+//                 DateTime::now().into(),
 //                 Decimal("1".to_string()).into(),
 //                 Value::String("1".to_string()),
 //             ];

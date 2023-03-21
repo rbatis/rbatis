@@ -11,7 +11,7 @@ use crate::types::year::Year;
 use crate::types::{Decode, Encode, TypeInfo};
 use crate::value::MySqlValue;
 use rbdc::date::Date;
-use rbdc::datetime::FastDateTime;
+use rbdc::datetime::DateTime;
 use rbdc::decimal::Decimal;
 use rbdc::json::Json;
 use rbdc::timestamp::Timestamp;
@@ -129,7 +129,7 @@ impl Encode for Value {
                     .encode(buf),
                     //RFC3339 = "2006-01-02 15:04:05.999999"
                     "Timestamp" => Timestamp(v.as_u64().unwrap_or_default()).encode(buf),
-                    "DateTime" => FastDateTime(
+                    "DateTime" => DateTime(
                         fastdate::DateTime::from_str(&v.into_string().unwrap_or_default()).unwrap(),
                     )
                     .encode(buf),

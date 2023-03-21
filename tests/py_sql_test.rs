@@ -20,7 +20,7 @@ mod test {
     use rbatis::intercept::SqlIntercept;
     use rbatis::sql::PageRequest;
     use rbatis::{Error, Rbatis};
-    use rbdc::datetime::FastDateTime;
+    use rbdc::datetime::DateTime;
     use rbdc::db::{ConnectOptions, Connection, Driver, ExecResult, MetaData, Row};
     use rbdc::rt::block_on;
     use rbs::{from_value, to_value, Value};
@@ -194,7 +194,7 @@ mod test {
         pub sort: Option<String>,
         pub status: Option<i32>,
         pub remark: Option<String>,
-        pub create_time: Option<rbdc::datetime::FastDateTime>,
+        pub create_time: Option<rbdc::datetime::DateTime>,
         pub version: Option<i64>,
         pub delete_flag: Option<i32>,
         //exec sql

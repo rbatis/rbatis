@@ -56,7 +56,7 @@ fn bench_insert() {
             sort: None,
             status: Some(2),
             remark: Some("2".into()),
-            create_time: Some(rbdc::datetime::FastDateTime::now()),
+            create_time: Some(rbdc::datetime::DateTime::now()),
             version: Some(1),
             delete_flag: Some(1),
         };
@@ -166,7 +166,7 @@ struct MockTable {
     pub sort: Option<String>,
     pub status: Option<i32>,
     pub remark: Option<String>,
-    pub create_time: Option<rbdc::datetime::FastDateTime>,
+    pub create_time: Option<rbdc::datetime::DateTime>,
     pub version: Option<i64>,
     pub delete_flag: Option<i32>,
 }

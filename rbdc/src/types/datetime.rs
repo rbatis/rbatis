@@ -6,16 +6,22 @@ use std::ops::{Add, Deref, DerefMut, Sub};
 use std::str::FromStr;
 use std::time::Duration;
 
-#[derive(Clone, Eq, PartialEq, Hash)]
-pub struct FastDateTime(pub fastdate::DateTime);
+#[deprecated(
+since = "4.1.0",
+note = "Please use `rbdc::datetime::DateTime` instead"
+)]
+pub type FastDateTime = DateTime;
 
-impl Display for FastDateTime {
+#[derive(Clone, Eq, PartialEq, Hash)]
+pub struct DateTime(pub fastdate::DateTime);
+
+impl Display for DateTime {
     fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
         write!(f, "DateTime({})", self.0)
     }
 }
 
-impl Serialize for FastDateTime {
+impl Serialize for DateTime {
     fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
     where
         S: Serializer,
@@ -24,13 +30,13 @@ impl Serialize for FastDateTime {
     }
 }
 
-impl Debug for FastDateTime {
+impl Debug for DateTime {
     fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
         write!(f, "DateTime({})", self.0)
     }
 }
 
-impl<'de> Deserialize<'de> for FastDateTime {
+impl<'de> Deserialize<'de> for DateTime {
     fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
     where
         D: Deserializer<'de>,
@@ -60,7 +66,7 @@ impl<'de> Deserialize<'de> for FastDateTime {
     }
 }
 
-impl Deref for FastDateTime {
+impl Deref for DateTime {
     type Target = fastdate::DateTime;
 
     fn deref(&self) -> &Self::Target {
@@ -68,13 +74,13 @@ impl Deref for FastDateTime {
     }
 }
 
-impl DerefMut for FastDateTime {
+impl DerefMut for DateTime {
     fn deref_mut(&mut self) -> &mut Self::Target {
         &mut self.0
     }
 }
 
-impl FastDateTime {
+impl DateTime {
     pub fn now() -> Self {
         Self(fastdate::DateTime::now())
     }
@@ -119,19 +125,19 @@ impl FastDateTime {
     }
 
     pub fn from_timestamp(sec: i64) -> Self {
-        FastDateTime(fastdate::DateTime::from_timestamp(sec))
+        DateTime(fastdate::DateTime::from_timestamp(sec))
     }
 
     pub fn from_timestamp_millis(ms: i64) -> Self {
-        FastDateTime(fastdate::DateTime::from_timestamp_millis(ms))
+        DateTime(fastdate::DateTime::from_timestamp_millis(ms))
     }
 
     pub fn from_timestamp_nano(nano: u128) -> Self {
-        FastDateTime(fastdate::DateTime::from_timestamp_nano(nano))
+        DateTime(fastdate::DateTime::from_timestamp_nano(nano))
     }
 }
 
-impl Sub for FastDateTime {
+impl Sub for DateTime {
     type Output = Duration;
 
     fn sub(self, rhs: Self) -> Self::Output {
@@ -139,85 +145,36 @@ impl Sub for FastDateTime {
     }
 }
 
-impl Add<Duration> for FastDateTime {
-    type Output = FastDateTime;
+impl Add<Duration> for DateTime {
+    type Output = DateTime;
 
     fn add(self, rhs: Duration) -> Self::Output {
-        FastDateTime(self.0.add(rhs))
+        DateTime(self.0.add(rhs))
     }
 }
 
-impl Sub<Duration> for FastDateTime {
-    type Output = FastDateTime;
+impl Sub<Duration> for DateTime {
+    type Output = DateTime;
 
     fn sub(self, rhs: Duration) -> Self::Output {
-        FastDateTime(self.0.sub(rhs))
+        DateTime(self.0.sub(rhs))
     }
 }
 
-impl FromStr for FastDateTime {
+impl FromStr for DateTime {
     type Err = crate::error::Error;
 
     fn from_str(s: &str) -> Result<Self, Self::Err> {
-        Ok(FastDateTime(
+        Ok(DateTime(
             fastdate::DateTime::from_str(s)
                 .map_err(|e| crate::error::Error::from(e.to_string()))?,
         ))
     }
 }
 
-impl From<FastDateTime> for Value {
-    fn from(arg: FastDateTime) -> Self {
+impl From<DateTime> for Value {
+    fn from(arg: DateTime) -> Self {
         Value::Ext("DateTime", Box::new(Value::String(arg.0.to_string())))
     }
 }
 
-#[derive(serde::Serialize, serde::Deserialize, Debug, Clone, Eq, PartialEq)]
-#[serde(rename = "DateTime")]
-pub struct DateTime(pub String);
-
-impl Display for DateTime {
-    fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
-        write!(f, "DateTime({})", self.0)
-    }
-}
-
-impl Deref for DateTime {
-    type Target = String;
-
-    fn deref(&self) -> &Self::Target {
-        &self.0
-    }
-}
-
-impl DerefMut for DateTime {
-    fn deref_mut(&mut self) -> &mut Self::Target {
-        &mut self.0
-    }
-}
-
-impl FromStr for DateTime {
-    type Err = crate::Error;
-
-    fn from_str(s: &str) -> Result<Self, Self::Err> {
-        Ok(DateTime(s.to_string()))
-    }
-}
-
-#[test]
-fn test() {
-    let date = DateTime("2017-02-06 00:00:00".to_string());
-    let v = rbs::to_value(&date).unwrap();
-    println!("{}", v);
-    assert_eq!(
-        "2017-02-06 00:00:00",
-        v.as_str().unwrap_or_default().to_string()
-    );
-    let date = FastDateTime(fastdate::DateTime::from_str(&date.0).unwrap());
-    let v = rbs::to_value(&date).unwrap();
-    println!("{}", v);
-    assert_eq!(
-        "2017-02-06 00:00:00",
-        v.as_str().unwrap_or_default().to_string()
-    );
-}
