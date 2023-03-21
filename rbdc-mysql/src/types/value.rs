@@ -121,28 +121,36 @@ impl Encode for Value {
             Value::String(mut v) => {
                 let t = {
                     if Date::is(&v) != "" {
+                        Date::trim_ends_match(&mut v);
                         "Date"
                     } else if DateTime::is(&v) != "" {
+                        DateTime::trim_ends_match(&mut v);
                         "DateTime"
                     } else if Time::is(&v) != "" {
+                        Time::trim_ends_match(&mut v);
                         "Time"
                     } else if Timestamp::is(&v) != "" {
+                        Timestamp::trim_ends_match(&mut v);
                         "Timestamp"
                     } else if Decimal::is(&v) != "" {
+                        Decimal::trim_ends_match(&mut v);
                         "Decimal"
                     } else if Uuid::is(&v) != "" {
+                        Uuid::trim_ends_match(&mut v);
                         "Uuid"
                     } else if v.ends_with("Year") {
+                        v = v.trim_end_matches("Year").to_string();
                         "Year"
                     } else if v.ends_with("Enum") {
+                        v = v.trim_end_matches("Enum").to_string();
                         "Enum"
                     } else if v.ends_with("Set") {
+                        v = v.trim_end_matches("Set").to_string();
                         "Set"
                     } else {
                         ""
                     }
                 };
-                v = v.trim_end_matches(t).to_string();
                 match t {
                     "Uuid" => Uuid::from(v).encode(buf),
                     //decimal = 12345678
@@ -182,8 +190,8 @@ impl Encode for Value {
 
 impl Decode for Value {
     fn decode(v: MySqlValue) -> Result<Self, Error>
-    where
-        Self: Sized,
+        where
+            Self: Sized,
     {
         Ok(match v.type_info().r#type {
             ColumnType::Tiny => Value::U64(uint_decode(v).unwrap_or_default()),
@@ -229,5 +237,32 @@ impl Decode for Value {
                 Value::from(Value::Binary(v.as_bytes().unwrap_or_default().to_vec()))
             }
         })
+    }
+}
+
+
+#[cfg(test)]
+mod test {
+    use rbdc::date::Date;
+    use rbdc::datetime::DateTime;
+    use crate::types::Encode;
+
+    #[test]
+    fn test_encode_date() {
+        let v = Date::from(fastdate::Date {
+            day: 1,
+            mon: 1,
+            year: 2023,
+        });
+        let mut buf = vec![];
+        v.encode(&mut buf).unwrap();
+
+        let mut target_buf = vec![];
+        fastdate::Date {
+            day: 1,
+            mon: 1,
+            year: 2023,
+        }.encode(&mut target_buf).unwrap();
+        assert_eq!(buf, target_buf);
     }
 }
