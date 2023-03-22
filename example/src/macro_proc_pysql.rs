@@ -3,12 +3,12 @@ extern crate rbatis;
 
 pub mod model;
 
+use serde_json::json;
 use crate::rbatis::sql::IntoSql;
 use crate::{init_db, BizActivity};
 use model::*;
 use rbatis::executor::Executor;
 use rbatis::Error;
-use serde_json::json;
 #[py_sql(
     "`select * from biz_activity where delete_flag = 0`
                   if name != '':

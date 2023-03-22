@@ -22,7 +22,7 @@ impl Encode for Json {
         buf.push(1);
 
         // the JSON data written to the buffer is the same regardless of parameter type
-        buf.write_all(&self.0.to_string().into_bytes())?;
+        buf.write_all(&self.0.into_bytes())?;
 
         Ok(IsNull::No)
     }
@@ -34,7 +34,9 @@ impl Decode for Json {
         let type_info = value.type_info;
         let mut buf = value.value.unwrap_or_default();
         if buf.len() == 0 {
-            return Ok(Json::from(serde_json::Value::Null));
+            return Ok(Json {
+                0: "null".to_string(),
+            });
         }
         if fmt == PgValueFormat::Binary && type_info == PgTypeInfo::JSONB {
             assert_eq!(
@@ -44,9 +46,9 @@ impl Decode for Json {
             );
             buf.remove(0);
         }
-        Ok(Self::from(serde_json::Value::String(unsafe {
-            String::from_utf8_unchecked(buf)
-        })))
+        Ok(Self {
+            0: unsafe { String::from_utf8_unchecked(buf) },
+        })
     }
 }
 

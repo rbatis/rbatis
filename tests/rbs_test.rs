@@ -1,10 +1,9 @@
 #[cfg(test)]
 mod test {
     use rbatis_codegen::ops::{Add, BitAnd, BitOr, Div, Mul, Not, PartialEq, PartialOrd, Rem, Sub};
-    use rbs::value::map::ValueMap;
-    use rbs::{to_value, Value};
+    use rbs::Value;
     use std::cmp::Ordering;
-    use std::ops::Index;
+    use rbdc::datetime::DateTime;
 
     #[test]
     fn test_ser_i32() {
@@ -137,78 +136,19 @@ mod test {
     }
 
     #[test]
-    fn test_into_iter() {
-        let mut v = ValueMap::new();
-        v.insert(1.into(), 2.into());
-        let m = Value::Map(v.clone());
-        let r = &m;
-        let mut items = vec![];
-        for (k, v) in r.into_iter() {
-            items.push((k.as_ref().clone(), v.clone()));
-        }
-        assert_eq!(ValueMap::from(items), v);
-    }
-
-    #[test]
-    fn test_readme_code() {
-        #[derive(serde::Serialize, serde::Deserialize, Debug)]
-        pub struct A {
-            pub name: String,
-        }
-        let a = A {
-            name: "sss".to_string(),
+    fn test_fmt() {
+        use std::str::FromStr;
+        let a = rbs::to_value!(true);
+        let b = rbs::to_value!("11");
+        let c = rbs::to_value!(DateTime::from_str("2023-03-22 00:39:04.0278992").unwrap());
+        let d = rbs::to_value! {
+            "1":1,
         };
-        let v = rbs::to_value(a).unwrap();
-        println!("v: {}", v);
-        let s: A = rbs::from_value(v.clone()).unwrap();
-        println!("s:{:?}", s);
-        let json = v.to_string();
-        assert_eq!(r#"{"name":"sss"}"#, json);
-    }
-
-    #[test]
-    fn test_macro_to_value_empty() {
-        let v = rbs::to_value! {};
-        println!("{}", v.to_string());
-        assert_eq!(r#"{}"#, v.to_string());
-    }
-
-    #[test]
-    fn test_macro_to_value() {
-        let m = rbs::to_value! {
-            1: 1,
-            "2": 2,
-        };
-        println!("{}", m.to_string());
-        assert_eq!(r#"{1:1,"2":2}"#, m.to_string());
-    }
-
-    #[test]
-    fn test_macro_to_value_index() {
-        let m = rbs::to_value! {
-            1: 1,
-            "2": 2,
-        };
-        let v = m.index("2");
-        assert_eq!(v.as_i64().unwrap_or_default(), 2);
-        let v2 = &m["2"];
-        assert_eq!(v2.as_i64().unwrap_or_default(), 2);
-    }
-
-    #[test]
-    fn test_rbatis_codegen_op_add() {
-        let v = to_value!("10");
-        let v2 = to_value!("2");
-        let r = v.op_add(v2);
-        assert_eq!(r.as_str().unwrap_or_default(), "102");
-    }
-
-    #[test]
-    fn test_rbatis_codegen_op_div() {
-        let v = to_value!("10DEC");
-        let v2 = to_value!("2DEC");
-        let r = v.op_div(v2);
-        assert_eq!(r.as_i64().unwrap_or_default(), 5);
-        assert_eq!("10".op_div(to_value!(2)), 5.0);
+        assert_eq!(a.to_string(), "true");
+        assert_eq!(b.to_string(), r#""11""#);
+        println!("{},{:?}", c, c);
+        assert_eq!(c.to_string(), r#""2023-03-22 00:39:04.0278992""#);
+        assert_eq!(format!("{:?}", c), r#"Ext("DateTime", String("2023-03-22 00:39:04.0278992"))"#);
+        assert_eq!(d.to_string(), r#"{"1":1}"#);
     }
 }

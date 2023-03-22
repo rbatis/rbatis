@@ -10,19 +10,11 @@ pub use self::se::{to_value, to_value_def};
 
 mod de;
 mod se;
-pub use se::Serializer;
-pub type Deserializer = Value;
 /// ser ref Error
-#[derive(Debug, Eq, PartialEq)]
+#[derive(Debug)]
 pub enum Error {
     /// Syntax
     Syntax(String),
-}
-
-impl From<&str> for Error {
-    fn from(value: &str) -> Self {
-        Error::Syntax(value.to_string())
-    }
 }
 
 impl Display for Error {
@@ -56,6 +48,7 @@ impl ValueExt for Value {
             Value::Binary(ref v) => Unexpected::Bytes(v),
             Value::Array(..) => Unexpected::Seq,
             Value::Map(..) => Unexpected::Map,
+            Value::Ext(..) => Unexpected::Seq,
         }
     }
 }

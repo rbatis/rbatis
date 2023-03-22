@@ -3,10 +3,10 @@ extern crate rbatis;
 
 pub mod model;
 
+use serde_json::json;
 use crate::{init_db, BizActivity};
 use model::*;
 use rbatis::rbatis::Rbatis;
-use serde_json::json;
 
 /// doc you can see https://rbatis.github.io/rbatis.io
 #[sql("select * from biz_activity where delete_flag = ?")]

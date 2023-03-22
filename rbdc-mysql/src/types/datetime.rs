@@ -37,9 +37,7 @@ impl Encode for DateTime {
 impl Decode for DateTime {
     fn decode(value: MySqlValue) -> Result<Self, Error> {
         Ok(match value.format() {
-            MySqlValueFormat::Text => {
-                Self::from(fastdate::DateTime::from_str(value.as_str()?).unwrap())
-            }
+            MySqlValueFormat::Text => Self(fastdate::DateTime::from_str(value.as_str()?).unwrap()),
             MySqlValueFormat::Binary => {
                 let buf = value.as_bytes()?;
                 let len = buf[0];
@@ -54,7 +52,7 @@ impl Decode for DateTime {
                         hour: 0,
                     }
                 };
-                Self::from(fastdate::DateTime {
+                Self(fastdate::DateTime {
                     nano: time.nano,
                     sec: time.sec,
                     min: time.min,

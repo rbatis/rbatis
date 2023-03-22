@@ -1,5 +1,6 @@
 use crate::connection::{tls, DropBox, MySqlConnection, MySqlStream, MAX_PACKET_SIZE};
 use crate::options::{MySqlConnectOptions, MySqlSslMode};
+use crate::protocol::auth::AuthPlugin;
 use crate::protocol::connect::{
     AuthSwitchRequest, AuthSwitchResponse, Handshake, HandshakeResponse,
 };
@@ -7,7 +8,6 @@ use crate::protocol::Capabilities;
 use bytes::buf::Buf;
 use bytes::Bytes;
 use rbdc::{err_protocol, Error};
-use crate::protocol::auth::AuthPlugin;
 
 impl MySqlConnection {
     pub(crate) async fn establish(options: &MySqlConnectOptions) -> Result<Self, Error> {
@@ -122,7 +122,7 @@ impl MySqlConnection {
                             break;
                         }
 
-                        // plugin signaled to continue authentication
+                    // plugin signaled to continue authentication
                     } else {
                         return Err(err_protocol!(
                             "unexpected packet 0x{:02x} during authentication",

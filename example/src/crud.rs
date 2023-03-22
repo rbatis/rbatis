@@ -3,11 +3,11 @@ extern crate rbatis;
 
 pub mod model;
 
+use serde_json::json;
 use crate::model::{init_db, BizActivity};
 use rbatis::rbdc::datetime::DateTime;
 use rbatis::sql::page::PageRequest;
-use rbs::{to_value, Value};
-use serde_json::json;
+use rbs::Value;
 
 //crud!(BizActivity {},"biz_activity");//custom table name
 //impl_select!(BizActivity{select_all_by_id(table_name:&str,id:&str) => "`where id = #{id}`"}); //custom table name
@@ -25,11 +25,10 @@ impl_select_page!(BizActivity{select_page_by_name(name:&str) =>"
      if name == '':
        `where name != ''`"});
 
-// sql() method, or you can write an new one pub trait IntoSql {
-//     fn sql(&self) -> Value;
-// }
+// sql() method write in rbatis::sql::methods.rs
 use rbatis::sql::IntoSql;
-impl_select!(BizActivity{select_by_method(ids:&[&str],logic:Value) -> Option => "`where ${logic.sql()} and id in ${ids.sql()}   limit 1`"});
+use rbs::value::map::ValueMap;
+impl_select!(BizActivity{select_by_method(ids:&[&str],logic:ValueMap) -> Option => "`where ${logic.sql()} and id in ${ids.sql()}   limit 1`"});
 
 #[tokio::main]
 pub async fn main() {
@@ -99,15 +98,10 @@ pub async fn main() {
     let data = BizActivity::select_in_column(&mut rb, "id", &["1", "2", "3"]).await;
     println!("select_in_column = {}", json!(data));
 
-    let data = BizActivity::select_by_method(
-        &mut rb,
-        &["1", "2"],
-        to_value! {
-            "id = ": 1,
-            "and id != ":2,
-        },
-    )
-    .await;
+    let mut logic = ValueMap::new();
+    logic.insert("id = ".into(), Value::I32(1));
+    logic.insert("and id != ".into(), Value::I32(2));
+    let data = BizActivity::select_by_method(&mut rb, &["1", "2"], logic).await;
     println!("select_by_method = {}", json!(data));
 
     let data = BizActivity::delete_in_column(&mut rb, "id", &["1", "2", "3"]).await;

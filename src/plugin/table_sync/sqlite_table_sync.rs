@@ -1,14 +1,8 @@
+use crate::executor::RBatisConnExecutor;
 use crate::table_sync::TableSync;
+use crate::Error;
 use futures_core::future::BoxFuture;
 use rbs::Value;
-use rbdc::date::Date;
-use rbdc::datetime::DateTime;
-use rbdc::decimal::Decimal;
-use rbdc::{Error, RBDCString};
-use rbdc::timestamp::Timestamp;
-use rbdc::types::time::Time;
-use rbdc::uuid::Uuid;
-use crate::executor::RBatisConnExecutor;
 
 pub struct SqliteTableSync {
     pub sql_id: String,
@@ -32,28 +26,20 @@ fn type_str(v: &Value) -> &'static str {
         Value::U64(_) => "INT8",
         Value::F32(_) => "DOUBLE",
         Value::F64(_) => "DOUBLE",
-        Value::String(v) => {
-            if Date::is(&v) != "" {
-                "TEXT"
-            } else if DateTime::is(&v) != "" {
-                "TEXT"
-            } else if Time::is(&v) != "" {
-                "TEXT"
-            } else if Timestamp::is(&v) != "" {
-                "INT8"
-            } else if Decimal::is(&v) != "" {
-                "TEXT"
-            } else if Uuid::is(&v) != "" {
-                "TEXT"
-            } else {
-                "TEXT"
-            }
-        },
+        Value::String(_) => "TEXT",
         Value::Binary(_) => "BLOB",
-        Value::Array(_) => "BLOB",
-        Value::Map(_) => {
-            "BLOB"
-        }
+        Value::Array(_) => "NULL",
+        Value::Map(_) => "NULL",
+        Value::Ext(t, _v) => match *t {
+            "Date" => "TEXT",
+            "DateTime" => "TEXT",
+            "Time" => "TEXT",
+            "Timestamp" => "INT8",
+            "Decimal" => "NUMERIC",
+            "Json" => "BLOB",
+            "Uuid" => "TEXT",
+            _ => "NULL",
+        },
     }
 }
 
@@ -124,6 +110,7 @@ impl TableSync for SqliteTableSync {
                     }
                     Ok(())
                 }
+                Value::Ext(_table_name, m) => self.sync(rb, *m, &name).await,
                 _ => Err(Error::from("table not is an struct or map!")),
             }
         })

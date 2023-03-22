@@ -15,6 +15,6 @@ impl Encode for Decimal {
 
 impl Decode for Decimal {
     fn decode(value: MySqlValue) -> Result<Self, Error> {
-        Ok(Self::from(value.as_str().unwrap_or("0").to_string()))
+        Ok(Self(value.as_str().unwrap_or("0").to_string()))
     }
 }

@@ -17,7 +17,7 @@ impl Encode for DateTime {
 
 impl Decode for DateTime {
     fn decode(value: PgValue) -> Result<Self, Error> {
-        Ok(Self::from(fastdate::DateTime::decode(value)?))
+        Ok(Self(fastdate::DateTime::decode(value)?))
     }
 }
 
@@ -49,6 +49,6 @@ impl Decode for fastdate::DateTime {
 
 impl Encode for fastdate::DateTime {
     fn encode(self, buf: &mut PgArgumentBuffer) -> Result<IsNull, Error> {
-        Timestamp::from(self.unix_timestamp_millis() as u64).encode(buf)
+        Timestamp(self.unix_timestamp_millis() as u64).encode(buf)
     }
 }

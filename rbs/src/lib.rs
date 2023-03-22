@@ -7,26 +7,33 @@ pub mod index;
 pub mod value;
 
 pub use crate::value::ext::Error;
-pub use crate::value::ext::{Deserializer, Serializer};
 pub use value::ext::{deserialize_from, from_value};
 pub use value::ext::{to_value, to_value_def};
 pub use value::Value;
 
 impl Value {
+    pub fn into_ext(self, name: &'static str) -> Self {
+        match self {
+            Value::Ext(_, _) => self,
+            _ => Value::Ext(name, Box::new(self)),
+        }
+    }
+
     pub fn is_empty(&self) -> bool {
         match self {
             Value::Null => true,
-            Value::Bool(v) => *v == false,
-            Value::I32(v) => *v == 0,
-            Value::I64(v) => *v == 0,
-            Value::U32(v) => *v == 0,
-            Value::U64(v) => *v == 0,
-            Value::F32(v) => *v == 0.0,
-            Value::F64(v) => *v == 0.0,
+            Value::Bool(_) => false,
+            Value::I32(_) => false,
+            Value::I64(_) => false,
+            Value::U32(_) => false,
+            Value::U64(_) => false,
+            Value::F32(_) => false,
+            Value::F64(_) => false,
             Value::String(v) => v.is_empty(),
             Value::Binary(v) => v.is_empty(),
             Value::Array(v) => v.is_empty(),
             Value::Map(v) => v.is_empty(),
+            Value::Ext(_, v) => v.is_empty(),
         }
     }
 }
