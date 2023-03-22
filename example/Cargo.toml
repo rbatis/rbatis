@@ -26,6 +26,9 @@ path = "src/macro_proc_rawsql.rs"
 name = "crud"
 path = "src/crud.rs"
 [[bin]]
+name = "crud_json"
+path = "src/crud_json.rs"
+[[bin]]
 name = "plugin_table_sync"
 path = "src/plugin_table_sync.rs"
 [[bin]]
