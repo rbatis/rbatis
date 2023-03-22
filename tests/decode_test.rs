@@ -33,7 +33,7 @@ mod test {
             m.insert(Value::String("a".to_string()), Value::I64(1));
             m
         })]))
-        .unwrap();
+            .unwrap();
         assert_eq!(v, 1);
     }
 
@@ -44,7 +44,7 @@ mod test {
             m.insert(Value::String("a".to_string()), Value::I64(1));
             m
         })]))
-        .unwrap();
+            .unwrap();
         assert_eq!(v, 1i64);
     }
 

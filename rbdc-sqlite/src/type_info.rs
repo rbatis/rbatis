@@ -1,5 +1,4 @@
 use std::fmt::{self, Display, Formatter};
-use std::ops::Index;
 use std::os::raw::c_int;
 use std::str::FromStr;
 
@@ -141,23 +140,17 @@ impl Type for Value {
             Value::String(_) => SqliteTypeInfo(DataType::Text),
             Value::Binary(_) => SqliteTypeInfo(DataType::Blob),
             Value::Array(_) => SqliteTypeInfo(DataType::Null),
-            Value::Map(m) => {
-                let t = m.index("type").as_str().unwrap_or_default();
-                if t != "" {
-                    match t {
-                        "Date" => SqliteTypeInfo(DataType::Text),
-                        "DateTime" => SqliteTypeInfo(DataType::Text),
-                        "Time" => SqliteTypeInfo(DataType::Text),
-                        "Timestamp" => SqliteTypeInfo(DataType::Int64),
-                        "Decimal" => SqliteTypeInfo(DataType::Numeric),
-                        "Json" => SqliteTypeInfo(DataType::Blob),
-                        "Uuid" => SqliteTypeInfo(DataType::Text),
-                        _ => SqliteTypeInfo(DataType::Blob),
-                    }
-                } else {
-                    SqliteTypeInfo(DataType::Blob)
-                }
-            }
+            Value::Map(_) => SqliteTypeInfo(DataType::Null),
+            Value::Ext(t, _) => match *t {
+                "Date" => SqliteTypeInfo(DataType::Text),
+                "DateTime" => SqliteTypeInfo(DataType::Text),
+                "Time" => SqliteTypeInfo(DataType::Text),
+                "Timestamp" => SqliteTypeInfo(DataType::Int64),
+                "Decimal" => SqliteTypeInfo(DataType::Numeric),
+                "Json" => SqliteTypeInfo(DataType::Blob),
+                "Uuid" => SqliteTypeInfo(DataType::Text),
+                _ => SqliteTypeInfo(DataType::Null),
+            },
         }
     }
 }

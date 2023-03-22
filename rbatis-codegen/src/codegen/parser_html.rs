@@ -224,7 +224,7 @@ fn parse(
                             args.push(rbs::to_value(#method_impl).unwrap_or_default());
                         };
                     } else {
-                        replaces = quote! {#replaces.replacen(#v, &#method_impl.string_sql(), 1)};
+                        replaces = quote! {#replaces.replacen(#v, &#method_impl.as_sql(), 1)};
                     }
                 }
                 if !replaces.is_empty() {

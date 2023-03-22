@@ -37,7 +37,7 @@ impl Encode for Timestamp {
 impl Decode for Timestamp {
     fn decode(value: MySqlValue) -> Result<Self, Error> {
         Ok(match value.format() {
-            MySqlValueFormat::Text => Self::from(
+            MySqlValueFormat::Text => Self(
                 fastdate::DateTime::from_str(value.as_str()?)
                     .unwrap()
                     .unix_timestamp_millis() as u64,
@@ -56,7 +56,7 @@ impl Decode for Timestamp {
                         hour: 0,
                     }
                 };
-                Self::from(
+                Self(
                     fastdate::DateTime {
                         nano: time.nano,
                         sec: time.sec,

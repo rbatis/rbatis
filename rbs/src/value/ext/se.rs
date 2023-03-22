@@ -38,6 +38,7 @@ impl Serialize for Value {
                 }
                 state.end()
             }
+            Value::Ext(ref ty, ref value) => s.serialize_newtype_struct(ty, value),
         }
     }
 }
@@ -48,7 +49,7 @@ impl ser::Error for Error {
     }
 }
 
-pub struct Serializer;
+struct Serializer;
 
 /// Convert a `T` into `rbs::Value` which is an enum that can represent any valid MessagePack data.
 ///
@@ -179,13 +180,13 @@ impl ser::Serializer for Serializer {
     #[inline]
     fn serialize_newtype_struct<T: ?Sized>(
         self,
-        _name: &'static str,
+        name: &'static str,
         value: &T,
     ) -> Result<Self::Ok, Self::Error>
     where
         T: Serialize,
     {
-        value.serialize(self)
+        return Ok(Value::Ext(name, Box::new(value.serialize(self)?)));
     }
 
     fn serialize_newtype_variant<T: ?Sized>(
@@ -416,7 +417,7 @@ impl ser::SerializeMap for DefaultSerializeMap {
 
     #[inline]
     fn end(self) -> Result<Value, Error> {
-        Ok(Value::Map(ValueMap::from(self.map)))
+        Ok(Value::Map(ValueMap(self.map)))
     }
 }
 
@@ -438,7 +439,7 @@ impl ser::SerializeStruct for DefaultSerializeMap {
     }
 
     fn end(self) -> Result<Self::Ok, Self::Error> {
-        Ok(Value::Map(ValueMap::from(self.map)))
+        Ok(Value::Map(ValueMap(self.map)))
     }
 }
 
@@ -460,7 +461,7 @@ impl ser::SerializeStructVariant for DefaultSerializeMap {
     }
 
     fn end(self) -> Result<Self::Ok, Self::Error> {
-        Ok(Value::Map(ValueMap::from(self.map)))
+        Ok(Value::Map(ValueMap(self.map)))
     }
 }
 

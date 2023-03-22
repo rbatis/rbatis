@@ -1,6 +1,6 @@
 [package]
 name = "rbdc-mysql"
-version = "4.2.2"
+version = "4.3.1"
 edition = "2021"
 description = "The Rust SQL Toolkit and ORM Library. An async, pure Rust SQL crate featuring compile-time Dynamic SQL"
 readme = "Readme.md"
@@ -14,9 +14,9 @@ homepage = "https://rbatis.github.io/rbatis.io"
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
-rbs = { version = "4.2", path = "../rbs" }
-rbdc = { version = "4.2", path = "../rbdc" }
+rbs = { version = "4.3", path = "../rbs" }
 bytes = "1.1.0"
+rbdc = { version = "4.3", path = "../rbdc" }
 serde = "1"
 bitflags = "1.3.2"
 digest = { version = "0.10.0", default-features = false, features = ["std"] }
@@ -35,6 +35,5 @@ either = "1.7.0"
 byteorder = { version = "1.4.3", default-features = false, features = ["std"] }
 fastdate = { version = "0.1" }
 hex = "0.4.3"
-serde_json = "1.0"
 [dev-dependencies]
 tokio = { version = "1", features = ["full"] }

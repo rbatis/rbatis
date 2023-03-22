@@ -46,7 +46,7 @@ impl Decode for Value {
             },
             ColumnData::Guid(v) => match v {
                 None => Value::Null,
-                Some(v) => Value::from(Value::from(v.to_string())),
+                Some(v) => Value::String(v.to_string()).into_ext("Uuid"),
             },
             ColumnData::Binary(v) => match v {
                 None => Value::Null,
@@ -59,7 +59,7 @@ impl Decode for Value {
                     match v {
                         Ok(v) => match v {
                             None => Value::Null,
-                            Some(v) => Value::from(Value::String(v.to_string())),
+                            Some(v) => Value::String(v.to_string()).into_ext("Decimal"),
                         },
                         Err(e) => {
                             return Err(Error::from(e.to_string()));
@@ -69,7 +69,7 @@ impl Decode for Value {
             },
             ColumnData::Xml(v) => match v {
                 None => Value::Null,
-                Some(v) => Value::from(Value::String(v.to_string())),
+                Some(v) => Value::String(v.to_string()).into_ext("Xml"),
             },
             ColumnData::DateTime(v) => match v {
                 None => Value::Null,
@@ -115,7 +115,7 @@ impl Decode for Value {
                     match v {
                         Ok(v) => match v {
                             None => Value::Null,
-                            Some(v) => Value::from(Value::String(v.to_string())),
+                            Some(v) => Value::String(v.to_string()).into_ext("Time"),
                         },
                         Err(e) => {
                             return Err(Error::from(e.to_string()));
@@ -131,7 +131,7 @@ impl Decode for Value {
                     match v {
                         Ok(v) => match v {
                             None => Value::Null,
-                            Some(v) => Value::from(Value::String(v.to_string())),
+                            Some(v) => Value::String(v.to_string()).into_ext("Date"),
                         },
                         Err(e) => {
                             return Err(Error::from(e.to_string()));

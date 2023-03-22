@@ -1,62 +1,38 @@
-use crate::RBDCString;
-use rbs::{to_value, Value};
+use rbs::Value;
 use serde::de::Error;
-use serde::{Deserialize, Deserializer, Serializer};
+use serde::{Deserialize, Deserializer, Serialize, Serializer};
 use std::fmt::{Debug, Display, Formatter};
 use std::ops::{Add, Deref, DerefMut, Sub};
 use std::str::FromStr;
 use std::time::Duration;
 
 #[deprecated(
-    since = "4.1.0",
-    note = "Please use `rbdc::datetime::DateTime` instead"
+since = "4.1.0",
+note = "Please use `rbdc::datetime::DateTime` instead"
 )]
 pub type FastDateTime = DateTime;
 
 #[derive(Clone, Eq, PartialEq, Hash)]
 pub struct DateTime(pub fastdate::DateTime);
 
-impl RBDCString for DateTime {
-    fn ends_name() -> &'static str {
-        "DT"
-    }
-
-    fn decode_str(arg: &str) -> Result<Self, crate::Error> {
-        let is = Self::is(arg);
-        if is != "" {
-            return Ok(Self::from_str(arg.trim_end_matches(Self::ends_name()))?);
-        }
-        Err(crate::Error::E(format!(
-            "warn type decode :{}",
-            Self::ends_name()
-        )))
+impl Display for DateTime {
+    fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
+        write!(f, "DateTime({})", self.0)
     }
 }
 
-impl serde::Serialize for DateTime {
+impl Serialize for DateTime {
     fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
     where
         S: Serializer,
     {
-        if std::any::type_name::<S>() == std::any::type_name::<rbs::Serializer>() {
-            let mut s = self.0.to_string();
-            s.push_str(Self::ends_name());
-            serializer.serialize_str(&s)
-        } else {
-            self.0.serialize(serializer)
-        }
-    }
-}
-
-impl Display for DateTime {
-    fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
-        write!(f, "{}", self.0)
+        serializer.serialize_newtype_struct("DateTime", &self.0)
     }
 }
 
 impl Debug for DateTime {
     fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
-        write!(f, "{}", self.0)
+        write!(f, "DateTime({})", self.0)
     }
 }
 
@@ -65,36 +41,25 @@ impl<'de> Deserialize<'de> for DateTime {
     where
         D: Deserializer<'de>,
     {
-        let v = Value::deserialize(deserializer)?;
-        match v {
-            Value::I32(u) => Ok(DateTime::from(fastdate::DateTime::from_timestamp_millis(
-                u as i64,
-            ))),
-            Value::U32(u) => Ok(DateTime::from(fastdate::DateTime::from_timestamp_millis(
-                u as i64,
-            ))),
-            Value::I64(u) => Ok(DateTime::from(fastdate::DateTime::from_timestamp_millis(u))),
-            Value::U64(u) => Ok(DateTime::from(fastdate::DateTime::from_timestamp_millis(
-                u as i64,
-            ))),
-            Value::String(mut v) => Ok({
-                if std::any::type_name::<D>() == std::any::type_name::<rbs::Deserializer>() {
-                    DateTime::trim_ends_match(&mut v);
-                    DateTime::from(
-                        fastdate::DateTime::from_str(&v)
-                            .map_err(|e| D::Error::custom(e.to_string()))?,
-                    )
-                } else {
-                    DateTime::from(
-                        fastdate::DateTime::from_str(&v)
-                            .map_err(|e| D::Error::custom(e.to_string()))?,
-                    )
-                }
+        #[derive(serde::Serialize, serde::Deserialize, Debug, Clone)]
+        #[serde(rename = "DateTime")]
+        pub struct DateTimeValue(pub Value);
+        let v = DateTimeValue::deserialize(deserializer)?;
+        match v.0 {
+            Value::I32(u) => Ok(Self(fastdate::DateTime::from_timestamp_millis(u as i64))),
+            Value::U32(u) => Ok(Self(fastdate::DateTime::from_timestamp_millis(u as i64))),
+            Value::I64(u) => Ok(Self(fastdate::DateTime::from_timestamp_millis(u))),
+            Value::U64(u) => Ok(Self(fastdate::DateTime::from_timestamp_millis(u as i64))),
+            Value::String(s) => Ok({
+                Self(
+                    fastdate::DateTime::from_str(&s)
+                        .map_err(|e| D::Error::custom(e.to_string()))?,
+                )
             }),
             _ => {
                 return Err(D::Error::custom(&format!(
                     "unsupported type DateTime({})",
-                    v
+                    v.0
                 )));
             }
         }
@@ -117,11 +82,11 @@ impl DerefMut for DateTime {
 
 impl DateTime {
     pub fn now() -> Self {
-        Self::from(fastdate::DateTime::now())
+        Self(fastdate::DateTime::now())
     }
 
     pub fn utc() -> Self {
-        Self::from(fastdate::DateTime::utc())
+        Self(fastdate::DateTime::utc())
     }
 
     pub fn set_micro(mut self, micro: u32) -> Self {
@@ -160,15 +125,15 @@ impl DateTime {
     }
 
     pub fn from_timestamp(sec: i64) -> Self {
-        Self::from(fastdate::DateTime::from_timestamp(sec))
+        DateTime(fastdate::DateTime::from_timestamp(sec))
     }
 
     pub fn from_timestamp_millis(ms: i64) -> Self {
-        Self::from(fastdate::DateTime::from_timestamp_millis(ms))
+        DateTime(fastdate::DateTime::from_timestamp_millis(ms))
     }
 
     pub fn from_timestamp_nano(nano: u128) -> Self {
-        Self::from(fastdate::DateTime::from_timestamp_nano(nano))
+        DateTime(fastdate::DateTime::from_timestamp_nano(nano))
     }
 }
 
@@ -184,7 +149,7 @@ impl Add<Duration> for DateTime {
     type Output = DateTime;
 
     fn add(self, rhs: Duration) -> Self::Output {
-        DateTime::from(self.0.add(rhs))
+        DateTime(self.0.add(rhs))
     }
 }
 
@@ -192,7 +157,7 @@ impl Sub<Duration> for DateTime {
     type Output = DateTime;
 
     fn sub(self, rhs: Duration) -> Self::Output {
-        DateTime::from(self.0.sub(rhs))
+        DateTime(self.0.sub(rhs))
     }
 }
 
@@ -200,7 +165,7 @@ impl FromStr for DateTime {
     type Err = crate::error::Error;
 
     fn from_str(s: &str) -> Result<Self, Self::Err> {
-        Ok(DateTime::from(
+        Ok(DateTime(
             fastdate::DateTime::from_str(s)
                 .map_err(|e| crate::error::Error::from(e.to_string()))?,
         ))
@@ -209,24 +174,7 @@ impl FromStr for DateTime {
 
 impl From<DateTime> for Value {
     fn from(arg: DateTime) -> Self {
-        to_value!(arg)
+        Value::Ext("DateTime", Box::new(Value::String(arg.0.to_string())))
     }
 }
 
-impl From<fastdate::DateTime> for DateTime {
-    fn from(arg: fastdate::DateTime) -> Self {
-        Self(arg)
-    }
-}
-
-#[test]
-fn test() {
-    let date = DateTime::from_str("2017-02-06 00:00:00").unwrap();
-    let v = rbs::to_value(&date).unwrap();
-    println!("v={}", v);
-    assert_eq!("\"2017-02-06 00:00:00DT\"", v.to_string());
-    let date = DateTime::from(date.0);
-    let v = rbs::to_value(&date).unwrap();
-    println!("v={}", v);
-    assert_eq!("\"2017-02-06 00:00:00DT\"", v.to_string());
-}
