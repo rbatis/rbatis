@@ -1,7 +1,7 @@
 #![feature(test)]
 extern crate test;
 
-use rbs::{value_map, Value};
+use rbs::{Value, to_value};
 use test::Bencher;
 
 #[bench]
@@ -22,9 +22,9 @@ fn bench_rbs_decode_value(b: &mut Bencher) {
 
 #[bench]
 fn bench_rbatis_decode(b: &mut Bencher) {
-    let array = Value::Array(vec![Value::Map(value_map! {
-        1 => 1,
-    })]);
+    let array = Value::Array(vec![to_value! {
+        1 : 1,
+    }]);
     b.iter(|| {
         rbatis::decode::<i32>(array.clone()).unwrap();
     });
@@ -33,9 +33,9 @@ fn bench_rbatis_decode(b: &mut Bencher) {
 #[bench]
 fn bench_rbatis_decode_map(b: &mut Bencher) {
     let date = rbdc::types::datetime::DateTime::now();
-    let array = Value::Array(vec![Value::Map(value_map! {
-        1 => date,
-    })]);
+    let array = Value::Array(vec![to_value! {
+        1 : date,
+    }]);
     b.iter(|| {
         rbatis::decode::<rbdc::types::datetime::DateTime>(array.clone()).unwrap();
     });
