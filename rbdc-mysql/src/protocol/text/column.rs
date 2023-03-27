@@ -11,7 +11,8 @@ use rbdc::{err_protocol, Error};
 // https://dev.mysql.com/doc/dev/mysql-server/8.0.12/group__group__cs__column__definition__flags.html
 
 bitflags! {
-    #[derive(serde::Serialize, serde::Deserialize)]
+    //#[derive(serde::Serialize, serde::Deserialize)]
+    #[derive(Clone, Copy, Debug, PartialEq, Eq, Hash)]
     pub struct ColumnFlags: u16 {
         /// Field can't be `NULL`.
         const NOT_NULL = 1;
