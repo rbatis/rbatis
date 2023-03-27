@@ -1,16 +1,15 @@
 #[cfg(test)]
 mod test {
     use rbs::value::map::ValueMap;
-    use rbs::{value_map, Value};
+    use rbs::{Value, to_value};
     use std::str::FromStr;
 
     #[test]
     fn test_decode_value() {
-        let m = value_map! {
+        let m = to_value! {
             1: 1,
             "2": 2,
         };
-        let m = Value::Map(m);
         let v: Value = rbatis::decode(Value::Array(vec![m.clone()])).unwrap();
         assert_eq!(v, Value::Array(vec![m]));
     }
@@ -18,11 +17,11 @@ mod test {
     #[test]
     fn test_decode_one() {
         let date = rbdc::types::datetime::DateTime::now();
-        let m = value_map! {
+        let m = to_value! {
             "1" : date.clone(),
         };
         let v: rbdc::types::datetime::DateTime =
-            rbatis::decode(Value::Array(vec![Value::Map(m)])).unwrap();
+            rbatis::decode(Value::Array(vec![m])).unwrap();
         assert_eq!(v, date);
     }
 
@@ -50,11 +49,10 @@ mod test {
 
     #[test]
     fn test_decode_json_array() {
-        let m = value_map! {
+        let m = to_value! {
             "1" : 1,
             "2" : 2,
         };
-        let m = Value::Map(m);
         let v: serde_json::Value =
             rbatis::decode(Value::Array(vec![m.clone(), m.clone()])).unwrap();
         assert_eq!(
