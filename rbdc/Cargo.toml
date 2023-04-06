@@ -24,7 +24,7 @@ _tls-native-tls = ["native-tls", "tokio-native-tls"]
 tokio = { version = "1", features = ["fs", "net", "rt", "rt-multi-thread", "time", "io-util"] }
 tokio-rustls = "0.23"
 rustls = { version = "0.20.8", features = ["dangerous_configuration"], optional = true }
-webpki-roots = { version = "0.22.0", optional = true }
+webpki-roots = { version = "0.23.0", optional = true }
 rustls-pemfile = { version = "1.0", optional = true }
 log = "0.4"
 once_cell = "1.13"
