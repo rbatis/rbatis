@@ -90,20 +90,16 @@ impl PageRequest {
     }
 
     pub fn new_total(page_no: u64, page_size: u64, total: u64) -> Self {
-        return PageRequest::new_plugin(String::new(), page_no, page_size, total);
-    }
-
-    pub fn new_plugin(_plugin: String, page_no: u64, page_size: u64, total: u64) -> Self {
         let mut page_no = page_no;
         if page_no < 1 {
             page_no = 1;
         }
-        return Self {
+        Self {
             total,
             page_size,
             page_no,
             search_count: true,
-        };
+        }
     }
 }
 
@@ -308,8 +304,8 @@ impl<T: Display + Debug> Display for Page<T> {
 
 impl<V> Page<V> {
     pub fn from<T>(arg: Page<T>) -> Self
-    where
-        V: From<T>,
+        where
+            V: From<T>,
     {
         let mut p = Page::<V>::new(arg.page_no, arg.page_size);
         p.pages = arg.pages;
