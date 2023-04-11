@@ -39,6 +39,13 @@ impl<'de> serde::Deserialize<'de> for BizUser {
                     account: account,
                 })
             }
+            Value::String(v) => {
+                let account: Option<Account> = serde_json::from_str(&v).map_err(|e| D::Error::custom(&format!("warn type decode Date:{}", e)))?;
+                Ok(Self {
+                    id: z.id,
+                    account: account,
+                })
+            }
             Value::Binary(v) => {
                 let account: Option<Account> = serde_json::from_slice(&v).map_err(|e| D::Error::custom(&format!("warn type decode Date:{}", e)))?;
                 Ok(Self {
