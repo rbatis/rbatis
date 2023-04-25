@@ -80,7 +80,7 @@ impl Decode for Value {
                         Ok(v) => match v {
                             None => Value::Null,
                             Some(v) => Value::from(DateTime::from_timestamp_nano(
-                                v.timestamp_nanos() as u128,
+                                v.timestamp_nanos() as i128,
                             )),
                         },
                         Err(e) => {
@@ -98,7 +98,7 @@ impl Decode for Value {
                         Ok(v) => match v {
                             None => Value::Null,
                             Some(v) => Value::from(DateTime::from_timestamp_nano(
-                                v.timestamp_nanos() as u128,
+                                v.timestamp_nanos() as i128,
                             )),
                         },
                         Err(e) => {
@@ -148,7 +148,7 @@ impl Decode for Value {
                         Ok(v) => match v {
                             None => Value::Null,
                             Some(v) => Value::from(DateTime::from_timestamp_nano(
-                                v.timestamp_nanos() as u128,
+                                v.timestamp_nanos() as i128,
                             )),
                         },
                         Err(e) => {
@@ -166,7 +166,7 @@ impl Decode for Value {
                         Ok(v) => match v {
                             None => Value::Null,
                             Some(v) => Value::from(DateTime::from_timestamp_nano(
-                                v.timestamp_nanos() as u128,
+                                v.timestamp_nanos() as i128,
                             )),
                         },
                         Err(e) => {
