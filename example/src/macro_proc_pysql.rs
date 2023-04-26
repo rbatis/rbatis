@@ -1,14 +1,33 @@
 #[macro_use]
 extern crate rbatis;
 
-pub mod model;
+pub mod init;
 
 use serde_json::json;
 use crate::rbatis::sql::IntoSql;
-use crate::{init_db, BizActivity};
-use model::*;
+use crate::{init_db};
+use init::*;
 use rbatis::executor::Executor;
 use rbatis::Error;
+use rbatis::rbdc::datetime::DateTime;
+
+/// table
+#[derive(Clone, Debug, serde::Serialize, serde::Deserialize)]
+pub struct BizActivity {
+    pub id: Option<String>,
+    pub name: Option<String>,
+    pub pc_link: Option<String>,
+    pub h5_link: Option<String>,
+    pub pc_banner_img: Option<String>,
+    pub h5_banner_img: Option<String>,
+    pub sort: Option<String>,
+    pub status: Option<i32>,
+    pub remark: Option<String>,
+    pub create_time: Option<DateTime>,
+    pub version: Option<i64>,
+    pub delete_flag: Option<i32>,
+}
+
 #[py_sql(
     "`select * from biz_activity where delete_flag = 0`
                   if name != '':

@@ -1,14 +1,14 @@
 #[macro_use]
 extern crate rbatis;
 
-pub mod model;
+pub mod init;
 
 use log::LevelFilter;
 use serde::de::Error;
 use serde::Deserializer;
 use rbatis::table_sync::{SqliteTableSync, TableSync};
 use rbs::{from_value, to_value, Value};
-use crate::model::{init_db};
+use crate::init::{init_db};
 
 #[derive(Clone, Debug, serde::Serialize)]
 pub struct BizUser {

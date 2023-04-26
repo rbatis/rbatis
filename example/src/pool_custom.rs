@@ -1,5 +1,5 @@
-pub mod model;
-use crate::model::init_db;
+pub mod init;
+use crate::init::init_db;
 #[tokio::main]
 pub async fn main() {
     fast_log::init(fast_log::Config::new().console()).expect("rbatis init fail");

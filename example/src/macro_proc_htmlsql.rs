@@ -1,11 +1,29 @@
 #[macro_use]
 extern crate rbatis;
-pub mod model;
+pub mod init;
 
 use serde_json::json;
-use model::*;
+use init::*;
 use rbatis::executor::Executor;
 use rbatis::rbdc::datetime::DateTime;
+
+
+/// table
+#[derive(Clone, Debug, serde::Serialize, serde::Deserialize)]
+pub struct BizActivity {
+    pub id: Option<String>,
+    pub name: Option<String>,
+    pub pc_link: Option<String>,
+    pub h5_link: Option<String>,
+    pub pc_banner_img: Option<String>,
+    pub h5_banner_img: Option<String>,
+    pub sort: Option<String>,
+    pub status: Option<i32>,
+    pub remark: Option<String>,
+    pub create_time: Option<DateTime>,
+    pub version: Option<i64>,
+    pub delete_flag: Option<i32>,
+}
 
 // Clion Smart tips: click code, choose 'Inject Language or Reference', and then choose html
 #[html_sql(r#"<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.1//EN" "https://raw.githubusercontent.com/rbatis/rbatis/master/rbatis-codegen/mybatis-3-mapper.dtd">

@@ -1,6 +1,6 @@
-pub mod model;
+pub mod init;
 
-use crate::model::init_db;
+use crate::init::init_db;
 use rbatis::crud;
 use rbatis::rbdc::datetime::DateTime;
 use serde::{Deserialize, Serialize};
