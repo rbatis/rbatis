@@ -1,8 +1,26 @@
-pub mod model;
+pub mod init;
 
 use serde_json::json;
-use crate::model::{init_db, BizActivity};
+use rbatis::rbdc::datetime::DateTime;
+use crate::init::{init_db};
 use rbs::to_value;
+
+/// table
+#[derive(Clone, Debug, serde::Serialize, serde::Deserialize)]
+pub struct BizActivity {
+    pub id: Option<String>,
+    pub name: Option<String>,
+    pub pc_link: Option<String>,
+    pub h5_link: Option<String>,
+    pub pc_banner_img: Option<String>,
+    pub h5_banner_img: Option<String>,
+    pub sort: Option<String>,
+    pub status: Option<i32>,
+    pub remark: Option<String>,
+    pub create_time: Option<DateTime>,
+    pub version: Option<i64>,
+    pub delete_flag: Option<i32>,
+}
 
 #[tokio::main]
 pub async fn main() {
