@@ -471,7 +471,7 @@ impl Encode for Value {
                 match type_name {
                     "Uuid" => Uuid(v.into_string().unwrap_or_default()).encode(buf)?,
                     //decimal = 12345678
-                    "Decimal" => Decimal(v.into_string().unwrap_or_default()).encode(buf)?,
+                    "Decimal" => Decimal::from_str(v.as_str().unwrap_or_default()).unwrap_or_default().encode(buf)?,
                     //Date = "1993-02-06"
                     "Date" => Date(
                         fastdate::Date::from_str(&v.into_string().unwrap_or_default()).unwrap(),
@@ -521,7 +521,7 @@ impl Encode for Value {
                     }
                     "Bit" => v.into_bytes().unwrap_or_default().encode(buf)?,
                     "Varbit" => v.into_bytes().unwrap_or_default().encode(buf)?,
-                    "Numeric" => Decimal(v.into_string().unwrap_or_default()).encode(buf)?,
+                    "Numeric" => Decimal::from_str(v.as_str().unwrap_or_default()).unwrap_or_default().encode(buf)?,
                     "Record" => v.into_bytes().unwrap_or_default().encode(buf)?,
                     "Jsonb" => Json(v.into_string().unwrap_or_default()).encode(buf)?,
                     "Int4Range" => v.into_bytes().unwrap_or_default().encode(buf)?,
