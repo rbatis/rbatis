@@ -1,6 +1,6 @@
 [package]
 name = "rbdc"
-version = "4.3.3"
+version = "4.3.4"
 edition = "2021"
 description = "The Rust SQL Toolkit and ORM Library. An async, pure Rust SQL crate featuring compile-time Dynamic SQL"
 readme = "Readme.md"
@@ -45,3 +45,4 @@ serde_bytes = "0.11.6"
 async-trait = "0.1.56"
 uuid = { version = "1.1", features = ["v4"] }
 itoa = "1.0"
+bigdecimal = {version = "0.3.0",features = ["serde"]}
