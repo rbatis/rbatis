@@ -361,7 +361,7 @@ pub fn impl_fn(
     let t = syn::parse_str::<Expr>(&string_data);
     if t.is_err() {
         panic!(
-            "[codegen]syn::parse_str: {} fail for: {}",
+            "[rbatis-codegen]syn::parse_str: {} fail for: {}",
             args,
             t.err().expect("codegen_func fail").to_string()
         )
@@ -373,7 +373,7 @@ pub fn impl_fn(
     let t = syn::parse_str::<Expr>(&string_data);
     if t.is_err() {
         panic!(
-            "[codegen]syn::parse_str: {} fail for: {}",
+            "[rbatis-codegen]syn::parse_str: {} fail for: {}",
             args,
             t.err().expect("codegen_func fail").to_string()
         )

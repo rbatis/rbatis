@@ -28,7 +28,7 @@ pub fn impl_fn_py(m: &ItemFn, args: &AttributeArgs) -> TokenStream {
         data = data[1..data.len() - 1].to_string();
     }
     data = data.replace("\\n", "\n");
-    let nodes = NodeType::parse_pysql(&data).expect("[rbatis] parse py_sql fail!");
+    let nodes = NodeType::parse_pysql(&data).expect("[rbatis-codegen] parse py_sql fail!");
     let htmls = crate::codegen::syntax_tree_pysql::to_html(
         &nodes,
         data.starts_with("select") || data.starts_with(" select"),
@@ -202,13 +202,13 @@ impl NodeType {
             let for_tag = "for";
             if !trim_express.starts_with(for_tag) {
                 return Err(Error::from(
-                    "[rbatis] parser express fail:".to_string() + source_str,
+                    "[rbatis-codegen] parser express fail:".to_string() + source_str,
                 ));
             }
             let in_tag = " in ";
             if !trim_express.contains(in_tag) {
                 return Err(Error::from(
-                    "[rbatis] parser express fail:".to_string() + source_str,
+                    "[rbatis-codegen] parser express fail:".to_string() + source_str,
                 ));
             }
             let in_index = trim_express
@@ -220,7 +220,7 @@ impl NodeType {
             if item.contains(",") {
                 let splits: Vec<&str> = item.split(",").collect();
                 if splits.len() != 2 {
-                    panic!("[rbatis_codegen] for node must be 'for key,item in col:'");
+                    panic!("[rbatis-codegen_codegen] for node must be 'for key,item in col:'");
                 }
                 index = splits[0];
                 item = splits[1];
@@ -240,7 +240,7 @@ impl NodeType {
                     trim: express.to_string(),
                 }));
             } else {
-                return Err(Error::from(format!("[rbatis] express trim value must be string value, for example:  trim 'value',error express: {}", trim_express)));
+                return Err(Error::from(format!("[rbatis-codegen] express trim value must be string value, for example:  trim 'value',error express: {}", trim_express)));
             }
         } else if trim_express.starts_with(ChooseNode::name()) {
             let mut node = ChooseNode {
@@ -256,7 +256,7 @@ impl NodeType {
                         node.otherwise_node = Some(Box::new(x));
                     }
                     _ => {
-                        return Err(Error::from("[rbatis] parser node fail,choose node' child must be when and otherwise nodes!".to_string()));
+                        return Err(Error::from("[rbatis-codegen] parser node fail,choose node' child must be when and otherwise nodes!".to_string()));
                     }
                 }
             }
@@ -283,7 +283,7 @@ impl NodeType {
             let name_value: Vec<&str> = express.split("=").collect();
             if name_value.len() != 2 {
                 return Err(Error::from(
-                    "[rbatis] parser bind express fail:".to_string() + trim_express,
+                    "[rbatis-codegen] parser bind express fail:".to_string() + trim_express,
                 ));
             }
             return Ok(NodeType::NBind(BindNode {
@@ -299,7 +299,7 @@ impl NodeType {
         } else {
             // unkonw tag
             return Err(Error::from(
-                "[rbatis] unknow tag: ".to_string() + source_str,
+                "[rbatis-codegen] unknow tag: ".to_string() + source_str,
             ));
         }
     }

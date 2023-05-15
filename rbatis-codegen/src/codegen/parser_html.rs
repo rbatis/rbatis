@@ -71,7 +71,7 @@ fn include_replace(htmls: Vec<Element>, sql_map: &mut BTreeMap<String, Element>)
                 sql_map.insert(
                     x.attrs
                         .get("id")
-                        .expect("[rbatis] <sql> element must have id!")
+                        .expect("[rbatis-codegen] <sql> element must have id!")
                         .clone(),
                     x.clone(),
                 );
@@ -80,17 +80,17 @@ fn include_replace(htmls: Vec<Element>, sql_map: &mut BTreeMap<String, Element>)
                 let ref_id = x
                     .attrs
                     .get("refid")
-                    .expect("[rbatis] <include> element must have attr <include refid=\"\">!")
+                    .expect("[rbatis-codegen] <include> element must have attr <include refid=\"\">!")
                     .clone();
                 let url;
                 if ref_id.contains("://") {
                     url = Url::parse(&ref_id).expect(&format!(
-                        "[rbatis] parse <include refid=\"{}\"> fail!",
+                        "[rbatis-codegen] parse <include refid=\"{}\"> fail!",
                         ref_id
                     ));
                 } else {
                     url = Url::parse(&format!("current://current?refid={}", ref_id)).expect(
-                        &format!("[rbatis] parse <include refid=\"{}\"> fail!", ref_id),
+                        &format!("[rbatis-codegen] parse <include refid=\"{}\"> fail!", ref_id),
                     );
                 }
                 let path = url.host_str().unwrap_or_default().to_string()
@@ -109,7 +109,7 @@ fn include_replace(htmls: Vec<Element>, sql_map: &mut BTreeMap<String, Element>)
                             panic!("not find ref_id on url {}", ref_id);
                         }
                         let mut f = File::open(&path).expect(&format!(
-                            "[rbatis] can't find file={}",
+                            "[rbatis-codegen] can't find file={}",
                             url.host_str().unwrap_or_default()
                         ));
                         let mut html = String::new();
@@ -136,7 +136,7 @@ fn include_replace(htmls: Vec<Element>, sql_map: &mut BTreeMap<String, Element>)
                         let element = sql_map
                             .get(ref_id_pair.as_str())
                             .expect(&format!(
-                                "[rbatis] can not find element <include refid=\"{}\"> !",
+                                "[rbatis-codegen] can not find element <include refid=\"{}\"> !",
                                 ref_id
                             ))
                             .clone();
