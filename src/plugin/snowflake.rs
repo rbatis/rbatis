@@ -11,7 +11,6 @@ pub struct Snowflake {
     pub worker_id: i64,
     pub datacenter_id: i64,
     pub sequence: AtomicI64,
-    pub time: AtomicI64,
 }
 
 impl serde::Serialize for Snowflake {
@@ -24,7 +23,6 @@ impl serde::Serialize for Snowflake {
         s.serialize_field("worker_id", &self.worker_id)?;
         s.serialize_field("datacenter_id", &self.datacenter_id)?;
         s.serialize_field("sequence", &self.sequence.load(Ordering::Relaxed))?;
-        s.serialize_field("time", &self.time.load(Ordering::Relaxed))?;
         s.end()
     }
 }
@@ -40,7 +38,6 @@ impl<'de> serde::Deserialize<'de> for Snowflake {
             pub worker_id: i64,
             pub datacenter_id: i64,
             pub sequence: i64,
-            pub time: i64,
         }
         let proxy = Snowflake::deserialize(deserializer)?;
         Ok(self::Snowflake {
@@ -48,7 +45,6 @@ impl<'de> serde::Deserialize<'de> for Snowflake {
             worker_id: proxy.worker_id,
             datacenter_id: proxy.datacenter_id,
             sequence: AtomicI64::from(proxy.sequence),
-            time: AtomicI64::from(proxy.time),
         })
     }
 }
@@ -56,13 +52,11 @@ impl<'de> serde::Deserialize<'de> for Snowflake {
 impl Clone for Snowflake {
     fn clone(&self) -> Self {
         let sequence = self.sequence.load(Ordering::Relaxed);
-        let time = self.time.load(Ordering::Relaxed);
         Self {
             epoch: self.epoch,
             worker_id: self.worker_id,
             datacenter_id: self.datacenter_id,
             sequence: AtomicI64::new(sequence),
-            time: AtomicI64::new(time),
         }
     }
 }
@@ -74,7 +68,6 @@ impl Snowflake {
             worker_id: 1,
             datacenter_id: 1,
             sequence: AtomicI64::new(0),
-            time: AtomicI64::new(0),
         }
     }
 
@@ -84,7 +77,6 @@ impl Snowflake {
             worker_id,
             datacenter_id,
             sequence: AtomicI64::new(0),
-            time: AtomicI64::new(0),
         }
     }
 
@@ -106,7 +98,6 @@ impl Snowflake {
     pub fn generate(&self) -> i64 {
         let timestamp = self.get_time();
         let sequence = self.sequence.fetch_add(1, Ordering::SeqCst);
-        self.time.store(timestamp, Ordering::Relaxed);
         (timestamp << 22)
             | (self.worker_id << 17)
             | (self.datacenter_id << 12)
@@ -207,5 +198,31 @@ mod test {
         for (_, v) in id_map {
             assert_eq!(v <= 1, true);
         }
+    }
+
+    #[test]
+    fn test_generate_no_clock_back() {
+        let snowflake = Snowflake::default();
+        let id1 = snowflake.generate();
+        let id2 = snowflake.generate();
+
+        assert_ne!(id1, id2);
+    }
+
+    #[test]
+    fn test_generate_clock_back() {
+        let mut snowflake = Snowflake::default();
+        let initial_timestamp = snowflake.get_time();
+        snowflake.set_epoch(initial_timestamp - 100000000000000000); // 设置一个较早的 epoch
+
+        // 生成一个初始 ID
+        let initial_id = snowflake.generate();
+
+        // 模拟时钟回拨，将时间设置为初始 ID 的时间戳减去一段时间
+        snowflake.set_epoch(initial_timestamp - 200000000000000000);
+
+        // 生成新的 ID
+        let new_id = snowflake.generate();
+        assert!(new_id > initial_id);
     }
 }
