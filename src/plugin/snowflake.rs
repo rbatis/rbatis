@@ -104,14 +104,8 @@ impl Snowflake {
     }
 
     pub fn generate(&self) -> i64 {
-        let last_timestamp = self.time.load(Ordering::Relaxed);
-        let mut timestamp = self.get_time();
+        let timestamp = self.get_time();
         let sequence = self.sequence.fetch_add(1, Ordering::SeqCst);
-        if timestamp == last_timestamp {
-            if sequence == 0 && timestamp <= last_timestamp {
-                timestamp = self.get_time();
-            }
-        }
         self.time.store(timestamp, Ordering::Relaxed);
         (timestamp << 22)
             | (self.worker_id << 17)
