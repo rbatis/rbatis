@@ -6,5 +6,6 @@ use test::Bencher;
 
 #[bench]
 fn bench_snowflake_id(b: &mut Bencher) {
+    new_snowflake_id();
     b.iter(|| new_snowflake_id());
 }
