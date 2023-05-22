@@ -3,6 +3,7 @@ use rbdc::datetime::DateTime;
 use serde::ser::SerializeStruct;
 use serde::{Deserializer, Serializer};
 use std::sync::atomic::{AtomicI64, Ordering};
+use std::time::{SystemTime, UNIX_EPOCH};
 
 ///Snowflakes algorithm
 #[derive(Debug)]
@@ -114,7 +115,8 @@ impl Snowflake {
     }
 
     fn get_time(&self) -> i64 {
-        DateTime::utc().unix_timestamp_millis() - self.epoch
+        let since_the_epoch = SystemTime::now().duration_since(UNIX_EPOCH).expect("Time went backwards");
+        since_the_epoch.as_millis() as i64 - self.epoch
     }
 }
 
@@ -146,7 +148,7 @@ mod test {
     }
 
     #[test]
-    fn test_race(){
+    fn test_race() {
         let size = 1000;
         let mut v1: Vec<i64> = Vec::with_capacity(size);
         let mut v2: Vec<i64> = Vec::with_capacity(size);
@@ -204,7 +206,7 @@ mod test {
                 .or_insert(1);
         }
         for (_, v) in id_map {
-            assert_eq!(v<=1,true);
+            assert_eq!(v <= 1, true);
         }
     }
 }
