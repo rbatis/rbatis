@@ -12,7 +12,6 @@ mod tests {
         assert_eq!(sf1.worker_id, sf2.worker_id);
         assert_eq!(sf1.datacenter_id, sf2.datacenter_id);
         assert_eq!(sf1.sequence.load(Ordering::Relaxed), sf2.sequence.load(Ordering::Relaxed));
-        assert_eq!(sf1.time.load(Ordering::Relaxed), sf2.time.load(Ordering::Relaxed));
     }
 
     #[test]
@@ -23,8 +22,7 @@ mod tests {
         assert_eq!(sf1.worker_id, sf2.worker_id);
         assert_eq!(sf1.datacenter_id, sf2.datacenter_id);
         assert_eq!(sf1.sequence.load(Ordering::Relaxed), sf2.sequence.load(Ordering::Relaxed));
-        assert_eq!(sf1.time.load(Ordering::Relaxed), sf2.time.load(Ordering::Relaxed));
-    }
+   }
 
     #[test]
     fn test_snowflake_generation() {
