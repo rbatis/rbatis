@@ -213,15 +213,9 @@ mod test {
     fn test_generate_clock_back() {
         let mut snowflake = Snowflake::default();
         let initial_timestamp = snowflake.get_time();
-        snowflake.set_epoch(initial_timestamp - 100000000000000000); // 设置一个较早的 epoch
-
-        // 生成一个初始 ID
+        snowflake.set_epoch(initial_timestamp - 100000000000000000);
         let initial_id = snowflake.generate();
-
-        // 模拟时钟回拨，将时间设置为初始 ID 的时间戳减去一段时间
         snowflake.set_epoch(initial_timestamp - 200000000000000000);
-
-        // 生成新的 ID
         let new_id = snowflake.generate();
         assert!(new_id > initial_id);
     }
