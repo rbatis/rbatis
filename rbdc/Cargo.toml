@@ -1,6 +1,6 @@
 [package]
 name = "rbdc"
-version = "4.3.4"
+version = "4.3.5"
 edition = "2021"
 description = "The Rust SQL Toolkit and ORM Library. An async, pure Rust SQL crate featuring compile-time Dynamic SQL"
 readme = "Readme.md"
@@ -13,10 +13,9 @@ repository = "https://github.com/rbatis/rbatis"
 homepage = "https://rbatis.github.io/rbatis.io"
 
 [features]
-default = ["_rt-tokio", "_tls-rustls"]
-_tls-rustls = ["rustls", "webpki-roots", "rustls-pemfile"]
-_rt-tokio = []
-_tls-native-tls = ["native-tls", "tokio-native-tls"]
+default = ["tls-rustls"]
+tls-rustls = ["rustls", "webpki-roots", "rustls-pemfile"]
+tls-native-tls = ["native-tls", "tokio-native-tls"]
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
