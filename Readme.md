@@ -116,7 +116,6 @@ fast_log = "1.5"
 #### (option) 'native-tls'
 ```toml
 rbs = { version = "4.3" }
-rbdc = { version = "4.3", default-features = false, features = ["tls-native-tls"] }
 rbdc-sqlite = { version = "4.3", default-features = false, features = ["tls-native-tls"] }
 #rbdc-mysql={version="4.3", default-features = false, features = ["tls-native-tls"]}
 #rbdc-pg={version="4.3", default-features = false, features = ["tls-native-tls"]}
