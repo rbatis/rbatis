@@ -129,6 +129,7 @@ log = "0.4"
 fast_log = "1.5"
 ```
 
+#### default use
 ```rust
 //#[macro_use] define in 'root crate' or 'mod.rs' or 'main.rs'
 #[macro_use]
