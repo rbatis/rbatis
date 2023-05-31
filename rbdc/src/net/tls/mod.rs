@@ -53,7 +53,7 @@ impl std::fmt::Display for CertificateInput {
     }
 }
 
-#[cfg(feature = "_tls-rustls")]
+#[cfg(feature = "tls-rustls")]
 mod rustls;
 
 pub enum MaybeTlsStream<S>
@@ -103,7 +103,7 @@ where
             }
         };
 
-        #[cfg(feature = "_tls-rustls")]
+        #[cfg(feature = "tls-rustls")]
         let host = ::rustls::ServerName::try_from(host).map_err(|err| Error::E(err.to_string()))?;
 
         *self = MaybeTlsStream::Tls(connector.connect(host, stream).await?);
@@ -112,7 +112,7 @@ where
     }
 }
 
-#[cfg(feature = "_tls-native-tls")]
+#[cfg(feature = "tls-native-tls")]
 async fn configure_tls_connector(
     accept_invalid_certs: bool,
     accept_invalid_hostnames: bool,
@@ -143,7 +143,7 @@ async fn configure_tls_connector(
     Ok(connector)
 }
 
-#[cfg(feature = "_tls-rustls")]
+#[cfg(feature = "tls-rustls")]
 use self::rustls::configure_tls_connector;
 
 impl<S> AsyncRead for MaybeTlsStream<S>
@@ -190,7 +190,6 @@ where
         }
     }
 
-    #[cfg(any(feature = "_rt-tokio"))]
     fn poll_shutdown(mut self: Pin<&mut Self>, cx: &mut Context<'_>) -> Poll<io::Result<()>> {
         match &mut *self {
             MaybeTlsStream::Raw(s) => Pin::new(s).poll_shutdown(cx),
@@ -211,10 +210,10 @@ where
         match self {
             MaybeTlsStream::Raw(s) => s,
 
-            #[cfg(feature = "_tls-rustls")]
+            #[cfg(feature = "tls-rustls")]
             MaybeTlsStream::Tls(s) => s.get_ref().0,
 
-            #[cfg(all(feature = "_tls-native-tls"))]
+            #[cfg(all(feature = "tls-native-tls"))]
             MaybeTlsStream::Tls(s) => s.get_ref().get_ref().get_ref(),
 
             MaybeTlsStream::Upgrading => {
@@ -232,10 +231,10 @@ where
         match self {
             MaybeTlsStream::Raw(s) => s,
 
-            #[cfg(feature = "_tls-rustls")]
+            #[cfg(feature = "tls-rustls")]
             MaybeTlsStream::Tls(s) => s.get_mut().0,
 
-            #[cfg(all(feature = "_tls-native-tls"))]
+            #[cfg(all(feature = "tls-native-tls"))]
             MaybeTlsStream::Tls(s) => s.get_mut().get_mut().get_mut(),
 
             MaybeTlsStream::Upgrading => {

@@ -1,4 +1,4 @@
-#[cfg(all(feature = "_tls-native-tls"))]
+#[cfg(all(feature = "tls-native-tls"))]
 pub use native_tls;
 
 //
@@ -10,7 +10,6 @@ pub use tokio::{
 };
 
 //unix
-#[cfg(all(unix, any(feature = "_rt-tokio")))]
 pub use tokio::net::UnixStream;
 
 pub use tokio_runtime::{block_on, enter_runtime};
@@ -41,18 +40,10 @@ mod tokio_runtime {
     }
 }
 
-#[cfg(all(
-    feature = "_tls-native-tls",
-    any(feature = "_rt-tokio"),
-    not(any(feature = "_tls-rustls")),
-))]
+#[cfg(feature = "tls-native-tls")]
 pub use tokio_native_tls::{TlsConnector, TlsStream};
 
-#[cfg(all(
-    feature = "_tls-rustls",
-    any(feature = "_rt-tokio"),
-    not(any(feature = "_tls-native-tls")),
-))]
+#[cfg(feature = "tls-rustls")]
 pub use tokio_rustls::{client::TlsStream, TlsConnector};
 
 //

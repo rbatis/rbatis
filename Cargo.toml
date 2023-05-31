@@ -27,12 +27,15 @@ repository = "https://github.com/rbatis/rbatis"
 homepage = "https://rbatis.github.io/rbatis.io"
 
 [features]
-default = ["default_mode"]
+default = ["default_mode","tls-rustls"]
 #debug_mode feature will show decode json data
 debug_mode = ["rbatis-macro-driver/debug_mode"]
 default_mode = ["rbatis-macro-driver/default"]
 #support upper case sql keyword
 upper_case_sql_keyword = []
+
+tls-rustls=["rbdc/tls-rustls"]
+tls-native-tls=["rbdc/tls-native-tls"]
 
 [dependencies]
 rbatis-codegen = { version = "4.0", path = "rbatis-codegen" }
@@ -47,7 +50,7 @@ once_cell = "1.10"
 hex = "0.4"
 rand = "0.8"
 rbs = { version = "4.3", path = "rbs" }
-rbdc = { version = "4.3", path = "rbdc" }
+rbdc = { version = "4.3", path = "rbdc", default-features = false, optional = true }
 crossbeam = "0.8.2"
 dark-std = "0.2"
 fastdate = "0.1"
