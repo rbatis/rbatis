@@ -10,6 +10,7 @@ pub use tokio::{
 };
 
 //unix
+#[cfg(unix)]
 pub use tokio::net::UnixStream;
 
 pub use tokio_runtime::{block_on, enter_runtime};
