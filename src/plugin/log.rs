@@ -52,7 +52,7 @@ pub trait LogPlugin: Send + Sync {
 }
 
 #[derive(Debug)]
-pub struct RbatisLogPlugin {
+pub struct RBatisLogPlugin {
     pub level_filter: AtomicI8,
     pub error: AtomicI8,
     pub warn: AtomicI8,
@@ -61,10 +61,10 @@ pub struct RbatisLogPlugin {
     pub trace: AtomicI8,
 }
 
-impl Default for RbatisLogPlugin {
+impl Default for RBatisLogPlugin {
     //default leve info
     fn default() -> Self {
-        RbatisLogPlugin {
+        RBatisLogPlugin {
             level_filter: AtomicI8::new(3), //info
             error: AtomicI8::new(1),
             warn: AtomicI8::new(2),
@@ -75,7 +75,7 @@ impl Default for RbatisLogPlugin {
     }
 }
 
-impl RbatisLogPlugin {
+impl RBatisLogPlugin {
     fn i8_to_level(level: i8) -> Level {
         match level {
             1 => Level::Error,
@@ -120,28 +120,28 @@ impl RbatisLogPlugin {
     }
 }
 
-impl LogPlugin for RbatisLogPlugin {
+impl LogPlugin for RBatisLogPlugin {
     fn get_level_filter(&self) -> LevelFilter {
-        RbatisLogPlugin::i8_to_level_filter(self.level_filter.load(Ordering::SeqCst))
+        RBatisLogPlugin::i8_to_level_filter(self.level_filter.load(Ordering::SeqCst))
     }
 
     fn set_level_filter(&self, level: LevelFilter) {
         self.level_filter
-            .store(RbatisLogPlugin::level_filter_to_i8(level), Ordering::SeqCst);
+            .store(RBatisLogPlugin::level_filter_to_i8(level), Ordering::SeqCst);
     }
 
     fn get_level(&self, level: Level) -> Level {
         match level {
-            Level::Error => RbatisLogPlugin::i8_to_level(self.error.load(Ordering::SeqCst)),
-            Level::Warn => RbatisLogPlugin::i8_to_level(self.warn.load(Ordering::SeqCst)),
-            Level::Info => RbatisLogPlugin::i8_to_level(self.info.load(Ordering::SeqCst)),
-            Level::Debug => RbatisLogPlugin::i8_to_level(self.debug.load(Ordering::SeqCst)),
-            Level::Trace => RbatisLogPlugin::i8_to_level(self.trace.load(Ordering::SeqCst)),
+            Level::Error => RBatisLogPlugin::i8_to_level(self.error.load(Ordering::SeqCst)),
+            Level::Warn => RBatisLogPlugin::i8_to_level(self.warn.load(Ordering::SeqCst)),
+            Level::Info => RBatisLogPlugin::i8_to_level(self.info.load(Ordering::SeqCst)),
+            Level::Debug => RBatisLogPlugin::i8_to_level(self.debug.load(Ordering::SeqCst)),
+            Level::Trace => RBatisLogPlugin::i8_to_level(self.trace.load(Ordering::SeqCst)),
         }
     }
 
     fn set_level(&self, from: Level, to: Level) {
-        let i = RbatisLogPlugin::level_to_i8(to);
+        let i = RBatisLogPlugin::level_to_i8(to);
         match from {
             Level::Error => {
                 self.error.store(i, Ordering::SeqCst);

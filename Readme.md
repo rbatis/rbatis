@@ -164,7 +164,7 @@ async fn main() {
     /// enable log crate to show sql logs
     fast_log::init(fast_log::Config::new().console()).expect("rbatis init fail");
     /// initialize rbatis. also you can call rb.clone(). this is  an Arc point
-    let rb = Rbatis::new();
+    let rb = RBatis::new();
     /// connect to database  
     // sqlite 
     rb.init(SqliteDriver {}, "sqlite://target/sqlite.db").unwrap();
@@ -220,7 +220,7 @@ async fn main() {
 ```rust
 #[tokio::main]
 pub async fn main() {
-    use rbatis::Rbatis;
+    use rbatis::RBatis;
     use rbdc_sqlite::driver::SqliteDriver;
     #[derive(Clone, Debug, serde::Serialize, serde::Deserialize)]
     pub struct BizActivity {
@@ -228,7 +228,7 @@ pub async fn main() {
         pub name: Option<String>,
     }
     fast_log::init(fast_log::Config::new().console()).expect("rbatis init fail");
-    let rb = Rbatis::new();
+    let rb = RBatis::new();
     rb.init(SqliteDriver {}, "sqlite://target/sqlite.db").unwrap();
     let table: Option<BizActivity> = rb
         .query_decode("select * from biz_activity limit ?", vec![rbs::to_value!(1)])
@@ -254,7 +254,7 @@ pub async fn main() {
     #[py_sql("select * from biz_activity where delete_flag = 0
                   if name != '':
                     `and name=#{name}`")]
-async fn py_sql_tx(rb: &Rbatis, tx_id: &String, name: &str) -> Vec<BizActivity> { impled!() }
+async fn py_sql_tx(rb: &RBatis, tx_id: &String, name: &str) -> Vec<BizActivity> { impled!() }
 ```
 
 * Added html_sql support, a form of organization similar to MyBatis, to facilitate migration of Java systems to Rust(
@@ -284,15 +284,15 @@ async fn select_by_condition(rb: &mut dyn Executor, page_req: &PageRequest, name
 ```rust
 use once_cell::sync::Lazy;
 
-pub static RB: Lazy<Rbatis> = Lazy::new(|| Rbatis::new());
+pub static RB: Lazy<RBatis> = Lazy::new(|| RBatis::new());
 
 /// Macro generates execution logic based on method definition, similar to @select dynamic SQL of Java/Mybatis
-/// RB is the name referenced locally by Rbatis, for example DAO ::RB, com:: XXX ::RB... Can be
+/// RB is the name referenced locally by RBatis, for example DAO ::RB, com:: XXX ::RB... Can be
 /// The second parameter is the standard driver SQL. Note that the corresponding database parameter mysql is? , pg is $1...
 /// macro auto edit method to  'pub async fn select(name: &str) -> rbatis::core::Result<BizActivity> {}'
 ///
 #[sql("select * from biz_activity where id = ?")]
-pub async fn select(rb: &Rbatis, name: &str) -> BizActivity {}
+pub async fn select(rb: &RBatis, name: &str) -> BizActivity {}
 //or： pub async fn select(name: &str) -> rbatis::core::Result<BizActivity> {}
 
 #[tokio::test]

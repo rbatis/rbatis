@@ -19,7 +19,7 @@ mod test {
     use rbatis::executor::RBatisConnExecutor;
     use rbatis::intercept::SqlIntercept;
     use rbatis::sql::PageRequest;
-    use rbatis::{Error, Rbatis};
+    use rbatis::{Error, RBatis};
     use rbdc::datetime::DateTime;
     use rbdc::db::{ConnectOptions, Connection, Driver, ExecResult, MetaData, Row};
     use rbdc::rt::block_on;
@@ -41,7 +41,7 @@ mod test {
     impl SqlIntercept for MockIntercept {
         fn do_intercept(
             &self,
-            rb: &Rbatis,
+            rb: &RBatis,
             sql: &mut String,
             args: &mut Vec<Value>,
             is_prepared_sql: bool,
@@ -204,12 +204,12 @@ mod test {
     #[test]
     fn test_query_decode() {
         let f = async move {
-            let mut rb = Rbatis::new();
+            let mut rb = RBatis::new();
             rb.init(MockDriver {}, "test").unwrap();
             let queue = Arc::new(SegQueue::new());
             rb.set_sql_intercepts(vec![Box::new(MockIntercept::new(queue.clone()))]);
             #[py_sql("select ${id},${id},#{id},#{id} ")]
-            pub async fn test_same_id(rb: &mut Rbatis, id: &u64) -> Result<Value, Error> {
+            pub async fn test_same_id(rb: &mut RBatis, id: &u64) -> Result<Value, Error> {
                 impled!()
             }
             let r = test_same_id(&mut rb, &1).await.unwrap();

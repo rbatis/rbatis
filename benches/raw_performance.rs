@@ -10,7 +10,7 @@
 extern crate test;
 
 use futures_core::future::BoxFuture;
-use rbatis::rbatis::Rbatis;
+use rbatis::rbatis::RBatis;
 use rbatis::{impl_insert, impl_select};
 use rbdc::db::{ConnectOptions, Connection, Driver, ExecResult, Row};
 use rbdc::{block_on, Error};
@@ -26,7 +26,7 @@ use test::Bencher;
 #[test]
 fn bench_raw() {
     let f = async {
-        let rbatis = Rbatis::new();
+        let rbatis = RBatis::new();
         rbatis.init(MockDriver {}, "mock://");
         rbatis.acquire().await.unwrap();
         rbatis::bench!(100000, {
@@ -43,7 +43,7 @@ fn bench_raw() {
 #[test]
 fn bench_insert() {
     let f = async {
-        let rbatis = Rbatis::new();
+        let rbatis = RBatis::new();
         rbatis.init(MockDriver {}, "mock://").unwrap();
         rbatis.acquire().await.unwrap();
         let mut t = MockTable {
@@ -74,7 +74,7 @@ fn bench_insert() {
 #[test]
 fn bench_select() {
     let f = async {
-        let rbatis = Rbatis::new();
+        let rbatis = RBatis::new();
         rbatis.init(MockDriver {}, "mock://").unwrap();
         rbatis.acquire().await.unwrap();
         rbatis::bench!(100000, {

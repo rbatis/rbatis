@@ -1,6 +1,6 @@
 use crate::executor::{RBatisConnExecutor, RBatisTxExecutor};
 use crate::plugin::intercept::SqlIntercept;
-use crate::plugin::log::{LogPlugin, RbatisLogPlugin};
+use crate::plugin::log::{LogPlugin, RBatisLogPlugin};
 use crate::snowflake::new_snowflake_id;
 use crate::Error;
 use dark_std::sync::SyncVec;
@@ -11,9 +11,9 @@ use std::fmt::{Debug, Formatter};
 use std::sync::Arc;
 use std::time::Duration;
 
-/// rbatis engine
+/// RBatis engine
 #[derive(Clone)]
-pub struct Rbatis {
+pub struct RBatis {
     // the connection pool,use OnceCell init this
     pub pool: Arc<OnceCell<Pool>>,
     // sql intercept vec chain
@@ -22,46 +22,49 @@ pub struct Rbatis {
     pub log_plugin: Arc<Box<dyn LogPlugin>>,
 }
 
-impl Debug for Rbatis {
+#[deprecated(note = "please use RBatis replace this")]
+pub type Rbatis = RBatis;
+
+impl Debug for RBatis {
     fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
-        f.debug_struct("Rbatis")
+        f.debug_struct("RBatis")
             .field("pool", &self.pool)
             .field("sql_intercepts", &self.sql_intercepts.len())
             .finish()
     }
 }
 
-impl Default for Rbatis {
-    fn default() -> Rbatis {
-        Rbatis::new()
+impl Default for RBatis {
+    fn default() -> RBatis {
+        RBatis::new()
     }
 }
 
-///Rbatis Options
-pub struct RbatisOption {
+///RBatis Options
+pub struct RBatisOption {
     /// sql intercept vec chain
     pub sql_intercepts: SyncVec<Box<dyn SqlIntercept>>,
     /// log plugin
     pub log_plugin: Box<dyn LogPlugin>,
 }
 
-impl Default for RbatisOption {
+impl Default for RBatisOption {
     fn default() -> Self {
         Self {
             sql_intercepts: SyncVec::new(),
-            log_plugin: Box::new(RbatisLogPlugin::default()) as Box<dyn LogPlugin>,
+            log_plugin: Box::new(RBatisLogPlugin::default()) as Box<dyn LogPlugin>,
         }
     }
 }
 
-impl Rbatis {
-    ///create an Rbatis
+impl RBatis {
+    ///create an RBatis
     pub fn new() -> Self {
-        return Self::new_with_opt(RbatisOption::default());
+        return Self::new_with_opt(RBatisOption::default());
     }
 
-    ///new Rbatis from Option
-    pub fn new_with_opt(option: RbatisOption) -> Self {
+    ///new RBatis from Option
+    pub fn new_with_opt(option: RBatisOption) -> Self {
         return Self {
             pool: Arc::new(OnceCell::new()),
             sql_intercepts: Arc::new(option.sql_intercepts),
@@ -69,9 +72,7 @@ impl Rbatis {
         };
     }
 
-    /// init() and try_acquire a connection.
-    /// use init() replace this method
-    #[deprecated]
+    /// self.init(driver, url)? and self.try_acquire().await? a connection.
     pub async fn link<Driver: rbdc::db::Driver + 'static>(
         &self,
         driver: Driver,
@@ -154,8 +155,8 @@ impl Rbatis {
     ///
     /// can set option for example:
     /// ```rust
-    /// use rbatis::Rbatis;
-    /// let rb = Rbatis::new();
+    /// use rbatis::RBatis;
+    /// let rb = RBatis::new();
     /// //rb.init(rbdc_sqlite::driver::SqliteDriver {},"sqlite://target/sqlite.db");
     /// //rb.get_pool().unwrap().resize(10);
     /// ```

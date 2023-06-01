@@ -81,11 +81,11 @@ async fn select_by_condition(
 }
 ```
 
-### 2. Rbatis expr
+### 2. RBatis expr
 
-* Rbatis expr is ```#{name}```,```#{age + 1}```,```${age + 1}``` and  code test:``` <if test="dt >= '2009-12-12 00:00:00'"></if> ```
-* Rbatis expr will be Convert to original rust code,if Rbatis expression = ```#{age + 1}```,the code = ``` rb_arg_map["age"].op_add(1) ```
-* Rbatis expr directly use strings to compare and process date types,just like ``` <if test="dt >= '2009-12-12 00:00:00'"></if> ```,``` #{dt >= '2009-12-12 00:00:00'}```
+* RBatis expr is ```#{name}```,```#{age + 1}```,```${age + 1}``` and  code test:``` <if test="dt >= '2009-12-12 00:00:00'"></if> ```
+* RBatis expr will be Convert to original rust code,if RBatis expression = ```#{age + 1}```,the code = ``` rb_arg_map["age"].op_add(1) ```
+* RBatis expr directly use strings to compare and process date types,just like ``` <if test="dt >= '2009-12-12 00:00:00'"></if> ```,``` #{dt >= '2009-12-12 00:00:00'}```
 
 ### 3. The function body is generated through the process macro via rbatis-codegen
 
@@ -105,7 +105,7 @@ pub async fn select_by_condition(
         rbs::to_value(name).unwrap_or_default(),
     );
     rb_arg_map.insert("a".to_string().into(), rbs::to_value(a).unwrap_or_default());
-    use rbatis::executor::RbatisRef;
+    use rbatis::executor::RBatisRef;
     let driver_type = rb.rbatis_ref().driver_type()?;
     use rbatis::rbatis_codegen;
     pub fn impl_html_sql(arg: &rbs::Value, _tag: char) -> (String, Vec<rbs::Value>) {

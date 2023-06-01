@@ -2,7 +2,7 @@ use std::fmt::{Debug, Formatter};
 use std::ops::{Deref, DerefMut};
 
 use crate::decode::{decode, is_debug_mode};
-use crate::rbatis::Rbatis;
+use crate::rbatis::RBatis;
 use crate::snowflake::new_snowflake_id;
 use crate::sql::tx::Tx;
 use crate::Error;
@@ -13,29 +13,29 @@ use rbdc::db::{Connection, ExecResult};
 use rbs::Value;
 use serde::de::DeserializeOwned;
 
-/// the rbatis's Executor. this trait impl with structs = Rbatis,RBatisConnExecutor,RBatisTxExecutor,RBatisTxExecutorGuard
-pub trait Executor: RbatisRef {
+/// the rbatis's Executor. this trait impl with structs = RBatis,RBatisConnExecutor,RBatisTxExecutor,RBatisTxExecutorGuard
+pub trait Executor: RBatisRef {
     fn exec(&mut self, sql: &str, args: Vec<Value>) -> BoxFuture<'_, Result<ExecResult, Error>>;
     fn query(&mut self, sql: &str, args: Vec<Value>) -> BoxFuture<'_, Result<Value, Error>>;
 }
 
-pub trait RbatisRef: Send {
-    fn rbatis_ref(&self) -> &Rbatis;
+pub trait RBatisRef: Send {
+    fn rbatis_ref(&self) -> &RBatis;
 
     fn driver_type(&self) -> crate::Result<&str> {
         self.rbatis_ref().driver_type()
     }
 }
 
-impl RbatisRef for Rbatis {
-    fn rbatis_ref(&self) -> &Rbatis {
+impl RBatisRef for RBatis {
+    fn rbatis_ref(&self) -> &RBatis {
         self
     }
 }
 
 pub struct RBatisConnExecutor {
     pub conn: Box<dyn Connection>,
-    pub rb: Rbatis,
+    pub rb: RBatis,
 }
 
 impl Debug for RBatisConnExecutor {
@@ -168,8 +168,8 @@ impl Executor for RBatisConnExecutor {
     }
 }
 
-impl RbatisRef for RBatisConnExecutor {
-    fn rbatis_ref(&self) -> &Rbatis {
+impl RBatisRef for RBatisConnExecutor {
+    fn rbatis_ref(&self) -> &RBatis {
         &self.rb
     }
 }
@@ -189,7 +189,7 @@ impl RBatisConnExecutor {
 pub struct RBatisTxExecutor {
     pub tx_id: i64,
     pub conn: Box<dyn Connection>,
-    pub rb: Rbatis,
+    pub rb: RBatis,
     pub done: bool,
 }
 
@@ -325,8 +325,8 @@ impl Executor for RBatisTxExecutor {
     }
 }
 
-impl RbatisRef for RBatisTxExecutor {
-    fn rbatis_ref(&self) -> &Rbatis {
+impl RBatisRef for RBatisTxExecutor {
+    fn rbatis_ref(&self) -> &RBatis {
         &self.rb
     }
 }
@@ -463,8 +463,8 @@ impl Drop for RBatisTxExecutorGuard {
     }
 }
 
-impl RbatisRef for RBatisTxExecutorGuard {
-    fn rbatis_ref(&self) -> &Rbatis {
+impl RBatisRef for RBatisTxExecutorGuard {
+    fn rbatis_ref(&self) -> &RBatis {
         &self.rb
     }
 }
@@ -491,7 +491,7 @@ impl Executor for RBatisTxExecutorGuard {
     }
 }
 
-impl Rbatis {
+impl RBatis {
     /// exec sql
     pub async fn exec(&self, sql: &str, args: Vec<Value>) -> Result<rbdc::db::ExecResult, Error> {
         let mut conn = self.acquire().await?;
@@ -516,7 +516,7 @@ impl Rbatis {
     }
 }
 
-impl Executor for Rbatis {
+impl Executor for RBatis {
     fn exec(&mut self, sql: &str, args: Vec<Value>) -> BoxFuture<'_, Result<ExecResult, Error>> {
         let sql = sql.to_string();
         Box::pin(async move {
@@ -534,13 +534,13 @@ impl Executor for Rbatis {
     }
 }
 
-impl RbatisRef for &Rbatis {
-    fn rbatis_ref(&self) -> &Rbatis {
+impl RBatisRef for &RBatis {
+    fn rbatis_ref(&self) -> &RBatis {
         self
     }
 }
 
-impl Executor for &Rbatis {
+impl Executor for &RBatis {
     fn exec(&mut self, sql: &str, args: Vec<Value>) -> BoxFuture<'_, Result<ExecResult, Error>> {
         let sql = sql.to_string();
         Box::pin(async move {
