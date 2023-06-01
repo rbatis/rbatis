@@ -5,9 +5,9 @@ pub mod init;
 
 use log::LevelFilter;
 use serde::de::Error;
-use serde::{Deserialize, Deserializer};
+use serde::{Deserializer};
 use rbatis::table_sync::{SqliteTableSync, TableSync};
-use rbs::{from_value, to_value, Value};
+use rbs::{to_value, Value};
 use crate::init::{init_db};
 
 #[derive(Clone, Debug, serde::Serialize, serde::Deserialize)]
@@ -38,14 +38,14 @@ impl<'de> serde::Deserialize<'de> for Account {
                 }
             }
         }
-        let z = rbs::Value::deserialize(deserializer)?;
+        let z = serde_json::Value::deserialize(deserializer)?;
         match z {
-            Value::String(v) => {
+            serde_json::Value::String(v) => {
                 let account: Account = serde_json::from_str(&v).map_err(|e| D::Error::custom(&format!("warn type decode Date:{}", e)))?;
                 Ok(account)
             }
             _ => {
-                let account: AccountProxy = serde_json::from_str(&z.to_string()).map_err(|e| D::Error::custom(&format!("warn type decode Date:{}", e)))?;
+                let account: AccountProxy = serde_json::from_value(z).map_err(|e| D::Error::custom(&format!("warn type decode Date:{}", e)))?;
                 Ok(account.into())
             }
         }
