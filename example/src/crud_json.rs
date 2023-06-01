@@ -5,63 +5,48 @@ pub mod init;
 
 use log::LevelFilter;
 use serde::de::Error;
-use serde::Deserializer;
+use serde::{Deserialize, Deserializer};
 use rbatis::table_sync::{SqliteTableSync, TableSync};
 use rbs::{from_value, to_value, Value};
 use crate::init::{init_db};
 
-#[derive(Clone, Debug, serde::Serialize)]
+#[derive(Clone, Debug, serde::Serialize, serde::Deserialize)]
 pub struct BizUser {
     pub id: Option<String>,
     pub account: Option<Account>,
 }
 crud!(BizUser{});
 
-#[derive(Clone, Debug, serde::Serialize, serde::Deserialize, Default)]
+#[derive(Clone, Debug, serde::Serialize, Default)]
 pub struct Account {
     pub id: Option<String>,
     pub name: Option<String>,
 }
 
-impl<'de> serde::Deserialize<'de> for BizUser {
+impl<'de> serde::Deserialize<'de> for Account {
     fn deserialize<D>(deserializer: D) -> Result<Self, D::Error> where D: Deserializer<'de> {
-        #[derive(Clone, Debug, serde::Serialize, serde::Deserialize)]
-        pub struct BizUserZ {
+        #[derive(Clone, Debug, serde::Serialize, serde::Deserialize, Default)]
+        pub struct AccountProxy {
             pub id: Option<String>,
-            pub account: Value,
+            pub name: Option<String>,
         }
-        let z = BizUserZ::deserialize(deserializer)?;
-        match z.account {
-            Value::Null => {
-                let account: Option<Account> = from_value(z.account).map_err(|e| D::Error::custom(&format!("warn type decode Date:{}", e)))?;
-                Ok(Self {
-                    id: z.id,
-                    account: account,
-                })
+        impl From<AccountProxy> for Account {
+            fn from(value: AccountProxy) -> Self {
+                Account {
+                    id: value.id,
+                    name: value.name,
+                }
             }
+        }
+        let z = rbs::Value::deserialize(deserializer)?;
+        match z {
             Value::String(v) => {
-                let account: Option<Account> = serde_json::from_str(&v).map_err(|e| D::Error::custom(&format!("warn type decode Date:{}", e)))?;
-                Ok(Self {
-                    id: z.id,
-                    account: account,
-                })
-            }
-            Value::Binary(v) => {
-                let account: Option<Account> = serde_json::from_slice(&v).map_err(|e| D::Error::custom(&format!("warn type decode Date:{}", e)))?;
-                Ok(Self {
-                    id: z.id,
-                    account: account,
-                })
-            }
-            Value::Map(_) => {
-                let account: Option<Account> = from_value(z.account).map_err(|e| D::Error::custom(&format!("warn type decode Date:{}", e)))?;
-                Ok(Self {
-                    id: z.id,
-                    account: account,
-                })
+                let account: Account = serde_json::from_str(&v).map_err(|e| D::Error::custom(&format!("warn type decode Date:{}", e)))?;
+                Ok(account)
             }
             _ => {
-                Err(D::Error::custom("warn type"))
+                let account: AccountProxy = serde_json::from_str(&z.to_string()).map_err(|e| D::Error::custom(&format!("warn type decode Date:{}", e)))?;
+                Ok(account.into())
             }
         }
     }
