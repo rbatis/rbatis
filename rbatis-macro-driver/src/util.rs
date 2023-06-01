@@ -61,8 +61,7 @@ pub(crate) fn is_query(return_source: &str) -> bool {
 }
 
 pub(crate) fn is_rbatis_ref(ty_stream: &str) -> bool {
-    if ty_stream.contains("RbatisExecutor")
-        || ty_stream.contains("Rbatis")
+    if  ty_stream.contains("RBatis")
         || ty_stream.contains("RBatisConnExecutor")
         || ty_stream.contains("RBatisTxExecutor")
         || ty_stream.contains("RBatisTxExecutorGuard")

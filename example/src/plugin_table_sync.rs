@@ -1,4 +1,4 @@
-use rbatis::rbatis::Rbatis;
+use rbatis::rbatis::RBatis;
 use rbatis::rbdc::datetime::DateTime;
 use rbatis::table_sync::{SqliteTableSync, TableSync};
 use rbdc_sqlite::driver::SqliteDriver;
@@ -17,7 +17,7 @@ pub struct RBUser {
 #[tokio::main]
 pub async fn main() {
     fast_log::init(fast_log::Config::new().console()).expect("rbatis init fail");
-    let rb = Rbatis::new();
+    let rb = RBatis::new();
     rb.init(SqliteDriver {}, &format!("sqlite://target/sqlite.db"))
         .unwrap();
     let mut s = SqliteTableSync::default();

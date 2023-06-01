@@ -43,7 +43,7 @@ fn bench_rbatis_decode_map(b: &mut Bencher) {
 
 #[bench]
 fn bench_is_debug_mode(b: &mut Bencher) {
-    let rb = rbatis::Rbatis::new();
+    let rb = rbatis::RBatis::new();
     b.iter(|| {
         rb.is_debug_mode();
     });

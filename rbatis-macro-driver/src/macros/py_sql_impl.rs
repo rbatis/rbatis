@@ -7,7 +7,7 @@ use crate::proc_macro::TokenStream;
 use crate::util::{find_fn_body, find_return_type, get_fn_args, is_query, is_rbatis_ref};
 
 ///py_sql macro
-///support args for rb:&Rbatis
+///support args for rb:&RBatis
 pub(crate) fn impl_macro_py_sql(target_fn: &ItemFn, args: &AttributeArgs) -> TokenStream {
     let return_ty = find_return_type(target_fn);
     let mut rbatis_ident = "".to_token_stream();
@@ -32,7 +32,7 @@ pub(crate) fn impl_macro_py_sql(target_fn: &ItemFn, args: &AttributeArgs) -> Tok
     let mut sql_ident = quote!();
     if args.len() >= 1 {
         if rbatis_name.is_empty() {
-            panic!("[rbatis] you should add rbatis ref param  rb:&Rbatis  or rb: &mut Executor<'_,'_>  on '{}()'!", target_fn.sig.ident);
+            panic!("[rbatis] you should add rbatis ref param  rb:&RBatis  or rb: &mut Executor  on '{}()'!", target_fn.sig.ident);
         }
         let mut s = "".to_string();
         for ele in args {
@@ -106,7 +106,7 @@ pub(crate) fn impl_macro_py_sql(target_fn: &ItemFn, args: &AttributeArgs) -> Tok
          let mut rb_arg_map = rbs::value::map::ValueMap::new();
          #sql_args_gen
          #fn_body
-         use rbatis::executor::{RbatisRef};
+         use rbatis::executor::{RBatisRef};
          let driver_type = #rbatis_ident.rbatis_ref().driver_type()?;
          use rbatis::rbatis_codegen;
          #gen_func

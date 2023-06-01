@@ -1,10 +1,10 @@
 use log::LevelFilter;
-use rbatis::rbatis::Rbatis;
+use rbatis::rbatis::RBatis;
 use rbatis::dark_std::defer;
 
-/// make an Rbatis
-pub async fn init_db() -> Rbatis {
-    let rb = Rbatis::new();
+/// make an RBatis
+pub async fn init_db() -> RBatis {
+    let rb = RBatis::new();
     // ------------choose database driver------------
     // rb.init(rbdc_mysql::driver::MysqlDriver {}, "mysql://root:123456@localhost:3306/test").unwrap();
     // rb.init(rbdc_pg::driver::PgDriver {}, "postgres://postgres:123456@localhost:5432/postgres").unwrap();

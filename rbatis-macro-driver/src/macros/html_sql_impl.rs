@@ -34,7 +34,7 @@ pub(crate) fn impl_macro_html_sql(target_fn: &ItemFn, args: &AttributeArgs) -> T
     let mut sql_ident = quote!();
     if args.len() >= 1 {
         if rbatis_name.is_empty() {
-            panic!("[rbatis] you should add rbatis ref param  rb:&Rbatis  or rb: &mut Executor<'_,'_>  on '{}()'!", target_fn.sig.ident);
+            panic!("[rbatis] you should add rbatis ref param  rb:&RBatis  or rb: &mut Executor  on '{}()'!", target_fn.sig.ident);
         }
         let mut s = "".to_string();
         for ele in args {
@@ -147,7 +147,7 @@ pub(crate) fn impl_macro_html_sql(target_fn: &ItemFn, args: &AttributeArgs) -> T
          let mut rb_arg_map = rbs::value::map::ValueMap::new();
          #sql_args_gen
          #fn_body
-         use rbatis::executor::{RbatisRef};
+         use rbatis::executor::{RBatisRef};
          let driver_type = #rbatis_ident.rbatis_ref().driver_type()?;
          use rbatis::rbatis_codegen;
          #gen_func

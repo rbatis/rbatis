@@ -19,7 +19,7 @@ mod test {
     use rbatis::executor::RBatisConnExecutor;
     use rbatis::intercept::SqlIntercept;
     use rbatis::sql::PageRequest;
-    use rbatis::{Error, Rbatis};
+    use rbatis::{Error, RBatis};
     use rbdc::datetime::DateTime;
     use rbdc::db::{ConnectOptions, Connection, Driver, ExecResult, MetaData, Row};
     use rbdc::rt::block_on;
@@ -41,7 +41,7 @@ mod test {
     impl SqlIntercept for MockIntercept {
         fn do_intercept(
             &self,
-            rb: &Rbatis,
+            rb: &RBatis,
             sql: &mut String,
             args: &mut Vec<Value>,
             is_prepared_sql: bool,
@@ -204,7 +204,7 @@ mod test {
     #[test]
     fn test_query_decode() {
         let f = async move {
-            let mut rb = Rbatis::new();
+            let mut rb = RBatis::new();
             rb.init(MockDriver {}, "test").unwrap();
             let r: Vec<MockTable> = rb
                 .query_decode("select * from mock_table", vec![])
@@ -222,7 +222,7 @@ mod test {
     #[test]
     fn test_query_decode_tx() {
         let f = async move {
-            let rb = Rbatis::new();
+            let rb = RBatis::new();
             rb.init(MockDriver {}, "test").unwrap();
             let mut tx = rb.acquire_begin().await.unwrap();
             let r: Vec<MockTable> = tx
@@ -236,7 +236,7 @@ mod test {
     #[test]
     fn test_query_decode_tx_guard() {
         let f = async move {
-            let rb = Rbatis::new();
+            let rb = RBatis::new();
             rb.init(MockDriver {}, "test").unwrap();
             let mut tx = rb.acquire_begin().await.unwrap().defer_async(|tx| async {});
             let r: Vec<MockTable> = tx
@@ -251,7 +251,7 @@ mod test {
     #[test]
     fn test_insert() {
         let f = async move {
-            let mut rb = Rbatis::new();
+            let mut rb = RBatis::new();
             let queue = Arc::new(SegQueue::new());
             rb.set_sql_intercepts(vec![Box::new(MockIntercept::new(queue.clone()))]);
             rb.init(MockDriver {}, "test").unwrap();
@@ -299,7 +299,7 @@ mod test {
     #[test]
     fn test_insert_batch() {
         let f = async move {
-            let mut rb = Rbatis::new();
+            let mut rb = RBatis::new();
             let queue = Arc::new(SegQueue::new());
             rb.set_sql_intercepts(vec![Box::new(MockIntercept::new(queue.clone()))]);
             rb.init(MockDriver {}, "test").unwrap();
@@ -363,7 +363,7 @@ mod test {
     #[test]
     fn test_update_by_column() {
         let f = async move {
-            let mut rb = Rbatis::new();
+            let mut rb = RBatis::new();
             let queue = Arc::new(SegQueue::new());
             rb.set_sql_intercepts(vec![Box::new(MockIntercept::new(queue.clone()))]);
             rb.init(MockDriver {}, "test").unwrap();
@@ -412,7 +412,7 @@ mod test {
     #[test]
     fn test_select_all() {
         let f = async move {
-            let mut rb = Rbatis::new();
+            let mut rb = RBatis::new();
             let queue = Arc::new(SegQueue::new());
             rb.set_sql_intercepts(vec![Box::new(MockIntercept::new(queue.clone()))]);
             rb.init(MockDriver {}, "test").unwrap();
@@ -427,7 +427,7 @@ mod test {
     #[test]
     fn test_delete_by_column() {
         let f = async move {
-            let mut rb = Rbatis::new();
+            let mut rb = RBatis::new();
             let queue = Arc::new(SegQueue::new());
             rb.set_sql_intercepts(vec![Box::new(MockIntercept::new(queue.clone()))]);
             rb.init(MockDriver {}, "test").unwrap();
@@ -445,7 +445,7 @@ mod test {
     #[test]
     fn test_delete_by_column_batch() {
         let f = async move {
-            let mut rb = Rbatis::new();
+            let mut rb = RBatis::new();
             let queue = Arc::new(SegQueue::new());
             rb.set_sql_intercepts(vec![Box::new(MockIntercept::new(queue.clone()))]);
             rb.init(MockDriver {}, "test").unwrap();
@@ -464,7 +464,7 @@ mod test {
     #[test]
     fn test_select_all_by_id() {
         let f = async move {
-            let mut rb = Rbatis::new();
+            let mut rb = RBatis::new();
             let queue = Arc::new(SegQueue::new());
             rb.set_sql_intercepts(vec![Box::new(MockIntercept::new(queue.clone()))]);
             rb.init(MockDriver {}, "test").unwrap();
@@ -482,7 +482,7 @@ mod test {
     #[test]
     fn test_select_by_id() {
         let f = async move {
-            let mut rb = Rbatis::new();
+            let mut rb = RBatis::new();
             let queue = Arc::new(SegQueue::new());
             rb.set_sql_intercepts(vec![Box::new(MockIntercept::new(queue.clone()))]);
             rb.init(MockDriver {}, "test").unwrap();
@@ -503,7 +503,7 @@ mod test {
     #[test]
     fn test_select_by_dto() {
         let f = async move {
-            let mut rb = Rbatis::new();
+            let mut rb = RBatis::new();
             let queue = Arc::new(SegQueue::new());
             rb.set_sql_intercepts(vec![Box::new(MockIntercept::new(queue.clone()))]);
             rb.init(MockDriver {}, "test").unwrap();
@@ -525,7 +525,7 @@ mod test {
     #[test]
     fn test_update_by_name() {
         let f = async move {
-            let mut rb = Rbatis::new();
+            let mut rb = RBatis::new();
             let queue = Arc::new(SegQueue::new());
             rb.set_sql_intercepts(vec![Box::new(MockIntercept::new(queue.clone()))]);
             rb.init(MockDriver {}, "test").unwrap();
@@ -573,7 +573,7 @@ mod test {
     #[test]
     fn test_update_by_dto() {
         let f = async move {
-            let mut rb = Rbatis::new();
+            let mut rb = RBatis::new();
             let queue = Arc::new(SegQueue::new());
             rb.set_sql_intercepts(vec![Box::new(MockIntercept::new(queue.clone()))]);
             rb.init(MockDriver {}, "test").unwrap();
@@ -627,7 +627,7 @@ mod test {
     #[test]
     fn test_delete_by_name() {
         let f = async move {
-            let mut rb = Rbatis::new();
+            let mut rb = RBatis::new();
             let queue = Arc::new(SegQueue::new());
             rb.set_sql_intercepts(vec![Box::new(MockIntercept::new(queue.clone()))]);
             rb.init(MockDriver {}, "test").unwrap();
@@ -642,7 +642,7 @@ mod test {
     #[test]
     fn test_select_page() {
         let f = async move {
-            let mut rb = Rbatis::new();
+            let mut rb = RBatis::new();
             let queue = Arc::new(SegQueue::new());
             rb.set_sql_intercepts(vec![Box::new(MockIntercept::new(queue.clone()))]);
             rb.init(MockDriver {}, "test").unwrap();
@@ -670,7 +670,7 @@ mod test {
     #[test]
     fn test_select_page_by_name() {
         let f = async move {
-            let mut rb = Rbatis::new();
+            let mut rb = RBatis::new();
             let queue = Arc::new(SegQueue::new());
             rb.set_sql_intercepts(vec![Box::new(MockIntercept::new(queue.clone()))]);
             rb.init(MockDriver {}, "test").unwrap();
@@ -693,7 +693,7 @@ mod test {
     #[test]
     fn test_select_by_column() {
         let f = async move {
-            let mut rb = Rbatis::new();
+            let mut rb = RBatis::new();
             let queue = Arc::new(SegQueue::new());
             rb.set_sql_intercepts(vec![Box::new(MockIntercept::new(queue.clone()))]);
             rb.init(MockDriver {}, "test").unwrap();
@@ -713,7 +713,7 @@ mod test {
     #[test]
     fn test_select_from_table_name_by_id() {
         let f = async move {
-            let mut rb = Rbatis::new();
+            let mut rb = RBatis::new();
             let queue = Arc::new(SegQueue::new());
             rb.set_sql_intercepts(vec![Box::new(MockIntercept::new(queue.clone()))]);
             rb.init(MockDriver {}, "test").unwrap();
@@ -733,7 +733,7 @@ mod test {
     #[test]
     fn test_select_table_column_from_table_name_by_id() {
         let f = async move {
-            let mut rb = Rbatis::new();
+            let mut rb = RBatis::new();
             let queue = Arc::new(SegQueue::new());
             rb.set_sql_intercepts(vec![Box::new(MockIntercept::new(queue.clone()))]);
             rb.init(MockDriver {}, "test").unwrap();
@@ -751,7 +751,7 @@ mod test {
     #[test]
     fn test_select_in_column() {
         let f = async move {
-            let mut rb = Rbatis::new();
+            let mut rb = RBatis::new();
             let queue = Arc::new(SegQueue::new());
             rb.set_sql_intercepts(vec![Box::new(MockIntercept::new(queue.clone()))]);
             rb.init(MockDriver {}, "test").unwrap();
@@ -769,7 +769,7 @@ mod test {
     #[test]
     fn test_delete_in_column() {
         let f = async move {
-            let mut rb = Rbatis::new();
+            let mut rb = RBatis::new();
             let queue = Arc::new(SegQueue::new());
             rb.set_sql_intercepts(vec![Box::new(MockIntercept::new(queue.clone()))]);
             rb.init(MockDriver {}, "test").unwrap();
@@ -787,7 +787,7 @@ mod test {
     #[test]
     fn test_tx() {
         let f = async move {
-            let rb = Rbatis::new();
+            let rb = RBatis::new();
             rb.init(MockDriver {}, "test").unwrap();
             let t = MockTable {
                 id: Some("2".into()),
@@ -820,7 +820,7 @@ mod test {
     #[test]
     fn test_pool_get() {
         let f = async move {
-            let rb = Rbatis::new();
+            let rb = RBatis::new();
             rb.init(MockDriver {}, "test").unwrap();
             for _ in 0..100000 {
                 let mut tx = rb.acquire().await.unwrap();
@@ -833,7 +833,7 @@ mod test {
     #[test]
     fn test_pool_try_get() {
         let f = async move {
-            let rb = Rbatis::new();
+            let rb = RBatis::new();
             rb.init(MockDriver {}, "test").unwrap();
             let mut v = vec![];
             for _ in 0..100000 {

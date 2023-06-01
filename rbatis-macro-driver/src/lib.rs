@@ -14,13 +14,13 @@ mod util;
 
 /// auto create sql macro,this macro use RB.query_prepare and RB.exec_prepare
 /// for example:
-///     pub static RB:Lazy<Rbatis> = Lazy::new(||Rbatis::new());
+///     pub static RB:Lazy<RBatis> = Lazy::new(||RBatis::new());
 ///     #[sql(RB, "select * from biz_activity where id = ?")]
 ///     async fn select(name: &str) -> BizActivity {}
 ///
 /// or:
 ///     #[sql("select * from biz_activity where id = ?")]
-///     async fn select(rb:&Rbatis, name: &str) -> BizActivity {}
+///     async fn select(rb:&RBatis, name: &str) -> BizActivity {}
 ///
 #[proc_macro_attribute]
 pub fn sql(args: TokenStream, func: TokenStream) -> TokenStream {
@@ -38,12 +38,12 @@ pub fn sql(args: TokenStream, func: TokenStream) -> TokenStream {
 
 /// py sql create macro,this macro use RB.py_query and RB.py_exec
 ///
-///  pub static RB:Lazy<Rbatis> = Lazy::new(||Rbatis::new());
+///  pub static RB:Lazy<RBatis> = Lazy::new(||RBatis::new());
 ///  #[py_sql(RB,"select * from biz_activity where delete_flag = 0")]
 ///  async fn py_select_page(page_req: &PageRequest, name: &str) -> Page<BizActivity> { }
 ///  or:
 ///  #[py_sql("select * from biz_activity where delete_flag = 0")]
-///  async fn py_select_page(rb: &mut RbatisExecutor<'_,'_>, page_req: &PageRequest, name: &str) -> Page<BizActivity> { }
+///  async fn py_select_page(rb: &mut Executor, page_req: &PageRequest, name: &str) -> Page<BizActivity> { }
 ///
 ///  or more example:
 ///  #[py_sql("
@@ -72,7 +72,7 @@ pub fn sql(args: TokenStream, func: TokenStream) -> TokenStream {
 ///         otherwise:
 ///           AND age = 0
 ///     WHERE id  = '2'")]
-///   pub async fn py_select_rb(rbatis: &Rbatis, name: &str) -> Option<BizActivity> {}
+///   pub async fn py_select_rb(rbatis: &RBatis, name: &str) -> Option<BizActivity> {}
 #[proc_macro_attribute]
 pub fn py_sql(args: TokenStream, func: TokenStream) -> TokenStream {
     let args = parse_macro_input!(args as AttributeArgs);
@@ -94,14 +94,14 @@ pub fn py_sql(args: TokenStream, func: TokenStream) -> TokenStream {
 /// html sql create macro,this macro use RB.py_query and RB.py_exec
 /// for example:
 ///
-/// pub static RB:Lazy<Rbatis> = Lazy::new(||Rbatis::new());
+/// pub static RB:Lazy<RBatis> = Lazy::new(||RBatis::new());
 /// #[py_sql(RB,"example/example.html")]
 /// pub async fn py_select_rb(name: &str) -> Option<BizActivity> {}
 ///
 /// or:
 ///
 /// #[py_sql("example/example.html")]
-/// pub async fn py_select_rb(rbatis: &Rbatis, name: &str) -> Option<BizActivity> {}
+/// pub async fn py_select_rb(rbatis: &RBatis, name: &str) -> Option<BizActivity> {}
 ///
 #[proc_macro_attribute]
 pub fn html_sql(args: TokenStream, func: TokenStream) -> TokenStream {

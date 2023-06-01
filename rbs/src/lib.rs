@@ -3,7 +3,6 @@ extern crate serde;
 extern crate core;
 
 pub mod index;
-#[allow(deprecated)]
 pub mod value;
 
 pub use crate::value::ext::Error;

@@ -1,4 +1,4 @@
-use crate::rbatis::Rbatis;
+use crate::rbatis::RBatis;
 use crate::Error;
 use rbs::Value;
 
@@ -8,7 +8,7 @@ pub trait SqlIntercept: Send + Sync {
     /// is_prepared_sql: if is run in prepared_sql=ture
     fn do_intercept(
         &self,
-        rb: &Rbatis,
+        rb: &RBatis,
         sql: &mut String,
         args: &mut Vec<Value>,
         is_prepared_sql: bool,
@@ -22,7 +22,7 @@ pub struct BlockAttackDeleteInterceptor {}
 impl SqlIntercept for BlockAttackDeleteInterceptor {
     fn do_intercept(
         &self,
-        _rb: &Rbatis,
+        _rb: &RBatis,
         sql: &mut String,
         _args: &mut Vec<Value>,
         _is_prepared_sql: bool,
@@ -47,7 +47,7 @@ pub struct BlockAttackUpdateInterceptor {}
 impl SqlIntercept for BlockAttackUpdateInterceptor {
     fn do_intercept(
         &self,
-        _rb: &Rbatis,
+        _rb: &RBatis,
         sql: &mut String,
         _args: &mut Vec<Value>,
         _is_prepared_sql: bool,

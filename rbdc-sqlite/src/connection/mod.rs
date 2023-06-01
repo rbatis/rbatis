@@ -74,7 +74,7 @@ impl SqliteConnection {
     ///
     /// You probably want to use [`.lock_handle()`][Self::lock_handle] to ensure that the worker thread is not using
     /// the database concurrently.
-    #[deprecated = "Unsynchronized access is unsafe. See documentation for details."]
+    #[deprecated(note= "Unsynchronized access is unsafe. See documentation for details.")]
     pub fn as_raw_handle(&mut self) -> *mut sqlite3 {
         self.worker.handle_raw.as_ptr()
     }
@@ -101,7 +101,7 @@ impl SqliteConnection {
     ///
     /// Note that this may also block if the worker command channel is currently applying
     /// backpressure.
-    #[deprecated = "Completes asynchronously. See documentation for details."]
+    #[deprecated(note = "Completes asynchronously. See documentation for details.")]
     pub fn create_collation(
         &mut self,
         name: &str,

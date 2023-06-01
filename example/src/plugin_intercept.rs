@@ -1,7 +1,7 @@
 pub mod init;
 use crate::init::{init_db};
 use rbatis::intercept::SqlIntercept;
-use rbatis::{crud, Error, Rbatis};
+use rbatis::{crud, Error, RBatis};
 use rbs::Value;
 use serde_json::json;
 use rbatis::rbdc::datetime::DateTime;
@@ -12,7 +12,7 @@ pub struct LogicDeletePlugin {}
 impl SqlIntercept for LogicDeletePlugin {
     fn do_intercept(
         &self,
-        _rb: &Rbatis,
+        _rb: &RBatis,
         sql: &mut String,
         _args: &mut Vec<Value>,
         _is_prepared_sql: bool,

@@ -6,7 +6,7 @@ pub mod init;
 use serde_json::json;
 use crate::{init_db};
 use init::*;
-use rbatis::rbatis::Rbatis;
+use rbatis::rbatis::RBatis;
 use rbatis::rbdc::datetime::DateTime;
 
 /// table
@@ -28,7 +28,7 @@ pub struct BizActivity {
 
 /// doc you can see https://rbatis.github.io/rbatis.io
 #[sql("select * from biz_activity where delete_flag = ?")]
-async fn raw_sql(rb: &Rbatis, delete_flag: &i32) -> rbatis::Result<Vec<BizActivity>> {
+async fn raw_sql(rb: &RBatis, delete_flag: &i32) -> rbatis::Result<Vec<BizActivity>> {
     impled!()
 }
 
