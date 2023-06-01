@@ -7,7 +7,7 @@ use log::LevelFilter;
 use serde::de::Error;
 use serde::{Deserializer};
 use rbatis::table_sync::{SqliteTableSync, TableSync};
-use rbs::{to_value, Value};
+use rbs::{to_value};
 use crate::init::{init_db};
 
 #[derive(Clone, Debug, serde::Serialize, serde::Deserialize)]
