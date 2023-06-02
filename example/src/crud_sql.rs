@@ -6,6 +6,7 @@ pub mod init;
 use serde_json::json;
 use crate::init::init_db;
 use rbatis::rbdc::datetime::DateTime;
+use rbatis::sql::IntoSql;
 
 /// table
 #[derive(Clone, Debug, serde::Serialize, serde::Deserialize)]
@@ -24,7 +25,6 @@ pub struct BizActivity {
     pub delete_flag: Option<i32>,
 }
 
-use rbatis::sql::IntoSql;
 impl_select!(BizActivity{select_by_method(ids:&[&str]) -> Option => "`where ${logic.sql()}  limit 1`"});
 
 #[tokio::main]
