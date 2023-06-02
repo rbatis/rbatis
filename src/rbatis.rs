@@ -10,6 +10,7 @@ use rbdc::pool::{ManagerPorxy, Pool};
 use std::fmt::{Debug, Formatter};
 use std::sync::Arc;
 use std::time::Duration;
+use crate::intercept::LogInterceptor;
 
 /// RBatis engine
 #[derive(Clone)]
@@ -51,7 +52,11 @@ pub struct RBatisOption {
 impl Default for RBatisOption {
     fn default() -> Self {
         Self {
-            sql_intercepts: SyncVec::new(),
+            sql_intercepts: {
+                let intercepts = SyncVec::new();
+                intercepts.push(Box::new(LogInterceptor {}) as Box<dyn SqlIntercept>);
+                intercepts
+            },
             log_plugin: Box::new(RBatisLogPlugin::default()) as Box<dyn LogPlugin>,
         }
     }
