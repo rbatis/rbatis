@@ -1,16 +1,16 @@
 use std::fmt::{Debug, Formatter};
 use std::ops::{Deref, DerefMut};
 
-use crate::decode::{decode, is_debug_mode};
+use crate::decode::{decode};
 use crate::rbatis::RBatis;
 use crate::snowflake::new_snowflake_id;
 use crate::sql::tx::Tx;
 use crate::Error;
 use futures::Future;
+use futures::future::Either;
 use futures_core::future::BoxFuture;
-use log::LevelFilter;
 use rbdc::db::{Connection, ExecResult};
-use rbs::Value;
+use rbs::{Value};
 use serde::de::DeserializeOwned;
 
 /// the rbatis's Executor. this trait impl with structs = RBatis,RBatisConnExecutor,RBatisTxExecutor,RBatisTxExecutorGuard
@@ -73,42 +73,20 @@ impl Executor for RBatisConnExecutor {
         let mut sql = sql.to_string();
         Box::pin(async move {
             let rb_task_id = new_snowflake_id();
-            let is_prepared = args.len() > 0;
             for item in self.rbatis_ref().sql_intercepts.iter() {
-                item.do_intercept(self.rbatis_ref(), &mut sql, &mut args, is_prepared)?;
-            }
-            if self.rbatis_ref().log_plugin.is_enable() {
-                let b = Value::Array(args);
-                self.rbatis_ref().log_plugin.do_log(
-                    LevelFilter::Info,
-                    &format!(
-                        "[rbatis] [{}] exec  => `{}` {}",
-                        &rb_task_id,
-                        sql,
-                        &b
-                    ),
-                );
-                args = b.into();
+                item.do_intercept(rb_task_id, self.rbatis_ref(), &mut sql, &mut args, None)?;
             }
             let result = self.conn.exec(&sql, args).await;
-            if self.rbatis_ref().log_plugin.is_enable() {
-                match &result {
-                    Ok(result) => {
-                        self.rbatis_ref().log_plugin.do_log(
-                            LevelFilter::Info,
-                            &format!(
-                                "[rbatis] [{}] exec  <= rows_affected={}",
-                                rb_task_id, result.rows_affected
-                            ),
-                        );
+            for item in self.rbatis_ref().sql_intercepts.iter() {
+                let r = match &result {
+                    Ok(v) => {
+                        Ok(Either::Left(v))
                     }
                     Err(e) => {
-                        self.rbatis_ref().log_plugin.do_log(
-                            LevelFilter::Error,
-                            &format!("[rbatis] [{}] exec  <= {}", rb_task_id, e),
-                        );
+                        Err(e)
                     }
-                }
+                };
+                item.do_intercept(rb_task_id, self.rbatis_ref(), &mut sql, &mut vec![], Some(r))?;
             }
             result
         })
@@ -118,50 +96,20 @@ impl Executor for RBatisConnExecutor {
         let mut sql = sql.to_string();
         Box::pin(async move {
             let rb_task_id = new_snowflake_id();
-            let is_prepared = args.len() > 0;
             for item in self.rbatis_ref().sql_intercepts.iter() {
-                item.do_intercept(self.rbatis_ref(), &mut sql, &mut args, is_prepared)?;
+                item.do_intercept(rb_task_id, self.rbatis_ref(), &mut sql, &mut args, None)?;
             }
-            if self.rbatis_ref().log_plugin.is_enable() {
-                let b = Value::Array(args);
-                self.rbatis_ref().log_plugin.do_log(
-                    LevelFilter::Info,
-                    &format!(
-                        "[rbatis] [{}] query => `{}` {}",
-                        rb_task_id,
-                        &sql,
-                        &b
-                    ),
-                );
-                args = b.into();
-            }
-            let mut result = self.conn.get_values(&sql, args).await;
-            if self.rbatis_ref().log_plugin.is_enable() {
-                result = match result {
-                    Ok(result) => {
-                        let result_len = result.len();
-                        let data = Value::Array(result);
-                        if is_debug_mode() {
-                            self.rbatis_ref().log_plugin.do_log(
-                                LevelFilter::Info,
-                                &format!("[rbatis] [{}] query <= len={},rows={}", rb_task_id, result_len, &data),
-                            );
-                        } else {
-                            self.rbatis_ref().log_plugin.do_log(
-                                LevelFilter::Info,
-                                &format!("[rbatis] [{}] query <= len={}", rb_task_id, result_len),
-                            );
-                        }
-                        Ok(data.into())
+            let result = self.conn.get_values(&sql, args).await;
+            for item in self.rbatis_ref().sql_intercepts.iter() {
+                let r = match &result {
+                    Ok(v) => {
+                        Ok(Either::Right(v))
                     }
                     Err(e) => {
-                        self.rbatis_ref().log_plugin.do_log(
-                            LevelFilter::Error,
-                            &format!("[rbatis] [{}] query <= {}", rb_task_id, e),
-                        );
                         Err(e)
                     }
-                }
+                };
+                item.do_intercept(rb_task_id, self.rbatis_ref(), &mut sql, &mut vec![], Some(r))?;
             }
             Ok(Value::Array(result?))
         })
@@ -231,42 +179,20 @@ impl Executor for RBatisTxExecutor {
     ) -> BoxFuture<'_, Result<ExecResult, Error>> {
         let mut sql = sql.to_string();
         Box::pin(async move {
-            let is_prepared = args.len() > 0;
             for item in self.rbatis_ref().sql_intercepts.iter() {
-                item.do_intercept(self.rbatis_ref(), &mut sql, &mut args, is_prepared)?;
-            }
-            if self.rbatis_ref().log_plugin.is_enable() {
-                let b = Value::Array(args);
-                self.rbatis_ref().log_plugin.do_log(
-                    LevelFilter::Info,
-                    &format!(
-                        "[rbatis] [{}] exec  => `{}` {}",
-                        self.tx_id,
-                        &sql,
-                        &b
-                    ),
-                );
-                args = b.into();
+                item.do_intercept(self.tx_id, self.rbatis_ref(), &mut sql, &mut args, None)?;
             }
             let result = self.conn.exec(&sql, args).await;
-            if self.rbatis_ref().log_plugin.is_enable() {
-                match &result {
-                    Ok(result) => {
-                        self.rbatis_ref().log_plugin.do_log(
-                            LevelFilter::Info,
-                            &format!(
-                                "[rbatis] [{}] exec  <= rows_affected={}",
-                                self.tx_id, result.rows_affected
-                            ),
-                        );
+            for item in self.rbatis_ref().sql_intercepts.iter() {
+                let r = match &result {
+                    Ok(v) => {
+                        Ok(Either::Left(v))
                     }
                     Err(e) => {
-                        self.rbatis_ref().log_plugin.do_log(
-                            LevelFilter::Error,
-                            &format!("[rbatis] [{}] exec  <= {}", self.tx_id, e),
-                        );
+                        Err(e)
                     }
-                }
+                };
+                item.do_intercept(self.tx_id, self.rbatis_ref(), &mut sql, &mut vec![], Some(r))?;
             }
             result
         })
@@ -275,50 +201,20 @@ impl Executor for RBatisTxExecutor {
     fn query(&mut self, sql: &str, mut args: Vec<Value>) -> BoxFuture<'_, Result<Value, Error>> {
         let mut sql = sql.to_string();
         Box::pin(async move {
-            let is_prepared = args.len() > 0;
             for item in self.rbatis_ref().sql_intercepts.iter() {
-                item.do_intercept(self.rbatis_ref(), &mut sql, &mut args, is_prepared)?;
+                item.do_intercept(self.tx_id, self.rbatis_ref(), &mut sql, &mut args,None)?;
             }
-            if self.rbatis_ref().log_plugin.is_enable() {
-                let b = Value::Array(args);
-                self.rbatis_ref().log_plugin.do_log(
-                    LevelFilter::Info,
-                    &format!(
-                        "[rbatis] [{}] query => `{}` {}",
-                        self.tx_id,
-                        &sql,
-                        &b
-                    ),
-                );
-                args = b.into();
-            }
-            let mut result = self.conn.get_values(&sql, args).await;
-            if self.rbatis_ref().log_plugin.is_enable() {
-                result = match result {
-                    Ok(result) => {
-                        let result_len = result.len();
-                        let data = Value::Array(result);
-                        if is_debug_mode() {
-                            self.rbatis_ref().log_plugin.do_log(
-                                LevelFilter::Info,
-                                &format!("[rbatis] [{}] query <= len={},rows = {}", self.tx_id, result_len, &data),
-                            );
-                        } else {
-                            self.rbatis_ref().log_plugin.do_log(
-                                LevelFilter::Info,
-                                &format!("[rbatis] [{}] query <= len={}", self.tx_id, result_len),
-                            );
-                        }
-                        Ok(data.into())
+            let result = self.conn.get_values(&sql, args).await;
+            for item in self.rbatis_ref().sql_intercepts.iter() {
+                let r = match &result {
+                    Ok(v) => {
+                        Ok(Either::Right(v))
                     }
                     Err(e) => {
-                        self.rbatis_ref().log_plugin.do_log(
-                            LevelFilter::Error,
-                            &format!("[rbatis] [{}] query <= {}", self.tx_id, e),
-                        );
                         Err(e)
                     }
-                }
+                };
+                item.do_intercept(self.tx_id, self.rbatis_ref(), &mut sql, &mut vec![], Some(r))?;
             }
             Ok(Value::Array(result?))
         })

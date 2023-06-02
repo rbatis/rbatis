@@ -16,7 +16,7 @@ mod test {
 
     use crossbeam::queue::SegQueue;
     use futures_core::future::BoxFuture;
-    use rbatis::executor::RBatisConnExecutor;
+    use rbatis::executor::{Executor, RBatisConnExecutor};
     use rbatis::intercept::SqlIntercept;
     use rbatis::sql::PageRequest;
     use rbatis::{Error, RBatis};
@@ -27,6 +27,7 @@ mod test {
     use std::any::Any;
     use std::collections::HashMap;
     use std::sync::Arc;
+    use futures::future::Either;
 
     pub struct MockIntercept {
         pub sql_args: Arc<SegQueue<(String, Vec<Value>)>>,
@@ -39,14 +40,10 @@ mod test {
     }
 
     impl SqlIntercept for MockIntercept {
-        fn do_intercept(
-            &self,
-            rb: &RBatis,
-            sql: &mut String,
-            args: &mut Vec<Value>,
-            is_prepared_sql: bool,
-        ) -> Result<(), Error> {
-            self.sql_args.push((sql.to_string(), args.clone()));
+        fn do_intercept(&self, task_id: i64, rb: &dyn Executor, sql: &mut String, args: &mut Vec<Value>, result: Option<Result<Either<&ExecResult, &Vec<Value>>, &Error>>) -> Result<(), Error> {
+            if result.is_none(){
+                self.sql_args.push((sql.to_string(), args.clone()));
+            }
             Ok(())
         }
     }
