@@ -12,7 +12,7 @@ pub trait LogPlugin: Send + Sync {
     fn is_enable(&self) -> bool {
         return !self.get_level_filter().eq(&LevelFilter::Off);
     }
-    fn do_log(&self, level: LevelFilter, data: &str) {
+    fn do_log(&self, level: LevelFilter, data: String) {
         if self.get_level_filter().eq(&LevelFilter::Off) {
             return;
         }
