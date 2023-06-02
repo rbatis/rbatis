@@ -20,7 +20,6 @@ pub mod crud;
 pub mod error;
 pub mod decode;
 
-pub use crate::rbatis::Rbatis;
 pub use crate::rbatis::RBatis;
 pub use crate::rbatis::RBatisOption;
 pub use crud::*;

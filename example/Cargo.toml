@@ -26,6 +26,12 @@ path = "src/macro_proc_rawsql.rs"
 name = "crud"
 path = "src/crud.rs"
 [[bin]]
+name = "crud_map"
+path = "src/crud_map.rs"
+[[bin]]
+name = "crud_sql"
+path = "src/crud_sql.rs"
+[[bin]]
 name = "crud_json"
 path = "src/crud_json.rs"
 [[bin]]
