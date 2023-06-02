@@ -124,7 +124,7 @@ impl SqlIntercept for LogInterceptor {
                         Either::Left(result) => {
                             rb.rbatis_ref().log_plugin.do_log(
                                 LevelFilter::Info,
-                                &format!(
+                                format!(
                                     "[rbatis] [{}] {}  <= rows_affected={}",
                                     task_id, op, result
                                 ),
@@ -134,14 +134,14 @@ impl SqlIntercept for LogInterceptor {
                             if is_debug_mode() {
                                 rb.rbatis_ref().log_plugin.do_log(
                                     LevelFilter::Info,
-                                    &format!("[rbatis] [{}] {} <= len={},rows={}", task_id, op, data.len(), RbsValueMutDisplay {
+                                    format!("[rbatis] [{}] {} <= len={},rows={}", task_id, op, data.len(), RbsValueMutDisplay {
                                         inner: data
                                     }),
                                 );
                             } else {
                                 rb.rbatis_ref().log_plugin.do_log(
                                     LevelFilter::Info,
-                                    &format!("[rbatis] [{}] {} <= len={}", task_id, op, data.len()),
+                                    format!("[rbatis] [{}] {} <= len={}", task_id, op, data.len()),
                                 );
                             }
                         }
@@ -150,7 +150,7 @@ impl SqlIntercept for LogInterceptor {
                 Err(e) => {
                     rb.rbatis_ref().log_plugin.do_log(
                         LevelFilter::Error,
-                        &format!("[rbatis] [{}] exec  <= {}", task_id, e),
+                        format!("[rbatis] [{}] exec  <= {}", task_id, e),
                     );
                 }
             }
@@ -164,7 +164,7 @@ impl SqlIntercept for LogInterceptor {
             }
             rb.rbatis_ref().log_plugin.do_log(
                 LevelFilter::Info,
-                &format!(
+                format!(
                     "[rbatis] [{}] {} => `{}` {}",
                     task_id,
                     op,
