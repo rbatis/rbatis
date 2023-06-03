@@ -2,11 +2,6 @@ use once_cell::sync::Lazy;
 
 pub static TEMPLATE: Lazy<SqlTemplates> = Lazy::new(|| SqlTemplates::default());
 
-#[inline]
-fn string_to_static_str(s: String) -> &'static str {
-    Box::leak(s.into_boxed_str())
-}
-
 #[derive(Clone, Debug)]
 pub struct Keywords {
     pub value: &'static str,
@@ -29,10 +24,10 @@ macro_rules! gen_template {
                  Self{
                   $(
                     $key:Keywords{
-                        value: string_to_static_str($value.to_uppercase()),
-                        left_space:string_to_static_str(" ".to_string()+$value.to_uppercase().as_str()),
-                        right_space:string_to_static_str($value.to_uppercase()+" "),
-                        left_right_space:string_to_static_str(format!(" {} ",$value.to_uppercase())),
+                        value:  Box::leak(($value.to_uppercase().into_boxed_str())),
+                        left_space: Box::leak((" ".to_string()+$value.to_uppercase().as_str()).into_boxed_str()),
+                        right_space: Box::leak(($value.to_uppercase()+" ").into_boxed_str()),
+                        left_right_space: Box::leak((format!(" {} ",$value.to_uppercase()).into_boxed_str())),
                     },
                   )+
                  }
