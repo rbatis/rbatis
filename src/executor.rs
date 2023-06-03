@@ -74,20 +74,20 @@ impl Executor for RBatisConnExecutor {
         Box::pin(async move {
             let rb_task_id = new_snowflake_id();
             for item in self.rbatis_ref().intercepts.iter() {
-                item.do_intercept(rb_task_id, self.rbatis_ref(), &mut sql, &mut args, None)?;
+                item.before(rb_task_id, self.rbatis_ref(), &mut sql, &mut args)?;
             }
-            let result = self.conn.exec(&sql, args).await;
+            let mut result = self.conn.exec(&sql, args).await;
             for item in self.rbatis_ref().intercepts.iter() {
-                let r = match &result {
+                let r = match &mut result {
                     Ok(v) => Ok(Either::Left(v)),
                     Err(e) => Err(e),
                 };
-                item.do_intercept(
+                item.after(
                     rb_task_id,
                     self.rbatis_ref(),
                     &mut sql,
                     &mut vec![],
-                    Some(r),
+                    r,
                 )?;
             }
             result
@@ -99,20 +99,20 @@ impl Executor for RBatisConnExecutor {
         Box::pin(async move {
             let rb_task_id = new_snowflake_id();
             for item in self.rbatis_ref().intercepts.iter() {
-                item.do_intercept(rb_task_id, self.rbatis_ref(), &mut sql, &mut args, None)?;
+                item.before(rb_task_id, self.rbatis_ref(), &mut sql, &mut args)?;
             }
-            let result = self.conn.get_values(&sql, args).await;
+            let mut result = self.conn.get_values(&sql, args).await;
             for item in self.rbatis_ref().intercepts.iter() {
-                let r = match &result {
+                let r = match &mut result {
                     Ok(v) => Ok(Either::Right(v)),
                     Err(e) => Err(e),
                 };
-                item.do_intercept(
+                item.after(
                     rb_task_id,
                     self.rbatis_ref(),
                     &mut sql,
                     &mut vec![],
-                    Some(r),
+                    r,
                 )?;
             }
             Ok(Value::Array(result?))
@@ -184,20 +184,20 @@ impl Executor for RBatisTxExecutor {
         let mut sql = sql.to_string();
         Box::pin(async move {
             for item in self.rbatis_ref().intercepts.iter() {
-                item.do_intercept(self.tx_id, self.rbatis_ref(), &mut sql, &mut args, None)?;
+                item.before(self.tx_id, self.rbatis_ref(), &mut sql, &mut args)?;
             }
-            let result = self.conn.exec(&sql, args).await;
+            let mut result = self.conn.exec(&sql, args).await;
             for item in self.rbatis_ref().intercepts.iter() {
-                let r = match &result {
+                let r = match &mut result {
                     Ok(v) => Ok(Either::Left(v)),
                     Err(e) => Err(e),
                 };
-                item.do_intercept(
+                item.after(
                     self.tx_id,
                     self.rbatis_ref(),
                     &mut sql,
                     &mut vec![],
-                    Some(r),
+                    r,
                 )?;
             }
             result
@@ -208,20 +208,20 @@ impl Executor for RBatisTxExecutor {
         let mut sql = sql.to_string();
         Box::pin(async move {
             for item in self.rbatis_ref().intercepts.iter() {
-                item.do_intercept(self.tx_id, self.rbatis_ref(), &mut sql, &mut args, None)?;
+                item.before(self.tx_id, self.rbatis_ref(), &mut sql, &mut args)?;
             }
-            let result = self.conn.get_values(&sql, args).await;
+            let mut result = self.conn.get_values(&sql, args).await;
             for item in self.rbatis_ref().intercepts.iter() {
-                let r = match &result {
+                let r = match &mut result {
                     Ok(v) => Ok(Either::Right(v)),
                     Err(e) => Err(e),
                 };
-                item.do_intercept(
+                item.after(
                     self.tx_id,
                     self.rbatis_ref(),
                     &mut sql,
                     &mut vec![],
-                    Some(r),
+                    r,
                 )?;
             }
             Ok(Value::Array(result?))

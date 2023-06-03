@@ -17,21 +17,34 @@ pub enum Either<A, B> {
 
 /// sql intercept
 pub trait SqlIntercept: Send + Sync {
-    fn name(&self)->&str{
+    fn name(&self) -> &str {
         std::any::type_name::<Self>()
     }
+
     /// task_id maybe is conn_id or tx_id,
     /// is_prepared_sql = !args.is_empty(),
-    /// result = None(before post(sql,arg)->Result)
-    /// result = Some(after post(sql,arg)->Result)
-    fn do_intercept(
+    fn before(
         &self,
-        task_id: i64,
-        rb: &dyn Executor,
-        sql: &mut String,
-        args: &mut Vec<Value>,
-        result: Option<Result<Either<&ExecResult, &Vec<Value>>, &Error>>,
-    ) -> Result<(), Error>;
+        _task_id: i64,
+        _rb: &dyn Executor,
+        _sql: &mut String,
+        _args: &mut Vec<Value>,
+    ) -> Result<(), Error> {
+        Ok(())
+    }
+
+    /// task_id maybe is conn_id or tx_id,
+    /// is_prepared_sql = !args.is_empty(),
+    fn after(
+        &self,
+        _task_id: i64,
+        _rb: &dyn Executor,
+        _sql: &mut String,
+        _args: &mut Vec<Value>,
+        _result: Result<Either<&mut ExecResult, &mut Vec<Value>>, &mut Error>,
+    ) -> Result<(), Error> {
+        Ok(())
+    }
 }
 
 
@@ -56,7 +69,7 @@ impl<'a> Display for RbsValueMutDisplay<'a> {
 }
 
 /// LogInterceptor
-#[derive(Debug,Clone)]
+#[derive(Debug, Clone)]
 pub struct LogInterceptor {
     pub level_filter: LevelFilter,
 }
@@ -80,59 +93,70 @@ impl LogInterceptor {
 }
 
 impl SqlIntercept for LogInterceptor {
-    fn do_intercept(
+    fn before(
         &self,
         task_id: i64,
         _rb: &dyn Executor,
         sql: &mut String,
         args: &mut Vec<Value>,
-        result: Option<Result<Either<&ExecResult, &Vec<Value>>, &Error>>,
     ) -> Result<(), Error> {
         if self.level_filter == LevelFilter::Off {
             return Ok(());
         }
         let level = self.to_level().unwrap();
-        if let Some(result) = result {
-            //recv sql/args
-            match result {
-                Ok(result) => {
-                    let op;
-                    if sql.trim_start().starts_with("select") {
-                        op = "query";
-                    } else {
-                        op = "exec ";
+        //send sql/args
+        let op;
+        if sql.trim_start().starts_with("select") {
+            op = "query";
+        } else {
+            op = "exec ";
+        }
+        log!(level,"[rbatis] [{}] {} => `{}` {}",task_id,op,&sql,RbsValueMutDisplay { inner: args });
+        Ok(())
+    }
+
+    fn after(
+        &self,
+        task_id: i64,
+        _rb: &dyn Executor,
+        sql: &mut String,
+        _args: &mut Vec<Value>,
+        result: Result<Either<&mut ExecResult, &mut Vec<Value>>, &mut Error>,
+    ) -> Result<(), Error> {
+        if self.level_filter == LevelFilter::Off {
+            return Ok(());
+        }
+        let level = self.to_level().unwrap();
+        //recv sql/args
+        match result {
+            Ok(result) => {
+                let op;
+                if sql.trim_start().starts_with("select") {
+                    op = "query";
+                } else {
+                    op = "exec ";
+                }
+                match result {
+                    Either::Left(result) => {
+                        log!(level,"[rbatis] [{}] {}  <= rows_affected={}",task_id, op, result);
                     }
-                    match result {
-                        Either::Left(result) => {
-                            log!(level,"[rbatis] [{}] {}  <= rows_affected={}",task_id, op, result);
-                        }
-                        Either::Right(data) => {
-                            if is_debug_mode() {
-                                log!(level,"[rbatis] [{}] {} <= len={},rows={}",
+                    Either::Right(data) => {
+                        if is_debug_mode() {
+                            log!(level,"[rbatis] [{}] {} <= len={},rows={}",
                                         task_id,
                                         op,
                                         data.len(),
                                         RbsValueMutDisplay { inner: data }
                                 );
-                            } else {
-                                log!(level,"[rbatis] [{}] {} <= len={}", task_id, op, data.len());
-                            }
+                        } else {
+                            log!(level,"[rbatis] [{}] {} <= len={}", task_id, op, data.len());
                         }
                     }
                 }
-                Err(e) => {
-                    log!(level,"[rbatis] [{}] exec  <= {}", task_id, e);
-                }
             }
-        } else {
-            //send sql/args
-            let op;
-            if sql.trim_start().starts_with("select") {
-                op = "query";
-            } else {
-                op = "exec ";
+            Err(e) => {
+                log!(level,"[rbatis] [{}] exec  <= {}", task_id, e);
             }
-            log!(level,"[rbatis] [{}] {} => `{}` {}",task_id,op,&sql,RbsValueMutDisplay { inner: args });
         }
         Ok(())
     }
