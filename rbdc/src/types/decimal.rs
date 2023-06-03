@@ -1,11 +1,11 @@
-use std::cmp::Ordering;
 use crate::Error;
+use bigdecimal::{BigDecimal, ParseBigDecimalError};
 use rbs::Value;
 use serde::Deserializer;
+use std::cmp::Ordering;
 use std::fmt::{Debug, Display, Formatter};
 use std::ops::{Add, Deref, DerefMut, Div, Mul, Rem, Sub};
 use std::str::FromStr;
-use bigdecimal::{BigDecimal, ParseBigDecimalError};
 
 #[derive(serde::Serialize, Clone, Eq, PartialEq, Hash)]
 #[serde(rename = "Decimal")]
@@ -13,8 +13,8 @@ pub struct Decimal(pub BigDecimal);
 
 impl<'de> serde::Deserialize<'de> for Decimal {
     fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
-        where
-            D: Deserializer<'de>,
+    where
+        D: Deserializer<'de>,
     {
         use serde::de::Error;
         match Value::deserialize(deserializer)?.into_string() {
@@ -76,7 +76,6 @@ impl Default for Decimal {
     }
 }
 
-
 impl Add for Decimal {
     type Output = Self;
 
@@ -109,7 +108,6 @@ impl Div for Decimal {
     }
 }
 
-
 impl PartialOrd for Decimal {
     fn partial_cmp(&self, other: &Self) -> Option<Ordering> {
         self.0.partial_cmp(&other.0)
@@ -126,8 +124,8 @@ impl Rem for Decimal {
 
 #[cfg(test)]
 mod test {
-    use std::str::FromStr;
     use crate::decimal::Decimal;
+    use std::str::FromStr;
 
     #[test]
     fn test_big_decimal() {

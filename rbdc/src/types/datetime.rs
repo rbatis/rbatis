@@ -7,8 +7,8 @@ use std::str::FromStr;
 use std::time::Duration;
 
 #[deprecated(
-since = "4.1.0",
-note = "Please use `rbdc::datetime::DateTime` instead"
+    since = "4.1.0",
+    note = "Please use `rbdc::datetime::DateTime` instead"
 )]
 pub type FastDateTime = DateTime;
 
@@ -177,4 +177,3 @@ impl From<DateTime> for Value {
         Value::Ext("DateTime", Box::new(Value::String(arg.0.to_string())))
     }
 }
-

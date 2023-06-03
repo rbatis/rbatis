@@ -67,7 +67,11 @@ impl MySqlConnection {
             //mysql < 5.5.0 version only use MySqlNativePassword
             if server_version_major < 5 || (server_version_major == 5 && server_version_minor < 5) {
                 if let Some(password) = &options.password {
-                    Some(AuthPlugin::MySqlNativePassword.scramble(&mut stream, password, &nonce).await?)
+                    Some(
+                        AuthPlugin::MySqlNativePassword
+                            .scramble(&mut stream, password, &nonce)
+                            .await?,
+                    )
                 } else {
                     None
                 }

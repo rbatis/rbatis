@@ -1,15 +1,14 @@
 #[cfg(test)]
 mod test {
-    use std::sync::atomic::Ordering;
     use rbatis::plugin::snowflake::new_snowflake_id;
     use rbatis::snowflake::Snowflake;
+    use std::sync::atomic::Ordering;
 
     #[test]
     fn test_new_snowflake_id() {
         println!("{}", new_snowflake_id());
         println!("{}", new_snowflake_id());
     }
-
 
     #[test]
     fn test_snowflake_serialization() {
@@ -19,7 +18,10 @@ mod test {
         assert_eq!(sf1.epoch, sf2.epoch);
         assert_eq!(sf1.worker_id, sf2.worker_id);
         assert_eq!(sf1.datacenter_id, sf2.datacenter_id);
-        assert_eq!(sf1.sequence.load(Ordering::Relaxed), sf2.sequence.load(Ordering::Relaxed));
+        assert_eq!(
+            sf1.sequence.load(Ordering::Relaxed),
+            sf2.sequence.load(Ordering::Relaxed)
+        );
     }
 
     #[test]
@@ -29,7 +31,10 @@ mod test {
         assert_eq!(sf1.epoch, sf2.epoch);
         assert_eq!(sf1.worker_id, sf2.worker_id);
         assert_eq!(sf1.datacenter_id, sf2.datacenter_id);
-        assert_eq!(sf1.sequence.load(Ordering::Relaxed), sf2.sequence.load(Ordering::Relaxed));
+        assert_eq!(
+            sf1.sequence.load(Ordering::Relaxed),
+            sf2.sequence.load(Ordering::Relaxed)
+        );
     }
 
     #[test]
@@ -38,5 +43,4 @@ mod test {
         let id = sf.generate();
         assert_ne!(id, 0);
     }
-
 }

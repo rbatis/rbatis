@@ -3,10 +3,10 @@ extern crate rbatis;
 
 pub mod init;
 
-use serde_json::json;
 use crate::init::init_db;
 use rbatis::rbdc::datetime::DateTime;
 use rbatis::sql::IntoSql;
+use serde_json::json;
 
 /// table
 #[derive(Clone, Debug, serde::Serialize, serde::Deserialize)]
@@ -34,7 +34,7 @@ pub async fn main() {
             .console()
             .level(log::LevelFilter::Debug),
     )
-        .expect("rbatis init fail");
+    .expect("rbatis init fail");
     let mut rb = init_db().await;
 
     let data = BizActivity::select_by_method(&mut rb, &["1", "2"]).await;

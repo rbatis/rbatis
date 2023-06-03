@@ -3,19 +3,19 @@ extern crate rbatis;
 
 pub mod init;
 
+use crate::init::init_db;
 use log::LevelFilter;
-use serde::de::Error;
-use serde::{Deserializer};
 use rbatis::table_sync::{SqliteTableSync, TableSync};
-use rbs::{to_value};
-use crate::init::{init_db};
+use rbs::to_value;
+use serde::de::Error;
+use serde::Deserializer;
 
 #[derive(Clone, Debug, serde::Serialize, serde::Deserialize)]
 pub struct BizUser {
     pub id: Option<String>,
     pub account: Option<Account>,
 }
-crud!(BizUser{});
+crud!(BizUser {});
 
 #[derive(Clone, Debug, serde::Serialize, Default)]
 pub struct Account {
@@ -24,7 +24,10 @@ pub struct Account {
 }
 
 impl<'de> serde::Deserialize<'de> for Account {
-    fn deserialize<D>(deserializer: D) -> Result<Self, D::Error> where D: Deserializer<'de> {
+    fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
+    where
+        D: Deserializer<'de>,
+    {
         #[derive(Clone, Debug, serde::Serialize, serde::Deserialize, Default)]
         pub struct AccountProxy {
             pub id: Option<String>,
@@ -41,11 +44,13 @@ impl<'de> serde::Deserialize<'de> for Account {
         let z = serde_json::Value::deserialize(deserializer)?;
         match z {
             serde_json::Value::String(v) => {
-                let account: Account = serde_json::from_str(&v).map_err(|e| D::Error::custom(&format!("warn type decode:{}", e)))?;
+                let account: Account = serde_json::from_str(&v)
+                    .map_err(|e| D::Error::custom(&format!("warn type decode:{}", e)))?;
                 Ok(account)
             }
             _ => {
-                let account: AccountProxy = serde_json::from_value(z).map_err(|e| D::Error::custom(&format!("warn type decode:{}", e)))?;
+                let account: AccountProxy = serde_json::from_value(z)
+                    .map_err(|e| D::Error::custom(&format!("warn type decode:{}", e)))?;
                 Ok(account.into())
             }
         }
@@ -59,15 +64,20 @@ pub async fn main() {
             .console()
             .level(log::LevelFilter::Debug),
     )
-        .expect("rbatis init fail");
+    .expect("rbatis init fail");
     let rb = init_db().await;
 
     let user = BizUser {
         id: Some("1".to_string()),
-        account: Some(Account { id: Some("2".to_string()), name: Some("xxx".to_string()) }),
+        account: Some(Account {
+            id: Some("2".to_string()),
+            name: Some("xxx".to_string()),
+        }),
     };
     fast_log::LOGGER.set_level(LevelFilter::Off);
-    _ = SqliteTableSync::default().sync(rb.acquire().await.unwrap(), to_value!(&user), "biz_user").await;
+    _ = SqliteTableSync::default()
+        .sync(rb.acquire().await.unwrap(), to_value!(&user), "biz_user")
+        .await;
     fast_log::LOGGER.set_level(LevelFilter::Info);
 
     let v = BizUser::insert(&mut rb.clone(), &user).await;

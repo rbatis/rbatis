@@ -11,8 +11,8 @@ pub struct Json(pub String);
 
 impl<'de> serde::Deserialize<'de> for Json {
     fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
-        where
-            D: Deserializer<'de>,
+    where
+        D: Deserializer<'de>,
     {
         Ok(Json::from(Value::deserialize(deserializer)?))
     }
@@ -96,7 +96,6 @@ impl FromStr for Json {
         Ok(Self(s.to_string()))
     }
 }
-
 
 #[cfg(test)]
 mod test {

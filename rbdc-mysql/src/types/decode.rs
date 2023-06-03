@@ -147,9 +147,12 @@ pub(crate) fn decode_time_buf(_: u8, mut buf: &[u8]) -> Result<String, Error> {
     let milliseconds = if buf.len() >= 4 {
         buf.get_u32_le()
     } else {
-        0  // 如果没有足够的字节表示毫秒值，将其设置为默认值
+        0 // 如果没有足够的字节表示毫秒值，将其设置为默认值
     };
-    Ok(format!("{:0>2}:{:0>2}:{:0>2}.{:0>6}", hour, minute, seconds, milliseconds))
+    Ok(format!(
+        "{:0>2}:{:0>2}:{:0>2}.{:0>6}",
+        hour, minute, seconds, milliseconds
+    ))
 }
 
 pub(crate) fn decode_bool(value: MySqlValue) -> Result<bool, Error> {

@@ -304,8 +304,8 @@ impl<T: Display + Debug> Display for Page<T> {
 
 impl<V> Page<V> {
     pub fn from<T>(arg: Page<T>) -> Self
-        where
-            V: From<T>,
+    where
+        V: From<T>,
     {
         let mut p = Page::<V>::new(arg.page_no, arg.page_size);
         p.pages = arg.pages;

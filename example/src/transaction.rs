@@ -1,6 +1,6 @@
 pub mod init;
 
-use crate::init::{init_db};
+use crate::init::init_db;
 use rbatis::executor::{RBatisConnExecutor, RBatisTxExecutor};
 use rbatis::rbdc::datetime::DateTime;
 
