@@ -8,11 +8,11 @@ use std::ops::Deref;
 use log::{Level, LevelFilter, log};
 
 #[derive(Debug, Clone)]
-pub enum Either<A, B> {
-    /// First branch of the type
-    Left(/* #[pin] */ A),
-    /// Second branch of the type
-    Right(/* #[pin] */ B),
+pub enum ResultType<A, B> {
+    /// Exec type
+    Exec(/* #[pin] */ A),
+    /// Query type
+    Query(/* #[pin] */ B),
 }
 
 /// sql intercept
@@ -41,7 +41,7 @@ pub trait SqlIntercept: Send + Sync {
         _rb: &dyn Executor,
         _sql: &mut String,
         _args: &mut Vec<Value>,
-        _result: Result<Either<&mut ExecResult, &mut Vec<Value>>, &mut Error>,
+        _result: Result<ResultType<&mut ExecResult, &mut Vec<Value>>, &mut Error>,
     ) -> Result<(), Error> {
         Ok(())
     }
@@ -121,7 +121,7 @@ impl SqlIntercept for LogInterceptor {
         _rb: &dyn Executor,
         sql: &mut String,
         _args: &mut Vec<Value>,
-        result: Result<Either<&mut ExecResult, &mut Vec<Value>>, &mut Error>,
+        result: Result<ResultType<&mut ExecResult, &mut Vec<Value>>, &mut Error>,
     ) -> Result<(), Error> {
         if self.level_filter == LevelFilter::Off {
             return Ok(());
@@ -137,10 +137,10 @@ impl SqlIntercept for LogInterceptor {
                     op = "exec ";
                 }
                 match result {
-                    Either::Left(result) => {
+                    ResultType::Exec(result) => {
                         log!(level,"[rbatis] [{}] {}  <= rows_affected={}",task_id, op, result);
                     }
-                    Either::Right(data) => {
+                    ResultType::Query(data) => {
                         if is_debug_mode() {
                             log!(level,"[rbatis] [{}] {} <= len={},rows={}",
                                         task_id,

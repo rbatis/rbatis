@@ -1,6 +1,6 @@
 pub mod init;
 use crate::init::init_db;
-use rbatis::intercept::{Either, SqlIntercept};
+use rbatis::intercept::{ResultType, SqlIntercept};
 use rbatis::rbdc::datetime::DateTime;
 use rbatis::{crud, Error};
 use rbs::Value;
@@ -18,7 +18,7 @@ impl SqlIntercept for LogicDeletePlugin {
         _rb: &dyn Executor,
         sql: &mut String,
         _args: &mut Vec<Value>,
-        result: Option<Result<Either<&ExecResult, &Vec<Value>>, &Error>>,
+        result: Option<Result<ResultType<&ExecResult, &Vec<Value>>, &Error>>,
     ) -> Result<(), Error> {
         if let None = result{
             if sql.contains("delete from ") {
