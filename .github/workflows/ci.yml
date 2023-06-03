@@ -10,16 +10,6 @@ env:
   CARGO_TERM_COLOR: always
 
 jobs:
-  build:
-    name: Run cargo fmt and cargo test
-    runs-on: ubuntu-latest
-
-    steps:
-    - uses: actions/checkout@v3
-    - name: Build
-      run: cargo build --verbose
-    - name: Run tests
-      run: cargo test --verbose
   test:
     name: Test ${{ matrix.rust }} on ${{ matrix.os }}
     runs-on: ${{ matrix.os }}
