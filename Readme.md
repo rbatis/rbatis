@@ -36,9 +36,9 @@ Thanks to ```SQLX, deadpool, Tiberius, MyBatis, xorm``` and so on reference desi
 * run code ```MockTable::select_all(&mut rbatis.clone()).await.unwrap();``` on benches bench_select()
 
 ```
----- bench_raw stdout ----
-Time: 84.6463ms ,each:846 ns/op
-QPS: 1181286 QPS/s
+---- bench_raw stdout ----(windows)
+Time: 52.4187ms ,each:524 ns/op
+QPS: 1906435 QPS/s
 
 ---- bench_insert stdout ----(macos,cpu-M1Max)
 Time: 378.186333ms ,each:3781 ns/op

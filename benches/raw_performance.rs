@@ -19,10 +19,9 @@ use std::any::Any;
 use test::Bencher;
 
 //cargo test --release --package rbatis --bench raw_performance bench_raw  --no-fail-fast -- --exact -Z unstable-options --show-output
-
-// ---- bench_raw stdout ----(macos,cpu-M1Max)
-// Time: 70.59475ms ,each:705 ns/op
-// QPS: 1416454 QPS/s
+// ---- bench_raw stdout ----(windows)
+//Time: 52.4187ms ,each:524 ns/op
+//QPS: 1906435 QPS/s
 #[test]
 fn bench_raw() {
     let f = async {
