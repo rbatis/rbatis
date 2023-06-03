@@ -15,7 +15,7 @@ use std::time::Duration;
 pub struct RBatis {
     // the connection pool,use OnceCell init this
     pub pool: Arc<OnceLock<Pool>>,
-    // sql intercept vec
+    // sql intercept vec(intercepts[0] default is a log interceptor)
     pub intercepts: Arc<SyncVec<Box<dyn SqlIntercept>>>,
 }
 
