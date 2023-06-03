@@ -39,17 +39,14 @@ mod test {
     }
 
     impl SqlIntercept for MockIntercept {
-        fn do_intercept(
+        fn before(
             &self,
             task_id: i64,
             rb: &dyn Executor,
             sql: &mut String,
             args: &mut Vec<Value>,
-            result: Option<Result<Either<&ExecResult, &Vec<Value>>, &Error>>,
         ) -> Result<(), Error> {
-            if result.is_none() {
-                self.sql_args.push((sql.to_string(), args.clone()));
-            }
+            self.sql_args.push((sql.to_string(), args.clone()));
             Ok(())
         }
     }
