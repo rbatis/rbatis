@@ -24,63 +24,6 @@ pub trait SqlIntercept: Send + Sync {
     ) -> Result<(), Error>;
 }
 
-/// Prevent full table updates and deletions
-#[derive(Debug)]
-pub struct BlockAttackDeleteInterceptor {}
-
-impl SqlIntercept for BlockAttackDeleteInterceptor {
-    fn do_intercept(
-        &self,
-        _task_id: i64,
-        _rb: &dyn Executor,
-        sql: &mut String,
-        _args: &mut Vec<Value>,
-        _result: Option<Result<Either<&ExecResult, &Vec<Value>>, &Error>>,
-    ) -> Result<(), Error> {
-        if _result.is_some() {
-            return Ok(());
-        }
-        let sql = sql.trim();
-        if sql.starts_with(crate::sql::TEMPLATE.delete_from.value)
-            && !sql.contains(crate::sql::TEMPLATE.r#where.left_right_space)
-        {
-            return Err(Error::from(format!(
-                "[rbatis][BlockAttackDeleteInterceptor] not allow attack sql:{}",
-                sql
-            )));
-        }
-        return Ok(());
-    }
-}
-
-/// Prevent full table updates and deletions
-#[derive(Debug)]
-pub struct BlockAttackUpdateInterceptor {}
-
-impl SqlIntercept for BlockAttackUpdateInterceptor {
-    fn do_intercept(
-        &self,
-        _task_id: i64,
-        _rb: &dyn Executor,
-        sql: &mut String,
-        _args: &mut Vec<Value>,
-        _result: Option<Result<Either<&ExecResult, &Vec<Value>>, &Error>>,
-    ) -> Result<(), Error> {
-        if _result.is_some() {
-            return Ok(());
-        }
-        let sql = sql.trim();
-        if sql.starts_with(crate::sql::TEMPLATE.update.value)
-            && !sql.contains(crate::sql::TEMPLATE.r#where.left_right_space)
-        {
-            return Err(Error::from(format!(
-                "[rbatis][BlockAttackUpdateInterceptor] not allow attack sql:{}",
-                sql
-            )));
-        }
-        return Ok(());
-    }
-}
 
 struct RbsValueMutDisplay<'a> {
     inner: &'a Vec<Value>,
