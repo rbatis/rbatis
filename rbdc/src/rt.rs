@@ -16,28 +16,33 @@ pub use tokio::net::UnixStream;
 pub use tokio_runtime::{block_on, enter_runtime};
 
 mod tokio_runtime {
-    use once_cell::sync::Lazy;
+    use std::sync::OnceLock;
     use tokio::runtime::{self, Runtime};
 
     // lazily initialize a global runtime once for multiple invocations of the macros
-    static RUNTIME: Lazy<Runtime> = Lazy::new(|| {
-        runtime::Builder::new_multi_thread()
-            .enable_io()
-            .enable_time()
-            .build()
-            .expect("failed to initialize Tokio runtime")
-    });
+    static RUNTIME: OnceLock<Runtime> = OnceLock::new();
 
     pub fn block_on<F: std::future::Future>(future: F) -> F::Output {
-        RUNTIME.block_on(future)
+        RUNTIME.get_or_init(||{
+            init_tokio()
+        }).block_on(future)
     }
 
     pub fn enter_runtime<F, R>(f: F) -> R
     where
         F: FnOnce() -> R,
     {
-        let _rt = RUNTIME.enter();
+        let _rt = RUNTIME.get_or_init(||{
+            init_tokio()
+        }).enter();
         f()
+    }
+    fn init_tokio() -> Runtime {
+        runtime::Builder::new_multi_thread()
+            .enable_io()
+            .enable_time()
+            .build()
+            .expect("failed to initialize Tokio runtime")
     }
 }
 

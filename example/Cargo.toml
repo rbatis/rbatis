@@ -67,7 +67,6 @@ serde = { version = "1", features = ["derive"] }
 rbs={version="4.3",path="../rbs"}
 serde_json = "1"
 fastdate = { version = "0.1"}
-once_cell = "1.9.0"
 #log lib
 log = "0.4"
 fast_log = "1.5"
