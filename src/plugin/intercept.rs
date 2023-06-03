@@ -71,6 +71,7 @@ impl<'a> Display for RbsValueMutDisplay<'a> {
 /// LogInterceptor
 #[derive(Debug, Clone)]
 pub struct LogInterceptor {
+    ///control log off,or change log level
     pub level_filter: LevelFilter,
 }
 
