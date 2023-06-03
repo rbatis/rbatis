@@ -1,7 +1,6 @@
 use crate::executor::{RBatisConnExecutor, RBatisTxExecutor};
 use crate::intercept::LogInterceptor;
 use crate::plugin::intercept::SqlIntercept;
-use crate::plugin::log::{LogPlugin, RBatisLogPlugin};
 use crate::snowflake::new_snowflake_id;
 use crate::Error;
 use dark_std::sync::SyncVec;
@@ -16,10 +15,8 @@ use std::time::Duration;
 pub struct RBatis {
     // the connection pool,use OnceCell init this
     pub pool: Arc<OnceLock<Pool>>,
-    // sql intercept vec chain
-    pub sql_intercepts: Arc<SyncVec<Box<dyn SqlIntercept>>>,
-    // log plugin
-    pub log_plugin: Arc<Box<dyn LogPlugin>>,
+    // sql intercept vec
+    pub intercepts: Arc<SyncVec<Box<dyn SqlIntercept>>>,
 }
 
 #[deprecated(note = "please use RBatis replace this")]
@@ -29,7 +26,7 @@ impl Debug for RBatis {
     fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
         f.debug_struct("RBatis")
             .field("pool", &self.pool)
-            .field("sql_intercepts", &self.sql_intercepts.len())
+            .field("sql_intercepts", &self.intercepts.len())
             .finish()
     }
 }
@@ -44,8 +41,6 @@ impl Default for RBatis {
 pub struct RBatisOption {
     /// sql intercept vec chain
     pub sql_intercepts: SyncVec<Box<dyn SqlIntercept>>,
-    /// log plugin
-    pub log_plugin: Box<dyn LogPlugin>,
 }
 
 impl Default for RBatisOption {
@@ -53,10 +48,9 @@ impl Default for RBatisOption {
         Self {
             sql_intercepts: {
                 let intercepts = SyncVec::new();
-                intercepts.push(Box::new(LogInterceptor {}) as Box<dyn SqlIntercept>);
+                intercepts.push(Box::new(LogInterceptor::new()) as Box<dyn SqlIntercept>);
                 intercepts
-            },
-            log_plugin: Box::new(RBatisLogPlugin::default()) as Box<dyn LogPlugin>,
+            }
         }
     }
 }
@@ -71,8 +65,13 @@ impl RBatis {
     pub fn new_with_opt(option: RBatisOption) -> Self {
         return Self {
             pool: Arc::new(OnceLock::new()),
-            sql_intercepts: Arc::new(option.sql_intercepts),
-            log_plugin: Arc::new(option.log_plugin),
+            intercepts: Arc::new({
+                let result = SyncVec::new();
+                for x in option.sql_intercepts {
+                    result.push(x);
+                }
+                result
+            }),
         };
     }
 
@@ -145,14 +144,9 @@ impl RBatis {
         return Ok(());
     }
 
-    /// set_log_plugin
-    pub fn set_log_plugin(&mut self, arg: impl LogPlugin + 'static) {
-        self.log_plugin = Arc::new(Box::new(arg));
-    }
-
     /// set_sql_intercepts for many
     pub fn set_sql_intercepts(&mut self, arg: Vec<Box<dyn SqlIntercept>>) {
-        self.sql_intercepts = Arc::new(SyncVec::from(arg));
+        self.intercepts = Arc::new(SyncVec::from(arg));
     }
 
     /// get conn pool

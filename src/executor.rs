@@ -73,11 +73,11 @@ impl Executor for RBatisConnExecutor {
         let mut sql = sql.to_string();
         Box::pin(async move {
             let rb_task_id = new_snowflake_id();
-            for item in self.rbatis_ref().sql_intercepts.iter() {
+            for item in self.rbatis_ref().intercepts.iter() {
                 item.do_intercept(rb_task_id, self.rbatis_ref(), &mut sql, &mut args, None)?;
             }
             let result = self.conn.exec(&sql, args).await;
-            for item in self.rbatis_ref().sql_intercepts.iter() {
+            for item in self.rbatis_ref().intercepts.iter() {
                 let r = match &result {
                     Ok(v) => Ok(Either::Left(v)),
                     Err(e) => Err(e),
@@ -98,11 +98,11 @@ impl Executor for RBatisConnExecutor {
         let mut sql = sql.to_string();
         Box::pin(async move {
             let rb_task_id = new_snowflake_id();
-            for item in self.rbatis_ref().sql_intercepts.iter() {
+            for item in self.rbatis_ref().intercepts.iter() {
                 item.do_intercept(rb_task_id, self.rbatis_ref(), &mut sql, &mut args, None)?;
             }
             let result = self.conn.get_values(&sql, args).await;
-            for item in self.rbatis_ref().sql_intercepts.iter() {
+            for item in self.rbatis_ref().intercepts.iter() {
                 let r = match &result {
                     Ok(v) => Ok(Either::Right(v)),
                     Err(e) => Err(e),
@@ -183,11 +183,11 @@ impl Executor for RBatisTxExecutor {
     ) -> BoxFuture<'_, Result<ExecResult, Error>> {
         let mut sql = sql.to_string();
         Box::pin(async move {
-            for item in self.rbatis_ref().sql_intercepts.iter() {
+            for item in self.rbatis_ref().intercepts.iter() {
                 item.do_intercept(self.tx_id, self.rbatis_ref(), &mut sql, &mut args, None)?;
             }
             let result = self.conn.exec(&sql, args).await;
-            for item in self.rbatis_ref().sql_intercepts.iter() {
+            for item in self.rbatis_ref().intercepts.iter() {
                 let r = match &result {
                     Ok(v) => Ok(Either::Left(v)),
                     Err(e) => Err(e),
@@ -207,11 +207,11 @@ impl Executor for RBatisTxExecutor {
     fn query(&mut self, sql: &str, mut args: Vec<Value>) -> BoxFuture<'_, Result<Value, Error>> {
         let mut sql = sql.to_string();
         Box::pin(async move {
-            for item in self.rbatis_ref().sql_intercepts.iter() {
+            for item in self.rbatis_ref().intercepts.iter() {
                 item.do_intercept(self.tx_id, self.rbatis_ref(), &mut sql, &mut args, None)?;
             }
             let result = self.conn.get_values(&sql, args).await;
-            for item in self.rbatis_ref().sql_intercepts.iter() {
+            for item in self.rbatis_ref().intercepts.iter() {
                 let r = match &result {
                     Ok(v) => Ok(Either::Right(v)),
                     Err(e) => Err(e),

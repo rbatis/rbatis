@@ -2,18 +2,21 @@ use crate::decode::is_debug_mode;
 use crate::executor::Executor;
 use crate::Error;
 use futures::future::Either;
-use log::LevelFilter;
 use rbdc::db::ExecResult;
 use rbs::Value;
 use std::fmt::{Debug, Display, Formatter};
 use std::ops::Deref;
+use log::{Level, LevelFilter, log};
 
 /// sql intercept
 pub trait SqlIntercept: Send + Sync {
+    fn name(&self)->&str{
+        std::any::type_name::<Self>()
+    }
     /// task_id maybe is conn_id or tx_id,
     /// is_prepared_sql = !args.is_empty(),
-    /// result = None(post sql,arg)
-    /// result = Some(recv query result)
+    /// result = None(before post(sql,arg)->Result)
+    /// result = Some(after post(sql,arg)->Result)
     fn do_intercept(
         &self,
         task_id: i64,
@@ -28,6 +31,7 @@ pub trait SqlIntercept: Send + Sync {
 struct RbsValueMutDisplay<'a> {
     inner: &'a Vec<Value>,
 }
+
 impl<'a> Display for RbsValueMutDisplay<'a> {
     fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
         f.write_str("[")?;
@@ -45,21 +49,42 @@ impl<'a> Display for RbsValueMutDisplay<'a> {
 }
 
 /// LogInterceptor
-#[derive(Debug)]
-pub struct LogInterceptor {}
+#[derive(Debug,Clone)]
+pub struct LogInterceptor {
+    pub level_filter: log::LevelFilter,
+}
+
+impl LogInterceptor {
+    pub fn new() -> Self {
+        Self {
+            level_filter: LevelFilter::Info,
+        }
+    }
+    pub fn to_level(&self) -> Option<Level> {
+        match self.level_filter {
+            LevelFilter::Off => { None }
+            LevelFilter::Error => { Some(Level::Error) }
+            LevelFilter::Warn => { Some(Level::Warn) }
+            LevelFilter::Info => { Some(Level::Info) }
+            LevelFilter::Debug => { Some(Level::Debug) }
+            LevelFilter::Trace => { Some(Level::Trace) }
+        }
+    }
+}
 
 impl SqlIntercept for LogInterceptor {
     fn do_intercept(
         &self,
         task_id: i64,
-        rb: &dyn Executor,
+        _rb: &dyn Executor,
         sql: &mut String,
         args: &mut Vec<Value>,
         result: Option<Result<Either<&ExecResult, &Vec<Value>>, &Error>>,
     ) -> Result<(), Error> {
-        if !rb.rbatis_ref().log_plugin.is_enable() {
+        if self.level_filter == LevelFilter::Off {
             return Ok(());
         }
+        let level = self.to_level().unwrap();
         if let Some(result) = result {
             //recv sql/args
             match result {
@@ -72,40 +97,24 @@ impl SqlIntercept for LogInterceptor {
                     }
                     match result {
                         Either::Left(result) => {
-                            rb.rbatis_ref().log_plugin.do_log(
-                                LevelFilter::Info,
-                                format!(
-                                    "[rbatis] [{}] {}  <= rows_affected={}",
-                                    task_id, op, result
-                                ),
-                            );
+                            log!(level,"[rbatis] [{}] {}  <= rows_affected={}",task_id, op, result);
                         }
                         Either::Right(data) => {
                             if is_debug_mode() {
-                                rb.rbatis_ref().log_plugin.do_log(
-                                    LevelFilter::Info,
-                                    format!(
-                                        "[rbatis] [{}] {} <= len={},rows={}",
+                                log!(level,"[rbatis] [{}] {} <= len={},rows={}",
                                         task_id,
                                         op,
                                         data.len(),
                                         RbsValueMutDisplay { inner: data }
-                                    ),
                                 );
                             } else {
-                                rb.rbatis_ref().log_plugin.do_log(
-                                    LevelFilter::Info,
-                                    format!("[rbatis] [{}] {} <= len={}", task_id, op, data.len()),
-                                );
+                                log!(level,"[rbatis] [{}] {} <= len={}", task_id, op, data.len());
                             }
                         }
                     }
                 }
                 Err(e) => {
-                    rb.rbatis_ref().log_plugin.do_log(
-                        LevelFilter::Error,
-                        format!("[rbatis] [{}] exec  <= {}", task_id, e),
-                    );
+                    log!(level,"[rbatis] [{}] exec  <= {}", task_id, e);
                 }
             }
         } else {
@@ -116,16 +125,7 @@ impl SqlIntercept for LogInterceptor {
             } else {
                 op = "exec ";
             }
-            rb.rbatis_ref().log_plugin.do_log(
-                LevelFilter::Info,
-                format!(
-                    "[rbatis] [{}] {} => `{}` {}",
-                    task_id,
-                    op,
-                    &sql,
-                    RbsValueMutDisplay { inner: args }
-                ),
-            );
+            log!(level,"[rbatis] [{}] {} => `{}` {}",task_id,op,&sql,RbsValueMutDisplay { inner: args });
         }
         Ok(())
     }
