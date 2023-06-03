@@ -1,12 +1,19 @@
 use crate::decode::is_debug_mode;
 use crate::executor::Executor;
 use crate::Error;
-use futures::future::Either;
 use rbdc::db::ExecResult;
 use rbs::Value;
 use std::fmt::{Debug, Display, Formatter};
 use std::ops::Deref;
 use log::{Level, LevelFilter, log};
+
+#[derive(Debug, Clone)]
+pub enum Either<A, B> {
+    /// First branch of the type
+    Left(/* #[pin] */ A),
+    /// Second branch of the type
+    Right(/* #[pin] */ B),
+}
 
 /// sql intercept
 pub trait SqlIntercept: Send + Sync {
