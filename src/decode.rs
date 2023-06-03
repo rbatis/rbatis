@@ -25,12 +25,12 @@ where
         //decode array
         Ok(rbs::from_value(Value::Array(datas))?)
     } else {
-        Ok(try_decode_map( &mut datas)?)
+        Ok(try_decode_map(&mut datas)?)
     }
 }
 
 //decode doc or one type
-pub fn try_decode_map<T>( datas: &mut Vec<Value>) -> Result<T, Error>
+pub fn try_decode_map<T>(datas: &mut Vec<Value>) -> Result<T, Error>
 where
     T: DeserializeOwned,
 {
@@ -74,7 +74,7 @@ pub fn is_debug_mode() -> bool {
 mod test {
     use crate::decode::decode;
     use rbs::value::map::ValueMap;
-    use rbs::{Value};
+    use rbs::Value;
     use std::collections::HashMap;
 
     #[test]

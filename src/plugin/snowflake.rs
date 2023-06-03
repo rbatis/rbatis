@@ -14,8 +14,8 @@ pub struct Snowflake {
 
 impl serde::Serialize for Snowflake {
     fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
-        where
-            S: Serializer,
+    where
+        S: Serializer,
     {
         let mut s = serializer.serialize_struct("Snowflake", 5)?;
         s.serialize_field("epoch", &self.epoch)?;
@@ -28,8 +28,8 @@ impl serde::Serialize for Snowflake {
 
 impl<'de> serde::Deserialize<'de> for Snowflake {
     fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
-        where
-            D: Deserializer<'de>,
+    where
+        D: Deserializer<'de>,
     {
         #[derive(Debug, serde::Serialize, serde::Deserialize)]
         struct Snowflake {
@@ -97,20 +97,18 @@ impl Snowflake {
     pub fn generate(&self) -> i64 {
         let timestamp = self.get_time();
         let sequence = self.sequence.fetch_add(1, Ordering::SeqCst);
-        (timestamp << 22)
-            | (self.worker_id << 17)
-            | (self.datacenter_id << 12)
-            | sequence
+        (timestamp << 22) | (self.worker_id << 17) | (self.datacenter_id << 12) | sequence
     }
 
     fn get_time(&self) -> i64 {
-        let since_the_epoch = SystemTime::now().duration_since(UNIX_EPOCH).expect("Time went backwards");
+        let since_the_epoch = SystemTime::now()
+            .duration_since(UNIX_EPOCH)
+            .expect("Time went backwards");
         since_the_epoch.as_millis() as i64 - self.epoch
     }
 }
 
 pub static SNOWFLAKE: Snowflake = Snowflake::new(1_564_790_400_000, 1, 1);
-
 
 ///gen new snowflake_id
 pub fn new_snowflake_id() -> i64 {
@@ -119,8 +117,8 @@ pub fn new_snowflake_id() -> i64 {
 
 #[cfg(test)]
 mod test {
-    use std::collections::HashMap;
     use crate::snowflake::{new_snowflake_id, Snowflake};
+    use std::collections::HashMap;
 
     #[test]
     fn test_gen() {
@@ -186,7 +184,6 @@ mod test {
         all.append(&mut v2);
         all.append(&mut v3);
         all.append(&mut v4);
-
 
         let mut id_map: HashMap<i64, i64> = HashMap::with_capacity(all.len());
         for id in all {

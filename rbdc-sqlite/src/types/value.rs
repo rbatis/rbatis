@@ -10,7 +10,7 @@ impl Decode for Value {
     where
         Self: Sized,
     {
-        if value.type_info_opt().is_none(){
+        if value.type_info_opt().is_none() {
             return Ok(Value::Null);
         }
         match value.type_info().0 {
@@ -82,12 +82,12 @@ impl Encode for Value {
                 //json
                 Value::Array(v).to_string().encode(args)?;
                 Ok(IsNull::No)
-            },
+            }
             Value::Map(v) => {
                 //json
                 Value::Map(v).to_string().encode(args)?;
                 Ok(IsNull::No)
-            },
+            }
             Value::Ext(t, v) => match t {
                 "Date" => {
                     v.into_string().unwrap_or_default().encode(args)?;

@@ -1,7 +1,7 @@
 #[cfg(test)]
 mod test {
     use rbs::value::map::ValueMap;
-    use rbs::{Value, to_value};
+    use rbs::{to_value, Value};
     use std::str::FromStr;
 
     #[test]
@@ -20,8 +20,7 @@ mod test {
         let m = to_value! {
             "1" : date.clone(),
         };
-        let v: rbdc::types::datetime::DateTime =
-            rbatis::decode(Value::Array(vec![m])).unwrap();
+        let v: rbdc::types::datetime::DateTime = rbatis::decode(Value::Array(vec![m])).unwrap();
         assert_eq!(v, date);
     }
 
@@ -32,7 +31,7 @@ mod test {
             m.insert(Value::String("a".to_string()), Value::I64(1));
             m
         })]))
-            .unwrap();
+        .unwrap();
         assert_eq!(v, 1);
     }
 
@@ -43,7 +42,7 @@ mod test {
             m.insert(Value::String("a".to_string()), Value::I64(1));
             m
         })]))
-            .unwrap();
+        .unwrap();
         assert_eq!(v, 1i64);
     }
 

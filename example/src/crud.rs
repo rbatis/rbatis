@@ -3,10 +3,10 @@ extern crate rbatis;
 
 pub mod init;
 
-use serde_json::json;
 use crate::init::init_db;
 use rbatis::rbdc::datetime::DateTime;
 use rbatis::sql::page::PageRequest;
+use serde_json::json;
 
 /// table
 #[derive(Clone, Debug, serde::Serialize, serde::Deserialize)]

@@ -14,7 +14,7 @@ fn bench_rbs_encode(b: &mut Bencher) {
 
 #[bench]
 fn bench_rbs_from(b: &mut Bencher) {
-    let v = rbs::to_value!{
+    let v = rbs::to_value! {
         "a":1,
         "b":2,
     };

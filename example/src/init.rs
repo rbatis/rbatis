@@ -1,6 +1,6 @@
 use log::LevelFilter;
-use rbatis::rbatis::RBatis;
 use rbatis::dark_std::defer;
+use rbatis::rbatis::RBatis;
 
 /// make an RBatis
 pub async fn init_db() -> RBatis {
@@ -19,8 +19,8 @@ pub async fn init_db() -> RBatis {
     let sql = std::fs::read_to_string("example/table_sqlite.sql").unwrap();
     let raw = fast_log::LOGGER.get_level().clone();
     fast_log::LOGGER.set_level(LevelFilter::Off);
-    defer!(||{
-         fast_log::LOGGER.set_level(raw);
+    defer!(|| {
+        fast_log::LOGGER.set_level(raw);
     });
     let _ = rb.exec(&sql, vec![]).await;
     // ------------create tables way 2 end------------

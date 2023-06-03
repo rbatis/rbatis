@@ -1,5 +1,8 @@
 use crate::net::CertificateInput;
-use rustls::{CertificateError, client::{ServerCertVerified, ServerCertVerifier, WebPkiVerifier}, ClientConfig, Error as TlsError, OwnedTrustAnchor, RootCertStore, ServerName};
+use rustls::{
+    client::{ServerCertVerified, ServerCertVerifier, WebPkiVerifier},
+    CertificateError, ClientConfig, Error as TlsError, OwnedTrustAnchor, RootCertStore, ServerName,
+};
 use std::io::Cursor;
 use std::sync::Arc;
 use std::time::SystemTime;

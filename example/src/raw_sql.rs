@@ -1,9 +1,9 @@
 pub mod init;
 
-use serde_json::json;
+use crate::init::init_db;
 use rbatis::rbdc::datetime::DateTime;
-use crate::init::{init_db};
 use rbs::to_value;
+use serde_json::json;
 
 /// table
 #[derive(Clone, Debug, serde::Serialize, serde::Deserialize)]

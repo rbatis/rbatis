@@ -80,7 +80,9 @@ fn include_replace(htmls: Vec<Element>, sql_map: &mut BTreeMap<String, Element>)
                 let ref_id = x
                     .attrs
                     .get("refid")
-                    .expect("[rbatis-codegen] <include> element must have attr <include refid=\"\">!")
+                    .expect(
+                        "[rbatis-codegen] <include> element must have attr <include refid=\"\">!",
+                    )
                     .clone();
                 let url;
                 if ref_id.contains("://") {
@@ -90,7 +92,10 @@ fn include_replace(htmls: Vec<Element>, sql_map: &mut BTreeMap<String, Element>)
                     ));
                 } else {
                     url = Url::parse(&format!("current://current?refid={}", ref_id)).expect(
-                        &format!("[rbatis-codegen] parse <include refid=\"{}\"> fail!", ref_id),
+                        &format!(
+                            "[rbatis-codegen] parse <include refid=\"{}\"> fail!",
+                            ref_id
+                        ),
                     );
                 }
                 let path = url.host_str().unwrap_or_default().to_string()

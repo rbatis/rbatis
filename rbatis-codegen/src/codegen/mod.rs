@@ -1,6 +1,5 @@
 /// The core logic of code generation is written in func.rs
 /// The syntax tree we use is the html tag structure loader_html.rs Element struct
-
 extern crate proc_macro;
 
 use syn::{parse_macro_input, AttributeArgs, ItemFn};

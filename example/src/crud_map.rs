@@ -3,12 +3,12 @@ extern crate rbatis;
 
 pub mod init;
 
-use serde_json::json;
 use crate::init::init_db;
 use rbatis::rbdc::datetime::DateTime;
-use rbs::Value;
 use rbatis::sql::IntoSql;
 use rbs::value::map::ValueMap;
+use rbs::Value;
+use serde_json::json;
 
 /// table
 #[derive(Clone, Debug, serde::Serialize, serde::Deserialize)]
@@ -36,11 +36,11 @@ pub async fn main() {
             .console()
             .level(log::LevelFilter::Debug),
     )
-        .expect("rbatis init fail");
+    .expect("rbatis init fail");
     let mut rb = init_db().await;
     let mut logic = ValueMap::new();
     logic.insert("id = ".into(), Value::I32(1));
     logic.insert("and id != ".into(), Value::I32(2));
-    let data = BizActivity::select_by_map(&mut rb,  logic).await;
+    let data = BizActivity::select_by_map(&mut rb, logic).await;
     println!("select_by_method = {}", json!(data));
 }

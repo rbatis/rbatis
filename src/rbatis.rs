@@ -1,4 +1,5 @@
 use crate::executor::{RBatisConnExecutor, RBatisTxExecutor};
+use crate::intercept::LogInterceptor;
 use crate::plugin::intercept::SqlIntercept;
 use crate::plugin::log::{LogPlugin, RBatisLogPlugin};
 use crate::snowflake::new_snowflake_id;
@@ -9,7 +10,6 @@ use rbdc::pool::{ManagerPorxy, Pool};
 use std::fmt::{Debug, Formatter};
 use std::sync::{Arc, OnceLock};
 use std::time::Duration;
-use crate::intercept::LogInterceptor;
 
 /// RBatis engine
 #[derive(Clone)]

@@ -1,9 +1,9 @@
 #[cfg(test)]
 mod test {
     use rbatis_codegen::ops::{Add, BitAnd, BitOr, Div, Mul, Not, PartialEq, PartialOrd, Rem, Sub};
+    use rbdc::datetime::DateTime;
     use rbs::Value;
     use std::cmp::Ordering;
-    use rbdc::datetime::DateTime;
 
     #[test]
     fn test_ser_i32() {
@@ -148,7 +148,10 @@ mod test {
         assert_eq!(b.to_string(), r#""11""#);
         println!("{},{:?}", c, c);
         assert_eq!(c.to_string(), r#""2023-03-22 00:39:04.0278992""#);
-        assert_eq!(format!("{:?}", c), r#"Ext("DateTime", String("2023-03-22 00:39:04.0278992"))"#);
+        assert_eq!(
+            format!("{:?}", c),
+            r#"Ext("DateTime", String("2023-03-22 00:39:04.0278992"))"#
+        );
         assert_eq!(d.to_string(), r#"{"1":1}"#);
     }
 }

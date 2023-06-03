@@ -105,12 +105,8 @@ impl Encode for Value {
                 buf.put_bytes_lenenc(v);
                 Ok(0)
             }
-            Value::Array(v) => {
-                Json(Value::Array(v).to_string()).encode(buf)
-            },
-            Value::Map(v) => {
-                Json(Value::Map(v).to_string()).encode(buf)
-            },
+            Value::Array(v) => Json(Value::Array(v).to_string()).encode(buf),
+            Value::Map(v) => Json(Value::Map(v).to_string()).encode(buf),
             Value::Ext(ext_type, v) => {
                 match ext_type {
                     "Uuid" => {
@@ -118,7 +114,9 @@ impl Encode for Value {
                         Uuid(v.into_string().unwrap_or_default()).encode(buf)
                     }
                     //decimal = 12345678
-                    "Decimal" => Decimal::from_str(v.as_str().unwrap_or_default()).unwrap_or_default().encode(buf),
+                    "Decimal" => Decimal::from_str(v.as_str().unwrap_or_default())
+                        .unwrap_or_default()
+                        .encode(buf),
                     //year = "1993"
                     "Year" => Year(v.as_u64().unwrap_or_default() as u16).encode(buf),
                     //Date = "1993-02-06"

@@ -1,7 +1,7 @@
 #![feature(test)]
 extern crate test;
 
-use rbs::{Value, to_value};
+use rbs::{to_value, Value};
 use test::Bencher;
 
 #[bench]

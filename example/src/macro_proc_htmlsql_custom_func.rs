@@ -3,14 +3,14 @@ extern crate rbatis;
 
 pub mod init;
 
-use serde_json::json;
 use init::*;
+use serde_json::json;
 
 use rbatis::executor::Executor;
 use rbatis::rbdc::datetime::DateTime;
 use rbs::Value;
 
-use crate::{init_db};
+use crate::init_db;
 
 /// table
 #[derive(Clone, Debug, serde::Serialize, serde::Deserialize)]
@@ -28,7 +28,6 @@ pub struct BizActivity {
     pub version: Option<i64>,
     pub delete_flag: Option<i32>,
 }
-
 
 pub trait IsTest {
     fn is_test(&self) -> bool;
@@ -49,7 +48,8 @@ impl IsTest for rbs::Value {
 ///    ....
 ///  </if>
 /// ```
-#[html_sql(r#"
+#[html_sql(
+    r#"
     <select id="custom_func">
         `select * from biz_activity`
         <where>
@@ -57,7 +57,8 @@ impl IsTest for rbs::Value {
                 `and name like #{name}`
             </if>
         </where>
-    </select>"#)]
+    </select>"#
+)]
 async fn custom_func(rb: &mut dyn Executor, name: &str) -> rbatis::Result<Vec<BizActivity>> {
     impled!()
 }
