@@ -82,6 +82,24 @@ impl SqlIntercept for BlockAttackUpdateInterceptor {
     }
 }
 
+struct RbsValueMutDisplay<'a> {
+    inner: &'a Vec<Value>,
+}
+impl<'a> Display for RbsValueMutDisplay<'a> {
+    fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
+        f.write_str("[")?;
+        let mut idx = 0;
+        for x in self.inner.deref() {
+            std::fmt::Display::fmt(x, f)?;
+            if (idx + 1) < self.inner.len() {
+                f.write_str(",")?;
+            }
+            idx += 1;
+        }
+        f.write_str("]")?;
+        Ok(())
+    }
+}
 
 /// LogInterceptor
 #[derive(Debug)]
@@ -91,24 +109,6 @@ impl SqlIntercept for LogInterceptor {
     fn do_intercept(&self, task_id: i64, rb: &dyn Executor, sql: &mut String, args: &mut Vec<Value>, result: Option<Result<Either<&ExecResult, &Vec<Value>>, &Error>>) -> Result<(), Error> {
         if !rb.rbatis_ref().log_plugin.is_enable() {
             return Ok(());
-        }
-        struct RbsValueMutDisplay<'a> {
-            inner: &'a Vec<Value>,
-        }
-        impl<'a> Display for RbsValueMutDisplay<'a> {
-            fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
-                f.write_str("[")?;
-                let mut idx = 0;
-                for x in self.inner.deref() {
-                    std::fmt::Display::fmt(x, f)?;
-                    if (idx + 1) < self.inner.len() {
-                        f.write_str(",")?;
-                    }
-                    idx += 1;
-                }
-                f.write_str("]")?;
-                Ok(())
-            }
         }
         if let Some(result) = result {
             //recv sql/args
