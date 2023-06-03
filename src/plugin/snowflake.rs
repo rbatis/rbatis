@@ -1,4 +1,3 @@
-use once_cell::sync::Lazy;
 use serde::ser::SerializeStruct;
 use serde::{Deserializer, Serializer};
 use std::sync::atomic::{AtomicI64, Ordering};
@@ -71,7 +70,7 @@ impl Snowflake {
         }
     }
 
-    pub fn new(epoch: i64, worker_id: i64, datacenter_id: i64) -> Snowflake {
+    pub const fn new(epoch: i64, worker_id: i64, datacenter_id: i64) -> Snowflake {
         Snowflake {
             epoch,
             worker_id,
@@ -110,7 +109,8 @@ impl Snowflake {
     }
 }
 
-pub static SNOWFLAKE: Lazy<Snowflake> = Lazy::new(|| Snowflake::default());
+pub static SNOWFLAKE: Snowflake = Snowflake::new(1_564_790_400_000, 1, 1);
+
 
 ///gen new snowflake_id
 pub fn new_snowflake_id() -> i64 {

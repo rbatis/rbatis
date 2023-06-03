@@ -4,11 +4,10 @@ use crate::plugin::log::{LogPlugin, RBatisLogPlugin};
 use crate::snowflake::new_snowflake_id;
 use crate::Error;
 use dark_std::sync::SyncVec;
-use once_cell::sync::OnceCell;
 use rbdc::db::Connection;
 use rbdc::pool::{ManagerPorxy, Pool};
 use std::fmt::{Debug, Formatter};
-use std::sync::Arc;
+use std::sync::{Arc, OnceLock};
 use std::time::Duration;
 use crate::intercept::LogInterceptor;
 
@@ -16,7 +15,7 @@ use crate::intercept::LogInterceptor;
 #[derive(Clone)]
 pub struct RBatis {
     // the connection pool,use OnceCell init this
-    pub pool: Arc<OnceCell<Pool>>,
+    pub pool: Arc<OnceLock<Pool>>,
     // sql intercept vec chain
     pub sql_intercepts: Arc<SyncVec<Box<dyn SqlIntercept>>>,
     // log plugin
@@ -71,7 +70,7 @@ impl RBatis {
     ///new RBatis from Option
     pub fn new_with_opt(option: RBatisOption) -> Self {
         return Self {
-            pool: Arc::new(OnceCell::new()),
+            pool: Arc::new(OnceLock::new()),
             sql_intercepts: Arc::new(option.sql_intercepts),
             log_plugin: Arc::new(option.log_plugin),
         };
