@@ -17,7 +17,7 @@ mod test {
     use crossbeam::queue::SegQueue;
     use futures_core::future::BoxFuture;
     use rbatis::executor::{Executor, RBatisConnExecutor};
-    use rbatis::intercept::{Either, SqlIntercept};
+    use rbatis::intercept::{ResultType, SqlIntercept};
     use rbatis::sql::PageRequest;
     use rbatis::{Error, RBatis};
     use rbdc::datetime::DateTime;

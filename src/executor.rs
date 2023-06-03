@@ -11,7 +11,7 @@ use futures_core::future::BoxFuture;
 use rbdc::db::{Connection, ExecResult};
 use rbs::Value;
 use serde::de::DeserializeOwned;
-use crate::intercept::Either;
+use crate::intercept::ResultType;
 
 /// the rbatis's Executor. this trait impl with structs = RBatis,RBatisConnExecutor,RBatisTxExecutor,RBatisTxExecutorGuard
 pub trait Executor: RBatisRef {
@@ -79,7 +79,7 @@ impl Executor for RBatisConnExecutor {
             let mut result = self.conn.exec(&sql, args).await;
             for item in self.rbatis_ref().intercepts.iter() {
                 let r = match &mut result {
-                    Ok(v) => Ok(Either::Left(v)),
+                    Ok(v) => Ok(ResultType::Exec(v)),
                     Err(e) => Err(e),
                 };
                 item.after(
@@ -104,7 +104,7 @@ impl Executor for RBatisConnExecutor {
             let mut result = self.conn.get_values(&sql, args).await;
             for item in self.rbatis_ref().intercepts.iter() {
                 let r = match &mut result {
-                    Ok(v) => Ok(Either::Right(v)),
+                    Ok(v) => Ok(ResultType::Query(v)),
                     Err(e) => Err(e),
                 };
                 item.after(
@@ -189,7 +189,7 @@ impl Executor for RBatisTxExecutor {
             let mut result = self.conn.exec(&sql, args).await;
             for item in self.rbatis_ref().intercepts.iter() {
                 let r = match &mut result {
-                    Ok(v) => Ok(Either::Left(v)),
+                    Ok(v) => Ok(ResultType::Exec(v)),
                     Err(e) => Err(e),
                 };
                 item.after(
@@ -213,7 +213,7 @@ impl Executor for RBatisTxExecutor {
             let mut result = self.conn.get_values(&sql, args).await;
             for item in self.rbatis_ref().intercepts.iter() {
                 let r = match &mut result {
-                    Ok(v) => Ok(Either::Right(v)),
+                    Ok(v) => Ok(ResultType::Query(v)),
                     Err(e) => Err(e),
                 };
                 item.after(
