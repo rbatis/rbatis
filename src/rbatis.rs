@@ -40,7 +40,7 @@ impl Default for RBatis {
 
 ///RBatis Options
 pub struct RBatisOption {
-    /// sql intercept vec chain
+    /// sql intercept vec chain(will move to RBatis)
     pub intercepts: SyncVec<Arc<dyn Intercept>>,
 }
 
@@ -62,7 +62,7 @@ impl RBatis {
         return Self::new_with_opt(RBatisOption::default());
     }
 
-    ///new RBatis from Option
+    ///new RBatis from RBatisOption
     pub fn new_with_opt(option: RBatisOption) -> Self {
         return Self {
             pool: Arc::new(OnceLock::new()),
