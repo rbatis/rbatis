@@ -17,7 +17,7 @@ pub struct RBatis {
     // the connection pool,use OnceCell init this
     pub pool: Arc<OnceLock<Pool>>,
     // sql intercept vec(intercepts[0] default is a log interceptor)
-    pub intercepts: Arc<SyncVec<Box<dyn SqlIntercept>>>,
+    pub intercepts: Arc<SyncVec<Arc<dyn SqlIntercept>>>,
 }
 
 #[deprecated(note = "please use RBatis replace this")]
@@ -41,7 +41,7 @@ impl Default for RBatis {
 ///RBatis Options
 pub struct RBatisOption {
     /// sql intercept vec chain
-    pub sql_intercepts: SyncVec<Box<dyn SqlIntercept>>,
+    pub sql_intercepts: SyncVec<Arc<dyn SqlIntercept>>,
 }
 
 impl Default for RBatisOption {
@@ -49,7 +49,7 @@ impl Default for RBatisOption {
         Self {
             sql_intercepts: {
                 let intercepts = SyncVec::new();
-                intercepts.push(Box::new(LogInterceptor::new(LevelFilter::Info)) as Box<dyn SqlIntercept>);
+                intercepts.push(Arc::new(LogInterceptor::new(LevelFilter::Info)) as Arc<dyn SqlIntercept>);
                 intercepts
             }
         }
@@ -146,7 +146,7 @@ impl RBatis {
     }
 
     /// set_sql_intercepts for many
-    pub fn set_sql_intercepts(&mut self, arg: Vec<Box<dyn SqlIntercept>>) {
+    pub fn set_sql_intercepts(&mut self, arg: Vec<Arc<dyn SqlIntercept>>) {
         self.intercepts = Arc::new(SyncVec::from(arg));
     }
 
