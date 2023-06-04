@@ -39,8 +39,8 @@ pub async fn main() {
     .expect("rbatis init fail");
     let mut rb = init_db().await;
     let mut logic = ValueMap::new();
-    logic.insert("id = ".into(), Value::I32(1));
-    logic.insert("and id != ".into(), Value::I32(2));
+    logic.insert("id = ".into(), Value::String("221".to_string()));
+    logic.insert("and id != ".into(), Value::String("222".to_string()));
     let data = BizActivity::select_by_map(&mut rb, logic).await;
     println!("select_by_method = {}", json!(data));
 }
