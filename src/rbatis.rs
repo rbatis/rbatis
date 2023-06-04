@@ -1,5 +1,4 @@
 use crate::executor::{RBatisConnExecutor, RBatisTxExecutor};
-use crate::intercept::LogInterceptor;
 use crate::plugin::intercept::SqlIntercept;
 use crate::snowflake::new_snowflake_id;
 use crate::Error;
@@ -9,6 +8,8 @@ use rbdc::pool::{ManagerPorxy, Pool};
 use std::fmt::{Debug, Formatter};
 use std::sync::{Arc, OnceLock};
 use std::time::Duration;
+use log::LevelFilter;
+use crate::intercept_log::LogInterceptor;
 
 /// RBatis engine
 #[derive(Clone)]
@@ -48,7 +49,7 @@ impl Default for RBatisOption {
         Self {
             sql_intercepts: {
                 let intercepts = SyncVec::new();
-                intercepts.push(Box::new(LogInterceptor::new()) as Box<dyn SqlIntercept>);
+                intercepts.push(Box::new(LogInterceptor::new(LevelFilter::Info)) as Box<dyn SqlIntercept>);
                 intercepts
             }
         }
