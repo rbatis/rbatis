@@ -14,9 +14,9 @@ use crate::intercept_log::LogInterceptor;
 /// RBatis engine
 #[derive(Clone)]
 pub struct RBatis {
-    // the connection pool,use OnceCell init this
+    // the connection pool
     pub pool: Arc<OnceLock<Pool>>,
-    // sql intercept vec(intercepts[0] default is a log interceptor)
+    // intercept vec(default the intercepts[0] is a log interceptor)
     pub intercepts: Arc<SyncVec<Arc<dyn Intercept>>>,
 }
 
