@@ -27,7 +27,7 @@ impl Debug for RBatis {
     fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
         f.debug_struct("RBatis")
             .field("pool", &self.pool)
-            .field("sql_intercepts", &self.intercepts.len())
+            .field("intercepts", &self.intercepts.len())
             .finish()
     }
 }
@@ -41,13 +41,13 @@ impl Default for RBatis {
 ///RBatis Options
 pub struct RBatisOption {
     /// sql intercept vec chain
-    pub sql_intercepts: SyncVec<Arc<dyn Intercept>>,
+    pub intercepts: SyncVec<Arc<dyn Intercept>>,
 }
 
 impl Default for RBatisOption {
     fn default() -> Self {
         Self {
-            sql_intercepts: {
+            intercepts: {
                 let intercepts = SyncVec::new();
                 intercepts.push(Arc::new(LogInterceptor::new(LevelFilter::Info)) as Arc<dyn Intercept>);
                 intercepts
@@ -68,7 +68,7 @@ impl RBatis {
             pool: Arc::new(OnceLock::new()),
             intercepts: Arc::new({
                 let result = SyncVec::new();
-                for x in option.sql_intercepts {
+                for x in option.intercepts {
                     result.push(x);
                 }
                 result
@@ -145,8 +145,8 @@ impl RBatis {
         return Ok(());
     }
 
-    /// set_sql_intercepts for many
-    pub fn set_sql_intercepts(&mut self, arg: Vec<Arc<dyn Intercept>>) {
+    /// set_intercepts for many
+    pub fn set_intercepts(&mut self, arg: Vec<Arc<dyn Intercept>>) {
         self.intercepts = Arc::new(SyncVec::from(arg));
     }
 
