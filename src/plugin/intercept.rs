@@ -13,7 +13,7 @@ pub enum ResultType<A, B> {
 }
 
 /// sql intercept
-pub trait Intercept: Send + Sync {
+pub trait Intercept: Send + Sync + Debug {
     fn name(&self) -> &str {
         std::any::type_name::<Self>()
     }

@@ -5,14 +5,14 @@ use crate::Error;
 use dark_std::sync::SyncVec;
 use rbdc::db::Connection;
 use rbdc::pool::{ManagerPorxy, Pool};
-use std::fmt::{Debug, Formatter};
+use std::fmt::Debug;
 use std::sync::{Arc, OnceLock};
 use std::time::Duration;
 use log::LevelFilter;
 use crate::intercept_log::LogInterceptor;
 
 /// RBatis engine
-#[derive(Clone)]
+#[derive(Clone,Debug)]
 pub struct RBatis {
     // the connection pool
     pub pool: Arc<OnceLock<Pool>>,
@@ -22,15 +22,6 @@ pub struct RBatis {
 
 #[deprecated(note = "please use RBatis replace this")]
 pub type Rbatis = RBatis;
-
-impl Debug for RBatis {
-    fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
-        f.debug_struct("RBatis")
-            .field("pool", &self.pool)
-            .field("intercepts", &self.intercepts.len())
-            .finish()
-    }
-}
 
 impl Default for RBatis {
     fn default() -> RBatis {

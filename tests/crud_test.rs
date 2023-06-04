@@ -28,6 +28,7 @@ mod test {
     use std::collections::HashMap;
     use std::sync::Arc;
 
+    #[derive(Debug)]
     pub struct MockIntercept {
         pub sql_args: Arc<SegQueue<(String, Vec<Value>)>>,
     }
