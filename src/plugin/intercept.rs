@@ -48,11 +48,11 @@ pub trait SqlIntercept: Send + Sync {
 }
 
 
-struct RbsValueMutDisplay<'a> {
+struct RbsValueDisplay<'a> {
     inner: &'a Vec<Value>,
 }
 
-impl<'a> Display for RbsValueMutDisplay<'a> {
+impl<'a> Display for RbsValueDisplay<'a> {
     fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
         f.write_str("[")?;
         let mut idx = 0;
@@ -112,7 +112,7 @@ impl SqlIntercept for LogInterceptor {
         } else {
             op = "exec ";
         }
-        log!(level,"[rbatis] [{}] {} => `{}` {}",task_id,op,&sql,RbsValueMutDisplay { inner: args });
+        log!(level,"[rbatis] [{}] {} => `{}` {}",task_id,op,&sql,RbsValueDisplay { inner: args });
         Ok(())
     }
 
@@ -147,7 +147,7 @@ impl SqlIntercept for LogInterceptor {
                                         task_id,
                                         op,
                                         data.len(),
-                                        RbsValueMutDisplay { inner: data }
+                                        RbsValueDisplay { inner: data }
                                 );
                         } else {
                             log!(level,"[rbatis] [{}] {} <= len={}", task_id, op, data.len());
