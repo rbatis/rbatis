@@ -25,7 +25,7 @@ pub struct BizActivity {
     pub delete_flag: Option<i32>,
 }
 
-impl_select!(BizActivity{select_by_method(ids:&[&str]) -> Option => "`where ${logic.sql()}  limit 1`"});
+impl_select!(BizActivity{select_by_method(ids:&[&str]) -> Option => "`where id in ${ids.sql()}  limit 1`"});
 
 #[tokio::main]
 pub async fn main() {
