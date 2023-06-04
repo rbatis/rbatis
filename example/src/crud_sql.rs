@@ -25,7 +25,7 @@ pub struct BizActivity {
     pub delete_flag: Option<i32>,
 }
 
-impl_select!(BizActivity{select_by_method(ids:&[&str]) -> Option => "`where id in ${ids.sql()}  limit 1`"});
+impl_select!(BizActivity{select_by_method(ids:&[&str]) -> Vec => "`where id in ${ids.sql()}  limit 1`"});
 
 #[tokio::main]
 pub async fn main() {
@@ -37,6 +37,6 @@ pub async fn main() {
     .expect("rbatis init fail");
     let mut rb = init_db().await;
 
-    let data = BizActivity::select_by_method(&mut rb, &["1", "2"]).await;
+    let data = BizActivity::select_by_method(&mut rb, &["221", "222"]).await;
     println!("select_by_method = {}", json!(data));
 }
