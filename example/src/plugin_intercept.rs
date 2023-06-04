@@ -1,6 +1,6 @@
 pub mod init;
 use crate::init::init_db;
-use rbatis::intercept::{SqlIntercept};
+use rbatis::intercept::{Intercept};
 use rbatis::rbdc::datetime::DateTime;
 use rbatis::{crud, Error};
 use rbs::Value;
@@ -10,7 +10,7 @@ use rbatis::executor::Executor;
 /// Logic delete： The deletion statement changes to the modification of flag, and the query statement filters flag with additional conditions
 pub struct LogicDeletePlugin {}
 
-impl SqlIntercept for LogicDeletePlugin {
+impl Intercept for LogicDeletePlugin {
     fn before(
         &self,
         _task_id: i64,

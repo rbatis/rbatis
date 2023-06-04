@@ -1,5 +1,5 @@
 use crate::executor::{RBatisConnExecutor, RBatisTxExecutor};
-use crate::plugin::intercept::SqlIntercept;
+use crate::plugin::intercept::Intercept;
 use crate::snowflake::new_snowflake_id;
 use crate::Error;
 use dark_std::sync::SyncVec;
@@ -17,7 +17,7 @@ pub struct RBatis {
     // the connection pool,use OnceCell init this
     pub pool: Arc<OnceLock<Pool>>,
     // sql intercept vec(intercepts[0] default is a log interceptor)
-    pub intercepts: Arc<SyncVec<Arc<dyn SqlIntercept>>>,
+    pub intercepts: Arc<SyncVec<Arc<dyn Intercept>>>,
 }
 
 #[deprecated(note = "please use RBatis replace this")]
@@ -41,7 +41,7 @@ impl Default for RBatis {
 ///RBatis Options
 pub struct RBatisOption {
     /// sql intercept vec chain
-    pub sql_intercepts: SyncVec<Arc<dyn SqlIntercept>>,
+    pub sql_intercepts: SyncVec<Arc<dyn Intercept>>,
 }
 
 impl Default for RBatisOption {
@@ -49,7 +49,7 @@ impl Default for RBatisOption {
         Self {
             sql_intercepts: {
                 let intercepts = SyncVec::new();
-                intercepts.push(Arc::new(LogInterceptor::new(LevelFilter::Info)) as Arc<dyn SqlIntercept>);
+                intercepts.push(Arc::new(LogInterceptor::new(LevelFilter::Info)) as Arc<dyn Intercept>);
                 intercepts
             }
         }
@@ -146,7 +146,7 @@ impl RBatis {
     }
 
     /// set_sql_intercepts for many
-    pub fn set_sql_intercepts(&mut self, arg: Vec<Arc<dyn SqlIntercept>>) {
+    pub fn set_sql_intercepts(&mut self, arg: Vec<Arc<dyn Intercept>>) {
         self.intercepts = Arc::new(SyncVec::from(arg));
     }
 
