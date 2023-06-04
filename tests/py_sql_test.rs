@@ -26,8 +26,10 @@ mod test {
     use rbs::{from_value, to_value, Value};
     use std::any::Any;
     use std::collections::HashMap;
+    use std::fmt::{Debug, Formatter};
     use std::sync::Arc;
 
+    #[derive(Debug)]
     pub struct MockIntercept {
         pub sql_args: Arc<SegQueue<(String, Vec<Value>)>>,
     }
