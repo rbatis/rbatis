@@ -7,7 +7,7 @@ use rbs::Value;
 use crate::decode::is_debug_mode;
 use crate::Error;
 use crate::executor::Executor;
-use crate::intercept::{ResultType, SqlIntercept};
+use crate::intercept::{ResultType, Intercept};
 
 struct RbsValueDisplay<'a> {
     inner: &'a Vec<Value>,
@@ -95,7 +95,7 @@ impl LogInterceptor {
     }
 }
 
-impl SqlIntercept for LogInterceptor {
+impl Intercept for LogInterceptor {
     fn before(
         &self,
         task_id: i64,

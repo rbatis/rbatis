@@ -17,7 +17,7 @@ mod test {
     use crossbeam::queue::SegQueue;
     use futures_core::future::BoxFuture;
     use rbatis::executor::{Executor, RBatisConnExecutor};
-    use rbatis::intercept::{ResultType, SqlIntercept};
+    use rbatis::intercept::{ResultType, Intercept};
     use rbatis::sql::PageRequest;
     use rbatis::{Error, RBatis};
     use rbdc::datetime::DateTime;
@@ -38,7 +38,7 @@ mod test {
         }
     }
 
-    impl SqlIntercept for MockIntercept {
+    impl Intercept for MockIntercept {
         fn before(
             &self,
             task_id: i64,
@@ -207,7 +207,7 @@ mod test {
             let mut rb = RBatis::new();
             rb.init(MockDriver {}, "test").unwrap();
             let queue = Arc::new(SegQueue::new());
-            rb.set_sql_intercepts(vec![Box::new(MockIntercept::new(queue.clone()))]);
+            rb.set_sql_intercepts(vec![Arc::new(MockIntercept::new(queue.clone()))]);
             #[py_sql("select ${id},${id},#{id},#{id} ")]
             pub async fn test_same_id(rb: &mut RBatis, id: &u64) -> Result<Value, Error> {
                 impled!()

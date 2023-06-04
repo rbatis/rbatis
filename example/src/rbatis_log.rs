@@ -1,7 +1,7 @@
 use std::sync::{Arc, OnceLock};
 use fast_log::Config;
 use log::LevelFilter;
-use rbatis::intercept::SqlIntercept;
+use rbatis::intercept::Intercept;
 use rbatis::intercept_log::LogInterceptor;
 use rbatis::{crud, RBatis};
 
@@ -12,7 +12,7 @@ pub struct BizActivity {
 }
 crud!(BizActivity {});
 
-/// RBatis log also is a SqlIntercept
+/// RBatis log also is a Intercept
 pub static RB_LOG: OnceLock<Arc<LogInterceptor>> = OnceLock::new();
 
 #[tokio::main]
@@ -23,7 +23,7 @@ pub async fn main() {
     rb.intercepts.clear();
 
     let l = Arc::new(LogInterceptor::new(LevelFilter::Info));
-    rb.intercepts.push(l.clone() as Arc<dyn SqlIntercept>);
+    rb.intercepts.push(l.clone() as Arc<dyn Intercept>);
     //store to static
     _ = RB_LOG.set(l);
 
