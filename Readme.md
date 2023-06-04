@@ -24,7 +24,7 @@ It is an ORM, a small compiler, a dynamic SQL languages
 * Supports logging, customizable logging based on `log` crate
 * 100% Safe Rust with `#![forbid(unsafe_code)]` enabled
 * Support use Trait System Add ```py_sql/ html_sql``` functions ([see](https://github.com/rbatis/rbatis/blob/master/example/src/macro_proc_htmlsql_custom_func.rs))
-* [abs_admin project](https://github.com/rbatis/abs_admin)  an complete background user management system(Vue.js+rbatis+actix-web)
+* [abs_admin project](https://github.com/rbatis/abs_admin)  an complete background user management system(Vue.js+rbatis+ntex)
 
 Thanks to ```SQLX, deadpool, Tiberius, MyBatis, xorm``` and so on reference design or code implementation. Release of V4.0 is Inspired and supported by these frameworks.
 
@@ -89,7 +89,7 @@ QPS: 885486 QPS/s
 
 ### Supported Web Frameworks
 
-* any web Frameworks just like actix-web, axum, hyper*, rocket, tide, warp, salvo and more.
+* any web Frameworks just like ntex, actix-web, axum, hyper, rocket, tide, warp, salvo and more.
 
 ##### Quick example: QueryWrapper and common usages (see example/crud_test.rs for details)
 
