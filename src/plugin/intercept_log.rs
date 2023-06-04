@@ -158,7 +158,7 @@ impl SqlIntercept for LogInterceptor {
                 }
             }
             Err(e) => {
-                log!(log::Level::Error,"[rbatis] [{}] exec  <= {}", task_id, e);
+                log!(level,"[rbatis] [{}] exec  <= {}", task_id, e);
             }
         }
         Ok(())
