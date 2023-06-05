@@ -1,4 +1,6 @@
 use std::sync::{Arc, OnceLock};
+use std::thread::sleep;
+use std::time::Duration;
 use fast_log::Config;
 use log::LevelFilter;
 use rbatis::intercept::Intercept;
@@ -17,7 +19,7 @@ pub static RB_LOG: OnceLock<Arc<LogInterceptor>> = OnceLock::new();
 
 #[tokio::main]
 pub async fn main() {
-    let logger=fast_log::init(Config::new().console()).unwrap();
+    fast_log::init(Config::new().console()).unwrap();
 
     let rb = RBatis::new();
     rb.intercepts.clear();
@@ -39,18 +41,20 @@ pub async fn main() {
     //default log level = info
     println!("log level = info");
     _ = BizActivity::select_all(&mut rb.clone()).await;
-    logger.wait();
+    sleep(Duration::from_secs(1));
     println!("-------done-------");
+    sleep(Duration::from_secs(1));
     //set log level off (this can call set_level_filter any where)
     RB_LOG.get().unwrap().set_level_filter(LevelFilter::Off);
     println!("log level = off");
     _ = BizActivity::select_all(&mut rb.clone()).await;
-    logger.wait();
+    sleep(Duration::from_secs(1));
     println!("-------done-------");
+    sleep(Duration::from_secs(1));
     //set log level trace (this can call set_level_filter any where)
     println!("log level = trace");
     RB_LOG.get().unwrap().set_level_filter(LevelFilter::Trace);
     _ = BizActivity::select_all(&mut rb.clone()).await;
-    logger.wait();
+    sleep(Duration::from_secs(1));
     println!("-------done-------");
 }
