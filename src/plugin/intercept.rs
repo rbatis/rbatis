@@ -20,6 +20,7 @@ pub trait Intercept: Send + Sync + Debug {
 
     /// task_id maybe is conn_id or tx_id,
     /// is_prepared_sql = !args.is_empty(),
+    #[inline]
     fn before(
         &self,
         _task_id: i64,
@@ -32,6 +33,7 @@ pub trait Intercept: Send + Sync + Debug {
 
     /// task_id maybe is conn_id or tx_id,
     /// is_prepared_sql = !args.is_empty(),
+    #[inline]
     fn after(
         &self,
         _task_id: i64,
