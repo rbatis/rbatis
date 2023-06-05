@@ -8,8 +8,7 @@ members = [
     "rbdc-pg",
     "rbdc-sqlite",
     "rbdc-mssql",
-    "rbatis-macro-driver",
-    "example",
+    "rbatis-macro-driver"
 ]
 
 [package]
