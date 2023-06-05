@@ -65,6 +65,7 @@ pub async fn main() {
     rb.intercepts.push(Arc::new(LogicDeletePlugin {}));
     let r = BizActivity::delete_by_column(&mut rb.clone(), "id", "1").await;
     println!("{}", json!(r));
+    log::logger().flush();
     let record = BizActivity::select_by_column(&mut rb.clone(), "id", "1").await;
     println!("{}", json!(record));
     log::logger().flush();
