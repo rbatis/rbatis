@@ -1,4 +1,6 @@
 pub mod init;
+
+use std::sync::Arc;
 use crate::init::init_db;
 use rbatis::intercept::{Intercept};
 use rbatis::rbdc::datetime::DateTime;
@@ -8,6 +10,7 @@ use serde_json::json;
 use rbatis::executor::Executor;
 
 /// Logic delete： The deletion statement changes to the modification of flag, and the query statement filters flag with additional conditions
+#[derive(Debug)]
 pub struct LogicDeletePlugin {}
 
 impl Intercept for LogicDeletePlugin {
@@ -59,7 +62,7 @@ crud!(BizActivity {});
 pub async fn main() {
     fast_log::init(fast_log::Config::new().console()).expect("rbatis init fail");
     let rb = init_db().await;
-    rb.intercepts.push(Box::new(LogicDeletePlugin {}));
+    rb.intercepts.push(Arc::new(LogicDeletePlugin {}));
     let r = BizActivity::delete_by_column(&mut rb.clone(), "id", "1").await;
     println!("{}", json!(r));
     let record = BizActivity::select_by_column(&mut rb.clone(), "id", "1").await;
