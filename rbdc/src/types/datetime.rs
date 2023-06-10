@@ -132,7 +132,7 @@ impl DateTime {
         DateTime(fastdate::DateTime::from_timestamp_millis(ms))
     }
 
-    pub fn from_timestamp_nano(nano: i128) -> Self {
+    pub fn from_timestamp_nano(nano: u128) -> Self {
         DateTime(fastdate::DateTime::from_timestamp_nano(nano))
     }
 }

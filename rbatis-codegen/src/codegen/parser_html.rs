@@ -192,6 +192,7 @@ fn parse(
 ) -> proc_macro2::TokenStream {
     let mut body = quote! {};
     let fix_sql = quote! {};
+
     for x in arg {
         match x.tag.as_str() {
             "mapper" => {
