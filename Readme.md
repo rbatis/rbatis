@@ -17,7 +17,7 @@ It is an ORM, a small compiler, a dynamic SQL languages
 * Compatibility with most mybatis3 syntax: Supports a wide range of mybatis3 syntax for seamless integration.
 * High performance, No Runtimes, No Garbage Collection: Based on Future/Tokio, rbatis offers excellent performance without compromising memory management.
 * Zero cost [Dynamic SQL](dyn_sql.md): Dynamically construct SQL queries at compile-time using proc-macro and Cow techniques, eliminating the need for an ONGL engine like mybatis.
-* JDBC-like driver design: Utilizes cargo.toml dependencies and separates the driver implementation with Box<dyn Driver>.
+* JDBC-like driver design: Utilizes cargo.toml dependencies and separates the driver implementation with `Box<dyn Driver>`.
 * Flexible placeholder support: All database drivers support `#{arg}`, `${arg}`, and `?` placeholders (with automatic processing for pg/mssql).
 * Dynamic SQL and Query Languages: Write SQL code freely, with support for dynamic SQL, pagination, py_sql query language, and html_sql inspired by Mybatis.
 * Dynamic configuration connection pool: Easily configure connection pooling based on the deadpool crate.
