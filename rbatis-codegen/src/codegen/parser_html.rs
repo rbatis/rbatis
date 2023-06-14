@@ -114,8 +114,8 @@ fn include_replace(htmls: Vec<Element>, sql_map: &mut BTreeMap<String, Element>)
                             panic!("not find ref_id on url {}", ref_id);
                         }
                         let mut f = File::open(&path).expect(&format!(
-                            "[rbatis-codegen] can't find file={}",
-                            url.host_str().unwrap_or_default()
+                            "[rbatis-codegen] can't find file='{}',url='{}' ",
+                            path, url
                         ));
                         let mut html = String::new();
                         f.read_to_string(&mut html).expect("read fail");
