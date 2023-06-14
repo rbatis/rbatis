@@ -13,18 +13,18 @@
 
 It is an ORM, a small compiler, a dynamic SQL languages
 
-* Non-invasive API design. You don't need to change the current code
-* Compatible with most mybatis3 syntax
-* No Runtimes, No Garbage Collection, High performance, Based on Future/Tokio
-* Zero cost [Dynamic SQL](dyn_sql.md), implemented using (proc-macro, compile-time, Cow(Reduce unnecessary cloning)) techniques, don't need ONGL engine (mybatis)
-* JDBC-like driver design, driver use cargo.toml dependency and ```Box<dyn Driver>``` separation
-* All database drivers supported ```#{arg}```, ```${arg}```, ```?``` placeholder (pg/mssql auto processing '?' to '$1' and '@P1')
-* Dynamic SQL (Write code freely in SQL), pagination, ```py_sql``` query lang and ```html_sql``` (Inspired Mybatis).
-* Dynamic configuration connection pool (Based on the deadpool)
-* Supports logging, customizable logging based on `log` crate
-* 100% Safe Rust with `#![forbid(unsafe_code)]` enabled
-* Support use Trait System Add ```py_sql/ html_sql``` functions ([see](https://github.com/rbatis/rbatis/blob/master/example/src/macro_proc_htmlsql_custom_func.rs))
-* [abs_admin project](https://github.com/rbatis/abs_admin)  an complete background user management system(Vue.js+rbatis+ntex)
+* Non-invasive API design: No need to modify existing code.
+* Compatibility with most mybatis3 syntax: Supports a wide range of mybatis3 syntax for seamless integration.
+* High performance, No Runtimes, No Garbage Collection: Based on Future/Tokio, rbatis offers excellent performance without compromising memory management.
+* Zero cost [Dynamic SQL](dyn_sql.md): Dynamically construct SQL queries at compile-time using proc-macro and Cow techniques, eliminating the need for an ONGL engine like mybatis.
+* JDBC-like driver design: Utilizes cargo.toml dependencies and separates the driver implementation with Box<dyn Driver>.
+* Flexible placeholder support: All database drivers support `#{arg}`, `${arg}`, and `?` placeholders (with automatic processing for pg/mssql).
+* Dynamic SQL and Query Languages: Write SQL code freely, with support for dynamic SQL, pagination, py_sql query language, and html_sql inspired by Mybatis.
+* Dynamic configuration connection pool: Easily configure connection pooling based on the deadpool crate.
+* Logging support: Built-in logging functionality with customizable options using the log crate.
+* 100% Safe Rust: Developed with safety in mind, rbatis enables the use of `#![forbid(unsafe_code)]` to ensure secure code execution.
+* Trait System Integration: Extend functionality by adding `py_sql`/`html_sql` functions using the Trait System (see here for [examples](https://github.com/rbatis/example/blob/main/src/macro_proc_htmlsql_custom_func.rs)).
+* [abs_admin project](https://github.com/rbatis/abs_admin)  Check out the abs_admin project, a comprehensive background user management system built with Vue.js, rbatis, and ntex.
 
 Thanks to ```SQLX, deadpool, Tiberius, MyBatis, xorm``` and so on reference design or code implementation. Release of V4.0 is Inspired and supported by these frameworks.
 
