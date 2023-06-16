@@ -4,7 +4,7 @@ use rbs::Value;
 use serde::Deserializer;
 use std::cmp::Ordering;
 use std::fmt::{Debug, Display, Formatter};
-use std::ops::{Add, Deref, DerefMut, Div, Mul, Rem, Sub};
+use std::ops::{Deref, DerefMut, Add, AddAssign, Div, Mul, MulAssign, Neg, Rem, Sub, SubAssign};
 use std::str::FromStr;
 
 #[derive(serde::Serialize, Clone, Eq, PartialEq, Hash)]
@@ -13,8 +13,8 @@ pub struct Decimal(pub BigDecimal);
 
 impl<'de> serde::Deserialize<'de> for Decimal {
     fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
-    where
-        D: Deserializer<'de>,
+        where
+            D: Deserializer<'de>,
     {
         use serde::de::Error;
         match Value::deserialize(deserializer)?.into_string() {
@@ -118,7 +118,33 @@ impl Rem for Decimal {
     type Output = Decimal;
 
     fn rem(self, other: Decimal) -> Decimal {
-        Decimal(self.0 % other.0)
+        Decimal(self.0.rem(other.0))
+    }
+}
+
+impl Neg for Decimal {
+    type Output = Decimal;
+
+    fn neg(self) -> Self::Output {
+        Decimal(self.0.neg())
+    }
+}
+
+impl AddAssign for Decimal {
+    fn add_assign(&mut self, rhs: Self) {
+        self.0.add_assign(rhs.0)
+    }
+}
+
+impl MulAssign for Decimal {
+    fn mul_assign(&mut self, rhs: Self) {
+        self.0.mul_assign(rhs.0)
+    }
+}
+
+impl SubAssign for Decimal {
+    fn sub_assign(&mut self, rhs: Self) {
+        self.0.sub_assign(rhs.0)
     }
 }
 
