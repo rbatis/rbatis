@@ -23,6 +23,9 @@ pub struct RBatis {
 #[deprecated(note = "please use RBatis replace this")]
 pub type Rbatis = RBatis;
 
+#[deprecated(note = "please use RBatisOption replace this")]
+pub type RbatisOption = RBatisOption;
+
 impl Default for RBatis {
     fn default() -> RBatis {
         RBatis::new()
