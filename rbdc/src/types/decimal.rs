@@ -96,7 +96,7 @@ impl Mul for Decimal {
     type Output = Self;
 
     fn mul(self, rhs: Self) -> Self::Output {
-        Decimal(self.0.sub(rhs.0))
+        Decimal(self.0.mul(rhs.0))
     }
 }
 
@@ -104,7 +104,7 @@ impl Div for Decimal {
     type Output = Self;
 
     fn div(self, rhs: Self) -> Self::Output {
-        Decimal(self.0.sub(rhs.0))
+        Decimal(self.0.div(rhs.0))
     }
 }
 
