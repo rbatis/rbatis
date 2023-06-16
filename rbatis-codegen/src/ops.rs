@@ -359,6 +359,23 @@ pub trait From<T>: Sized {
     fn op_from(_: T) -> Self;
 }
 
+
+pub trait Neg {
+    /// The resulting type after applying the `-` operator.
+    type Output;
+
+    /// Performs the unary `-` operation.
+    ///
+    /// # Example
+    ///
+    /// ```
+    /// let x: i32 = 12;
+    /// assert_eq!(-x, -12);
+    /// ```
+    #[must_use = "this returns the result of the operation, without modifying the original"]
+    fn neg(self) -> Self::Output;
+}
+
 #[cfg(test)]
 mod test {
     use crate::ops::AsProxy;
