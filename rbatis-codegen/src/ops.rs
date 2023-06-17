@@ -359,7 +359,6 @@ pub trait From<T>: Sized {
     fn op_from(_: T) -> Self;
 }
 
-
 pub trait Neg {
     /// The resulting type after applying the `-` operator.
     type Output;

@@ -314,23 +314,29 @@ macro_rules! impl_select_page {
                 use $crate::sql::IPageRequest;
                 let mut table_column = "*".to_string();
                 let mut table_name = $table_name.to_string();
-                let mut total = 0;
-                {
-                   #[$crate::py_sql("`select count(1) as count from ${table_name} `",$where_sql)]
-                   async fn rb_impl_count(executor: &mut dyn $crate::executor::Executor,table_column:&str,table_name: &str,$($param_key:$param_type,)*) -> std::result::Result<u64, $crate::rbdc::Error> {impled!()}
-                   total = rb_impl_count(executor, &table_column,&table_name, $($param_key,)*).await?;
-                }
                 //pg,mssql can override this parameter to implement its own limit statement
                 let mut limit_sql = " limit ${page_no},${page_size}".to_string();
                 limit_sql=limit_sql.replace("${page_no}",&page_req.offset().to_string());
                 limit_sql=limit_sql.replace("${page_size}",&page_req.page_size.to_string());
                 let records:Vec<$table>;
-                #[$crate::py_sql("`select ${table_column} from ${table_name} `",$where_sql,"\n
-                              if !sql.contains('page_no') && !sql.contains('page_size'):
-                                `${limit_sql}`")]
-                async fn rb_impl_select(executor: &mut dyn $crate::executor::Executor,table_column:&str,table_name: &str,page_no:u64,page_size:u64,page_offset:u64,limit_sql:&str,$($param_key:$param_type,)*) -> std::result::Result<Vec<$table>, $crate::rbdc::Error> {impled!()}
-                records = rb_impl_select(executor,&table_column,&table_name,page_req.page_no, page_req.page_size,page_req.offset(),&limit_sql,$($param_key,)*).await?;
-
+                struct Inner{}
+                impl Inner{
+                 #[$crate::py_sql(
+                    "`select `
+                    if do_count == false:
+                      `${table_column}`
+                    if do_count == true:
+                       `count(1) as count`
+                    ` from ${table_name} `\n",$where_sql,"\n
+                    if !sql.contains('page_no') && !sql.contains('page_size'):
+                        `${limit_sql}`")]
+                  async fn rb_impl_select(executor: &mut dyn $crate::executor::Executor,do_count:bool,table_column:&str,table_name: &str,page_no:u64,page_size:u64,page_offset:u64,limit_sql:&str,$($param_key:$param_type,)*) -> std::result::Result<rbs::Value, $crate::rbdc::Error> {impled!()}
+                }
+                let totalValue = Inner::rb_impl_select(executor,true,&table_column,&table_name,page_req.page_no, page_req.page_size,page_req.offset(),"",$($param_key,)*).await?;
+                let recordsValue = Inner::rb_impl_select(executor,false,&table_column,&table_name,page_req.page_no, page_req.page_size,page_req.offset(),&limit_sql,$($param_key,)*).await?;
+                let total =  $crate::decode(totalValue)?;
+                let records = rbs::from_value(recordsValue)?;
+                let mut page = $crate::sql::Page::<$table>::new_total(page_req.offset(), page_req.page_size, total);
                 let mut page = $crate::sql::Page::<$table>::new_total(page_req.page_no, page_req.page_size, total);
                 page.records = records;
                 Ok(page)

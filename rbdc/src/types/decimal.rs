@@ -4,7 +4,7 @@ use rbs::Value;
 use serde::Deserializer;
 use std::cmp::Ordering;
 use std::fmt::{Debug, Display, Formatter};
-use std::ops::{Deref, DerefMut, Add, AddAssign, Div, Mul, MulAssign, Neg, Rem, Sub, SubAssign};
+use std::ops::{Add, AddAssign, Deref, DerefMut, Div, Mul, MulAssign, Neg, Rem, Sub, SubAssign};
 use std::str::FromStr;
 
 #[derive(serde::Serialize, Clone, Eq, PartialEq, Hash)]
@@ -13,8 +13,8 @@ pub struct Decimal(pub BigDecimal);
 
 impl<'de> serde::Deserialize<'de> for Decimal {
     fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
-        where
-            D: Deserializer<'de>,
+    where
+        D: Deserializer<'de>,
     {
         use serde::de::Error;
         match Value::deserialize(deserializer)?.into_string() {
