@@ -17,7 +17,7 @@ mod test {
     use crossbeam::queue::SegQueue;
     use futures_core::future::BoxFuture;
     use rbatis::executor::{Executor, RBatisConnExecutor};
-    use rbatis::intercept::{ResultType, Intercept};
+    use rbatis::intercept::{Intercept, ResultType};
     use rbatis::sql::PageRequest;
     use rbatis::{Error, RBatis};
     use rbdc::datetime::DateTime;
@@ -45,7 +45,7 @@ mod test {
             task_id: i64,
             rb: &dyn Executor,
             sql: &mut String,
-            args: &mut Vec<Value>
+            args: &mut Vec<Value>,
         ) -> Result<(), Error> {
             self.sql_args.push((sql.to_string(), args.clone()));
             Ok(())

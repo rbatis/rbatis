@@ -2,7 +2,7 @@ use crate::executor::Executor;
 use crate::Error;
 use rbdc::db::ExecResult;
 use rbs::Value;
-use std::fmt::{Debug};
+use std::fmt::Debug;
 
 #[derive(Debug, Clone)]
 pub enum ResultType<A, B> {

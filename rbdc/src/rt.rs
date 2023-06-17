@@ -23,18 +23,14 @@ mod tokio_runtime {
     static RUNTIME: OnceLock<Runtime> = OnceLock::new();
 
     pub fn block_on<F: std::future::Future>(future: F) -> F::Output {
-        RUNTIME.get_or_init(||{
-            init_tokio()
-        }).block_on(future)
+        RUNTIME.get_or_init(|| init_tokio()).block_on(future)
     }
 
     pub fn enter_runtime<F, R>(f: F) -> R
     where
         F: FnOnce() -> R,
     {
-        let _rt = RUNTIME.get_or_init(||{
-            init_tokio()
-        }).enter();
+        let _rt = RUNTIME.get_or_init(|| init_tokio()).enter();
         f()
     }
     fn init_tokio() -> Runtime {

@@ -1,18 +1,18 @@
 use crate::executor::{RBatisConnExecutor, RBatisTxExecutor};
+use crate::intercept_log::LogInterceptor;
 use crate::plugin::intercept::Intercept;
 use crate::snowflake::new_snowflake_id;
 use crate::Error;
 use dark_std::sync::SyncVec;
+use log::LevelFilter;
 use rbdc::db::Connection;
 use rbdc::pool::{ManagerPorxy, Pool};
 use std::fmt::Debug;
 use std::sync::{Arc, OnceLock};
 use std::time::Duration;
-use log::LevelFilter;
-use crate::intercept_log::LogInterceptor;
 
 /// RBatis engine
-#[derive(Clone,Debug)]
+#[derive(Clone, Debug)]
 pub struct RBatis {
     // the connection pool
     pub pool: Arc<OnceLock<Pool>>,
@@ -43,9 +43,10 @@ impl Default for RBatisOption {
         Self {
             intercepts: {
                 let intercepts = SyncVec::new();
-                intercepts.push(Arc::new(LogInterceptor::new(LevelFilter::Info)) as Arc<dyn Intercept>);
                 intercepts
-            }
+                    .push(Arc::new(LogInterceptor::new(LevelFilter::Info)) as Arc<dyn Intercept>);
+                intercepts
+            },
         }
     }
 }

@@ -1,13 +1,13 @@
+use crate::decode::is_debug_mode;
+use crate::executor::Executor;
+use crate::intercept::{Intercept, ResultType};
+use crate::Error;
+use log::{log, Level, LevelFilter};
+use rbdc::db::ExecResult;
+use rbs::Value;
 use std::fmt::{Display, Formatter};
 use std::ops::Deref;
 use std::sync::atomic::{AtomicUsize, Ordering};
-use log::{Level, LevelFilter, log};
-use rbdc::db::ExecResult;
-use rbs::Value;
-use crate::decode::is_debug_mode;
-use crate::Error;
-use crate::executor::Executor;
-use crate::intercept::{ResultType, Intercept};
 
 struct RbsValueDisplay<'a> {
     inner: &'a Vec<Value>,
@@ -28,7 +28,6 @@ impl<'a> Display for RbsValueDisplay<'a> {
         Ok(())
     }
 }
-
 
 /// LogInterceptor
 #[derive(Debug)]
@@ -60,37 +59,35 @@ impl LogInterceptor {
 
     pub fn get_level_filter(&self) -> LevelFilter {
         match self.level_filter.load(Ordering::Relaxed) {
-            0 => { LevelFilter::Off }
-            1 => { LevelFilter::Error }
-            2 => { LevelFilter::Warn }
-            3 => { LevelFilter::Info }
-            4 => { LevelFilter::Debug }
-            5 => { LevelFilter::Trace }
-            _ => {
-                LevelFilter::Off
-            }
+            0 => LevelFilter::Off,
+            1 => LevelFilter::Error,
+            2 => LevelFilter::Warn,
+            3 => LevelFilter::Info,
+            4 => LevelFilter::Debug,
+            5 => LevelFilter::Trace,
+            _ => LevelFilter::Off,
         }
     }
 
     pub fn to_level(&self) -> Option<Level> {
         match self.get_level_filter() {
-            LevelFilter::Off => { None }
-            LevelFilter::Error => { Some(Level::Error) }
-            LevelFilter::Warn => { Some(Level::Warn) }
-            LevelFilter::Info => { Some(Level::Info) }
-            LevelFilter::Debug => { Some(Level::Debug) }
-            LevelFilter::Trace => { Some(Level::Trace) }
+            LevelFilter::Off => None,
+            LevelFilter::Error => Some(Level::Error),
+            LevelFilter::Warn => Some(Level::Warn),
+            LevelFilter::Info => Some(Level::Info),
+            LevelFilter::Debug => Some(Level::Debug),
+            LevelFilter::Trace => Some(Level::Trace),
         }
     }
 
     pub fn set_level_filter(&self, level_filter: LevelFilter) {
         match level_filter {
-            LevelFilter::Off => { self.level_filter.store(0, Ordering::SeqCst) }
-            LevelFilter::Error => { self.level_filter.store(1, Ordering::SeqCst) }
-            LevelFilter::Warn => { self.level_filter.store(2, Ordering::SeqCst) }
-            LevelFilter::Info => { self.level_filter.store(3, Ordering::SeqCst) }
-            LevelFilter::Debug => { self.level_filter.store(4, Ordering::SeqCst) }
-            LevelFilter::Trace => { self.level_filter.store(5, Ordering::SeqCst) }
+            LevelFilter::Off => self.level_filter.store(0, Ordering::SeqCst),
+            LevelFilter::Error => self.level_filter.store(1, Ordering::SeqCst),
+            LevelFilter::Warn => self.level_filter.store(2, Ordering::SeqCst),
+            LevelFilter::Info => self.level_filter.store(3, Ordering::SeqCst),
+            LevelFilter::Debug => self.level_filter.store(4, Ordering::SeqCst),
+            LevelFilter::Trace => self.level_filter.store(5, Ordering::SeqCst),
         }
     }
 }
@@ -114,7 +111,14 @@ impl Intercept for LogInterceptor {
         } else {
             op = "exec ";
         }
-        log!(level,"[rbatis] [{}] {} => `{}` {}",task_id,op,&sql,RbsValueDisplay { inner: args });
+        log!(
+            level,
+            "[rbatis] [{}] {} => `{}` {}",
+            task_id,
+            op,
+            &sql,
+            RbsValueDisplay { inner: args }
+        );
         Ok(())
     }
 
@@ -141,24 +145,32 @@ impl Intercept for LogInterceptor {
                 }
                 match result {
                     ResultType::Exec(result) => {
-                        log!(level,"[rbatis] [{}] {}  <= rows_affected={}",task_id, op, result);
+                        log!(
+                            level,
+                            "[rbatis] [{}] {}  <= rows_affected={}",
+                            task_id,
+                            op,
+                            result
+                        );
                     }
                     ResultType::Query(data) => {
                         if is_debug_mode() {
-                            log!(level,"[rbatis] [{}] {} <= len={},rows={}",
-                                        task_id,
-                                        op,
-                                        data.len(),
-                                        RbsValueDisplay { inner: data }
-                                );
+                            log!(
+                                level,
+                                "[rbatis] [{}] {} <= len={},rows={}",
+                                task_id,
+                                op,
+                                data.len(),
+                                RbsValueDisplay { inner: data }
+                            );
                         } else {
-                            log!(level,"[rbatis] [{}] {} <= len={}", task_id, op, data.len());
+                            log!(level, "[rbatis] [{}] {} <= len={}", task_id, op, data.len());
                         }
                     }
                 }
             }
             Err(e) => {
-                log!(level,"[rbatis] [{}] exec  <= {}", task_id, e);
+                log!(level, "[rbatis] [{}] exec  <= {}", task_id, e);
             }
         }
         Ok(())

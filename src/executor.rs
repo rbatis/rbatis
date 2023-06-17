@@ -2,6 +2,7 @@ use std::fmt::{Debug, Formatter};
 use std::ops::{Deref, DerefMut};
 
 use crate::decode::decode;
+use crate::intercept::ResultType;
 use crate::rbatis::RBatis;
 use crate::snowflake::new_snowflake_id;
 use crate::sql::tx::Tx;
@@ -11,7 +12,6 @@ use futures_core::future::BoxFuture;
 use rbdc::db::{Connection, ExecResult};
 use rbs::Value;
 use serde::de::DeserializeOwned;
-use crate::intercept::ResultType;
 
 /// the rbatis's Executor. this trait impl with structs = RBatis,RBatisConnExecutor,RBatisTxExecutor,RBatisTxExecutorGuard
 pub trait Executor: RBatisRef {
@@ -82,13 +82,7 @@ impl Executor for RBatisConnExecutor {
                     Ok(v) => Ok(ResultType::Exec(v)),
                     Err(e) => Err(e),
                 };
-                item.after(
-                    rb_task_id,
-                    self.rbatis_ref(),
-                    &mut sql,
-                    &mut vec![],
-                    r,
-                )?;
+                item.after(rb_task_id, self.rbatis_ref(), &mut sql, &mut vec![], r)?;
             }
             result
         })
@@ -107,13 +101,7 @@ impl Executor for RBatisConnExecutor {
                     Ok(v) => Ok(ResultType::Query(v)),
                     Err(e) => Err(e),
                 };
-                item.after(
-                    rb_task_id,
-                    self.rbatis_ref(),
-                    &mut sql,
-                    &mut vec![],
-                    r,
-                )?;
+                item.after(rb_task_id, self.rbatis_ref(), &mut sql, &mut vec![], r)?;
             }
             Ok(Value::Array(result?))
         })
@@ -192,13 +180,7 @@ impl Executor for RBatisTxExecutor {
                     Ok(v) => Ok(ResultType::Exec(v)),
                     Err(e) => Err(e),
                 };
-                item.after(
-                    self.tx_id,
-                    self.rbatis_ref(),
-                    &mut sql,
-                    &mut vec![],
-                    r,
-                )?;
+                item.after(self.tx_id, self.rbatis_ref(), &mut sql, &mut vec![], r)?;
             }
             result
         })
@@ -216,13 +198,7 @@ impl Executor for RBatisTxExecutor {
                     Ok(v) => Ok(ResultType::Query(v)),
                     Err(e) => Err(e),
                 };
-                item.after(
-                    self.tx_id,
-                    self.rbatis_ref(),
-                    &mut sql,
-                    &mut vec![],
-                    r,
-                )?;
+                item.after(self.tx_id, self.rbatis_ref(), &mut sql, &mut vec![], r)?;
             }
             Ok(Value::Array(result?))
         })

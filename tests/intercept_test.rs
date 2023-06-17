@@ -1,13 +1,13 @@
 #[cfg(test)]
 mod test {
+    use futures_core::future::BoxFuture;
+    use log::{LevelFilter, Log, Metadata, Record};
+    use rbatis::{Error, RBatis};
+    use rbdc::db::{ConnectOptions, Connection, Driver, ExecResult, MetaData, Row};
+    use rbdc::rt::block_on;
+    use rbs::Value;
     use std::any::Any;
     use std::sync::OnceLock;
-    use futures_core::future::BoxFuture;
-    use log::{ LevelFilter, Log, Metadata, Record};
-    use rbatis::{Error, RBatis};
-    use rbdc::db::{Connection, ConnectOptions, Driver, ExecResult, MetaData, Row};
-    use rbs::Value;
-    use rbdc::rt::block_on;
 
     pub struct Logger {}
 
@@ -17,14 +17,17 @@ mod test {
         }
 
         fn log(&self, record: &Record) {
-            println!("[{}]{}",record.module_path_static().unwrap(),record.args())
+            println!(
+                "[{}]{}",
+                record.module_path_static().unwrap(),
+                record.args()
+            )
         }
 
         fn flush(&self) {}
     }
 
     pub static LOGGER: OnceLock<Logger> = OnceLock::new();
-
 
     #[derive(Debug, Clone)]
     struct MockDriver {}
@@ -123,7 +126,11 @@ mod test {
             })
         }
 
-        fn exec(&mut self, _sql: &str, _params: Vec<Value>) -> BoxFuture<Result<ExecResult, Error>> {
+        fn exec(
+            &mut self,
+            _sql: &str,
+            _params: Vec<Value>,
+        ) -> BoxFuture<Result<ExecResult, Error>> {
             Box::pin(async move {
                 Ok(ExecResult {
                     rows_affected: 0,
@@ -162,12 +169,13 @@ mod test {
     fn test_to_snake_name() {
         _ = LOGGER.set(Logger {});
         log::set_logger(LOGGER.get().unwrap())
-            .map(|()| log::set_max_level(LevelFilter::Info)).unwrap();
+            .map(|()| log::set_max_level(LevelFilter::Info))
+            .unwrap();
         let rb = RBatis::new();
 
         rb.init(MockDriver {}, "test").unwrap();
         let f = async move {
-            _=rb.exec("select * from table", vec![]).await;
+            _ = rb.exec("select * from table", vec![]).await;
         };
         block_on(f);
     }
