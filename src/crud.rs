@@ -330,10 +330,10 @@ macro_rules! impl_select_page {
                     ` from ${table_name} `\n",$where_sql,"\n
                     if !sql.contains('page_no') && !sql.contains('page_size'):
                         `${limit_sql}`")]
-                  async fn rb_impl_select(executor: &mut dyn $crate::executor::Executor,do_count:bool,table_column:&str,table_name: &str,page_no:u64,page_size:u64,page_offset:u64,limit_sql:&str,$($param_key:$param_type,)*) -> std::result::Result<rbs::Value, $crate::rbdc::Error> {impled!()}
+                   async fn $fn_name(executor: &mut dyn $crate::executor::Executor,do_count:bool,table_column:&str,table_name: &str,page_no:u64,page_size:u64,page_offset:u64,limit_sql:&str,$($param_key:$param_type,)*) -> std::result::Result<rbs::Value, $crate::rbdc::Error> {impled!()}
                 }
-                let totalValue = Inner::rb_impl_select(executor,true,&table_column,&table_name,page_req.page_no, page_req.page_size,page_req.offset(),"",$($param_key,)*).await?;
-                let recordsValue = Inner::rb_impl_select(executor,false,&table_column,&table_name,page_req.page_no, page_req.page_size,page_req.offset(),&limit_sql,$($param_key,)*).await?;
+                let totalValue = Inner::$fn_name(executor,true,&table_column,&table_name,page_req.page_no, page_req.page_size,page_req.offset(),"",$($param_key,)*).await?;
+                let recordsValue = Inner::$fn_name(executor,false,&table_column,&table_name,page_req.page_no, page_req.page_size,page_req.offset(),&limit_sql,$($param_key,)*).await?;
                 let total =  $crate::decode(totalValue)?;
                 let records = rbs::from_value(recordsValue)?;
                 let mut page = $crate::sql::Page::<$table>::new_total(page_req.offset(), page_req.page_size, total);
