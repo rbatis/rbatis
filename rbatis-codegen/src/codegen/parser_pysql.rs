@@ -15,7 +15,8 @@ use crate::codegen::syntax_tree_pysql::where_node::WhereNode;
 use crate::codegen::syntax_tree_pysql::{DefaultName, Name, NodeType};
 use quote::ToTokens;
 use std::collections::HashMap;
-use syn::{AttributeArgs, ItemFn};
+use syn::{ItemFn};
+use crate::codegen::ParseArgs;
 
 pub trait ParsePySql {
     fn parse_pysql(
@@ -23,9 +24,9 @@ pub trait ParsePySql {
     ) -> Result<Vec<NodeType>, crate::codegen::syntax_tree_pysql::error::Error>;
 }
 
-pub fn impl_fn_py(m: &ItemFn, args: &AttributeArgs) -> TokenStream {
+pub fn impl_fn_py(m: &ItemFn, args: &ParseArgs) -> TokenStream {
     let fn_name = m.sig.ident.to_string();
-    let mut data = args.get(0).to_token_stream().to_string();
+    let mut data = args.sqls[0].to_token_stream().to_string();
     if data.ne("\"\"") && data.starts_with("\"") && data.ends_with("\"") {
         data = data[1..data.len() - 1].to_string();
     }

@@ -210,52 +210,8 @@ fn convert_to_arg_access(context: &str, arg: Expr, ignore: &[String]) -> Expr {
                     .expect("codegen_func fail");
                 }
                 // The `<<` operator (shift left)
-                BinOp::Shl(_) => {
-                    panic!("unsupported token << ")
-                }
-                // The `>>` operator (shift right)
-                BinOp::Shr(_) => {
-                    panic!("unsupported token >> ")
-                }
-                // The `+=` operator
-                BinOp::AddEq(_) => {
-                    panic!("unsupported token += ")
-                }
-                // The `-=` operator
-                BinOp::SubEq(_) => {
-                    panic!("unsupported token -= ")
-                }
-                // The `*=` operator
-                BinOp::MulEq(_) => {
-                    panic!("unsupported token *= ")
-                }
-                // The `/=` operator
-                BinOp::DivEq(_) => {
-                    panic!("unsupported token /= ")
-                }
-                // The `%=` operator
-                BinOp::RemEq(_) => {
-                    panic!("unsupported token %= ")
-                }
-                // The `^=` operator
-                BinOp::BitXorEq(_) => {
-                    panic!("unsupported token ^= ")
-                }
-                // The `&=` operator
-                BinOp::BitAndEq(_) => {
-                    panic!("unsupported token &= ")
-                }
-                // The `|=` operator
-                BinOp::BitOrEq(_) => {
-                    panic!("unsupported token |= ")
-                }
-                // The `<<=` operator
-                BinOp::ShlEq(_) => {
-                    panic!("unsupported token <<= ")
-                }
-                // The `>>=` operator
-                BinOp::ShrEq(_) => {
-                    panic!("unsupported token >>= ")
+                _ => {
+                    panic!("unsupported token {}",b.op.to_token_stream())
                 }
             }
             return Expr::Binary(b);
@@ -326,6 +282,7 @@ fn convert_to_arg_access(context: &str, arg: Expr, ignore: &[String]) -> Expr {
                 }
                 Lit::Bool(_) => {}
                 Lit::Verbatim(_) => {}
+                _ =>{}
             }
             return Expr::Lit(b);
         }

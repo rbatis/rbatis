@@ -1,6 +1,6 @@
 [package]
 name = "rbatis-codegen"
-version = "4.3.4"
+version = "4.3.5"
 edition = "2021"
 description = "The Rust SQL Toolkit and ORM Library. An async, pure Rust SQL crate featuring compile-time Dynamic SQL gen system"
 readme = "Readme.md"
@@ -26,7 +26,7 @@ serde_json = "1"
 #macro
 proc-macro2 = "1.0"
 quote = "1.0"
-syn = { version = "1.0", features = ["full"] }
+syn = { version = "2.0", features = ["full"] }
 base64 = "0.21"
 async-trait = "0.1"
 url = "2.2.2"
