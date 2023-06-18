@@ -3,13 +3,14 @@ use quote::quote;
 use quote::ToTokens;
 use std::fs::File;
 use std::io::Read;
-use syn::{AttributeArgs, FnArg, ItemFn, Lit, NestedMeta};
+use syn::{ FnArg, ItemFn};
 
 use crate::macros::py_sql_impl;
+use crate::ParseArgs;
 use crate::proc_macro::TokenStream;
 use crate::util::{find_fn_body, find_return_type, get_fn_args, is_query, is_rbatis_ref};
 
-pub(crate) fn impl_macro_html_sql(target_fn: &ItemFn, args: &AttributeArgs) -> TokenStream {
+pub(crate) fn impl_macro_html_sql(target_fn: &ItemFn, args: &ParseArgs) -> TokenStream {
     let return_ty = find_return_type(target_fn);
     let func_name_ident = target_fn.sig.ident.to_token_stream();
 
@@ -32,27 +33,13 @@ pub(crate) fn impl_macro_html_sql(target_fn: &ItemFn, args: &AttributeArgs) -> T
         }
     }
     let mut sql_ident = quote!();
-    if args.len() >= 1 {
+    if args.sqls.len() >= 1 {
         if rbatis_name.is_empty() {
             panic!("[rbatis] you should add rbatis ref param  rb:&RBatis  or rb: &mut Executor  on '{}()'!", target_fn.sig.ident);
         }
         let mut s = "".to_string();
-        for ele in args {
-            match ele {
-                NestedMeta::Meta(_) => {}
-                NestedMeta::Lit(l) => match l {
-                    Lit::Str(v) => {
-                        s = s + v.value().as_str();
-                    }
-                    Lit::ByteStr(_) => {}
-                    Lit::Byte(_) => {}
-                    Lit::Char(_) => {}
-                    Lit::Int(_) => {}
-                    Lit::Float(_) => {}
-                    Lit::Bool(_) => {}
-                    Lit::Verbatim(_) => {}
-                },
-            }
+        for v in &args.sqls {
+            s = s + v.value().as_str();
         }
         sql_ident = quote!(#s);
     } else {
