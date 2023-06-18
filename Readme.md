@@ -13,7 +13,7 @@
 
 It is an ORM, a small compiler, a dynamic SQL languages
 
-* Non-invasive API design: No need to modify existing code.
+* robustness design: Non-invasive API design,No need to modify existing code
 * Compatibility with most mybatis3 syntax: Supports a wide range of mybatis3 syntax for seamless integration.
 * High performance, No Runtimes, No Garbage Collection: Based on Future/Tokio, rbatis offers excellent performance without compromising memory management.
 * Zero cost [Dynamic SQL](dyn_sql.md): Dynamically construct SQL queries at compile-time using proc-macro and Cow techniques, eliminating the need for an ONGL engine like mybatis.
