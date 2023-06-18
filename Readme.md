@@ -9,7 +9,7 @@
 
 <img style="width: 200px;height: 200px;" width="200" height="200" src="logo.png" />
 
-#### A Rust Compile Time ORM robustness,async, pure Rust Dynamic SQL ORM. 
+#### a compile-time code generation ORM that balances ease of writing with performance and robustness
 
 It is an ORM, a small compiler, a dynamic SQL languages
 
@@ -26,7 +26,7 @@ It is an ORM, a small compiler, a dynamic SQL languages
 * Trait System Integration: Extend functionality by adding `py_sql`/`html_sql` functions using the Trait System (see here for [examples](https://github.com/rbatis/example/blob/main/src/macro_proc_htmlsql_custom_func.rs)).
 * [abs_admin project](https://github.com/rbatis/abs_admin)  Check out the abs_admin project, a comprehensive background user management system built with Vue.js, rbatis, and ntex.
 
-Thanks to ```SQLX, deadpool, Tiberius, MyBatis, xorm``` and so on reference design or code implementation. Release of V4.0 is Inspired and supported by these frameworks.
+**Thanks to ```SQLX, deadpool, Tiberius, MyBatis, xorm``` and so on reference design or code implementation. Release of V4.0 is Inspired and supported by these frameworks.**
 
 ### Performance
 
