@@ -293,7 +293,7 @@ macro_rules! impl_delete {
 /// #[derive(Clone, Debug, serde::Serialize, serde::Deserialize)]
 /// pub struct BizActivity{}
 /// rbatis::impl_select_page!(BizActivity{select_page() =>"
-///      if !sql.contains('count'):
+///      if do_count == false:
 ///        `order by create_time desc`"});
 /// ```
 #[macro_export]
