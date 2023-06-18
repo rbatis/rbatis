@@ -21,12 +21,18 @@ use crate::codegen::ParseArgs;
 pub trait ParsePySql {
     fn parse_pysql(
         arg: &str,
-    ) -> Result<Vec<NodeType>, crate::codegen::syntax_tree_pysql::error::Error>;
+    ) -> Result<Vec<NodeType>, Error>;
 }
 
 pub fn impl_fn_py(m: &ItemFn, args: &ParseArgs) -> TokenStream {
     let fn_name = m.sig.ident.to_string();
-    let mut data = args.sqls[0].to_token_stream().to_string();
+    let mut data = {
+        let mut s = String::new();
+        for x in &args.sqls {
+            s = s + &x.to_token_stream().to_string();
+        }
+        s
+    };
     if data.ne("\"\"") && data.starts_with("\"") && data.ends_with("\"") {
         data = data[1..data.len() - 1].to_string();
     }

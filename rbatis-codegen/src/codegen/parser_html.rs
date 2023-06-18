@@ -675,6 +675,9 @@ fn impl_trim(
 
 pub fn impl_fn_html(m: &ItemFn, args: &ParseArgs) -> TokenStream {
     let fn_name = m.sig.ident.to_string();
+    if args.sqls.len() == 0 {
+        panic!("[rbatis-codegen] #[html_sql()] must have html_data, for example: {}", stringify!(#[html_sql(r#"<select id="select_by_condition">`select * from biz_activity</select>"#)]));
+    }
     let html_data = args.sqls[0].to_token_stream().to_string();
     let t = parse_html(&html_data, &fn_name, &mut vec![]);
     return t.into();
