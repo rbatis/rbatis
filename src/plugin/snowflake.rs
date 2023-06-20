@@ -227,7 +227,6 @@ mod test {
         let mut snowflake = Snowflake::default();
         snowflake.generate();
         let initial_timestamp = snowflake.last_timestamp.load(Ordering::Relaxed);
-        snowflake.last_timestamp = AtomicU64::new(initial_timestamp - 1224655892);
         let initial_id = snowflake.generate();
         println!("initial_id={}",initial_id);
         snowflake.last_timestamp=AtomicU64::new(initial_timestamp - 1224655892);
