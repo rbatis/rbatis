@@ -60,7 +60,7 @@ impl Clone for Snowflake {
 }
 
 impl Snowflake {
-    pub fn default() -> Snowflake {
+    pub const fn default() -> Snowflake {
         Snowflake {
             epoch: 1_564_790_400_000,
             worker_id: 1,
@@ -123,7 +123,7 @@ impl Snowflake {
     }
 }
 
-pub static SNOWFLAKE: Snowflake = Snowflake::new(1_564_790_400_000, 1, 1);
+pub static SNOWFLAKE: Snowflake = Snowflake::default();
 
 ///gen new snowflake_id
 pub fn new_snowflake_id() -> i64 {
