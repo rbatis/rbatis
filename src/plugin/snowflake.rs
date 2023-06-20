@@ -1,26 +1,26 @@
 use serde::ser::SerializeStruct;
 use serde::{Deserializer, Serializer};
-use std::sync::atomic::{AtomicI64, Ordering};
+use std::sync::atomic::{AtomicU64, Ordering};
 use std::time::{SystemTime, UNIX_EPOCH};
 
 ///Snowflakes algorithm
 #[derive(Debug)]
 pub struct Snowflake {
-    pub epoch: i64,
-    pub worker_id: i64,
-    pub datacenter_id: i64,
-    pub sequence: AtomicI64,
+    pub epoch: u64,
+    pub worker_id: u64,
+    pub sequence: AtomicU64,
+    pub last_timestamp: AtomicU64,
 }
 
 impl serde::Serialize for Snowflake {
     fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
-    where
-        S: Serializer,
+        where
+            S: Serializer,
     {
         let mut s = serializer.serialize_struct("Snowflake", 5)?;
         s.serialize_field("epoch", &self.epoch)?;
         s.serialize_field("worker_id", &self.worker_id)?;
-        s.serialize_field("datacenter_id", &self.datacenter_id)?;
+        s.serialize_field("last_timestamp", &self.last_timestamp.load(Ordering::Relaxed))?;
         s.serialize_field("sequence", &self.sequence.load(Ordering::Relaxed))?;
         s.end()
     }
@@ -28,34 +28,33 @@ impl serde::Serialize for Snowflake {
 
 impl<'de> serde::Deserialize<'de> for Snowflake {
     fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
-    where
-        D: Deserializer<'de>,
+        where
+            D: Deserializer<'de>,
     {
         #[derive(Debug, serde::Serialize, serde::Deserialize)]
         struct Snowflake {
-            pub epoch: i64,
-            pub worker_id: i64,
-            pub datacenter_id: i64,
-            pub sequence: i64,
+            pub epoch: u64,
+            pub worker_id: u64,
+            pub last_timestamp: u64,
+            pub sequence: u64,
         }
         let proxy = Snowflake::deserialize(deserializer)?;
         Ok(self::Snowflake {
             epoch: proxy.epoch,
             worker_id: proxy.worker_id,
-            datacenter_id: proxy.datacenter_id,
-            sequence: AtomicI64::from(proxy.sequence),
+            last_timestamp: AtomicU64::new(proxy.last_timestamp),
+            sequence: AtomicU64::new(proxy.sequence),
         })
     }
 }
 
 impl Clone for Snowflake {
     fn clone(&self) -> Self {
-        let sequence = self.sequence.load(Ordering::Relaxed);
         Self {
             epoch: self.epoch,
             worker_id: self.worker_id,
-            datacenter_id: self.datacenter_id,
-            sequence: AtomicI64::new(sequence),
+            last_timestamp: AtomicU64::new(self.last_timestamp.load(Ordering::Relaxed)),
+            sequence: AtomicU64::new(self.sequence.load(Ordering::Relaxed)),
         }
     }
 }
@@ -65,46 +64,57 @@ impl Snowflake {
         Snowflake {
             epoch: 1_564_790_400_000,
             worker_id: 1,
-            datacenter_id: 1,
-            sequence: AtomicI64::new(0),
+            last_timestamp: AtomicU64::new(0 as u64),
+            sequence: AtomicU64::new(0),
         }
     }
 
-    pub const fn new(epoch: i64, worker_id: i64, datacenter_id: i64) -> Snowflake {
+    pub const fn new(epoch: u64, worker_id: u64, last_timestamp: u64) -> Snowflake {
         Snowflake {
-            epoch,
-            worker_id,
-            datacenter_id,
-            sequence: AtomicI64::new(0),
+            epoch:epoch,
+            worker_id:worker_id,
+            last_timestamp: AtomicU64::new(last_timestamp),
+            sequence: AtomicU64::new(0),
         }
     }
 
-    pub fn set_epoch(&mut self, epoch: i64) -> &mut Self {
+    pub fn set_epoch(&mut self, epoch: u64) -> &mut Self {
         self.epoch = epoch;
         self
     }
 
-    pub fn set_worker_id(&mut self, worker_id: i64) -> &mut Self {
+    pub fn set_worker_id(&mut self, worker_id: u64) -> &mut Self {
         self.worker_id = worker_id;
         self
     }
 
-    pub fn set_datacenter_id(&mut self, datacenter_id: i64) -> &mut Self {
-        self.datacenter_id = datacenter_id;
+    pub fn set_datacenter_id(&mut self, last_timestamp: u64) -> &mut Self {
+        self.last_timestamp =  AtomicU64::new(last_timestamp);
         self
     }
 
-    pub fn generate(&self) -> i64 {
-        let timestamp = self.get_time();
-        let sequence = self.sequence.fetch_add(1, Ordering::SeqCst);
-        (timestamp << 22) | (self.worker_id << 17) | (self.datacenter_id << 12) | sequence
+    pub fn generate(&self) -> u64 {
+        let mut timestamp = self.get_timestamp();
+        loop {
+            let last_timestamp = self.last_timestamp.load(Ordering::Relaxed);
+            if timestamp < last_timestamp {
+                timestamp = last_timestamp;
+            }
+            if self.last_timestamp.compare_exchange(last_timestamp, timestamp, Ordering::SeqCst, Ordering::SeqCst).is_ok() {
+                break;
+            }
+        }
+        let sequence = self.sequence.fetch_add(1, Ordering::Relaxed);
+        let timestamp_shifted = timestamp << 22;
+        let worker_id_shifted = self.worker_id << 12;
+        let id = timestamp_shifted | worker_id_shifted | sequence;
+        id
     }
 
-    fn get_time(&self) -> i64 {
-        let since_the_epoch = SystemTime::now()
-            .duration_since(UNIX_EPOCH)
-            .expect("Time went backwards");
-        since_the_epoch.as_millis() as i64 - self.epoch
+    fn get_timestamp(&self) -> u64 {
+        let start = SystemTime::now();
+        let since_epoch = start.duration_since(UNIX_EPOCH).expect("Failed to get system time");
+        since_epoch.as_millis() as u64 - self.epoch
     }
 }
 
@@ -112,16 +122,23 @@ pub static SNOWFLAKE: Snowflake = Snowflake::new(1_564_790_400_000, 1, 1);
 
 ///gen new snowflake_id
 pub fn new_snowflake_id() -> i64 {
-    SNOWFLAKE.generate()
+    SNOWFLAKE.generate() as i64
 }
 
 #[cfg(test)]
 mod test {
     use crate::snowflake::{new_snowflake_id, Snowflake};
     use std::collections::HashMap;
+    use std::sync::atomic::{AtomicU64, Ordering};
+    use std::thread::sleep;
+    use std::time::Duration;
 
     #[test]
     fn test_gen() {
+        println!("{}", new_snowflake_id());
+        println!("{}", new_snowflake_id());
+        sleep(Duration::from_secs(1));
+        println!("{}", new_snowflake_id());
         println!("{}", new_snowflake_id());
     }
 
@@ -202,18 +219,20 @@ mod test {
         let snowflake = Snowflake::default();
         let id1 = snowflake.generate();
         let id2 = snowflake.generate();
-
         assert_ne!(id1, id2);
     }
 
     #[test]
-    fn test_generate_clock_back() {
+    fn test_generate_clock_rollback() {
         let mut snowflake = Snowflake::default();
-        let initial_timestamp = snowflake.get_time();
-        snowflake.set_epoch(initial_timestamp - 100000000000000000);
+        snowflake.generate();
+        let initial_timestamp = snowflake.last_timestamp.load(Ordering::Relaxed);
+        snowflake.last_timestamp = AtomicU64::new((initial_timestamp - 1224655892));
         let initial_id = snowflake.generate();
-        snowflake.set_epoch(initial_timestamp - 200000000000000000);
+        println!("initial_id={}",initial_id);
+        snowflake.last_timestamp=AtomicU64::new((initial_timestamp - 1224655892));
         let new_id = snowflake.generate();
+        println!("new_id____={}",new_id);
         assert!(new_id > initial_id);
     }
 }
