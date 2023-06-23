@@ -9,9 +9,4 @@ Struct(User Define) -> rbs::ValueRef -> ref clone() -> Database
 
 ### how to define my driver?
 should impl trait and load driver
-* impl trait Driver
-* impl trait Connection
-* impl trait Statement
-* impl trait ResultSet
-* impl trait MetaData
-* impl trait ConnectOptions
+* impl trait rbdc::db::{ConnectOptions, Connection, ExecResult, MetaData, Placeholder, Row};
