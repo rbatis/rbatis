@@ -3,7 +3,6 @@ use crate::options::MySqlConnectOptions;
 use futures_core::future::BoxFuture;
 use rbdc::db::{ConnectOptions, Connection};
 use rbdc::Error;
-use std::any::Any;
 use std::str::FromStr;
 
 impl ConnectOptions for MySqlConnectOptions {

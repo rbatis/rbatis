@@ -12,7 +12,6 @@ use futures_core::Stream;
 use rbdc::db::{ConnectOptions, Connection, ExecResult, MetaData, Placeholder, Row};
 use rbdc::Error;
 use rbs::Value;
-use std::any::Any;
 use std::sync::Arc;
 use tiberius::{Client, Column, ColumnData, Config, Query};
 use tokio::net::TcpStream;

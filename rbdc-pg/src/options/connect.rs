@@ -3,7 +3,6 @@ use crate::options::PgConnectOptions;
 use futures_core::future::BoxFuture;
 use rbdc::db::{ConnectOptions, Connection};
 use rbdc::error::Error;
-use std::any::Any;
 use std::str::FromStr;
 
 impl ConnectOptions for PgConnectOptions {
