@@ -108,7 +108,7 @@ impl Connection for MssqlConnection {
                 x.encode(&mut q)?;
             }
             let v = q
-                .query(self.inner.as_mut().expect("MssqlConnection inner is none"))
+                .query(self.inner.as_mut().ok_or_else(||Error::from("MssqlConnection is close"))?)
                 .await
                 .map_err(|e| Error::from(e.to_string()))?;
             let mut results = Vec::with_capacity(v.size_hint().0);
@@ -149,7 +149,7 @@ impl Connection for MssqlConnection {
                 x.encode(&mut q)?;
             }
             let v = q
-                .execute(&mut self.inner.as_mut().expect("MssqlConnection inner is none"))
+                .execute( self.inner.as_mut().ok_or_else(||Error::from("MssqlConnection is close"))?)
                 .await
                 .map_err(|e| Error::from(e.to_string()))?;
             Ok(ExecResult {
