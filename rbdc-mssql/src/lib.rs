@@ -167,6 +167,7 @@ impl Connection for MssqlConnection {
 
     fn close(&mut self) -> BoxFuture<Result<(), rbdc::Error>> {
         Box::pin(async move {
+            //inner must be Option,so we can take owner and call close(self) method.
             if let Some(v) = self.inner.take() {
                 v.close().await.map_err(|e| Error::from(e.to_string()))?;
             }
