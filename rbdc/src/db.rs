@@ -76,6 +76,9 @@ pub trait Connection: Send {
     /// Execute a query that is expected to update some rows.
     fn exec(&mut self, sql: &str, params: Vec<Value>) -> BoxFuture<Result<ExecResult, Error>>;
 
+    /// ping
+    fn ping(&mut self) -> BoxFuture<Result<(), Error>>;
+
     /// close connection
     /// Normally conn is dropped when the link is dropped,
     /// but it is recommended to actively close this function so that the database does not report errors.
@@ -83,9 +86,6 @@ pub trait Connection: Send {
     /// It is recommended to use Option<DataBaseConnection>
     /// and then call take to take ownership and then if let Some(v) = self.inner.take() {v.lose ().await; }
     fn close(&mut self) -> BoxFuture<Result<(), Error>>;
-
-    /// ping
-    fn ping(&mut self) -> BoxFuture<Result<(), Error>>;
 }
 
 /// Result set from executing a query against a statement
