@@ -100,7 +100,7 @@ impl Connection for MssqlConnection {
         &mut self,
         sql: &str,
         params: Vec<Value>,
-    ) -> BoxFuture<Result<Vec<Box<dyn Row>>, rbdc::Error>> {
+    ) -> BoxFuture<Result<Vec<Box<dyn Row>>, Error>> {
         let sql = MssqlDriver {}.exchange(sql);
         Box::pin(async move {
             let mut q = Query::new(sql);
@@ -141,7 +141,7 @@ impl Connection for MssqlConnection {
         &mut self,
         sql: &str,
         params: Vec<Value>,
-    ) -> BoxFuture<Result<ExecResult, rbdc::Error>> {
+    ) -> BoxFuture<Result<ExecResult, Error>> {
         let sql = MssqlDriver {}.exchange(sql);
         Box::pin(async move {
             let mut q = Query::new(sql);
@@ -165,7 +165,7 @@ impl Connection for MssqlConnection {
         })
     }
 
-    fn close(&mut self) -> BoxFuture<Result<(), rbdc::Error>> {
+    fn close(&mut self) -> BoxFuture<Result<(), Error>> {
         Box::pin(async move {
             //inner must be Option,so we can take owner and call close(self) method.
             if let Some(v) = self.inner.take() {
