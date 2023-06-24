@@ -138,8 +138,8 @@ pub trait ConnectOptions: Any + Send + Sync + Debug + 'static {
     ///
     #[inline]
     fn set(&mut self, arg: Box<dyn Any>)
-    where
-        Self: Sized,
+        where
+            Self: Sized,
     {
         *self = *arg.downcast().expect("must be self type!");
     }
@@ -147,37 +147,20 @@ pub trait ConnectOptions: Any + Send + Sync + Debug + 'static {
     ///set option from uri
     fn set_uri(&mut self, uri: &str) -> Result<(), Error>;
 
-    /// uppercase self,default is this code
-    ///```rust
-    /// use std::any::Any;
-    /// use futures_core::future::BoxFuture;
-    /// use rbdc::db::{Connection, ConnectOptions};
-    /// use rbdc::Error;
-    /// #[derive(Debug)]
-    /// pub struct MyConnectOptions{}
-    ///
-    /// impl ConnectOptions for MyConnectOptions{
-    ///   fn connect(&self) -> BoxFuture<Result<Box<dyn Connection>, Error>> {
-    ///         unimplemented!()
-    ///     }
-    ///
-    ///    fn set_uri(&mut self, uri: &str) -> Result<(), Error> {
-    ///         unimplemented!()
-    ///     }
-    ///
-    ///    fn uppercase_self(&self) -> &(dyn Any + Send + Sync) {
-    ///         self
-    ///    }
-    ///
-    /// }
-    /// ```
-    fn uppercase_self(&self) -> &(dyn Any + Send + Sync);
+    #[deprecated(note = "deprecated method,you can remove this")]
+    fn uppercase_self(&self) -> &(dyn Any + Send + Sync){
+        unimplemented!()
+    }
 }
 
 /// database driver ConnectOptions
 impl dyn ConnectOptions {
     pub fn downcast_ref<E: ConnectOptions>(&self) -> Option<&E> {
-        self.uppercase_self().downcast_ref()
+        let v = unsafe {
+            //this is safe
+            std::mem::transmute_copy::<&dyn ConnectOptions, &E>(&self)
+        };
+        Some(v)
     }
 }
 

@@ -56,10 +56,6 @@ impl ConnectOptions for MssqlConnectOptions {
         );
         Ok(())
     }
-
-    fn uppercase_self(&self) -> &(dyn Any + Send + Sync) {
-        self
-    }
 }
 
 #[derive(Debug)]

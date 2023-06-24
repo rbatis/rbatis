@@ -380,8 +380,4 @@ impl ConnectOptions for SqliteConnectOptions {
         self.create_if_missing = true;
         Ok(())
     }
-
-    fn uppercase_self(&self) -> &(dyn Any + Send + Sync) {
-        self
-    }
 }
