@@ -33,7 +33,7 @@ impl PgBufMutExt for Vec<u8> {
     #[inline]
     fn put_statement_name(&mut self, id: Oid) {
         // N.B. if you change this don't forget to update it in ../describe.rs
-        self.extend(b"sqlx_s_");
+        self.extend(b"rbdc_s_");
 
         self.extend(itoa::Buffer::new().format(id.0).as_bytes());
 
@@ -44,7 +44,7 @@ impl PgBufMutExt for Vec<u8> {
     #[inline]
     fn put_portal_name(&mut self, id: Option<Oid>) {
         if let Some(id) = id {
-            self.extend(b"sqlx_p_");
+            self.extend(b"rbdc_p_");
 
             self.extend(itoa::Buffer::new().format(id.0).as_bytes());
         }

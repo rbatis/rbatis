@@ -247,7 +247,7 @@ mod test {
         );
     }
     #[test]
-    fn it_parses_sqlx_options_correctly() {
+    fn it_parses_rbdc_options_correctly() {
         let uri = "postgres:///?options[synchronous_commit]=off&options[search_path]=postgres";
         let opts = PgConnectOptions::from_str(uri).unwrap();
 

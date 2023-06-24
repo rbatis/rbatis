@@ -41,7 +41,7 @@ impl Encode<'_> for Parse<'_> {
 
 #[test]
 fn test_encode_parse() {
-    const EXPECTED: &[u8] = b"P\0\0\0\x1dsqlx_s_1\0SELECT $1\0\0\x01\0\0\0\x19";
+    const EXPECTED: &[u8] = b"P\0\0\0\x1drbdc_s_1\0SELECT $1\0\0\x01\0\0\0\x19";
 
     let mut buf = Vec::new();
     let m = Parse {

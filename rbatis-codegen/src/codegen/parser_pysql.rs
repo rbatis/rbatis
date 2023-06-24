@@ -47,7 +47,7 @@ pub fn impl_fn_py(m: &ItemFn, args: &ParseArgs) -> TokenStream {
 }
 
 impl ParsePySql for NodeType {
-    //TODO maybe this use Rust parser crates？
+    //TODO maybe this use Rust parser crates?
     fn parse_pysql(arg: &str) -> Result<Vec<NodeType>, Error> {
         let line_space_map = Self::create_line_space_map(&arg);
         let mut main_node = vec![];

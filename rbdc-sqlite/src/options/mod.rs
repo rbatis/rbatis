@@ -147,7 +147,7 @@ impl SqliteConnectOptions {
             pragmas,
             collations: Default::default(),
             serialized: false,
-            thread_name: Arc::new(DebugFn(|id| format!("sqlx-sqlite-worker-{}", id))),
+            thread_name: Arc::new(DebugFn(|id| format!("rbdc-sqlite-worker-{}", id))),
             command_channel_size: 50,
             row_channel_size: 50,
         }
@@ -326,7 +326,7 @@ impl SqliteConnectOptions {
     /// set to `false` if at all possible.    
     ///
     /// If you do end up needing to set this to `true` for some reason, please
-    /// [open an issue](https://github.com/launchbadge/sqlx/issues/new/choose) as this may indicate
+    /// [open an issue](https://github.com/rbatis/rbatis/issues/new/choose) as this may indicate
     /// a concurrency bug in SQLx. Please provide clear instructions for reproducing the issue,
     /// including a sample database schema if applicable.
     pub fn serialized(mut self, serialized: bool) -> Self {

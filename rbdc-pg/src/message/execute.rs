@@ -25,7 +25,7 @@ impl Encode<'_> for Execute {
 
 #[test]
 fn test_encode_execute() {
-    const EXPECTED: &[u8] = b"E\0\0\0\x11sqlx_p_5\0\0\0\0\x02";
+    const EXPECTED: &[u8] = b"E\0\0\0\x11rbdc_p_5\0\0\0\0\x02";
 
     let mut buf = Vec::new();
     let m = Execute {
