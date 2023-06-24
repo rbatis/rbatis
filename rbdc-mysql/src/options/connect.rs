@@ -56,8 +56,4 @@ impl ConnectOptions for MySqlConnectOptions {
         *self = MySqlConnectOptions::from_str(uri).map_err(|e| Error::from(e.to_string()))?;
         Ok(())
     }
-
-    fn uppercase_self(&self) -> &(dyn Any + Send + Sync) {
-        self
-    }
 }

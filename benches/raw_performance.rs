@@ -148,10 +148,6 @@ impl ConnectOptions for MockConnectOptions {
     fn set_uri(&mut self, uri: &str) -> Result<(), Error> {
         Ok(())
     }
-
-    fn uppercase_self(&self) -> &(dyn Any + Send + Sync) {
-        self
-    }
 }
 
 #[derive(Clone, Debug, serde::Serialize, serde::Deserialize)]

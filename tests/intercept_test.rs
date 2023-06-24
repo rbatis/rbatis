@@ -6,7 +6,6 @@ mod test {
     use rbdc::db::{ConnectOptions, Connection, Driver, ExecResult, MetaData, Row};
     use rbdc::rt::block_on;
     use rbs::Value;
-    use std::any::Any;
     use std::sync::OnceLock;
 
     pub struct Logger {}
@@ -158,10 +157,6 @@ mod test {
 
         fn set_uri(&mut self, _uri: &str) -> Result<(), Error> {
             Ok(())
-        }
-
-        fn uppercase_self(&self) -> &(dyn Any + Send + Sync) {
-            self
         }
     }
 
