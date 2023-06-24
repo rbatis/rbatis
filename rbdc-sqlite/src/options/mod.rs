@@ -11,7 +11,6 @@ pub use auto_vacuum::SqliteAutoVacuum;
 use futures_core::future::BoxFuture;
 pub use journal_mode::SqliteJournalMode;
 pub use locking_mode::SqliteLockingMode;
-use std::any::Any;
 use std::cmp::Ordering;
 use std::str::FromStr;
 use std::sync::Arc;
