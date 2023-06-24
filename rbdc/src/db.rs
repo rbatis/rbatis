@@ -77,6 +77,11 @@ pub trait Connection: Send {
     fn exec(&mut self, sql: &str, params: Vec<Value>) -> BoxFuture<Result<ExecResult, Error>>;
 
     /// close connection
+    /// Normally conn is dropped when the link is dropped,
+    /// but it is recommended to actively close this function so that the database does not report errors.
+    /// If &mut self is not satisfied close, when you need mut self,
+    /// It is recommended to use Option<DataBaseConnection>
+    /// and then call take to take ownership and then if let Some(v) = self.inner.take() {v.lose ().await; }
     fn close(&mut self) -> BoxFuture<Result<(), Error>>;
 
     /// ping
