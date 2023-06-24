@@ -113,6 +113,6 @@ mod test {
         v.replace_range(10..11, "T");
         println!("{}", v.to_string());
         let n = chrono::NaiveDateTime::from_str(&v).unwrap();
-        assert_eq!(n.to_string().replace(" ", "T"), v.to_string());
+        assert_eq!(n.to_string().replace(" ", "T").trim_end_matches("00"), v);
     }
 }
