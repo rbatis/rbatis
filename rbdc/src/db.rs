@@ -162,6 +162,14 @@ impl dyn ConnectOptions {
         };
         Some(v)
     }
+
+    pub fn downcast_ref_mut<E: ConnectOptions>(&mut self) -> Option<&mut E> {
+        let v = unsafe {
+            //this is safe
+            std::mem::transmute_copy::<&mut dyn ConnectOptions, &mut E>( &self)
+        };
+        Some(v)
+    }
 }
 
 /// make all database drivers support dialect '?'
