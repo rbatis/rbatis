@@ -356,7 +356,6 @@ mod bigdecimal_to_pgnumeric {
 
     #[test]
     fn issue_423_four_digit() {
-        // This is a regression test for https://github.com/launchbadge/sqlx/issues/423
         let four_digit: BigDecimal = "1234".parse().unwrap();
         assert_eq!(
             PgNumeric::try_from(&four_digit).unwrap(),
@@ -371,7 +370,6 @@ mod bigdecimal_to_pgnumeric {
 
     #[test]
     fn issue_423_negative_four_digit() {
-        // This is a regression test for https://github.com/launchbadge/sqlx/issues/423
         let negative_four_digit: BigDecimal = "-1234".parse().unwrap();
         assert_eq!(
             PgNumeric::try_from(&negative_four_digit).unwrap(),
@@ -386,7 +384,6 @@ mod bigdecimal_to_pgnumeric {
 
     #[test]
     fn issue_423_eight_digit() {
-        // This is a regression test for https://github.com/launchbadge/sqlx/issues/423
         let eight_digit: BigDecimal = "12345678".parse().unwrap();
         assert_eq!(
             PgNumeric::try_from(&eight_digit).unwrap(),
@@ -401,7 +398,6 @@ mod bigdecimal_to_pgnumeric {
 
     #[test]
     fn issue_423_negative_eight_digit() {
-        // This is a regression test for https://github.com/launchbadge/sqlx/issues/423
         let negative_eight_digit: BigDecimal = "-12345678".parse().unwrap();
         assert_eq!(
             PgNumeric::try_from(&negative_eight_digit).unwrap(),

@@ -29,7 +29,7 @@ impl FromStr for SqliteConnectOptions {
             options.in_memory = true;
             options.shared_cache = true;
             let seqno = IN_MEMORY_DB_SEQ.fetch_add(1, Ordering::Relaxed);
-            options.filename = Cow::Owned(PathBuf::from(format!("file:sqlx-in-memory-{}", seqno)));
+            options.filename = Cow::Owned(PathBuf::from(format!("file:rbdc-in-memory-{}", seqno)));
         } else {
             // % decode to allow for `?` or `#` in the filename
             options.filename = Cow::Owned(

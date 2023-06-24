@@ -425,10 +425,10 @@ fn default_host(port: u16) -> String {
 fn test_options_formatting() {
     let options = PgConnectOptions::new().options([("geqo", "off")]);
     assert_eq!(options.options, Some("-c geqo=off".to_string()));
-    let options = options.options([("search_path", "sqlx")]);
+    let options = options.options([("search_path", "rbdc")]);
     assert_eq!(
         options.options,
-        Some("-c geqo=off -c search_path=sqlx".to_string())
+        Some("-c geqo=off -c search_path=rbdc".to_string())
     );
     let options = PgConnectOptions::new().options([("geqo", "off"), ("statement_timeout", "5min")]);
     assert_eq!(

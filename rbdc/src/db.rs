@@ -187,7 +187,7 @@ impl dyn ConnectOptions {
 ///
 /// for example: postgres driver
 /// ```log
-///  "select * from  table where name = ？"
+///  "select * from  table where name = ?"
 /// ```
 /// to
 /// ```log
