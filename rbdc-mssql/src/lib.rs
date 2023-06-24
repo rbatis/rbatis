@@ -19,7 +19,7 @@ use tokio::net::TcpStream;
 use tokio_util::compat::{Compat, TokioAsyncWriteCompatExt};
 
 pub struct MssqlConnection {
-    inner: Client<Compat<TcpStream>>,
+    inner: Option<Client<Compat<TcpStream>>>,
 }
 
 impl MssqlConnection {
@@ -33,7 +33,7 @@ impl MssqlConnection {
         let c = Client::connect(cfg.clone(), tcp.compat_write())
             .await
             .map_err(|e| Error::from(e.to_string()))?;
-        Ok(Self { inner: c })
+        Ok(Self { inner: Some(c) })
     }
 }
 
@@ -108,7 +108,7 @@ impl Connection for MssqlConnection {
                 x.encode(&mut q)?;
             }
             let v = q
-                .query(&mut self.inner)
+                .query(self.inner.as_mut().expect("MssqlConnection inner is none"))
                 .await
                 .map_err(|e| Error::from(e.to_string()))?;
             let mut results = Vec::with_capacity(v.size_hint().0);
@@ -149,7 +149,7 @@ impl Connection for MssqlConnection {
                 x.encode(&mut q)?;
             }
             let v = q
-                .execute(&mut self.inner)
+                .execute(&mut self.inner.as_mut().expect("MssqlConnection inner is none"))
                 .await
                 .map_err(|e| Error::from(e.to_string()))?;
             Ok(ExecResult {
@@ -167,7 +167,9 @@ impl Connection for MssqlConnection {
 
     fn close(&mut self) -> BoxFuture<Result<(), rbdc::Error>> {
         Box::pin(async move {
-            self.inner.close();
+            if let Some(v) = self.inner.take() {
+                v.close().await.map_err(|e| Error::from(e.to_string()))?;
+            }
             Ok(())
         })
     }
@@ -176,6 +178,7 @@ impl Connection for MssqlConnection {
         //TODO While 'select 1' can temporarily solve the problem of checking that the connection is valid, it looks ugly.Better replace it with something better way
         Box::pin(async move {
             self.inner
+                .as_mut().expect("MssqlConnection inner is none")
                 .query("select 1", &[])
                 .await
                 .map_err(|e| Error::from(e.to_string()))?;
