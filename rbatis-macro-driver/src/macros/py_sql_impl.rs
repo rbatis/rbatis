@@ -129,7 +129,7 @@ pub(crate) fn filter_args_context_id(
         }
         sql_args_gen = quote! {
              #sql_args_gen
-             rb_arg_map.insert(#item_name.to_string().into(),rbs::to_value(#item).unwrap_or_default());
+             rb_arg_map.insert(#item_name.to_string().into(),rbs::to_value(#item)?);
         };
     }
     sql_args_gen
