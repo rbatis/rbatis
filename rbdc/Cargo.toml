@@ -23,7 +23,7 @@ tls-native-tls = ["native-tls", "tokio-native-tls"]
 tokio = { version = "1", features = ["fs", "net", "rt", "rt-multi-thread", "time", "io-util"] }
 tokio-rustls = {version= "0.24.0" , optional = true}
 rustls = { version = "0.21.0", features = ["dangerous_configuration"], optional = true }
-webpki-roots = { version = "0.23.0", optional = true }
+webpki-roots = { version = "0.24.0", optional = true }
 rustls-pemfile = { version = "1.0", optional = true }
 log = "0.4"
 serde = "1"
@@ -43,4 +43,4 @@ serde_bytes = "0.11.6"
 async-trait = "0.1.56"
 uuid = { version = "1.1", features = ["v4"] }
 itoa = "1.0"
-bigdecimal = {version = "0.3.0",features = ["serde"]}
+bigdecimal = {version = "0.4.0",features = ["serde"]}
