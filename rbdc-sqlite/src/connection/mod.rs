@@ -220,7 +220,7 @@ impl Statements {
             self.cached.insert(query, statement);
         }
 
-        let statement = self.cached.get_mut(query).unwrap();
+        let statement = self.cached.get_mut(query)?;
 
         if exists {
             // as this statement has been executed before, we reset before continuing

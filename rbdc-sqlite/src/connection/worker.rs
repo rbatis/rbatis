@@ -83,7 +83,7 @@ impl ConnectionWorker {
                     // grant us the lock even if another task is waiting.
                     conn: Mutex::new(conn, true),
                 });
-                let mut conn = shared.conn.try_lock().unwrap();
+                let mut conn = shared.conn.try_lock()?;
 
                 if establish_tx
                     .send(Ok(Self {
