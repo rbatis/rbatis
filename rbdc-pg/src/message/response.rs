@@ -186,7 +186,6 @@ fn notice_protocol_err() -> Error {
          This is most likely due to an error that occurred during authentication and \
          the default lc_messages locale is not binary-compatible with UTF-8. \
          See the server logs for the error details."
-            .into()
     )
 }
 
