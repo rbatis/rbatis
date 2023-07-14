@@ -24,7 +24,7 @@ impl Driver for SqliteDriver {
         &'a self,
         opt: &'a dyn ConnectOptions,
     ) -> BoxFuture<Result<Box<dyn Connection>, Error>> {
-        let opt: &SqliteConnectOptions = opt.downcast_ref()?;
+        let opt: &SqliteConnectOptions = opt.downcast_ref().unwrap();
         Box::pin(async move {
             let conn = opt.connect().await?;
             Ok(Box::new(conn) as Box<dyn Connection>)
@@ -42,6 +42,12 @@ impl Placeholder for SqliteDriver {
     }
 }
 
+#[cfg(test)]
+mod test {
+    #[test]
+    fn test_default() {
+    }
+}
 // #[cfg(test)]
 // mod test {
 //     use crate::driver::SqliteDriver;

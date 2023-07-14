@@ -95,3 +95,10 @@ mod test {
 //         assert_eq!(s, "select * from table where id = @P1 age = @P2")
 //     }
 // }
+
+#[cfg(test)]
+mod test {
+    #[test]
+    fn test_default() {
+    }
+}

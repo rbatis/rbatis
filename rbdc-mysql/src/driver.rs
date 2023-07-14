@@ -24,7 +24,7 @@ impl Driver for MysqlDriver {
         &'a self,
         opt: &'a dyn ConnectOptions,
     ) -> BoxFuture<Result<Box<dyn Connection>, Error>> {
-        let opt: &MySqlConnectOptions = opt.downcast_ref()?;
+        let opt: &MySqlConnectOptions = opt.downcast_ref().unwrap();
         Box::pin(async move {
             let conn = opt.connect().await?;
             Ok(conn)
@@ -42,6 +42,13 @@ impl Placeholder for MysqlDriver {
     }
 }
 
+#[cfg(test)]
+mod test {
+    #[test]
+    fn test_default() {
+        assert_eq!(true,true);
+    }
+}
 // #[cfg(test)]
 // mod test {
 //     use crate::driver::MysqlDriver;
